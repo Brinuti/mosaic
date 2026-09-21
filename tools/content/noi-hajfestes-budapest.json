@@ -1,0 +1,826 @@
+{
+ "file": "noi-hajfestes-budapest.html",
+ "title": "Női hajfestés - Budapest - 2.kerület",
+ "desc": "Női hajfestés és hajvágás a Bécsi út 2-ben. Balayage, melír, tőfestés, szőkítés. Ismerd meg Evelint és nézd meg a munkáit",
+ "blocks": [
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ebf1831725394a0591c64e442a81b333.png",
+   "alt": "asset_7.png"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "Head Spa"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/4-kezes-headspa-ajandekkartya",
+   "label": "ÚJ! - 4 kezes Headspa!"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-budapest",
+   "label": "Mi az a Head Spa?"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/paros-headspa-budapest",
+   "label": "Páros Head Spa"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-ferfiaknak",
+   "label": "Head Spa Férfiaknak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-arak-budapest",
+   "label": "Head Spa Csomagok és Árak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/head-spa-kedvezmeny",
+   "label": "Head Spa - 20% SZEPTEMBERI kedvezmény!"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/head-spa-velemenyek",
+   "label": "Head Spa Vélemények"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-termekek-oxygeni",
+   "label": "OXYGENI Termékek"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest",
+   "label": "Szőrtelenítés"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodraszat-budapest",
+   "label": "Fodrászat"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodrasz-budapest-balayage-hajfestes",
+   "label": "Betti"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/balayage-haj-festes-budapest",
+   "label": "Noel"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-hajfestes-budapest",
+   "label": "Evelin"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodrasz-budapest-balayage-hajfestes",
+   "label": "Fodrászat Árak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/oxigenterapia-budapest",
+   "label": "Oxigénterápia"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/sminktetovalas-budapest",
+   "label": "Sminktetoválás"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-ajandekkartya",
+   "label": "Ajándékkártya"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/idpontfoglalas",
+   "label": "FOGLALÁS"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "GYIK"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "Kapcsolat"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_c784ca57ffc3470f90e9225d7f9c16d7.png",
+   "alt": "info.png"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ec266ac7692e4ac78b760a89cd93adb8.jpg",
+   "alt": "english-flag.JPG"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"text-align:center; font-size:14px;\"><a href=\"https://www.mosaicheadspa.hu/head-spa-kedvezmeny\" target=\"_blank\"><span style=\"font-weight:bold;\"><span style=\"color:#FFFFFF;\"><span style=\"text-decoration:underline;\">Szeptemberi akci&oacute;! - 20% kedvezm&eacute;ny minden headspa foglal&aacute;sra + aj&aacute;nd&eacute;kk&aacute;rty&aacute;ra!</span></span></span></a></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:40px;\"><span style=\"font-size:40px;\">V&eacute;gre olyan frizur&aacute;d lesz, amilyet meg&aacute;lmodt&aacute;l!</span></h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Ingyenes konzult&aacute;ci&oacute;val &eacute;s hajhosszabb&iacute;t&aacute;ssal is v&aacute;rlak</span> a <span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/noi-fodrasz-budapest-balayage-hajfestes\" target=\"_self\" data-anchor=\"anchors-m5l1xx5l2\">2. ker&uuml;let B&eacute;csi &uacute;t 2-ben. (3.ker Kolosy t&eacute;rn&eacute;l)</a></span></p> <p style=\"font-size:17px;\"><span></span></p> <p style=\"font-size:17px;\">&quot;Megtal&aacute;ljuk a hozz&aacute;d illő sz&iacute;nt &eacute;s v&aacute;g&aacute;st, amitől ragyogsz majd!&quot;<br> <span style=\"font-weight:bold;\">Szaniszl&oacute;-Cene Evelin - Professzion&aacute;lis fodr&aacute;sz</span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas",
+   "label": "IDŐPONT FOGLALÁS"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-hajfestes-budapest",
+   "label": "MUNKÁIM"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_81f16bfc67fb4ad6a78e8eda371a0139.png",
+   "alt": "5stars.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\">5,0 - Kiv&aacute;l&oacute;</p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_dcdd217b7e9b4be4baf1bc2b9d41348b.png",
+   "alt": "fanola-logo.png"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_daa60c756ac240a8af2776b040919d37.jpg",
+   "alt": "evelin-header.jpg"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/11062b_371a5c6e1a664c2cb20e65be814467d6.jpeg",
+   "alt": "Textured Wall"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:38px; text-align:center;\"><span style=\"font-size:38px;\"><span style=\"color:#ffffff;\"><span style=\"font-style:normal;\"><span><span style=\"font-weight:400;\">Ingyenes konzult&aacute;ci&oacute;val v&aacute;rlak! :)</span></span></span></span></span></h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\">A frizur&aacute;d az egyik legmeghat&aacute;roz&oacute;bb eleme annak, ahogyan m&aacute;sok l&aacute;tnak &mdash; &eacute;s ha a sz&iacute;n vagy a v&aacute;g&aacute;s nem siker&uuml;l j&oacute;l, az hossz&uacute; t&aacute;von befoly&aacute;solhatja az &ouml;nbizalmadat.</p> <p style=\"font-size:17px;\"><span></span></p> <p style=\"font-size:17px;\">T&ouml;bb mint 4 &eacute;ve dolgozom fodr&aacute;szk&eacute;nt, &iacute;gy pontosan &aacute;t&eacute;rzem, milyen csal&oacute;d&aacute;st tud okozni egy rossz tapasztalat. A j&oacute; h&iacute;r: n&aacute;lam nyugodt lehetsz, mert biztons&aacute;gban vagy. Vend&eacute;geim 90%-a &eacute;vek &oacute;ta visszaj&aacute;r hozz&aacute;m, mert tudj&aacute;k, mire sz&aacute;m&iacute;thatnak.</p> <p style=\"font-size:17px;\"><span></span></p> <p style=\"font-size:17px;\">A legfontosabb sz&aacute;momra, hogy figyeljek r&aacute;d &eacute;s val&oacute;ban meg&eacute;rtselek. Az első alkalommal r&eacute;szletesen &aacute;tbesz&eacute;lj&uuml;k az elk&eacute;pzel&eacute;seidet, azt is, mit szeretn&eacute;l elker&uuml;lni &mdash; &eacute;s azt is megmutatom hogyan tudod otthon be&aacute;ll&iacute;tani a frizur&aacute;dat.</p> <p style=\"font-size:17px;\">💇&zwj;♀️ N&eacute;zd meg eddigi munk&aacute;imat, &eacute;s foglalj le egy d&iacute;jmentes konzult&aacute;ci&oacute;s időpontot <span style=\"font-weight:bold;\">vagy b&aacute;rmelyik szolg&aacute;ltat&aacute;somra!</span></p> <p style=\"font-size:17px;\"><span style=\"font-weight:bold;\"><span></span></span></p> <p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Szaniszl&oacute;-Cene Evelin</span><br> Professzion&aacute;lis fodr&aacute;sz</p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas",
+   "label": "INGYENES KONTULTÁCIÓ"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"text-align:center; font-size:40px;\">Ilyen minős&eacute;gre sz&aacute;m&iacute;thatsz tőlem</h2>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_598950063e194020b30de9ab9af02f70.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_eb50ab815f7f4eb2961ced72e57568e4.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_edc229c432074210bcab2a232fc37a69.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_f138c9a1c0494e0786f48b7229df5ad1.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_8dd884813b39460c867ec0dbe4e54d8e.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_d37a16ed301442089271bf4f265193f7.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_d5771c1b288f452ebe82cd7012235422.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_56d954ffd3ac43949832a865639592f0.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_1c4732d7d0444e469d4a20fc1037e860.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_f06dcbbb1fcd443bbafb063887d725d1.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_1ccb9440749a4b3c97a063cf8345303b.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_1306008fd5104887b0160f0b01c85e1d.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_c58f97e8192348a4a168790031f033e9.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_528f32ac20c14f72a41e315e0e9414b7.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_2f42a96d028e44b09b7eb1d4478b3603.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_db144fe225464c7d840084bded2da66d.jpg",
+   "alt": ""
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas",
+   "label": "ÁRLISTA + SZABAD IDŐPONTOK"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-hajfestes-budapest",
+   "label": "SZOLGÁLTATÁSOK"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"text-align:center; font-size:40px;\">Gy&ouml;ny&ouml;rűen fel&uacute;j&iacute;tott szalonban v&aacute;rlak</h2>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_47f7e08fe5414673b335b056ed00c34f.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_03657009453347e0995c299e7c60340c.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_936227646e3f456e801ebd03d3f73e71.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_aa3b2f8ec7564c87bf16836d7d3b29d6.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_de82baa4848741a2810d03774b0487db.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_d2c5bcd45f674487b8e3a431c55e335e.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_00a2f4bd0e9b4325b2d02e77edb874e9.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_e189ed57f4ce487f8b2ac489ee5ffe1d.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ac85eea74409484091e12f8d72fbee98.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_3988162a2d0d4b7cbb343309359cf9a3.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_1e4639668fab4f1c90e83ff4f824eb16.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_f0e0d20e38674229adc8d4512f968f74.jpg",
+   "alt": ""
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"line-height:1em; text-align:center; font-size:40px;\">&Aacute;rlist&aacute;m</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<ul style=\"font-size:17px;\"> <li> <p style=\"font-size:17px;\">A fest&eacute;sek &aacute;ra mag&aacute;ban foglalja a hajfest&eacute;kek &aacute;r&aacute;t is.</p> </li> <li> <p style=\"font-size:17px;\">A fest&eacute;sek &aacute;ramag&aacute;ban foglalja a v&aacute;g&aacute;st + sz&aacute;r&iacute;t&aacute;st is.</p> </li> <li> <p style=\"font-size:17px;\">A hajv&aacute;g&aacute;s &aacute;ra mag&aacute;ban foglalja a sz&aacute;r&iacute;t&aacute;st is.</p> </li> <li> <p style=\"font-size:17px;\">K&eacute;szp&eacute;nzzel &eacute;s bankk&aacute;rty&aacute;val is tudsz fizetni.<span></span></p> </li> </ul>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas",
+   "label": "SZABAD IDŐPONTOK"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/4eb7255f066a4d91aefa0f11a07b3ba5.jpg",
+   "alt": "Brown Hair"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:40px;\">1. Balayage / Ombre / Mel&iacute;r</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:26px;\"><span style=\"font-size:26px;\">Időtartam: kb 180 perc</span></p> <p style=\"font-size:26px;\"><span style=\"font-size:26px;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\">&Aacute;r</span></span><span>:</span> <span style=\"font-weight:bold;\">39.950 Ft -t&oacute;l (sz&aacute;r&iacute;t&aacute;ssal, v&aacute;g&aacute;ssal)</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\">Az első &eacute;s legfontosabb dolog a kommunik&aacute;ci&oacute;. Minden haj m&aacute;s, &eacute;s mindenkinek egyedi elk&eacute;pzel&eacute;se van arr&oacute;l, hogyan szeretn&eacute; l&aacute;tni mag&aacute;t. 18 &eacute;v tapasztalattal pontosan tudom, hogy a hajfest&eacute;s nemcsak technika, hanem műv&eacute;szet is &ndash; &eacute;s ez az, amitől az eredm&eacute;ny val&oacute;ban szem&eacute;lyre szabott lesz.</p> <p style=\"font-size:17px;\"><span></span></p> <p style=\"font-size:17px;\">Elősz&ouml;r is, alaposan &aacute;tbesz&eacute;lj&uuml;k az elk&eacute;pzel&eacute;seidet. Megn&eacute;zem az arcvon&aacute;sodat, a bőrt&oacute;nust, a hajad term&eacute;szetes &aacute;llapot&aacute;t, m&uacute;ltj&aacute;t &eacute;s az alapj&aacute;n d&ouml;ntj&uuml;k el k&ouml;z&ouml;sen, hogy milyen technik&aacute;t haszn&aacute;ljunk: balayage-t, ombre-t vagy mel&iacute;rt.</p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\">A balayage p&eacute;ld&aacute;ul l&aacute;gy &aacute;tmenetet biztos&iacute;t, az ombre m&eacute;lyebb kontrasztot &eacute;s dr&aacute;mai hat&aacute;st ad, m&iacute;g a mel&iacute;r prec&iacute;z cs&iacute;kokat hoz l&eacute;tre a frissess&eacute;g &eacute;rdek&eacute;ben. </p> <p style=\"font-size:18px; line-height:1.8em;\"><span><span></span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Hozz&aacute;d illő sz&iacute;nek</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">T&ouml;k&eacute;letes</span></p> <p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">&aacute;tmenetek</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Term&eacute;szetes hat&aacute;s</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas",
+   "label": "ÁRLISTA + SZABAD IDŐPONTOK"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/balayage-haj-festes-budapest\" target=\"_self\" data-anchor=\"anchors-m95tiafe1\"><span style=\"font-weight:bold;\">Munk&aacute;im &gt;&gt;</span></a></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_598950063e194020b30de9ab9af02f70.jpg",
+   "alt": "12.jpg"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_d37a16ed301442089271bf4f265193f7.jpg",
+   "alt": "14.jpg"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/ac38c9a926cb4a69a6bb0340639d2b90.jpg",
+   "alt": "blonde hair"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:40px;\">2. Sz&aacute;r&iacute;t&aacute;s</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:26px;\"><span style=\"font-size:26px;\">Időtartam: 35-60 perc </span></p> <p style=\"font-size:26px;\"><span style=\"font-size:26px;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\">&Aacute;r</span></span></span><span style=\"font-size:26px;\"><span>:</span></span><span style=\"font-size:26px;\"> <span style=\"font-weight:bold;\">7.350</span></span><span style=\"font-size:26px;\"><span style=\"font-weight:bold;\"> Ft -t&oacute;l</span></span></p> <div> </div>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\">Amikor valaki be&uuml;l a sz&eacute;kembe hajsz&aacute;r&iacute;t&aacute;sra, az első dolog, amit figyelembe veszek, az a haj t&iacute;pusa, hossza &eacute;s a vend&eacute;g elk&eacute;pzel&eacute;se. </p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\">Elősz&ouml;r mindig megvizsg&aacute;lom a haj term&eacute;szetes &aacute;llapot&aacute;t. R&ouml;vid haj eset&eacute;n a precizit&aacute;s &eacute;s a text&uacute;ra hangs&uacute;lyoz&aacute;sa a kulcs. K&ouml;z&eacute;phossz&uacute; hajn&aacute;l a forma megtart&aacute;sa &eacute;s a term&eacute;szetes volumen kiemel&eacute;se a c&eacute;l, m&iacute;g hossz&uacute; haj eset&eacute;ben a simas&aacute;got &eacute;s az es&eacute;s&eacute;t kell t&ouml;k&eacute;letes&iacute;teni. A hull&aacute;mos hajnak pedig k&uuml;l&ouml;n technik&aacute;ja van.</p> <p style=\"font-size:17px;\"><span></span></p> <p style=\"font-size:17px;\">A hajsz&aacute;r&iacute;t&aacute;s k&ouml;zben mindig arra figyelek, hogy a haj ne s&eacute;r&uuml;lj&ouml;n. Haszn&aacute;lok hőv&eacute;dőt, magas minős&eacute;gű hajkef&eacute;t &eacute;s vigy&aacute;zok a hőm&eacute;rs&eacute;kletre, hogy megőrizzem a hajad eg&eacute;szs&eacute;g&eacute;t &eacute;s f&eacute;ny&eacute;t.</p> <p style=\"font-size:18px; line-height:1.8em;\"><span><span></span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Volumen &eacute;s</span></p> <p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">tart&aacute;s</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Sz&ouml;sz&ouml;s&ouml;d&eacute;s kiz&aacute;rva</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Vigy&aacute;zok a hajadra</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas",
+   "label": "ÁRLISTA + SZABAD IDŐPONTOK"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/noi-hajfestes-budapest\" target=\"_self\" data-anchor=\"anchors-mblskd615\"><span style=\"font-weight:bold;\">Munk&aacute;im &gt;&gt;</span></a></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/4eb7255f066a4d91aefa0f11a07b3ba5.jpg",
+   "alt": "Brown Hair"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:40px;\">3. Hajv&aacute;g&aacute;s</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:26px;\"><span style=\"font-size:26px;\">Időtartam: 60 - 75 perc</span></p> <p style=\"font-size:26px;\"><span style=\"font-size:26px;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\">&Aacute;r</span></span></span><span style=\"font-size:26px;\"><span>:</span></span><span style=\"font-size:26px;\"> </span><span style=\"font-size:26px;\"><span style=\"font-weight:bold;\">11.950 Ft -t&oacute;l</span><span style=\"font-weight:bold;\"> (sz&aacute;r&iacute;t&aacute;ssal)</span></span></p> <div> </div>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\">A r&ouml;vid haj v&aacute;g&aacute;s&aacute;n&aacute;l a precizit&aacute;s elengedhetetlen, hiszen minden apr&oacute; hiba azonnal l&aacute;that&oacute;v&aacute; v&aacute;lik. Az arcform&aacute;hoz illő strukt&uacute;r&aacute;t &eacute;s a haj term&eacute;szetes es&eacute;s&eacute;t figyelembe v&eacute;ve kell kialak&iacute;tani a fazont, hogy az k&ouml;nnyen form&aacute;zhat&oacute; &eacute;s tart&oacute;s legyen.</p> <p style=\"font-size:17px;\"><span></span></p> <p style=\"font-size:17px;\">A k&ouml;z&eacute;phossz&uacute; haj eset&eacute;ben az egyens&uacute;ly a kulcs: a hajnak volument &eacute;s mozg&aacute;st kell kapnia an&eacute;lk&uuml;l, hogy lelapulna. Fontos, hogy a r&eacute;tegek harmonikusak legyenek, &iacute;gy a frizura term&eacute;szetesnek &eacute;s k&ouml;nnyednek tűnik. Hull&aacute;mos haj eset&eacute;n &aacute;tmenet v&aacute;g&aacute;ssal m&eacute;g szebb lehet az eredm&eacute;ny.</p> <p style=\"font-size:17px;\"><span></span></p> <p style=\"font-size:17px;\">A hossz&uacute; hajn&aacute;l a legnagyobb figyelmet az eg&eacute;szs&eacute;ges hajv&eacute;gekre kell ford&iacute;tani, mik&ouml;zben megőrz&ouml;m a haj term&eacute;szetes es&eacute;s&eacute;t &eacute;s text&uacute;r&aacute;j&aacute;t. A megfelelő r&eacute;tegez&eacute;ssel levegősebb&eacute; &eacute;s k&ouml;nnyebben kezelhetőv&eacute; v&aacute;lik a haj, mik&ouml;zben megőrzi a hossz&aacute;t &eacute;s eleganci&aacute;j&aacute;t.</p> <p style=\"font-size:17px;\"><span></span></p> <p style=\"font-size:17px;\"><span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Illeszked&eacute;s az arcform&aacute;dhoz</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Mozg&aacute;s &eacute;s volumen</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Eg&eacute;szs&eacute;ges hajv&eacute;gek</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas",
+   "label": "ÁRLISTA + SZABAD IDŐPONTOK"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/noi-hajfestes-budapest\" target=\"_self\" data-anchor=\"anchors-mblskd615\"><span style=\"font-weight:bold;\">Munk&aacute;im &gt;&gt;</span></a></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_f138c9a1c0494e0786f48b7229df5ad1.jpg",
+   "alt": "10.jpg"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_56d954ffd3ac43949832a865639592f0.jpg",
+   "alt": "15.jpg"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/ac38c9a926cb4a69a6bb0340639d2b90.jpg",
+   "alt": "blonde hair"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:40px;\">4. Tőfest&eacute;s</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:30px;\"><span style=\"font-size:30px;\">Időtartam: 90-120 perc </span></p> <p style=\"font-size:26px;\"><span style=\"font-size:26px;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\">&Aacute;r</span></span></span><span style=\"font-size:26px;\"><span>:</span></span><span style=\"font-size:26px;\"> </span><span style=\"font-weight:bold;\"><span style=\"font-size:26px;\">23.950</span></span><span style=\"font-size:26px;\"><span style=\"font-weight:bold;\"> Ft - t&oacute;l</span><span style=\"font-weight:bold;\"> (v&aacute;g&aacute;ssal, sz&aacute;r&iacute;t&aacute;ssal)</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\">A tőfest&eacute;s t&ouml;k&eacute;letes megold&aacute;s, ha a hajsz&iacute;ned alapvetően rendben van, &eacute;s csak a len&ouml;v&eacute;st szeretn&eacute;d elt&uuml;ntetni. Ez k&uuml;l&ouml;n&ouml;sen előny&ouml;s, ha ősz hajsz&aacute;lak jelennek meg a t&ouml;vekn&eacute;l, vagy ha a hajhossz sz&iacute;ne m&eacute;g &eacute;l&eacute;nk &eacute;s eg&eacute;szs&eacute;ges.</p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\">Gyorsabb &eacute;s k&iacute;m&eacute;letesebb, mint a teljes fest&eacute;s, hiszen csak a hajtőre ker&uuml;l fest&eacute;k, &iacute;gy a hajv&eacute;gek &eacute;rintetlenek maradnak. A sz&iacute;nkiv&aacute;laszt&aacute;s sor&aacute;n figyelek arra, hogy az &aacute;rnyalat t&ouml;k&eacute;letesen illeszkedjen a hajad megl&eacute;vő t&oacute;nus&aacute;hoz, &iacute;gy az eredm&eacute;ny teljesen term&eacute;szetes lesz.</p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\">Az ecsetvon&aacute;sokat prec&iacute;zen v&eacute;gzem, hogy a fest&eacute;k csak oda ker&uuml;lj&ouml;n, ahov&aacute; sz&uuml;ks&eacute;ges, elker&uuml;lve a foltos vagy egyenetlen hat&aacute;st. Ha sz&uuml;ks&eacute;ges, toniz&aacute;l&aacute;ssal harmoniz&aacute;lom a hajhosszt, hogy az eg&eacute;sz frizura ragyog&oacute; &eacute;s egys&eacute;ges legyen. &Iacute;gy a v&eacute;geredm&eacute;ny egy len&ouml;v&eacute;smentes, eg&eacute;szs&eacute;ges megjelen&eacute;sű haj, ami nemcsak sz&eacute;p, hanem &aacute;poltnak is hat.</p> <p style=\"font-size:18px; line-height:1.8em;\"><span><span></span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Foltosod&aacute;s n&eacute;lk&uuml;l</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Term&eacute;szetes illeszked&eacute;s</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Len&ouml;v&eacute;smentes hat&aacute;s</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas",
+   "label": "ÁRLISTA + SZABAD IDŐPONTOK"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/noi-hajfestes-budapest\" target=\"_self\" data-anchor=\"anchors-mblskd615\"><span style=\"font-weight:bold;\">Munk&aacute;im &gt;&gt;</span></a></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/4eb7255f066a4d91aefa0f11a07b3ba5.jpg",
+   "alt": "Brown Hair"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:40px;\">5. Teljes fest&eacute;s + v&aacute;g&aacute;s</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:26px;\"><span style=\"font-size:26px;\">Időtartam: 120 - 180 perc</span></p> <p style=\"font-size:26px;\"><span style=\"font-size:26px;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\">&Aacute;r</span></span></span><span style=\"font-size:26px;\"><span>:</span></span><span style=\"font-size:26px;\"> </span><span style=\"font-size:26px;\"><span style=\"font-weight:bold;\">39.950 Ft - t&oacute;l (sz&aacute;r&iacute;t&aacute;ssal)</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\">Egysz&iacute;nű fest&eacute;s eset&eacute;n a teljes fest&eacute;s &eacute;s v&aacute;g&aacute;s ide tartozik, szem&eacute;lyes konzult&aacute;ci&oacute;val, sz&iacute;nsk&aacute;la alapj&aacute;n v&aacute;laszt&aacute;ssal &eacute;s v&aacute;g&aacute;ssal.</p> <p style=\"font-size:17px;\"><span><span></span></span></p> <p style=\"font-size:17px;\">Ha balayage / ombre / mel&iacute;r<span style=\"letter-spacing:0em;\">-t szeretn&eacute;l k&eacute;rni v&aacute;g&aacute;ssal egy&uuml;tt ebben az esetben ezek fest&eacute;s&eacute;re foglalj időpontot &eacute;s kedvezm&eacute;nyesen r&ouml;vid haj &aacute;ron elk&eacute;sz&iacute;tem neked a v&aacute;g&aacute;st is.</span></p> <p style=\"font-size:17px;\"><span></span></p> <p style=\"font-size:17px;\"><span></span><span></span><span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Egysz&iacute;nű fest&eacute;ssel</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Balayage / ombre / mel&iacute;r is</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">A v&aacute;g&aacute;s r&ouml;vid haj &aacute;ron</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9e314fcb249a4faf875c94c1c4c19aa9.png",
+   "alt": "okay.png"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas",
+   "label": "ÁRLISTA + SZABAD IDŐPONTOK"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/noi-hajfestes-budapest\" target=\"_self\" data-anchor=\"anchors-mblskd615\"><span style=\"font-weight:bold;\">Munk&aacute;im &gt;&gt;</span></a></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_8dd884813b39460c867ec0dbe4e54d8e.jpg",
+   "alt": "16.jpg"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/11062b_c07a0fdbefc64e3f97e7b5040c3528e3.jpg",
+   "alt": "Grey Mosaic Floor"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:40px;\">A legmagasabb minős&eacute;gű hajfest&eacute;kekkel dolgozunk</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Schwarzkopf, LUXOYA, Fanola.</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\">A Schwarzkopf, a Luxoya &eacute;s a Fanola fest&eacute;keit egyar&aacute;nt sz&iacute;vesen haszn&aacute;ljuk &ndash; minden technik&aacute;hoz megvan a t&ouml;k&eacute;letes v&aacute;laszt&aacute;sunk.</p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\">Ak&aacute;r balayage-r&oacute;l, fest&eacute;sről vagy tőfest&eacute;sről van sz&oacute;, mindig &eacute;l&eacute;nk, term&eacute;szetes sz&iacute;neket tudunk vel&uuml;k el&eacute;rni.</p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\">Az ősz hajsz&aacute;lakat is gy&ouml;ny&ouml;rűen fedik, &eacute;s a haj puha, selymes marad a t&aacute;pl&aacute;l&oacute; &ouml;sszetevőknek k&ouml;sz&ouml;nhetően.</p> <p style=\"font-size:17px;\"><br> A vend&eacute;geink im&aacute;dj&aacute;k, hogy a hajsz&iacute;n&uuml;k tart&oacute;s &eacute;s eg&eacute;szs&eacute;ges f&eacute;nyű marad.<br> Mindh&aacute;rom m&aacute;rka k&ouml;nnyen kezelhető, j&oacute;l keverhető &eacute;s k&iacute;m&eacute;letes a hajhoz &ndash; ez&eacute;rt b&aacute;rmilyen st&iacute;lust is szeretn&eacute;l, biztosan megtal&aacute;ljuk hozz&aacute; a legjobb fest&eacute;ket!</p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_fe7e7720cbf84a99b6f9a0527bf0f4b1.jpg",
+   "alt": "3marka.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"text-align:center; font-size:40px;\">Mitől m&aacute;s a MOSAIC Hair?</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:18px; line-height:1.8em; text-align:center;\"><span style=\"font-size:18px;\">K&ouml;zel 4 &eacute;v tapasztalat ut&aacute;n kijelenthetem, hogy semmilyen kock&aacute;zatot nem v&aacute;llalsz velem :)</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_d852d31680af4d7b9648e789200bc3be.png",
+   "alt": "kulonallo_privat_kelezok.png"
+  },
+  {
+   "t": "text",
+   "html": "<h3 style=\"font-size:20px; text-align:center;\"><span style=\"font-size:20px;\">Te vagy a k&ouml;z&eacute;ppontban</span></h3>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em; text-align:center;\"><span style=\"font-size:16px;\">Minden fest&eacute;sn&eacute;l &eacute;s v&aacute;g&aacute;sn&aacute;l alaposan &aacute;tbesz&eacute;lj&uuml;k az elk&eacute;pzel&eacute;seidet &eacute;s minden tud&aacute;sommal igyekszem majd kihozni a legt&ouml;bbet a v&aacute;gyaidb&oacute;l.</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_85ced775b433471d89c19448c90ad05c.png",
+   "alt": "organikus_termekek.png"
+  },
+  {
+   "t": "text",
+   "html": "<h3 style=\"font-size:20px; text-align:center;\"><span style=\"font-size:20px;\">Minős&eacute;gi hajfest&eacute;k</span></h3>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em; text-align:center;\"><span style=\"font-size:16px;\">A legnagyobb m&aacute;rk&aacute;k hajfest&eacute;keivel dolgozunk, melyekkel a t&ouml;k&eacute;letes sz&iacute;nt tudjuk neked biztos&iacute;tani, kompromisszumok n&eacute;lk&uuml;l.</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_a3c4fc8ad4cf4969abd32f82db96f71a.png",
+   "alt": "hivatasos_masszor.png"
+  },
+  {
+   "t": "text",
+   "html": "<h3 style=\"font-size:20px; text-align:center;\"><span style=\"font-size:20px;\">Aj&aacute;nd&eacute;k fejmassz&aacute;zs</span></h3>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em; text-align:center;\"><span style=\"font-size:16px;\">A hajmos&aacute;st relax&aacute;l&oacute; fejmassz&aacute;zzsal eg&eacute;sz&iacute;tem ki, hogy a kezel&eacute;sed r&ouml;gt&ouml;n egy kis kikapcsol&oacute;d&aacute;ssal, ellazul&aacute;ssal kezdődj&ouml;n:)</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_391b5408152e49bd93f51f3763b874fe.png",
+   "alt": "kivalo_lokacio.png"
+  },
+  {
+   "t": "text",
+   "html": "<h3 style=\"font-size:20px; text-align:center;\"><span style=\"font-size:20px;\">Kiv&aacute;l&oacute; lok&aacute;ci&oacute;</span></h3>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em; text-align:center;\"><span style=\"font-size:16px;\">A MOSAIC Headspa a 2. &eacute;s 3.ker&uuml;let hat&aacute;r&aacute;n helyezkedik el a B&eacute;csi &uacute;t 2. sz&aacute;m alatt, amely a Zsigmond t&eacute;r meg&aacute;ll&oacute;n&aacute;l tal&aacute;lhat&oacute;.</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_303213a6e00149509a11d9d4d9301bbb.png",
+   "alt": "proffeszionalis_szaritok_2.png"
+  },
+  {
+   "t": "text",
+   "html": "<h3 style=\"font-size:20px; text-align:center;\"><span style=\"font-size:20px;\">T&ouml;k&eacute;letes besz&aacute;r&iacute;t&aacute;s</span></h3>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em; text-align:center;\"><span style=\"font-size:16px;\">A hajsz&aacute;r&iacute;t&aacute;s nem csak a frizura befejez&eacute;se, hanem a t&ouml;k&eacute;letes forma &eacute;s tart&aacute;s megteremt&eacute;se is. Napokig &eacute;lvezheted a gy&ouml;ny&ouml;rű, &eacute;letteli frizur&aacute;d.</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_c6792476ce974075b413f8c535efeec2.png",
+   "alt": "szivvel_lelekkel.png"
+  },
+  {
+   "t": "text",
+   "html": "<h3 style=\"font-size:20px; text-align:center;\"><span style=\"font-size:20px;\">Sz&iacute;v&uuml;gy&uuml;nk a sz&eacute;ps&eacute;ged</span></h3>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em; text-align:center;\"><span style=\"font-size:16px;\">A MOSAIC teljes csapata hivat&aacute;sk&eacute;nt tekint a szakm&aacute;j&aacute;ra &eacute;s az t&ouml;lt fel minket, ha t&eacute;ged m&eacute;g szebb&eacute; var&aacute;zsolunk &eacute;s a t&uuml;k&ouml;rbe n&eacute;zve mosolyogsz majd!</span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas",
+   "label": "ÁRLISTA + SZABAD IDŐPONTOK"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/11062b_c676302884b34e2eacc489eede7cbc47.jpg",
+   "alt": "Spa Salts and Stones"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"text-align:center; font-size:40px;\">Itt tal&aacute;lsz meg</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<h3 style=\"font-size:26px; line-height:normal;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:26px;\">C&iacute;mem</span></span></h3>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">1023 Budapest B&eacute;csi &uacute;t 2.<br> A Kolosy &eacute;s a Zsigmond t&eacute;r k&ouml;z&ouml;tt.</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h3 style=\"font-size:26px; line-height:normal;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:26px;\">Ahol el&eacute;rsz</span></span></h3>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"text-decoration:underline;\"><a href=\"tel:+36 20 247 4444\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">06 20 247 4444</span></span></a></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\"><a>mosaicheadspa@gmail.com</a></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h3 style=\"font-size:26px; line-height:normal;\"><span style=\"font-size:26px;\">Nyitvatart&aacute;som</span></h3>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">H&eacute;tfő - P&eacute;ntek</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">8:00 &ndash; 20:00</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">Szombat</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"font-size:16px;\">Z&aacute;rva</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">Vas&aacute;rnap</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"font-size:16px;\">Z&aacute;rva</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_3d447a4483a54782920eee5bd468b1b5.jpg",
+   "alt": "mosaic-itt-vagyunk.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; line-height:1.8em; text-align:center;\"><span style=\"font-size:14px;\"><span style=\"letter-spacing:normal;\">Big in Japan Kft. - <span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/aszf\" target=\"_self\">&Aacute;SZF</a></span> - <span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/impresszum\" target=\"_self\">Impresszum</a></span></span></span></p>"
+  }
+ ]
+}

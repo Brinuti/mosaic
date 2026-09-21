@@ -1,0 +1,9 @@
+# fuggosegek
+node_modules/
+
+# nyers, ujra letoltheto Wix HTML-dumpok (a build nem hasznalja oket)
+tools/raw/
+
+# rendszer
+Thumbs.db
+.DS_Store

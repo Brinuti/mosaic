@@ -1,0 +1,91 @@
+{
+  "fooldal": [
+    {
+      "q": "Mi az a head spa kezelés és miben különbözik a hagyományos hajmosástól?",
+      "a": "A head spa egy luxus fejbőr- és hajkezelés, amely mélytisztítást, hidratálást és masszázst ötvöz. Nemcsak a hajad lesz tiszta, hanem a fejbőr egészségére is fókuszálunk, elősegítve a hajnövekedést és csökkentve a stresszt."
+    },
+    {
+      "q": "Milyen előnyei vannak a head spa kezelésnek a fejbőrre és a hajra nézve?",
+      "a": "A headspa javítja a fejbőr vérkeringését, méregteleníti és oxigénnel látja el, ami elősegíti az egészségesebb hajnövekedést. A haj fényesebb, puhább és dúsabb lesz, miközben a fejbőr problémái (például szárazság vagy zsírosodás) is javulhatnak."
+    },
+    {
+      "q": "Mennyi ideig tart egy head spa kezelés?",
+      "a": "A head spa kezelés hossza 50 perc, 10 perc az átöltözés / visszaöltözés és 30 perc a beszárítás profi fodrász által, így összesen kb 90 perc a teljes kezelés."
+    },
+    {
+      "q": "Kinek ajánlott a head spa kezelés?",
+      "a": "Bárkinek, aki szeretné javítani a fejbőre és haja állapotát. Különösen ajánlott azoknak, akik stresszesek, hajhullással küzdenek, vagy problémás a fejbőrük (pl. száraz, zsíros vagy korpás). Az Oxigeni márkának, amelyet a kezeléshez használunk kifejezetten problémás hajra kifejlesztett terméke is van."
+    },
+    {
+      "q": "Segít a head spa a hajhullás csökkentésében?",
+      "a": "A kezelés serkenti a fejbőr vérkeringését, erősíti a hajhagymákat, ami hozzájárulhat a hajhullás csökkentéséhez és az új hajszálak növekedéséhez."
+    },
+    {
+      "q": "Fejbőrproblémák (pl. korpásodás, zsírosodás) esetén is igénybe vehető a kezelés?",
+      "a": "A headspa kifejezetten segíthet az ilyen problémák enyhítésében. A kezelés során alkalmazott természetes Oxygeni termékek és masszázstechnika egyensúlyba hozzák a fejbőr állapotát."
+    },
+    {
+      "q": "Milyen termékeket használtok a head spa kezelés során?",
+      "a": "Az Oxygeni Hair természetes, vegyszermentes termékeit alkalmazunk, amelyek kíméletesek a fejbőrhöz, de hatékonyan tisztítanak és táplálnak."
+    },
+    {
+      "q": "Milyen gyakran érdemes head spa kezelésre járni?",
+      "a": "Amaximális hajápoló és stresszoldó hatás fenntartása érdekében havonta egyszer ajánlott, de ha komolyabb fejbőrproblémád van, akkor akár 2 hetente is érdemes lehet megismételni a kezelést."
+    },
+    {
+      "q": "Lehet festett vagy kezelt hajjal is head spa kezelésre jönni?",
+      "a": "Igen, a head spa biztonságos festett vagy kezelt haj esetén is, sőt, segíthet a haj egészségének megőrzésében és a festett haj fényének megtartásában."
+    },
+    {
+      "q": "Mennyi idő után láthatóak az eredmények?",
+      "a": "Már egy head spa kezelés után is érezhető a változás – a haj puhább, fényesebb lesz, a fejbőr pedig frissebb. A tartós eredményekhez rendszeres kezelés ajánlott."
+    }
+  ],
+  "masodik": [
+    {
+      "q": "Van-e bármilyen ellenjavallat, ami miatt nem ajánlott a kezelés?",
+      "a": "Head Spa kezelésen akkor vehetsz részt, ha az alábbiakat elfogadod:",
+      "lista": [
+        "A kezelést megelőző 4 héten belül fejsérülésed, vagy súlyosabb (hányással és lázzal járó) agyrázkódásod nem volt.",
+        "Nincsen akut arcüleggyuladásod, nyirokcsomó-vagy mandulagyulladásod, illetve foggyulladásod.",
+        "Nem vagy lázas beteg.",
+        "Az elmúlt 4 hétben nem estél át nagyobb műtéti beavatkozáson.",
+        "Nem vagy vérzékeny.",
+        "Nem vagy fertőző beteg (Hepatitis A,B,C, Aids, tuberkulózis, vagy egyéb fertőző betegség)",
+        "A felsőtested bőrfelületén nincsen nyílt seb, friss taruma, intenzív hámhiány, fekély, vagy mély gombásodás.",
+        "Nem vagy epilepsziás.",
+        "Nincs kezeletlen szív- és érrendszeri betegséged.",
+        "Nincsen kiugróan magas vérnyomásod.",
+        "És nem vagy veszélyeztetett terhes."
+      ]
+    },
+    {
+      "q": "Csak hosszú hajra ajánlott, vagy rövidebb haj esetén is hatékony?",
+      "a": "A Head Spa bármilyen hajhossznál hatékony, rövid és hosszú haj esetén egyaránt. A kezelés a fejbőrre fókuszál, így a haj hossza nem befolyásolja az eredményt."
+    },
+    {
+      "q": "Fejfájás vagy migrén esetén segíthet a Head Spa kezelés?",
+      "a": "A fejbőr masszírozása javítja a vérkeringést és oldja a feszültséget, ami sok esetben segíthet enyhíteni a fejfájást vagy migrént."
+    },
+    {
+      "q": "Férfiak is jöhetnek?",
+      "a": "A Head Spa nemtől függetlenül bárkinek ajánlott, férfiak és nők egyaránt élvezhetik a kezelést és annak előnyeit."
+    },
+    {
+      "q": "Kopasz férfiak is jöhetnek? :)",
+      "a": "Természetesen, a nem hajas fejbőr talán ugyanúgy érzékeny és jól reagál a masszázsra és a fejbőr kezelésre."
+    },
+    {
+      "q": "Milyen hatással van a Head Spa a stressz csökkentésére?",
+      "a": "A Head Spa relaxáló masszázsa és nyugtató környezete segít csökkenteni a stresszt és feltölt mentálisan is, így a rendszeres headspa nyugtató hatású, jobb közérzetet biztosít és segíti az alvást."
+    },
+    {
+      "q": "Lehet-e kombinálni a Head Spa kezelést más hajkezelésekkel, például hajfestéssel vagy hajvágással?",
+      "a": "Igen, a Head Spa remekül kiegészíti a hajfestést és hajvágást, sőt előkészíti a fejbőrt és a hajat, hogy még szebb legyen a végeredmény. A MOSAIC szalonban 18 év tapasztalatú fodrásszal is várunk."
+    },
+    {
+      "q": "Lehet Head Spa-ra jönni póthajjal?",
+      "a": "Igen, lehet headspa kezelésre jönni póthajjal is, de fontos figyelembe venni néhány dolgot. A kezelés elsősorban a fejbőrre fókuszál, így a póthaj nem akadály, de előzetesen érdemes jelezni, hogy póthajad van. Így személyre szabottan, kíméletes technikával végezzük a kezelést, hogy elkerüljük a póthaj károsodását vagy kilazulását. A headspa segíthet a saját hajad és a fejbőröd egészségének megőrzésében, ami a póthaj tartósságára is pozitív hatással lehet."
+    }
+  ]
+}

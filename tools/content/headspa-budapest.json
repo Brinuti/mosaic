@@ -1,0 +1,483 @@
+{
+ "file": "headspa-budapest.html",
+ "title": "A legjobb Head Spa Budapesten? Ilyen a MOSAIC",
+ "desc": "💆‍♀️ Végigjártunk a Budapesti Head Spa szalonokat, hogy a MOSAIC Budapest legjobb Head Spa -ja lehessen!  Ezért vagyunk mások!  👆",
+ "blocks": [
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ebf1831725394a0591c64e442a81b333.png",
+   "alt": "asset_7.png"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "Head Spa"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/4-kezes-headspa-ajandekkartya",
+   "label": "ÚJ! - 4 kezes Headspa!"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-budapest",
+   "label": "Mi az a Head Spa?"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/paros-headspa-budapest",
+   "label": "Páros Head Spa"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-ferfiaknak",
+   "label": "Head Spa Férfiaknak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-arak-budapest",
+   "label": "Head Spa Csomagok és Árak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/head-spa-kedvezmeny",
+   "label": "Head Spa - 20% SZEPTEMBERI kedvezmény!"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/head-spa-velemenyek",
+   "label": "Head Spa Vélemények"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-termekek-oxygeni",
+   "label": "OXYGENI Termékek"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest",
+   "label": "Szőrtelenítés"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodraszat-budapest",
+   "label": "Fodrászat"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodrasz-budapest-balayage-hajfestes",
+   "label": "Betti"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/balayage-haj-festes-budapest",
+   "label": "Noel"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-hajfestes-budapest",
+   "label": "Evelin"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodrasz-budapest-balayage-hajfestes",
+   "label": "Fodrászat Árak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/oxigenterapia-budapest",
+   "label": "Oxigénterápia"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/sminktetovalas-budapest",
+   "label": "Sminktetoválás"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-ajandekkartya",
+   "label": "Ajándékkártya"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/idpontfoglalas",
+   "label": "FOGLALÁS"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "GYIK"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "Kapcsolat"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_c784ca57ffc3470f90e9225d7f9c16d7.png",
+   "alt": "info.png"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ec266ac7692e4ac78b760a89cd93adb8.jpg",
+   "alt": "english-flag.JPG"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"text-align:center; font-size:14px;\"><a href=\"https://www.mosaicheadspa.hu/head-spa-kedvezmeny\" target=\"_blank\"><span style=\"font-weight:bold;\"><span style=\"color:#FFFFFF;\"><span style=\"text-decoration:underline;\">Szeptemberi akci&oacute;! - 20% kedvezm&eacute;ny minden headspa foglal&aacute;sra + aj&aacute;nd&eacute;kk&aacute;rty&aacute;ra!</span></span></span></a></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h1 style=\"font-size:50px;\"><span style=\"font-weight:bold;\"><span style=\"color:#000000;\">Head Spa Budapest: A MOSAIC Head Spa a legjobb?</span></span></h1>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_81c75e1b9b4440aaabfc218990135703.jpg",
+   "alt": "budapest-legjobb-headspa-ja.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px;\"><span><span style=\"font-size:15px;\"><span style=\"font-weight:bold;\"><span style=\"color:#000000;\">Olvas&aacute;si idő: 11 perc</span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"font-style:italic;\"><span style=\"font-weight:bold;\"><span style=\"color:#000000;\">&ldquo;Mielőtt a MOSAIC Head Spa-t l&eacute;trehoztuk, t&ouml;bb budapesti &eacute;s k&uuml;lf&ouml;ldi Head Spa szalont tesztelt&uuml;k le, hogy a legjobb szolg&aacute;ltat&aacute;s j&ouml;hessen l&eacute;tre.&rdquo;</span></span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"font-style:italic;\"><span style=\"font-weight:bold;\"><span style=\"color:#000000;\"><span></span></span></span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"font-weight:bold;\"><span style=\"color:#000000;\">- Interj&uacute; De&aacute;k Ferenc Istv&aacute;nnal a MOSAIC Head Spa Budapest alap&iacute;t&oacute;j&aacute;val.</span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"font-weight:bold;\"><span style=\"color:#000000;\"><span></span></span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"font-weight:bold;\"><span style=\"color:#000000;\"><span></span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:35px;\"><span style=\"font-weight:bold;\"><span style=\"font-size:35px;\"><span style=\"color:#000000;\">Mi az a Head Spa &eacute;s honnan sz&aacute;rmazik?</span></span></span></h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">A Head Spa a leg&uacute;jabb női őr&uuml;let, a trend amely m&eacute;g csak most &eacute;rkezett meg</span> Magyarorsz&aacute;gra, de m&aacute;r most t&ouml;retlen n&eacute;pszerűs&eacute;gnek &ouml;rvend a H&ouml;lgyek k&ouml;r&eacute;ben. De mi ez, &eacute;s mi&eacute;rt szeretik ennyire a nők?</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A Head Spa vagy magyaros&iacute;tva &ldquo;fejf&uuml;rdő&rdquo; <span style=\"font-weight:bold;\">a haj&aacute;pol&aacute;s &eacute;s a massz&aacute;zs kever&eacute;ke</span>, amely kimondottan a fejet &eacute;s annak k&ouml;rny&eacute;k&eacute;t veszi c&eacute;lba, &eacute;s azon t&uacute;l, hogy elk&eacute;pesztően nyugtat&oacute; &eacute;s <span style=\"font-weight:bold;\">stresszold&oacute;</span> hat&aacute;s&uacute;, komoly <span style=\"font-weight:bold;\">haj&aacute;pol&aacute;si előnyei</span> is vannak.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A social m&eacute;di&aacute;ban egyre t&ouml;bbet tal&aacute;lkozhatunk az ikonikus <span style=\"font-weight:bold;\">aranysz&iacute;nű f&eacute;lk&ouml;r alak&uacute; fejzuhannyal</span>, amely a Head Spa kezel&eacute;s egyik alapj&aacute;t k&eacute;pezi.</span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_da1d4728a7c8428d9d62aab8e8a964f0.jpg",
+   "alt": "a-mosaic-headspa-budapest-korvizsugaras-aranygloria.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\">A Head Spa jellegzetes szimb&oacute;luma &eacute;s eszk&ouml;ze: A k&ouml;rv&iacute;zsugaras &quot;aranygl&oacute;ria.&quot;</span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">B&aacute;r az alapja val&oacute;ban egy m&eacute;lytiszt&iacute;t&oacute; &eacute;s nagyon kellemes hajmos&aacute;s, de ann&aacute;l sokkal t&ouml;bbről van sz&oacute;. Nem csak az&eacute;rt mert massz&aacute;zs elemeket is tartalmaz, hanem az&eacute;rt mert olyan <span style=\"font-weight:bold;\">szem&eacute;lyre szabott sze&aacute;nszot jelent, amelyet semelyik fodr&aacute;sz szalonban nem kapunk meg. </span></span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A fejbőrt&iacute;pusunk pontos meghat&aacute;roz&aacute;sa ut&aacute;n egyedileg kikevert speci&aacute;lis pakol&aacute;sokkal &aacute;polj&aacute;k a fej- </span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">&eacute;s arcbőrt, &iacute;gy a rendszeres Head Spa a leggyakoribb fejbőrprobl&eacute;m&aacute;kra is j&oacute;t&eacute;kony hat&aacute;ssal van.</span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"font-weight:bold;\"><span style=\"color:#000000;\">&ldquo; A korp&aacute;s, sz&aacute;raz fejbőr hidrat&aacute;lt lesz tőle, a zs&iacute;ros haj faggy&uacute;termel&eacute;se normaliz&aacute;l&oacute;dik, a hajhull&aacute;s pedig cs&ouml;kken, a hajhagym&aacute;k eg&eacute;szs&eacute;ge jav&iacute;that&oacute;.</span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"font-weight:normal;\"><span style=\"color:#000000;\"></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A szem&eacute;lyre szabott nyugtat&oacute; pakol&aacute;sokat, gőzb&uacute;r&aacute;val, &eacute;s c&eacute;lzott arc-&eacute;s fejbőrmassz&aacute;zzsal juttatj&aacute;k a bőr m&eacute;lyebb r&eacute;tegeibe, az eg&eacute;szet pedig oxig&eacute;nter&aacute;pi&aacute;val is megkoron&aacute;zz&aacute;k, ami alapjaiban jav&iacute;tja a hajhagym&aacute;k t&aacute;panyagfelv&eacute;tel&eacute;t.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">A Head Spa jap&aacute;n eredetű</span>, gy&ouml;kere a shiatsu arcmassz&aacute;zsra &eacute;s az onsen f&uuml;rdőkult&uacute;r&aacute;ra eredeztethető vissza, ez&eacute;rt azt lehet mondani, hogy a<span style=\"font-weight:bold;\"> 3 fő eleme, a hajmos&aacute;s, a gőz&ouml;l&eacute;s &eacute;s a massz&aacute;zs.</span></span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Mivel a fejben rengeteg receptor van, ez&eacute;rt egy Head Spa kezel&eacute;s <span style=\"font-weight:bold;\">olyan szinten stresszold&oacute; hat&aacute;s&uacute;, </span>hogy m&eacute;g a legnyugtalanabb embereket is k&eacute;pes levinni alf&aacute;ba.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Alap&iacute;t&oacute;k&eacute;nt &eacute;s f&eacute;rfik&eacute;nt &eacute;n is megd&ouml;bbenve tapasztaltam, hogy az 50 perces Head Spa kezel&eacute;sem 16 perc&eacute;t az <span style=\"font-weight:bold;\">okosgyűrűm alv&aacute;snak &eacute;szlelte, mik&ouml;zben v&eacute;gig &eacute;bren voltam.</span></span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_4ee922058b8e43b6ad7480ebdd6cc4a1.jpg",
+   "alt": "a-headspa-a-legjobb-stresszoldo.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\">A Head Spa kezel&eacute;s megnyugtatja a testet, lejjebb viszi a pulzust &eacute;s be&aacute;ll&iacute;tja a l&eacute;gz&eacute;st. Nem csoda, hogy az okosgyűrűm azt hitte, hogy alszom a kezel&eacute;s k&ouml;zben.</span></span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span><span></span></span></span></span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/idpontfoglalas",
+   "label": "IDŐPONTFOGLALÁS"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:35px;\"><span style=\"font-size:35px;\"><span style=\"font-weight:bold;\"><span style=\"color:#000000;\">Mitől m&aacute;s a MOSAIC Head Spa Budapest?</span></span></span></h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Miut&aacute;n t&ouml;bb budapesti &eacute;s k&uuml;lf&ouml;ldi szalont is v&eacute;gigj&aacute;rtunk egy dolgot biztosan megtudtunk: </span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"font-weight:bold;\"><span style=\"color:#000000;\">A Head Spa egy priv&aacute;t, csendes felt&ouml;ltőd&eacute;s, &iacute;gy az eg&eacute;sz szalon k&ouml;rnyezet&eacute;t ennek kell al&aacute;rendelni.</span></span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">A legt&ouml;bb szalonnal ellent&eacute;tben &iacute;gy, k&uuml;l&ouml;n szedt&uuml;k a v&aacute;r&oacute;helyis&eacute;get &eacute;s a recepci&oacute;t,</span> de m&eacute;g m&aacute;s emeletre is helyezt&uuml;k őket, &iacute;gy a MOSAIC-ban az <span style=\"font-weight:bold;\">emeleten csak a Head Spa </span>z&aacute;rt, t&aacute;gas &eacute;s priv&aacute;t kezelői helyezkednek el, ahol a csend, a halk zene &eacute;s a f&eacute;nyek mind a teljes kikapcsol&oacute;d&aacute;st &eacute;s meg&eacute;rkez&eacute;st szolg&aacute;lj&aacute;k.</span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_984c2348443b404f8be9e1a273aefd59.jpg",
+   "alt": ""
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\">Az alap&iacute;t&aacute;skor a legfontosabb c&eacute;l volt, hogy a MOSAIC Head Spa-ban vend&eacute;geinknek m&aacute;r a puszta jelenl&eacute;t is megnyugv&aacute;st hozzon.</span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A k&ouml;vetkező tanuls&aacute;g amit megtudtunk a piackutat&aacute;sunkb&oacute;l az volt, hogy nagyon nem mindegy, hogy <span style=\"font-weight:bold;\">milyen szakember v&eacute;gzi a kezel&eacute;st</span>. Tal&aacute;lkoztunk j&oacute; &eacute;lm&eacute;nyekkel is, de olyan szalon is volt, ahol nem &eacute;rezt&uuml;k az &eacute;rint&eacute;s igazi erej&eacute;t. Ez&eacute;rt a MOSAIC Head Spa-ban csak olyan <span style=\"font-weight:bold;\">tapasztalt gy&oacute;gymasszőr&ouml;ket</span> alkalmazunk, akiknek az &eacute;rint&eacute;se is gy&oacute;gy&iacute;t, &eacute;s akik elv&eacute;gezt&eacute;k a hajgy&oacute;gy&aacute;szati alapk&eacute;z&eacute;st is, ami egy teljes &eacute;rt&eacute;kű Head Spa kezel&eacute;shez kell. Fontosnak tartjuk, hogy a kezelőink hivat&aacute;sk&eacute;nt tekintsenek a munk&aacute;jukra &eacute;s <span style=\"font-weight:bold;\">sz&iacute;vvel l&eacute;lekkel dolgozzanak</span><span style=\"font-weight:normal;\">, mert a masszőr hangulata &aacute;tragad a vend&eacute;gre</span>. Vend&eacute;geink nagyon szeretik a kezel&eacute;seinket, mert a profi &eacute;s gyeng&eacute;d &eacute;rint&eacute;sek eddig nem tapasztalt m&oacute;don nyugtatj&aacute;k le őket.</span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_28b6a0e799ce4ec88381b6b40e406fd6.jpg",
+   "alt": ""
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\">A MOSAIC Head Spa-ban tapasztalt gy&oacute;gymasszőr&ouml;k v&eacute;gzik a kezel&eacute;st, mert hisz&uuml;nk abban, hogy az &eacute;rint&eacute;s gy&oacute;gy&iacute;t &eacute;s ezt csak szakemberek tudj&aacute;k igaz&aacute;n profin v&eacute;gezni.</span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">A harmadik dolog, amit m&aacute;shogy csin&aacute;lunk az a Head Spa sze&aacute;nsz v&eacute;g&eacute;n a hajsz&aacute;r&iacute;t&aacute;s.</span> Profi, szalon szintű besz&aacute;r&iacute;t&aacute;st k&iacute;n&aacute;lunk a v&eacute;g&eacute;n, amitől az az &eacute;rz&eacute;se a vend&eacute;gnek mintha most j&ouml;tt volna ki a fodr&aacute;sz&aacute;t&oacute;l.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Kevesen tudj&aacute;k, de egy Head Spa kezel&eacute;s egy fontos esem&eacute;ny, t&aacute;rgyal&aacute;s, fot&oacute;z&aacute;s, buli, vagy randi előtt is kiv&aacute;l&oacute; program, hiszen a felfriss&uuml;l&eacute;sen t&uacute;l olyan frizur&aacute;val t&aacute;vozhatunk, amilyet otthon kevesen tudnak be&aacute;ll&iacute;tani.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Vend&eacute;geink k&eacute;rhetnek egyenes, de ak&aacute;r hull&aacute;mos sz&aacute;r&iacute;t&aacute;st is, &iacute;gy maga a z&aacute;r&oacute; &ldquo;hajsz&aacute;r&iacute;t&aacute;s&rdquo; fel&eacute;r egy komplett fodr&aacute;szati finish szolg&aacute;ltat&aacute;ssal, amely&eacute;rt <span style=\"font-weight:bold;\">sok fodr&aacute;sz szalonban 10-15.000 forintot is elk&eacute;rnek besz&aacute;r&iacute;t&aacute;s c&iacute;m&eacute;n.</span></span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_296cd274d87347bd80bfa6c55bfc52dd.jpg",
+   "alt": ""
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\">A MOSAIC Head Spa-ban a z&aacute;r&oacute; hajsz&aacute;r&iacute;t&aacute;st profi &eacute;s j&oacute; fej fodr&aacute;szok v&eacute;gzik.</span></span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\"><span></span></span></span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/idpontfoglalas",
+   "label": "IDŐPONTFOGLALÁS"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A Head Spa kezel&eacute;s alapvetően egy csendes &eacute;s nyugodt &eacute;nidő, a sz&aacute;r&iacute;t&aacute;s sor&aacute;n viszont a &ldquo;vil&aacute;gba &uacute;jra visszat&eacute;rve&rdquo; vend&eacute;geink nagyon szeretik fodr&aacute;szaink t&aacute;rsas&aacute;g&aacute;t, akik <span style=\"font-weight:bold;\">k&ouml;zvetlenek, kommunikat&iacute;vak</span> &eacute;s nem csak t&ouml;k&eacute;letes frizur&aacute;t de j&oacute;kedvet is var&aacute;zsolnak 🙂</span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_fdbee8a9b83f4c8080e6f821b543a6c3.jpeg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_4c584e505b834479b3d4700276650b61.jpg",
+   "alt": ""
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\">Egy MOSAIC Head Spa kezel&eacute;s ut&aacute;n nem fogod elhinni, hogy ez a haj haj a Ti&eacute;d. :)</span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">A negyedik dolog, amit nagyon k&ouml;rbej&aacute;rtunk, azok a kezel&eacute;s k&ouml;zben haszn&aacute;lt term&eacute;kek.</span> Mindenk&eacute;ppen 100%-ban <span style=\"font-weight:bold;\">term&eacute;szetes, kemik&aacute;lia- &eacute;s &aacute;llatk&iacute;s&eacute;rlet mentes &eacute;s veg&aacute;n</span> term&eacute;keket szerett&uuml;nk volna, hiszen a Head Spa alapja az eg&eacute;szs&eacute;g. A sz&eacute;p haj att&oacute;l sz&eacute;p mert eg&eacute;szs&eacute;ges, &eacute;s a test is akkor nyugodt, ha megkapja az &eacute;rint&eacute;st, ez&eacute;rt nem lehet elrontani a szolg&aacute;ltat&aacute;st szintetikus anyagokkal.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">Az Oxygeni term&eacute;kei mellett tett&uuml;k le a voksunkat,</span> amelyek a legmagasabb minős&eacute;get k&eacute;pviselik, kiz&aacute;r&oacute;lag term&eacute;szetes &ouml;sszetevőkből k&eacute;sz&uuml;lnek &eacute;s mindenf&eacute;le kemik&aacute;li&aacute;t&oacute;l mentesek.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Azon t&uacute;l, hogy komoly fejbőr minős&eacute;g v&aacute;ltoz&aacute;st tudunk el&eacute;rni az Oxygeni<span style=\"font-weight:bold;\"> egyedileg kikevert pakol&aacute;saival</span>, de m&eacute;g a leg&eacute;rz&eacute;kenyebb bőrű vend&eacute;geink &eacute;s oda vannak tőle, hogy mennyire szereti a &ldquo;bőr&uuml;k&rdquo; ezeket az illatos nat&uacute;r kr&eacute;meket.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Egy MOSAIC Head Spa sze&aacute;nsz ut&aacute;n &iacute;gy a <span style=\"font-weight:bold;\">haj csillog&oacute;, soha nem l&aacute;tott puhas&aacute;g&uacute; &eacute;s selymes </span>lesz, ami egy nőn&eacute;l komoly &ouml;nbizaloml&ouml;ketet tud adni. De f&eacute;rfik&eacute;nt m&eacute;g &eacute;n napokig is &eacute;reztem a r&ouml;vid hajamon a v&aacute;ltoz&aacute;st, &eacute;s az illatfelhőt.</span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_f9a4ce4bf90b48ceb1aaed9da17a25f8.jpg",
+   "alt": ""
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span><span style=\"font-weight:bold;\">Az &ouml;t&ouml;dik dolog pedig, amiben a MOSAIC Head Spa, m&aacute;s mint a t&ouml;bbi budapesti Head Spa az az, hogy n&aacute;lunk a vend&eacute;geknek lehetős&eacute;g&uuml;k van saj&aacute;t maguk &ouml;sszerakni egy headspa kezel&eacute;st.</span> </span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span>A MOSAIC 50 perces K&iacute;v&aacute;ns&aacute;g csomag l&eacute;nyege ugyanis a szem&eacute;lyre szabotts&aacute;g.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span>Ha elj&ouml;ssz hozz&aacute;nk egy alap kezel&eacute;sre <span style=\"font-weight:bold;\">t&ouml;bb mint 10 f&eacute;le kezel&eacute;s elemmel</span> fogsz tal&aacute;lkozni: Hajmos&aacute;s, gőzb&uacute;ra, hajpakol&aacute;s, arcpakol&aacute;s, arcmassz&aacute;zs eszk&ouml;z&ouml;kkel &eacute;s k&eacute;zzel, fejmassz&aacute;zs eszk&ouml;z&ouml;kkel &eacute;s k&eacute;zzel, dekolt&aacute;zs massz&aacute;zs, &eacute;s k&eacute;zmassz&aacute;zs. </span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_a772c9222aa949a0888a4aa2298ef0b5f002.jpg",
+   "alt": "Fejmasszázs eszközökkel"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_a12ccd3c1d8741698774232c8bee7efdf002.jpg",
+   "alt": "Kézmasszázs"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_08e23fa612e846eca8137312513c1fecf002.jpg",
+   "alt": "Arcmasszázs"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_29c8623e64464bdb96b1d61fa5ed6556f002.jpg",
+   "alt": "Mélytisztító hajmosás"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_225ee4f9b6164d3c858705c394f7d04ef002.jpg",
+   "alt": "Fejbőr masszírozó fésű"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_430fb9fbd2e744b08703615db12f4018f002.jpg",
+   "alt": "20 ujjas fejmasszírozó"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_bbb818fad4674d2097775970ca10c3d0f002.jpg",
+   "alt": "Arcroller"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_4dd11049dc03482e8b6a169484d1b976f002.jpg",
+   "alt": "Fajmasszírozó körkefe"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Ezek k&ouml;z&uuml;l biztos, hogy lesz 3-4 olyan kedvenc r&eacute;sz, amire azt mondod, hogy ezt &oacute;r&aacute;kig is el tudn&aacute;d viselni. &Eacute;s itt van a l&eacute;nyeg! A k&ouml;vetkező alkalommal csak mondd el a MOSAIC masszőr&ouml;dnek, melyikeket im&aacute;dtad a legjobban &eacute;s <span style=\"font-weight:bold;\">&uacute;gy fogjuk fel&eacute;p&iacute;teni a kezel&eacute;sedet, hogy az a legt&ouml;bb &ouml;r&ouml;met okozza neked.</span></span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A nev&uuml;nk is innen ered: Mint a MOZAIK apr&oacute; kis darabk&aacute;it, &uacute;gy tudod te is &ouml;sszerakni azt a Head Spa &eacute;lm&eacute;nyt, ami m&aacute;r annyira a <span style=\"font-weight:bold;\">ti&eacute;d, annyira neked val&oacute;</span>, hogy rendszeresen be szeretn&eacute;d majd &eacute;p&iacute;teni az &eacute;letedbe.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Ez a MOSAIC l&eacute;nyege &eacute;s esszenci&aacute;ja: Olyan szolg&aacute;ltat&aacute;st szeretn&eacute;nk ny&uacute;jtani, ami val&oacute;ban r&oacute;lad sz&oacute;l, mert a Head Spa &aacute;tform&aacute;l&oacute; &eacute;s tart&oacute;s hat&aacute;s&aacute;t akkor tudod majd a legink&aacute;bb &eacute;lvezni, ha szok&aacute;st csin&aacute;lsz belőle.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">De hogyan is n&eacute;z ki pontosan egy kezel&eacute;s, milyen elemekből &aacute;ll? N&eacute;zz&uuml;k meg most ezt:</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:35px;\"><span style=\"font-size:35px;\"><span style=\"font-weight:bold;\"><span style=\"color:#000000;\">Mennyibe ker&uuml;l &eacute;s hogy n&eacute;z ki egy Head Spa kezel&eacute;s a MOSAIC-ban?</span></span></span></h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Egy 50 perces MOSAIC &quot;Hair&quot; Head Spa kezel&eacute;s egy mikokamer&aacute;s fejbőrvizsg&aacute;lattal kezdődik, amelynek sor&aacute;n meghat&aacute;rozzuk a fejbőr&ouml;d t&iacute;pus&aacute;t &eacute;s &aacute;llapot&aacute;t:</span></span></p> <p style=\"font-size:17px;\"> </p> <ul style=\"color:rgb(0, 0, 0); font-family:sarabun,sans-serif; font-size:17px;\"> <li> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">sz&aacute;raz / korp&aacute;s,</span></span></p> </li> <li> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">zs&iacute;ros,</span></span></p> </li> <li> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">hajhull&oacute;s,</span></span></p> </li> <li> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">gyulladt.</span></span></p> </li> </ul>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_aab3792d7e0247748ef77f3b0fea566a.jpg",
+   "alt": ""
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\">Első l&eacute;p&eacute;sk&eacute;nt egy speci&aacute;lis mikorkamer&aacute;val m&eacute;rj&uuml;k fel a fejbőr&ouml;d t&iacute;pus&aacute;t &eacute;s &aacute;llapot&aacute;t.</span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">A kamer&aacute;s vizsg&aacute;lat fogja majd meghat&aacute;rozni, hogy hogyan &eacute;p&uuml;l fel a Head Spa kezel&eacute;sed</span>, illetve, hogy az Oxygeni nat&uacute;r term&eacute;keiből, milyen egyedileg ott frissen kikevert mixet haszn&aacute;lunk majd a fej- &eacute;s arcbőr&ouml;dre, melyik t&aacute;pl&aacute;lja legink&aacute;bb azt. Egy sz&aacute;raz fejbőrt hidrat&aacute;lni kell, egy zs&iacute;ros hajn&aacute;l a faggy&uacute;termel&eacute;s optimaliz&aacute;l&aacute;sa lesz a c&eacute;l, m&iacute;g a hajhull&aacute;st erős m&eacute;lytisz&iacute;t&aacute;ssal, v&eacute;rkering&eacute;st serkentő massz&aacute;zzsal &eacute;s kieg&eacute;sz&iacute;tő oxig&eacute;nter&aacute;pi&aacute;val tudjuk jav&iacute;tani.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A kamer&aacute;s vizsg&aacute;lat ut&aacute;n j&ouml;n az ikonikus Head Spa aranygl&oacute;ria, azaz a k&ouml;rv&iacute;zsugaras hajmos&aacute;s, Oxygeni samponnal &eacute;s m&eacute;lytisz&iacute;t&oacute; fejmos&aacute;ssal.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A megtiszt&iacute;tott fejre &eacute;s arcra vissz&uuml;k fel a haj- &eacute;s arcpakol&aacute;st, ezt gőz&ouml;l&eacute;ssel &eacute;s k&uuml;l&ouml;nb&ouml;ző massz&aacute;zstechnik&aacute;kkal juttatjuk a bőr m&eacute;lyebb r&eacute;tegeibe, majd szabad k&eacute;zzel &eacute;s eszk&ouml;z&ouml;kkel serkentj&uuml;k a v&eacute;rkering&eacute;st.</span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">M&aacute;r &ouml;nmag&aacute;ban a l&aacute;gy melegvizes hajmos&aacute;s &eacute;s a folyamatos gyeng&eacute;d &eacute;rint&eacute;s, &eacute;s az &eacute;rz&eacute;kszervek bevon&aacute;sa illatokkal, zen&eacute;ve, f&eacute;nyekkel elk&eacute;pesztően nyugtat&oacute; hat&aacute;s&uacute;, de itt m&eacute;g nincs v&eacute;ge.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Mindezt professzion&aacute;lis <span style=\"font-weight:bold;\">gy&oacute;gymassz&aacute;zs elemeket is tartalmaz&oacute;</span> arc- dekolt&aacute;zs &eacute;s k&eacute;zmassz&aacute;zzsal koron&aacute;zzuk meg, hogy a stressz minden egyes nyom&aacute;t kiűzz&uuml;k a testből, hogy az 1 &oacute;r&aacute;s Head Spa sze&aacute;nsz v&eacute;g&eacute;re &uacute;gy kelj fel az &aacute;gyb&oacute;l mintha teljesen kicser&eacute;ltek volna.</span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/idpontfoglalas",
+   "label": "IDŐPONTFOGLALÁS"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\">M</p> <p style=\"font-size:17px;\">M&Aacute;</p> <p style=\"font-size:17px;\"><span></span><span><span style=\"color:#3D9BE9;\"><span style=\"font-weight:bold;\">Az 50 perces MOSAIC Head Spa kezel&eacute;s &aacute;ra 29.900 Ft</span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#3D9BE9;\"><span style=\"font-weight:bold;\">Az 50 perces 4 kezes MOSAIC Head Spa kezel&eacute;s &aacute;ra 39.900 Ft</span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#3D9BE9;\"><span style=\"font-weight:bold;\">Az 50 perces P&Aacute;ROS MOSAIC Head Spa kezel&eacute;s &aacute;ra: 53.800 Ft</span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#3D9BE9;\"><span style=\"font-weight:bold;\"><span></span></span></span></span><span><span style=\"font-weight:bold;\"><span style=\"color:#000000;\"><span></span></span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"font-weight:bold;\"><span style=\"color:#000000;\">Szalonunkban k&eacute;szp&eacute;nzzel, bankk&aacute;rty&aacute;val &eacute;s SZ&Eacute;P k&aacute;rty&aacute;val is tudsz fizetni.</span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"font-weight:bold;\"><span style=\"color:#000000;\"></span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"font-weight:bold;\"><span style=\"color:#000000;\"></span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"font-weight:bold;\"><span style=\"color:#000000;\"></span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"font-weight:bold;\"><span style=\"color:#000000;\"></span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"font-weight:bold;\"><span style=\"color:#000000;\"><span></span></span></span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">Felejsd el, amit eddig a massz&aacute;zsr&oacute;l &eacute;s haj&aacute;pol&aacute;sr&oacute;l tudt&aacute;l!</span> A MOSAIC Head Spa egy teljesen &uacute;j szint, amit &eacute;n is nehezen tudok szavakba &ouml;nteni. Egy olyan magas szinten nyugtat&oacute; &eacute;s gy&oacute;gy&iacute;t&oacute; kezel&eacute;s, amitől a tested &eacute;s a lelked nyugodt a hajad pedig eg&eacute;szs&eacute;gtől ragyog&oacute; lesz.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Alap&iacute;t&oacute;k&eacute;nt &eacute;n magam minden h&eacute;ten j&aacute;rok, mert egyszerűen semmi m&aacute;ssal nem tudom el&eacute;rni ezt a hat&aacute;st. V&aacute;llalkoz&oacute; vagyok, &eacute;s <span style=\"font-weight:bold;\">komoly &eacute;letminős&eacute;g &eacute;s alv&aacute;sminős&eacute;g javul&aacute;st &eacute;rtem el azzal, hogy hetente 1x megengedem magamnak ezt az 50 + 30 perc (sz&aacute;r&iacute;t&aacute;s) &eacute;nidőt, amikor 3 ember csak velem foglalkozik.</span></span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/idpontfoglalas",
+   "label": "SZABAD IDŐPONTOK"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_f2bd30e6071d4c0aa35a449683260ff6.jpg",
+   "alt": "deak-ferenc-istvan-mosaic-headspa-kozben.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\">Alap&iacute;t&oacute;k&eacute;nt komoly &eacute;letminős&eacute;g javul&aacute;st &eacute;rtem el a rendszeres Head Spa-val.</span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A z&aacute;r&oacute; hajsz&aacute;r&iacute;t&aacute;s, pedig k&uuml;l&ouml;n helyis&eacute;gben profi fodr&aacute;szok &aacute;ltal t&ouml;rt&eacute;nik. A sz&aacute;r&iacute;t&aacute;s &aacute;r&aacute;t m&aacute;r tartalmazza a kezel&eacute;s &eacute;s plusz 30 percet vesz ig&eacute;nybe, <span style=\"font-weight:bold;\">teh&aacute;t egy 50 perces MOSAIC Head Spa kezel&eacute;s val&oacute;j&aacute;ban 50+30 perces felt&ouml;ltőd&eacute;st jelent.</span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:35px;\"><span style=\"font-size:35px;\"><span style=\"font-weight:bold;\"><span style=\"color:#000000;\">Milyen pozit&iacute;v hat&aacute;sai vannak a Head Spa-nak?</span></span></span></h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Az első &eacute;s legfontosabb amit &eacute;rezni fogsz egy 50 perces MOSAIC Head Spa kezel&eacute;s ut&aacute;n az az, hogy a <span style=\"font-weight:bold;\">tested &eacute;s a lelked megnyugszik, a szorong&aacute;sod eltűnik, a pulzusod &eacute;s a l&eacute;gz&eacute;sed normaliz&aacute;l&oacute;dik, egyfajta b&eacute;ke sz&aacute;ll meg</span>, amiből m&eacute;g &oacute;r&aacute;kig nem lehet majd kibillenteni.</span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Ha 1 sz&oacute;ban akarn&aacute;m megfogalmazni, hogy milyen &eacute;rz&eacute;s egy Head Spa kezel&eacute;s, akkor hadd id&eacute;zzek egyik kedves vend&eacute;g&uuml;nktől 👇</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\">N&eacute;zd meg a vide&oacute;t hanggal, mert nem lehet szavakba &ouml;nteni, hogy milyen &eacute;rz&eacute;s a MOSAIC Head Spa sze&aacute;nsz.</span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A meleg v&iacute;z, a csend, a zene, a gy&oacute;gy&iacute;t&oacute; &eacute;rint&eacute;s, az &eacute;rz&eacute;kszervek v&aacute;ltozatos ingerl&eacute;se &eacute;s a fej receptorainak k&eacute;nyeztet&eacute;se teljesen levisz alf&aacute;ba.</span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"><span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A k&ouml;vetkező dolog, ami vend&eacute;geinket sz&oacute; szerint lesokkolja, az az, amit a hajsz&aacute;r&iacute;t&aacute;s ut&aacute;n a t&uuml;k&ouml;rben l&aacute;tnak. <span style=\"font-weight:bold;\">Hihetetlen mekkora hajminős&eacute;g javul&aacute;st lehet el&eacute;rni m&aacute;r 1 Head Spa kezel&eacute;stől is.</span></span></span></p> <p style=\"font-size:17px;\"><span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A stressz nem csak lelkileg megterhelő, de a hajat is k&aacute;ros&iacute;tja &eacute;s a Head Spa mind a kettőt egyszerre kezeli. Seg&iacute;t visszatal&aacute;lni &ouml;nmagunkhoz. A b&eacute;k&eacute;t nem el&eacute;rni kell, az mindig benned van. Olyan mint a nap a felhők f&ouml;l&ouml;tt. De visszatal&aacute;lni hozz&aacute; nem k&ouml;nnyű. Ebben seg&iacute;t a MOSAIC Head Spa.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A rendszeres Head Spa kezel&eacute;s pedig azon t&uacute;l, hogy egyre ink&aacute;bb hozz&aacute;j&aacute;rul a tart&oacute;s nyugalom &eacute;s harmonikus &eacute;letműk&ouml;d&eacute;s el&eacute;r&eacute;shez, <span style=\"font-weight:bold;\">a leggyakoribb fejbőrprobl&eacute;m&aacute;kra is intenz&iacute;v hat&aacute;ssal van.👇</span></span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/idpontfoglalas",
+   "label": "IDŐPONTFOGLALÁS"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_101df2c65b5340da8dbacef936b0c362.png",
+   "alt": "zsiros_fejbor.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:20px; text-align:center;\"><span style=\"color:#000000;\"><span style=\"font-size:20px;\">Zs&iacute;ros fejbőr eset&eacute;n</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"line-height:1.5em; font-size:14px;\"><span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ M&eacute;lyen <span style=\"font-weight:bold;\">tiszt&iacute;tja a fejbőrt</span>, elt&aacute;vol&iacute;tja a felesleges faggy&uacute;t &eacute;s lerak&oacute;d&aacute;sokat.</span></span></span></p> <p style=\"line-height:1.5em; font-size:14px;\"><br> <span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ <span style=\"font-weight:bold;\">Kiegyens&uacute;lyozza a faggy&uacute;termel&eacute;st</span>, &iacute;gy cs&ouml;kken a gyors zs&iacute;rosod&aacute;s.</span></span></span></p> <p style=\"line-height:1.5em; font-size:14px;\"><br> <span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ Megnyugtatja a fejbőrt, <span style=\"font-weight:bold;\">cs&ouml;kkenti az irrit&aacute;ci&oacute;t &eacute;s a gyullad&aacute;st.</span></span></span></span></p> <p style=\"line-height:1.5em; font-size:14px;\"><br> <span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\"><span style=\"font-weight:bold;\">✔️ Friss, tiszta &eacute;rzetet</span> biztos&iacute;t, hosszabb ideig marad &uuml;de a haj.</span></span></span></p> <p style=\"line-height:1.5em; font-size:14px;\"><br> <span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ Nem sz&aacute;r&iacute;tja ki a fejbőrt, &iacute;gy <span style=\"font-weight:bold;\">elker&uuml;lhető a t&uacute;lzott faggy&uacute;termel&eacute;s visszat&eacute;r&eacute;se.</span></span></span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_8043bfeb052b4321958da732d7d897b4.png",
+   "alt": "szaraz_fejbor.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:20px; text-align:center;\"><span style=\"color:#000000;\"><span style=\"font-size:20px;\">Sz&aacute;raz fejbőr eset&eacute;n</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; line-height:1.5em;\"><span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ Intenz&iacute;ven <span style=\"font-weight:bold;\">hidrat&aacute;lja &eacute;s t&aacute;pl&aacute;lja a fejbőrt</span> term&eacute;szetes &ouml;sszetevőkkel.</span></span></span></p> <p style=\"font-size:14px; line-height:1.5em;\"><span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\"></span></span></span></p> <p style=\"font-size:14px; line-height:1.5em;\"><span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ <span style=\"font-weight:bold;\">Enyh&iacute;ti a viszket&eacute;st &eacute;s a h&aacute;ml&aacute;st,</span> megsz&uuml;nteti a kellemetlen fesz&uuml;lő &eacute;rz&eacute;st.</span></span></span></p> <p style=\"font-size:14px; line-height:1.5em;\"><br> <span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ Seg&iacute;t helyre&aacute;ll&iacute;tani a fejbőr term&eacute;szetes <span style=\"font-weight:bold;\">v&eacute;dőr&eacute;teg&eacute;t.</span></span></span></span></p> <p style=\"font-size:14px; line-height:1.5em;\"><br> <span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\"><span style=\"font-weight:bold;\">✔️ Cs&ouml;kkenti a korp&aacute;sod&aacute;st</span> &eacute;s a sz&aacute;razs&aacute;g okozta irrit&aacute;ci&oacute;t.</span></span></span></p> <p style=\"font-size:14px; line-height:1.5em;\"><br> <span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ <span style=\"font-weight:bold;\">A haj puh&aacute;bb</span>, rugalmasabb &eacute;s eg&eacute;szs&eacute;gesebb kin&eacute;zetű lesz.</span></span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_e98171ec07984e359a41f0aab69fa799.png",
+   "alt": "hajhullas.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:20px; text-align:center;\"><span style=\"color:#000000;\"><span style=\"font-size:20px;\">Hajhull&aacute;s eset&eacute;n</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; line-height:1.5em;\"><span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ Serkenti a fejbőr v&eacute;rkering&eacute;s&eacute;t, &iacute;gy <span style=\"font-weight:bold;\">t&ouml;bb oxig&eacute;n &eacute;s t&aacute;panyag jut a hajhagym&aacute;khoz.</span></span></span></span></p> <p style=\"font-size:14px; line-height:1.5em;\"><br> <span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ Erős&iacute;ti a hajhagym&aacute;kat, <span style=\"font-weight:bold;\">cs&ouml;kkenti a t&uacute;lzott hajhull&aacute;st.</span></span></span></span></p> <p style=\"font-size:14px; line-height:1.5em;\"><br> <span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ M&eacute;lyen tiszt&iacute;tja a fejbőrt, <span style=\"font-weight:bold;\">elt&aacute;vol&iacute;tja a haj n&ouml;veked&eacute;s&eacute;t g&aacute;tl&oacute; m&eacute;reganyagokat.</span></span></span></span></p> <p style=\"font-size:14px; line-height:1.5em;\"><br> <span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ <span style=\"font-weight:bold;\">Seg&iacute;t aktiv&aacute;lni az &uacute;j hajsz&aacute;lak.</span></span></span></span></p> <p style=\"font-size:14px; line-height:1.5em;\"><span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\"><span style=\"font-weight:bold;\">n&ouml;veked&eacute;s&eacute;t,</span> d&uacute;sabb&aacute; &eacute;s &eacute;lettel teliv&eacute; var&aacute;zsolja a frizur&aacute;t.</span></span></span></p> <p style=\"font-size:14px; line-height:1.5em;\"><br> <span style=\"font-size:14px;\"><span style=\"color:#000000;\"><span style=\"letter-spacing:normal;\">✔️ Stresszold&oacute; hat&aacute;sa r&eacute;v&eacute;n cs&ouml;kkenti a hajhull&aacute;s egyik <span style=\"font-weight:normal;\">leggyakoribb kiv&aacute;lt&oacute; ok&aacute;t.</span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:35px;\"><span style=\"color:rgb(0, 0, 0); font-weight:700;\">Kinek aj&aacute;nlott a Head Spa?</span></h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">Mindenkinek k&ouml;telező, akinek a h&eacute;tk&ouml;znapjait a stressz hat&aacute;rozza meg</span> &eacute;s nem tud igaz&aacute;n t&ouml;ltődni. Kimondottan aj&aacute;nlom f&eacute;rfiaknak, hiszen mi m&eacute;g t&ouml;bbet is stresszel&uuml;nk. </span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A MOSAIC megalap&iacute;t&aacute;s&aacute;val egy&eacute;bk&eacute;nt kitűz&ouml;tt c&eacute;lunk volt az is, hogy a szalon ne legyen t&uacute;l &ldquo;csajos&rdquo; &iacute;gy <span style=\"font-weight:bold;\">a f&eacute;rfiak is komfortosan &eacute;rezhetik magukat.</span> :) Tudom, hogy nek&uuml;nk milyen neh&eacute;z időt sz&aacute;nni magunkra, &eacute;s ha sz&aacute;nunk is akkor nem a Head Spa az első gondolatunk, de f&eacute;rfi olvas&oacute;im elhihetik: A MOSAIC headspa-ban nem a p&uacute;derfelhőről sz&oacute;l minden, &iacute;gy igaz&aacute;n otthonos k&ouml;zeg lehet az erősebb nem sz&aacute;m&aacute;ra is.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">Kopasz f&eacute;rfiaknak k&eacute;tszeresen is aj&aacute;nlom</span>, hiszen a haj n&eacute;lk&uuml;li fejbőr sokkal &eacute;rz&eacute;kenyebb, ez&eacute;rt ők dupla akkor &eacute;lvezeti &eacute;rt&eacute;ket tudnak kienni a MOSAIC Head Spa sze&aacute;nszaib&oacute;l. Mondjuk a hajsz&aacute;r&iacute;t&aacute;s kihagyhat&oacute; 🙂</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">Ezen k&iacute;v&uuml;l a Head Spa-t kimondottan fogja &eacute;lvezni az aki szereti, ha a fej&eacute;t, haj&aacute;t &ldquo;birizg&aacute;lj&aacute;k.&rdquo;</span> Ha olyan vagy mint &eacute;n, hogy a fodr&aacute;szn&aacute;l fizetn&eacute;l is az&eacute;rt, hogy a hajmos&aacute;s ne csak 2 percig tartson, akkor a Head Spa-ra r&aacute; fogsz szokni. Borzongat&oacute; &eacute;s egyben megnyugtat&oacute; &eacute;lm&eacute;ny, amihez jelenleg nem tudok hasonl&oacute;t.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">Vend&eacute;geink igen nagy sz&aacute;zal&eacute;ka olyan h&aacute;ziasszonyokb&oacute;l &eacute;s anyuk&aacute;kb&oacute;l &aacute;ll</span>, akiknek eg&eacute;sz nap helyt kell &aacute;llniuk &eacute;s nem marad idej&uuml;k magukra. Sok esetben a p&aacute;rjukt&oacute;l kapj&aacute;k a kezel&eacute;st aj&aacute;nd&eacute;kba &eacute;s teljesen kicser&eacute;lve mennek haza.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">V&aacute;llalkoz&oacute;knak, felsővezetőknek, elfoglalt &uuml;zletembereknek is k&ouml;telező sze&aacute;nsz</span>. A hetet egy Head Spa-val ind&iacute;tani a legjobb befektet&eacute;s amit magad&eacute;rt tehetsz: Kisimultan, tiszta fejjel &eacute;s nyugodtan nem csak a kih&iacute;v&aacute;sokat fogod k&ouml;nnyebben venni, de jobb d&ouml;nt&eacute;seket is hozol majd.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">P&aacute;roknak pedig nem l&eacute;tezik enn&eacute;l jobb &eacute;lm&eacute;nyaj&aacute;nd&eacute;k.</span> Eleve egy&uuml;tt &aacute;t&eacute;lni egy ilyen k&eacute;nyeztet&eacute;st m&aacute;r l&aacute;thatatlan m&oacute;don erős&iacute;ti a kapcsolatot 2 ember k&ouml;z&ouml;tt. De egy p&aacute;ros Head Spa ut&aacute;n m&eacute;g &oacute;r&aacute;kig lesz k&ouml;z&ouml;s besz&eacute;dt&eacute;ma az, hogy kinek melyik volt a kedvenc r&eacute;sze, &eacute;s őszint&eacute;n: Mi t&ouml;bbet &eacute;s szem&eacute;lyesebbet aj&aacute;nd&eacute;kozhatn&aacute;l szerelmednek, mint a legjobb, legkipihentebb &eacute;s szeretetteljesebb &ouml;nmagadat? 🙂</span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_f6e7b88ba4974c659c3b6c0d5abe1905.jpg",
+   "alt": "paros-headspa-kezeles-budapesten-a-mosaic-headspaban.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px; text-align:center;\"><span style=\"color:#183033;\"><span style=\"font-weight:bold;\"><span style=\"font-size:15px;\">Ha egy igazi &eacute;lm&eacute;nyt szeretn&eacute;tek egy&uuml;tt &aacute;t&eacute;lni, akkor pr&oacute;b&aacute;lj&aacute;tok ki a MOSAIC P&aacute;ros Head Spa kezel&eacute;s&eacute;t!</span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:35px;\"><span style=\"color:rgb(0, 0, 0); font-weight:700;\">Hol van a MOSAIC Head Spa Budapesten &eacute;s hogy lehet bejutni?</span></h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A MOSAIC Head Spa <span style=\"font-weight:bold;\">270 m2-es exkluz&iacute;v szalonja </span>Bud&aacute;n tal&aacute;lhat&oacute; a 2. &eacute;s 3. ker&uuml;let hat&aacute;r&aacute;n a Kolosy t&eacute;rhez k&ouml;zel. </span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A pontos c&iacute;m&uuml;nk: <span style=\"font-weight:bold;\">1023 Budapest, B&eacute;csi &uacute;t 2.</span></span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Au&oacute;val &eacute;rdemes r&ouml;gt&ouml;n a <span style=\"font-weight:bold;\">B&eacute;csi &uacute;t 11-et be&iacute;rnod</span> a navi-ba mert ott van egy <span style=\"font-weight:bold;\">z&aacute;rt parkol&oacute;</span>, &eacute;s innen a MOSAIC csak 2 perc, gyalog.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A legegyszerűbb ha online foglalsz időpontot hozz&aacute;nk, itt a napt&aacute;rban m&aacute;r l&aacute;tod is a szabad helyeket:</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">De ha nem te j&ouml;nn&eacute;l, hanem megaj&aacute;nd&eacute;kozn&aacute;d a szerettedet egy ilyen fajta szem&eacute;lyes t&ouml;rőd&eacute;ssel, akkor aj&aacute;nd&eacute;kk&aacute;rty&aacute;t is tudsz n&aacute;lunk v&aacute;s&aacute;rolni, szem&eacute;lyesen a szalonban, vagy ak&aacute;r online is </span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"></span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-ajandekkartya",
+   "label": "AJÁNDÉKKÁRTYA"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:35px;\"><span style=\"color:rgb(0, 0, 0); font-weight:700;\">Milyen rendszeress&eacute;ggel &eacute;rdemes headspa-ba j&aacute;rni?</span></h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">Azt mondom, hogy aki teheti annak &eacute;rdemes hetente</span>, mert &iacute;gy lehet a haj&aacute;pol&oacute;- &eacute;s stresszold&oacute; hat&aacute;st folyamatosan fenntartani.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Term&eacute;szetesen a <span style=\"font-weight:bold;\">havi / 2-3 havi headspa kezel&eacute;snek</span> is rengeteg pozit&iacute;v hat&aacute;sa van, ezt mindenkinek saj&aacute;t mag&aacute;nak kell eld&ouml;ntenie.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Azok akik valamilyen <span style=\"font-weight:bold;\">hajprobl&eacute;m&aacute;val rendelkeznek</span> - itt nem a komolyabb hajgy&oacute;gy&aacute;szati kateg&oacute;ri&aacute;kra gondolok, teh&aacute;t seborrhea, pikkelys&ouml;m&ouml;r, gyullad&aacute;sok - nekik &eacute;rdemes lehet az <span style=\"font-weight:bold;\">első 3-5 alkalmat &ldquo;k&uacute;raszerűen&rdquo; kicsit jobban besűr&iacute;teni</span>, ut&aacute;na pedig el&eacute;g lehet 1-2-3 havonta ism&eacute;telni a sze&aacute;nszot.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">B&aacute;rhogy is d&ouml;nt valaki, mi a maxim&aacute;lis t&aacute;mogat&aacute;st szeretn&eacute;nk ny&uacute;jtani annak, aki m&eacute;lt&oacute;nak tal&aacute;lja a MOSAIC Headspa-t arra, hogy rendszeresen v&aacute;lassza. &Iacute;gy el&eacute;rhető n&aacute;lunk:</span></span></p> <p style=\"font-size:17px;\"> </p> <ul style=\"color:rgb(0, 0, 0); font-family:sarabun,sans-serif; font-size:17px;\"> <li> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">&Eacute;s minden vend&eacute;g&uuml;knek automatikusan j&aacute;r egy elk&ouml;teleződ&eacute;s n&eacute;lk&uuml;li hűs&eacute;gk&aacute;rtya</span>, amellyel minden 5. headspa alkalom f&eacute;l&aacute;ron van.</span></span></p> </li> <li> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Egy <span style=\"font-weight:bold;\">10 alkalmas b&eacute;rlet,</span> amelyhez 2 alkalom aj&aacute;nd&eacute;k, vagy m&aacute;shogy fogalmazva 20% kedvezm&eacute;nyt biztos&iacute;t.</span></span></p> </li> <li> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Illetve az orsz&aacute;gban mi vezett&uuml;k be elősz&ouml;r a <span style=\"font-weight:bold;\">havi d&iacute;jas Headspa előfizet&eacute;st</span>, amely 10% kedvezm&eacute;ny mellett havi 1 alkalmat biztos&iacute;t, amelyet ak&aacute;r el is aj&aacute;nd&eacute;kozhatunk.</span></span></p> </li> </ul> <p style=\"font-size:17px;\"><br> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Mindenesetre az &eacute;n szem&eacute;lyes tan&aacute;csom neked Kedves Olvas&oacute; az az, hogy gyere el egy alap 60 perces Headspa kezel&eacute;sre &eacute;s:</span></span></p> <p style=\"font-size:17px;\"> </p> <ul style=\"color:rgb(0, 0, 0); font-family:sarabun,sans-serif; font-size:17px;\"> <li> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">&eacute;rezd meg milyen hat&aacute;ssal van a testedre, a lelkedre &eacute;s a hajadra,</span></span></p> </li> <li> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">&eacute;s tapasztald meg, hogy melyik r&eacute;szek a kedvenceid a kezel&eacute;s k&ouml;zben,</span></span></p> </li> </ul> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Majd gyere el hozz&aacute;nk &uacute;jra m&aacute;sodik alkalommal egy K&iacute;v&aacute;ns&aacute;g headspa kezel&eacute;sre &eacute;s rakd &ouml;ssze te, hogy milyen legyen az &aacute;lom headspa kezel&eacute;sed!</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Ez az &eacute;lm&eacute;ny m&aacute;r biztosan 100%-ban olyan lesz, ami neked val&oacute; &eacute;s a legnagyobb k&eacute;nyeztet&eacute;st okozza, &eacute;s majd &eacute;rezni fogod, hogy mikor hi&aacute;nyzik a testednek / lelkednek ez az &uacute;jabb felt&ouml;ltőd&eacute;s.<br> <br> K&ouml;sz&ouml;n&ouml;m, hogy elolvastad a cikket.</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Szeretettel &eacute;s szem&eacute;lyesen h&iacute;vlak meg a MOSAIC-ba, Budapest legnagyobb Headspa szalonj&aacute;ba &eacute;s &iacute;g&eacute;rem neked, hogy olyan &eacute;lm&eacute;nyben lesz r&eacute;szed, amit nem fogsz egyhamar elfelejteni :)</span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_21101ef3464246369ba29c1c9c48951f.png",
+   "alt": "sajto-png_edited_edited.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">Bar&aacute;ts&aacute;ggal:</span></span></p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\"><span style=\"font-weight:bold;\">De&aacute;k Ferenc Istv&aacute;n</span></span></span></p> <p style=\"font-size:17px;\"><span><span style=\"color:#000000;\">A MOSAIC Headspa alap&iacute;t&oacute;ja</span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/idpontfoglalas",
+   "label": "IDŐPONTFOGLALÁS"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-ajandekkartya",
+   "label": "AJÁNDÉKKÁRTYA"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; line-height:1.8em; text-align:center;\"><span style=\"font-size:14px;\"><span style=\"letter-spacing:normal;\">Big in Japan Kft. - <span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/aszf\" target=\"_self\">&Aacute;SZF</a></span> - <span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/impresszum\" target=\"_self\">Impresszum</a></span></span></span></p>"
+  }
+ ]
+}

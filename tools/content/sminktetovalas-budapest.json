@@ -1,0 +1,679 @@
+{
+ "file": "sminktetovalas-budapest.html",
+ "title": "Sminktetoválás - Budapest - 2.kerület",
+ "desc": "5 év tapasztalattal, gyönyörű természetes száj és szemöldök, fájdalommentesen.",
+ "blocks": [
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ebf1831725394a0591c64e442a81b333.png",
+   "alt": "asset_7.png"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "Head Spa"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/4-kezes-headspa-ajandekkartya",
+   "label": "ÚJ! - 4 kezes Headspa!"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-budapest",
+   "label": "Mi az a Head Spa?"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/paros-headspa-budapest",
+   "label": "Páros Head Spa"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-ferfiaknak",
+   "label": "Head Spa Férfiaknak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-arak-budapest",
+   "label": "Head Spa Csomagok és Árak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/head-spa-kedvezmeny",
+   "label": "Head Spa - 20% SZEPTEMBERI kedvezmény!"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/head-spa-velemenyek",
+   "label": "Head Spa Vélemények"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-termekek-oxygeni",
+   "label": "OXYGENI Termékek"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest",
+   "label": "Szőrtelenítés"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodraszat-budapest",
+   "label": "Fodrászat"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodrasz-budapest-balayage-hajfestes",
+   "label": "Betti"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/balayage-haj-festes-budapest",
+   "label": "Noel"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-hajfestes-budapest",
+   "label": "Evelin"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodrasz-budapest-balayage-hajfestes",
+   "label": "Fodrászat Árak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/oxigenterapia-budapest",
+   "label": "Oxigénterápia"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/sminktetovalas-budapest",
+   "label": "Sminktetoválás"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-ajandekkartya",
+   "label": "Ajándékkártya"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/idpontfoglalas",
+   "label": "FOGLALÁS"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "GYIK"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "Kapcsolat"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_c784ca57ffc3470f90e9225d7f9c16d7.png",
+   "alt": "info.png"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ec266ac7692e4ac78b760a89cd93adb8.jpg",
+   "alt": "english-flag.JPG"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"text-align:center; font-size:14px;\"><a href=\"https://www.mosaicheadspa.hu/head-spa-kedvezmeny\" target=\"_blank\"><span style=\"font-weight:bold;\"><span style=\"color:#FFFFFF;\"><span style=\"text-decoration:underline;\">Szeptemberi akci&oacute;! - 20% kedvezm&eacute;ny minden headspa foglal&aacute;sra + aj&aacute;nd&eacute;kk&aacute;rty&aacute;ra!</span></span></span></a></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:40px;\"><span style=\"font-weight:bold;\"><span style=\"font-size:40px;\">Term&eacute;szetes </span><span style=\"font-size:40px;\">sminktetov&aacute;l&aacute;s, ami illik az arcform&aacute;dhoz.</span></span></h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:normal;\"><span style=\"font-style:italic;\">&quot;Szem&ouml;ld&ouml;k- &eacute;s ajaktetov&aacute;l&aacute;s, ha f&eacute;lsz a t&uacute;l erős, s&ouml;t&eacute;t, vagy mű hat&aacute;st&oacute;l &mdash; &eacute;s ink&aacute;bb az arcod legszebb, v&aacute;ltozat&aacute;t szeretn&eacute;d.&quot; - <span style=\"font-weight:bold;\">MOSAIC - 1023 B&eacute;csi &uacute;t 2 (A Zsigmond t&eacute;rn&eacute;l)</span></span></span></p> <p style=\"font-size:17px;\"><br> <span style=\"font-weight:normal;\"><span style=\"font-weight:bold;\">T&ouml;reki Melitta</span> - 5 &eacute;v tapasztalat&uacute; PMU stylist, oktat&oacute;, WULOP Mil&aacute;n&oacute; - 3. helyezett.</span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/pmu-foglalas",
+   "label": "VISSZAHÍVÁST KÉREK!"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/sminktetovalas-budapest",
+   "label": "MUNKÁIM"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_81f16bfc67fb4ad6a78e8eda371a0139.png",
+   "alt": "5stars.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px;\"><span style=\"font-size:15px;\"><span style=\"font-weight:bold;\">5,0 - 1.145 v&eacute;lem&eacute;ny - Arcra szabott PMU &eacute;lm&eacute;ny</span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_9a056d2081e84e17a3914d06797e9ca4.jpg",
+   "alt": "melitta-uj.jpg"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/11062b_371a5c6e1a664c2cb20e65be814467d6.jpeg",
+   "alt": "Textured Wall"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:38px;\"><span style=\"font-size:38px;\"><span style=\"color:#ffffff;\"><span style=\"font-style:normal;\"><span><span style=\"font-weight:400;\">&quot;Valami v&aacute;ltozott rajtad, nem tudom mi, de gy&ouml;ny&ouml;rű vagy!&quot;</span></span></span></span></span></h2>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_567cfb0230ba49c089087cf55d6ead4e.jpg",
+   "alt": "toreki-melitta-pmu.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\">A j&oacute; sminktetov&aacute;l&aacute;s szolid, harmoniz&aacute;l az arcoddal, &eacute;s m&aacute;sok csak azt veszik &eacute;szre, hogy szebb lett&eacute;l.</p> <p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">T&ouml;reki Melitta vagyok, 5 &eacute;ve sminktetov&aacute;l&oacute; &eacute;s oktat&oacute;. 2025-ben harmadik helyez&eacute;st &eacute;rtem el a mil&aacute;n&oacute;i WULOP Italia Eyebrow Shading kateg&oacute;ri&aacute;j&aacute;ban.</span> A term&eacute;szetes hat&aacute;s&uacute; szem&ouml;ld&ouml;k- &eacute;s ajaktetov&aacute;l&aacute;sok a szakter&uuml;letem.</p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\">Tudom, hogy tartasz a t&uacute;l s&ouml;t&eacute;t, mű, f&aacute;jdalmas vagy foltos eredm&eacute;nytől. Ez&eacute;rt minden kezel&eacute;s konzult&aacute;ci&oacute;val &eacute;s szem&eacute;lyre szabott tervez&eacute;ssel kezdődik. A form&aacute;t az arcodhoz, a sz&iacute;nt pedig a bőr&ouml;d, hajad, szemed vagy ajkad t&oacute;nus&aacute;hoz igaz&iacute;tom. Nem a friss, intenz&iacute;vebb &aacute;llapotra, hanem a gy&oacute;gyult eredm&eacute;nyre tervezek.</p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\">Csak akkor kezdek dolgozni, amikor a form&aacute;t &eacute;s a sz&iacute;nir&aacute;nyt is j&oacute;v&aacute;hagytad. A term&eacute;szetes vonalaidat emelem ki, kem&eacute;ny kont&uacute;r, t&uacute;lrajzolt forma &eacute;s sablonos hat&aacute;s n&eacute;lk&uuml;l.</p> <p style=\"font-size:17px;\">Steril, egyszer haszn&aacute;latos eszk&ouml;z&ouml;kkel, k&iacute;m&eacute;letesen dolgozom, v&eacute;gig figyelve a komfortodra. </p> <p style=\"font-size:17px;\"> </p> <p style=\"font-size:17px;\">A friss sz&iacute;n erősebb, a kezelt ter&uuml;let &aacute;tmenetileg duzzadtabb lehet, majd n&eacute;h&aacute;ny h&eacute;t alatt l&aacute;gyul term&eacute;szetess&eacute;. Az &aacute;raim tartalmazz&aacute;k a korrekci&oacute;t is. Ha Te is a term&eacute;szetess&eacute;g h&iacute;ve vagy, akkor jelentkezz be hozz&aacute;m egy ingyenes konzult&aacute;ci&oacute;ra, vagy g&ouml;rgess lejjebb a munk&aacute;imhoz.....<span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/pmu-foglalas",
+   "label": "IDŐPONTOT SZERETNÉK"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\"><span style=\"font-style:italic;\"><span style=\"font-size:15px;\">📅 online, vagy ingyenes 📞 telefonos konzult&aacute;ci&oacute;val!</span></span></span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/11062b_371a5c6e1a664c2cb20e65be814467d6.jpeg",
+   "alt": "Textured Wall"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:38px; text-align:center;\"><span style=\"font-size:38px;\"><span style=\"color:#ffffff;\"><span style=\"font-style:normal;\"><span><span style=\"font-weight:400;\">&Iacute;gy n&eacute;z ki az ingyenes konzult&aacute;ci&oacute;</span></span></span></span></span></h2>"
+  },
+  {
+   "t": "link",
+   "href": "https://mosaic-pmu.salonic.hu/selectDate/?startDate=1789729417&amp;placeId=14585&amp;employeeId=32428&amp;serviceId=471160",
+   "label": "KONZULTÁCIÓ IDŐPONTOK"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"text-align:center; font-size:40px;\">Szem&ouml;ld&ouml;ktetov&aacute;l&aacute;s munk&aacute;im</h2>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_db6fa6eb5e6f45c5a2be66d8cf2e32f9.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_8794ba70f0304fadbc5091b395ec5ec1.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_4c629176c1454dd2bd9cb676bd03d5e5.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_6192c7cbded04f37b2ee8983838b3850.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ceb2371e35aa4f98a8c83030af918811.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_b6b53c06750a4e21ad4f2ba20b82fb49.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_5bbec0e6bf3841f8b2b34facf142777a.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_28329d5f17184703bb8fc4910da8c334.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_73841778858c46c58239af00c35f790a.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_92688ee3b0b04b64a86184924d807b3c.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_939f22c052524564b77c4d467ed6575a.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ea5e7ae1bfe54b72aa2c271e02806ffe.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_4ddd87214dd6447ca23b836818252854.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_d7669fd8f94149d7ac5dd1ab957fb7d4.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_51d5beecf14f481e8697870c362b5d44.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ac5d338bdfed4f68901dac3f90b53c37.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_89cc6bf1793c48f193ce38d64d87e940.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_62a644e9ed3c4133b980108d678da12b.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_5b48311124f64d42a66b29ce2c4bef95.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_414f6e9eff9f4b77975073587d6d5624.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_e6bcf204c9164857a3c5ae2ed41b71c7.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_2807abab1e874b0c88377c49b6527008.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_7fffb1321a074ed4947397f3f63ec834.jpg",
+   "alt": ""
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/pmu-foglalas",
+   "label": "IDŐPONTOT SZERETNÉK!"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\"><span style=\"font-style:italic;\"><span style=\"font-size:15px;\">📅 online, vagy ingyenes 📞 telefonos konzult&aacute;ci&oacute;val!</span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"text-align:center; font-size:40px;\">Sz&aacute;jtetov&aacute;l&aacute;s munk&aacute;im</h2>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_25713721006844f58218e4ffef886773.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_d42275837f7b49019058be5fc6649c23.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_b6af66c9c7dc4fd3a3b69507ab640a10.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_683fa11adf134a6697c321f1d47ba45c.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_014b63526bc644c7a234475fb367a963.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_14edf618439f44d88072604878d0cbd6.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_3fe0ac48ceea4cb69935ef6bf8a7021b.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_fe660eb6a05a46ec9e0ce0eb2850cd5b.jpg",
+   "alt": ""
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/pmu-foglalas",
+   "label": "IDŐPONTOT SZERETNÉK!"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\"><span style=\"font-style:italic;\"><span style=\"font-size:15px;\">📅 online, vagy ingyenes 📞 telefonos konzult&aacute;ci&oacute;val!</span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"text-align:center; font-size:40px;\">100%-ban term&eacute;szetes hat&aacute;s</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"text-align:center; font-size:17px;\">Eszt&eacute;tikai tetov&aacute;l&aacute;saim c&eacute;lja, hogy finoman emeljem ki az arc egyedi karakter&eacute;t an&eacute;lk&uuml;l, hogy sminkelt vagy maszkos hat&aacute;st keltene. A v&eacute;geredm&eacute;ny mindig letisztult, harmonikus &eacute;s term&eacute;szetes &ndash; olyan, mintha mindig &ouml;nmagad legszebb v&aacute;ltozata lenn&eacute;l. </p> <p style=\"text-align:center; font-size:17px;\">Modern orosz &eacute;s ukr&aacute;n technik&aacute;kat alkalmazok, melyek lehetőv&eacute; teszik a prec&iacute;z, l&aacute;gy vonalvezet&eacute;st, a val&oacute;di szőrsz&aacute;lakhoz megt&eacute;veszt&eacute;sig hasonl&iacute;t&oacute; hat&aacute;st &eacute;s a maxim&aacute;lisan term&eacute;szetes megjelen&eacute;st.</p> <p style=\"text-align:center; font-size:17px;\"> </p> <p style=\"text-align:center; font-size:17px;\">A Sminktetov&aacute;l&aacute;s nem csup&aacute;n egy szolg&aacute;ltat&aacute;s &ndash; ez egy &eacute;lm&eacute;ny, ahol minden r&oacute;lad sz&oacute;l. Amikor engem v&aacute;lasztasz, egy olyan helyre &eacute;rkezel, ahol a szak&eacute;rtelem, a gondoskod&aacute;s &eacute;s az eszt&eacute;tikum tal&aacute;lkozik.</p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_663d6199748c4770be062d8c47dc0276.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_5c98660eb3ea40f5a7c1d4d56d3ee25f.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_2e9a7cf8afbd481682182b3244396198.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_b72c6b0a862d4a0ba31e58a6ea868fe8.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_602a27b7c322485180da7d136af6ad87.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_af60d987d02a4ad0a8f23b6b66a2df8e.jpg",
+   "alt": ""
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/pmu-foglalas",
+   "label": "IDŐPONTOT SZERETNÉK!"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\"><span style=\"font-style:italic;\"><span style=\"font-size:15px;\">📅 online, vagy ingyenes 📞 telefonos konzult&aacute;ci&oacute;val!</span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:40px; text-align:center;\"><span style=\"font-size:40px;\">Sminktetov&aacute;l&aacute;s &Aacute;rlista</span></h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\"><span style=\"font-style:italic;\"><span style=\"font-size:15px;\">Szeptemberben 20% kedvezm&eacute;nnyel!</span></span></span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ecc43f72cf2a47e69b78512eb515ecfd.jpg",
+   "alt": "Mosaic Headspa -Salonic csomagok másolata (11).jpg"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:19px; text-align:center;\"><span style=\"font-weight:normal;\">Szemtetov&aacute;l&aacute;s &aacute;rak</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:15px; text-align:center;\"><span style=\"text-decoration:underline;\"><span style=\"font-weight:bold;\">SZEM&Ouml;LD&Ouml;K - P&Uacute;DERES</span></span></p> <p style=\"font-size:15px; text-align:center;\"><span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"font-weight:bold;\">99.000 Ft </span>helyett most <span style=\"color:#C6A346;\"><span style=\"font-weight:bold;\">79.000 Ft</span></span></p> <p style=\"font-size:15px; text-align:center;\"> </p> <p style=\"font-size:15px; text-align:center;\"><span style=\"text-decoration:underline;\"><span style=\"font-weight:bold;\">SZEM&Ouml;LD&Ouml;K - HIBRID</span></span></p> <p style=\"font-size:15px; text-align:center;\"> </p> <p style=\"font-size:15px; text-align:center;\"><span style=\"font-weight:bold;\">99.000 Ft</span> helyett most <span style=\"color:#C6A346;\"><span style=\"font-weight:bold;\">79.000 Ft</span></span></p> <p style=\"font-size:15px; text-align:center;\"> </p> <p style=\"font-size:15px; text-align:center;\"><span style=\"text-decoration:underline;\"><span style=\"font-weight:bold;\">SZEMPILLASŰR&Iacute;T&Eacute;S</span></span></p> <p style=\"font-size:15px; text-align:center;\"> </p> <p style=\"font-size:15px; text-align:center;\"><span style=\"font-weight:bold;\">59.000 Ft</span> helyett most <span style=\"color:#C6A346;\"><span style=\"font-weight:bold;\">45.000 Ft</span></span></p> <p style=\"font-size:15px; text-align:center;\"><span></span></p> <p style=\"font-size:15px; text-align:center;\"><span style=\"font-weight:bold;\">A korrekci&oacute;t az &aacute;r tartalmazza.</span></p> <p style=\"font-size:15px; text-align:center;\"><span><span></span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/pmu-foglalas",
+   "label": "IDŐPONTOT SZERETNÉK!"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\"><span style=\"font-style:italic;\"><span style=\"font-size:15px;\">20% szeptemberi kedvezm&eacute;nnyel!</span></span></span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_59cb17150d2b4030be482bc8f0c692b1.jpg",
+   "alt": "40.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:19px; text-align:center;\"><span style=\"font-weight:normal;\"><span style=\"font-size:19px;\">Sz&aacute;jtetov&aacute;l&aacute;s &aacute;rak</span><span style=\"letter-spacing:0em;\"></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; text-align:center;\"><span style=\"text-decoration:underline;\"><span style=\"font-weight:bold;\">AJAKTETOV&Aacute;L&Aacute;S - AQUARELL</span></span></p> <p style=\"font-size:14px; text-align:center;\"> </p> <p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:normal;\"><span style=\"font-weight:bold;\">124.900 Ft</span> helyett most <span style=\"color:#C6A346;\"><span style=\"font-weight:bold;\">99.000 Ft</span></span></span></p> <p style=\"font-size:14px; text-align:center;\"><span></span><br> <span style=\"text-decoration:underline;\"><span style=\"font-weight:bold;\">AJAKTETOV&Aacute;L&Aacute;S - R&Uacute;ZSHAT&Aacute;S</span></span></p> <p style=\"font-size:14px; text-align:center;\"><span></span></p> <p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:normal;\"><span style=\"font-weight:bold;\">134.900 Ft</span> helyett most <span style=\"color:#C6A346;\"><span style=\"font-weight:bold;\">110.000 Ft</span></span></span></p> <p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:normal;\"><span><span></span></span></span><span><span></span></span></p> <p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:bold;\">A korrekci&oacute;t az &aacute;r tartalmazza.</span></p> <p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:normal;\"><span><span></span></span></span><span style=\"font-weight:normal;\"><span></span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/pmu-foglalas",
+   "label": "IDŐPONTOT SZERETNÉK!"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\"><span style=\"font-style:italic;\"><span style=\"font-size:15px;\">20% szeptemberi kedvezm&eacute;nnyel!</span></span></span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_c1068848917e4a7cbe778b07a8f0365f.jpg",
+   "alt": "41.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:19px; text-align:center;\"><span style=\"font-weight:normal;\">Tetov&aacute;l&aacute;s elt&aacute;vol&iacute;t&aacute;s &aacute;rak</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; text-align:center;\"><span style=\"text-decoration:underline;\"><span style=\"font-weight:bold;\"><span style=\"font-size:14px;\">SZEM&Ouml;LD&Ouml;K TETOV. ELT&Aacute;VOL&Iacute;T&Aacute;S</span></span></span></p> <p style=\"font-size:14px; text-align:center;\"> </p> <p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:normal;\"><span style=\"font-size:14px;\"><span style=\"font-weight:bold;\">24.900 Ft</span> helyett most <span style=\"color:#C6A346;\"><span style=\"font-weight:bold;\">18.000 Ft</span></span></span></span><br> </p> <p style=\"font-size:14px; text-align:center;\"><span style=\"text-decoration:underline;\"><span style=\"font-weight:bold;\"><span style=\"font-size:14px;\">TESTTETOV&Aacute;L&Aacute;S ELT&Aacute;VOL&Iacute;T&Aacute;S</span></span></span></p> <p style=\"font-size:14px; text-align:center;\"> </p> <p style=\"font-size:14px; text-align:center;\"><span style=\"color:#C6A346;\"><span style=\"font-weight:bold;\"><span style=\"font-size:14px;\">M&eacute;retf&uuml;ggő egyedi &aacute;r</span></span></span><span style=\"font-weight:normal;\"><span style=\"font-size:14px;\"><span><span></span></span></span></span><span style=\"font-weight:normal;\"><span style=\"font-size:14px;\"><span><span></span></span></span></span><span style=\"font-weight:normal;\"><span style=\"font-size:14px;\"><span></span></span></span><span style=\"font-weight:normal;\"><span style=\"font-size:14px;\"><span><span></span></span></span></span><span></span><span style=\"font-weight:normal;\"><span style=\"font-size:14px;\"><span></span></span></span></p> <p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:normal;\"><span style=\"font-size:14px;\"><span></span></span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/pmu-foglalas",
+   "label": "IDŐPONTOT SZERETNÉK!"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\"><span style=\"font-style:italic;\"><span style=\"font-size:15px;\">20% szeptemberi kedvezm&eacute;nnyel!</span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"text-align:center; font-size:40px;\">Budai szalonomban v&aacute;rlak a Kolosy t&eacute;rn&eacute;l</h2>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_47f7e08fe5414673b335b056ed00c34f.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_03657009453347e0995c299e7c60340c.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_aa3b2f8ec7564c87bf16836d7d3b29d6.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_de82baa4848741a2810d03774b0487db.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_d2c5bcd45f674487b8e3a431c55e335e.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_00a2f4bd0e9b4325b2d02e77edb874e9.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_e189ed57f4ce487f8b2ac489ee5ffe1d.jpg",
+   "alt": ""
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ac85eea74409484091e12f8d72fbee98.jpg",
+   "alt": ""
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:40px; line-height:normal; text-align:center;\"><span style=\"font-size:40px;\"><span style=\"letter-spacing:normal;\">3 aj&aacute;nd&eacute;k, ami&eacute;rt nem fizetsz<span style=\"color:#C6A346;\">👇</span></span></span></h2>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_756c4daabb2240df8a446cae1ef51240.jpg",
+   "alt": "3ingyen.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span>✅ </span><span style=\"font-weight:bold;\">KONZULT&Aacute;CI&Oacute; + TERVEZ&Eacute;S: <span style=\"font-weight:normal;\">A kezel&eacute;s előtt minden k&eacute;rd&eacute;sedet &aacute;tbesz&eacute;lj&uuml;k &eacute;s előzetesen berajzolva addig t&ouml;k&eacute;letes&iacute;tj&uuml;k a form&aacute;t, am&iacute;g azt nem mondod: ez az!</span></span></p> <p style=\"font-size:17px;\"><span></span></p> <p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">✅ INGYENES KORREKCI&Oacute;: <span style=\"font-weight:normal;\">A tetov&aacute;l&aacute;s elk&eacute;sz&uuml;lte ut&aacute;ni 4-7 h&eacute;tben t&ouml;k&eacute;letes&iacute;tem a v&eacute;geredm&eacute;nyt.</span></span></p> <p style=\"font-size:17px;\"><br> <span style=\"font-weight:bold;\">✅ INGYENES &Aacute;POL&Aacute;SI TAN&Aacute;CSAD&Aacute;S + KR&Eacute;M: <span style=\"font-weight:normal;\">R&eacute;szletesen elmagyar&aacute;zom hogyan &aacute;pold, hogy sz&eacute;pen gy&oacute;gyuljon &eacute;s kr&eacute;met is adok neked aj&aacute;nd&eacute;kba.</span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/pmu-foglalas",
+   "label": "IDŐPONTOT SZERETNÉK!"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"color:#D9C164;\"><span style=\"font-style:italic;\"><span style=\"font-size:15px;\">📅 online, vagy ingyenes 📞 telefonos konzult&aacute;ci&oacute;val!</span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h1 style=\"font-size:40px; line-height:normal; text-align:center;\"><span style=\"font-size:40px;\"><span style=\"letter-spacing:normal;\">&Eacute;s 3 garancia, amivel nem kock&aacute;ztatsz</span></span></h1>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_77674e9958854e55b2500b31360e440f.jpg",
+   "alt": "gari01.jpg"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_176c0791cdd24aea922f4e4f006e93e6.jpg",
+   "alt": "gari02.jpg"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_aaed5b7c53794b2bb3af9c1b7da1dc80.jpg",
+   "alt": "gari03.jpg"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/11062b_c07a0fdbefc64e3f97e7b5040c3528e3.jpg",
+   "alt": "Grey Mosaic Floor"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:40px;\">A legfontosabb k&eacute;rd&eacute;sek</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:17px;\"><span style=\"font-weight:bold;\">Melitta v&aacute;laszol</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:20px;\"><span style=\"font-weight:bold;\"><span style=\"font-size:20px;\">1. Mi van, ha t&uacute;l s&ouml;t&eacute;t vagy tetov&aacute;lt hat&aacute;s&uacute; lesz?</span></span></h2> <p style=\"font-size:17px;\">&bdquo;Nem a friss, intenz&iacute;vebb sz&iacute;nre, hanem a l&aacute;gyabb, gy&oacute;gyult eredm&eacute;nyre tervezek. A pigmentet fokozatosan &eacute;p&iacute;tem fel, hogy a szem&ouml;ld&ouml;k ne legyen kem&eacute;ny, az ajak pedig ne hasson &aacute;lland&oacute; r&uacute;zsnak.&rdquo;</p> <p style=\"font-size:17px;\"><span></span></p> <h2 style=\"font-size:20px;\"><span style=\"font-weight:bold;\"><span style=\"font-size:20px;\">2. Mi t&ouml;rt&eacute;nik, ha nem tetszik a forma vagy az &aacute;rnyalat?</span></span></h2> <p style=\"font-size:17px;\">&bdquo;A form&aacute;t &eacute;s a sz&iacute;nir&aacute;nyt előre, szem&eacute;lyre szabottan tervezz&uuml;k meg. Addig finom&iacute;tunk rajta, am&iacute;g teljesen magad&eacute;nak nem &eacute;rzed. Csak akkor kezdem el a tetov&aacute;l&aacute;st, amikor te is j&oacute;v&aacute;hagytad.&rdquo;</p> <p style=\"font-size:17px;\"><span></span></p> <h2 style=\"font-size:20px;\"><span style=\"font-weight:bold;\"><span style=\"font-size:20px;\">3. Biztosan illeni fog az arcomhoz?</span></span></h2> <p style=\"font-size:17px;\">&bdquo;Igen! Szem&ouml;ld&ouml;kn&eacute;l az arcform&aacute;t, a mimik&aacute;t, a haj- &eacute;s bőrsz&iacute;nt, ajakn&aacute;l a term&eacute;szetes form&aacute;t, az eredeti ajaksz&iacute;nt &eacute;s a bőrt&oacute;nust veszem figyelembe. A c&eacute;l, hogy ne a tetov&aacute;l&aacute;st vegy&eacute;k &eacute;szre, hanem azt, hogy harmonikusabb lett az arcod.&rdquo;</p> <p style=\"font-size:17px;\"><span></span></p> <h2 style=\"font-size:20px;\"><span style=\"font-weight:bold;\"><span style=\"font-size:20px;\">4. Mennyire f&aacute;j a kezel&eacute;s?</span></span></h2> <p style=\"font-size:17px;\">&quot;K&iacute;m&eacute;letesen dolgozom, folyamatosan figyelek a komfortodra, &eacute;s b&aacute;rmikor tarthatunk r&ouml;vid sz&uuml;netet. A legt&ouml;bb vend&eacute;gem kellemesebbnek &eacute;rzi, mint amire előtte sz&aacute;m&iacute;tott.&rdquo;</p> <p style=\"font-size:17px;\"><span></span></p> <h2 style=\"font-size:20px;\"><span style=\"font-weight:bold;\"><span style=\"font-size:20px;\">5. Norm&aacute;lis, ha frissen s&ouml;t&eacute;tebb, duzzadtabb vagy erősebb?</span></span></h2> <p style=\"font-size:17px;\">&bdquo;Igen. A friss sz&iacute;n mindig intenz&iacute;vebb, ajaktetov&aacute;l&aacute;s ut&aacute;n pedig &aacute;tmeneti duzzanat is előfordulhat. A kezelt ter&uuml;let h&aacute;mlik, halv&aacute;nyul, majd n&eacute;h&aacute;ny h&eacute;t alatt kialakul a v&eacute;gleges, l&aacute;gyabb &aacute;rnyalat. A gy&oacute;gyult eredm&eacute;nyt &aacute;ltal&aacute;ban 4&ndash;6 h&eacute;t ut&aacute;n lehet meg&iacute;t&eacute;lni.&rdquo;</p> <p style=\"font-size:17px;\"><span></span></p> <h2 style=\"font-size:20px;\"><span style=\"font-weight:bold;\"><span style=\"font-size:20px;\">6. Meddig marad meg a sminktetov&aacute;l&aacute;s, mennyire tart&oacute;s?</span></span></h2> <p style=\"font-size:17px;\">&bdquo;&Aacute;ltal&aacute;ban 2-2,5 &eacute;vig sz&eacute;p marad, idővel pedig friss&iacute;t&eacute;sre lehet sz&uuml;ks&eacute;g, hogy a forma &eacute;s a sz&iacute;n &uacute;jra egys&eacute;ges legyen.&rdquo;</p> <p style=\"font-size:17px;\"><span></span></p> <h2 style=\"font-size:20px;\"><span style=\"font-weight:bold;\"><span style=\"font-size:20px;\">7. Biztons&aacute;gos &eacute;s higi&eacute;nikus a kezel&eacute;s?</span></span></h2> <p style=\"font-size:17px;\">&bdquo;Steril, egyszer haszn&aacute;latos tűmodullal &eacute;s szigor&uacute; higi&eacute;niai protokoll szerint dolgozom. A kor&aacute;bbi tetov&aacute;l&aacute;st, gy&oacute;gyszereket, ellenjavallatokat &eacute;s ajaktetov&aacute;l&aacute;sn&aacute;l a herpeszhajlamot is előre &aacute;tbesz&eacute;lj&uuml;k.&quot;</p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_c9d6d48560364c5685123a9408f1b4f9.jpg",
+   "alt": "melitta-valaszol.jpg"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/11062b_c676302884b34e2eacc489eede7cbc47.jpg",
+   "alt": "Spa Salts and Stones"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"text-align:center; font-size:40px;\">Itt tal&aacute;lsz meg</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<h3 style=\"font-size:26px; line-height:normal;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:26px;\">C&iacute;mem</span></span></h3>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">1023 Budapest B&eacute;csi &uacute;t 2.<br> A Kolosy &eacute;s a Zsigmond t&eacute;r k&ouml;z&ouml;tt.</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h3 style=\"font-size:26px; line-height:normal;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:26px;\">Ahol el&eacute;rsz</span></span></h3>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">06 20 247 4444</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\"><a>mosaicheadspa@gmail.com</a></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h3 style=\"font-size:26px; line-height:normal;\"><span style=\"font-size:26px;\">Nyitvatart&aacute;som</span></h3>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">H&eacute;tfő - P&eacute;ntek</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">8:00 &ndash; 20:00</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">Szombat</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"font-size:16px;\">Z&aacute;rva</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">Vas&aacute;rnap</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em;\"><span style=\"font-size:16px;\">Z&aacute;rva</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_3d447a4483a54782920eee5bd468b1b5.jpg",
+   "alt": "mosaic-itt-vagyunk.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; line-height:1.8em; text-align:center;\"><span style=\"font-size:14px;\"><span style=\"letter-spacing:normal;\">Big in Japan Kft. - <span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/aszf\" target=\"_self\">&Aacute;SZF</a></span> - <span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/impresszum\" target=\"_self\">Impresszum</a></span></span></span></p>"
+  }
+ ]
+}

@@ -1,0 +1,226 @@
+{
+ "file": "headspa-termekek-oxygeni.html",
+ "title": "Head Spa kezelések OXYGENI Termékekkel",
+ "desc": "Az OXYGENI legnagyobb partnerszalonjaként Head Spa kezeléseinket a prémium, vegán és 100%-ban természetes OXYGENI termlkekkel végezzük.",
+ "blocks": [
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ebf1831725394a0591c64e442a81b333.png",
+   "alt": "asset_7.png"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "Head Spa"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/4-kezes-headspa-ajandekkartya",
+   "label": "ÚJ! - 4 kezes Headspa!"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-budapest",
+   "label": "Mi az a Head Spa?"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/paros-headspa-budapest",
+   "label": "Páros Head Spa"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-ferfiaknak",
+   "label": "Head Spa Férfiaknak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-arak-budapest",
+   "label": "Head Spa Csomagok és Árak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/head-spa-kedvezmeny",
+   "label": "Head Spa - 20% SZEPTEMBERI kedvezmény!"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/head-spa-velemenyek",
+   "label": "Head Spa Vélemények"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-termekek-oxygeni",
+   "label": "OXYGENI Termékek"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest",
+   "label": "Szőrtelenítés"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodraszat-budapest",
+   "label": "Fodrászat"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodrasz-budapest-balayage-hajfestes",
+   "label": "Betti"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/balayage-haj-festes-budapest",
+   "label": "Noel"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-hajfestes-budapest",
+   "label": "Evelin"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodrasz-budapest-balayage-hajfestes",
+   "label": "Fodrászat Árak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/oxigenterapia-budapest",
+   "label": "Oxigénterápia"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/sminktetovalas-budapest",
+   "label": "Sminktetoválás"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-ajandekkartya",
+   "label": "Ajándékkártya"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/idpontfoglalas",
+   "label": "FOGLALÁS"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "GYIK"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "Kapcsolat"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_c784ca57ffc3470f90e9225d7f9c16d7.png",
+   "alt": "info.png"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ec266ac7692e4ac78b760a89cd93adb8.jpg",
+   "alt": "english-flag.JPG"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"text-align:center; font-size:14px;\"><a href=\"https://www.mosaicheadspa.hu/head-spa-kedvezmeny\" target=\"_blank\"><span style=\"font-weight:bold;\"><span style=\"color:#FFFFFF;\"><span style=\"text-decoration:underline;\">Szeptemberi akci&oacute;! - 20% kedvezm&eacute;ny minden headspa foglal&aacute;sra + aj&aacute;nd&eacute;kk&aacute;rty&aacute;ra!</span></span></span></a></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_99208317186841a0a861e52dc938ab5a.jpg",
+   "alt": "oxygeni-partnerszalon-mosaic-headspa.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<h1 style=\"text-align:center; font-size:50px;\">Organikus, veg&aacute;n &eacute;s kemik&aacute;liamentes.</h1>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"text-align:center; font-size:17px;\">A MOSAIC Head Spa-ban az eg&eacute;szs&eacute;gben &eacute;s a term&eacute;szetess&eacute;gben hisz&uuml;nk, ez&eacute;rt kezel&eacute;seinkhez kiz&aacute;r&oacute;lag az OXYGENI Pr&eacute;mium term&eacute;keit haszn&aacute;ljuk.</p> <p style=\"text-align:center; font-size:17px;\"><span></span></p> <p style=\"text-align:center; font-size:17px;\"><span style=\"color:#C6A346;\"><span style=\"text-decoration:underline;\"><a href=\"https://oxygenihair.hu/hatoanyagaink\" target=\"_blank\" rel=\"noreferrer noopener\">100%-ban term&eacute;szetes, veg&aacute;n &ouml;sszetevőkből &aacute;llnak</a></span></span>, mentesek vegyszerektől, illatanyagokt&oacute;l &eacute;s sz&iacute;nez&eacute;kektől, &iacute;gy k&iacute;m&eacute;letesek a fejbőrh&ouml;z &eacute;s a hajhoz. Az OXYGENI nat&uacute;rkozmetikumai hat&eacute;konyan t&aacute;mogatj&aacute;k a fejbőr &eacute;s a haj eg&eacute;szs&eacute;g&eacute;t, előseg&iacute;tik a regener&aacute;ci&oacute;t, cs&ouml;kkentik a hajhull&aacute;st, &eacute;s hozz&aacute;j&aacute;rulnak a haj term&eacute;szetes f&eacute;ny&eacute;nek &eacute;s vitalit&aacute;s&aacute;nak vissza&aacute;ll&iacute;t&aacute;s&aacute;hoz.</p> <p style=\"text-align:center; font-size:17px;\"><span></span></p> <p style=\"text-align:center; font-size:17px;\"><span style=\"font-weight:bold;\">A MOSAIC Head Spa az Oxygeni legnagyobb hazai partnerszalonja.</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"text-align:center; font-size:40px;\">Amire a hajadnak a <span style=\"font-weight:bold;\">term&eacute;szetből</span> sz&uuml;ks&eacute;ge van. 🌿</h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em; text-align:center;\"><span style=\"font-weight:bold;\">Minden Head Spa kezel&eacute;s alapja a hajkamer&aacute;s vizsg&aacute;lat, amely alapj&aacute;n egyedileg frissen neked keverj&uuml;k ki azt az OXYGENI pakol&aacute;st, amire a fej- &eacute;s arcbőr&ouml;dnek sz&uuml;ks&eacute;ge van.</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.8em; text-align:center;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">Az OXYGENI a fenntarthat&oacute; sz&eacute;ps&eacute;g&aacute;pol&aacute;s &uacute;tt&ouml;rője. Nat&uacute;r kr&eacute;meik:</span></span></p> <p style=\"font-size:16px; line-height:1.8em; text-align:center;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\"><span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<ul style=\"font-size:16px; letter-spacing:normal;\"> <li style=\"line-height:1.8em;\"> <p style=\"font-size:16px; line-height:1.8em;\">Pr&eacute;mium minős&eacute;gűek,</p> </li> <li style=\"line-height:1.8em;\"> <p style=\"font-size:16px; line-height:1.8em;\">&Aacute;llatk&iacute;s&eacute;rlet mentesek,</p> </li> <li style=\"line-height:1.8em;\"> <p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">Vegyszer mentesek,</span></span></p> </li> <li style=\"line-height:1.8em;\"> <p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">Illatanyag mentesek,</span></span></p> </li> <li style=\"line-height:1.8em;\"> <p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">Sz&iacute;nez&eacute;k mentesek,</span></span></p> </li> <li style=\"line-height:1.8em;\"> <p style=\"font-size:16px; line-height:1.8em;\"><span style=\"font-weight:bold;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">100%-ban term&eacute;szetes &ouml;sszetevőkből &aacute;llnak,</span></span></span></p> </li> <li style=\"line-height:1.8em;\"> <p style=\"font-size:16px; line-height:1.8em;\">Minden hat&oacute;anyaguk veg&aacute;n Sv&aacute;jcb&oacute;l &eacute;s Olaszorsz&aacute;gb&oacute;l,</p> </li> <li style=\"line-height:1.8em;\"> <p style=\"font-size:16px; line-height:1.8em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">Multifunkcion&aacute;lisak, azaz egyszerre &aacute;polj&aacute;k a hajat &eacute;s a bőrt.</span></span><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\"><span></span></span></span></p> </li> </ul>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_f9a4ce4bf90b48ceb1aaed9da17a25f8.jpg",
+   "alt": "oxigeni.jpg"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_35fb28ead0794f0f868c6795bc1a7dea.jpg",
+   "alt": "DSC05692.jpg"
+  },
+  {
+   "t": "text",
+   "html": "<h2 style=\"font-size:56px; text-align:center;\"><span style=\"font-size:56px;\">Az OXYGENI Head Spa hat&aacute;sai</span></h2>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:18px; line-height:1.8em; text-align:center;\"><span style=\"font-weight:normal;\"><span style=\"font-size:18px;\">M&aacute;r 1 Head Spa kezel&eacute;s ut&aacute;n &eacute;rezni fogod a hajadon a v&aacute;ltoz&aacute;st!</span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_101df2c65b5340da8dbacef936b0c362.png",
+   "alt": "zsiros_fejbor.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:20px; text-align:center;\"><span style=\"font-size:20px;\">Zs&iacute;ros fejbőr eset&eacute;n</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"line-height:1.5em; font-size:17px;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ M&eacute;lyen <span style=\"font-weight:bold;\">tiszt&iacute;tja a fejbőrt</span>, elt&aacute;vol&iacute;tja a felesleges faggy&uacute;t &eacute;s lerak&oacute;d&aacute;sokat.</span></span></p> <p style=\"line-height:1.5em; font-size:17px;\"><br> <span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ <span style=\"font-weight:bold;\">Kiegyens&uacute;lyozza a faggy&uacute;termel&eacute;st</span>, &iacute;gy cs&ouml;kken a gyors zs&iacute;rosod&aacute;s.</span></span></p> <p style=\"line-height:1.5em; font-size:17px;\"><br> <span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ Megnyugtatja a fejbőrt, <span style=\"font-weight:bold;\">cs&ouml;kkenti az irrit&aacute;ci&oacute;t &eacute;s a gyullad&aacute;st.</span></span></span></p> <p style=\"line-height:1.5em; font-size:17px;\"><br> <span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\"><span style=\"font-weight:bold;\">✔️ Friss, tiszta &eacute;rzetet</span> biztos&iacute;t, hosszabb ideig marad &uuml;de a haj.</span></span></p> <p style=\"line-height:1.5em; font-size:17px;\"><br> <span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ Nem sz&aacute;r&iacute;tja ki a fejbőrt, &iacute;gy <span style=\"font-weight:bold;\">elker&uuml;lhető a t&uacute;lzott faggy&uacute;termel&eacute;s visszat&eacute;r&eacute;se.</span></span></span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_8043bfeb052b4321958da732d7d897b4.png",
+   "alt": "szaraz_fejbor.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:20px; text-align:center;\"><span style=\"font-size:20px;\">Sz&aacute;raz fejbőr eset&eacute;n</span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.5em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ Intenz&iacute;ven <span style=\"font-weight:bold;\">hidrat&aacute;lja &eacute;s t&aacute;pl&aacute;lja a fejbőrt</span> term&eacute;szetes &ouml;sszetevőkkel.</span></span></p> <p style=\"font-size:16px; line-height:1.5em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\"><span></span></span></span></p> <p style=\"font-size:16px; line-height:1.5em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ <span style=\"font-weight:bold;\">Enyh&iacute;ti a viszket&eacute;st &eacute;s a h&aacute;ml&aacute;st,</span> megsz&uuml;nteti a kellemetlen fesz&uuml;lő &eacute;rz&eacute;st.</span></span></p> <p style=\"font-size:16px; line-height:1.5em;\"><br> <span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ Seg&iacute;t helyre&aacute;ll&iacute;tani a fejbőr term&eacute;szetes <span style=\"font-weight:bold;\">v&eacute;dőr&eacute;teg&eacute;t.</span></span></span></p> <p style=\"font-size:16px; line-height:1.5em;\"><br> <span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\"><span style=\"font-weight:bold;\">✔️ Cs&ouml;kkenti a korp&aacute;sod&aacute;st</span> &eacute;s a sz&aacute;razs&aacute;g okozta irrit&aacute;ci&oacute;t.</span></span></p> <p style=\"font-size:16px; line-height:1.5em;\"><br> <span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ <span style=\"font-weight:bold;\">A haj puh&aacute;bb</span>, rugalmasabb &eacute;s eg&eacute;szs&eacute;gesebb kin&eacute;zetű lesz.</span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:20px; text-align:center;\"><span style=\"font-size:20px;\">Hajhull&aacute;s eset&eacute;n</span></p>"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_e98171ec07984e359a41f0aab69fa799.png",
+   "alt": "hajhullas.png"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:1.5em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ Serkenti a fejbőr v&eacute;rkering&eacute;s&eacute;t, &iacute;gy <span style=\"font-weight:bold;\">t&ouml;bb oxig&eacute;n &eacute;s t&aacute;panyag jut a hajhagym&aacute;khoz.</span></span></span></p> <p style=\"font-size:16px; line-height:1.5em;\"><br> <span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ Erős&iacute;ti a hajhagym&aacute;kat, <span style=\"font-weight:bold;\">cs&ouml;kkenti a t&uacute;lzott hajhull&aacute;st.</span></span></span></p> <p style=\"font-size:16px; line-height:1.5em;\"><br> <span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ M&eacute;lyen tiszt&iacute;tja a fejbőrt, <span style=\"font-weight:bold;\">elt&aacute;vol&iacute;tja a haj n&ouml;veked&eacute;s&eacute;t g&aacute;tl&oacute; m&eacute;reganyagokat.</span></span></span></p> <p style=\"font-size:16px; line-height:1.5em;\"><br> <span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ <span style=\"font-weight:bold;\">Seg&iacute;t aktiv&aacute;lni az &uacute;j hajsz&aacute;lak.</span></span></span></p> <p style=\"font-size:16px; line-height:1.5em;\"><span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\"><span style=\"font-weight:bold;\">n&ouml;veked&eacute;s&eacute;t,</span> d&uacute;sabb&aacute; &eacute;s &eacute;lettel teliv&eacute; var&aacute;zsolja a frizur&aacute;t.</span></span></p> <p style=\"font-size:16px; line-height:1.5em;\"><br> <span style=\"letter-spacing:normal;\"><span style=\"font-size:16px;\">✔️ Stresszold&oacute; hat&aacute;sa r&eacute;v&eacute;n cs&ouml;kkenti a hajhull&aacute;s egyik <span style=\"font-weight:normal;\">leggyakoribb kiv&aacute;lt&oacute; ok&aacute;t.</span></span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/idpontfoglalas",
+   "label": "IDŐPONTFOGLALÁS"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; line-height:1.8em; text-align:center;\"><span style=\"font-size:14px;\"><span style=\"letter-spacing:normal;\">Big in Japan Kft. - <span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/aszf\" target=\"_self\">&Aacute;SZF</a></span> - <span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/impresszum\" target=\"_self\">Impresszum</a></span></span></span></p>"
+  }
+ ]
+}
