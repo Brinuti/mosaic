@@ -1,0 +1,182 @@
+{
+ "file": "szortelenites-foglalas.html",
+ "title": "Időpontfoglalás",
+ "desc": "Foglalj időpontot headspa kezelésre online vagy telefonon azonnali visszaigazolással!",
+ "blocks": [
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ebf1831725394a0591c64e442a81b333.png",
+   "alt": "asset_7.png"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "Head Spa"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/4-kezes-headspa-ajandekkartya",
+   "label": "ÚJ! - 4 kezes Headspa!"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-budapest",
+   "label": "Mi az a Head Spa?"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/paros-headspa-budapest",
+   "label": "Páros Head Spa"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-ferfiaknak",
+   "label": "Head Spa Férfiaknak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-arak-budapest",
+   "label": "Head Spa Csomagok és Árak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/head-spa-kedvezmeny",
+   "label": "Head Spa - 20% SZEPTEMBERI kedvezmény!"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/head-spa-velemenyek",
+   "label": "Head Spa Vélemények"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-termekek-oxygeni",
+   "label": "OXYGENI Termékek"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest",
+   "label": "Szőrtelenítés"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodraszat-budapest",
+   "label": "Fodrászat"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodrasz-budapest-balayage-hajfestes",
+   "label": "Betti"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/balayage-haj-festes-budapest",
+   "label": "Noel"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-hajfestes-budapest",
+   "label": "Evelin"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/noi-fodrasz-budapest-balayage-hajfestes",
+   "label": "Fodrászat Árak"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/oxigenterapia-budapest",
+   "label": "Oxigénterápia"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/sminktetovalas-budapest",
+   "label": "Sminktetoválás"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/headspa-ajandekkartya",
+   "label": "Ajándékkártya"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu/idpontfoglalas",
+   "label": "FOGLALÁS"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "GYIK"
+  },
+  {
+   "t": "link",
+   "href": "https://www.mosaicheadspa.hu",
+   "label": "Kapcsolat"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_c784ca57ffc3470f90e9225d7f9c16d7.png",
+   "alt": "info.png"
+  },
+  {
+   "t": "img",
+   "local": "assets/img/c2eb0f_ec266ac7692e4ac78b760a89cd93adb8.jpg",
+   "alt": "english-flag.JPG"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"text-align:center; font-size:14px;\"><a href=\"https://www.mosaicheadspa.hu/head-spa-kedvezmeny\" target=\"_blank\"><span style=\"font-weight:bold;\"><span style=\"color:#FFFFFF;\"><span style=\"text-decoration:underline;\">Szeptemberi akci&oacute;! - 20% kedvezm&eacute;ny minden headspa foglal&aacute;sra + aj&aacute;nd&eacute;kk&aacute;rty&aacute;ra!</span></span></span></a></p>"
+  },
+  {
+   "t": "text",
+   "html": "<h1 style=\"text-align:center; font-size:50px;\">Időpontfoglal&aacute;s - Szőrtelen&iacute;t&eacute;s</h1>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; text-align:center;\"><span style=\"font-weight:700;\">Elysion Pro l&eacute;zeres szőrtelen&iacute;t&eacute;s Zs&oacute;fival</span><br> <span style=\"font-style:normal;\"><span style=\"font-weight:400;\"><span style=\"color:#FFFFFF;\"><span><span style=\"font-size:14px;\"><span style=\"letter-spacing:0em;\">👇</span></span></span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:normal; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"font-size:16px;\"><span style=\"letter-spacing:0.05em;\"><span style=\"color:#282626;\"><span>🔎 Szőrtelen&iacute;t&eacute;s</span></span></span></span></span></p> <p style=\"font-size:16px; line-height:normal; text-align:center;\"><span style=\"font-size:16px;\"><span style=\"letter-spacing:0.05em;\"><span style=\"color:#282626;\"><span>1. alkalom</span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; line-height:1.5em; text-align:center;\"><span style=\"color:#FFFFFF;\"><span><span style=\"font-size:14px;\"><span style=\"letter-spacing:0em;\">Időpontfoglal&aacute;s Zs&oacute;fihoz l&eacute;zeres szőrtelen&iacute;t&eacute;sre.</span></span></span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://mosaic-elysion.salonic.hu/showServices/?placeId=14586&amp;specId=66404",
+   "label": "ELSŐ IDŐPONTOK"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:normal; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"font-size:16px;\"><span style=\"letter-spacing:0.05em;\"><span style=\"color:#282626;\"><span>🪒 Szőrtelen&iacute;t&eacute;s</span></span></span></span></span></p> <p style=\"font-size:16px; line-height:normal; text-align:center;\"><span style=\"font-size:16px;\"><span style=\"letter-spacing:0.05em;\"><span style=\"color:#282626;\"><span>2. alkalomt&oacute;l</span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; line-height:1.5em; text-align:center;\"><span style=\"color:#FFFFFF;\"><span><span style=\"font-size:14px;\"><span style=\"letter-spacing:0em;\">Ha k&ouml;vetkező </span></span></span></span></p> <p style=\"font-size:14px; line-height:1.5em; text-align:center;\"><span style=\"color:#FFFFFF;\"><span><span style=\"font-size:14px;\"><span style=\"letter-spacing:0em;\">kezel&eacute;sre j&ouml;ssz</span></span></span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "https://mosaic-elysion.salonic.hu/showServices/?placeId=14586&amp;specId=66405",
+   "label": "KEZELÉS IDŐPONTOK"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:16px; line-height:normal; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"font-size:16px;\"><span style=\"letter-spacing:0.05em;\"><span style=\"color:#282626;\"><span>📞 Telefonos </span></span></span></span></span></p> <p style=\"font-size:16px; line-height:normal; text-align:center;\"><span style=\"font-weight:bold;\"><span style=\"font-size:16px;\"><span style=\"letter-spacing:0.05em;\"><span style=\"color:#282626;\"><span>foglal&aacute;s</span></span></span></span></span></p>"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; line-height:1.5em; text-align:center;\"><span style=\"color:#FFFFFF;\"><span><span style=\"font-size:14px;\"><span style=\"letter-spacing:0em;\">Ha k&eacute;rd&eacute;sed van </span></span></span></span></p> <p style=\"font-size:14px; line-height:1.5em; text-align:center;\"><span style=\"color:#FFFFFF;\"><span><span style=\"font-size:14px;\"><span style=\"letter-spacing:0em;\">foglal&aacute;s előtt.</span></span></span></span></p>"
+  },
+  {
+   "t": "link",
+   "href": "tel:06202474444",
+   "label": "06202474444"
+  },
+  {
+   "t": "text",
+   "html": "<p style=\"font-size:14px; line-height:1.8em; text-align:center;\"><span style=\"font-size:14px;\"><span style=\"letter-spacing:normal;\">Big in Japan Kft. - <span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/aszf\" target=\"_self\">&Aacute;SZF</a></span> - <span style=\"text-decoration:underline;\"><a href=\"https://www.mosaicheadspa.hu/impresszum\" target=\"_self\">Impresszum</a></span></span></span></p>"
+  }
+ ]
+}

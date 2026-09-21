@@ -3,7 +3,7 @@
 A mosaicheadspa.hu Wix-mentes, statikus mása. Nincs build-függősége a Wixtől: sima HTML + CSS + JS,
 bármilyen tárhelyre feltölthető.
 
-- **20 oldal**, 311 kép, 13 videó, saját `assets/` mappából kiszolgálva
+- **22 oldal**, 311 kép, 13 videó, saját `assets/` mappából kiszolgálva
 - **Nincs külső futásidejű függőség** (a foglalás Salonic-linkekkel és a Google Maps beágyazással működik,
   ahogy az eredetin is)
 
@@ -27,7 +27,7 @@ párját módosítsd, majd futtasd:
 node tools/build.mjs
 ```
 
-Node 18+ kell hozzá (ESM). A parancs újragenerálja mind a 20 oldalt, a `sitemap.xml`-t és a `robots.txt`-t.
+Node 18+ kell hozzá (ESM). A parancs újragenerálja mind a 22 oldalt, a `sitemap.xml`-t és a `robots.txt`-t.
 
 ### Oldal-fejléc
 
@@ -53,6 +53,8 @@ A `<!--include nev-->` a build során behelyettesíti a `src/partials/nev.html` 
 | `arak-kartyak` | a 4 head spa árkártya |
 | `faq-fooldal` | a főoldal 10 kérdéses GYIK-je |
 | `faq-masodik` | a 8 kérdéses GYIK (ellenjavallatokkal) |
+| `faq-szortelenites` | a szőrtelenítés oldal 10 kérdéses GYIK-je |
+| `faq-oxigen` | az oxigénterápia oldal 10 kérdéses GYIK-je |
 
 Ha az árak vagy a nyitvatartás változik, elég a partialt átírni — minden oldalon frissül.
 
@@ -118,34 +120,22 @@ Ellenőrzés a pótlás után:
 grep -ho 'data-video="[^"]*"' *.html | sed 's/data-video="//;s/"//' | sort -u | while read v; do [ -f "$v" ] || echo "HIANYZIK: $v"; done
 ```
 
-### 3.2 Két GYIK-blokk
+### 3.2 A Trustindex Google-vélemény widget
 
-Két GYIK harmadik féltől származó widgetben volt, aminek a tartalma nem volt kinyerhető az oldal
-forrásából:
+A Google-véleményeket megjelenítő **Trustindex widget** nem jött át — a helyén a csillagos
+értékelés és a véleményszám szerepel statikusan. Ha élő véleményfolyamot szeretnél, a
+Trustindex beágyazó scriptje (`cdn.trustindex.io/loader.js?8a7562c424f027774456be130a1`)
+betehető külön partialként.
 
-- **`lezeres-szortelenites-budapest.html`** — „A leggyakoribb szőrtelenítés kérdések"
-- **`oxigenterapia-budapest.html`** — „Oxigénterápia - Gyakori Kérdések"
+> **Pótolva:** a két GYIK-blokk, ami korábban harmadik féltől (Common Ninja accordion) jött,
+> ki lett nyerve és beépítve a `faq-szortelenites` és `faq-oxigen` partialokba, 10-10
+> kérdéssel. Ezek már a saját HTML-edben vannak, nem kell hozzájuk külső szolgáltatás.
 
-Ezek a szekciók jelenleg **hiányoznak** ezekről az oldalakról. Ha megvan a szöveg, a
-`src/partials/faq-masodik.html` mintájára készíthető belőlük partial, és `<!--include ...-->`-szal
-beilleszthető.
-
-Ugyanígy nem jött át a **Trustindex Google-vélemény widget** — a helyén a csillagos értékelés és a
-véleményszám szerepel statikusan.
-
-### 3.3 Két megszűnt útvonal
-
-Az eredeti oldalon volt két foglalási aloldal, amik nem szerepeltek a bejárt oldalak között:
-`/szortelenites-foglalas` és `/pmu-foglalas`. Ezek helyett a linkek most oda mutatnak, ahol
-ugyanazok a Salonic-foglalások elérhetők:
-
-| eredeti | most |
-|---|---|
-| `/szortelenites-foglalas` | `idpontfoglalas.html#szor` |
-| `/pmu-foglalas` (VISSZAHÍVÁST KÉREK) | a Salonic ingyenes PMU-konzultáció foglalója |
-
-**Nézd át, hogy ez így jó-e** — ha a két eredeti oldalon volt olyan tartalom vagy űrlap, amit meg
-akarsz tartani, szólj, és elkészítem külön oldalként.
+> **Pótolva:** a `/szortelenites-foglalas` és a `/pmu-foglalas` oldal elkészült
+> (`szortelenites-foglalas.html`, `pmu-foglalas.html`), az összes rájuk mutató link
+> visszaállt az eredeti célra. A PMU-oldal visszahívás-kérő űrlapja Netlify Forms
+> formátumban készült (név, telefonszám, szolgáltatás, „volt már tetoválásod”, megjegyzés,
+> opcionális fotó) — lásd a 4. pontot.
 
 ---
 
@@ -163,6 +153,10 @@ megrendelő űrlap a Wix beépített űrlapkezelőjét használta. Ez **Netlify 
   továbbit nem kell tenni.
 - **Máshol**: a `data-netlify` attribútum hatástalan, az űrlap nem küld sehova. Ilyenkor cseréld le
   Formspree-re (`action="https://formspree.io/f/AZONOSITO"`), vagy szólj, és átírom.
+
+A `pmu-foglalas.html` visszahívás-kérő űrlapja ugyanígy Netlify Forms (`name="pmu-visszahivas"`),
+de fájlfeltöltéssel is (`enctype="multipart/form-data"`) — Netlify-n a feltöltött fotó is
+megjelenik a beküldésnél.
 
 A Stripe-os „bankkártyás vásárlás" gombok változatlanul az eredeti Stripe-linkekre mutatnak, azok
 minden tárhelyen működnek.

@@ -374,6 +374,10 @@ strong, b { font-weight: 700; }
   border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.95); color: var(--ink);
 }
 .gift-form button { margin-top: 8px; }
+.form-radio { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; }
+.form-radio legend { font-size: 15px; font-weight: 700; padding: 0; margin-bottom: 2px; }
+.gift-form label.inline { display: flex; align-items: center; gap: 8px; font-weight: 400; }
+.gift-form label.inline input { width: auto; padding: 0; }
 .bank-info { background: rgba(0,0,0,.25); border-radius: 8px; padding: 18px 20px; }
 .bank-info p { font-size: 16px; }
 figure.clip-label { margin: 0; }

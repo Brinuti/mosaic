@@ -1,0 +1,81 @@
+<!--meta
+{"title":"Időpontfoglalás - Sminktetoválás | MOSAIC Head Spa","description":"Foglalj online időpontot Melittához sminktetoválásra, vagy kérj visszahívást és beszéljük át a kérdéseidet. MOSAIC Head Spa, Budapest 1023 Bécsi út 2.","nav":"idpontfoglalas","parent":"sminktetovalas","image":"assets/img/c2eb0f_9f9333291e0e46b3805146224ead10f0.jpg"}
+-->
+
+<!-- ===== pmu foglalas ===== -->
+<section class="section bg-dark" id="smink">
+  <div class="wrap wrap-wide">
+    <h1 class="t-center">Időpontfoglalás - Sminktetoválás</h1>
+    <p class="t-center"><strong>„Készen állsz a foglalásra, vagy előbb beszélnél velem?”<br>Válaszd ki, melyik a kényelmesebb számodra.</strong></p>
+    <p class="t-center">👇</p>
+
+    <div class="grid g-2 mt-24">
+      <article class="card">
+        <div class="card-body">
+          <h3>Online foglalok időpontot a naptáradba</h3>
+          <ul>
+            <li>A kattintás után a foglaló oldal új ablakban nyílik meg</li>
+            <li>A naptáramban ki tudod választani a megfelelő időpontot</li>
+            <li>Kész is. Várlak szeretettel! :)</li>
+          </ul>
+          <a class="btn btn-block" href="https://mosaic-pmu.salonic.hu/employees/32428/?placeId=14585" target="_blank" rel="noopener">ONLINE FOGLALOK</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-body">
+          <h3>Kérdésem van hozzád a foglalás előtt</h3>
+          <ul>
+            <li>Kérj visszahívást és átbeszéljük a kérdéseidet</li>
+            <li>Gyors és kötelezettségmentes</li>
+            <li>A hívás végén közösen nézünk egy időpontot ami neked is megfelelő :)</li>
+          </ul>
+          <a class="btn btn-block" href="#urlap">VISSZAHÍVÁST KÉREK</a>
+        </div>
+      </article>
+    </div>
+
+    <p class="t-center mt-24 mb-0">VAGY</p>
+  </div>
+</section>
+
+<!-- ===== visszahivas urlap ===== -->
+<section class="section bg-mid" id="urlap">
+  <div class="wrap mw-720">
+    <h2 class="t-center">📞 Telefonos időpontfoglalás</h2>
+    <p class="t-center">Töltsd ki az űrlapot és 1 munkanapon belül visszahívlak, minden kérdésedet átbeszéljük és találunk számodra egy megfelelő időpontot! :)<br><strong>Üdv: Melitta</strong></p>
+
+    <form class="gift-form" name="pmu-visszahivas" method="POST" data-netlify="true" netlify-honeypot="bot-field" enctype="multipart/form-data">
+      <input type="hidden" name="form-name" value="pmu-visszahivas">
+      <p class="sr-only"><label>Ne töltsd ki: <input name="bot-field"></label></p>
+
+      <label>Név*<input type="text" name="nev" required></label>
+      <label>Telefonszám*<input type="tel" name="telefonszam" required></label>
+      <label>Szolgáltatás
+        <select name="szolgaltatas">
+          <option value="">Válassz...</option>
+          <option>Szemöldök tetoválás - Soft powder - 79.000 Ft</option>
+          <option>Szemöldök tetoválás - Hibrid - 79.000 Ft</option>
+          <option>Szempilla sűrítés - 47.000 Ft</option>
+          <option>Szemhéj tetoválás - Füstös - 63.000 Ft</option>
+          <option>Ajaktetoválás - Aquarell - 99.000 Ft</option>
+          <option>Ajaktetoválás - Rúzs hatású - 110.000 Ft</option>
+          <option>Szemöldök tetoválás eltávolítás - 18.000 Ft</option>
+        </select>
+      </label>
+
+      <fieldset class="form-radio">
+        <legend>Volt már korábban tetoválásod?*</legend>
+        <label class="inline"><input type="radio" name="volt_mar_korabban_tetovalasod" value="Igen" required> Igen</label>
+        <label class="inline"><input type="radio" name="volt_mar_korabban_tetovalasod" value="Nem"> Nem</label>
+      </fieldset>
+
+      <label>Mit beszéljünk át a foglalás előtt?<textarea name="megjegyzes" rows="3"></textarea></label>
+      <label>Feltölthetsz róla fotót (Nem kötelező)<input type="file" name="fotó" accept="image/*"></label>
+
+      <button class="btn btn-lg btn-block" type="submit">Visszahíváskérés elküldése</button>
+    </form>
+  </div>
+</section>
+
+<!--include contact-->
