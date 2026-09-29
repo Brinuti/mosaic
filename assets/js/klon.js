@@ -88,4 +88,39 @@
       mutat(tetel.getAttribute('data-shown') !== 'true');
     });
   }
+
+  // --- 4. video visszatetele ------------------------------------------
+  // Az eles oldalon a Wix Playable lejatszoja tesz egy <video> elemet a
+  // .VideoPlayer__playerContainer dobozba. Vezerlogomb nincs: a video magatol
+  // indul, nemitva, vegtelenitve. Ugyanezt tesszuk, csak a helyi fajllal.
+  // Az eles mobil valtozat egyaltalan nem rak be videot - ezert a klon mobil
+  // oldalain sem keresunk semmit.
+  const VIDEOK = {
+    'comp-m73bstee': 'c2eb0f_909ce4959fe24f4f984d8953fd315d67.mp4',
+    'comp-m7j9ka9m1': 'c2eb0f_cc22b1baf4c64848938cb7d48575b561.mp4',
+  };
+  // a sajat utvonalunkbol olvassuk ki, hova mutassanak a tarsfajlok (klon/ vagy klon/m/)
+  const sajatSrc = (document.currentScript && document.currentScript.src) || '';
+  const GYOKER = sajatSrc.split('assets/js/klon.js')[0];
+
+  // az eles mobil oldal nem inditja el a lejatszot, ezert ott mi sem tesszuk
+  const mobilOldal = !!document.getElementById('wixMobileViewport');
+
+  for (const [azon, fajl] of (mobilOldal ? [] : Object.entries(VIDEOK))) {
+    const gazda = document.getElementById(azon);
+    if (!gazda) continue;
+    const doboz = gazda.querySelector('[data-testid="playable"]');
+    if (!doboz || doboz.querySelector('video')) continue;
+    const v = document.createElement('video');
+    v.src = GYOKER + 'assets/video/' + fajl;
+    v.preload = 'none';
+    v.autoplay = true;
+    v.loop = true;
+    v.muted = true;            // enelkul a bongeszo nem inditana el magatol
+    v.playsInline = true;
+    v.setAttribute('playsinline', 'true');
+    // az eles oldalon a lejatszo sajat CSS-e adja ezeket - nalunk a stilus jon ide
+    v.style.cssText = 'display:block;width:100%;height:100%;object-fit:contain';
+    doboz.appendChild(v);
+  }
 })();
