@@ -44,6 +44,23 @@ function kepekAtirasa(html) {
   });
 }
 
+// A Wix sajat kiszolgalojarol jon meg nehany apro kep is (a nyelvvalto zaszlaja,
+// illetve egy nem hasznalt keretminta). Ezeket is helyire csereljuk, hogy az oldal
+// egyetlen kerest se kuldjon a Wix fele.
+const PARASTORAGE_KEPEK = {
+  'services/linguist-flags/1.1005.0/assets/flags/square/HUN_2x.png': 'flag-HUN_2x.png',
+  'services/linguist-flags/1.1005.0/assets/flags/square/HUN.png': 'flag-HUN.png',
+  'services/editor-elements-library/dist/thunderbolt/media/sloppyframe.3214ce8e.png': 'sloppyframe.png',
+};
+
+function parastorageKepek(html) {
+  for (const [tavoli, helyi] of Object.entries(PARASTORAGE_KEPEK)) {
+    if (!helyiKepek.has(helyi)) { hianyzoKepek.add(helyi + '  <- ' + tavoli); continue; }
+    html = html.split('https://static.parastorage.com/' + tavoli).join(ELOTAG + 'assets/img/' + helyi);
+  }
+  return html;
+}
+
 // --- 2. belso hivatkozasok atirasa -------------------------------------
 // A Wix minden belso linket teljes cimmel ir ki (https://www.mosaicheadspa.hu/...).
 // Ezeket helyi fajlnevre csereljuk, kulonben a klonbol visszavinne a Wix-oldalra.
@@ -159,6 +176,7 @@ for (const f of fajlok) {
   html = scriptekTorlese(html);
   html = wixBetukTorlese(html);
   html = kepekAtirasa(html);
+  html = parastorageKepek(html);
   html = linkekAtirasa(html);
   html = sajatBeszuras(html);
   fs.writeFileSync(path.join(OUT, f), html);
