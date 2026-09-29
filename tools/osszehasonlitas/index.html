@@ -1,0 +1,81 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Klon osszehasonlitas</title>
+<style>
+  html,body{margin:0;background:#111;color:#eee;font:13px/1.4 monospace}
+  .sor{display:flex;gap:8px}
+  iframe{width:1440px;height:900px;border:0;transform:scale(.33);transform-origin:0 0}
+  .doboz{width:480px;height:300px;overflow:hidden}
+  h2{font-size:13px;margin:4px}
+</style>
+<div class="sor">
+  <div><h2>EREDETI (Wix, JS-sel)</h2><div class="doboz"><iframe id="a" src="/eredeti/index.html"></iframe></div></div>
+  <div><h2>KLON (statikus)</h2><div class="doboz"><iframe id="b" src="/index.html"></iframe></div></div>
+</div>
+<pre id="ki">Hasznalat: await betolt('index.html'); majd kulonbseg()</pre>
+<script>
+const $ = (s) => document.querySelector(s);
+
+// Betolti mindket valtozatot es megvarja, amig elkeszulnek.
+window.betolt = function (oldal) {
+  return new Promise((ok) => {
+    let n = 0;
+    const kesz = () => { if (++n === 2) setTimeout(ok, 2500); };
+    $('#a').onload = kesz; $('#b').onload = kesz;
+    $('#a').src = '/eredeti/' + oldal;
+    $('#b').src = '/' + oldal;
+  });
+};
+
+// Szoveget hordozo elemek ujjlenyomata: szoveg -> [x, y, szelesseg, magassag]
+function ujjlenyomat(doc) {
+  const ki = new Map();
+  for (const el of doc.querySelectorAll('*')) {
+    if (el.closest('script,style,head')) continue;
+    let sz = '';
+    for (const n of el.childNodes) if (n.nodeType === 3) sz += n.nodeValue;
+    sz = sz.replace(/\s+/g, ' ').trim();
+    if (sz.length < 2) continue;
+    const r = el.getBoundingClientRect();
+    if (!r.width && !r.height) continue;
+    const kulcs = sz.slice(0, 60);
+    const t = (ki.get(kulcs) || []);
+    const cs = getComputedStyle(el);
+    t.push({ x: Math.round(r.left + doc.defaultView.scrollX), y: Math.round(r.top + doc.defaultView.scrollY),
+             w: Math.round(r.width), h: Math.round(r.height),
+             f: cs.fontFamily.split(',')[0].replace(/["']/g, ''), m: cs.fontSize, v: cs.fontWeight, c: cs.color });
+    ki.set(kulcs, t);
+  }
+  return ki;
+}
+
+window.kulonbseg = function (turesPx = 2) {
+  const A = ujjlenyomat($('#a').contentDocument);
+  const B = ujjlenyomat($('#b').contentDocument);
+  const csakA = [], csakB = [], eltero = [];
+  for (const [k, av] of A) {
+    const bv = B.get(k);
+    if (!bv) { csakA.push(k); continue; }
+    const n = Math.min(av.length, bv.length);
+    for (let i = 0; i < n; i++) {
+      const a = av[i], b = bv[i];
+      const d = { dx: b.x - a.x, dy: b.y - a.y, dw: b.w - a.w, dh: b.h - a.h };
+      const baj = Math.abs(d.dx) > turesPx || Math.abs(d.dw) > turesPx || Math.abs(d.dh) > turesPx;
+      const betuBaj = a.m !== b.m || a.v !== b.v || a.c !== b.c;
+      if (baj || betuBaj) eltero.push({ k, ...d, a: `${a.f} ${a.m} ${a.v} ${a.c}`, b: `${b.f} ${b.m} ${b.v} ${b.c}` });
+    }
+  }
+  for (const k of B.keys()) if (!A.has(k)) csakB.push(k);
+  const da = $('#a').contentDocument.documentElement, db = $('#b').contentDocument.documentElement;
+  return {
+    magassag: { eredeti: da.scrollHeight, klon: db.scrollHeight, kulonbseg: db.scrollHeight - da.scrollHeight },
+    szelesseg: { eredeti: da.scrollWidth, klon: db.scrollWidth },
+    szovegblokk: { eredeti: A.size, klon: B.size },
+    csakEredetiben: csakA.length, csakKlonban: csakB.length,
+    elteroDb: eltero.length,
+    csakEredetibenMinta: csakA.slice(0, 25),
+    csakKlonbanMinta: csakB.slice(0, 15),
+    elteroMinta: eltero.slice(0, 25),
+  };
+};
+</script>
