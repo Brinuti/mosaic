@@ -42,11 +42,16 @@ for (const [wixNev, wMap] of Object.entries(TERKEP)) {
   for (const [wixW, [csal, csalW, sa, asc, desc]] of Object.entries(wMap)) {
     const fajlok = talal(csal, csalW);
     if (!fajlok.length) { console.warn(`  ! hianyzik: ${csal} ${csalW} (${wixNev})`); continue; }
+    // A bongeszo a size-adjust ertekevel felszorozza az ascent/descent felulirast is,
+    // ezert elore leosztjuk vele - igy a vegeredmeny pontosan a mert ertek lesz.
+    const szorzo = (sa || 100) / 100;
+    const ascKi = asc ? +(asc / szorzo).toFixed(3) : null;
+    const descKi = desc ? +(desc / szorzo).toFixed(3) : null;
     for (const f of fajlok) {
       ki += `@font-face{font-family:'${wixNev}';font-style:normal;font-weight:${wixW};`
           + `font-display:swap;src:url(../fonts/${f.file}) format('woff2');`
           + (sa && sa !== 100 ? `size-adjust:${sa}%;` : '')
-          + (asc ? `ascent-override:${asc}%;descent-override:${desc}%;line-gap-override:0%;` : '')
+          + (ascKi ? `ascent-override:${ascKi}%;descent-override:${descKi}%;line-gap-override:0%;` : '')
           + `unicode-range:${f.range}}\n`;
       db++;
     }

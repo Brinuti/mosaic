@@ -10,6 +10,16 @@ const TIPUS = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=ut
 createServer((req, res) => {
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (p === '/') p = '/index.html';
+  // /eredeti-mobil/<oldal>.html : az erintetlen Wix mobil-mentes
+  if (p.startsWith('/eredeti-mobil/')) {
+    const ny = path.join(ROOT, 'tools/raw-mobil', p.slice('/eredeti-mobil/'.length));
+    if (existsSync(ny)) { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }); return createReadStream(ny).pipe(res); }
+  }
+  // /mobil/<oldal>.html : a mobil klon
+  if (p.startsWith('/mobil/')) {
+    const mo = path.join(ROOT, 'klon-mobil', p.slice('/mobil/'.length));
+    if (existsSync(mo)) { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }); return createReadStream(mo).pipe(res); }
+  }
   // /eredeti/<oldal>.html : az erintetlen Wix-mentes, osszehasonlitasi alapnak
   if (p.startsWith('/eredeti/')) {
     const nyers = path.join(ROOT, "tools/raw", p.slice('/eredeti/'.length));

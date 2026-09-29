@@ -15,7 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
-const RAW = path.join(ROOT, 'tools/raw');
+const RAWOK = [path.join(ROOT, 'tools/raw'), path.join(ROOT, 'tools/raw-mobil')];
 const OUT = path.join(ROOT, 'assets/fonts');
 fs.mkdirSync(OUT, { recursive: true });
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36';
@@ -40,7 +40,7 @@ function fontFaceBlokkok(s) {
 }
 
 const szabalyok = new Map(); // egyedi kulcs -> { csalad, stilus, suly, tart, utvonal }
-for (const f of fs.readdirSync(RAW).filter((x) => x.endsWith('.html'))) {
+for (const RAW of RAWOK) for (const f of fs.readdirSync(RAW).filter((x) => x.endsWith('.html'))) {
   for (const b of fontFaceBlokkok(fs.readFileSync(path.join(RAW, f), 'utf8'))) {
     const src = (b.match(/url\(['"]?([^'")]+)/) || [])[1] || '';
     const m = src.match(/fonts-cache\/googlefont\/woff2(\/s\/[^'")]+\.woff2?)/);

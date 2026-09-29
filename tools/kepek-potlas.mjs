@@ -3,14 +3,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 const ROOT = path.resolve(import.meta.dirname, '..');
-const RAW = path.join(ROOT, 'tools/raw');
+const RAWOK = [path.join(ROOT, 'tools/raw'), path.join(ROOT, 'tools/raw-mobil')];
 const IMG = path.join(ROOT, 'assets/img');
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36';
 const megvan = new Set(fs.readdirSync(IMG));
 
 // minden wixstatic media-hivatkozas osszegyujtese
 const kellenek = new Map(); // helyi fajlnev -> letoltesi URL (transzformacio nelkul, eredeti meret)
-for (const f of fs.readdirSync(RAW).filter((x) => x.endsWith('.html'))) {
+for (const RAW of RAWOK) for (const f of fs.readdirSync(RAW).filter((x) => x.endsWith('.html'))) {
   const s = fs.readFileSync(path.join(RAW, f), 'utf8');
   for (const m of s.matchAll(/https:\/\/static\.wixstatic\.com\/media\/([^"'\s)]+)/g)) {
     const u = decodeURIComponent(m[0]);

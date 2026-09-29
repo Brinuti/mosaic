@@ -4,7 +4,7 @@
 <style>
   html,body{margin:0;background:#111;color:#eee;font:13px/1.4 monospace}
   .sor{display:flex;gap:8px}
-  iframe{width:1440px;height:900px;border:0;transform:scale(.33);transform-origin:0 0}
+  iframe{width:var(--w,1440px);height:var(--h,900px);border:0;transform:scale(.33);transform-origin:0 0}
   .doboz{width:480px;height:300px;overflow:hidden}
   h2{font-size:13px;margin:4px}
 </style>
@@ -16,14 +16,23 @@
 <script>
 const $ = (s) => document.querySelector(s);
 
+// Asztali (1440px) vagy mobil (320px) osszehasonlitas kozott valt.
+window.mobilMod = false;
+window.mobil = function (be) {
+  window.mobilMod = be !== false;
+  document.documentElement.style.setProperty('--w', window.mobilMod ? '320px' : '1440px');
+  document.documentElement.style.setProperty('--h', window.mobilMod ? '720px' : '900px');
+  return window.mobilMod ? 'mobil 320px' : 'asztali 1440px';
+};
+
 // Betolti mindket valtozatot es megvarja, amig elkeszulnek.
-window.betolt = function (oldal) {
+window.betolt = function (oldal, varakozas) {
   return new Promise((ok) => {
     let n = 0;
-    const kesz = () => { if (++n === 2) setTimeout(ok, 2500); };
+    const kesz = () => { if (++n === 2) setTimeout(ok, varakozas || 2500); };
     $('#a').onload = kesz; $('#b').onload = kesz;
-    $('#a').src = '/eredeti/' + oldal;
-    $('#b').src = '/' + oldal;
+    $('#a').src = (window.mobilMod ? '/eredeti-mobil/' : '/eredeti/') + oldal;
+    $('#b').src = (window.mobilMod ? '/m/' : '/') + oldal;
   });
 };
 
@@ -77,5 +86,60 @@ window.kulonbseg = function (turesPx = 2) {
     csakKlonbanMinta: csakB.slice(0, 15),
     elteroMinta: eltero.slice(0, 25),
   };
+};
+</script>
+<script>
+// Megvarja, amig az eredeti (JS-es) oldal elrendezese megallapodik, majd osszeveti a klonnal.
+// Az eredetin a Wix szkriptjei meg percekig mozgathatjak a tartalmat, ezert a korabbi
+// mereseink hol +30, hol 0 pixelt mutattak - ez a fuggveny csak stabil allapotot mer.
+function nyugalom(doc, jel) {
+  return new Promise((ok) => {
+    let elozo = -1, azonos = 0, korok = 0;
+    const lep = () => {
+      const m = doc.documentElement.scrollHeight;
+      if (m === elozo) azonos++; else { azonos = 0; elozo = m; }
+      if (azonos >= (jel || 3) || ++korok > 40) return ok(m);
+      setTimeout(lep, 300);
+    };
+    lep();
+  });
+}
+
+// A JS altal beszurt sutibanner nem resze a statikus klonnak - a magassagat nem szamoljuk.
+const BANNER = /^mh-cc/;
+
+window.vizsgal = async function (oldal) {
+  await betolt(oldal, 600);
+  const da = document.querySelector('#a').contentDocument;
+  const db = document.querySelector('#b').contentDocument;
+  await nyugalom(da);
+  await nyugalom(db, 2);
+  const eltero = [];
+  for (const e of da.querySelectorAll('[id]')) {
+    if (!e.id || BANNER.test(e.id)) continue;
+    const o = db.getElementById(e.id);
+    if (!o) continue;
+    const ra = e.getBoundingClientRect(), rb = o.getBoundingClientRect();
+    const dh = Math.round(rb.height - ra.height), dw = Math.round(rb.width - ra.width);
+    if (dh || dw) eltero.push({ id: e.id, tag: e.tagName, dh, dw, sz: (e.innerText || '').replace(/\s+/g, ' ').slice(0, 45) });
+  }
+  const k = kulonbseg(2);
+  return {
+    oldal,
+    magassag: `${da.documentElement.scrollHeight} -> ${db.documentElement.scrollHeight}`,
+    dH: db.documentElement.scrollHeight - da.documentElement.scrollHeight,
+    szelesseg: `${da.documentElement.scrollWidth} -> ${db.documentElement.scrollWidth}`,
+    elemEltero: eltero.length,
+    szovegEltero: k.elteroDb,
+    csakEredetiben: k.csakEredetiben,
+    csakKlonban: k.csakKlonban,
+    minta: eltero.slice(0, 6),
+  };
+};
+
+window.vizsgalTobb = async function (oldalak) {
+  const ki = [];
+  for (const o of oldalak) ki.push(await vizsgal(o));
+  return ki.map((r) => `${r.dH === 0 && r.elemEltero === 0 ? 'OK  ' : 'ELT '}${r.oldal.padEnd(44)} ${r.magassag.padEnd(16)} dH=${String(r.dH).padStart(4)} elem=${String(r.elemEltero).padStart(3)} szoveg=${r.szovegEltero}`).join('\n');
 };
 </script>
