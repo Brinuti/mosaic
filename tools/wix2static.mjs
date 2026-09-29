@@ -48,16 +48,28 @@ function kepekAtirasa(html) {
 // A Wix minden belso linket teljes cimmel ir ki (https://www.mosaicheadspa.hu/...).
 // Ezeket helyi fajlnevre csereljuk, kulonben a klonbol visszavinne a Wix-oldalra.
 // A canonical es az og:url szandekosan marad teljes cim - azok az SEO-hoz kellenek.
+// A blogbejegyzeseket a Wix a /post/ eloteg alatt is kiszolgalja, mi viszont
+// egy sima oldalkent mentjuk le - ezert az elotagot levagjuk.
+function slugbol(ut) {
+  const tiszta = ut.replace(/^\/+|\/+$/g, '').replace(/^post\//, '');
+  const slug = tiszta || 'index';
+  return oldalak.has(slug) ? slug : null;
+}
+
 function linkekAtirasa(html) {
   let db = 0;
-  // A cim allhat per jel nelkul is (a fejlec logoja a puszta domainre mutat) - az is a nyitolap.
-  const ki = html.replace(/(<a\b[^>]*?\bhref=")https:\/\/www\.mosaicheadspa\.hu(?:\/([^"]*))?"/gi, (egesz, eleje, hatulja) => {
+  const csere = (egesz, eleje, hatulja) => {
     const [ut, ...maradek] = (hatulja || '').split(/(?=[#?])/);
-    const slug = ut.replace(/\/$/, '') || 'index';
-    if (!oldalak.has(slug)) return egesz;
+    const slug = slugbol(ut);
+    if (!slug) return egesz;
     db++;
     return `${eleje}${slug}.html${maradek.join('')}"`;
-  });
+  };
+  const ki = html
+    // teljes cim - a per jel el is maradhat (a fejlec logoja a puszta domainre mutat)
+    .replace(/(<a\b[^>]*?\bhref=")https:\/\/www\.mosaicheadspa\.hu(?:\/([^"]*))?"/gi, csere)
+    // gyokertol indulo cim, pl. href="/post/suti-tajekoztato"
+    .replace(/(<a\b[^>]*?\bhref=")\/([^"/][^"]*|)"/gi, csere);
   atirtLink += db;
   return ki;
 }
