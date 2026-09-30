@@ -1,53 +1,50 @@
 # Videók a klónban – leltár és teendők
 
-A Wix-oldalon háromféle videó van. A klónban eddig csak kettő játszott le; a többi doboz
-üres volt, mert a Wix a tartalmukat nem a HTML-ben küldi, hanem utólag, JavaScripttel tölti be.
+A Wix-oldalon háromféle videó van. A Wix a tartalmukat nem a HTML-ben küldi, hanem utólag,
+JavaScripttel tölti be egy külön JSON-ból (oldal-adatok) – ezért voltak üresek a klón dobozai.
 
 | fajta | hol | db | állapot |
 |---|---|---|---|
-| **magától induló háttérvideó** | nyitóoldal, `headspa-budapest-hungary` | 2 | ✅ működik (csak asztali nézetben, ahogy az élő oldalon is) |
-| **kattintásra induló videó** (vendégvélemények, bemutatók) | 13 oldal, lásd lent | 52 doboz | ⏳ a lejátszó kész, a doboz → videó párosítás hiányzik |
-| **kezelés-galéria** (Wix Video lista) | `index`, `headspa-budapest`, `headspa-budapest-hungary`, `headspa-ferfiaknak`, `paros-headspa-budapest` | 8 videó | ⏳ a lejátszó kész, a 8 fájl hiányzik |
+| **magától induló videó** | nyitóoldal, `headspa-budapest-hungary` | 2 | ✅ asztalin magától indul; mobilon – mint az élő oldalon – poszter + lejátszás gomb |
+| **kattintásra induló videó** (vendégvélemények, bemutatók) | 13 oldal, lásd lent | 51 doboz (+ a fenti 2 mobilon) | ✅ poszterkép + lejátszás gomb, kattintásra indul |
+| **kezelés-galéria** (Wix Video lista) | `index`, `headspa-budapest`, `headspa-budapest-hungary`, `headspa-ferfiaknak`, `paros-headspa-budapest` | 8 videó | ⏳ a lejátszó kész, a 8 fájl hiányzik (Wix-export kell) |
 
-## 1. Kattintásra induló videók (52 doboz)
+## 1. Kattintásra induló videók
 
 | oldal | dobozok |
 |---|---|
-| `index` | 10 kicsi (258×472) + 5 nagyobb (280×510) |
+| `index` | 10 kicsi (258×472) + 5 nagyobb (280×510); mobilon + a nyitóvideó |
 | `head-spa-velemenyek` | 10 kicsi (258×472) + 5 nagyobb (280×510) |
 | `headspa-ajandekkartya` | 1 négyzetes + 3 álló |
 | `4-kezes-headspa-ajandekkartya` | 3 álló |
-| `headspa-budapest-hungary` | 3 álló + 1 négyzetes |
+| `headspa-budapest-hungary` | 3 álló + 1 négyzetes; mobilon + a nyitóvideó |
 | `headspa-budapest` | 1 álló + 1 négyzetes |
 | `noi-fodraszat-budapest` | 2 |
 | `balayage-haj-festes-budapest`, `noi-fodrasz-budapest-balayage-hajfestes`, `noi-hajfestes-budapest`, `lezeres-szortelenites-budapest`, `oxigenterapia-budapest`, `sminktetovalas-budapest` | 1-1 |
 
-A mentett HTML-ben ezek a dobozok teljesen üresek: nincs bennük se poszterkép, se videócím.
-Hogy melyik dobozba melyik videó kell, az a Wix **oldal-adataiban** (page JSON) van. Ezt a
-`tools/wix-oldaladatok.mjs` tölti le és gyűjti ki dobozonként:
+Asztali és mobil nézetben ugyanazok a dobozok vannak, mobilon is látható méretben (a Wix mobil
+oldal-adataiban is szerepelnek, vezérlőkkel, kattintásra indulva). **Mind a 28 különböző videó és
+mind a 30 poszterkép a repóban van** (`assets/video/`, `assets/img/<id>f00N.jpg`), a legnagyobb
+videó 70 MB (a GitHub-korlát fájlonként 100 MB).
+
+### Hogyan készült
 
 ```bash
-node tools/wix-oldaladatok.mjs      # -> tools/wix-oldaladatok.json
+node tools/wix-oldaladatok.mjs   # oldal-adatok -> tools/wix-oldaladatok.json
+node tools/videok-letoltese.mjs  # a hiányzó videók és poszterek letöltése
 ```
 
-Ehhez hálózati hozzáférés kell a `siteassets.parastorage.com` felé. A felhős munkakörnyezetből
-ez jelenleg tiltva van. A környezet beállításaiban engedélyezendő tartományok:
+1. A `tools/wix-oldaladatok.mjs` minden lementett oldalból kiolvassa az oldal-adatok címét
+   (`siteassets.parastorage.com`), letölti mobil és asztali nézetben (nyersen: `tools/wix-json/`,
+   ez nincs a repóban), és dobozonként kigyűjti a videót, a posztert, a lejátszó beállításait
+   (`lejatszo`: forrás, poszter, automatikus indítás, némítás, ismétlés) és a beágyazások címét.
+2. A `tools/videok-letoltese.mjs` a videókat abban a minőségben tölti le, amit az élő lejátszó
+   kap (`video.wixstatic.com/video/<id>/<q>/mp4/file.mp4`), a posztereket eredeti méretben.
+3. A párosítás az `assets/js/klon.js` `KATTINTOS` táblázatában van: `doboz → '<videó-id>/<poszterkocka>'`
+   (a poszter nem mindig az `f000.jpg`, van `f001` és `f002` is – az oldal-adatok mondják meg).
 
-```
-siteassets.parastorage.com   (oldal-adatok)
-static.wixstatic.com         (poszterképek)
-video.wixstatic.com          (a nyilvános videók letöltése)
-www-mosaicheadspa-hu.filesusr.com   (a HTML-beágyazások tartalma)
-```
-
-Ha a párosítás megvan, a videók nagy része **exportálás nélkül** letölthető (a 14 már meglévő
-fájl is így jött le). A párosítás a `assets/js/klon.js` `KATTINTOS` táblázatába kerül, a
-lejátszó (poszterkép + lejátszás gomb, kattintásra indul) már kész.
-
-Már letöltött, de még egyik dobozhoz sem rendelt videók (`assets/video/`):
-`3b9f1c40…`, `40c49eeb…`, `4a41bc38…`, `7c74e304…`, `9ede44a0…`, `9fb46d0b…`, `a257ba46…`,
-`ae591f49…`, `b14d6ca6…`, `c03c84ff…`, `c49cecf6…`, `ecca71a0…` – ezek a korábbi, kézzel
-épített változatban vendégvéleményként szerepelnek.
+Ha a Wixen egy videót lecserélnek, a fenti két parancs után a `KATTINTOS` táblázatot kell
+igazítani (a `tools/wix-oldaladatok.json`-ban a `lejatszo` mezők).
 
 ## 2. Kezelés-galéria (8 videó) – ezt Wixből kell exportálni
 
@@ -80,12 +77,7 @@ A Wix felülete néha átrendeződik, ezért a menüpontok neve kicsit eltérhet
    biztosan kiderül, melyik melyik.
 3. **Ne nevezd át őket kézzel.** Elég, ha a fájlnévből vagy a mappából kiderül a galériacím
    (pl. `Kézmasszázs.mp4`), a pontos átnevezést és a feltöltést én intézem.
-4. **Átadás:** tedd egy Google Drive-mappába, és küldd el a linkjét. (Ha a többi videót is
-   exportálod – vélemények, bemutatók –, azokat is ugyanide; a párosítás után kiderül, melyik kell.)
+4. **Átadás:** tedd egy Google Drive-mappába, és küldd el a linkjét.
 
-### Ha az összes videót exportálod
-
-Ha egyszerűbb mindent egyben letölteni a *Webhely fájljai → Videók* mappából, az is jó: a
-párosítás a Wix oldal-adatai alapján megy, a fölösleges fájlok nem kerülnek fel.
-Csak arra figyelj, hogy egy fájl 100 MB alatt maradjon (a GitHub korlátja); a mostaniak 1–45 MB
-közöttiek.
+Ellenőrizve 2026-09-30-án: ezek a címek minden minőségben (1080p–360p) 403-at adnak, a többi
+videóval ellentétben kívülről nem tölthetők le.
