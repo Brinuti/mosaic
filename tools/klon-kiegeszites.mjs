@@ -33,6 +33,14 @@ function logoCsere(html, elotag) {
 
 export function kiegeszit(html, elotag) {
   if (html.includes(LOGO)) html = logoCsere(html, elotag);
+  // a galeriak teljes kepllistaja (tools/galeriak.mjs) - a klon.js 7. szakasza hasznalja
+  if (!html.includes('assets/js/galeriak.js')) {
+    html = html.replace(/<\/head>/i, `<script src="${elotag}assets/js/galeriak.js"></script>\n</head>`);
+  }
+  // a GYIK-ok szovege (tools/gyik.mjs) - a klon.js 5b. szakasza hasznalja
+  if (!html.includes('assets/js/gyik.js')) {
+    html = html.replace(/<\/head>/i, `<script src="${elotag}assets/js/gyik.js"></script>\n</head>`);
+  }
   if (html.includes(JEL)) return html;
   const fej = [
     JEL,

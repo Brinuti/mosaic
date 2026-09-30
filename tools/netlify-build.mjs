@@ -65,7 +65,7 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
 // Verziojel a sajat szkriptek es stilusok hivatkozasaira (?v=<tartalom-hash>):
 // igy egy javitas azonnal eler minden latogatot, akkor is, ha a bongeszo meg
 // egy regebbi valtozatot tarol.
-const SAJAT = ['assets/js/klon.js', 'assets/js/suti.js', 'assets/css/klon.css'];
+const SAJAT = ['assets/js/klon.js', 'assets/js/suti.js', 'assets/js/galeriak.js', 'assets/js/gyik.js', 'assets/css/klon.css'];
 const verzio = Object.fromEntries(SAJAT.map((f) => [f,
   crypto.createHash('sha1').update(fs.readFileSync(path.join(ROOT, f))).digest('hex').slice(0, 10)]));
 for (const mappa of [DIST, path.join(DIST, 'm')]) {
