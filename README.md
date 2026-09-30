@@ -135,8 +135,8 @@ node tools/popup-info.mjs --letoltes && node tools/klon-kiegeszites.mjs
 
 ### 1.6 Videók
 
-Részletesen: **[VIDEOK.md](VIDEOK.md)** – leltár mind a 13 oldal videós dobozairól, és hogy mit
-kell még Wixből exportálni.
+Részletesen: **[VIDEOK.md](VIDEOK.md)** – leltár mind a 13 oldal videós dobozairól, és hogy
+honnan jöttek a fájlok.
 
 ### 1.6b Süti-sáv és mérőkódok — `assets/js/suti.js`
 
@@ -260,10 +260,10 @@ működnek.
 
 ## 3. Amit még pótolni kell
 
-### 3.1 Videók
+### 3.1 Videók – kész
 
-Lásd **[VIDEOK.md](VIDEOK.md)**: a kattintásra induló videók mind a helyükön vannak; a
-kezelés-galéria 8 videóját (token-védett) a Wixből kell exportálni.
+Lásd **[VIDEOK.md](VIDEOK.md)**: a kattintásra induló videók és a kezelés-galéria 8 videója is a
+helyén van.
 
 ### 3.2 HTML-beágyazások (GYIK, árlisták és társai) – kész
 
