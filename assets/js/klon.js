@@ -829,6 +829,261 @@
     ugrik(0);
   }
 
+  // --- 7b. racsos galeriak + nagyitas kattintasra -----------------------------
+  // A racsos (nem lapozos) galeriakbol a Wix mobilon csak az elso 4-6 kepet
+  // rajzolja ki, a doboz viszont mindegyik helyet fenntartja - nagy ures resz
+  // marad. Ezeket a teljes kepllistabol (assets/js/galeriak.js) CSS-racskent
+  // epitjuk ujra: ugyanannyi oszloppal, hezaggal es kepparannyal, mint a Wix.
+  // Minden galeria (a lapozosak is) kattintasra nagyit: felugro kep lapozassal.
+  const nagyito = (lista, kezdo) => {
+    let i = kezdo;
+    const h = document.createElement('div');
+    h.className = 'mh-nagyito';
+    h.setAttribute('role', 'dialog');
+    h.setAttribute('aria-label', 'Kép nagyítva');
+    h.innerHTML = '<img alt=""><button type="button" class="mh-nagyito-zar" aria-label="Bezárás">×</button>' +
+      '<button type="button" class="mh-nagyito-nyil mh-nagyito-bal" aria-label="Előző kép">‹</button>' +
+      '<button type="button" class="mh-nagyito-nyil mh-nagyito-jobb" aria-label="Következő kép">›</button>' +
+      '<div class="mh-nagyito-szam"></div>';
+    const kep = h.querySelector('img'), szam = h.querySelector('.mh-nagyito-szam');
+    const mutat = (j) => {
+      i = (j + lista.length) % lista.length;
+      kep.src = GYOKER + 'assets/img/' + lista[i][0];
+      kep.alt = lista[i][1] || '';
+      szam.textContent = (i + 1) + ' / ' + lista.length;
+    };
+    const bezar = () => { h.remove(); document.removeEventListener('keydown', bill); };
+    const bill = (e) => {
+      if (e.key === 'Escape') bezar();
+      else if (e.key === 'ArrowLeft') mutat(i - 1);
+      else if (e.key === 'ArrowRight') mutat(i + 1);
+    };
+    h.addEventListener('click', (e) => {
+      if (e.target.closest('.mh-nagyito-bal')) mutat(i - 1);
+      else if (e.target.closest('.mh-nagyito-jobb')) mutat(i + 1);
+      else if (e.target === h || e.target.closest('.mh-nagyito-zar')) bezar();
+    });
+    let sx = null;
+    h.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
+    h.addEventListener('touchend', (e) => {
+      if (sx === null) return;
+      const d = e.changedTouches[0].clientX - sx;
+      sx = null;
+      if (Math.abs(d) > 40) mutat(i + (d < 0 ? 1 : -1));
+    });
+    document.addEventListener('keydown', bill);
+    document.body.appendChild(h);
+    mutat(i);
+    h.querySelector('.mh-nagyito-zar').focus();
+  };
+
+  for (const tarto of document.querySelectorAll('.pro-gallery[id^="pro-gallery-container-"]')) {
+    const doboz = tarto.id.replace('pro-gallery-container-', '');
+    const lista = GALERIAK[doboz];
+    if (!lista || !lista.length) continue;
+
+    if (tarto.classList.contains('slider')) {
+      // lapozos galeria: a dia kepere kattintva nagyit (a 7. szakasz epitette a diakat)
+      const belso = tarto.querySelector('.gallery-horizontal-scroll-inner');
+      if (belso) [...belso.children].forEach((dia, i) => {
+        dia.style.cursor = 'zoom-in';
+        dia.addEventListener('click', () => nagyito(lista, i));
+      });
+      continue;
+    }
+
+    // racs: oszlopszam, hezag es keparany a Wix-kirajzolasbol
+    const elemek = [...tarto.querySelectorAll('[data-hook="item-container"]')];
+    if (!elemek.length) continue;
+    const r0 = elemek[0].getBoundingClientRect();
+    const elsoSor = elemek.filter((e) => Math.abs(e.getBoundingClientRect().top - r0.top) < 4);
+    const oszlop = Math.max(1, elsoSor.length);
+    const xek = elsoSor.map((e) => e.getBoundingClientRect().left).sort((a, b) => a - b);
+    const hezag = oszlop > 1 ? Math.max(0, Math.round(xek[1] - xek[0] - r0.width)) : 5;
+    const arany = r0.height / r0.width;
+    const illeszt = tarto.querySelector('.cube-type-fit') ? 'contain' : 'cover';
+
+    const racs = document.createElement('div');
+    racs.className = 'mh-racs';
+    racs.style.cssText = 'display:grid;grid-template-columns:repeat(' + oszlop + ',1fr);gap:' + hezag + 'px';
+    lista.forEach(([kep, alt], i) => {
+      const cella = document.createElement('button');
+      cella.type = 'button';
+      cella.className = 'mh-racs-cella';
+      cella.setAttribute('aria-label', 'Kép nagyítása' + (alt ? ': ' + alt : ''));
+      cella.style.aspectRatio = String(1 / arany);
+      const img = document.createElement('img');
+      img.src = GYOKER + 'assets/img/' + kep;
+      img.alt = alt;
+      img.loading = 'lazy';
+      img.style.objectFit = illeszt;
+      cella.appendChild(img);
+      cella.addEventListener('click', () => nagyito(lista, i));
+      racs.appendChild(cella);
+    });
+    tarto.replaceChildren(racs);
+    tarto.style.height = 'auto';
+    // a Wix fix magassagai a galeria kornyeken (a doboz, a keret, a racsok)
+    let e = tarto.parentElement;
+    for (let k = 0; e && k < 8; k++, e = e.parentElement) {
+      if (e.id === doboz) { e.style.setProperty('height', 'auto', 'important'); break; }
+      e.style.height = 'auto';
+    }
+    const wixDoboz = document.getElementById(doboz);
+    if (wixDoboz) tartalomMagassag(wixDoboz);
+  }
+
+  // --- 7c. horgonyos menulinkek (pl. GYIK, Kapcsolat) ---------------------------
+  // A Wix a menupontokat data-anchor="anchors-..." attributummal jeloli, es a
+  // sajat JS-e gorget a hozza tartozo szekciohoz. A horgony -> szekcio parositas
+  // a Wix oldal-adataibol (anchorDataIdToCompIdMap, tools/wix-json/).
+  const HORGONYOK = {
+    'anchors-m3znoasf3': 'comp-m3znoarb',
+    'anchors-m4l2o45y4': 'comp-m4l2o45p',
+    'anchors-m5l1xx2p5': 'comp-m5l1xx2o5',
+    'anchors-m5l1xx3s4': 'comp-m5l1xx3r3',
+    'anchors-m5l1xx5l2': 'comp-m5l1xx5j5',
+    'anchors-m5p3vmz93': 'comp-m5p3vmyh',
+    'anchors-m7io5w8n4': 'comp-m7io5w8m',
+    'anchors-m7ipdoix1': 'comp-m7ipdoiu',
+    'anchors-m95snrjx5': 'comp-m95snrjw3',
+    'anchors-m95snrky': 'comp-m95snrkv',
+    'anchors-m95snroo1': 'comp-m95snrom5',
+    'anchors-m95tiafe1': 'comp-m95tiadv',
+    'anchors-mb6g8h65': 'comp-mb6g8h60',
+    'anchors-mblskd615': 'comp-mblskd603',
+    'anchors-mciu8zaf5': 'comp-mciu8zae4',
+    'anchors-mciu8zbx1': 'comp-mciu8zbw',
+    'anchors-micq2k9e6': 'comp-micq2k9c',
+    'anchors-micq2ka51': 'comp-micq2ka41',
+    'anchors-mlg8q2z32': 'comp-mlg8q2z13',
+    'anchors-mlgjpxj5': 'comp-mlgjpxi2',
+    'anchors-mnmzylj04': 'comp-mnmzyliv',
+    'anchors-mrys9zup4': 'comp-mrys9zuo',
+  };
+  const fejlecMagassag = () => {
+    const f = document.getElementById('SITE_HEADER');
+    if (!f) return 0;
+    const cs = getComputedStyle(f);
+    return /fixed|sticky/.test(cs.position) ? f.getBoundingClientRect().height : 0;
+  };
+  const odaGorget = (cel, sima) => {
+    const y = cel.getBoundingClientRect().top + scrollY - fejlecMagassag();
+    window.scrollTo({ top: Math.max(0, y), behavior: sima ? 'smooth' : 'auto' });
+  };
+  const fajlnev = (ut) => (ut.split('/').pop() || 'index.html').replace(/\.html$/, '');
+  for (const a of document.querySelectorAll('a[data-anchor]')) {
+    const szekcio = HORGONYOK[a.getAttribute('data-anchor')];
+    const href = a.getAttribute('href');
+    if (!szekcio || !href) continue;
+    a.setAttribute('href', href.split('#')[0] + '#' + szekcio);
+    a.addEventListener('click', (e) => {
+      if (fajlnev(href.split('#')[0]) !== fajlnev(location.pathname)) return;
+      const cel = document.getElementById(szekcio);
+      if (!cel) return;
+      e.preventDefault();
+      // a mobil menu zarodjon be
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      history.replaceState(null, '', '#' + szekcio);
+      odaGorget(cel, true);
+    });
+  }
+  // masik oldalrol erkezve (#comp-...): a GYIK, galeriak atrendezese utan igazitunk
+  if (location.hash.length > 1) {
+    const cel = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (cel) setTimeout(() => odaGorget(cel, false), 150);
+  }
+
+  // --- 7d. ajandekkartya-urlap -> Netlify Forms ---------------------------------
+  // Az eles oldalon a Wix Forms kuldi be, majd a /success-ajandekkartya oldalra
+  // iranyit; a vevonek es nektek a Wix Automations kuld e-mailt. A klonban a
+  // Netlify Forms fogadja (a lathatatlan urlapleiras a klon-kiegeszites.mjs-bol),
+  // az e-maileket a netlify/functions/submission-created.mjs kuldi.
+  const URLAP_MEZOK = [
+    ['Ajándékozott Teljes Neve', 'ajandekozott'],
+    ['Fizető fél Vezetékneve', 'vezeteknev'],
+    ['Fizető fél Keresztneve', 'keresztnev'],
+    ['E-mail cím', 'email'],
+    ['Telefonszámod', 'telefon'],
+    ['Számlázási cím', 'szamlazasi_cim'],
+    ['Cégnév', 'cegnev'],
+    ['Cég adószám', 'adoszam'],
+  ];
+  for (const urlap of document.querySelectorAll('form[id^="form-7715ab48"]')) {
+    const gomb = urlap.querySelector('[data-hook="submit-button"]');
+    if (!gomb) continue;
+    const uzenet = document.createElement('p');
+    uzenet.className = 'mh-urlap-uzenet';
+    uzenet.setAttribute('role', 'alert');
+    gomb.after(uzenet);
+    const mezo = (cimke) => [...urlap.querySelectorAll('input')].find((i) => (i.getAttribute('aria-label') || '').startsWith(cimke));
+
+    // A Wix radiogombjai nem <label>-ben vannak, es a kijeloles latszatat is a
+    // Wix JS-e rajzolja (data-checked + "...--checked" osztaly): ezt itt potoljuk.
+    const allapot = () => {
+      for (const i of urlap.querySelectorAll('input[type=radio], input[type=checkbox]')) {
+        for (let e = i.parentElement; e && e !== urlap && !e.matches('fieldset'); e = e.parentElement) {
+          if (e.hasAttribute('data-checked')) e.setAttribute('data-checked', String(i.checked));
+          if (e.dataset.mhPipa) e.classList.toggle(e.dataset.mhPipa, i.checked);
+        }
+        i.setAttribute('aria-checked', String(i.checked));
+      }
+    };
+    for (const e of urlap.querySelectorAll('[class*="--checked"]')) e.dataset.mhPipa = [...e.classList].find((c) => c.endsWith('--checked'));
+    for (const e of urlap.querySelectorAll('.sYOg_Hk')) e.dataset.mhPipa = 'oi7np_Q--checked';
+    for (const r of urlap.querySelectorAll('[data-hook="core-radio-button"]')) {
+      r.style.cursor = 'pointer';
+      r.addEventListener('click', (e) => {
+        const i = r.querySelector('input[type=radio]');
+        if (!i || e.target === i) return;
+        i.checked = true;
+        i.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    urlap.addEventListener('change', allapot);
+    urlap.addEventListener('input', (e) => e.target.classList.remove('mh-hibas'));
+
+    const kuld = async (e) => {
+      e.preventDefault();
+      uzenet.textContent = '';
+      let hibas = null;
+      for (const i of urlap.querySelectorAll('input[required]:not([type=radio])')) {
+        const rossz = i.type === 'checkbox' ? !i.checked : !i.value.trim() || !i.checkValidity();
+        i.setAttribute('aria-invalid', String(rossz));
+        i.classList.toggle('mh-hibas', rossz);
+        if (rossz && !hibas) hibas = i;
+      }
+      const kartya = urlap.querySelector('input[type=radio]:checked');
+      if (!kartya) hibas = hibas || urlap.querySelector('input[type=radio]');
+      if (hibas) {
+        uzenet.textContent = 'Kérlek, töltsd ki a csillaggal (*) jelölt mezőket, és válaszd ki a kártyát.';
+        hibas.focus();
+        return;
+      }
+      const adat = new URLSearchParams({ 'form-name': 'ajandekkartya', oldal: location.pathname.split('/').pop() || 'index.html' });
+      for (const [cimke, nev] of URLAP_MEZOK) { const i = mezo(cimke); adat.set(nev, i ? i.value.trim() : ''); }
+      adat.set('kartya', kartya.getAttribute('aria-label') || kartya.value);
+      adat.set('aszf', 'elfogadva');
+      gomb.setAttribute('aria-disabled', 'true');
+      gomb.style.opacity = '.6';
+      try {
+        const v = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: adat.toString() });
+        if (!v.ok) throw new Error('HTTP ' + v.status);
+        // merokodok (ha a latogato engedte): a GTM es a Meta ezt latja konverziokent
+        (window.dataLayer = window.dataLayer || []).push({ event: 'ajandekkartya_rendeles', kartya: adat.get('kartya') });
+        if (window.fbq) window.fbq('track', 'Lead', { content_name: adat.get('kartya') });
+        location.href = 'success-ajandekkartya.html';
+      } catch (err) {
+        uzenet.textContent = 'Hiba történt a küldés közben. Kérlek, próbáld újra, vagy írj nekünk: mosaicheadspa@gmail.com';
+        gomb.removeAttribute('aria-disabled');
+        gomb.style.opacity = '';
+      }
+    };
+    gomb.addEventListener('click', kuld);
+    urlap.addEventListener('submit', kuld);
+  }
+
+
   // --- 8. Wix-felugro ablak (lightbox): a fejlec "i" ikonja ---------------
   // Az eles oldalon a [data-popupid] elemre kattintva a Wix JS-e letolti es
   // kirajzolja a felugro ablakot. A klonban a kesz HTML az oldal vegen van egy

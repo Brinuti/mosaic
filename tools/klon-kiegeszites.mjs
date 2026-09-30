@@ -49,7 +49,22 @@ function popupBeszuras(html, elotag) {
   return html.replace(/<\/body>/i, `<!--mh-popup-->\n${blokkok.join('\n')}\n<!--/mh-popup-->\n</body>`);
 }
 
+// A Wix-kepnevben zarojel is lehet ("...masolata (7).jpg"); a wix2static a
+// zarojelnel elvagta a cimet, es a maradek ").jpg" a helyi fajlnevhez ragadt.
+const csonkaKep = /(assets\/img\/[A-Za-z0-9_]+\.(?:jpe?g|png|webp|gif|avif))\)[^"'\s,)]*\.(?:jpe?g|png|webp|gif|avif)/g;
+
+const NETLIFY_URLAP = '<form name="ajandekkartya" data-netlify="true" netlify-honeypot="bot-field" hidden>' +
+  ['bot-field', 'ajandekozott', 'vezeteknev', 'keresztnev', 'email', 'telefon', 'szamlazasi_cim',
+    'cegnev', 'adoszam', 'kartya', 'aszf', 'oldal'].map((n) => `<input name="${n}">`).join('') +
+  '</form>';
+
 export function kiegeszit(html, elotag) {
+  html = html.replace(csonkaKep, '$1');
+  // Az ajandekkartya-urlap Netlify Forms-leirasa: a Netlify a kiszolgalt HTML-ben
+  // keresi az urlapokat, a Wix-urlapot pedig a klon.js 10. szakasza kuldi ide.
+  if (html.includes('form-7715ab48-7c85-4c1c-8fbc-a38c1cb1a23c') && !html.includes('name="ajandekkartya"')) {
+    html = html.replace(/<\/body>/i, NETLIFY_URLAP + '\n</body>');
+  }
   if (html.includes(LOGO)) html = logoCsere(html, elotag);
   // a galeriak teljes kepllistaja (tools/galeriak.mjs) - a klon.js 7. szakasza hasznalja
   if (!html.includes('assets/js/galeriak.js')) {
