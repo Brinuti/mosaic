@@ -361,8 +361,7 @@
   // a www-mosaicheadspa-hu.filesusr.com/html/<nev>.htm cimrol tolti; ezeket
   // valtozatlanul letoltottuk az assets/embed/ ala (tools/wix-oldaladatok.json).
   //
-  // Mindegyik harmadik feltol tolt be tartalmat (Trustindex, Common Ninja,
-  // Google), ezert a tajekoztato szerint a "funkcionalis" kategoriaba tartoznak:
+  // Mindegyik harmadik feltol tolt be tartalmat (Trustindex, Google), ezert a tajekoztato szerint a "funkcionalis" kategoriaba tartoznak:
   // amig a latogato ezt nem engedte, egy helykitolto all a helyukon, egy gombbal,
   // ami csak ezt a kategoriat engedelyezi.
   const TERKEP = 'https://www.google.com/maps?q=' +
@@ -374,13 +373,6 @@
   const EMBEDEK = {
     'c2eb0f_614b09d160b9382c4cffcde6d7828dcb': ['Vendégértékelések', 'Trustindex'],
     'c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6': ['Vendégértékelések', 'Trustindex'],
-    'c2eb0f_e2a637ece2437154df156d36cae403f4': ['Gyakori kérdések', 'Common Ninja'],
-    'c2eb0f_dab261d3e84629df7798238e716f0266': ['Gyakori kérdések', 'Common Ninja'],
-    'c2eb0f_97df67cb524ad4ad76e22fddea2496e5': ['Gyakori kérdések', 'Common Ninja'],
-    'c2eb0f_7101a51e50aef2435d5ed679e90074d4': ['Gyakori kérdések', 'Common Ninja'],
-    'c2eb0f_193bec926d66321bf99ada19cf4105a5': ['Gyakori kérdések', 'Common Ninja'],
-    'c2eb0f_89f74d4c7a84ec25afa7aad7f0133562': ['Árlista', 'Common Ninja'],
-    'c2eb0f_ebe819c8a20603ef818d0ff477702c21': ['Árlista', 'Common Ninja'],
   };
 
   // doboz -> 'terkep' vagy egy EMBEDEK-kulcs
@@ -391,11 +383,6 @@
     'comp-mlg8q2rf5': 'c2eb0f_614b09d160b9382c4cffcde6d7828dcb',  // lezeres-szortelenites-budapest
     'comp-mnmzylj31': 'c2eb0f_614b09d160b9382c4cffcde6d7828dcb',  // oxigenterapia-budapest
     'comp-mghyh3i9': 'c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6',   // index ("olvasd el vendegeinktol")
-    // arlistak (Common Ninja)
-    'comp-mb6gc2i53': 'c2eb0f_89f74d4c7a84ec25afa7aad7f0133562',  // noi-fodraszat-budapest
-    'comp-m5p3vva4': 'c2eb0f_89f74d4c7a84ec25afa7aad7f0133562',   // noi-fodrasz-budapest-balayage-hajfestes
-    'comp-metxv9d0': 'c2eb0f_89f74d4c7a84ec25afa7aad7f0133562',   // noi-hajfestes-budapest
-    'comp-mb6g8h6k': 'c2eb0f_ebe819c8a20603ef818d0ff477702c21',   // balayage-haj-festes-budapest
     // Google-terkep
     'comp-m3znoat23': 'terkep', 'comp-m7iq5wws1': 'terkep', 'comp-m7j9kag62': 'terkep',
     'comp-m7kiqhv01': 'terkep', 'comp-m7pxb9eh': 'terkep', 'comp-m7q2fh4v': 'terkep',
@@ -456,29 +443,43 @@
   } else {
     kitolt(true);
   }
-  // --- 5b. GYIK: sajat harmonika a Common Ninja widget helyett ------------------
-  // Az eles oldalon a GYIK-ok fizetos Common Ninja widgetek, fix magassagu
-  // keretben (a fooldalon ketto egymas alatt, alattuk sok ures hellyel). Helyettuk
-  // sajat harmonika all, a szoveg az assets/js/gyik.js-bol jon (tools/gyik.mjs).
-  // A doboz magassaga a tartalomhoz igazodik; a ketreszes GYIK-oknal az elso
-  // dobozba kerul a teljes lista, a masodik eltunik.
+  // --- 5b. GYIK es arlistak: sajat kod a fizetos Common Ninja widgetek helyett ---
+  // Az eles oldalon ezek Common Ninja widgetek, fix magassagu keretben (a
+  // fooldalon ket GYIK egymas alatt, alattuk sok ures hellyel). Helyettuk sajat
+  // harmonika es tablazat all; a tartalom a Common Ninja-bol egyszer letoltve
+  // (tools/commonninja.mjs -> assets/js/gyik.js, assets/js/arlistak.js). A doboz
+  // magassaga a tartalomhoz igazodik; ahol a Wixen ket GYIK volt egymas alatt,
+  // ott az elso dobozba kerul mindketto egy listaban, a masodik eltunik.
   const GYIK = window.MH_GYIK || {};
+  const ARLISTAK = window.MH_ARLISTAK || {};
+  const GYIK_1 = 'c2eb0f_e2a637ece2437154df156d36cae403f4';   // "MOSAIC GYIK 1"
+  const GYIK_2 = 'c2eb0f_dab261d3e84629df7798238e716f0266';   // "MOSAIC GYIK 2"
+  const GYIK_AJANDEK = 'c2eb0f_97df67cb524ad4ad76e22fddea2496e5';
   const GYIK_DOBOZOK = {
-    'comp-m5m8txa6': 'fooldal', 'comp-m5m8w3ok': null,          // index
-    'comp-m7kiqhte': 'fooldal', 'comp-m7kiqhtg1': null,         // headspa-ferfiaknak
-    'comp-m7pxb9cs': 'fooldal', 'comp-m7pxb9cu': null,          // paros-headspa-budapest
-    'comp-m7io5w964': 'masodik',                                // headspa-ajandekkartya
-    'comp-micq2kau4': 'masodik',                                // 4-kezes-headspa-ajandekkartya
-    'comp-mlg8q2yy2': 'szortelenites',                          // lezeres-szortelenites-budapest
-    'comp-mciu8zgq': 'oxigen',                                  // oxigenterapia-budapest
+    'comp-m5m8txa6': [GYIK_1, GYIK_2], 'comp-m5m8w3ok': null,    // index
+    'comp-m7kiqhte': [GYIK_1, GYIK_2], 'comp-m7kiqhtg1': null,   // headspa-ferfiaknak
+    'comp-m7pxb9cs': [GYIK_1, GYIK_2], 'comp-m7pxb9cu': null,    // paros-headspa-budapest
+    'comp-m7io5w964': [GYIK_AJANDEK],                            // headspa-ajandekkartya
+    'comp-micq2kau4': [GYIK_AJANDEK],                            // 4-kezes-headspa-ajandekkartya
+    'comp-mlg8q2yy2': ['c2eb0f_7101a51e50aef2435d5ed679e90074d4'], // lezeres-szortelenites-budapest
+    'comp-mciu8zgq': ['c2eb0f_193bec926d66321bf99ada19cf4105a5'],  // oxigenterapia-budapest
   };
-  for (const [azon, nev] of Object.entries(GYIK_DOBOZOK)) {
+  const ARLISTA_DOBOZOK = {
+    'comp-mb6gc2i53': 'c2eb0f_89f74d4c7a84ec25afa7aad7f0133562',  // noi-fodraszat-budapest (Betti)
+    'comp-m5p3vva4': 'c2eb0f_89f74d4c7a84ec25afa7aad7f0133562',   // noi-fodrasz-budapest-balayage-hajfestes
+    'comp-metxv9d0': 'c2eb0f_89f74d4c7a84ec25afa7aad7f0133562',   // noi-hajfestes-budapest
+    'comp-mb6g8h6k': 'c2eb0f_ebe819c8a20603ef818d0ff477702c21',   // balayage-haj-festes-budapest (Noel)
+  };
+
+  for (const [azon, nevek] of Object.entries(GYIK_DOBOZOK)) {
     const doboz = document.getElementById(azon);
     if (!doboz) continue;
-    if (!nev || !GYIK[nev]) { doboz.classList.add('mh-gyik-rejtett'); continue; }
+    if (!nevek) { doboz.classList.add('mh-gyik-rejtett'); continue; }
+    const tetelek = nevek.flatMap((n) => GYIK[n] || []);
+    if (!tetelek.length) continue;
     const lista = document.createElement('div');
     lista.className = 'mh-gyik';
-    GYIK[nev].forEach(([kerdes, valasz], i) => {
+    tetelek.forEach(([kerdes, valasz], i) => {
       const tetel = document.createElement('div');
       tetel.className = 'mh-gyik-tetel';
       const gomb = document.createElement('button');
@@ -486,7 +487,8 @@
       gomb.id = azon + '-k' + i;
       gomb.setAttribute('aria-expanded', 'false');
       gomb.setAttribute('aria-controls', azon + '-v' + i);
-      gomb.innerHTML = '<span>' + kerdes + '</span><i aria-hidden="true"></i>';
+      gomb.innerHTML = '<span></span><i aria-hidden="true"></i>';
+      gomb.firstChild.textContent = kerdes;
       const panel = document.createElement('div');
       panel.className = 'mh-gyik-valasz';
       panel.id = azon + '-v' + i;
@@ -504,6 +506,43 @@
     });
     doboz.classList.add('mh-gyik-doboz');
     doboz.replaceChildren(lista);
+  }
+
+  // Arlista: tablazat; keskeny kepernyon (mobil) soronkent kartya, a hajhosszal
+  // cimkezve. A "X helyett Y" arak athuzott regi + kiemelt uj arkent jelennek meg.
+  const arCella = (td, ertek) => {
+    const m = ertek.match(/^(.*?)\s+helyett\s+(.*)$/);
+    if (!m) { td.textContent = ertek; return; }
+    const regi = document.createElement('s');
+    regi.textContent = m[1];
+    const uj = document.createElement('strong');
+    uj.textContent = m[2];
+    td.append(regi, document.createElement('br'), uj);
+  };
+  for (const [azon, nev] of Object.entries(ARLISTA_DOBOZOK)) {
+    const doboz = document.getElementById(azon);
+    const adat = ARLISTAK[nev];
+    if (!doboz || !adat) continue;
+    const tabla = document.createElement('table');
+    tabla.className = 'mh-arlista';
+    const fej = tabla.createTHead().insertRow();
+    adat.fejlec.forEach((f, i) => {
+      const th = document.createElement('th');
+      th.textContent = f;
+      if (!i) th.setAttribute('aria-label', 'Szolgáltatás');
+      fej.appendChild(th);
+    });
+    const test = tabla.createTBody();
+    for (const sor of adat.sorok) {
+      const tr = test.insertRow();
+      sor.forEach((ertek, i) => {
+        const td = document.createElement(i ? 'td' : 'th');
+        if (i) { td.dataset.cimke = adat.fejlec[i]; arCella(td, ertek); } else { td.scope = 'row'; td.textContent = ertek; }
+        tr.appendChild(td);
+      });
+    }
+    doboz.classList.add('mh-gyik-doboz');
+    doboz.replaceChildren(tabla);
   }
 
   // --- 6. Wix "fluid-columns-repeater" (pl. a head spa arkartyak) ---------

@@ -64,7 +64,15 @@
     width: 100% !important; height: 100% !important; margin: 0 !important; left: 0 !important;
     align-self: stretch !important; justify-self: stretch !important;
   }
-  #comp-m73bstee video { object-fit: cover !important; }
+  /* A valodi video sajat merete ne novelhesse meg a dobozt: minden reteg
+     abszolut, a hero magassagat a szoveges oszlop adja. */
+  #comp-ivqhhfyj { overflow: hidden; }
+  #comp-m73bstee { position: relative !important; background: none !important; }
+  #comp-m73bstee [data-testid="playable"] { position: absolute !important; inset: 0 !important; height: auto !important; }
+  #comp-m73bstee video {
+    position: absolute !important; inset: 0 !important;
+    width: 100% !important; height: 100% !important; object-fit: cover !important;
+  }
 }
 
 /* GYIK-harmonika a Common Ninja widget helyett (klon.js 5b). A Wix-doboz fix
@@ -97,4 +105,29 @@
    "Evelin" fodrasz-doboz (comp-m5l46he9: 804px, a 980-as savban 114px-rol). */
 @media (min-width: 700px) {
   #comp-m3znoat23 { width: 804px !important; left: 114px !important; }
+}
+
+/* Arlista-tablazat a Common Ninja helyett (klon.js 5b) */
+.mh-arlista {
+  width: 100%; border-collapse: collapse; font: 15px/1.35 'lato', sans-serif; color: #fff;
+  background: rgba(24, 48, 51, .85); border-radius: 6px; overflow: hidden;
+}
+.mh-arlista thead th {
+  padding: 14px 10px; background: #d9c164; color: #183033; font-weight: 700; text-align: center;
+}
+.mh-arlista tbody th { padding: 12px 14px; text-align: left; font-weight: 600; vertical-align: middle; }
+.mh-arlista td { vertical-align: middle; }
+.mh-arlista td { padding: 12px 10px; text-align: center; white-space: nowrap; }
+.mh-arlista tbody tr:nth-child(even) { background: rgba(255, 255, 255, .06); }
+.mh-arlista tbody tr + tr > * { border-top: 1px solid rgba(255, 255, 255, .12); }
+.mh-arlista s { opacity: .65; font-size: 13px; }
+.mh-arlista strong { color: #d9c164; }
+/* mobil: soronkent kartya, a cellak elott a hajhossz */
+@media (max-width: 699px) {
+  .mh-arlista thead { display: none; }
+  .mh-arlista, .mh-arlista tbody, .mh-arlista tr, .mh-arlista th, .mh-arlista td { display: block; width: 100%; }
+  .mh-arlista tbody th { padding: 14px 14px 6px; color: #d9c164; font-size: 16px; }
+  .mh-arlista td { display: flex; justify-content: space-between; gap: 12px; padding: 6px 14px; text-align: right; white-space: normal; border: 0 !important; }
+  .mh-arlista td::before { content: attr(data-cimke); text-align: left; opacity: .8; }
+  .mh-arlista tbody tr { padding-bottom: 8px; }
 }
