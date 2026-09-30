@@ -1,5 +1,6 @@
 // Urlap-bekuldesek e-mailben: az ajandekkartya-rendelesrol a vevonek es a
-// szalonnak, a PMU-visszahivaskeresrol (pmu-foglalas) a szalonnak.
+// szalonnak, a PMU-visszahivaskeresrol (pmu-foglalas) es az allasjelentkezesekrol
+// (ppc-allashirdetes, fodrasz-allas-budapest) a szalonnak.
 //
 // A Netlify minden sikeres urlap-bekuldes utan meghivja ezt a fuggvenyt
 // (submission-created esemeny). Az eles Wix-oldal ugyanigy mukodik: a vevo a
@@ -39,9 +40,33 @@ const PMU_MEZOK = [
   ['oldal', 'Oldal'],
 ];
 
+// allasjelentkezesek: urlap -> [targy, mezok]
+const JELENTKEZESEK = {
+  'ppc-jelentkezes': ['Új jelentkezés: PPC-szakember', [
+    ['nev', 'Név'], ['email', 'E-mail'], ['telefon', 'Telefon'],
+    ['google_ads_ev', 'Google Ads tapasztalat (év)'], ['google_ads_iparag', 'Google Ads iparágak'],
+    ['meta_ads_ev', 'Facebook Ads tapasztalat (év)'], ['meta_ads_iparag', 'Facebook Ads iparágak'],
+    ['wix', 'Wix landingek'], ['wordpress', 'WordPress-szerkesztő'], ['jelenlegi_munkahely', 'Hol dolgozik, miért váltana'],
+    ['motivacio', 'Motiváció'], ['cpa', 'Miért érne el alacsonyabb CPA-t'], ['berigeny', 'Bérigény (nettó)'], ['oldal', 'Oldal'],
+  ]],
+  'fodrasz-jelentkezes': ['Új jelentkezés: fodrász', [
+    ['nev', 'Név'], ['email', 'E-mail'], ['telefon', 'Telefon'], ['szuletesi_ev', 'Születési év'],
+    ['tapasztalat', 'Tapasztalat (év)'], ['jelenlegi_munkahely', 'Hol dolgozik, miért váltana'],
+    ['referencia_link', 'Fb / Insta / TikTok'],
+    ...Array.from({ length: 10 }, (_, i) => [`kepek${i + 1}`, `Hajkép ${i + 1}`]), ['oldal', 'Oldal'],
+  ]],
+};
+
+// a feltoltott fajl a Netlify-adatban objektum ({ url, filename, ... }) vagy URL
+const ertek = (v) => {
+  if (v && typeof v === 'object') v = v.url || '';
+  const t = String(v ?? '');
+  return /^https?:\/\//.test(t) ? `<a href="${esc(t)}">${esc(t.split('/').pop().split('?')[0] || t)}</a>` : esc(t);
+};
+
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const tablazat = (d, mezok = MEZOK) => '<table cellpadding="6" style="border-collapse:collapse;font:14px Arial,sans-serif">' +
-  mezok.filter(([k]) => d[k]).map(([k, c]) => `<tr><td style="color:#666">${c}</td><td><b>${esc(d[k])}</b></td></tr>`).join('') +
+  mezok.filter(([k]) => d[k]).map(([k, c]) => `<tr><td style="color:#666">${c}</td><td><b>${ertek(d[k])}</b></td></tr>`).join('') +
   '</table>';
 
 const vevoLevel = (d) => `<div style="font:15px/1.5 Arial,sans-serif;color:#183033;max-width:600px">
@@ -71,7 +96,7 @@ ${tablazat(d)}
 export default async (req) => {
   const { payload } = await req.json();
   const urlap = payload && payload.form_name;
-  if (urlap !== 'ajandekkartya' && urlap !== 'pmu-visszahivas') return new Response('mas urlap');
+  if (urlap !== 'ajandekkartya' && urlap !== 'pmu-visszahivas' && !JELENTKEZESEK[urlap]) return new Response('mas urlap');
   const d = payload.data || {};
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
@@ -82,6 +107,20 @@ export default async (req) => {
   const posta = nodemailer.createTransport({ host: SMTP_HOST, port, secure: port === 465, auth: { user: SMTP_USER, pass: SMTP_PASS } });
   const felado = process.env.MAIL_FROM || `MOSAIC Headspa <${SMTP_USER}>`;
   const szalon = process.env.MAIL_TO || 'mosaicheadspa@gmail.com';
+
+  if (JELENTKEZESEK[urlap]) {
+    const [targy, mezok] = JELENTKEZESEK[urlap];
+    try {
+      await posta.sendMail({
+        from: felado, to: szalon, replyTo: d.email || undefined,
+        subject: `${targy} - ${d.nev || ''}`,
+        html: `<p style="font:15px Arial,sans-serif">${esc(targy)} érkezett a weboldalról:</p>${tablazat(d, mezok)}`,
+      });
+    } catch (e) {
+      console.error(`${urlap}: kuldesi hiba`, e);
+    }
+    return new Response('ok');
+  }
 
   if (urlap === 'pmu-visszahivas') {
     try {
