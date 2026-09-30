@@ -122,6 +122,64 @@
     // az eles oldalon a lejatszo sajat CSS-e adja ezeket - nalunk a stilus jon ide
     v.style.cssText = 'display:block;width:100%;height:100%;object-fit:contain';
     doboz.appendChild(v);
+    hangGomb(doboz, v);
+  }
+
+  // A hero-video fölött a Wixen is ott a felirat: "hangot ra!" - a nemitva
+  // induló videóhoz kell egy hanggomb. Kattintasra az elejerol, hanggal indul.
+  function hangGomb(doboz, v) {
+    doboz.style.position = 'relative';
+    const g = document.createElement('button');
+    g.type = 'button';
+    g.className = 'mh-hang';
+    const allit = () => {
+      g.setAttribute('aria-label', v.muted ? 'Hang bekapcsolása' : 'Hang kikapcsolása');
+      g.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">' +
+        '<path d="M3 9v6h4l5 5V4L7 9H3z"/>' +
+        (v.muted
+          ? '<path d="M16 9l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" fill="none"/>'
+          : '<path d="M16.5 12a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/>') +
+        '</svg><span>' + (v.muted ? 'Hangot rá!' : '') + '</span>';
+    };
+    const valt = () => {
+      if (v.muted) { v.muted = false; v.currentTime = 0; } else v.muted = true;
+      v.play().catch(() => {});
+      allit();
+    };
+    g.addEventListener('click', (e) => { e.stopPropagation(); valt(); });
+    v.addEventListener('click', valt);
+    v.style.cursor = 'pointer';
+    allit();
+    doboz.appendChild(g);
+  }
+
+  // Mobilon a Wix nem inditja el magatol a hero-videot, hanem lejatszas-gombot
+  // mutat - kattintasra hanggal indul. Ugyanigy teszunk; poszterkep helyett a
+  // video elso kockaja latszik.
+  if (mobilOldal) {
+    for (const [azon, fajl] of Object.entries(VIDEOK)) {
+      const doboz = document.getElementById(azon);
+      if (!doboz || doboz.firstElementChild) continue;
+      const tarto = document.createElement('div');
+      tarto.className = 'mh-video';
+      const elo = document.createElement('video');
+      elo.src = GYOKER + 'assets/video/' + fajl + '#t=0.1';
+      elo.preload = 'metadata';
+      elo.muted = true;
+      elo.playsInline = true;
+      elo.setAttribute('playsinline', 'true');
+      tarto.append(elo, lejatszoGomb());
+      tarto.addEventListener('click', () => {
+        const v = document.createElement('video');
+        v.src = GYOKER + 'assets/video/' + fajl;
+        v.controls = true;
+        v.autoplay = true;
+        v.playsInline = true;
+        v.setAttribute('playsinline', 'true');
+        tarto.replaceChildren(v);
+      }, { once: true });
+      doboz.appendChild(tarto);
+    }
   }
 
   // --- 4a. oszlop-hattervideok (wix-video) ----------------------------------
@@ -155,7 +213,7 @@
   const KATTINTOS = {
   };
 
-  const lejatszoGomb = () => {
+  function lejatszoGomb() {
     const g = document.createElement('button');
     g.type = 'button';
     g.className = 'mh-video-gomb';
@@ -164,7 +222,7 @@
       '<circle cx="20" cy="20" r="19" fill="rgba(0,0,0,.35)" stroke="currentColor" stroke-width="2"/>' +
       '<path d="M16 12.5v15l12-7.5z"/></svg>';
     return g;
-  };
+  }
 
   const videoElem = (azonosito) => {
     const v = document.createElement('video');
@@ -327,5 +385,19 @@
     window.mhSuti.figyel((d) => { if (d.fun) kitolt(true); });
   } else {
     kitolt(true);
+  }
+  // --- 6. Wix "fluid-columns-repeater" (pl. a head spa arkartyak) ---------
+  // A Wix sajat eleme rejtve (visibility:hidden) erkezik, es a JS-e teszi
+  // lathatova, miutan a hezagokat CSS-valtozokba irta. Ugyanezt tesszuk a
+  // horizontal-gap / vertical-gap attributumokbol.
+  for (const r of document.querySelectorAll('fluid-columns-repeater')) {
+    const h = Number(r.getAttribute('horizontal-gap')) || 0;
+    const f = Number(r.getAttribute('vertical-gap')) || 0;
+    r.style.setProperty('--item-margin', (f / 2) + 'px ' + (h / 2) + 'px');
+    r.style.setProperty('--margin-top', (-f / 2) + 'px');
+    r.style.setProperty('--margin-bottom', (-f / 2) + 'px');
+    r.style.setProperty('--margin-inline-start', (-h / 2) + 'px');
+    r.style.setProperty('--margin-inline-end', (-h / 2) + 'px');
+    r.style.visibility = 'visible';
   }
 })();
