@@ -265,6 +265,7 @@
     'comp-m7q9i6yk': 'velemeny',   // head-spa-velemenyek
     'comp-mlg8q2rf5': 'velemeny',  // lezeres-szortelenites-budapest
     'comp-mnmzylj31': 'velemeny',  // oxigenterapia-budapest (ugyanaz a doboz, ugyanakkora)
+    'comp-mghyh3i9': 'velemeny',   // index, "olvasd el vendegeinktol" alatt (980x357, mobilon 315x488)
     // Google-terkep
     'comp-m3znoat23': 'terkep', 'comp-m7iq5wws1': 'terkep', 'comp-m7j9kag62': 'terkep',
     'comp-m7kiqhv01': 'terkep', 'comp-m7pxb9eh': 'terkep', 'comp-m7q2fh4v': 'terkep',
