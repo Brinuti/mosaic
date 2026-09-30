@@ -1,0 +1,9 @@
+{
+  "name": "mosaicheadspa-klon",
+  "private": true,
+  "type": "module",
+  "description": "A mosaicheadspa.hu statikus klonja (Netlify). A fuggoseg csak az ajandekkartya-urlap e-mail kuldesehez kell.",
+  "dependencies": {
+    "nodemailer": "^6.9.16"
+  }
+}

@@ -309,6 +309,20 @@ rakja a klónt és az `assets/`-ot, a régi `/post/…` címekre átirányítás
 `noindex` fejlécet kap és a `robots.txt` mindent tilt, így a próbaoldal nem kerül a Google-be.
 Élesítéskor: Netlify → *Site configuration → Environment variables* → `ELES` = `1`, majd új deploy.
 
+**Ajándékkártya-űrlap** (`headspa-ajandekkartya`, `4-kezes-headspa-ajandekkartya`): a `klon.js`
+7d. szakasza ellenőrzi és a Netlify Forms-nak küldi be (`ajandekkartya` nevű űrlap), majd a
+`success-ajandekkartya.html` köszönőoldalra visz – mint a Wixen. Az e-maileket a
+`netlify/functions/submission-created.mjs` küldi (a vevőnek az utalási adatokkal, a szalonnak a
+rendeléssel). Beállítás a Netlify-on:
+
+1. *Forms* → **Enable form detection** (új oldalaknál alapból ki van kapcsolva), majd új deploy.
+2. *Site configuration → Environment variables*: `SMTP_HOST` (pl. `smtp.gmail.com`),
+   `SMTP_PORT` (`465`), `SMTP_USER` (pl. `mosaicheadspa@gmail.com`), `SMTP_PASS` (Gmailnél
+   **alkalmazásjelszó**: Google-fiók → Biztonság → Kétlépcsős azonosítás → Alkalmazásjelszavak).
+   Nem kötelező: `MAIL_FROM` (feladó), `MAIL_TO` (a szalon címe, alapból mosaicheadspa@gmail.com).
+
+Ezek nélkül a rendelések a Netlify *Forms* listájában akkor is megjelennek, csak e-mail nem megy.
+
 ### Saját tárhely / cPanel
 
 Töltsd fel FTP-vel a választott változat `*.html` fájljait, az `assets/` mappát, a `sitemap.xml`-t

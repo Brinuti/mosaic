@@ -146,3 +146,67 @@
   .mh-gyik-tetel > button i::before, .mh-gyik-tetel > button i::after { width: 12px; top: 5px; }
   .mh-gyik-valasz { font-size: 13px; padding: 0 0 12px; }
 }
+
+/* Wix Video lista lapozo nyilai (klon.js 4c): a Wix CSS-e a JS-e betolteseig
+   kikapcsolja rajtuk a kattintast */
+[data-hook="css-slider-prev-button"], [data-hook="css-slider-next-button"] {
+  pointer-events: auto !important; z-index: 5; cursor: pointer;
+}
+.mh-dia-nyil {
+  position: absolute; top: 50%; z-index: 6; width: 32px; height: 48px; margin-top: -24px;
+  border: 0; background: rgba(0, 0, 0, .35); color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.mh-dia-nyil-bal { left: 0; border-radius: 0 6px 6px 0; }
+.mh-dia-nyil-jobb { right: 0; border-radius: 6px 0 0 6px; }
+
+/* racsos galeria ujraepitve (klon.js 7b) */
+.mh-racs { width: 100%; }
+.mh-racs-cella { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; overflow: hidden; }
+.mh-racs-cella img { display: block; width: 100%; height: 100%; transition: transform .3s ease; }
+.mh-racs-cella:hover img { transform: scale(1.03); }
+
+/* kepnagyito (klon.js 7b) */
+.mh-nagyito {
+  position: fixed; inset: 0; z-index: 2147483100; background: rgba(0, 0, 0, .9);
+  display: flex; align-items: center; justify-content: center; padding: 56px 56px 44px;
+}
+.mh-nagyito img { max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 6px 30px rgba(0, 0, 0, .5); }
+.mh-nagyito button { position: absolute; border: 0; background: none; color: #fff; cursor: pointer; line-height: 1; }
+.mh-nagyito-zar { top: 8px; right: 14px; font-size: 40px; }
+.mh-nagyito-nyil { top: 50%; margin-top: -30px; font-size: 56px; padding: 0 12px; }
+.mh-nagyito-bal { left: 4px; }
+.mh-nagyito-jobb { right: 4px; }
+.mh-nagyito-szam { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; color: #ddd; font: 14px 'lato', sans-serif; }
+@media (max-width: 699px) {
+  .mh-nagyito { padding: 48px 8px 40px; }
+  .mh-nagyito-nyil { font-size: 44px; padding: 0 6px; }
+}
+
+/* ajandekkartya-urlap (klon.js 7d) */
+.mh-urlap-uzenet { margin: 10px 0 0; color: #ffd2d2; font: 14px/1.4 'lato', sans-serif; }
+.mh-urlap-uzenet:empty { display: none; }
+input.mh-hibas { outline: 2px solid #df3131 !important; outline-offset: 1px; }
+
+/* racsos galeria ujraepitve (klon.js 7b) */
+.mh-racs { width: 100%; }
+.mh-racs-cella { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; overflow: hidden; }
+.mh-racs-cella img { display: block; width: 100%; height: 100%; transition: transform .3s ease; }
+.mh-racs-cella:hover img { transform: scale(1.03); }
+
+/* kepnagyito (klon.js 7b) */
+.mh-nagyito {
+  position: fixed; inset: 0; z-index: 2147483100; background: rgba(0, 0, 0, .9);
+  display: flex; align-items: center; justify-content: center; padding: 56px 56px 44px;
+}
+.mh-nagyito img { max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 6px 30px rgba(0, 0, 0, .5); }
+.mh-nagyito button { position: absolute; border: 0; background: none; color: #fff; cursor: pointer; line-height: 1; }
+.mh-nagyito-zar { top: 8px; right: 14px; font-size: 40px; }
+.mh-nagyito-nyil { top: 50%; margin-top: -30px; font-size: 56px; padding: 0 12px; }
+.mh-nagyito-bal { left: 4px; }
+.mh-nagyito-jobb { right: 4px; }
+.mh-nagyito-szam { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; color: #ddd; font: 14px 'lato', sans-serif; }
+@media (max-width: 699px) {
+  .mh-nagyito { padding: 48px 8px 40px; }
+  .mh-nagyito-nyil { font-size: 44px; padding: 0 6px; }
+}
