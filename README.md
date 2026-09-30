@@ -114,6 +114,7 @@ azokat az osztályokat és attribútumokat állítja, amiket az élő oldalon m�
    induló videók (`KATTINTOS` táblázat, 53 doboz) és a kezelés-galéria felugró lejátszója
 5. **Beágyazások** (`BEAGYAZASOK`): a Wix HTML-beágyazásai (GYIK, árlisták, Trustindex) az
    `assets/embed/` alól és a Google-térkép, keretben, a Wix üres dobozaiban
+6. **Árkártyák** (Wix `fluid-columns-repeater`): láthatóvá tétel és a hézagok beállítása
 
 Görgetési vagy belépő animációt szándékosan nem ad hozzá semmihez.
 
