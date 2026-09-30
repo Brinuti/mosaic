@@ -1,102 +1,127 @@
-// Urlap-bekuldesek e-mailben: az ajandekkartya-rendelesrol a vevonek es a
-// szalonnak, a PMU-visszahivaskeresrol (pmu-foglalas) es az allasjelentkezesekrol
-// (ppc-allashirdetes, fodrasz-allas-budapest) a szalonnak.
+// Urlap-bekuldesek e-mailben - ugyanazok a levelek, amiket a Wix kuldott
+// (a mosaicheadspa@gmail.com postafiokban levo Wix-levelek alapjan):
+//   ajandekkartya       vevonek: "MOSAIC ajándékkártya utalási adatok + infók"
+//                       szalonnak: "Ajándékkártya  Előreutalásos ajándékkártyát vett"
+//   pmu-visszahivas     szalonnak: "Új Smink form-beküldés érkezett"
+//   fodrasz-jelentkezes szalonnak: "Új fodrász jelentkezett"
+//   ppc-jelentkezes     szalonnak: "Új PPC-jelentkezés érkezett" (a Wixen ehhez nem
+//                       volt automatikus level; igy legalabb nem vesz el)
+// A kitoltonek csak az ajandekkartyanal megy level, mint a Wixen.
 //
 // A Netlify minden sikeres urlap-bekuldes utan meghivja ezt a fuggvenyt
-// (submission-created esemeny). Az eles Wix-oldal ugyanigy mukodik: a vevo a
-// koszonooldalon latja az utalasi adatokat, es e-mailben is megkapja; a szalon
-// e-mailben kapja a rendelest.
-//
-// Beallitas a Netlify feluleten (Site configuration > Environment variables):
-//   SMTP_HOST   pl. smtp.gmail.com
-//   SMTP_PORT   pl. 465
-//   SMTP_USER   pl. mosaicheadspa@gmail.com
-//   SMTP_PASS   Gmailnel "alkalmazásjelszó" (nem a sima jelszo)
-//   MAIL_FROM   (nem kotelezo) a felado, alapbol SMTP_USER
+// (submission-created esemeny). Beallitas a Netlify feluleten (Environment variables):
+//   SMTP_HOST   smtp.gmail.com
+//   SMTP_PORT   465
+//   SMTP_USER   mosaicheadspa@gmail.com
+//   SMTP_PASS   Gmail "alkalmazásjelszó"
+//   MAIL_FROM   (nem kotelezo) a felado, alapbol "Mosaic Headspa <SMTP_USER>"
 //   MAIL_TO     (nem kotelezo) a szalon cime, alapbol mosaicheadspa@gmail.com
-// Ha ezek hianyoznak, a fuggveny csak naplozza a bekuldest; a rendeles ettol
+// Ha ezek hianyoznak, a fuggveny csak naplozza a bekuldest; a bekuldes ettol
 // meg megjelenik a Netlify Forms listajaban.
 import nodemailer from 'nodemailer';
 
-const MEZOK = [
-  ['kartya', 'Ajándékkártya'],
-  ['ajandekozott', 'Ajándékozott neve'],
-  ['vezeteknev', 'Vezetéknév'],
-  ['keresztnev', 'Keresztnév'],
-  ['email', 'E-mail'],
-  ['telefon', 'Telefon'],
-  ['szamlazasi_cim', 'Számlázási cím'],
-  ['cegnev', 'Cégnév'],
-  ['adoszam', 'Adószám'],
-  ['oldal', 'Oldal'],
-];
+const SZAMLASZAM = '10700378-76447714-51100005';
+const TELEFON = '06 20 247 4444';
 
-const PMU_MEZOK = [
-  ['nev', 'Név'],
-  ['telefon', 'Telefon'],
-  ['szolgaltatas', 'Szolgáltatás'],
-  ['volt_mar_tetovalasa', 'Volt már tetoválása'],
-  ['megjegyzes', 'Mit beszéljünk át'],
-  ['oldal', 'Oldal'],
-];
-
-// allasjelentkezesek: urlap -> [targy, mezok]
-const JELENTKEZESEK = {
-  'ppc-jelentkezes': ['Új jelentkezés: PPC-szakember', [
-    ['nev', 'Név'], ['email', 'E-mail'], ['telefon', 'Telefon'],
-    ['google_ads_ev', 'Google Ads tapasztalat (év)'], ['google_ads_iparag', 'Google Ads iparágak'],
-    ['meta_ads_ev', 'Facebook Ads tapasztalat (év)'], ['meta_ads_iparag', 'Facebook Ads iparágak'],
-    ['wix', 'Wix landingek'], ['wordpress', 'WordPress-szerkesztő'], ['jelenlegi_munkahely', 'Hol dolgozik, miért váltana'],
-    ['motivacio', 'Motiváció'], ['cpa', 'Miért érne el alacsonyabb CPA-t'], ['berigeny', 'Bérigény (nettó)'], ['oldal', 'Oldal'],
-  ]],
-  'fodrasz-jelentkezes': ['Új jelentkezés: fodrász', [
-    ['nev', 'Név'], ['email', 'E-mail'], ['telefon', 'Telefon'], ['szuletesi_ev', 'Születési év'],
-    ['tapasztalat', 'Tapasztalat (év)'], ['jelenlegi_munkahely', 'Hol dolgozik, miért váltana'],
-    ['referencia_link', 'Fb / Insta / TikTok'],
-    ...Array.from({ length: 10 }, (_, i) => [`kepek${i + 1}`, `Hajkép ${i + 1}`]), ['oldal', 'Oldal'],
-  ]],
-};
-
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 // a feltoltott fajl a Netlify-adatban objektum ({ url, filename, ... }) vagy URL
 const ertek = (v) => {
   if (v && typeof v === 'object') v = v.url || '';
   const t = String(v ?? '');
-  return /^https?:\/\//.test(t) ? `<a href="${esc(t)}">${esc(t.split('/').pop().split('?')[0] || t)}</a>` : esc(t);
+  return /^https?:\/\//.test(t) ? `<a href="${esc(t)}">${esc(decodeURIComponent(t.split('/').pop().split('?')[0]) || t)}</a>` : esc(t);
+};
+const betu = 'font:15px/1.6 Arial,Helvetica,sans-serif;color:#222';
+
+// A Wix szalon-ertesitoinek formaja: bevezeto sor, majd "Cimke : ertek" sorok
+const osszefoglalo = (bevezeto, cim, mezok, d) => `<div style="${betu}">
+<p>${bevezeto}</p>
+<p><b>${cim}</b></p>
+${mezok.filter(([k]) => d[k]).map(([k, c]) => `<p style="margin:0 0 10px">${esc(c)} : ${ertek(d[k])}</p>`).join('\n')}
+<p style="color:#888;font-size:12px">Beküldve innen: ${esc(d.oldal || '')}</p>
+</div>`;
+const wixBevezeto = (urlapNev) => `A(z) MOSAIC Headspa egy látogatója beküldte az űrlapodat (${esc(urlapNev)})`;
+
+const URLAPOK = {
+  ajandekkartya: {
+    targy: 'Ajándékkártya  Előreutalásos ajándékkártyát vett',
+    html: (d) => osszefoglalo('A site visitor just submitted your form Ajándékkártya on MOSAIC Headspa', 'A vásárlás adatai:', [
+      ['ajandekozott', 'Ajándékozott Teljes Neve'], ['vezeteknev', 'Fizető fél Vezetékneve'],
+      ['keresztnev', 'Fizető fél Keresztneve'], ['email', 'E-mail cím (Ahova a pdf-et kéred)'],
+      ['telefon', 'Telefonszámod amin elérünk'], ['szamlazasi_cim', 'Számlázási cím (magán vagy céges)'],
+      ['cegnev', 'Cégnév (Ha céges számlát kérsz)'], ['adoszam', 'Cég adószám (Ha céges számlát kérsz)'],
+      ['kartya', 'Milyen kártyát kérsz?'], ['aszf', 'A Mosaic Headspa ÁSZF-jét elolvastam és elfogadom.'],
+    ], d),
+    vevo: true,
+  },
+  'pmu-visszahivas': {
+    targy: 'Új Smink form-beküldés érkezett',
+    html: (d) => osszefoglalo(wixBevezeto('Smink form'), 'Beküldés összefoglalása:', [
+      ['nev', 'Név'], ['telefon', 'Telefonszám'], ['szolgaltatas', 'Szolgáltatás'],
+      ['volt_mar_tetovalasa', 'Volt már korábban tetoválásod?'], ['megjegyzes', 'Mit beszéljünk át a foglalás előtt?'],
+    ], d),
+  },
+  'fodrasz-jelentkezes': {
+    targy: 'Új fodrász jelentkezett',
+    html: (d) => osszefoglalo(wixBevezeto('Fodrász'), 'Beküldés összefoglalása:', [
+      ['nev', 'Név'], ['email', 'Email'], ['telefon', 'Telefonszám'], ['szuletesi_ev', 'Melyik évben születtél?'],
+      ['tapasztalat', 'Hány év tapasztalatod van?'], ['jelenlegi_munkahely', 'Hol dolgozol és miért váltanál?'],
+      ['referencia_link', 'Fb / Insta / Tiktok referenciáid linkje:'],
+      ...Array.from({ length: 10 }, (_, i) => [`kepek${i + 1}`, `Hajkép ${i + 1}`]),
+    ], d),
+  },
+  'ppc-jelentkezes': {
+    targy: 'Új PPC-jelentkezés érkezett',
+    html: (d) => osszefoglalo(wixBevezeto('PPC űrlap'), 'Beküldés összefoglalása:', [
+      ['nev', 'Név'], ['email', 'Email'], ['telefon', 'Telefonszám'],
+      ['google_ads_ev', 'Hány év tapasztalatod van Google Ads kezelésben?'], ['google_ads_iparag', 'Milyen iparágakban hirdettél Google-ön?'],
+      ['meta_ads_ev', 'Hány év tapasztalatod van Facebook Ads kezelésben?'], ['meta_ads_iparag', 'Milyen iparágakban hirdettél Facebook-on?'],
+      ['wix', 'Milyen tapasztalatod van WIX landingek szerkesztésében?'], ['wordpress', 'Wordpress-ben melyik szerkesztőt használod?'],
+      ['jelenlegi_munkahely', 'Hol dolgozol most, és miért váltanál?'], ['motivacio', 'Mi a fő motivációd, hogy ezen az 5 vállalkozáson dolgozz csak?'],
+      ['cpa', 'Miért gondolod, hogy alacsonyabb CPA-kat tudnál elérni?'], ['berigeny', 'Havi bérigényed (nettó)'],
+    ], d),
+  },
 };
 
-const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-const tablazat = (d, mezok = MEZOK) => '<table cellpadding="6" style="border-collapse:collapse;font:14px Arial,sans-serif">' +
-  mezok.filter(([k]) => d[k]).map(([k, c]) => `<tr><td style="color:#666">${c}</td><td><b>${ertek(d[k])}</b></td></tr>`).join('') +
-  '</table>';
-
-const vevoLevel = (d) => `<div style="font:15px/1.5 Arial,sans-serif;color:#183033;max-width:600px">
-<p>Kedves ${esc(d.keresztnev || d.vezeteknev)}!</p>
-<p>🙏 Köszönjük a vásárlást! Ahhoz, hogy átvehesd az ajándékkártyádat, kérlek, hogy a vásárlás összegét utald el a MOSAIC Headspa bankszámlájára:</p>
-<h3>1. Utalási adatok</h3>
-<p>Kedvezményezett neve: <b>Big In Japan Kft</b><br>
-Számlaszáma: <b>10700378-76447714-51100005</b><br>
-Összeg:<br>
-50 perces 4 kezes Head spa kezelés esetén: <b>39.900 Ft</b><br>
-50 perces egyéni Head Spa kezelés esetén: <b>26.900 Ft</b><br>
-Páros Head Spa kezelés esetén: <b>53.800 Ft</b><br>
-Közlemény: <b>${esc(d.ajandekozott || 'az ajándékozott(ak) neve')}</b></p>
-<h3>2. Bizonylat küldés</h3>
-<p>Utána küldd el kérlek az utalási bizonylatot e-mailben a <a href="mailto:mosaicheadspa@gmail.com">mosaicheadspa@gmail.com</a> címre.</p>
-<h3>3. Megkapod e-mailben az ajándékkártyát</h3>
-<p>Ezt követően átküldjük az e-mail címedre az ajándékkártyád nyomtatható verzióját, amely tartalmazza a kuponkódot a foglaláshoz.</p>
-<h3>4. Átveheted személyesen is papír alapon</h3>
-<p>Papír alapon, szép díszes borítékban is átveheted az ajándékkártyát nyitvatartási időben: 1023 Budapest, Bécsi út 2. - MOSAIC Headspa</p>
-<h3>5. Kérdésed van?</h3>
-<p>Írj nekünk: <a href="mailto:mosaicheadspa@gmail.com">mosaicheadspa@gmail.com</a>, vagy hívj minket: 06 20 247 4444</p>
-<h3>A rendelésed</h3>
-${tablazat(d)}
-<p>Szeretettel:<br>A MOSAIC Headspa csapata</p>
+// A vevo levele - a Wix "MOSAIC ajándékkártya utalási adatok + infók" levelenek szovege
+const cim = (s) => `<p style="margin:28px 0 8px;font-weight:bold;letter-spacing:.5px">${s}</p>`;
+const vevoLevel = (d) => {
+  const kartya = String(d.kartya || '').replace(/\s+-\s+[\d.]+\s*Ft.*$/, '').trim();
+  return `<div style="${betu};max-width:600px">
+<p>Kedves ${esc(d.keresztnev || d.vezeteknev || '')}!</p>
+<p>Köszönjük, hogy megvásároltad a "${esc(kartya)}" ajándékkártyát! :)</p>
+<p>A vásárlás véglegesítéséhez a banki utalást ide várjuk:</p>
+${cim('BANKI UTALÁSI ADATOK')}
+<p>Kedvezményezett: Big In Japan Kft.<br>Számlaszám: ${SZAMLASZAM}</p>
+<p>Közlemény: Az ajándékozott neve</p>
+<p>Összeg:</p>
+<ul>
+<li>LIMITÁLT 50 perces 4 kezes Head Spa ajándékkártya esetén: 39.900 Ft</li>
+<li>50 perces egyéni Head Spa kezelés esetén: 26.900 Ft</li>
+<li>50 perces páros Head Spa kezelés esetén: 53.800 Ft</li>
+</ul>
+${cim('IDE KÜLDD A BIZONYLATOT')}
+<p>Kérlek, hogy amint teljesítetted az utalást az alábbi e-mail címre küldd meg számunkra az utalási bizonylatot:</p>
+<p><a href="mailto:mosaicheadspa@gmail.com">mosaicheadspa@gmail.com</a></p>
+${cim('NYOMTATHATÓ FORMÁTUMBAN ELKÜLDJÜK AZ E-MAIL CÍMEDRE')}
+<p>Ezt követően az ajándékkártyát elküldjük az e-mail címedre digitális (pdf) formátumban is, amit könnyen ki tudsz nyomtatni akár otthon is és már mehet is a borítékba :)</p>
+${cim('SZEMÉLYESEN IS ÁTVEHETED SZALONUNKBAN')}
+<p>Ha nincs nyomtatód, vagy papír alapon szeretnéd átvenni, azt pedig megteheted nálunk, a MOSAIC Headspa-ban:</p>
+<p>1023 Budapest - Bécsi út 2.</p>
+<p>Csak mondd be az ajándékozott nevét és a recepción odaadjuk neked a kártyát.</p>
+${cim('ÍGY TUDOD FELHASZNÁLNI')}
+<p>Az ajándékkártyán pedig fogsz találni egy kódot, amit az online foglalásnál tudsz majd érvényesíteni a "kuponkód" mezőbe történő beírással.</p>
+<p>Ha kérdésed van, csak írj nekünk! :)</p>
+<p style="margin-top:28px;font-size:13px;color:#555"><b>Budapest, 2 kerület, Bécsi út, 1023 Hungary</b><br>
+<b>${TELEFON}</b><br>
+<a href="https://www.mosaicheadspa.hu/"><b>Időpont foglalás</b></a></p>
 </div>`;
+};
 
 export default async (req) => {
   const { payload } = await req.json();
   const urlap = payload && payload.form_name;
-  if (urlap !== 'ajandekkartya' && urlap !== 'pmu-visszahivas' && !JELENTKEZESEK[urlap]) return new Response('mas urlap');
+  const leiras = URLAPOK[urlap];
+  if (!leiras) return new Response('mas urlap');
   const d = payload.data || {};
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
@@ -105,50 +130,18 @@ export default async (req) => {
   }
   const port = Number(SMTP_PORT || 465);
   const posta = nodemailer.createTransport({ host: SMTP_HOST, port, secure: port === 465, auth: { user: SMTP_USER, pass: SMTP_PASS } });
-  const felado = process.env.MAIL_FROM || `MOSAIC Headspa <${SMTP_USER}>`;
+  const felado = process.env.MAIL_FROM || `Mosaic Headspa <${SMTP_USER}>`;
   const szalon = process.env.MAIL_TO || 'mosaicheadspa@gmail.com';
+  const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email || '') ? d.email : undefined;
 
-  if (JELENTKEZESEK[urlap]) {
-    const [targy, mezok] = JELENTKEZESEK[urlap];
-    try {
-      await posta.sendMail({
-        from: felado, to: szalon, replyTo: d.email || undefined,
-        subject: `${targy} - ${d.nev || ''}`,
-        html: `<p style="font:15px Arial,sans-serif">${esc(targy)} érkezett a weboldalról:</p>${tablazat(d, mezok)}`,
-      });
-    } catch (e) {
-      console.error(`${urlap}: kuldesi hiba`, e);
-    }
-    return new Response('ok');
-  }
-
-  if (urlap === 'pmu-visszahivas') {
-    try {
-      await posta.sendMail({
-        from: felado, to: szalon,
-        subject: `PMU visszahívás: ${d.nev || ''} - ${d.telefon || ''}`,
-        html: `<p style="font:15px Arial,sans-serif">Új visszahíváskérés érkezett a PMU-oldalról (1 munkanapon belül hívd vissza):</p>${tablazat(d, PMU_MEZOK)}`,
-      });
-    } catch (e) {
-      console.error('pmu-visszahivas: kuldesi hiba', e);
-    }
-    return new Response('ok');
-  }
-  const nev = `${d.vezeteknev || ''} ${d.keresztnev || ''}`.trim();
-
-  const kuldesek = [posta.sendMail({
-    from: felado, to: szalon, replyTo: d.email || undefined,
-    subject: `Új ajándékkártya-rendelés: ${d.kartya || ''} - ${nev}`,
-    html: `<p style="font:15px Arial,sans-serif">Új ajándékkártya-rendelés érkezett a weboldalról:</p>${tablazat(d)}`,
-  })];
-  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email || '')) {
+  const kuldesek = [posta.sendMail({ from: felado, to: szalon, replyTo: email, subject: leiras.targy, html: leiras.html(d) })];
+  if (leiras.vevo && email) {
     kuldesek.push(posta.sendMail({
-      from: felado, to: d.email, replyTo: szalon,
-      subject: 'Ajándékkártya: Sikeres vásárlás! - MOSAIC Headspa',
+      from: felado, to: email, replyTo: szalon,
+      subject: 'MOSAIC ajándékkártya utalási adatok + infók',
       html: vevoLevel(d),
     }));
   }
-  const eredmeny = await Promise.allSettled(kuldesek);
-  for (const e of eredmeny) if (e.status === 'rejected') console.error('ajandekkartya: kuldesi hiba', e.reason);
+  for (const e of await Promise.allSettled(kuldesek)) if (e.status === 'rejected') console.error(`${urlap}: kuldesi hiba`, e.reason);
   return new Response('ok');
 };
