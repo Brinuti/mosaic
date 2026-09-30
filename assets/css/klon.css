@@ -210,3 +210,13 @@ input.mh-hibas { outline: 2px solid #df3131 !important; outline-offset: 1px; }
   .mh-nagyito { padding: 48px 8px 40px; }
   .mh-nagyito-nyil { font-size: 44px; padding: 0 6px; }
 }
+
+/* A Wix Video lista nyilai a Wix JS-e nelkul lathatatlanok: mindig latszodjanak */
+[data-hook="css-slider-prev-button"], [data-hook="css-slider-next-button"] {
+  opacity: 1 !important; color: #fff !important; background: rgba(0, 0, 0, .45) !important;
+  display: flex !important; align-items: center; justify-content: center;
+}
+[data-hook="css-slider-prev-button"] svg, [data-hook="css-slider-next-button"] svg {
+  opacity: 1 !important; visibility: visible !important; fill: #fff; color: #fff;
+}
+[data-hook="css-slider-prev-button"]:hover, [data-hook="css-slider-next-button"]:hover { background: rgba(0, 0, 0, .7) !important; }
