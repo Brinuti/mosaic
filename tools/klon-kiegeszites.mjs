@@ -55,9 +55,11 @@ export function kiegeszit(html, elotag) {
   if (!html.includes('assets/js/galeriak.js')) {
     html = html.replace(/<\/head>/i, `<script src="${elotag}assets/js/galeriak.js"></script>\n</head>`);
   }
-  // a GYIK-ok szovege (tools/gyik.mjs) - a klon.js 5b. szakasza hasznalja
-  if (!html.includes('assets/js/gyik.js')) {
-    html = html.replace(/<\/head>/i, `<script src="${elotag}assets/js/gyik.js"></script>\n</head>`);
+  // a GYIK-ok es arlistak tartalma (tools/commonninja.mjs) - a klon.js 5b. szakasza hasznalja
+  for (const f of ['gyik', 'arlistak']) {
+    if (!html.includes(`assets/js/${f}.js`)) {
+      html = html.replace(/<\/head>/i, `<script src="${elotag}assets/js/${f}.js"></script>\n</head>`);
+    }
   }
   html = popupBeszuras(html, elotag);
   if (html.includes(JEL)) return html;
