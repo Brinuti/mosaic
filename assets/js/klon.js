@@ -652,6 +652,26 @@
   Object.assign(GYIK_DOBOZOK, TABLAK.gyik);
   Object.assign(ARLISTA_DOBOZOK, TABLAK.arlista);
 
+  // Az eles oldalon a GYIK kulso keretben (Common Ninja iframe) volt, igy a
+  // merokodok (pl. a TikTok automatikus egyeztetese) nem lattak bele. Nalunk az
+  // oldal resze - hogy a TikTok ne olvassa ki belole a szalon e-mail-cimet (es ne
+  // kosse azt minden latogatohoz), a szovegben a kukacot CSS rajzolja ki: a
+  // latogato ugyanazt latja, a szkript viszont nem talal e-mail-cimet.
+  function rejtettKukac(elem) {
+    const jarok = document.createTreeWalker(elem, NodeFilter.SHOW_TEXT);
+    const talalt = [];
+    while (jarok.nextNode()) if (/\S@\S/.test(jarok.currentNode.nodeValue)) talalt.push(jarok.currentNode);
+    for (const t of talalt) {
+      const darabok = t.nodeValue.split('@');
+      const tores = document.createDocumentFragment();
+      darabok.forEach((d, i) => {
+        if (i) { const k = document.createElement('span'); k.className = 'mh-kukac'; tores.append(k); }
+        tores.append(d);
+      });
+      t.replaceWith(tores);
+    }
+  }
+
   // A Wix a doboz koruli racsoknak a regi widget mereteihez igazitott minimalis
   // magassagot adott (pl. min-height:1881px, illetve "ek" elemek) - ez az uj,
   // rovidebb tartalom alatt ures helykent maradna. A szulo-racsoknal (a
@@ -705,6 +725,7 @@
       panel.setAttribute('aria-labelledby', gomb.id);
       panel.hidden = true;
       panel.innerHTML = valasz;
+      rejtettKukac(panel);
       gomb.addEventListener('click', () => {
         const nyitva = gomb.getAttribute('aria-expanded') === 'true';
         gomb.setAttribute('aria-expanded', String(!nyitva));
@@ -1026,18 +1047,54 @@
     if (cel) setTimeout(() => odaGorget(cel, false), 150);
   }
 
-  // A Wix Forms beküldés utan "generate_lead" esemenyt tesz a dataLayer-be, a
-  // mezok Wix-kulcsaival (user_data.<kulcs>), plusz email es phone_number. A GTM
-  // erre inditja a GA4 "ajandekkartya_utalas", a TikTok "PlaceAnOrder" es a Stape
-  // (Meta CAPI) "purchase" cimket - ezert pontosan ugyanigy kuldjuk.
-  // adat: URLSearchParams/FormData, kulcsok: [[sajat nev, Wix-kulcs], ...]
-  function wixLead(adat, kulcsok) {
-    var u = {};
-    kulcsok.forEach(function (k) { var v = adat.get(k[0]); if (typeof v === 'string' && v) u[k[1]] = v; });
-    var email = adat.get('email'), tel = adat.get('telefon');
-    if (email) u.email = email;
-    if (tel) u.phone_number = String(tel).replace(/[^\d+]/g, '');
-    (window.dataLayer = window.dataLayer || []).push({ event: 'generate_lead', user_data: u });
+  // A Wix Forms bekuldes utan a Wix "Lead" jelentese megy a GTM- es a GA4-csatornara.
+  // Pontosan ez kerult a dataLayer-be (az eles oldalon a Wix sajat kodjaval
+  // ellenorizve, 2026-09-30): lead -> {ecommerce:null} -> generate_lead (user_data:
+  // a mezok Wix-kulcsai, az e-mail- es telefonszam-mezo "email" / "phone_number"
+  // neven), majd a GA4-nek egy generate_lead esemeny. A GTM a generate_lead-re
+  // inditja a GA4 "ajandekkartya_utalas", a TikTok "PlaceAnOrder" es a Stape
+  // (Meta CAPI) cimket.
+  // A Wix user_data-atalakitasa (thunderbolt reporter-api, R()): a kulcsnev alapjan
+  // email / phone_number / address.*; ha nincs ilyen kulcs, az elso e-mail-, illetve
+  // telefonszam-formaju ertek kerul email / phone_number neven a helyere.
+  const WIX_UD = { email: ['email'], phone_number: ['phone', 'phone_number'], 'address.first_name': ['first_name', 'firstname'],
+    'address.last_name': ['last_name', 'lastname', 'surname'], 'address.street': ['address', 'street'], 'address.city': ['city', 'town'],
+    'address.region': ['region', 'state', 'province'], 'address.postal_code': ['postal', 'postal_code', 'zip'], 'address.country': ['country'] };
+  function wixUserData(ertekek) {
+    const t = {};
+    const betesz = (cel, kulcs, v) => { const r = kulcs.split('.'), u = r.pop(); r.reduce((o, k) => (o[k] = o[k] || {}), cel)[u] = v; };
+    for (const [k, v] of Object.entries(ertekek)) {
+      const talalt = Object.entries(WIX_UD).find(([, minta]) => minta.some((m) => k.toLowerCase().includes(m) && v));
+      if (talalt) { if (talalt[0].includes('.')) betesz(t, talalt[0], v); else t[talalt[0]] = v; } else t[k] = v;
+    }
+    const keres = (re) => Object.entries(ertekek).find(([, v]) => typeof v === 'string' && re.test(v));
+    if (!t.email) { const e = keres(/[^\s@]+@[^\s@]+\.[^\s@]+/); if (e) { delete t[e[0]]; t.email = e[1].match(/[^\s@]+@[^\s@]+\.[^\s@]+/)[0]; } }
+    if (!t.phone_number) { const e = keres(/^\+?[\d\s()-]{7,}$/); if (e) { delete t[e[0]]; t.phone_number = e[1]; } }
+    return t;
+  }
+  // A Wix telefonmezo erteke nemzetkozi formaban (+36...)
+  const wixTelefon = (v) => {
+    let x = String(v || '').replace(/[^\d+]/g, '');
+    if (!x) return '';
+    if (!x.startsWith('+')) x = '+36' + x.replace(/^(06|36|0)/, '');
+    return x;
+  };
+  // adat: URLSearchParams/FormData; kulcsok: [[sajat nev, Wix-kulcs], ...];
+  // extra: tovabbi Wix-ertekek (pl. az ASZF jelolonegyzet: true)
+  function wixLead(adat, kulcsok, urlapNev, formId, extra) {
+    const ertekek = {};
+    for (const [sajat, wix] of kulcsok) {
+      let v = adat.get(sajat);
+      if (typeof v !== 'string' || !v.trim()) continue;
+      ertekek[wix] = sajat === 'telefon' ? wixTelefon(v) : v.trim();
+    }
+    Object.assign(ertekek, extra || {});
+    const cimke = 'Form name: ' + urlapNev;
+    const dl = (window.dataLayer = window.dataLayer || []);
+    dl.push({ event: 'lead', event_label: cimke, event_category: 'contact' });
+    dl.push({ ecommerce: null });
+    dl.push({ event: 'generate_lead', lead_category: 'contact', label: cimke, form_id: formId, user_data: wixUserData(ertekek) });
+    if (window.gtag) window.gtag('event', 'generate_lead', { event_category: 'contact', event_action: 'Submitted', event_label: cimke });
   }
 
   // A Wix radiogombjai nem <label>-ben vannak, es a kijeloles latszatat is a
@@ -1122,7 +1179,8 @@
         // merokodok (ha a latogato engedte): a GTM es a Meta ezt latja konverziokent
         wixLead(adat, [['keresztnev', 'fizeto_fel_keresztneve'], ['vezeteknev', 'fizeto_fel_vezetekneve'], ['email', 'e_mail_cim'],
           ['telefon', 'telefonszam'], ['szamlazasi_cim', 'cim'], ['cegnev', 'cegnev_opcionalis'], ['adoszam', 'ceg_adoszam_opcionalis'],
-          ['ajandekozott', 'ajandekozott_neve'], ['kartya', 'milyen_kartyat_kersz']]);
+          ['ajandekozott', 'ajandekozott_neve'], ['kartya', 'milyen_kartyat_kersz']],
+          'Ajándékkártya ', '7715ab48-7c85-4c1c-8fbc-a38c1cb1a23c', { form_field_d3ec: true });
         location.href = '/success-ajandekkartya';
       } catch (err) {
         uzenet.textContent = 'Hiba történt a küldés közben. Kérlek, próbáld újra, vagy írj nekünk: mosaicheadspa@gmail.com';
@@ -1216,7 +1274,8 @@
         const v = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: adat.toString() });
         if (!v.ok) throw new Error('HTTP ' + v.status);
         wixLead(adat, [['nev', 'nev'], ['telefon', 'telefonszam'], ['szolgaltatas', 'szolgaltatas'],
-          ['volt_mar_tetovalasa', 'volt_mar_korabban_tetovalasod'], ['megjegyzes', 'mit_beszeljuenk_at_a_foglalas_elott']]);
+          ['volt_mar_tetovalasa', 'volt_mar_korabban_tetovalasod'], ['megjegyzes', 'mit_beszeljuenk_at_a_foglalas_elott']],
+          'Smink form', '875a7aa0-161e-464f-9f14-24706dcccd86');
         // mint a Wixen: a pmu-vh koszonooldalra visz
         location.href = '/pmu-vh';
       } catch (err) {
@@ -1236,7 +1295,7 @@
   // kicsinyitjuk (a Netlify 8 MB-ot fogad egy bekuldesben), legfeljebb 10-et.
   const JELENTKEZESEK = {
     'form-5b88872c': {
-      nev: 'ppc-jelentkezes', siker: '/allashirdetes-ok',
+      nev: 'ppc-jelentkezes', siker: '/allashirdetes-ok', wixNev: 'PPC űrlap', wixId: '5b88872c-2a75-4ae1-9376-fdcced9f5ff4',
       wixKulcsok: [['nev', 'first_name'], ['email', 'email'], ['telefon', 'phone'], ['jelenlegi_munkahely', 'tell_us_what_you_need_help_with'],
         ['motivacio', 'miert_valtanal'], ['berigeny', 'form_field'], ['google_ads_ev', 'form_field_1'],
         ['cpa', 'miert_gondolod_hogy_alacsonyabb_cpa_kat_tudnal_elerni_mint_en_10'], ['google_ads_iparag', 'google_ads'],
@@ -1249,7 +1308,7 @@
       ],
     },
     'form-86cf1fc1': {
-      nev: 'fodrasz-jelentkezes', siker: '/fodrasz-allas-ok',
+      nev: 'fodrasz-jelentkezes', siker: '/fodrasz-allas-ok', wixNev: 'Fodrász', wixId: '86cf1fc1-4770-408e-b0a0-d3cf7c3bb447',
       wixKulcsok: [['nev', 'first_name'], ['email', 'email'], ['telefon', 'phone'], ['szuletesi_ev', 'melyik_evben_szuelettel'],
         ['tapasztalat', 'hany_ev_tapasztalatod_van'], ['jelenlegi_munkahely', 'hol_dolgozol_es_miert_valtanal'],
         ['referencia_link', 'fb_insta_tiktok_referenciaid_linkje']],
@@ -1343,7 +1402,7 @@
           kicsik.forEach((f, n) => adat.set('kepek' + (n + 1), f, f.name));
           const v = await fetch('/', { method: 'POST', body: adat });
           if (!v.ok) throw new Error('HTTP ' + v.status);
-          wixLead(adat, cfg.wixKulcsok);
+          wixLead(adat, cfg.wixKulcsok, cfg.wixNev, cfg.wixId);
           location.href = cfg.siker;
         } catch (err) {
           uzenet.textContent = 'Hiba történt a küldés közben. Kérlek, próbáld újra, vagy írj nekünk: mosaicheadspa@gmail.com';

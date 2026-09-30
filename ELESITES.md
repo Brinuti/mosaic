@@ -13,7 +13,7 @@ az adatsort.
 | SEO | title, description, canonical, robots, nyelv, H1, alt, og/twitter, JSON-LD: 88/88 egyezik (a képek a saját domainről jönnek, a Wix CDN helyett) |
 | sitemap, robots | élesben a Wix fájljai szó szerint (`tools/wix-sitemap/`), a sitemap minden címe 200 |
 | GTM | GTM-PST2HB22, ugyanaz a konténer (69 tag): Google Ads, GA4-események, TikTok, Stape (CAPI), Zapier |
-| GA4 | G-H4206SQ0Q7, mint a Wixen: automatikus oldalmegtekintés ki, `page_view` + `visit` esemény, `action_source=website` |
+| GA4 | G-H4206SQ0Q7, mint a Wixen: automatikus oldalmegtekintés ki, `page_view` esemény, `action_source=website` (a `visit`-et a GA4 szabálya másolja) |
 | Meta-pixelek | oldalanként, a Wix beállítása szerint: Headspa 3473839859576758 (25 oldal), Fodrász 1361403694872594 (12), Szőr 643342342027957 (5), PMU 1019878750660854 (4); hozzájárulástól függetlenül, mint a Wixen |
 | dataLayer | `Pageview`, `page_view` (url, title, page_type), űrlapnál `generate_lead` + `user_data` a Wix-mezőkulcsokkal |
 | Mérés-összevetés | élő Wix vs. klón, mobil, 8 oldal (köztük köszönő- és konverziós oldalak): minden GA4-, Meta-, TikTok-, Ads- és Stape-hívás egyezik |
@@ -27,6 +27,7 @@ az adatsort.
    - `TXT`: `v=spf1 include:_spf.google.com ~all`
    - `TXT`: `google-site-verification=IteLJpEtWAiDMbUgFBetFV4EdKeAcH-qQ76LmLv3LCc`
    - `CNAME stape` → `euj.stape.io` (szerveroldali mérés, Meta CAPI)
+   - `CNAME capi-pmu` → `capig.stape.cloud` (a PMU-pixel Meta CAPI Gateway-e)
    - `www` és a gyökérdomain az új tárhelyre; **a gyökér 301-gyel a `www`-re** (mint most)
 2. **Tárhely**: `ELES=1` környezeti változó (indexelhető, a Wix-féle robots.txt és sitemap).
 3. **Cloudflare-re költözéskor**: a `netlify/lib/utvonal.js` logikáját egy Pages Functionbe
@@ -41,3 +42,4 @@ az adatsort.
   klón ezt pontosan másolja az adatsor miatt, de GDPR szempontból kockázatos, ezért érdemes külön
   lépésben rendezni.
 - Mérés helyben: `node tools/serve-dist.mjs` (a Netlify edge-függvényével azonos útválasztás).
+- A Wix-mérés teljes leírása: [WIX-MERES.md](WIX-MERES.md).
