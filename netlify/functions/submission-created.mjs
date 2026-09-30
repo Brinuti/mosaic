@@ -1,4 +1,5 @@
-// Ajandekkartya-urlap: e-mail a vevonek es a szalonnak.
+// Urlap-bekuldesek e-mailben: az ajandekkartya-rendelesrol a vevonek es a
+// szalonnak, a PMU-visszahivaskeresrol (pmu-foglalas) a szalonnak.
 //
 // A Netlify minden sikeres urlap-bekuldes utan meghivja ezt a fuggvenyt
 // (submission-created esemeny). Az eles Wix-oldal ugyanigy mukodik: a vevo a
@@ -29,9 +30,18 @@ const MEZOK = [
   ['oldal', 'Oldal'],
 ];
 
+const PMU_MEZOK = [
+  ['nev', 'Név'],
+  ['telefon', 'Telefon'],
+  ['szolgaltatas', 'Szolgáltatás'],
+  ['volt_mar_tetovalasa', 'Volt már tetoválása'],
+  ['megjegyzes', 'Mit beszéljünk át'],
+  ['oldal', 'Oldal'],
+];
+
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-const tablazat = (d) => '<table cellpadding="6" style="border-collapse:collapse;font:14px Arial,sans-serif">' +
-  MEZOK.filter(([k]) => d[k]).map(([k, c]) => `<tr><td style="color:#666">${c}</td><td><b>${esc(d[k])}</b></td></tr>`).join('') +
+const tablazat = (d, mezok = MEZOK) => '<table cellpadding="6" style="border-collapse:collapse;font:14px Arial,sans-serif">' +
+  mezok.filter(([k]) => d[k]).map(([k, c]) => `<tr><td style="color:#666">${c}</td><td><b>${esc(d[k])}</b></td></tr>`).join('') +
   '</table>';
 
 const vevoLevel = (d) => `<div style="font:15px/1.5 Arial,sans-serif;color:#183033;max-width:600px">
@@ -60,17 +70,31 @@ ${tablazat(d)}
 
 export default async (req) => {
   const { payload } = await req.json();
-  if (!payload || payload.form_name !== 'ajandekkartya') return new Response('mas urlap');
+  const urlap = payload && payload.form_name;
+  if (urlap !== 'ajandekkartya' && urlap !== 'pmu-visszahivas') return new Response('mas urlap');
   const d = payload.data || {};
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-    console.log('ajandekkartya: nincs SMTP-beallitas, e-mail nem ment ki', JSON.stringify(d));
+    console.log(`${urlap}: nincs SMTP-beallitas, e-mail nem ment ki`, JSON.stringify(d));
     return new Response('nincs smtp');
   }
   const port = Number(SMTP_PORT || 465);
   const posta = nodemailer.createTransport({ host: SMTP_HOST, port, secure: port === 465, auth: { user: SMTP_USER, pass: SMTP_PASS } });
   const felado = process.env.MAIL_FROM || `MOSAIC Headspa <${SMTP_USER}>`;
   const szalon = process.env.MAIL_TO || 'mosaicheadspa@gmail.com';
+
+  if (urlap === 'pmu-visszahivas') {
+    try {
+      await posta.sendMail({
+        from: felado, to: szalon,
+        subject: `PMU visszahívás: ${d.nev || ''} - ${d.telefon || ''}`,
+        html: `<p style="font:15px Arial,sans-serif">Új visszahíváskérés érkezett a PMU-oldalról (1 munkanapon belül hívd vissza):</p>${tablazat(d, PMU_MEZOK)}`,
+      });
+    } catch (e) {
+      console.error('pmu-visszahivas: kuldesi hiba', e);
+    }
+    return new Response('ok');
+  }
   const nev = `${d.vezeteknev || ''} ${d.keresztnev || ''}`.trim();
 
   const kuldesek = [posta.sendMail({

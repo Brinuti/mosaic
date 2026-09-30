@@ -188,6 +188,13 @@
 .mh-urlap-uzenet:empty { display: none; }
 input.mh-hibas { outline: 2px solid #df3131 !important; outline-offset: 1px; }
 
+/* PMU-visszahivaskeres (klon.js 7e): a lathatatlan nativ lista fedi a Wix-gombot */
+.mh-lenyilo { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+[data-hook="popover-element"]:has(.mh-lenyilo:focus-visible) > button { outline: 2px solid #183033; outline-offset: 2px; }
+button.mh-hibas, textarea.mh-hibas, select.mh-hibas { outline: 2px solid #df3131 !important; outline-offset: 1px; }
+.mh-urlap-uzenet--pmu { color: #ffd2d2; }
+.mh-urlap-uzenet--siker { color: #fff; font-weight: bold; font-size: 16px; }
+
 /* racsos galeria ujraepitve (klon.js 7b) */
 .mh-racs { width: 100%; }
 .mh-racs-cella { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; overflow: hidden; }

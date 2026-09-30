@@ -994,6 +994,32 @@
     if (cel) setTimeout(() => odaGorget(cel, false), 150);
   }
 
+  // A Wix radiogombjai nem <label>-ben vannak, es a kijeloles latszatat is a
+  // Wix JS-e rajzolja (data-checked + "...--checked" osztaly): ezt itt potoljuk.
+  function wixValasztok(urlap) {
+    const allapot = () => {
+      for (const i of urlap.querySelectorAll('input[type=radio], input[type=checkbox]')) {
+        for (let e = i.parentElement; e && e !== urlap && !e.matches('fieldset'); e = e.parentElement) {
+          if (e.hasAttribute('data-checked')) e.setAttribute('data-checked', String(i.checked));
+          if (e.dataset.mhPipa) e.classList.toggle(e.dataset.mhPipa, i.checked);
+        }
+        i.setAttribute('aria-checked', String(i.checked));
+      }
+    };
+    for (const e of urlap.querySelectorAll('[class*="--checked"]')) e.dataset.mhPipa = [...e.classList].find((c) => c.endsWith('--checked'));
+    for (const e of urlap.querySelectorAll('.sYOg_Hk')) e.dataset.mhPipa = 'oi7np_Q--checked';
+    for (const r of urlap.querySelectorAll('[data-hook="core-radio-button"]')) {
+      r.style.cursor = 'pointer';
+      r.addEventListener('click', (e) => {
+        const i = r.querySelector('input[type=radio]');
+        if (!i || e.target === i) return;
+        i.checked = true;
+        i.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    urlap.addEventListener('change', allapot);
+  }
+
   // --- 7d. ajandekkartya-urlap -> Netlify Forms ---------------------------------
   // Az eles oldalon a Wix Forms kuldi be, majd a /success-ajandekkartya oldalra
   // iranyit; a vevonek es nektek a Wix Automations kuld e-mailt. A klonban a
@@ -1018,29 +1044,7 @@
     gomb.after(uzenet);
     const mezo = (cimke) => [...urlap.querySelectorAll('input')].find((i) => (i.getAttribute('aria-label') || '').startsWith(cimke));
 
-    // A Wix radiogombjai nem <label>-ben vannak, es a kijeloles latszatat is a
-    // Wix JS-e rajzolja (data-checked + "...--checked" osztaly): ezt itt potoljuk.
-    const allapot = () => {
-      for (const i of urlap.querySelectorAll('input[type=radio], input[type=checkbox]')) {
-        for (let e = i.parentElement; e && e !== urlap && !e.matches('fieldset'); e = e.parentElement) {
-          if (e.hasAttribute('data-checked')) e.setAttribute('data-checked', String(i.checked));
-          if (e.dataset.mhPipa) e.classList.toggle(e.dataset.mhPipa, i.checked);
-        }
-        i.setAttribute('aria-checked', String(i.checked));
-      }
-    };
-    for (const e of urlap.querySelectorAll('[class*="--checked"]')) e.dataset.mhPipa = [...e.classList].find((c) => c.endsWith('--checked'));
-    for (const e of urlap.querySelectorAll('.sYOg_Hk')) e.dataset.mhPipa = 'oi7np_Q--checked';
-    for (const r of urlap.querySelectorAll('[data-hook="core-radio-button"]')) {
-      r.style.cursor = 'pointer';
-      r.addEventListener('click', (e) => {
-        const i = r.querySelector('input[type=radio]');
-        if (!i || e.target === i) return;
-        i.checked = true;
-        i.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-    }
-    urlap.addEventListener('change', allapot);
+    wixValasztok(urlap);
     urlap.addEventListener('input', (e) => e.target.classList.remove('mh-hibas'));
 
     const kuld = async (e) => {
@@ -1083,6 +1087,101 @@
     urlap.addEventListener('submit', kuld);
   }
 
+
+  // --- 7e. PMU-visszahivaskeres (pmu-foglalas) -> Netlify Forms -------------------
+  // Az eles oldalon Wix Forms. Az asztali nezetben a "Szolgaltatas" lenyilo
+  // lista opcioit a Wix JS-e rajzolna ki: helyette egy lathatatlan, a gombot
+  // teljesen fedo nativ <select> kerul ra (a mobil nezetben eleve az van).
+  const PMU_SZOLGALTATASOK = [
+    'Ajaktetoválás - Aquarell - 99.000 Ft',
+    'Ajaktetoválás - Rúzs hatású - 110.000 Ft',
+    'Szemöldök tetoválás - Hibrid - 79.000 Ft',
+    'Szemöldök tetoválás - Soft powder - 79.000 Ft',
+    'Szemöldök tetoválás eltávolítás - 18.000 Ft',
+    'Szempilla sűrítés - 47.000 Ft',
+    'Szemhéj tetoválás - Füstös - 63.000 Ft',
+  ];
+  for (const urlap of document.querySelectorAll('form[id^="form-875a7aa0"]')) {
+    const gomb = urlap.querySelector('[data-hook="submit-button"]');
+    if (!gomb) continue;
+    const uzenet = document.createElement('p');
+    uzenet.className = 'mh-urlap-uzenet mh-urlap-uzenet--pmu';
+    uzenet.setAttribute('role', 'alert');
+    gomb.after(uzenet);
+    wixValasztok(urlap);
+
+    let valaszto = urlap.querySelector('select[data-hook="native-select"]');
+    const lenyilo = urlap.querySelector('button[data-hook="dropdown-base"]');
+    if (!valaszto && lenyilo) {
+      valaszto = document.createElement('select');
+      valaszto.setAttribute('aria-label', 'Szolgáltatás');
+      valaszto.className = 'mh-lenyilo';
+      valaszto.innerHTML = '<option value="" disabled selected></option>' +
+        PMU_SZOLGALTATASOK.map((o) => `<option>${o}</option>`).join('');
+      lenyilo.parentElement.style.position = 'relative';
+      lenyilo.tabIndex = -1;
+      lenyilo.setAttribute('aria-hidden', 'true');
+      lenyilo.after(valaszto);
+      const szoveg = lenyilo.querySelector('[data-hook="dropdown-base-text"]');
+      valaszto.addEventListener('change', () => { if (szoveg) szoveg.textContent = valaszto.value; });
+    }
+    const valasztott = () => (valaszto && valaszto.selectedIndex > 0 ? valaszto.options[valaszto.selectedIndex].text : '');
+    const hibaJel = (el, rossz) => {
+      if (!el) return;
+      el.setAttribute('aria-invalid', String(rossz));
+      (el === valaszto && lenyilo ? lenyilo : el).classList.toggle('mh-hibas', rossz);
+    };
+    urlap.addEventListener('input', (e) => e.target.classList.remove('mh-hibas'));
+    urlap.addEventListener('change', (e) => { if (e.target === valaszto) hibaJel(valaszto, false); });
+
+    const nev = urlap.querySelector('input[aria-label="Név"]');
+    const telefon = urlap.querySelector('input[aria-label^="Telefonszám"]');
+    const megjegyzes = urlap.querySelector('textarea');
+    const kuld = async (e) => {
+      e.preventDefault();
+      if (gomb.getAttribute('aria-disabled') === 'true') return;
+      uzenet.textContent = '';
+      let hibas = null;
+      const tel = telefon ? telefon.value.replace(/[^\d+]/g, '') : '';
+      for (const [el, rossz] of [[nev, !nev || !nev.value.trim()], [telefon, tel.replace(/\D/g, '').length < 8], [valaszto, !valasztott()]]) {
+        hibaJel(el, rossz);
+        if (rossz && !hibas) hibas = el;
+      }
+      const tetovalas = urlap.querySelector('input[type=radio]:checked');
+      if (!tetovalas) hibas = hibas || urlap.querySelector('input[type=radio]');
+      if (hibas) {
+        uzenet.textContent = 'Kérlek, töltsd ki a csillaggal (*) jelölt mezőket (a telefonszámot is helyesen).';
+        hibas.focus();
+        return;
+      }
+      const adat = new URLSearchParams({
+        'form-name': 'pmu-visszahivas',
+        nev: nev.value.trim(),
+        telefon: telefon.value.trim(),
+        szolgaltatas: valasztott(),
+        volt_mar_tetovalasa: tetovalas.value,
+        megjegyzes: megjegyzes ? megjegyzes.value.trim() : '',
+        oldal: location.pathname.split('/').pop() || 'index.html',
+      });
+      gomb.setAttribute('aria-disabled', 'true');
+      gomb.style.opacity = '.6';
+      try {
+        const v = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: adat.toString() });
+        if (!v.ok) throw new Error('HTTP ' + v.status);
+        (window.dataLayer = window.dataLayer || []).push({ event: 'pmu_visszahivas', szolgaltatas: adat.get('szolgaltatas') });
+        if (window.fbq) window.fbq('track', 'Lead', { content_name: adat.get('szolgaltatas') });
+        uzenet.classList.add('mh-urlap-uzenet--siker');
+        uzenet.textContent = 'Köszönöm, megkaptam! 1 munkanapon belül visszahívlak. – Melitta';
+        gomb.style.display = 'none';
+      } catch (err) {
+        uzenet.textContent = 'Hiba történt a küldés közben. Kérlek, próbáld újra, vagy hívj minket: 06 20 247 4444';
+        gomb.removeAttribute('aria-disabled');
+        gomb.style.opacity = '';
+      }
+    };
+    gomb.addEventListener('click', kuld);
+    urlap.addEventListener('submit', kuld);
+  }
 
   // --- 8. Wix-felugro ablak (lightbox): a fejlec "i" ikonja ---------------
   // Az eles oldalon a [data-popupid] elemre kattintva a Wix JS-e letolti es

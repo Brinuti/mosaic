@@ -57,6 +57,10 @@ const NETLIFY_URLAP = '<form name="ajandekkartya" data-netlify="true" netlify-ho
   ['bot-field', 'ajandekozott', 'vezeteknev', 'keresztnev', 'email', 'telefon', 'szamlazasi_cim',
     'cegnev', 'adoszam', 'kartya', 'aszf', 'oldal'].map((n) => `<input name="${n}">`).join('') +
   '</form>';
+const NETLIFY_PMU = '<form name="pmu-visszahivas" data-netlify="true" netlify-honeypot="bot-field" hidden>' +
+  ['bot-field', 'nev', 'telefon', 'szolgaltatas', 'volt_mar_tetovalasa', 'megjegyzes', 'oldal']
+    .map((n) => `<input name="${n}">`).join('') +
+  '</form>';
 
 export function kiegeszit(html, elotag) {
   html = html.replace(csonkaKep, '$1');
@@ -64,6 +68,10 @@ export function kiegeszit(html, elotag) {
   // keresi az urlapokat, a Wix-urlapot pedig a klon.js 10. szakasza kuldi ide.
   if (html.includes('form-7715ab48-7c85-4c1c-8fbc-a38c1cb1a23c') && !html.includes('name="ajandekkartya"')) {
     html = html.replace(/<\/body>/i, NETLIFY_URLAP + '\n</body>');
+  }
+  // a PMU-visszahivaskeres (pmu-foglalas) ugyanigy - a klon.js 7e. szakasza kuldi
+  if (html.includes('form-875a7aa0-161e-464f-9f14-24706dcccd86') && !html.includes('name="pmu-visszahivas"')) {
+    html = html.replace(/<\/body>/i, NETLIFY_PMU + '\n</body>');
   }
   if (html.includes(LOGO)) html = logoCsere(html, elotag);
   // a galeriak teljes kepllistaja (tools/galeriak.mjs) - a klon.js 7. szakasza hasznalja
