@@ -104,18 +104,36 @@ azokat az osztályokat és attribútumokat állítja, amiket az élő oldalon m�
 1. **Mobil menü** nyitás/zárás (hamburger → X, fátyolra és Esc-re zár)
 2. **Mobil almenük** lenyitása
 3. **Asztali legördülő menü** rámutatásra, billentyűzetről is
-4. **A két lejátszódó videó** behelyezése helyi fájlból
+4. **Videók** helyi fájlból: a két magától induló videó, az oszlop-háttérvideók, a kattintásra
+   induló videók (`KATTINTOS` táblázat) és a kezelés-galéria felugró lejátszója
+5. **Beágyazások**: Trustindex-vélemények és Google-térkép a Wix üres dobozaiban
 
 Görgetési vagy belépő animációt szándékosan nem ad hozzá semmihez.
 
 ### 1.6 Videók
 
-Az élő oldalon 13 oldalon van videólejátszó komponens, de **csak kettőn indul el ténylegesen
-videó**: a nyitóoldalon és a `headspa-budapest-hungary` oldalon. Ez a kettő le van töltve és a
-`klon.js` teszi be őket. Az élő **mobil** változat egyik oldalon sem indítja el a lejátszót, ezért
-a mobil klónban sem teszünk be videót.
+Részletesen: **[VIDEOK.md](VIDEOK.md)** – leltár mind a 13 oldal videós dobozairól, és hogy mit
+kell még Wixből exportálni.
 
-A galériás kezelés-videókról lásd a 3.1 pontot.
+### 1.6b Süti-sáv és mérőkódok — `assets/js/suti.js`
+
+Az élő oldalon a süti-sáv egy Wix egyéni kód, a mérés a Wix GTM- és GA-integrációján át ment. A
+klónban mindezt a `suti.js` adja, amit a `tools/klon-kiegeszites.mjs` szúr be minden oldal
+`<head>`-jébe (a `wix2static.mjs` is ezt hívja):
+
+| | mikor fut |
+|---|---|
+| süti-sáv (az élő oldaléval azonos kinézet és szöveg) | mindig; a döntés 12 hónapig a böngészőben marad |
+| Google Consent Mode v2 | mindig; alapból minden tiltva, a döntés szerint frissül |
+| Google Tag Manager `GTM-PST2HB22` | mindig (mint a Wixen) – a címkéit a Consent Mode engedi vagy tiltja |
+| Google Analytics 4 `G-H4206SQ0Q7` | statisztikai hozzájárulással |
+| Meta Pixel `3473839859576758` | marketing-hozzájárulással (a Wixen hozzájárulás nélkül is futott) |
+| Trustindex értékelés-snippet, Facebook-domainigazolás | mindig (sütit nem használnak) |
+| Trustindex-widget, Google-térkép | funkcionális hozzájárulással; addig helykitöltő áll a helyükön |
+
+**A mérőkódok csak a `mosaicheadspa.hu` domainen futnak** (`ELES_DOMAINEK` a fájl tetején), a
+Netlify-os próbaoldal nem szennyezi a statisztikát. A TikTok, a Google Ads és a szerveroldali
+(Stape) mérés a GTM-konténerben van, azokhoz itt nem kell nyúlni.
 
 ### 1.7 Ellenőrzés: összehasonlítás az eredetivel
 
@@ -210,47 +228,27 @@ működnek.
 
 ---
 
-## 3. Amit kézzel kell pótolni
+## 3. Amit még pótolni kell
 
-### 3.1 Nyolc kezelés-videó (Wix token-védelem)
+### 3.1 Videók
 
-A galériás kezelés-videók a Wix tokenes védelme miatt nem tölthetők le — a linkjük 403-at ad, a
-HTML-be ágyazott aláírás pedig csak helykitöltő („invalid token”). Ezeket a **Wix Media
-Managerből kell exportálnod** és bemásolnod az `assets/video/` mappába, **pontosan ezekkel a
-fájlnevekkel**:
+Lásd **[VIDEOK.md](VIDEOK.md)**: 52 kattintásra induló videós doboz párosítása (a Wix
+oldal-adataiból, `tools/wix-oldaladatok.mjs`) és a 8 kezelés-galéria videó exportja.
 
-```
-c2eb0f_08e23fa612e846eca8137312513c1fec.mp4
-c2eb0f_225ee4f9b6164d3c858705c394f7d04e.mp4
-c2eb0f_29c8623e64464bdb96b1d61fa5ed6556.mp4
-c2eb0f_430fb9fbd2e744b08703615db12f4018.mp4
-c2eb0f_4dd11049dc03482e8b6a169484d1b976.mp4
-c2eb0f_a12ccd3c1d8741698774232c8bee7efd.mp4
-c2eb0f_a772c9222aa949a0888a4aa2298ef0b5.mp4
-c2eb0f_bbb818fad4674d2097775970ca10c3d0.mp4
-```
+### 3.2 HTML-beágyazások (GYIK, árlisták és társai)
 
-A poszter-képek (az indítás előtt látszó állóképek) le vannak töltve, tehát addig is helyesen néz
-ki az oldal — csak a lejátszás nem indul el. A pótlás után a `klon.js`-be kell egy kis lejátszó,
-hogy a bélyegképre kattintva induljon a helyi fájl.
+A Wix HTML-beágyazás dobozai (`HtmlComponent`) a klónban üresek, a tartalmukat a Wix külön
+tölti be. Ami már megvan: a Trustindex-widget (3 oldal). Ami hiányzik:
 
-### 3.2 Süti-sáv
+| oldal | doboz | ami előtte áll |
+|---|---|---|
+| `index`, `headspa-ferfiaknak`, `paros-headspa-budapest` | 2 db (642×1071, 642×1043) | „Gyakori Head Spa Kérdések” |
+| `lezeres-szortelenites-budapest`, `oxigenterapia-budapest` | 1 db (642×1071) | GYIK |
+| `headspa-ajandekkartya`, `4-kezes-headspa-ajandekkartya` | 1 db (702×1103) | „Gyakran Ismételt Kérdések” |
+| `noi-fodraszat-budapest`, `noi-fodrasz-…-balayage-hajfestes`, `noi-hajfestes-budapest`, `balayage-haj-festes-budapest` | 1 db (860×7xx) | árak, „SZABAD IDŐPONTOK” előtt |
+| `index` | 1 db (980×357) | „olvasd el vendégeinktől” – valószínűleg egy másik Trustindex-widget |
 
-A Wix a sütijóváhagyó sávot **JavaScriptből** teszi az oldalra, ezért a klónban nincs benne. A
-süti-tájékoztató **szöveges oldala** megvan (`suti-tajekoztato.html`, az eredetin
-`/post/suti-tajekoztato`), de magát a sávot a saját tárhelyen pótolni kell (bármelyik ingyenes
-megoldás megteszi).
-
-Ha a régi cím is működjön, érdemes egy átirányítást beállítani:
-`/post/suti-tajekoztato` → `/suti-tajekoztato.html`.
-
-### 3.3 Trustindex Google-vélemény widget
-
-A Google-véleményeket megjelenítő Trustindex widget nem jött át. Ha élő véleményfolyamot
-szeretnél, a beágyazó scriptje betehető
-(`cdn.trustindex.io/loader.js?8a7562c424f027774456be130a1`).
-
----
+A tartalmuk címét a `tools/wix-oldaladatok.mjs` gyűjti ki (`www-mosaicheadspa-hu.filesusr.com`).
 
 ## 4. Publikálás
 
@@ -266,11 +264,12 @@ A kettő **nem keverhető**: a menü és a linkek másképp épülnek fel bennü
 
 ### Netlify (ajánlott)
 
-Húzd be a repót vagy a mappát.
+A repóban lévő `netlify.toml` mindent beállít: a `tools/netlify-build.mjs` egy `dist/` mappába
+rakja a klónt és az `assets/`-ot, a régi `/post/…` címekre átirányítást tesz.
 
-- a klónhoz: **publish directory:** `klon`, build command nincs (az `assets/` mappát a `klon/`
-  mellé kell másolni, vagy a gyökeret publikálni és a klónt a gyökérbe kiterítni)
-- a kézi változathoz: **build command:** `node tools/build.mjs`, **publish directory:** `.`
+**Amíg az `ELES=1` környezeti változó nincs beállítva, az oldal próbaüzemben fut:** minden oldal
+`noindex` fejlécet kap és a `robots.txt` mindent tilt, így a próbaoldal nem kerül a Google-be.
+Élesítéskor: Netlify → *Site configuration → Environment variables* → `ELES` = `1`, majd új deploy.
 
 ### Saját tárhely / cPanel
 
