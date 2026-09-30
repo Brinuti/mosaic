@@ -172,7 +172,13 @@
     v.autoplay = !!info.autoPlay;
     v.style.cssText = 'width:100%;height:100%;object-fit:' + (info.fittingType === 'fill' ? 'cover' : 'contain');
     const poszter = tarto.querySelector('.bgVideoposter');
-    v.addEventListener('playing', () => { if (poszter) poszter.style.visibility = 'hidden'; }, { once: true });
+    // A Wix CSS-e a videot atlatszonak tartja (.X9nqm0 {opacity:0}), es a sajat
+    // JS-e teszi lathatova, amikor elindult - ugyanigy teszunk, kulonben a
+    // poszter eltunese utan ures marad a helye.
+    v.addEventListener('playing', () => {
+      v.style.opacity = '1';
+      if (poszter) poszter.style.visibility = 'hidden';
+    }, { once: true });
     v.src = GYOKER + 'assets/video/' + info.videoId + '.mp4';
   }
 
