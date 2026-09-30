@@ -1,0 +1,9 @@
+# A klon publikalasa. A dist/ mappat a tools/netlify-build.mjs rakja ossze
+# (klon/ + assets/ egy helyre). Eles publikalaskor a Netlify feluleten az
+# ELES=1 kornyezeti valtozot kell beallitani - addig az oldal noindex.
+[build]
+  command = "node tools/netlify-build.mjs"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
