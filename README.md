@@ -323,6 +323,12 @@ rendeléssel). Beállítás a Netlify-on:
 
 Ezek nélkül a rendelések a Netlify *Forms* listájában akkor is megjelennek, csak e-mail nem megy.
 
+**PMU-visszahíváskérés** (`pmu-foglalas`): a `klon.js` 7e. szakasza a `pmu-visszahivas` nevű
+Netlify-űrlapnak küldi be (név, telefon, szolgáltatás, volt-e már tetoválása, megjegyzés), és az
+űrlap alatt köszönő üzenetet mutat. Az asztali nézetben a „Szolgáltatás" lista opcióit a Wix JS-e
+rajzolná ki, ezért egy láthatatlan natív `<select>` fedi a gombot (a mobil nézetben eleve az van).
+A szalon e-mailt kap róla ugyanattól a függvénytől, ugyanazokkal a beállításokkal.
+
 ### Saját tárhely / cPanel
 
 Töltsd fel FTP-vel a választott változat `*.html` fájljait, az `assets/` mappát, a `sitemap.xml`-t
