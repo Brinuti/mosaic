@@ -76,6 +76,10 @@ const NETLIFY_JELENTKEZES = {
 
 export function kiegeszit(html, elotag) {
   html = html.replace(csonkaKep, '$1');
+  // A Wix a src nelkuli kepeket (pl. a blog szerzojenek profilkepe) JS-bol tolti
+  // ki a data-image-info alapjan; a klonban a helyi fajlt irjuk be.
+  html = html.replace(/(<wow-image\b[^>]*data-image-info="[^"]*?&quot;uri&quot;:&quot;([0-9a-f]{6}_[0-9a-f]{32})[^"]*"[^>]*>\s*<img\b)(?![^>]*\bsrc=)/g,
+    (egesz, eleje, id) => (fs.existsSync(path.resolve(import.meta.dirname, '..', 'assets/img', id + '.jpg')) ? `${eleje} src="${elotag}assets/img/${id}.jpg"` : egesz));
   // Az ajandekkartya-urlap Netlify Forms-leirasa: a Netlify a kiszolgalt HTML-ben
   // keresi az urlapokat, a Wix-urlapot pedig a klon.js 10. szakasza kuldi ide.
   if (html.includes('form-7715ab48-7c85-4c1c-8fbc-a38c1cb1a23c') && !html.includes('name="ajandekkartya"')) {
