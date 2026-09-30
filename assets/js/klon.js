@@ -158,6 +158,10 @@
   // adja, kattintasra hanggal indul.
 
   // --- 4a. oszlop-hattervideok (wix-video) ----------------------------------
+  // Hangsav nelkuli videok: a Wixre feltoltott eredeti fajlban sincs hang
+  // (video.wixstatic.com/video/<id>/file) - ezekre nem teszunk hanggombot.
+  const NEMA_VIDEOK = new Set(['c2eb0f_c49cecf68dc14cdf99207280fb646f62']);
+
   // A <video> elem megvan a mentesben, csak a forrasa hianyzik: a Wix a
   // data-video-info alapjan tolti be. Ugyanezt tesszuk a helyi fajllal. A mobil
   // mentesekben ilyen elem nincs (az eles mobil oldal is csak a poszterkepet mutatja).
@@ -181,7 +185,7 @@
     }, { once: true });
     v.src = GYOKER + 'assets/video/' + info.videoId + '.mp4';
     const oszlop = document.getElementById(info.containerId);
-    if (oszlop) hangGomb(oszlop, v);
+    if (oszlop && !NEMA_VIDEOK.has(info.videoId)) hangGomb(oszlop, v);
   }
 
   // Mobilon a Wix a hattervideo helyen csak a poszterkepet mutatja. A kert
@@ -207,7 +211,7 @@
       v.src = GYOKER + 'assets/video/' + videoId + '.mp4';
       media.style.position = 'relative';
       media.appendChild(v);
-      hangGomb(oszlop, v);
+      if (!NEMA_VIDEOK.has(videoId)) hangGomb(oszlop, v);
     }
   }
 
@@ -329,58 +333,174 @@
     doboz.appendChild(tarto);
   }
 
-  // --- 4c. videogaleria (Wix Video lista) ------------------------------------
-  // A galeria bélyegkepei, cimei es a lejatszas-gombok megvannak, csak kattintasra
-  // nem tortenik semmi. A bélyegkep neve <videoazonosito>f002.jpg - ebbol tudjuk,
-  // melyik video tartozik hozza. Ha a video helyben megvan (assets/video/), egy
-  // felugro lejatszoban inditjuk; ha nincs, a gomb nem csinal semmit, mint eddig.
-  const megvan = new Map();
-  const letezik = (url) => {
-    if (!megvan.has(url)) {
-      megvan.set(url, fetch(url, { method: 'HEAD' }).then((r) => r.ok).catch(() => false));
+  // --- 4c. kezeles-videok (Wix Video csatorna) -------------------------------
+  // A Wix Video listabol a HTML csak az elso 8 videot rajzolja ki, es a lapozo
+  // nyilak (css-slider) sem mukodnek. A csatorna teljes, 15 videos listaja itt
+  // van (Wix VOD API, lasd VIDEOK.md); a hianyzo elemeket az utolso minta
+  // lemasolasaval tesszuk a sor vegere. A nyilak lapoznak, a videok pedig a
+  // bélyegkep helyen, kis ablakban jatszodnak le (nem ugranak fel).
+  // [Wix videoazonosito, cim, hossz]; a poszter: assets/img/<azonosito>f002.jpg
+  const VIDEOTAR = [
+    ['c2eb0f_a772c9222aa949a0888a4aa2298ef0b5', 'Fejmasszázs eszközökkel', '00:37'],
+    ['c2eb0f_a12ccd3c1d8741698774232c8bee7efd', 'Kézmasszázs', '00:39'],
+    ['c2eb0f_08e23fa612e846eca8137312513c1fec', 'Arcmasszázs', '00:37'],
+    ['c2eb0f_29c8623e64464bdb96b1d61fa5ed6556', 'Mélytisztító hajmosás', '00:21'],
+    ['c2eb0f_225ee4f9b6164d3c858705c394f7d04e', 'Fejbőr masszírozó fésű', '00:34'],
+    ['c2eb0f_430fb9fbd2e744b08703615db12f4018', '20 ujjas fejmasszírozó', '00:12'],
+    ['c2eb0f_bbb818fad4674d2097775970ca10c3d0', 'Arcroller', '00:18'],
+    ['c2eb0f_4dd11049dc03482e8b6a169484d1b976', 'Fajmasszírozó körkefe', '00:13'],
+    ['c2eb0f_c02456fd01664cb59eb593266e0a8279', 'Nyakmasszázs', '00:13'],
+    ['c2eb0f_7eec543c5b944e89966b93b4649ed71a', 'Személyre kikevert hajpakolás', '00:23'],
+    ['c2eb0f_cefa94f02ca34e3388845e308afc24f7', 'Dekoltázs masszázs', '00:13'],
+    ['c2eb0f_95f0e62128e946b98eff0a6adda4c14c', 'Rózsakvarc fejbőrfésű', '00:26'],
+    ['c2eb0f_c68f720ea07c4cc6b19dd56b1ab51f35', 'Körvízsugaras vízterápia', '00:38'],
+    ['c2eb0f_85f266a4010d40aba40c28ee4af9230e', 'Rózsakvarc arcmasszírozás', '00:26'],
+    ['c2eb0f_4b543396abd34dcc92dfe594049c8a78', 'Személyre kikevert arcpakolás', '00:19'],
+  ];
+  const posztere = (id) => GYOKER + 'assets/img/' + id + 'f002.jpg';
+
+  let mostSzol = null;
+  const helybenJatszik = (elem, id) => {
+    const borito = elem.querySelector('[data-hook="thumbnail-cover"]');
+    if (!borito) return;
+    if (mostSzol && mostSzol !== borito) {
+      const regi = mostSzol.querySelector('video');
+      if (regi) regi.pause();
     }
-    return megvan.get(url);
+    mostSzol = borito;
+    if (borito.querySelector('video')) { borito.querySelector('video').play().catch(() => {}); return; }
+    const v = videoElem(id);
+    v.poster = posztere(id);
+    v.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:3';
+    borito.style.position = 'relative';
+    borito.appendChild(v);
   };
 
-  const felugro = (azonosito, cim) => {
-    const hatter = document.createElement('div');
-    hatter.className = 'mh-felugro';
-    hatter.setAttribute('role', 'dialog');
-    hatter.setAttribute('aria-label', cim || 'Videó');
-    const zar = document.createElement('button');
-    zar.type = 'button';
-    zar.className = 'mh-felugro-zar';
-    zar.setAttribute('aria-label', 'Bezárás');
-    zar.textContent = '×';
-    const v = videoElem(azonosito);
-    hatter.append(v, zar);
-    const bezar = () => { v.pause(); hatter.remove(); document.removeEventListener('keydown', esc); };
-    const esc = (e) => { if (e.key === 'Escape') bezar(); };
-    hatter.addEventListener('click', (e) => { if (e.target === hatter || e.target === zar) bezar(); });
-    document.addEventListener('keydown', esc);
-    document.body.appendChild(hatter);
-    zar.focus();
-  };
-
-  // A kiemelt (nagy) video nem a bélyegkep-listaban van, ezert minden
-  // lejatszas-gombtol felfele keressuk a legkozelebbi elemet, amiben pontosan egy
-  // videohoz tartozo bélyegkep van.
-  const POSZTER = /assets\/img\/([a-z0-9]+_[a-f0-9]{32})f00\d\.jpg/g;
-  for (const gomb of document.querySelectorAll('[data-hook="overlay-play-button"]')) {
-    let elem = gomb.parentElement, azonosito = null;
-    for (let i = 0; elem && i < 12; i++, elem = elem.parentElement) {
-      const talalt = new Set([...elem.innerHTML.matchAll(POSZTER)].map((m) => m[1]));
-      if (talalt.size === 1) { azonosito = [...talalt][0]; break; }
-      if (talalt.size > 1) break;
+  for (const csuszka of document.querySelectorAll('[data-hook="css-slider"]')) {
+    const sor = csuszka.querySelector('[data-hook="css-slider-slides"]');
+    if (!sor || !sor.children.length) continue;
+    const meglevo = [...sor.children];
+    const idje = (el) => { const m = el.innerHTML.match(/assets\/img\/([a-z0-9]+_[a-f0-9]{32})f00\d\.jpg/); return m && m[1]; };
+    const vanMar = new Set(meglevo.map(idje));
+    const minta = meglevo[meglevo.length - 1];
+    const mintaId = idje(minta);
+    // a hianyzo videok hozzaadasa a minta masolasaval
+    for (const [id, cim, hossz] of VIDEOTAR) {
+      if (vanMar.has(id) || !mintaId) continue;
+      const uj = minta.cloneNode(true);
+      uj.innerHTML = uj.innerHTML.split(mintaId).join(id);
+      const cimElem = uj.querySelector('[data-hook="title"]');
+      if (cimElem) cimElem.textContent = cim;
+      const kep = uj.querySelector('img');
+      if (kep) kep.alt = cim;
+      for (const e of uj.querySelectorAll('div')) {
+        if (!e.children.length && /^\d\d:\d\d$/.test(e.textContent.trim())) e.textContent = hossz;
+      }
+      sor.appendChild(uj);
     }
-    if (!azonosito) continue;
-    const url = GYOKER + 'assets/video/' + azonosito + '.mp4';
-    const kep = elem.querySelector('img[alt]');
-    const cim = kep ? kep.alt : '';
-    gomb.addEventListener('click', (e) => {
-      e.preventDefault();
-      letezik(url).then((van) => { if (van) felugro(azonosito, cim); });
+    // lejatszas helyben
+    for (const elem of sor.children) {
+      const id = idje(elem);
+      if (!id) continue;
+      for (const g of elem.querySelectorAll('[data-hook="overlay-play-button"], [data-hook="title"]')) {
+        (g.closest('button') || g).addEventListener('click', (e) => { e.preventDefault(); helybenJatszik(elem, id); });
+      }
+    }
+    // lapozo nyilak: egy latható szelessegnyit gorgetnek
+    const elozo = csuszka.querySelector('[data-hook="css-slider-prev-button"]');
+    const kovetkezo = csuszka.querySelector('[data-hook="css-slider-next-button"]');
+    const allapot = () => {
+      const max = sor.scrollWidth - sor.clientWidth - 2;
+      for (const [g, tilt] of [[elozo, sor.scrollLeft <= 2], [kovetkezo, sor.scrollLeft >= max]]) {
+        if (!g) continue;
+        g.disabled = tilt;
+        g.setAttribute('aria-hidden', String(tilt));
+        g.tabIndex = tilt ? -1 : 0;
+        g.style.visibility = tilt ? 'hidden' : '';
+      }
+    };
+    const lapoz = (irany) => {
+      const lepes = Math.max(sor.firstElementChild.getBoundingClientRect().width, sor.clientWidth - sor.firstElementChild.getBoundingClientRect().width);
+      sor.scrollBy({ left: irany * lepes, behavior: 'smooth' });
+    };
+    if (elozo) elozo.addEventListener('click', () => lapoz(-1));
+    if (kovetkezo) kovetkezo.addEventListener('click', () => lapoz(1));
+    sor.addEventListener('scroll', allapot, { passive: true });
+    allapot();
+  }
+
+  // Mobilon a Wix Video egy 320x250-es, egyszerre egy diat mutato lapozo
+  // (data-channel-layout="mobile"). Ugyanigy: a hianyzo videok diakent a vegere,
+  // nyilak es huzas lapoz, a lejatszas a dian belul indul.
+  for (const fo of document.querySelectorAll('[data-channel-layout="mobile"] [data-hook="main-ui"]')) {
+    const diak0 = [...fo.querySelectorAll('[data-index]')];
+    if (!diak0.length) continue;
+    const sav = diak0[0].parentElement;
+    const idje = (el) => { const m = el.innerHTML.match(/assets\/img\/([a-z0-9]+_[a-f0-9]{32})f00\d\.jpg/); return m && m[1]; };
+    const vanMar = new Set(diak0.map(idje));
+    const minta = diak0[diak0.length - 1];
+    const mintaId = idje(minta);
+    const mintaCim = (minta.querySelector('[data-hook="title"] [title]') || {}).title || '';
+    for (const [id, cim] of VIDEOTAR) {
+      if (vanMar.has(id) || !mintaId) continue;
+      const uj = minta.cloneNode(true);
+      uj.innerHTML = uj.innerHTML.split(mintaId).join(id).split(mintaCim).join(cim);
+      sav.appendChild(uj);
+    }
+    const diak = [...sav.children];
+    diak.forEach((d, i) => { d.setAttribute('data-index', String(i)); d.removeAttribute('data-active'); });
+    const szel = diak[0].getBoundingClientRect().width || 320;
+    sav.style.transition = 'transform .35s ease';
+    sav.parentElement.style.overflow = 'hidden';
+    const pottyok = fo.querySelector('[data-hook="navigation-dots"]');
+    if (pottyok) pottyok.style.display = 'none';
+
+    let most = 0;
+    const ugrik = (i) => {
+      most = Math.max(0, Math.min(diak.length - 1, i));
+      sav.style.transform = 'translateX(' + (-most * szel) + 'px)';
+      for (const v of sav.querySelectorAll('video')) v.pause();
+      nyilBal.style.visibility = most ? '' : 'hidden';
+      nyilJobb.style.visibility = most < diak.length - 1 ? '' : 'hidden';
+    };
+    const nyil = (irany) => {
+      const g = document.createElement('button');
+      g.type = 'button';
+      g.className = 'mh-dia-nyil mh-dia-nyil-' + (irany < 0 ? 'bal' : 'jobb');
+      g.setAttribute('aria-label', irany < 0 ? 'Előző videó' : 'Következő videó');
+      g.innerHTML = '<svg viewBox="0 0 53 100" width="14" height="26" fill="currentColor" aria-hidden="true"' +
+        (irany < 0 ? ' style="transform:scaleX(-1)"' : '') + '><path d="M5.16 99.14L2.15 96.13 48.6 50.11 2.15 4.3 5.16 1.29 54.62 50.11"/></svg>';
+      g.addEventListener('click', (e) => { e.stopPropagation(); ugrik(most + irany); });
+      fo.appendChild(g);
+      return g;
+    };
+    fo.style.position = 'relative';
+    const nyilBal = nyil(-1), nyilJobb = nyil(1);
+
+    diak.forEach((d, i) => {
+      const id = idje(d);
+      const gomb = d.querySelector('[data-hook="overlay-play-button"]');
+      if (!id || !gomb) return;
+      gomb.addEventListener('click', (e) => {
+        e.preventDefault();
+        const doboz = gomb.closest('[style*="position:relative"]') || d;
+        if (doboz.querySelector('video')) return;
+        const v = videoElem(id);
+        v.poster = posztere(id);
+        v.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:3';
+        doboz.appendChild(v);
+      });
     });
+
+    let startX = null;
+    sav.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
+    sav.addEventListener('touchend', (e) => {
+      if (startX === null) return;
+      const dx = e.changedTouches[0].clientX - startX;
+      startX = null;
+      if (Math.abs(dx) > 40) ugrik(most + (dx < 0 ? 1 : -1));
+    });
+    ugrik(0);
   }
 
   // --- 5. beagyazott tartalmak: HTML-beagyazasok es Google-terkep ----------
