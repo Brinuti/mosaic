@@ -8,7 +8,7 @@
 //   - egyeni kod a <head>-ben: Meta Pixel, Trustindex richsnippet.
 //
 // A kategoriak a suti-tajekoztato szerint:
-//   fun = funkcionalis (Trustindex-velemenyek, Google-terkep)
+//   fun = funkcionalis (Trustindex-velemenyek, Common Ninja GYIK es arlistak, Google-terkep)
 //   ana = statisztika  (Google Analytics 4)
 //   adv = marketing    (Google Ads, Meta, TikTok - a GTM-en es a Pixelen at)
 //
@@ -179,7 +179,7 @@
       '<div id="mh-cc-settings" style="display:none">' +
         '<h2>Süti beállítások</h2>' +
         kategoria('', 'Feltétlenül szükséges', 'Az oldal működéséhez kellenek, nem kapcsolhatók ki.') +
-        kategoria('mh-cc-fun', 'Funkcionális', 'Kényelmi funkciók, pl. vendégértékelések és a térkép megjelenítése.') +
+        kategoria('mh-cc-fun', 'Funkcionális', 'Kényelmi funkciók, pl. vendégértékelések, GYIK, árlisták és a térkép megjelenítése.') +
         kategoria('mh-cc-ana', 'Statisztika', 'Megmutatja, hogyan használják a látogatók az oldalt.') +
         kategoria('mh-cc-adv', 'Marketing', 'Hirdetéseink mérése (Google, Meta, TikTok) és releváns ajánlatok.') +
         '<div class="mh-row" style="margin-top:12px">' +

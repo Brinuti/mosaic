@@ -45,6 +45,9 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   ...(ELES ? [] : ['  X-Robots-Tag: noindex, nofollow']),
   '/assets/*',
   '  Cache-Control: public, max-age=604800',
+  // a HTML-beagyazasok (GYIK, arlistak) csak keretben jelennek meg, onalloan ne indexelodjenek
+  '/assets/embed/*',
+  '  X-Robots-Tag: noindex',
   '',
 ].join('\n'));
 
