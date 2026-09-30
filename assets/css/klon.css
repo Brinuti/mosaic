@@ -227,3 +227,5 @@ button.mh-hibas, textarea.mh-hibas, select.mh-hibas { outline: 2px solid #df3131
   opacity: 1 !important; visibility: visible !important; fill: #fff; color: #fff;
 }
 [data-hook="css-slider-prev-button"]:hover, [data-hook="css-slider-next-button"]:hover { background: rgba(0, 0, 0, .7) !important; }
+.mh-fajlok { margin: 8px 0 0; font: 14px/1.4 'lato', sans-serif; color: inherit; opacity: .85; }
+.mh-fajlok:empty { display: none; }

@@ -1202,9 +1202,8 @@
         if (!v.ok) throw new Error('HTTP ' + v.status);
         (window.dataLayer = window.dataLayer || []).push({ event: 'pmu_visszahivas', szolgaltatas: adat.get('szolgaltatas') });
         if (window.fbq) window.fbq('track', 'Lead', { content_name: adat.get('szolgaltatas') });
-        uzenet.classList.add('mh-urlap-uzenet--siker');
-        uzenet.textContent = 'Köszönöm, megkaptam! 1 munkanapon belül visszahívlak. – Melitta';
-        gomb.style.display = 'none';
+        // mint a Wixen: a pmu-vh koszonooldalra visz
+        location.href = 'pmu-vh.html';
       } catch (err) {
         uzenet.textContent = 'Hiba történt a küldés közben. Kérlek, próbáld újra, vagy hívj minket: 06 20 247 4444';
         gomb.removeAttribute('aria-disabled');
@@ -1213,6 +1212,126 @@
     };
     gomb.addEventListener('click', kuld);
     urlap.addEventListener('submit', kuld);
+  }
+
+  // --- 7f. allasjelentkezesek (PPC, fodrasz) -> Netlify Forms -------------------
+  // Az eles oldalon Wix Forms, bekuldes utan a Wix a koszonooldalra iranyit. A
+  // mezok a Wix-cimkejuk eleje alapjan kapnak nevet (a Netlify-urlapleiras a
+  // klon-kiegeszites.mjs-ben). A fodrasz-urlap hajkepeit a bongeszoben
+  // kicsinyitjuk (a Netlify 8 MB-ot fogad egy bekuldesben), legfeljebb 10-et.
+  const JELENTKEZESEK = {
+    'form-5b88872c': {
+      nev: 'ppc-jelentkezes', siker: 'allashirdetes-ok.html',
+      mezok: [
+        ['Hány év tapasztalatod van Google', 'google_ads_ev'], ['Milyen iparágakban hirdettél Google', 'google_ads_iparag'],
+        ['Hány év tapasztalatod van Facebook', 'meta_ads_ev'], ['Milyen iparágakban hirdettél Facebook', 'meta_ads_iparag'],
+        ['Milyen tapasztalatod van WIX', 'wix'], ['Wordpress', 'wordpress'], ['Hol dolgozol most', 'jelenlegi_munkahely'],
+        ['Mi a fő motivációd', 'motivacio'], ['Miért gondolod', 'cpa'], ['Havi bérigényed', 'berigeny'],
+      ],
+    },
+    'form-86cf1fc1': {
+      nev: 'fodrasz-jelentkezes', siker: 'fodrasz-allas-ok.html',
+      mezok: [
+        ['Név', 'nev'], ['Melyik évben', 'szuletesi_ev'], ['Hány év tapasztalatod', 'tapasztalat'],
+        ['Hol dolgozol', 'jelenlegi_munkahely'], ['Fb / Insta', 'referencia_link'],
+      ],
+    },
+  };
+  const MAX_KEP = 10;
+  const kicsinyit = (fajl) => new Promise((kesz) => {
+    if (!/^image\//.test(fajl.type)) { kesz(fajl.size < 4e6 ? fajl : null); return; }
+    const kep = new Image();
+    kep.onload = () => {
+      const arany = Math.min(1, 1600 / Math.max(kep.width, kep.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(kep.width * arany);
+      c.height = Math.round(kep.height * arany);
+      c.getContext('2d').drawImage(kep, 0, 0, c.width, c.height);
+      c.toBlob((b) => kesz(b && new File([b], fajl.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' })), 'image/jpeg', 0.8);
+      URL.revokeObjectURL(kep.src);
+    };
+    kep.onerror = () => kesz(null);
+    kep.src = URL.createObjectURL(fajl);
+  });
+
+  for (const [elotag, cfg] of Object.entries(JELENTKEZESEK)) {
+    for (const urlap of document.querySelectorAll(`form[id^="${elotag}"]`)) {
+      const gomb = urlap.querySelector('[data-hook="submit-button"]');
+      if (!gomb) continue;
+      const uzenet = document.createElement('p');
+      uzenet.className = 'mh-urlap-uzenet';
+      uzenet.setAttribute('role', 'alert');
+      gomb.after(uzenet);
+      urlap.addEventListener('input', (e) => e.target.classList.remove('mh-hibas'));
+
+      // mezo -> nev: tipus szerint (e-mail, telefon), kulonben a cimke eleje alapjan;
+      // a cimke nelkuli szovegmezo a nev (a PPC-urlapon)
+      const mezok = [];
+      for (const i of urlap.querySelectorAll('input:not([type=file]):not([type=hidden]), textarea')) {
+        const cimke = (i.getAttribute('aria-label') || '').trim();
+        let nev = i.type === 'email' ? 'email' : (i.type === 'phone' || i.type === 'tel' || /^Telefonszám|Telefonszám$/.test(cimke)) ? 'telefon' : null;
+        if (!nev) { const t = cfg.mezok.find(([eleje]) => cimke.startsWith(eleje)); nev = t ? t[1] : (!cimke ? 'nev' : null); }
+        if (nev) mezok.push([i, nev]);
+      }
+
+      // fajlfeltoltes: a Wix gombja a rejtett <input type=file>-t nyitja meg
+      const fajlMezo = urlap.querySelector('input[type=file]');
+      let kepek = [];
+      if (fajlMezo) {
+        const gyoker = fajlMezo.closest('[data-hook="file-upload-root"]');
+        const feltolt = gyoker && gyoker.querySelector('button');
+        const lista = document.createElement('p');
+        lista.className = 'mh-fajlok';
+        (gyoker || fajlMezo).after(lista);
+        fajlMezo.accept = 'image/*';
+        if (feltolt) feltolt.addEventListener('click', (e) => { e.preventDefault(); fajlMezo.click(); });
+        fajlMezo.addEventListener('change', () => {
+          kepek = [...kepek, ...fajlMezo.files].slice(0, MAX_KEP);
+          lista.textContent = kepek.length ? `${kepek.length} kép kiválasztva (legfeljebb ${MAX_KEP})` : '';
+          fajlMezo.value = '';
+        });
+      }
+
+      const kuld = async (e) => {
+        e.preventDefault();
+        if (gomb.getAttribute('aria-disabled') === 'true') return;
+        uzenet.textContent = '';
+        let hibas = null;
+        for (const [i, nev] of mezok) {
+          const ertek = i.value.trim();
+          const rossz = (i.required && !ertek) || (ertek && !i.checkValidity()) ||
+            (nev === 'telefon' && i.required && ertek.replace(/\D/g, '').length < 8);
+          i.setAttribute('aria-invalid', String(!!rossz));
+          i.classList.toggle('mh-hibas', !!rossz);
+          if (rossz && !hibas) hibas = i;
+        }
+        if (hibas) {
+          uzenet.textContent = 'Kérlek, töltsd ki a kötelező mezőket (az e-mail-címet és a telefonszámot is helyesen).';
+          hibas.focus();
+          return;
+        }
+        const adat = new FormData();
+        adat.set('form-name', cfg.nev);
+        adat.set('oldal', location.pathname.split('/').pop() || 'index.html');
+        for (const [i, nev] of mezok) adat.set(nev, i.value.trim());
+        gomb.setAttribute('aria-disabled', 'true');
+        gomb.style.opacity = '.6';
+        try {
+          const kicsik = (await Promise.all(kepek.map(kicsinyit))).filter(Boolean);
+          kicsik.forEach((f, n) => adat.set('kepek' + (n + 1), f, f.name));
+          const v = await fetch('/', { method: 'POST', body: adat });
+          if (!v.ok) throw new Error('HTTP ' + v.status);
+          (window.dataLayer = window.dataLayer || []).push({ event: 'allas_jelentkezes', urlap: cfg.nev });
+          location.href = cfg.siker;
+        } catch (err) {
+          uzenet.textContent = 'Hiba történt a küldés közben. Kérlek, próbáld újra, vagy írj nekünk: mosaicheadspa@gmail.com';
+          gomb.removeAttribute('aria-disabled');
+          gomb.style.opacity = '';
+        }
+      };
+      gomb.addEventListener('click', kuld);
+      urlap.addEventListener('submit', kuld);
+    }
   }
 
   // --- 8. Wix-felugro ablak (lightbox): a fejlec "i" ikonja ---------------

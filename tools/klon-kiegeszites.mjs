@@ -61,6 +61,18 @@ const NETLIFY_PMU = '<form name="pmu-visszahivas" data-netlify="true" netlify-ho
   ['bot-field', 'nev', 'telefon', 'szolgaltatas', 'volt_mar_tetovalasa', 'megjegyzes', 'oldal']
     .map((n) => `<input name="${n}">`).join('') +
   '</form>';
+// allasjelentkezesek (klon.js 7f): PPC-hirdetes es fodrasz-allas; a fodrasznal
+// legfeljebb 10 hajkep (kepek1..kepek10), ezert multipart
+const kepMezok = Array.from({ length: 10 }, (_, i) => `<input type="file" name="kepek${i + 1}">`).join('');
+const NETLIFY_JELENTKEZES = {
+  'form-5b88872c-2a75-4ae1-9376-fdcced9f5ff4': '<form name="ppc-jelentkezes" data-netlify="true" netlify-honeypot="bot-field" hidden>' +
+    ['bot-field', 'nev', 'email', 'telefon', 'google_ads_ev', 'google_ads_iparag', 'meta_ads_ev', 'meta_ads_iparag',
+      'wix', 'wordpress', 'jelenlegi_munkahely', 'motivacio', 'cpa', 'berigeny', 'oldal']
+      .map((n) => `<input name="${n}">`).join('') + '</form>',
+  'form-86cf1fc1-4770-408e-b0a0-d3cf7c3bb447': '<form name="fodrasz-jelentkezes" data-netlify="true" netlify-honeypot="bot-field" enctype="multipart/form-data" hidden>' +
+    ['bot-field', 'nev', 'email', 'telefon', 'szuletesi_ev', 'tapasztalat', 'jelenlegi_munkahely', 'referencia_link', 'oldal']
+      .map((n) => `<input name="${n}">`).join('') + kepMezok + '</form>',
+};
 
 export function kiegeszit(html, elotag) {
   html = html.replace(csonkaKep, '$1');
@@ -72,6 +84,10 @@ export function kiegeszit(html, elotag) {
   // a PMU-visszahivaskeres (pmu-foglalas) ugyanigy - a klon.js 7e. szakasza kuldi
   if (html.includes('form-875a7aa0-161e-464f-9f14-24706dcccd86') && !html.includes('name="pmu-visszahivas"')) {
     html = html.replace(/<\/body>/i, NETLIFY_PMU + '\n</body>');
+  }
+  for (const [azon, leiras] of Object.entries(NETLIFY_JELENTKEZES)) {
+    const nev = leiras.match(/name="([^"]+)"/)[1];
+    if (html.includes(azon) && !html.includes(`name="${nev}"`)) html = html.replace(/<\/body>/i, leiras + '\n</body>');
   }
   if (html.includes(LOGO)) html = logoCsere(html, elotag);
   // a galeriak teljes kepllistaja (tools/galeriak.mjs) - a klon.js 7. szakasza hasznalja
