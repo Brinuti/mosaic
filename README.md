@@ -42,7 +42,12 @@ Egy új oldal lementése (a `post/` előtag opcionális, a második paraméter a
 
 ```bash
 node tools/oldal-mentes.mjs headspa-budapest
+node tools/oldal-mentes.mjs / index                                  # nyitóoldal
+node tools/oldal-mentes.mjs post/suti-tajekoztato suti-tajekoztato
 ```
+
+A `tools/raw/` (asztali mentések) nincs a repóban, frissítéskor mind a 25 oldalt újra kell menteni.
+Legutóbbi teljes frissítés: **2026-09-30** (Wix-kiadás 3277).
 
 Az átalakítás (mindig mindkettőt futtasd):
 
@@ -55,14 +60,15 @@ Egyetlen oldal újraépítése: `node tools/wix2static.mjs index`
 
 ### 1.2 Mit csinál az átalakító
 
-1. **Kiszedi a Wix összes scriptjét.** A teljes elrendezés a HTML-be ágyazott `<style>` blokkokban
-   van, ezért a script nélküli oldal ugyanúgy néz ki — csak nem „él”.
+1. **Kiszedi a Wix összes scriptjét**, és a Wix egyéni kódjait (`pageHtmlEmbeds`: Meta Pixel, az
+   élő oldal saját süti-sávja) – ezeket a klónban a `suti.js` adja. A teljes elrendezés a HTML-be
+   ágyazott `<style>` blokkokban van, ezért a script nélküli oldal ugyanúgy néz ki — csak nem „él”.
 2. **Kitörli a Wix `@font-face` szabályait**, amik a Wix CDN-jére mutatnak (1849 db az asztali,
    1899 db a mobil oldalakon). Helyettük a saját betűkészletünk lép életbe.
 3. **Átírja a képhivatkozásokat** a `static.wixstatic.com` címről a helyi `assets/img/` mappára.
    Ugyanígy a néhány `static.parastorage.com`-ról jövő apró képet is (a nyelvváltó zászlaja),
    hogy az oldal futásidőben **egyetlen kérést se** küldjön a Wix felé.
-4. **Átírja a belső linkeket** teljes Wix-címről helyi fájlnévre (864 asztali, 911 mobil link),
+4. **Átírja a belső linkeket** teljes Wix-címről helyi fájlnévre (860 asztali, 886 mobil link),
    a `/post/` előtagot levágva. A `canonical` és az `og:url` szándékosan marad teljes cím — azok
    a keresőnek kellenek.
 5. **Beszúrja** a saját CSS-t, a `klon.js`-t és az asztali↔mobil váltót.
@@ -105,8 +111,10 @@ azokat az osztályokat és attribútumokat állítja, amiket az élő oldalon m�
 2. **Mobil almenük** lenyitása
 3. **Asztali legördülő menü** rámutatásra, billentyűzetről is
 4. **Videók** helyi fájlból: a két magától induló videó, az oszlop-háttérvideók, a kattintásra
-   induló videók (`KATTINTOS` táblázat) és a kezelés-galéria felugró lejátszója
-5. **Beágyazások**: Trustindex-vélemények és Google-térkép a Wix üres dobozaiban
+   induló videók (`KATTINTOS` táblázat, 53 doboz) és a kezelés-galéria felugró lejátszója
+5. **Beágyazások** (`BEAGYAZASOK`): a Wix HTML-beágyazásai (GYIK, árlisták, Trustindex) az
+   `assets/embed/` alól és a Google-térkép, keretben, a Wix üres dobozaiban
+6. **Árkártyák** (Wix `fluid-columns-repeater`): láthatóvá tétel és a hézagok beállítása
 
 Görgetési vagy belépő animációt szándékosan nem ad hozzá semmihez.
 
@@ -129,7 +137,7 @@ klónban mindezt a `suti.js` adja, amit a `tools/klon-kiegeszites.mjs` szúr be 
 | Google Analytics 4 `G-H4206SQ0Q7` | statisztikai hozzájárulással |
 | Meta Pixel `3473839859576758` | marketing-hozzájárulással (a Wixen hozzájárulás nélkül is futott) |
 | Trustindex értékelés-snippet, Facebook-domainigazolás | mindig (sütit nem használnak) |
-| Trustindex-widget, Google-térkép | funkcionális hozzájárulással; addig helykitöltő áll a helyükön |
+| Trustindex-widgetek, Common Ninja GYIK és árlisták, Google-térkép | funkcionális hozzájárulással; addig helykitöltő áll a helyükön |
 
 **A mérőkódok csak a `mosaicheadspa.hu` domainen futnak** (`ELES_DOMAINEK` a fájl tetején), a
 Netlify-os próbaoldal nem szennyezi a statisztikát. A TikTok, a Google Ads és a szerveroldali
@@ -163,8 +171,15 @@ A vizsgálat **megvárja, amíg az eredeti oldal elrendezése megállapodik** (a
 betöltés után még percekig mozgatják a tartalmat), majd összeveti minden azonosítóval ellátott
 elem szélességét és magasságát.
 
-**Jelenlegi állás: mind a 25 asztali és mind a 25 mobil oldal `dH=0, elem=0`** — azaz az oldal
-teljes magassága és minden elem mérete pontosan egyezik az eredetivel.
+**Utolsó teljes mérés (2026-09-29): mind a 25 asztali és mind a 25 mobil oldal `dH=0, elem=0`** —
+azaz az oldal teljes magassága és minden elem mérete pontosan egyezett az eredetivel.
+
+A mérés csak akkor mérvadó, ha az eredeti oldal betűi és scriptjei betöltődnek
+(`static.parastorage.com`). A felhős munkakörnyezetből ez a tartomány 2026-09-30-án tiltva volt – az
+eredeti ilyenkor tartalék betűkkel rajzolódik ki, és hamis eltéréseket mutat. Ezért a 2026-09-30-i
+frissítés után a régi és az új klónt vetettük össze elemenként: mobilon mind a 25 oldal pixelre
+azonos, asztalin az egyetlen eltérés, hogy az élő oldal fejléce 87-ről 77 pixelre változott (ez a
+Wix CSS-éből jön, az új klón követi).
 
 ---
 
@@ -232,23 +247,31 @@ működnek.
 
 ### 3.1 Videók
 
-Lásd **[VIDEOK.md](VIDEOK.md)**: 52 kattintásra induló videós doboz párosítása (a Wix
-oldal-adataiból, `tools/wix-oldaladatok.mjs`) és a 8 kezelés-galéria videó exportja.
+Lásd **[VIDEOK.md](VIDEOK.md)**: a kattintásra induló videók mind a helyükön vannak; a
+kezelés-galéria 8 videóját (token-védett) a Wixből kell exportálni.
 
-### 3.2 HTML-beágyazások (GYIK, árlisták és társai)
+### 3.2 HTML-beágyazások (GYIK, árlisták és társai) – kész
 
-A Wix HTML-beágyazás dobozai (`HtmlComponent`) a klónban üresek, a tartalmukat a Wix külön
-tölti be. Ami már megvan: a Trustindex-widget (3 oldal). Ami hiányzik:
+A Wix HTML-beágyazás dobozai (`HtmlComponent`) a tartalmukat a
+`www-mosaicheadspa-hu.filesusr.com/html/<név>.htm` címről töltik. Ezeket változatlanul
+letöltöttük az `assets/embed/` alá, és a `klon.js` ugyanúgy keretben (iframe) teszi vissza őket.
+Mindegyik harmadik féltől tölt tartalmat, ezért funkcionális hozzájárulás kell hozzájuk (addig
+helykitöltő áll a helyükön):
 
-| oldal | doboz | ami előtte áll |
-|---|---|---|
-| `index`, `headspa-ferfiaknak`, `paros-headspa-budapest` | 2 db (642×1071, 642×1043) | „Gyakori Head Spa Kérdések” |
-| `lezeres-szortelenites-budapest`, `oxigenterapia-budapest` | 1 db (642×1071) | GYIK |
-| `headspa-ajandekkartya`, `4-kezes-headspa-ajandekkartya` | 1 db (702×1103) | „Gyakran Ismételt Kérdések” |
-| `noi-fodraszat-budapest`, `noi-fodrasz-…-balayage-hajfestes`, `noi-hajfestes-budapest`, `balayage-haj-festes-budapest` | 1 db (860×7xx) | árak, „SZABAD IDŐPONTOK” előtt |
-| `index` | 1 db (980×357) | „olvasd el vendégeinktől” – valószínűleg egy másik Trustindex-widget |
+| fájl (`assets/embed/`) | tartalom | szolgáltató | oldalak |
+|---|---|---|---|
+| `c2eb0f_e2a637…`, `c2eb0f_dab261…` | GYIK (2 doboz, 642×1071, 642×1043) | Common Ninja | `index`, `headspa-ferfiaknak`, `paros-headspa-budapest` |
+| `c2eb0f_97df67…` | GYIK (702×1103) | Common Ninja | `headspa-ajandekkartya`, `4-kezes-headspa-ajandekkartya` |
+| `c2eb0f_7101a5…` | GYIK | Common Ninja | `lezeres-szortelenites-budapest` |
+| `c2eb0f_193bec…` | GYIK | Common Ninja | `oxigenterapia-budapest` |
+| `c2eb0f_89f74d…` | árlista (860×7xx) | Common Ninja | `noi-fodraszat-budapest`, `noi-fodrasz-…-balayage-hajfestes`, `noi-hajfestes-budapest` |
+| `c2eb0f_ebe819…` | árlista | Common Ninja | `balayage-haj-festes-budapest` |
+| `c2eb0f_614b09…` | vendégértékelések | Trustindex | `head-spa-velemenyek`, `lezeres-szortelenites-budapest`, `oxigenterapia-budapest` |
+| `c2eb0f_95e68e…` | vendégértékelések (980×357) | Trustindex | `index` |
 
-A tartalmuk címét a `tools/wix-oldaladatok.mjs` gyűjti ki (`www-mosaicheadspa-hu.filesusr.com`).
+A GYIK és az árlisták szövege tehát **nem** a mi fájljainkban van, hanem a Common Ninja
+fiókjában – ott kell szerkeszteni, mint eddig. A Common Ninja és a Trustindex a felhős
+munkakörnyezetből nem volt elérhető, a keretek tartalmát ezért csak élesben lehet megnézni.
 
 ## 4. Publikálás
 
@@ -281,7 +304,7 @@ Töltsd fel FTP-vel a választott változat `*.html` fájljait, az `assets/` map
 1. A `tools/build.mjs`-ben a `SITE` konstans adja a sitemap abszolút URL-jeit — ellenőrizd a
    végleges domaint.
 2. Minden slug megegyezik az eredetivel, szóval a legtöbb tárhelyen elég a „clean URL" opciót
-   bekapcsolni. Kivétel a `/post/suti-tajekoztato` (lásd 3.2).
+   bekapcsolni. Kivétel a `/post/suti-tajekoztato`: a Netlify-n átirányítás van rá (`tools/netlify-build.mjs`), máshol kézzel kell beállítani.
 
 ---
 

@@ -17,6 +17,7 @@
 //   ELES=1 node tools/netlify-build.mjs   eles publikalas
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -43,10 +44,38 @@ fs.writeFileSync(path.join(DIST, '_redirects'), [
 fs.writeFileSync(path.join(DIST, '_headers'), [
   '/*',
   ...(ELES ? [] : ['  X-Robots-Tag: noindex, nofollow']),
-  '/assets/*',
+  // A szkripteket es stilusokat mindig ujraellenorzi a bongeszo (kulonben egy
+  // javitas napokig nem latszana); a kepek, betuk, videok maradhatnak egy hetig.
+  '/assets/js/*',
+  '  Cache-Control: public, max-age=0, must-revalidate',
+  '/assets/css/*',
+  '  Cache-Control: public, max-age=0, must-revalidate',
+  '/assets/img/*',
   '  Cache-Control: public, max-age=604800',
+  '/assets/video/*',
+  '  Cache-Control: public, max-age=604800',
+  '/assets/fonts/*',
+  '  Cache-Control: public, max-age=604800',
+  // a HTML-beagyazasok (GYIK, arlistak) csak keretben jelennek meg, onalloan ne indexelodjenek
+  '/assets/embed/*',
+  '  X-Robots-Tag: noindex',
   '',
 ].join('\n'));
+
+// Verziojel a sajat szkriptek es stilusok hivatkozasaira (?v=<tartalom-hash>):
+// igy egy javitas azonnal eler minden latogatot, akkor is, ha a bongeszo meg
+// egy regebbi valtozatot tarol.
+const SAJAT = ['assets/js/klon.js', 'assets/js/suti.js', 'assets/css/klon.css'];
+const verzio = Object.fromEntries(SAJAT.map((f) => [f,
+  crypto.createHash('sha1').update(fs.readFileSync(path.join(ROOT, f))).digest('hex').slice(0, 10)]));
+for (const mappa of [DIST, path.join(DIST, 'm')]) {
+  for (const f of fs.readdirSync(mappa).filter((x) => x.endsWith('.html'))) {
+    const p = path.join(mappa, f);
+    let h = fs.readFileSync(p, 'utf8');
+    for (const [fajl, v] of Object.entries(verzio)) h = h.split(fajl + '"').join(fajl + '?v=' + v + '"');
+    fs.writeFileSync(p, h);
+  }
+}
 
 const html = fs.readdirSync(DIST).filter((f) => f.endsWith('.html')).length;
 const mobil = fs.readdirSync(path.join(DIST, 'm')).filter((f) => f.endsWith('.html')).length;

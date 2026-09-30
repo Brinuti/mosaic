@@ -13,7 +13,26 @@ import { fileURLToPath } from 'node:url';
 
 const JEL = '<!--mh-kiegeszites-->';
 
+// A fejlec logoja: a Wix a 3000x3000-es eredetibol elore kicsinyitett, elesitett
+// valtozatot kuldott (fill, kozepre vagva, usm). A klonban az eredeti allt, amit a
+// bongeszo 143x54-re kicsinyit - ez recés, pixeles. Helyette a Wixszel azonos
+// modon (kozepre vagva, Lanczos + usm_0.66 elesites) kicsinyitett 1x/2x/3x
+// valtozatok kerulnek be: assets/img/logo-<szeles>x<magas>@<n>x.png.
+const LOGO = 'c2eb0f_ebf1831725394a0591c64e442a81b333.png';
+function logoCsere(html, elotag) {
+  return html.replace(/<img\b[^>]*assets\/img\/c2eb0f_ebf1831725394a0591c64e442a81b333\.png[^>]*>/g, (img) => {
+    const m = img.match(/width="(\d+)" height="(\d+)"/);
+    if (!m) return img;
+    const alap = `${elotag}assets/img/logo-${m[1]}x${m[2]}`;
+    const srcset = `${alap}@1x.png 1x, ${alap}@2x.png 2x, ${alap}@3x.png 3x`;
+    return img
+      .replace(/srcSet="[^"]*"/, `srcSet="${srcset}"`)
+      .replace(/ src="[^"]*"/, ` src="${alap}@1x.png"`);
+  });
+}
+
 export function kiegeszit(html, elotag) {
+  if (html.includes(LOGO)) html = logoCsere(html, elotag);
   if (html.includes(JEL)) return html;
   const fej = [
     JEL,

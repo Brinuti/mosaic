@@ -3,6 +3,7 @@ node_modules/
 
 # nyers, ujra letoltheto Wix HTML-dumpok (a build nem hasznalja oket)
 tools/raw/
+tools/wix-json/
 
 # rendszer
 Thumbs.db

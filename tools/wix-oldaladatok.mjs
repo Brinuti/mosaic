@@ -45,6 +45,16 @@ function kigyujt(json, talalat) {
         for (const m of s.matchAll(/([a-z0-9]+_[a-f0-9]{32})f00\d\.jpg/g)) t.poszterek.add(m[1]);
         for (const m of s.matchAll(/https?:\\?\/\\?\/[^"\s]*(?:filesusr\.com|youtube\.com|youtu\.be|vimeo\.com|salonic\.hu|trustindex\.io|google\.com\\?\/maps)[^"\s]*/g)) t.url.add(m[0].replace(/\\\//g, '/'));
         for (const m of s.matchAll(/"(?:title|name|alt)":"([^"]{2,120})"/g)) t.cimek.add(m[1]);
+        // VideoPlayer-beallitasok (a klon.js KATTINTOS tablazatahoz)
+        if (v.playableConfig && typeof v.src === 'string') {
+          const nezet = v.isMobileView || v.isMobile ? 'mobil' : 'asztali';
+          (t.lejatszo || (t.lejatszo = {}))[nezet] = {
+            src: v.src,
+            poszter: v.playableConfig.poster && v.playableConfig.poster.uri,
+            autoplay: !!v.autoplay, muted: !!v.muted, loop: !!v.loop, controls: !!v.controls,
+            hossz: v.duration,
+          };
+        }
       }
       bejar(v);
     }
@@ -81,7 +91,7 @@ for (const f of fajlok) {
   const tiszta = {};
   for (const [k, t] of Object.entries(talalat)) {
     if (!t.videok.size && !t.url.size && !t.poszterek.size) continue;
-    tiszta[k] = Object.fromEntries(Object.entries(t).map(([a, b]) => [a, [...b]]));
+    tiszta[k] = Object.fromEntries(Object.entries(t).map(([a, b]) => [a, b instanceof Set ? [...b] : b]));
   }
   eredmeny[oldal] = tiszta;
   console.log(`${oldal.padEnd(45)} ${Object.keys(tiszta).length} doboz tartalommal`);
