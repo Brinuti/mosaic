@@ -610,4 +610,77 @@
     });
     ugrik(0);
   }
+
+  // --- 8. Wix-felugro ablak (lightbox): a fejlec "i" ikonja ---------------
+  // Az eles oldalon a [data-popupid] elemre kattintva a Wix JS-e letolti es
+  // kirajzolja a felugro ablakot. A klonban a kesz HTML az oldal vegen van egy
+  // <template id="mh-popup-<id>">-ben (tools/popup-info.mjs + klon-kiegeszites.mjs).
+  // A Wixszel egyezo viselkedes:
+  //   - a doboz a Wix CSS-eben levo motion-glideIn animacioval jobbrol uszik be
+  //     (600ms): a Wix a --motion-left valtozoba a doboz bal szelet irja, es az
+  //     animaciot "paused"-bol inditja, a vegen data-motion-enter="done"
+  //   - a hatteroldal nem gorgetheto, amig nyitva van
+  //   - bezaras: X gomb, Esc, a fatyolra kattintas (popupsWithCloseOnOverlayClick),
+  //     kilepo animacio nelkul (a Wixen is azonnal eltunik)
+  const popupok = {};
+  let nyitottPopup = null;
+  let popupNyito = null;
+
+  function popupElem(id) {
+    if (popupok[id]) return popupok[id];
+    const sablon = document.getElementById('mh-popup-' + id);
+    if (!sablon) return null;
+    document.body.appendChild(sablon.content.cloneNode(true));
+    const gyoker = document.querySelector('[data-mh-popup="' + id + '"]');
+    if (!gyoker) return null;
+    // az X, illetve a dobozon kivul barhova (a fatyolra) kattintas bezar
+    gyoker.addEventListener('click', (e) => {
+      if (e.target.closest('[data-mh-popup-zar]') || !e.target.closest('.mh-popup-doboz')) popupZar();
+    });
+    gyoker.addEventListener('keydown', (e) => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('[data-mh-popup-zar]')) { e.preventDefault(); popupZar(); }
+    });
+    popupok[id] = gyoker;
+    return gyoker;
+  }
+
+  function popupNyit(id, nyito) {
+    const gyoker = popupElem(id);
+    if (!gyoker) return;
+    if (nyitottPopup) popupZar();
+    popupNyito = nyito || null;
+    const doboz = gyoker.querySelector('.mh-popup-doboz');
+    if (doboz) doboz.removeAttribute('data-motion-enter');
+    gyoker.hidden = false;
+    document.documentElement.style.overflow = 'hidden';
+    nyitottPopup = gyoker;
+    if (doboz) {
+      // az animacio 0%-an meg nincs eltolas, ezert itt a vegleges helyet merjuk
+      doboz.style.setProperty('--motion-left', doboz.getBoundingClientRect().left + 'px');
+      doboz.style.animationPlayState = 'running';
+      const kesz = () => { doboz.setAttribute('data-motion-enter', 'done'); doboz.style.animationPlayState = ''; };
+      if (getComputedStyle(doboz).animationName === 'none') kesz();
+      else doboz.addEventListener('animationend', kesz, { once: true });
+    }
+    gyoker.focus({ preventScroll: true });
+  }
+
+  function popupZar() {
+    if (!nyitottPopup) return;
+    nyitottPopup.hidden = true;
+    nyitottPopup = null;
+    document.documentElement.style.overflow = '';
+    if (popupNyito) popupNyito.focus({ preventScroll: true });
+    popupNyito = null;
+  }
+
+  for (const nyito of document.querySelectorAll('[data-popupid]')) {
+    const id = nyito.getAttribute('data-popupid');
+    if (!document.getElementById('mh-popup-' + id)) continue;
+    nyito.addEventListener('click', (e) => { e.preventDefault(); popupNyit(id, nyito); });
+    nyito.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); popupNyit(id, nyito); }
+    });
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') popupZar(); });
 })();

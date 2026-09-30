@@ -115,8 +115,23 @@ azokat az osztályokat és attribútumokat állítja, amiket az élő oldalon m�
 5. **Beágyazások** (`BEAGYAZASOK`): a Wix HTML-beágyazásai (GYIK, árlisták, Trustindex) az
    `assets/embed/` alól és a Google-térkép, keretben, a Wix üres dobozaiban
 6. **Árkártyák** (Wix `fluid-columns-repeater`): láthatóvá tétel és a hézagok beállítása
+7. **Felugró ablak** (a fejléc „i” ikonja, Wix-lightbox „Infó”): jobbról beúszik (a Wix saját
+   `motion-glideIn` animációja, 600 ms), háttérfátyol, az X, az Esc és a fátyolra kattintás zár
 
 Görgetési vagy belépő animációt szándékosan nem ad hozzá semmihez.
+
+### 1.5b Felugró ablak („Infó”) — `assets/popup/`
+
+A Wix a felugró ablakot kattintásra tölti le (komponensfa + CSS a `siteassets.parastorage.com`-ról),
+a `?lightbox=rk7x7` címre az SSR sem rajzolja ki. A `tools/popup-info.mjs` ugyanezt a két választ
+használja (`tools/popup/*.json`, `--letoltes` kapcsolóval frissíti), és a Wix id-ivel és
+`data-mesh-id`-ivel építi fel a HTML-t, így a Wix elrendezése változatlanul érvényes:
+`assets/popup/info.html` (asztali) és `info-mobil.html`. A `klon-kiegeszites.mjs` ezt
+`<template>`-ként teszi minden oldal végére, a `klon.js` onnan nyitja meg.
+
+```bash
+node tools/popup-info.mjs --letoltes && node tools/klon-kiegeszites.mjs
+```
 
 ### 1.6 Videók
 
