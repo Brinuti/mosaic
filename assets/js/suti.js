@@ -113,12 +113,13 @@
       betoltve.dl = true;
       var cim = d.title;
       w.dataLayer.push({ event: 'Pageview', url: UTVONAL, title: cim });
+      w.dataLayer.push({ ecommerce: null });
       w.dataLayer.push({ event: 'page_view', url: UTVONAL, title: cim, page_type: 'static' });
     }
 
     // GA4: mint a Wix "Google Tag (Advanced Consent Mode)" kodja - mindig betolt,
     // a hozzajarulast a Consent Mode jelei kezelik; az automatikus oldalmegtekintes
-    // ki van kapcsolva, a Wix sajat csatornaja kuldte a page_view es visit esemenyt.
+    // ki van kapcsolva, a Wix sajat csatornaja kuldte a page_view esemenyt.
     if (!betoltve.ga4) {
       betoltve.ga4 = true;
       betolt('https://www.googletagmanager.com/gtag/js?id=' + GA4);
@@ -126,9 +127,10 @@
       // a Wix minden GA4-hivasra (a GTM-bol jovokre is) rateszi: action_source=website
       gtag('set', { action_source: 'website' });
       gtag('config', GA4, { send_page_view: false });
-      var lap = { page_location: location.origin + UTVONAL + location.search, page_title: d.title };
+      var lap = { page_location: location.origin + UTVONAL + location.search, page_title: d.title, action_source: 'website' };
+      // a "visit" esemenyt nem kell kuldeni: a GA4 sajat "Esemeny letrehozasa" szabalya
+      // minden page_view-rol keszit egy masolatot (a Wixen is igy jon letre)
       gtag('event', 'page_view', lap);
-      gtag('event', 'visit', lap);
     }
 
     // Meta Pixel: az oldalhoz tartozo pixel, hozzajarulastol fuggetlenul (mint a Wixen)
