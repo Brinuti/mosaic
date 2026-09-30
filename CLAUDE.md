@@ -1,8 +1,11 @@
 # Munkaszabályok (Claude)
 
 - **Nyelv:** a felhasználóval mindig magyarul kommunikálj – a közbenső állapotjelzésekben is.
-- **Mindent te csinálsz, amit lehet.** A felhasználótól csak azt kérd, amihez tényleg ő kell
-  (jelszó, fiókhozzáférés, fizetés, döntés). Ilyenkor lépésről lépésre írd le, mit kell tennie.
+- **MINDENT te csinálsz meg.** Ne adj a felhasználónak feladatot, ne kérd, hogy ő teszteljen,
+  ő állítson be valamit vagy ő adjon le tesztrendelést – keress rá utat (csatlakoztatott
+  eszközök, Composio, Gmail, Playwright stb.). Kivétel csak az, amit technikailag kizárólag ő
+  tehet meg (bejelentkezés/engedélyezés a saját fiókjába egy kattintással). Ilyenkor a
+  legrövidebb utat add (egy link, egy kattintás), és utána minden mást te intézel.
 - **Minden változtatás után:** tesztelés (dist build + Playwright), commit, push a fejlesztői
   ágra, PR a `main`-re, és a PR-t te mergeled (`merge_pull_request`, teljes 40 karakteres SHA).
   A Netlify a `main`-t publikálja: https://mosaicheadspa.netlify.app/

@@ -317,10 +317,26 @@
     return v;
   };
 
+  // a kesobb athozott oldalak dobozai (tools/oldaltablak.mjs -> assets/js/oldaltablak.js)
+  const TABLAK = window.MH_TABLAK || {};
+  Object.assign(KATTINTOS, TABLAK.kattintos);
+
   for (const [azon, ertek] of Object.entries(KATTINTOS)) {
     const doboz = document.getElementById(azon);
     if (!doboz || doboz.firstElementChild) continue;
-    const [azonosito, kocka] = ertek.split('/');
+    const [azonosito, kocka, mod] = ertek.split('/');
+    // az asztalin magatol indulo lejatszo: nemitva, vegtelenitve, hanggombbal (mint a 4. pont)
+    if (mod === 'auto' && !mobilOldal) {
+      const v = document.createElement('video');
+      v.src = GYOKER + 'assets/video/' + azonosito + '.mp4';
+      v.poster = GYOKER + 'assets/img/' + azonosito + kocka + '.jpg';
+      v.autoplay = v.loop = v.muted = v.playsInline = true;
+      v.setAttribute('playsinline', 'true');
+      v.style.cssText = 'display:block;width:100%;height:100%;object-fit:cover';
+      doboz.appendChild(v);
+      hangGomb(doboz, v);
+      continue;
+    }
     const tarto = document.createElement('div');
     tarto.className = 'mh-video';
     const kep = document.createElement('img');
@@ -538,11 +554,24 @@
     'comp-mciu8zie': 'terkep', 'comp-mghyuypd4': 'terkep', 'comp-micq2kcn': 'terkep',
   };
 
+  Object.assign(EMBEDEK, TABLAK.embedek);
+  Object.assign(BEAGYAZASOK, TABLAK.beagyazasok);
+  // a Wix-szerkesztobe szovegkent beirt Trustindex-kod a kesobb athozott oldalakon
+  for (const azon of TABLAK.rejtett || []) {
+    const d = document.getElementById(azon);
+    if (d) d.style.visibility = 'hidden';
+  }
+
   const keret = (fajta) => {
     const f = document.createElement('iframe');
     f.style.cssText = 'display:block;width:100%;height:100%;border:0;background:transparent';
     f.loading = 'lazy';
-    if (fajta === 'terkep') {
+    if (fajta.startsWith('yt:')) {
+      f.title = 'Videó (YouTube)';
+      f.src = 'https://www.youtube-nocookie.com/embed/' + fajta.slice(3);
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      f.allowFullscreen = true;
+    } else if (fajta === 'terkep') {
       f.title = 'MOSAIC Head Spa térkép - 1023 Budapest, Bécsi út 2.';
       f.src = TERKEP;
       f.referrerPolicy = 'no-referrer-when-downgrade';
@@ -558,7 +587,7 @@
   const helykitolto = (fajta) => {
     const h = document.createElement('div');
     h.className = 'mh-helykitolto';
-    const [cim, kitol] = fajta === 'terkep' ? ['Térkép', 'Google'] : EMBEDEK[fajta];
+    const [cim, kitol] = fajta === 'terkep' ? ['Térkép', 'Google'] : fajta.startsWith('yt:') ? ['Videó', 'YouTube'] : EMBEDEK[fajta];
     const szoveg = cim + ': a tartalom külső szolgáltatótól (' + kitol + ') töltődik be.';
     const gomb = cim + ' megjelenítése';
     h.innerHTML = '<p>' + szoveg + '</p><button type="button">' + gomb + '</button>' +
@@ -619,6 +648,9 @@
     'comp-metxv9d0': 'c2eb0f_89f74d4c7a84ec25afa7aad7f0133562',   // noi-hajfestes-budapest
     'comp-mb6g8h6k': 'c2eb0f_ebe819c8a20603ef818d0ff477702c21',   // balayage-haj-festes-budapest (Noel)
   };
+
+  Object.assign(GYIK_DOBOZOK, TABLAK.gyik);
+  Object.assign(ARLISTA_DOBOZOK, TABLAK.arlista);
 
   // A Wix a doboz koruli racsoknak a regi widget mereteihez igazitott minimalis
   // magassagot adott (pl. min-height:1881px, illetve "ek" elemek) - ez az uj,

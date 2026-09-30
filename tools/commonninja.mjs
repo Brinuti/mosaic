@@ -54,7 +54,10 @@ for (const f of fs.readdirSync(EMBED).filter((x) => x.endsWith('.html'))) {
     }
   }
   if (!fs.existsSync(mentes)) { console.log(`${nev}: nincs mentett adat`); continue; }
-  const w = JSON.parse(fs.readFileSync(mentes, 'utf8')).data.widgetData;
+  const valasz = JSON.parse(fs.readFileSync(mentes, 'utf8'));
+  // a Common Ninja-ban torolt widget: az eles oldalon is ures a helye
+  if (!valasz.data) { console.log(`${nev}: nincs ilyen widget (${valasz.message || 'ures valasz'})`); continue; }
+  const w = valasz.data.widgetData;
   const adat = w.pluginData.data;
   if (w.appMeta.type === 'accordion') {
     gyik[nev] = adat.questions.map((q) => [szoveg(q.text), tisztit(q.answer && q.answer.text)]);

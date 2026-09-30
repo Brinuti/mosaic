@@ -71,7 +71,8 @@ export function kiegeszit(html, elotag) {
     html = html.replace(/<\/head>/i, `<script src="${elotag}assets/js/galeriak.js"></script>\n</head>`);
   }
   // a GYIK-ok es arlistak tartalma (tools/commonninja.mjs) - a klon.js 5b. szakasza hasznalja
-  for (const f of ['gyik', 'arlistak']) {
+  // + a kesobb athozott oldalak dobozainak tablazatai (tools/oldaltablak.mjs)
+  for (const f of ['gyik', 'arlistak', 'oldaltablak']) {
     if (!html.includes(`assets/js/${f}.js`)) {
       html = html.replace(/<\/head>/i, `<script src="${elotag}assets/js/${f}.js"></script>\n</head>`);
     }
