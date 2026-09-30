@@ -26,6 +26,8 @@ export function utvonal(ut, ua) {
   if (!tiszta) tiszta = '/';
   if (tiszta !== ut) return { atiranyit: tiszta };
   // a blogbejegyzest a Wix a /post/ elotaggal is kiszolgalja (atiranyitas nelkul)
-  const nev = ut === '/' ? 'index' : (ALNEVEK[ut.slice(1)] || ut.slice(1).replace(/^post\//, ''));
+  // a nyitooldal fajlja 'fooldal' (a Netlify az 'index' nevet mappa-kezdolapnak venne
+  // es /_a/-ra iranyitana at)
+  const nev = ut === '/' ? 'fooldal' : (ALNEVEK[ut.slice(1)] || ut.slice(1).replace(/^post\//, ''));
   return { atir: (TELEFON.test(ua || '') ? '/_m/' : '/_a/') + nev };
 }

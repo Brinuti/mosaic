@@ -34,6 +34,8 @@ const LAP_A = path.join(DIST, '_a'), LAP_M = path.join(DIST, '_m');
 fs.mkdirSync(LAP_A, { recursive: true });
 for (const f of fs.readdirSync(path.join(ROOT, 'klon')).filter((x) => x.endsWith('.html'))) fs.copyFileSync(path.join(ROOT, 'klon', f), path.join(LAP_A, f));
 fs.cpSync(path.join(ROOT, 'klon', 'm'), LAP_M, { recursive: true });
+// a nyitooldal a /_a/fooldal, /_m/fooldal fajlbol jon (lasd netlify/lib/utvonal.js)
+for (const m of [LAP_A, LAP_M]) fs.renameSync(path.join(m, 'index.html'), path.join(m, 'fooldal.html'));
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
 // sitemap es robots.txt: elesben a Wix mostani fajljai szo szerint (tools/wix-sitemap/),
 // hogy a keresok ugyanazt a cimlistat lassak; a probaoldalon mindent tiltunk.
