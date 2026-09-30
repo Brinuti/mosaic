@@ -115,7 +115,7 @@ export function kiegeszit(html, elotag) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const ROOT = path.resolve(import.meta.dirname, '..');
   let db = 0;
-  for (const [mappa, elotag] of [['klon', ''], ['klon/m', '../']]) {
+  for (const [mappa, elotag] of [['klon', '/'], ['klon/m', '/']]) {
     for (const f of fs.readdirSync(path.join(ROOT, mappa)).filter((x) => x.endsWith('.html'))) {
       const p = path.join(ROOT, mappa, f);
       const regi = fs.readFileSync(p, 'utf8');

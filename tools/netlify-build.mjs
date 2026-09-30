@@ -4,8 +4,12 @@
 // projekt gyokereben, az assets/ alatt. A kiszolgalon a kettonek egymas mellett
 // kell lennie, ezert egy friss dist/ mappaba masoljuk:
 //
-//   dist/*.html        <- klon/*.html      (asztali)
-//   dist/m/*.html      <- klon/m/*.html    (mobil)
+//   dist/_a/*.html     <- klon/*.html      (asztali)
+//   dist/_m/*.html     <- klon/m/*.html    (mobil)
+//
+// A latogato ezeket nem kozvetlenul eri el: a netlify/edge-functions/oldal.js a
+// Wix-szel azonos, kiterjesztes nelkuli cimen (pl. /headspa-budapest) adja a
+// bongeszonek megfelelo valtozatot.
 //   dist/assets/       <- assets/
 //   dist/robots.txt, dist/sitemap.xml, dist/_redirects, dist/_headers
 //
@@ -26,20 +30,22 @@ const ELES = process.env.ELES === '1';
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
 
-fs.cpSync(path.join(ROOT, 'klon'), DIST, { recursive: true });
+const LAP_A = path.join(DIST, '_a'), LAP_M = path.join(DIST, '_m');
+fs.mkdirSync(LAP_A, { recursive: true });
+for (const f of fs.readdirSync(path.join(ROOT, 'klon')).filter((x) => x.endsWith('.html'))) fs.copyFileSync(path.join(ROOT, 'klon', f), path.join(LAP_A, f));
+fs.cpSync(path.join(ROOT, 'klon', 'm'), LAP_M, { recursive: true });
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
-fs.copyFileSync(path.join(ROOT, 'sitemap.xml'), path.join(DIST, 'sitemap.xml'));
-
+// sitemap es robots.txt: elesben a Wix mostani fajljai szo szerint (tools/wix-sitemap/),
+// hogy a keresok ugyanazt a cimlistat lassak; a probaoldalon mindent tiltunk.
+const SITEMAP = path.join(ROOT, 'tools', 'wix-sitemap');
+for (const f of fs.readdirSync(SITEMAP).filter((x) => x.endsWith('.xml'))) fs.copyFileSync(path.join(SITEMAP, f), path.join(DIST, f));
 fs.writeFileSync(path.join(DIST, 'robots.txt'), ELES
-  ? 'User-agent: *\nAllow: /\n\nSitemap: https://www.mosaicheadspa.hu/sitemap.xml\n'
+  ? fs.readFileSync(path.join(SITEMAP, 'robots.txt'), 'utf8')
   : 'User-agent: *\nDisallow: /\n');
 
-// A Wix a suti-tajekoztatot /post/ elotaggal szolgalta ki - a regi cim is mukodjon.
-fs.writeFileSync(path.join(DIST, '_redirects'), [
-  '/post/suti-tajekoztato  /suti-tajekoztato  301',
-  '/post/*                 /:splat            301',
-  '',
-].join('\n'));
+// A regi /post/ cimeket es a mobil/asztali valasztast a netlify/edge-functions
+// intezi (utvonal.js) - kulon atiranyitasi szabaly nem kell.
+fs.writeFileSync(path.join(DIST, '_redirects'), '');
 
 fs.writeFileSync(path.join(DIST, '_headers'), [
   '/*',
@@ -68,7 +74,7 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
 const SAJAT = ['assets/js/klon.js', 'assets/js/suti.js', 'assets/js/galeriak.js', 'assets/js/gyik.js', 'assets/js/arlistak.js', 'assets/js/oldaltablak.js', 'assets/css/klon.css'];
 const verzio = Object.fromEntries(SAJAT.map((f) => [f,
   crypto.createHash('sha1').update(fs.readFileSync(path.join(ROOT, f))).digest('hex').slice(0, 10)]));
-for (const mappa of [DIST, path.join(DIST, 'm')]) {
+for (const mappa of [LAP_A, LAP_M]) {
   for (const f of fs.readdirSync(mappa).filter((x) => x.endsWith('.html'))) {
     const p = path.join(mappa, f);
     let h = fs.readFileSync(p, 'utf8');
@@ -77,6 +83,6 @@ for (const mappa of [DIST, path.join(DIST, 'm')]) {
   }
 }
 
-const html = fs.readdirSync(DIST).filter((f) => f.endsWith('.html')).length;
-const mobil = fs.readdirSync(path.join(DIST, 'm')).filter((f) => f.endsWith('.html')).length;
+const html = fs.readdirSync(LAP_A).filter((f) => f.endsWith('.html')).length;
+const mobil = fs.readdirSync(LAP_M).filter((f) => f.endsWith('.html')).length;
 console.log(`dist/ kesz: ${html} asztali + ${mobil} mobil oldal, ${ELES ? 'ELES (indexelheto)' : 'PROBA (noindex)'}`);
