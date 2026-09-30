@@ -391,17 +391,6 @@
     'comp-mlg8q2rf5': 'c2eb0f_614b09d160b9382c4cffcde6d7828dcb',  // lezeres-szortelenites-budapest
     'comp-mnmzylj31': 'c2eb0f_614b09d160b9382c4cffcde6d7828dcb',  // oxigenterapia-budapest
     'comp-mghyh3i9': 'c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6',   // index ("olvasd el vendegeinktol")
-    // GYIK (Common Ninja)
-    'comp-m5m8txa6': 'c2eb0f_e2a637ece2437154df156d36cae403f4',   // index
-    'comp-m5m8w3ok': 'c2eb0f_dab261d3e84629df7798238e716f0266',   // index
-    'comp-m7kiqhte': 'c2eb0f_e2a637ece2437154df156d36cae403f4',   // headspa-ferfiaknak
-    'comp-m7kiqhtg1': 'c2eb0f_dab261d3e84629df7798238e716f0266',  // headspa-ferfiaknak
-    'comp-m7pxb9cs': 'c2eb0f_e2a637ece2437154df156d36cae403f4',   // paros-headspa-budapest
-    'comp-m7pxb9cu': 'c2eb0f_dab261d3e84629df7798238e716f0266',   // paros-headspa-budapest
-    'comp-m7io5w964': 'c2eb0f_97df67cb524ad4ad76e22fddea2496e5',  // headspa-ajandekkartya
-    'comp-micq2kau4': 'c2eb0f_97df67cb524ad4ad76e22fddea2496e5',  // 4-kezes-headspa-ajandekkartya
-    'comp-mlg8q2yy2': 'c2eb0f_7101a51e50aef2435d5ed679e90074d4',  // lezeres-szortelenites-budapest
-    'comp-mciu8zgq': 'c2eb0f_193bec926d66321bf99ada19cf4105a5',   // oxigenterapia-budapest
     // arlistak (Common Ninja)
     'comp-mb6gc2i53': 'c2eb0f_89f74d4c7a84ec25afa7aad7f0133562',  // noi-fodraszat-budapest
     'comp-m5p3vva4': 'c2eb0f_89f74d4c7a84ec25afa7aad7f0133562',   // noi-fodrasz-budapest-balayage-hajfestes
@@ -467,6 +456,56 @@
   } else {
     kitolt(true);
   }
+  // --- 5b. GYIK: sajat harmonika a Common Ninja widget helyett ------------------
+  // Az eles oldalon a GYIK-ok fizetos Common Ninja widgetek, fix magassagu
+  // keretben (a fooldalon ketto egymas alatt, alattuk sok ures hellyel). Helyettuk
+  // sajat harmonika all, a szoveg az assets/js/gyik.js-bol jon (tools/gyik.mjs).
+  // A doboz magassaga a tartalomhoz igazodik; a ketreszes GYIK-oknal az elso
+  // dobozba kerul a teljes lista, a masodik eltunik.
+  const GYIK = window.MH_GYIK || {};
+  const GYIK_DOBOZOK = {
+    'comp-m5m8txa6': 'fooldal', 'comp-m5m8w3ok': null,          // index
+    'comp-m7kiqhte': 'fooldal', 'comp-m7kiqhtg1': null,         // headspa-ferfiaknak
+    'comp-m7pxb9cs': 'fooldal', 'comp-m7pxb9cu': null,          // paros-headspa-budapest
+    'comp-m7io5w964': 'masodik',                                // headspa-ajandekkartya
+    'comp-micq2kau4': 'masodik',                                // 4-kezes-headspa-ajandekkartya
+    'comp-mlg8q2yy2': 'szortelenites',                          // lezeres-szortelenites-budapest
+    'comp-mciu8zgq': 'oxigen',                                  // oxigenterapia-budapest
+  };
+  for (const [azon, nev] of Object.entries(GYIK_DOBOZOK)) {
+    const doboz = document.getElementById(azon);
+    if (!doboz) continue;
+    if (!nev || !GYIK[nev]) { doboz.classList.add('mh-gyik-rejtett'); continue; }
+    const lista = document.createElement('div');
+    lista.className = 'mh-gyik';
+    GYIK[nev].forEach(([kerdes, valasz], i) => {
+      const tetel = document.createElement('div');
+      tetel.className = 'mh-gyik-tetel';
+      const gomb = document.createElement('button');
+      gomb.type = 'button';
+      gomb.id = azon + '-k' + i;
+      gomb.setAttribute('aria-expanded', 'false');
+      gomb.setAttribute('aria-controls', azon + '-v' + i);
+      gomb.innerHTML = '<span>' + kerdes + '</span><i aria-hidden="true"></i>';
+      const panel = document.createElement('div');
+      panel.className = 'mh-gyik-valasz';
+      panel.id = azon + '-v' + i;
+      panel.setAttribute('role', 'region');
+      panel.setAttribute('aria-labelledby', gomb.id);
+      panel.hidden = true;
+      panel.innerHTML = valasz;
+      gomb.addEventListener('click', () => {
+        const nyitva = gomb.getAttribute('aria-expanded') === 'true';
+        gomb.setAttribute('aria-expanded', String(!nyitva));
+        panel.hidden = nyitva;
+      });
+      tetel.append(gomb, panel);
+      lista.appendChild(tetel);
+    });
+    doboz.classList.add('mh-gyik-doboz');
+    doboz.replaceChildren(lista);
+  }
+
   // --- 6. Wix "fluid-columns-repeater" (pl. a head spa arkartyak) ---------
   // A Wix sajat eleme rejtve (visibility:hidden) erkezik, es a JS-e teszi
   // lathatova, miutan a hezagokat CSS-valtozokba irta. Ugyanezt tesszuk a
@@ -481,4 +520,167 @@
     r.style.setProperty('--margin-inline-end', (-h / 2) + 'px');
     r.style.visibility = 'visible';
   }
+  // --- 7. Wix Pro Gallery lapozo ----------------------------------------------
+  // A lapozos galeriakbol a Wix HTML-je csak az elso ket kepet es egy "kovetkezo"
+  // nyilat rajzol ki, a tobbit es a mukodest a sajat JS-e adja. A teljes
+  // kepllista az assets/js/galeriak.js-ben van (tools/galeriak.mjs). A dia a
+  // galeria meretet tolti ki (a Wix "fill" / "fit" beallitasa szerint), a
+  // nyilak es a bélyegkepek lapoznak, a vegen korbeer.
+  const GALERIAK = window.MH_GALERIAK || {};
+  for (const tarto of document.querySelectorAll('.pro-gallery.slider[id^="pro-gallery-container-"]')) {
+    const lista = GALERIAK[tarto.id.replace('pro-gallery-container-', '')];
+    const gorgeto = tarto.querySelector('.gallery-horizontal-scroll');
+    const belso = tarto.querySelector('.gallery-horizontal-scroll-inner');
+    if (!lista || lista.length < 2 || !gorgeto || !belso) continue;
+
+    const illeszt = tarto.querySelector('.cube-type-fit') ? 'contain' : 'cover';
+    gorgeto.style.overflow = 'hidden';
+    gorgeto.classList.remove('scroll-snap');
+    belso.style.cssText = 'display:flex;height:100%;transition:transform .45s ease';
+    belso.replaceChildren(...lista.map(([kep, alt], i) => {
+      const dia = document.createElement('div');
+      dia.style.cssText = 'flex:0 0 100%;height:100%';
+      const img = document.createElement('img');
+      img.src = GYOKER + 'assets/img/' + kep;
+      img.alt = alt;
+      img.loading = i < 2 ? 'eager' : 'lazy';
+      img.style.cssText = 'display:block;width:100%;height:100%;object-fit:' + illeszt;
+      dia.appendChild(img);
+      return dia;
+    }));
+
+    // bélyegkepek: az elso kettobol vesszuk a meretet es a lepeskozt
+    const oszlop = tarto.parentElement.querySelector('[data-hook="gallery-thumbnails-column"]');
+    let belyegek = [];
+    if (oszlop) {
+      const minta = oszlop.querySelectorAll('.thumbnailItem');
+      const lepes = minta.length > 1 ? parseFloat(minta[1].style.left) - parseFloat(minta[0].style.left) : 0;
+      if (minta.length && lepes > 0) {
+        const alapStilus = minta[0].getAttribute('style').replace(/background-image:[^;]*;?/, '').replace(/left:[^;]*;?/, '');
+        belyegek = lista.map(([kep], i) => {
+          const b = document.createElement('div');
+          b.className = 'thumbnailItem';
+          b.setAttribute('style', alapStilus + ';background-image:url(' + GYOKER + 'assets/img/' + kep + ');left:' + (i * lepes) + 'px;cursor:pointer');
+          b.addEventListener('click', () => ugrik(i));
+          return b;
+        });
+        oszlop.replaceChildren(...belyegek);
+        oszlop.style.transition = 'left .45s ease';
+        oszlop.dataset.lepes = String(lepes);
+      }
+    }
+
+    let most = 0;
+    const ugrik = (i) => {
+      most = (i + lista.length) % lista.length;
+      belso.style.transform = 'translateX(' + (-100 * most) + '%)';
+      belyegek.forEach((b, j) => b.classList.toggle('pro-gallery-highlight', j === most));
+      if (oszlop && belyegek.length) {
+        // az aktiv bélyegkep maradjon lathato: kozepre gorgetjuk, a szeleken megallva
+        const lepes = Number(oszlop.dataset.lepes);
+        const lathato = oszlop.parentElement.clientWidth;
+        const teljes = belyegek.length * lepes;
+        const eltolas = Math.max(0, Math.min(teljes - lathato, most * lepes - (lathato - lepes) / 2));
+        oszlop.style.left = (-eltolas) + 'px';
+      }
+    };
+
+    const kovetkezo = tarto.querySelector('[data-hook="nav-arrow-next"]');
+    if (kovetkezo) {
+      const elozo = kovetkezo.cloneNode(true);
+      elozo.setAttribute('data-hook', 'nav-arrow-prev');
+      elozo.setAttribute('aria-label', 'Previous Item');
+      elozo.style.right = '';
+      elozo.style.left = kovetkezo.style.right || '23px';
+      const nyil = elozo.querySelector('svg');
+      if (nyil) nyil.style.transform = 'scaleX(-1)';
+      kovetkezo.after(elozo);
+      kovetkezo.addEventListener('click', (e) => { e.preventDefault(); ugrik(most + 1); });
+      elozo.addEventListener('click', (e) => { e.preventDefault(); ugrik(most - 1); });
+    }
+
+    // erinto-kepernyon huzassal is lapozhato
+    let startX = null;
+    gorgeto.addEventListener('pointerdown', (e) => { startX = e.clientX; });
+    gorgeto.addEventListener('pointerup', (e) => {
+      if (startX === null) return;
+      const d = e.clientX - startX;
+      startX = null;
+      if (Math.abs(d) > 40) ugrik(most + (d < 0 ? 1 : -1));
+    });
+    ugrik(0);
+  }
+
+  // --- 8. Wix-felugro ablak (lightbox): a fejlec "i" ikonja ---------------
+  // Az eles oldalon a [data-popupid] elemre kattintva a Wix JS-e letolti es
+  // kirajzolja a felugro ablakot. A klonban a kesz HTML az oldal vegen van egy
+  // <template id="mh-popup-<id>">-ben (tools/popup-info.mjs + klon-kiegeszites.mjs).
+  // A Wixszel egyezo viselkedes:
+  //   - a doboz a Wix CSS-eben levo motion-glideIn animacioval jobbrol uszik be
+  //     (600ms): a Wix a --motion-left valtozoba a doboz bal szelet irja, es az
+  //     animaciot "paused"-bol inditja, a vegen data-motion-enter="done"
+  //   - a hatteroldal nem gorgetheto, amig nyitva van
+  //   - bezaras: X gomb, Esc, a fatyolra kattintas (popupsWithCloseOnOverlayClick),
+  //     kilepo animacio nelkul (a Wixen is azonnal eltunik)
+  const popupok = {};
+  let nyitottPopup = null;
+  let popupNyito = null;
+
+  function popupElem(id) {
+    if (popupok[id]) return popupok[id];
+    const sablon = document.getElementById('mh-popup-' + id);
+    if (!sablon) return null;
+    document.body.appendChild(sablon.content.cloneNode(true));
+    const gyoker = document.querySelector('[data-mh-popup="' + id + '"]');
+    if (!gyoker) return null;
+    // az X, illetve a dobozon kivul barhova (a fatyolra) kattintas bezar
+    gyoker.addEventListener('click', (e) => {
+      if (e.target.closest('[data-mh-popup-zar]') || !e.target.closest('.mh-popup-doboz')) popupZar();
+    });
+    gyoker.addEventListener('keydown', (e) => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('[data-mh-popup-zar]')) { e.preventDefault(); popupZar(); }
+    });
+    popupok[id] = gyoker;
+    return gyoker;
+  }
+
+  function popupNyit(id, nyito) {
+    const gyoker = popupElem(id);
+    if (!gyoker) return;
+    if (nyitottPopup) popupZar();
+    popupNyito = nyito || null;
+    const doboz = gyoker.querySelector('.mh-popup-doboz');
+    if (doboz) doboz.removeAttribute('data-motion-enter');
+    gyoker.hidden = false;
+    document.documentElement.style.overflow = 'hidden';
+    nyitottPopup = gyoker;
+    if (doboz) {
+      // az animacio 0%-an meg nincs eltolas, ezert itt a vegleges helyet merjuk
+      doboz.style.setProperty('--motion-left', doboz.getBoundingClientRect().left + 'px');
+      doboz.style.animationPlayState = 'running';
+      const kesz = () => { doboz.setAttribute('data-motion-enter', 'done'); doboz.style.animationPlayState = ''; };
+      if (getComputedStyle(doboz).animationName === 'none') kesz();
+      else doboz.addEventListener('animationend', kesz, { once: true });
+    }
+    gyoker.focus({ preventScroll: true });
+  }
+
+  function popupZar() {
+    if (!nyitottPopup) return;
+    nyitottPopup.hidden = true;
+    nyitottPopup = null;
+    document.documentElement.style.overflow = '';
+    if (popupNyito) popupNyito.focus({ preventScroll: true });
+    popupNyito = null;
+  }
+
+  for (const nyito of document.querySelectorAll('[data-popupid]')) {
+    const id = nyito.getAttribute('data-popupid');
+    if (!document.getElementById('mh-popup-' + id)) continue;
+    nyito.addEventListener('click', (e) => { e.preventDefault(); popupNyit(id, nyito); });
+    nyito.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); popupNyit(id, nyito); }
+    });
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') popupZar(); });
 })();

@@ -1,5 +1,6 @@
 // A klon oldalainak kiegeszitese azzal, amit a Wix a sajat rendszerebol adott:
-// suti-sav + merokodok (assets/js/suti.js) es a Facebook-domainigazolas.
+// suti-sav + merokodok (assets/js/suti.js), a Facebook-domainigazolas es a fejlec
+// "i" ikonjara nyilo felugro ablak (assets/popup/, lasd tools/popup-info.mjs).
 //
 // A wix2static.mjs minden atalakitott oldalra lefuttatja. Kulon is futtathato a
 // mar meglevo klon/ fajlokra (pl. ha a tools/raw/ nincs meg a gepen):
@@ -31,8 +32,34 @@ function logoCsere(html, elotag) {
   });
 }
 
+// A Wix-felugro ablakok (lightbox) tartalmat a Wix JS-e kattintasra tolti be.
+// A klonban a tools/popup-info.mjs altal elkeszitett HTML <template>-kent kerul az
+// oldal vegere (igy nem tolt be es nem rajzol semmit, amig nem kell), a klon.js a
+// [data-popupid] elemre kattintva innen nyitja meg. Ujrafuttatva a regi blokkot csereli.
+const POPUPOK = { rk7x7: { asztali: 'assets/popup/info.html', mobil: 'assets/popup/info-mobil.html' } };
+const POPUP_BLOKK = /\n?<!--mh-popup-->[\s\S]*?<!--\/mh-popup-->/g;
+function popupBeszuras(html, elotag) {
+  const ROOT = path.resolve(import.meta.dirname, '..');
+  const nezet = elotag ? 'mobil' : 'asztali';
+  const blokkok = Object.entries(POPUPOK)
+    .filter(([id]) => html.includes(`data-popupid="${id}"`))
+    .map(([id, f]) => `<template id="mh-popup-${id}">\n${fs.readFileSync(path.join(ROOT, f[nezet]), 'utf8').trim()}\n</template>`);
+  html = html.replace(POPUP_BLOKK, '');
+  if (!blokkok.length) return html;
+  return html.replace(/<\/body>/i, `<!--mh-popup-->\n${blokkok.join('\n')}\n<!--/mh-popup-->\n</body>`);
+}
+
 export function kiegeszit(html, elotag) {
   if (html.includes(LOGO)) html = logoCsere(html, elotag);
+  // a galeriak teljes kepllistaja (tools/galeriak.mjs) - a klon.js 7. szakasza hasznalja
+  if (!html.includes('assets/js/galeriak.js')) {
+    html = html.replace(/<\/head>/i, `<script src="${elotag}assets/js/galeriak.js"></script>\n</head>`);
+  }
+  // a GYIK-ok szovege (tools/gyik.mjs) - a klon.js 5b. szakasza hasznalja
+  if (!html.includes('assets/js/gyik.js')) {
+    html = html.replace(/<\/head>/i, `<script src="${elotag}assets/js/gyik.js"></script>\n</head>`);
+  }
+  html = popupBeszuras(html, elotag);
   if (html.includes(JEL)) return html;
   const fej = [
     JEL,
