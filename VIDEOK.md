@@ -7,7 +7,7 @@ JavaScripttel tölti be egy külön JSON-ból (oldal-adatok) – ezért voltak �
 |---|---|---|---|
 | **magától induló videó** | nyitóoldal, `headspa-budapest-hungary` | 2 | ✅ asztalin magától indul; mobilon – mint az élő oldalon – poszter + lejátszás gomb |
 | **kattintásra induló videó** (vendégvélemények, bemutatók) | 13 oldal, lásd lent | 51 doboz (+ a fenti 2 mobilon) | ✅ poszterkép + lejátszás gomb, kattintásra indul |
-| **kezelés-galéria** (Wix Video lista) | `index`, `headspa-budapest`, `headspa-budapest-hungary`, `headspa-ferfiaknak`, `paros-headspa-budapest` | 8 videó | ⏳ a lejátszó kész, a 8 fájl hiányzik (Wix-export kell) |
+| **kezelés-galéria** (Wix Video lista) | `index`, `headspa-budapest`, `headspa-budapest-hungary`, `headspa-ferfiaknak`, `paros-headspa-budapest` | 8 videó | ✅ bélyegképre kattintva felugró lejátszóban indul |
 
 ## 1. Kattintásra induló videók
 
@@ -46,11 +46,20 @@ node tools/videok-letoltese.mjs  # a hiányzó videók és poszterek letöltése
 Ha a Wixen egy videót lecserélnek, a fenti két parancs után a `KATTINTOS` táblázatot kell
 igazítani (a `tools/wix-oldaladatok.json`-ban a `lejatszo` mezők).
 
-## 2. Kezelés-galéria (8 videó) – ezt Wixből kell exportálni
+## 2. Kezelés-galéria (8 videó)
 
-Ezeket a Wix tokenes védelemmel tölti be, a linkjük kívülről 403-at ad, ezért csak a Wix
-felületéről tölthetők le. A galéria kész, a bélyegképre kattintva felugró lejátszóban indul –
-amint a fájl a helyén van.
+A Wix Video galéria videóit a Wix csak aláírt linkkel adja ki, ezért a közvetlen címük 403-at
+ad. Miután a Wix Video-ban engedélyezték a letöltést (*allow_download*), a lejátszó letöltés gombja
+mögötti végpontról eredeti minőségben letölthetők lettek (2026-09-30):
+
+```
+https://www.mosaicheadspa.hu/_api/vod/public/v3-to-v2/public/download/<item_id>/redirect?instance=<aláírás>&channel_id=64f2c45bd04e4d4cae7124b198553b6b
+```
+
+Az `instance` aláírást és a videók `item_id`-jét a Wix-oldal futás közben kéri le (a
+`…/public/lists/<csatorna>` és `…/public/play/<item_id>` hívásokból) – ehhez az élő oldalt
+böngészőben kell megnyitni, és a lejátszó hálózati kéréseiből kiolvasni. A csatornán 15 videó van;
+a klón galériájában 8 szerepel, csak ezek vannak a repóban.
 
 | cím a galériában | hossz | fájlnév a repóban (`assets/video/`) |
 |---|---|---|
@@ -62,22 +71,3 @@ amint a fájl a helyén van.
 | 20 ujjas fejmasszírozó | 0:11 | `c2eb0f_430fb9fbd2e744b08703615db12f4018.mp4` |
 | Arcroller | 0:17 | `c2eb0f_bbb818fad4674d2097775970ca10c3d0.mp4` |
 | Fajmasszírozó körkefe | 0:12 | `c2eb0f_4dd11049dc03482e8b6a169484d1b976.mp4` |
-
-### Így exportáld
-
-A Wix felülete néha átrendeződik, ezért a menüpontok neve kicsit eltérhet.
-
-1. **A galéria videói (Wix Video):** a Wix vezérlőpulton (Dashboard) a bal oldali menüben
-   *Wix Video* → *Videótár* (Video Library). Keresd meg a fenti címeket. Egy videó melletti
-   **⋯** menüben, ha van, válaszd a *Letöltés* (Download) pontot.
-2. **Ha ott nincs letöltés:** nyisd meg a szerkesztőt (*Edit Site*), bal oldalt *Média* (Media)
-   → *Webhely fájljai* (Site Files) → *Videók* mappa. Itt több fájl is kijelölhető egyszerre, és
-   a felső sávban megjelenik a **Letöltés** gomb (ZIP-ben jön le). Egy fájlra kattintva jobb oldalt
-   látszik a részletes adatlap; a *Fájl URL* végén lévő `c2eb0f_…` rész a fenti azonosító – ebből
-   biztosan kiderül, melyik melyik.
-3. **Ne nevezd át őket kézzel.** Elég, ha a fájlnévből vagy a mappából kiderül a galériacím
-   (pl. `Kézmasszázs.mp4`), a pontos átnevezést és a feltöltést én intézem.
-4. **Átadás:** tedd egy Google Drive-mappába, és küldd el a linkjét.
-
-Ellenőrizve 2026-09-30-án: ezek a címek minden minőségben (1080p–360p) 403-at adnak, a többi
-videóval ellentétben kívülről nem tölthetők le.
