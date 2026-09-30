@@ -1,5 +1,7 @@
-// Netlify edge-fuggveny: a Wix-szel azonos URL-ek (lasd utvonal.js).
-import { utvonal } from './utvonal.js';
+// Netlify edge-fuggveny: a Wix-szel azonos URL-ek (lasd netlify/lib/utvonal.js).
+// A segedmodul szandekosan nincs az edge-functions mappaban: ott minden fajl
+// kulon edge-fuggvenynek szamit.
+import { utvonal } from '../lib/utvonal.js';
 
 export default async (req, context) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') return;
@@ -9,7 +11,10 @@ export default async (req, context) => {
   if (d.atiranyit) {
     return new Response(null, { status: 301, headers: { location: encodeURI(d.atiranyit) + url.search } });
   }
-  const valasz = await context.rewrite(encodeURI(d.atir) + url.search);
+  const cel = new URL(encodeURI(d.atir) + url.search, req.url);
+  // context.rewrite: a valaszhoz hozzaadhatjuk a Vary fejlecet; ha nincs, sima atiras
+  if (typeof context.rewrite !== 'function') return cel;
+  const valasz = await context.rewrite(cel);
   if (valasz.status === 404) return; // nincs ilyen oldal: a Netlify sajat 404-e
   const h = new Headers(valasz.headers);
   // ugyanaz a cim mobilon es asztalin mast ad - a gyorsitotar ezt tudja

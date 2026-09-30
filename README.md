@@ -78,7 +78,7 @@ Egyetlen oldal újraépítése: `node tools/wix2static.mjs index`
 Minden oldal a Wix-szel azonos, kiterjesztés nélküli címen él (`/headspa-budapest`, a nyitóoldal
 `/`), és **ugyanazon a címen** kapja a telefon a mobil, minden más az asztali változatot – ahogy a
 Wix is a böngésző azonosítója (user agent) alapján döntött, nem a képernyő szélessége szerint.
-Ezt a `netlify/edge-functions/oldal.js` végzi a szerveren (a logika: `utvonal.js`); a lapfájlok a
+Ezt a `netlify/edge-functions/oldal.js` végzi a szerveren (a logika: `netlify/lib/utvonal.js`); a lapfájlok a
 `dist/_a/` (asztali) és `dist/_m/` (mobil) mappában vannak. A régi `.html`, `/m/…` és a per jeles
 címek 301-gyel a Wix-féle címre visznek. Így a GA4, a Meta és a Google Ads ugyanazokat az
 oldalútvonalakat látja, mint eddig.

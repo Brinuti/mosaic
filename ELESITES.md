@@ -29,7 +29,7 @@ az adatsort.
    - `CNAME stape` → `euj.stape.io` (szerveroldali mérés, Meta CAPI)
    - `www` és a gyökérdomain az új tárhelyre; **a gyökér 301-gyel a `www`-re** (mint most)
 2. **Tárhely**: `ELES=1` környezeti változó (indexelhető, a Wix-féle robots.txt és sitemap).
-3. **Cloudflare-re költözéskor**: a `netlify/edge-functions/utvonal.js` logikáját egy Pages Functionbe
+3. **Cloudflare-re költözéskor**: a `netlify/lib/utvonal.js` logikáját egy Pages Functionbe
    kell tenni; az űrlapokat és a levélküldést át kell írni; 3 videó 25 MB fölött van.
 4. **Az átállás után**: GA4-összevetés az utolsó 28 napos alappal (page_view 38 664, visit 36 970,
    session_start 19 088), Meta Events Manager és Google Ads konverziók ellenőrzése.

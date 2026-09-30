@@ -4,7 +4,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
-import { utvonal } from '../netlify/edge-functions/utvonal.js';
+import { utvonal } from '../netlify/lib/utvonal.js';
 
 const DIST = path.resolve(import.meta.dirname, '..', 'dist');
 const PORT = +(process.argv[2] || 4191);
