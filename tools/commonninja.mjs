@@ -30,6 +30,14 @@ const tisztit = (h) => String(h || '')
   .replace(/\s+/g, ' ').trim();
 const szoveg = (h) => tisztit(h).replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 
+// Kezi javitasok a Common Ninja-ban elirt adatokon: widget -> [[rossz, jo], ...]
+const JAVITASOK = {
+  // Noel arlista, "Tofestes + vagas + szaritas" / Extra hosszu haj: az akcios ar
+  // magasabb volt az eredetinel; a tobbi sor alapjan (-20%) 27.960 Ft a helyes.
+  'c2eb0f_ebe819c8a20603ef818d0ff477702c21': [['34.950 Ft helyett 35.160 Ft', '34.950 Ft helyett 27.960 Ft']],
+};
+const javit = (nev, x) => (JAVITASOK[nev] || []).reduce((a, [rossz, jo]) => (a === rossz ? jo : a), x);
+
 const gyik = {}, arlistak = {};
 for (const f of fs.readdirSync(EMBED).filter((x) => x.endsWith('.html'))) {
   const pid = (fs.readFileSync(path.join(EMBED, f), 'utf8').match(/pid-([0-9a-f-]{36})/) || [])[1];
@@ -55,7 +63,7 @@ for (const f of fs.readdirSync(EMBED).filter((x) => x.endsWith('.html'))) {
     arlistak[nev] = {
       nev: w.pluginData.name,
       fejlec: adat.columns.map((c) => szoveg(c.content && c.content.text)),
-      sorok: adat.rows.map((r) => r.cells.map((c) => szoveg(c.content && c.content.text))),
+      sorok: adat.rows.map((r) => r.cells.map((c) => javit(nev, szoveg(c.content && c.content.text)))),
     };
     console.log(`${nev}: tablazat "${w.pluginData.name}", ${arlistak[nev].sorok.length} sor`);
   } else {

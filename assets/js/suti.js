@@ -208,8 +208,47 @@
     nezet(melyik || 'main');
     sav.style.display = 'block';
     ujra.style.display = 'none';
+    // a savon belul barmilyen mozdulat leallitja az automatikus eltunest;
+    // a beallitasok nezetet (a latogato nyitotta meg) nem rejtjuk el magatol
+    if (melyik === 'settings') stopIdozito(); else inditIdozito();
   }
-  function elrejt() { sav.style.display = 'none'; ujra.style.display = 'block'; }
+  // A lebego "Suti beallitasok" gomb nem jelenik meg (kerésre): a hozzajarulas a
+  // lablec "Suti beallitasok" linkjevel modosithato (lasd lableclink()).
+  function elrejt() { stopIdozito(); sav.style.display = 'none'; ujra.style.display = 'none'; }
+
+  // Ha a latogato 20 masodpercig nem nyul a savhoz, eltunik (dontes nelkul - ilyenkor
+  // minden nem-szukseges kategoria tiltva marad), es ebben a munkamenetben nem jon vissza.
+  var AUTO_REJTES_MS = 20000;
+  var idozito = null;
+  function stopIdozito() { if (idozito) { clearTimeout(idozito); idozito = null; } }
+  function inditIdozito() {
+    stopIdozito();
+    idozito = setTimeout(function () {
+      idozito = null;
+      try { sessionStorage.setItem('mh_cc_elrejtve', '1'); } catch (e) { /* nem baj */ }
+      elrejt();
+    }, AUTO_REJTES_MS);
+  }
+  function rejtveMunkamenetben() {
+    try { return sessionStorage.getItem('mh_cc_elrejtve') === '1'; } catch (e) { return false; }
+  }
+
+  // "Suti beallitasok" link a lablecben, az "ASZF - Impresszum" sor vegen - a
+  // tajekoztato szerint itt lehet a hozzajarulast utolag modositani vagy visszavonni.
+  function lableclink() {
+    var cel = null, linkek = d.querySelectorAll('a[href$="impresszum.html"]');
+    for (var i = 0; i < linkek.length; i++) if (linkek[i].closest('footer')) cel = linkek[i];
+    if (!cel || d.getElementById('mh-cc-lablec')) return;
+    var kulso = cel.parentElement && cel.parentElement.tagName === 'SPAN' ? cel.parentElement : cel;
+    var a = d.createElement('a');
+    a.id = 'mh-cc-lablec';
+    a.href = '#';
+    a.className = cel.className;
+    a.textContent = 'Süti beállítások';
+    a.style.textDecoration = 'underline';
+    a.addEventListener('click', function (e) { e.preventDefault(); mutat('settings'); });
+    kulso.after(d.createTextNode(' - '), a);
+  }
 
   function felepit() {
     if (beagyazott || sav) return;
@@ -242,9 +281,12 @@
       }
     });
     ujra.addEventListener('click', function () { mutat('settings'); });
+    ['pointerdown', 'focusin', 'mouseenter', 'touchstart'].forEach(function (ev) {
+      sav.addEventListener(ev, stopIdozito, { passive: true });
+    });
+    lableclink();
 
-    if (dontes && !dontes.reszleges) ujra.style.display = 'block';
-    else mutat('main');
+    if ((!dontes || dontes.reszleges) && !rejtveMunkamenetben()) mutat('main');
   }
 
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', felepit);
