@@ -1,6 +1,7 @@
 // Egy eles oldal lementese mindket valtozatban:
 //   node tools/oldal-mentes.mjs <utvonal> [fajlnev]
 // pl. node tools/oldal-mentes.mjs post/suti-tajekoztato suti-tajekoztato
+//      node tools/oldal-mentes.mjs / index   (nyitooldal)
 // Eredmeny: tools/raw/<fajlnev>.html es tools/raw-mobil/<fajlnev>.html
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,7 +12,7 @@ const MOBIL = 'Mozilla/5.0 (Linux; Android 13; SM-S901B) AppleWebKit/537.36 (KHT
 
 const ut = (process.argv[2] || '').replace(/^\/+/, '');
 const nev = process.argv[3] || (ut.split('/').pop() || 'index');
-if (!ut) { console.error('Hasznalat: node tools/oldal-mentes.mjs <utvonal> [fajlnev]'); process.exit(1); }
+if (process.argv[2] === undefined) { console.error('Hasznalat: node tools/oldal-mentes.mjs <utvonal> [fajlnev]'); process.exit(1); }
 
 for (const [mappa, ua] of [['tools/raw', ASZTALI], ['tools/raw-mobil', MOBIL]]) {
   const v = await fetch(`https://www.mosaicheadspa.hu/${ut}`, { headers: { 'user-agent': ua, 'accept-language': 'hu-HU,hu;q=0.9' } });
