@@ -1026,6 +1026,20 @@
     if (cel) setTimeout(() => odaGorget(cel, false), 150);
   }
 
+  // A Wix Forms beküldés utan "generate_lead" esemenyt tesz a dataLayer-be, a
+  // mezok Wix-kulcsaival (user_data.<kulcs>), plusz email es phone_number. A GTM
+  // erre inditja a GA4 "ajandekkartya_utalas", a TikTok "PlaceAnOrder" es a Stape
+  // (Meta CAPI) "purchase" cimket - ezert pontosan ugyanigy kuldjuk.
+  // adat: URLSearchParams/FormData, kulcsok: [[sajat nev, Wix-kulcs], ...]
+  function wixLead(adat, kulcsok) {
+    var u = {};
+    kulcsok.forEach(function (k) { var v = adat.get(k[0]); if (typeof v === 'string' && v) u[k[1]] = v; });
+    var email = adat.get('email'), tel = adat.get('telefon');
+    if (email) u.email = email;
+    if (tel) u.phone_number = String(tel).replace(/[^\d+]/g, '');
+    (window.dataLayer = window.dataLayer || []).push({ event: 'generate_lead', user_data: u });
+  }
+
   // A Wix radiogombjai nem <label>-ben vannak, es a kijeloles latszatat is a
   // Wix JS-e rajzolja (data-checked + "...--checked" osztaly): ezt itt potoljuk.
   function wixValasztok(urlap) {
@@ -1106,9 +1120,10 @@
         const v = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: adat.toString() });
         if (!v.ok) throw new Error('HTTP ' + v.status);
         // merokodok (ha a latogato engedte): a GTM es a Meta ezt latja konverziokent
-        (window.dataLayer = window.dataLayer || []).push({ event: 'ajandekkartya_rendeles', kartya: adat.get('kartya') });
-        if (window.fbq) window.fbq('track', 'Lead', { content_name: adat.get('kartya') });
-        location.href = 'success-ajandekkartya.html';
+        wixLead(adat, [['keresztnev', 'fizeto_fel_keresztneve'], ['vezeteknev', 'fizeto_fel_vezetekneve'], ['email', 'e_mail_cim'],
+          ['telefon', 'telefonszam'], ['szamlazasi_cim', 'cim'], ['cegnev', 'cegnev_opcionalis'], ['adoszam', 'ceg_adoszam_opcionalis'],
+          ['ajandekozott', 'ajandekozott_neve'], ['kartya', 'milyen_kartyat_kersz']]);
+        location.href = '/success-ajandekkartya';
       } catch (err) {
         uzenet.textContent = 'Hiba történt a küldés közben. Kérlek, próbáld újra, vagy írj nekünk: mosaicheadspa@gmail.com';
         gomb.removeAttribute('aria-disabled');
@@ -1200,10 +1215,10 @@
       try {
         const v = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: adat.toString() });
         if (!v.ok) throw new Error('HTTP ' + v.status);
-        (window.dataLayer = window.dataLayer || []).push({ event: 'pmu_visszahivas', szolgaltatas: adat.get('szolgaltatas') });
-        if (window.fbq) window.fbq('track', 'Lead', { content_name: adat.get('szolgaltatas') });
+        wixLead(adat, [['nev', 'nev'], ['telefon', 'telefonszam'], ['szolgaltatas', 'szolgaltatas'],
+          ['volt_mar_tetovalasa', 'volt_mar_korabban_tetovalasod'], ['megjegyzes', 'mit_beszeljuenk_at_a_foglalas_elott']]);
         // mint a Wixen: a pmu-vh koszonooldalra visz
-        location.href = 'pmu-vh.html';
+        location.href = '/pmu-vh';
       } catch (err) {
         uzenet.textContent = 'Hiba történt a küldés közben. Kérlek, próbáld újra, vagy hívj minket: 06 20 247 4444';
         gomb.removeAttribute('aria-disabled');
@@ -1221,7 +1236,11 @@
   // kicsinyitjuk (a Netlify 8 MB-ot fogad egy bekuldesben), legfeljebb 10-et.
   const JELENTKEZESEK = {
     'form-5b88872c': {
-      nev: 'ppc-jelentkezes', siker: 'allashirdetes-ok.html',
+      nev: 'ppc-jelentkezes', siker: '/allashirdetes-ok',
+      wixKulcsok: [['nev', 'first_name'], ['email', 'email'], ['telefon', 'phone'], ['jelenlegi_munkahely', 'tell_us_what_you_need_help_with'],
+        ['motivacio', 'miert_valtanal'], ['berigeny', 'form_field'], ['google_ads_ev', 'form_field_1'],
+        ['cpa', 'miert_gondolod_hogy_alacsonyabb_cpa_kat_tudnal_elerni_mint_en_10'], ['google_ads_iparag', 'google_ads'],
+        ['meta_ads_ev', 'meta_ads'], ['meta_ads_iparag', 'meta_ads_1'], ['wix', 'wix'], ['wordpress', 'wordpress_ben_melyik_szerkesztot_hasznalod']],
       mezok: [
         ['Hány év tapasztalatod van Google', 'google_ads_ev'], ['Milyen iparágakban hirdettél Google', 'google_ads_iparag'],
         ['Hány év tapasztalatod van Facebook', 'meta_ads_ev'], ['Milyen iparágakban hirdettél Facebook', 'meta_ads_iparag'],
@@ -1230,7 +1249,10 @@
       ],
     },
     'form-86cf1fc1': {
-      nev: 'fodrasz-jelentkezes', siker: 'fodrasz-allas-ok.html',
+      nev: 'fodrasz-jelentkezes', siker: '/fodrasz-allas-ok',
+      wixKulcsok: [['nev', 'first_name'], ['email', 'email'], ['telefon', 'phone'], ['szuletesi_ev', 'melyik_evben_szuelettel'],
+        ['tapasztalat', 'hany_ev_tapasztalatod_van'], ['jelenlegi_munkahely', 'hol_dolgozol_es_miert_valtanal'],
+        ['referencia_link', 'fb_insta_tiktok_referenciaid_linkje']],
       mezok: [
         ['Név', 'nev'], ['Melyik évben', 'szuletesi_ev'], ['Hány év tapasztalatod', 'tapasztalat'],
         ['Hol dolgozol', 'jelenlegi_munkahely'], ['Fb / Insta', 'referencia_link'],
@@ -1321,7 +1343,7 @@
           kicsik.forEach((f, n) => adat.set('kepek' + (n + 1), f, f.name));
           const v = await fetch('/', { method: 'POST', body: adat });
           if (!v.ok) throw new Error('HTTP ' + v.status);
-          (window.dataLayer = window.dataLayer || []).push({ event: 'allas_jelentkezes', urlap: cfg.nev });
+          wixLead(adat, cfg.wixKulcsok);
           location.href = cfg.siker;
         } catch (err) {
           uzenet.textContent = 'Hiba történt a küldés közben. Kérlek, próbáld újra, vagy írj nekünk: mosaicheadspa@gmail.com';

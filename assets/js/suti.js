@@ -23,7 +23,21 @@
   // --- beallitasok ------------------------------------------------------
   var GTM = 'GTM-PST2HB22';
   var GA4 = 'G-H4206SQ0Q7';
-  var META_PIXEL = '3473839859576758';
+  // Meta-pixelek oldalanként, pontosan a Wix egyeni kodjainak oldal-beallitasa
+  // szerint (Headspa / PMU / Fodrasz / Szor). A Wixen "szukseges" kategoriaban
+  // voltak, igy hozzajarulastol fuggetlenul futottak - az adatsor miatt itt is.
+  var PIXEL_HEADSPA = '3473839859576758', PIXEL_PMU = '1019878750660854',
+    PIXEL_FODRASZ = '1361403694872594', PIXEL_SZOR = '643342342027957';
+  var PIXEL_OLDALAK = {};
+  [[PIXEL_HEADSPA, 'index home success-foglalas-egyeni-vip success-foglalas head-spa-kedvezmeny headspa-kupon headspa-ferfiaknak headspa-ajandekkartya success-elofizetes headspa-10szazalek-kedvezmennyel headspa-arak-budapest headspa-elofizetes success-foglalas-4kezes ajikartya-ok headspa-budapest-hungary head-spa-velemenyek foglalas-ok success-foglalas-paros headspa-budapest success-foglalas-paros-vip success-ajandekkartya-stripe 4-kezes-headspa-ajandekkartya paros-headspa-budapest success-ajandekkartya success-foglalas-egyeni'],
+    [PIXEL_PMU, 'korrekcio-ok pmu-ok sminktetovalas-budapest eltavolitas-ok'],
+    [PIXEL_FODRASZ, 'fodraszat-foglalas balayage-haj-festes-budapest fodrasz-ok noi-fodrasz-budapesten-30-szazalek-kedvezmennyel noi-fodraszat-szoke noi-fodraszat-hullam 30szazalek oxigenterapia-ok noi-fodraszat-budapest noi-fodrasz-budapest-balayage-hajfestes noi-hajfestes-budapest oxigenterapia-budapest'],
+    [PIXEL_SZOR, 'lezeres-szortelenites-budapest szortelenites-foglalas elysion-ok szor-konzi-ok szortelenites-ok']
+  ].forEach(function (s) { s[1].split(' ').forEach(function (o) { PIXEL_OLDALAK[o] = s[0]; }); });
+  // az oldal Wix-beli neve az URL-bol ("/" -> index; a /m/ elotag es a .html nelkul)
+  var OLDAL = decodeURIComponent(location.pathname).replace(/^\/(m\/)?/, '').replace(/\.html$/, '').replace(/\/$/, '') || 'index';
+  // a Wix ezt az utvonalat kuldte a dataLayer-be es a GA4-be (kiterjesztes es /m/ nelkul)
+  var UTVONAL = OLDAL === 'index' ? '/' : '/' + OLDAL;
   var TRUSTINDEX_SNIPPET = 'https://cdn.trustindex.io/assets/js/richsnippet.js?392183251480g320';
   // A merokodok csak az eles domainen futnak - a probaoldal (netlify.app,
   // localhost) ne szennyezze a statisztikat es a hirdetesi adatokat.
@@ -94,19 +108,32 @@
       betolt('https://www.googletagmanager.com/gtm.js?id=' + GTM);
     }
 
-    // GA4: csak statisztikai hozzajarulassal. A Wix sajat csatornajan kuldte
-    // az oldalmegtekintest - itt ezt maga a gtag teszi.
-    if (p.ana && !betoltve.ga4) {
+    // A Wix oldalmegtekintes-esemenyei a dataLayer-ben (a GTM-cimkek ezekre is epulhetnek)
+    if (!betoltve.dl) {
+      betoltve.dl = true;
+      var cim = d.title;
+      w.dataLayer.push({ event: 'Pageview', url: UTVONAL, title: cim });
+      w.dataLayer.push({ event: 'page_view', url: UTVONAL, title: cim, page_type: 'static' });
+    }
+
+    // GA4: mint a Wix "Google Tag (Advanced Consent Mode)" kodja - mindig betolt,
+    // a hozzajarulast a Consent Mode jelei kezelik; az automatikus oldalmegtekintes
+    // ki van kapcsolva, a Wix sajat csatornaja kuldte a page_view es visit esemenyt.
+    if (!betoltve.ga4) {
       betoltve.ga4 = true;
       betolt('https://www.googletagmanager.com/gtag/js?id=' + GA4);
       gtag('js', new Date());
-      gtag('config', GA4);
+      // a Wix minden GA4-hivasra (a GTM-bol jovokre is) rateszi: action_source=website
+      gtag('set', { action_source: 'website' });
+      gtag('config', GA4, { send_page_view: false });
+      var lap = { page_location: location.origin + UTVONAL + location.search, page_title: d.title };
+      gtag('event', 'page_view', lap);
+      gtag('event', 'visit', lap);
     }
 
-    // Meta Pixel: csak marketing-hozzajarulassal. (A Wixen egyeni kodkent
-    // hozzajarulastol fuggetlenul futott - a tajekoztato szerint viszont
-    // marketing-suti, ezert itt a donteshez kotjuk.)
-    if (p.adv && !betoltve.meta) {
+    // Meta Pixel: az oldalhoz tartozo pixel, hozzajarulastol fuggetlenul (mint a Wixen)
+    var pixel = PIXEL_OLDALAK[OLDAL];
+    if (pixel && !betoltve.meta) {
       betoltve.meta = true;
       /* eslint-disable */
       !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -115,7 +142,7 @@
       t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
       (w,d,'script','https://connect.facebook.net/en_US/fbevents.js');
       /* eslint-enable */
-      w.fbq('init', META_PIXEL);
+      w.fbq('init', pixel);
       w.fbq('track', 'PageView');
     }
   }
@@ -172,7 +199,7 @@
   var JELOLES =
     '<div id="mh-cc" role="dialog" aria-live="polite" aria-label="Süti beállítások">' +
       '<div id="mh-cc-main">' +
-        '<p class="mh-txt">Sütiket használunk (<a href="suti-tajekoztato.html" target="_blank" rel="noopener">részletek</a>).</p>' +
+        '<p class="mh-txt">Sütiket használunk (<a href="/suti-tajekoztato" target="_blank" rel="noopener">részletek</a>).</p>' +
         '<button type="button" class="mh-link" data-mh="settings">Beállítások</button>' +
         '<button type="button" class="mh-primary" data-mh="accept">Elfogadom</button>' +
       '</div>' +
@@ -236,7 +263,7 @@
   // "Suti beallitasok" link a lablecben, az "ASZF - Impresszum" sor vegen - a
   // tajekoztato szerint itt lehet a hozzajarulast utolag modositani vagy visszavonni.
   function lableclink() {
-    var cel = null, linkek = d.querySelectorAll('a[href$="impresszum.html"]');
+    var cel = null, linkek = d.querySelectorAll('a[href$="/impresszum"], a[href$="impresszum.html"]');
     for (var i = 0; i < linkek.length; i++) if (linkek[i].closest('footer')) cel = linkek[i];
     if (!cel || d.getElementById('mh-cc-lablec')) return;
     var kulso = cel.parentElement && cel.parentElement.tagName === 'SPAN' ? cel.parentElement : cel;

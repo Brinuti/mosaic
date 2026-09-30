@@ -129,7 +129,8 @@ export default async (req) => {
     return new Response('nincs smtp');
   }
   const port = Number(SMTP_PORT || 465);
-  const posta = nodemailer.createTransport({ host: SMTP_HOST, port, secure: port === 465, auth: { user: SMTP_USER, pass: SMTP_PASS } });
+  // a Google az alkalmazasjelszot negyes csoportokban, szokozokkel mutatja
+  const posta = nodemailer.createTransport({ host: SMTP_HOST, port, secure: port === 465, auth: { user: SMTP_USER, pass: SMTP_PASS.replace(/\s+/g, '') } });
   const felado = process.env.MAIL_FROM || `Mosaic Headspa <${SMTP_USER}>`;
   const szalon = process.env.MAIL_TO || 'mosaicheadspa@gmail.com';
   const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email || '') ? d.email : undefined;

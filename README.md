@@ -73,15 +73,20 @@ Egyetlen oldal újraépítése: `node tools/wix2static.mjs index`
    a keresőnek kellenek.
 5. **Beszúrja** a saját CSS-t, a `klon.js`-t és az asztali↔mobil váltót.
 
-### 1.3 Asztali ↔ mobil váltás
+### 1.3 Asztali ↔ mobil váltás és az URL-ek
 
-A `<head>` legelejére kerül egy pár soros script, ami ugyanazt a döntést hozza, mint a Wix: ha a
-böngésző azonosítója telefonra utal, a `klon/m/` alatti oldalra ugrik (és fordítva). **Nem a
-képernyő szélessége számít**, ezért egy keskenyre húzott asztali ablak továbbra is az asztali
-változatot kapja — pontosan úgy, ahogy most is.
+Minden oldal a Wix-szel azonos, kiterjesztés nélküli címen él (`/headspa-budapest`, a nyitóoldal
+`/`), és **ugyanazon a címen** kapja a telefon a mobil, minden más az asztali változatot – ahogy a
+Wix is a böngésző azonosítója (user agent) alapján döntött, nem a képernyő szélessége szerint.
+Ezt a `netlify/edge-functions/oldal.js` végzi a szerveren (a logika: `netlify/lib/utvonal.js`); a lapfájlok a
+`dist/_a/` (asztali) és `dist/_m/` (mobil) mappában vannak. A régi `.html`, `/m/…` és a per jeles
+címek 301-gyel a Wix-féle címre visznek. Így a GA4, a Meta és a Google Ads ugyanazokat az
+oldalútvonalakat látja, mint eddig.
 
-Keretbe (iframe) ágyazva a váltó soha nem lép működésbe, hogy az összehasonlító eszköz használható
-maradjon.
+Helyben ugyanígy: `node tools/serve-dist.mjs` (http://localhost:4191).
+
+A mérés (GTM, GA4, Meta-pixelek, dataLayer-események) a Wixszel azonos – részletek és az
+élesítési teendők: [ELESITES.md](ELESITES.md).
 
 ### 1.4 Betűk
 
