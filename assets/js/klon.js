@@ -180,6 +180,35 @@
       if (poszter) poszter.style.visibility = 'hidden';
     }, { once: true });
     v.src = GYOKER + 'assets/video/' + info.videoId + '.mp4';
+    const oszlop = document.getElementById(info.containerId);
+    if (oszlop) hangGomb(oszlop, v);
+  }
+
+  // Mobilon a Wix a hattervideo helyen csak a poszterkepet mutatja. A kert
+  // viselkedes szerint ott is mozogjon: a poszter fole ugyanazt a videot tesszuk.
+  // (doboz -> videoazonosito; csak az asztalin is lejatszodo hattervideok.)
+  const MOBIL_HATTERVIDEOK = {
+    'comp-m7qdhnhw': 'c2eb0f_c49cecf68dc14cdf99207280fb646f62',   // index
+    'comp-m7ith1w21': 'c2eb0f_7c74e304d3394deeb1101d7612e658ce',  // headspa-ajandekkartya
+  };
+  if (mobilOldal) {
+    for (const [azon, videoId] of Object.entries(MOBIL_HATTERVIDEOK)) {
+      const media = document.getElementById('bgMedia_' + azon);
+      const oszlop = document.getElementById(azon);
+      if (!media || !oszlop || media.querySelector('video')) continue;
+      const v = document.createElement('video');
+      v.muted = true;
+      v.loop = true;
+      v.autoplay = true;
+      v.playsInline = true;
+      v.setAttribute('playsinline', 'true');
+      v.preload = 'auto';
+      v.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+      v.src = GYOKER + 'assets/video/' + videoId + '.mp4';
+      media.style.position = 'relative';
+      media.appendChild(v);
+      hangGomb(oszlop, v);
+    }
   }
 
   // --- 4b. kattintasra indulo videok (velemeny- es kezelesvideok) ----------
@@ -471,10 +500,38 @@
     'comp-mb6g8h6k': 'c2eb0f_ebe819c8a20603ef818d0ff477702c21',   // balayage-haj-festes-budapest (Noel)
   };
 
+  // A Wix a doboz koruli racsoknak a regi widget mereteihez igazitott minimalis
+  // magassagot adott (pl. min-height:1881px, illetve "ek" elemek) - ez az uj,
+  // rovidebb tartalom alatt ures helykent maradna. A szulo-racsoknal (a
+  // szekcioig) kikapcsoljuk.
+  function tartalomMagassag(doboz) {
+    let e = doboz.parentElement;
+    for (let i = 0; e && i < 6; i++, e = e.parentElement) {
+      if (/gridContainer$/.test(e.getAttribute('data-mesh-id') || '')) {
+        e.style.minHeight = '0';
+        // a Wix "ek" elemei (…-wedge-N) a regi sormagassagot tartanak fenn
+        for (const ek of e.querySelectorAll(':scope > [data-mesh-id*="-wedge-"]')) ek.style.display = 'none';
+      }
+      if (e.tagName === 'SECTION') break;
+    }
+  }
+
   for (const [azon, nevek] of Object.entries(GYIK_DOBOZOK)) {
     const doboz = document.getElementById(azon);
     if (!doboz) continue;
-    if (!nevek) { doboz.classList.add('mh-gyik-rejtett'); continue; }
+    if (!nevek) {
+      // a doboz mogott allo, csak neki szolo (ures) hatterkartya is tunjon el
+      const r = doboz.getBoundingClientRect();
+      doboz.classList.add('mh-gyik-rejtett');
+      for (const t of doboz.parentElement.children) {
+        if (t === doboz || !t.id) continue;
+        const q = t.getBoundingClientRect();
+        const fed = q.top < r.bottom && q.bottom > r.top && q.left < r.right && q.right > r.left;
+        const ures = !t.textContent.trim() && !t.querySelector('img, video, iframe, svg');
+        if (fed && ures) t.classList.add('mh-gyik-rejtett');
+      }
+      continue;
+    }
     const tetelek = nevek.flatMap((n) => GYIK[n] || []);
     if (!tetelek.length) continue;
     const lista = document.createElement('div');
@@ -506,6 +563,7 @@
     });
     doboz.classList.add('mh-gyik-doboz');
     doboz.replaceChildren(lista);
+    tartalomMagassag(doboz);
   }
 
   // Arlista: tablazat; keskeny kepernyon (mobil) soronkent kartya, a hajhosszal
@@ -543,6 +601,7 @@
     }
     doboz.classList.add('mh-gyik-doboz');
     doboz.replaceChildren(tabla);
+    tartalomMagassag(doboz);
   }
 
   // --- 6. Wix "fluid-columns-repeater" (pl. a head spa arkartyak) ---------
