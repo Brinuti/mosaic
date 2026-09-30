@@ -123,6 +123,128 @@
     v.style.cssText = 'display:block;width:100%;height:100%;object-fit:contain';
     doboz.appendChild(v);
   }
+
+  // --- 4a. oszlop-hattervideok (wix-video) ----------------------------------
+  // A <video> elem megvan a mentesben, csak a forrasa hianyzik: a Wix a
+  // data-video-info alapjan tolti be. Ugyanezt tesszuk a helyi fajllal. A mobil
+  // mentesekben ilyen elem nincs (az eles mobil oldal is csak a poszterkepet mutatja).
+  for (const tarto of document.querySelectorAll('wix-video[data-video-info]')) {
+    let info;
+    try { info = JSON.parse(tarto.getAttribute('data-video-info')); } catch (e) { continue; }
+    const v = tarto.querySelector('video');
+    if (!v || v.src || !info.videoId) continue;
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    v.autoplay = !!info.autoPlay;
+    v.style.cssText = 'width:100%;height:100%;object-fit:' + (info.fittingType === 'fill' ? 'cover' : 'contain');
+    const poszter = tarto.querySelector('.bgVideoposter');
+    v.addEventListener('playing', () => { if (poszter) poszter.style.visibility = 'hidden'; }, { once: true });
+    v.src = GYOKER + 'assets/video/' + info.videoId + '.mp4';
+  }
+
+  // --- 4b. kattintasra indulo videok (velemeny- es kezelesvideok) ----------
+  // A tobbi VideoPlayer-dobozt a Wix poszterkeppel es lejatszas-gombbal rajzolja
+  // ki, es kattintasra indul. A klonban ezek a dobozok teljesen uresek (a Wix a
+  // tartalmukat kulon JSON-bol tolti) - ez a tablazat mondja meg, melyikbe mi
+  // kerul: doboz-azonosito -> Wix videoazonosito. A poszter a
+  // assets/img/<azonosito>f000.jpg, a video a assets/video/<azonosito>.mp4.
+  //
+  // A tablazatot a tools/wix-oldaladatok.mjs kimenetebol kell kitolteni (lasd
+  // VIDEOK.md). Amelyik doboz nincs benne, az ures marad, mint eddig.
+  const KATTINTOS = {
+  };
+
+  const lejatszoGomb = () => {
+    const g = document.createElement('button');
+    g.type = 'button';
+    g.className = 'mh-video-gomb';
+    g.setAttribute('aria-label', 'Videó lejátszása');
+    g.innerHTML = '<svg viewBox="0 0 40 40" width="50" height="50" fill="currentColor" aria-hidden="true">' +
+      '<circle cx="20" cy="20" r="19" fill="rgba(0,0,0,.35)" stroke="currentColor" stroke-width="2"/>' +
+      '<path d="M16 12.5v15l12-7.5z"/></svg>';
+    return g;
+  };
+
+  const videoElem = (azonosito) => {
+    const v = document.createElement('video');
+    v.src = GYOKER + 'assets/video/' + azonosito + '.mp4';
+    v.controls = true;
+    v.autoplay = true;
+    v.playsInline = true;
+    v.setAttribute('playsinline', 'true');
+    return v;
+  };
+
+  for (const [azon, azonosito] of Object.entries(KATTINTOS)) {
+    const doboz = document.getElementById(azon);
+    if (!doboz || doboz.firstElementChild) continue;
+    const tarto = document.createElement('div');
+    tarto.className = 'mh-video';
+    const kep = document.createElement('img');
+    kep.src = GYOKER + 'assets/img/' + azonosito + 'f000.jpg';
+    kep.alt = '';
+    kep.loading = 'lazy';
+    const gomb = lejatszoGomb();
+    tarto.append(kep, gomb);
+    tarto.addEventListener('click', () => tarto.replaceChildren(videoElem(azonosito)), { once: true });
+    doboz.appendChild(tarto);
+  }
+
+  // --- 4c. videogaleria (Wix Video lista) ------------------------------------
+  // A galeria bélyegkepei, cimei es a lejatszas-gombok megvannak, csak kattintasra
+  // nem tortenik semmi. A bélyegkep neve <videoazonosito>f002.jpg - ebbol tudjuk,
+  // melyik video tartozik hozza. Ha a video helyben megvan (assets/video/), egy
+  // felugro lejatszoban inditjuk; ha nincs, a gomb nem csinal semmit, mint eddig.
+  const megvan = new Map();
+  const letezik = (url) => {
+    if (!megvan.has(url)) {
+      megvan.set(url, fetch(url, { method: 'HEAD' }).then((r) => r.ok).catch(() => false));
+    }
+    return megvan.get(url);
+  };
+
+  const felugro = (azonosito, cim) => {
+    const hatter = document.createElement('div');
+    hatter.className = 'mh-felugro';
+    hatter.setAttribute('role', 'dialog');
+    hatter.setAttribute('aria-label', cim || 'Videó');
+    const zar = document.createElement('button');
+    zar.type = 'button';
+    zar.className = 'mh-felugro-zar';
+    zar.setAttribute('aria-label', 'Bezárás');
+    zar.textContent = '×';
+    const v = videoElem(azonosito);
+    hatter.append(v, zar);
+    const bezar = () => { v.pause(); hatter.remove(); document.removeEventListener('keydown', esc); };
+    const esc = (e) => { if (e.key === 'Escape') bezar(); };
+    hatter.addEventListener('click', (e) => { if (e.target === hatter || e.target === zar) bezar(); });
+    document.addEventListener('keydown', esc);
+    document.body.appendChild(hatter);
+    zar.focus();
+  };
+
+  // A kiemelt (nagy) video nem a bélyegkep-listaban van, ezert minden
+  // lejatszas-gombtol felfele keressuk a legkozelebbi elemet, amiben pontosan egy
+  // videohoz tartozo bélyegkep van.
+  const POSZTER = /assets\/img\/([a-z0-9]+_[a-f0-9]{32})f00\d\.jpg/g;
+  for (const gomb of document.querySelectorAll('[data-hook="overlay-play-button"]')) {
+    let elem = gomb.parentElement, azonosito = null;
+    for (let i = 0; elem && i < 12; i++, elem = elem.parentElement) {
+      const talalt = new Set([...elem.innerHTML.matchAll(POSZTER)].map((m) => m[1]));
+      if (talalt.size === 1) { azonosito = [...talalt][0]; break; }
+      if (talalt.size > 1) break;
+    }
+    if (!azonosito) continue;
+    const url = GYOKER + 'assets/video/' + azonosito + '.mp4';
+    const kep = elem.querySelector('img[alt]');
+    const cim = kep ? kep.alt : '';
+    gomb.addEventListener('click', (e) => {
+      e.preventDefault();
+      letezik(url).then((van) => { if (van) felugro(azonosito, cim); });
+    });
+  }
+
   // --- 5. beagyazott tartalmak: Trustindex-velemenyek es Google-terkep ------
   // Az eles oldalon ezek a Wix HtmlComponent / GoogleMap dobozaiban, keretben
   // (iframe) jelennek meg. A klonban a dobozok uresek - ide tesszuk vissza oket,
