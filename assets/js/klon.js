@@ -123,4 +123,86 @@
     v.style.cssText = 'display:block;width:100%;height:100%;object-fit:contain';
     doboz.appendChild(v);
   }
+  // --- 5. beagyazott tartalmak: Trustindex-velemenyek es Google-terkep ------
+  // Az eles oldalon ezek a Wix HtmlComponent / GoogleMap dobozaiban, keretben
+  // (iframe) jelennek meg. A klonban a dobozok uresek - ide tesszuk vissza oket,
+  // ugyanugy keretben, a doboz teljes meretere.
+  //
+  // Mindketto harmadik feltol tolt be tartalmat, ezert a tajekoztato szerint a
+  // "funkcionalis" kategoriaba tartoznak: amig a latogato ezt nem engedte, egy
+  // helykitolto all a helyukon, egy gombbal, ami csak ezt a kategoriat engedelyezi.
+  const TRUSTINDEX = 'https://cdn.trustindex.io/loader.js?8a7562c424f027774456be130a1';
+  const TERKEP = 'https://www.google.com/maps?q=' +
+    encodeURIComponent('MOSAIC Head Spa, 1023 Budapest, Bécsi út 2.') + '&output=embed';
+  const TERKEP_LINK = 'https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent('MOSAIC Head Spa, 1023 Budapest, Bécsi út 2.');
+
+  const BEAGYAZASOK = {
+    // Trustindex-widget (472x317-es doboz; a velemenyek es a szortelenites
+    // oldalon a mellette levo szovegdobozban a Wix-szerkesztobe beirt kod is latszik)
+    'comp-m7q9i6yk': 'velemeny',   // head-spa-velemenyek
+    'comp-mlg8q2rf5': 'velemeny',  // lezeres-szortelenites-budapest
+    'comp-mnmzylj31': 'velemeny',  // oxigenterapia-budapest (ugyanaz a doboz, ugyanakkora)
+    // Google-terkep
+    'comp-m3znoat23': 'terkep', 'comp-m7iq5wws1': 'terkep', 'comp-m7j9kag62': 'terkep',
+    'comp-m7kiqhv01': 'terkep', 'comp-m7pxb9eh': 'terkep', 'comp-m7q2fh4v': 'terkep',
+    'comp-mciu8zie': 'terkep', 'comp-mghyuypd4': 'terkep', 'comp-micq2kcn': 'terkep',
+  };
+
+  const keret = (fajta) => {
+    const f = document.createElement('iframe');
+    f.style.cssText = 'display:block;width:100%;height:100%;border:0;background:transparent';
+    if (fajta === 'terkep') {
+      f.title = 'MOSAIC Head Spa térkép - 1023 Budapest, Bécsi út 2.';
+      f.src = TERKEP;
+      f.loading = 'lazy';
+      f.referrerPolicy = 'no-referrer-when-downgrade';
+      f.allowFullscreen = true;
+    } else {
+      f.title = 'Vendégértékelések';
+      f.srcdoc = '<!doctype html><html><head><meta charset="utf-8">' +
+        '<style>html,body{margin:0;background:transparent}</style></head><body>' +
+        '<script defer async src="' + TRUSTINDEX + '"><\/script></body></html>';
+    }
+    return f;
+  };
+
+  const helykitolto = (fajta) => {
+    const h = document.createElement('div');
+    h.className = 'mh-helykitolto';
+    const szoveg = fajta === 'terkep'
+      ? 'A térkép a Google-től töltődik be.'
+      : 'A vendégértékelések a Trustindextől töltődnek be.';
+    const gomb = fajta === 'terkep' ? 'Térkép megjelenítése' : 'Értékelések megjelenítése';
+    h.innerHTML = '<p>' + szoveg + '</p><button type="button">' + gomb + '</button>' +
+      (fajta === 'terkep'
+        ? '<a href="' + TERKEP_LINK + '" target="_blank" rel="noopener">Megnyitás a Google Térképen</a>'
+        : '');
+    h.querySelector('button').addEventListener('click', () => {
+      if (window.mhSuti) window.mhSuti.enged('fun');
+      else kitolt(true);
+    });
+    return h;
+  };
+
+  const kitolt = (engedve) => {
+    for (const [azon, fajta] of Object.entries(BEAGYAZASOK)) {
+      const doboz = document.getElementById(azon);
+      if (!doboz) continue;
+      const most = doboz.firstElementChild;
+      if (engedve) {
+        if (most && most.tagName === 'IFRAME') continue;
+        doboz.replaceChildren(keret(fajta));
+      } else if (!most) {
+        doboz.appendChild(helykitolto(fajta));
+      }
+    }
+  };
+
+  if (window.mhSuti) {
+    kitolt(window.mhSuti.engedely('fun'));
+    window.mhSuti.figyel((d) => { if (d.fun) kitolt(true); });
+  } else {
+    kitolt(true);
+  }
 })();
