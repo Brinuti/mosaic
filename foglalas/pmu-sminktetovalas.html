@@ -10,7 +10,9 @@
 <link rel="canonical" href="https://www.mosaicheadspa.hu/pmu-sminktetovalas">
 <link rel="icon" href="/assets/img/c2eb0f_b001e2c55098446da3e38ff055e20354.png" type="image/png">
 <link rel="preload" href="/assets/fonts/playfair-display-500-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/img/c2eb0f_73841778858c46c58239af00c35f790a.jpg" as="image">
+<link rel="preload" href="/assets/img/pmu/gyogyult-szoke.jpg" as="image">
+<link rel="stylesheet" href="/assets/css/wix-google-fonts.css">
+<link rel="stylesheet" href="/assets/css/wix-fonts.css">
 <link rel="stylesheet" href="/assets/css/pmu-landing.css">
 <script src="/assets/js/suti.js"></script>
 </head>
@@ -24,20 +26,8 @@
   A [szogletes zarojeles] szovegek validalasra varo helyorzok - ne talalj ki helyettuk adatot.
 -->
 
-<header class="fejlec">
-  <div class="sav">
-    <a class="logo" href="#top" aria-label="MOSAIC Beauty Studio – az oldal teteje"><span class="logo-nev">MOSAIC</span><span class="logo-al">Beauty Studio</span></a>
-    <nav class="menu" aria-label="Oldalmenü">
-      <a href="#eredmenyek">Sminktetoválás</a>
-      <a href="#eredmenyek">Eredmények</a>
-      <a href="#arak">Árak</a>
-      <a href="#menet">Menet</a>
-      <a href="#gyik">GYIK</a>
-    </nav>
-    <span class="fej-telefon helyorzo" data-helyorzo="telefonszam"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/></svg>[TELEFONSZÁM HELYE]</span>
-    <a class="gomb gomb-sotet gomb-kicsi" href="#foglalas" data-cta="fejlec-idopontok"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Időpontok</a>
-  </div>
-</header>
+<!-- A MOSAIC oldal fejlece: a tools/netlify-build.mjs szurja be (assets/fejlec/, tools/fejlec-kivonat.mjs) -->
+<!--mh-fejlec-->
 
 <main id="top">
 
@@ -58,8 +48,9 @@
         <h1>Természetes sminktetoválás, ami illik az arcformádhoz.</h1>
         <p class="hero-al">Melitta veled együtt tervezi meg a formát, és csak akkor kezd, ha te jóváhagytad.</p>
         <div class="szakember-mini">
-          <span class="avatar" role="img" aria-label="Töreki Melitta"></span>
-          <span><b>Töreki Melitta</b><small>sminktetováló szakember</small><em class="alairas">Melitta</em></span>
+          <img class="avatar" src="/assets/img/pmu/melitta-portre.jpg" alt="Töreki Melitta" width="76" height="76">
+          <span><b>Töreki Melitta</b><small>PMU stylist és oktató · 5 év tapasztalat</small>
+          <span class="dij-sor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 01-10 0zM7 6H4a3 3 0 003 4M17 6h3a3 3 0 01-3 4M12 14v4M8 21h8M9 18h6"/></svg>WULOP Milano 2025 – Eyebrow Shading <b>3. hely</b></span></span>
         </div>
         <a class="gomb gomb-sotet gomb-nagy" href="#foglalas" data-cta="hero-foglalas">Szabad időpontokat nézek <span class="nyil">→</span></a>
         <div class="masodlagos">
@@ -67,17 +58,16 @@
           <button type="button" class="link-gomb" data-visszahivas="hero" data-cta="hero-visszahivas">Visszahívást kérek <span class="nyil">→</span></button>
         </div>
         <div class="bizalom">
-          <span class="google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg>Google 5,0 <span class="csillagok" aria-label="5 csillag">★★★★★</span></span>
-          <span class="elvalaszto"></span>
-          <span class="dij"><span class="ikon-kor"><svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 01-10 0zM7 6H4a3 3 0 003 4M17 6h3a3 3 0 01-3 4M12 14v4M8 21h8M9 18h6"/></svg></span>WULOP Milano 2025 – 3. hely</span>
+          <a class="google" href="#velemenyek" data-cta="hero-google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg><span class="g-ertek" data-g-ertek>Google</span> <span class="csillagok" aria-hidden="true">★★★★★</span> <span class="g-db" data-g-db>Vendégvélemények</span> <span class="nyil">→</span></a>
         </div>
       </div>
       <figure class="hero-kep">
-        <div class="eloutana">
-          <div class="fel" style="--kep:url(/assets/img/c2eb0f_73841778858c46c58239af00c35f790a.jpg);--meret:200% 100%;--pos:0 0"><span class="cimke">Előtte</span></div>
-          <div class="fel" style="--kep:url(/assets/img/c2eb0f_73841778858c46c58239af00c35f790a.jpg);--meret:200% 100%;--pos:100% 0"><span class="cimke">Gyógyult eredmény</span></div>
-        </div>
-        <figcaption class="kezirat">Természetes.<br>Hozzád illő.<br>Mindig te.</figcaption>
+        <img class="hero-foto" src="/assets/img/pmu/gyogyult-szoke.jpg" alt="Gyógyult, természetes szemöldöktetoválás" width="1000" height="1500" fetchpriority="high">
+        <span class="cimke">Gyógyult eredmény</span>
+        <figcaption class="hero-betet" aria-label="Előtte és utána">
+          <span class="betet-kep" style="--pos:0 0"><span class="cimke">Előtte</span></span>
+          <span class="betet-kep" style="--pos:0 100%"><span class="cimke">Utána</span></span>
+        </figcaption>
       </figure>
     </div>
   </div>
@@ -104,27 +94,30 @@
     <p class="halk kozepre">Válaszd ki, melyik illik most rád, hogy a számodra legmegfelelőbb információkat mutathassuk.</p>
     <div class="helyzet-racs">
       <article class="helyzet">
-        <img src="/assets/img/c2eb0f_af60d987d02a4ad0a8f23b6b66a2df8e.jpg" alt="" loading="lazy" style="object-position:50% 30%">
+        <img src="/assets/img/pmu/szemoldok-03.jpg" alt="" loading="lazy">
         <div>
-          <h3>Ez lenne az első sminktetoválásom</h3>
+          <p class="helyzet-terulet">Szemöldök</p>
+          <h3>Ez lenne az első szemöldöktetoválásom</h3>
           <p>Szeretnék természetes, hozzám illő eredményt, és nem tudom, pontosan mire számítsak.</p>
-          <a class="gomb gomb-sotet gomb-kicsi" href="#foglalas" data-elozmeny="nem" data-cta="helyzet-elso">Ez vagyok <span class="nyil">→</span></a>
+          <a class="gomb gomb-sotet gomb-kicsi" href="#foglalas" data-elozmeny="nem" data-terulet="szemoldok" data-cta="helyzet-elso">Ez vagyok <span class="nyil">→</span></a>
         </div>
       </article>
       <article class="helyzet">
         <img src="/assets/img/c2eb0f_89cc6bf1793c48f193ce38d64d87e940.jpg" alt="" loading="lazy">
         <div>
+          <p class="helyzet-terulet">Szemöldök vagy ajak</p>
           <h3>Van már sminktetoválásom</h3>
           <p class="figyelmeztet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 16.5v.5"/></svg>Ha régebbi sminktetoválásod van, kérlek ne foglalj időpontot azonnal, előbb küldj egy fotót, hogy segíthessünk a számodra megfelelő megoldással.</p>
           <a class="gomb gomb-sotet gomb-kicsi" href="#foglalas" data-elozmeny="igen" data-cta="helyzet-regi">Fotót küldök <span class="nyil">→</span></a>
         </div>
       </article>
       <article class="helyzet">
-        <div class="ketkep"><img src="/assets/img/c2eb0f_414f6e9eff9f4b77975073587d6d5624.jpg" alt="" loading="lazy"><img src="/assets/img/c2eb0f_014b63526bc644c7a234475fb367a963.jpg" alt="" loading="lazy"></div>
+        <img src="/assets/img/pmu/ajak-03.jpg" alt="" loading="lazy">
         <div>
-          <h3>Ajak vagy szemhéj érdekel</h3>
-          <p>Természetes hatású ajak- és szemhéj&shy;tetoválások, az arcodhoz illeszkedő megoldásokkal.</p>
-          <a class="gomb gomb-sotet gomb-kicsi" href="#arak" data-cta="helyzet-ajak-szemhej">Megnézem <span class="nyil">→</span></a>
+          <p class="helyzet-terulet">Ajak</p>
+          <h3>Ajaktetoválás érdekel</h3>
+          <p>Természetes hatású ajaktetoválás, az arcodhoz és a bőrtónusodhoz illő színnel.</p>
+          <a class="gomb gomb-sotet gomb-kicsi" href="#eredmenyek" data-szuro-ugras="ajak" data-cta="helyzet-ajak">Megnézem <span class="nyil">→</span></a>
         </div>
       </article>
     </div>
@@ -138,62 +131,33 @@
     <p class="halk kozepre">Valódi vendégek, valódi eredmények. Természetes, gyógyult sminktetoválások Melitta munkái.</p>
     <div class="szuro" role="tablist" aria-label="Eredmények szűrése">
       <button type="button" role="tab" aria-selected="true" data-szuro="osszes">Összes</button>
-      <button type="button" role="tab" aria-selected="false" data-szuro="elso">Első PMU</button>
-      <button type="button" role="tab" aria-selected="false" data-szuro="ritka">Ritka-hiányos</button>
-      <button type="button" role="tab" aria-selected="false" data-szuro="erett">Érettebb bőr</button>
-      <button type="button" role="tab" aria-selected="false" data-szuro="regi">Régi PMU után</button>
+      <button type="button" role="tab" aria-selected="false" data-szuro="szemoldok">Szemöldök</button>
       <button type="button" role="tab" aria-selected="false" data-szuro="ajak">Ajak</button>
-      <button type="button" role="tab" aria-selected="false" data-szuro="szemhej">Szemhéj</button>
     </div>
-    <!-- A kartyak data-kategoria erteke a szurohoz: csak validalt besorolas keruljon ide. -->
-    <div class="eset-racs" id="esetek">
-      <article class="eset" data-kategoria="elso">
-        <div class="eloutana kicsi">
-          <div class="fel" style="--kep:url(/assets/img/c2eb0f_73841778858c46c58239af00c35f790a.jpg);--meret:200% 100%;--pos:0 0"><span class="cimke">Előtte</span></div>
-          <div class="fel" style="--kep:url(/assets/img/c2eb0f_73841778858c46c58239af00c35f790a.jpg);--meret:200% 100%;--pos:100% 0"><span class="cimke">Gyógyult eredmény</span></div>
-        </div>
-        <h3>Szemöldöktetoválás</h3><p>Természetes sűrítés, az arcformához igazítva.</p>
-        <p class="gyogyult helyorzo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Gyógyult: [idő helye]</p>
-      </article>
-      <article class="eset" data-kategoria="elso">
-        <div class="eloutana kicsi">
-          <div class="fel" style="--kep:url(/assets/img/c2eb0f_9a056d2081e84e17a3914d06797e9ca4.jpg);--meret:250% 200%;--pos:0 0"><span class="cimke">Előtte</span></div>
-          <div class="fel" style="--kep:url(/assets/img/c2eb0f_9a056d2081e84e17a3914d06797e9ca4.jpg);--meret:250% 200%;--pos:0 100%"><span class="cimke">Gyógyult eredmény</span></div>
-        </div>
-        <h3>Szemöldöktetoválás</h3><p>Lágy, természetes forma, finom satírral.</p>
-        <p class="gyogyult helyorzo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Gyógyult: [idő helye]</p>
-      </article>
-      <article class="eset" data-kategoria="ajak">
-        <div class="eloutana kicsi">
-          <div class="fel" style="--kep:url(/assets/img/c2eb0f_25713721006844f58218e4ffef886773.jpg);--meret:100% 200%;--pos:0 0"><span class="cimke">Előtte</span></div>
-          <div class="fel" style="--kep:url(/assets/img/c2eb0f_25713721006844f58218e4ffef886773.jpg);--meret:100% 200%;--pos:0 100%"><span class="cimke">Gyógyult eredmény</span></div>
-        </div>
-        <h3>Ajaktetoválás</h3><p>Üdébb, harmonikusabb ajkak.</p>
-        <p class="gyogyult helyorzo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Gyógyult: [idő helye]</p>
-      </article>
-      <article class="eset" data-kategoria="ajak">
-        <div class="eloutana kicsi">
-          <div class="fel" style="--kep:url(/assets/img/c2eb0f_d42275837f7b49019058be5fc6649c23.jpg);--meret:100% 200%;--pos:0 0"><span class="cimke">Előtte</span></div>
-          <div class="fel" style="--kep:url(/assets/img/c2eb0f_d42275837f7b49019058be5fc6649c23.jpg);--meret:100% 200%;--pos:0 100%"><span class="cimke">Gyógyult eredmény</span></div>
-        </div>
-        <h3>Ajaktetoválás</h3><p>Egységesebb ajakszín és kontúr.</p>
-        <p class="gyogyult helyorzo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Gyógyult: [idő helye]</p>
-      </article>
-      <article class="eset" data-kategoria="ajak">
-        <div class="eloutana kicsi">
-          <div class="fel" style="--kep:url(/assets/img/c2eb0f_b6af66c9c7dc4fd3a3b69507ab640a10.jpg);--meret:100% 200%;--pos:0 100%"><span class="cimke">Előtte</span></div>
-          <div class="fel" style="--kep:url(/assets/img/c2eb0f_b6af66c9c7dc4fd3a3b69507ab640a10.jpg);--meret:100% 200%;--pos:0 0"><span class="cimke">Gyógyult eredmény</span></div>
-        </div>
-        <h3>Ajaktetoválás</h3><p>Természetes ajakszín-frissítés.</p>
-        <p class="gyogyult helyorzo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Gyógyult: [idő helye]</p>
-      </article>
-      <article class="eset" data-kategoria="szemhej">
-        <div class="eloutana kicsi helyorzo-kep"><div class="fel"><span class="cimke">Előtte</span></div><div class="fel"><span class="cimke">Gyógyult eredmény</span></div><span class="helyorzo-szoveg">[Szemhéjtetoválás – előtte / gyógyult fotó helye]</span></div>
-        <h3>Szemhéjtetoválás</h3><p>Természetes, lágy kontúr a kifejezőbb tekintetért.</p>
-        <p class="gyogyult helyorzo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Gyógyult: [idő helye]</p>
-      </article>
+    <!-- Melitta munkai (Drive: Sminktetovalas kepek / referenciak), minden kep 1:1. -->
+    <div class="ref-racs" id="esetek">
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-01.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-02.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-02.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-05.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"><span class="cimke">Előtte / utána</span></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-01.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"><span class="cimke">Előtte / utána</span></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-03.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-04.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-03.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-06.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-04.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"><span class="cimke">Előtte / utána</span></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-07.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-08.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-05.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-09.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-06.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-10.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-07.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"><span class="cimke">Előtte / utána</span></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-11.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-08.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-12.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
     </div>
-    <p class="szuro-ures halk kozepre" hidden>Ebben a kategóriában hamarosan mutatunk gyógyult eredményt.</p>
+    <div class="kozepre"><button type="button" class="gomb gomb-korvonal" id="ref-tobb">További eredmények <span class="nyil">↓</span></button></div>
   </div>
 </section>
 
@@ -202,7 +166,7 @@
   <div class="tartalom">
     <div class="ar-fej">
       <div>
-        <p class="felcim">Árak</p>
+        <p class="felcim">Előleg nélküli árak</p>
         <h2 id="ar-cim" class="nagy">Árak</h2>
         <p class="lead">Pontosan tudd előre, mit fizetsz és mit kapsz.</p>
       </div>
@@ -270,9 +234,9 @@
     <ol class="lepes-racs">
       <li><div class="lepes-fej"><span class="szam">1</span><h3>Megnézzük az arcodat</h3></div><p>Figyelembe vesszük az arcformádat, bőrtípusodat és az egyéni adottságaidat.</p><img src="/assets/img/c2eb0f_663d6199748c4770be062d8c47dc0276.jpg" alt="" loading="lazy" style="object-position:50% 35%"></li>
       <li><div class="lepes-fej"><span class="szam">2</span><h3>Előrajzoljuk</h3></div><p>Precízen megtervezzük a formát, amely illik az arcodhoz.</p><img src="/assets/img/c2eb0f_51d5beecf14f481e8697870c362b5d44.jpg" alt="" loading="lazy"></li>
-      <li class="kiemelt"><div class="lepes-fej"><span class="szam">3</span><h3>Te hagyod jóvá</h3></div><p>Csak akkor kezdjük el a pigmentálást, ha a forma teljesen megfelel neked.</p><img src="/assets/img/c2eb0f_af60d987d02a4ad0a8f23b6b66a2df8e.jpg" alt="" loading="lazy" style="object-position:50% 30%"></li>
+      <li class="kiemelt"><div class="lepes-fej"><span class="szam">3</span><h3>Te hagyod jóvá</h3></div><p>Csak akkor kezdjük el a pigmentálást, ha a forma teljesen megfelel neked.</p><img src="/assets/img/pmu/jovahagyas.jpg" alt="" loading="lazy" style="object-position:50% 40%"></li>
       <li><div class="lepes-fej"><span class="szam">4</span><h3>Precíz pigmentálás</h3></div><p>Finoman, rétegenként dolgozunk a természetes hatásért.</p><img src="/assets/img/c2eb0f_b72c6b0a862d4a0ba31e58a6ea868fe8.jpg" alt="" loading="lazy" style="object-position:50% 45%"></li>
-      <li><div class="lepes-fej"><span class="szam">5</span><h3>Gyógyult eredményre tervezünk</h3></div><p>A technikát és a színt is úgy választjuk meg, hogy gyógyulás után is természetes maradjon.</p><img src="/assets/img/c2eb0f_ac5d338bdfed4f68901dac3f90b53c37.jpg" alt="" loading="lazy"></li>
+      <li><div class="lepes-fej"><span class="szam">5</span><h3>Gyógyult eredményre tervezünk</h3></div><p>A technikát és a színt is úgy választjuk meg, hogy gyógyulás után is természetes maradjon.</p><img src="/assets/img/pmu/gyogyult-szoke-2.jpg" alt="" loading="lazy" style="object-position:50% 38%"></li>
     </ol>
   </div>
 </section>
@@ -338,28 +302,23 @@
     <div class="szakember-video">
       <blockquote>„Nem a friss színre tervezek, hanem a gyógyult eredményre.”</blockquote>
       <button type="button" class="video-kartya" id="video-gomb" aria-label="Videó lejátszása: Nézd meg, hogyan dolgozom">
-        <span class="video-kep"><span class="lejatszas" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg></span><span class="hossz" id="video-hossz" hidden></span></span>
-        <span class="video-felirat"><span class="nyil">→</span><span><b>Nézd meg, hogyan dolgozom</b><small>30–45 mp-ben megmutatom a folyamatot.</small></span></span>
+        <span class="video-kep"><span class="lejatszas" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg></span></span>
+        <span class="video-felirat"><b>Nézd meg, hogyan dolgozom</b><small>Rövid videó a kezelésről</small></span>
       </button>
     </div>
   </div>
 </section>
 
 <!-- ============ 3b. VELEMENYEK ============ -->
-<section class="velemenyek" aria-labelledby="vel-cim">
+<section class="velemenyek" id="velemenyek" aria-labelledby="vel-cim">
   <div class="tartalom">
     <div class="vel-fej">
       <div><p class="felcim">Vélemények</p><h2 id="vel-cim">Vendégeink tapasztalatai</h2></div>
       <span class="vonal" aria-hidden="true"></span>
-      <div class="google-nagy"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg><span><b>5,0</b> <span class="csillagok">★★★★★</span><small>Google értékelés alapján</small></span></div>
+      <div class="google-nagy"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg><span><b data-g-ertek></b> <span class="csillagok">★★★★★</span><small data-g-db>Google-értékelések</small></span></div>
     </div>
-    <!-- Valodi, PMU-ra vonatkozo Google-velemenyekkel csereld (szoveg + nev); addig helyorzo. -->
-    <div class="vel-racs">
-      <article class="vel"><span class="idezojel">“</span><p class="vel-szoveg helyorzo">Valódi PMU<br>Google vélemény helye</p><span class="csillagok">★★★★★</span><img src="/assets/img/c2eb0f_e6bcf204c9164857a3c5ae2ed41b71c7.jpg" alt="" loading="lazy"><p class="tema"><b>Természetesség —</b> féltem, hogy túl erős lesz</p></article>
-      <article class="vel"><span class="idezojel">“</span><p class="vel-szoveg helyorzo">Valódi PMU<br>Google vélemény helye</p><span class="csillagok">★★★★★</span><img src="/assets/img/c2eb0f_2807abab1e874b0c88377c49b6527008.jpg" alt="" loading="lazy"><p class="tema"><b>Első PMU —</b> megnyugtató folyamat</p></article>
-      <article class="vel"><span class="idezojel">“</span><p class="vel-szoveg helyorzo">Valódi PMU<br>Google vélemény helye</p><span class="csillagok">★★★★★</span><img src="/assets/img/c2eb0f_014b63526bc644c7a234475fb367a963.jpg" alt="" loading="lazy"><p class="tema"><b>Napi rajzolás —</b> nem kell minden reggel újrarajzolni</p></article>
-      <article class="vel"><span class="idezojel">“</span><p class="vel-szoveg helyorzo">Valódi PMU<br>Google vélemény helye</p><span class="csillagok">★★★★★</span><img src="/assets/img/c2eb0f_89cc6bf1793c48f193ce38d64d87e940.jpg" alt="" loading="lazy"><p class="tema"><b>Régi PMU —</b> csak ha van valódi, hiteles eset</p></article>
-    </div>
+    <!-- A MOSAIC Trustindex-widgetje (a nyitooldalon is ez van), funkcionalis suti-hozzajarulassal. -->
+    <div class="trustindex" id="trustindex"></div>
   </div>
 </section>
 
@@ -571,13 +530,14 @@
 
 <dialog class="video-ablak" id="video-ablak" aria-label="Videó: hogyan dolgozom">
   <form method="dialog"><button type="submit" class="vh-zar" aria-label="Bezárás">×</button></form>
-  <video id="video" controls playsinline preload="none" poster="/assets/img/c2eb0f_b72c6b0a862d4a0ba31e58a6ea868fe8.jpg" src="/assets/video/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326e.mp4"></video>
+  <div class="video-keret" id="video-keret"></div>
 </dialog>
 
 <!-- Netlify-urlapok (a build ezekbol ismeri fel a mezoket; a JS kuldi be oket) -->
 <form name="pmu-foto" data-netlify="true" netlify-honeypot="bot-field" enctype="multipart/form-data" hidden><input name="bot-field"><input name="terulet"><input name="nev"><input name="telefon"><input name="email"><input name="oldal"><input type="file" name="foto1"><input type="file" name="foto2"><input type="file" name="foto3"><input type="file" name="foto4"><input type="file" name="foto5"></form>
 <form name="pmu-visszahivas" data-netlify="true" netlify-honeypot="bot-field" hidden><input name="bot-field"><input name="nev"><input name="telefon"><input name="szolgaltatas"><input name="volt_mar_tetovalasa"><input name="megjegyzes"><input name="oldal"></form>
 
+<script src="/assets/js/klon.js" defer></script>
 <script src="/assets/js/pmu-landing.js" defer></script>
 </body>
 </html>

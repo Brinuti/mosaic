@@ -37,8 +37,15 @@ for (const f of fs.readdirSync(path.join(ROOT, 'klon')).filter((x) => x.endsWith
 fs.cpSync(path.join(ROOT, 'klon', 'm'), LAP_M, { recursive: true });
 // Sajat (nem a Wixrol mentett) oldalak, pl. a foglalo proba (/foglalo-proba): egy reszponziv
 // fajl, ugyanaz megy az asztali es a mobil mappaba is. Linket nem kapnak, noindex-esek.
+// A <!--mh-fejlec--> jelolo helyere a MOSAIC oldal fejlece kerul (tools/fejlec-kivonat.mjs):
+// az asztali mappaba az asztali, a mobilba a mobil valtozat - pontosan ugyanaz, mint a tobbi oldalon.
+const FEJLEC = { [LAP_A]: 'asztali', [LAP_M]: 'mobil' };
 for (const f of fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.endsWith('.html'))) {
-  for (const m of [LAP_A, LAP_M]) fs.copyFileSync(path.join(ROOT, 'foglalas', f), path.join(m, f));
+  const forras = fs.readFileSync(path.join(ROOT, 'foglalas', f), 'utf8');
+  for (const m of [LAP_A, LAP_M]) {
+    const fejlec = forras.includes('<!--mh-fejlec-->') ? fs.readFileSync(path.join(ROOT, 'assets/fejlec', FEJLEC[m] + '.html'), 'utf8') : '';
+    fs.writeFileSync(path.join(m, f), forras.replace('<!--mh-fejlec-->', () => fejlec));
+  }
 }
 // a nyitooldal a /_a/fooldal, /_m/fooldal fajlbol jon (lasd netlify/lib/utvonal.js)
 for (const m of [LAP_A, LAP_M]) fs.renameSync(path.join(m, 'index.html'), path.join(m, 'fooldal.html'));
@@ -50,7 +57,10 @@ fs.cpSync(path.join(ROOT, 'salonic'), path.join(DIST, 'salonic'), { recursive: t
 const IMG = path.join(DIST, 'assets', 'img'), IMG_M = path.join(IMG, 'm');
 fs.mkdirSync(IMG_M, { recursive: true });
 for (const f of fs.readdirSync(IMG)) {
-  if (fs.statSync(path.join(IMG, f)).isFile() && !fs.existsSync(path.join(IMG_M, f))) fs.copyFileSync(path.join(IMG, f), path.join(IMG_M, f));
+  if (f === 'm' || fs.existsSync(path.join(IMG_M, f))) continue;
+  // az almappak (pl. pmu/) is: a mobil oldalakon minden kephivatkozas az m/ ala mutat
+  if (fs.statSync(path.join(IMG, f)).isDirectory()) fs.cpSync(path.join(IMG, f), path.join(IMG_M, f), { recursive: true });
+  else fs.copyFileSync(path.join(IMG, f), path.join(IMG_M, f));
 }
 // sitemap es robots.txt: elesben a Wix mostani fajljai szo szerint (tools/wix-sitemap/),
 // hogy a keresok ugyanazt a cimlistat lassak; a probaoldalon mindent tiltunk.
