@@ -48,8 +48,15 @@
     munkatars: -1, nap: null, idopont: null,
   };
 
+  // idokorlatos lekeres: lassu vagy elakadt halozatnal ne porogjon a vegtelensegig
+  function leker(url) {
+    const ab = new AbortController();
+    const ido = setTimeout(() => ab.abort(), 15000);
+    return fetch(url, { credentials: 'omit', signal: ab.signal }).finally(() => clearTimeout(ido));
+  }
+
   async function oldal(ut) {
-    const v = await fetch(SZALON.cim + ut, { credentials: 'omit' });
+    const v = await leker(SZALON.cim + ut);
     if (!v.ok) throw new Error('HTTP ' + v.status);
     return new DOMParser().parseFromString(await v.text(), 'text/html');
   }
@@ -147,7 +154,7 @@
 
   // --- 3. kezelo es idopont ------------------------------------------------
   async function naptarAzonosito(szolg) {
-    const v = await fetch(SZALON.cim + '/selectDate/?employeeId=-1&placeId=' + SZALON.placeId + '&serviceId=' + szolg, { credentials: 'omit' });
+    const v = await leker(SZALON.cim + '/selectDate/?employeeId=-1&placeId=' + SZALON.placeId + '&serviceId=' + szolg);
     const m = (await v.text()).match(/calendarId:\s*'([^']+)'/);
     if (!m) throw new Error('nincs calendarId');
     return m[1];
@@ -158,7 +165,7 @@
       startDate: tol, offset: 0, days: napok, placeId: SZALON.placeId, serviceId: allapot.szolgaltatas.id,
       employeeId: -1, calendarId: allapot.naptar, pref: '', apiVersion: 1, language: 'hu', excludeNonAcceptingEmployees: 0,
     });
-    const v = await fetch(API + '?' + p, { credentials: 'omit' });
+    const v = await leker(API + '?' + p);
     const j = await v.json();
     if (j.status !== 'success') throw new Error('API: ' + j.status);
     const most = Date.now() / 1000;
