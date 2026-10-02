@@ -337,7 +337,10 @@
 
   // --- 5. koszonooldal ----------------------------------------------------------------
   BELEPES.koszonjuk = () => {
-    const f = olvas(TAROLO);
+    // ?minta=1#koszonjuk: a koszonooldal megtekintese foglalas nelkul, mintaadatokkal
+    const minta = new URLSearchParams(location.search).has('minta')
+      ? { ts: Math.floor(Date.now() / 86400000 + 7) * 86400 + 8 * 3600, perc: 90, nev: 'Szemöldöktetoválás – Hibrid', ar: '79 000 Ft' } : null;
+    const f = olvas(TAROLO) || minta;
     if (!f) { mutat('kezdo'); return; }
     $('koszono-osszegzes').replaceChildren(elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'sor' }, ikon('naptar'),
       elem('span', {}, elem('b', { szoveg: teljes(f.ts) }), elem('b', { szoveg: f.nev }), elem('span', { szoveg: f.ar + ' · ' + idotartam(f.perc) })))));
@@ -352,7 +355,7 @@
       const a = elem('a', { href: URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })), download: 'mosaic-sminktetovalas.ics' });
       document.body.append(a); a.click(); a.remove();
     };
-    $('ott-leszek').onclick = (e) => { e.currentTarget.textContent = 'Köszönjük, várunk szeretettel! ✓'; e.currentTarget.disabled = true; };
+    $('ott-leszek').onclick = (e) => { e.currentTarget.textContent = 'Várunk! ✓'; e.currentTarget.disabled = true; };
   };
 
   // --- B / D. foto ----------------------------------------------------------------------
@@ -518,7 +521,7 @@
   // ?kezeles=<Salonic-azonosito vagy kulcsszo> (kezeles-specifikus landingrol): az 1. lepes kimarad
   (async () => {
     const kert = new URLSearchParams(location.search).get('kezeles');
-    if (location.hash === '#koszonjuk' && olvas(TAROLO)) {
+    if (location.hash === '#koszonjuk' && (olvas(TAROLO) || new URLSearchParams(location.search).has('minta'))) {
       history.replaceState({ nezet: 'koszonjuk' }, '', '#koszonjuk');
       mutat('koszonjuk');
       BELEPES.koszonjuk();

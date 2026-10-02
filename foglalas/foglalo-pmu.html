@@ -190,6 +190,21 @@
   .betolt::before { content: ''; display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px; border: 2px solid var(--vonal); border-top-color: var(--sotet); border-radius: 50%; animation: forog .8s linear infinite; }
   @keyframes forog { to { transform: rotate(360deg); } }
   @media (min-width: 700px) { h1 { font-size: 34px; } }
+  /* koszonooldal tomoren, hogy egy mobilkepernyore ferjen */
+  [data-nezet=koszonjuk] .pipa-kor { width: 52px; height: 52px; margin: 0 auto 8px; }
+  [data-nezet=koszonjuk] .pipa-kor svg { width: 28px; height: 28px; }
+  [data-nezet=koszonjuk] h2 { font-size: 22px; }
+  [data-nezet=koszonjuk] .osszegzes-kartya { padding: 10px 12px; margin: 12px 0 0; }
+  [data-nezet=koszonjuk] .osszegzes-kartya b { font-size: 15px; }
+  [data-nezet=koszonjuk] .gombsor { grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 6px; }
+  [data-nezet=koszonjuk] .gombsor .gomb { min-height: 46px; font-size: 13px; letter-spacing: .05em; padding: 8px 10px; }
+  [data-nezet=koszonjuk] > p.kicsi { font-size: 12px; margin: 0; }
+  [data-nezet=koszonjuk] h3 { margin: 14px 0 0 !important; font-size: 17px; }
+  [data-nezet=koszonjuk] .lepesek-lista { gap: 6px; margin-top: 8px; }
+  [data-nezet=koszonjuk] .lepesek-lista li { grid-template-columns: 24px 1fr; gap: 10px; font-size: 14px; }
+  [data-nezet=koszonjuk] .lepesek-lista li::before { width: 22px; height: 22px; font-size: 12px; }
+  [data-nezet=koszonjuk] .video-kartya { margin-top: 12px; grid-template-columns: 56px 1fr; padding: 8px; }
+  [data-nezet=koszonjuk] .video-kartya .indexkep { width: 56px; height: 56px; }
 </style>
 </head>
 <body>
@@ -253,8 +268,7 @@
     <p class="halk kicsi">Ezért kérdezzük, hogy a számodra legmegfelelőbb és legbiztonságosabb kezelést tudjuk javasolni.</p>
     <div class="valaszok" role="radiogroup">
       <label class="valasz"><input type="radio" name="elozmeny" value="elso"><span>Nem, ez lesz az első</span></label>
-      <label class="valasz"><input type="radio" name="elozmeny" value="van"><span>Igen, van rajta PMU</span></label>
-      <label class="valasz"><input type="radio" name="elozmeny" value="nemtudom"><span>Nem vagyok biztos benne</span></label>
+      <label class="valasz"><input type="radio" name="elozmeny" value="van"><span>Igen, már van sminktetoválásom – ezt szeretném javíttatni</span></label>
     </div>
     <button class="gomb" type="button" id="kerdes-tovabb" disabled>Tovább <span class="nyil">→</span></button>
   </section>
@@ -276,11 +290,11 @@
     <div class="kozepre"><h2 style="margin-bottom:4px">Sikeres foglalás!</h2><p class="halk" style="margin-top:0">Köszönjük, hogy minket választottál!</p></div>
     <div id="koszono-osszegzes"></div>
     <div class="gombsor">
-      <button class="gomb" type="button" id="naptarhoz"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Naptárhoz adom</button>
-      <button class="gomb masod" type="button" id="ott-leszek">Igen, ott leszek ✓</button>
+      <button class="gomb" type="button" id="naptarhoz"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Naptárba</button>
+      <button class="gomb masod" type="button" id="ott-leszek">Ott leszek ✓</button>
     </div>
     <p class="kozepre kicsi halk">Időpont módosítása vagy lemondása: a visszaigazoló e-mailben lévő linkkel.</p>
-    <h3 style="margin-top:22px">Mi történik most?</h3>
+    <h3>Mi történik most?</h3>
     <ol class="lepesek-lista">
       <li>Visszaigazolást küldünk e-mailben.</li>
       <li>A kezelés előtt emlékeztetőt kapsz.</li>
