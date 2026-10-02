@@ -178,8 +178,11 @@
   .osszegzes-kartya svg { width: 32px; height: 32px; color: var(--sotet); }
   .osszegzes-kartya b { display: block; font-size: 16px; }
   .osszegzes-kartya span { font-size: 14px; color: var(--kozep); }
-  .salonic-keret { --keret-levag: 108px; --keret-magas: 1560px; position: relative; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; overflow: hidden; height: var(--keret-magas); }
-  @media (min-width: 600px) { .salonic-keret { --keret-magas: 1420px; } }
+  /* a Salonic-adatlap a sajat CSS-unkkel (salonic/pmu.css): 70 px-es fejlec, az urlap 98 px-nel kezdodik,
+     a lablec mobilon ~1420, szelesebben ~1380 px-nel - a levagas es a magassag ehhez igazodik
+     (raadassal a telefonszam utan megjeleno extra mezokre es hibauzenetekre) */
+  .salonic-keret { --keret-levag: 84px; --keret-magas: 1420px; position: relative; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; overflow: hidden; height: var(--keret-magas); }
+  @media (min-width: 600px) { .salonic-keret { --keret-magas: 1370px; } }
   .salonic-keret .betolt { position: absolute; inset: 16px; }
   .salonic-keret iframe { position: relative; display: block; width: 100%; border: 0; height: calc(var(--keret-magas) + var(--keret-levag)); margin-top: calc(-1 * var(--keret-levag)); }
   .pipa-kor { width: 74px; height: 74px; border-radius: 50%; background: var(--krem); display: grid; place-items: center; margin: 8px auto 14px; }
