@@ -39,3 +39,18 @@ Jelszót ide soha ne írj; a WP alkalmazásjelszót a felhasználó adja meg a s
    a frontenden (a `?v=2` paraméter megkerüli a cache-t; a `/gyogytornaszok/` lista cache-ét
    a 22537-es oldal újramentése üríti), kártya és adatlap szövegei, képek 200-ak.
 7. Végén jelezd a felhasználónak, mit találtál ki te (pl. címsor, meta-leírás), és mi hiányzott.
+
+## Kiegészítések (később tanultak)
+- **Rendelőhöz rendelés:** a rendelőoldalak (`office` post type: Nyugati 69, Batthyány 29, Oktogon 26812)
+  a `qbs-members-by-office` shortcode-dal listáznak, a kapcsolat a `qbg_related_posts` táblában van
+  (`QUICKBERG_Related_Posts::set_relation(['first_id'=>office,'second_id'=>member])`), NEM a tag
+  meta/taxonómiájában. Új gyógytornásznál ezt is be kell állítani (ideiglenes snippetből REST route-tal).
+  A "📌" link a hős blokkban a helyes rendelőoldalra mutasson (sablonmásolásnál gyakori hiba).
+- **Telefon:** központi szám 06-20-323-6373 (a régi 252/282/292 végű számok megszűntek).
+- **Excel:** a `Weboldalválasztó` oszlopai nevek szerint vannak; a zöld cella számít. A Vitéz-es
+  kompetencia-táblázatban Nóri és Adél oszlopa azonos (valószínűleg másolat) – egyénileg kell kérdezni.
+- **Kártyarács:** a gyógytornász-kártyák float-os rácsa lyukas lett eltérő magasságoknál. Javítás:
+  `<style id="gyt-kartya-racs">` blokk (flex-wrap) a `/gyogytornaszok/` és a 3 rendelőoldal tetején.
+  A kártyák `<b>` címkéje lezáratlan, abban van a gomb (a CSS ezt kezeli).
+- **Composio sandbox:** néha lefagy; új `session_id`-val (SEARCH_TOOLS `generate_id`) újraindítható,
+  de a /tmp fájlok elvesznek, Playwrightot újra kell telepíteni.
