@@ -37,6 +37,13 @@ fs.cpSync(path.join(ROOT, 'klon', 'm'), LAP_M, { recursive: true });
 // a nyitooldal a /_a/fooldal, /_m/fooldal fajlbol jon (lasd netlify/lib/utvonal.js)
 for (const m of [LAP_A, LAP_M]) fs.renameSync(path.join(m, 'index.html'), path.join(m, 'fooldal.html'));
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
+// Mobilkepek (assets/img/m/, tools/mobil-kepek.py): ami ott nincs (mar eleve kicsi),
+// azt valtozatlanul bemasoljuk, igy a mobil oldal minden kepe megvan az m/ mappaban is.
+const IMG = path.join(DIST, 'assets', 'img'), IMG_M = path.join(IMG, 'm');
+fs.mkdirSync(IMG_M, { recursive: true });
+for (const f of fs.readdirSync(IMG)) {
+  if (fs.statSync(path.join(IMG, f)).isFile() && !fs.existsSync(path.join(IMG_M, f))) fs.copyFileSync(path.join(IMG, f), path.join(IMG_M, f));
+}
 // sitemap es robots.txt: elesben a Wix mostani fajljai szo szerint (tools/wix-sitemap/),
 // hogy a keresok ugyanazt a cimlistat lassak; a probaoldalon mindent tiltunk.
 const SITEMAP = path.join(ROOT, 'tools', 'wix-sitemap');
@@ -75,6 +82,9 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
 // igy egy javitas azonnal eler minden latogatot, akkor is, ha a bongeszo meg
 // egy regebbi valtozatot tarol.
 const SAJAT = ['assets/js/klon.js', 'assets/js/suti.js', 'assets/js/galeriak.js', 'assets/js/gyik.js', 'assets/js/arlistak.js', 'assets/js/oldaltablak.js', 'assets/css/klon.css'];
+// Oldalankenti LCP-kep (a legnagyobb tartalmi elem), egyszer bongeszovel lemerve:
+// tools/lcp-elofeltoltes.json ({ mobil: { lap: kep }, asztali: {...} }). Elotoltjuk, es nem lusta.
+const LCP = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/lcp-elofeltoltes.json'), 'utf8'));
 const verzio = Object.fromEntries(SAJAT.map((f) => [f,
   crypto.createHash('sha1').update(fs.readFileSync(path.join(ROOT, f))).digest('hex').slice(0, 10)]));
 for (const mappa of [LAP_A, LAP_M]) {
@@ -91,6 +101,13 @@ for (const mappa of [LAP_A, LAP_M]) {
     // kettot (asztalin ezek kozt van a legnagyobb tartalmi elem).
     let jeloletlen = 0;
     h = h.replace(/<img\b(?![^>]*\b(?:loading|fetchpriority)=)/g, (m) => (++jeloletlen <= 2 ? m : '<img loading="lazy" decoding="async"'));
+    const lcp = LCP[mappa === LAP_M ? 'mobil' : 'asztali'][f.replace(/\.html$/, '')];
+    if (lcp) {
+      h = h.replace(/<head>/i, '<head><link rel="preload" as="image" href="' + encodeURI(lcp) + '" fetchpriority="high">');
+      h = h.split('<img loading="lazy" decoding="async" src="' + lcp + '"').join('<img fetchpriority="high" src="' + lcp + '"');
+    }
+    // mobilon a kisebb kepvaltozatok (a teljes URL-ek - og:image, JSON-LD - maradnak)
+    if (mappa === LAP_M) h = h.replace(/(["'(\s,])\/assets\/img\/(?!m\/)/g, '$1/assets/img/m/');
     fs.writeFileSync(p, h);
   }
 }
