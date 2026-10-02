@@ -92,8 +92,8 @@ body.customer-mosaic-pmu .text-muted { color: var(--mh-kozep) !important; }
 body.customer-mosaic-pmu .fb-login-button, body.customer-mosaic-pmu .divider-line { display: none !important; }
 body.customer-mosaic-pmu .panel-body > .text-center.py-4 { display: none !important; }
 
-/* lablec */
-body.customer-mosaic-pmu .footer { background: transparent !important; color: var(--mh-halvany) !important; font-size: 12px; }
+/* lablec: nem kell (a szabalyzat es az adatkezeles linkje a hozzajarulasnal is ott van) */
+body.customer-mosaic-pmu footer, body.customer-mosaic-pmu .footer { display: none !important; }
 
 /* tomorebb elrendezes: kisebb cimsorok es kozok */
 body.customer-mosaic-pmu .panel-heading h3, body.customer-mosaic-pmu .card-body h3 { font-size: 18px !important; margin: 0 0 8px !important; }
