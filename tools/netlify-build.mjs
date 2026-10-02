@@ -53,17 +53,18 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   '/*',
   ...(ELES ? [] : ['  X-Robots-Tag: noindex, nofollow']),
   // A szkripteket es stilusokat mindig ujraellenorzi a bongeszo (kulonben egy
-  // javitas napokig nem latszana); a kepek, betuk, videok maradhatnak egy hetig.
+  // javitas napokig nem latszana).
   '/assets/js/*',
   '  Cache-Control: public, max-age=0, must-revalidate',
   '/assets/css/*',
   '  Cache-Control: public, max-age=0, must-revalidate',
+  // a kepek, videok es betuk neve a Wix-azonosito (nem valtozik), ezert egy evig maradhatnak
   '/assets/img/*',
-  '  Cache-Control: public, max-age=604800',
+  '  Cache-Control: public, max-age=31536000',
   '/assets/video/*',
-  '  Cache-Control: public, max-age=604800',
+  '  Cache-Control: public, max-age=31536000',
   '/assets/fonts/*',
-  '  Cache-Control: public, max-age=604800',
+  '  Cache-Control: public, max-age=31536000',
   // a HTML-beagyazasok (GYIK, arlistak) csak keretben jelennek meg, onalloan ne indexelodjenek
   '/assets/embed/*',
   '  X-Robots-Tag: noindex',
@@ -81,6 +82,15 @@ for (const mappa of [LAP_A, LAP_M]) {
     const p = path.join(mappa, f);
     let h = fs.readFileSync(p, 'utf8');
     for (const [fajl, v] of Object.entries(verzio)) h = h.split(fajl + '"').join(fajl + '?v=' + v + '"');
+    // A tisztan adatot tarolo szkriptek (window.MH_* = {...}) ne blokkoljak a megjelenitest:
+    // defer-rel a klon.js elott, sorrendben futnak (az is defer).
+    h = h.replace(/<script src="([^"]*assets\/js\/(?:galeriak|gyik|arlistak|oldaltablak)\.js[^"]*)"><\/script>/g, '<script src="$1" defer></script>');
+    // Lusta kepbetoltes: a Wix a kepernyo tetejen levo kepeket fetchpriority="high"-jal vagy
+    // loading="eager"-rel jelolte, a tobbit loading="lazy"-vel - az atalakitas utan jelolet
+    // nelkul maradt kepek ezert mind azonnal letoltodtek. Ezekre lazy kerul, kiveve az elso
+    // kettot (asztalin ezek kozt van a legnagyobb tartalmi elem).
+    let jeloletlen = 0;
+    h = h.replace(/<img\b(?![^>]*\b(?:loading|fetchpriority)=)/g, (m) => (++jeloletlen <= 2 ? m : '<img loading="lazy" decoding="async"'));
     fs.writeFileSync(p, h);
   }
 }
