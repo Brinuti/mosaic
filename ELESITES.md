@@ -38,6 +38,13 @@ az adatsort.
 
 ## Tudnivaló
 
+- **Sütidöntés átvétele:** a Wix a döntést a `consent-policy` sütiben tárolta (`.mosaicheadspa.hu`,
+  1 év). Az új oldal ezt átveszi, ha még nincs saját döntés, így a csere után a visszatérő látogató
+  nem kapja meg újra a sávot. Az új oldal a saját döntést is beírja ugyanebbe a sütibe, Wix-formátumban,
+  így egy visszaállás után a Wix sem kérdez újra.
+- **A csere napján a DNS-ben csak a `www` és a gyökér változik.** Érintetlen marad: `stape` és
+  `capi-pmu` CNAME, TXT, MX.
+
 - A Meta-pixelek a Wixen „szükséges” kategóriában voltak, ezért hozzájárulás nélkül is futnak. A
   klón ezt pontosan másolja az adatsor miatt, de GDPR szempontból kockázatos, ezért érdemes külön
   lépésben rendezni.
