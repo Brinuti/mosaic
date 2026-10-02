@@ -98,6 +98,13 @@
   [data-nezet=c-info] .video-doboz { margin-top: 0; }
   [data-nezet=c-info] .video-doboz video { height: 34vh; max-height: 260px; object-fit: cover; object-position: 50% 30%; }
   [data-nezet=c-info] .video-doboz.megy video { height: auto; max-height: 60vh; object-fit: contain; }
+  /* szelesebb kijelzon (asztali, landing-keret) az allo video teljes egeszeben, nem levagva */
+  @media (min-width: 540px) {
+    [data-nezet=c-info] .video-doboz { width: 240px; margin: 0 auto; }
+    [data-nezet=c-info] .video-doboz video, [data-nezet=c-info] .video-doboz.megy video { height: auto; max-height: none; aspect-ratio: 9 / 16; object-fit: cover; }
+  }
+  /* keretben a vh a keret magassagahoz igazodna (ami a tartalomhoz nő): fix felso korlat */
+  .beagyazva .video-doboz video, .beagyazva [data-nezet=c-info] .video-doboz.megy video { max-height: 620px; }
   [data-nezet=c-info] h2 { margin: 12px 0 6px !important; }
   [data-nezet=c-info] > p { margin: 0; font-size: 15px; }
   [data-nezet=c-info] .pipak { margin: 12px 0 16px !important; gap: 6px; }
