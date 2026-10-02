@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Időpontfoglalás – MOSAIC Headspa (próba)</title>
+<title>Időpontfoglalás – MOSAIC Sminktetoválás (próba)</title>
 <link rel="icon" href="/assets/img/c2eb0f_b001e2c55098446da3e38ff055e20354.png" type="image/png">
 <link rel="stylesheet" href="/assets/css/wix-google-fonts.css">
 <style>
@@ -88,6 +88,30 @@
     .kartya img, .kartya > span:first-child:empty { display: none; }
     .gomb { padding: 12px 18px; }
   }
+
+  /* havi naptar */
+  .honap-fej { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; }
+  .honap-fej b { font-size: 18px; }
+  .lapoz { border: 1px solid var(--vonal); background: var(--feher); border-radius: 99px; width: 38px; height: 38px; cursor: pointer; font-size: 18px; }
+  .lapoz[disabled] { opacity: .35; cursor: default; }
+  .naptar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .naptar .hetnap { text-align: center; font-size: 12px; color: var(--halvany); padding-bottom: 2px; }
+  .nnap { aspect-ratio: 1 / 1; min-height: 44px; border: 1px solid var(--vonal); background: var(--feher); border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 2px; }
+  .nnap b { font-size: 16px; }
+  .nnap i { width: 7px; height: 7px; border-radius: 50%; background: var(--halvany); }
+  .nnap.sok i { background: #3f7652; }
+  .nnap.keves i { background: #c49a3a; }
+  .nnap[disabled] { background: transparent; border-color: transparent; color: #b9b1a6; cursor: default; }
+  .nnap[disabled] i { display: none; }
+  .nnap.ures { visibility: hidden; }
+  .nnap[aria-pressed="true"] { background: var(--sotet); border-color: var(--sotet); color: var(--krem); }
+  .jelmagyarazat { display: flex; gap: 16px; font-size: 13px; color: var(--kozep); margin: 12px 0 0; flex-wrap: wrap; }
+  .jelmagyarazat span::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; background: #3f7652; }
+  .jelmagyarazat span.k::before { background: #c49a3a; }
+  .napi-sav { margin: 18px 0 8px; padding: 12px 14px; background: var(--krem); border-radius: 12px; font-size: 14px; }
+  .kartya[disabled] { opacity: .5; cursor: default; box-shadow: none; }
+  .kartya .ar { text-align: right; }
+  .kartya .athuzott { text-decoration: line-through; color: var(--halvany); font-weight: 400; font-size: 13px; display: block; text-align: right; }
 </style>
 </head>
 <body>
@@ -96,40 +120,43 @@
   <span class="proba">próbaoldal</span>
 </header>
 <main>
-  <h1>Időpontfoglalás</h1>
-  <p class="alcim">MOSAIC Headspa · 1023 Budapest, Bécsi út 4.</p>
+  <h1>Sminktetoválás – időpontfoglalás</h1>
+  <p class="alcim">MOSAIC Sminktetoválás · Melitta · 1023 Budapest, Bécsi út 4.</p>
   <ol class="lepesek" id="lepesek">
-    <li data-lepes="kategoria">Kezelés típusa</li>
-    <li data-lepes="szolgaltatas">Kezelés</li>
+    <li data-lepes="nap">Nap</li>
+    <li data-lepes="kezeles">Kezelés</li>
     <li data-lepes="idopont">Időpont</li>
-    <li data-lepes="osszegzes">Összegzés</li>
+    <li data-lepes="adatok">Adatok</li>
   </ol>
 
-  <section id="kategoria" data-cim="Kezelés típusa">
-    <h2>Milyen kezelést foglalnál?</h2>
-    <div class="kartyak" id="kategoriak"><div class="betolt">Betöltés…</div></div>
+  <section id="nap">
+    <h2>Mikor jönnél?</h2>
+    <div class="honap-fej">
+      <button class="lapoz" type="button" id="elozo-honap" aria-label="Előző hónap">‹</button>
+      <b id="honap-cim"></b>
+      <button class="lapoz" type="button" id="kovetkezo-honap" aria-label="Következő hónap">›</button>
+    </div>
+    <div class="naptar" id="naptar"><div class="betolt" style="grid-column: 1 / -1">Szabad napok betöltése…</div></div>
+    <div class="jelmagyarazat"><span>Sok szabad idő</span><span class="k">Kevés szabad idő (rövidebb kezelésre)</span></div>
   </section>
 
-  <section id="szolgaltatas" hidden>
-    <button class="vissza" type="button" data-vissza="kategoria">‹ Vissza</button>
-    <h2 id="szolgaltatas-cim">Válassz kezelést</h2>
-    <div class="kartyak" id="szolgaltatasok"></div>
+  <section id="kezeles" hidden>
+    <button class="vissza" type="button" data-vissza="nap">‹ Vissza a naptárhoz</button>
+    <h2 id="kezeles-cim">Melyik kezelést kérnéd?</h2>
+    <div class="napi-sav" id="napi-sav"></div>
+    <div class="kartyak" id="kezelesek"></div>
   </section>
 
   <section id="idopont" hidden>
-    <button class="vissza" type="button" data-vissza="szolgaltatas">‹ Vissza</button>
-    <h2>Kezelő és időpont</h2>
-    <div class="chipek" id="munkatarsak" role="group" aria-label="Kezelő"></div>
-    <div class="napok" id="napok" role="group" aria-label="Nap"></div>
+    <button class="vissza" type="button" data-vissza="kezeles">‹ Vissza</button>
+    <h2 id="idopont-cim">Válassz kezdési időpontot</h2>
     <div id="idok"></div>
   </section>
 
-  <section id="osszegzes" hidden>
+  <section id="adatok" hidden>
     <button class="vissza" type="button" data-vissza="idopont">‹ Vissza</button>
     <h2>Adataid és a foglalás</h2>
-    <div class="osszegzes">
-      <dl id="osszegzes-adatok"></dl>
-    </div>
+    <div class="osszegzes"><dl id="osszegzes-adatok"></dl></div>
     <p class="megj">Add meg az elérhetőséged, és nyomd meg a foglalás gombot. A visszaigazolást e-mailben kapod.</p>
     <div class="salonic-keret" id="salonic-keret">
       <div class="betolt" id="salonic-betolt">Foglalási űrlap betöltése…</div>
@@ -138,10 +165,6 @@
     <p class="megj">Nem jelenik meg az űrlap? <a id="veglegesit" href="#" target="_top">Nyisd meg itt</a>.</p>
   </section>
 </main>
-<div class="also" id="also" hidden>
-  <div class="valasztas" id="also-szoveg"></div>
-  <button class="gomb" type="button" id="also-gomb" disabled>Tovább</button>
-</div>
-<script src="/assets/js/foglalo.js" defer></script>
+<script src="/assets/js/foglalo-pmu.js" defer></script>
 </body>
 </html>

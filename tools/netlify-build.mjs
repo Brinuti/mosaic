@@ -87,7 +87,7 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
 // Verziojel a sajat szkriptek es stilusok hivatkozasaira (?v=<tartalom-hash>):
 // igy egy javitas azonnal eler minden latogatot, akkor is, ha a bongeszo meg
 // egy regebbi valtozatot tarol.
-const SAJAT = ['assets/js/klon.js', 'assets/js/suti.js', 'assets/js/galeriak.js', 'assets/js/gyik.js', 'assets/js/arlistak.js', 'assets/js/oldaltablak.js', 'assets/js/foglalo.js', 'assets/css/klon.css'];
+const SAJAT = ['assets/js/klon.js', 'assets/js/suti.js', 'assets/js/galeriak.js', 'assets/js/gyik.js', 'assets/js/arlistak.js', 'assets/js/oldaltablak.js', 'assets/js/foglalo.js', 'assets/js/foglalo-pmu.js', 'assets/css/klon.css'];
 // Oldalankenti LCP-kep (a legnagyobb tartalmi elem), egyszer bongeszovel lemerve:
 // tools/lcp-elofeltoltes.json ({ mobil: { lap: kep }, asztali: {...} }). Elotoltjuk, es nem lusta.
 const LCP = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/lcp-elofeltoltes.json'), 'utf8'));
