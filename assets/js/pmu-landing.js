@@ -456,5 +456,8 @@
     }));
     $('terkep').querySelector('.terkep-kep').style.cssText = 'background:none;inset:auto 0 0 auto;width:auto;height:auto';
   }
+  // a terv szerint a foglalo a NEM aggal indul (a harom megerositest a latogato pipalja ki)
+  valasztElozmeny('nem');
+
   if (window.mhSuti) { terkep(window.mhSuti.engedely('fun')); window.mhSuti.figyel((d) => terkep(d.fun)); }
 })();
