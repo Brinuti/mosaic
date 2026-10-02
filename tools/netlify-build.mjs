@@ -85,6 +85,17 @@ const SAJAT = ['assets/js/klon.js', 'assets/js/suti.js', 'assets/js/galeriak.js'
 // Oldalankenti LCP-kep (a legnagyobb tartalmi elem), egyszer bongeszovel lemerve:
 // tools/lcp-elofeltoltes.json ({ mobil: { lap: kep }, asztali: {...} }). Elotoltjuk, es nem lusta.
 const LCP = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/lcp-elofeltoltes.json'), 'utf8'));
+// Kattintasra indulo videok poszterei (klon.js KATTINTOS + oldaltablak.js): a build eleve
+// beirja a poszterkepet es a lejatszo gombot, igy az elso kirajzolaskor latszik (mobilon ez a
+// legnagyobb tartalmi elem); a klon.js csak a kattintast koti ra.
+const klonForras = fs.readFileSync(path.join(ROOT, 'assets/js/klon.js'), 'utf8');
+const kattintosBlokk = klonForras.slice(klonForras.indexOf('const KATTINTOS = {'), klonForras.indexOf('};', klonForras.indexOf('const KATTINTOS = {')));
+const KATTINTOS = Object.fromEntries([...kattintosBlokk.matchAll(/'(comp-[a-z0-9]+)': '([^']+)'/g)].map((m) => [m[1], m[2]]));
+{
+  const t = fs.readFileSync(path.join(ROOT, 'assets/js/oldaltablak.js'), 'utf8');
+  Object.assign(KATTINTOS, JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1)).kattintos || {});
+}
+const LEJATSZO_GOMB = '<button type="button" class="mh-video-gomb" aria-label="Videó lejátszása"><svg viewBox="0 0 40 40" width="50" height="50" fill="currentColor" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="rgba(0,0,0,.35)" stroke="currentColor" stroke-width="2"/><path d="M16 12.5v15l12-7.5z"/></svg></button>';
 const verzio = Object.fromEntries(SAJAT.map((f) => [f,
   crypto.createHash('sha1').update(fs.readFileSync(path.join(ROOT, f))).digest('hex').slice(0, 10)]));
 for (const mappa of [LAP_A, LAP_M]) {
@@ -102,6 +113,14 @@ for (const mappa of [LAP_A, LAP_M]) {
     let jeloletlen = 0;
     h = h.replace(/<img\b(?![^>]*\b(?:loading|fetchpriority)=)/g, (m) => (++jeloletlen <= 2 ? m : '<img loading="lazy" decoding="async"'));
     const lcp = LCP[mappa === LAP_M ? 'mobil' : 'asztali'][f.replace(/\.html$/, '')];
+    for (const [azon, ertek] of Object.entries(KATTINTOS)) {
+      const [azonosito, kocka, mod] = ertek.split('/');
+      if (mod === 'auto' && mappa === LAP_A) continue; // asztalin magatol indulo video (klon.js)
+      const poszter = '/assets/img/' + azonosito + kocka + '.jpg';
+      const betolt = poszter === lcp ? 'fetchpriority="high"' : 'loading="lazy" decoding="async"';
+      h = h.replace(new RegExp('(<div id="' + azon + '"[^>]*>)(</div>)'),
+        '$1<div class="mh-video"><img ' + betolt + ' src="' + poszter + '" alt="">' + LEJATSZO_GOMB + '</div>$2');
+    }
     if (lcp) {
       h = h.replace(/<head>/i, '<head><link rel="preload" as="image" href="' + encodeURI(lcp) + '" fetchpriority="high">');
       h = h.split('<img loading="lazy" decoding="async" src="' + lcp + '"').join('<img fetchpriority="high" src="' + lcp + '"');
