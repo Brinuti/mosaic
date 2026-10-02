@@ -60,6 +60,20 @@ const URLAPOK = {
       ['volt_mar_tetovalasa', 'Volt már korábban tetoválásod?'], ['megjegyzes', 'Mit beszéljünk át a foglalás előtt?'],
     ], d),
   },
+  // a /foglalo-pmu probaoldal urlapjai (B/D ag: foto; C ag: visszahivas)
+  'pmu-proba-foto': {
+    targy: '[PRÓBA] Sminktetoválás – fotó érkezett',
+    html: (d) => osszefoglalo('A sminktetoválás-foglaló (próba) egy látogatója fotót küldött.', 'Beküldés összefoglalása:', [
+      ['ag', 'Ág'], ['nev', 'Név'], ['telefon', 'Telefonszám'], ['email', 'E-mail'], ['kezeles', 'Kezelés / terület'],
+      ['idopont', 'Választott időpont'], ...Array.from({ length: 5 }, (_, i) => [`foto${i + 1}`, `Fotó ${i + 1}`]),
+    ], d),
+  },
+  'pmu-proba-visszahivas': {
+    targy: '[PRÓBA] Sminktetoválás – visszahívást kértek (10 perces konzultáció)',
+    html: (d) => osszefoglalo('A sminktetoválás-foglaló (próba) egy látogatója visszahívást kért.', 'Beküldés összefoglalása:', [
+      ['nev', 'Név'], ['telefon', 'Telefonszám'], ['mikor_nap', 'Melyik nap?'], ['mikor_napszak', 'Melyik napszakban?'],
+    ], d),
+  },
   'fodrasz-jelentkezes': {
     targy: 'Új fodrász jelentkezett',
     html: (d) => osszefoglalo(wixBevezeto('Fodrász'), 'Beküldés összefoglalása:', [

@@ -99,6 +99,18 @@
     'comp-m73bstee': 'c2eb0f_909ce4959fe24f4f984d8953fd315d67.mp4',
     'comp-m7j9ka9m1': 'c2eb0f_cc22b1baf4c64848938cb7d48575b561.mp4',
   };
+  // A sminktetovalas foglalo probaoldala (/foglalo-pmu) a sikeres foglalas utan ide, a koszonooldalra
+  // (pl. /pmu-ok) kuldi a vendeget mh_proba=pmu jellel: itt lefut a megszokott meres, majd
+  // visszaterunk a proba sajat koszonooldalara.
+  if (/[?&]mh_proba=pmu(&|$)/.test(location.search)) {
+    const fedo = document.createElement('div');
+    fedo.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#fffaf4;color:#183033;display:grid;place-items:center;font:18px lato,Arial,sans-serif';
+    fedo.textContent = 'Foglalásod rögzítése…';
+    document.body.appendChild(fedo);
+    const tovabb = () => setTimeout(() => location.replace('/foglalo-pmu#koszonjuk'), 3500);
+    if (document.readyState === 'complete') tovabb(); else addEventListener('load', tovabb);
+  }
+
   // a sajat utvonalunkbol olvassuk ki, hova mutassanak a tarsfajlok (klon/ vagy klon/m/)
   const sajatSrc = (document.currentScript && document.currentScript.src) || '';
   const GYOKER = sajatSrc.split('assets/js/klon.js')[0];
