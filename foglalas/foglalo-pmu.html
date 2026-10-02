@@ -34,10 +34,10 @@
   .ikon-gomb svg { width: 22px; height: 22px; }
   .proba { display: block; width: max-content; margin: 0 auto 24px; font-size: 11px; background: var(--krem); color: var(--kozep); border-radius: 99px; padding: 3px 10px; }
 
-  main { max-width: 560px; margin: 0 auto; padding: 18px 16px 48px; }
+  main { max-width: 560px; margin: 0 auto; padding: 14px 16px 24px; }
   h1, h2, h3 { font-family: var(--cim); font-weight: 400; margin: 0; letter-spacing: .01em; }
   h1 { font-size: 30px; line-height: 1.15; }
-  h2 { font-size: 24px; line-height: 1.2; margin-bottom: 14px; }
+  h2 { font-size: 22px; line-height: 1.2; margin-bottom: 12px; }
   h3 { font-size: 18px; margin-bottom: 8px; }
   .halk { color: var(--kozep); }
   .kicsi { font-size: 14px; }
@@ -56,25 +56,20 @@
   .pontok i.be { background: var(--sotet); }
 
   /* 0. nyitooldal */
-  .hero { position: relative; border-radius: 18px; overflow: hidden; background: var(--krem); min-height: 330px; display: grid; }
-  .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 70% 30%; }
-  .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(251,238,222,.97) 0%, rgba(251,238,222,.86) 46%, rgba(251,238,222,0) 78%); }
-  .hero .szoveg { position: relative; z-index: 1; padding: 26px 20px; max-width: 64%; align-self: center; }
-  .hero h1 { font-size: 27px; }
-  .hero p { margin: 10px 0 0; font-size: 14px; color: var(--kozep); }
-  .elonyok { list-style: none; padding: 0; margin: 18px 0; display: grid; gap: 10px; }
-  .elonyok li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: center; font-size: 15px; }
-  .elonyok svg { width: 26px; height: 26px; color: var(--arany); }
-  .melitta { display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: center; padding: 12px; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; margin-bottom: 16px; }
-  .melitta img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; object-position: 50% 32%; }
+  .kezdo-cim { font-size: 24px; margin: 0; }
+  .elonyok { list-style: none; padding: 0; margin: 10px 0 12px; display: grid; gap: 6px; }
+  .elonyok li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: center; font-size: 14px; line-height: 1.3; }
+  .elonyok svg { width: 22px; height: 22px; color: var(--arany); }
+  .melitta { display: grid; grid-template-columns: 48px 1fr; gap: 10px; align-items: center; padding: 8px 10px; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; margin-bottom: 12px; }
+  .melitta img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; object-position: 50% 32%; }
   .melitta b { display: block; }
-  .melitta span { font-size: 13px; color: var(--kozep); }
-  .belepo { display: grid; grid-template-columns: 44px 1fr 20px; gap: 12px; align-items: center; width: 100%; text-align: left; background: var(--feher); border: 1.5px solid var(--vonal); border-radius: 14px; padding: 14px; margin-top: 12px; cursor: pointer; }
+  .melitta span { font-size: 12px; line-height: 1.3; display: block; color: var(--kozep); }
+  .belepo { display: grid; grid-template-columns: 34px 1fr 18px; gap: 10px; align-items: center; width: 100%; text-align: left; background: var(--feher); border: 1.5px solid var(--vonal); border-radius: 12px; padding: 9px 12px; margin-top: 8px; cursor: pointer; }
   .belepo:hover { border-color: var(--halvany); }
-  .belepo svg { width: 34px; height: 34px; color: var(--arany); }
+  .belepo svg { width: 28px; height: 28px; color: var(--arany); }
   .belepo b { display: block; font-size: 15px; }
   .belepo span { font-size: 14px; color: var(--hiba); font-weight: 700; }
-  .ertekeles { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 20px 0 6px; font-size: 15px; }
+  .ertekeles { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 12px 0 0; font-size: 15px; }
   .csillag { color: #e0a82e; letter-spacing: 2px; font-size: 18px; }
   .video-kartya { display: grid; grid-template-columns: 74px 1fr; gap: 12px; align-items: center; width: 100%; text-align: left; background: var(--krem); border: 0; border-radius: 14px; padding: 10px; margin-top: 16px; cursor: pointer; }
   .video-kartya .indexkep { position: relative; width: 74px; height: 74px; border-radius: 10px; overflow: hidden; }
@@ -86,56 +81,51 @@
   .video-doboz video { display: block; width: 100%; max-height: 70vh; }
 
   /* kezeleskartyak */
-  .kezelesek { display: grid; gap: 12px; }
-  .kezeles { display: grid; grid-template-columns: 92px 1fr 18px; gap: 14px; align-items: center; width: 100%; text-align: left; background: var(--feher); border: 1.5px solid var(--vonal); border-radius: 14px; padding: 8px 12px 8px 8px; cursor: pointer; }
+  .kezelesek { display: grid; gap: 8px; }
+  .kezeles { display: grid; grid-template-columns: 48px 1fr auto 16px; gap: 10px; align-items: center; width: 100%; text-align: left; background: var(--feher); border: 1.5px solid var(--vonal); border-radius: 12px; padding: 6px 10px 6px 6px; cursor: pointer; }
   .kezeles:hover, .kezeles:focus-visible { border-color: var(--sotet); outline: none; }
-  .kezeles img { width: 92px; height: 92px; border-radius: 10px; object-fit: cover; }
-  .kezeles .nev { display: block; font-family: var(--cim); font-size: 18px; line-height: 1.2; }
-  .kezeles .valtozat { display: block; color: var(--kozep); font-size: 14px; }
-  .kezeles .ar { display: block; margin-top: 6px; font-weight: 700; }
-  .kezeles .ar s { color: var(--halvany); font-weight: 400; font-size: 13px; margin-left: 6px; }
-  .kezeles .ido { display: block; font-size: 13px; color: var(--kozep); }
-  .chevron { width: 18px; height: 18px; color: var(--halvany); }
-  .egyeb { margin-top: 18px; }
-  .egyeb .kezeles { grid-template-columns: 1fr 18px; padding: 14px; }
+  .kezeles img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; }
+  .kezeles .nev { display: block; font-family: var(--cim); font-size: 16px; line-height: 1.25; }
+  .kezeles .valtozat { display: block; color: var(--kozep); font-size: 13px; line-height: 1.25; }
+  .kezeles .jobb { text-align: right; white-space: nowrap; line-height: 1.25; }
+  .kezeles .ar { display: block; font-weight: 700; font-size: 15px; }
+  .kezeles .ar s { display: block; color: var(--halvany); font-weight: 400; font-size: 12px; }
+  .kezeles .ido { font-size: 12px; color: var(--kozep); }
+  .chevron { width: 16px; height: 16px; color: var(--halvany); }
+  .egyeb { margin-top: 8px; }
+  .egyeb .kezelesek { grid-template-columns: 1fr 1fr; }
+  .egyeb .kezeles { grid-template-columns: 1fr auto; padding: 8px 10px; }
+  .egyeb .kezeles .nev { font-size: 14px; }
+  .egyeb .kezeles .jobb { text-align: left; }
   .doboz-info { display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; background: var(--krem); border-radius: 12px; padding: 12px 14px; margin-top: 16px; font-size: 14px; color: var(--kozep); }
   .doboz-info svg { width: 22px; height: 22px; color: var(--sotet); }
 
   /* 2. idopontok */
-  .valasztott { display: grid; grid-template-columns: 72px 1fr auto; gap: 12px; align-items: center; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; padding: 8px 12px 8px 8px; margin-bottom: 20px; }
-  .valasztott img { width: 72px; height: 72px; border-radius: 10px; object-fit: cover; }
-  .valasztott .nev { font-family: var(--cim); font-size: 17px; display: block; line-height: 1.2; }
-  .valasztott .info { font-size: 13px; color: var(--kozep); display: block; margin-top: 2px; }
-  .valasztott .modosit { align-self: start; background: none; border: 0; color: var(--hiba); font-size: 13px; text-decoration: underline; cursor: pointer; padding: 4px 0; }
-  .slotok { display: grid; gap: 10px; }
-  .slot { display: grid; grid-template-columns: 26px 1fr auto 16px; gap: 12px; align-items: center; width: 100%; background: var(--feher); border: 1.5px solid var(--vonal); border-radius: 12px; padding: 14px; text-align: left; cursor: pointer; font-size: 16px; }
-  .slot:hover { border-color: var(--sotet); }
-  .slot.aktiv, .slot:active { background: var(--sotet); border-color: var(--sotet); color: var(--krem); }
-  .slot svg { width: 22px; height: 22px; }
-  .slot b { font-size: 17px; }
-  .masik { display: block; text-align: center; margin: 16px auto 4px; }
+  .valasztott { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; background: var(--feher); border: 1px solid var(--vonal); border-radius: 12px; padding: 6px 10px 6px 6px; margin-bottom: 12px; }
+  .valasztott img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; }
+  .valasztott .nev { font-family: var(--cim); font-size: 15px; display: block; line-height: 1.2; }
+  .valasztott .info { font-size: 12px; color: var(--kozep); display: block; margin-top: 1px; }
+  .valasztott .modosit { align-self: center; background: none; border: 0; color: var(--hiba); font-size: 13px; text-decoration: underline; cursor: pointer; padding: 4px 0; }
   .pipak { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 10px; }
   .pipak li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: center; color: var(--kozep); font-size: 15px; }
   .pipak svg { width: 24px; height: 24px; color: var(--arany); }
 
   /* A. naptar */
-  .honap-fej { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; }
-  .honap-fej b { font-family: var(--cim); font-weight: 400; font-size: 19px; }
-  .lapoz { border: 1px solid var(--vonal); background: var(--feher); border-radius: 99px; width: 40px; height: 40px; cursor: pointer; font-size: 18px; }
+  .honap-fej { display: flex; align-items: center; justify-content: space-between; margin: 0 0 6px; }
+  .honap-fej b { font-family: var(--cim); font-weight: 400; font-size: 18px; text-transform: capitalize; }
+  .lapoz { border: 1px solid var(--vonal); background: var(--feher); border-radius: 99px; width: 36px; height: 36px; cursor: pointer; font-size: 18px; }
   .lapoz[disabled] { opacity: .3; cursor: default; }
-  .naptar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .naptar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px 5px; }
   .naptar .hetnap { text-align: center; font-size: 12px; color: var(--halvany); }
-  .nnap { aspect-ratio: 1 / 1; min-height: 40px; border: 0; border-radius: 50%; background: transparent; cursor: pointer; font-weight: 700; color: var(--sotet); }
+  .nnap { height: 34px; max-width: 46px; width: 100%; justify-self: center; border: 0; border-radius: 50%; background: transparent; cursor: pointer; font-weight: 700; color: var(--sotet); }
   .nnap.szabad { background: #dcebdf; color: var(--zold); }
   .nnap.szabad:hover { background: #c7dfcc; }
   .nnap[disabled] { color: #bdb4a8; cursor: default; font-weight: 400; }
   .nnap.ures { visibility: hidden; }
   .nnap[aria-pressed="true"] { background: var(--zold); color: #fff; }
-  .jel { display: flex; gap: 16px; font-size: 13px; color: var(--kozep); margin: 12px 0 18px; }
-  .jel span::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #dcebdf; border: 1px solid var(--zold); margin-right: 6px; vertical-align: -1px; }
-  .jel span.n::before { background: #eee; border-color: #ccc; }
-  .idolista { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; margin-top: 10px; }
-  .idogomb { border: 1.5px solid var(--vonal); background: var(--feher); border-radius: 10px; padding: 11px 0; cursor: pointer; font-weight: 700; }
+  .nap-cim { font-size: 14px; font-weight: 700; margin: 8px 0 6px; }
+  .idolista { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .idogomb { border: 1.5px solid var(--vonal); background: var(--feher); border-radius: 10px; padding: 7px 0; font-size: 15px; cursor: pointer; font-weight: 700; }
   .idogomb[aria-pressed="true"] { background: var(--sotet); color: var(--krem); border-color: var(--sotet); }
 
   /* 3. kerdes */
@@ -199,7 +189,7 @@
   .betolt { color: var(--kozep); padding: 14px 0; }
   .betolt::before { content: ''; display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px; border: 2px solid var(--vonal); border-top-color: var(--sotet); border-radius: 50%; animation: forog .8s linear infinite; }
   @keyframes forog { to { transform: rotate(360deg); } }
-  @media (min-width: 700px) { h1 { font-size: 34px; } .hero h1 { font-size: 32px; } .hero { min-height: 380px; } }
+  @media (min-width: 700px) { h1 { font-size: 34px; } }
 </style>
 </head>
 <body>
@@ -211,21 +201,15 @@
 <main id="tartalom">
   <!-- 0. nyitooldal -->
   <section data-nezet="kezdo">
-    <div class="hero">
-      <img src="/assets/img/m/c2eb0f_db6fa6eb5e6f45c5a2be66d8cf2e32f9.jpg" alt="" fetchpriority="high">
-      <div class="szoveg">
-        <h1>Természetes sminktetoválás, ami az arcodhoz illik.</h1>
-        <p>Szemöldök, ajak és szemhéj – a gyógyult, letisztult eredményre tervezve.</p>
-      </div>
-    </div>
+    <h1 class="kezdo-cim">Sminktetoválás időpontfoglalás</h1>
     <ul class="elonyok">
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 11c0 5.5-7 10-7 10z"/></svg>Természetes, harmonikus hatás – túlrajzolt forma nélkül</li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4zM14 6l3 3"/></svg>Személyre szabott tervezés, a formát te hagyod jóvá</li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>Steril, egyszer használatos eszközök · az ár a korrekciót is tartalmazza</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 11c0 5.5-7 10-7 10z"/></svg>Természetes hatás, túlrajzolt forma nélkül</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4zM14 6l3 3"/></svg>A formát te hagyod jóvá a kezelés előtt</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>Steril, egyszer használatos eszközök</li>
     </ul>
     <div class="melitta">
       <img src="/assets/img/m/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326ef000.jpg" alt="Töreki Melitta">
-      <div><b>Töreki Melitta</b><span>5 év tapasztalat · PMU stylist, oktató · WULOP Milánó 3. helyezett</span></div>
+      <div><b>Töreki Melitta</b><span>5 év tapasztalat · PMU stylist, oktató<br>WULOP Milánó 3. helyezett</span></div>
     </div>
     <button class="gomb" type="button" data-ugrik="szolg">Időpontot foglalok <span class="nyil">→</span></button>
     <button class="belepo" type="button" data-ugrik="c-info">
@@ -239,47 +223,26 @@
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
     </button>
     <div class="ertekeles"><span class="csillag">★★★★★</span><b>5,0</b><span class="halk">· 1.145 vélemény</span></div>
-    <button class="video-kartya" type="button" data-video>
-      <span class="indexkep"><img src="/assets/img/m/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326ef000.jpg" alt=""></span>
-      <span><b>Szia, Melitta vagyok!</b><span>Nézd meg rövid üzenetemet</span></span>
-    </button>
   </section>
 
   <!-- 1. kezelesvalasztas -->
   <section data-nezet="szolg" hidden>
-    <h2>Melyik kezelésre szeretnél időpontot foglalni?</h2>
+    <h2>Melyik kezelést választod?</h2>
     <div class="kezelesek" id="kezelesek"><div class="betolt">Kezelések betöltése…</div></div>
     <div class="egyeb" id="egyeb"></div>
-    <div class="doboz-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Egy érintésre automatikusan továbblépünk a szabad időpontokhoz.</div>
   </section>
 
-  <!-- 2. legkozelebbi szabad idopontok -->
+  <!-- 2. idopont: rogton a naptar (csak a szabad napok) -->
   <section data-nezet="ido" hidden>
-    <h2>Válassz időpontot</h2>
     <div id="ido-kezeles"></div>
     <div id="ido-uzenet"></div>
-    <h3>Legközelebbi szabad időpontok</h3>
-    <div class="slotok" id="slotok"><div class="betolt">Szabad időpontok keresése…</div></div>
-    <button class="link masik" type="button" data-ugrik="naptar">Másik időpontot keresek →</button>
-    <ul class="pipak">
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4M9 15l2 2 4-4"/></svg>Valós, naprakész időpontok</li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/></svg>Adatokat csak az időpont kiválasztása után kérünk</li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/></svg>Nincs szükség fiókra</li>
-    </ul>
-  </section>
-
-  <!-- A. teljes naptar -->
-  <section data-nezet="naptar" hidden>
-    <h2>Másik időpont</h2>
     <div class="honap-fej">
       <button class="lapoz" type="button" id="elozo-honap" aria-label="Előző hónap">‹</button>
       <b id="honap-cim"></b>
       <button class="lapoz" type="button" id="kovetkezo-honap" aria-label="Következő hónap">›</button>
     </div>
     <div class="naptar" id="naptar"></div>
-    <div class="jel"><span>Szabad időpont</span><span class="n">Nem elérhető</span></div>
     <div id="nap-idok"></div>
-    <div id="naptar-gomb" hidden><div style="height:14px"></div><button class="gomb" type="button" id="ezt-valasztom">Ezt az időpontot választom <span class="nyil">→</span></button></div>
   </section>
 
   <!-- 3. gyors kerdes -->
