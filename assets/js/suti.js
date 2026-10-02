@@ -3,7 +3,8 @@
 // Az eles Wix-oldalon ugyanez harom helyrol jott:
 //   - a "Mosaic suti-sav" egyeni kod (bodyEnd): a sav kinezete es szovege
 //     - ezt vesszuk at valtozatlanul, csak a Wix consentPolicyManager helyett
-//     a sajat tarolonkba (localStorage) ment;
+//     a sajat tarolonkba (localStorage) ment, es a Wix "consent-policy" sutijet
+//     is olvassa/irja (a csere utan a korabbi dontes ervenyes marad);
 //   - a Wix Google Tag Manager es Google Analytics integracioja (Consent Mode v2);
 //   - egyeni kod a <head>-ben: Meta Pixel, Trustindex richsnippet.
 //
@@ -62,9 +63,40 @@
   }
   function tarol(o) {
     try { localStorage.setItem(KULCS, JSON.stringify(o)); } catch (e) { /* nem baj */ }
+    if (!o.reszleges) wixIr(o);
+  }
+
+  // --- a Wix korabbi dontese ----------------------------------------------
+  // A Wix a dontest a "consent-policy" sutiben tarolta (.mosaicheadspa.hu, 1 ev):
+  // {"ess":1,"func":1,"anl":1,"adv":1,"dt3":1,"ts":<perc 1970 ota>}, URL-kodolva.
+  // A csere utan a visszatero latogato ne kapja meg ujra a savot: ha nincs sajat
+  // dontes, de van Wix-dontes, azt vesszuk at. Visszafele is irjuk ugyanebben a
+  // formaban, hogy egy esetleges visszaallas utan a Wix se kerdezzen ujra.
+  var WIX_SUTI = 'consent-policy';
+  function wixOlvas() {
+    try {
+      var m = d.cookie.match(/(?:^|;\s*)consent-policy=([^;]*)/);
+      if (!m) return null;
+      var c = JSON.parse(decodeURIComponent(m[1]));
+      if (!c || c.ess === undefined) return null;
+      var t = +c.ts > 0 ? c.ts * 6e4 : Date.now();
+      if (Date.now() - t > ERVENYES_NAP * 864e5) return null;
+      return { v: 1, t: t, fun: c.func == 1, ana: c.anl == 1, adv: c.adv == 1, wix: true };
+    } catch (e) { return null; }
+  }
+  function wixIr(o) {
+    try {
+      var c = { ess: 1, func: o.fun ? 1 : 0, anl: o.ana ? 1 : 0, adv: o.adv ? 1 : 0, dt3: o.adv ? 1 : 0, ts: Math.floor(o.t / 6e4) };
+      d.cookie = WIX_SUTI + '=' + encodeURIComponent(JSON.stringify(c)) + '; path=/; max-age=' + ERVENYES_NAP * 86400 +
+        (eles ? '; domain=.mosaicheadspa.hu' : '') + '; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
+    } catch (e) { /* nem baj */ }
   }
 
   var dontes = olvas();
+  if (!dontes) {
+    dontes = wixOlvas();
+    if (dontes) { try { localStorage.setItem(KULCS, JSON.stringify(dontes)); } catch (e) { /* nem baj */ } }
+  }
   var figyelok = [];
 
   // --- Google Consent Mode v2 ------------------------------------------

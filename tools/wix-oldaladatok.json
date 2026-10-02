@@ -128,6 +128,178 @@
    }
   }
  },
+ "ajandekkartya-szulinapra": {
+  "comp-mup9nua6": {
+   "videok": [
+    "36b443_f1b15cf597a647bea19035aaae5d9295"
+   ],
+   "poszterek": [
+    "36b443_f1b15cf597a647bea19035aaae5d9295"
+   ],
+   "url": [],
+   "cimek": [
+    "Your Video Title"
+   ],
+   "lejatszo": {
+    "mobil": {
+     "src": "https://video.wixstatic.com/video/36b443_f1b15cf597a647bea19035aaae5d9295/1080p/mp4/file.mp4",
+     "poszter": "36b443_f1b15cf597a647bea19035aaae5d9295f000.jpg",
+     "autoplay": false,
+     "muted": false,
+     "loop": false,
+     "controls": true,
+     "hossz": 60
+    },
+    "asztali": {
+     "src": "https://video.wixstatic.com/video/36b443_f1b15cf597a647bea19035aaae5d9295/1080p/mp4/file.mp4",
+     "poszter": "36b443_f1b15cf597a647bea19035aaae5d9295f000.jpg",
+     "autoplay": false,
+     "muted": false,
+     "loop": false,
+     "controls": true,
+     "hossz": 60
+    }
+   }
+  },
+  "comp-mup9nubd2": {
+   "videok": [
+    "c2eb0f_7c74e304d3394deeb1101d7612e658ce"
+   ],
+   "poszterek": [
+    "c2eb0f_7c74e304d3394deeb1101d7612e658ce"
+   ],
+   "url": [],
+   "cimek": [
+    "Your Video Title"
+   ],
+   "lejatszo": {
+    "mobil": {
+     "src": "https://video.wixstatic.com/video/c2eb0f_7c74e304d3394deeb1101d7612e658ce/1080p/mp4/file.mp4",
+     "poszter": "c2eb0f_7c74e304d3394deeb1101d7612e658cef000.jpg",
+     "autoplay": false,
+     "muted": false,
+     "loop": false,
+     "controls": true,
+     "hossz": 59.87
+    },
+    "asztali": {
+     "src": "https://video.wixstatic.com/video/c2eb0f_7c74e304d3394deeb1101d7612e658ce/1080p/mp4/file.mp4",
+     "poszter": "c2eb0f_7c74e304d3394deeb1101d7612e658cef000.jpg",
+     "autoplay": false,
+     "muted": false,
+     "loop": false,
+     "controls": true,
+     "hossz": 59.87
+    }
+   }
+  },
+  "comp-mup9nudi": {
+   "videok": [],
+   "poszterek": [],
+   "url": [
+    "https://www-mosaicheadspa-hu.filesusr.com/html/c2eb0f_97df67cb524ad4ad76e22fddea2496e5.html"
+   ],
+   "cimek": [
+    "Embedded Content"
+   ]
+  },
+  "comp-mup9nud75": {
+   "videok": [
+    "c2eb0f_7c74e304d3394deeb1101d7612e658ce"
+   ],
+   "poszterek": [
+    "c2eb0f_7c74e304d3394deeb1101d7612e658ce"
+   ],
+   "url": [],
+   "cimek": [
+    "Your Video Title"
+   ],
+   "lejatszo": {
+    "mobil": {
+     "src": "https://video.wixstatic.com/video/c2eb0f_7c74e304d3394deeb1101d7612e658ce/1080p/mp4/file.mp4",
+     "poszter": "c2eb0f_7c74e304d3394deeb1101d7612e658cef001.jpg",
+     "autoplay": false,
+     "muted": false,
+     "loop": false,
+     "controls": true,
+     "hossz": 59.87
+    },
+    "asztali": {
+     "src": "https://video.wixstatic.com/video/c2eb0f_7c74e304d3394deeb1101d7612e658ce/1080p/mp4/file.mp4",
+     "poszter": "c2eb0f_7c74e304d3394deeb1101d7612e658cef001.jpg",
+     "autoplay": false,
+     "muted": false,
+     "loop": false,
+     "controls": true,
+     "hossz": 59.87
+    }
+   }
+  },
+  "comp-mup9nud84": {
+   "videok": [
+    "c2eb0f_ecca71a0b1ec412cbb80698cfd5cc50f"
+   ],
+   "poszterek": [
+    "c2eb0f_ecca71a0b1ec412cbb80698cfd5cc50f"
+   ],
+   "url": [],
+   "cimek": [
+    "Your Video Title"
+   ],
+   "lejatszo": {
+    "mobil": {
+     "src": "https://video.wixstatic.com/video/c2eb0f_ecca71a0b1ec412cbb80698cfd5cc50f/1080p/mp4/file.mp4",
+     "poszter": "c2eb0f_ecca71a0b1ec412cbb80698cfd5cc50ff001.jpg",
+     "autoplay": false,
+     "muted": false,
+     "loop": false,
+     "controls": true,
+     "hossz": 67.63
+    },
+    "asztali": {
+     "src": "https://video.wixstatic.com/video/c2eb0f_ecca71a0b1ec412cbb80698cfd5cc50f/1080p/mp4/file.mp4",
+     "poszter": "c2eb0f_ecca71a0b1ec412cbb80698cfd5cc50ff001.jpg",
+     "autoplay": false,
+     "muted": false,
+     "loop": false,
+     "controls": true,
+     "hossz": 67.63
+    }
+   }
+  },
+  "comp-mup9nuda1": {
+   "videok": [
+    "c2eb0f_3b9f1c40760f4809b8e590f7ca2b0329"
+   ],
+   "poszterek": [
+    "c2eb0f_3b9f1c40760f4809b8e590f7ca2b0329"
+   ],
+   "url": [],
+   "cimek": [
+    "Your Video Title"
+   ],
+   "lejatszo": {
+    "mobil": {
+     "src": "https://video.wixstatic.com/video/c2eb0f_3b9f1c40760f4809b8e590f7ca2b0329/1080p/mp4/file.mp4",
+     "poszter": "c2eb0f_3b9f1c40760f4809b8e590f7ca2b0329f002.jpg",
+     "autoplay": false,
+     "muted": false,
+     "loop": false,
+     "controls": true,
+     "hossz": 115.63
+    },
+    "asztali": {
+     "src": "https://video.wixstatic.com/video/c2eb0f_3b9f1c40760f4809b8e590f7ca2b0329/1080p/mp4/file.mp4",
+     "poszter": "c2eb0f_3b9f1c40760f4809b8e590f7ca2b0329f002.jpg",
+     "autoplay": false,
+     "muted": false,
+     "loop": false,
+     "controls": true,
+     "hossz": 115.63
+    }
+   }
+  }
+ },
  "ajandekkartya-ugc": {
   "comp-mrenyaiv3": {
    "videok": [

@@ -2,6 +2,11 @@
 // A klon.js tablazatainak kiegeszitese a kesobb athozott oldalakhoz.
 window.MH_TABLAK = {
  "kattintos": {
+  "comp-mup9nua6": "36b443_f1b15cf597a647bea19035aaae5d9295/f000",
+  "comp-mup9nubd2": "c2eb0f_7c74e304d3394deeb1101d7612e658ce/f000",
+  "comp-mup9nud75": "c2eb0f_7c74e304d3394deeb1101d7612e658ce/f001",
+  "comp-mup9nud84": "c2eb0f_ecca71a0b1ec412cbb80698cfd5cc50f/f001",
+  "comp-mup9nuda1": "c2eb0f_3b9f1c40760f4809b8e590f7ca2b0329/f002",
   "comp-mrenyaiv3": "36b443_d5fd03efcebc4970ac2d0d9fed5ff377/f000",
   "comp-mrenyak7": "c2eb0f_7c74e304d3394deeb1101d7612e658ce/f001",
   "comp-mrenyak9": "c2eb0f_ecca71a0b1ec412cbb80698cfd5cc50f/f001",
@@ -88,6 +93,7 @@ window.MH_TABLAK = {
   "comp-mpap6jmb2": "c2eb0f_614b09d160b9382c4cffcde6d7828dcb",
   "comp-mpanyeai": "c2eb0f_614b09d160b9382c4cffcde6d7828dcb",
   "comp-mnna913b5": "c2eb0f_614b09d160b9382c4cffcde6d7828dcb",
+  "comp-mup9nuex1": "terkep",
   "comp-mrenyanx2": "terkep",
   "comp-mj8ikg4b6": "terkep",
   "comp-m7qe3gy6": "terkep",
@@ -114,6 +120,9 @@ window.MH_TABLAK = {
   ]
  },
  "gyik": {
+  "comp-mup9nudi": [
+   "c2eb0f_97df67cb524ad4ad76e22fddea2496e5"
+  ],
   "comp-mrenyamm": [
    "c2eb0f_97df67cb524ad4ad76e22fddea2496e5"
   ],
