@@ -38,6 +38,14 @@ az adatsort.
 
 ## Tudnivaló
 
+- **Élesítés: 2026-10-02.** DNS a Websupportnál (ns1–3.websupport.hu): `@ A 75.2.60.5`,
+  `www CNAME mosaicheadspa.netlify.app`. Elsődleges domain: `www.mosaicheadspa.hu`, a gyökér 301-gyel
+  rá irányít (mint a Wixen). Let's Encrypt tanúsítvány mindkét címre. Nyitott: a Websupport-zónában
+  maradt két régi `@ NS ns2/ns3.wixdns.net` sor törlése (ügyfélszolgálati jegy) – addig a Wix-oldal
+  és -előfizetés maradjon meg.
+- **A Netlify „Powered by Netlify” jelvénye kikapcsolva** (`built_with_badge_enabled: false`). Mobilon
+  eltakarta a süti-sáv „Elfogadom” gombját.
+
 - **Sütidöntés átvétele:** a Wix a döntést a `consent-policy` sütiben tárolta (`.mosaicheadspa.hu`,
   1 év). Az új oldal ezt átveszi, ha még nincs saját döntés, így a csere után a visszatérő látogató
   nem kapja meg újra a sávot. Az új oldal a saját döntést is beírja ugyanebbe a sütibe, Wix-formátumban,

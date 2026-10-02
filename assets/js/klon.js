@@ -812,9 +812,11 @@
       const dia = document.createElement('div');
       dia.style.cssText = 'flex:0 0 100%;height:100%';
       const img = document.createElement('img');
-      img.src = GYOKER + 'assets/img/' + kep;
+      // csak a lathato es a szomszedos dia toltodik be (betolt), a tobbi lapozaskor
+      img.dataset.src = GYOKER + 'assets/img/' + kep;
       img.alt = alt;
-      img.loading = i < 2 ? 'eager' : 'lazy';
+      img.loading = 'lazy';
+      img.decoding = 'async';
       img.style.cssText = 'display:block;width:100%;height:100%;object-fit:' + illeszt;
       dia.appendChild(img);
       return dia;
@@ -831,19 +833,36 @@
         belyegek = lista.map(([kep], i) => {
           const b = document.createElement('div');
           b.className = 'thumbnailItem';
-          b.setAttribute('style', alapStilus + ';background-image:url(' + GYOKER + 'assets/img/' + kep + ');left:' + (i * lepes) + 'px;cursor:pointer');
+          // a bélyegkep csak akkor toltodik be, amikor a galeria a kepernyo kozelebe er
+          b.setAttribute('style', alapStilus + ';left:' + (i * lepes) + 'px;cursor:pointer');
+          b.dataset.kep = GYOKER + 'assets/img/' + kep;
           b.addEventListener('click', () => ugrik(i));
           return b;
         });
         oszlop.replaceChildren(...belyegek);
+        const belyegBetolt = () => belyegek.forEach((b) => { b.style.backgroundImage = 'url(' + b.dataset.kep + ')'; });
+        if ('IntersectionObserver' in window) {
+          const figyelo = new IntersectionObserver((bejegyzesek) => {
+            if (bejegyzesek.some((e) => e.isIntersecting)) { figyelo.disconnect(); belyegBetolt(); }
+          }, { rootMargin: '600px 0px' });
+          figyelo.observe(tarto);
+        } else belyegBetolt();
         oszlop.style.transition = 'left .45s ease';
         oszlop.dataset.lepes = String(lepes);
       }
     }
 
     let most = 0;
+    const diak = [...belso.children];
+    const betolt = (i) => {
+      for (const d of [-1, 0, 1, 2]) {
+        const img = diak[(i + d + lista.length) % lista.length].firstElementChild;
+        if (img && !img.getAttribute('src') && img.dataset.src) img.src = img.dataset.src;
+      }
+    };
     const ugrik = (i) => {
       most = (i + lista.length) % lista.length;
+      betolt(most);
       belso.style.transform = 'translateX(' + (-100 * most) + '%)';
       belyegek.forEach((b, j) => b.classList.toggle('pro-gallery-highlight', j === most));
       if (oszlop && belyegek.length) {
