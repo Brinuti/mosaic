@@ -138,3 +138,16 @@ body.customer-mosaic-pmu .form-check { margin-top: 4px !important; }
 
 /* a reCAPTCHA jelvenye ne usszon ra az urlapra: az oldal aljara kerul, a helyen marad lathatonak */
 body.customer-mosaic-pmu .grecaptcha-badge { position: relative !important; bottom: auto !important; right: auto !important; margin: 8px auto 4px !important; box-shadow: none !important; }
+
+/* Salonic-osszegzo: 1. sor a kezeles neve (egy sorban, ...-tal), 2. sor datum + idopont, idotartam, ar */
+body.customer-mosaic-pmu .order-lg-2 .card-body { display: flex !important; flex-wrap: wrap !important; align-items: baseline !important; column-gap: 8px !important; row-gap: 2px !important; }
+body.customer-mosaic-pmu .order-lg-2 .card-body > ul, body.customer-mosaic-pmu .order-lg-2 .card-body > ul > li { display: contents !important; }
+body.customer-mosaic-pmu .order-lg-2 .card-body strong { order: 1; flex: 0 0 100%; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px !important; font-weight: 700 !important; }
+body.customer-mosaic-pmu .order-lg-2 .card-body h4.my-0, body.customer-mosaic-pmu .order-lg-2 .card-body > h4 { order: 2; font-size: 12px !important; font-family: inherit !important; font-weight: 700 !important; margin: 0 !important; white-space: nowrap; }
+body.customer-mosaic-pmu .order-lg-2 .card-body li > div { order: 3; display: flex !important; gap: 8px; font-size: 12px !important; white-space: nowrap; }
+body.customer-mosaic-pmu .order-lg-2 .card-body li > div * { font-size: 12px !important; white-space: nowrap; }
+/* jelolonegyzetek, "*-gal jelolt mezok" es lemondasi sor: kisebb betu (a szoveg a mezoket tartalmazo dobozban van) */
+body.customer-mosaic-pmu .panel-body > div { font-size: 11px !important; line-height: 1.35 !important; }
+body.customer-mosaic-pmu .form-check label, body.customer-mosaic-pmu .form-check label a { font-size: 10.5px !important; line-height: 1.35 !important; }
+body.customer-mosaic-pmu .form-check label { padding-left: 24px !important; }
+body.customer-mosaic-pmu .panel-body > div > hr { margin: 4px 0 !important; }
