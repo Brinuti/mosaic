@@ -82,9 +82,10 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   '  Cache-Control: public, max-age=31536000',
   // a Salonic oldalan (salonic/pmu.css) is ezeket a betuket hasznaljuk - mas domainrol csak igy toltodnek
   '  Access-Control-Allow-Origin: *',
-  // a Salonic-CSS-t (salonic/) verziojel nelkul toltik be: rovid gyorsitotar, hogy a javitas hamar eljusson
+  // a Salonic-CSS-t (salonic/) verziojel nelkul toltik be: mindig ujraellenorizze a bongeszo,
+  // kulonben egy javitas nem latszana azonnal (a valtozatlan fajlt 304-gyel, gyorsan kapja meg)
   '/salonic/*',
-  '  Cache-Control: public, max-age=300',
+  '  Cache-Control: public, max-age=0, must-revalidate',
   '  Access-Control-Allow-Origin: *',
   // a HTML-beagyazasok (GYIK, arlistak) csak keretben jelennek meg, onalloan ne indexelodjenek
   '/assets/embed/*',

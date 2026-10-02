@@ -135,3 +135,6 @@ body.customer-mosaic-pmu .order-lg-2 .service-data li strong { font-size: 13px !
 body.customer-mosaic-pmu .order-lg-1 .card { margin-top: 0 !important; }
 body.customer-mosaic-pmu .order-lg-1 .card-body { padding: 10px 12px !important; }
 body.customer-mosaic-pmu .form-check { margin-top: 4px !important; }
+
+/* a reCAPTCHA jelvenye ne usszon ra az urlapra: az oldal aljara kerul, a helyen marad lathatonak */
+body.customer-mosaic-pmu .grecaptcha-badge { position: relative !important; bottom: auto !important; right: auto !important; margin: 8px auto 4px !important; box-shadow: none !important; }
