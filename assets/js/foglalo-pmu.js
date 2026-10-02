@@ -413,9 +413,9 @@
   const MAX_FOTO = 5;
   BELEPES.foto = () => {
     const d = allapot.ag === 'D';
-    $('foto-cim').textContent = d ? 'Nem vagy biztos benne? Küldj fotót, és segítünk.' : 'Küldj fotót a jelenlegi tetoválásról';
-    $('foto-szoveg').textContent = d ? 'Ránézünk, és megírjuk, hogy első kezelés vagy korrekció szükséges-e.'
-      : 'Ez segít, hogy a legbiztonságosabb és leghatékonyabb kezelést tudjuk javasolni.';
+    $('foto-cim').textContent = d ? 'Nem vagy biztos benne? Küldj fotót, és segítünk.' : 'Tölts fel fotót a jelenlegi sminktetoválásodról';
+    $('foto-szoveg').replaceChildren(d ? 'Ránézünk, és megírjuk, hogy első kezelés vagy korrekció szükséges-e.'
+      : elem('b', { szoveg: 'Fotó nélkül nem tudunk segíteni: a feltöltés kötelező. Csak a fotó alapján tudjuk megmondani, mit lehet és érdemes tenni.' }));
     $('foto-osszegzes').replaceChildren(allapot.slot && allapot.kezeles
       ? elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Választott (preferált) időpont' }), elem('div', { class: 'sor' }, ikon('naptar'),
         elem('span', {}, elem('b', { szoveg: teljes(allapot.slot) }), elem('span', { szoveg: allapot.kezeles.cim + (allapot.kezeles.valtozat ? ' – ' + allapot.kezeles.valtozat : '') }))))
