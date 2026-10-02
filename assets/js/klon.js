@@ -325,8 +325,15 @@
 
   for (const [azon, ertek] of Object.entries(KATTINTOS)) {
     const doboz = document.getElementById(azon);
-    if (!doboz || doboz.firstElementChild) continue;
+    if (!doboz) continue;
     const [azonosito, kocka, mod] = ertek.split('/');
+    // a build (netlify-build.mjs) a poszter + gomb HTML-jet mar beirta: csak a kattintast kotjuk ra
+    const kesz = doboz.querySelector(':scope > .mh-video');
+    if (kesz) {
+      kesz.addEventListener('click', () => kesz.replaceChildren(videoElem(azonosito)), { once: true });
+      continue;
+    }
+    if (doboz.firstElementChild) continue;
     // az asztalin magatol indulo lejatszo: nemitva, vegtelenitve, hanggombbal (mint a 4. pont)
     if (mod === 'auto' && !mobilOldal) {
       const v = document.createElement('video');
