@@ -310,7 +310,7 @@
     const k = allapot.kezeles;
     const url = SZALON.cim + '/guestData/?' + new URLSearchParams({ placeId: SZALON.placeId, serviceId: k.id, employeeId: -1, startDate: allapot.slot });
     // a koszonooldalnak (a /pmu-ok meres utan ide jovunk vissza)
-    tarol(TAROLO, { ts: allapot.slot, perc: k.perc, nev: k.egyeb ? k.nev : k.cim + (k.valtozat ? ' – ' + k.valtozat : ''), ar: arSzoveg(k), foto: k.foto });
+    tarol(TAROLO, { ts: allapot.slot, perc: k.perc, nev: k.egyeb ? k.nev : k.cim + (k.valtozat ? ' – ' + k.valtozat : ''), ar: arSzoveg(k), foto: k.foto, tipus: /konzult/i.test(k.nev) ? 'konz' : 'kezeles' });
     $('salonic-link').href = url;
     const keret = $('salonic');
     $('salonic-betolt').hidden = false;
@@ -337,13 +337,26 @@
     BELEPES.ido('Ez az időpont közben elfogyott. Válassz egy másikat!');
   };
 
-  // --- 5. koszonooldal ----------------------------------------------------------------
+  // --- 5. koszonooldalak (az elkotelezodes szerint kulon) --------------------------------------
+  //  - fizetos kezeles:     #koszonjuk
+  //  - ingyenes konzultacio: #koszonjuk-konzultacio (szemelyes, a szalonban)
+  //  - 10 perces visszahivas: c-kesz (#visszahivas-kesz), lasd lent
+  // Mintanezet foglalas nelkul: ?minta=kezeles|konz|visszahivas
+  const MINTA = new URLSearchParams(location.search).get('minta');
+  const KOSZ = {
+    kezeles: { cim: 'Sikeres foglalás!', hash: '#koszonjuk', lepesek: ['Visszaigazolást küldünk e-mailben.', 'A kezelés előtt emlékeztetőt kapsz.', 'Várunk szeretettel a megadott időpontban!'] },
+    konz: { cim: 'Konzultációd lefoglalva!', hash: '#koszonjuk-konzultacio', lepesek: ['Visszaigazolást küldünk e-mailben.', 'Melitta átbeszéli veled a kívánt hatást.', 'Ha tetszik, helyben foglalhatsz kezelést.'] },
+  };
   BELEPES.koszonjuk = () => {
-    // ?minta=1#koszonjuk: a koszonooldal megtekintese foglalas nelkul, mintaadatokkal
-    const minta = new URLSearchParams(location.search).has('minta')
-      ? { ts: Math.floor(Date.now() / 86400000 + 7) * 86400 + 8 * 3600, perc: 90, nev: 'Szemöldöktetoválás – Hibrid', ar: '79 000 Ft' } : null;
-    const f = olvas(TAROLO) || minta;
+    const mintaNap = Math.floor(Date.now() / 86400000 + 7) * 86400 + 8 * 3600;
+    const minta = MINTA === 'konz' ? { ts: mintaNap, perc: 30, nev: 'Ingyenes konzultáció', ar: 'Ingyenes', tipus: 'konz' }
+      : MINTA ? { ts: mintaNap, perc: 90, nev: 'Szemöldöktetoválás – Hibrid', ar: '79 000 Ft', tipus: 'kezeles' } : null;
+    const f = minta || olvas(TAROLO);
     if (!f) { mutat('kezdo'); return; }
+    const v = KOSZ[f.tipus] || KOSZ.kezeles;
+    $('kosz-cim').textContent = v.cim;
+    $('kosz-lepesek').replaceChildren(...v.lepesek.map((t) => elem('li', { szoveg: t })));
+    if (location.hash !== v.hash) history.replaceState({ nezet: 'koszonjuk' }, '', location.pathname + location.search + v.hash);
     const terkep = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(SZALON.terkep);
     $('koszono-osszegzes').replaceChildren(elem('div', { class: 'kosz-kartya' },
       elem('span', { class: 'adat' }, elem('b', { szoveg: teljes(f.ts) }), elem('b', { szoveg: f.nev }), f.ar + ' · ' + idotartam(f.perc),
@@ -511,9 +524,14 @@
       mikor_nap: allapot.cNap, mikor_napszak: allapot.cSav, oldal: 'foglalo-pmu',
     });
     if (!(await bekuld(adat, gomb, $('c-kuld-hiba')))) return;
-    $('c-kesz-osszegzes').replaceChildren(cOsszegzes('Visszahívás'));
     ugrik('c-kesz');
   });
+  BELEPES['c-kesz'] = () => {
+    if (MINTA === 'visszahivas') Object.assign(allapot, { cNap: allapot.cNap || 'Holnap', cSav: allapot.cSav || 'Délelőtt (9–12)' });
+    if (!allapot.cNap) { mutat('kezdo'); return; }
+    $('c-kesz-osszegzes').replaceChildren(cOsszegzes('Ekkor hívunk'));
+    history.replaceState({ nezet: 'c-kesz' }, '', location.pathname + location.search + '#visszahivas-kesz');
+  };
 
   // --- video ------------------------------------------------------------------------------
   for (const g of document.querySelectorAll('[data-video]')) {
@@ -527,10 +545,15 @@
   // ?kezeles=<Salonic-azonosito vagy kulcsszo> (kezeles-specifikus landingrol): az 1. lepes kimarad
   (async () => {
     const kert = new URLSearchParams(location.search).get('kezeles');
-    if (location.hash === '#koszonjuk' && (olvas(TAROLO) || new URLSearchParams(location.search).has('minta'))) {
-      history.replaceState({ nezet: 'koszonjuk' }, '', '#koszonjuk');
+    if (location.hash.startsWith('#koszonjuk') && (olvas(TAROLO) || MINTA)) {
+      history.replaceState({ nezet: 'koszonjuk' }, '', location.hash);
       mutat('koszonjuk');
       BELEPES.koszonjuk();
+      return;
+    }
+    if (MINTA === 'visszahivas') {
+      mutat('c-kesz');
+      BELEPES['c-kesz']();
       return;
     }
     history.replaceState({ nezet: 'kezdo' }, '', location.pathname + location.search);

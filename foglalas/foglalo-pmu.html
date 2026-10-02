@@ -191,19 +191,20 @@
   @keyframes forog { to { transform: rotate(360deg); } }
   @media (min-width: 700px) { h1 { font-size: 34px; } }
   /* koszonooldal tomoren, hogy egy mobilkepernyore ferjen */
-  [data-nezet=koszonjuk] .pipa-kor { width: 52px; height: 52px; margin: 0 auto 8px; }
-  [data-nezet=koszonjuk] .pipa-kor svg { width: 28px; height: 28px; }
-  [data-nezet=koszonjuk] h2 { font-size: 22px; }
+  [data-nezet=koszonjuk] .pipa-kor, [data-nezet=c-kesz] .pipa-kor { width: 52px; height: 52px; margin: 0 auto 8px; }
+  [data-nezet=koszonjuk] .pipa-kor svg, [data-nezet=c-kesz] .pipa-kor svg { width: 28px; height: 28px; }
+  [data-nezet=koszonjuk] h2, [data-nezet=c-kesz] h2 { font-size: 22px; }
   [data-nezet=koszonjuk] .osszegzes-kartya { padding: 10px 12px; margin: 12px 0 0; }
   [data-nezet=koszonjuk] .osszegzes-kartya b { font-size: 15px; }
   [data-nezet=koszonjuk] .gombsor { grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 6px; }
   [data-nezet=koszonjuk] .gombsor .gomb { min-height: 46px; font-size: 13px; letter-spacing: .05em; padding: 8px 10px; }
-  [data-nezet=koszonjuk] > p.kicsi { font-size: 12px; margin: 0; }
+  [data-nezet=koszonjuk] > p.kicsi, [data-nezet=c-kesz] > p.kicsi { font-size: 12px; margin: 0; }
   [data-nezet=koszonjuk] h3 { margin: 14px 0 0 !important; font-size: 17px; }
-  [data-nezet=koszonjuk] .lepesek-lista { gap: 6px; margin-top: 8px; }
-  [data-nezet=koszonjuk] .lepesek-lista li { grid-template-columns: 24px 1fr; gap: 10px; font-size: 14px; }
-  [data-nezet=koszonjuk] .lepesek-lista li::before { width: 22px; height: 22px; font-size: 12px; }
-  [data-nezet=koszonjuk] h2.kozepre { margin: 0; }
+  [data-nezet=koszonjuk] .lepesek-lista, [data-nezet=c-kesz] .lepesek-lista { gap: 6px; margin-top: 8px; }
+  [data-nezet=koszonjuk] .lepesek-lista li, [data-nezet=c-kesz] .lepesek-lista li { grid-template-columns: 24px 1fr; gap: 10px; font-size: 14px; }
+  [data-nezet=koszonjuk] .lepesek-lista li::before, [data-nezet=c-kesz] .lepesek-lista li::before { width: 22px; height: 22px; font-size: 12px; }
+  [data-nezet=koszonjuk] h2.kozepre, [data-nezet=c-kesz] h2.kozepre { margin: 0; }
+  [data-nezet=c-kesz] .osszegzes-kartya { margin: 12px 0 8px; padding: 10px 12px; }
   .kosz-kartya { display: grid; grid-template-columns: 1fr 104px; gap: 10px; align-items: stretch; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; padding: 8px 8px 8px 12px; margin-top: 12px; }
   .kosz-kartya .adat { font-size: 13px; color: var(--kozep); line-height: 1.35; align-self: center; }
   .kosz-kartya .adat b { display: block; color: var(--sotet); font-size: 15px; }
@@ -305,7 +306,7 @@
   <!-- 5. koszonooldal -->
   <section data-nezet="koszonjuk" hidden>
     <div class="pipa-kor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
-    <h2 class="kozepre">Sikeres foglalás!</h2>
+    <h2 class="kozepre" id="kosz-cim">Sikeres foglalás!</h2>
     <div id="koszono-osszegzes"></div>
     <p class="megerosit">Erősítsd meg egy érintéssel, hogy jössz! <span aria-hidden="true">↓</span></p>
     <div class="gombsor">
@@ -316,11 +317,7 @@
     <div class="utana">
       <div>
         <h3>Mi történik most?</h3>
-        <ol class="lepesek-lista">
-          <li>Visszaigazolást küldünk e-mailben.</li>
-          <li>A kezelés előtt emlékeztetőt kapsz.</li>
-          <li>Várunk szeretettel a megadott időpontban!</li>
-        </ol>
+        <ol class="lepesek-lista" id="kosz-lepesek"></ol>
       </div>
       <button class="video-allo" type="button" data-video aria-label="Melitta videóüzenetének lejátszása">
         <img src="/assets/img/m/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326ef000.jpg" alt="">
@@ -410,10 +407,25 @@
 
   <section data-nezet="c-kesz" hidden>
     <div class="pipa-kor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
-    <div class="kozepre"><h2 style="margin-bottom:4px">Megerősítve!</h2><p class="halk" style="margin-top:0">Hamarosan hívunk a megadott időpontban.</p></div>
+    <h2 class="kozepre">Visszahívást kértél!</h2>
     <div id="c-kesz-osszegzes"></div>
-    <p class="halk kicsi kozepre">Ha közben változás történik, értesítünk.</p>
-    <div class="elvalaszto"></div>
+    <p class="kozepre kicsi halk">Ha közben változik a terved, hívj minket: 06 20 247 4444.</p>
+    <div class="utana">
+      <div>
+        <h3>Mi történik most?</h3>
+        <ol class="lepesek-lista">
+          <li>A megadott időben felhívunk (kb. 10 perc).</li>
+          <li>Átbeszéljük, melyik kezelés illik hozzád.</li>
+          <li>Ha szeretnéd, a hívás végén időpontot is foglalunk.</li>
+        </ol>
+      </div>
+      <button class="video-allo" type="button" data-video aria-label="Melitta videóüzenetének lejátszása">
+        <img src="/assets/img/m/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326ef000.jpg" alt="">
+        <span class="lejatszo" aria-hidden="true"></span>
+        <span class="felirat"><b>Szia, Melitta vagyok!</b>Nézd meg üzenetemet</span>
+      </button>
+    </div>
+    <div style="height:14px"></div>
     <a class="gomb masod" href="/sminktetovalas-budapest">Vissza a sminktetováláshoz</a>
   </section>
 </main>
