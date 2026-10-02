@@ -67,6 +67,12 @@
   .osszegzes dt { color: var(--kozep); }
   .osszegzes dd { margin: 0; font-weight: 700; }
   .megj { font-size: 14px; color: var(--kozep); margin: 14px 0 0; }
+  /* a Salonic adatlapjabol a felso fejlec es boritokep (116 px) levagva, a lablec a keret alatt marad */
+  .salonic-keret { --keret-levag: 108px; --keret-magas: 1560px; }
+  @media (min-width: 600px) { .salonic-keret { --keret-magas: 1420px; } }
+  .salonic-keret { position: relative; margin-top: 14px; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; overflow: hidden; height: var(--keret-magas, 1250px); }
+  .salonic-keret .betolt { position: absolute; inset: 16px; }
+  .salonic-keret iframe { position: relative; display: block; width: 100%; border: 0; height: calc(var(--keret-magas, 1250px) + var(--keret-levag, 0px)); margin-top: calc(-1 * var(--keret-levag, 0px)); background: transparent; }
   .gomb { display: inline-block; background: var(--sotet); color: var(--krem); border: 0; border-radius: 99px; padding: 14px 26px; font-weight: 700; letter-spacing: .04em; cursor: pointer; text-decoration: none; }
   .gomb[disabled] { opacity: .4; cursor: default; }
   .vissza { background: none; border: 0; color: var(--kozep); cursor: pointer; padding: 6px 0; margin-bottom: 8px; font-size: 14px; }
@@ -120,13 +126,16 @@
 
   <section id="osszegzes" hidden>
     <button class="vissza" type="button" data-vissza="idopont">‹ Vissza</button>
-    <h2>Összegzés</h2>
+    <h2>Adataid és a foglalás</h2>
     <div class="osszegzes">
       <dl id="osszegzes-adatok"></dl>
-      <p class="megj">A következő lépésben add meg a neved és az elérhetőséged, majd véglegesítsd a foglalást.
-        A foglalást a Salonic rendszere rögzíti, onnan kapod a visszaigazoló e-mailt is.</p>
     </div>
-    <p><a class="gomb" id="veglegesit" href="#">Tovább az adataimhoz ›</a></p>
+    <p class="megj">Add meg az elérhetőséged, és nyomd meg a foglalás gombot. A visszaigazolást e-mailben kapod.</p>
+    <div class="salonic-keret" id="salonic-keret">
+      <div class="betolt" id="salonic-betolt">Foglalási űrlap betöltése…</div>
+      <iframe id="salonic" title="Foglalás véglegesítése" allow="payment"></iframe>
+    </div>
+    <p class="megj">Nem jelenik meg az űrlap? <a id="veglegesit" href="#" target="_top">Nyisd meg itt</a>.</p>
   </section>
 </main>
 <div class="also" id="also" hidden>

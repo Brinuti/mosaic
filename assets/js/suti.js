@@ -21,6 +21,19 @@
 (function () {
   'use strict';
 
+  // A foglalo oldal (/foglalo-proba) beagyazott Salonic-adatlapja sikeres foglalas utan a mi
+  // koszonooldalunkra iranyit - a keretben (ha az idopont kozben elkelt, a fooldalunkra).
+  // Ilyenkor itt semmi nem fut (meres sem): a foglalo oldal dont - a koszonooldalt a teljes
+  // ablakban nyitja meg, igy a konverzio egyszer, a fo ablakban merodik (mint eddig).
+  try {
+    if (window.top !== window.self && window.parent.location.hostname === location.hostname) {
+      document.documentElement.style.visibility = 'hidden';
+      if (typeof window.parent.mhKeretbenOldal === 'function') window.parent.mhKeretbenOldal(location.href);
+      else window.top.location.replace(location.href);
+      return;
+    }
+  } catch (e) { /* idegen oldal kereteben: nincs teendo */ }
+
   // --- beallitasok ------------------------------------------------------
   var GTM = 'GTM-PST2HB22';
   var GA4 = 'G-H4206SQ0Q7';
