@@ -74,6 +74,11 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .link-gomb { background: none; border: 0; padding: 0; color: var(--sotet); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 :where(main, .lablec, dialog) :focus-visible { outline: 2px solid var(--arany); outline-offset: 3px; }
 
+/* --- logo (lablec) --- */
+.logo { display: inline-flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--sotet); line-height: 1; }
+.logo-nev { font: 400 30px/1 var(--cim); letter-spacing: .08em; }
+.logo-al { font: 600 8.5px/1 var(--test); letter-spacing: .38em; text-transform: uppercase; color: var(--arany); margin-top: 6px; }
+
 /* --- hero --- */
 .hero { padding: 26px 0 44px; background: radial-gradient(120% 90% at 85% 10%, #f1e9de 0%, transparent 60%), linear-gradient(#f9f6f1, #f6f0e7); }
 .tenyek { list-style: none; margin: 0 0 30px; padding: 0; display: flex; justify-content: space-between; gap: 16px; }
@@ -260,9 +265,9 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 
 /* --- szakember --- */
 .szakember { padding: 0; background: linear-gradient(90deg, #f7f2ea 0%, #f1e9de 100%); border-top: 1px solid var(--vonal); overflow: hidden; }
-.szakember-racs { display: grid; grid-template-columns: 300px 1fr 480px; align-items: stretch; min-height: 440px; }
+.szakember-racs { display: grid; grid-template-columns: 360px 1fr 480px; align-items: stretch; min-height: 440px; }
 .szakember-adatok { padding: 36px 0; }
-.szakember-adatok h2.nagy { font-size: 52px; }
+.szakember-adatok h2.nagy { font-size: 50px; white-space: nowrap; }
 .szakember-adatok .lead { margin-top: 6px; }
 .szakember-adatok ul { list-style: none; padding: 0; margin: 34px 0 0; display: grid; gap: 26px; }
 .szakember-adatok li { display: flex; gap: 22px; align-items: flex-start; font-size: 14.5px; }
@@ -296,9 +301,18 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .trustindex .mh-helykitolto { min-height: 260px; display: grid; place-content: center; gap: 12px; text-align: center; background: #fff; border: 1px solid var(--vonal); border-radius: 14px; padding: 30px; color: var(--halk); }
 .trustindex .mh-helykitolto button { justify-self: center; }
 .vel-racs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.vel { background: #fff; border-radius: 14px; padding: 12px 12px 16px; border: 1px solid #efe8de; box-shadow: var(--arnyek); display: flex; flex-direction: column; }
+.vel { background: #fff; border-radius: 14px; padding: 16px 16px 14px; border: 1px solid #efe8de; box-shadow: var(--arnyek); display: flex; flex-direction: column; }
+.vel-fej-sor { display: flex; justify-content: space-between; align-items: flex-start; }
+.vel-fej-sor svg, .vel-mind > svg { width: 24px; height: 24px; stroke: none; }
+.vel .vel-szoveg { background: none; padding: 6px 2px 0; text-align: left; text-transform: none; letter-spacing: 0; font: italic 400 16.5px/1.45 var(--cim); color: var(--szoveg); flex: 1; }
+.vel .csillagok { text-align: left; margin: 12px 2px 4px; color: #e2a83a; }
+.vel-nev { font-weight: 600; font-size: 14px; margin: 0 2px 12px; }
+.vel-nev small { display: block; font-weight: 400; font-size: 12px; color: var(--halk); }
+.vel-mind { align-items: center; justify-content: center; text-align: center; gap: 10px; text-decoration: none; color: var(--szoveg); background: var(--bezs); }
+.vel-mind b { font: 500 40px/1 var(--cim); color: var(--sotet); }
+.vel-mind .gomb { margin-top: 8px; }
+a.google-nagy { text-decoration: none; color: inherit; }
 .idezojel { font: 500 44px/0.7 var(--cim); color: #b08b51; margin: 12px 0 2px 6px; }
-.vel-szoveg { background: var(--krem2); border-radius: 8px; padding: 14px; text-align: center; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; line-height: 1.5; }
 .vel .csillagok { text-align: center; color: #b08b51; margin: 8px 0 12px; font-size: 14px; }
 .vel img { width: 100%; aspect-ratio: 2.4; object-fit: cover; border-radius: 6px; }
 .tema { font-size: 13px; color: #4a5555; margin-top: 12px; padding: 0 6px; }
@@ -354,14 +368,14 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 #fogl-1 .terulet-lista { flex: 1; grid-auto-rows: 1fr; }
 .lepesszam { width: 40px; height: 40px; border-radius: 50%; background: var(--bezs); display: grid; place-items: center; font: 500 20px/1 var(--cim); color: #5d4a32; }
 .terulet-lista { display: grid; gap: 8px; }
-.terulet { display: grid; grid-template-columns: 52px 110px 1fr 20px; align-items: center; background: #f6f1ea; border-radius: 10px; overflow: hidden; cursor: pointer; transition: background .15s; min-height: 72px; }
+.terulet { display: grid; grid-template-columns: 46px clamp(80px, 7vw, 110px) 1fr 22px; align-items: center; background: #f6f1ea; border-radius: 10px; overflow: hidden; cursor: pointer; transition: background .15s; min-height: 72px; }
 .terulet:hover { background: #f1e9de; }
 .terulet input { position: absolute; opacity: 0; pointer-events: none; }
 .terulet .radio { justify-self: center; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #3b4a4a; background: #fff; display: grid; place-items: center; }
 .terulet input:checked + .radio::after { content: ''; width: 12px; height: 12px; border-radius: 50%; background: var(--sotet); }
 .terulet input:focus-visible + .radio { outline: 2px solid var(--arany); outline-offset: 2px; }
-.terulet img { width: 110px; height: 100%; min-height: 72px; object-fit: cover; }
-.terulet .nev { font: 500 18px/1 var(--cim); color: var(--sotet); padding-left: 16px; }
+.terulet img { width: 100%; height: 100%; min-height: 72px; object-fit: cover; }
+.terulet .nev { font: 500 18px/1.1 var(--cim); color: var(--sotet); padding-left: 14px; min-width: 0; }
 .terulet .chevron { width: 16px; height: 16px; color: #5c6766; }
 .terulet:has(input:checked) { background: #efe5d7; box-shadow: inset 0 0 0 1px #d9c7ab; }
 .igen-nem { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }

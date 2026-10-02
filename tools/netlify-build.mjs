@@ -106,7 +106,13 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
 // Verziojel a sajat szkriptek es stilusok hivatkozasaira (?v=<tartalom-hash>):
 // igy egy javitas azonnal eler minden latogatot, akkor is, ha a bongeszo meg
 // egy regebbi valtozatot tarol.
-const SAJAT = ['assets/js/klon.js', 'assets/js/suti.js', 'assets/js/galeriak.js', 'assets/js/gyik.js', 'assets/js/arlistak.js', 'assets/js/oldaltablak.js', 'assets/js/foglalo.js', 'assets/js/foglalo-pmu.js', 'assets/css/klon.css'];
+// Minden sajat szkript es stiluslap (nem csak egy kezi lista): a /assets/js/* es /assets/css/*
+// egy evig tarolhato (immutable), ezert ami verziojel nelkul megy ki, annak a javitasa nem jut el a
+// latogatohoz - a regi CSS/JS marad a bongeszoben az uj HTML mellett (igy esett szet a PMU landing).
+const SAJAT = [
+  ...fs.readdirSync(path.join(ROOT, 'assets/js')).filter((f) => f.endsWith('.js')).map((f) => 'assets/js/' + f),
+  ...fs.readdirSync(path.join(ROOT, 'assets/css')).filter((f) => f.endsWith('.css')).map((f) => 'assets/css/' + f),
+];
 // Oldalankenti LCP-kep (a legnagyobb tartalmi elem), egyszer bongeszovel lemerve:
 // tools/lcp-elofeltoltes.json ({ mobil: { lap: kep }, asztali: {...} }). Elotoltjuk, es nem lusta.
 const LCP = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/lcp-elofeltoltes.json'), 'utf8'));
