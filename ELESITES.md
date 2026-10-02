@@ -29,7 +29,7 @@ az adatsort.
    - `CNAME stape` → `euj.stape.io` (szerveroldali mérés, Meta CAPI)
    - `CNAME capi-pmu` → `capig.stape.cloud` (a PMU-pixel Meta CAPI Gateway-e)
    - `www` és a gyökérdomain az új tárhelyre; **a gyökér 301-gyel a `www`-re** (mint most)
-2. **Tárhely**: `ELES=1` környezeti változó (indexelhető, a Wix-féle robots.txt és sitemap).
+2. **Tárhely**: `ELES=1` környezeti változó (indexelhető, a Wix-féle robots.txt és sitemap) – 2026-10-02-án beállítva (production). A próbacímeken (`*.netlify.app`) az edge-függvény ettől függetlenül `noindex`-et és tiltó robots.txt-t ad. Elsődleges domain: `www.mosaicheadspa.hu`, a gyökér rá irányít.
 3. **Cloudflare-re költözéskor**: a `netlify/lib/utvonal.js` logikáját egy Pages Functionbe
    kell tenni; az űrlapokat és a levélküldést át kell írni; 3 videó 25 MB fölött van.
 4. **Az átállás után**: GA4-összevetés az utolsó 28 napos alappal (page_view 38 664, visit 36 970,
