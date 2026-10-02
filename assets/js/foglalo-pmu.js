@@ -30,6 +30,8 @@
     kezelo: 32428, // Toreki Melitta
     naptar: '76a8541e-bb52-22ab-f8c0-531b86f55abb', // a Salonic naptar-azonositoja
     hely: 'MOSAIC, 1023 Budapest, Bécsi út 2.',
+    cimSor: '1023 Budapest, Bécsi út 2. (Kolosy térnél)',
+    terkep: 'MOSAIC, 1023 Budapest, Bécsi út 2',
   };
   const API = 'https://api.salonic.hu/calendar/getAvailableTimes';
   const ZONA = 'Europe/Budapest';
@@ -342,8 +344,12 @@
       ? { ts: Math.floor(Date.now() / 86400000 + 7) * 86400 + 8 * 3600, perc: 90, nev: 'Szemöldöktetoválás – Hibrid', ar: '79 000 Ft' } : null;
     const f = olvas(TAROLO) || minta;
     if (!f) { mutat('kezdo'); return; }
-    $('koszono-osszegzes').replaceChildren(elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'sor' }, ikon('naptar'),
-      elem('span', {}, elem('b', { szoveg: teljes(f.ts) }), elem('b', { szoveg: f.nev }), elem('span', { szoveg: f.ar + ' · ' + idotartam(f.perc) })))));
+    const terkep = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(SZALON.terkep);
+    $('koszono-osszegzes').replaceChildren(elem('div', { class: 'kosz-kartya' },
+      elem('span', { class: 'adat' }, elem('b', { szoveg: teljes(f.ts) }), elem('b', { szoveg: f.nev }), f.ar + ' · ' + idotartam(f.perc),
+        elem('span', { class: 'cim', szoveg: SZALON.cimSor })),
+      elem('a', { class: 'terkep', href: terkep, target: '_blank', rel: 'noopener', 'aria-label': 'Megnyitás térképen' },
+        elem('iframe', { src: 'https://www.google.com/maps?q=' + encodeURIComponent(SZALON.terkep) + '&z=15&output=embed', loading: 'lazy', tabindex: '-1', title: 'Térkép' }))));
     $('naptarhoz').onclick = () => {
       const t = (ts) => new Date(ts * 1000).toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
       const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MOSAIC//Foglalas//HU', 'BEGIN:VEVENT',
@@ -513,7 +519,7 @@
   for (const g of document.querySelectorAll('[data-video]')) {
     g.addEventListener('click', () => {
       const v = elem('video', { src: '/assets/video/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326e.mp4', controls: true, playsinline: true, autoplay: true });
-      g.replaceWith(elem('div', { class: 'video-doboz' }, v));
+      (g.closest('.utana') || g).replaceWith(elem('div', { class: 'video-doboz' }, v));
     });
   }
 

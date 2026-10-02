@@ -203,8 +203,26 @@
   [data-nezet=koszonjuk] .lepesek-lista { gap: 6px; margin-top: 8px; }
   [data-nezet=koszonjuk] .lepesek-lista li { grid-template-columns: 24px 1fr; gap: 10px; font-size: 14px; }
   [data-nezet=koszonjuk] .lepesek-lista li::before { width: 22px; height: 22px; font-size: 12px; }
-  [data-nezet=koszonjuk] .video-kartya { margin-top: 12px; grid-template-columns: 56px 1fr; padding: 8px; }
-  [data-nezet=koszonjuk] .video-kartya .indexkep { width: 56px; height: 56px; }
+  [data-nezet=koszonjuk] h2.kozepre { margin: 0; }
+  .kosz-kartya { display: grid; grid-template-columns: 1fr 104px; gap: 10px; align-items: stretch; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; padding: 8px 8px 8px 12px; margin-top: 12px; }
+  .kosz-kartya .adat { font-size: 13px; color: var(--kozep); line-height: 1.35; align-self: center; }
+  .kosz-kartya .adat b { display: block; color: var(--sotet); font-size: 15px; }
+  .kosz-kartya .adat .cim { display: block; margin-top: 4px; color: var(--sotet); }
+  .terkep { position: relative; display: block; border-radius: 10px; overflow: hidden; min-height: 96px; background: var(--krem); }
+  .terkep iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
+  .megerosit { text-align: center; font-weight: 700; font-size: 14px; margin: 12px 0 0; color: var(--sotet); }
+  .megerosit span { display: inline-block; animation: lenget 1.2s ease-in-out infinite; }
+  @keyframes lenget { 50% { transform: translateY(4px); } }
+  .ott-leszek { animation: pulzal 1.8s ease-out infinite; }
+  .ott-leszek[disabled] { animation: none; opacity: 1; background: var(--zold); }
+  @keyframes pulzal { 0% { box-shadow: 0 0 0 0 rgba(24,48,51,.45); } 70%, 100% { box-shadow: 0 0 0 10px rgba(24,48,51,0); } }
+  .utana { display: grid; grid-template-columns: 1fr 118px; gap: 12px; align-items: start; margin-top: 12px; }
+  .utana h3 { margin: 0 !important; }
+  .video-allo { position: relative; display: block; width: 118px; height: 168px; padding: 0; border: 0; border-radius: 14px; overflow: hidden; cursor: pointer; background: var(--krem); }
+  .video-allo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+  .video-allo .lejatszo { position: absolute; left: 50%; top: 40%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: rgba(24,48,51,.78) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fbeede' d='M9 7v10l8-5z'/%3E%3C/svg%3E") center/26px no-repeat; }
+  .video-allo .felirat { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 8px 7px; background: linear-gradient(transparent, rgba(24,48,51,.85)); color: #fff; font-size: 11px; line-height: 1.25; text-align: left; }
+  .video-allo .felirat b { display: block; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -287,23 +305,29 @@
   <!-- 5. koszonooldal -->
   <section data-nezet="koszonjuk" hidden>
     <div class="pipa-kor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
-    <div class="kozepre"><h2 style="margin-bottom:4px">Sikeres foglalás!</h2><p class="halk" style="margin-top:0">Köszönjük, hogy minket választottál!</p></div>
+    <h2 class="kozepre">Sikeres foglalás!</h2>
     <div id="koszono-osszegzes"></div>
+    <p class="megerosit">Erősítsd meg egy érintéssel, hogy jössz! <span aria-hidden="true">↓</span></p>
     <div class="gombsor">
-      <button class="gomb" type="button" id="naptarhoz"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Naptárba</button>
-      <button class="gomb masod" type="button" id="ott-leszek">Ott leszek ✓</button>
+      <button class="gomb ott-leszek" type="button" id="ott-leszek">Ott leszek ✓</button>
+      <button class="gomb masod" type="button" id="naptarhoz"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Naptárba</button>
     </div>
     <p class="kozepre kicsi halk">Időpont módosítása vagy lemondása: a visszaigazoló e-mailben lévő linkkel.</p>
-    <h3>Mi történik most?</h3>
-    <ol class="lepesek-lista">
-      <li>Visszaigazolást küldünk e-mailben.</li>
-      <li>A kezelés előtt emlékeztetőt kapsz.</li>
-      <li>Várunk szeretettel a megadott időpontban!</li>
-    </ol>
-    <button class="video-kartya" type="button" data-video>
-      <span class="indexkep"><img src="/assets/img/m/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326ef000.jpg" alt=""></span>
-      <span><b>Szia, Melitta vagyok…</b><span>Nézd meg rövid üzenetemet</span></span>
-    </button>
+    <div class="utana">
+      <div>
+        <h3>Mi történik most?</h3>
+        <ol class="lepesek-lista">
+          <li>Visszaigazolást küldünk e-mailben.</li>
+          <li>A kezelés előtt emlékeztetőt kapsz.</li>
+          <li>Várunk szeretettel a megadott időpontban!</li>
+        </ol>
+      </div>
+      <button class="video-allo" type="button" data-video aria-label="Melitta videóüzenetének lejátszása">
+        <img src="/assets/img/m/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326ef000.jpg" alt="">
+        <span class="lejatszo" aria-hidden="true"></span>
+        <span class="felirat"><b>Szia, Melitta vagyok!</b>Nézd meg üzenetemet</span>
+      </button>
+    </div>
   </section>
 
   <!-- B / D. foto -->
