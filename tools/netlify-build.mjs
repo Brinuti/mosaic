@@ -43,6 +43,8 @@ for (const f of fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.ends
 // a nyitooldal a /_a/fooldal, /_m/fooldal fajlbol jon (lasd netlify/lib/utvonal.js)
 for (const m of [LAP_A, LAP_M]) fs.renameSync(path.join(m, 'index.html'), path.join(m, 'fooldal.html'));
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
+// a Salonic foglalo oldalainak egyedi CSS-e (a Salonic "Egyedi CSS URL" beallitasa tolti be)
+fs.cpSync(path.join(ROOT, 'salonic'), path.join(DIST, 'salonic'), { recursive: true });
 // Mobilkepek (assets/img/m/, tools/mobil-kepek.py): ami ott nincs (mar eleve kicsi),
 // azt valtozatlanul bemasoljuk, igy a mobil oldal minden kepe megvan az m/ mappaban is.
 const IMG = path.join(DIST, 'assets', 'img'), IMG_M = path.join(IMG, 'm');
@@ -78,6 +80,12 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   '  Cache-Control: public, max-age=31536000',
   '/assets/fonts/*',
   '  Cache-Control: public, max-age=31536000',
+  // a Salonic oldalan (salonic/pmu.css) is ezeket a betuket hasznaljuk - mas domainrol csak igy toltodnek
+  '  Access-Control-Allow-Origin: *',
+  // a Salonic-CSS-t (salonic/) verziojel nelkul toltik be: rovid gyorsitotar, hogy a javitas hamar eljusson
+  '/salonic/*',
+  '  Cache-Control: public, max-age=300',
+  '  Access-Control-Allow-Origin: *',
   // a HTML-beagyazasok (GYIK, arlistak) csak keretben jelennek meg, onalloan ne indexelodjenek
   '/assets/embed/*',
   '  X-Robots-Tag: noindex',
