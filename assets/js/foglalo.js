@@ -11,6 +11,15 @@
 (() => {
   'use strict';
 
+  // A sajat kereteben nyiltunk meg (a Salonic visszairanyitott): nem rajzolunk, szolunk a szulonek.
+  try {
+    if (window.top !== window.self && window.parent.location.hostname === location.hostname) {
+      document.documentElement.style.visibility = 'hidden';
+      if (typeof window.parent.mhKeretbenOldal === 'function') window.parent.mhKeretbenOldal(location.href);
+      return;
+    }
+  } catch (e) { /* idegen oldal kereteben */ }
+
   const SZALON = {
     nev: 'MOSAIC Headspa',
     cim: 'https://mosaicheadspa.salonic.hu',
@@ -296,6 +305,25 @@
     keret.src = url;
     lepes('osszegzes');
   }
+
+  // A beagyazott Salonic-adatlap helyett a mi egyik oldalunk toltodott be a keretben (azt a
+  // suti.js, illetve ez a fajl jelzi):
+  //  - sikeres foglalas utan a Salonic a koszonooldalra iranyit: azt a teljes ablakban nyitjuk
+  //    meg (a meres ott fut, egyszer);
+  //  - ha az idopont kozben elkelt, a Salonic "vissza" iranyit - a bongeszo csak a domaint
+  //    kuldi hivatkozokent, ezert ez a fooldal (vagy ez az oldal): uj idopontot kerunk.
+  window.mhKeretbenOldal = (href) => {
+    const ut = new URL(href).pathname.replace(/\/+$/, '');
+    if (ut === '' || ut === '/foglalo-proba') idopontElkelt();
+    else location.assign(href);
+  };
+  const idopontElkelt = () => {
+    const s = allapot.szolgaltatas;
+    $('salonic').removeAttribute('src');
+    szolgaltatasValaszt(s).then(() => {
+      $('idok').prepend(elem('div', { class: 'hiba', szoveg: 'A választott időpontot közben lefoglalták – kérlek, válassz másikat.' }));
+    });
+  };
 
   kategoriak();
 })();
