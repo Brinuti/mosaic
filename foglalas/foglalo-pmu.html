@@ -23,6 +23,11 @@
   a { color: inherit; }
   img { max-width: 100%; display: block; }
   [hidden] { display: none !important; }
+  /* beagyazva (a /pmu-sminktetovalas landing foglalo-reszeben): a keret magassaga a tartalome */
+  .beagyazva .proba { display: none; }
+  .beagyazva .fej { position: static; }
+  /* a MOSAIC osszes Google-velemenye (1.145) nem Melittae: a landingen Melitta sajat velemenyei latszanak */
+  .beagyazva .ertekeles, .beagyazva .bizalom li:first-child { display: none; }
 
   /* fejlec */
   .fej { position: sticky; top: 0; z-index: 20; background: var(--hatter); border-bottom: 1px solid var(--vonal); display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; height: 58px; padding: 0 8px; }
@@ -424,12 +429,10 @@
 
   <section data-nezet="c-ido" hidden>
     <h2>Mikor hívjunk?</h2>
-    <p class="halk kicsi">Válaszd ki, mikor kényelmes neked – ehhez igazodunk.</p>
-    <h3>Melyik nap?</h3>
-    <div class="chipek" id="c-napok"></div>
+    <p class="halk kicsi">Melyik napszakban kényelmes? Ha mindegy, csak lépj tovább.</p>
     <h3>Melyik napszakban?</h3>
     <div class="chipek" id="c-savok"></div>
-    <button class="gomb" type="button" id="c-ido-tovabb" disabled>Tovább <span class="nyil">→</span></button>
+    <button class="gomb" type="button" id="c-ido-tovabb">Tovább <span class="nyil">→</span></button>
   </section>
 
   <section data-nezet="c-adatok" hidden>

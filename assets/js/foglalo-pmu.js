@@ -15,9 +15,12 @@
 (() => {
   'use strict';
 
+  // ?beagyazva=1: a /pmu-sminktetovalas landing foglalo-reszeben, kereten belul fut (lasd lent: beagyazas).
+  const BEAGYAZVA = new URLSearchParams(location.search).has('beagyazva');
+
   // A sajat kereteben nyiltunk meg (a Salonic visszairanyitott): nem rajzolunk, szolunk a szulonek.
   try {
-    if (window.top !== window.self && window.parent.location.hostname === location.hostname) {
+    if (!BEAGYAZVA && window.top !== window.self && window.parent.location.hostname === location.hostname) {
       document.documentElement.style.visibility = 'hidden';
       if (typeof window.parent.mhKeretbenOldal === 'function') window.parent.mhKeretbenOldal(location.href);
       return;
@@ -104,7 +107,7 @@
   const allapot = {
     kezelesek: [], kezeles: null, kezdesek: [], kezdesekKezeles: null,
     slot: null, elozmeny: null, ag: 'B', fotok: [], fotoKezeles: null,
-    cNap: null, cSav: null, honap: null, naptarNap: null,
+    cKert: false, cSav: null, honap: null, naptarNap: null,
   };
 
   // --- nezetek es vissza-gomb (a bongeszo vissza-gombja is mukodik, az adatok megmaradnak) ---
@@ -143,6 +146,7 @@
     $('vissza').style.visibility = nev === 'kezdo' || /kesz$|koszonjuk/.test(nev) ? 'hidden' : 'visible';
     lepesjelzo(nev);
     scrollTo(0, 0);
+    if (BEAGYAZVA) jelez({ nezet: nev });
   }
   function ugrik(nev) {
     if (nev === aktualis) return;
@@ -393,7 +397,7 @@
     const ut = u.pathname.replace(/\/+$/, '');
     if (ut !== '' && ut !== '/foglalo-pmu') {
       u.searchParams.set('mh_proba', 'pmu');
-      location.assign(u.href);
+      (BEAGYAZVA ? window.top : window).location.assign(u.href);
       return;
     }
     $('salonic').removeAttribute('src');
@@ -544,7 +548,7 @@
     adat.set('email', ertek('foto-adatok', 'email'));
     adat.set('kezeles', allapot.slot && k ? k.nev : allapot.fotoKezeles || '');
     adat.set('idopont', allapot.slot ? fmt(allapot.slot, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) + ' ' + ora(allapot.slot) + ' (preferált, nem végleges)' : '');
-    adat.set('oldal', 'foglalo-pmu');
+    adat.set('oldal', BEAGYAZVA ? 'pmu-sminktetovalas' : 'foglalo-pmu');
     allapot.fotok.forEach((f, i) => adat.set('foto' + (i + 1), f.blob, 'foto' + (i + 1) + '.jpg'));
     if (!(await bekuld(adat, gomb, $('foto-kuld-hiba')))) return;
     $('foto-kesz-osszegzes').replaceChildren(allapot.slot && k
@@ -557,28 +561,18 @@
 
   // --- C. visszahivas ---------------------------------------------------------------------
   const SAVOK = ['Délelőtt (9–12)', 'Kora délután (12–15)', 'Délután (15–18)', 'Bármikor'];
+  // csak a napszakot kerdezzuk, es az sem kotelezo (itt nem lassitunk): valasztas nelkul "Bármikor"
   BELEPES['c-ido'] = () => {
-    const most = new Date();
-    const napok = [];
-    for (let i = 0; napok.length < 6 && i < 10; i++) {
-      const d = new Date(most.getTime() + i * 86400000);
-      const ts = d.getTime() / 1000;
-      if (fmt(ts, { weekday: 'short' }).startsWith('V')) continue; // vasarnap nem hivunk
-      if (i === 0 && +fmt(ts, { hour: 'numeric', hourCycle: 'h23' }) >= 17) continue;
-      napok.push(i === 0 ? 'Ma' : i === 1 ? 'Holnap (' + fmt(ts, { month: 'short', day: 'numeric' }) + ')' : napNev(ts));
-    }
-    napok.push('Bármelyik nap');
     const rajzol = () => {
-      $('c-napok').replaceChildren(...napok.map((n) => elem('button', { type: 'button', class: 'chip', 'aria-pressed': String(allapot.cNap === n), szoveg: n, onclick: () => { allapot.cNap = n; rajzol(); } })));
-      $('c-savok').replaceChildren(...SAVOK.map((n) => elem('button', { type: 'button', class: 'chip', 'aria-pressed': String(allapot.cSav === n), szoveg: n, onclick: () => { allapot.cSav = n; rajzol(); } })));
-      $('c-ido-tovabb').disabled = !(allapot.cNap && allapot.cSav);
+      $('c-savok').replaceChildren(...SAVOK.map((n) => elem('button', { type: 'button', class: 'chip', 'aria-pressed': String(allapot.cSav === n), szoveg: n, onclick: () => { allapot.cSav = allapot.cSav === n ? null : n; rajzol(); } })));
     };
     rajzol();
   };
+  const cMikor = () => allapot.cSav || 'Bármikor';
   const cOsszegzes = (cim) => elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: cim }), elem('div', { class: 'sor' }, ikon('telefon'),
-    elem('span', {}, elem('b', { szoveg: allapot.cNap + ', ' + allapot.cSav.toLowerCase() }), elem('span', { szoveg: '10 perces ingyenes telefonos konzultáció' }))));
-  $('c-ido-tovabb').addEventListener('click', () => ugrik('c-adatok'));
-  BELEPES['c-adatok'] = () => { if (!allapot.cNap) { ugrik('c-ido'); return; } $('c-osszegzes').replaceChildren(cOsszegzes('Mikor hívjunk?')); };
+    elem('span', {}, elem('b', { szoveg: cMikor() }), elem('span', { szoveg: '10 perces ingyenes telefonos konzultáció' }))));
+  $('c-ido-tovabb').addEventListener('click', () => { allapot.cKert = true; ugrik('c-adatok'); });
+  BELEPES['c-adatok'] = () => { if (!allapot.cKert) { ugrik('c-ido'); return; } $('c-osszegzes').replaceChildren(cOsszegzes('Mikor hívjunk?')); };
   $('c-kuld').addEventListener('click', async (e) => {
     const gomb = e.currentTarget;
     if (gomb.getAttribute('aria-disabled') === 'true') return;
@@ -586,14 +580,14 @@
     if (!urlapEllenoriz('c-adatok')) return;
     const adat = new URLSearchParams({
       'form-name': 'pmu-proba-visszahivas', nev: ertek('c-adatok', 'nev'), telefon: ertek('c-adatok', 'telefon'),
-      mikor_nap: allapot.cNap, mikor_napszak: allapot.cSav, oldal: 'foglalo-pmu',
+      mikor_nap: '', mikor_napszak: cMikor(), oldal: BEAGYAZVA ? 'pmu-sminktetovalas' : 'foglalo-pmu',
     });
     if (!(await bekuld(adat, gomb, $('c-kuld-hiba')))) return;
     ugrik('c-kesz');
   });
   BELEPES['c-kesz'] = () => {
-    if (MINTA === 'visszahivas') Object.assign(allapot, { cNap: allapot.cNap || 'Holnap', cSav: allapot.cSav || 'Délelőtt (9–12)' });
-    if (!allapot.cNap) { mutat('kezdo'); return; }
+    if (MINTA === 'visszahivas') Object.assign(allapot, { cKert: true, cSav: allapot.cSav || 'Délelőtt (9–12)' });
+    if (!allapot.cKert) { mutat('kezdo'); return; }
     $('c-kesz-osszegzes').replaceChildren(cOsszegzes('Ekkor hívunk'));
     history.replaceState({ nezet: 'c-kesz' }, '', location.pathname + location.search + '#visszahivas-kesz');
   };
@@ -606,6 +600,21 @@
       const v = elem('video', { src: '/assets/video/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326e.mp4', controls: true, playsinline: true, autoplay: true });
       (g.closest('.utana') || g).replaceWith(elem('div', { class: 'video-doboz' }, v));
     });
+  }
+
+  // --- beagyazas (?beagyazva=1) -------------------------------------------------------------
+  // A szulo (landing) a keret magassagat a tartalomhoz igazitja, nezetvaltaskor a keret tetejere
+  // gorget; a linkek (pl. "Vissza a sminktetovalashoz") a teljes ablakban nyilnak meg.
+  function jelez(adat) { try { window.parent.postMessage(Object.assign({ mhFoglalo: true }, adat), location.origin); } catch (e) { /* nincs szulo */ } }
+  if (BEAGYAZVA) {
+    document.documentElement.classList.add('beagyazva');
+    const meret = () => jelez({ magassag: Math.ceil(document.body.getBoundingClientRect().height) });
+    new ResizeObserver(meret).observe(document.body);
+    addEventListener('load', meret);
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href]');
+      if (a && !a.target && !a.getAttribute('href').startsWith('#')) a.target = '_top';
+    }, true);
   }
 
   // --- indulas ------------------------------------------------------------------------------
@@ -625,6 +634,11 @@
     }
     history.replaceState({ nezet: 'kezdo' }, '', location.pathname + location.search);
     mutat('kezdo');
+    // ?lepes=foto | visszahivas | szolg: a landing gombjai egyenesen a folyamat adott lepesebe visznek
+    const lepes = new URLSearchParams(location.search).get('lepes');
+    if (lepes === 'foto') { allapot.ag = 'B'; ugrik('foto'); }
+    else if (lepes === 'visszahivas') ugrik('c-info');
+    else if (lepes === 'szolg' && !kert) ugrik('szolg');
     try {
       await kezelesekBetolt();
       if (kert) {

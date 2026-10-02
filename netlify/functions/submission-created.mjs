@@ -3,7 +3,6 @@
 //   ajandekkartya       vevonek: "MOSAIC ajándékkártya utalási adatok + infók"
 //                       szalonnak: "Ajándékkártya  Előreutalásos ajándékkártyát vett"
 //   pmu-visszahivas     szalonnak: "Új Smink form-beküldés érkezett"
-//   pmu-foto            szalonnak: "Sminktetoválás – régi PMU, fotó érkezett" (/pmu-sminktetovalas)
 //   fodrasz-jelentkezes szalonnak: "Új fodrász jelentkezett"
 //   ppc-jelentkezes     szalonnak: "Új PPC-jelentkezés érkezett" (a Wixen ehhez nem
 //                       volt automatikus level; igy legalabb nem vesz el)
@@ -67,14 +66,6 @@ const URLAPOK = {
     html: (d) => osszefoglalo('A sminktetoválás-foglaló (próba) egy látogatója fotót küldött.', 'Beküldés összefoglalása:', [
       ['ag', 'Ág'], ['nev', 'Név'], ['telefon', 'Telefonszám'], ['email', 'E-mail'], ['kezeles', 'Kezelés / terület'],
       ['idopont', 'Választott időpont'], ...Array.from({ length: 5 }, (_, i) => [`foto${i + 1}`, `Fotó ${i + 1}`]),
-    ], d),
-  },
-  // a /pmu-sminktetovalas landing IGEN aga: regi PMU -> foto (naptar nelkul)
-  'pmu-foto': {
-    targy: 'Sminktetoválás – régi PMU, fotó érkezett',
-    html: (d) => osszefoglalo('A sminktetoválás-oldal egy látogatója fotót küldött a meglévő sminktetoválásáról (szakmai értékelésre, időpont még nincs).', 'Beküldés összefoglalása:', [
-      ['nev', 'Név'], ['telefon', 'Telefonszám'], ['email', 'E-mail'], ['terulet', 'Terület'],
-      ...Array.from({ length: 5 }, (_, i) => [`foto${i + 1}`, `Fotó ${i + 1}`]),
     ], d),
   },
   'pmu-proba-visszahivas': {
@@ -158,7 +149,9 @@ export default async (req) => {
   const szalon = process.env.MAIL_TO || 'mosaicheadspa@gmail.com';
   const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email || '') ? d.email : undefined;
 
-  const kuldesek = [posta.sendMail({ from: felado, to: szalon, replyTo: email, subject: leiras.targy, html: leiras.html(d) })];
+  // a pmu-proba-* urlapokat az eles /pmu-sminktetovalas landing is hasznalja (beagyazott foglalo): onnan nem proba
+  const targy = d.oldal === 'pmu-sminktetovalas' ? leiras.targy.replace(/^\[PRÓBA\]\s*/, '') : leiras.targy;
+  const kuldesek = [posta.sendMail({ from: felado, to: szalon, replyTo: email, subject: targy, html: leiras.html(d) })];
   if (leiras.vevo && email) {
     kuldesek.push(posta.sendMail({
       from: felado, to: email, replyTo: szalon,
