@@ -13,6 +13,7 @@ export default async (req, context) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') return;
   const url = new URL(req.url);
   const eles = ELES_HOST.test(url.hostname);
+  if (url.pathname === '/mh-host-teszt') return new Response(JSON.stringify({ url: req.url, host: req.headers.get('host'), xfh: req.headers.get('x-forwarded-host'), site: context.site, srv: context.server }), { headers: { 'content-type': 'application/json' } });
   if (!eles && url.pathname === '/robots.txt') {
     return new Response(TILTO_ROBOTS, { headers: { 'content-type': 'text/plain; charset=utf-8', 'x-robots-tag': 'noindex' } });
   }
