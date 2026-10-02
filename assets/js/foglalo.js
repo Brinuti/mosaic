@@ -3,11 +3,11 @@
 // A kezelestipusokat es a keleseket a Salonic foglalo oldalaibol olvassuk ki (a
 // salonic.hu oldalai engedik a mas domainrol valo lekerest), a szabad idopontokat a
 // Salonic nyilvanos naptar-API-ja adja (api.salonic.hu/calendar/getAvailableTimes).
-// A foglalas veglegesitese (nev, elerhetoseg, foglalasi dij) a Salonic sajat oldalan
-// tortenik: a kivalasztott idoponttal egyenesen az adatmegado lepesre (/guestData/)
-// visszuk a vendeget - a foglalast igy a Salonic rogziti, minden e-mailjevel, a
-// koszonooldali meressel egyutt, ugyanugy, mint eddig. (A Salonic az adatlapot
-// reCAPTCHA-val vedi, azt csak a sajat oldalan lehet kitolteni.)
+// A foglalas veglegesitese (nev, elerhetoseg) a Salonic adatmegado lepesen (/guestData/)
+// tortenik, amit a kivalasztott idoponttal a sajat oldalunkba agyazunk: a foglalast igy a
+// Salonic rogziti, minden e-mailjevel, a koszonooldali meressel egyutt, ugyanugy, mint
+// eddig. (Az adatlapot a Salonic lathatatlan reCAPTCHA-val vedi, ami csak az o oldalan -
+// a beagyazott keretben - fut le, ezert az urlapot nem a sajat kodunk kuldi be.)
 (() => {
   'use strict';
 
@@ -282,9 +282,18 @@
       ['Helyszín', SZALON.nev + ', 1023 Budapest, Bécsi út 4.'],
     ];
     $('osszegzes-adatok').replaceChildren(...sorok.flatMap(([k, v]) => [elem('dt', { szoveg: k }), elem('dd', { szoveg: v })]));
-    $('veglegesit').href = SZALON.cim + '/guestData/?' + new URLSearchParams({
+    const url = SZALON.cim + '/guestData/?' + new URLSearchParams({
       placeId: SZALON.placeId, serviceId: s.id, employeeId: mid, startDate: ts,
     });
+    $('veglegesit').href = url;
+    // A Salonic adatlapja beagyazva (a Salonic ezt engedi: frame-ancestors *): a vendeg itt adja
+    // meg az adatait, a foglalast a Salonic rogziti (a lathatatlan robotszurovel egyutt). Sikeres
+    // foglalas utan a Salonic a mi koszonooldalunkra iranyit, ami kiugrik a keretbol (suti.js).
+    const keret = $('salonic');
+    $('salonic-betolt').hidden = false;
+    keret.style.visibility = 'hidden';
+    keret.onload = () => { $('salonic-betolt').hidden = true; keret.style.visibility = ''; };
+    keret.src = url;
     lepes('osszegzes');
   }
 

@@ -21,6 +21,16 @@
 (function () {
   'use strict';
 
+  // A foglalo oldal (/foglalo-proba) beagyazott Salonic-adatlapja sikeres foglalas utan a mi
+  // koszonooldalunkra iranyit - a keretben. Ilyenkor a teljes ablakban nyitjuk meg, meg
+  // minden meres elott, hogy a konverzio egyszer, a fo ablakban merodjon (mint eddig).
+  try {
+    if (window.top !== window.self && window.top.location.hostname === location.hostname) {
+      window.top.location.replace(location.href);
+      return;
+    }
+  } catch (e) { /* idegen oldal kereteben: nincs teendo */ }
+
   // --- beallitasok ------------------------------------------------------
   var GTM = 'GTM-PST2HB22';
   var GA4 = 'G-H4206SQ0Q7';
