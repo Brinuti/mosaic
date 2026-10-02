@@ -151,3 +151,12 @@ body.customer-mosaic-pmu .panel-body > div { font-size: 11px !important; line-he
 body.customer-mosaic-pmu .form-check label, body.customer-mosaic-pmu .form-check label a { font-size: 10.5px !important; line-height: 1.35 !important; }
 body.customer-mosaic-pmu .form-check label { padding-left: 24px !important; }
 body.customer-mosaic-pmu .panel-body > div > hr { margin: 4px 0 !important; }
+
+/* mobilon (a foglalo keretben is) egy kepernyo: a nem kotelezo megjegyzes-mezo es a reCAPTCHA-jelveny
+   helyett a Google altal elfogadott egysoros szoveges jelzes */
+@media (max-width: 599px) {
+  body.customer-mosaic-pmu .booking-time-remain-container, body.customer-mosaic-pmu .booking-time-remain-container * { font-size: 12px !important; }
+  body.customer-mosaic-pmu .form-group:has(#GuestDataForm_guestComment) { display: none !important; }
+  body.customer-mosaic-pmu .grecaptcha-badge { visibility: hidden !important; position: absolute !important; bottom: 0 !important; }
+  body.customer-mosaic-pmu .panel-body > div::after { content: 'Az oldalt a reCAPTCHA védi; a Google adatvédelmi irányelvei és ÁSZF-je érvényes.'; flex: 0 0 100%; display: block; margin-top: 6px; font-size: 9.5px; line-height: 1.3; color: #8a9799; text-align: center; }
+}
