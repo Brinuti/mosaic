@@ -153,6 +153,13 @@ asztali és a mobil mappába is bemásolja).
   Google-vélemények, egészségügyi kizárólista, parkolás, tömegközlekedés, telefonszám,
   Instagram/Facebook-link, gyógyulási idők az eredménykártyákon, szemhéj előtte–utána fotó.
 - Végleges mobil terv még nincs: keskeny kijelzőn ideiglenesen egymás alá rendeződik.
+- **Fejléc:** pontosan a MOSAIC oldal fejléce (menü, akciósáv, „i” felugró ablak). A
+  `tools/fejlec-kivonat.mjs` a klónból emeli ki (HTML + a hozzá tartozó CSS) az
+  `assets/fejlec/asztali.html` és `mobil.html` fájlba; a build a `<!--mh-fejlec-->` jelölő helyére
+  teszi (az `_a/`-ba az asztalit, az `_m/`-be a mobilt). Ha a klón fejléce változik, futtasd újra.
+- Képek: `assets/img/pmu/` (Melitta referenciái a Drive-ról), videó: Google Drive-beágyazás
+  kattintásra; vélemények: a nyitóoldal Trustindex-widgetje (funkcionális hozzájárulással), a
+  pontos értékelést és véleményszámot a betöltött widgetből írja ki a hero Google-gombjára.
 
 ### 1.6 Videók
 

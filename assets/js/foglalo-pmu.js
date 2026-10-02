@@ -90,7 +90,7 @@
   // "Vasárnap, okt. 4." (mint a tervben)
   const napNev = (ts) => { const h = fmt(ts, { weekday: 'long' }); return h.charAt(0).toUpperCase() + h.slice(1) + ', ' + fmt(ts, { month: 'short', day: 'numeric' }); };
   const teljes = (ts) => napNev(ts) + ' · ' + ora(ts);
-  const idotartam = (p) => { const o = p / 60; return 'kb. ' + (Number.isInteger(o) ? o : o.toFixed(1).replace('.', ',')) + ' óra'; };
+  const idotartam = (p) => { if (p < 60) return 'kb. ' + p + ' perc'; const o = p / 60; return 'kb. ' + (Number.isInteger(o) ? o : o.toFixed(1).replace('.', ',')) + ' óra'; };
   const szoveg = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : '');
   const tarol = (k, v) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* privat mod */ } };
   const olvas = (k) => { try { return JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { return null; } };
