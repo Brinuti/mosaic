@@ -164,6 +164,16 @@
   // (video.wixstatic.com/video/<id>/file) - ezekre nem teszunk hanggombot.
   const NEMA_VIDEOK = new Set(['c2eb0f_c49cecf68dc14cdf99207280fb646f62']);
 
+  // A hattervideo csak akkor toltodik, amikor a latogato a kozelebe gorget (a kepernyo
+  // tetejen levo azonnal) - igy a lejjebb levo, tobb MB-os videok nem lassitjak a betoltest.
+  const kozelben = (elem, fn) => {
+    if (!('IntersectionObserver' in window)) { fn(); return; }
+    const io = new IntersectionObserver((bej) => {
+      if (bej.some((b) => b.isIntersecting)) { io.disconnect(); fn(); }
+    }, { rootMargin: '800px 0px' });
+    io.observe(elem);
+  };
+
   // A <video> elem megvan a mentesben, csak a forrasa hianyzik: a Wix a
   // data-video-info alapjan tolti be. Ugyanezt tesszuk a helyi fajllal. A mobil
   // mentesekben ilyen elem nincs (az eles mobil oldal is csak a poszterkepet mutatja).
@@ -185,7 +195,7 @@
       v.style.opacity = '1';
       if (poszter) poszter.style.visibility = 'hidden';
     }, { once: true });
-    v.src = GYOKER + 'assets/video/' + info.videoId + '.mp4';
+    kozelben(tarto, () => { v.src = GYOKER + 'assets/video/' + info.videoId + '.mp4'; });
     const oszlop = document.getElementById(info.containerId);
     if (oszlop && !NEMA_VIDEOK.has(info.videoId)) hangGomb(oszlop, v);
   }
@@ -210,9 +220,9 @@
       v.setAttribute('playsinline', 'true');
       v.preload = 'auto';
       v.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
-      v.src = GYOKER + 'assets/video/' + videoId + '.mp4';
       media.style.position = 'relative';
       media.appendChild(v);
+      kozelben(media, () => { v.src = GYOKER + 'assets/video/' + videoId + '.mp4'; });
       if (!NEMA_VIDEOK.has(videoId)) hangGomb(oszlop, v);
     }
   }

@@ -22,6 +22,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { ritkit } from './css-ritkitas.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -59,12 +60,12 @@ fs.writeFileSync(path.join(DIST, '_redirects'), '');
 fs.writeFileSync(path.join(DIST, '_headers'), [
   '/*',
   ...(ELES ? [] : ['  X-Robots-Tag: noindex, nofollow']),
-  // A szkripteket es stilusokat mindig ujraellenorzi a bongeszo (kulonben egy
-  // javitas napokig nem latszana).
+  // A szkriptekre az oldalak mindig tartalom-hash verziojellel (?v=...) hivatkoznak, igy
+  // egy javitas uj cimet kap - a bongeszo nyugodtan tarolhatja oket egy evig.
   '/assets/js/*',
-  '  Cache-Control: public, max-age=0, must-revalidate',
+  '  Cache-Control: public, max-age=31536000, immutable',
   '/assets/css/*',
-  '  Cache-Control: public, max-age=0, must-revalidate',
+  '  Cache-Control: public, max-age=31536000, immutable',
   // a kepek, videok es betuk neve a Wix-azonosito (nem valtozik), ezert egy evig maradhatnak
   '/assets/img/*',
   '  Cache-Control: public, max-age=31536000',
@@ -96,16 +97,31 @@ const KATTINTOS = Object.fromEntries([...kattintosBlokk.matchAll(/'(comp-[a-z0-9
   Object.assign(KATTINTOS, JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1)).kattintos || {});
 }
 const LEJATSZO_GOMB = '<button type="button" class="mh-video-gomb" aria-label="Videó lejátszása"><svg viewBox="0 0 40 40" width="50" height="50" fill="currentColor" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="rgba(0,0,0,.35)" stroke="currentColor" stroke-width="2"/><path d="M16 12.5v15l12-7.5z"/></svg></button>';
+// A sajat szkriptek szovege: a CSS-ritkitas ezekben is keresi az osztalyneveket (amit a
+// klon.js futas kozben tesz ki, annak a stilusa is maradjon meg).
+const SAJAT_JS = fs.readdirSync(path.join(ROOT, 'assets/js')).filter((f) => f.endsWith('.js'))
+  .map((f) => fs.readFileSync(path.join(ROOT, 'assets/js', f), 'utf8')).join('\n');
+// A harom kis stiluslap (betuk + klon.css) beagyazva: kulon letoltesre varva blokkolnak
+// az elso megjelenitest. A relativ betu-hivatkozasokat abszolutra irjuk.
+const BEAGYAZOTT = ['wix-google-fonts.css', 'wix-fonts.css', 'klon.css'].map((f) => [f,
+  fs.readFileSync(path.join(ROOT, 'assets/css', f), 'utf8').replace(/url\((['"]?)\.\.\/fonts\//g, 'url($1/assets/fonts/')]);
 const verzio = Object.fromEntries(SAJAT.map((f) => [f,
   crypto.createHash('sha1').update(fs.readFileSync(path.join(ROOT, f))).digest('hex').slice(0, 10)]));
 for (const mappa of [LAP_A, LAP_M]) {
   for (const f of fs.readdirSync(mappa).filter((x) => x.endsWith('.html'))) {
     const p = path.join(mappa, f);
-    let h = fs.readFileSync(p, 'utf8');
+    let h = ritkit(fs.readFileSync(p, 'utf8'), SAJAT_JS);
+    for (const [fajl, css] of BEAGYAZOTT) {
+      let elso = true;
+      h = h.replace(new RegExp('<link rel="stylesheet" href="/assets/css/' + fajl.replace('.', '\\.') + '">', 'g'),
+        () => (elso ? (elso = false, '<style data-forras="' + fajl + '">' + css + '</style>') : ''));
+    }
     for (const [fajl, v] of Object.entries(verzio)) h = h.split(fajl + '"').join(fajl + '?v=' + v + '"');
     // A tisztan adatot tarolo szkriptek (window.MH_* = {...}) ne blokkoljak a megjelenitest:
     // defer-rel a klon.js elott, sorrendben futnak (az is defer).
-    h = h.replace(/<script src="([^"]*assets\/js\/(?:galeriak|gyik|arlistak|oldaltablak)\.js[^"]*)"><\/script>/g, '<script src="$1" defer></script>');
+    // A suti.js (hozzajarulas + meresi kodok) is defer: sorrendben a klon.js elott fut, a
+    // savot amugy is DOMContentLoaded-kor rajzolja, a GTM-et pedig o maga tolti be aszinkron.
+    h = h.replace(/<script src="([^"]*assets\/js\/(?:galeriak|gyik|arlistak|oldaltablak|suti)\.js[^"]*)"><\/script>/g, '<script src="$1" defer></script>');
     // Lusta kepbetoltes: a Wix a kepernyo tetejen levo kepeket fetchpriority="high"-jal vagy
     // loading="eager"-rel jelolte, a tobbit loading="lazy"-vel - az atalakitas utan jelolet
     // nelkul maradt kepek ezert mind azonnal letoltodtek. Ezekre lazy kerul, kiveve az elso
