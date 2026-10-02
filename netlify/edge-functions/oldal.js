@@ -3,9 +3,19 @@
 // kulon edge-fuggvenynek szamit.
 import { utvonal } from '../lib/utvonal.js';
 
+// Az eles domain. Minden mas host (mosaicheadspa.netlify.app, deploy-preview-...)
+// probacim: noindex + mindent tilto robots.txt, akkor is, ha az ELES=1 build
+// mar az indexelheto valtozatot publikalja.
+const ELES_HOST = /^(www\.)?mosaicheadspa\.hu$/;
+const TILTO_ROBOTS = 'User-agent: *\nDisallow: /\n';
+
 export default async (req, context) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') return;
   const url = new URL(req.url);
+  const eles = ELES_HOST.test(url.hostname);
+  if (!eles && url.pathname === '/robots.txt') {
+    return new Response(TILTO_ROBOTS, { headers: { 'content-type': 'text/plain; charset=utf-8', 'x-robots-tag': 'noindex' } });
+  }
   const d = utvonal(decodeURIComponent(url.pathname), req.headers.get('user-agent'));
   if (!d) return;
   if (d.atiranyit) {
@@ -19,6 +29,7 @@ export default async (req, context) => {
   const h = new Headers(valasz.headers);
   // ugyanaz a cim mobilon es asztalin mast ad - a gyorsitotar ezt tudja
   h.set('vary', 'User-Agent');
+  if (!eles) h.set('x-robots-tag', 'noindex, nofollow');
   return new Response(valasz.body, { status: valasz.status, headers: h });
 };
 
