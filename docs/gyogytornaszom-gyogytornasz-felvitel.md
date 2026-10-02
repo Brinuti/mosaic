@@ -54,3 +54,9 @@ Jelszót ide soha ne írj; a WP alkalmazásjelszót a felhasználó adja meg a s
   A kártyák `<b>` címkéje lezáratlan, abban van a gomb (a CSS ezt kezeli).
 - **Composio sandbox:** néha lefagy; új `session_id`-val (SEARCH_TOOLS `generate_id`) újraindítható,
   de a /tmp fájlok elvesznek, Playwrightot újra kell telepíteni.
+- **Árak (2026.10.01-től):** állapotfelmérés 23.500 Ft (akciós 19.000), gyógytorna alkalom 19.000, állkapocs 13.500,
+  bérlet 5×: 18.000/alk (90.000), 10×: 17.100/alk (171.000). Az árlista a `Árlista magyar` reusable blokkban van (ID 22578),
+  de a rövid árak több más blokkban/oldalon is szerepelnek (24857, 27224, 28077, 28873, 29037, /online-gyogytorna/, /idopontfoglalas/).
+  A tag `first_consultation_price` mezője: akciós listán lévőknek 19.000 Ft, a többieknek 23.500 Ft.
+- **Központi telefon:** minden tartalomban 06-20-323-6373 (tel: link), ügyelet H–P 8–19:30, Szo 8–14.
+  Oldalcache: blokk (reusable) módosítása után a hivatkozó oldalak cache-e nem ürül magától.
