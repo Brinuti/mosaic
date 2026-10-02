@@ -140,7 +140,12 @@
     foto: () => (allapot.slot ? 'kerdes' : 'kezdo'), 'foto-adatok': () => 'foto',
     'c-info': () => 'kezdo', 'c-ido': () => 'c-info', 'c-adatok': () => 'c-ido',
   };
+  // ha elhagyjuk a kepernyot (masik lepes, vissza, masik ful/oldal), a futo video megall
+  const videokLeallit = () => { for (const v of document.querySelectorAll('video')) if (!v.paused) v.pause(); };
+  addEventListener('pagehide', videokLeallit);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) videokLeallit(); });
   function mutat(nev) {
+    if (nev !== aktualis) videokLeallit();
     aktualis = nev;
     for (const s of document.querySelectorAll('[data-nezet]')) s.hidden = s.dataset.nezet !== nev;
     $('vissza').style.visibility = nev === 'kezdo' || /kesz$|koszonjuk/.test(nev) ? 'hidden' : 'visible';
