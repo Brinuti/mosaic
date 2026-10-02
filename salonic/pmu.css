@@ -177,6 +177,9 @@ body.customer-mosaic-pmu .panel-body > div > hr { margin: 4px 0 !important; }
   body.customer-mosaic-pmu .order-lg-2 .card-body h4.my-0, body.customer-mosaic-pmu .order-lg-2 .card-body > h4,
   body.customer-mosaic-pmu .order-lg-2 .card-body li > div, body.customer-mosaic-pmu .order-lg-2 .card-body li > div * { font-size: 11.5px !important; }
   body.customer-mosaic-pmu .order-lg-2 .card { margin-bottom: 4px !important; }
+  /* a felszabadult helyen kicsit szellosebb: tobb hely a mezok kozott es a cimke alatt */
+  body.customer-mosaic-pmu .form-group { margin-bottom: 10px !important; }
+  body.customer-mosaic-pmu .control-label, body.customer-mosaic-pmu .form-group label:not(.form-check-label) { font-size: 12.5px !important; margin-bottom: 4px !important; }
   /* nincs oldaliranyu gorgetes (a Salonic mobilmenuje es a negativ margoju sor kilog), es alul nincs ures hely */
   html, body.customer-mosaic-pmu { overflow-x: hidden !important; }
   /* gorgetosav nem latszik (telefonon amugy is rejtett; asztali keskeny ablakban zavaro), gorgetni tovabbra is lehet */

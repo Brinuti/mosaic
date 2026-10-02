@@ -250,8 +250,7 @@
         elem('span', { class: 'valtozat', szoveg: [k.egyeb ? 'Személyesen' : k.valtozat, idotartam(k.perc)].filter(Boolean).join(' · ') })),
       elem('span', { class: 'jobb' },
         elem('span', { class: 'ar', szoveg: arSzoveg(k) }),
-        k.eredeti ? elem('s', { szoveg: ft(k.eredeti) }) : null),
-      ikon('jobbra'));
+        k.eredeti ? elem('s', { szoveg: ft(k.eredeti) }) : null));
   }
   BELEPES.szolg = async () => {
     try {

@@ -69,8 +69,10 @@
         const lista = [];
         for (const i of d.querySelectorAll('input[data-id][data-duration]')) {
           if (lista.some((k) => k.id === i.dataset.id)) continue;
-          const nev = (i.dataset.name || '').trim().replace(/\s*-\s*[\d. ]+\s*Ft helyett most\s*$/i, '');
-          lista.push({ id: i.dataset.id, nev, ar: +i.dataset.price || 0, perc: +i.dataset.duration || 0 });
+          // "Ajaktetovalas - Aquarell - 124.900 Ft helyett most" -> nev + eredeti ar
+          const nyers = (i.dataset.name || '').trim();
+          const m = nyers.match(/^(.*?)\s*-\s*([\d. ]+)\s*Ft helyett most\s*$/i);
+          lista.push({ id: i.dataset.id, nev: m ? m[1] : nyers, eredeti: m ? +m[2].replace(/\D/g, '') : 0, ar: +i.dataset.price || 0, perc: +i.dataset.duration || 0 });
         }
         if (!lista.length) throw new Error('nincs kezeles');
         return lista;
@@ -140,6 +142,23 @@
     if (c) meres({ event: 'pmu_landing_cta', cta: c.dataset.cta });
   });
 
+  // --- 2. arak: a kartyak arai a Salonicbol frissulnek (a HTML-ben levo ertek a tartalek) ------------
+  (async () => {
+    try {
+      const lista = await kezelesek();
+      const norm = (x) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const ft = (n) => new Intl.NumberFormat('hu-HU').format(n) + ' Ft';
+      for (const k of document.querySelectorAll('.ar-kartya[data-salonic]')) {
+        const szavak = k.dataset.salonic.split('-');
+        const t = lista.find((x) => szavak.every((w) => norm(x.nev).includes(w)));
+        if (!t || !t.ar) continue;
+        k.querySelector('.ar-most').textContent = ft(t.ar);
+        k.querySelector('.ar-regi').textContent = t.eredeti > t.ar ? ft(t.eredeti) : '';
+        if (t.perc) k.querySelector('.ar-ido').textContent = t.perc + ' perc';
+      }
+    } catch (e) { console.error(e); }
+  })();
+
   // --- 4. foglalo: a megtervezett foglalasi folyamat (/foglalo-pmu) beagyazva -------------------
   // A keret magassagat a beagyazott oldal jelzi (postMessage), nezetvaltaskor a keret tetejere
   // gorgetunk, ha az mar a kepernyon kivul van. A tobbi szekcio gombjai (data-foglalo) a folyamat
@@ -166,7 +185,7 @@
 
   // --- eredmenyek: Szemoldok / Ajak szuro, eloszor 12 kep ----------------------------------------
   const refRacs = $('esetek');
-  const ELSO = 12;
+  const ELSO = 16;
   let szuro = 'osszes';
   function rajzolRef(mind) {
     let n = 0;
