@@ -179,6 +179,9 @@ body.customer-mosaic-pmu .panel-body > div > hr { margin: 4px 0 !important; }
   body.customer-mosaic-pmu .order-lg-2 .card { margin-bottom: 4px !important; }
   /* nincs oldaliranyu gorgetes (a Salonic mobilmenuje es a negativ margoju sor kilog), es alul nincs ures hely */
   html, body.customer-mosaic-pmu { overflow-x: hidden !important; }
+  /* gorgetosav nem latszik (telefonon amugy is rejtett; asztali keskeny ablakban zavaro), gorgetni tovabbra is lehet */
+  html { scrollbar-width: none !important; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
   body.customer-mosaic-pmu .navbar-collapse { display: none !important; }
   body.customer-mosaic-pmu .guest-data-container .row { margin-left: 0 !important; margin-right: 0 !important; }
   body.customer-mosaic-pmu .guest-data-container .row > [class*="col-"] { padding-left: 0 !important; padding-right: 0 !important; }
