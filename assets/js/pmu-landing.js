@@ -448,45 +448,6 @@
   $('video-ablak').addEventListener('close', () => $('video-keret').replaceChildren());
   $('video-ablak').addEventListener('click', (e) => { if (e.target === $('video-ablak')) $('video-ablak').close(); });
 
-  // --- velemenyek: a MOSAIC Trustindex-widgetje (funkcionalis hozzajarulassal, mint a klonban) -------
-  // A keret azonos domainrol jon (/assets/embed/), ezert a betoltott widgetbol kiolvassuk az
-  // ertekelest es a velemenyek szamat, es kiirjuk a hero Google-gombjara is.
-  const TRUSTINDEX = '/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html';
-  function googleAdat(keret) {
-    let probak = 0;
-    const id = setInterval(() => {
-      if (++probak > 40) { clearInterval(id); return; }
-      let doc; try { doc = keret.contentDocument; } catch (e) { clearInterval(id); return; }
-      if (!doc || !doc.body) return;
-      const t = doc.body.innerText.replace(/\s+/g, ' ');
-      const db = t.match(/(\d[\d  .]*)\s*(?:vélemény|értékelés|review)/i);
-      const ertek = t.match(/\b([1-5][.,]\d)\b/);
-      const magas = doc.documentElement.scrollHeight;
-      if (magas > 100) keret.style.height = magas + 'px';
-      if (!db) return;
-      clearInterval(id);
-      const szam = db[1].replace(/\D/g, '');
-      const pont = ertek ? ertek[1].replace('.', ',') : '';
-      for (const e of document.querySelectorAll('[data-g-db]')) e.textContent = szam + ' Google-értékelés';
-      for (const e of document.querySelectorAll('[data-g-ertek]')) e.textContent = pont ? 'Google ' + pont : 'Google';
-      document.querySelector('.google-nagy b').textContent = pont;
-    }, 500);
-  }
-  function velemenyek(engedve) {
-    const doboz = $('trustindex');
-    if (engedve) {
-      if (doboz.querySelector('iframe')) return;
-      const keret = elem('iframe', { src: TRUSTINDEX, title: 'Vendégvélemények (Trustindex)', loading: 'lazy' });
-      keret.addEventListener('load', () => googleAdat(keret));
-      doboz.replaceChildren(keret);
-    } else if (!doboz.firstElementChild) {
-      doboz.replaceChildren(elem('div', { class: 'mh-helykitolto' },
-        elem('p', { szoveg: 'A vendégvélemények külső szolgáltatótól (Trustindex / Google) töltődnek be.' }),
-        elem('button', { type: 'button', class: 'gomb gomb-sotet gomb-kicsi', szoveg: 'Vélemények megjelenítése', onclick: () => { if (window.mhSuti) window.mhSuti.enged('fun'); else velemenyek(true); } })));
-    }
-  }
-  if (window.mhSuti) { velemenyek(window.mhSuti.engedely('fun')); window.mhSuti.figyel((d) => { if (d.fun) velemenyek(true); }); }
-  else velemenyek(true);
 
   // --- terkep: Google-terkep a funkcionalis sutik engedelyezese utan (mint a klon tobbi oldalan) ---
   function terkep(engedve) {
