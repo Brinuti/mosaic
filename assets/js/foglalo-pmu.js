@@ -50,7 +50,18 @@
     [/konzult/i, 'c2eb0f_c9d6d48560364c5685123a9408f1b4f9.jpg'],
     [/korrekci/i, 'c2eb0f_663d6199748c4770be062d8c47dc0276.jpg'],
   ];
-  const EGYEB = /konzult|korrekci/i; // nem "elso alkalmas" kezelesek: a lista aljan, kerdes nelkul
+  const EGYEB = /konzult/i; // nem "elso alkalmas" kezeles: a lista aljan, kerdes nelkul
+  const NEM_FOGLALHATO = /korrekci/i; // korrekciora nem lehet idopontot foglalni: elobb fotot kerunk
+  // rovid magyarazat az (i) gombhoz (kulcsszo -> szoveg)
+  const LEIRAS = [
+    [/szem[oö]ld[oö]k.*hibrid/i, 'A szálrajzolást és a púderes árnyalást ötvözi: élethű szőrszálak, mégis teltebb, tartósabb forma.'],
+    [/szem[oö]ld[oö]k.*powder/i, 'Puha, púderes árnyalás szálrajzolás nélkül – mintha szemöldökpúderrel töltenéd ki, finoman sminkelt hatás.'],
+    [/ajak.*aquarell/i, 'Áttetsző, természetes színfrissítés kontúr nélkül – mintha színezett ajakbalzsamot viselnél.'],
+    [/ajak.*r[uú]zs/i, 'Telítettebb, egyenletes szín és határozottabb kontúr – rúzsos hatás egész nap, smink nélkül.'],
+    [/szemh[eé]j/i, 'Finoman elmosott, füstös tushúzás a pillák mentén: kiemeli a szemet, nem kell reggelente megrajzolni.'],
+    [/szempilla/i, 'Pigmentálás a pillák tövében: sűrűbbnek, dúsabbnak látszó pillasor, smink nélkül is.'],
+    [/konzult/i, 'Személyes, kötetlen találkozó Melittával a szalonban: átbeszélitek, milyen hatást szeretnél, és melyik technika illik hozzád.'],
+  ];
 
   // --- segedek ---------------------------------------------------------------
   const $ = (id) => document.getElementById(id);
@@ -137,7 +148,7 @@
     const d = new DOMParser().parseFromString(await v.text(), 'text/html');
     const lista = [];
     for (const i of d.querySelectorAll('input[data-id][data-duration]')) {
-      if (lista.some((k) => k.id === i.dataset.id)) continue;
+      if (lista.some((k) => k.id === i.dataset.id) || NEM_FOGLALHATO.test(i.dataset.name || '')) continue;
       const nyers = (i.dataset.name || '').trim();
       // "Ajaktetovalas - Aquarell - 124.900 Ft helyett most" -> cim, valtozat, eredeti ar
       const m = nyers.match(/^(.*?)\s*-\s*([\d. ]+)\s*Ft helyett most\s*$/i);
@@ -177,24 +188,45 @@
   }
 
   // --- 1. kezelesvalasztas -------------------------------------------------------
+  // nyitott info-buborek: egyszerre csak egy; kattintasra / erintesre, asztalin raallasra is
+  function infoBezar() {
+    for (const b of document.querySelectorAll('.info-buborek')) b.remove();
+    for (const g of document.querySelectorAll('.info-gomb[aria-expanded="true"]')) g.setAttribute('aria-expanded', 'false');
+  }
+  document.addEventListener('click', (e) => { if (!e.target.closest('.info-gomb')) infoBezar(); });
   function kezelesKartya(k, kattint) {
+    const leiras = (LEIRAS.find(([re]) => re.test(k.nev)) || [])[1];
+    const kartya = kezelesGomb(k, kattint);
+    if (!leiras) return kartya;
+    const sor = elem('div', { class: 'kezeles-sor' }, kartya);
+    const nyit = () => {
+      infoBezar();
+      info.setAttribute('aria-expanded', 'true');
+      sor.append(elem('div', { class: 'info-buborek', role: 'tooltip', szoveg: leiras }));
+    };
+    const info = elem('button', { type: 'button', class: 'info-gomb', 'aria-label': 'Mi ez? – ' + k.nev, 'aria-expanded': 'false',
+      onclick: (e) => { e.stopPropagation(); info.getAttribute('aria-expanded') === 'true' ? infoBezar() : nyit(); } });
+    if (matchMedia('(hover: hover)').matches) { info.addEventListener('mouseenter', nyit); sor.addEventListener('mouseleave', infoBezar); }
+    sor.append(info);
+    return sor;
+  }
+  function kezelesGomb(k, kattint) {
     return elem('button', { type: 'button', class: 'kezeles', onclick: kattint },
-      k.egyeb ? null : elem('img', { src: k.foto, alt: '' }),
+      elem('img', { src: k.foto, alt: '' }),
       elem('span', {},
         elem('span', { class: 'nev', szoveg: k.egyeb ? k.nev : k.cim }),
-        k.egyeb ? null : elem('span', { class: 'valtozat', szoveg: [k.valtozat, idotartam(k.perc)].filter(Boolean).join(' · ') })),
+        elem('span', { class: 'valtozat', szoveg: [k.egyeb ? 'Személyesen' : k.valtozat, idotartam(k.perc)].filter(Boolean).join(' · ') })),
       elem('span', { class: 'jobb' },
         elem('span', { class: 'ar', szoveg: arSzoveg(k) }),
         k.eredeti ? elem('s', { szoveg: ft(k.eredeti) }) : null),
-      k.egyeb ? null : ikon('jobbra'));
+      ikon('jobbra'));
   }
   BELEPES.szolg = async () => {
     try {
       await kezelesekBetolt();
-      const fo = allapot.kezelesek.filter((k) => !k.egyeb);
-      const egyeb = allapot.kezelesek.filter((k) => k.egyeb);
-      $('kezelesek').replaceChildren(...fo.map((k) => kezelesKartya(k, () => kezelesValaszt(k))));
-      $('egyeb').replaceChildren(...(egyeb.length ? [elem('div', { class: 'kezelesek' }, ...egyeb.map((k) => kezelesKartya(k, () => kezelesValaszt(k))))] : []));
+      // az ingyenes konzultacio a lista aljan
+      const sorrend = [...allapot.kezelesek.filter((k) => !k.egyeb), ...allapot.kezelesek.filter((k) => k.egyeb)];
+      $('kezelesek').replaceChildren(...sorrend.map((k) => kezelesKartya(k, () => kezelesValaszt(k))));
     } catch (e) {
       console.error(e);
       hibaDoboz($('kezelesek'), 'Most nem sikerült betölteni a kezeléseket. Kérjük, próbáld újra pár perc múlva, vagy hívj minket: 06 20 247 4444.');
@@ -310,7 +342,7 @@
     const k = allapot.kezeles;
     const url = SZALON.cim + '/guestData/?' + new URLSearchParams({ placeId: SZALON.placeId, serviceId: k.id, employeeId: -1, startDate: allapot.slot });
     // a koszonooldalnak (a /pmu-ok meres utan ide jovunk vissza)
-    tarol(TAROLO, { ts: allapot.slot, perc: k.perc, nev: k.egyeb ? k.nev : k.cim + (k.valtozat ? ' – ' + k.valtozat : ''), ar: arSzoveg(k), foto: k.foto });
+    tarol(TAROLO, { ts: allapot.slot, perc: k.perc, nev: k.egyeb ? k.nev : k.cim + (k.valtozat ? ' – ' + k.valtozat : ''), ar: arSzoveg(k), foto: k.foto, tipus: /konzult/i.test(k.nev) ? 'konz' : 'kezeles' });
     $('salonic-link').href = url;
     const keret = $('salonic');
     $('salonic-betolt').hidden = false;
@@ -337,13 +369,26 @@
     BELEPES.ido('Ez az időpont közben elfogyott. Válassz egy másikat!');
   };
 
-  // --- 5. koszonooldal ----------------------------------------------------------------
+  // --- 5. koszonooldalak (az elkotelezodes szerint kulon) --------------------------------------
+  //  - fizetos kezeles:     #koszonjuk
+  //  - ingyenes konzultacio: #koszonjuk-konzultacio (szemelyes, a szalonban)
+  //  - 10 perces visszahivas: c-kesz (#visszahivas-kesz), lasd lent
+  // Mintanezet foglalas nelkul: ?minta=kezeles|konz|visszahivas
+  const MINTA = new URLSearchParams(location.search).get('minta');
+  const KOSZ = {
+    kezeles: { cim: 'Sikeres foglalás!', hash: '#koszonjuk', lepesek: ['Visszaigazolást küldünk e-mailben.', 'A kezelés előtt emlékeztetőt kapsz.', 'Lemondani legkésőbb 48 órával előtte tudod – utána az időpont már a tiéd, másnak nem adhatjuk oda.'] },
+    konz: { cim: 'Konzultációd lefoglalva!', hash: '#koszonjuk-konzultacio', lepesek: ['Visszaigazolást küldünk e-mailben.', 'Asszisztensünk felhív, hogy egyeztessétek a részleteket.', 'A konzultáción minden kérdésedre választ kapsz.'] },
+  };
   BELEPES.koszonjuk = () => {
-    // ?minta=1#koszonjuk: a koszonooldal megtekintese foglalas nelkul, mintaadatokkal
-    const minta = new URLSearchParams(location.search).has('minta')
-      ? { ts: Math.floor(Date.now() / 86400000 + 7) * 86400 + 8 * 3600, perc: 90, nev: 'Szemöldöktetoválás – Hibrid', ar: '79 000 Ft' } : null;
-    const f = olvas(TAROLO) || minta;
+    const mintaNap = Math.floor(Date.now() / 86400000 + 7) * 86400 + 8 * 3600;
+    const minta = MINTA === 'konz' ? { ts: mintaNap, perc: 30, nev: 'Ingyenes konzultáció', ar: 'Ingyenes', tipus: 'konz' }
+      : MINTA ? { ts: mintaNap, perc: 90, nev: 'Szemöldöktetoválás – Hibrid', ar: '79 000 Ft', tipus: 'kezeles' } : null;
+    const f = minta || olvas(TAROLO);
     if (!f) { mutat('kezdo'); return; }
+    const v = KOSZ[f.tipus] || KOSZ.kezeles;
+    $('kosz-cim').textContent = v.cim;
+    $('kosz-lepesek').replaceChildren(...v.lepesek.map((t) => elem('li', { szoveg: t })));
+    if (location.hash !== v.hash) history.replaceState({ nezet: 'koszonjuk' }, '', location.pathname + location.search + v.hash);
     const terkep = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(SZALON.terkep);
     $('koszono-osszegzes').replaceChildren(elem('div', { class: 'kosz-kartya' },
       elem('span', { class: 'adat' }, elem('b', { szoveg: teljes(f.ts) }), elem('b', { szoveg: f.nev }), f.ar + ' · ' + idotartam(f.perc),
@@ -368,14 +413,13 @@
   const MAX_FOTO = 5;
   BELEPES.foto = () => {
     const d = allapot.ag === 'D';
-    $('foto-cim').textContent = d ? 'Nem vagy biztos benne? Küldj fotót, és segítünk.' : 'Küldj fotót a jelenlegi tetoválásról';
-    $('foto-szoveg').textContent = d ? 'Ránézünk, és megírjuk, hogy első kezelés vagy korrekció szükséges-e.'
-      : 'Ez segít, hogy a legbiztonságosabb és leghatékonyabb kezelést tudjuk javasolni.';
+    $('foto-cim').textContent = d ? 'Nem vagy biztos benne? Küldj fotót, és segítünk.' : 'Tölts fel fotót a jelenlegi sminktetoválásodról';
+    $('foto-szoveg').replaceChildren(d ? 'Ránézünk, és megírjuk, hogy első kezelés vagy korrekció szükséges-e.'
+      : elem('b', { szoveg: 'Fotó nélkül nem tudunk segíteni: a feltöltés kötelező. Csak a fotó alapján tudjuk megmondani, mit lehet és érdemes tenni.' }));
     $('foto-osszegzes').replaceChildren(allapot.slot && allapot.kezeles
       ? elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Választott (preferált) időpont' }), elem('div', { class: 'sor' }, ikon('naptar'),
         elem('span', {}, elem('b', { szoveg: teljes(allapot.slot) }), elem('span', { szoveg: allapot.kezeles.cim + (allapot.kezeles.valtozat ? ' – ' + allapot.kezeles.valtozat : '') }))))
-      : elem('div', {}, elem('h3', { szoveg: 'Melyik területről van szó?' }), elem('div', { class: 'chipek' }, ...['Szemöldök', 'Ajak', 'Szemhéj', 'Más / nem tudom'].map((n) =>
-        elem('button', { type: 'button', class: 'chip', 'aria-pressed': String(allapot.fotoKezeles === n), szoveg: n, onclick: () => { allapot.fotoKezeles = n; BELEPES.foto(); } })))));
+      : '');
     rajzolFotok();
   };
   function rajzolFotok() {
@@ -511,11 +555,18 @@
       mikor_nap: allapot.cNap, mikor_napszak: allapot.cSav, oldal: 'foglalo-pmu',
     });
     if (!(await bekuld(adat, gomb, $('c-kuld-hiba')))) return;
-    $('c-kesz-osszegzes').replaceChildren(cOsszegzes('Visszahívás'));
     ugrik('c-kesz');
   });
+  BELEPES['c-kesz'] = () => {
+    if (MINTA === 'visszahivas') Object.assign(allapot, { cNap: allapot.cNap || 'Holnap', cSav: allapot.cSav || 'Délelőtt (9–12)' });
+    if (!allapot.cNap) { mutat('kezdo'); return; }
+    $('c-kesz-osszegzes').replaceChildren(cOsszegzes('Ekkor hívunk'));
+    history.replaceState({ nezet: 'c-kesz' }, '', location.pathname + location.search + '#visszahivas-kesz');
+  };
 
   // --- video ------------------------------------------------------------------------------
+  // a 10 perces konzultacio videoja kis, levagott elonezet - lejatszaskor teljes
+  document.querySelector('[data-nezet=c-info] video').addEventListener('play', (e) => e.target.parentNode.classList.add('megy'));
   for (const g of document.querySelectorAll('[data-video]')) {
     g.addEventListener('click', () => {
       const v = elem('video', { src: '/assets/video/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326e.mp4', controls: true, playsinline: true, autoplay: true });
@@ -527,10 +578,15 @@
   // ?kezeles=<Salonic-azonosito vagy kulcsszo> (kezeles-specifikus landingrol): az 1. lepes kimarad
   (async () => {
     const kert = new URLSearchParams(location.search).get('kezeles');
-    if (location.hash === '#koszonjuk' && (olvas(TAROLO) || new URLSearchParams(location.search).has('minta'))) {
-      history.replaceState({ nezet: 'koszonjuk' }, '', '#koszonjuk');
+    if (location.hash.startsWith('#koszonjuk') && (olvas(TAROLO) || MINTA)) {
+      history.replaceState({ nezet: 'koszonjuk' }, '', location.hash);
       mutat('koszonjuk');
       BELEPES.koszonjuk();
+      return;
+    }
+    if (MINTA === 'visszahivas') {
+      mutat('c-kesz');
+      BELEPES['c-kesz']();
       return;
     }
     history.replaceState({ nezet: 'kezdo' }, '', location.pathname + location.search);
