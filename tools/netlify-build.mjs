@@ -35,6 +35,11 @@ const LAP_A = path.join(DIST, '_a'), LAP_M = path.join(DIST, '_m');
 fs.mkdirSync(LAP_A, { recursive: true });
 for (const f of fs.readdirSync(path.join(ROOT, 'klon')).filter((x) => x.endsWith('.html'))) fs.copyFileSync(path.join(ROOT, 'klon', f), path.join(LAP_A, f));
 fs.cpSync(path.join(ROOT, 'klon', 'm'), LAP_M, { recursive: true });
+// Sajat (nem a Wixrol mentett) oldalak, pl. a foglalo proba (/foglalo-proba): egy reszponziv
+// fajl, ugyanaz megy az asztali es a mobil mappaba is. Linket nem kapnak, noindex-esek.
+for (const f of fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.endsWith('.html'))) {
+  for (const m of [LAP_A, LAP_M]) fs.copyFileSync(path.join(ROOT, 'foglalas', f), path.join(m, f));
+}
 // a nyitooldal a /_a/fooldal, /_m/fooldal fajlbol jon (lasd netlify/lib/utvonal.js)
 for (const m of [LAP_A, LAP_M]) fs.renameSync(path.join(m, 'index.html'), path.join(m, 'fooldal.html'));
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
@@ -82,7 +87,7 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
 // Verziojel a sajat szkriptek es stilusok hivatkozasaira (?v=<tartalom-hash>):
 // igy egy javitas azonnal eler minden latogatot, akkor is, ha a bongeszo meg
 // egy regebbi valtozatot tarol.
-const SAJAT = ['assets/js/klon.js', 'assets/js/suti.js', 'assets/js/galeriak.js', 'assets/js/gyik.js', 'assets/js/arlistak.js', 'assets/js/oldaltablak.js', 'assets/css/klon.css'];
+const SAJAT = ['assets/js/klon.js', 'assets/js/suti.js', 'assets/js/galeriak.js', 'assets/js/gyik.js', 'assets/js/arlistak.js', 'assets/js/oldaltablak.js', 'assets/js/foglalo.js', 'assets/css/klon.css'];
 // Oldalankenti LCP-kep (a legnagyobb tartalmi elem), egyszer bongeszovel lemerve:
 // tools/lcp-elofeltoltes.json ({ mobil: { lap: kep }, asztali: {...} }). Elotoltjuk, es nem lusta.
 const LCP = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/lcp-elofeltoltes.json'), 'utf8'));

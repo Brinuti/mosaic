@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Időpontfoglalás – MOSAIC Headspa (próba)</title>
+<link rel="icon" href="/assets/img/c2eb0f_b001e2c55098446da3e38ff055e20354.png" type="image/png">
+<link rel="stylesheet" href="/assets/css/wix-google-fonts.css">
+<style>
+  :root {
+    --sotet: #183033; --kozep: #44595c; --halvany: #6d8285; --krem: #fbeede;
+    --hatter: #fffaf4; --vonal: #e6dccd; --feher: #fff; --hiba: #a33a2b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--hatter); color: var(--sotet); font-family: 'lato', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.45; }
+  button { font: inherit; color: inherit; }
+  .fej { background: var(--sotet); color: var(--krem); padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+  .fej a { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+  .fej img { width: 34px; height: 34px; border-radius: 50%; background: var(--krem); }
+  .fej b { letter-spacing: .14em; font-size: 15px; }
+  .proba { margin-left: auto; font-size: 12px; border: 1px solid var(--krem); border-radius: 99px; padding: 2px 10px; opacity: .85; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 120px; }
+  h1 { font-weight: 400; font-size: 26px; margin: 6px 0 4px; letter-spacing: .02em; }
+  .alcim { color: var(--kozep); margin: 0 0 18px; }
+  .lepesek { display: flex; gap: 6px; margin: 0 0 22px; padding: 0; list-style: none; counter-reset: l; flex-wrap: wrap; }
+  .lepesek li { counter-increment: l; font-size: 13px; color: var(--halvany); display: flex; align-items: center; gap: 6px; }
+  .lepesek li::before { content: counter(l); width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--halvany); display: grid; place-items: center; font-size: 12px; }
+  .lepesek li + li::after { order: -1; content: ''; width: 14px; height: 1px; background: var(--vonal); }
+  .lepesek li.aktiv { color: var(--sotet); font-weight: 700; }
+  .lepesek li.aktiv::before, .lepesek li.kesz::before { background: var(--sotet); border-color: var(--sotet); color: var(--krem); }
+  .lepesek li.kesz { color: var(--kozep); cursor: pointer; }
+  section[hidden] { display: none; }
+  h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; }
+  .kartyak { display: grid; gap: 12px; }
+  .kartya { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; text-align: left; width: 100%; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; padding: 14px; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+  .kartya:hover, .kartya:focus-visible { border-color: var(--halvany); box-shadow: 0 4px 16px rgba(24,48,51,.08); outline: none; }
+  .kartya.valasztott { border-color: var(--sotet); box-shadow: 0 0 0 1px var(--sotet); }
+  .kartya img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; }
+  .kartya .nev { font-weight: 700; display: block; }
+  .kartya .info { color: var(--kozep); font-size: 14px; display: block; margin-top: 2px; }
+  .kartya .ar { font-weight: 700; white-space: nowrap; }
+  .cimke { display: inline-block; background: var(--krem); color: var(--sotet); font-size: 12px; border-radius: 99px; padding: 1px 8px; margin-top: 6px; }
+  .chipek { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .chip { border: 1px solid var(--vonal); background: var(--feher); border-radius: 99px; padding: 8px 14px; cursor: pointer; font-size: 14px; }
+  .chip[aria-pressed="true"] { background: var(--sotet); border-color: var(--sotet); color: var(--krem); }
+  .napok { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 10px; scroll-snap-type: x mandatory; }
+  .nap { flex: 0 0 auto; width: 66px; scroll-snap-align: start; border: 1px solid var(--vonal); background: var(--feher); border-radius: 12px; padding: 8px 4px; text-align: center; cursor: pointer; }
+  .nap small { display: block; font-size: 12px; color: var(--kozep); }
+  .nap b { display: block; font-size: 20px; }
+  .nap[disabled] { opacity: .38; cursor: default; }
+  .nap[aria-pressed="true"] { background: var(--sotet); border-color: var(--sotet); color: var(--krem); }
+  .nap[aria-pressed="true"] small { color: var(--krem); }
+  .tovabbnap { flex: 0 0 auto; border: 1px dashed var(--halvany); background: none; border-radius: 12px; padding: 8px 12px; cursor: pointer; font-size: 13px; color: var(--kozep); }
+  .napresz { margin: 16px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--halvany); }
+  .idok { display: grid; grid-template-columns: repeat(auto-fill, minmax(82px, 1fr)); gap: 8px; }
+  .ido { border: 1px solid var(--vonal); background: var(--feher); border-radius: 10px; padding: 10px 0; cursor: pointer; font-weight: 700; }
+  .ido:hover { border-color: var(--halvany); }
+  .ido[aria-pressed="true"] { background: var(--sotet); border-color: var(--sotet); color: var(--krem); }
+  .ures, .betolt, .hiba { color: var(--kozep); padding: 14px 0; }
+  .hiba { color: var(--hiba); }
+  .betolt::before { content: ''; display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px; border: 2px solid var(--vonal); border-top-color: var(--sotet); border-radius: 50%; animation: forog 0.8s linear infinite; }
+  @keyframes forog { to { transform: rotate(360deg); } }
+  .osszegzes { background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; padding: 16px; }
+  .osszegzes dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; margin: 0; }
+  .osszegzes dt { color: var(--kozep); }
+  .osszegzes dd { margin: 0; font-weight: 700; }
+  .megj { font-size: 14px; color: var(--kozep); margin: 14px 0 0; }
+  .gomb { display: inline-block; background: var(--sotet); color: var(--krem); border: 0; border-radius: 99px; padding: 14px 26px; font-weight: 700; letter-spacing: .04em; cursor: pointer; text-decoration: none; }
+  .gomb[disabled] { opacity: .4; cursor: default; }
+  .vissza { background: none; border: 0; color: var(--kozep); cursor: pointer; padding: 6px 0; margin-bottom: 8px; font-size: 14px; }
+  .also { position: fixed; left: 0; right: 0; bottom: 0; background: rgba(255,250,244,.96); border-top: 1px solid var(--vonal); padding: 12px 16px; display: flex; align-items: center; gap: 12px; justify-content: space-between; backdrop-filter: blur(6px); }
+  .also[hidden] { display: none; }
+  .also .valasztas { font-size: 14px; color: var(--kozep); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .also .valasztas b { color: var(--sotet); }
+  @media (max-width: 480px) {
+    h1 { font-size: 22px; }
+    .lepesek { gap: 6px 12px; }
+    .lepesek li + li::after { display: none; }
+    .kartya { grid-template-columns: 1fr auto; }
+    .kartya img { display: none; }
+    .gomb { padding: 12px 18px; }
+  }
+</style>
+</head>
+<body>
+<header class="fej">
+  <a href="/"><img src="/assets/img/c2eb0f_b001e2c55098446da3e38ff055e20354.png" alt=""><b>MOSAIC</b></a>
+  <span class="proba">próbaoldal</span>
+</header>
+<main>
+  <h1>Időpontfoglalás</h1>
+  <p class="alcim">MOSAIC Headspa · 1023 Budapest, Bécsi út 4.</p>
+  <ol class="lepesek" id="lepesek">
+    <li data-lepes="kategoria">Kezelés típusa</li>
+    <li data-lepes="szolgaltatas">Kezelés</li>
+    <li data-lepes="idopont">Időpont</li>
+    <li data-lepes="osszegzes">Összegzés</li>
+  </ol>
+
+  <section id="kategoria" data-cim="Kezelés típusa">
+    <h2>Milyen kezelést foglalnál?</h2>
+    <div class="kartyak" id="kategoriak"><div class="betolt">Betöltés…</div></div>
+  </section>
+
+  <section id="szolgaltatas" hidden>
+    <button class="vissza" type="button" data-vissza="kategoria">‹ Vissza</button>
+    <h2 id="szolgaltatas-cim">Válassz kezelést</h2>
+    <div class="kartyak" id="szolgaltatasok"></div>
+  </section>
+
+  <section id="idopont" hidden>
+    <button class="vissza" type="button" data-vissza="szolgaltatas">‹ Vissza</button>
+    <h2>Kezelő és időpont</h2>
+    <div class="chipek" id="munkatarsak" role="group" aria-label="Kezelő"></div>
+    <div class="napok" id="napok" role="group" aria-label="Nap"></div>
+    <div id="idok"></div>
+  </section>
+
+  <section id="osszegzes" hidden>
+    <button class="vissza" type="button" data-vissza="idopont">‹ Vissza</button>
+    <h2>Összegzés</h2>
+    <div class="osszegzes">
+      <dl id="osszegzes-adatok"></dl>
+      <p class="megj">A következő lépésben add meg a neved és az elérhetőséged, majd véglegesítsd a foglalást.
+        A foglalást a Salonic rendszere rögzíti, onnan kapod a visszaigazoló e-mailt is.</p>
+    </div>
+    <p><a class="gomb" id="veglegesit" href="#">Tovább az adataimhoz ›</a></p>
+  </section>
+</main>
+<div class="also" id="also" hidden>
+  <div class="valasztas" id="also-szoveg"></div>
+  <button class="gomb" type="button" id="also-gomb" disabled>Tovább</button>
+</div>
+<script src="/assets/js/foglalo.js" defer></script>
+</body>
+</html>
