@@ -138,6 +138,22 @@ használja (`tools/popup/*.json`, `--letoltes` kapcsolóval frissíti), és a Wi
 node tools/popup-info.mjs --letoltes && node tools/klon-kiegeszites.mjs
 ```
 
+### 1.5c Sminktetoválás-landing — `/pmu-sminktetovalas`
+
+Hirdetési céloldal a jóváhagyott 4 képes asztali terv szerint (a meglévő `/sminktetovalas-budapest`
+mellett, saját címen, `noindex`). Fájlok: `foglalas/pmu-sminktetovalas.html`,
+`assets/css/pmu-landing.css`, `assets/js/pmu-landing.js` (a `foglalas/` oldalait a build az
+asztali és a mobil mappába is bemásolja).
+
+- **Foglaló** (4. rész): terület → „Volt már PMU-d?” → **NEM**: 3 megerősítés (2–2,5 óra,
+  4–7 hét korrekció, ne siess) → élő szabad időpontok (Salonic API) → a Salonic adatlapja
+  beágyazva; **IGEN**: fotófeltöltés (`pmu-foto` Netlify-űrlap, e-mail a szalonnak), naptár nincs.
+- A legközelebbi időpontok és a kezelések a Salonicból jönnek, mint a `/foglalo-pmu` oldalon.
+- **Helyőrzők** (`data-helyorzo` / `.helyorzo`, szögletes zárójelben): hiányzó árak, valódi PMU
+  Google-vélemények, egészségügyi kizárólista, parkolás, tömegközlekedés, telefonszám,
+  Instagram/Facebook-link, gyógyulási idők az eredménykártyákon, szemhéj előtte–utána fotó.
+- Végleges mobil terv még nincs: keskeny kijelzőn ideiglenesen egymás alá rendeződik.
+
 ### 1.6 Videók
 
 Részletesen: **[VIDEOK.md](VIDEOK.md)** – leltár mind a 13 oldal videós dobozairól, és hogy

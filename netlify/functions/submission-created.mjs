@@ -3,6 +3,7 @@
 //   ajandekkartya       vevonek: "MOSAIC ajándékkártya utalási adatok + infók"
 //                       szalonnak: "Ajándékkártya  Előreutalásos ajándékkártyát vett"
 //   pmu-visszahivas     szalonnak: "Új Smink form-beküldés érkezett"
+//   pmu-foto            szalonnak: "Sminktetoválás – régi PMU, fotó érkezett" (/pmu-sminktetovalas)
 //   fodrasz-jelentkezes szalonnak: "Új fodrász jelentkezett"
 //   ppc-jelentkezes     szalonnak: "Új PPC-jelentkezés érkezett" (a Wixen ehhez nem
 //                       volt automatikus level; igy legalabb nem vesz el)
@@ -66,6 +67,14 @@ const URLAPOK = {
     html: (d) => osszefoglalo('A sminktetoválás-foglaló (próba) egy látogatója fotót küldött.', 'Beküldés összefoglalása:', [
       ['ag', 'Ág'], ['nev', 'Név'], ['telefon', 'Telefonszám'], ['email', 'E-mail'], ['kezeles', 'Kezelés / terület'],
       ['idopont', 'Választott időpont'], ...Array.from({ length: 5 }, (_, i) => [`foto${i + 1}`, `Fotó ${i + 1}`]),
+    ], d),
+  },
+  // a /pmu-sminktetovalas landing IGEN aga: regi PMU -> foto (naptar nelkul)
+  'pmu-foto': {
+    targy: 'Sminktetoválás – régi PMU, fotó érkezett',
+    html: (d) => osszefoglalo('A sminktetoválás-oldal egy látogatója fotót küldött a meglévő sminktetoválásáról (szakmai értékelésre, időpont még nincs).', 'Beküldés összefoglalása:', [
+      ['nev', 'Név'], ['telefon', 'Telefonszám'], ['email', 'E-mail'], ['terulet', 'Terület'],
+      ...Array.from({ length: 5 }, (_, i) => [`foto${i + 1}`, `Fotó ${i + 1}`]),
     ], d),
   },
   'pmu-proba-visszahivas': {
