@@ -110,10 +110,38 @@
   // --- nezetek es vissza-gomb (a bongeszo vissza-gombja is mukodik, az adatok megmaradnak) ---
   const NEZETEK = [...document.querySelectorAll('[data-nezet]')].map((s) => s.dataset.nezet);
   let aktualis = 'kezdo';
+  // lepesjelzo a fejlecben (a logo helyett) minden lepesnel; a nyito- es koszonooldalakon a logo
+  const LEPES = {
+    szolg: ['fo', 0], ido: ['fo', 1], kerdes: ['fo', 2], adatok: ['fo', 3],
+    foto: ['foto', 0], 'foto-adatok': ['foto', 1],
+    'c-info': ['c', 0], 'c-ido': ['c', 1], 'c-adatok': ['c', 2],
+  };
+  function lepesjelzo(nev) {
+    const l = LEPES[nev];
+    $('lepesjelzo').hidden = !l;
+    $('logo').hidden = !!l;
+    if (!l) return;
+    const kerdesNelkul = allapot.kezeles && allapot.kezeles.egyeb;
+    const sorok = {
+      fo: kerdesNelkul ? ['Kezelés', 'Időpont', 'Adatok'] : ['Kezelés', 'Időpont', 'Kérdés', 'Adatok'],
+      foto: ['Fotó', 'Elérhetőség', 'Kész'],
+      c: ['Konzultáció', 'Időpont', 'Elérhetőség'],
+    }[l[0]];
+    const hol = kerdesNelkul && nev === 'adatok' ? 2 : l[1];
+    $('lepesjelzo').replaceChildren(...sorok.map((t, i) => elem('li', { class: i < hol ? 'kesz' : i === hol ? 'most' : '', 'aria-current': i === hol ? 'step' : false },
+      elem('i', { szoveg: i < hol ? '✓' : String(i + 1) }), elem('span', { szoveg: t }))));
+  }
+  // a fejlec vissza gombja mindig az elozo lepesre visz (nem a bongeszo elozmenyeiben lep vissza)
+  const ELOZO = {
+    szolg: () => 'kezdo', ido: () => 'szolg', kerdes: () => 'ido', adatok: () => (allapot.kezeles && allapot.kezeles.egyeb ? 'ido' : 'kerdes'),
+    foto: () => (allapot.slot ? 'kerdes' : 'kezdo'), 'foto-adatok': () => 'foto',
+    'c-info': () => 'kezdo', 'c-ido': () => 'c-info', 'c-adatok': () => 'c-ido',
+  };
   function mutat(nev) {
     aktualis = nev;
     for (const s of document.querySelectorAll('[data-nezet]')) s.hidden = s.dataset.nezet !== nev;
     $('vissza').style.visibility = nev === 'kezdo' || /kesz$|koszonjuk/.test(nev) ? 'hidden' : 'visible';
+    lepesjelzo(nev);
     scrollTo(0, 0);
   }
   function ugrik(nev) {
@@ -128,7 +156,7 @@
     // a listak ujrarajzolasa (az adatok megmaradnak); az adatlapot nem toltjuk ujra
     if (BELEPES[nev] && !/^(adatok|koszonjuk)$|kesz$/.test(nev)) BELEPES[nev]();
   });
-  $('vissza').addEventListener('click', () => (history.state && history.state.nezet ? history.back() : ugrik('kezdo')));
+  $('vissza').addEventListener('click', () => ugrik(ELOZO[aktualis] ? ELOZO[aktualis]() : 'kezdo'));
   document.addEventListener('click', (e) => {
     const g = e.target.closest('[data-ugrik]');
     if (!g) return;
@@ -344,11 +372,17 @@
     // a koszonooldalnak (a /pmu-ok meres utan ide jovunk vissza)
     tarol(TAROLO, { ts: allapot.slot, perc: k.perc, nev: k.egyeb ? k.nev : k.cim + (k.valtozat ? ' – ' + k.valtozat : ''), ar: arSzoveg(k), foto: k.foto, tipus: /konzult/i.test(k.nev) ? 'konz' : 'kezeles' });
     $('salonic-link').href = url;
-    const keret = $('salonic');
+    // mindig uj keret: igy a betoltes nem kerul a bongeszo elozmenyei koze, es a vissza gomb
+    // nem a Salonic belso oldalaira lep vissza
+    const regi = $('salonic');
+    const keret = elem('iframe', { id: 'salonic', title: 'Foglalás véglegesítése', src: url, style: 'visibility:hidden' });
+    // a "Nem jelenik meg az urlap?" tartalek-link csak akkor latszik, ha 8 mp alatt sem toltott be
+    const tartalek = $('salonic-link').closest('p');
+    tartalek.hidden = true;
+    const lassu = setTimeout(() => { tartalek.hidden = false; }, 8000);
+    keret.onload = () => { clearTimeout(lassu); $('salonic-betolt').hidden = true; keret.style.visibility = ''; };
     $('salonic-betolt').hidden = false;
-    keret.style.visibility = 'hidden';
-    keret.onload = () => { $('salonic-betolt').hidden = true; keret.style.visibility = ''; };
-    keret.src = url;
+    regi.replaceWith(keret);
   };
   // A keretben a mi egyik oldalunk toltodott be (suti.js / ez a fajl jelzi):
   //  - sikeres foglalas: a /pmu-ok oldalra iranyitott - a teljes ablakban nyitjuk meg (meres!),

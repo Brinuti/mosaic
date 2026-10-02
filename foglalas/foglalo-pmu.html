@@ -29,6 +29,17 @@
   .fej .logo { justify-self: center; display: flex; flex-direction: column; align-items: center; text-decoration: none; line-height: 1; }
   .fej .logo b { font-family: var(--cim); font-weight: 400; letter-spacing: .32em; font-size: 19px; margin-right: -.32em; }
   .fej .logo small { font-size: 9px; letter-spacing: .3em; color: var(--halvany); margin-top: 3px; margin-right: -.3em; }
+  .lepesjelzo { justify-self: stretch; display: flex; justify-content: center; gap: 2px; list-style: none; margin: 0; padding: 0; min-width: 0; }
+  .lepesjelzo[hidden] { display: none; }
+  .lepesjelzo li { flex: 1 1 0; max-width: 84px; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; position: relative; font-size: 10.5px; color: var(--halvany); }
+  .lepesjelzo li + li::before { content: ''; position: absolute; top: 10px; right: calc(50% + 13px); width: calc(100% - 26px); height: 1.5px; background: var(--vonal); }
+  .lepesjelzo li.kesz + li::before { background: var(--sotet); }
+  .lepesjelzo i { width: 21px; height: 21px; border-radius: 50%; border: 1.5px solid var(--vonal); display: grid; place-items: center; font-style: normal; font-weight: 700; font-size: 11px; background: var(--hatter); }
+  .lepesjelzo span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .lepesjelzo li.most { color: var(--sotet); font-weight: 700; }
+  .lepesjelzo li.most i { background: var(--sotet); border-color: var(--sotet); color: var(--krem); }
+  .lepesjelzo li.kesz { color: var(--sotet); }
+  .lepesjelzo li.kesz i { border-color: var(--sotet); color: var(--sotet); }
   .ikon-gomb { width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: none; cursor: pointer; border-radius: 50%; text-decoration: none; }
   .ikon-gomb:hover { background: var(--krem); }
   .ikon-gomb svg { width: 22px; height: 22px; }
@@ -183,7 +194,7 @@
   /* a Salonic-adatlap a sajat, tomor CSS-unkkel (salonic/pmu.css): 70 px-es fejlec, az idozito 94 px-nel;
      mobilon megjegyzes-mezo es jelveny nelkul a gomb alja ~615 px-nel, igy a keret a gombbal egyutt
      egy kepernyore fer (ha hibauzenet miatt hosszabb lesz, a kereten belul gorget); szelesebben ~655 px */
-  .salonic-keret { --keret-levag: 84px; --keret-magas: 580px; position: relative; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; overflow: hidden; height: var(--keret-magas); }
+  .salonic-keret { --keret-levag: 84px; --keret-magas: 560px; position: relative; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; overflow: hidden; height: var(--keret-magas); }
   @media (min-width: 600px) { .salonic-keret { --keret-magas: 750px; } }
   .salonic-keret .betolt { position: absolute; inset: 16px; }
   @media (max-width: 599px) { #adatok-osszegzes, [data-nezet=adatok] .pontok { display: none; } }
@@ -255,7 +266,8 @@
 <body>
 <header class="fej">
   <button class="ikon-gomb" type="button" id="vissza" aria-label="Vissza" style="visibility:hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
-  <a class="logo" href="/sminktetovalas-budapest"><b>MOSAIC</b><small>SMINKTETOVÁLÁS</small></a>
+  <a class="logo" id="logo" href="/sminktetovalas-budapest"><b>MOSAIC</b><small>SMINKTETOVÁLÁS</small></a>
+  <ol class="lepesjelzo" id="lepesjelzo" aria-label="Hol tartasz" hidden></ol>
   <a class="ikon-gomb" href="tel:+36202474444" aria-label="Hívás: 06 20 247 4444"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/></svg></a>
 </header>
 <main id="tartalom">
@@ -312,7 +324,6 @@
 
   <!-- 3. gyors kerdes -->
   <section data-nezet="kerdes" hidden>
-    <div class="pontok"><i class="be"></i><i class="be"></i><i></i></div>
     <div id="kerdes-osszegzes"></div>
     <h2>Volt már sminktetoválásod ezen a területen?</h2>
     <p class="halk kicsi">Ezért kérdezzük, hogy a számodra legmegfelelőbb és legbiztonságosabb kezelést tudjuk javasolni.</p>
@@ -325,7 +336,6 @@
 
   <!-- 4. adatok + foglalas (Salonic-adatlap) -->
   <section data-nezet="adatok" hidden>
-    <div class="pontok"><i class="be"></i><i class="be"></i><i class="be"></i></div>
     <div id="adatok-osszegzes"></div>
     <div class="salonic-keret">
       <div class="betolt" id="salonic-betolt">Foglalási űrlap betöltése…</div>
@@ -360,7 +370,6 @@
 
   <!-- B / D. foto -->
   <section data-nezet="foto" hidden>
-    <div class="pontok"><i class="be"></i><i></i><i></i></div>
     <h2 id="foto-cim">Küldj fotót a jelenlegi tetoválásról</h2>
     <div id="foto-osszegzes"></div>
     <p class="halk" id="foto-szoveg">Ez segít, hogy a legbiztonságosabb és leghatékonyabb kezelést tudjuk javasolni.</p>
@@ -376,7 +385,6 @@
   </section>
 
   <section data-nezet="foto-adatok" hidden>
-    <div class="pontok"><i class="be"></i><i class="be"></i><i></i></div>
     <h2>Elérhetőségeid</h2>
     <p class="halk kicsi">A fotó alapján felveszük veled a kapcsolatot.</p>
     <div id="foto-kuld-hiba"></div>
@@ -415,7 +423,6 @@
   </section>
 
   <section data-nezet="c-ido" hidden>
-    <div class="pontok"><i class="be"></i><i></i><i></i></div>
     <h2>Mikor hívjunk?</h2>
     <p class="halk kicsi">Válaszd ki, mikor kényelmes neked – ehhez igazodunk.</p>
     <h3>Melyik nap?</h3>
@@ -426,7 +433,6 @@
   </section>
 
   <section data-nezet="c-adatok" hidden>
-    <div class="pontok"><i class="be"></i><i class="be"></i><i></i></div>
     <h2>Elérhetőségeid</h2>
     <div id="c-osszegzes"></div>
     <div id="c-kuld-hiba"></div>
