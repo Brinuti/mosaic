@@ -21,8 +21,9 @@
   MOSAIC sminktetovalas landing - asztali nezet a jovahagyott 4 kepes terv szerint
   (1. Hero -> idopontok -> helyzetek -> eredmenyek, 2. Arak -> mu hatas -> menet -> gyogyulas,
    3. Melitta -> velemenyek -> mielott foglalsz -> GYIK, 4. foglalo -> helyszin -> lablec).
-  A szekciok sorrendje, a CTA-hierarchia (foglalas > konzultacio > visszahivas) es a foglalo
-  logikaja (NEM: commitment -> naptar, IGEN: foto -> nincs naptar) a terv resze, ne valtoztasd.
+  A szekciok sorrendje es a CTA-hierarchia (foglalas > konzultacio > visszahivas) a terv resze,
+  ne valtoztasd. A foglalo a megtervezett /foglalo-pmu folyamat beagyazva (lasd pmu-landing.js);
+  visszahivas es fotokuldes csak azon belul van (nincs kulon visszahivas-urlap).
   A [szogletes zarojeles] szovegek validalasra varo helyorzok - ne talalj ki helyettuk adatot.
 -->
 
@@ -52,10 +53,10 @@
           <span><b>Töreki Melitta</b><small>PMU stylist és oktató · 5 év tapasztalat</small>
           <span class="dij-sor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 01-10 0zM7 6H4a3 3 0 003 4M17 6h3a3 3 0 01-3 4M12 14v4M8 21h8M9 18h6"/></svg>WULOP Milano 2025 – Eyebrow Shading <b>3. hely</b></span></span>
         </div>
-        <a class="gomb gomb-sotet gomb-nagy" href="#foglalas" data-cta="hero-foglalas">Szabad időpontokat nézek <span class="nyil">→</span></a>
+        <a class="gomb gomb-sotet gomb-nagy" href="#foglalas" data-foglalo="lepes=szolg" data-cta="hero-foglalas">Szabad időpontokat nézek <span class="nyil">→</span></a>
         <div class="masodlagos">
           <a class="gomb gomb-korvonal" href="/foglalo-pmu?kezeles=konzultacio" data-cta="hero-konzultacio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Ingyenes konzultációt kérek</a>
-          <button type="button" class="link-gomb" data-visszahivas="hero" data-cta="hero-visszahivas">Visszahívást kérek <span class="nyil">→</span></button>
+          <button type="button" class="link-gomb" data-foglalo="lepes=visszahivas" data-cta="hero-visszahivas">Visszahívást kérek <span class="nyil">→</span></button>
         </div>
         <div class="bizalom">
           <a class="google" href="#velemenyek" data-cta="hero-google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg><span class="g-ertek">Google 5,0</span> <span class="csillagok" aria-hidden="true">★★★★★</span> <span class="g-db">Melitta értékelései</span> <span class="nyil">→</span></a>
@@ -84,7 +85,7 @@
       <div class="nap-kartya csontvaz"></div><div class="nap-kartya csontvaz"></div><div class="nap-kartya csontvaz"></div>
     </div>
   </div>
-  <div class="kozepre"><a class="gomb gomb-korvonal gomb-szeles" href="#foglalas" data-cta="idopontok-mind">Minden időpont megnézése <span class="nyil">→</span></a></div>
+  <div class="kozepre"><a class="gomb gomb-korvonal gomb-szeles" href="#foglalas" data-foglalo="lepes=szolg" data-cta="idopontok-mind">Minden időpont megnézése <span class="nyil">→</span></a></div>
 </section>
 
 <!-- ============ 1c. MELYIK HELYZET IGAZ RAD? ============ -->
@@ -99,7 +100,7 @@
           <p class="helyzet-terulet">Szemöldök</p>
           <h3>Ez lenne az első szemöldöktetoválásom</h3>
           <p>Szeretnék természetes, hozzám illő eredményt, és nem tudom, pontosan mire számítsak.</p>
-          <a class="gomb gomb-sotet gomb-kicsi" href="#foglalas" data-elozmeny="nem" data-terulet="szemoldok" data-cta="helyzet-elso">Ez vagyok <span class="nyil">→</span></a>
+          <a class="gomb gomb-sotet gomb-kicsi" href="#foglalas" data-foglalo="lepes=szolg" data-cta="helyzet-elso">Ez vagyok <span class="nyil">→</span></a>
         </div>
       </article>
       <article class="helyzet">
@@ -108,7 +109,7 @@
           <p class="helyzet-terulet">Szemöldök vagy ajak</p>
           <h3>Van már sminktetoválásom</h3>
           <p class="figyelmeztet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 16.5v.5"/></svg>Ha régebbi sminktetoválásod van, kérlek ne foglalj időpontot azonnal, előbb küldj egy fotót, hogy segíthessünk a számodra megfelelő megoldással.</p>
-          <a class="gomb gomb-sotet gomb-kicsi" href="#foglalas" data-elozmeny="igen" data-cta="helyzet-regi">Fotót küldök <span class="nyil">→</span></a>
+          <a class="gomb gomb-sotet gomb-kicsi" href="#foglalas" data-foglalo="lepes=foto" data-cta="helyzet-regi">Fotót küldök <span class="nyil">→</span></a>
         </div>
       </article>
       <article class="helyzet">
@@ -185,27 +186,27 @@
       <article class="ar-kartya">
         <img src="/assets/img/c2eb0f_e6bcf204c9164857a3c5ae2ed41b71c7.jpg" alt="Szemöldöktetoválás – Soft Powder" loading="lazy">
         <div><h3>Szemöldök – Soft Powder</h3><p class="ar">79 000 Ft-tól</p><p>Természetes, lágy hatás, finom satírozással.</p>
-        <a class="gomb gomb-bezs" href="#foglalas" data-terulet="szemoldok" data-cta="ar-szemoldok-powder">Részletek</a></div>
+        <a class="gomb gomb-bezs" href="#foglalas" data-foglalo="kezeles=szemoldok-powder" data-cta="ar-szemoldok-powder">Részletek</a></div>
       </article>
       <article class="ar-kartya">
         <img src="/assets/img/c2eb0f_5b48311124f64d42a66b29ce2c4bef95.jpg" alt="Szemöldöktetoválás – Hibrid" loading="lazy">
         <div><h3>Szemöldök – Hibrid</h3><p class="ar helyorzo">[ár helye]</p><p>Természetes szálhatás és lágy satír kombinációja.</p>
-        <a class="gomb gomb-bezs" href="#foglalas" data-terulet="szemoldok" data-cta="ar-szemoldok-hibrid">Részletek</a></div>
+        <a class="gomb gomb-bezs" href="#foglalas" data-foglalo="kezeles=szemoldok-hibrid" data-cta="ar-szemoldok-hibrid">Részletek</a></div>
       </article>
       <article class="ar-kartya">
         <img src="/assets/img/c2eb0f_014b63526bc644c7a234475fb367a963.jpg" alt="Ajaktetoválás" loading="lazy">
         <div><h3>Ajak</h3><p class="ar helyorzo">[ár helye]</p><p>Természetes színt és formát ad, finom kontúrral.</p>
-        <a class="gomb gomb-bezs" href="#foglalas" data-terulet="ajak" data-cta="ar-ajak">Részletek</a></div>
+        <a class="gomb gomb-bezs" href="#foglalas" data-foglalo="lepes=szolg" data-cta="ar-ajak">Részletek</a></div>
       </article>
       <article class="ar-kartya">
         <img src="/assets/img/c2eb0f_89cc6bf1793c48f193ce38d64d87e940.jpg" alt="Szemhéjtetoválás" loading="lazy">
         <div><h3>Szemhéj</h3><p class="ar helyorzo">[ár helye]</p><p>Diszkrét, természetes hatású szemhéjtetoválás.</p>
-        <a class="gomb gomb-bezs" href="#foglalas" data-terulet="szemhej" data-cta="ar-szemhej">Részletek</a></div>
+        <a class="gomb gomb-bezs" href="#foglalas" data-foglalo="kezeles=szemhej" data-cta="ar-szemhej">Részletek</a></div>
       </article>
       <article class="ar-kartya">
         <img src="/assets/img/c2eb0f_7fffb1321a074ed4947397f3f63ec834.jpg" alt="Sminktetoválás frissítése" loading="lazy">
         <div><h3>Frissítés 1–3 év után</h3><p class="ar helyorzo">[ár / szabály helye]</p><p>Az egyéni állapottól függően.</p>
-        <a class="gomb gomb-bezs" href="#foglalas" data-terulet="frissites" data-cta="ar-frissites">Részletek</a></div>
+        <a class="gomb gomb-bezs" href="#foglalas" data-foglalo="lepes=foto" data-cta="ar-frissites">Részletek</a></div>
       </article>
     </div>
     <div class="eloleg">
@@ -341,7 +342,7 @@
       </div>
       <div class="mielott-jobb">
         <div class="sor"><span class="ikon-sotet"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4M8 14h2M12 14h2M16 14h0M8 17h2M12 17h2"/></svg></span>
-          <div><h3>Ha közbejön valami</h3><p>Az időpont módosítása egyszerűen megoldható.</p><button type="button" class="gomb gomb-sotet gomb-kicsi" data-visszahivas="modositas" data-cta="mielott-modositas">Időpont módosítása <span class="nyil">→</span></button></div></div>
+          <div><h3>Ha közbejön valami</h3><p>Az időpont módosítása egyszerűen megoldható.</p><button type="button" class="gomb gomb-sotet gomb-kicsi" data-foglalo="lepes=visszahivas" data-cta="mielott-modositas">Időpont módosítása <span class="nyil">→</span></button></div></div>
         <hr>
         <div class="sor"><svg class="ora" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
           <div><h3>Olyan időpontot válassz,<br>amikor tényleg ráérsz 2–2,5 órát.</h3><p>Így nyugodtan, kapkodás nélkül tudunk dolgozni.</p></div></div>
@@ -372,7 +373,7 @@
         <details><summary>Mi van, ha már van sminktetoválásom?</summary><p>Ilyenkor nem foglalunk rögtön kezelést: előbb küldj néhány jól látható, természetes fényben készült fotót a jelenlegi sminktetoválásodról. Melitta megnézi, hogyan lehet biztonságosan továbbmenni, és ez alapján javasol kezelést.</p></details>
         <details><summary>Mire kell figyelnem előtte?</summary><p>A korábbi tetoválást, a gyógyszereket, az ellenjavallatokat és ajaktetoválásnál a herpeszhajlamot is előre átbeszéljük.</p><p class="helyorzo" data-helyorzo="egeszsegugyi-lista">[A kezelés előtti teendők és kizáró okok végleges listája Melitta jóváhagyása után.]</p></details>
         <details><summary>Mennyi idővel esemény / nyaralás előtt érdemes jönni?</summary><p>Számolj a gyógyulással és a korrekcióval is: a gyógyult eredményt általában 4–6 hét után lehet megítélni, a korrekció pedig 4–7 hét múlva következik.</p></details>
-        <details><summary>Hogyan módosíthatom az időpontomat?</summary><p>Az időpont módosítása egyszerűen megoldható: <button type="button" class="link-gomb" data-visszahivas="modositas">kérj visszahívást</button>, és egyeztetünk egy új időpontot.</p></details>
+        <details><summary>Hogyan módosíthatom az időpontomat?</summary><p>Az időpont módosítása egyszerűen megoldható: <button type="button" class="link-gomb" data-foglalo="lepes=visszahivas">kérj visszahívást</button>, és egyeztetünk egy új időpontot.</p></details>
       </div>
     </div>
   </div>
@@ -391,86 +392,15 @@
       <p class="kezirat-szurke"><svg viewBox="0 0 120 70" aria-hidden="true"><path d="M116 8C80 4 40 14 18 56M18 56l-2-16M18 56l14-8"/></svg>Egyszerű foglalás,<br>biztonságos és átlátható folyamat.</p>
     </div>
 
-    <div class="fogl-racs" data-elozmeny="">
-      <!-- 1. Mit szeretnel? -->
-      <div class="fogl-panel" id="fogl-1">
-        <h3><span class="lepesszam">1</span>Mit szeretnél?</h3>
-        <div class="terulet-lista" role="radiogroup" aria-label="Kezelési terület">
-          <label class="terulet"><input type="radio" name="terulet" value="szemoldok" checked><span class="radio" aria-hidden="true"></span><img src="/assets/img/c2eb0f_e6bcf204c9164857a3c5ae2ed41b71c7.jpg" alt=""><span class="nev">Szemöldök</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></label>
-          <label class="terulet"><input type="radio" name="terulet" value="ajak"><span class="radio" aria-hidden="true"></span><img src="/assets/img/c2eb0f_014b63526bc644c7a234475fb367a963.jpg" alt=""><span class="nev">Ajak</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></label>
-          <label class="terulet"><input type="radio" name="terulet" value="szemhej"><span class="radio" aria-hidden="true"></span><img src="/assets/img/c2eb0f_89cc6bf1793c48f193ce38d64d87e940.jpg" alt=""><span class="nev">Szemhéj</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></label>
-          <label class="terulet"><input type="radio" name="terulet" value="frissites"><span class="radio" aria-hidden="true"></span><img src="/assets/img/c2eb0f_7fffb1321a074ed4947397f3f63ec834.jpg" alt=""><span class="nev">Frissítés</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></label>
-        </div>
+    <div class="fogl-racs">
+      <!-- a megtervezett foglalasi folyamat (/foglalo-pmu) beagyazva: kezeles -> idopont -> kerdes -> adatok,
+           regi PMU -> foto, bizonytalan -> 10 perces visszahivas -->
+      <div class="foglalo-keret" id="foglalo-keret">
+        <iframe id="foglalo" src="/foglalo-pmu?beagyazva=1" title="Sminktetoválás időpontfoglalás" loading="lazy"></iframe>
       </div>
-
-      <!-- 2. Volt mar PMU-d? NEM -> commitment -> naptar | IGEN -> foto (nincs naptar) -->
-      <div class="fogl-panel" id="fogl-2">
-        <h3><span class="lepesszam">2</span>Volt már PMU-d ezen a területen?</h3>
-        <div class="igen-nem" role="radiogroup" aria-label="Volt már PMU-d ezen a területen?">
-          <button type="button" role="radio" aria-checked="false" data-valasz="nem">Nem</button>
-          <button type="button" role="radio" aria-checked="false" data-valasz="igen">Igen</button>
-        </div>
-        <div class="ag-nem" data-ag="nem" hidden>
-          <svg class="le-nyil" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M6 13l6 6 6-6"/></svg>
-          <div class="megerosites">
-            <p class="megerosites-cim">Rendben, mutatjuk a szabad időpontokat.</p>
-            <label><input type="checkbox" name="tudom"><span class="pipa" aria-hidden="true"></span>Tudom, hogy a kezelés 2–2,5 óra.</label>
-            <label><input type="checkbox" name="tudom"><span class="pipa" aria-hidden="true"></span>Tudom, hogy 4–7 hét múlva korrekció következik.</label>
-            <label><input type="checkbox" name="tudom"><span class="pipa" aria-hidden="true"></span>Olyan napot választok, amikor nem sietek.</label>
-          </div>
-          <p class="felcim kicsi">Következő szabad időpontok</p>
-          <div class="fogl-slotok" id="fogl-slotok" aria-live="polite"></div>
-          <p class="fogl-uzenet" id="fogl-uzenet" role="alert" hidden></p>
-          <a class="gomb gomb-sotet gomb-szeles" id="teljes-naptar" href="/foglalo-pmu" data-cta="foglalo-teljes-naptar">Teljes naptár <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
-        </div>
-        <div class="ag-igen-info" data-ag="igen" hidden>
-          <svg class="le-nyil" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M6 13l6 6 6-6"/></svg>
-          <div class="megerosites">
-            <p class="megerosites-cim">Régi sminktetoválásnál nem foglalunk rögtön kezelést.</p>
-            <p>Előbb fotót kérünk, Melitta szakmailag megnézi, és utána javasolja a következő lépést. Ehhez nem kell naptár – a fotót a jobb oldalon tudod feltölteni.</p>
-          </div>
-        </div>
-        <p class="ag-alap halk" data-ag="" >Válaszd ki, hogy volt-e már sminktetoválásod ezen a területen – ez alapján mutatjuk a következő lépést.</p>
-      </div>
-
-      <!-- IGEN ag: foto -->
-      <div class="fogl-panel fogl-foto" id="fogl-3">
-        <p class="sav-cim">Ha igen-t választasz</p>
-        <div class="foto-doboz">
-          <div class="foto-fej"><span class="kamera" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span><h3>Van már PMU&#8209;d?<br>Először fotóra<br>van szükségünk.</h3></div>
-          <p>Tölts fel néhány jól látható, természetes fényben készült fotót a jelenlegi sminktetoválásodról.</p>
-          <div class="foto-urlap" id="foto-urlap" hidden>
-            <div class="foto-racs" id="foto-racs"></div>
-            <label class="foto-zona"><input type="file" id="foto-input" accept="image/*" multiple><span>+ Fotó hozzáadása</span></label>
-            <label class="mezo">Neved<input id="f-nev" autocomplete="name" required></label>
-            <label class="mezo">Telefonszámod<input id="f-telefon" type="tel" autocomplete="tel" required></label>
-            <label class="mezo">E-mail címed<input id="f-email" type="email" autocomplete="email" required></label>
-            <label class="hozzajarul"><input type="checkbox" id="f-hozzajarul"><span>Hozzájárulok, hogy a fotóimat a kezelési javaslathoz megnézzétek (<a href="/suti-tajekoztato" target="_blank">adatkezelés</a>).</span></label>
-            <p class="fogl-uzenet" id="foto-hiba" role="alert" hidden></p>
-          </div>
-          <button type="button" class="gomb gomb-sotet gomb-szeles" id="foto-gomb" data-cta="foglalo-foto">Fotó feltöltése <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg></button>
-          <div class="foto-kesz" id="foto-kesz" hidden><b>Megkaptuk a fotóidat!</b> Melitta megnézi őket, és hamarosan jelentkezünk a javaslatával.</div>
-          <div class="melitta-sor"><span class="avatar kicsi" aria-hidden="true"></span><p>Melitta megnézi, hogyan lehet biztonságosan továbbmenni.</p></div>
-        </div>
-      </div>
-
       <aside class="fogl-portre" aria-hidden="true">
-        <p class="kezirat-feher">Személyre szabott<br>szépség, természetesen.</p>
         <p class="portre-nev">Töreki Melitta<small>PMU stylist és oktató</small></p>
       </aside>
-    </div>
-
-    <!-- foglalas veglegesitese: a Salonic adatlapja (mint a /foglalo-pmu oldalon) -->
-    <div class="veglegesites" id="veglegesites" hidden>
-      <div class="vegl-fej">
-        <div><p class="felcim kicsi">Foglalás véglegesítése</p><p class="vegl-osszegzes" id="vegl-osszegzes"></p></div>
-        <button type="button" class="link-gomb" id="vegl-vissza">Másik időpont</button>
-      </div>
-      <div class="salonic-keret">
-        <div class="betolt" id="salonic-betolt">Foglalási űrlap betöltése…</div>
-        <iframe id="salonic" title="Foglalás véglegesítése"></iframe>
-      </div>
-      <p class="halk kicsi">Nem jelenik meg az űrlap? <a id="salonic-link" href="#" target="_top">Nyisd meg itt</a>.</p>
     </div>
   </div>
 </section>
@@ -502,45 +432,12 @@
 
 </main>
 
-<footer class="lablec">
-  <div class="tartalom lablec-sor">
-    <svg class="lablec-level" viewBox="0 0 140 120" aria-hidden="true"><path d="M10 116C40 80 70 50 130 8M40 82c-14-16-12-34 2-42 6 16 4 30-2 42zM70 56c-8-18 0-34 16-38 0 18-6 30-16 38zM98 34c0-16 10-26 26-26-4 14-12 22-26 26zM52 70c18-4 32 2 40 16-16 4-30-2-40-16z"/></svg>
-    <a class="logo logo-feher" href="#top"><span class="logo-nev">MOSAIC</span><span class="logo-al">Beauty Studio</span></a>
-    <span class="lablec-elv"></span>
-    <p>Sminktetoválás<br>1023 Budapest, Bécsi út 2.</p>
-    <span class="lablec-elv"></span>
-    <p class="lablec-tel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/></svg><span class="helyorzo" data-helyorzo="telefonszam">[TELEFONSZÁM HELYE]</span></p>
-    <nav class="lablec-linkek" aria-label="Jogi információk"><a href="/suti-tajekoztato">Adatkezelés</a><a href="/aszf">ÁSZF</a><a href="/impresszum">Impresszum</a></nav>
-    <span class="kozosseg">
-      <span class="helyorzo-ikon" data-helyorzo="instagram-link" title="[Instagram-link helye]" aria-label="Instagram (link helye)"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4.5"/><circle cx="12" cy="12" r="3.6"/><circle cx="16.6" cy="7.4" r=".6"/></svg></span>
-      <span class="helyorzo-ikon" data-helyorzo="facebook-link" title="[Facebook-link helye]" aria-label="Facebook (link helye)"><svg viewBox="0 0 24 24"><path d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4a21 21 0 00-2.3-.1c-2.3 0-3.9 1.4-3.9 4v2.2H7.8v3h2.6V21"/></svg></span>
-    </span>
-  </div>
-</footer>
-
-<!-- visszahivas (harmadlagos CTA) -->
-<dialog class="visszahivas" id="visszahivas" aria-labelledby="vh-cim">
-  <form method="dialog" class="vh-urlap" id="vh-urlap" novalidate>
-    <button type="submit" class="vh-zar" value="megse" aria-label="Bezárás">×</button>
-    <h2 id="vh-cim">Visszahívást kérek</h2>
-    <p class="halk" id="vh-leiras">Add meg a neved és a telefonszámod, és hamarosan visszahívunk.</p>
-    <label class="mezo">Neved<input id="vh-nev" autocomplete="name"></label>
-    <label class="mezo">Telefonszámod<input id="vh-telefon" type="tel" autocomplete="tel"></label>
-    <label class="mezo">Miben segíthetünk? <small>(nem kötelező)</small><textarea id="vh-megjegyzes" rows="2"></textarea></label>
-    <p class="fogl-uzenet" id="vh-hiba" role="alert" hidden></p>
-    <button type="button" class="gomb gomb-sotet gomb-szeles" id="vh-kuld">Visszahívást kérek</button>
-    <p class="vh-kesz" id="vh-kesz" hidden><b>Köszönjük!</b> Hamarosan hívunk.</p>
-  </form>
-</dialog>
+<!--mh-lablec-->
 
 <dialog class="video-ablak" id="video-ablak" aria-label="Videó: hogyan dolgozom">
   <form method="dialog"><button type="submit" class="vh-zar" aria-label="Bezárás">×</button></form>
   <div class="video-keret" id="video-keret"></div>
 </dialog>
-
-<!-- Netlify-urlapok (a build ezekbol ismeri fel a mezoket; a JS kuldi be oket) -->
-<form name="pmu-foto" data-netlify="true" netlify-honeypot="bot-field" enctype="multipart/form-data" hidden><input name="bot-field"><input name="terulet"><input name="nev"><input name="telefon"><input name="email"><input name="oldal"><input type="file" name="foto1"><input type="file" name="foto2"><input type="file" name="foto3"><input type="file" name="foto4"><input type="file" name="foto5"></form>
-<form name="pmu-visszahivas" data-netlify="true" netlify-honeypot="bot-field" hidden><input name="bot-field"><input name="nev"><input name="telefon"><input name="szolgaltatas"><input name="volt_mar_tetovalasa"><input name="megjegyzes"><input name="oldal"></form>
 
 <script src="/assets/js/klon.js" defer></script>
 <script src="/assets/js/pmu-landing.js" defer></script>

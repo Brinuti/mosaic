@@ -145,9 +145,12 @@ mellett, saját címen, `noindex`). Fájlok: `foglalas/pmu-sminktetovalas.html`,
 `assets/css/pmu-landing.css`, `assets/js/pmu-landing.js` (a `foglalas/` oldalait a build az
 asztali és a mobil mappába is bemásolja).
 
-- **Foglaló** (4. rész): terület → „Volt már PMU-d?” → **NEM**: 3 megerősítés (2–2,5 óra,
-  4–7 hét korrekció, ne siess) → élő szabad időpontok (Salonic API) → a Salonic adatlapja
-  beágyazva; **IGEN**: fotófeltöltés (`pmu-foto` Netlify-űrlap, e-mail a szalonnak), naptár nincs.
+- **Foglaló** (4. rész): a megtervezett foglalási folyamat (`/foglalo-pmu?beagyazva=1`) keretben
+  (kezelés → időpont → kérdés → adatok; régi PMU → fotó; bizonytalan → 10 perces visszahívás).
+  A keret magasságát a beágyazott oldal jelzi (`postMessage`). A landing gombjai (`data-foglalo`)
+  a folyamat adott lépését nyitják meg: `lepes=szolg`, `lepes=foto`, `lepes=visszahivas`,
+  `kezeles=<kulcsszó>`. Beágyazva a beküldések `oldal` mezője `pmu-sminktetovalas`, a levél
+  tárgyából ilyenkor elmarad a `[PRÓBA]`.
 - A legközelebbi időpontok és a kezelések a Salonicból jönnek, mint a `/foglalo-pmu` oldalon.
 - **Helyőrzők** (`data-helyorzo` / `.helyorzo`, szögletes zárójelben): hiányzó árak, valódi PMU
   Google-vélemények, egészségügyi kizárólista, parkolás, tömegközlekedés, telefonszám,
@@ -157,9 +160,11 @@ asztali és a mobil mappába is bemásolja).
   `tools/fejlec-kivonat.mjs` a klónból emeli ki (HTML + a hozzá tartozó CSS) az
   `assets/fejlec/asztali.html` és `mobil.html` fájlba; a build a `<!--mh-fejlec-->` jelölő helyére
   teszi (az `_a/`-ba az asztalit, az `_m/`-be a mobilt). Ha a klón fejléce változik, futtasd újra.
+- **Lábléc:** ugyanígy a MOSAIC oldal lábléce (`assets/fejlec/lablec-asztali.html`,
+  `lablec-mobil.html`, `<!--mh-lablec-->` jelölő), ugyanazzal a scripttel.
 - Képek: `assets/img/pmu/` (Melitta referenciái a Drive-ról), videó: Google Drive-beágyazás
-  kattintásra; vélemények: a nyitóoldal Trustindex-widgetje (funkcionális hozzájárulással), a
-  pontos értékelést és véleményszámot a betöltött widgetből írja ki a hero Google-gombjára.
+  kattintásra; vélemények: Melitta saját Google-véleményei kártyákon (statikusan), link a
+  Google-találatra.
 
 ### 1.6 Videók
 

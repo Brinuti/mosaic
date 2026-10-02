@@ -13,6 +13,9 @@
 // A Wix-szuloelemek (masterPage stb.) display:contents burkolokent maradnak meg, igy a rajuk
 // epulo szelektorok is mukodnek, de elrendezest nem adnak (a sticky fejlec a <body>-hoz tapad).
 //
+// Ugyanigy a lablecet (#SITE_FOOTER) is: assets/fejlec/lablec-asztali.html, lablec-mobil.html
+// (<!--mh-lablec--> jelolo, #mh-lablec burok).
+//
 // Eredmeny: assets/fejlec/asztali.html es assets/fejlec/mobil.html. Ezeket a
 // tools/netlify-build.mjs szurja be a <!--mh-fejlec--> jelolo helyere (az _a/ mappaba az
 // asztalit, az _m/ mappaba a mobilt). A muködest (legordulo, mobil menu, "i" felugro ablak)
@@ -37,10 +40,10 @@ const szerver = spawn(process.execPath, [path.join(ROOT, 'tools/serve-klon.mjs')
 await new Promise((ok) => setTimeout(ok, 700));
 
 // a bongeszoben fut: kiemeli a fejlecet es a hozza tartozo CSS-t
-function kiemel(allapotOsztalyok) {
-  const fejlec = document.getElementById('SITE_HEADER');
+function kiemel({ allapotOsztalyok, gyokerId, kiegeszitok, burokId }) {
+  const fejlec = document.getElementById(gyokerId);
   // mobilon a lenyilo menu (es a fatyla) a fejlecen kivul lehet
-  const tobbi = ['MENU_AS_CONTAINER', 'overlay-MENU_AS_CONTAINER', 'MENU_AS_CONTAINER_EXPANDABLE_MENU']
+  const tobbi = kiegeszitok
     .map((id) => document.getElementById(id)).filter((e) => e && !fejlec.contains(e));
   const gyokerek = [fejlec, ...tobbi.filter((e) => !tobbi.some((m) => m !== e && m.contains(e)))];
   const fa = new Set();
@@ -91,7 +94,7 @@ function kiemel(allapotOsztalyok) {
         } else if (/^(:root|html|body)\b/.test(s)) {
           for (let i = 0; i < r.style.length; i++) { const p = r.style[i]; if (p.startsWith('--')) valtozok[p] = r.style.getPropertyValue(p).trim(); }
         } else if (illik(s)) {
-          megtart.push(':where(#mh-fejlec) ' + s);
+          megtart.push(':where(#' + burokId + ') ' + s);
         }
       }
       if (!megtart.length) return '';
@@ -150,28 +153,37 @@ function cimek(html) {
 // a klon.js-ben classList.toggle/add-dal allitott osztalyok: ezek szabalyai is kellenek
 const ALLAPOT = [...new Set([...fs.readFileSync(path.join(ROOT, 'assets/js/klon.js'), 'utf8')
   .matchAll(/classList\.(?:toggle|add)\('([\w-]+)'/g)].map((m) => m[1]))];
+// fejlec: SITE_HEADER (+ mobilon a menu-kontener), lablec: SITE_FOOTER
+const RESZEK = [
+  { nev: 'fejlec', gyokerId: 'SITE_HEADER', burokId: 'mh-fejlec', fajl: (n) => n, popup: true,
+    kiegeszitok: ['MENU_AS_CONTAINER', 'overlay-MENU_AS_CONTAINER', 'MENU_AS_CONTAINER_EXPANDABLE_MENU'] },
+  { nev: 'lablec', gyokerId: 'SITE_FOOTER', burokId: 'mh-lablec', fajl: (n) => 'lablec-' + n, popup: false, kiegeszitok: [] },
+];
 const bongeszo = await playwright.chromium.launch();
 for (const [nev, ua, ut] of [['asztali', undefined, `/${MINTA}.html`], ['mobil', UA_MOBIL, `/m/${MINTA}.html`]]) {
   const lap = await bongeszo.newPage({ viewport: nev === 'mobil' ? { width: 390, height: 844 } : { width: 1440, height: 900 }, userAgent: ua, isMobile: nev === 'mobil' });
   await lap.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
   await lap.goto(`http://localhost:${PORT}${ut}`, { waitUntil: 'load' });
-  const k = await lap.evaluate(kiemel, ALLAPOT);
-  const nyit = k.burok.map((b) => `<${b.tag}${b.id ? ` id="${b.id}"` : ''}${b.cls ? ` class="${b.cls}"` : ''} style="display:contents">`).join('');
-  const zar = k.burok.map((b) => `</${b.tag}>`).reverse().join('');
-  const popup = fs.readFileSync(path.join(ROOT, nev === 'mobil' ? 'assets/popup/info-mobil.html' : 'assets/popup/info.html'), 'utf8').trim();
-  const ki = [
-    `<!-- A MOSAIC oldal fejlece (${nev}), a klon ${MINTA} oldalabol - generalta: tools/fejlec-kivonat.mjs -->`,
-    `<style data-forras="fejlec">#mh-fejlec{display:contents;${k.valtozok};${k.orokolt}}${k.css}</style>`,
-    `<div id="mh-fejlec" class="${k.gyokerOsztaly}">${nyit}`,
-    cimek(k.html),
-    `${zar}</div>`,
-    `<template id="mh-popup-rk7x7">\n${popup}\n</template>`,
-    // a Wix mobil fejlece 320 px szeles elrendezes: a klon oldalain a viewport nagyitja fel a
-    // kepernyo szelessegere, itt (device-width viewport mellett) a fejlecet nagyitjuk ugyanennyire
-    ...(nev === 'mobil' ? [`<script>(function(){function z(){var n=document.documentElement.clientWidth/320;for(var i of ${JSON.stringify(k.gyokerIdk)}){var e=document.getElementById(i);if(e)e.style.zoom=n}}z();addEventListener('resize',z)})()</script>`] : []),
-  ].join('\n') + '\n';
-  fs.writeFileSync(path.join(KI, nev + '.html'), ki);
-  console.log(`assets/fejlec/${nev}.html  ${(ki.length / 1024).toFixed(0)} kB (CSS ${(k.css.length / 1024).toFixed(0)} kB)`);
+  for (const resz of RESZEK) {
+    const k = await lap.evaluate(kiemel, { allapotOsztalyok: ALLAPOT, gyokerId: resz.gyokerId, kiegeszitok: resz.kiegeszitok, burokId: resz.burokId });
+    const nyit = k.burok.map((b) => `<${b.tag}${b.id ? ` id="${b.id}"` : ''}${b.cls ? ` class="${b.cls}"` : ''} style="display:contents">`).join('');
+    const zar = k.burok.map((b) => `</${b.tag}>`).reverse().join('');
+    const popup = resz.popup ? fs.readFileSync(path.join(ROOT, nev === 'mobil' ? 'assets/popup/info-mobil.html' : 'assets/popup/info.html'), 'utf8').trim() : '';
+    const ki = [
+      `<!-- A MOSAIC oldal ${resz.nev}e (${nev}), a klon ${MINTA} oldalabol - generalta: tools/fejlec-kivonat.mjs -->`,
+      `<style data-forras="${resz.nev}">#${resz.burokId}{display:contents;${k.valtozok};${k.orokolt}}${k.css}</style>`,
+      `<div id="${resz.burokId}" class="${k.gyokerOsztaly}">${nyit}`,
+      cimek(k.html),
+      `${zar}</div>`,
+      ...(popup ? [`<template id="mh-popup-rk7x7">\n${popup}\n</template>`] : []),
+      // a Wix mobil fejlece 320 px szeles elrendezes: a klon oldalain a viewport nagyitja fel a
+      // kepernyo szelessegere, itt (device-width viewport mellett) a reszt nagyitjuk ugyanennyire
+      ...(nev === 'mobil' ? [`<script>(function(){function z(){var n=document.documentElement.clientWidth/320;for(var i of ${JSON.stringify(k.gyokerIdk)}){var e=document.getElementById(i);if(e)e.style.zoom=n}}z();addEventListener('resize',z)})()</script>`] : []),
+    ].join('\n') + '\n';
+    const fajl = resz.fajl(nev) + '.html';
+    fs.writeFileSync(path.join(KI, fajl), ki);
+    console.log(`assets/fejlec/${fajl}  ${(ki.length / 1024).toFixed(0)} kB (CSS ${(k.css.length / 1024).toFixed(0)} kB)`);
+  }
   await lap.close();
 }
 await bongeszo.close();

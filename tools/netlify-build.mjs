@@ -39,12 +39,14 @@ fs.cpSync(path.join(ROOT, 'klon', 'm'), LAP_M, { recursive: true });
 // fajl, ugyanaz megy az asztali es a mobil mappaba is. Linket nem kapnak, noindex-esek.
 // A <!--mh-fejlec--> jelolo helyere a MOSAIC oldal fejlece kerul (tools/fejlec-kivonat.mjs):
 // az asztali mappaba az asztali, a mobilba a mobil valtozat - pontosan ugyanaz, mint a tobbi oldalon.
+// Ugyanigy a <!--mh-lablec--> helyere a MOSAIC lablece.
 const FEJLEC = { [LAP_A]: 'asztali', [LAP_M]: 'mobil' };
 for (const f of fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.endsWith('.html'))) {
   const forras = fs.readFileSync(path.join(ROOT, 'foglalas', f), 'utf8');
   for (const m of [LAP_A, LAP_M]) {
-    const fejlec = forras.includes('<!--mh-fejlec-->') ? fs.readFileSync(path.join(ROOT, 'assets/fejlec', FEJLEC[m] + '.html'), 'utf8') : '';
-    fs.writeFileSync(path.join(m, f), forras.replace('<!--mh-fejlec-->', () => fejlec));
+    const resz = (jel, fajl) => forras.includes(jel) ? fs.readFileSync(path.join(ROOT, 'assets/fejlec', fajl + '.html'), 'utf8') : '';
+    const fejlec = resz('<!--mh-fejlec-->', FEJLEC[m]), lablec = resz('<!--mh-lablec-->', 'lablec-' + FEJLEC[m]);
+    fs.writeFileSync(path.join(m, f), forras.replace('<!--mh-fejlec-->', () => fejlec).replace('<!--mh-lablec-->', () => lablec));
   }
 }
 // a nyitooldal a /_a/fooldal, /_m/fooldal fajlbol jon (lasd netlify/lib/utvonal.js)
