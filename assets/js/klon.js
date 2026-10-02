@@ -105,6 +105,8 @@
 
   // az eles mobil oldal nem inditja el a lejatszot, ezert ott mi sem tesszuk
   const mobilOldal = !!document.getElementById('wixMobileViewport');
+  // mobilon a kisebb (max. 1000 px szeles) kepvaltozatok: assets/img/m/ (tools/mobil-kepek.py + build)
+  const KEPEK = GYOKER + (mobilOldal ? 'assets/img/m/' : 'assets/img/');
 
   for (const [azon, fajl] of (mobilOldal ? [] : Object.entries(VIDEOK))) {
     const gazda = document.getElementById(azon);
@@ -329,7 +331,7 @@
     if (mod === 'auto' && !mobilOldal) {
       const v = document.createElement('video');
       v.src = GYOKER + 'assets/video/' + azonosito + '.mp4';
-      v.poster = GYOKER + 'assets/img/' + azonosito + kocka + '.jpg';
+      v.poster = KEPEK + azonosito + kocka + '.jpg';
       v.autoplay = v.loop = v.muted = v.playsInline = true;
       v.setAttribute('playsinline', 'true');
       v.style.cssText = 'display:block;width:100%;height:100%;object-fit:cover';
@@ -340,9 +342,11 @@
     const tarto = document.createElement('div');
     tarto.className = 'mh-video';
     const kep = document.createElement('img');
-    kep.src = GYOKER + 'assets/img/' + azonosito + kocka + '.jpg';
+    kep.src = KEPEK + azonosito + kocka + '.jpg';
     kep.alt = '';
-    kep.loading = 'lazy';
+    // a kepernyon levo poszter (pl. a mobil hero) a legnagyobb tartalmi elem: azonnal toltodjon
+    if (doboz.getBoundingClientRect().top < innerHeight) kep.fetchPriority = 'high';
+    else kep.loading = 'lazy';
     const gomb = lejatszoGomb();
     tarto.append(kep, gomb);
     tarto.addEventListener('click', () => tarto.replaceChildren(videoElem(azonosito)), { once: true });
@@ -373,7 +377,7 @@
     ['c2eb0f_85f266a4010d40aba40c28ee4af9230e', 'Rózsakvarc arcmasszírozás', '00:26'],
     ['c2eb0f_4b543396abd34dcc92dfe594049c8a78', 'Személyre kikevert arcpakolás', '00:19'],
   ];
-  const posztere = (id) => GYOKER + 'assets/img/' + id + 'f002.jpg';
+  const posztere = (id) => KEPEK + id + 'f002.jpg';
 
   let mostSzol = null;
   const helybenJatszik = (elem, id) => {
@@ -813,7 +817,7 @@
       dia.style.cssText = 'flex:0 0 100%;height:100%';
       const img = document.createElement('img');
       // csak a lathato es a szomszedos dia toltodik be (betolt), a tobbi lapozaskor
-      img.dataset.src = GYOKER + 'assets/img/' + kep;
+      img.dataset.src = KEPEK + kep;
       img.alt = alt;
       img.loading = 'lazy';
       img.decoding = 'async';
@@ -835,7 +839,7 @@
           b.className = 'thumbnailItem';
           // a bélyegkep csak akkor toltodik be, amikor a galeria a kepernyo kozelebe er
           b.setAttribute('style', alapStilus + ';left:' + (i * lepes) + 'px;cursor:pointer');
-          b.dataset.kep = GYOKER + 'assets/img/' + kep;
+          b.dataset.kep = KEPEK + kep;
           b.addEventListener('click', () => ugrik(i));
           return b;
         });
@@ -920,7 +924,7 @@
     const kep = h.querySelector('img'), szam = h.querySelector('.mh-nagyito-szam');
     const mutat = (j) => {
       i = (j + lista.length) % lista.length;
-      kep.src = GYOKER + 'assets/img/' + lista[i][0];
+      kep.src = KEPEK + lista[i][0];
       kep.alt = lista[i][1] || '';
       szam.textContent = (i + 1) + ' / ' + lista.length;
     };
@@ -985,7 +989,7 @@
       cella.setAttribute('aria-label', 'Kép nagyítása' + (alt ? ': ' + alt : ''));
       cella.style.aspectRatio = String(1 / arany);
       const img = document.createElement('img');
-      img.src = GYOKER + 'assets/img/' + kep;
+      img.src = KEPEK + kep;
       img.alt = alt;
       img.loading = 'lazy';
       img.style.objectFit = illeszt;
