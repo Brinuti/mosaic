@@ -54,6 +54,9 @@
     return new DOMParser().parseFromString(await v.text(), 'text/html');
   }
   const szoveg = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : '');
+  // a Salonic idegen nyelvu (alapbol angol) feliratai helyett
+  const FORDITAS = [[/Headspa Treatments/i, 'Head spa kezelések'], [/\(Booking with a Gift Card\)/i, '(foglalás ajándékkártyával)']];
+  const magyarul = (t) => FORDITAS.reduce((x, [mit, mire]) => x.replace(mit, mire), t || '');
 
   // --- lepesek -------------------------------------------------------------
   const LEPESEK = ['kategoria', 'szolgaltatas', 'idopont', 'osszegzes'];
@@ -91,10 +94,10 @@
       for (const a of d.querySelectorAll('a[href*="showServices"]')) {
         const spec = new URL(a.getAttribute('href'), SZALON.cim).searchParams.get('specId');
         if (!spec || lista.some((k) => k.spec === spec)) continue;
-        const doboz = a.closest('.card-header, .card') || a.parentElement;
+        const doboz = a.closest('.card') || a.parentElement;
         lista.push({
           spec,
-          nev: szoveg(doboz.querySelector('.list-group-item-specName')) || szoveg(a),
+          nev: magyarul(a.dataset.name || szoveg(doboz.querySelector('.card-title'))),
           leiras: szoveg(doboz.querySelector('.card-description')),
           kep: (doboz.querySelector('img') || {}).src || '',
         });
@@ -122,7 +125,8 @@
         const label = d.querySelector('label[for="' + i.id + '"]') || i.parentElement;
         return {
           id: i.dataset.id,
-          nev: i.dataset.name,
+          // a data-name-ben a Salonic nem escape-eli az idezojelet ("Relax"), ezert a lathato cimet vesszuk
+          nev: szoveg(label.querySelector('.service-title')) || i.dataset.name,
           ar: +i.dataset.price || 0,
           perc: +i.dataset.duration || 0,
           leiras: szoveg(label.querySelector('.service-description-booking-showServices')),
