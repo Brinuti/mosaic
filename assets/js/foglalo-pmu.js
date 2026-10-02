@@ -376,8 +376,8 @@
   // Mintanezet foglalas nelkul: ?minta=kezeles|konz|visszahivas
   const MINTA = new URLSearchParams(location.search).get('minta');
   const KOSZ = {
-    kezeles: { cim: 'Sikeres foglalás!', hash: '#koszonjuk', lepesek: ['Visszaigazolást küldünk e-mailben.', 'A kezelés előtt emlékeztetőt kapsz.', 'Várunk szeretettel a megadott időpontban!'] },
-    konz: { cim: 'Konzultációd lefoglalva!', hash: '#koszonjuk-konzultacio', lepesek: ['Visszaigazolást küldünk e-mailben.', 'Melitta átbeszéli veled a kívánt hatást.', 'Ha tetszik, helyben foglalhatsz kezelést.'] },
+    kezeles: { cim: 'Sikeres foglalás!', hash: '#koszonjuk', lepesek: ['Visszaigazolást küldünk e-mailben.', 'A kezelés előtt emlékeztetőt kapsz.', 'Lemondani legkésőbb 48 órával előtte tudod – utána az időpont már a tiéd, másnak nem adhatjuk oda.'] },
+    konz: { cim: 'Konzultációd lefoglalva!', hash: '#koszonjuk-konzultacio', lepesek: ['Visszaigazolást küldünk e-mailben.', 'Asszisztensünk felhív, hogy egyeztessétek a részleteket.', 'A konzultáción minden kérdésedre választ kapsz.'] },
   };
   BELEPES.koszonjuk = () => {
     const mintaNap = Math.floor(Date.now() / 86400000 + 7) * 86400 + 8 * 3600;
