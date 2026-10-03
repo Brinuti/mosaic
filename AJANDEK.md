@@ -190,7 +190,7 @@ A merge előtt/után, ebben a sorrendben. (Amíg ez nincs végigvíve, **ne** li
 ne indítsunk hirdetést rá.)
 
 - [ ] **Árak**: az `ajandek-adat.js` árai a mostani akcióval egyeznek (lásd fent).
-- [ ] **Vendégvélemény**: a `{review}` helyőrzőt (`PROOFOK.general`) valódi, engedélyezett Google-vélemény váltsa; a csillag-összegzés számát is pótolni kell (`{aktuális Google értékelés}`). Soha nem generált idézet.
+- [x] **Vendégvélemény**: a tulajdonos 2026-10-03-án megadta a valódi Google-véleményt (szó szerint, `PROOFOK.general`) és az összegzést (4,9 · 1.259 vélemény, `GOOGLE`); az értékelés számát időnként frissíteni kell az `ajandek-adat.js`-ben (és a `foglalas/ajandek.html` statikus tartalékszövegében). Soha nem generált idézet.
 - [ ] **Páros termék vizuálja** („két barátnő”, nem romantikus): nincs valódi kép → `TERMEKEK.paros.vizual` (`{asset_url}`) üres.
 - [ ] **Stripe teszt-kör**: teszt-kulcsokkal egy teljes vásárlás (siker, elutasított kártya, 3DS), webhook és levelek ellenőrzése. *2026-10-03: a Cloudflare-előnézeten (`claude-ajandek-motor.mosaic-d77.pages.dev`, teszt-módú Stripe) a háttér-oldal végigment: PI létrehozás → megerősítés `pm_card_visa` teszt-tokennel → `payment_intent.succeeded` webhook (HTTP 200, aláírás rendben) → „kiállítottam” (két lépés, másodszor nem küld újat) → nyomtatható kártya + `AK-` kód; `pm_card_chargeDeclined` → `sikertelen`. A beágyazott Payment Element kézi próbája is megvolt (asztali Chrome): `4242…` siker, `4000 0000 0000 0002` elutasítás + újrapróbálás, `4000 0025 0000 3155` 3DS: mindhárom rendben; a levelek megérkeztek. Még hátra van: Apple Pay iPhone-on (a `pages.dev` előnézet domainje nincs bejegyezve, ott csak Revolut Pay látszott; az Apple Pay-t az `mosaicheadspa.hu` domain regisztrálása után lehet kipróbálni, élesítéskor, külön jóváhagyással).*
 - [ ] **Stripe webhook-végpont** létrehozása (előbb teszt-módban a deploy preview címére, élesben csak külön jóváhagyással): `https://<host>/api/ajandek/webhook`, események: `payment_intent.succeeded`, `charge.refunded`, `charge.dispute.created` → a `whsec_…` a `STRIPE_WEBHOOK_SECRET`-be. A meglévő szamlabridge- és Zapier-webhookokhoz nem szabad nyúlni. *Teszt-módú végpont kész (`we_1UMVmpFv8vc2ArnLqiBzqIri`, a Cloudflare-előnézetre); az éles végpont az élesítés napján, külön jóváhagyással.*
@@ -203,8 +203,8 @@ ne indítsunk hirdetést rá.)
 
 ## Helyőrzők
 
-A spec szerint hiányzó üzleti adatot nem találunk ki, kapcsos zárójeles helyőrző áll: `{review}`,
-`{aktuális Google értékelés}` (vélemény), `{asset_url}` (Páros-kép). A Stripe-konfiguráció és a
+A spec szerint hiányzó üzleti adatot nem találunk ki, kapcsos zárójeles helyőrző áll: `{asset_url}`
+(Páros-kép). A vélemény és a Google-összegzés már valódi adat (lásd fent). A Stripe-konfiguráció és a
 teljesítési SLA a fenti környezeti változókból jön; amíg nincsenek, a motor ezt jelzi, nem talál ki
 értéket.
 

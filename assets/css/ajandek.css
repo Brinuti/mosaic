@@ -196,10 +196,10 @@ body.ah[data-nezet="fokusz"] .ah-bevaltom { display: none; }
 .ah-proof { background: var(--ah-petrol); color: #fff; border-radius: 26px; padding: 28px 24px; display: grid; gap: 22px; align-items: center; }
 .ah-proof h2 { color: #fff; }
 .ah-proof-idezet { margin: 0; }
-.ah-proof-idezet p { font-family: var(--ah-cim); font-size: 22px; line-height: 1.35; }
+.ah-proof-idezet p { font-family: var(--ah-cim); font-size: 19px; line-height: 1.45; }
 .ah-proof-idezet footer { margin-top: 14px; font-size: 13px; color: #d4dede; }
 .ah-proof.ah-helyorzo { outline: 2px dashed var(--ah-arany); outline-offset: -10px; }
-@media (min-width: 800px) { .ah-proof { grid-template-columns: .8fr 1.2fr; gap: 40px; padding: 38px; } .ah-proof-idezet p { font-size: 26px; } }
+@media (min-width: 800px) { .ah-proof { grid-template-columns: .8fr 1.2fr; gap: 40px; padding: 38px; } .ah-proof-idezet p { font-size: 22px; } }
 
 /* ---------- ellenvetes (variant-slot) ---------- */
 .ah-ellenvetes h2 { margin-bottom: 10px; }

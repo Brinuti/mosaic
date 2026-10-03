@@ -83,12 +83,16 @@
   ];
 
   // Valodi vendegvelemeny CSAK akkor mehet ide, ha letezik es a vendeg/Google-megjelenites
-  // engedi. Amig nincs: helyorzo ({review}) - soha ne generalj idezetet.
+  // engedi. Soha ne generalj idezetet. A Google-osszegzes (GOOGLE) a tulajdonos 2026-10-03-i adata:
+  // ha az ertekeles szama jelentosen valtozik, itt kell frissiteni.
+  var GOOGLE = { pont: '4,9', darab: '1.259' };
+  var GOOGLE_SZOVEG = GOOGLE.pont + ' · ' + GOOGLE.darab + ' Google-vélemény';
   var PROOFOK = {
     general: {
-      idezet: '{review}',
-      forras: '{aktuális Google értékelés}',
-      valodi: false
+      // szo szerint a Google-velemeny (a tulajdonos adta meg 2026-10-03-an), nem rovidítve, nem javítva
+      idezet: 'Nagyon elégedett vagyok! Brutálisan színvonalas hely, kellemes, nagyon szeretetteljes környezet! A vendégszeretet és a szolgáltatás zseniális. Biztosan visszamegyek! Ajánlom mindenkinek! Sajnos csak ezt az egy képet készítettem, mert annyira el voltam ámulva. De a szolgáltatás 5*-os! Minden 5*-os!',
+      forras: GOOGLE_SZOVEG,
+      valodi: true
     }
   };
 
@@ -107,7 +111,7 @@
         src: '/assets/img/c2eb0f_bbb818fad4674d2097775970ca10c3d0f002.jpg',
         alt: 'Vendég Head Spa kezelésen a MOSAIC-ban'
       },
-      hero_trust: ['★★★★★ Google értékelések', '✓ 6 hónapig felhasználható', '✓ online megvásárolható', '✓ egyéni vagy közös élmény'],
+      hero_trust: ['★★★★★ ' + GOOGLE_SZOVEG, '✓ 6 hónapig felhasználható', '✓ online megvásárolható', '✓ egyéni vagy közös élmény'],
       product_order: ['egyeni', '4kezes', 'paros'],
       featured_proof: 'general',
       objection_title: null,
