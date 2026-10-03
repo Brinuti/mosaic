@@ -18,6 +18,24 @@
 <link rel="icon" href="/assets/img/c2eb0f_b001e2c55098446da3e38ff055e20354.png" type="image/png">
 <link rel="preload" href="/assets/fonts/playfair-display-500-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/css/ajandek.css">
+<script>
+/* A Stripe-visszateres (payment_intent, payment_intent_client_secret, redirect_status) es a levelbeli rendeles-link
+   (rendeles, rt) parametereit KIVESSZUK a cimsorbol, MIELOTT a suti.js / GTM beolvasna az oldal cimet: a client_secret
+   a rendeles kulcsa, nem kerulhet a meresbe. A motor (ajandek.js) a sessionStorage-bol olvassa vissza. A kampany-
+   parameterek (utm_*, gclid, fbclid, ttclid, variant) a cimsorban maradnak. */
+(function () {
+  try {
+    var u = new URL(location.href), p = u.searchParams, mentes = {}, volt = false;
+    ['payment_intent', 'payment_intent_client_secret', 'redirect_status', 'rendeles', 'rt'].forEach(function (k) {
+      if (p.has(k)) { mentes[k] = p.get(k); p.delete(k); volt = true; }
+    });
+    if (volt) {
+      sessionStorage.setItem('ah_vissza', JSON.stringify(mentes));
+      history.replaceState(history.state, '', u.pathname + (p.toString() ? '?' + p.toString() : '') + u.hash);
+    }
+  } catch (e) { /* tarolo nelkul az utan-nezet nem all vissza, de a vasarlas nem serul */ }
+})();
+</script>
 <script src="/assets/js/suti.js"></script>
 <script src="/assets/js/ajandek-adat.js" defer></script>
 <script src="/assets/js/ajandek.js" defer></script>

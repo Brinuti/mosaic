@@ -90,6 +90,9 @@
     attr: attr,
     pi: tar.pi || null,
     cs: tar.cs || null,
+    rt: tar.rt || null,                  // csak olvasasi rendeles-token (levelbeli link); a client_secret nem kerul e-mailbe/URL-be
+    csakOlvas: !!tar.csak_olvas,         // a levelbeli linkkel megnyitott rendeles: nincs szerkesztes, nincs purchase
+    fizetesInditva: tar.fizetes_inditva || null, // annak a PaymentIntentnek az azonositoja, amelyiknek a fizeteset EBBEN a munkamenetben inditottuk
     rendeles: null,
     mod: 'betolt',          // betolt | elo | teszt | nincs
     azonnali: false,
@@ -103,7 +106,8 @@
   function ment() {
     tarolas.ir({
       v: 1, variant_id: S.variant.variant_id, termek: S.termek, finder: S.finder, urlap: S.urlap,
-      attr: S.attr, pi: S.pi, cs: S.cs, utan_allapot: S.utanAllapot, fizetve_ido: S.fizetveIdo
+      attr: S.attr, pi: S.pi, cs: S.cs, rt: S.rt, csak_olvas: S.csakOlvas, fizetes_inditva: S.fizetesInditva,
+      utan_allapot: S.utanAllapot, fizetve_ido: S.fizetveIdo
     });
   }
 
@@ -454,7 +458,8 @@
         if (v.status !== 200 || !v.adat.client_secret) {
           var e = new Error('szerver'); e.szerver = v; throw e;
         }
-        S.pi = v.adat.pi; S.cs = v.adat.client_secret; ment();
+        // ebben a munkamenetben inditjuk ennek a PaymentIntentnek a fizeteset: csak ekkor mehet ki rola purchase
+        S.pi = v.adat.pi; S.cs = v.adat.client_secret; S.rt = null; S.csakOlvas = false; S.fizetesInditva = S.pi; ment();
         return stripeAdapter.stripe.confirmPayment({
           elements: stripeAdapter.elements,
           clientSecret: S.cs,
@@ -476,6 +481,7 @@
       });
     }).catch(function (e) {
       var uzenet = 'Hálózati vagy szerverhiba történt. Kérjük, próbáld újra.';
+      if (e && e.szerver && e.szerver.status === 429) uzenet = 'Túl sok próbálkozás történt. Kérjük, várj pár percet, és próbáld újra, vagy hívj minket: 06 20 247 4444.';
       if (e && e.szerver && e.szerver.adat && e.szerver.adat.mezok) {
         S.folyamatban = false; allapotba('fizetes');
         var latszik = false;
@@ -488,6 +494,11 @@
       }
       hibaAllapot(uzenet);
     });
+  }
+
+  // a rendeles lekerdezese: fizetes utan a client_secrettel, a levelbeli linkkel nyitott (csak olvasasi) nezetben a rt-tokennel
+  function rendelesUt() {
+    return 'rendeles?pi=' + encodeURIComponent(S.pi) + '&' + (S.csakOlvas ? 'rt=' + encodeURIComponent(S.rt) : 'cs=' + encodeURIComponent(S.cs));
   }
 
   // a szerver (nem a bongeszo!) mondja meg, hogy fizetve van-e
@@ -594,17 +605,28 @@
     else allapotba('szemelyre');
     kartyaFigyel();
   }
+  // A dataLayer "purchase" esemeny: CSAK sikeres (a szerver altal a Stripe-tol visszakerdezett) fizetes utan, PaymentIntentenkent
+  // EGYSZER. Nem megy ki: a fizetes inditasakor, oldalfrissiteskor, visszalepeskor, a levelbeli (csak olvasasi) link megnyitasakor,
+  // es ha a fizetest nem ebben a munkamenetben inditottuk (pl. tovabbitott link masik eszkozon).
   function purchaseMeres(r) {
     var t = termek(r.termek) || termek(S.termek);
-    if (!t || !S.pi) return;
+    if (!t || !S.pi || S.csakOlvas) return;
+    if (S.fizetesInditva !== S.pi) return;
     var kulcs = 'ah_purchase_' + S.pi;
     if (helyiOlvas(kulcs)) return; // egy PaymentIntent csak egyszer purchase (frissites, visszalepes)
     helyiIr(kulcs, '1');
     var attrSrv = r.attr || {};
+    // az ertek a SZERVER (Stripe) altal visszaigazolt brutto osszeg, nem a bongeszo konfigja
+    var ertek = Number(r.osszeg) > 0 ? Number(r.osszeg) : t.ar_ft;
+    var penznem = r.penznem || A.PENZNEM;
+    var tet = tetel(t);
+    tet.price = ertek;
     mer('purchase', {
-      ecommerce: { transaction_id: S.pi, value: t.ar_ft, currency: A.PENZNEM, items: [tetel(t)] },
-      transaction_id: S.pi, value: t.ar_ft, currency: A.PENZNEM,
-      product_type: t.product_type, payment_method: r.fizetesi_mod || 'card',
+      ecommerce: { transaction_id: S.pi, value: ertek, currency: penznem, items: [tet] },
+      transaction_id: S.pi, value: ertek, currency: penznem,
+      // event_id: a bongeszos es a szerveroldali (Meta / TikTok) esemeny ugyanazzal az azonositoval deduplikalhato
+      event_id: S.pi,
+      product_type: t.product_type, quantity: 1, payment_method: r.fizetesi_mod || 'card',
       variant_id: attrSrv.variant_id || S.variant.variant_id
     });
   }
@@ -652,7 +674,7 @@
     if (!S.rendeles || kartyaKesz()) return;
     if (document.hidden) { kartyaFigyel(); return; }
     figyelSzamlalo++;
-    api('rendeles?pi=' + encodeURIComponent(S.pi) + '&cs=' + encodeURIComponent(S.cs)).then(function (v) {
+    api(rendelesUt()).then(function (v) {
       if (v.status === 200 && v.adat.allapot === 'fizetve') { S.rendeles = v.adat; frissitUtan(); }
       kartyaFigyel();
     }).catch(kartyaFigyel);
@@ -843,30 +865,56 @@
     }).catch(function () { S.mod = 'nincs'; });
   }
 
+  // A Stripe-visszateres (payment_intent, client_secret) es a levelbeli rendeles-link (rendeles + rt) adatait a lap elejen futo
+  // kis szkript (foglalas/ajandek.html) mar kivette az URL-bol es a sessionStorage-ba tette, MIELOTT a suti.js / GTM
+  // beolvashatta volna a cimet (a client_secret nem kerulhet a meresbe).
+  function visszaAdat() {
+    try {
+      var v = JSON.parse(sessionStorage.getItem('ah_vissza') || '{}');
+      sessionStorage.removeItem('ah_vissza');
+      return v && typeof v === 'object' ? v : {};
+    } catch (e) { return {}; }
+  }
+
   function visszaallit() {
-    var pi = Q.get('payment_intent'), cs = Q.get('payment_intent_client_secret');
+    var vissza = visszaAdat();
+    var pi = vissza.payment_intent, cs = vissza.payment_intent_client_secret;
     // Stripe 3DS / atiranyitas utani visszateres: a szerver ellenorzi a fizetest
     if (pi && cs) {
-      S.pi = pi; S.cs = cs;
-      try { history.replaceState({}, '', location.pathname + '?variant=' + encodeURIComponent(S.variant.variant_id)); } catch (e) { /* nem baj */ }
+      S.pi = pi; S.cs = cs; S.rt = null; S.csakOlvas = false;
       S.folyamatban = true;
       allapotba('feldolgozas', { eroltet: true });
       fizetesEllenorzes(pi, cs, 30000);
       return;
     }
+    // levelbeli rendeles-link: csak olvasas (a fizetes nem ebben a munkamenetben indult -> nincs purchase, nincs szerkesztes)
+    if (vissza.rendeles && vissza.rt) {
+      S.pi = String(vissza.rendeles); S.rt = String(vissza.rt); S.cs = null; S.csakOlvas = true; S.utanAllapot = 'osszegzo';
+      api(rendelesUt()).then(function (v) {
+        if (v.status === 200 && v.adat.allapot === 'fizetve') {
+          S.rendeles = v.adat;
+          if (!S.termek && v.adat.termek) S.termek = v.adat.termek;
+          S.fizetveIdo = Date.now();
+          allapotba('siker', { eroltet: true });
+          allapotba('osszegzo', { eroltet: true });
+          kartyaFigyel();
+        } else { S.pi = null; S.rt = null; S.csakOlvas = false; S.utanAllapot = null; ment(); alap(); }
+      }).catch(function () { S.pi = null; S.rt = null; S.csakOlvas = false; S.utanAllapot = null; ment(); alap(); });
+      return;
+    }
     // mar fizetett rendeles ugyanabban a sessionben: frissites utan is az utan-nezet - de csak rovid ideig, es egy
     // uj hirdetesi kattintas (UTM / click-azonosito az URL-ben) tiszta lappal indul, hogy ujabb ajandekot lehessen venni
     var friss = S.fizetveIdo && Date.now() - S.fizetveIdo < 2 * 3600 * 1000 && !ujAttr;
-    if (S.utanAllapot && !friss) { S.pi = null; S.cs = null; S.utanAllapot = null; S.fizetveIdo = 0; ment(); }
-    if (S.pi && S.cs && S.utanAllapot) {
-      api('rendeles?pi=' + encodeURIComponent(S.pi) + '&cs=' + encodeURIComponent(S.cs)).then(function (v) {
+    if (S.utanAllapot && !friss) { S.pi = null; S.cs = null; S.rt = null; S.csakOlvas = false; S.utanAllapot = null; S.fizetveIdo = 0; ment(); }
+    if (S.pi && (S.cs || S.rt) && S.utanAllapot) {
+      api(rendelesUt()).then(function (v) {
         if (v.status === 200 && v.adat.allapot === 'fizetve') {
           S.rendeles = v.adat;
           purchaseMeres(v.adat);
           allapotba('siker', { eroltet: true });
-          if (S.utanAllapot === 'osszegzo') allapotba('osszegzo', { eroltet: true }); else allapotba('szemelyre');
+          if (S.utanAllapot === 'osszegzo' || S.csakOlvas) allapotba('osszegzo', { eroltet: true }); else allapotba('szemelyre');
           kartyaFigyel();
-        } else { S.pi = null; S.cs = null; S.utanAllapot = null; S.fizetveIdo = 0; ment(); alap(); }
+        } else { S.pi = null; S.cs = null; S.rt = null; S.csakOlvas = false; S.utanAllapot = null; S.fizetveIdo = 0; ment(); alap(); }
       }).catch(function () { alap(); });
       return;
     }

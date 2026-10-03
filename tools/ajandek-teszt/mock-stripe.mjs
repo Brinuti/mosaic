@@ -4,7 +4,9 @@
 //   GET  /v1/payment_intents/:id        lekeres (expand[]=latest_charge)
 //   POST /v1/payment_intents/:id        frissites (amount, receipt_email, description, metadata osszefesules;
 //                                       metadata[kulcs]= ures ertek torli)
-// Vezerlo-segedek a tesztnek (allapot): sikeresIt, bukas, feldolgozas, kovetkezoHiba, pi, keresek.
+//   GET  /v1/charges/:id                terheles (a vita-esemenyhez, ha a vita-objektumban nincs PI)
+// Vezerlo-segedek a tesztnek (allapot): sikeresIt, bukas, feldolgozas, visszaterites, vita,
+// kovetkezoHiba, hibaSzabaly, pi, charge, keresek.
 //
 //   const mock = await mockStripeInditas();   // { url, bezar(), allapot }
 //   env.STRIPE_API_BASE = mock.url;
@@ -54,6 +56,8 @@ export async function mockStripeInditas({ port = 0, kulcsElotag = 'sk_test_mock'
   const idem = new Map();
   const keresek = [];
   const hibaSor = [];
+  let hibaSzabaly = null; // (keres) => HTTP-statusz | 0
+  const vitak = new Map();
 
   function kifejt(pi, expand) {
     const o = masol(pi);
@@ -110,11 +114,19 @@ export async function mockStripeInditas({ port = 0, kulcsElotag = 'sk_test_mock'
     const kulcs = auth.startsWith('Bearer ') ? auth.slice(7) : '';
     const idemKulcs = req.headers['idempotency-key'] || null;
     const parameterek = req.method === 'GET' ? bontas(u.searchParams) : bontas(new URLSearchParams(torzsSzoveg));
-    keresek.push({ method: req.method, path: u.pathname, params: masol(parameterek), idem: idemKulcs, verzio: req.headers['stripe-version'] || null });
+    const keres = { method: req.method, path: u.pathname, params: masol(parameterek), idem: idemKulcs, verzio: req.headers['stripe-version'] || null };
+    keresek.push(keres);
     if (!kulcs.startsWith(kulcsElotag)) return hiba(401, 'invalid_request_error', 'Invalid API Key provided.');
     if (hibaSor.length) {
       const st = hibaSor.shift();
       return hiba(st, 'api_error', 'Mock: szimulalt Stripe-hiba.');
+    }
+    const szabalyStatusz = hibaSzabaly ? Number(hibaSzabaly(keres)) || 0 : 0;
+    if (szabalyStatusz) return hiba(szabalyStatusz, 'api_error', 'Mock: szabaly szerinti Stripe-hiba.');
+    const chm = /^\/v1\/charges\/([A-Za-z0-9_]+)$/.exec(u.pathname);
+    if (chm && req.method === 'GET') {
+      const ch = chargek.get(chm[1]);
+      return ch ? { status: 200, json: masol(ch) } : hiba(404, 'invalid_request_error', `No such charge: '${chm[1]}'`, 'resource_missing', 'charge');
     }
 
     if (u.pathname === '/v1/payment_intents' && req.method === 'POST') {
@@ -175,6 +187,7 @@ export async function mockStripeInditas({ port = 0, kulcsElotag = 'sk_test_mock'
           ? { type: 'link', link: {} }
           : { type: 'card', card: { brand: 'visa', last4: '4242', wallet: mod === 'card' ? null : { type: mod } } },
         billing_details: { name: pi.metadata.nev || null, email: pi.receipt_email },
+        refunded: false, amount_refunded: 0, disputed: false,
       };
       chargek.set(ch.id, ch);
       Object.assign(pi, { status: 'succeeded', amount_received: pi.amount, latest_charge: ch.id, last_payment_error: null });
@@ -194,6 +207,28 @@ export async function mockStripeInditas({ port = 0, kulcsElotag = 'sk_test_mock'
     kovetkezoHiba(status = 500, n = 1) {
       for (let i = 0; i < n; i++) hibaSor.push(status);
     },
+    // tartos hibaszabaly: fn({ method, path, params, idem }) -> HTTP-statusz (bukik) | 0 (mehet); null: ki
+    hibaSzabaly(fn) {
+      hibaSzabaly = typeof fn === 'function' ? fn : null;
+    },
+    // visszaterites a PI terhelesen (osszeg: a Stripe-egysegben, alapbol a teljes osszeg)
+    visszaterites(piId, { osszeg } = {}) {
+      const pi = pik.get(piId) || nemLetezo(piId);
+      const ch = chargek.get(pi.latest_charge) || nemLetezo(pi.latest_charge);
+      ch.amount_refunded = Math.min(ch.amount, (ch.amount_refunded || 0) + (osszeg ?? ch.amount));
+      ch.refunded = ch.amount_refunded >= ch.amount;
+      return masol(ch);
+    },
+    // vita (chargeback) a PI terhelesen -> a vita-objektum (dp_...)
+    vita(piId) {
+      const pi = pik.get(piId) || nemLetezo(piId);
+      const ch = chargek.get(pi.latest_charge) || nemLetezo(pi.latest_charge);
+      ch.disputed = true;
+      const dp = { id: 'dp_' + veletlen(24), object: 'dispute', amount: ch.amount, charge: ch.id, payment_intent: pi.id, status: 'needs_response', reason: 'fraudulent' };
+      vitak.set(dp.id, dp);
+      return masol(dp);
+    },
+    charge: (id) => (chargek.has(id) ? masol(chargek.get(id)) : null),
     // lekerdezok
     pi: (id) => (pik.has(id) ? masol(pik.get(id)) : null),
     get pik() { return pik; },

@@ -4,29 +4,41 @@
 // (functions/api/ajandek/[[kind]].js): tiszta, platformfuggetlen kod, csak Web-szabvanyos
 // API-kkal (fetch, crypto.subtle, TextEncoder, URL) - Node 20 alatt es Workersben is fut.
 //
-//   ajandekKezel({ method, url, headers, text, env, kuld, most }) -> { status, headers, body }
+//   ajandekKezel({ method, url, headers, text, env, kuld, most, ip }) -> { status, headers, body }
+//   (ip: a platform altal megbizhatoan megadott kliens-IP; ha nincs, a fejlecekbol olvassuk)
 //
 // Vegpontok (a frontenddel egyeztetett szerzodes):
 //   GET  beallitas   Stripe-mod, publikus kulcs, azonnali kartya
 //   POST fizetes     PaymentIntent letrehozasa / frissitese (termekvaltas); az ar MINDIG a
 //                    szerveren, az assets/js/ajandek-adat.js-bol (a kliens osszege nem szamit)
-//   GET  rendeles    a rendeles allapota (Stripe-tol visszakerdezve; hitelesites: client_secret)
-//   POST szemelyre   megajandekozott neve, uzenet, alkalom, atadas (csak fizetes utan)
+//   GET  rendeles    a rendeles allapota (Stripe-tol visszakerdezve); hitelesites: pi + cs
+//                    (client_secret) vagy pi + rt (rendelesToken, CSAK olvasas - ez megy levelben)
+//   POST szemelyre   megajandekozott neve, uzenet, alkalom, atadas (csak fizetes utan; csak cs-sel)
 //   GET  kartya      a nyomtathato ajandekkartya (ha fizetve es a szalon kiallitotta); hitelesites:
 //                    pi + t (kartyaToken, tovabbithato link) vagy - visszafele kompatibilisen - pi + cs
 //   GET  kiallit     a szalon "kiallitottam" linkje (HMAC-token): CSAK megerosito oldal
 //   POST kiallit     a megerosito oldal urlapja (pi, t): kartya_kesz=1 + vevo-level a kartyaval
-//   POST webhook     Stripe payment_intent.succeeded -> szalon- es vevo-level (idempotens)
+//   POST webhook     Stripe-esemenyek (alairas-ellenorzott, idempotens):
+//                      payment_intent.succeeded   -> szalon- es vevo-level
+//                      charge.refunded            -> szalon-level: toroljek a kuponkodot
+//                      charge.dispute.created     -> ugyanaz (vita / chargeback)
+//                    A Stripe-ban a webhook-vegpontot MINDHAROM esemenyre elo kell fizetni.
 //   POST atutalas    atutalasos igeny (NEM vasarlas): utalasi adatok levelben
+//
+// Visszaeles elleni vedelem a /fizetes, /szemelyre, /atutalas vegponton: csak application/json
+// (415), kulso oldalrol inditott keres tiltva (Origin / Sec-Fetch-Site -> 403), es memoriaban
+// tartott, best-effort kereskorlat kliens-IP-nkent (429 + retry-after). A szamlalo fuggvenypeldanyonkent
+// el (nem globalis): tobb peldany / ujraindulas eseten lazabb, de a tomeges visszaelest fekezi.
 //
 // Kornyezeti valtozok:
 //   STRIPE_SECRET_KEY        sk_live_... / sk_test_... (vagy korlatozott rk_...)
 //   STRIPE_PUBLISHABLE_KEY   pk_live_... / pk_test_...
 //   STRIPE_WEBHOOK_SECRET    whsec_... (tobb is lehet vesszovel elvalasztva, kulcscserekor)
-//   AJANDEK_TITOK            a kuponkod es a kiallito link HMAC-kulcsa. ERDEMES BEALLITANI: ha
-//                            nincs, a STRIPE_SECRET_KEY SHA-256-jabol szamoljuk, es kulcscsere
-//                            utan a meg ki nem allitott rendelesek kiallito linkje ervenytelen lesz
-//                            (a mar ertesitett rendelesek kodja a PI metadataban is megvan: kod).
+//   AJANDEK_TITOK            KOTELEZO, legalabb 32 karakter: a kuponkod es a linkek (kiallit, kartya,
+//                            rendeles) HMAC-kulcsa. Ha hianyzik / rovid, a motor ki van kapcsolva
+//                            (beallitas: mod 'nincs'; webhook, kiallit, kartya, rendeles: 503).
+//                            Csere utan a regi linkek ervenytelenek; a mar ertesitett rendelesek
+//                            kodja a PI metadataban (kod) megmarad.
 //   AJANDEK_BAZIS_URL        a levelekben es a kartyan levo linkek eleje (alapbol a keres origin-je)
 //   AJANDEK_AZONNALI         '1' = a webhook rogton kiallitja a kartyat (kulonben a szalon linkje)
 //   STRIPE_API_BASE          csak tesztekhez (mock Stripe), alapbol https://api.stripe.com
@@ -42,10 +54,15 @@ const STRIPE_ALAP = 'https://api.stripe.com';
 // rogzitett API-verzio: a latest_charge mezo es a valaszok formaja ne a fiok alapbeallitasan muljon
 const STRIPE_VERZIO = '2024-06-20';
 const STRIPE_IDOKORLAT_MS = 15000;
-const MAX_TORZS = 32 * 1024;
-const MAX_WEBHOOK = 512 * 1024;
+export const MAX_TORZS = 32 * 1024;
+export const MAX_WEBHOOK = 512 * 1024;
 const TOLERANCIA_MP = 300;
+const MIN_TITOK = 32;
+// ennyi ideig tekintjuk elo kiallitasnak a 'kiallitas_folyamatban' jelzot (utana ujra lehet probalni)
+const FOLYAMATBAN_MS = 15 * 60 * 1000;
 const PI_RE = /^pi_[A-Za-z0-9]{8,80}$/;
+const CH_RE = /^ch_[A-Za-z0-9]{8,80}$/;
+const TOKEN_RE = /^[0-9a-f]{64}$/;
 const KULCS_RE = /^[A-Za-z0-9_-]{8,100}$/;
 const EMAIL_RE = /^[^\s@<>()[\]\\,;:"']+@[^\s@<>()[\]\\,;:"'.]+(\.[^\s@<>()[\]\\,;:"'.]+)*\.[^\s@<>()[\]\\,;:"'.]{2,}$/;
 const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
@@ -89,6 +106,40 @@ async function html(k, status, tartalom, { urlapKuldes = false } = {}) {
 }
 
 const oldal = (k, status, cim, bekezdesek, extra = {}) => html(k, status, L.egyszeruOldal({ cim, bekezdesek, bazis: k.bazis, ...extra }), { urlapKuldes: Boolean(extra.urlap) });
+const nincsBeallitvaOldal = (k) => oldal(k, 503, 'A rendszer nincs beállítva', ['Az ajándékkártya-rendszer most nem érhető el. Kérlek, írj nekünk: ' + ADAT.SZALON.email]);
+const visszavonvaOldal = (k, reszletek) => oldal(k, 409, 'Ez az ajándékkártya nem használható', [
+  'Ehhez a rendeléshez visszatérítés/vita tartozik, a kártya nem használható.',
+  'Ha kérdésed van, írj nekünk: ' + ADAT.SZALON.email,
+], reszletek ? { reszletek } : {});
+
+// A platform-adapterek kozos segedje: a keres torzse meretkorlattal. A tul nagy torzset NEM olvassa
+// be (content-length alapjan azonnal, kulonben olvasas kozben all meg). -> { text } | { valasz: 413 }
+export async function keresTorzs(request) {
+  if (request.method === 'GET' || request.method === 'HEAD') return { text: '' };
+  let max = MAX_TORZS;
+  try { if (/\/webhook\/?$/.test(new URL(request.url).pathname)) max = MAX_WEBHOOK; } catch { /* alap korlat */ }
+  const tulNagy = { valasz: json(413, { hiba: 'tul_nagy' }) };
+  const hossz = request.headers.get('content-length');
+  if (hossz !== null && hossz !== '' && !(Number(hossz) <= max)) return tulNagy;
+  if (!request.body) return { text: '' };
+  const olvaso = request.body.getReader();
+  const darabok = [];
+  let meret = 0;
+  for (;;) {
+    const { done, value } = await olvaso.read();
+    if (done) break;
+    meret += value.byteLength;
+    if (meret > max) {
+      try { await olvaso.cancel(); } catch { /* mindegy */ }
+      return tulNagy;
+    }
+    darabok.push(value);
+  }
+  const egyben = new Uint8Array(meret);
+  let p = 0;
+  for (const d of darabok) { egyben.set(d, p); p += d.byteLength; }
+  return { text: new TextDecoder().decode(egyben) };
+}
 
 // --- kriptografia (Web Crypto) ----------------------------------------------------------------------------
 async function sha256(bajtok) {
@@ -126,13 +177,14 @@ function veletlenKod(n, abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') {
 
 const titkosKulcs = (env) => String(env.STRIPE_SECRET_KEY || '').trim();
 const publikusKulcs = (env) => String(env.STRIPE_PUBLISHABLE_KEY || '').trim();
+const titokSzoveg = (env) => String(env.AJANDEK_TITOK || '').trim();
+const titokJo = (env) => titokSzoveg(env).length >= MIN_TITOK;
+// a Stripe-ot es a titkot is igenylo vegpontokhoz (fail closed)
+const beallitva = (env) => Boolean(titkosKulcs(env)) && titokJo(env);
 
 async function titok(env) {
-  const t = String(env.AJANDEK_TITOK || '').trim();
-  if (t) return enc.encode(t);
-  const sk = titkosKulcs(env);
-  if (!sk) throw new Error('nincs titok (AJANDEK_TITOK / STRIPE_SECRET_KEY)');
-  return sha256(enc.encode(sk));
+  if (!titokJo(env)) throw new Error(`AJANDEK_TITOK hianyzik vagy rovidebb ${MIN_TITOK} karakternel`);
+  return enc.encode(titokSzoveg(env));
 }
 
 // KOD: 'AK-XXXX-XXXX' (a rendelesszam MH-, igy a ketto nem osszetevesztheto) - az HMAC-SHA256(titok, 'kod:' + piId) elso 5 bajtja (40 bit) Crockford base32-ben
@@ -153,6 +205,12 @@ export async function kiallitToken(env, piId) {
 // e-mailjet mutato /rendeles-hez es a modosito /szemelyre-hez nem ad hozzaferest, mint a client_secret).
 export async function kartyaToken(env, piId) {
   return hex(await hmac(await titok(env), 'kartya:' + piId));
+}
+
+// A rendeles-oldal levelben kuldott linkjenek tokenje: CSAK olvasas (/rendeles); a /szemelyre-hez,
+// a /fizetes-hez nem jo. Igy a client_secret nem kerul e-mailbe / URL-be.
+export async function rendelesToken(env, piId) {
+  return hex(await hmac(await titok(env), 'rendeles:' + piId));
 }
 
 // --- Stripe REST (fetch) -------------------------------------------------------------------------------
@@ -214,15 +272,89 @@ const piFrissit = (env, id, params) => stripe(env, 'POST', `/v1/payment_intents/
 function stripeMod(env) {
   const sk = titkosKulcs(env);
   const pk = publikusKulcs(env);
-  if (!sk || !pk) return 'nincs';
+  // titok nelkul a kodok es linkek nem kepezhetok: inkabb ki van kapcsolva (fail closed)
+  if (!sk || !pk || !titokJo(env)) return 'nincs';
   const teszt = /^(sk|rk)_test_/.test(sk);
   // teszt titkos kulcs eles publikus kulccsal (vagy forditva): a fizetes ugysem mukodne
   if (teszt ? /^pk_live_/.test(pk) : /^pk_test_/.test(pk)) return 'nincs';
   return teszt ? 'teszt' : 'elo';
 }
 
+// --- visszaeles elleni vedelem ------------------------------------------------------------------------------
+const PERC = 60 * 1000;
+const KORLATOK = {
+  fizetes: [{ nev: 'ip', max: 20, ablak: 10 * PERC }],
+  szemelyre: [{ nev: 'ip', max: 30, ablak: 10 * PERC }],
+  // levelet kuld tetszoleges cimre: IP-nkent szigoru, es a peldanyon osszesen is korlatos
+  atutalas: [{ nev: 'ip', max: 3, ablak: 10 * PERC }, { nev: 'osszes', max: 30, ablak: 60 * PERC }],
+};
+const MAX_SZAMLALO = 5000;
+const szamlalok = new Map(); // kulcs -> { kezdet, db, ablak }
+
+// csak tesztekhez / a helyi fejlesztoi kiszolgalohoz
+export function _korlatAlaphelyzet() {
+  szamlalok.clear();
+}
+export const _korlatMeret = () => szamlalok.size;
+
+function szamlaloTakarit(t) {
+  for (const [kulcs, s] of szamlalok) if (t - s.kezdet >= s.ablak) szamlalok.delete(kulcs);
+  // ha meg mindig tul sok: a legregebbiek ki (a Map beszurasi sorrendben iteral)
+  while (szamlalok.size >= MAX_SZAMLALO) szamlalok.delete(szamlalok.keys().next().value);
+}
+
+// -> null (mehet) | hany masodperc mulva probalkozhat ujra
+function korlatTullepes(ut, ip, most) {
+  const szabalyok = KORLATOK[ut];
+  if (!szabalyok) return null;
+  const t = most.getTime();
+  const elemek = szabalyok.map((s) => {
+    const kulcs = `${ut}|${s.nev === 'ip' ? 'ip:' + ip : '*'}`;
+    let e = szamlalok.get(kulcs);
+    if (e && t - e.kezdet >= s.ablak) { szamlalok.delete(kulcs); e = null; }
+    return { s, kulcs, e };
+  });
+  for (const { s, e } of elemek) if (e && e.db >= s.max) return Math.max(1, Math.ceil((e.kezdet + s.ablak - t) / 1000));
+  for (const x of elemek) {
+    if (x.e) { x.e.db += 1; continue; }
+    if (szamlalok.size >= MAX_SZAMLALO) szamlaloTakarit(t);
+    szamlalok.set(x.kulcs, { kezdet: t, db: 1, ablak: x.s.ablak });
+  }
+  return null;
+}
+
+function kliensIp(h, adott) {
+  for (const x of [adott, h['cf-connecting-ip'], h['x-nf-client-connection-ip'], String(h['x-forwarded-for'] || '').split(',')[0]]) {
+    const s = String(x || '').trim();
+    if (s) return s.slice(0, 64);
+  }
+  return 'ismeretlen';
+}
+
+// mas oldalrol inditott keres (CSRF / beagyazott urlap)?
+function kulsoKeres(k) {
+  if (String(k.h['sec-fetch-site'] || '').trim().toLowerCase() === 'cross-site') return true;
+  const origin = k.h.origin;
+  if (origin === undefined || origin === '') return false;
+  try { return new URL(origin).host !== k.u.host; } catch { return true; } // pl. 'null'
+}
+
+// A szoveget fogado POST-vegpontok kapuja (a torzs feldolgozasa elott). -> null | kesz valasz
+function postKapu(k, ut) {
+  if (kulsoKeres(k)) return json(403, { hiba: 'tiltott' });
+  const tipus = String(k.h['content-type'] || '').split(';')[0].trim().toLowerCase();
+  if (tipus !== 'application/json') return json(415, { hiba: 'tipus' });
+  const varj = korlatTullepes(ut, k.ip, k.most);
+  if (varj) return json(429, { hiba: 'tul_sok_keres' }, { 'retry-after': String(varj) });
+  return null;
+}
+
 // --- bemenet ---------------------------------------------------------------------------------------------
-const VEZERLO = /[\u0000-\u001F\u007F-\u009F\u2028\u2029]/g;
+// (a regexek szamkodbol epulnek: a forrasfajlban ne legyen nyers U+2028 / U+2029 sorelvalaszto)
+const kar = (n) => String.fromCharCode(n);
+const SORELVALASZTOK = kar(0x2028) + kar(0x2029);
+const VEZERLO = new RegExp('[' + kar(0) + '-' + kar(0x1f) + kar(0x7f) + '-' + kar(0x9f) + SORELVALASZTOK + ']', 'g');
+const VEZERLO_SORTORES_NELKUL = new RegExp('[' + kar(0) + '-' + kar(9) + kar(0x0b) + '-' + kar(0x1f) + kar(0x7f) + '-' + kar(0x9f) + SORELVALASZTOK + ']', 'g');
 // egysoros szoveg: vezerlokarakterek ki, szokozok osszevonva, trimmelve
 function egysor(v) {
   if (typeof v !== 'string' && typeof v !== 'number') return '';
@@ -232,7 +364,7 @@ function egysor(v) {
 function tobbsor(v) {
   if (typeof v !== 'string') return '';
   return v.normalize('NFC').replace(/\r\n?/g, '\n').replace(/\t/g, ' ')
-    .replace(/[\u0000-\u0009\u000B-\u001F\u007F-\u009F\u2028\u2029]/g, '')
+    .replace(VEZERLO_SORTORES_NELKUL, '')
     .replace(/[ ]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
@@ -353,6 +485,11 @@ function budapestiNap(iso) {
 const alkalomCim = (id) => (ADAT.ALKALMAK.find((a) => a.id === id) || {}).cim || '';
 const atadasCim = (id) => (ADAT.ATADASOK.find((a) => a.id === id) || {}).cim || '';
 
+function folyamatbanFriss(md, most) {
+  const t = Date.parse(md.kiallitas_folyamatban || '');
+  return Number.isFinite(t) && Math.abs(most.getTime() - t) < FOLYAMATBAN_MS;
+}
+
 // Minden, ami a PI-bol kovetkezik (valasz, levelek, kartya)
 async function rendelesInfo(k, pi) {
   const md = pi.metadata || {};
@@ -362,10 +499,15 @@ async function rendelesInfo(k, pi) {
   const fizetve = allapot === 'fizetve';
   const fizetveMp = fizetve ? Number((ch && ch.created) || pi.created) || null : null;
   const fizetveEkkor = fizetveMp ? new Date(fizetveMp * 1000).toISOString() : null;
-  const cs = String(pi.client_secret || '');
+  // visszaterites (reszleges is) vagy vita: a PI 'succeeded' marad, de a kartya nem hasznalhato
+  const visszaterites = Boolean(ch && (ch.refunded === true || Number(ch.amount_refunded) > 0));
+  const vita = Boolean(ch && ch.disputed === true);
+  const visszavonva = fizetve && (visszaterites || vita || Boolean(md.visszavonva));
   return {
-    pi, md, termek, allapot, fizetve,
-    kesz: fizetve && md.kartya_kesz === '1',
+    pi, md, termek, allapot, fizetve, visszavonva,
+    visszavonas_oka: vita || md.visszavonva === 'vita' ? 'vita' : visszaterites || md.visszavonva ? 'visszaterites' : null,
+    visszaterites_szoveg: ch && Number(ch.amount_refunded) > 0 ? ADAT.arSzoveg(Number(ch.amount_refunded) / 100) : '',
+    kesz: fizetve && !visszavonva && md.kartya_kesz === '1',
     fizetve_ekkor: fizetveEkkor,
     ervenyes_ig: fizetveEkkor ? ADAT.ervenyesIg(budapestiNap(fizetveEkkor)) : null,
     rendeles_id: ADAT.rendelesAzonosito(pi.id),
@@ -376,18 +518,19 @@ async function rendelesInfo(k, pi) {
     penznem: String(pi.currency || 'huf').toUpperCase(),
     email: pi.receipt_email || '',
     fizetesi_mod: fizetesiMod(ch),
-    // a webhook a metadataba is beirja (kulcscsere utan is ugyanaz maradjon)
+    // a webhook a metadataba is beirja (titokcsere utan is ugyanaz maradjon)
     kod: fizetve ? (md.kod || await kuponKod(k.env, pi.id)) : null,
     // tovabbithato link (az ajandekozottnak is): kulon token, client_secret NELKUL
     kartya_url: fizetve ? `${k.bazis}/api/ajandek/kartya?pi=${encodeURIComponent(pi.id)}&t=${await kartyaToken(k.env, pi.id)}` : null,
-    rendeles_url: `${k.bazis}/ajandek?payment_intent=${encodeURIComponent(pi.id)}&payment_intent_client_secret=${encodeURIComponent(cs)}&redirect_status=succeeded`,
+    // a levelben kuldott rendeles-link: csak olvaso token, client_secret NELKUL
+    rendeles_url: `${k.bazis}/ajandek?rendeles=${encodeURIComponent(pi.id)}&rt=${await rendelesToken(k.env, pi.id)}`,
   };
 }
 
 function rendelesValasz(i) {
   const attr = {};
   for (const kulcs of ATTR_KULCSOK) attr[kulcs] = i.md[kulcs] || null;
-  const kartya = { allapot: i.kesz ? 'kesz' : 'keszul', ervenyes_ig: i.ervenyes_ig };
+  const kartya = { allapot: i.visszavonva ? 'visszavonva' : i.kesz ? 'kesz' : 'keszul', ervenyes_ig: i.ervenyes_ig };
   if (i.kesz) {
     kartya.url = i.kartya_url;
     kartya.kod = i.kod;
@@ -398,6 +541,7 @@ function rendelesValasz(i) {
   };
   return {
     allapot: i.allapot,
+    visszavonva: i.visszavonva,
     rendeles_id: i.rendeles_id,
     termek: i.md.termek || null,
     termek_nev: i.termek_nev || null,
@@ -413,20 +557,39 @@ function rendelesValasz(i) {
   };
 }
 
-// A client_secret az egyetlen hitelesito. -> { pi } | { status, hiba }
+const TILTOTT = { status: 403, hiba: 'tiltott' };
+
+// pi + client_secret (a vevo bongeszojeben van; olvasas ES modositas). -> { pi } | { status, hiba }
 async function hitelesPi(k, piId, cs) {
   piId = String(piId ?? '').trim();
   cs = String(cs ?? '').trim();
-  if (!PI_RE.test(piId) || !cs || cs.length > 200 || !cs.startsWith(piId + '_secret_')) return { status: 403, hiba: 'tiltott' };
-  if (!titkosKulcs(k.env)) return { status: 503, hiba: 'nincs_beallitva' };
+  if (!PI_RE.test(piId) || !cs || cs.length > 200 || !cs.startsWith(piId + '_secret_')) return TILTOTT;
+  if (!beallitva(k.env)) return { status: 503, hiba: 'nincs_beallitva' };
   let pi;
   try {
     pi = await piLeker(k.env, piId);
   } catch (e) {
-    if (e instanceof StripeHiba && e.status === 404) return { status: 403, hiba: 'tiltott' };
+    if (e instanceof StripeHiba && e.status === 404) return TILTOTT;
     throw e;
   }
-  if (!egyenlo(cs, pi.client_secret)) return { status: 403, hiba: 'tiltott' };
+  if (!egyenlo(cs, pi.client_secret)) return TILTOTT;
+  if (!pi.metadata || pi.metadata.forras !== FORRAS) return { status: 404, hiba: 'nincs' };
+  return { pi };
+}
+
+// pi + celhoz kotott HMAC-token (kartyaToken / rendelesToken). -> { pi } | { status, hiba }
+async function tokenesPi(k, piNyers, tNyers, tokenFv) {
+  const piId = String(piNyers ?? '').trim();
+  const t = String(tNyers ?? '').trim().toLowerCase();
+  if (!beallitva(k.env)) return { status: 503, hiba: 'nincs_beallitva' };
+  if (!PI_RE.test(piId) || !TOKEN_RE.test(t) || !egyenlo(t, await tokenFv(k.env, piId))) return TILTOTT;
+  let pi;
+  try {
+    pi = await piLeker(k.env, piId);
+  } catch (e) {
+    if (e instanceof StripeHiba && e.status === 404) return { status: 404, hiba: 'nincs' };
+    throw e;
+  }
   if (!pi.metadata || pi.metadata.forras !== FORRAS) return { status: 404, hiba: 'nincs' };
   return { pi };
 }
@@ -436,6 +599,16 @@ async function levelKuld(k, level) {
   await k.kuld(level);
 }
 
+// metadata-iras, ami NEM dob: egy mar kiment level utan a hiba ne okozzon ujrakuldest
+async function metaIrasCsendes(k, piId, metadata, mi) {
+  try {
+    return await piFrissit(k.env, piId, { metadata });
+  } catch (e) {
+    console.error(`ajandek: metadata-iras hiba (${mi})`, piId, e && e.message);
+    return null;
+  }
+}
+
 // --- vegpontok ---------------------------------------------------------------------------------------------
 async function beallitas(k) {
   const mod = stripeMod(k.env);
@@ -443,6 +616,8 @@ async function beallitas(k) {
 }
 
 async function fizetes(k) {
+  const kapu = postKapu(k, 'fizetes');
+  if (kapu) return kapu;
   const { d, valasz } = jsonTorzs(k);
   if (valasz) return valasz;
   // robotcsapda: sikeresnek latszo valasz, de semmi nem tortenik
@@ -504,18 +679,25 @@ async function fizetes(k) {
 }
 
 async function rendeles(k) {
-  const h = await hitelesPi(k, k.u.searchParams.get('pi'), k.u.searchParams.get('cs'));
+  const rt = k.u.searchParams.get('rt');
+  const h = rt
+    ? await tokenesPi(k, k.u.searchParams.get('pi'), rt, rendelesToken)
+    : await hitelesPi(k, k.u.searchParams.get('pi'), k.u.searchParams.get('cs'));
   if (h.hiba) return json(h.status, { hiba: h.hiba });
   return json(200, rendelesValasz(await rendelesInfo(k, h.pi)));
 }
 
 async function szemelyre(k) {
+  const kapu = postKapu(k, 'szemelyre');
+  if (kapu) return kapu;
   const { d, valasz } = jsonTorzs(k);
   if (valasz) return valasz;
+  // csak a client_secret jo (az olvaso rt / kartya t token NEM)
   const h = await hitelesPi(k, d.pi, d.cs);
   if (h.hiba) return json(h.status, { hiba: h.hiba });
   const elozo = h.pi.metadata;
   if (piAllapot(h.pi) !== 'fizetve') return json(409, { hiba: 'nincs_fizetve' });
+  if ((await rendelesInfo(k, h.pi)).visszavonva) return json(409, { hiba: 'visszavonva' });
 
   const m = {};
   const nev = egysor(d.nev);
@@ -541,6 +723,7 @@ async function szemelyre(k) {
   const valtozott = (elozo.szemelyre_nev || '') !== nev || (elozo.szemelyre_uzenet || '') !== uzenet || (elozo.szemelyre_alkalom || '') !== alkalom;
   if (fizikai && (elozo.fizikai_ertesitve !== '1' || valtozott)) {
     const i = await rendelesInfo(k, pi);
+    let kiment = false;
     try {
       await levelKuld(k, {
         cimzett: 'szalon',
@@ -551,41 +734,27 @@ async function szemelyre(k) {
           modositas: elozo.fizikai_ertesitve === '1',
         }),
       });
-      if (elozo.fizikai_ertesitve !== '1') pi = await piFrissit(k.env, pi.id, { metadata: { fizikai_ertesitve: '1' } });
+      kiment = true;
     } catch (e) {
-      if (e instanceof StripeHiba) throw e;
       // a szemelyre szabas mentve; a jelzo nem allt be, a kovetkezo mentes ujra probalja
       console.error('ajandek: szemelyre - kuldesi hiba', pi.id, e && e.message);
     }
+    if (kiment && elozo.fizikai_ertesitve !== '1') pi = (await metaIrasCsendes(k, pi.id, { fizikai_ertesitve: '1' }, 'fizikai_ertesitve')) || pi;
   }
   return json(200, rendelesValasz(await rendelesInfo(k, pi)));
 }
 
-// A kartya-oldal ket hitelesitese: pi + t (kartyaToken; ezt adjuk ki linkkent) vagy - visszafele
-// kompatibilisen - pi + cs (client_secret). -> { pi } | { status, hiba }
-async function kartyaHitelesites(k) {
-  const t = String(k.u.searchParams.get('t') || '').trim().toLowerCase();
-  if (!t) return hitelesPi(k, k.u.searchParams.get('pi'), k.u.searchParams.get('cs'));
-  const piId = String(k.u.searchParams.get('pi') || '').trim();
-  if (!titkosKulcs(k.env)) return { status: 503, hiba: 'nincs_beallitva' };
-  if (!PI_RE.test(piId) || !/^[0-9a-f]{64}$/.test(t) || !egyenlo(t, await kartyaToken(k.env, piId))) return { status: 403, hiba: 'tiltott' };
-  let pi;
-  try {
-    pi = await piLeker(k.env, piId);
-  } catch (e) {
-    if (e instanceof StripeHiba && e.status === 404) return { status: 404, hiba: 'nincs' };
-    throw e;
-  }
-  if (!pi.metadata || pi.metadata.forras !== FORRAS) return { status: 404, hiba: 'nincs' };
-  return { pi };
-}
-
 async function kartya(k) {
   k.htmlValasz = true;
-  const h = await kartyaHitelesites(k);
+  const t = k.u.searchParams.get('t');
+  const h = t
+    ? await tokenesPi(k, k.u.searchParams.get('pi'), t, kartyaToken)
+    : await hitelesPi(k, k.u.searchParams.get('pi'), k.u.searchParams.get('cs'));
+  if (h.hiba === 'nincs_beallitva') return nincsBeallitvaOldal(k);
   if (h.hiba === 'tiltott') return oldal(k, 403, 'A link nem érvényes', ['Ellenőrizd, hogy a teljes linket nyitottad-e meg a levélből. Ha nem sikerül, írj nekünk: ' + ADAT.SZALON.email]);
   if (h.hiba) return oldal(k, h.status, 'Ez az ajándékkártya nem található', ['Ha kérdésed van, írj nekünk: ' + ADAT.SZALON.email]);
   const i = await rendelesInfo(k, h.pi);
+  if (i.visszavonva) return visszavonvaOldal(k);
   if (i.allapot === 'feldolgozas') {
     return oldal(k, 409, 'A fizetésed feldolgozás alatt áll', ['Amint a fizetés beérkezik, elkészítjük az ajándékkártyádat, és e-mailben is elküldjük. Ez az oldal 20 másodpercenként magától frissül.'], { frissit: 20 });
   }
@@ -607,13 +776,13 @@ async function kartya(k) {
 // A szalon kiallito linkje ket lepesben mukodik: a GET (a levelben levo link) csak ellenoriz es
 // megerosito oldalt ad - igy egy levelszkenner / linkelonezet automatikus GET-je nem allit ki
 // semmit -, a kiallitast az oldal urlapjanak POST-ja vegzi. Mindket lepes HMAC-tokenhez kotott.
-// -> { valasz } (kesz HTML-valasz) | { pi, i, reszletek }
+// -> { valasz } (kesz HTML-valasz) | { pi, i, reszletek, piId, t }
 async function kiallitElokeszit(k, piNyers, tNyers) {
   k.htmlValasz = true;
   const piId = String(piNyers ?? '').trim();
   const t = String(tNyers ?? '').trim().toLowerCase();
-  if (!titkosKulcs(k.env)) return { valasz: await oldal(k, 503, 'A rendszer nincs beállítva', ['A Stripe-kulcs hiányzik.']) };
-  if (!PI_RE.test(piId) || !/^[0-9a-f]{64}$/.test(t) || !egyenlo(t, await kiallitToken(k.env, piId))) {
+  if (!beallitva(k.env)) return { valasz: await nincsBeallitvaOldal(k) };
+  if (!PI_RE.test(piId) || !TOKEN_RE.test(t) || !egyenlo(t, await kiallitToken(k.env, piId))) {
     return { valasz: await oldal(k, 403, 'Érvénytelen link', ['Ez a kiállító link nem érvényes. A rendelésről szóló levélben lévő gombot használd.']) };
   }
   let pi;
@@ -630,8 +799,17 @@ async function kiallitElokeszit(k, piNyers, tNyers) {
   if (!i.fizetve) {
     return { valasz: await oldal(k, 409, 'A rendelés még nincs kifizetve', ['A kártyát csak sikeres fizetés után lehet kiállítani.'], { reszletek }) };
   }
+  if (i.visszavonva) return { valasz: await visszavonvaOldal(k, reszletek) };
   if (i.md.kartya_kesz === '1') {
     return { valasz: await oldal(k, 200, 'Ez az ajándékkártya már ki van állítva', ['A vevő korábban megkapta a levelet a kártyával; újat nem küldtünk.'], { reszletek }) };
+  }
+  if (folyamatbanFriss(i.md, k.most)) {
+    return {
+      valasz: await oldal(k, 409, 'A kiállítás folyamatban van', [
+        'Ennek az ajándékkártyának a kiállítása pár perce elindult; újabb levelet nem küldtünk.',
+        'Ha 15 perc múlva sem látod kiállítottnak, nyisd meg újra a levélben lévő gombot.',
+      ], { reszletek }),
+    };
   }
   return { pi, i, reszletek, piId, t };
 }
@@ -665,6 +843,10 @@ async function kiallit(k) {
   const e = await kiallitElokeszit(k, d && d.pi, d && d.t);
   if (e.valasz) return e.valasz;
   const { pi, i, reszletek } = e;
+  // 1) jelzo a level ELOTT: egy dupla kattintas / parhuzamos keres ne kuldjon masodik levelet
+  //    (ha ez nem sikerul, Stripe-hiba -> 502, es level sem ment ki)
+  await piFrissit(k.env, pi.id, { metadata: { kiallitas_folyamatban: k.most.toISOString(), kod: i.kod } });
+  // 2) a vevo levele
   if (i.email) {
     try {
       await levelKuld(k, {
@@ -675,12 +857,22 @@ async function kiallit(k) {
           kod: i.kod, ervenyes_ig: i.ervenyes_ig, szalon: ADAT.SZALON,
         }),
       });
-    } catch (e) {
-      console.error('ajandek: kiallit - kuldesi hiba', pi.id, e && e.message);
+    } catch (hiba) {
+      console.error('ajandek: kiallit - kuldesi hiba', pi.id, hiba && hiba.message);
+      // nem ment ki level: a jelzo le, igy azonnal ujra lehet probalni
+      await metaIrasCsendes(k, pi.id, { kiallitas_folyamatban: '' }, 'kiallitas_folyamatban torles');
       return oldal(k, 502, 'Nem sikerült elküldeni a levelet', ['A kártya még nincs kiállítva. Próbáld újra kicsit később: nyisd meg újra a levélben lévő gombot.'], { reszletek });
     }
   }
-  await piFrissit(k.env, pi.id, { metadata: { kartya_kesz: '1', kartya_kiallitva_ekkor: k.most.toISOString(), kod: i.kod } });
+  // 3) rogzites (egy ujraprobalassal); ha nem sikerul, a level mar kiment: NEM kuldjuk ujra azonnal
+  const vegso = { kartya_kesz: '1', kartya_kiallitva_ekkor: k.most.toISOString(), kiallitas_folyamatban: '' };
+  const rogzitve = (await metaIrasCsendes(k, pi.id, vegso, 'kartya_kesz')) || (await metaIrasCsendes(k, pi.id, vegso, 'kartya_kesz, ujra'));
+  if (!rogzitve) {
+    return oldal(k, 502, 'A levél kiment, de a kiállítást nem sikerült rögzíteni', [
+      'A vevő megkapta a levelet a kártyával, de a rendszer nem tudta elmenteni, hogy kiállítottad.',
+      '15 perc múlva nyisd meg újra a levélben lévő gombot, és erősítsd meg újra (a vevő ekkor még egy levelet kap).',
+    ], { reszletek });
+  }
   return oldal(k, 200, 'Kiállítva, a vevő megkapta a levelet', [
     i.email ? `A nyomtatható ajándékkártya linkjét elküldtük ide: ${i.email}.` : 'A vevőnek nincs e-mail-címe – a kártyát a rendelés oldalán éri el.',
   ], { reszletek });
@@ -700,26 +892,18 @@ async function alairasJo(fejlec, torzs, titkok, most) {
   }
   if (!t || !/^\d{1,12}$/.test(t) || !v1.length) return false;
   if (Math.abs(most.getTime() / 1000 - Number(t)) > TOLERANCIA_MP) return false;
-  for (const titokSzoveg of titkok) {
-    const vart = hex(await hmac(enc.encode(titokSzoveg), `${t}.${torzs}`));
+  for (const titokResz of titkok) {
+    const vart = hex(await hmac(enc.encode(titokResz), `${t}.${torzs}`));
     if (v1.some((s) => egyenlo(s, vart))) return true;
   }
   return false;
 }
 
-async function webhook(k) {
-  if (k.text.length > MAX_WEBHOOK) return json(413, { hiba: 'tul_nagy' });
-  const titkok = String(k.env.STRIPE_WEBHOOK_SECRET || '').split(',').map((s) => s.trim()).filter(Boolean);
-  if (!titkok.length || !titkosKulcs(k.env)) return json(503, { hiba: 'nincs_beallitva' });
-  if (!(await alairasJo(k.h['stripe-signature'], k.text, titkok, k.most))) return json(400, { hiba: 'alairas' });
-  let esemeny;
-  try { esemeny = JSON.parse(k.text); } catch { return json(400, { hiba: 'ervenytelen' }); }
-  const ok = json(200, { ok: true });
-  if (!esemeny || esemeny.type !== 'payment_intent.succeeded') return ok;
-  const obj = esemeny.data && esemeny.data.object;
-  // a fiok minden mas fizetese (fizetolinkek stb.) nem a miénk
-  if (!obj || !PI_RE.test(String(obj.id || '')) || !obj.metadata || obj.metadata.forras !== FORRAS) return ok;
-
+// payment_intent.succeeded: szalon- es vevo-level. Minden level UTAN azonnal rogzitjuk a
+// reszallapotot (ertesites: 'szalon' / 'vevo' / '1'), hogy egy kesobbi hiba / idotullepes miatti
+// Stripe-ujrakuldes ne kuldjon dupla levelet.
+async function fizetesEsemeny(k, obj, ok) {
+  if (!PI_RE.test(String(obj.id || '')) || !obj.metadata || obj.metadata.forras !== FORRAS) return ok;
   // a PI-t a Stripe-tol kerdezzuk vissza (nem az esemeny tartalmanak hiszunk)
   let pi;
   try {
@@ -733,6 +917,19 @@ async function webhook(k) {
 
   const azonnali = k.env.AJANDEK_AZONNALI === '1';
   const i = await rendelesInfo(k, pi);
+  // mar visszaterítettek / vitatjak: sikerlevel nem megy (a visszavonasrol kulon level szol)
+  if (i.visszavonva) return ok;
+
+  // elotte: a kod (es azonnali modban a kiallitas) rogzitese - ha ez nem sikerul, meg nem ment ki
+  // semmi, a Stripe ujraprobalhatja (Stripe-hiba -> 502)
+  const elo = {};
+  if (md.kod !== i.kod) elo.kod = i.kod;
+  if (azonnali && md.kartya_kesz !== '1') {
+    elo.kartya_kesz = '1';
+    elo.kartya_kiallitva_ekkor = k.most.toISOString();
+  }
+  if (Object.keys(elo).length) await piFrissit(k.env, pi.id, { metadata: elo });
+
   const kiallitUrl = `${k.bazis}/api/ajandek/kiallit?pi=${encodeURIComponent(pi.id)}&t=${await kiallitToken(k.env, pi.id)}`;
   const levelek = [
     ['szalon', {
@@ -761,30 +958,86 @@ async function webhook(k) {
   let hibas = false;
   for (const [nev, level] of levelek) {
     if (kesz.has(nev)) continue;
-    if (!level) { kesz.add(nev); continue; }
-    try {
-      await levelKuld(k, level);
-      kesz.add(nev);
-    } catch (e) {
-      hibas = true;
-      console.error(`ajandek: webhook - kuldesi hiba (${nev})`, pi.id, e && e.message);
+    if (level) {
+      try {
+        await levelKuld(k, level);
+      } catch (e) {
+        hibas = true;
+        console.error(`ajandek: webhook - kuldesi hiba (${nev})`, pi.id, e && e.message);
+        continue;
+      }
     }
+    kesz.add(nev);
+    // azonnal rogzitjuk; ha nem sikerul, csak naplozunk (a level mar kiment, ne kuldjuk ujra)
+    await metaIrasCsendes(k, pi.id, { ertesites: kesz.size === 2 ? '1' : nev }, 'ertesites');
   }
-  const ertesites = kesz.size === 2 ? '1' : kesz.size === 1 ? [...kesz][0] : '';
-  const uj = {};
-  if (ertesites !== (md.ertesites || '')) uj.ertesites = ertesites;
-  if (md.kod !== i.kod) uj.kod = i.kod;
-  if (azonnali && md.kartya_kesz !== '1') {
-    uj.kartya_kesz = '1';
-    uj.kartya_kiallitva_ekkor = k.most.toISOString();
-  }
-  if (Object.keys(uj).length) await piFrissit(k.env, pi.id, { metadata: uj });
   // nem 2xx: a Stripe kesobb ujrakuldi, es csak a hianyzo level megy ki
   if (hibas) return json(500, { hiba: 'level' });
   return ok;
 }
 
+// charge.refunded / charge.dispute.created: a szalon torolje a kuponkodot (egyszer, idempotensen)
+async function visszavonasEsemeny(k, tipus, obj, ok) {
+  let piId = typeof obj.payment_intent === 'string' ? obj.payment_intent : (obj.payment_intent && obj.payment_intent.id) || '';
+  if (!piId && typeof obj.charge === 'string' && CH_RE.test(obj.charge)) {
+    // regebbi vita-objektum PI nelkul: a terhelesbol
+    try {
+      piId = (await stripe(k.env, 'GET', `/v1/charges/${obj.charge}`)).payment_intent || '';
+    } catch (e) {
+      if (e instanceof StripeHiba && e.status === 404) return ok;
+      throw e;
+    }
+  }
+  if (!PI_RE.test(String(piId))) return ok;
+  let pi;
+  try {
+    pi = await piLeker(k.env, piId);
+  } catch (e) {
+    if (e instanceof StripeHiba && e.status === 404) return ok;
+    throw e;
+  }
+  const md = pi.metadata || {};
+  if (md.forras !== FORRAS || md.visszavonas_ertesites === '1') return ok;
+  const i = await rendelesInfo(k, pi);
+  // csak ha a Stripe-tol visszakerdezett terheles is visszaterítettnek / vitatottnak latszik
+  if (!i.visszavonva) return ok;
+  const oka = tipus === 'charge.dispute.created' ? 'vita' : i.visszavonas_oka || 'visszaterites';
+  try {
+    await levelKuld(k, {
+      cimzett: 'szalon',
+      valasz: i.email || undefined,
+      ...L.szalonVisszavonasLevel({
+        oka, rendeles_id: i.rendeles_id, pi: pi.id, termek_nev: i.termek_nev, osszeg_szoveg: i.osszeg_szoveg,
+        visszaterites_szoveg: i.visszaterites_szoveg, email: i.email, nev: md.nev, kod: i.kod,
+        kiallitva: md.kartya_kesz === '1', fizikai: md.szemelyre_atadas === 'fizikai',
+      }),
+    });
+  } catch (e) {
+    console.error('ajandek: webhook - kuldesi hiba (visszavonas)', pi.id, e && e.message);
+    return json(500, { hiba: 'level' });
+  }
+  await metaIrasCsendes(k, pi.id, { visszavonas_ertesites: '1', visszavonva: oka }, 'visszavonas_ertesites');
+  return ok;
+}
+
+async function webhook(k) {
+  if (k.text.length > MAX_WEBHOOK) return json(413, { hiba: 'tul_nagy' });
+  const titkok = String(k.env.STRIPE_WEBHOOK_SECRET || '').split(',').map((s) => s.trim()).filter(Boolean);
+  if (!titkok.length || !beallitva(k.env)) return json(503, { hiba: 'nincs_beallitva' });
+  if (!(await alairasJo(k.h['stripe-signature'], k.text, titkok, k.most))) return json(400, { hiba: 'alairas' });
+  let esemeny;
+  try { esemeny = JSON.parse(k.text); } catch { return json(400, { hiba: 'ervenytelen' }); }
+  const ok = json(200, { ok: true });
+  const obj = esemeny && esemeny.data && esemeny.data.object;
+  if (!obj || typeof obj !== 'object') return ok;
+  if (esemeny.type === 'payment_intent.succeeded') return fizetesEsemeny(k, obj, ok);
+  if (esemeny.type === 'charge.refunded' || esemeny.type === 'charge.dispute.created') return visszavonasEsemeny(k, esemeny.type, obj, ok);
+  return ok;
+}
+
 async function atutalas(k) {
+  const kapu = postKapu(k, 'atutalas');
+  if (kapu) return kapu;
   const { d, valasz } = jsonTorzs(k);
   if (valasz) return valasz;
   if (egysor(d['bot-field'])) return json(200, { ok: true });
@@ -795,7 +1048,9 @@ async function atutalas(k) {
 
   const ar = arFt(r.termek);
   const ref = 'ATU-' + veletlenKod(6);
-  const kozlemeny = (ref + (megajandekozott ? ' ' + megajandekozott : '')).slice(0, 140);
+  // a kozlemeny CSAK a sajat azonositonk: a vevonek kuldott levelbe semmilyen, a kitolto altal
+  // megadott szabad szoveg nem kerul (igy a vegpont nem hasznalhato mas cimre kuldott uzenetekre)
+  const kozlemeny = ref;
   const osszegSzoveg = ADAT.arSzoveg(ar);
   const kozos = {
     rendeles_ref: ref, termek_nev: r.termek.nev, kartya_cim: r.termek.kartya_cim, osszeg_szoveg: osszegSzoveg, kozlemeny,
@@ -818,7 +1073,7 @@ async function atutalas(k) {
     await levelKuld(k, {
       cimzett: r.email,
       valasz: 'szalon',
-      ...L.vevoAtutalasLevel({ ...kozos, kedvezmenyezett: ADAT.BANK.kedvezmenyezett, szamlaszam: ADAT.BANK.szamlaszam, nev: r.nev, szalon: ADAT.SZALON }),
+      ...L.vevoAtutalasLevel({ ...kozos, kedvezmenyezett: ADAT.BANK.kedvezmenyezett, szamlaszam: ADAT.BANK.szamlaszam, szalon: ADAT.SZALON }),
     });
   } catch (e) {
     // az utalasi adatokat a valasz is tartalmazza (a kepernyon latszik)
@@ -862,13 +1117,15 @@ function bazisUrl(env, u) {
   return u.origin;
 }
 
-export async function ajandekKezel({ method, url, headers, text, env, kuld, most } = {}) {
+export async function ajandekKezel({ method, url, headers, text, env, kuld, most, ip } = {}) {
   let u;
   try { u = new URL(url); } catch { return json(400, { hiba: 'ervenytelen' }); }
+  const h = fejlecek(headers);
   const k = {
     method: String(method || 'GET').toUpperCase(),
     u,
-    h: fejlecek(headers),
+    h,
+    ip: kliensIp(h, ip),
     text: typeof text === 'string' ? text : '',
     env: env || {},
     kuld,

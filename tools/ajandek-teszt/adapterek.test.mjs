@@ -23,7 +23,7 @@ before(async () => {
   mock = await mockStripeInditas();
   ENV = {
     STRIPE_SECRET_KEY: 'sk_test_mock_adapter', STRIPE_PUBLISHABLE_KEY: 'pk_test_mock_adapter', STRIPE_WEBHOOK_SECRET: WHSEC,
-    STRIPE_API_BASE: mock.url, AJANDEK_TITOK: 'adapter-titok',
+    STRIPE_API_BASE: mock.url, AJANDEK_TITOK: 'adapter-titok-adapter-titok-adapter-titok',
   };
   netlify = await import('../../netlify/functions/ajandek.mjs');
   cloudflare = await import(new URL('../../functions/api/ajandek/[[kind]].js', import.meta.url).href);
@@ -156,4 +156,65 @@ test('Cloudflare-adapter: onRequest(context), context.env, worker-mailer alapert
   delete env.SMTP_PASS;
   v = await hivas(new Request('https://mosaicheadspa.pages.dev/api/ajandek/webhook', { method: 'POST', headers: { 'stripe-signature': e2.fejlec }, body: e2.torzs }));
   assert.equal(v.status, 500);
+});
+
+// Egy Request-szeru objektum, aminek a torzsehez NEM szabad hozzanyulni (a tul nagy torzset nem olvassuk be).
+function nemOlvashato(url, method, fejlecek) {
+  return {
+    url, method, headers: new Headers(fejlecek),
+    get body() { throw new Error('a torzset nem lett volna szabad beolvasni'); },
+    text() { throw new Error('a torzset nem lett volna szabad beolvasni'); },
+  };
+}
+
+test('mindket adapter: tul nagy content-length -> 413 a torzs beolvasasa nelkul; content-length nelkul olvasas kozben all meg', async () => {
+  Object.assign(process.env, ENV);
+  const env = { ...ENV };
+  const cf = (req) => cloudflare.onRequest({ request: req, env, next: () => { throw new Error('nem kellene'); } });
+  const nf = (req) => netlify.default(req, {});
+  for (const futtat of [nf, cf]) {
+    for (const [ut, meret] of [['webhook', 512 * 1024 + 1], ['fizetes', 32 * 1024 + 1], ['atutalas', 10 * 1024 * 1024], ['szemelyre', 'nem-szam']]) {
+      const v = await futtat(nemOlvashato(`https://www.mosaicheadspa.hu/api/ajandek/${ut}`, 'POST', { 'content-type': 'application/json', 'content-length': String(meret) }));
+      assert.equal(v.status, 413, `${ut} ${meret}`);
+      assert.deepEqual(await v.json(), { hiba: 'tul_nagy' });
+      assert.equal(v.headers.get('cache-control'), 'no-store');
+    }
+    // content-length nelkul (pl. chunked): a 32 KB feletti JSON-torzs olvasas kozben 413
+    let v = await futtat(new Request('https://www.mosaicheadspa.hu/api/ajandek/fizetes', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ x: 'y'.repeat(40 * 1024) }),
+    }));
+    assert.equal(v.status, 413);
+    // a webhooknak 512 KB jar: egy 100 KB-os (alairatlan) torzs eljut a kezeloig (-> 400 alairas)
+    v = await futtat(new Request('https://www.mosaicheadspa.hu/api/ajandek/webhook', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ x: 'y'.repeat(100 * 1024) }),
+    }));
+    assert.equal(v.status, 400);
+    assert.deepEqual(await v.json(), { hiba: 'alairas' });
+  }
+});
+
+test('a kereskorlat a platform altal adott IP-t hasznalja (Netlify: context.ip, Cloudflare: cf-connecting-ip), nem a hamisithato fejleceket', async () => {
+  const { _korlatAlaphelyzet } = await import('../../netlify/lib/ajandek.js');
+  Object.assign(process.env, ENV);
+  const torzs = JSON.stringify({ 'bot-field': 'x' });
+  const keres = (fejlecek) => new Request('https://www.mosaicheadspa.hu/api/ajandek/atutalas', {
+    method: 'POST', headers: { 'content-type': 'application/json', ...fejlecek }, body: torzs,
+  });
+  _korlatAlaphelyzet();
+  // Netlify: a kliens hiaba kuld minden kereshez mas cf-connecting-ip / x-forwarded-for fejlecet
+  for (let i = 0; i < 3; i++) {
+    const v = await netlify.default(keres({ 'cf-connecting-ip': `203.0.113.${i}`, 'x-forwarded-for': `198.51.100.${i}` }), { ip: '192.0.2.1' });
+    assert.equal(v.status, 200);
+  }
+  let v = await netlify.default(keres({ 'cf-connecting-ip': '203.0.113.99' }), { ip: '192.0.2.1' });
+  assert.equal(v.status, 429);
+  assert.ok(Number(v.headers.get('retry-after')) > 0);
+  // Cloudflare: a cf-connecting-ip-t a Cloudflare allitja be
+  _korlatAlaphelyzet();
+  const env = { ...ENV };
+  const cf = (req) => cloudflare.onRequest({ request: req, env, next: () => { throw new Error('nem kellene'); } });
+  for (let i = 0; i < 3; i++) assert.equal((await cf(keres({ 'cf-connecting-ip': '192.0.2.7', 'x-forwarded-for': `198.51.100.${i}` }))).status, 200);
+  v = await cf(keres({ 'cf-connecting-ip': '192.0.2.7', 'x-forwarded-for': '198.51.100.200' }));
+  assert.equal(v.status, 429);
+  _korlatAlaphelyzet();
 });

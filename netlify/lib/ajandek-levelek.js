@@ -99,6 +99,8 @@ ${teendo}
 
 // --- fizetes utan: a vevo levele -------------------------------------------------------------------
 // d: { rendeles_id, termek_nev, kartya_cim, osszeg_szoveg, nev, rendeles_url, kartya_url?, kod?, ervenyes_ig?, szalon }
+// A rendeles_url csak olvaso tokent visz (rt), client_secret-et nem: a levelbol a rendeles
+// megnezheto, de nem modosithato (a szemelyre szabas a fizetes utani oldalon tortenik).
 export function vevoFizetveLevel(d) {
   const kesz = Boolean(d.kartya_url);
   return {
@@ -114,7 +116,7 @@ ${kodDoboz(d.kod, d.ervenyes_ig)}
 ${gomb(d.kartya_url, 'Ajándékkártya megnyitása')}`
     : `${cim('MI TÖRTÉNIK MOST?')}
 <p>Az ajándékkártyád elkészítésén dolgozunk; amint kész, e-mailben küldjük a nyomtatható kártyát a kuponkóddal.</p>
-<p>A rendelésed állapotát itt is megnézheted, és ha szeretnéd, személyre szabhatod a kártyát (név, üzenet, alkalom):</p>
+<p>A rendelésed állapotát itt is megnézheted:</p>
 ${gomb(d.rendeles_url, 'A rendelésem')}`}
 ${cim('ÍGY LEHET FELHASZNÁLNI')}
 <p>Az ajándékkártyán lévő kódot az online időpontfoglalásnál (<a href="https://www.mosaicheadspa.hu/idpontfoglalas">mosaicheadspa.hu/idpontfoglalas</a>) a „kuponkód” mezőbe kell beírni. A kártya a vásárlástól számítva 6 hónapig használható fel.</p>
@@ -166,12 +168,15 @@ ${d.uzenet ? `<p style="white-space:pre-line;border-left:3px solid ${ARANY};padd
 }
 
 // --- atutalasos igeny (nem vasarlas) ------------------------------------------------------------------
-// d: { rendeles_ref, termek_nev, kartya_cim, osszeg_szoveg, kedvezmenyezett, szamlaszam, kozlemeny, nev, szalon }
+// A vevo levele SZANDEKOSAN nem tartalmaz a kitolto altal beirt szabad szoveget (nev, megajandekozott):
+// az /atutalas barki altal hivhato, es tetszoleges cimre kuld - igy nem lehet vele idegen tartalmu
+// levelet kuldeni a MOSAIC nevében. Csak a sajat adatunk van benne (termek, ar, bank, ATU-azonosito).
+// d: { rendeles_ref, termek_nev, kartya_cim, osszeg_szoveg, kedvezmenyezett, szamlaszam, kozlemeny, szalon }
 export function vevoAtutalasLevel(d) {
   return {
     targy: `MOSAIC ajándékkártya – utalási adatok (${d.rendeles_ref})`,
     html: `<div style="${betu};max-width:600px">
-<p>Kedves ${esc(d.nev)}!</p>
+<p>Kedves Vásárló!</p>
 <p>Köszönjük, hogy a(z) „${esc(d.kartya_cim || d.termek_nev)}” ajándékkártyát választottad! :)</p>
 <p>A vásárlás véglegesítéséhez a banki utalást ide várjuk:</p>
 ${cim('BANKI UTALÁSI ADATOK')}
@@ -185,7 +190,7 @@ ${cim('IDE KÜLDD A BIZONYLATOT')}
 ${cim('NYOMTATHATÓ FORMÁTUMBAN ELKÜLDJÜK AZ E-MAIL-CÍMEDRE')}
 <p>Az utalás beérkezése után az ajándékkártyát elküldjük az e-mail-címedre digitális formátumban is, amit könnyen ki tudsz nyomtatni akár otthon is, és már mehet is a borítékba :)</p>
 ${cim('SZEMÉLYESEN IS ÁTVEHETED SZALONUNKBAN')}
-<p>Ha nincs nyomtatód, vagy papír alapon szeretnéd átvenni, azt pedig megteheted nálunk, a MOSAIC Head Spa-ban (${esc(d.szalon.cim)}). Csak mondd be a közleményben szereplő azonosítót, és a recepción odaadjuk neked a kártyát.</p>
+<p>Ha nincs nyomtatód, vagy papír alapon szeretnéd átvenni, azt pedig megteheted nálunk, a MOSAIC Head Spa-ban (${esc(d.szalon.cim)}). Csak mondd be a közleményben szereplő azonosítót (${esc(d.rendeles_ref)}), és a recepción odaadjuk neked a kártyát.</p>
 ${cim('ÍGY TUDOD FELHASZNÁLNI')}
 <p>Az ajándékkártyán találsz egy kódot, amit az online foglalásnál tudsz majd érvényesíteni a „kuponkód” mezőbe történő beírással.</p>
 <p>Ha kérdésed van, csak írj nekünk! :)</p>
@@ -211,6 +216,30 @@ ${tabla([
 ])}
 <p>A vevő megkapta az utalási adatokat. Ha az utalás beérkezett, a megszokott módon hozd létre a kuponkódot a Salonicban, és küldd el neki az ajándékkártyát.</p>
 ${d.oldal ? `<p style="color:#888;font-size:12px">Beküldve innen: ${esc(d.oldal)}</p>` : ''}
+</div>`,
+  };
+}
+
+// --- visszaterites / vita (chargeback): a szalon torolje a kuponkodot ------------------------------------
+// d: { oka: 'visszaterites' | 'vita', rendeles_id, pi, termek_nev, osszeg_szoveg, visszaterites_szoveg,
+//      email, nev, kod, kiallitva, fizikai }
+export function szalonVisszavonasLevel(d) {
+  const vita = d.oka === 'vita';
+  return {
+    targy: `Visszatérítés / vita – töröld a kuponkódot: ${d.kod}`,
+    html: `<div style="${betu};max-width:640px">
+<p><b>${vita
+    ? 'Egy ajándékkártya-fizetésre a kártyabirtokos vitát (chargeback) nyitott.'
+    : 'Egy ajándékkártya-fizetést visszatérítettek.'} Az ajándékkártya ezért nem használható.</b></p>
+${kodDoboz(d.kod, null)}
+<p><b>Teendő:</b> töröld (vagy tiltsd le) a Salonicban a(z) <b>${esc(d.kod)}</b> kuponkódot, ha már létrehoztad.${d.kiallitva ? ' A kártyát a vevő már megkapta – ha foglalt vele időpontot, vedd fel vele a kapcsolatot.' : ''}${d.fizikai ? ' A vevő fizikai kártyát kért: ha már elkészült, ne add át.' : ''}</p>
+${tabla([
+  ['Ok', vita ? 'vita (chargeback)' : 'visszatérítés'], ['Rendelés', d.rendeles_id], ['Termék', d.termek_nev],
+  ['Összeg', d.osszeg_szoveg], ['Visszatérítve', d.visszaterites_szoveg],
+  ['Kártya kiállítva', d.kiallitva ? 'igen' : 'nem'], ['Vevő', d.nev], ['Vevő e-mail', d.email],
+])}
+${vita ? '<p style="font-size:13px;color:#555">A vita részleteit és a válaszadási határidőt a Stripe-fiókban találod.</p>' : ''}
+<p style="color:#888;font-size:12px">Stripe: ${esc(d.pi)}</p>
 </div>`,
   };
 }

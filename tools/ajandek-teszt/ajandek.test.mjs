@@ -1,19 +1,22 @@
 // A Gift Commerce Engine szerveroldalanak tesztjei (Node beepitett tesztfuttato, nincs uj fuggoseg):
-//   node --test tools/ajandek-teszt/
+//   node --test "tools/ajandek-teszt/*.test.mjs"
 // A kezelot (netlify/lib/ajandek.js) kozvetlenul hivjuk; a Stripe helyett a helyi mock fut
 // (mock-stripe.mjs), a STRIPE_API_BASE erre mutat. Valodi halozati forgalom / level nincs.
 import test, { before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { mockStripeInditas } from './mock-stripe.mjs';
-import { ajandekKezel, kuponKod, kiallitToken, kartyaToken } from '../../netlify/lib/ajandek.js';
+import { ajandekKezel, kuponKod, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
 import { utvonal } from '../../netlify/lib/utvonal.js';
 import { config as edgeConfig } from '../../netlify/edge-functions/oldal.js';
 
 const ADAT = globalThis.AJANDEK_ADAT;
 const BAZIS = 'https://teszt.mosaicheadspa.hu';
 const WHSEC = 'whsec_teszt_titok';
+const TITOK = 'teszt-titok-teszt-titok-teszt-titok-0123456789';
 const KOD_RE = /^AK-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/;
+// a kereskorlat IP-nkent szamol: alapbol minden hivas sajat (veletlen) IP-rol jon
+const veletlenIp = () => `10.${crypto.randomInt(256)}.${crypto.randomInt(256)}.${crypto.randomInt(256)}`;
 
 let mock;
 let ENV;
@@ -26,17 +29,17 @@ before(async () => {
     STRIPE_PUBLISHABLE_KEY: 'pk_test_mock_123',
     STRIPE_WEBHOOK_SECRET: WHSEC,
     STRIPE_API_BASE: mock.url,
-    AJANDEK_TITOK: 'teszt-titok',
+    AJANDEK_TITOK: TITOK,
   };
 });
 after(async () => { await mock.bezar(); });
 
-async function hiv(method, ut, { body, query, headers = {}, env = ENV, most, kuld } = {}) {
+async function hiv(method, ut, { body, query, headers = {}, env = ENV, most, kuld, ip } = {}) {
   const url = new URL(BAZIS + '/api/ajandek/' + ut);
   for (const [k, v] of Object.entries(query || {})) url.searchParams.set(k, v);
   const text = body === undefined ? '' : typeof body === 'string' ? body : JSON.stringify(body);
   const v = await ajandekKezel({
-    method, url: url.toString(), headers: { 'content-type': 'application/json', ...headers }, text, env, most,
+    method, url: url.toString(), headers: { 'content-type': 'application/json', 'x-forwarded-for': veletlenIp(), ...headers }, text, env, most, ip,
     kuld: kuld || (async (l) => { levelek.push(l); }),
   });
   const adat = /json/.test(v.headers['content-type'] || '') ? JSON.parse(v.body) : null;
@@ -129,7 +132,8 @@ describe('utvalasztas', () => {
 // --- /beallitas --------------------------------------------------------------------------------------------
 describe('/beallitas', () => {
   test('mod a kulcs elotagjabol; publikus kulcs csak ha van mod; azonnali_kartya', async () => {
-    const eset = async (env) => (await hiv('GET', 'beallitas', { env })).adat;
+    // (a titok kotelezo; a hianyaval kulon teszt foglalkozik)
+    const eset = async (env) => (await hiv('GET', 'beallitas', { env: { AJANDEK_TITOK: TITOK, ...env } })).adat;
     assert.deepEqual(await eset({}), { mod: 'nincs', publikus_kulcs: null, azonnali_kartya: false });
     assert.equal((await eset({ STRIPE_SECRET_KEY: 'sk_test_x' })).mod, 'nincs');
     assert.equal((await eset({ STRIPE_PUBLISHABLE_KEY: 'pk_test_x' })).mod, 'nincs');
@@ -480,7 +484,15 @@ describe('/webhook', () => {
     assert.ok(vevo.html.includes(a.rendeles_id));
     assert.ok(vevo.html.includes('39.900 Ft'));
     assert.match(vevo.html, /elkészítésén dolgozunk; amint kész, e-mailben küldjük/);
-    assert.ok(vevo.html.includes(`${BAZIS}/ajandek?payment_intent=${a.pi}&amp;payment_intent_client_secret=${a.client_secret}&amp;redirect_status=succeeded`));
+    // a rendeles-link csak olvaso tokent visz: client_secret / payment_intent NINCS a levelekben
+    const rt = await rendelesToken(ENV, a.pi);
+    assert.ok(vevo.html.includes(`${BAZIS}/ajandek?rendeles=${a.pi}&amp;rt=${rt}`));
+    for (const l of levelek) {
+      assert.ok(!l.html.includes('client_secret'), l.targy);
+      assert.ok(!l.html.includes('payment_intent='), l.targy);
+      assert.ok(!l.html.includes(a.client_secret), l.targy);
+      assert.ok(!l.html.includes('_secret_'), l.targy);
+    }
     assert.ok(!vevo.html.includes(kod), 'a kod meg nem megy ki a vevonek');
     for (const l of levelek) assert.doesNotMatch(l.html, /perceken belül|azonnal/i);
   });
@@ -829,21 +841,22 @@ describe('/kartya', () => {
   });
 });
 
+
 // --- /atutalas ---------------------------------------------------------------------------------------------------------
 describe('/atutalas', () => {
-  test('levelek a vevonek es a szalonnak, a valaszban az utalasi adatok, NEM hoz letre PI-t', async () => {
+  test('levelek a vevonek es a szalonnak, a valaszban az utalasi adatok, NEM hoz letre PI-t; a vevo-levelben nincs szabad szoveg', async () => {
     levelek = [];
     const keresekElotte = mock.allapot.keresek.length;
-    const torzs = rendelesTorzs({ termek: '4kezes', megajandekozott: 'Nagy Mária', osszeg: 1 });
+    const torzs = rendelesTorzs({ termek: '4kezes', nev: 'Kattints <a href="http://csalo.example">ide</a>', megajandekozott: 'Nagy Mária <b>', osszeg: 1 });
     delete torzs.kulcs;
     const r = await hiv('POST', 'atutalas', { body: torzs });
     assert.equal(r.status, 200);
     assert.equal(r.adat.ok, true);
     assert.equal(r.adat.osszeg, 39900);
     assert.match(r.adat.rendeles_ref, /^ATU-[A-Z0-9]{6}$/);
+    // a kozlemeny CSAK a sajat azonosito
     assert.deepEqual(r.adat.utalas, {
-      kedvezmenyezett: ADAT.BANK.kedvezmenyezett, szamlaszam: ADAT.BANK.szamlaszam, osszeg_ft: 39900,
-      kozlemeny: `${r.adat.rendeles_ref} Nagy Mária`,
+      kedvezmenyezett: ADAT.BANK.kedvezmenyezett, szamlaszam: ADAT.BANK.szamlaszam, osszeg_ft: 39900, kozlemeny: r.adat.rendeles_ref,
     });
     assert.equal(mock.allapot.keresek.length, keresekElotte, 'nincs Stripe-hivas');
     assert.equal(levelek.length, 2);
@@ -852,13 +865,21 @@ describe('/atutalas', () => {
     assert.ok(vevo && szalon);
     assert.equal(vevo.valasz, 'szalon');
     assert.equal(szalon.valasz, 'vevo@example.com');
+    assert.ok(vevo.html.includes('Kedves Vásárló!'));
     assert.ok(vevo.html.includes('39.900 Ft'));
     assert.ok(!vevo.html.includes('26.900 Ft') && !vevo.html.includes('53.800 Ft'), 'csak a valasztott termek ara');
     assert.ok(vevo.html.includes(ADAT.BANK.szamlaszam));
-    assert.ok(vevo.html.includes(`${r.adat.rendeles_ref} Nagy Mária`));
+    assert.ok(vevo.html.includes(r.adat.rendeles_ref));
+    // a kitolto altal beirt szoveg (nev, megajandekozott) semmilyen formaban nincs a vevo levelében
+    for (const tilos of ['Kattints', 'csalo.example', 'Nagy Mária', '&lt;a', '&lt;b']) assert.ok(!vevo.html.includes(tilos), tilos);
+    assert.ok(!vevo.targy.includes('Kattints') && !vevo.targy.includes('Nagy'));
+    // a szalon levelében escape-elve megmarad
     assert.match(szalon.targy, /^Új ajándékkártya-igény \(átutalás, még nincs kifizetve\)/);
     assert.ok(szalon.html.includes(r.adat.rendeles_ref));
     assert.ok(szalon.html.includes('4 kezes Head Spa'));
+    assert.ok(szalon.html.includes('Nagy Mária &lt;b&gt;'));
+    assert.ok(szalon.html.includes('Kattints &lt;a href=&quot;http://csalo.example&quot;&gt;ide&lt;/a&gt;'));
+    assert.ok(!szalon.html.includes('<a href="http://csalo.example">'));
   });
 
   test('validacio 400; robotcsapda -> 200 levelek nelkul; szalon-level hibaja -> 502', async () => {
@@ -874,17 +895,451 @@ describe('/atutalas', () => {
   });
 });
 
+// --- visszaeles elleni vedelem ---------------------------------------------------------------------------------------------
+describe('visszaeles-vedelem (/fizetes, /szemelyre, /atutalas)', () => {
+  const VEDETT = ['fizetes', 'szemelyre', 'atutalas'];
+  const csapda = () => rendelesTorzs({ 'bot-field': 'x' }); // a robotcsapda nem hiv Stripe-ot es nem kuld levelet
+
+  test('csak application/json torzs: mas content-type -> 415 (es semmi nem tortenik)', async () => {
+    levelek = [];
+    const elotte = mock.allapot.pik.size;
+    for (const ut of VEDETT) {
+      for (const tipus of ['text/plain', 'application/x-www-form-urlencoded', 'multipart/form-data; boundary=x', '', 'application/jsonx']) {
+        const r = await hiv('POST', ut, { body: rendelesTorzs(), headers: { 'content-type': tipus } });
+        assert.equal(r.status, 415, `${ut} ${tipus}`);
+        assert.deepEqual(r.adat, { hiba: 'tipus' });
+      }
+      const r = await hiv('POST', ut, { body: csapda(), headers: { 'content-type': 'Application/JSON; charset=utf-8' } });
+      assert.notEqual(r.status, 415, ut);
+    }
+    assert.equal(mock.allapot.pik.size, elotte);
+    assert.equal(levelek.length, 0);
+  });
+
+  test('kulso oldalrol inditott keres (Origin mas host / null, Sec-Fetch-Site: cross-site) -> 403', async () => {
+    for (const ut of VEDETT) {
+      for (const fejlec of [
+        { origin: 'https://gonosz.example' },
+        { origin: 'https://teszt.mosaicheadspa.hu.gonosz.example' },
+        { origin: 'null' },
+        { origin: 'nem-url' },
+        { 'sec-fetch-site': 'cross-site' },
+        { origin: BAZIS, 'sec-fetch-site': 'cross-site' },
+      ]) {
+        const r = await hiv('POST', ut, { body: csapda(), headers: fejlec });
+        assert.equal(r.status, 403, `${ut} ${JSON.stringify(fejlec)}`);
+        assert.deepEqual(r.adat, { hiba: 'tiltott' });
+      }
+      // sajat oldal (azonos host), vagy Origin nelkul (pl. regi bongeszo): mehet
+      // (a /szemelyre-n valodi, fizetett rendelessel: ott a kapu utan a client_secret is kell)
+      const torzs = ut === 'szemelyre'
+        ? await fizetettRendeles().then((a) => ({ pi: a.pi, cs: a.client_secret, nev: 'Anna' }))
+        : csapda();
+      for (const fejlec of [{ origin: BAZIS, 'sec-fetch-site': 'same-origin' }, { origin: 'http://teszt.mosaicheadspa.hu' }, {}, { 'sec-fetch-site': 'same-site' }]) {
+        const r = await hiv('POST', ut, { body: torzs, headers: fejlec });
+        assert.equal(r.status, 200, `${ut} ${JSON.stringify(fejlec)}`);
+      }
+    }
+  });
+
+  test('kereskorlat IP-nkent: /fizetes 20 / 10 perc -> 429 + retry-after; masik IP es a kovetkezo ablak mehet', async () => {
+    _korlatAlaphelyzet();
+    const t0 = new Date('2026-10-03T10:00:00Z');
+    const ip = { 'x-forwarded-for': '203.0.113.7, 10.0.0.1' };
+    for (let i = 0; i < 20; i++) assert.equal((await hiv('POST', 'fizetes', { body: csapda(), headers: ip, most: t0 })).status, 200, `#${i + 1}`);
+    const r = await hiv('POST', 'fizetes', { body: csapda(), headers: ip, most: new Date(t0.getTime() + 60 * 1000) });
+    assert.equal(r.status, 429);
+    assert.deepEqual(r.adat, { hiba: 'tul_sok_keres' });
+    assert.equal(r.headers['retry-after'], '540');
+    // ugyanaz az IP (az x-forwarded-for elso eleme szamit) mas proxy-lanccal is korlatozva
+    assert.equal((await hiv('POST', 'fizetes', { body: csapda(), headers: { 'x-forwarded-for': '203.0.113.7' }, most: t0 })).status, 429);
+    // masik IP mehet; a mas vegpontok szamlaloja kulon el
+    assert.equal((await hiv('POST', 'fizetes', { body: csapda(), headers: { 'x-forwarded-for': '203.0.113.8' }, most: t0 })).status, 200);
+    assert.equal((await hiv('POST', 'szemelyre', { body: {}, headers: ip, most: t0 })).status, 403);
+    // 10 perc utan uj ablak
+    assert.equal((await hiv('POST', 'fizetes', { body: csapda(), headers: ip, most: new Date(t0.getTime() + 10 * 60 * 1000) })).status, 200);
+    _korlatAlaphelyzet();
+  });
+
+  test('kereskorlat: /szemelyre 30 / 10 perc; az IP forrasa: ip parameter > cf-connecting-ip > x-nf-client-connection-ip > x-forwarded-for', async () => {
+    _korlatAlaphelyzet();
+    const t0 = new Date('2026-10-03T11:00:00Z');
+    for (let i = 0; i < 30; i++) {
+      // a cf-connecting-ip szamit, a (hamisithato) x-forwarded-for valtozhat
+      const r = await hiv('POST', 'szemelyre', { body: {}, headers: { 'cf-connecting-ip': '198.51.100.9', 'x-forwarded-for': veletlenIp() }, most: t0 });
+      assert.equal(r.status, 403, `#${i + 1}`);
+    }
+    assert.equal((await hiv('POST', 'szemelyre', { body: {}, headers: { 'cf-connecting-ip': '198.51.100.9' }, most: t0 })).status, 429);
+    // az adapter altal adott ip parameter elsobbseget elvez a fejlecekkel szemben
+    for (let i = 0; i < 3; i++) {
+      const r = await hiv('POST', 'atutalas', { body: csapda(), ip: '192.0.2.50', headers: { 'cf-connecting-ip': veletlenIp(), 'x-nf-client-connection-ip': veletlenIp() }, most: t0 });
+      assert.equal(r.status, 200);
+    }
+    assert.equal((await hiv('POST', 'atutalas', { body: csapda(), ip: '192.0.2.50', headers: { 'cf-connecting-ip': veletlenIp() }, most: t0 })).status, 429);
+    _korlatAlaphelyzet();
+  });
+
+  test('/atutalas: 3 / 10 perc IP-nkent, es a peldanyon osszesen 30 / ora', async () => {
+    _korlatAlaphelyzet();
+    levelek = [];
+    const t0 = new Date('2026-10-03T12:00:00Z');
+    const ip = (n) => ({ 'x-forwarded-for': `192.0.2.${n}` });
+    for (let i = 0; i < 3; i++) assert.equal((await hiv('POST', 'atutalas', { body: csapda(), headers: ip(1), most: t0 })).status, 200);
+    let r = await hiv('POST', 'atutalas', { body: csapda(), headers: ip(1), most: t0 });
+    assert.equal(r.status, 429);
+    assert.equal(r.headers['retry-after'], '600');
+    // tovabbi 27 kulonbozo IP-rol -> osszesen 30
+    for (let i = 0; i < 27; i++) assert.equal((await hiv('POST', 'atutalas', { body: csapda(), headers: ip(10 + i), most: t0 })).status, 200, `#${i}`);
+    r = await hiv('POST', 'atutalas', { body: csapda(), headers: ip(99), most: new Date(t0.getTime() + 5 * 60 * 1000) });
+    assert.equal(r.status, 429, 'a peldany-szintu felso korlat');
+    assert.equal(r.headers['retry-after'], String(55 * 60));
+    // egy ora mulva ujra mehet
+    assert.equal((await hiv('POST', 'atutalas', { body: csapda(), headers: ip(99), most: new Date(t0.getTime() + 61 * 60 * 1000) })).status, 200);
+    assert.equal(levelek.length, 0, 'a robotcsapda nem kuldott levelet');
+    _korlatAlaphelyzet();
+  });
+
+  test('a szamlalo-tabla kicsi marad (sok kulonbozo IP)', async () => {
+    _korlatAlaphelyzet();
+    const t0 = new Date('2026-10-03T13:00:00Z');
+    for (let i = 0; i < 6000; i++) {
+      await ajandekKezel({ method: 'POST', url: BAZIS + '/api/ajandek/fizetes', headers: { 'content-type': 'application/json' }, text: '{"bot-field":"x"}', env: ENV, ip: `ip-${i}`, most: t0 });
+    }
+    const { _korlatMeret } = await import('../../netlify/lib/ajandek.js');
+    assert.ok(_korlatMeret() <= 5000, String(_korlatMeret()));
+    // a legujabb IP-k szamlaloja megvan: a 20. keres utan korlatoz
+    for (let i = 0; i < 19; i++) await ajandekKezel({ method: 'POST', url: BAZIS + '/api/ajandek/fizetes', headers: { 'content-type': 'application/json' }, text: '{"bot-field":"x"}', env: ENV, ip: 'ip-5999', most: t0 });
+    const v = await ajandekKezel({ method: 'POST', url: BAZIS + '/api/ajandek/fizetes', headers: { 'content-type': 'application/json' }, text: '{"bot-field":"x"}', env: ENV, ip: 'ip-5999', most: t0 });
+    assert.equal(v.status, 429);
+    _korlatAlaphelyzet();
+  });
+});
+
+// --- /rendeles csak olvaso tokennel ------------------------------------------------------------------------------------------
+describe('/rendeles?rt= (csak olvaso token)', () => {
+  test('rt jo -> 200, ugyanaz a valasz, mint cs-sel; rossz / mas celu / mas PI-hez tartozo rt -> 403', async () => {
+    const a = await fizetettRendeles();
+    const rt = await rendelesToken(ENV, a.pi);
+    const r = await hiv('GET', 'rendeles', { query: { pi: a.pi, rt } });
+    assert.equal(r.status, 200);
+    const cs = await hiv('GET', 'rendeles', { query: { pi: a.pi, cs: a.client_secret } });
+    assert.deepEqual(r.adat, cs.adat);
+    assert.equal(r.adat.allapot, 'fizetve');
+    assert.ok(!r.body.includes(a.client_secret), 'a valasz nem adja ki a client_secret-et');
+    const masik = await fizetettRendeles();
+    for (const query of [
+      { pi: a.pi, rt: rt.replace(/^./, (c) => (c === '0' ? '1' : '0')) },
+      { pi: a.pi, rt: await rendelesToken(ENV, masik.pi) },
+      { pi: a.pi, rt: await kartyaToken(ENV, a.pi) },
+      { pi: a.pi, rt: await kiallitToken(ENV, a.pi) },
+      { pi: a.pi, rt: 'abc' },
+      { pi: masik.pi, rt },
+      { rt },
+    ]) {
+      const x = await hiv('GET', 'rendeles', { query });
+      assert.equal(x.status, 403, JSON.stringify(query));
+      assert.deepEqual(x.adat, { hiba: 'tiltott' });
+    }
+    // az rt nem kartya-token es nem kiallito token
+    assert.equal((await hiv('GET', 'kartya', { query: { pi: a.pi, t: rt } })).status, 403);
+    assert.equal((await hiv('GET', 'kiallit', { query: { pi: a.pi, t: rt } })).status, 403);
+  });
+
+  test('az rt a /szemelyre-hez es a /fizetes-hez NEM jo', async () => {
+    const a = await fizetettRendeles();
+    const rt = await rendelesToken(ENV, a.pi);
+    for (const body of [{ pi: a.pi, rt, nev: 'Betolakodo' }, { pi: a.pi, cs: rt, nev: 'Betolakodo' }]) {
+      const r = await hiv('POST', 'szemelyre', { body });
+      assert.equal(r.status, 403);
+    }
+    assert.equal(mock.allapot.pi(a.pi).metadata.szemelyre_nev, undefined);
+    // nyitott PI: az rt-vel nem lehet a meglevo PI-t modositani (uj PI jon letre)
+    const b = await ujRendeles();
+    const brt = await rendelesToken(ENV, b.pi);
+    const f = await hiv('POST', 'fizetes', { body: rendelesTorzs({ termek: 'paros', pi: b.pi, cs: brt, rt: brt }) });
+    assert.equal(f.status, 200);
+    assert.notEqual(f.adat.pi, b.pi);
+    assert.equal(mock.allapot.pi(b.pi).amount, 2690000);
+  });
+});
+
+// --- visszaterites / vita -----------------------------------------------------------------------------------------------------
+function alairtTorzs(obj, tipus, titok = WHSEC) {
+  const torzs = JSON.stringify({ id: 'evt_' + crypto.randomUUID().replace(/-/g, ''), object: 'event', type: tipus, data: { object: obj } });
+  const ts = Math.floor(Date.now() / 1000);
+  return { torzs, fejlec: `t=${ts},v1=${crypto.createHmac('sha256', titok).update(`${ts}.${torzs}`).digest('hex')}` };
+}
+
+describe('visszaterites / vita (chargeback)', () => {
+  test('visszaterites: kartya.allapot visszavonva (kod es url nelkul), /kartya 409, a kiallitas tiltva', async () => {
+    const a = await fizetettRendeles();
+    const alap = { pi: a.pi, cs: a.client_secret };
+    let r = await hiv('GET', 'rendeles', { query: alap });
+    assert.equal(r.adat.visszavonva, false);
+    // kiallitas, majd visszaterites
+    assert.equal((await kiallitPost(a.pi, await kiallitToken(ENV, a.pi))).status, 200);
+    assert.equal((await hiv('GET', 'rendeles', { query: alap })).adat.kartya.allapot, 'kesz');
+    mock.allapot.visszaterites(a.pi);
+    r = await hiv('GET', 'rendeles', { query: alap });
+    assert.equal(r.status, 200);
+    assert.equal(r.adat.allapot, 'fizetve');
+    assert.equal(r.adat.visszavonva, true);
+    assert.deepEqual(Object.keys(r.adat.kartya).sort(), ['allapot', 'ervenyes_ig']);
+    assert.equal(r.adat.kartya.allapot, 'visszavonva');
+    assert.doesNotMatch(r.body, /AK-[0-9A-Z]{4}-[0-9A-Z]{4}/);
+    assert.doesNotMatch(r.body, /api\/ajandek\/kartya/);
+    // a kartya-oldal (t es cs) 409 barati oldal, kod nelkul
+    for (const query of [{ pi: a.pi, t: await kartyaToken(ENV, a.pi) }, alap]) {
+      const k = await hiv('GET', 'kartya', { query });
+      assert.equal(k.status, 409);
+      assert.match(k.body, /visszatérítés\/vita tartozik, a kártya nem használható/);
+      assert.doesNotMatch(k.body, /AK-[0-9A-Z]{4}-[0-9A-Z]{4}/);
+    }
+    // szemelyre szabas sem
+    assert.equal((await hiv('POST', 'szemelyre', { body: { ...alap, nev: 'X' } })).status, 409);
+  });
+
+  test('reszleges visszaterites es vita is visszavon; a kiallitas (GET/POST) nem allit ki visszavont rendelest', async () => {
+    const a = await fizetettRendeles();
+    mock.allapot.visszaterites(a.pi, { osszeg: 100000 });
+    let r = await hiv('GET', 'rendeles', { query: { pi: a.pi, cs: a.client_secret } });
+    assert.equal(r.adat.visszavonva, true);
+    assert.equal(r.adat.kartya.allapot, 'visszavonva');
+    const b = await fizetettRendeles();
+    mock.allapot.vita(b.pi);
+    r = await hiv('GET', 'rendeles', { query: { pi: b.pi, rt: await rendelesToken(ENV, b.pi) } });
+    assert.equal(r.adat.visszavonva, true);
+    levelek = [];
+    const t = await kiallitToken(ENV, b.pi);
+    const g = await hiv('GET', 'kiallit', { query: { pi: b.pi, t } });
+    assert.equal(g.status, 409);
+    assert.doesNotMatch(g.body, /<form/);
+    const p = await kiallitPost(b.pi, t);
+    assert.equal(p.status, 409);
+    assert.equal(levelek.length, 0);
+    assert.equal(mock.allapot.pi(b.pi).metadata.kartya_kesz, undefined);
+    // a sikeres fizetes esemenye mar visszavont rendelesnel nem kuld sikerlevelet
+    assert.equal((await webhook(alairtEsemeny(b.pi))).status, 200);
+    assert.equal(levelek.length, 0);
+  });
+
+  test('webhook charge.refunded -> EGY szalon-level "toroljek a kuponkodot", ketszeri kezbesitesnel is', async () => {
+    const a = await fizetettRendeles({ termek: 'paros' });
+    await webhook(alairtEsemeny(a.pi));
+    await kiallitPost(a.pi, await kiallitToken(ENV, a.pi));
+    const ch = mock.allapot.visszaterites(a.pi);
+    levelek = [];
+    const e = alairtTorzs(ch, 'charge.refunded');
+    assert.equal((await webhook(e)).status, 200);
+    assert.equal((await webhook(e)).status, 200);
+    assert.equal((await webhook(alairtTorzs(ch, 'charge.refunded'))).status, 200);
+    assert.equal(levelek.length, 1);
+    const kod = await kuponKod(ENV, a.pi);
+    const l = levelek[0];
+    assert.equal(l.cimzett, 'szalon');
+    assert.equal(l.targy, `Visszatérítés / vita – töröld a kuponkódot: ${kod}`);
+    assert.ok(l.html.includes(kod));
+    assert.ok(l.html.includes(a.rendeles_id));
+    assert.ok(l.html.includes('Páros Head Spa'));
+    assert.ok(l.html.includes('53.800 Ft'));
+    assert.match(l.html, /visszatérítés/);
+    assert.match(l.html, /már megkapta/);
+    const md = mock.allapot.pi(a.pi).metadata;
+    assert.equal(md.visszavonas_ertesites, '1');
+    assert.equal(md.visszavonva, 'visszaterites');
+  });
+
+  test('webhook charge.dispute.created (PI-vel, vagy csak charge-dzsal) -> szalon-level a vitarol', async () => {
+    const a = await fizetettRendeles();
+    const dp = mock.allapot.vita(a.pi);
+    levelek = [];
+    assert.equal((await webhook(alairtTorzs(dp, 'charge.dispute.created'))).status, 200);
+    assert.equal(levelek.length, 1);
+    assert.match(levelek[0].html, /vitát \(chargeback\)/);
+    assert.equal(mock.allapot.pi(a.pi).metadata.visszavonva, 'vita');
+    // regebbi vita-objektum: csak a charge azonosito -> a terhelesbol keressuk vissza a PI-t
+    const b = await fizetettRendeles();
+    const dp2 = mock.allapot.vita(b.pi);
+    delete dp2.payment_intent;
+    assert.equal((await webhook(alairtTorzs(dp2, 'charge.dispute.created'))).status, 200);
+    assert.equal(levelek.length, 2);
+    assert.ok(levelek[1].html.includes(await kuponKod(ENV, b.pi)));
+  });
+
+  test('idegen PI, vagy a Stripe szerint nem visszaterített terheles -> nincs level; levelkuldesi hiba -> 500, ujrakuldeskor egyszer', async () => {
+    levelek = [];
+    const v = await fetch(mock.url + '/v1/payment_intents', {
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + ENV.STRIPE_SECRET_KEY, 'content-type': 'application/x-www-form-urlencoded' },
+      body: 'amount=1000000&currency=huf&metadata[forras]=fizetolink',
+    });
+    const idegen = await v.json();
+    mock.allapot.sikeresIt(idegen.id);
+    const ich = mock.allapot.visszaterites(idegen.id);
+    assert.equal((await webhook(alairtTorzs(ich, 'charge.refunded'))).status, 200);
+    // az esemeny visszateritest allit, de a Stripe-tol visszakerdezett terheles nem az
+    const a = await fizetettRendeles();
+    const ch = mock.allapot.charge(mock.allapot.pi(a.pi).latest_charge);
+    assert.equal((await webhook(alairtTorzs({ ...ch, refunded: true, amount_refunded: ch.amount }, 'charge.refunded'))).status, 200);
+    assert.equal(levelek.length, 0);
+    assert.equal(mock.allapot.pi(a.pi).metadata.visszavonas_ertesites, undefined);
+    // kuldesi hiba
+    mock.allapot.visszaterites(a.pi);
+    const e = alairtTorzs(mock.allapot.charge(ch.id), 'charge.refunded');
+    assert.equal((await webhook(e, { kuld: async () => { throw new Error('SMTP le'); } })).status, 500);
+    assert.equal(mock.allapot.pi(a.pi).metadata.visszavonas_ertesites, undefined);
+    assert.equal((await webhook(e)).status, 200);
+    assert.equal((await webhook(e)).status, 200);
+    assert.equal(levelek.length, 1);
+  });
+});
+
+// --- AJANDEK_TITOK kotelezo ------------------------------------------------------------------------------------------------------
+describe('AJANDEK_TITOK kotelezo (legalabb 32 karakter, fail closed)', () => {
+  test('hianyzo vagy rovid titok: mod nincs; fizetes/rendeles/webhook 503 JSON; kiallit/kartya 503 HTML; nincs SHA-256(sk) tartalek', async () => {
+    const a = await fizetettRendeles();
+    const jo = { pi: a.pi, cs: a.client_secret };
+    const kt = await kartyaToken(ENV, a.pi);
+    const it = await kiallitToken(ENV, a.pi);
+    for (const titok of [undefined, '', 'rovid', 'x'.repeat(31), ' '.repeat(40)]) {
+      const env = { ...ENV, AJANDEK_TITOK: titok };
+      const cimke = JSON.stringify(titok);
+      assert.deepEqual((await hiv('GET', 'beallitas', { env })).adat, { mod: 'nincs', publikus_kulcs: null, azonnali_kartya: false }, cimke);
+      let r = await hiv('POST', 'fizetes', { body: rendelesTorzs(), env });
+      assert.equal(r.status, 503, cimke);
+      assert.deepEqual(r.adat, { hiba: 'nincs_beallitva' });
+      r = await hiv('GET', 'rendeles', { query: jo, env });
+      assert.equal(r.status, 503, cimke);
+      assert.deepEqual(r.adat, { hiba: 'nincs_beallitva' });
+      assert.equal((await hiv('GET', 'rendeles', { query: { pi: a.pi, rt: 'a'.repeat(64) }, env })).status, 503);
+      assert.equal((await hiv('POST', 'szemelyre', { body: { ...jo, nev: 'X' }, env })).status, 503);
+      r = await webhook(alairtEsemeny(a.pi), { env });
+      assert.equal(r.status, 503, cimke);
+      assert.deepEqual(r.adat, { hiba: 'nincs_beallitva' });
+      for (const [m, ut, opciok] of [
+        ['GET', 'kiallit', { query: { pi: a.pi, t: it } }],
+        ['GET', 'kartya', { query: { pi: a.pi, t: kt } }],
+        ['GET', 'kartya', { query: jo }],
+      ]) {
+        r = await hiv(m, ut, { ...opciok, env });
+        assert.equal(r.status, 503, `${ut} ${cimke}`);
+        assert.match(r.headers['content-type'], /text\/html/);
+      }
+      r = await kiallitPost(a.pi, it, { env });
+      assert.equal(r.status, 503);
+      await assert.rejects(kuponKod(env, a.pi), /AJANDEK_TITOK/);
+      await assert.rejects(kartyaToken(env, a.pi), /AJANDEK_TITOK/);
+    }
+    // pontosan 32 karakter mar eleg
+    assert.equal((await hiv('GET', 'beallitas', { env: { ...ENV, AJANDEK_TITOK: 'y'.repeat(32) } })).adat.mod, 'teszt');
+    // az atutalas (nem Stripe, nincs titok-fuggo link) titok nelkul is mukodik
+    assert.equal((await hiv('POST', 'atutalas', { body: rendelesTorzs(), env: { ...ENV, AJANDEK_TITOK: '' } })).status, 200);
+  });
+});
+
+// --- metadata-iras levelenkent (dupla level ellen) -----------------------------------------------------------------------------
+describe('metadata-iras minden level utan (nincs dupla level)', () => {
+  test('webhook: a szalon-level utan mar rogzitve van a reszallapot, mielott a vevo-level kimegy', async () => {
+    const a = await fizetettRendeles();
+    levelek = [];
+    const allapotKuldeskor = [];
+    const r = await webhook(alairtEsemeny(a.pi), {
+      kuld: async (l) => { allapotKuldeskor.push([l.cimzett, mock.allapot.pi(a.pi).metadata.ertesites]); levelek.push(l); },
+    });
+    assert.equal(r.status, 200);
+    assert.deepEqual(allapotKuldeskor, [['szalon', undefined], ['vevo@example.com', 'szalon']]);
+    assert.equal(mock.allapot.pi(a.pi).metadata.ertesites, '1');
+    assert.ok(mock.allapot.pi(a.pi).metadata.kod, 'a kod mar a levelek elott rogzitve');
+  });
+
+  test('webhook: ha a levelek kimentek, de a metadata-iras hibazik -> naplo + 200 (nem 500, ne kuldje ujra a Stripe)', async () => {
+    const a = await fizetettRendeles();
+    levelek = [];
+    mock.allapot.hibaSzabaly((k) => (k.method === 'POST' && k.params.metadata && k.params.metadata.ertesites ? 500 : 0));
+    try {
+      const r = await webhook(alairtEsemeny(a.pi));
+      assert.equal(r.status, 200);
+      assert.equal(levelek.length, 2);
+    } finally {
+      mock.allapot.hibaSzabaly(null);
+    }
+  });
+
+  test('webhook: ha mar az elozetes (kod) rogzites hibazik -> 502 es egyetlen level sem megy ki', async () => {
+    const a = await fizetettRendeles();
+    levelek = [];
+    mock.allapot.hibaSzabaly((k) => (k.method === 'POST' && k.params.metadata && k.params.metadata.kod ? 500 : 0));
+    try {
+      const r = await webhook(alairtEsemeny(a.pi));
+      assert.equal(r.status, 502);
+      assert.deepEqual(r.adat, { hiba: 'stripe' });
+      assert.equal(levelek.length, 0);
+    } finally {
+      mock.allapot.hibaSzabaly(null);
+    }
+    assert.equal((await webhook(alairtEsemeny(a.pi))).status, 200);
+    assert.equal(levelek.length, 2);
+  });
+
+  test('kiallit: a jelzo a level ELOTT all be; amig friss, ujabb POST/GET nem kuld (folyamatban oldal); 15 perc utan ujra lehet', async () => {
+    const a = await fizetettRendeles();
+    const t = await kiallitToken(ENV, a.pi);
+    levelek = [];
+    const t0 = new Date('2026-10-03T14:00:00Z');
+    // 1) a level kuldesekor a jelzo mar a metadataban van; a vegso rogzites (mindket probalkozas) hibazik
+    mock.allapot.hibaSzabaly((k) => (k.method === 'POST' && k.params.metadata && k.params.metadata.kartya_kesz ? 500 : 0));
+    let jelzoKuldeskor = null;
+    let r;
+    try {
+      r = await kiallitPost(a.pi, t, { most: t0, kuld: async (l) => { jelzoKuldeskor = mock.allapot.pi(a.pi).metadata.kiallitas_folyamatban; levelek.push(l); } });
+    } finally {
+      mock.allapot.hibaSzabaly(null);
+    }
+    assert.equal(jelzoKuldeskor, t0.toISOString());
+    assert.equal(r.status, 502);
+    assert.match(r.body, /A levél kiment, de a kiállítást nem sikerült rögzíteni/);
+    assert.equal(levelek.length, 1);
+    // 2) azonnal ujra (dupla kattintas / parhuzamos keres): nincs uj level
+    const t1 = new Date(t0.getTime() + 2 * 60 * 1000);
+    r = await kiallitPost(a.pi, t, { most: t1 });
+    assert.equal(r.status, 409);
+    assert.match(r.body, /A kiállítás folyamatban van/);
+    const g = await hiv('GET', 'kiallit', { query: { pi: a.pi, t }, most: t1 });
+    assert.equal(g.status, 409);
+    assert.doesNotMatch(g.body, /<form/);
+    assert.equal(levelek.length, 1);
+    // 3) 15 perc utan a beragadt jelzo nem blokkol tovabb: ujra kiallithato (a vevo meg egy levelet kap)
+    const t2 = new Date(t0.getTime() + 16 * 60 * 1000);
+    assert.match((await hiv('GET', 'kiallit', { query: { pi: a.pi, t }, most: t2 })).body, /<form/);
+    r = await kiallitPost(a.pi, t, { most: t2 });
+    assert.equal(r.status, 200);
+    assert.equal(levelek.length, 2);
+    const md = mock.allapot.pi(a.pi).metadata;
+    assert.equal(md.kartya_kesz, '1');
+    assert.equal(md.kiallitas_folyamatban, undefined);
+  });
+
+  test('kiallit: levelkuldesi hiba -> a jelzo torlodik, azonnal ujra lehet probalni', async () => {
+    const a = await fizetettRendeles();
+    const t = await kiallitToken(ENV, a.pi);
+    levelek = [];
+    const r = await kiallitPost(a.pi, t, { kuld: async () => { throw new Error('SMTP le'); } });
+    assert.equal(r.status, 502);
+    assert.equal(mock.allapot.pi(a.pi).metadata.kiallitas_folyamatban, undefined);
+    assert.equal((await kiallitPost(a.pi, t)).status, 200);
+    assert.equal(levelek.length, 1);
+  });
+});
+
 // --- kuponkod ------------------------------------------------------------------------------------------------------------------
 describe('kuponkod', () => {
-  test('determinisztikus, AK-XXXX-XXXX Crockford, AJANDEK_TITOK nelkul a titkos kulcs SHA-256-jabol', async () => {
+  test('determinisztikus, AK-XXXX-XXXX Crockford, az AJANDEK_TITOK HMAC-javal', async () => {
     const k1 = await kuponKod(ENV, 'pi_3UMSqdTesztAzonosito');
     assert.equal(k1, await kuponKod(ENV, 'pi_3UMSqdTesztAzonosito'));
     assert.match(k1, KOD_RE);
-    assert.equal(k1, vartKod('teszt-titok', 'pi_3UMSqdTesztAzonosito'));
+    assert.equal(k1, vartKod(TITOK, 'pi_3UMSqdTesztAzonosito'));
     assert.notEqual(k1, await kuponKod(ENV, 'pi_3UMSqdMasikAzonosito'));
-    const env2 = { STRIPE_SECRET_KEY: 'sk_test_mock_123' };
-    const titok2 = crypto.createHash('sha256').update('sk_test_mock_123').digest();
-    assert.equal(await kuponKod(env2, 'pi_3UMSqdTesztAzonosito'), vartKod(titok2, 'pi_3UMSqdTesztAzonosito'));
+    assert.notEqual(k1, await kuponKod({ ...ENV, AJANDEK_TITOK: TITOK + 'x' }, 'pi_3UMSqdTesztAzonosito'));
     for (let i = 0; i < 200; i++) assert.match(await kuponKod(ENV, 'pi_' + i.toString(36).padStart(10, 'x')), KOD_RE);
   });
 });

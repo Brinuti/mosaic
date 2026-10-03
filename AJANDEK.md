@@ -69,21 +69,45 @@ forrás/variant attribúcióhoz kötődik). P1-ben a P1 variantok ugyanebbe az o
 Eseménysorrend: `view_item` → `gift_finder_select` → `select_item` → `begin_checkout` →
 `add_payment_info` → `purchase`. Közös paraméterek: `variant_id, gift_context, relationship,
 occasion, utm_source/medium/campaign/content/term, gclid, fbclid, ttclid`; termék-eseményeknél
-`product_type`; `add_payment_info`/`purchase`: `payment_method`; `purchase`: `transaction_id`
-(a Stripe PaymentIntent azonosítója), `value`, `currency`.
+`product_type`; `add_payment_info`/`purchase`: `payment_method`.
 
-**`purchase` kizárólag akkor megy ki, ha a szerver a Stripe-tól visszakérdezve „fizetve” állapotot
-mond** (`GET /api/ajandek/rendeles`), és PaymentIntentenként legfeljebb egyszer (`localStorage`).
-**Nem purchase:** Stripe-kattintás, átutalási igény (ez a külön `bank_transfer_request` esemény),
-kártya-letöltés, beváltás.
+**A `purchase` esemény szerződése** (ezt használja a GTM-et beállító külön munkaterület):
 
-A mérőkódok (GTM, GA4, Meta Pixel) a `suti.js`-ből jönnek, **csak a `mosaicheadspa.hu` domainen**
-futnak. Az oldal a Headspa Meta-pixel oldallistájában van (mint a többi ajándékkártya-oldal).
+| mező | érték |
+|---|---|
+| `event` | `purchase` |
+| `transaction_id` (és `ecommerce.transaction_id`) | a Stripe PaymentIntent azonosítója (`pi_…`) |
+| `value` (és `ecommerce.value`) | a **szerver (Stripe) által visszaigazolt bruttó összeg** forintban, nem a böngésző konfigja |
+| `currency` | `HUF` |
+| `event_id` | ugyanaz, mint a `transaction_id` – a böngészős és a szerveroldali (Meta / TikTok) esemény deduplikálásához |
+| `product_type`, `quantity` | `egyeni` / `4kezes` / `paros`, `quantity: 1` (és `ecommerce.items`) |
+| `payment_method`, `variant_id`, `gift_context`, `utm_*`, `gclid`, `fbclid`, `ttclid` | a fizetés és az attribúció adatai |
 
-> **A GTM-konténer nincs módosítva.** A `purchase` esemény a dataLayerbe kerül, de hogy a Google
-> Ads / Meta / TikTok konverziós címkék arra épülnek-e, azt a GTM-ben kell beállítani. Eddig az
-> ajándékkártya-vásárlás a `/success-ajandekkartya-stripe?ertek=…` oldal látogatásán alapult –
-> az új folyamat nem oda érkezik.
+**A `purchase` kizárólag akkor megy ki, ha** (1) a szerver a Stripe-tól visszakérdezve „fizetve”
+állapotot mond (`GET /api/ajandek/rendeles`), (2) a fizetést **ebben a munkamenetben indította** a
+vásárló (tehát a levélből megnyitott, továbbított vagy másik eszközön nyitott link **nem** vált ki újat),
+és (3) az adott PaymentIntentről még nem ment ki (`localStorage`). **Nem megy ki:** a fizetés
+indításakor, oldalfrissítéskor, visszalépéskor, átutalási igénynél (az a külön `bank_transfer_request`
+esemény), kártya-letöltéskor, beváltáskor.
+
+**A `client_secret` nem kerül a mérésbe.** A Stripe-visszatérés és a levélbeli rendelés-link
+paramétereit (`payment_intent*`, `redirect_status`, `rendeles`, `rt`) az `ajandek.html` elején futó kis
+szkript a `sessionStorage`-ba teszi és kiveszi a címsorból, még mielőtt a `suti.js` / GTM beolvasná az
+URL-t. A levélben nincs `client_secret`: csak olvasási tokent (`?rendeles=…&rt=…`) tartalmazó link van,
+amivel a rendelés megnézhető, de nem szerkeszthető.
+
+**A mérés (GTM, Google Ads, Meta, TikTok) beállítása NEM ennek a fejlesztésnek a része.** A GTM-konténer
+nincs módosítva; a címkéket külön munkaterületen, másodlagos konverzióként, a 2026-10-12-i kapuig
+párhuzamos teszttel állítja be egy külön ablak. A mérőkódok a `suti.js`-ből jönnek, **csak a
+`mosaicheadspa.hu` domainen** futnak (a deploy preview-n nem). Az új oldalt a `suti.js` Meta-pixel
+oldallistájába **nem** vettem fel (ez is a mérés-beállítás döntése).
+
+> **A `/success-ajandekkartya-stripe` oldal megmarad.** A mostani fizetőlinkes ajándékkártya-oldalak és a
+> Stripe-fizetőlinkek átirányítása érintetlen (a `klon/` mappa nem változott); az ajándékkártya-konverzió
+> ma erre az oldalra épül. Az új `/ajandek` folyamat **nem** jár ott (a saját köszönő nézete az oldalon
+> belül van), ezért **amíg a hirdetés a régi oldalakra mutat, a mostani mérés változatlanul fut**. Az
+> `/ajandek` címet 2026-10-12 előtt **ne** linkeljük és ne hirdessük, mert a mostani konverzió nem látná
+> az ott történt vásárlásokat. Ha ez változna, előbb szólni kell.
 
 ## Fizetés és teljesítés
 
@@ -126,12 +150,19 @@ vevőnek és a szalonnak); a kártya az utalás beérkezése után készül.
 |---|---|
 | `GET beallitas` | `{ mod: 'elo'｜'teszt'｜'nincs', publikus_kulcs, azonnali_kartya }` |
 | `POST fizetes` | PaymentIntent létrehozása/frissítése; az ár a szerveren |
-| `GET rendeles?pi=&cs=` | rendelés állapota (Stripe-tól visszakérdezve); hitelesítés: `client_secret` |
+| `GET rendeles?pi=&cs=` vagy `?pi=&rt=` | rendelés állapota (Stripe-tól visszakérdezve); hitelesítés: `client_secret`, vagy az **`rt`** (HMAC, csak olvasás – ez megy levélben; a módosító végpontokhoz nem jó). Visszatérítés/vita esetén `visszavonva: true`, a kártya `kartya.allapot: 'visszavonva'` (kód és link nélkül) |
 | `POST szemelyre` | megajándékozott neve, üzenet, alkalom, átadás (csak fizetés után) |
 | `GET kartya?pi=&t=` | nyomtatható kártya (ha kiállított); a `t` külön token (HMAC), **nem** a `client_secret` – a link továbbítható, a rendeléshez nem ad hozzáférést (a régi `pi+cs` alak is megy) |
 | `GET/POST kiallit?pi=&t=` | a szalon „kiállítottam” linkje (HMAC-token; GET csak megerősít) |
-| `POST webhook` | Stripe `payment_intent.succeeded` (aláírás-ellenőrzött, idempotens) |
-| `POST atutalas` | átutalási igény (nem vásárlás) |
+| `POST webhook` | Stripe `payment_intent.succeeded` + `charge.refunded` + `charge.dispute.created` (aláírás-ellenőrzött, idempotens; visszatérítésnél/vitánál levél a szalonnak: töröld a kuponkódot) |
+| `POST atutalas` | átutalási igény (nem vásárlás); a vevőlevélbe nem kerül szabad szöveg |
+
+**Visszaélés elleni védelem** (`/fizetes`, `/szemelyre`, `/atutalas`): csak `application/json` (415), idegen
+host/`cross-site` kérés tiltva (403), memóriában tartott, best-effort kérésszám-korlát kliens-IP-nként
+(`/fizetes` 20, `/atutalas` 3, `/szemelyre` 30 kérés / 10 perc; 429). A korlát **függvénypéldányonként** él,
+ezért több példány vagy újraindulás esetén lazább – élesben érdemes mellé Netlify rate limit / Cloudflare WAF
+szabályt, vagy Turnstile-t tenni (külső fiók, jóváhagyás kell). A túl nagy kérés (32 KB, webhook 512 KB) 413,
+a törzset be sem olvassa.
 
 ## Beállítás
 
@@ -143,7 +174,7 @@ Variables and Secrets*; az SMTP-változók ugyanazok, mint az űrlapoknál):
 | `STRIPE_SECRET_KEY` | `sk_live_…` (vagy korlátozott `rk_live_…`: PaymentIntents írás/olvasás) – **titkos** |
 | `STRIPE_PUBLISHABLE_KEY` | `pk_live_…` (nyilvános; Cloudflare-en a `wrangler.toml` `[vars]` részébe kell, különben a felületen megadottat törli) |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_…` az új webhook-végponthoz – **titkos** |
-| `AJANDEK_TITOK` | a kuponkód és a kiállító link HMAC-kulcsa – **titkos**, egyszer kell kitalálni, utána ne változzon |
+| `AJANDEK_TITOK` | a kuponkód, a kiállító link, a kártya- és rendelés-tokenek HMAC-kulcsa – **titkos, KÖTELEZŐ, legalább 32 karakter** (nélküle a motor nem indul: `mod: nincs`). Egyszer kell kitalálni és minden platformon ugyanaz legyen; utána ne változzon, különben a már kiküldött linkek érvénytelenek |
 | `AJANDEK_BAZIS_URL` | nem kötelező: a levelekben lévő linkek eleje (alapból a kérés origin-je) |
 | `AJANDEK_AZONNALI` | nem kötelező: `1` = azonnali teljesítés (lásd fent) |
 
@@ -159,11 +190,11 @@ ne indítsunk hirdetést rá.)
 - [ ] **Vendégvélemény**: a `{review}` helyőrzőt (`PROOFOK.general`) valódi, engedélyezett Google-vélemény váltsa; a csillag-összegzés számát is pótolni kell (`{aktuális Google értékelés}`). Soha nem generált idézet.
 - [ ] **Páros termék vizuálja** („két barátnő”, nem romantikus): nincs valódi kép → `TERMEKEK.paros.vizual` (`{asset_url}`) üres.
 - [ ] **Stripe teszt-kör**: teszt-kulcsokkal egy teljes vásárlás (siker, elutasított kártya, 3DS), webhook és levelek ellenőrzése.
-- [ ] **Stripe webhook-végpont** létrehozása: `https://www.mosaicheadspa.hu/api/ajandek/webhook`, esemény: `payment_intent.succeeded` → a `whsec_…` a `STRIPE_WEBHOOK_SECRET`-be.
+- [ ] **Stripe webhook-végpont** létrehozása (előbb teszt-módban a deploy preview címére, élesben csak külön jóváhagyással): `https://<host>/api/ajandek/webhook`, események: `payment_intent.succeeded`, `charge.refunded`, `charge.dispute.created` → a `whsec_…` a `STRIPE_WEBHOOK_SECRET`-be. A meglévő szamlabridge- és Zapier-webhookokhoz nem szabad nyúlni.
 - [ ] **Apple Pay**: a `mosaicheadspa.hu` domain regisztrálása a Stripe-ban (Payment method domains) és a `/.well-known/apple-developer-merchantid-domain-association` fájl kiszolgálása (Google Pay és kártya enélkül is megy).
 - [ ] **Számla**: egy valódi (vagy teszt) fizetés után ellenőrizni, hogy a `szamlabridge` ebből is számlát készít (név, cím, ÁFA – a fizetőlinkek `automatic_tax`-szal mentek, ez nem).
 - [ ] **Teljesítési SLA**: eldönteni, hogy a kártya kiállítása automatikus-e (`AJANDEK_AZONNALI=1`) vagy a szalon kézi lépése; csak ennek megfelelő ígéret szerepelhet az oldalon.
-- [ ] **GTM**: a `purchase` (és a többi) dataLayer-eseményre épülő címkék/konverziók beállítása (Google Ads, Meta, TikTok, GA4).
+- [ ] **Mérés (GTM, Google Ads, Meta, TikTok)**: NEM ennek a fejlesztésnek a része; külön munkaterületen, másodlagos konverzióként, a 2026-10-12-i kapuig párhuzamos teszttel állítja be egy külön ablak (a `purchase` esemény szerződése fent). Az `/ajandek` címet addig **ne** linkeljük és ne hirdessük.
 - [ ] **ÁSZF/impresszum**: a checkout-szöveg („fizetési kötelezettséggel jár”) jogi átnézése.
 - [ ] **Egy merge/nap** a Netlify-kredit miatt; a PR-előnézeten (deploy-preview) tesztelj.
 

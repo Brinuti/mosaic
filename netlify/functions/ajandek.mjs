@@ -3,13 +3,13 @@
 // kezelo -> Response atalakitas es a levelkuldes (nodemailer, mint a submission-created.mjs).
 //
 // Beallitas a Netlify feluleten (Environment variables):
-//   STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK,
-//   (nem kotelezo) AJANDEK_BAZIS_URL, AJANDEK_AZONNALI
+//   STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET,
+//   AJANDEK_TITOK (KOTELEZO, legalabb 32 karakter), (nem kotelezo) AJANDEK_BAZIS_URL, AJANDEK_AZONNALI
 //   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, MAIL_FROM, MAIL_TO - ugyanazok, mint az urlapoknal.
 // Ha nincs SMTP-beallitas, a levelkuldes hibat dob: a webhook ilyenkor nem 2xx-et ad, igy a
 // Stripe kesobb ujraprobalja (egy fizetett rendeles ertesitoje nem veszhet el csendben).
 import nodemailer from 'nodemailer';
-import { ajandekKezel } from '../lib/ajandek.js';
+import { ajandekKezel, keresTorzs } from '../lib/ajandek.js';
 
 function levelkuldo() {
   let posta = null;
@@ -33,11 +33,19 @@ function levelkuldo() {
   };
 }
 
-export default async (req) => {
-  const headers = {};
-  for (const [k, v] of req.headers) headers[k.toLowerCase()] = v;
-  const text = req.method === 'GET' || req.method === 'HEAD' ? '' : await req.text();
-  const v = await ajandekKezel({ method: req.method, url: req.url, headers, text, env: process.env, kuld: levelkuldo() });
+export default async (req, context) => {
+  // a tul nagy torzset be sem olvassuk (content-length, illetve olvasas kozbeni korlat)
+  const t = await keresTorzs(req);
+  const v = t.valasz || await ajandekKezel({
+    method: req.method,
+    url: req.url,
+    headers: req.headers,
+    text: t.text,
+    env: process.env,
+    kuld: levelkuldo(),
+    // a Netlify altal megallapitott kliens-IP (a kereskorlathoz); a kliens nem hamisithatja
+    ip: (context && context.ip) || req.headers.get('x-nf-client-connection-ip') || undefined,
+  });
   return new Response(v.body, { status: v.status, headers: v.headers });
 };
 

@@ -1,5 +1,6 @@
 // Helyi fejleszto/teszt kiszolgalo a Gift Commerce Engine-hez (NEM kerul az oldalba).
 //   node tools/ajandek-teszt/szerver.mjs [port]      (alapbol 4195)
+//   KORLAT=1 node tools/ajandek-teszt/szerver.mjs    a kereskorlat is el (alapbol helyben ki van kapcsolva)
 //
 // - /ajandek            a foglalas/ajandek.html (a build-jelolok nelkul); ?m=1 vagy mobil user agent:
 //                       a mobil-oldalak build-atirasat utanozza (/assets/img/ -> /assets/img/m/)
@@ -21,18 +22,19 @@ const TIPUS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
   '.woff2': 'font/woff2', '.woff': 'font/woff', '.ico': 'image/x-icon' };
 
 const elfogottLevelek = [];
-let ajandekKezel = null, mock = null, env = {};
+let ajandekKezel = null, korlatAlaphelyzet = null, mock = null, env = {};
 
 async function hatterInditas() {
   try {
-    ({ ajandekKezel } = await import('../../netlify/lib/ajandek.js'));
+    ({ ajandekKezel, _korlatAlaphelyzet: korlatAlaphelyzet } = await import('../../netlify/lib/ajandek.js'));
     const { mockStripeInditas } = await import('./mock-stripe.mjs');
     mock = await mockStripeInditas({ port: 0 });
     env = {
       STRIPE_SECRET_KEY: process.env.TESZT_MOD === 'nincs' ? '' : 'sk_test_mock_dev',
       STRIPE_PUBLISHABLE_KEY: process.env.TESZT_MOD === 'nincs' ? '' : 'pk_test_mock_dev',
       STRIPE_WEBHOOK_SECRET: 'whsec_mock_dev',
-      AJANDEK_TITOK: 'dev-titok',
+      // a kezelo legalabb 32 karakteres titkot ker (kulonben 'nincs' mod)
+      AJANDEK_TITOK: 'dev-titok-dev-titok-dev-titok-dev-titok',
       AJANDEK_AZONNALI: process.env.AZONNALI === '1' ? '1' : '',
       STRIPE_API_BASE: mock.url,
     };
@@ -88,6 +90,9 @@ http.createServer(async (req, res) => {
         res.writeHead(200, { 'content-type': 'application/json' });
         return res.end(JSON.stringify({ mod: 'nincs', publikus_kulcs: null, azonnali_kartya: false }));
       }
+      // helyben minden keres ugyanarrol az IP-rol jon: a kereskorlat (pl. 20 /fizetes / 10 perc) a
+      // kezi / Playwright-probat zavarna, ezert alapbol nullazzuk; KORLAT=1-gyel az eles viselkedes
+      if (process.env.KORLAT !== '1' && korlatAlaphelyzet) korlatAlaphelyzet();
       const szoveg = req.method === 'GET' || req.method === 'HEAD' ? '' : await torzs(req);
       const fejlecek = Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k.toLowerCase(), String(v)]));
       const v = await ajandekKezel({

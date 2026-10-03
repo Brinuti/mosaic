@@ -5,11 +5,11 @@
 // Ez az utvonal pontosabb, mint a functions/[[path]].js, ezert az /api/ajandek/* ide jut.
 //
 // Beallitas (Cloudflare: Workers & Pages -> a projekt -> Settings -> Variables and Secrets):
-//   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK, SMTP_PASS (titkos);
+//   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK (KOTELEZO, legalabb 32 karakter), SMTP_PASS (titkos);
 //   STRIPE_PUBLISHABLE_KEY, AJANDEK_BAZIS_URL, AJANDEK_AZONNALI (nem titkos: a wrangler.toml [vars]
 //   reszebe, mert ha van wrangler.toml, a feluleten megadott nem titkos valtozokat a Cloudflare torli).
 import { WorkerMailer } from 'worker-mailer';
-import { ajandekKezel } from '../../../netlify/lib/ajandek.js';
+import { ajandekKezel, keresTorzs } from '../../../netlify/lib/ajandek.js';
 
 // Egy keresen belul egy SMTP-kapcsolat; a levelek sorban mennek ki rajta.
 function postas(env) {
@@ -59,13 +59,17 @@ function postas(env) {
 
 export async function onRequest(context) {
   const { request, env } = context;
-  const headers = {};
-  for (const [k, v] of request.headers) headers[k.toLowerCase()] = v;
-  const text = request.method === 'GET' || request.method === 'HEAD' ? '' : await request.text();
+  // a tul nagy torzset be sem olvassuk (content-length, illetve olvasas kozbeni korlat)
+  const t = await keresTorzs(request);
+  if (t.valasz) return new Response(t.valasz.body, { status: t.valasz.status, headers: t.valasz.headers });
   const p = postas(env);
   let v;
   try {
-    v = await ajandekKezel({ method: request.method, url: request.url, headers, text, env, kuld: (l) => p.kuld(l) });
+    v = await ajandekKezel({
+      method: request.method, url: request.url, headers: request.headers, text: t.text, env, kuld: (l) => p.kuld(l),
+      // a Cloudflare a cf-connecting-ip fejlecet maga allitja be (a kliens erteket felulirja)
+      ip: request.headers.get('cf-connecting-ip') || undefined,
+    });
   } finally {
     await p.zar();
   }
