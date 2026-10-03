@@ -41,6 +41,7 @@
   const ELORE_NAP = 92;
   const KEP = '/assets/img/m/';
   const TAROLO = 'mh_pmu_foglalas';
+  const TAROLO_C = 'mh_pmu_visszahivas';
 
   // kezelesfotok a sminktetovalas oldal sajat kepeibol (kulcsszo -> kep)
   const FOTOK = [
@@ -63,7 +64,7 @@
     [/ajak.*r[uú]zs/i, 'Telítettebb, egyenletes szín és határozottabb kontúr – rúzsos hatás egész nap, smink nélkül.'],
     [/szemh[eé]j/i, 'Finoman elmosott, füstös tushúzás a pillák mentén: kiemeli a szemet, nem kell reggelente megrajzolni.'],
     [/szempilla/i, 'Pigmentálás a pillák tövében: sűrűbbnek, dúsabbnak látszó pillasor, smink nélkül is.'],
-    [/konzult/i, 'Személyes, kötetlen találkozó Melittával a szalonban: átbeszélitek, milyen hatást szeretnél, és melyik technika illik hozzád.'],
+    [/konzult/i, 'Személyes, kötetlen találkozó velem a szalonban: átbeszéljük, milyen hatást szeretnél, megtervezem és berajzolom a formát, és megmutatom, melyik technika illik hozzád. Kötelezettség nélkül.'],
   ];
 
   // --- segedek ---------------------------------------------------------------
@@ -128,7 +129,7 @@
     const sorok = {
       fo: kerdesNelkul ? ['Kezelés', 'Időpont', 'Adatok'] : ['Kezelés', 'Időpont', 'Kérdés', 'Adatok'],
       foto: ['Fotó', 'Elérhetőség', 'Kész'],
-      c: ['Konzultáció', 'Időpont', 'Elérhetőség'],
+      c: ['Telefon', 'Időpont', 'Elérhetőség'],
     }[l[0]];
     const hol = kerdesNelkul && nev === 'adatok' ? 2 : l[1];
     $('lepesjelzo').replaceChildren(...sorok.map((t, i) => elem('li', { class: i < hol ? 'kesz' : i === hol ? 'most' : '', 'aria-current': i === hol ? 'step' : false },
@@ -189,7 +190,7 @@
       const nyers = (i.dataset.name || '').trim();
       // "Ajaktetovalas - Aquarell - 124.900 Ft helyett most" -> cim, valtozat, eredeti ar
       const m = nyers.match(/^(.*?)\s*-\s*([\d. ]+)\s*Ft helyett most\s*$/i);
-      const nev = m ? m[1] : nyers;
+      const nev = /konzult/i.test(nyers) ? 'Személyes konzultáció' : m ? m[1] : nyers;
       const [cim, ...tobbi] = nev.split(/\s+-\s+/);
       const foto = (FOTOK.find(([re]) => re.test(nev)) || [, 'c2eb0f_567cfb0230ba49c089087cf55d6ead4e.jpg'])[1];
       lista.push({
@@ -201,7 +202,7 @@
     if (!lista.length) throw new Error('nincs kezeles');
     allapot.kezelesek = lista;
   }
-  const arSzoveg = (k) => (k.ar ? ft(k.ar) : /ingyenes/i.test(k.nev) ? 'Ingyenes' : 'Egyedi ár');
+  const arSzoveg = (k) => (k.ar ? ft(k.ar) : /ingyenes|konzult/i.test(k.nev) ? 'Ingyenes' : 'Egyedi ár');
 
   async function szabadKezdesek(kezelesId, tol, napok) {
     const p = new URLSearchParams({
@@ -252,7 +253,7 @@
       elem('img', { src: k.foto, alt: '' }),
       elem('span', {},
         elem('span', { class: 'nev', szoveg: k.egyeb ? k.nev : k.cim }),
-        elem('span', { class: 'valtozat', szoveg: [k.egyeb ? 'Személyesen' : k.valtozat, idotartam(k.perc)].filter(Boolean).join(' · ') })),
+        elem('span', { class: 'valtozat', szoveg: [k.egyeb ? 'A szalonban' : k.valtozat, idotartam(k.perc)].filter(Boolean).join(' · ') })),
       elem('span', { class: 'jobb' },
         elem('span', { class: 'ar', szoveg: arSzoveg(k) }),
         k.eredeti ? elem('s', { szoveg: ft(k.eredeti) }) : null));
@@ -265,7 +266,7 @@
       $('kezelesek').replaceChildren(...sorrend.map((k) => kezelesKartya(k, () => kezelesValaszt(k))));
     } catch (e) {
       console.error(e);
-      hibaDoboz($('kezelesek'), 'Most nem sikerült betölteni a kezeléseket. Kérjük, próbáld újra pár perc múlva, vagy hívj minket: 06 20 247 4444.');
+      hibaDoboz($('kezelesek'), 'Most nem sikerült betölteni a kezeléseket. Kérlek, próbáld újra pár perc múlva, vagy hívj minket: 06 20 247 4444.');
     }
   };
   function kezelesValaszt(k) {
@@ -294,11 +295,19 @@
     $('naptar').replaceChildren(elem('div', { class: 'betolt', style: 'grid-column:1/-1', szoveg: 'Szabad napok betöltése…' }));
     try { await kezdesekBetolt(friss); } catch (e) {
       console.error(e);
-      hibaDoboz($('naptar'), 'Most nem sikerült lekérni a szabad időpontokat. Kérjük, próbáld újra, vagy hívj minket: 06 20 247 4444.');
+      hibaDoboz($('naptar'), 'Most nem sikerült lekérni a szabad időpontokat. Kérlek, próbáld újra, vagy hívj minket: 06 20 247 4444.');
       return;
     }
     // elore kijeloljuk az elso szabad napot, igy az idopontok rogton latszanak
     const napok = new Set(allapot.kezdesek.map(napKulcs));
+    // ?nap=YYYY-MM-DD (a landingen kivalasztott nap): ha erre a kezelesre is van aznap szabad idopont, azt mutatjuk
+    const kertNap = new URLSearchParams(location.search).get('nap');
+    if (kertNap && !allapot.kertNapKesz) {
+      allapot.kertNapKesz = true;
+      const [ev, ho, nap] = kertNap.split('-').map(Number);
+      const k = ev ? napKulcs(Date.UTC(ev, ho - 1, nap, 10) / 1000) : null;
+      if (k && napok.has(k)) { allapot.naptarNap = k; allapot.honap = honapKulcs(Date.UTC(ev, ho - 1, nap, 10) / 1000); }
+    }
     if (!napok.has(allapot.naptarNap)) { allapot.naptarNap = allapot.kezdesek.length ? napKulcs(allapot.kezdesek[0]) : null; allapot.honap = null; }
     if (!allapot.honap && allapot.kezdesek.length) allapot.honap = honapKulcs(allapot.kezdesek[0]);
     rajzolNaptar();
@@ -347,8 +356,8 @@
     // egy erintes az idoponton = tovabb (nincs kulon "ezt valasztom" gomb)
     $('nap-idok').replaceChildren(...(idok.length ? [elem('div', { class: 'nap-cim', szoveg: napNev(idok[0]) }), elem('div', { class: 'idolista' }, ...idok.map((ts) =>
       elem('button', { type: 'button', class: 'idogomb', 'aria-pressed': String(ts === allapot.slot), szoveg: ora(ts), onclick: () => slotValaszt(ts) })))]
-      : !szabad.size ? [elem('div', { class: 'doboz-info' }, ikon('naptar'), elem('span', { szoveg: 'Erre a kezelésre jelenleg nincs szabad időpont. Kérj visszahívást, és közösen találunk egyet!' })),
-        elem('div', { style: 'height:12px' }), elem('button', { type: 'button', class: 'gomb', 'data-ugrik': 'c-info' }, 'Visszahívást kérek ', elem('span', { class: 'nyil', szoveg: '→' }))]
+      : !szabad.size ? [elem('div', { class: 'doboz-info' }, ikon('naptar'), elem('span', { szoveg: 'Erre a kezelésre jelenleg nincs szabad időpont. Kérj telefonos konzultációt, és közösen találunk egyet!' })),
+        elem('div', { style: 'height:12px' }), elem('button', { type: 'button', class: 'gomb', 'data-ugrik': 'c-info' }, 'Telefonos konzultációt kérek ', elem('span', { class: 'nyil', szoveg: '→' }))]
       : [elem('p', { class: 'halk kicsi', szoveg: 'Válassz egy zölddel jelölt napot.' })]));
   }
   $('elozo-honap').addEventListener('click', () => { const hk = honapok(); allapot.honap = hk[Math.max(0, hk.indexOf(allapot.honap) - 1)]; rajzolNaptar(); });
@@ -418,8 +427,8 @@
   // Mintanezet foglalas nelkul: ?minta=kezeles|konz|visszahivas
   const MINTA = new URLSearchParams(location.search).get('minta');
   const KOSZ = {
-    kezeles: { cim: 'Sikeres foglalás!', hash: '#koszonjuk', lepesek: ['Visszaigazolást küldünk e-mailben.', 'A kezelés előtt emlékeztetőt kapsz.', 'Lemondani legkésőbb 48 órával előtte tudod – utána az időpont már a tiéd, másnak nem adhatjuk oda.'] },
-    konz: { cim: 'Konzultációd lefoglalva!', hash: '#koszonjuk-konzultacio', lepesek: ['Visszaigazolást küldünk e-mailben.', 'Asszisztensünk felhív, hogy egyeztessétek a részleteket.', 'A konzultáción minden kérdésedre választ kapsz.'] },
+    kezeles: { cim: 'Sikeres foglalás!', hash: '#koszonjuk', lepesek: ['Visszaigazolást küldök e-mailben.', 'A kezelés előtt emlékeztetőt kapsz.', 'Lemondani legkésőbb 48 órával előtte tudod – utána az időpont már a tiéd, másnak nem adhatom oda.'] },
+    konz: { cim: 'Személyes konzultációd lefoglalva!', hash: '#koszonjuk-konzultacio', lepesek: ['Visszaigazolást küldök e-mailben.', 'Asszisztensem felhív, hogy egyeztessétek a részleteket.', 'A konzultáción minden kérdésedre választ kapsz.'] },
   };
   BELEPES.koszonjuk = () => {
     const mintaNap = Math.floor(Date.now() / 86400000 + 7) * 86400 + 8 * 3600;
@@ -448,16 +457,16 @@
       const a = elem('a', { href: URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })), download: 'mosaic-sminktetovalas.ics' });
       document.body.append(a); a.click(); a.remove();
     };
-    $('ott-leszek').onclick = (e) => { e.currentTarget.textContent = 'Várunk! ✓'; e.currentTarget.disabled = true; };
+    $('ott-leszek').onclick = (e) => { e.currentTarget.textContent = 'Várlak! ✓'; e.currentTarget.disabled = true; };
   };
 
   // --- B / D. foto ----------------------------------------------------------------------
   const MAX_FOTO = 5;
   BELEPES.foto = () => {
     const d = allapot.ag === 'D';
-    $('foto-cim').textContent = d ? 'Nem vagy biztos benne? Küldj fotót, és segítünk.' : 'Tölts fel fotót a jelenlegi sminktetoválásodról';
-    $('foto-szoveg').replaceChildren(d ? 'Ránézünk, és megírjuk, hogy első kezelés vagy korrekció szükséges-e.'
-      : elem('b', { szoveg: 'Fotó nélkül nem tudunk segíteni: a feltöltés kötelező. Csak a fotó alapján tudjuk megmondani, mit lehet és érdemes tenni.' }));
+    $('foto-cim').textContent = d ? 'Nem vagy biztos benne? Küldj fotót, és segítek.' : 'Tölts fel fotót a jelenlegi sminktetoválásodról';
+    $('foto-szoveg').replaceChildren(d ? 'Ránézek, és megírom, hogy első kezelés vagy korrekció szükséges-e.'
+      : elem('b', { szoveg: 'Fotó nélkül nem tudok segíteni: a feltöltés kötelező. Csak a fotó alapján tudom megmondani, mit lehet és érdemes tenni.' }));
     $('foto-osszegzes').replaceChildren(allapot.slot && allapot.kezeles
       ? elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Választott (preferált) időpont' }), elem('div', { class: 'sor' }, ikon('naptar'),
         elem('span', {}, elem('b', { szoveg: teljes(allapot.slot) }), elem('span', { szoveg: allapot.kezeles.cim + (allapot.kezeles.valtozat ? ' – ' + allapot.kezeles.valtozat : '') }))))
@@ -489,7 +498,7 @@
         allapot.fotok.push({ blob: b, url: URL.createObjectURL(b) });
       } catch (err) { rossz++; }
     }
-    if (rossz) hibaDoboz($('foto-hiba'), 'A kép feltöltése nem sikerült' + (fajlok.length > 1 ? ' (' + rossz + ' képnél)' : '') + '. Kérjük, próbálj másik képet (JPG vagy PNG).');
+    if (rossz) hibaDoboz($('foto-hiba'), 'A kép feltöltése nem sikerült' + (fajlok.length > 1 ? ' (' + rossz + ' képnél)' : '') + '. Kérlek, próbálj másik képet (JPG vagy PNG).');
     if (e.target.files.length > fajlok.length) hibaDoboz($('foto-hiba'), 'Legfeljebb ' + MAX_FOTO + ' képet küldhetsz.');
     e.target.value = '';
     rajzolFotok();
@@ -533,7 +542,7 @@
       return true;
     } catch (e) {
       console.error(e);
-      hibaDoboz(hibaHely, 'Hiba történt a küldés közben. Kérjük, próbáld újra, vagy hívj minket: 06 20 247 4444.');
+      hibaDoboz(hibaHely, 'Hiba történt a küldés közben. Kérlek, próbáld újra, vagy hívj minket: 06 20 247 4444.');
       return false;
     } finally { gomb.removeAttribute('aria-disabled'); gomb.innerHTML = regi; }
   }
@@ -542,7 +551,7 @@
     if (gomb.getAttribute('aria-disabled') === 'true') return;
     hibaDoboz($('foto-kuld-hiba'), '');
     if (!urlapEllenoriz('foto-adatok')) return;
-    if (!$('foto-hozzajarul').checked) { hibaDoboz($('foto-kuld-hiba'), 'Kérjük, fogadd el az adatkezelést, hogy a fotóidat megnézhessük.'); return; }
+    if (!$('foto-hozzajarul').checked) { hibaDoboz($('foto-kuld-hiba'), 'Kérlek, fogadd el az adatkezelést, hogy a fotóidat megnézhessem.'); return; }
     const k = allapot.kezeles;
     const adat = new FormData();
     adat.set('form-name', 'pmu-proba-foto');
@@ -574,9 +583,9 @@
   };
   const cMikor = () => allapot.cSav || 'Bármikor';
   const cOsszegzes = (cim) => elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: cim }), elem('div', { class: 'sor' }, ikon('telefon'),
-    elem('span', {}, elem('b', { szoveg: cMikor() }), elem('span', { szoveg: '10 perces ingyenes telefonos konzultáció' }))));
+    elem('span', {}, elem('b', { szoveg: cMikor() }), elem('span', { szoveg: 'Telefonos konzultáció · kb. 10 perc, ingyenes' }))));
   $('c-ido-tovabb').addEventListener('click', () => { allapot.cKert = true; ugrik('c-adatok'); });
-  BELEPES['c-adatok'] = () => { if (!allapot.cKert) { ugrik('c-ido'); return; } $('c-osszegzes').replaceChildren(cOsszegzes('Mikor hívjunk?')); };
+  BELEPES['c-adatok'] = () => { if (!allapot.cKert) { ugrik('c-ido'); return; } $('c-osszegzes').replaceChildren(cOsszegzes('Mikor hívjalak?')); };
   $('c-kuld').addEventListener('click', async (e) => {
     const gomb = e.currentTarget;
     if (gomb.getAttribute('aria-disabled') === 'true') return;
@@ -587,12 +596,17 @@
       mikor_nap: '', mikor_napszak: cMikor(), oldal: BEAGYAZVA ? 'pmu-sminktetovalas' : 'foglalo-pmu',
     });
     if (!(await bekuld(adat, gomb, $('c-kuld-hiba')))) return;
-    ugrik('c-kesz');
+    // a telefonos konzultacio ugyanaz a konverzio, mint a weboldal regi visszahivas-urlapja es a
+    // Facebook-leadek: a /pmu-vh koszonooldalon lefut a megszokott meres, majd a klon.js visszahoz ide
+    tarol(TAROLO_C, { cSav: cMikor() });
+    try { window.top.location.assign('/pmu-vh?mh_proba=vh'); } catch (e2) { location.assign('/pmu-vh?mh_proba=vh'); }
   });
   BELEPES['c-kesz'] = () => {
     if (MINTA === 'visszahivas') Object.assign(allapot, { cKert: true, cSav: allapot.cSav || 'Délelőtt (9–12)' });
+    const c = olvas(TAROLO_C);
+    if (c && !allapot.cKert) Object.assign(allapot, { cKert: true, cSav: c.cSav === 'Bármikor' ? null : c.cSav });
     if (!allapot.cKert) { mutat('kezdo'); return; }
-    $('c-kesz-osszegzes').replaceChildren(cOsszegzes('Ekkor hívunk'));
+    $('c-kesz-osszegzes').replaceChildren(cOsszegzes('Ekkor hívlak'));
     history.replaceState({ nezet: 'c-kesz' }, '', location.pathname + location.search + '#visszahivas-kesz');
   };
 
@@ -631,7 +645,7 @@
       BELEPES.koszonjuk();
       return;
     }
-    if (MINTA === 'visszahivas') {
+    if (MINTA === 'visszahivas' || (location.hash === '#visszahivas-kesz' && olvas(TAROLO_C))) {
       mutat('c-kesz');
       BELEPES['c-kesz']();
       return;
