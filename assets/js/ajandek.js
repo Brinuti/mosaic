@@ -649,7 +649,7 @@
     panel.appendChild(h('p', { class: 'ah-halk ah-kicsi', text: 'Az ajándékkártyát az utalás beérkezése után e-mailben küldjük. Két adatot még kérünk:' }));
     var tel = h('input', { id: 'ah-atu-tel', type: 'tel', autocomplete: 'tel', inputmode: 'tel', maxlength: '25', placeholder: '+36 20 123 4567', required: true });
     var nev = h('input', { id: 'ah-atu-nev', type: 'text', maxlength: '80', autocomplete: 'off', placeholder: 'Anna' });
-    var uzenet = h('textarea', { id: 'ah-atu-uzenet', maxlength: '300', rows: '3', placeholder: 'Boldog születésnapot…' });
+    var uzenet = h('textarea', { id: 'ah-atu-uzenet', maxlength: '300', rows: '3', placeholder: 'Írd ide az üzenetet a kártyára…' });
     var hibaP = h('p', { class: 'ah-mezohiba', id: 'ah-atu-hiba', role: 'alert', hidden: !hiba, text: hiba || '' });
     var kuldGomb = h('button', { type: 'button', class: 'ah-gomb ah-gomb-fo ah-gomb-teljes', text: 'Utalási adatok kérése' });
     function mezo(cimke, az, elem, seg) {

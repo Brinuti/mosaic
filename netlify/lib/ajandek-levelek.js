@@ -201,7 +201,7 @@ ${lablec(d.szalon)}
 }
 
 // d: { rendeles_ref, termek_nev, osszeg_szoveg, kozlemeny, email, nev, telefon, iranyitoszam, varos, cim, ceges_nev, ceges_adoszam,
-//      megajandekozott, uzenet, oldal, kiallit_url, salonic_url, salonic_nev }
+//      megajandekozott, uzenet, oldal, kiallit_url, salonic_url, salonic_nev, szalon_email }
 export function szalonAtutalasLevel(d) {
   return {
     targy: `Új ajándékkártya-igény (átutalás, még nincs kifizetve) – ${d.rendeles_ref}`,
@@ -220,7 +220,7 @@ ${tabla([['Megajándékozott', d.megajandekozott]])}
 ${d.uzenet ? `<p style="white-space:pre-line;border-left:3px solid ${ARANY};padding:4px 12px;margin:8px 0">${esc(d.uzenet)}</p>` : ''}
 ${cim('TEENDŐ, HA AZ UTALÁS BEÉRKEZETT')}
 <ol style="margin:0 0 12px 18px;padding:0">
-<li><b>Salonic:</b> utalvány-értékesítés (a számla miatt): ${d.salonic_url ? `<a href="${esc(d.salonic_url)}">Utalvány értékesítés megnyitása</a> – ${esc(d.salonic_nev || d.termek_nev)}` : esc(d.termek_nev)}. Fizetési mód: <b>Átutalás</b>. A fenti vevő- és megajándékozott-adatokat használd.</li>
+<li><b>Salonic:</b> utalvány-értékesítés (a számla miatt): ${d.salonic_url ? `<a href="${esc(d.salonic_url)}">Utalvány értékesítés megnyitása</a> – ${esc(d.salonic_nev || d.termek_nev)}` : esc(d.termek_nev)}. Fizetési mód: <b>Átutalás</b>. Az űrlap mezői a lenti gombra kattintva megnyíló oldalon soronként másolhatók. Az <b>Ajándékozó e-mail címe</b> mezőbe a <b>szalon címét</b> (${esc(d.szalon_email || '')}) írd, hogy a Salonic ne küldjön saját levelet a vevőnek; az „Ajándékozott e-mail címe” mező és a másolat-küldés jelölőnégyzet maradjon üresen.</li>
 <li>A Salonic által adott <b>utalványkódot</b> másold ki.</li>
 <li>Kattints az alábbi gombra, írd be a kódot, és a vevő e-mailben megkapja a kártyát:</li>
 </ol>
@@ -258,6 +258,8 @@ ${vita ? '<p style="font-size:13px;color:#555">A vita részleteit és a válasza
 
 // --- HTML-oldalak --------------------------------------------------------------------------------------
 // A nyomtatogomb szkriptje: a kezelo ennek a hash-et teszi a Content-Security-Policy-ba.
+// A "Masolas" gombok szkriptje (a kiallito oldalon): vagolapra masol, regi bongeszoben textarea-tartalekkal.
+export const MASOL_JS = `document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('button[data-masol]');if(!b)return;var t=b.getAttribute('data-masol'),r=b.getAttribute('data-eredeti'),ok=function(){b.textContent=b.getAttribute('data-ok');b.classList.add('kesz');setTimeout(function(){b.textContent=r;b.classList.remove('kesz')},1800)},tart=function(){var a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();var s=false;try{s=document.execCommand('copy')}catch(x){}document.body.removeChild(a);if(s)ok()};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,tart)}else{tart()}});`;
 export const NYOMTAT_JS = "document.getElementById('nyomtat').addEventListener('click',function(){window.print()});";
 
 const OLDAL_CSS = `*{box-sizing:border-box}html,body{margin:0}
@@ -275,12 +277,23 @@ input[type=text]{width:100%;font:16px/1.4 "Courier New",Courier,monospace;letter
 .hiba{color:#8f3b2e;font-size:14px;text-align:left;margin:0 0 10px}
 .mezo{margin:0 0 4px}
 .linksor{margin:6px 0 2px}
+.masol{margin:20px 0 4px;text-align:left}
+.masol h2{font:600 15px/1.3 "Helvetica Neue",Arial,sans-serif;color:${PETROL_SOT};margin:0 0 8px}
+.masol-sor{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;border-top:1px solid #e1d9c8;padding:9px 0}
+.masol-sor:last-of-type{border-bottom:1px solid #e1d9c8}
+.masol-adat{flex:1;min-width:0}
+.masol-cimke{display:block;font-size:12px;color:#5d7576;margin:0 0 2px}
+.masol-ertek{display:block;font-size:15px;white-space:pre-line;overflow-wrap:anywhere}
+button.masol-gomb{flex:none;font-size:13px;padding:8px 14px;background:#fff;color:${PETROL};border:1px solid ${PETROL}}
+button.masol-gomb:hover{background:#eef3f2}
+button.masol-gomb.kesz{background:${PETROL};color:#fff}
 button{font:600 16px/1.35 "Helvetica Neue",Arial,sans-serif;background:${PETROL};color:#fff;border:0;border-radius:4px;padding:14px 22px;cursor:pointer;max-width:100%}
 button:hover{background:${PETROL_SOT}}`;
 
 // Egyszeru, barati oldal (allapot, hiba, a szalon visszaigazolasa / megerosito urlapja)
 // d: { cim, bekezdesek: [szoveg], reszletek?: [[cimke, ertek]], frissit?: masodperc, bazis,
 //      linkek?: [{ url, szoveg }],
+//      masol?: { cim, sorok: [{ cimke, ertek }] }  (soronkent "Masolas" gomb a vagolapra; a szkript hash-e a CSP-ben)
 //      urlap?: { action, rejtett: { nev: ertek }, mezok?: [{ nev, cimke, ertek, max, kotelezo, megjegyzes }], hiba?, gomb } }
 //      (az urlap POST-tal kuld)
 export function egyszeruOldal(d) {
@@ -298,6 +311,10 @@ ${d.frissit ? `<meta http-equiv="refresh" content="${Number(d.frissit) | 0}">` :
 ${(d.bekezdesek || []).map((b) => `<p>${esc(b)}</p>`).join('\n')}
 ${d.reszletek && d.reszletek.length ? tabla(d.reszletek) : ''}
 ${(d.linkek || []).map((l) => `<p class="linksor"><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.szoveg)}</a></p>`).join('\n')}
+${d.masol && d.masol.sorok && d.masol.sorok.length ? `<section class="masol"><h2>${esc(d.masol.cim)}</h2>
+${d.masol.sorok.map((m) => `<div class="masol-sor"><div class="masol-adat"><span class="masol-cimke">${esc(m.cimke)}</span><span class="masol-ertek">${esc(m.ertek)}</span></div><button type="button" class="masol-gomb" data-masol="${esc(m.ertek)}" data-eredeti="Másolás" data-ok="Másolva ✓">Másolás</button></div>`).join('\n')}
+</section>
+<script>${MASOL_JS}</script>` : ''}
 ${d.urlap ? `<form method="post" action="${esc(d.urlap.action)}">
 ${Object.entries(d.urlap.rejtett || {}).map(([n, v]) => `<input type="hidden" name="${esc(n)}" value="${esc(v)}">`).join('\n')}
 ${(d.urlap.mezok || []).map((m) => `<div class="mezo"><label for="m-${esc(m.nev)}">${esc(m.cimke)}</label>

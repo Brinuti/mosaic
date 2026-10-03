@@ -88,10 +88,13 @@ function json(status, adat, fejlec = {}) {
   return { status, headers: { ...ALAP_FEJLEC, 'content-type': 'application/json; charset=utf-8', ...fejlec }, body: JSON.stringify(adat) };
 }
 
-let nyomtatHash = null;
+let szkriptHash = null;
 // urlapKuldes: csak a kiallitas megerosito oldala kuldhet urlapot (form-action 'self'), minden mas 'none'
 async function html(k, status, tartalom, { urlapKuldes = false } = {}) {
-  if (!nyomtatHash) nyomtatHash = 'sha256-' + base64(await sha256(enc.encode(L.NYOMTAT_JS)));
+  if (!szkriptHash) {
+    const hash = async (js) => "'sha256-" + base64(await sha256(enc.encode(js))) + "'";
+    szkriptHash = (await hash(L.NYOMTAT_JS)) + ' ' + (await hash(L.MASOL_JS));
+  }
   let kepForras = "'self'";
   try { kepForras += ' ' + new URL(k.bazis).origin; } catch { /* marad a 'self' */ }
   return {
@@ -99,7 +102,7 @@ async function html(k, status, tartalom, { urlapKuldes = false } = {}) {
     headers: {
       ...ALAP_FEJLEC,
       'content-type': 'text/html; charset=utf-8',
-      'content-security-policy': `default-src 'none'; img-src ${kepForras}; font-src ${kepForras}; style-src 'unsafe-inline'; script-src '${nyomtatHash}'; base-uri 'none'; form-action ${urlapKuldes ? "'self'" : "'none'"}; frame-ancestors 'none'`,
+      'content-security-policy': `default-src 'none'; img-src ${kepForras}; font-src ${kepForras}; style-src 'unsafe-inline'; script-src ${szkriptHash}; base-uri 'none'; form-action ${urlapKuldes ? "'self'" : "'none'"}; frame-ancestors 'none'`,
     },
     body: tartalom,
   };
@@ -807,8 +810,7 @@ async function kiallitElokeszit(k, piNyers, tNyers) {
   const i = await rendelesInfo(k, pi);
   const md = i.md;
   const reszletek = i.atutalas
-    ? [['Azonosító (közlemény)', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Vevő neve', md.nev], ['Vevő e-mail', i.email],
-      ['Vevő telefon', md.telefon], ['Megajándékozott', md.szemelyre_nev], ['Üzenet', md.szemelyre_uzenet]]
+    ? [['Azonosító (közlemény)', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Vevő e-mail', i.email]]
     : [['Rendelés', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Érvényes', i.ervenyes_ig ? L.datumIg(i.ervenyes_ig) : ''], ['Vevő', i.email]];
   if (!i.fizetve && !i.atutalas) {
     return { valasz: await oldal(k, 409, 'A rendelés még nincs kifizetve', ['A kártyát csak sikeres fizetés után lehet kiállítani.'], { reszletek }) };
@@ -838,9 +840,28 @@ async function kiallitUrlap(k, e, hiba) {
   const atu = e.i.atutalas;
   const termek = e.i.termek;
   const salonicUrl = atu && termek && termek.salonic ? `${ADAT.SALONIC_BAZIS}/promotion/giftCard/sale/${termek.salonic.id}` : null;
+  const md = e.i.md;
+  // A Salonic-urlap mezoi (Ajandekozo = a vevo). A Salonic az utalvanyt az "Ajandekozo e-mail cime" mezore kuldi, ezert
+  // oda a szalon cime kerul: a vevo csak a MOSAIC-kartyat kapja, a Salonic sajat levelet nem.
+  // a Salonic-mezok hossz-korlatja (nameTo 40, message 150): a masolt szoveg ennyire vagva, hogy beillesztve ne csonkuljon varatlanul
+  const vag = (v, max) => Array.from(String(v || '')).slice(0, max).join('').trim();
+  const masol = atu ? {
+    cim: 'A Salonic-űrlap kitöltéséhez (Másolás gombbal)',
+    sorok: [
+      { cimke: 'Ajándékozó neve', ertek: md.nev || '' },
+      { cimke: 'Ajándékozó e-mail címe (ide a szalon címe kerül, hogy a Salonic ne írjon a vevőnek)', ertek: ADAT.SZALON.email },
+      { cimke: 'Ajándékozó mobiltelefonszáma', ertek: md.telefon || '' },
+      { cimke: 'Ajándékozott neve', ertek: vag(md.szemelyre_nev, 40) },
+      { cimke: 'Személyes üzenet (a Salonic legfeljebb 150 karaktert fogad el; a kártyára a teljes üzenet kerül)', ertek: vag(md.szemelyre_uzenet, 150) },
+    ].filter((m) => m.ertek),
+  } : {
+    cim: 'A Salonic-kuponhoz (Másolás gombbal)',
+    sorok: [{ cimke: 'Javasolt kuponkód', ertek: e.i.javasolt_kod || '' }].filter((m) => m.ertek),
+  };
   return oldal(k, hiba ? 400 : 200, atu ? 'Az utalás beérkezett – kiállítod a kártyát?' : 'Kiállítod az ajándékkártyát?', atu
     ? [
-      'Előbb a Salonicban végezd el az utalvány-értékesítést (fizetési mód: Átutalás) a lenti adatokkal, utána a kapott utalványkódot írd be ide.',
+      'Előbb a Salonicban végezd el az utalvány-értékesítést a lenti adatokkal, utána a kapott utalványkódot írd be ide.',
+      'Salonic-űrlap: fizetési mód „Átutalás”; az „Utalvány küldése másolatban az ajándékozott részére is” jelölőnégyzet maradjon üresen; az „Ajándékozott e-mail címe” mező maradjon üres.',
       'A gomb megnyomása után a vevő e-mailben megkapja a nyomtatható ajándékkártyát a kóddal.',
     ]
     : [
@@ -848,6 +869,7 @@ async function kiallitUrlap(k, e, hiba) {
       'A gomb megnyomása után a vevő e-mailben megkapja a nyomtatható ajándékkártyát a kóddal.',
     ], {
     reszletek: e.reszletek,
+    masol,
     linkek: salonicUrl ? [{ url: salonicUrl, szoveg: `Salonic: utalvány értékesítés megnyitása (${termek.salonic.nev})` }] : [],
     urlap: {
       action: k.u.pathname,
@@ -1147,7 +1169,7 @@ async function atutalas(k) {
       ...L.szalonAtutalasLevel({
         ...kozos, email: r.email, nev: r.nev, telefon, iranyitoszam: r.iranyitoszam, varos: r.varos, cim: r.cim,
         ceges_nev: r.ceges_nev, ceges_adoszam: r.ceges_adoszam, megajandekozott, uzenet, oldal: r.attr.oldal,
-        kiallit_url: kiallitUrl, salonic_url: salonic ? `${ADAT.SALONIC_BAZIS}/promotion/giftCard/sale/${salonic.id}` : '', salonic_nev: salonic ? salonic.nev : '',
+        kiallit_url: kiallitUrl, salonic_url: salonic ? `${ADAT.SALONIC_BAZIS}/promotion/giftCard/sale/${salonic.id}` : '', salonic_nev: salonic ? salonic.nev : '', szalon_email: ADAT.SZALON.email,
       }),
     });
   } catch (e) {

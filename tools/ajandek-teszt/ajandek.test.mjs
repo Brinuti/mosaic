@@ -7,10 +7,12 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { mockStripeInditas } from './mock-stripe.mjs';
 import { ajandekKezel, kuponKod, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
+import { MASOL_JS, NYOMTAT_JS } from '../../netlify/lib/ajandek-levelek.js';
 import { utvonal } from '../../netlify/lib/utvonal.js';
 import { config as edgeConfig } from '../../netlify/edge-functions/oldal.js';
 
 const ADAT = globalThis.AJANDEK_ADAT;
+const SZALON = ADAT.SZALON;
 const BAZIS = 'https://teszt.mosaicheadspa.hu';
 const WHSEC = 'whsec_teszt_titok';
 const TITOK = 'teszt-titok-teszt-titok-teszt-titok-0123456789';
@@ -941,6 +943,17 @@ describe('/atutalas', () => {
     assert.ok(g.body.includes(r.adat.rendeles_ref));
     assert.ok(g.body.includes('https://app.salonic.hu/promotion/giftCard/sale/4081'));
     assert.ok(!g.body.includes('AK-'), 'utalasnal nincs javasolt AK- kod');
+    // Salonic-urlap: soronkent masolhato adatok; az "Ajandekozo e-mail" a SZALON cime (a Salonic ne irjon a vevonek)
+    const masolt = [...g.body.matchAll(/data-masol="([^"]*)"/g)].map((m) => m[1]);
+    assert.deepEqual(masolt, ['Teszt Vevő', SZALON.email, TEL, 'Anna', 'Boldog születésnapot!']);
+    assert.ok(!masolt.includes('vevo@example.com'), 'a vevo e-mail cime nem kerul a masolhato Salonic-adatok koze');
+    assert.ok(g.body.includes('maradjon üresen'), 'a Salonic masolat-kuldes / ajandekozott e-mail ures marad');
+    assert.equal(g.body.match(/<script>/g).length, 1);
+    assert.equal(/<script>([^<]*)<\/script>/.exec(g.body)[1], MASOL_JS);
+    const hashMasol = crypto.createHash('sha256').update(MASOL_JS).digest('base64');
+    const hashNyomtat = crypto.createHash('sha256').update(NYOMTAT_JS).digest('base64');
+    assert.ok(g.headers['content-security-policy'].includes(`script-src 'sha256-${hashNyomtat}' 'sha256-${hashMasol}';`));
+    assert.ok(!/script-src[^;]*unsafe/.test(g.headers['content-security-policy']));
     assert.equal(JSON.stringify(mock.allapot.pi(pi.id).metadata), meta0, 'a GET nem modosit');
     assert.equal(levelek.length, 0);
     // POST kod nelkul / hibas kodra: 400 es ujra az urlap, semmi nem tortenik
@@ -984,6 +997,22 @@ describe('/atutalas', () => {
     assert.ok(g.body.includes('Érvényes: 2027. április 5-ig'));
   });
 
+  test('Salonic masolhato adatok: a nev 40, az uzenet 150 karakterre vagva (a Salonic-mezok korlatja); a kartyara a teljes uzenet kerul', async () => {
+    const hosszuNev = 'Á'.repeat(41) + 'x';
+    const hosszuUzenet = 'Szeretettel '.repeat(20).trim(); // 239 karakter
+    const r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ termek: 'egyeni', megajandekozott: hosszuNev, uzenet: hosszuUzenet, telefon: TEL }) });
+    assert.equal(r.status, 200);
+    const pi = atuPi(r.adat.rendeles_ref);
+    const g = await hiv('GET', 'kiallit', { query: { pi: pi.id, t: await kiallitToken(ENV, pi.id) } });
+    const masolt = [...g.body.matchAll(/data-masol="([^"]*)"/g)].map((m) => m[1]);
+    assert.equal(masolt.length, 5);
+    assert.equal(masolt[3], 'Á'.repeat(40));
+    assert.equal(masolt[4], hosszuUzenet.slice(0, 150).trim());
+    assert.ok(masolt[4].length <= 150);
+    // a mock-Stripe-ban a teljes szoveg megmarad (ez kerul a kartyara)
+    assert.equal(mock.allapot.pi(pi.id).metadata.szemelyre_uzenet, hosszuUzenet);
+  });
+
   test('kartyas rendelesnel a szalon felulirhatja a javasolt kodot: az kerul a levelbe es a kartyara', async () => {
     const a = await fizetettRendeles({ termek: 'egyeni' });
     await webhook(alairtEsemeny(a.pi));
@@ -992,6 +1021,7 @@ describe('/atutalas', () => {
     const g = await hiv('GET', 'kiallit', { query: { pi: a.pi, t } });
     assert.ok(g.body.includes(`name="kod" value="${await kuponKod(ENV, a.pi)}"`), 'alapbol a javasolt kod');
     assert.ok(!g.body.includes('promotion/giftCard/sale'), 'kartyas fizetesnel nincs utalvany-ertekesites');
+    assert.deepEqual([...g.body.matchAll(/data-masol="([^"]*)"/g)].map((m) => m[1]), [await kuponKod(ENV, a.pi)], 'a javasolt kuponkod masolhato');
     const p = await kiallitPost(a.pi, t, { kod: 'SajatKupon-7' });
     assert.equal(p.status, 200);
     assert.equal(mock.allapot.pi(a.pi).metadata.kod, 'SajatKupon-7');
