@@ -99,20 +99,8 @@
     'comp-m73bstee': 'c2eb0f_909ce4959fe24f4f984d8953fd315d67.mp4',
     'comp-m7j9ka9m1': 'c2eb0f_cc22b1baf4c64848938cb7d48575b561.mp4',
   };
-  // A sminktetovalas foglalo probaoldala (/foglalo-pmu) a sikeres foglalas utan ide, a koszonooldalra
-  // (pl. /pmu-ok) kuldi a vendeget mh_proba=pmu jellel: itt lefut a megszokott meres, majd
-  // visszaterunk a proba sajat koszonooldalara.
-  // mh_proba=pmu: foglalas a /pmu-ok oldalon at; mh_proba=vh: telefonos konzultacio a /pmu-vh oldalon at
-  const mhProba = (location.search.match(/[?&]mh_proba=(pmu|vh)(&|$)/) || [])[1];
-  if (mhProba) {
-    const fedo = document.createElement('div');
-    fedo.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#fffaf4;color:#183033;display:grid;place-items:center;font:18px lato,Arial,sans-serif';
-    fedo.textContent = mhProba === 'vh' ? 'Kérésed rögzítése…' : 'Foglalásod rögzítése…';
-    document.body.appendChild(fedo);
-    const cel = mhProba === 'vh' ? '/foglalo-pmu#visszahivas-kesz' : '/foglalo-pmu#koszonjuk';
-    const tovabb = () => setTimeout(() => location.replace(cel), 3500);
-    if (document.readyState === 'complete') tovabb(); else addEventListener('load', tovabb);
-  }
+  // (A /pmu-ok es /pmu-vh koszonooldal 2026-10-03 ota a foglalo sajat oldala - foglalas/pmu-ok.html,
+  // foglalas/pmu-vh.html -, a meres ott fut; innen mar nem iranyitunk at.)
 
   // a sajat utvonalunkbol olvassuk ki, hova mutassanak a tarsfajlok (klon/ vagy klon/m/)
   const sajatSrc = (document.currentScript && document.currentScript.src) || '';
