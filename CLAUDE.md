@@ -10,20 +10,19 @@
   ágra, PR a `main`-re. A PR Netlify-előnézete (deploy-preview-N--mosaicheadspa.netlify.app)
   ingyenes – ott tesztelj. A Netlify a `main`-t publikálja (https://www.mosaicheadspa.hu/,
   élesben 2026-10-02 óta).
-- **Takarékosan a Netlify-kreditekkel** (Pro csomag: 3000 kredit/hó; ha elfogy, az ÉLES oldal
-  leáll – 2026-10-03-án megtörtént):
-  - minden éles deploy 15 kredit → a `main`-re **legfeljebb napi 1 merge**, a munkát egy PR-be
-    gyűjtsd; apró javításért ne mergelj külön;
-  - a `netlify.toml` `ignore` parancsa (`tools/netlify-kihagy.mjs`) kihagyja a buildet, ha csak
-    oldalba nem kerülő fájl változott (dokumentáció, mentések, segédeszközök); ha új, az oldalba
-    kerülő fájlt vagy mappát vezetsz be, vedd fel az `OLDALBA_KERUL` listába;
-  - az éles oldalt ne terheld feleslegesen (Playwright-tesztek a PR-előnézeten vagy helyben fussanak).
+- **Tárhely: Cloudflare Pages** (ingyenes, korlátlan forgalom), élesben 2026-10-03 óta: a `main`
+  minden mergelése magától kimegy a https://www.mosaicheadspa.hu/ címre (projekt: `mosaic`,
+  próbacím: mosaic-d77.pages.dev). A DNS is a Cloudflare-en van (a domain a Websupportnál
+  regisztrált). Részletek: [CLOUDFLARE.md](CLOUDFLARE.md). A `functions/` a Cloudflare-é; a
+  `netlify/` a régi Netlify-tárhelyé (tartalék, amíg le nem mondjuk); a levelek szövege közös
+  (`netlify/lib/levelek.js`). A nem titkos Cloudflare-változók a `wrangler.toml`-ban vannak
+  (ha a felületen adod meg őket, a Cloudflare törli őket), titkos csak az `SMTP_PASS`.
+- **Netlify:** amíg az előfizetés él, a `main`-re mergelés ott is buildet indít (15 kredit);
+  ezért továbbra is **legfeljebb napi 1 merge**, a munkát egy PR-be gyűjtsd. A `netlify.toml`
+  `ignore` parancsa (`tools/netlify-kihagy.mjs`) kihagyja a buildet, ha csak oldalba nem kerülő
+  fájl változott. **Ha a Cloudflare pár napig hibátlanul fut, szólj a felhasználónak, hogy
+  mondja le a Netlify-előfizetést** (előtte a `mosaic-pmu-sms` Netlify-projektet is nézd át).
   A PR-t te mergeled (`merge_pull_request`, teljes 40 karakteres SHA).
-- **Tárhely:** Netlify Pro (20 USD/hó, 2026-10-03 óta). A terv: költözés a Cloudflare Pages-re
-  (ingyenes, korlátlan forgalom) – a kód kész, a lépések: [CLOUDFLARE.md](CLOUDFLARE.md). A repó
-  mindkét tárhelyen működik: a `functions/` a Cloudflare-é, a `netlify/` a Netlifyé, a
-  levelek szövege közös (`netlify/lib/levelek.js`). **A költözés után szólj a felhasználónak, hogy mondja le a
-  Netlify-előfizetést.**
 - **Fizetős külső szolgáltatás helyett** saját kód (pl. a Common Ninja GYIK/árlista helyett).
 - **Mérőkódok:** csak a `mosaicheadspa.hu` domainen futhatnak (`assets/js/suti.js`,
   `ELES_DOMAINEK`). Külső fiókban (Meta, GTM, GA, Google Ads, TikTok) semmit ne hozz létre és
