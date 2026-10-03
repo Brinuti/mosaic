@@ -29,7 +29,7 @@ Döntések: [DECISIONS.md](DECISIONS.md). Adapter: [SALONIC_ADAPTER_CONTRACT.md]
 
 - **Éles foglalás beküldése:** a Salonicnak nincs próbakörnyezete, és a foglalás éles naptárat és konverziókat érint. A beküldést nem próbáltam.
 - **A `motor-visszahivas` űrlap éles levélküldése:** a levélsablon (`netlify/lib/levelek.js`) és a Cloudflare/Netlify kezelés a meglévő mechanizmuson fut, de éles beküldéssel nem próbáltam (a szalon e-mailt kapna).
-- **A Cloudflare-es útvonal** (`functions/[[path]].js`) a deploy-előnézeten ellenőrizendő.
+- A Cloudflare Pages előnézeten (`https://claude-booking-engine-ui.mosaic-d77.pages.dev/foglalo-motor?business=headspa`) ellenőrizve: az oldal és a motor kiszolgálódik, `noindex` fejléccel és metával, tiltó `robots.txt`-vel; HS1 → HS2 → C1 az élő Salonic-adatokkal, konzolhiba nélkül. A Netlify-s útvonal nem lett külön próbálva (az éles tárhely Cloudflare Pages).
 
 ## Ismert korlátok (a Salonic oldalai nem szerződéses felület)
 
