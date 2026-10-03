@@ -1,0 +1,3705 @@
+{
+  "fetched_at": "2026-10-03T15:10:31.828Z",
+  "method": "read-only GET on public Salonic pages + api.salonic.hu/calendar/getAvailableTimes; no booking created",
+  "businesses": {
+    "headspa": {
+      "account": "mosaicheadspa",
+      "place_id": 10427,
+      "host": "https://mosaicheadspa.salonic.hu",
+      "specs": [
+        {
+          "spec_id": "39592",
+          "name": "Headspa kezelésre foglalok!"
+        },
+        {
+          "spec_id": "41471",
+          "name": "Kuponkóddal / Ajándékkártyával Foglalok!"
+        }
+      ],
+      "staff": {
+        "24065": {
+          "api_name": "Mirage Egyéni kezelő"
+        },
+        "24354": {
+          "api_name": "Páros kezelés"
+        },
+        "24989": {
+          "api_name": "Sole Egyéni kezelő"
+        },
+        "27076": {
+          "api_name": "Mirage Egyéni kezelő - Május"
+        },
+        "29415": {
+          "api_name": "Négykezes Head spa"
+        }
+      },
+      "calendar_id": "ebf1c485-e15e-d57f-de78-284a6591ece4",
+      "notes": [],
+      "spec_page_status": 200,
+      "place_name": "Mosaic Headspa",
+      "place_address": "1023 Budapest, Bécsi út 4. földszint 1. ajtó",
+      "place_phone": "+36-20-247-4444",
+      "readback_status": "PARTIAL_READBACK",
+      "open_items": [
+        "VIP (100 perc) szolgaltatas nem szerepel a 39592/41471 kategoriakban - az audit szerint publikusan latszik: DATA_REQUEST",
+        "booking_type, success_route, is_acquisition_conversion nem olvashato a Salonicbol: uzleti dontes kell"
+      ]
+    },
+    "hair": {
+      "account": "mosaic-hair",
+      "place_id": 10823,
+      "host": "https://mosaic-hair.salonic.hu",
+      "specs": [
+        {
+          "spec_id": "48289",
+          "name": "Balayage"
+        },
+        {
+          "spec_id": "48292",
+          "name": "Elrontott festés korrekció / Teljes festés"
+        },
+        {
+          "spec_id": "48298",
+          "name": "Férfi hajvágás"
+        },
+        {
+          "spec_id": "49344",
+          "name": "Hajszerkezet újraépítés"
+        },
+        {
+          "spec_id": "48291",
+          "name": "Ingyenes Fodrász konzultáció"
+        },
+        {
+          "spec_id": "48294",
+          "name": "Női hajvágás + szárítás"
+        },
+        {
+          "spec_id": "48295",
+          "name": "Női szárítás"
+        },
+        {
+          "spec_id": "48290",
+          "name": "Póthaj"
+        },
+        {
+          "spec_id": "48299",
+          "name": "Teljes melír / airtouch + vágás"
+        },
+        {
+          "spec_id": "48293",
+          "name": "Teljes szőkítés"
+        },
+        {
+          "spec_id": "48296",
+          "name": "Tőfestés + szárítás"
+        },
+        {
+          "spec_id": "48297",
+          "name": "Tőfestés + vágás + szárítás"
+        },
+        {
+          "spec_id": "59306",
+          "name": "Végleges Szőrtelenítés - 1. Alkalom"
+        },
+        {
+          "spec_id": "59247",
+          "name": "Végleges Szőrtelenítés - 2. Alkalomtól"
+        }
+      ],
+      "staff": {
+        "23694": {
+          "label": "Betti",
+          "api_name": "Betti"
+        },
+        "25095": {
+          "label": "Noel - 20% kedvezmény!",
+          "api_name": "Noel - 20% kedvezmény!"
+        },
+        "26064": {
+          "label": "Evelin",
+          "api_name": "Evelin"
+        }
+      },
+      "calendar_id": "f2bf7672-fa03-f092-e14b-fc23577e5ab2",
+      "notes": [],
+      "spec_page_status": 200,
+      "place_name": "Mosaic Hair",
+      "place_address": "1023 Budapest Bécsi út 4 fszt. 1.",
+      "place_phone": "06202474444",
+      "readback_status": "PARTIAL_READBACK",
+      "open_items": [
+        "az ar munkatarsfuggo: Noel (25095) cimkeje \"20% kedvezmeny!\", a data-price a nem kedvezmenyes ar (34 360 = 0,8 x 42 950) - munkatarsankenti vegso ar nincs kiolvasva",
+        "booking_type, success_route, is_acquisition_conversion: uzleti dontes kell"
+      ]
+    },
+    "oxygen": {
+      "account": "mosaic-oxigen",
+      "place_id": 14409,
+      "host": "https://mosaic-oxigen.salonic.hu",
+      "specs": [
+        {
+          "spec_id": "64122",
+          "name": "Oxigénterápia - 1.alkalom"
+        },
+        {
+          "spec_id": "64128",
+          "name": "Oxigénterápia - 2.alkalomtól"
+        }
+      ],
+      "staff": {
+        "31988": {
+          "label": "Bozsoki - Harangozó Tündi",
+          "api_name": "Bozsoki - Harangozó Tündi"
+        },
+        "32009": {
+          "label": "Szűcs Vivien",
+          "api_name": "Szűcs Vivien"
+        },
+        "32969": {
+          "label": "Menyhárt Móni",
+          "api_name": "Menyhárt Móni"
+        }
+      },
+      "calendar_id": "de045315-2757-ad57-0d83-d86a7b287c78",
+      "notes": [],
+      "spec_page_status": 200,
+      "place_name": "Mosaic Oxigén",
+      "place_address": "1023 Budapest Bécsi út 2. Fszt 1",
+      "place_phone": "+36-20-247-4444",
+      "readback_status": "PARTIAL_READBACK",
+      "open_items": [
+        "a landing \"Konzultacio + Hajkamera vizsgalat 4 990 Ft\" ajanlatahoz NINCS Salonic szolgaltatas (csak 3 db: 466110, 468638, 466158): DATA_REQUEST",
+        "booking_type, success_route, is_acquisition_conversion: uzleti dontes kell"
+      ]
+    },
+    "laser": {
+      "account": "mosaic-elysion",
+      "place_id": 14586,
+      "host": "https://mosaic-elysion.salonic.hu",
+      "specs": [
+        {
+          "spec_id": "66404",
+          "name": null,
+          "source": "repo: idpontfoglalas.html / szortelenites-foglalas.html"
+        },
+        {
+          "spec_id": "66405",
+          "name": null,
+          "source": "repo: idpontfoglalas.html / szortelenites-foglalas.html"
+        }
+      ],
+      "staff": {
+        "32417": {
+          "api_name": "Elysion Pro Szőrtelenítés"
+        }
+      },
+      "calendar_id": "02742cf7-07cb-a3ef-fc7c-b871c86ce163",
+      "notes": [
+        "selectSpecialization redirects to /showServices/?employeeId=32417&placeId=14586&serviceId=0 (single employee); spec ids come from the site code"
+      ],
+      "spec_page_status": 200,
+      "place_name": "Mosaic Elysion",
+      "place_address": "1023 Budapest Bécsi út 4 fszt. 1.",
+      "place_phone": "+36-20-247-4444",
+      "readback_status": "PARTIAL_READBACK",
+      "open_items": [
+        "technikai fiok: mosaic-elysion, placeId 14586, API placeName \"Mosaic Elysion\", egyetlen munkatars 32417 (\"Elysion Pro Szortelenites\")",
+        "a nyilvanos keresoben latott \"- Mosaic Hair\" cimke nem reprodukalhato a technikai vegpontokon",
+        "3 szolgaltatas ara 0 (konzultacio 476477, ket egyedi csomag 476478/476503): az ar nem olvashato",
+        "a data-price mar az akcios ar (pl. BASIC 36 400); listaar nem olvashato"
+      ]
+    },
+    "pmu": {
+      "account": "mosaic-pmu",
+      "place_id": 14585,
+      "host": "https://mosaic-pmu.salonic.hu",
+      "specs": [],
+      "staff": {
+        "32428": {
+          "label": "Melitta",
+          "api_name": "Melitta"
+        }
+      },
+      "calendar_id": "76a8541e-bb52-22ab-f8c0-531b86f55abb",
+      "notes": [],
+      "spec_page_status": 200,
+      "place_name": "Mosaic PMU",
+      "place_address": "1023 Budapest Bécsi út 2. Fszt 1",
+      "place_phone": "06202474444",
+      "readback_status": "PARTIAL_READBACK",
+      "open_items": [
+        "eltavolitas szolgaltatas NEM szerepel a 32428 munkatars oldalan: DATA_REQUEST",
+        "konzultacio (471160) es korrekcio (471157) ara ures; a foglalo a korrekciot szandekosan elrejti (NEM_FOGLALHATO)",
+        "booking_type, is_acquisition_conversion: uzleti dontes kell; success_route a kod szerint /pmu-ok (minden fizetos es ingyenes foglalas), /pmu-vh (telefonos visszahivas, nem Salonic)"
+      ]
+    }
+  },
+  "services": [
+    {
+      "business": "headspa",
+      "salonic_account": "mosaicheadspa",
+      "salonic_place_id": "10427",
+      "salonic_spec_id": "39592",
+      "service_category": "Headspa kezelésre foglalok!",
+      "salonic_service_id": "302342",
+      "service_name_raw": "💆‍♀️ EGYÉNI 50 perces MOSAIC",
+      "duration_min": 80,
+      "active_price": 26900,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "24065",
+          "staff_label": "Mirage Egyéni kezelő",
+          "staff_api_name": "Mirage Egyéni kezelő"
+        },
+        {
+          "staff_id": "24989",
+          "staff_label": "Sole Egyéni kezelő",
+          "staff_api_name": "Sole Egyéni kezelő"
+        },
+        {
+          "staff_id": "27076",
+          "staff_label": "Mirage Egyéni kezelő - Május",
+          "staff_api_name": "Mirage Egyéni kezelő - Május"
+        },
+        {
+          "staff_id": "29415",
+          "staff_label": "Négykezes Head spa",
+          "staff_api_name": "Négykezes Head spa"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "headspa",
+      "salonic_account": "mosaicheadspa",
+      "salonic_place_id": "10427",
+      "salonic_spec_id": "39592",
+      "service_category": "Headspa kezelésre foglalok!",
+      "salonic_service_id": "302499",
+      "service_name_raw": "💆‍♀️ EGYÉNI 50 perces MOSAIC",
+      "duration_min": 80,
+      "active_price": 26900,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "24065",
+          "staff_label": "Mirage Egyéni kezelő",
+          "staff_api_name": "Mirage Egyéni kezelő"
+        },
+        {
+          "staff_id": "24989",
+          "staff_label": "Sole Egyéni kezelő",
+          "staff_api_name": "Sole Egyéni kezelő"
+        },
+        {
+          "staff_id": "27076",
+          "staff_label": "Mirage Egyéni kezelő - Május",
+          "staff_api_name": "Mirage Egyéni kezelő - Május"
+        },
+        {
+          "staff_id": "29415",
+          "staff_label": "Négykezes Head spa",
+          "staff_api_name": "Négykezes Head spa"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "headspa",
+      "salonic_account": "mosaicheadspa",
+      "salonic_place_id": "10427",
+      "salonic_spec_id": "39592",
+      "service_category": "Headspa kezelésre foglalok!",
+      "salonic_service_id": "302999",
+      "service_name_raw": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+      "duration_min": 80,
+      "active_price": 53800,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "24354",
+          "staff_label": "Páros kezelés",
+          "staff_api_name": "Páros kezelés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "headspa",
+      "salonic_account": "mosaicheadspa",
+      "salonic_place_id": "10427",
+      "salonic_spec_id": "39592",
+      "service_category": "Headspa kezelésre foglalok!",
+      "salonic_service_id": "431713",
+      "service_name_raw": "💆‍♀️ NÉGYKEZES EGYÉNI 50 perces MOSAIC Head Spa kezelés + 30 perc hajszárítás",
+      "duration_min": 80,
+      "active_price": 39900,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "29415",
+          "staff_label": "Négykezes Head spa",
+          "staff_api_name": "Négykezes Head spa"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "headspa",
+      "salonic_account": "mosaicheadspa",
+      "salonic_place_id": "10427",
+      "salonic_spec_id": "41471",
+      "service_category": "Kuponkóddal / Ajándékkártyával Foglalok!",
+      "salonic_service_id": "303705",
+      "service_name_raw": "KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces MOSAIC",
+      "duration_min": 80,
+      "active_price": 26900,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "24065",
+          "staff_label": "Mirage Egyéni kezelő",
+          "staff_api_name": "Mirage Egyéni kezelő"
+        },
+        {
+          "staff_id": "24989",
+          "staff_label": "Sole Egyéni kezelő",
+          "staff_api_name": "Sole Egyéni kezelő"
+        },
+        {
+          "staff_id": "27076",
+          "staff_label": "Mirage Egyéni kezelő - Május",
+          "staff_api_name": "Mirage Egyéni kezelő - Május"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "headspa",
+      "salonic_account": "mosaicheadspa",
+      "salonic_place_id": "10427",
+      "salonic_spec_id": "41471",
+      "service_category": "Kuponkóddal / Ajándékkártyával Foglalok!",
+      "salonic_service_id": "303785",
+      "service_name_raw": "KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces MOSAIC",
+      "duration_min": 80,
+      "active_price": 26900,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "24065",
+          "staff_label": "Mirage Egyéni kezelő",
+          "staff_api_name": "Mirage Egyéni kezelő"
+        },
+        {
+          "staff_id": "24989",
+          "staff_label": "Sole Egyéni kezelő",
+          "staff_api_name": "Sole Egyéni kezelő"
+        },
+        {
+          "staff_id": "27076",
+          "staff_label": "Mirage Egyéni kezelő - Május",
+          "staff_api_name": "Mirage Egyéni kezelő - Május"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "headspa",
+      "salonic_account": "mosaicheadspa",
+      "salonic_place_id": "10427",
+      "salonic_spec_id": "41471",
+      "service_category": "Kuponkóddal / Ajándékkártyával Foglalok!",
+      "salonic_service_id": "303891",
+      "service_name_raw": "KUPONKÓDDAL - 💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+      "duration_min": 80,
+      "active_price": 53800,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "24354",
+          "staff_label": "Páros kezelés",
+          "staff_api_name": "Páros kezelés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "headspa",
+      "salonic_account": "mosaicheadspa",
+      "salonic_place_id": "10427",
+      "salonic_spec_id": "41471",
+      "service_category": "Kuponkóddal / Ajándékkártyával Foglalok!",
+      "salonic_service_id": "431710",
+      "service_name_raw": "KUPONKÓDDAL - 💆‍♀️ NÉGYKEZES EGYÉNI 50 perces MOSAIC Head Spa kezelés + 30 perc hajszárítás",
+      "duration_min": 80,
+      "active_price": 39900,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "29415",
+          "staff_label": "Négykezes Head spa",
+          "staff_api_name": "Négykezes Head spa"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48289",
+      "service_category": "Balayage",
+      "salonic_service_id": "231532",
+      "service_name_raw": "☀ Balayage / ombre / babylight + vágás + szárítás - Közepes haj",
+      "duration_min": 180,
+      "active_price": 42950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48289",
+      "service_category": "Balayage",
+      "salonic_service_id": "231533",
+      "service_name_raw": "☀ Balayage / ombre / babylight + vágás + szárítás - Hosszú haj",
+      "duration_min": 210,
+      "active_price": 47950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48289",
+      "service_category": "Balayage",
+      "salonic_service_id": "470829",
+      "service_name_raw": "☀ Balayage / ombre / babylight + vágás + szárítás - Extra Hosszú haj",
+      "duration_min": 240,
+      "active_price": 54950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48289",
+      "service_category": "Balayage",
+      "salonic_service_id": "440294",
+      "service_name_raw": "☀ Balayage / ombre / babylight +tőfestés+ vágás + szárítás - Közepes haj",
+      "duration_min": 210,
+      "active_price": 48950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48289",
+      "service_category": "Balayage",
+      "salonic_service_id": "440295",
+      "service_name_raw": "☀ Balayage / ombre / babylight +tőfestés+ vágás + szárítás - Hosszú haj",
+      "duration_min": 240,
+      "active_price": 52950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48289",
+      "service_category": "Balayage",
+      "salonic_service_id": "470831",
+      "service_name_raw": "☀ Balayage / ombre / babylight +tőfestés+ vágás + szárítás - Extra Hosszú haj",
+      "duration_min": 270,
+      "active_price": 59950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48292",
+      "service_category": "Elrontott festés korrekció / Teljes festés",
+      "salonic_service_id": "395330",
+      "service_name_raw": "Teljes festés/ Supernatural Color- Rövid haj",
+      "duration_min": 120,
+      "active_price": 32950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48292",
+      "service_category": "Elrontott festés korrekció / Teljes festés",
+      "salonic_service_id": "395337",
+      "service_name_raw": "Teljes festés/ Supernatural Color- Közepes haj",
+      "duration_min": 150,
+      "active_price": 39950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48292",
+      "service_category": "Elrontott festés korrekció / Teljes festés",
+      "salonic_service_id": "395338",
+      "service_name_raw": "Teljes festés/ Supernatural Color- Hosszú haj",
+      "duration_min": 180,
+      "active_price": 44950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48292",
+      "service_category": "Elrontott festés korrekció / Teljes festés",
+      "salonic_service_id": "470827",
+      "service_name_raw": "Teljes festés/Supernatural Color- Extra Hosszú haj",
+      "duration_min": 210,
+      "active_price": 48950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48298",
+      "service_category": "Férfi hajvágás",
+      "salonic_service_id": "231549",
+      "service_name_raw": "💇‍♂️ Férfi hajvágás",
+      "duration_min": 30,
+      "active_price": 7450,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "49344",
+      "service_category": "Hajszerkezet újraépítés",
+      "salonic_service_id": "401929",
+      "service_name_raw": "JOICO 4 lépéses hajújraépítő kezelés - félhosszú haj",
+      "duration_min": 120,
+      "active_price": 19950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "49344",
+      "service_category": "Hajszerkezet újraépítés",
+      "salonic_service_id": "401930",
+      "service_name_raw": "JOICO 4 lépéses hajújraépítő kezelés - hosszú haj",
+      "duration_min": 120,
+      "active_price": 22950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "49344",
+      "service_category": "Hajszerkezet újraépítés",
+      "salonic_service_id": "470835",
+      "service_name_raw": "JOICO 4 lépéses hajújraépítő kezelés - Extra Hosszú haj",
+      "duration_min": 150,
+      "active_price": 25950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48291",
+      "service_category": "Ingyenes Fodrász konzultáció",
+      "salonic_service_id": "232804",
+      "service_name_raw": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+      "duration_min": 30,
+      "active_price": 0,
+      "list_price": 9900,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48294",
+      "service_category": "Női hajvágás + szárítás",
+      "salonic_service_id": "231537",
+      "service_name_raw": "✂ Női hajvágás + Szárítás - Rövid haj",
+      "duration_min": 60,
+      "active_price": 11950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48294",
+      "service_category": "Női hajvágás + szárítás",
+      "salonic_service_id": "231538",
+      "service_name_raw": "✂ Női hajvágás + Szárítás - Közepes haj",
+      "duration_min": 60,
+      "active_price": 13950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48294",
+      "service_category": "Női hajvágás + szárítás",
+      "salonic_service_id": "231539",
+      "service_name_raw": "✂ Női hajvágás + Szárítás - Hosszú haj",
+      "duration_min": 90,
+      "active_price": 14950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48294",
+      "service_category": "Női hajvágás + szárítás",
+      "salonic_service_id": "470823",
+      "service_name_raw": "✂ Női hajvágás + Szárítás - Extra Hosszú haj",
+      "duration_min": 120,
+      "active_price": 16950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48295",
+      "service_category": "Női szárítás",
+      "salonic_service_id": "231534",
+      "service_name_raw": "🌊 Női szárítás - Rövid haj",
+      "duration_min": 30,
+      "active_price": 7350,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48295",
+      "service_category": "Női szárítás",
+      "salonic_service_id": "231535",
+      "service_name_raw": "🌊 Női szárítás - Közepes haj",
+      "duration_min": 60,
+      "active_price": 8950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48295",
+      "service_category": "Női szárítás",
+      "salonic_service_id": "231536",
+      "service_name_raw": "🌊 Női szárítás - Hosszú haj",
+      "duration_min": 60,
+      "active_price": 9950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48295",
+      "service_category": "Női szárítás",
+      "salonic_service_id": "470822",
+      "service_name_raw": "🌊 Női szárítás - Extra Hosszú haj",
+      "duration_min": 90,
+      "active_price": 12950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48290",
+      "service_category": "Póthaj",
+      "salonic_service_id": "233949",
+      "service_name_raw": "Póthaj leszedés",
+      "duration_min": 90,
+      "active_price": 10000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48290",
+      "service_category": "Póthaj",
+      "salonic_service_id": "233950",
+      "service_name_raw": "Póthaj felrakás (350 Ft / Tincs)",
+      "duration_min": 90,
+      "active_price": 35000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48299",
+      "service_category": "Teljes melír / airtouch + vágás",
+      "salonic_service_id": "231546",
+      "service_name_raw": "🖌 Teljes melír / airtouch + vágás + szárítás - Rövid haj",
+      "duration_min": 150,
+      "active_price": 39950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48299",
+      "service_category": "Teljes melír / airtouch + vágás",
+      "salonic_service_id": "231547",
+      "service_name_raw": "🖌 Teljes melír / airtouch + vágás + szárítás - Közepes haj",
+      "duration_min": 210,
+      "active_price": 47950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48299",
+      "service_category": "Teljes melír / airtouch + vágás",
+      "salonic_service_id": "231548",
+      "service_name_raw": "🖌 Teljes melír / airtouch + vágás + szárítás - Hosszú haj",
+      "duration_min": 270,
+      "active_price": 60950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48299",
+      "service_category": "Teljes melír / airtouch + vágás",
+      "salonic_service_id": "470834",
+      "service_name_raw": "🖌 Teljes melír / airtouch + vágás + szárítás - Extra Hosszú haj",
+      "duration_min": 270,
+      "active_price": 64950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48293",
+      "service_category": "Teljes szőkítés",
+      "salonic_service_id": "395926",
+      "service_name_raw": "Teljes szőkítés/ korrekció- vágással - Rövid haj",
+      "duration_min": 180,
+      "active_price": 39950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48293",
+      "service_category": "Teljes szőkítés",
+      "salonic_service_id": "395927",
+      "service_name_raw": "Teljes szőkítés/korrekció- vágással - Közepes haj",
+      "duration_min": 210,
+      "active_price": 47950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48293",
+      "service_category": "Teljes szőkítés",
+      "salonic_service_id": "395928",
+      "service_name_raw": "Teljes szőkítés/korrekció - vágással - Hosszú haj",
+      "duration_min": 270,
+      "active_price": 60950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48293",
+      "service_category": "Teljes szőkítés",
+      "salonic_service_id": "470836",
+      "service_name_raw": "Teljes szőkítés /korrekció- vágással - Extra Hosszú haj",
+      "duration_min": 300,
+      "active_price": 64950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48296",
+      "service_category": "Tőfestés + szárítás",
+      "salonic_service_id": "231540",
+      "service_name_raw": "👱‍♀️ Tőfestés + Szárítás - Rövid haj",
+      "duration_min": 90,
+      "active_price": 23950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48296",
+      "service_category": "Tőfestés + szárítás",
+      "salonic_service_id": "231541",
+      "service_name_raw": "👱‍♀️ Tőfestés + Szárítás - Közepes haj",
+      "duration_min": 120,
+      "active_price": 24950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48296",
+      "service_category": "Tőfestés + szárítás",
+      "salonic_service_id": "231542",
+      "service_name_raw": "👱‍♀️ Tőfestés + Szárítás - Hosszú haj",
+      "duration_min": 120,
+      "active_price": 25950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48296",
+      "service_category": "Tőfestés + szárítás",
+      "salonic_service_id": "470824",
+      "service_name_raw": "👱‍♀️ Tőfestés + Szárítás - Extra Hosszú haj",
+      "duration_min": 150,
+      "active_price": 28950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48297",
+      "service_category": "Tőfestés + vágás + szárítás",
+      "salonic_service_id": "231543",
+      "service_name_raw": "👱‍♀️✂ Tőfestés + Vágás + Szárítás - Rövid haj",
+      "duration_min": 120,
+      "active_price": 26950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48297",
+      "service_category": "Tőfestés + vágás + szárítás",
+      "salonic_service_id": "231544",
+      "service_name_raw": "👱‍♀️✂ Tőfestés + Vágás + Szárítás - Közepes haj",
+      "duration_min": 150,
+      "active_price": 28950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48297",
+      "service_category": "Tőfestés + vágás + szárítás",
+      "salonic_service_id": "231545",
+      "service_name_raw": "👱‍♀️✂ Tőfestés + Vágás + Szárítás - Hosszú haj",
+      "duration_min": 180,
+      "active_price": 31950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "hair",
+      "salonic_account": "mosaic-hair",
+      "salonic_place_id": "10823",
+      "salonic_spec_id": "48297",
+      "service_category": "Tőfestés + vágás + szárítás",
+      "salonic_service_id": "470837",
+      "service_name_raw": "👱‍♀️✂ Tőfestés + Vágás + Szárítás - Extra Hosszú haj",
+      "duration_min": 210,
+      "active_price": 34950,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "23694",
+          "staff_label": "Betti",
+          "staff_api_name": "Betti"
+        },
+        {
+          "staff_id": "25095",
+          "staff_label": "Noel - 20% kedvezmény!",
+          "staff_api_name": "Noel - 20% kedvezmény!"
+        },
+        {
+          "staff_id": "26064",
+          "staff_label": "Evelin",
+          "staff_api_name": "Evelin"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "oxygen",
+      "salonic_account": "mosaic-oxigen",
+      "salonic_place_id": "14409",
+      "salonic_spec_id": "64122",
+      "service_category": "Oxigénterápia - 1.alkalom",
+      "salonic_service_id": "466110",
+      "service_name_raw": "Haj Oxigénterápia - 1. alkalom",
+      "duration_min": 80,
+      "active_price": 29900,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "31988",
+          "staff_label": "Bozsoki - Harangozó Tündi",
+          "staff_api_name": "Bozsoki - Harangozó Tündi"
+        },
+        {
+          "staff_id": "32009",
+          "staff_label": "Szűcs Vivien",
+          "staff_api_name": "Szűcs Vivien"
+        },
+        {
+          "staff_id": "32969",
+          "staff_label": "Menyhárt Móni",
+          "staff_api_name": "Menyhárt Móni"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "oxygen",
+      "salonic_account": "mosaic-oxigen",
+      "salonic_place_id": "14409",
+      "salonic_spec_id": "64122",
+      "service_category": "Oxigénterápia - 1.alkalom",
+      "salonic_service_id": "468638",
+      "service_name_raw": "👩 Haj Oxigénterápia - 1. alkalom",
+      "duration_min": 120,
+      "active_price": 29900,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "31988",
+          "staff_label": "Bozsoki - Harangozó Tündi",
+          "staff_api_name": "Bozsoki - Harangozó Tündi"
+        },
+        {
+          "staff_id": "32969",
+          "staff_label": "Menyhárt Móni",
+          "staff_api_name": "Menyhárt Móni"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "oxygen",
+      "salonic_account": "mosaic-oxigen",
+      "salonic_place_id": "14409",
+      "salonic_spec_id": "64128",
+      "service_category": "Oxigénterápia - 2.alkalomtól",
+      "salonic_service_id": "466158",
+      "service_name_raw": "👩 Haj Oxigénterápia - 2. alkalomtól",
+      "duration_min": 80,
+      "active_price": 26000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "31988",
+          "staff_label": "Bozsoki - Harangozó Tündi",
+          "staff_api_name": "Bozsoki - Harangozó Tündi"
+        },
+        {
+          "staff_id": "32009",
+          "staff_label": "Szűcs Vivien",
+          "staff_api_name": "Szűcs Vivien"
+        },
+        {
+          "staff_id": "32969",
+          "staff_label": "Menyhárt Móni",
+          "staff_api_name": "Menyhárt Móni"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "pmu",
+      "salonic_account": "mosaic-pmu",
+      "salonic_place_id": "14585",
+      "salonic_spec_id": null,
+      "service_category": null,
+      "salonic_service_id": "471160",
+      "service_name_raw": "Ingyenes konzultáció",
+      "duration_min": 30,
+      "active_price": null,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32428",
+          "staff_label": "Melitta",
+          "staff_api_name": "Melitta"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "pmu",
+      "salonic_account": "mosaic-pmu",
+      "salonic_place_id": "14585",
+      "salonic_spec_id": null,
+      "service_category": null,
+      "salonic_service_id": "471034",
+      "service_name_raw": "Ajaktetoválás - Aquarell - 124.900 Ft helyett most",
+      "duration_min": 120,
+      "active_price": 99000,
+      "list_price": 124900,
+      "eligible_staff": [
+        {
+          "staff_id": "32428",
+          "staff_label": "Melitta",
+          "staff_api_name": "Melitta"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "pmu",
+      "salonic_account": "mosaic-pmu",
+      "salonic_place_id": "14585",
+      "salonic_spec_id": null,
+      "service_category": null,
+      "salonic_service_id": "471152",
+      "service_name_raw": "Ajaktetoválás - Rúzs hatású - 134.900 Ft helyett most",
+      "duration_min": 120,
+      "active_price": 110000,
+      "list_price": 134900,
+      "eligible_staff": [
+        {
+          "staff_id": "32428",
+          "staff_label": "Melitta",
+          "staff_api_name": "Melitta"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "pmu",
+      "salonic_account": "mosaic-pmu",
+      "salonic_place_id": "14585",
+      "salonic_spec_id": null,
+      "service_category": null,
+      "salonic_service_id": "471153",
+      "service_name_raw": "Szemöldök tetoválás - Hibrid - 99.000 Ft helyett most",
+      "duration_min": 90,
+      "active_price": 79000,
+      "list_price": 99000,
+      "eligible_staff": [
+        {
+          "staff_id": "32428",
+          "staff_label": "Melitta",
+          "staff_api_name": "Melitta"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "pmu",
+      "salonic_account": "mosaic-pmu",
+      "salonic_place_id": "14585",
+      "salonic_spec_id": null,
+      "service_category": null,
+      "salonic_service_id": "471154",
+      "service_name_raw": "Szemöldök tetoválás - Soft powder - 99.000 Ft helyett most",
+      "duration_min": 90,
+      "active_price": 79000,
+      "list_price": 99000,
+      "eligible_staff": [
+        {
+          "staff_id": "32428",
+          "staff_label": "Melitta",
+          "staff_api_name": "Melitta"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "pmu",
+      "salonic_account": "mosaic-pmu",
+      "salonic_place_id": "14585",
+      "salonic_spec_id": null,
+      "service_category": null,
+      "salonic_service_id": "481061",
+      "service_name_raw": "Szempilla sűrítés - 59.000 Ft helyett most",
+      "duration_min": 60,
+      "active_price": 47000,
+      "list_price": 59000,
+      "eligible_staff": [
+        {
+          "staff_id": "32428",
+          "staff_label": "Melitta",
+          "staff_api_name": "Melitta"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "pmu",
+      "salonic_account": "mosaic-pmu",
+      "salonic_place_id": "14585",
+      "salonic_spec_id": null,
+      "service_category": null,
+      "salonic_service_id": "481062",
+      "service_name_raw": "Szemhéj tetoválás - Füstös - 79.000 Ft helyett most",
+      "duration_min": 120,
+      "active_price": 63000,
+      "list_price": 79000,
+      "eligible_staff": [
+        {
+          "staff_id": "32428",
+          "staff_label": "Melitta",
+          "staff_api_name": "Melitta"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "pmu",
+      "salonic_account": "mosaic-pmu",
+      "salonic_place_id": "14585",
+      "salonic_spec_id": null,
+      "service_category": null,
+      "salonic_service_id": "471157",
+      "service_name_raw": "Korrekció",
+      "duration_min": 30,
+      "active_price": null,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32428",
+          "staff_label": "Melitta",
+          "staff_api_name": "Melitta"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476477",
+      "service_name_raw": "Ingyenes konzultáció zsófihoz!",
+      "duration_min": 30,
+      "active_price": 0,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476478",
+      "service_name_raw": "⭐ AKCIÓ - EGYEDI CSOMAG (TE RAKOD ÖSSZE!) - 50% KEDVEZMÉNNYEL + állapofelmérés",
+      "duration_min": 60,
+      "active_price": 0,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476479",
+      "service_name_raw": "🪒 AKCIÓ - BASIC CSOMAG - Állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 36400,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476480",
+      "service_name_raw": "🔥 AKCIÓ - MEDIUM CSOMAG + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 90,
+      "active_price": 50400,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476482",
+      "service_name_raw": "🌞 AKCIÓ - SUMMER CSOMAG + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 120,
+      "active_price": 66800,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476483",
+      "service_name_raw": "👑 AKCIÓ - TOTAL CSOMAG + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 90,
+      "active_price": 86000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476484",
+      "service_name_raw": "🧔 AKCIÓ - MAN TOTAL CSOMAG + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 120,
+      "active_price": 54400,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476485",
+      "service_name_raw": "ARC - Teljes arc + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 24000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476486",
+      "service_name_raw": "ARC - Bajuszvonal + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 9600,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476487",
+      "service_name_raw": "ARC - Állcsúcs + állkapocsvonal + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 9600,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476488",
+      "service_name_raw": "TEST - Teljes hónalj + állapotfelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 15200,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476489",
+      "service_name_raw": "TEST - Alkar + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 19200,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476490",
+      "service_name_raw": "TEST - Felkar + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 19200,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476491",
+      "service_name_raw": "TEST - Teljes kar + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 33600,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476492",
+      "service_name_raw": "INTIM - Bikini vonal + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 15200,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476493",
+      "service_name_raw": "INTIM - Teljes Intim + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 28800,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476494",
+      "service_name_raw": "LÁBAK - 2 Lábszár + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 28000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476495",
+      "service_name_raw": "LÁBAK - 2 Comb + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 28000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476496",
+      "service_name_raw": "LÁBAK - 2 Teljes láb + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 47200,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476498",
+      "service_name_raw": "FÉRFI - Hát + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 28800,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476499",
+      "service_name_raw": "FÉRFI - Mellkas + állapofelmérés -20% kedvezménnyel",
+      "duration_min": 60,
+      "active_price": 25600,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476500",
+      "service_name_raw": "FÉRFI - Has + állapofelmérés",
+      "duration_min": 60,
+      "active_price": 25600,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476501",
+      "service_name_raw": "EGYÉB - Kis testrész + állapofelmérés",
+      "duration_min": 60,
+      "active_price": 15200,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66404",
+      "service_category": null,
+      "salonic_service_id": "476502",
+      "service_name_raw": "EGYÉB - Közepes testrész + állapofelmérés",
+      "duration_min": 60,
+      "active_price": 23200,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476503",
+      "service_name_raw": "⭐ AKCIÓ - EGYEDI CSOMAG (TE RAKOD ÖSSZE!) - 50% KEDVEZMÉNNYEL",
+      "duration_min": 60,
+      "active_price": 0,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476506",
+      "service_name_raw": "🪒 AKCIÓ - BASIC CSOMAG - 9.500 FT KEDVEZMÉNNYEL",
+      "duration_min": 30,
+      "active_price": 45500,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476507",
+      "service_name_raw": "🔥 AKCIÓ - MEDIUM CSOMAG - 27.000 FT KEDVEZMÉNNYEL",
+      "duration_min": 60,
+      "active_price": 63000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476508",
+      "service_name_raw": "🌞 AKCIÓ - SUMMER CSOMAG - 30.500 FT KEDVEZMÉNNYEL",
+      "duration_min": 90,
+      "active_price": 83500,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476509",
+      "service_name_raw": "👑 AKCIÓ - TOTAL CSOMAG - 48.500 FT KEDVEZMÉNNYEL",
+      "duration_min": 90,
+      "active_price": 107500,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476510",
+      "service_name_raw": "🧔 AKCIÓ - MAN TOTAL CSOMAG - 32.000 FT KEDVEZMÉNNYEL",
+      "duration_min": 60,
+      "active_price": 68000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476511",
+      "service_name_raw": "ARC - Bajuszvonal",
+      "duration_min": 30,
+      "active_price": 12000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476512",
+      "service_name_raw": "ARC - Állcsúcs + állkapocsvonal",
+      "duration_min": 30,
+      "active_price": 12000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476517",
+      "service_name_raw": "ARC - Teljes arc",
+      "duration_min": 30,
+      "active_price": 30000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476521",
+      "service_name_raw": "TEST - Teljes hónalj",
+      "duration_min": 30,
+      "active_price": 19000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476522",
+      "service_name_raw": "TEST - Alkar",
+      "duration_min": 30,
+      "active_price": 24000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476523",
+      "service_name_raw": "TEST - Felkar",
+      "duration_min": 30,
+      "active_price": 24000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476524",
+      "service_name_raw": "TEST - Teljes kar",
+      "duration_min": 30,
+      "active_price": 42000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476525",
+      "service_name_raw": "INTIM - Bikini vonal",
+      "duration_min": 30,
+      "active_price": 19000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476526",
+      "service_name_raw": "INTIM - Teljes Intim",
+      "duration_min": 30,
+      "active_price": 36000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476527",
+      "service_name_raw": "LÁBAK - 2 Lábszár",
+      "duration_min": 30,
+      "active_price": 35000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476528",
+      "service_name_raw": "LÁBAK - 2 Comb",
+      "duration_min": 30,
+      "active_price": 35000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476529",
+      "service_name_raw": "LÁBAK - 2 Teljes láb",
+      "duration_min": 60,
+      "active_price": 59000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476530",
+      "service_name_raw": "FÉRFI - Hát",
+      "duration_min": 30,
+      "active_price": 36000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476531",
+      "service_name_raw": "FÉRFI - Mellkas",
+      "duration_min": 30,
+      "active_price": 32000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476532",
+      "service_name_raw": "FÉRFI - Has",
+      "duration_min": 30,
+      "active_price": 32000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476533",
+      "service_name_raw": "EGYÉB - Kis testrész",
+      "duration_min": 30,
+      "active_price": 19000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "laser",
+      "salonic_account": "mosaic-elysion",
+      "salonic_place_id": "14586",
+      "salonic_spec_id": "66405",
+      "service_category": null,
+      "salonic_service_id": "476535",
+      "service_name_raw": "EGYÉB - Közepes testrész",
+      "duration_min": 30,
+      "active_price": 29000,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "32417",
+          "staff_label": "Elysion Pro Szőrtelenítés",
+          "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    }
+  ],
+  "availability_samples": [
+    {
+      "business": "headspa",
+      "service_id": "302342",
+      "http": 200,
+      "api_status": "success",
+      "top_level_keys": [
+        "status",
+        "data"
+      ],
+      "data_keys": [
+        "dateText",
+        "date",
+        "placeName",
+        "placeAddress",
+        "placePhone",
+        "blocks"
+      ],
+      "employees_with_slots": [
+        "24065",
+        "24989",
+        "27076",
+        "29415"
+      ],
+      "slot_count_14d": 13,
+      "first_slot_unix": 1791282600,
+      "sample_slot_object": {
+        "timestamp": 1791282600,
+        "formatted": "12:30",
+        "formattedFull": "október 6. (kedd) 12:30"
+      }
+    },
+    {
+      "business": "hair",
+      "service_id": "231532",
+      "http": 200,
+      "api_status": "success",
+      "top_level_keys": [
+        "status",
+        "data"
+      ],
+      "data_keys": [
+        "dateText",
+        "date",
+        "placeName",
+        "placeAddress",
+        "placePhone",
+        "blocks"
+      ],
+      "employees_with_slots": [
+        "23694",
+        "26064",
+        "-1",
+        "25095"
+      ],
+      "slot_count_14d": 45,
+      "first_slot_unix": 1791192600,
+      "sample_slot_object": {
+        "timestamp": 1791192600,
+        "formatted": "11:30",
+        "formattedFull": "október 5. (hétfő) 11:30"
+      }
+    },
+    {
+      "business": "oxygen",
+      "service_id": "466110",
+      "http": 200,
+      "api_status": "success",
+      "top_level_keys": [
+        "status",
+        "data"
+      ],
+      "data_keys": [
+        "dateText",
+        "date",
+        "placeName",
+        "placeAddress",
+        "placePhone",
+        "blocks"
+      ],
+      "employees_with_slots": [
+        "32009",
+        "-1",
+        "31988",
+        "32969"
+      ],
+      "slot_count_14d": 68,
+      "first_slot_unix": 1791183600,
+      "sample_slot_object": {
+        "timestamp": 1791183600,
+        "formatted": "09:00",
+        "formattedFull": "október 5. (hétfő) 09:00"
+      }
+    },
+    {
+      "business": "pmu",
+      "service_id": "471160",
+      "http": 200,
+      "api_status": "success",
+      "top_level_keys": [
+        "status",
+        "data"
+      ],
+      "data_keys": [
+        "dateText",
+        "date",
+        "placeName",
+        "placeAddress",
+        "placePhone",
+        "blocks"
+      ],
+      "employees_with_slots": [
+        "32428",
+        "-1"
+      ],
+      "slot_count_14d": 163,
+      "first_slot_unix": 1791280800,
+      "sample_slot_object": {
+        "timestamp": 1791280800,
+        "formatted": "12:00",
+        "formattedFull": "október 6. (kedd) 12:00"
+      }
+    }
+  ],
+  "problems": [],
+  "fetched_at_patch": "2026-10-03T15:13:38.153Z",
+  "gate": {
+    "status": "NOT_READY_FOR_PRODUCTION_CREATE",
+    "reason": "booking_type / success_route / is_acquisition_conversion uzletagankent nincs jovahagyva; createBooking/getBooking/updateBooking nem implementalhato a nyilvanos Salonic feluleten (lasd PMU_LIVE_ADAPTER_FINDINGS.md)"
+  },
+  "note": "Minden adat a Salonic nyilvanos oldalairol es az api.salonic.hu naptar-API-bol, csak olvasassal. Foglalas nem jott letre. ID-t, arat, munkatarsat nem talaltam ki: ami nem olvashato, null + open_items."
+}
