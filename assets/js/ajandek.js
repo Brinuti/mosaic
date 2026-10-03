@@ -658,7 +658,8 @@
       hely.appendChild(h('p', { class: 'ah-kartya-megjegyzes', text: 'Megnyílik a nyomtatható kártya: nyomtasd ki, vagy mentsd PDF-ként. E-mailben is elküldtük.' }));
     } else {
       hely.appendChild(h('div', { class: 'ah-keszul' }, h('span', { class: 'ah-forgo', 'aria-hidden': 'true' }), h('span', { text: 'Készítjük az ajándékkártyádat…' })));
-      hely.appendChild(h('p', { class: 'ah-kartya-megjegyzes', text: S.azonnali ? 'Perceken belül itt és az e-mailedben is megjelenik.' : 'Elkészültekor itt megjelenik, és e-mailben is megkapod.' }));
+      // a szalon kezzel allitja ki a kartyat (lasd AJANDEK.md): idoigeny nem igerheto, de a telefonszam mindig ott van
+      hely.appendChild(h('p', { class: 'ah-kartya-megjegyzes', text: (S.azonnali ? 'Perceken belül itt és az e-mailedben is megjelenik.' : 'Elkészültekor itt megjelenik, és e-mailben is megkapod.') + ' Kérdésed van? Hívj minket: ' + A.SZALON.telefon + '.' }));
     }
   }
   // auto-refresh: amig az ajandekkartya keszul, idonkent ujrakerdezzuk a szervert. A hatterben levo lap nem
@@ -712,6 +713,19 @@
     }).then(function () { gomb.disabled = false; });
   }
   function szemelyreKihagy() { S.utanAllapot = 'osszegzo'; allapotba('osszegzo'); }
+
+  // "Újabb ajándékkártyát vásárolok": a megrendelés az e-mailben lévő linkkel továbbra is elérhető; az oldal tiszta
+  // lappal indul (új PaymentIntent, új purchase), a beírt számlázási adatok megmaradnak
+  function ujVasarlas() {
+    clearTimeout(figyelIdozito); figyelSzamlalo = 0;
+    S.pi = null; S.cs = null; S.rt = null; S.csakOlvas = false; S.fizetesInditva = null;
+    S.rendeles = null; S.utanAllapot = null; S.fizetveIdo = 0; S.termek = null; S.folyamatban = false;
+    // a kifizetett fizetoelem helyett ujat epitunk (tiszta kartyamezok)
+    try { if (stripeAdapter.elem && stripeAdapter.elem.destroy) stripeAdapter.elem.destroy(); } catch (e) { /* nem baj */ }
+    stripeAdapter.elem = null; stripeAdapter.elements = null; stripeAdapter.osszeg = null; S.elemKesz = false;
+    allapotba('bongeszes', { eroltet: true });
+    window.scrollTo(0, 0);
+  }
 
   // ---------------------------------------------------------------- FinalOrderHub
   function osszegzoRender() {
@@ -848,6 +862,7 @@
     });
     $('ah-szemelyre-urlap').addEventListener('submit', szemelyreMent);
     $('ah-sz-kihagy').addEventListener('click', szemelyreKihagy);
+    $('ah-uj-vasarlas').addEventListener('click', ujVasarlas);
     $('ah-hero-cta').addEventListener('click', function (ev) { var f = $('ah-finder'); if (f) { ev.preventDefault(); gorgess(f, 'start'); } });
     videoKot();
   }

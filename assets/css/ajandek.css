@@ -80,6 +80,7 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-gombsor { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 8px; }
 .ah-gombsor-oszlop { flex-direction: column; align-items: stretch; text-align: center; }
 .ah-gombsor-oszlop .ah-link { align-self: center; }
+.ah-uj-sor { text-align: center; margin: 18px 0 0; }
 
 /* ---------- header ---------- */
 /* A MOSAIC oldal fejlecenek sajat szine (Wix color_11 = rgb(24,48,51)): a logo feher felirata csak sotet hatteren latszik */
