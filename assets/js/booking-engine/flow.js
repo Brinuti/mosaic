@@ -16,6 +16,13 @@ export const ROUTES = Object.freeze({
   // Oxigen: egy belepesi kerdes (OX1); ha egy szandekhoz tobb Salonic-szolgaltatas tartozik, rovid valasztas (OX2) - csak C1 elott
   OX1: { service: 'C1', variant: 'OX2' },
   OX2: { service: 'C1' },
+  // Fodraszat: HA1 (mit szeretnel) -> HA2 (kezeles) -> [HA2B (hajhossz)] -> HA3 (van valasztott fodraszod?) -> [HA3B] -> C1;
+  // az ingyenes konzultacio (HA-CONSULT) egyenesen C1-re megy; konkret szolgaltatas landing a HA3-ra
+  HA1: { intent: 'HA2', consult: 'C1' },
+  HA2: { group: 'HA2B', service: 'HA3' },
+  HA2B: { service: 'HA3' },
+  HA3: { any: 'C1', choose: 'HA3B' },
+  HA3B: { staff: 'C1' },
   C1: { slot: 'C3', more: 'C2', none: 'A1' },
   C2: { slot: 'C3', none: 'A1' },
   C3: { next: 'C4' },
@@ -32,14 +39,76 @@ export function next(state, event) {
   return to;
 }
 
-/** Belepesi pont: konkret szolgaltatas ismert -> C1; ajandekkartya-szandek -> HS3 (ha az uzletagnak van); egyebkent (generic) az uzletag elso allapota (HS1 / OX1). */
-export function entryState({ hasService, voucher, first = 'HS1', voucherState = 'HS3' }) {
-  if (hasService) return 'C1';
+/**
+ * Belepesi pont: konkret szolgaltatas ismert -> az uzletag "exact" allapota (alap: C1; Fodraszat: HA3, a szakember-kerdes); ajandekkartya-szandek -> HS3
+ * (ha az uzletagnak van); egyebkent (generic) az uzletag elso allapota (HS1 / OX1 / HA1).
+ */
+export function entryState({ hasService, voucher, first = 'HS1', voucherState = 'HS3', exact = 'C1' }) {
+  if (hasService) return exact;
   return voucher && voucherState ? voucherState : first;
 }
 
 /** Egy szandekhoz (pl. "Elso kezeles") tartozo Salonic-szolgaltatasok; ha tobb is van, az engine rovid valasztast kinal (OX2). */
 export const intentCandidates = (services, intent) => services.filter((s) => intent.test(s));
+
+// --- Fodraszat: kategoria-szandekek, kezelesek hajhossz szerint, szakemberi arkedvezmeny --------------------------------------------
+const normCat = (s) => String(s ?? '').normalize('NFC').trim().toLowerCase();
+
+/**
+ * Egy szandek (pl. "Hajfestes") Salonic-szolgaltatasai a jovahagyott kategoria-lista szerint. A konzultacio kulon ag (nem tartozik ide).
+ * A catchAll szandek ("Egyeb") azt is megkapja, amit egyik szandek sem igenyel (uj Salonic-kategoria sem vesz el).
+ */
+export function intentServices(services, intents, intent) {
+  const claimed = new Set(intents.flatMap((i) => (i.categories || []).map(normCat)));
+  const own = new Set((intent.categories || []).map(normCat));
+  return services.filter((s) => s.bookingType !== 'consultation' && (own.has(normCat(s.category)) || (intent.catchAll && !claimed.has(normCat(s.category)))));
+}
+
+const LENGTH_RE = /\s*[-–]\s*(Rövid|Közepes|Hosszú|Extra\s+Hosszú|Félhosszú)\s+haj\s*$/i;
+const LENGTH_LABEL = { 'rövid': 'Rövid haj', 'közepes': 'Közepes haj', 'hosszú': 'Hosszú haj', 'extra hosszú': 'Extra hosszú haj', 'félhosszú': 'Félhosszú haj' };
+const tidy = (s) => s.replace(/\s*\+\s*/g, ' + ').replace(/\s*\/\s*/g, ' / ').replace(/(\S)-\s+/g, '$1 – ').replace(/\s+-\s+/g, ' – ').replace(/\s+/g, ' ').trim();
+const groupKey = (stem) => stem.toLowerCase().replace(/[^\p{L}\p{N}+]/gu, ''); // a Salonic nevei kozott szokozes/irasjel-elteres van, ez kiegyenlit
+
+/** "Balayage ... - Kozepes haj" -> { stem: "Balayage ...", length: "Kozepes haj" }; hajhossz nelkuli szolgaltatasnal length = null. */
+export function parseLength(name) {
+  const clean = displayName(name);
+  const m = clean.match(LENGTH_RE);
+  if (!m) return { stem: tidy(clean), length: null };
+  return { stem: tidy(clean.replace(LENGTH_RE, '')), length: LENGTH_LABEL[m[1].toLowerCase().replace(/\s+/g, ' ')] || null };
+}
+
+/** A szolgaltatasok kezelesenkent (a hajhossz-valtozatok egy csoportban), a Salonic sorrendjeben; a hajhosszak idotartam szerint rendezve. */
+export function groupServices(services) {
+  const groups = new Map();
+  for (const service of services) {
+    const { stem, length } = parseLength(service.name);
+    const key = groupKey(stem);
+    if (!groups.has(key)) groups.set(key, { key, title: stem, items: [] });
+    groups.get(key).items.push({ service, length });
+  }
+  const out = [...groups.values()];
+  for (const g of out) g.items.sort((a, b) => (a.service.durationMin || 0) - (b.service.durationMin || 0));
+  return out;
+}
+
+const rangeOf = (nums) => { const v = nums.filter((n) => n !== null && n !== undefined); return v.length ? [Math.min(...v), Math.max(...v)] : null; };
+/** Egy kezelescsoport tomor jellemzoje: "2 ora 30 perc - 3 ora 30 perc · 39 950 - 48 950 Ft" (egy valtozatnal egyetlen ertek). */
+export function groupFacts(group) {
+  const d = rangeOf(group.items.map((i) => i.service.durationMin));
+  const p = rangeOf(group.items.map((i) => i.service.activePrice));
+  const dur = d ? (d[0] === d[1] ? durationLabel(d[0]) : `${durationLabel(d[0])} – ${durationLabel(d[1])}`) : '';
+  const price = p ? (p[0] === p[1] ? formatPrice(p[0]) : `${formatPrice(p[0]).replace(/ Ft$/, '')} – ${formatPrice(p[1])}`) : '';
+  return [dur, price].filter(Boolean).join(' · ');
+}
+
+/** A Salonic szakemberi cimkeje ("Noel - 20% kedvezmeny!") a kedvezmeny szazalekat tartalmazza; 0, ha nincs. */
+export const staffDiscountPercent = (label) => { const m = /(\d{1,2})\s*%\s*kedvezm/i.exec(label || ''); return m ? +m[1] : 0; };
+/** A szolgaltatas ara az adott szakemberrel (a szakemberi kedvezmennyel; nincs kedvezmeny = a Salonic ara). */
+export function priceFor(service, staffLabel) {
+  if (service.activePrice === null || service.activePrice === undefined) return null;
+  const pct = staffDiscountPercent(staffLabel);
+  return pct ? Math.round(service.activePrice * (100 - pct) / 100) : service.activePrice;
+}
 
 // --- ido (Europe/Budapest) --------------------------------------------------------------------------------------------------
 const fmt = (unix, o, locale = 'hu-HU') => new Intl.DateTimeFormat(locale, { timeZone: TIMEZONE, ...o }).format(new Date(unix * 1000));
@@ -107,7 +176,10 @@ export function availableDays(slots, { max = 14 } = {}) {
 // --- megjelenites ------------------------------------------------------------------------------------------------------------
 const EMOJI = /[\p{Extended_Pictographic}‍️]/gu;
 /** A Salonic nevebol: emoji es a "KUPONKODDAL - " elotag nelkul (a kupon-allapotot kulon jelezzuk). */
-export const displayName = (name) => String(name || '').replace(EMOJI, '').replace(/^\s*KUPONKÓDDAL\s*-\s*/i, '').replace(/\s+/g, ' ').trim();
+// A Salonic nevebol: emoji, "KUPONKODDAL - " elotag es a zarojeles akcios szoveg ("(9.900 Ft helyett most 0 Ft!)") nelkul: a listaar/akcio kulon latszik.
+export const displayName = (name) => String(name || '').replace(EMOJI, '').replace(/^\s*KUPONKÓDDAL\s*-\s*/i, '').replace(/\s*\(\s*[\d.\s]+Ft helyett most[^)]*\)/i, '').replace(/\s+/g, ' ').trim();
+/** "Ingyenes" a 0 Ft-os szolgaltatasra (pl. konzultacio), egyebkent a formazott ar. */
+export const priceLabel = (n) => (n === 0 ? 'Ingyenes' : formatPrice(n));
 // Ezres tagolas minden meretnel ("4 990 Ft", "29 900 Ft"): az Intl hu-HU a negyjegyu szamokat nem tagolja, ezert kezzel.
 export const formatPrice = (n) => (n === null || n === undefined ? '' : `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} Ft`);
 export const durationLabel = (min) => (min >= 60 ? `${Math.floor(min / 60)} óra${min % 60 ? ' ' + (min % 60) + ' perc' : ''}` : `${min} perc`);
@@ -142,6 +214,7 @@ export function parseContext(search, referrer = '', origin = '') {
   return {
     business: q.get('business') || 'headspa',
     serviceKey: q.get('service') || null,
+    category: q.get('category') || null, // kategoria-landing: a szandek kulcsa (pl. balayage) -> kozvetlenul a kezeles-valasztasra
     voucher: q.get('voucher') === '1' || q.get('intent') === 'voucher',
     sourcePage,
     attribution,

@@ -163,6 +163,15 @@ test('verifyConfirmation: kivalasztott munkatars neve (promos cimkevel is) egyez
   assert.equal(verifyConfirmation(hairUrl('Betti'), exp).checks.staff.status, 'fail');
 });
 
+test('verifyConfirmation: elfogadhato arak (szakemberi kedvezmeny): a vart ar vagy a kedvezmenyes ar elfogadott, mas nem', () => {
+  const hairUrl = (price) => '/fodrasz-ok?' + new URLSearchParams({ first_booking: 'true', price, employee: 'Noel', location: 'Mosaic Hair', service: 'Balayage', g: 'zz9', bookingUrl: bookingUrl('https://mosaic-hair.salonic.hu', 10823, '231532', START) });
+  const exp = { business: 'hair', serviceId: '231532', startUnix: START, staffId: -1, activePrice: 42950, acceptablePrices: [34360] };
+  assert.equal(verifyConfirmation(hairUrl('42950'), exp).ok, true);
+  assert.equal(verifyConfirmation(hairUrl('34360'), exp).ok, true, 'a "barmely szakember" a kedvezmenyes szakemberhez is oszthat');
+  assert.equal(verifyConfirmation(hairUrl('30000'), exp).checks.price.status, 'fail');
+  assert.equal(verifyConfirmation(hairUrl('34360'), { ...exp, acceptablePrices: [] }).checks.price.status, 'fail', 'felsorolt kedvezmeny nelkul a kedvezmenyes ar elter');
+});
+
 test('verifyConfirmation: ismeretlen ar (null) = kihagyott ellenorzes; ismeretlen uzletag = hiba', () => {
   assert.equal(verifyConfirmation(redirect(), { ...pmuExpected, activePrice: null }).checks.price.status, 'skipped');
   assert.throws(() => verifyConfirmation(redirect(), { ...pmuExpected, business: 'nincs' }), (e) => e.code === 'UNKNOWN_BUSINESS');

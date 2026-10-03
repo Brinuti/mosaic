@@ -162,8 +162,11 @@ export function verifyConfirmation(urlOrQuery, expected, businesses = BUSINESSES
   else if (!expected.staffName) set('staff', 'skipped', String(expected.staffId), employee); // nincs nev, amihez hasonlitani lehetne
   else set('staff', employee && (norm(employee) === norm(expected.staffName) || norm(employee).includes(norm(expected.staffName)) || norm(expected.staffName).includes(norm(employee))) ? 'pass' : 'fail', expected.staffName, employee);
   const price = digits(q.get('price'));
-  if (expected.activePrice === null || expected.activePrice === undefined) set('price', 'skipped', null, price); // a Salonic nem adott kiolvashato arat
-  else set('price', price === null ? 'fail' : price === expected.activePrice ? 'pass' : 'fail', expected.activePrice, price);
+  // elfogadhato arak: a vart ar + a szakemberi kedvezmenyes arak (pl. "barmely szakember" valasztasnal a Salonic a kedvezmenyes
+  // szakemberhez is oszthat); egyik sem olvashato = kihagyott ellenorzes
+  const accepted = [expected.activePrice, ...(expected.acceptablePrices || [])].filter((v) => v !== null && v !== undefined);
+  if (!accepted.length) set('price', 'skipped', null, price); // a Salonic nem adott kiolvashato arat
+  else set('price', price === null ? 'fail' : accepted.includes(price) ? 'pass' : 'fail', accepted.join(' / '), price);
 
   const ok = Object.values(checks).every((c) => c.status !== 'fail');
   return {
