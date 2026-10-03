@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  EXIT_GIFTCARD, ROUTES, availableDays, cardsFor, classifyRedirect, dayKey, dayLabel, daypartOf, displayName, durationLabel, entryState,
+  EXIT_GIFTCARD, ROUTES, withAttribution, availableDays, cardsFor, classifyRedirect, dayKey, dayLabel, daypartOf, displayName, durationLabel, entryState,
   filterSlots, findByKey, formatPrice, groupFacts, groupServices, icsFor, intentCandidates, intentServices, longDate, next, parseContext, parseLength,
   priceFor, priceLabel, quickSlots, shouldHandoff, staffDiscountPercent, stripLabel, timeLabel, uniqueTimes,
 } from '../assets/js/booking-engine/flow.js';
@@ -334,6 +334,26 @@ test('shouldHandoff: eles tartomanyon atadas a meglevo koszonooldalnak, elonezet
   assert.equal(shouldHandoff('localhost'), false);
   assert.equal(shouldHandoff('www.mosaicheadspa.hu', '?atadas=0'), false);
   assert.equal(shouldHandoff('localhost', '?atadas=1'), true);
+});
+
+test('withAttribution: a hirdetesi azonositok a koszonooldal-URL VEGERE kerulnek, a Salonic parameterei bajtra valtozatlanok', () => {
+  const salonic = 'https://www.mosaicheadspa.hu/fodrasz-ok?first_booking=true&service=Fodr%C3%A1sz+konzult%C3%A1ci%C3%B3+%289.900+Ft+helyett+most+0+Ft%21%29&price=0&g=g:3385039&bookingUrl=https%3A%2F%2Fmosaic-hair.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26startDate%3D1792674000%26back%3D';
+  const klikk = '?business=hair&service=konzult&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc';
+  const ki = withAttribution(salonic, klikk);
+  assert.ok(ki.startsWith(salonic), 'a Salonic URL elotagja bajtra valtozatlan');
+  assert.equal(ki.slice(salonic.length), '&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc');
+  // ami nem hirdetesi azonosito (business, service, minta, atadas ...), az nem kerul at
+  assert.ok(!/business=|service=konzult/.test(ki.slice(salonic.length)));
+  // nincs mit hozzaadni: valtozatlan
+  assert.equal(withAttribution(salonic, '?business=hair'), salonic);
+  assert.equal(withAttribution(salonic, ''), salonic);
+  // ha a Salonic URL-je mar tartalmazza, nem irjuk felul es nem duplazzuk
+  assert.equal(withAttribution(salonic + '&utm_source=salonic', '?utm_source=teszt&utm_medium=cpc'), salonic + '&utm_source=salonic&utm_medium=cpc');
+  // query nelkuli URL, fragment, ertek-kodolas
+  assert.equal(withAttribution('https://x.hu/ok', '?gclid=a b&utm_term=ő'), 'https://x.hu/ok?gclid=a%20b&utm_term=%C5%91');
+  assert.equal(withAttribution('https://x.hu/ok?a=1#h', '?gclid=Z'), 'https://x.hu/ok?a=1&gclid=Z#h');
+  assert.equal(withAttribution('https://x.hu/ok?', '?gclid=Z'), 'https://x.hu/ok?gclid=Z');
+  assert.equal(withAttribution('nem url', '?gclid=Z'), 'nem url');
 });
 
 test('icsFor: naptar-fajl: kezdes, veg, helyszin, emlekezteto', () => {

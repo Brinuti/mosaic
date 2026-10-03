@@ -7,6 +7,8 @@ Négy valódi próbafoglalás a **rejtett `/foglalo-motor` oldalról**, az éles
 - reCAPTCHA-kihívás **egyiknél sem** jött.
 - **Lemondás:** a tulajdonos jóváhagyásával 2026-10-03 20:05 körül mind a négy foglalást lemondtuk a visszaigazoló e-mail „Lemondom” linkjével (lemondás oka: „Próbafoglalás (TESZT), lemondva”); a Salonic mindegyiknél kiírta: „Az időpont lemondása sikeres volt!”. A vendégkartonokat **nem** töröltük.
 
+**Második kör (mérés-ellenőrzés, 2026-10-03 este):** három további valódi próbafoglalás automatizált böngészővel, a kimenő mérési kérések letiltásával és naplózásával (fodrászat-konzultáció 21:07, oxigén 2. alkalom 21:10, lézer fizetős 21:12; mind lemondva), lásd [MERES_ELLENORZES.md](MERES_ELLENORZES.md).
+
 ## Lista
 
 | # | Üzletág | Szolgáltatás | Küldés ideje (perc) | Foglalt időpont | Foglalás-azonosító (Salonic) | Tranzakcióazonosító (köszönőoldal) | Köszönőoldal |

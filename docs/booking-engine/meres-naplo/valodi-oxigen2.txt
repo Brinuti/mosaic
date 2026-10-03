@@ -1,0 +1,127 @@
+=== oxigen2 / valodi / helyi dist az eles tartomanyon / kattintas-azonositok: igen
+vege URL: https://www.mosaicheadspa.hu/oxigenterapia-masodik?first_booking=true&service=%F0%9F%91%A9+Haj+Oxig%C3%A9nter%C3%A1pia+-+2.+alkalomt%C3%B3l&category=Oxig%C3%A9nter%C3%A1p
+naplozott es LETILTOTT kimeno kereses: 54
+  a sajat oldal KERETBEN (a Salonic-iframe-ben betoltott koszonooldal) inditott meresi keres: 0  (a keretben a koszonooldal semmit nem kuld)
+  harmadik fel sajat keretebol (pl. Meta pixel-iframe): 26 (ismeretlen-tiltott KERET(mosaic-oxigen.salonic.hu), google-ads KERET(mosaic-oxigen.salonic.hu), stape KERET(?), tiktok KERET(mosaic-oxigen.salonic.hu), meta KERET(about:blank))
+  nem besorolt, de tiltott: GET connect.facebook.net/en_US/sdk.js
+
+--- GOOGLE ADS konverzio (en=conversion): egyedi konverziok (cimke | azonosito | ertek)
+  pLhlCISIp4kdEPDs9sg- | oid=oxigenterapi-3385031-466158-1792594800 | ertek=26000 HUF
+      -> 2 keres: googleadservices/pagead/conversion [FO], googleadservices/ccm/conversion [FO]
+  EGYEDI Google Ads konverziok: 1   (egy konverzio tobb csatornan megy: pagead/conversion, ccm/conversion, viewthroughconversion: ez NEM dupla)
+
+--- GA4 (es stape g/collect): nem-oldalbetoltes esemenyek
+  oxygen_headspa_second_appointment: 1 keres (region1g/collect [FO])
+  GA4 -> Google Ads konverzio-importok (region1/measurement/conversion): oxygen_headspa_second_appointment
+
+--- META
+  bongeszo (facebook.com/tr) Oxigen_Visszajaro: 1 keres [KERET(about:blank)]  <- konverzio  event_id=oxigenterapi-3385031-466...
+  szerveroldali CAPI (capig.stape) Oxigen_Visszajaro 26000 HUF: event_id=oxigenterapi-3385031-466158-17...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  Meta konverzios esemeny-nevek (bongeszo + CAPI egyutt, deduplikalas utan): Oxigen_Visszajaro [bongeszo 1, CAPI 1, azonos event_id]
+
+--- TIKTOK
+  POST /ipv6/enrich_ipv6 [KERET(mosaic-oxigen.salonic.hu)] esemeny: EnrichIpv6
+  POST /api/v2/pixel [KERET(mosaic-oxigen.salonic.hu)] esemeny: LandingPageView
+  POST /api/v2/pixel [KERET(mosaic-oxigen.salonic.hu)] esemeny: Pageview
+  POST /api/v2/pixel [KERET(mosaic-oxigen.salonic.hu)] esemeny: LandingPageView
+  POST /api/v2/pixel [KERET(mosaic-oxigen.salonic.hu)] esemeny: InitiateCheckout
+  POST /api/v2/pixel/act [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /ipv6/enrich_ipv6 [KERET(mosaic-oxigen.salonic.hu)] esemeny: EnrichIpv6
+  POST /api/v2/pixel [KERET(mosaic-oxigen.salonic.hu)] esemeny: LandingPageView
+  POST /api/v2/pixel [KERET(mosaic-oxigen.salonic.hu)] esemeny: EnrichAM
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /ipv6/enrich_ipv6 [FO] esemeny: EnrichIpv6
+  POST /api/v2/pixel [FO] esemeny: LandingPageView
+  POST /api/v2/pixel [FO] esemeny: Pageview
+  POST /api/v2/pixel [FO] esemeny: Purchase
+  POST /api/v2/pixel/act [FO] esemeny: (esemeny-kotegek, nem JSON-torzs)
+  POST /api/v2/pixel [FO] esemeny: EngagedSession
+  TikTok konverzios esemenyek: InitiateCheckout, EnrichAM, Purchase
+
+ZAPIER webhook: 1 keres [FO]
+
+=== OSSZEGZES: konverzio platformonkent (keretben + fo ablakban egyutt)
+  Google Ads : 1 egyedi konverzio (pLhlCISIp4kdEPDs9sg-)
+  GA4/stape  : 1 fajta nem-oldalbetoltes esemeny, mindegyik 1x a gyujto vegponton
+  Meta       : Oxigen_Visszajaro
+  TikTok     : InitiateCheckout, EnrichAM, Purchase; /api/v2/pixel keresek: 24
+  KERETBEN inditott: 0
+
+=== KATTINTAS-AZONOSITOK (gclid=TESZT123, fbclid=TESZT456, ttclid=TESZT789, utm_source=teszt, utm_medium=cpc)
+  Google Ads-kereses: gclid a "gclaw/gclid" mezoben: MEGVAN (10 keres; pl. TESZT123)
+  GA4/Ads-import:     gclid a "gclaw/gclid" mezoben: MEGVAN (2 keres)
+  Meta (facebook.com/tr): fbc mezo: MEGVAN (1 keres; POST-torzs)
+  Meta CAPI (capig.stape): fb.clickID/fbc a torzsben: MEGVAN (1/1 keres)
+  TikTok: ttclid (context.ad.callback / ttclid) a torzsben: MEGVAN (6/24 keres)
+  GA4 kampany-forras (cs/cm mezo, vagy utm a dl=page_location-ben): MEGVAN: cs=undefined cm=undefined
+  GA4 page_view / visit hitek (munkamenet-kezdet): 
+    en=page_view sid=1791054647 dl=https://www.mosaicheadspa.hu/oxigenterapia-masodik?first_boo dr=https://www.mosaicheadspa.hu/foglalo-motor?business=oxygen&service=466158&gclid=
+    en=visit sid=1791054647 dl=https://www.mosaicheadspa.hu/oxigenterapia-masodik?first_boo dr=https://www.mosaicheadspa.hu/foglalo-motor?business=oxygen&service=466158&gclid=
+  referrer (dr/ref) a koszonooldalon: https://www.mosaicheadspa.hu/ | https://www.mosaicheadspa.hu/foglalo-motor?business=oxygen&service=466158&gclid=TESZT123&fbclid=TESZT456&ttcli
+  sutik a vegen: _ttp=3KCHTLHs0dhFUAeTYkIq0qUEoJn.17910546 | _gcl_aw=GCL.1791054647.TESZT123 | _ga=GA1.1.2002088082.1791054647 | _ga_H4206SQ0Q7=GS2.1.s1791054647$o1$g0$t1791054647$ | _gcl_au=1.1.1223679517.1791054647.-.-.179105 | _tt_enable_cookie=1 | _ttp=01M41JT4BHEBZGS9TXP3CED368_.tt.1.179 | ttclid=TESZT789.1791054647666 | _fbc=fb.1.1791054648020.TESZT456 | _fbp=fb.1.1791054648029.29038504542635277
+
+engedett harmadik fel (csak szkript-betoltes): cdn.jsdelivr.net:2, fonts.googleapis.com:1, cdnjs.cloudflare.com:3, www.google.com:5, www.googletagmanager.com:4, www.gstatic.com:5, fonts.gstatic.com:5, analytics.tiktok.com:6, cdn.trustindex.io:2, connect.facebook.net:2
+
+=== NYERS NAPLO
+#1 t=5946 ismeretlen-tiltott GET [KERET(mosaic-oxigen.salonic.hu)] connect.facebook.net/en_US/sdk.js {}
+#2 t=6300 google-ads POST [KERET(mosaic-oxigen.salonic.hu)] www.google.com/ccm/collect {"en":"page_view","dl":"https://mosaic-oxigen.salonic.hu/guestData/?anyone=true&employeeId=32969&placeId=14409&serviceId=466158&startDate=1792594800&back="}
+#3 t=6628 google-ads POST [KERET(mosaic-oxigen.salonic.hu)] www.google.com/ccm/collect {"tid":"AW-16795940464","en":"page_view","dl":"https://mosaic-oxigen.salonic.hu/guestData/?anyone=true&employeeId=32969&placeId=14409&serviceId=466158&startDate=1792594800&back="}
+#4 t=6629 google-ads POST [KERET(mosaic-oxigen.salonic.hu)] www.google.com/ccm/collect {"tid":"AW-16795940464","dl":"https://mosaic-oxigen.salonic.hu/guestData/?anyone=true&employeeId=32969&placeId=14409&serviceId=466158&startDate=1792594800&back="}
+#5 t=6674 stape GET [KERET(?)] stape.mosaicheadspa.hu/_/service_worker/69f0/sw_iframe.html {}
+#6 t=6859 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics-ipv6.tiktokw.us/ipv6/enrich_ipv6 {} BODY={"event":"EnrichIpv6","event_id":"1791054866623_17910548895503","message_id":"messageId-1791054636645-5515127825524-CTDGK5BC77U0PIODKP30#source=2","is_onsite":false,"timestamp":"2026-10-03T19:10:36.64
+#7 t=6860 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"LandingPageView","event_id":"","message_id":"messageId-1791054636650-4186281325141-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T19:10:36.650Z","context":{"ad":{"sdk_env":"
+#8 t=6860 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"Pageview","event_id":"1791054866623_17910548895503","message_id":"messageId-1791054636645-5515127825524-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T19:10:36.645Z","contex
+#9 t=6980 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"LandingPageView","event_id":"","message_id":"messageId-1791054636770-7095930781701-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T19:10:36.770Z","context":{"ad":{"sdk_env":"
+#10 t=6983 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"InitiateCheckout","event_id":"1791054866623_179105488955026","message_id":"messageId-1791054636767-5739212143221-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T19:10:36.767Z
+#11 t=7112 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/pixel/act {} BODY={"event_id":"","message_id":"messageId-1791054636910-7805897476074","is_onsite":false,"timestamp":"2026-10-03T19:10:36.910Z","context":{"ad":{"sdk_env":"external","jsb_status":2},"device":{"platform":
+#12 t=7343 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/pixel/act {} BODY={"event_id":"","message_id":"messageId-1791054637145-2051173065748","is_onsite":false,"timestamp":"2026-10-03T19:10:37.145Z","context":{"ad":{"sdk_env":"external","jsb_status":2},"device":{"platform":
+#13 t=7344 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/monitor {} BODY={"metric_name":"custom_info","pixel_code":"CTDGK5BC77U0PIODKP30","platform":0,"app_name":"external","net_type":"4g","placement":"non","lib":{"lib_version":"2.2.1","ttq_name":"ttq"},"in_iframe":6,"time
+#14 t=9449 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/pixel/act {} BODY={"event_id":"","message_id":"messageId-1791054639244-2178287086768","is_onsite":false,"timestamp":"2026-10-03T19:10:39.244Z","context":{"ad":{"sdk_env":"external","jsb_status":2},"device":{"platform":
+#15 t=9450 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/pixel/act {} BODY={"event_id":"","message_id":"messageId-1791054639246-6487017997073","is_onsite":false,"timestamp":"2026-10-03T19:10:39.246Z","context":{"ad":{"sdk_env":"external","jsb_status":2},"device":{"platform":
+#16 t=9457 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/monitor {} BODY={"metric_name":"custom_info","pixel_code":"CTDGK5BC77U0PIODKP30","platform":0,"app_name":"external","net_type":"4g","placement":"non","lib":{"lib_version":"2.2.1","ttq_name":"ttq"},"in_iframe":6,"time
+#17 t=9457 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/monitor {} BODY={"metric_name":"custom_info","pixel_code":"CTDGK5BC77U0PIODKP30","platform":0,"app_name":"external","net_type":"4g","placement":"non","lib":{"lib_version":"2.2.1","ttq_name":"ttq"},"in_iframe":6,"time
+#18 t=11064 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/pixel/act {} BODY={"event_id":"","message_id":"messageId-1791054640841-8039728066292","is_onsite":false,"timestamp":"2026-10-03T19:10:40.841Z","context":{"ad":{"sdk_env":"external","jsb_status":2},"device":{"platform":
+#19 t=11067 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/monitor {} BODY={"metric_name":"custom_info","pixel_code":"CTDGK5BC77U0PIODKP30","platform":0,"app_name":"external","net_type":"4g","placement":"non","lib":{"lib_version":"2.2.1","ttq_name":"ttq"},"in_iframe":6,"time
+#20 t=12418 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics-ipv6.tiktokw.us/ipv6/enrich_ipv6 {} BODY={"event":"EnrichIpv6","event_id":"","message_id":"messageId-1791054642190-7270962736470-CTDGK5BC77U0PIODKP30#source=2","is_onsite":false,"timestamp":"2026-10-03T19:10:42.190Z","context":{"ad":{"sdk_en
+#21 t=12420 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"LandingPageView","event_id":"","message_id":"messageId-1791054642192-8616067297184-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T19:10:42.192Z","context":{"ad":{"sdk_env":"
+#22 t=12420 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"EnrichAM","event_id":"","message_id":"messageId-1791054642190-7270962736470-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T19:10:42.190Z","context":{"ad":{"sdk_env":"externa
+#23 t=12421 google-ads POST [KERET(mosaic-oxigen.salonic.hu)] www.google.com/pagead/form-data/16795940464 {}
+#24 t=12421 google-ads POST [KERET(mosaic-oxigen.salonic.hu)] www.google.com/ccm/form-data/16795940464 {}
+#25 t=15884 tiktok POST [KERET(mosaic-oxigen.salonic.hu)] analytics.tiktok.com/api/v2/monitor {} BODY={"metric_name":"custom_info","pixel_code":"CTDGK5BC77U0PIODKP30","platform":0,"app_name":"external","net_type":"4g","placement":"non","lib":{"lib_version":"2.2.1","ttq_name":"ttq"},"in_iframe":6,"time
+#26 t=17350 ga4 POST [FO] region1.analytics.google.com/measurement/conversion {"tid":"G-H4206SQ0Q7","en":"page_view","gclaw":"TESZT123"}
+#27 t=17351 ga4 POST [FO] region1.analytics.google.com/g/collect {"tid":"G-H4206SQ0Q7","dl":"https://www.mosaicheadspa.hu/oxigenterapia-masodik?first_booking=true&service=%F0%9F%91%A9+Haj+Oxig%C3%A9nter%C3%A1pia+-+2.+alkalomt%C3%B3l&category=Oxig%C3%A9nter%C3%A1pia+-+2.alkalomt%C3%B3l&price=26000&location=Mosaic+Oxig%C3%A9n&employee=Menyh%C3%A1rt+M%C3%B3ni&g=g:3385031&bookingUrl=https%3A%2F%2Fmosaic-oxigen.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32969%26placeId%3D14409%26serviceId%3D466158%26startDate%3D1792594800%26back%3D&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc","sid":"1791054647","en":"page_view"}
+#28 t=17352 ga4 POST [FO] stats.g.doubleclick.net/g/collect {"tid":"G-H4206SQ0Q7"}
+#29 t=17353 google-ads GET [FO] googleads.g.doubleclick.net/pagead/viewthroughconversion/16795940464/ {"en":"page_view"}
+#30 t=17354 google-ads POST [FO] www.google.com/rmkt/collect/16795940464/ {"en":"page_view","gclaw":"TESZT123"}
+#31 t=17355 google-ads POST [FO] www.google.com/ccm/collect {"tid":"AW-16795940464","en":"page_view","gclid":"TESZT123","dl":"https://www.mosaicheadspa.hu/oxigenterapia-masodik?first_booking=true&service=%F0%9F%91%A9+Haj+Oxig%C3%A9nter%C3%A1pia+-+2.+alkalomt%C3%B3l&category=Oxig%C3%A9nter%C3%A1pia+-+2.alkalomt%C3%B3l&price=26000&location=Mosaic+Oxig%C3%A9n&employee=Menyh%C3%A1rt+M%C3%B3ni&g=g:3385031&bookingUrl=https%3A%2F%2Fmosaic-oxigen.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32969%26placeId%3D14409%26serviceId%3D466158%26startDate%3D1792594800%26back%3D&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=","gclaw":"TESZT123"}
+#32 t=17355 google-ads GET [FO] www.googleadservices.com/pagead/set_partitioned_cookie {"tid":"AW-16795940464","en":"page_view","gclid":"TESZT123","gclaw":"TESZT123"}
+#33 t=17356 google-ads POST [FO] ad.doubleclick.net/ccm/s/collect {"gclid":"TESZT123"}
+#34 t=17356 google-ads POST [FO] www.google.com/ccm/collect {"tid":"AW-16795940464","en":"page_view","gclid":"TESZT123","dl":"https://www.mosaicheadspa.hu/oxigenterapia-masodik","gclaw":"TESZT123"}
+#35 t=17356 ga4 GET [FO] www.google.hu/ads/ga-audiences {"tid":"G-H4206SQ0Q7"}
+#36 t=17463 zapier POST [FO] hooks.zapier.com/hooks/catch/25416243/0xYgLEnqBPdjKSkG/ {} BODY={"startDate":"1792594800","employee":"Menyhárt Móni","price":"26000","first":"true","gclid":"TESZT123","fbclid":"","ttclid":"TESZT789","ttp":"","eid":"oxigenterapi-3385031-466158-1792594800","fbc":"",
+#37 t=17463 google-ads GET [FO] googleads.g.doubleclick.net/pagead/viewthroughconversion/16795940464/ {}
+#38 t=17464 google-ads POST [FO] www.google.com/rmkt/collect/16795940464/ {"gclaw":"TESZT123"}
+#39 t=17464 ga4 POST [FO] region1.analytics.google.com/measurement/conversion {"tid":"G-H4206SQ0Q7","en":"oxygen_headspa_second_appointment","value":"26000","currency_code":"HUF","gclaw":"TESZT123"}
+#40 t=17466 ga4 POST [FO] region1.analytics.google.com/g/collect {"tid":"G-H4206SQ0Q7","dl":"https://www.mosaicheadspa.hu/oxigenterapia-masodik?first_booking=true&service=%F0%9F%91%A9+Haj+Oxig%C3%A9nter%C3%A1pia+-+2.+alkalomt%C3%B3l&category=Oxig%C3%A9nter%C3%A1pia+-+2.alkalomt%C3%B3l&price=26000&location=Mosaic+Oxig%C3%A9n&employee=Menyh%C3%A1rt+M%C3%B3ni&g=g:3385031&bookingUrl=https%3A%2F%2Fmosaic-oxigen.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32969%26placeId%3D14409%26serviceId%3D466158%26startDate%3D1792594800%26back%3D&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc","sid":"1791054647","en":"visit"}
+#41 t=17466 ga4 POST [FO] region1.analytics.google.com/g/collect {"tid":"G-H4206SQ0Q7","sid":"1791054647","dl":"https://www.mosaicheadspa.hu/oxigenterapia-masodik?first_booking=true&service=%F0%9F%91%A9+Haj+Oxig%C3%A9nter%C3%A1pia+-+2.+alkalomt%C3%B3l&category=Oxig%C3%A9nter%C3%A1pia+-+2.alkalomt%C3%B3l&price=26000&location=Mosaic+Oxig%C3%A9n&employee=Menyh%C3%A1rt+M%C3%B3ni&g=g:3385031&bookingUrl=https%3A%2F%2Fmosaic-oxigen.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32969%26placeId%3D14409%26serviceId%3D466158%26startDate%3D1792594800%26back%3D&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc","en":"oxygen_headspa_second_appointment"}
+#42 t=17467 google-ads GET [FO] www.googleadservices.com/pagead/conversion/16795940464/ {"en":"conversion","label":"pLhlCISIp4kdEPDs9sg-","oid":"oxigenterapi-3385031-466158-1792594800","value":"26000","currency_code":"HUF","gclaw":"TESZT123"}
+#43 t=17467 google-ads POST [FO] www.google.com/ccm/collect {"en":"page_view","gclid":"TESZT123","dl":"https://www.mosaicheadspa.hu/oxigenterapia-masodik?first_booking=true&service=%F0%9F%91%A9+Haj+Oxig%C3%A9nter%C3%A1pia+-+2.+alkalomt%C3%B3l&category=Oxig%C3%A9nter%C3%A1pia+-+2.alkalomt%C3%B3l&price=26000&location=Mosaic+Oxig%C3%A9n&employee=Menyh%C3%A1rt+M%C3%B3ni&g=g:3385031&bookingUrl=https%3A%2F%2Fmosaic-oxigen.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32969%26placeId%3D14409%26serviceId%3D466158%26startDate%3D1792594800%26back%3D&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=","gclaw":"TESZT123"}
+#44 t=17467 google-ads POST [FO] www.google.com/ccm/collect {"tid":"AW-16795940464","gclid":"TESZT123","dl":"https://www.mosaicheadspa.hu/oxigenterapia-masodik?first_booking=true&service=%F0%9F%91%A9+Haj+Oxig%C3%A9nter%C3%A1pia+-+2.+alkalomt%C3%B3l&category=Oxig%C3%A9nter%C3%A1pia+-+2.alkalomt%C3%B3l&price=26000&location=Mosaic+Oxig%C3%A9n&employee=Menyh%C3%A1rt+M%C3%B3ni&g=g:3385031&bookingUrl=https%3A%2F%2Fmosaic-oxigen.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32969%26placeId%3D14409%26serviceId%3D466158%26startDate%3D1792594800%26back%3D&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=","gclaw":"TESZT123"}
+#45 t=17468 google-ads GET [FO] www.googleadservices.com/ccm/conversion/16795940464/ {"en":"conversion","label":"pLhlCISIp4kdEPDs9sg-","oid":"oxigenterapi-3385031-466158-1792594800","value":"26000","currency_code":"HUF","gclaw":"TESZT123"}
+#46 t=17881 tiktok POST [FO] analytics-ipv6.tiktokw.us/ipv6/enrich_ipv6 {} BODY={"event":"EnrichIpv6","event_id":"1791054863392_17910554361684","message_id":"messageId-1791054647674-7477282553283-CTDGK5BC77U0PIODKP30#source=2","is_onsite":false,"timestamp":"2026-10-03T19:10:47.67
+#47 t=17882 tiktok POST [FO] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"LandingPageView","event_id":"","message_id":"messageId-1791054647679-8775354755924-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T19:10:47.679Z","context":{"ad":{"callback":
+#48 t=17883 tiktok POST [FO] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"Pageview","event_id":"1791054863392_17910554361684","message_id":"messageId-1791054647674-7477282553283-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T19:10:47.674Z","contex
+#49 t=17930 tiktok POST [FO] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"Purchase","event_id":"oxigenterapi-3385031-466158-1792594800","message_id":"messageId-1791054647730-2738071383967-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T19:10:47.730
+#50 t=17933 stape GET [FO] stape.mosaicheadspa.hu/data {}
+#51 t=18124 tiktok POST [FO] analytics.tiktok.com/api/v2/pixel/act {} BODY={"event_id":"","message_id":"messageId-1791054647924-2492885818849","is_onsite":false,"timestamp":"2026-10-03T19:10:47.924Z","context":{"ad":{"callback":"TESZT789.1791054647662","sdk_env":"external","
+#52 t=18251 stape POST [FO] capig.stape.do/events/d80615b8fa0b6c22f97217e9e0a9896c562a9eb58bbc3be6e25c59838cecf37c {} BODY={"event_name":"Oxigen_Visszajaro","conversion_value":{"value":26000,"currency":"HUF"},"smart_setup":{"is_auto_web_details":true},"fb.dynamic_product_ads":{"content_type":"foglalas_visszajaro","content
+#53 t=18262 meta POST [KERET(about:blank)] www.facebook.com/tr/ {} BODY=id=1361403694872594&ev=Oxigen_Visszajaro&dl=https%3A%2F%2Fwww.mosaicheadspa.hu%2Foxigenterapia-masodik%3Ffirst_booking%3Dtrue%26service%3D%25F0%259F%2591%25A9%2BHaj%2BOxig%25C3%25A9nter%25C3%25A1pia%2
+#54 t=27889 tiktok POST [FO] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"EngagedSession","event_id":"","message_id":"messageId-1791054657686-5753843647521-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T19:10:57.686Z","context":{"ad":{"callback":"

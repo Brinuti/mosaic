@@ -81,6 +81,7 @@ Ez **üzletáganként 1 valódi konverziót** jelent a hirdetési fiókokban (j�
 - [x] A próbák lefutása (2026-10-03, HeadSpa, Oxigén, Fodrászat, Lézer): lásd [PROBAFOGLALASOK.md](PROBAFOGLALASOK.md).
 - [x] A négy próbaidőpont lemondva (2026-10-03, a „Lemondom” linkkel; a Salonic mindegyiknél visszaigazolta).
 - [x] A központi link-térkép és a kapcsolók elkészítése, kipróbálása (kikapcsolva a kimenet bájtra azonos; bekapcsolva csak a linkek változnak; `tools/test-foglalo-atkotes.mjs`).
+- [x] Mérés-ellenőrzés kimenő kérések nélkül (automatizált böngésző, minden keret): köszönőoldalanként minden címke / esemény egyszer, azonosan a natív útvonallal; a keretben betöltött köszönőoldal 0 kérést küld; a kattintás-azonosítók és a GA4-forrás végigérnek: [MERES_ELLENORZES.md](MERES_ELLENORZES.md). Három valódi próbafoglalás (fodrászat-konzultáció, oxigén 2. alkalom, lézer fizetős), lemondva.
 - [ ] Az átkapcsolás: a négy kapcsoló `true`, `main`-re merge, élő ellenőrzés (a tulajdonos jóváhagyásával, egyszerre).
 
 ## 7. Kockázatok és kezelésük

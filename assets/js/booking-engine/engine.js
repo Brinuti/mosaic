@@ -482,7 +482,8 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       if (v && v.ok) confirmed(v);
       else track('booking_error', { ...(S.service ? serviceParams(S.service) : {}), step: 'C5', reason: v ? 'verify_failed' : 'no_expectation',
         filter: v ? Object.entries(v.checks).filter(([, c]) => c.status === 'fail').map(([k]) => k).join(',') : undefined });
-      if (HANDOFF) { win.location.assign(href); return undefined; }
+      // (a Salonic URL-je valtozatlan marad; csak a motor sajat URL-jen erkezett hirdetesi azonositok kerulnek a vegere, ha a Salonic nem hozta oket)
+      if (HANDOFF) { win.location.assign(F.withAttribution(href, win.location.search)); return undefined; }
       // elonezeten / helyben: a motor maga mutatja a sikert (a Salonic az eles koszonooldalra iranyit, onnan nem ertesithetne minket)
       return go(v && v.ok ? 'C6' : 'A3U', { replace: true });
     }
