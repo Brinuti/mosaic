@@ -108,7 +108,7 @@
   function kepBeallit(img, t) {
     if (!img) return;
     var v = t && t.vizual;
-    if (v && v.src) { img.setAttribute('src', kepUt(v.src)); img.setAttribute('alt', v.alt || ''); img.hidden = false; }
+    if (v && v.src) { img.setAttribute('src', kepUt(v.src)); img.setAttribute('alt', v.alt || ''); img.style.objectPosition = v.poz || ''; img.hidden = false; }
     else { img.removeAttribute('src'); img.hidden = true; }
   }
 
@@ -280,7 +280,7 @@
     kartya.appendChild(h('p', { class: 'ah-szalag', 'data-ajanlott-jel': t.id, text: 'Ajánlott választás', hidden: true }));
     var kep = h('div', { class: 'ah-termek-kep' });
     if (t.vizual && t.vizual.src) {
-      kep.appendChild(h('img', { src: kepUt(t.vizual.src), alt: t.vizual.alt || '', width: t.vizual.w || null, height: t.vizual.h || null, loading: 'lazy', decoding: 'async' }));
+      kep.appendChild(h('img', { src: kepUt(t.vizual.src), alt: t.vizual.alt || '', width: t.vizual.w || null, height: t.vizual.h || null, loading: 'lazy', decoding: 'async', style: t.vizual.poz ? 'object-position:' + t.vizual.poz : null }));
     }
     if (t.badge) kep.appendChild(h('p', { class: 'ah-badge', text: t.badge }));
     kartya.appendChild(kep);

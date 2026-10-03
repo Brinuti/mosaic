@@ -53,6 +53,9 @@ valódi vélemény + Google-összegzés, „Itt találsz minket” + gyakori ké
 a jóváhagyott szövegekből), és a fizetési nézet három oszlopban (1 Termék | 2 Adatok | 3 Fizetés). A
 mockup kitalált elemei NEM kerültek át: „azonnali kézbesítés”, „pár perc alatt elkészül”, videós
 vendégvélemények, kitalált idézet, generált belső terek és térkép, „Kolosy tér”.
+A hero, az egyéni kártya és a „Itt találsz minket” fotója a tulajdonos Drive-mappájából való (MOSAIC Head spa /
+Ajándékkártya / Képek: DSC01431, DSC01424, DSC01452; a Drive saját, kb. 1200 px széles miniatűr-változata,
+`assets/img/ajandek/`; az eredetiek 7 MB-osak). A 4 kezes és a páros kép a korábbi valódi fotó.
 A képek valódi MOSAIC-fotók (`TERMEKEK.*.vizual`, a hero a `hero_media`): a **páros** termék
 képe a MOSAIC egyetlen valódi páros fotója (egy nő és egy férfi vendég, két terapeuta); a spec
 „két barátnő” képet kért – ha van ilyen fotó, a `TERMEKEK.paros.vizual`-t kell cserélni.

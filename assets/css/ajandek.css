@@ -107,7 +107,7 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 /* ---------- hero: vilagos hatter, valodi foto (mobilon fent, asztalin jobbra, elmosodo atmenettel) ---------- */
 .ah-hero { position: relative; isolation: isolate; background: var(--ah-krem); overflow: clip; }
 .ah-hero-media { margin: 0; aspect-ratio: 4 / 3; max-height: 380px; width: 100%; }
-.ah-hero-kep { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; }
+.ah-hero-kep { width: 100%; height: 100%; object-fit: cover; object-position: 50% 46%; }
 .ah-hero-racs { padding: 26px 0 34px; }
 .ah-hero-szoveg { display: flex; flex-direction: column; gap: 14px; max-width: 620px; min-width: 0; }
 .ah-hero .ah-felcim { margin: 0; }
@@ -127,7 +127,7 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
   .ah-hero-media { position: absolute; top: 0; right: 0; bottom: 0; width: 58%; aspect-ratio: auto; max-height: none; z-index: -1; }
   .ah-hero-kep { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 34%); mask-image: linear-gradient(90deg, transparent 0, #000 34%); }
   .ah-hero-racs { padding: 56px 0; }
-  .ah-hero-szoveg { gap: 18px; }
+  .ah-hero-szoveg { gap: 18px; max-width: 540px; }
   .ah-bizalom { grid-template-columns: 1fr 1fr; justify-content: start; gap: 14px 26px; max-width: 420px; }
 }
 @media (min-width: 1200px) { .ah-bizalom { grid-template-columns: repeat(4, auto); max-width: none; gap: 12px 24px; } }

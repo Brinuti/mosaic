@@ -28,7 +28,7 @@
       ar_ft: 26900,
       vendeg_db: 1,
       // valodi MOSAIC fotok (assets/img): egy terapeuta / ket terapeuta / ket vendeg
-      vizual: { src: '/assets/img/c2eb0f_bbb818fad4674d2097775970ca10c3d0f002.jpg', alt: 'Egyéni Head Spa kezelés a MOSAIC-ban', w: 1920, h: 1080 }
+      vizual: { src: '/assets/img/ajandek/egyeni.jpg', alt: 'Egyéni Head Spa: a vendég hajmosása a MOSAIC-ban', w: 1200, h: 1800, poz: '50% 55%' }
     },
     '4kezes': {
       id: '4kezes',
@@ -42,7 +42,7 @@
       badge: 'PRÉMIUM ÉLMÉNY',
       ar_ft: 39900,
       vendeg_db: 1,
-      vizual: { src: '/assets/img/c2eb0f_895be890d71d488db23f5a05dd52c04b.jpg', alt: '4 kezes Head Spa: két terapeuta dolgozik egyszerre egy vendégen', w: 1000, h: 1000 }
+      vizual: { src: '/assets/img/c2eb0f_895be890d71d488db23f5a05dd52c04b.jpg', alt: '4 kezes Head Spa: két terapeuta dolgozik egyszerre egy vendégen', w: 1000, h: 1000, poz: '50% 45%' }
     },
     paros: {
       id: 'paros',
@@ -58,7 +58,7 @@
       vendeg_db: 2,
       // a spec szerint a GENERAL vizual ket baratno (nem romantikus par); ez a MOSAIC egyetlen valodi paros fotoja
       // (ket vendeg, ket terapeuta, egymas mellett) - ha van baratnos kep, ide kell cserelni
-      vizual: { src: '/assets/img/c2eb0f_2c17645e97d943fda9265b973f1bb6a9.jpg', alt: 'Páros Head Spa: két vendég, két terapeuta, egy közös helyiségben', w: 1500, h: 1500 }
+      vizual: { src: '/assets/img/c2eb0f_2c17645e97d943fda9265b973f1bb6a9.jpg', alt: 'Páros Head Spa: két vendég, két terapeuta, egy közös helyiségben', w: 1500, h: 1500, poz: '50% 50%' }
     }
   };
 
@@ -110,7 +110,7 @@
       hero_subtitle: 'Japán Head Spa élmény Budán, digitális vagy nyomtatott ajándékkártyával.',
       hero_cta: 'Kiválasztom az ajándékot',
       hero_media: {
-        src: '/assets/img/c2eb0f_7815e153567d467fb8c261d4e5302ee0.jpg',
+        src: '/assets/img/ajandek/hero.jpg',
         alt: 'Vendégek Head Spa kezelésen a MOSAIC-ban'
       },
       hero_trust: [
