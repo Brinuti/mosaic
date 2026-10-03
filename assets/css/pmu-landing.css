@@ -836,3 +836,7 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
   #comp-m4lbfl1t { margin-top: 17px !important; }
   #comp-m7q6eklh, #comp-m7jcfhgp { margin-top: 20px !important; }
 }
+/* csillagok: szurke alap + arany reteg a valos ertekig (fel csillag is) */
+.te-csillagok { position: relative; display: inline-block; font-size: 15px; letter-spacing: 1px; line-height: 1; color: #dadce0; }
+.te-csillagok::before { content: '★★★★★'; }
+.te-csillagok::after { content: '★★★★★'; position: absolute; left: 0; top: 0; width: var(--ert, 100%); overflow: hidden; white-space: nowrap; color: #f4b400; }

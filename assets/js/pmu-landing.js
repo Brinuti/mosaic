@@ -252,7 +252,7 @@
       if (n) $('te-db').textContent = new Intl.NumberFormat('hu-HU').format(+n).replace(/\s/g, '.') + ' Google-vélemény';
       if (cs.length === 5) {
         const ossz = cs.reduce((a, b) => a + b, 0);
-        $('te-csillagok').textContent = cs.map((x) => (x === 1 ? '★' : x ? '⯪' : '☆')).join('');
+        $('te-csillagok').style.setProperty('--ert', (ossz / 5) * 100 + '%');
         $('te-csillagok').setAttribute('aria-label', '5 csillagból ' + String(ossz).replace('.', ','));
       }
       if (min && min.trim()) $('te-minosites').textContent = min.trim().replace(/ értékelés$/i, '');
