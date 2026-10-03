@@ -23,8 +23,9 @@
       kartya_cim: 'Egyéni MOSAIC Head Spa ajándékkártya',
       // a nyomtathato kartyan a savba kerulo felirat (2 sor, nagybetusen jelenik meg)
       kartya_felirat: ['50+30 perces egyéni MOSAIC', 'HEAD SPA KEZELÉS'],
-      fejlec: 'Egy óra csak neki.',
-      leiras: 'A legegyszerűbb választás, ha egy embernek keresel igazán pihentető ajándékot.',
+      fejlec: 'Teljes figyelem, csak neki.',
+      osszefoglalo: '50 perc kezelés + 30 perc szárítás',
+      leiras: 'Teljes figyelem, mély kikapcsolódás, rendezett haj: a legegyszerűbb választás, ha egy embernek keresel igazán pihentető ajándékot.',
       tartalom: ['50 perc Head Spa', '30 perc szárítás', '1 fő', '6 hónapig felhasználható'],
       badge: 'NEKI EGYEDÜL',
       ar_ft: 26900,
@@ -32,7 +33,7 @@
       // a Salonic utalvany-terméke (Marketing > Ajandekutalvanyok), a szalon "utalvany ertekesitesehez" (utalasos rendelesnel)
       salonic: { id: 4040, nev: '50 perces MOSAIC Head Spa kezelés + 30 perc hajszárítás-20% (26 900 Ft)' },
       // valodi MOSAIC fotok (assets/img): egy terapeuta / ket terapeuta / ket vendeg
-      vizual: { src: '/assets/img/ajandek/egyeni.jpg', alt: 'Egyéni Head Spa: a vendég hajmosása a MOSAIC-ban', w: 1200, h: 1800, poz: '50% 55%' }
+      vizual: { src: '/assets/img/ajandek/egyeni.jpg', alt: 'Egyéni Head Spa: a vendég hajmosása az arany zuhanyív alatt a MOSAIC-ban', w: 1100, h: 1650, poz: '50% 42%' }
     },
     '4kezes': {
       id: '4kezes',
@@ -42,13 +43,14 @@
       kartya_cim: '4 kezes MOSAIC Head Spa ajándékkártya',
       kartya_felirat: ['50+30 perces 4 kezes MOSAIC', 'HEAD SPA KEZELÉS'],
       fejlec: 'Ha igazán különlegeset adnál.',
-      leiras: 'Két terapeuta dolgozik egyszerre — intenzívebb, különlegesebb Head Spa élmény.',
+      osszefoglalo: '50 perc 4 kezes kezelés + 30 perc szárítás',
+      leiras: 'Két terapeuta dolgozik egyszerre: intenzívebb, különlegesebb Head Spa élmény.',
       tartalom: ['50 perc 4 kezes Head Spa', '30 perc szárítás', '1 fő', '2 terapeuta', '6 hónapig felhasználható'],
-      badge: 'PRÉMIUM ÉLMÉNY',
+      badge: 'VALAMI IGAZÁN KÜLÖNLEGES',
       ar_ft: 39900,
       vendeg_db: 1,
       salonic: { id: 4000, nev: '50 perces 4 Kezes Headspa ajándékkártya - 39.900 Ft' },
-      vizual: { src: '/assets/img/c2eb0f_895be890d71d488db23f5a05dd52c04b.jpg', alt: '4 kezes Head Spa: két terapeuta dolgozik egyszerre egy vendégen', w: 1000, h: 1000, poz: '50% 45%' }
+      vizual: { src: '/assets/img/ajandek/negy-kezes.jpg', alt: '4 kezes Head Spa: két terapeuta dolgozik egyszerre egy vendégen a MOSAIC-ban', w: 1200, h: 800, poz: '50% 45%' }
     },
     paros: {
       id: 'paros',
@@ -58,7 +60,8 @@
       kartya_cim: 'Páros MOSAIC Head Spa ajándékkártya',
       kartya_felirat: ['50+30 perces páros MOSAIC', 'HEAD SPA KEZELÉS (2 FŐ)'],
       fejlec: 'Közös élmény két főre.',
-      leiras: 'Barátnővel, anyukáddal vagy a pároddal.',
+      osszefoglalo: '50 perc kezelés + 30 perc szárítás / fő',
+      leiras: 'Közös élmény, közös kikapcsolódás: barátnővel, anyukáddal vagy a pároddal.',
       tartalom: ['2 vendég', '2 terapeuta', 'egy közös időpont', '6 hónapig felhasználható'],
       badge: 'KETTEN, EGYÜTT',
       ar_ft: 53800,
@@ -114,20 +117,20 @@
     general: {
       variant_id: 'general',
       hero_eyebrow: 'MOSAIC HEAD SPA AJÁNDÉKKÁRTYA',
-      hero_title: 'Ajándékozz neki 80 percet, ami tényleg csak róla szól.',
-      hero_subtitle: 'Japán Head Spa élmény Budán, digitális vagy nyomtatott ajándékkártyával.',
-      hero_cta: 'Kiválasztom az ajándékot',
+      hero_title: 'Adj neki 80 percet, amikor végre csak vele foglalkoznak.',
+      hero_subtitle: 'Japán Head Spa élmény Budán: mély kikapcsolódás, digitális vagy nyomtatott ajándékkártyával.',
+      hero_cta: 'Ajándékkártya választása',
       hero_media: {
         src: '/assets/img/ajandek/hero.jpg',
-        alt: 'Vendégek Head Spa kezelésen a MOSAIC-ban'
+        alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt'
       },
       hero_trust: [
         { csillag: true, szoveg: GOOGLE.pont + ' · ' + GOOGLE.darab, alszoveg: 'Google-vélemény' },
-        { ikon: 'calendar', szoveg: '6 hónapig', alszoveg: 'felhasználható' },
-        { ikon: 'monitor', szoveg: 'online', alszoveg: 'megvásárolható' },
-        { ikon: 'users', szoveg: 'egyéni vagy', alszoveg: 'közös élmény' }
+        { ikon: 'calendar', szoveg: '6 hónapig', alszoveg: 'érvényes' },
+        { ikon: 'monitor', szoveg: 'Online', alszoveg: 'megvásárolható' },
+        { ikon: 'card', szoveg: 'Gyönyörű, személyre', alszoveg: 'szabható kártya' }
       ],
-      product_order: ['egyeni', '4kezes', 'paros'],
+      product_order: ['egyeni', 'paros', '4kezes'],
       featured_proof: 'general',
       objection_title: null,
       objection_body: null,

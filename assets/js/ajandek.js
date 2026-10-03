@@ -77,7 +77,8 @@
     mail: '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/>',
     pin: '<path d="M12 21s6.5-5.6 6.5-11a6.5 6.5 0 0 0-13 0c0 5.4 6.5 11 6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
     phone: '<path d="M6.5 4h3l1.5 4-2 1.3a10 10 0 0 0 5.7 5.7L16 13l4 1.5v3a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 4.5 6.2 2 2 0 0 1 6.5 4z"/>',
-    card: '<rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M3.5 10.5h17M7 15h4"/>'
+    card: '<rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M3.5 10.5h17M7 15h4"/>',
+    printer: '<path d="M7 9V4.5h10V9"/><path d="M7 17H5a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 5 9h14a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 19 17h-2"/><rect x="7" y="13.5" width="10" height="6.5" rx=".8"/>'
   };
   function ikonKitolt(span, nev) {
     if (!span || !IKONOK[nev]) return span;
@@ -276,8 +277,6 @@
   // ---------------------------------------------------------------- ProductGrid / ProductCard
   function termekKartya(t) {
     var kartya = h('article', { class: 'ah-termek', id: 'ah-termek-' + t.id, 'data-termek': t.id });
-    // az "Ajanlott valasztas" szalag: a Gift Finder valasztasa, egyebkent a variant elso termeke (nem allit nepszerusegi adatot)
-    kartya.appendChild(h('p', { class: 'ah-szalag', 'data-ajanlott-jel': t.id, text: 'Ajánlott választás', hidden: true }));
     var kep = h('div', { class: 'ah-termek-kep' });
     if (t.vizual && t.vizual.src) {
       kep.appendChild(h('img', { src: kepUt(t.vizual.src), alt: t.vizual.alt || '', width: t.vizual.w || null, height: t.vizual.h || null, loading: 'lazy', decoding: 'async', style: t.vizual.poz ? 'object-position:' + t.vizual.poz : null }));
@@ -286,14 +285,11 @@
     kartya.appendChild(kep);
     var test = h('div', { class: 'ah-termek-test' });
     test.appendChild(h('h3', { text: t.nev }));
-    test.appendChild(h('p', { class: 'ah-termek-fejlec', text: t.fejlec }));
+    test.appendChild(h('p', { class: 'ah-termek-osszefoglalo', text: t.osszefoglalo }));
     test.appendChild(h('p', { class: 'ah-termek-leiras', text: t.leiras }));
-    var ul = h('ul', { class: 'ah-lista' });
-    t.tartalom.forEach(function (sor) { ul.appendChild(listaSor(sor)); });
-    test.appendChild(ul);
     test.appendChild(h('div', { class: 'ah-termek-alja' },
-      h('p', { class: 'ah-ar-blokk' }, h('span', { class: 'ah-ar-cimke', text: 'aktuális ár' }), h('span', { class: 'ah-ar', text: A.arSzoveg(t.ar_ft) })),
-      h('button', { type: 'button', class: 'ah-gomb ah-gomb-fo', 'data-valaszt': t.id }, h('span', { 'data-valaszt-szoveg': '', text: 'Ezt választom' }), ikonSpan('arrow'))));
+      h('p', { class: 'ah-ar-blokk' }, h('span', { class: 'ah-ar', text: A.arSzoveg(t.ar_ft) })),
+      h('button', { type: 'button', class: 'ah-gomb ah-gomb-fo', 'data-valaszt': t.id }, h('span', { 'data-valaszt-szoveg': '', text: 'Ajándékozom' }))));
     kartya.appendChild(test);
     return kartya;
   }
@@ -319,7 +315,7 @@
       var g = k.querySelector('[data-valaszt]');
       if (g) {
         var gsz = g.querySelector('[data-valaszt-szoveg]');
-        if (gsz) gsz.textContent = az ? 'Kiválasztva ✓' : 'Ezt választom';
+        if (gsz) gsz.textContent = az ? 'Kiválasztva ✓' : 'Ajándékozom';
         g.classList.toggle('ah-gomb-kesz', az);
         g.classList.toggle('ah-gomb-fo', !az);
         if (az) k.setAttribute('aria-current', 'true'); else k.removeAttribute('aria-current');
@@ -363,16 +359,25 @@
     $('ah-fizet-gomb').textContent = S.folyamatban ? 'Feldolgozzuk a fizetésed…' : 'Biztonságos fizetés — ' + ar;
   }
 
-  // ---------------------------------------------------------------- ExperienceSection (video)
-  function videoKot() {
-    var v = $('ah-video'), gomb = $('ah-lejatszo'), doboz = $('ah-video-doboz');
-    gomb.addEventListener('click', function () {
-      v.preload = 'auto';
+  // ---------------------------------------------------------------- vendeg-videok (valodi testimonial videok, modalis lejatszo)
+  function vendegVideok() {
+    var abl = $('ah-video-ablak'), v = $('ah-video'), bezar = $('ah-video-bezar');
+    if (!abl || !v || !bezar) return;
+    function leall() { try { v.pause(); } catch (e) { /* nem baj */ } v.removeAttribute('src'); try { v.load(); } catch (e) { /* nem baj */ } }
+    function lezar() { leall(); if (abl.close) abl.close(); else abl.removeAttribute('open'); }
+    document.addEventListener('click', function (ev) {
+      var g = ev.target.closest ? ev.target.closest('[data-vendeg]') : null;
+      if (!g) return;
+      v.setAttribute('src', g.getAttribute('data-vendeg'));
+      abl.setAttribute('aria-label', (g.getAttribute('data-nev') || 'Vendég') + ' videója');
+      if (abl.showModal) abl.showModal(); else abl.setAttribute('open', '');
       var p = v.play();
-      if (p && p.catch) p.catch(function () { /* nem indult: marad a poszter */ });
+      if (p && p.catch) p.catch(function () { /* a vezerlokkel inditható */ });
     });
-    v.addEventListener('play', function () { doboz.classList.add('ah-megy'); });
-    v.addEventListener('click', function () { if (v.paused) v.play(); else { v.pause(); doboz.classList.remove('ah-megy'); } });
+    bezar.addEventListener('click', lezar);
+    // a hatterre (a doboz melletti sotet teruletre) kattintas is bezar
+    abl.addEventListener('click', function (ev) { if (ev.target === abl) lezar(); });
+    abl.addEventListener('close', leall);
   }
 
   // ---------------------------------------------------------------- Checkout
@@ -965,7 +970,7 @@
     $('ah-sz-kihagy').addEventListener('click', szemelyreKihagy);
     $('ah-uj-vasarlas').addEventListener('click', ujVasarlas);
     $('ah-hero-cta').addEventListener('click', function (ev) { var f = $('ah-finder'); if (f) { ev.preventDefault(); gorgess(f, 'start'); } });
-    videoKot();
+    vendegVideok();
   }
 
   // ---------------------------------------------------------------- inditas / visszaallitas

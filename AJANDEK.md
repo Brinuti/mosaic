@@ -47,18 +47,25 @@ hajjal távozik). A fejléc és a lábléc **az éles oldalé**: a `foglalas/aja
 `<!--mh-fejlec-->` / `<!--mh-lablec-->` jelölőt a build az `assets/fejlec/` töredékekkel cseréli
 (mint a sminktetoválás-landingen), a menüt az `assets/js/klon.js` működteti; az „Ajándékkártya”
 menüpontot a `menuAktiv()` jelöli aktívnak. A helyi kiszolgáló ugyanezt a beillesztést végzi.
-Elrendezés (második mockup): világos hero jobb oldali fotóval, ikonos Gift Finder, képes termékkártyák a
-valódi kártya előnézetével („Így néz ki az ajándékkártya”), „A vásárlás menete”, élmény-blokk a videóval,
-valódi vélemény + Google-összegzés, „Itt találsz minket” + gyakori kérdések (a válaszok az élő oldalról /
-a jóváhagyott szövegekből), és a fizetési nézet három oszlopban (1 Termék | 2 Adatok | 3 Fizetés). A
-mockup kitalált elemei NEM kerültek át: „azonnali kézbesítés”, „pár perc alatt elkészül”, videós
-vendégvélemények, kitalált idézet, generált belső terek és térkép, „Kolosy tér”.
-A hero, az egyéni kártya és a „Itt találsz minket” fotója a tulajdonos Drive-mappájából való (MOSAIC Head spa /
-Ajándékkártya / Képek: DSC01431, DSC01424, DSC01452; a Drive saját, kb. 1200 px széles miniatűr-változata,
-`assets/img/ajandek/`; az eredetiek 7 MB-osak). A 4 kezes és a páros kép a korábbi valódi fotó.
-A képek valódi MOSAIC-fotók (`TERMEKEK.*.vizual`, a hero a `hero_media`): a **páros** termék
-képe a MOSAIC egyetlen valódi páros fotója (egy nő és egy férfi vendég, két terapeuta); a spec
-„két barátnő” képet kért – ha van ilyen fotó, a `TERMEKEK.paros.vizual`-t kell cserélni.
+Elrendezés (a harmadik, véglegesnek szánt mockup szerint, 2026-10-03): teljes szélességű, meleg hero-fotó (arany zuhanyív) a bal
+oldalon krémszínű átmenet alatt futó szöveggel; egy rácsban a ikonos Gift Finder, a három képes termékkártya (Egyéni, Páros,
+4 kezes: a Finder sorrendjével egyezően; kép + jelvény, cím, „50 perc kezelés + 30 perc szárítás”, rövid leírás, ár +
+„Ajándékozom” gomb) és a jobb oldali „Így néz ki az ajándékkártya” előnézet (a **valódi Canva-kártya** felső, fejjel lefelé nyomtatott
+fele 180°-kal elforgatva, `assets/img/ajandek/kartya-hatter.jpg`); „A vásárlás menete”; „Mit mondanak a vendégeink?” (**négy valódi
+vendég-videó** modális lejátszóval + a valódi Google-vélemény és 4,9 / 1.259); „Ezt adod át neki” (fotó + a valódi kártya);
+„Miért MOSAIC?” (három valódi szalonfotó + cím és elérhetőség); „Hogyan működik az ajándékozás?” + gyakori kérdések; a fizetési nézet
+három oszlopban (1 Termék | 2 Adatok | 3 Fizetés). A mockup kitalált elemei NEM kerültek át: „azonnali kézbesítés”, a mockup
+idézetei és vendégfeliratai (a videók alatt csak a vendég keresztneve és a videó hossza áll), a születésnapos mintaüzenet,
+generált belső terek és térkép, „Kolosy tér” (a cím: 1023 Budapest, Bécsi út 2.), „láthatóan szebb haj”.
+
+**Fotók és videók** (a tulajdonos Drive-mappájából, 2026-10-03; a Drive saját, 900–2000 px széles JPG-előnézete, az eredetiek 7 MB-osak):
+hero: DSC03646 (Mosaic fotózások / Renátó második fotózás); Egyéni: DSC03638; 4 kezes: DSC01452 (Ajándékkártya / Képek);
+„Ezt adod át neki”: DSC03651; szalon: DSC05642, DSC05648, DSC05660 (Renátó első fotózás); a páros kép a korábbi valódi fotó (egy nő és
+egy férfi vendég, két terapeuta; „két barátnő” kép esetén a `TERMEKEK.paros.vizual`-t kell cserélni, a CSS kicsit világosítja).
+A négy vendég-videó (Zsóka, Zita, Kinga, Dóri) a Drive „Testimonial videók / 480p_Testimonial” mappájából való, 360x640-re átkódolva
+(`assets/video/ajandek-vendeg-*.mp4`, 1,6–2,8 MB; a Cloudflare Pages 25 MiB-nál nagyobb fájlt nem fogad, az eredetiek 23–36 MB-osak).
+Újabb videó felvétele: letöltés, ffmpeg (`-c:v libx264 -crf 32 -maxrate 450k -c:a aac -b:a 48k -ac 1 -movflags +faststart`), egy új
+`li` a `foglalas/ajandek.html` `ah-vendeg-lista`-jában (`data-vendeg`, `data-nev`, poszter: a Drive videó-miniatűrje).
 
 ### Árak – egyetlen forrás
 
