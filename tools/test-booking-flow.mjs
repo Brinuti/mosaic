@@ -346,3 +346,25 @@ test('icsFor: naptar-fajl: kezdes, veg, helyszin, emlekezteto', () => {
   assert.match(ics, /TRIGGER:-PT24H/);
   assert.match(ics, /END:VCALENDAR$/);
 });
+
+// A build (tools/netlify-build.mjs) a modulok egymasra hivatkozasaiba tartalom-hash verziojelet ir (a /assets/js/* egy evig tarolhato,
+// verziojel nelkul egy motor-javitas nem jutna el a mar betoltott bongeszokhoz). Ehhez minden import relativ, .js-re vegzodo, statikus.
+test('motor-modulok: minden import relativ .js hivatkozas (a build verziojelet ir beleje), nincs dinamikus import', () => {
+  const dir = path.join(here, '..', 'assets', 'js', 'booking-engine');
+  const files = [];
+  (function walk(d) { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (e.name.endsWith('.js')) files.push(p); } })(dir);
+  assert.ok(files.length >= 9, 'a motor modulokat megtalalja');
+  const re = /(from\s+['"])(\.{1,2}\/[^'"?]+\.js)(['"])/g;
+  let n = 0;
+  for (const f of files) {
+    const src = fs.readFileSync(f, 'utf8');
+    assert.ok(!/\bimport\s*\(/.test(src), `${path.basename(f)}: nincs dinamikus import`);
+    const specs = [...src.matchAll(/\bfrom\s+['"]([^'"]+)['"]/g)].map((m) => m[1]);
+    for (const s of specs) assert.match(s, /^\.{1,2}\/[^'"?]+\.js$/, `${path.basename(f)}: ${s}`);
+    n += [...src.matchAll(re)].length;
+    assert.equal([...src.matchAll(re)].length, specs.length, `${path.basename(f)}: minden import verziozhato`);
+  }
+  assert.ok(n >= 9, `a ${n} import mind verziozhato`);
+  const html = fs.readFileSync(path.join(here, '..', 'foglalas', 'foglalo-motor.html'), 'utf8');
+  assert.ok(html.includes("/assets/js/booking-engine/engine.js'"), 'a foglalo-oldal importja a build altal verziozott alak');
+});

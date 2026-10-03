@@ -60,6 +60,22 @@ for (const m of [LAP_A, LAP_M]) fs.renameSync(path.join(m, 'index.html'), path.j
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
 // a Salonic foglalo oldalainak egyedi CSS-e (a Salonic "Egyedi CSS URL" beallitasa tolti be)
 fs.cpSync(path.join(ROOT, 'salonic'), path.join(DIST, 'salonic'), { recursive: true });
+// A foglalo (assets/js/booking-engine/**) moduljai egymast verziojel nelkul importaljak, a /assets/js/* viszont egy evig tarolhato
+// (immutable): egy motor-javitas nem jutna el a mar betoltott bongeszokhoz (a tobbi sajat szkript az oldalakban kap ?v= jelet, ezek nem).
+// A modulok tartalom-hash-eibol egy kozos verziojelet szamolunk, es beirjuk a modulok egymasra hivatkozasaiba es a foglalo-oldal importjaba.
+const MOTOR_MODULOK = [];
+(function bejar(mappa) {
+  for (const e of fs.readdirSync(mappa, { withFileTypes: true })) {
+    const p = path.join(mappa, e.name);
+    if (e.isDirectory()) bejar(p); else if (e.name.endsWith('.js')) MOTOR_MODULOK.push(p);
+  }
+})(path.join(DIST, 'assets/js/booking-engine'));
+MOTOR_MODULOK.sort();
+const MOTOR_VERZIO = crypto.createHash('sha1').update(MOTOR_MODULOK.map((p) => fs.readFileSync(p, 'utf8')).join('\n')).digest('hex').slice(0, 10);
+for (const p of MOTOR_MODULOK) {
+  const t = fs.readFileSync(p, 'utf8');
+  fs.writeFileSync(p, t.replace(/(from\s+['"])(\.{1,2}\/[^'"?]+\.js)(['"])/g, `$1$2?v=${MOTOR_VERZIO}$3`));
+}
 // Mobilkepek (assets/img/m/, tools/mobil-kepek.py): ami ott nincs (mar eleve kicsi),
 // azt valtozatlanul bemasoljuk, igy a mobil oldal minden kepe megvan az m/ mappaban is.
 const IMG = path.join(DIST, 'assets', 'img'), IMG_M = path.join(IMG, 'm');
@@ -209,6 +225,8 @@ for (const mappa of [LAP_A, LAP_M]) {
     }
     // mobilon a kisebb kepvaltozatok (a teljes URL-ek - og:image, JSON-LD - maradnak)
     if (mappa === LAP_M) h = h.replace(/(["'(\s,])\/assets\/img\/(?!m\/)/g, '$1/assets/img/m/');
+    // a foglalo-oldal importja a motor verzios cimere mutat (lasd MOTOR_VERZIO)
+    h = h.split("/assets/js/booking-engine/engine.js'").join(`/assets/js/booking-engine/engine.js?v=${MOTOR_VERZIO}'`);
     // Salonic foglalo-linkek -> /foglalo-motor (a koszonooldalakat kihagyja; kikapcsolva a szoveg valtozatlan)
     if (ATKOTES.size && !kihagyottOldal(f)) { const r = atkot(h, ATKOTES); h = r.html; atkotesDb = osszead(atkotesDb, r.db); }
     fs.writeFileSync(p, h);

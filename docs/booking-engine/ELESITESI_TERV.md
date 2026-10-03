@@ -51,7 +51,7 @@ A motor saját sikeroldala (naptárba tétel, útvonaltervezés) a **második ü
 
 **Biztonság (ellenőrizve):**
 
-- **Kikapcsolva a build kimenete bájtra azonos** a mostanival: 1349 fájl, az összes (186) HTML-oldal és az összes többi fájl hash-e egyezik (az egyetlen eltérés a `intent` belépést bevezető két motor-fájl).
+- **Kikapcsolva a build kimenete bájtra azonos** a mostanival: 1349 fájl, az összes (186) HTML-oldal és az összes többi fájl hash-e egyezik. Az egyetlen eltérés a foglalóhoz tartozó 5 fájl (`engine.js`, `flow.js`, `flows/laser.js`, `/foglalo-motor` asztali és mobil változata): az `intent` belépés és a modulok verziójele (lásd a Kockázatok táblát). Ezeket csak a rejtett `/foglalo-motor` tölti be.
 - **Bekapcsolva** (minden kapcsoló): 172 HTML-oldal és a `gyik.js` változik; a két build HTML-jének különbsége **kizárólag a linkek** (és a `gyik.js` verziójele) – a GTM, a `suti.js`, a pixelek és a köszönőoldalak érintetlenek. A PMU-oldalak és a PMU foglaló változatlan.
 - A `gyik.js` verziójele (`?v=…`) az átírt tartalomból számolódik, így a böngésző egy évig tárolható régi példánya nem marad meg.
 
@@ -92,6 +92,7 @@ Ez **üzletáganként 1 valódi konverziót** jelent a hirdetési fiókokban (j�
 | A Salonic módosít a saját oldalain | A motor adapterteszttel ellenőrizhető (`LIVE=1`); hiba esetén tartalék-link a Salonicra. |
 | Az ár nem egyezik (pl. Noel 20% kedvezménye) | Kezelve: a szakemberi kedvezmény az árban és az ellenőrzésben; a köszönőoldalra az ellenőrzéstől függetlenül átadunk. |
 | A Salonic-űrlap GA4-eseményei (`view_item`, `begin_checkout`) iframe-ben másként viselkedhetnek | A próbánál ellenőrizni; a konverziót ez nem érinti (a köszönőoldal méri). |
+| A motor moduljai egy évig tárolhatók (a `/assets/js/*` „immutable”), verziójel nélkül egy javítás nem érne el már betöltő böngészőt (a PR-előnézeten ez „Ismeretlen üzletág” hibaként jött elő a régi, tárolt `engine.js` miatt) | Javítva: a build a modulok tartalom-hash-éből közös verziójelet (`?v=`) ír a modulok egymásra hivatkozásaiba és a `/foglalo-motor` importjába, így minden motor-változtatás új címet kap; a többi saját szkript az oldalakban eddig is kapott verziójelet. Élesítés előtt kötelező volt rendbe tenni. |
 | Cookie-hozzájárulás a próbában | A mérés ellenőrzéséhez a próba böngészőjében a süti-sávon el kell fogadni a hozzájárulást: ehhez a tulajdonos külön jóváhagyása kell. |
 
 ## 8. Visszaállítás
