@@ -22,6 +22,20 @@ const TIPUS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
   '.woff2': 'font/woff2', '.woff': 'font/woff', '.ico': 'image/x-icon' };
 
 const elfogottLevelek = [];
+
+// memoriaban tartott Cloudflare-KV-utanzat (AJANDEK_FOTOK): a szemelyre szabott kartya fotoihoz; ujrainditaskor elvesz.
+// TESZT_FOTO=nincs: nincs foto-tarolo (a fotofeltoltes ki van kapcsolva, mint egy KV-kotes nelkuli kornyezetben)
+function memoriaKv() {
+  const t = new Map();
+  return {
+    async get(kulcs, opciok) {
+      const v = t.get(kulcs);
+      if (!v) return null;
+      return opciok && opciok.type === 'arrayBuffer' ? v.slice().buffer : new TextDecoder().decode(v);
+    },
+    async put(kulcs, ertek) { t.set(kulcs, new Uint8Array(ertek instanceof ArrayBuffer ? ertek : ertek.slice().buffer)); },
+  };
+}
 let ajandekKezel = null, korlatAlaphelyzet = null, mock = null, env = {};
 
 async function hatterInditas() {
@@ -37,6 +51,7 @@ async function hatterInditas() {
       AJANDEK_TITOK: 'dev-titok-dev-titok-dev-titok-dev-titok',
       AJANDEK_AZONNALI: process.env.AZONNALI === '1' ? '1' : '',
       STRIPE_API_BASE: mock.url,
+      ...(process.env.TESZT_FOTO === 'nincs' ? {} : { AJANDEK_FOTOK: memoriaKv() }),
     };
     console.log('Backend + mock Stripe indult:', mock.url, '| azonnali kartya:', env.AJANDEK_AZONNALI === '1');
   } catch (e) {

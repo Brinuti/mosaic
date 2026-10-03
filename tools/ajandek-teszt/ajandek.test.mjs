@@ -6,7 +6,7 @@ import test, { before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { mockStripeInditas } from './mock-stripe.mjs';
-import { ajandekKezel, kuponKod, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
+import { ajandekKezel, kuponKod, kiallitToken, kartyaToken, rendelesToken, fotoToken, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
 import vm from 'node:vm';
 import { MASOL_JS, NYOMTAT_JS, SALONIC_KITOLTO_JS } from '../../netlify/lib/ajandek-levelek.js';
 import { utvonal } from '../../netlify/lib/utvonal.js';
@@ -143,10 +143,10 @@ describe('/beallitas', () => {
   test('mod a kulcs elotagjabol; publikus kulcs csak ha van mod; azonnali_kartya', async () => {
     // (a titok kotelezo; a hianyaval kulon teszt foglalkozik)
     const eset = async (env) => (await hiv('GET', 'beallitas', { env: { AJANDEK_TITOK: TITOK, ...env } })).adat;
-    assert.deepEqual(await eset({}), { mod: 'nincs', publikus_kulcs: null, azonnali_kartya: false });
+    assert.deepEqual(await eset({}), { mod: 'nincs', publikus_kulcs: null, azonnali_kartya: false, foto: false });
     assert.equal((await eset({ STRIPE_SECRET_KEY: 'sk_test_x' })).mod, 'nincs');
     assert.equal((await eset({ STRIPE_PUBLISHABLE_KEY: 'pk_test_x' })).mod, 'nincs');
-    assert.deepEqual(await eset({ STRIPE_SECRET_KEY: 'sk_test_x', STRIPE_PUBLISHABLE_KEY: 'pk_test_y' }), { mod: 'teszt', publikus_kulcs: 'pk_test_y', azonnali_kartya: false });
+    assert.deepEqual(await eset({ STRIPE_SECRET_KEY: 'sk_test_x', STRIPE_PUBLISHABLE_KEY: 'pk_test_y' }), { mod: 'teszt', publikus_kulcs: 'pk_test_y', azonnali_kartya: false, foto: false });
     assert.equal((await eset({ STRIPE_SECRET_KEY: 'rk_test_x', STRIPE_PUBLISHABLE_KEY: 'pk_test_y' })).mod, 'teszt');
     assert.equal((await eset({ STRIPE_SECRET_KEY: 'sk_live_x', STRIPE_PUBLISHABLE_KEY: 'pk_live_y' })).mod, 'elo');
     assert.equal((await eset({ STRIPE_SECRET_KEY: 'rk_live_x', STRIPE_PUBLISHABLE_KEY: 'pk_live_y' })).mod, 'elo');
@@ -710,7 +710,7 @@ describe('/szemelyre', () => {
     let r = await hiv('POST', 'szemelyre', { body: { ...alap, nev: '  Kiss  Anna ', uzenet: 'Boldog\r\nszülinapot!\u0007', alkalom: 'szuletesnap', atadas: 'digitalis' } });
     assert.equal(r.status, 200);
     assert.equal(r.adat.allapot, 'fizetve');
-    assert.deepEqual(r.adat.szemelyre, { nev: 'Kiss Anna', uzenet: 'Boldog\nszülinapot!', alkalom: 'szuletesnap', atadas: 'digitalis' });
+    assert.deepEqual(r.adat.szemelyre, { nev: 'Kiss Anna', uzenet: 'Boldog\nszülinapot!', alkalom: 'szuletesnap', atadas: 'digitalis', tema: null, idezet: null, foto: false });
     assert.equal(levelek.length, 0);
     const md = mock.allapot.pi(a.pi).metadata;
     assert.equal(md.szemelyre_nev, 'Kiss Anna');
@@ -1107,6 +1107,221 @@ describe('/atutalas', () => {
   });
 });
 
+
+// --- szemelyre szabott (otthon nyomtatott) kartya: atvetel, design, idezet, foto (KV) ----------------------------------------
+// KV-mock: a Cloudflare KV get / put (type: arrayBuffer, expirationTtl) felulete
+function ujKv() {
+  const t = new Map();
+  return {
+    t,
+    async get(kulcs, opciok) {
+      const v = t.get(kulcs);
+      if (!v) return null;
+      return opciok && opciok.type === 'arrayBuffer' ? v.bajtok.slice().buffer : new TextDecoder().decode(v.bajtok);
+    },
+    async put(kulcs, ertek, opciok) {
+      t.set(kulcs, { bajtok: new Uint8Array(ertek instanceof ArrayBuffer ? ertek : ertek.buffer ? ertek.slice().buffer : ertek), ttl: opciok && opciok.expirationTtl });
+    },
+  };
+}
+const jpegAdat = (meret = 4000) => {
+  const b = Buffer.alloc(meret, 7);
+  b[0] = 0xff; b[1] = 0xd8; b[2] = 0xff; b[3] = 0xe0; b[meret - 2] = 0xff; b[meret - 1] = 0xd9;
+  return 'data:image/jpeg;base64,' + b.toString('base64');
+};
+const NAP = 24 * 3600;
+
+describe('szemelyre szabott kartya (otthon nyomtatott)', () => {
+  test('/beallitas: foto csak akkor, ha van KV-tarolo', async () => {
+    assert.equal((await hiv('GET', 'beallitas')).adat.foto, false);
+    assert.equal((await hiv('GET', 'beallitas', { env: { ...ENV, AJANDEK_FOTOK: ujKv() } })).adat.foto, true);
+    assert.equal((await hiv('GET', 'beallitas', { env: { AJANDEK_FOTOK: ujKv() } })).adat.foto, false, 'Stripe nelkul (mod nincs) nincs foto sem');
+  });
+
+  test('/foto feltoltes: JPEG (data URL) -> id, 3 napos ervenyesseggel; ervenytelen / nagy / nem JPEG / KV nelkul elutasitva', async () => {
+    const kv = ujKv();
+    const env = { ...ENV, AJANDEK_FOTOK: kv };
+    const ip = '10.77.1.1';
+    _korlatAlaphelyzet();
+    const jo = await hiv('POST', 'foto', { body: { kep: jpegAdat() }, env, ip });
+    assert.equal(jo.status, 200, jo.body);
+    assert.match(jo.adat.id, /^[A-Z0-9]{24}$/);
+    const tarolt = kv.t.get('foto:' + jo.adat.id);
+    assert.ok(tarolt && tarolt.bajtok.length === 4000);
+    assert.equal(tarolt.ttl, 3 * NAP);
+    for (const [kep, status] of [
+      ['', 400], ['nem-data-url', 400], ['data:image/png;base64,AAAA', 400], ['data:image/jpeg;base64,@@@', 400],
+      ['data:image/jpeg;base64,' + Buffer.alloc(3000, 1).toString('base64'), 400], // nem JPEG-fejlec
+      ['data:image/jpeg;base64,' + Buffer.alloc(300, 1).toString('base64'), 400],  // tul kicsi
+    ]) {
+      const r = await hiv('POST', 'foto', { body: { kep }, env, ip });
+      assert.equal(r.status, status, kep.slice(0, 30));
+    }
+    const nagy = await hiv('POST', 'foto', { body: { kep: jpegAdat(700 * 1024 + 10) }, env, ip });
+    assert.equal(nagy.status, 413);
+    assert.equal((await hiv('POST', 'foto', { body: { kep: jpegAdat() }, ip })).status, 503, 'KV nelkul');
+    assert.equal((await hiv('POST', 'foto', { body: 'nem json', headers: { 'content-type': 'text/plain' }, env, ip })).status, 415);
+  });
+
+  test('/foto feltoltes: kereskorlat (12 / 10 perc IP-nkent)', async () => {
+    const env = { ...ENV, AJANDEK_FOTOK: ujKv() };
+    _korlatAlaphelyzet();
+    const ip = '10.77.2.2';
+    for (let i = 0; i < 12; i++) assert.equal((await hiv('POST', 'foto', { body: { kep: jpegAdat() }, env, ip })).status, 200);
+    const r = await hiv('POST', 'foto', { body: { kep: jpegAdat() }, env, ip });
+    assert.equal(r.status, 429);
+    assert.ok(r.headers['retry-after']);
+    _korlatAlaphelyzet();
+  });
+
+  test('/fizetes + szemelyre szabas: metadata, a foto hosszu ervenyessegre kotve; a vegleges kartya a valasztott designnal, idezettel, fotoval, kodja a szaloné', async () => {
+    const kv = ujKv();
+    const env = { ...ENV, AJANDEK_FOTOK: kv };
+    _korlatAlaphelyzet();
+    const f = await hiv('POST', 'foto', { body: { kep: jpegAdat(5000) }, env });
+    const fotoId = f.adat.id;
+    const r = await hiv('POST', 'fizetes', { env, body: rendelesTorzs({
+      termek: 'paros', atvetel: 'otthon',
+      szemelyre: { tema: 'krem', idezet: 'A legszebb ajándék <b>te</b> vagy!\nPihenj sokat.', nev: 'Kovács Anna', foto_id: fotoId, foto_poz: '40,35,1.3' },
+    }) });
+    assert.equal(r.status, 200, r.body);
+    const md = mock.allapot.pi(r.adat.pi).metadata;
+    assert.equal(md.atvetel, 'otthon');
+    assert.equal(md.kartya_tema, 'krem');
+    assert.equal(md.kartya_idezet, 'A legszebb ajándék <b>te</b> vagy!\nPihenj sokat.');
+    assert.equal(md.szemelyre_nev, 'Kovács Anna');
+    assert.equal(md.foto_id, fotoId);
+    assert.equal(md.foto_poz, '40.0,35.0,1.30');
+    assert.equal(kv.t.get('foto:' + fotoId).ttl, 400 * NAP, 'a rendeleshez kotes hosszu ervenyessegre ujrairja');
+
+    mock.allapot.sikeresIt(r.adat.pi, { mod: 'card' });
+    levelek = [];
+    assert.equal((await webhook(alairtEsemeny(r.adat.pi), { env })).status, 200);
+    const szalon = levelek.find((l) => l.cimzett === 'szalon');
+    assert.ok(szalon.html.includes('E-mailben, otthon kinyomtatja'));
+    assert.ok(szalon.html.includes('Krém') && szalon.html.includes('Pihenj sokat'));
+    const elonezetUrl = /href="([^"]*\/api\/ajandek\/elonezet\?[^"]+)"/.exec(szalon.html)[1].replace(/&amp;/g, '&');
+    assert.ok(elonezetUrl.startsWith(BAZIS));
+
+    // kiallitas a szalon kodjaval
+    const t = await kiallitToken(env, r.adat.pi);
+    const g = await hiv('GET', 'kiallit', { query: { pi: r.adat.pi, t }, env });
+    assert.ok(g.body.includes('Kártya-design') && g.body.includes('Krém'));
+    assert.ok(g.body.includes('/api/ajandek/elonezet?pi='), 'a kiallito oldalon az elonezet linkje');
+    const p = await kiallitPost(r.adat.pi, t, { kod: 'GYOR1865', env });
+    assert.equal(p.status, 200, p.body);
+
+    const k = await hiv('GET', 'kartya', { query: { pi: r.adat.pi, t: await kartyaToken(env, r.adat.pi) }, env });
+    assert.equal(k.status, 200);
+    assert.ok(k.body.includes('ak-t-krem'), 'a valasztott design');
+    assert.ok(k.body.includes('GYOR1865') && k.body.includes('Kovács Anna') && k.body.includes('Pihenj sokat'));
+    assert.ok(k.body.includes('A legszebb ajándék &lt;b&gt;te&lt;/b&gt; vagy!'), 'az idezet escape-elve');
+    assert.ok(!k.body.includes('<b>te</b>'));
+    const fotoUrl = /<img src="([^"]*\/api\/ajandek\/foto\?[^"]+)"/.exec(k.body)[1].replace(/&amp;/g, '&');
+    assert.ok(fotoUrl.startsWith(BAZIS + '/api/ajandek/foto?id=' + fotoId + '&t='));
+    assert.ok(k.body.includes('object-position:40% 35%') && k.body.includes('scale(1.3)'), 'a fotokivagas');
+    assert.ok(!k.body.includes('kartya-hatter.jpg'), 'nem a klasszikus Canva-hatter');
+    assert.match(k.headers['content-security-policy'], /img-src 'self'/);
+
+    // a fotot csak az id + token mutatja meg
+    const kep = await hiv('GET', 'foto', { query: { id: fotoId, t: fotoUrl.split('&t=')[1] }, env });
+    assert.equal(kep.status, 200);
+    assert.equal(kep.headers['content-type'], 'image/jpeg');
+    assert.equal(kep.body.length, 5000);
+    assert.equal((await hiv('GET', 'foto', { query: { id: fotoId, t: '0'.repeat(64) }, env })).status, 403);
+    assert.equal((await hiv('GET', 'foto', { query: { id: 'A'.repeat(24), t: await fotoToken(env, 'A'.repeat(24)) }, env })).status, 404);
+    assert.equal((await hiv('GET', 'foto', { query: { id: fotoId, t: fotoUrl.split('&t=')[1] } })).status, 404, 'KV nelkul nincs kep');
+
+    // a szalon elonezete (kiallit-tokennel): a kiallitas elott is megnezheto
+    const e = await hiv('GET', 'elonezet', { query: { pi: r.adat.pi, t }, env });
+    assert.equal(e.status, 200);
+    assert.ok(e.body.includes('Előnézet a szalonnak') && e.body.includes('ak-t-krem'));
+    assert.equal((await hiv('GET', 'elonezet', { query: { pi: r.adat.pi, t: await kartyaToken(env, r.adat.pi) }, env })).status, 403, 'a kartya-token nem jo elonezethez');
+  });
+
+  test('/fizetes + szemelyre szabas: ervenytelen adatok 400 (design, idezet, nev, foto-id, szemelyre szabas szemelyes atvetelnel)', async () => {
+    const env = { ...ENV, AJANDEK_FOTOK: ujKv() };
+    const jo = { tema: 'smaragd', idezet: 'Szia', nev: 'Anna' };
+    const proba = async (extra) => hiv('POST', 'fizetes', { env, body: rendelesTorzs(extra) });
+    for (const [extra, mezo] of [
+      [{ atvetel: 'otthon', szemelyre: { ...jo, tema: 'nincs-ilyen' } }, 'szemelyre.tema'],
+      [{ atvetel: 'otthon', szemelyre: { ...jo, idezet: 'x'.repeat(161) } }, 'szemelyre.idezet'],
+      [{ atvetel: 'otthon', szemelyre: { ...jo, nev: 'x'.repeat(41) } }, 'szemelyre.nev'],
+      [{ atvetel: 'otthon', szemelyre: { ...jo, foto_id: 'rovid' } }, 'szemelyre.foto'],
+      [{ atvetel: 'szemelyesen', szemelyre: jo }, 'szemelyre'],
+      [{ szemelyre: jo }, 'szemelyre'],
+      [{ atvetel: 'posta' }, 'atvetel'],
+    ]) {
+      const r = await proba(extra);
+      assert.equal(r.status, 400, JSON.stringify(extra));
+      assert.ok(mezo in r.adat.mezok, `${mezo}: ${JSON.stringify(r.adat.mezok)}`);
+    }
+    // olyan foto-id, ami nincs a tarolban (lejart / kitalalt)
+    const nincs = await proba({ atvetel: 'otthon', szemelyre: { ...jo, foto_id: 'A'.repeat(24) } });
+    assert.equal(nincs.status, 400);
+    assert.ok(nincs.adat.mezok.foto);
+    // KV nelkul a foto-id sem jo
+    const kvNelkul = await hiv('POST', 'fizetes', { body: rendelesTorzs({ atvetel: 'otthon', szemelyre: { ...jo, foto_id: 'A'.repeat(24) } }) });
+    assert.equal(kvNelkul.status, 503);
+  });
+
+  test('szemelyre szabas nelkul (otthon, de semmit nem adott meg) es szemelyes atvetelnel a MOSAIC klasszikus kartyaja jar; a szalon levele az atvetelt jelzi', async () => {
+    _korlatAlaphelyzet();
+    const otthon = await hiv('POST', 'fizetes', { body: rendelesTorzs({ atvetel: 'otthon' }) });
+    assert.equal(otthon.status, 200);
+    assert.equal(mock.allapot.pi(otthon.adat.pi).metadata.atvetel, 'otthon');
+    assert.equal(mock.allapot.pi(otthon.adat.pi).metadata.kartya_tema, undefined);
+    const szem = await hiv('POST', 'fizetes', { body: rendelesTorzs({ atvetel: 'szemelyesen' }) });
+    assert.equal(szem.status, 200);
+    assert.equal(mock.allapot.pi(szem.adat.pi).metadata.atvetel, 'szemelyesen');
+    mock.allapot.sikeresIt(szem.adat.pi, { mod: 'card' });
+    levelek = [];
+    await webhook(alairtEsemeny(szem.adat.pi));
+    const szalon = levelek.find((l) => l.cimzett === 'szalon');
+    assert.ok(szalon.html.includes('Személyesen, a szalonban'));
+    assert.ok(!szalon.html.includes('Kártya-design'));
+    const t = await kiallitToken(ENV, szem.adat.pi);
+    assert.equal((await kiallitPost(szem.adat.pi, t)).status, 200);
+    const k = await hiv('GET', 'kartya', { query: { pi: szem.adat.pi, t: await kartyaToken(ENV, szem.adat.pi) } });
+    assert.ok(k.body.includes('kartya-hatter.jpg'));
+    assert.equal((await hiv('GET', 'elonezet', { query: { pi: szem.adat.pi, t } })).status, 404, 'nincs mit elonezni');
+  });
+
+  test('/atutalas + szemelyre szabas: a rekord metadata-ja, a szalon levele az elonezet linkjevel, a nev a tervezobol; a Salonic-link nameTo-ja a tervezo neve', async () => {
+    const kv = ujKv();
+    const env = { ...ENV, AJANDEK_FOTOK: kv };
+    _korlatAlaphelyzet();
+    const f = await hiv('POST', 'foto', { body: { kep: jpegAdat() }, env });
+    levelek = [];
+    const r = await hiv('POST', 'atutalas', { env, body: { ...rendelesTorzs({
+      termek: 'egyeni', telefon: '+36 30 123 4567', atvetel: 'otthon',
+      szemelyre: { tema: 'homok', idezet: 'Pihenj egy jót!', nev: 'Nagy Mária', foto_id: f.adat.id, foto_poz: '50,50,1' },
+    }), kulcs: undefined } });
+    assert.equal(r.status, 200, r.body);
+    const pi = atuPi(r.adat.rendeles_ref);
+    assert.equal(pi.metadata.atvetel, 'otthon');
+    assert.equal(pi.metadata.kartya_tema, 'homok');
+    assert.equal(pi.metadata.szemelyre_nev, 'Nagy Mária');
+    assert.equal(pi.metadata.foto_id, f.adat.id);
+    assert.equal(kv.t.get('foto:' + f.adat.id).ttl, 400 * NAP);
+    const szalon = levelek.find((l) => l.cimzett === 'szalon');
+    assert.ok(szalon.html.includes('Homok') && szalon.html.includes('Pihenj egy jót!') && szalon.html.includes('/api/ajandek/elonezet?pi='));
+    const salonic = /href="https:\/\/app\.salonic\.hu[^"]+#mosaic=([^"]+)"/.exec(szalon.html);
+    assert.equal(JSON.parse(decodeURIComponent(salonic[1].replace(/&#39;/g, "'"))).nameTo, 'Nagy Mária');
+    // a kiallito oldal es az elonezet (kod nelkul, utalasnal a kod a kiallitaskor kerul ra)
+    const t = await kiallitToken(env, pi.id);
+    const g = await hiv('GET', 'kiallit', { query: { pi: pi.id, t }, env });
+    assert.ok(g.body.includes('Kártya-design') && g.body.includes('Homok'));
+    const e = await hiv('GET', 'elonezet', { query: { pi: pi.id, t }, env });
+    assert.equal(e.status, 200);
+    assert.ok(e.body.includes('A KÓD KIÁLLÍTÁSKOR KERÜL RÁ') && e.body.includes('ak-t-homok'));
+    // kiallitas -> a vevo kartyaja a szemelyre szabott
+    assert.equal((await kiallitPost(pi.id, t, { kod: 'GYOR2000', env })).status, 200);
+    const k = await hiv('GET', 'kartya', { query: { pi: pi.id, t: await kartyaToken(env, pi.id) }, env });
+    assert.ok(k.body.includes('ak-t-homok') && k.body.includes('GYOR2000') && k.body.includes('Nagy Mária'));
+  });
+});
+
 // --- visszaeles elleni vedelem ---------------------------------------------------------------------------------------------
 describe('visszaeles-vedelem (/fizetes, /szemelyre, /atutalas)', () => {
   const VEDETT = ['fizetes', 'szemelyre', 'atutalas'];
@@ -1416,7 +1631,7 @@ describe('AJANDEK_TITOK kotelezo (legalabb 32 karakter, fail closed)', () => {
     for (const titok of [undefined, '', 'rovid', 'x'.repeat(31), ' '.repeat(40)]) {
       const env = { ...ENV, AJANDEK_TITOK: titok };
       const cimke = JSON.stringify(titok);
-      assert.deepEqual((await hiv('GET', 'beallitas', { env })).adat, { mod: 'nincs', publikus_kulcs: null, azonnali_kartya: false }, cimke);
+      assert.deepEqual((await hiv('GET', 'beallitas', { env })).adat, { mod: 'nincs', publikus_kulcs: null, azonnali_kartya: false, foto: false }, cimke);
       let r = await hiv('POST', 'fizetes', { body: rendelesTorzs(), env });
       assert.equal(r.status, 503, cimke);
       assert.deepEqual(r.adat, { hiba: 'nincs_beallitva' });

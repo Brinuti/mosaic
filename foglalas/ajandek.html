@@ -40,6 +40,7 @@
 </script>
 <script src="/assets/js/suti.js"></script>
 <script src="/assets/js/ajandek-adat.js" defer></script>
+<script src="/assets/js/ajandek-kartya.js" defer></script>
 <script src="/assets/js/ajandek.js" defer></script>
 </head>
 <body class="ah" data-allapot="bongeszes">
@@ -119,10 +120,15 @@
         <div class="ah-kartya ah-panel-mellek">
           <p class="ah-felcim">Ajándékkártya</p>
           <dl class="ah-meta">
-            <div><dt>Formátum</dt><dd>Digitális ajándékkártya</dd></div>
             <div><dt>Kézbesítés</dt><dd id="ah-kiv-kezbesites">Sikeres fizetés után e-mailben kapod meg.</dd></div>
             <div><dt>Felhasználható</dt><dd>6 hónapig</dd></div>
           </dl>
+          <fieldset class="ah-atvetel" id="ah-atvetel">
+            <legend>Hogyan veszed át az ajándékkártyát?</legend>
+            <label class="ah-atvetel-opcio"><input type="radio" name="atvetel" value="otthon" checked><span class="ah-atvetel-szoveg"><strong>E-mailben, otthon kinyomtatom</strong><small>Nyomtatható formában kapod meg, és személyre is szabhatod.</small></span></label>
+            <label class="ah-atvetel-opcio"><input type="radio" name="atvetel" value="szemelyesen"><span class="ah-atvetel-szoveg"><strong>Személyesen, a szalonban</strong><small>Papír alapon, díszborítékban veheted át.</small></span></label>
+            <p class="ah-atvetel-info" id="ah-atvetel-info" aria-live="polite"></p>
+          </fieldset>
           <div class="ah-gombsor">
             <button type="button" class="ah-gomb ah-gomb-fo ah-gomb-teljes" id="ah-tovabb-gomb"><span>Tovább a fizetéshez</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></button>
           </div>
@@ -273,6 +279,27 @@
   </section>
 </div>
 
+<!-- kezeles-bemutato: a termek kivalasztasakor nyilo ablak (leiras + video; a videok helye a TERMEKEK.*.kezeles.video) -->
+<dialog class="ah-kezeles-ablak" id="ah-kezeles-ablak" aria-labelledby="ah-kez-cim">
+  <button type="button" class="ah-ablak-bezar" id="ah-kez-bezar" aria-label="Bezárás">×</button>
+  <div class="ah-kez-racs">
+    <div class="ah-kez-media" id="ah-kez-media"></div>
+    <div class="ah-kez-szoveg">
+      <p class="ah-felcim" id="ah-kez-badge"></p>
+      <h2 id="ah-kez-cim"></h2>
+      <p class="ah-kez-osszefoglalo" id="ah-kez-osszefoglalo"></p>
+      <div class="ah-kez-leiras" id="ah-kez-leiras"></div>
+      <h3 class="ah-kez-alcim">Mi történik a kezelésen?</h3>
+      <ul class="ah-lista ah-kez-lepesek" id="ah-kez-lepesek"></ul>
+      <p class="ah-ar-sav"><span>Ajándékkártya ára</span><strong class="ah-ar" id="ah-kez-ar"></strong></p>
+      <div class="ah-gombsor">
+        <button type="button" class="ah-gomb ah-gomb-fo" id="ah-kez-valaszt"><span>Ezt ajándékozom</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></button>
+        <button type="button" class="ah-gomb ah-gomb-kor" id="ah-kez-masik">Másikat nézek</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
 <!-- vendeg-video: a modalis lejatszo (a kattintott kartya videoja, hang, vezerlok) -->
 <dialog class="ah-video-ablak" id="ah-video-ablak" aria-label="Vendég-videó">
   <button type="button" class="ah-video-bezar" id="ah-video-bezar" aria-label="Bezárás">×</button>
@@ -281,6 +308,58 @@
 
 <!-- ======== FIZETES -> SIKER -> SZEMELYRE SZABAS -> OSSZEGZO: fokuszalt nezet, ugyanazon az oldalon ======== -->
 <div id="ah-fokusz" hidden>
+
+  <!-- MINI SZEMELYRE SZABO (csak az otthon kinyomtatott kartyahoz): dizajn + foto + idezet, elo elonezettel; a fizetes elott -->
+  <section class="ah-tervezo" id="ah-tervezo" aria-labelledby="ah-tervezo-cim" hidden>
+    <div class="ah-fizetes-sor">
+      <button type="button" class="ah-vissza" id="ah-tervezo-vissza"><span aria-hidden="true">←</span>&nbsp;Vissza az ajándékhoz</button>
+    </div>
+    <header class="ah-tervezo-fej">
+      <h2 id="ah-tervezo-cim" tabindex="-1">Szabd személyre az ajándékkártyát</h2>
+      <p class="ah-halk">Válassz designt, tölts fel egy fotót, és írj rá egy idézetet vagy üzenetet. A személyre szabás az otthon kinyomtatott kártyára vonatkozik.</p>
+    </header>
+    <div class="ah-tervezo-racs">
+      <div class="ah-tervezo-elonezet">
+        <div class="ah-ak-doboz" id="ah-ak-elonezet" aria-label="A kártya élő előnézete" role="img"></div>
+        <p class="ah-halk ah-kicsi">Így fog kinézni a kinyomtatott kártya. Az utalványkód akkor kerül rá, amikor a szalon kiállítja a kártyát.</p>
+      </div>
+      <div class="ah-kartya ah-tervezo-vezerlok">
+        <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">1</span>Válassz designt</h3>
+        <div class="ah-tema-racs" id="ah-tema-racs" role="radiogroup" aria-label="Kártya-design"></div>
+
+        <div id="ah-foto-blokk">
+          <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">2</span>Fotó</h3>
+          <div class="ah-foto-vezerlo">
+            <input type="file" id="ah-foto-fajl" accept="image/*" hidden>
+            <button type="button" class="ah-gomb ah-gomb-kor" id="ah-foto-gomb"><span class="ah-ikon" data-ikon="camera" aria-hidden="true"></span><span id="ah-foto-gomb-szoveg">Fotó feltöltése</span></button>
+            <button type="button" class="ah-link" id="ah-foto-torol" hidden>Fotó törlése</button>
+          </div>
+          <div class="ah-zoom" id="ah-zoom-sor" hidden>
+            <label for="ah-zoom">Nagyítás</label>
+            <input type="range" id="ah-zoom" min="1" max="3" step="0.05" value="1">
+          </div>
+          <p class="ah-halk ah-kicsi" id="ah-foto-tipp">Bármilyen fotó jó (telefonról is). A fotót a kártya előnézetén húzva igazíthatod.</p>
+          <p class="ah-mezohiba" id="ah-foto-hiba" role="alert" hidden></p>
+        </div>
+
+        <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">3</span>Idézet vagy üzenet</h3>
+        <div class="ah-mezo">
+          <label for="ah-idezet" class="ah-lathatatlan-cim">Idézet vagy üzenet</label>
+          <textarea id="ah-idezet" maxlength="160" rows="3" placeholder="Írd ide az idézetet vagy az üzenetet…"></textarea>
+          <p class="ah-szamlalo"><span id="ah-idezet-db">0</span>/160</p>
+        </div>
+        <div class="ah-mezo">
+          <label for="ah-tervezo-nev">Kinek szól? (nem kötelező)</label>
+          <input id="ah-tervezo-nev" type="text" maxlength="40" autocomplete="off" placeholder="pl. Anna">
+        </div>
+        <p class="ah-mezohiba" id="ah-tervezo-hiba" role="alert" hidden></p>
+        <div class="ah-gombsor ah-gombsor-oszlop">
+          <button type="button" class="ah-gomb ah-gomb-fo ah-gomb-teljes" id="ah-tervezo-tovabb"><span id="ah-tervezo-tovabb-szoveg">Tovább a fizetéshez</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></button>
+          <button type="button" class="ah-link" id="ah-tervezo-kihagy">Kihagyom a személyre szabást</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- 10. EMBEDDED CHECKOUT (a szemelyre szabas SZANDEKOSAN nincs itt): 1 Termek | 2 Adatok | 3 Fizetes -->
   <section class="ah-fizetes" id="ah-fizetes" aria-labelledby="ah-fizetes-cim" hidden>
@@ -305,6 +384,7 @@
           </div>
           <dl class="ah-meta">
             <div><dt>Felhasználható</dt><dd>6 hónapig</dd></div>
+            <div><dt>Átvétel</dt><dd id="ah-osszesito-atvetel"></dd></div>
           </dl>
           <p class="ah-ar-sav ah-osszesen"><span>Aktuális ár</span><strong class="ah-ar" id="ah-osszesito-ar"></strong></p>
         </div>
@@ -426,10 +506,6 @@
           <div class="ah-mezo">
             <label for="ah-sz-alkalom">Milyen alkalomra?</label>
             <select id="ah-sz-alkalom" name="alkalom"></select>
-          </div>
-          <div class="ah-mezo">
-            <label for="ah-sz-atadas">Hogyan szeretnéd átadni?</label>
-            <select id="ah-sz-atadas" name="atadas"></select>
           </div>
           <p class="ah-mezohiba" id="ah-sz-hiba" role="alert" hidden></p>
           <div class="ah-gombsor ah-gombsor-oszlop">

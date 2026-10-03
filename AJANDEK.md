@@ -78,10 +78,14 @@ Egyéni 26.900 Ft, 4 kezes 39.900 Ft, Páros 53.800 Ft – az **októberi 20% ke
 ## Állapotgép
 
 ```
-bongeszes → kivalasztva → fizetes → feldolgozas → siker → szemelyre → osszegzo
-                 ↑            ↓            ↓
-                 └────────────┴── hiba ←───┘   (hiba → fizetes: az inputok megmaradnak)
+bongeszes → kivalasztva → [tervezo] → fizetes → feldolgozas → siker → [szemelyre] → osszegzo
+                 ↑           ↓          ↓            ↓
+                 └───────────┴──────────┴── hiba ←───┘   (hiba → fizetes: az inputok megmaradnak)
 ```
+
+A termék „Ajándékozom” gombja előbb a **kezelés-bemutató ablakot** nyitja (leírás + videó; „Ezt ajándékozom” viszi
+tovább a `kivalasztva` állapotba). A `tervezo` (mini személyre szabó) csak **otthon kinyomtatott** kártyánál van, és a
+`szemelyre` (fizetés utáni név/üzenet) csak **személyes átvételnél**. Lásd lent: „Átvétel és személyre szabás”.
 
 Asztali és mobil **ugyanazt** az állapotgépet és ugyanazt a komponensfát használja (csak a CSS
 különbözik). A böngésző Vissza gombja a checkoutból a „kiválasztva” állapotba visz. Stripe 3DS /
@@ -209,11 +213,48 @@ A háttér frissítése: Canva-tervmásolat („MOSAIC ajándékkártya háttér
 
 **Átutalás nem vásárlás** a mérés szempontjából (`bank_transfer_request`, nem `purchase`).
 
+### Átvétel és személyre szabás (2026-10-03)
+
+**Kezelés-bemutató ablak.** A termékkártya „Ajándékozom” gombja `<dialog id="ah-kezeles-ablak">`-t nyit: fotó/videó, rövid leírás,
+„Mi történik a kezelésen?” lista, ár, „Ezt ajándékozom” / „Másikat nézek”. A tartalom a `TERMEKEK.*.kezeles` mezőben van
+(`leiras`, `lepesek`, `video`); a szövegek a MOSAIC élő oldalairól valók. **A videó helye üres**: `kezeles.video = { src, poster }`
+(mp4; a Cloudflare Pages 25 MiB/fájl korlátja miatt tömörítve) – amíg nincs, az ablak a termék fotóját és „A kezelés videója
+hamarosan itt lesz.” feliratot mutat. **Élesítés előtt mindhárom videót fel kell tölteni.**
+
+**Átvétel.** A kiválasztott termék panelén a vevő a fizetés előtt választ: *E-mailben, otthon kinyomtatom* (alap; személyre szabható)
+vagy *Személyesen, a szalonban* (papír, díszborítékban). A választás a PI `metadata.atvetel` mezőjébe kerül (`otthon` / `szemelyesen`),
+és a szalon levelében + a kiállító oldalon látszik. A régi fizetés utáni „Hogyan szeretnéd átadni?” kérdés megszűnt (személyes
+átvételnél a `/szemelyre` `atadas: fizikai` marad, így a szalon értesítője változatlan).
+
+**Mini személyre szabó** (`tervezo` nézet, csak otthon nyomtatott kártyánál): design (jelenleg 4 helyőrző: Smaragd, Krém, Homok,
+Fehér), fotó (telefonról is; böngészőben ≤ 1600 px JPEG-re kicsinyítve; húzással és nagyítással igazítható), idézet vagy
+üzenet (≤ 160 karakter), „Kinek szól?” (≤ 40). Az előnézet **élő** és a szerver **ugyanazt a sablont** használja
+(`assets/js/ajandek-kartya.js`: `TEMAK`, `html()`, `CSS`), ezért a kinyomtatott kártya = az előnézet. Ha a vevő semmit nem ad
+meg (vagy a „Kihagyom” linket használja), a MOSAIC klasszikus (Canva) kártyáját kapja.
+
+**Új design felvétele** (a végleges, megtervezett designok helye): a `TEMAK` tömbbe egy új elem `{ id, nev, kep: {x,y,w,h,alak},
+idezet: {x,y,w,h}, nevHely: {x,y,w,h} }` (a 794 × 1123 px-es A4 lap koordinátáiban), a színeit a `CSS`-ben az `.ak-t-<id>` szabály adja
+(`--ak-h` háttér, `--ak-sz` szöveg, `--ak-a` kiemelő, `--ak-m` fotóhely-szín). Háttérképes (Canva) designnál a szövegmentes háttér a
+`.ak-t-<id>`-ben `background: url(…)`; a fotóhely a háttér **fölé** kerül (alak: `iv` | `teglalap` | `kor` | `polaroid`, vagy új `.ak-<alak>`
+szabály). **Minden designon van fotóhely és idézet-hely.** A designok száma a `TEMAK` hosszától függ (a felület magától követi).
+
+**Fotó-tárolás.** A fotót a `POST /api/ajandek/foto` (JPEG data URL, ≤ 700 KB) a Cloudflare **KV**-ba (`AJANDEK_FOTOK` kötés,
+kulcs `foto:<24 jegyű id>`) teszi: 3 napig él, és amikor a `/fizetes` vagy az `/atutalas` megkapja az `id`-t, a rendeléshez kötve
+**400 napra** újraírja (a kártya 6 hónapig érvényes). A rendelés metadata-ja csak az azonosítót és a kivágást (`foto_id`, `foto_poz`
+= `x,y,zoom`) tartalmazza. A képet `GET /api/ajandek/foto?id=&t=` mutatja (a `t` HMAC; a kártya-oldal és az előnézet linkjében van).
+**KV-kötés nélkül** a `/beallitas` `foto: false`-t ad, a felületen a fotófeltöltés rejtett, a design és az idézet viszont működik.
+A KV létrehozása és a kötés a `wrangler.toml`-ban: lásd az élesítési ellenőrzőlistát.
+
+**Metadata** (a PI-n, a `/fizetes` és az `/atutalas` is írja): `atvetel`, `kartya_tema`, `kartya_idezet`, `szemelyre_nev`, `foto_id`,
+`foto_poz`. A szalon levele (és a kiállító oldal) kiírja az átvételt, a designt, az idézetet és hogy van-e fotó, és ad egy
+**előnézeti linket** (`GET /api/ajandek/elonezet?pi=&t=`, a kiállító token; a kiállítás előtt is megmutatja a vevő kártyáját).
+A vevő végleges kártyája (`GET kartya`) a szalon által beírt kóddal készül.
+
 ### API (`/api/ajandek/…`)
 
 | végpont | |
 |---|---|
-| `GET beallitas` | `{ mod: 'elo'｜'teszt'｜'nincs', publikus_kulcs, azonnali_kartya }` |
+| `GET beallitas` | `{ mod: 'elo'｜'teszt'｜'nincs', publikus_kulcs, azonnali_kartya, foto }` (`foto`: van-e KV-tároló a fotókhoz) |
 | `POST fizetes` | PaymentIntent létrehozása/frissítése; az ár a szerveren |
 | `GET rendeles?pi=&cs=` vagy `?pi=&rt=` | rendelés állapota (Stripe-tól visszakérdezve); hitelesítés: `client_secret`, vagy az **`rt`** (HMAC, csak olvasás – ez megy levélben; a módosító végpontokhoz nem jó). Visszatérítés/vita esetén `visszavonva: true`, a kártya `kartya.allapot: 'visszavonva'` (kód és link nélkül) |
 | `POST szemelyre` | megajándékozott neve, üzenet, alkalom, átadás (csak fizetés után) |
@@ -221,6 +262,9 @@ A háttér frissítése: Canva-tervmásolat („MOSAIC ajándékkártya háttér
 | `GET/POST kiallit?pi=&t=` | a szalon kiállító linkje (HMAC-token; GET csak megerősít, POST: `kod` kötelező; utalásnál ez állítja „fizetve” állapotba a rendelést) |
 | `POST webhook` | Stripe `payment_intent.succeeded` + `charge.refunded` + `charge.dispute.created` (aláírás-ellenőrzött, idempotens; visszatérítésnél/vitánál levél a szalonnak: töröld a kuponkódot) |
 | `POST atutalas` | átutalási igény (nem vásárlás): Stripe-nyilvántartási rekord + levelek; telefon kötelező; a vevőlevélbe nem kerül szabad szöveg |
+| `POST foto` | a személyre szabott kártya fotója (JPEG data URL, ≤ 700 KB) → `{ id }`; Cloudflare KV, IP-nként 12 / 10 perc; KV nélkül 503 |
+| `GET foto?id=&t=` | a fotó (id + HMAC-token); privát, 1 évig gyorsítótárazható |
+| `GET elonezet?pi=&t=` | a szalon előnézete a személyre szabott kártyáról (kiállító token) |
 
 **Visszaélés elleni védelem** (`/fizetes`, `/szemelyre`, `/atutalas`): csak `application/json` (415), idegen
 host/`cross-site` kérés tiltva (403), memóriában tartott, best-effort kérésszám-korlát kliens-IP-nként
@@ -242,6 +286,7 @@ Variables and Secrets*; az SMTP-változók ugyanazok, mint az űrlapoknál):
 | `AJANDEK_TITOK` | a kuponkód, a kiállító link, a kártya- és rendelés-tokenek HMAC-kulcsa – **titkos, KÖTELEZŐ, legalább 32 karakter** (nélküle a motor nem indul: `mod: nincs`). Egyszer kell kitalálni és minden platformon ugyanaz legyen; utána ne változzon, különben a már kiküldött linkek érvénytelenek |
 | `AJANDEK_BAZIS_URL` | nem kötelező: a levelekben lévő linkek eleje (alapból a kérés origin-je) |
 | `AJANDEK_AZONNALI` | nem kötelező: `1` = azonnali teljesítés (lásd fent) |
+| `AJANDEK_FOTOK` | Cloudflare **KV-kötés** (nem környezeti változó): a személyre szabott kártyák fotói; `wrangler.toml` `[[kv_namespaces]]` (Production) és `[[env.preview.kv_namespaces]]` (előnézet). Nélküle nincs fotófeltöltés |
 
 Ha a Stripe-kulcsok hiányoznak, a `mod` `nincs`, és a checkout nem enged fizetni. Teszt-kulcsokkal
 (`sk_test_`/`pk_test_`) a `mod` `teszt`: a lap „TESZT MÓD” szalagot mutat.

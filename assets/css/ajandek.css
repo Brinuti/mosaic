@@ -193,6 +193,79 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-pipalista .ah-ikon { width: 20px; height: 20px; padding: 3px; border-radius: 50%; background: #e4efe4; color: #3d7c53; }
 @media (min-width: 700px) and (max-width: 1099px) { .ah-kartya-elonezet { grid-template-columns: 200px 1fr; align-items: center; justify-items: stretch; text-align: left; } .ah-elonezet-cim { grid-column: 1 / -1; transform: none; } .ah-minta { width: 200px; } }
 
+/* ---------- kezeles-bemutato ablak (a termek kivalasztasakor) ---------- */
+.ah-kezeles-ablak { padding: 0; border: 0; border-radius: 18px; background: var(--ah-feher); color: var(--ah-szoveg); width: min(920px, 94vw); max-height: 92vh; overflow: auto; box-shadow: 0 24px 70px rgba(0, 0, 0, .45); }
+.ah-kezeles-ablak:not([open]) { display: none; }
+.ah-kezeles-ablak::backdrop { background: rgba(14, 28, 27, .72); }
+.ah-ablak-bezar { position: absolute; top: 10px; right: 10px; z-index: 3; width: 42px; height: 42px; border-radius: 50%; border: 0; background: rgba(255, 253, 250, .92); color: var(--ah-petrol); font-size: 26px; line-height: 1; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, .2); }
+.ah-ablak-bezar:hover { background: #fff; }
+.ah-kez-racs { display: grid; }
+.ah-kez-media { background: #1c2a29; min-height: 220px; }
+.ah-kez-media video { display: block; width: 100%; max-height: 52vh; background: #000; object-fit: contain; }
+.ah-kez-hamarosan { position: relative; margin: 0; height: 100%; min-height: 220px; }
+.ah-kez-hamarosan img { width: 100%; height: 100%; max-height: 52vh; object-fit: cover; opacity: .82; }
+.ah-kez-hamarosan figcaption { position: absolute; left: 12px; right: 12px; bottom: 12px; padding: 8px 12px; border-radius: 8px; background: rgba(15, 38, 36, .78); color: #f3e4b6; font-size: 13.5px; text-align: center; }
+.ah-kez-szoveg { padding: 22px 20px 22px; display: grid; gap: 10px; align-content: start; }
+.ah-kez-szoveg h2 { font-size: 28px; }
+.ah-kez-osszefoglalo { font-size: 14px; color: var(--ah-arany-sz); letter-spacing: .01em; }
+.ah-kez-leiras { display: grid; gap: 8px; font-size: 15px; line-height: 1.5; color: #3f4f50; }
+.ah-kez-alcim { font-size: 17px; margin-top: 6px; }
+.ah-kez-lepesek { gap: 8px; font-size: 14.5px; }
+.ah-kez-lepesek li { align-items: flex-start; }
+.ah-kez-lepesek .ah-ikon { margin-top: 2px; color: #3d7c53; }
+.ah-kez-szoveg .ah-ar-sav { margin-top: 6px; }
+@media (min-width: 800px) {
+  .ah-kez-racs { grid-template-columns: 1fr 1fr; }
+  .ah-kez-media { min-height: 100%; }
+  .ah-kez-media video, .ah-kez-hamarosan img { max-height: none; height: 100%; }
+  .ah-kez-hamarosan { min-height: 100%; }
+  .ah-kez-szoveg { padding: 34px 32px 30px; }
+}
+
+/* ---------- atvetel: hogyan veszed at (a kivalasztott-panelben) ---------- */
+.ah-atvetel { margin: 6px 0 0; padding: 0; border: 0; display: grid; gap: 10px; min-width: 0; }
+.ah-atvetel legend { padding: 0; margin: 0 0 8px; font-family: var(--ah-cim); font-size: 18px; color: var(--ah-petrol); }
+.ah-atvetel-opcio { display: flex; align-items: flex-start; gap: 12px; padding: 13px 14px; border: 1px solid var(--ah-vonal); border-radius: 12px; background: var(--ah-feher); cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+.ah-atvetel-opcio:hover { border-color: var(--ah-arany); }
+.ah-atvetel-opcio:has(input:checked) { border-color: var(--ah-petrol); box-shadow: 0 0 0 1px var(--ah-petrol); background: #f3f8f6; }
+.ah-atvetel-opcio:has(input:focus-visible) { outline: 3px solid var(--ah-arany-sz); outline-offset: 2px; }
+.ah-atvetel-opcio input { margin: 3px 0 0; width: 18px; height: 18px; accent-color: var(--ah-petrol); flex: none; }
+.ah-atvetel-szoveg { display: grid; gap: 2px; min-width: 0; }
+.ah-atvetel-szoveg strong { font-weight: 500; font-size: 15.5px; color: var(--ah-petrol); }
+.ah-atvetel-szoveg small { font-size: 13.5px; line-height: 1.4; color: var(--ah-halk); }
+.ah-atvetel-info { font-size: 13.5px; line-height: 1.5; color: #3f4f50; background: #f7efd9; border: 1px solid #e8d9ad; border-radius: 10px; padding: 11px 13px; }
+
+/* ---------- mini szemelyre szabo ---------- */
+.ah-tervezo { padding: 8px 0 60px; }
+.ah-tervezo-fej { width: min(1180px, calc(100% - 2 * var(--ah-gut))); margin: 6px auto 20px; display: grid; gap: 8px; }
+.ah-tervezo-fej .ah-halk { max-width: 680px; }
+.ah-tervezo-racs { width: min(1180px, calc(100% - 2 * var(--ah-gut))); margin: 0 auto; display: grid; gap: 22px; align-items: start; }
+.ah-tervezo-elonezet { display: grid; gap: 10px; justify-items: center; }
+.ah-ak-doboz { width: min(100%, 340px); box-shadow: 0 16px 40px rgba(40, 34, 20, .25); border-radius: 3px; overflow: hidden; background: #fff; touch-action: pan-y; }
+.ah-ak-doboz.ah-foto-van .ak-ablak { cursor: grab; }
+.ah-ak-doboz.ah-huz .ak-ablak { cursor: grabbing; }
+.ah-tervezo-elonezet > .ah-halk { text-align: center; max-width: 340px; }
+.ah-tervezo-vezerlok { display: grid; gap: 4px; }
+.ah-tervezo-vezerlok .ah-urlap-cim { margin: 10px 0 12px; font-size: 19px; }
+.ah-tervezo-vezerlok .ah-urlap-cim:first-child { margin-top: 0; }
+.ah-tema-racs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.ah-tema { display: grid; gap: 6px; padding: 6px; border: 2px solid var(--ah-vonal); border-radius: 10px; background: #fff; cursor: pointer; text-align: center; transition: border-color .2s; }
+.ah-tema:hover { border-color: var(--ah-arany); }
+.ah-tema.ah-tema-valasztott { border-color: var(--ah-petrol); box-shadow: 0 0 0 1px var(--ah-petrol); }
+.ah-tema-kep { display: block; pointer-events: none; }
+.ah-tema-nev { font-size: 13px; color: var(--ah-petrol); }
+.ah-foto-vezerlo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 10px; }
+.ah-foto-vezerlo .ah-gomb { min-height: 46px; padding: 0 18px; }
+.ah-zoom { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; margin-bottom: 8px; font-size: 14px; color: #41585a; }
+.ah-zoom input { width: 100%; accent-color: var(--ah-petrol); }
+.ah-szamlalo { text-align: right; font-size: 12.5px; color: var(--ah-halk); margin-top: -2px; }
+.ah-tervezo-vezerlok .ah-mezo textarea { min-height: 96px; }
+@media (min-width: 900px) {
+  .ah-tervezo-racs { grid-template-columns: minmax(300px, 380px) 1fr; gap: 40px; }
+  .ah-tervezo-elonezet { position: sticky; top: calc(var(--ah-fejlec-m) + 18px); }
+  .ah-ak-doboz { width: 100%; }
+}
+
 /* ---------- kivalasztott termek panel (inline) ---------- */
 .ah-panel { margin-top: 28px; display: grid; gap: 18px; scroll-margin-top: calc(var(--ah-fejlec-m) + 16px); }
 @media (min-width: 860px) { .ah-panel { grid-template-columns: 1.25fr .75fr; gap: 24px; align-items: start; } }

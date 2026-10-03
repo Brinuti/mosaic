@@ -9,6 +9,7 @@
 
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
+import '../../assets/js/ajandek-kartya.js';
 const betu = 'font:15px/1.6 Arial,Helvetica,sans-serif;color:#222';
 const PETROL = '#244A4D';
 const PETROL_SOT = '#0f3a3c';
@@ -65,7 +66,8 @@ const szamlazasiCim = (d) => [d.iranyitoszam, d.varos].filter(Boolean).join(' ')
 
 // --- fizetes utan: a szalon levele -----------------------------------------------------------------
 // d: { rendeles_id, pi, termek_nev, osszeg_szoveg, fizetesi_mod, fizetve_ekkor, email, nev, iranyitoszam,
-//      varos, cim, ceges_nev, ceges_adoszam, kod, ervenyes_ig, kiallit_url, azonnali, attr }
+//      varos, cim, ceges_nev, ceges_adoszam, kod, ervenyes_ig, kiallit_url, azonnali, attr,
+//      atvetel_szoveg?, design_szoveg?, idezet_szoveg?, foto_van?, elonezet_url? }
 export function szalonFizetveLevel(d) {
   const attr = d.attr || {};
   const forras = [attr.utm_source, attr.utm_medium, attr.utm_campaign].filter(Boolean).join(' / ');
@@ -87,6 +89,7 @@ ${tabla([
   ['Név', d.nev], ['E-mail', d.email], ['Cím', szamlazasiCim(d)],
   ['Cégnév', d.ceges_nev], ['Adószám', d.ceges_adoszam],
 ])}
+${d.atvetel_szoveg ? `${cim('ÁTVÉTEL ÉS SZEMÉLYRE SZABÁS')}${tabla([['Átvétel', d.atvetel_szoveg], ['Kártya-design', d.design_szoveg], ['Idézet', d.idezet_szoveg], ['Saját fotó', d.design_szoveg ? (d.foto_van ? 'van' : 'nincs') : '']])}${d.elonezet_url ? `<p>A vevő személyre szabott kártyájának előnézete (design, fotó, idézet): <a href="${esc(d.elonezet_url)}">megnyitás új lapon</a></p>` : ''}` : ''}
 ${cim('TEENDŐ: 100%-OS KUPON A SALONICBAN')}
 <p>A számlát a szamlabridge már elkészítette, ezért a Salonicban <b>nem utalvány-értékesítést</b>, hanem sima <b>100%-os kupont</b> hozz létre: a(z) <b>${esc(d.termek_nev)}</b> szolgáltatásra, egyszer felhasználható, érvényes ${esc(datumIg(d.ervenyes_ig))} (6 hónap).</p>
 ${kodDoboz(d.kod, d.ervenyes_ig)}
@@ -218,6 +221,7 @@ ${tabla([
 ${cim('A KÁRTYÁRA KERÜLŐ ADATOK')}
 ${tabla([['Megajándékozott', d.megajandekozott]])}
 ${d.uzenet ? `<p style="white-space:pre-line;border-left:3px solid ${ARANY};padding:4px 12px;margin:8px 0">${esc(d.uzenet)}</p>` : ''}
+${d.atvetel_szoveg ? `${cim('ÁTVÉTEL ÉS SZEMÉLYRE SZABÁS')}${tabla([['Átvétel', d.atvetel_szoveg], ['Kártya-design', d.design_szoveg], ['Idézet', d.idezet_szoveg], ['Saját fotó', d.design_szoveg ? (d.foto_van ? 'van' : 'nincs') : '']])}${d.elonezet_url ? `<p>A vevő személyre szabott kártyájának előnézete (design, fotó, idézet): <a href="${esc(d.elonezet_url)}">megnyitás új lapon</a></p>` : ''}` : ''}
 ${cim('TEENDŐ, HA AZ UTALÁS BEÉRKEZETT')}
 <ol style="margin:0 0 12px 18px;padding:0">
 <li><b>Salonic:</b> utalvány-értékesítés (a számla miatt): ${d.salonic_url ? `<a href="${esc(d.salonic_url)}">Utalvány értékesítés megnyitása az adatokkal</a> – ${esc(d.salonic_nev || d.termek_nev)}` : esc(d.termek_nev)}. A megnyílt űrlapot a <b>MOSAIC kitöltő</b> könyvjelző egy kattintással kitölti (beállítása egyszeri, a lenti gombbal megnyíló oldalon van). Kézzel: Ajándékozó = a vevő; az <b>Ajándékozó e-mail címe</b> mezőbe a <b>szalon címét</b> (${esc(d.szalon_email || '')}) írd, hogy a Salonic ne küldjön saját levelet a vevőnek; fizetési mód: <b>Átutalás</b>; az „Ajándékozott e-mail címe” és a másolat-küldés jelölőnégyzet maradjon üresen. Az üzenetet a Salonicba nem kell beírni, a kártyára a MOSAIC írja.</li>
@@ -356,6 +360,48 @@ const meretSor = (szoveg, lepcsok) => {
   for (const [max, px] of lepcsok) if (n <= max) return px;
   return lepcsok[lepcsok.length - 1][1];
 };
+// A SZEMELYRE SZABOTT (otthon nyomtatott) kartya onallo oldala: a mini szemelyre szabo elonezetevel azonos sablon
+// (assets/js/ajandek-kartya.js), igy a nyomtatas = az, amit a vevo a fizetes elott latott.
+// d: { bazis, tema, idezet, nev, foto_src, foto_poz, kartya_felirat, ar_szoveg, kod, ervenyes_ig, ervenyes_szoveg, elonezet }
+export function szemelyreSzabottKartyaOldal(d) {
+  const K = globalThis.AJANDEK_KARTYA;
+  const kartya = K.html({
+    tema: d.tema, idezet: d.idezet, nev: d.nev, fotoSrc: d.foto_src || null, fotoPoz: K.pozOlvas(d.foto_poz),
+    felirat: d.kartya_felirat, ertek: d.ar_szoveg, kod: d.kod, ervenyes: d.ervenyes_ig ? datumIg(d.ervenyes_ig) : (d.ervenyes_szoveg || null), minta: false,
+  });
+  return `<!doctype html>
+<html lang="hu"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>MOSAIC Head Spa ajándékkártya${d.elonezet ? ' – előnézet' : ''}</title>
+<style>
+${K.betuCss(d.bazis)}
+${K.CSS}
+@page{size:A4 portrait;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#e9e3d7;color:#2b2b2b;font:15px/1.55 "Helvetica Neue",Arial,Helvetica,sans-serif;padding:24px 12px 40px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.lap{width:min(100%,794px);margin:0 auto;box-shadow:0 10px 30px rgba(15,58,60,.25)}
+.jelzes{max-width:794px;margin:0 auto 14px;background:#f7efd9;border:1px solid #e8d9ad;border-radius:6px;padding:10px 14px;font-size:14px;text-align:center}
+.gombsor{text-align:center;margin:22px 0 0}
+#nyomtat{font:600 16px/1 "Helvetica Neue",Arial,sans-serif;background:#17403f;color:#fff;border:0;border-radius:4px;padding:14px 26px;cursor:pointer}
+#nyomtat:hover{background:#0f3130}
+.tipp{font-size:13px;color:#555;margin:12px auto 0;max-width:150mm}
+@media print{body{background:#fff;padding:0}.lap{width:210mm;box-shadow:none}.nem-nyomtat{display:none!important}}
+</style></head>
+<body><main>
+${d.elonezet ? '<p class="jelzes nem-nyomtat">Előnézet a szalonnak: a vevő a kiállítás után kapja meg a végleges kártyát.</p>' : ''}
+<section class="lap" aria-label="Ajándékkártya">${kartya}</section>
+<div class="gombsor nem-nyomtat">
+<button type="button" id="nyomtat">Nyomtatás / Mentés PDF-ként</button>
+<p class="tipp">Tipp: a nyomtatási ablakban a „Mentés PDF-ként” célt választva PDF-et kapsz, amit e-mailben is továbbküldhetsz. A kódot az online időpontfoglalásnál (mosaicheadspa.hu/idpontfoglalas) add meg. Nyomtatáskor kapcsold be a háttérszínek / háttérgrafika nyomtatását.</p>
+</div>
+</main>
+<script>${NYOMTAT_JS}</script>
+</body></html>`;
+}
+
 export function kartyaOldal(d) {
   const bazis = esc(d.bazis);
   const nev = String(d.nev || '').trim() || 'Neked';

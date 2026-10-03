@@ -6,8 +6,10 @@
 //   SelectedProductPanel, Checkout + OrderSummary, PaymentState (feldolgozas/hiba),
 //   PurchaseSuccess, Personalization, FinalOrderHub.
 //
-// Allapotok:  bongeszes -> kivalasztva -> fizetes -> feldolgozas -> (hiba -> fizetes) | siker
-//             siker -> szemelyre -> osszegzo        (nincs kosar, nincs kulon termekoldal)
+// Allapotok:  bongeszes -> kivalasztva -> [tervezo (csak otthon nyomtatott kartya)] -> fizetes -> feldolgozas -> (hiba -> fizetes) | siker
+//             siker -> szemelyre (csak szemelyes atvetelnel) -> osszegzo        (nincs kosar, nincs kulon termekoldal)
+// A termek kivalasztasakor kezeles-bemutato ablak nyilik; a fizetes elott az atvetel modjat is valasztja a vevo, az otthon
+// nyomtatott kartyat a mini szemelyre szabo (dizajn + foto + idezet) testre szabja.
 //
 // A PURCHASE esemeny KIZAROLAG akkor megy ki, ha a SZERVER a Stripe-tol visszakerdezve
 // "fizetve"-t mond (GET /api/ajandek/rendeles). Stripe-kattintas, atutalasi igeny,
@@ -16,16 +18,18 @@
   'use strict';
   var A = window.AJANDEK_ADAT;
   if (!A) { return; }
+  var KT = window.AJANDEK_KARTYA || null;
 
   var API = '/api/ajandek/';
   var TAROLO = 'ah_v1';
   var ATTR_KULCSOK = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'gclid', 'fbclid', 'ttclid'];
   var ATMENETEK = {
     bongeszes: ['kivalasztva'],
-    kivalasztva: ['bongeszes', 'kivalasztva', 'fizetes'],
-    fizetes: ['kivalasztva', 'feldolgozas'],
+    kivalasztva: ['bongeszes', 'kivalasztva', 'tervezo', 'fizetes'],
+    tervezo: ['kivalasztva', 'tervezo', 'fizetes'],
+    fizetes: ['kivalasztva', 'tervezo', 'feldolgozas'],
     feldolgozas: ['siker', 'hiba', 'fizetes'],
-    hiba: ['fizetes', 'kivalasztva', 'feldolgozas'],
+    hiba: ['fizetes', 'kivalasztva', 'tervezo', 'feldolgozas'],
     siker: ['szemelyre', 'osszegzo'],
     szemelyre: ['osszegzo'],
     osszegzo: []
@@ -78,6 +82,7 @@
     pin: '<path d="M12 21s6.5-5.6 6.5-11a6.5 6.5 0 0 0-13 0c0 5.4 6.5 11 6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
     phone: '<path d="M6.5 4h3l1.5 4-2 1.3a10 10 0 0 0 5.7 5.7L16 13l4 1.5v3a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 4.5 6.2 2 2 0 0 1 6.5 4z"/>',
     card: '<rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M3.5 10.5h17M7 15h4"/>',
+    camera: '<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.2-2h6.6l1.2 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.4"/>',
     printer: '<path d="M7 9V4.5h10V9"/><path d="M7 17H5a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 5 9h14a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 19 17h-2"/><rect x="7" y="13.5" width="10" height="6.5" rx=".8"/>'
   };
   function ikonKitolt(span, nev) {
@@ -156,14 +161,19 @@
     folyamatban: false,     // dupla beküldés ellen
     elemKesz: false,
     fizMod: null,
-    utanAllapot: tar.utan_allapot || null
+    utanAllapot: tar.utan_allapot || null,
+    atvetel: tar.atvetel === 'szemelyesen' ? 'szemelyesen' : 'otthon', // hogyan veszi at a kartyat (a fizetes elott valasztja)
+    tervezo: ujTervezo(tar.tervezo),                                  // a mini szemelyre szabo adatai
+    fotoLehet: false                                                  // a szerver /beallitas jelzi: van-e foto-tarolo (KV)
   };
 
   function ment() {
     tarolas.ir({
       v: 1, variant_id: S.variant.variant_id, termek: S.termek, finder: S.finder, urlap: S.urlap,
       attr: S.attr, pi: S.pi, cs: S.cs, rt: S.rt, csak_olvas: S.csakOlvas, fizetes_inditva: S.fizetesInditva,
-      utan_allapot: S.utanAllapot, fizetve_ido: S.fizetveIdo
+      utan_allapot: S.utanAllapot, fizetve_ido: S.fizetveIdo,
+      atvetel: S.atvetel,
+      tervezo: { tema: S.tervezo.tema, idezet: S.tervezo.idezet, nev: S.tervezo.nev, fotoId: S.tervezo.fotoId, fotoPoz: S.tervezo.fotoPoz, kihagyva: S.tervezo.kihagyva }
     });
   }
 
@@ -344,7 +354,7 @@
     t.tartalom.forEach(function (sor) { lista.appendChild(listaSor(sor)); });
     $('ah-kiv-ar').textContent = A.arSzoveg(t.ar_ft);
     // "Perceken belul" csak garantalt teljesites mellett: a szerver /beallitas mondja meg (azonnali_kartya)
-    $('ah-kiv-kezbesites').textContent = S.azonnali ? 'Perceken belül az e-mailedben.' : 'Sikeres fizetés után e-mailben kapod meg.';
+    atvetelRender();
   }
   function osszesitoRender() {
     var t = termek(S.termek);
@@ -356,6 +366,9 @@
     var ar = A.arSzoveg(t.ar_ft);
     $('ah-osszesito-ar').textContent = ar;
     $('ah-osszesito-fej-ar').textContent = ar;
+    var atv = atvetelOpcio().cim;
+    if (S.atvetel === 'otthon' && !S.tervezo.kihagyva) atv += ' (személyre szabott: ' + temaNev(S.tervezo.tema) + ')';
+    $('ah-osszesito-atvetel').textContent = atv;
     $('ah-fizet-gomb').textContent = S.folyamatban ? 'Feldolgozzuk a fizetésed…' : 'Biztonságos fizetés — ' + ar;
   }
 
@@ -379,6 +392,331 @@
     abl.addEventListener('click', function (ev) { if (ev.target === abl) lezar(); });
     abl.addEventListener('close', leall);
   }
+
+  // ---------------------------------------------------------------- kezeles-bemutato ablak (a termek kivalasztasakor nyilik)
+  var kezelesId = null;
+  function kezelesMegnyit(id) {
+    var t = termek(id), abl = $('ah-kezeles-ablak');
+    if (!t || !abl) { kivalaszt(id); return; }
+    var k = t.kezeles || {};
+    kezelesId = id;
+    $('ah-kez-badge').textContent = t.badge || '';
+    $('ah-kez-cim').textContent = t.nev;
+    $('ah-kez-osszefoglalo').textContent = t.osszefoglalo || '';
+    var leiras = uresit($('ah-kez-leiras'));
+    (k.leiras && k.leiras.length ? k.leiras : [t.leiras]).forEach(function (sor) { leiras.appendChild(h('p', { text: sor })); });
+    var lista = uresit($('ah-kez-lepesek'));
+    (k.lepesek || []).forEach(function (sor) { lista.appendChild(h('li', null, ikonSpan('check'), h('span', { text: sor }))); });
+    $('ah-kez-ar').textContent = A.arSzoveg(t.ar_ft);
+    var media = uresit($('ah-kez-media'));
+    var poszter = (k.video && k.video.poster) || (t.vizual && t.vizual.src) || null;
+    if (k.video && k.video.src) {
+      media.appendChild(h('video', { controls: true, playsinline: true, preload: 'none', poster: poszter ? kepUt(poszter) : null, 'aria-label': t.nev + ': a kezelés videója' }, h('source', { src: k.video.src, type: 'video/mp4' })));
+    } else {
+      // a video a tulajdonos feltoltese (TERMEKEK.*.kezeles.video): addig a termek fotoja es egy jelzes
+      media.appendChild(h('figure', { class: 'ah-kez-hamarosan' },
+        poszter ? h('img', { src: kepUt(poszter), alt: (t.vizual && t.vizual.alt) || '', loading: 'lazy', decoding: 'async' }) : null,
+        h('figcaption', { text: 'A kezelés videója hamarosan itt lesz.' })));
+    }
+    if (abl.showModal) { if (!abl.open) abl.showModal(); } else abl.setAttribute('open', '');
+  }
+  function kezelesBezar() {
+    var abl = $('ah-kezeles-ablak');
+    if (!abl) return;
+    Array.prototype.forEach.call(abl.querySelectorAll('video'), function (v) { try { v.pause(); } catch (e) { /* nem baj */ } });
+    if (abl.close) abl.close(); else abl.removeAttribute('open');
+  }
+  function kezelesBekot() {
+    var abl = $('ah-kezeles-ablak');
+    if (!abl) return;
+    $('ah-kez-bezar').addEventListener('click', kezelesBezar);
+    $('ah-kez-masik').addEventListener('click', kezelesBezar);
+    $('ah-kez-valaszt').addEventListener('click', function () { var id = kezelesId; kezelesBezar(); if (id) kivalaszt(id); });
+    abl.addEventListener('click', function (ev) { if (ev.target === abl) kezelesBezar(); });
+    abl.addEventListener('close', function () { Array.prototype.forEach.call(abl.querySelectorAll('video'), function (v) { try { v.pause(); } catch (e) { /* nem baj */ } }); });
+  }
+
+  // ---------------------------------------------------------------- atvetel: hogyan veszi at a kartyat (a fizetes elott)
+  var ATVETEL_INFO = {
+    otthon: 'Otthon kinyomtatva személyre szabhatod: a következő lépésben designt választhatsz, fotót tölthetsz fel, és idézetet írhatsz rá. A személyre szabott design csak az otthon kinyomtatott kártyára vonatkozik.',
+    szemelyesen: 'A szalonban (1023 Budapest, Bécsi út 2.) díszborítékban, papír alapon veheted át. A papír kártya a MOSAIC saját designjával készül, a fotós, designválasztós személyre szabás csak az otthon kinyomtatott kártyához tartozik. A megajándékozott nevét és az üzenetet a vásárlás után megadhatod.'
+  };
+  function atvetelOpcio() {
+    for (var i = 0; i < A.ATVETELEK.length; i++) if (A.ATVETELEK[i].id === S.atvetel) return A.ATVETELEK[i];
+    return A.ATVETELEK[0];
+  }
+  function atvetelRender() {
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="atvetel"]'), function (r) { r.checked = r.value === S.atvetel; });
+    $('ah-atvetel-info').textContent = ATVETEL_INFO[S.atvetel] || '';
+    var gombSzoveg = $('ah-tovabb-gomb').querySelector('span');
+    if (gombSzoveg) gombSzoveg.textContent = S.atvetel === 'otthon' ? 'Tovább a személyre szabáshoz' : 'Tovább a fizetéshez';
+    $('ah-kiv-kezbesites').textContent = S.atvetel === 'otthon'
+      ? (S.azonnali ? 'Perceken belül az e-mailedben.' : 'Sikeres fizetés után e-mailben kapod meg, nyomtatható formában.')
+      : 'Papír alapon, a szalonban veheted át, amint elkészült.';
+  }
+  function atvetelValaszt(id) {
+    if (!A.ATVETELEK.some(function (x) { return x.id === id; })) return;
+    S.atvetel = id;
+    ment();
+    atvetelRender();
+  }
+  function tovabbGomb() {
+    if (S.atvetel === 'otthon' && window.AJANDEK_KARTYA) tervezoNyit(); else fizetesre();
+  }
+
+  // ---------------------------------------------------------------- mini szemelyre szabo (csak az otthon kinyomtatott kartyahoz)
+  // Dizajn + foto + idezet + nev, elo elonezettel. A kartya HTML-jet/CSS-et a szerver is ugyanebbol (ajandek-kartya.js) rajzolja,
+  // igy az elonezet = a kinyomtatott kartya. A fotot a "Tovabb" gomb feltolti (POST /api/ajandek/foto), a fizetes csak az azonositot kuldi.
+  var tervezoKesz = false;
+  var fotoBlob = null;      // a feldolgozott (<= 1600 px) JPEG
+  var fotoUrl = null;       // blob: URL az elonezethez
+  var fotoAdat = null;      // ugyanez dataURL-ben (sessionStorage / feltoltes)
+  function ujTervezo(m) {
+    m = (m && typeof m === 'object') ? m : {};
+    return {
+      tema: KT && KT.tema(m.tema) ? m.tema : (KT ? KT.TEMAK[0].id : 'smaragd'),
+      idezet: String(m.idezet || '').slice(0, 160),
+      nev: String(m.nev || '').slice(0, 40),
+      fotoId: typeof m.fotoId === 'string' ? m.fotoId : null,
+      fotoPoz: KT ? KT.pozOlvas(KT.pozIr(m.fotoPoz)) : { x: 50, y: 50, z: 1 },
+      kihagyva: !!m.kihagyva
+    };
+  }
+  function fotoTarolasOlvas() { try { return sessionStorage.getItem('ah_foto') || null; } catch (e) { return null; } }
+  function fotoTarolasIr(adat) {
+    try { if (adat) sessionStorage.setItem('ah_foto', adat); else sessionStorage.removeItem('ah_foto'); } catch (e) { /* tul nagy / privat ablak: a foto csak ebben az oldalbetoltesben el */ }
+  }
+  function fotoBeallit(blob, adat) {
+    if (fotoUrl) { try { URL.revokeObjectURL(fotoUrl); } catch (e) { /* nem baj */ } }
+    fotoBlob = blob || null;
+    fotoUrl = blob ? URL.createObjectURL(blob) : null;
+    fotoAdat = adat || null;
+  }
+  function fotoVisszaallit() {
+    var adat = fotoTarolasOlvas();
+    if (!adat || fotoBlob) return Promise.resolve();
+    return fetch(adat).then(function (r) { return r.blob(); }).then(function (b) { fotoBeallit(b, adat); }).catch(function () { fotoTarolasIr(null); });
+  }
+  function blobAdatba(blob) {
+    return new Promise(function (ok, rossz) {
+      var fr = new FileReader();
+      fr.onload = function () { ok(String(fr.result)); };
+      fr.onerror = function () { rossz(new Error('olvasas')); };
+      fr.readAsDataURL(blob);
+    });
+  }
+  function kepDekodolImg(fajl) {
+    return new Promise(function (ok, rossz) {
+      var u = URL.createObjectURL(fajl), i = new Image();
+      i.onload = function () { URL.revokeObjectURL(u); ok(i); };
+      i.onerror = function () { URL.revokeObjectURL(u); rossz(new Error('kep')); };
+      i.src = u;
+    });
+  }
+  function kepDekodol(fajl) {
+    if (window.createImageBitmap) return createImageBitmap(fajl, { imageOrientation: 'from-image' }).catch(function () { return kepDekodolImg(fajl); });
+    return kepDekodolImg(fajl);
+  }
+  function fotoBetolt(fajl) {
+    hibaMezo('ah-foto-hiba', '');
+    if (!fajl) return;
+    if (!/^image\//.test(fajl.type || '') && !/\.(jpe?g|png|webp|heic|heif)$/i.test(fajl.name || '')) { hibaMezo('ah-foto-hiba', 'Ez nem képfájl. Válassz egy JPG vagy PNG képet.'); return; }
+    if (fajl.size > 30 * 1024 * 1024) { hibaMezo('ah-foto-hiba', 'Ez a kép túl nagy (legfeljebb 30 MB).'); return; }
+    kepDekodol(fajl).then(function (forras) {
+      var w = forras.naturalWidth || forras.width, hh = forras.naturalHeight || forras.height;
+      var sk = Math.min(1, 1600 / Math.max(w, hh));
+      var cv = document.createElement('canvas');
+      cv.width = Math.max(1, Math.round(w * sk)); cv.height = Math.max(1, Math.round(hh * sk));
+      var cx = cv.getContext('2d');
+      cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height);
+      cx.drawImage(forras, 0, 0, cv.width, cv.height);
+      if (forras.close) forras.close();
+      return new Promise(function (ok, rossz) { cv.toBlob(function (b) { if (b) ok(b); else rossz(new Error('blob')); }, 'image/jpeg', 0.86); });
+    }).then(function (blob) {
+      fotoBeallit(blob, null);
+      S.tervezo.fotoId = null;
+      S.tervezo.fotoPoz = { x: 50, y: 50, z: 1 };
+      tervezoRender();
+      ment();
+      return blobAdatba(blob).then(function (adat) { fotoAdat = adat; fotoTarolasIr(adat); });
+    }).catch(function () { hibaMezo('ah-foto-hiba', 'A képet nem sikerült megnyitni. Próbálj másik képet (JPG vagy PNG).'); });
+  }
+  function fotoTorol() {
+    fotoBeallit(null, null);
+    fotoTarolasIr(null);
+    S.tervezo.fotoId = null;
+    S.tervezo.fotoPoz = { x: 50, y: 50, z: 1 };
+    $('ah-foto-fajl').value = '';
+    tervezoRender();
+    ment();
+  }
+  function fotoFeltolt() {
+    var adat = fotoAdat ? Promise.resolve(fotoAdat) : blobAdatba(fotoBlob);
+    return adat.then(function (d) { return api('foto', { json: { kep: d } }); }).then(function (v) {
+      if (v.status === 200 && v.adat && v.adat.id) { S.tervezo.fotoId = v.adat.id; ment(); return; }
+      var e = new Error('foto'); e.statusz = v.status; throw e;
+    });
+  }
+
+  function kartyaAdat() {
+    var t = termek(S.termek) || {};
+    return {
+      tema: S.tervezo.tema, idezet: S.tervezo.idezet, nev: S.tervezo.nev, fotoSrc: fotoUrl, fotoPoz: S.tervezo.fotoPoz,
+      felirat: t.kartya_felirat, ertek: t.ar_ft ? A.arSzoveg(t.ar_ft) : '', kod: null, ervenyes: null, minta: true
+    };
+  }
+  function temaMiniek() {
+    if (!KT) return;
+    KT.TEMAK.forEach(function (t) {
+      var kep = document.querySelector('[data-tema-gomb="' + t.id + '"] .ah-tema-kep');
+      if (!kep) return;
+      var adat = kartyaAdat(); adat.tema = t.id;
+      kep.innerHTML = KT.html(adat);
+    });
+  }
+  function tervezoRender() {
+    if (!KT) return;
+    $('ah-ak-elonezet').innerHTML = KT.html(kartyaAdat());
+    var racs = $('ah-tema-racs');
+    if (!tervezoKesz) {
+      uresit(racs);
+      KT.TEMAK.forEach(function (t) {
+        racs.appendChild(h('button', { type: 'button', class: 'ah-tema', role: 'radio', 'data-tema-gomb': t.id, 'aria-checked': 'false', 'aria-label': t.nev + ' design' },
+          h('span', { class: 'ah-tema-kep' }), h('span', { class: 'ah-tema-nev', text: t.nev })));
+      });
+      tervezoKesz = true;
+    }
+    Array.prototype.forEach.call(racs.querySelectorAll('[data-tema-gomb]'), function (b) {
+      var az = b.getAttribute('data-tema-gomb') === S.tervezo.tema;
+      b.setAttribute('aria-checked', az ? 'true' : 'false');
+      b.classList.toggle('ah-tema-valasztott', az);
+    });
+    temaMiniek();
+    var van = !!fotoUrl;
+    $('ah-foto-blokk').hidden = !S.fotoLehet;
+    $('ah-foto-torol').hidden = !van;
+    $('ah-zoom-sor').hidden = !van;
+    $('ah-zoom').value = String(S.tervezo.fotoPoz.z);
+    $('ah-foto-gomb-szoveg').textContent = van ? 'Másik fotó választása' : 'Fotó feltöltése';
+    $('ah-ak-elonezet').classList.toggle('ah-foto-van', van);
+  }
+  function tervezoMezokTolt() {
+    $('ah-idezet').value = S.tervezo.idezet;
+    $('ah-idezet-db').textContent = String(S.tervezo.idezet.length);
+    $('ah-tervezo-nev').value = S.tervezo.nev;
+  }
+  function tervezoNyit() {
+    if (!S.termek) return;
+    if (allapotba('tervezo')) {
+      try { history.pushState({ ah: 'tervezo' }, '', location.pathname + location.search + '#szemelyre-szabas'); } catch (e) { /* nem baj */ }
+    }
+  }
+  function tervezoKihagy() {
+    S.tervezo.kihagyva = true;
+    ment();
+    fizetesre();
+  }
+  function tervezoTovabb() {
+    var tv = S.tervezo;
+    tv.idezet = ($('ah-idezet').value || '').trim().slice(0, KT.IDEZET_MAX);
+    tv.nev = ($('ah-tervezo-nev').value || '').trim().slice(0, KT.NEV_MAX);
+    tv.kihagyva = !(fotoUrl || tv.idezet || tv.nev); // semmit nem adott meg: a MOSAIC alap kartyaja
+    hibaMezo('ah-tervezo-hiba', '');
+    var gomb = $('ah-tervezo-tovabb'), felirat = $('ah-tervezo-tovabb-szoveg');
+    function vissza() { gomb.disabled = false; felirat.textContent = 'Tovább a fizetéshez'; }
+    if (fotoUrl && !tv.fotoId) {
+      gomb.disabled = true; felirat.textContent = 'Fotó feltöltése…';
+      fotoFeltolt().then(function () { vissza(); ment(); fizetesre(); }).catch(function (e) {
+        vissza();
+        hibaMezo('ah-tervezo-hiba', e && e.statusz === 503
+          ? 'A fotó feltöltése most nem érhető el. Töröld a fotót, vagy próbáld újra később.'
+          : 'A fotót nem sikerült feltölteni. Próbáld újra, vagy töröld a fotót és folytasd nélküle.');
+      });
+      return;
+    }
+    ment();
+    fizetesre();
+  }
+  // A fotokivagas: a kartyan a fotohely (.ak-ablak) tartalma object-position + scale; a huzas a tartalmat koveti
+  var huzas = null;
+  function fotoStilus() {
+    var p = S.tervezo.fotoPoz;
+    Array.prototype.forEach.call(document.querySelectorAll('#ah-ak-elonezet .ak-ablak img'), function (i) {
+      i.style.objectPosition = p.x + '% ' + p.y + '%';
+      i.style.transformOrigin = p.x + '% ' + p.y + '%';
+      i.style.transform = 'scale(' + p.z + ')';
+    });
+  }
+  function tervezoBekot() {
+    var doboz = $('ah-ak-elonezet');
+    doboz.addEventListener('pointerdown', function (ev) {
+      var abl = ev.target.closest ? ev.target.closest('.ak-ablak') : null;
+      var kep = abl && abl.querySelector('img');
+      if (!kep || !fotoUrl) return;
+      var r = abl.getBoundingClientRect();
+      huzas = { x: ev.clientX, y: ev.clientY, fw: r.width, fh: r.height, nw: kep.naturalWidth || 1, nh: kep.naturalHeight || 1, p0: { x: S.tervezo.fotoPoz.x, y: S.tervezo.fotoPoz.y } };
+      try { doboz.setPointerCapture(ev.pointerId); } catch (e) { /* nem baj */ }
+      doboz.classList.add('ah-huz');
+      ev.preventDefault();
+    });
+    doboz.addEventListener('pointermove', function (ev) {
+      if (!huzas) return;
+      var q = huzas, z = S.tervezo.fotoPoz.z;
+      var s = Math.max(q.fw / q.nw, q.fh / q.nh), iw = q.nw * s, ih = q.nh * s;
+      var dxk = z * iw - q.fw, dyk = z * ih - q.fh; // a nagyitott kep teljes "mozgastere"
+      var nx = dxk > 1 ? q.p0.x - (ev.clientX - q.x) * 100 / dxk : q.p0.x;
+      var ny = dyk > 1 ? q.p0.y - (ev.clientY - q.y) * 100 / dyk : q.p0.y;
+      S.tervezo.fotoPoz.x = Math.min(100, Math.max(0, nx));
+      S.tervezo.fotoPoz.y = Math.min(100, Math.max(0, ny));
+      fotoStilus();
+    });
+    function vege() {
+      if (!huzas) return;
+      huzas = null;
+      doboz.classList.remove('ah-huz');
+      ment();
+      temaMiniek();
+    }
+    doboz.addEventListener('pointerup', vege);
+    doboz.addEventListener('pointercancel', vege);
+
+    $('ah-tema-racs').addEventListener('click', function (ev) {
+      var b = ev.target.closest ? ev.target.closest('[data-tema-gomb]') : null;
+      if (!b) return;
+      S.tervezo.tema = b.getAttribute('data-tema-gomb');
+      ment();
+      tervezoRender();
+    });
+    $('ah-foto-gomb').addEventListener('click', function () { $('ah-foto-fajl').click(); });
+    $('ah-foto-fajl').addEventListener('change', function () { fotoBetolt(this.files && this.files[0]); });
+    $('ah-foto-torol').addEventListener('click', fotoTorol);
+    $('ah-zoom').addEventListener('input', function () {
+      S.tervezo.fotoPoz.z = Math.min(3, Math.max(1, Number(this.value) || 1));
+      fotoStilus();
+    });
+    $('ah-zoom').addEventListener('change', function () { ment(); temaMiniek(); });
+    var idozito = null;
+    $('ah-idezet').addEventListener('input', function () {
+      S.tervezo.idezet = (this.value || '').slice(0, KT.IDEZET_MAX);
+      $('ah-idezet-db').textContent = String(S.tervezo.idezet.length);
+      clearTimeout(idozito);
+      idozito = setTimeout(function () { ment(); tervezoRender(); }, 120);
+    });
+    $('ah-tervezo-nev').addEventListener('input', function () {
+      S.tervezo.nev = (this.value || '').slice(0, KT.NEV_MAX);
+      clearTimeout(idozito);
+      idozito = setTimeout(function () { ment(); tervezoRender(); }, 120);
+    });
+    $('ah-tervezo-tovabb').addEventListener('click', tervezoTovabb);
+    $('ah-tervezo-kihagy').addEventListener('click', tervezoKihagy);
+    $('ah-tervezo-vissza').addEventListener('click', function () {
+      if (history.state && history.state.ah === 'tervezo') history.back(); else allapotba('kivalasztva');
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="atvetel"]'), function (r) {
+      r.addEventListener('change', function () { if (this.checked) atvetelValaszt(this.value); });
+    });
+  }
+  function temaNev(id) { var t = KT && KT.tema(id); return t ? t.nev : ''; }
 
   // ---------------------------------------------------------------- Checkout
   var stripeAdapter = { stripe: null, elements: null, elem: null, betoltes: null, osszeg: null };
@@ -491,8 +829,17 @@
     return {
       termek: S.termek, email: o.email, nev: o.nev, iranyitoszam: o.iranyitoszam, varos: o.varos, cim: o.cim,
       ceges: (o.ceges_nev || o.ceges_adoszam) ? { nev: o.ceges_nev, adoszam: o.ceges_adoszam } : null,
-      attr: Object.assign({}, kozosParam(), { oldal: S.attr.oldal })
+      attr: Object.assign({}, kozosParam(), { oldal: S.attr.oldal }),
+      atvetel: S.atvetel,
+      szemelyre: szemelyreMezok()
     };
+  }
+  // az otthon nyomtatott kartya szemelyre szabasa (ha a vevo adott meg valamit): a szerver ezeket a metadata-ba irja
+  function szemelyreMezok() {
+    if (S.atvetel !== 'otthon' || S.tervezo.kihagyva || !KT) return null;
+    var tv = S.tervezo, m = { tema: tv.tema, idezet: tv.idezet, nev: tv.nev };
+    if (tv.fotoId) { m.foto_id = tv.fotoId; m.foto_poz = KT.pozIr(tv.fotoPoz); }
+    return m;
   }
 
   function api(utvonal, opciok) {
@@ -557,6 +904,13 @@
       if (e && e.szerver && e.szerver.status === 429) uzenet = 'Túl sok próbálkozás történt. Kérjük, várj pár percet, és próbáld újra, vagy hívj minket: 06 20 247 4444.';
       if (e && e.szerver && e.szerver.adat && e.szerver.adat.mezok) {
         S.folyamatban = false; allapotba('fizetes');
+        var mz = e.szerver.adat.mezok;
+        var szHiba = Object.keys(mz).filter(function (k) { return k === 'foto' || k === 'atvetel' || k.indexOf('szemelyre') === 0; });
+        if (szHiba.length) {
+          if (mz.foto || mz['szemelyre.foto']) { S.tervezo.fotoId = null; ment(); }
+          hibaMezo('ah-fizetes-hiba', mz.foto || mz['szemelyre.foto'] || 'A személyre szabott kártya adatai nem érvényesek: lépj vissza a személyre szabáshoz, és ellenőrizd őket.');
+          return;
+        }
         var latszik = false;
         Object.keys(e.szerver.adat.mezok).forEach(function (k) {
           var az = k.indexOf('ceges') === 0 ? 'ah-ceges-hiba' : 'ah-' + k + '-hiba';
@@ -653,6 +1007,7 @@
     panel.appendChild(h('h3', { text: 'Átutalással fizetek' }));
     panel.appendChild(h('p', { class: 'ah-halk ah-kicsi', text: 'Az ajándékkártyát az utalás beérkezése után e-mailben küldjük. Két adatot még kérünk:' }));
     var tel = h('input', { id: 'ah-atu-tel', type: 'tel', autocomplete: 'tel', inputmode: 'tel', maxlength: '25', placeholder: '+36 20 123 4567', required: true });
+    var otthon = S.atvetel === 'otthon'; // otthon nyomtatott kartyanal a nev / uzenet a szemelyre szabobol jon
     var nev = h('input', { id: 'ah-atu-nev', type: 'text', maxlength: '80', autocomplete: 'off', placeholder: 'Anna' });
     var uzenet = h('textarea', { id: 'ah-atu-uzenet', maxlength: '300', rows: '3', placeholder: 'Írd ide az üzenetet a kártyára…' });
     var hibaP = h('p', { class: 'ah-mezohiba', id: 'ah-atu-hiba', role: 'alert', hidden: !hiba, text: hiba || '' });
@@ -662,8 +1017,8 @@
     }
     var urlap = h('div', { class: 'ah-atu-urlap' },
       mezo('Telefonszámod *', 'ah-atu-tel', tel, 'A számla és az ajándékkártya kiállításához kell, csak a szalon látja.'),
-      mezo('Kinek szól az ajándék? (nem kötelező)', 'ah-atu-nev', nev, 'Ez a név kerül a kártyára.'),
-      mezo('Üzenet a kártyára (nem kötelező)', 'ah-atu-uzenet', uzenet),
+      otthon ? null : mezo('Kinek szól az ajándék? (nem kötelező)', 'ah-atu-nev', nev, 'Ez a név kerül a kártyára.'),
+      otthon ? null : mezo('Üzenet a kártyára (nem kötelező)', 'ah-atu-uzenet', uzenet),
       hibaP, kuldGomb);
     panel.appendChild(urlap);
     kuldGomb.addEventListener('click', function () {
@@ -673,12 +1028,11 @@
       var kerelem = szamlazasiAdat(o);
       kerelem['bot-field'] = $('ah-csapda').value;
       kerelem.telefon = tel.value.trim();
-      kerelem.megajandekozott = nev.value.trim();
-      kerelem.uzenet = uzenet.value.trim();
+      if (!otthon) { kerelem.megajandekozott = nev.value.trim(); kerelem.uzenet = uzenet.value.trim(); }
       api('atutalas', { json: kerelem }).then(function (v) {
         if (v.status === 400 && v.adat && v.adat.mezok) {
           var m = v.adat.mezok;
-          throw Object.assign(new Error('ervenytelen'), { uzenet: m.telefon || m.uzenet || m.megajandekozott || 'Ellenőrizd a megadott adatokat.' });
+          throw Object.assign(new Error('ervenytelen'), { uzenet: m.telefon || m.uzenet || m.megajandekozott || m.foto || 'Ellenőrizd a megadott adatokat.' });
         }
         if (v.status !== 200 || !v.adat.ok) throw new Error('atutalas');
         atutalasKesz(panel, o, v.adat.utalas || {});
@@ -711,7 +1065,7 @@
     purchaseMeres(r);
     S.fizetveIdo = Date.now();
     try { if (location.hash === '#fizetes') history.replaceState({}, '', location.pathname + location.search); } catch (e) { /* nem baj */ }
-    S.utanAllapot = S.utanAllapot === 'osszegzo' ? 'osszegzo' : 'szemelyre';
+    S.utanAllapot = (S.utanAllapot === 'osszegzo' || S.atvetel === 'otthon') ? 'osszegzo' : 'szemelyre';
     allapotba('siker', { eroltet: true });
     if (S.utanAllapot === 'osszegzo') allapotba('osszegzo', { eroltet: true });
     else allapotba('szemelyre');
@@ -802,8 +1156,6 @@
     var al = uresit($('ah-sz-alkalom'));
     al.appendChild(h('option', { value: '', text: 'Válassz alkalmat' }));
     A.ALKALMAK.forEach(function (x) { al.appendChild(h('option', { value: x.id, text: x.cim })); });
-    var at = uresit($('ah-sz-atadas'));
-    A.ATADASOK.forEach(function (x) { at.appendChild(h('option', { value: x.id, text: x.cim })); });
   }
   function szemelyreMent(ev) {
     ev.preventDefault();
@@ -813,7 +1165,7 @@
     hibaMezo('ah-sz-hiba', '');
     api('szemelyre', { json: {
       pi: S.pi, cs: S.cs, nev: ($('ah-sz-nev').value || '').trim(), uzenet: ($('ah-sz-uzenet').value || '').trim(),
-      alkalom: $('ah-sz-alkalom').value, atadas: $('ah-sz-atadas').value
+      alkalom: $('ah-sz-alkalom').value, atadas: S.atvetel === 'otthon' ? 'nyomtatott' : 'fizikai'
     } }).then(function (v) {
       if (v.status !== 200 || !v.adat.allapot) throw new Error('szemelyre');
       S.rendeles = v.adat;
@@ -831,6 +1183,7 @@
     clearTimeout(figyelIdozito); figyelSzamlalo = 0;
     S.pi = null; S.cs = null; S.rt = null; S.csakOlvas = false; S.fizetesInditva = null;
     S.rendeles = null; S.utanAllapot = null; S.fizetveIdo = 0; S.termek = null; S.folyamatban = false;
+    S.atvetel = 'otthon'; S.tervezo = ujTervezo(null); fotoBeallit(null, null); fotoTarolasIr(null);
     // a kifizetett fizetoelem helyett ujat epitunk (tiszta kartyamezok)
     try { if (stripeAdapter.elem && stripeAdapter.elem.destroy) stripeAdapter.elem.destroy(); } catch (e) { /* nem baj */ }
     stripeAdapter.elem = null; stripeAdapter.elements = null; stripeAdapter.osszeg = null; S.elemKesz = false;
@@ -847,6 +1200,8 @@
     metaSor(dl, 'Ajándékkártya', r.kartya_cim || (t && t.kartya_cim) || '');
     metaSor(dl, 'Összeg', A.arSzoveg(r.osszeg));
     metaSor(dl, 'Rendelés', '#' + r.rendeles_id);
+    if (r.atvetel) metaSor(dl, 'Átvétel', r.atvetel === 'szemelyesen' ? 'Személyesen, a szalonban' : 'E-mailben, otthon nyomtatva');
+    if (r.szemelyre && r.szemelyre.tema) metaSor(dl, 'Személyre szabott design', temaNev(r.szemelyre.tema) + (r.szemelyre.foto ? ', saját fotóval' : ''));
     if (r.szemelyre && r.szemelyre.nev) metaSor(dl, 'Megajándékozott', r.szemelyre.nev);
     var ervenyes = r.kartya && ervenyesSzoveg(r.kartya.ervenyes_ig);
     metaSor(dl, 'Érvényesség', ervenyes || A.ERVENYESSEG_HONAP + ' hónapig');
@@ -880,6 +1235,10 @@
     var utanNezet = a === 'siker' || a === 'szemelyre' || a === 'osszegzo';
     $('ah-utan').hidden = !utanNezet;
     $('ah-vissza-gomb').hidden = !(a === 'fizetes' || a === 'hiba');
+    $('ah-vissza-gomb').innerHTML = '<span aria-hidden="true">←</span>&nbsp;' + (S.atvetel === 'otthon' && KT ? 'Vissza a személyre szabáshoz' : 'Másik élményt választok');
+    var tervNezet = a === 'tervezo';
+    $('ah-tervezo').hidden = !tervNezet;
+    if (tervNezet) { if (elozoAllapot !== 'tervezo') tervezoMezokTolt(); tervezoRender(); }
 
     // landing: kivalasztott panel
     var panel = $('ah-kivalasztott');
@@ -916,10 +1275,11 @@
     // fokusz es gorgetes az uj nezetre (nem a landing tetejere)
     if (elozoAllapot !== a) {
       if (a === 'fizetes' && (elozoAllapot === 'kivalasztva' || elozoAllapot === null)) { window.scrollTo(0, 0); setTimeout(function () { fokusz($('ah-fizetes-cim')); }, 30); }
+      if (a === 'tervezo') { window.scrollTo(0, 0); setTimeout(function () { fokusz($('ah-tervezo-cim')); }, 30); }
       if (a === 'hiba') { gorgess($('ah-hibasav'), 'center'); setTimeout(function () { fokusz($('ah-hibasav')); }, 30); }
       if (a === 'siker' || a === 'szemelyre') { if (elozoAllapot !== 'siker') { window.scrollTo(0, 0); setTimeout(function () { fokusz($('ah-siker-cim')); }, 30); } }
       if (a === 'osszegzo') { window.scrollTo(0, 0); setTimeout(function () { fokusz($('ah-osszegzo-cim')); }, 30); }
-      if (a === 'kivalasztva' && (elozoAllapot === 'fizetes' || elozoAllapot === 'hiba')) { setTimeout(function () { gorgess($('ah-kivalasztott'), 'center'); }, 30); }
+      if (a === 'kivalasztva' && (elozoAllapot === 'fizetes' || elozoAllapot === 'hiba' || elozoAllapot === 'tervezo')) { setTimeout(function () { gorgess($('ah-kivalasztott'), 'center'); }, 30); }
     }
     elozoAllapot = a;
   }
@@ -936,8 +1296,14 @@
     if (S.folyamatban) return;
     allapotba('kivalasztva');
   }
+  // a fizetesbol vissza: otthon nyomtatott kartyanal a szemelyre szabo, egyebkent a kivalasztott termek
+  function visszaElozo() {
+    if (S.folyamatban) return;
+    allapotba(S.atvetel === 'otthon' && KT ? 'tervezo' : 'kivalasztva');
+  }
   window.addEventListener('popstate', function () {
-    if (S.allapot === 'fizetes' || S.allapot === 'hiba') visszaKivalasztva();
+    if (S.allapot === 'fizetes' || S.allapot === 'hiba') visszaElozo();
+    else if (S.allapot === 'tervezo') allapotba('kivalasztva');
     else if (S.allapot === 'feldolgozas') { try { history.pushState({ ah: 'fizetes' }, '', location.pathname + location.search + '#fizetes'); } catch (e) { /* nem baj */ } }
   });
 
@@ -947,14 +1313,14 @@
       var c = ev.target.closest ? ev.target.closest('[data-finder],[data-valaszt],[data-valtas]') : null;
       if (!c) return;
       if (c.hasAttribute('data-finder')) finderValaszt(c.getAttribute('data-finder'));
-      else if (c.hasAttribute('data-valaszt')) kivalaszt(c.getAttribute('data-valaszt'));
+      else if (c.hasAttribute('data-valaszt')) kezelesMegnyit(c.getAttribute('data-valaszt'));
       else if (c.hasAttribute('data-valtas')) { var x = $(c.getAttribute('data-valtas')); x.hidden = !x.hidden; }
     });
-    $('ah-tovabb-gomb').addEventListener('click', fizetesre);
+    $('ah-tovabb-gomb').addEventListener('click', tovabbGomb);
     $('ah-masik-gomb').addEventListener('click', function () { S.termek = null; allapotba('bongeszes'); gorgess($('ah-termek-racs'), 'center'); });
     $('ah-vissza-gomb').addEventListener('click', function () {
       // a checkout-bejegyzest a bongeszo-elozmenyekbol is levesszuk (a popstate visz vissza a kivalasztott allapotba)
-      if (history.state && history.state.ah === 'fizetes') history.back(); else visszaKivalasztva();
+      if (history.state && history.state.ah === 'fizetes') history.back(); else visszaElozo();
     });
     $('ah-urlap').addEventListener('submit', fizetesBekuldes);
     $('ah-urlap').addEventListener('input', urlapMent);
@@ -971,6 +1337,8 @@
     $('ah-uj-vasarlas').addEventListener('click', ujVasarlas);
     $('ah-hero-cta').addEventListener('click', function (ev) { var f = $('ah-finder'); if (f) { ev.preventDefault(); gorgess(f, 'start'); } });
     vendegVideok();
+    kezelesBekot();
+    if (KT) tervezoBekot();
   }
 
   // ---------------------------------------------------------------- inditas / visszaallitas
@@ -981,6 +1349,7 @@
       S.publikusKulcs = b.publikus_kulcs || null;
       if (!S.publikusKulcs) S.mod = 'nincs';
       S.azonnali = !!b.azonnali_kartya;
+      S.fotoLehet = !!b.foto;
       if (S.mod === 'teszt') {
         document.body.appendChild(h('div', { class: 'ah-teszt-szalag', text: 'TESZT MÓD — nem valódi fizetés, nem valódi rendelés.' }));
       }
@@ -1070,6 +1439,8 @@
   function init() {
     // a statikus tartalom a config-bol (a komponensfa nem valtozik, csak a tartalom)
     ikonokKitolt(document);
+    if (KT && !document.getElementById('ah-ak-css')) { var st = document.createElement('style'); st.id = 'ah-ak-css'; st.textContent = KT.CSS; document.head.appendChild(st); }
+    fotoVisszaallit().then(function () { if (S.allapot === 'tervezo') tervezoRender(); });
     menuAktiv();
     heroRender();
     proofRender();
@@ -1081,6 +1452,7 @@
     render();
     beallitasBetolt().then(function () {
       if (S.allapot === 'kivalasztva') { panelRender(); stripeElokeszit(); }
+      if (S.allapot === 'tervezo') tervezoRender();
       if (S.allapot === 'fizetes' || S.allapot === 'hiba') fizetesiElemInit();
     });
     visszaallit();

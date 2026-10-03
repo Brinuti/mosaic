@@ -24,6 +24,10 @@
 //                      charge.dispute.created     -> ugyanaz (vita / chargeback)
 //                    A Stripe-ban a webhook-vegpontot MINDHAROM esemenyre elo kell fizetni.
 //   POST atutalas    atutalasos igeny (NEM vasarlas): utalasi adatok levelben
+//   POST foto        a szemelyre szabott (otthon nyomtatott) kartya fotoja: JPEG (data URL), <= 700 KB -> { id };
+//                    a kepet a Cloudflare KV (AJANDEK_FOTOK) tarolja; a /fizetes es az /atutalas csak az id-t kapja
+//   GET  foto        a kartyan megjeleno fotó (id + HMAC-token; a kartya-oldal es az elonezet hasznalja)
+//   GET  elonezet    a szalon-linkes (kiallit-token) elonezet a szemelyre szabott kartyarol
 //
 // Visszaeles elleni vedelem a /fizetes, /szemelyre, /atutalas vegponton: csak application/json
 // (415), kulso oldalrol inditott keres tiltva (Origin / Sec-Fetch-Site -> 403), es memoriaban
@@ -41,12 +45,16 @@
 //                            kodja a PI metadataban (kod) megmarad.
 //   AJANDEK_BAZIS_URL        a levelekben es a kartyan levo linkek eleje (alapbol a keres origin-je)
 //   AJANDEK_AZONNALI         '1' = a webhook rogton kiallitja a kartyat (kulonben a szalon linkje)
+//   AJANDEK_FOTOK            (Cloudflare KV-kotes) a szemelyre szabott kartya fotoi; nelkule a fotofeltoltes ki van
+//                            kapcsolva (beallitas: foto false), a design es az idezet igy is mukodik
 //   STRIPE_API_BASE          csak tesztekhez (mock Stripe), alapbol https://api.stripe.com
 //   STRIPE_API_VERSION       alapbol STRIPE_VERZIO
 import '../../assets/js/ajandek-adat.js';
+import '../../assets/js/ajandek-kartya.js';
 import * as L from './ajandek-levelek.js';
 
 const ADAT = globalThis.AJANDEK_ADAT;
+const KARTYA = globalThis.AJANDEK_KARTYA;
 
 const ELOTAG = '/api/ajandek/';
 const FORRAS = 'ajandek-motor';
@@ -56,6 +64,12 @@ const STRIPE_VERZIO = '2024-06-20';
 const STRIPE_IDOKORLAT_MS = 15000;
 export const MAX_TORZS = 32 * 1024;
 export const MAX_WEBHOOK = 512 * 1024;
+// a foto-feltoltes torzse: 700 KB-os JPEG base64-ben ~ 934 KB + a JSON-burkolat
+export const MAX_FOTO_TORZS = 1024 * 1024;
+const FOTO_MAX_BAJT = 700 * 1024;
+const FOTO_ID_RE = /^[A-Z0-9]{24}$/;
+const FOTO_TTL_FELTOLTES = 3 * 24 * 3600;   // csatolatlan (meg nem rendeleshez kotott) feltoltes
+const FOTO_TTL_VEGLEGES = 400 * 24 * 3600;  // rendeleshez kotott: a kartya 6 honapig ervenyes
 const TOLERANCIA_MP = 300;
 const MIN_TITOK = 32;
 // ennyi ideig tekintjuk elo kiallitasnak a 'kiallitas_folyamatban' jelzot (utana ujra lehet probalni)
@@ -71,7 +85,7 @@ const ATTR_KULCSOK = ['variant_id', 'gift_context', 'relationship', 'occasion', 
   'utm_campaign', 'utm_content', 'utm_term', 'gclid', 'fbclid', 'ttclid'];
 // a /fizetes altal irt metadata-kulcsok (termekvaltaskor ezeket mind ujrairjuk / toroljuk)
 const FIZETES_META = ['forras', 'termek', 'product_type', ...ATTR_KULCSOK, 'oldal', 'nev', 'iranyitoszam',
-  'varos', 'cim', 'ceges_nev', 'ceges_adoszam', 'kartya_cim'];
+  'varos', 'cim', 'ceges_nev', 'ceges_adoszam', 'kartya_cim', 'atvetel', 'kartya_tema', 'kartya_idezet', 'szemelyre_nev', 'foto_id', 'foto_poz'];
 
 const sajat = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 const enc = new TextEncoder();
@@ -120,7 +134,11 @@ const visszavonvaOldal = (k, reszletek) => oldal(k, 409, 'Ez az ajándékkártya
 export async function keresTorzs(request) {
   if (request.method === 'GET' || request.method === 'HEAD') return { text: '' };
   let max = MAX_TORZS;
-  try { if (/\/webhook\/?$/.test(new URL(request.url).pathname)) max = MAX_WEBHOOK; } catch { /* alap korlat */ }
+  try {
+    const ut = new URL(request.url).pathname;
+    if (/\/webhook\/?$/.test(ut)) max = MAX_WEBHOOK;
+    else if (/\/foto\/?$/.test(ut)) max = MAX_FOTO_TORZS;
+  } catch { /* alap korlat */ }
   const tulNagy = { valasz: json(413, { hiba: 'tul_nagy' }) };
   const hossz = request.headers.get('content-length');
   if (hossz !== null && hossz !== '' && !(Number(hossz) <= max)) return tulNagy;
@@ -288,6 +306,8 @@ const PERC = 60 * 1000;
 const KORLATOK = {
   fizetes: [{ nev: 'ip', max: 20, ablak: 10 * PERC }],
   szemelyre: [{ nev: 'ip', max: 30, ablak: 10 * PERC }],
+  // a tarolot (KV) tolti: IP-nkent es a peldanyon osszesen is korlatos
+  foto: [{ nev: 'ip', max: 12, ablak: 10 * PERC }, { nev: 'osszes', max: 300, ablak: 60 * PERC }],
   // levelet kuld tetszoleges cimre: IP-nkent szigoru, es a peldanyon osszesen is korlatos
   atutalas: [{ nev: 'ip', max: 3, ablak: 10 * PERC }, { nev: 'osszes', max: 30, ablak: 60 * PERC }],
 };
@@ -371,8 +391,8 @@ function tobbsor(v) {
     .replace(/[ ]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
-function jsonTorzs(k) {
-  if (k.text.length > MAX_TORZS) return { valasz: json(413, { hiba: 'tul_nagy' }) };
+function jsonTorzs(k, max = MAX_TORZS) {
+  if (k.text.length > max) return { valasz: json(413, { hiba: 'tul_nagy' }) };
   let d;
   try { d = JSON.parse(k.text || ''); } catch { d = null; }
   if (!d || typeof d !== 'object' || Array.isArray(d)) return { valasz: json(400, { hiba: 'ervenytelen', mezok: {} }) };
@@ -431,9 +451,32 @@ function rendelesAdat(d) {
       }
     }
   }
+  // hogyan veszi at a kartyat; az otthon nyomtatott kartya szemelyre szabhato (dizajn + foto + idezet + nev)
+  const atvetel = egysor(d.atvetel);
+  if (atvetel && atvetel !== 'otthon' && atvetel !== 'szemelyesen') m.atvetel = 'Válaszd ki, hogyan veszed át az ajándékkártyát.';
+  let szemelyre = null;
+  const sz = d.szemelyre;
+  if (sz && typeof sz === 'object' && !Array.isArray(sz)) {
+    if (atvetel !== 'otthon') {
+      m.szemelyre = 'A személyre szabás csak az otthon kinyomtatott kártyához tartozik.';
+    } else {
+      const tema = egysor(sz.tema);
+      if (!KARTYA.tema(tema)) m['szemelyre.tema'] = 'Válassz a felsorolt designok közül.';
+      const idezet = tobbsor(sz.idezet);
+      if (idezet.length > KARTYA.IDEZET_MAX) m['szemelyre.idezet'] = `Az idézet legfeljebb ${KARTYA.IDEZET_MAX} karakter lehet.`;
+      const szNev = egysor(sz.nev);
+      if (szNev.length > KARTYA.NEV_MAX) m['szemelyre.nev'] = `A név legfeljebb ${KARTYA.NEV_MAX} karakter lehet.`;
+      const fotoId = egysor(sz.foto_id);
+      if (fotoId && !FOTO_ID_RE.test(fotoId)) m['szemelyre.foto'] = 'Érvénytelen fotó-azonosító: töltsd fel újra a fotót.';
+      szemelyre = { tema, idezet, nev: szNev, foto_id: fotoId, foto_poz: fotoId ? KARTYA.pozIr(KARTYA.pozOlvas(egysor(sz.foto_poz))) : '' };
+    }
+  }
   return {
     mezok: m,
-    r: { termek, email, nev, iranyitoszam, varos, cim, ceges_nev: cegesNev, ceges_adoszam: cegesAdoszam, attr: attrAdat(d.attr) },
+    r: {
+      termek, email, nev, iranyitoszam, varos, cim, ceges_nev: cegesNev, ceges_adoszam: cegesAdoszam, attr: attrAdat(d.attr),
+      atvetel, szemelyre,
+    },
   };
 }
 
@@ -458,6 +501,11 @@ function fizetesMeta(r) {
     forras: FORRAS, termek: r.termek.id, product_type: r.termek.product_type, ...r.attr,
     nev: r.nev, iranyitoszam: r.iranyitoszam, varos: r.varos, cim: r.cim,
     ceges_nev: r.ceges_nev, ceges_adoszam: r.ceges_adoszam, kartya_cim: r.termek.kartya_cim,
+    atvetel: r.atvetel,
+    ...(r.szemelyre ? {
+      kartya_tema: r.szemelyre.tema, kartya_idezet: r.szemelyre.idezet, szemelyre_nev: r.szemelyre.nev,
+      foto_id: r.szemelyre.foto_id, foto_poz: r.szemelyre.foto_poz,
+    } : {}),
   });
 }
 
@@ -523,6 +571,11 @@ async function rendelesInfo(k, pi) {
     // utalasnal a vevo altal ismert ATU-azonosito (a kozlemenyben van), kulonben a PI-bol szamolt MH-azonosito
     rendeles_id: atu && md.atu_ref ? md.atu_ref : ADAT.rendelesAzonosito(pi.id),
     atutalas: atu,
+    // az otthon nyomtatott (szemelyre szabhato) kartya adatai
+    atvetel: md.atvetel || '',
+    tema: md.kartya_tema && KARTYA.tema(md.kartya_tema) ? md.kartya_tema : '',
+    idezet: md.kartya_idezet || '',
+    foto_id: FOTO_ID_RE.test(md.foto_id || '') ? md.foto_id : '',
     termek_nev: termek ? termek.nev : (md.termek || ''),
     kartya_cim: md.kartya_cim || (termek ? termek.kartya_cim : ''),
     osszeg: Math.round(Number(pi.amount) / 100),
@@ -552,11 +605,13 @@ function rendelesValasz(i) {
   const sz = {
     nev: i.md.szemelyre_nev || null, uzenet: i.md.szemelyre_uzenet || null,
     alkalom: i.md.szemelyre_alkalom || null, atadas: i.md.szemelyre_atadas || null,
+    tema: i.tema || null, idezet: i.idezet || null, foto: Boolean(i.foto_id),
   };
   return {
     allapot: i.allapot,
     visszavonva: i.visszavonva,
     rendeles_id: i.rendeles_id,
+    atvetel: i.atvetel || null,
     termek: i.md.termek || null,
     termek_nev: i.termek_nev || null,
     kartya_cim: i.kartya_cim || null,
@@ -626,7 +681,7 @@ async function metaIrasCsendes(k, piId, metadata, mi) {
 // --- vegpontok ---------------------------------------------------------------------------------------------
 async function beallitas(k) {
   const mod = stripeMod(k.env);
-  return json(200, { mod, publikus_kulcs: mod === 'nincs' ? null : publikusKulcs(k.env), azonnali_kartya: k.env.AJANDEK_AZONNALI === '1' });
+  return json(200, { mod, publikus_kulcs: mod === 'nincs' ? null : publikusKulcs(k.env), azonnali_kartya: k.env.AJANDEK_AZONNALI === '1', foto: Boolean(fotoTar(k.env)) && mod !== 'nincs' });
 }
 
 async function fizetes(k) {
@@ -642,6 +697,8 @@ async function fizetes(k) {
   if (Object.keys(mezok).length) return json(400, { hiba: 'ervenytelen', mezok });
   if (stripeMod(k.env) === 'nincs') return json(503, { hiba: 'nincs_beallitva' });
   if (!kulcs) kulcs = veletlenKod(24);
+  const fotoHiba = await fotoCsatolasEllenorzes(k, r);
+  if (fotoHiba) return fotoHiba;
 
   const ar = arFt(r.termek);
   const meta = fizetesMeta(r);
@@ -780,6 +837,7 @@ async function kartya(k) {
       'Amint elkészül, e-mailben is elküldjük. Ez az oldal 20 másodpercenként magától frissül, nem kell itt várnod.',
     ], { frissit: 20, reszletek: [['Rendelés', i.rendeles_id], ['Termék', i.termek_nev]] });
   }
+  if (i.atvetel === 'otthon' && i.tema) return szemelyreSzabottOldal(k, i);
   return html(k, 200, L.kartyaOldal({
     bazis: k.bazis, kod: i.kod, kartya_felirat: i.termek ? i.termek.kartya_felirat : null, ar_szoveg: i.osszeg_szoveg,
     nev: i.md.szemelyre_nev || '', uzenet: i.md.szemelyre_uzenet || '',
@@ -809,10 +867,15 @@ async function kiallitElokeszit(k, piNyers, tNyers) {
   if (!pi.metadata || pi.metadata.forras !== FORRAS) return { valasz: await oldal(k, 404, 'A rendelés nem található', []) };
   const i = await rendelesInfo(k, pi);
   const md = i.md;
-  const reszletek = i.atutalas
+  const szl = await szemelyreLeiras(k, i);
+  const szemelyreSorok = [
+    ['Átvétel', szl.atvetel_szoveg], ['Kártya-design', szl.design_szoveg], ['Idézet', szl.idezet_szoveg], ['Saját fotó', szl.design_szoveg ? (szl.foto_van ? 'van' : 'nincs') : ''],
+  ];
+  const reszletek = (i.atutalas
     ? [['Azonosító (közlemény)', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Vevő neve', md.nev], ['Vevő e-mail', i.email],
       ['Vevő telefon', md.telefon], ['Megajándékozott', md.szemelyre_nev]]
-    : [['Rendelés', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Érvényes', i.ervenyes_ig ? L.datumIg(i.ervenyes_ig) : ''], ['Vevő', i.email]];
+    : [['Rendelés', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Érvényes', i.ervenyes_ig ? L.datumIg(i.ervenyes_ig) : ''], ['Vevő', i.email]]
+  ).concat(szemelyreSorok);
   if (!i.fizetve && !i.atutalas) {
     return { valasz: await oldal(k, 409, 'A rendelés még nincs kifizetve', ['A kártyát csak sikeres fizetés után lehet kiállítani.'], { reszletek }) };
   }
@@ -828,7 +891,7 @@ async function kiallitElokeszit(k, piNyers, tNyers) {
       ], { reszletek }),
     };
   }
-  return { pi, i, reszletek, piId, t };
+  return { pi, i, reszletek, piId, t, elonezetUrl: szl.elonezet_url };
 }
 
 // A kartyara kerulo kod: a Salonicban letrehozott 100%-os kupon (kartyas fizetes) vagy az utalvany-ertekesites
@@ -872,7 +935,10 @@ async function kiallitUrlap(k, e, hiba) {
       'A gomb megnyomása után a vevő e-mailben megkapja a nyomtatható ajándékkártyát a kóddal.',
     ], {
     reszletek: e.reszletek,
-    linkek: salonicUrl ? [{ url: salonicUrl, szoveg: `Salonic megnyitása az adatokkal (${termek.salonic.nev})` }] : [],
+    linkek: [
+      ...(salonicUrl ? [{ url: salonicUrl, szoveg: `Salonic megnyitása az adatokkal (${termek.salonic.nev})` }] : []),
+      ...(e.elonezetUrl ? [{ url: e.elonezetUrl, szoveg: 'A vevő személyre szabott kártyájának előnézete (design, fotó, idézet)' }] : []),
+    ],
     kitolto: salonicUrl ? {
       cim: 'A Salonic-űrlap kitöltése egy kattintással',
       szoveg: 'A fenti linkkel megnyíló Salonic-oldalon kattints a böngésző könyvjelzősávjában a MOSAIC kitöltő gombra: beírja az Ajándékozó nevét és telefonszámát, a szalon e-mail címét (hogy a Salonic ne írjon a vevőnek), az Ajándékozott nevét, és a fizetési módot Átutalásra állítja. Semmit nem küld el: az Előnézetet és az értékesítést te indítod.',
@@ -1030,6 +1096,7 @@ async function fizetesEsemeny(k, obj, ok) {
         fizetesi_mod: i.fizetesi_mod, fizetve_ekkor: i.fizetve_ekkor, email: i.email, nev: md.nev,
         iranyitoszam: md.iranyitoszam, varos: md.varos, cim: md.cim, ceges_nev: md.ceges_nev, ceges_adoszam: md.ceges_adoszam,
         kod: i.kod, ervenyes_ig: i.ervenyes_ig, kiallit_url: kiallitUrl, azonnali, attr: md,
+        ...(await szemelyreLeiras(k, i)),
       }),
     }],
     ['vevo', i.email ? {
@@ -1149,6 +1216,8 @@ async function atutalas(k) {
   if (Object.keys(mezok).length) return json(400, { hiba: 'ervenytelen', mezok });
   // az igeny a Stripe-ban nyilvantartasi rekord (nem fizetheto); nelkule nincs mire hivatkozni a kiallitasnal
   if (stripeMod(k.env) === 'nincs') return json(503, { hiba: 'nincs_beallitva' });
+  const fotoHiba = await fotoCsatolasEllenorzes(k, r);
+  if (fotoHiba) return fotoHiba;
 
   const ar = arFt(r.termek);
   const ref = 'ATU-' + veletlenKod(6);
@@ -1165,7 +1234,9 @@ async function atutalas(k) {
       amount: ar * 100, currency: 'huf', payment_method_types: ['card'], receipt_email: r.email,
       description: `MOSAIC ajándékkártya - ÁTUTALÁSOS IGÉNY (nincs kifizetve) - ${ref}`,
       metadata: metaTisztit({
-        ...fizetesMeta(r), fizetesi_mod: 'atutalas', atu_ref: ref, telefon, szemelyre_nev: megajandekozott, szemelyre_uzenet: uzenet,
+        ...fizetesMeta(r), fizetesi_mod: 'atutalas', atu_ref: ref, telefon,
+        // otthon nyomtatott kartyanal a nev a szemelyre szabobol jon (fizetesMeta), a szalonban atvetelnel az urlapbol
+        szemelyre_nev: megajandekozott || (r.szemelyre && r.szemelyre.nev) || '', szemelyre_uzenet: uzenet,
       }),
     }, 'ah-atu-' + ref);
   } catch (e) {
@@ -1182,7 +1253,11 @@ async function atutalas(k) {
       ...L.szalonAtutalasLevel({
         ...kozos, email: r.email, nev: r.nev, telefon, iranyitoszam: r.iranyitoszam, varos: r.varos, cim: r.cim,
         ceges_nev: r.ceges_nev, ceges_adoszam: r.ceges_adoszam, megajandekozott, uzenet, oldal: r.attr.oldal,
-        kiallit_url: kiallitUrl, salonic_url: salonicKitoltoUrl(r.termek, { nev: r.nev, telefon, szemelyre_nev: megajandekozott }), salonic_nev: salonic ? salonic.nev : '', szalon_email: ADAT.SZALON.email,
+        kiallit_url: kiallitUrl, salonic_url: salonicKitoltoUrl(r.termek, { nev: r.nev, telefon, szemelyre_nev: megajandekozott || (r.szemelyre && r.szemelyre.nev) || '' }), salonic_nev: salonic ? salonic.nev : '', szalon_email: ADAT.SZALON.email,
+        atvetel_szoveg: r.atvetel === 'szemelyesen' ? 'Személyesen, a szalonban (papír kártya, díszborítékban)' : r.atvetel === 'otthon' ? 'E-mailben, otthon kinyomtatja' : '',
+        design_szoveg: r.szemelyre ? (KARTYA.tema(r.szemelyre.tema) || {}).nev || '' : '', idezet_szoveg: r.szemelyre ? r.szemelyre.idezet : '',
+        foto_van: Boolean(r.szemelyre && r.szemelyre.foto_id),
+        elonezet_url: r.szemelyre ? `${k.bazis}/api/ajandek/elonezet?pi=${encodeURIComponent(pi.id)}&t=${await kiallitToken(k.env, pi.id)}` : '',
       }),
     });
   } catch (e) {
@@ -1207,6 +1282,109 @@ async function atutalas(k) {
   });
 }
 
+// --- a szemelyre szabott kartya fotoja (Cloudflare KV) -----------------------------------------------------
+// A kepet a bongeszo mar <= 1600 px-es JPEG-re kicsinyiti; itt csak ellenorizzuk (JPEG, <= 700 KB) es taroljuk
+// a KV-ban ('foto:<id>', 3 napig). A rendeleshez kotes (a /fizetes vagy az /atutalas, amely az id-t megkapja) ujra
+// beirja hosszu (400 napos) ervenyessegre. A kepet az id + HMAC-token mutatja meg (a kartya-oldal / elonezet linkjeben).
+const fotoTar = (env) => (env && env.AJANDEK_FOTOK && typeof env.AJANDEK_FOTOK.get === 'function' && typeof env.AJANDEK_FOTOK.put === 'function' ? env.AJANDEK_FOTOK : null);
+
+export async function fotoToken(env, id) {
+  return hex(await hmac(await titok(env), 'foto:' + id));
+}
+
+async function fotoFeltoltes(k) {
+  const kapu = postKapu(k, 'foto');
+  if (kapu) return kapu;
+  if (!beallitva(k.env)) return json(503, { hiba: 'nincs_beallitva' });
+  const tar = fotoTar(k.env);
+  if (!tar) return json(503, { hiba: 'foto_nincs_beallitva' });
+  const { d, valasz } = jsonTorzs(k, MAX_FOTO_TORZS);
+  if (valasz) return valasz;
+  const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/]+={0,2})$/.exec(String(d.kep || ''));
+  if (!m) return json(400, { hiba: 'ervenytelen', mezok: { kep: 'A fotó JPEG formátumú legyen.' } });
+  let bajtok;
+  try {
+    const bin = atob(m[1]);
+    bajtok = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bajtok[i] = bin.charCodeAt(i);
+  } catch {
+    return json(400, { hiba: 'ervenytelen', mezok: { kep: 'A fotó nem olvasható.' } });
+  }
+  if (bajtok.length > FOTO_MAX_BAJT) return json(413, { hiba: 'tul_nagy' });
+  // JPEG: FF D8 FF eleje, FF D9 vege
+  if (bajtok.length < 1024 || bajtok[0] !== 0xff || bajtok[1] !== 0xd8 || bajtok[2] !== 0xff) {
+    return json(400, { hiba: 'ervenytelen', mezok: { kep: 'A fotó nem érvényes JPEG.' } });
+  }
+  const id = veletlenKod(24);
+  await tar.put('foto:' + id, bajtok, { expirationTtl: FOTO_TTL_FELTOLTES });
+  return json(200, { ok: true, id });
+}
+
+async function fotoLetoltes(k) {
+  if (!beallitva(k.env)) return json(503, { hiba: 'nincs_beallitva' });
+  const id = String(k.u.searchParams.get('id') || '');
+  const t = String(k.u.searchParams.get('t') || '').trim().toLowerCase();
+  if (!FOTO_ID_RE.test(id) || !TOKEN_RE.test(t) || !egyenlo(t, await fotoToken(k.env, id))) return json(403, { hiba: 'tiltott' });
+  const tar = fotoTar(k.env);
+  if (!tar) return json(404, { hiba: 'nincs' });
+  const ertek = await tar.get('foto:' + id, { type: 'arrayBuffer' });
+  if (!ertek) return json(404, { hiba: 'nincs' });
+  return {
+    status: 200,
+    headers: { ...ALAP_FEJLEC, 'content-type': 'image/jpeg', 'cache-control': 'private, max-age=31536000, immutable', 'content-disposition': 'inline' },
+    body: new Uint8Array(ertek),
+  };
+}
+
+// A /fizetes es az /atutalas: ha a kerelem foto-azonositot hoz, a kep legyen meg a tarolban; ervenyes azonositonal
+// a rendeleshez kotjuk (hosszu ervenyesseg). -> null (rendben) | kesz hibavalasz
+async function fotoCsatolasEllenorzes(k, r) {
+  const id = r.szemelyre && r.szemelyre.foto_id;
+  if (!id) return null;
+  const tar = fotoTar(k.env);
+  if (!tar) return json(503, { hiba: 'foto_nincs_beallitva' });
+  const ertek = await tar.get('foto:' + id, { type: 'arrayBuffer' });
+  if (!ertek) return json(400, { hiba: 'ervenytelen', mezok: { foto: 'A fotó feltöltése lejárt vagy hiányzik: töltsd fel újra a személyre szabásnál.' } });
+  await tar.put('foto:' + id, ertek, { expirationTtl: FOTO_TTL_VEGLEGES });
+  return null;
+}
+
+// A szemelyre szabott kartya oldala (a vevo kartyaja es a szalon elonezete). elonezet: a kod / ervenyesseg meg nem vegleges.
+async function szemelyreSzabottOldal(k, i, opciok = {}) {
+  const fotoSrc = i.foto_id ? `${k.bazis}/api/ajandek/foto?id=${i.foto_id}&t=${await fotoToken(k.env, i.foto_id)}` : null;
+  return html(k, 200, L.szemelyreSzabottKartyaOldal({
+    bazis: k.bazis, tema: i.tema, idezet: i.idezet, nev: i.md.szemelyre_nev || '', foto_src: fotoSrc, foto_poz: i.md.foto_poz || '',
+    kartya_felirat: i.termek ? i.termek.kartya_felirat : null, ar_szoveg: i.osszeg_szoveg,
+    kod: opciok.kod || i.kod || '', ervenyes_ig: i.ervenyes_ig, ervenyes_szoveg: opciok.ervenyes_szoveg || '', elonezet: Boolean(opciok.elonezet),
+  }));
+}
+
+// A szalon levelei / kiallito oldala: hogyan veszi at, mit valasztott (a design, az idezet es a foto megtekintheto)
+async function szemelyreLeiras(k, i) {
+  const atvetel = i.atvetel === 'szemelyesen' ? 'Személyesen, a szalonban (papír kártya, díszborítékban)' : i.atvetel === 'otthon' ? 'E-mailben, otthon kinyomtatja' : '';
+  const szemelyre = i.atvetel === 'otthon' && i.tema;
+  return {
+    atvetel_szoveg: atvetel,
+    design_szoveg: szemelyre ? (KARTYA.tema(i.tema) || {}).nev || i.tema : '',
+    idezet_szoveg: szemelyre ? i.idezet : '',
+    foto_van: Boolean(szemelyre && i.foto_id),
+    elonezet_url: szemelyre ? `${k.bazis}/api/ajandek/elonezet?pi=${encodeURIComponent(i.pi.id)}&t=${await kiallitToken(k.env, i.pi.id)}` : '',
+  };
+}
+
+// GET elonezet: a szalon (kiallit-tokennel) megnezi a vevo szemelyre szabott kartyajat, a kiallitas elott is
+async function kartyaElonezet(k) {
+  k.htmlValasz = true;
+  const h = await tokenesPi(k, k.u.searchParams.get('pi'), k.u.searchParams.get('t'), kiallitToken);
+  if (h.hiba === 'nincs_beallitva') return nincsBeallitvaOldal(k);
+  if (h.hiba === 'tiltott') return oldal(k, 403, 'Érvénytelen link', ['Ez az előnézeti link nem érvényes. A rendelésről szóló levélben lévő linket használd.']);
+  if (h.hiba) return oldal(k, h.status, 'A rendelés nem található', []);
+  const i = await rendelesInfo(k, h.pi);
+  if (i.atvetel !== 'otthon' || !i.tema) return oldal(k, 404, 'Ehhez a rendeléshez nincs személyre szabott kártya', ['A vevő a MOSAIC alap kártyáját kapja.']);
+  const kod = i.kod || (i.atutalas ? 'A KÓD KIÁLLÍTÁSKOR KERÜL RÁ' : i.javasolt_kod);
+  return szemelyreSzabottOldal(k, i, { kod, elonezet: true, ervenyes_szoveg: i.ervenyes_ig ? '' : 'a kiállítástól számított 6 hónapig' });
+}
+
 const UTAK = new Map([
   ['beallitas', { GET: beallitas }],
   ['fizetes', { POST: fizetes }],
@@ -1216,6 +1394,8 @@ const UTAK = new Map([
   ['kiallit', { GET: kiallitMegerosites, POST: kiallit }],
   ['webhook', { POST: webhook }],
   ['atutalas', { POST: atutalas }],
+  ['foto', { POST: fotoFeltoltes, GET: fotoLetoltes }],
+  ['elonezet', { GET: kartyaElonezet }],
 ]);
 
 function fejlecek(h) {

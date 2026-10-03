@@ -32,6 +32,17 @@
       vendeg_db: 1,
       // a Salonic utalvany-terméke (Marketing > Ajandekutalvanyok), a szalon "utalvany ertekesitesehez" (utalasos rendelesnel)
       salonic: { id: 4040, nev: '50 perces MOSAIC Head Spa kezelés + 30 perc hajszárítás-20% (26 900 Ft)' },
+      kezeles: {
+        leiras: ['Személyre szabott hajápolási szeánsz mélyrelaxáló masszázs elemekkel: 50 perc Head Spa, utána 30 perc profi hajszárítás.'],
+        lepesek: [
+          'Mikrokamerás fejbőrvizsgálattal indul, hogy a fejbőrtípusodhoz illő kezelést kapd',
+          'Mélytisztító hajmosás az eredeti Head Spa arany zuhanyívvel',
+          'A fej- és arcbőrtípusodnak megfelelő, 100%-ban természetes OXYGENI haj- és arcpakolás',
+          'Fej-, arc-, nyak- és dekoltázsmasszázs, gőzölés',
+          'A végén 30 perc profi hajszárítás'
+        ],
+        video: null
+      },
       // valodi MOSAIC fotok (assets/img): egy terapeuta / ket terapeuta / ket vendeg
       vizual: { src: '/assets/img/ajandek/egyeni.jpg', alt: 'Egyéni Head Spa: a vendég hajmosása az arany zuhanyív alatt a MOSAIC-ban', w: 1100, h: 1650, poz: '50% 42%' }
     },
@@ -50,6 +61,16 @@
       ar_ft: 39900,
       vendeg_db: 1,
       salonic: { id: 4000, nev: '50 perces 4 Kezes Headspa ajándékkártya - 39.900 Ft' },
+      kezeles: {
+        leiras: ['A MOSAIC saját találmánya: két gyógymasszőr dolgozik egyszerre, a végén egy profi fodrász szárít, vagyis hárman kényeztetnek 50+30 percen át.'],
+        lepesek: [
+          'Fej-, arc-, nyak-, dekoltázs-, kar-, kéz-, láb- és vállmasszázs',
+          'Mélytisztító hajmosás és körvízsugaras terápia az arany zuhanyívvel',
+          'A fej- és arcbőrtípusodnak megfelelő, természetes OXYGENI pakolás, gőzölés',
+          'A végén 30 perc profi hajszárítás'
+        ],
+        video: null
+      },
       vizual: { src: '/assets/img/ajandek/negy-kezes.jpg', alt: '4 kezes Head Spa: két terapeuta dolgozik egyszerre egy vendégen a MOSAIC-ban', w: 1200, h: 800, poz: '50% 45%' }
     },
     paros: {
@@ -67,6 +88,16 @@
       ar_ft: 53800,
       vendeg_db: 2,
       salonic: { id: 4081, nev: '50 perces PÁROS MOSAIC Head Spa Ajándékutalvány -20% (53 800 Ft)' },
+      kezeles: {
+        leiras: ['Ketten fekszetek egymás mellé egy privát, csendes kezelőszobában, két gyógymasszőr kényeztet titeket egyszerre: közös élmény barátnővel, anyukával vagy a párral.'],
+        lepesek: [
+          'Mikrokamerás fejbőrvizsgálat, a bőrtípusotokhoz illő természetes haj- és arcpakolás',
+          'Mélytisztító hajmosás az eredeti Head Spa arany zuhanyívvel',
+          'Arc-, nyak-, fej- és dekoltázsmasszázs kézzel és eszközökkel, gőzölés',
+          '50 perc kezelés + 30 perc hajszárítás fejenként, egymás mellett'
+        ],
+        video: null
+      },
       // a spec szerint a GENERAL vizual ket baratno (nem romantikus par); ez a MOSAIC egyetlen valodi paros fotoja
       // (ket vendeg, ket terapeuta, egymas mellett) - ha van baratnos kep, ide kell cserelni
       vizual: { src: '/assets/img/c2eb0f_2c17645e97d943fda9265b973f1bb6a9.jpg', alt: 'Páros Head Spa: két vendég, két terapeuta, egy közös helyiségben', w: 1500, h: 1500, poz: '50% 50%' }
@@ -77,6 +108,12 @@
     { id: 'egyedul', ikon: 'user', cim: 'Neki egyedül', leiras: 'Ha azt szeretnéd, hogy végre csak vele foglalkozzanak.', termek: 'egyeni', nyil: 'Egyéni Head Spa ajánlása' },
     { id: 'ketten', ikon: 'users', cim: 'Ketten mennének', leiras: 'Barátnővel, anyukával vagy a párjával.', termek: 'paros', nyil: 'Páros Head Spa ajánlása' },
     { id: 'kulonleges', ikon: 'gift', cim: 'Valami igazán különlegeset szeretnék', leiras: 'Prémium Head Spa két terapeutával egyszerre.', termek: '4kezes', nyil: '4 kezes Head Spa ajánlása' }
+  ];
+
+  // Hogyan veszi at az ajandekkartyat (a fizetes elott valasztja): az otthon kinyomtatott kartya szabhato szemelyre
+  var ATVETELEK = [
+    { id: 'otthon', cim: 'E-mailben, otthon kinyomtatom', rovid: 'Nyomtatható formában kapod meg, és személyre is szabhatod.', szemelyre: true },
+    { id: 'szemelyesen', cim: 'Személyesen, a szalonban', rovid: 'Papír alapon, díszborítékban veheted át.', szemelyre: false }
   ];
 
   var ALKALMAK = [
@@ -190,6 +227,7 @@
     TERMEKEK: TERMEKEK,
     FINDER: FINDER,
     ALKALMAK: ALKALMAK,
+    ATVETELEK: ATVETELEK,
     ATADASOK: ATADASOK,
     PROOFOK: PROOFOK,
     GOOGLE: GOOGLE,
