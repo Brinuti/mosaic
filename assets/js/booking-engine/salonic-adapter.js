@@ -49,11 +49,17 @@ const toInt = (v) => (v === undefined || v === null || v === '' ? null : Number.
 const digits = (v) => { const d = String(v ?? '').replace(/[^\d]/g, ''); return d ? +d : null; };
 const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 
+// A Salonic a data-name erteket idezojel-kezeles nelkul irja ki (pl. data-name="... MOSAIC "Relax" Head Spa ..."), ezert a
+// szabvanyos attributum-olvasas az elso belso idezojelnel levagna a nevet. A nevet a kovetkezo data-* attributumig olvassuk.
+const NAME_ATTR = /\bdata-name="([\s\S]*?)"(?=\s+data-(?:price|duration|employees)=)/;
+
 /** A kezelesek a Salonic oldalairol: `<input data-id data-duration data-price data-name data-employees>`. */
 export function parseServices(html) {
   const out = [];
   for (const m of String(html).matchAll(/<input[^>]*\bdata-id="[^"]*"[^>]*>/g)) {
-    const a = attrsOf(m[0]);
+    const nm = m[0].match(NAME_ATTR);
+    const a = attrsOf(nm ? m[0].replace(nm[0], 'data-name=""') : m[0]);
+    if (nm) a['data-name'] = decodeEntities(nm[1]);
     if (a['data-duration'] === undefined || out.some((s) => s.serviceId === a['data-id'])) continue;
     const name = clean(a['data-name']);
     // "Ajaktetovalas - Aquarell - 124.900 Ft helyett most": a "helyett" ar a listaar, a data-price az aktualis ar

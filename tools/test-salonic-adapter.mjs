@@ -40,6 +40,17 @@ test('parseServices (Hair): munkatars-azonositok, emoji a nevben, ismetlodo azon
   assert.equal(s[0].listPrice, null);
 });
 
+test('parseServices (HeadSpa): a Salonic idezojel-kezeles nelkuli data-name erteke nem csonkul', () => {
+  const s = parseServices(fx('headspa-showServices.html'));
+  assert.equal(s.length, 4);
+  assert.match(s[0].name, /MOSAIC "Relax" Head Spa kezelés \+ 30 perc hajszárítás$/);
+  assert.match(s[1].name, /MOSAIC "Hair" Head Spa/);
+  assert.notEqual(s[0].name, s[1].name, 'a ket Egyeni valtozat megkulonboztetheto');
+  assert.equal(s[0].activePrice, 26900);
+  assert.equal(s[0].durationMin, 80);
+  assert.deepEqual(s[0].staffIds, ['24065', '24989', '27076', '29415']);
+});
+
 test('parseSpecs: kategoriak a showServices linkekbol, duplikatum nelkul', () => {
   assert.deepEqual(parseSpecs(fx('headspa-selectSpecialization.html')).map((x) => x.specId), ['39592', '41471']);
 });
