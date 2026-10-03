@@ -43,7 +43,8 @@
           destroy: function () {}
         };
         return {
-          create: function () { return elem; },
+          _allapot: allapot,
+          create: function (tipus, o) { allapot.mezok = (o && o.fields && o.fields.billingDetails) || null; return elem; },
           submit: function () {
             var szam = allapot.input ? allapot.input.value.replace(/\s/g, '') : '';
             if (szam.length < 16) return Promise.resolve({ error: { type: 'validation_error', message: 'A kártyaszám hiányos.' } });
@@ -54,6 +55,26 @@
       },
       confirmPayment: function (p) {
         var cs = p.clientSecret, pi = cs.split('_secret_')[0];
+        // a valodi Stripe.js IntegrationErrort dob, ha a fields.billingDetails 'never' mezoit nem adjuk at (a cim MINDEN
+        // reszletet kéri, line2 es state is; ures szoveg elfogadott) - igy a hiba a helyi tesztben is latszik
+        var mezok = p.elements && p.elements._allapot && p.elements._allapot.mezok;
+        var bd = (p.confirmParams && p.confirmParams.payment_method_data && p.confirmParams.payment_method_data.billing_details) || {};
+        if (mezok) {
+          var hianyzo = '';
+          if (mezok.name === 'never' && bd.name === undefined) hianyzo = 'name';
+          else if (mezok.email === 'never' && bd.email === undefined) hianyzo = 'email';
+          else if (mezok.address === 'never') {
+            ['line1', 'line2', 'city', 'state', 'country', 'postal_code'].some(function (k) {
+              if (!bd.address || bd.address[k] === undefined) { hianyzo = 'address.' + k; return true; }
+              return false;
+            });
+          }
+          if (hianyzo) {
+            var hiba = new Error('You specified "never" for fields.billing_details when creating the payment Element, but did not pass confirmParams.payment_method_data.billing_details.' + hianyzo + ' when calling stripe.confirmPayment().');
+            hiba.name = 'IntegrationError';
+            return Promise.reject(hiba);
+          }
+        }
         var szamEl = document.getElementById('mock-kartya');
         var szam = szamEl ? szamEl.value.replace(/\s/g, '') : '';
         var mod = (document.getElementById('mock-tipus') || {}).value || 'card';

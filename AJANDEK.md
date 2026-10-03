@@ -216,4 +216,7 @@ A helyi kiszolgáló a valódi kezelőt egy **mock Stripe API** ellen futtatja, 
 Stripe-mockot (`stripe-mock.js`) tesz a lapba: a teszt-kártyaszám `4242 4242 4242 4242` sikeres,
 `4000 0000 0000 0002` elutasított, `4000 0025 0000 3155` átirányításos (3DS-szerű) fizetés. Az
 elfogott levelek: `/__teszt/levelek`. Éles kiszolgálón ezek a fájlok nincsenek: ott a valódi
-`js.stripe.com` töltődik be.
+`js.stripe.com` töltődik be. A mock a valódi Stripe.js `IntegrationError`ját is utánozza (a
+`fields.billingDetails: 'never'` mezőit – a címnél `line2` és `state` is – át kell adni a
+`confirmPayment`-nek, üres szöveg elég): ezt a hibát a Cloudflare-előnézeten a valódi Stripe-pal
+találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.

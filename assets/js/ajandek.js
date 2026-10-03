@@ -465,7 +465,7 @@
           clientSecret: S.cs,
           confirmParams: {
             return_url: location.origin + location.pathname + '?variant=' + encodeURIComponent(S.variant.variant_id),
-            payment_method_data: { billing_details: { name: o.nev, email: o.email, address: { line1: o.cim, city: o.varos, postal_code: o.iranyitoszam, country: 'HU' } } }
+            payment_method_data: { billing_details: { name: o.nev, email: o.email, address: { line1: o.cim, line2: '', city: o.varos, state: '', postal_code: o.iranyitoszam, country: 'HU' } } }
           },
           redirect: 'if_required'
         });
@@ -480,6 +480,7 @@
         return fizetesEllenorzes(S.pi, S.cs, 25000);
       });
     }).catch(function (e) {
+      try { console.error('ajandek: a fizetes megszakadt', e); } catch (x) { /* nem baj */ }
       var uzenet = 'Hálózati vagy szerverhiba történt. Kérjük, próbáld újra.';
       if (e && e.szerver && e.szerver.status === 429) uzenet = 'Túl sok próbálkozás történt. Kérjük, várj pár percet, és próbáld újra, vagy hívj minket: 06 20 247 4444.';
       if (e && e.szerver && e.szerver.adat && e.szerver.adat.mezok) {

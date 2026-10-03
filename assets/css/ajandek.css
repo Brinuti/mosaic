@@ -54,6 +54,8 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-ugras:focus { left: 0; }
 :where(.ah) :focus-visible { outline: 3px solid var(--ah-arany-sz); outline-offset: 2px; border-radius: 4px; }
 .ah-fejlec :focus-visible { outline-color: #d9c9a7; }
+/* a csak programbol fokuszalt cimsor (nezetvaltaskor a gorgetes/olvaso-fokusz) ne kapjon keretet */
+:where(.ah) [tabindex="-1"]:focus-visible { outline: none; }
 
 .ah-tartalom { width: min(var(--ah-szeles), calc(100% - 2 * var(--ah-gut))); margin: 0 auto; }
 .ah-keskeny { max-width: 720px; }
