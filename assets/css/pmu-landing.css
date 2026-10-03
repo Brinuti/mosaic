@@ -810,3 +810,29 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
 .terkep-ertekeles small { display: block; font-size: 12px; color: var(--halk); }
 .terkep-gomb { z-index: 3; white-space: nowrap; }
 @media (max-width: 700px) { .terkep-ertekeles { right: 8px; top: auto; bottom: 56px; } }
+
+/* === 2026-10-04 === */
+/* hero-betet: csak a ket tiszta kep (felirat es elvalaszto vonal nelkul) */
+.betet-kep { background: #ddd var(--kep) 50% 50% / cover no-repeat; }
+#te-minosites { font-size: 13px; font-weight: 500; color: var(--szoveg); }
+/* mobil: minden szekciocim egyforma (30 px), a dobozcimek 19 px */
+@media (max-width: 700px) {
+  main h2, main h2.nagy, .szakember h2, .helyszin h2.nagy, .gyik h2, .mielott h2, .velemenyek h2, .eredmenyek h2 { font-size: var(--b1) !important; line-height: 1.12; }
+  .mielott-bal > h3, .mielott-jobb > h3 { font-size: var(--b2) !important; }
+  /* hero: az elso kepernyon Melitta is teljesen latszik */
+  .hero { padding-top: 12px; }
+  .hero h1 { margin-bottom: 8px; }
+  .hero-kep { aspect-ratio: 1.9; }
+  .hero-al { font-size: var(--b3); margin: 8px 0 10px; }
+  .cta-blokk, .masodlagos { gap: 8px; }
+  .cta-blokk .gomb-nagy { min-height: 50px; }
+  .masodlagos .gomb, .masodlagos .link-gomb { min-height: 40px; padding: 6px 16px; }
+  .szakember-mini { margin-top: 12px; }
+}
+/* asztal: a zold menucsikban a logo felett es alatt ugyanannyi hely */
+@media (min-width: 701px) {
+  #SITE_HEADER, #bgLayers_SITE_HEADER, #bgLayers_SITE_HEADER > div { min-height: 70px !important; height: 70px !important; }
+  #comp-m3znboq3 { margin-top: 8px !important; }
+  #comp-m4lbfl1t { margin-top: 17px !important; }
+  #comp-m7q6eklh, #comp-m7jcfhgp { margin-top: 20px !important; }
+}
