@@ -36,7 +36,7 @@
 <section class="hero">
   <div class="tartalom">
     <ul class="tenyek" aria-label="A legfontosabbak röviden">
-      <li><span class="ikon-kor"><svg viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/></svg></span>Árak<br>63 000 Ft-tól</li>
+      <li><span class="ikon-kor"><svg viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/></svg></span><span>Szemöldök 79 000 Ft-tól<small class="tenyek-al">Ajak 99 000 Ft-tól</small></span></li>
       <li><span class="ikon-kor"><svg viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="12" rx="1"/><path d="M12 9v12M3 13h18M12 9c-2-4-6-4-6-1.5S9 9 12 9zm0 0c2-4 6-4 6-1.5S15 9 12 9z"/></svg></span>4–7 hét utáni<br>korrekció az árban</li>
       <li><span class="ikon-kor"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Akár telefonon is<br>konzultálhatunk</li>
       <li><span class="ikon-kor"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span>Szombaton is<br>van időpont</li>
@@ -68,7 +68,7 @@
         <img class="hero-foto" src="/assets/img/pmu/gyogyult-szoke.jpg" alt="Gyógyult, természetes szemöldöktetoválás" width="1000" height="1500" fetchpriority="high">
         <figcaption class="hero-betet" aria-label="Előtte és utána">
           <span class="betet-kep" style="--pos:0 0"><span class="cimke">Előtte</span></span>
-          <span class="betet-kep" style="--pos:0 100%"><span class="cimke">Utána</span></span>
+          <span class="betet-kep" style="--pos:0 100%"><span class="cimke">Gyógyult eredmény</span></span>
         </figcaption>
       </figure>
     </div>
@@ -101,7 +101,7 @@
         <img src="/assets/img/pmu/szemoldok-03.jpg" alt="" loading="lazy">
         <div>
           <p class="helyzet-terulet">Szemöldök</p>
-          <h3>Ez lenne az első szemöldöktetoválásom</h3>
+          <h3>Ez lenne az első szemöldök&shy;tetoválásom</h3>
           <p>Szeretnék természetes, hozzám illő eredményt, és nem tudom, pontosan mire számítsak.</p>
           <a class="gomb gomb-sotet gomb-kicsi" href="#foglalas" data-foglalo="lepes=szolg" data-cta="helyzet-elso">Ez vagyok <span class="nyil">→</span></a>
         </div>
@@ -110,7 +110,7 @@
         <img src="/assets/img/c2eb0f_89cc6bf1793c48f193ce38d64d87e940.jpg" alt="" loading="lazy">
         <div>
           <p class="helyzet-terulet">Szemöldök vagy ajak</p>
-          <h3>Van már sminktetoválásom</h3>
+          <h3>Van már smink&shy;tetoválásom</h3>
           <p class="figyelmeztet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 16.5v.5"/></svg>Ha régebbi sminktetoválásod van, kérlek, ne foglalj időpontot azonnal: előbb küldj egy fotót, hogy a számodra megfelelő megoldással segíthessek.</p>
           <a class="gomb gomb-sotet gomb-kicsi" href="#foglalas" data-foglalo="lepes=foto" data-cta="helyzet-regi">Fotót küldök <span class="nyil">→</span></a>
         </div>
@@ -132,38 +132,26 @@
 <section class="eredmenyek" id="eredmenyek" aria-labelledby="eredmeny-cim">
   <div class="tartalom">
     <h2 id="eredmeny-cim" class="kozepre">Az eredményt nézd, ne az ígéretet.</h2>
-    <p class="halk kozepre">Valódi vendégek, valódi eredmények: természetes, gyógyult sminktetoválások – a saját munkáim. Kattints egy képre a nagyításhoz.</p>
+    <p class="halk kozepre">Valódi vendégek, valódi eredmények – a saját munkáim. Nézd meg a hozzád leginkább hasonló esetet.</p>
     <p class="nem-ai"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><span><b>Nem AI-generált képek.</b> Minden fotó eredeti, valódi vendégről készült, és mind a saját munkám.</span><a class="insta" href="https://www.instagram.com/trkm_pmu/" target="_blank" rel="noopener" data-cta="eredmenyek-instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>További munkáim az Instagramon <span class="nyil">→</span></a></p>
-    <div class="szuro" role="tablist" aria-label="Eredmények szűrése">
-      <button type="button" role="tab" aria-selected="true" data-szuro="osszes">Összes</button>
-      <button type="button" role="tab" aria-selected="false" data-szuro="szemoldok">Szemöldök</button>
-      <button type="button" role="tab" aria-selected="false" data-szuro="ajak">Ajak</button>
+    <!-- 6 kiemelt eset problematipus szerint; ahol van elotte/utana kep, ott a kepen jelolve.
+         [A gyogyult allapot hete esetenkent Melitta adata alapjan kerul ki - ne talalj ki erteket.] -->
+    <div class="eset-racs">
+      <figure class="eset" data-irany="lr"><div class="eset-kep"><img src="/assets/img/pmu/szemoldok-05.jpg" alt="Ritka, hiányos szemöldök – Melitta munkája" loading="lazy" width="1000" height="1000"><span class="eset-cimke elotte">Előtte</span><span class="eset-cimke utana">Utána</span></div>
+        <figcaption><span class="eset-tipus">Szemöldök</span><b>Ritka, hiányos szemöldök</b><span>Teltebb, rendezett forma – az arcához illő ívvel.</span></figcaption></figure>
+      <figure class="eset" data-irany=""><div class="eset-kep"><img src="/assets/img/pmu/szemoldok-11.jpg" alt="Érettebb bőr – Melitta munkája" loading="lazy" width="1000" height="1000"></div>
+        <figcaption><span class="eset-tipus">Szemöldök</span><b>Érettebb bőr</b><span>Lágy, púderes árnyalás, ami nem keményíti meg az arcot.</span></figcaption></figure>
+      <figure class="eset" data-irany=""><div class="eset-kep"><img src="/assets/img/pmu/szemoldok-02.jpg" alt="Természetes, mindennapi hatás – Melitta munkája" loading="lazy" width="1000" height="1000"></div>
+        <figcaption><span class="eset-tipus">Szemöldök</span><b>Természetes, mindennapi hatás</b><span>Smink nélkül is rendezett, mégsem feltűnő.</span></figcaption></figure>
+      <figure class="eset" data-irany="tb"><div class="eset-kep"><img src="/assets/img/pmu/ajak-07.jpg" alt="Halvány, elmosódó ajakkontúr – Melitta munkája" loading="lazy" width="1000" height="1000"><span class="eset-cimke elotte">Előtte</span><span class="eset-cimke utana">Utána</span></div>
+        <figcaption><span class="eset-tipus">Ajak</span><b>Halvány, elmosódó ajakkontúr</b><span>Élénkebb szín és tisztább kontúr, túlrajzolás nélkül.</span></figcaption></figure>
+      <figure class="eset" data-irany="bt"><div class="eset-kep"><img src="/assets/img/pmu/ajak-04.jpg" alt="Egyenetlen ajakszín – Melitta munkája" loading="lazy" width="1000" height="1000"><span class="eset-cimke elotte">Előtte</span><span class="eset-cimke utana">Utána</span></div>
+        <figcaption><span class="eset-tipus">Ajak</span><b>Egyenetlen ajakszín</b><span>Egyenletes, természetes árnyalat.</span></figcaption></figure>
+      <figure class="eset" data-irany=""><div class="eset-kep"><img src="/assets/img/c2eb0f_89cc6bf1793c48f193ce38d64d87e940.jpg" alt="Szemhéj – Melitta munkája" loading="lazy" width="1000" height="1000"></div>
+        <figcaption><span class="eset-tipus">Szemhéj</span><b>Szemhéj</b><span>Diszkrét, füstös hatás, ami kiemeli a szemet.</span></figcaption></figure>
     </div>
-    <!-- Melitta munkai (Drive: Sminktetovalas kepek / referenciak), minden kep 1:1. -->
-    <div class="ref-racs" id="esetek">
-    <!-- sorrend: kozeli szemoldok -> arcos szemoldok -> ajak (elobb a kesz, aztan az elotte/utana) -->
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-01.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-03.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-06.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-09.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-12.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-02.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-04.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-07.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-08.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-10.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-11.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-05.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-02.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-03.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-05.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-06.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-08.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-01.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-04.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-07.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-    </div>
-    <div class="kozepre"><button type="button" class="gomb gomb-korvonal" id="ref-tobb">További eredmények <span class="nyil">↓</span></button></div>
+    <div class="kozepre"><a class="gomb gomb-korvonal" href="#tovabbi" id="tovabbi-ugras">További eredmények <span class="nyil">↓</span></a></div>
+
   </div>
 </section>
 
@@ -191,27 +179,27 @@
     <div class="ar-racs">
       <article class="ar-kartya" data-salonic="szemoldok-powder">
         <img src="/assets/img/c2eb0f_e6bcf204c9164857a3c5ae2ed41b71c7.jpg" alt="Szemöldöktetoválás – Soft Powder" loading="lazy">
-        <div><h3>Szemöldök – púderes</h3><p class="ar"><span class="ar-most">79 000 Ft</span> <s class="ar-regi">99 000 Ft</s></p><p class="ar-ido">90 perc</p><p>Lágy, púderes árnyalás – mintha szemöldökpúderrel töltenéd ki.</p>
+        <div><h3>Szemöldök – púderes</h3><p class="ar"><span class="ar-most">79 000 Ft</span></p><p class="ar-ido">kb. 2–2,5 óra</p><p>Lágy, púderes árnyalás – mintha szemöldökpúderrel töltenéd ki.</p>
         <a class="gomb gomb-bezs" href="#foglalas" data-foglalo="kezeles=szemoldok-powder" data-cta="ar-szemoldok-powder">Időpontot nézek</a></div>
       </article>
       <article class="ar-kartya" data-salonic="szemoldok-hibrid">
         <img src="/assets/img/c2eb0f_5b48311124f64d42a66b29ce2c4bef95.jpg" alt="Szemöldöktetoválás – Hibrid" loading="lazy">
-        <div><h3>Szemöldök – hibrid</h3><p class="ar"><span class="ar-most">79 000 Ft</span> <s class="ar-regi">99 000 Ft</s></p><p class="ar-ido">90 perc</p><p>Élethű szálak és púderes árnyalás: teltebb, mégis természetes.</p>
+        <div><h3>Szemöldök – hibrid</h3><p class="ar"><span class="ar-most">79 000 Ft</span></p><p class="ar-ido">kb. 2–2,5 óra</p><p>Élethű szálak és púderes árnyalás: teltebb, mégis természetes.</p>
         <a class="gomb gomb-bezs" href="#foglalas" data-foglalo="kezeles=szemoldok-hibrid" data-cta="ar-szemoldok-hibrid">Időpontot nézek</a></div>
       </article>
       <article class="ar-kartya" data-salonic="ajak-aquarell">
         <img src="/assets/img/c2eb0f_014b63526bc644c7a234475fb367a963.jpg" alt="Ajaktetoválás – Aquarell" loading="lazy">
-        <div><h3>Ajak – aquarell</h3><p class="ar"><span class="ar-most">99 000 Ft</span> <s class="ar-regi">124 900 Ft</s></p><p class="ar-ido">120 perc</p><p>Áttetsző, természetes színfrissítés, kontúr nélkül.</p>
+        <div><h3>Ajak – aquarell</h3><p class="ar"><span class="ar-most">99 000 Ft</span></p><p class="ar-ido">kb. 2–2,5 óra</p><p>Áttetsző, természetes színfrissítés, kontúr nélkül.</p>
         <a class="gomb gomb-bezs" href="#foglalas" data-foglalo="kezeles=ajak-aquarell" data-cta="ar-ajak-aquarell">Időpontot nézek</a></div>
       </article>
       <article class="ar-kartya" data-salonic="ajak-ruzs">
         <img src="/assets/img/c2eb0f_14edf618439f44d88072604878d0cbd6.jpg" alt="Ajaktetoválás – rúzs hatású" loading="lazy">
-        <div><h3>Ajak – rúzs hatású</h3><p class="ar"><span class="ar-most">110 000 Ft</span> <s class="ar-regi">134 900 Ft</s></p><p class="ar-ido">120 perc</p><p>Telítettebb szín, határozottabb kontúr – rúzsos hatás.</p>
+        <div><h3>Ajak – rúzs hatású</h3><p class="ar"><span class="ar-most">110 000 Ft</span></p><p class="ar-ido">kb. 2–2,5 óra</p><p>Telítettebb szín, határozottabb kontúr – rúzsos hatás.</p>
         <a class="gomb gomb-bezs" href="#foglalas" data-foglalo="kezeles=ajak-ruzs" data-cta="ar-ajak-ruzs">Időpontot nézek</a></div>
       </article>
       <article class="ar-kartya" data-salonic="szemhej">
         <img src="/assets/img/c2eb0f_89cc6bf1793c48f193ce38d64d87e940.jpg" alt="Szemhéjtetoválás – füstös" loading="lazy">
-        <div><h3>Szemhéj – füstös</h3><p class="ar"><span class="ar-most">63 000 Ft</span> <s class="ar-regi">79 000 Ft</s></p><p class="ar-ido">120 perc</p><p>Diszkrét, füstös hatású szemhéjtetoválás.</p>
+        <div><h3>Szemhéj – füstös</h3><p class="ar"><span class="ar-most">63 000 Ft</span></p><p class="ar-ido">kb. 2–2,5 óra</p><p>Diszkrét, füstös hatású szemhéjtetoválás.</p>
         <a class="gomb gomb-bezs" href="#foglalas" data-foglalo="kezeles=szemhej" data-cta="ar-szemhej">Időpontot nézek</a></div>
       </article>
     </div>
@@ -221,6 +209,41 @@
       <p class="eloleg-szoveg">Időpontfoglaláskor nem kérek előleget.<br> A kezelés díját a helyszínen, a szolgáltatás után fizeted.</p>
       <svg class="level" viewBox="0 0 120 60" aria-hidden="true"><path d="M8 52C40 46 78 30 112 6M40 44c-8-10-4-22 6-26 2 12-1 20-6 26zM66 32c-4-12 2-22 13-23-1 12-5 19-13 23zM88 18c2-10 10-15 20-14-4 9-11 13-20 14z"/></svg>
     </div>
+  </div>
+</section>
+
+<!-- ============ 2a. TOVABBI EREDMENYEK (az arak utan, kattintasra nyilik) ============ -->
+<section class="galeria" id="tovabbi" aria-labelledby="tovabbi-cim">
+  <div class="tartalom">
+    <h2 id="tovabbi-cim" class="kozepre">További eredmények</h2>
+    <p class="halk kozepre">Még több munkám – szemöldök és ajak. Kattints egy képre a nagyításhoz.</p>
+    <div class="kozepre"><button type="button" class="gomb gomb-korvonal" id="ref-tobb">Mutasd a többi képet <span class="nyil">↓</span></button></div>
+    <div id="galeria-tartalom" hidden>
+    <div class="szuro" role="tablist" aria-label="Eredmények szűrése">
+      <button type="button" role="tab" aria-selected="true" data-szuro="osszes">Összes</button>
+      <button type="button" role="tab" aria-selected="false" data-szuro="szemoldok">Szemöldök</button>
+      <button type="button" role="tab" aria-selected="false" data-szuro="ajak">Ajak</button>
+    </div>
+    <!-- Melitta munkai (Drive: Sminktetovalas kepek / referenciak), minden kep 1:1. -->
+    <div class="ref-racs" id="esetek">
+    <!-- sorrend: kozeli szemoldok -> arcos szemoldok -> ajak (elobb a kesz, aztan az elotte/utana) -->
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-01.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-03.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-06.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-09.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-12.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-04.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-07.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-08.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-10.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-02.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-03.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-05.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-06.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-08.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-01.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+    </div>
+        </div>
   </div>
 </section>
 
@@ -241,7 +264,7 @@
     <ol class="lepes-racs">
       <li><div class="lepes-fej"><span class="szam">1</span><h3>Megnézem az arcodat</h3></div><p>Figyelembe veszem az arcformádat, bőrtípusodat és az egyéni adottságaidat.</p><img src="/assets/img/c2eb0f_663d6199748c4770be062d8c47dc0276.jpg" alt="" loading="lazy" style="object-position:50% 35%"></li>
       <li><div class="lepes-fej"><span class="szam">2</span><h3>Előrajzolom</h3></div><p>Precízen megtervezem a formát, amely illik az arcodhoz.</p><img src="/assets/img/pmu/elorajzolas.jpg" alt="Melitta előrajzolja a szemöldök formáját" loading="lazy" style="object-position:55% 40%"></li>
-      <li><div class="lepes-fej"><span class="szam">3</span><h3>Te hagyod jóvá</h3></div><p>Csak akkor kezdem el a pigmentálást, ha a forma teljesen megfelel neked.</p><img src="/assets/img/pmu/jovahagyas.jpg" alt="" loading="lazy" style="object-position:50% 40%"></li>
+      <li class="kiemelt"><p class="kiemelt-cimke">A legfontosabb lépés</p><div class="lepes-fej"><span class="szam">3</span><h3>Te hagyod jóvá</h3></div><p>Csak akkor kezdem el a pigmentálást, ha a forma teljesen megfelel neked.</p><img src="/assets/img/pmu/jovahagyas.jpg" alt="" loading="lazy" style="object-position:50% 40%"></li>
       <li><div class="lepes-fej"><span class="szam">4</span><h3>Precíz pigmentálás</h3></div><p>Finoman, rétegenként dolgozom a természetes hatásért.</p><img src="/assets/img/c2eb0f_b72c6b0a862d4a0ba31e58a6ea868fe8.jpg" alt="" loading="lazy" style="object-position:50% 45%"></li>
       <li><div class="lepes-fej"><span class="szam">5</span><h3>Gyógyult eredményre tervezek</h3></div><p>A technikát és a színt is úgy választom meg, hogy gyógyulás után is természetes maradjon.</p><img src="/assets/img/pmu/gyogyult-szoke.jpg" alt="Gyógyult, természetes szemöldöktetoválás" loading="lazy" style="object-position:50% 30%"></li>
     </ol>
@@ -256,15 +279,15 @@
       <h2 id="menet-cim">Így zajlik — és ennyi idővel számolj</h2>
       <ol class="idovonal">
         <li><span class="ikon-kor"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg></span><h3>Telefonos<br>egyeztetés</h3><p>Bármire jelentkezel, előtte felhívlak: átbeszéljük az elképzeléseidet, és minden kérdésedet felteheted.</p></li>
-        <li><span class="ikon-kor"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><h3>Kezelés<br>1,5–2 óra</h3><p>Megnézem az arcodat, megtervezem a formát, és a jóváhagyásod után elvégzem a pigmentálást.</p></li>
+        <li><span class="ikon-kor"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><h3>Kezelés<br>2–2,5 óra</h3><p>Megnézem az arcodat, megtervezem a formát, és a jóváhagyásod után elvégzem a pigmentálást.</p></li>
         <li><span class="ikon-kor"><svg viewBox="0 0 24 24"><path d="M12 20c-4-2-7-5-7-9 2 0 4 1 5 3 0-4 1-7 2-9 1 2 2 5 2 9 1-2 3-3 5-3 0 4-3 7-7 9z"/></svg></span><h3>Gyógyulás<br>7–10 nap</h3><p>A szín fokozatosan halványodik, ez természetes része a folyamatnak.</p></li>
         <li><span class="ikon-kor"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><h3>Korrekció<br>4–7 hét múlva</h3><p>Ekkor finomítom az eredményt, szükség esetén erősítek a színen.</p></li>
       </ol>
     </div>
     <aside class="nyugi">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-      <h3>Fontos esemény előtt?</h3>
-      <p>Esküvő, nyaralás vagy fotózás előtt foglalj legalább 6 héttel korábban: így a gyógyulás és a korrekció is lezajlik, és a nagy napon már a végleges, természetes eredmény látszik.</p>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/></svg>
+      <h3>Mindenképp felhívunk!</h3>
+      <p>Időpontfoglalásod után 24 órán belül felhívunk, és minden kérdésedet átbeszéljük.</p>
     </aside>
   </div>
 </section>
@@ -369,7 +392,8 @@
       <div class="mielott-jobb">
         <h3>Köszönöm, hogy tiszteled az időmet.</h3>
         <p class="tisztelet-lead">Kérlek, csak olyan időpontot foglalj le, amelyet valóban vállalni tudsz.</p>
-        <p class="tisztelet-szoveg">A sminktetováláshoz 2–2,5 órás idősávot kizárólag neked tartunk fenn, erre az időre más vendég nem tud foglalni. Ha bizonytalan vagy abban, hogy el tudsz-e jönni, inkább válassz most egy későbbi időpontot.</p>
+        <p class="tisztelet-szoveg">A sminktetováláshoz 2–2,5 órás idősávot kizárólag neked tartunk fenn, erre az időre más vendég nem tud foglalni.</p>
+        <p class="tisztelet-szoveg">Ha bizonytalan vagy, vagy még csak érdeklődsz, akkor inkább beszéljünk telefonon, vagy gyere el ingyenes konzultációra. Fizetős időpontot kérlek, csak akkor foglalj, ha tényleg eldöntötted, hogy sminktetoválást szeretnél.</p>
         <!-- idovonal-abra: foglalas -> 48 oraval elotte (eddig lehet atfoglalni) -> kezeles -->
         <ol class="lemondas-abra" aria-label="Időpont-módosítási határidő">
           <li><span class="pont"></span><b>Foglalás</b><small>olyan napra, amit vállalni tudsz</small></li>
@@ -393,7 +417,7 @@
         <details><summary>Mennyire fáj a sminktetoválás?</summary><p>Kíméletesen dolgozom, folyamatosan figyelek a komfortodra, és bármikor tarthatunk rövid szünetet. A legtöbb vendégem kellemesebbnek érzi, mint amire előtte számított.</p></details>
         <details><summary>Mi van, ha túl sötét vagy mű lesz?</summary><p>Nem a friss, intenzívebb színre, hanem a lágyabb, gyógyult eredményre tervezek. A pigmentet fokozatosan építem fel, hogy a szemöldök ne legyen kemény, az ajak pedig ne hasson állandó rúzsnak.</p></details>
         <details><summary>Mi történik, ha nem tetszik az előrajzolt forma?</summary><p>A formát és a színirányt előre, személyre szabottan tervezem meg. Addig finomítok rajta, amíg teljesen magadénak nem érzed. Csak akkor kezdem el a tetoválást, amikor te is jóváhagytad.</p></details>
-        <details><summary>Mennyi ideig tart a kezelés?</summary><p>A szemöldöktetoválás kb. 1,5 óra, az ajak- és a szemhéjtetoválás kb. 2 óra. A korrekció 4–7 hét múlva következik.</p></details>
+        <details><summary>Mennyi ideig tart a kezelés?</summary><p>A kezelés a tervezéssel és az előrajzolással együtt kb. 2–2,5 óra – erre az időre csak téged várlak. A korrekció 4–7 hét múlva következik.</p></details>
         <details><summary>Hogyan gyógyul?</summary><p>A friss szín mindig intenzívebb, ajaktetoválás után pedig átmeneti duzzanat is előfordulhat. A kezelt terület hámlik, halványul, majd néhány hét alatt kialakul a végleges, lágyabb árnyalat.</p></details>
         <details><summary>Mikor látható a végleges eredmény?</summary><p>A gyógyult eredményt általában 4–6 hét után lehet megítélni.</p></details>
         <details><summary>Meddig marad meg?</summary><p>Általában 2–2,5 évig szép marad, idővel pedig frissítésre lehet szükség, hogy a forma és a szín újra egységes legyen.</p></details>

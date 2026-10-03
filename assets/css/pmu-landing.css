@@ -735,3 +735,61 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
   .nem-ai { border-radius: 14px; text-align: center; }
 }
 @media (max-width: 370px) { .ut-tipus { white-space: normal; } }
+
+/* === 2026-10-03 (5. kor) === */
+/* hero: ar szemoldokre, az ajak kisebben; a betet masodik kepe "gyogyult eredmeny" */
+.tenyek-al { display: block; color: var(--halk); font-size: var(--b4); }
+.betet-kep .cimke { white-space: normal; text-align: center; line-height: 1.15; letter-spacing: .08em; max-width: calc(100% - 12px); }
+/* helyzetek: a hosszu cim es a gomb ne logjon ki a kartyabol */
+.helyzet > div:last-child { min-width: 0; }
+.helyzet h3 { overflow-wrap: anywhere; hyphens: auto; }
+.helyzet .gomb { max-width: 100%; }
+/* 6 kiemelt eset problematipus szerint */
+.eset-racs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 8px; }
+.eset { margin: 0; background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid #e3e8e1; box-shadow: var(--arnyek); display: flex; flex-direction: column; }
+.eset-kep { position: relative; aspect-ratio: 1.25; background: #e5e8e0; }
+.eset-kep img { width: 100%; height: 100%; object-fit: cover; }
+.eset[data-irany="lr"] .eset-kep img, .eset[data-irany="tb"] .eset-kep img, .eset[data-irany="bt"] .eset-kep img { object-fit: cover; object-position: 50% 50%; }
+.eset[data-irany="tb"] .eset-kep, .eset[data-irany="bt"] .eset-kep { aspect-ratio: 1; }
+.eset-cimke { position: absolute; background: rgba(255, 255, 255, .92); color: #2c2c2c; font: 600 var(--b4)/1 var(--test); letter-spacing: .12em; text-transform: uppercase; padding: 6px 10px; border-radius: 999px; }
+.eset-cimke.utana { background: #183033; color: #fff; }
+.eset[data-irany="lr"] .elotte { left: 10px; bottom: 10px; }
+.eset[data-irany="lr"] .utana { right: 10px; bottom: 10px; }
+.eset[data-irany="tb"] .elotte { left: 10px; top: 10px; }
+.eset[data-irany="tb"] .utana { left: 10px; top: calc(50% + 10px); }
+.eset[data-irany="bt"] .utana { left: 10px; top: 10px; }
+.eset[data-irany="bt"] .elotte { left: 10px; top: calc(63% + 8px); }
+.eset figcaption { padding: 14px 16px 16px; display: grid; gap: 4px; }
+.eset-tipus { font: 600 var(--b4)/1.2 var(--test); letter-spacing: .16em; text-transform: uppercase; color: var(--arany); }
+.eset figcaption b { font: 500 var(--b2)/1.2 var(--cim); color: var(--szoveg); }
+.eset figcaption > span:last-child { font-size: var(--b4); color: var(--halk); line-height: 1.45; }
+.eredmenyek .kozepre .gomb { margin-top: 22px; }
+/* tovabbi eredmenyek: az arak utan, kattintasra nyilik */
+.galeria { padding: 44px 0 50px; background: #f7f8f6; border-top: 1px solid var(--vonal); }
+.galeria .halk { margin: 8px 0 18px; }
+.galeria .szuro { margin: 18px 0; }
+/* mitol nem lesz mu hatasu: a 3. lepes (jovahagyas) kiemelve - petrol hatter, de nem gomb-szeru */
+.lepes-racs li.kiemelt { background: #183033; border: 2px solid #c6a346; transform: none; box-shadow: none; cursor: default; position: relative; }
+.lepes-racs li.kiemelt h3 { color: #fff; font: 500 var(--b3)/1.25 var(--cim); letter-spacing: 0; text-transform: none; }
+.lepes-racs li.kiemelt p { color: #dfe8e6; }
+.lepes-racs li.kiemelt .szam { background: #d9c164; color: #183033; }
+.lepes-racs li.kiemelt p.kiemelt-cimke { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); margin: 0; flex: none; white-space: nowrap; background: #c6a346; color: #fff; font: 600 var(--b4)/1 var(--test); letter-spacing: .1em; text-transform: uppercase; padding: 5px 10px; border-radius: 999px; }
+/* menet: "Mindenkepp felhivunk!" doboz */
+.nyugi svg { color: #183033; }
+.nyugi h3 { color: #183033; }
+@media (max-width: 1100px) { .eset-racs { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 700px) {
+  .eset-racs { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .eset figcaption { padding: 8px 10px 10px; gap: 2px; }
+  .eset-cimke { padding: 4px 7px; letter-spacing: .06em; }
+  .eset figcaption > span:last-child { display: none; }
+  .galeria { padding: 30px 0 34px; }
+  .lepes-racs li.kiemelt { margin-top: 10px; }
+  .lepes-racs li.kiemelt p.kiemelt-cimke { left: auto; right: 10px; transform: none; }
+}
+@media (max-width: 700px) { .eset-kep, .eset[data-irany] .eset-kep { aspect-ratio: 1; } }
+.helyzet h3 { overflow-wrap: normal; hyphens: manual; }
+@media (min-width: 1101px) and (max-width: 1300px) { .helyzet { grid-template-columns: 36% 1fr; } }
+.tisztelet-lead { margin-right: 0 !important; }
+@media (min-width: 1241px) { .tisztelet-lead { white-space: nowrap; } }
+@media (min-width: 1101px) and (max-width: 1240px) { .tisztelet-lead { font-size: var(--b4) !important; white-space: nowrap; } }
