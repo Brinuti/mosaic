@@ -11,3 +11,8 @@ compatibility_date = "2026-09-01"
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
 SMTP_USER = "mosaicheadspa@gmail.com"
+# Gift Commerce Engine (/ajandek, lasd AJANDEK.md): a nem titkos valtozok IDE kellenek (a feluleten megadottakat a
+# wrangler.toml torli). Titkosak (Secret tipussal a feluleten): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK.
+# STRIPE_PUBLISHABLE_KEY = "pk_live_..."
+# AJANDEK_BAZIS_URL = "https://www.mosaicheadspa.hu"
+# AJANDEK_AZONNALI = "1"   # csak ha a kartya kiallitasa valoban automatikus (lasd AJANDEK.md)
