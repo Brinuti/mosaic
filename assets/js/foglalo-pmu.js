@@ -254,7 +254,7 @@
       elem('img', { src: k.foto, alt: '' }),
       elem('span', {},
         elem('span', { class: 'nev', szoveg: k.egyeb ? k.nev : k.cim }),
-        elem('span', { class: 'valtozat', szoveg: [k.egyeb ? 'A szalonban' : k.valtozat, idotartam(k.perc)].filter(Boolean).join(' · ') })),
+        elem('span', { class: 'valtozat', szoveg: [k.egyeb ? 'A szalonban' : k.valtozat, idotartam(k.perc).replace(/^kb\. /, '')].filter(Boolean).join(' · ') })),
       elem('span', { class: 'jobb' },
         elem('span', { class: 'ar', szoveg: arSzoveg(k) }),
         null));

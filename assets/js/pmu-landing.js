@@ -172,15 +172,23 @@
     if (e.origin !== location.origin || e.source !== keret.contentWindow || !e.data || !e.data.mhFoglalo) return;
     if (e.data.magassag) keret.style.height = e.data.magassag + 'px';
     // az elso (betolteskori) nezetnel nem gorgetunk
-    if (e.data.nezet && nezetek++ && keret.getBoundingClientRect().top < 0) $('foglalo-keret').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // mobilon minden lepesvaltaskor a keret teteje a fejlec ala kerul, igy az adott lepes egesze a kepernyon van
+    if (e.data.nezet && nezetek++ && (mobil() || keret.getBoundingClientRect().top < 0)) keretIgazit();
   });
+  const mobil = () => matchMedia('(max-width: 700px)').matches;
+  function keretIgazit() {
+    const fej = document.getElementById('SITE_HEADER');
+    const fejAlja = fej && /fixed|sticky/.test(getComputedStyle(fej).position) ? Math.max(0, fej.getBoundingClientRect().bottom) : 0;
+    const cel = $('foglalo-keret').getBoundingClientRect().top + scrollY - fejAlja - (mobil() ? 6 : 16);
+    scrollTo({ top: Math.max(0, cel), behavior: 'smooth' });
+  }
   document.addEventListener('click', (e) => {
     const g = e.target.closest('[data-foglalo]');
     if (!g) return;
     e.preventDefault();
     keret.loading = 'eager';
     keret.src = ALAP + '&' + g.dataset.foglalo;
-    $('foglalo-keret').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    keretIgazit();
   });
 
   // --- eredmenyek: Szemoldok / Ajak szuro, eloszor 12 kep ----------------------------------------
@@ -226,6 +234,32 @@
     nagyMutat(lathatoRefek().indexOf(f));
     nagyito.showModal();
   });
+
+  // --- terkep: a MOSAIC Google-ertekelese a Trustindex-widget aktualis tartalmabol ----------------------
+  // A Trustindex a suti-tajekoztato szerint "funkcionalis" szolgaltatas: csak ennek engedelyezese utan kerdezzuk le.
+  const TI = 'https://cdn.trustindex.io/widgets/8a/8a7562c424f027774456be130a1/content.html';
+  let tiKesz = false;
+  async function ertekelesFrissit() {
+    if (tiKesz || !$('te-db') || !(window.mhSuti && mhSuti.engedely('fun'))) return;
+    tiKesz = true;
+    try {
+      const d = new DOMParser().parseFromString(await (await fetch(TI, { credentials: 'omit' })).text(), 'text/html');
+      const fej = d.querySelector('.ti-header');
+      const db = ((fej && fej.querySelector('.ti-rating-text a')) || {}).textContent || '';
+      const n = (db.match(/\d[\d\s.]*/) || [''])[0].replace(/\D/g, '');
+      const cs = fej ? [...fej.querySelectorAll('.ti-stars .ti-star')].map((x) => (x.classList.contains('f') ? 1 : x.classList.contains('h') ? 0.5 : 0)) : [];
+      const min = ((fej && fej.querySelector('.ti-rating')) || {}).textContent;
+      if (n) $('te-db').textContent = new Intl.NumberFormat('hu-HU').format(+n).replace(/\s/g, '.') + ' Google-vélemény';
+      if (cs.length === 5) {
+        const ossz = cs.reduce((a, b) => a + b, 0);
+        $('te-csillagok').textContent = cs.map((x) => (x === 1 ? '★' : x ? '⯪' : '☆')).join('');
+        $('te-csillagok').setAttribute('aria-label', '5 csillagból ' + String(ossz).replace('.', ','));
+      }
+      if (min && min.trim()) $('te-minosites').textContent = min.trim().replace(/ értékelés$/i, '');
+    } catch (e) { tiKesz = false; console.error(e); }
+  }
+  ertekelesFrissit();
+  if (window.mhSuti && mhSuti.figyel) mhSuti.figyel(ertekelesFrissit);
 
   // --- velemenyek: lapozhato sor ---------------------------------------------------------------------
   const velRacs = $('vel-racs');
