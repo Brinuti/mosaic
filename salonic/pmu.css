@@ -203,3 +203,8 @@ body.customer-mosaic-pmu .panel-body > div > hr { margin: 4px 0 !important; }
   body.customer-mosaic-pmu .order-lg-1 .card-body { padding: 18px 20px !important; }
   body.customer-mosaic-pmu .btn-submit-booking { margin-top: 10px !important; }
 }
+
+/* egy betucsalad (Jost), mint a landingen es a foglaloban; a foglalas-gomb arany, mint a MOSAIC oldalon */
+body.customer-mosaic-pmu, body.customer-mosaic-pmu input, body.customer-mosaic-pmu button, body.customer-mosaic-pmu label, body.customer-mosaic-pmu .form-control { font-family: 'MosaicJost', 'Helvetica Neue', Arial, sans-serif !important; }
+body.customer-mosaic-pmu .btn-success, body.customer-mosaic-pmu .btn-primary, body.customer-mosaic-pmu .salonic-gradient-button, body.customer-mosaic-pmu .btn-submit-booking, body.customer-mosaic-pmu .btn-submit-booking:focus { background: linear-gradient(#c6a346, #d9c164) !important; border: 0 !important; color: #fff !important; border-radius: 999px !important; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); }
+body.customer-mosaic-pmu .btn-success:hover, body.customer-mosaic-pmu .btn-primary:hover, body.customer-mosaic-pmu .btn-submit-booking:hover { background: #3f7652 !important; text-shadow: none; }
