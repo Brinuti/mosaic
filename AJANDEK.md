@@ -180,10 +180,8 @@ Két eset van (a szalon eddigi gyakorlata szerint):
    kuponkód egy „Másolás” gombbal másolható (`MASOL_JS`). Mindkét szkript hash-e a CSP-ben van.
    **Miért nem megy teljesen „egy gombbal, magától”?** A Salonic a saját oldalán fut, kívülről nem írható: az URL-paraméter nem tölti elő az
    űrlapot, API nincs, és a `PHPSESSID` süti SameSite-attribútum nélkül jön (Chrome ezt Lax-nak veszi), ezért a MOSAIC-oldalról indított
-   cross-site POST nem vinné át a belépést. Csak a Salonic-oldalon futó kód tud kitölteni. Ennek két módja van: a **könyvjelző** (2 kattintás:
-   link + könyvjelző; semmit nem kell telepíteni) és a **Tampermonkey-szkript** (`assets/eszkoz/mosaic-salonic-kitolto.user.js`, 1 kattintás:
-   a link megnyitásakor magától kitölt; a Tampermonkey böngészőbővítmény kell hozzá). A szkript fájl a könyvjelző kódját szó szerint tartalmazza
-   (a teszt ellenőrzi); a kód módosításakor újra kell generálni: fejléc + `if (/[#&]mosaic=/.test(location.hash)) { <SALONIC_KITOLTO_JS> }`.
+   cross-site POST nem vinné át a belépést. Csak a Salonic-oldalon futó kód tud kitölteni, ezért a megoldás a könyvjelző (2 kattintás: link +
+   könyvjelző; semmit nem kell telepíteni). Tampermonkey-szkriptet (1 kattintás) a szalon nem kért, nincs benne.
 3. **Kiállítás (mindkét esetben ugyanaz):** a gomb megerősítő oldalt nyit (GET, nem módosít), ott a szalon beírja a **kódot**, és
    megnyomja a gombot (POST). Utalásnál ekkor áll „fizetve” állapotba a rendelés (`atutalas_beerkezett`, `atutalas_ekkor`; az
    érvényesség ettől a naptól számít). A vevő levelet kap a kártya linkjével; az order hub „Ajándékkártya letöltése” gombja is aktív.

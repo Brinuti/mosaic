@@ -8,7 +8,6 @@ import crypto from 'node:crypto';
 import { mockStripeInditas } from './mock-stripe.mjs';
 import { ajandekKezel, kuponKod, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
 import vm from 'node:vm';
-import fs from 'node:fs';
 import { MASOL_JS, NYOMTAT_JS, SALONIC_KITOLTO_JS } from '../../netlify/lib/ajandek-levelek.js';
 import { utvonal } from '../../netlify/lib/utvonal.js';
 import { config as edgeConfig } from '../../netlify/edge-functions/oldal.js';
@@ -1087,29 +1086,6 @@ describe('/atutalas', () => {
       assert.equal(x.elemek.GiftCardBuyForm_nameFrom.value, '');
       assert.equal(x.naplo.banner, null);
     }
-  });
-
-  test('Tampermonkey-szkript (assets/eszkoz): ugyanaz a kod, mint a konyvjelzo; csak #mosaic= mellett fut; az oldalon opcionalis linkkent szerepel', async () => {
-    const fajl = fs.readFileSync(new URL('../../assets/eszkoz/mosaic-salonic-kitolto.user.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
-    assert.ok(fajl.includes(SALONIC_KITOLTO_JS), 'a konyvjelzo kodjat tartalmazza szo szerint (frissitsd: node a generalas a scratchpad-bol / lasd AJANDEK.md)');
-    assert.match(fajl, /^\/\/ ==UserScript==[^]*\/\/ @match\s+https:\/\/app\.salonic\.hu\/promotion\/giftCard\/sale\/\*[^]*\/\/ @grant\s+none[^]*\/\/ ==\/UserScript==/);
-    const kod = fajl.replace(/^\/\/.*$/gm, '');
-    const r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ termek: 'egyeni', nev: 'Vevő Béla', megajandekozott: 'Kovács Anna', telefon: TEL }) });
-    const pi = atuPi(r.adat.rendeles_ref);
-    const g = await hiv('GET', 'kiallit', { query: { pi: pi.id, t: await kiallitToken(ENV, pi.id) } });
-    const hash = new URL(/href="(https:\/\/app\.salonic\.hu[^"]+)"/.exec(g.body)[1].replace(/&#39;/g, "'")).hash;
-    const be = kitoltoFuttat(kod, hash, 'app.salonic.hu');
-    assert.equal(be.elemek.GiftCardBuyForm_nameFrom.value, 'Vevő Béla');
-    assert.equal(be.elemek.GiftCardBuyForm_paymentType.value, '14');
-    assert.equal(be.elemek.GiftCardBuyForm_sendCC.checked, false);
-    assert.equal(be.naplo.alert.length, 0);
-    // hash nelkul (a szalon maga nyitja az urlapot) a szkript nem csinal semmit: nincs figyelmeztetes sem
-    const ki = kitoltoFuttat(kod, '', 'app.salonic.hu');
-    assert.equal(ki.naplo.alert.length, 0);
-    assert.equal(ki.naplo.banner, null);
-    assert.equal(ki.elemek.GiftCardBuyForm_nameFrom.value, '');
-    // az oldal opcionalisan ajanlja
-    assert.ok(g.body.includes(`${BAZIS}/assets/eszkoz/mosaic-salonic-kitolto.user.js`));
   });
 
   test('kartyas rendelesnel a szalon felulirhatja a javasolt kodot: az kerul a levelbe es a kartyara', async () => {

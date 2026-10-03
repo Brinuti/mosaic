@@ -879,12 +879,6 @@ async function kiallitUrlap(k, e, hiba) {
       beallitas: 'Egyszeri beállítás: húzd ezt a gombot a könyvjelzősávba (ha nem látszik: Ctrl+Shift+B). Itt kattintani nem kell, csak húzni:',
       href: 'javascript:' + L.SALONIC_KITOLTO_JS,
       nev: 'MOSAIC kitöltő',
-      // opcionális, még gyorsabb: Tampermonkey-szkript, amely a link megnyitásakor magától (kattintás nélkül) kitölti az űrlapot
-      opcio: {
-        szoveg: 'Még egyszerűbb (opcionális): a Tampermonkey böngészőbővítménnyel a Salonic-link megnyitásakor az űrlap már kitöltve jön, könyvjelző-kattintás nélkül.',
-        url: `${k.bazis}/assets/eszkoz/mosaic-salonic-kitolto.user.js`,
-        nev: 'A szkript telepítése (Tampermonkey kell hozzá)',
-      },
     } : null,
     masol: atu ? null : {
       cim: 'A Salonic-kuponhoz',

@@ -306,7 +306,7 @@ button:hover{background:${PETROL_SOT}}`;
 // d: { cim, bekezdesek: [szoveg], reszletek?: [[cimke, ertek]], frissit?: masodperc, bazis,
 //      linkek?: [{ url, szoveg }],
 //      masol?: { cim, sorok: [{ cimke, ertek }] }  (soronkent "Masolas" gomb a vagolapra; a szkript hash-e a CSP-ben)
-//      kitolto?: { cim, szoveg, beallitas, href, nev, opcio?: { szoveg, url, nev } }  (egy kattintasos Salonic-kitolto: a draggable konyvjelzo-link, javascript: href)
+//      kitolto?: { cim, szoveg, beallitas, href, nev }  (egy kattintasos Salonic-kitolto: a draggable konyvjelzo-link, javascript: href)
 //      urlap?: { action, rejtett: { nev: ertek }, mezok?: [{ nev, cimke, ertek, max, kotelezo, megjegyzes }], hiba?, gomb } }
 //      (az urlap POST-tal kuld)
 export function egyszeruOldal(d) {
@@ -327,7 +327,6 @@ ${(d.linkek || []).map((l) => `<p class="linksor"><a href="${esc(l.url)}" target
 ${d.kitolto ? `<section class="kitolto"><h2>${esc(d.kitolto.cim)}</h2>
 <p>${esc(d.kitolto.szoveg)}</p>
 <p>${esc(d.kitolto.beallitas)} <a class="kitolto-gomb" href="${esc(d.kitolto.href)}" draggable="true" title="Húzd a könyvjelzősávba">${esc(d.kitolto.nev)}</a></p>
-${d.kitolto.opcio ? `<p>${esc(d.kitolto.opcio.szoveg)} <a href="${esc(d.kitolto.opcio.url)}">${esc(d.kitolto.opcio.nev)}</a></p>` : ''}
 </section>` : ''}
 ${d.masol && d.masol.sorok && d.masol.sorok.length ? `<section class="masol"><h2>${esc(d.masol.cim)}</h2>
 ${d.masol.sorok.map((m) => `<div class="masol-sor"><div class="masol-adat"><span class="masol-cimke">${esc(m.cimke)}</span><span class="masol-ertek">${esc(m.ertek)}</span></div><button type="button" class="masol-gomb" data-masol="${esc(m.ertek)}" data-eredeti="Másolás" data-ok="Másolva ✓">Másolás</button></div>`).join('\n')}
