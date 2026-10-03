@@ -24,7 +24,7 @@
       fejlec: 'Egy óra csak neki.',
       leiras: 'A legegyszerűbb választás, ha egy embernek keresel igazán pihentető ajándékot.',
       tartalom: ['50 perc Head Spa', '30 perc szárítás', '1 fő', '6 hónapig felhasználható'],
-      badge: null,
+      badge: 'NEKI EGYEDÜL',
       ar_ft: 26900,
       vendeg_db: 1,
       // valodi MOSAIC fotok (assets/img): egy terapeuta / ket terapeuta / ket vendeg
@@ -53,7 +53,7 @@
       fejlec: 'Közös élmény két főre.',
       leiras: 'Barátnővel, anyukáddal vagy a pároddal.',
       tartalom: ['2 vendég', '2 terapeuta', 'egy közös időpont', '6 hónapig felhasználható'],
-      badge: null,
+      badge: 'KETTEN, EGYÜTT',
       ar_ft: 53800,
       vendeg_db: 2,
       // a spec szerint a GENERAL vizual ket baratno (nem romantikus par); ez a MOSAIC egyetlen valodi paros fotoja
@@ -110,7 +110,7 @@
       hero_subtitle: 'Japán Head Spa élmény Budán, digitális vagy nyomtatott ajándékkártyával.',
       hero_cta: 'Kiválasztom az ajándékot',
       hero_media: {
-        src: '/assets/img/c2eb0f_3655b2f7e196464195c3e5f10c9644ba.jpg',
+        src: '/assets/img/c2eb0f_7815e153567d467fb8c261d4e5302ee0.jpg',
         alt: 'Vendégek Head Spa kezelésen a MOSAIC-ban'
       },
       hero_trust: [

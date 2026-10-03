@@ -11,7 +11,7 @@
 <meta name="description" content="Digitális vagy nyomtatott MOSAIC Head Spa ajándékkártya: egyéni, 4 kezes vagy páros élmény, online megvásárolható, 6 hónapig felhasználható.">
 <meta property="og:title" content="MOSAIC Head Spa ajándékkártya">
 <meta property="og:description" content="Ajándékozz neki 80 percet, ami tényleg csak róla szól.">
-<meta property="og:image" content="https://www.mosaicheadspa.hu/assets/img/c2eb0f_3655b2f7e196464195c3e5f10c9644ba.jpg">
+<meta property="og:image" content="https://www.mosaicheadspa.hu/assets/img/c2eb0f_7815e153567d467fb8c261d4e5302ee0.jpg">
 <meta property="og:url" content="https://www.mosaicheadspa.hu/ajandek">
 <meta property="og:site_name" content="MOSAIC Headspa">
 <meta property="og:type" content="website">
@@ -55,18 +55,18 @@
 <!-- ======== BONGESZES / KIVALASZTVA: a landing szekciok ======== -->
 <div id="ah-landing">
 
-  <!-- 4. GENERAL HERO: teljes szelessegu valodi fotohatter -->
+  <!-- 4. GENERAL HERO: vilagos hatter, szoveg balra, valodi foto jobbra -->
   <section class="ah-hero" id="ah-hero" aria-labelledby="ah-hero-cim">
     <figure class="ah-hero-media">
-      <img class="ah-hero-kep" id="ah-hero-kep" src="/assets/img/c2eb0f_3655b2f7e196464195c3e5f10c9644ba.jpg" width="1500" height="1000" alt="Vendégek Head Spa kezelésen a MOSAIC-ban" fetchpriority="high">
+      <img class="ah-hero-kep" id="ah-hero-kep" src="/assets/img/c2eb0f_7815e153567d467fb8c261d4e5302ee0.jpg" width="800" height="533" alt="Vendég Head Spa kezelésen a MOSAIC-ban" fetchpriority="high">
     </figure>
     <div class="ah-tartalom ah-hero-racs">
       <div class="ah-hero-szoveg">
         <p class="ah-felcim" id="ah-hero-eyebrow">MOSAIC HEAD SPA AJÁNDÉKKÁRTYA</p>
         <h1 id="ah-hero-cim">Ajándékozz neki 80 percet, ami tényleg csak róla szól.</h1>
         <p class="ah-lead" id="ah-hero-alcim">Japán Head Spa élmény Budán, digitális vagy nyomtatott ajándékkártyával.</p>
+        <p class="ah-hero-gomb"><a class="ah-gomb ah-gomb-fo" id="ah-hero-cta" href="#ah-finder"><span id="ah-hero-cta-szoveg">Kiválasztom az ajándékot</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></a></p>
         <ul class="ah-bizalom" id="ah-hero-bizalom" aria-label="Röviden"></ul>
-        <p class="ah-hero-gomb"><a class="ah-gomb ah-gomb-vilagos" id="ah-hero-cta" href="#ah-finder"><span id="ah-hero-cta-szoveg">Kiválasztom az ajándékot</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></a></p>
         <p class="ah-hero-bevaltas">Már van ajándékkártyád? <a href="/idpontfoglalas">Foglalj időpontot a kuponkóddal →</a></p>
       </div>
     </div>
@@ -75,7 +75,7 @@
   <!-- 5. GIFT FINDER: 1 kattintas, nincs reload, nem kerdoiv -->
   <section class="ah-szekcio ah-szekcio-finder" id="ah-finder" aria-labelledby="ah-finder-cim">
     <div class="ah-tartalom">
-      <header class="ah-szekcio-fej ah-kozep">
+      <header class="ah-szekcio-fej">
         <h2 id="ah-finder-cim">Milyen ajándékot keresel?</h2>
         <p class="ah-halk">Segítünk kiválasztani azt az élményt, ami hozzá illik.</p>
       </header>
@@ -83,13 +83,33 @@
     </div>
   </section>
 
-  <!-- 6. TERMEKEK (GENERAL sorrend: Egyeni, 4 kezes, Paros) + 9. PRODUCT SELECTED STATE (inline panel) -->
+  <!-- 6. TERMEKEK (GENERAL sorrend: Egyeni, 4 kezes, Paros) + az ajandekkartya elonezete + 9. PRODUCT SELECTED STATE (inline panel) -->
   <section class="ah-szekcio ah-szekcio-termek" id="ah-termekek" aria-labelledby="ah-termekek-cim">
     <div class="ah-tartalom">
-      <header class="ah-szekcio-fej ah-kozep ah-lathatatlan-cim">
+      <header class="ah-szekcio-fej ah-lathatatlan-cim">
         <h2 id="ah-termekek-cim">Válaszd ki az élményt</h2>
       </header>
-      <div class="ah-termekek" id="ah-termek-racs"></div>
+      <div class="ah-termek-sor">
+        <div class="ah-termekek" id="ah-termek-racs"></div>
+
+        <aside class="ah-kartya-elonezet" aria-labelledby="ah-elonezet-cim">
+          <p class="ah-elonezet-cim" id="ah-elonezet-cim">Így néz ki az ajándékkártya</p>
+          <!-- a valodi nyomtathato kartya (netlify/lib/ajandek-levelek.js) egyszerusitett mutatoja; a mintaszoveg nem valodi rendeles -->
+          <div class="ah-minta-kartya" aria-hidden="true">
+            <img src="/assets/img/logo-143x54@2x.png" width="112" height="42" alt="">
+            <p class="ah-minta-eyebrow">MOSAIC Head Spa ajándékkártya</p>
+            <p class="ah-minta-cim">Egyéni MOSAIC Head Spa ajándékkártya</p>
+            <p class="ah-minta-neki"><span>Neki</span>a megajándékozott neve</p>
+            <p class="ah-minta-kod"><span>Kuponkód</span>AK-XXXX-XXXX</p>
+            <p class="ah-minta-ervenyes">6 hónapig felhasználható</p>
+          </div>
+          <ul class="ah-pipalista">
+            <li><span class="ah-ikon" data-ikon="check" aria-hidden="true"></span>Digitálisan vagy nyomtatható formában</li>
+            <li><span class="ah-ikon" data-ikon="check" aria-hidden="true"></span>Személyre szabható üzenettel</li>
+            <li><span class="ah-ikon" data-ikon="check" aria-hidden="true"></span>6 hónapig érvényes</li>
+          </ul>
+        </aside>
+      </div>
 
       <section class="ah-panel" id="ah-kivalasztott" aria-labelledby="ah-kiv-fej" aria-live="polite" tabindex="-1" hidden>
         <div class="ah-kartya ah-panel-fo">
@@ -121,6 +141,26 @@
     </div>
   </section>
 
+  <!-- A vasarlas menete: a fizetes utani allapotok (siker -> szemelyre szabas -> kesz kartya) bemutatasa -->
+  <section class="ah-szekcio ah-menete" id="ah-menete" aria-labelledby="ah-menete-cim">
+    <div class="ah-tartalom">
+      <header class="ah-szekcio-fej">
+        <h2 id="ah-menete-cim">A vásárlás menete</h2>
+        <p class="ah-halk">Fizetés után még személyre szabhatod, az ajándékkártya pedig készen áll az ajándékozásra.</p>
+      </header>
+      <ol class="ah-menete-lepesek">
+        <li><span class="ah-menete-szam">1</span><span class="ah-menete-ikon"><span class="ah-ikon" data-ikon="check" aria-hidden="true"></span></span><div><strong>Sikeres fizetés</strong><span>A fizetésről e-mailben visszaigazolást kapsz.</span></div></li>
+        <li><span class="ah-menete-szam">2</span><span class="ah-menete-ikon"><span class="ah-ikon" data-ikon="pencil" aria-hidden="true"></span></span><div><strong>Személyre szabás</strong><span>Add meg a megajándékozott nevét, írj hozzá üzenetet, és válaszd ki az alkalmat.</span></div></li>
+        <li><span class="ah-menete-szam">3</span><span class="ah-menete-ikon"><span class="ah-ikon" data-ikon="gift" aria-hidden="true"></span></span><div><strong>Kész ajándékkártya</strong><span>Elkészültekor letöltheted, vagy e-mailben is megkapod.</span></div></li>
+      </ol>
+      <div class="ah-menete-kartyak">
+        <div class="ah-kartya ah-menete-kartya"><span class="ah-menete-ikon ah-menete-ikon-nagy"><span class="ah-ikon" data-ikon="check" aria-hidden="true"></span></span><div><h3>Sikeres vásárlás!</h3><p>Köszönjük a megrendelésed! A fizetés sikeresen megtörtént, a rendelés részleteiről e-mailben visszaigazolást küldünk.</p></div></div>
+        <div class="ah-kartya ah-menete-kartya"><span class="ah-menete-ikon ah-menete-ikon-nagy"><span class="ah-ikon" data-ikon="gift" aria-hidden="true"></span></span><div><h3>Személyre szabás</h3><p>Add meg, kinek szól az ajándék, írj hozzá egyedi üzenetet, és válaszd ki az alkalmat. Ez nem befolyásolja a vásárlást.</p></div></div>
+        <div class="ah-kartya ah-menete-kartya"><span class="ah-menete-ikon ah-menete-ikon-nagy"><span class="ah-ikon" data-ikon="card" aria-hidden="true"></span></span><div><h3>Elkészült ajándékkártya</h3><p>Az ajándékkártya elkészültekor letöltheted és kinyomtathatod, vagy e-mailben továbbküldheted a megajándékozottnak.</p></div></div>
+      </div>
+    </div>
+  </section>
+
   <!-- 7. EXPERIENCE -->
   <section class="ah-szekcio ah-szekcio-elmeny" id="ah-elmeny" aria-labelledby="ah-elmeny-cim">
     <div class="ah-tartalom ah-elmeny-racs">
@@ -145,19 +185,66 @@
   </section>
 
   <!-- 8. SOCIAL PROOF: csak valodi velemeny (a tulajdonos adta meg) es a Google-osszegzes -->
-  <section class="ah-velemeny-sav" id="ah-velemeny" aria-labelledby="ah-velemeny-cim">
-    <div class="ah-tartalom ah-velemeny-racs" id="ah-proof">
-      <div class="ah-proof-fo">
-        <p class="ah-felcim ah-felcim-vilagos" id="ah-velemeny-cim">Valódi MOSAIC vendégvélemény</p>
-        <blockquote class="ah-proof-idezet">
+  <section class="ah-szekcio ah-velemeny" id="ah-velemeny" aria-labelledby="ah-velemeny-cim">
+    <div class="ah-tartalom">
+      <header class="ah-szekcio-fej">
+        <h2 id="ah-velemeny-cim">Mit mondanak a vendégeink?</h2>
+        <p class="ah-halk">Valódi MOSAIC vendégvélemény a Google-ről.</p>
+      </header>
+      <div class="ah-velemeny-racs" id="ah-proof">
+        <blockquote class="ah-kartya ah-proof-idezet">
           <p id="ah-proof-idezet"></p>
           <footer id="ah-proof-forras"></footer>
         </blockquote>
+        <div class="ah-kartya ah-google" aria-label="Google-értékelések összegzése">
+          <p class="ah-csillagok" aria-hidden="true">★★★★★</p>
+          <p class="ah-google-pont" id="ah-google-pont"></p>
+          <p class="ah-google-szam" id="ah-google-szam"></p>
+        </div>
       </div>
-      <div class="ah-google" aria-label="Google-értékelések összegzése">
-        <p class="ah-csillagok" aria-hidden="true">★★★★★</p>
-        <p class="ah-google-pont" id="ah-google-pont"></p>
-        <p class="ah-google-szam" id="ah-google-szam"></p>
+    </div>
+  </section>
+
+  <!-- Hol talalsz minket + gyakori kerdesek (a valaszok a MOSAIC mar elo oldalairol / a jovahagyott szovegekbol valok) -->
+  <section class="ah-szekcio ah-info" id="ah-info" aria-labelledby="ah-hely-cim">
+    <div class="ah-tartalom ah-info-racs">
+      <div class="ah-kartya ah-hely">
+        <h2 id="ah-hely-cim">Itt találsz minket</h2>
+        <div class="ah-hely-kepek">
+          <img src="/assets/img/c2eb0f_984c2348443b404f8be9e1a273aefd59.jpg" width="1500" height="1125" alt="A MOSAIC kezelőszobája" loading="lazy">
+          <img src="/assets/img/c2eb0f_8c347f764efd4b94997943270259bfce.jpg" width="1402" height="934" alt="Mécsesek a MOSAIC szalonban" loading="lazy">
+        </div>
+        <ul class="ah-hely-lista">
+          <li><span class="ah-ikon" data-ikon="pin" aria-hidden="true"></span><span>1023 Budapest, Bécsi út 2.<small>A Zsigmond térnél</small></span></li>
+          <li><span class="ah-ikon" data-ikon="clock" aria-hidden="true"></span><span>Hétfő–péntek: 8–20 óráig<small>Szombat: 9–18 óráig, vasárnap: zárva</small></span></li>
+          <li><span class="ah-ikon" data-ikon="phone" aria-hidden="true"></span><span><a href="tel:+36202474444">06 20 247 4444</a></span></li>
+          <li><span class="ah-ikon" data-ikon="mail" aria-hidden="true"></span><span><a href="mailto:mosaicheadspa@gmail.com">mosaicheadspa@gmail.com</a></span></li>
+        </ul>
+        <p><a class="ah-link" href="https://www.google.com/maps/search/?api=1&amp;query=1023+Budapest+B%C3%A9csi+%C3%BAt+2" target="_blank" rel="noopener">Útvonal a térképen →</a></p>
+      </div>
+      <div class="ah-gyik">
+        <h2>Gyakori kérdések</h2>
+        <details><summary>Meddig érvényes az ajándékkártya?</summary><p>A vásárlás napjától számított 6 hónapig. A pontos lejárati dátum a kártyán is szerepel.</p></details>
+        <details><summary>Hogyan kapom meg az ajándékkártyát?</summary><p>A fizetés után e-mailben visszaigazolást kapsz. Az ajándékkártya elkészültekor itt az oldalon és e-mailben is megjelenik, nyomtatható formában (kinyomtathatod, vagy PDF-ként mentheted). Papír alapon, ízléses borítékban a szalonban is átveheted.</p></details>
+        <details><summary>Hogyan váltható be?</summary><p>Az <a href="/idpontfoglalas">online időpontfoglalásnál</a> a kártyán lévő kuponkódot add meg a „kuponkód” mezőben, a rendszer jóváírja a 100% kedvezményt. A kártya névre szól és 6 hónapig érvényes.</p></details>
+        <details><summary>Férfiak is jöhetnek?</summary><p>A Head Spa nemtől függetlenül bárkinek ajánlott, férfiak és nők egyaránt élvezhetik a kezelést és annak előnyeit.</p></details>
+        <details><summary>Csak hosszú hajra ajánlott, vagy rövidebb haj esetén is hatékony?</summary><p>A Head Spa bármilyen hajhossznál hatékony, rövid és hosszú haj esetén egyaránt. A kezelés a fejbőrre fókuszál, így a haj hossza nem befolyásolja az eredményt.</p></details>
+        <details><summary>Van-e bármilyen ellenjavallat, ami miatt nem ajánlott a kezelés?</summary>
+          <p>Head Spa kezelésen akkor vehetsz részt, ha az alábbiakat elfogadod:</p>
+          <ul>
+            <li>A kezelést megelőző 4 héten belül fejsérülésed, vagy súlyosabb (hányással és lázzal járó) agyrázkódásod nem volt.</li>
+            <li>Nincsen akut arcüreggyuladásod, nyirokcsomó- vagy mandulagyulladásod, illetve foggyulladásod.</li>
+            <li>Nem vagy lázas beteg.</li>
+            <li>Az elmúlt 4 hétben nem estél át nagyobb műtéti beavatkozáson.</li>
+            <li>Nem vagy vérzékeny.</li>
+            <li>Nem vagy fertőző beteg (Hepatitis A, B, C, Aids, tuberkulózis, vagy egyéb fertőző betegség).</li>
+            <li>A felsőtested bőrfelületén nincsen nyílt seb, friss trauma, intenzív hámhiány, fekély, vagy mély gombásodás.</li>
+            <li>Nem vagy epilepsziás.</li>
+            <li>Nincs kezeletlen szív- és érrendszeri betegséged.</li>
+            <li>Nincsen kiugróan magas vérnyomásod.</li>
+            <li>És nem vagy veszélyeztetett terhes.</li>
+          </ul>
+        </details>
       </div>
     </div>
   </section>
@@ -174,100 +261,16 @@
 <!-- ======== FIZETES -> SIKER -> SZEMELYRE SZABAS -> OSSZEGZO: fokuszalt nezet, ugyanazon az oldalon ======== -->
 <div id="ah-fokusz" hidden>
 
-  <!-- 10. EMBEDDED CHECKOUT (a szemelyre szabas SZANDEKOSAN nincs itt) -->
+  <!-- 10. EMBEDDED CHECKOUT (a szemelyre szabas SZANDEKOSAN nincs itt): 1 Termek | 2 Adatok | 3 Fizetes -->
   <section class="ah-fizetes" id="ah-fizetes" aria-labelledby="ah-fizetes-cim" hidden>
     <div class="ah-fizetes-sor">
       <button type="button" class="ah-vissza" id="ah-vissza-gomb" hidden><span aria-hidden="true">←</span>&nbsp;Másik élményt választok</button>
     </div>
+    <h2 class="ah-lathatatlan-cim" id="ah-fizetes-cim" tabindex="-1">Biztonságos fizetés</h2>
     <div class="ah-fizetes-racs">
-      <form class="ah-kartya ah-urlap" id="ah-urlap" novalidate autocomplete="on">
-        <div class="ah-urlap-fej">
-          <h2 id="ah-fizetes-cim" tabindex="-1"><span class="ah-ikon" data-ikon="lock" aria-hidden="true"></span>Biztonságos fizetés</h2>
-          <p class="ah-kicsi ah-halk">Titkosított kapcsolat · Stripe</p>
-        </div>
-
-        <!-- 12. PAYMENT ERROR: a beirt adatok megmaradnak, nem dob vissza a landing tetejere -->
-        <div class="ah-hibasav" id="ah-hibasav" role="alert" tabindex="-1" hidden>
-          <h3>A fizetés nem sikerült.</h3>
-          <p>Nem terheltük meg a kártyádat. Próbáld újra, vagy válassz másik fizetési módot.</p>
-          <p class="ah-hibasav-resz" id="ah-hibasav-resz"></p>
-          <div class="ah-gombsor">
-            <button type="button" class="ah-gomb ah-gomb-fo" id="ah-ujra-gomb">Újra megpróbálom</button>
-            <button type="button" class="ah-gomb ah-gomb-kor" id="ah-masikmod-gomb">Másik fizetési mód</button>
-          </div>
-        </div>
-
-        <div class="ah-mezo">
-          <label for="ah-email">E-mail címed</label>
-          <input id="ah-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="pl. te@emailcimed.hu" required>
-          <p class="ah-mezohiba" id="ah-email-hiba" hidden></p>
-        </div>
-        <div class="ah-mezo">
-          <label for="ah-nev">Számlázási név</label>
-          <input id="ah-nev" name="nev" type="text" autocomplete="name" maxlength="120" required>
-          <p class="ah-mezohiba" id="ah-nev-hiba" hidden></p>
-        </div>
-        <div class="ah-mezosor">
-          <div class="ah-mezo ah-mezo-kicsi">
-            <label for="ah-iranyitoszam">Irányítószám</label>
-            <input id="ah-iranyitoszam" name="iranyitoszam" type="text" autocomplete="postal-code" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" required>
-            <p class="ah-mezohiba" id="ah-iranyitoszam-hiba" hidden></p>
-          </div>
-          <div class="ah-mezo">
-            <label for="ah-varos">Város</label>
-            <input id="ah-varos" name="varos" type="text" autocomplete="address-level2" maxlength="80" required>
-            <p class="ah-mezohiba" id="ah-varos-hiba" hidden></p>
-          </div>
-        </div>
-        <div class="ah-mezo">
-          <label for="ah-cim">Utca, házszám</label>
-          <input id="ah-cim" name="cim" type="text" autocomplete="address-line1" maxlength="200" required>
-          <p class="ah-mezohiba" id="ah-cim-hiba" hidden></p>
-        </div>
-
-        <details class="ah-ceges" id="ah-ceges">
-          <summary>Céges számlát kérek</summary>
-          <div class="ah-mezo">
-            <label for="ah-ceges-nev">Cégnév</label>
-            <input id="ah-ceges-nev" name="ceges_nev" type="text" autocomplete="organization" maxlength="120">
-          </div>
-          <div class="ah-mezo">
-            <label for="ah-ceges-adoszam">Adószám</label>
-            <input id="ah-ceges-adoszam" name="ceges_adoszam" type="text" maxlength="20">
-          </div>
-          <p class="ah-mezohiba" id="ah-ceges-hiba" hidden></p>
-        </details>
-
-        <div class="ah-fizetesi-doboz" id="ah-fizetesi-doboz">
-          <p class="ah-cimke">Fizetési mód</p>
-          <p class="ah-halk ah-kicsi">Apple Pay, Google Pay vagy bankkártya – ahol elérhető.</p>
-          <div id="ah-fizetesi-elem" aria-live="polite"></div>
-          <p class="ah-mezohiba" id="ah-fizetes-hiba" role="alert" hidden></p>
-          <p class="ah-nincs-fizetes" id="ah-nincs-fizetes" hidden>Az online fizetés jelenleg nem érhető el. Próbáld újra később, vagy válaszd az átutalást, esetleg hívj minket: <a href="tel:+36202474444">06 20 247 4444</a>.</p>
-        </div>
-
-        <input type="text" name="bot-field" id="ah-csapda" class="ah-csapda" tabindex="-1" autocomplete="off" aria-hidden="true">
-
-        <div class="ah-fizet-sav" id="ah-fizet-sav">
-          <button type="submit" class="ah-gomb ah-gomb-fo ah-gomb-teljes ah-gomb-fizet" id="ah-fizet-gomb">Biztonságos fizetés — {ár}</button>
-        </div>
-        <!-- Atutalas: nem elsodleges CTA, kis masodlagos link. Az atutalasi igeny NEM vasarlas. -->
-        <p class="ah-atutalas-sor"><button type="button" class="ah-link" id="ah-atutalas-gomb" aria-expanded="false" aria-controls="ah-atutalas">Inkább átutalással fizetnék →</button></p>
-        <div class="ah-atutalas" id="ah-atutalas" aria-live="polite" hidden></div>
-
-        <p class="ah-biztonsag"><span class="ah-ikon" data-ikon="lock" aria-hidden="true"></span> Biztonságos Stripe fizetés</p>
-        <p class="ah-segit-sor">Kérdésed van? Hívj minket: <a href="tel:+36202474444">06 20 247 4444</a></p>
-        <p class="ah-jogi">A fizetés gombra kattintva elfogadod az <a href="/aszf" target="_blank" rel="noopener">ÁSZF</a>-et és tudomásul veszed az <a href="/suti-tajekoztato" target="_blank" rel="noopener">adatkezelési tájékoztatót</a>. A megrendelés fizetési kötelezettséggel jár.</p>
-
-        <div class="ah-feldolgozas" id="ah-feldolgozas" role="status" aria-live="polite" hidden>
-          <span class="ah-forgo" aria-hidden="true"></span>
-          <p>Feldolgozzuk a fizetésed…</p>
-        </div>
-      </form>
-
       <aside class="ah-kartya ah-osszesito" id="ah-osszesito" aria-label="Rendelési összesítő">
         <button type="button" class="ah-osszesito-fej" id="ah-osszesito-gomb" aria-expanded="false" aria-controls="ah-osszesito-test">
-          <span class="ah-osszesito-cim">Választott ajándék</span>
+          <span class="ah-osszesito-cim"><span class="ah-lepes-szam">1</span>Termék</span>
           <span class="ah-osszesito-vegosszeg" id="ah-osszesito-fej-ar"></span>
         </button>
         <div class="ah-osszesito-test" id="ah-osszesito-test">
@@ -285,14 +288,96 @@
           <p class="ah-ar-sav ah-osszesen"><span>Aktuális ár</span><strong class="ah-ar" id="ah-osszesito-ar"></strong></p>
         </div>
       </aside>
-    </div>
 
-    <!-- a folyamat harom lepese: fizetes utan a siker -> szemelyre szabas -> vegleges nezet allapotok kovetik -->
-    <ol class="ah-sav-lepesek" aria-label="Mi történik a fizetés után?">
-      <li><span class="ah-sav-szam">1</span><div><strong>Kész az ajándékod. ✓</strong><span>A fizetés után e-mailben visszaigazolást kapsz, az ajándékkártya elkészültekor itt és e-mailben is megjelenik.</span></div></li>
-      <li><span class="ah-sav-szam">2</span><div><strong>Most tedd személyessé.</strong><span>Írhatsz hozzá egyedi üzenetet, és kiválaszthatod az átadás módját.</span></div></li>
-      <li><span class="ah-sav-szam">3</span><div><strong>Minden kész.</strong><span>Az ajándékkártya 6 hónapig felhasználható a MOSAIC Head Spában.</span></div></li>
-    </ol>
+      <form class="ah-kartya ah-urlap" id="ah-urlap" novalidate autocomplete="on">
+        <!-- 12. PAYMENT ERROR: a beirt adatok megmaradnak, nem dob vissza a landing tetejere -->
+        <div class="ah-hibasav" id="ah-hibasav" role="alert" tabindex="-1" hidden>
+          <h3>A fizetés nem sikerült.</h3>
+          <p>Nem terheltük meg a kártyádat. Próbáld újra, vagy válassz másik fizetési módot.</p>
+          <p class="ah-hibasav-resz" id="ah-hibasav-resz"></p>
+          <div class="ah-gombsor">
+            <button type="button" class="ah-gomb ah-gomb-fo" id="ah-ujra-gomb">Újra megpróbálom</button>
+            <button type="button" class="ah-gomb ah-gomb-kor" id="ah-masikmod-gomb">Másik fizetési mód</button>
+          </div>
+        </div>
+
+        <div class="ah-urlap-oszlopok">
+          <div class="ah-urlap-adatok">
+            <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">2</span>Adatok</h3>
+            <div class="ah-mezo">
+              <label for="ah-email">E-mail címed</label>
+              <input id="ah-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="pl. te@emailcimed.hu" required>
+              <p class="ah-mezohiba" id="ah-email-hiba" hidden></p>
+            </div>
+            <div class="ah-mezo">
+              <label for="ah-nev">Számlázási név</label>
+              <input id="ah-nev" name="nev" type="text" autocomplete="name" maxlength="120" required>
+              <p class="ah-mezohiba" id="ah-nev-hiba" hidden></p>
+            </div>
+            <div class="ah-mezosor">
+              <div class="ah-mezo ah-mezo-kicsi">
+                <label for="ah-iranyitoszam">Irányítószám</label>
+                <input id="ah-iranyitoszam" name="iranyitoszam" type="text" autocomplete="postal-code" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" required>
+                <p class="ah-mezohiba" id="ah-iranyitoszam-hiba" hidden></p>
+              </div>
+              <div class="ah-mezo">
+                <label for="ah-varos">Város</label>
+                <input id="ah-varos" name="varos" type="text" autocomplete="address-level2" maxlength="80" required>
+                <p class="ah-mezohiba" id="ah-varos-hiba" hidden></p>
+              </div>
+            </div>
+            <div class="ah-mezo">
+              <label for="ah-cim">Utca, házszám</label>
+              <input id="ah-cim" name="cim" type="text" autocomplete="address-line1" maxlength="200" required>
+              <p class="ah-mezohiba" id="ah-cim-hiba" hidden></p>
+            </div>
+
+            <details class="ah-ceges" id="ah-ceges">
+              <summary>Céges számlát kérek</summary>
+              <div class="ah-mezo">
+                <label for="ah-ceges-nev">Cégnév</label>
+                <input id="ah-ceges-nev" name="ceges_nev" type="text" autocomplete="organization" maxlength="120">
+              </div>
+              <div class="ah-mezo">
+                <label for="ah-ceges-adoszam">Adószám</label>
+                <input id="ah-ceges-adoszam" name="ceges_adoszam" type="text" maxlength="20">
+              </div>
+              <p class="ah-mezohiba" id="ah-ceges-hiba" hidden></p>
+            </details>
+          </div>
+
+          <div class="ah-urlap-fizetes">
+            <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">3</span>Fizetés <span class="ah-urlap-biztonsag"><span class="ah-ikon" data-ikon="lock" aria-hidden="true"></span>Titkosított kapcsolat · Stripe</span></h3>
+            <div class="ah-fizetesi-doboz" id="ah-fizetesi-doboz">
+              <p class="ah-cimke">Fizetési mód</p>
+              <p class="ah-halk ah-kicsi">Apple Pay, Google Pay vagy bankkártya – ahol elérhető.</p>
+              <div id="ah-fizetesi-elem" aria-live="polite"></div>
+              <p class="ah-mezohiba" id="ah-fizetes-hiba" role="alert" hidden></p>
+              <p class="ah-nincs-fizetes" id="ah-nincs-fizetes" hidden>Az online fizetés jelenleg nem érhető el. Próbáld újra később, vagy válaszd az átutalást, esetleg hívj minket: <a href="tel:+36202474444">06 20 247 4444</a>.</p>
+            </div>
+
+            <input type="text" name="bot-field" id="ah-csapda" class="ah-csapda" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+            <div class="ah-fizet-sav" id="ah-fizet-sav">
+              <button type="submit" class="ah-gomb ah-gomb-fo ah-gomb-teljes ah-gomb-fizet" id="ah-fizet-gomb">Biztonságos fizetés — {ár}</button>
+            </div>
+
+            <!-- Atutalas: nem elsodleges CTA, kis masodlagos link. Az atutalasi igeny NEM vasarlas. -->
+            <p class="ah-atutalas-sor"><button type="button" class="ah-link" id="ah-atutalas-gomb" aria-expanded="false" aria-controls="ah-atutalas">Inkább átutalással fizetnék →</button></p>
+            <div class="ah-atutalas" id="ah-atutalas" aria-live="polite" hidden></div>
+
+            <p class="ah-biztonsag"><span class="ah-ikon" data-ikon="lock" aria-hidden="true"></span> Biztonságos Stripe fizetés</p>
+            <p class="ah-segit-sor">Kérdésed van? Hívj minket: <a href="tel:+36202474444">06 20 247 4444</a></p>
+            <p class="ah-jogi">A fizetés gombra kattintva elfogadod az <a href="/aszf" target="_blank" rel="noopener">ÁSZF</a>-et és tudomásul veszed az <a href="/suti-tajekoztato" target="_blank" rel="noopener">adatkezelési tájékoztatót</a>. A megrendelés fizetési kötelezettséggel jár.</p>
+          </div>
+        </div>
+
+        <div class="ah-feldolgozas" id="ah-feldolgozas" role="status" aria-live="polite" hidden>
+          <span class="ah-forgo" aria-hidden="true"></span>
+          <p>Feldolgozzuk a fizetésed…</p>
+        </div>
+      </form>
+    </div>
   </section>
 
   <!-- 13-15. SIKER -> SZEMELYRE SZABAS -> VEGLEGES ORDER HUB (a vasarlas ekkor mar megtortent) -->

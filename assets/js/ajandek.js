@@ -72,7 +72,12 @@
     lock: '<rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>',
     check: '<path d="M5 12.5l4.2 4.2L19 7"/>',
     arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
-    chevron: '<path d="M9 5l7 7-7 7"/>'
+    chevron: '<path d="M9 5l7 7-7 7"/>',
+    pencil: '<path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/>',
+    mail: '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/>',
+    pin: '<path d="M12 21s6.5-5.6 6.5-11a6.5 6.5 0 0 0-13 0c0 5.4 6.5 11 6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
+    phone: '<path d="M6.5 4h3l1.5 4-2 1.3a10 10 0 0 0 5.7 5.7L16 13l4 1.5v3a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 4.5 6.2 2 2 0 0 1 6.5 4z"/>',
+    card: '<rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M3.5 10.5h17M7 15h4"/>'
   };
   function ikonKitolt(span, nev) {
     if (!span || !IKONOK[nev]) return span;
@@ -280,14 +285,15 @@
     if (t.badge) kep.appendChild(h('p', { class: 'ah-badge', text: t.badge }));
     kartya.appendChild(kep);
     var test = h('div', { class: 'ah-termek-test' });
-    test.appendChild(h('p', { class: 'ah-felcim', text: t.nev }));
-    test.appendChild(h('h3', { text: t.fejlec }));
+    test.appendChild(h('h3', { text: t.nev }));
+    test.appendChild(h('p', { class: 'ah-termek-fejlec', text: t.fejlec }));
     test.appendChild(h('p', { class: 'ah-termek-leiras', text: t.leiras }));
     var ul = h('ul', { class: 'ah-lista' });
     t.tartalom.forEach(function (sor) { ul.appendChild(listaSor(sor)); });
     test.appendChild(ul);
-    test.appendChild(h('p', { class: 'ah-ar-blokk' }, h('span', { class: 'ah-ar-cimke', text: 'aktuális ár' }), h('span', { class: 'ah-ar', text: A.arSzoveg(t.ar_ft) })));
-    test.appendChild(h('button', { type: 'button', class: 'ah-gomb ah-gomb-fo', 'data-valaszt': t.id }, h('span', { 'data-valaszt-szoveg': '', text: 'Ezt választom' }), ikonSpan('arrow')));
+    test.appendChild(h('div', { class: 'ah-termek-alja' },
+      h('p', { class: 'ah-ar-blokk' }, h('span', { class: 'ah-ar-cimke', text: 'aktuális ár' }), h('span', { class: 'ah-ar', text: A.arSzoveg(t.ar_ft) })),
+      h('button', { type: 'button', class: 'ah-gomb ah-gomb-fo', 'data-valaszt': t.id }, h('span', { 'data-valaszt-szoveg': '', text: 'Ezt választom' }), ikonSpan('arrow'))));
     kartya.appendChild(test);
     return kartya;
   }

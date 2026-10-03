@@ -34,7 +34,7 @@ Nincs kosár, nincs külön termékoldal, nincs külön checkout variantonként.
 | `functions/api/ajandek/[[kind]].js` | Cloudflare Pages-adapter (ugyanaz a kezelő) |
 | `tools/ajandek-teszt/` | helyi teszt-kiszolgáló, böngészős Stripe-mock, mock Stripe API, `node --test` tesztek (nem kerül az oldalba) |
 
-### Design (2026-10-03, a feltöltött mockup alapján)
+### Design (2026-10-03, a feltöltött mockupok alapján; a második, világos mockup a mérvadó)
 
 A mockup **elrendezését és hangulatát** vettük át (fotóhátteres hero, ikonos Gift Finder, képes
 termékkártyák, sötétzöld véleménysáv, kétoszlopos checkout, háromlépéses összefoglaló), a
@@ -47,6 +47,12 @@ hajjal távozik). A fejléc és a lábléc **az éles oldalé**: a `foglalas/aja
 `<!--mh-fejlec-->` / `<!--mh-lablec-->` jelölőt a build az `assets/fejlec/` töredékekkel cseréli
 (mint a sminktetoválás-landingen), a menüt az `assets/js/klon.js` működteti; az „Ajándékkártya”
 menüpontot a `menuAktiv()` jelöli aktívnak. A helyi kiszolgáló ugyanezt a beillesztést végzi.
+Elrendezés (második mockup): világos hero jobb oldali fotóval, ikonos Gift Finder, képes termékkártyák a
+valódi kártya előnézetével („Így néz ki az ajándékkártya”), „A vásárlás menete”, élmény-blokk a videóval,
+valódi vélemény + Google-összegzés, „Itt találsz minket” + gyakori kérdések (a válaszok az élő oldalról /
+a jóváhagyott szövegekből), és a fizetési nézet három oszlopban (1 Termék | 2 Adatok | 3 Fizetés). A
+mockup kitalált elemei NEM kerültek át: „azonnali kézbesítés”, „pár perc alatt elkészül”, videós
+vendégvélemények, kitalált idézet, generált belső terek és térkép, „Kolosy tér”.
 A képek valódi MOSAIC-fotók (`TERMEKEK.*.vizual`, a hero a `hero_media`): a **páros** termék
 képe a MOSAIC egyetlen valódi páros fotója (egy nő és egy férfi vendég, két terapeuta); a spec
 „két barátnő” képet kért – ha van ilyen fotó, a `TERMEKEK.paros.vizual`-t kell cserélni.
