@@ -168,13 +168,16 @@ Két eset van (a szalon eddigi gyakorlata szerint):
    kártyát”** gombbal és a Salonic-értékesítés közvetlen linkjével (`app.salonic.hu/promotion/giftCard/sale/<id>`, az id az
    `ajandek-adat.js` `TERMEKEK.*.salonic` mezőjében van; a termék/ár változásakor itt kell frissíteni). A szalon a bankkivonaton látott
    `ATU-…` közleményre keres a postafiókban.
-   **Másoló gombok.** A Salonic-űrlap (`GiftCardBuyForm[...]`) URL-paraméterrel nem tölthető elő, és a Salonic nem ad API-t, ezért a
-   megerősítő oldal soronként **„Másolás”** gombot ad a beillesztendő adatokhoz (Ajándékozó neve, e-mail, mobil; Ajándékozott neve;
-   üzenet). Az „Ajándékozó e-mail címe” mezőbe a **szalon címe** kerül (nem a vevőé), mert a Salonic az utalványt erre a címre
-   küldi: így a vevő csak a MOSAIC-kártyát kapja, a Salonic saját (csúnya) levelét nem. A Salonic-mezők korlátja miatt az ajándékozott
-   neve 40, az üzenet 150 karakterre vágva másolódik (a kártyára a teljes üzenet kerül). A másolás vágólapra ír, régi
-   böngészőben textarea-tartalékkal; a szkript hash-e a CSP-ben van (`MASOL_JS`, `ajandek-levelek.js`). Kártyás rendelésnél a
-   javasolt kuponkód másolható.
+   **Egy kattintásos Salonic-kitöltés.** A Salonic-űrlap (`GiftCardBuyForm[...]`) URL-paraméterrel nem tölthető elő, és a Salonic nem
+   ad API-t. A kiállító oldal Salonic-linkje ezért az adatokat a `#mosaic=<JSON>` részben viszi (a hash nem megy el a szerverre), és a
+   szalon **egyszer** a könyvjelzősávba húzza a **„MOSAIC kitöltő”** könyvjelzőt (a kiállító oldalon van, `SALONIC_KITOLTO_JS` az
+   `ajandek-levelek.js`-ben, `javascript:` link). A Salonic-oldalon egyetlen kattintás kitölti az Ajándékozó nevét + telefonját, az
+   Ajándékozott nevét (max. 40 karakter), a szalon e-mail címét és a fizetési módot (Átutalás = 14); a másolat-jelölőt kiveszi. **Semmit
+   nem küld el**, az Előnézetet / értékesítést a szalon indítja. Az „Ajándékozó e-mail címe” mezőbe a **szalon címe** kerül (nem a vevőé), mert
+   a Salonic az utalványt erre a címre küldi: így a vevő csak a MOSAIC-kártyát kapja, a Salonic saját levelét nem (kikapcsolni nem lehet).
+   Az **üzenet nem kerül a Salonicba** (a kártyára a MOSAIC írja). Új Salonic-mező esetén a kitöltő a szerver által küldött JSON kulcsait
+   követi (`GiftCardBuyForm_<kulcs>`), a könyvjelzőt nem kell újratelepíteni. Kártyás rendelésnél nincs Salonic-űrlap, ott a javasolt
+   kuponkód egy „Másolás” gombbal másolható (`MASOL_JS`). Mindkét szkript hash-e a CSP-ben van.
 3. **Kiállítás (mindkét esetben ugyanaz):** a gomb megerősítő oldalt nyit (GET, nem módosít), ott a szalon beírja a **kódot**, és
    megnyomja a gombot (POST). Utalásnál ekkor áll „fizetve” állapotba a rendelés (`atutalas_beerkezett`, `atutalas_ekkor`; az
    érvényesség ettől a naptól számít). A vevő levelet kap a kártya linkjével; az order hub „Ajándékkártya letöltése” gombja is aktív.

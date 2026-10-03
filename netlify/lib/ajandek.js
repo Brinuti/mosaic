@@ -810,7 +810,8 @@ async function kiallitElokeszit(k, piNyers, tNyers) {
   const i = await rendelesInfo(k, pi);
   const md = i.md;
   const reszletek = i.atutalas
-    ? [['Azonosító (közlemény)', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Vevő e-mail', i.email]]
+    ? [['Azonosító (közlemény)', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Vevő neve', md.nev], ['Vevő e-mail', i.email],
+      ['Vevő telefon', md.telefon], ['Megajándékozott', md.szemelyre_nev]]
     : [['Rendelés', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Érvényes', i.ervenyes_ig ? L.datumIg(i.ervenyes_ig) : ''], ['Vevő', i.email]];
   if (!i.fizetve && !i.atutalas) {
     return { valasz: await oldal(k, 409, 'A rendelés még nincs kifizetve', ['A kártyát csak sikeres fizetés után lehet kiállítani.'], { reszletek }) };
@@ -835,33 +836,35 @@ async function kiallitElokeszit(k, piNyers, tNyers) {
 const KOD_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{2,39}$/;
 const kodTisztit = (v) => egysor(v).replace(/\s+/g, '');
 
+// A Salonic utalvany-ertekesitesi urlapjanak linkje, az adatokkal a #mosaic= reszben (a hash a szerverre nem megy el). Az urlapot
+// a "MOSAIC kitolto" konyvjelzo (L.SALONIC_KITOLTO_JS) tolti ki egy kattintassal. Az "Ajandekozo" = a vevo; az e-mail helyere a
+// SZALON cime kerul: a Salonic az utalvanyt erre a cimre kuldi, igy a vevo csak a MOSAIC-kartyat kapja, a Salonic sajat levelet nem
+// (a Salonic nem ad ezt kikapcsolni). A masolat-jelolo (sendCC) ures, az "Ajandekozott e-mail" nincs kitoltve; az uzenet nem kerul
+// a Salonicba (a kartyara a MOSAIC irja). A nameTo a Salonicban max. 40 karakter.
+const SALONIC_FIZETESI_MOD_ATUTALAS = '14';
+function salonicKitoltoUrl(termek, md) {
+  if (!termek || !termek.salonic) return '';
+  const adat = {
+    nameFrom: md.nev || '',
+    emailFrom: ADAT.SZALON.email,
+    phoneFrom: md.telefon || '',
+    nameTo: Array.from(String(md.szemelyre_nev || '')).slice(0, 40).join('').trim(),
+    paymentType: SALONIC_FIZETESI_MOD_ATUTALAS,
+    sendCC: 0,
+  };
+  for (const kulcs of Object.keys(adat)) if (adat[kulcs] === '') delete adat[kulcs];
+  return `${ADAT.SALONIC_BAZIS}/promotion/giftCard/sale/${termek.salonic.id}#mosaic=${encodeURIComponent(JSON.stringify(adat))}`;
+}
+
 // A kiallito oldal (GET, es hibas POST utan ujra): reszletek + kod mezo + gomb
 async function kiallitUrlap(k, e, hiba) {
   const atu = e.i.atutalas;
   const termek = e.i.termek;
-  const salonicUrl = atu && termek && termek.salonic ? `${ADAT.SALONIC_BAZIS}/promotion/giftCard/sale/${termek.salonic.id}` : null;
   const md = e.i.md;
-  // A Salonic-urlap mezoi (Ajandekozo = a vevo). A Salonic az utalvanyt az "Ajandekozo e-mail cime" mezore kuldi, ezert
-  // oda a szalon cime kerul: a vevo csak a MOSAIC-kartyat kapja, a Salonic sajat levelet nem.
-  // a Salonic-mezok hossz-korlatja (nameTo 40, message 150): a masolt szoveg ennyire vagva, hogy beillesztve ne csonkuljon varatlanul
-  const vag = (v, max) => Array.from(String(v || '')).slice(0, max).join('').trim();
-  const masol = atu ? {
-    cim: 'A Salonic-űrlap kitöltéséhez (Másolás gombbal)',
-    sorok: [
-      { cimke: 'Ajándékozó neve', ertek: md.nev || '' },
-      { cimke: 'Ajándékozó e-mail címe (ide a szalon címe kerül, hogy a Salonic ne írjon a vevőnek)', ertek: ADAT.SZALON.email },
-      { cimke: 'Ajándékozó mobiltelefonszáma', ertek: md.telefon || '' },
-      { cimke: 'Ajándékozott neve', ertek: vag(md.szemelyre_nev, 40) },
-      { cimke: 'Személyes üzenet (a Salonic legfeljebb 150 karaktert fogad el; a kártyára a teljes üzenet kerül)', ertek: vag(md.szemelyre_uzenet, 150) },
-    ].filter((m) => m.ertek),
-  } : {
-    cim: 'A Salonic-kuponhoz (Másolás gombbal)',
-    sorok: [{ cimke: 'Javasolt kuponkód', ertek: e.i.javasolt_kod || '' }].filter((m) => m.ertek),
-  };
+  const salonicUrl = atu ? salonicKitoltoUrl(termek, md) : '';
   return oldal(k, hiba ? 400 : 200, atu ? 'Az utalás beérkezett – kiállítod a kártyát?' : 'Kiállítod az ajándékkártyát?', atu
     ? [
-      'Előbb a Salonicban végezd el az utalvány-értékesítést a lenti adatokkal, utána a kapott utalványkódot írd be ide.',
-      'Salonic-űrlap: fizetési mód „Átutalás”; az „Utalvány küldése másolatban az ajándékozott részére is” jelölőnégyzet maradjon üresen; az „Ajándékozott e-mail címe” mező maradjon üres.',
+      'Előbb a Salonicban végezd el az utalvány-értékesítést, utána a kapott utalványkódot írd be lent.',
       'A gomb megnyomása után a vevő e-mailben megkapja a nyomtatható ajándékkártyát a kóddal.',
     ]
     : [
@@ -869,8 +872,18 @@ async function kiallitUrlap(k, e, hiba) {
       'A gomb megnyomása után a vevő e-mailben megkapja a nyomtatható ajándékkártyát a kóddal.',
     ], {
     reszletek: e.reszletek,
-    masol,
-    linkek: salonicUrl ? [{ url: salonicUrl, szoveg: `Salonic: utalvány értékesítés megnyitása (${termek.salonic.nev})` }] : [],
+    linkek: salonicUrl ? [{ url: salonicUrl, szoveg: `Salonic megnyitása az adatokkal (${termek.salonic.nev})` }] : [],
+    kitolto: salonicUrl ? {
+      cim: 'A Salonic-űrlap kitöltése egy kattintással',
+      szoveg: 'A fenti linkkel megnyíló Salonic-oldalon kattints a böngésző könyvjelzősávjában a MOSAIC kitöltő gombra: beírja az Ajándékozó nevét és telefonszámát, a szalon e-mail címét (hogy a Salonic ne írjon a vevőnek), az Ajándékozott nevét, és a fizetési módot Átutalásra állítja. Semmit nem küld el: az Előnézetet és az értékesítést te indítod.',
+      beallitas: 'Egyszeri beállítás: húzd ezt a gombot a könyvjelzősávba (ha nem látszik: Ctrl+Shift+B). Itt kattintani nem kell, csak húzni:',
+      href: 'javascript:' + L.SALONIC_KITOLTO_JS,
+      nev: 'MOSAIC kitöltő',
+    } : null,
+    masol: atu ? null : {
+      cim: 'A Salonic-kuponhoz',
+      sorok: [{ cimke: 'Javasolt kuponkód', ertek: e.i.javasolt_kod || '' }].filter((m) => m.ertek),
+    },
     urlap: {
       action: k.u.pathname,
       rejtett: { pi: e.piId, t: e.t },
@@ -1169,7 +1182,7 @@ async function atutalas(k) {
       ...L.szalonAtutalasLevel({
         ...kozos, email: r.email, nev: r.nev, telefon, iranyitoszam: r.iranyitoszam, varos: r.varos, cim: r.cim,
         ceges_nev: r.ceges_nev, ceges_adoszam: r.ceges_adoszam, megajandekozott, uzenet, oldal: r.attr.oldal,
-        kiallit_url: kiallitUrl, salonic_url: salonic ? `${ADAT.SALONIC_BAZIS}/promotion/giftCard/sale/${salonic.id}` : '', salonic_nev: salonic ? salonic.nev : '', szalon_email: ADAT.SZALON.email,
+        kiallit_url: kiallitUrl, salonic_url: salonicKitoltoUrl(r.termek, { nev: r.nev, telefon, szemelyre_nev: megajandekozott }), salonic_nev: salonic ? salonic.nev : '', szalon_email: ADAT.SZALON.email,
       }),
     });
   } catch (e) {

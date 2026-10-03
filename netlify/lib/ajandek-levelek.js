@@ -220,7 +220,7 @@ ${tabla([['Megajándékozott', d.megajandekozott]])}
 ${d.uzenet ? `<p style="white-space:pre-line;border-left:3px solid ${ARANY};padding:4px 12px;margin:8px 0">${esc(d.uzenet)}</p>` : ''}
 ${cim('TEENDŐ, HA AZ UTALÁS BEÉRKEZETT')}
 <ol style="margin:0 0 12px 18px;padding:0">
-<li><b>Salonic:</b> utalvány-értékesítés (a számla miatt): ${d.salonic_url ? `<a href="${esc(d.salonic_url)}">Utalvány értékesítés megnyitása</a> – ${esc(d.salonic_nev || d.termek_nev)}` : esc(d.termek_nev)}. Fizetési mód: <b>Átutalás</b>. Az űrlap mezői a lenti gombra kattintva megnyíló oldalon soronként másolhatók. Az <b>Ajándékozó e-mail címe</b> mezőbe a <b>szalon címét</b> (${esc(d.szalon_email || '')}) írd, hogy a Salonic ne küldjön saját levelet a vevőnek; az „Ajándékozott e-mail címe” mező és a másolat-küldés jelölőnégyzet maradjon üresen.</li>
+<li><b>Salonic:</b> utalvány-értékesítés (a számla miatt): ${d.salonic_url ? `<a href="${esc(d.salonic_url)}">Utalvány értékesítés megnyitása az adatokkal</a> – ${esc(d.salonic_nev || d.termek_nev)}` : esc(d.termek_nev)}. A megnyílt űrlapot a <b>MOSAIC kitöltő</b> könyvjelző egy kattintással kitölti (beállítása egyszeri, a lenti gombbal megnyíló oldalon van). Kézzel: Ajándékozó = a vevő; az <b>Ajándékozó e-mail címe</b> mezőbe a <b>szalon címét</b> (${esc(d.szalon_email || '')}) írd, hogy a Salonic ne küldjön saját levelet a vevőnek; fizetési mód: <b>Átutalás</b>; az „Ajándékozott e-mail címe” és a másolat-küldés jelölőnégyzet maradjon üresen. Az üzenetet a Salonicba nem kell beírni, a kártyára a MOSAIC írja.</li>
 <li>A Salonic által adott <b>utalványkódot</b> másold ki.</li>
 <li>Kattints az alábbi gombra, írd be a kódot, és a vevő e-mailben megkapja a kártyát:</li>
 </ol>
@@ -257,10 +257,17 @@ ${vita ? '<p style="font-size:13px;color:#555">A vita részleteit és a válasza
 }
 
 // --- HTML-oldalak --------------------------------------------------------------------------------------
-// A nyomtatogomb szkriptje: a kezelo ennek a hash-et teszi a Content-Security-Policy-ba.
-// A "Masolas" gombok szkriptje (a kiallito oldalon): vagolapra masol, regi bongeszoben textarea-tartalekkal.
+// A kiallito oldal szkriptjei: a kezelo ezek hash-et teszi a Content-Security-Policy-ba.
+// A "Masolas" gomb szkriptje (a kartyas rendeles javasolt kuponkodjanal): vagolapra masol, regi bongeszoben textarea-tartalekkal.
 export const MASOL_JS = `document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('button[data-masol]');if(!b)return;var t=b.getAttribute('data-masol'),r=b.getAttribute('data-eredeti'),ok=function(){b.textContent=b.getAttribute('data-ok');b.classList.add('kesz');setTimeout(function(){b.textContent=r;b.classList.remove('kesz')},1800)},tart=function(){var a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();var s=false;try{s=document.execCommand('copy')}catch(x){}document.body.removeChild(a);if(s)ok()};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,tart)}else{tart()}});`;
+// A nyomtatogomb szkriptje (a kartya-oldalon).
 export const NYOMTAT_JS = "document.getElementById('nyomtat').addEventListener('click',function(){window.print()});";
+
+// A "MOSAIC kitoltő" konyvjelzo (bookmarklet) szkriptje: a Salonic utalvany-ertekesitesi urlapjan a link #mosaic=<JSON> reszebol
+// kitolti a GiftCardBuyForm_<kulcs> mezoket (szoveg: value, jelolonegyzet: checked), majd jelzi, hany mezo lett kitoltve.
+// SOHA nem kuld el semmit: az Elonezet / ertekesites gombot a szalon nyomja meg. Csak az app.salonic.hu oldalon fut.
+// Szabaly (javascript: URL-kent az href-be kerul): nincs benne %, ", <, >, sortores, es csak ASCII (a magyar betuk \u-escape-pel).
+export const SALONIC_KITOLTO_JS = String.raw`(function(){var m=/[#&]mosaic=([^&]+)/.exec(location.hash);if(location.hostname!=='app.salonic.hu'||!m){alert('MOSAIC kit\u00f6lt\u0151: ezt a k\u00f6nyvjelz\u0151t a MOSAIC oldalr\u00f3l megnyitott Salonic-\u0171rlapon kell megnyomni (a ki\u00e1ll\u00edt\u00f3 oldal Salonic-linkj\u00e9vel nyisd meg az \u0171rlapot).');return;}var d;try{d=JSON.parse(decodeURIComponent(m[1]));}catch(x){alert('MOSAIC kit\u00f6lt\u0151: hib\u00e1s adat a linkben, nyisd meg \u00fajra a ki\u00e1ll\u00edt\u00f3 oldal linkj\u00e9t.');return;}var n=0,h=[];Object.keys(d).forEach(function(k){var e=document.getElementById('GiftCardBuyForm_'+k);if(!e){h.push(k);return;}if(e.type==='checkbox'){e.checked=!!d[k];}else{e.value=String(d[k]);}['input','change'].forEach(function(t){e.dispatchEvent(new Event(t,{bubbles:true}));});n++;});var b=document.createElement('div');b.textContent='MOSAIC: '+n+' mez\u0151 kit\u00f6ltve'+(h.length?' (nem tal\u00e1lom: '+h.join(', ')+')':'')+'. Ellen\u0151rizd, majd kattints az El\u0151n\u00e9zetre.';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#17403f;color:#fff;padding:14px;text-align:center;font:16px sans-serif';document.body.appendChild(b);setTimeout(function(){b.remove();},9000);})();`;
 
 const OLDAL_CSS = `*{box-sizing:border-box}html,body{margin:0}
 .logo-sav{display:block;box-sizing:content-box;background:#183033;padding:10px 22px;border-radius:10px;margin:0 0 18px}
@@ -287,6 +294,11 @@ input[type=text]{width:100%;font:16px/1.4 "Courier New",Courier,monospace;letter
 button.masol-gomb{flex:none;font-size:13px;padding:8px 14px;background:#fff;color:${PETROL};border:1px solid ${PETROL}}
 button.masol-gomb:hover{background:#eef3f2}
 button.masol-gomb.kesz{background:${PETROL};color:#fff}
+.kitolto{margin:20px 0 4px;text-align:left;border:1px dashed #b9ab8a;background:#fbf8f1;padding:14px 16px}
+.kitolto h2{font:600 15px/1.3 "Helvetica Neue",Arial,sans-serif;color:${PETROL_SOT};margin:0 0 8px}
+.kitolto p{font-size:14px;margin:0 0 10px}
+.kitolto p:last-child{margin:0}
+a.kitolto-gomb{display:inline-block;background:${PETROL};color:#fff;font:600 15px/1.2 "Helvetica Neue",Arial,sans-serif;padding:9px 16px;border-radius:4px;text-decoration:none;cursor:grab;vertical-align:middle}
 button{font:600 16px/1.35 "Helvetica Neue",Arial,sans-serif;background:${PETROL};color:#fff;border:0;border-radius:4px;padding:14px 22px;cursor:pointer;max-width:100%}
 button:hover{background:${PETROL_SOT}}`;
 
@@ -294,6 +306,7 @@ button:hover{background:${PETROL_SOT}}`;
 // d: { cim, bekezdesek: [szoveg], reszletek?: [[cimke, ertek]], frissit?: masodperc, bazis,
 //      linkek?: [{ url, szoveg }],
 //      masol?: { cim, sorok: [{ cimke, ertek }] }  (soronkent "Masolas" gomb a vagolapra; a szkript hash-e a CSP-ben)
+//      kitolto?: { cim, szoveg, beallitas, href, nev }  (egy kattintasos Salonic-kitolto: a draggable konyvjelzo-link, javascript: href)
 //      urlap?: { action, rejtett: { nev: ertek }, mezok?: [{ nev, cimke, ertek, max, kotelezo, megjegyzes }], hiba?, gomb } }
 //      (az urlap POST-tal kuld)
 export function egyszeruOldal(d) {
@@ -311,6 +324,10 @@ ${d.frissit ? `<meta http-equiv="refresh" content="${Number(d.frissit) | 0}">` :
 ${(d.bekezdesek || []).map((b) => `<p>${esc(b)}</p>`).join('\n')}
 ${d.reszletek && d.reszletek.length ? tabla(d.reszletek) : ''}
 ${(d.linkek || []).map((l) => `<p class="linksor"><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.szoveg)}</a></p>`).join('\n')}
+${d.kitolto ? `<section class="kitolto"><h2>${esc(d.kitolto.cim)}</h2>
+<p>${esc(d.kitolto.szoveg)}</p>
+<p>${esc(d.kitolto.beallitas)} <a class="kitolto-gomb" href="${esc(d.kitolto.href)}" draggable="true" title="Húzd a könyvjelzősávba">${esc(d.kitolto.nev)}</a></p>
+</section>` : ''}
 ${d.masol && d.masol.sorok && d.masol.sorok.length ? `<section class="masol"><h2>${esc(d.masol.cim)}</h2>
 ${d.masol.sorok.map((m) => `<div class="masol-sor"><div class="masol-adat"><span class="masol-cimke">${esc(m.cimke)}</span><span class="masol-ertek">${esc(m.ertek)}</span></div><button type="button" class="masol-gomb" data-masol="${esc(m.ertek)}" data-eredeti="Másolás" data-ok="Másolva ✓">Másolás</button></div>`).join('\n')}
 </section>

@@ -7,7 +7,8 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { mockStripeInditas } from './mock-stripe.mjs';
 import { ajandekKezel, kuponKod, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
-import { MASOL_JS, NYOMTAT_JS } from '../../netlify/lib/ajandek-levelek.js';
+import vm from 'node:vm';
+import { MASOL_JS, NYOMTAT_JS, SALONIC_KITOLTO_JS } from '../../netlify/lib/ajandek-levelek.js';
 import { utvonal } from '../../netlify/lib/utvonal.js';
 import { config as edgeConfig } from '../../netlify/edge-functions/oldal.js';
 
@@ -902,7 +903,9 @@ describe('/atutalas', () => {
     assert.ok(szalon.html.includes(TEL));
     assert.ok(szalon.html.includes('Kattints &lt;a href=&quot;http://csalo.example&quot;&gt;ide&lt;/a&gt;'));
     assert.ok(!szalon.html.includes('<a href="http://csalo.example">'));
-    assert.ok(szalon.html.includes('https://app.salonic.hu/promotion/giftCard/sale/4000'));
+    assert.ok(szalon.html.includes('https://app.salonic.hu/promotion/giftCard/sale/4000#mosaic='));
+    assert.ok(szalon.html.includes(SZALON.email), 'a szalon-level megmondja, hogy a szalon cime kerul az ajandekozo e-mail mezobe');
+    assert.ok(szalon.html.includes('MOSAIC kitöltő'));
     const token = await kiallitToken(ENV, pi.id);
     assert.ok(szalon.html.includes(`${BAZIS}/api/ajandek/kiallit?pi=${pi.id}&amp;t=${token}`));
     assert.ok(szalon.html.includes('Az utalás beérkezett – kiállítom a kártyát'));
@@ -939,20 +942,16 @@ describe('/atutalas', () => {
     assert.equal(g.status, 200);
     assert.match(g.body, /Az utalás beérkezett – kiállítod a kártyát\?/);
     assert.match(g.body, /name="kod" value=""/);
-    assert.ok(g.body.includes('Teszt Vevő') && g.body.includes('Anna') && g.body.includes('Boldog születésnapot!') && g.body.includes(TEL));
+    assert.ok(g.body.includes('Teszt Vevő') && g.body.includes('Anna') && g.body.includes(TEL));
     assert.ok(g.body.includes(r.adat.rendeles_ref));
     assert.ok(g.body.includes('https://app.salonic.hu/promotion/giftCard/sale/4081'));
     assert.ok(!g.body.includes('AK-'), 'utalasnal nincs javasolt AK- kod');
-    // Salonic-urlap: soronkent masolhato adatok; az "Ajandekozo e-mail" a SZALON cime (a Salonic ne irjon a vevonek)
-    const masolt = [...g.body.matchAll(/data-masol="([^"]*)"/g)].map((m) => m[1]);
-    assert.deepEqual(masolt, ['Teszt Vevő', SZALON.email, TEL, 'Anna', 'Boldog születésnapot!']);
-    assert.ok(!masolt.includes('vevo@example.com'), 'a vevo e-mail cime nem kerul a masolhato Salonic-adatok koze');
-    assert.ok(g.body.includes('maradjon üresen'), 'a Salonic masolat-kuldes / ajandekozott e-mail ures marad');
-    assert.equal(g.body.match(/<script>/g).length, 1);
-    assert.equal(/<script>([^<]*)<\/script>/.exec(g.body)[1], MASOL_JS);
-    const hashMasol = crypto.createHash('sha256').update(MASOL_JS).digest('base64');
-    const hashNyomtat = crypto.createHash('sha256').update(NYOMTAT_JS).digest('base64');
-    assert.ok(g.headers['content-security-policy'].includes(`script-src 'sha256-${hashNyomtat}' 'sha256-${hashMasol}';`));
+    // Salonic: egy kattintasos kitolto (a link hash-e), nincs soronkenti masolas, az uzenet nem latszik
+    assert.ok(g.body.includes('#mosaic='));
+    assert.ok(!g.body.includes('data-masol'));
+    assert.ok(!g.body.includes('Boldog születésnapot!'));
+    assert.ok(!/<script/.test(g.body));
+    assert.match(g.headers['content-security-policy'], /script-src 'sha256-[A-Za-z0-9+/=]+' 'sha256-[A-Za-z0-9+/=]+';/);
     assert.ok(!/script-src[^;]*unsafe/.test(g.headers['content-security-policy']));
     assert.equal(JSON.stringify(mock.allapot.pi(pi.id).metadata), meta0, 'a GET nem modosit');
     assert.equal(levelek.length, 0);
@@ -997,20 +996,93 @@ describe('/atutalas', () => {
     assert.ok(g.body.includes('Érvényes: 2027. április 5-ig'));
   });
 
-  test('Salonic masolhato adatok: a nev 40, az uzenet 150 karakterre vagva (a Salonic-mezok korlatja); a kartyara a teljes uzenet kerul', async () => {
+  // A Salonic-link adata a #mosaic= reszben: az "Ajandekozo" = a vevo, az e-mail a SZALON cime (a Salonic ne irjon a vevonek), az uzenet NINCS benne
+  const salonicAdat = (html) => {
+    const m = /href="(https:\/\/app\.salonic\.hu\/promotion\/giftCard\/sale\/(\d+))#mosaic=([^"]+)"/.exec(html);
+    assert.ok(m, 'a Salonic-link az adatokkal');
+    return { id: m[2], adat: JSON.parse(decodeURIComponent(m[3].replace(/&#39;/g, "'"))) };
+  };
+
+  test('Salonic-kitolto: a link hash-e a vevo adatait, a szalon e-mailjet es az Atutalas fizetesi modot hordozza; az uzenet nem; a nev 40 karakterre vagva', async () => {
     const hosszuNev = 'Á'.repeat(41) + 'x';
-    const hosszuUzenet = 'Szeretettel '.repeat(20).trim(); // 239 karakter
-    const r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ termek: 'egyeni', megajandekozott: hosszuNev, uzenet: hosszuUzenet, telefon: TEL }) });
+    const r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ termek: 'egyeni', nev: 'Vevő Béla', megajandekozott: hosszuNev, uzenet: 'Titkos üzenet a kártyára', telefon: TEL }) });
     assert.equal(r.status, 200);
     const pi = atuPi(r.adat.rendeles_ref);
     const g = await hiv('GET', 'kiallit', { query: { pi: pi.id, t: await kiallitToken(ENV, pi.id) } });
-    const masolt = [...g.body.matchAll(/data-masol="([^"]*)"/g)].map((m) => m[1]);
-    assert.equal(masolt.length, 5);
-    assert.equal(masolt[3], 'Á'.repeat(40));
-    assert.equal(masolt[4], hosszuUzenet.slice(0, 150).trim());
-    assert.ok(masolt[4].length <= 150);
-    // a mock-Stripe-ban a teljes szoveg megmarad (ez kerul a kartyara)
-    assert.equal(mock.allapot.pi(pi.id).metadata.szemelyre_uzenet, hosszuUzenet);
+    const { id, adat } = salonicAdat(g.body);
+    assert.equal(id, '4040');
+    assert.deepEqual(adat, { nameFrom: 'Vevő Béla', emailFrom: SZALON.email, phoneFrom: TEL, nameTo: 'Á'.repeat(40), paymentType: '14', sendCC: 0 });
+    assert.ok(!JSON.stringify(adat).includes('Titkos'), 'az uzenet nem kerul a Salonicba');
+    assert.ok(!g.body.includes('Titkos üzenet'), 'a kiallito oldal sem mutatja');
+    // a kartyara a teljes uzenet kerul (a rekordban megmarad)
+    assert.equal(mock.allapot.pi(pi.id).metadata.szemelyre_uzenet, 'Titkos üzenet a kártyára');
+    // megajandekozott neve nelkul nincs nameTo
+    const r2 = await hiv('POST', 'atutalas', { body: rendelesTorzs({ termek: 'egyeni', telefon: TEL }) });
+    const pi2 = atuPi(r2.adat.rendeles_ref);
+    const g2 = await hiv('GET', 'kiallit', { query: { pi: pi2.id, t: await kiallitToken(ENV, pi2.id) } });
+    assert.ok(!('nameTo' in salonicAdat(g2.body).adat));
+  });
+
+  test('"MOSAIC kitolto" konyvjelzo: javascript: href (biztonsagos karakterek), a CSP-ben nincs unsafe-inline, a kiallito oldalon nincs szkript', async () => {
+    const r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ termek: 'paros', telefon: TEL }) });
+    const pi = atuPi(r.adat.rendeles_ref);
+    const g = await hiv('GET', 'kiallit', { query: { pi: pi.id, t: await kiallitToken(ENV, pi.id) } });
+    assert.ok(/^[\x20-\x7e]+$/.test(SALONIC_KITOLTO_JS), 'csak ASCII');
+    assert.ok(!/[%"<>\r\n]/.test(SALONIC_KITOLTO_JS), 'nincs % " < > sortores');
+    const m = /class="kitolto-gomb" href="javascript:([^"]*)"/.exec(g.body);
+    assert.ok(m, 'a konyvjelzo-link');
+    const dekodolt = m[1].replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+    assert.equal(dekodolt, SALONIC_KITOLTO_JS);
+    assert.ok(g.body.includes('MOSAIC kitöltő'));
+    assert.ok(!/<script/.test(g.body), 'atutalasos kiallito oldalon nincs szkript');
+    assert.ok(!/script-src[^;]*unsafe/.test(g.headers['content-security-policy']));
+  });
+
+  test('"MOSAIC kitolto" futtatasa (vm, DOM-csonkokkal): kitolti a mezoket, a masolat-jelolot kiveszi, semmit nem kuld; rossz oldalon / hash nelkul csak figyelmeztet', async () => {
+    const r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ termek: '4kezes', nev: 'Vevő Béla', megajandekozott: 'Kovács Anna', telefon: TEL }) });
+    const pi = atuPi(r.adat.rendeles_ref);
+    const g = await hiv('GET', 'kiallit', { query: { pi: pi.id, t: await kiallitToken(ENV, pi.id) } });
+    const link = new URL(/href="(https:\/\/app\.salonic\.hu[^"]+)"/.exec(g.body)[1].replace(/&#39;/g, "'"));
+    const futtat = (hash, hostname) => {
+      const elemek = {};
+      for (const [kulcs, tipus] of Object.entries({ nameTo: 'text', nameFrom: 'text', emailFrom: 'email', phoneFrom: 'tel', paymentType: 'select-one', sendCC: 'checkbox', message: 'textarea' })) {
+        elemek['GiftCardBuyForm_' + kulcs] = { type: tipus, value: kulcs === 'paymentType' ? '1' : '', checked: true, esemenyek: [], dispatchEvent(e) { this.esemenyek.push(e.type); } };
+      }
+      const naplo = { alert: [], banner: null, kuldes: 0 };
+      vm.runInNewContext(SALONIC_KITOLTO_JS, {
+        location: { hash, hostname },
+        document: {
+          getElementById: (id) => elemek[id] || null,
+          createElement: () => ({ style: {}, remove() {} }),
+          body: { appendChild(b) { naplo.banner = b; } },
+          forms: [{ submit() { naplo.kuldes++; } }],
+        },
+        Event: class { constructor(t) { this.type = t; } },
+        alert: (m) => naplo.alert.push(m),
+        setTimeout: () => 0,
+      });
+      return { elemek, naplo };
+    };
+    const ok = futtat(link.hash, 'app.salonic.hu');
+    const e = (k) => ok.elemek['GiftCardBuyForm_' + k];
+    assert.equal(e('nameFrom').value, 'Vevő Béla');
+    assert.equal(e('emailFrom').value, SZALON.email);
+    assert.equal(e('phoneFrom').value, TEL);
+    assert.equal(e('nameTo').value, 'Kovács Anna');
+    assert.equal(e('paymentType').value, '14');
+    assert.equal(e('sendCC').checked, false, 'a masolat-jelolo ures');
+    assert.equal(e('message').value, '', 'az uzenet mezo erintetlen');
+    assert.deepEqual(e('nameFrom').esemenyek, ['input', 'change']);
+    assert.equal(ok.naplo.alert.length, 0);
+    assert.equal(ok.naplo.kuldes, 0, 'nem kuld el semmit');
+    assert.match(ok.naplo.banner.textContent, /^MOSAIC: 6 mező kitöltve\. Ellenőrizd, majd kattints az Előnézetre\.$/);
+    // masik oldalon / hash nelkul / serult adattal: figyelmeztetes, semmi nem toltodik ki
+    for (const [hash, host] of [[link.hash, 'masik.example'], ['', 'app.salonic.hu'], ['#mosaic=%7Brossz', 'app.salonic.hu']]) {
+      const x = futtat(hash, host);
+      assert.equal(x.naplo.alert.length, 1, `${host} ${hash}`);
+      assert.equal(x.elemek.GiftCardBuyForm_nameFrom.value, '');
+      assert.equal(x.naplo.banner, null);
+    }
   });
 
   test('kartyas rendelesnel a szalon felulirhatja a javasolt kodot: az kerul a levelbe es a kartyara', async () => {
