@@ -167,13 +167,13 @@
   const keret = $('foglalo');
   const ALAP = '/foglalo-pmu?beagyazva=1';
   let nezetek = 0;
-  keret.addEventListener('load', () => { nezetek = 0; });
   addEventListener('message', (e) => {
     if (e.origin !== location.origin || e.source !== keret.contentWindow || !e.data || !e.data.mhFoglalo) return;
     if (e.data.magassag) keret.style.height = e.data.magassag + 'px';
     // az elso (betolteskori) nezetnel nem gorgetunk
     // mobilon minden lepesvaltaskor a keret teteje a fejlec ala kerul, igy az adott lepes egesze a kepernyon van
-    if (e.data.nezet && nezetek++ && (mobil() || keret.getBoundingClientRect().top < 0)) keretIgazit();
+    // (a keret atmeretezese utan igazitunk: pl. a lejatszott, nagyra nyitott video utan a keret jocskan osszemegy)
+    if (e.data.nezet && nezetek++) setTimeout(() => { if (mobil() || keret.getBoundingClientRect().top < 0) keretIgazit(); }, 120);
   });
   const mobil = () => matchMedia('(max-width: 700px)').matches;
   function keretIgazit() {
@@ -187,6 +187,7 @@
     if (!g) return;
     e.preventDefault();
     keret.loading = 'eager';
+    nezetek = 0; // az uj betoltes elso nezetenel nem gorgetunk
     keret.src = ALAP + '&' + g.dataset.foglalo;
     keretIgazit();
   });
