@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import {
   EXIT_GIFTCARD, ROUTES, availableDays, cardsFor, classifyRedirect, dayKey, dayLabel, daypartOf, displayName, durationLabel, entryState,
   filterSlots, findByKey, formatPrice, groupFacts, groupServices, icsFor, intentCandidates, intentServices, longDate, next, parseContext, parseLength,
-  priceFor, priceLabel, quickSlots, staffDiscountPercent, stripLabel, timeLabel, uniqueTimes,
+  priceFor, priceLabel, quickSlots, shouldHandoff, staffDiscountPercent, stripLabel, timeLabel, uniqueTimes,
 } from '../assets/js/booking-engine/flow.js';
 import { HEADSPA } from '../assets/js/booking-engine/flows/headspa.js';
 import { OXYGEN } from '../assets/js/booking-engine/flows/oxygen.js';
@@ -320,6 +320,15 @@ test('classifyRedirect: elkelt idopont (fooldal / foglalo), visszaigazolas, isme
   assert.equal(classifyRedirect('https://www.mosaicheadspa.hu/success-foglalas?first_booking=true&bookingUrl=https%3A%2F%2Fx'), 'confirmation');
   assert.equal(classifyRedirect('https://www.mosaicheadspa.hu/valami-mas'), 'unknown');
   assert.equal(classifyRedirect('nem url'), 'unknown');
+});
+
+test('shouldHandoff: eles tartomanyon atadas a meglevo koszonooldalnak, elonezeten/helyben nem; ?atadas= felulirja', () => {
+  assert.equal(shouldHandoff('www.mosaicheadspa.hu'), true);
+  assert.equal(shouldHandoff('mosaicheadspa.hu', '?business=oxygen'), true);
+  assert.equal(shouldHandoff('claude-booking-engine-ui.mosaic-d77.pages.dev'), false);
+  assert.equal(shouldHandoff('localhost'), false);
+  assert.equal(shouldHandoff('www.mosaicheadspa.hu', '?atadas=0'), false);
+  assert.equal(shouldHandoff('localhost', '?atadas=1'), true);
 });
 
 test('icsFor: naptar-fajl: kezdes, veg, helyszin, emlekezteto', () => {

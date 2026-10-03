@@ -8,7 +8,7 @@
 //
 // Minden dinamikus szoveg textContent-tel kerul az oldalra (a Salonic adata sosem HTML-kent).
 
-import { createSalonicAdapter } from './salonic-adapter.js';
+import { createSalonicAdapter, BUSINESSES } from './salonic-adapter.js';
 import { classifyService, effectiveType, isAcquisition } from './business-config.js';
 import * as F from './flow.js';
 import { createTracker } from './tracking.js';
@@ -33,6 +33,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   const ctx = F.parseContext(win.location.search, doc.referrer, win.location.origin);
   const flow = FLOWS[ctx.business];
   const nowUnix = () => Math.floor(now() / 1000);
+  const HANDOFF = F.shouldHandoff(win.location.hostname, win.location.search); // eles tartomanyon: atadas a meglevo koszonooldalnak
 
   // A sajat kereteben nyiltunk meg (a Salonic atiranyitotta az adatlapot): nem rajzolunk, szolunk a szulonek.
   try {
@@ -382,7 +383,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     },
     A3: async () => h('section', {}, title('Most nem tudjuk véglegesíteni az online foglalást.'), note(`Kérjük, próbáld újra, vagy kérj visszahívást, esetleg hívj minket: ${PHONE}.`),
       h('div', { class: 'be-actions' }, primary('Próbálom újra', () => retry()), secondary('Hívjatok vissza', () => { S.callbackReason = 'technikai_hiba'; go('A3_CB'); }),
-        h('a', { class: 'be-link', href: PHONE_HREF, text: `Hívás: ${PHONE}` }))),
+        salonicFallback(), h('a', { class: 'be-link', href: PHONE_HREF, text: `Hívás: ${PHONE}` }))),
     A3_CB: async () => callbackView({ heading: 'Visszahívást kérsz?', intro: 'Hagyd meg a telefonszámod, és visszahívunk.' }),
     A3U: async () => h('section', {}, title('A foglalásodat feldolgoztuk.'),
       note('A visszaigazolást nem tudtuk automatikusan ellenőrizni. Kérjük, nézd meg az e-mailedet: ott találod a foglalásod adatait. Ha nem érkezik levél, hívj minket.'),
@@ -414,8 +415,11 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
           () => chooseService(service)))));
     });
   }
+  // Tartalek: ha a motor vagy a Salonic adatai nem toltenek be, a vendeg a Salonic eredeti foglalojara kerulhet (nem szakad meg a foglalas)
+  const salonicUrl = () => { const c = BUSINESSES[flow.business]; return c ? `${c.host}/selectSpecialization/?placeId=${c.placeId}` : null; };
+  const salonicFallback = () => (salonicUrl() ? h('a', { class: 'be-btn be-btn-2', href: salonicUrl(), text: 'Foglalás a Salonic oldalán' }) : null);
   const loadError = () => h('section', {}, title('Most nem sikerült betölteni az időpontokat.'), note(`Kérjük, próbáld újra pár perc múlva, vagy hívj minket: ${PHONE}.`),
-    h('div', { class: 'be-actions' }, primary('Újrapróbálom', () => show(S.state)), h('a', { class: 'be-btn be-btn-2', href: PHONE_HREF, text: `Hívás: ${PHONE}` })));
+    h('div', { class: 'be-actions' }, primary('Újrapróbálom', () => show(S.state)), salonicFallback(), h('a', { class: 'be-btn be-btn-2', href: PHONE_HREF, text: `Hívás: ${PHONE}` })));
 
   function retry() {
     if (S.slot && S.service) return go('C4', { replace: true }); // az adatlap ujratoltese; ha kozben mar rogzult, a Salonic elkelt idopontot jelez (A2)
@@ -470,11 +474,17 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   function resolveRedirect(href) {
     const kind = F.classifyRedirect(href, { enginePath: flow.enginePath });
     if (kind === 'slot_lost') return go('A2', { replace: true });
-    if (kind === 'confirmation' && S.expected) {
-      const v = adapter.verifyConfirmation(href, S.expected);
-      if (v.ok) return confirmed(v);
-      track('booking_error', { ...serviceParams(S.service), step: 'C5', reason: 'verify_failed', filter: Object.entries(v.checks).filter(([, c]) => c.status === 'fail').map(([k]) => k).join(',') });
-      return go('A3U', { replace: true });
+    if (kind === 'confirmation') {
+      // A Salonic csak sikeres foglalas utan iranyit a koszonooldalra, ezert a vendeget ellenorzestol fuggetlenul atadjuk a MEGLEVO
+      // koszonooldalnak (eles tartomanyon): a mostani meres (konverziok, pixelek) azon fut valtozatlanul, egyszer, a fo ablakban.
+      // Az ellenorzes eredmenye csak a sajat esemenyeinket (booking_completed / booking_error) szabja.
+      const v = S.expected ? adapter.verifyConfirmation(href, S.expected) : null;
+      if (v && v.ok) confirmed(v);
+      else track('booking_error', { ...(S.service ? serviceParams(S.service) : {}), step: 'C5', reason: v ? 'verify_failed' : 'no_expectation',
+        filter: v ? Object.entries(v.checks).filter(([, c]) => c.status === 'fail').map(([k]) => k).join(',') : undefined });
+      if (HANDOFF) { win.location.assign(href); return undefined; }
+      // elonezeten / helyben: a motor maga mutatja a sikert (a Salonic az eles koszonooldalra iranyit, onnan nem ertesithetne minket)
+      return go(v && v.ok ? 'C6' : 'A3U', { replace: true });
     }
     track('booking_error', { ...serviceParams(S.service), step: 'C5', reason: 'unknown_redirect' });
     return go('A3', { replace: true });
@@ -487,7 +497,6 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       ...serviceParams(S.service), booking_type: type, booking_id: v.bookingRef, final_price: v.reported.price ?? S.service.activePrice,
       new_or_returning: v.firstBooking ? 'new' : 'returning', acquisition: isAcquisition({ bookingType: cls.bookingType, splitByRuntime: cls.splitByRuntime, firstBooking: v.firstBooking }),
     }, { once: v.bookingRef });
-    return go('C6', { replace: true });
   }
   win.mhKeretbenOldal = onSalonicRedirect;
 

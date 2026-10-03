@@ -228,6 +228,18 @@ export function parseContext(search, referrer = '', origin = '') {
   };
 }
 
+/**
+ * Sikeres foglalas utan atadjuk a vendeget a MEGLEVO koszonooldalnak (a mostani meres valtozatlanul azon fut), de csak az eles
+ * tartomanyon: ott a Salonic atiranyitasa a sajat oldalunkra jon vissza. Elonezeten / helyben a motor maga mutatja a sikert
+ * (a Salonic az eles koszonooldalra iranyit, az onnan nem ertesitheti az elonezeti oldalt). ?atadas=0 kikapcsolja, ?atadas=1 bekapcsolja.
+ */
+export function shouldHandoff(hostname, search = '', liveHosts = ['www.mosaicheadspa.hu', 'mosaicheadspa.hu']) {
+  const v = new URLSearchParams(search).get('atadas');
+  if (v === '0') return false;
+  if (v === '1') return true;
+  return liveHosts.includes(hostname);
+}
+
 /** A Salonic adatlap (iframe) altal betoltott oldalunk: elkelt idopont (fooldal / maga a foglalo), visszaigazolas, vagy ismeretlen. */
 export function classifyRedirect(href, { enginePath = '/foglalo-motor' } = {}) {
   let u;

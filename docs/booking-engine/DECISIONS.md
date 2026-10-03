@@ -30,6 +30,10 @@ Minden döntés a tulajdonostól jött, 2026-10-03-án, a [PMU live audit és a 
 | 20 | Lézer: területek | **Jóváhagyva:** Arc (Teljes arc, Bajuszvonal, Állcsúcs + állkapocsvonal) · Hónalj · Kar (Alkar, Felkar, Teljes kar) · Intim (Bikini vonal, Teljes intim) · Láb (2 lábszár, 2 comb, 2 teljes láb) · Törzs (Hát, Mellkas, Has) · Több terület (akciós csomagok, egyedi csomag, egyéb testrészek). A területet a Salonic nevének előtagjából (ARC, TEST, INTIM, LÁBAK, FÉRFI, EGYÉB, AKCIÓ) olvassa a motor. A nevekből az előtag elmarad, a kedvezmény és az állapotfelmérés az ár mellett látszik. |
 | 21 | Lézer: egyedi csomag ára | **„Egyedi ár”**, foglalható marad (a Salonicban 0 Ft, a végső árat a helyszínen állítják be). A konzultáció „Ingyenes”. |
 | 22 | Lézer: „Már járok kezelésre” | **Ugyanazok a területek, utána a kezelés** a 2. alkalomtól árakkal (nem egy 23 soros lista). |
+| 23 | Az élesítés módja | **Mindent kipróbálunk nem élesben (rejtett oldalról), és utána egyszerre kapcsolunk át** (nem üzletáganként). |
+| 24 | Köszönőoldal az első ütemben | **A mostani köszönőoldal** (átadás a meglévő oldalnak, a mérés változatlan). A motor saját sikeroldala később. |
+| 25 | Lézeres konzultáció-naptár | **Az Elysion-fiók** (`476477`); a Hair-fiókbeli régi (`444584`) kivezetendő. |
+| 26 | Valódi próbafoglalások | **Jóváhagyva** üzletáganként egy (a HeadSpánál is), feltételekkel: név „TESZT – Claude”, fix e-mail és telefon, lista a végén (üzletág, perc pontos időpont, azonosító), platformonkénti (Google, Meta, TikTok) „pontosan egyszer” konverzió-ellenőrzés, e-mail és köszönőoldal ellenőrzése, a szalon lemondja a próbát, a vendéget nem törli. |
 | 15 | Oxigén belépés | Egy kérdés (OX1): Hajkamerás vizsgálat / Első oxigénterápiás kezelés / Már jártam nálatok. Szakember nem kötelező: alapból „bármely megfelelő”, a naptárban választható. |
 
 **A tesztelés korlátja:** a Salonicnak nincs próbakörnyezete, ezért éles foglalást a próba során nem adunk le. A foglalás-utáni ágakat (siker, elkelt időpont, hiba) mintanézettel és egységtesztekkel ellenőrizzük.
