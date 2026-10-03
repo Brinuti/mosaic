@@ -236,7 +236,19 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     });
     let json;
     try { json = JSON.parse(await getText(API_URL + '?' + p)); } catch (e) { if (e instanceof SalonicError) throw e; throw new SalonicError('PARSE', 'A naptar-API valasza nem JSON', { business }); }
+    const d = json.data || {};
+    if (d.placeName || d.placeAddress) cache.set('place:' + business, { t: now(), v: { name: clean(d.placeName) || null, address: clean(d.placeAddress) || null, phone: clean(d.placePhone) || null } });
     return slotsFromApi(json, { business, service, minUnix: Math.floor(now() / 1000) + minLeadMinutes * 60 });
+  }
+
+  /** A helyszin neve, cime, telefonja (a naptar-API valaszabol; a cim nincs beleegetve). */
+  async function getPlace(business) {
+    const c = cache.get('place:' + business);
+    if (c) return c.v;
+    const first = (await getServices(business)).find((s) => s.durationMin);
+    if (first) await getAvailability(business, first.serviceId, { days: 1 });
+    const c2 = cache.get('place:' + business);
+    return c2 ? c2.v : { name: null, address: null, phone: null };
   }
 
   /** A szolgaltatashoz tartozo munkatarsak: azonosito a Salonic szolgaltatas-listajabol, nev a naptar-API-bol (csak ha van szabad idopontja a keretben). */
@@ -266,7 +278,7 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
   return {
     capabilities: Object.freeze({ createBooking: false, getBooking: false, updateBooking: false, bookingId: 'synthetic', priceReadback: 'redirect-attested' }),
     businesses: Object.keys(businesses),
-    getServices, getStaff, getAvailability, beginBooking,
+    getServices, getStaff, getAvailability, getPlace, beginBooking,
     verifyConfirmation: (url, expected) => verifyConfirmation(url, expected, businesses),
     createBooking: notSupported('createBooking'),
     getBooking: notSupported('getBooking'),

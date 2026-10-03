@@ -206,6 +206,21 @@ test('adapter (PMU): getServices a munkatarsoldalbol, gyorsitotar, getAvailabili
   assert.ok(f.calls.every((c) => c.method === 'GET'), 'az adapter sosem kuld nem-GET kerest');
 });
 
+test('adapter: getPlace a naptar-API valaszabol (nev, cim), gyorsitotarbol', async () => {
+  const f = fakeFetch([
+    [/\/employees\/32428\//, ok(fx('pmu-employees.html'))],
+    [/\/selectDate\//, ok(fx('selectDate-snippet.html'))],
+    [/getAvailableTimes/, ok(JSON.stringify(apiFixture()))],
+  ]);
+  const a = createSalonicAdapter({ fetchImpl: f, now: () => 0 });
+  const p = await a.getPlace('pmu');
+  assert.match(p.address, /Budapest/);
+  assert.ok(p.name && p.name.length > 0);
+  const calls = f.calls.length;
+  assert.deepEqual(await a.getPlace('pmu'), p);
+  assert.equal(f.calls.length, calls, 'masodik hivas a gyorsitotarbol');
+});
+
 test('adapter (kategoriak): specIds konfiguraciobol, es selectSpecialization-bol felfedezve', async () => {
   const f = fakeFetch([
     [/selectSpecialization/, ok(fx('headspa-selectSpecialization.html'))],

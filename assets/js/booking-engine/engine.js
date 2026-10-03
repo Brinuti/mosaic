@@ -1,0 +1,403 @@
+// MOSAIC Booking Engine V1 - a foglalo felulete (HeadSpa az elso uzletag)
+//
+// Allapotonkent egy nezet (lasd flow.js): HS1 -> HS2/HS3 -> C1 -> (C2) -> C3 -> C4 -> C5 -> C6, mellettuk A1/A2/A3.
+// Adat: kizarolag a SalonicAdapter (Salonic nyilvanos oldalai + naptar-API), ar/idotartam/azonosito nincs beleegetve.
+// C4: a Salonic beagyazott adatlapja (a foglalast a Salonic rogziti); a sikert a Salonic atiranyitasanak parameterei
+// igazoljak (adapter.verifyConfirmation, kliensoldali). Ez a probaoldal NEM nyitja meg az eles koszonooldalt, mert ott mereskod
+// futna; elesitesnel kulon dontes (docs/booking-engine/DECISIONS.md).
+//
+// Minden dinamikus szoveg textContent-tel kerul az oldalra (a Salonic adata sosem HTML-kent).
+
+import { createSalonicAdapter } from './salonic-adapter.js';
+import { classifyService, effectiveType, isAcquisition } from './business-config.js';
+import * as F from './flow.js';
+import { createTracker } from './tracking.js';
+import { HEADSPA } from './flows/headspa.js';
+
+const FLOWS = { headspa: HEADSPA };
+const PHONE = '06 20 247 4444';
+const PHONE_HREF = 'tel:+36202474444';
+const STEPS = ['Szolgáltatás', 'Időpont', 'Összegzés', 'Adatok'];
+const STEP_OF = { HS1: 0, HS2: 0, HS3: 0, C1: 1, C2: 1, A1: 1, A1_SENT: 1, A2: 1, C3: 2, C4: 3, C5: 3, A3: 3, A3U: 3, A3_CB: 3, A3_SENT: 3 };
+const NO_STEPS = new Set(['C6']);
+const MIN_LEAD_MINUTES = 30; // a fel oran belul kezdodo idopontot nem kinaljuk (mint a PMU foglalo)
+const HOLD_MS = 4 * 60 * 1000 + 50 * 1000; // a Salonic 5 percig tartja fenn a megnyitott idopontot
+
+export function startEngine({ root, doc = document, win = window, adapter = createSalonicAdapter(), now = () => Date.now() }) {
+  const ctx = F.parseContext(win.location.search, doc.referrer, win.location.origin);
+  const flow = FLOWS[ctx.business];
+  const nowUnix = () => Math.floor(now() / 1000);
+
+  // A sajat kereteben nyiltunk meg (a Salonic atiranyitotta az adatlapot): nem rajzolunk, szolunk a szulonek.
+  try {
+    if (win.top !== win.self && win.parent.location.hostname === win.location.hostname) {
+      doc.documentElement.style.visibility = 'hidden';
+      if (typeof win.parent.mhKeretbenOldal === 'function') win.parent.mhKeretbenOldal(win.location.href);
+      return null;
+    }
+  } catch (e) { /* idegen oldal kereteben */ }
+
+  const store = (() => { try { return win.sessionStorage; } catch (e) { return null; } })();
+  const tracker = createTracker({ ctx, doc, storage: store, now });
+  const track = tracker.track;
+
+  const S = {
+    ctx, flow, state: null, depth: 0, services: null, voucher: ctx.voucher, service: null, exact: false,
+    slots: [], slot: null, daypart: 'any', day: null, staff: null, place: null, expected: null, guestUrl: null, confirmation: null,
+    callbackReason: 'nincs_idopont', slotLostNote: false,
+  };
+
+  // --- DOM-segedek ---------------------------------------------------------------------------------------------------------
+  const h = (tag, attrs = {}, ...kids) => {
+    const e = doc.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v === false || v === null || v === undefined) continue;
+      if (k === 'text') e.textContent = v;
+      else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v === true ? '' : v);
+    }
+    for (const c of kids.flat()) if (c !== null && c !== undefined && c !== false) e.append(c.nodeType ? c : doc.createTextNode(String(c)));
+    return e;
+  };
+  const $ = (id) => doc.getElementById(id);
+  const chevron = () => h('span', { class: 'be-chev', 'aria-hidden': 'true', text: '›' });
+  const bigButton = (title, sub, onclick) => h('button', { type: 'button', class: 'be-choice', onclick },
+    h('span', { class: 'be-choice-text' }, h('b', { text: title }), sub ? h('small', { text: sub }) : null), chevron());
+  const primary = (text, onclick, extra = {}) => h('button', { type: 'button', class: 'be-btn', onclick, ...extra }, text);
+  const secondary = (text, onclick) => h('button', { type: 'button', class: 'be-btn be-btn-2', onclick }, text);
+  const link = (text, onclick) => h('button', { type: 'button', class: 'be-link', onclick, text });
+  const note = (text, cls = '') => h('p', { class: ('be-note ' + cls).trim(), text });
+  const alertBox = (text) => h('div', { class: 'be-alert', role: 'alert' }, text);
+  const title = (text) => h('h2', { class: 'be-title', tabindex: '-1', text });
+
+  // --- megjelenites -------------------------------------------------------------------------------------------------------------
+  const priceText = (svc) => (svc.bookingType === 'voucher_redemption' ? flow.copy.voucherSettled : F.formatPrice(svc.activePrice));
+  const nameOf = (svc) => F.displayName(svc.name);
+  const serviceFacts = (svc) => [svc.durationMin ? F.durationLabel(svc.durationMin) : null, priceText(svc) || null].filter(Boolean).join(' · ');
+  const serviceBar = (back) => h('div', { class: 'be-svc' },
+    h('span', { class: 'be-svc-text' }, h('b', { text: nameOf(S.service) }), h('small', { text: serviceFacts(S.service) })),
+    back ? link('Módosítás', back) : null);
+  const summaryRows = (rows) => h('dl', { class: 'be-rows' }, rows.filter(([, v]) => v).map(([k, v]) => h('div', {}, h('dt', { text: k }), h('dd', { text: v }))));
+  const placeText = () => [S.place && S.place.name, S.place && S.place.address].filter(Boolean).join(', ');
+
+  function setView(node, state) {
+    root.replaceChildren(node);
+    const step = STEP_OF[state];
+    const steps = $('be-steps');
+    if (steps) {
+      steps.hidden = NO_STEPS.has(state) || step === undefined;
+      steps.replaceChildren(...STEPS.map((t, i) => h('li', { class: i < step ? 'done' : i === step ? 'now' : '', 'aria-current': i === step ? 'step' : false },
+        h('i', { text: i < step ? '✓' : String(i + 1) }), h('span', { text: t }))));
+    }
+    const back = $('be-back');
+    if (back) back.style.visibility = S.depth > 0 && state !== 'C6' && !/_SENT$/.test(state) ? 'visible' : 'hidden';
+    win.scrollTo(0, 0);
+    const t = root.querySelector('.be-title');
+    if (t) t.focus({ preventScroll: true });
+  }
+
+  // --- navigacio ------------------------------------------------------------------------------------------------------------------
+  let renderToken = 0;
+  async function show(state) {
+    S.state = state;
+    win.clearTimeout(S.holdTimer);
+    const token = ++renderToken;
+    setView(h('p', { class: 'be-loading', role: 'status', text: 'Betöltés…' }), state);
+    try {
+      const node = await views[state]();
+      if (token === renderToken && node) setView(node, state);
+    } catch (e) {
+      if (token !== renderToken) return;
+      console.error(e);
+      track('booking_error', { step: state, reason: (e && e.code) || 'load_failed' });
+      setView(loadError(), 'A3');
+    }
+  }
+  function go(state, { replace = false } = {}) {
+    if (replace) win.history.replaceState({ view: state, depth: S.depth }, '', '#' + state);
+    else { S.depth += 1; win.history.pushState({ view: state, depth: S.depth }, '', '#' + state); }
+    return show(state);
+  }
+  const needs = { C3: () => S.slot && S.service, C4: () => S.slot && S.service, C1: () => S.service, C2: () => S.service && S.slots.length };
+  win.addEventListener('popstate', (e) => {
+    const view = e.state && e.state.view;
+    S.depth = (e.state && e.state.depth) || 0;
+    if (!view || (needs[view] && !needs[view]())) { S.depth = 0; show(entry()); return; }
+    show(view);
+  });
+  $('be-back') && $('be-back').addEventListener('click', () => win.history.back());
+
+  // --- adat ---------------------------------------------------------------------------------------------------------------------
+  async function ensureServices() {
+    if (S.services) return S.services;
+    S.services = (await adapter.getServices(flow.business)).map((s) => ({ ...s, bookingType: classifyService(flow.business, s).bookingType }));
+    return S.services;
+  }
+  // Elkeltnek csak akkor mondjuk, ha a Salonic ket egymas utani valasza is adott idopontokat a napra, de a kivalasztott nem volt
+  // koztuk. Ures valasz vagy hiba nem dont (ilyenkor megprobaljuk az adatlapot): egy esetleges hibas valasz ne ejtsen at szabad idopontot.
+  async function slotStillFree() {
+    for (let i = 0; i < 2; i++) {
+      try {
+        const r = await adapter.getAvailability(flow.business, S.service.serviceId, { from: S.slot.start_unix - 3600, days: 1, minLeadMinutes: 0 });
+        if (!r.length || r.some((s) => s.start_unix === S.slot.start_unix)) return true;
+      } catch (e) { return true; }
+      if (i === 0) await new Promise((ok) => win.setTimeout(ok, 400));
+    }
+    return false;
+  }
+  async function loadSlots() {
+    S.slots = await adapter.getAvailability(flow.business, S.service.serviceId, { days: 30, minLeadMinutes: MIN_LEAD_MINUTES });
+    S.day = null;
+    return S.slots;
+  }
+  const serviceParams = (svc) => ({ service: nameOf(svc), service_id: svc.serviceId, booking_type: classifyService(flow.business, svc).bookingType, list_price: svc.listPrice, final_price: svc.activePrice, voucher: svc.bookingType === 'voucher_redemption' });
+  function chooseService(svc, { exact = false } = {}) {
+    S.service = svc; S.exact = exact; S.slot = null; S.slots = [];
+    track('booking_service_selected', serviceParams(svc));
+    return go('C1');
+  }
+  function pickSlot(slot) {
+    S.slot = slot;
+    track('booking_slot_selected', { ...serviceParams(S.service), staff_id: slot.staff_id });
+    return go('C3');
+  }
+
+  // --- nezetek ------------------------------------------------------------------------------------------------------------------
+  const views = {
+    HS1: async () => h('section', {}, title(flow.copy.hs1Title), h('div', { class: 'be-list' }, flow.copy.hs1.map((o) => bigButton(o.title, null, () => {
+      track('booking_intent_selected', { step: 'HS1', reason: o.key });
+      if (o.key === 'giftcard') { win.location.assign(flow.giftCardUrl); return; } // nem foglalasi allapot: kilep a Gift Card funnelbe
+      S.voucher = o.key === 'voucher';
+      go(F.next('HS1', o.key));
+    })))),
+
+    HS2: () => cardsView('HS2', false),
+    HS3: () => cardsView('HS3', true),
+
+    C1: async () => {
+      if (!S.slots.length) await loadSlots();
+      if (!S.slots.length) { track('booking_no_slots', { ...serviceParams(S.service), step: 'C1' }); S.callbackReason = 'nincs_idopont'; go('A1', { replace: true }); return null; }
+      const groups = F.quickSlots(S.slots, { max: 5, nowUnix: nowUnix() });
+      track('booking_slot_viewed', { ...serviceParams(S.service), step: 'C1', count: groups.reduce((n, g) => n + g.items.length, 0) });
+      return h('section', {}, title('Legközelebbi szabad időpontok'), serviceBar(S.exact ? null : () => win.history.back()),
+        S.slotLostNote ? alertBox('Ez az időpont közben elkelt. Válassz egy másikat!') : null,
+        h('div', { class: 'be-days' }, groups.map((g) => h('div', { class: 'be-day' }, h('b', { text: g.label }),
+          h('div', { class: 'be-times' }, g.items.map((i) => h('button', { type: 'button', class: 'be-time', text: i.time, onclick: () => pickSlot(i.slot) })))))),
+        h('div', { class: 'be-actions' }, secondary('További időpontok', () => go('C2')),
+          link('Nem találok megfelelő időpontot', () => { S.callbackReason = 'nincs_idopont'; track('booking_no_slots', { ...serviceParams(S.service), step: 'C1', reason: 'user' }); go('A1'); })));
+    },
+
+    C2: async () => {
+      if (!S.slots.length) await loadSlots();
+      const days = F.availableDays(S.slots);
+      if (!days.length) { S.callbackReason = 'nincs_idopont'; go('A1', { replace: true }); return null; }
+      if (!S.day || !days.some((d) => d.key === S.day)) S.day = days[0].key;
+      const staffOptions = flow.showStaffFilter ? [...new Map(S.slots.map((s) => [s.staff_id, s.staff_label])).entries()] : [];
+      const list = F.uniqueTimes(F.filterSlots(S.slots, { day: S.day, daypart: S.daypart, staffId: S.staff || null }));
+      track('booking_slot_viewed', { ...serviceParams(S.service), step: 'C2', count: list.length });
+      const redraw = (filter) => { if (filter) track('booking_filter_used', { filter }); show('C2'); };
+      return h('section', {}, title('Válassz időpontot'), serviceBar(() => win.history.back()),
+        h('div', { class: 'be-strip', role: 'group', 'aria-label': 'Nap' }, days.map((d) => h('button', { type: 'button', class: 'be-chip', 'aria-pressed': String(d.key === S.day), text: d.label, onclick: () => { S.day = d.key; redraw('day'); } }))),
+        h('p', { class: 'be-label', text: 'Napszak' }),
+        h('div', { class: 'be-strip', role: 'group', 'aria-label': 'Napszak' }, F.DAYPARTS.map(([k, t]) => h('button', { type: 'button', class: 'be-chip', 'aria-pressed': String(k === S.daypart), text: t, onclick: () => { S.daypart = k; redraw('daypart'); } }))),
+        staffOptions.length > 1 ? h('label', { class: 'be-label' }, 'Szakember', h('select', { class: 'be-select', onchange: (e) => { S.staff = e.target.value || null; redraw('staff'); } },
+          h('option', { value: '', text: 'Bármely megfelelő szakember' }), staffOptions.map(([id, label]) => h('option', { value: id, selected: String(S.staff) === String(id), text: label || id })))) : null,
+        list.length ? h('div', { class: 'be-times be-grid' }, list.map((s) => h('button', { type: 'button', class: 'be-time', text: F.timeLabel(s.start_unix), onclick: () => pickSlot(s) })))
+          : h('div', {}, note('Erre a napszakra nincs szabad időpont.'), link('Nem találok megfelelő időpontot', () => { S.callbackReason = 'nincs_idopont'; go('A1'); })));
+    },
+
+    C3: async () => {
+      if (!S.place) { try { S.place = await adapter.getPlace(flow.business); } catch (e) { S.place = null; } }
+      return h('section', {}, title('A választásod'),
+        h('div', { class: 'be-card' }, h('b', { class: 'be-card-title', text: nameOf(S.service) }),
+          summaryRows([['Időtartam', S.service.durationMin ? F.durationLabel(S.service.durationMin) : ''], ['Ár', priceText(S.service)],
+            ['Dátum', F.longDate(S.slot.start_unix)], ['Időpont', F.timeLabel(S.slot.start_unix)],
+            ['Szakember', flow.showStaffFilter ? 'Bármely megfelelő' : ''], ['Helyszín', placeText()]])),
+        h('div', { class: 'be-actions' }, primary('Tovább az adatokhoz', () => go(F.next('C3', 'next'))), link('Másik időpontot választok', () => win.history.back())));
+    },
+
+    C4: async () => {
+      // Friss ellenorzes: az idopont meg szabad-e. (Az elkelt idopontnal a Salonic a SAJAT fooldalara dob, ami a keretben nem
+      // latszik a motornak; a masik munkamenet altal tartott idopontot a naptar-API nem rejti el, ezt az alabbi segito sor kezeli.)
+      if (!S.adapterSample && !(await slotStillFree())) { S.a2Reason = 'taken'; go('A2', { replace: true }); return null; }
+      const b = await adapter.beginBooking({ business: flow.business, serviceId: S.service.serviceId, startUnix: S.slot.start_unix, staffId: -1 });
+      S.expected = b.expected; S.guestUrl = b.guestDataUrl;
+      track('booking_details_started', { ...serviceParams(S.service), step: 'C4' }, { once: S.slot.slot_id });
+      const loading = h('p', { class: 'be-loading', role: 'status', text: 'Foglalási űrlap betöltése…' });
+      const fallback = h('p', { class: 'be-note', hidden: true }, 'Nem jelenik meg az űrlap? ', h('a', { href: S.guestUrl, target: '_top', text: 'Nyisd meg itt' }), '.');
+      const help = h('div', { class: 'be-help', hidden: true }, note('Ha az űrlap helyett a Salonic főoldala látszik, az időpontot épp valaki más foglalja. Válassz másik időpontot.'),
+        secondary('Másik időpontot választok', () => go('C1')));
+      const frame = h('iframe', { class: 'be-iframe', title: 'Foglalás véglegesítése', src: S.guestUrl, style: 'visibility:hidden' });
+      const slow = win.setTimeout(() => { fallback.hidden = false; help.hidden = false; }, 6000);
+      frame.addEventListener('load', () => { win.clearTimeout(slow); loading.hidden = true; frame.style.visibility = ''; win.setTimeout(() => { help.hidden = false; }, 2500); });
+      // A Salonic 5 percig tartja fenn az idopontot, utana a sajat fooldalara dob: ezt mi is figyeljuk (4:50).
+      S.holdTimer = win.setTimeout(() => { if (S.state === 'C4') { S.a2Reason = 'expired'; go('A2', { replace: true }); } }, HOLD_MS);
+      return h('section', {}, title('Add meg az adataidat'),
+        h('div', { class: 'be-mini' }, h('b', { text: `${F.longDate(S.slot.start_unix)} · ${F.timeLabel(S.slot.start_unix)}` }), h('span', { text: nameOf(S.service) }),
+          link('Módosítás', () => win.history.go(-2))),
+        h('div', { class: 'be-frame' }, loading, frame), fallback, help);
+    },
+
+    C5: async () => h('section', { class: 'be-center' }, h('div', { class: 'be-spinner', 'aria-hidden': 'true' }), title('Időpontod rögzítése…'),
+      h('ul', { class: 'be-check' }, h('li', { class: 'ok', text: 'Adatok ellenőrzése' }), h('li', { text: 'Foglalás ellenőrzése' }), h('li', { text: 'Visszaigazolás' }))),
+
+    C6: async () => {
+      const c = S.confirmation;
+      const rep = c ? c.reported : {};
+      const voucher = S.service.bookingType === 'voucher_redemption';
+      const price = voucher ? flow.copy.voucherSettled : F.formatPrice(rep.price ?? S.service.activePrice);
+      return h('section', { class: 'be-center be-success' }, h('div', { class: 'be-tick', 'aria-hidden': 'true', text: '✓' }), title('Foglalásod sikeres!'),
+        h('div', { class: 'be-card be-left' }, h('b', { class: 'be-card-title', text: nameOf(S.service) }),
+          summaryRows([['Időtartam', S.service.durationMin ? F.durationLabel(S.service.durationMin) : ''], ['Ár', price],
+            ['Dátum', F.longDate(S.slot.start_unix)], ['Időpont', F.timeLabel(S.slot.start_unix)], ['Szakember', flow.showStaffFilter ? rep.employee : ''], ['Helyszín', placeText()]])),
+        h('div', { class: 'be-actions' }, primary('Hozzáadás a naptárhoz', addToCalendar),
+          h('a', { class: 'be-btn be-btn-2', href: S.place && S.place.address ? F.mapsUrl(placeText()) : '#', target: '_blank', rel: 'noopener', text: 'Útvonaltervezés', hidden: !(S.place && S.place.address) })),
+        note('Időpont módosítása vagy lemondása: a visszaigazoló e-mailben lévő linkkel.'));
+    },
+
+    A1: async () => callbackView({ heading: 'Nincs megfelelő időpont?', intro: 'Hagyd meg a telefonszámod, és visszahívunk.' }),
+    A1_SENT: async () => sentView(),
+    A2: async () => {
+      S.slotLostNote = true;
+      track('booking_slot_lost', { ...serviceParams(S.service), step: 'C4' }, { once: S.slot && S.slot.slot_id });
+      await loadSlots();
+      const alts = F.uniqueTimes(S.slots).slice(0, 4);
+      const expired = S.a2Reason === 'expired';
+      return h('section', {}, title(expired ? 'A foglalási idő lejárt.' : 'Ez az időpont közben elkelt.'),
+        note(expired ? 'A Salonic 5 percig tartja fenn a kiválasztott időpontot. Válassz újra:' : 'Válassz egy másik időpontot:'),
+        alts.length ? h('div', { class: 'be-times be-grid' }, alts.map((s) => h('button', { type: 'button', class: 'be-time', text: `${F.dayLabel(s.start_unix, nowUnix())} ${F.timeLabel(s.start_unix)}`, onclick: () => { S.slotLostNote = false; pickSlot(s); } }))) : null,
+        h('div', { class: 'be-actions' }, secondary('Másik nap…', () => { S.slotLostNote = false; go('C2'); }),
+          alts.length ? null : link('Nincs megfelelő időpont', () => { S.callbackReason = 'nincs_idopont'; go('A1'); })));
+    },
+    A3: async () => h('section', {}, title('Most nem tudjuk véglegesíteni az online foglalást.'), note(`Kérjük, próbáld újra, vagy kérj visszahívást, esetleg hívj minket: ${PHONE}.`),
+      h('div', { class: 'be-actions' }, primary('Próbálom újra', () => retry()), secondary('Hívjatok vissza', () => { S.callbackReason = 'technikai_hiba'; go('A3_CB'); }),
+        h('a', { class: 'be-link', href: PHONE_HREF, text: `Hívás: ${PHONE}` }))),
+    A3_CB: async () => callbackView({ heading: 'Visszahívást kérsz?', intro: 'Hagyd meg a telefonszámod, és visszahívunk.' }),
+    A3U: async () => h('section', {}, title('A foglalásodat feldolgoztuk.'),
+      note('A visszaigazolást nem tudtuk automatikusan ellenőrizni. Kérjük, nézd meg az e-mailedet: ott találod a foglalásod adatait. Ha nem érkezik levél, hívj minket.'),
+      h('div', { class: 'be-actions' }, h('a', { class: 'be-btn', href: PHONE_HREF, text: `Hívás: ${PHONE}` }), secondary('Új időpontot foglalok', () => { S.slot = null; go('C1'); }))),
+    A3_SENT: async () => sentView(),
+  };
+  function cardsView(state, voucher) {
+    return ensureServices().then(() => {
+      const cards = F.cardsFor(S.services, flow.cards, { voucher });
+      if (!cards.length) return loadError();
+      return h('section', {}, title(voucher ? flow.copy.hs3Title : flow.copy.hs2Title), voucher ? note(flow.copy.hs3Note) : null,
+        h('div', { class: 'be-list' }, cards.map(({ card, service }) => bigButton(card.title,
+          [service.durationMin ? F.durationLabel(service.durationMin) : null, voucher ? flow.copy.voucherSettled : F.formatPrice(service.activePrice)].filter(Boolean).join(' · '),
+          () => chooseService(service)))));
+    });
+  }
+  const loadError = () => h('section', {}, title('Most nem sikerült betölteni az időpontokat.'), note(`Kérjük, próbáld újra pár perc múlva, vagy hívj minket: ${PHONE}.`),
+    h('div', { class: 'be-actions' }, primary('Újrapróbálom', () => show(S.state)), h('a', { class: 'be-btn be-btn-2', href: PHONE_HREF, text: `Hívás: ${PHONE}` })));
+
+  function retry() {
+    if (S.slot && S.service) return go('C4', { replace: true }); // az adatlap ujratoltese; ha kozben mar rogzult, a Salonic elkelt idopontot jelez (A2)
+    return go(S.service ? 'C1' : entry());
+  }
+
+  // --- visszahivas-kero urlap (A1 / A3) --------------------------------------------------------------------------------------------
+  function callbackView({ heading, intro }) {
+    const err = h('div', { id: 'be-cb-err' });
+    const field = (label, name, type, ph, auto) => h('label', { class: 'be-field' }, h('span', { text: label }), h('input', { name, type, placeholder: ph, autocomplete: auto, required: true }));
+    const form = h('form', { class: 'be-form', novalidate: true, onsubmit: async (e) => {
+      e.preventDefault();
+      const f = e.currentTarget; const v = (n) => f.elements[n].value.trim();
+      err.replaceChildren();
+      const phoneDigits = v('telefon').replace(/\D/g, '');
+      if (v('nev').length < 2) { err.append(alertBox('Kérlek, add meg a neved.')); f.elements.nev.focus(); return; }
+      if (phoneDigits.length < 9 || phoneDigits.length > 13) { err.append(alertBox('Kérlek, érvényes telefonszámot adj meg.')); f.elements.telefon.focus(); return; }
+      if (!f.elements.hozzajarul.checked) { err.append(alertBox('Kérlek, fogadd el az adatkezelést, hogy visszahívhassunk.')); return; }
+      const btn = f.querySelector('button[type=submit]'); btn.disabled = true; const old = btn.textContent; btn.textContent = 'Küldés…';
+      const body = new URLSearchParams({ 'form-name': 'motor-visszahivas', nev: v('nev'), telefon: v('telefon'), uzletag: flow.business, szolgaltatas: S.service ? nameOf(S.service) : '', ok: S.callbackReason, oldal: 'foglalo-motor', forras: ctx.sourcePage || '' });
+      try {
+        const ab = new AbortController(); const t = win.setTimeout(() => ab.abort(), 15000);
+        const r = await win.fetch('/', { method: 'POST', body, credentials: 'same-origin', signal: ab.signal }).finally(() => win.clearTimeout(t));
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        track('booking_callback_requested', { ...(S.service ? serviceParams(S.service) : {}), reason: S.callbackReason });
+        go(S.state === 'A3_CB' ? 'A3_SENT' : 'A1_SENT', { replace: true });
+      } catch (x) {
+        console.error(x); btn.disabled = false; btn.textContent = old;
+        err.append(alertBox(`Hiba történt a küldés közben. Kérlek, próbáld újra, vagy hívj minket: ${PHONE}.`));
+      }
+    } },
+      field('Név', 'nev', 'text', 'pl. Kovács Anna', 'name'), field('Telefonszám', 'telefon', 'tel', '+36 30 123 4567', 'tel'),
+      h('label', { class: 'be-consent' }, h('input', { type: 'checkbox', name: 'hozzajarul' }), h('span', {}, 'Hozzájárulok, hogy a MOSAIC a visszahíváshoz kezelje az adataimat (', h('a', { href: '/aszf', target: '_blank', rel: 'noopener', text: 'ÁSZF' }), ').')),
+      err, h('button', { type: 'submit', class: 'be-btn', text: 'Visszahívást kérek' }));
+    return h('section', {}, title(heading), note(intro), form, h('a', { class: 'be-link', href: PHONE_HREF, text: `Vagy hívj most: ${PHONE}` }));
+  }
+  const sentView = () => h('section', { class: 'be-center' }, h('div', { class: 'be-tick', 'aria-hidden': 'true', text: '✓' }), title('Visszahívást kértél!'), note('Hamarosan hívunk a megadott számon.'));
+
+  // --- naptar-fajl -------------------------------------------------------------------------------------------------------------------
+  function addToCalendar() {
+    const ics = F.icsFor({ startUnix: S.slot.start_unix, durationMin: S.service.durationMin || 60, title: `${flow.brand}: ${nameOf(S.service)}`, location: placeText(), description: `MOSAIC. Tel.: ${PHONE}` });
+    const a = h('a', { href: win.URL.createObjectURL(new win.Blob([ics], { type: 'text/calendar' })), download: 'mosaic-foglalas.ics' });
+    doc.body.append(a); a.click(); a.remove();
+  }
+
+  // --- a Salonic adatlapja utan (C5) -----------------------------------------------------------------------------------------------
+  // A suti.js (es ez a modul) a keretben betoltott sajat oldalunk cimet ide jelzi: elkelt idopont, visszaigazolas vagy ismeretlen.
+  function onSalonicRedirect(href) {
+    go('C5', { replace: true });
+    win.setTimeout(() => resolveRedirect(href), 700);
+  }
+  function resolveRedirect(href) {
+    const kind = F.classifyRedirect(href, { enginePath: flow.enginePath });
+    if (kind === 'slot_lost') return go('A2', { replace: true });
+    if (kind === 'confirmation' && S.expected) {
+      const v = adapter.verifyConfirmation(href, S.expected);
+      if (v.ok) return confirmed(v);
+      track('booking_error', { ...serviceParams(S.service), step: 'C5', reason: 'verify_failed', filter: Object.entries(v.checks).filter(([, c]) => c.status === 'fail').map(([k]) => k).join(',') });
+      return go('A3U', { replace: true });
+    }
+    track('booking_error', { ...serviceParams(S.service), step: 'C5', reason: 'unknown_redirect' });
+    return go('A3', { replace: true });
+  }
+  function confirmed(v) {
+    S.confirmation = v;
+    const cls = classifyService(flow.business, S.service);
+    const type = effectiveType({ bookingType: cls.bookingType, splitByRuntime: cls.splitByRuntime, firstBooking: v.firstBooking });
+    track('booking_completed', {
+      ...serviceParams(S.service), booking_type: type, booking_id: v.bookingRef, final_price: v.reported.price ?? S.service.activePrice,
+      new_or_returning: v.firstBooking ? 'new' : 'returning', acquisition: isAcquisition({ bookingType: cls.bookingType, splitByRuntime: cls.splitByRuntime, firstBooking: v.firstBooking }),
+    }, { once: v.bookingRef });
+    return go('C6', { replace: true });
+  }
+  win.mhKeretbenOldal = onSalonicRedirect;
+
+  // --- belepes ------------------------------------------------------------------------------------------------------------------------
+  function entry() { return F.entryState({ hasService: false, voucher: S.voucher }); }
+
+  async function start() {
+    if (!flow) { setView(alertBox('Ismeretlen üzletág.'), 'A3'); return; }
+    track('booking_open', { entry: ctx.serviceKey ? 'service' : 'generic' });
+    if (ctx.sample) return sample();
+    let first = entry();
+    if (ctx.serviceKey) {
+      try {
+        await ensureServices();
+        const svc = F.findByKey(S.services, ctx.serviceKey, { voucher: S.voucher });
+        if (svc) { S.service = svc; S.exact = true; track('booking_service_selected', serviceParams(svc)); first = F.entryState({ hasService: true, voucher: S.voucher }); }
+      } catch (e) { console.error(e); }
+    }
+    win.history.replaceState({ view: first, depth: 0 }, '', win.location.pathname + win.location.search + '#' + first);
+    return show(first);
+  }
+
+  // Mintanezet foglalas nelkul: ?minta=siker|elkelt|hiba|ellenorizetlen|nincs-idopont|visszahivas-kesz
+  function sample() {
+    const t0 = Math.floor(now() / 86400000 + 2) * 86400 + 8 * 3600;
+    S.service = { serviceId: '0', name: 'EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás', durationMin: 80, activePrice: 26900, listPrice: null, bookingType: 'first_treatment' };
+    S.slot = { start_unix: t0, staff_id: '1', staff_label: 'x', slot_id: 'minta' };
+    S.slots = [0, 5400, 90000, 93600, 176400].map((d, i) => ({ start_unix: t0 + d, staff_id: '1', staff_label: 'x', slot_id: 'minta' + i, service_id: '0' }));
+    S.place = { name: 'Mosaic Headspa', address: '1023 Budapest, Bécsi út 4. földszint 1. ajtó' };
+    S.confirmation = { reported: { price: 26900, employee: 'Mirage' } };
+    const map = { siker: 'C6', elkelt: 'A2', hiba: 'A3', ellenorizetlen: 'A3U', 'nincs-idopont': 'A1', 'visszahivas-kesz': 'A1_SENT' };
+    S.adapterSample = true;
+    adapter.getAvailability = async () => S.slots; // mintanezetben nincs halozat
+    win.history.replaceState({ view: map[ctx.sample] || 'HS1', depth: 0 }, '', win.location.pathname + win.location.search);
+    return show(map[ctx.sample] || 'HS1');
+  }
+
+  return { start: start(), state: S, show, go };
+}

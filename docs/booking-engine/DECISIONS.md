@@ -9,6 +9,23 @@ Minden döntés a tulajdonostól jött, 2026-10-03-án, a [PMU live audit és a 
 | 3 | PMU eltávolítás online foglalható legyen? | **Nem, csak fotó alapján.** | Nincs Salonic-szolgáltatás. Az `removal` és a `photo_review_lead` nem foglalás, soha nem lehet `booking_completed`. |
 | 4 | A foglalások besorolása a hirdetési méréshez | **Jóváhagyva** (lásd lent). | `assets/js/booking-engine/business-config.js` |
 
+## Felület-döntések (2026-10-03, a UI építése előtt)
+
+| # | Kérdés | Döntés |
+|---|---|---|
+| 5 | Az adatok megadása (C4) és a foglalás létrehozása (C5) | **A Salonic beágyazott adatlapja** (mint a PMU-nál): saját űrlap nem lehetséges (reCAPTCHA, nincs foglalás-API). A foglaló az oldalunkon marad, az utolsó lépésben a Salonic űrlapja látszik benne. |
+| 6 | Melyik üzletággal kezdünk | **HeadSpa** |
+| 7 | „Értesítsetek, ha felszabadul hely” | **Az első verzióban kimarad**, csak a „Hívjatok vissza” marad. |
+| 8 | HeadSpa Egyéni: Relax vagy Hair | **Csak a Relax**, nincs választás. A „Hair” változat (és a kuponos párja) ebből a foglalóból nem foglalható. |
+| 9 | „Hívjatok vissza” | **Visszahívás-kérő űrlap**, a szalon e-mailt kap (új űrlap-típus: `motor-visszahivas`). |
+| 10 | „Időpont módosítása” a siker-oldalon | **Szöveg:** a módosító link a visszaigazoló e-mailben van. |
+| 11 | Szakember-választó a HeadSpa naptárában | **Nincs**, bárki megfelelő (a HeadSpa „munkatársai” kezelő-helyek). A Hair és az Oxigén alatt marad. |
+| 12 | A kész foglaló helye | **Rejtett próbaoldal** (`/foglalo-motor`, `noindex`, nincs rá link). Éles oldalba csak külön jóváhagyással kerül. |
+
+**A tesztelés korlátja:** a Salonicnak nincs próbakörnyezete, ezért éles foglalást a próba során nem adunk le. A foglalás-utáni ágakat (siker, elkelt időpont, hiba) mintanézettel és egységtesztekkel ellenőrizzük.
+
+**Go-live előtt eldöntendő:** a mai HeadSpa konverziós mérés a `/success-foglalas*` köszönőoldalak URL-paramétereire épül. A próbaoldalon a motor maga mutatja a sikert, és nem nyitja meg a köszönőoldalt, ezért mérés nem fut. Élesítéskor el kell dönteni, hogyan marad meg a jelenlegi mérés.
+
 ## Jóváhagyott besorolás
 
 - Ingyenes konzultáció → `consultation`.
