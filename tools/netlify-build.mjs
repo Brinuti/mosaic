@@ -26,7 +26,8 @@ import { ritkit } from './css-ritkitas.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
-const ELES = process.env.ELES === '1';
+// Cloudflare Pages-en a main ag buildje az eles (a *.pages.dev cimeken a functions/[[path]].js ad noindexet)
+const ELES = process.env.ELES === '1' || (process.env.CF_PAGES === '1' && process.env.CF_PAGES_BRANCH === 'main');
 
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
@@ -75,6 +76,26 @@ fs.writeFileSync(path.join(DIST, 'robots.txt'), ELES
 // A regi /post/ cimeket es a mobil/asztali valasztast a netlify/edge-functions
 // intezi (utvonal.js) - kulon atiranyitasi szabaly nem kell.
 fs.writeFileSync(path.join(DIST, '_redirects'), '');
+
+// Cloudflare Pages (functions/[[path]].js): a fuggveny csak a lapcimekre fusson,
+// a fajlok (kepek, stilusok, szkriptek, videok) kozvetlenul jojjenek - a
+// fuggvenyhivasok szama igy a latogatasokkal aranyos, nem a fajlokeval.
+// A Netlify ezeket a fajlokat figyelmen kivul hagyja.
+fs.writeFileSync(path.join(DIST, '_routes.json'), JSON.stringify({
+  version: 1,
+  include: ['/*'],
+  exclude: ['/assets/*', '/_a/*', '/_m/*', '/salonic/*', '/favicon.ico',
+    ...fs.readdirSync(DIST).filter((f) => f.endsWith('.xml')).map((f) => '/' + f)],
+}, null, 1));
+// 404-es lap: a Cloudflare Pages ennek hianyaban a nyitooldalt adna minden
+// ismeretlen cimre (egyoldalas alkalmazaskent kezelne a webhelyet)
+if (!fs.existsSync(path.join(DIST, '404.html'))) {
+  fs.writeFileSync(path.join(DIST, '404.html'), '<!doctype html><html lang="hu"><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">' +
+    '<title>Az oldal nem található | MOSAIC Headspa</title><style>body{font:16px/1.5 Arial,sans-serif;' +
+    'text-align:center;padding:15vh 20px;color:#222}a{color:#1b3a3a}</style></head><body>' +
+    '<h1>Az oldal nem található</h1><p><a href="/">Vissza a nyitóoldalra</a></p></body></html>');
+}
 
 fs.writeFileSync(path.join(DIST, '_headers'), [
   '/*',

@@ -20,7 +20,9 @@
   - az éles oldalt ne terheld feleslegesen (Playwright-tesztek a PR-előnézeten vagy helyben fussanak).
   A PR-t te mergeled (`merge_pull_request`, teljes 40 karakteres SHA).
 - **Tárhely:** Netlify Pro (20 USD/hó, 2026-10-03 óta). A terv: költözés a Cloudflare Pages-re
-  (ingyenes, korlátlan forgalom). **A költözés után szólj a felhasználónak, hogy mondja le a
+  (ingyenes, korlátlan forgalom) – a kód kész, a lépések: [CLOUDFLARE.md](CLOUDFLARE.md). A repó
+  mindkét tárhelyen működik: a `functions/` a Cloudflare-é, a `netlify/` a Netlifyé, a
+  levelek szövege közös (`netlify/lib/levelek.js`). **A költözés után szólj a felhasználónak, hogy mondja le a
   Netlify-előfizetést.**
 - **Fizetős külső szolgáltatás helyett** saját kód (pl. a Common Ninja GYIK/árlista helyett).
 - **Mérőkódok:** csak a `mosaicheadspa.hu` domainen futhatnak (`assets/js/suti.js`,
