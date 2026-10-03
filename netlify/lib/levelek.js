@@ -57,6 +57,13 @@ export const URLAPOK = {
       ['nev', 'Név'], ['telefon', 'Telefonszám'], ['mikor_nap', 'Melyik nap?'], ['mikor_napszak', 'Melyik napszakban?'],
     ], d),
   },
+  // a koszonooldal "Ott leszek" gombja: a vendeg megerositette, hogy jon (a Salonicba kivulrol nem irhatunk)
+  'pmu-megerosites': {
+    targy: 'Sminktetoválás – a vendég megerősítette az időpontját',
+    html: (d) => osszefoglalo('Egy vendég a köszönőoldalon megerősítette, hogy eljön („Ott leszek”).', 'Az időpont:', [
+      ['idopont', 'Időpont'], ['kezeles', 'Kezelés'], ['ar', 'Ár'],
+    ], d),
+  },
   'fodrasz-jelentkezes': {
     targy: 'Új fodrász jelentkezett',
     html: (d) => osszefoglalo(wixBevezeto('Fodrász'), 'Beküldés összefoglalása:', [

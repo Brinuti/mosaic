@@ -151,6 +151,8 @@
     aktualis = nev;
     for (const s of document.querySelectorAll('[data-nezet]')) s.hidden = s.dataset.nezet !== nev;
     $('vissza').style.visibility = nev === 'kezdo' || /kesz$|koszonjuk/.test(nev) ? 'hidden' : 'visible';
+    // koszonooldalakon: a telefon balra kerul, jobbra fent "x" (bezaras)
+    document.body.classList.toggle('kesz-nezet', /kesz$|koszonjuk/.test(nev));
     lepesjelzo(nev);
     scrollTo(0, 0);
     if (BEAGYAZVA) jelez({ nezet: nev });
@@ -432,6 +434,12 @@
   //  - 10 perces visszahivas: c-kesz (#visszahivas-kesz), lasd lent
   // Mintanezet foglalas nelkul: ?minta=kezeles|konz|visszahivas
   const MINTA = new URLSearchParams(location.search).get('minta');
+  const KOSZ_OLDAL = (location.pathname.match(/^\/pmu-(ok|vh)\/?$/) || [])[1];
+  // bezaras (x): beagyazva a foglalo elejere ugrik, kulon oldalon vissza a sminktetovalas oldalra
+  $('bezar').addEventListener('click', () => {
+    if (BEAGYAZVA) { history.replaceState({ nezet: 'kezdo' }, '', location.pathname + location.search.replace(/[?&]lepes=[^&]*/, '')); mutat('kezdo'); return; }
+    try { window.top.location.assign('/sminktetovalas-budapest'); } catch (e) { location.assign('/sminktetovalas-budapest'); }
+  });
   const KOSZ = {
     kezeles: { cim: 'Sikeres foglalás!', hash: '#koszonjuk', lepesek: ['Visszaigazolást küldök e-mailben.', 'A kezelés előtt emlékeztetőt kapsz.', 'Lemondani legkésőbb 48 órával előtte tudod – utána az időpont már a tiéd, másnak nem adhatom oda.'] },
     konz: { cim: 'Személyes konzultációd lefoglalva!', hash: '#koszonjuk-konzultacio', lepesek: ['Visszaigazolást küldök e-mailben.', 'Asszisztensem felhív, hogy egyeztessétek a részleteket.', 'A konzultáción minden kérdésedre választ kapsz.'] },
@@ -441,11 +449,14 @@
     const minta = MINTA === 'konz' ? { ts: mintaNap, perc: 30, nev: 'Ingyenes konzultáció', ar: 'Ingyenes', tipus: 'konz' }
       : MINTA ? { ts: mintaNap, perc: 90, nev: 'Szemöldöktetoválás – Hibrid', ar: '79 000 Ft', tipus: 'kezeles' } : null;
     const f = minta || olvas(TAROLO);
-    if (!f) { mutat('kezdo'); return; }
-    const v = KOSZ[f.tipus] || KOSZ.kezeles;
+    if (!f && KOSZ_OLDAL !== 'ok') { mutat('kezdo'); return; }
+    const v = KOSZ[f ? f.tipus : 'kezeles'] || KOSZ.kezeles;
     $('kosz-cim').textContent = v.cim;
     $('kosz-lepesek').replaceChildren(...v.lepesek.map((t) => elem('li', { szoveg: t })));
-    if (location.hash !== v.hash) history.replaceState({ nezet: 'koszonjuk' }, '', location.pathname + location.search + v.hash);
+    // a /pmu-ok koszonooldalon a cim valtozatlan marad (a meres es a hirdetesi konverziok ezt figyelik)
+    if (!KOSZ_OLDAL && location.hash !== v.hash) history.replaceState({ nezet: 'koszonjuk' }, '', location.pathname + location.search + v.hash);
+    for (const x of document.querySelectorAll('.megerosit, [data-nezet=koszonjuk] .gombsor')) x.hidden = !f;
+    if (!f) { $('koszono-osszegzes').replaceChildren(); return; }
     const terkep = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(SZALON.terkep);
     $('koszono-osszegzes').replaceChildren(elem('div', { class: 'kosz-kartya' },
       elem('span', { class: 'adat' }, elem('b', { szoveg: teljes(f.ts) }), elem('b', { szoveg: f.nev }), f.ar + ' · ' + idotartam(f.perc),
@@ -463,7 +474,13 @@
       const a = elem('a', { href: URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })), download: 'mosaic-sminktetovalas.ics' });
       document.body.append(a); a.click(); a.remove();
     };
-    $('ott-leszek').onclick = (e) => { e.currentTarget.textContent = 'Várlak! ✓'; e.currentTarget.disabled = true; };
+    // "Ott leszek": a szalon e-mailt kap rola (a Salonicba kivulrol nem tudunk irni), a gomb zoldre valt
+    $('ott-leszek').onclick = (e) => {
+      const g = e.currentTarget;
+      g.textContent = 'Köszönöm, várlak! ✓'; g.disabled = true; g.classList.add('kesz');
+      const adat = new URLSearchParams({ 'form-name': 'pmu-megerosites', idopont: teljes(f.ts), kezeles: f.nev, ar: f.ar || '', oldal: location.pathname.slice(1) || 'foglalo-pmu' });
+      leker('/', { method: 'POST', credentials: 'same-origin', body: adat }).catch((err) => console.error(err));
+    };
   };
 
   // --- B / D. foto ----------------------------------------------------------------------
@@ -613,15 +630,16 @@
     // a telefonos konzultacio ugyanaz a konverzio, mint a weboldal regi visszahivas-urlapja es a
     // Facebook-leadek: a /pmu-vh koszonooldalon lefut a megszokott meres, majd a klon.js visszahoz ide
     tarol(TAROLO_C, { cSav: cMikor() });
-    try { window.top.location.assign('/pmu-vh?mh_proba=vh'); } catch (e2) { location.assign('/pmu-vh?mh_proba=vh'); }
+    try { window.top.location.assign('/pmu-vh'); } catch (e2) { location.assign('/pmu-vh'); }
   });
   BELEPES['c-kesz'] = () => {
     if (MINTA === 'visszahivas') Object.assign(allapot, { cKert: true, cSav: allapot.cSav || 'Délelőtt (9–12)' });
     const c = olvas(TAROLO_C);
     if (c && !allapot.cKert) Object.assign(allapot, { cKert: true, cSav: c.cSav === 'Bármikor' ? null : c.cSav });
+    if (!allapot.cKert && KOSZ_OLDAL === 'vh') allapot.cKert = true;
     if (!allapot.cKert) { mutat('kezdo'); return; }
     $('c-kesz-osszegzes').replaceChildren(cOsszegzes('Ekkor hívlak'));
-    history.replaceState({ nezet: 'c-kesz' }, '', location.pathname + location.search + '#visszahivas-kesz');
+    if (!KOSZ_OLDAL) history.replaceState({ nezet: 'c-kesz' }, '', location.pathname + location.search + '#visszahivas-kesz');
   };
 
   // --- video ------------------------------------------------------------------------------
@@ -653,6 +671,9 @@
   // ?kezeles=<Salonic-azonosito vagy kulcsszo> (kezeles-specifikus landingrol): az 1. lepes kimarad
   (async () => {
     const kert = new URLSearchParams(location.search).get('kezeles');
+    // a koszonooldalak sajat cimukon: /pmu-ok (Salonic-foglalas utan), /pmu-vh (telefonos konzultacio utan)
+    if (KOSZ_OLDAL === 'ok') { mutat('koszonjuk'); BELEPES.koszonjuk(); return; }
+    if (KOSZ_OLDAL === 'vh') { mutat('c-kesz'); BELEPES['c-kesz'](); return; }
     if (location.hash.startsWith('#koszonjuk') && (olvas(TAROLO) || MINTA)) {
       history.replaceState({ nezet: 'koszonjuk' }, '', location.hash);
       mutat('koszonjuk');
