@@ -62,8 +62,9 @@ Ez **üzletáganként 1 valódi konverziót** jelent a hirdetési fiókokban (j�
 - [x] Közös Salonic-CSS élesben (`salonic/mosaic.css`).
 - [x] Átadás a meglévő köszönőoldalnak, tartalék-link a Salonicra (megépítve).
 - [ ] Az „Egyedi CSS URL” beállítása a Salonic-fiókokban (a tulajdonos teendője).
-- [ ] A `/foglalo-motor` rejtett élesítése a próbákhoz (a #65 PR mergelése: új, linkelés nélküli oldal, a meglévő oldalak nem változnak).
-- [ ] A próbák lefutása és az eredmények átnézése.
+- [x] A `/foglalo-motor` rejtett élesítése a próbákhoz (a #65 PR mergelve 2026-10-03 19:26; új, linkelés nélküli, `noindex` oldal, `robots.txt`-ben tiltva, nincs a sitemapben; a meglévő oldalak, a `suti.js` és a GTM bájtra változatlanok).
+- [x] A próbák lefutása (2026-10-03, HeadSpa, Oxigén, Fodrászat, Lézer): lásd [PROBAFOGLALASOK.md](PROBAFOGLALASOK.md).
+- [ ] A szalon lemondja a négy próbaidőpontot.
 - [ ] A központi link-térkép és a kapcsolók elkészítése, kipróbálása.
 
 ## 7. Kockázatok és kezelésük
