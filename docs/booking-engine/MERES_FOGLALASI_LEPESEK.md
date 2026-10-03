@@ -2,6 +2,8 @@
 
 Készült: 2026-10-03, éles oldalon és a Salonic nyilvános oldalain, **kimenő mérés nélkül** (alapból tiltó szűrő + DNS-zár, `tools/meres-proba/`). A Salonic-oldalakon csak oldalakat töltöttem be és kattintottam, foglalás nem jött létre. **Semmi nem épült be**, ez a leírás csak azt rögzíti, mi hiányzik és mi kellene hozzá.
 
+> **Döntés (2026-10-03, a tulajdonostól): a C opció.** A köztes eseményeket (`view_item`, `select_employee`, `ViewContent`) nem pótoljuk, mert semmi nem épül rájuk. A 3. pont (A/B opció) csak háttér, nem épül meg.
+
 ## 1. Eredmény röviden
 
 A Salonic **a saját oldalain** küldi ezeket az eseményeket (a mi GA4-tulajdonunkba, `G-H4206SQ0Q7`, és a mi TikTok-pixelünkre, `CTDGK5BC77U0PIODKP30`). A motor útján a vendég az adatlap előtti Salonic-oldalakat nem látja, ezért ezek közül a legtöbb nem indul el.
@@ -40,4 +42,4 @@ Két dolog kell mindenképp: (1) a motor oldalán fusson a mérőkészlet, (2) a
 
 **C. Nem pótolni.** Ha nincs olyan GA4-jelentés, hirdetési célközönség vagy TikTok-szabály, amelyik a `view_item` / `select_employee` / `ViewContent` eseményre épül, a hiány nem okoz kárt, csak a tölcsér korábbi lépései hiányoznak a motor útján. Ezt csak a tulajdonos tudja ellenőrizni (GA4 felfedezés / hirdetési célközönségek / TikTok eseménykezelő); én a fiókokhoz nem nyúltam.
 
-**Nyitott kérdés a döntéshez:** használ-e valami (célközönség, jelentés, optimalizálási esemény) a `view_item` / `select_employee` / `ViewContent` eseményt? Ha nem, a C pont elég; ha igen, az A pont a javasolt út.
+**Eldöntve:** semmi nem épül ezekre az eseményekre, ezért a C pont érvényes (nem pótoljuk).
