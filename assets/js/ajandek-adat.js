@@ -21,12 +21,16 @@
       item_id: 'mosaic-ajandekkartya-egyeni',
       nev: 'Egyéni Head Spa',
       kartya_cim: 'Egyéni MOSAIC Head Spa ajándékkártya',
+      // a nyomtathato kartyan a savba kerulo felirat (2 sor, nagybetusen jelenik meg)
+      kartya_felirat: ['50+30 perces egyéni MOSAIC', 'HEAD SPA KEZELÉS'],
       fejlec: 'Egy óra csak neki.',
       leiras: 'A legegyszerűbb választás, ha egy embernek keresel igazán pihentető ajándékot.',
       tartalom: ['50 perc Head Spa', '30 perc szárítás', '1 fő', '6 hónapig felhasználható'],
       badge: 'NEKI EGYEDÜL',
       ar_ft: 26900,
       vendeg_db: 1,
+      // a Salonic utalvany-terméke (Marketing > Ajandekutalvanyok), a szalon "utalvany ertekesitesehez" (utalasos rendelesnel)
+      salonic: { id: 4040, nev: '50 perces MOSAIC Head Spa kezelés + 30 perc hajszárítás-20% (26 900 Ft)' },
       // valodi MOSAIC fotok (assets/img): egy terapeuta / ket terapeuta / ket vendeg
       vizual: { src: '/assets/img/ajandek/egyeni.jpg', alt: 'Egyéni Head Spa: a vendég hajmosása a MOSAIC-ban', w: 1200, h: 1800, poz: '50% 55%' }
     },
@@ -36,12 +40,14 @@
       item_id: 'mosaic-ajandekkartya-4kezes',
       nev: '4 kezes Head Spa',
       kartya_cim: '4 kezes MOSAIC Head Spa ajándékkártya',
+      kartya_felirat: ['50+30 perces 4 kezes MOSAIC', 'HEAD SPA KEZELÉS'],
       fejlec: 'Ha igazán különlegeset adnál.',
       leiras: 'Két terapeuta dolgozik egyszerre — intenzívebb, különlegesebb Head Spa élmény.',
       tartalom: ['50 perc 4 kezes Head Spa', '30 perc szárítás', '1 fő', '2 terapeuta', '6 hónapig felhasználható'],
       badge: 'PRÉMIUM ÉLMÉNY',
       ar_ft: 39900,
       vendeg_db: 1,
+      salonic: { id: 4000, nev: '50 perces 4 Kezes Headspa ajándékkártya - 39.900 Ft' },
       vizual: { src: '/assets/img/c2eb0f_895be890d71d488db23f5a05dd52c04b.jpg', alt: '4 kezes Head Spa: két terapeuta dolgozik egyszerre egy vendégen', w: 1000, h: 1000, poz: '50% 45%' }
     },
     paros: {
@@ -50,12 +56,14 @@
       item_id: 'mosaic-ajandekkartya-paros',
       nev: 'Páros Head Spa',
       kartya_cim: 'Páros MOSAIC Head Spa ajándékkártya',
+      kartya_felirat: ['50+30 perces páros MOSAIC', 'HEAD SPA KEZELÉS (2 FŐ)'],
       fejlec: 'Közös élmény két főre.',
       leiras: 'Barátnővel, anyukáddal vagy a pároddal.',
       tartalom: ['2 vendég', '2 terapeuta', 'egy közös időpont', '6 hónapig felhasználható'],
       badge: 'KETTEN, EGYÜTT',
       ar_ft: 53800,
       vendeg_db: 2,
+      salonic: { id: 4081, nev: '50 perces PÁROS MOSAIC Head Spa Ajándékutalvány -20% (53 800 Ft)' },
       // a spec szerint a GENERAL vizual ket baratno (nem romantikus par); ez a MOSAIC egyetlen valodi paros fotoja
       // (ket vendeg, ket terapeuta, egymas mellett) - ha van baratnos kep, ide kell cserelni
       vizual: { src: '/assets/img/c2eb0f_2c17645e97d943fda9265b973f1bb6a9.jpg', alt: 'Páros Head Spa: két vendég, két terapeuta, egy közös helyiségben', w: 1500, h: 1500, poz: '50% 50%' }
@@ -143,6 +151,7 @@
     szamlaszam: '10700378-76447714-51100005'
   };
 
+  var SALONIC_BAZIS = 'https://app.salonic.hu';
   var ERVENYESSEG_HONAP = 6;
   var PENZNEM = 'HUF';
 
@@ -184,6 +193,7 @@
     VARIANTOK: VARIANTOK,
     SZALON: SZALON,
     BANK: BANK,
+    SALONIC_BAZIS: SALONIC_BAZIS,
     ERVENYESSEG_HONAP: ERVENYESSEG_HONAP,
     PENZNEM: PENZNEM,
     variantFeloldas: variantFeloldas,

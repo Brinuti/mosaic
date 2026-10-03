@@ -99,7 +99,7 @@ async function html(k, status, tartalom, { urlapKuldes = false } = {}) {
     headers: {
       ...ALAP_FEJLEC,
       'content-type': 'text/html; charset=utf-8',
-      'content-security-policy': `default-src 'none'; img-src ${kepForras}; style-src 'unsafe-inline'; script-src '${nyomtatHash}'; base-uri 'none'; form-action ${urlapKuldes ? "'self'" : "'none'"}; frame-ancestors 'none'`,
+      'content-security-policy': `default-src 'none'; img-src ${kepForras}; font-src ${kepForras}; style-src 'unsafe-inline'; script-src '${nyomtatHash}'; base-uri 'none'; form-action ${urlapKuldes ? "'self'" : "'none'"}; frame-ancestors 'none'`,
     },
     body: tartalom,
   };
@@ -459,7 +459,12 @@ function fizetesMeta(r) {
 }
 
 // --- a rendeles allapota -----------------------------------------------------------------------------------
+// Atutalasos igeny: a PaymentIntent csak NYILVANTARTASI rekord (soha nem fizetheto ki kartyaval, a client_secretjet
+// senki nem kapja meg). "Fizetve" = a szalon az "utalas beerkezett" gombbal jovahagyta (metadata).
+const atutalasos = (md) => Boolean(md) && md.fizetesi_mod === 'atutalas';
+
 function piAllapot(pi) {
+  if (atutalasos(pi.metadata)) return pi.metadata.atutalas_beerkezett === '1' ? 'fizetve' : 'nyitott';
   if (pi.status === 'succeeded') return 'fizetve';
   if (pi.status === 'processing') return 'feldolgozas';
   if (pi.status === 'requires_payment_method' && pi.last_payment_error) return 'sikertelen';
@@ -493,11 +498,13 @@ function folyamatbanFriss(md, most) {
 // Minden, ami a PI-bol kovetkezik (valasz, levelek, kartya)
 async function rendelesInfo(k, pi) {
   const md = pi.metadata || {};
+  const atu = atutalasos(md);
   const termek = sajat(ADAT.TERMEKEK, md.termek) ? ADAT.TERMEKEK[md.termek] : null;
   const ch = pi.latest_charge && typeof pi.latest_charge === 'object' ? pi.latest_charge : null;
   const allapot = piAllapot(pi);
   const fizetve = allapot === 'fizetve';
-  const fizetveMp = fizetve ? Number((ch && ch.created) || pi.created) || null : null;
+  // utalasnal a jovahagyas ideje szamit (a Salonic-utalvany ervenyessege is az ertekesites napjatol indul)
+  const fizetveMp = fizetve ? (atu ? Math.floor(Date.parse(md.atutalas_ekkor || '') / 1000) : Number((ch && ch.created) || pi.created)) || null : null;
   const fizetveEkkor = fizetveMp ? new Date(fizetveMp * 1000).toISOString() : null;
   // visszaterites (reszleges is) vagy vita: a PI 'succeeded' marad, de a kartya nem hasznalhato
   const visszaterites = Boolean(ch && (ch.refunded === true || Number(ch.amount_refunded) > 0));
@@ -510,16 +517,20 @@ async function rendelesInfo(k, pi) {
     kesz: fizetve && !visszavonva && md.kartya_kesz === '1',
     fizetve_ekkor: fizetveEkkor,
     ervenyes_ig: fizetveEkkor ? ADAT.ervenyesIg(budapestiNap(fizetveEkkor)) : null,
-    rendeles_id: ADAT.rendelesAzonosito(pi.id),
+    // utalasnal a vevo altal ismert ATU-azonosito (a kozlemenyben van), kulonben a PI-bol szamolt MH-azonosito
+    rendeles_id: atu && md.atu_ref ? md.atu_ref : ADAT.rendelesAzonosito(pi.id),
+    atutalas: atu,
     termek_nev: termek ? termek.nev : (md.termek || ''),
     kartya_cim: md.kartya_cim || (termek ? termek.kartya_cim : ''),
     osszeg: Math.round(Number(pi.amount) / 100),
     osszeg_szoveg: ADAT.arSzoveg(Number(pi.amount) / 100),
     penznem: String(pi.currency || 'huf').toUpperCase(),
     email: pi.receipt_email || '',
-    fizetesi_mod: fizetesiMod(ch),
-    // a webhook a metadataba is beirja (titokcsere utan is ugyanaz maradjon)
-    kod: fizetve ? (md.kod || await kuponKod(k.env, pi.id)) : null,
+    fizetesi_mod: atu ? 'atutalas' : fizetesiMod(ch),
+    // kartyas fizetesnel a webhook a metadataba is beirja (titokcsere utan is ugyanaz maradjon); a szalon a
+    // kiallitaskor felulirhatja (a Salonicban letrehozott kupon / utalvany kodja). Utalasnal CSAK a szalon adja meg.
+    kod: fizetve ? (md.kod || (atu ? null : await kuponKod(k.env, pi.id))) : null,
+    javasolt_kod: atu ? '' : await kuponKod(k.env, pi.id),
     // tovabbithato link (az ajandekozottnak is): kulon token, client_secret NELKUL
     kartya_url: fizetve ? `${k.bazis}/api/ajandek/kartya?pi=${encodeURIComponent(pi.id)}&t=${await kartyaToken(k.env, pi.id)}` : null,
     // a levelben kuldott rendeles-link: csak olvaso token, client_secret NELKUL
@@ -767,8 +778,8 @@ async function kartya(k) {
     ], { frissit: 20, reszletek: [['Rendelés', i.rendeles_id], ['Termék', i.termek_nev]] });
   }
   return html(k, 200, L.kartyaOldal({
-    bazis: k.bazis, kod: i.kod, kartya_cim: i.kartya_cim, tartalom: i.termek ? i.termek.tartalom : [],
-    nev: i.md.szemelyre_nev || '', uzenet: i.md.szemelyre_uzenet || '', alkalom_cim: alkalomCim(i.md.szemelyre_alkalom),
+    bazis: k.bazis, kod: i.kod, kartya_felirat: i.termek ? i.termek.kartya_felirat : null, ar_szoveg: i.osszeg_szoveg,
+    nev: i.md.szemelyre_nev || '', uzenet: i.md.szemelyre_uzenet || '',
     ervenyes_ig: i.ervenyes_ig, szalon: ADAT.SZALON,
   }));
 }
@@ -794,9 +805,12 @@ async function kiallitElokeszit(k, piNyers, tNyers) {
   }
   if (!pi.metadata || pi.metadata.forras !== FORRAS) return { valasz: await oldal(k, 404, 'A rendelés nem található', []) };
   const i = await rendelesInfo(k, pi);
-  const reszletek = [['Rendelés', i.rendeles_id], ['Termék', i.termek_nev], ['Kuponkód', i.kod],
-    ['Érvényes', i.ervenyes_ig ? L.datumIg(i.ervenyes_ig) : ''], ['Vevő', i.email]];
-  if (!i.fizetve) {
+  const md = i.md;
+  const reszletek = i.atutalas
+    ? [['Azonosító (közlemény)', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Vevő neve', md.nev], ['Vevő e-mail', i.email],
+      ['Vevő telefon', md.telefon], ['Megajándékozott', md.szemelyre_nev], ['Üzenet', md.szemelyre_uzenet]]
+    : [['Rendelés', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Érvényes', i.ervenyes_ig ? L.datumIg(i.ervenyes_ig) : ''], ['Vevő', i.email]];
+  if (!i.fizetve && !i.atutalas) {
     return { valasz: await oldal(k, 409, 'A rendelés még nincs kifizetve', ['A kártyát csak sikeres fizetés után lehet kiállítani.'], { reszletek }) };
   }
   if (i.visszavonva) return { valasz: await visszavonvaOldal(k, reszletek) };
@@ -814,20 +828,50 @@ async function kiallitElokeszit(k, piNyers, tNyers) {
   return { pi, i, reszletek, piId, t };
 }
 
+// A kartyara kerulo kod: a Salonicban letrehozott 100%-os kupon (kartyas fizetes) vagy az utalvany-ertekesites
+// kodja (utalas) - a szalon irja be. Nincs formatum-kenyszer, csak biztonsagos karakterek.
+const KOD_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{2,39}$/;
+const kodTisztit = (v) => egysor(v).replace(/\s+/g, '');
+
+// A kiallito oldal (GET, es hibas POST utan ujra): reszletek + kod mezo + gomb
+async function kiallitUrlap(k, e, hiba) {
+  const atu = e.i.atutalas;
+  const termek = e.i.termek;
+  const salonicUrl = atu && termek && termek.salonic ? `${ADAT.SALONIC_BAZIS}/promotion/giftCard/sale/${termek.salonic.id}` : null;
+  return oldal(k, hiba ? 400 : 200, atu ? 'Az utalás beérkezett – kiállítod a kártyát?' : 'Kiállítod az ajándékkártyát?', atu
+    ? [
+      'Előbb a Salonicban végezd el az utalvány-értékesítést (fizetési mód: Átutalás) a lenti adatokkal, utána a kapott utalványkódot írd be ide.',
+      'A gomb megnyomása után a vevő e-mailben megkapja a nyomtatható ajándékkártyát a kóddal.',
+    ]
+    : [
+      'Előbb a Salonicban hozd létre a 100%-os kupont (a számla már kiment, ezért nem utalvány-értékesítés), utána írd be ide a kupon kódját.',
+      'A gomb megnyomása után a vevő e-mailben megkapja a nyomtatható ajándékkártyát a kóddal.',
+    ], {
+    reszletek: e.reszletek,
+    linkek: salonicUrl ? [{ url: salonicUrl, szoveg: `Salonic: utalvány értékesítés megnyitása (${termek.salonic.nev})` }] : [],
+    urlap: {
+      action: k.u.pathname,
+      rejtett: { pi: e.piId, t: e.t },
+      mezok: [{
+        nev: 'kod', max: 40, kotelezo: true, ertek: atu ? '' : (e.i.md.kod || e.i.javasolt_kod || ''),
+        cimke: atu ? 'Utalványkód (a Salonic utalvány-értékesítésből)' : 'Kupon kódja (a Salonicban létrehozott 100%-os kupon)',
+        megjegyzes: atu ? 'Például: GYOR1865. Ez a kód kerül a kártyára, és ezzel foglal majd a vendég.'
+          : 'Alapból a javasolt kód áll itt; ha a Salonicban mást adtál meg, írd át arra.',
+      }],
+      hiba: hiba || '',
+      gomb: atu ? 'Az utalás beérkezett – kiküldjük a kártyát' : 'A kupon kész – kiküldjük a kártyát',
+    },
+  });
+}
+
 // GET: csak megerosito oldal (allapotot nem modosit, levelet nem kuld)
 async function kiallitMegerosites(k) {
   const e = await kiallitElokeszit(k, k.u.searchParams.get('pi'), k.u.searchParams.get('t'));
   if (e.valasz) return e.valasz;
-  return oldal(k, 200, 'Kiállítod az ajándékkártyát?', [
-    'Csak akkor küldd ki, ha a kuponkódot már létrehoztad a Salonicban (100% kedvezmény, egyszer felhasználható, 6 hónapig érvényes).',
-    'A gomb megnyomása után a vevő e-mailben megkapja a nyomtatható ajándékkártyát a kóddal.',
-  ], {
-    reszletek: e.reszletek,
-    urlap: { action: k.u.pathname, rejtett: { pi: e.piId, t: e.t }, gomb: 'Igen, a kuponkódot létrehoztam a Salonicban – kiküldjük a kártyát' },
-  });
+  return kiallitUrlap(k, e, '');
 }
 
-// POST (urlap vagy JSON: pi, t): a kiallitas
+// POST (urlap vagy JSON: pi, t, kod): a kiallitas
 async function kiallit(k) {
   let d = null;
   if (k.text.length <= MAX_TORZS) {
@@ -837,15 +881,26 @@ async function kiallit(k) {
       if (!d || typeof d !== 'object' || Array.isArray(d)) d = null;
     } else {
       const p = new URLSearchParams(k.text);
-      d = { pi: p.get('pi'), t: p.get('t') };
+      d = { pi: p.get('pi'), t: p.get('t'), kod: p.get('kod') };
     }
   }
   const e = await kiallitElokeszit(k, d && d.pi, d && d.t);
   if (e.valasz) return e.valasz;
-  const { pi, i, reszletek } = e;
+  const { pi, reszletek } = e;
+  const kod = kodTisztit(d && d.kod);
+  if (!KOD_RE.test(kod)) {
+    return kiallitUrlap(k, e, 'Add meg a kódot (3-40 karakter: betű, szám, kötőjel, pont vagy aláhúzás).');
+  }
+  const atu = e.i.atutalas;
   // 1) jelzo a level ELOTT: egy dupla kattintas / parhuzamos keres ne kuldjon masodik levelet
-  //    (ha ez nem sikerul, Stripe-hiba -> 502, es level sem ment ki)
-  await piFrissit(k.env, pi.id, { metadata: { kiallitas_folyamatban: k.most.toISOString(), kod: i.kod } });
+  //    (ha ez nem sikerul, Stripe-hiba -> 502, es level sem ment ki). Utalasnal ekkor all "fizetve" allapotba a rendeles.
+  const elo = { kiallitas_folyamatban: k.most.toISOString(), kod };
+  if (atu && !pi.metadata.atutalas_ekkor) {
+    elo.atutalas_beerkezett = '1';
+    elo.atutalas_ekkor = k.most.toISOString();
+  } else if (atu) elo.atutalas_beerkezett = '1';
+  const frissitett = await piFrissit(k.env, pi.id, { metadata: elo });
+  const i = await rendelesInfo(k, frissitett);
   // 2) a vevo levele
   if (i.email) {
     try {
@@ -874,7 +929,7 @@ async function kiallit(k) {
     ], { reszletek });
   }
   return oldal(k, 200, 'Kiállítva, a vevő megkapta a levelet', [
-    i.email ? `A nyomtatható ajándékkártya linkjét elküldtük ide: ${i.email}.` : 'A vevőnek nincs e-mail-címe – a kártyát a rendelés oldalán éri el.',
+    i.email ? `A nyomtatható ajándékkártya linkjét elküldtük ide: ${i.email}. A kártyán szereplő kód: ${i.kod}.` : 'A vevőnek nincs e-mail-címe – a kártyát a rendelés oldalán éri el.',
   ], { reszletek });
 }
 
@@ -1035,6 +1090,14 @@ async function webhook(k) {
   return ok;
 }
 
+// Telefonszam: a Salonic utalvany-ertekesitesehez kell (kotelezo mezo ott). Csak szamok, +, szokoz, kotojel, zarojel, perjel.
+function telefonTisztit(v) {
+  const t = egysor(v);
+  if (!/^\+?[0-9][0-9 ()\/.-]{5,24}$/.test(t)) return '';
+  const szamjegy = t.replace(/\D/g, '').length;
+  return szamjegy >= 8 && szamjegy <= 15 ? t : '';
+}
+
 async function atutalas(k) {
   const kapu = postKapu(k, 'atutalas');
   if (kapu) return kapu;
@@ -1044,7 +1107,13 @@ async function atutalas(k) {
   const { mezok, r } = rendelesAdat(d);
   const megajandekozott = egysor(d.megajandekozott);
   if (megajandekozott.length > 80) mezok.megajandekozott = 'A név legfeljebb 80 karakter lehet.';
+  const uzenet = tobbsor(d.uzenet);
+  if (uzenet.length > 300) mezok.uzenet = 'Az üzenet legfeljebb 300 karakter lehet.';
+  const telefon = telefonTisztit(d.telefon);
+  if (!telefon) mezok.telefon = 'Add meg a telefonszámod (a Salonic-utalványhoz kell).';
   if (Object.keys(mezok).length) return json(400, { hiba: 'ervenytelen', mezok });
+  // az igeny a Stripe-ban nyilvantartasi rekord (nem fizetheto); nelkule nincs mire hivatkozni a kiallitasnal
+  if (stripeMod(k.env) === 'nincs') return json(503, { hiba: 'nincs_beallitva' });
 
   const ar = arFt(r.termek);
   const ref = 'ATU-' + veletlenKod(6);
@@ -1055,14 +1124,30 @@ async function atutalas(k) {
   const kozos = {
     rendeles_ref: ref, termek_nev: r.termek.nev, kartya_cim: r.termek.kartya_cim, osszeg_szoveg: osszegSzoveg, kozlemeny,
   };
+  let pi;
+  try {
+    pi = await stripe(k.env, 'POST', '/v1/payment_intents', {
+      amount: ar * 100, currency: 'huf', payment_method_types: ['card'], receipt_email: r.email,
+      description: `MOSAIC ajándékkártya - ÁTUTALÁSOS IGÉNY (nincs kifizetve) - ${ref}`,
+      metadata: metaTisztit({
+        ...fizetesMeta(r), fizetesi_mod: 'atutalas', atu_ref: ref, telefon, szemelyre_nev: megajandekozott, szemelyre_uzenet: uzenet,
+      }),
+    }, 'ah-atu-' + ref);
+  } catch (e) {
+    console.error('ajandek: atutalas - Stripe-hiba', ref, e && e.message);
+    return json(502, { hiba: 'stripe' });
+  }
+  const kiallitUrl = `${k.bazis}/api/ajandek/kiallit?pi=${encodeURIComponent(pi.id)}&t=${await kiallitToken(k.env, pi.id)}`;
+  const salonic = r.termek.salonic || null;
   // a szalon levele nelkul az igeny elveszne: ha az nem megy ki, hibat adunk
   try {
     await levelKuld(k, {
       cimzett: 'szalon',
       valasz: r.email,
       ...L.szalonAtutalasLevel({
-        ...kozos, email: r.email, nev: r.nev, iranyitoszam: r.iranyitoszam, varos: r.varos, cim: r.cim,
-        ceges_nev: r.ceges_nev, ceges_adoszam: r.ceges_adoszam, megajandekozott, oldal: r.attr.oldal,
+        ...kozos, email: r.email, nev: r.nev, telefon, iranyitoszam: r.iranyitoszam, varos: r.varos, cim: r.cim,
+        ceges_nev: r.ceges_nev, ceges_adoszam: r.ceges_adoszam, megajandekozott, uzenet, oldal: r.attr.oldal,
+        kiallit_url: kiallitUrl, salonic_url: salonic ? `${ADAT.SALONIC_BAZIS}/promotion/giftCard/sale/${salonic.id}` : '', salonic_nev: salonic ? salonic.nev : '',
       }),
     });
   } catch (e) {

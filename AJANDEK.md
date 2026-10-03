@@ -150,28 +150,43 @@ ugyanolyan, mint a mostani fizetőlinkeknél.
 adataiból. Az új PaymentIntentek is ezt váltják ki – **de nem lett kipróbálva** (lásd az
 ellenőrzőlistát). A fizetőlinkek `automatic_tax`-szal mentek, ez a flow **nem használ Stripe Tax-ot**.
 
-**Teljesítés (kuponkód):** a kártya kuponkódját a szalon a Salonicban hozza létre kézzel (mint
-eddig; a Salonic-nak nincs kuponkód-API-ja a repóban). Ezért a „kész” állapot nem automatikus:
+**Teljesítés (a kártyára kerülő kód).** A szalon a Salonicban hozza létre a kódot kézzel; a rendszer a **szalon által beírt kódot** teszi a kártyára.
+Két eset van (a szalon eddigi gyakorlata szerint):
 
-1. A fizetés után a Stripe webhook (`POST /api/ajandek/webhook`) két levelet küld: a szalonnak
-   (rendelés, **kuponkód**, vevő adatai, „kiállítottam” gomb) és a vevőnek („megkaptuk a fizetésed”).
-2. A szalon a Salonicban létrehozza a kuponkódot (100% kedvezmény, 6 hónap), majd a levélben lévő
-   gombbal **kiállítja** a kártyát (két lépés: megerősítő oldal → POST).
-3. Ekkor a vevő levelet kap a nyomtatható kártya linkjével, és az order hub „Ajándékkártya
-   letöltése” gombja is aktív lesz. Addig: „Készítjük az ajándékkártyádat…” (10 másodpercenként
-   frissül).
+| | bankkártya (Stripe) | utalás |
+|---|---|---|
+| Salonic | sima **100%-os kupon** (a számlát a szamlabridge már kiállította) | **utalvány-értékesítés** (fizetési mód: Átutalás; ez készíti a számlát, és a Salonic a saját utalványkódját mindig felismeri foglalásnál) |
+| a kód | a levélben javasolt `AK-XXXX-XXXX` (átírható) | a Salonic adja (pl. `GYOR1865`), a szalon írja be |
+| rendelésazonosító | `MH-XXXXXXXX` | `ATU-XXXXXX` (ez a bankkivonat közleménye) |
 
-A kuponkód determinisztikus (`AK-XXXX-XXXX`, HMAC a PaymentIntent azonosítóból; a rendelésszám `MH-…` kezdetű, hogy a kettő ne legyen összetéveszthető; **a Salonic elfogad-e kötőjeles kuponkódot, nincs ellenőrizve**). **Soha nem írunk
-„perceken belül”, „azonnal”, „ma” ígéretet**, amíg ez nem garantált: ha a kódok előre kerülnek a
-Salonicba, és a teljesítés tényleg azonnali, az `AJANDEK_AZONNALI=1` környezeti változó kapcsolja át
-(ekkor a webhook rögtön kiállítja a kártyát, és a feliratok „perceken belül”-re váltanak).
+1. **Kártya:** a Stripe webhook (`POST /api/ajandek/webhook`) két levelet küld: a szalonnak (rendelés, vevő adatai, javasolt kód,
+   **„Kiállítom a kártyát”** gomb) és a vevőnek („megkaptuk a fizetésed”).
+2. **Utalás:** a vevő a fizetési oldalon az „Inkább átutalással fizetnék” linkre kattint, megadja a telefonszámát (kötelező, a
+   Salonic-utalványhoz kell) és opcionálisan a megajándékozott nevét + üzenetet. A rendszer a Stripe-ban egy **nyilvántartási
+   PaymentIntentet** hoz létre (`metadata.fizetesi_mod = atutalas`, `atu_ref = ATU-…`; **nem fizethető ki**, a `client_secret`-jét senki nem
+   kapja meg), és két levelet küld: a vevőnek az utalási adatokat, a szalonnak az igényt a **„Az utalás beérkezett – kiállítom a
+   kártyát”** gombbal és a Salonic-értékesítés közvetlen linkjével (`app.salonic.hu/promotion/giftCard/sale/<id>`, az id az
+   `ajandek-adat.js` `TERMEKEK.*.salonic` mezőjében van; a termék/ár változásakor itt kell frissíteni). A szalon a bankkivonaton látott
+   `ATU-…` közleményre keres a postafiókban.
+3. **Kiállítás (mindkét esetben ugyanaz):** a gomb megerősítő oldalt nyit (GET, nem módosít), ott a szalon beírja a **kódot**, és
+   megnyomja a gombot (POST). Utalásnál ekkor áll „fizetve” állapotba a rendelés (`atutalas_beerkezett`, `atutalas_ekkor`; az
+   érvényesség ettől a naptól számít). A vevő levelet kap a kártya linkjével; az order hub „Ajándékkártya letöltése” gombja is aktív.
+   Egyszer megy (`kartya_kesz`), ismételt kattintás nem küld újat.
 
-**Letöltés:** a kártya egy nyomtatható HTML-oldal (`/api/ajandek/kartya`), a böngészőből
-kinyomtatható vagy PDF-ként menthető. A hozzáférés külön tokenhez kötött (`?pi=&t=`, HMAC), így
-az „Elküldöm e-mailben” gombbal továbbított link csak a kártyát mutatja, a rendelést nem.
+**Szamlabridge:** csak a Stripe-fizetésekből készít számlát. Utalásnál a számlát a Salonic utalvány-értékesítése készíti, ezért a
+nyilvántartási PI soha nem „succeeded” (a `payment_intent.succeeded` webhook nem fut rá, a szamlabridge nem számláz).
 
-**Átutalás:** kis másodlagos link; **nem vásárlás**. Elküldi a meglévő utalási adatokat (levél a
-vevőnek és a szalonnak); a kártya az utalás beérkezése után készül.
+Soha nem írunk „perceken belül”, „azonnal”, „ma” ígéretet, amíg ez nem garantált (`AJANDEK_AZONNALI=1` kapcsolja át, jelenleg ki van
+kapcsolva: ekkor a webhook rögtön kiállítja a kártyát, és a feliratok „perceken belül”-re váltanak).
+
+**A kártya** (`/api/ajandek/kartya?pi=&t=`) a MOSAIC saját **Canva-terve** (A4 álló, sötétzöld-arany): a háttér
+`assets/img/ajandek/kartya-hatter.jpg` (a Canva-terv szövegmentes másolatából exportálva), erre írja a rendszer a megajándékozott
+nevét (fejjel lefelé, a felső arany sávba), a vevő üzenetét (ha nincs: az alapvers), a termék feliratát (`kartya_felirat`),
+az értéket, a kódot és az érvényességet – ugyanazokra a helyekre, ahova eddig kézzel. Nyomtatható / PDF-ként menthető
+(böngésző nyomtatás), a hozzáférés külön tokenhez kötött (`t`, HMAC), így a továbbított link csak a kártyát mutatja.
+A háttér frissítése: Canva-tervmásolat („MOSAIC ajándékkártya háttér (automatikus)”) → export JPG 2382×3369 → felülírni a fájlt.
+
+**Átutalás nem vásárlás** a mérés szempontjából (`bank_transfer_request`, nem `purchase`).
 
 ### API (`/api/ajandek/…`)
 
@@ -182,9 +197,9 @@ vevőnek és a szalonnak); a kártya az utalás beérkezése után készül.
 | `GET rendeles?pi=&cs=` vagy `?pi=&rt=` | rendelés állapota (Stripe-tól visszakérdezve); hitelesítés: `client_secret`, vagy az **`rt`** (HMAC, csak olvasás – ez megy levélben; a módosító végpontokhoz nem jó). Visszatérítés/vita esetén `visszavonva: true`, a kártya `kartya.allapot: 'visszavonva'` (kód és link nélkül) |
 | `POST szemelyre` | megajándékozott neve, üzenet, alkalom, átadás (csak fizetés után) |
 | `GET kartya?pi=&t=` | nyomtatható kártya (ha kiállított); a `t` külön token (HMAC), **nem** a `client_secret` – a link továbbítható, a rendeléshez nem ad hozzáférést (a régi `pi+cs` alak is megy) |
-| `GET/POST kiallit?pi=&t=` | a szalon „kiállítottam” linkje (HMAC-token; GET csak megerősít) |
+| `GET/POST kiallit?pi=&t=` | a szalon kiállító linkje (HMAC-token; GET csak megerősít, POST: `kod` kötelező; utalásnál ez állítja „fizetve” állapotba a rendelést) |
 | `POST webhook` | Stripe `payment_intent.succeeded` + `charge.refunded` + `charge.dispute.created` (aláírás-ellenőrzött, idempotens; visszatérítésnél/vitánál levél a szalonnak: töröld a kuponkódot) |
-| `POST atutalas` | átutalási igény (nem vásárlás); a vevőlevélbe nem kerül szabad szöveg |
+| `POST atutalas` | átutalási igény (nem vásárlás): Stripe-nyilvántartási rekord + levelek; telefon kötelező; a vevőlevélbe nem kerül szabad szöveg |
 
 **Visszaélés elleni védelem** (`/fizetes`, `/szemelyre`, `/atutalas`): csak `application/json` (415), idegen
 host/`cross-site` kérés tiltva (403), memóriában tartott, best-effort kérésszám-korlát kliens-IP-nként

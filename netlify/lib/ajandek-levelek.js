@@ -70,9 +70,9 @@ export function szalonFizetveLevel(d) {
   const attr = d.attr || {};
   const forras = [attr.utm_source, attr.utm_medium, attr.utm_campaign].filter(Boolean).join(' / ');
   const teendo = d.azonnali
-    ? `<p><b>Figyelem:</b> az automatikus kártyakiállítás be van kapcsolva, ezért a vevő a kártyát a fenti kóddal <b>már megkapta</b>. Kérlek, mielőbb hozd létre a kuponkódot a Salonicban, hogy a foglalásnál beváltható legyen.</p>`
-    : `<p>Ha a kupon elkészült, kattints az alábbi gombra, és a megnyíló oldalon erősítsd meg – ekkor a vevő e-mailben megkapja a nyomtatható ajándékkártyát a kóddal:</p>
-${gomb(d.kiallit_url, 'Kiállítottam – értesítem a vevőt')}
+    ? `<p><b>Figyelem:</b> az automatikus kártyakiállítás be van kapcsolva, ezért a vevő a kártyát a fenti kóddal <b>már megkapta</b>. Kérlek, mielőbb hozd létre a kupont a Salonicban, hogy a foglalásnál beváltható legyen.</p>`
+    : `<p>Ha a kupon elkészült, kattints az alábbi gombra, add meg a kupon kódját (alapból a javasolt kód van beírva), és a vevő e-mailben megkapja a nyomtatható ajándékkártyát:</p>
+${gomb(d.kiallit_url, 'Kiállítom a kártyát')}
 <p style="font-size:13px;color:#555">Ha a gomb nem működik, ezt a címet nyisd meg: <a href="${esc(d.kiallit_url)}">${esc(d.kiallit_url)}</a></p>`;
   return {
     targy: `Új ajándékkártya-rendelés (fizetve) – ${d.rendeles_id}`,
@@ -87,9 +87,10 @@ ${tabla([
   ['Név', d.nev], ['E-mail', d.email], ['Cím', szamlazasiCim(d)],
   ['Cégnév', d.ceges_nev], ['Adószám', d.ceges_adoszam],
 ])}
-${cim('TEENDŐ: KUPONKÓD A SALONICBAN')}
+${cim('TEENDŐ: 100%-OS KUPON A SALONICBAN')}
+<p>A számlát a szamlabridge már elkészítette, ezért a Salonicban <b>nem utalvány-értékesítést</b>, hanem sima <b>100%-os kupont</b> hozz létre: a(z) <b>${esc(d.termek_nev)}</b> szolgáltatásra, egyszer felhasználható, érvényes ${esc(datumIg(d.ervenyes_ig))} (6 hónap).</p>
 ${kodDoboz(d.kod, d.ervenyes_ig)}
-<p>A Salonicban hozd létre a kuponkódot: <b>${esc(d.kod)}</b> – 100% kedvezmény, a(z) <b>${esc(d.termek_nev)}</b> szolgáltatásra, egyszer felhasználható, érvényes ${esc(datumIg(d.ervenyes_ig))} (6 hónap).</p>
+<p style="font-size:13px;color:#555">A fenti kód csak javaslat: bármilyen kódot használhatsz, a kiállító oldalon azt add meg, amit a Salonicban létrehoztál.</p>
 ${teendo}
 <p style="font-size:13px;color:#555">Ha a vevő fizikai kártyát kér, vagy a szalonban venné át, arról külön levelet kapsz.</p>
 <p style="color:#888;font-size:12px">Stripe: ${esc(d.pi)}${attr.variant_id ? ` · változat: ${esc(attr.variant_id)}` : ''}${forras ? ` · forrás: ${esc(forras)}` : ''}</p>
@@ -188,7 +189,7 @@ ${cim('IDE KÜLDD A BIZONYLATOT')}
 <p>Kérlek, hogy amint teljesítetted az utalást, az alábbi e-mail-címre küldd meg számunkra az utalási bizonylatot (vagy egyszerűen válaszolj erre a levélre):</p>
 <p><a href="mailto:${esc(d.szalon.email)}">${esc(d.szalon.email)}</a></p>
 ${cim('NYOMTATHATÓ FORMÁTUMBAN ELKÜLDJÜK AZ E-MAIL-CÍMEDRE')}
-<p>Az utalás beérkezése után az ajándékkártyát elküldjük az e-mail-címedre digitális formátumban is, amit könnyen ki tudsz nyomtatni akár otthon is, és már mehet is a borítékba :)</p>
+<p>Az utalás beérkezése után az ajándékkártyát elküldjük az e-mail-címedre: egy linkről megnyithatod, kinyomtathatod vagy PDF-ként elmentheted, és már mehet is a borítékba :)</p>
 ${cim('SZEMÉLYESEN IS ÁTVEHETED SZALONUNKBAN')}
 <p>Ha nincs nyomtatód, vagy papír alapon szeretnéd átvenni, azt pedig megteheted nálunk, a MOSAIC Head Spa-ban (${esc(d.szalon.cim)}). Csak mondd be a közleményben szereplő azonosítót (${esc(d.rendeles_ref)}), és a recepción odaadjuk neked a kártyát.</p>
 ${cim('ÍGY TUDOD FELHASZNÁLNI')}
@@ -199,22 +200,33 @@ ${lablec(d.szalon)}
   };
 }
 
-// d: { rendeles_ref, termek_nev, osszeg_szoveg, kozlemeny, email, nev, iranyitoszam, varos, cim, ceges_nev, ceges_adoszam, megajandekozott, oldal }
+// d: { rendeles_ref, termek_nev, osszeg_szoveg, kozlemeny, email, nev, telefon, iranyitoszam, varos, cim, ceges_nev, ceges_adoszam,
+//      megajandekozott, uzenet, oldal, kiallit_url, salonic_url, salonic_nev }
 export function szalonAtutalasLevel(d) {
   return {
     targy: `Új ajándékkártya-igény (átutalás, még nincs kifizetve) – ${d.rendeles_ref}`,
     html: `<div style="${betu};max-width:640px">
 <p><b>Új ajándékkártya-igény érkezett átutalással. Ez még NEM vásárlás: a kártyát csak az utalás beérkezése után kell kiállítani.</b></p>
 ${tabla([
-  ['Azonosító', d.rendeles_ref], ['Termék', d.termek_nev], ['Összeg', d.osszeg_szoveg], ['Várt közlemény', d.kozlemeny],
-  ['Megajándékozott', d.megajandekozott],
+  ['Azonosító (közlemény)', d.rendeles_ref], ['Termék', d.termek_nev], ['Összeg', d.osszeg_szoveg],
 ])}
 ${cim('A VEVŐ (SZÁMLÁZÁSI ADATOK)')}
 ${tabla([
-  ['Név', d.nev], ['E-mail', d.email], ['Cím', szamlazasiCim(d)],
+  ['Név', d.nev], ['E-mail', d.email], ['Telefon', d.telefon], ['Cím', szamlazasiCim(d)],
   ['Cégnév', d.ceges_nev], ['Adószám', d.ceges_adoszam],
 ])}
-<p>A vevő megkapta az utalási adatokat. Ha az utalás beérkezett, a megszokott módon hozd létre a kuponkódot a Salonicban, és küldd el neki az ajándékkártyát.</p>
+${cim('A KÁRTYÁRA KERÜLŐ ADATOK')}
+${tabla([['Megajándékozott', d.megajandekozott]])}
+${d.uzenet ? `<p style="white-space:pre-line;border-left:3px solid ${ARANY};padding:4px 12px;margin:8px 0">${esc(d.uzenet)}</p>` : ''}
+${cim('TEENDŐ, HA AZ UTALÁS BEÉRKEZETT')}
+<ol style="margin:0 0 12px 18px;padding:0">
+<li><b>Salonic:</b> utalvány-értékesítés (a számla miatt): ${d.salonic_url ? `<a href="${esc(d.salonic_url)}">Utalvány értékesítés megnyitása</a> – ${esc(d.salonic_nev || d.termek_nev)}` : esc(d.termek_nev)}. Fizetési mód: <b>Átutalás</b>. A fenti vevő- és megajándékozott-adatokat használd.</li>
+<li>A Salonic által adott <b>utalványkódot</b> másold ki.</li>
+<li>Kattints az alábbi gombra, írd be a kódot, és a vevő e-mailben megkapja a kártyát:</li>
+</ol>
+${gomb(d.kiallit_url, 'Az utalás beérkezett – kiállítom a kártyát')}
+<p style="font-size:13px;color:#555">Ha a gomb nem működik, ezt a címet nyisd meg: <a href="${esc(d.kiallit_url)}">${esc(d.kiallit_url)}</a></p>
+<p style="font-size:13px;color:#555">Keresés: a bankszámlakivonaton a közleményben látható <b>${esc(d.rendeles_ref)}</b> kódot keresd ebben a postafiókban.</p>
 ${d.oldal ? `<p style="color:#888;font-size:12px">Beküldve innen: ${esc(d.oldal)}</p>` : ''}
 </div>`,
   };
@@ -257,12 +269,20 @@ h1{font:400 26px/1.3 "Playfair Display",Georgia,"Times New Roman",serif;color:${
 p{margin:0 0 12px}a{color:${PETROL}}
 table{margin:14px auto 0!important;text-align:left;font-size:14px}
 form{margin:22px 0 4px}
+label{display:block;margin:0 0 6px;font-size:14px;text-align:left;color:#41585a}
+input[type=text]{width:100%;font:16px/1.4 "Courier New",Courier,monospace;letter-spacing:1px;padding:12px 14px;border:1px solid #bbb;border-radius:4px;margin:0 0 6px}
+.seg{font-size:13px;color:#666;text-align:left;margin:0 0 16px}
+.hiba{color:#8f3b2e;font-size:14px;text-align:left;margin:0 0 10px}
+.mezo{margin:0 0 4px}
+.linksor{margin:6px 0 2px}
 button{font:600 16px/1.35 "Helvetica Neue",Arial,sans-serif;background:${PETROL};color:#fff;border:0;border-radius:4px;padding:14px 22px;cursor:pointer;max-width:100%}
 button:hover{background:${PETROL_SOT}}`;
 
 // Egyszeru, barati oldal (allapot, hiba, a szalon visszaigazolasa / megerosito urlapja)
 // d: { cim, bekezdesek: [szoveg], reszletek?: [[cimke, ertek]], frissit?: masodperc, bazis,
-//      urlap?: { action, rejtett: { nev: ertek }, gomb } }  (az urlap POST-tal kuld)
+//      linkek?: [{ url, szoveg }],
+//      urlap?: { action, rejtett: { nev: ertek }, mezok?: [{ nev, cimke, ertek, max, kotelezo, megjegyzes }], hiba?, gomb } }
+//      (az urlap POST-tal kuld)
 export function egyszeruOldal(d) {
   return `<!doctype html>
 <html lang="hu"><head><meta charset="utf-8">
@@ -277,17 +297,38 @@ ${d.frissit ? `<meta http-equiv="refresh" content="${Number(d.frissit) | 0}">` :
 <h1>${esc(d.cim)}</h1>
 ${(d.bekezdesek || []).map((b) => `<p>${esc(b)}</p>`).join('\n')}
 ${d.reszletek && d.reszletek.length ? tabla(d.reszletek) : ''}
+${(d.linkek || []).map((l) => `<p class="linksor"><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.szoveg)}</a></p>`).join('\n')}
 ${d.urlap ? `<form method="post" action="${esc(d.urlap.action)}">
 ${Object.entries(d.urlap.rejtett || {}).map(([n, v]) => `<input type="hidden" name="${esc(n)}" value="${esc(v)}">`).join('\n')}
+${(d.urlap.mezok || []).map((m) => `<div class="mezo"><label for="m-${esc(m.nev)}">${esc(m.cimke)}</label>
+<input type="text" id="m-${esc(m.nev)}" name="${esc(m.nev)}" value="${esc(m.ertek || '')}" maxlength="${Number(m.max) || 40}" autocomplete="off" autocapitalize="off" spellcheck="false"${m.kotelezo ? ' required' : ''}>
+${m.megjegyzes ? `<p class="seg">${esc(m.megjegyzes)}</p>` : ''}</div>`).join('\n')}
+${d.urlap.hiba ? `<p class="hiba">${esc(d.urlap.hiba)}</p>` : ''}
 <button type="submit">${esc(d.urlap.gomb)}</button>
 </form>` : ''}
 </main></body></html>`;
 }
 
-// A nyomtathato ajandekkartya (onallo oldal; A4 lapon egy A5-arany fekvo kartya)
-// d: { bazis, kod, kartya_cim, tartalom: [..], nev, uzenet, alkalom_cim, ervenyes_ig, szalon }
+// A nyomtathato ajandekkartya (onallo oldal): a MOSAIC sajat (Canva-ban keszult) A4-es kartyaterve hatterkent
+// (assets/img/ajandek/kartya-hatter.jpg, a valtozo szovegek nelkul), a valtozo reszeket (nev, termek, ertek,
+// kod, ervenyesseg, uzenet) a rendszer irja ra - ugyanazokra a helyekre, ahova eddig kezzel kerultek.
+// A pozicio / meret a terv 794 x 1123 px-es koordinatainak szazalekos atszamitasa; a betumeret a kartya
+// szelessegehez kepest (cqw), igy a kepernyon es nyomtatasban (210 mm) is aranyos.
+// d: { bazis, kod, kartya_felirat: [sor1, sor2], ar_szoveg, nev, uzenet, ervenyes_ig, szalon }
+const KP = (x, y, w, h) => `left:${(x / 7.94).toFixed(3)}%;top:${(y / 11.23).toFixed(3)}%;width:${(w / 7.94).toFixed(3)}%;height:${(h / 11.23).toFixed(3)}%`;
+const CQ = (px) => `${(px / 7.94).toFixed(3)}cqw`;
+const meretSor = (szoveg, lepcsok) => {
+  const n = String(szoveg || '').length;
+  for (const [max, px] of lepcsok) if (n <= max) return px;
+  return lepcsok[lepcsok.length - 1][1];
+};
 export function kartyaOldal(d) {
-  const tartalom = (d.tartalom || []).filter((t) => !/hónapig/.test(t));
+  const bazis = esc(d.bazis);
+  const nev = String(d.nev || '').trim() || 'Neked';
+  const uzenet = String(d.uzenet || '').trim() || 'Miképp szeretetem Feléd árad, úgy hozom a pillanat varázsát, s csak Neked ajándékul adom a szép haj és lágy érintés csodáját.';
+  const felirat = (d.kartya_felirat && d.kartya_felirat.length ? d.kartya_felirat : ['MOSAIC', 'HEAD SPA KEZELÉS']).map(esc).join('<br>');
+  const betu = (suly, tipus) => `@font-face{font-family:"AjandekSans";font-style:normal;font-weight:${suly};font-display:swap;src:url(${bazis}/assets/fonts/${tipus}-latin.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"AjandekSans";font-style:normal;font-weight:${suly};font-display:swap;src:url(${bazis}/assets/fonts/${tipus}-latin-ext.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}`;
   return `<!doctype html>
 <html lang="hu"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -295,54 +336,41 @@ export function kartyaOldal(d) {
 <meta name="referrer" content="no-referrer">
 <title>MOSAIC Head Spa ajándékkártya – ${esc(d.kod)}</title>
 <style>
-@page{size:A4 portrait;margin:12mm}
+${betu(400, 'hanken-grotesk-400')}
+${betu(600, 'hanken-grotesk-600')}
+@page{size:A4 portrait;margin:0}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:#e9e3d7;color:#2b2b2b;font:15px/1.55 "Helvetica Neue",Arial,Helvetica,sans-serif;padding:28px 14px 40px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.lap{max-width:186mm;margin:0 auto}
-.kartya{position:relative;background:${IVORY};border:1.5px solid ${PETROL};padding:11mm 12mm 8mm;min-height:131.5mm;display:flex;flex-direction:column;align-items:center;text-align:center;box-shadow:0 10px 30px rgba(15,58,60,.15)}
-.kartya::before{content:"";position:absolute;inset:3.2mm;border:1px solid ${ARANY};pointer-events:none}
-.logo{display:block;box-sizing:content-box;width:143px;height:auto;margin:0 auto 4mm;background:#183033;padding:10px 24px;border-radius:10px}
-.eyebrow{margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${PETROL}}
-h1{font:400 27px/1.25 "Playfair Display",Georgia,"Times New Roman",serif;color:${PETROL_SOT};margin:3mm 0 1.5mm}
-.tartalom{margin:0;font-size:13px;color:#5b5b5b}
-.vonal{width:60mm;height:1px;background:${ARANY};margin:4.5mm auto}
-.neki{margin:0 0 2mm;font:italic 21px/1.3 "Playfair Display",Georgia,"Times New Roman",serif;color:${PETROL_SOT}}
-.neki .cimke{display:block;font:11px/1.6 "Helvetica Neue",Arial,sans-serif;font-style:normal;letter-spacing:3px;text-transform:uppercase;color:${PETROL}}
-.uzenet{margin:0 auto 2mm;max-width:140mm;font:italic 15px/1.5 Georgia,"Times New Roman",serif;color:#3a3a3a;white-space:pre-line;overflow-wrap:anywhere}
-.alkalom{margin:0 0 2mm;font-size:13px;color:#5b5b5b}
-.kod-doboz{margin:3mm auto 2mm;padding:3mm 8mm;border:1px solid ${ARANY};background:#fffdf8}
-.kod-cimke{display:block;font-size:10.5px;letter-spacing:3px;text-transform:uppercase;color:${PETROL}}
-.kod{display:block;font:700 28px/1.25 "Courier New",Courier,monospace;letter-spacing:3px;color:${PETROL_SOT}}
-.ervenyes{margin:0 0 3mm;font-size:13.5px;color:#2b2b2b}
-.bevaltas{margin:auto 0 2mm;font-size:12.5px;color:#4a4a4a;max-width:150mm}
-.bevaltas a{color:${PETROL};text-decoration:none;font-weight:bold}
-.lab{margin:0;font-size:11.5px;letter-spacing:.3px;color:${PETROL}}
+body{background:#e9e3d7;color:#2b2b2b;font:15px/1.55 "Helvetica Neue",Arial,Helvetica,sans-serif;padding:24px 12px 40px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.lap{position:relative;width:min(100%,794px);margin:0 auto;aspect-ratio:794/1123;container-type:inline-size;background:#0f2727;box-shadow:0 10px 30px rgba(15,58,60,.25);overflow:hidden}
+.hatter{position:absolute;inset:0;width:100%;height:100%;display:block}
+.k{position:absolute;margin:0;display:flex;align-items:center;justify-content:center;text-align:center;font-family:"AjandekSans","Hanken Grotesk","Helvetica Neue",Arial,sans-serif;overflow:hidden}
+.f180{transform:rotate(180deg)}
+.nev{${KP(16.79, 179.47, 773.6, 48.03)};font-weight:600;font-size:${CQ(40.1)};line-height:.9;color:#091717;text-transform:uppercase}
+.uzenet{${KP(198.16, 42.74, 410.9, 73.5)};font-weight:400;font-size:${CQ(18.6)};line-height:1.4;color:#f4de93;white-space:pre-line;overflow-wrap:anywhere}
+.termek{${KP(73.12, 708.1, 647.46, 75.8)};font-weight:600;font-size:${CQ(36.1)};line-height:.9;color:#091717;text-transform:uppercase}
+.ertek{${KP(209.86, 855.75, 351.28, 22.2)};font-weight:600;font-size:${CQ(19)};line-height:1.2;color:#091717}
+.kod{${KP(209.86, 934.66, 351.28, 22.2)};font-weight:600;font-size:${CQ(19)};line-height:1.2;letter-spacing:.06em;color:#091717}
+.ervenyes{${KP(244, 988, 296, 20)};font-weight:400;font-size:${CQ(13.5)};line-height:1.2;color:#f4de93}
 .gombsor{text-align:center;margin:22px 0 0}
-#nyomtat{font:600 16px/1 "Helvetica Neue",Arial,sans-serif;background:${PETROL};color:#fff;border:0;border-radius:4px;padding:14px 26px;cursor:pointer}
-#nyomtat:hover{background:${PETROL_SOT}}
+#nyomtat{font:600 16px/1 "Helvetica Neue",Arial,sans-serif;background:#17403f;color:#fff;border:0;border-radius:4px;padding:14px 26px;cursor:pointer}
+#nyomtat:hover{background:#0f3130}
 .tipp{font-size:13px;color:#555;margin:12px auto 0;max-width:150mm}
-@media (max-width:560px){h1{font-size:22px}.kod{font-size:22px;letter-spacing:2px}.kartya{padding:9mm 7mm 7mm}}
-@media print{body{background:#fff;padding:0}.kartya{box-shadow:none;width:186mm;min-height:131.5mm;break-inside:avoid}.nem-nyomtat{display:none!important}}
+@media print{body{background:#fff;padding:0}.lap{width:210mm;height:297mm;box-shadow:none}.nem-nyomtat{display:none!important}}
 </style></head>
-<body><main class="lap">
-<section class="kartya" aria-label="Ajándékkártya">
-<img class="logo" src="${esc(d.bazis)}/assets/img/logo-143x54@2x.png" width="143" alt="MOSAIC Head Spa">
-<p class="eyebrow">MOSAIC Head Spa ajándékkártya</p>
-<h1>${esc(d.kartya_cim)}</h1>
-${tartalom.length ? `<p class="tartalom">${tartalom.map(esc).join(' · ')}</p>` : ''}
-<div class="vonal"></div>
-${d.nev ? `<p class="neki"><span class="cimke">Neki</span>${esc(d.nev)}</p>` : ''}
-${d.uzenet ? `<p class="uzenet">${esc(d.uzenet)}</p>` : ''}
-${d.alkalom_cim ? `<p class="alkalom">Alkalom: ${esc(d.alkalom_cim)}</p>` : ''}
-<div class="kod-doboz"><span class="kod-cimke">Kuponkód</span><span class="kod">${esc(d.kod)}</span></div>
-<p class="ervenyes">Érvényes: <strong>${esc(datumIg(d.ervenyes_ig))}</strong> · 6 hónapig felhasználható</p>
-<p class="bevaltas">Beváltás: az online időpontfoglalásnál (<a href="https://www.mosaicheadspa.hu/idpontfoglalas">https://www.mosaicheadspa.hu/idpontfoglalas</a>) a kuponkód mezőbe írhatod be a kódot.</p>
-<p class="lab">${esc(d.szalon.nev)} · ${esc(d.szalon.cim)} · ${esc(d.szalon.telefon)} · www.mosaicheadspa.hu</p>
+<body><main>
+<section class="lap" aria-label="Ajándékkártya">
+<img class="hatter" src="${bazis}/assets/img/ajandek/kartya-hatter.jpg" alt="" width="2382" height="3369">
+<p class="k f180 uzenet" style="font-size:${CQ(meretSor(uzenet, [[120, 18.6], [190, 15.5], [300, 12.5]]))}">${esc(uzenet)}</p>
+<p class="k f180 nev" style="font-size:${CQ(meretSor(nev, [[22, 40.1], [30, 32], [60, 24]]))}">${esc(nev)}</p>
+<p class="k termek">${felirat}</p>
+<p class="k ertek">${esc(d.ar_szoveg || '')}</p>
+<p class="k kod" style="font-size:${CQ(meretSor(d.kod, [[16, 19], [28, 15], [60, 11]]))}">${esc(d.kod)}</p>
+<p class="k ervenyes">Érvényes: ${esc(datumIg(d.ervenyes_ig))}</p>
 </section>
 <div class="gombsor nem-nyomtat">
 <button type="button" id="nyomtat">Nyomtatás / Mentés PDF-ként</button>
-<p class="tipp">Tipp: a nyomtatási ablakban a „Mentés PDF-ként” célt választva PDF-et kapsz, amit e-mailben is továbbküldhetsz.</p>
+<p class="tipp">Tipp: a nyomtatási ablakban a „Mentés PDF-ként” célt választva PDF-et kapsz, amit e-mailben is továbbküldhetsz. A kódot az online időpontfoglalásnál (mosaicheadspa.hu/idpontfoglalas) add meg.</p>
 </div>
 </main>
 <script>${NYOMTAT_JS}</script>

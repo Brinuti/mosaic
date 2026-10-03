@@ -625,10 +625,12 @@
   }
 
   // ---------------------------------------------------------------- atutalas (NEM vasarlas)
+  // Az utalasi igeny 2 lepes: (1) a szamlazasi adatok ellenorzese utan egy kis urlap a kartyara kerulo adatokkal es a
+  // telefonszammal (a Salonic-utalvany-ertekesiteshez kell), (2) a kuldes utan az utalasi adatok.
   function atutalasKer() {
     var panel = $('ah-atutalas');
     var gomb = $('ah-atutalas-gomb');
-    if (panel.getAttribute('data-kesz')) { // mar elkuldtuk: csak ki-be kapcsoljuk, nem kuldjuk ujra
+    if (panel.getAttribute('data-kesz') || panel.getAttribute('data-urlap')) { // mar megnyitottuk / elkuldtuk: csak ki-be kapcsoljuk
       panel.hidden = !panel.hidden;
       gomb.setAttribute('aria-expanded', panel.hidden ? 'false' : 'true');
       return;
@@ -636,27 +638,64 @@
     var o = validal();
     if (!o) return;
     gomb.setAttribute('aria-expanded', 'true');
-    uresit(panel).appendChild(h('p', { text: 'Elküldjük az utalási adatokat…' }));
+    panel.setAttribute('data-urlap', '1');
+    atutalasUrlap(panel, o);
     panel.hidden = false;
-    var kerelem = szamlazasiAdat(o);
-    kerelem['bot-field'] = $('ah-csapda').value;
-    api('atutalas', { json: kerelem }).then(function (v) {
-      if (v.status !== 200 || !v.adat.ok) { throw new Error('atutalas'); }
-      var u = v.adat.utalas || {};
-      uresit(panel);
-      panel.setAttribute('data-kesz', '1');
-      panel.appendChild(h('h3', { text: 'Átutalással fizetek' }));
-      panel.appendChild(h('p', { text: 'Elküldtük az utalási adatokat a(z) ' + o.email + ' címre. Az ajándékkártyát az utalás beérkezése után készítjük el.' }));
-      var dl = h('dl', { class: 'ah-meta' });
-      [['Kedvezményezett', u.kedvezmenyezett], ['Számlaszám', u.szamlaszam], ['Összeg', A.arSzoveg(u.osszeg_ft)], ['Közlemény', u.kozlemeny]].forEach(function (p) {
-        dl.appendChild(h('div', null, h('dt', { text: p[0] }), h('dd', { text: p[1] || '' })));
+    gorgess(panel, 'center');
+  }
+  function atutalasUrlap(panel, o, hiba) {
+    uresit(panel);
+    panel.appendChild(h('h3', { text: 'Átutalással fizetek' }));
+    panel.appendChild(h('p', { class: 'ah-halk ah-kicsi', text: 'Az ajándékkártyát az utalás beérkezése után e-mailben küldjük. Két adatot még kérünk:' }));
+    var tel = h('input', { id: 'ah-atu-tel', type: 'tel', autocomplete: 'tel', inputmode: 'tel', maxlength: '25', placeholder: '+36 20 123 4567', required: true });
+    var nev = h('input', { id: 'ah-atu-nev', type: 'text', maxlength: '80', autocomplete: 'off', placeholder: 'Anna' });
+    var uzenet = h('textarea', { id: 'ah-atu-uzenet', maxlength: '300', rows: '3', placeholder: 'Boldog születésnapot…' });
+    var hibaP = h('p', { class: 'ah-mezohiba', id: 'ah-atu-hiba', role: 'alert', hidden: !hiba, text: hiba || '' });
+    var kuldGomb = h('button', { type: 'button', class: 'ah-gomb ah-gomb-fo ah-gomb-teljes', text: 'Utalási adatok kérése' });
+    function mezo(cimke, az, elem, seg) {
+      return h('div', { class: 'ah-mezo' }, h('label', { for: az, text: cimke }), elem, seg ? h('p', { class: 'ah-kicsi ah-halk', text: seg }) : null);
+    }
+    var urlap = h('div', { class: 'ah-atu-urlap' },
+      mezo('Telefonszámod *', 'ah-atu-tel', tel, 'A számla és az ajándékkártya kiállításához kell, csak a szalon látja.'),
+      mezo('Kinek szól az ajándék? (nem kötelező)', 'ah-atu-nev', nev, 'Ez a név kerül a kártyára.'),
+      mezo('Üzenet a kártyára (nem kötelező)', 'ah-atu-uzenet', uzenet),
+      hibaP, kuldGomb);
+    panel.appendChild(urlap);
+    kuldGomb.addEventListener('click', function () {
+      var szam = (tel.value || '').replace(/\D/g, '');
+      if (szam.length < 8) { hibaP.textContent = 'Add meg a telefonszámod (legalább 8 számjegy).'; hibaP.hidden = false; tel.focus(); return; }
+      kuldGomb.disabled = true;
+      var kerelem = szamlazasiAdat(o);
+      kerelem['bot-field'] = $('ah-csapda').value;
+      kerelem.telefon = tel.value.trim();
+      kerelem.megajandekozott = nev.value.trim();
+      kerelem.uzenet = uzenet.value.trim();
+      api('atutalas', { json: kerelem }).then(function (v) {
+        if (v.status === 400 && v.adat && v.adat.mezok) {
+          var m = v.adat.mezok;
+          throw Object.assign(new Error('ervenytelen'), { uzenet: m.telefon || m.uzenet || m.megajandekozott || 'Ellenőrizd a megadott adatokat.' });
+        }
+        if (v.status !== 200 || !v.adat.ok) throw new Error('atutalas');
+        atutalasKesz(panel, o, v.adat.utalas || {});
+      }).catch(function (e) {
+        kuldGomb.disabled = false;
+        hibaP.textContent = (e && e.uzenet) || 'Nem sikerült elküldeni az utalási adatokat. Próbáld újra, vagy hívj minket: 06 20 247 4444.';
+        hibaP.hidden = false;
       });
-      panel.appendChild(dl);
-      panel.appendChild(h('p', { class: 'ah-kicsi ah-halk', text: 'Ez még nem vásárlás: az ajándékkártya az utalás beérkezése után készül el.' }));
-      mer('bank_transfer_request', { ecommerce: { currency: A.PENZNEM, value: osszegFt(), items: [tetel(termek(S.termek))] }, product_type: termek(S.termek).product_type, payment_method: 'bank_transfer' });
-    }).catch(function () {
-      uresit(panel).appendChild(h('p', { class: 'ah-mezohiba', text: 'Nem sikerült elküldeni az utalási adatokat. Próbáld újra, vagy hívj minket: 06 20 247 4444.' }));
     });
+  }
+  function atutalasKesz(panel, o, u) {
+    uresit(panel);
+    panel.setAttribute('data-kesz', '1');
+    panel.appendChild(h('h3', { text: 'Átutalással fizetek' }));
+    panel.appendChild(h('p', { text: 'Elküldtük az utalási adatokat a(z) ' + o.email + ' címre. Az ajándékkártyát az utalás beérkezése után e-mailben küldjük.' }));
+    var dl = h('dl', { class: 'ah-meta' });
+    [['Kedvezményezett', u.kedvezmenyezett], ['Számlaszám', u.szamlaszam], ['Összeg', A.arSzoveg(u.osszeg_ft)], ['Közlemény', u.kozlemeny]].forEach(function (p) {
+      dl.appendChild(h('div', null, h('dt', { text: p[0] }), h('dd', { text: p[1] || '' })));
+    });
+    panel.appendChild(dl);
+    panel.appendChild(h('p', { class: 'ah-kicsi ah-halk', text: 'Fontos: a közleménybe pontosan a fenti azonosítót írd, így tudjuk párosítani az utalást. Ez még nem vásárlás: az ajándékkártya az utalás beérkezése után készül el.' }));
+    mer('bank_transfer_request', { ecommerce: { currency: A.PENZNEM, value: osszegFt(), items: [tetel(termek(S.termek))] }, product_type: termek(S.termek).product_type, payment_method: 'bank_transfer' });
   }
 
   // ---------------------------------------------------------------- PurchaseSuccess

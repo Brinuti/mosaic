@@ -136,12 +136,14 @@ test('Cloudflare-adapter: onRequest(context), context.env, worker-mailer alapert
   const link = /href="(https:\/\/mosaicheadspa\.pages\.dev\/api\/ajandek\/kiallit\?[^"]+)"/.exec(szalonHtml)[1].replace(/&amp;/g, '&');
   v = await hivas(new Request(link));
   assert.equal(v.status, 200);
-  assert.match(await v.text(), /<form method="post"/);
+  const lap = await v.text();
+  assert.match(lap, /<form method="post"/);
+  const kod = /name="kod" value="([^"]+)"/.exec(lap)[1]; // a javasolt kod elo van toltve
   assert.equal(l.length, 2);
   const u = new URL(link);
   v = await hivas(new Request(u.origin + u.pathname, {
     method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ pi: u.searchParams.get('pi'), t: u.searchParams.get('t') }).toString(),
+    body: new URLSearchParams({ pi: u.searchParams.get('pi'), t: u.searchParams.get('t'), kod }).toString(),
   }));
   assert.equal(v.status, 200);
   assert.equal(l.length, 3);

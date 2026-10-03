@@ -54,6 +54,12 @@ const rendelesTorzs = (extra = {}) => ({
   ...extra,
 });
 
+// az utalasos igeny nyilvantartasi rekordja (PI) az ATU-azonosito alapjan
+const atuPi = (ref) => {
+  const x = [...mock.allapot.pik.values()].filter((y) => y.metadata && y.metadata.atu_ref === ref)[0];
+  return x ? mock.allapot.pi(x.id) : null;
+};
+
 async function ujRendeles(extra) {
   const r = await hiv('POST', 'fizetes', { body: rendelesTorzs(extra) });
   assert.equal(r.status, 200, r.body);
@@ -474,8 +480,7 @@ describe('/webhook', () => {
     assert.ok(szalon.html.includes('12345678-1-42'));
     assert.ok(szalon.html.includes('1023 Budapest, Bécsi út 2.'));
     assert.ok(szalon.html.includes('Apple Pay'));
-    assert.match(szalon.html, /Salonicban hozd létre a kuponkódot/);
-    assert.match(szalon.html, /100% kedvezmény/);
+    assert.match(szalon.html, /100%-os kupont/);
     const token = await kiallitToken(ENV, a.pi);
     assert.ok(szalon.html.includes(`${BAZIS}/api/ajandek/kiallit?pi=${a.pi}&amp;t=${token}`));
 
@@ -561,9 +566,14 @@ describe('/webhook', () => {
 
 // --- /kiallit es /kartya ------------------------------------------------------------------------------------------------
 // a megerosito oldal urlapja: application/x-www-form-urlencoded POST ugyanarra az utra
-const kiallitPost = (pi, t, opciok = {}) => hiv('POST', 'kiallit', {
-  body: new URLSearchParams({ pi, t }).toString(), headers: { 'content-type': 'application/x-www-form-urlencoded' }, ...opciok,
-});
+// kod: alapbol a javasolt (AK-) kod, mint amikor a szalon nem irja at; a Salonicban kapott kodot az opciok.kod adja
+const kiallitPost = async (pi, t, opciok = {}) => {
+  const { kod, ...tobbi } = opciok;
+  return hiv('POST', 'kiallit', {
+    body: new URLSearchParams({ pi, t, kod: kod ?? await kuponKod(ENV, pi) }).toString(),
+    headers: { 'content-type': 'application/x-www-form-urlencoded' }, ...tobbi,
+  });
+};
 const rosszTokenek = async (piId, jo) => ['', 'abc', jo.replace(/^./, (c) => (c === '0' ? '1' : '0')), await kiallitToken(ENV, 'pi_masikazonosito123')];
 
 describe('/kiallit', () => {
@@ -588,7 +598,7 @@ describe('/kiallit', () => {
       assert.match(r.body, /<form method="post" action="\/api\/ajandek\/kiallit">/);
       assert.ok(r.body.includes(`<input type="hidden" name="pi" value="${a.pi}">`));
       assert.ok(r.body.includes(`<input type="hidden" name="t" value="${token}">`));
-      assert.ok(r.body.includes('Igen, a kuponkódot létrehoztam a Salonicban – kiküldjük a kártyát'));
+      assert.ok(r.body.includes('A kupon kész – kiküldjük a kártyát'));
       assert.ok(r.body.includes(await kuponKod(ENV, a.pi)));
       assert.ok(r.body.includes('vevo@example.com'));
       assert.ok(r.body.includes(a.rendeles_id));
@@ -652,7 +662,7 @@ describe('/kiallit', () => {
   test('POST JSON-nal is mukodik; nem fizetett PI -> 409', async () => {
     const a = await fizetettRendeles();
     levelek = [];
-    const r = await hiv('POST', 'kiallit', { body: { pi: a.pi, t: await kiallitToken(ENV, a.pi) } });
+    const r = await hiv('POST', 'kiallit', { body: { pi: a.pi, t: await kiallitToken(ENV, a.pi), kod: 'GYOR1865' } });
     assert.equal(r.status, 200);
     assert.equal(mock.allapot.pi(a.pi).metadata.kartya_kesz, '1');
     assert.equal(levelek.length, 1);
@@ -810,17 +820,16 @@ describe('/kartya', () => {
     const h = r.body;
     const kod = await kuponKod(ENV, a.pi);
     assert.ok(h.includes(kod));
-    assert.ok(h.includes('MOSAIC Head Spa ajándékkártya'));
-    assert.ok(h.includes('Páros MOSAIC Head Spa ajándékkártya'));
-    assert.ok(h.includes('Születésnap'));
-    assert.ok(h.includes('6 hónapig felhasználható'));
-    assert.ok(h.includes('https://www.mosaicheadspa.hu/idpontfoglalas'));
-    assert.ok(h.includes('kuponkód mezőbe írhatod be a kódot'));
-    assert.ok(h.includes(`${BAZIS}/assets/img/logo-143x54@2x.png`));
+    // a MOSAIC sajat (Canva-s) kartyaterve a hatter, a valtozo szovegeket a rendszer irja ra
+    assert.ok(h.includes(`${BAZIS}/assets/img/ajandek/kartya-hatter.jpg`));
+    assert.ok(h.includes('páros MOSAIC'));
+    assert.ok(h.includes('HEAD SPA KEZELÉS (2 FŐ)'));
+    assert.ok(h.includes('53.800 Ft'));
+    assert.ok(h.includes('mosaicheadspa.hu/idpontfoglalas'));
+    assert.ok(h.includes(`${BAZIS}/assets/fonts/hanken-grotesk-600-latin.woff2`));
+    assert.match(r.headers['content-security-policy'], /font-src 'self'/);
     assert.ok(h.includes('Nyomtatás / Mentés PDF-ként'));
     assert.match(h, /@media print\{[^}]*\{[^}]*\}[^]*\.nem-nyomtat\{display:none!important\}/);
-    assert.ok(h.includes('1023 Budapest, Bécsi út 2.'));
-    assert.ok(h.includes('06 20 247 4444'));
     // XSS: a nyers jelolok nem kerulhetnek az oldalba
     assert.ok(!h.includes('<img src=x'));
     assert.ok(!h.includes('<script>alert'));
@@ -844,10 +853,10 @@ describe('/kartya', () => {
 
 // --- /atutalas ---------------------------------------------------------------------------------------------------------
 describe('/atutalas', () => {
-  test('levelek a vevonek es a szalonnak, a valaszban az utalasi adatok, NEM hoz letre PI-t; a vevo-levelben nincs szabad szoveg', async () => {
+  const TEL = '+36 20 123 4567';
+  test('levelek a vevonek es a szalonnak (kiallito linkkel), a Stripe-ban nyilvantartasi rekord (nem fizetheto); a vevo-levelben nincs szabad szoveg', async () => {
     levelek = [];
-    const keresekElotte = mock.allapot.keresek.length;
-    const torzs = rendelesTorzs({ termek: '4kezes', nev: 'Kattints <a href="http://csalo.example">ide</a>', megajandekozott: 'Nagy Mária <b>', osszeg: 1 });
+    const torzs = rendelesTorzs({ termek: '4kezes', nev: 'Kattints <a href="http://csalo.example">ide</a>', megajandekozott: 'Nagy Mária <b>', uzenet: 'Boldog <i>szülinapot</i>', telefon: TEL, osszeg: 1 });
     delete torzs.kulcs;
     const r = await hiv('POST', 'atutalas', { body: torzs });
     assert.equal(r.status, 200);
@@ -858,7 +867,16 @@ describe('/atutalas', () => {
     assert.deepEqual(r.adat.utalas, {
       kedvezmenyezett: ADAT.BANK.kedvezmenyezett, szamlaszam: ADAT.BANK.szamlaszam, osszeg_ft: 39900, kozlemeny: r.adat.rendeles_ref,
     });
-    assert.equal(mock.allapot.keresek.length, keresekElotte, 'nincs Stripe-hivas');
+    // nyilvantartasi rekord: PI, amit senki nem tud kifizetni; az ar a szerveren szamolt
+    const pi = atuPi(r.adat.rendeles_ref);
+    assert.ok(pi, 'letrejott a rekord');
+    assert.equal(pi.status, 'requires_payment_method');
+    assert.equal(pi.amount, 3990000);
+    assert.equal(pi.metadata.fizetesi_mod, 'atutalas');
+    assert.equal(pi.metadata.telefon, TEL);
+    assert.equal(pi.metadata.szemelyre_nev, 'Nagy Mária <b>');
+    assert.equal(pi.metadata.forras, 'ajandek-motor');
+    assert.equal(pi.receipt_email, 'vevo@example.com');
     assert.equal(levelek.length, 2);
     const vevo = levelek.find((l) => l.cimzett === 'vevo@example.com');
     const szalon = levelek.find((l) => l.cimzett === 'szalon');
@@ -870,28 +888,117 @@ describe('/atutalas', () => {
     assert.ok(!vevo.html.includes('26.900 Ft') && !vevo.html.includes('53.800 Ft'), 'csak a valasztott termek ara');
     assert.ok(vevo.html.includes(ADAT.BANK.szamlaszam));
     assert.ok(vevo.html.includes(r.adat.rendeles_ref));
-    // a kitolto altal beirt szoveg (nev, megajandekozott) semmilyen formaban nincs a vevo levelében
-    for (const tilos of ['Kattints', 'csalo.example', 'Nagy Mária', '&lt;a', '&lt;b']) assert.ok(!vevo.html.includes(tilos), tilos);
+    // a kitolto altal beirt szoveg (nev, megajandekozott, uzenet, telefon) semmilyen formaban nincs a vevo levelében
+    for (const tilos of ['Kattints', 'csalo.example', 'Nagy Mária', 'szülinapot', '123 4567', '&lt;a', '&lt;b']) assert.ok(!vevo.html.includes(tilos), tilos);
     assert.ok(!vevo.targy.includes('Kattints') && !vevo.targy.includes('Nagy'));
-    // a szalon levelében escape-elve megmarad
+    // a szalon levelében escape-elve megmarad, es ott van a kiallito gomb + a Salonic-utalvany linkje
     assert.match(szalon.targy, /^Új ajándékkártya-igény \(átutalás, még nincs kifizetve\)/);
     assert.ok(szalon.html.includes(r.adat.rendeles_ref));
     assert.ok(szalon.html.includes('4 kezes Head Spa'));
     assert.ok(szalon.html.includes('Nagy Mária &lt;b&gt;'));
+    assert.ok(szalon.html.includes('Boldog &lt;i&gt;szülinapot&lt;/i&gt;'));
+    assert.ok(szalon.html.includes(TEL));
     assert.ok(szalon.html.includes('Kattints &lt;a href=&quot;http://csalo.example&quot;&gt;ide&lt;/a&gt;'));
     assert.ok(!szalon.html.includes('<a href="http://csalo.example">'));
+    assert.ok(szalon.html.includes('https://app.salonic.hu/promotion/giftCard/sale/4000'));
+    const token = await kiallitToken(ENV, pi.id);
+    assert.ok(szalon.html.includes(`${BAZIS}/api/ajandek/kiallit?pi=${pi.id}&amp;t=${token}`));
+    assert.ok(szalon.html.includes('Az utalás beérkezett – kiállítom a kártyát'));
   });
 
-  test('validacio 400; robotcsapda -> 200 levelek nelkul; szalon-level hibaja -> 502', async () => {
+  test('validacio 400 (telefon kotelezo); robotcsapda -> 200 levelek nelkul; szalon-level hibaja -> 502', async () => {
     levelek = [];
-    let r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ email: 'rossz', termek: 'x', megajandekozott: 'n'.repeat(81) }) });
+    let r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ email: 'rossz', termek: 'x', megajandekozott: 'n'.repeat(81), uzenet: 'u'.repeat(301), telefon: 'nincs' }) });
     assert.equal(r.status, 400);
-    assert.ok(r.adat.mezok.email && r.adat.mezok.termek && r.adat.mezok.megajandekozott);
-    r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ 'bot-field': 'x' }) });
+    assert.ok(r.adat.mezok.email && r.adat.mezok.termek && r.adat.mezok.megajandekozott && r.adat.mezok.uzenet && r.adat.mezok.telefon);
+    r = await hiv('POST', 'atutalas', { body: rendelesTorzs() });
+    assert.equal(r.status, 400, 'telefon nelkul nem megy');
+    r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ 'bot-field': 'x', telefon: TEL }) });
     assert.equal(r.status, 200);
     assert.equal(levelek.length, 0);
-    r = await hiv('POST', 'atutalas', { body: rendelesTorzs(), kuld: async () => { throw new Error('SMTP le'); } });
+    r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ telefon: TEL }), kuld: async () => { throw new Error('SMTP le'); } });
     assert.equal(r.status, 502);
+  });
+
+  test('utalasos kiallitas: a szalon beirja a Salonic-utalvanykodot -> a rendeles "fizetve", a vevo megkapja a kartyat a SZALON kodjaval; egyszer', async () => {
+    levelek = [];
+    const r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ termek: 'paros', megajandekozott: 'Anna', uzenet: 'Boldog születésnapot!', telefon: TEL, nev: 'Teszt Vevő' }) });
+    assert.equal(r.status, 200);
+    const pi = atuPi(r.adat.rendeles_ref);
+    const t = await kiallitToken(ENV, pi.id);
+    levelek = [];
+    // a kartya-oldal addig nem "kesz"
+    let g = await hiv('GET', 'kartya', { query: { pi: pi.id, t: await kartyaToken(ENV, pi.id) } });
+    assert.equal(g.status, 409);
+    assert.doesNotMatch(g.body, /AK-/);
+    // GET: megerosito oldal, ures kod-mezo, a vevo/megajandekozott adataival es a Salonic-linkkel; nem modosit, nem kuld
+    const meta0 = JSON.stringify(mock.allapot.pi(pi.id).metadata);
+    g = await hiv('GET', 'kiallit', { query: { pi: pi.id, t } });
+    assert.equal(g.status, 200);
+    assert.match(g.body, /Az utalás beérkezett – kiállítod a kártyát\?/);
+    assert.match(g.body, /name="kod" value=""/);
+    assert.ok(g.body.includes('Teszt Vevő') && g.body.includes('Anna') && g.body.includes('Boldog születésnapot!') && g.body.includes(TEL));
+    assert.ok(g.body.includes(r.adat.rendeles_ref));
+    assert.ok(g.body.includes('https://app.salonic.hu/promotion/giftCard/sale/4081'));
+    assert.ok(!g.body.includes('AK-'), 'utalasnal nincs javasolt AK- kod');
+    assert.equal(JSON.stringify(mock.allapot.pi(pi.id).metadata), meta0, 'a GET nem modosit');
+    assert.equal(levelek.length, 0);
+    // POST kod nelkul / hibas kodra: 400 es ujra az urlap, semmi nem tortenik
+    for (const rossz of ['', 'ab', 'GY OR!', '<script>', 'x'.repeat(41)]) {
+      const p = await kiallitPost(pi.id, t, { kod: rossz });
+      assert.equal(p.status, 400, rossz);
+      assert.match(p.body, /Add meg a kódot/);
+      assert.ok(p.body.includes('<form'));
+    }
+    assert.equal(JSON.stringify(mock.allapot.pi(pi.id).metadata), meta0);
+    assert.equal(levelek.length, 0);
+    // jo kod (a szokozok kikerulnek)
+    const most = new Date('2026-10-05T08:30:00Z');
+    const p = await kiallitPost(pi.id, t, { kod: ' GYOR 1865 ', most });
+    assert.equal(p.status, 200, p.body);
+    assert.match(p.body, /Kiállítva, a vevő megkapta a levelet/);
+    assert.ok(p.body.includes('GYOR1865'));
+    const md = mock.allapot.pi(pi.id).metadata;
+    assert.equal(md.atutalas_beerkezett, '1');
+    assert.equal(md.atutalas_ekkor, most.toISOString());
+    assert.equal(md.kod, 'GYOR1865');
+    assert.equal(md.kartya_kesz, '1');
+    assert.equal(levelek.length, 1);
+    const l = levelek[0];
+    assert.equal(l.cimzett, 'vevo@example.com');
+    assert.ok(l.html.includes('GYOR1865'));
+    assert.ok(!l.html.includes('AK-'));
+    assert.ok(l.html.includes(`${BAZIS}/api/ajandek/kartya?pi=${pi.id}&amp;t=${await kartyaToken(ENV, pi.id)}`));
+    assert.ok(l.html.includes('2027. április 5-ig'), 'ervenyesseg a jovahagyas napjatol 6 honap');
+    // masodszor nem megy ujabb level, a kod nem valtozik
+    const p2 = await kiallitPost(pi.id, t, { kod: 'MAS12345' });
+    assert.equal(p2.status, 200);
+    assert.match(p2.body, /már ki van állítva/);
+    assert.equal(levelek.length, 1);
+    assert.equal(mock.allapot.pi(pi.id).metadata.kod, 'GYOR1865');
+    // a kartya-oldal: a szalon kodja, a megajandekozott neve, az uzenet, a termek es az ar
+    g = await hiv('GET', 'kartya', { query: { pi: pi.id, t: await kartyaToken(ENV, pi.id) } });
+    assert.equal(g.status, 200);
+    assert.ok(g.body.includes('GYOR1865') && g.body.includes('Anna') && g.body.includes('Boldog születésnapot!'));
+    assert.ok(g.body.includes('53.800 Ft') && g.body.includes('páros MOSAIC'));
+    assert.ok(g.body.includes('Érvényes: 2027. április 5-ig'));
+  });
+
+  test('kartyas rendelesnel a szalon felulirhatja a javasolt kodot: az kerul a levelbe es a kartyara', async () => {
+    const a = await fizetettRendeles({ termek: 'egyeni' });
+    await webhook(alairtEsemeny(a.pi));
+    levelek = [];
+    const t = await kiallitToken(ENV, a.pi);
+    const g = await hiv('GET', 'kiallit', { query: { pi: a.pi, t } });
+    assert.ok(g.body.includes(`name="kod" value="${await kuponKod(ENV, a.pi)}"`), 'alapbol a javasolt kod');
+    assert.ok(!g.body.includes('promotion/giftCard/sale'), 'kartyas fizetesnel nincs utalvany-ertekesites');
+    const p = await kiallitPost(a.pi, t, { kod: 'SajatKupon-7' });
+    assert.equal(p.status, 200);
+    assert.equal(mock.allapot.pi(a.pi).metadata.kod, 'SajatKupon-7');
+    assert.ok(levelek[0].html.includes('SajatKupon-7'));
+    const k = await hiv('GET', 'kartya', { query: { pi: a.pi, t: await kartyaToken(ENV, a.pi) } });
+    assert.ok(k.body.includes('SajatKupon-7'));
+    assert.ok(!k.body.includes(await kuponKod(ENV, a.pi)));
   });
 });
 
@@ -1232,8 +1339,8 @@ describe('AJANDEK_TITOK kotelezo (legalabb 32 karakter, fail closed)', () => {
     }
     // pontosan 32 karakter mar eleg
     assert.equal((await hiv('GET', 'beallitas', { env: { ...ENV, AJANDEK_TITOK: 'y'.repeat(32) } })).adat.mod, 'teszt');
-    // az atutalas (nem Stripe, nincs titok-fuggo link) titok nelkul is mukodik
-    assert.equal((await hiv('POST', 'atutalas', { body: rendelesTorzs(), env: { ...ENV, AJANDEK_TITOK: '' } })).status, 200);
+    // az atutalas is a Stripe-rekordra es a titok-fuggo kiallito linkre epul: titok nelkul nem megy
+    assert.equal((await hiv('POST', 'atutalas', { body: rendelesTorzs({ telefon: '+36 20 123 4567' }), env: { ...ENV, AJANDEK_TITOK: '' } })).status, 503);
   });
 });
 
