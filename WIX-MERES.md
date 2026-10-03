@@ -773,7 +773,7 @@ Többlet az egyes oldalakon:
 
 | Wix-elem | Klónbeli megfelelő |
 |---|---|
-| Meta-pixelek oldalanként, hozzájárulástól függetlenül | `assets/js/suti.js` – `PIXEL_OLDALAK` (ugyanaz a 4 pixel, ugyanazok az oldalak) |
+| Meta-pixelek oldalanként, hozzájárulástól függetlenül | `assets/js/suti.js` – `PIXEL_OLDALAK` (ugyanaz a 4 pixel; a Wixes oldalakon felül 2026-10-től 13 ajándékkártya-/kampány-landing is, a `ppc-allashirdetes` szándékosan nem; alapértelmezett pixel nincs; ellenőrzés: `tools/meres-proba/pixel-proba.mjs`) |
 | GTM-PST2HB22 + Consent Mode (default denied, `wait_for_update` 500, update a sávból) | `assets/js/suti.js` – ugyanaz a konténer, változtatás nélkül, így minden 4. fejezetbeli tag ugyanúgy fut |
 | GA4 gtag `send_page_view:false` + Wix-féle `page_view` | `assets/js/suti.js` (`page_view` kézzel, `action_source=website`); a `visit`-et a GA4 saját „Esemény létrehozása” szabálya készíti, mint a Wixen |
 | Wix dataLayer `Pageview` / `{ecommerce:null}` / `page_view` | `assets/js/suti.js` |

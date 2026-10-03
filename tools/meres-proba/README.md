@@ -29,3 +29,22 @@ node tools/meres-proba/osszevet.mjs "cimke=naplo1.json" "cimke=naplo2.json"
 - `landing-sonda.mjs <útvonalak…>`: mely landingeken fut a Google-címke, a Meta-pixel és a TikTok-pixel, és kapják-e el a kattintás-azonosítót.
 
 A teszt a süti-hozzájárulást elfogadottnak tekinti (a saját tárolóba írja, mint a süti-sáv gombja), így a mérés teljes üzemben fut.
+
+## Meta-pixel oldalankénti ellenőrzése: `pixel-proba.mjs`
+
+Minden oldalon `?fbclid=TESZTPIXEL` paraméterrel betölti az oldalt, és oldalanként megmondja: melyik pixel-azonosító indult (és hányszor: `fbq.getState().pixels`),
+hány `PageView` ment, létrejött-e a `_fbc` süti (benne a `TESZTPIXEL`) és a `_fbp`, volt-e „Duplicate Pixel ID” figyelmeztetés, és a `buy.stripe.com` gombok
+linkjében **kattintás után** ott van-e az fbc (a GTM 177-es címke kattintáskor írja a `client_reference_id`-be; hozzájárulás kell hozzá).
+A kimenő mérési kérések (a `capig.stape.do` is) alapból tiltva és naplózva vannak (`tilt.mjs`, mint a többi mérőszkriptnél).
+
+```
+node tools/meres-proba/pixel-proba.mjs --oldalak mind|/utvonal,/masik --out pixel.json [--koszonok 1] [--overlay dist] [--mobil 1] [--hozzajarulas 0]
+node tools/meres-proba/pixel-proba.mjs --osszevet elozo.json uj.json
+```
+
+- `--oldalak mind`: a `klon/` minden oldala; `--oldalak nincs --koszonok 1`: csak a köszönőoldalak.
+- `--koszonok 1`: hat köszönőoldal a Salonic valódi átirányításának paramétereivel (`first_booking` + `bookingUrl`), hogy a GTM 213-as címkéje is lefusson (kimenő kérés nélkül) – itt látszik, ha a címke kétszer inicializálná a pixelt.
+- `--overlay dist`: a még nem deployolt változat a helyi `dist/`-ből (a `pmu-ok` / `pmu-vh` a gitben szimbolikus link, ami Windowson szövegfájl: az eszköz a célfájlt szolgálja ki).
+- `--hozzajarulas 0`: friss látogató süti-hozzájárulás nélkül (a pixel ettől függetlenül fut, mint a Wixen; a Stripe-link fbc-je viszont hozzájárulást kér).
+- `--osszevet`: két futás összevetése oldalanként (pixelek, PageView, CAPI, események, Google/TikTok) – a „mely oldalak változtak” kérdésre.
+- Az elvárt pixel a helyi `assets/js/suti.js` `PIXEL_OLDALAK` listájából jön; a listán kívüli oldalra „nincs elvárt pixel”.
