@@ -32,6 +32,7 @@
       vendeg_db: 1,
       // a Salonic utalvany-terméke (Marketing > Ajandekutalvanyok), a szalon "utalvany ertekesitesehez" (utalasos rendelesnel)
       salonic: { id: 4040, nev: '50 perces MOSAIC Head Spa kezelés + 30 perc hajszárítás-20% (26 900 Ft)' },
+      pontosan: { ido: '50 perc Head Spa + 30 perc hajszárítás', fo: '1 vendég', kezelo: 'Tapasztalt gyógymasszőr' },
       kezeles: {
         leiras: ['Személyre szabott hajápolási szeánsz mélyrelaxáló masszázs elemekkel: 50 perc Head Spa, utána 30 perc profi hajszárítás.'],
         lepesek: [
@@ -61,6 +62,7 @@
       ar_ft: 39900,
       vendeg_db: 1,
       salonic: { id: 4000, nev: '50 perces 4 Kezes Headspa ajándékkártya - 39.900 Ft' },
+      pontosan: { ido: '50 perc 4 kezes Head Spa + 30 perc hajszárítás', fo: '1 vendég', kezelo: 'Két gyógymasszőr egyszerre, a végén profi fodrász szárít' },
       kezeles: {
         leiras: ['A MOSAIC saját találmánya: két gyógymasszőr dolgozik egyszerre, a végén egy profi fodrász szárít, vagyis hárman kényeztetnek 50+30 percen át.'],
         lepesek: [
@@ -88,6 +90,7 @@
       ar_ft: 53800,
       vendeg_db: 2,
       salonic: { id: 4081, nev: '50 perces PÁROS MOSAIC Head Spa Ajándékutalvány -20% (53 800 Ft)' },
+      pontosan: { ido: '50 perc Head Spa + 30 perc hajszárítás fejenként', fo: '2 vendég, egymás mellett', kezelo: 'Két gyógymasszőr, egyszerre' },
       kezeles: {
         leiras: ['Ketten fekszetek egymás mellé egy privát, csendes kezelőszobában, két gyógymasszőr kényeztet titeket egyszerre: közös élmény barátnővel, anyukával vagy a párral.'],
         lepesek: [
@@ -103,6 +106,17 @@
       vizual: { src: '/assets/img/c2eb0f_2c17645e97d943fda9265b973f1bb6a9.jpg', alt: 'Páros Head Spa: két vendég, két terapeuta, egy közös helyiségben', w: 1500, h: 1500, poz: '50% 50%' }
     }
   };
+
+  // "Ilyen a Head Spa": a kezelest bemutato video (valodi MOSAIC-felvetel; ha a tulajdonos sajat videot tolt fel, itt kell cserelni)
+  // + a vendeg szempontjabol megfogalmazott elmeny-elemek (nem technikai leiras)
+  var HEADSPA_VIDEO = { src: '/assets/video/c2eb0f_a772c9222aa949a0888a4aa2298ef0b5.mp4', poster: '/assets/img/ajandek/headspa-video-poszter.jpg', ido: '0:37' };
+  var BENEFITOK = [
+    { ikon: 'leaf', cim: 'Kikapcsolódás', szoveg: 'Nyugodt, privát környezet, nincs rohanás.' },
+    { ikon: 'sparkle', cim: 'Fej-, arc- és nyakmasszázs', szoveg: 'Kézzel és eszközökkel végzett masszázs, gőzölés.' },
+    { ikon: 'waves', cim: 'Vízélmény', szoveg: 'A hajmosás az eredeti Head Spa arany zuhanyív alatt történik.' },
+    { ikon: 'heart', cim: 'Teljes figyelem', szoveg: 'A kezelés teljes ideje a vendégről szól.' },
+    { ikon: 'check', cim: 'Rendezett haj', szoveg: 'A végén profi hajszárítás is jár hozzá.' }
+  ];
 
   var FINDER = [
     { id: 'egyedul', ikon: 'user', cim: 'Neki egyedül', leiras: 'Ha azt szeretnéd, hogy végre csak vele foglalkozzanak.', termek: 'egyeni', nyil: 'Egyéni Head Spa ajánlása' },
@@ -168,14 +182,78 @@
         { ikon: 'card', szoveg: 'Gyönyörű, személyre', alszoveg: 'szabható kártya' }
       ],
       product_order: ['egyeni', 'paros', '4kezes'],
+      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
       featured_proof: 'general',
       objection_title: null,
       objection_body: null,
       relationship: null,
       gift_context: 'general',
       occasion: null
+    },
+    // Ferfi vasarlo, "neki" (a vendegvideok mind noi reakciok: azt bizonyitjak, hogy ennek tenyleg orulni fog)
+    for_her: {
+      variant_id: 'for_her',
+      hero_eyebrow: 'MOSAIC HEAD SPA AJÁNDÉKKÁRTYA',
+      hero_title: 'Ajándékozz neki 80 percet, ami tényleg csak róla szól.',
+      hero_subtitle: 'Japán Head Spa élmény Budán: ő kikapcsolódik, te pedig megkaptad a tökéletes ajándékot.',
+      hero_cta: 'Ajándékot választok neki',
+      hero_media: { src: '/assets/img/ajandek/hero.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt' },
+      hero_trust: null,
+      product_order: ['egyeni', '4kezes', 'paros'],
+      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      featured_proof: 'general',
+      objection_title: null, objection_body: null,
+      relationship: null, gift_context: 'for_her', occasion: null
+    },
+    // Barat(no)ival
+    together_friend: {
+      variant_id: 'together_friend',
+      hero_eyebrow: 'MOSAIC PÁROS HEAD SPA AJÁNDÉKKÁRTYA',
+      hero_title: 'Menjetek el együtt, és töltsetek 80 percet csak egymásra.',
+      hero_subtitle: 'Páros Head Spa Budán: két vendég, két terapeuta, egy közös élmény barátnőddel.',
+      hero_cta: 'Közös élményt választok',
+      hero_media: { src: '/assets/img/ajandek/hero.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt' },
+      hero_trust: null,
+      product_order: ['paros', 'egyeni', '4kezes'],
+      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      featured_proof: 'general',
+      objection_title: null, objection_body: null,
+      relationship: 'friend', gift_context: 'together', occasion: null
+    },
+    // Anyukaval
+    together_mother: {
+      variant_id: 'together_mother',
+      hero_eyebrow: 'MOSAIC PÁROS HEAD SPA AJÁNDÉKKÁRTYA',
+      hero_title: 'Töltsetek együtt 80 percet, amikor végre csak rátok figyelnek.',
+      hero_subtitle: 'Páros Head Spa Budán: közös kikapcsolódás anyukáddal, egymás mellett.',
+      hero_cta: 'Közös élményt választok',
+      hero_media: { src: '/assets/img/ajandek/hero.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt' },
+      hero_trust: null,
+      product_order: ['paros', 'egyeni', '4kezes'],
+      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      featured_proof: 'general',
+      objection_title: null, objection_body: null,
+      relationship: 'mother', gift_context: 'together', occasion: null
+    },
+    // Parjaval
+    together_partner: {
+      variant_id: 'together_partner',
+      hero_eyebrow: 'MOSAIC PÁROS HEAD SPA AJÁNDÉKKÁRTYA',
+      hero_title: 'Egy közös élmény kettőtöknek: 80 perc, csak ti ketten.',
+      hero_subtitle: 'Páros Head Spa Budán: privát, csendes kezelőszobában, egymás mellett.',
+      hero_cta: 'Közös élményt választok',
+      hero_media: { src: '/assets/img/ajandek/hero.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt' },
+      hero_trust: null,
+      product_order: ['paros', 'egyeni', '4kezes'],
+      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      featured_proof: 'general',
+      objection_title: null, objection_body: null,
+      relationship: 'partner', gift_context: 'together', occasion: null
     }
   };
+
+  // a variansok kozos bizalmi sora (a GENERAL sajat listaja ugyanez): ha egy variant nem ad meg sajatot, ez jelenik meg
+  Object.keys(VARIANTOK).forEach(function (k) { if (!VARIANTOK[k].hero_trust) VARIANTOK[k].hero_trust = VARIANTOK.general.hero_trust; });
 
   var SZALON = {
     nev: 'MOSAIC Head Spa',
@@ -226,6 +304,8 @@
   g.AJANDEK_ADAT = {
     TERMEKEK: TERMEKEK,
     FINDER: FINDER,
+    HEADSPA_VIDEO: HEADSPA_VIDEO,
+    BENEFITOK: BENEFITOK,
     ALKALMAK: ALKALMAK,
     ATVETELEK: ATVETELEK,
     ATADASOK: ATADASOK,

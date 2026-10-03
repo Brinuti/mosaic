@@ -66,7 +66,7 @@
         <p class="ah-felcim" id="ah-hero-eyebrow" hidden></p>
         <h1 id="ah-hero-cim">Adj neki 80 percet, amikor végre csak vele foglalkoznak.</h1>
         <p class="ah-lead" id="ah-hero-alcim">Japán Head Spa élmény Budán, digitális vagy nyomtatott ajándékkártyával.</p>
-        <p class="ah-hero-gomb"><a class="ah-gomb ah-gomb-fo" id="ah-hero-cta" href="#ah-finder"><span id="ah-hero-cta-szoveg">Ajándékkártya választása</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></a></p>
+        <p class="ah-hero-gomb"><a class="ah-gomb ah-gomb-fo" id="ah-hero-cta" href="#ah-finder"><span id="ah-hero-cta-szoveg">Ajándékkártya választása</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></a><span class="ah-hero-ar" id="ah-hero-ar"></span></p>
         <ul class="ah-bizalom" id="ah-hero-bizalom" aria-label="Röviden"></ul>
         <p class="ah-hero-bevaltas">Már van ajándékkártyád? <a href="/idpontfoglalas">Foglalj időpontot a kuponkóddal →</a></p>
       </div>
@@ -137,27 +137,25 @@
     </div>
   </section>
 
-  <!-- A vasarlas menete: a fizetes utani allapotok (siker -> szemelyre szabas -> kesz kartya) bemutatasa -->
-  <section class="ah-szekcio ah-menete" id="ah-menete" aria-labelledby="ah-menete-cim">
-    <div class="ah-tartalom">
-      <header class="ah-szekcio-fej">
-        <h2 id="ah-menete-cim">A vásárlás menete</h2>
-        <p class="ah-halk">Fizetés után még személyre szabhatod, az ajándékkártya pedig készen áll az ajándékozásra.</p>
-      </header>
-      <ol class="ah-menete-lepesek">
-        <li><span class="ah-menete-szam">1</span><span class="ah-menete-ikon"><span class="ah-ikon" data-ikon="check" aria-hidden="true"></span></span><div><strong>Sikeres fizetés</strong><span>A fizetésről e-mailben visszaigazolást kapsz.</span></div></li>
-        <li><span class="ah-menete-szam">2</span><span class="ah-menete-ikon"><span class="ah-ikon" data-ikon="pencil" aria-hidden="true"></span></span><div><strong>Személyre szabás</strong><span>Add meg a megajándékozott nevét, írj hozzá üzenetet, és válaszd ki az alkalmat.</span></div></li>
-        <li><span class="ah-menete-szam">3</span><span class="ah-menete-ikon"><span class="ah-ikon" data-ikon="gift" aria-hidden="true"></span></span><div><strong>Kész ajándékkártya</strong><span>Elkészültekor letöltheted, vagy e-mailben is megkapod.</span></div></li>
-      </ol>
-      <div class="ah-menete-kartyak">
-        <div class="ah-kartya ah-menete-kartya"><span class="ah-menete-ikon ah-menete-ikon-nagy"><span class="ah-ikon" data-ikon="check" aria-hidden="true"></span></span><div><h3>Sikeres vásárlás!</h3><p>Köszönjük a megrendelésed! A fizetés sikeresen megtörtént, a rendelés részleteiről e-mailben visszaigazolást küldünk.</p></div></div>
-        <div class="ah-kartya ah-menete-kartya"><span class="ah-menete-ikon ah-menete-ikon-nagy"><span class="ah-ikon" data-ikon="gift" aria-hidden="true"></span></span><div><h3>Személyre szabás</h3><p>Add meg, kinek szól az ajándék, írj hozzá egyedi üzenetet, és válaszd ki az alkalmat. Ez nem befolyásolja a vásárlást.</p></div></div>
-        <div class="ah-kartya ah-menete-kartya"><span class="ah-menete-ikon ah-menete-ikon-nagy"><span class="ah-ikon" data-ikon="card" aria-hidden="true"></span></span><div><h3>Elkészült ajándékkártya</h3><p>Az ajándékkártya elkészültekor letöltheted és kinyomtathatod, vagy e-mailben továbbküldheted a megajándékozottnak.</p></div></div>
+      <!-- 9-10. "ILYEN A HEAD SPA": a kezelest megmutato video + az elmeny (benefit, nem technikai leiras) -->
+  <section class="ah-szekcio ah-headspa" id="ah-headspa" aria-labelledby="ah-headspa-cim">
+    <div class="ah-tartalom ah-headspa-racs">
+      <div class="ah-headspa-media">
+        <button type="button" class="ah-headspa-video" id="ah-headspa-video" data-vendeg="" data-nev="Ilyen a Head Spa" data-szeles aria-label="Ilyen a Head Spa: a kezelés videójának lejátszása">
+          <img id="ah-headspa-kep" src="/assets/img/ajandek/headspa-video-poszter.jpg" width="1000" height="563" alt="" loading="lazy" decoding="async">
+          <span class="ah-vendeg-lejatszas" aria-hidden="true"><svg viewBox="0 0 40 40" width="64" height="64"><circle cx="20" cy="20" r="19"/><path d="M16 12.5v15l12-7.5z"/></svg></span>
+          <span class="ah-vendeg-cimke"><b>Nézd meg, hogyan zajlik</b><small id="ah-headspa-ido"></small></span>
+        </button>
+      </div>
+      <div class="ah-headspa-szoveg">
+        <h2 id="ah-headspa-cim">Ilyen a Head Spa</h2>
+        <p class="ah-halk">A Head Spa japán eredetű fejfürdő: a hajápolás és a masszázs keveréke, amely a fejre és annak környékére fókuszál. Ezt éli át, akinek ajándékozod:</p>
+        <ul class="ah-benefit-lista" id="ah-benefitek"></ul>
       </div>
     </div>
   </section>
 
-  <!-- 8. SOCIAL PROOF: valodi vendeg-videok (a szalon testimonial videoi, csak keresztnev) + a valodi Google-velemeny es -osszegzes -->
+<!-- 8. SOCIAL PROOF: valodi vendeg-videok (a szalon testimonial videoi, csak keresztnev) + a valodi Google-velemeny es -osszegzes -->
   <section class="ah-szekcio ah-vendegek" id="ah-velemeny" aria-labelledby="ah-velemeny-cim">
     <div class="ah-tartalom">
       <header class="ah-szekcio-fej">
@@ -166,10 +164,10 @@
       </header>
       <div class="ah-vendegek-racs">
         <ul class="ah-vendeg-lista" aria-label="Vendég-videók">
-          <li><button type="button" class="ah-vendeg-gomb" data-vendeg="/assets/video/ajandek-vendeg-zsoka.mp4" data-nev="Zsóka" aria-label="Zsóka videója (1:12) – lejátszás"><img src="/assets/img/ajandek/vendeg-zsoka.jpg" width="540" height="960" alt="" loading="lazy" decoding="async"><span class="ah-vendeg-lejatszas" aria-hidden="true"><svg viewBox="0 0 40 40" width="46" height="46"><circle cx="20" cy="20" r="19"/><path d="M16 12.5v15l12-7.5z"/></svg></span><span class="ah-vendeg-cimke"><b>Zsóka</b><small>1:12</small></span></button></li>
-          <li><button type="button" class="ah-vendeg-gomb" data-vendeg="/assets/video/ajandek-vendeg-zita.mp4" data-nev="Zita" aria-label="Zita videója (1:48) – lejátszás"><img src="/assets/img/ajandek/vendeg-zita.jpg" width="540" height="960" alt="" loading="lazy" decoding="async"><span class="ah-vendeg-lejatszas" aria-hidden="true"><svg viewBox="0 0 40 40" width="46" height="46"><circle cx="20" cy="20" r="19"/><path d="M16 12.5v15l12-7.5z"/></svg></span><span class="ah-vendeg-cimke"><b>Zita</b><small>1:48</small></span></button></li>
-          <li><button type="button" class="ah-vendeg-gomb" data-vendeg="/assets/video/ajandek-vendeg-kinga.mp4" data-nev="Kinga" aria-label="Kinga videója (1:50) – lejátszás"><img src="/assets/img/ajandek/vendeg-kinga.jpg" width="540" height="960" alt="" loading="lazy" decoding="async"><span class="ah-vendeg-lejatszas" aria-hidden="true"><svg viewBox="0 0 40 40" width="46" height="46"><circle cx="20" cy="20" r="19"/><path d="M16 12.5v15l12-7.5z"/></svg></span><span class="ah-vendeg-cimke"><b>Kinga</b><small>1:50</small></span></button></li>
-          <li><button type="button" class="ah-vendeg-gomb" data-vendeg="/assets/video/ajandek-vendeg-dori.mp4" data-nev="Dóri" aria-label="Dóri videója (1:47) – lejátszás"><img src="/assets/img/ajandek/vendeg-dori.jpg" width="540" height="960" alt="" loading="lazy" decoding="async"><span class="ah-vendeg-lejatszas" aria-hidden="true"><svg viewBox="0 0 40 40" width="46" height="46"><circle cx="20" cy="20" r="19"/><path d="M16 12.5v15l12-7.5z"/></svg></span><span class="ah-vendeg-cimke"><b>Dóri</b><small>1:47</small></span></button></li>
+          <li data-vid="zsoka"><button type="button" class="ah-vendeg-gomb" data-vendeg="/assets/video/ajandek-vendeg-zsoka.mp4" data-nev="Zsóka" aria-label="Zsóka videója (1:12) – lejátszás"><img src="/assets/img/ajandek/vendeg-zsoka.jpg" width="540" height="960" alt="" loading="lazy" decoding="async"><span class="ah-vendeg-lejatszas" aria-hidden="true"><svg viewBox="0 0 40 40" width="46" height="46"><circle cx="20" cy="20" r="19"/><path d="M16 12.5v15l12-7.5z"/></svg></span><span class="ah-vendeg-cimke"><b>Zsóka</b><small>1:12</small></span></button></li>
+          <li data-vid="zita"><button type="button" class="ah-vendeg-gomb" data-vendeg="/assets/video/ajandek-vendeg-zita.mp4" data-nev="Zita" aria-label="Zita videója (1:48) – lejátszás"><img src="/assets/img/ajandek/vendeg-zita.jpg" width="540" height="960" alt="" loading="lazy" decoding="async"><span class="ah-vendeg-lejatszas" aria-hidden="true"><svg viewBox="0 0 40 40" width="46" height="46"><circle cx="20" cy="20" r="19"/><path d="M16 12.5v15l12-7.5z"/></svg></span><span class="ah-vendeg-cimke"><b>Zita</b><small>1:48</small></span></button></li>
+          <li data-vid="kinga"><button type="button" class="ah-vendeg-gomb" data-vendeg="/assets/video/ajandek-vendeg-kinga.mp4" data-nev="Kinga" aria-label="Kinga videója (1:50) – lejátszás"><img src="/assets/img/ajandek/vendeg-kinga.jpg" width="540" height="960" alt="" loading="lazy" decoding="async"><span class="ah-vendeg-lejatszas" aria-hidden="true"><svg viewBox="0 0 40 40" width="46" height="46"><circle cx="20" cy="20" r="19"/><path d="M16 12.5v15l12-7.5z"/></svg></span><span class="ah-vendeg-cimke"><b>Kinga</b><small>1:50</small></span></button></li>
+          <li data-vid="dori"><button type="button" class="ah-vendeg-gomb" data-vendeg="/assets/video/ajandek-vendeg-dori.mp4" data-nev="Dóri" aria-label="Dóri videója (1:47) – lejátszás"><img src="/assets/img/ajandek/vendeg-dori.jpg" width="540" height="960" alt="" loading="lazy" decoding="async"><span class="ah-vendeg-lejatszas" aria-hidden="true"><svg viewBox="0 0 40 40" width="46" height="46"><circle cx="20" cy="20" r="19"/><path d="M16 12.5v15l12-7.5z"/></svg></span><span class="ah-vendeg-cimke"><b>Dóri</b><small>1:47</small></span></button></li>
         </ul>
         <div class="ah-kartya ah-velemeny-kartya" id="ah-proof" aria-label="Google-vélemény">
           <div class="ah-google" aria-label="Google-értékelések összegzése">
@@ -186,7 +184,18 @@
     </div>
   </section>
 
-  <!-- Ezt adod at neki: az ajandekkartya bemutatasa (a valodi kartya + valodi foto) -->
+    <!-- 13. "PONTOSAN EZT KAPJA": ido, fo, ki vegzi, fo elemek, hol, ervenyesseg - termekenkent, ar + gomb egy helyen -->
+  <section class="ah-szekcio ah-pontosan" id="ah-pontosan" aria-labelledby="ah-pontosan-cim">
+    <div class="ah-tartalom">
+      <header class="ah-szekcio-fej">
+        <h2 id="ah-pontosan-cim">Pontosan ezt kapja</h2>
+        <p class="ah-halk">Mennyi ideig tart, kik végzik, hány főre szól és hol történik: semmi homály.</p>
+      </header>
+      <div class="ah-pontosan-racs" id="ah-pontosan-racs"></div>
+    </div>
+  </section>
+
+<!-- Ezt adod at neki: az ajandekkartya bemutatasa (a valodi kartya + valodi foto) -->
   <section class="ah-szekcio ah-atadas" id="ah-atadas" aria-labelledby="ah-atadas-cim">
     <div class="ah-tartalom ah-atadas-racs">
       <div class="ah-atadas-kep" aria-hidden="true">
@@ -231,39 +240,51 @@
     </div>
   </section>
 
-  <!-- Hogyan mukodik az ajandekozas + gyakori kerdesek (a valaszok a MOSAIC mar elo oldalairol / a jovahagyott szovegekbol valok) -->
+    <!-- 16. "HOGYAN MUKODIK?": kivalasztas -> szemelyre szabas -> fizetes -> atadas -> kesobbi bevaltas -->
+  <section class="ah-szekcio ah-hogyan" id="ah-hogyan" aria-labelledby="ah-hogyan-cim">
+    <div class="ah-tartalom">
+      <header class="ah-szekcio-fej">
+        <h2 id="ah-hogyan-cim">Hogyan működik?</h2>
+        <p class="ah-halk">Öt egyszerű lépés a kiválasztástól a beváltásig.</p>
+      </header>
+      <ol class="ah-hogyan-lepesek">
+        <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="gift" aria-hidden="true"></span><b>1</b></span><strong>Kiválasztod</strong><span>az élményt: egyéni, páros vagy 4 kezes.</span></li>
+        <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="pencil" aria-hidden="true"></span><b>2</b></span><strong>Személyre szabod</strong><span>Otthoni nyomtatásnál design, fotó és idézet; nem kötelező.</span></li>
+        <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="card" aria-hidden="true"></span><b>3</b></span><strong>Kifizeted</strong><span>online, bankkártyával (Apple Pay, Google Pay is, ahol elérhető).</span></li>
+        <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="mail" aria-hidden="true"></span><b>4</b></span><strong>Átadod</strong><span>E-mailben megkapod, kinyomtatod vagy továbbküldöd; vagy a szalonban átveszed.</span></li>
+        <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="calendar" aria-hidden="true"></span><b>5</b></span><strong>Ő beváltja</strong><span>A kártyán lévő kuponkóddal időpontot foglal az online foglalásnál, 6 hónapon belül.</span></li>
+      </ol>
+    </div>
+  </section>
+
+<!-- Hogyan mukodik az ajandekozas + gyakori kerdesek (a valaszok a MOSAIC mar elo oldalairol / a jovahagyott szovegekbol valok) -->
   <section class="ah-szekcio ah-info" id="ah-info" aria-labelledby="ah-hogyan-cim">
-    <div class="ah-tartalom ah-info-racs">
-      <div class="ah-hogyan">
-        <h2 id="ah-hogyan-cim">Hogyan működik az ajándékozás?</h2>
-        <ol class="ah-hogyan-lepesek">
-          <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="gift" aria-hidden="true"></span><b>1</b></span><strong>Kiválasztod</strong><span>a megfelelő élményt.</span></li>
-          <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="card" aria-hidden="true"></span><b>2</b></span><strong>Kifizeted</strong><span>online, biztonságosan.</span></li>
-          <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="pencil" aria-hidden="true"></span><b>3</b></span><strong>Személyre szabod</strong><span>az ajándékkártyát.</span></li>
-          <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="mail" aria-hidden="true"></span><b>4</b></span><strong>Megkapod</strong><span>e-mailben, vagy letöltheted, és ünnepelsz.</span></li>
-        </ol>
-      </div>
+    <div class="ah-tartalom ah-info-racs ah-info-egy">
       <div class="ah-gyik">
         <h2>Gyakori kérdések</h2>
         <details><summary>Meddig érvényes az ajándékkártya?</summary><p>A vásárlás napjától számított 6 hónapig. A pontos lejárati dátum a kártyán is szerepel.</p></details>
-        <details><summary>Hogyan kapom meg az ajándékkártyát?</summary><p>A fizetés után e-mailben visszaigazolást kapsz. Az ajándékkártya elkészültekor itt az oldalon és e-mailben is megjelenik, nyomtatható formában (kinyomtathatod, vagy PDF-ként mentheted). Papír alapon, ízléses borítékban a szalonban is átveheted.</p></details>
+        <details><summary>Hogyan kapom meg az ajándékkártyát?</summary><p>A fizetés után e-mailben visszaigazolást kapsz. Az ajándékkártya elkészültekor itt az oldalon és e-mailben is megjelenik, nyomtatható formában (kinyomtathatod, vagy PDF-ként mentheted).</p></details>
+        <details><summary>Személyre szabhatom a kártyát?</summary><p>Igen, az otthon kinyomtatott kártyát: a fizetés előtt választhatsz designt, feltölthetsz egy fotót, és írhatsz rá idézetet vagy üzenetet. A szalonban átvett papír kártya a MOSAIC saját designjával készül.</p></details>
+        <details><summary>Átvehetem személyesen is?</summary><p>Igen: a szalonban (1023 Budapest, Bécsi út 2.) díszborítékban, papír alapon veheted át. Ezt a fizetés előtt, az átvétel módjánál választod ki.</p></details>
+        <details><summary>Hogyan fizethetek?</summary><p>Elsősorban bankkártyával (Apple Pay és Google Pay is, ahol elérhető). Átutalást is kérhetsz: az utalási adatokat e-mailben küldjük, a kártyát az utalás beérkezése után állítjuk ki.</p></details>
         <details><summary>Hogyan váltható be?</summary><p>Az <a href="/idpontfoglalas">online időpontfoglalásnál</a> a kártyán lévő kuponkódot add meg a „kuponkód” mezőben, a rendszer jóváírja a 100% kedvezményt. A kártya névre szól és 6 hónapig érvényes.</p></details>
-        <details><summary>Férfiak is jöhetnek?</summary><p>A Head Spa nemtől függetlenül bárkinek ajánlott, férfiak és nők egyaránt élvezhetik a kezelést és annak előnyeit.</p></details>
-        <details><summary>Csak hosszú hajra ajánlott, vagy rövidebb haj esetén is hatékony?</summary><p>A Head Spa bármilyen hajhossznál hatékony, rövid és hosszú haj esetén egyaránt. A kezelés a fejbőrre fókuszál, így a haj hossza nem befolyásolja az eredményt.</p></details>
-        <details><summary>Van-e bármilyen ellenjavallat, ami miatt nem ajánlott a kezelés?</summary>
-          <p>Head Spa kezelésen akkor vehetsz részt, ha az alábbiakat elfogadod:</p>
+        <details><summary>Mi a különbség az egyéni, a páros és a 4 kezes között?</summary><p>Mindhárom 50 perc kezelés + 30 perc hajszárítás. Az egyéni egy vendégnek szól; a páros két vendégnek, egymás mellett, két gyógymasszőrrel; a 4 kezes egy vendégnek, két gyógymasszőr egyszerre kényezteti, a végén profi fodrász szárít.</p></details>
+        <details><summary>Férfiaknak is jó ajándék?</summary><p>A Head Spa nemtől függetlenül bárkinek ajánlott, férfiak és nők egyaránt élvezhetik a kezelést és annak előnyeit.</p></details>
+        <details><summary>Rövid hajra is jó?</summary><p>A Head Spa bármilyen hajhossznál hatékony, rövid és hosszú haj esetén egyaránt. A kezelés a fejbőrre fókuszál, így a haj hossza nem befolyásolja az eredményt.</p></details>
+        <details><summary>Van-e ellenjavallat, amire figyelni kell?</summary>
+          <p>Head Spa kezelésen akkor vehet részt, aki az alábbiakat elfogadja:</p>
           <ul>
-            <li>A kezelést megelőző 4 héten belül fejsérülésed, vagy súlyosabb (hányással és lázzal járó) agyrázkódásod nem volt.</li>
-            <li>Nincsen akut arcüreggyuladásod, nyirokcsomó- vagy mandulagyulladásod, illetve foggyulladásod.</li>
-            <li>Nem vagy lázas beteg.</li>
-            <li>Az elmúlt 4 hétben nem estél át nagyobb műtéti beavatkozáson.</li>
-            <li>Nem vagy vérzékeny.</li>
-            <li>Nem vagy fertőző beteg (Hepatitis A, B, C, Aids, tuberkulózis, vagy egyéb fertőző betegség).</li>
-            <li>A felsőtested bőrfelületén nincsen nyílt seb, friss trauma, intenzív hámhiány, fekély, vagy mély gombásodás.</li>
-            <li>Nem vagy epilepsziás.</li>
-            <li>Nincs kezeletlen szív- és érrendszeri betegséged.</li>
-            <li>Nincsen kiugróan magas vérnyomásod.</li>
-            <li>És nem vagy veszélyeztetett terhes.</li>
+            <li>A kezelést megelőző 4 héten belül fejsérülése, vagy súlyosabb (hányással és lázzal járó) agyrázkódása nem volt.</li>
+            <li>Nincsen akut arcüreggyulladása, nyirokcsomó- vagy mandulagyulladása, illetve foggyulladása.</li>
+            <li>Nem lázas beteg.</li>
+            <li>Az elmúlt 4 hétben nem esett át nagyobb műtéti beavatkozáson.</li>
+            <li>Nem vérzékeny.</li>
+            <li>Nem fertőző beteg (Hepatitis A, B, C, Aids, tuberkulózis, vagy egyéb fertőző betegség).</li>
+            <li>A felsőtestének bőrfelületén nincsen nyílt seb, friss trauma, intenzív hámhiány, fekély, vagy mély gombásodás.</li>
+            <li>Nem epilepsziás.</li>
+            <li>Nincs kezeletlen szív- és érrendszeri betegsége.</li>
+            <li>Nincsen kiugróan magas vérnyomása.</li>
+            <li>És nem veszélyeztetett terhes.</li>
           </ul>
         </details>
       </div>

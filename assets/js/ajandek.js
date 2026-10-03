@@ -235,7 +235,14 @@
       li.appendChild(h('span', { class: 'ah-bizalom-szoveg' }, h('b', { text: t.szoveg }), h('small', { text: t.alszoveg })));
       lista.appendChild(li);
     });
+    // az ar mindig a CTA kozeleben: a legolcsobb ajandekkartya ara
+    var arEl = $('ah-hero-ar');
+    if (arEl) {
+      var min = Math.min.apply(null, Object.keys(A.TERMEKEK).map(function (k) { return A.TERMEKEK[k].ar_ft; }));
+      arEl.textContent = A.arSzoveg(min) + '-tól';
+    }
     var kep = $('ah-hero-kep');
+    if (c.hero_media && c.hero_media.poz) kep.style.objectPosition = c.hero_media.poz;
     if (c.hero_media) {
       // mobilon a build a /assets/img/m/ valtozatra irja at a HTML-ben levo kepeket - a config kepeivel is ezt tesszuk
       var mobilKep = /\/assets\/img\/m\//.test(kep.getAttribute('src') || '');
@@ -250,6 +257,53 @@
       $('ah-ellenvetes-szoveg').textContent = c.objection_body || '';
       blokk.hidden = false;
     } else blokk.hidden = true;
+  }
+
+  // ---------------------------------------------------------------- Ilyen a Head Spa (video + elmeny) / Pontosan ezt kapja / vendegvideok sorrendje
+  function headspaRender() {
+    var v = A.HEADSPA_VIDEO, gomb = $('ah-headspa-video');
+    if (v && gomb) {
+      gomb.setAttribute('data-vendeg', v.src);
+      var kep = $('ah-headspa-kep');
+      if (kep && v.poster) kep.setAttribute('src', kepUt(v.poster));
+      $('ah-headspa-ido').textContent = v.ido || '';
+      gomb.setAttribute('aria-label', 'Ilyen a Head Spa: a kezelés videójának lejátszása' + (v.ido ? ' (' + v.ido + ')' : ''));
+    }
+    var lista = $('ah-benefitek');
+    if (!lista) return;
+    uresit(lista);
+    (A.BENEFITOK || []).forEach(function (b) {
+      lista.appendChild(h('li', null, h('span', { class: 'ah-benefit-ikon' }, ikonSpan(b.ikon)), h('div', null, h('strong', { text: b.cim }), h('span', { text: b.szoveg }))));
+    });
+  }
+  function pontosanRender() {
+    var racs = $('ah-pontosan-racs');
+    if (!racs) return;
+    uresit(racs);
+    S.variant.product_order.forEach(function (id) {
+      var t = termek(id);
+      if (!t) return;
+      var p = t.pontosan || {};
+      var dl = h('dl', { class: 'ah-pontosan-lista' });
+      [['Időtartam', p.ido], ['Hány főre szól', p.fo], ['Ki végzi', p.kezelo], ['Helyszín', A.SZALON.cim], ['Érvényesség', 'A vásárlástól ' + A.ERVENYESSEG_HONAP + ' hónapig']].forEach(function (sor) {
+        if (sor[1]) dl.appendChild(h('div', null, h('dt', { text: sor[0] }), h('dd', { text: sor[1] })));
+      });
+      var elemek = h('ul', { class: 'ah-lista' });
+      ((t.kezeles && t.kezeles.lepesek) || []).forEach(function (sor) { elemek.appendChild(h('li', null, ikonSpan('check'), h('span', { text: sor }))); });
+      racs.appendChild(h('article', { class: 'ah-kartya ah-pontosan-kartya', 'data-termek-pontosan': id },
+        h('h3', { text: t.nev }), dl, h('p', { class: 'ah-pontosan-cim', text: 'Fő elemek' }), elemek,
+        h('div', { class: 'ah-pontosan-alja' }, h('span', { class: 'ah-ar', text: A.arSzoveg(t.ar_ft) }),
+          h('button', { type: 'button', class: 'ah-gomb ah-gomb-fo', 'data-valaszt': id, text: 'Ajándékozom' }))));
+    });
+  }
+  // a persona szerinti sorrend: az elso testimonial-videok a variant szerint (a vendegvideok mind valodi vendegek)
+  function vendegRendez() {
+    var lista = document.querySelector('.ah-vendeg-lista');
+    if (!lista) return;
+    (S.variant.vendeg_sorrend || []).slice().reverse().forEach(function (vid) {
+      var li = lista.querySelector('[data-vid="' + vid + '"]');
+      if (li) lista.insertBefore(li, lista.firstChild);
+    });
   }
 
   // ---------------------------------------------------------------- SocialProof
@@ -382,6 +436,7 @@
       var g = ev.target.closest ? ev.target.closest('[data-vendeg]') : null;
       if (!g) return;
       v.setAttribute('src', g.getAttribute('data-vendeg'));
+      abl.classList.toggle('ah-szeles', g.hasAttribute('data-szeles'));
       abl.setAttribute('aria-label', (g.getAttribute('data-nev') || 'Vendég') + ' videója');
       if (abl.showModal) abl.showModal(); else abl.setAttribute('open', '');
       var p = v.play();
@@ -1446,6 +1501,9 @@
     proofRender();
     finderRender();
     termekekRender();
+    headspaRender();
+    pontosanRender();
+    vendegRendez();
     szemelyreInit();
     bekot();
     ment();

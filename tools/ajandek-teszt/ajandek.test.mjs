@@ -8,6 +8,7 @@ import crypto from 'node:crypto';
 import { mockStripeInditas } from './mock-stripe.mjs';
 import { ajandekKezel, kuponKod, kiallitToken, kartyaToken, rendelesToken, fotoToken, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
 import vm from 'node:vm';
+import fs from 'node:fs';
 import { MASOL_JS, NYOMTAT_JS, SALONIC_KITOLTO_JS } from '../../netlify/lib/ajandek-levelek.js';
 import { utvonal } from '../../netlify/lib/utvonal.js';
 import { config as edgeConfig } from '../../netlify/edge-functions/oldal.js';
@@ -106,6 +107,40 @@ describe('ajandek-adat: variantFeloldas', () => {
     assert.equal(ADAT.variantFeloldas('GENERAL'), g);
     assert.equal(ADAT.variantFeloldas('  General '), g);
     assert.equal(ADAT.variantFeloldas('general').variant_id, 'general');
+  });
+});
+
+describe('variansok (persona)', () => {
+  const VARIANSOK = Object.keys(ADAT.VARIANTOK);
+
+  test('minden variant teljes: azonos mezok, a termeksorrend az osszes termek, a bizonyito es a kepek leteznek, a feloldas visszaadja', () => {
+    assert.deepEqual(VARIANSOK.sort(), ['for_her', 'general', 'together_friend', 'together_mother', 'together_partner']);
+    const termekek = Object.keys(ADAT.TERMEKEK).sort();
+    for (const k of VARIANSOK) {
+      const v = ADAT.VARIANTOK[k];
+      assert.equal(v.variant_id, k);
+      assert.equal(ADAT.variantFeloldas(k), v);
+      for (const mezo of ['hero_title', 'hero_subtitle', 'hero_cta']) assert.ok(typeof v[mezo] === 'string' && v[mezo].length > 10, k + ' ' + mezo);
+      assert.deepEqual([...v.product_order].sort(), termekek, k + ' termeksorrend');
+      assert.ok(v.featured_proof in ADAT.PROOFOK, k + ' bizonyito');
+      assert.equal(v.hero_trust.length, 4, k + ' bizalmi sor');
+      assert.deepEqual([...v.vendeg_sorrend].sort(), ['dori', 'kinga', 'zita', 'zsoka'], k + ' vendeg-sorrend');
+      assert.ok(fs.existsSync(new URL('../../' + v.hero_media.src.replace(/^\//, ''), import.meta.url)), k + ' hero-kep');
+      // nem igazolt igeret sehol: nincs "azonnal", "perceken belul", "1 perc alatt", "meg ma"
+      assert.doesNotMatch(JSON.stringify(v), /azonnal|perceken belül|perc alatt|még ma/i, k);
+    }
+    // a persona szerinti terméksorrend: baratnovel / anyukaval / parral a Paros kerul elore, "neki" intentnel az Egyeni
+    assert.equal(ADAT.VARIANTOK.general.product_order[0], 'egyeni');
+    assert.equal(ADAT.VARIANTOK.for_her.product_order[0], 'egyeni');
+    for (const k of ['together_friend', 'together_mother', 'together_partner']) assert.equal(ADAT.VARIANTOK[k].product_order[0], 'paros', k);
+  });
+
+  test('a variant_id a rendeles metadata-jaba kerul (merhetoseg), az ismeretlen variant a GENERAL', async () => {
+    for (const [kuldott, vart] of [['together_friend', 'together_friend'], ['for_her', 'for_her'], ['nincs-ilyen', 'general'], ['', 'general'], ['__proto__', 'general']]) {
+      const r = await hiv('POST', 'fizetes', { body: rendelesTorzs({ attr: { variant_id: kuldott, oldal: '/ajandek' } }) });
+      assert.equal(r.status, 200, kuldott);
+      assert.equal(mock.allapot.pi(r.adat.pi).metadata.variant_id, vart, kuldott);
+    }
   });
 });
 
