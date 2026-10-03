@@ -918,10 +918,11 @@
       }).catch(function () { S.pi = null; S.rt = null; S.csakOlvas = false; S.utanAllapot = null; ment(); alap(); });
       return;
     }
-    // mar fizetett rendeles ugyanabban a sessionben: frissites utan is az utan-nezet - de csak rovid ideig, es egy
-    // uj hirdetesi kattintas (UTM / click-azonosito az URL-ben) tiszta lappal indul, hogy ujabb ajandekot lehessen venni
-    var friss = S.fizetveIdo && Date.now() - S.fizetveIdo < 2 * 3600 * 1000 && !ujAttr;
-    if (S.utanAllapot && !friss) { S.pi = null; S.cs = null; S.rt = null; S.csakOlvas = false; S.utanAllapot = null; S.fizetveIdo = 0; ment(); }
+    // mar fizetett rendeles ugyanabban a sessionben: frissites utan a szemelyre szabas lepese (siker/szemelyre) rovid
+    // ideig (30 perc) visszaall, hogy a vevo ne veszitse el; a vegleges nezet (Minden kesz) utan a frissites tiszta
+    // lappal indul (a rendeles a levelbeli linkkel elerheto). Uj hirdetesi kattintas (UTM / click-azonosito) is tiszta lap.
+    var friss = S.fizetveIdo && Date.now() - S.fizetveIdo < 30 * 60 * 1000 && !ujAttr && S.utanAllapot !== 'osszegzo';
+    if (S.utanAllapot && !friss) { S.pi = null; S.cs = null; S.rt = null; S.csakOlvas = false; S.fizetesInditva = null; S.utanAllapot = null; S.fizetveIdo = 0; S.termek = null; ment(); }
     if (S.pi && (S.cs || S.rt) && S.utanAllapot) {
       api(rendelesUt()).then(function (v) {
         if (v.status === 200 && v.adat.allapot === 'fizetve') {

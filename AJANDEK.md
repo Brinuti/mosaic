@@ -53,7 +53,10 @@ bongeszes → kivalasztva → fizetes → feldolgozas → siker → szemelyre �
 Asztali és mobil **ugyanazt** az állapotgépet és ugyanazt a komponensfát használja (csak a CSS
 különbözik). A böngésző Vissza gombja a checkoutból a „kiválasztva” állapotba visz. Stripe 3DS /
 átirányítás után az oldal a `payment_intent` paraméterekből visszaáll, és a **szerver** ellenőrzi
-a fizetést.
+a fizetést. Fizetés után a frissítés a személyre szabás lépését (`siker`/`szemelyre`) legfeljebb 30
+percig állítja vissza; a végleges nézet (`osszegzo`, „Minden kész.”) után a frissítés **tiszta
+lappal** indul (a rendelés a levélben lévő linkkel érhető el), és a „Újabb ajándékkártyát
+vásárolok” link bármikor új vásárlást indít.
 
 ### Variant config (a komponensfa nem változik, csak a tartalom)
 
