@@ -13,6 +13,7 @@ import {
 import { HEADSPA } from '../assets/js/booking-engine/flows/headspa.js';
 import { OXYGEN } from '../assets/js/booking-engine/flows/oxygen.js';
 import { HAIR } from '../assets/js/booking-engine/flows/hair.js';
+import { LASER, AREAS, areaOf, labelOf } from '../assets/js/booking-engine/flows/laser.js';
 import { classifyService } from '../assets/js/booking-engine/business-config.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -134,6 +135,72 @@ test('szakemberi kedvezmeny: a Salonic cimkejebol, az ar a kedvezmennyel; nincs 
   assert.equal(priceFor(balayage, 'Betti'), 42950);
   assert.equal(priceFor(balayage, null), 42950);
   assert.equal(priceFor({ activePrice: null }, 'Noel - 20% kedvezmény!'), null);
+});
+
+// --- Lezer ------------------------------------------------------------------------------------------------------------------------
+const laserServices = mapping.services.filter((s) => s.business === 'laser').map((s) => {
+  const svc = { serviceId: s.salonic_service_id, name: s.service_name_raw, specId: s.salonic_spec_id, category: s.service_category, activePrice: s.active_price, durationMin: s.duration_min, staffIds: s.eligible_staff.map((e) => e.staff_id) };
+  return { ...svc, bookingType: classifyService('laser', svc).bookingType };
+});
+
+test('Lezer: a wireframe routing tablaja (LA1-LA3), belepes LA1, nincs szakember-valaszto', () => {
+  assert.equal(next('LA1', 'consult'), 'C1', 'az ingyenes konzultacio egyenesen C1-re megy');
+  assert.equal(next('LA1', 'known'), 'LA2');
+  assert.equal(next('LA1', 'returning'), 'LA3');
+  assert.equal(next('LA2', 'area'), 'LA2B');
+  assert.equal(next('LA2', 'service'), 'C1');
+  assert.equal(next('LA3', 'area'), 'LA2B');
+  assert.equal(next('LA3', 'service'), 'C1');
+  assert.equal(next('LA2B', 'service'), 'C1');
+  assert.equal(entryState({ hasService: false, voucher: false, first: LASER.firstState, voucherState: LASER.voucherState, exact: LASER.exactState }), 'LA1');
+  assert.equal(entryState({ hasService: true, voucher: false, first: LASER.firstState, voucherState: LASER.voucherState, exact: LASER.exactState }), 'C1', 'konkret kezeles landing: kozvetlenul az idopontok');
+  assert.equal(LASER.showStaffFilter, false);
+});
+
+test('Lezer: mind a 46 kezeles pontosan egy teruletre kerul, mindket uton (elso es 2. alkalomtol)', () => {
+  assert.equal(laserServices.length, 47);
+  for (const type of ['first_treatment', 'returning_treatment']) {
+    const pool = laserServices.filter((s) => s.bookingType === type);
+    assert.equal(pool.length, 23);
+    const counts = Object.fromEntries(AREAS.map((a) => [a.key, pool.filter((s) => areaOf(s).key === a.key).length]));
+    assert.deepEqual(counts, { arc: 3, honalj: 1, kar: 3, intim: 2, lab: 3, torzs: 3, tobb: 8 }, type);
+  }
+  assert.deepEqual(laserServices.filter((s) => s.bookingType === 'consultation').map((s) => s.serviceId), ['476477']);
+});
+
+test('Lezer: a "Tobb terulet" az akcios csomagokat es az egyeb testreszeket tartalmazza; a konkret teruletek a nevukbol', () => {
+  const area = (id) => areaOf(laserServices.find((s) => s.serviceId === id)).key;
+  assert.equal(area('476485'), 'arc'); // ARC - Teljes arc
+  assert.equal(area('476488'), 'honalj'); // TEST - Teljes honalj
+  assert.equal(area('476489'), 'kar'); // TEST - Alkar
+  assert.equal(area('476492'), 'intim');
+  assert.equal(area('476494'), 'lab');
+  assert.equal(area('476498'), 'torzs'); // FERFI - Hat
+  assert.equal(area('476479'), 'tobb'); // BASIC csomag
+  assert.equal(area('476501'), 'tobb'); // EGYEB - Kis testresz
+  assert.equal(area('476503'), 'tobb'); // Egyedi csomag
+});
+
+test('Lezer: a Salonic neveibol tiszta cim es cimkek (elotag, allapotfelmeres, kedvezmeny)', () => {
+  const l = (id) => labelOf(laserServices.find((s) => s.serviceId === id));
+  assert.deepEqual(l('476485'), { title: 'Teljes arc', tags: ['állapotfelméréssel', '20% kedvezménnyel'] });
+  assert.deepEqual(l('476511'), { title: 'Bajuszvonal', tags: [] });
+  assert.deepEqual(l('476494'), { title: '2 Lábszár', tags: ['állapotfelméréssel', '20% kedvezménnyel'] });
+  assert.deepEqual(l('476500'), { title: 'Has', tags: ['állapotfelméréssel'] }, 'a Has soron nincs kedvezmeny');
+  assert.deepEqual(l('476479'), { title: 'BASIC CSOMAG', tags: ['állapotfelméréssel', '20% kedvezménnyel'] });
+  assert.deepEqual(l('476480'), { title: 'MEDIUM CSOMAG', tags: ['állapotfelméréssel', '20% kedvezménnyel'] });
+  assert.equal(l('476506').title, 'BASIC CSOMAG');
+  assert.deepEqual(l('476506').tags.map((t) => t.replace(/\s/g, ' ')), ['9 500 Ft kedvezménnyel']);
+  assert.deepEqual(l('476478'), { title: 'EGYEDI CSOMAG (TE RAKOD ÖSSZE!)', tags: ['állapotfelméréssel', '50% kedvezménnyel'] });
+  for (const s of laserServices) assert.ok(labelOf(s).title && !/^(ARC|TEST|INTIM|LÁBAK|FÉRFI|EGYÉB|AKCIÓ)\b/i.test(labelOf(s).title), `tiszta cim: ${s.serviceId}`);
+});
+
+test('Lezer: az egyedi csomag 0 Ft-ja "Egyedi ar", a konzultacio "Ingyenes"', () => {
+  assert.equal(priceLabel(0, LASER.zeroPriceLabel), 'Egyedi ár');
+  assert.equal(priceLabel(0), 'Ingyenes');
+  const custom = laserServices.filter((s) => /EGYEDI CSOMAG/.test(s.name));
+  assert.equal(custom.length, 2);
+  assert.ok(custom.every((s) => s.activePrice === 0 && s.bookingType !== 'consultation'));
 });
 
 test('Oxigen szandekek a Salonic aktualis szolgaltatasaibol: hajkamera, elso (ket valtozat -> OX2), visszajaro', () => {

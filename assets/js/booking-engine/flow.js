@@ -23,6 +23,12 @@ export const ROUTES = Object.freeze({
   HA2B: { service: 'HA3' },
   HA3: { any: 'C1', choose: 'HA3B' },
   HA3B: { staff: 'C1' },
+  // Lezer: LA1 (melyik ut illik rad) -> LA2 (terulet; "mar tudom") / LA3 (terulet; "mar jarok kezelesre") -> LA2B (kezeles) -> C1;
+  // az ingyenes konzultacio egyenesen C1-re megy; szakember nincs (egy kezelo)
+  LA1: { consult: 'C1', known: 'LA2', returning: 'LA3' },
+  LA2: { area: 'LA2B', service: 'C1' },
+  LA3: { area: 'LA2B', service: 'C1' },
+  LA2B: { service: 'C1' },
   C1: { slot: 'C3', more: 'C2', none: 'A1' },
   C2: { slot: 'C3', none: 'A1' },
   C3: { next: 'C4' },
@@ -178,8 +184,8 @@ const EMOJI = /[\p{Extended_Pictographic}‍️]/gu;
 /** A Salonic nevebol: emoji es a "KUPONKODDAL - " elotag nelkul (a kupon-allapotot kulon jelezzuk). */
 // A Salonic nevebol: emoji, "KUPONKODDAL - " elotag es a zarojeles akcios szoveg ("(9.900 Ft helyett most 0 Ft!)") nelkul: a listaar/akcio kulon latszik.
 export const displayName = (name) => String(name || '').replace(EMOJI, '').replace(/^\s*KUPONKÓDDAL\s*-\s*/i, '').replace(/\s*\(\s*[\d.\s]+Ft helyett most[^)]*\)/i, '').replace(/\s+/g, ' ').trim();
-/** "Ingyenes" a 0 Ft-os szolgaltatasra (pl. konzultacio), egyebkent a formazott ar. */
-export const priceLabel = (n) => (n === 0 ? 'Ingyenes' : formatPrice(n));
+/** A 0 Ft-os szolgaltatas felirata (alap: "Ingyenes", pl. konzultacio; az egyedi csomagnal "Egyedi ar"), egyebkent a formazott ar. */
+export const priceLabel = (n, zeroLabel = 'Ingyenes') => (n === 0 ? zeroLabel : formatPrice(n));
 // Ezres tagolas minden meretnel ("4 990 Ft", "29 900 Ft"): az Intl hu-HU a negyjegyu szamokat nem tagolja, ezert kezzel.
 export const formatPrice = (n) => (n === null || n === undefined ? '' : `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} Ft`);
 export const durationLabel = (min) => (min >= 60 ? `${Math.floor(min / 60)} óra${min % 60 ? ' ' + (min % 60) + ' perc' : ''}` : `${min} perc`);

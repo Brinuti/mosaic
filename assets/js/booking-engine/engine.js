@@ -15,12 +15,13 @@ import { createTracker } from './tracking.js';
 import { HEADSPA } from './flows/headspa.js';
 import { OXYGEN } from './flows/oxygen.js';
 import { HAIR } from './flows/hair.js';
+import { LASER } from './flows/laser.js';
 
-const FLOWS = { headspa: HEADSPA, oxygen: OXYGEN, hair: HAIR };
+const FLOWS = { headspa: HEADSPA, oxygen: OXYGEN, hair: HAIR, laser: LASER };
 const PHONE = '06 20 247 4444';
 const PHONE_HREF = 'tel:+36202474444';
 const STEPS = ['Szolgáltatás', 'Időpont', 'Összegzés', 'Adatok'];
-const STEP_OF = { HS1: 0, HS2: 0, HS3: 0, OX1: 0, OX2: 0, HA1: 0, HA2: 0, HA2B: 0, HA3: 0, HA3B: 0, C1: 1, C2: 1, A1: 1, A1_SENT: 1, A2: 1, C3: 2, C4: 3, C5: 3, A3: 3, A3U: 3, A3_CB: 3, A3_SENT: 3 };
+const STEP_OF = { HS1: 0, HS2: 0, HS3: 0, OX1: 0, OX2: 0, HA1: 0, HA2: 0, HA2B: 0, HA3: 0, HA3B: 0, LA1: 0, LA2: 0, LA2B: 0, LA3: 0, C1: 1, C2: 1, A1: 1, A1_SENT: 1, A2: 1, C3: 2, C4: 3, C5: 3, A3: 3, A3U: 3, A3_CB: 3, A3_SENT: 3 };
 const NO_STEPS = new Set(['C6']);
 const MIN_LEAD_MINUTES = 30; // a fel oran belul kezdodo idopontot nem kinaljuk (mint a PMU foglalo)
 const HOLD_MS = 4 * 60 * 1000 + 50 * 1000; // a Salonic 5 percig tartja fenn a megnyitott idopontot
@@ -76,12 +77,19 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   const title = (text) => h('h2', { class: 'be-title', tabindex: '-1', text });
 
   // --- megjelenites -------------------------------------------------------------------------------------------------------------
-  const priceText = (svc) => (svc.bookingType === 'voucher_redemption' ? flow.copy.voucherSettled : F.priceLabel(svc.activePrice));
-  const nameOf = (svc) => F.displayName(svc.name);
+  // 0 Ft: a konzultacio "Ingyenes", az egyedi csomag (a vegso arat a helyszinen allitjak) "Egyedi ar" (flow.zeroPriceLabel)
+  const zeroLabel = (svc) => (svc.bookingType === 'consultation' ? 'Ingyenes' : flow.zeroPriceLabel || 'Ingyenes');
+  const priceText = (svc) => (svc.bookingType === 'voucher_redemption' ? flow.copy.voucherSettled : F.priceLabel(svc.activePrice, zeroLabel(svc)));
+  // Lezer: a Salonic-nev elotag/akcios szoveg nelkul, a terulettel ("Kar - Alkar"); egyebkent a tiszta Salonic-nev
+  const nameOf = (svc) => {
+    if (!flow.labelOf) return F.displayName(svc.name);
+    const a = flow.areaOf(svc); const t = flow.labelOf(svc).title;
+    return a && a.key !== 'tobb' ? `${a.title} – ${t}` : t;
+  };
   const serviceFacts = (svc) => [svc.durationMin ? F.durationLabel(svc.durationMin) : null, priceText(svc) || null].filter(Boolean).join(' · ');
   // A kivalasztott szakember (a naptarban vagy a HA3-ban) cimkeje; a szakemberi kedvezmeny (pl. "Noel - 20% kedvezmeny!") az arban is latszik.
   const curStaffLabel = () => (S.slotStaff ? S.slotStaff.label : S.staff ? S.staffLabel : null);
-  const priceNow = () => (S.service.bookingType === 'voucher_redemption' ? flow.copy.voucherSettled : F.priceLabel(F.priceFor(S.service, curStaffLabel())));
+  const priceNow = () => (S.service.bookingType === 'voucher_redemption' ? flow.copy.voucherSettled : F.priceLabel(F.priceFor(S.service, curStaffLabel()), zeroLabel(S.service)));
   const staffNote = () => { const p = F.staffDiscountPercent(curStaffLabel()); return p ? `${p}% szakemberi kedvezménnyel` : ''; };
   const serviceBar = (back) => h('div', { class: 'be-svc' },
     h('span', { class: 'be-svc-text' }, h('b', { text: nameOf(S.service) }),
@@ -129,7 +137,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     return show(state);
   }
   const needs = { C3: () => S.slot && S.service, C4: () => S.slot && S.service, C1: () => S.service, C2: () => S.service && S.slots.length, OX2: () => S.candidates,
-    HA2: () => S.intent, HA2B: () => S.group, HA3: () => S.service, HA3B: () => S.service };
+    HA2: () => S.intent, HA2B: () => S.group, HA3: () => S.service, HA3B: () => S.service, LA2B: () => S.laserArea };
   win.addEventListener('popstate', (e) => {
     const view = e.state && e.state.view;
     S.depth = (e.state && e.state.depth) || 0;
@@ -242,6 +250,27 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       }))));
     },
 
+    // Lezer: konzultacio (egyenesen C1) / "Mar tudom" -> terulet -> kezeles / "Mar jarok" -> terulet -> kezeles (2. alkalomtol arak)
+    LA1: async () => {
+      await ensureServices();
+      const consult = S.services.find((s) => s.bookingType === 'consultation');
+      const has = { consult: !!consult, known: S.services.some((s) => s.bookingType === 'first_treatment'), returning: S.services.some((s) => s.bookingType === 'returning_treatment') };
+      const opts = flow.copy.intro.filter((o) => has[o.key]);
+      if (!opts.length) return loadError();
+      return h('section', {}, title(flow.copy.introTitle), h('div', { class: 'be-list' }, opts.map((o) => bigButton(o.title, o.sub, () => {
+        track('booking_intent_selected', { step: 'LA1', reason: o.key });
+        if (o.key === 'consult') return chooseService(consult, { next: F.next('LA1', 'consult') });
+        return go(F.next('LA1', o.key));
+      }))));
+    },
+    LA2: () => laserAreas('LA2', 'first_treatment', flow.copy.areaTitle),
+    LA3: () => laserAreas('LA3', 'returning_treatment', flow.copy.returningTitle),
+    LA2B: async () => h('section', {}, title(flow.copy.treatmentTitle), note(S.laserArea.area.title),
+      h('div', { class: 'be-list' }, S.laserArea.services.map((svc) => {
+        const l = flow.labelOf(svc);
+        return bigButton(l.title, [serviceFacts(svc), l.tags.join(', ')].filter(Boolean).join(' · '), () => chooseService(svc, { next: F.next('LA2B', 'service') }));
+      }))),
+
     C1: async () => {
       if (!S.slots.length) await loadSlots();
       if (!S.slots.length) { track('booking_no_slots', { ...serviceParams(S.service), step: 'C1' }); S.callbackReason = 'nincs_idopont'; go('A1', { replace: true }); return null; }
@@ -327,7 +356,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       const c = S.confirmation;
       const rep = c ? c.reported : {};
       const voucher = S.service.bookingType === 'voucher_redemption';
-      const price = voucher ? flow.copy.voucherSettled : F.priceLabel(rep.price ?? F.priceFor(S.service, curStaffLabel()));
+      const price = voucher ? flow.copy.voucherSettled : F.priceLabel(rep.price ?? F.priceFor(S.service, curStaffLabel()), zeroLabel(S.service));
       return h('section', { class: 'be-center be-success' }, h('div', { class: 'be-tick', 'aria-hidden': 'true', text: '✓' }), title('Foglalásod sikeres!'),
         h('div', { class: 'be-card be-left' }, h('b', { class: 'be-card-title', text: nameOf(S.service) }),
           summaryRows([['Időtartam', S.service.durationMin ? F.durationLabel(S.service.durationMin) : ''], ['Ár', price],
@@ -360,6 +389,21 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       h('div', { class: 'be-actions' }, h('a', { class: 'be-btn', href: PHONE_HREF, text: `Hívás: ${PHONE}` }), secondary('Új időpontot foglalok', () => { S.slot = null; go('C1'); }))),
     A3_SENT: async () => sentView(),
   };
+  // Lezer terulet-valaszto (LA2: elso kezeles, LA3: visszajaro): csak azok a teruletek, ahol van szolgaltatas az adott tipusbol
+  function laserAreas(state, type, heading) {
+    return ensureServices().then(() => {
+      const pool = S.services.filter((s) => s.bookingType === type);
+      const areas = flow.areas.map((area) => ({ area, services: pool.filter((s) => flow.areaOf(s).key === area.key) })).filter((o) => o.services.length);
+      if (!areas.length) return loadError();
+      return h('section', {}, title(heading), h('div', { class: 'be-list' }, areas.map((o) => bigButton(o.area.title, null, () => {
+        S.laserArea = o;
+        track('booking_filter_used', { filter: 'area' });
+        if (o.services.length === 1) return chooseService(o.services[0], { next: F.next(state, 'service') }); // egy szolgaltatas: nincs mit pontositani
+        return go(F.next(state, 'area'));
+      }))));
+    });
+  }
+
   function cardsView(state, voucher) {
     return ensureServices().then(() => {
       const cards = F.cardsFor(S.services, flow.cards, { voucher });
@@ -468,6 +512,12 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
           const intent = flow.intents.find((i) => i.key === ctx.category && !i.consult);
           const services = intent ? F.intentServices(S.services, flow.intents, intent) : [];
           if (services.length) { S.intent = { intent, services }; track('booking_intent_selected', { step: 'landing', reason: intent.key }); first = 'HA2'; }
+        } else if (ctx.category && flow.areas) {
+          // Lezer kategoria-landing (?category=<terulet kulcsa>, pl. arc): csak a terulet ismert -> a kezeles-pontositasra (LA2B)
+          const area = flow.areas.find((a) => a.key === ctx.category);
+          const services = area ? S.services.filter((s) => s.bookingType === 'first_treatment' && flow.areaOf(s).key === area.key) : [];
+          if (services.length === 1) { S.service = services[0]; S.exact = true; first = 'C1'; track('booking_service_selected', serviceParams(S.service)); }
+          else if (services.length) { S.laserArea = { area, services }; track('booking_intent_selected', { step: 'landing', reason: area.key }); first = 'LA2B'; }
         }
       } catch (e) { console.error(e); }
     }

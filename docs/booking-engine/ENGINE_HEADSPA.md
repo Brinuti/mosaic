@@ -1,6 +1,6 @@
-# Booking Engine V1 – HeadSpa és Oxigén foglaló (rejtett próbaoldal)
+# Booking Engine V1 – HeadSpa, Oxigén, Fodrászat és Lézer foglaló (rejtett próbaoldal)
 
-Oldal: `/foglalo-motor?business=headspa`, `?business=oxygen` vagy `?business=hair` (`noindex`, nincs rá link, nem része az éles oldalnak, amíg külön nem döntünk).
+Oldal: `/foglalo-motor?business=headspa`, `?business=oxygen`, `?business=hair` vagy `?business=laser` (`noindex`, nincs rá link, nem része az éles oldalnak, amíg külön nem döntünk).
 Kód: `assets/js/booking-engine/` (`engine.js` felület, `flow.js` logika, `flows/headspa.js` HeadSpa-beállítás, `tracking.js`, `salonic-adapter.js`, `business-config.js`), `assets/css/booking-engine.css`, `foglalas/foglalo-motor.html`.
 Döntések: [DECISIONS.md](DECISIONS.md). Adapter: [SALONIC_ADAPTER_CONTRACT.md](SALONIC_ADAPTER_CONTRACT.md).
 
@@ -27,6 +27,10 @@ Döntések: [DECISIONS.md](DECISIONS.md). Adapter: [SALONIC_ADAPTER_CONTRACT.md]
 `HA1` (Mit szeretnél?) → `HA2` (kezelés) → `HA2B` (hajhossz) → `HA3` (Van választott fodrászod?) → `HA3B` (fodrász) → `C1`. A 41 Salonic-szolgáltatás 5 szándékba rendezve (lásd DECISIONS.md 17–19.), a Balayage / szőkítés alatt 14 szolgáltatás helyett 4 kezelés látszik. Az ingyenes konzultáció egyenesen az időpontokra visz. A szakember nem kötelező: alapból „nincs”, ha a szolgáltatáshoz csak egy fodrász tartozik, a kérdés ki is marad. Noel „20% kedvezmény” feliratos, nála az ár a kedvezménnyel jelenik meg, és ezt az ellenőrzés is elfogadja.
 
 Belépések: `?business=hair` (generic → HA1), `&service=<azonosító vagy kulcsszó>` (konkrét szolgáltatás → HA3; konzultáció → C1), `&category=<balayage|color|cut|other>` (kategória-landing → HA2).
+
+## Lézer (`business=laser`)
+
+`LA1` (Melyik út illik rád?) → ingyenes konzultáció: egyenesen `C1` · „Már tudom, mit szeretnék” → `LA2` (terület) → `LA2B` (kezelés) → `C1` · „Már járok kezelésre” → `LA3` (terület) → `LA2B` (kezelés, 2. alkalomtól árakkal) → `C1`. Egy kezelő van, ezért nincs szakember-választó. A 47 szolgáltatás 7 területbe rendezve (DECISIONS.md 20–22.). Az egyedi csomag ára „Egyedi ár”. Belépések: `?business=laser`, `&service=<azonosító vagy kulcsszó>` (konkrét kezelés vagy konzultáció → `C1`), `&category=<arc|honalj|kar|intim|lab|torzs|tobb>` (terület-landing → `LA2B`).
 
 ## Közös Salonic-CSS (minden üzletág egyformán)
 
