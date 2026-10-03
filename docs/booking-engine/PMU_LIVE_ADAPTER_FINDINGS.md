@@ -58,8 +58,8 @@ Forrás: az éles oldal (https://www.mosaicheadspa.hu) és a repó `main` ága (
 ## 4. Nyitott döntések / DATA_REQUEST
 
 1. **Foglalás-létrehozás és -ellenőrzés:** a nyilvános dokumentáció nem említ foglalás-API-t (lásd 6. pont). Ha a Salonic ügyfélszolgálata sem ad (kulcs, webhook, `booking_id` az átirányításban), a `booking_completed` az átirányítás alapján mondható sikernek, szerver-oldali ellenőrzés nélkül. A 6. pont végén kérdéslista van az ügyfélszolgálatnak.
-2. **`booking_type`, `success_route`, `is_acquisition_conversion`** minden szolgáltatásra: ezek nem olvashatók a Salonicból, jóváhagyott üzleti szabály kell hozzájuk. A JSON-ban `null`.
-3. **Hiányzó szolgáltatások a Salonicban:** HeadSpa VIP (100 perc), Oxigén hajkamerás vizsgálat (4 990 Ft), PMU eltávolítás. Vagy nem foglalhatók online, vagy másik helyen vannak.
+2. ~~`booking_type`, `is_acquisition_conversion`~~ **Eldöntve** (2026-10-03): lásd [DECISIONS.md](DECISIONS.md) és `assets/js/booking-engine/business-config.js`. A `success_route` még nyitott.
+3. ~~Hiányzó szolgáltatások~~ **Eldöntve:** nincs VIP; a PMU eltávolítás csak fotó alapján megy (nem Salonic-foglalás). **Nyitott:** az Oxigén hajkamerás vizsgálat (4 990 Ft): a tulajdonos szerint fel van véve, a readback nem találja. Kell a pontos Salonic-név vagy a közvetlen foglalási link.
 4. **Siker-felismerés szűkítése** a PMU motorban (csak `/pmu-ok`): ez PMU-logikát nem érint, de változtatás, ezért jóváhagyás kell.
 5. **UTM/click-azonosítók:** a GTM-konténer ellenőrzése, hogy a jelenlegi mérés ténylegesen átviszi-e őket a `/pmu-ok` oldalig.
 

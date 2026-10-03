@@ -41,8 +41,8 @@
       "place_phone": "+36-20-247-4444",
       "readback_status": "PARTIAL_READBACK",
       "open_items": [
-        "VIP (100 perc) szolgaltatas nem szerepel a 39592/41471 kategoriakban - az audit szerint publikusan latszik: DATA_REQUEST",
-        "booking_type, success_route, is_acquisition_conversion nem olvashato a Salonicbol: uzleti dontes kell"
+        "DONTES (2026-10-03): nincs VIP (100 perces) szolgaltatas; a motorban nem szerepel. A weboldalrol valo kivetel kulon takaritas.",
+        "booking_type / is_acquisition_conversion: jovahagyva, lasd DECISIONS.md es business-config.js. success_route: nyitott."
       ]
     },
     "hair": {
@@ -130,7 +130,7 @@
       "readback_status": "PARTIAL_READBACK",
       "open_items": [
         "az ar munkatarsfuggo: Noel (25095) cimkeje \"20% kedvezmeny!\", a data-price a nem kedvezmenyes ar (34 360 = 0,8 x 42 950) - munkatarsankenti vegso ar nincs kiolvasva",
-        "booking_type, success_route, is_acquisition_conversion: uzleti dontes kell"
+        "booking_type / is_acquisition_conversion: jovahagyva, lasd DECISIONS.md. success_route: nyitott."
       ]
     },
     "oxygen": {
@@ -169,8 +169,8 @@
       "place_phone": "+36-20-247-4444",
       "readback_status": "PARTIAL_READBACK",
       "open_items": [
-        "a landing \"Konzultacio + Hajkamera vizsgalat 4 990 Ft\" ajanlatahoz NINCS Salonic szolgaltatas (csak 3 db: 466110, 468638, 466158): DATA_REQUEST",
-        "booking_type, success_route, is_acquisition_conversion: uzleti dontes kell"
+        "NYITOTT: a \"Konzultacio + hajkamera vizsgalat 4 990 Ft\" a tulajdonos szerint fel van veve es foglalhato, de a readback nem talalja (Oxigen fiok: 3, Hair fiok: 41 szolgaltatas, egyik sem 4 990 Ft). Kell a pontos Salonic-nev vagy a kozvetlen foglalasi link.",
+        "booking_type / is_acquisition_conversion: jovahagyva, lasd DECISIONS.md (a hajkamera-vizsgalat konzultacio lesz, ha megjelenik). success_route: nyitott."
       ]
     },
     "laser": {
@@ -207,7 +207,8 @@
         "technikai fiok: mosaic-elysion, placeId 14586, API placeName \"Mosaic Elysion\", egyetlen munkatars 32417 (\"Elysion Pro Szortelenites\")",
         "a nyilvanos keresoben latott \"- Mosaic Hair\" cimke nem reprodukalhato a technikai vegpontokon",
         "3 szolgaltatas ara 0 (konzultacio 476477, ket egyedi csomag 476478/476503): az ar nem olvashato",
-        "a data-price mar az akcios ar (pl. BASIC 36 400); listaar nem olvashato"
+        "a data-price mar az akcios ar (pl. BASIC 36 400); listaar nem olvashato",
+        "booking_type / is_acquisition_conversion: jovahagyva, lasd DECISIONS.md. success_route: nyitott."
       ]
     },
     "pmu": {
@@ -229,9 +230,9 @@
       "place_phone": "06202474444",
       "readback_status": "PARTIAL_READBACK",
       "open_items": [
-        "eltavolitas szolgaltatas NEM szerepel a 32428 munkatars oldalan: DATA_REQUEST",
+        "DONTES (2026-10-03): az eltavolitas csak foto alapjan megy, nincs Salonic-foglalas; removal es photo_review_lead nem foglalas.",
         "konzultacio (471160) es korrekcio (471157) ara ures; a foglalo a korrekciot szandekosan elrejti (NEM_FOGLALHATO)",
-        "booking_type, is_acquisition_conversion: uzleti dontes kell; success_route a kod szerint /pmu-ok (minden fizetos es ingyenes foglalas), /pmu-vh (telefonos visszahivas, nem Salonic)"
+        "booking_type / is_acquisition_conversion: jovahagyva, lasd DECISIONS.md. success_route a kod szerint /pmu-ok (minden Salonic-foglalas), /pmu-vh (telefonos visszahivas, nem Salonic)."
       ]
     }
   },
@@ -3699,7 +3700,7 @@
   "fetched_at_patch": "2026-10-03T15:13:38.153Z",
   "gate": {
     "status": "NOT_READY_FOR_PRODUCTION_CREATE",
-    "reason": "booking_type / success_route / is_acquisition_conversion uzletagankent nincs jovahagyva; createBooking/getBooking/updateBooking nem implementalhato a nyilvanos Salonic feluleten (lasd PMU_LIVE_ADAPTER_FINDINGS.md)"
+    "reason": "createBooking/getBooking/updateBooking nem implementalhato a nyilvanos Salonic feluleten (lasd PMU_LIVE_ADAPTER_FINDINGS.md); nyitott: success_route, az Oxigen hajkamera-vizsgalat Salonic-azonositoja"
   },
   "note": "Minden adat a Salonic nyilvanos oldalairol es az api.salonic.hu naptar-API-bol, csak olvasassal. Foglalas nem jott letre. ID-t, arat, munkatarsat nem talaltam ki: ami nem olvashato, null + open_items."
 }
