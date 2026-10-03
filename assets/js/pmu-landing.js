@@ -183,26 +183,29 @@
     $('foglalo-keret').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
-  // --- tovabbi eredmenyek (az arak utan): a kepek csak kattintasra nyilnak le; Szemoldok / Ajak szuro --
+  // --- eredmenyek: Szemoldok / Ajak szuro, eloszor 12 kep ----------------------------------------
   const refRacs = $('esetek');
+  const ELSO = 16;
   let szuro = 'osszes';
-  function rajzolRef() {
-    for (const k of refRacs.querySelectorAll('.ref')) k.hidden = !(szuro === 'osszes' || k.dataset.kategoria === szuro);
+  function rajzolRef(mind) {
+    let n = 0;
+    for (const k of refRacs.querySelectorAll('.ref')) {
+      const ok = szuro === 'osszes' || k.dataset.kategoria === szuro;
+      k.hidden = !ok;
+      if (ok) k.classList.toggle('tobb', ++n > ELSO);
+    }
+    refRacs.classList.toggle('zart', !mind && n > ELSO);
+    $('ref-tobb').hidden = mind || n <= ELSO;
   }
   function valasztSzuro(nev) {
     szuro = nev;
     for (const x of document.querySelectorAll('.szuro button')) x.setAttribute('aria-selected', String(x.dataset.szuro === nev));
-    rajzolRef();
-  }
-  function galeriaNyit() {
-    $('galeria-tartalom').hidden = false;
-    $('ref-tobb').hidden = true;
+    rajzolRef(false);
   }
   for (const b of document.querySelectorAll('.szuro button')) b.addEventListener('click', () => valasztSzuro(b.dataset.szuro));
-  for (const a of document.querySelectorAll('[data-szuro-ugras]')) a.addEventListener('click', () => { galeriaNyit(); valasztSzuro(a.dataset.szuroUgras); });
-  $('ref-tobb').addEventListener('click', () => { galeriaNyit(); meres({ event: 'pmu_landing_cta', cta: 'tovabbi-eredmenyek' }); });
-  $('tovabbi-ugras').addEventListener('click', galeriaNyit);
-  rajzolRef();
+  for (const a of document.querySelectorAll('[data-szuro-ugras]')) a.addEventListener('click', () => valasztSzuro(a.dataset.szuroUgras));
+  $('ref-tobb').addEventListener('click', () => rajzolRef(true));
+  rajzolRef(false);
 
   // --- referenciak: kattintasra nagyban (lapozhato, Esc / hatterre kattintas bezarja) -------------------
   const nagyito = elem('dialog', { class: 'nagyito', 'aria-label': 'Nagyított kép' });

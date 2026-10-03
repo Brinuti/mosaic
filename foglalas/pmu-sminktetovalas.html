@@ -67,8 +67,8 @@
       <figure class="hero-kep">
         <img class="hero-foto" src="/assets/img/pmu/gyogyult-szoke.jpg" alt="Gyógyult, természetes szemöldöktetoválás" width="1000" height="1500" fetchpriority="high">
         <figcaption class="hero-betet" aria-label="Előtte és utána">
-          <span class="betet-kep" style="--pos:0 0"><span class="cimke">Előtte</span></span>
-          <span class="betet-kep" style="--pos:0 100%"><span class="cimke">Gyógyult eredmény</span></span>
+          <span class="betet-kep" style="--pos:0 0"></span>
+          <span class="betet-kep" style="--pos:0 100%"></span>
         </figcaption>
       </figure>
     </div>
@@ -132,26 +132,38 @@
 <section class="eredmenyek" id="eredmenyek" aria-labelledby="eredmeny-cim">
   <div class="tartalom">
     <h2 id="eredmeny-cim" class="kozepre">Az eredményt nézd, ne az ígéretet.</h2>
-    <p class="halk kozepre">Valódi vendégek, valódi eredmények – a saját munkáim. Nézd meg a hozzád leginkább hasonló esetet.</p>
+    <p class="halk kozepre">Valódi vendégek, valódi eredmények: természetes, gyógyult sminktetoválások – a saját munkáim. Kattints egy képre a nagyításhoz.</p>
     <p class="nem-ai"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><span><b>Nem AI-generált képek.</b> Minden fotó eredeti, valódi vendégről készült, és mind a saját munkám.</span><a class="insta" href="https://www.instagram.com/trkm_pmu/" target="_blank" rel="noopener" data-cta="eredmenyek-instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>További munkáim az Instagramon <span class="nyil">→</span></a></p>
-    <!-- 6 kiemelt eset problematipus szerint; ahol van elotte/utana kep, ott a kepen jelolve.
-         [A gyogyult allapot hete esetenkent Melitta adata alapjan kerul ki - ne talalj ki erteket.] -->
-    <div class="eset-racs">
-      <figure class="eset" data-irany="lr"><div class="eset-kep"><img src="/assets/img/pmu/szemoldok-05.jpg" alt="Ritka, hiányos szemöldök – Melitta munkája" loading="lazy" width="1000" height="1000"><span class="eset-cimke elotte">Előtte</span><span class="eset-cimke utana">Utána</span></div>
-        <figcaption><span class="eset-tipus">Szemöldök</span><b>Ritka, hiányos szemöldök</b><span>Teltebb, rendezett forma – az arcához illő ívvel.</span></figcaption></figure>
-      <figure class="eset" data-irany=""><div class="eset-kep"><img src="/assets/img/pmu/szemoldok-11.jpg" alt="Érettebb bőr – Melitta munkája" loading="lazy" width="1000" height="1000"></div>
-        <figcaption><span class="eset-tipus">Szemöldök</span><b>Érettebb bőr</b><span>Lágy, púderes árnyalás, ami nem keményíti meg az arcot.</span></figcaption></figure>
-      <figure class="eset" data-irany=""><div class="eset-kep"><img src="/assets/img/pmu/szemoldok-02.jpg" alt="Természetes, mindennapi hatás – Melitta munkája" loading="lazy" width="1000" height="1000"></div>
-        <figcaption><span class="eset-tipus">Szemöldök</span><b>Természetes, mindennapi hatás</b><span>Smink nélkül is rendezett, mégsem feltűnő.</span></figcaption></figure>
-      <figure class="eset" data-irany="tb"><div class="eset-kep"><img src="/assets/img/pmu/ajak-07.jpg" alt="Halvány, elmosódó ajakkontúr – Melitta munkája" loading="lazy" width="1000" height="1000"><span class="eset-cimke elotte">Előtte</span><span class="eset-cimke utana">Utána</span></div>
-        <figcaption><span class="eset-tipus">Ajak</span><b>Halvány, elmosódó ajakkontúr</b><span>Élénkebb szín és tisztább kontúr, túlrajzolás nélkül.</span></figcaption></figure>
-      <figure class="eset" data-irany="bt"><div class="eset-kep"><img src="/assets/img/pmu/ajak-04.jpg" alt="Egyenetlen ajakszín – Melitta munkája" loading="lazy" width="1000" height="1000"><span class="eset-cimke elotte">Előtte</span><span class="eset-cimke utana">Utána</span></div>
-        <figcaption><span class="eset-tipus">Ajak</span><b>Egyenetlen ajakszín</b><span>Egyenletes, természetes árnyalat.</span></figcaption></figure>
-      <figure class="eset" data-irany=""><div class="eset-kep"><img src="/assets/img/c2eb0f_89cc6bf1793c48f193ce38d64d87e940.jpg" alt="Szemhéj – Melitta munkája" loading="lazy" width="1000" height="1000"></div>
-        <figcaption><span class="eset-tipus">Szemhéj</span><b>Szemhéj</b><span>Diszkrét, füstös hatás, ami kiemeli a szemet.</span></figcaption></figure>
+    <div class="szuro" role="tablist" aria-label="Eredmények szűrése">
+      <button type="button" role="tab" aria-selected="true" data-szuro="osszes">Összes</button>
+      <button type="button" role="tab" aria-selected="false" data-szuro="szemoldok">Szemöldök</button>
+      <button type="button" role="tab" aria-selected="false" data-szuro="ajak">Ajak</button>
     </div>
-    <div class="kozepre"><a class="gomb gomb-korvonal" href="#tovabbi" id="tovabbi-ugras">További eredmények <span class="nyil">↓</span></a></div>
-
+    <!-- Melitta munkai (Drive: Sminktetovalas kepek / referenciak), minden kep 1:1. -->
+    <div class="ref-racs" id="esetek">
+    <!-- sorrend: kozeli szemoldok -> arcos szemoldok -> ajak (elobb a kesz, aztan az elotte/utana) -->
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-01.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-03.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-06.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-09.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-12.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-02.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-04.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-07.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-08.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-10.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-11.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-05.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-02.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-03.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-05.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-06.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-08.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-01.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-04.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-07.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
+    </div>
+    <div class="kozepre"><button type="button" class="gomb gomb-korvonal" id="ref-tobb">További eredmények <span class="nyil">↓</span></button></div>
   </div>
 </section>
 
@@ -209,41 +221,6 @@
       <p class="eloleg-szoveg">Időpontfoglaláskor nem kérek előleget.<br> A kezelés díját a helyszínen, a szolgáltatás után fizeted.</p>
       <svg class="level" viewBox="0 0 120 60" aria-hidden="true"><path d="M8 52C40 46 78 30 112 6M40 44c-8-10-4-22 6-26 2 12-1 20-6 26zM66 32c-4-12 2-22 13-23-1 12-5 19-13 23zM88 18c2-10 10-15 20-14-4 9-11 13-20 14z"/></svg>
     </div>
-  </div>
-</section>
-
-<!-- ============ 2a. TOVABBI EREDMENYEK (az arak utan, kattintasra nyilik) ============ -->
-<section class="galeria" id="tovabbi" aria-labelledby="tovabbi-cim">
-  <div class="tartalom">
-    <h2 id="tovabbi-cim" class="kozepre">További eredmények</h2>
-    <p class="halk kozepre">Még több munkám – szemöldök és ajak. Kattints egy képre a nagyításhoz.</p>
-    <div class="kozepre"><button type="button" class="gomb gomb-korvonal" id="ref-tobb">Mutasd a többi képet <span class="nyil">↓</span></button></div>
-    <div id="galeria-tartalom" hidden>
-    <div class="szuro" role="tablist" aria-label="Eredmények szűrése">
-      <button type="button" role="tab" aria-selected="true" data-szuro="osszes">Összes</button>
-      <button type="button" role="tab" aria-selected="false" data-szuro="szemoldok">Szemöldök</button>
-      <button type="button" role="tab" aria-selected="false" data-szuro="ajak">Ajak</button>
-    </div>
-    <!-- Melitta munkai (Drive: Sminktetovalas kepek / referenciak), minden kep 1:1. -->
-    <div class="ref-racs" id="esetek">
-    <!-- sorrend: kozeli szemoldok -> arcos szemoldok -> ajak (elobb a kesz, aztan az elotte/utana) -->
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-01.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-03.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-06.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-09.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-12.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-04.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-07.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-08.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="szemoldok"><img src="/assets/img/pmu/szemoldok-10.jpg" alt="Szemöldöktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-02.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-03.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-05.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-06.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-08.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-      <figure class="ref" data-kategoria="ajak"><img src="/assets/img/pmu/ajak-01.jpg" alt="Ajaktetoválás – Melitta munkája" loading="lazy" width="1000" height="1000"></figure>
-    </div>
-        </div>
   </div>
 </section>
 
@@ -475,6 +452,11 @@
     <div class="terkep" id="terkep">
       <a class="terkep-kep" href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener">
         <span class="terkep-gomb">Útvonaltervezés <span class="nyil">→</span></span>
+      </a>
+      <!-- a MOSAIC Google-ertekelese (ugyanaz az adat, mint a foglalo nyitooldalan) -->
+      <a class="terkep-ertekeles" href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener" data-cta="helyszin-google">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg>
+        <span><b>MOSAIC Head Spa</b><span class="te-sor"><b>5,0</b> <span class="csillagok" aria-label="5 csillag">★★★★★</span></span><small>1.145 Google-vélemény</small></span>
       </a>
     </div>
     <div class="hely-kepek">
