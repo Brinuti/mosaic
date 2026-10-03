@@ -222,6 +222,7 @@ export function parseContext(search, referrer = '', origin = '') {
     serviceKey: q.get('service') || null,
     category: q.get('category') || null, // kategoria-landing: a szandek kulcsa (pl. balayage) -> kozvetlenul a kezeles-valasztasra
     voucher: q.get('voucher') === '1' || q.get('intent') === 'voucher',
+    intent: q.get('intent') || null, // lezer: first | returning (a regi "Elso idopontok" / "Kezeles idopontok" gombok) -> egyenesen a terulet-valasztasra
     sourcePage,
     attribution,
     sample: q.get('minta') || null,

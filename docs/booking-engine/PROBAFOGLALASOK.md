@@ -5,7 +5,7 @@ Négy valódi próbafoglalás a **rejtett `/foglalo-motor` oldalról**, az éles
 - Beírt név: vezetéknév „TESZT –”, keresztnév „Claude”. E-mail: `deakfi@grantis.hu` (a Gmail-összekötő ezt a fiókot éri el, ezért ezt a címet választotta a tulajdonos). Telefon: +36 70 942 0090.
 - A Salonic-feltételt (adatvédelmi tájékoztató és foglalási szabályzat) bepipáltuk, a hírlevelet **nem**. Süti-sáv: a saját oldalunkon „Elfogadom”.
 - reCAPTCHA-kihívás **egyiknél sem** jött.
-- A próbák után a **szalon lemondja** a foglalásokat; a vendégkartonokat **nem** töröljük.
+- **Lemondás:** a tulajdonos jóváhagyásával 2026-10-03 20:05 körül mind a négy foglalást lemondtuk a visszaigazoló e-mail „Lemondom” linkjével (lemondás oka: „Próbafoglalás (TESZT), lemondva”); a Salonic mindegyiknél kiírta: „Az időpont lemondása sikeres volt!”. A vendégkartonokat **nem** töröltük.
 
 ## Lista
 
@@ -33,7 +33,7 @@ A Google-címkék a böngészőben három csatornán (`pagead/conversion`, `ccm/
 
 ## Eltérések és megfigyelések
 
-1. **A vendégnév nem mindenhol „TESZT – Claude”.** A Salonic a foglalást a meglévő vendégkartonhoz köti, ha az e-mail vagy a telefonszám egyezik: a HeadSpa-fiókban „Deák Ferenc István”, a lézeres Elysion-fiókban „teszt teszt” karton volt. Oxigénnél és Fodrászatnál új, „TESZT – Claude” nevű vendég jött létre. A szalonnak a lemondáskor a négy időpontot a fenti lista alapján kell megkeresnie, nem a név alapján.
+1. **A vendégnév nem mindenhol „TESZT – Claude”.** A Salonic a foglalást a meglévő vendégkartonhoz köti, ha az e-mail vagy a telefonszám egyezik: a HeadSpa-fiókban „Deák Ferenc István”, a lézeres Elysion-fiókban „teszt teszt” karton volt. Oxigénnél és Fodrászatnál új, „TESZT – Claude” nevű vendég jött létre. A foglalások lemondva, de a Salonic-adminban a négy időpontot az időpont alapján lehet megtalálni (lásd a listát), nem a név alapján.
 2. **TikTok:** az esemény neve a pixel kérésének törzsében utazik, ezért kívülről nem látszik. Mért tény: a pixel egyszer töltött be, és egyetlen esemény-köteg (`/api/v2/pixel/act`) ment el. A pontos eseménynév a TikTok Events Managerben ellenőrizhető.
 3. **Fodrászat, Google-érték:** a 0 Ft-os konzultáció 13 000 HUF értékkel megy a Google Adsbe. Ez a mostani (meglévő) mérés beállítása, nem a foglalóé; érdemes átnézni, szándékos-e.
 4. **Kósza konverzió a mérésben:** a deploy utáni ellenőrzés során a `/success-foglalas` köszönőoldalt paraméterek nélkül töltöttem be. Kiderült, hogy ez az oldal süti-hozzájárulás nélkül is elsüti a Meta- és a stape-eseményeket (`CompleteRegistration`, `Schedule`, `ads_conversion_*`, `foglalas_ajikartya_ga4`, Google-hozzájárulás „denied” módban). Ez a mostani éles működés, nem a változtatásunk, de az én betöltésem egy paraméter nélküli, kósza konverziót küldött.
@@ -41,5 +41,5 @@ A Google-címkék a böngészőben három csatornán (`pagead/conversion`, `ccm/
 
 ## Teendők a próbák után
 
-- A szalon lemondja a négy próbaidőpontot (lista fent), a vendégkartonokat nem törli.
+- A négy próbaidőpont lemondva (lásd fent); a szalon, ha tisztán akarja tartani, a Salonic-adminban a lemondott „Deák Ferenc István” (HeadSpa), „TESZT – Claude” (Oxigén, Fodrászat) és „teszt teszt” (Elysion) bejegyzéseket megtalálja; a vendégkartonok maradtak.
 - A tulajdonos kérése a próbaszámról: „ez az enyém, de élesítésnél, ha mindent teszteltünk, élesben is javítsuk ki a 4444-re”. Élesítéskor ezt egyeztetni kell (pontosítandó, hol kell a 06 70 942 0090 helyére a 4444-es szám: a Salonic-vendégkartonokon vagy máshol).

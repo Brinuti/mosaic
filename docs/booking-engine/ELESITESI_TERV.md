@@ -32,17 +32,32 @@ A motor saját sikeroldala (naptárba tétel, útvonaltervezés) a **második ü
 
 ## 4. A gombok átkötése (a próbák után, egyszerre)
 
-Egy központi térkép (build-időben, üzletáganként egy kapcsolóval) a 19 Salonic-linket a motorra köti:
+**Elkészült, élesben kikapcsolva.** Egy központi térkép ([`tools/foglalo-atkotes.mjs`](../../tools/foglalo-atkotes.mjs)) a build során a Salonic-linkeket a motorra köti, üzletáganként egy kapcsolóval ([`tools/foglalo-atkotes.json`](../../tools/foglalo-atkotes.json): `headspa`, `oxigen`, `fodraszat`, `lezer`). A szabályok:
 
-| Salonic-link (ma) | Új cél |
-|---|---|
-| HeadSpa: időpont foglalás (`showServices … specId=39592`, `selectSpecialization`, `employees/…`, régi `selectDate`) | `/foglalo-motor?business=headspa` |
-| HeadSpa: kuponos beváltás (`specId=41471`) | `/foglalo-motor?business=headspa&voucher=1` |
-| HeadSpa ajándékkártya-vásárlás (`/giftcards…`) | **marad** (nem foglalás; az új ajándék-oldal készül) |
-| Fodrászat (`selectSpecialization`, `showServices …employeeId=23694`) | `/foglalo-motor?business=hair` |
-| Oxigén (`selectEmployee … 466110` / `466158`) | `/foglalo-motor?business=oxygen&service=466110` / `…=466158` |
-| Lézer (`specId=66404` / `66405`, konzultáció `444584`) | `/foglalo-motor?business=laser` (konzultációnál `&service=konzult`) |
-| PMU | **marad** (külön, már éles motor) |
+| Salonic-link (ma) | Új cél | Kapcsoló |
+|---|---|---|
+| HeadSpa: időpontfoglalás (`showServices … specId=39592`, `selectSpecialization`, a régi `employees/23532`) | `/foglalo-motor?business=headspa` | `headspa` |
+| HeadSpa: kuponos / ajándékkártyás beváltás (`specId=41471`) | `/foglalo-motor?business=headspa&voucher=1` | `headspa` |
+| HeadSpa: az angol oldal „Double Head Spa” gombja (régi, már nem élő `selectDate … 239336`) | `/foglalo-motor?business=headspa&service=paros` | `headspa` |
+| Oxigén (`selectEmployee … serviceId=466110` / `466158`) | `/foglalo-motor?business=oxygen&service=466110` / `…=466158` | `oxigen` |
+| Fodrászat (`selectSpecialization`, `showServices …employeeId=23694`) | `/foglalo-motor?business=hair` | `fodraszat` |
+| Lézer: konzultáció (Hair-fiók `444584`, Elysion-fiók `476477`) | `/foglalo-motor?business=laser&service=konzult` | `lezer` |
+| Lézer: „ELSŐ IDŐPONTOK” (`specId=66404`) / „KEZELÉS IDŐPONTOK” (`specId=66405`) | `/foglalo-motor?business=laser&intent=first` / `…&intent=returning` (egyenesen a területválasztóra) | `lezer` |
+| HeadSpa ajándékkártya-vásárlás (`/giftcards…`) | **marad** (nem foglalás; az új ajándék-oldal készül) | – |
+| PMU (`mosaic-pmu…`) | **marad** (külön, már éles motor) | – |
+| Köszönőoldalak (`success-*`, `*-ok`) | **kihagyva** (a méréshez tartozó oldalakhoz nem nyúlunk; ma egyetlen ilyen linkről van szó: `success-ajandekkartya-stripe`, kuponos beváltás) | – |
+
+**Mekkora a változás?** A térkép a mostani oldalakon (asztali + mobil) 235 linket köt át: HeadSpa 44, Oxigén 8, Fodrászat 26, Lézer 158 (a GYIK szkriptjében lévő egy HeadSpa-link is benne van). Az átkötés csak a `href` értékét cseréli; a `target`, `rel` és minden más változatlan.
+
+**Biztonság (ellenőrizve):**
+
+- **Kikapcsolva a build kimenete bájtra azonos** a mostanival: 1349 fájl, az összes (186) HTML-oldal és az összes többi fájl hash-e egyezik (az egyetlen eltérés a `intent` belépést bevezető két motor-fájl).
+- **Bekapcsolva** (minden kapcsoló): 172 HTML-oldal és a `gyik.js` változik; a két build HTML-jének különbsége **kizárólag a linkek** (és a `gyik.js` verziójele) – a GTM, a `suti.js`, a pixelek és a köszönőoldalak érintetlenek. A PMU-oldalak és a PMU foglaló változatlan.
+- A `gyik.js` verziójele (`?v=…`) az átírt tartalomból számolódik, így a böngésző egy évig tárolható régi példánya nem marad meg.
+
+**Az átkapcsolás (egyszerre, jóváhagyással):** a `tools/foglalo-atkotes.json` négy értéke `true`, `main`-re merge, deploy. **Visszaállítás:** a négy érték `false`, új deploy (néhány perc), vagy a Cloudflare Pages előző deploymentjére visszaállás.
+
+**Előnézet:** a PR-előnézeteken és a helyi buildeken az `elonezetBe: true` miatt minden kapcsoló be van kapcsolva, hogy az átkötés végigpróbálható legyen; az élesre (`main`) ez nem hat. A `FOGLALO_ATKOTES=none|all|headspa,lezer` környezeti változó felülír. Áttekintő lista: `node tools/foglalo-atkotes.mjs --jelentes`.
 
 ## 5. A kipróbálás (valódi próbafoglalások, jóváhagyott feltételekkel)
 
@@ -64,8 +79,9 @@ Ez **üzletáganként 1 valódi konverziót** jelent a hirdetési fiókokban (j�
 - [ ] Az „Egyedi CSS URL” beállítása a Salonic-fiókokban (a tulajdonos teendője).
 - [x] A `/foglalo-motor` rejtett élesítése a próbákhoz (a #65 PR mergelve 2026-10-03 19:26; új, linkelés nélküli, `noindex` oldal, `robots.txt`-ben tiltva, nincs a sitemapben; a meglévő oldalak, a `suti.js` és a GTM bájtra változatlanok).
 - [x] A próbák lefutása (2026-10-03, HeadSpa, Oxigén, Fodrászat, Lézer): lásd [PROBAFOGLALASOK.md](PROBAFOGLALASOK.md).
-- [ ] A szalon lemondja a négy próbaidőpontot.
-- [ ] A központi link-térkép és a kapcsolók elkészítése, kipróbálása.
+- [x] A négy próbaidőpont lemondva (2026-10-03, a „Lemondom” linkkel; a Salonic mindegyiknél visszaigazolta).
+- [x] A központi link-térkép és a kapcsolók elkészítése, kipróbálása (kikapcsolva a kimenet bájtra azonos; bekapcsolva csak a linkek változnak; `tools/test-foglalo-atkotes.mjs`).
+- [ ] Az átkapcsolás: a négy kapcsoló `true`, `main`-re merge, élő ellenőrzés (a tulajdonos jóváhagyásával, egyszerre).
 
 ## 7. Kockázatok és kezelésük
 

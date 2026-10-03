@@ -306,8 +306,13 @@ test('findByKey: azonosito vagy kulcsszavak; az ajandekkartyas es a normal kulon
 
 test('parseContext: input szerzodes, mérési parameterek, source_page', () => {
   const c = parseContext('?business=headspa&service=paros&voucher=1&utm_source=google&gclid=abc&fbclid=f1&ttclid=t1&minta=siker', 'https://www.mosaicheadspa.hu/headspa-budapest', 'https://www.mosaicheadspa.hu');
-  assert.deepEqual(c, { business: 'headspa', serviceKey: 'paros', category: null, voucher: true, sourcePage: '/headspa-budapest', attribution: { utm_source: 'google', gclid: 'abc', fbclid: 'f1', ttclid: 't1' }, sample: 'siker' });
+  assert.deepEqual(c, { business: 'headspa', serviceKey: 'paros', category: null, voucher: true, intent: null, sourcePage: '/headspa-budapest', attribution: { utm_source: 'google', gclid: 'abc', fbclid: 'f1', ttclid: 't1' }, sample: 'siker' });
   assert.equal(parseContext('?business=hair&category=balayage').category, 'balayage');
+  // lezer: ?intent=first | returning (a regi "Elso idopontok" / "Kezeles idopontok" gombok); az ajandekkartya-szandek (intent=voucher) valtozatlan
+  assert.equal(parseContext('?business=laser&intent=first').intent, 'first');
+  assert.equal(parseContext('?business=laser&intent=returning').intent, 'returning');
+  assert.equal(parseContext('?business=laser').intent, null);
+  assert.deepEqual([parseContext('?intent=voucher').voucher, parseContext('?intent=voucher').intent], [true, 'voucher']);
   assert.equal(parseContext('', 'https://masik.hu/x', 'https://www.mosaicheadspa.hu').sourcePage, '', 'idegen referrer nem source_page');
   assert.equal(parseContext('?source_page=/x').sourcePage, '/x');
   assert.equal(parseContext('').business, 'headspa');

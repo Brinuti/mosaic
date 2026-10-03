@@ -508,6 +508,8 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     track('booking_open', { entry: ctx.serviceKey ? 'service' : ctx.category ? 'category' : 'generic' });
     if (ctx.sample) return sample();
     let first = entry();
+    // Lezer: ?intent=first | returning -> a terulet-valasztas (LA2 / LA3), a konzultacio-kerdes (LA1) kihagyasaval; konkret szolgaltatas / kategoria elsobbseget elvez
+    if (!ctx.serviceKey && !ctx.category && flow.business === 'laser' && (ctx.intent === 'first' || ctx.intent === 'returning')) first = ctx.intent === 'first' ? 'LA2' : 'LA3';
     if (ctx.serviceKey || ctx.category) {
       try {
         await ensureServices();

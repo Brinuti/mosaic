@@ -11,6 +11,7 @@ Döntések: [DECISIONS.md](DECISIONS.md). Adapter: [SALONIC_ADAPTER_CONTRACT.md]
 | `business=headspa` | üzletág (most csak ez kész) |
 | `service=<azonosító vagy kulcsszavak>` | konkrét szolgáltatás (pl. `paros`, `egyeni`, `4kezes`): a landingről egyből az időpontokra visz (C1) |
 | `voucher=1` | ajándékkártyás belépés (HS3) |
+| `intent=first\|returning` | csak a lézernél: a régi „Első időpontok” / „Kezelés időpontok” gombok; egyenesen a területválasztóra (LA2 / LA3), a konzultáció-kérdés (LA1) kihagyásával; `service` / `category` elsőbbséget élvez |
 | `source_page`, `utm_*`, `gclid`, `fbclid`, `ttclid` | mérési kontextus, a követés a `dataLayer`-be írja |
 | `minta=siker\|elkelt\|hiba\|ellenorizetlen\|nincs-idopont\|visszahivas-kesz` | mintanézet foglalás nélkül |
 

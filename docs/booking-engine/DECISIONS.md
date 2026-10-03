@@ -34,11 +34,13 @@ Minden döntés a tulajdonostól jött, 2026-10-03-án, a [PMU live audit és a 
 | 24 | Köszönőoldal az első ütemben | **A mostani köszönőoldal** (átadás a meglévő oldalnak, a mérés változatlan). A motor saját sikeroldala később. |
 | 25 | Lézeres konzultáció-naptár | **Az Elysion-fiók** (`476477`); a Hair-fiókbeli régi (`444584`) kivezetendő. |
 | 26 | Valódi próbafoglalások | **Jóváhagyva** üzletáganként egy (a HeadSpánál is), feltételekkel: név „TESZT – Claude”, fix e-mail és telefon, lista a végén (üzletág, perc pontos időpont, azonosító), platformonkénti (Google, Meta, TikTok) „pontosan egyszer” konverzió-ellenőrzés, e-mail és köszönőoldal ellenőrzése, a szalon lemondja a próbát, a vendéget nem törli. |
+| 27 | A próbafoglalások lemondása | **A „Lemondom” linkkel, a tulajdonos jóváhagyásával** (2026-10-03): a szalon helyett mi mondtuk le mind a négyet; a vendégkartonokat nem töröltük. A Salonic mindegyiknél visszaigazolta a lemondást. |
+| 28 | A gombok átkötése a motorra | **Build-időben, üzletáganként kapcsolóval** (`tools/foglalo-atkotes.json`), **élesben kikapcsolva**: kikapcsolva a build kimenete bájtra azonos a mostanival. A PMU és az ajándékkártya-vásárlás marad Salonic-link, a köszönőoldalakhoz (`success-*`, `*-ok`) nem nyúlunk. A lézeres „ELSŐ IDŐPONTOK” / „KEZELÉS IDŐPONTOK” gomb a motor új `intent=first` / `intent=returning` belépésére mutat (egyenesen a területválasztóra). Az átkapcsolás egyszerre, külön jóváhagyással. |
 | 15 | Oxigén belépés | Egy kérdés (OX1): Hajkamerás vizsgálat / Első oxigénterápiás kezelés / Már jártam nálatok. Szakember nem kötelező: alapból „bármely megfelelő”, a naptárban választható. |
 
-**A tesztelés korlátja:** a Salonicnak nincs próbakörnyezete, ezért éles foglalást a próba során nem adunk le. A foglalás-utáni ágakat (siker, elkelt időpont, hiba) mintanézettel és egységtesztekkel ellenőrizzük.
+**A tesztelés (frissítve 2026-10-03):** a Salonicnak nincs próbakörnyezete, ezért a foglalás-utáni ágakat eleinte mintanézettel és egységtesztekkel ellenőriztük; utána (23., 26. döntés) üzletáganként egy valódi próbafoglalás készült az éles, rejtett foglalón, majd le lett mondva: [PROBAFOGLALASOK.md](PROBAFOGLALASOK.md).
 
-**Go-live előtt eldöntendő:** a mai HeadSpa konverziós mérés a `/success-foglalas*` köszönőoldalak URL-paramétereire épül. A próbaoldalon a motor maga mutatja a sikert, és nem nyitja meg a köszönőoldalt, ezért mérés nem fut. Élesítéskor el kell dönteni, hogyan marad meg a jelenlegi mérés.
+**A mérés (eldöntve, 24. döntés):** a mai HeadSpa konverziós mérés a `/success-foglalas*` köszönőoldalak URL-paramétereire épül. Éles tartományon a motor sikeres foglalás után a **meglévő köszönőoldalt** nyitja meg ugyanazokkal a paraméterekkel, így a mérés változatlanul fut (a próbák ezt igazolták: Google, Meta egyszer, a TikTok pixel egyszer töltött). Előnézeten / helyben a motor a saját sikeroldalát mutatja.
 
 ## Jóváhagyott besorolás
 
