@@ -11,3 +11,28 @@ compatibility_date = "2026-09-01"
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
 SMTP_USER = "mosaicheadspa@gmail.com"
+# Gift Commerce Engine (/ajandek, lasd AJANDEK.md): a nem titkos valtozok IDE kellenek (a feluleten megadottakat a
+# wrangler.toml torli). Titkosak (Secret tipussal a feluleten): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK.
+# STRIPE_PUBLISHABLE_KEY = "pk_live_..."     (ELES: csak az elesites napjan, kulon jovahagyassal kerul ide)
+# AJANDEK_BAZIS_URL = "https://www.mosaicheadspa.hu"
+# AJANDEK_AZONNALI = "1"   # csak ha a kartya kiallitasa valoban automatikus (lasd AJANDEK.md)
+
+# PR-elonezetek (preview deployok): a "vars" nem orokodik, ezert az SMTP-ertekek itt ujra szerepelnek. A Stripe
+# TESZT-modu NYILVANOS kulcsa (pk_test_...) publikus, minden fizetooldal HTML-jeben benne van. Az eles ([vars]) nem erintett.
+# A titkok (STRIPE_SECRET_KEY = sk_test_..., STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK, MAIL_TO, SMTP_PASS) a Cloudflare feluleten,
+# a Preview kornyezetben, Secret tipussal vannak.
+[env.preview.vars]
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = "465"
+SMTP_USER = "mosaicheadspa@gmail.com"
+STRIPE_PUBLISHABLE_KEY = "pk_test_51QhTxoFv8vc2ArnLyqmRz5giwCnlNAtTTygecEAnBRWbFmYrPWTYQtsCG3tSVI6hU3BJCBBKBNaMe6621Twfq40r00wzanIqTE"
+
+# A szemelyre szabott ajandekkartyak fotoi (Cloudflare KV, lasd AJANDEK.md "Foto-tarolas"): eles es elonezeti nevter kulon.
+# A kezelo az AJANDEK_FOTOK kotesen at olvassa / irja; nelkule a fotofeltoltes ki van kapcsolva.
+[[kv_namespaces]]
+binding = "AJANDEK_FOTOK"
+id = "2e712cfb6c2f43918468a79dd3773f0f"   # mosaic-ajandek-fotok
+
+[[env.preview.kv_namespaces]]
+binding = "AJANDEK_FOTOK"
+id = "69e750b6c0664b08a71a72dfbc96ae62"   # mosaic-ajandek-fotok-elonezet

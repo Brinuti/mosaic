@@ -6,6 +6,12 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["tools/serve.mjs"],
       "port": 4173
+    },
+    {
+      "name": "ajandek",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tools/ajandek-teszt/szerver.mjs", "4195"],
+      "port": 4195
     }
   ]
 }
