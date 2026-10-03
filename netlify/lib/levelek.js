@@ -42,17 +42,18 @@ export const URLAPOK = {
       ['volt_mar_tetovalasa', 'Volt már korábban tetoválásod?'], ['megjegyzes', 'Mit beszéljünk át a foglalás előtt?'],
     ], d),
   },
-  // a /foglalo-pmu probaoldal urlapjai (B/D ag: foto; C ag: visszahivas)
+  // a sminktetovalas-foglalo (/foglalo-pmu, a /sminktetovalas-budapest oldalba agyazva is) urlapjai
+  // (B/D ag: foto; C ag: visszahivas) - a 'pmu-proba-' urlapnev torteneti, ez mar az eles folyamat
   'pmu-proba-foto': {
-    targy: '[PRÓBA] Sminktetoválás – fotó érkezett',
-    html: (d) => osszefoglalo('A sminktetoválás-foglaló (próba) egy látogatója fotót küldött.', 'Beküldés összefoglalása:', [
+    targy: 'Sminktetoválás – fotó érkezett',
+    html: (d) => osszefoglalo('A sminktetoválás-foglaló egy látogatója fotót küldött.', 'Beküldés összefoglalása:', [
       ['ag', 'Ág'], ['nev', 'Név'], ['telefon', 'Telefonszám'], ['email', 'E-mail'], ['kezeles', 'Kezelés / terület'],
       ['idopont', 'Választott időpont'], ...Array.from({ length: 5 }, (_, i) => [`foto${i + 1}`, `Fotó ${i + 1}`]),
     ], d),
   },
   'pmu-proba-visszahivas': {
-    targy: '[PRÓBA] Sminktetoválás – visszahívást kértek (10 perces konzultáció)',
-    html: (d) => osszefoglalo('A sminktetoválás-foglaló (próba) egy látogatója visszahívást kért.', 'Beküldés összefoglalása:', [
+    targy: 'Sminktetoválás – visszahívást kértek (10 perces konzultáció)',
+    html: (d) => osszefoglalo('A sminktetoválás-foglaló egy látogatója visszahívást kért.', 'Beküldés összefoglalása:', [
       ['nev', 'Név'], ['telefon', 'Telefonszám'], ['mikor_nap', 'Melyik nap?'], ['mikor_napszak', 'Melyik napszakban?'],
     ], d),
   },
@@ -119,8 +120,7 @@ export function levelek(urlap, d) {
   const leiras = URLAPOK[urlap];
   if (!leiras) return null;
   const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email || '') ? d.email : undefined;
-  // a pmu-proba-* urlapokat az eles /pmu-sminktetovalas landing is hasznalja (beagyazott foglalo): onnan nem proba
-  const targy = d.oldal === 'pmu-sminktetovalas' ? leiras.targy.replace(/^\[PRÓBA\]\s*/, '') : leiras.targy;
+  const targy = leiras.targy;
   const ki = [{ cimzett: 'szalon', valasz: email, targy, html: leiras.html(d) }];
   if (leiras.vevo && email) {
     ki.push({ cimzett: email, valasz: 'szalon', targy: 'MOSAIC ajándékkártya utalási adatok + infók', html: vevoLevel(d) });
