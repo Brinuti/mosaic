@@ -118,28 +118,28 @@
   const LEPES = {
     szolg: ['fo', 0], ido: ['fo', 1], kerdes: ['fo', 2], adatok: ['fo', 3],
     foto: ['foto', 0], 'foto-adatok': ['foto', 1],
-    'c-info': ['c', 0], 'c-ido': ['c', 1], 'c-adatok': ['c', 2],
+    'c-info': ['c', 0], 'c-ido': ['c', 2], 'c-adatok': ['c', 3],
   };
   function lepesjelzo(nev) {
-    const l = LEPES[nev];
+    // a kerdes a telefonos agban is szerepel (ott a 2. lepes)
+    const l = nev === 'kerdes' && allapot.kerdesCel === 'c-ido' ? ['c', 1] : LEPES[nev];
     $('lepesjelzo').hidden = !l;
     $('logo').hidden = !!l;
     if (!l) return;
-    const kerdesNelkul = allapot.kezeles && allapot.kezeles.egyeb;
     const sorok = {
-      fo: kerdesNelkul ? ['Kezelés', 'Időpont', 'Adatok'] : ['Kezelés', 'Időpont', 'Kérdés', 'Adatok'],
+      fo: ['Kezelés', 'Időpont', 'Kérdés', 'Adatok'],
       foto: ['Fotó', 'Elérhetőség', 'Kész'],
-      c: ['Telefon', 'Időpont', 'Elérhetőség'],
+      c: ['Telefon', 'Kérdés', 'Időpont', 'Elérhetőség'],
     }[l[0]];
-    const hol = kerdesNelkul && nev === 'adatok' ? 2 : l[1];
+    const hol = l[1];
     $('lepesjelzo').replaceChildren(...sorok.map((t, i) => elem('li', { class: i < hol ? 'kesz' : i === hol ? 'most' : '', 'aria-current': i === hol ? 'step' : false },
       elem('i', { szoveg: i < hol ? '✓' : String(i + 1) }), elem('span', { szoveg: t }))));
   }
   // a fejlec vissza gombja mindig az elozo lepesre visz (nem a bongeszo elozmenyeiben lep vissza)
   const ELOZO = {
-    szolg: () => 'kezdo', ido: () => 'szolg', kerdes: () => 'ido', adatok: () => (allapot.kezeles && allapot.kezeles.egyeb ? 'ido' : 'kerdes'),
-    foto: () => (allapot.slot ? 'kerdes' : 'kezdo'), 'foto-adatok': () => 'foto',
-    'c-info': () => 'kezdo', 'c-ido': () => 'c-info', 'c-adatok': () => 'c-ido',
+    szolg: () => 'kezdo', ido: () => 'szolg', kerdes: () => (allapot.kerdesCel === 'c-ido' ? 'c-info' : 'ido'), adatok: () => 'kerdes',
+    foto: () => (allapot.kerdesValasz ? 'kerdes' : 'kezdo'), 'foto-adatok': () => 'foto',
+    'c-info': () => 'kezdo', 'c-ido': () => 'kerdes', 'c-adatok': () => 'c-ido',
   };
   // ha elhagyjuk a kepernyot (masik lepes, vissza, masik ful/oldal), a futo video megall
   const videokLeallit = () => { for (const v of document.querySelectorAll('video')) if (!v.paused) v.pause(); };
@@ -314,8 +314,9 @@
   };
   function slotValaszt(ts) {
     allapot.slot = ts;
-    if (allapot.kezeles.egyeb) ugrik('adatok'); // konzultacio / korrekcio: nincs mit kerdezni
-    else ugrik('kerdes');
+    // a kerdest senki nem ugorhatja at (a szemelyes konzultacio sem): regi PMU-val elobb foto kell
+    allapot.kerdesCel = 'adatok';
+    ugrik('kerdes');
   }
 
   // --- A. teljes naptar (csak a szabad napok) --------------------------------------
@@ -371,18 +372,22 @@
       elem('button', { type: 'button', class: 'modosit link', style: 'color:var(--hiba);font-weight:400;font-size:13px', szoveg: 'Módosítás', onclick: () => ugrik(modosit) }));
   }
   BELEPES.kerdes = () => {
-    if (!allapot.slot) { ugrik('ido'); return; }
-    $('kerdes-osszegzes').replaceChildren(miniOsszegzes());
+    const telefon = allapot.kerdesCel === 'c-ido';
+    if (!telefon && !allapot.slot) { ugrik('ido'); return; }
+    $('kerdes-osszegzes').replaceChildren(telefon ? '' : miniOsszegzes());
+    $('kerdes-cim').textContent = telefon || (allapot.kezeles && allapot.kezeles.egyeb) ? 'Volt már sminktetoválásod?' : 'Volt már sminktetoválásod ezen a területen?';
   };
   for (const r of document.querySelectorAll('input[name=elozmeny]')) r.addEventListener('change', () => { allapot.elozmeny = r.value; $('kerdes-tovabb').disabled = false; });
   $('kerdes-tovabb').addEventListener('click', () => {
-    if (allapot.elozmeny === 'elso') ugrik('adatok');
+    allapot.kerdesValasz = allapot.elozmeny;
+    if (allapot.elozmeny === 'elso') ugrik(allapot.kerdesCel || 'adatok');
     else { allapot.ag = allapot.elozmeny === 'van' ? 'B' : 'D'; ugrik('foto'); }
   });
 
   // --- 4. adatok: a Salonic adatlapja beagyazva ---------------------------------------
   BELEPES.adatok = () => {
     if (!allapot.slot) { ugrik('ido'); return; }
+    if (allapot.kerdesValasz !== 'elso') { allapot.kerdesCel = 'adatok'; ugrik('kerdes'); return; }
     $('adatok-osszegzes').replaceChildren(miniOsszegzes());
     const k = allapot.kezeles;
     const url = SZALON.cim + '/guestData/?' + new URLSearchParams({ placeId: SZALON.placeId, serviceId: k.id, employeeId: -1, startDate: allapot.slot });
@@ -585,6 +590,10 @@
   const cOsszegzes = (cim) => elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: cim }), elem('div', { class: 'sor' }, ikon('telefon'),
     elem('span', {}, elem('b', { szoveg: cMikor() }), elem('span', { szoveg: 'Telefonos konzultáció · kb. 10 perc, ingyenes' }))));
   $('c-ido-tovabb').addEventListener('click', () => { allapot.cKert = true; ugrik('c-adatok'); });
+  // a telefonos konzultacio elott is megkerdezzuk, van-e mar sminktetovalasa
+  $('c-info-tovabb').addEventListener('click', () => { allapot.kerdesCel = 'c-ido'; ugrik('kerdes'); });
+  const cIdoBelep = BELEPES['c-ido'];
+  BELEPES['c-ido'] = () => { if (allapot.kerdesValasz !== 'elso') { allapot.kerdesCel = 'c-ido'; ugrik('kerdes'); return; } cIdoBelep(); };
   BELEPES['c-adatok'] = () => { if (!allapot.cKert) { ugrik('c-ido'); return; } $('c-osszegzes').replaceChildren(cOsszegzes('Mikor hívjalak?')); };
   $('c-kuld').addEventListener('click', async (e) => {
     const gomb = e.currentTarget;

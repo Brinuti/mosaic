@@ -529,3 +529,17 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
   .mielott-jobb > h3, .tisztelet-lead { margin-right: 0 !important; }
 }
 .nyugi h3 { margin-top: 56px; }
+
+/* === foglalas: sotet hatter, Melitta kepe szelesebben, lagyan beleolvadva; a foglalo vilagos kartyaja jol kiugrik === */
+.foglalas { background: radial-gradient(120% 140% at 85% 30%, #24413f 0%, #183033 45%, #10221f 100%); border-top: 0; color: #f3ead9; }
+.foglalas .fogl-fej h2.nagy, .foglalas .fogl-lead { color: #fbf3e6; }
+.foglalas .felcim { color: #d9b77e; }
+.foglalas .kezirat-szurke { color: #e9dcc4; }
+.foglalas .kezirat-szurke svg { color: #d9b77e; }
+.foglalo-keret { border-color: rgba(255, 255, 255, .12); box-shadow: 0 30px 70px rgba(0, 0, 0, .45), 0 0 0 1px rgba(255, 255, 255, .04); }
+@media (min-width: 1101px) {
+  .fogl-hatter { width: 500px; right: max(0px, calc((100% - 1240px) / 2 - 40px)); background-position: 178px 14%; background-size: auto 128%;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, transparent 35%, rgba(0,0,0,.45) 50%, #000 78%, #000 92%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, transparent 35%, rgba(0,0,0,.45) 50%, #000 78%, #000 92%, transparent 100%); }
+  .fogl-hatter::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(24,48,51,.55), rgba(24,48,51,0) 50%); }
+  .fogl-portre { padding-right: 20px; }
+}
