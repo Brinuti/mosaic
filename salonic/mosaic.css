@@ -1,0 +1,225 @@
+/* MOSAIC - a Salonic foglalo oldalainak KOZOS egyedi megjelenese (minden uzletag)
+ *
+ * A /salonic/pmu.css altalanositasa: ugyanazok a szabalyok, de nem csak a PMU-fiokra ervenyes, hanem minden
+ * "customer-mosaic..." Salonic-fiokra (PMU, Oxigen, Fodraszat, Lezer, HeadSpa), hogy minden foglalo ugyanugy nezzen ki.
+ * A PMU-fiok tovabbra is a pmu.css-t hasznalja, amig at nem allitjuk erre.
+ *
+ * Bekapcsolas fiokonkent (app.salonic.hu > Beallitasok > Online bejelentkezes megjelenes > "Egyedi CSS URL"):
+ *     https://www.mosaicheadspa.hu/salonic/mosaic.css
+ * A /foglalo-motor ezt a beallitast automatikusan felismeri (a Salonic oldalaban megjeleno <link>-bol), es ehhez igazitja a keretet.
+ */
+
+@font-face { font-family: 'MosaicLato'; font-weight: 400; font-style: normal; font-display: swap; src: url(https://www.mosaicheadspa.hu/assets/fonts/lato-v24-S6uyw4BMUTPHjx4wXiWtFCc.woff2) format('woff2'); }
+@font-face { font-family: 'MosaicLato'; font-weight: 700; font-style: normal; font-display: swap; src: url(https://www.mosaicheadspa.hu/assets/fonts/lato-v24-S6u9w4BMUTPHh6UVSwiPGQ3q5d0.woff2) format('woff2'); }
+@font-face { font-family: 'MosaicJost'; font-weight: 400; font-style: normal; font-display: swap; src: url(https://www.mosaicheadspa.hu/assets/fonts/jost-400-latin-ext.woff2) format('woff2'); unicode-range: U+0100-024F; }
+@font-face { font-family: 'MosaicJost'; font-weight: 400; font-style: normal; font-display: swap; src: url(https://www.mosaicheadspa.hu/assets/fonts/jost-400-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+2000-206F; }
+
+body[class*="customer-mosaic"] {
+  --mh-sotet: #183033; --mh-kozep: #44595c; --mh-halvany: #6d8285;
+  --mh-krem: #fbeede; --mh-hatter: #fffaf4; --mh-vonal: #e8ddcd; --mh-hiba: #a33a2b;
+  background: var(--mh-hatter) !important;
+  color: var(--mh-sotet);
+  font-family: 'MosaicLato', 'Lato', 'Helvetica Neue', Arial, sans-serif !important;
+}
+body[class*="customer-mosaic"] h1, body[class*="customer-mosaic"] h2, body[class*="customer-mosaic"] h3,
+body[class*="customer-mosaic"] h4, body[class*="customer-mosaic"] .title, body[class*="customer-mosaic"] .card-title {
+  font-family: 'MosaicJost', 'MosaicLato', Arial, sans-serif !important;
+  font-weight: 400 !important;
+  color: var(--mh-sotet) !important;
+  letter-spacing: .01em;
+}
+
+/* fejlec es boritokep: vekony, egyszinu sav */
+body[class*="customer-mosaic"] .navbar { background: var(--mh-sotet) !important; box-shadow: none !important; }
+body[class*="customer-mosaic"] .page-header { min-height: 0 !important; height: 70px !important; background: var(--mh-sotet) !important; background-image: none !important; }
+body[class*="customer-mosaic"] .page-header::before, body[class*="customer-mosaic"] .page-header::after { display: none !important; }
+body[class*="customer-mosaic"] .main-raised, body[class*="customer-mosaic"] .section { margin-top: 0 !important; padding-top: 12px !important; padding-bottom: 12px !important; box-shadow: none !important; background: transparent !important; }
+
+/* kartyak */
+body[class*="customer-mosaic"] .card {
+  background: #fff !important; border: 1px solid var(--mh-vonal) !important; border-radius: 14px !important;
+  box-shadow: none !important; margin-top: 8px !important; margin-bottom: 12px !important;
+}
+body[class*="customer-mosaic"] .card-body { padding: 12px 14px !important; }
+
+/* visszaszamlalo */
+body[class*="customer-mosaic"] .booking-time-remain-container { font-size: 14px; color: var(--mh-kozep) !important; }
+body[class*="customer-mosaic"] .booking-time-remain-container .countdown { font-weight: 700; color: var(--mh-sotet); }
+
+/* urlapmezok */
+body[class*="customer-mosaic"] .form-group { margin: 0 0 8px !important; padding-top: 0 !important; }
+body[class*="customer-mosaic"] .control-label, body[class*="customer-mosaic"] .form-group label:not(.form-check-label) {
+  position: static !important; transform: none !important; display: block;
+  font-size: 13px !important; font-weight: 700 !important; color: var(--mh-sotet) !important; margin: 0 0 3px !important; line-height: 1.25 !important;
+}
+body[class*="customer-mosaic"] .control-label .required, body[class*="customer-mosaic"] span.required { color: var(--mh-hiba) !important; }
+body[class*="customer-mosaic"] .form-control {
+  height: 40px !important; padding: 6px 12px !important; font-size: 16px !important; color: var(--mh-sotet) !important;
+  background: #fff !important; background-image: none !important;
+  border: 1.5px solid var(--mh-vonal) !important; border-radius: 10px !important; box-shadow: none !important;
+}
+body[class*="customer-mosaic"] textarea.form-control { height: 56px !important; min-height: 0 !important; }
+body[class*="customer-mosaic"] .form-control:focus { border-color: var(--mh-sotet) !important; outline: none !important; }
+body[class*="customer-mosaic"] .has-error .form-control { border-color: var(--mh-hiba) !important; }
+body[class*="customer-mosaic"] .iti { width: 100%; }
+body[class*="customer-mosaic"] .iti input.form-control { padding-left: 92px !important; }
+body[class*="customer-mosaic"] .alert-danger { background: #f8e3df !important; color: var(--mh-hiba) !important; border: 0 !important; border-radius: 10px !important; box-shadow: none !important; }
+
+/* jelolonegyzetek */
+body[class*="customer-mosaic"] .form-check { margin: 2px 0 6px !important; }
+body[class*="customer-mosaic"] .form-check .form-check-label { font-size: 12px !important; color: var(--mh-kozep) !important; line-height: 1.35 !important; padding-left: 28px !important; }
+body[class*="customer-mosaic"] .form-check .form-check-sign .check { border-color: var(--mh-halvany) !important; border-radius: 4px !important; }
+body[class*="customer-mosaic"] .form-check .form-check-input:checked + .form-check-sign .check { background: var(--mh-sotet) !important; border-color: var(--mh-sotet) !important; }
+
+/* gombok */
+body[class*="customer-mosaic"] .btn-success, body[class*="customer-mosaic"] .btn-primary, body[class*="customer-mosaic"] .salonic-gradient-button {
+  background: var(--mh-sotet) !important; background-image: none !important; border: 0 !important; color: var(--mh-krem) !important;
+  border-radius: 12px !important; box-shadow: none !important;
+  font-weight: 700 !important; letter-spacing: .1em !important; text-transform: uppercase !important;
+}
+body[class*="customer-mosaic"] .btn-submit-booking { min-height: 46px; padding: 10px 16px !important; font-size: 14px !important; margin-top: 4px !important; }
+body[class*="customer-mosaic"] .btn-success:hover, body[class*="customer-mosaic"] .btn-primary:hover { background: #24453f !important; }
+body[class*="customer-mosaic"] .btn-success[disabled], body[class*="customer-mosaic"] .btn-success.disabled { opacity: .45 !important; }
+body[class*="customer-mosaic"] a:not(.btn):not(.nav-link) { color: var(--mh-sotet); text-decoration: underline; text-underline-offset: 2px; }
+
+/* osszegzo kartya (kezelo, nap, kezeles) */
+body[class*="customer-mosaic"] .order-lg-2 .card h4 { font-size: 18px !important; }
+body[class*="customer-mosaic"] .text-muted { color: var(--mh-kozep) !important; }
+
+/* Facebook-belepes es elvalaszto: nem kell a foglalashoz */
+body[class*="customer-mosaic"] .fb-login-button, body[class*="customer-mosaic"] .divider-line { display: none !important; }
+body[class*="customer-mosaic"] .panel-body .text-center.py-4 { display: none !important; }
+
+/* lablec: nem kell (a szabalyzat es az adatkezeles linkje a hozzajarulasnal is ott van) */
+body[class*="customer-mosaic"] footer, body[class*="customer-mosaic"] .footer { display: none !important; }
+
+/* tomorebb elrendezes: kisebb cimsorok es kozok */
+body[class*="customer-mosaic"] .panel-heading h3, body[class*="customer-mosaic"] .card-body h3 { font-size: 18px !important; margin: 0 0 8px !important; }
+body[class*="customer-mosaic"] .my-3 { margin-top: 6px !important; margin-bottom: 6px !important; }
+body[class*="customer-mosaic"] .mt-3 { margin-top: 6px !important; }
+body[class*="customer-mosaic"] .booking-time-remain-container { margin: 0 0 4px !important; }
+body[class*="customer-mosaic"] .form-group .alert { padding: 6px 10px !important; margin: 4px 0 0 !important; font-size: 13px !important; }
+body[class*="customer-mosaic"] hr { margin: 8px 0 !important; }
+
+/* ===== egy mobilkepernyore: a teljes adatlap a gombbal egyutt ===== */
+/* a Salonic osszegzo kartyaja (kezelo, nap, kezeles): tomor sav, foto nelkul */
+body[class*="customer-mosaic"] .order-lg-2 .card { margin: 0 0 6px !important; }
+body[class*="customer-mosaic"] .order-lg-2 .card-body { padding: 8px 12px !important; }
+body[class*="customer-mosaic"] .order-lg-2 img { display: none !important; }
+body[class*="customer-mosaic"] .order-lg-2 h4 { font-size: 14px !important; margin: 0 !important; line-height: 1.3 !important; }
+body[class*="customer-mosaic"] .order-lg-2 hr, body[class*="customer-mosaic"] .order-lg-2 .divider-line { display: none !important; }
+body[class*="customer-mosaic"] .order-lg-2 .card-body > * { margin-top: 0 !important; margin-bottom: 2px !important; padding-top: 0 !important; padding-bottom: 0 !important; }
+body[class*="customer-mosaic"] .order-lg-2 .card-body, body[class*="customer-mosaic"] .order-lg-2 .card-body span { font-size: 13px !important; line-height: 1.3 !important; }
+/* vezeteknev + keresztnev egy sorban: a mezoket tartalmazo doboz rugalmas sor */
+body[class*="customer-mosaic"] .panel-body > div { display: flex !important; flex-wrap: wrap !important; column-gap: 8px; }
+body[class*="customer-mosaic"] .panel-body > div > * { flex: 0 0 100%; max-width: 100%; }
+body[class*="customer-mosaic"] .panel-body > div > .form-group:has(#GuestDataForm_guestLastName),
+body[class*="customer-mosaic"] .panel-body > div > .form-group:has(#GuestDataForm_guestFirstName) { flex: 1 1 0; min-width: 0; }
+/* megjegyzes: egysoros */
+body[class*="customer-mosaic"] textarea.form-control { height: 40px !important; resize: vertical; }
+/* jelolonegyzetek: kisebb betu */
+body[class*="customer-mosaic"] .form-check .form-check-label { font-size: 11px !important; line-height: 1.3 !important; }
+body[class*="customer-mosaic"] .form-check { margin: 0 0 4px !important; }
+/* a kotelezo-mezo megjegyzes ("A *-gal jelolt mezok...") es a lemondasi sor kisebb */
+body[class*="customer-mosaic"] .guest-data-container p, body[class*="customer-mosaic"] .guest-data-container small { font-size: 11px !important; margin: 2px 0 !important; }
+body[class*="customer-mosaic"] .section, body[class*="customer-mosaic"] .container.mt-3 { padding-top: 6px !important; }
+
+/* Salonic-osszegzo: a kezelo neve el (a mi oldalunkon es a datumnal ugyis latszik), a datum es a kezeles egy tomor sorban */
+body[class*="customer-mosaic"] .order-lg-2 .card-body > .d-flex { display: none !important; }
+body[class*="customer-mosaic"] .order-lg-2 .card-body { display: flex !important; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+body[class*="customer-mosaic"] .order-lg-2 .service-data li { padding: 0 !important; display: flex; gap: 8px; align-items: baseline; }
+body[class*="customer-mosaic"] .order-lg-2 .service-data li strong { font-size: 13px !important; }
+/* kartya-margok */
+body[class*="customer-mosaic"] .order-lg-1 .card { margin-top: 0 !important; }
+body[class*="customer-mosaic"] .order-lg-1 .card-body { padding: 10px 12px !important; }
+body[class*="customer-mosaic"] .form-check { margin-top: 4px !important; }
+
+/* a reCAPTCHA jelvenye ne usszon ra az urlapra: az oldal aljara kerul, a helyen marad lathatonak */
+body[class*="customer-mosaic"] .grecaptcha-badge { position: relative !important; bottom: auto !important; right: auto !important; margin: 8px auto 4px !important; box-shadow: none !important; }
+
+/* Salonic-osszegzo: 1. sor a kezeles neve (egy sorban, ...-tal), 2. sor datum + idopont, idotartam, ar */
+body[class*="customer-mosaic"] .order-lg-2 .card-body { display: flex !important; flex-wrap: wrap !important; align-items: baseline !important; column-gap: 8px !important; row-gap: 2px !important; }
+body[class*="customer-mosaic"] .order-lg-2 .card-body > ul, body[class*="customer-mosaic"] .order-lg-2 .card-body > ul > li { display: contents !important; }
+body[class*="customer-mosaic"] .order-lg-2 .card-body strong { order: 1; flex: 0 0 100%; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px !important; font-weight: 700 !important; }
+body[class*="customer-mosaic"] .order-lg-2 .card-body h4.my-0, body[class*="customer-mosaic"] .order-lg-2 .card-body > h4 { order: 2; font-size: 12px !important; font-family: inherit !important; font-weight: 700 !important; margin: 0 !important; white-space: nowrap; }
+body[class*="customer-mosaic"] .order-lg-2 .card-body li > div { order: 3; display: flex !important; gap: 8px; font-size: 12px !important; white-space: nowrap; }
+body[class*="customer-mosaic"] .order-lg-2 .card-body li > div * { font-size: 12px !important; white-space: nowrap; }
+/* jelolonegyzetek, "*-gal jelolt mezok" es lemondasi sor: kisebb betu (a szoveg a mezoket tartalmazo dobozban van) */
+body[class*="customer-mosaic"] .panel-body > div { font-size: 11px !important; line-height: 1.35 !important; }
+body[class*="customer-mosaic"] .form-check label, body[class*="customer-mosaic"] .form-check label a { font-size: 10.5px !important; line-height: 1.35 !important; }
+body[class*="customer-mosaic"] .form-check label { padding-left: 24px !important; }
+body[class*="customer-mosaic"] .panel-body > div > hr { margin: 4px 0 !important; }
+
+/* mobilon (a foglalo keretben is) egy kepernyo: a nem kotelezo megjegyzes-mezo es a reCAPTCHA-jelveny
+   helyett a Google altal elfogadott egysoros szoveges jelzes */
+@media (max-width: 599px) {
+  body[class*="customer-mosaic"] .booking-time-remain-container, body[class*="customer-mosaic"] .booking-time-remain-container * { font-size: 12px !important; }
+  body[class*="customer-mosaic"] .form-group:has(#GuestDataForm_guestComment) { display: none !important; }
+  /* kisebb cellak es surubb sorkoz (a 16 px-es betu marad, kulonben az iPhone ranagyit) */
+  body[class*="customer-mosaic"] .form-control { height: 36px !important; padding: 4px 10px !important; }
+  body[class*="customer-mosaic"] .iti input.form-control { padding-left: 88px !important; }
+  body[class*="customer-mosaic"] .form-group { margin-bottom: 5px !important; }
+  body[class*="customer-mosaic"] .control-label, body[class*="customer-mosaic"] .form-group label:not(.form-check-label) { font-size: 12px !important; margin-bottom: 2px !important; }
+  body[class*="customer-mosaic"] .order-lg-1 .card-body { padding: 8px 10px !important; }
+  body[class*="customer-mosaic"] .form-check { margin: 0 0 3px !important; }
+  body[class*="customer-mosaic"] .form-check label, body[class*="customer-mosaic"] .form-check label a { font-size: 10px !important; line-height: 1.25 !important; }
+  body[class*="customer-mosaic"] .my-3 { margin-top: 2px !important; margin-bottom: 4px !important; }
+  body[class*="customer-mosaic"] .btn-submit-booking { margin-top: 4px !important; height: 42px !important; min-height: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; }
+  /* meg egy kicsit tomorebben */
+  body[class*="customer-mosaic"] .form-control, body[class*="customer-mosaic"] input.form-control { height: 32px !important; min-height: 0 !important; max-height: 32px !important; padding: 2px 10px !important; line-height: 26px !important; }
+  body[class*="customer-mosaic"] .panel-body > div { font-size: 10.5px !important; line-height: 1.3 !important; }
+  body[class*="customer-mosaic"] .panel-body > div > hr { margin: 2px 0 !important; }
+  body[class*="customer-mosaic"] .form-check label, body[class*="customer-mosaic"] .form-check label a { line-height: 1.2 !important; }
+  body[class*="customer-mosaic"] .order-lg-2 .card-body { padding: 5px 10px !important; }
+  body[class*="customer-mosaic"] .order-lg-2 .card-body strong { font-size: 13px !important; }
+  body[class*="customer-mosaic"] .order-lg-2 .card-body h4.my-0, body[class*="customer-mosaic"] .order-lg-2 .card-body > h4,
+  body[class*="customer-mosaic"] .order-lg-2 .card-body li > div, body[class*="customer-mosaic"] .order-lg-2 .card-body li > div * { font-size: 11.5px !important; }
+  body[class*="customer-mosaic"] .order-lg-2 .card { margin-bottom: 4px !important; }
+  /* a felszabadult helyen kicsit szellosebb: tobb hely a mezok kozott es a cimke alatt */
+  body[class*="customer-mosaic"] .form-group { margin-bottom: 10px !important; }
+  body[class*="customer-mosaic"] .control-label, body[class*="customer-mosaic"] .form-group label:not(.form-check-label) { font-size: 12.5px !important; margin-bottom: 4px !important; }
+  /* nincs oldaliranyu gorgetes (a Salonic mobilmenuje es a negativ margoju sor kilog), es alul nincs ures hely */
+  html, body[class*="customer-mosaic"] { overflow-x: hidden !important; }
+  /* gorgetosav nem latszik (telefonon amugy is rejtett; asztali keskeny ablakban zavaro), gorgetni tovabbra is lehet */
+  html { scrollbar-width: none !important; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+  body[class*="customer-mosaic"] .navbar-collapse { display: none !important; }
+  body[class*="customer-mosaic"] .guest-data-container .row { margin-left: 0 !important; margin-right: 0 !important; }
+  body[class*="customer-mosaic"] .guest-data-container .row > [class*="col-"] { padding-left: 0 !important; padding-right: 0 !important; }
+  body[class*="customer-mosaic"] .order-lg-1 .card { margin-bottom: 0 !important; }
+  body[class*="customer-mosaic"] form.form { margin-bottom: 0 !important; }
+  body[class*="customer-mosaic"] .section { padding-bottom: 6px !important; }
+  body[class*="customer-mosaic"] .grecaptcha-badge { visibility: hidden !important; position: absolute !important; bottom: 0 !important; }
+  body[class*="customer-mosaic"] .panel-body > div::after { content: 'Az oldalt a reCAPTCHA védi; a Google adatvédelmi irányelvei és ÁSZF-je érvényes.'; flex: 0 0 100%; display: block; margin-top: 6px; font-size: 9.5px; line-height: 1.3; color: #8a9799; text-align: center; }
+}
+
+/* asztalon (a foglalo kerete itt 880 px magas) a mezok kozott tobb levego, az urlap lefele hosszabb */
+@media (min-width: 600px) {
+  body[class*="customer-mosaic"] .form-group { margin-bottom: 16px !important; }
+  body[class*="customer-mosaic"] .form-control { height: 44px !important; }
+  body[class*="customer-mosaic"] .control-label, body[class*="customer-mosaic"] .form-group label:not(.form-check-label) { font-size: 14px !important; margin-bottom: 6px !important; }
+  body[class*="customer-mosaic"] .order-lg-1 .card-body { padding: 18px 20px !important; }
+  body[class*="customer-mosaic"] .btn-submit-booking { margin-top: 10px !important; }
+}
+
+/* egy betucsalad (Jost), mint a landingen es a foglaloban; a foglalas-gomb arany, mint a MOSAIC oldalon */
+body[class*="customer-mosaic"], body[class*="customer-mosaic"] input, body[class*="customer-mosaic"] button, body[class*="customer-mosaic"] label, body[class*="customer-mosaic"] .form-control { font-family: 'MosaicJost', 'Helvetica Neue', Arial, sans-serif !important; }
+body[class*="customer-mosaic"] .btn-success, body[class*="customer-mosaic"] .btn-primary, body[class*="customer-mosaic"] .salonic-gradient-button, body[class*="customer-mosaic"] .btn-submit-booking, body[class*="customer-mosaic"] .btn-submit-booking:focus { background: linear-gradient(#c6a346, #d9c164) !important; border: 0 !important; color: #fff !important; border-radius: 999px !important; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); }
+body[class*="customer-mosaic"] .btn-success:hover, body[class*="customer-mosaic"] .btn-primary:hover, body[class*="customer-mosaic"] .btn-submit-booking:hover { background: #3f7652 !important; text-shadow: none; }
+
+/* 2026-10-04: mobilon a teljes adatlap (gombbal) gorgetes nelkul elferjen - a landingen ~290 px szeles keretben is */
+@media (max-width: 599px) {
+  body[class*="customer-mosaic"] .my-3:has(.booking-time-remain-container) { margin: 0 0 4px !important; }
+  body[class*="customer-mosaic"] .booking-time-remain-container, body[class*="customer-mosaic"] .booking-time-remain-container * { font-size: 11px !important; line-height: 1.2 !important; white-space: nowrap; }
+  body[class*="customer-mosaic"] .order-lg-2 .card { margin: 0 0 4px !important; }
+  body[class*="customer-mosaic"] .order-lg-2 .card-body { padding: 4px 8px !important; }
+  body[class*="customer-mosaic"] .order-lg-2 .card-body, body[class*="customer-mosaic"] .order-lg-2 .card-body * { font-size: 11px !important; line-height: 1.25 !important; margin-top: 0 !important; margin-bottom: 0 !important; }
+  body[class*="customer-mosaic"] .order-lg-2 .card-body strong, body[class*="customer-mosaic"] .order-lg-2 .card-body h4 { font-size: 12px !important; }
+  body[class*="customer-mosaic"] .order-lg-1 .card-body { padding: 6px 8px !important; }
+  body[class*="customer-mosaic"] .form-group { margin-bottom: 6px !important; }
+  body[class*="customer-mosaic"] .control-label, body[class*="customer-mosaic"] .form-group label:not(.form-check-label) { font-size: 12px !important; margin-bottom: 2px !important; }
+  body[class*="customer-mosaic"] .form-check { margin: 0 0 2px !important; }
+  body[class*="customer-mosaic"] .form-check label, body[class*="customer-mosaic"] .form-check label a { font-size: 9.5px !important; line-height: 1.2 !important; }
+  body[class*="customer-mosaic"] span.d-block.mb-3 { margin: 0 !important; font-size: 10.5px !important; line-height: 1.25 !important; }
+  body[class*="customer-mosaic"] .btn-submit-booking { height: 40px !important; margin-top: 4px !important; }
+}
