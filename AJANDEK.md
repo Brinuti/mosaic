@@ -34,6 +34,23 @@ Nincs kosár, nincs külön termékoldal, nincs külön checkout variantonként.
 | `functions/api/ajandek/[[kind]].js` | Cloudflare Pages-adapter (ugyanaz a kezelő) |
 | `tools/ajandek-teszt/` | helyi teszt-kiszolgáló, böngészős Stripe-mock, mock Stripe API, `node --test` tesztek (nem kerül az oldalba) |
 
+### Design (2026-10-03, a feltöltött mockup alapján)
+
+A mockup **elrendezését és hangulatát** vettük át (fotóhátteres hero, ikonos Gift Finder, képes
+termékkártyák, sötétzöld véleménysáv, kétoszlopos checkout, háromlépéses összefoglaló), a
+**tartalmát nem**: az árak az éles Stripe-linkekből vannak (nem a mockup kitalált árai), a
+„legnépszerűbb” helyett „Ajánlott választás” áll, a vélemény a tulajdonos valódi Google-véleménye
+(nincs kitalált név/dátum, a második idézet elmarad), a fizetés Stripe (nem SimplePay), a termékek
+tartalma a jóváhagyott „50 perc + 30 perc szárítás” logika, és az „Ezt fogja átélni” blokk a
+jóváhagyott egyszerű szövegekkel megy (megérkezik → kikapcsol → csak vele foglalkoznak → rendezett
+hajjal távozik). A fejléc és a lábléc **az éles oldalé**: a `foglalas/ajandek.html`-ben a
+`<!--mh-fejlec-->` / `<!--mh-lablec-->` jelölőt a build az `assets/fejlec/` töredékekkel cseréli
+(mint a sminktetoválás-landingen), a menüt az `assets/js/klon.js` működteti; az „Ajándékkártya”
+menüpontot a `menuAktiv()` jelöli aktívnak. A helyi kiszolgáló ugyanezt a beillesztést végzi.
+A képek valódi MOSAIC-fotók (`TERMEKEK.*.vizual`, a hero a `hero_media`): a **páros** termék
+képe a MOSAIC egyetlen valódi páros fotója (egy nő és egy férfi vendég, két terapeuta); a spec
+„két barátnő” képet kért – ha van ilyen fotó, a `TERMEKEK.paros.vizual`-t kell cserélni.
+
 ### Árak – egyetlen forrás
 
 Az árak **csak** az `assets/js/ajandek-adat.js` `TERMEKEK.*.ar_ft` mezőjében vannak. A szerver ebből
