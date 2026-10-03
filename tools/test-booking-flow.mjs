@@ -1,0 +1,343 @@
+// A foglalo logikai magjanak tesztjei (flow.js, flows/headspa.js):
+//   node --test tools/test-booking-flow.mjs
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  EXIT_GIFTCARD, ROUTES, availableDays, cardsFor, classifyRedirect, dayKey, dayLabel, daypartOf, displayName, durationLabel, entryState,
+  filterSlots, findByKey, formatPrice, groupFacts, groupServices, icsFor, intentCandidates, intentServices, longDate, next, parseContext, parseLength,
+  priceFor, priceLabel, quickSlots, shouldHandoff, staffDiscountPercent, stripLabel, timeLabel, uniqueTimes,
+} from '../assets/js/booking-engine/flow.js';
+import { HEADSPA } from '../assets/js/booking-engine/flows/headspa.js';
+import { OXYGEN } from '../assets/js/booking-engine/flows/oxygen.js';
+import { HAIR } from '../assets/js/booking-engine/flows/hair.js';
+import { LASER, AREAS, areaOf, labelOf } from '../assets/js/booking-engine/flows/laser.js';
+import { classifyService } from '../assets/js/booking-engine/business-config.js';
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const mapping = JSON.parse(fs.readFileSync(path.join(here, '..', 'docs', 'booking-engine', 'SALONIC_SERVICE_STAFF_MAPPING_CURRENT.json'), 'utf8'));
+const headspaServices = mapping.services.filter((s) => s.business === 'headspa').map((s) => {
+  const svc = { serviceId: s.salonic_service_id, name: s.service_name_raw, specId: s.salonic_spec_id, activePrice: s.active_price, durationMin: s.duration_min };
+  return { ...svc, bookingType: classifyService('headspa', svc).bookingType };
+});
+
+// 2026-10-03 10:00 Budapest (CEST, UTC+2)
+const T = (d, h, m = 0) => Date.UTC(2026, 9, d, h - 2, m) / 1000;
+const slot = (unix, staff = '1') => ({ start_unix: unix, staff_id: staff, staff_label: 'x' });
+
+test('a wireframe routing tablaja (HeadSpa) pontosan egyezik az utvonalakkal', () => {
+  const rows = [
+    ['HS1', 'book', 'HS2'], ['HS1', 'voucher', 'HS3'], ['HS1', 'giftcard', EXIT_GIFTCARD],
+    ['HS2', 'service', 'C1'], ['HS3', 'service', 'C1'],
+    ['C1', 'slot', 'C3'], ['C1', 'more', 'C2'], ['C1', 'none', 'A1'], ['C2', 'slot', 'C3'], ['C2', 'none', 'A1'],
+    ['C3', 'next', 'C4'], ['C4', 'submit', 'C5'], ['C5', 'success', 'C6'], ['C5', 'slot_lost', 'A2'], ['C5', 'error', 'A3'],
+  ];
+  for (const [from, ev, to] of rows) assert.equal(next(from, ev), to, `${from} --${ev}--> ${to}`);
+  assert.throws(() => next('C3', 'slot'), /Ervenytelen/);
+  assert.throws(() => next('NINCS', 'x'));
+  assert.ok(Object.isFrozen(ROUTES));
+});
+
+test('belepesi pont: generic = HS1, konkret szolgaltatas = C1, ajandekkartya-szandek = HS3', () => {
+  assert.equal(entryState({ hasService: false, voucher: false }), 'HS1');
+  assert.equal(entryState({ hasService: true, voucher: false }), 'C1');
+  assert.equal(entryState({ hasService: true, voucher: true }), 'C1');
+  assert.equal(entryState({ hasService: false, voucher: true }), 'HS3');
+});
+
+test('Oxigen: a wireframe routing tablaja (OX1 -> C1; tobb valtozatnal OX2 -> C1), belepes OX1; nincs ajandekkartya-ag', () => {
+  assert.equal(next('OX1', 'service'), 'C1');
+  assert.equal(next('OX1', 'variant'), 'OX2');
+  assert.equal(next('OX2', 'service'), 'C1');
+  assert.equal(entryState({ hasService: false, voucher: false, first: OXYGEN.firstState, voucherState: OXYGEN.voucherState }), 'OX1');
+  assert.equal(entryState({ hasService: false, voucher: true, first: OXYGEN.firstState, voucherState: OXYGEN.voucherState }), 'OX1', 'az Oxigennek nincs ajandekkartya-ag');
+  assert.equal(entryState({ hasService: true, voucher: false, first: OXYGEN.firstState, voucherState: OXYGEN.voucherState }), 'C1');
+});
+
+// --- Fodraszat ------------------------------------------------------------------------------------------------------------------
+const hairServices = mapping.services.filter((s) => s.business === 'hair').map((s) => {
+  const svc = { serviceId: s.salonic_service_id, name: s.service_name_raw, specId: s.salonic_spec_id, category: s.service_category, activePrice: s.active_price, listPrice: s.list_price, durationMin: s.duration_min, staffIds: s.eligible_staff.map((e) => e.staff_id) };
+  return { ...svc, bookingType: classifyService('hair', svc).bookingType };
+});
+
+test('Fodraszat: a wireframe routing tablaja (HA1-HA3), belepes HA1; konkret szolgaltatas a HA3-ra', () => {
+  assert.equal(next('HA1', 'intent'), 'HA2');
+  assert.equal(next('HA1', 'consult'), 'C1', 'az ingyenes konzultacio egyenesen C1-re megy');
+  assert.equal(next('HA2', 'group'), 'HA2B');
+  assert.equal(next('HA2', 'service'), 'HA3');
+  assert.equal(next('HA2B', 'service'), 'HA3');
+  assert.equal(next('HA3', 'any'), 'C1');
+  assert.equal(next('HA3', 'choose'), 'HA3B');
+  assert.equal(next('HA3B', 'staff'), 'C1');
+  const e = { first: HAIR.firstState, voucherState: HAIR.voucherState, exact: HAIR.exactState };
+  assert.equal(entryState({ hasService: false, voucher: false, ...e }), 'HA1');
+  assert.equal(entryState({ hasService: true, voucher: false, ...e }), 'HA3', 'a konkret szolgaltatas landing a szakember-kerdesre erkezik');
+});
+
+test('Fodraszat: a 41 szolgaltatas mind besorolodik a jovahagyott szandekekbe, egy sem vész el', () => {
+  assert.equal(hairServices.length, 41);
+  const perIntent = Object.fromEntries(HAIR.intents.filter((i) => !i.consult).map((i) => [i.key, intentServices(hairServices, HAIR.intents, i)]));
+  assert.deepEqual(Object.fromEntries(Object.entries(perIntent).map(([k, v]) => [k, v.length])), { balayage: 14, color: 12, cut: 5, other: 9 });
+  const all = Object.values(perIntent).flat().map((s) => s.serviceId);
+  assert.equal(new Set(all).size, 40, 'egy szolgaltatas csak egy szandekben');
+  const consult = hairServices.filter((s) => s.bookingType === 'consultation');
+  assert.deepEqual(consult.map((s) => s.serviceId), ['232804']);
+  assert.equal(all.length + consult.length, 41);
+});
+
+test('Fodraszat: uj, ismeretlen Salonic-kategoria az "Egyeb"-be kerul (nem vesz el)', () => {
+  const novel = { serviceId: '777', name: 'Uj kezeles', category: 'Valami teljesen uj', bookingType: 'first_treatment', activePrice: 1000, durationMin: 30, staffIds: ['1'] };
+  const other = HAIR.intents.find((i) => i.key === 'other');
+  assert.ok(intentServices([...hairServices, novel], HAIR.intents, other).some((s) => s.serviceId === '777'));
+  assert.ok(!intentServices([...hairServices, novel], HAIR.intents, HAIR.intents.find((i) => i.key === 'color')).some((s) => s.serviceId === '777'));
+});
+
+test('parseLength: hajhossz felismerese a Salonic eltero irasmodjaibol', () => {
+  assert.deepEqual(parseLength('☀ Balayage / ombre / babylight + vágás + szárítás - Közepes haj'), { stem: 'Balayage / ombre / babylight + vágás + szárítás', length: 'Közepes haj' });
+  assert.deepEqual(parseLength('Teljes festés/ Supernatural Color- Rövid haj'), { stem: 'Teljes festés / Supernatural Color', length: 'Rövid haj' });
+  assert.deepEqual(parseLength('JOICO 4 lépéses hajújraépítő kezelés - félhosszú haj'), { stem: 'JOICO 4 lépéses hajújraépítő kezelés', length: 'Félhosszú haj' });
+  assert.equal(parseLength('🌊 Női szárítás - Extra Hosszú haj').length, 'Extra hosszú haj');
+  assert.deepEqual(parseLength('💇‍♂️ Férfi hajvágás'), { stem: 'Férfi hajvágás', length: null });
+  assert.equal(parseLength('Póthaj felrakás (350 Ft / Tincs)').length, null);
+});
+
+test('groupServices: a hajhossz-valtozatok egy kezelesben; a szokimeres 4 eltero irasmodja egy csoport; hosszak idotartam szerint', () => {
+  const byIntent = (key) => groupServices(intentServices(hairServices, HAIR.intents, HAIR.intents.find((i) => i.key === key)));
+  const balayage = byIntent('balayage');
+  assert.equal(balayage.length, 4, 'Balayage (2 kezeles), Teljes szokites, Teljes melir');
+  assert.deepEqual(balayage.map((g) => g.items.length), [3, 3, 4, 4]);
+  const szokites = balayage.find((g) => /szőkítés/i.test(g.title));
+  assert.equal(szokites.items.length, 4, 'a "korrekció- vágással" kulonbozo szokozes-irasmodjai egy csoportba kerulnek');
+  assert.deepEqual(szokites.items.map((i) => i.length), ['Rövid haj', 'Közepes haj', 'Hosszú haj', 'Extra hosszú haj']);
+  assert.equal(byIntent('color').length, 3);
+  assert.equal(byIntent('cut').length, 2);
+  assert.deepEqual(byIntent('cut').map((g) => g.items.length).sort(), [1, 4]);
+  const other = byIntent('other');
+  assert.equal(other.length, 4, 'Noi szaritas, JOICO, Pothaj leszedes, Pothaj felrakas');
+  for (const g of [...balayage, ...other]) for (let i = 1; i < g.items.length; i++) assert.ok(g.items[i - 1].service.durationMin <= g.items[i].service.durationMin);
+});
+
+test('groupFacts: tartomany idotartamra es arra', () => {
+  const g = groupServices(intentServices(hairServices, HAIR.intents, HAIR.intents.find((i) => i.key === 'cut'))).find((x) => /Női hajvágás/.test(x.title));
+  assert.equal(groupFacts(g).replace(/\s/g, ' '), '1 óra – 2 óra · 11 950 – 16 950 Ft');
+  const single = groupServices(hairServices.filter((s) => s.serviceId === '231549'))[0];
+  assert.equal(groupFacts(single).replace(/\s/g, ' '), '30 perc · 7 450 Ft');
+});
+
+test('szakemberi kedvezmeny: a Salonic cimkejebol, az ar a kedvezmennyel; nincs kedvezmeny = a Salonic ara', () => {
+  assert.equal(staffDiscountPercent('Noel - 20% kedvezmény!'), 20);
+  assert.equal(staffDiscountPercent('Betti'), 0);
+  assert.equal(staffDiscountPercent(null), 0);
+  const balayage = hairServices.find((s) => s.serviceId === '231532'); // 42 950 Ft
+  assert.equal(priceFor(balayage, 'Noel - 20% kedvezmény!'), 34360, 'pontosan a Salonic nyilvanos arsavjanak also vege');
+  assert.equal(priceFor(balayage, 'Betti'), 42950);
+  assert.equal(priceFor(balayage, null), 42950);
+  assert.equal(priceFor({ activePrice: null }, 'Noel - 20% kedvezmény!'), null);
+});
+
+// --- Lezer ------------------------------------------------------------------------------------------------------------------------
+const laserServices = mapping.services.filter((s) => s.business === 'laser').map((s) => {
+  const svc = { serviceId: s.salonic_service_id, name: s.service_name_raw, specId: s.salonic_spec_id, category: s.service_category, activePrice: s.active_price, durationMin: s.duration_min, staffIds: s.eligible_staff.map((e) => e.staff_id) };
+  return { ...svc, bookingType: classifyService('laser', svc).bookingType };
+});
+
+test('Lezer: a wireframe routing tablaja (LA1-LA3), belepes LA1, nincs szakember-valaszto', () => {
+  assert.equal(next('LA1', 'consult'), 'C1', 'az ingyenes konzultacio egyenesen C1-re megy');
+  assert.equal(next('LA1', 'known'), 'LA2');
+  assert.equal(next('LA1', 'returning'), 'LA3');
+  assert.equal(next('LA2', 'area'), 'LA2B');
+  assert.equal(next('LA2', 'service'), 'C1');
+  assert.equal(next('LA3', 'area'), 'LA2B');
+  assert.equal(next('LA3', 'service'), 'C1');
+  assert.equal(next('LA2B', 'service'), 'C1');
+  assert.equal(entryState({ hasService: false, voucher: false, first: LASER.firstState, voucherState: LASER.voucherState, exact: LASER.exactState }), 'LA1');
+  assert.equal(entryState({ hasService: true, voucher: false, first: LASER.firstState, voucherState: LASER.voucherState, exact: LASER.exactState }), 'C1', 'konkret kezeles landing: kozvetlenul az idopontok');
+  assert.equal(LASER.showStaffFilter, false);
+});
+
+test('Lezer: mind a 46 kezeles pontosan egy teruletre kerul, mindket uton (elso es 2. alkalomtol)', () => {
+  assert.equal(laserServices.length, 47);
+  for (const type of ['first_treatment', 'returning_treatment']) {
+    const pool = laserServices.filter((s) => s.bookingType === type);
+    assert.equal(pool.length, 23);
+    const counts = Object.fromEntries(AREAS.map((a) => [a.key, pool.filter((s) => areaOf(s).key === a.key).length]));
+    assert.deepEqual(counts, { arc: 3, honalj: 1, kar: 3, intim: 2, lab: 3, torzs: 3, tobb: 8 }, type);
+  }
+  assert.deepEqual(laserServices.filter((s) => s.bookingType === 'consultation').map((s) => s.serviceId), ['476477']);
+});
+
+test('Lezer: a "Tobb terulet" az akcios csomagokat es az egyeb testreszeket tartalmazza; a konkret teruletek a nevukbol', () => {
+  const area = (id) => areaOf(laserServices.find((s) => s.serviceId === id)).key;
+  assert.equal(area('476485'), 'arc'); // ARC - Teljes arc
+  assert.equal(area('476488'), 'honalj'); // TEST - Teljes honalj
+  assert.equal(area('476489'), 'kar'); // TEST - Alkar
+  assert.equal(area('476492'), 'intim');
+  assert.equal(area('476494'), 'lab');
+  assert.equal(area('476498'), 'torzs'); // FERFI - Hat
+  assert.equal(area('476479'), 'tobb'); // BASIC csomag
+  assert.equal(area('476501'), 'tobb'); // EGYEB - Kis testresz
+  assert.equal(area('476503'), 'tobb'); // Egyedi csomag
+});
+
+test('Lezer: a Salonic neveibol tiszta cim es cimkek (elotag, allapotfelmeres, kedvezmeny)', () => {
+  const l = (id) => labelOf(laserServices.find((s) => s.serviceId === id));
+  assert.deepEqual(l('476485'), { title: 'Teljes arc', tags: ['állapotfelméréssel', '20% kedvezménnyel'] });
+  assert.deepEqual(l('476511'), { title: 'Bajuszvonal', tags: [] });
+  assert.deepEqual(l('476494'), { title: '2 Lábszár', tags: ['állapotfelméréssel', '20% kedvezménnyel'] });
+  assert.deepEqual(l('476500'), { title: 'Has', tags: ['állapotfelméréssel'] }, 'a Has soron nincs kedvezmeny');
+  assert.deepEqual(l('476479'), { title: 'BASIC CSOMAG', tags: ['állapotfelméréssel', '20% kedvezménnyel'] });
+  assert.deepEqual(l('476480'), { title: 'MEDIUM CSOMAG', tags: ['állapotfelméréssel', '20% kedvezménnyel'] });
+  assert.equal(l('476506').title, 'BASIC CSOMAG');
+  assert.deepEqual(l('476506').tags.map((t) => t.replace(/\s/g, ' ')), ['9 500 Ft kedvezménnyel']);
+  assert.deepEqual(l('476478'), { title: 'EGYEDI CSOMAG (TE RAKOD ÖSSZE!)', tags: ['állapotfelméréssel', '50% kedvezménnyel'] });
+  for (const s of laserServices) assert.ok(labelOf(s).title && !/^(ARC|TEST|INTIM|LÁBAK|FÉRFI|EGYÉB|AKCIÓ)\b/i.test(labelOf(s).title), `tiszta cim: ${s.serviceId}`);
+});
+
+test('Lezer: az egyedi csomag 0 Ft-ja "Egyedi ar", a konzultacio "Ingyenes"', () => {
+  assert.equal(priceLabel(0, LASER.zeroPriceLabel), 'Egyedi ár');
+  assert.equal(priceLabel(0), 'Ingyenes');
+  const custom = laserServices.filter((s) => /EGYEDI CSOMAG/.test(s.name));
+  assert.equal(custom.length, 2);
+  assert.ok(custom.every((s) => s.activePrice === 0 && s.bookingType !== 'consultation'));
+});
+
+test('Oxigen szandekek a Salonic aktualis szolgaltatasaibol: hajkamera, elso (ket valtozat -> OX2), visszajaro', () => {
+  const services = mapping.services.filter((s) => s.business === 'oxygen').map((s) => {
+    const svc = { serviceId: s.salonic_service_id, name: s.service_name_raw, specId: s.salonic_spec_id, activePrice: s.active_price, durationMin: s.duration_min };
+    return { ...svc, bookingType: classifyService('oxygen', svc).bookingType };
+  });
+  const pick = (key) => intentCandidates(services, OXYGEN.intents.find((i) => i.key === key));
+  assert.deepEqual(pick('camera').map((s) => s.serviceId), ['466147']);
+  assert.equal(pick('camera')[0].activePrice, 4990);
+  assert.equal(pick('camera')[0].durationMin, 30);
+  assert.deepEqual(pick('first').map((s) => s.serviceId), ['466110'], 'egy jelolt: a foglalo egyenesen a C1-re megy (OX2 csak tobb valtozatnal jelenik meg)');
+  // ha a Salonic ujra felvenne egy masodik valtozatot, a motor nem valaszt helyetted, hanem rovid valasztast kinal
+  const extra = { ...services.find((s) => s.serviceId === '466110'), serviceId: '999999', durationMin: 120 };
+  assert.deepEqual(intentCandidates([...services, extra], OXYGEN.intents.find((i) => i.key === 'first')).map((s) => s.serviceId).sort(), ['466110', '999999']);
+  assert.deepEqual(pick('returning').map((s) => s.serviceId), ['466158']);
+  assert.ok(OXYGEN.showStaffFilter, 'az Oxigennel a szakember valaszthato');
+});
+
+test('ido: budapesti cimkek, napszakok es napnevek', () => {
+  assert.equal(timeLabel(T(3, 10)), '10:00');
+  assert.equal(timeLabel(T(3, 13, 30)), '13:30');
+  assert.equal(dayKey(T(3, 23, 30)), '2026-10-03');
+  assert.equal(dayKey(T(4, 0, 30)), '2026-10-04');
+  assert.equal(daypartOf(T(3, 11, 59)), 'morning');
+  assert.equal(daypartOf(T(3, 12)), 'afternoon');
+  assert.equal(daypartOf(T(3, 17, 59)), 'afternoon');
+  assert.equal(daypartOf(T(3, 18)), 'evening');
+  assert.equal(dayLabel(T(3, 15), T(3, 9)), 'Ma');
+  assert.equal(dayLabel(T(4, 15), T(3, 9)), 'Holnap');
+  assert.equal(dayLabel(T(5, 15), T(3, 9)), 'Hétfő');
+  assert.equal(longDate(T(3, 10)), 'Szombat, okt. 3.');
+  assert.equal(stripLabel(T(3, 10)), 'Szo 3.');
+});
+
+test('uniqueTimes: ugyanarra az idopontra egy bejegyzes, rendezve', () => {
+  const u = uniqueTimes([slot(T(3, 12), 'b'), slot(T(3, 10), 'a'), slot(T(3, 10), 'b'), slot(T(3, 12), 'a')]);
+  assert.deepEqual(u.map((s) => s.start_unix), [T(3, 10), T(3, 12)]);
+  assert.equal(u[0].staff_id, 'a');
+});
+
+test('quickSlots: legfeljebb 5 legkozelebbi idopont, napok szerint csoportositva', () => {
+  const slots = [T(3, 10), T(3, 11, 30), T(4, 14, 30), T(4, 16, 30), T(5, 9, 30), T(6, 9), T(7, 9)].map((t) => slot(t));
+  const g = quickSlots(slots, { max: 5, nowUnix: T(3, 9) });
+  assert.deepEqual(g.map((x) => [x.label, x.items.map((i) => i.time)]), [['Ma', ['10:00', '11:30']], ['Holnap', ['14:30', '16:30']], ['Hétfő', ['09:30']]]);
+  assert.equal(g.reduce((n, x) => n + x.items.length, 0), 5);
+  assert.deepEqual(quickSlots([], { nowUnix: T(3, 9) }), []);
+});
+
+test('filterSlots: napszak, munkatars, nap', () => {
+  const s = [slot(T(3, 10), 'a'), slot(T(3, 14), 'b'), slot(T(3, 19), 'a'), slot(T(4, 10), 'a')];
+  assert.equal(filterSlots(s, { daypart: 'morning' }).length, 2);
+  assert.equal(filterSlots(s, { daypart: 'evening' }).length, 1);
+  assert.equal(filterSlots(s, { staffId: 'a' }).length, 3);
+  assert.equal(filterSlots(s, { day: '2026-10-03', daypart: 'afternoon' }).length, 1);
+  assert.equal(filterSlots(s).length, 4);
+});
+
+test('availableDays: a napok, amelyekre van szabad idopont', () => {
+  const d = availableDays([slot(T(3, 10)), slot(T(3, 14)), slot(T(5, 9))]);
+  assert.deepEqual(d.map((x) => [x.key, x.label]), [['2026-10-03', 'Szo 3.'], ['2026-10-05', 'H 5.']]);
+});
+
+test('megjelenites: nev, ar, idotartam', () => {
+  assert.equal(displayName('💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás'), 'EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás');
+  assert.equal(displayName('KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces MOSAIC'), 'EGYÉNI 50 perces MOSAIC');
+  assert.equal(formatPrice(26900).replace(/\s/g, ' '), '26 900 Ft');
+  assert.equal(formatPrice(4990).replace(/\s/g, ' '), '4 990 Ft', 'negyjegyu ar is tagolt');
+  assert.equal(formatPrice(990), '990 Ft');
+  assert.equal(priceLabel(0), 'Ingyenes', 'a 0 Ft-os (konzultacio) "Ingyenes"');
+  assert.equal(priceLabel(null), '');
+  assert.equal(priceLabel(4990).replace(/\s/g, ' '), '4 990 Ft');
+  assert.equal(displayName('Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)'), 'Fodrász konzultáció', 'a zarojeles akcios szoveg nem resze a nevnek');
+  assert.equal(formatPrice(1250000).replace(/\s/g, ' '), '1 250 000 Ft');
+  assert.equal(formatPrice(null), '');
+  assert.equal(durationLabel(80), '1 óra 20 perc');
+  assert.equal(durationLabel(60), '1 óra');
+  assert.equal(durationLabel(30), '30 perc');
+});
+
+test('HeadSpa kartyak a Salonic aktualis szolgaltatasaibol: 3 kartya, Egyeni = csak Relax, ajandekkartyahoz is', () => {
+  const normal = cardsFor(headspaServices, HEADSPA.cards, { voucher: false });
+  assert.deepEqual(normal.map((c) => c.card.key), ['egyeni', 'paros', 'negykezes']);
+  assert.match(normal[0].service.name, /Relax/);
+  assert.ok(!normal.some((c) => /"Hair"/.test(c.service.name)), 'a Hair valtozat nem kerul be');
+  assert.ok(normal.every((c) => c.service.bookingType !== 'voucher_redemption'));
+  const voucher = cardsFor(headspaServices, HEADSPA.cards, { voucher: true });
+  assert.deepEqual(voucher.map((c) => c.card.key), ['egyeni', 'paros', 'negykezes']);
+  assert.ok(voucher.every((c) => c.service.bookingType === 'voucher_redemption'));
+  assert.deepEqual(cardsFor([], HEADSPA.cards), [], 'ami nincs a Salonicban, nem jelenik meg');
+  assert.ok(!HEADSPA.showStaffFilter);
+});
+
+test('findByKey: azonosito vagy kulcsszavak; az ajandekkartyas es a normal kulon', () => {
+  const normal = findByKey(headspaServices, 'paros');
+  assert.match(normal.name, /PÁROS/);
+  assert.notEqual(normal.bookingType, 'voucher_redemption');
+  assert.equal(findByKey(headspaServices, 'paros', { voucher: true }).bookingType, 'voucher_redemption');
+  assert.equal(findByKey(headspaServices, normal.serviceId).serviceId, normal.serviceId);
+  assert.equal(findByKey(headspaServices, 'nincs-ilyen'), null);
+  assert.equal(findByKey(headspaServices, null), null);
+});
+
+test('parseContext: input szerzodes, mérési parameterek, source_page', () => {
+  const c = parseContext('?business=headspa&service=paros&voucher=1&utm_source=google&gclid=abc&fbclid=f1&ttclid=t1&minta=siker', 'https://www.mosaicheadspa.hu/headspa-budapest', 'https://www.mosaicheadspa.hu');
+  assert.deepEqual(c, { business: 'headspa', serviceKey: 'paros', category: null, voucher: true, sourcePage: '/headspa-budapest', attribution: { utm_source: 'google', gclid: 'abc', fbclid: 'f1', ttclid: 't1' }, sample: 'siker' });
+  assert.equal(parseContext('?business=hair&category=balayage').category, 'balayage');
+  assert.equal(parseContext('', 'https://masik.hu/x', 'https://www.mosaicheadspa.hu').sourcePage, '', 'idegen referrer nem source_page');
+  assert.equal(parseContext('?source_page=/x').sourcePage, '/x');
+  assert.equal(parseContext('').business, 'headspa');
+});
+
+test('classifyRedirect: elkelt idopont (fooldal / foglalo), visszaigazolas, ismeretlen', () => {
+  assert.equal(classifyRedirect('https://www.mosaicheadspa.hu/'), 'slot_lost');
+  assert.equal(classifyRedirect('https://www.mosaicheadspa.hu'), 'slot_lost');
+  assert.equal(classifyRedirect('https://www.mosaicheadspa.hu/foglalo-motor?beagyazva=1'), 'slot_lost');
+  assert.equal(classifyRedirect('https://www.mosaicheadspa.hu/success-foglalas?first_booking=true&bookingUrl=https%3A%2F%2Fx'), 'confirmation');
+  assert.equal(classifyRedirect('https://www.mosaicheadspa.hu/valami-mas'), 'unknown');
+  assert.equal(classifyRedirect('nem url'), 'unknown');
+});
+
+test('shouldHandoff: eles tartomanyon atadas a meglevo koszonooldalnak, elonezeten/helyben nem; ?atadas= felulirja', () => {
+  assert.equal(shouldHandoff('www.mosaicheadspa.hu'), true);
+  assert.equal(shouldHandoff('mosaicheadspa.hu', '?business=oxygen'), true);
+  assert.equal(shouldHandoff('claude-booking-engine-ui.mosaic-d77.pages.dev'), false);
+  assert.equal(shouldHandoff('localhost'), false);
+  assert.equal(shouldHandoff('www.mosaicheadspa.hu', '?atadas=0'), false);
+  assert.equal(shouldHandoff('localhost', '?atadas=1'), true);
+});
+
+test('icsFor: naptar-fajl: kezdes, veg, helyszin, emlekezteto', () => {
+  const ics = icsFor({ startUnix: T(3, 10), durationMin: 80, title: 'HeadSpa, Egyéni', location: '1023 Budapest, Bécsi út 4.', description: 'MOSAIC' });
+  assert.match(ics, /^BEGIN:VCALENDAR\r\n/);
+  assert.match(ics, /DTSTART:20261003T080000Z/);
+  assert.match(ics, /DTEND:20261003T092000Z/);
+  assert.match(ics, /SUMMARY:HeadSpa\\, Egyéni/);
+  assert.match(ics, /LOCATION:1023 Budapest\\, Bécsi út 4\./);
+  assert.match(ics, /TRIGGER:-PT24H/);
+  assert.match(ics, /END:VCALENDAR$/);
+});
