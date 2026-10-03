@@ -94,7 +94,8 @@
   // "Vasárnap, okt. 4." (mint a tervben)
   const napNev = (ts) => { const h = fmt(ts, { weekday: 'long' }); return h.charAt(0).toUpperCase() + h.slice(1) + ', ' + fmt(ts, { month: 'short', day: 'numeric' }); };
   const teljes = (ts) => napNev(ts) + ' · ' + ora(ts);
-  const idotartam = (p) => { if (p < 60) return 'kb. ' + p + ' perc'; const o = p / 60; return 'kb. ' + (Number.isInteger(o) ? o : o.toFixed(1).replace('.', ',')) + ' óra'; };
+  // a sminktetovalas (90-120 perces Salonic-sav) a tervezessel es elorajzolassal egyutt kb. 2-2,5 ora - mindenhol igy kommunikaljuk
+  const idotartam = (p) => { if (p >= 90) return 'kb. 2–2,5 óra'; if (p < 60) return 'kb. ' + p + ' perc'; const o = p / 60; return 'kb. ' + (Number.isInteger(o) ? o : o.toFixed(1).replace('.', ',')) + ' óra'; };
   const szoveg = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : '');
   const tarol = (k, v) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* privat mod */ } };
   const olvas = (k) => { try { return JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { return null; } };
@@ -256,7 +257,7 @@
         elem('span', { class: 'valtozat', szoveg: [k.egyeb ? 'A szalonban' : k.valtozat, idotartam(k.perc)].filter(Boolean).join(' · ') })),
       elem('span', { class: 'jobb' },
         elem('span', { class: 'ar', szoveg: arSzoveg(k) }),
-        k.eredeti ? elem('s', { szoveg: ft(k.eredeti) }) : null));
+        null));
   }
   BELEPES.szolg = async () => {
     try {
