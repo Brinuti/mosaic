@@ -469,9 +469,9 @@
   const MAX_FOTO = 5;
   BELEPES.foto = () => {
     const d = allapot.ag === 'D';
-    $('foto-cim').textContent = d ? 'Nem vagy biztos benne? Küldj fotót, és segítek.' : 'Tölts fel fotót a jelenlegi sminktetoválásodról';
+    $('foto-cim').textContent = d ? 'Nem vagy biztos benne? Küldj fotót, és segítek.' : (matchMedia('(hover: none) and (pointer: coarse)').matches ? 'Fotózd le a jelenlegi sminktetoválásodat' : 'Tölts fel fotót a jelenlegi sminktetoválásodról');
     $('foto-szoveg').replaceChildren(d ? 'Ránézek, és megírom, hogy első kezelés vagy korrekció szükséges-e.'
-      : elem('b', { szoveg: 'Fotó nélkül nem tudok segíteni: a feltöltés kötelező. Csak a fotó alapján tudom megmondani, mit lehet és érdemes tenni.' }));
+      : elem('b', { szoveg: 'Fotó nélkül nem tudok segíteni: a fotó kötelező. Csak a fotó alapján tudom megmondani, mit lehet és érdemes tenni.' }));
     $('foto-osszegzes').replaceChildren(allapot.slot && allapot.kezeles
       ? elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Választott (preferált) időpont' }), elem('div', { class: 'sor' }, ikon('naptar'),
         elem('span', {}, elem('b', { szoveg: teljes(allapot.slot) }), elem('span', { szoveg: allapot.kezeles.cim + (allapot.kezeles.valtozat ? ' – ' + allapot.kezeles.valtozat : '') }))))
@@ -483,6 +483,7 @@
       elem('button', { type: 'button', 'aria-label': 'Fotó törlése', szoveg: '×', onclick: () => { URL.revokeObjectURL(f.url); allapot.fotok.splice(i, 1); rajzolFotok(); } }))));
     $('foto-tovabb').disabled = !allapot.fotok.length;
     document.querySelector('.foto-zona').hidden = allapot.fotok.length >= MAX_FOTO;
+    document.querySelector('.foto-mobil').hidden = allapot.fotok.length >= MAX_FOTO;
   }
   // a telefonos fotok tobb MB-osak: 1600 px-re kicsinyitjuk (a Netlify-urlap merethatara miatt is)
   async function kicsinyit(fajl) {
@@ -492,7 +493,7 @@
     v.getContext('2d').drawImage(kep, 0, 0, v.width, v.height);
     return new Promise((ok, hiba) => v.toBlob((b) => (b ? ok(b) : hiba(new Error('toBlob'))), 'image/jpeg', 0.82));
   }
-  $('foto-input').addEventListener('change', async (e) => {
+  async function fotoValasztva(e) {
     hibaDoboz($('foto-hiba'), '');
     const fajlok = [...e.target.files].slice(0, MAX_FOTO - allapot.fotok.length);
     let rossz = 0;
@@ -507,7 +508,10 @@
     if (e.target.files.length > fajlok.length) hibaDoboz($('foto-hiba'), 'Legfeljebb ' + MAX_FOTO + ' képet küldhetsz.');
     e.target.value = '';
     rajzolFotok();
-  });
+  }
+  // asztalon feltoltes, mobilon a kamera-gomb (capture) es a galeria-link ugyanigy mukodik
+  $('foto-input').addEventListener('change', fotoValasztva);
+  $('foto-kamera-input').addEventListener('change', fotoValasztva);
   $('foto-tovabb').addEventListener('click', () => ugrik('foto-adatok'));
 
   // mezonkenti (inline) ellenorzes
