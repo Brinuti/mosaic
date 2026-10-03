@@ -15,7 +15,7 @@ A gépen lévő Chrome-ot használja (`CHROME_UTVONAL` környezeti változóval 
 ## Futtatás
 
 ```bash
-node tools/meres-proba/meres-proba.mjs --szenario hair|oxigen2|lezer --mod szim|nativ|valodi --out naplo.json [--clickids 1] [--landing 1] [--overlay dist]
+node tools/meres-proba/meres-proba.mjs --szenario hair|oxigen2|lezer|headspa --mod szim|nativ|valodi --out naplo.json [--clickids 1] [--landing 1] [--overlay dist]
 node tools/meres-proba/elemzes.mjs naplo.json [--reszletes 1]
 node tools/meres-proba/osszevet.mjs "cimke=naplo1.json" "cimke=naplo2.json"
 ```
@@ -26,6 +26,7 @@ node tools/meres-proba/osszevet.mjs "cimke=naplo1.json" "cimke=naplo2.json"
 - `--clickids 1`: hirdetési kattintást utánzó paraméterek (`gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc`).
 - `--landing 1`: „hirdetés → landing → motor” út (a landing a kattintás-azonosítókkal, majd a rajta lévő gombbal a motorra).
 - `--overlay dist`: az éles tartomány oldalait a helyi `dist/`-ből szolgálja ki (még nem deployolt változat kipróbálása; a `dist/`-et `ELES=1 FOGLALO_ATKOTES=all node tools/netlify-build.mjs` készíti).
+- `salonic-lepesek.mjs`: a Salonic **natív** útján (főoldal → szolgáltatás → munkatárs → időpont → adatlap) végigkattintva kiírja a `view_item` / `select_employee` (GA4) és a `ViewContent` / `InitiateCheckout` (TikTok) események tartalmát; foglalás nem jön létre. Eredmény: [MERES_FOGLALASI_LEPESEK.md](../../docs/booking-engine/MERES_FOGLALASI_LEPESEK.md).
 - `landing-sonda.mjs <útvonalak…>`: mely landingeken fut a Google-címke, a Meta-pixel és a TikTok-pixel, és kapják-e el a kattintás-azonosítót.
 
 A teszt a süti-hozzájárulást elfogadottnak tekinti (a saját tárolóba írja, mint a süti-sáv gombja), így a mérés teljes üzemben fut.
