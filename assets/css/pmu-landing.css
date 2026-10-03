@@ -543,3 +543,144 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
   .fogl-hatter::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(24,48,51,.55), rgba(24,48,51,0) 50%); }
   .fogl-portre { padding-right: 20px; }
 }
+
+/* === 2026-10-03 (3. kor) === */
+/* zold doboz: a kert uj szoveg */
+.tisztelet-szoveg { font-size: 14.5px !important; color: #34413f !important; line-height: 1.5; margin: 0 40px 18px 0 !important; }
+.tisztelet-lead { font-weight: 600; margin-bottom: 8px !important; }
+.tisztelet-kiemelt { display: grid; grid-template-columns: 22px 1fr; gap: 10px; margin: 4px 0 0 !important; padding: 12px 14px; background: rgba(255, 255, 255, .55); border-radius: 10px; font-size: 14.5px !important; line-height: 1.45; color: #2f3c3c !important; }
+.tisztelet-kiemelt svg { width: 20px; height: 20px; fill: none; stroke: var(--sotet); stroke-width: 1.8; margin-top: 1px; }
+/* foglalo (asztal): Melitta kepe kozvetlenul a foglalo mellett, a feje nincs levagva, lagy atmenettel */
+@media (min-width: 1101px) {
+  .fogl-hatter { left: calc(max(32px, (100% - 1240px) / 2) + 540px); right: auto; width: 560px;
+    background: url(/assets/img/pmu/melitta-dij.jpg) 50% 0 / 100% auto no-repeat;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.6) 14%, #000 26%, #000 82%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.6) 14%, #000 26%, #000 82%, transparent 100%); }
+  .fogl-hatter::after { background: linear-gradient(180deg, rgba(16,34,31,0) 70%, #12261f 100%); }
+  .fogl-racs { grid-template-columns: minmax(0, 600px) 1fr; }
+  .fogl-portre { padding: 0 0 18px 150px; }
+}
+
+/* === mobil: minden szekcio 1, legfeljebb 2 kepernyo === */
+@media (max-width: 700px) {
+  h2, h2.nagy, .ar-fej h2.nagy, .fogl-fej h2.nagy, .helyzetek h2, .idopontok h2, .mu-fej h2, .menet h2, .gyogy-fej h2 { font-size: 29px; line-height: 1.12; }
+  .lead { font-size: 15.5px; }
+  .felcim { margin-bottom: 6px; }
+  .helyzetek, .eredmenyek, .arak, .mu, .menet, .gyogyulas, .szakember, .velemenyek, .mielott, .gyik, .helyszin { padding-top: 36px !important; padding-bottom: 36px !important; }
+
+  /* hero: csempek nelkul; cim -> kep -> alcim -> Melitta -> harom egyforma gomb */
+  .tenyek { display: none; }
+  .hero { padding: 18px 0 30px; }
+  .hero-racs { display: flex; flex-direction: column; gap: 0; }
+  .hero-szoveg { display: contents; }
+  .hero h1 { order: 1; font-size: 31px; margin: 0 0 14px; }
+  .hero-kep { order: 2; aspect-ratio: 1.35; border-radius: 14px; }
+  .hero-al { order: 3; font-size: 17px; margin: 14px 0 14px; }
+  .szakember-mini { order: 4; gap: 12px; margin-bottom: 16px; }
+  .cta-blokk { order: 5; }
+  .bizalom { order: 6; margin-top: 14px; justify-content: center; }
+  .szakember-mini .avatar { width: 54px; height: 54px; }
+  .dij-sor { white-space: nowrap; font-size: 11.5px; gap: 5px; margin-top: 4px; }
+  .dij-sor b { font-size: 11.5px; }
+  .dij-sor svg { width: 14px; height: 14px; }
+  .cta-blokk { display: grid; grid-template-columns: 1fr; gap: 10px; width: 100%; }
+  .masodlagos { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 0; }
+  .cta-blokk .gomb-nagy, .masodlagos .gomb, .masodlagos .link-gomb { width: 100%; min-height: 54px; box-sizing: border-box; justify-content: center; padding: 12px 18px; font-size: 15px; }
+  .cta-blokk .gomb-nagy { font-size: 14.5px; letter-spacing: .08em; }
+  .masodlagos .link-gomb { display: inline-flex; align-items: center; gap: 10px; border: 1px solid var(--sotet); border-radius: 999px; text-decoration: none; background: rgba(255, 255, 255, .45); }
+
+  /* legkozelebbi idopontok: egysoros napok */
+  .idopontok { padding: 26px 0 26px; }
+  .idopontok-racs { gap: 14px; }
+  .idopontok .halk { font-size: 13.5px; margin-top: 6px; }
+  .nap-kartyak { gap: 8px; }
+  .nap-kartya { min-height: 0; padding: 10px 14px; grid-template-columns: auto 1fr auto; column-gap: 14px; row-gap: 0; align-items: center; }
+  .nap-kartya .ikon-kor { display: none; }
+  .nap-kartya .datum { grid-column: 1; grid-row: 1; font-size: 21px; }
+  .nap-kartya .hetnap { grid-column: 1; grid-row: 2; font-size: 10px; }
+  .nap-kartya .orak { grid-column: 2; grid-row: 1 / 3; margin: 0; font-size: 12.5px; }
+  .nap-kartya .kis-nyil { grid-column: 3; grid-row: 1 / 3; align-self: center; }
+  .idopontok-racs > div:last-child > .kozepre { margin-top: 12px; }
+  .idopontok .gomb-korvonal.gomb-szeles { width: 100%; min-width: 0; padding: 12px 18px; }
+
+  /* melyik helyzet: kis kep + szoveg egymas mellett */
+  .helyzetek > .tartalom > .halk { font-size: 13.5px; }
+  .helyzet-racs { gap: 10px; margin-top: 16px; }
+  .helyzet { grid-template-columns: 92px 1fr; gap: 12px; padding: 10px; }
+  .helyzet > img { min-height: 0; height: 100%; max-height: 170px; }
+  .helyzet > div:last-child { gap: 5px; padding: 2px 0; }
+  .helyzet h3 { font-size: 16.5px; line-height: 1.2; }
+  .helyzet p { font-size: 12.5px; line-height: 1.4; }
+  .helyzet-terulet { font-size: 9.5px !important; }
+  .helyzet .gomb { align-self: flex-start; padding: 8px 16px; font-size: 13px; margin-top: 4px; }
+  .figyelmeztet svg { width: 15px; height: 15px; }
+
+  /* arak: pipas lista ket oszlopban, egysoros arkartyak */
+  .ar-fej { gap: 12px; margin-bottom: 14px; }
+  .tartalmaz { border-left: 0; padding-left: 0; }
+  .tartalmaz ul { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; margin-top: 6px; }
+  .tartalmaz li { width: auto; min-height: 0; border: 0; padding: 0 0 0 20px; text-align: left; font-size: 13px; position: relative; }
+  .tartalmaz li br, .tartalmaz li svg { display: none; }
+  .tartalmaz li::before { content: '✓'; position: absolute; left: 0; top: 0; color: var(--zold, #3f7652); font-weight: 700; }
+  .ar-racs { gap: 8px; }
+  .ar-kartya { display: grid; grid-template-columns: 74px 1fr; }
+  .ar-kartya img { aspect-ratio: auto; height: 100%; min-height: 74px; }
+  .ar-kartya > div { display: grid; grid-template-columns: 1fr auto; column-gap: 10px; align-items: center; padding: 9px 12px; }
+  .ar-kartya h3 { grid-column: 1; font-size: 14px; }
+  .ar-kartya .ar { grid-column: 1; font-size: 18px; margin: 2px 0 0; }
+  .ar-kartya .ar-regi { font-size: 12px; }
+  .ar-kartya p.ar-ido { grid-column: 1; margin: 0; font-size: 11.5px; }
+  .ar-kartya p:not(.ar):not(.ar-ido) { display: none; }
+  .ar-kartya .gomb { grid-column: 2; grid-row: 1 / 4; margin: 0; align-self: center; padding: 9px 12px; font-size: 0; letter-spacing: .1em; }
+  .ar-kartya .gomb::after { content: 'Időpont →'; font-size: 10.5px; }
+  .eloleg { grid-template-columns: auto 1fr; gap: 4px 14px; padding: 12px 16px; margin-top: 12px; }
+  .eloleg .ermek { width: 34px; height: 34px; grid-row: 1 / 3; }
+  .eloleg-cim { font-size: 20px; padding: 0; }
+  .eloleg-szoveg { font-size: 12.5px; }
+  .eloleg-szoveg br { display: none; }
+
+  /* mitol nem lesz mu hatasu: kis kep + szoveg soronkent */
+  .mu-fej { gap: 14px; margin-bottom: 16px; }
+  .jegyzet { padding: 12px 14px; gap: 10px; }
+  .jegyzet h3 { font-size: 16px; }
+  .jegyzet p { margin-top: 4px; }
+  .lepes-racs { gap: 8px; }
+  .lepes-racs li { display: grid; grid-template-columns: 84px 1fr; column-gap: 12px; padding: 10px; align-items: start; }
+  .lepes-racs img { grid-column: 1; grid-row: 1 / 3; aspect-ratio: 1; height: auto; }
+  .lepes-fej { grid-column: 2; min-height: 0; gap: 8px; }
+  .lepes-racs .szam { width: 24px; height: 24px; font-size: 13px; }
+  .lepes-racs h3 { font-size: 15px; }
+  .lepes-racs p { grid-column: 2; margin: 4px 0 0; font-size: 12.5px; }
+
+  /* igy zajlik: egyszeru vizszintes abra */
+  .menet-racs { gap: 18px; }
+  .idovonal { grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 20px; position: relative; }
+  .idovonal::before { content: ''; position: absolute; left: 12.5%; right: 12.5%; top: 20px; height: 2px; background: linear-gradient(90deg, var(--arany), #c9b089); }
+  .idovonal li { text-align: center; }
+  .idovonal .ikon-kor { position: relative; width: 40px; height: 40px; border: 2px solid #fff; }
+  .idovonal h3 { font-size: 12.5px; margin: 8px 0 0; }
+  .idovonal p { display: none; }
+  .nyugi { min-height: 0; padding: 14px 16px 14px 62px; }
+  .nyugi svg { width: 32px; height: 32px; top: 16px; left: 16px; }
+  .nyugi h3 { margin-top: 0 !important; font-size: 18px; }
+  .nyugi p { margin-top: 4px; font-size: 13px; }
+
+  /* gyogyulas: 2x2 kompakt */
+  .gyogy-fej { gap: 10px; margin-bottom: 14px; }
+  .gyogy-fej aside { border-left: 2px solid var(--vonal); padding-left: 12px; }
+  .gyogy-fej aside h3 { font-size: 15px; display: inline; }
+  .gyogy-fej aside p { display: inline; font-size: 13px; }
+  .gyogy-sor { grid-template-columns: 1fr 1fr; gap: 14px 12px; }
+  .gyogy-sor p { font-size: 12.5px; margin-top: 6px; line-height: 1.4; }
+  .szemoldok-rajz { aspect-ratio: 2; }
+
+  /* zold doboz */
+  .tisztelet-szoveg { margin-right: 0 !important; }
+}
+@media (max-width: 700px) {
+  .gyogy-fej aside h3::after { content: '\00a0'; }
+  .masodlagos .gomb svg { display: none; }
+  .masodlagos .gomb::after { content: '→'; }
+  .lemondas-abra small { text-wrap: balance; }
+  .utak h4 { font-size: 18px; }
+  .utak p { font-size: 13.5px; }
+}
