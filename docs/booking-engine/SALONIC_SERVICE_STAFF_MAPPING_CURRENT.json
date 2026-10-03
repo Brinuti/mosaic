@@ -169,8 +169,8 @@
       "place_phone": "+36-20-247-4444",
       "readback_status": "PARTIAL_READBACK",
       "open_items": [
-        "FELOLDVA (2026-10-03): a hajkamera-vizsgalat felkerult a Salonicba: 466147 \"AKCIOS Hajkamerás vizsgálat és konzultáció\", 30 perc, 4 990 Ft (a besorolasa: konzultacio).",
-        "Az elso oxigenterapiahoz ket Salonic-valtozat van (466110: 80 perc, 3 kezelo; 468638: 120 perc, 2 kezelo), azonos ar: a foglalo jelenleg rovid valasztast kinal (OX2), amig nincs dontes, melyiket kell kinalni.",
+        "FELOLDVA (2026-10-03): a hajkamera-vizsgalat felkerult: 466147 \"AKCIOS Hajkamerás vizsgálat és konzultáció\", 30 perc, 4 990 Ft (besorolas: konzultacio).",
+        "FELOLDVA (2026-10-03): az elso oxigenterapiabol a 120 perces valtozat (468638) kikerult a Salonicbol, csak a 80 perces (466110) maradt, ezt kinaljuk.",
         "booking_type / is_acquisition_conversion: jovahagyva, lasd DECISIONS.md. success_route: nyitott."
       ]
     },
@@ -2002,38 +2002,6 @@
           "staff_id": "32009",
           "staff_label": "Szűcs Vivien",
           "staff_api_name": "Szűcs Vivien"
-        },
-        {
-          "staff_id": "32969",
-          "staff_label": "Menyhárt Móni",
-          "staff_api_name": "Menyhárt Móni"
-        }
-      ],
-      "booking_type": null,
-      "success_route": null,
-      "is_acquisition_conversion": null,
-      "blocked": [
-        "booking_type",
-        "success_route",
-        "is_acquisition_conversion"
-      ]
-    },
-    {
-      "business": "oxygen",
-      "salonic_account": "mosaic-oxigen",
-      "salonic_place_id": "14409",
-      "salonic_spec_id": "64122",
-      "service_category": "Oxigénterápia - 1.alkalom",
-      "salonic_service_id": "468638",
-      "service_name_raw": "👩 Haj Oxigénterápia - 1. alkalom",
-      "duration_min": 120,
-      "active_price": 29900,
-      "list_price": null,
-      "eligible_staff": [
-        {
-          "staff_id": "31988",
-          "staff_label": "Bozsoki - Harangozó Tündi",
-          "staff_api_name": "Bozsoki - Harangozó Tündi"
         },
         {
           "staff_id": "32969",

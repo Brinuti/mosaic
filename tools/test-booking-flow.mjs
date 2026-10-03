@@ -62,7 +62,10 @@ test('Oxigen szandekek a Salonic aktualis szolgaltatasaibol: hajkamera, elso (ke
   assert.deepEqual(pick('camera').map((s) => s.serviceId), ['466147']);
   assert.equal(pick('camera')[0].activePrice, 4990);
   assert.equal(pick('camera')[0].durationMin, 30);
-  assert.deepEqual(pick('first').map((s) => s.serviceId).sort(), ['466110', '468638'], 'ket valtozat: a foglalo rovid valasztast kinal, nem valaszt helyetted');
+  assert.deepEqual(pick('first').map((s) => s.serviceId), ['466110'], 'egy jelolt: a foglalo egyenesen a C1-re megy (OX2 csak tobb valtozatnal jelenik meg)');
+  // ha a Salonic ujra felvenne egy masodik valtozatot, a motor nem valaszt helyetted, hanem rovid valasztast kinal
+  const extra = { ...services.find((s) => s.serviceId === '466110'), serviceId: '999999', durationMin: 120 };
+  assert.deepEqual(intentCandidates([...services, extra], OXYGEN.intents.find((i) => i.key === 'first')).map((s) => s.serviceId).sort(), ['466110', '999999']);
   assert.deepEqual(pick('returning').map((s) => s.serviceId), ['466158']);
   assert.ok(OXYGEN.showStaffFilter, 'az Oxigennel a szakember valaszthato');
 });

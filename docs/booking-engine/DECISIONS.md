@@ -23,6 +23,7 @@ Minden döntés a tulajdonostól jött, 2026-10-03-án, a [PMU live audit és a 
 | 12 | A kész foglaló helye | **Rejtett próbaoldal** (`/foglalo-motor`, `noindex`, nincs rá link). Éles oldalba csak külön jóváhagyással kerül. |
 | 13 | „Ajándékkártyát vásárolok” gomb (HeadSpa) | **Az új ajándék-oldalra, ha kész** (a másik ablak építi). Addig a mostani `/headspa-ajandekkartya` oldalra mutat; az átkötés egy sor a `flows/headspa.js`-ben (`giftCardUrl`). |
 | 14 | A beágyazott Salonic-adatlap megjelenése | **Közös CSS minden üzletágra** (a tulajdonos javaslata): a PMU-nál már használt `salonic/pmu.css` általánosítása, `salonic/mosaic.css`. Fiókonként a Salonic „Egyedi CSS URL” beállítása kell hozzá; a motor ezt magától felismeri és ehhez igazítja a keretet. |
+| 16 | Oxigén első kezelés: 80 vagy 120 perces változat | **A 80 perces** (azonos ár, a weboldal is ezt linkeli). A tulajdonos a 120 perces változatot időközben kivette a Salonicból, így már csak egy van; ha újra felvennék, a motor rövid választást kínál (nem dönt a vendég helyett). |
 | 15 | Oxigén belépés | Egy kérdés (OX1): Hajkamerás vizsgálat / Első oxigénterápiás kezelés / Már jártam nálatok. Szakember nem kötelező: alapból „bármely megfelelő”, a naptárban választható. |
 
 **A tesztelés korlátja:** a Salonicnak nincs próbakörnyezete, ezért éles foglalást a próba során nem adunk le. A foglalás-utáni ágakat (siker, elkelt időpont, hiba) mintanézettel és egységtesztekkel ellenőrizzük.

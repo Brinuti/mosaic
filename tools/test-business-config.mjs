@@ -13,8 +13,8 @@ const asService = (s) => ({ specId: s.salonic_spec_id, name: s.service_name_raw,
 const classified = mapping.services.map((s) => ({ s, c: classifyService(s.business, asService(s)) }));
 const count = (business, type) => classified.filter((x) => x.s.business === business && x.c.bookingType === type).length;
 
-test('a readback mind a 108 szolgaltatasa besorolodik, unclassified egy sincs', () => {
-  assert.equal(mapping.services.length, 108);
+test('a readback mind a 107 szolgaltatasa besorolodik, unclassified egy sincs', () => {
+  assert.equal(mapping.services.length, 107);
   assert.deepEqual(classified.filter((x) => x.c.bookingType === 'unclassified').map((x) => x.s.salonic_service_id), []);
 });
 
@@ -24,7 +24,7 @@ test('darabszamok uzletagankent (a jovahagyott szabaly szerint)', () => {
   assert.equal(count('hair', 'consultation'), 1);
   assert.equal(count('hair', 'first_treatment'), 40);
   assert.equal(count('oxygen', 'consultation'), 1); // a hajkamerás vizsgalat es konzultacio (466147)
-  assert.equal(count('oxygen', 'first_treatment'), 2);
+  assert.equal(count('oxygen', 'first_treatment'), 1); // a 120 perces valtozat kikerult a Salonicbol, a 80 perces maradt
   assert.equal(count('oxygen', 'returning_treatment'), 1);
   assert.equal(count('laser', 'consultation'), 1);
   assert.equal(count('laser', 'first_treatment'), 23);
@@ -69,7 +69,7 @@ test('az ar nem olvashato jelzes: ures vagy 0 ar, es az egyedi csomagok sem lesz
 test('Oxigen: a hajkamera-vizsgalat konzultacio (fizetos), az elso es a kovetkezo kezeles kulon tipus', () => {
   const oxy = classified.filter((x) => x.s.business === 'oxygen');
   const byId = Object.fromEntries(oxy.map((x) => [x.s.salonic_service_id, x.c.bookingType]));
-  assert.deepEqual(byId, { 466110: 'first_treatment', 468638: 'first_treatment', 466147: 'consultation', 466158: 'returning_treatment' });
+  assert.deepEqual(byId, { 466110: 'first_treatment', 466147: 'consultation', 466158: 'returning_treatment' });
 });
 
 test('uj szolgaltatas: az Oxigen hajkamerás vizsgalat konzultacio lesz, ismeretlen kategoria pedig unclassified (nem talal ki tipust)', () => {
