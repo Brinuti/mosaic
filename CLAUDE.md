@@ -8,13 +8,20 @@
   legrövidebb utat add (egy link, egy kattintás), és utána minden mást te intézel.
 - **Minden változtatás után:** tesztelés (dist build + Playwright), commit, push a fejlesztői
   ágra, PR a `main`-re. A PR Netlify-előnézete (deploy-preview-N--mosaicheadspa.netlify.app)
-  ingyenes – ott tesztelj. A `main`-re **kötegekben** mergelj (napi 1–3 alkalommal), mert minden
-  éles Netlify-deploy 15 kreditbe kerül (Personal csomag: 1000 kredit/hó). A PR-t te mergeled
-  (`merge_pull_request`, teljes 40 karakteres SHA). A Netlify a `main`-t publikálja:
-  https://mosaicheadspa.netlify.app/
-- **Tárhely:** most Netlify Personal (9 USD/hó, 2026-09-30-án vásárolva). Élesítéskor a terv:
-  költözés a Cloudflare Pages-re (ingyenes, korlátlan forgalom). **A költözés után szólj a
-  felhasználónak, hogy mondja le a Netlify-előfizetést.**
+  ingyenes – ott tesztelj. A Netlify a `main`-t publikálja (https://www.mosaicheadspa.hu/,
+  élesben 2026-10-02 óta).
+- **Takarékosan a Netlify-kreditekkel** (Pro csomag: 3000 kredit/hó; ha elfogy, az ÉLES oldal
+  leáll – 2026-10-03-án megtörtént):
+  - minden éles deploy 15 kredit → a `main`-re **legfeljebb napi 1 merge**, a munkát egy PR-be
+    gyűjtsd; apró javításért ne mergelj külön;
+  - a `netlify.toml` `ignore` parancsa (`tools/netlify-kihagy.mjs`) kihagyja a buildet, ha csak
+    oldalba nem kerülő fájl változott (dokumentáció, mentések, segédeszközök); ha új, az oldalba
+    kerülő fájlt vagy mappát vezetsz be, vedd fel az `OLDALBA_KERUL` listába;
+  - az éles oldalt ne terheld feleslegesen (Playwright-tesztek a PR-előnézeten vagy helyben fussanak).
+  A PR-t te mergeled (`merge_pull_request`, teljes 40 karakteres SHA).
+- **Tárhely:** Netlify Pro (20 USD/hó, 2026-10-03 óta). A terv: költözés a Cloudflare Pages-re
+  (ingyenes, korlátlan forgalom). **A költözés után szólj a felhasználónak, hogy mondja le a
+  Netlify-előfizetést.**
 - **Fizetős külső szolgáltatás helyett** saját kód (pl. a Common Ninja GYIK/árlista helyett).
 - **Mérőkódok:** csak a `mosaicheadspa.hu` domainen futhatnak (`assets/js/suti.js`,
   `ELES_DOMAINEK`). Külső fiókban (Meta, GTM, GA, Google Ads, TikTok) semmit ne hozz létre és

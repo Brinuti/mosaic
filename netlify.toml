@@ -4,6 +4,9 @@
 [build]
   command = "node tools/netlify-build.mjs"
   publish = "dist"
+  # minden eles deploy kreditbe kerul: ha csak dokumentacio vagy segedeszkoz
+  # valtozott, a build kimarad (tools/netlify-kihagy.mjs)
+  ignore = "node tools/netlify-kihagy.mjs"
 
 [build.environment]
   NODE_VERSION = "20"
