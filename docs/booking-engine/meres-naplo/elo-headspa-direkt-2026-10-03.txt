@@ -1,0 +1,162 @@
+MOSAIC - ELO ellenorzes az atkapcsolas elott: kozvetlen belepes a /foglalo-motor cimen + valodi HeadSpa probafoglalas
+Futtatva: 2026-10-03 22:47 helyi ido (20:47 UTC), az ELO oldalon (www.mosaicheadspa.hu), a #70 utan; a kapcsolok mind kikapcsolva (a rejtett /foglalo-motor cimen).
+Indulo URL: /foglalo-motor?business=headspa&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc  (lepesek: Idopontot foglalok -> Egyeni HeadSpa -> utolso szabad nap/ido -> Salonic-adatlap)
+Foglalas: "TESZT - Claude", deakfi@grantis.hu, Egyeni 50 perces Relax Head Spa + 30 perc hajszaritas (26 900 Ft), 2026-10-30 19:00 (Salonic: mosaicheadspa; a Salonic a telefon/e-mail alapjan a meglevo vendegkartonra parositott: g=2038420). Lemondva: 22:48:28 helyi ido (20:48 UTC) a visszaigazolo level "Lemondom" linkjevel (Salonic: "Az idopont lemondasa sikeres volt!").
+Kimeno meres: alapbol tilto szuro + DNS-zar (capig.stape.do, capi-pmu.mosaicheadspa.hu, Google, TikTok, Zapier is): 61 kerest naplozott es tiltott, semmi nem ment ki.
+
+TRANZAKCIO-AZONOSITO: hs-2038420-302342-1793383200   (g = vendeg-azonosito 2038420, serviceId 302342, startDate 1793383200 = 2026-10-30 18:00 UTC)
+  Meta event_id (HeadSpa_FoglalasElso, bongeszo + CAPI): successfogla-2038420-302342-1793383200
+Salonic foglalas-azonosito (lemondo link): 18d71389-9f9a-047a-fa65-bacb3a873378
+
+EREDMENY
+- Google Ads: 2 egyedi konverzio (cimke nJFWCNPd7fYb... es xIXsCNbd7fYb..., mindketto oid=hs-2038420-302342-1793383200, 26900 HUF), mindegyik ket csatornan (pagead/conversion + ccm/conversion) = nem dupla. A ket cimke a HeadSpa jelenlegi (nativ) beallitasa, a motor nem valtoztat rajta. gclid: gclaw=TESZT123 minden konverzios keresben.
+- Meta: bongeszo CompleteRegistration 1, Schedule 1, HeadSpa_FoglalasElso 1 (+ PageView 1); a szerveroldali CAPI-ban ugyanezek azonos event_id-vel (Meta deduplikal). fbc (fb.1.<ido>.TESZT456) minden bongeszo- es CAPI-kerelemben.
+- TikTok: Schedule 1 a fo ablakban; ttclid=TESZT789 a Schedule-kerelem torzseben (es a tobbi fo ablakos pixel-kerelemben). (InitiateCheckout/EnrichAM a Salonic-keretbol jon, mint a nativ uton.)
+- GA4: ads_conversion_Egy_b_Oldalbet_lt_s_www_1 1x, ads_conversion_Id_pont_foglal_sa_Oldal_2 1x, foglalas_ajikartya_ga4 1x; page_view + visit 1-1 (sid 1791060443). A munkamenet elso (egyetlen) talalata a koszonooldal; page_location (dl) tartalmazza: utm_source=teszt&utm_medium=cpc&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789 -> forras/kozeg a kuldott adat alapjan: teszt / cpc. (A GA4 sajat riportjaban nem tudom megnezni: a tesztkerelmek nem mentek ki.)
+- Zapier: 1 webhook. Megjegyzes: ebben a futasban a payload fbclid / fbc / fbp / ttclid mezoje ures (gclid, ttid, eid, xid kitoltve); a fodrasz-futasban a ttclid kitoltve, az fbclid/fbc/fbp ott is ures volt. Idozitesfuggo (a GTM-cimke korai kiolvasasa), a Zapier-cimke mukodese, nem a motore; az ad-platformokat nem erinti.
+- Platformonkent: Google Ads 1 foglalas = 2 konverzios cimke (mint nativ), Meta 3 esemeny + PageView (mint nativ), TikTok 1 (Schedule), GA4 3 egyedi esemeny 1-1x, Zapier 1. Dupla tuzeles nincs.
+
+A TELJES ELEMZES (elemzes.mjs --reszletes 1) KOVETKEZIK
+==========================================================================================
+=== headspa / valodi / eles, valtozatlan / kattintas-azonositok: igen
+vege URL: https://www.mosaicheadspa.hu/success-foglalas-egyeni?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+EGY%C3%89NI+50+perces+MOSAIC+%22Relax%22+Head+Spa+
+naplozott es LETILTOTT kimeno kereses: 61
+  a sajat oldal KERETBEN (a Salonic-iframe-ben betoltott koszonooldal) inditott meresi keres: 0  (a keretben a koszonooldal semmit nem kuld)
+  harmadik fel sajat keretebol (pl. Meta pixel-iframe): 28 (ismeretlen-tiltott KERET(mosaicheadspa.salonic.hu), google-ads KERET(mosaicheadspa.salonic.hu), stape KERET(?), tiktok KERET(mosaicheadspa.salonic.hu), meta KERET(about:blank))
+  nem besorolt, de tiltott: GET connect.facebook.net/en_US/sdk.js
+
+--- GOOGLE ADS konverzio (en=conversion): egyedi konverziok (cimke | azonosito | ertek)
+  nJFWCNPd7fYbEPDs9sg- | oid=hs-2038420-302342-1793383200 | ertek=26900 HUF
+      -> 2 keres: googleadservices/pagead/conversion [FO], googleadservices/ccm/conversion [FO]
+  xIXsCNbd7fYbEPDs9sg- | oid=hs-2038420-302342-1793383200 | ertek=26900 HUF
+      -> 2 keres: googleadservices/pagead/conversion [FO], googleadservices/ccm/conversion [FO]
+  EGYEDI Google Ads konverziok: 2   (egy konverzio tobb csatornan megy: pagead/conversion, ccm/conversion, viewthroughconversion: ez NEM dupla)
+
+--- GA4 (es stape g/collect): nem-oldalbetoltes esemenyek
+  ads_conversion_Egy_b_Oldalbet_lt_s_www_1: 1 keres (stapeg/collect [FO])
+  ads_conversion_Id_pont_foglal_sa_Oldal_2: 1 keres (stapeg/collect [FO])
+  foglalas_ajikartya_ga4: 1 keres (stapeg/collect [FO])
+  GA4 -> Google Ads konverzio-importok (region1/measurement/conversion): -
+
+--- META
+  bongeszo (facebook.com/tr) CompleteRegistration: 1 keres [KERET(about:blank)]  <- konverzio  event_id=ob3_plugin-set_39fd06a4b...
+  bongeszo (facebook.com/tr) Schedule: 1 keres [KERET(about:blank)]  <- konverzio  event_id=ob3_plugin-set_341d887b1...
+  bongeszo (facebook.com/tr) PageView: 1 keres [KERET(about:blank)]  event_id=ob3_plugin-set_c82b7298b...
+  bongeszo (facebook.com/tr) HeadSpa_FoglalasElso: 1 keres [KERET(about:blank)]  <- konverzio  event_id=successfogla-2038420-302...
+  szerveroldali CAPI (capig.stape) CompleteRegistration: event_id=ob3_plugin-set_39fd06a4bcb3875...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) Schedule: event_id=ob3_plugin-set_341d887b1a12456...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) PageView: event_id=ob3_plugin-set_c82b7298ba08201...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) HeadSpa_FoglalasElso 26900 HUF: event_id=successfogla-2038420-302342-17...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  Meta konverzios esemeny-nevek (bongeszo + CAPI egyutt, deduplikalas utan): CompleteRegistration [bongeszo 1, CAPI 1, azonos event_id]; Schedule [bongeszo 1, CAPI 1, azonos event_id]; HeadSpa_FoglalasElso [bongeszo 1, CAPI 1, azonos event_id]
+
+--- TIKTOK
+  POST /ipv6/enrich_ipv6 [KERET(mosaicheadspa.salonic.hu)] esemeny: EnrichIpv6
+  POST /api/v2/pixel [KERET(mosaicheadspa.salonic.hu)] esemeny: LandingPageView
+  POST /api/v2/pixel [KERET(mosaicheadspa.salonic.hu)] esemeny: Pageview
+  POST /api/v2/pixel [KERET(mosaicheadspa.salonic.hu)] esemeny: LandingPageView
+  POST /api/v2/pixel [KERET(mosaicheadspa.salonic.hu)] esemeny: InitiateCheckout
+  POST /api/v2/pixel/act [KERET(mosaicheadspa.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaicheadspa.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaicheadspa.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaicheadspa.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaicheadspa.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaicheadspa.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaicheadspa.salonic.hu)] esemeny: ?
+  POST /ipv6/enrich_ipv6 [KERET(mosaicheadspa.salonic.hu)] esemeny: EnrichIpv6
+  POST /api/v2/pixel [KERET(mosaicheadspa.salonic.hu)] esemeny: LandingPageView
+  POST /api/v2/pixel [KERET(mosaicheadspa.salonic.hu)] esemeny: EnrichAM
+  POST /api/v2/monitor [KERET(mosaicheadspa.salonic.hu)] esemeny: ?
+  POST /ipv6/enrich_ipv6 [FO] esemeny: EnrichIpv6
+  POST /api/v2/pixel [FO] esemeny: LandingPageView
+  POST /api/v2/pixel [FO] esemeny: Pageview
+  POST /api/v2/pixel [FO] esemeny: Schedule
+  POST /api/v2/pixel/act [FO] esemeny: (esemeny-kotegek, nem JSON-torzs)
+  POST /api/v2/pixel [FO] esemeny: EngagedSession
+  TikTok konverzios esemenyek: InitiateCheckout, EnrichAM, Schedule
+
+ZAPIER webhook: 1 keres [FO]
+
+=== OSSZEGZES: konverzio platformonkent (keretben + fo ablakban egyutt)
+  Google Ads : 2 egyedi konverzio (nJFWCNPd7fYbEPDs9sg-, xIXsCNbd7fYbEPDs9sg-)
+  GA4/stape  : 3 fajta nem-oldalbetoltes esemeny, mindegyik 1/1/1x a gyujto vegponton
+  Meta       : CompleteRegistration, Schedule, HeadSpa_FoglalasElso
+  TikTok     : InitiateCheckout, EnrichAM, Schedule; /api/v2/pixel keresek: 22
+  KERETBEN inditott: 0
+
+=== KATTINTAS-AZONOSITOK (gclid=TESZT123, fbclid=TESZT456, ttclid=TESZT789, utm_source=teszt, utm_medium=cpc)
+  Google Ads-kereses: gclid a "gclaw/gclid" mezoben: MEGVAN (13 keres; pl. TESZT123)
+  GA4/Ads-import:     gclid a "gclaw/gclid" mezoben: NINCS
+  Meta (facebook.com/tr): fbc mezo: MEGVAN (4 keres; POST-torzs)
+  Meta CAPI (capig.stape): fb.clickID/fbc a torzsben: MEGVAN (4/4 keres)
+  TikTok: ttclid (context.ad.callback / ttclid) a torzsben: MEGVAN (6/22 keres)
+  GA4 kampany-forras (cs/cm mezo, vagy utm a dl=page_location-ben): MEGVAN: cs=undefined cm=undefined
+  GA4 page_view / visit hitek (munkamenet-kezdet): 
+    en=page_view sid=1791060443 dl=https://www.mosaicheadspa.hu/success-foglalas-egyeni?first_b dr=https://www.mosaicheadspa.hu/foglalo-motor?business=headspa&gclid=TESZT123&fbcli
+    en=visit sid=1791060443 dl=https://www.mosaicheadspa.hu/success-foglalas-egyeni?first_b dr=https://www.mosaicheadspa.hu/foglalo-motor?business=headspa&gclid=TESZT123&fbcli
+  referrer (dr/ref) a koszonooldalon: https://www.mosaicheadspa.hu/ | https://www.mosaicheadspa.hu/foglalo-motor?business=headspa&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm
+  sutik a vegen: _ttp=3KCTDtrpM6Jzm4ATf9JVpWuzOki.17910604 | _gcl_aw=GCL.1791060444.TESZT123 | _ga=GA1.1.846989794.1791060444 | _gcl_au=1.1.1227689921.1791060444.-.-.179106 | _ga_H4206SQ0Q7=GS2.1.s1791060443$o1$g0$t1791060444$ | _tt_enable_cookie=1 | _ttp=01M41RB16E92JX123JK6TZ4F67_.tt.1.179 | ttclid=TESZT789.1791060444368 | _fbc=fb.1.1791060444440.TESZT456 | _fbp=fb.1.1791060444450.18589707994160904
+
+engedett harmadik fel (csak szkript-betoltes): cdn.jsdelivr.net:2, fonts.googleapis.com:1, cdnjs.cloudflare.com:2, www.google.com:5, www.googletagmanager.com:5, www.gstatic.com:5, fonts.gstatic.com:6, analytics.tiktok.com:6, cdn.trustindex.io:2, connect.facebook.net:2
+
+=== NYERS NAPLO
+#1 t=7277 ismeretlen-tiltott GET [KERET(mosaicheadspa.salonic.hu)] connect.facebook.net/en_US/sdk.js {}
+#2 t=7732 google-ads POST [KERET(mosaicheadspa.salonic.hu)] www.google.com/ccm/collect {"en":"page_view","dl":"https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=29415&placeId=10427&serviceId=302342&startDate=1793383200&back="}
+#3 t=8105 google-ads POST [KERET(mosaicheadspa.salonic.hu)] www.google.com/ccm/collect {"tid":"AW-16795940464","en":"page_view","dl":"https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=29415&placeId=10427&serviceId=302342&startDate=1793383200&back="}
+#4 t=8106 google-ads POST [KERET(mosaicheadspa.salonic.hu)] www.google.com/ccm/collect {"tid":"AW-16795940464","dl":"https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=29415&placeId=10427&serviceId=302342&startDate=1793383200&back="}
+#5 t=8151 stape GET [KERET(?)] stape.mosaicheadspa.hu/_/service_worker/69f0/sw_iframe.html {}
+#6 t=8339 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics-ipv6.tiktokw.us/ipv6/enrich_ipv6 {} BODY={"event":"EnrichIpv6","event_id":"1791061084172_17910611576513","message_id":"messageId-1791060433834-5113750488236-CTDGK5BC77U0PIODKP30#source=2","is_onsite":false,"timestamp":"2026-10-03T20:47:13.83
+#7 t=8340 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"LandingPageView","event_id":"","message_id":"messageId-1791060433840-8887886382615-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T20:47:13.840Z","context":{"ad":{"sdk_env":"
+#8 t=8340 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"Pageview","event_id":"1791061084172_17910611576513","message_id":"messageId-1791060433834-5113750488236-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T20:47:13.834Z","contex
+#9 t=8366 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"LandingPageView","event_id":"","message_id":"messageId-1791060433867-1089893261146-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T20:47:13.867Z","context":{"ad":{"sdk_env":"
+#10 t=8368 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"InitiateCheckout","event_id":"1791061084172_179106115765125","message_id":"messageId-1791060433863-9406692012929-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T20:47:13.863Z
+#11 t=8633 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/pixel/act {} BODY={"event_id":"","message_id":"messageId-1791060434133-1993343676792","is_onsite":false,"timestamp":"2026-10-03T20:47:14.133Z","context":{"ad":{"sdk_env":"external","jsb_status":2},"device":{"platform":
+#12 t=8834 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/pixel/act {} BODY={"event_id":"","message_id":"messageId-1791060434339-7046262848541","is_onsite":false,"timestamp":"2026-10-03T20:47:14.339Z","context":{"ad":{"sdk_env":"external","jsb_status":2},"device":{"platform":
+#13 t=8836 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/monitor {} BODY={"metric_name":"custom_info","pixel_code":"CTDGK5BC77U0PIODKP30","platform":0,"app_name":"external","net_type":"4g","placement":"non","lib":{"lib_version":"2.2.1","ttq_name":"ttq"},"in_iframe":6,"time
+#14 t=10820 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/pixel/act {} BODY={"event_id":"","message_id":"messageId-1791060436318-6188995798719","is_onsite":false,"timestamp":"2026-10-03T20:47:16.318Z","context":{"ad":{"sdk_env":"external","jsb_status":2},"device":{"platform":
+#15 t=10821 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/pixel/act {} BODY={"event_id":"","message_id":"messageId-1791060436320-1553972259711","is_onsite":false,"timestamp":"2026-10-03T20:47:16.320Z","context":{"ad":{"sdk_env":"external","jsb_status":2},"device":{"platform":
+#16 t=10829 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/monitor {} BODY={"metric_name":"custom_info","pixel_code":"CTDGK5BC77U0PIODKP30","platform":0,"app_name":"external","net_type":"4g","placement":"non","lib":{"lib_version":"2.2.1","ttq_name":"ttq"},"in_iframe":6,"time
+#17 t=10830 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/monitor {} BODY={"metric_name":"custom_info","pixel_code":"CTDGK5BC77U0PIODKP30","platform":0,"app_name":"external","net_type":"4g","placement":"non","lib":{"lib_version":"2.2.1","ttq_name":"ttq"},"in_iframe":6,"time
+#18 t=13720 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics-ipv6.tiktokw.us/ipv6/enrich_ipv6 {} BODY={"event":"EnrichIpv6","event_id":"","message_id":"messageId-1791060439192-6943938326505-CTDGK5BC77U0PIODKP30#source=2","is_onsite":false,"timestamp":"2026-10-03T20:47:19.192Z","context":{"ad":{"sdk_en
+#19 t=13720 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"LandingPageView","event_id":"","message_id":"messageId-1791060439194-8586668752338-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T20:47:19.194Z","context":{"ad":{"sdk_env":"
+#20 t=13721 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"EnrichAM","event_id":"","message_id":"messageId-1791060439192-6943938326505-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T20:47:19.192Z","context":{"ad":{"sdk_env":"externa
+#21 t=13725 google-ads POST [KERET(mosaicheadspa.salonic.hu)] www.google.com/pagead/form-data/16795940464 {}
+#22 t=13725 google-ads POST [KERET(mosaicheadspa.salonic.hu)] www.google.com/ccm/form-data/16795940464 {}
+#23 t=16395 tiktok POST [KERET(mosaicheadspa.salonic.hu)] analytics.tiktok.com/api/v2/monitor {} BODY={"metric_name":"custom_info","pixel_code":"CTDGK5BC77U0PIODKP30","platform":0,"app_name":"external","net_type":"4g","placement":"non","lib":{"lib_version":"2.2.1","ttq_name":"ttq"},"in_iframe":6,"time
+#24 t=18412 zapier POST [FO] hooks.zapier.com/hooks/catch/25416243/0xYgLEnqBPdjKSkG/ {} BODY={"startDate":"1793383200","employee":"Négykezes Head spa","price":"26900","first":"true","gclid":"TESZT123","fbclid":"","ttclid":"","ttp":"","ttid":"hs-2038420-302342-1793383200","eid":"successfogla-2
+#25 t=18412 google-ads POST [FO] www.google.com/ccm/collect {"en":"page_view","gclid":"TESZT123","dl":"https://www.mosaicheadspa.hu/success-foglalas-egyeni?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+EGY%C3%89NI+50+perces+MOSAIC+%22Relax%22+Head+Spa+kezel%C3%A9s+%2B+30+perc+hajsz%C3%A1r%C3%ADt%C3%A1s&category=Headspa+kezel%C3%A9sre+foglalok%21&price=26900&location=Mosaic+Headspa&employee=N%C3%A9gykezes+Head+spa&g=g:2038420&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D29415%26placeId%3D10427%26serviceId%3D302342%26startDate%3D1793383200","gclaw":"TESZT123"}
+#26 t=18413 google-ads GET [FO] www.googleadservices.com/pagead/set_partitioned_cookie {"en":"page_view","gclid":"TESZT123","gclaw":"TESZT123"}
+#27 t=18413 google-ads POST [FO] ad.doubleclick.net/ccm/s/collect {"gclid":"TESZT123"}
+#28 t=18603 stape GET [FO] stape.mosaicheadspa.hu/g/collect {"tid":"G-H4206SQ0Q7","sid":"1791060443","dl":"https://www.mosaicheadspa.hu/success-foglalas-egyeni?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+EGY%C3%89NI+50+perces+MOSAIC+%22Relax%22+Head+Spa+kezel%C3%A9s+%2B+30+perc+hajsz%C3%A1r%C3%ADt%C3%A1s&category=Headspa+kezel%C3%A9sre+foglalok%21&price=26900&location=Mosaic+Headspa&employee=N%C3%A9gykezes+Head+spa&g=g:2038420&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D29415%26placeId%3D10427%26serviceId%3D302342%26startDate%3D1793383200%26back%3D&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc","en":"page_view"}
+#29 t=18606 google-ads GET [FO] googleads.g.doubleclick.net/pagead/viewthroughconversion/16795940464/ {"en":"gtag.config"}
+#30 t=18612 google-ads POST [FO] www.google.com/rmkt/collect/16795940464/ {"en":"gtag.config","gclaw":"TESZT123"}
+#31 t=18612 google-ads GET [FO] googleads.g.doubleclick.net/pagead/viewthroughconversion/16795940464/ {}
+#32 t=18613 google-ads POST [FO] www.google.com/rmkt/collect/16795940464/ {"gclaw":"TESZT123"}
+#33 t=18613 stape GET [FO] stape.mosaicheadspa.hu/g/collect {"tid":"G-H4206SQ0Q7","sid":"1791060443","dl":"https://www.mosaicheadspa.hu/success-foglalas-egyeni?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+EGY%C3%89NI+50+perces+MOSAIC+%22Relax%22+Head+Spa+kezel%C3%A9s+%2B+30+perc+hajsz%C3%A1r%C3%ADt%C3%A1s&category=Headspa+kezel%C3%A9sre+foglalok%21&price=26900&location=Mosaic+Headspa&employee=N%C3%A9gykezes+Head+spa&g=g:2038420&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D29415%26placeId%3D10427%26serviceId%3D302342%26startDate%3D1793383200%26back%3D&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc","en":"visit"}
+#34 t=18614 stape GET [FO] stape.mosaicheadspa.hu/g/collect {"tid":"G-H4206SQ0Q7","sid":"1791060443","dl":"https://www.mosaicheadspa.hu/success-foglalas-egyeni?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+EGY%C3%89NI+50+perces+MOSAIC+%22Relax%22+Head+Spa+kezel%C3%A9s+%2B+30+perc+hajsz%C3%A1r%C3%ADt%C3%A1s&category=Headspa+kezel%C3%A9sre+foglalok%21&price=26900&location=Mosaic+Headspa&employee=N%C3%A9gykezes+Head+spa&g=g:2038420&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D29415%26placeId%3D10427%26serviceId%3D302342%26startDate%3D1793383200%26back%3D&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc","en":"ads_conversion_Egy_b_Oldalbet_lt_s_www_1"}
+#35 t=18614 stape GET [FO] stape.mosaicheadspa.hu/g/collect {"tid":"G-H4206SQ0Q7","sid":"1791060443","dl":"https://www.mosaicheadspa.hu/success-foglalas-egyeni?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+EGY%C3%89NI+50+perces+MOSAIC+%22Relax%22+Head+Spa+kezel%C3%A9s+%2B+30+perc+hajsz%C3%A1r%C3%ADt%C3%A1s&category=Headspa+kezel%C3%A9sre+foglalok%21&price=26900&location=Mosaic+Headspa&employee=N%C3%A9gykezes+Head+spa&g=g:2038420&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D29415%26placeId%3D10427%26serviceId%3D302342%26startDate%3D1793383200%26back%3D&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc","en":"ads_conversion_Id_pont_foglal_sa_Oldal_2"}
+#36 t=18615 stape GET [FO] stape.mosaicheadspa.hu/g/collect {"tid":"G-H4206SQ0Q7","sid":"1791060443","dl":"https://www.mosaicheadspa.hu/success-foglalas-egyeni?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+EGY%C3%89NI+50+perces+MOSAIC+%22Relax%22+Head+Spa+kezel%C3%A9s+%2B+30+perc+hajsz%C3%A1r%C3%ADt%C3%A1s&category=Headspa+kezel%C3%A9sre+foglalok%21&price=26900&location=Mosaic+Headspa&employee=N%C3%A9gykezes+Head+spa&g=g:2038420&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D29415%26placeId%3D10427%26serviceId%3D302342%26startDate%3D1793383200%26back%3D&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc","en":"foglalas_ajikartya_ga4"}
+#37 t=18615 google-ads GET [FO] www.googleadservices.com/pagead/conversion/16795940464/ {"en":"page_view","gclaw":"TESZT123","label":"jWtgCN7npJgaEPDs9sg-","oid":"GG_1330351470.1791060444"}
+#38 t=18616 stape GET [FO] stape.mosaicheadspa.hu/g/collect {"tid":"G-H4206SQ0Q7","sid":"1791060443","dl":"https://www.mosaicheadspa.hu/success-foglalas-egyeni?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+EGY%C3%89NI+50+perces+MOSAIC+%22Relax%22+Head+Spa+kezel%C3%A9s+%2B+30+perc+hajsz%C3%A1r%C3%ADt%C3%A1s&category=Headspa+kezel%C3%A9sre+foglalok%21&price=26900&location=Mosaic+Headspa&employee=N%C3%A9gykezes+Head+spa&g=g:2038420&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D29415%26placeId%3D10427%26serviceId%3D302342%26startDate%3D1793383200%26back%3D&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc","en":"gtm.js"}
+#39 t=18616 google-ads GET [FO] www.googleadservices.com/pagead/conversion/16795940464/ {"en":"conversion","label":"nJFWCNPd7fYbEPDs9sg-","oid":"hs-2038420-302342-1793383200","value":"26900","currency_code":"HUF","gclaw":"TESZT123"}
+#40 t=18617 google-ads GET [FO] www.googleadservices.com/pagead/conversion/16795940464/ {"en":"conversion","label":"xIXsCNbd7fYbEPDs9sg-","oid":"hs-2038420-302342-1793383200","value":"26900","currency_code":"HUF","gclaw":"TESZT123"}
+#41 t=18617 google-ads POST [FO] www.google.com/ccm/collect {"tid":"AW-16795940464","en":"page_view","gclid":"TESZT123","dl":"https://www.mosaicheadspa.hu/success-foglalas-egyeni?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+EGY%C3%89NI+50+perces+MOSAIC+%22Relax%22+Head+Spa+kezel%C3%A9s+%2B+30+perc+hajsz%C3%A1r%C3%ADt%C3%A1s&category=Headspa+kezel%C3%A9sre+foglalok%21&price=26900&location=Mosaic+Headspa&employee=N%C3%A9gykezes+Head+spa&g=g:2038420&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D29415%26placeId%3D10427%26serviceId%3D302342%26startDate%3D1793383200","gclaw":"TESZT123"}
+#42 t=18617 google-ads POST [FO] www.google.com/ccm/collect {"tid":"AW-16795940464","gclid":"TESZT123","dl":"https://www.mosaicheadspa.hu/success-foglalas-egyeni?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+EGY%C3%89NI+50+perces+MOSAIC+%22Relax%22+Head+Spa+kezel%C3%A9s+%2B+30+perc+hajsz%C3%A1r%C3%ADt%C3%A1s&category=Headspa+kezel%C3%A9sre+foglalok%21&price=26900&location=Mosaic+Headspa&employee=N%C3%A9gykezes+Head+spa&g=g:2038420&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D29415%26placeId%3D10427%26serviceId%3D302342%26startDate%3D1793383200","gclaw":"TESZT123"}
+#43 t=18618 google-ads GET [FO] www.googleadservices.com/ccm/conversion/16795940464/ {"en":"page_view","gclaw":"TESZT123","label":"jWtgCN7npJgaEPDs9sg-","oid":"GG_1330351470.1791060444"}
+#44 t=18625 google-ads GET [FO] www.googleadservices.com/ccm/conversion/16795940464/ {"en":"conversion","label":"nJFWCNPd7fYbEPDs9sg-","oid":"hs-2038420-302342-1793383200","value":"26900","currency_code":"HUF","gclaw":"TESZT123"}
+#45 t=18625 google-ads GET [FO] www.googleadservices.com/ccm/conversion/16795940464/ {"en":"conversion","label":"xIXsCNbd7fYbEPDs9sg-","oid":"hs-2038420-302342-1793383200","value":"26900","currency_code":"HUF","gclaw":"TESZT123"}
+#46 t=18627 stape GET [KERET(?)] stape.mosaicheadspa.hu/_/service_worker/69f0/sw_iframe.html {}
+#47 t=18885 tiktok POST [FO] analytics-ipv6.tiktokw.us/ipv6/enrich_ipv6 {} BODY={"event":"EnrichIpv6","event_id":"1791060799346_17910606392584","message_id":"messageId-1791060444379-9593307339577-CTDGK5BC77U0PIODKP30#source=2","is_onsite":false,"timestamp":"2026-10-03T20:47:24.37
+#48 t=18885 tiktok POST [FO] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"LandingPageView","event_id":"","message_id":"messageId-1791060444384-3502389944794-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T20:47:24.384Z","context":{"ad":{"callback":
+#49 t=18886 tiktok POST [FO] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"Pageview","event_id":"1791060799346_17910606392584","message_id":"messageId-1791060444379-9593307339577-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T20:47:24.379Z","contex
+#50 t=18886 tiktok POST [FO] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"Schedule","event_id":"","message_id":"messageId-1791060444386-4305652417103-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T20:47:24.386Z","context":{"ad":{"callback":"TESZT7
+#51 t=18976 stape POST [FO] capig.stape.de/events/d80615b8fa0b6c22f97217e9e0a9896c562a9eb58bbc3be6e25c59838cecf37c {} BODY={"event_name":"CompleteRegistration","smart_setup":{"is_auto_web_details":true},"custom_data":{"cs_est":true},"event_id":"ob3_plugin-set_39fd06a4bcb38759c7875051a4d2a04010b80f54e8e8d3551af1c6b4929dbd5
+#52 t=18996 stape POST [FO] capig.stape.de/events/d80615b8fa0b6c22f97217e9e0a9896c562a9eb58bbc3be6e25c59838cecf37c {} BODY={"event_name":"Schedule","smart_setup":{"is_auto_web_details":true},"custom_data":{"cs_est":true},"event_id":"ob3_plugin-set_341d887b1a124567949d4024c25e3a89d7aa3b9797b87942c98b6314a827ff21","fb.pixel
+#53 t=19013 stape POST [FO] capig.stape.de/events/d80615b8fa0b6c22f97217e9e0a9896c562a9eb58bbc3be6e25c59838cecf37c {} BODY={"event_name":"PageView","smart_setup":{"is_auto_web_details":true},"event_id":"ob3_plugin-set_c82b7298ba08201c16b3e2c5266c3a9a218787b019138c2762575027f1327c1c","fb.pixel_id":"3473839859576758","websi
+#54 t=19033 meta POST [KERET(about:blank)] www.facebook.com/tr/ {} BODY=id=3473839859576758&ev=CompleteRegistration&dl=https%3A%2F%2Fwww.mosaicheadspa.hu%2Fsuccess-foglalas-egyeni%3Ffirst_booking%3Dtrue%26service%3D%25F0%259F%2592%2586%25E2%2580%258D%25E2%2599%2580%25EF%2
+#55 t=19034 meta POST [KERET(about:blank)] www.facebook.com/tr/ {} BODY=id=3473839859576758&ev=Schedule&dl=https%3A%2F%2Fwww.mosaicheadspa.hu%2Fsuccess-foglalas-egyeni%3Ffirst_booking%3Dtrue%26service%3D%25F0%259F%2592%2586%25E2%2580%258D%25E2%2599%2580%25EF%25B8%258F%2BE
+#56 t=19035 meta POST [KERET(about:blank)] www.facebook.com/tr/ {} BODY=id=3473839859576758&ev=PageView&dl=https%3A%2F%2Fwww.mosaicheadspa.hu%2Fsuccess-foglalas-egyeni%3Ffirst_booking%3Dtrue%26service%3D%25F0%259F%2592%2586%25E2%2580%258D%25E2%2599%2580%25EF%25B8%258F%2BE
+#57 t=19097 stape POST [FO] capig.stape.de/events/d80615b8fa0b6c22f97217e9e0a9896c562a9eb58bbc3be6e25c59838cecf37c {} BODY={"event_name":"HeadSpa_FoglalasElso","conversion_value":{"value":26900,"currency":"HUF"},"smart_setup":{"is_auto_web_details":true},"fb.dynamic_product_ads":{"content_type":"foglalas_elso","content_ca
+#58 t=19108 stape GET [FO] stape.mosaicheadspa.hu/data {}
+#59 t=19114 meta POST [KERET(about:blank)] www.facebook.com/tr/ {} BODY=id=3473839859576758&ev=HeadSpa_FoglalasElso&dl=https%3A%2F%2Fwww.mosaicheadspa.hu%2Fsuccess-foglalas-egyeni%3Ffirst_booking%3Dtrue%26service%3D%25F0%259F%2592%2586%25E2%2580%258D%25E2%2599%2580%25EF%2
+#60 t=19248 tiktok POST [FO] analytics.tiktok.com/api/v2/pixel/act {} BODY={"event_id":"","message_id":"messageId-1791060444751-2912244795596","is_onsite":false,"timestamp":"2026-10-03T20:47:24.751Z","context":{"ad":{"callback":"TESZT789.1791060444362","sdk_env":"external","
+#61 t=28896 tiktok POST [FO] analytics.tiktok.com/api/v2/pixel {} BODY={"event":"EngagedSession","event_id":"","message_id":"messageId-1791060454400-5275424483343-CTDGK5BC77U0PIODKP30","is_onsite":false,"timestamp":"2026-10-03T20:47:34.400Z","context":{"ad":{"callback":"

@@ -1,7 +1,7 @@
 // A foglalo -> koszonooldal lanc meresi ellenorzese: MINDEN keretben naplozza a kimeno meresi kereseket (Google Ads, GA4, stape, Meta, TikTok,
 // Zapier), es le is tiltja oket (200-as ures valasz): igy semmi nem jut el a hirdetesi fiokokba.
 //
-//   node meres-proba.mjs --szenario hair|oxigen2|lezer --mod szim|valodi --out x.json [--overlay <dist-mappa>] [--clickids 1] [--fejes 1] [--megall 1]
+//   node meres-proba.mjs --szenario hair|oxigen2|lezer|headspa --mod szim|valodi --out x.json [--overlay <dist-mappa>] [--clickids 1] [--fejes 1] [--megall 1]
 //
 //   --mod szim     a Salonic adatlap (iframe) helyett csak a Salonic atiranyitasa fut (a koszonooldalra), foglalas NEM jon letre
 //   --mod valodi   valodi foglalas a Salonic-urlappal (csak a kert szenarional; a lemondast kulon kell elvegezni)
@@ -28,6 +28,9 @@ const SZENARIOK = {
   lezer: { start: '/foglalo-motor?business=laser&intent=first', salonic: 'mosaic-elysion.salonic.hu', terulet: /^Arc/, landing: { elo: '/lezeres-szortelenites-budapest', ut: '/idpontfoglalas', link: 'a[href*="intent=first"]' },
     sim: { ut: '/elysion-ok', first: true, service: 'ARC - Teljes arc', category: 'Végleges Szőrtelenítés - 1. Alkalom', price: 27000, location: 'Mosaic Elysion', employee: 'Elysion Pro Szőrtelenítés', employeeId: 32417, placeId: 14586, serviceId: 0 } },
 };
+// HeadSpa: a motor HS1 -> HS2 kartyavalasztasa utan jon az idopont (lepesek: a gombok szovege sorrendben)
+SZENARIOK.headspa = { start: '/foglalo-motor?business=headspa', salonic: 'mosaicheadspa.salonic.hu', lepesek: ['Időpontot foglalok', 'Egyéni HeadSpa'],
+  sim: { ut: '/success-foglalas-egyeni', first: true, service: 'EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás', category: 'Head Spa', price: 26900, location: 'Mosaic Headspa', employee: 'Négykezes Head spa', employeeId: 29415, placeId: 10427, serviceId: 302342 } };
 const sc = SZENARIOK[SZ];
 if (!sc) throw new Error('ismeretlen szenario: ' + SZ);
 const LANDING = arg('landing', '0') === '1';
@@ -179,6 +182,7 @@ try {
     await page.waitForTimeout(1500);
     await (await elsoLathato(page.locator('main button', { hasText: sc.landing.engedMotor }))).click();
   }
+  for (const lepes of (sc.lepesek || [])) { await page.waitForTimeout(1200); await (await elsoLathato(page.locator('main button', { hasText: lepes }))).click(); idovonal.push({ t: mp(), esemeny: 'lepes: ' + lepes }); }
   // lezer: terulet -> (kezeles)
   if (sc.terulet) {
     // a belepo-kerdes (LA1), ha az intent-belepes nincs meg az eles motorban: "Mar tudom, mit szeretnek"
@@ -211,7 +215,8 @@ try {
     if (MEGALL) { idovonal.push({ t: mp(), esemeny: 'megallas (--megall): az urlapot nem toltom ki' }); }
     else {
       const tolt = async (sel, ertek) => { const l = fr.locator(sel).first(); await l.click(); await l.pressSequentially(ertek, { delay: 45 }); }; // valodi billentyuleutesek: a telefonmezo (intl-tel-input) rejtett mezoi igy frissulnek
-      await tolt('#GuestDataForm_guestPhoneTemp', '709420090');
+      // A telefonszam a +36 elotti resz nelkul. Alapbol a SZALON szama (06 20 247 4444); a 2026-10-03-i probakhoz a tulajdonos sajat szamat (709420090) adtuk meg: MERES_TELEFON=709420090.
+      await tolt('#GuestDataForm_guestPhoneTemp', process.env.MERES_TELEFON || '202474444');
       await tolt('#GuestDataForm_guestLastName', 'TESZT –');
       await tolt('#GuestDataForm_guestFirstName', 'Claude');
       await tolt('#GuestDataForm_guestEmail', 'deakfi@grantis.hu');

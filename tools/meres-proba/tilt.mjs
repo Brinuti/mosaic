@@ -29,7 +29,8 @@ const ENGEDETT_GET = [
   /^https:\/\/(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|code\.jquery\.com|ajax\.googleapis\.com|maxcdn\.bootstrapcdn\.com|stackpath\.bootstrapcdn\.com|use\.fontawesome\.com)\//,
 ];
 // a Salonic maga barmilyen metodussal; a reCAPTCHA (a Salonic sajat vedelme, nem meres) barmilyen metodussal; a tobbi csak GET
-export const engedett = (url, method) => /^https:\/\/[a-z0-9.-]*salonic\.hu\//.test(url)
+// a sajat PR-elonezetek (Cloudflare Pages: <ag>.mosaic-d77.pages.dev) is a sajat oldalunk: barmilyen metodussal engedett (a meres ott ugyse fut: nem eles domain)
+export const engedett = (url, method) => /^https:\/\/([a-z0-9-]+\.)?mosaic-d77\.pages\.dev\//.test(url) || /^https:\/\/[a-z0-9.-]*salonic\.hu\//.test(url)
   || /^https:\/\/(www\.google\.com\/recaptcha\/|www\.gstatic\.com\/recaptcha\/|www\.recaptcha\.net\/)/.test(url)
   || (method === 'GET' && ENGEDETT_GET.some((re) => re.test(url)));
 
