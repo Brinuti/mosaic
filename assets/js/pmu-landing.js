@@ -154,8 +154,7 @@
         const t = lista.find((x) => szavak.every((w) => norm(x.nev).includes(w)));
         if (!t || !t.ar) continue;
         k.querySelector('.ar-most').textContent = ft(t.ar);
-        k.querySelector('.ar-regi').textContent = t.eredeti > t.ar ? ft(t.eredeti) : '';
-        if (t.perc) k.querySelector('.ar-ido').textContent = t.perc + ' perc';
+        // athuzott (regi) ar nem jelenik meg: csak a valos, jelenlegi ar; az idotartam mindenhol 2-2,5 ora (HTML)
       }
     } catch (e) { console.error(e); }
   })();
