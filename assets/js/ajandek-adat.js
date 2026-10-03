@@ -27,7 +27,8 @@
       badge: null,
       ar_ft: 26900,
       vendeg_db: 1,
-      vizual: null
+      // valodi MOSAIC fotok (assets/img): egy terapeuta / ket terapeuta / ket vendeg
+      vizual: { src: '/assets/img/c2eb0f_bbb818fad4674d2097775970ca10c3d0f002.jpg', alt: 'Egyéni Head Spa kezelés a MOSAIC-ban', w: 1920, h: 1080 }
     },
     '4kezes': {
       id: '4kezes',
@@ -41,7 +42,7 @@
       badge: 'PRÉMIUM ÉLMÉNY',
       ar_ft: 39900,
       vendeg_db: 1,
-      vizual: null
+      vizual: { src: '/assets/img/c2eb0f_895be890d71d488db23f5a05dd52c04b.jpg', alt: '4 kezes Head Spa: két terapeuta dolgozik egyszerre egy vendégen', w: 1000, h: 1000 }
     },
     paros: {
       id: 'paros',
@@ -55,15 +56,16 @@
       badge: null,
       ar_ft: 53800,
       vendeg_db: 2,
-      // GENERAL default vizual: ket baratno, NEM romantikus par. Valodi MOSAIC kep meg nincs -> {asset_url}
-      vizual: null
+      // a spec szerint a GENERAL vizual ket baratno (nem romantikus par); ez a MOSAIC egyetlen valodi paros fotoja
+      // (ket vendeg, ket terapeuta, egymas mellett) - ha van baratnos kep, ide kell cserelni
+      vizual: { src: '/assets/img/c2eb0f_2c17645e97d943fda9265b973f1bb6a9.jpg', alt: 'Páros Head Spa: két vendég, két terapeuta, egy közös helyiségben', w: 1500, h: 1500 }
     }
   };
 
   var FINDER = [
-    { id: 'egyedul', cim: 'Neki egyedül', leiras: 'Ha azt szeretnéd, hogy végre csak vele foglalkozzanak.', termek: 'egyeni', nyil: 'Egyéni Head Spa ajánlása' },
-    { id: 'ketten', cim: 'Ketten mennének', leiras: 'Barátnővel, anyukával vagy a párjával.', termek: 'paros', nyil: 'Páros Head Spa ajánlása' },
-    { id: 'kulonleges', cim: 'Valami igazán különlegeset szeretnék', leiras: 'Prémium Head Spa két terapeutával egyszerre.', termek: '4kezes', nyil: '4 kezes Head Spa ajánlása' }
+    { id: 'egyedul', ikon: 'user', cim: 'Neki egyedül', leiras: 'Ha azt szeretnéd, hogy végre csak vele foglalkozzanak.', termek: 'egyeni', nyil: 'Egyéni Head Spa ajánlása' },
+    { id: 'ketten', ikon: 'users', cim: 'Ketten mennének', leiras: 'Barátnővel, anyukával vagy a párjával.', termek: 'paros', nyil: 'Páros Head Spa ajánlása' },
+    { id: 'kulonleges', ikon: 'gift', cim: 'Valami igazán különlegeset szeretnék', leiras: 'Prémium Head Spa két terapeutával egyszerre.', termek: '4kezes', nyil: '4 kezes Head Spa ajánlása' }
   ];
 
   var ALKALMAK = [
@@ -108,10 +110,15 @@
       hero_subtitle: 'Japán Head Spa élmény Budán, digitális vagy nyomtatott ajándékkártyával.',
       hero_cta: 'Kiválasztom az ajándékot',
       hero_media: {
-        src: '/assets/img/c2eb0f_bbb818fad4674d2097775970ca10c3d0f002.jpg',
-        alt: 'Vendég Head Spa kezelésen a MOSAIC-ban'
+        src: '/assets/img/c2eb0f_3655b2f7e196464195c3e5f10c9644ba.jpg',
+        alt: 'Vendégek Head Spa kezelésen a MOSAIC-ban'
       },
-      hero_trust: ['★★★★★ ' + GOOGLE_SZOVEG, '✓ 6 hónapig felhasználható', '✓ online megvásárolható', '✓ egyéni vagy közös élmény'],
+      hero_trust: [
+        { csillag: true, szoveg: GOOGLE.pont + ' · ' + GOOGLE.darab, alszoveg: 'Google-vélemény' },
+        { ikon: 'calendar', szoveg: '6 hónapig', alszoveg: 'felhasználható' },
+        { ikon: 'monitor', szoveg: 'online', alszoveg: 'megvásárolható' },
+        { ikon: 'users', szoveg: 'egyéni vagy', alszoveg: 'közös élmény' }
+      ],
       product_order: ['egyeni', '4kezes', 'paros'],
       featured_proof: 'general',
       objection_title: null,
@@ -173,6 +180,7 @@
     ALKALMAK: ALKALMAK,
     ATADASOK: ATADASOK,
     PROOFOK: PROOFOK,
+    GOOGLE: GOOGLE,
     VARIANTOK: VARIANTOK,
     SZALON: SZALON,
     BANK: BANK,

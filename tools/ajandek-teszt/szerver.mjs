@@ -46,7 +46,9 @@ async function hatterInditas() {
 
 function oldal(ut, mobil) {
   let h = fs.readFileSync(path.join(ROOT, 'foglalas', 'ajandek.html'), 'utf8');
-  h = h.replace('<!--mh-fejlec-->', '').replace('<!--mh-lablec-->', '');
+  // az eles oldal fejlece es lablece, mint a tools/netlify-build.mjs-ben (assets/fejlec/)
+  const reszlet = (fajl) => fs.readFileSync(path.join(ROOT, 'assets/fejlec', fajl + '.html'), 'utf8');
+  h = h.replace('<!--mh-fejlec-->', () => reszlet(mobil ? 'mobil' : 'asztali')).replace('<!--mh-lablec-->', () => reszlet(mobil ? 'lablec-mobil' : 'lablec-asztali'));
   // a build a sajat szkript/stilus hivatkozasokhoz verziojelet fuz - helyben nem kell
   h = h.replace('<script src="/assets/js/ajandek-adat.js" defer></script>', '<script src="/__teszt/stripe-mock.js"></script>\n<script src="/assets/js/ajandek-adat.js" defer></script>');
   if (mobil) h = h.replace(/(["'(\s,])\/assets\/img\/(?!m\/)/g, '$1/assets/img/m/');
