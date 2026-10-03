@@ -74,7 +74,10 @@ async function urlap(context) {
 
   const lista = levelek(nev, d);
   if (!lista) return new Response('ok');
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = env;
+  // alapertekek: a Gmail-fiok; titkos valtozokent csak az SMTP_PASS kell (wrangler.toml)
+  const SMTP_HOST = env.SMTP_HOST || 'smtp.gmail.com';
+  const SMTP_USER = env.SMTP_USER || 'mosaicheadspa@gmail.com';
+  const { SMTP_PORT, SMTP_PASS } = env;
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
     console.log(`${nev}: nincs SMTP-beallitas, e-mail nem ment ki`, JSON.stringify(d));
     return new Response('ok');

@@ -1,7 +1,13 @@
 # Cloudflare Pages-beallitas (a Netlify helyett / mellett). A dist/ mappat a
 # tools/netlify-build.mjs rakja ossze, a lapcimeket es az urlapokat a
 # functions/[[path]].js kezeli. A titkos beallitasok (SMTP_PASS stb.) a
-# Cloudflare feluleten vannak, nem itt.
+# Cloudflare feluleten vannak, nem itt. A nem titkos valtozok IDE kellenek: ha van
+# wrangler.toml, a Cloudflare a feluleten megadott nem titkos valtozokat torli.
 name = "mosaicheadspa"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-09-01"
+
+[vars]
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = "465"
+SMTP_USER = "mosaicheadspa@gmail.com"
