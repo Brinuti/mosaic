@@ -102,12 +102,15 @@
   // A sminktetovalas foglalo probaoldala (/foglalo-pmu) a sikeres foglalas utan ide, a koszonooldalra
   // (pl. /pmu-ok) kuldi a vendeget mh_proba=pmu jellel: itt lefut a megszokott meres, majd
   // visszaterunk a proba sajat koszonooldalara.
-  if (/[?&]mh_proba=pmu(&|$)/.test(location.search)) {
+  // mh_proba=pmu: foglalas a /pmu-ok oldalon at; mh_proba=vh: telefonos konzultacio a /pmu-vh oldalon at
+  const mhProba = (location.search.match(/[?&]mh_proba=(pmu|vh)(&|$)/) || [])[1];
+  if (mhProba) {
     const fedo = document.createElement('div');
     fedo.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#fffaf4;color:#183033;display:grid;place-items:center;font:18px lato,Arial,sans-serif';
-    fedo.textContent = 'Foglalásod rögzítése…';
+    fedo.textContent = mhProba === 'vh' ? 'Kérésed rögzítése…' : 'Foglalásod rögzítése…';
     document.body.appendChild(fedo);
-    const tovabb = () => setTimeout(() => location.replace('/foglalo-pmu#koszonjuk'), 3500);
+    const cel = mhProba === 'vh' ? '/foglalo-pmu#visszahivas-kesz' : '/foglalo-pmu#koszonjuk';
+    const tovabb = () => setTimeout(() => location.replace(cel), 3500);
     if (document.readyState === 'complete') tovabb(); else addEventListener('load', tovabb);
   }
 

@@ -300,12 +300,12 @@
     <button class="gomb" type="button" data-ugrik="szolg">Időpontot foglalok <span class="nyil">→</span></button>
     <button class="belepo" type="button" data-ugrik="c-info">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/></svg>
-      <div><b>Nem tudod, melyik kezelés kell?</b><span>Beszéljünk 10 percet →</span></div>
+      <div><b>Nem tudod, melyik kezelés kell?</b><span>Telefonos konzultáció →</span></div>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
     </button>
     <button class="belepo" type="button" data-ugrik="foto" data-ag="B">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>
-      <div><b>Van sminktetoválásod, és javíttatnád?</b><span>Először megnézzük →</span></div>
+      <div><b>Van sminktetoválásod, és javíttatnád?</b><span>Először megnézem →</span></div>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
     </button>
     <div class="ertekeles"><span class="csillag">★★★★★</span><b>5,0</b><span class="halk">· 1.145 vélemény</span></div>
@@ -340,7 +340,7 @@
   <section data-nezet="kerdes" hidden>
     <div id="kerdes-osszegzes"></div>
     <h2>Volt már sminktetoválásod ezen a területen?</h2>
-    <p class="halk kicsi">Ezért kérdezzük, hogy a számodra legmegfelelőbb és legbiztonságosabb kezelést tudjuk javasolni.</p>
+    <p class="halk kicsi">Ezért kérdezem, hogy a számodra legmegfelelőbb és legbiztonságosabb kezelést javasolhassam.</p>
     <div class="valaszok" role="radiogroup">
       <label class="valasz"><input type="radio" name="elozmeny" value="elso"><span>Nem, ez lesz az első</span></label>
       <label class="valasz"><input type="radio" name="elozmeny" value="van"><span>Igen, már van sminktetoválásom – ezt szeretném javíttatni</span></label>
@@ -386,7 +386,7 @@
   <section data-nezet="foto" hidden>
     <h2 id="foto-cim">Küldj fotót a jelenlegi tetoválásról</h2>
     <div id="foto-osszegzes"></div>
-    <p class="halk" id="foto-szoveg">Ez segít, hogy a legbiztonságosabb és leghatékonyabb kezelést tudjuk javasolni.</p>
+    <p class="halk" id="foto-szoveg">Csak a fotó alapján tudom megmondani, mit lehet és érdemes tenni.</p>
     <div id="foto-hiba"></div>
     <label class="foto-zona" for="foto-input">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>
@@ -400,44 +400,44 @@
 
   <section data-nezet="foto-adatok" hidden>
     <h2>Elérhetőségeid</h2>
-    <p class="halk kicsi">A fotó alapján felveszük veled a kapcsolatot.</p>
+    <p class="halk kicsi">A fotó alapján felveszem veled a kapcsolatot.</p>
     <div id="foto-kuld-hiba"></div>
-    <label class="mezo" data-mezo="nev"><span>Név <i>*</i></span><input type="text" autocomplete="name" placeholder="pl. Kovács Anna"><em class="hibauz">Kérjük, add meg a neved.</em></label>
-    <label class="mezo" data-mezo="telefon"><span>Telefonszám <i>*</i></span><input type="tel" autocomplete="tel" placeholder="+36 30 123 4567"><em class="hibauz">Kérjük, érvényes telefonszámot adj meg.</em></label>
-    <label class="mezo" data-mezo="email" data-nemkotelezo><span>E-mail <span class="halk">(nem kötelező)</span></span><input type="email" autocomplete="email" placeholder="pl. anna@gmail.com"><em class="hibauz">Kérjük, érvényes e-mail-címet adj meg.</em></label>
+    <label class="mezo" data-mezo="nev"><span>Név <i>*</i></span><input type="text" autocomplete="name" placeholder="pl. Kovács Anna"><em class="hibauz">Kérlek, add meg a neved.</em></label>
+    <label class="mezo" data-mezo="telefon"><span>Telefonszám <i>*</i></span><input type="tel" autocomplete="tel" placeholder="+36 30 123 4567"><em class="hibauz">Kérlek, érvényes telefonszámot adj meg.</em></label>
+    <label class="mezo" data-mezo="email" data-nemkotelezo><span>E-mail <span class="halk">(nem kötelező)</span></span><input type="email" autocomplete="email" placeholder="pl. anna@gmail.com"><em class="hibauz">Kérlek, érvényes e-mail-címet adj meg.</em></label>
     <label class="jelolo"><input type="checkbox" id="foto-hozzajarul"><span>Hozzájárulok, hogy a fotóimat és adataimat a MOSAIC a kezelés egyeztetéséhez kezelje (<a href="/aszf" target="_blank">ÁSZF</a>).</span></label>
     <button class="gomb" type="button" id="foto-kuld">Fotó elküldése <span class="nyil">→</span></button>
   </section>
 
   <section data-nezet="foto-kesz" hidden>
     <div class="pipa-kor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
-    <div class="kozepre"><h2 style="margin-bottom:4px">Megkaptuk a fotódat!</h2><p class="halk" style="margin-top:0">Hamarosan jelentkezünk a javaslatunkkal.</p></div>
+    <div class="kozepre"><h2 style="margin-bottom:4px">Megkaptam a fotódat!</h2><p class="halk" style="margin-top:0">Hamarosan jelentkezem a javaslatommal.</p></div>
     <div id="foto-kesz-osszegzes"></div>
     <h3>Mi történik most?</h3>
     <ol class="lepesek-lista">
       <li>Melitta megnézi a fotódat.</li>
-      <li>Visszajelzünk telefonon (vagy e-mailben).</li>
+      <li>Visszajelzek telefonon (vagy e-mailben).</li>
       <li>Ha minden rendben, együtt véglegesítjük az időpontot.</li>
     </ol>
     <div class="elvalaszto"></div>
     <a class="gomb masod" href="/sminktetovalas-budapest">Vissza a sminktetováláshoz</a>
   </section>
 
-  <!-- C. 10 perces visszahivas -->
+  <!-- C. telefonos konzultacio (visszahivas, kb. 10 perc) -->
   <section data-nezet="c-info" hidden>
     <div class="video-doboz"><video src="/assets/video/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326e.mp4" poster="/assets/img/m/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326ef000.jpg" controls playsinline preload="none"></video></div>
-    <h2 style="margin-top:18px">10 perces, ingyenes konzultáció</h2>
-    <p class="halk">Segítünk kiválasztani a számodra legmegfelelőbb kezelést, és minden kérdésedre válaszolunk – telefonon.</p>
+    <h2 style="margin-top:18px">Telefonos konzultáció</h2>
+    <p class="halk">Kb. 10 percben, telefonon segítek kiválasztani a számodra legmegfelelőbb kezelést, és minden kérdésedre válaszolok.</p>
     <ul class="pipak" style="margin-bottom:22px">
       <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Személyre szabott tanácsadás</li>
       <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Kezelési javaslat az igényeidhez</li>
       <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Kötelezettség nélkül</li>
     </ul>
-    <button class="gomb" type="button" data-ugrik="c-ido">Visszahívást kérek <span class="nyil">→</span></button>
+    <button class="gomb" type="button" data-ugrik="c-ido">Telefonos konzultációt kérek <span class="nyil">→</span></button>
   </section>
 
   <section data-nezet="c-ido" hidden>
-    <h2>Mikor hívjunk?</h2>
+    <h2>Mikor hívjalak?</h2>
     <p class="halk kicsi">Melyik napszakban kényelmes? Ha mindegy, csak lépj tovább.</p>
     <h3>Melyik napszakban?</h3>
     <div class="chipek" id="c-savok"></div>
@@ -448,24 +448,24 @@
     <h2>Elérhetőségeid</h2>
     <div id="c-osszegzes"></div>
     <div id="c-kuld-hiba"></div>
-    <label class="mezo" data-mezo="nev"><span>Név <i>*</i></span><input type="text" autocomplete="name" placeholder="pl. Kovács Anna"><em class="hibauz">Kérjük, add meg a neved.</em></label>
-    <label class="mezo" data-mezo="telefon"><span>Telefonszám <i>*</i></span><input type="tel" autocomplete="tel" placeholder="+36 30 123 4567"><em class="hibauz">Kérjük, érvényes telefonszámot adj meg.</em></label>
-    <p class="halk kicsi">Erre a számra hívunk fel a megbeszélt időpontban.</p>
+    <label class="mezo" data-mezo="nev"><span>Név <i>*</i></span><input type="text" autocomplete="name" placeholder="pl. Kovács Anna"><em class="hibauz">Kérlek, add meg a neved.</em></label>
+    <label class="mezo" data-mezo="telefon"><span>Telefonszám <i>*</i></span><input type="tel" autocomplete="tel" placeholder="+36 30 123 4567"><em class="hibauz">Kérlek, érvényes telefonszámot adj meg.</em></label>
+    <p class="halk kicsi">Erre a számra hívlak a megbeszélt időpontban.</p>
     <button class="gomb" type="button" id="c-kuld">Visszahívás kérése <span class="nyil">→</span></button>
   </section>
 
   <section data-nezet="c-kesz" hidden>
     <div class="pipa-kor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
-    <h2 class="kozepre">Visszahívást kértél!</h2>
+    <h2 class="kozepre">Telefonos konzultációt kértél!</h2>
     <div id="c-kesz-osszegzes"></div>
-    <p class="kozepre kicsi halk">Ha közben változik a terved, hívj minket: 06 20 247 4444.</p>
+    <p class="kozepre kicsi halk">Ha közben változik a terved, hívj: 06 20 247 4444.</p>
     <div class="utana utana-egy">
       <div>
         <h3>Mi történik most?</h3>
         <ol class="lepesek-lista">
-          <li>A megadott időben felhívunk (kb. 10 perc).</li>
+          <li>A megadott időben felhívlak (kb. 10 perc).</li>
           <li>Átbeszéljük, melyik kezelés illik hozzád.</li>
-          <li>Ha szeretnéd, a hívás végén időpontot is foglalunk.</li>
+          <li>Ha szeretnéd, a hívás végén időpontot is foglalhatunk.</li>
         </ol>
       </div>
     </div>

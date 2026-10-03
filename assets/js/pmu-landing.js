@@ -51,6 +51,7 @@
   const nagy = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   const datum = (ts) => nagy(fmt(ts, { month: 'short', day: 'numeric' })); // "Okt. 6."
   const hetnap = (ts) => fmt(ts, { weekday: 'long' });
+  const iso = (ts) => new Intl.DateTimeFormat('sv-SE', { timeZone: ZONA }).format(new Date(ts * 1000)); // 2026-10-06
   const meres = (adat) => { (window.dataLayer = window.dataLayer || []).push(adat); };
 
   function leker(url, o = {}) {
@@ -125,7 +126,7 @@
         hova.replaceChildren(elem('p', { class: 'nap-uzenet', szoveg: 'A következő hetekre most nincs szabad időpont. Kérj visszahívást, és közösen találunk egyet!' }));
         return;
       }
-      hova.replaceChildren(...n.map((idok) => elem('a', { class: 'nap-kartya', href: '#foglalas', 'data-foglalo': 'lepes=szolg', 'data-cta': 'idopontok-nap' },
+      hova.replaceChildren(...n.map((idok) => elem('a', { class: 'nap-kartya', href: '#foglalas', 'data-foglalo': 'lepes=szolg&nap=' + iso(idok[0]), 'data-cta': 'idopontok-nap' },
         elem('span', { class: 'ikon-kor', html: SVG.naptar }),
         elem('span', { class: 'kis-nyil', html: SVG.jobbra }),
         elem('span', { class: 'datum', szoveg: datum(idok[0]) }),
@@ -206,6 +207,39 @@
   for (const a of document.querySelectorAll('[data-szuro-ugras]')) a.addEventListener('click', () => valasztSzuro(a.dataset.szuroUgras));
   $('ref-tobb').addEventListener('click', () => rajzolRef(true));
   rajzolRef(false);
+
+  // --- referenciak: kattintasra nagyban (lapozhato, Esc / hatterre kattintas bezarja) -------------------
+  const nagyito = elem('dialog', { class: 'nagyito', 'aria-label': 'Nagyított kép' });
+  const nagyKep = elem('img', { alt: '' });
+  let nagyIdx = 0;
+  const lathatoRefek = () => [...refRacs.querySelectorAll('.ref')].filter((f) => !f.hidden);
+  const nagyMutat = (i) => { const l = lathatoRefek(); nagyIdx = (i + l.length) % l.length; const im = l[nagyIdx].querySelector('img'); nagyKep.src = im.src; nagyKep.alt = im.alt; };
+  nagyito.append(nagyKep,
+    elem('button', { type: 'button', class: 'vh-zar', 'aria-label': 'Bezárás', szoveg: '×', onclick: () => nagyito.close() }),
+    elem('button', { type: 'button', class: 'lapoz elozo', 'aria-label': 'Előző kép', szoveg: '‹', onclick: () => nagyMutat(nagyIdx - 1) }),
+    elem('button', { type: 'button', class: 'lapoz kov', 'aria-label': 'Következő kép', szoveg: '›', onclick: () => nagyMutat(nagyIdx + 1) }));
+  nagyito.addEventListener('click', (e) => { if (e.target === nagyito) nagyito.close(); });
+  nagyito.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') nagyMutat(nagyIdx - 1); if (e.key === 'ArrowRight') nagyMutat(nagyIdx + 1); });
+  document.body.append(nagyito);
+  refRacs.addEventListener('click', (e) => {
+    const f = e.target.closest('.ref');
+    if (!f) return;
+    nagyMutat(lathatoRefek().indexOf(f));
+    nagyito.showModal();
+  });
+
+  // --- velemenyek: lapozhato sor ---------------------------------------------------------------------
+  const velRacs = $('vel-racs');
+  const velAllapot = () => {
+    $('vel-elozo').disabled = velRacs.scrollLeft < 4;
+    $('vel-kov').disabled = velRacs.scrollLeft + velRacs.clientWidth > velRacs.scrollWidth - 4;
+  };
+  const velLapoz = (irany) => velRacs.scrollBy({ left: irany * velRacs.clientWidth * 0.9, behavior: 'smooth' });
+  $('vel-elozo').addEventListener('click', () => velLapoz(-1));
+  $('vel-kov').addEventListener('click', () => velLapoz(1));
+  velRacs.addEventListener('scroll', velAllapot, { passive: true });
+  addEventListener('resize', velAllapot);
+  velAllapot();
 
   // --- video (Google Drive, allo formatum): csak kattintasra toltodik be ------------------------------
   const VIDEO = 'https://drive.google.com/file/d/1HaOg3JRFZmDfUAJ0rgHAtzW2UndqO09i/preview';
