@@ -23,11 +23,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { ritkit } from './css-ritkitas.mjs';
+import { atkot, atkotSzoveg, kapcsolokBuildhez, kihagyottOldal, osszead, UZLETAGAK } from './foglalo-atkotes.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 // Cloudflare Pages-en a main ag buildje az eles (a *.pages.dev cimeken a functions/[[path]].js ad noindexet)
 const ELES = process.env.ELES === '1' || (process.env.CF_PAGES === '1' && process.env.CF_PAGES_BRANCH === 'main');
+// A Salonic foglalo-linkek atkotese a kozos foglalora (/foglalo-motor), uzletagankent (tools/foglalo-atkotes.json): ami nincs bekapcsolva,
+// ahhoz a build nem nyul, a kimenet bajtra azonos a mostanival.
+const ATKOTES = kapcsolokBuildhez({ eles: ELES });
+let atkotesDb = Object.fromEntries(UZLETAGAK.map((k) => [k, 0]));
 
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
@@ -55,6 +60,22 @@ for (const m of [LAP_A, LAP_M]) fs.renameSync(path.join(m, 'index.html'), path.j
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
 // a Salonic foglalo oldalainak egyedi CSS-e (a Salonic "Egyedi CSS URL" beallitasa tolti be)
 fs.cpSync(path.join(ROOT, 'salonic'), path.join(DIST, 'salonic'), { recursive: true });
+// A foglalo (assets/js/booking-engine/**) moduljai egymast verziojel nelkul importaljak, a /assets/js/* viszont egy evig tarolhato
+// (immutable): egy motor-javitas nem jutna el a mar betoltott bongeszokhoz (a tobbi sajat szkript az oldalakban kap ?v= jelet, ezek nem).
+// A modulok tartalom-hash-eibol egy kozos verziojelet szamolunk, es beirjuk a modulok egymasra hivatkozasaiba es a foglalo-oldal importjaba.
+const MOTOR_MODULOK = [];
+(function bejar(mappa) {
+  for (const e of fs.readdirSync(mappa, { withFileTypes: true })) {
+    const p = path.join(mappa, e.name);
+    if (e.isDirectory()) bejar(p); else if (e.name.endsWith('.js')) MOTOR_MODULOK.push(p);
+  }
+})(path.join(DIST, 'assets/js/booking-engine'));
+MOTOR_MODULOK.sort();
+const MOTOR_VERZIO = crypto.createHash('sha1').update(MOTOR_MODULOK.map((p) => fs.readFileSync(p, 'utf8')).join('\n')).digest('hex').slice(0, 10);
+for (const p of MOTOR_MODULOK) {
+  const t = fs.readFileSync(p, 'utf8');
+  fs.writeFileSync(p, t.replace(/(from\s+['"])(\.{1,2}\/[^'"?]+\.js)(['"])/g, `$1$2?v=${MOTOR_VERZIO}$3`));
+}
 // Mobilkepek (assets/img/m/, tools/mobil-kepek.py): ami ott nincs (mar eleve kicsi),
 // azt valtozatlanul bemasoljuk, igy a mobil oldal minden kepe megvan az m/ mappaban is.
 const IMG = path.join(DIST, 'assets', 'img'), IMG_M = path.join(IMG, 'm');
@@ -158,8 +179,16 @@ const SAJAT_JS = fs.readdirSync(path.join(ROOT, 'assets/js')).filter((f) => f.en
 // az elso megjelenitest. A relativ betu-hivatkozasokat abszolutra irjuk.
 const BEAGYAZOTT = ['wix-google-fonts.css', 'wix-fonts.css', 'klon.css'].map((f) => [f,
   fs.readFileSync(path.join(ROOT, 'assets/css', f), 'utf8').replace(/url\((['"]?)\.\.\/fonts\//g, 'url($1/assets/fonts/')]);
+// A GYIK szovegeben is van foglalo-link (assets/js/gyik.js): ugyanaz az atkotes. A verziojel a dist/-beli (atirt) tartalombol
+// szamolodik, hogy az atirt szkript uj cimet kapjon (a regit a bongeszo egy evig tarthatja); atkotes nelkul a tartalom azonos.
+if (ATKOTES.size) {
+  const gyik = path.join(DIST, 'assets/js/gyik.js');
+  const r = atkotSzoveg(fs.readFileSync(gyik, 'utf8'), ATKOTES);
+  fs.writeFileSync(gyik, r.szoveg);
+  atkotesDb = osszead(atkotesDb, r.db);
+}
 const verzio = Object.fromEntries(SAJAT.map((f) => [f,
-  crypto.createHash('sha1').update(fs.readFileSync(path.join(ROOT, f))).digest('hex').slice(0, 10)]));
+  crypto.createHash('sha1').update(fs.readFileSync(path.join(DIST, f))).digest('hex').slice(0, 10)]));
 for (const mappa of [LAP_A, LAP_M]) {
   for (const f of fs.readdirSync(mappa).filter((x) => x.endsWith('.html'))) {
     const p = path.join(mappa, f);
@@ -196,6 +225,10 @@ for (const mappa of [LAP_A, LAP_M]) {
     }
     // mobilon a kisebb kepvaltozatok (a teljes URL-ek - og:image, JSON-LD - maradnak)
     if (mappa === LAP_M) h = h.replace(/(["'(\s,])\/assets\/img\/(?!m\/)/g, '$1/assets/img/m/');
+    // a foglalo-oldal importja a motor verzios cimere mutat (lasd MOTOR_VERZIO)
+    h = h.split("/assets/js/booking-engine/engine.js'").join(`/assets/js/booking-engine/engine.js?v=${MOTOR_VERZIO}'`);
+    // Salonic foglalo-linkek -> /foglalo-motor (a koszonooldalakat kihagyja; kikapcsolva a szoveg valtozatlan)
+    if (ATKOTES.size && !kihagyottOldal(f)) { const r = atkot(h, ATKOTES); h = r.html; atkotesDb = osszead(atkotesDb, r.db); }
     fs.writeFileSync(p, h);
   }
 }
@@ -203,3 +236,4 @@ for (const mappa of [LAP_A, LAP_M]) {
 const html = fs.readdirSync(LAP_A).filter((f) => f.endsWith('.html')).length;
 const mobil = fs.readdirSync(LAP_M).filter((f) => f.endsWith('.html')).length;
 console.log(`dist/ kesz: ${html} asztali + ${mobil} mobil oldal, ${ELES ? 'ELES (indexelheto)' : 'PROBA (noindex)'}`);
+console.log(`foglalo-atkotes: ${ATKOTES.size ? [...ATKOTES].map((k) => `${k} ${atkotesDb[k]}`).join(', ') : 'kikapcsolva (a linkek Salonic-linkek maradnak)'}`);

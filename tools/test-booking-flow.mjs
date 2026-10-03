@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  EXIT_GIFTCARD, ROUTES, availableDays, cardsFor, classifyRedirect, dayKey, dayLabel, daypartOf, displayName, durationLabel, entryState,
+  EXIT_GIFTCARD, ROUTES, withAttribution, availableDays, cardsFor, classifyRedirect, dayKey, dayLabel, daypartOf, displayName, durationLabel, entryState,
   filterSlots, findByKey, formatPrice, groupFacts, groupServices, icsFor, intentCandidates, intentServices, longDate, next, parseContext, parseLength,
   priceFor, priceLabel, quickSlots, shouldHandoff, staffDiscountPercent, stripLabel, timeLabel, uniqueTimes,
 } from '../assets/js/booking-engine/flow.js';
@@ -306,8 +306,13 @@ test('findByKey: azonosito vagy kulcsszavak; az ajandekkartyas es a normal kulon
 
 test('parseContext: input szerzodes, mérési parameterek, source_page', () => {
   const c = parseContext('?business=headspa&service=paros&voucher=1&utm_source=google&gclid=abc&fbclid=f1&ttclid=t1&minta=siker', 'https://www.mosaicheadspa.hu/headspa-budapest', 'https://www.mosaicheadspa.hu');
-  assert.deepEqual(c, { business: 'headspa', serviceKey: 'paros', category: null, voucher: true, sourcePage: '/headspa-budapest', attribution: { utm_source: 'google', gclid: 'abc', fbclid: 'f1', ttclid: 't1' }, sample: 'siker' });
+  assert.deepEqual(c, { business: 'headspa', serviceKey: 'paros', category: null, voucher: true, intent: null, sourcePage: '/headspa-budapest', attribution: { utm_source: 'google', gclid: 'abc', fbclid: 'f1', ttclid: 't1' }, sample: 'siker' });
   assert.equal(parseContext('?business=hair&category=balayage').category, 'balayage');
+  // lezer: ?intent=first | returning (a regi "Elso idopontok" / "Kezeles idopontok" gombok); az ajandekkartya-szandek (intent=voucher) valtozatlan
+  assert.equal(parseContext('?business=laser&intent=first').intent, 'first');
+  assert.equal(parseContext('?business=laser&intent=returning').intent, 'returning');
+  assert.equal(parseContext('?business=laser').intent, null);
+  assert.deepEqual([parseContext('?intent=voucher').voucher, parseContext('?intent=voucher').intent], [true, 'voucher']);
   assert.equal(parseContext('', 'https://masik.hu/x', 'https://www.mosaicheadspa.hu').sourcePage, '', 'idegen referrer nem source_page');
   assert.equal(parseContext('?source_page=/x').sourcePage, '/x');
   assert.equal(parseContext('').business, 'headspa');
@@ -331,6 +336,26 @@ test('shouldHandoff: eles tartomanyon atadas a meglevo koszonooldalnak, elonezet
   assert.equal(shouldHandoff('localhost', '?atadas=1'), true);
 });
 
+test('withAttribution: a hirdetesi azonositok a koszonooldal-URL VEGERE kerulnek, a Salonic parameterei bajtra valtozatlanok', () => {
+  const salonic = 'https://www.mosaicheadspa.hu/fodrasz-ok?first_booking=true&service=Fodr%C3%A1sz+konzult%C3%A1ci%C3%B3+%289.900+Ft+helyett+most+0+Ft%21%29&price=0&g=g:3385039&bookingUrl=https%3A%2F%2Fmosaic-hair.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26startDate%3D1792674000%26back%3D';
+  const klikk = '?business=hair&service=konzult&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc';
+  const ki = withAttribution(salonic, klikk);
+  assert.ok(ki.startsWith(salonic), 'a Salonic URL elotagja bajtra valtozatlan');
+  assert.equal(ki.slice(salonic.length), '&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc');
+  // ami nem hirdetesi azonosito (business, service, minta, atadas ...), az nem kerul at
+  assert.ok(!/business=|service=konzult/.test(ki.slice(salonic.length)));
+  // nincs mit hozzaadni: valtozatlan
+  assert.equal(withAttribution(salonic, '?business=hair'), salonic);
+  assert.equal(withAttribution(salonic, ''), salonic);
+  // ha a Salonic URL-je mar tartalmazza, nem irjuk felul es nem duplazzuk
+  assert.equal(withAttribution(salonic + '&utm_source=salonic', '?utm_source=teszt&utm_medium=cpc'), salonic + '&utm_source=salonic&utm_medium=cpc');
+  // query nelkuli URL, fragment, ertek-kodolas
+  assert.equal(withAttribution('https://x.hu/ok', '?gclid=a b&utm_term=ő'), 'https://x.hu/ok?gclid=a%20b&utm_term=%C5%91');
+  assert.equal(withAttribution('https://x.hu/ok?a=1#h', '?gclid=Z'), 'https://x.hu/ok?a=1&gclid=Z#h');
+  assert.equal(withAttribution('https://x.hu/ok?', '?gclid=Z'), 'https://x.hu/ok?gclid=Z');
+  assert.equal(withAttribution('nem url', '?gclid=Z'), 'nem url');
+});
+
 test('icsFor: naptar-fajl: kezdes, veg, helyszin, emlekezteto', () => {
   const ics = icsFor({ startUnix: T(3, 10), durationMin: 80, title: 'HeadSpa, Egyéni', location: '1023 Budapest, Bécsi út 4.', description: 'MOSAIC' });
   assert.match(ics, /^BEGIN:VCALENDAR\r\n/);
@@ -340,4 +365,26 @@ test('icsFor: naptar-fajl: kezdes, veg, helyszin, emlekezteto', () => {
   assert.match(ics, /LOCATION:1023 Budapest\\, Bécsi út 4\./);
   assert.match(ics, /TRIGGER:-PT24H/);
   assert.match(ics, /END:VCALENDAR$/);
+});
+
+// A build (tools/netlify-build.mjs) a modulok egymasra hivatkozasaiba tartalom-hash verziojelet ir (a /assets/js/* egy evig tarolhato,
+// verziojel nelkul egy motor-javitas nem jutna el a mar betoltott bongeszokhoz). Ehhez minden import relativ, .js-re vegzodo, statikus.
+test('motor-modulok: minden import relativ .js hivatkozas (a build verziojelet ir beleje), nincs dinamikus import', () => {
+  const dir = path.join(here, '..', 'assets', 'js', 'booking-engine');
+  const files = [];
+  (function walk(d) { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (e.name.endsWith('.js')) files.push(p); } })(dir);
+  assert.ok(files.length >= 9, 'a motor modulokat megtalalja');
+  const re = /(from\s+['"])(\.{1,2}\/[^'"?]+\.js)(['"])/g;
+  let n = 0;
+  for (const f of files) {
+    const src = fs.readFileSync(f, 'utf8');
+    assert.ok(!/\bimport\s*\(/.test(src), `${path.basename(f)}: nincs dinamikus import`);
+    const specs = [...src.matchAll(/\bfrom\s+['"]([^'"]+)['"]/g)].map((m) => m[1]);
+    for (const s of specs) assert.match(s, /^\.{1,2}\/[^'"?]+\.js$/, `${path.basename(f)}: ${s}`);
+    n += [...src.matchAll(re)].length;
+    assert.equal([...src.matchAll(re)].length, specs.length, `${path.basename(f)}: minden import verziozhato`);
+  }
+  assert.ok(n >= 9, `a ${n} import mind verziozhato`);
+  const html = fs.readFileSync(path.join(here, '..', 'foglalas', 'foglalo-motor.html'), 'utf8');
+  assert.ok(html.includes("/assets/js/booking-engine/engine.js'"), 'a foglalo-oldal importja a build altal verziozott alak');
 });

@@ -222,6 +222,7 @@ export function parseContext(search, referrer = '', origin = '') {
     serviceKey: q.get('service') || null,
     category: q.get('category') || null, // kategoria-landing: a szandek kulcsa (pl. balayage) -> kozvetlenul a kezeles-valasztasra
     voucher: q.get('voucher') === '1' || q.get('intent') === 'voucher',
+    intent: q.get('intent') || null, // lezer: first | returning (a regi "Elso idopontok" / "Kezeles idopontok" gombok) -> egyenesen a terulet-valasztasra
     sourcePage,
     attribution,
     sample: q.get('minta') || null,
@@ -233,6 +234,25 @@ export function parseContext(search, referrer = '', origin = '') {
  * tartomanyon: ott a Salonic atiranyitasa a sajat oldalunkra jon vissza. Elonezeten / helyben a motor maga mutatja a sikert
  * (a Salonic az eles koszonooldalra iranyit, az onnan nem ertesitheti az elonezeti oldalt). ?atadas=0 kikapcsolja, ?atadas=1 bekapcsolja.
  */
+export const ATTRIBUTION_KEYS = Object.freeze(['gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid', 'msclkid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']);
+
+/**
+ * Az atadott koszonooldal-URL (a Salonic allitja elo, a motor nem nyul bele) VEGERE fuzi a motor sajat URL-jen erkezett hirdetesi azonositokat
+ * (gclid, fbclid, ttclid, utm_* ...), ha a Salonic URL-je nem tartalmazza oket. Igy a hirdetesbol KOZVETLENUL a foglalora erkezo latogato
+ * azonositoi (es a GA4 kampany-forrasa) a koszonooldalon is megvannak: a platformok a ma is hasznalt modon, az oldal URL-jebol olvassak (nem a
+ * referrerbol). A Salonic paraméterei bajtra valtozatlanok maradnak (nem szerializaljuk ujra az URL-t); ha nincs mit hozzaadni, az href valtozatlan.
+ */
+export function withAttribution(href, search = '') {
+  let u;
+  try { u = new URL(href); } catch (e) { return href; }
+  const q = new URLSearchParams(search);
+  const add = ATTRIBUTION_KEYS.filter((k) => q.get(k) && !u.searchParams.has(k)).map((k) => `${k}=${encodeURIComponent(q.get(k))}`);
+  if (!add.length) return href;
+  const hash = href.indexOf('#');
+  const base = hash >= 0 ? href.slice(0, hash) : href, frag = hash >= 0 ? href.slice(hash) : '';
+  return base + (base.includes('?') ? (/[?&]$/.test(base) ? '' : '&') : '?') + add.join('&') + frag;
+}
+
 export function shouldHandoff(hostname, search = '', liveHosts = ['www.mosaicheadspa.hu', 'mosaicheadspa.hu']) {
   const v = new URLSearchParams(search).get('atadas');
   if (v === '0') return false;
