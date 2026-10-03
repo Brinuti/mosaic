@@ -294,6 +294,24 @@
     .foto-mobil { display: grid; justify-items: center; gap: 4px; }
     .foto-mobil .gomb svg { width: 22px; height: 22px; }
   }
+
+  /* === 2026-10-04: mobilon minden lepes egy kepernyo === */
+  .kezelesek { grid-template-columns: minmax(0, 1fr); }
+  .kezeles-sor, .kezeles, .kezeles > span:nth-child(2) { min-width: 0; }
+  .kezeles .valtozat { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 599px) {
+    /* idopont-lepes: naptar es idopontok egy kepernyon (6 hetes honap + 4 sor idopont is) */
+    .valasztott { padding: 4px 8px 4px 4px; margin-bottom: 6px; }
+    .valasztott img { width: 36px; height: 36px; }
+    .honap-fej { margin-bottom: 2px; }
+    .lapoz { width: 32px; height: 32px; }
+    .naptar { gap: 1px 4px; }
+    .nnap { height: 32px; width: 32px; }
+    .nap-cim { margin: 4px 0 4px; }
+    .idolista { gap: 5px; }
+    .idogomb { padding: 5px 0; }
+  }
+  @media (max-width: 599px) { [data-nezet=szolg] .bizalom { margin-top: 10px; gap: 4px; } [data-nezet=szolg] h2 { margin-bottom: 10px !important; } }
 </style>
 </head>
 <body>
@@ -314,7 +332,7 @@
     <button class="gomb" type="button" data-ugrik="szolg">Időpontot foglalok <span class="nyil">→</span></button>
     <button class="belepo" type="button" data-ugrik="c-info">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/></svg>
-      <div><b>Nem tudod, melyik kezelés kell?</b><span>Telefonos konzultáció →</span></div>
+      <div><b>Nem tudod, melyik kezelést szeretnéd?</b><span>Telefonos konzultáció →</span></div>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
     </button>
     <button class="belepo" type="button" data-ugrik="foto" data-ag="B">
