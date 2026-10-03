@@ -169,8 +169,9 @@
       "place_phone": "+36-20-247-4444",
       "readback_status": "PARTIAL_READBACK",
       "open_items": [
-        "NYITOTT: a \"Konzultacio + hajkamera vizsgalat 4 990 Ft\" a tulajdonos szerint fel van veve es foglalhato, de a readback nem talalja (Oxigen fiok: 3, Hair fiok: 41 szolgaltatas, egyik sem 4 990 Ft). Kell a pontos Salonic-nev vagy a kozvetlen foglalasi link.",
-        "booking_type / is_acquisition_conversion: jovahagyva, lasd DECISIONS.md (a hajkamera-vizsgalat konzultacio lesz, ha megjelenik). success_route: nyitott."
+        "FELOLDVA (2026-10-03): a hajkamera-vizsgalat felkerult a Salonicba: 466147 \"AKCIOS Hajkamerás vizsgálat és konzultáció\", 30 perc, 4 990 Ft (a besorolasa: konzultacio).",
+        "Az elso oxigenterapiahoz ket Salonic-valtozat van (466110: 80 perc, 3 kezelo; 468638: 120 perc, 2 kezelo), azonos ar: a foglalo jelenleg rovid valasztast kinal (OX2), amig nincs dontes, melyiket kell kinalni.",
+        "booking_type / is_acquisition_conversion: jovahagyva, lasd DECISIONS.md. success_route: nyitott."
       ]
     },
     "laser": {
@@ -3560,6 +3561,40 @@
           "staff_id": "32417",
           "staff_label": "Elysion Pro Szőrtelenítés",
           "staff_api_name": "Elysion Pro Szőrtelenítés"
+        }
+      ],
+      "booking_type": null,
+      "success_route": null,
+      "is_acquisition_conversion": null,
+      "blocked": [
+        "booking_type",
+        "success_route",
+        "is_acquisition_conversion"
+      ]
+    },
+    {
+      "business": "oxygen",
+      "salonic_account": "mosaic-oxigen",
+      "salonic_place_id": "14409",
+      "salonic_spec_id": "64122",
+      "service_category": "Oxigénterápia - 1.alkalom",
+      "salonic_service_id": "466147",
+      "service_name_raw": "AKCIÓS Hajkamerás vizsgálat és konzultáció",
+      "duration_min": 30,
+      "active_price": 4990,
+      "list_price": null,
+      "eligible_staff": [
+        {
+          "staff_id": "31988",
+          "staff_label": "Bozsoki - Harangozó Tündi"
+        },
+        {
+          "staff_id": "32009",
+          "staff_label": "Szűcs Vivien"
+        },
+        {
+          "staff_id": "32969",
+          "staff_label": "Menyhárt Móni"
         }
       ],
       "booking_type": null,

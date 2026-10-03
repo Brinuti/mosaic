@@ -13,6 +13,9 @@ export const ROUTES = Object.freeze({
   HS1: { book: 'HS2', voucher: 'HS3', giftcard: EXIT_GIFTCARD },
   HS2: { service: 'C1' },
   HS3: { service: 'C1' },
+  // Oxigen: egy belepesi kerdes (OX1); ha egy szandekhoz tobb Salonic-szolgaltatas tartozik, rovid valasztas (OX2) - csak C1 elott
+  OX1: { service: 'C1', variant: 'OX2' },
+  OX2: { service: 'C1' },
   C1: { slot: 'C3', more: 'C2', none: 'A1' },
   C2: { slot: 'C3', none: 'A1' },
   C3: { next: 'C4' },
@@ -29,11 +32,14 @@ export function next(state, event) {
   return to;
 }
 
-/** Belepesi pont: konkret szolgaltatas ismert -> C1; ajandekkartya-szandek -> HS3; egyebkent (generic) HS1. */
-export function entryState({ hasService, voucher }) {
+/** Belepesi pont: konkret szolgaltatas ismert -> C1; ajandekkartya-szandek -> HS3 (ha az uzletagnak van); egyebkent (generic) az uzletag elso allapota (HS1 / OX1). */
+export function entryState({ hasService, voucher, first = 'HS1', voucherState = 'HS3' }) {
   if (hasService) return 'C1';
-  return voucher ? 'HS3' : 'HS1';
+  return voucher && voucherState ? voucherState : first;
 }
+
+/** Egy szandekhoz (pl. "Elso kezeles") tartozo Salonic-szolgaltatasok; ha tobb is van, az engine rovid valasztast kinal (OX2). */
+export const intentCandidates = (services, intent) => services.filter((s) => intent.test(s));
 
 // --- ido (Europe/Budapest) --------------------------------------------------------------------------------------------------
 const fmt = (unix, o, locale = 'hu-HU') => new Intl.DateTimeFormat(locale, { timeZone: TIMEZONE, ...o }).format(new Date(unix * 1000));
@@ -102,7 +108,8 @@ export function availableDays(slots, { max = 14 } = {}) {
 const EMOJI = /[\p{Extended_Pictographic}‍️]/gu;
 /** A Salonic nevebol: emoji es a "KUPONKODDAL - " elotag nelkul (a kupon-allapotot kulon jelezzuk). */
 export const displayName = (name) => String(name || '').replace(EMOJI, '').replace(/^\s*KUPONKÓDDAL\s*-\s*/i, '').replace(/\s+/g, ' ').trim();
-export const formatPrice = (n) => (n === null || n === undefined ? '' : `${new Intl.NumberFormat('hu-HU').format(n)} Ft`);
+// Ezres tagolas minden meretnel ("4 990 Ft", "29 900 Ft"): az Intl hu-HU a negyjegyu szamokat nem tagolja, ezert kezzel.
+export const formatPrice = (n) => (n === null || n === undefined ? '' : `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} Ft`);
 export const durationLabel = (min) => (min >= 60 ? `${Math.floor(min / 60)} óra${min % 60 ? ' ' + (min % 60) + ' perc' : ''}` : `${min} perc`);
 
 /** Az uzletag kartyai (HS2/HS3): minden kartyahoz a Salonic aktualis szolgaltatasa; ami nincs a Salonicban, kimarad (nem talalunk ki ujat). */

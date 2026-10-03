@@ -1,6 +1,6 @@
-# Booking Engine V1 – HeadSpa foglaló (rejtett próbaoldal)
+# Booking Engine V1 – HeadSpa és Oxigén foglaló (rejtett próbaoldal)
 
-Oldal: `/foglalo-motor?business=headspa` (`noindex`, nincs rá link, nem része az éles oldalnak, amíg külön nem döntünk).
+Oldal: `/foglalo-motor?business=headspa` vagy `?business=oxygen` (`noindex`, nincs rá link, nem része az éles oldalnak, amíg külön nem döntünk).
 Kód: `assets/js/booking-engine/` (`engine.js` felület, `flow.js` logika, `flows/headspa.js` HeadSpa-beállítás, `tracking.js`, `salonic-adapter.js`, `business-config.js`), `assets/css/booking-engine.css`, `foglalas/foglalo-motor.html`.
 Döntések: [DECISIONS.md](DECISIONS.md). Adapter: [SALONIC_ADAPTER_CONTRACT.md](SALONIC_ADAPTER_CONTRACT.md).
 
@@ -17,6 +17,16 @@ Döntések: [DECISIONS.md](DECISIONS.md). Adapter: [SALONIC_ADAPTER_CONTRACT.md]
 ## Folyamat (a wireframe szerint)
 
 `HS1` (intent) → `HS2` (élmény) / `HS3` (ajándékkártya) → `C1` (legközelebbi időpontok, max. 5) → `C2` (naptár: nap, napszak; HeadSpa-n nincs szakember-választó) → `C3` (összegzés) → `C4` (a Salonic beágyazott adatlapja) → `C5` (ellenőrzés) → `C6` (siker). Mellékágak: `A1` nincs időpont (visszahívás-űrlap), `A2` elkelt vagy lejárt időpont, `A3` technikai hiba, `A3U` a foglalás feldolgozva, de nem ellenőrizhető. Az ajándékkártya-vásárlás kilép a `/headspa-ajandekkartya` oldalra.
+
+## Oxigén (`business=oxygen`)
+
+`OX1` → `C1`: három belépési út (hajkamerás vizsgálat 4 990 Ft, első kezelés, már jártam nálatok). A szolgáltatást a besorolás (`bookingType`) választja, nem azonosító-lista, ezért az új Salonic-szolgáltatás magától megjelenik. Ha egy szándékhoz több Salonic-változat tartozik (az első kezelésnél: 80 és 120 perces, azonos áron), a motor rövid választást kínál (`OX2`), nem dönt a vendég helyett. A szakember nem kötelező: a naptárban (`C2`) választható, és a választott szakember végigmegy az összegzésen és a Salonic-űrlapon.
+
+## Közös Salonic-CSS (minden üzletág egyformán)
+
+Az adatlap megjelenését a Salonic-fiók „Egyedi CSS URL” beállítása adja (a PMU-nál ma `salonic/pmu.css`). Az általánosított `salonic/mosaic.css` minden `customer-mosaic…` fiókra érvényes. Hatása (élő HeadSpa- és Oxigén-oldalon, a PMU stíluslappal kipróbálva): az adatlap egy képernyőre összeugrik (812 px), a lábléc, a Facebook-belépés és a megjegyzés mező el van rejtve, MOSAIC betűtípus és arany gomb, a kuponkód mező megmarad.
+
+Bekapcsolás fiókonként (a tulajdonos teendője, a `salonic/mosaic.css` éles megjelenése után): Salonic > Beállítások > Online bejelentkezés megjelenés > „Egyedi CSS URL” = `https://www.mosaicheadspa.hu/salonic/mosaic.css`. A motor a Salonic oldalából felismeri, hogy a fiók betölti-e (`adapter.getPresentation`), és ehhez méretezi a keretet (78 px levágás, 735 px látszó magasság); nélküle az alap méretezés él (100 px levágás, fiókonként 1545 / 1653 px).
 
 ## Mi van letesztelve
 

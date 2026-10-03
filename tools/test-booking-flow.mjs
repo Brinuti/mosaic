@@ -7,9 +7,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   EXIT_GIFTCARD, ROUTES, availableDays, cardsFor, classifyRedirect, dayKey, dayLabel, daypartOf, displayName, durationLabel, entryState,
-  filterSlots, findByKey, formatPrice, icsFor, longDate, next, parseContext, quickSlots, stripLabel, timeLabel, uniqueTimes,
+  filterSlots, findByKey, formatPrice, icsFor, intentCandidates, longDate, next, parseContext, quickSlots, stripLabel, timeLabel, uniqueTimes,
 } from '../assets/js/booking-engine/flow.js';
 import { HEADSPA } from '../assets/js/booking-engine/flows/headspa.js';
+import { OXYGEN } from '../assets/js/booking-engine/flows/oxygen.js';
 import { classifyService } from '../assets/js/booking-engine/business-config.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -41,6 +42,29 @@ test('belepesi pont: generic = HS1, konkret szolgaltatas = C1, ajandekkartya-sza
   assert.equal(entryState({ hasService: true, voucher: false }), 'C1');
   assert.equal(entryState({ hasService: true, voucher: true }), 'C1');
   assert.equal(entryState({ hasService: false, voucher: true }), 'HS3');
+});
+
+test('Oxigen: a wireframe routing tablaja (OX1 -> C1; tobb valtozatnal OX2 -> C1), belepes OX1; nincs ajandekkartya-ag', () => {
+  assert.equal(next('OX1', 'service'), 'C1');
+  assert.equal(next('OX1', 'variant'), 'OX2');
+  assert.equal(next('OX2', 'service'), 'C1');
+  assert.equal(entryState({ hasService: false, voucher: false, first: OXYGEN.firstState, voucherState: OXYGEN.voucherState }), 'OX1');
+  assert.equal(entryState({ hasService: false, voucher: true, first: OXYGEN.firstState, voucherState: OXYGEN.voucherState }), 'OX1', 'az Oxigennek nincs ajandekkartya-ag');
+  assert.equal(entryState({ hasService: true, voucher: false, first: OXYGEN.firstState, voucherState: OXYGEN.voucherState }), 'C1');
+});
+
+test('Oxigen szandekek a Salonic aktualis szolgaltatasaibol: hajkamera, elso (ket valtozat -> OX2), visszajaro', () => {
+  const services = mapping.services.filter((s) => s.business === 'oxygen').map((s) => {
+    const svc = { serviceId: s.salonic_service_id, name: s.service_name_raw, specId: s.salonic_spec_id, activePrice: s.active_price, durationMin: s.duration_min };
+    return { ...svc, bookingType: classifyService('oxygen', svc).bookingType };
+  });
+  const pick = (key) => intentCandidates(services, OXYGEN.intents.find((i) => i.key === key));
+  assert.deepEqual(pick('camera').map((s) => s.serviceId), ['466147']);
+  assert.equal(pick('camera')[0].activePrice, 4990);
+  assert.equal(pick('camera')[0].durationMin, 30);
+  assert.deepEqual(pick('first').map((s) => s.serviceId).sort(), ['466110', '468638'], 'ket valtozat: a foglalo rovid valasztast kinal, nem valaszt helyetted');
+  assert.deepEqual(pick('returning').map((s) => s.serviceId), ['466158']);
+  assert.ok(OXYGEN.showStaffFilter, 'az Oxigennel a szakember valaszthato');
 });
 
 test('ido: budapesti cimkek, napszakok es napnevek', () => {
@@ -91,6 +115,9 @@ test('megjelenites: nev, ar, idotartam', () => {
   assert.equal(displayName('💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás'), 'EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás');
   assert.equal(displayName('KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces MOSAIC'), 'EGYÉNI 50 perces MOSAIC');
   assert.equal(formatPrice(26900).replace(/\s/g, ' '), '26 900 Ft');
+  assert.equal(formatPrice(4990).replace(/\s/g, ' '), '4 990 Ft', 'negyjegyu ar is tagolt');
+  assert.equal(formatPrice(990), '990 Ft');
+  assert.equal(formatPrice(1250000).replace(/\s/g, ' '), '1 250 000 Ft');
   assert.equal(formatPrice(null), '');
   assert.equal(durationLabel(80), '1 óra 20 perc');
   assert.equal(durationLabel(60), '1 óra');

@@ -87,6 +87,20 @@ export function parseSpecs(html) {
 
 export const parseCalendarId = (html) => (String(html).match(/calendarId:\s*'([^']+)'/) || [])[1] || null;
 
+/**
+ * A Salonic-fiok "Egyeni CSS URL" beallitasa: ha a fiok betolti a MOSAIC kozos stiluslapjat (salonic/pmu.css, salonic/mosaic.css),
+ * az oldalaban megjelenik egy <link rel="stylesheet" href="https://www.mosaicheadspa.hu/salonic/...css">. A motor ebbol tudja, hogy
+ * a beagyazott adatlap tomor (egy kepernyos) vagy az alap, magas kinezetu, es ehhez meretezi a keretet.
+ */
+export function parseCustomCss(html, hosts = ['www.mosaicheadspa.hu', 'mosaicheadspa.hu']) {
+  for (const m of String(html).matchAll(/<link\b[^>]*>/gi)) {
+    const a = attrsOf(m[0]);
+    if (!/stylesheet/i.test(a.rel || '') || !a.href) continue;
+    try { const u = new URL(a.href); if (hosts.includes(u.hostname) && /^\/salonic\/[^/]+\.css$/i.test(u.pathname)) return a.href; } catch (e) { /* hibas href */ }
+  }
+  return null;
+}
+
 /** A naptar-API valaszabol szabad idopontok (a UI-szerzodes: MASTER SPEC 6.). A "-1" kulcsu blokk ures helykitolto, kimarad. */
 export function slotsFromApi(json, ctx) {
   if (!json || json.status !== 'success') throw new SalonicError('API_STATUS', 'A naptar-API nem sikeres valaszt adott: ' + (json && json.status), { status: json && json.status });
@@ -202,14 +216,24 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     const cfg = cfgOf(business);
     return cached('services:' + business, async () => {
       const found = [];
+      let customCss = null;
+      const page = async (url) => { const t = await getText(url); customCss = customCss || parseCustomCss(t); return t; }; // az egyeni CSS jelet a mar letoltott oldalakbol olvassuk
       const add = (list, spec) => { for (const s of list) if (!found.some((x) => x.serviceId === s.serviceId)) found.push({ ...s, specId: spec ? spec.specId : null, category: spec ? spec.name : null }); };
-      if (cfg.employeeId) add(parseServices(await getText(`${cfg.host}/employees/${cfg.employeeId}/?placeId=${cfg.placeId}`)), null);
+      if (cfg.employeeId) add(parseServices(await page(`${cfg.host}/employees/${cfg.employeeId}/?placeId=${cfg.placeId}`)), null);
       let specs = (cfg.specIds || []).map((id) => ({ specId: String(id), name: null }));
-      if (!specs.length && !cfg.employeeId) specs = parseSpecs(await getText(`${cfg.host}/selectSpecialization/?placeId=${cfg.placeId}`));
-      for (const spec of specs) add(parseServices(await getText(`${cfg.host}/showServices/?placeId=${cfg.placeId}&specId=${spec.specId}`)), spec);
+      if (!specs.length && !cfg.employeeId) specs = parseSpecs(await page(`${cfg.host}/selectSpecialization/?placeId=${cfg.placeId}`));
+      for (const spec of specs) add(parseServices(await page(`${cfg.host}/showServices/?placeId=${cfg.placeId}&specId=${spec.specId}`)), spec);
       if (!found.length) throw new SalonicError('PARSE', `Nem talaltam szolgaltatast: ${business}`, { business });
+      cache.set('css:' + business, { t: now(), v: customCss });
       return found;
     });
+  }
+
+  /** Az adatlap megjelenese: { customCss } - a MOSAIC kozos stiluslapjanak cime, ha a Salonic-fiok betolti; egyebkent null (alap kinezet). */
+  async function getPresentation(business) {
+    await getServices(business);
+    const c = cache.get('css:' + business);
+    return { customCss: c ? c.v : null };
   }
 
   async function findService(business, serviceId) {
@@ -278,7 +302,7 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
   return {
     capabilities: Object.freeze({ createBooking: false, getBooking: false, updateBooking: false, bookingId: 'synthetic', priceReadback: 'redirect-attested' }),
     businesses: Object.keys(businesses),
-    getServices, getStaff, getAvailability, getPlace, beginBooking,
+    getServices, getStaff, getAvailability, getPlace, getPresentation, beginBooking,
     verifyConfirmation: (url, expected) => verifyConfirmation(url, expected, businesses),
     createBooking: notSupported('createBooking'),
     getBooking: notSupported('getBooking'),

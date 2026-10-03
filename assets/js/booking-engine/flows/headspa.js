@@ -8,6 +8,12 @@ export const HEADSPA = Object.freeze({
   title: 'Időpontfoglalás',
   brand: 'MOSAIC Head Spa',
   enginePath: '/foglalo-motor',
+  // A Salonic adatlap (iframe) latszo magassaga mobil elrendezesben: az "elkuldes" gomb alja 1424 px; a Salonic sajat suti-savja
+  // (~197 px) az iframe aljara fekszik, ezert a gomb + 24 px + a sav magassaga kell, hogy ne takarja el (a lablec 1571 px-nel kezdodik,
+  // a sav alatt marad). A Salonic-fiok "Egyeni CSS URL" beallitasaval (mint a PMU-nal) ez egyszerusodik.
+  frame: Object.freeze({ crop: 100, visible: 1545 }), // az alap (egyeni CSS nelkuli) Salonic-kinezethez; a MOSAIC kozos CSS-sel a motor a tomor meretet hasznalja
+  firstState: 'HS1',
+  voucherState: 'HS3',
   giftCardUrl: '/headspa-ajandekkartya', // az ajandekkartya-vasarlas kilep a foglalasbol (Gift Card funnel)
   showStaffFilter: false, // 11. dontes: a HeadSpa "munkatarsai" kezelo-helyek, a vendeg nem valaszt
   // HS2/HS3 kartyak. 8. dontes: az Egyeni = csak a "Relax" valtozat (a "Hair" nem foglalhato ebbol a foglalobol).

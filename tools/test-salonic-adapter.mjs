@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  BUSINESSES, SalonicError, createSalonicAdapter, decodeEntities, parseCalendarId, parseServices, parseSpecs, slotsFromApi, verifyConfirmation,
+  BUSINESSES, SalonicError, createSalonicAdapter, decodeEntities, parseCalendarId, parseCustomCss, parseServices, parseSpecs, slotsFromApi, verifyConfirmation,
 } from '../assets/js/booking-engine/salonic-adapter.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -53,6 +53,25 @@ test('parseServices (HeadSpa): a Salonic idezojel-kezeles nelkuli data-name erte
 
 test('parseSpecs: kategoriak a showServices linkekbol, duplikatum nelkul', () => {
   assert.deepEqual(parseSpecs(fx('headspa-selectSpecialization.html')).map((x) => x.specId), ['39592', '41471']);
+});
+
+test('parseCustomCss: a MOSAIC kozos Salonic-stiluslap felismerese (attributum-sorrendtol fuggetlenul), idegen nem szamit', () => {
+  const link = (attrs) => `<head><link ${attrs}></head>`;
+  assert.equal(parseCustomCss(link('rel="stylesheet" href="https://www.mosaicheadspa.hu/salonic/pmu.css" media="screen"')), 'https://www.mosaicheadspa.hu/salonic/pmu.css');
+  assert.equal(parseCustomCss(link('href="https://www.mosaicheadspa.hu/salonic/mosaic.css" rel="stylesheet"')), 'https://www.mosaicheadspa.hu/salonic/mosaic.css');
+  assert.equal(parseCustomCss(link('rel="stylesheet" href="https://static2.salonic.hu/assets/x.css"')), null);
+  assert.equal(parseCustomCss(link('rel="stylesheet" href="https://evil.example/salonic/mosaic.css"')), null, 'idegen domain nem szamit');
+  assert.equal(parseCustomCss(link('rel="stylesheet" href="https://www.mosaicheadspa.hu/assets/css/x.css"')), null, 'csak a /salonic/ ala eso');
+  assert.equal(parseCustomCss(link('rel="icon" href="https://www.mosaicheadspa.hu/salonic/mosaic.css"')), null);
+  assert.equal(parseCustomCss('<html></html>'), null);
+});
+
+test('adapter: getPresentation felismeri, ha a Salonic-fiok betolti a MOSAIC kozos CSS-et', async () => {
+  const css = '<link rel="stylesheet" href="https://www.mosaicheadspa.hu/salonic/mosaic.css" media="screen">';
+  const styled = fakeFetch([[/selectSpecialization/, ok(fx('headspa-selectSpecialization.html'))], [/showServices/, ok(css + fx('headspa-showServices.html'))]]);
+  assert.deepEqual(await createSalonicAdapter({ fetchImpl: styled, now: () => 0 }).getPresentation('headspa'), { customCss: 'https://www.mosaicheadspa.hu/salonic/mosaic.css' });
+  const plain = fakeFetch([[/selectSpecialization/, ok(fx('headspa-selectSpecialization.html'))], [/showServices/, ok(fx('headspa-showServices.html'))]]);
+  assert.deepEqual(await createSalonicAdapter({ fetchImpl: plain, now: () => 0 }).getPresentation('headspa'), { customCss: null });
 });
 
 test('parseCalendarId', () => {
