@@ -1,0 +1,38 @@
+MOSAIC - Meta-pixel az uj landingeken: ELO teszt-naplo
+Keszult: 2026-10-03T20:04:25.516Z (UTC) | PR #69 mergelve 2026-10-03 19:56:43 UTC | elo suti.js verzio: 557eadccaf
+Modszer: minden oldal ?fbclid=TESZTPIXEL parameterrel, valodi Chrome, a kimeno merest (capig.stape.do, capi-pmu.mosaicheadspa.hu, Google, TikTok, Zapier) alapbol tilto szuro + DNS-zar fogta: semmi nem ment ki.
+Ellenorzott: fbq.getState().pixels (hany pixel-init, melyik azonosito), PageView darab pixelenkent, _fbc suti (benne TESZTPIXEL), _fbp suti, "Duplicate Pixel ID" figyelmeztetes, Stripe-gombok fbc-je kattintas utan.
+
+1) A 13 felvett oldal (asztali, hozzajarulassal)
+oldal | pixel (azonosito) | pixel-init db | PageView db | _fbc letrejott (TESZTPIXEL) | _fbp | dupla-init figy. | Stripe-link fbc kattintas utan | eredmeny
+japan-headspa-ajandekkartya | HeadSpa 3473839859576758 | 1 | 1 | igen (fb.1.1791057598535.TESZTPIXEL) | igen | 0 | 3/3 gomb | OK
+headspa-ajandekkartya-anyukaknak | HeadSpa 3473839859576758 | 1 | 1 | igen (fb.1.1791057559472.TESZTPIXEL) | igen | 0 | 3/3 gomb | OK
+headspa-ajándékkártya-ezo | HeadSpa 3473839859576758 | 1 | 1 | igen (fb.1.1791057568031.TESZTPIXEL) | igen | 0 | 3/3 gomb | OK
+headspa-ajandakkartya-fiataloknak | HeadSpa 3473839859576758 | 1 | 1 | igen (fb.1.1791057558758.TESZTPIXEL) | igen | 0 | 3/3 gomb | OK
+headspa-paros-csajos-ajandekkartya | HeadSpa 3473839859576758 | 1 | 1 | igen (fb.1.1791057584539.TESZTPIXEL) | igen | 0 | 3/3 gomb | OK
+headspa-self-care | HeadSpa 3473839859576758 | 1 | 1 | igen (fb.1.1791057585115.TESZTPIXEL) | igen | 0 | 3/3 gomb | OK
+idpontfoglalas | HeadSpa 3473839859576758 | 1 | 1 | igen (fb.1.1791057592971.TESZTPIXEL) | igen | 0 | (nincs Stripe-gomb) | OK
+oxigenterapia-ferfiaknak | Fodraszat 1361403694872594 | 1 | 1 | igen (fb.1.1791057626510.TESZTPIXEL) | igen | 0 | (nincs Stripe-gomb) | OK
+mosaic-hair-idopontfoglalas | Fodraszat 1361403694872594 | 1 | 1 | igen (fb.1.1791057606393.TESZTPIXEL) | igen | 0 | (nincs Stripe-gomb) | OK
+sminktetovalas-budapest-rovid | PMU 1019878750660854 | 1 | 1 | igen (fb.1.1791057665794.TESZTPIXEL) | igen | 0 | (nincs Stripe-gomb) | OK
+pmu-melitta | PMU 1019878750660854 | 1 | 1 | igen (fb.1.1791057639030.TESZTPIXEL) | igen | 0 | (nincs Stripe-gomb) | OK
+szortelenites-zsofi-rovid | Szortelenites 643342342027957 | 1 | 1 | igen (fb.1.1791057692839.TESZTPIXEL) | igen | 0 | (nincs Stripe-gomb) | OK
+szortelenites-lezeres-kezeles-folyamata | Szortelenites 643342342027957 | 1 | 1 | igen (fb.1.1791057688084.TESZTPIXEL) | igen | 0 | (nincs Stripe-gomb) | OK
+
+2) Ugyanez a 13 oldal a tobbi valtozatban: OK = pontosan 1 init, jo azonosito, 1 PageView, _fbc (TESZTPIXEL) es _fbp
+- asztali, hozzajarulas nelkul: 13/13 OK | Stripe-link fbc kattintas utan: 0/18 (hozzajarulas nelkul a 177-es tag nem irja, ez a mai viselkedes)
+- mobil, hozzajarulassal: 13/13 OK | Stripe-link fbc kattintas utan: 18/18
+- mobil, hozzajarulas nelkul: 13/13 OK | Stripe-link fbc kattintas utan: 0/18 (hozzajarulas nelkul a 177-es tag nem irja, ez a mai viselkedes)
+
+3) Regresszio: az elo oldal a deploy elott (pixel-elotte) es utana, 89 oldal + 6 koszonooldal (Salonic valodi parametereivel)
+- vizsgalt oldal: 95; valtozott: 13 (pontosan a 13 felvett oldal); valtozatlan: 82
+- koszonooldalak (a 213-as GTM-tag a Salonic-parameterekkel lefut, kimeno kerelem nelkul), valtozatlanok; pixel-init db / PageView / dupla-init figy.:
+    /elysion-ok: pixel 643342342027957 (1 init) | PageView {"643342342027957":1} | dupla-init figy. 0
+    /fodrasz-ok: pixel 1361403694872594 (1 init) | PageView {"1361403694872594":1} | dupla-init figy. 0
+    /oxigenterapia-masodik: pixel 1361403694872594 (1 init) | PageView {} | dupla-init figy. 0
+    /oxigenterapia-ok: pixel 1361403694872594 (1 init) | PageView {"1361403694872594":1} | dupla-init figy. 0
+    /pmu-ok: pixel 1019878750660854 (1 init) | PageView {"1019878750660854":1} | dupla-init figy. 0
+    /success-foglalas-egyeni: pixel 3473839859576758 (1 init) | PageView {"3473839859576758":1} | dupla-init figy. 0
+- a 13 felvett oldal kozott nincs koszonooldal; a 213-as tag dupla-init ellenorzese a hat meglevo koszonooldalon tortent (elotte = utana).
+
+4) A ppc-allashirdetes oldal nincs a listakban (kimarad).

@@ -43,14 +43,15 @@
   // 2026-10: a Meta-hirdetesek ajandekkartya- es kampany-landingjei is felkerultek (a Wixen
   // erkezo forgalom egy resze ilyen oldalon landolt, es nem volt _fbc / _fbp). A
   // ppc-allashirdetes (allasos hirdetes) SZANDEKOSAN kimarad a Meta-meresbol; alapertelmezett
-  // pixel nincs: csak a felsorolt oldal kap pixelt.
+  // pixel nincs: csak a felsorolt oldal kap pixelt. A tulajdonos kifejezett listaja szerint SZANDEKOSAN
+  // pixel nelkul: ppc-allashirdetes, allashirdetes-ok, aszf, headspa-termekek-oxygeni.
   var PIXEL_HEADSPA = '3473839859576758', PIXEL_PMU = '1019878750660854',
     PIXEL_FODRASZ = '1361403694872594', PIXEL_SZOR = '643342342027957';
   var PIXEL_OLDALAK = {};
-  [[PIXEL_HEADSPA, 'index home success-foglalas-egyeni-vip success-foglalas head-spa-kedvezmeny headspa-kupon headspa-ferfiaknak headspa-ajandekkartya success-elofizetes headspa-10szazalek-kedvezmennyel headspa-arak-budapest headspa-elofizetes success-foglalas-4kezes ajikartya-ok headspa-budapest-hungary head-spa-velemenyek foglalas-ok success-foglalas-paros headspa-budapest success-foglalas-paros-vip success-ajandekkartya-stripe 4-kezes-headspa-ajandekkartya paros-headspa-budapest success-ajandekkartya success-foglalas-egyeni japan-headspa-ajandekkartya headspa-ajandekkartya-anyukaknak headspa-ajándékkártya-ezo headspa-ajandakkartya-fiataloknak headspa-paros-csajos-ajandekkartya headspa-self-care idpontfoglalas'],
-    [PIXEL_PMU, 'korrekcio-ok pmu-ok sminktetovalas-budapest eltavolitas-ok pmu-vh pmu-lead-ok sminktetovalas-budapest-rovid pmu-melitta'],
+  [[PIXEL_HEADSPA, 'index home success-foglalas-egyeni-vip success-foglalas head-spa-kedvezmeny headspa-kupon headspa-ferfiaknak headspa-ajandekkartya success-elofizetes headspa-10szazalek-kedvezmennyel headspa-arak-budapest headspa-elofizetes success-foglalas-4kezes ajikartya-ok headspa-budapest-hungary head-spa-velemenyek foglalas-ok success-foglalas-paros headspa-budapest success-foglalas-paros-vip success-ajandekkartya-stripe 4-kezes-headspa-ajandekkartya paros-headspa-budapest success-ajandekkartya success-foglalas-egyeni japan-headspa-ajandekkartya headspa-ajandekkartya-anyukaknak headspa-ajándékkártya-ezo headspa-ajandakkartya-fiataloknak headspa-paros-csajos-ajandekkartya headspa-self-care idpontfoglalas headspa-ajandekkartya-noknek'],
+    [PIXEL_PMU, 'korrekcio-ok pmu-ok sminktetovalas-budapest eltavolitas-ok pmu-vh pmu-lead-ok sminktetovalas-budapest-rovid pmu-melitta pmu-foglalas'],
     [PIXEL_FODRASZ, 'fodraszat-foglalas balayage-haj-festes-budapest fodrasz-ok noi-fodrasz-budapesten-30-szazalek-kedvezmennyel noi-fodraszat-szoke noi-fodraszat-hullam 30szazalek oxigenterapia-ok noi-fodraszat-budapest noi-fodrasz-budapest-balayage-hajfestes noi-hajfestes-budapest oxigenterapia-budapest oxigenterapia-ferfiaknak mosaic-hair-idopontfoglalas'],
-    [PIXEL_SZOR, 'lezeres-szortelenites-budapest szortelenites-foglalas elysion-ok szor-konzi-ok szortelenites-ok szortelenites-zsofi-rovid szortelenites-lezeres-kezeles-folyamata']
+    [PIXEL_SZOR, 'lezeres-szortelenites-budapest szortelenites-foglalas elysion-ok szor-konzi-ok szortelenites-ok szortelenites-zsofi-rovid szortelenites-lezeres-kezeles-folyamata szortelenites-5-dolog szortelenites-zsofi-bemutatkozo szortelenites-zsofi-vendeg szőrtelenítés-zsófi-3 szőrtelenítés-zsófi-csomagok vegleges-szortelenites-ferfiaknak']
   ].forEach(function (s) { s[1].split(' ').forEach(function (o) { PIXEL_OLDALAK[o] = s[0]; }); });
   // az oldal Wix-beli neve az URL-bol ("/" -> index; a /m/ elotag es a .html nelkul)
   var OLDAL = decodeURIComponent(location.pathname).replace(/^\/(m\/)?/, '').replace(/\.html$/, '').replace(/\/$/, '') || 'index';
