@@ -489,3 +489,43 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
 }
 .utak .link-gomb { text-align: left; display: inline; padding: 0; }
 @media (max-width: 700px) { .mielott-jobb .sor > div { padding-right: 14px; } }
+
+/* === 2026-10-03 (2. kor) === */
+/* hero: a fo gomb pontosan olyan szeles, mint alatta a ket masodlagos egyutt */
+.cta-blokk { display: inline-grid; grid-template-columns: max-content; }
+.cta-blokk .gomb-nagy { width: 100%; justify-content: center; padding-left: 20px; padding-right: 20px; }
+/* eredmenyek: nem AI-generalt kepek */
+.nem-ai { display: flex; align-items: center; justify-content: center; gap: 10px; width: max-content; max-width: 100%; margin: 14px auto 22px; padding: 9px 16px; border-radius: 999px; background: #fff; border: 1px solid var(--vonal); font-size: 14px; color: #3f4b4b; box-shadow: var(--arnyek); }
+.nem-ai svg { flex: none; width: 22px; height: 22px; color: var(--zold, #3f7652); stroke: currentColor; fill: none; stroke-width: 1.8; }
+.nem-ai b { color: var(--szoveg); }
+/* mielott foglalsz: a vendeg erzese a fo sor, a jelentkezes tipusa kis felirat */
+.ut-tipus { margin: 0 0 2px !important; font: 600 11px/1.3 var(--test) !important; letter-spacing: .14em; text-transform: uppercase; color: #8e6d3e !important; }
+.ut-tipus small { font-size: 10px; letter-spacing: .06em; text-transform: none; background: #fff; border-radius: 99px; padding: 1px 7px; margin-left: 4px; color: #6a5a3e; }
+.utak h4 { font: 400 20px/1.25 var(--cim); margin: 0 0 4px; }
+/* zold doboz: tisztelet / lemondas, abraval */
+.mielott-jobb { padding: 28px 34px 30px; }
+.mielott-jobb > h3 { font-size: 24px; margin: 0 40px 8px 0; }
+.tisztelet-lead { font-size: 15.5px !important; color: #2f3c3c !important; margin: 0 40px 18px 0 !important; line-height: 1.5; }
+.lemondas-abra { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); position: relative; }
+.lemondas-abra::before { content: ''; position: absolute; left: 16.6%; right: 16.6%; top: 9px; height: 2px; background: linear-gradient(90deg, #8fa89a 0 50%, #c98b6b 50% 100%); }
+.lemondas-abra li { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 3px; padding: 0 6px; }
+.lemondas-abra .pont { width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2px solid #8fa89a; margin-bottom: 6px; }
+.lemondas-abra .hatar .pont { background: var(--sotet); border-color: var(--sotet); box-shadow: 0 0 0 5px rgba(24, 48, 51, .12); }
+.lemondas-abra b { font: 600 13px/1.25 var(--test); color: var(--szoveg); }
+.lemondas-abra small { font-size: 12px; color: #4f5d5d; line-height: 1.3; }
+.tisztelet-pontok { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.tisztelet-pontok li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: 14px; color: #34413f; line-height: 1.45; }
+.tisztelet-pontok svg { width: 20px; height: 20px; fill: none; stroke: var(--sotet); stroke-width: 2; margin-top: 1px; }
+.alairas { margin: 16px 0 0 !important; font: italic 400 17px/1.4 var(--cim) !important; color: var(--sotet) !important; }
+.alairas span { font-style: normal; font-size: 15px; margin-left: 6px; }
+/* foglalo fejlec: a megjegyzes a lead sorral egy sorban, a nyil lejjebb */
+.fogl-fej { display: block; }
+.fogl-lead { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 26px; }
+.fogl-lead .kezirat-szurke { margin: 0; display: inline-flex; align-items: center; gap: 10px; font-size: 17px; }
+.fogl-lead .kezirat-szurke svg { position: static; width: 66px; height: 40px; transform: translateY(10px); }
+@media (max-width: 700px) {
+  .cta-blokk { display: grid; grid-template-columns: 1fr; }
+  .lemondas-abra small { font-size: 11px; }
+  .mielott-jobb > h3, .tisztelet-lead { margin-right: 0 !important; }
+}
+.nyugi h3 { margin-top: 56px; }
