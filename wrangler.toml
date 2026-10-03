@@ -1,0 +1,7 @@
+# Cloudflare Pages-beallitas (a Netlify helyett / mellett). A dist/ mappat a
+# tools/netlify-build.mjs rakja ossze, a lapcimeket es az urlapokat a
+# functions/[[path]].js kezeli. A titkos beallitasok (SMTP_PASS stb.) a
+# Cloudflare feluleten vannak, nem itt.
+name = "mosaicheadspa"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-09-01"

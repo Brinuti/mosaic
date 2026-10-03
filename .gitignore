@@ -10,3 +10,7 @@ Thumbs.db
 .DS_Store
 _preview/
 dist/
+
+# helyi Cloudflare-teszt beallitasai (wrangler pages dev)
+.dev.vars
+.wrangler/
