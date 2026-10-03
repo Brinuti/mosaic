@@ -8,6 +8,7 @@ import crypto from 'node:crypto';
 import { mockStripeInditas } from './mock-stripe.mjs';
 import { ajandekKezel, kuponKod, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
 import vm from 'node:vm';
+import fs from 'node:fs';
 import { MASOL_JS, NYOMTAT_JS, SALONIC_KITOLTO_JS } from '../../netlify/lib/ajandek-levelek.js';
 import { utvonal } from '../../netlify/lib/utvonal.js';
 import { config as edgeConfig } from '../../netlify/edge-functions/oldal.js';
@@ -855,6 +856,28 @@ describe('/kartya', () => {
 
 
 // --- /atutalas ---------------------------------------------------------------------------------------------------------
+// A "MOSAIC kitolto" szkript futtatasa DOM-csonkokkal (vm): { elemek, naplo }
+function kitoltoFuttat(szkript, hash, hostname) {
+  const elemek = {};
+  for (const [kulcs, tipus] of Object.entries({ nameTo: 'text', nameFrom: 'text', emailFrom: 'email', phoneFrom: 'tel', paymentType: 'select-one', sendCC: 'checkbox', message: 'textarea' })) {
+    elemek['GiftCardBuyForm_' + kulcs] = { type: tipus, value: kulcs === 'paymentType' ? '1' : '', checked: true, esemenyek: [], dispatchEvent(e) { this.esemenyek.push(e.type); } };
+  }
+  const naplo = { alert: [], banner: null, kuldes: 0 };
+  vm.runInNewContext(szkript, {
+    location: { hash, hostname },
+    document: {
+      getElementById: (id) => elemek[id] || null,
+      createElement: () => ({ style: {}, remove() {} }),
+      body: { appendChild(bn) { naplo.banner = bn; } },
+      forms: [{ submit() { naplo.kuldes++; } }],
+    },
+    Event: class { constructor(t) { this.type = t; } },
+    alert: (m) => naplo.alert.push(m),
+    setTimeout: () => 0,
+  });
+  return { elemek, naplo };
+}
+
 describe('/atutalas', () => {
   const TEL = '+36 20 123 4567';
   test('levelek a vevonek es a szalonnak (kiallito linkkel), a Stripe-ban nyilvantartasi rekord (nem fizetheto); a vevo-levelben nincs szabad szoveg', async () => {
@@ -1043,26 +1066,7 @@ describe('/atutalas', () => {
     const pi = atuPi(r.adat.rendeles_ref);
     const g = await hiv('GET', 'kiallit', { query: { pi: pi.id, t: await kiallitToken(ENV, pi.id) } });
     const link = new URL(/href="(https:\/\/app\.salonic\.hu[^"]+)"/.exec(g.body)[1].replace(/&#39;/g, "'"));
-    const futtat = (hash, hostname) => {
-      const elemek = {};
-      for (const [kulcs, tipus] of Object.entries({ nameTo: 'text', nameFrom: 'text', emailFrom: 'email', phoneFrom: 'tel', paymentType: 'select-one', sendCC: 'checkbox', message: 'textarea' })) {
-        elemek['GiftCardBuyForm_' + kulcs] = { type: tipus, value: kulcs === 'paymentType' ? '1' : '', checked: true, esemenyek: [], dispatchEvent(e) { this.esemenyek.push(e.type); } };
-      }
-      const naplo = { alert: [], banner: null, kuldes: 0 };
-      vm.runInNewContext(SALONIC_KITOLTO_JS, {
-        location: { hash, hostname },
-        document: {
-          getElementById: (id) => elemek[id] || null,
-          createElement: () => ({ style: {}, remove() {} }),
-          body: { appendChild(b) { naplo.banner = b; } },
-          forms: [{ submit() { naplo.kuldes++; } }],
-        },
-        Event: class { constructor(t) { this.type = t; } },
-        alert: (m) => naplo.alert.push(m),
-        setTimeout: () => 0,
-      });
-      return { elemek, naplo };
-    };
+    const futtat = (hash, hostname) => kitoltoFuttat(SALONIC_KITOLTO_JS, hash, hostname);
     const ok = futtat(link.hash, 'app.salonic.hu');
     const e = (k) => ok.elemek['GiftCardBuyForm_' + k];
     assert.equal(e('nameFrom').value, 'Vevő Béla');
@@ -1083,6 +1087,29 @@ describe('/atutalas', () => {
       assert.equal(x.elemek.GiftCardBuyForm_nameFrom.value, '');
       assert.equal(x.naplo.banner, null);
     }
+  });
+
+  test('Tampermonkey-szkript (assets/eszkoz): ugyanaz a kod, mint a konyvjelzo; csak #mosaic= mellett fut; az oldalon opcionalis linkkent szerepel', async () => {
+    const fajl = fs.readFileSync(new URL('../../assets/eszkoz/mosaic-salonic-kitolto.user.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+    assert.ok(fajl.includes(SALONIC_KITOLTO_JS), 'a konyvjelzo kodjat tartalmazza szo szerint (frissitsd: node a generalas a scratchpad-bol / lasd AJANDEK.md)');
+    assert.match(fajl, /^\/\/ ==UserScript==[^]*\/\/ @match\s+https:\/\/app\.salonic\.hu\/promotion\/giftCard\/sale\/\*[^]*\/\/ @grant\s+none[^]*\/\/ ==\/UserScript==/);
+    const kod = fajl.replace(/^\/\/.*$/gm, '');
+    const r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ termek: 'egyeni', nev: 'Vevő Béla', megajandekozott: 'Kovács Anna', telefon: TEL }) });
+    const pi = atuPi(r.adat.rendeles_ref);
+    const g = await hiv('GET', 'kiallit', { query: { pi: pi.id, t: await kiallitToken(ENV, pi.id) } });
+    const hash = new URL(/href="(https:\/\/app\.salonic\.hu[^"]+)"/.exec(g.body)[1].replace(/&#39;/g, "'")).hash;
+    const be = kitoltoFuttat(kod, hash, 'app.salonic.hu');
+    assert.equal(be.elemek.GiftCardBuyForm_nameFrom.value, 'Vevő Béla');
+    assert.equal(be.elemek.GiftCardBuyForm_paymentType.value, '14');
+    assert.equal(be.elemek.GiftCardBuyForm_sendCC.checked, false);
+    assert.equal(be.naplo.alert.length, 0);
+    // hash nelkul (a szalon maga nyitja az urlapot) a szkript nem csinal semmit: nincs figyelmeztetes sem
+    const ki = kitoltoFuttat(kod, '', 'app.salonic.hu');
+    assert.equal(ki.naplo.alert.length, 0);
+    assert.equal(ki.naplo.banner, null);
+    assert.equal(ki.elemek.GiftCardBuyForm_nameFrom.value, '');
+    // az oldal opcionalisan ajanlja
+    assert.ok(g.body.includes(`${BAZIS}/assets/eszkoz/mosaic-salonic-kitolto.user.js`));
   });
 
   test('kartyas rendelesnel a szalon felulirhatja a javasolt kodot: az kerul a levelbe es a kartyara', async () => {
