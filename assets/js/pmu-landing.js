@@ -1,4 +1,4 @@
-// MOSAIC sminktetovalas landing (/pmu-sminktetovalas) - a jovahagyott asztali terv mukodese.
+// MOSAIC sminktetovalas landing (/sminktetovalas-budapest; a regi /pmu-sminktetovalas ide iranyit) - a jovahagyott asztali terv mukodese.
 //
 // Foglalo (4. resz): a megtervezett foglalasi folyamat (/foglalo-pmu?beagyazva=1) keretben - a
 // kezeles -> idopont -> kerdes (NEM: commitment, IGEN: foto, naptar nelkul) -> adatok logika ott el.

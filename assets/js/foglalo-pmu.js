@@ -15,7 +15,7 @@
 (() => {
   'use strict';
 
-  // ?beagyazva=1: a /pmu-sminktetovalas landing foglalo-reszeben, kereten belul fut (lasd lent: beagyazas).
+  // ?beagyazva=1: a /sminktetovalas-budapest landing foglalo-reszeben, kereten belul fut (lasd lent: beagyazas).
   const BEAGYAZVA = new URLSearchParams(location.search).has('beagyazva');
 
   // A sajat kereteben nyiltunk meg (a Salonic visszairanyitott): nem rajzolunk, szolunk a szulonek.
@@ -571,7 +571,7 @@
     adat.set('email', ertek('foto-adatok', 'email'));
     adat.set('kezeles', allapot.slot && k ? k.nev : allapot.fotoKezeles || '');
     adat.set('idopont', allapot.slot ? fmt(allapot.slot, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) + ' ' + ora(allapot.slot) + ' (preferált, nem végleges)' : '');
-    adat.set('oldal', BEAGYAZVA ? 'pmu-sminktetovalas' : 'foglalo-pmu');
+    adat.set('oldal', BEAGYAZVA ? 'sminktetovalas-budapest' : 'foglalo-pmu');
     allapot.fotok.forEach((f, i) => adat.set('foto' + (i + 1), f.blob, 'foto' + (i + 1) + '.jpg'));
     if (!(await bekuld(adat, gomb, $('foto-kuld-hiba')))) return;
     $('foto-kesz-osszegzes').replaceChildren(allapot.slot && k
@@ -607,7 +607,7 @@
     if (!urlapEllenoriz('c-adatok')) return;
     const adat = new URLSearchParams({
       'form-name': 'pmu-proba-visszahivas', nev: ertek('c-adatok', 'nev'), telefon: ertek('c-adatok', 'telefon'),
-      mikor_nap: '', mikor_napszak: cMikor(), oldal: BEAGYAZVA ? 'pmu-sminktetovalas' : 'foglalo-pmu',
+      mikor_nap: '', mikor_napszak: cMikor(), oldal: BEAGYAZVA ? 'sminktetovalas-budapest' : 'foglalo-pmu',
     });
     if (!(await bekuld(adat, gomb, $('c-kuld-hiba')))) return;
     // a telefonos konzultacio ugyanaz a konverzio, mint a weboldal regi visszahivas-urlapja es a
