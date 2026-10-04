@@ -275,6 +275,48 @@
   addEventListener('resize', velAllapot);
   velAllapot();
 
+  // --- hero-galeria: a folyamat lepesei (elorajzolas -> munka -> gyogyult), 1:1, huzhato ---------------
+  (() => {
+    const sav = $('hero-galeria');
+    const pontok = [...document.querySelectorAll('#galeria-pontok button')];
+    if (!sav || !pontok.length) return;
+    const db = sav.children.length;
+    const elozo = $('galeria-elozo'), kov = $('galeria-kov');
+    // a szelesseg betoltes elejen meg 0 lehet (elrendezes elott): ilyenkor az elso kep az aktualis
+    const aktualis = () => (sav.clientWidth ? Math.max(0, Math.min(db - 1, Math.round(sav.scrollLeft / sav.clientWidth))) : 0);
+    const frissit = () => {
+      const i = aktualis();
+      pontok.forEach((p, n) => p.setAttribute('aria-current', String(n === i)));
+      elozo.disabled = i === 0;
+      kov.disabled = i === db - 1;
+    };
+    const ugrik = (i) => sav.scrollTo({
+      left: Math.max(0, Math.min(db - 1, i)) * sav.clientWidth,
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+    let kocka = 0;
+    sav.addEventListener('scroll', () => { cancelAnimationFrame(kocka); kocka = requestAnimationFrame(frissit); }, { passive: true });
+    elozo.addEventListener('click', () => ugrik(aktualis() - 1));
+    kov.addEventListener('click', () => ugrik(aktualis() + 1));
+    pontok.forEach((p, n) => p.addEventListener('click', () => ugrik(n)));
+    sav.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      ugrik(aktualis() + (e.key === 'ArrowRight' ? 1 : -1));
+    });
+    // atmeretezeskor (pl. telefon forgatasa) maradjon ugyanazon a kepen
+    let meret = sav.clientWidth;
+    addEventListener('resize', () => {
+      if (sav.clientWidth === meret) return;
+      const i = Math.round(sav.scrollLeft / (meret || 1));
+      meret = sav.clientWidth;
+      sav.scrollTo({ left: i * meret, behavior: 'auto' });
+    });
+    frissit();
+    addEventListener('load', frissit);
+    if (window.ResizeObserver) new ResizeObserver(frissit).observe(sav);
+  })();
+
   // --- video (Google Drive, allo formatum): csak kattintasra toltodik be ------------------------------
   const VIDEO = 'https://drive.google.com/file/d/1HaOg3JRFZmDfUAJ0rgHAtzW2UndqO09i/preview';
   $('video-gomb').addEventListener('click', () => {
