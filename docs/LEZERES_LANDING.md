@@ -12,24 +12,29 @@ címen nincs mérőkód-pixel, és ezt nem is írtuk át). Visszaállítás átv
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (37 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (46 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje
 
-Hero (cím: „Lézeres szőrtelenítés Budapesten garanciával”, kiemelt, kattintható **4,9/5 + pontos Google-értékelésszám**, ami a véleményekhez görget) →
-Mennyibe kerül? (testtáj-**ábrákkal**, nem fotókkal) → Már tudod, mit szeretnél? → Eredmények → 8 kezelés, csak 6-ot fizetsz → garancia + fenntartó
-(örökre féláron) → Neked is jó választás? → Zsófi → **Vendégeink értékelései** → A kezeléssel kapcsolatban érdekelhet → Részletes árlista →
-**Több területet szeretnél? (árkalkulátor)** → Gyakori kérdések → Időpontfoglalás online (**naptár**) → Helyszín (**Google térkép**).
+Hero (cím: „Lézeres szőrtelenítés Budapesten garanciával”, kis, kattintható **4,9/5 + pontos Google-értékelésszám**, ami a véleményekhez görget) →
+Mennyibe kerül? (testtáj-**ábrákkal**) → Már tudod, mit szeretnél? → Eredmények → 8 kezelés, csak 6-ot fizetsz → garancia + fenntartó (örökre féláron) →
+Neked is jó választás? → **Zsófival fogsz találkozni (lejátszható konzultációs videó + képgaléria)** → **Vendégeink értékelései (az eredeti Trustindex-embed)** →
+A kezeléssel kapcsolatban érdekelhet → Részletes árlista (ikonokkal) → **Több területet szeretnél? (ikonos árkalkulátor)** → Gyakori kérdések →
+Időpontfoglalás online (**kompakt, naptáras**) → Helyszín (**Google térkép**).
 
 Nincs „felcím” (arany cím a főcím felett) sehol. Az első kezelés 20% kedvezménye több helyen szerepel (hero, árkártyák, program, árlista, kalkulátor, GYIK).
 A négy szekció (érdekelhet, árlista, több terület, GYIK) külön, teljes szélességű szekció. Az intim területhez nincs testfotó: a „Mennyibe kerül?”
 kártyák semleges alakos ábrák (kiemelt testtájjal), az SVG-k a HTML elején vannak (`#abra-alak`, `#abra-honalj`, `#abra-intim`, `#abra-lab`).
 
-**Értékelések:** a hero és a véleményszekció `4,9/5` + darabszám. A darabszám (`data-ertekeles-db`) a HTML-ben tartalék érték (1 257), a Trustindex-widget
-aktuális adatából frissül (a „funkcionális” sütik elfogadása után, ugyanaz a widget, mint a régi oldalon). A 6 idézett vélemény valódi Google-vélemény
-(a MOSAIC összes kezelésére vonatkozó értékelésekből, a Trustindex-widget legutóbbi 40 véleményéből; lézer-specifikus vélemény nem volt köztük).
-A „4,9” a tulajdonos megadott értéke (a Trustindex csak „Kiváló”-t és a darabszámot adja).
+**Értékelések:** a hero-ban kis `4,9/5` gomb a pontos darabszámmal (`data-ertekeles-db`, tartalék érték: 1 257, a Trustindex-widget aktuális adatából frissül a
+„funkcionális” sütik elfogadása után), ami a `#velemenyek` szekcióhoz görget. A szekció az **eredeti Trustindex-embed** (`/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html`, ugyanaz,
+mint a főoldalon és az ajándékkártya-oldalon), iframe-ben; a sütik elfogadásáig (vagy a „Vélemények megjelenítése” gombig) helykitöltő áll a helyén. A „4,9” a tulajdonos megadott értéke.
+
+**Ikonok:** a foglaló-motor testrész-ikonjai (`assets/js/booking-engine/ikonok.js`, 24×24 vonalas alak, a kiemelt rész arany), az árlistában (csoportonként és soronként)
+és a kalkulátor gombjain. Az ikonok egyetlen forrása az árlista HTML-je (a kalkulátor onnan másolja).
+
+**Zsófi:** a konzultációs videó (a régi oldal 44 mp-es videója, `assets/video/c2eb0f_ba9a927739a64ab090ddb79bc84c6dc0.mp4`) kattintásra tölt be (9 MB), mellette 5 képből álló, nagyítható galéria.
 
 ## Árforrás
 
@@ -52,9 +57,9 @@ részek le vannak tiltva (nincs dupla számolás). A program: 6 fizetős alkalom
 
 ## Időpont-választó (naptár)
 
-Havi naptár: a szabad napok kattinthatók, az első szabad nap alapból ki van jelölve, alatta a nap időpontjai. A szabad időpontokat a Salonic nyilvános
+Kompakt kártya: bal oldalt kezelés/konzultáció váltó és a terület legördülője (csempék nélkül), mellette a havi naptár és a nap időpontjai. A szabad napok kattinthatók, az első szabad nap alapból ki van jelölve, alatta a nap időpontjai. A szabad időpontokat a Salonic nyilvános
 naptár-API-ja adja (`api.salonic.hu/calendar/getAvailableTimes`, ugyanaz, mint a PMU landingen), amikor a szekció a képernyő közelébe ér. Időpontot nem találunk ki:
-ha az API nem válaszol, a Salonic foglaló linkjét kapja a látogató. Egy időpontra kattintva a Salonic `/guestData/` adatlapja nyílik új lapon, az időponttal
+ha az API nem válaszol, a Salonic foglaló linkjét kapja a látogató. Egy időpontra kattintva a Salonic `/guestData/` adatlapja nyílik ugyanabban a lapon (nincs felugró), az időponttal
 együtt (ugyanezt a címet nyitja a foglaló-motor is). A statikus linkek (ingyenes konzultáció) a build link-átkötésén mennek át (`tools/foglalo-atkotes.mjs`):
 kikapcsolt átkötésnél (éles) Salonic-link, előnézeten a foglaló-réteg nyílik.
 
