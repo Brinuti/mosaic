@@ -269,7 +269,15 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
 
   test('asset-validalas: a NEEDS_MANUAL_VALIDATION asset nem jelenik meg - a variant a GENERAL assetet kapja, az eredeti javaslat megmarad; a jovahagyott asset marad', () => {
     const V = ADAT.VARIANTOK;
-    for (const k of ['friend', 'for_her', 'partner']) {
+    // a for_her nincs validalt sajat assetje: a GENERAL-t kapja; a friend es a partner a tulajdonos kerese szerint sajat (jovahagyott) hero-videot kapott
+    for (const k of ['friend', 'partner']) {
+      assert.notEqual(V[k].hero_media, G.hero_media, k + ' sajat hero-asset');
+      assert.ok(['APPROVED_BY_METADATA', 'APPROVED_BY_FOLDER_CONTEXT', 'APPROVED_BY_EXPLICIT_FILENAME'].includes(V[k].hero_media.status), k + ' jovahagyott');
+      for (const ut of [V[k].hero_media.src, V[k].hero_media.video.src]) assert.ok(fs.existsSync(new URL('../../' + ut.slice(1), import.meta.url)) && fs.statSync(new URL('../../' + ut.slice(1), import.meta.url)).size < 1024 * 1024, k + ' fajl letezik, < 1 MB: ' + ut);
+    }
+    assert.equal(V.friend.hero_media.video.src, '/assets/video/ajandek-hero-baratnok.mp4');
+    assert.equal(V.partner.hero_media.video.src, '/assets/video/ajandek-hero-partner.mp4');
+    for (const k of ['for_her']) {
       assert.equal(V[k].hero_media, G.hero_media, k + ' fallback a GENERAL hero-assetre');
       assert.equal(V[k].hero_media_javaslat.status, 'NEEDS_MANUAL_VALIDATION', k);
       assert.ok(V[k].hero_media_javaslat.validalas, k + ' validalasi feladat');

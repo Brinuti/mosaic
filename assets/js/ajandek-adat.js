@@ -248,7 +248,9 @@
       hero_title: 'Ne még egy tárgyat adjatok egymásnak. Menjetek inkább együtt.',
       hero_subtitle: 'Közös Head Spa élmény két főre — amikor egyikőtöknek sem kell semmit megszerveznie.',
       hero_cta: 'Közös élményt választok',
-      hero_media: { forras: 'Új páros videó.MP4', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Csak akkor FRIEND hero, ha ténylegesen két nő/barátnő látható. Ha nem, GENERAL fallback.' },
+      // a tulajdonos kérése (2026-10-04): barátnők választják egymásnak, ezért a hero a páros kezelés videójának barátnős szakasza (két nő, fürdőlepedőben, pezsgővel; felülnézeti kép a két ágyról);
+      // forrás: a Meta-fiók "Páros Headspa szept ajánlati WARM / Szept páros HEADSPA 20%" videója (ugyanaz, mint a Páros termék kezelés-videója), az árcsík és a felirat nélküli sáv, 3:2, hang nélkül (0,5 MB)
+      hero_media: { src: '/assets/img/ajandek/hero-baratnok.jpg', alt: 'Két barátnő fürdőlepedőben pezsgővel, majd egymás mellett a Head Spa kezelésen a MOSAIC-ban', video: { src: '/assets/video/ajandek-hero-baratnok.mp4' }, forras: 'Meta: Páros Headspa szept ajánlati WARM', status: 'APPROVED_BY_METADATA' },
       gift_finder_preselect: 'ketten',
       product_order: ['paros', 'egyeni', '4kezes'],
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
@@ -298,7 +300,9 @@
       hero_title: 'Egy randi, ahol most mindketten kikapcsoltok.',
       hero_subtitle: 'Közös Head Spa élmény két főre — ajándék, amit nem csak átadsz, hanem együtt éltek át.',
       hero_cta: 'Páros élményt választok',
-      hero_media: { forras: 'Páros headspa kezelés 1.MP4', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Csak valódi romantikus pár látható esetén PARTNER; ha két nő/barátnő vagy nem egyértelmű, GENERAL fallback. Romantikus vizuál GENERAL-ben tilos.' },
+      // a tulajdonos kérése (2026-10-04): valódi férfi + nő pár. Forrás: Drive "Headspa férfiaknak" mappa / "Páros kezelés.MP4" (a pár a váróban, fürdőlepedőben, pezsgővel: 22,9-24,1 mp, lassítva),
+      // közte a kezelés pillanatai (női és férfi vendég); a felirat és a szöveg nélküli 3:2-es sáv, hang nélkül (0,6 MB)
+      hero_media: { src: '/assets/img/ajandek/hero-partner.jpg', alt: 'Egy pár fürdőlepedőben, pezsgővel a kezében a MOSAIC váróterében, a közös Head Spa előtt', video: { src: '/assets/video/ajandek-hero-partner.mp4' }, forras: 'Drive: Headspa férfiaknak / Páros kezelés.MP4', status: 'APPROVED_BY_FOLDER_CONTEXT' },
       gift_finder_preselect: 'ketten',
       product_order: ['paros', 'egyeni', '4kezes'],
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
