@@ -12,7 +12,7 @@ címen nincs mérőkód-pixel, és ezt nem is írtuk át). Visszaállítás átv
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (71 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (74 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje
@@ -53,6 +53,8 @@ Minden gomb (`.gomb`) ugyanazt a betűt használja: Jost, 15 px, normál írásm
 **Fejléc:** a fejléc felső, rózsaszín akciós sávját (`section#comp-mpv0ganp`, Wix-fejléc) ezen az oldalon elrejtjük (a `lezer-landing.css`-ben, ezért csak itt hat; a tulajdonos kérése, hogy helyet nyerjünk). A fejléc így 77 → 46 px (asztal) és 94 → 63 px (mobil); a görgetési eltolások (`scroll-padding-top`, `scroll-margin-top`) 76 px-esek.
 
 **Google-értékelés jelvény (hero):** a három jelvény (garancia / 20% kedvezmény / Kolosy tér) alatt, a gombok felett áll; kerek, krémes szélű jelvény (G-logó, 4,9/5, csillagok, „1 257 Google-vélemény”), az érték és a vélemények száma egyforma kicsi betűvel, lefelé mutató nyíl nélkül; továbbra is a `#velemenyek` szekcióra mutat.
+
+**Tizenharmadik kör (2026-10-04, mobil finomítások):** a fő cím „Lézeres szőrtelenítés 12 hónap garanciával”; a három jelvény (garancia / 20% / Kolosy tér) a bal és a jobb margóig ér; a Google-értékelés sor nem kártya (nem néz ki gombnak); a hero kalkulátor-sora: „Több területet szeretnél? Számold ki az árát →”; a „Mennyibe kerül?” alcíme „Bérlet helyett alkalmanként fizetsz.”, a 20%-os sáv „Az első kezelés 20% kedvezménnyel” (egy sor), ott nincs kalkulátoros sor; a 8 kezelés szekcióban nincs 20%-os mondat; az árlista bevezetője rövid, **az árlistában nincs „Időpont” gomb** (és nincs gomb-oszlop); mobilon az árlista ugyanolyan széles (16 px-es margók), mint a kalkulátor és az akkordionok; az „Orvosi ajánlással” jelvény mobilon középen, a videó fölött; a vélemény-widget iframe magassága folyamatosan követi a tartalmat (csak nő), hogy a lapozó hosszabb kártyái ne vágódjanak le.
 
 ## Árforrás
 

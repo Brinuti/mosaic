@@ -350,8 +350,8 @@
     if (!tiDoboz || tiBetoltve) return;
     tiBetoltve = true;
     const f = elem('iframe', { class: 'ti-keret', src: tiDoboz.dataset.embed, title: 'Google-vélemények (Trustindex)', loading: 'lazy', scrolling: 'no' });
-    let proba = 0;
-    const meret = () => {
+    let proba = 0, legnagyobb = 0;
+    const meret = (nullaz) => {
       try {
         const d = f.contentDocument;
         const w = d && d.querySelector('.ti-widget');
@@ -366,12 +366,12 @@
           d.head.appendChild(st);
         }
         const m = Math.ceil(w.getBoundingClientRect().bottom + (parseFloat(d.defaultView.getComputedStyle(d.body).marginBottom) || 0) + 16);
-        if (m > 60) f.style.height = m + 'px';
+        if (m > 60 && (nullaz || m > legnagyobb)) { legnagyobb = m; f.style.height = m + 'px'; } // csak nonek: a lapozo kartyai kozott ne ugraljon az oldal, de a hosszabb kartya se vagodjon le
         return true;
       } catch (hiba) { return true; }
     };
-    const ido = setInterval(() => { proba++; meret(); if (proba > 60) clearInterval(ido); }, 500);
-    addEventListener('resize', meret);
+    const ido = setInterval(() => { proba++; meret(); if (proba > 3600 || !f.isConnected) clearInterval(ido); }, 700);
+    addEventListener('resize', () => meret(true));
     tiDoboz.replaceChildren(f);
   }
   if (tiDoboz) {
