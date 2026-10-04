@@ -613,3 +613,12 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-ti-keret { display: block; width: 100%; height: 340px; border: 0; background: transparent; }
 .ah-kez-media { width: min(100%, 340px); margin: 0 auto; }
 @media (min-width: 800px) { .ah-kez-media { margin: 0; } }
+
+/* ---------- a mini szemelyre szabo elonezete: FEKVO kartya (felbehajtott A4): elolap felul, hatoldal alatta ---------- */
+.ah-ak-doboz { width: min(100%, 440px); background: transparent; box-shadow: none; border-radius: 0; overflow: visible; }
+.ah-ak-doboz .ak-lap { display: flex; flex-direction: column-reverse; gap: 14px; }
+.ah-ak-doboz .ak-lap > .ak-hat { transform: none; }
+.ah-ak-doboz .ak { box-shadow: 0 14px 34px rgba(40, 34, 20, .26); border-radius: 4px; }
+.ah-ak-doboz .ak-hajt { display: none; }
+.ah-tervezo-elonezet > .ah-halk { max-width: 440px; }
+@media (min-width: 900px) { .ah-tervezo-racs { grid-template-columns: minmax(340px, 480px) 1fr; } .ah-ak-doboz { width: 100%; } }

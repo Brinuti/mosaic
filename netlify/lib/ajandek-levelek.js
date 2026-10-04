@@ -388,14 +388,14 @@ body{background:#e9e3d7;color:#2b2b2b;font:15px/1.55 "Helvetica Neue",Arial,Helv
 #nyomtat{font:600 16px/1 "Helvetica Neue",Arial,sans-serif;background:#17403f;color:#fff;border:0;border-radius:4px;padding:14px 26px;cursor:pointer}
 #nyomtat:hover{background:#0f3130}
 .tipp{font-size:13px;color:#555;margin:12px auto 0;max-width:150mm}
-@media print{body{background:#fff;padding:0}.lap{width:210mm;box-shadow:none}.nem-nyomtat{display:none!important}}
+@media print{body{background:#fff;padding:0}.lap{width:210mm;height:297mm;overflow:hidden;box-shadow:none}.nem-nyomtat{display:none!important}}
 </style></head>
 <body><main>
 ${d.elonezet ? '<p class="jelzes nem-nyomtat">Előnézet a szalonnak: a vevő a kiállítás után kapja meg a végleges kártyát.</p>' : ''}
 <section class="lap" aria-label="Ajándékkártya">${kartya}</section>
 <div class="gombsor nem-nyomtat">
 <button type="button" id="nyomtat">Nyomtatás / Mentés PDF-ként</button>
-<p class="tipp">Tipp: a nyomtatási ablakban a „Mentés PDF-ként” célt választva PDF-et kapsz, amit e-mailben is továbbküldhetsz. A kódot az online időpontfoglalásnál (mosaicheadspa.hu/idpontfoglalas) add meg. Nyomtatáskor kapcsold be a háttérszínek / háttérgrafika nyomtatását.</p>
+<p class="tipp">Tipp: a lapot A4-es papírra nyomtasd (álló tájolás), majd hajtsd félbe a szaggatott vonal mentén: elöl a személyre szabott lap, hátul a kártya adatai lesznek. A nyomtatási ablakban a „Mentés PDF-ként” célt választva PDF-et kapsz, amit e-mailben is továbbküldhetsz. A kódot az online időpontfoglalásnál (mosaicheadspa.hu/idpontfoglalas) add meg. Nyomtatáskor kapcsold be a háttérszínek / háttérgrafika nyomtatását.</p>
 </div>
 </main>
 <script>${NYOMTAT_JS}</script>

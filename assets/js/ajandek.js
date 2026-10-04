@@ -741,7 +741,7 @@
     KT.TEMAK.forEach(function (t) {
       var kep = document.querySelector('[data-tema-gomb="' + t.id + '"] .ah-tema-kep');
       if (!kep) return;
-      var adat = kartyaAdat(); adat.tema = t.id;
+      var adat = kartyaAdat(); adat.tema = t.id; adat.oldal = 'elol';   // a design-valasztoban csak az elolap latszik
       kep.innerHTML = KT.html(adat);
     });
   }

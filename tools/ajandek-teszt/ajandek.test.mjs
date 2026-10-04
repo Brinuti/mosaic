@@ -1894,3 +1894,30 @@ describe('kuponkod', () => {
     for (let i = 0; i < 200; i++) assert.match(await kuponKod(ENV, 'pi_' + i.toString(36).padStart(10, 'x')), KOD_RE);
   });
 });
+
+describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
+  const K = globalThis.AJANDEK_KARTYA;
+  const minta = { tema: 'krem', idezet: 'Ez a személyes idézet', nev: 'Nagy Mária', fotoSrc: null, felirat: ['50+30 perces egyéni MOSAIC', 'HEAD SPA KEZELÉS'], ertek: '26.900 Ft', kod: 'AK-TEST-0001', ervenyes: '2027. április 4.', minta: false };
+
+  test('az A4-es lapon ket fekvo lap van: felul a hatoldal (180 fokkal elforgatva), alul az elolap; a lapok aranya a felbehajtott A4 (794 : 561,5)', () => {
+    const h = K.html(minta);
+    assert.ok(h.includes('class="ak-lap"'));
+    assert.ok(h.indexOf('ak-hat') < h.indexOf('ak-elol'), 'a hatoldal van felul');
+    assert.match(K.CSS, /\.ak-lap>\.ak-hat\{transform:rotate\(180deg\)\}/);
+    assert.match(K.CSS, /aspect-ratio:794\/561\.5/);
+    // az elolap a szemelyre szabott resz, a hatoldal az adatok
+    const elol = K.html({ ...minta, oldal: 'elol' }), hat = K.html({ ...minta, oldal: 'hat' });
+    assert.ok(elol.includes('ak-elol') && !elol.includes('ak-hat') && elol.includes('Ez a személyes idézet') && elol.includes('Nagy Mária') && !elol.includes('AK-TEST-0001'));
+    assert.ok(hat.includes('ak-hat') && !hat.includes('ak-elol') && hat.includes('AK-TEST-0001') && hat.includes('26.900 Ft') && hat.includes('2027. április 4.') && !hat.includes('Ez a személyes idézet'));
+  });
+
+  test('minden dizajn fekvo lapon fer el: a fotohely, az idezet es a nev a lapon belul van, az idezet es a nev nem er a fotohelyre', () => {
+    for (const t of K.TEMAK) {
+      for (const [nev, r] of [['kep', t.kep], ['idezet', t.idezet], ['nevHely', t.nevHely]]) {
+        assert.ok(r.x >= 0 && r.y >= 0 && r.x + r.w <= K.LAP_W && r.y + r.h <= K.LAP_H, `${t.id}.${nev} a lapon belul`);
+      }
+      const atfed = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+      assert.ok(!atfed(t.kep, t.idezet) && !atfed(t.kep, t.nevHely), `${t.id}: a szoveg nem fedi a fotot`);
+    }
+  });
+});

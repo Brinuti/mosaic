@@ -424,4 +424,9 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
   nincs közöttük (az előbbi a variant-doksi szerint validálandó).
 - **Pontosan ezt kapja / Miért MOSAIC:** lapozó (15 elem) ill. 14 képes galéria nagyítóval (nyilak, billentyűk, húzás).
 - **Kártya-előnézet:** a valódi Canva-kártya (`DAG_yBRXLo0`, „Ajándékkártya A4 két oldalas (21 x 10 cm) másolata”, 4. oldal) előlapja, fekvő.
-- **Következő lépés (a tulajdonos kérése):** a nyomtatott/személyre szabott kártya formátuma álló A4 helyett **fekvő** lesz, a Canva-terv (21 x 10 cm) méretarányában.
+- **Kártya-formátum (a tulajdonos kérése, 2026-10-04): fekvő, félbehajtott A4.** A személyre szabott (otthon nyomtatott) kártya sablonja (`assets/js/ajandek-kartya.js`) már nem egy álló A4
+  lap, hanem az A4-es (álló) lapon **két fekvő lap** (egyenként 210 x 148,5 mm = 794 x 561,5 px, 1,414 : 1): felül a **hátoldal** (180°-kal elforgatva: a kártya adatai: termék, érték,
+  utalványkód, érvényesség, cím), alul az **előlap** (a személyre szabott rész: fotó, idézet, „NEKI: név”). Félbehajtva egy 21 x 14,85 cm-es fekvő kártya lesz (a szaggatott vonal a hajtás).
+  A designer előnézete az előlapot és alatta a hátoldalt mutatja külön-külön; a végleges oldal (`szemelyreSzabottKartyaOldal`) pontosan egy A4-es lapra nyomtat. A négy dizajn továbbra is
+  ELŐZETES helyőrző: a végleges (Canva-ban készült) dizajnokat **fekvő, 21 x 14,85 cm-es** lapként kell készíteni (`TEMAK[].hatter` = szövegmentes hátterkép). A „standard” (szalon-)kártya
+  (`kartyaOldal`, `kartya-hatter.jpg`) a tulajdonos eredeti Canva-terve: ugyanez a félbehajtott A4 (felül elforgatott fél), változatlan.
