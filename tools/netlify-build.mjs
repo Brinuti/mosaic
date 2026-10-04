@@ -78,6 +78,9 @@ for (const m of [LAP_A, LAP_M]) {
 // a nyitooldal a /_a/fooldal, /_m/fooldal fajlbol jon (lasd netlify/lib/utvonal.js)
 for (const m of [LAP_A, LAP_M]) fs.renameSync(path.join(m, 'index.html'), path.join(m, 'fooldal.html'));
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
+// Apple Pay: a Stripe nyilvanos domain-ellenorzo fajlja (https://stripe.com/files/apple-pay/apple-developer-merchantid-domain-association,
+// ugyanaz minden Stripe-kereskedonek) a /.well-known/ alatt, statikusan (nincs fuggvenyhivas). A domain regisztralasa a Stripe-ban (Payment method domains).
+fs.cpSync(path.join(ROOT, 'well-known'), path.join(DIST, '.well-known'), { recursive: true });
 // a Salonic foglalo oldalainak egyedi CSS-e (a Salonic "Egyedi CSS URL" beallitasa tolti be)
 fs.cpSync(path.join(ROOT, 'salonic'), path.join(DIST, 'salonic'), { recursive: true });
 // Mobilkepek (assets/img/m/, tools/mobil-kepek.py): ami ott nincs (mar eleve kicsi),
@@ -109,7 +112,7 @@ fs.writeFileSync(path.join(DIST, '_redirects'), '');
 fs.writeFileSync(path.join(DIST, '_routes.json'), JSON.stringify({
   version: 1,
   include: ['/*'],
-  exclude: ['/assets/*', '/_a/*', '/_m/*', '/salonic/*', '/favicon.ico',
+  exclude: ['/assets/*', '/_a/*', '/_m/*', '/salonic/*', '/.well-known/*', '/favicon.ico',
     ...fs.readdirSync(DIST).filter((f) => f.endsWith('.xml')).map((f) => '/' + f)],
 }, null, 1));
 // 404-es lap: a Cloudflare Pages ennek hianyaban a nyitooldalt adna minden
@@ -145,6 +148,9 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   '/salonic/*',
   '  Cache-Control: public, max-age=0, must-revalidate',
   '  Access-Control-Allow-Origin: *',
+  '/.well-known/*',
+  '  Content-Type: text/plain; charset=utf-8',
+  '  Cache-Control: public, max-age=0, must-revalidate',
   // a HTML-beagyazasok (GYIK, arlistak) csak keretben jelennek meg, onalloan ne indexelodjenek
   '/assets/embed/*',
   '  X-Robots-Tag: noindex',

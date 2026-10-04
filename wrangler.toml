@@ -13,7 +13,7 @@ SMTP_PORT = "465"
 SMTP_USER = "mosaicheadspa@gmail.com"
 # Gift Commerce Engine (/ajandek, lasd AJANDEK.md): a nem titkos valtozok IDE kellenek (a feluleten megadottakat a
 # wrangler.toml torli). Titkosak (Secret tipussal a feluleten): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK.
-# STRIPE_PUBLISHABLE_KEY = "pk_live_..."     (ELES: csak az elesites napjan, kulon jovahagyassal kerul ide)
+STRIPE_PUBLISHABLE_KEY = "pk_live_51QhTxoFv8vc2ArnLJDN8P0UApI3h2BtAA5U4Yj2SlJYZQihjqw6Sz65iWAaRB8xtQSfCnDLn067Zij1CPz3NJKyT007JIHo3hu"   # NYILVANOS kulcs (a tulajdonos adta, 2026-10-04); a titkos kulcs (STRIPE_SECRET_KEY, korlatozott rk_live) es a STRIPE_WEBHOOK_SECRET a Cloudflare Production Secret-jei
 # AJANDEK_BAZIS_URL = "https://www.mosaicheadspa.hu"
 AJANDEK_AZONNALI = "1"   # a tulajdonos donotese (2026-10-04): bankkartyas rendelesnel a kartya a fizetes utan AZONNAL kimegy; a szalon a levelben kapott kodot viszi fel a Salonicba. Atutalasnal marad a kezi gomb.
 
