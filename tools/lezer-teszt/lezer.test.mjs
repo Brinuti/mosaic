@@ -1,4 +1,4 @@
-// A /lezeres-szortelenites-budapest landing tesztjei bongeszoben (Playwright), a helyi dist/ ellen. Kulso halozati forgalom nincs:
+// A /lezeres-szortelenites-budapest-uj landing tesztjei bongeszoben (Playwright), a helyi dist/ ellen. Kulso halozati forgalom nincs:
 // minden nem helyi keres le van tiltva, a Salonic naptar-API-t a teszt hamisitja.
 //
 //   node tools/netlify-build.mjs && node --test tools/lezer-teszt/lezer.test.mjs
@@ -148,8 +148,28 @@ describe('arforras (az #arlista tablazat)', () => {
 });
 
 describe('kalkulator: a legdragabb teruletet teljes aron, a tobbit 50%-on', () => {
-  const kivalaszt = async (p, ...kulcsok) => { for (const k of kulcsok) await p.click(`.sz-chip[data-kulcs="${k}"]`); };
+  const kapcsol = async (p, ...kulcsok) => { for (const k of kulcsok) await p.click(`.sz-chip[data-kulcs="${k}"]`); };
+  const uresit = async (p) => kapcsol(p, ...ALAP); // az alapbol kijelolt teruletek levetele
   const alkalom = async (p) => szamjegy(await p.textContent('.sz-ossz b'));
+  const ALAP = ['lab', 'honalj', 'intim'];
+
+  test('alapbol nehany terulet ki van jelolve (hogy lassa, hogy kalkulator): lab + honalj + intim = 86 500; az elso kezeles 20% kedvezmennyel: 69 200', async () => {
+    const { p, ctx } = await nyit();
+    for (const k of ALAP) assert.equal(await p.getAttribute(`.sz-chip[data-kulcs="${k}"]`, 'aria-pressed'), 'true', k);
+    assert.equal(await alkalom(p), 59000 + 9500 + 18000);
+    assert.equal(szamjegy(await p.textContent('.sz-elso b')), 69200);
+    assert.match(await p.textContent('.sz-elso'), /20% kedvezménnyel/);
+    assert.ok(await p.locator('.kezirat').isVisible(), 'nyilas / kezirasos felhivas a kalkulator felett');
+    assert.ok(await p.locator('.szamolo-ikon').isVisible(), 'kalkulator-ikon');
+    await ctx.close();
+  });
+
+  test('nincs "tajekoztato szamitas" felirat (ez vegleges ar)', async () => {
+    const { p, ctx } = await nyit();
+    const szoveg = await p.textContent('#szamolo');
+    assert.ok(!/tájékoztató/i.test(szoveg), 'tajekoztato');
+    await ctx.close();
+  });
 
   // az eredeti (elo) oldal "peldak az egyedi csomagra" szamai
   for (const [nev, kulcsok, vart] of [
@@ -162,15 +182,17 @@ describe('kalkulator: a legdragabb teruletet teljes aron, a tobbit 50%-on', () =
   ]) {
     test(nev, async () => {
       const { p, ctx } = await nyit();
-      await kivalaszt(p, ...kulcsok);
+      await uresit(p);
+      await kapcsol(p, ...kulcsok);
       assert.equal(await alkalom(p), vart);
       await ctx.close();
     });
   }
 
-  test('a program: 6 fizetos alkalom, 2 ajandek; a sorrend nem szamit; a kijelolt legdragabb a teljes ar', async () => {
+  test('a program: 6 fizetos alkalom, 2 ajandek; a sorrend nem szamit; a legdragabb a teljes ar', async () => {
     const { p, ctx } = await nyit();
-    await kivalaszt(p, 'honalj', 'lab'); // az olcsobb elobb
+    await uresit(p);
+    await kapcsol(p, 'honalj', 'lab'); // az olcsobb elobb
     assert.equal(await alkalom(p), 68500);
     assert.equal(szamjegy(await p.textContent('.sz-program b')), 68500 * 6);
     assert.match(await p.textContent('.sz-program'), /137\s*000/); // 2 x 68 500 ajandek
@@ -178,79 +200,119 @@ describe('kalkulator: a legdragabb teruletet teljes aron, a tobbit 50%-on', () =
     assert.match(sorok[0], /Teljes láb.*59\s*000/);
     assert.match(sorok[1], /Hónalj.*9\s*500/);
     assert.match(await p.textContent('.sz-kedv'), /9\s*500/); // csomagkedvezmeny
+    assert.equal(szamjegy(await p.textContent('.sz-elso b')), 68500 * 0.8);
     await ctx.close();
   });
 
   test('a szulo kijelolese kikapcsolja a tartalmazott teruleteket (nincs dupla szamolas)', async () => {
     const { p, ctx } = await nyit();
-    await kivalaszt(p, 'szar', 'comb');
+    await uresit(p);
+    await kapcsol(p, 'szar', 'comb');
     assert.equal(await alkalom(p), 35000 + 17500);
-    await kivalaszt(p, 'lab');
+    await kapcsol(p, 'lab');
     assert.equal(await alkalom(p), 59000);
     assert.equal(await p.locator('.sz-chip[data-kulcs="szar"]').isDisabled(), true);
     assert.equal(await p.locator('.sz-chip[data-kulcs="comb"]').getAttribute('aria-pressed'), 'false');
-    await kivalaszt(p, 'lab'); // levesszuk
+    await kapcsol(p, 'lab'); // levesszuk
     assert.equal(await p.locator('.sz-chip[data-kulcs="szar"]').isDisabled(), false);
     await ctx.close();
   });
 
   test('a gomb: egy teruletnel arra foglal, tobbnel az egyedi csomagra', async () => {
     const { p, ctx } = await nyit();
-    await kivalaszt(p, 'honalj');
+    await uresit(p);
+    await kapcsol(p, 'honalj');
     assert.equal(await p.getAttribute('#szamolo-tartalom a[data-terulet]', 'data-terulet'), 'honalj');
-    await kivalaszt(p, 'intim');
+    await kapcsol(p, 'intim');
     assert.equal(await p.getAttribute('#szamolo-tartalom a[data-terulet]', 'data-terulet'), 'egyedi');
     await ctx.close();
   });
 
-  test('ures allapot: nincs eredmeny, az osszegsav rejtett', async () => {
+  test('ha mindent levesz: nincs eredmeny, az osszegsav rejtett; telefonon az osszegsav latszik a kijeloleseknel', async () => {
     const { p, ctx } = await nyit({ mobil: true });
+    assert.equal(await p.locator('.sz-sav').isVisible(), true);
+    assert.match(await p.textContent('.sz-sav'), /86\s*500/);
+    await uresit(p);
     assert.match(await p.textContent('#szamolo-tartalom'), /Válassz legalább egy területet/);
     assert.equal(await p.locator('.sz-sav').isHidden(), true);
-    await p.click('.sz-chip[data-kulcs="honalj"]');
-    assert.equal(await p.locator('.sz-sav').isVisible(), true);
-    assert.match(await p.textContent('.sz-sav'), /19\s*000/);
     await ctx.close();
   });
 });
 
-describe('idopont-valaszto (hamisitott Salonic-API)', () => {
-  const kell = (p) => p.waitForSelector('#slotok a.slot');
-  // az azonos napi idopontok linkje azonos (a startDate a nap kezdete): a cimkeket hasonlitjuk
-  const hrefek = (p) => p.$$eval('#slotok a.slot', (l) => l.map((a) => a.href));
-  const cimkek = (p) => p.$$eval('#slotok a.slot', (l) => l.map((a) => a.textContent));
+describe('idopont-valaszto: naptar (hamisitott Salonic-API)', () => {
+  const kell = (p) => p.waitForSelector('#naptar button.naptar-nap');
+  const idoLinkek = (p) => p.$$eval('#idok a.ido', (l) => l.map((a) => a.href));
+  const idoCimkek = (p) => p.$$eval('#idok a.ido', (l) => l.map((a) => a.textContent));
 
-  test('az alapertelmezett Honalj elso szabad idopontjait mutatja, a foglalo-linkkel (serviceId = Honalj elso alkalom)', async () => {
+  test('naptart mutat (nem "tovabbi idopontok" gombot): az elso szabad nap alapbol kijelolve, a napok idopontjai latszanak, a hónap neve + lapozo', async () => {
     const hivasok = [];
     const { p, ctx } = await nyit({ api: (u) => { hivasok.push(new URL(u).searchParams); return idok(...SLOTOK); } });
     await p.locator('#foglalo').scrollIntoViewIfNeeded();
     await kell(p);
-    const h = await hrefek(p);
-    assert.equal(h.length, 3);
-    for (const x of h) assert.match(x, /^https:\/\/mosaic-elysion\.salonic\.hu\/selectDate\/\?employeeId=32417&placeId=14586&serviceId=476488&startDate=\d+$/);
+    assert.equal(await p.locator('#tovabbi-idopontok').count(), 0, 'nincs "További időpontok" gomb');
+    assert.equal(await p.locator('#naptar .naptar-racs').count(), 1);
+    assert.match(await p.textContent('#naptar .naptar-fej b'), /\d{4}\. \p{L}+/u);
+    assert.equal(await p.locator('#naptar button.naptar-nap[aria-pressed="true"]').count(), 1, 'az elso szabad nap kijelolve');
+    assert.equal(await p.locator('#naptar .naptar-hetnap').count(), 7);
+    // az idopontok a kivalasztott nap idopontjai, kozvetlenul a foglalasi adatlapra mutatnak (az idopont benne van)
+    const linkek = await idoLinkek(p);
+    assert.ok(linkek.length >= 1);
+    for (const x of linkek) assert.match(x, /^https:\/\/mosaic-elysion\.salonic\.hu\/guestData\/\?anyone=true&employeeId=32417&placeId=14586&serviceId=476488&startDate=\d+&back=$/);
     assert.equal(hivasok[0].get('serviceId'), '476488');
     assert.equal(hivasok[0].get('placeId'), '14586');
-    assert.equal(await p.getAttribute('#tovabbi-idopontok', 'href'), 'https://mosaic-elysion.salonic.hu/selectDate/?employeeId=32417&placeId=14586&serviceId=476488');
-    // a cimke: datum + ido, a legkorabbi elso
-    const elso = await p.textContent('#slotok a.slot:first-child');
-    assert.match(elso, /\d{2}:\d{2}/);
     await ctx.close();
   });
 
-  test('terulet-csere: uj lekeres az uj kezeleshez; a "Hónalj + intim" a Basic csomag; a legordulo a tobbi teruletet is tudja', async () => {
+  test('csak a szabad napok kattinthatok; masik napra kattintva annak az idopontjai latszanak, a link pontosan az idopont idobelyege', async () => {
+    const nap2 = holnap + 3 * 86400; // egy masik nap
+    const { p, ctx } = await nyit({ api: () => idok(holnap, holnap + 3600, nap2, nap2 + 1800) });
+    await p.locator('#foglalo').scrollIntoViewIfNeeded();
+    await kell(p);
+    const szabad = await p.$$eval('#naptar button.naptar-nap', (l) => l.length);
+    assert.equal(szabad, 2, 'ket szabad nap');
+    assert.ok((await p.locator('#naptar span.naptar-nap').count()) >= 20, 'a tobbi nap nem kattinthato');
+    const elsoLinkek = await idoLinkek(p);
+    assert.equal(elsoLinkek.length, 2);
+    assert.ok(elsoLinkek[0].includes(`startDate=${holnap}&`) && elsoLinkek[1].includes(`startDate=${holnap + 3600}&`));
+    await p.click('#naptar button.naptar-nap[aria-pressed="false"]');
+    await p.waitForFunction((t) => document.querySelector('#idok a.ido')?.href.includes('startDate=' + t), nap2);
+    const masodik = await idoLinkek(p);
+    assert.equal(masodik.length, 2);
+    assert.ok(masodik[1].includes(`startDate=${nap2 + 1800}&`));
+    assert.equal(await p.locator('#naptar button.naptar-nap[aria-pressed="true"]').count(), 1);
+    await ctx.close();
+  });
+
+  test('a honap-lapozo: tobb honapnyi szabad nap eseten lapoz; az elso / utolso honapnal tiltott', async () => {
+    const harom = holnap + 40 * 86400; // ~ 1-2 honappal kesobb
+    const { p, ctx } = await nyit({ api: () => idok(holnap, harom) });
+    await p.locator('#foglalo').scrollIntoViewIfNeeded();
+    await kell(p);
+    const elsoHo = await p.textContent('#naptar .naptar-fej b');
+    assert.equal(await p.locator('.naptar-lapoz').first().isDisabled(), true, 'az elso honap elott nincs mit');
+    await p.locator('.naptar-lapoz').last().click();
+    const masodikHo = await p.textContent('#naptar .naptar-fej b');
+    assert.notEqual(masodikHo, elsoHo);
+    await p.locator('.naptar-lapoz').first().click();
+    assert.equal(await p.textContent('#naptar .naptar-fej b'), elsoHo);
+    await ctx.close();
+  });
+
+  test('terulet-csere: uj lekeres az uj kezeleshez; a "Honalj + intim" a Basic csomag; a legordulo a tobbi teruletet is tudja', async () => {
     const hivott = [];
     const { p, ctx } = await nyit({ api: (u) => { hivott.push(new URL(u).searchParams.get('serviceId')); return idok(...SLOTOK); } });
     await p.locator('#foglalo').scrollIntoViewIfNeeded();
     await kell(p);
+    const vart = (id) => p.waitForFunction((x) => document.querySelector('#idok a.ido')?.href.includes('serviceId=' + x), id);
     await p.click('#terulet-chipek .chip[data-terulet="intim"]');
-    await p.waitForFunction(() => /serviceId=476493/.test(document.querySelector('#slotok a.slot')?.href || ''));
+    await vart('476493');
     await p.click('#terulet-chipek .chip[data-terulet="basic"]');
-    await p.waitForFunction(() => /serviceId=476479/.test(document.querySelector('#slotok a.slot')?.href || ''));
+    await vart('476479');
     await p.selectOption('#terulet-select', 'kar');
-    await p.waitForFunction(() => /serviceId=476491/.test(document.querySelector('#slotok a.slot')?.href || ''));
+    await vart('476491');
     assert.equal(await p.locator('#terulet-chipek .chip[aria-pressed="true"]').count(), 0, 'a legordulo valasztasakor a chipek kikapcsolnak');
     await p.click('#terulet-chipek .chip[data-terulet="egyedi"]');
-    await p.waitForFunction(() => /serviceId=476478/.test(document.querySelector('#slotok a.slot')?.href || ''));
+    await vart('476478');
     assert.ok(hivott.includes('476493') && hivott.includes('476479') && hivott.includes('476491') && hivott.includes('476478'), hivott.join());
     await ctx.close();
   });
@@ -260,7 +322,7 @@ describe('idopont-valaszto (hamisitott Salonic-API)', () => {
     await p.locator('#foglalo').scrollIntoViewIfNeeded();
     await kell(p);
     await p.check('input[name="mod"][value="konzult"]');
-    await p.waitForFunction(() => /serviceId=476477/.test(document.querySelector('#slotok a.slot')?.href || ''));
+    await p.waitForFunction(() => /serviceId=476477/.test(document.querySelector('#idok a.ido')?.href || ''));
     assert.equal(await p.locator('#lepes-terulet').isHidden(), true);
     assert.equal(await p.textContent('#lepes-idopont .szam'), '2');
     await p.check('input[name="mod"][value="kezeles"]');
@@ -269,40 +331,12 @@ describe('idopont-valaszto (hamisitott Salonic-API)', () => {
     await ctx.close();
   });
 
-  test('a 15 percenkenti kezdesekbol legalabb 1 ora kulonbsegu idopontokat mutat (nem 13:30 / 13:45 / 14:00)', async () => {
-    const t0 = Math.floor(holnap / 3600) * 3600 + 1800; // xx:30
-    const { p, ctx } = await nyit({ api: () => idok(t0, t0 + 900, t0 + 1800, t0 + 2700, t0 + 3600, t0 + 4500, t0 + 7200) });
-    await p.locator('#foglalo').scrollIntoViewIfNeeded();
-    await kell(p);
-    const idoPontok = await p.$$eval('#slotok a.slot b', (l) => l.map((b) => b.textContent));
-    assert.equal(idoPontok.length, 3);
-    const perc = idoPontok.map((x) => +x.slice(0, 2) * 60 + +x.slice(3));
-    assert.ok(perc[1] - perc[0] >= 60 && perc[2] - perc[1] >= 60, idoPontok.join());
-    await ctx.close();
-  });
-
-  test('a nyil lapoz a tovabbi idopontokra, korbefordul', async () => {
-    const { p, ctx } = await nyit({ api: () => idok(...SLOTOK) });
-    await p.locator('#foglalo').scrollIntoViewIfNeeded();
-    await kell(p);
-    const elso = await cimkek(p);
-    await p.click('#slot-tovabb');
-    const masodik = await cimkek(p);
-    assert.notDeepEqual(masodik, elso);
-    assert.equal(masodik.length, 3);
-    await p.click('#slot-tovabb'); // 7 idopont: a 3. oldalon csak 1 marad
-    assert.equal((await cimkek(p)).length, 1);
-    await p.click('#slot-tovabb');
-    assert.deepEqual(await cimkek(p), elso);
-    await ctx.close();
-  });
-
   test('ha nincs szabad idopont, uzenet + a foglalorendszer linkje; nem talal ki idopontot', async () => {
     const { p, ctx } = await nyit({ api: () => idok() });
     await p.locator('#foglalo').scrollIntoViewIfNeeded();
     await p.waitForSelector('#slot-uzenet:not([hidden])');
     assert.match(await p.textContent('#slot-uzenet'), /nincs szabad időpont/);
-    assert.equal(await p.locator('#slotok a.slot').count(), 0);
+    assert.equal(await p.locator('#naptar button.naptar-nap').count(), 0);
     await ctx.close();
   });
 
@@ -319,8 +353,18 @@ describe('idopont-valaszto (hamisitott Salonic-API)', () => {
     ({ p, ctx } = await nyit({ api: (u) => { const id = new URL(u).searchParams.get('calendarId'); hasznalt.push(id); return id === 'uj-naptar-id' ? idok(...SLOTOK) : { status: 'error' }; } }));
     await p.route('https://mosaic-elysion.salonic.hu/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', headers: { 'access-control-allow-origin': '*' }, body: "<script>var x = { calendarId: 'uj-naptar-id' }</script>" }));
     await p.locator('#foglalo').scrollIntoViewIfNeeded();
-    await p.waitForSelector('#slotok a.slot');
+    await p.waitForSelector('#naptar button.naptar-nap');
     assert.deepEqual(hasznalt.slice(0, 2), ['02742cf7-07cb-a3ef-fc7c-b871c86ce163', 'uj-naptar-id']);
+    await ctx.close();
+  });
+
+  test('a naptar telefonon (390 px) is elfer, nincs vizszintes gorgetes', async () => {
+    const { p, ctx } = await nyit({ mobil: true, api: () => idok(...SLOTOK) });
+    await p.locator('#foglalo').scrollIntoViewIfNeeded();
+    await kell(p);
+    const m = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: innerWidth, nap: document.querySelector('#naptar .naptar-nap').getBoundingClientRect().width }));
+    assert.ok(m.sw <= m.iw, `scrollWidth ${m.sw} > ${m.iw}`);
+    assert.ok(m.nap >= 30, 'a napok erintheto meretuek: ' + m.nap);
     await ctx.close();
   });
 });
@@ -330,7 +374,7 @@ describe('osszekottetesek', () => {
     const { p, ctx } = await nyit({ api: () => idok(...SLOTOK) });
     await p.click('.ar-csoport tr[data-kulcs="lab"] a[data-terulet]');
     await p.waitForFunction(() => document.querySelector('#terulet-chipek .chip[data-terulet="lab"]').getAttribute('aria-pressed') === 'true');
-    await p.waitForFunction(() => /serviceId=476496/.test(document.querySelector('#slotok a.slot')?.href || ''));
+    await p.waitForFunction(() => /serviceId=476496/.test(document.querySelector('#idok a.ido')?.href || ''));
     // sima gorgetes: megvarjuk, mig a foglalo a kepernyo tetejere er
     await p.waitForFunction(() => { const t = document.getElementById('foglalo').getBoundingClientRect().top; return t < 200 && t > -100; }, null, { timeout: 8000 });
     await ctx.close();
@@ -350,6 +394,83 @@ describe('osszekottetesek', () => {
     const h = await p.$$eval('a[href*="serviceId=476477"], a[href*="service=konzult"]', (l) => l.map((a) => a.getAttribute('href')));
     assert.ok(h.length >= 4, 'konzultacios gombok: ' + h.length);
     for (const x of h) assert.match(x, /serviceId=476477|business=laser/);
+    await ctx.close();
+  });
+});
+
+describe('az uj tartalom (visszajelzesek alapjan)', () => {
+  test('nincs felcim: nincs arany cim a fo cim felett sehol', async () => {
+    const { p, ctx } = await nyit();
+    assert.equal(await p.locator('.felcim').count(), 0);
+    await ctx.close();
+  });
+
+  test('a cim "garanciaval", az alcim a vilag egyik legerosebb lezerrel, alkalmankent fizetes, 4. es 8. ajandek, fenntarto kezelesek orokre felaron', async () => {
+    const { p, ctx } = await nyit();
+    assert.equal((await p.textContent('h1')).trim(), 'Lézeres szőrtelenítés Budapesten garanciával');
+    const al = await p.textContent('.hero-al');
+    assert.match(al, /világ egyik legerősebb/);
+    assert.match(al, /Elysion Pro/);
+    assert.match(al, /többszázezres előrefizetés/);
+    assert.match(al, /alkalmanként fizetsz/);
+    assert.match(al, /4\. és a 8\. alkalom ajándék/);
+    assert.match(al, /fenntartó kezelések pedig örökre féláron/);
+    await ctx.close();
+  });
+
+  test('a 4,9/5 komoly: a pontos ertekelesszammal, kattinthato, a velemenyekhez gorget', async () => {
+    const { p, ctx } = await nyit();
+    const g = p.locator('.hero .google-nagy');
+    assert.match(await g.textContent(), /4,9/);
+    assert.match(await g.textContent(), /\/5/);
+    assert.match(await g.textContent(), /1\s257\s+Google-vélemény/);
+    assert.equal(await g.getAttribute('href'), '#velemenyek');
+    await g.click();
+    await p.waitForFunction(() => { const t = document.getElementById('velemenyek').getBoundingClientRect().top; return t < 200 && t > -150; }, null, { timeout: 8000 });
+    assert.ok((await p.locator('#velemenyek .vel').count()) >= 6, 'velemenyek');
+    await ctx.close();
+  });
+
+  test('a testtaji kartyak abrak (nem fotok): 4 abra, mindegyiken kiemelt terulettel', async () => {
+    const { p, ctx } = await nyit();
+    assert.equal(await p.locator('.gyors-kartya svg.abra').count(), 4);
+    assert.equal(await p.locator('.gyors-kartya img').count(), 0);
+    const kiemelesek = await p.$$eval('.gyors-kartya', (l) => l.map((a) => [...a.querySelectorAll('svg.abra use')].map((u) => u.getAttribute('href')).join('+')));
+    assert.deepEqual(kiemelesek, ['#abra-alak+#abra-honalj', '#abra-alak+#abra-intim', '#abra-alak+#abra-honalj+#abra-intim', '#abra-alak+#abra-lab']);
+    await ctx.close();
+  });
+
+  test('az elso kezeles 20% kedvezmenyerol tobb helyen szol az oldal', async () => {
+    const { p, ctx } = await nyit();
+    const szoveg = await p.textContent('main');
+    assert.ok((szoveg.match(/20% kedvezmén/g) || []).length >= 5, 'a 20% kedvezmeny tobb helyen szerepel');
+    assert.match(await p.textContent('.hero-bizalom'), /20% kedvezmény/);
+    assert.match(await p.textContent('#arlista .arlista-bevezeto'), /első kezelés 20% kedvezménnyel/);
+    await ctx.close();
+  });
+
+  test('az arlista olvashato: egy dobozban, fix oszlopokkal; minden sor egy vonalba esik', async () => {
+    const { p, ctx } = await nyit();
+    const oszlopok = await p.$$eval('#arlista .ar-csoport tbody tr', (l) => [...new Set(l.map((tr) => Math.round(tr.querySelector('.ar-egy').getBoundingClientRect().right)))]);
+    assert.equal(oszlopok.length, 1, 'az alkalmankenti ar oszlopa mindenhol ugyanott vegzodik: ' + oszlopok);
+    const prog = await p.$$eval('#arlista .ar-csoport tbody tr', (l) => [...new Set(l.map((tr) => Math.round(tr.querySelector('.ar-prog').getBoundingClientRect().right)))]);
+    assert.equal(prog.length, 1);
+    assert.ok(await p.locator('#arlista .ar-fejlec').isVisible());
+    const meret = await p.$eval('#arlista tbody th', (e) => parseFloat(getComputedStyle(e).fontSize));
+    assert.ok(meret >= 16, 'a terulet neve legalabb 16 px: ' + meret);
+    await ctx.close();
+  });
+
+  test('Google terkep: nincs nagy statikus terkepkep; sutik nelkul a gombra toltodik be a Google terkep', async () => {
+    const { p, ctx, kulso } = await nyit();
+    const html = await p.content();
+    assert.ok(!html.includes('3d447a4483a54782920eee5bd468b1b5'), 'a regi statikus terkepkep kikerult');
+    assert.equal(await p.locator('#terkep iframe').count(), 0, 'sutik nelkul nincs iframe');
+    await p.click('#terkep-gomb');
+    await p.waitForSelector('#terkep iframe');
+    assert.match(await p.getAttribute('#terkep iframe', 'src'), /^https:\/\/www\.google\.com\/maps\?q=.*output=embed$/);
+    assert.equal(await p.locator('#terkep-hely').count(), 0);
+    assert.ok(kulso.some((u) => /google\.com\/maps/.test(u)), 'a Google terkep kerese elindult');
     await ctx.close();
   });
 });

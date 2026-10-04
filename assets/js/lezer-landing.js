@@ -1,11 +1,13 @@
-// MOSAIC lezeres szortelenites landing (/lezeres-szortelenites-budapest) - mukodes.
+// MOSAIC lezeres szortelenites landing (/lezeres-szortelenites-budapest-uj) - mukodes.
 //
-//  1. Idopont-valaszto (#foglalas): a legkozelebbi szabad idopontok elo lekerdezese a Salonic nyilvanos naptar-API-bol
-//     (ugyanaz a forras, mint a PMU landingen). Idopontot nem talalunk ki: ha az API nem valaszol, a Salonic-linkre vezetunk.
-//  2. Kalkulator (#szamolo): a legdragabb terulet teljes aron, minden tovabbi terulet 50%-on (akkor is, ha nagy terulet).
+//  1. Idopont-valaszto (#foglalas): havi naptar + a kivalasztott nap idopontjai a Salonic nyilvanos naptar-API-bol (ugyanaz a forras, mint a
+//     PMU landingen). Idopontot nem talalunk ki: ha az API nem valaszol, a Salonic-linkre vezetunk. Egy idopontra kattintva a Salonic
+//     /guestData/ adatlapja nyilik (az idopont mar kivalasztva).
+//  2. Kalkulator (#szamolo): a legdragabb terulet teljes aron, minden tovabbi terulet 50%-on (akkor is, ha nagy terulet). Alapbol nehany
+//     terulet ki van jelolve, hogy lassa, hogy kalkulator; az elso kezeles 20% kedvezmennyel.
 //  3. Arforras: az #arlista tablazat sorai (data-ar, data-elso, data-tartalmaz) - a kalkulator es a valaszto ebbol olvas,
 //     igy az arakat egy helyen kell karbantartani.
-//  4. Apro segedek: data-terulet (a valasztot az adott teruletre allitja), data-gyik (kinyitja a GYIK-elemet), terkep.
+//  4. Apro segedek: data-terulet (a valasztot az adott teruletre allitja), data-gyik (kinyitja a GYIK-elemet), Google terkep, ertekelesek szama.
 (() => {
   'use strict';
 
@@ -20,6 +22,8 @@
   const ELORE_NAP = 92;
   const KONZULT = { nev: 'Ingyenes konzultáció', elso: '476477' };
   const EGYEDI = { kulcs: 'egyedi', nev: 'Több terület (egyedi csomag)', elso: '476478' };
+  const ALAP_VALASZTAS = ['lab', 'honalj', 'intim']; // a kalkulator indito allapota
+  const ELSO_KEDVEZMENY = 0.8; // az elso kezeles 20% kedvezmennyel
 
   const $ = (id) => document.getElementById(id);
   const elem = (tag, attr = {}, ...gyerek) => {
@@ -38,8 +42,8 @@
   const ft = (n) => szam(n) + ' Ft';
   const fmt = (ts, o) => new Intl.DateTimeFormat('hu-HU', { timeZone: ZONA, ...o }).format(new Date(ts * 1000));
   const ora = (ts) => fmt(ts, { hour: '2-digit', minute: '2-digit' });
-  const datum = (ts) => fmt(ts, { month: 'short', day: 'numeric' }); // "okt. 6."
-  const napKulcs = (ts) => fmt(ts, { year: 'numeric', month: '2-digit', day: '2-digit' });
+  const isoNap = (ts) => new Intl.DateTimeFormat('sv-SE', { timeZone: ZONA }).format(new Date(ts * 1000)); // 2026-10-07
+  const SVG_NYIL = (irany) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${irany < 0 ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'}"/></svg>`;
 
   // --- arforras: az arlista tablazat ------------------------------------------------------------------------------------------
   const SOROK = [...document.querySelectorAll('#arlista tr[data-kulcs]')].map((tr) => ({
@@ -61,11 +65,12 @@
     const tetelek = sorok.map((s, i) => ({ ...s, fizet: i === 0 ? s.ar : s.ar / 2, teljes: i === 0 }));
     const lista = tetelek.reduce((o, t) => o + t.ar, 0);
     const alkalom = tetelek.reduce((o, t) => o + t.fizet, 0);
-    return { tetelek, lista, alkalom, kedvezmeny: lista - alkalom, program: alkalom * 6, ajandek: alkalom * 2 };
+    return { tetelek, lista, alkalom, kedvezmeny: lista - alkalom, program: alkalom * 6, ajandek: alkalom * 2, elso: alkalom * ELSO_KEDVEZMENY };
   }
   // a kalkulatorban nem szerepelnek a kesz csomagok (azok sajat, fix aru sorok), csak az egyes teruletek
   const SZAMOLO_CSOPORTOK = [...new Set(SOROK.filter((s) => !s.csomag).map((s) => s.csoport))];
-  const valasztott = new Set();
+  const valasztott = new Set(ALAP_VALASZTAS.filter((k) => AR[k]));
+  const CALC_IKON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8.5 7h7M8.5 11h.01M12 11h.01M15.5 11h.01M8.5 14.5h.01M12 14.5h.01M15.5 14.5h.01M8.5 18h.01M12 18h3.5"/></svg>';
 
   const szuloje = (kulcs) => SOROK.find((s) => s.tartalmaz.includes(kulcs) && valasztott.has(s.kulcs));
   function szamoloValaszt(kulcs) {
@@ -79,7 +84,8 @@
   function szamoloRajzol() {
     const hova = $('szamolo-valaszto');
     const e = szamol(valasztott);
-    hova.replaceChildren(elem('h3', { class: 'szamolo-cim', szoveg: 'Jelöld be a területeket' }),
+    hova.replaceChildren(
+      elem('h3', { class: 'szamolo-cim', html: `<span class="szamolo-ikon">${CALC_IKON}</span>Árkalkulátor <small>Kattints a területekre: az ár azonnal frissül</small>` }),
       ...SZAMOLO_CSOPORTOK.map((cs) => elem('div', { class: 'sz-csoport' },
         elem('div', { class: 'sz-csoport-nev', szoveg: cs }),
         elem('div', { class: 'sz-chipek' }, ...SOROK.filter((s) => !s.csomag && s.csoport === cs).map((s) => {
@@ -104,9 +110,10 @@
         elem('span', { class: 'osszeg', szoveg: ft(t.fizet) })))),
       elem('div', { class: 'sz-ossz' }, elem('span', { szoveg: 'Alkalmanként' }), elem('b', { szoveg: ft(e.alkalom) })),
       e.kedvezmeny ? elem('p', { class: 'sz-kedv', szoveg: `Csomagkedvezmény: ${ft(e.kedvezmeny)} alkalmanként` }) : null,
+      elem('div', { class: 'sz-elso', html: `<span>Az első kezelés 20% kedvezménnyel</span><b>${ft(e.elso)}</b>` }),
       elem('div', { class: 'sz-program', html: `8 alkalmas program: csak 6 alkalmat fizetsz<b>${ft(e.program)}</b>A 4. és a 8. alkalom ajándék (${ft(e.ajandek)} értékben).` }),
       elem('a', { class: 'gomb gomb-arany gomb-szeles', href: '#foglalas', 'data-terulet': egy ? e.tetelek[0].kulcs : EGYEDI.kulcs, html: `${egy ? 'Időpontot foglalok' : 'Egyedi csomagot foglalok'} <span class="nyil">→</span>` }),
-      elem('p', { class: 'sz-lab', szoveg: 'Tájékoztató számítás. A végleges csomagot a konzultáción állítjuk össze, az ár a program végéig fix.' }));
+      elem('p', { class: 'sz-lab', szoveg: 'Az ár a program végéig fix.' }));
   }
   $('szamolo-valaszto').addEventListener('click', (e) => {
     const b = e.target.closest('.sz-chip');
@@ -117,13 +124,14 @@
   });
   szamoloRajzol();
 
-  // --- 1. idopont-valaszto -----------------------------------------------------------------------------------------------------
-  const allapot = { mod: 'kezeles', terulet: 'honalj', oldal: 0, kezdesek: [] };
+  // --- 1. idopont-valaszto (naptar) ------------------------------------------------------------------------------------------------
+  const allapot = { mod: 'kezeles', terulet: 'honalj', napok: new Map(), nap: null, honap: null };
   const CHIP_KULCSOK = [...document.querySelectorAll('#terulet-chipek .chip')].map((c) => c.dataset.terulet);
-  const SOR = 3; // ennyi idopontot mutatunk egyszerre
 
   const szolgaltatasId = () => (allapot.mod === 'konzult' ? KONZULT.elso : (SZOLGALTATAS[allapot.terulet] || {}).elso);
-  const salonicUrl = (id, tol) => `${SZALON.cim}/selectDate/?employeeId=${SZALON.kezelo}&placeId=${SZALON.placeId}&serviceId=${id}${tol ? '&startDate=' + tol : ''}`;
+  const salonicUrl = (id) => `${SZALON.cim}/selectDate/?employeeId=${SZALON.kezelo}&placeId=${SZALON.placeId}&serviceId=${id}`;
+  // a kivalasztott idopont adatlapja: az idopont mar benne van (ugyanezt a cimet nyitja a foglalo-motor is)
+  const adatlapUrl = (id, ts) => `${SZALON.cim}/guestData/?anyone=true&employeeId=${SZALON.kezelo}&placeId=${SZALON.placeId}&serviceId=${id}&startDate=${ts}&back=`;
 
   function leker(url, o = {}) {
     const ab = new AbortController();
@@ -161,52 +169,83 @@
     return cache[id];
   }
 
-  /** A rendezett idobelyegekbol azokat tartja meg, amelyek az elozo megtartottol legalabb 1 orara vannak. */
-  const ritka = (k) => k.reduce((ki, ts) => (!ki.length || ts - ki[ki.length - 1] >= 3600 ? [...ki, ts] : ki), []);
-
-  function slotokRajzol() {
-    const hova = $('slotok'), tovabb = $('slot-tovabb'), uzenet = $('slot-uzenet');
+  const ketjegy = (n) => String(n).padStart(2, '0');
+  function idokRajzol() {
+    const hova = $('idok');
+    const lista = allapot.napok.get(allapot.nap) || [];
+    if (!lista.length) { hova.replaceChildren(); return; }
     const id = szolgaltatasId();
-    const k = allapot.kezdesek;
-    $('tovabbi-idopontok').href = salonicUrl(id);
-    uzenet.hidden = true;
-    if (!k.length) { hova.replaceChildren(); tovabb.hidden = true; return; }
-    const kezd = (allapot.oldal % Math.ceil(k.length / SOR)) * SOR; // az utolso oldal utan korbefordul
-    const lap = k.slice(kezd, kezd + SOR);
-    hova.replaceChildren(...lap.map((ts) => elem('a', {
-      class: 'slot', href: salonicUrl(id, Math.floor(ts / 86400) * 86400), target: '_blank', rel: 'noopener',
-      'aria-label': `${datum(ts)} ${ora(ts)}`,
-    }, elem('small', { szoveg: datum(ts) }), elem('b', { szoveg: ora(ts) }))));
-    tovabb.hidden = k.length <= SOR;
+    hova.replaceChildren(
+      elem('p', { class: 'idok-cim', szoveg: fmt(lista[0], { month: 'long', day: 'numeric', weekday: 'long' }) }),
+      elem('div', { class: 'ido-racs' }, ...lista.map((ts) => elem('a', {
+        class: 'ido', href: adatlapUrl(id, ts), target: '_blank', rel: 'noopener', 'aria-label': `${fmt(ts, { month: 'long', day: 'numeric' })} ${ora(ts)}`, szoveg: ora(ts),
+      }))));
   }
+  function napValaszt(iso) { allapot.nap = iso; naptarRajzol(); }
+  function honapLep(irany) {
+    const [y, mo] = allapot.honap;
+    const d = new Date(Date.UTC(y, mo + irany, 1));
+    allapot.honap = [d.getUTCFullYear(), d.getUTCMonth()];
+    naptarRajzol();
+  }
+  function naptarRajzol() {
+    const [y, mo] = allapot.honap;
+    const kulcsok = [...allapot.napok.keys()];
+    const ho = `${y}-${ketjegy(mo + 1)}`;
+    const cim = new Intl.DateTimeFormat('hu-HU', { year: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(y, mo, 15)));
+    const lapoz = (irany, tiltva) => elem('button', {
+      type: 'button', class: 'naptar-lapoz', 'aria-label': irany < 0 ? 'Előző hónap' : 'Következő hónap', disabled: tiltva, html: SVG_NYIL(irany), onclick: () => honapLep(irany),
+    });
+    const eltolas = (new Date(Date.UTC(y, mo, 1)).getUTCDay() + 6) % 7; // hetfo az elso oszlop
+    const hossz = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate();
+    const cellak = [];
+    for (const nap of ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V']) cellak.push(elem('span', { class: 'naptar-hetnap', szoveg: nap }));
+    for (let i = 0; i < eltolas; i++) cellak.push(elem('span'));
+    for (let d = 1; d <= hossz; d++) {
+      const iso = `${ho}-${ketjegy(d)}`;
+      if (allapot.napok.has(iso)) {
+        cellak.push(elem('button', {
+          type: 'button', class: 'naptar-nap', 'aria-pressed': String(iso === allapot.nap), 'aria-label': `${d}. ${cim.split(' ')[1] || ''}: szabad időpontok`, szoveg: String(d), onclick: () => napValaszt(iso),
+        }));
+      } else cellak.push(elem('span', { class: 'naptar-nap', szoveg: String(d) }));
+    }
+    $('naptar').replaceChildren(
+      elem('div', { class: 'naptar-fej' }, lapoz(-1, ho <= kulcsok[0].slice(0, 7)), elem('b', { szoveg: cim }), lapoz(1, ho >= kulcsok[kulcsok.length - 1].slice(0, 7))),
+      elem('div', { class: 'naptar-racs' }, ...cellak));
+    idokRajzol();
+  }
+
   let kerNo = 0;
-  async function slotokBetolt() {
-    const hova = $('slotok'), uzenet = $('slot-uzenet');
+  async function idopontokBetolt() {
+    const uzenet = $('slot-uzenet');
     const id = szolgaltatasId();
     const en = ++kerNo;
-    allapot.oldal = 0;
-    allapot.kezdesek = [];
-    $('slot-tovabb').hidden = true;
+    allapot.napok = new Map();
+    allapot.nap = null;
     uzenet.hidden = true;
-    hova.replaceChildren(...Array.from({ length: SOR }, () => elem('span', { class: 'slot csontvaz' })));
-    $('tovabbi-idopontok').href = salonicUrl(id);
+    $('idok').replaceChildren();
+    $('naptar').replaceChildren(elem('div', { class: 'naptar-csontvaz csontvaz' }));
     if (!id) return;
     try {
       const k = await szabadKezdesek(id);
       if (en !== kerNo) return; // kozben masik teruletet valasztott
-      // a Salonic 15 percenkent ad kezdest (13:30, 13:45, 14:00): a gombokon legalabb 1 ora kulonbsegu idopontokat mutatunk, a teljes lista a Salonicban van
-      allapot.kezdesek = ritka(k).slice(0, SOR * 8);
-      if (!k.length) {
-        hova.replaceChildren();
+      const napok = new Map();
+      for (const ts of k) { const d = isoNap(ts); if (!napok.has(d)) napok.set(d, []); napok.get(d).push(ts); }
+      allapot.napok = napok;
+      if (!napok.size) {
+        $('naptar').replaceChildren();
         uzenet.replaceChildren('A következő hetekre most nincs szabad időpont. ', elem('a', { href: salonicUrl(id), target: '_blank', rel: 'noopener', szoveg: 'Nézd meg a foglalórendszerben →' }));
         uzenet.hidden = false;
         return;
       }
-      slotokRajzol();
+      const elso = [...napok.keys()][0];
+      allapot.nap = elso; // az elso szabad nap alapbol ki van jelolve, hogy az idopontok rogton latszanak
+      allapot.honap = [+elso.slice(0, 4), +elso.slice(5, 7) - 1];
+      naptarRajzol();
     } catch (hiba) {
       if (en !== kerNo) return;
       console.error(hiba);
-      hova.replaceChildren();
+      $('naptar').replaceChildren();
       uzenet.replaceChildren('Most nem sikerült lekérni a szabad időpontokat. ', elem('a', { href: salonicUrl(id), target: '_blank', rel: 'noopener', szoveg: 'Nézd meg itt az összeset →' }));
       uzenet.hidden = false;
     }
@@ -226,7 +265,7 @@
     allapot.mod = mod || allapot.mod;
     if (terulet) allapot.terulet = terulet;
     valasztoRajzol();
-    if ([allapot.mod, allapot.terulet].join() !== regi) slotokBetolt();
+    if ([allapot.mod, allapot.terulet].join() !== regi) idopontokBetolt();
   }
 
   // a "masik terulet" legordulo: a chipekben nem szereplo teruletek es csomagok, csoportonkent
@@ -239,7 +278,6 @@
   $('terulet-chipek').addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (c) beallit('kezeles', c.dataset.terulet); });
   $('terulet-select').addEventListener('change', (e) => { if (e.target.value) beallit('kezeles', e.target.value); });
   for (const r of document.querySelectorAll('input[name="mod"]')) r.addEventListener('change', () => beallit(r.value));
-  $('slot-tovabb').addEventListener('click', () => { allapot.oldal++; slotokRajzol(); });
 
   // a tobbi szekcio gombjai: a valasztot az adott teruletre allitjuk, es oda gorgetunk
   document.addEventListener('click', (e) => {
@@ -265,19 +303,39 @@
   valasztoRajzol();
   const foglalo = $('foglalo');
   if ('IntersectionObserver' in window) {
-    const fig = new IntersectionObserver((t) => { if (t.some((x) => x.isIntersecting)) { fig.disconnect(); slotokBetolt(); } }, { rootMargin: '600px 0px' });
+    const fig = new IntersectionObserver((t) => { if (t.some((x) => x.isIntersecting)) { fig.disconnect(); idopontokBetolt(); } }, { rootMargin: '600px 0px' });
     fig.observe(foglalo);
-  } else slotokBetolt();
+  } else idopontokBetolt();
 
-  // --- terkep: Google-terkep a funkcionalis sutik engedelyezese utan (mint a tobbi oldalon) ------------------------------------------
-  function terkep(engedve) {
+  // --- Google terkep: a funkcionalis sutik engedelyezese utan magatol, egyebkent a gombra kattintva toltodik be ----------------------
+  function terkepBetolt() {
     const t = $('terkep');
-    if (!engedve || !t || t.querySelector('iframe')) return;
+    if (!t || t.querySelector('iframe')) return;
     t.prepend(elem('iframe', {
       title: 'Térkép: MOSAIC, 1023 Budapest, Bécsi út 2.', loading: 'lazy', referrerpolicy: 'no-referrer-when-downgrade',
       src: 'https://www.google.com/maps?q=' + encodeURIComponent('MOSAIC Head Spa, 1023 Budapest, Bécsi út 2.') + '&output=embed',
     }));
-    t.querySelector('.terkep-kep').style.cssText = 'background:none;inset:auto 0 0 auto;width:auto;height:auto';
+    const h = $('terkep-hely');
+    if (h) h.remove();
   }
-  if (window.mhSuti) { terkep(window.mhSuti.engedely('fun')); window.mhSuti.figyel((d) => terkep(d.fun)); }
+  $('terkep-gomb').addEventListener('click', terkepBetolt);
+  if (window.mhSuti) { if (window.mhSuti.engedely('fun')) terkepBetolt(); window.mhSuti.figyel((d) => { if (d.fun) terkepBetolt(); }); }
+
+  // --- ertekelesek szama: a Trustindex-widget aktualis adata (a sutik "funkcionalis" csoportja); a HTML-ben a tartalek ertek all -------
+  const TI = 'https://cdn.trustindex.io/widgets/8a/8a7562c424f027774456be130a1/content.html';
+  let tiKesz = false;
+  async function ertekelesFrissit() {
+    if (tiKesz || !(window.mhSuti && window.mhSuti.engedely('fun'))) return;
+    tiKesz = true;
+    try {
+      const d = new DOMParser().parseFromString(await (await fetch(TI, { credentials: 'omit' })).text(), 'text/html');
+      const a = d.querySelector('.ti-header .ti-rating-text a');
+      const n = ((a && a.textContent.match(/\d[\d\s.]*/)) || [''])[0].replace(/\D/g, '');
+      if (!n) return;
+      for (const e of document.querySelectorAll('[data-ertekeles-db]')) e.textContent = szam(+n);
+      for (const l of document.querySelectorAll('.google-nagy[aria-label]')) l.setAttribute('aria-label', l.getAttribute('aria-label').replace(/\d+ Google-vélemény/, `${n} Google-vélemény`));
+    } catch (hiba) { tiKesz = false; console.error(hiba); }
+  }
+  ertekelesFrissit();
+  if (window.mhSuti && window.mhSuti.figyel) window.mhSuti.figyel(ertekelesFrissit);
 })();
