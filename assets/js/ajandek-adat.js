@@ -245,7 +245,7 @@
     friend: {
       variant_id: 'friend',
       hero_eyebrow: 'KÖZÖS MOSAIC HEAD SPA ÉLMÉNY',
-      hero_title: 'Ne még egy tárgyat adjatok egymásnak. Menjetek inkább együtt.',
+      hero_title: 'A tökéletes csajos nap ezzel a programmal kezdődik.',
       hero_subtitle: 'Közös Head Spa élmény két főre — amikor egyikőtöknek sem kell semmit megszerveznie.',
       hero_cta: 'Közös élményt választok',
       // a tulajdonos kérése (2026-10-04): barátnők választják egymásnak, ezért a hero a páros kezelés videójának barátnős szakasza (két nő, fürdőlepedőben, pezsgővel; felülnézeti kép a két ágyról);
@@ -297,8 +297,8 @@
     partner: {
       variant_id: 'partner',
       hero_eyebrow: 'PÁROS MOSAIC HEAD SPA',
-      hero_title: 'Egy randi, ahol most mindketten kikapcsoltok.',
-      hero_subtitle: 'Közös Head Spa élmény két főre — ajándék, amit nem csak átadsz, hanem együtt éltek át.',
+      hero_title: 'Egy felejthetetlen randi, ahol mindketten ellazultok.',
+      hero_subtitle: 'Közös Head Spa élmény két főre — ajándék, amit nem csak átadsz, hanem együtt élitek át.',
       hero_cta: 'Páros élményt választok',
       // a tulajdonos kérése (2026-10-04): valódi férfi + nő pár. Forrás: Drive "Headspa férfiaknak" mappa / "Páros kezelés.MP4" (a pár a váróban, fürdőlepedőben, pezsgővel: 22,9-24,1 mp, lassítva),
       // közte a kezelés pillanatai (női és férfi vendég); a felirat és a szöveg nélküli 3:2-es sáv, hang nélkül (0,6 MB)

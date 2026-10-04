@@ -251,10 +251,11 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     for (const k of VARIANSOK) assert.ok(V[k].gift_finder_preselect === null || ADAT.FINDER.some((f) => f.id === V[k].gift_finder_preselect), k);
     assert.equal(V.general.hero_title, 'Ajándékozz neki 80 percet, ami tényleg csak róla szól.');
     assert.equal(V.general.hero_cta, 'Kiválasztom az ajándékot');
-    assert.equal(V.friend.hero_title, 'Ne még egy tárgyat adjatok egymásnak. Menjetek inkább együtt.');
+    assert.equal(V.friend.hero_title, 'A tökéletes csajos nap ezzel a programmal kezdődik.');
     assert.equal(V.mother.hero_title, 'Adj neki közös időt — ne még egy dolgot.');
     assert.equal(V.for_her.hero_title, 'Adj neki 80 percet, amikor végre semmiről nem kell gondoskodnia.');
-    assert.equal(V.partner.hero_title, 'Egy randi, ahol most mindketten kikapcsoltok.');
+    assert.equal(V.partner.hero_title, 'Egy felejthetetlen randi, ahol mindketten ellazultok.');
+    assert.ok(V.partner.hero_subtitle.endsWith('hanem együtt élitek át.'));
     assert.equal(V.last_minute.hero_title, 'Ajándékot keresel az utolsó pillanatban?');
     assert.deepEqual(Object.fromEntries(VARIANSOK.map((k) => [k, [V[k].gift_context, V[k].relationship, V[k].occasion]])), {
       general: ['general', null, null], friend: ['together', 'friend', null], mother: ['together', 'mother', null],
