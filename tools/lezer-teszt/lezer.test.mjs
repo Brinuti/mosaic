@@ -825,6 +825,8 @@ describe('a hetedik kor visszajelzesei', () => {
     const { p, ctx } = await nyit();
     const szoveg = await p.textContent('.alkalmas-kartya.igen p');
     assert.match(szoveg, /^Ha egy életre elfelejtenéd a borotvát és a begyulladt szőrtüszőket, akkor igen\./);
+    assert.equal(szoveg.trim(), 'Ha egy életre elfelejtenéd a borotvát és a begyulladt szőrtüszőket, akkor igen.');
+    assert.ok(!/Pigmentáltabb/.test(szoveg), 'a pigmentaltabb szoros mondat kikerult');
     await ctx.close();
   });
 
@@ -839,7 +841,11 @@ describe('a hetedik kor visszajelzesei', () => {
     await p.waitForSelector('.szorbenoves video[controls]');
     assert.equal(await p.getAttribute('.szorbenoves video source', 'src'), forras);
     assert.match(await p.getAttribute('.szorbenoves video', 'aria-label'), /Dr\. Máté Kinga orvos/);
-    assert.match(await p.textContent('.szorbenoves-szoveg p'), /^Dr\. Máté Kinga orvos is a lézeres szőrtelenítést ajánlja\./);
+    assert.match(await p.textContent('.szorbenoves-szoveg p'), /^Dr\. Máté Kinga orvos, sebész szakorvosjelölt is a lézeres szőrtelenítést és Zsófit ajánlja\./);
+    const badge = await p.$eval('.orvosi-badge', (e) => { const b = e.getBoundingClientRect(); const d = e.parentElement.getBoundingClientRect(); return { szoveg: e.textContent.trim(), jobb: Math.round(d.right - b.right), fent: Math.round(b.top - d.top), pipa: !!e.querySelector('svg path') }; });
+    assert.equal(badge.szoveg, 'Orvosi ajánlással');
+    assert.ok(badge.pipa, 'pipa ikon');
+    assert.ok(badge.jobb >= 0 && badge.jobb <= 24 && badge.fent >= 0 && badge.fent <= 24, 'a doboz jobb felso sarkaban: ' + JSON.stringify(badge));
     assert.ok(!/Zsófi rövid videóját/.test(await p.textContent('.szorbenoves')), 'nem a Zsofi videojarol szol a szoveg');
     const gomb = await p.$eval('.szorbenoves-szoveg a.gomb', (e) => ({ osztaly: e.className, hatter: getComputedStyle(e).backgroundImage }));
     assert.match(gomb.osztaly, /gomb-arany/, 'arany gomb');

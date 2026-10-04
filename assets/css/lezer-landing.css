@@ -191,7 +191,10 @@ p.kedv-sor { display: flex; align-items: center; gap: 10px; width: fit-content; 
 .alkalmas-kartya.nezzuk .ikon-kor { background: #f1e8d6; color: var(--arany); }
 .alkalmas-kartya.kerdezz .ikon-kor { background: var(--zsalya); color: var(--sotet); }
 /* a szorbenoves-video (Meta-hirdetes) a harom kartya alatt: kicsi, fuggoleges video + szoveg */
-.szorbenoves { display: grid; grid-template-columns: 200px 1fr; gap: 32px; align-items: center; width: min(720px, 100%); margin: 28px auto 0; padding: 20px 28px 20px 20px; background: linear-gradient(#f4efe4, #ede6d8); border: 1px solid #e3dbc9; border-radius: 16px; box-shadow: var(--arnyek); }
+.szorbenoves { position: relative; display: grid; grid-template-columns: 200px 1fr; gap: 32px; align-items: center; width: min(720px, 100%); margin: 28px auto 0; padding: 20px 28px 20px 20px; background: linear-gradient(#f4efe4, #ede6d8); border: 1px solid #e3dbc9; border-radius: 16px; box-shadow: var(--arnyek); }
+/* "Orvosi ajanlassal" jelveny a doboz jobb felso sarkaban */
+.orvosi-badge { position: absolute; top: 14px; right: 14px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: var(--sotet); color: #fff; font: 500 13px/1 var(--test); box-shadow: 0 4px 12px rgba(15, 58, 60, .22); z-index: 1; }
+.orvosi-badge svg { width: 17px; height: 17px; stroke: #e8d9a8; stroke-width: 2; }
 .szorbenoves .video-kartya { max-width: 200px; border-radius: 14px; box-shadow: 0 10px 26px rgba(60, 40, 20, .16); }
 .szorbenoves .lejatszas { width: 56px; height: 56px; }
 .szorbenoves .lejatszas svg { width: 24px; height: 24px; margin-left: 3px; }
@@ -514,7 +517,7 @@ a.ido:hover { border-color: var(--arany); box-shadow: 0 6px 14px rgba(160, 127, 
 
   .alkalmas-racs { grid-template-columns: 1fr; gap: 14px; margin-top: 22px; }
   .alkalmas-kartya { padding: 22px 20px; }
-  .szorbenoves { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 16px; padding: 20px 16px; margin-top: 18px; }
+  .szorbenoves { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 16px; padding: 56px 16px 20px; margin-top: 18px; }
   .szorbenoves .video-kartya { max-width: 190px; }
 
   .zsofi { padding: 40px 0; }
