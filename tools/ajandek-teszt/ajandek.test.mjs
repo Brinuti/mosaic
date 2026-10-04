@@ -179,6 +179,16 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     // fizetes: az ajandekozott neve, egy fizetesi mod valaszto (kartya / atutalas), nincs kulon "Inkabb atutalassal" link
     for (const jel of ['id="ah-ajandekozott"', 'id="ah-telefon"', 'id="ah-fizmod"', 'name="fizmod" value="kartya"', 'name="fizmod" value="atutalas"', 'id="ah-atu-doboz"', 'id="ah-atutalas"']) assert.ok(html.includes(jel), jel);
     assert.ok(!html.includes('ah-atutalas-gomb') && !html.includes('Inkább átutalással'), 'a regi atutalas-link kikerult');
+    // 2026-10-04, 2. kor: Miert a MOSAIC Headspa (jelveny + alapito), 2 perc..., 2 soros lepes-szovegek, kozepre igazitott kartya-kep, a PMU-oldal gombszine
+    for (const jel of ['Miért a MOSAIC Headspa?', 'class="ah-badge"', 'alapito-feri.png', 'Deák Ferenc István', 'Amikor megalapítottam a MOSAIC-ot', '2 perc és már a Tiéd is!']) assert.ok(html.includes(jel), jel);
+    assert.ok(fs.existsSync(new URL('../../assets/img/ajandek/alapito-feri.png', import.meta.url)), 'az alapito kepe letezik');
+    const hogyan = html.slice(html.indexOf('<ol class="ah-hogyan-lepesek">'), html.indexOf('</ol>', html.indexOf('<ol class="ah-hogyan-lepesek">')));
+    const lepesek = hogyan.split('</strong><span>').slice(1).map((r) => r.slice(0, r.indexOf('</span>')));
+    assert.equal(lepesek.length, 5);
+    for (const sz of lepesek) assert.ok(sz.length <= 56, 'a lepes-szoveg ketsoros: ' + sz);
+    const css = fs.readFileSync(new URL('../../assets/css/ajandek.css', import.meta.url), 'utf8');
+    assert.ok(css.includes('.ah-gomb-fo { background: linear-gradient(#c6a346, #d9c164)'), 'az elsodleges gomb a PMU-oldal arany atmenete');
+    assert.ok(css.includes('.ah-hogyan-lepesek li > span:last-child { display: -webkit-box; -webkit-line-clamp: 2'), 'a lepes-szoveg 2 soros');
     assert.ok(html.includes('csak az utalás visszaigazolása után tudjuk kiállítani') && html.includes('Bankkártyás fizetésnél a kártyát automatikusan'), 'atutalasi figyelmeztetes');
     for (const t of Object.values(ADAT.TERMEKEK)) assert.ok(typeof t.kartya_sor === 'string' && t.kartya_sor.length > 10, t.id + ' kartya_sor');
   });

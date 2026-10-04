@@ -467,3 +467,15 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
 - **Szövegek (a tulajdonos kérése):** „Mi az a Headspa és miért ilyen népszerű?” (alcímben a népszerűség okai); „Imádják a nők!” + „Nézd meg, mit mondanak a kezelés után :)”;
   „Több mint 1.300 db 5 csillagos értékelés!” (**a hero és a Trustindex jelenleg 1.259 / 1255 db-ot mutat, ezért a „több mint 1.300”-at a tulajdonosnak meg kell erősítenie**);
   „Kényeztetés a legmagasabb szinten”; „Személyre szabott ajándékkártya!” + a 3 kattintásos szerkesztést és az A5 méretet leíró bekezdés.
+
+## Szöveg- és elrendezés-módosítások, 2. kör (2026-10-04, a tulajdonos kérései)
+
+- **Fejléc:** a „Válaszd ki az ajándékot” fejlécben a kártya-kép középen áll (1100 px-től a három oszlop középső oszlopában, a videó felett; alatta a cím alatt középre igazítva).
+- **Mi az a Headspa és miért ilyen népszerű?:** a videóbox és a mellette lévő szöveges doboz (kártya) egyforma magas (900 px-től; a videó kitölti a sor magasságát, `object-fit: cover`).
+- **Miért a MOSAIC Headspa?:** új szöveg (legnagyobb headspa, 270 m², parkolás), alatta Google-értékelés jelvény (`data-google-pont` / `data-google-szam`, a `GOOGLE` adatból, a
+  Google-szekcióra görget), az alapító kis képe (`assets/img/ajandek/alapito-feri.png`, az éles oldal fotójából), az idézete és az aláírása (Deák Ferenc István, a MOSAIC Headspa alapítója).
+  A „jelvény” (badge) értelmezése: a tulajdonos nem részletezte, az éles főoldal csillagos értékelés-sorát követtem.
+- **2 perc és már a Tiéd is!** (volt: Hogyan működik?): a lépések alatti szöveg mindenhol pontosan 2 soros (rövidített szövegek + `-webkit-line-clamp: 2`, `min-height: 2.9em`).
+- **Kényeztetés a legmagasabb szinten:** a lapozó videó-dobozai nagyobbak (300 px), az időtartam nem látszik, a dobozok címe középre igazított.
+- **Gombok:** az elsődleges gomb (`.ah-gomb-fo`) mindenhol a PMU-oldal gombszíne: arany átmenet (`#c6a346` → `#d9c164`), fehér felirat (az élő `/sminktetovalas-budapest` oldal
+  gombjából mérve); a gomb formája változatlan (a PMU-oldal gombjai pill alakúak). A másodlagos (körvonalas) gomb marad.

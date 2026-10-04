@@ -296,7 +296,7 @@
       lista.appendChild(h('li', null,
         h('button', { type: 'button', class: 'ah-elem', 'data-vendeg': e.video, 'data-nev': e.nev, 'data-forma': 'szeles', 'aria-label': e.nev + ' (' + e.ido + ') – videó lejátszása' },
           h('span', { class: 'ah-elem-kep' }, h('img', { src: kepUt(e.poster), alt: '', width: 640, height: 360, loading: 'lazy', decoding: 'async' }), jatszo),
-          h('span', { class: 'ah-elem-cimke' }, h('b', { text: e.nev }), h('small', { text: e.ido })))));
+          h('span', { class: 'ah-elem-cimke' }, h('b', { text: e.nev })))));
     });
   }
   // galeria (Miert MOSAIC): lapozhato sor kis kepekkel, kattintasra nagyito (elozo / kovetkezo, nyilbillentyuk, huzas)
@@ -410,6 +410,9 @@
     // a Google-osszegzes (tulajdonosi adat, lasd ajandek-adat.js)
     $('ah-google-pont').textContent = A.GOOGLE.pont;
     $('ah-google-szam').textContent = A.GOOGLE.darab + ' Google-vélemény';
+    // a "Miért a MOSAIC Headspa?" blokk értékelés-jelvénye ugyanebből az adatból
+    Array.prototype.forEach.call(document.querySelectorAll('[data-google-pont]'), function (e) { e.textContent = A.GOOGLE.pont; });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-google-szam]'), function (e) { e.textContent = A.GOOGLE.darab + ' Google-vélemény'; });
     trustindexInit();
   }
 
