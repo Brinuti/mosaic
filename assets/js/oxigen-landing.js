@@ -89,6 +89,41 @@
   lapozo($('kezelo-sav'), $('kezelo-elozo'), $('kezelo-kovetkezo'), true);
   document.querySelectorAll('.ba-keret').forEach((k) => lapozo(k.querySelector('.ba-sav'), k.querySelector('.elozo'), k.querySelector('.kovetkezo'), true));
 
+  // --- mobil sticky CTA: a hero-gombok elgorgetese utan latszik, a zaro savnal eltunik ---
+  const sticky = $('sticky-cta'), heroCta = document.querySelector('.hero-cta'), zaro = document.querySelector('.zaro');
+  if (sticky && heroCta && zaro && 'IntersectionObserver' in window) {
+    let heroLatszik = true, vegen = false;
+    const frissit = () => {
+      const lat = !heroLatszik && !vegen;
+      sticky.classList.toggle('lathato', lat);
+      sticky.setAttribute('aria-hidden', lat ? 'false' : 'true');
+      sticky.querySelectorAll('a').forEach((a) => (lat ? a.removeAttribute('tabindex') : a.setAttribute('tabindex', '-1')));
+      document.body.classList.toggle('sticky-be', lat);
+    };
+    new IntersectionObserver((es) => { heroLatszik = es[0].isIntersecting; frissit(); }).observe(heroCta);
+    new IntersectionObserver((es) => { vegen = es[0].isIntersecting; frissit(); }).observe(zaro);
+  }
+
+  // --- YouTube-videok (az Oxygeni Hair and Skin csatornajarol): csak kattintasra toltodnek be, youtube-nocookie ---
+  const ytAblak = $('yt-ablak'), ytKeret = $('yt-keret');
+  if (ytAblak && ytKeret) {
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-yt]');
+      if (!b) return;
+      ytKeret.className = 'yt-keret' + (b.dataset.allo ? ' allo' : '');
+      const f = document.createElement('iframe');
+      f.src = 'https://www.youtube-nocookie.com/embed/' + b.dataset.yt + '?autoplay=1&rel=0';
+      f.title = (b.querySelector('.yt-szoveg') || b).textContent.trim();
+      f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      f.allowFullscreen = true;
+      ytKeret.replaceChildren(f);
+      ytAblak.showModal();
+      meres({ event: 'oxigen_landing_video', video: b.dataset.yt });
+    });
+    ytAblak.addEventListener('close', () => ytKeret.replaceChildren());
+    ytAblak.addEventListener('click', (e) => { if (e.target === ytAblak) ytAblak.close(); });
+  }
+
   // --- video: csak kattintasra toltodik be ----------------------------------------------------------
   const doboz = $('video-doboz'), gomb = $('video-gomb');
   if (doboz && gomb) {

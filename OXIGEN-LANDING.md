@@ -30,7 +30,7 @@ küldenek (a PMU-landing `pmu_landing_*` mintájára; ezekre GTM-címke nem figy
 
 ## Hero és eredmények
 
-- A H1 („Működő hajgyógyászati oxigénterápia hajhullás ellen”) a bal blokkban áll; alatta: „Kétmillió elvégzett kezelésből 95%-os hatékonyság*”, lábjegyzet: „*Az Oxygeni statisztikája alapján”.
+- A H1 („Működő hajgyógyászati oxigénterápia hajhullás ellen”) a bal blokkban áll, két sorban (a méret a viewporthoz igazodik); a galéria teteje a cím nagybetűinek tetejéhez igazodik; alatta: „Kétmillió elvégzett kezelésből 95%-os hatékonyság*”, lábjegyzet: „*Az Oxygeni statisztikája alapján”.
 - A hero jobb oldala **valós előtte/utána fotók galériája** (nem statikus kép): egy dia = egy `<figure class="hg-dia">`; a pontokat, nyilakat és a 6 mp-es automatikus lapozást (amíg a látogató bele nem nyúl; csökkentett mozgásnál nincs) az `oxigen-landing.js` adja. Felirat: „Gyengébb panaszok esetén 3–5 alkalom, súlyosabb panaszok esetén 5–10 alkalom.” A 5 jelenlegi kép **helyőrző** (hajhullás-referencia az Oxygeni-sorozatból), a tulajdonos válogatja a valódiakat (akár 10-et).
 - „Az Oxygeni vendégeinek valós javulásai”: a **régi oldal galériái, panaszonként, ugyanabban a sorrendben, mind a 21 kép** (`assets/img/oxigen/eredmeny-01..21.jpg`): hajhullás 12, korpás haj 3, pikkelysömör 3, seborrea 3, „Forrás: Oxygeni Hair” jelöléssel. A hero 5 képe ezek közül való (ismétlődik, amíg a tulajdonos ki nem választja a sajátokat).
 - **Vendégeink véleménye**: az **eredeti Trustindex-csúszka** (ugyanaz a widget, mint a főoldalon az „olvasd el vendégeinktől” résznél: `assets/embed/c2eb0f_95e68e62…`, Google-értékelés + 3 kártya) keretben. Külső szolgáltató, ezért a süti-tájékoztató szerint „funkcionális”: csak hozzájárulás után tölt be, addig gombos helykitöltő áll. A vélemények valós Google-értékelések, nem szerkesztettük őket; általános MOSAIC-vélemények (HeadSpa, fodrászat), oxigén-specifikus egyelőre nincs köztük.
@@ -38,6 +38,17 @@ küldenek (a PMU-landing `pmu_landing_*` mintájára; ezekre GTM-címke nem figy
 ## A kezelés lépésről lépésre (lenyitható)
 
 9 két soros lépés, alatta a **„Hogyan működik az oxigénterápia?”** blokk: a hatásmechanizmus az Oxygeni Hair & Skin oldala (oxygenihair.hu) alapján, saját megfogalmazásban, forrásmegjelöléssel (diagnózis, 100%-os tiszta oxigén magas nyomással a bazális sejtsorig, vitaminok/ásványi anyagok hordozása, sejtanyagcsere és vérkeringés, hajhagymák, kollagén/pH, védekezőképesség).
+
+## CTA-hierarchia (intent szerint, mobilon is ebben a sorrendben)
+
+- **Hero:** elöl az arany „Első kezelést foglalok – 29 900 Ft” („Hajkamerás állapotfelméréssel együtt · 120 perc”), mögötte körvonalas: „Még nem vagy biztos? Hajkamerás állapotfelmérés – 4 990 Ft”.
+- **Árak:** elöl a kiemelt kártya (Első oxigénterápiás hajkezelés + állapotfelmérés, 29 900 Ft, jelvény: „Ha szeretnéd rögtön elkezdeni”), utána a halványabb „Csak hajkamerás állapotfelmérés” (4 990 Ft, „Ha még nem tudod, neked való-e”).
+- **Záró sáv:** arany „Első kezelést foglalok”, mögötte körvonalas „Csak állapotfelmérés”.
+- **Mobil sticky sáv** (`#sticky-cta`, csak ≤700 px): a hero-gombok elgörgetése után látszik, a záró sávnál eltűnik; primary: „Első kezelés · 29 900 Ft”, mellette kis link: „Csak felmérés · 4 990 Ft”.
+
+## Milyen hajhullásokra működik? + videók
+
+Új szakasz (`#hajhullas-tipusok`): autoimmun, hormonális, férfias (androgén alopécia), post-covid és intenzív hajhullás, saját megfogalmazásban az Oxygeni Hair & Skin oldala (oxygenihair.hu) alapján. Alatta 4 videó az Oxygeni Hair and Skin YouTube-csatornájáról (az oxygenihair.hu is beágyazza őket), a „Hogyan működik” blokkban 1 rövid. A videók csak kattintásra töltődnek be (`youtube-nocookie.com`, ablakban); `data-yt` = YouTube-azonosító.
 
 ## Alcímek, gombok
 
