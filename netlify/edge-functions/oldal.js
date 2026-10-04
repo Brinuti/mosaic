@@ -33,4 +33,4 @@ export default async (req, context) => {
   return new Response(valasz.body, { status: valasz.status, headers: h });
 };
 
-export const config = { path: '/*', excludedPath: ['/assets/*', '/.netlify/*', '/_a/*', '/_m/*'] };
+export const config = { path: '/*', excludedPath: ['/assets/*', '/.netlify/*', '/_a/*', '/_m/*', '/api/*'] };
