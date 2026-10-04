@@ -42,7 +42,8 @@
           'Fej-, arc-, nyak- és dekoltázsmasszázs, gőzölés',
           'A végén 30 perc profi hajszárítás'
         ],
-        video: null
+        // a tulajdonos Meta-fiókjából ("Headspa szeptember 20_ natív kezelés.mp4"): a beégetett „szeptemberi akció" sáv és a záró kártya levágva (3:4, 0:55)
+        video: { src: '/assets/video/ajandek-kezeles-egyeni.mp4', poster: '/assets/img/ajandek/kezeles-egyeni.jpg', ido: '0:55' }
       },
       // valodi MOSAIC fotok (assets/img): egy terapeuta / ket terapeuta / ket vendeg
       vizual: { src: '/assets/img/ajandek/egyeni.jpg', alt: 'Egyéni Head Spa: a vendég hajmosása az arany zuhanyív alatt a MOSAIC-ban', w: 1100, h: 1650, poz: '50% 42%' }
@@ -71,7 +72,8 @@
           'A fej- és arcbőrtípusodnak megfelelő, természetes OXYGENI pakolás, gőzölés',
           'A végén 30 perc profi hajszárítás'
         ],
-        video: null
+        // a Meta-fiók 4 kezes videóihoz nincs letölthető fájl; ez a "Hook1.MP4" (Ajándékkártya mappa) 4 kezes szakasza (11-18,8 s), feliratokkal
+        video: { src: '/assets/video/ajandek-kezeles-4kezes.mp4', poster: '/assets/img/ajandek/kezeles-4kezes.jpg', ido: '0:08' }
       },
       vizual: { src: '/assets/img/ajandek/negy-kezes.jpg', alt: '4 kezes Head Spa: két terapeuta dolgozik egyszerre egy vendégen a MOSAIC-ban', w: 1200, h: 800, poz: '50% 45%' }
     },
@@ -99,7 +101,8 @@
           'Arc-, nyak-, fej- és dekoltázsmasszázs kézzel és eszközökkel, gőzölés',
           '50 perc kezelés + 30 perc hajszárítás fejenként, egymás mellett'
         ],
-        video: null
+        // a Meta-fiókból ("Szept páros HEADSPA 20_.mp4"): a beégetett „szeptemberi akció" sáv és a záró (akciós) kártya levágva (3:4, 0:29)
+        video: { src: '/assets/video/ajandek-kezeles-paros.mp4', poster: '/assets/img/ajandek/kezeles-paros.jpg', ido: '0:29' }
       },
       // a spec szerint a GENERAL vizual ket baratno (nem romantikus par); ez a MOSAIC egyetlen valodi paros fotoja
       // (ket vendeg, ket terapeuta, egymas mellett) - ha van baratnos kep, ide kell cserelni
@@ -110,6 +113,42 @@
   // "Ilyen a Head Spa": a kezelest bemutato video = a tulajdonos "szöveg nélkül.mp4" felvetele (APPROVED_BY_METADATA; 1080x1080 forras,
   // weben 640x640, 5 MB; a "forma" a modalis lejatszo alakja). + a vendeg szempontjabol megfogalmazott elmeny-elemek (nem technikai leiras)
   var HEADSPA_VIDEO = { src: '/assets/video/ajandek-headspa.mp4', poster: '/assets/img/ajandek/headspa-poszter.jpg', ido: '0:57', forma: 'negyzet', forras: 'szöveg nélkül.mp4' };
+  // "Pontosan ezt kapja": egy MOSAIC Head Spa szeánsz elemei - az élő főoldal lapozója (klon.js VIDEOTAR; a videók és a posztereik már az oldalon vannak:
+  // /assets/video/<id>.mp4, /assets/img/<id>f002.jpg). Minden elem egy rövid, valódi felvétel.
+  var ELEMEK = [
+    ['c2eb0f_a772c9222aa949a0888a4aa2298ef0b5', 'Fejmasszázs eszközökkel', '0:37'],
+    ['c2eb0f_a12ccd3c1d8741698774232c8bee7efd', 'Kézmasszázs', '0:39'],
+    ['c2eb0f_08e23fa612e846eca8137312513c1fec', 'Arcmasszázs', '0:37'],
+    ['c2eb0f_29c8623e64464bdb96b1d61fa5ed6556', 'Mélytisztító hajmosás', '0:21'],
+    ['c2eb0f_225ee4f9b6164d3c858705c394f7d04e', 'Fejbőr masszírozó fésű', '0:34'],
+    ['c2eb0f_430fb9fbd2e744b08703615db12f4018', '20 ujjas fejmasszírozó', '0:12'],
+    ['c2eb0f_bbb818fad4674d2097775970ca10c3d0', 'Arcroller', '0:18'],
+    ['c2eb0f_4dd11049dc03482e8b6a169484d1b976', 'Hajmasszírozó körkefe', '0:13'],
+    ['c2eb0f_c02456fd01664cb59eb593266e0a8279', 'Nyakmasszázs', '0:13'],
+    ['c2eb0f_7eec543c5b944e89966b93b4649ed71a', 'Személyre kikevert hajpakolás', '0:23'],
+    ['c2eb0f_cefa94f02ca34e3388845e308afc24f7', 'Dekoltázs masszázs', '0:13'],
+    ['c2eb0f_95f0e62128e946b98eff0a6adda4c14c', 'Rózsakvarc fejbőrfésű', '0:26'],
+    ['c2eb0f_c68f720ea07c4cc6b19dd56b1ab51f35', 'Körvízsugaras vízterápia', '0:38'],
+    ['c2eb0f_85f266a4010d40aba40c28ee4af9230e', 'Rózsakvarc arcmasszírozás', '0:26'],
+    ['c2eb0f_4b543396abd34dcc92dfe594049c8a78', 'Személyre kikevert arcpakolás', '0:19']
+  ].map(function (e) { return { id: e[0], nev: e[1], ido: e[2], video: '/assets/video/' + e[0] + '.mp4', poster: '/assets/img/' + e[0] + 'f002.jpg' }; });
+  // "Miert MOSAIC?" galeria: valodi MOSAIC-fotok (a tulajdonos Drive-mappajabol es az elo oldalrol); [fajl, szelesseg, magassag, alt]
+  var GALERIA = [
+    ['galeria-01', 1100, 734, 'A MOSAIC kezelőhelyisége'],
+    ['galeria-02', 1000, 668, 'A MOSAIC váróterme, mintás tapétával'],
+    ['galeria-03', 900, 600, 'Zöld fotelek a MOSAIC váróterében'],
+    ['galeria-04', 1000, 668, 'Kezelőszoba növényekkel a MOSAIC-ban'],
+    ['galeria-05', 1000, 1000, 'Mikrokamerás fejbőrvizsgálat a MOSAIC-ban'],
+    ['galeria-06', 1200, 1042, 'A hajmosás az eredeti Head Spa zuhanyívvel'],
+    ['galeria-07', 900, 600, 'Arany lámpák és plakát a MOSAIC falán'],
+    ['galeria-08', 1000, 668, 'A MOSAIC váróterme zöld fotelekkel'],
+    ['galeria-09', 1000, 1000, 'Profi hajszárítás a MOSAIC-ban'],
+    ['galeria-10', 1000, 1334, 'Selymes, fényes haj a Head Spa után'],
+    ['galeria-11', 1000, 668, 'A MOSAIC előtere'],
+    ['galeria-12', 1000, 668, 'A MOSAIC folyosója'],
+    ['galeria-13', 1000, 668, 'A MOSAIC közös tere'],
+    ['galeria-14', 1000, 668, 'A MOSAIC bejárata a logóval']
+  ].map(function (e) { return { src: '/assets/img/ajandek/' + e[0] + '.jpg', w: e[1], h: e[2], alt: e[3] }; });
   var BENEFITOK = [
     { ikon: 'leaf', cim: 'Kikapcsolódás', szoveg: 'Nyugodt, privát környezet, nincs rohanás.' },
     { ikon: 'sparkle', cim: 'Fej-, arc- és nyakmasszázs', szoveg: 'Kézzel és eszközökkel végzett masszázs, gőzölés.' },
@@ -182,7 +221,7 @@
       // a hero videoja ("szöveg nélkül.mp4", APPROVED_BY_METADATA): a 24-36. masodperc 3:2-es kivagasa (hang nelkul, 1,1 MB); a fotó a poszter
       hero_media: { src: HERO_FOTO.src, alt: HERO_FOTO.alt, video: { src: '/assets/video/ajandek-hero-altalanos.mp4' }, forras: 'szöveg nélkül.mp4', status: 'APPROVED_BY_METADATA' },
       hero_trust: [
-        { csillag: true, szoveg: GOOGLE.pont + ' · ' + GOOGLE.darab, alszoveg: 'Google-vélemény' },
+        { csillag: true, szoveg: GOOGLE.pont + ' · ' + GOOGLE.darab, alszoveg: 'Google-vélemény', href: '#ah-google' },
         { ikon: 'calendar', szoveg: '6 hónapig', alszoveg: 'érvényes' },
         { ikon: 'monitor', szoveg: 'Online', alszoveg: 'megvásárolható' },
         { ikon: 'card', szoveg: 'Gyönyörű, személyre', alszoveg: 'szabható kártya' }
@@ -192,7 +231,8 @@
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
       first_proof_javaslat: { forras: 'Karolin.mov', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Ellenőrizni: általános pozitív Head Spa testimonial-e; ne állítsuk róla, hogy ajándékba kapta, ha nem mondja.' },
       featured_proof: 'general',
-      reassurance: '6 hónapig felhasználható · online megvásárolható · az időpontot a megajándékozott később választja ki.',
+      // a hero ikonos sora már mondja a 6 hónapot / online / kártyát: itt nincs külön (ismétlődő) megnyugtató sor
+      reassurance: null,
       objection_title: null, objection_body: null,
       relationship: null, gift_context: 'general', occasion: null
     },
@@ -279,7 +319,7 @@
       featured_proof: 'general',
       // Fontos: a kezbesitesi idore NEM teszunk allitast (se "azonnal", se "1 perc alatt", se "meg ma"), amig a teljesitesi SLA
       // nincs egyetlen hiteles forrasbol igazolva - a megjeleno szoveg ezert csak az online vasarlast mondja
-      reassurance: 'Online megvásárolható.',
+      reassurance: null,   // a hero ikonos sora már mondja: „Online megvásárolható"; kézbesítési időre nincs állítás
       sla_megjegyzes: 'Kézbesítési időre csak igazolt fulfillment SLA alapján szabad állítást tenni.',
       objection_title: null, objection_body: null,
       relationship: null, gift_context: 'last_minute', occasion: 'dynamic'
@@ -347,6 +387,8 @@
     TERMEKEK: TERMEKEK,
     FINDER: FINDER,
     HEADSPA_VIDEO: HEADSPA_VIDEO,
+    ELEMEK: ELEMEK,
+    GALERIA: GALERIA,
     BENEFITOK: BENEFITOK,
     ALKALMAK: ALKALMAK,
     ATVETELEK: ATVETELEK,

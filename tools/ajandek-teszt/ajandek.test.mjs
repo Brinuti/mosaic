@@ -121,7 +121,9 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
       const v = ADAT.VARIANTOK[k];
       assert.equal(v.variant_id, k);
       assert.equal(ADAT.variantFeloldas(k), v);
-      for (const mezo of ['hero_title', 'hero_subtitle', 'hero_cta', 'reassurance']) assert.ok(typeof v[mezo] === 'string' && v[mezo].length > 8, k + ' ' + mezo);
+      for (const mezo of ['hero_title', 'hero_subtitle', 'hero_cta']) assert.ok(typeof v[mezo] === 'string' && v[mezo].length > 8, k + ' ' + mezo);
+      // a megnyugtato sor: nincs (general / last_minute: a hero ikonos sora mar mondja), vagy rovid persona-sor; ismetlodo szoveg nincs
+      assert.ok(v.reassurance === null || (typeof v.reassurance === 'string' && v.reassurance.length > 8 && v.reassurance.length < 90), k + ' reassurance');
       assert.deepEqual([...v.product_order].sort(), termekek, k + ' termeksorrend');
       assert.ok(v.featured_proof in ADAT.PROOFOK, k + ' bizonyito');
       assert.equal(v.hero_trust.length, 4, k + ' bizalmi sor');
@@ -149,6 +151,29 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.ok(fs.existsSync(f('/assets/img/ajandek/atadas-kartya.jpg')), 'Ezt adod at neki fotoja (DSC01457)');
   });
 
+  test('a kezeles-videok (egyeni / 4 kezes / paros), a szeansz-elemek lapozoja, a galeria es a testimonial-videok leteznek es konnyuek', () => {
+    const f = (u) => new URL('../../' + u.replace(/^\//, ''), import.meta.url);
+    for (const [id, t] of Object.entries(ADAT.TERMEKEK)) {
+      const v = t.kezeles.video;
+      assert.ok(v && v.src && v.poster, id + ' kezeles-video');
+      assert.ok(fs.existsSync(f(v.src)) && fs.statSync(f(v.src)).size < 4e6, id + ' video letezik, < 4 MB');
+      assert.ok(fs.existsSync(f(v.poster)), id + ' poszter');
+    }
+    assert.equal(ADAT.ELEMEK.length, 15);
+    for (const e of ADAT.ELEMEK) {
+      assert.ok(fs.existsSync(f(e.video)) && fs.existsSync(f(e.poster)), e.nev);
+      assert.match(e.ido, /^\d:\d\d$/);
+    }
+    assert.ok(ADAT.GALERIA.length >= 12);
+    for (const g of ADAT.GALERIA) { assert.ok(fs.existsSync(f(g.src)) && g.alt.length > 5, g.src); assert.ok(fs.statSync(f(g.src)).size < 400e3, g.src + ' < 400 KB'); }
+    // a HTML-ben megadott vendeg-videok (8) mind leteznek, es a lapon nincs a szeptemberi akcio / regi ertekeles szoveg
+    const html = fs.readFileSync(f('foglalas/ajandek.html'), 'utf8');
+    const vendegek = [...html.matchAll(/data-vendeg="(\/assets\/video\/ajandek-vendeg-[a-z]+\.mp4)"/g)].map((m) => m[1]);
+    assert.equal(vendegek.length, 8);
+    for (const v of vendegek) assert.ok(fs.existsSync(f(v)) && fs.statSync(f(v)).size < 12e6, v);
+    assert.doesNotMatch(html, /id="ah-finder-racs"|ah-kezeles-ablak|ah-panel-mellek/, 'a Gift Finder gombjai, a felugro kezeles-ablak es a "Valasztott ajandek" osszegzo kikerult');
+  });
+
   test('a dokumentum szerinti terméksorrend, Gift Finder elovalasztas, szovegek es analitikai mezok', () => {
     const V = ADAT.VARIANTOK;
     for (const k of ['general', 'for_her', 'last_minute']) assert.deepEqual(V[k].product_order, ['egyeni', '4kezes', 'paros'], k);
@@ -169,8 +194,11 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
       general: ['general', null, null], friend: ['together', 'friend', null], mother: ['together', 'mother', null],
       for_her: ['for_her', 'recipient_female', null], partner: ['together', 'partner', null], last_minute: ['last_minute', null, 'dynamic'],
     });
-    // a last_minute kijelzett szovege csak az online vasarlast mondja (a kezbesitesi idore nincs allitas)
-    assert.equal(V.last_minute.reassurance, 'Online megvásárolható.');
+    // a last_minute-ban nincs kulon megnyugtato sor (az ikonos sor mondja: "Online megvasarolhato"); a kezbesitesi idore nincs allitas
+    assert.equal(V.last_minute.reassurance, null);
+    assert.equal(V.general.reassurance, null, 'a general-ban nincs ismetlodo "6 honapig..." sor');
+    // a hero Google-sora link a Google-velemenyek szekciojara
+    assert.equal(V.general.hero_trust[0].href, '#ah-google');
   });
 
   test('asset-validalas: a NEEDS_MANUAL_VALIDATION asset nem jelenik meg - a variant a GENERAL assetet kapja, az eredeti javaslat megmarad; a jovahagyott asset marad', () => {

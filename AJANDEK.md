@@ -13,7 +13,7 @@ beérkezése), nem a CTA-kattintás, nem a Stripe-kattintás, nem az űrlap-bek�
 
 | P0 (kész) | P1 (később, ugyanebbe a motorba) |
 |---|---|
-| GENERAL hero, Gift Finder (1 kattintás, nincs reload), 3 termék, kiválasztott-állapot panel; a 6 variant (`general`, `friend`, `mother`, `for_her`, `partner`, `last_minute`) | a `NEEDS_MANUAL_VALIDATION` assetek (barátnős / páros / férfi-hook videók, TikTok-proofok) tulajdonosi validálása; a `last_minute` kézbesítési-idő állítása csak valódi SLA mellett |
+| GENERAL hero, 3 termék (a doboz egésze kattintható), a kiválasztott termék beágyazott kezelés-bemutatója; a 6 variant (`general`, `friend`, `mother`, `for_her`, `partner`, `last_minute`) | a `NEEDS_MANUAL_VALIDATION` assetek (barátnős / páros / férfi-hook videók, TikTok-proofok) tulajdonosi validálása; a `last_minute` kézbesítési-idő állítása csak valódi SLA mellett |
 | beágyazott Stripe checkout (Payment Element), siker/hiba állapot, feldolgozás | |
 | vásárlás utáni személyre szabás, végleges order hub | |
 | purchase analytics, perzisztencia, variant-routing (ismeretlen → GENERAL) | |
@@ -48,12 +48,12 @@ hajjal távozik). A fejléc és a lábléc **az éles oldalé**: a `foglalas/aja
 (mint a sminktetoválás-landingen), a menüt az `assets/js/klon.js` működteti; az „Ajándékkártya”
 menüpontot a `menuAktiv()` jelöli aktívnak. A helyi kiszolgáló ugyanezt a beillesztést végzi.
 Elrendezés (a harmadik, véglegesnek szánt mockup szerint, 2026-10-03): teljes szélességű, meleg hero-fotó (arany zuhanyív) a bal
-oldalon krémszínű átmenet alatt futó szöveggel; egy rácsban a ikonos Gift Finder, a három képes termékkártya (Egyéni, Páros,
-4 kezes: a Finder sorrendjével egyezően; kép + jelvény, cím, „50 perc kezelés + 30 perc szárítás”, rövid leírás, ár +
-„Ajándékozom” gomb) és a jobb oldali „Így néz ki az ajándékkártya” előnézet (a **valódi Canva-kártya** felső, fejjel lefelé nyomtatott
-fele 180°-kal elforgatva, `assets/img/ajandek/kartya-hatter.jpg`); „A vásárlás menete”; „Mit mondanak a vendégeink?” (**négy valódi
-vendég-videó** modális lejátszóval + a valódi Google-vélemény és 4,9 / 1.259); „Ezt adod át neki” (fotó + a valódi kártya);
-„Miért MOSAIC?” (három valódi szalonfotó + cím és elérhetőség); „Hogyan működik az ajándékozás?” + gyakori kérdések; a fizetési nézet
+oldalon krémszínű átmenet alatt futó szöveggel (2026-10-04-től a hero média a jobb félen áll); egy rácsban a három képes termékkártya
+(Egyéni, 4 kezes, Páros a variant sorrendjében; kép + jelvény, cím, „50 perc kezelés + 30 perc szárítás”, rövid leírás, ár + „Ajándékozom”
+gomb) és mellettük, azonos magasságban a jobb oszlop: „Így néz ki az ajándékkártya” (a **valódi Canva-kártya** előlapja, fekvő 21 x 10 cm,
+`assets/img/ajandek/kartya-elolap.jpg`) és alatta a tömör átvétel-választó; „Mit mondanak a vendégeink?” (**nyolc valódi vendég-videó**
+lapozható sorban); külön „Valódi Google-vélemények” szekció (Trustindex); „Pontosan ezt kapja” (a szeánsz 15 elemének lapozója);
+„Ezt adod át neki” (fotó + a valódi kártya); „Miért MOSAIC?” (cím, elérhetőség + 14 képes, lapozható, nagyítható galéria); „Hogyan működik az ajándékozás?” + gyakori kérdések; a fizetési nézet
 három oszlopban (1 Termék | 2 Adatok | 3 Fizetés). A mockup kitalált elemei NEM kerültek át: „azonnali kézbesítés”, a mockup
 idézetei és vendégfeliratai (a videók alatt csak a vendég keresztneve és a videó hossza áll), a születésnapos mintaüzenet,
 generált belső terek és térkép, „Kolosy tér” (a cím: 1023 Budapest, Bécsi út 2.), „láthatóan szebb haj”.
@@ -76,8 +76,8 @@ A hero- és Head Spa-videók a tulajdonos 2026-10-03-án jóváhagyott letölté
 ### Oldal-felépítés és ellenőrzőlista (2026-10-03, a design-felülvizsgálat)
 
 Elv: az oldal ne csak egy szép ajándékkártya-checkout legyen. **Előbb tegye kívánatossá a Head Spa élményt, bizonyítsa, hogy jó ajándék,
-utána tegye nagyon egyszerűvé a megvásárlását.** A landing sorrendje: *hero (ár a CTA mellett, bizalmi sor)* → *Gift Finder + 3 termék + a
-kártya előnézete* → *Ilyen a Head Spa (videó + élmény-elemek)* → *vendég-videók + a valódi Google-vélemény* → *Pontosan ezt kapja* → *Ezt
+utána tegye nagyon egyszerűvé a megvásárlását.** A landing sorrendje: *hero (ár a CTA mellett, bizalmi sor)* → *3 termék + a
+kártya előnézete + az átvétel-választó* → *Ilyen a Head Spa (videó + élmény-elemek)* → *vendég-videók* → *Google-vélemények* → *Pontosan ezt kapja* → *Ezt
 adod át neki* → *Miért MOSAIC? + helyszín* → *Hogyan működik? (5 lépés)* → *GYIK*; a checkout, a személyre szabó és a végső összegző ugyanazon az
 oldalon, külön nézetben.
 
@@ -88,14 +88,14 @@ oldalon, külön nézetben.
 | 3 | Hero eladja az ajándékot és a Head Spa-t | ✓ |
 | 4 | Valódi MOSAIC fotó/videó a hero-ban | ✓ valódi fotó + csendes hero-videó (`general`: „szöveg nélkül.mp4”, `mother`: „Anya-lánya.MP4”, `last_minute`: „Hook1.MP4” kivágás); a nem validált variantok a `general` médiát kapják |
 | 5 | Erős trust sor | ✓ 4,9 · 1.259, 6 hónap, online, személyre szabható kártya |
-| 6 | Gift Finder | ✓ |
+| 6 | Gift Finder | **megszűnt** (2026-10-04, a tulajdonos kérésére: ugyanazt mondta, mint a három termék-doboz). A variant „előválasztása” a megfelelő termékkártya „ajánlott” (arany keretes) jelölése; a `gift_finder_select` esemény már nem megy ki |
 | 7 | 3 termék elkülönítve (ár + lényeg + CTA) | ✓ |
 | 8 | Persona szerinti terméksorrend | ✓ barátnő/anya/pár: Páros elöl; általános és „neki”: Egyéni |
 | 9 | „Ilyen a Head Spa” videós blokk | ✓ a tulajdonos „szöveg nélkül.mp4” felvétele (57 s, 640x640, hanggal; `HEADSPA_VIDEO`, négyzet alakú lejátszó) |
 | 10 | Benefit, nem technikai leírás | ✓ új (`BENEFITOK`: kikapcsolódás, masszázs, vízélmény, teljes figyelem, rendezett haj) |
-| 11 | Valódi videótestimonialok | ✓ 4 vendég |
+| 11 | Valódi videótestimonialok | ✓ 8 vendég (Zsóka, Zita, Kinga, Dóri, Hédi, Koletta, Viki, Szandi), lapozható sorban |
 | 12 | Férfi intentnél női reakciók | ✓ mind a négy vendég nő; a `for_her` variant ezt a sorrendet adja |
-| 13 | „Pontosan ezt kapja” | ✓ új: időtartam, hány főre szól, ki végzi, fő elemek, helyszín, érvényesség, ár + gomb, termékenként |
+| 13 | „Pontosan ezt kapja” | ✓ a táblázat helyett az élő főoldal „Egy MOSAIC Headspa szeánsz elemei” lapozója (15 elem, rövid valódi videók) + 4 tudnivaló és egy „Kiválasztom az ajándékot” gomb |
 | 14 | „Ezt adod át neki” | ✓ a valódi kártya + a DSC01457 fotó (Ajándékkártya / Képek; a variant-dokumentum szerint ennek a blokknak a közös fotója) |
 | 15 | MOSAIC / helyszín proof | ✓ szalonfotók, cím, nyitvatartás, térkép-link |
 | 16 | „Hogyan működik?” | ✓ 5 lépés: kiválasztás → személyre szabás → fizetés → átadás → beváltás |
@@ -127,8 +127,8 @@ bongeszes → kivalasztva → [tervezo] → fizetes → feldolgozas → siker �
                  └───────────┴──────────┴── hiba ←───┘   (hiba → fizetes: az inputok megmaradnak)
 ```
 
-A termék „Ajándékozom” gombja előbb a **kezelés-bemutató ablakot** nyitja (leírás + videó; „Ezt ajándékozom” viszi
-tovább a `kivalasztva` állapotba). A `tervezo` (mini személyre szabó) csak **otthon kinyomtatott** kártyánál van, és a
+A termék-doboz (vagy az „Ajándékozom” gomb) kiválasztja a terméket, és alatta **beágyazva** nyílik a kezelés-bemutató (videó + leírás +
+ár + „Tovább”); nincs felugró ablak. A `tervezo` (mini személyre szabó) csak **otthon kinyomtatott** kártyánál van, és a
 `szemelyre` (fizetés utáni név/üzenet) csak **személyes átvételnél**. Lásd lent: „Átvétel és személyre szabás”.
 
 Asztali és mobil **ugyanazt** az állapotgépet és ugyanazt a komponensfát használja (csak a CSS
@@ -184,7 +184,7 @@ szöveg mellett (kivágás és közel-arany nélkül), mobilon felül.
 
 ## Mérés (dataLayer, GA4 ecommerce séma)
 
-Eseménysorrend: `view_item` → `gift_finder_select` → `select_item` → `begin_checkout` →
+Eseménysorrend: `view_item` → `select_item` → `begin_checkout` →
 `add_payment_info` → `purchase`. Közös paraméterek: `variant_id, gift_context, relationship,
 occasion, utm_source/medium/campaign/content/term, gclid, fbclid, ttclid`; termék-eseményeknél
 `product_type`; `add_payment_info`/`purchase`: `payment_method`.
@@ -293,11 +293,15 @@ A háttér frissítése: Canva-tervmásolat („MOSAIC ajándékkártya háttér
 
 ### Átvétel és személyre szabás (2026-10-03)
 
-**Kezelés-bemutató ablak.** A termékkártya „Ajándékozom” gombja `<dialog id="ah-kezeles-ablak">`-t nyit: fotó/videó, rövid leírás,
-„Mi történik a kezelésen?” lista, ár, „Ezt ajándékozom” / „Másikat nézek”. A tartalom a `TERMEKEK.*.kezeles` mezőben van
-(`leiras`, `lepesek`, `video`); a szövegek a MOSAIC élő oldalairól valók. **A videó helye üres**: `kezeles.video = { src, poster }`
-(mp4; a Cloudflare Pages 25 MiB/fájl korlátja miatt tömörítve) – amíg nincs, az ablak a termék fotóját és „A kezelés videója
-hamarosan itt lesz.” feliratot mutat. **Élesítés előtt mindhárom videót fel kell tölteni.**
+**Kezelés-bemutató (beágyazva, 2026-10-04-től nem felugró).** A kiválasztott termék alatt nyitva a „Választott ajándék” doboz: bal oldalt a
+kezelés videója (`<video controls>`), mellette cím, leírás, „Mi történik a kezelésen?” lista; alul az ár és a „Tovább” gomb. A tartalom a
+`TERMEKEK.*.kezeles` mezőben van (`leiras`, `lepesek`, `video`). A videók: *egyéni* = a Meta-fiók „Headspa szeptember 20_ natív kezelés.mp4”
+(a beégetett „SZEPTEMBERI AKCIÓ −20%” sáv és a régi értékelést mutató záró kártya levágva, 3:4, 0:55), *páros* = „Szept páros HEADSPA 20_.mp4”
+(ugyanígy levágva, 0:29), *4 kezes* = a „Hook1.MP4” 4 kezes szakasza (0:08; a Meta 4 kezes videóihoz nincs letölthető fájl). **Ha saját,
+végleges kezelés-videó készül, a `kezeles.video = { src, poster }` mezőt kell cserélni.**
+
+**Átvétel-választó.** A termék-sor jobb oldalán, az ajándékkártya előnézete alatt áll (mindig látható), csak a „Hogyan veszed át?” kérdés és
+a két opció, egy rövid magyarázó sorral.
 
 **Átvétel.** A kiválasztott termék panelén a vevő a fizetés előtt választ: *E-mailben, otthon kinyomtatom* (alap; személyre szabható)
 vagy *Személyesen, a szalonban* (papír, díszborítékban). A választás a PI `metadata.atvetel` mezőjébe kerül (`otthon` / `szemelyesen`),
@@ -408,3 +412,16 @@ elfogott levelek: `/__teszt/levelek`. Éles kiszolgálón ezek a fájlok nincsen
 `fields.billingDetails: 'never'` mezőit – a címnél `line2` és `state` is – át kell adni a
 `confirmPayment`-nek, üres szöveg elég): ezt a hibát a Cloudflare-előnézeten a valódi Stripe-pal
 találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
+
+## Oldal-átrendezés (2026-10-04, a tulajdonos kérései)
+
+- **Hero:** az ismétlődő „6 hónapig felhasználható · online …” sor lekerült (az ikonos sor már mondja); a „4,9 · 1.259 Google-vélemény” sor kattintható, a Google-szekcióra görget.
+- **Google-vélemények:** külön szekció; a **Trustindex** inline widgetje (az élő főoldal beágyazása: `assets/embed/c2eb0f_95e68e62….html`, iframe) a suti-hozzájárulás
+  „funkcionális” kategóriája után tölt be (`mhSuti.engedely('fun')`), addig a tulajdonos által megadott valódi vélemény és egy „Vendégértékelések megjelenítése”
+  gomb áll a helyén (ugyanúgy, mint az élő oldalon). A widget a saját élő számát mutatja (pl. 1255), a hero a tulajdonos számát (1.259): a kettő eltérhet.
+- **Termékek:** a doboz egésze kattintható (nem csak a gomb); a Gift Finder gombsor és a „Választott ajándék” összegző doboz megszűnt (ugyanazt mondta).
+- **Testimonialok:** +4 valódi vendég-videó (Hédi, Koletta, Viki, Szandi; a Drive „720P_Mosaic Testimonial” mappából, 540x960-ra tömörítve, 6–9 MB). A „Karolin.mov” és a „Vali Úr.mov”
+  nincs közöttük (az előbbi a variant-doksi szerint validálandó).
+- **Pontosan ezt kapja / Miért MOSAIC:** lapozó (15 elem) ill. 14 képes galéria nagyítóval (nyilak, billentyűk, húzás).
+- **Kártya-előnézet:** a valódi Canva-kártya (`DAG_yBRXLo0`, „Ajándékkártya A4 két oldalas (21 x 10 cm) másolata”, 4. oldal) előlapja, fekvő.
+- **Következő lépés (a tulajdonos kérése):** a nyomtatott/személyre szabott kártya formátuma álló A4 helyett **fekvő** lesz, a Canva-terv (21 x 10 cm) méretarányában.
