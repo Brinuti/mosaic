@@ -6,14 +6,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  EXIT_GIFTCARD, ROUTES, withAttribution, availableDays, cardsFor, classifyRedirect, dayKey, dayLabel, daypartOf, displayName, durationLabel, entryState,
-  filterSlots, findByKey, formatPrice, groupFacts, groupServices, icsFor, intentCandidates, intentServices, longDate, next, parseContext, parseLength,
-  priceFor, priceLabel, quickSlots, shouldHandoff, staffDiscountPercent, stripLabel, timeLabel, uniqueTimes,
+  ROUTES, withAttribution, cardsFor, classifyRedirect, dayKey, dayLabel, displayName, durationLabel, entryState,
+  filterSlots, findByKey, formatPrice, groupFacts, groupServices, icsFor, intentCandidates, intentServices, longDate, mergeVariantSlots, monthGrid, monthList, dayTimes, next, parseContext, parseLength,
+  priceFor, priceLabel, shouldHandoff, staffDiscountPercent, timeLabel, uniqueTimes,
 } from '../assets/js/booking-engine/flow.js';
+import { CHOOSER } from '../assets/js/booking-engine/families.js';
 import { HEADSPA } from '../assets/js/booking-engine/flows/headspa.js';
 import { OXYGEN } from '../assets/js/booking-engine/flows/oxygen.js';
-import { HAIR } from '../assets/js/booking-engine/flows/hair.js';
-import { LASER, AREAS, areaOf, labelOf } from '../assets/js/booking-engine/flows/laser.js';
+import { HAIR, kezelesKep, hajhosszKep } from '../assets/js/booking-engine/flows/hair.js';
+import { LASER, AREAS, areaOf, labelOf, packageOf, areaIkon } from '../assets/js/booking-engine/flows/laser.js';
+import { IKONOK, hajhosszIkon, kezelesIkon } from '../assets/js/booking-engine/ikonok.js';
 import { classifyService } from '../assets/js/booking-engine/business-config.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -29,31 +31,37 @@ const slot = (unix, staff = '1') => ({ start_unix: unix, staff_id: staff, staff_
 
 test('a wireframe routing tablaja (HeadSpa) pontosan egyezik az utvonalakkal', () => {
   const rows = [
-    ['HS1', 'book', 'HS2'], ['HS1', 'voucher', 'HS3'], ['HS1', 'giftcard', EXIT_GIFTCARD],
-    ['HS2', 'service', 'C1'], ['HS3', 'service', 'C1'],
-    ['C1', 'slot', 'C3'], ['C1', 'more', 'C2'], ['C1', 'none', 'A1'], ['C2', 'slot', 'C3'], ['C2', 'none', 'A1'],
-    ['C3', 'next', 'C4'], ['C4', 'submit', 'C5'], ['C5', 'success', 'C6'], ['C5', 'slot_lost', 'A2'], ['C5', 'error', 'A3'],
+    // HeadSpa: az elso kerdes az ajandekkartya (HS1: kuponkoddal -> HS3, anelkul -> HS2), utana az elmeny-valasztas
+    ['HS1', 'voucher', 'HS3'], ['HS1', 'normal', 'HS2'], ['HS2', 'service', 'C1'], ['HS3', 'service', 'C1'],
+    // nincs osszegzo kepernyo: az idopont (C1, a PMU-foglalo havi naptara) utan rogton az adatlap (C4)
+    ['C1', 'slot', 'C4'], ['C1', 'none', 'A1'],
+    ['C4', 'submit', 'C5'], ['C5', 'success', 'C6'], ['C5', 'slot_lost', 'A2'], ['C5', 'error', 'A3'],
   ];
   for (const [from, ev, to] of rows) assert.equal(next(from, ev), to, `${from} --${ev}--> ${to}`);
-  assert.throws(() => next('C3', 'slot'), /Ervenytelen/);
+  assert.throws(() => next('C3', 'next'), /Ervenytelen/, 'az osszegzo kepernyo (C3) megszunt');
+  assert.throws(() => next('C1', 'more'), /Ervenytelen/, 'a gyors idopontok / naptar-sav (C2) megszunt: minden uzletagnal a havi naptar az idopont-valaszto');
+  assert.throws(() => next('HS2', 'giftcard'), /Ervenytelen/, 'az ajandekkartya-vasarlas nem a foglalo resze (kulon oldal)');
   assert.throws(() => next('NINCS', 'x'));
   assert.ok(Object.isFrozen(ROUTES));
 });
 
-test('belepesi pont: generic = HS1, konkret szolgaltatas = C1, ajandekkartya-szandek = HS3', () => {
+test('belepesi pont: generic = HS1 (HeadSpa: ajandekkartya-e), konkret szolgaltatas = C1, ajandekkartya-szandek = HS3', () => {
   assert.equal(entryState({ hasService: false, voucher: false }), 'HS1');
+  assert.equal(entryState({ hasService: false, voucher: false, first: HEADSPA.firstState }), 'HS1');
   assert.equal(entryState({ hasService: true, voucher: false }), 'C1');
   assert.equal(entryState({ hasService: true, voucher: true }), 'C1');
   assert.equal(entryState({ hasService: false, voucher: true }), 'HS3');
 });
 
-test('Oxigen: a wireframe routing tablaja (OX1 -> C1; tobb valtozatnal OX2 -> C1), belepes OX1; nincs ajandekkartya-ag', () => {
-  assert.equal(next('OX1', 'service'), 'C1');
+test('Oxigen: OX1 -> OXS (szakember, kepes kartyak) -> C1; tobb valtozatnal OX1 -> OX2 -> OXS; belepes OX1; nincs ajandekkartya-ag', () => {
+  assert.equal(next('OX1', 'service'), 'OXS');
   assert.equal(next('OX1', 'variant'), 'OX2');
-  assert.equal(next('OX2', 'service'), 'C1');
+  assert.equal(next('OX2', 'service'), 'OXS');
+  assert.equal(next('OXS', 'next'), 'C1');
   assert.equal(entryState({ hasService: false, voucher: false, first: OXYGEN.firstState, voucherState: OXYGEN.voucherState }), 'OX1');
   assert.equal(entryState({ hasService: false, voucher: true, first: OXYGEN.firstState, voucherState: OXYGEN.voucherState }), 'OX1', 'az Oxigennek nincs ajandekkartya-ag');
-  assert.equal(entryState({ hasService: true, voucher: false, first: OXYGEN.firstState, voucherState: OXYGEN.voucherState }), 'C1');
+  assert.equal(entryState({ hasService: true, voucher: false, first: OXYGEN.firstState, voucherState: OXYGEN.voucherState, exact: OXYGEN.exactState }), 'OXS', 'a konkret szolgaltatas landing a szakember-valasztora erkezik');
+  assert.equal(OXYGEN.afterService, 'OXS');
 });
 
 // --- Fodraszat ------------------------------------------------------------------------------------------------------------------
@@ -62,24 +70,26 @@ const hairServices = mapping.services.filter((s) => s.business === 'hair').map((
   return { ...svc, bookingType: classifyService('hair', svc).bookingType };
 });
 
-test('Fodraszat: a wireframe routing tablaja (HA1-HA3), belepes HA1; konkret szolgaltatas a HA3-ra', () => {
+test('Fodraszat: a belepo a fodrasz-valaszto (HA0), utana HA1 -> HA2 -> HA2B -> C1; landingek is a HA0-val kezdodnek', () => {
+  assert.equal(next('HA0', 'all'), 'HA1');
+  assert.equal(next('HA0', 'intent'), 'HA2', 'kategoria-landing: fodrasz, aztan a kezeles-pontositas');
+  assert.equal(next('HA0', 'service'), 'C1', 'konkret szolgaltatas landing: fodrasz, aztan az idopontok');
   assert.equal(next('HA1', 'intent'), 'HA2');
   assert.equal(next('HA1', 'consult'), 'C1', 'az ingyenes konzultacio egyenesen C1-re megy');
   assert.equal(next('HA2', 'group'), 'HA2B');
-  assert.equal(next('HA2', 'service'), 'HA3');
-  assert.equal(next('HA2B', 'service'), 'HA3');
-  assert.equal(next('HA3', 'any'), 'C1');
-  assert.equal(next('HA3', 'choose'), 'HA3B');
-  assert.equal(next('HA3B', 'staff'), 'C1');
+  assert.equal(next('HA2', 'service'), 'C1');
+  assert.equal(next('HA2B', 'service'), 'C1');
+  assert.throws(() => next('HA3', 'any'), /Ervenytelen/, 'a HA3 / HA3B megszunt: a fodrasz-valasztas a legelejen van');
   const e = { first: HAIR.firstState, voucherState: HAIR.voucherState, exact: HAIR.exactState };
-  assert.equal(entryState({ hasService: false, voucher: false, ...e }), 'HA1');
-  assert.equal(entryState({ hasService: true, voucher: false, ...e }), 'HA3', 'a konkret szolgaltatas landing a szakember-kerdesre erkezik');
+  assert.equal(entryState({ hasService: false, voucher: false, ...e }), 'HA0');
+  assert.equal(entryState({ hasService: true, voucher: false, ...e }), 'HA0', 'a konkret szolgaltatas landing a fodrasz-valasztora erkezik');
+  assert.equal(HAIR.staffFirst, true);
 });
 
 test('Fodraszat: a 41 szolgaltatas mind besorolodik a jovahagyott szandekekbe, egy sem vész el', () => {
   assert.equal(hairServices.length, 41);
   const perIntent = Object.fromEntries(HAIR.intents.filter((i) => !i.consult).map((i) => [i.key, intentServices(hairServices, HAIR.intents, i)]));
-  assert.deepEqual(Object.fromEntries(Object.entries(perIntent).map(([k, v]) => [k, v.length])), { balayage: 14, color: 12, cut: 5, other: 9 });
+  assert.deepEqual(Object.fromEntries(Object.entries(perIntent).map(([k, v]) => [k, v.length])), { balayage: 14, color: 12, cut: 5, szaritas: 4, ujraepites: 3, pothaj: 2, other: 0 }, 'az "Egyeb" elemei kulon szandekok: Noi szaritas 4, Hajszerkezet ujraepites 3, Pothaj 2; az egyeb ures (ismeretlen kategoriara var)');
   const all = Object.values(perIntent).flat().map((s) => s.serviceId);
   assert.equal(new Set(all).size, 40, 'egy szolgaltatas csak egy szandekben');
   const consult = hairServices.filter((s) => s.bookingType === 'consultation');
@@ -87,7 +97,7 @@ test('Fodraszat: a 41 szolgaltatas mind besorolodik a jovahagyott szandekekbe, e
   assert.equal(all.length + consult.length, 41);
 });
 
-test('Fodraszat: uj, ismeretlen Salonic-kategoria az "Egyeb"-be kerul (nem vesz el)', () => {
+test('Fodraszat: uj, ismeretlen Salonic-kategoria az (alapbol rejtett) "Egyeb"-be kerul (nem vesz el)', () => {
   const novel = { serviceId: '777', name: 'Uj kezeles', category: 'Valami teljesen uj', bookingType: 'first_treatment', activePrice: 1000, durationMin: 30, staffIds: ['1'] };
   const other = HAIR.intents.find((i) => i.key === 'other');
   assert.ok(intentServices([...hairServices, novel], HAIR.intents, other).some((s) => s.serviceId === '777'));
@@ -114,8 +124,9 @@ test('groupServices: a hajhossz-valtozatok egy kezelesben; a szokimeres 4 eltero
   assert.equal(byIntent('color').length, 3);
   assert.equal(byIntent('cut').length, 2);
   assert.deepEqual(byIntent('cut').map((g) => g.items.length).sort(), [1, 4]);
-  const other = byIntent('other');
+  const other = [...byIntent('szaritas'), ...byIntent('ujraepites'), ...byIntent('pothaj')];
   assert.equal(other.length, 4, 'Noi szaritas, JOICO, Pothaj leszedes, Pothaj felrakas');
+  assert.equal(byIntent('other').length, 0, 'az Egyeb ures, amig nincs ismeretlen kategoria');
   for (const g of [...balayage, ...other]) for (let i = 1; i < g.items.length; i++) assert.ok(g.items[i - 1].service.durationMin <= g.items[i].service.durationMin);
 });
 
@@ -220,20 +231,15 @@ test('Oxigen szandekek a Salonic aktualis szolgaltatasaibol: hajkamera, elso (ke
   assert.ok(OXYGEN.showStaffFilter, 'az Oxigennel a szakember valaszthato');
 });
 
-test('ido: budapesti cimkek, napszakok es napnevek', () => {
+test('ido: budapesti cimkek es napnevek', () => {
   assert.equal(timeLabel(T(3, 10)), '10:00');
   assert.equal(timeLabel(T(3, 13, 30)), '13:30');
   assert.equal(dayKey(T(3, 23, 30)), '2026-10-03');
   assert.equal(dayKey(T(4, 0, 30)), '2026-10-04');
-  assert.equal(daypartOf(T(3, 11, 59)), 'morning');
-  assert.equal(daypartOf(T(3, 12)), 'afternoon');
-  assert.equal(daypartOf(T(3, 17, 59)), 'afternoon');
-  assert.equal(daypartOf(T(3, 18)), 'evening');
   assert.equal(dayLabel(T(3, 15), T(3, 9)), 'Ma');
   assert.equal(dayLabel(T(4, 15), T(3, 9)), 'Holnap');
   assert.equal(dayLabel(T(5, 15), T(3, 9)), 'Hétfő');
   assert.equal(longDate(T(3, 10)), 'Szombat, okt. 3.');
-  assert.equal(stripLabel(T(3, 10)), 'Szo 3.');
 });
 
 test('uniqueTimes: ugyanarra az idopontra egy bejegyzes, rendezve', () => {
@@ -242,26 +248,12 @@ test('uniqueTimes: ugyanarra az idopontra egy bejegyzes, rendezve', () => {
   assert.equal(u[0].staff_id, 'a');
 });
 
-test('quickSlots: legfeljebb 5 legkozelebbi idopont, napok szerint csoportositva', () => {
-  const slots = [T(3, 10), T(3, 11, 30), T(4, 14, 30), T(4, 16, 30), T(5, 9, 30), T(6, 9), T(7, 9)].map((t) => slot(t));
-  const g = quickSlots(slots, { max: 5, nowUnix: T(3, 9) });
-  assert.deepEqual(g.map((x) => [x.label, x.items.map((i) => i.time)]), [['Ma', ['10:00', '11:30']], ['Holnap', ['14:30', '16:30']], ['Hétfő', ['09:30']]]);
-  assert.equal(g.reduce((n, x) => n + x.items.length, 0), 5);
-  assert.deepEqual(quickSlots([], { nowUnix: T(3, 9) }), []);
-});
-
-test('filterSlots: napszak, munkatars, nap', () => {
+test('filterSlots: munkatars, nap', () => {
   const s = [slot(T(3, 10), 'a'), slot(T(3, 14), 'b'), slot(T(3, 19), 'a'), slot(T(4, 10), 'a')];
-  assert.equal(filterSlots(s, { daypart: 'morning' }).length, 2);
-  assert.equal(filterSlots(s, { daypart: 'evening' }).length, 1);
   assert.equal(filterSlots(s, { staffId: 'a' }).length, 3);
-  assert.equal(filterSlots(s, { day: '2026-10-03', daypart: 'afternoon' }).length, 1);
+  assert.equal(filterSlots(s, { day: '2026-10-03' }).length, 3);
+  assert.equal(filterSlots(s, { day: '2026-10-03', staffId: 'b' }).length, 1);
   assert.equal(filterSlots(s).length, 4);
-});
-
-test('availableDays: a napok, amelyekre van szabad idopont', () => {
-  const d = availableDays([slot(T(3, 10)), slot(T(3, 14)), slot(T(5, 9))]);
-  assert.deepEqual(d.map((x) => [x.key, x.label]), [['2026-10-03', 'Szo 3.'], ['2026-10-05', 'H 5.']]);
 });
 
 test('megjelenites: nev, ar, idotartam', () => {
@@ -281,17 +273,35 @@ test('megjelenites: nev, ar, idotartam', () => {
   assert.equal(durationLabel(30), '30 perc');
 });
 
-test('HeadSpa kartyak a Salonic aktualis szolgaltatasaibol: 3 kartya, Egyeni = csak Relax, ajandekkartyahoz is', () => {
+test('HeadSpa kartyak a Salonic aktualis szolgaltatasaibol: 3 kartya, az Egyeni Relax + Hair egy kartyan, ajandekkartyahoz is', () => {
   const normal = cardsFor(headspaServices, HEADSPA.cards, { voucher: false });
   assert.deepEqual(normal.map((c) => c.card.key), ['egyeni', 'paros', 'negykezes']);
-  assert.match(normal[0].service.name, /Relax/);
-  assert.ok(!normal.some((c) => /"Hair"/.test(c.service.name)), 'a Hair valtozat nem kerul be');
-  assert.ok(normal.every((c) => c.service.bookingType !== 'voucher_redemption'));
+  assert.match(normal[0].service.name, /Relax/, 'az elsodleges valtozat a Relax');
+  assert.equal(normal[0].services.length, 2, 'az Egyeni kartyahoz a Relax es a Hair valtozat is tartozik (ugyanaz a szolgaltatas)');
+  assert.ok(normal[0].services.some((s) => /"Hair"/.test(s.name)) && normal[0].services.every((s) => /EGYÉNI/.test(s.name) && !/NÉGYKEZES/.test(s.name)));
+  assert.deepEqual(normal.slice(1).map((c) => c.services.length), [1, 1], 'a Paros es a Negykezes egy-egy szolgaltatas');
+  assert.ok(normal.every((c) => c.services.every((s) => s.bookingType !== 'voucher_redemption')));
   const voucher = cardsFor(headspaServices, HEADSPA.cards, { voucher: true });
   assert.deepEqual(voucher.map((c) => c.card.key), ['egyeni', 'paros', 'negykezes']);
-  assert.ok(voucher.every((c) => c.service.bookingType === 'voucher_redemption'));
+  assert.equal(voucher[0].services.length, 2, 'a kuponos Egyeni Relax + Hair is egy kartya');
+  assert.ok(voucher.every((c) => c.services.every((s) => s.bookingType === 'voucher_redemption')));
+  // a valtozat-jeloles nelkuli, egyseges nev (nem latszik, melyik valtozatra megy a foglalas)
+  const nevek = normal[0].services.map((s) => HEADSPA.egyesit(displayName(s.name)));
+  assert.equal(nevek[0], nevek[1]);
+  assert.ok(!/Relax|Hair/i.test(nevek[0]) && /EGYÉNI 50 perces MOSAIC Head Spa/.test(nevek[0]), nevek[0]);
+  assert.equal(HEADSPA.egyesit(displayName(normal[1].service.name)), displayName(normal[1].service.name), 'a Paros neve valtozatlan');
   assert.deepEqual(cardsFor([], HEADSPA.cards), [], 'ami nincs a Salonicban, nem jelenik meg');
   assert.ok(!HEADSPA.showStaffFilter);
+});
+
+test('mergeVariantSlots: a valtozatok idopontjainak uniója idorend szerint, azonos idopontnal az elso valtozat elol, a service_id megmarad', () => {
+  const relax = [{ start_unix: T(5, 12), service_id: 'R', staff_id: '1' }, { start_unix: T(6, 9), service_id: 'R', staff_id: '1' }];
+  const hair = [{ start_unix: T(5, 10), service_id: 'H', staff_id: '1' }, { start_unix: T(5, 12), service_id: 'H', staff_id: '2' }, { start_unix: T(7, 9), service_id: 'H', staff_id: '1' }];
+  const m = mergeVariantSlots([relax, hair]);
+  assert.deepEqual(m.map((s) => s.service_id), ['H', 'R', 'H', 'R', 'H']);
+  assert.deepEqual(m.map((s) => s.start_unix), [T(5, 10), T(5, 12), T(5, 12), T(6, 9), T(7, 9)]);
+  assert.equal(uniqueTimes(m).find((s) => s.start_unix === T(5, 12)).service_id, 'R', 'az azonos idopontot a Relax viszi (elso valtozat)');
+  assert.deepEqual(mergeVariantSlots([hair]).length, 3);
 });
 
 test('findByKey: azonosito vagy kulcsszavak; az ajandekkartyas es a normal kulon', () => {
@@ -387,4 +397,112 @@ test('motor-modulok: minden import relativ .js hivatkozas (a build verziojelet i
   assert.ok(n >= 9, `a ${n} import mind verziozhato`);
   const html = fs.readFileSync(path.join(here, '..', 'foglalas', 'foglalo-motor.html'), 'utf8');
   assert.ok(html.includes("/assets/js/booking-engine/engine.js'"), 'a foglalo-oldal importja a build altal verziozott alak');
+});
+
+// --- design (2026-10-04): kepek a valasztokon, havi naptar (PMU-foglalo), nincs osszegzo -------------------------------------------------------
+const ROOT = path.join(here, '..');
+const kepFajl = (k) => path.join(ROOT, 'assets', 'img', 'booking', k + '.jpg');
+
+test('minden valasztokartya kepe (kulcs) letezo fajl: szolgaltatas-valaszto, HeadSpa, oxigen, fodraszat, lezer', () => {
+  const kulcsok = [
+    ...CHOOSER.families.map((f) => f.kep),
+    ...HEADSPA.cards.map((c) => c.kep),
+    ...OXYGEN.intents.map((i) => i.kep),
+    ...HAIR.intents.filter((i) => i.kep).map((i) => i.kep),
+    ...HAIR.staffPhotos.map(([, k]) => k),
+    ...OXYGEN.staffPhotos.map(([, k]) => k),
+    ...LASER.copy.intro.map((o) => o.kep),
+    ...LASER.areas.map((a) => a.kep),
+  ];
+  assert.ok(kulcsok.length >= 31, `${kulcsok.length} kep`);
+  for (const k of kulcsok) { assert.ok(k, 'minden kartyanak van kepe'); assert.ok(fs.existsSync(kepFajl(k)), `hianyzik: assets/img/booking/${k}.jpg`); assert.ok(fs.statSync(kepFajl(k)).size < 30000, `${k}: kis kep (< 30 kB)`); }
+  assert.equal(new Set(kulcsok).size, kulcsok.length, 'nincs ketszer hasznalt kulcs');
+});
+
+test('fodraszat: minden szandek / kezelescsoport / hajhossz illusztracioja letezo fajl (a tulajdonos mintakepei)', () => {
+  const kulcsok = new Set();
+  for (const intent of HAIR.intents.filter((i) => !i.consult)) {
+    for (const g of groupServices(intentServices(hairServices, HAIR.intents, intent))) {
+      const k = kezelesKep(g.title);
+      assert.ok(k, `${g.title}: van kezeles-kep`); kulcsok.add(k);
+      for (const it of g.items) if (it.length) { const h = hajhosszKep(intent.key, it.length); assert.ok(h, `${g.title} / ${it.length}: van hajhossz-kep`); kulcsok.add(h); }
+    }
+  }
+  for (const k of kulcsok) assert.ok(fs.existsSync(kepFajl(k)), `hianyzik: ${k}`);
+  assert.equal(hajhosszKep('ujraepites', 'Hosszú haj'), 'hh-joico-hosszu');
+  assert.equal(hajhosszKep('szaritas', 'Hosszú haj'), 'hh-hosszu');
+  assert.equal(hajhosszKep('szaritas', 'Félhosszú haj'), 'hh-kozepes');
+  assert.equal(kezelesKep('Balayage / ombre / babylight + tőfestés + vágás + szárítás'), 'hk-balayage-tofestes');
+  assert.equal(kezelesKep('Tőfestés + Vágás + Szárítás'), 'hk-tofestes-vagas-szaritas');
+  assert.equal(kezelesKep('Női hajvágás + Szárítás'), 'hk-noi-vagas');
+  assert.equal(kezelesKep('Ismeretlen valami'), null);
+});
+
+test('szovegek (tulajdonos, 2026-10-04): oxigen hajkamera, HeadSpa ajandekkartya-kerdes, kuponkodos kartyak', () => {
+  const kamera = OXYGEN.intents.find((i) => i.key === 'camera');
+  assert.equal(kamera.sub, 'Megnézzük a fejbőröd állapotát + átbeszéljük milyen eredményt várhatsz');
+  assert.equal(HEADSPA.firstState, 'HS1');
+  assert.equal(HEADSPA.copy.hs1Title, 'Ajándékkártyával vagy anélkül foglalsz?');
+  assert.deepEqual(HEADSPA.copy.hs1.map((o) => [o.key, o.title]), [['voucher', 'Ajándékkártyával (kuponkóddal) foglalok'], ['normal', 'Normál foglalás kuponkód nélkül']]);
+  assert.equal(HEADSPA.copy.voucherSettled, 'Kuponkóddal');
+  for (const f of [HEADSPA, OXYGEN, HAIR, LASER]) assert.ok(!f.durationOverride, f.business + ': az idotartam a Salonic ideje (a HeadSpa-nal 1:20, a tulajdonos megerositette)');
+  assert.equal(HAIR.copy.staffListTitle, 'Melyik fodrászt választod?');
+  assert.ok(OXYGEN.copy.staffListTitle && OXYGEN.copy.staffAny);
+});
+
+test('ikonok: a hajhossz- es kezeles-ikonok, a lezer-testreszek es a HeadSpa-kartyak ikonjai mind leteznek', () => {
+  for (const l of ['Rövid haj', 'Félhosszú haj', 'Közepes haj', 'Hosszú haj', 'Extra hosszú haj']) assert.ok(IKONOK[hajhosszIkon(l)], l);
+  assert.equal(hajhosszIkon('Rövid haj'), 'haj-rovid');
+  assert.equal(hajhosszIkon('Extra hosszú haj'), 'haj-extra');
+  assert.equal(hajhosszIkon(null), 'haj', 'hajhossz nelkul az altalanos haj-ikon');
+  assert.equal(kezelesIkon('Balayage / ombre / babylight + vágás + szárítás'), 'balayage');
+  assert.equal(kezelesIkon('Teljes szőkítés / korrekció – vágással'), 'szokites');
+  assert.equal(kezelesIkon('Teljes melír / airtouch + vágás + szárítás'), 'melir');
+  assert.equal(kezelesIkon('Női hajvágás + szárítás'), 'vagas');
+  for (const o of HEADSPA.copy.hs1) assert.ok(IKONOK[o.ikon], o.ikon);
+  for (const a of AREAS) assert.ok(IKONOK[areaIkon(a.key)], a.key);
+  for (const g of hairServices) assert.ok(IKONOK[kezelesIkon(g.name)], g.name);
+});
+
+test('lezer-csomagok: a testreszek a site csomag-leirasa szerint (nem az "allapotfelmeres + kedvezmeny"), ikonokkal', () => {
+  const laser = mapping.services.filter((s) => s.business === 'laser').map((s) => ({ serviceId: s.salonic_service_id, name: s.service_name_raw, activePrice: s.active_price }));
+  const csomagok = laser.map((s) => [labelOf(s).title, packageOf(s)]).filter(([, p]) => p);
+  const nevek = new Set(csomagok.map(([n]) => n.split(' ')[0]));
+  for (const n of ['BASIC', 'MEDIUM', 'SUMMER', 'TOTAL', 'MAN', 'EGYEDI']) assert.ok(nevek.has(n), n + ' csomag');
+  for (const [n, p] of csomagok) {
+    if (/^EGYEDI/.test(n)) { assert.ok(p.leiras && !p.reszek.length); continue; }
+    assert.ok(p.reszek.length >= 2, n);
+    for (const r of p.reszek) { assert.ok(r.label && IKONOK[r.ikon], n + ': ' + r.label); }
+  }
+  const labels = (re) => packageOf(laser.find((s) => re.test(labelOf(s).title))).reszek.map((r) => r.label);
+  assert.deepEqual(labels(/^BASIC/), ['Hónalj', 'Teljes intim']);
+  assert.deepEqual(labels(/^MAN TOTAL/), ['Hát', 'Váll', 'Mellkas', 'Has', 'Hónalj']);
+  assert.deepEqual(labels(/^TOTAL/), ['Teljes láb', 'Teljes kar', 'Hónalj', 'Intim']);
+  assert.equal(packageOf(laser.find((s) => /Kis testrész/.test(s.name))), null, 'a sima testresz nem csomag');
+  assert.equal(packageOf(laser.find((s) => /Alkar/.test(s.name))), null);
+});
+
+test('havi naptar: honapok a mai honaptol a keresesi hatarig, a racs hetfovel kezdodik, csak a szabad napok aktivak', () => {
+  assert.deepEqual(monthList(T(3, 10), 92), ['2026-10', '2026-11', '2026-12', '2027-01']);
+  assert.deepEqual(monthList(T(3, 10), 10), ['2026-10']);
+  // 2026. oktober 1. = csutortok -> 3 ures cella (H, K, Sze) elol; 31 nap
+  const g = monthGrid('2026-10', new Set(['2026-10-03', '2026-10-30']));
+  assert.equal(g.title, '2026. október');
+  assert.equal(g.cells.filter((c) => c.blank).length, 3);
+  assert.equal(g.cells.filter((c) => !c.blank).length, 31);
+  assert.deepEqual(g.cells.filter((c) => c.free).map((c) => c.key), ['2026-10-03', '2026-10-30']);
+  assert.equal(g.cells[3].n, 1);
+  // 2026. november 1. = vasarnap -> 6 ures cella; 30 nap; februar nem szokoev
+  assert.equal(monthGrid('2026-11', new Set()).cells.filter((c) => c.blank).length, 6);
+  assert.equal(monthGrid('2027-02', new Set()).cells.filter((c) => !c.blank).length, 28);
+  assert.equal(monthGrid('2027-02', new Set()).title, '2027. február');
+});
+
+test('havi naptar: a nap idopontjai a PMU-foglalo szabalya szerint (egesz es fel orak; a negyed csak ha mellette nincs ilyen), egy idopont egy bejegyzes', () => {
+  const s = (unix, staff = '1') => ({ start_unix: unix, staff_id: staff, staff_label: 'x' });
+  const nap = [s(T(5, 10)), s(T(5, 10, 15)), s(T(5, 10, 30)), s(T(5, 10, 45)), s(T(5, 11)), s(T(5, 12, 15)), s(T(5, 14), '2'), s(T(5, 14), '3'), s(T(6, 9))];
+  const idok = dayTimes(nap, '2026-10-05').map((x) => timeLabel(x.start_unix));
+  assert.deepEqual(idok, ['10:00', '10:30', '11:00', '12:15', '14:00'], 'a 10:15 / 10:45 elmarad, a magaban allo 12:15 marad, a ketszer szabad 14:00 egyszer szerepel');
+  assert.deepEqual(dayTimes(nap, '2026-10-06').map((x) => timeLabel(x.start_unix)), ['09:00']);
+  assert.deepEqual(dayTimes(nap, '2026-10-07'), []);
 });

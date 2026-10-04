@@ -306,3 +306,90 @@ test('ELO smoke: mind az 5 uzletag szolgaltatasai es szabad idopontjai olvashato
   }
   assert.ok(calls.every((m) => !m || m === 'GET'), 'csak GET keres mehet');
 });
+
+// --- gyorsitas (2026-10-04): beallitott naptar-azonosito, parhuzamos reszekre bontott idopontok, progressziv betoltes, gyorsitotar ----------------------------------
+const gyorsCfg = { gyors: { account: 'gyors', host: 'https://gyors.salonic.hu', placeId: 1, specIds: [1], calendarId: 'cal-beallitott' } };
+const gyorsRoutes = (extra = []) => [[/showServices/, ok(fx('hair-showServices.html'))], [/getAvailableTimes/, ok(JSON.stringify(apiFixture()))], ...extra];
+const ketKorabbi = (u) => new URL(u).searchParams;
+
+test('adapter (gyors): a beallitott naptar-azonosito miatt nincs selectDate lekeres; a 92 napos keres 3 parhuzamos, folyamatos resz; azonos idopontok nem duplazodnak', async () => {
+  const f = fakeFetch(gyorsRoutes());
+  const a = createSalonicAdapter({ fetchImpl: f, now: nowFixed, businesses: gyorsCfg });
+  const svc = (await a.getServices('gyors')).find((s) => s.durationMin);
+  const slots = await a.getAvailability('gyors', svc.serviceId, { days: 92 });
+  assert.equal(f.calls.filter((c) => /selectDate/.test(c.url)).length, 0, 'a naptar-azonosito a konfiguraciobol jon');
+  const api = f.calls.filter((c) => /getAvailableTimes/.test(c.url)).map((c) => ketKorabbi(c.url));
+  assert.equal(api.length, 3, '92 nap = 3 resz (legfeljebb 31 nap)');
+  assert.ok(api.every((q) => q.get('calendarId') === 'cal-beallitott'));
+  const napok = api.map((q) => +q.get('days')); const kezdetek = api.map((q) => +q.get('startDate'));
+  assert.equal(napok.reduce((x, y) => x + y, 0), 92);
+  for (let i = 1; i < api.length; i++) assert.equal(kezdetek[i], kezdetek[i - 1] + napok[i - 1] * 86400, 'a reszek folyamatosan kovetik egymast');
+  assert.equal(new Set(slots.map((s) => s.slot_id)).size, slots.length, 'a reszekbol osszefuzott lista nem duplaz');
+  assert.ok(slots.length > 0 && slots.every((s, i) => i === 0 || s.start_unix >= slots[i - 1].start_unix));
+});
+
+test('adapter (gyors): firstDays + onMore: az elso 14 nap kulon, hamarabb erkezik, a teljes lista az onMore-ban; 14 nap alatt egyetlen kereses', async () => {
+  const f = fakeFetch(gyorsRoutes());
+  const a = createSalonicAdapter({ fetchImpl: f, now: nowFixed, businesses: gyorsCfg });
+  const svc = (await a.getServices('gyors')).find((s) => s.durationMin);
+  let teljes = null;
+  const elso = await a.getAvailability('gyors', svc.serviceId, { days: 92, firstDays: 14, onMore: (l) => { teljes = l; } });
+  const api = f.calls.filter((c) => /getAvailableTimes/.test(c.url)).map((c) => ketKorabbi(c.url));
+  assert.equal(+api[0].get('days'), 14, 'az elso resz 14 napos');
+  assert.equal(api.length, 4, '14 nap + a maradek 78 nap 3 reszben');
+  await new Promise((r) => setTimeout(r, 20));
+  assert.ok(teljes && teljes.length >= elso.length, 'a teljes lista megerkezik');
+  const kisebb = fakeFetch(gyorsRoutes());
+  const b = createSalonicAdapter({ fetchImpl: kisebb, now: nowFixed, businesses: gyorsCfg });
+  await b.getAvailability('gyors', svc.serviceId, { days: 14 });
+  assert.equal(kisebb.calls.filter((c) => /getAvailableTimes/.test(c.url)).length, 1);
+});
+
+test('adapter (gyors): az elozetes (14 napos) kereses kulcsa megegyezik a naptar elso reszevel; 90 mp-ig a reszek gyorsitotarbol jonnek', async () => {
+  let ido = nowFixed();
+  const f = fakeFetch(gyorsRoutes());
+  const a = createSalonicAdapter({ fetchImpl: f, now: () => ido, businesses: gyorsCfg });
+  const svc = (await a.getServices('gyors')).find((s) => s.durationMin);
+  const api = () => f.calls.filter((c) => /getAvailableTimes/.test(c.url)).length;
+  await a.getAvailability('gyors', svc.serviceId, { days: 14 }); // elozetes betoltes
+  assert.equal(api(), 1);
+  ido += 20000; // 20 mp mulva nyilik meg a naptar: az elso resz mar megvan
+  await a.getAvailability('gyors', svc.serviceId, { days: 92, firstDays: 14, onMore: () => {} });
+  assert.equal(api(), 4, 'az elso resz nem toltodik ujra (1 + 3 uj resz)');
+  ido += 100000; // 90 mp utan ujra kerdez
+  await a.getAvailability('gyors', svc.serviceId, { days: 14 });
+  assert.equal(api(), 5);
+});
+
+test('adapter (gyors): ha a Salonic elutasitja a beallitott naptar-azonositot, a selectDate oldalbol olvassa ki, es megjegyzi', async () => {
+  const f = fakeFetch([
+    [/showServices/, ok(fx('hair-showServices.html'))],
+    [/selectDate/, ok(fx('selectDate-snippet.html'))],
+    [/getAvailableTimes/, (n) => (/calendarId=cal-beallitott/.test(f.calls[n - 1].url) ? ok(JSON.stringify({ status: 'error', data: {} })) : ok(JSON.stringify(apiFixture())))],
+  ]);
+  const a = createSalonicAdapter({ fetchImpl: f, now: nowFixed, businesses: gyorsCfg });
+  const svc = (await a.getServices('gyors')).find((s) => s.durationMin);
+  const slots = await a.getAvailability('gyors', svc.serviceId, { days: 14 });
+  assert.ok(slots.length > 0);
+  assert.equal(f.calls.filter((c) => /selectDate/.test(c.url)).length, 1);
+  const utolso = f.calls.filter((c) => /getAvailableTimes/.test(c.url)).pop().url;
+  assert.ok(!/cal-beallitott/.test(utolso), 'a masodik probalkozas a kiolvasott azonositoval megy');
+  await a.getAvailability('gyors', svc.serviceId, { days: 14, from: 1700000000 });
+  assert.ok(!/cal-beallitott/.test(f.calls.filter((c) => /getAvailableTimes/.test(c.url)).pop().url), 'a kiolvasott azonositot megjegyezte');
+});
+
+test('adapter (gyors): a szolgaltatas-lista tartos (storage) gyorsitotarbol is jon, es a kategoria-oldalak parhuzamosan toltodnek', async () => {
+  const tarolo = new Map(); const storage = { getItem: (k) => (tarolo.has(k) ? tarolo.get(k) : null), setItem: (k, v) => tarolo.set(k, v) };
+  const cfg = { gyors: { ...gyorsCfg.gyors, specIds: [1, 2, 3] } };
+  const f = fakeFetch(gyorsRoutes());
+  const a = createSalonicAdapter({ fetchImpl: f, now: nowFixed, businesses: cfg, storage });
+  const lista = await a.getServices('gyors');
+  assert.equal(f.calls.filter((c) => /showServices/.test(c.url)).length, 3);
+  assert.deepEqual([...new Set(lista.map((s) => s.specId))], ['1'], 'a sorrend a kategoriak sorrendje (az ismetlodo azonositok az elso kategoriahoz tartoznak)');
+  const b = createSalonicAdapter({ fetchImpl: f, now: nowFixed, businesses: cfg, storage });
+  assert.deepEqual((await b.getServices('gyors')).map((s) => s.serviceId), lista.map((s) => s.serviceId));
+  assert.equal(f.calls.filter((c) => /showServices/.test(c.url)).length, 3, 'az uj adapter a tarolobol olvas, nem kerdez ujra');
+  const lejart = createSalonicAdapter({ fetchImpl: f, now: () => nowFixed() + 11 * 60 * 1000, businesses: cfg, storage });
+  await lejart.getServices('gyors');
+  assert.equal(f.calls.filter((c) => /showServices/.test(c.url)).length, 6, '10 perc utan ujra tolt');
+});

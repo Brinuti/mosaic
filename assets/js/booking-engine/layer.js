@@ -7,7 +7,7 @@
 //   - Shadow DOM: az oldal (Wix-klon) stilusai nem szivarognak be, a foglalo stilusa nem szivarog ki
 // A szamlalas / hand-off a motoreben marad (engine.js): sikeres foglalas utan a meglevo koszonooldal nyilik meg, a meres valtozatlan.
 
-import { startEngine } from './engine.js';
+import { startEngine, warmUp } from './engine.js';
 
 const HOST_ID = 'mosaic-booking-layer';
 const CONTEXT_KEYS = ['business', 'service', 'category', 'voucher', 'intent']; // ezek kerulnek az URL-be; a tobbi (UTM, click ID) az oldal sajat URL-jen van
@@ -74,6 +74,9 @@ export function openBooking(opts = {}, env = {}) {
   const layerEl = shadow.querySelector('.be-layer');
   const panel = shadow.querySelector('.be-panel');
   const body = shadow.querySelector('.be-panel-body');
+  // A stilus megerkezeseig a reteg rejtett: stilus nelkul a fejlec ikonjai (pl. a telefon) hatalmas, kek SVG-kent villannanak fel (elso megnyitas, hideg gyorsitotar)
+  host.style.visibility = 'hidden';
+  const sheet = shadow.querySelector('link[rel="stylesheet"]');
   if (env.fontsHref && !doc.querySelector('link[data-be-fonts]')) { // a @font-face csak a dokumentumban mukodik (Shadow DOM-ban nem)
     const l = doc.createElement('link'); l.rel = 'stylesheet'; l.href = env.fontsHref; l.setAttribute('data-be-fonts', ''); doc.head.append(l);
   }
@@ -121,16 +124,20 @@ export function openBooking(opts = {}, env = {}) {
   function requestClose() {
     if (closed) return;
     if (restored) { if (urlAllapot) win.history.replaceState(null, '', cleanUrl(win.location.href)); teardown(); return; }
+    // A reteg AZONNAL eltunik, a motor pedig nem rajzol ujra: a visszalepes kozben a bongeszo egy korabbi (pl. elavult) reteg-bejegyzesre is erhet, annak
+    // a nezete nem villanhat fel (a sminktetovalo-keret sajat lepesei is a szulo elozmenyeibe kerulnek, igy a lepesszam pontos).
+    if (engine.state) engine.state.closing = true;
+    host.style.visibility = 'hidden';
     const steps = (engine.state ? engine.state.depth : 0) + 1;
     win.history.go(-steps); // a popstate (onExit) zarja be a reteget es allitja vissza az eredeti cimet
     win.setTimeout(() => { if (!closed) { if (urlAllapot) win.history.replaceState(null, '', cleanUrl(win.location.href)); teardown(); } }, 800); // ha a bongeszo nem lepett vissza
   }
   const onExit = () => teardown();
 
-  // --- billentyuzet: Esc bezar, Tab a panelen belul marad -----------------------------------------------------------------------------
+  // --- billentyuzet: Esc nem zar, Tab a panelen belul marad -----------------------------------------------------------------------------
   const FOCUSABLE = 'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),iframe,[tabindex]:not([tabindex="-1"])';
   shadow.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { e.stopPropagation(); requestClose(); return; }
+    if (e.key === 'Escape') { e.stopPropagation(); return; } // a foglalo nem zarodik be veletlenul: csak a jobb felso X zarja be (a bongeszo vissza gombja lepesenkent visszalep)
     if (e.key !== 'Tab') return;
     const list = [...panel.querySelectorAll(FOCUSABLE)].filter((el) => !el.hidden && el.getClientRects().length);
     if (!list.length) { e.preventDefault(); panel.focus(); return; }
@@ -138,13 +145,24 @@ export function openBooking(opts = {}, env = {}) {
     if (e.shiftKey && (active === first || active === panel)) { last.focus(); e.preventDefault(); }
     else if (!e.shiftKey && active === last) { first.focus(); e.preventDefault(); }
   });
-  shadow.querySelector('.be-backdrop').addEventListener('click', requestClose);
+  // (a hatterre kattintas SEM zar: csak az X)
 
   // --- a motor ------------------------------------------------------------------------------------------------------------------------
   const engine = startEngine({ root: body, win, doc, mode: 'layer', search: engineSearch, defaultBusiness: null, onClose: requestClose, onExit, urlAllapot });
   current = { host, engine, close: requestClose, restored };
-  win.requestAnimationFrame(() => { layerEl.classList.add('be-open'); panel.focus({ preventScroll: true }); });
+  // megjelenites: ha a stilus megerkezett (vagy 3 mp utan akkor is): a reteg lathatova valik es becsuszik
+  let latszik = false;
+  const mutat = () => {
+    if (latszik || closed) return;
+    latszik = true;
+    host.style.visibility = '';
+    win.requestAnimationFrame(() => { layerEl.classList.add('be-open'); panel.focus({ preventScroll: true }); });
+  };
+  if (sheet && !sheet.sheet) { sheet.addEventListener('load', mutat); sheet.addEventListener('error', mutat); win.setTimeout(mutat, 3000); } else mutat();
   return engine;
 }
 
 export function closeBooking() { if (current) current.close(); }
+
+/** Elomelegites a CTA kontextusabol (a launcher a CTA fole vitt egerre / erintesre hivja): Salonic-kapcsolat + szolgaltatas-lista, adott szolgaltatasnal idopontok. */
+export function warm(opts = {}) { try { warmUp(normalizeOptions(opts)); } catch (e) { /* nem kritikus */ } }

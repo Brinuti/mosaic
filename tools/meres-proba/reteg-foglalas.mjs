@@ -2,7 +2,7 @@
 //
 //   node tools/meres-proba/reteg-foglalas.mjs --bazis https://www.mosaicheadspa.hu|https://<ag>.mosaic-d77.pages.dev --utvonal h0-headspa|hair-konzult|... [--overlay dist] [--mobil 1] [--out naplo.json]
 //
-// Utvonalak: h0-headspa (szolgaltatas-elso: Head Spa -> Idopontot foglalok -> Egyeni HeadSpa), hair-konzult, oxigen-2, lezer-konzult.
+// Utvonalak: h0-headspa (szolgaltatas-elso: Head Spa -> Egyeni HeadSpa -> havi naptar), hair-konzult, oxigen-2, lezer-konzult.
 // A kimeno meres (capig.stape.do is) alapbol tiltva (tilt.mjs), a naplo a tiltott kereseket is tartalmazza. A telefonszam: MERES_TELEFON (alap: a szalon szama).
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
@@ -55,19 +55,31 @@ try {
   lepes('reteg megnyilt', { utvonal: UTVONAL, url: page.url().slice(0, 120) });
   if (UTVONAL === 'h0-headspa') {
     await (await lathato(reteg.locator('.be-choice', { hasText: 'Head Spa' }))).click(); lepes('H0: Head Spa');
-    await (await lathato(reteg.locator('.be-choice', { hasText: 'Időpontot foglalok' }))).click(); lepes('HS1: Időpontot foglalok');
+    const hs1 = reteg.locator('.be-choice', { hasText: 'Időpontot foglalok' }); // a regi motor HS1 lepese; az ujban a HS2 az elso
+    if (await hs1.count()) { await hs1.first().click(); lepes('HS1: Időpontot foglalok'); }
     await (await lathato(reteg.locator('.be-choice', { hasText: 'Egyéni HeadSpa' }))).click(); lepes('HS2: Egyéni HeadSpa');
   }
-  await (await lathato(reteg.locator('button', { hasText: 'További időpontok' }))).click();
-  const napok = reteg.locator('.be-strip[aria-label="Nap"] .be-chip'); await lathato(napok);
-  await napok.nth((await napok.count()) - 1).click();
-  await page.waitForTimeout(800);
-  const idok = reteg.locator('.be-time'); const db = await idok.count();
-  const ido = (await idok.nth(db - 1).textContent()).trim(); await idok.nth(db - 1).click();
+  // idopont: HeadSpan a PMU-foglalo havi naptara (az utolso szabad nap utolso idopontja), egyebkent a "tovabbi idopontok" naptar-sav
+  await reteg.locator('.be-nnap.szabad, button:has-text("További időpontok")').first().waitFor({ state: 'visible', timeout: 25000 });
+  let ido;
+  const szabadNapok = reteg.locator('.be-nnap.szabad');
+  if (await szabadNapok.count()) {
+    await szabadNapok.nth((await szabadNapok.count()) - 1).click(); await page.waitForTimeout(500);
+    const gombok = reteg.locator('.be-idogomb'); const db = await gombok.count();
+    ido = (await gombok.nth(db - 1).textContent()).trim(); await gombok.nth(db - 1).click();
+  } else {
+    await (await lathato(reteg.locator('button', { hasText: 'További időpontok' }))).click();
+    const napok = reteg.locator('.be-strip[aria-label="Nap"] .be-chip'); await lathato(napok);
+    await napok.nth((await napok.count()) - 1).click();
+    await page.waitForTimeout(800);
+    const idok = reteg.locator('.be-time'); const db = await idok.count();
+    ido = (await idok.nth(db - 1).textContent()).trim(); await idok.nth(db - 1).click();
+  }
   lepes('időpont választva', { ido });
-  const osszegzes = (await (await lathato(reteg.locator('.be-card'))).textContent()).replace(/\s+/g, ' ').trim();
-  lepes('összegzés (C3)', { osszegzes: osszegzes.slice(0, 200) });
-  await (await lathato(reteg.locator('button', { hasText: 'Tovább az adatokhoz' }))).click();
+  // az ujban rogton az adatlap; a regi motornal elobb az osszegzo kepernyo (C3) jott
+  await reteg.locator('button:has-text("Tovább az adatokhoz"), iframe.be-iframe').first().waitFor({ state: 'attached', timeout: 30000 });
+  const tovabb = reteg.locator('button', { hasText: 'Tovább az adatokhoz' });
+  if (await tovabb.count()) { lepes('összegzés (C3, a régi motoron)'); await tovabb.first().click(); }
   await reteg.locator('iframe.be-iframe').waitFor({ state: 'attached', timeout: 30000 });
   await page.waitForTimeout(4500);
   const fr = page.frames().find((f) => /salonic\.hu\/guestData/.test(f.url()));
@@ -86,7 +98,7 @@ try {
   const t1 = Date.now(); let veg = null;
   while (Date.now() - t1 < 60000 && !veg) {
     const c = reteg.locator('.be-title'); const cim = (await c.count()) ? (await c.first().textContent()).trim() : '';
-    if (/Foglalásod sikeres|A foglalásodat feldolgoztuk|Ez az időpont közben elkelt|Most nem tudjuk/.test(cim)) veg = cim;
+    if (/Sikeres foglalás|Foglalásod sikeres|A foglalásodat feldolgoztuk|Ez az időpont közben elkelt|Most nem tudjuk/.test(cim)) veg = cim;
     else if (page.url().includes('bookingUrl=')) veg = 'A FO ABLAK koszonooldalra navigalt: ' + page.url().slice(0, 100);
     else await page.waitForTimeout(700);
   }
