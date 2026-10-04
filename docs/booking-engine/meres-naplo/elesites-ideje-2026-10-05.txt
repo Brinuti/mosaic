@@ -1,0 +1,24 @@
+AZ ELESITES (a foglalo-atkotes) PONTOS IDEJE - a rezsimvaltas hatara a meresben
+===============================================================================
+
+Elemzo review #3 kerese: az elesites pontos ideje (UTC + deploy) a naploba, mert ez a rezsimvaltas hatara (a mereseket innentol az uj uton, felugro foglaloval keletkezik).
+
+PR: #114 (claude/foglalo-elesites), merge-commit 8c59c470b15a2cb9f5e13ccb61a401cd54cb80de (a PR feje: 32b515ccd1c1098ff1097bc5bdd7546bdfff4268)
+  Merge:  2026-10-04 22:48:01 UTC  (= 2026-10-05 00:48:01 helyi ido, CEST)
+  Deploy: Cloudflare Pages (mosaic projekt) "success", befejezve 2026-10-04 22:49:22 UTC (= 00:49:22 CEST)
+  => az eles oldal 2026-10-04 22:49:22 UTC-tol az UJ valtozat. (Az 22:48:28 UTC-s ellenorzes meg a regit adta: 200 a /kupon-utan-foglalas cimen;
+     a 23:08:51 UTC-s ellenorzes mar 301-et, Location: /?utm_source=ellenorzes.)
+  A merge elott a main 641ae58 volt (#116), a PR a main-nel egyesitve ment ki (merge-commit a0a57e7).
+
+Mi valtozott az elesben (a meresre: lasd eles-atkotes-osszefoglalo-2026-10-04.txt es eles-popup-valodi-osszefoglalo-2026-10-04.txt)
+- minden foglalas-gomb + a fomenu "FOGLALAS" a motor felugro retegeben nyilik (mobilon es asztalon); a regi foglalo-oldalak (/idpontfoglalas, /mosaic-hair-idopontfoglalas,
+  /szortelenites-foglalas, /pmu-foglalas, /smink-foglalas, /naptar) ures oldal + bezarhatatlan felugro; /fodraszat-foglalas es /kupon-utan-foglalas 301 a fooldalra (UTM megmarad).
+- A koszonooldalak, a GTM, a suti.js, a pixelek valtozatlanok.
+
+ELO ELLENORZES (az elesites utan, 2026-10-04 23:09 - 23:2x UTC)
+- 301: /kupon-utan-foglalas?utm_source=ellenorzes -> /?utm_source=ellenorzes; /fodraszat-foglalas?gclid=x -> 301 (curl, Server: cloudflare).
+- node tools/meres-proba/oldal-proba.mjs (eles): 12 ellenorzes, 0 hiba.
+- node tools/meres-proba/reteg-proba.mjs (eles, asztali): 299 ellenorzes, 0 hiba (eles-atkotes-reteg-proba-asztali-ELES-2026-10-05.txt): fomenu FOGLALAS -> reteg minden vizsgalt oldalon;
+  a regi foglalo-oldalak ures oldal + bezarhatatlan felugro (suti-sav a foglalo folott, kattinthato); 301-ek; nincs JS-hiba; a meres-vedelem rendben.
+- Visszaallitas (ha kell): tools/foglalo-atkotes.json kapcsolok false + deploy (~2-3 perc), vagy a Cloudflare korabbi deploy-ja.
+- Hatralevo (nem blokkolo, az elemzo kapu-listaja): Safari / iPhone-proba, a ket kodnelkuli Google Ads konverzio URL-szabalya, a Zapier teszt-vedelem bovitese.
