@@ -6,7 +6,7 @@
 //   <a href="/foglalo-motor?business=oxygen&service=466110">           (a linktermeken at kerult CTA-k: a retegben nyilnak meg, JS nelkul a /foglalo-motor oldalra visznek)
 //
 // A build (tools/netlify-build.mjs) a __MOTOR_VERZIO__ / __CSS_VERZIO__ jeleket tartalom-hash-re cseréli (a /assets/js/* egy evig tarolhato).
-// Ha az oldal ?booking=1-gyel toltodik be (ujratoltes, megosztott link, "elore" gomb), a reteg ujra megnyilik.
+// Ha az oldal ?booking=1-gyel toltodik be (megosztott / kezzel keszitett link), a reteg megnyilik; a reteg maga NEM ir at URL-t (GTM History Change: lasd layer.js).
 
 const V_MOTOR = '__MOTOR_VERZIO__';
 const V_CSS = '__CSS_VERZIO__';

@@ -41,6 +41,7 @@ const BELEPOK = [
 
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const eredmeny = [];
+const merEsem = []; // a FO ablak kimeno meresi kereseit gyujtjuk (a Salonic-keretet nem): a reteg hasznalata nem indithat meresi esemenyt
 const ok = (cimke, rendben, reszlet = '') => { eredmeny.push({ cimke, rendben, reszlet }); console.log(`${rendben ? 'OK  ' : 'HIBA'} ${cimke}${reszlet ? ' | ' + reszlet : ''}`); };
 
 async function ujLap() {
@@ -58,7 +59,10 @@ async function ujLap() {
       }
     }
     const plat = platformOf(url) || (engedett(url, req.method()) || u.origin === BAZIS ? null : 'tiltott');
-    if (plat) return route.fulfill(ures(req));
+    if (plat) {
+      if (req.frame() && req.frame().parentFrame() === null) { const q = Object.fromEntries(u.searchParams); let ev = ''; if (plat === 'meta') ev = new URLSearchParams(req.postData() || '').get('ev') || q.ev || ''; else if (plat === 'tiktok') { try { ev = JSON.parse(req.postData() || '{}').event || ''; } catch (e) { ev = ''; } } else ev = q.en || ''; merEsem.push({ plat, ev: ev || u.pathname.slice(0, 40), ut: u.pathname.slice(0, 40) }); }
+      return route.fulfill(ures(req));
+    }
     return route.continue();
   });
   const page = await ctx.newPage();
@@ -95,7 +99,7 @@ for (const [cimke, opts, vart, extra] of BELEPOK) {
   const pont = (vart === null && c) || (c && (c.includes(vart)));
   ok(`${cimke} | kezdo allapot`, !!pont, `cim="${c}"`);
   if (extra && opts.business !== 'pmu') { const sav = await reteg(page).locator('.be-svc').first().textContent().catch(() => ''); ok(`${cimke} | szolgaltatas-sav tartalmazza: ${extra}`, new RegExp(extra, 'i').test(sav), sav.trim().slice(0, 60)); }
-  ok(`${cimke} | URL frissul`, u.searchParams.get('booking') === '1' && (!opts.business || u.searchParams.get('business') === opts.business) && u.pathname === OLDAL, u.pathname + u.search.slice(0, 80));
+  ok(`${cimke} | az URL NEM valtozik (a GTM History Change triggerei miatt)`, u.pathname + u.search === eredetiUrl && !u.hash, u.pathname + u.search + u.hash);
   ok(`${cimke} | nincs oldalvaltas`, (await page.evaluate(() => window.__marker)) === 'maradt');
   if (KEPEK && BELEPOK.indexOf(BELEPOK.find((b) => b[0] === cimke)) % 3 === 0) { fs.mkdirSync(KEPEK, { recursive: true }); await page.screenshot({ path: path.join(KEPEK, `${MOBIL ? 'mobil' : 'asztali'}-${cimke.replace(/\W+/g, '-')}.png`) }); }
   // bezaras a X-szel
@@ -141,7 +145,7 @@ ok('ujratoltes (?booking=1): a reteg megnyilik a jo allapotban', !!c2 && c2.incl
 await reteg(page).locator('#be-close').click();
 await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {});
 const veg = url(page);
-ok('visszaallitott reteg bezarasa: booking-parameterek nelkul, a UTM / click ID megmarad', !veg.searchParams.has('booking') && veg.searchParams.get('gclid') === 'TESZT123' && veg.searchParams.get('utm_source') === 'teszt', veg.search);
+ok('?booking=1 beerkezo link: a bezaras nem nyul az URL-hez (nincs extra oldalmegtekintes), a UTM / click ID megmarad', veg.searchParams.get('booking') === '1' && veg.searchParams.get('gclid') === 'TESZT123' && veg.searchParams.get('utm_source') === 'teszt' && !veg.hash, veg.search);
 
 // --- valodi landing-oldalak: a (linktermekbol kapott) foglalo-gombok a retegat nyitjak, nem navigalnak --------------------------------------------
 const LANDINGEK = ['/idpontfoglalas', '/lezeres-szortelenites-budapest', '/headspa-budapest-hungary', '/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel', '/szortelenites-foglalas', '/headspa-ajandekkartya'];
@@ -156,11 +160,29 @@ for (const lap of LANDINGEK) {
     const c = await varCim(page);
     const u = url(page);
     const q = new URL(h, BAZIS).searchParams;
-    ok(lap + ' | CTA ' + h.replace('/foglalo-motor?', '') + ' -> reteg', !!c && u.pathname === lap && u.searchParams.get('booking') === '1' && (!q.get('business') || u.searchParams.get('business') === q.get('business')) && (await page.evaluate(() => window.__marker)) === 'maradt', 'cim="' + c + '"');
+    ok(lap + ' | CTA ' + h.replace('/foglalo-motor?', '') + ' -> reteg (az URL valtozatlan)', !!c && u.pathname === lap && !u.searchParams.has('booking') && !u.hash && (await page.evaluate(() => window.__marker)) === 'maradt', 'cim="' + c + '"');
     await reteg(page).locator('#be-close').click().catch(() => {});
     await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {});
   }
 }
+// --- meres-vedelem: a GTM-es landing-oldalon a reteg teljes hasznalata (nyitas, lepesek, adatlap, bezaras) nem indit meresi esemenyt a fo ablakbol ----
+{
+  await page.goto(BAZIS + '/lezeres-szortelenites-budapest?gclid=TESZT123&utm_source=teszt&utm_medium=cpc', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 });
+  await page.waitForTimeout(9000); // a betoltes-kori meresi esemenyek lecsengenek
+  const n0 = merEsem.length;
+  await page.evaluate(() => document.querySelector('a[href*="foglalo-motor"]').click());
+  await varCim(page); await page.waitForTimeout(2500);
+  await reteg(page).locator('.be-time').first().click(); await page.waitForTimeout(2500);
+  await reteg(page).locator('button', { hasText: 'Tovább az adatokhoz' }).click(); await page.waitForTimeout(8000);
+  await reteg(page).locator('#be-back').click(); await page.waitForTimeout(2500);
+  await reteg(page).locator('#be-close').click();
+  await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(4000);
+  const uj = merEsem.slice(n0).filter((e) => !(e.plat === 'tiktok' && /^(EngagedSession|\/api\/v2\/(monitor|pixel\/(act|inter)))/.test(e.ev)));
+  ok('meres-vedelem: a reteg hasznalata (GTM-es oldalon) nem indit meresi kerest a fo ablakbol', uj.length === 0, uj.slice(0, 6).map((e) => e.plat + ':' + e.ev).join(', '));
+}
+
 // a PMU-landing es a koszonooldalak nem kapnak launchert
 for (const lap of ['/sminktetovalas-budapest', '/fodrasz-ok']) {
   await page.goto(BAZIS + lap, { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500);

@@ -38,8 +38,12 @@ const FRAME_STYLED = Object.freeze({ crop: 78, visible: 735 });
  * defaultBusiness: ha az URL / a hivas nem nevezi meg az uzletagat: 'headspa' (a /foglalo-motor regi alapja) vagy null (-> H0, szolgaltatas-elso).
  */
 export function startEngine({ root, doc = document, win = window, adapter = createSalonicAdapter(), now = () => Date.now(),
-  mode = 'page', search = null, defaultBusiness = 'headspa', onClose = null, onExit = null }) {
+  mode = 'page', search = null, defaultBusiness = 'headspa', onClose = null, onExit = null, urlAllapot = null }) {
   const layer = mode === 'layer';
+  // urlAllapot: a lepesek (#H0, #C1, ...) az URL-be kerulnek-e. Onallo oldalon igen (ott nincs GTM); a retegben alapbol NEM: a GTM History Change
+  // triggerei minden URL-valtozasnal (pushState / replaceState / hash / vissza) Meta PageView-t, GA4 page_view / visit-et es Google Ads page_view-t inditanak.
+  const urlbe = urlAllapot === null ? !layer : !!urlAllapot;
+  const elozmeny = (mod, allapot, url) => (urlbe ? win.history[mod](allapot, '', url) : win.history[mod](allapot, '')); // URL nelkul: a cim nem valtozik
   const ctx = F.parseContext(search !== null ? search : win.location.search, doc.referrer, win.location.origin, { defaultBusiness });
   let flow = ctx.business ? FLOWS[ctx.business] : null;
   const nowUnix = () => Math.floor(now() / 1000);
@@ -162,8 +166,8 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     }
   }
   function go(state, { replace = false } = {}) {
-    if (replace) win.history.replaceState({ view: state, depth: S.depth, beLayer: layer }, '', '#' + state);
-    else { S.depth += 1; win.history.pushState({ view: state, depth: S.depth, beLayer: layer }, '', '#' + state); }
+    if (replace) elozmeny('replaceState', { view: state, depth: S.depth, beLayer: layer }, '#' + state);
+    else { S.depth += 1; elozmeny('pushState', { view: state, depth: S.depth, beLayer: layer }, '#' + state); }
     return show(state);
   }
   const needs = { C3: () => S.slot && S.service, C4: () => S.slot && S.service, C1: () => S.service, C2: () => S.service && S.slots.length, OX2: () => S.candidates,
@@ -589,7 +593,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     if (ctx.sample) return sample();
     let first = entry();
     if (!flow) { // H0 vagy PMU: nincs mit pontositani
-      win.history.replaceState({ view: first, depth: 0, beLayer: layer }, '', win.location.pathname + win.location.search + '#' + first);
+      elozmeny('replaceState', { view: first, depth: 0, beLayer: layer }, win.location.pathname + win.location.search + '#' + first);
       return show(first);
     }
     // Lezer: ?intent=first | returning -> a terulet-valasztas (LA2 / LA3), a konzultacio-kerdes (LA1) kihagyasaval; konkret szolgaltatas / kategoria elsobbseget elvez
@@ -616,7 +620,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
         }
       } catch (e) { console.error(e); }
     }
-    win.history.replaceState({ view: first, depth: 0, beLayer: layer }, '', win.location.pathname + win.location.search + '#' + first);
+    elozmeny('replaceState', { view: first, depth: 0, beLayer: layer }, win.location.pathname + win.location.search + '#' + first);
     return show(first);
   }
 
