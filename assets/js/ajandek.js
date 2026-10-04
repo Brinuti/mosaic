@@ -1422,6 +1422,30 @@
     fizModRender();
     gorgess(panel, 'center');
     mer('bank_transfer_request', { ecommerce: { currency: A.PENZNEM, value: osszegFt(), items: [tetel(termek(S.termek))] }, product_type: termek(S.termek).product_type, payment_method: 'bank_transfer' });
+    regiUtalasLead(o);
+  }
+  // A MOSTANI utalasos konverzio a regi Wix "Ajandekkartya " urlap bekuldesere epul: a GTM a dataLayer generate_lead esemenyere indul
+  // (GA4 ajandekkartya_utalas, Google Ads utalasos konverzio, TikTok). Az uj oldal ezt a regi esemenyt is elkuldi (a regi urlap form_id-javal,
+  // pontosan az assets/js/klon.js wixLead sorrendjeben: lead -> ecommerce:null -> generate_lead), hogy az utalasos meres valtozatlan maradjon.
+  // A bank_transfer_request az uj meresi szerzodes resze marad. Rendelesenkent egyszer fut (az atutalasKesz csak szerveroldali siker utan hivodik).
+  function regiUtalasLead(o) {
+    try {
+      var cimke = 'Form name: Ajándékkártya ';
+      var nevek = String(o.nev || '').trim().split(/\s+/);
+      var tel = String(o.telefon || '').replace(/[^\d+]/g, '');
+      if (tel && tel.charAt(0) !== '+') tel = '+36' + tel.replace(/^(06|36|0)/, '');
+      var ud = {
+        fizeto_fel_vezetekneve: nevek[0] || '', fizeto_fel_keresztneve: nevek.slice(1).join(' '),
+        email: o.email || '', cim: [o.iranyitoszam, o.varos, o.cim].filter(Boolean).join(' '),
+        ajandekozott_neve: o.ajandekozott || '', milyen_kartyat_kersz: termek(S.termek).kartya_cim, form_field_d3ec: true
+      };
+      if (tel) ud.phone_number = tel;
+      var dl = window.dataLayer = window.dataLayer || [];
+      dl.push({ event: 'lead', event_label: cimke, event_category: 'contact' });
+      dl.push({ ecommerce: null });
+      dl.push({ event: 'generate_lead', lead_category: 'contact', label: cimke, form_id: '7715ab48-7c85-4c1c-8fbc-a38c1cb1a23c', user_data: ud });
+      if (window.gtag) window.gtag('event', 'generate_lead', { event_category: 'contact', event_action: 'Submitted', event_label: cimke });
+    } catch (e) { /* a meres hibaja nem allithatja meg az atutalasi nezetet */ }
   }
 
   // ---------------------------------------------------------------- PurchaseSuccess

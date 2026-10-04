@@ -308,6 +308,36 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.ok(resz.indexOf("mer('purchase'") < resz.indexOf('regiKonverzio(ertek)'));
   });
 
+  test('a sajat merokeret NEM dobja ki a vasarlot: a suti.js "keretben vagyunk" aga kivetelt tesz a data-ah-regi-konverzio keretre, ott a merokodok futnak (MERO_KERET)', () => {
+    const suti = fs.readFileSync(new URL('../../assets/js/suti.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+    const js = fs.readFileSync(new URL('../../assets/js/ajandek.js', import.meta.url), 'utf8');
+    // a keret attributuma: ugyanaz, amit az ajandek.js ra tesz, es amit a suti.js keres
+    assert.ok(js.includes("f.setAttribute('data-ah-regi-konverzio', '1')"));
+    assert.ok(suti.includes("window.frameElement.hasAttribute('data-ah-regi-konverzio')"));
+    // 1) az atiranyito (top.location.replace) agra nem megy be a sajat keret
+    assert.match(suti, /if \(!MERO_KERET && window\.top !== window\.self && window\.parent\.location\.hostname === location\.hostname\)/);
+    // 2) a merokodok a sajat keretben is futnak (a beagyazott/osszehasonlito keretben tovabbra sem)
+    assert.ok(suti.includes('if (!eles || (beagyazott && !MERO_KERET)) return;'));
+    // a MERO_KERET a "keretben vagyunk" ag ELOTT dol el
+    assert.ok(suti.indexOf('var MERO_KERET') < suti.indexOf('window.top.location.replace(location.href)'));
+    // a sav a keretben tovabbra sincs (felepit: beagyazott -> return)
+    assert.ok(suti.includes('if (beagyazott || sav) return;'));
+  });
+
+  test('az utalasos igenyles a REGI generate_lead esemenyt is elkuldi a regi "Ajandekkartya " urlap form_id-javal (lead -> ecommerce:null -> generate_lead), a bank_transfer_request mellett', () => {
+    const js = fs.readFileSync(new URL('../../assets/js/ajandek.js', import.meta.url), 'utf8');
+    const resz = js.slice(js.indexOf('function atutalasKesz'), js.indexOf('// ---------------------------------------------------------------- PurchaseSuccess'));
+    assert.ok(resz.includes("mer('bank_transfer_request'"));
+    assert.ok(resz.indexOf("mer('bank_transfer_request'") < resz.indexOf('regiUtalasLead(o);'), 'az uj esemeny utan megy a regi');
+    assert.ok(resz.includes("form_id: '7715ab48-7c85-4c1c-8fbc-a38c1cb1a23c'"));
+    assert.ok(resz.includes("var cimke = 'Form name: Ajándékkártya ';"), 'a cimke a regi urlap cime (a vegen szokozzel)');
+    const sorrend = ["event: 'lead'", 'ecommerce: null', "event: 'generate_lead'"].map((x) => resz.indexOf(x));
+    assert.ok(sorrend.every((x) => x > 0) && sorrend[0] < sorrend[1] && sorrend[1] < sorrend[2], 'lead -> ecommerce:null -> generate_lead');
+    // csak az atutalasKesz hivja (szerveroldali siker utan), a kartyas fizetes nem
+    assert.equal(js.split('regiUtalasLead(o);').length - 1, 1);
+    assert.ok(!js.slice(js.indexOf('function purchaseMeres'), js.indexOf('function metaSor(')).includes('generate_lead'));
+  });
+
   test('mobil sticky sav (az oxigen-landing mintajara): van markup + CSS (csak mobilon), a gomb a landing #ah-finder-ere ugrik, a hero-gomb szoveget a variant adja', () => {
     const html = fs.readFileSync(new URL('../../foglalas/ajandek.html', import.meta.url), 'utf8');
     const css = fs.readFileSync(new URL('../../assets/css/ajandek.css', import.meta.url), 'utf8');
