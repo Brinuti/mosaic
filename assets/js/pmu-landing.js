@@ -282,7 +282,8 @@
     if (!sav || !pontok.length) return;
     const db = sav.children.length;
     const elozo = $('galeria-elozo'), kov = $('galeria-kov');
-    const aktualis = () => Math.max(0, Math.min(db - 1, Math.round(sav.scrollLeft / sav.clientWidth)));
+    // a szelesseg betoltes elejen meg 0 lehet (elrendezes elott): ilyenkor az elso kep az aktualis
+    const aktualis = () => (sav.clientWidth ? Math.max(0, Math.min(db - 1, Math.round(sav.scrollLeft / sav.clientWidth))) : 0);
     const frissit = () => {
       const i = aktualis();
       pontok.forEach((p, n) => p.setAttribute('aria-current', String(n === i)));
@@ -312,6 +313,8 @@
       sav.scrollTo({ left: i * meret, behavior: 'auto' });
     });
     frissit();
+    addEventListener('load', frissit);
+    if (window.ResizeObserver) new ResizeObserver(frissit).observe(sav);
   })();
 
   // --- video (Google Drive, allo formatum): csak kattintasra toltodik be ------------------------------
