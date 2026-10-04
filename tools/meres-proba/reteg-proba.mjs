@@ -623,7 +623,7 @@ const sor = pg.locator('[data-nezet=' + nezet + ']:not([hidden]) .kezelo-oszlop'
     const ar = (((await reteg(pg).locator('.be-mini').textContent().catch(() => '')) || '').match(/(\d[\d\s\u00a0]*)\s*Ft/) || [])[1];
     const cena = ar ? ar.replace(/\D/g, '') : '1';
     const bu = new URL(keret); for (const [k, v] of Object.entries(felul)) bu.searchParams.set(k, v);
-    return { g, href: BAZIS + '/success-foglalas?first_booking=false&price=' + cena + '&employee=Teszt+Szakember&location=Budapest&service=Proba&g=2461999&bookingUrl=' + encodeURIComponent(bu.href) };
+    return { g, href: BAZIS + '/success-foglalas?first_booking=false&price=' + cena + '&employee=Teszt+Szakember&location=Budapest&service=Proba&g=g:2461999&bookingUrl=' + encodeURIComponent(bu.href) };
   };
   async function elokeszit() {
     const uu = await eloLap(IDOK, { oldal: OLDAL + '?atadas=0' });

@@ -8,9 +8,10 @@ export const VEGPONT = '/api/foglalas-esemeny';
 
 /** A beirando jelzes: a motor vart valasztasa + a Salonic atiranyitasanak vendeg-azonositoja. null, ha valami hianyzik (akkor nem irunk). */
 export function irasAdat(business, expected, ellenorzes) {
-  const vendeg = ellenorzes && ellenorzes.reported && ellenorzes.reported.guestId;
-  if (!business || !expected || !vendeg || expected.serviceId === undefined || expected.serviceId === null || !Number.isFinite(expected.startUnix)) return null;
-  return { uzletag: business, szolgaltatas: String(expected.serviceId), kezdes: expected.startUnix, vendeg: String(vendeg) };
+  // a Salonic atiranyitasa a vendeg-azonositot "g:2038420" alakban adja: az elotag nelkuli szam az azonosito
+  const vendeg = String((ellenorzes && ellenorzes.reported && ellenorzes.reported.guestId) ?? '').replace(/^g:/, '');
+  if (!business || !expected || !/^\d{1,12}$/.test(vendeg) || expected.serviceId === undefined || expected.serviceId === null || !Number.isFinite(expected.startUnix)) return null;
+  return { uzletag: business, szolgaltatas: String(expected.serviceId), kezdes: expected.startUnix, vendeg };
 }
 
 /** Az olvaso cim: a kezeles osszes valtozata (pl. normal / egyeni) egyben, a legujabb foglalas szamit. */

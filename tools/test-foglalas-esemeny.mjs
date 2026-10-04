@@ -22,6 +22,11 @@ test('iras-ellenorzes: jo jelzes elfogadva, a szamok szovegkent', () => {
   assert.equal(e.ok, true); assert.deepEqual(e.adat, jo());
 });
 
+test('iras-ellenorzes: a vendeg-azonosito a Salonic "g:2038420" alakjaban is jo (az elotag nem szamit); hibas alak elutasitva', () => {
+  assert.deepEqual(irasEllenorzes(jo({ vendeg: 'g:2038420' }), NOW), { ok: true, adat: jo({ vendeg: '2038420' }) });
+  for (const rossz of ['g:', 'g:abc', 'x:123', 'g:g:1', ' 12', '']) assert.equal(irasEllenorzes(jo({ vendeg: rossz }), NOW).hiba, 'rossz_vendeg', rossz);
+});
+
 test('iras-ellenorzes: ismeretlen uzletag, rossz azonositok, rossz kezdes, hianyzo mezok elutasitva', () => {
   for (const [felul, hiba] of [[{ uzletag: 'pmu' }, 'ismeretlen_uzletag'], [{ uzletag: 'x' }, 'ismeretlen_uzletag'], [{ uzletag: undefined }, 'ismeretlen_uzletag'],
     [{ szolgaltatas: '12a' }, 'rossz_szolgaltatas'], [{ szolgaltatas: '' }, 'rossz_szolgaltatas'], [{ szolgaltatas: '1'.repeat(13) }, 'rossz_szolgaltatas'],
@@ -102,7 +107,7 @@ test('vegpont: az ELES domainen az iras alapbol KI van kapcsolva (semmit nem tar
 });
 
 test('vegpont: idegen eredet, rossz jelzes, tul nagy test, rossz metodus elutasitva; teszt-vendeg kihagyva; tarolo nelkul nem hibazik', async () => {
-  const env = { ESEMENYEK: hamisKv(), ESEMENY_KIHAGY: ' 111 , 2461253 ' };
+  const env = { ESEMENYEK: hamisKv(), ESEMENY_KIHAGY: ' 111 , g:2461253 ' }; // az elotagos alak is jo a kihagyo listaban
   assert.equal((await kezel(post(jo(), { origin: 'https://masik.example' }), env, NOW)).status, 403);
   assert.equal((await kezel(post(jo(), { origin: 'nem-url' }), env, NOW)).status, 403);
   assert.equal((await kezel(post(jo({ uzletag: 'x' })), env, NOW)).status, 400);
@@ -126,6 +131,8 @@ test('Pages Function: az onRequest a kezelore vezet (eles ido, hamis KV)', async
 test('kliens: irasAdat a motor vart valasztasabol + a Salonic vendeg-azonositojabol; hianyzo adatnal null (nem irunk)', () => {
   const v = { reported: { guestId: '2461253' } };
   assert.deepEqual(irasAdat('hair', { serviceId: 466110, startUnix: 1_800_259_200 }, v), { uzletag: 'hair', szolgaltatas: '466110', kezdes: 1_800_259_200, vendeg: '2461253' });
+  assert.deepEqual(irasAdat('headspa', { serviceId: 302342, startUnix: 1_792_251_000 }, { reported: { guestId: 'g:2038420' } }), { uzletag: 'headspa', szolgaltatas: '302342', kezdes: 1_792_251_000, vendeg: '2038420' }, 'a valodi Salonic-atiranyitas alakja: g:2038420');
+  assert.equal(irasAdat('hair', { serviceId: 1, startUnix: 1 }, { reported: { guestId: 'g:abc' } }), null);
   assert.equal(irasAdat('hair', { serviceId: 466110, startUnix: 1_800_259_200 }, { reported: {} }), null);
   assert.equal(irasAdat('hair', { serviceId: 466110, startUnix: 1_800_259_200 }, null), null);
   assert.equal(irasAdat('hair', null, v), null);
