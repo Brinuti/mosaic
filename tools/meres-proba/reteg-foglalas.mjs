@@ -7,7 +7,7 @@
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import path from 'node:path';
-import { UA, UA_MOBIL, platformOf, engedett, dnsArg, ures } from './tilt.mjs';
+import { UA, UA_MOBIL, platformOf, engedett, dnsArg, ures, esemenyIras, esemenyUres } from './tilt.mjs';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const BAZIS = arg('bazis', 'https://www.mosaicheadspa.hu'), UTVONAL = arg('utvonal', 'hair-konzult'), OVERLAY = arg('overlay', ''), MOBIL = arg('mobil', '0') === '1', OUT = arg('out', '');
@@ -18,7 +18,7 @@ if (OVERLAY) ({ fajlUtvonal } = await import('../serve-dist.mjs'));
 const TIPUS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.mp4': 'video/mp4' };
 const ua = MOBIL ? UA_MOBIL : UA;
 const T0 = Date.now(); const mp = () => Date.now() - T0;
-const idovonal = [], naplo = [];
+const idovonal = [], naplo = [], jegyzettombIras = []; // jegyzettombIras: a (blokkolt) foglalasi jegyzettomb-jelzesek
 
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const ctx = await browser.newContext({ userAgent: ua, viewport: MOBIL ? { width: 390, height: 844 } : { width: 1280, height: 900 }, locale: 'hu-HU', timezoneId: 'Europe/Budapest', serviceWorkers: 'block', isMobile: MOBIL, hasTouch: MOBIL });
@@ -34,6 +34,7 @@ await ctx.route('**/*', async (route) => {
       return route.fulfill({ status: 200, headers: { 'content-type': TIPUS[path.extname(e.fajl)] || 'application/octet-stream', 'cache-control': 'no-store' }, body });
     }
   }
+  if (esemenyIras(url, req.method())) { jegyzettombIras.push(req.postData()); return route.fulfill(esemenyUres()); } // a foglalasi jegyzettombbe a proba nem irhat (tilt.mjs); a jelzest naplozzuk
   const plat = platformOf(url) || (engedett(url, req.method()) || u.origin === BAZIS ? null : 'tiltott');
   if (plat) { naplo.push({ t: mp(), plat, metodus: req.method(), host: u.host, ut: u.pathname.slice(0, 60), keret: req.frame() === page.mainFrame() ? 'FO' : (req.frame() && req.frame().url().slice(0, 70)) }); return route.fulfill(ures(req)); }
   return route.continue();
@@ -105,6 +106,7 @@ try {
   }
   const keretUrlok = page.frames().map((f) => f.url().slice(0, 120));
   lepes('vég', { veg, keretek: keretUrlok.filter((x) => !x.startsWith('about:')) });
+  lepes('jegyzettomb-jelzes (blokkolva, nem ment ki)', { db: jegyzettombIras.length, tartalom: jegyzettombIras[0] || null }); // valodi, ellenorzott foglalasnal EGY jelzes (az eles atadasnal is: keepalive)
   const c6 = reteg.locator('.be-kosz-kartya');
   if (await c6.count()) lepes('sikerkepernyo kartya', { szoveg: (await c6.first().textContent()).replace(/\s+/g, ' ').trim().slice(0, 240) });
   await page.waitForTimeout(6000);

@@ -60,7 +60,7 @@ A build (`tools/netlify-build.mjs`): a launcher verziójelei (`__MOTOR_VERZIO__`
 
 ## Élő foglaltság (2026-10-04, 7. kör)
 
-Az időpont-naptár alatt egy sáv mutatja a szolgáltatás valódi szabad időpontjainak számát a következő 7 napra (`elo-foglaltsag.js`); percenként frissül, csak valódi változásra mozdul; a heti foglaltság % és az „utoljára foglaltak” állapot csak kiszámítható / valódi adatból jelenik meg (ma egyik sem). Részletek: DECISIONS.md.
+Az időpont-naptár alatt egy sáv mutatja a szolgáltatás valódi szabad időpontjainak számát a következő 7 napra (`elo-foglaltsag.js`); percenként frissül, csak valódi változásra mozdul; a heti foglaltság % csak kiszámítható kapacitásból jelenik meg (ma nem), az „N perce foglaltak utoljára” sor csak a szerver-oldali foglalási jegyzettömb valódi bejegyzéséből (`jegyzettomb.js`, `functions/api/foglalas-esemeny.js`; az éles írás ki van kapcsolva a tulajdonos jóváhagyásáig, ezért ma nem látszik). Részletek: DECISIONS.md („Foglalási jegyzettömb”).
 
 ## Viselkedés (2026-10-04, 4. kör)
 

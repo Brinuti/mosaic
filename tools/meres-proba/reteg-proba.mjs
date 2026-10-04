@@ -7,7 +7,7 @@
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import path from 'node:path';
-import { UA, UA_MOBIL, platformOf, engedett, dnsArg, ures } from './tilt.mjs';
+import { UA, UA_MOBIL, platformOf, engedett, dnsArg, ures, esemenyIras, esemenyUres } from './tilt.mjs';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
@@ -42,6 +42,9 @@ const BELEPOK = [
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const eredmeny = [];
 let apiMock = null; // fuggveny(startDate, days) -> a Salonic naptar-API valasza (az "Elo foglaltsag" probahoz)
+// a foglalasi jegyzettomb (/api/foglalas-esemeny) MINDIG mockolt: GET -> esemenyMock(url) (alapbol nincs adat), a POST-ok naploba kerulnek (a valodi vegpontra sosem megy)
+let esemenyMock = () => ({ kor_ms: null });
+const esemenyNaplo = [];
 let cssKesleltet = 0; // ms: a booking-engine.css kiszolgalasanak keslelteteset a "stilus elotti villanas" proba allitja
 const merEsem = []; // a FO ablak kimeno meresi kereseit gyujtjuk (a Salonic-keretet nem): a reteg hasznalata nem indithat meresi esemenyt
 const ok = (cimke, rendben, reszlet = '') => { eredmeny.push({ cimke, rendben, reszlet }); console.log(`${rendben ? 'OK  ' : 'HIBA'} ${cimke}${reszlet ? ' | ' + reszlet : ''}`); };
@@ -52,6 +55,7 @@ async function ujLap() {
     const req = route.request(), url = req.url();
     let u; try { u = new URL(url); } catch (e) { return route.continue(); }
     if (apiMock && /api\.salonic\.hu\/calendar\/getAvailableTimes/.test(url)) return route.fulfill({ status: 200, headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*' }, body: JSON.stringify(apiMock(+u.searchParams.get('startDate'), +u.searchParams.get('days'))) });
+    if (/\/api\/foglalas-esemeny(\?|$)/.test(u.pathname + u.search)) { esemenyNaplo.push({ metodus: req.method(), ut: u.pathname + u.search, test: req.postData() || null }); return route.fulfill({ status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: JSON.stringify(req.method() === 'GET' ? esemenyMock(u) : { irva: false, ok: 'proba' }) }); }
     if (cssKesleltet && /booking-engine\.css/.test(u.pathname)) await new Promise((r) => setTimeout(r, cssKesleltet));
     if (OVERLAY && u.origin === BAZIS && req.method() === 'GET') {
       const e = fajlUtvonal(decodeURIComponent(u.pathname), req.headers()['user-agent'] || ua);
@@ -62,6 +66,7 @@ async function ujLap() {
         return route.fulfill({ status: 200, headers: { 'content-type': TIPUS[path.extname(e.fajl)] || 'application/octet-stream', 'cache-control': 'no-store' }, body });
       }
     }
+    if (esemenyIras(url, req.method())) return route.fulfill(esemenyUres()); // a foglalasi jegyzettombbe a proba nem irhat (tilt.mjs)
     const plat = platformOf(url) || (engedett(url, req.method()) || u.origin === BAZIS ? null : 'tiltott');
     if (plat) {
       if (req.frame() && req.frame().parentFrame() === null) { const q = Object.fromEntries(u.searchParams); let ev = ''; if (plat === 'meta') ev = new URLSearchParams(req.postData() || '').get('ev') || q.ev || ''; else if (plat === 'tiktok') { try { ev = JSON.parse(req.postData() || '{}').event || ''; } catch (e) { ev = ''; } } else ev = q.en || ''; merEsem.push({ plat, ev: ev || u.pathname.slice(0, 40), ut: u.pathname.slice(0, 40) }); }
@@ -526,11 +531,11 @@ const sor = pg.locator('[data-nezet=' + nezet + ']:not([hidden]) .kezelo-oszlop'
     return { status: 'success', data: { blocks, placeName: 'Mosaic Headspa', placeAddress: '1023 Budapest, Bécsi út 4.' } };
   };
   const sav = (pg) => pg.locator('#mosaic-booking-layer').locator('.be-elo');
-  async function eloLap(idok) {
+  async function eloLap(idok, { oldal = OLDAL } = {}) {
     apiMock = mockAlap(idok);
     const u = await ujLap();
     await u.page.addInitScript(() => { window.__MH_ELO_MS = 1500; });
-    await u.page.goto(BAZIS + OLDAL, { waitUntil: 'domcontentloaded' });
+    await u.page.goto(BAZIS + oldal, { waitUntil: 'domcontentloaded' });
     await u.page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 });
     await u.page.evaluate(() => window.openBooking({ business: 'headspa', service: 'paros' }));
     await sav(u.page).waitFor({ timeout: 25000 });
@@ -580,6 +585,70 @@ const sor = pg.locator('[data-nezet=' + nezet + ']:not([hidden]) .kezelo-oszlop'
   s = sav(u.page);
   const uz4 = (await s.locator('.be-elo-uzenet').textContent()).trim();
   ok('elo foglaltsag: ha a 7 napban nincs szabad idopont, ezt mondja es megnevezi a legkozelebbit', /^A következő 7 napra nincs szabad időpont\. A legközelebbi: .+\.$/.test(uz4) && /nincs/.test(await s.getAttribute('class')), uz4);
+  await u.ctx.close();
+
+  // --- 2026-10-04 (8. kor): a foglalasi jegyzettomb (szerver-oldali, valodi foglalasi esemenyek): "N perce foglaltak utoljara erre a kezelesre" + az iras a megerositett foglalasnal ---
+  const IDOK = [idopont(1), idopont(2), idopont(3), idopont(10), idopont(40)];
+  // a) van valodi bejegyzes: a sav masodik sora; a szamlalo percenkent leptet (59 perc -> 1 orája), nem ugrik; a jegyzettomb ritkan kerdezodik
+  let esemenyT = null;
+  esemenyMock = () => ({ kor_ms: Date.now() - (esemenyT ||= Date.now() - (59 * 60000 + 57000)) });
+  esemenyNaplo.length = 0;
+  u = await eloLap(IDOK);
+  s = sav(u.page);
+  await s.locator('.be-elo-sor').first().waitFor({ timeout: 10000 }).catch(() => {});
+  const sor1 = (await s.locator('.be-elo-sor').first().textContent().catch(() => '')).trim();
+  ok('jegyzettomb: valodi bejegyzesnel a savban megjelenik: "59 perce foglaltak utoljara erre a kezelesre." (a masik sor valtozatlan)', /^59 perce foglaltak utoljára erre a kezelésre\.$/.test(sor1) && /^A következő 7 napra/.test(await s.locator('.be-elo-uzenet').textContent()), sor1);
+  await s.locator('.be-elo-sor', { hasText: 'órája' }).waitFor({ timeout: 9000 }).catch(() => {});
+  const sor2 = (await s.locator('.be-elo-sor').first().textContent().catch(() => '')).trim();
+  ok('jegyzettomb: a szamlalo percenkent leptet ("59 perce" -> "1 oraja foglaltak utoljara erre a kezelesre."), nincs valtozas-animacio, a cim marad', sor2 === '1 órája foglaltak utoljára erre a kezelésre.' && (await s.locator('.be-elo-cim').textContent()) === 'Élő foglaltság' && !(await s.locator('.be-elo-uzenet.valt').count()), sor2);
+  await u.page.waitForTimeout(3500);
+  const olvasasok = esemenyNaplo.filter((e) => e.metodus === 'GET');
+  ok('jegyzettomb: az olvasas a kezeles azonositoival megy (uzletag + szolgaltatas), ritkan (nem minden frissitesi korben): 2-3 olvasas ~12 mp alatt, iras nincs', olvasasok.length >= 2 && olvasasok.length <= 3 && /uzletag=headspa&szolgaltatas=\d+(,\d+)*$/.test(olvasasok[0].ut) && !esemenyNaplo.some((e) => e.metodus !== 'GET'), olvasasok.length + ' olvasas: ' + (olvasasok[0] || {}).ut);
+  await u.ctx.close();
+
+  // b) tul regi (25 oras) vagy ertelmetlen adat: a sor nem jelenik meg (nem mondunk semmit, ami nem igaz / nem biztos)
+  for (const [cimke, mock] of [['25 oras bejegyzes', () => ({ kor_ms: 25 * 3600 * 1000 })], ['ertelmetlen adat', () => ({ kor_ms: 'x' })], ['hianyzo adat', () => ({})]]) {
+    esemenyMock = mock;
+    u = await eloLap(IDOK); s = sav(u.page);
+    await u.page.waitForTimeout(2500);
+    ok('jegyzettomb: ' + cimke + ' -> nincs "N perce foglaltak" sor (csak az elsodleges uzenet)', (await s.locator('.be-elo-sor').count()) === 0 && /^A következő 7 napra/.test(await s.locator('.be-elo-uzenet').textContent()), '');
+    await u.ctx.close();
+  }
+  esemenyMock = () => ({ kor_ms: null });
+
+  // c) iras: CSAK a megerositett (a motor vart valasztasaval egyezo) foglalasnal; hibas atiranyitasnal nem. (atadas=0: a motor maga mutatja a sikert, nem ad at az eles koszonooldalnak)
+  const atiranyitas = async (pg, felul = {}) => {
+    const keret = await reteg(pg).locator('iframe.be-iframe').getAttribute('src');
+    const g = new URL(keret);
+    const ar = (((await reteg(pg).locator('.be-mini').textContent().catch(() => '')) || '').match(/(\d[\d\s\u00a0]*)\s*Ft/) || [])[1];
+    const cena = ar ? ar.replace(/\D/g, '') : '1';
+    const bu = new URL(keret); for (const [k, v] of Object.entries(felul)) bu.searchParams.set(k, v);
+    return { g, href: BAZIS + '/success-foglalas?first_booking=false&price=' + cena + '&employee=Teszt+Szakember&location=Budapest&service=Proba&g=2461999&bookingUrl=' + encodeURIComponent(bu.href) };
+  };
+  async function elokeszit() {
+    const uu = await eloLap(IDOK, { oldal: OLDAL + '?atadas=0' });
+    await reteg(uu.page).locator('.be-nnap.szabad').first().waitFor({ timeout: 20000 });
+    await reteg(uu.page).locator('.be-idogomb').first().click();
+    await reteg(uu.page).locator('iframe.be-iframe').waitFor({ state: 'attached', timeout: 20000 }); // csak a megjelenese kell (a Salonic-keret kitoltese a mockolt idopontra nem kell)
+    return uu;
+  }
+  esemenyNaplo.length = 0;
+  u = await elokeszit();
+  let a = await atiranyitas(u.page, { startDate: String(+(await atiranyitas(u.page)).g.searchParams.get('startDate') + 1800) }); // masik idopont, mint amit valasztott
+  await u.page.evaluate((h) => window.mhKeretbenOldal(h), a.href);
+  await u.page.waitForTimeout(2500);
+  ok('jegyzettomb: ha a Salonic atiranyitasa NEM egyezik a vart valasztassal (masik idopont), nem keletkezik jelzes (nincs iras)', !esemenyNaplo.some((e) => e.metodus === 'POST') && !(await reteg(u.page).locator('.be-kosz-kartya').count()), esemenyNaplo.map((e) => e.metodus).join(','));
+  await u.ctx.close();
+
+  u = await elokeszit();
+  a = await atiranyitas(u.page);
+  await u.page.evaluate((h) => window.mhKeretbenOldal(h), a.href);
+  await reteg(u.page).locator('.be-kosz-kartya').waitFor({ timeout: 10000 }).catch(() => {});
+  const posztok = esemenyNaplo.filter((e) => e.metodus === 'POST');
+  let adat = null; try { adat = JSON.parse((posztok[0] || {}).test || 'null'); } catch (e) { adat = null; }
+  ok('jegyzettomb: megerositett foglalasnal EGY jelzes megy: uzletag, szolgaltatas, kezdes (a motor vart valasztasa), vendeg-azonosito (a Salonic atiranyitasabol)',
+    posztok.length === 1 && adat && adat.uzletag === 'headspa' && adat.szolgaltatas === a.g.searchParams.get('serviceId') && adat.kezdes === +a.g.searchParams.get('startDate') && adat.vendeg === '2461999' && Object.keys(adat).length === 4, posztok.length + ' iras: ' + ((posztok[0] || {}).test || ''));
+  ok('jegyzettomb: a jelzes nem tartalmaz szemelyes adatot (nev, e-mail, telefon), csak azonositokat es idot', !!adat && !/@|\+36|Teszt|Proba/.test(JSON.stringify(adat)), JSON.stringify(adat));
   await u.ctx.close();
   apiMock = null;
 

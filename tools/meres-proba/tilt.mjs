@@ -28,9 +28,14 @@ const ENGEDETT_GET = [
   /^https:\/\/(i\.ytimg\.com|img\.youtube\.com)\//,
   /^https:\/\/(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|code\.jquery\.com|ajax\.googleapis\.com|maxcdn\.bootstrapcdn\.com|stackpath\.bootstrapcdn\.com|use\.fontawesome\.com)\//,
 ];
+// A foglalasi jegyzettomb (functions/api/foglalas-esemeny.js) IRASA: a probak alapbol NEM irhatnak bele (a teszt-foglalas ne keruljon a valodi "N perce foglaltak
+// utoljara" sorba); a kereset a szkriptek helyben megvalaszoljak. Szandekos vizsgalathoz (elonezeti KV): MERES_ESEMENY_IRAS=1.
+export const esemenyIras = (url, method) => /\/api\/foglalas-esemeny(\?|$)/.test(url) && method !== 'GET' && process.env.MERES_ESEMENY_IRAS !== '1';
+export const esemenyUres = () => ({ status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: '{"irva":false,"ok":"proba"}' });
+
 // a Salonic maga barmilyen metodussal; a reCAPTCHA (a Salonic sajat vedelme, nem meres) barmilyen metodussal; a tobbi csak GET
-// a sajat PR-elonezetek (Cloudflare Pages: <ag>.mosaic-d77.pages.dev) is a sajat oldalunk: barmilyen metodussal engedett (a meres ott ugyse fut: nem eles domain)
-export const engedett = (url, method) => /^https:\/\/([a-z0-9-]+\.)?mosaic-d77\.pages\.dev\//.test(url) || /^https:\/\/[a-z0-9.-]*salonic\.hu\//.test(url)
+// a sajat PR-elonezetek (Cloudflare Pages: <ag>.mosaic-d77.pages.dev) is a sajat oldalunk: barmilyen metodussal engedett (a meres ott ugyse fut: nem eles domain); a jegyzettomb-iras kivetel (lasd fent)
+export const engedett = (url, method) => (/^https:\/\/([a-z0-9-]+\.)?mosaic-d77\.pages\.dev\//.test(url) && !esemenyIras(url, method)) || /^https:\/\/[a-z0-9.-]*salonic\.hu\//.test(url)
   || /^https:\/\/(www\.google\.com\/recaptcha\/|www\.gstatic\.com\/recaptcha\/|www\.recaptcha\.net\/)/.test(url)
   || (method === 'GET' && ENGEDETT_GET.some((re) => re.test(url)));
 

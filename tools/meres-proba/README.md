@@ -33,6 +33,8 @@ A valódi foglalás próbaszáma alapból a **tulajdonos saját száma** (+36 70
 
 A teszt a süti-hozzájárulást elfogadottnak tekinti (a saját tárolóba írja, mint a süti-sáv gombja), így a mérés teljes üzemben fut.
 
+**Foglalási jegyzettömb** (`/api/foglalas-esemeny`): a szkriptek soha nem írhatnak a valódi jegyzettömbbe (a próbafoglalás ne kerüljön az „N perce foglaltak utoljára” sorba): az írás (POST) a `tilt.mjs` `esemenyIras` szabálya szerint tiltott, a szkriptek helyben megválaszolják; a `reteg-proba.mjs` a végpontot teljesen mockolja (olvasás és írás a naplóba). Szándékos vizsgálathoz (előnézeti KV-névtér): `MERES_ESEMENY_IRAS=1`.
+
 ## Meta-pixel oldalankénti ellenőrzése: `pixel-proba.mjs`
 
 Minden oldalon `?fbclid=TESZTPIXEL` paraméterrel betölti az oldalt, és oldalanként megmondja: melyik pixel-azonosító indult (és hányszor: `fbq.getState().pixels`),

@@ -7,7 +7,7 @@
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import path from 'node:path';
-import { UA, UA_MOBIL, platformOf, engedett, dnsArg, ures } from './tilt.mjs';
+import { UA, UA_MOBIL, platformOf, engedett, dnsArg, ures, esemenyIras, esemenyUres } from './tilt.mjs';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const OVERLAY = arg('overlay', ''), MOBIL = arg('mobil', '0') === '1', KI = arg('ki', 'design-kepek'), BAZIS = arg('bazis', 'https://www.mosaicheadspa.hu'), STILUS = arg('stilus', '0') === '1';
@@ -32,6 +32,7 @@ await ctx.route('**/*', async (route) => {
       return route.fulfill({ status: 200, headers: { 'content-type': TIPUS[path.extname(e.fajl)] || 'application/octet-stream', 'cache-control': 'no-store' }, body });
     }
   }
+  if (esemenyIras(url, req.method())) return route.fulfill(esemenyUres()); // a foglalasi jegyzettombbe a proba nem irhat (tilt.mjs)
   const plat = platformOf(url) || (engedett(url, req.method()) || u.origin === BAZIS ? null : 'tiltott');
   if (plat) return route.fulfill(ures(req));
   return route.continue();

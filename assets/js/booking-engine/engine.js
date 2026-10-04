@@ -18,6 +18,7 @@ import { CHOOSER, PMU_PATH } from './families.js';
 import { IKONOK, hajhosszIkon, kezelesIkon } from './ikonok.js';
 import { koszonoLepesek, VISSZAHIVAS_LEPESEK, LEZER_KEZELO } from './koszono.js';
 import { ablakIdopontok, eloAllapot, frissites, ELO_NAP } from './elo-foglaltsag.js';
+import { VEGPONT, irasAdat, olvasUrl, utolsoFoglalasPerc } from './jegyzettomb.js';
 import { HEADSPA } from './flows/headspa.js';
 import { OXYGEN } from './flows/oxygen.js';
 import { HAIR } from './flows/hair.js';
@@ -35,6 +36,7 @@ const NAPTAR_NAP = 92; // a havi naptar (C1) ennyi napra elore keres (mint a PMU
 const HETNAPOK = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
 const NO_STEPS = new Set(['C6', 'A1_SENT']); // kesz foglalas / kesz visszahivas-keres: nincs mit lepni
 const ELO_MS = 60 * 1000; // az "Elo foglaltsag" sav frissitese (csak nyitott naptarnal, lathato lapon); tesztben win.__MH_ELO_MS felulirja
+const JEGYZETTOMB_KORONKENT = 5; // a foglalasi jegyzettombot minden 5. frissitesi korben olvassuk ujra (a KV olvasasi keret kimeleseert); a "N perce" szamlalo kozben percenkent leptet
 const MIN_LEAD_MINUTES = 30; // a fel oran belul kezdodo idopontot nem kinaljuk (mint a PMU foglalo)
 const HOLD_MS = 4 * 60 * 1000 + 50 * 1000; // a Salonic 5 percig tartja fenn a megnyitott idopontot
 // A Salonic-fiok betolti a MOSAIC kozos stiluslapjat (salonic/mosaic.css, vagy a PMU-nal pmu.css): a fejlec 70 px (a keret 78 px-t vag le),
@@ -329,22 +331,42 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     const pont = h('span', { class: 'be-elo-pont', 'aria-hidden': 'true' });
     const cim = h('b', { class: 'be-elo-cim' }); const uz = h('span', { class: 'be-elo-uzenet' }); const extra = h('span', { class: 'be-elo-extra' }); const also = h('i', { class: 'be-elo-also' });
     const el = h('div', { class: 'be-elo jo', role: 'status', 'aria-live': 'polite' }, pont, h('div', { class: 'be-elo-szoveg' }, cim, uz, extra, also));
-    let elozoUzenet = null; let frissultAmig = 0;
+    let elozoUzenet = null; let elozoExtra = ''; let frissultAmig = 0;
     const rajzol = (valtozas = null) => {
       if (valtozas) { frissultAmig = now() + 12000; win.setTimeout(() => { if (el.isConnected) rajzol(); }, 12100); } // 12 mp-ig "Most frissult", utana vissza "Elo foglaltsag"-ra
       const pool = eloPool(); const idok = ablakIdopontok(pool, nowUnix(), ELO_NAP);
       const elso = pool.length ? F.uniqueTimes(pool)[0] : null;
-      const a = eloAllapot({ szabad: idok.length, kovetkezo: !idok.length && elso ? F.longDate(elso.start_unix) : null, frissult: now() < frissultAmig ? 'valtozas' : null });
+      const a = eloAllapot({ szabad: idok.length, kovetkezo: !idok.length && elso ? F.longDate(elso.start_unix) : null, frissult: now() < frissultAmig ? 'valtozas' : null,
+        utolsoFoglalasPerc: S.utolso ? utolsoFoglalasPerc(S.utolso.valasz, S.utolso.mikor, now()) : null }); // csak a jegyzettombbol (valodi foglalasi esemeny); nincs adat = nincs sor
       el.className = 'be-elo ' + a.hangulat;
       cim.textContent = a.cim; also.textContent = a.also;
-      extra.replaceChildren(...a.extra.map((s) => h('span', { class: 'be-elo-sor', text: s })));
+      const extraSzoveg = a.extra.join('\n');
+      if (extraSzoveg !== elozoExtra) { extra.replaceChildren(...a.extra.map((s) => h('span', { class: 'be-elo-sor', text: s }))); elozoExtra = extraSzoveg; } // csak valodi valtozaskor nyulunk a DOM-hoz (a kepernyoolvaso sem szol feleslegesen)
       if (a.uzenet !== elozoUzenet) { uz.textContent = a.uzenet; if (elozoUzenet !== null) { uz.classList.remove('valt'); void uz.offsetWidth; uz.classList.add('valt'); } elozoUzenet = a.uzenet; }
     };
     return { el, rajzol };
   }
+  // A foglalasi jegyzettomb (jegyzettomb.js, szerver-oldali, VALODI foglalasi esemenyek): mikor foglaltak utoljara erre a kezelesre (a kezeles osszes valtozata kozul a legujabb).
+  // Hiba / nincs bejegyzes / nincs szerver-oldali tarolo: a sav ezt a sort nem mutatja (nem talalunk ki erteket).
+  async function jegyzettombOlvas() {
+    if (destroyed || S.adapterSample || !S.service || !S.eloBar || typeof win.fetch !== 'function') return;
+    const bar = S.eloBar; const token = renderToken;
+    try {
+      const vs = S.variants && S.variants.length > 1 ? S.variants : [S.service];
+      const r = await win.fetch(olvasUrl(flow.business, vs.map((v) => v.serviceId)), { cache: 'no-store', credentials: 'same-origin' });
+      if (!r.ok) return;
+      const valasz = await r.json();
+      if (destroyed || token !== renderToken || S.eloBar !== bar) return;
+      S.utolso = { valasz, mikor: now() };
+      bar.rajzol();
+    } catch (e) { /* nincs adat: a sav ezt a sort nem mutatja */ }
+  }
   // Percenkent (csak nyitott naptarnal, lathato lapon): friss lekeres a kovetkezo 7 napra; ha a szabad idopontok halmaza tenylegesen valtozott, a naptar es a sav helyben frissul
   async function eloFrissit() {
     if (destroyed || doc.hidden || S.state !== 'C1' || !S.eloBar || !S.service || S.eloBusy) return;
+    S.eloTick = (S.eloTick || 0) + 1;
+    S.eloBar.rajzol(); // a "N perce foglaltak" szamlalo percenkent leptet (a szoveg csak akkor valtozik, ha a perc valtozott)
+    if (S.eloTick % JEGYZETTOMB_KORONKENT === 0) jegyzettombOlvas();
     S.eloBusy = true; const bar = S.eloBar; const token = renderToken;
     try {
       const vs = S.variants && S.variants.length > 1 ? S.variants : [S.service];
@@ -645,7 +667,8 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       paint();
       S.repaint = paint; // a hatterben megerkezo tovabbi napok helyben frissitik a naptarat
       S.onMore = () => { if (S.state === 'C1' && S.repaint && naptar.isConnected) S.repaint(); };
-      const elo = eloSav(); S.eloBar = elo; elo.rajzol();
+      S.utolso = null; S.eloTick = 0; // a jegyzettomb-adat a mostani kezeleshez tartozik: ujraolvassuk
+      const elo = eloSav(); S.eloBar = elo; elo.rajzol(); jegyzettombOlvas();
       win.clearInterval(S.eloTimer); if (!destroyed) S.eloTimer = win.setInterval(eloFrissit, win.__MH_ELO_MS || ELO_MS);
       track('booking_slot_viewed', { ...track0, count: S.day ? F.dayTimes(S.staff ? F.filterSlots(S.slots, { staffId: S.staff }) : S.slots, S.day).length : 0 });
       // a cim a PMU-foglalon sincs kiirva (a lepesjelzo mutatja, hol tart); a kepernyoolvasonak es a fokusznak marad egy rejtett cim
@@ -937,6 +960,15 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       ...serviceParams(S.service), booking_type: type, booking_id: v.bookingRef, final_price: v.reported.price ?? S.service.activePrice,
       new_or_returning: v.firstBooking ? 'new' : 'returning', acquisition: isAcquisition({ bookingType: cls.bookingType, splitByRuntime: cls.splitByRuntime, firstBooking: v.firstBooking }),
     }, { once: v.bookingRef });
+    jegyzettombIr(v);
+  }
+  // A foglalasi jegyzettombbe (szerver) kerul: a VALODI, ellenorzott foglalas ideje (a sav "N perce foglaltak utoljara" sorahoz). Szemelyes adat nelkul; a szerver az eles
+  // domainen alapbol nem tarol (ESEMENY_IRAS kapcsolo), a hiba nem akadalyozza a vendeget. keepalive: az eles atiranyitas (HANDOFF) kozben is elmegy.
+  function jegyzettombIr(v) {
+    if (S.adapterSample || typeof win.fetch !== 'function') return;
+    const adat = irasAdat(flow.business, S.expected, v);
+    if (!adat) return;
+    try { win.fetch(VEGPONT, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(adat), keepalive: true, credentials: 'same-origin' }).catch(() => {}); } catch (e) { /* nem kritikus */ }
   }
   win.mhKeretbenOldal = onSalonicRedirect;
   const destroy = () => {
