@@ -1,0 +1,98 @@
+// MOSAIC oxigenterapia landing (/oxigenterapia-budapest) - a kezelok, az eredmenyek es a videok mukodese.
+//
+// Az oldalon belul nincs #horgony-link: a GTM History Change triggere minden hash-valtozasra merest inditana, ezert a
+// "gorgess ide" gombok (data-gorgetes) a JS-ben gorgetnek, az URL valtozatlan marad. A foglalas a Salonic-linkeken keresztul
+// (a build kozponti link-terkepe kesobb a kozos foglalora koti at), ezert itt foglalo-kod nincs.
+(() => {
+  'use strict';
+
+  // A sajat kereteben nyiltunk meg (a Salonic visszairanyitott): a suti.js mar jelzett a szulonek.
+  try { if (window.top !== window.self && window.parent.location.hostname === location.hostname) return; } catch (e) { /* idegen keret */ }
+
+  const $ = (id) => document.getElementById(id);
+  const meres = (adat) => { (window.dataLayer = window.dataLayer || []).push(adat); };
+
+  // --- CTA-mérés: ugyanaz a minta, mint a PMU landingen (data-cta) ----------------------------------
+  document.addEventListener('click', (e) => {
+    const c = e.target.closest('[data-cta]');
+    if (c) meres({ event: 'oxigen_landing_cta', cta: c.dataset.cta });
+  });
+
+  // --- gorgetes (URL-valtozas nelkul) ---------------------------------------------------------------
+  const csokkentett = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.addEventListener('click', (e) => {
+    const g = e.target.closest('[data-gorgetes]');
+    if (!g) return;
+    const cel = $(g.dataset.gorgetes);
+    if (!cel) return;
+    const r = $('protokoll');
+    if (r && g.dataset.gorgetes === 'kezeles') r.open = true;
+    cel.scrollIntoView({ behavior: csokkentett ? 'auto' : 'smooth', block: 'start' });
+  });
+
+  // --- lapozhato sorok (kezelok, eredmenyek) --------------------------------------------------------
+  function lapozo(sav, elozo, kovetkezo, rejtsdHaNincsTul) {
+    if (!sav || !elozo || !kovetkezo) return;
+    const allapot = () => {
+      const tul = sav.scrollWidth > sav.clientWidth + 4;
+      if (rejtsdHaNincsTul) elozo.hidden = kovetkezo.hidden = !tul;
+      elozo.disabled = sav.scrollLeft < 4;
+      kovetkezo.disabled = sav.scrollLeft + sav.clientWidth > sav.scrollWidth - 4;
+    };
+    const lapoz = (irany) => {
+      const kartya = sav.firstElementChild;
+      const lepes = kartya ? kartya.getBoundingClientRect().width + parseFloat(getComputedStyle(sav).columnGap || 20) : sav.clientWidth * 0.9;
+      sav.scrollBy({ left: irany * lepes, behavior: csokkentett ? 'auto' : 'smooth' });
+    };
+    elozo.addEventListener('click', () => lapoz(-1));
+    kovetkezo.addEventListener('click', () => lapoz(1));
+    sav.addEventListener('scroll', allapot, { passive: true });
+    addEventListener('resize', allapot);
+    allapot();
+  }
+  lapozo($('kezelo-sav'), $('kezelo-elozo'), $('kezelo-kovetkezo'), true);
+  lapozo($('ba-sav'), $('ba-elozo'), $('ba-kovetkezo'), false);
+
+  // --- video: csak kattintasra toltodik be ----------------------------------------------------------
+  const doboz = $('video-doboz'), gomb = $('video-gomb');
+  if (doboz && gomb) {
+    gomb.addEventListener('click', () => {
+      const v = document.createElement('video');
+      v.src = doboz.dataset.video;
+      v.controls = true;
+      v.autoplay = true;
+      v.playsInline = true;
+      v.setAttribute('playsinline', 'true');
+      v.setAttribute('aria-label', 'Így zajlik egy oxigénterápiás kezelés');
+      gomb.replaceWith(v);
+      v.play().catch(() => { /* a vezérlők megmaradnak, a látogató elindíthatja */ });
+      meres({ event: 'oxigen_landing_video' });
+    }, { once: true });
+  }
+
+  // --- a MOSAIC Google-ertekelese a Trustindex-widget aktualis tartalmabol -----------------------------
+  // A Trustindex a suti-tajekoztato szerint "funkcionalis" szolgaltatas: csak ennek engedelyezese utan kerdezzuk le.
+  const TI = 'https://cdn.trustindex.io/widgets/8a/8a7562c424f027774456be130a1/content.html';
+  let tiKesz = false;
+  async function ertekelesFrissit() {
+    if (tiKesz || !$('te-db') || !(window.mhSuti && mhSuti.engedely('fun'))) return;
+    tiKesz = true;
+    try {
+      const d = new DOMParser().parseFromString(await (await fetch(TI, { credentials: 'omit' })).text(), 'text/html');
+      const fej = d.querySelector('.ti-header');
+      const db = ((fej && fej.querySelector('.ti-rating-text a')) || {}).textContent || '';
+      const n = (db.match(/\d[\d\s.]*/) || [''])[0].replace(/\D/g, '');
+      const cs = fej ? [...fej.querySelectorAll('.ti-stars .ti-star')].map((x) => (x.classList.contains('f') ? 1 : x.classList.contains('h') ? 0.5 : 0)) : [];
+      const min = ((fej && fej.querySelector('.ti-rating')) || {}).textContent;
+      if (n) $('te-db').textContent = new Intl.NumberFormat('hu-HU').format(+n).replace(/\s/g, '.') + ' Google-vélemény';
+      if (cs.length === 5) {
+        const ossz = cs.reduce((a, b) => a + b, 0);
+        $('te-csillagok').style.setProperty('--ert', (ossz / 5) * 100 + '%');
+        $('te-csillagok').setAttribute('aria-label', '5 csillagból ' + String(ossz).replace('.', ','));
+      }
+      if (min && min.trim()) $('te-minosites').textContent = min.trim().replace(/ értékelés$/i, '');
+    } catch (e) { tiKesz = false; console.error(e); }
+  }
+  ertekelesFrissit();
+  if (window.mhSuti && mhSuti.figyel) mhSuti.figyel(ertekelesFrissit);
+})();
