@@ -775,3 +775,56 @@ describe('a hatodik kor visszajelzesei', () => {
     await ctx.close();
   });
 });
+
+describe('a hetedik kor visszajelzesei', () => {
+  test('telefonon az elso kepernyon (kis kijelzon is) nincs sticky sav; csak a hero gombjainak elgorgetese utan jon be', async () => {
+    const ctx = await bongeszo.newContext({ viewport: { width: 390, height: 600 }, userAgent: UA_MOBIL, isMobile: true, hasTouch: true });
+    const p = await ctx.newPage();
+    await p.route(/^(?!http:\/\/localhost)/, (r) => r.abort());
+    await p.goto(bazis + OLDAL, { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(600);
+    const gomb = await p.$eval('.hero .cta-sor', (e) => e.getBoundingClientRect().top);
+    assert.ok(gomb > 600, 'a hero gombjai az elso kepernyo alatt vannak: ' + gomb);
+    assert.equal(await p.$eval('#sticky-cta', (e) => e.classList.contains('lathato')), false, 'betoltes utan nincs sav');
+    await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, 300); });
+    await p.waitForTimeout(400);
+    assert.equal(await p.$eval('#sticky-cta', (e) => e.classList.contains('lathato')), false, 'a gombok meg nem gorogtek el');
+    await p.evaluate(() => { const e = document.querySelector('.tudod'); scrollTo(0, e.getBoundingClientRect().top + scrollY - 80); });
+    await p.waitForTimeout(500);
+    assert.equal(await p.$eval('#sticky-cta', (e) => e.classList.contains('lathato')), true, 'a gombok elgorgetese utan latszik');
+    await ctx.close();
+  });
+
+  test('"/ alkalom" a kartyakon (nem "fizetos alkalom"); az Allnak nincs alcime az arlistaban', async () => {
+    const { p, ctx } = await nyit();
+    const kartya = await p.$$eval('.gyors-kartya small', (l) => l.map((e) => e.textContent.trim()));
+    assert.deepEqual(kartya, ['/ alkalom', '/ alkalom', '/ alkalom', '/ alkalom']);
+    assert.equal(await p.locator('#arlista tr[data-kulcs="all"] small').count(), 0);
+    assert.ok(!/állcsúcs/.test(await p.textContent('#arlista')), 'nincs "allcsucs + allkapocsvonal" szoveg');
+    await ctx.close();
+  });
+
+  test('asztalon a Zsofi-szekcioban a cim a video tetejevel, a galeria a video aljaval egy vonalban van; a gomb korul hely', async () => {
+    const { p, ctx } = await nyit();
+    await p.evaluate(() => document.querySelectorAll('#zsofi img[loading=lazy]').forEach((i) => { i.loading = 'eager'; }));
+    await p.locator('#zsofi').scrollIntoViewIfNeeded();
+    await p.waitForTimeout(500);
+    const m = await p.evaluate(() => {
+      const v = document.querySelector('#zsofi-video').getBoundingClientRect(); const h = document.querySelector('#zsofi-cim').getBoundingClientRect();
+      const g = document.querySelector('#zsofi .galeria').getBoundingClientRect(); const b = document.querySelector('#zsofi-cim').parentElement.querySelector('.gomb').getBoundingClientRect();
+      const u = document.querySelector('#zsofi .zsofi-tenyek').getBoundingClientRect();
+      return { videoTop: v.top, cimTop: h.top, videoAlja: v.bottom, galeriaAlja: g.bottom, gombElott: b.top - u.bottom, gombUtan: g.top - b.bottom };
+    });
+    assert.ok(Math.abs(m.cimTop - m.videoTop) <= 8, 'a cim teteje a video tetejen: ' + [m.cimTop, m.videoTop]);
+    assert.ok(Math.abs(m.galeriaAlja - m.videoAlja) <= 2, 'a galeria alja a video alja: ' + [m.galeriaAlja, m.videoAlja]);
+    assert.ok(m.gombElott >= 16 && m.gombUtan >= 24, 'a gomb korul hely: ' + [m.gombElott, m.gombUtan]);
+    await ctx.close();
+  });
+
+  test('"Valoszinuleg igen" kartya: az uj szoveg (borotva, begyulladt szortuszok)', async () => {
+    const { p, ctx } = await nyit();
+    const szoveg = await p.textContent('.alkalmas-kartya.igen p');
+    assert.match(szoveg, /^Ha egy életre elfelejtenéd a borotvát és a begyulladt szőrtüszőket, akkor igen\./);
+    await ctx.close();
+  });
+});

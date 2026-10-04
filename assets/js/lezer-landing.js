@@ -385,7 +385,8 @@
       sticky.querySelectorAll('a').forEach((a) => (lat ? a.removeAttribute('tabindex') : a.setAttribute('tabindex', '-1')));
       document.body.classList.toggle('sticky-be', lat);
     };
-    new IntersectionObserver((es) => { heroLatszik = es[0].isIntersecting; frissit(); }).observe(heroCta);
+    // a sav csak akkor jon be, ha a hero gombjai mar FELJEBB gorogtek a kepernyo tetejen (nem akkor, ha meg lejjebb vannak: kis telefonon a gombok az elso kepernyo alatt vannak)
+    new IntersectionObserver((es) => { heroLatszik = es[0].isIntersecting || es[0].boundingClientRect.top > 0; frissit(); }).observe(heroCta);
     // a foglalo szekcio kepernyon van, vagy mar elhagytuk (fentebb van): a foglalo maga a cel, ott / utana nincs szukseg a savra
     new IntersectionObserver((es) => { const r = es[es.length - 1]; vegen = r.isIntersecting || r.boundingClientRect.top < 0; frissit(); }).observe(foglSzekcio);
   }
