@@ -671,3 +671,21 @@ describe('a latvanyterv szerinti ikonok es a tomorebb arlista', () => {
     await ctx.close();
   });
 });
+
+describe('eredmenyek: tobb valodi elotte/utana kartya', () => {
+  test('harom kartya (honalj, labszar, arc), mindegyik kepe betoltodik, a rács nem "egy" kartyas', async () => {
+    const { p, ctx } = await nyit();
+    await p.evaluate(() => document.querySelectorAll('#eredmenyek img[loading=lazy]').forEach((i) => { i.loading = 'eager'; }));
+    await p.locator('#eredmenyek').scrollIntoViewIfNeeded();
+    await p.waitForFunction(() => [...document.querySelectorAll('#eredmenyek img')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 8000 });
+    assert.equal(await p.locator('#eredmenyek .eredmeny-racs.egy').count(), 0);
+    const terulet = await p.$$eval('#eredmenyek .eredmeny-kartya dd', (l) => l.map((e) => e.textContent.trim()));
+    assert.deepEqual(terulet, ['Hónalj', 'Lábszár', 'Arc']);
+    assert.equal(await p.locator('#eredmenyek .cimke').count(), 6, 'kartyankent Elotte + Utana');
+    const m = await p.$$eval('#eredmenyek .eloutana', (l) => l.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; }));
+    assert.equal(new Set(m.map((x) => x.join('x'))).size, 1, 'egyforma meretu kepkeretek: ' + JSON.stringify(m));
+    assert.ok(m[0][0] >= 300, 'harom oszlop: ' + m[0][0]);
+    await ctx.close();
+  });
+});
+

@@ -12,7 +12,7 @@ címen nincs mérőkód-pixel, és ezt nem is írtuk át). Visszaállítás átv
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (53 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (54 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje
@@ -71,7 +71,7 @@ térképkép kikerült).
 
 ## Nyitott pontok (a tulajdonos döntése / adata kell)
 
-- **Eredmények (előtte/utána):** jelenleg egy valódi vendégfotó van (hónalj, a régi oldalról), a rács egy kártyás (`class="eredmeny-racs egy"`). További kártya: új `<article class="eredmeny-kartya">` valódi fotóval és adatokkal (terület, kezelések száma, időtáv), majd az `egy` osztály törlése. Adatot nem találunk ki.
+- **Eredmények (előtte/utána):** három valódi vendégfotó-kártya: hónalj (a régi oldalról), lábszár és arc (a tulajdonostól, 2026-10-04; `assets/img/lezer-eredmeny/`). Minden kép egy kompozit (balra előtte, jobbra utána, kb. 1,45:1), a „Előtte/Utána” címkét a CSS rakja rá (`.cimke`). Új kártya: új `<article class="eredmeny-kartya">` valódi fotóval és területtel; adatot (kezelésszám, időtáv) nem találunk ki. Telefonon oldalra görgethető sor.
 - A „4,9” és a Zsófi-szekció „4 év tapasztalat” a megadott tervből és a régi oldalról való.
 - A hero alcíme (**„a világ egyik legerősebb diódalézerével, az Elysion Pro-val”**): a régi oldal ezzel egyező állítása; ha a „világ első” volt a szándék, a szöveg a `.hero-al` sorban módosítható.
 
