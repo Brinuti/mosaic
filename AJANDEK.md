@@ -630,3 +630,8 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
   - **partner:** a Drive „Páros kezelés.MP4” felvételből (a pár a váróban, a kezelés pillanatai); poszter: a pár (2,5 MB).
 - **Szerszám:** a montázs `ffmpeg`-gel készült (szegmenslista: forrás, kezdet, hossz, vágási y0, sebesség; 720², 24 fps, libx264 crf 27–29, `+faststart`); új montázshoz ugyanígy kell szegmenslistát írni, a képkockákat 1 fps-es kontakt-lapon érdemes végignézni (homályos / átúsztatott részek miatt).
 - A friend / partner hero-videó forrása továbbra is a Drive / Meta (`hero_media.forras`); a Meta-fiók további páros videóinak átnézése (letöltés külön jóváhagyás) még nyitott.
+
+## 13. kör (2026-10-04, a tulajdonos kérése): mobil sticky sáv (az oxigén-landing mintájára)
+- **Mobilon (≤ 640 px) alul rögzített sáv** (`#ah-sticky`, CSS `.ah-sticky`): arany gomb (a szövege a variáns hero-gombja, pl. „Közös élményt választok”) + mellette „Ajándékkártya / 26.900 Ft-tól” (a legolcsóbb termék ára az adatból). A gomb a termék-választóhoz (`#ah-finder`) görget. Asztali nézeten nincs.
+- **Mikor látszik:** a hero-gomb elgörgetése után, **csak a landing nézetben** (nem a tervezőben / fizetésnél / a vásárlás utáni oldalakon); eltűnik, amíg a termék-választó (`#ah-finder`) a képernyőn van, és a lábléc (`#mh-lablec`) elérésekor. Így gyakorlatilag a választó alatti részeken (a kezelésről, a vélemények, a GYIK…) marad alul, hogy onnan egy érintéssel vissza lehessen ugrani a választáshoz. IntersectionObserver (`stickyBekot` / `stickyFrissit` az `ajandek.js`-ben).
+- Látható állapotban a lap alján 76 px hely marad (`body.ah-sticky-be`), a „Süti beállítások” gomb a sáv fölé csúszik. Az oxigén-landing sávja ugyanilyen elvű (a másodlagos „Csak felmérés” link helyett itt az ár áll).

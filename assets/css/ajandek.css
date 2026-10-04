@@ -1441,3 +1441,18 @@ body .ah-halk, .ah-tenyek li, .ah-benefit-lista li span, .ah-forma-lista li span
 
 /* mobil: a tervezo cime egy sorban marad (b2), igy a konfigurator egy kepernyore elfer */
 @media (max-width: 700px) { .ah-tervezo-fej h2 { font-size: var(--b2) !important; } }
+
+/* --- mobil sticky sav (az oxigen-landing mintajara): a hero-gomb elgorgetese utan jelenik meg alul --- */
+.ah-sticky { display: none; }
+@media (max-width: 640px) {
+  .ah-sticky { display: flex; align-items: center; gap: 12px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: rgba(250, 246, 238, .97); box-shadow: 0 -6px 22px rgba(60, 40, 15, .16); transform: translateY(115%); transition: transform .25s ease; }
+  .ah-sticky[hidden] { display: none; }
+  .ah-sticky.ah-lathato { transform: none; }
+  .ah-sticky .ah-gomb { flex: 1; min-height: 46px; padding: 0 16px; font-size: var(--b3); white-space: nowrap; }
+  .ah-sticky-ar { flex: none; font-family: var(--ah-test); font-size: var(--b4); line-height: 1.25; color: var(--ah-petrol); text-align: center; }
+  .ah-sticky-ar b { display: block; font-weight: 600; font-size: var(--b4); }
+  body.ah-sticky-be { padding-bottom: 76px; }
+  @media (max-width: 340px) { .ah-sticky { gap: 8px; padding-left: 10px; padding-right: 10px; } .ah-sticky .ah-gomb { padding: 0 12px; } }
+  /* a suti-beallitasok gomb ne takarja a savot */
+  body.ah-sticky-be #mh-cc-reopen { bottom: 84px; }
+}

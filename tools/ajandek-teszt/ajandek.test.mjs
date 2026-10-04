@@ -268,6 +268,20 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.equal(V.general.hero_trust[0].href, '#ah-google');
   });
 
+  test('mobil sticky sav (az oxigen-landing mintajara): van markup + CSS (csak mobilon), a gomb a landing #ah-finder-ere ugrik, a hero-gomb szoveget a variant adja', () => {
+    const html = fs.readFileSync(new URL('../../foglalas/ajandek.html', import.meta.url), 'utf8');
+    const css = fs.readFileSync(new URL('../../assets/css/ajandek.css', import.meta.url), 'utf8');
+    const js = fs.readFileSync(new URL('../../assets/js/ajandek.js', import.meta.url), 'utf8');
+    assert.match(html, /id="ah-sticky"[^>]*aria-hidden="true"/);
+    assert.match(html, /id="ah-sticky-gomb"[^>]*href="#ah-finder"[^>]*tabindex="-1"/);
+    assert.match(css, /\.ah-sticky \{ display: none; \}/, 'alapbol rejtett (asztalin nincs)');
+    assert.match(css, /@media \(max-width: 640px\) \{\s*\.ah-sticky \{ display: flex;[^}]*position: fixed;/);
+    assert.ok(js.includes("data-nezet') === 'landing'"), 'csak a landing nezetben latszik (nem a tervezoben / fizetesnel)');
+    assert.ok(js.includes("$('ah-sticky-szoveg').textContent = c.hero_cta"), 'a gomb szovege a variant hero-gombja');
+    // a sticky sav ara a legolcsobb termek (adatbol, nem kitalalt)
+    assert.equal(Math.min(...Object.values(ADAT.TERMEKEK).map((t) => t.ar_ft)), 26900);
+  });
+
   test('asset-validalas: a NEEDS_MANUAL_VALIDATION asset nem jelenik meg - a variant a GENERAL assetet kapja, az eredeti javaslat megmarad; a jovahagyott asset marad', () => {
     const V = ADAT.VARIANTOK;
     // a for_her nincs validalt sajat assetje: a GENERAL-t kapja; a friend es a partner a tulajdonos kerese szerint sajat (jovahagyott) hero-videot kapott

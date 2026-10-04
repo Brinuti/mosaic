@@ -240,6 +240,7 @@
     $('ah-hero-cim').textContent = c.hero_title;
     $('ah-hero-alcim').textContent = c.hero_subtitle;
     $('ah-hero-cta-szoveg').textContent = c.hero_cta;
+    if ($('ah-sticky-szoveg')) $('ah-sticky-szoveg').textContent = c.hero_cta;
     var biz = $('ah-hero-biztositas');
     if (biz) { biz.textContent = c.reassurance || ''; biz.hidden = !c.reassurance; }
     var lista = uresit($('ah-hero-bizalom'));
@@ -1644,6 +1645,36 @@
       if (a === 'kivalasztva' && (elozoAllapot === 'fizetes' || elozoAllapot === 'hiba' || elozoAllapot === 'tervezo')) { setTimeout(function () { gorgess($('ah-lepesek'), 'center'); }, 30); }
     }
     elozoAllapot = a;
+    stickyFrissit();
+  }
+
+  // ---------------------------------------------------------------- mobil sticky sav (az oxigen-landing mintajara)
+  // A hero-gomb elgorgetese utan latszik, a termek-valaszto (#ah-finder) es a lablec eleresekor eltunik; csak a landing nezetben (nem a tervezoben / fizetesnel).
+  // A gomb szovege a variant hero-gombja (heroRender frissiti), a sav melletti ar a legolcsobb termek ara. CSS: csak <= 640 px-en jelenik meg.
+  var stickyAllapot = { hero: true, valaszto: false, lablec: false };
+  function stickyFrissit() {
+    var sav = $('ah-sticky');
+    if (!sav) return;
+    var lat = !stickyAllapot.hero && !stickyAllapot.valaszto && !stickyAllapot.lablec && document.body.getAttribute('data-nezet') === 'landing';
+    sav.hidden = false;
+    sav.classList.toggle('ah-lathato', lat);
+    sav.setAttribute('aria-hidden', lat ? 'false' : 'true');
+    var gomb = $('ah-sticky-gomb');
+    if (lat) gomb.removeAttribute('tabindex'); else gomb.setAttribute('tabindex', '-1');
+    document.body.classList.toggle('ah-sticky-be', lat);
+  }
+  function stickyBekot() {
+    var sav = $('ah-sticky'), hero = $('ah-hero-cta'), valaszto = $('ah-finder');
+    if (!sav || !hero || !valaszto) return;
+    var legolcsobb = Object.keys(A.TERMEKEK).reduce(function (m, k) { var ar = A.TERMEKEK[k].ar_ft; return m === null || ar < m ? ar : m; }, null);
+    if (legolcsobb) { var arEl = $('ah-sticky-ar'); arEl.appendChild(document.createTextNode('Ajándékkártya')); arEl.appendChild(h('b', { text: A.arSzoveg(legolcsobb) + '-tól' })); }
+    sav.querySelector('a').addEventListener('click', function (ev) { ev.preventDefault(); gorgess(valaszto, 'start'); });
+    if (!('IntersectionObserver' in window)) return;
+    // a hero-gomb "elgorgetve": nincs a kepernyon, es a lap teteje fole kerult (nem alatta)
+    new IntersectionObserver(function (es) { var r = es[0]; stickyAllapot.hero = r.isIntersecting || r.boundingClientRect.top > 0; stickyFrissit(); }).observe(hero);
+    new IntersectionObserver(function (es) { stickyAllapot.valaszto = es[0].isIntersecting; stickyFrissit(); }).observe(valaszto);
+    var lablec = $('mh-lablec');
+    if (lablec) new IntersectionObserver(function (es) { stickyAllapot.lablec = es[0].isIntersecting; stickyFrissit(); }).observe(lablec);
   }
 
   // ---------------------------------------------------------------- tovabb a fizetesre (history: a visszalepes a kivalasztott allapotba visz)
@@ -1706,6 +1737,7 @@
     $('ah-sz-kihagy').addEventListener('click', szemelyreKihagy);
     $('ah-uj-vasarlas').addEventListener('click', ujVasarlas);
     $('ah-hero-cta').addEventListener('click', function (ev) { var f = $('ah-finder'); if (f) { ev.preventDefault(); gorgess(f, 'start'); } });
+    stickyBekot();
     vendegVideok();
     kezAblakBekot();
     if (KT) tervezoBekot();
