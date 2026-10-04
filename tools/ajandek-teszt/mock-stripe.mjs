@@ -180,7 +180,7 @@ export async function mockStripeInditas({ port = 0, kulcsElotag = 'sk_test_mock'
     const sz = {
       id: 'in_' + veletlen(18), object: 'invoice', customer: p.customer, status: 'draft', currency: 'huf', collection_method: p.collection_method || 'charge_automatically',
       auto_advance: String(p.auto_advance) === 'true', metadata: { ...(p.metadata || {}) }, payment_settings: { payment_method_types: pm.length ? pm : null },
-      automatic_tax: { enabled: !!autoAdo, status: null }, lines: { object: 'list', data: sorok.map(masol) }, payment_intent: null,
+      automatic_tax: { enabled: !!autoAdo, status: null }, lines: { object: 'list', data: sorok.map(masol).reverse() /* mint a Stripe: legujabb elol */ }, payment_intent: null,
       total: 0, tax: 0, amount_due: 0, created: mp(), livemode: false,
     };
     for (const t of sorok) t.invoice = sz.id;

@@ -719,6 +719,8 @@ describe('Stripe-szamla (AJANDEK_STRIPE_SZAMLA=1)', () => {
     ]);
     assert.equal(szamla.total, 3990000);
     assert.equal(szamla.tax, 529370); // a regi 4 kezes Checkout-session: amount_tax 529370
+    // a Stripe a sorokat legujabb-elol listazza, a szamlabridge ebben a sorrendben allitja ki a szamlat (regi szamla: az adomentes tetel elol) -> forditva hozzuk letre
+    assert.deepEqual([...mock.allapot.szamlaTetelek.values()].filter((t) => t.invoice === szamla.id).map((t) => t.tax_code), ['txcd_20040009', 'txcd_00000000']);
     assert.deepEqual(szamla.lines.data.map((t) => t.tax_amounts[0].amount), [0, 529370]);
     assert.equal(pi.amount, 3990000);
     assert.equal(pi.metadata.szamla_mod, 'invoice');

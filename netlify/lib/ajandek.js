@@ -751,7 +751,9 @@ async function szamlaPi(k, r, ar, leiras, meta, kulcs) {
     }
   }
   if (!ugyfel) ugyfel = await stripe(k.env, 'POST', '/v1/customers', ugyfelParam, id('u2'));
-  for (const [i, t] of tetelek.entries()) {
+  // A Stripe a szamla sorait a LETREHOZAS FORDITOTT sorrendjeben listazza (legujabb elol), a szamlabridge ebben a sorrendben allitja ki a szamlat; a regi
+  // (fizetolinkes) 4 kezes szamlan az adomentes (TAM) tetel az elso, ezert a tetelek forditva jonnek letre (a SZAMLA_TETELEK sorrendje a szamlan latszo sorrend).
+  for (const [i, t] of [...tetelek.entries()].reverse()) {
     await stripe(k.env, 'POST', '/v1/invoiceitems', {
       customer: ugyfel.id, currency: 'huf', amount: t.ft * 100, description: t.nev, tax_behavior: 'inclusive', tax_code: t.adokod,
       metadata: { forras: FORRAS },
