@@ -761,14 +761,11 @@ async function szamlaPi(k, r, ar, leiras, meta, kulcs) {
     customer: ugyfel.id, collection_method: 'charge_automatically', auto_advance: false, currency: 'huf',
     automatic_tax: { enabled: true }, pending_invoice_items_behavior: 'include', metadata: { forras: FORRAS },
   };
-  let szamla;
-  try {
-    // ugyanazok a fizetesi modok, mint a Payment Elementben (kartya + Google Pay, Revolut Pay, Link)
-    szamla = await stripe(k.env, 'POST', '/v1/invoices', { ...szamlaParam, payment_settings: { payment_method_types: ['card', 'link', 'revolut_pay'] } }, id('s'));
-  } catch (e) {
-    if (!(e instanceof StripeHiba && e.status === 400)) throw e;
-    szamla = await stripe(k.env, 'POST', '/v1/invoices', szamlaParam, id('s2'));
-  }
+  // A fizetesi modok: alapbol a Stripe szamla-sablonja szerint. FIGYELEM: a Payment Element dinamikus fizetesi modokkal (nincs paymentMethodTypes) csak
+  // olyan PaymentIntentet fogad el, amely NEM explicit payment_method_types-szal keszult; ha a szamla PI-je explicit listat kap, a megerosites hibaval all
+  // le. Ezert az explicit lista (AJANDEK_SZAMLA_FIZMODOK, pl. "card,link,revolut_pay") csak akkor allithato, ha a kliens Elements-e is ugyanazt a listat kapja.
+  const fizmodok = String(k.env.AJANDEK_SZAMLA_FIZMODOK || '').split(',').map((x) => x.trim()).filter((x) => /^[a-z_]+$/.test(x));
+  const szamla = await stripe(k.env, 'POST', '/v1/invoices', fizmodok.length ? { ...szamlaParam, payment_settings: { payment_method_types: fizmodok } } : szamlaParam, id('s'));
   const biztos = async (hiba) => { await szamlaVoid(k, szamla.id); throw new Error(hiba); };
   const kesz = await stripe(k.env, 'POST', `/v1/invoices/${szamla.id}/finalize`, { auto_advance: false, expand: ['payment_intent'] }, id('f'));
   const pi = kesz.payment_intent;
@@ -830,6 +827,8 @@ async function fizetes(k) {
       const sz = await szamlaPi(k, r, ar, leiras, meta, kulcs);
       return json(200, {
         pi: sz.id, client_secret: sz.client_secret, osszeg: Math.round(Number(sz.amount) / 100), penznem: 'HUF', rendeles_id: ADAT.rendelesAzonosito(sz.id), szamla: 'stripe',
+        // teszt-modban (elonezet) a diagnosztikahoz: a szamla PI-jenek fizetesi modjai (a Payment Element-tel egyezniuk kell)
+        ...(stripeMod(k.env) === 'teszt' ? { szamla_pi: { tipusok: sz.payment_method_types || null, auto: sz.automatic_payment_methods || null } } : {}),
       });
     } catch (e) {
       console.error('ajandek: a Stripe-szamla letrehozasa nem sikerult, sima PaymentIntent (a szamlat kezzel kell kiallitani):', e && e.message, e && e.status, e && e.kod);
