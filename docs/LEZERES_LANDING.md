@@ -1,9 +1,11 @@
-# Lézeres szőrtelenítés landing (`/lezeres-szortelenites-budapest`)
+# Lézeres szőrtelenítés landing (`/lezeres-szortelenites-budapest-uj`)
 
 Az új oldal a megadott terv alapján készült, a `/sminktetovalas-budapest` landing stílusában (Playfair Display + Jost, arany
-foglalás-gomb, sötétzöld foglaló-szekció). Ugyanazon a címen él, mint a régi (Wixes klón) oldal: a `foglalas/` mappába tett saját oldal a
-build-ben felülírja a `klon/lezeres-szortelenites-budapest.html`-t (ahogy a PMU landing is). **Visszaállítás:** a
-`foglalas/lezeres-szortelenites-budapest.html` törlése és új deploy, a klón változatlanul megvan.
+foglalás-gomb, sötétzöld foglaló-szekció). **Külön címen él** (`/lezeres-szortelenites-budapest-uj`, `noindex`, sehonnan nincs rá link, nem szerepel a sitemapben): a mostani, éles
+`/lezeres-szortelenites-budapest` oldalt (Wixes klón) NEM cseréli le. A tulajdonos döntése (2026-10-04): amíg nem jelzi, nem váltunk át.
+**Átváltás:** a fájl átnevezése `foglalas/lezeres-szortelenites-budapest.html`-re, a `noindex` meta törlése, a canonical / og:url javítása, a tesztek `OLDAL`
+útvonalának átírása és egy deploy (a mérés útvonal szerint működik: a `suti.js` pixel-listáján a `lezeres-szortelenites-budapest` szerepel; az `-uj`
+címen nincs mérőkód-pixel, és ezt nem is írtuk át). Visszaállítás átváltás után: a fájl törlése, a klón változatlanul megvan.
 
 | Fájl | Szerepe |
 |---|---|
