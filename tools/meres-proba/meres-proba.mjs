@@ -28,8 +28,8 @@ const SZENARIOK = {
   lezer: { start: '/foglalo-motor?business=laser&intent=first', salonic: 'mosaic-elysion.salonic.hu', terulet: /^Arc/, landing: { elo: '/lezeres-szortelenites-budapest', ut: '/idpontfoglalas', link: 'a[href*="intent=first"]' },
     sim: { ut: '/elysion-ok', first: true, service: 'ARC - Teljes arc', category: 'Végleges Szőrtelenítés - 1. Alkalom', price: 27000, location: 'Mosaic Elysion', employee: 'Elysion Pro Szőrtelenítés', employeeId: 32417, placeId: 14586, serviceId: 0 } },
 };
-// HeadSpa: a motor HS1 -> HS2 kartyavalasztasa utan jon az idopont (lepesek: a gombok szovege sorrendben)
-SZENARIOK.headspa = { start: '/foglalo-motor?business=headspa', salonic: 'mosaicheadspa.salonic.hu', lepesek: ['Időpontot foglalok', 'Egyéni HeadSpa'],
+// HeadSpa: a motor HS2 kartyavalasztasa utan jon az idopont (lepesek: a gombok szovege sorrendben; a '?' elotagu opcionalis: a regi motor HS1 lepese)
+SZENARIOK.headspa = { start: '/foglalo-motor?business=headspa', salonic: 'mosaicheadspa.salonic.hu', lepesek: ['?Időpontot foglalok', 'Egyéni HeadSpa'],
   sim: { ut: '/success-foglalas-egyeni', first: true, service: 'EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás', category: 'Head Spa', price: 26900, location: 'Mosaic Headspa', employee: 'Négykezes Head spa', employeeId: 29415, placeId: 10427, serviceId: 302342 } };
 const sc = SZENARIOK[SZ];
 if (!sc) throw new Error('ismeretlen szenario: ' + SZ);
@@ -195,7 +195,12 @@ try {
     await page.waitForTimeout(1500);
     await (await elsoLathato(page.locator(MAIN + ' button', { hasText: sc.landing.engedMotor }))).click();
   }
-  for (const lepes of (sc.lepesek || [])) { await page.waitForTimeout(1200); await (await elsoLathato(page.locator(MAIN + ' button', { hasText: lepes }))).click(); idovonal.push({ t: mp(), esemeny: 'lepes: ' + lepes }); }
+  for (const lepes of (sc.lepesek || [])) {
+    await page.waitForTimeout(1200);
+    const opcionalis = lepes.startsWith('?'), felirat = lepes.replace(/^\?/, '');
+    if (opcionalis && !(await page.locator(MAIN + ' button', { hasText: felirat }).count())) { idovonal.push({ t: mp(), esemeny: 'lepes kihagyva (nincs ilyen gomb az ujabb motorban): ' + felirat }); continue; }
+    await (await elsoLathato(page.locator(MAIN + ' button', { hasText: felirat }))).click(); idovonal.push({ t: mp(), esemeny: 'lepes: ' + felirat });
+  }
   // lezer: terulet -> (kezeles)
   if (sc.terulet) {
     // a belepo-kerdes (LA1), ha az intent-belepes nincs meg az eles motorban: "Mar tudom, mit szeretnek"
@@ -208,14 +213,27 @@ try {
       const b = await elsoLathato(page.locator('.be-list button')); idovonal.push({ t: mp(), esemeny: 'kezeles', szoveg: (await b.textContent()).replace(/\s+/g, ' ').trim().slice(0, 120) }); await b.click();
     }
   }
-  await (await elsoLathato(page.locator(MAIN + ' button', { hasText: 'További időpontok' }))).click();
-  await elsoLathato(page.locator('.be-strip[aria-label="Nap"] .be-chip'));
-  const napok = page.locator('.be-strip[aria-label="Nap"] .be-chip'); await napok.nth((await napok.count()) - 1).click();
-  await page.waitForTimeout(800);
-  const idok = page.locator('.be-time'); const db = await idok.count();
-  const idoSzoveg = (await idok.nth(db - 1).textContent()).trim(); await idok.nth(db - 1).click();
+  // idopont: HeadSpan a PMU-foglalo havi naptara (az utolso szabad nap utolso idopontja), egyebkent a "tovabbi idopontok" naptar-sav
+  await page.locator('.be-nnap.szabad, ' + MAIN + ' button:has-text("További időpontok")').first().waitFor({ state: 'visible', timeout: 30000 });
+  let idoSzoveg;
+  const szabadNapok = page.locator('.be-nnap.szabad');
+  if (await szabadNapok.count()) {
+    await szabadNapok.nth((await szabadNapok.count()) - 1).click(); await page.waitForTimeout(500);
+    const gombok = page.locator('.be-idogomb'); const db = await gombok.count();
+    idoSzoveg = (await gombok.nth(db - 1).textContent()).trim(); await gombok.nth(db - 1).click();
+  } else {
+    await (await elsoLathato(page.locator(MAIN + ' button', { hasText: 'További időpontok' }))).click();
+    await elsoLathato(page.locator('.be-strip[aria-label="Nap"] .be-chip'));
+    const napok = page.locator('.be-strip[aria-label="Nap"] .be-chip'); await napok.nth((await napok.count()) - 1).click();
+    await page.waitForTimeout(800);
+    const idok = page.locator('.be-time'); const db = await idok.count();
+    idoSzoveg = (await idok.nth(db - 1).textContent()).trim(); await idok.nth(db - 1).click();
+  }
   idovonal.push({ t: mp(), esemeny: 'idopont valasztva', ido: idoSzoveg });
-  await (await elsoLathato(page.locator(MAIN + ' button', { hasText: 'Tovább az adatokhoz' }))).click();
+  // az ujban rogton az adatlap; a regi motornal elobb az osszegzo kepernyo (C3) jott
+  await page.locator(MAIN + ' button:has-text("Tovább az adatokhoz"), iframe').first().waitFor({ state: 'attached', timeout: 30000 });
+  const tovabbGomb = page.locator(MAIN + ' button', { hasText: 'Tovább az adatokhoz' });
+  if (await tovabbGomb.count()) await (await elsoLathato(tovabbGomb)).click();
   await page.locator('iframe').first().waitFor({ state: 'attached', timeout: 30000 });
   idovonal.push({ t: mp(), esemeny: 'Salonic-adatlap (iframe) betoltve' });
 

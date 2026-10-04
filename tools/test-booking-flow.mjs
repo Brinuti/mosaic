@@ -7,9 +7,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   EXIT_GIFTCARD, ROUTES, withAttribution, availableDays, cardsFor, classifyRedirect, dayKey, dayLabel, daypartOf, displayName, durationLabel, entryState,
-  filterSlots, findByKey, formatPrice, groupFacts, groupServices, icsFor, intentCandidates, intentServices, longDate, next, parseContext, parseLength,
+  filterSlots, findByKey, formatPrice, groupFacts, groupServices, icsFor, intentCandidates, intentServices, longDate, monthGrid, monthList, dayTimes, next, parseContext, parseLength,
   priceFor, priceLabel, quickSlots, shouldHandoff, staffDiscountPercent, stripLabel, timeLabel, uniqueTimes,
 } from '../assets/js/booking-engine/flow.js';
+import { CHOOSER } from '../assets/js/booking-engine/families.js';
 import { HEADSPA } from '../assets/js/booking-engine/flows/headspa.js';
 import { OXYGEN } from '../assets/js/booking-engine/flows/oxygen.js';
 import { HAIR } from '../assets/js/booking-engine/flows/hair.js';
@@ -29,19 +30,22 @@ const slot = (unix, staff = '1') => ({ start_unix: unix, staff_id: staff, staff_
 
 test('a wireframe routing tablaja (HeadSpa) pontosan egyezik az utvonalakkal', () => {
   const rows = [
-    ['HS1', 'book', 'HS2'], ['HS1', 'voucher', 'HS3'], ['HS1', 'giftcard', EXIT_GIFTCARD],
-    ['HS2', 'service', 'C1'], ['HS3', 'service', 'C1'],
-    ['C1', 'slot', 'C3'], ['C1', 'more', 'C2'], ['C1', 'none', 'A1'], ['C2', 'slot', 'C3'], ['C2', 'none', 'A1'],
-    ['C3', 'next', 'C4'], ['C4', 'submit', 'C5'], ['C5', 'success', 'C6'], ['C5', 'slot_lost', 'A2'], ['C5', 'error', 'A3'],
+    // HeadSpa: az elmeny-valasztas (HS2) az elso allapot; alatta az ajandekkartya-bevaltas (HS3) es -vasarlas linkje
+    ['HS2', 'service', 'C1'], ['HS2', 'voucher', 'HS3'], ['HS2', 'giftcard', EXIT_GIFTCARD], ['HS3', 'service', 'C1'],
+    // nincs osszegzo kepernyo: az idopont utan rogton az adatlap (C4); CN = a PMU-foglalo havi naptara
+    ['C1', 'slot', 'C4'], ['C1', 'more', 'C2'], ['C1', 'none', 'A1'], ['C2', 'slot', 'C4'], ['C2', 'none', 'A1'], ['CN', 'slot', 'C4'], ['CN', 'none', 'A1'],
+    ['C4', 'submit', 'C5'], ['C5', 'success', 'C6'], ['C5', 'slot_lost', 'A2'], ['C5', 'error', 'A3'],
   ];
   for (const [from, ev, to] of rows) assert.equal(next(from, ev), to, `${from} --${ev}--> ${to}`);
-  assert.throws(() => next('C3', 'slot'), /Ervenytelen/);
+  assert.throws(() => next('C3', 'next'), /Ervenytelen/, 'az osszegzo kepernyo (C3) megszunt');
+  assert.throws(() => next('HS1', 'book'), /Ervenytelen/, 'a HS1 megszunt: a HeadSpa az elmeny-valasztassal indul');
   assert.throws(() => next('NINCS', 'x'));
   assert.ok(Object.isFrozen(ROUTES));
 });
 
-test('belepesi pont: generic = HS1, konkret szolgaltatas = C1, ajandekkartya-szandek = HS3', () => {
-  assert.equal(entryState({ hasService: false, voucher: false }), 'HS1');
+test('belepesi pont: generic = HS2 (HeadSpa), konkret szolgaltatas = C1, ajandekkartya-szandek = HS3', () => {
+  assert.equal(entryState({ hasService: false, voucher: false }), 'HS2');
+  assert.equal(entryState({ hasService: false, voucher: false, first: HEADSPA.firstState }), 'HS2');
   assert.equal(entryState({ hasService: true, voucher: false }), 'C1');
   assert.equal(entryState({ hasService: true, voucher: true }), 'C1');
   assert.equal(entryState({ hasService: false, voucher: true }), 'HS3');
@@ -387,4 +391,58 @@ test('motor-modulok: minden import relativ .js hivatkozas (a build verziojelet i
   assert.ok(n >= 9, `a ${n} import mind verziozhato`);
   const html = fs.readFileSync(path.join(here, '..', 'foglalas', 'foglalo-motor.html'), 'utf8');
   assert.ok(html.includes("/assets/js/booking-engine/engine.js'"), 'a foglalo-oldal importja a build altal verziozott alak');
+});
+
+// --- design (2026-10-04): kepek a valasztokon, havi naptar (PMU-foglalo), nincs osszegzo -------------------------------------------------------
+const ROOT = path.join(here, '..');
+const kepFajl = (k) => path.join(ROOT, 'assets', 'img', 'booking', k + '.jpg');
+
+test('minden valasztokartya kepe (kulcs) letezo fajl: szolgaltatas-valaszto, HeadSpa, oxigen, fodraszat, lezer', () => {
+  const kulcsok = [
+    ...CHOOSER.families.map((f) => f.kep),
+    ...HEADSPA.cards.map((c) => c.kep),
+    ...OXYGEN.intents.map((i) => i.kep),
+    ...HAIR.intents.map((i) => i.kep),
+    ...HAIR.staffPhotos.map(([, k]) => k),
+    ...LASER.copy.intro.map((o) => o.kep),
+    ...LASER.areas.map((a) => a.kep),
+  ];
+  assert.ok(kulcsok.length >= 28, `${kulcsok.length} kep`);
+  for (const k of kulcsok) { assert.ok(k, 'minden kartyanak van kepe'); assert.ok(fs.existsSync(kepFajl(k)), `hianyzik: assets/img/booking/${k}.jpg`); assert.ok(fs.statSync(kepFajl(k)).size < 30000, `${k}: kis kep (< 30 kB)`); }
+  assert.equal(new Set(kulcsok).size, kulcsok.length, 'nincs ketszer hasznalt kulcs');
+});
+
+test('az oxigen hajkamera-szoveg egy rovid mondat; a HeadSpa ajandekkartya-linkjei megvannak', () => {
+  const kamera = OXYGEN.intents.find((i) => i.key === 'camera');
+  assert.match(kamera.sub, /bizonytalan/i);
+  assert.ok(kamera.sub.length <= 52 && !kamera.sub.includes('\n'));
+  assert.ok(HEADSPA.copy.voucherLink && HEADSPA.copy.giftCardLink && HEADSPA.giftCardUrl);
+  assert.equal(HEADSPA.firstState, 'HS2');
+  assert.equal(HEADSPA.naptar, true);
+  for (const f of [OXYGEN, HAIR, LASER]) assert.ok(!f.naptar, `${f.business}: a naptar-nezet csak a HeadSpae`);
+});
+
+test('havi naptar: honapok a mai honaptol a keresesi hatarig, a racs hetfovel kezdodik, csak a szabad napok aktivak', () => {
+  assert.deepEqual(monthList(T(3, 10), 92), ['2026-10', '2026-11', '2026-12', '2027-01']);
+  assert.deepEqual(monthList(T(3, 10), 10), ['2026-10']);
+  // 2026. oktober 1. = csutortok -> 3 ures cella (H, K, Sze) elol; 31 nap
+  const g = monthGrid('2026-10', new Set(['2026-10-03', '2026-10-30']));
+  assert.equal(g.title, '2026. október');
+  assert.equal(g.cells.filter((c) => c.blank).length, 3);
+  assert.equal(g.cells.filter((c) => !c.blank).length, 31);
+  assert.deepEqual(g.cells.filter((c) => c.free).map((c) => c.key), ['2026-10-03', '2026-10-30']);
+  assert.equal(g.cells[3].n, 1);
+  // 2026. november 1. = vasarnap -> 6 ures cella; 30 nap; februar nem szokoev
+  assert.equal(monthGrid('2026-11', new Set()).cells.filter((c) => c.blank).length, 6);
+  assert.equal(monthGrid('2027-02', new Set()).cells.filter((c) => !c.blank).length, 28);
+  assert.equal(monthGrid('2027-02', new Set()).title, '2027. február');
+});
+
+test('havi naptar: a nap idopontjai a PMU-foglalo szabalya szerint (egesz es fel orak; a negyed csak ha mellette nincs ilyen), egy idopont egy bejegyzes', () => {
+  const s = (unix, staff = '1') => ({ start_unix: unix, staff_id: staff, staff_label: 'x' });
+  const nap = [s(T(5, 10)), s(T(5, 10, 15)), s(T(5, 10, 30)), s(T(5, 10, 45)), s(T(5, 11)), s(T(5, 12, 15)), s(T(5, 14), '2'), s(T(5, 14), '3'), s(T(6, 9))];
+  const idok = dayTimes(nap, '2026-10-05').map((x) => timeLabel(x.start_unix));
+  assert.deepEqual(idok, ['10:00', '10:30', '11:00', '12:15', '14:00'], 'a 10:15 / 10:45 elmarad, a magaban allo 12:15 marad, a ketszer szabad 14:00 egyszer szerepel');
+  assert.deepEqual(dayTimes(nap, '2026-10-06').map((x) => timeLabel(x.start_unix)), ['09:00']);
+  assert.deepEqual(dayTimes(nap, '2026-10-07'), []);
 });

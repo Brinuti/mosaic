@@ -1,7 +1,7 @@
 // MOSAIC Booking Engine V1 - a folyamat tiszta (DOM-mentes, halozat-mentes) logikaja
 //
 // Allapotok a wireframe-ok szerint (docs: MOSAIC_HeadSpa_Booking_Engine_V1_Wireframe.md):
-//   HS1 intent, HS2 elmeny, HS3 ajandekkartya-tipus, C1 gyors idopontok, C2 naptar, C3 osszegzes,
+//   HS2 elmeny, HS3 ajandekkartya-tipus, C1 gyors idopontok, C2 naptar-sav, CN havi naptar (HeadSpa: a PMU-foglalo naptara; nincs osszegzo kepernyo),
 //   C4 vendegadatok (a Salonic beagyazott adatlapja), C5 rogzites, C6 siker, A1 nincs idopont, A2 elkelt, A3 technikai hiba.
 // Az utvonalak (ROUTES) pontosan a wireframe routing tablaja; a teszt ezt veti ossze vele.
 
@@ -10,8 +10,8 @@ export const TIMEZONE = 'Europe/Budapest';
 // --- allapotgep -----------------------------------------------------------------------------------------------------------
 export const EXIT_GIFTCARD = 'EXIT_GIFTCARD'; // az ajandekkartya-vasarlas NEM foglalasi allapot: kilep a Gift Card funnelbe
 export const ROUTES = Object.freeze({
-  HS1: { book: 'HS2', voucher: 'HS3', giftcard: EXIT_GIFTCARD },
-  HS2: { service: 'C1' },
+  // HeadSpa: az elmeny-valasztas (HS2) az elso allapot; alatta ket link: ajandekkartya-bevaltas (HS3) es -vasarlas (kilep a Gift Card funnelbe)
+  HS2: { service: 'C1', voucher: 'HS3', giftcard: EXIT_GIFTCARD },
   HS3: { service: 'C1' },
   // Oxigen: egy belepesi kerdes (OX1); ha egy szandekhoz tobb Salonic-szolgaltatas tartozik, rovid valasztas (OX2) - csak C1 elott
   OX1: { service: 'C1', variant: 'OX2' },
@@ -29,9 +29,10 @@ export const ROUTES = Object.freeze({
   LA2: { area: 'LA2B', service: 'C1' },
   LA3: { area: 'LA2B', service: 'C1' },
   LA2B: { service: 'C1' },
-  C1: { slot: 'C3', more: 'C2', none: 'A1' },
-  C2: { slot: 'C3', none: 'A1' },
-  C3: { next: 'C4' },
+  // Nincs osszegzo kepernyo (design, 2026-10-04): az idopont kivalasztasa utan rogton a Salonic adatlapja (C4). CN: a PMU-foglalo havi naptara (HeadSpa).
+  C1: { slot: 'C4', more: 'C2', none: 'A1' },
+  C2: { slot: 'C4', none: 'A1' },
+  CN: { slot: 'C4', none: 'A1' },
   C4: { submit: 'C5' },
   C5: { success: 'C6', slot_lost: 'A2', error: 'A3' },
   A1: { callback: 'A1_SENT' },
@@ -47,9 +48,9 @@ export function next(state, event) {
 
 /**
  * Belepesi pont: konkret szolgaltatas ismert -> az uzletag "exact" allapota (alap: C1; Fodraszat: HA3, a szakember-kerdes); ajandekkartya-szandek -> HS3
- * (ha az uzletagnak van); egyebkent (generic) az uzletag elso allapota (HS1 / OX1 / HA1).
+ * (ha az uzletagnak van); egyebkent (generic) az uzletag elso allapota (HS2 / OX1 / HA1).
  */
-export function entryState({ hasService, voucher, first = 'HS1', voucherState = 'HS3', exact = 'C1' }) {
+export function entryState({ hasService, voucher, first = 'HS2', voucherState = 'HS3', exact = 'C1' }) {
   if (hasService) return exact;
   return voucher && voucherState ? voucherState : first;
 }
@@ -177,6 +178,30 @@ export function availableDays(slots, { max = 14 } = {}) {
   const seen = new Map();
   for (const s of slots) if (!seen.has(dayKey(s.start_unix))) seen.set(dayKey(s.start_unix), s.start_unix);
   return [...seen].slice(0, max).map(([key, unix]) => ({ key, unix, label: stripLabel(unix) }));
+}
+
+// --- havi naptar (a PMU-foglalo naptara): csak a szabad napok aktivak, a valasztott nap idopontjai gombokban ----------------------------
+/** A havi naptar honapjai: a mai honaptol az utolso szabad idopontig / a keresesi hatarig (nowUnix + days nap), YYYY-MM kulccsal. */
+export function monthList(nowUnix, days = 92) {
+  const out = [];
+  for (let t = nowUnix; t <= nowUnix + days * 86400; t += 86400) { const k = dayKey(t).slice(0, 7); if (!out.includes(k)) out.push(k); }
+  return out;
+}
+/** Egy honap racsa hetfovel kezdve: { title: "2026. október" (a stilus nagybetuzi), cells: [{ blank: true } | { n, key, free }] }. */
+export function monthGrid(monthKeyStr, freeDays) {
+  const [y, m] = monthKeyStr.split('-').map(Number);
+  const first = Date.UTC(y, m - 1, 1, 10) / 1000;
+  const lead = (new Date(first * 1000).getUTCDay() + 6) % 7;
+  const dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const cells = Array.from({ length: lead }, () => ({ blank: true }));
+  for (let n = 1; n <= dim; n++) { const key = `${monthKeyStr}-${String(n).padStart(2, '0')}`; cells.push({ n, key, free: freeDays.has(key) }); }
+  return { title: fmt(first, { year: 'numeric', month: 'long' }), cells };
+}
+/** Egy nap idopontjai a PMU-foglalo szabalya szerint: az egesz es fel orakat mutatjuk, a negyedet csak ha mellette nincs ilyen. Egy idopont = egy bejegyzes. */
+export function dayTimes(slots, key) {
+  const nap = uniqueTimes(slots).filter((s) => dayKey(s.start_unix) === key);
+  const set = new Set(nap.map((s) => s.start_unix));
+  return nap.filter((s) => s.start_unix % 1800 === 0 || (!set.has(s.start_unix - 900) && !set.has(s.start_unix + 900)));
 }
 
 // --- megjelenites ------------------------------------------------------------------------------------------------------------

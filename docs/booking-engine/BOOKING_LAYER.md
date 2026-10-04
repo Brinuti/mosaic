@@ -47,6 +47,13 @@ Elnevezések: `service_id` = `service`, `service_category` = `category` (a régi
 
 A build (`tools/netlify-build.mjs`): a launcher verziójelei (`__MOTOR_VERZIO__`, `__CSS_VERZIO__`) tartalom-hash-re cserélődnek (a `/assets/js/*` egy évig tárolható); a launcher csak ott kerül az oldalra, ahol az átkötés be van kapcsolva (előnézet / helyi build), vagy a `/booking-test` oldalon. **Az éles, kikapcsolt build minden meglévő oldalon bájtra azonos a mostanival** (174 oldal asztali + mobil, ellenőrizve az élővel). Új a `robots.txt`-ben: `Disallow: /foglalas$`, `/foglalas?`, `/booking-test` (amíg rejtettek).
 
+## Design (2026-10-04, 1. kör; csak előnézeten, DECISIONS.md „Design-döntések”)
+
+- **Képek** minden szolgáltatás-választónál (`assets/img/booking/*.jpg`, kulcsok a `families.js`-ben és a `flows/*.js`-ben: `kep`); a fodrászok fotója: `flows/hair.js` `staffPhotos`.
+- **HeadSpa:** `HS2` az első képernyő (kép, időtartam, ár; alatta az ajándékkártya két linkje) → `CN`: a PMU-foglaló havi naptára (`flow.js`: `monthList`, `monthGrid`, `dayTimes`) → rögtön a Salonic adatlapja. Nincs összegző képernyő (`C3` megszűnt), a lépésjelző 3 lépés. A többi üzletág időpont-választása változatlan (`C1` / `C2`).
+- **Adatlap:** teljes szélességű keret (nem csúszik ki), a választott időpont összegzése fölötte (asztalon). A PMU-val azonos kinézethez a Salonic-fiókban be kell állítani az „Egyedi CSS URL”-t (lásd ENGINE_HEADSPA.md, „Közös Salonic-CSS”).
+- Pillanatképek a nézetekről: `node tools/meres-proba/design-kepek.mjs --overlay dist --ki mappa [--mobil 1] [--stilus 1]`.
+
 ## Ellenőrzés
 
 - `node --test tools/test-booking-layer.mjs tools/test-booking-flow.mjs …` (egységtesztek).

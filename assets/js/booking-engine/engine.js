@@ -1,6 +1,7 @@
 // MOSAIC Booking Engine V1 - a foglalo felulete (HeadSpa az elso uzletag)
 //
-// Allapotonkent egy nezet (lasd flow.js): HS1 -> HS2/HS3 -> C1 -> (C2) -> C3 -> C4 -> C5 -> C6, mellettuk A1/A2/A3.
+// Allapotonkent egy nezet (lasd flow.js): HS2/HS3 -> C1 (HeadSpan CN: a PMU-foglalo havi naptara) -> (C2) -> C4 -> C5 -> C6, mellettuk A1/A2/A3.
+// Nincs osszegzo kepernyo: az idopont kivalasztasa utan rogton a Salonic adatlapja (C4) jon.
 // Adat: kizarolag a SalonicAdapter (Salonic nyilvanos oldalai + naptar-API), ar/idotartam/azonosito nincs beleegetve.
 // C4: a Salonic beagyazott adatlapja (a foglalast a Salonic rogziti); a sikert a Salonic atiranyitasanak parameterei
 // igazoljak (adapter.verifyConfirmation, kliensoldali). Ez a probaoldal NEM nyitja meg az eles koszonooldalt, mert ott mereskod
@@ -21,8 +22,11 @@ import { LASER } from './flows/laser.js';
 const FLOWS = { headspa: HEADSPA, oxygen: OXYGEN, hair: HAIR, laser: LASER };
 const PHONE = '06 20 247 4444';
 const PHONE_HREF = 'tel:+36202474444';
-const STEPS = ['Szolgáltatás', 'Időpont', 'Összegzés', 'Adatok'];
-const STEP_OF = { H0: 0, HS1: 0, HS2: 0, HS3: 0, OX1: 0, OX2: 0, HA1: 0, HA2: 0, HA2B: 0, HA3: 0, HA3B: 0, LA1: 0, LA2: 0, LA2B: 0, LA3: 0, C1: 1, C2: 1, A1: 1, A1_SENT: 1, A2: 1, C3: 2, C4: 3, C5: 3, A3: 3, A3U: 3, A3_CB: 3, A3_SENT: 3 };
+const STEPS = ['Szolgáltatás', 'Időpont', 'Adatok'];
+const STEP_OF = { H0: 0, HS2: 0, HS3: 0, OX1: 0, OX2: 0, HA1: 0, HA2: 0, HA2B: 0, HA3: 0, HA3B: 0, LA1: 0, LA2: 0, LA2B: 0, LA3: 0, C1: 1, C2: 1, CN: 1, A1: 1, A1_SENT: 1, A2: 1, C4: 2, C5: 2, A3: 2, A3U: 2, A3_CB: 2, A3_SENT: 2 };
+const KEP_UT = '/assets/img/booking/'; // a kartyak kis kepei (tools/booking-kepek.mjs); ha egy kep nem toltodik be, a kartya kep nelkul is rendben van
+const NAPTAR_NAP = 92; // a havi naptar (CN) ennyi napra elore keres (mint a PMU-foglalo)
+const HETNAPOK = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
 const NO_STEPS = new Set(['C6']);
 const MIN_LEAD_MINUTES = 30; // a fel oran belul kezdodo idopontot nem kinaljuk (mint a PMU foglalo)
 const HOLD_MS = 4 * 60 * 1000 + 50 * 1000; // a Salonic 5 percig tartja fenn a megnyitott idopontot
@@ -65,7 +69,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   const S = {
     ctx, flow, state: null, depth: 0, services: null, voucher: ctx.voucher, service: null, exact: false,
     slots: [], slot: null, daypart: 'any', day: null, staff: null, place: null, expected: null, guestUrl: null, confirmation: null,
-    callbackReason: 'nincs_idopont', slotLostNote: false, intent: null, group: null, staffLabel: null, slotStaff: null,
+    callbackReason: 'nincs_idopont', slotLostNote: false, intent: null, group: null, staffLabel: null, slotStaff: null, month: null, slotsDays: 0,
   };
 
   // --- DOM-segedek ---------------------------------------------------------------------------------------------------------
@@ -83,8 +87,17 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   let shell = null;
   const $ = (id) => (shell ? shell.querySelector('#' + id) : null); // a sajat shellben keres (a reteg Shadow DOM-jaban a doc.getElementById nem latna)
   const chevron = () => h('span', { class: 'be-chev', 'aria-hidden': 'true', text: '›' });
-  const bigButton = (title, sub, onclick) => h('button', { type: 'button', class: 'be-choice', onclick },
-    h('span', { class: 'be-choice-text' }, h('b', { text: title }), sub ? h('small', { text: sub }) : null), chevron());
+  // Valasztokartya: bal oldalt kis kep (vagy monogram), kozepen a cim + egy sor, jobbra az ar (ha van) es a nyil
+  // (a hosszabb egysoros magyarazat a kartya aljan, teljes szelessegben all, nem a szuk szovegoszlopban)
+  const bigButton = (title, sub, onclick, { kep = null, ar = null, monogram = null } = {}) => {
+    const wide = !!sub && (kep || monogram) && sub.length > 36;
+    return h('button', { type: 'button', class: 'be-choice', onclick },
+      kep ? h('img', { class: 'be-choice-img', src: KEP_UT + kep + '.jpg', alt: '', width: '56', height: '56', onerror: (e) => e.currentTarget.remove() })
+        : monogram ? h('span', { class: 'be-choice-img be-mono', 'aria-hidden': 'true', text: monogram }) : null,
+      h('span', { class: 'be-choice-text' }, h('b', { text: title }), sub && !wide ? h('small', { text: sub }) : null),
+      ar ? h('span', { class: 'be-choice-ar', text: ar }) : null, chevron(),
+      wide ? h('small', { class: 'be-choice-wide', text: sub }) : null);
+  };
   const primary = (text, onclick, extra = {}) => h('button', { type: 'button', class: 'be-btn', onclick, ...extra }, text);
   const secondary = (text, onclick) => h('button', { type: 'button', class: 'be-btn be-btn-2', onclick }, text);
   const link = (text, onclick) => h('button', { type: 'button', class: 'be-link', onclick, text });
@@ -119,14 +132,26 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     return a && a.key !== 'tobb' ? `${a.title} – ${t}` : t;
   };
   const serviceFacts = (svc) => [svc.durationMin ? F.durationLabel(svc.durationMin) : null, priceText(svc) || null].filter(Boolean).join(' · ');
+  // Egy valasztokartya ara tobb szolgaltatas-valtozatnal: egyforma ar = az ar; kulonbozo = "X Ft-tol" (a Salonic aktualis araibol)
+  const fromPrice = (svcs) => {
+    const ps = svcs.map((s) => s.activePrice).filter((p) => p !== null && p !== undefined);
+    if (!ps.length) return null;
+    const lo = Math.min(...ps);
+    return F.priceLabel(lo, zeroLabel(svcs[0])) + (lo === Math.max(...ps) || lo === 0 ? '' : '-tól');
+  };
   // A kivalasztott szakember (a naptarban vagy a HA3-ban) cimkeje; a szakemberi kedvezmeny (pl. "Noel - 20% kedvezmeny!") az arban is latszik.
   const curStaffLabel = () => (S.slotStaff ? S.slotStaff.label : S.staff ? S.staffLabel : null);
   const priceNow = () => (S.service.bookingType === 'voucher_redemption' ? flow.copy.voucherSettled : F.priceLabel(F.priceFor(S.service, curStaffLabel()), zeroLabel(S.service)));
-  const staffNote = () => { const p = F.staffDiscountPercent(curStaffLabel()); return p ? `${p}% szakemberi kedvezménnyel` : ''; };
-  const serviceBar = (back) => h('div', { class: 'be-svc' },
-    h('span', { class: 'be-svc-text' }, h('b', { text: nameOf(S.service) }),
-      h('small', { text: [S.service.durationMin ? F.durationLabel(S.service.durationMin) : null, priceNow() || null, curStaffLabel()].filter(Boolean).join(' · ') })),
-    back ? link('Módosítás', back) : null);
+  // A HeadSpa-kartya kepe (mint a PMU-foglalo "valasztott" kartyaja); a tobbi uzletagnal nincs kartya-kep, ott a sav kep nelkul all
+  const kepOf = (svc) => { const c = (flow.cards || []).find((x) => x.test(F.displayName(svc.name))); return c ? c.kep : null; };
+  const serviceBar = (back) => {
+    const kep = kepOf(S.service);
+    return h('div', { class: 'be-svc' },
+      kep ? h('img', { class: 'be-svc-img', src: KEP_UT + kep + '.jpg', alt: '', width: '44', height: '44', onerror: (e) => e.currentTarget.remove() }) : null,
+      h('span', { class: 'be-svc-text' }, h('b', { text: nameOf(S.service) }),
+        h('small', { text: [S.service.durationMin ? F.durationLabel(S.service.durationMin) : null, priceNow() || null, curStaffLabel()].filter(Boolean).join(' · ') })),
+      back ? link('Módosítás', back) : null);
+  };
   const summaryRows = (rows) => h('dl', { class: 'be-rows' }, rows.filter(([, v]) => v).map(([k, v]) => h('div', {}, h('dt', { text: k }), h('dd', { text: v }))));
   const placeText = () => [S.place && S.place.name, S.place && S.place.address].filter(Boolean).join(', ');
 
@@ -170,7 +195,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     else { S.depth += 1; elozmeny('pushState', { view: state, depth: S.depth, beLayer: layer }, '#' + state); }
     return show(state);
   }
-  const needs = { C3: () => S.slot && S.service, C4: () => S.slot && S.service, C1: () => S.service, C2: () => S.service && S.slots.length, OX2: () => S.candidates,
+  const needs = { C4: () => S.slot && S.service, C1: () => S.service, CN: () => S.service, C2: () => S.service && S.slots.length, OX2: () => S.candidates,
     HA2: () => S.intent, HA2B: () => S.group, HA3: () => S.service, HA3B: () => S.service, LA2B: () => S.laserArea };
   const onPop = (e) => {
     // reteg-modban: a reteg megnyitasa elotti bejegyzesre lepett vissza -> a reteg bezarul (az oldal ugyanott marad)
@@ -200,8 +225,9 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     }
     return false;
   }
-  async function loadSlots() {
-    S.slots = await adapter.getAvailability(flow.business, S.service.serviceId, { days: 30, minLeadMinutes: MIN_LEAD_MINUTES });
+  async function loadSlots(days = 30) {
+    S.slots = await adapter.getAvailability(flow.business, S.service.serviceId, { days, minLeadMinutes: MIN_LEAD_MINUTES });
+    S.slotsDays = days;
     S.day = null;
     return S.slots;
   }
@@ -211,20 +237,21 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     track('booking_service_selected', serviceParams(svc));
     return go(next);
   }
-  // fromFilter: a naptarban (C2) konkret szakembert valasztott a vendeg -> ez vegigmegy az osszegzesen es az adatlapon;
-  // egyebkent "barmely megfelelo szakember" (a Salonic oszt be).
+  // fromFilter: a naptarban (C2) konkret szakembert valasztott a vendeg -> ez vegigmegy az adatlapon;
+  // egyebkent "barmely megfelelo szakember" (a Salonic oszt be). Az idopont kivalasztasa utan rogton az adatlap (C4) jon.
   function pickSlot(slot, { fromFilter = false } = {}) {
     S.slot = slot;
     S.slotStaff = fromFilter && S.staff ? { id: String(S.staff), label: slot.staff_label } : null;
     track('booking_slot_selected', { ...serviceParams(S.service), staff_id: S.slotStaff ? S.slotStaff.id : undefined });
-    return go('C3');
+    return go('C4');
   }
+  const dayView = () => (flow.naptar ? 'CN' : 'C2'); // a "masik nap" nezete: HeadSpan a PMU-foglalo naptara, egyebkent a naptar-sav
   const staffRow = () => (flow.showStaffFilter ? (S.slotStaff ? S.slotStaff.label : 'Bármely megfelelő') : '');
 
   // --- nezetek ------------------------------------------------------------------------------------------------------------------
   const views = {
     // Szolgaltatas-elso kezdo allapot (families.js): aki nem konkret szolgaltatas-oldalrol jon, itt valaszt
-    H0: async () => h('section', {}, title(CHOOSER.title), h('div', { class: 'be-list' }, CHOOSER.families.map((fam) => bigButton(fam.title, fam.sub, () => chooseFamily(fam))))),
+    H0: async () => h('section', {}, title(CHOOSER.title), h('div', { class: 'be-list' }, CHOOSER.families.map((fam) => bigButton(fam.title, fam.sub, () => chooseFamily(fam), { kep: fam.kep })))),
 
     // PMU: a sajat, kesz foglalo (assets/js/foglalo-pmu.js). Onallo oldalon atlepunk ra; retegben beagyazva nyilik (a sajat folyamata szerint;
     // a vegen a teljes ablakban nyilik a koszonooldal, a meres valtozatlan). A keret magassagat a beagyazott oldal jelzi (postMessage).
@@ -243,13 +270,6 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       return h('section', { class: 'be-pmu-wrap' }, loading, frame);
     },
 
-    HS1: async () => h('section', {}, title(flow.copy.hs1Title), h('div', { class: 'be-list' }, flow.copy.hs1.map((o) => bigButton(o.title, null, () => {
-      track('booking_intent_selected', { step: 'HS1', reason: o.key });
-      if (o.key === 'giftcard') { win.location.assign(flow.giftCardUrl); return; } // nem foglalasi allapot: kilep a Gift Card funnelbe
-      S.voucher = o.key === 'voucher';
-      go(F.next('HS1', o.key));
-    })))),
-
     HS2: () => cardsView('HS2', false),
     HS3: () => cardsView('HS3', true),
 
@@ -263,7 +283,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
         if (o.candidates.length === 1) return chooseService(o.candidates[0]);
         S.candidates = o.candidates; // tobb Salonic-valtozat: rovid valasztas (OX2)
         return go(F.next('OX1', 'variant'));
-      }))));
+      }, { kep: o.intent.kep, ar: fromPrice(o.candidates) }))));
     },
     OX2: async () => h('section', {}, title(flow.copy.variantTitle), h('div', { class: 'be-list' }, S.candidates.map((svc) => bigButton(nameOf(svc), serviceFacts(svc), () => chooseService(svc))))),
 
@@ -278,7 +298,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
         if (o.intent.consult) return chooseService(o.services[0], { next: F.next('HA1', 'consult') });
         S.intent = o;
         return go(F.next('HA1', 'intent'));
-      }))));
+      }, { kep: o.intent.kep }))));
     },
     HA2: async () => h('section', {}, title(flow.copy.groupTitle), note(S.intent.intent.title),
       h('div', { class: 'be-list' }, F.groupServices(S.intent.services).map((g) => bigButton(g.title, F.groupFacts(g), () => {
@@ -299,11 +319,16 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       const staff = (await adapter.getStaff(flow.business, S.service.serviceId)).filter((x) => x.staff_label); // a nevet a naptar-API adja (csak akinek van szabad ideje)
       if (!staff.length) return h('section', {}, title(flow.copy.staffListTitle), note('Most egyik fodrásznak sincs szabad időpontja ehhez a kezeléshez.'),
         h('div', { class: 'be-actions' }, primary('Bármely fodrász', () => { S.staff = null; S.staffLabel = null; go('C1'); })));
-      return h('section', {}, title(flow.copy.staffListTitle), h('div', { class: 'be-list' }, staff.map((x) => bigButton(x.staff_label, null, () => {
-        S.staff = x.staff_id; S.staffLabel = x.staff_label;
-        track('booking_filter_used', { filter: 'staff' });
-        go(F.next('HA3B', 'staff'));
-      }))));
+      // a Salonic-cimke "Noel - 20% kedvezmeny!": a nev a cim, a kedvezmeny az also sor; a fodraszok fotoja (flow.staffPhotos), akinek nincs, annak monogram
+      return h('section', {}, title(flow.copy.staffListTitle), h('div', { class: 'be-list' }, staff.map((x) => {
+        const [nev, ...tobbi] = x.staff_label.split(/\s+-\s+/);
+        const foto = (flow.staffPhotos.find(([re]) => re.test(nev)) || [])[1];
+        return bigButton(nev, tobbi.join(' – '), () => {
+          S.staff = x.staff_id; S.staffLabel = x.staff_label;
+          track('booking_filter_used', { filter: 'staff' });
+          go(F.next('HA3B', 'staff'));
+        }, foto ? { kep: foto } : { monogram: nev.trim().charAt(0).toUpperCase() });
+      })));
     },
 
     // Lezer: konzultacio (egyenesen C1) / "Mar tudom" -> terulet -> kezeles / "Mar jarok" -> terulet -> kezeles (2. alkalomtol arak)
@@ -317,7 +342,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
         track('booking_intent_selected', { step: 'LA1', reason: o.key });
         if (o.key === 'consult') return chooseService(consult, { next: F.next('LA1', 'consult') });
         return go(F.next('LA1', o.key));
-      }))));
+      }, { kep: o.kep }))));
     },
     LA2: () => laserAreas('LA2', 'first_treatment', flow.copy.areaTitle),
     LA3: () => laserAreas('LA3', 'returning_treatment', flow.copy.returningTitle),
@@ -328,6 +353,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       }))),
 
     C1: async () => {
+      if (flow.naptar) { go('CN', { replace: true }); return null; } // HeadSpa: nincs "gyors idopontok" lepes, rogton a PMU-foglalo havi naptara
       if (!S.slots.length) await loadSlots();
       if (!S.slots.length) { track('booking_no_slots', { ...serviceParams(S.service), step: 'C1' }); S.callbackReason = 'nincs_idopont'; go('A1', { replace: true }); return null; }
       // a valasztott szakember idopontjai (HA3 / naptar); ha neki nincs, felkinaljuk a "barmely szakember"-t
@@ -365,14 +391,37 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
           : h('div', {}, note('Erre a napszakra nincs szabad időpont.'), link('Nem találok megfelelő időpontot', () => { S.callbackReason = 'nincs_idopont'; go('A1'); })));
     },
 
-    C3: async () => {
-      if (!S.place) { try { S.place = await adapter.getPlace(flow.business); } catch (e) { S.place = null; } }
-      return h('section', {}, title('A választásod'),
-        h('div', { class: 'be-card' }, h('b', { class: 'be-card-title', text: nameOf(S.service) }),
-          summaryRows([['Időtartam', S.service.durationMin ? F.durationLabel(S.service.durationMin) : ''], ['Ár', [priceNow(), staffNote() && `(${staffNote()})`].filter(Boolean).join(' ')],
-            ['Dátum', F.longDate(S.slot.start_unix)], ['Időpont', F.timeLabel(S.slot.start_unix)],
-            ['Szakember', staffRow()], ['Helyszín', placeText()]])),
-        h('div', { class: 'be-actions' }, primary('Tovább az adatokhoz', () => go(F.next('C3', 'next'))), link('Másik időpontot választok', () => win.history.back())));
+    // CN: a PMU-foglalo havi naptara (assets/js/foglalo-pmu.js, rajzolNaptar) egy az egyben: csak a szabad napok aktivak, az elso szabad nap elore
+    // kivalasztva, a nap idopontjai gombokban; egy erintes az idoponton = tovabb az adatlapra (nincs osszegzo kepernyo).
+    CN: async () => {
+      if (!S.slots.length || S.slotsDays < NAPTAR_NAP) await loadSlots(NAPTAR_NAP);
+      if (!S.slots.length) { track('booking_no_slots', { ...serviceParams(S.service), step: 'CN' }); S.callbackReason = 'nincs_idopont'; go('A1', { replace: true }); return null; }
+      const szabad = new Set(S.slots.map((s) => F.dayKey(s.start_unix)));
+      const hk = F.monthList(nowUnix(), NAPTAR_NAP);
+      if (!S.day || !szabad.has(S.day)) { S.day = F.dayKey(F.uniqueTimes(S.slots)[0].start_unix); S.month = null; }
+      if (!S.month || !hk.includes(S.month)) S.month = hk.includes(S.day.slice(0, 7)) ? S.day.slice(0, 7) : hk[0];
+      track('booking_slot_viewed', { ...serviceParams(S.service), step: 'CN', count: F.dayTimes(S.slots, S.day).length });
+      // honap- / napvaltasnal helyben rajzolunk ujra (nincs betoltes-villanas, a gorgetes marad), mint a PMU-foglalo
+      const naptar = h('div', {});
+      const paint = () => {
+        const i = hk.indexOf(S.month);
+        const grid = F.monthGrid(S.month, szabad);
+        const idok = F.dayTimes(S.slots, S.day);
+        const lapoz = (d, label, jel) => h('button', { type: 'button', class: 'be-lapoz', 'aria-label': label, text: jel, disabled: hk[i + d] === undefined, onclick: () => { S.month = hk[i + d]; paint(); } });
+        naptar.replaceChildren(
+          h('div', { class: 'be-honap-fej' }, lapoz(-1, 'Előző hónap', '‹'), h('b', { text: grid.title }), lapoz(1, 'Következő hónap', '›')),
+          h('div', { class: 'be-naptar' }, HETNAPOK.map((n) => h('div', { class: 'be-hetnap', text: n })),
+            grid.cells.map((c) => (c.blank ? h('div', { class: 'be-nnap be-ures' }) : h('button', { type: 'button', class: 'be-nnap' + (c.free ? ' szabad' : ''), disabled: !c.free,
+              'aria-pressed': String(c.key === S.day), 'aria-label': c.n + '. ' + (c.free ? 'szabad időpont van' : 'nem elérhető'), text: String(c.n), onclick: () => { S.day = c.key; paint(); } })))),
+          idok.length ? h('div', {}, h('div', { class: 'be-nap-cim', text: F.longDate(idok[0].start_unix) }),
+            h('div', { class: 'be-idolista' }, idok.map((s) => h('button', { type: 'button', class: 'be-idogomb', 'aria-pressed': String(!!S.slot && S.slot.start_unix === s.start_unix), text: F.timeLabel(s.start_unix), onclick: () => pickSlot(s) }))))
+            : note('Válassz egy zölddel jelölt napot.'));
+      };
+      paint();
+      // a cim a PMU-foglalon sincs kiirva (a lepesjelzo mutatja, hol tart); a kepernyoolvasonak es a fokusznak marad egy rejtett cim
+      return h('section', {}, h('h2', { class: 'be-title be-sr', tabindex: '-1', text: 'Válassz időpontot' }),
+        S.slotLostNote ? alertBox('Ez az időpont közben elkelt. Válassz egy másikat!') : null, serviceBar(S.exact ? null : () => win.history.back()), naptar,
+        link('Nem találok megfelelő időpontot', () => { S.callbackReason = 'nincs_idopont'; track('booking_no_slots', { ...serviceParams(S.service), step: 'CN', reason: 'user' }); go('A1'); }));
     },
 
     C4: async () => {
@@ -402,8 +451,11 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       // Nem eles tartomanyon (elonezet / helyi) a Salonic az ELES koszonooldalra iranyit, ami a keretben nem ertesitheti a motort (idegen eredet), ezert itt a
       // vegen a Salonic / koszonooldal keretbeli tartalma latszik, nem a motor sikerkepernyoje; a foglalas ettol fuggetlenul VALODI.
       return h('section', {}, !HANDOFF && !S.adapterSample ? h('span', { class: 'be-proba', text: 'Előnézet · valódi foglalás' }) : null, title('Add meg az adataidat'),
-        h('div', { class: 'be-mini' }, h('b', { text: `${F.longDate(S.slot.start_unix)} · ${F.timeLabel(S.slot.start_unix)}` }), h('span', { text: nameOf(S.service) }),
-          link('Módosítás', () => win.history.go(-2))),
+        // a valasztott idopont osszegzese, mint a PMU-foglalon (kis kepernyon elrejtve: az adatlap egy kepernyore fer); "Modositas" = vissza az idopont-valasztora
+        h('div', { class: 'be-mini' }, icon('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>', 1.6),
+          h('span', { class: 'be-mini-text' }, h('b', { text: `${F.longDate(S.slot.start_unix)} · ${F.timeLabel(S.slot.start_unix)}` }), h('span', { text: nameOf(S.service) }),
+            h('span', { class: 'be-halk', text: [priceNow(), S.service.durationMin ? F.durationLabel(S.service.durationMin) : null].filter(Boolean).join(' · ') })),
+          link('Módosítás', () => win.history.back())),
         h('div', { class: 'be-frame', 'data-styled': String(styled), style: `--visible:${geo.visible}px;--crop:${geo.crop}px` }, loading, frame), fallback, help);
     },
 
@@ -411,6 +463,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       h('ul', { class: 'be-check' }, h('li', { class: 'ok', text: 'Adatok ellenőrzése' }), h('li', { text: 'Foglalás ellenőrzése' }), h('li', { text: 'Visszaigazolás' }))),
 
     C6: async () => {
+      if (!S.place) { try { S.place = await adapter.getPlace(flow.business); } catch (e) { S.place = null; } } // helyszin: a sikerkepernyohoz es a naptar-fajlhoz (az osszegzo kepernyo mar nincs)
       const c = S.confirmation;
       const rep = c ? c.reported : {};
       const voucher = S.service.bookingType === 'voucher_redemption';
@@ -435,7 +488,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       return h('section', {}, title(expired ? 'A foglalási idő lejárt.' : 'Ez az időpont közben elkelt.'),
         note(expired ? 'A Salonic 5 percig tartja fenn a kiválasztott időpontot. Válassz újra:' : 'Válassz egy másik időpontot:'),
         alts.length ? h('div', { class: 'be-times be-grid' }, alts.map((s) => h('button', { type: 'button', class: 'be-time', text: `${F.dayLabel(s.start_unix, nowUnix())} ${F.timeLabel(s.start_unix)}`, onclick: () => { S.slotLostNote = false; S.staff = null; pickSlot(s); } }))) : null,
-        h('div', { class: 'be-actions' }, secondary('Másik nap…', () => { S.slotLostNote = false; go('C2'); }),
+        h('div', { class: 'be-actions' }, secondary('Másik nap…', () => { S.slotLostNote = false; go(dayView()); }),
           alts.length ? null : link('Nincs megfelelő időpont', () => { S.callbackReason = 'nincs_idopont'; go('A1'); })));
     },
     A3: async () => h('section', {}, title('Most nem tudjuk véglegesíteni az online foglalást.'), note(`Kérjük, próbáld újra, vagy kérj visszahívást, esetleg hívj minket: ${PHONE}.`),
@@ -458,7 +511,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
         track('booking_filter_used', { filter: 'area' });
         if (o.services.length === 1) return chooseService(o.services[0], { next: F.next(state, 'service') }); // egy szolgaltatas: nincs mit pontositani
         return go(F.next(state, 'area'));
-      }))));
+      }, { kep: o.area.kep }))));
     });
   }
 
@@ -466,10 +519,15 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     return ensureServices().then(() => {
       const cards = F.cardsFor(S.services, flow.cards, { voucher });
       if (!cards.length) return loadError();
+      // mint a PMU-foglalo kezelesvalasztoja: kep, cim + idotartam, jobbra az ar (ajandekkartyanal az "Ajandekkartyaval rendezve" az also sorban)
       return h('section', {}, title(voucher ? flow.copy.hs3Title : flow.copy.hs2Title), voucher ? note(flow.copy.hs3Note) : null,
         h('div', { class: 'be-list' }, cards.map(({ card, service }) => bigButton(card.title,
-          [service.durationMin ? F.durationLabel(service.durationMin) : null, voucher ? flow.copy.voucherSettled : F.formatPrice(service.activePrice)].filter(Boolean).join(' · '),
-          () => chooseService(service)))));
+          [service.durationMin ? F.durationLabel(service.durationMin) : null, voucher ? flow.copy.voucherSettled : null].filter(Boolean).join(' · '),
+          () => chooseService(service), { kep: card.kep, ar: voucher ? null : F.formatPrice(service.activePrice) }))),
+        // az ajandekkartya-bevaltas es -vasarlas nem kulon lepes, hanem a valasztas alatti ket link (legkevesebb lepes)
+        voucher ? null : h('div', { class: 'be-more' },
+          link(flow.copy.voucherLink, () => { track('booking_intent_selected', { step: 'HS2', reason: 'voucher' }); S.voucher = true; go(F.next('HS2', 'voucher')); }),
+          link(flow.copy.giftCardLink, () => { track('booking_intent_selected', { step: 'HS2', reason: 'giftcard' }); win.location.assign(flow.giftCardUrl); }))); // nem foglalasi allapot: kilep a Gift Card funnelbe
     });
   }
   // Tartalek: ha a motor vagy a Salonic adatai nem toltenek be, a vendeg a Salonic eredeti foglalojara kerulhet (nem szakad meg a foglalas)
@@ -576,7 +634,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   function setBusiness(business) {
     flow = FLOWS[business];
     ctx.business = business;
-    Object.assign(S, { flow, services: null, voucher: false, service: null, exact: false, slots: [], slot: null, daypart: 'any', day: null, staff: null, place: null, expected: null,
+    Object.assign(S, { flow, services: null, voucher: false, service: null, exact: false, slots: [], slot: null, daypart: 'any', day: null, month: null, staff: null, place: null, expected: null,
       guestUrl: null, confirmation: null, intent: null, group: null, staffLabel: null, slotStaff: null, candidates: null, laserArea: null, slotLostNote: false });
     tracker.setBusiness(business);
   }
@@ -628,6 +686,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   function sample() {
     const t0 = Math.floor(now() / 86400000 + 2) * 86400 + 8 * 3600;
     S.service = { serviceId: '0', name: 'EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás', durationMin: 80, activePrice: 26900, listPrice: null, bookingType: 'first_treatment' };
+    if (!flow) { flow = FLOWS.headspa; S.flow = flow; ctx.business = 'headspa'; } // a mintanezet HeadSpa-adatokkal dolgozik (nincs uzletag-valasztas)
     S.slot = { start_unix: t0, staff_id: '1', staff_label: 'x', slot_id: 'minta' };
     S.slots = [0, 5400, 90000, 93600, 176400].map((d, i) => ({ start_unix: t0 + d, staff_id: '1', staff_label: 'x', slot_id: 'minta' + i, service_id: '0' }));
     S.place = { name: 'Mosaic Headspa', address: '1023 Budapest, Bécsi út 4. földszint 1. ajtó' };
@@ -636,8 +695,8 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     S.adapterSample = true;
     adapter.getAvailability = async () => S.slots; // mintanezetben nincs halozat
     adapter.getPresentation = async () => ({ customCss: null });
-    win.history.replaceState({ view: map[ctx.sample] || 'HS1', depth: 0 }, '', win.location.pathname + win.location.search);
-    return show(map[ctx.sample] || 'HS1');
+    win.history.replaceState({ view: map[ctx.sample] || 'HS2', depth: 0 }, '', win.location.pathname + win.location.search);
+    return show(map[ctx.sample] || 'HS2');
   }
 
   return { start: start(), state: S, show, go, destroy };

@@ -22,8 +22,8 @@ const ua = MOBIL ? UA_MOBIL : UA;
 // [cimke, a CTA nyitasa (opts), a vart kezdo cim (reszlet), tovabbi ellenorzes]
 const BELEPOK = [
   ['altalanos (nincs kontextus)', {}, 'Mit szeretnél foglalni?'],
-  ['HeadSpa altalanos', { business: 'headspa' }, 'Hogyan folytatnád?'],
-  ['HeadSpa paros', { business: 'headspa', service: 'paros' }, 'Legközelebbi szabad időpontok', 'Páros'],
+  ['HeadSpa altalanos', { business: 'headspa' }, 'Melyik HeadSpa élményt választod?'],
+  ['HeadSpa paros', { business: 'headspa', service: 'paros' }, 'Válassz időpontot', 'Páros'],
   ['HeadSpa ajandekkartya-bevaltas', { business: 'headspa', voucher: '1' }, 'Milyen ajándékkártyád van?'],
   ['Fodraszat altalanos', { business: 'hair' }, 'Mit szeretnél?'],
   ['Fodraszat balayage-kategoria', { business: 'hair', service_category: 'balayage' }, 'Melyik kezelés?'],
@@ -138,6 +138,92 @@ await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'
 ok('bezaras utan a hatter nem inert, a gorgetes visszaall', await page.evaluate(() => [...document.body.children].every((e) => !e.inert) && getComputedStyle(document.documentElement).overflow !== 'hidden'));
 ok('H0 utan bezaras: eredeti cim', url(page).pathname + url(page).search === eredetiUrl, url(page).pathname + url(page).search);
 
+// --- design (2026-10-04): kepek a valasztokon, HeadSpa: PMU-naptar, nincs osszegzo kepernyo, 3 lepes ------------------------------------------------
+async function kepekBetoltve(page, minDb, ido = 8000) {
+  const t0 = Date.now(); let r = { db: 0, jo: 0 };
+  while (Date.now() - t0 < ido) {
+    r = await reteg(page).locator('.be-choice-img').evaluateAll((es) => ({ db: es.length, jo: es.filter((e) => e.tagName !== 'IMG' || (e.complete && e.naturalWidth > 0)).length }));
+    if (r.db >= minDb && r.jo === r.db) break;
+    await page.waitForTimeout(250);
+  }
+  return r;
+}
+const kattint = async (page, szoveg) => { await reteg(page).locator('.be-choice', { hasText: szoveg }).first().click(); await varCim(page); await page.waitForTimeout(400); };
+const zar = async (page) => { await reteg(page).locator('#be-close').click().catch(() => {}); await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {}); };
+{
+  await nyit(page, {}); await varCim(page);
+  let k = await kepekBetoltve(page, 5);
+  ok('design | H0: mind az 5 szolgaltatas mellett kis kep (betoltott)', k.db === 5 && k.jo === 5, JSON.stringify(k));
+  await zar(page);
+
+  await nyit(page, { business: 'headspa' }); await varCim(page);
+  k = await kepekBetoltve(page, 3);
+  ok('design | HeadSpa: 3 elmeny, mindegyik mellett kep', k.db === 3 && k.jo === 3, JSON.stringify(k));
+  const arak = await reteg(page).locator('.be-choice-ar').allTextContents();
+  ok('design | HeadSpa: minden elmenynel ar jobbra', arak.length === 3 && arak.every((a) => /\d\s?Ft/.test(a)), arak.join(' | '));
+  const linkek = await reteg(page).locator('.be-more .be-link').allTextContents();
+  ok('design | HeadSpa: nincs "Hogyan folytatnad?" lepes, alul ket link (ajandekkartya-bevaltas / -vasarlas)', linkek.length === 2 && !(await reteg(page).locator('.be-title', { hasText: 'Hogyan folytatnád' }).count()), linkek.join(' | '));
+  const lepesek = (await reteg(page).locator('.be-steps li').allTextContents()).join('|');
+  ok('design | lepesjelzo: 3 lepes (Szolgaltatas, Idopont, Adatok)', lepesek.replace(/\d/g, '') === 'Szolgáltatás|Időpont|Adatok', lepesek);
+  await reteg(page).locator('.be-more .be-link', { hasText: 'beváltom' }).click(); await varCim(page); await page.waitForTimeout(300);
+  ok('design | HeadSpa: ajandekkartya-bevaltas link -> "Milyen ajandekkartyad van?"', (await cim(page).textContent()).includes('Milyen ajándékkártyád van?'));
+  await reteg(page).locator('#be-back').click(); await varCim(page); await page.waitForTimeout(300);
+  ok('design | HeadSpa: vissza -> elmeny-valasztas', (await cim(page).textContent()).includes('Melyik HeadSpa élményt'));
+  await kattint(page, 'Egyéni HeadSpa');
+  const nap = reteg(page).locator('.be-nnap.szabad');
+  await nap.first().waitFor({ timeout: 20000 });
+  const szabadDb = await nap.count(), idoDb = await reteg(page).locator('.be-idogomb').count();
+  ok('design | HeadSpa idopont: a PMU-foglalo havi naptara (7 oszlopos racs, szabad napok zoldek, idopont-gombok)', (await reteg(page).locator('.be-hetnap').count()) === 7 && szabadDb > 3 && idoDb > 0, `szabad nap: ${szabadDb}, idopont: ${idoDb}`);
+  ok('design | HeadSpa idopont: nincs "gyors idopontok" / naptar-sav, a kezeles kepe a savban', !(await reteg(page).locator('.be-day, .be-strip').count()) && (await reteg(page).locator('.be-svc-img').count()) === 1);
+  ok('design | HeadSpa idopont: az elso szabad nap elore kivalasztva', (await reteg(page).locator('.be-nnap[aria-pressed="true"]').count()) === 1);
+  const elsoNap = await reteg(page).locator('.be-nap-cim').textContent();
+  ok('design | HeadSpa idopont: a nap idopontjai 5 oszlopos racsban (PMU)', (await reteg(page).locator('.be-idolista').evaluate((e) => getComputedStyle(e).gridTemplateColumns.split(' ').length)) === 5);
+  // masik szabad nap kivalasztasa: helyben frissul (nincs betoltes-villanas), az idopontok a naphoz tartoznak
+  if (szabadDb > 1) {
+    await nap.nth(1).click(); await page.waitForTimeout(200);
+    const masikNap = await reteg(page).locator('.be-nap-cim').textContent();
+    ok('design | HeadSpa idopont: masik nap -> masik cim, helyben', masikNap !== elsoNap && (await reteg(page).locator('.be-loading').count()) === 0, elsoNap + ' -> ' + masikNap);
+  }
+  const elsoIdo = (await reteg(page).locator('.be-idogomb').first().textContent()).trim();
+  await reteg(page).locator('.be-idogomb').first().click();
+  await reteg(page).locator('iframe.be-iframe').waitFor({ timeout: 20000 });
+  ok('design | idopont utan ROGTON a Salonic adatlap (nincs osszegzo kepernyo)', !(await reteg(page).locator('.be-title', { hasText: 'A választásod' }).count()) && (await cim(page).textContent()).includes('Add meg az adataidat'), (await cim(page).textContent()));
+  ok('design | adatlap: a lepesjelzo a 3. lepesen all (Adatok), a keret megvan', (await reteg(page).locator('.be-frame').count()) === 1 && (await reteg(page).locator('.be-steps li.now').textContent()).includes('Adatok'));
+  const mini = reteg(page).locator('.be-mini');
+  const miniLatszik = await mini.evaluate((e) => getComputedStyle(e).display !== 'none');
+  ok('design | adatlap: osszegzo-sor (' + (MOBIL ? 'mobilon rejtett' : 'asztalon latszik') + ', mint a PMU-n)', MOBIL ? !miniLatszik : miniLatszik && (await mini.textContent()).includes(elsoIdo), (await mini.textContent()).replace(/\s+/g, ' ').slice(0, 90));
+  await reteg(page).locator('#be-back').click(); await page.waitForTimeout(800);
+  ok('design | adatlap -> vissza: a naptar a kivalasztott nappal', (await reteg(page).locator('.be-nnap[aria-pressed="true"]').count()) === 1 && !!(await reteg(page).locator('.be-naptar').count()));
+  await zar(page);
+
+  await nyit(page, { business: 'oxygen' }); await varCim(page);
+  k = await kepekBetoltve(page, 3);
+  const oxAr = await reteg(page).locator('.be-choice-ar').allTextContents();
+  const oxSub = await reteg(page).locator('.be-choice small').allTextContents();
+  ok('design | Oxigen: 3 valasztas, mindegyik mellett kep es ar', k.db === 3 && k.jo === 3 && oxAr.length === 3 && oxAr.every((a) => /(\d\s?Ft|Ingyenes)/.test(a)), JSON.stringify(k) + ' ' + oxAr.join(' | '));
+  ok('design | Oxigen: a hajkamera-szoveg egy mondat ("Bizonytalan vagy? ...")', oxSub.length > 0 && /Bizonytalan vagy\?.*oxigén/.test(oxSub[0]), oxSub[0]);
+  await zar(page);
+
+  await nyit(page, { business: 'hair' }); await varCim(page);
+  k = await kepekBetoltve(page, 5);
+  ok('design | Fodraszat: minden szandek mellett kep', k.db >= 4 && k.jo === k.db, JSON.stringify(k));
+  await kattint(page, 'Balayage');
+  // a kezeles-valasztason at a fodrasz-valasztasig (ha a szolgaltatashoz tobb fodrasz tartozik)
+  let hcim = (await cim(page).textContent()).trim();
+  for (let i = 0; i < 3 && !/Van választott fodrászod/i.test(hcim); i++) { await reteg(page).locator('.be-choice').first().click(); await varCim(page); await page.waitForTimeout(400); hcim = (await cim(page).textContent()).trim(); }
+  if (/Van választott fodrászod/i.test(hcim)) {
+    await reteg(page).locator('.be-choice').nth(1).click(); await page.waitForTimeout(1500); await varCim(page);
+    k = await kepekBetoltve(page, 1);
+    ok('design | Fodraszat: a fodraszok mellett fotok (vagy monogram)', k.db >= 1 && k.jo === k.db, `${(await cim(page).textContent()).trim()} ${JSON.stringify(k)}`);
+  } else ok('design | Fodraszat: fodrasz-valaszto (ennel a kezelesnel nincs)', true, hcim);
+  await zar(page);
+
+  await nyit(page, { business: 'laser', intent: 'first' }); await varCim(page);
+  k = await kepekBetoltve(page, 4);
+  ok('design | Lezer: a teruletek mellett kep', k.db >= 4 && k.jo === k.db, JSON.stringify(k));
+  await zar(page);
+}
+
 // ujratoltes ?booking=1-gyel: a reteg ujra megnyilik; bezaras utan tiszta cim
 await page.goto(BAZIS + OLDAL + '?utm_source=teszt&utm_medium=cpc&gclid=TESZT123&booking=1&business=oxygen&service=466110', { waitUntil: 'domcontentloaded' });
 const c2 = await varCim(page);
@@ -174,7 +260,7 @@ for (const lap of LANDINGEK) {
   await page.evaluate(() => document.querySelector('a[href*="foglalo-motor"]').click());
   await varCim(page); await page.waitForTimeout(2500);
   await reteg(page).locator('.be-time').first().click(); await page.waitForTimeout(2500);
-  await reteg(page).locator('button', { hasText: 'Tovább az adatokhoz' }).click(); await page.waitForTimeout(8000);
+  await reteg(page).locator('iframe.be-iframe').waitFor({ timeout: 15000 }); await page.waitForTimeout(8000); // az idopont utan rogton az adatlap (nincs osszegzo kepernyo)
   await reteg(page).locator('#be-back').click(); await page.waitForTimeout(2500);
   await reteg(page).locator('#be-close').click();
   await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {});

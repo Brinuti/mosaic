@@ -63,3 +63,12 @@ A Salonic nem minden helyen bontja az első és a következő alkalmat külön k
 
 - **A köztes lépés-események nem pótolódnak** (`view_item`, `select_employee` GA4; `ViewContent` TikTok): semmi nem épül rájuk, ezért a motor útján elmaradnak (C opció, [MERES_FOGLALASI_LEPESEK.md](MERES_FOGLALASI_LEPESEK.md)). A `/foglalo-motor` oldal nem kap mérőkódot, a GTM-hez és a stape-hez nem nyúlunk. A TikTok `InitiateCheckout` a Salonic-keretből továbbra is jön, de törékeny; ezt az átkapcsolás után figyeljük.
 - **Az átkapcsolás időpontja:** 2026-10-04, a design véglegesítése után, **minden üzletág egyszerre, a HeadSpával együtt** (négy kapcsoló, egy merge). A #71 (éles próbák naplói, dokumentáció) ugyanezzel a merge-dzsel megy.
+
+## Design-döntések 2026-10-04 (a tulajdonos kérései, csak előnézeten, az éles oldal nem változik)
+
+- **Kis kép minden szolgáltatás-választó mellett** (szolgáltatás-választó, HeadSpa, Oxigén, Fodrászat szándékok és a fodrászok, Lézer szándékok és területek): a kép a site saját képeiből készült (`tools/booking-kepek.json`, `tools/booking-kepek.mjs` → `assets/img/booking/*.jpg`, 160×160, ~6 kB). Akinek nincs fotója (új fodrász), az monogramot kap.
+- **Oxigén első képernyő:** kép + ár mindhárom választás mellett (az ár a Salonic aktuális ára; több változatnál „X Ft-tól”). A hajkamerás vizsgálat sora: „Bizonytalan vagy? Nézzük meg, mit adhat az oxigén.” (egy sor).
+- **HeadSpa időpont-választás = a PMU-foglaló naptára** egy az egyben (ugyanaz a hónap-rács, zöld szabad napok, 5 oszlopos időpont-rács, ugyanaz az időpont-szűrés: egész és fél órák, a negyed csak ha mellette nincs ilyen). 92 napra előre keres, mint a PMU.
+- **Nincs összegző képernyő sehol**: az időpont kiválasztása után rögtön a Salonic adatlapja jön. A választott időpont összegzése az adatlap fölött marad (asztalon), mobilon rejtett (mint a PMU-n), a „Módosítás” az időpont-választóra vissza.
+- **A HeadSpa „Hogyan folytatnád?” (HS1) lépése megszűnt**: az élmény-választás az első képernyő, az ajándékkártya-beváltás és -vásárlás két link alatta (legkevesebb lépés).
+- **Salonic-adatlap = a PMU kinézete:** ezt a Salonic-fiók „Egyedi CSS URL” beállítása adja (`https://www.mosaicheadspa.hu/salonic/mosaic.css`), a motor ehhez méretez. Ez fiókonként a tulajdonos teendője (HeadSpa, Hair, Oxigén, Elysion); a beállítás a Salonic saját (natív) foglaló-oldalaira is hat. A keret a PMU-hoz hasonlóan teljes szélességű (nem csúszik ki).

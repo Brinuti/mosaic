@@ -17,9 +17,9 @@ export const OXYGEN = Object.freeze({
   giftCardUrl: null,
   showStaffFilter: true, // a szakember nem kotelezo: alapbol "barmely megfelelo", a naptarban valaszthato
   intents: Object.freeze([
-    { key: 'camera', title: 'Hajkamerás vizsgálat', sub: 'Ha először szeretnéd megtudni, mire lehet szüksége a fejbőrödnek.', test: (s) => s.bookingType === 'consultation' },
-    { key: 'first', title: 'Első oxigénterápiás kezelés', test: (s) => s.bookingType === 'first_treatment' },
-    { key: 'returning', title: 'Már jártam nálatok', sub: 'Következő kezelés', test: (s) => s.bookingType === 'returning_treatment' },
+    { key: 'camera', title: 'Hajkamerás vizsgálat', sub: 'Bizonytalan vagy? Nézzük meg, mit adhat az oxigén.', kep: 'ox-camera', test: (s) => s.bookingType === 'consultation' },
+    { key: 'first', title: 'Első oxigénterápiás kezelés', kep: 'ox-first', test: (s) => s.bookingType === 'first_treatment' },
+    { key: 'returning', title: 'Már jártam nálatok', sub: 'Következő kezelés', kep: 'ox-returning', test: (s) => s.bookingType === 'returning_treatment' },
   ]),
   copy: Object.freeze({
     introTitle: 'Mit szeretnél foglalni?',

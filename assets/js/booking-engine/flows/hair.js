@@ -18,12 +18,14 @@ export const HAIR = Object.freeze({
   // (ugyanaz, mint az Oxigennel); a kozos CSS-sel a motor a tomor meretet hasznalja
   frame: Object.freeze({ crop: 100, visible: 1653 }),
   intents: Object.freeze([
-    { key: 'balayage', title: 'Balayage / szőkítés', categories: Object.freeze(['Balayage', 'Teljes szőkítés', 'Teljes melír / airtouch + vágás']) },
-    { key: 'color', title: 'Hajfestés', categories: Object.freeze(['Tőfestés + szárítás', 'Tőfestés + vágás + szárítás', 'Elrontott festés korrekció / Teljes festés']) },
-    { key: 'cut', title: 'Hajvágás', categories: Object.freeze(['Női hajvágás + szárítás', 'Férfi hajvágás']) },
-    { key: 'other', title: 'Egyéb fodrászati szolgáltatás', categories: Object.freeze(['Női szárítás', 'Hajszerkezet újraépítés', 'Póthaj']), catchAll: true },
-    { key: 'unsure', title: 'Nem tudom pontosan', sub: 'Ingyenes konzultáció', consult: true },
+    { key: 'balayage', title: 'Balayage / szőkítés', kep: 'hair-balayage', categories: Object.freeze(['Balayage', 'Teljes szőkítés', 'Teljes melír / airtouch + vágás']) },
+    { key: 'color', title: 'Hajfestés', kep: 'hair-color', categories: Object.freeze(['Tőfestés + szárítás', 'Tőfestés + vágás + szárítás', 'Elrontott festés korrekció / Teljes festés']) },
+    { key: 'cut', title: 'Hajvágás', kep: 'hair-cut', categories: Object.freeze(['Női hajvágás + szárítás', 'Férfi hajvágás']) },
+    { key: 'other', title: 'Egyéb fodrászati szolgáltatás', kep: 'hair-other', categories: Object.freeze(['Női szárítás', 'Hajszerkezet újraépítés', 'Póthaj']), catchAll: true },
+    { key: 'unsure', title: 'Nem tudom pontosan', sub: 'Ingyenes konzultáció', kep: 'hair-consult', consult: true },
   ]),
+  // a fodraszok fotoi (a site sajat kepei, tools/booking-kepek.json); akinek nincs, annak monogram jelenik meg
+  staffPhotos: Object.freeze([[/betti/i, 'staff-betti'], [/noel/i, 'staff-noel'], [/evelin/i, 'staff-evelin']]),
   copy: Object.freeze({
     introTitle: 'Mit szeretnél?',
     groupTitle: 'Melyik kezelés?',

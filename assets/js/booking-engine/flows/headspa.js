@@ -12,23 +12,22 @@ export const HEADSPA = Object.freeze({
   // (~197 px) az iframe aljara fekszik, ezert a gomb + 24 px + a sav magassaga kell, hogy ne takarja el (a lablec 1571 px-nel kezdodik,
   // a sav alatt marad). A Salonic-fiok "Egyeni CSS URL" beallitasaval (mint a PMU-nal) ez egyszerusodik.
   frame: Object.freeze({ crop: 100, visible: 1545 }), // az alap (egyeni CSS nelkuli) Salonic-kinezethez; a MOSAIC kozos CSS-sel a motor a tomor meretet hasznalja
-  firstState: 'HS1',
+  // Legkevesebb lepes: a belepes egyenesen az elmeny-valasztas (HS2); az ajandekkartya-beváltás / -vasarlas a HS2 aljan egy-egy link (a HS1 mar nem lepes).
+  firstState: 'HS2',
+  naptar: true, // az idopont-valasztas a PMU-foglalo havi naptara (CN), nem a gyors idopontok (C1 / C2)
   voucherState: 'HS3',
   giftCardUrl: '/headspa-ajandekkartya', // az ajandekkartya-vasarlas kilep a foglalasbol (Gift Card funnel)
   showStaffFilter: false, // 11. dontes: a HeadSpa "munkatarsai" kezelo-helyek, a vendeg nem valaszt
   // HS2/HS3 kartyak. 8. dontes: az Egyeni = csak a "Relax" valtozat (a "Hair" nem foglalhato ebbol a foglalobol).
   cards: Object.freeze([
-    { key: 'egyeni', title: 'Egyéni HeadSpa', test: (n) => /EGYÉNI/i.test(n) && /Relax/i.test(n) },
-    { key: 'paros', title: 'Páros HeadSpa', test: (n) => /PÁROS/i.test(n) },
-    { key: 'negykezes', title: '4 kezes HeadSpa', test: (n) => /NÉGYKEZES|4[ -]?KEZES/i.test(n) },
+    { key: 'egyeni', title: 'Egyéni HeadSpa', kep: 'hs-egyeni', test: (n) => /EGYÉNI/i.test(n) && /Relax/i.test(n) },
+    { key: 'paros', title: 'Páros HeadSpa', kep: 'hs-paros', test: (n) => /PÁROS/i.test(n) },
+    { key: 'negykezes', title: '4 kezes HeadSpa', kep: 'hs-negykezes', test: (n) => /NÉGYKEZES|4[ -]?KEZES/i.test(n) },
   ]),
   copy: Object.freeze({
-    hs1Title: 'Hogyan folytatnád?',
-    hs1: [
-      { key: 'book', title: 'Időpontot foglalok' },
-      { key: 'voucher', title: 'Ajándékkártyám van – beváltom' },
-      { key: 'giftcard', title: 'Ajándékkártyát vásárolok' },
-    ],
+    // a HS2 (elmeny-valasztas) alatti ket link (a korabbi HS1 "Hogyan folytatnad?" lepes helyett)
+    voucherLink: 'Ajándékkártyám van – beváltom',
+    giftCardLink: 'Ajándékkártyát vásárolok',
     hs2Title: 'Melyik HeadSpa élményt választod?',
     hs3Title: 'Milyen ajándékkártyád van?',
     hs3Note: 'Az ajándékkártyás foglalást a Salonic adatlapján kuponkóddal tudod rendezni.',

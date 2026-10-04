@@ -9,13 +9,13 @@
 import { displayName } from '../flow.js';
 
 export const AREAS = Object.freeze([
-  { key: 'arc', title: 'Arc', test: (n) => /^ARC\s*-/i.test(n) },
-  { key: 'honalj', title: 'Hónalj', test: (n) => /^TEST\s*-.*hónalj/i.test(n) },
-  { key: 'kar', title: 'Kar', test: (n) => /^TEST\s*-/i.test(n) }, // a hónalj után: Alkar, Felkar, Teljes kar
-  { key: 'intim', title: 'Intim', test: (n) => /^INTIM\s*-/i.test(n) },
-  { key: 'lab', title: 'Láb', test: (n) => /^LÁBAK\s*-/i.test(n) },
-  { key: 'torzs', title: 'Törzs', test: (n) => /^FÉRFI\s*-/i.test(n) },
-  { key: 'tobb', title: 'Több terület', test: () => true }, // akciós csomagok, egyedi csomag, egyéb testrészek
+  { key: 'arc', title: 'Arc', kep: 'la-arc', test: (n) => /^ARC\s*-/i.test(n) },
+  { key: 'honalj', title: 'Hónalj', kep: 'la-honalj', test: (n) => /^TEST\s*-.*hónalj/i.test(n) },
+  { key: 'kar', title: 'Kar', kep: 'la-kar', test: (n) => /^TEST\s*-/i.test(n) }, // a hónalj után: Alkar, Felkar, Teljes kar
+  { key: 'intim', title: 'Intim', kep: 'la-intim', test: (n) => /^INTIM\s*-/i.test(n) },
+  { key: 'lab', title: 'Láb', kep: 'la-lab', test: (n) => /^LÁBAK\s*-/i.test(n) },
+  { key: 'torzs', title: 'Törzs', kep: 'la-torzs', test: (n) => /^FÉRFI\s*-/i.test(n) },
+  { key: 'tobb', title: 'Több terület', kep: 'la-tobb', test: () => true }, // akciós csomagok, egyedi csomag, egyéb testrészek
 ]);
 
 export const areaOf = (service) => AREAS.find((a) => a.test(displayName(service.name)));
@@ -56,9 +56,9 @@ export const LASER = Object.freeze({
   copy: Object.freeze({
     introTitle: 'Melyik út illik rád?',
     intro: Object.freeze([
-      { key: 'consult', title: 'Ingyenes konzultációt kérek', sub: 'Ha még nem tudod pontosan, melyik terület vagy kezelés megfelelő.' },
-      { key: 'known', title: 'Már tudom, mit szeretnék' },
-      { key: 'returning', title: 'Már járok kezelésre' },
+      { key: 'consult', title: 'Ingyenes konzultációt kérek', sub: 'Ha még nem tudod pontosan, melyik terület vagy kezelés megfelelő.', kep: 'la-consult' },
+      { key: 'known', title: 'Már tudom, mit szeretnék', kep: 'la-known' },
+      { key: 'returning', title: 'Már járok kezelésre', kep: 'la-returning' },
     ]),
     areaTitle: 'Melyik területet szeretnéd?',
     returningTitle: 'Következő kezelés: melyik terület?',

@@ -7,12 +7,12 @@
 export const CHOOSER = Object.freeze({
   title: 'Mit szeretnél foglalni?',
   families: Object.freeze([
-    { key: 'headspa', business: 'headspa', title: 'Head Spa', sub: 'Egyéni, páros és 4 kezes élmény' },
-    { key: 'hair', business: 'hair', title: 'Fodrászat', sub: 'Balayage, hajfestés, hajvágás, ingyenes konzultáció' },
-    { key: 'oxygen', business: 'oxygen', title: 'Oxigénterápia', sub: 'Hajkamerás vizsgálat és oxigénterápiás kezelés' },
-    { key: 'laser', business: 'laser', title: 'Lézeres szőrtelenítés', sub: 'Ingyenes konzultáció, első és további kezelések' },
+    { key: 'headspa', business: 'headspa', title: 'Head Spa', sub: 'Egyéni, páros és 4 kezes élmény', kep: 'h0-headspa' },
+    { key: 'hair', business: 'hair', title: 'Fodrászat', sub: 'Balayage, hajfestés, hajvágás', kep: 'h0-hair' },
+    { key: 'oxygen', business: 'oxygen', title: 'Oxigénterápia', sub: 'Hajkamera-vizsgálat és kezelés', kep: 'h0-oxygen' },
+    { key: 'laser', business: 'laser', title: 'Lézeres szőrtelenítés', sub: 'Ingyenes konzultáció, kezelések', kep: 'h0-laser' },
     // a PMU a sajat, kesz foglalojaval nyilik (assets/js/foglalo-pmu.js, /foglalo-pmu): nem ennek a motornak a folyamata
-    { key: 'pmu', business: 'pmu', title: 'Sminktetoválás', sub: 'Szemöldök, ajak, szemhéj', external: true },
+    { key: 'pmu', business: 'pmu', title: 'Sminktetoválás', sub: 'Szemöldök, ajak, szemhéj', kep: 'h0-pmu', external: true },
   ]),
 });
 
