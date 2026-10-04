@@ -30,6 +30,10 @@ Az oldalon belül **nincs `#horgony`-link**: a GTM History Change triggere minde
 gombok (`data-gorgetes`) JS-ből görgetnek. A CTA-kattintások `oxigen_landing_cta` (`data-cta` érték) és `oxigen_landing_video` dataLayer-eseményt
 küldenek (a PMU-landing `pmu_landing_*` mintájára; ezekre GTM-címke nem figyel).
 
+## Fejléc
+
+A MOSAIC fejléc piros akció-sávja (`#comp-mpv0ganp`, „Októberi akció…”) ezen a landingen **nincs** (a tulajdonos kérésére): az `oxigen-landing.css` elrejti (`display:none`), a fejléc ettől csak a menüsor magas (asztali 46 px, mobil 61 px), a tartalom feljebb kerül. A hero-galéria képaláírásában nincs „Hajhullás” cím, csak az alkalmak száma.
+
 ## Hero és eredmények
 
 - A H1 („Működő hajgyógyászati oxigénterápia hajhullás ellen”) a bal blokkban áll, két sorban (a méret a viewporthoz igazodik); a galéria teteje a cím nagybetűinek tetejéhez igazodik; alatta: „Kétmillió elvégzett kezelésből 95%-os hatékonyság*”, lábjegyzet: „*Az Oxygeni statisztikája alapján”.

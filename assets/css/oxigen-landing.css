@@ -32,7 +32,9 @@
   --arnyek: 0 1px 2px rgba(60, 40, 15, .05), 0 10px 28px rgba(60, 40, 15, .08);
 }
 :where(main, dialog), :where(main, dialog) * { box-sizing: border-box; }
-html { scroll-padding-top: 90px; -webkit-text-size-adjust: 100%; }
+html { scroll-padding-top: 64px; -webkit-text-size-adjust: 100%; }
+/* a piros akcio-sav (a MOSAIC fejlec resze) ezen a landingen nincs: a fejlec csak a menusor */
+#comp-mpv0ganp { display: none !important; }
 body { margin: 0; background: var(--krem); color: var(--szoveg); font: 400 16px/1.5 var(--test); -webkit-font-smoothing: antialiased; }
 :where(main, dialog) img { display: block; max-width: 100%; }
 :where(main, dialog) a { color: inherit; }
@@ -113,8 +115,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .hg-dia .cimke.elotte { left: 12px; }
 .hg-dia .cimke.utana { right: 12px; }
 .hg-dia figcaption { text-align: center; margin-top: 12px; }
-.hg-dia figcaption b { display: block; font: 600 15px/1.3 var(--test); color: var(--szoveg); }
-.hg-dia figcaption span { display: block; font-size: 13px; color: var(--halk); margin-top: 2px; }
+.hg-dia figcaption span { display: block; font-size: 14px; color: #4a5757; margin-top: 0; }
 .hg-dia figcaption i { font-style: normal; }
 .hg-dia .sz-m { display: none; }
 .hg-pontok { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
@@ -545,7 +546,6 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .hero-galeria { padding: 6px 6px 10px; border-radius: 18px; margin-bottom: 0; }
   .hg-kep { aspect-ratio: 1.7; }
   .hg-dia figcaption { margin-top: 8px; }
-  .hg-dia figcaption b { font-size: 14px; }
   .hg-dia figcaption span { font-size: clamp(10px, 3.3vw, 12.5px); white-space: nowrap; }
   .hg-dia .sz-d { display: none; }
   .hg-dia .sz-m { display: inline; }
