@@ -2,6 +2,9 @@ User-agent: *
 Allow: /
 Disallow: *?lightbox=
 Disallow: /foglalo-motor
+Disallow: /foglalas$
+Disallow: /foglalas?
+Disallow: /booking-test
 
 # Optimization for Google Ads Bot
 User-agent: AdsBot-Google-Mobile

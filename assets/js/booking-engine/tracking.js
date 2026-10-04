@@ -42,5 +42,7 @@ export function createTracker({ ctx, dataLayer, doc = typeof document !== 'undef
     dl.push(entry);
     return entry;
   }
-  return { track, base };
+  /** A kezdo allapotban (H0) meg nincs uzletag: a valasztas utan allitjuk be, a tovabbi esemenyek mar azzal mennek. */
+  function setBusiness(business) { base.business = business; }
+  return { track, base, setBusiness };
 }

@@ -76,6 +76,13 @@ for (const p of MOTOR_MODULOK) {
   const t = fs.readFileSync(p, 'utf8');
   fs.writeFileSync(p, t.replace(/(from\s+['"])(\.{1,2}\/[^'"?]+\.js)(['"])/g, `$1$2?v=${MOTOR_VERZIO}$3`));
 }
+// A helyben nyilo foglalo-reteg inditoja (assets/js/booking-launcher.js) a motor es a stilusok tartalom-hash-et kapja (a /assets/js/* es a
+// /assets/css/* egy evig tarolhato): a __MOTOR_VERZIO__ / __CSS_VERZIO__ jeleket itt irjuk be, a launcher sajat ?v= jele ezutan szamolodik.
+const CSS_VERZIO = crypto.createHash('sha1').update(['booking-engine.css', 'booking-fonts.css'].map((c) => fs.readFileSync(path.join(DIST, 'assets/css', c), 'utf8')).join('\n')).digest('hex').slice(0, 10);
+{
+  const p = path.join(DIST, 'assets/js/booking-launcher.js');
+  fs.writeFileSync(p, fs.readFileSync(p, 'utf8').split('__MOTOR_VERZIO__').join(MOTOR_VERZIO).split('__CSS_VERZIO__').join(CSS_VERZIO));
+}
 // Mobilkepek (assets/img/m/, tools/mobil-kepek.py): ami ott nincs (mar eleve kicsi),
 // azt valtozatlanul bemasoljuk, igy a mobil oldal minden kepe megvan az m/ mappaban is.
 const IMG = path.join(DIST, 'assets', 'img'), IMG_M = path.join(IMG, 'm');
@@ -173,7 +180,8 @@ const KATTINTOS = Object.fromEntries([...kattintosBlokk.matchAll(/'(comp-[a-z0-9
 const LEJATSZO_GOMB = '<button type="button" class="mh-video-gomb" aria-label="Videó lejátszása"><svg viewBox="0 0 40 40" width="50" height="50" fill="currentColor" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="rgba(0,0,0,.35)" stroke="currentColor" stroke-width="2"/><path d="M16 12.5v15l12-7.5z"/></svg></button>';
 // A sajat szkriptek szovege: a CSS-ritkitas ezekben is keresi az osztalyneveket (amit a
 // klon.js futas kozben tesz ki, annak a stilusa is maradjon meg).
-const SAJAT_JS = fs.readdirSync(path.join(ROOT, 'assets/js')).filter((f) => f.endsWith('.js'))
+// (a booking-launcher.js nem hoz letre oldal-elemet, a szovegeben levo szavak (pl. "category") ne tartsanak meg felesleges CSS-szabalyt)
+const SAJAT_JS = fs.readdirSync(path.join(ROOT, 'assets/js')).filter((f) => f.endsWith('.js') && f !== 'booking-launcher.js')
   .map((f) => fs.readFileSync(path.join(ROOT, 'assets/js', f), 'utf8')).join('\n');
 // A harom kis stiluslap (betuk + klon.css) beagyazva: kulon letoltesre varva blokkolnak
 // az elso megjelenitest. A relativ betu-hivatkozasokat abszolutra irjuk.
@@ -189,10 +197,15 @@ if (ATKOTES.size) {
 }
 const verzio = Object.fromEntries(SAJAT.map((f) => [f,
   crypto.createHash('sha1').update(fs.readFileSync(path.join(DIST, f))).digest('hex').slice(0, 10)]));
+// A sajat foglalo-oldalak (a motor / a PMU foglalo / a probaoldalak) maguk toltik a foglalot: ezekre a launcher nem kerul.
+const FOGLALO_OLDALAK = new Set(['foglalo-motor.html', 'foglalas.html', 'booking-test.html', 'foglalo-pmu.html', 'foglalo-proba.html', 'sminktetovalas-budapest.html']);
 for (const mappa of [LAP_A, LAP_M]) {
   for (const f of fs.readdirSync(mappa).filter((x) => x.endsWith('.html'))) {
     const p = path.join(mappa, f);
     let h = ritkit(fs.readFileSync(p, 'utf8'), SAJAT_JS);
+    // Ahol a foglalo-linkek a motorra mutatnak (bekapcsolt atkotes: elonezet / helyi build), ott a CTA a foglalot HELYBEN nyitja (reteg),
+    // nem visz at a /foglalo-motor oldalra. Kikapcsolt atkotesnel (eles, ma) semmi nem valtozik.
+    if (ATKOTES.size && !kihagyottOldal(f) && !FOGLALO_OLDALAK.has(f)) h = h.replace('</body>', '<script type="module" src="/assets/js/booking-launcher.js"></script></body>');
     for (const [fajl, css] of BEAGYAZOTT) {
       let elso = true;
       h = h.replace(new RegExp('<link rel="stylesheet" href="/assets/css/' + fajl.replace('.', '\\.') + '">', 'g'),

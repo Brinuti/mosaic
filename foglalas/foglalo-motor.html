@@ -12,15 +12,7 @@
 <!-- MOSAIC Booking Engine V1 - rejtett probaoldal (noindex, nincs ra link): /foglalo-motor?business=headspa
      Belepesi kontextus: ?business=&service=<azonosito|kulcsszavak>&voucher=1&source_page=&utm_*=&gclid=&fbclid=&ttclid=
      Mintanezet foglalas nelkul: ?minta=siker|elkelt|hiba|ellenorizetlen|nincs-idopont|visszahivas-kesz -->
-<header class="be-head">
-  <div class="be-head-row">
-    <button class="be-icon" type="button" id="be-back" aria-label="Vissza" style="visibility:hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <h1 class="be-h1">Időpontfoglalás</h1>
-    <a class="be-icon" href="tel:+36202474444" aria-label="Hívás: 06 20 247 4444"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/></svg></a>
-  </div>
-  <ol class="be-steps" id="be-steps" aria-label="Hol tartasz" hidden></ol>
-</header>
-<main class="be-main" id="be-root"><p class="be-loading" role="status">Betöltés…</p></main>
+<div id="be-app"></div>
 <noscript><main class="be-main"><p class="be-alert">A foglaláshoz JavaScript szükséges. Hívj minket: <a href="tel:+36202474444">06 20 247 4444</a>.</p></main></noscript>
 
 <!-- a Netlify ebbol ismeri fel az urlapot (a JS kuldi be); a Cloudflare-fuggveny a form-name alapjan kezeli -->
@@ -28,7 +20,7 @@
 
 <script type="module">
   import { startEngine } from '/assets/js/booking-engine/engine.js';
-  startEngine({ root: document.getElementById('be-root') });
+  startEngine({ root: document.getElementById('be-app') });
 </script>
 </body>
 </html>

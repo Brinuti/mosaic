@@ -51,3 +51,12 @@ node tools/meres-proba/pixel-proba.mjs --osszevet elozo.json uj.json
 - `--hozzajarulas 0`: friss látogató süti-hozzájárulás nélkül (a pixel ettől függetlenül fut, mint a Wixen; a Stripe-link fbc-je viszont hozzájárulást kér).
 - `--osszevet`: két futás összevetése oldalanként (pixelek, PageView, CAPI, események, Google/TikTok) – a „mely oldalak változtak” kérdésre.
 - Az elvárt pixel a helyi `assets/js/suti.js` `PIXEL_OLDALAK` listájából jön; a listán kívüli oldalra „nincs elvárt pixel”.
+## A helyben nyíló foglaló-réteg: `reteg-proba.mjs`
+
+```
+node tools/meres-proba/reteg-proba.mjs [--overlay dist] [--bazis https://…] [--mobil 1] [--kepek mappa] [--oldal /booking-test]
+```
+
+Foglalás nélkül végigjárja a réteget: minden belépési pont (HeadSpa, Fodrászat, Oxigén, Lézer, PMU, szolgáltatás-első kezdőállapot) jó állapotból indul-e, nem navigál-e az oldal, frissül-e az URL, bezárás / Esc / vissza gomb, újratöltés-visszaállítás (UTM és click ID megmarad), fókusz-csapda, valamint a valódi landing-oldalak foglaló-gombjai. `--bazis https://<ág>.mosaic-d77.pages.dev` egy PR-előnézetet vizsgál; leírás: [BOOKING_LAYER.md](../../docs/booking-engine/BOOKING_LAYER.md).
+
+**`reteg-foglalas.mjs`**: VALÓDI foglalás a rétegen át (`--utvonal h0-headspa|hair-konzult|oxigen-2|lezer-konzult`, `--bazis https://www.mosaicheadspa.hu` vagy egy előnézet): az utolsó szabad nap utolsó időpontja, „TESZT – Claude” név, a telefonszám `MERES_TELEFON` (alap: a szalon száma). A lemondás külön: `lemond.mjs`. Előnézeten a Salonic az ÉLES köszönőoldalra irányít a keretbe, ami idegen szülő alatt mérés nélkül fut (a `suti.js` keretben nem mér), és a motort nem értesíti: a vége ott a keret tartalma, nem a motor sikerképernyője; az éles tartományon a meglévő köszönőoldal nyílik meg a teljes ablakban.

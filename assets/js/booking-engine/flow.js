@@ -211,16 +211,18 @@ export function findByKey(services, key, { voucher = false } = {}) {
 }
 
 // --- belepesi kontextus -------------------------------------------------------------------------------------------------------
-export function parseContext(search, referrer = '', origin = '') {
+// defaultBusiness: ha az URL nem nevezi meg az uzletagat: a /foglalo-motor oldalon HeadSpa (alap), a /foglalas oldalon es a retegben null
+// -> a szolgaltatas-elso kezdo allapot (H0). Az aliasok (service_id, service_category) a CTA-hivasokhoz (openBooking) valok.
+export function parseContext(search, referrer = '', origin = '', { defaultBusiness = 'headspa' } = {}) {
   const q = new URLSearchParams(search);
   let sourcePage = q.get('source_page') || '';
   if (!sourcePage && referrer) { try { const r = new URL(referrer); if (!origin || r.origin === origin) sourcePage = r.pathname; } catch (e) { /* hibas referrer */ } }
   const attribution = {};
   for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'gclid', 'fbclid', 'ttclid']) if (q.get(k)) attribution[k] = q.get(k);
   return {
-    business: q.get('business') || 'headspa',
-    serviceKey: q.get('service') || null,
-    category: q.get('category') || null, // kategoria-landing: a szandek kulcsa (pl. balayage) -> kozvetlenul a kezeles-valasztasra
+    business: q.get('business') || defaultBusiness,
+    serviceKey: q.get('service') || q.get('service_id') || null,
+    category: q.get('category') || q.get('service_category') || null, // kategoria-landing: a szandek kulcsa (pl. balayage) -> kozvetlenul a kezeles-valasztasra
     voucher: q.get('voucher') === '1' || q.get('intent') === 'voucher',
     intent: q.get('intent') || null, // lezer: first | returning (a regi "Elso idopontok" / "Kezeles idopontok" gombok) -> egyenesen a terulet-valasztasra
     sourcePage,

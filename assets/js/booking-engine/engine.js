@@ -12,6 +12,7 @@ import { createSalonicAdapter, BUSINESSES } from './salonic-adapter.js';
 import { classifyService, effectiveType, isAcquisition } from './business-config.js';
 import * as F from './flow.js';
 import { createTracker } from './tracking.js';
+import { CHOOSER, PMU_PATH } from './families.js';
 import { HEADSPA } from './flows/headspa.js';
 import { OXYGEN } from './flows/oxygen.js';
 import { HAIR } from './flows/hair.js';
@@ -21,7 +22,7 @@ const FLOWS = { headspa: HEADSPA, oxygen: OXYGEN, hair: HAIR, laser: LASER };
 const PHONE = '06 20 247 4444';
 const PHONE_HREF = 'tel:+36202474444';
 const STEPS = ['Szolgáltatás', 'Időpont', 'Összegzés', 'Adatok'];
-const STEP_OF = { HS1: 0, HS2: 0, HS3: 0, OX1: 0, OX2: 0, HA1: 0, HA2: 0, HA2B: 0, HA3: 0, HA3B: 0, LA1: 0, LA2: 0, LA2B: 0, LA3: 0, C1: 1, C2: 1, A1: 1, A1_SENT: 1, A2: 1, C3: 2, C4: 3, C5: 3, A3: 3, A3U: 3, A3_CB: 3, A3_SENT: 3 };
+const STEP_OF = { H0: 0, HS1: 0, HS2: 0, HS3: 0, OX1: 0, OX2: 0, HA1: 0, HA2: 0, HA2B: 0, HA3: 0, HA3B: 0, LA1: 0, LA2: 0, LA2B: 0, LA3: 0, C1: 1, C2: 1, A1: 1, A1_SENT: 1, A2: 1, C3: 2, C4: 3, C5: 3, A3: 3, A3U: 3, A3_CB: 3, A3_SENT: 3 };
 const NO_STEPS = new Set(['C6']);
 const MIN_LEAD_MINUTES = 30; // a fel oran belul kezdodo idopontot nem kinaljuk (mint a PMU foglalo)
 const HOLD_MS = 4 * 60 * 1000 + 50 * 1000; // a Salonic 5 percig tartja fenn a megnyitott idopontot
@@ -29,15 +30,24 @@ const HOLD_MS = 4 * 60 * 1000 + 50 * 1000; // a Salonic 5 percig tartja fenn a m
 // a lablec el van rejtve, az adatlap egy kepernyos: az "elkuldes" gomb alja 592 px + 24 px + a Salonic suti-savja (~197 px) = 813 px.
 const FRAME_STYLED = Object.freeze({ crop: 78, visible: 735 });
 
-export function startEngine({ root, doc = document, win = window, adapter = createSalonicAdapter(), now = () => Date.now() }) {
-  const ctx = F.parseContext(win.location.search, doc.referrer, win.location.origin);
-  const flow = FLOWS[ctx.business];
+/**
+ * A foglalo felulete. Ket modban fut ugyanez a kod:
+ *  - mode 'page':  onallo oldal (/foglalo-motor, /foglalas): a fejlec + tartalom a root-ban, az ablak gorgetesevel.
+ *  - mode 'layer': a szolgaltatas-oldalon helyben nyilo reteg (assets/js/booking-engine/layer.js): ugyanaz a fejlec (+ bezaras),
+ *                  a sajat gorgetoteruleten; a belepesi kontextust a hivo adja (search), a bezarast az onClose / onExit kezeli.
+ * defaultBusiness: ha az URL / a hivas nem nevezi meg az uzletagat: 'headspa' (a /foglalo-motor regi alapja) vagy null (-> H0, szolgaltatas-elso).
+ */
+export function startEngine({ root, doc = document, win = window, adapter = createSalonicAdapter(), now = () => Date.now(),
+  mode = 'page', search = null, defaultBusiness = 'headspa', onClose = null, onExit = null }) {
+  const layer = mode === 'layer';
+  const ctx = F.parseContext(search !== null ? search : win.location.search, doc.referrer, win.location.origin, { defaultBusiness });
+  let flow = ctx.business ? FLOWS[ctx.business] : null;
   const nowUnix = () => Math.floor(now() / 1000);
   const HANDOFF = F.shouldHandoff(win.location.hostname, win.location.search); // eles tartomanyon: atadas a meglevo koszonooldalnak
 
   // A sajat kereteben nyiltunk meg (a Salonic atiranyitotta az adatlapot): nem rajzolunk, szolunk a szulonek.
   try {
-    if (win.top !== win.self && win.parent.location.hostname === win.location.hostname) {
+    if (!layer && win.top !== win.self && win.parent.location.hostname === win.location.hostname) {
       doc.documentElement.style.visibility = 'hidden';
       if (typeof win.parent.mhKeretbenOldal === 'function') win.parent.mhKeretbenOldal(win.location.href);
       return null;
@@ -66,7 +76,8 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     for (const c of kids.flat()) if (c !== null && c !== undefined && c !== false) e.append(c.nodeType ? c : doc.createTextNode(String(c)));
     return e;
   };
-  const $ = (id) => doc.getElementById(id);
+  let shell = null;
+  const $ = (id) => (shell ? shell.querySelector('#' + id) : null); // a sajat shellben keres (a reteg Shadow DOM-jaban a doc.getElementById nem latna)
   const chevron = () => h('span', { class: 'be-chev', 'aria-hidden': 'true', text: '›' });
   const bigButton = (title, sub, onclick) => h('button', { type: 'button', class: 'be-choice', onclick },
     h('span', { class: 'be-choice-text' }, h('b', { text: title }), sub ? h('small', { text: sub }) : null), chevron());
@@ -76,6 +87,22 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   const note = (text, cls = '') => h('p', { class: ('be-note ' + cls).trim(), text });
   const alertBox = (text) => h('div', { class: 'be-alert', role: 'alert' }, text);
   const title = (text) => h('h2', { class: 'be-title', tabindex: '-1', text });
+
+  // --- shell: fejlec (vissza, cim, hivas, [bezaras]) + lepesjelzo + gorgetheto tartalom ----------------------------------------------
+  // Statikus ikon-szovegek (nem a Salonic adata): <template>-bol, mert az SVG-hez nevterezett elem kell.
+  const icon = (inner, w = 2) => { const tpl = doc.createElement('template'); tpl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + w + '" aria-hidden="true">' + inner + '</svg>'; return tpl.content.firstChild; };
+  const closeBtn = layer ? h('button', { type: 'button', class: 'be-icon', id: 'be-close', 'aria-label': 'Bezárás', onclick: () => { if (onClose) onClose(); } }, icon('<path d="M6 6l12 12M18 6L6 18"/>')) : null;
+  const backBtn = h('button', { type: 'button', class: 'be-icon', id: 'be-back', 'aria-label': 'Vissza', style: 'visibility:hidden', onclick: () => win.history.back() }, icon('<path d="M15 5l-7 7 7 7"/>'));
+  const stepsEl = h('ol', { class: 'be-steps', id: 'be-steps', 'aria-label': 'Hol tartasz', hidden: true });
+  const mainEl = h('main', { class: 'be-main', id: 'be-root' }, h('p', { class: 'be-loading', role: 'status', text: 'Betöltés…' }));
+  const scrollEl = h('div', { class: 'be-scroll' }, mainEl);
+  shell = h('div', { class: 'be-shell' + (layer ? ' be-shell-layer' : '') },
+    h('header', { class: 'be-head' },
+      h('div', { class: 'be-head-row' }, backBtn, h('h1', { class: 'be-h1', id: 'be-h1', text: 'Időpontfoglalás' }),
+        h('div', { class: 'be-head-right' }, h('a', { class: 'be-icon', href: PHONE_HREF, 'aria-label': 'Hívás: ' + PHONE }, icon('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/>', 1.8)), closeBtn)),
+      stepsEl),
+    scrollEl);
+  root.replaceChildren(shell);
 
   // --- megjelenites -------------------------------------------------------------------------------------------------------------
   // 0 Ft: a konzultacio "Ingyenes", az egyedi csomag (a vegso arat a helyszinen allitjak) "Egyedi ar" (flow.zeroPriceLabel)
@@ -100,18 +127,19 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   const placeText = () => [S.place && S.place.name, S.place && S.place.address].filter(Boolean).join(', ');
 
   function setView(node, state) {
-    root.replaceChildren(node);
+    mainEl.replaceChildren(node);
+    mainEl.classList.toggle('be-main-wide', state === 'PMU');
+    shell.classList.toggle('be-shell-pmu', state === 'PMU'); // a PMU-foglalonak sajat fejlece van: a motoreben csak a bezaras marad
     const step = STEP_OF[state];
-    const steps = $('be-steps');
+    const steps = stepsEl;
     if (steps) {
       steps.hidden = NO_STEPS.has(state) || step === undefined;
       steps.replaceChildren(...STEPS.map((t, i) => h('li', { class: i < step ? 'done' : i === step ? 'now' : '', 'aria-current': i === step ? 'step' : false },
         h('i', { text: i < step ? '✓' : String(i + 1) }), h('span', { text: t }))));
     }
-    const back = $('be-back');
-    if (back) back.style.visibility = S.depth > 0 && state !== 'C6' && !/_SENT$/.test(state) ? 'visible' : 'hidden';
-    win.scrollTo(0, 0);
-    const t = root.querySelector('.be-title');
+    backBtn.style.visibility = S.depth > 0 && state !== 'C6' && !/_SENT$/.test(state) ? 'visible' : 'hidden';
+    if (layer) scrollEl.scrollTop = 0; else win.scrollTo(0, 0);
+    const t = mainEl.querySelector('.be-title');
     if (t) t.focus({ preventScroll: true });
   }
 
@@ -120,6 +148,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   async function show(state) {
     S.state = state;
     win.clearTimeout(S.holdTimer);
+    if (S.pmuCleanup) { S.pmuCleanup(); S.pmuCleanup = null; }
     const token = ++renderToken;
     setView(h('p', { class: 'be-loading', role: 'status', text: 'Betöltés…' }), state);
     try {
@@ -133,19 +162,21 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     }
   }
   function go(state, { replace = false } = {}) {
-    if (replace) win.history.replaceState({ view: state, depth: S.depth }, '', '#' + state);
-    else { S.depth += 1; win.history.pushState({ view: state, depth: S.depth }, '', '#' + state); }
+    if (replace) win.history.replaceState({ view: state, depth: S.depth, beLayer: layer }, '', '#' + state);
+    else { S.depth += 1; win.history.pushState({ view: state, depth: S.depth, beLayer: layer }, '', '#' + state); }
     return show(state);
   }
   const needs = { C3: () => S.slot && S.service, C4: () => S.slot && S.service, C1: () => S.service, C2: () => S.service && S.slots.length, OX2: () => S.candidates,
     HA2: () => S.intent, HA2B: () => S.group, HA3: () => S.service, HA3B: () => S.service, LA2B: () => S.laserArea };
-  win.addEventListener('popstate', (e) => {
+  const onPop = (e) => {
+    // reteg-modban: a reteg megnyitasa elotti bejegyzesre lepett vissza -> a reteg bezarul (az oldal ugyanott marad)
+    if (layer && !(e.state && e.state.beLayer)) { if (onExit) onExit(); return; }
     const view = e.state && e.state.view;
     S.depth = (e.state && e.state.depth) || 0;
     if (!view || (needs[view] && !needs[view]())) { S.depth = 0; show(entry()); return; }
     show(view);
-  });
-  $('be-back') && $('be-back').addEventListener('click', () => win.history.back());
+  };
+  win.addEventListener('popstate', onPop);
 
   // --- adat ---------------------------------------------------------------------------------------------------------------------
   async function ensureServices() {
@@ -188,6 +219,26 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
 
   // --- nezetek ------------------------------------------------------------------------------------------------------------------
   const views = {
+    // Szolgaltatas-elso kezdo allapot (families.js): aki nem konkret szolgaltatas-oldalrol jon, itt valaszt
+    H0: async () => h('section', {}, title(CHOOSER.title), h('div', { class: 'be-list' }, CHOOSER.families.map((fam) => bigButton(fam.title, fam.sub, () => chooseFamily(fam))))),
+
+    // PMU: a sajat, kesz foglalo (assets/js/foglalo-pmu.js). Onallo oldalon atlepunk ra; retegben beagyazva nyilik (a sajat folyamata szerint;
+    // a vegen a teljes ablakban nyilik a koszonooldal, a meres valtozatlan). A keret magassagat a beagyazott oldal jelzi (postMessage).
+    PMU: async () => {
+      if (!layer) { win.location.assign(PMU_PATH); return null; }
+      const frame = h('iframe', { class: 'be-pmu', title: 'Sminktetoválás időpontfoglalás', src: PMU_PATH + '?beagyazva=1' });
+      const loading = h('p', { class: 'be-loading', role: 'status', text: 'Betöltés…' });
+      const onMsg = (e) => {
+        if (e.origin !== win.location.origin || e.source !== frame.contentWindow || !e.data || !e.data.mhFoglalo) return;
+        if (e.data.magassag) frame.style.height = Math.max(e.data.magassag, 320) + 'px';
+        loading.hidden = true;
+        if (e.data.nezet) scrollEl.scrollTop = 0;
+      };
+      win.addEventListener('message', onMsg);
+      S.pmuCleanup = () => win.removeEventListener('message', onMsg);
+      return h('section', { class: 'be-pmu-wrap' }, loading, frame);
+    },
+
     HS1: async () => h('section', {}, title(flow.copy.hs1Title), h('div', { class: 'be-list' }, flow.copy.hs1.map((o) => bigButton(o.title, null, () => {
       track('booking_intent_selected', { step: 'HS1', reason: o.key });
       if (o.key === 'giftcard') { win.location.assign(flow.giftCardUrl); return; } // nem foglalasi allapot: kilep a Gift Card funnelbe
@@ -344,7 +395,9 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       frame.addEventListener('load', () => { win.clearTimeout(slow); loading.hidden = true; frame.style.visibility = ''; win.setTimeout(() => { help.hidden = false; }, 2500); });
       // A Salonic 5 percig tartja fenn az idopontot, utana a sajat fooldalara dob: ezt mi is figyeljuk (4:50).
       S.holdTimer = win.setTimeout(() => { if (S.state === 'C4') { S.a2Reason = 'expired'; go('A2', { replace: true }); } }, HOLD_MS);
-      return h('section', {}, title('Add meg az adataidat'),
+      // Nem eles tartomanyon (elonezet / helyi) a Salonic az ELES koszonooldalra iranyit, ami a keretben nem ertesitheti a motort (idegen eredet), ezert itt a
+      // vegen a Salonic / koszonooldal keretbeli tartalma latszik, nem a motor sikerkepernyoje; a foglalas ettol fuggetlenul VALODI.
+      return h('section', {}, !HANDOFF && !S.adapterSample ? h('span', { class: 'be-proba', text: 'Előnézet · valódi foglalás' }) : null, title('Add meg az adataidat'),
         h('div', { class: 'be-mini' }, h('b', { text: `${F.longDate(S.slot.start_unix)} · ${F.timeLabel(S.slot.start_unix)}` }), h('span', { text: nameOf(S.service) }),
           link('Módosítás', () => win.history.go(-2))),
         h('div', { class: 'be-frame', 'data-styled': String(styled), style: `--visible:${geo.visible}px;--crop:${geo.crop}px` }, loading, frame), fallback, help);
@@ -439,7 +492,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       if (phoneDigits.length < 9 || phoneDigits.length > 13) { err.append(alertBox('Kérlek, érvényes telefonszámot adj meg.')); f.elements.telefon.focus(); return; }
       if (!f.elements.hozzajarul.checked) { err.append(alertBox('Kérlek, fogadd el az adatkezelést, hogy visszahívhassunk.')); return; }
       const btn = f.querySelector('button[type=submit]'); btn.disabled = true; const old = btn.textContent; btn.textContent = 'Küldés…';
-      const body = new URLSearchParams({ 'form-name': 'motor-visszahivas', nev: v('nev'), telefon: v('telefon'), uzletag: flow.business, szolgaltatas: S.service ? nameOf(S.service) : '', ok: S.callbackReason, oldal: 'foglalo-motor', forras: ctx.sourcePage || '' });
+      const body = new URLSearchParams({ 'form-name': 'motor-visszahivas', nev: v('nev'), telefon: v('telefon'), uzletag: flow.business, szolgaltatas: S.service ? nameOf(S.service) : '', ok: S.callbackReason, oldal: layer ? win.location.pathname : 'foglalo-motor', forras: ctx.sourcePage || '' });
       try {
         const ab = new AbortController(); const t = win.setTimeout(() => ab.abort(), 15000);
         const r = await win.fetch('/', { method: 'POST', body, credentials: 'same-origin', signal: ab.signal }).finally(() => win.clearTimeout(t));
@@ -500,15 +553,45 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     }, { once: v.bookingRef });
   }
   win.mhKeretbenOldal = onSalonicRedirect;
+  const destroy = () => {
+    win.removeEventListener('popstate', onPop);
+    win.clearTimeout(S.holdTimer);
+    if (S.pmuCleanup) { S.pmuCleanup(); S.pmuCleanup = null; }
+    renderToken += 1; // a folyamatban levo betoltes eredmenyet mar nem rajzoljuk ki
+    if (win.mhKeretbenOldal === onSalonicRedirect) delete win.mhKeretbenOldal;
+    root.replaceChildren();
+  };
 
   // --- belepes ------------------------------------------------------------------------------------------------------------------------
-  function entry() { return F.entryState({ hasService: false, voucher: S.voucher, first: flow.firstState, voucherState: flow.voucherState, exact: flow.exactState }); }
+  function entry() {
+    if (!flow) return ctx.business === 'pmu' ? 'PMU' : 'H0'; // nincs uzletag: szolgaltatas-elso kezdo allapot
+    return F.entryState({ hasService: false, voucher: S.voucher, first: flow.firstState, voucherState: flow.voucherState, exact: flow.exactState });
+  }
+
+  // Uzletag-valtas (a szolgaltatas-elso kezdo allapotbol): az elozo uzletag adatai nem maradhatnak meg
+  function setBusiness(business) {
+    flow = FLOWS[business];
+    ctx.business = business;
+    Object.assign(S, { flow, services: null, voucher: false, service: null, exact: false, slots: [], slot: null, daypart: 'any', day: null, staff: null, place: null, expected: null,
+      guestUrl: null, confirmation: null, intent: null, group: null, staffLabel: null, slotStaff: null, candidates: null, laserArea: null, slotLostNote: false });
+    tracker.setBusiness(business);
+  }
+  function chooseFamily(fam) {
+    track('booking_intent_selected', { step: 'H0', reason: fam.key });
+    if (fam.key === 'pmu') { ctx.business = 'pmu'; return go('PMU'); }
+    setBusiness(fam.business);
+    return go(entry());
+  }
 
   async function start() {
-    if (!flow) { setView(alertBox('Ismeretlen üzletág.'), 'A3'); return; }
-    track('booking_open', { entry: ctx.serviceKey ? 'service' : ctx.category ? 'category' : 'generic' });
+    if (ctx.business && ctx.business !== 'pmu' && !flow) { setView(alertBox('Ismeretlen üzletág.'), 'A3'); return; }
+    track('booking_open', { entry: ctx.serviceKey ? 'service' : ctx.category ? 'category' : 'generic', reason: layer ? 'layer' : 'page' });
     if (ctx.sample) return sample();
     let first = entry();
+    if (!flow) { // H0 vagy PMU: nincs mit pontositani
+      win.history.replaceState({ view: first, depth: 0, beLayer: layer }, '', win.location.pathname + win.location.search + '#' + first);
+      return show(first);
+    }
     // Lezer: ?intent=first | returning -> a terulet-valasztas (LA2 / LA3), a konzultacio-kerdes (LA1) kihagyasaval; konkret szolgaltatas / kategoria elsobbseget elvez
     if (!ctx.serviceKey && !ctx.category && flow.business === 'laser' && (ctx.intent === 'first' || ctx.intent === 'returning')) first = ctx.intent === 'first' ? 'LA2' : 'LA3';
     if (ctx.serviceKey || ctx.category) {
@@ -533,7 +616,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
         }
       } catch (e) { console.error(e); }
     }
-    win.history.replaceState({ view: first, depth: 0 }, '', win.location.pathname + win.location.search + '#' + first);
+    win.history.replaceState({ view: first, depth: 0, beLayer: layer }, '', win.location.pathname + win.location.search + '#' + first);
     return show(first);
   }
 
@@ -553,5 +636,5 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     return show(map[ctx.sample] || 'HS1');
   }
 
-  return { start: start(), state: S, show, go };
+  return { start: start(), state: S, show, go, destroy };
 }
