@@ -126,7 +126,7 @@ describe('oldal', () => {
 describe('arforras (az #arlista tablazat)', () => {
   test('a 8 alkalmas program = 6 x alkalmankenti ar minden sorban; az azonositok szamok', async () => {
     const { p, ctx } = await nyit();
-    const sorok = await p.$$eval('#arlista tr[data-kulcs]', (l) => l.map((tr) => ({ k: tr.dataset.kulcs, ar: +tr.dataset.ar, elso: tr.dataset.elso, egy: tr.querySelector('.ar-egy').textContent, prog: tr.querySelector('.ar-prog').textContent })));
+    const sorok = await p.$$eval('#arlista tr[data-kulcs]', (l) => l.map((tr) => ({ k: tr.dataset.kulcs, ar: +tr.dataset.ar, elso: tr.dataset.elso, egy: (() => { const c = tr.querySelector('.ar-egy').cloneNode(true); c.querySelectorAll('s').forEach((x) => x.remove()); return c.textContent; })(), prog: tr.querySelector('.ar-prog').textContent })));
     assert.ok(sorok.length >= 20);
     for (const s of sorok) {
       assert.equal(szamjegy(s.egy), s.ar, s.k + ' alkalmankent');
@@ -689,3 +689,89 @@ describe('eredmenyek: tobb valodi elotte/utana kartya', () => {
   });
 });
 
+describe('a hatodik kor visszajelzesei', () => {
+  test('GYIK: a "Mit jelent az, hogy vegleges?" es a "Biztos, hogy eleg a 8 alkalom?" kerdes megvalaszolva', async () => {
+    const { p, ctx } = await nyit();
+    const kerdesek = await p.$$eval('#info summary', (l) => l.map((e) => e.textContent.trim()));
+    assert.ok(kerdesek.includes('Mit jelent az, hogy végleges?'), kerdesek.join(' | '));
+    assert.ok(kerdesek.includes('Biztos, hogy elég a 8 alkalom?'));
+    assert.equal(kerdesek.length, 6);
+    for (const v of await p.$$eval('#info details p', (l) => l.map((e) => e.textContent.trim().length))) assert.ok(v > 60, 'a valasz nem ures');
+    await ctx.close();
+  });
+
+  test('csomagok: az eredeti (kulon-kulon vett) ar athuzva, pirossal; megegyezik a testreszek arainak osszegevel', async () => {
+    const { p, ctx } = await nyit();
+    const sorok = await p.$$eval('#arlista tr[data-csomag]', (l) => l.map((tr) => ({ k: tr.dataset.kulcs, reszek: (tr.dataset.reszek || '').split(','), regi: tr.querySelector('.regi-ar')?.textContent, szin: tr.querySelector('.regi-ar') && getComputedStyle(tr.querySelector('.regi-ar')).color, vonal: tr.querySelector('.regi-ar') && getComputedStyle(tr.querySelector('.regi-ar')).textDecorationLine, ar: +tr.dataset.ar })));
+    const ar = await p.$$eval('#arlista tr[data-kulcs]', (l) => Object.fromEntries(l.map((tr) => [tr.dataset.kulcs, +tr.dataset.ar])));
+    assert.equal(sorok.length, 5);
+    for (const s of sorok) {
+      assert.ok(s.regi, s.k + ' eredeti ar');
+      assert.equal(szamjegy(s.regi.replace('Külön-külön:', '')), s.reszek.reduce((o, r) => o + ar[r], 0), s.k + ': a testreszek ara osszesen');
+      assert.ok(szamjegy(s.regi.replace('Külön-külön:', '')) > s.ar, s.k + ': az eredeti ar nagyobb a csomagarnal');
+      assert.match(s.szin, /^rgb\(19\d, 57, 43\)$/, 'piros: ' + s.szin);
+      assert.equal(s.vonal, 'line-through');
+    }
+    await ctx.close();
+  });
+
+  test('kalkulator: egy teruletnel nincs "null" es nincs athuzott ar; tobb teruletnel az eredeti ar athuzva, pirossal', async () => {
+    const { p, ctx } = await nyit();
+    // alapbol 3 terulet: athuzott eredeti ar (59 000 + 19 000 + 36 000 = 114 000)
+    assert.equal(szamjegy(await p.textContent('#szamolo-tartalom .sz-ossz .regi-ar')), 114000);
+    for (const k of ['lab', 'intim']) await p.click(`.sz-chip[data-kulcs="${k}"]`);
+    assert.equal(await p.locator('#szamolo-tartalom .sz-ossz .regi-ar').count(), 0, 'egy teruletnel nincs athuzott ar');
+    assert.equal(await p.locator('#szamolo-tartalom .sz-kedv').count(), 0);
+    assert.ok(!/null/.test(await p.textContent('#szamolo-tartalom')), 'nincs "null" felirat');
+    assert.ok(!/Kattints a területekre/.test(await p.textContent('#szamolo')), 'nincs alcim');
+    await ctx.close();
+  });
+
+  test('foglalo: nincs "Mar jartal nalunk?" sor; a szabad napok kor alakuak', async () => {
+    const { p, ctx } = await nyit({ api: () => idok(...SLOTOK) });
+    assert.ok(!/Már jártál nálunk/.test(await p.textContent('#foglalas')));
+    await p.locator('#foglalo').scrollIntoViewIfNeeded();
+    await p.waitForSelector('#naptar button.naptar-nap');
+    const sugar = await p.$eval('#naptar button.naptar-nap', (e) => getComputedStyle(e).borderTopLeftRadius);
+    assert.equal(sugar, '50%');
+    await ctx.close();
+  });
+
+  test('telefon: a fo cim 2 sorban, utana a kep, utana a tobbi szoveg; a hero es a Zsofi ikonjai 3 oszlopban, kozepre igazitva', async () => {
+    for (const w of [360, 390]) {
+      const ctx = await bongeszo.newContext({ viewport: { width: w, height: 800 }, userAgent: UA_MOBIL, isMobile: true, hasTouch: true });
+      const p = await ctx.newPage();
+      await p.route(/^(?!http:\/\/localhost)/, (r) => r.abort());
+      await p.goto(bazis + OLDAL, { waitUntil: 'domcontentloaded' });
+      const h1 = await p.$eval('.hero h1', (e) => { const r = e.getBoundingClientRect(); return { sor: Math.round(r.height / parseFloat(getComputedStyle(e).lineHeight)), alja: r.bottom }; });
+      assert.equal(h1.sor, 2, w + ' px: a fo cim 2 sor');
+      const kep = await p.$eval('.hero-kep', (e) => e.getBoundingClientRect().top);
+      const ajanlat = await p.$eval('.hero-ajanlat', (e) => e.getBoundingClientRect().top);
+      assert.ok(h1.alja <= kep + 1 && kep < ajanlat, w + ' px: cim -> kep -> tobbi szoveg: ' + [h1.alja, kep, ajanlat]);
+      for (const sel of ['.hero-bizalom', '.zsofi-tenyek']) {
+        const m = await p.$$eval(sel + ' li', (l) => l.map((li) => { const r = li.getBoundingClientRect(); const i = li.querySelector('.ikon-kor').getBoundingClientRect(); return { top: Math.round(r.top), ikonKozep: Math.round(i.left + i.width / 2), liKozep: Math.round(r.left + r.width / 2), align: getComputedStyle(li).textAlign }; }));
+        assert.equal(new Set(m.map((x) => x.top)).size, 1, sel + ': egymas mellett');
+        for (const x of m) { assert.ok(Math.abs(x.ikonKozep - x.liKozep) <= 1, sel + ': az ikon kozepen'); assert.equal(x.align, 'center'); }
+      }
+      await ctx.close();
+    }
+  });
+
+  test('telefon: a kalkulator alatti sor egy sorban; a nyil lefele mutat (elforgatva); a csomag-csoportcim alatt hely van', async () => {
+    const ctx = await bongeszo.newContext({ viewport: { width: 360, height: 800 }, userAgent: UA_MOBIL, isMobile: true, hasTouch: true });
+    const p = await ctx.newPage();
+    await p.route(/^(?!http:\/\/localhost)/, (r) => r.abort());
+    await p.goto(bazis + OLDAL, { waitUntil: 'domcontentloaded' });
+    const lab = await p.$eval('.sz-lab .rovid', (e) => { const r = e.getBoundingClientRect(); return { ma: Math.round(r.height), sor: parseFloat(getComputedStyle(e).lineHeight), szoveg: e.textContent }; });
+    assert.ok(lab.ma <= lab.sor * 1.2, 'egy sor: ' + lab.ma + ' / ' + lab.sor);
+    assert.match(lab.szoveg, /^Az ár fix, 8 alkalomból csak 6-ot fizetsz, 2 ajándék\.$/);
+    assert.equal(await p.$eval('.sz-lab .hosszu', (e) => getComputedStyle(e).display), 'none');
+    assert.notEqual(await p.$eval('.kezirat svg', (e) => getComputedStyle(e).transform), 'none');
+    const hely = await p.$eval('.ar-csomagok h3', (h) => { const kov = h.nextElementSibling.getBoundingClientRect().top - h.getBoundingClientRect().bottom; return Math.round(kov); });
+    assert.ok(hely >= 0, 'a csoportcim es a tablazat kozott: ' + hely);
+    assert.ok(await p.$eval('.ar-csomagok h3', (e) => parseFloat(getComputedStyle(e).paddingBottom)) >= 8, 'a csoportcim alatt hely');
+    const sw = await p.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
+    assert.ok(sw[0] <= sw[1], 'nincs vizszintes gorgetes: ' + sw);
+    await ctx.close();
+  });
+});

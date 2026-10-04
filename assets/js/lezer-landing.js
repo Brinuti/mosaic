@@ -88,7 +88,7 @@
     const hova = $('szamolo-valaszto');
     const e = szamol(valasztott);
     hova.replaceChildren(
-      elem('h3', { class: 'szamolo-cim', html: `<span class="szamolo-ikon">${CALC_IKON}</span>Árkalkulátor <small>Kattints a területekre: az ár azonnal frissül</small>` }),
+      elem('h3', { class: 'szamolo-cim', html: `<span class="szamolo-ikon">${CALC_IKON}</span>Árkalkulátor` }),
       ...SZAMOLO_CSOPORTOK.map((cs) => elem('div', { class: 'sz-csoport' },
         elem('div', { class: 'sz-csoport-nev', html: `${SOROK.find((s) => s.csoport === cs).csoportIkon}<span>${cs}</span>` }),
         elem('div', { class: 'sz-chipek' }, ...SOROK.filter((s) => !s.csomag && s.csoport === cs).map((s) => {
@@ -107,17 +107,19 @@
       return;
     }
     const egy = e.tetelek.length === 1;
-    tartalom.replaceChildren(
+    tartalom.replaceChildren(...[
       elem('ul', { class: 'sz-sorok' }, ...e.tetelek.map((t) => elem('li', { class: t.teljes ? 'teljes' : '' },
         elem('span', { html: `${t.ikon}<span>${t.nev}<small>${t.teljes ? (egy ? 'teljes ár' : 'a legdrágább: teljes ár') : `50% kedvezmény · ${ft(t.ar)} helyett`}</small></span>` }),
         elem('span', { class: 'osszeg', szoveg: ft(t.fizet) })))),
-      elem('div', { class: 'sz-ossz' }, elem('span', { szoveg: 'Alkalmanként' }), elem('b', { szoveg: ft(e.alkalom) })),
+      // tobb teruletnel az eredeti (kulon-kulon vett) ar athuzva, pirossal: lassa, mekkora a kedvezmeny; egy teruletnel nincs mit athuzni
+      elem('div', { class: 'sz-ossz' }, elem('span', { szoveg: 'Alkalmanként' }), elem('div', { class: 'sz-ar' }, e.kedvezmeny ? elem('s', { class: 'regi-ar', szoveg: ft(e.lista) }) : null, elem('b', { szoveg: ft(e.alkalom) }))),
       e.kedvezmeny ? elem('div', { class: 'sz-kedv', html: `<span>Csomagkedvezmény alkalmanként</span><span>−${ft(e.kedvezmeny)}</span>` }) : null,
       elem('div', { class: 'sz-elso', html: `<span>Az első kezelés 20% kedvezménnyel</span><b>${ft(e.elso)}</b>` }),
       elem('div', { class: 'sz-program', html: `<div class="sz-sor"><span>8 alkalmas program: csak 6 alkalmat fizetsz</span><b>${ft(e.program)}</b></div><small>A 4. és a 8. alkalom ajándék (${ft(e.ajandek)} értékben).</small>` }),
       elem('div', { class: 'sz-cta' },
         elem('a', { class: 'gomb gomb-arany gomb-szeles', href: '#foglalas', 'data-terulet': egy ? e.tetelek[0].kulcs : EGYEDI.kulcs, html: `${egy ? 'Időpontot foglalok' : 'Egyedi csomagot foglalok'} <span class="nyil">→</span>` }),
-        elem('p', { class: 'sz-lab', szoveg: 'Az ár a program végéig fix. 8 alkalomból csak 6-ot fizetsz, 2 alkalom ajándék.' })));
+        // telefonon rovidebb valtozat, hogy elferjen egy sorban
+        elem('p', { class: 'sz-lab', html: '<span class="hosszu">Az ár a program végéig fix. 8 alkalomból csak 6-ot fizetsz, 2 alkalom ajándék.</span><span class="rovid">Az ár fix, 8 alkalomból csak 6-ot fizetsz, 2 ajándék.</span>' }))].filter(Boolean));
   }
   $('szamolo-valaszto').addEventListener('click', (e) => {
     const b = e.target.closest('.sz-chip');
