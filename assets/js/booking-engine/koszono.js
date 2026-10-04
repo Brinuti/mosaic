@@ -31,5 +31,5 @@ export const VISSZAHIVAS_LEPESEK = [
   'Ha szeretnéd, a hívás közben együtt kiválasztjátok az időpontot is.',
 ];
 
-/** A lezer kezeloje (Elysion Pro szakerto): a meglevo koszonooldalak is az o nevevel zarulnak ("Varlak szeretettel: Zsofi"); fotoja egyelore nincs (monogram). */
-export const LEZER_KEZELO = Object.freeze({ name: 'Zsófi', foto: null });
+/** A lezer kezeloje (Elysion Pro szakerto): a meglevo koszonooldalak is az o nevevel zarulnak ("Varlak szeretettel: Zsofi"); fotoja a lezeres oldal bemutatkozo kepe (staff-zsofi). */
+export const LEZER_KEZELO = Object.freeze({ name: 'Zsófi', foto: 'staff-zsofi' });

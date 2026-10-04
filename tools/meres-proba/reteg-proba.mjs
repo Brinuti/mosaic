@@ -477,11 +477,13 @@ async function zarFigyelve(page) {
     const lepesek = await pg.locator('.be-lepesek li').count();
     const kezeloDb = await pg.locator('.be-kezelo').count();
     const kezeloSzoveg = kezeloDb ? await pg.locator('.be-kezelo').first().textContent() : '';
+    // a kezelo a kartyan BELUL, a szoveg es a terkep kozott
+    const sorrend = await pg.locator('.be-kosz-kartya').evaluate((k) => [...k.children].map((c) => c.className.split(' ')[0]).join(','));
     const foto = kezeloDb ? await pg.locator('.be-kezelo img.be-kezelo-kep').evaluateAll((es) => es.map((e) => e.complete && e.naturalWidth > 0)) : [];
     ok(`koszono (${cimke}): "Sikeres foglalas!", kartya + terkep, "Ott leszek", naptar, "Mi tortenik most?" (3 pont)`, cim === 'Sikeres foglalás!' && (await pg.locator('.be-kosz-kartya .be-terkep').count()) === 1 && (await pg.locator('.be-ott').count()) === 1
       && (await pg.locator('.be-naptar-link').count()) === 1 && lepesek === 3 && /Ott leszek/.test(await pg.locator('.be-ott').textContent()), `${cim} / ${lepesek} pont`);
-    ok(`koszono (${cimke}): ${kezelo ? 'a kezelo (' + kezelo + ') kepe es neve a kartya es a "Ott leszek" kozott, "var teged"' : 'nincs kezelo-sor (szobak vannak, nem kezelok)'}`,
-      kezelo ? kezeloDb === 1 && kezeloSzoveg.includes(kezelo) && /vár téged/.test(kezeloSzoveg) && (cimke === 'Lezer' || (foto.length === 1 && foto[0])) : kezeloDb === 0, kezeloSzoveg.replace(/\s+/g, ' ').trim());
+    ok(`koszono (${cimke}): ${kezelo ? 'a kezelo (' + kezelo + ') kepe es neve a kartyan belul, a szoveg es a terkep kozott, "var teged"' : 'nincs kezelo (szobak vannak, nem kezelok): a kartya = szoveg + terkep'}`,
+      kezelo ? kezeloDb === 1 && kezeloSzoveg.includes(kezelo) && /vár téged/.test(kezeloSzoveg) && foto.length === 1 && foto[0] && sorrend === 'be-kosz-adat,be-kezelo,be-terkep' : kezeloDb === 0 && sorrend === 'be-kosz-adat,be-terkep', sorrend + ' | ' + kezeloSzoveg.replace(/\s+/g, ' ').trim());
     if (cimke === 'Lezer') ok('koszono (Lezer): a kezelesre vonatkozo tudnivalok (borotvalas, napozas)', /borotváld le/.test(await pg.locator('.be-lepesek').textContent()) && /napozást/.test(await pg.locator('.be-lepesek').textContent()));
     if (cimke === 'Oxigen') ok('koszono (Oxigen): hajmosas / hajfestes tudnivalo', /48 órával ne moss hajat/.test(await pg.locator('.be-lepesek').textContent()));
   }
@@ -494,14 +496,18 @@ async function zarFigyelve(page) {
   await pg.goto(BAZIS + '/foglalo-motor?minta=visszahivas-kesz', { waitUntil: 'domcontentloaded' });
   await pg.locator('.be-success').waitFor({ timeout: 15000 });
   const vhSzoveg = await pg.locator('main').textContent();
-  ok('koszono (visszahivas): "Visszahivast kertel!", "Mi tortenik most?" 3 pont, nincs idopont-allitas, nincs lepesjelzo', /Visszahívást kértél!/.test(vhSzoveg) && (await pg.locator('.be-lepesek li').count()) === 3 && /felhív a megadott számon/.test(vhSzoveg) && !(await pg.locator('.be-steps:not([hidden])').count()), '');
+  ok('koszono (visszahivas): "Visszahivast kertel!", "Mi tortenik most?" 3 pont, nincs idopont-allitas, nincs lepesjelzo, nincs "ha kozben valtozik a terved, hivj" sor', /Visszahívást kértél!/.test(vhSzoveg) && (await pg.locator('.be-lepesek li').count()) === 3 && /felhív a megadott számon/.test(vhSzoveg) && !(await pg.locator('.be-steps:not([hidden])').count()) && !/változik a terved/.test(vhSzoveg), '');
   // sminktetovalo: a kezelo (Melitta) kepe es neve a kartya / terkep es a szoveg kozott, mindegyik koszonon
   for (const [cimke, ut, nezet] of [['foglalas', '/foglalo-pmu?minta=kezeles#koszonjuk', 'koszonjuk'], ['szemelyes konzultacio', '/foglalo-pmu?minta=konz#koszonjuk-konzultacio', 'koszonjuk'], ['visszahivas', '/foglalo-pmu?minta=visszahivas', 'c-kesz'], ['fotokuldes', '/foglalo-pmu?minta=foto', 'foto-kesz']]) {
     await pg.goto(BAZIS + ut, { waitUntil: 'domcontentloaded' });
     await pg.locator('[data-nezet=' + nezet + ']:not([hidden])').waitFor({ timeout: 15000 });
     await pg.waitForTimeout(400);
-    const sor = pg.locator('[data-nezet=' + nezet + ']:not([hidden]) .kezelo-sor');
-    ok('koszono (PMU ' + cimke + '): Toreki Melitta kepe es neve', (await sor.count()) === 1 && /Töreki Melitta/.test(await sor.textContent()) && await sor.locator('img').evaluate((e) => e.complete && e.naturalWidth > 0), (await sor.textContent()).replace(/\s+/g, ' ').trim());
+const sor = pg.locator('[data-nezet=' + nezet + ']:not([hidden]) .kezelo-oszlop');
+    const kartyaban = await sor.evaluate((e) => !!e.closest('.kosz-kartya, .osszegzes-kartya'));
+    const sz = await pg.locator('[data-nezet=' + nezet + ']:not([hidden])').textContent();
+    ok('koszono (PMU ' + cimke + '): Toreki Melitta kepe es neve a kartyan belul' + (nezet === 'koszonjuk' ? ' (a szoveg es a terkep kozott)' : '') + (nezet === 'c-kesz' ? ', nincs "ha kozben valtozik a terved, hivj" sor' : ''),
+      (await sor.count()) === 1 && /Töreki Melitta/.test(await sor.textContent()) && kartyaban && await sor.locator('img').evaluate((e) => e.complete && e.naturalWidth > 0) && (nezet !== 'c-kesz' || !/változik a terved/.test(sz))
+      && (nezet !== 'koszonjuk' || (await pg.locator('.kosz-kartya').evaluate((k) => [...k.children].map((c) => c.className.split(' ')[0]).join(',')) === 'adat,kezelo-oszlop,terkep')), (await sor.textContent()).replace(/\s+/g, ' ').trim());
   }
   await u.ctx.close();
 }
@@ -566,7 +572,7 @@ for (const lap of LANDINGEK) {
   await reteg(page).locator('#be-close').click();
   await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(4000);
-  const uj = merEsem.slice(n0).filter((e) => !(e.plat === 'tiktok' && /^(EngagedSession|\/api\/v2\/(monitor|pixel\/(act|inter)))/.test(e.ev)));
+  const uj = merEsem.slice(n0).filter((e) => !(e.plat === 'tiktok' && /^(EngagedSession|\/api\/v2\/(monitor|pixel\/(act|inter)))/.test(e.ev)) && !(e.plat === 'tiltott' && /^\/csp\//.test(e.ev))); // (a bongeszo CSP-jelentesei nem meresi esemenyek)
   ok('meres-vedelem: a reteg hasznalata (GTM-es oldalon) nem indit meresi kerest a fo ablakbol', uj.length === 0, uj.slice(0, 6).map((e) => e.plat + ':' + e.ev).join(', '));
 }
 

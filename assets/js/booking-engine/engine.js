@@ -668,9 +668,11 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       const hely = placeText();
       const terkep = hely ? h('a', { class: 'be-terkep', href: F.mapsUrl(hely), target: '_blank', rel: 'noopener', 'aria-label': 'Megnyitás térképen' },
         h('iframe', { src: 'https://www.google.com/maps?q=' + encodeURIComponent(hely) + '&z=15&output=embed', loading: 'lazy', tabindex: '-1', title: 'Térkép' })) : null;
-      const kartya = h('div', { class: 'be-kosz-kartya' }, h('span', { class: 'be-kosz-adat' }, h('b', { text: mikor }), h('b', { text: nameOf(S.service) }),
-        [price, durText(S.service)].filter(Boolean).join(' · '), S.place && S.place.address ? h('span', { class: 'be-kosz-cim', text: S.place.address }) : null), terkep);
       const kezelo = thanksPractitioner(rep.employee);
+      // a kezelo (kep + nev + "var teged") a kartyan belul all, a szoveg es a terkep kozott
+      const kartya = h('div', { class: 'be-kosz-kartya' + (kezelo ? ' van-kezelo' : '') }, h('span', { class: 'be-kosz-adat' }, h('b', { text: mikor }), h('b', { text: nameOf(S.service) }),
+        [price, durText(S.service)].filter(Boolean).join(' · '), S.place && S.place.address ? h('span', { class: 'be-kosz-cim', text: S.place.address }) : null),
+      kezelo ? practitionerCell(kezelo, 'vár téged') : null, terkep);
       const ott = h('button', { type: 'button', class: 'be-btn be-ott', text: 'Ott leszek ✓', onclick: (e) => {
         const g = e.currentTarget; g.textContent = 'Köszönöm, várunk! ✓'; g.disabled = true; g.classList.add('kesz');
         if (S.adapterSample) return; // mintanezet: nincs kuldes (nem megy e-mail a szalonnak)
@@ -679,7 +681,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       } });
       const naptarba = h('button', { type: 'button', class: 'be-naptar-link', onclick: addToCalendar }, icon('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>', 1.8), 'Naptárba teszem');
       return h('section', { class: 'be-center be-success' }, h('div', { class: 'be-tick', 'aria-hidden': 'true', text: '✓' }), title('Sikeres foglalás!'),
-        kartya, kezelo ? practitionerRow(kezelo, 'vár téged') : null,
+        kartya,
         h('p', { class: 'be-megerosit' }, 'Erősítsd meg egy érintéssel, hogy jössz! ', h('span', { 'aria-hidden': 'true', text: '↓' })),
         h('div', { class: 'be-ott-sor' }, ott, naptarba),
         note('Időpont módosítása vagy lemondása: a visszaigazoló e-mailben lévő linkkel.', 'be-kicsi'),
@@ -825,10 +827,10 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   }
   // A koszono kepernyok kozos reszei: szamozott lista, a kezelo sora (kep + nev), a kezelo azonositasa
   const stepList = (items) => h('ol', { class: 'be-lepesek' }, items.map((t) => h('li', { text: t })));
-  const practitionerRow = (p, szoveg) => h('div', { class: 'be-kezelo' },
-    p.foto ? h('img', { class: 'be-kezelo-kep', src: kepSrc(p.foto), alt: p.name, width: '48', height: '48', onerror: (e) => e.currentTarget.remove() })
+  const practitionerCell = (p, szoveg) => h('span', { class: 'be-kezelo' },
+    p.foto ? h('img', { class: 'be-kezelo-kep', src: kepSrc(p.foto), alt: p.name, width: '44', height: '44', onerror: (e) => e.currentTarget.remove() })
       : h('span', { class: 'be-kezelo-kep', 'aria-hidden': 'true', text: p.name.charAt(0).toUpperCase() }),
-    h('span', { class: 'be-kezelo-szoveg' }, h('b', { text: p.name }), h('span', { text: szoveg })));
+    h('b', { text: p.name }), h('small', { text: szoveg }));
   // Ahol van kezelo (fodraszat, oxigen: a valasztott / a Salonic altal jelzett szakember, fotoval; lezer: Zsofi), ott a koszonoben is megjelenik; a HeadSpanal szobak vannak, nem kezelok.
   function thanksPractitioner(reported) {
     if (flow.business === 'laser') return LEZER_KEZELO;
@@ -842,7 +844,6 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   const sentView = () => h('section', { class: 'be-center be-success' }, h('div', { class: 'be-tick', 'aria-hidden': 'true', text: '✓' }), title('Visszahívást kértél!'),
     note('Hamarosan hívunk a megadott számon.'),
     h('h3', { class: 'be-h3', text: 'Mi történik most?' }), stepList(VISSZAHIVAS_LEPESEK),
-    note(`Ha közben változik a terved, hívj: ${PHONE}.`, 'be-kicsi'),
     layer ? h('div', { class: 'be-actions' }, secondary('Bezárás', () => { if (onClose) onClose(); })) : null);
 
   // --- naptar-fajl -------------------------------------------------------------------------------------------------------------------

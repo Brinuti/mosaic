@@ -247,11 +247,14 @@ a { color: inherit; }
 .be-kosz-adat b { display: block; color: var(--sotet); font-size: var(--m-alap); font-weight: 700; }
 .be-kosz-cim { display: block; margin-top: 4px; color: var(--sotet); }
 .be-terkep { position: relative; display: block; border-radius: 10px; overflow: hidden; min-height: 96px; background: var(--krem); }
+@media (max-width: 359px) { .be-kosz-kartya.van-kezelo { grid-template-columns: minmax(0, 1fr) 70px 80px; } }
 .be-terkep iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
-.be-kezelo { display: grid; grid-template-columns: 48px 1fr; gap: 10px; align-items: center; text-align: left; margin-top: 10px; padding: 8px 10px; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; }
-.be-kezelo-kep { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; object-position: 50% 32%; background: var(--krem); display: grid; place-items: center; font-size: 22px; color: var(--sotet); }
-.be-kezelo-szoveg b { display: block; font-weight: 700; }
-.be-kezelo-szoveg span { display: block; color: var(--kozep); font-size: var(--m-kicsi); line-height: 1.3; }
+.be-kosz-kartya.van-kezelo { grid-template-columns: minmax(0, 1fr) 78px 96px; gap: 8px; }
+.be-kosz-kartya.van-kezelo .be-kosz-adat b { font-size: 14px; }
+.be-kezelo { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; min-width: 0; }
+.be-kezelo-kep { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: 50% 32%; background: var(--krem); display: grid; place-items: center; font-size: 20px; color: var(--sotet); }
+.be-kezelo b { display: block; font-weight: 700; font-size: var(--m-kicsi); line-height: 1.2; overflow-wrap: anywhere; }
+.be-kezelo small { display: block; color: var(--kozep); font-size: 11.5px; line-height: 1.2; }
 .be-megerosit { text-align: center; font-weight: 700; margin: 14px 0 6px; }
 .be-ott-sor { display: grid; justify-items: center; gap: 4px; }
 .be-ott { width: 72%; min-height: 46px; font-size: var(--m-kicsi); letter-spacing: .05em; padding: 8px 10px; }

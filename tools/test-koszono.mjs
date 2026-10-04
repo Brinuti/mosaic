@@ -21,8 +21,8 @@ test('koszono: oxigen: hajmosas / hajfestes tudnivalo; headspa es fodraszat: erk
   for (const b of ['headspa', 'hair']) { const s = koszonoLepesek(b, 'first_treatment').join(' '); assert.match(s, /15–20 perccel/); assert.match(s, /nem tudunk csúszni/); }
 });
 
-test('koszono: a lezer kezeloje Zsofi (foto nincs: monogram)', () => {
-  assert.equal(LEZER_KEZELO.name, 'Zsófi'); assert.equal(LEZER_KEZELO.foto, null);
+test('koszono: a lezer kezeloje Zsofi (a lezeres oldal bemutatkozo kepe)', () => {
+  assert.equal(LEZER_KEZELO.name, 'Zsófi'); assert.equal(LEZER_KEZELO.foto, 'staff-zsofi');
 });
 
 test('levelek: az "Ott leszek" (motor-megerosites) levele a szalonnak megy, az idoponttal', () => {

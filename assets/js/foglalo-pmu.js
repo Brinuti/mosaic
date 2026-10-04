@@ -93,6 +93,8 @@
   // a koszono kepernyokon a kezelo (kep + nev): a kartya / terkep es a szoveg kozott
   const MELITTA_KEP = '/assets/img/m/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326ef000.jpg';
   const melittaSor = (szoveg) => elem('div', { class: 'melitta kezelo-sor' }, elem('img', { src: MELITTA_KEP, alt: 'Töreki Melitta' }), elem('div', {}, elem('b', { szoveg: 'Töreki Melitta' }), elem('span', { szoveg })));
+  // a kartyan belul, a szoveg es a terkep / a jobb szel kozott: kep + nev + roviden, mi fog tortenni
+  const melittaOszlop = (szoveg) => elem('span', { class: 'kezelo-oszlop' }, elem('img', { src: MELITTA_KEP, alt: 'Töreki Melitta' }), elem('b', { szoveg: 'Töreki Melitta' }), elem('small', { szoveg }));
   const ft = (n) => new Intl.NumberFormat('hu-HU').format(n) + ' Ft';
   const fmt = (ts, o) => new Intl.DateTimeFormat('hu-HU', { timeZone: ZONA, ...o }).format(new Date(ts * 1000));
   const napKulcs = (ts) => fmt(ts, { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\s/g, '');
@@ -495,12 +497,12 @@
     for (const x of document.querySelectorAll('.megerosit, [data-nezet=koszonjuk] .gombsor')) x.hidden = !f;
     if (!f) { $('koszono-osszegzes').replaceChildren(); return; }
     const terkep = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(SZALON.terkep);
-    $('koszono-osszegzes').replaceChildren(elem('div', { class: 'kosz-kartya' },
+    $('koszono-osszegzes').replaceChildren(elem('div', { class: 'kosz-kartya van-kezelo' },
       elem('span', { class: 'adat' }, elem('b', { szoveg: teljes(f.ts) }), elem('b', { szoveg: f.nev }), f.ar + ' · ' + idotartam(f.perc),
         elem('span', { class: 'cim', szoveg: SZALON.cimSor })),
+      melittaOszlop('vár téged'),
       elem('a', { class: 'terkep', href: terkep, target: '_blank', rel: 'noopener', 'aria-label': 'Megnyitás térképen' },
         elem('iframe', { src: 'https://www.google.com/maps?q=' + encodeURIComponent(SZALON.terkep) + '&z=15&output=embed', loading: 'lazy', tabindex: '-1', title: 'Térkép' }))));
-    $('koszono-osszegzes').append(melittaSor('vár téged a szalonban'));
     $('naptarhoz').onclick = () => {
       const t = (ts) => new Date(ts * 1000).toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
       const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MOSAIC//Foglalas//HU', 'BEGIN:VEVENT',
@@ -630,10 +632,9 @@
     allapot.fotok.forEach((f, i) => adat.set('foto' + (i + 1), f.blob, 'foto' + (i + 1) + '.jpg'));
     if (!(await bekuld(adat, gomb, $('foto-kuld-hiba')))) return;
     $('foto-kesz-osszegzes').replaceChildren(allapot.slot && k
-      ? elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Preferált időpont (nem végleges)' }), elem('div', { class: 'sor' }, ikon('naptar'),
-        elem('span', {}, elem('b', { szoveg: teljes(allapot.slot) }), elem('span', { szoveg: k.cim + (k.valtozat ? ' – ' + k.valtozat : '') }))))
-      : '');
-    $('foto-kesz-osszegzes').append(melittaSor('megnézi a fotódat, és hamarosan jelentkezik'));
+      ? elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Preferált időpont (nem végleges)' }), elem('div', { class: 'sor van-kezelo' }, ikon('naptar'),
+        elem('span', {}, elem('b', { szoveg: teljes(allapot.slot) }), elem('span', { szoveg: k.cim + (k.valtozat ? ' – ' + k.valtozat : '') })), melittaOszlop('jelentkezik')))
+      : melittaSor('megnézi a fotódat, és hamarosan jelentkezik'));
     allapot.fotok = [];
     ugrik('foto-kesz');
   });
@@ -648,8 +649,8 @@
     rajzol();
   };
   const cMikor = () => allapot.cSav || 'Bármikor';
-  const cOsszegzes = (cim) => elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: cim }), elem('div', { class: 'sor' }, ikon('telefon'),
-    elem('span', {}, elem('b', { szoveg: cMikor() }), elem('span', { szoveg: 'Telefonos konzultáció · kb. 10 perc, ingyenes' }))));
+  const cOsszegzes = (cim, kezelo = false) => elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: cim }), elem('div', { class: 'sor' + (kezelo ? ' van-kezelo' : '') }, ikon('telefon'),
+    elem('span', {}, elem('b', { szoveg: cMikor() }), elem('span', { szoveg: 'Telefonos konzultáció · kb. 10 perc, ingyenes' })), kezelo ? melittaOszlop('felhív') : null));
   $('c-ido-tovabb').addEventListener('click', () => { allapot.cKert = true; ugrik('c-adatok'); });
   // a telefonos konzultacio elott is megkerdezzuk, van-e mar sminktetovalasa
   $('c-info-tovabb').addEventListener('click', () => { allapot.kerdesCel = 'c-ido'; ugrik('kerdes'); });
@@ -677,7 +678,7 @@
     if (c && !allapot.cKert) Object.assign(allapot, { cKert: true, cSav: c.cSav === 'Bármikor' ? null : c.cSav });
     if (!allapot.cKert && KOSZ_OLDAL === 'vh') allapot.cKert = true;
     if (!allapot.cKert) { mutat('kezdo'); return; }
-    $('c-kesz-osszegzes').replaceChildren(cOsszegzes('Ekkor hívlak'), melittaSor('hamarosan felhív'));
+    $('c-kesz-osszegzes').replaceChildren(cOsszegzes('Ekkor hívlak', true));
     if (!KOSZ_OLDAL) history.replaceState({ nezet: 'c-kesz' }, '', location.pathname + location.search + '#visszahivas-kesz');
   };
 
@@ -722,9 +723,8 @@
     // ?minta=foto: a fotokuldes utani kepernyo (mintanezet, kuldes nelkul)
     if (MINTA === 'foto') {
       const ts = Math.floor(Date.now() / 86400000 + 7) * 86400 + 8 * 3600;
-      $('foto-kesz-osszegzes').replaceChildren(elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Preferált időpont (nem végleges)' }), elem('div', { class: 'sor' }, ikon('naptar'),
-        elem('span', {}, elem('b', { szoveg: teljes(ts) }), elem('span', { szoveg: 'Szemöldöktetoválás – Hibrid' })))));
-      $('foto-kesz-osszegzes').append(melittaSor('megnézi a fotódat, és hamarosan jelentkezik'));
+      $('foto-kesz-osszegzes').replaceChildren(elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Preferált időpont (nem végleges)' }), elem('div', { class: 'sor van-kezelo' }, ikon('naptar'),
+        elem('span', {}, elem('b', { szoveg: teljes(ts) }), elem('span', { szoveg: 'Szemöldöktetoválás – Hibrid' })), melittaOszlop('jelentkezik'))));
       mutat('foto-kesz');
       return;
     }
