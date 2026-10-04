@@ -70,12 +70,23 @@
           <a class="google" href="#velemenyek" data-cta="hero-google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg><span class="g-ertek">Google 5,0</span> <span class="csillagok" aria-hidden="true">★★★★★</span> <span class="g-db">Melitta értékelései</span> <span class="nyil">→</span></a>
         </div>
       </div>
-      <figure class="hero-kep">
-        <img class="hero-foto" src="/assets/img/pmu/gyogyult-szoke.jpg" alt="Gyógyult, természetes szemöldöktetoválás" width="1000" height="1500" fetchpriority="high">
-        <figcaption class="hero-betet" aria-label="Előtte és utána">
-          <span class="betet-kep" style="--kep:url(/assets/img/pmu/hero-elotte.jpg)"></span>
-          <span class="betet-kep" style="--kep:url(/assets/img/pmu/hero-utana.jpg)"></span>
-        </figcaption>
+      <figure class="hero-kep hero-galeria" aria-roledescription="carousel" aria-label="Így készül a szemöldöktetoválás: az előrajzolástól a gyógyult eredményig">
+        <div class="galeria-sav" id="hero-galeria" tabindex="0">
+          <img class="galeria-kep" src="/assets/img/pmu/folyamat-1-elorajzolas.jpg" alt="A szemöldök formájának előrajzolása" width="1080" height="1080" fetchpriority="high">
+          <img class="galeria-kep" src="/assets/img/pmu/folyamat-2-munka.jpg" alt="Szemöldöktetoválás közben, közelről" width="1080" height="1080" loading="lazy" decoding="async">
+          <img class="galeria-kep" src="/assets/img/pmu/folyamat-3-munka-kozben.jpg" alt="Töreki Melitta munka közben" width="1080" height="1080" loading="lazy" decoding="async">
+          <img class="galeria-kep" src="/assets/img/pmu/folyamat-4-friss.jpg" alt="Frissen elkészült, természetes szemöldöktetoválás" width="1080" height="1080" loading="lazy" decoding="async">
+          <img class="galeria-kep" src="/assets/img/pmu/folyamat-5-gyogyult.jpg" alt="Gyógyult, természetes hatású szemöldök" width="1080" height="1080" loading="lazy" decoding="async">
+        </div>
+        <button type="button" class="galeria-nyil galeria-elozo" id="galeria-elozo" aria-label="Előző kép">‹</button>
+        <button type="button" class="galeria-nyil galeria-kov" id="galeria-kov" aria-label="Következő kép">›</button>
+        <div class="galeria-pontok" id="galeria-pontok">
+          <button type="button" aria-label="1. kép: előrajzolás" aria-current="true"></button>
+          <button type="button" aria-label="2. kép: munka közben"></button>
+          <button type="button" aria-label="3. kép: munka közben, távolabbról"></button>
+          <button type="button" aria-label="4. kép: friss eredmény"></button>
+          <button type="button" aria-label="5. kép: gyógyult eredmény"></button>
+        </div>
       </figure>
     </div>
   </div>
@@ -109,7 +120,7 @@
           <p class="helyzet-terulet">Szemöldök</p>
           <h3>Ez lenne az első szemöldök&shy;tetoválásom</h3>
           <p>Szeretnék természetes, hozzám illő eredményt, és nem tudom, pontosan mire számítsak.</p>
-          <a class="gomb gomb-sotet gomb-kicsi" href="#foglalas" data-foglalo="lepes=szolg" data-cta="helyzet-elso">Ez vagyok <span class="nyil">→</span></a>
+          <a class="gomb gomb-sotet gomb-kicsi" href="#mielott" data-cta="helyzet-elso">Ez vagyok <span class="nyil">→</span></a>
         </div>
       </article>
       <article class="helyzet">
@@ -127,7 +138,7 @@
           <p class="helyzet-terulet">Ajak</p>
           <h3>Ajaktetoválás érdekel</h3>
           <p>Természetes hatású ajaktetoválás, az arcodhoz és a bőrtónusodhoz illő színnel.</p>
-          <a class="gomb gomb-sotet gomb-kicsi" href="#foglalas" data-foglalo="lepes=szolg" data-cta="helyzet-ajak">Ez vagyok <span class="nyil">→</span></a>
+          <a class="gomb gomb-sotet gomb-kicsi" href="#mielott" data-cta="helyzet-ajak">Ez vagyok <span class="nyil">→</span></a>
         </div>
       </article>
     </div>
@@ -357,7 +368,7 @@
 </section>
 
 <!-- ============ 3c. MIELOTT FOGLALSZ ============ -->
-<section class="mielott" aria-labelledby="mielott-cim">
+<section class="mielott" id="mielott" aria-labelledby="mielott-cim">
   <div class="tartalom">
     <div class="cim-vonallal"><div><p class="felcim">Fontos információk</p><h2 id="mielott-cim">Mielőtt foglalsz</h2></div><span class="vonal" aria-hidden="true"></span></div>
     <div class="mielott-racs">
@@ -382,19 +393,20 @@
           </li>
         </ol>
       </div>
-      <div class="mielott-jobb">
-        <h3>Köszönöm, hogy tiszteled az időmet.</h3>
-        <p class="tisztelet-lead">Kérlek, csak olyan időpontot foglalj le, amelyet valóban vállalni tudsz.</p>
-        <p class="tisztelet-szoveg">A sminktetováláshoz 2–2,5 órás idősávot kizárólag neked tartunk fenn, erre az időre más vendég nem tud foglalni.</p>
-        <p class="tisztelet-szoveg">Ha bizonytalan vagy, vagy még csak érdeklődsz, akkor inkább beszéljünk telefonon, vagy gyere el ingyenes konzultációra. Fizetős időpontot kérlek, csak akkor foglalj, ha tényleg eldöntötted, hogy sminktetoválást szeretnél.</p>
-        <!-- idovonal-abra: foglalas -> 48 oraval elotte (eddig lehet atfoglalni) -> kezeles -->
-        <ol class="lemondas-abra" aria-label="Időpont-módosítási határidő">
-          <li><span class="pont"></span><b>Foglalás</b><small>olyan napra, amit vállalni tudsz</small></li>
-          <li class="hatar"><span class="pont"></span><b>48 órával előtte</b><small>eddig foglalhatsz át</small></li>
-          <li><span class="pont"></span><b>A kezelés napja</b><small>2–2,5 óra csak neked</small></li>
-        </ol>
-        <p class="tisztelet-kiemelt"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4M9 15l2 2 4-4"/></svg><span>Ha mégis közbejön valami, kérlek, legalább 48 órával előtte módosítsd az időpontodat – lemondás helyett lehetőleg foglalj át egy másik napra.</span></p>
-        <svg class="level-dekor" viewBox="0 0 80 160" aria-hidden="true"><path d="M70 6C40 40 30 90 46 154M58 30c-20 4-28 18-26 34 16-6 24-18 26-34zM52 70c-18 6-24 20-20 36 14-8 20-20 20-36zM48 108c-16 6-20 18-16 32 12-8 16-18 16-32z"/></svg>
+      <div class="mielott-jobb konz">
+        <h3>Konzultáción berajzolom neked, hogyan fog kinézni</h3>
+        <p class="tisztelet-lead">Az ingyenes konzultáció pontosan erről szól.</p>
+        <p class="tisztelet-szoveg">Ha félsz, feltehetsz minden kérdést. A szemöldöködet pedig berajzolom neked, hogy lásd, hogyan fog kinézni – és addig finomítjuk, amíg nem tetszik.</p>
+        <div class="konz-montazs">
+          <figure>
+            <img src="/assets/img/pmu/konzultacio-elorajzolt.jpg" alt="Előrajzolt szemöldök a konzultáción" width="900" height="900" loading="lazy" decoding="async">
+            <figcaption class="konz-cimke">Előrajzolva</figcaption>
+          </figure>
+          <figure>
+            <img src="/assets/img/pmu/konzultacio-kesz.jpg" alt="Ugyanaz a szemöldök elkészülve" width="900" height="900" loading="lazy" decoding="async">
+            <figcaption class="konz-cimke">Kész szemöldök</figcaption>
+          </figure>
+        </div>
       </div>
     </div>
   </div>
