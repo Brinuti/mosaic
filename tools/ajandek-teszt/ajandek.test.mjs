@@ -181,6 +181,10 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.ok(!html.includes('ah-atutalas-gomb') && !html.includes('Inkább átutalással'), 'a regi atutalas-link kikerult');
     // minden kartyan plusz sor: "Hogyan epul fel a kezeles?" (felugro, lepesekkel az eles oldalrol)
     for (const jel of ['id="ah-kez-ablak"', 'id="ah-kez-elemek"', 'id="ah-kez-kep"', 'id="ah-kez-valaszt"']) assert.ok(html.includes(jel), jel);
+    // a fizetesi urlap mezoi uresek (nincs peldaszoveg: Kovacs Anna, 1024, Budapest, ...); a tervezo nincs szamlalo, az athelyezes szovegesen
+    const urlapHtml = html.slice(html.indexOf('id="ah-urlap"'), html.indexOf('id="ah-feldolgozas"'));
+    assert.ok(!/placeholder=/.test(urlapHtml), 'a fizetesi urlapon nincs placeholder');
+    assert.ok(!html.includes('id="ah-idezet-db"') && html.includes('id="ah-mozgat-seg"') && html.includes('Helyezd át a képet a kezeddel'), 'nincs karakterszamlalo; az athelyezes szoveges');
     // a felugro: a kep (allo) balra, a szoveg (bevezeto, lista, idotartam) jobbra, a gomb alul; a bezaro X svg (pontosan kozepen), nem betu
     assert.ok(html.indexOf('ah-kez-kepkeret') < html.indexOf('ah-kez-szoveg') && html.indexOf('id="ah-kez-ido"') > html.indexOf('ah-kez-szoveg') && html.indexOf('id="ah-kez-valaszt"') > html.indexOf('id="ah-kez-ido"'), 'kep | szoveg + idotartam | gomb');
     for (const az of ['ah-kez-bezar', 'ah-lb-bezar', 'ah-video-bezar', 'ah-ak-nagy-bezar']) assert.match(html, new RegExp('id="' + az + '"[^>]*><svg class="ah-x-ikon"'), az + ': svg X');

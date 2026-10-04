@@ -410,7 +410,8 @@
               <label for="ah-zoom">Nagyítás</label>
               <input type="range" id="ah-zoom" min="1" max="3" step="0.05" value="1">
             </div>
-            <div class="ah-mozgat" id="ah-mozgat" role="group" aria-label="A fotó áthelyezése" hidden>
+            <p class="ah-mozgat-seg" id="ah-mozgat-seg" hidden><span class="ah-m-hosszu">Helyezd át a képet a kezeddel: húzd a fotót a kártyán.</span><span class="ah-m-rovid">Helyezd át a képet a kezeddel.</span></p>
+            <div class="ah-mozgat" id="ah-mozgat" role="group" aria-label="A fotó áthelyezése (billentyűzettel)" hidden>
               <span class="ah-mozgat-cimke">Áthelyezés</span>
               <button type="button" data-irany="1,0" aria-label="Fotó balra" title="Balra"><span aria-hidden="true">←</span></button>
               <button type="button" data-irany="0,1" aria-label="Fotó fel" title="Fel"><span aria-hidden="true">↑</span></button>
@@ -424,7 +425,6 @@
             <div class="ah-mezo">
               <label for="ah-idezet" class="ah-lathatatlan-cim">Idézet vagy üzenet</label>
               <textarea id="ah-idezet" maxlength="160" rows="2" placeholder="Írd ide az idézetet vagy az üzenetet…"></textarea>
-              <p class="ah-szamlalo"><span id="ah-idezet-db">0</span>/160</p>
             </div>
           </div>
         </div>
@@ -432,7 +432,7 @@
         <div class="ah-tv-sor ah-tv-alja">
           <div class="ah-mezo">
             <label for="ah-tervezo-nev">Ajándékozott neve</label>
-            <input id="ah-tervezo-nev" type="text" maxlength="40" autocomplete="off" placeholder="pl. Anna">
+            <input id="ah-tervezo-nev" type="text" maxlength="40" autocomplete="off">
           </div>
           <div class="ah-gombsor ah-gombsor-oszlop">
             <button type="button" class="ah-gomb ah-gomb-fo ah-gomb-teljes" id="ah-tervezo-tovabb"><span id="ah-tervezo-tovabb-szoveg">Tovább a fizetéshez</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></button>
@@ -492,43 +492,43 @@
               <div class="ah-mezo ah-mezo-ikonos">
                 <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="gift"></span></span>
                 <label for="ah-ajandekozott">Ajándékozott neve</label>
-                <input id="ah-ajandekozott" name="ajandekozott" type="text" autocomplete="off" maxlength="40" placeholder="Akinek az ajándékot szánod" required>
+                <input id="ah-ajandekozott" name="ajandekozott" type="text" autocomplete="off" maxlength="40" required>
                 <p class="ah-mezohiba" id="ah-ajandekozott-hiba" hidden></p>
               </div>
               <div class="ah-mezo ah-mezo-ikonos">
                 <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="user"></span></span>
                 <label for="ah-nev">Számlázási név</label>
-                <input id="ah-nev" name="nev" type="text" autocomplete="name" maxlength="120" placeholder="pl. Kovács Anna" required>
+                <input id="ah-nev" name="nev" type="text" autocomplete="name" maxlength="120" required>
                 <p class="ah-mezohiba" id="ah-nev-hiba" hidden></p>
               </div>
               <div class="ah-mezo ah-mezo-ikonos">
                 <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="mail"></span></span>
                 <label for="ah-email">E-mail címed</label>
-                <input id="ah-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="pl. te@emailcimed.hu" required>
+                <input id="ah-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" required>
                 <p class="ah-mezohiba" id="ah-email-hiba" hidden></p>
               </div>
               <div class="ah-mezo ah-mezo-ikonos" id="ah-telefon-mezo" hidden>
                 <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="phone"></span></span>
                 <label for="ah-telefon">Telefonszámod</label>
-                <input id="ah-telefon" name="telefon" type="tel" autocomplete="tel" inputmode="tel" maxlength="25" placeholder="+36 20 123 4567">
+                <input id="ah-telefon" name="telefon" type="tel" autocomplete="tel" inputmode="tel" maxlength="25">
                 <p class="ah-mezohiba" id="ah-telefon-hiba" hidden></p>
               </div>
               <div class="ah-mezo ah-mezo-ikonos">
                 <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="pin"></span></span>
                 <label for="ah-iranyitoszam">Irányítószám</label>
-                <input id="ah-iranyitoszam" name="iranyitoszam" type="text" autocomplete="postal-code" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="1024" required>
+                <input id="ah-iranyitoszam" name="iranyitoszam" type="text" autocomplete="postal-code" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" required>
                 <p class="ah-mezohiba" id="ah-iranyitoszam-hiba" hidden></p>
               </div>
               <div class="ah-mezo ah-mezo-ikonos">
                 <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="building"></span></span>
                 <label for="ah-varos">Város</label>
-                <input id="ah-varos" name="varos" type="text" autocomplete="address-level2" maxlength="80" placeholder="Budapest" required>
+                <input id="ah-varos" name="varos" type="text" autocomplete="address-level2" maxlength="80" required>
                 <p class="ah-mezohiba" id="ah-varos-hiba" hidden></p>
               </div>
               <div class="ah-mezo ah-mezo-ikonos">
                 <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="home"></span></span>
                 <label for="ah-cim">Utca, házszám</label>
-                <input id="ah-cim" name="cim" type="text" autocomplete="address-line1" maxlength="200" placeholder="pl. Margit körút 1." required>
+                <input id="ah-cim" name="cim" type="text" autocomplete="address-line1" maxlength="200" required>
                 <p class="ah-mezohiba" id="ah-cim-hiba" hidden></p>
               </div>
             </div>
@@ -542,11 +542,11 @@
               <div class="ah-ceges-mezok">
                 <div class="ah-mezo">
                   <label for="ah-ceges-nev">Cégnév</label>
-                  <input id="ah-ceges-nev" name="ceges_nev" type="text" autocomplete="organization" maxlength="120" placeholder="pl. Mosaic Kft.">
+                  <input id="ah-ceges-nev" name="ceges_nev" type="text" autocomplete="organization" maxlength="120">
                 </div>
                 <div class="ah-mezo">
                   <label for="ah-ceges-adoszam">Adószám</label>
-                  <input id="ah-ceges-adoszam" name="ceges_adoszam" type="text" maxlength="20" placeholder="pl. 12345678-2-42">
+                  <input id="ah-ceges-adoszam" name="ceges_adoszam" type="text" maxlength="20">
                 </div>
               </div>
               <p class="ah-mezohiba" id="ah-ceges-hiba" hidden></p>
@@ -572,7 +572,7 @@
               <p class="ah-atu-figyelem" role="note"><span class="ah-ikon" data-ikon="hourglass" aria-hidden="true"></span><span><b>Fontos:</b> átutalás esetén az ajándékkártyát csak az utalás visszaigazolása után tudjuk kiállítani, ezért nem kapod meg azonnal. Bankkártyás fizetésnél az ajándékkártyát automatikusan, azonnal küldjük.</span></p>
               <div class="ah-mezo" id="ah-atu-uzenet-mezo" hidden>
                 <label for="ah-atu-uzenet">Üzenet a kártyára (nem kötelező)</label>
-                <textarea id="ah-atu-uzenet" maxlength="300" rows="2" placeholder="Írd ide az üzenetet a kártyára…"></textarea>
+                <textarea id="ah-atu-uzenet" maxlength="300" rows="2"></textarea>
               </div>
               <p class="ah-mezohiba" id="ah-atu-hiba" role="alert" hidden></p>
             </div>
@@ -616,11 +616,11 @@
         <form id="ah-szemelyre-urlap" novalidate>
           <div class="ah-mezo">
             <label for="ah-sz-nev">Kinek szól?</label>
-            <input id="ah-sz-nev" name="nev" type="text" maxlength="80" placeholder="Anna" autocomplete="off">
+            <input id="ah-sz-nev" name="nev" type="text" maxlength="80" autocomplete="off">
           </div>
           <div class="ah-mezo">
             <label for="ah-sz-uzenet">Írnál rá valamit?</label>
-            <textarea id="ah-sz-uzenet" name="uzenet" maxlength="300" rows="4" placeholder="Írd ide az üzenetet a kártyára…"></textarea>
+            <textarea id="ah-sz-uzenet" name="uzenet" maxlength="300" rows="4"></textarea>
           </div>
           <div class="ah-mezo">
             <label for="ah-sz-alkalom">Milyen alkalomra?</label>

@@ -839,8 +839,10 @@
     $('ah-foto-torol').hidden = !van;
     $('ah-zoom-sor').hidden = !van;
     $('ah-mozgat').hidden = !van;
+    $('ah-mozgat-seg').hidden = !van;
     $('ah-zoom').value = String(S.tervezo.fotoPoz.z);
-    $('ah-foto-gomb-szoveg').textContent = van ? 'Másik fotó választása' : 'Fotó feltöltése';
+    // mobilon a rovid szoveg ("Másik fotó") latszik, hogy a gomb a cim mellett elferjen
+    $('ah-foto-gomb-szoveg').innerHTML = van ? 'Másik fotó<span class="ah-m-hosszu"> választása</span>' : 'Fotó<span class="ah-m-hosszu"> feltöltése</span>';
     $('ah-ak-elonezet').classList.toggle('ah-foto-van', van);
     // az első fotó után egy rövid jelzés a kártyán: a fotó húzással is igazítható
     if (van && !huzasJelezve && !$('ah-ak-elonezet').querySelector('.ah-huz-jelzo')) {
@@ -849,7 +851,6 @@
   }
   function tervezoMezokTolt() {
     $('ah-idezet').value = S.tervezo.idezet;
-    $('ah-idezet-db').textContent = String(S.tervezo.idezet.length);
     $('ah-tervezo-nev').value = S.tervezo.nev;
   }
   function tervezoNyit() {
@@ -1022,7 +1023,6 @@
       var sorok = (this.value || '').split('\n');
       if (sorok.length > 5) this.value = sorok.slice(0, 5).join('\n');
       S.tervezo.idezet = (this.value || '').slice(0, KT.IDEZET_MAX);
-      $('ah-idezet-db').textContent = String(S.tervezo.idezet.length);
       clearTimeout(idozito);
       idozito = setTimeout(function () { ment(); tervezoRender(); }, 120);
     });
