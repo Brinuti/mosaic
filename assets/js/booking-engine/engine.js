@@ -31,7 +31,7 @@ const KEP_V = '__KEP_VERZIO__'; // a build a kepek tartalom-hash-ere cseréli (a
 const kepSrc = (k) => KEP_UT + k + '.jpg?v=' + KEP_V;
 const NAPTAR_NAP = 92; // a havi naptar (C1) ennyi napra elore keres (mint a PMU-foglalo)
 const HETNAPOK = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
-const NO_STEPS = new Set(['C6']);
+const NO_STEPS = new Set(['C6', 'A1_SENT']); // kesz foglalas / kesz visszahivas-keres: nincs mit lepni
 const MIN_LEAD_MINUTES = 30; // a fel oran belul kezdodo idopontot nem kinaljuk (mint a PMU foglalo)
 const HOLD_MS = 4 * 60 * 1000 + 50 * 1000; // a Salonic 5 percig tartja fenn a megnyitott idopontot
 // A Salonic-fiok betolti a MOSAIC kozos stiluslapjat (salonic/mosaic.css, vagy a PMU-nal pmu.css): a fejlec 70 px (a keret 78 px-t vag le),
