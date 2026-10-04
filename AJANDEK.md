@@ -457,13 +457,10 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
   küldjük.” üzenettel; a külön „Inkább átutalással fizetnék” link és panel megszűnt. Elküldés után az utalási adatok a fizetés kártyában jelennek meg (a választó, a gomb és az
   *Adatok* kártya letiltva). Az átutalás továbbra sem vásárlás (`bank_transfer_request`).
 - **Tulajdonos első kártyadizájnja (`smaragd`, a feltöltött terv):** zöld-arany, bal oldalt íves fotóablak, jobbra logó + idézet + „NEKI” + név; hátoldal: termék, érték, kód,
-  érvényesség. A terv előlapjáról/hátoldaláról a mintaszövegeket és a mintafotót kiszedtem (`assets/img/ajandek/kartya-smaragd-elol.jpg`, `-hat.jpg`, 930 x 577 px, a logó, a
-  keretek, a „NEKI”, az „UTALVÁNYKÓD” felirat, a lábléc a háttérképen marad). A sablon (`ajandek-kartya.js`) a dizájnnak **saját koordináta-teret és képarányt** enged
-  (`w`, `h`, `hatter`, `hat`): a lap képaránya 1,612 : 1; a nyomtató oldalon az A4 két felében középre igazítva áll (a hajtás a két fél között). A fotó az ívbe kerül
-  (kivágott ív + vékony arany szegély, a háttér vastag íve fölé), az **idézet és a név a biztonságos területen marad**: a betűméret lépcsőkben csökken a hosszal és a sorok számával
-  (idézet: 33 → 16 px a 930 px-es lapon, max. 160 karakter és 5 sor; név: 27 → 14 px, egy sor, max. 40 karakter), a dobozok `overflow: hidden`, így semmi nem lóg a levelekre,
-  a keretre vagy a logóra (160 karakteres idézettel, 40 karakteres névvel, 8 soros szöveggel ellenőrizve). **Fontos:** a feltöltött terv felbontása kicsi (930 px / 21 cm ≈ 113 dpi):
-  éles nyomtatáshoz a tulajdonostól kell a nagy felbontású (legalább 2480 x 1540 px) szövegmentes háttér; a többi három dizájn még helyőrző.
+  érvényesség. A terv előlapjáról/hátoldaláról a mintaszövegeket és a mintafotót kiszedtem (lásd az „5. kör / Kártyadizájnok (A5 vászon)” részt). A sablon (`ajandek-kartya.js`) a
+  dizájnnak **saját koordináta-teret és képarányt** enged (`w`, `h`, `hatter`, `hat`); a nyomtató oldalon az A4 két felében középre igazítva áll (a hajtás a két fél között). A fotó az
+  ívbe kerül, az **idézet és a név a biztonságos területen marad**: a betűméret lépcsőkben csökken a hosszal és a sorok számával (max. 160 karakter idézet, 40 karakter név), a dobozok
+  `overflow: hidden`, így semmi nem lóg a levelekre, a keretre vagy a logóra (160 karakteres idézettel, 40 karakteres névvel, 8 soros szöveggel ellenőrizve).
 - **Szövegek (a tulajdonos kérése):** „Mi az a Headspa és miért ilyen népszerű?” (alcímben a népszerűség okai); „Imádják a nők!” + „Nézd meg, mit mondanak a kezelés után :)”;
   „Több mint 1.300 db 5 csillagos értékelés!” (**a hero és a Trustindex jelenleg 1.259 / 1255 db-ot mutat, ezért a „több mint 1.300”-at a tulajdonosnak meg kell erősítenie**);
   „Kényeztetés a legmagasabb szinten”; „Személyre szabott ajándékkártya!” + a 3 kattintásos szerkesztést és az A5 méretet leíró bekezdés.
@@ -521,16 +518,10 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
   „Személyre szabható” (a megajándékozott neve és üzenet vagy a fotótok is a kártyára kerül); fizetés: „Bankkártya, Revolut, Google Pay – Az ajándékkártyát azonnal küldjük”, „Banki átutalás – Utalás
   után küldjük ki az ajándékkártyát”, a figyelmeztetésben „ajándékkártya”. A „Rendelésed” doboz hátteréből a levélminta kikerült. A vélemények alcíme alatt piros, lefelé mutató (finoman pattogó)
   nyíl a videókra.
-- **Két új kártyadizájn (a tulajdonos 2. és 3. terve):** `szalag` (pezsgőszínű, rózsaarany szalagok, **kör** fotóablak; 844 x 664 px) és `virag` (rózsaszín, cseresznyevirág, **lekerekített téglalap**
-  fotóablak; 934 x 592 px); sorrend: Smaragd, Szalag, Virág, majd a három előzetes (Krém, Homok, Fehér, változatlanul). A feltöltött tervekről a mintaszöveget és a mintafotót kiszedtem
-  (`assets/img/ajandek/kartya-szalag-*.jpg`, `kartya-virag-*.jpg`); a hátoldalon az „ÉRTÉKE” felirat, a kódkeret és a lábléc a háttérképen marad, a termék, az érték, a kód és az érvényesség a
-  kiürített helyre kerül. A fotóablak a háttér aranykeretén belül marad (a keretet a háttérkép adja). Az idézet és a név betűmérete a dobozból **számolt lépcsők** szerint csökken (`idezetLepcso`,
-  `nevLepcso`), a szövegszínek a tervekből mérve (szalag: barna, virág: mályva). A mintaszöveg (az előnézeten) most pontosan olyan színű, mint a beírt szöveg (nem halvány): nem változik a színe,
-  amikor elkezdi írni. A nyomtató oldalon a magasabb lapok is elférnek az A4 felén (a lap szélessége a félmagasságból számolódik, középre igazítva).
-- **A5 képarány (minden dizájn):** a Smaragd, a Szalag és a Virág háttérképei eredetileg 1,61 / 1,27 / 1,58 arányúak voltak; mostantól mind **A5 fekvő (1,414 : 1)**, új grafika nélkül: az üres sávokat
-  nyújtottam (nem az egész képet), így a logó, a fotóablak gyűrűje és az aprószövegek nem torzulnak. Smaragd 930 x 658: az elöl a két elválasztó közötti üres idézet-sáv nyúlik (az ív magasabb), a hátoldal
-  egyenletesen; Virág 934 x 660: az akvarell-csík sávja nyúlik (a fotóablak magasabb); Szalag 939 x 664: oldalra nyúlik, a gyűrű (x < 380) és a logó sorai védettek, alatta a szöveg-oszlop szélesedik.
-  A szövegdobozok a megfelelően áthelyezett koordinátákkal (a dobozok az átméretezett háttérre illesztve); a teszt minden dizájnra ellenőrzi az A5 arányt.
+- **Három kártyadizájn:** `smaragd`, `szalag` (pezsgőszínű, rózsaarany szalagok, **kör** fotóablak), `virag` (rózsaszín, cseresznyevirág, **lekerekített téglalap** fotóablak); sorrend: Smaragd,
+  Szalag, Virág, majd a három előzetes (Krém, Homok, Fehér, változatlanul). Az idézet és a név betűmérete a dobozból **számolt lépcsők** szerint csökken (`idezetLepcso`, `nevLepcso`). A
+  mintaszöveg (az előnézeten) pontosan olyan színű, mint a beírt szöveg (nem halvány). A nyomtató oldalon a magasabb lapok is elférnek az A4 felén. (A háttérképek jelenlegi, A5 vásznas
+  változatát lásd az „5. kör”-ben; a korábbi, nyújtott változatok kikerültek.)
 - **„Hogyan épül fel a kezelés?” felugró (átdolgozva):** a három kezelés saját szövege az **éles oldal árlistájának kezelés-kártyájáról**: egyéni = „50 perces MOSAIC ‘Relax’ Head Spa kezelés” (masszázs fókuszú,
   hajápolási elemekkel; 11 elem), „4 Kezes” (6 pont, kiemelve: 2 profi masszőr, 8 féle masszázs), Páros (12 elem, kiemelve: arc radírozás, méregtelenítő arcpakolás, pezsgő); mindegyiknél „+ 30 perc kímélő
   hajszárítás”, „Időtartam: 50+30 perc”, felül a kezelés alapképe. (A „gyógymasszőr” itt is „profi masszőr”.)
@@ -541,3 +532,38 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
 - **Gombok (pontosítás):** a „Személyre szabott ajándékkártya!” blokkban a gomb („Összeállítom a saját kártyámat”) a **szöveges oszlop alatt, középen** áll (nem az egész szekció alatt), és a kép alja pontosan a gomb
   aljával van egy vonalban (1180 px-től egymás mellett; alatta egymás alatt). A „Kényeztetés a legmagasabb szinten” szekció alatt mégsem kell gomb (kikerült).
 - **ChatGPT-prompt a dizájnok újragyártásához:** `AJANDEK-CHATGPT-PROMPT.md` (A5 fekvő, 2480 x 1754 px, szövegmentes, magenta fotóablak, közös elrendezési rács, ellenőrzőlista).
+
+## 5. kör (2026-10-04, a tulajdonos kérései)
+
+### Kártyadizájnok (A5 vászon)
+
+- **Miért újra:** a korábbi háttereket (nem A5 arányú képekből) nyújtani kellett, ettől a keret levágottnak / a rajz összekuszáltnak látszott. A tulajdonos újra feltöltötte mindhárom dizájn
+  mindkét oldalát **1491 x 1055 px-es, A5 fekvő (1,413 : 1) vászonként** (14–19. kép), ezért a háttér most **változatlan**: nincs vágás, nincs nyújtás, a kártya keretével, lekerekített
+  sarkával és árnyékával együtt, ahogy a terv készült. (A kártya körül a terv saját vászonszéle látszik: Smaragd: fehéres, Virág: barackszínű, Szalag: nincs.) A teszt ellenőrzi, hogy
+  a JPEG mérete pontosan a dizájn `w` x `h` értéke (1491 x 1055), és hogy minden dizájn A5 arányú.
+- **Fájlok:** `assets/img/ajandek/kartya-{smaragd,szalag,virag}-{elol,hat}-a5.jpg` (új név, mert az eszközök éves gyorsítótárat kapnak: a régi néven maradt képet a böngésző megtartaná).
+- **Amit kiszedtem a vászonról:** az idézet és a név mintaszövege; az előlapi mintafotó (Smaragd: a fotóív belseje sötét árnyalattal kitöltve, a vastag arany ív marad), a Szalag kör- és a Virág
+  téglalap-ablakának fényképe / kamera-ikonja / felirata; a hátoldalon a termék-, érték-, kód- és érvényesség-szöveg. Maradt a háttéren: logó, „NEKI”, „AJÁNDÉKKÁRTYA” (Virág), „ÉRTÉKE”,
+  „UTALVÁNYKÓD” + kódkeret, elválasztók, lábléc. A kiszedés **diffúziós kitöltés + finom zaj** (a környező háttérből), nem takarás: lásd `tools/kartya-hatter/feldolgoz.mjs`.
+- **Geometria (a vászon pixeleiben):** Smaragd fotóív: x 158, y 150, 516 x 758 (félkör sugár 258, középpont 416;408); Szalag fotókör: x 85, y 281, 523 x 523 (középpont 346,5;542,5);
+  Virág fotóablak: x 166, y 170, 439,5 x 685, sarok 15. A dobozokat (idézet, név, termék, érték, kód, érvényesség) a mintaszövegek mért középpontjára illesztettem (a hátoldalon a „ÉRTÉKE”
+  felirat a háttéren marad, az érték mellette balra igazítva áll).
+- **Betűk / színek a mintaszövegből:** a mintaszöveg szélességéhez illesztett betűméret és betűtáv (DOM-mal mérve): Smaragd termék: Playfair, 44 px, 0,12 em; Virág: Playfair, 47 px, 0,133 em;
+  Szalag: Jost, 47,5 px, 0,096 em; értékek: 74,5 / 92 / 62,8 px (**lining számjegyek**, `font-variant-numeric: lining-nums`, mert a Playfair alapból régi stílusú számokat ad); kód: Jost,
+  0,42 / 0,53 / 0,355 em; az idézet és a név a mintaszöveg méretéig nő (57,5 / 46 / 67,5 px; hosszabb szövegnél a lépcsők csökkentik). Színek: a mintaszöveg betűmagjának színe (`szin` a
+  dizájnban, plusz `hely`: a fotóhely-jelző színe a világos ablakokon). A dizájn `hat.betu` mezője adja a termék / kód / érvényesség betűcsaládját és betűtávját (a betűtáv utolsó, hozzáadott
+  hézagát a bal oldali kitöltés egyenlíti ki, `box-sizing: border-box`). **Figyelem:** a stílus-attribútumba (`style="..."`) kerülő betűcsaládnevek egyes idézőjelesek (`'Playfair Display'`), különben a
+  többi deklaráció elveszik (a teszt ezt őrzi).
+- **Felbontás:** 1491 px / 21 cm ≈ 180 dpi: képernyőre kiváló, otthoni nyomtatáshoz elfogadható. Élesebb nyomtatáshoz ugyanez a terv 2480 px széles vászonnal kellene (a koordináták ekkor
+  1,663-szorosukra változnak; a `feldolgoz.mjs` ablakai is).
+
+### Új kártyadizájn felvétele (pixelpontos, gyors munkafolyamat)
+
+1. **A tervet A5 fekvő vászonként kell feltölteni** (210 x 148,5 mm; ajánlott 2480 x 1754 px, legalább 1491 x 1055), a kártyával a vásznon (a vászon szélén nem kell semmit levágni), **oldalanként egy
+   kép**: az *előlap* mintaszöveggel (idézet, név) és mintafotóval; a *hátoldal* mintaadatokkal (termék, érték, kód, érvényesség). Nem kell két külön, rétegekre bontott fájl: a mintaszövegeket én
+   szedem ki. A mintaszövegek legyenek igazi szövegek (nem betűk rajza), és olyan helyen álljanak, ahová a valódi szöveg kerülne.
+2. **Amit megcsinálok (percek, nem órák):** a mintaszöveg-dobozok mérése (`tools/kartya-hatter/feldolgoz.mjs`), a háttér kitisztítása, a fotóablak (ív / kör / lekerekített téglalap) pixelpontos
+   mérése, a betűméret / betűtáv / szín illesztése a mintaszöveghez (DOM-mérés), a dizájn felvétele az `ajandek-kartya.js`-be, teszt, élő összevetés (az eredeti kép és a megjelenő kártya 50-50%-os
+   keveréke: ha a szöveg egymásra esik, a dizájn pontos).
+3. **Ami a leggyorsabb forrás:** Canva (A5 fekvő lap, a fiókban vannak Brand Template-ek, az összekötő tud exportálni) vagy Figma (A5 keret, 2480 x 1754) — a lényeg a fix A5 vászon és a valódi
+   szöveg; réteg-export nem szükséges. ChatGPT-képgenerálás kevésbé megbízható (a méret és az arány nem pontos), ezért a feltöltött vászon mérete a hibaforrás: a teszt ezt ellenőrzi.

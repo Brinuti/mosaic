@@ -1973,15 +1973,15 @@ describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
 
   test('KEPES dizajn (smaragd, a tulajdonos terve): sajat aranyu lap, szovegmentes hatterkepek, a fotohely az ivben, a szovegek a biztonsagos teruleten', () => {
     const t = K.tema('smaragd');
-    assert.ok(t && t.hatter && t.w === 930 && t.h === 658, 'a smaragd a feltoltott terv (930 x 658, A5)');
+    assert.ok(t && t.hatter && t.w === 1491 && t.h === 1055, 'a smaragd a feltoltott terv (1491 x 1055, A5 vaszon)');
     for (const fajl of [t.hatter.elol, t.hatter.hat]) {
       const ut = new URL('../../' + fajl.replace(/^\//, ''), import.meta.url);
       assert.ok(fs.existsSync(ut), fajl + ' letezik');
       assert.ok(fs.statSync(ut).size < 400 * 1024, fajl + ' kicsi (< 400 KB)');
     }
     const h = K.html({ ...minta, tema: 'smaragd' });
-    assert.ok(h.includes('aspect-ratio:930/658'), 'a lap sajat aranyu');
-    assert.ok(h.indexOf('ak-hat') < h.indexOf('ak-elol') && h.includes('kartya-smaragd-elol.jpg') && h.includes('kartya-smaragd-hat.jpg'));
+    assert.ok(h.includes('aspect-ratio:1491/1055'), 'a lap sajat aranyu');
+    assert.ok(h.indexOf('ak-hat') < h.indexOf('ak-elol') && h.includes('kartya-smaragd-elol-a5.jpg') && h.includes('kartya-smaragd-hat-a5.jpg'));
     const elol = K.html({ ...minta, tema: 'smaragd', oldal: 'elol' }), hat = K.html({ ...minta, tema: 'smaragd', oldal: 'hat' });
     assert.ok(elol.includes('Ez a személyes idézet') && elol.includes('Nagy Mária') && !elol.includes('AK-TEST-0001') && !elol.includes('<small>NEKI</small>'), 'a "NEKI" a hatterkepen van');
     for (const x of ['AK-TEST-0001', '26.900 Ft', '2027. április 4.', '50+30 perces egyéni MOSAIC', 'HEAD SPA KEZELÉS']) assert.ok(hat.includes(x), x);
@@ -1991,7 +1991,7 @@ describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
     const atfed = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
     assert.ok(t.idezet.x >= t.kep.x + t.kep.w && t.nevHely.x >= t.kep.x + t.kep.w);
     assert.ok(!atfed(t.idezet, t.nevHely));
-    assert.ok(t.idezet.x + t.idezet.w <= 840 && t.nevHely.x + t.nevHely.w <= 840, 'nem er a jobb oldali levelekre / veneres teruletre');
+    assert.ok(t.idezet.x + t.idezet.w <= 1325 && t.nevHely.x + t.nevHely.w <= 1325, 'nem er a jobb oldali levelekre / veneres teruletre');
   });
 
   test('KEPES dizajn: a betumeret a szoveg hosszatol (es a sorok szamatol) fugg, a leghosszabb idezet / nev is belefer a dobozba', () => {
@@ -2022,7 +2022,7 @@ describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
     const L = await import('../../netlify/lib/ajandek-levelek.js');
     const oldal = L.szemelyreSzabottKartyaOldal({ bazis: 'https://pelda.hu', tema: 'smaragd', idezet: 'Szia', nev: 'Réka', kartya_felirat: ['A', 'B'], ar_szoveg: '26.900 Ft', kod: 'AAAA-BBBB', ervenyes_ig: '2027-04-04' });
     assert.ok(oldal.includes('aspect-ratio:794/1123;grid-template-rows:1fr 1fr;align-items:center') && oldal.includes('.ak-lap>.ak{width:min(100%,calc(70.71cqw * var(--ak-ar,1.4141)))'), 'a ket fel kozepre igazitva, a magasabb lapok is elferjenek');
-    assert.ok(oldal.includes('aspect-ratio:930/658') && oldal.includes('/assets/img/ajandek/kartya-smaragd-hat.jpg'));
+    assert.ok(oldal.includes('aspect-ratio:1491/1055') && oldal.includes('/assets/img/ajandek/kartya-smaragd-hat-a5.jpg'));
     assert.ok(oldal.includes('Réka') && oldal.includes('AAAA-BBBB'));
   });
 
@@ -2037,10 +2037,15 @@ describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
       for (const fajl of [t.hatter.elol, t.hatter.hat]) {
         const ut = new URL('../../' + fajl.replace(/^\//, ''), import.meta.url);
         assert.ok(fs.existsSync(ut) && fs.statSync(ut).size < 400 * 1024, t.id + ': ' + fajl);
+        // a JPEG fejlece (SOF) szerinti meret = a dizajn meret: a hatter a feltoltott A5 vaszon, nem vagott, nem nyujtott
+        const buf = fs.readFileSync(ut);
+        let o = 2, jw = 0, jh = 0;
+        while (o < buf.length) { if (buf[o] !== 0xff) { o++; continue; } const mk = buf[o + 1]; if (mk >= 0xc0 && mk <= 0xc3) { jh = buf.readUInt16BE(o + 5); jw = buf.readUInt16BE(o + 7); break; } o += 2 + buf.readUInt16BE(o + 2); }
+        assert.deepEqual([jw, jh], [t.w, t.h], t.id + ': ' + fajl + ' merete = a dizajn merete');
       }
       assert.ok(['iv', 'kor', 'sarok'].includes(t.kep.alak), t.id + ' alak');
       if (t.kep.alak === 'kor') assert.ok(Math.abs(t.kep.w - t.kep.h) < 1, t.id + ': a kor ablak kor alaku');
-      for (const [nev, r] of [['kep', t.kep], ['idezet', t.idezet], ['nevHely', t.nevHely], ...Object.entries(t.hat).filter(([k]) => k !== 'meret')]) {
+      for (const [nev, r] of [['kep', t.kep], ['idezet', t.idezet], ['nevHely', t.nevHely], ...Object.entries(t.hat).filter(([k]) => k !== 'meret' && k !== 'betu')]) {
         assert.ok(r.x >= 0 && r.y >= 0 && r.x + r.w <= t.w && r.y + r.h <= t.h, t.id + '.' + nev + ' a lapon belul');
       }
       assert.ok(!atfed(t.kep, t.idezet) && !atfed(t.kep, t.nevHely) && !atfed(t.idezet, t.nevHely), t.id + ': nincs atfedes');
@@ -2051,6 +2056,17 @@ describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
       assert.ok(elol.includes('aspect-ratio:' + t.w + '/' + t.h) && elol.includes('--ak-ar:'), t.id + ' sajat keparany');
       assert.ok(elol.includes('Ez a személyes idézet') && elol.includes('Nagy Mária') && hat.includes('AK-TEST-0001') && hat.includes('26.900 Ft'), t.id + ' tartalom');
       if (t.szin) for (const k of ['idezet', 'nev']) assert.ok(elol.includes('color:' + t.szin[k]), t.id + ' ' + k + ' szin a tervbol');
+      // a stilus-attributum nem szakad meg (a betucsalad egyes idezojeles): a betutav / betucsalad / szin mind benne van az elemben
+      assert.ok(!/font-family:"/.test(hat) && !/font-family:"/.test(elol), t.id + ': nincs dupla idezojeles font-family a style attributumban');
+      const bt = t.hat.betu || {};
+      for (const [k, osztaly] of [['termek', 'ak-h-termek'], ['kod', 'ak-h-kod'], ['erv', 'ak-h-erv']]) {
+        if (!bt[k]) continue;
+        const m = new RegExp('class="' + osztaly + '" style="([^"]*)"').exec(hat);
+        assert.ok(m, t.id + ' ' + k + ' elem');
+        if (bt[k].ls != null) assert.ok(m[1].includes('letter-spacing:' + bt[k].ls + 'em;padding-left:' + bt[k].ls + 'em'), t.id + ' ' + k + ' betutav + kiegyenlito kitoltes');
+        if (bt[k].fam === 'serif') assert.ok(m[1].includes("font-family:'Playfair Display'"), t.id + ' ' + k + ' Playfair');
+        assert.ok(m[1].includes('color:' + t.szin[k === 'erv' ? 'erv' : k]), t.id + ' ' + k + ' szin');
+      }
     }
     // a mintaszoveg pontosan olyan szinu, mint a beirt (nem halvany)
     assert.ok(K.CSS.includes('.ak-halvany{opacity:1}'));
