@@ -50,8 +50,7 @@ link-átkötésén mennek át (`tools/foglalo-atkotes.mjs`): kikapcsolt átköt�
 
 ## Nyitott pontok (a tulajdonos döntése / adata kell)
 
-- **Eredmények (előtte/utána):** egy valódi vendégfotó van (hónalj, a régi oldalról); a másik kettő helyőrző (`[VALÓDI ADAT]`), valódi fotó és adat
-  (terület, kezelések száma, időtáv) kell, különben a két helyőrző kártya törlendő.
+- **Eredmények (előtte/utána):** jelenleg egy valódi vendégfotó van (hónalj, a régi oldalról), a rács egy kártyás (`class="eredmeny-racs egy"`). További kártya: új `<article class="eredmeny-kartya">` valódi fotóval és adatokkal (terület, kezelések száma, időtáv), majd az `egy` osztály törlése. Adatot nem találunk ki.
 - A hero „4,9/5 Google vendégértékelés” és a Zsófi-szekció „4 év tapasztalat” a megadott tervből és a régi oldalról való; az élesítés előtt egyeztetendő.
 
 ## Tesztelés
