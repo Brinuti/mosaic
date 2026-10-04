@@ -86,6 +86,9 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .hero-lead { font-size: 17px; line-height: 1.5; color: #2f4040; margin-top: 14px; max-width: 520px; }
 .tenyek { display: flex; flex-wrap: wrap; gap: 14px 28px; margin: 26px 0 28px; }
 .tenyek li { display: flex; align-items: center; gap: 12px; font-size: 14px; line-height: 1.25; color: #2a3a3a; }
+.tenyek .teny-m { display: none; }
+.teny-google { display: flex; flex-direction: column; align-items: center; gap: 6px; color: inherit; text-decoration: none; }
+.teny-google svg { stroke: none; }
 .ikon-kor { flex: none; width: 42px; height: 42px; border-radius: 50%; background: #efe3cb; display: inline-grid; place-items: center; color: #8a6c3e; }
 .ikon-kor svg { width: 21px; height: 21px; }
 .hero-cta { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
@@ -310,21 +313,9 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .miert-kartya p { font-size: 14px; color: #4a5757; margin-top: 4px; line-height: 1.45; }
 
 /* --- arc + haj es GYIK --- */
-.arc-gyik { padding: 20px 0 64px; background: var(--krem); }
-.arc-gyik-racs { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); gap: 48px; align-items: start; }
-.arc-haj { position: sticky; top: 110px; display: grid; grid-template-columns: 190px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 28px; row-gap: 12px; align-items: stretch; }
-.arc-haj img { grid-column: 1; grid-row: 1; width: 100%; height: 100%; min-height: 240px; object-fit: cover; border-radius: 16px; box-shadow: var(--arnyek); }
-.arc-szoveg { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; min-width: 0; }
-.arc-tel { grid-column: 2; grid-row: 2; text-align: center; margin-top: 0 !important; font-size: 14px !important; color: var(--halk) !important; }
-.arc-tel a { color: var(--sotet); font-weight: 600; text-decoration: none; }
-.arc-arak { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
-.arc-szoveg .gomb { align-self: center; margin-top: 18px; }
-.arc-haj h2 { font-size: 30px; line-height: 1.18; }
-.arc-haj p { font-size: 15px; color: #3b4a49; margin-top: 12px; line-height: 1.55; }
-.arc-ar { background: var(--lap); border: 1px solid #eadfca; border-radius: 12px; padding: 10px 14px; text-align: center; }
-.arc-ar small { display: block; font-size: 13px; color: var(--halk); }
-.arc-ar b { display: block; font: 500 24px/1.2 var(--cim); color: var(--sotet); }
-.gyik h2 { font-size: 30px; }
+.gyik-szekcio { padding: 20px 0 64px; background: var(--krem); }
+.gyik-racs { max-width: 880px; margin: 0 auto; }
+.gyik h2 { font-size: 34px; text-align: center; }
 .gyik-lista { margin-top: 16px; }
 .gyik-lista details { border-bottom: 1px solid var(--vonal); }
 .gyik-lista summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 2px; font: 500 15.5px/1.35 var(--test); color: var(--szoveg); }
@@ -516,8 +507,6 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .szalon-racs { grid-template-columns: 1fr; gap: 24px; }
   .yt-racs { grid-template-columns: repeat(2, 1fr); }
   .miert-racs { grid-template-columns: repeat(2, 1fr); }
-  .arc-gyik-racs { grid-template-columns: 1fr; gap: 36px; }
-  .arc-haj { position: static; }
   .protokoll ol { grid-template-columns: repeat(2, 1fr); }
   .zaro-racs { grid-template-columns: 1fr; }
 }
@@ -530,13 +519,15 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .hero-al { font-size: 16px; }
   .hero-lead { font-size: 16px; }
   .hero-szoveg { padding: 4px 0 20px; }
-  .tenyek { display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 8px; margin: 18px 0 20px; }
-  .hero-bizalom { flex-wrap: nowrap; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .tenyek { display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: flex-start; gap: 6px; margin: 18px 0 20px; }
+  .hero-bizalom { display: none; }
+  .tenyek .teny-m { display: flex; }
   .szep { flex: 0 1 auto; font-size: 12.5px; align-items: flex-start; }
   .google { flex: 0 1 auto; font-size: 12.5px; gap: 2px 6px; justify-content: flex-end; text-align: right; }
   .google > svg { width: 20px; height: 20px; }
   #te-minosites, .google .halk { display: none; }
-  .tenyek li { flex-direction: column; text-align: center; font-size: 12px; gap: 6px; }
+  .tenyek li { flex: 0 1 auto; min-width: 0; flex-direction: column; text-align: center; font-size: 12px; line-height: 1.2; gap: 6px; }
+  .teny-google .ikon-kor svg { width: 22px; height: 22px; }
   .ikon-kor { width: 36px; height: 36px; }
   .ikon-kor svg { width: 18px; height: 18px; }
   .google .halk { display: none; }
@@ -607,10 +598,6 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .szalon h2 { font-size: 27px; }
   .miert-racs { gap: 12px; }
   .miert-kartya { padding: 16px 12px; }
-  .arc-haj { grid-template-columns: 1fr; row-gap: 16px; }
-  .arc-haj img { grid-column: 1; grid-row: 1; height: auto; aspect-ratio: 1.5; min-height: 0; }
-  .arc-szoveg { grid-column: 1; grid-row: 2; }
-  .arc-tel { grid-column: 1; grid-row: 3; }
   .zaro { padding: 26px 0; }
   .zaro h2 { font-size: 19px; }
   .zaro-cta { flex-direction: column; }
@@ -618,6 +605,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 }
 @media (max-width: 345px) {
   .tenyek li { font-size: 11px; }
+  .tenyek { gap: 4px; }
   .szep, .google { font-size: 11px; }
   .elso-link .gomb { font-size: 13.5px; padding: 14px 10px; white-space: normal; }
   .szep svg { width: 18px; height: 18px; }
