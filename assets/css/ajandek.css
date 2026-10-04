@@ -1376,3 +1376,20 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
   .ah-tv-alja .ah-gomb-teljes { min-height: 44px; }
   .ah-tv-kihagy .ah-link { min-height: 24px; padding: 0 6px; font-size: 14px; }
 }
+
+/* mobil: a "Milyen ajandekkartyat szeretnel?" cim nem latszik (a termek neve alatt rogton a valaszto jon); a valaszto kisebb betukkel, alacsonyabb cellakkal */
+@media (max-width: 640px) {
+  .ah-vasarlas .ah-atvetel-cim { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); border: 0; }
+  .ah-vasarlas { padding: 14px 14px 14px; gap: 10px; }
+  .ah-vasarlas-fent, .ah-vasarlas-kozep { gap: 8px; }
+  .ah-vasarlas .ah-atvetel { gap: 8px; }
+  .ah-vasarlas .ah-atvetel-opcio { padding: 8px 10px; gap: 9px; min-height: 0; }
+  .ah-vasarlas .ah-atvetel-szoveg { gap: 0; }
+  .ah-vasarlas .ah-atvetel-szoveg strong { font-size: 14.5px; line-height: 1.2; }
+  .ah-vasarlas .ah-atvetel-ikon { width: 26px; height: 26px; }
+  .ah-vasarlas .ah-atvetel-ikon .ah-ikon { width: 22px; height: 22px; }
+  .ah-vasarlas .ah-ajanlott-jel { font-size: 9.5px; padding: 2px 8px; top: -9px; }
+  .ah-vasarlas .ah-gomb-teljes { min-height: 46px; }
+}
+/* az AJANLOTT jelzo ne takarja a termek arat */
+@media (max-width: 640px) { .ah-vasarlas .ah-atvetel { margin-top: 8px; } .ah-vasarlas .ah-ajanlott-jel { top: -8px; } }
