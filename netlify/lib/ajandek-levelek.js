@@ -72,7 +72,7 @@ export function szalonFizetveLevel(d) {
   const attr = d.attr || {};
   const forras = [attr.utm_source, attr.utm_medium, attr.utm_campaign].filter(Boolean).join(' / ');
   const teendo = d.azonnali
-    ? `<p><b>Figyelem:</b> a vevő a kártyát a fenti kóddal <b>már megkapta</b> (e-mailben). Kérlek, mielőbb hozd létre a kupont a Salonicban <b>ezzel a kóddal</b>, hogy a foglalásnál beváltható legyen. Más teendő nincs, gombot nem kell megnyomni.</p>`
+    ? `<p><b>Figyelem:</b> a vevő a kártyát a fenti kóddal <b>már megkapta</b> (e-mailben), ezért a Salonicban <b>pontosan ezt a kódot</b> add meg a kuponnak (másold ki innen). Kérlek, mielőbb hozd létre, hogy a foglalásnál beváltható legyen. Más teendő nincs, gombot nem kell megnyomni.</p>`
     : `<p>Ha a kupon elkészült, kattints az alábbi gombra, add meg a kupon kódját (alapból a javasolt kód van beírva), és a vevő e-mailben megkapja a nyomtatható ajándékkártyát:</p>
 ${gomb(d.kiallit_url, 'Kiállítom a kártyát')}
 <p style="font-size:13px;color:#555">Ha a gomb nem működik, ezt a címet nyisd meg: <a href="${esc(d.kiallit_url)}">${esc(d.kiallit_url)}</a></p>`;
@@ -94,7 +94,7 @@ ${cim('TEENDŐ: 100%-OS KUPON A SALONICBAN')}
 <p>A számlát a szamlabridge már elkészítette, ezért a Salonicban <b>nem utalvány-értékesítést</b>, hanem sima <b>100%-os kupont</b> hozz létre: a(z) <b>${esc(d.termek_nev)}</b> szolgáltatásra, egyszer felhasználható, érvényes ${esc(datumIg(d.ervenyes_ig))} (6 hónap).</p>
 ${kodDoboz(d.kod, d.ervenyes_ig)}
 ${d.azonnali
-    ? `<p><b>A vevő ezzel a kóddal kapta meg a kártyát,</b> ezért a Salonicban <b>pontosan ezt a kódot</b> add meg a kuponnak (másold ki innen).</p>`
+    ? ''
     : `<p style="font-size:13px;color:#555">A fenti kód csak javaslat: bármilyen kódot használhatsz, a kiállító oldalon azt add meg, amit a Salonicban létrehoztál.</p>`}
 ${teendo}
 <p style="font-size:13px;color:#555">Ha a vevő fizikai kártyát kér, vagy a szalonban venné át, arról külön levelet kapsz.</p>
