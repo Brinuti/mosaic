@@ -64,12 +64,24 @@ const lablec = (szalon) => `<p style="margin-top:28px;font-size:13px;color:#555"
 ${esc(szalon.cim)}<br>
 <b>${esc(szalon.telefon)}</b><br>
 <a href="https://www.mosaicheadspa.hu/idpontfoglalas"><b>Időpont foglalás</b></a></p>`;
+const ftHu = (n) => String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' Ft';
+// A SZAMLA blokk (a szalon-level fizetve): a varhato tetelek es az allapot. d.szamla = { mod: 'invoice' | 'nincs', hiba?, figy?, tetelek: [{ nev, ft, afa }] }
+const szamlaBlokk = (d) => {
+  const sz = d.szamla;
+  if (!sz) return '';
+  const sorok = (sz.tetelek || []).map((t) => [t.nev, `${ftHu(t.ft)} · ${t.afa}`]);
+  const figy = sz.figy === 'adoszam' ? `<p style="color:#b00020"><b>Figyelem:</b> a cég adószámát a Stripe nem fogadta el, ezért a számlán ellenőrizd a vevő adószámát (a fenti adatok szerint).</p>` : '';
+  if (sz.mod === 'invoice') {
+    return `${cim('SZÁMLA')}<p>A számlát a szamlabridge a Stripe-számla tételeiből <b>automatikusan elkészíti</b> a szamlazz.hu-ban (a vevő e-mailben kapja). A várt tételek:</p>${tabla(sorok)}${figy}`;
+  }
+  return `${cim('SZÁMLA – KÉZZEL KELL KIÁLLÍTANI')}<p style="color:#b00020"><b>Figyelem:</b> ennél a rendelésnél a szamlabridge <b>nem</b> készíti el automatikusan a számlát (nem jött létre tételes Stripe-számla${sz.hiba ? `; ok: ${esc(sz.hiba)}` : ''}). Kérjük, állítsd ki a szamlazz.hu-ban a vevő fenti adataival, ezekkel a tételekkel (fizetési mód: Stripe):</p>${tabla(sorok)}${figy}`;
+};
 const szamlazasiCim = (d) => [d.iranyitoszam, d.varos].filter(Boolean).join(' ') + (d.cim ? ', ' + d.cim : '');
 
 // --- fizetes utan: a szalon levele -----------------------------------------------------------------
 // d: { rendeles_id, pi, termek_nev, osszeg_szoveg, fizetesi_mod, fizetve_ekkor, email, nev, iranyitoszam,
 //      varos, cim, ceges_nev, ceges_adoszam, kod, ervenyes_ig, kiallit_url, azonnali, attr,
-//      megajandekozott?, atvetel_szoveg?, design_szoveg?, idezet_szoveg?, foto_van?, foto_url?, elonezet_url? }
+//      szamla?: { mod, hiba?, figy?, tetelek: [{ nev, ft, afa }] }, megajandekozott?, atvetel_szoveg?, design_szoveg?, idezet_szoveg?, foto_van?, foto_url?, elonezet_url? }
 export function szalonFizetveLevel(d) {
   const attr = d.attr || {};
   const forras = [attr.utm_source, attr.utm_medium, attr.utm_campaign].filter(Boolean).join(' / ');
@@ -92,8 +104,9 @@ ${tabla([
   ['Cégnév', d.ceges_nev], ['Adószám', d.ceges_adoszam],
 ])}
 ${d.atvetel_szoveg ? `${cim('ÁTVÉTEL ÉS SZEMÉLYRE SZABÁS')}${tabla([['Átvétel', d.atvetel_szoveg], ['Kártya-design', d.design_szoveg], ['Idézet', d.idezet_szoveg], ['Saját fotó', d.design_szoveg ? (d.foto_van ? 'van' : 'nincs') : '']])}${fotoBlokk(d)}${d.elonezet_url ? `<p>A vevő személyre szabott kártyájának előnézete (design, fotó, idézet): <a href="${esc(d.elonezet_url)}">megnyitás új lapon</a></p>` : ''}` : ''}
+${szamlaBlokk(d)}
 ${cim('TEENDŐ: 100%-OS KUPON A SALONICBAN')}
-<p>A számlát a szamlabridge már elkészítette, ezért a Salonicban <b>nem utalvány-értékesítést</b>, hanem sima <b>100%-os kupont</b> hozz létre: a(z) <b>${esc(d.termek_nev)}</b> szolgáltatásra, egyszer felhasználható, érvényes ${esc(datumIg(d.ervenyes_ig))} (6 hónap).</p>
+<p>${!d.szamla ? 'A számlát a szamlabridge már elkészítette' : d.szamla.mod === 'invoice' ? 'A számlát a szamlabridge automatikusan elkészíti' : 'A számlát kézzel kell kiállítani (lásd fent)'}, ezért a Salonicban <b>nem utalvány-értékesítést</b>, hanem sima <b>100%-os kupont</b> hozz létre: a(z) <b>${esc(d.termek_nev)}</b> szolgáltatásra, egyszer felhasználható, érvényes ${esc(datumIg(d.ervenyes_ig))} (6 hónap).</p>
 ${kodDoboz(d.kod, d.ervenyes_ig)}
 ${d.azonnali
     ? ''

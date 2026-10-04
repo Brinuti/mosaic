@@ -411,7 +411,34 @@
     return d.toISOString().slice(0, 10);
   }
 
+  // A SZAMLA SORAI (Stripe-szamla -> szamlabridge -> szamlazz.hu), termekenkent: PONTOSAN azok a tetelnevek, osszegek es Stripe-adokodok,
+  // amelyeket a regi Stripe-fizetolinkek hasznaltak (a tulajdonos szamlai: E-BIG-2026-3184 egyeni, E-BIG-2026-3139 4 kezes, 2026-10-04).
+  // A sorok osszege = a termek ara (teszt vedi). adokod: txcd_20040009 = 27%-os, brutto arba szamitva (Stripe Tax); txcd_00000000 = nem
+  // adozo tetel: a szamlabridge a kapcsolat alapertelmezett adokodjara (TAM, targyi adomentes) forditja. afa: a szalon-level szovege.
+  var SZAMLA_TETELEK = {
+    egyeni: [
+      { nev: 'Egyéni Headspa Ajándékkártya 20% Márciusi kedvezménnyel - 50+30 perces', ft: 26900, adokod: 'txcd_20040009', afa: '27%' }
+    ],
+    paros: [
+      { nev: 'MOSAIC Headspa Ajándékkártya 20% kedvezménnyel - 50+30 perces Páros', ft: 53800, adokod: 'txcd_20040009', afa: '27%' }
+    ],
+    '4kezes': [
+      { nev: "4 kezes Headspa Ajándékkártya - 50+30 perces (8695'03) - Az Áfa tv. 85.§ (1) b) pont alapján adómentes szolgáltatás", ft: 15000, adokod: 'txcd_00000000', afa: 'TAM (tárgyi adómentes)' },
+      { nev: '4 kezes Headspa Ajándékkártya - 50+30 perces (9623)', ft: 24900, adokod: 'txcd_20040009', afa: '27%' }
+    ]
+  };
+  function szamlaTetelek(id) { return Object.prototype.hasOwnProperty.call(SZAMLA_TETELEK, id) ? SZAMLA_TETELEK[id] : null; }
+
+  // A FIZETESI MODOK: a Payment Element (kliens) es a PaymentIntent / Stripe-szamla (szerver) UGYANAZT az explicit listat kapja. A valodi Stripe.js ugyanis
+  // hibaval all le ("Payment details were collected through Stripe Elements using automatic payment methods and cannot be confirmed through the API
+  // configured with payment_method_types"), ha a dinamikus Element explicit mod-listas PaymentIntentet kap (a Stripe-szamla PI-je mindig explicit listas).
+  // Google Pay / Apple Pay a "card" resze. A lista a Stripe szamla-sablonjanak alapertelmezesevel is egyezik (card, revolut_pay).
+  var FIZETESI_MODOK = ['card', 'revolut_pay'];
+
   g.AJANDEK_ADAT = {
+    FIZETESI_MODOK: FIZETESI_MODOK,
+    SZAMLA_TETELEK: SZAMLA_TETELEK,
+    szamlaTetelek: szamlaTetelek,
     TERMEKEK: TERMEKEK,
     OLDAL_ALAPERTEK: OLDAL_ALAPERTEK,
     oldalAlapertek: oldalAlapertek,

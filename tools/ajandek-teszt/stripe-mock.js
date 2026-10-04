@@ -13,7 +13,7 @@
   }
   window.Stripe = function (kulcs) {
     if (!/^pk_test_/.test(kulcs || '')) throw new Error('mock: csak pk_test_ kulcs');
-    return {
+    var stripe = {
       elements: function (opciok) {
         var allapot = { opciok: opciok, input: null, valtozas: [] };
         var elem = {
@@ -54,6 +54,21 @@
         };
       },
       confirmPayment: function (p) {
+        var pi0 = p.clientSecret.split('_secret_')[0];
+        // a valodi Stripe.js: a dinamikus (paymentMethodTypes nelkuli) Element csak AUTOMATIKUS fizetesi modos PaymentIntentet fogad el, az explicit listas
+        // Element csak ugyanazt az explicit listat - kulonben IntegrationError (a szamla-PI mindig explicit listas)
+        var opc = (p.elements && p.elements._allapot && p.elements._allapot.opciok) || {};
+        return fetch('/__teszt/mock/pi-info?pi=' + encodeURIComponent(pi0)).then(function (r) { return r.json(); }).then(function (info) {
+          var elemLista = Array.isArray(opc.paymentMethodTypes) && opc.paymentMethodTypes.length ? opc.paymentMethodTypes : null;
+          var uzenet = '';
+          if (!elemLista && !info.auto) uzenet = 'Payment details were collected through Stripe Elements using automatic payment methods and cannot be confirmed through the API configured with payment_method_types.';
+          else if (elemLista && info.auto) uzenet = 'Payment details were collected through Stripe Elements using payment_method_types and cannot be confirmed through the API configured with automatic payment methods.';
+          else if (elemLista && JSON.stringify(elemLista.slice().sort()) !== JSON.stringify((info.tipusok || []).slice().sort())) uzenet = 'The payment_method_types of the Elements (' + elemLista.join(',') + ') do not match the PaymentIntent (' + (info.tipusok || []).join(',') + ').';
+          if (uzenet) { var h = new Error(uzenet); h.name = 'IntegrationError'; return Promise.reject(h); }
+          return stripe._megerosit(p);
+        });
+      },
+      _megerosit: function (p) {
         var cs = p.clientSecret, pi = cs.split('_secret_')[0];
         // a valodi Stripe.js IntegrationErrort dob, ha a fields.billingDetails 'never' mezoit nem adjuk at (a cim MINDEN
         // reszletet kéri, line2 es state is; ures szoveg elfogadott) - igy a hiba a helyi tesztben is latszik
@@ -98,5 +113,6 @@
         });
       }
     };
+    return stripe;
   };
 })();

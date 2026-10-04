@@ -52,6 +52,7 @@ async function hatterInditas() {
       // a kezelo legalabb 32 karakteres titkot ker (kulonben 'nincs' mod)
       AJANDEK_TITOK: 'dev-titok-dev-titok-dev-titok-dev-titok',
       AJANDEK_AZONNALI: process.env.AZONNALI === '1' ? '1' : '',
+      AJANDEK_STRIPE_SZAMLA: process.env.SZAMLA === '1' ? '1' : '',
       STRIPE_API_BASE: mock.url,
       ...(process.env.TESZT_FOTO === 'nincs' ? {} : { AJANDEK_FOTOK: memoriaKv() }),
     };
@@ -101,6 +102,11 @@ http.createServer(async (req, res) => {
       if (req.method === 'DELETE') { elfogottLevelek.length = 0; res.writeHead(204); return res.end(); }
       res.writeHead(200, { 'content-type': 'application/json' });
       return res.end(JSON.stringify(elfogottLevelek));
+    }
+    if (ut === '/__teszt/mock/pi-info' && mock) {
+      const x = mock.allapot.pi(u.searchParams.get('pi')) || {};
+      res.writeHead(200, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ tipusok: x.payment_method_types || null, auto: !!(x.automatic_payment_methods && x.automatic_payment_methods.enabled) }));
     }
     if (ut.startsWith('/__teszt/mock/') && mock) {
       const pi = u.searchParams.get('pi');
