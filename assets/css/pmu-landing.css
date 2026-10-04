@@ -882,8 +882,8 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
 }
 
 /* ============ Mielott foglalsz, jobb oldal: a cim asztalon egy sorban ============ */
-/* a szoveg szelessege ~22,75 x betumeret; a doboz belso szelessege 1102 px-nel ~437 px, 1440 px-nel ~526 px (afolott allando) */
-@media (min-width: 1101px) { .mielott-jobb.konz > h3 { font-size: clamp(17px, calc(6.2px + 1.11vw), 22px); white-space: nowrap; margin-right: 0; } }
+/* a szoveg szelessege ~23,7 x betumeret; a doboz belso szelessege 1102 px-nel ~437 px, 1440 px-nel ~526 px (afolott allando) */
+@media (min-width: 1101px) { .mielott-jobb.konz > h3 { font-size: clamp(16px, calc(5.6px + 1.02vw), 21px); white-space: nowrap; margin-right: 0; } }
 
 /* ============ terkep: ha a Google terkep betoltott, annak sajat kartyaja eleg (a MOSAIC-jelveny csak tartalek) ============ */
 .terkep.betoltve .terkep-ertekeles { display: none; }
@@ -906,3 +906,10 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
   .video-kartya { width: 100%; }
   .video-kep { aspect-ratio: 1 / 1; }
 }
+
+/* ============ konzultacios doboz: cim, alcim es szoveg kozepre ============ */
+.mielott-jobb.konz, .mielott-jobb.konz > h3, .mielott-jobb.konz .tisztelet-lead, .mielott-jobb.konz .tisztelet-szoveg { text-align: center; }
+.mielott-jobb.konz .tisztelet-szoveg { max-width: 470px; margin-left: auto; margin-right: auto; text-wrap: balance; }
+
+/* ============ a sarga felcimek (Fontos informaciok, Elolleg nelkul ...) minden kijelzon kiesnek ============ */
+.felcim:not(.kicsi) { display: none; }
