@@ -30,16 +30,16 @@ küldenek (a PMU-landing `pmu_landing_*` mintájára; ezekre GTM-címke nem figy
 
 ## Hero-galéria
 
-A hero jobb oldalán **valós előtte/utána fotók galériája** van (nem statikus kép): egy dia = egy `<figure class="hg-dia">` a HTML-ben; a pontokat, a nyilakat és a 6 másodperces automatikus lapozást (amíg a látogató bele nem nyúl; csökkentett mozgásnál nincs) az `oxigen-landing.js` adja. A benne lévő 4 kép **helyőrző** (a régi oldalon is szereplő Oxygeni Hair kép), a tulajdonos válogatja a valódiakat.
+A hero jobb oldalán **valós előtte/utána fotók galériája** van (nem statikus kép): egy dia = egy `<figure class="hg-dia">` a HTML-ben; a pontokat, a nyilakat és a 6 másodperces automatikus lapozást (amíg a látogató bele nem nyúl; csökkentett mozgásnál nincs) az `oxigen-landing.js` adja. Az oldal **csak a hajhullásra** épül (a többi panaszra külön landing készül). A galériában az Oxygeni Hair 5 hajhullás-referenciája van (`assets/img/oxigen/hajhullas-1..5.jpg`), a felirat: „Gyengébb panaszok esetén 3–5 alkalom, súlyosabb panaszok esetén 5–10 alkalom.” Az „Az Oxygeni vendégeinek valós javulásai” sor **más** képeket mutat (`hajhullas-6..8.jpg`). A repóban összesen 8 hajhullás előtte/utána kép van (a régi Wix-oldal Oxygeni-sorozata); a tulajdonos által kiválasztott további fotók (akár 10 a galériába) ide veendők.
 
 ## Alcímek, gombok
 
-Az oldalon nincsenek a címek fölötti kis (sárga) alcímek. Minden gomb ugyanaz az arany pill-gomb (a többi oldal aranygombja: `linear-gradient(#c6a346, #d9c164)`, fehér felirat). A SZÉP Kártya elfogadása a hero-ban, az árak alatt, a szalon-szakaszban és a GYIK-ban is szerepel.
+Az oldalon nincsenek a címek fölötti kis (sárga) alcímek. Az arany pill-gomb (a többi oldal aranygombja: `linear-gradient(#c6a346, #d9c164)`, fehér felirat) a foglalás-gombok színe; **a hajkamerás állapotfelmérés gombjai fehérek** (`gomb-feher`), a záró sötét sávban körvonalas (`gomb-kontur`, nem teli). A SZÉP Kártya elfogadása a hero-ban, az árak alatt, a szalon-szakaszban és a GYIK-ban is szerepel.
 
 ## Validálásra váró helyőrzők (`[szögletes zárójeles]`, `.helyorzo`)
 
-- a három kezelő bemutatkozó szövege és szakmai háttere (a nevek és a fotók a Salonic szakember-oldaláról vannak);
-- a hero-galéria és az eredmények szakasz **előtte/utána** képei (az Oxygeni Hair régi oldalon is szereplő képei), amíg a tulajdonos ki nem választja a véglegeseket; az alattuk lévő mondat („kétmillió elvégzett kezelésből 95%-nál pozitív változás”) a tulajdonos megadott szövege;
+- a három kezelő rövid bemutatkozója **általános szöveg** (oxigénterápiás képzés, gyakorlott kezelő, a kezelés menete; személyes adat nélkül, mert nincs forrásunk): a valódi szakmai háttér a tulajdonostól kérendő; a nevek és a fotók a Salonic szakember-oldaláról vannak;
+- az előtte/utána képek az Oxygeni Hair márka referenciái; a „kétmillió elvégzett kezelésből 95%-nál pozitív változás” és a „3–5 / 5–10 alkalom” a tulajdonos megadott szövege;
 - az időpont-módosítás pontos határideje a GYIK-ban.
 
 ## Nyitott pontok (döntés kell)

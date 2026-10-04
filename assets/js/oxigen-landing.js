@@ -87,7 +87,7 @@
   }
 
   lapozo($('kezelo-sav'), $('kezelo-elozo'), $('kezelo-kovetkezo'), true);
-  lapozo($('ba-sav'), $('ba-elozo'), $('ba-kovetkezo'), false);
+  lapozo($('ba-sav'), $('ba-elozo'), $('ba-kovetkezo'), true);
 
   // --- video: csak kattintasra toltodik be ----------------------------------------------------------
   const doboz = $('video-doboz'), gomb = $('video-gomb');
