@@ -12,17 +12,24 @@ címen nincs mérőkód-pixel, és ezt nem is írtuk át). Visszaállítás átv
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (27 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (37 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje
 
-Hero → Mennyibe kerül? → Már tudod, mit szeretnél? → Eredmények → 8 kezelés, csak 6-ot fizetsz → garancia + fenntartó →
-Neked is jó választás? → Zsófi → A kezeléssel kapcsolatban érdekelhet → Részletes árlista → **Több területet szeretnél? (kalkulátor)** →
-Gyakori kérdések → Időpontfoglalás online → Helyszín.
+Hero (cím: „Lézeres szőrtelenítés Budapesten garanciával”, kiemelt, kattintható **4,9/5 + pontos Google-értékelésszám**, ami a véleményekhez görget) →
+Mennyibe kerül? (testtáj-**ábrákkal**, nem fotókkal) → Már tudod, mit szeretnél? → Eredmények → 8 kezelés, csak 6-ot fizetsz → garancia + fenntartó
+(örökre féláron) → Neked is jó választás? → Zsófi → **Vendégeink értékelései** → A kezeléssel kapcsolatban érdekelhet → Részletes árlista →
+**Több területet szeretnél? (árkalkulátor)** → Gyakori kérdések → Időpontfoglalás online (**naptár**) → Helyszín (**Google térkép**).
 
-A mintában egymás mellett álló négy szekció (érdekelhet, árlista, több terület, GYIK) külön, teljes szélességű szekció.
-Az intim területhez nincs testfotó: a „Teljes intim” és a „Hónalj + intim” kártyán a kezelőszoba és a gép fotója áll.
+Nincs „felcím” (arany cím a főcím felett) sehol. Az első kezelés 20% kedvezménye több helyen szerepel (hero, árkártyák, program, árlista, kalkulátor, GYIK).
+A négy szekció (érdekelhet, árlista, több terület, GYIK) külön, teljes szélességű szekció. Az intim területhez nincs testfotó: a „Mennyibe kerül?”
+kártyák semleges alakos ábrák (kiemelt testtájjal), az SVG-k a HTML elején vannak (`#abra-alak`, `#abra-honalj`, `#abra-intim`, `#abra-lab`).
+
+**Értékelések:** a hero és a véleményszekció `4,9/5` + darabszám. A darabszám (`data-ertekeles-db`) a HTML-ben tartalék érték (1 257), a Trustindex-widget
+aktuális adatából frissül (a „funkcionális” sütik elfogadása után, ugyanaz a widget, mint a régi oldalon). A 6 idézett vélemény valódi Google-vélemény
+(a MOSAIC összes kezelésére vonatkozó értékelésekből, a Trustindex-widget legutóbbi 40 véleményéből; lézer-specifikus vélemény nem volt köztük).
+A „4,9” a tulajdonos megadott értéke (a Trustindex csak „Kiváló”-t és a darabszámot adja).
 
 ## Árforrás
 
@@ -38,22 +45,27 @@ a Salonic oldaláról újra kiolvassa).
 
 ## Kalkulátor
 
-A kiválasztott területek közül a legdrágább teljes áron, minden további **50%-on** számít (akkor is, ha nagy terület). Ellenőrizve az
+Alapból három terület ki van jelölve (láb + hónalj + intim), hogy látszódjon, hogy kalkulátor; kézírásos felirat + nyíl hívja fel rá a figyelmet. A kiválasztott területek közül a legdrágább teljes áron, minden további **50%-on** számít (akkor is, ha nagy terület). Ellenőrizve az
 eredeti oldal példáival: láb + kar + hónalj + arc = 104 500 Ft, láb + intim = 77 000 Ft, kar + hónalj = 51 500 Ft, arc + kar = 57 000 Ft,
 hónalj + intim = 45 500 Ft (a Basic csomag ára). Ha egy „teljes” terület ki van jelölve (teljes láb / kar / arc / intim), az őt alkotó
-részek le vannak tiltva (nincs dupla számolás). A program: 6 fizetős alkalom (a 4. és a 8. ajándék).
+részek le vannak tiltva (nincs dupla számolás). A program: 6 fizetős alkalom (a 4. és a 8. ajándék). Az első kezelés 20% kedvezménnyel (alkalmankénti ár × 0,8, a Salonic első-alkalmas árai is így vannak). Nincs „tájékoztató számítás” felirat: ez végleges ár (az ár a program végéig fix).
 
-## Időpont-választó
+## Időpont-választó (naptár)
 
-A legközelebbi szabad időpontokat a Salonic nyilvános naptár-API-ja adja (`api.salonic.hu/calendar/getAvailableTimes`, ugyanaz, mint a PMU landingen),
-az oldal alján, amikor a szekció a képernyő közelébe ér. Időpontot nem találunk ki: ha az API nem válaszol, a Salonic foglaló linkjét kapja a látogató.
-Az időpont-gombok a Salonic `selectDate` oldalára visznek (új lapon). A statikus linkek (ingyenes konzultáció, „Más időpontok”) a build
-link-átkötésén mennek át (`tools/foglalo-atkotes.mjs`): kikapcsolt átkötésnél (éles) Salonic-link, előnézeten a foglaló-réteg nyílik.
+Havi naptár: a szabad napok kattinthatók, az első szabad nap alapból ki van jelölve, alatta a nap időpontjai. A szabad időpontokat a Salonic nyilvános
+naptár-API-ja adja (`api.salonic.hu/calendar/getAvailableTimes`, ugyanaz, mint a PMU landingen), amikor a szekció a képernyő közelébe ér. Időpontot nem találunk ki:
+ha az API nem válaszol, a Salonic foglaló linkjét kapja a látogató. Egy időpontra kattintva a Salonic `/guestData/` adatlapja nyílik új lapon, az időponttal
+együtt (ugyanezt a címet nyitja a foglaló-motor is). A statikus linkek (ingyenes konzultáció) a build link-átkötésén mennek át (`tools/foglalo-atkotes.mjs`):
+kikapcsolt átkötésnél (éles) Salonic-link, előnézeten a foglaló-réteg nyílik.
+
+**Helyszín:** Google térkép (iframe) a „funkcionális” sütik elfogadása után magától, egyébként a „Google térkép megjelenítése” gombra kattintva tölt be (a nagy statikus
+térképkép kikerült).
 
 ## Nyitott pontok (a tulajdonos döntése / adata kell)
 
 - **Eredmények (előtte/utána):** jelenleg egy valódi vendégfotó van (hónalj, a régi oldalról), a rács egy kártyás (`class="eredmeny-racs egy"`). További kártya: új `<article class="eredmeny-kartya">` valódi fotóval és adatokkal (terület, kezelések száma, időtáv), majd az `egy` osztály törlése. Adatot nem találunk ki.
-- A hero „4,9/5 Google vendégértékelés” és a Zsófi-szekció „4 év tapasztalat” a megadott tervből és a régi oldalról való; az élesítés előtt egyeztetendő.
+- A „4,9” és a Zsófi-szekció „4 év tapasztalat” a megadott tervből és a régi oldalról való.
+- A hero alcíme (**„a világ egyik legerősebb diódalézerével, az Elysion Pro-val”**): a régi oldal ezzel egyező állítása; ha a „világ első” volt a szándék, a szöveg a `.hero-al` sorban módosítható.
 
 ## Tesztelés
 
