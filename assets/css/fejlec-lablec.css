@@ -1,4 +1,4 @@
-/* A MOSAIC fejlec es lablec kozos finomitasa (minden oldalon).
+/* A MOSAIC fejlec, lablec es gombok kozos finomitasa (minden oldalon).
    Egy forras, ket helyre kerul (tools/netlify-build.mjs):
    - a Wixes (klon) oldalakba a beagyazott klon.css moge,
    - a sajat oldalakba (a <!--mh-fejlec--> darabok) a fejlec moge.
@@ -27,7 +27,7 @@
 .device-mobile-optimized #comp-mo70bxf7 { margin-top: 10px !important; width: 78px !important; height: 26px !important; left: 190px !important; }
 .device-mobile-optimized #comp-mo70bxf7 a { height: 100% !important; padding: 0 !important; box-shadow: 0 4px 12px rgba(150, 120, 40, .35) !important; }
 .device-mobile-optimized #comp-mo70bxf7 .StylableButton2545352419__container { width: 100% !important; height: 100% !important; justify-content: center !important; align-items: center !important; }
-.device-mobile-optimized #comp-mo70bxf7 .StylableButton2545352419__label { font: 500 11.5px/1 roboto, sans-serif !important; letter-spacing: .02em !important; margin: 0 !important; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); }
+.device-mobile-optimized #comp-mo70bxf7 .StylableButton2545352419__label { font: 500 11.5px/1 'Jost', 'Helvetica Neue', Arial, sans-serif !important; letter-spacing: .02em !important; margin: 0 !important; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); }
 
 /* ============ MOBIL AKCIOSAV: egy sorban, kisebb betu, lagy, elmosott ragyogas ============ */
 .device-mobile-optimized [data-mesh-id="comp-mpv0gaodinlineContent-gridContainer"] { grid-template-rows: 26px !important; }
@@ -53,3 +53,12 @@
 .device-mobile-optimized #SITE_FOOTER [data-mesh-id="SITE_FOOTERinlineContent-gridContainer"] { grid-template-rows: auto !important; }
 .device-mobile-optimized #comp-m40zyigs { margin: 14px 0 16px !important; left: 0 !important; width: 100% !important; height: auto !important; }
 .device-mobile-optimized #comp-m40zyigs p, .device-mobile-optimized #comp-m40zyigs p * { font-size: 11.5px !important; white-space: nowrap; }
+
+/* ============ GOMBOK (minden Wixes oldalon, asztalon es mobilon): arany szin, Jost betu, puha arnyek ============
+   Ugyanaz a kinezet, mint a sminktetovalas es az uj oldalak gombjain. A szoveg nagy/kis betuje es a meret a Wixben marad. */
+@font-face { font-family: 'Jost'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/jost-400-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Jost'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/jost-400-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+/* egyseges arany (a nehany "hamisitott sarga" gombot is: IDOPONT FOGLALAS, JELENTKEZEM!, VISSZAHIVAST KEREK!); a hover-allapot marad a Wixe */
+[class*="StylableButton2545352419__root"]:not(:hover) { background-image: linear-gradient(#c6a346, #d9c164) !important; }
+[class*="StylableButton2545352419__root"] { box-shadow: 0 6px 18px rgba(150, 120, 40, .22) !important; }
+[class*="StylableButton2545352419__root"] [class*="StylableButton2545352419__label"] { font-family: 'Jost', 'Helvetica Neue', Arial, sans-serif !important; font-weight: 500 !important; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); }
