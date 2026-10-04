@@ -111,7 +111,7 @@
             <label class="ah-atvetel-opcio"><input type="radio" name="atvetel" value="szemelyesen"><span class="ah-atvetel-ikon"><span class="ah-ikon" data-ikon="store" aria-hidden="true"></span></span><span class="ah-atvetel-szoveg"><strong>Eredeti, fizikai kártya – a szalonban veszem át</strong><small>Díszborítékban, személyre szabás nélkül (Bécsi út 2.).</small></span></label>
             </fieldset>
           </div>
-          <button type="button" class="ah-gomb ah-gomb-fo ah-gomb-teljes" id="ah-tovabb-gomb"><span>Tovább a vásárláshoz</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></button>
+          <button type="button" class="ah-gomb ah-gomb-fo ah-gomb-teljes" id="ah-tovabb-gomb"><span>Tovább a személyre szabáshoz</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></button>
         </div>
       </section>
     </div>
@@ -210,9 +210,8 @@
 <!-- Ezt adod at neki: az ajandekkartya bemutatasa (a valodi kartya + valodi foto) -->
   <section class="ah-szekcio ah-atadas" id="ah-atadas" aria-labelledby="ah-atadas-cim">
     <div class="ah-tartalom ah-atadas-racs">
-      <div class="ah-atadas-kep" aria-hidden="true">
-        <img class="ah-atadas-foto" src="/assets/img/ajandek/atadas-kartya.jpg" width="1400" height="934" alt="" loading="lazy" decoding="async">
-        <div class="ah-minta-atfedo"><img src="/assets/img/ajandek/kartya-elolap.jpg" width="1100" height="524" alt="" loading="lazy" decoding="async"></div>
+      <div class="ah-atadas-kep">
+        <img class="ah-atadas-foto" src="/assets/img/ajandek/atadas-szemelyre.jpg" width="1200" height="1097" alt="A személyre szabott ajándékkártya: bármilyen fotót feltölthetsz, bármit ráírhatsz, és a megajándékozott nevét is" loading="lazy" decoding="async">
       </div>
       <div class="ah-atadas-szoveg">
         <h2 id="ah-atadas-cim">Személyre szabott ajándékkártya!</h2>
@@ -240,7 +239,6 @@
             <figcaption><b>Deák Ferenc István</b><small>a MOSAIC Headspa alapítója</small></figcaption>
           </div>
         </figure>
-        <p><a class="ah-gomb ah-gomb-fo" href="/headspa-budapest"><span>Ismerd meg a Head Spa-t</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></a></p>
       </div>
       <div class="ah-kartya ah-hely">
         <h3>Itt találsz minket</h3>
@@ -250,6 +248,9 @@
           <li><span class="ah-ikon" data-ikon="phone" aria-hidden="true"></span><span><a href="tel:+36202474444">06 20 247 4444</a></span></li>
           <li><span class="ah-ikon" data-ikon="mail" aria-hidden="true"></span><span><a href="mailto:mosaicheadspa@gmail.com">mosaicheadspa@gmail.com</a></span></li>
         </ul>
+        <div class="ah-terkep" id="ah-terkep" data-src="https://www.openstreetmap.org/export/embed.html?bbox=19.0297%2C47.5217%2C19.0437%2C47.5277&amp;layer=mapnik&amp;marker=47.5247344%2C19.0367534">
+          <button type="button" class="ah-terkep-gomb" id="ah-terkep-gomb"><span class="ah-ikon" data-ikon="pin" aria-hidden="true"></span><span>Térkép megjelenítése</span></button>
+        </div>
         <p><a class="ah-link" href="https://www.google.com/maps/search/?api=1&amp;query=1023+Budapest+B%C3%A9csi+%C3%BAt+2" target="_blank" rel="noopener">Útvonal a térképen →</a></p>
       </div>
     </div>
@@ -369,7 +370,6 @@
               <label for="ah-zoom">Nagyítás</label>
               <input type="range" id="ah-zoom" min="1" max="3" step="0.05" value="1">
             </div>
-            <p class="ah-halk ah-kicsi" id="ah-foto-tipp">Telefonról is jó. Húzással igazíthatod.</p>
             <p class="ah-mezohiba" id="ah-foto-hiba" role="alert" hidden></p>
           </div>
           <div class="ah-tv-idezet">
@@ -389,9 +389,9 @@
           </div>
           <div class="ah-gombsor ah-gombsor-oszlop">
             <button type="button" class="ah-gomb ah-gomb-fo ah-gomb-teljes" id="ah-tervezo-tovabb"><span id="ah-tervezo-tovabb-szoveg">Tovább a fizetéshez</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></button>
-            <button type="button" class="ah-link" id="ah-tervezo-kihagy">Kihagyom a személyre szabást</button>
           </div>
         </div>
+        <p class="ah-tv-kihagy"><button type="button" class="ah-link" id="ah-tervezo-kihagy">Kihagyom a személyre szabást</button></p>
         <p class="ah-mezohiba" id="ah-tervezo-hiba" role="alert" hidden></p>
       </div>
     </div>

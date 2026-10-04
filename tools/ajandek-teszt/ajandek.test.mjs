@@ -179,6 +179,14 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     // fizetes: az ajandekozott neve, egy fizetesi mod valaszto (kartya / atutalas), nincs kulon "Inkabb atutalassal" link
     for (const jel of ['id="ah-ajandekozott"', 'id="ah-telefon"', 'id="ah-fizmod"', 'name="fizmod" value="kartya"', 'name="fizmod" value="atutalas"', 'id="ah-atu-doboz"', 'id="ah-atutalas"']) assert.ok(html.includes(jel), jel);
     assert.ok(!html.includes('ah-atutalas-gomb') && !html.includes('Inkább átutalással'), 'a regi atutalas-link kikerult');
+    // 2026-10-04, 3. kor: uj atadas-kep, pici terkep, nincs gomb Feri alatt, a tervezo gombja es a Kihagyom, a "szemelyre szabashoz" gomb
+    for (const jel of ['atadas-szemelyre.jpg', 'id="ah-terkep"', 'openstreetmap.org/export/embed.html', 'class="ah-tv-kihagy"', 'id="ah-tovabb-gomb"><span>Tovább a személyre szabáshoz</span>']) assert.ok(html.includes(jel), jel);
+    assert.ok(!html.includes('Ismerd meg a Head Spa-t') && !html.includes('ah-foto-tipp') && !html.includes('Húzással igazíthatod'), 'a Feri alatti gomb es a foto-tipp kikerult');
+    assert.ok(fs.existsSync(new URL('../../assets/img/ajandek/atadas-szemelyre.jpg', import.meta.url)), 'az atadas-kep letezik');
+    assert.ok(ADAT.TERMEKEK['4kezes'].kezeles.video.ido === '0:40' && fs.statSync(new URL('../../assets/video/ajandek-kezeles-4kezes.mp4', import.meta.url)).size > 2e6, 'a 4 kezes video a teljes (kb. 40 mp-es) valtozat');
+    // a kartya-kep a hero aljan "atlog" (felulre es jobbra), a cimbe nem er bele
+    const cssTeljes = fs.readFileSync(new URL('../../assets/css/ajandek.css', import.meta.url), 'utf8');
+    assert.ok(cssTeljes.includes('.ah-valaszto-kartya { position: absolute; z-index: 4; top: -98px; left: max(412px, 49%); width: 330px;'), 'a kartya a hero aljara log');
     // 2026-10-04, 2. kor: Miert a MOSAIC Headspa (jelveny + alapito), 2 perc..., 2 soros lepes-szovegek, kozepre igazitott kartya-kep, a PMU-oldal gombszine
     for (const jel of ['Miért a MOSAIC Headspa?', 'class="ah-badge"', 'alapito-feri.png', 'Deák Ferenc István', 'Amikor megalapítottam a MOSAIC-ot', '2 perc és már a Tiéd is!']) assert.ok(html.includes(jel), jel);
     assert.ok(fs.existsSync(new URL('../../assets/img/ajandek/alapito-feri.png', import.meta.url)), 'az alapito kepe letezik');

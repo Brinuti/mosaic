@@ -414,6 +414,7 @@
     Array.prototype.forEach.call(document.querySelectorAll('[data-google-pont]'), function (e) { e.textContent = A.GOOGLE.pont; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-google-szam]'), function (e) { e.textContent = A.GOOGLE.darab + ' Google-vélemény'; });
     trustindexInit();
+    terkepInit();
   }
 
   // A valodi Google-velemenyek a Trustindex-widgetbol jonnek (ugyanaz a widget, mint az elo oldalon: head-spa-velemenyek). A Trustindex a suti-
@@ -453,6 +454,29 @@
       if (gomb) gomb.hidden = true;
       if (megj) megj.textContent = 'A vélemények betöltése…';
     }
+  }
+  // az "Itt találsz minket" doboz pici térképe (OpenStreetMap): harmadik fél tartalma, ezért a Trustindexhez hasonlóan csak a "funkcionális"
+  // hozzájárulás után töltődik be; addig egy helyőrző + gomb áll a helyén
+  function terkepInit() {
+    var doboz = $('ah-terkep'), gomb = $('ah-terkep-gomb');
+    if (!doboz || !gomb) return;
+    var engedelyezve = function () { try { return !!(window.mhSuti && window.mhSuti.engedely('fun')); } catch (e) { return false; } };
+    function betolt() {
+      if (doboz.querySelector('iframe')) return;
+      var f = document.createElement('iframe');
+      f.src = doboz.getAttribute('data-src');
+      f.title = 'A MOSAIC Head Spa a térképen (OpenStreetMap)';
+      f.loading = 'lazy';
+      f.referrerPolicy = 'no-referrer';
+      doboz.appendChild(f);
+      doboz.classList.add('ah-terkep-kesz');
+    }
+    if (engedelyezve()) { betolt(); return; }
+    gomb.addEventListener('click', function () {
+      try { if (window.mhSuti && window.mhSuti.enged) window.mhSuti.enged('fun'); } catch (e) { /* nem baj */ }
+      if (engedelyezve()) betolt();
+    });
+    try { if (window.mhSuti && window.mhSuti.figyel) window.mhSuti.figyel(function () { if (engedelyezve()) betolt(); }); } catch (e) { /* nem baj */ }
   }
   function trustindexInit() {
     var gomb = $('ah-ti-gomb');
@@ -589,6 +613,9 @@
   }
   function atvetelRender() {
     Array.prototype.forEach.call(document.querySelectorAll('input[name="atvetel"]'), function (r) { r.checked = r.value === S.atvetel; });
+    // a gomb azt mondja, hova visz: a személyre szabható (otthon nyomtatott) kártyánál a személyre szabóra, egyébként a vásárláshoz
+    var felirat = $('ah-tovabb-gomb') && $('ah-tovabb-gomb').firstElementChild;
+    if (felirat) felirat.textContent = (S.atvetel === 'otthon' && KT) ? 'Tovább a személyre szabáshoz' : 'Tovább a vásárláshoz';
   }
   function atvetelValaszt(id) {
     if (!A.ATVETELEK.some(function (x) { return x.id === id; })) return;

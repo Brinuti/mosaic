@@ -75,7 +75,7 @@
           'A végén 30 perc profi hajszárítás'
         ],
         // a Meta-fiók 4 kezes videóihoz nincs letölthető fájl; ez a "Hook1.MP4" (Ajándékkártya mappa) 4 kezes szakasza (11-18,8 s), feliratokkal
-        video: { src: '/assets/video/ajandek-kezeles-4kezes.mp4', poster: '/assets/img/ajandek/kezeles-4kezes.jpg', ido: '0:08' }
+        video: { src: '/assets/video/ajandek-kezeles-4kezes.mp4', poster: '/assets/img/ajandek/kezeles-4kezes.jpg', ido: '0:40' }
       },
       vizual: { src: '/assets/img/ajandek/negy-kezes.jpg', alt: '4 kezes Head Spa: két terapeuta dolgozik egyszerre egy vendégen a MOSAIC-ban', w: 1200, h: 800, poz: '50% 45%' }
     },

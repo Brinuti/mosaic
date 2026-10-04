@@ -479,3 +479,18 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
 - **Kényeztetés a legmagasabb szinten:** a lapozó videó-dobozai nagyobbak (300 px), az időtartam nem látszik, a dobozok címe középre igazított.
 - **Gombok:** az elsődleges gomb (`.ah-gomb-fo`) mindenhol a PMU-oldal gombszíne: arany átmenet (`#c6a346` → `#d9c164`), fehér felirat (az élő `/sminktetovalas-budapest` oldal
   gombjából mérve); a gomb formája változatlan (a PMU-oldal gombjai pill alakúak). A másodlagos (körvonalas) gomb marad.
+
+## 3. kör (2026-10-04, a tulajdonos kérései)
+
+- **Ajándékkártya-kép a „Válaszd ki az ajándékot” fejlécben:** 900 px-től abszolút pozíciójú: kicsit feljebb és jobbra, a hero-videó aljába (kb. 62 px) és a szekció tetejére „átlóg”
+  (`top: -98px; left: max(412px, 49%)`), de a cím mellett marad (a címtől mindig jobbra: ellenőrizve 920–1920 px között). 900 px alatt a cím alatt, középen áll.
+- **Átadás blokk:** a kép a tulajdonos nyilas képe (`assets/img/ajandek/atadas-szemelyre.jpg`: „Tölts fel bármilyen fotót / Írj ide bármit / Írd ide a neveteket / nevét”), a szöveg
+  vele egyforma magas (a cím a kép tetejéhez, a lista az aljához igazodik, háttér nélkül). Ugyanígy a „Mi az a Headspa” blokk: egyforma magas, **fehér háttér nélkül**.
+- **Miért a MOSAIC Headspa?:** nincs gomb Feri alatt, az idézet mögött nincs fehér kártya; a bal oszlop alja (Feri idézete) a jobb oldali „Itt találsz minket” doboz aljával egy vonalban.
+  A dobozban pici térkép (OpenStreetMap beágyazás, 47.5247344, 19.0367534): harmadik fél tartalma, ezért a Trustindexhez hasonlóan csak a „funkcionális” hozzájárulás után tölt be
+  (addig helyőrző + „Térkép megjelenítése” gomb: a gomb engedélyezi a kategóriát).
+- **4 kezes videó:** a teljes „Hook1” felvétel (39,5 s, 540x720, 2,7 MB; korábban csak egy 7,8 s-os részlet volt); az utolsó jelenet régi számokat mutat (4,8 · 116 értékelés).
+- **Lapozó:** a „Kiválasztom az ajándékot” gomb a videósor alatt középen.
+- **Szabd személyre:** több levegő a fejléc fölött és a két doboz előtt; a „Tovább” gomb pontosan a fölötte lévő (idézet) cella szélességű és a név-mezővel egy sorban; a
+  „Kihagyom a személyre szabást” alul, középen; a „Telefonról is jó. Húzással igazíthatod.” sor kikerült.
+- **Gomb a választóban:** a személyre szabható digitális kártyánál „Tovább a személyre szabáshoz”, a szalonban átvételnél „Tovább a vásárláshoz”.

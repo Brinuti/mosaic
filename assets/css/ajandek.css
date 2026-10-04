@@ -950,26 +950,21 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-gomb-fo:hover { background: linear-gradient(#b99638, #cdb255); }
 .ah-gomb-fo:disabled { opacity: .6; cursor: not-allowed; }
 
-/* "Valaszd ki az ajandekot": a kartya kepe a fejlec kozepen (nem a jobb szelen) */
+/* "Valaszd ki az ajandekot": a kartya kepe a hero-video aljan es a szekcio tetejen "atlog" (kicsit feljebb es jobbra), a cimbe nem er bele */
 .ah-valaszto-kartya { justify-self: center; margin: 0 auto; }
-@media (min-width: 1100px) {
-  .ah-valaszto-fej { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
-  .ah-valaszto-kartya { grid-column: 2; justify-self: center; width: 330px; margin: 0; }
+@media (min-width: 900px) {
+  .ah-valaszto-fej { display: block; position: relative; margin-bottom: 44px; }
+  .ah-valaszto-kartya { position: absolute; z-index: 4; top: -98px; left: max(412px, 49%); width: 330px; margin: 0; }
 }
-@media (min-width: 800px) and (max-width: 1099px) {
-  .ah-valaszto-fej { grid-template-columns: minmax(0, 1fr); }
-  .ah-valaszto-kartya { justify-self: center; width: 300px; margin: 0 auto; }
-}
+@media (max-width: 899px) { .ah-valaszto-fej { grid-template-columns: minmax(0, 1fr); } .ah-valaszto-kartya { justify-self: center; width: 280px; } }
 
-/* Mi az a Headspa: a videobox es a mellette levo szoveges doboz egyforma magas */
+/* Mi az a Headspa: a videobox es a mellette levo szoveg egyforma magas (a cim a video tetejehez, a lista az aljahoz igazodik), hatter nelkul */
 @media (min-width: 900px) {
   .ah-headspa-racs { align-items: stretch; }
   .ah-headspa-media { display: grid; }
   .ah-headspa-video { aspect-ratio: auto; max-width: none; margin: 0; align-self: stretch; min-height: 420px; }
-  .ah-headspa-szoveg { display: flex; flex-direction: column; justify-content: center; padding: 30px 38px; background: var(--ah-feher); border: 1px solid var(--ah-vonal); border-radius: 16px; box-shadow: var(--ah-arnyek); }
-}
-@media (max-width: 899px) {
-  .ah-headspa-szoveg { padding: 22px 20px; background: var(--ah-feher); border: 1px solid var(--ah-vonal); border-radius: 16px; box-shadow: var(--ah-arnyek); }
+  .ah-headspa-szoveg { display: flex; flex-direction: column; }
+  .ah-headspa-szoveg .ah-benefit-lista { margin-top: auto; }
 }
 
 /* Miert a MOSAIC Headspa: ertekeles-jelveny + az alapito kepe es idezete */
@@ -978,12 +973,12 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-badge-csillag { color: #c6a346; letter-spacing: .04em; font-size: 15px; }
 .ah-badge b { font-weight: 500; }
 .ah-badge-pont { opacity: .5; }
-.ah-alapito { margin: 6px 0 0; display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 18px; align-items: center; padding: 16px 20px; background: #fff; border: 1px solid var(--ah-vonal); border-radius: 16px; box-shadow: var(--ah-arnyek); }
+.ah-alapito { margin: 6px 0 0; display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 18px; align-items: center; padding: 0; }
 .ah-alapito img { display: block; width: 76px; height: 76px; border-radius: 50%; object-fit: cover; object-position: 50% 14%; background: #e9dfca; }
 .ah-alapito blockquote { margin: 0 0 8px; font-family: var(--ah-cim); font-style: italic; font-size: 17px; line-height: 1.45; color: var(--ah-petrol); }
 .ah-alapito figcaption { display: grid; gap: 1px; font-size: 13px; color: var(--ah-halk); }
 .ah-alapito figcaption b { font-family: var(--ah-cim); font-style: italic; font-weight: 500; font-size: 17px; color: #8a6a36; }
-@media (max-width: 479px) { .ah-alapito { grid-template-columns: 56px minmax(0, 1fr); gap: 12px; padding: 14px; } .ah-alapito img { width: 56px; height: 56px; } .ah-alapito blockquote { font-size: 15.5px; } }
+@media (max-width: 479px) { .ah-alapito { grid-template-columns: 56px minmax(0, 1fr); gap: 12px; } .ah-alapito img { width: 56px; height: 56px; } .ah-alapito blockquote { font-size: 15.5px; } }
 
 /* Hogyan mukodik: a lepesek alatti szoveg mindenhol pontosan 2 soros */
 .ah-hogyan-lepesek li > span:last-child { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.9em; }
@@ -992,3 +987,42 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-elemek > li { width: 300px; }
 .ah-elem-cimke { justify-content: center; text-align: center; }
 .ah-elem-cimke b { font-size: 17px; }
+
+/* =================== 3. kor (2026-10-04) =================== */
+/* Miert a MOSAIC Headspa: a bal oszlop alja (Feri idezete) a jobb oldali doboz aljaval egy vonalban */
+@media (min-width: 900px) {
+  .ah-miert-racs { align-items: stretch; }
+  .ah-miert-szoveg { grid-template-rows: auto auto auto 1fr; align-content: start; }
+  .ah-miert-szoveg .ah-alapito { align-self: end; }
+}
+/* Itt talalsz minket: pici terkep (hozzajarulas utan toltodik be) */
+.ah-terkep { position: relative; height: 140px; margin: 6px 0 12px; border-radius: 12px; overflow: hidden; border: 1px solid var(--ah-vonal);
+  background: repeating-linear-gradient(35deg, transparent 0 26px, rgba(255, 255, 255, .75) 26px 29px), repeating-linear-gradient(-58deg, transparent 0 38px, rgba(255, 255, 255, .6) 38px 41px), #e8e2d1; }
+.ah-terkep iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.ah-terkep-gomb { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--ah-vonal); background: #fff; color: var(--ah-petrol); font: inherit; font-size: 14px; cursor: pointer; box-shadow: var(--ah-arnyek); }
+.ah-terkep-gomb:hover { border-color: var(--ah-arany); }
+.ah-terkep-gomb .ah-ikon { width: 20px; height: 20px; color: #c6a346; }
+.ah-terkep-kesz .ah-terkep-gomb { display: none; }
+
+/* Szemelyre szabo ajandekkartya (Atadas): a kep es a szoveg egyforma magas */
+.ah-atadas-kep { margin: 0; }
+.ah-atadas-foto { width: 100%; height: auto; aspect-ratio: 1200 / 1097; object-fit: cover; object-position: center; border-radius: 16px; box-shadow: var(--ah-arnyek); }
+@media (min-width: 900px) {
+  .ah-atadas-racs { align-items: stretch; }
+  .ah-atadas-kep { margin: 0; }
+  .ah-atadas-szoveg { display: flex; flex-direction: column; }
+  .ah-atadas-szoveg .ah-forma-lista { margin-top: auto; }
+}
+
+/* lapozo (Kenyeztetes a legmagasabb szinten): a gomb a videosor alatt kozepen */
+.ah-pontosan-cta { text-align: center; }
+
+/* Szabd szemelyre: tobb levego fent; a gomb a fole eso cella szelessegeben es a nev-mezovel egy sorban; a "Kihagyom" alul, kozepen */
+.ah-tervezo { padding-top: 24px; }
+.ah-tervezo-fej { margin-bottom: 22px; }
+@media (min-width: 900px) {
+  .ah-tv-alja { grid-template-columns: 1fr 1fr; gap: 20px; align-items: end; }
+  .ah-tv-alja .ah-gombsor { display: block; margin: 0; }
+  .ah-tv-alja .ah-gomb-teljes { width: 100%; min-height: 48px; }
+}
+.ah-tv-kihagy { display: flex; justify-content: center; margin: 4px 0 0; }
