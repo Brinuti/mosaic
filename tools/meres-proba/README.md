@@ -53,6 +53,17 @@ node tools/meres-proba/pixel-proba.mjs --osszevet elozo.json uj.json
 - `--hozzajarulas 0`: friss látogató süti-hozzájárulás nélkül (a pixel ettől függetlenül fut, mint a Wixen; a Stripe-link fbc-je viszont hozzájárulást kér).
 - `--osszevet`: két futás összevetése oldalanként (pixelek, PageView, CAPI, események, Google/TikTok) – a „mely oldalak változtak” kérdésre.
 - Az elvárt pixel a helyi `assets/js/suti.js` `PIXEL_OLDALAK` listájából jön; a listán kívüli oldalra „nincs elvárt pixel”.
+## Az ajándékkártya-motor régi konverziója: `ajandek-konverzio.mjs`
+
+A vásárlás utáni rejtett keret (a régi köszönő-oldal) élő próbája, alapból tiltó kimenő kérésekkel (`capig.stape.*` is). Platformonként megmondja, hány konverzió megy ki, melyik ablakból (fő ablak / rejtett keret), milyen értékkel és `pi_…` azonosítóval, és hogy a gclid / fbc / ttclid benne van-e.
+
+```
+node tools/meres-proba/ajandek-konverzio.mjs [--mod motor|regi] [--landing /headspa-ajandekkartya] [--termek egyeni] [--ertek 26900] [--out konverzio.json]
+```
+
+- `--mod motor` (alap): hirdetési kattintás (`gclid`, `fbclid`, `ttclid`, `utm_*`), majd a motor Stripe-átirányításos visszatérési útja; a szerver „fizetve” válaszát (`/api/ajandek/rendeles`) a próba utánozza, minden más a valódi kód. **A kártyás fizetés nem történik meg** (kártyaadatot nem adunk meg, a Stripe.js tiltott).
+- `--mod regi`: a régi köszönő-oldal a fő ablakban – összehasonlítási alap (ugyanazokat a konverziókat kell adnia, csak a fő ablakból).
+
 ## A helyben nyíló foglaló-réteg: `reteg-proba.mjs`
 
 ```

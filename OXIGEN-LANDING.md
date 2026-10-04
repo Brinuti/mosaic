@@ -1,6 +1,6 @@
-# Oxigénterápia landing (`/oxigenterapia-budapest-uj`)
+# Oxigénterápia landing (`/oxigenterapia-budapest`)
 
-> **Élesítés (2026-10-04):** az oldal a **külön címen** él: `/oxigenterapia-budapest-uj` (`noindex, nofollow`, sehonnan nincs rá link, nincs a sitemapben, a Meta-pixel a slug miatt rajta nem tüzel). A régi `/oxigenterapia-budapest` (Wix-klon) változatlan. **Csere az eredeti címre** (csak a tulajdonos kifejezett kérésére): a `foglalas/oxigenterapia-budapest-uj.html` átnevezése `foglalas/oxigenterapia-budapest-uj.html`-re; benne a `robots noindex` meta törlése, a canonical és az `og:url` visszaírása a `/oxigenterapia-budapest` címre, a `<!--mh-menu-aktiv:…-->` jelölő törölhető; az `assets/js/suti.js` pixel-listája a slug (`oxigenterapia-budapest` → Fodrász-pixel) szerint magától működik; utána pixel-próba (`tools/meres-proba/pixel-proba.mjs`).
+> **Élesítés (2026-10-04):** az oldal a tulajdonos kifejezett kérésére az **eredeti címen** él: `/oxigenterapia-budapest` (a `foglalas/oxigenterapia-budapest.html` felülírja a `klon/` azonos nevű Wixes oldalát, mint a PMU-landing). A Meta-pixel (Fodrász-pixel) a slug alapján működik (`suti.js`). A korábbi próbacím (`/oxigenterapia-budapest-uj`) csak átirányít az eredeti címre (`foglalas/oxigenterapia-budapest-uj.html`, noindex). **Visszaállítás a régi Wixes oldalra:** a `foglalas/oxigenterapia-budapest.html` törlése (a `klon/oxigenterapia-budapest.html` változatlanul megvan), a `tools/lcp-elofeltoltes.json` két `"oxigenterapia-budapest"` sorának visszaírása a régi oldal LCP-előtöltéséhez (`/assets/img/c2eb0f_df59d1ff920446568f008e0a89216473.jpg`).
 
 
 Az oldal a tulajdonos képernyőterve szerint készült (hero → jelek → állapotfelmérés → kezelők → első alkalom → kezelés lépései

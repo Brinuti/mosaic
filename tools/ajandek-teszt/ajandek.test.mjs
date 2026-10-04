@@ -666,7 +666,7 @@ describe('Stripe-szamla (AJANDEK_STRIPE_SZAMLA=1)', () => {
       assert.equal(sorokAdat.reduce((o, x) => o + x.ft, 0), t.ar_ft, t.id + ' sorainak osszege');
       for (const x of sorokAdat) assert.match(x.adokod, /^txcd_\d{8}$/);
     }
-    assert.deepEqual(ADAT.szamlaTetelek('egyeni'), [{ nev: 'Egyéni Headspa Ajándékkártya 20% Márciusi kedvezménnyel - 50+30 perces', ft: 26900, adokod: 'txcd_20040009', afa: '27%' }]);
+    assert.deepEqual(ADAT.szamlaTetelek('egyeni'), [{ nev: 'Egyéni Headspa Ajándékkártya 20% kedvezménnyel - 50+30 perces', ft: 26900, adokod: 'txcd_20040009', afa: '27%' }]);
     assert.deepEqual(ADAT.szamlaTetelek('paros').map((x) => [x.nev, x.ft, x.adokod]), [['MOSAIC Headspa Ajándékkártya 20% kedvezménnyel - 50+30 perces Páros', 53800, 'txcd_20040009']]);
     assert.deepEqual(ADAT.szamlaTetelek('4kezes').map((x) => [x.nev, x.ft, x.adokod]), [
       ["4 kezes Headspa Ajándékkártya - 50+30 perces (8695'03) - Az Áfa tv. 85.§ (1) b) pont alapján adómentes szolgáltatás", 15000, 'txcd_00000000'],
@@ -683,7 +683,7 @@ describe('Stripe-szamla (AJANDEK_STRIPE_SZAMLA=1)', () => {
     assert.equal(pi.amount, 2690000);
     assert.ok(szamla, 'a PI szamlahoz tartozik');
     assert.equal(szamla.status, 'open');
-    assert.deepEqual(sorok(szamla), [{ nev: 'Egyéni Headspa Ajándékkártya 20% Márciusi kedvezménnyel - 50+30 perces', osszeg: 2690000, kod: 'txcd_20040009', behavior: 'inclusive' }]);
+    assert.deepEqual(sorok(szamla), [{ nev: 'Egyéni Headspa Ajándékkártya 20% kedvezménnyel - 50+30 perces', osszeg: 2690000, kod: 'txcd_20040009', behavior: 'inclusive' }]);
     assert.equal(szamla.total, 2690000);
     assert.equal(szamla.amount_due, 2690000);
     assert.equal(szamla.tax, 571890); // a regi fizetolink Checkout-ja is ugyanezt adta (amount_tax 571890)
