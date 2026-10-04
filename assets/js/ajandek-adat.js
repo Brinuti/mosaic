@@ -417,7 +417,7 @@
   // adozo tetel: a szamlabridge a kapcsolat alapertelmezett adokodjara (TAM, targyi adomentes) forditja. afa: a szalon-level szovege.
   var SZAMLA_TETELEK = {
     egyeni: [
-      { nev: 'Egyéni Headspa Ajándékkártya 20% Márciusi kedvezménnyel - 50+30 perces', ft: 26900, adokod: 'txcd_20040009', afa: '27%' }
+      { nev: 'Egyéni Headspa Ajándékkártya 20% kedvezménnyel - 50+30 perces', ft: 26900, adokod: 'txcd_20040009', afa: '27%' }
     ],
     paros: [
       { nev: 'MOSAIC Headspa Ajándékkártya 20% kedvezménnyel - 50+30 perces Páros', ft: 53800, adokod: 'txcd_20040009', afa: '27%' }
