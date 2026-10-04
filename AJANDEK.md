@@ -48,13 +48,14 @@ hajjal távozik). A fejléc és a lábléc **az éles oldalé**: a `foglalas/aja
 (mint a sminktetoválás-landingen), a menüt az `assets/js/klon.js` működteti; az „Ajándékkártya”
 menüpontot a `menuAktiv()` jelöli aktívnak. A helyi kiszolgáló ugyanezt a beillesztést végzi.
 Elrendezés (a harmadik, véglegesnek szánt mockup szerint, 2026-10-03): teljes szélességű, meleg hero-fotó (arany zuhanyív) a bal
-oldalon krémszínű átmenet alatt futó szöveggel (2026-10-04-től a hero média a jobb félen áll); egy rácsban a három képes termékkártya
-(Egyéni, 4 kezes, Páros a variant sorrendjében; kép + jelvény, cím, „50 perc kezelés + 30 perc szárítás”, rövid leírás, ár + „Ajándékozom”
-gomb) és mellettük, azonos magasságban a jobb oszlop: „Így néz ki az ajándékkártya” (a **valódi Canva-kártya** előlapja, fekvő 21 x 10 cm,
-`assets/img/ajandek/kartya-elolap.jpg`) és alatta a tömör átvétel-választó; „Mit mondanak a vendégeink?” (**nyolc valódi vendég-videó**
+oldalon krémszínű átmenet alatt futó szöveggel (2026-10-04-től a hero média a jobb félen áll); a „Válaszd ki az ajándékot” fejléc (a **valódi Canva-kártya** előlapja, fekvő 21 x 10 cm,
+`assets/img/ajandek/kartya-elolap.jpg`) alatt **három lépés egymás mellett** (a tulajdonos 5. mockupja szerint): *1 Válassz élményt* (három vízszintes
+termék-kártya, rádiógomb: kép, név, „50 perc kezelés + 30 perc szárítás”, „1 fő”, `kartya_sor`, ár) | *2 Nézd meg, milyen* (a kiválasztott élmény 9:16-os videója) |
+*3 Vedd meg az ajándékkártyát* (név + ár, leírás, „Mi történik a kezelésen?”, „Milyen ajándékkártyát szeretnél?” két opcióval, „Tovább a vásárláshoz”); „Mit mondanak a vendégeink?” (**nyolc valódi vendég-videó**
 lapozható sorban); külön „Valódi Google-vélemények” szekció (Trustindex); „Pontosan ezt kapja” (a szeánsz 15 elemének lapozója);
 „Ezt adod át neki” (fotó + a valódi kártya); „Miért MOSAIC?” (cím, elérhetőség + 14 képes, lapozható, nagyítható galéria); „Hogyan működik az ajándékozás?” + gyakori kérdések; a fizetési nézet
-három oszlopban (1 Termék | 2 Adatok | 3 Fizetés). A mockup kitalált elemei NEM kerültek át: „azonnali kézbesítés”, a mockup
+két oszlopban (a tulajdonos 4. mockupja szerint): bal oldalt *2 Adatok* (mezőnként ikon, összecsukható „Céges számlát kérek”), jobb oldalt *1 Rendelésed* (kép, cím, tartalom, „Felhasználható 6 hónapig”, ár)
+és alatta *3 Fizetés* (Stripe Payment Element, „Biztonságos fizetés — ár”, „Inkább átutalással fizetnék”); mobilon egy oszlop, ragadós fizetés-sávval. A mockup kitalált elemei NEM kerültek át: „azonnali kézbesítés”, a mockup
 idézetei és vendégfeliratai (a videók alatt csak a vendég keresztneve és a videó hossza áll), a születésnapos mintaüzenet,
 generált belső terek és térkép, „Kolosy tér” (a cím: 1023 Budapest, Bécsi út 2.), „láthatóan szebb haj”.
 
@@ -293,15 +294,16 @@ A háttér frissítése: Canva-tervmásolat („MOSAIC ajándékkártya háttér
 
 ### Átvétel és személyre szabás (2026-10-03)
 
-**Kezelés-bemutató (beágyazva, 2026-10-04-től nem felugró).** A kiválasztott termék alatt nyitva a „Választott ajándék” doboz: bal oldalt a
-kezelés videója (`<video controls>`), mellette cím, leírás, „Mi történik a kezelésen?” lista; alul az ár és a „Tovább” gomb. A tartalom a
+**Kezelés-bemutató (beágyazva, 2026-10-04-től nem felugró).** A 2. lépésben a kijelzett élmény videója (`<video controls>`, 9:16), a 3. lépésben cím, ár, leírás és a
+„Mi történik a kezelésen?” lista (összecsukva). A kijelzett élmény = a vevő választása, ennek hiányában az ajánlott (a variant előválasztása, egyébként az első a sorrendben), így a
+videó és a vásárlás-doboz mindig ki van töltve; a rádiógomb állítja be az `S.termek`-et (nincs görgetés, nincs felugró). A tartalom a
 `TERMEKEK.*.kezeles` mezőben van (`leiras`, `lepesek`, `video`). A videók: *egyéni* = a Meta-fiók „Headspa szeptember 20_ natív kezelés.mp4”
 (a beégetett „SZEPTEMBERI AKCIÓ −20%” sáv és a régi értékelést mutató záró kártya levágva, 3:4, 0:55), *páros* = „Szept páros HEADSPA 20_.mp4”
 (ugyanígy levágva, 0:29), *4 kezes* = a „Hook1.MP4” 4 kezes szakasza (0:08; a Meta 4 kezes videóihoz nincs letölthető fájl). **Ha saját,
 végleges kezelés-videó készül, a `kezeles.video = { src, poster }` mezőt kell cserélni.**
 
-**Átvétel-választó.** A termék-sor jobb oldalán, az ajándékkártya előnézete alatt áll (mindig látható), csak a „Hogyan veszed át?” kérdés és
-a két opció, egy rövid magyarázó sorral.
+**Átvétel-választó.** A 3. lépés doboza: „Milyen ajándékkártyát szeretnél?” – *Személyre szabható, digitális ajándékkártya* (AJÁNLOTT; alap, a következő lépésben személyre szabható)
+vagy *Eredeti, fizikai ajándékkártya – a szalonban veszem át* (díszborítékban, személyre szabás nélkül). A „Tovább a vásárláshoz” gomb az átvételtől függően a személyre szabóra vagy a fizetésre visz.
 
 **Átvétel.** A kiválasztott termék panelén a vevő a fizetés előtt választ: *E-mailben, otthon kinyomtatom* (alap; személyre szabható)
 vagy *Személyesen, a szalonban* (papír, díszborítékban). A választás a PI `metadata.atvetel` mezőjébe kerül (`otthon` / `szemelyesen`),
@@ -419,7 +421,7 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
 - **Google-vélemények:** külön szekció; a **Trustindex** inline widgetje (az élő főoldal beágyazása: `assets/embed/c2eb0f_95e68e62….html`, iframe) a suti-hozzájárulás
   „funkcionális” kategóriája után tölt be (`mhSuti.engedely('fun')`), addig a tulajdonos által megadott valódi vélemény és egy „Vendégértékelések megjelenítése”
   gomb áll a helyén (ugyanúgy, mint az élő oldalon). A widget a saját élő számát mutatja (pl. 1255), a hero a tulajdonos számát (1.259): a kettő eltérhet.
-- **Termékek:** a doboz egésze kattintható (nem csak a gomb); a Gift Finder gombsor és a „Választott ajándék” összegző doboz megszűnt (ugyanazt mondta).
+- **Termékek:** a Gift Finder gombsor és a „Választott ajándék” összegző doboz megszűnt (ugyanazt mondta); 2026-10-04 délután a teljes választó rész a tulajdonos 5. mockupja szerint háromlépéses lett (lásd fent), a fizetés a 4. mockup szerint.
 - **Testimonialok:** +4 valódi vendég-videó (Hédi, Koletta, Viki, Szandi; a Drive „720P_Mosaic Testimonial” mappából, 540x960-ra tömörítve, 6–9 MB). A „Karolin.mov” és a „Vali Úr.mov”
   nincs közöttük (az előbbi a variant-doksi szerint validálandó).
 - **Pontosan ezt kapja / Miért MOSAIC:** lapozó (15 elem) ill. 14 képes galéria nagyítóval (nyilak, billentyűk, húzás).
