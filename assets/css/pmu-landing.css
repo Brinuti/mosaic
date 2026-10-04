@@ -920,3 +920,10 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
   .konz-montazs { grid-template-columns: 1fr; gap: 10px; padding-top: 16px; }
   .konz-cimke { left: 10px; bottom: 10px; font-size: 12px; padding: 7px 13px; }
 }
+
+/* ============ asztalon (>= 1101 px) a galeria magassaga a bal oszlopeval egyezik: addig er le, ahol a Google-ertekeles vegzodik ============ */
+@media (min-width: 1101px) {
+  .hero-racs { align-items: stretch; }
+  .hero-kep.hero-galeria { aspect-ratio: auto; min-height: 400px; }
+  .hero-galeria .galeria-sav { position: absolute; inset: 0; height: auto; }
+}
