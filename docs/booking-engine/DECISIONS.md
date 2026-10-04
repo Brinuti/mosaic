@@ -58,3 +58,8 @@ A Salonic nem minden helyen bontja az első és a következő alkalmat külön k
 
 - A VIP említése a weboldalon (HeadSpa oldalak, árlista, ajándékkártya).
 - A PMU eltávolítás: a `/eltavolitas-ok` köszönőoldal és a hozzá tartozó mérés használatban marad-e.
+
+## Döntések 2026-10-03 (az éles próbák után)
+
+- **A köztes lépés-események nem pótolódnak** (`view_item`, `select_employee` GA4; `ViewContent` TikTok): semmi nem épül rájuk, ezért a motor útján elmaradnak (C opció, [MERES_FOGLALASI_LEPESEK.md](MERES_FOGLALASI_LEPESEK.md)). A `/foglalo-motor` oldal nem kap mérőkódot, a GTM-hez és a stape-hez nem nyúlunk. A TikTok `InitiateCheckout` a Salonic-keretből továbbra is jön, de törékeny; ezt az átkapcsolás után figyeljük.
+- **Az átkapcsolás időpontja:** 2026-10-04, a design véglegesítése után, **minden üzletág egyszerre, a HeadSpával együtt** (négy kapcsoló, egy merge). A #71 (éles próbák naplói, dokumentáció) ugyanezzel a merge-dzsel megy.

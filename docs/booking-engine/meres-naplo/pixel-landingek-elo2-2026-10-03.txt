@@ -1,0 +1,61 @@
+MOSAIC - Meta-pixel, 2. kor (PR #70): ELO teszt-naplo
+Keszult: 2026-10-03T20:24:12.949Z (UTC) | deploy: 2026-10-03 20:19 UTC (merge 20:18:44 UTC) | elo suti.js verzio: 869136e293
+Modszer: ugyanaz, mint a #69-nel: ?fbclid=TESZTPIXEL, valodi Chrome, a kimeno merest (capig.stape.do, capi-pmu.mosaicheadspa.hu, Google, TikTok, Zapier) alapbol tilto szuro + DNS-zar fogta: semmi nem ment ki.
+
+1) A 8 felvett oldal (asztali, hozzajarulassal)
+oldal | pixel (azonosito) | pixel-init db | PageView db | _fbc letrejott (TESZTPIXEL) | _fbp | dupla-init figy. | OLDAL == lista-nev | Stripe-link fbc kattintas utan | eredmeny
+vegleges-szortelenites-ferfiaknak | Szortelenites 643342342027957 | 1 | 1 | igen (fb.1.1791058981339.TESZTPIXEL) | igen | 0 | igen | (nincs Stripe-gomb) | OK
+szőrtelenítés-zsófi-csomagok | Szortelenites 643342342027957 | 1 | 1 | igen (fb.1.1791058977446.TESZTPIXEL) | igen | 0 | igen | (nincs Stripe-gomb) | OK
+szőrtelenítés-zsófi-3 | Szortelenites 643342342027957 | 1 | 1 | igen (fb.1.1791058975734.TESZTPIXEL) | igen | 0 | igen | (nincs Stripe-gomb) | OK
+szortelenites-zsofi-bemutatkozo | Szortelenites 643342342027957 | 1 | 1 | igen (fb.1.1791058969729.TESZTPIXEL) | igen | 0 | igen | (nincs Stripe-gomb) | OK
+szortelenites-5-dolog | Szortelenites 643342342027957 | 1 | 1 | igen (fb.1.1791058961816.TESZTPIXEL) | igen | 0 | igen | (nincs Stripe-gomb) | OK
+szortelenites-zsofi-vendeg | Szortelenites 643342342027957 | 1 | 1 | igen (fb.1.1791058974288.TESZTPIXEL) | igen | 0 | igen | (nincs Stripe-gomb) | OK
+headspa-ajandekkartya-noknek | HeadSpa 3473839859576758 | 1 | 1 | igen (fb.1.1791058848969.TESZTPIXEL) | igen | 0 | igen | 3/3 gomb | OK
+pmu-foglalas | PMU 1019878750660854 | 1 | 1 | igen (fb.1.1791058920372.TESZTPIXEL) | igen | 0 | igen | (nincs Stripe-gomb) | OK
+
+2) Ugyanez a 8 oldal a tobbi valtozatban (OK = pontosan 1 init, jo azonosito, 1 PageView, _fbc es _fbp)
+- asztali, hozzajarulas nelkul: 8/8 OK | Stripe-link fbc kattintas utan: 0/3 (hozzajarulas nelkul a 177-es tag nem irja, ez a mai viselkedes)
+- mobil, hozzajarulassal: 8/8 OK | Stripe-link fbc kattintas utan: 3/3
+- mobil, hozzajarulas nelkul: 8/8 OK | Stripe-link fbc kattintas utan: 0/3 (hozzajarulas nelkul a 177-es tag nem irja, ez a mai viselkedes)
+
+3) Regresszio: az elo oldal a #69 utan (korabbi naplo) es most, 89 oldal + 6 koszonooldal (Salonic valodi parametereivel)
+- vizsgalt oldal: 95; valtozott: 8 (pontosan a 8 felvett oldal); valtozatlan: 87
+- koszonooldalak (213-as GTM-tag a Salonic-parameterekkel lefut, kimeno kerelem nelkul), valtozatlanok: pixel-init db / PageView / dupla-init figy.
+    /elysion-ok: pixel 643342342027957 (1 init) | PageView {"643342342027957":1} | dupla-init figy. 0
+    /fodrasz-ok: pixel 1361403694872594 (1 init) | PageView {"1361403694872594":1} | dupla-init figy. 0
+    /oxigenterapia-masodik: pixel 1361403694872594 (1 init) | PageView {} | dupla-init figy. 0
+    /oxigenterapia-ok: pixel 1361403694872594 (1 init) | PageView {"1361403694872594":1} | dupla-init figy. 0
+    /pmu-ok: pixel 1019878750660854 (1 init) | PageView {"1019878750660854":1} | dupla-init figy. 0
+    /success-foglalas-egyeni: pixel 3473839859576758 (1 init) | PageView {"3473839859576758":1} | dupla-init figy. 0
+- a 8 felvett oldal kozott nincs koszonooldal (a pmu-foglalas foglalo-oldal: a foglalas utan a Salonic a /pmu-ok koszonooldalra viszi a latogatot, az uj oldalbetoltes, nem dupla init).
+
+4) Teljes lista: mind a 28 oldal, amelyen a #69 utan nem volt pixel (*** = most felveve; a tobbi tovabbra is pixel nelkul)
+ 1.     ajandekkartya-szulinapra
+ 2.     ajandekkartya-ugc
+ 3.     allashirdetes-ok  [szandekosan kimarad (kerted)]
+ 4.     aszf  [szandekosan kimarad (kerted)]
+ 5.     blog
+ 6.     fizetesi-hiba
+ 7.     fodrasz-allas-budapest
+ 8.     fodrasz-allas-ok
+ 9.     head-spa-allas
+10. *** headspa-ajandekkartya-noknek  -> felveve (HeadSpa)
+11.     headspa-akcio-festessel-50szazalek
+12.     headspa-termekek-oxygeni  [szandekosan kimarad (kerted)]
+13.     impresszum
+14.     kupon-utan-foglalas
+15.     naptar
+16.     oxigenterapia-masodik
+17. *** pmu-foglalas  -> felveve (PMU)
+18.     pmu-urlap
+19.     ppc-allashirdetes  [szandekosan kimarad (allasos hirdetes)]
+20.     pricing-plans-list
+21.     smink-foglalas
+22.     suti-tajekoztato
+23. *** szortelenites-5-dolog  -> felveve (Szortelenites)
+24. *** szortelenites-zsofi-bemutatkozo  -> felveve (Szortelenites)
+25. *** szortelenites-zsofi-vendeg  -> felveve (Szortelenites)
+26. *** szőrtelenítés-zsófi-3  -> felveve (Szortelenites)
+27. *** szőrtelenítés-zsófi-csomagok  -> felveve (Szortelenites)
+28. *** vegleges-szortelenites-ferfiaknak  -> felveve (Szortelenites)
+Osszesen 28 volt pixel nelkul; most felveve 8; pixel nelkul maradt 20 (az elo teszt szerint: egyezik).
