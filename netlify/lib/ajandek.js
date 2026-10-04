@@ -85,7 +85,8 @@ const ATTR_KULCSOK = ['variant_id', 'gift_context', 'relationship', 'occasion', 
   'utm_campaign', 'utm_content', 'utm_term', 'gclid', 'fbclid', 'ttclid'];
 // a /fizetes altal irt metadata-kulcsok (termekvaltaskor ezeket mind ujrairjuk / toroljuk)
 const FIZETES_META = ['forras', 'termek', 'product_type', ...ATTR_KULCSOK, 'oldal', 'nev', 'iranyitoszam',
-  'varos', 'cim', 'ceges_nev', 'ceges_adoszam', 'kartya_cim', 'atvetel', 'kartya_tema', 'kartya_idezet', 'szemelyre_nev', 'foto_id', 'foto_poz'];
+  'varos', 'cim', 'ceges_nev', 'ceges_adoszam', 'kartya_cim', 'atvetel', 'kartya_tema', 'kartya_idezet', 'szemelyre_nev', 'foto_id', 'foto_poz',
+  'szamla_id', 'szamla_mod', 'szamla_hiba', 'szamla_figy'];
 
 const sajat = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 const enc = new TextEncoder();
@@ -690,6 +691,111 @@ async function beallitas(k) {
   return json(200, { mod, publikus_kulcs: mod === 'nincs' ? null : publikusKulcs(k.env), azonnali_kartya: k.env.AJANDEK_AZONNALI === '1', foto: Boolean(fotoTar(k.env)) && mod !== 'nincs' });
 }
 
+// --- Stripe-szamla (tetelek + Stripe Tax): a szamlabridge a Stripe Invoice tetelei ELSOKENT olvassa, igy keszul a szamlazz.hu-s szamla ---
+// Ugyanaz az elv, mint a regi fizetolinkeknel: tetelenkent nev + osszeg + Stripe-adokod (txcd_...), brutto arba szamitva, a Stripe Tax szamolja az
+// AFA-t; a nem adozo tetelt (txcd_00000000) a szamlabridge TAM-ra forditja. Kapcsolo: AJANDEK_STRIPE_SZAMLA="1". Barmilyen hiba (jogosultsag, adoszam,
+// eltero osszeg / ado) eseten a fizetes NEM akad el: sima PaymentIntent keszul, a szalon-level jelzi, hogy a szamlat kezzel kell kiallitani.
+// AJANDEK_STRIPE_SZAMLA: "1" = minden fizetes; "teszt" = csak a probavasarlasok (a vevo e-mail cime tartalmazza a "+szamlateszt" cimkezest, pl.
+// valaki+szamlateszt@gmail.com): igy a szamla igazolhato az eles fiokban, mielott a valodi vevok megkapnak; ures = ki.
+const szamlaBe = (env, email) => {
+  const m = String(env.AJANDEK_STRIPE_SZAMLA || '');
+  return m === '1' || (m === 'teszt' && /\+szamlateszt@/i.test(String(email || '')));
+};
+const SZAMLA_ID_RE = /^in_[A-Za-z0-9]{8,80}$/;
+const szamlaInfo = (md) => ({
+  mod: md.szamla_mod === 'invoice' ? 'invoice' : 'nincs', hiba: md.szamla_hiba || '', figy: md.szamla_figy || '',
+  tetelek: (ADAT.szamlaTetelek(md.termek) || []).map((t) => ({ nev: t.nev, ft: t.ft, afa: t.afa })),
+});
+
+async function szamlaVoid(k, id) {
+  try {
+    await stripe(k.env, 'POST', `/v1/invoices/${id}/void`, {});
+  } catch (e) {
+    console.error('ajandek: a Stripe-szamla visszavonasa nem sikerult', id, e && e.message);
+  }
+}
+
+// ujraprobalas (pl. elutasitott kartya utan): az elozo probalkozas nyitott, ki nem fizetett szamlajat visszavonjuk
+async function szamlaRegiVisszavon(k, piId, cs) {
+  if (!(piId && cs && PI_RE.test(piId) && cs.startsWith(piId + '_secret_'))) return;
+  try {
+    const regi = await stripe(k.env, 'GET', `/v1/payment_intents/${piId}`);
+    const md = regi.metadata || {};
+    if (egyenlo(cs, regi.client_secret) && md.forras === FORRAS && regi.status === 'requires_payment_method' && SZAMLA_ID_RE.test(md.szamla_id || '')) await szamlaVoid(k, md.szamla_id);
+  } catch (e) {
+    console.error('ajandek: az elozo Stripe-szamla ellenorzese nem sikerult', piId, e && e.message);
+  }
+}
+
+// Ugyfel + szamlatetelek + Stripe-szamla (veglegesitve) -> a szamla PaymentIntentje (a Payment Element ezt fizeti). Hiba eseten dob.
+async function szamlaPi(k, r, ar, leiras, meta, kulcs) {
+  const tetelek = ADAT.szamlaTetelek(r.termek.id);
+  if (!tetelek || !tetelek.length || tetelek.reduce((o, t) => o + t.ft, 0) !== ar) throw new Error('szamla_tetel');
+  const id = (nev) => `ah-sz-${kulcs}-${nev}`;
+  const ugyfelParam = {
+    name: r.ceges_nev || r.nev, email: r.email, metadata: { forras: FORRAS },
+    address: { line1: r.cim, city: r.varos, postal_code: r.iranyitoszam, country: 'HU' },
+  };
+  let figy = '';
+  let ugyfel = null;
+  if (r.ceges_adoszam) {
+    // a Stripe hu_tin formatuma: 12345678-1-23 (a vevo szokozzel / kotojel nelkul is megadhatja)
+    const szj = String(r.ceges_adoszam).replace(/[\s.\-/]/g, '');
+    const adoszam = /^\d{11}$/.test(szj) ? `${szj.slice(0, 8)}-${szj.slice(8, 9)}-${szj.slice(9)}` : '';
+    if (!adoszam) figy = 'adoszam';
+    else try {
+      ugyfel = await stripe(k.env, 'POST', '/v1/customers', { ...ugyfelParam, tax_id_data: { 0: { type: 'hu_tin', value: adoszam } } }, id('u'));
+    } catch (e) {
+      if (!(e instanceof StripeHiba && e.status === 400)) throw e;
+      figy = 'adoszam'; // a Stripe nem fogadta el az adoszamot: ugyfel adoszam nelkul, a szalon-level figyelmeztet
+    }
+  }
+  if (!ugyfel) ugyfel = await stripe(k.env, 'POST', '/v1/customers', ugyfelParam, id('u2'));
+  for (const [i, t] of tetelek.entries()) {
+    await stripe(k.env, 'POST', '/v1/invoiceitems', {
+      customer: ugyfel.id, currency: 'huf', amount: t.ft * 100, description: t.nev, tax_behavior: 'inclusive', tax_code: t.adokod,
+      metadata: { forras: FORRAS },
+    }, id('t' + i));
+  }
+  const szamlaParam = {
+    customer: ugyfel.id, collection_method: 'charge_automatically', auto_advance: false, currency: 'huf',
+    automatic_tax: { enabled: true }, pending_invoice_items_behavior: 'include', metadata: { forras: FORRAS },
+  };
+  let szamla;
+  try {
+    // ugyanazok a fizetesi modok, mint a Payment Elementben (kartya + Google Pay, Revolut Pay, Link)
+    szamla = await stripe(k.env, 'POST', '/v1/invoices', { ...szamlaParam, payment_settings: { payment_method_types: ['card', 'link', 'revolut_pay'] } }, id('s'));
+  } catch (e) {
+    if (!(e instanceof StripeHiba && e.status === 400)) throw e;
+    szamla = await stripe(k.env, 'POST', '/v1/invoices', szamlaParam, id('s2'));
+  }
+  const biztos = async (hiba) => { await szamlaVoid(k, szamla.id); throw new Error(hiba); };
+  const kesz = await stripe(k.env, 'POST', `/v1/invoices/${szamla.id}/finalize`, { auto_advance: false, expand: ['payment_intent'] }, id('f'));
+  const pi = kesz.payment_intent;
+  if (!SZAMLA_ID_RE.test(String(kesz.id || ''))) return biztos('szamla_id');
+  if (kesz.status !== 'open') return biztos('szamla_allapot');
+  if (!kesz.automatic_tax || kesz.automatic_tax.status !== 'complete') return biztos('szamla_ado_nem_kesz');
+  if (Number(kesz.amount_due) !== ar * 100 || Number(kesz.total) !== ar * 100) return biztos('szamla_osszeg');
+  if (!kesz.lines || !Array.isArray(kesz.lines.data) || kesz.lines.data.length !== tetelek.length) return biztos('szamla_sorok');
+  // az ado: a 27%-os sorok brutto aranak 27/127-e (Stripe-kerekites: legfeljebb 1 forint = 100 egyseg elteres), a nem adozo sorokon 0
+  const vartAdo = tetelek.reduce((o, t) => o + (t.adokod === 'txcd_00000000' ? 0 : Math.round(t.ft * 100 * 27 / 127)), 0);
+  if (Math.abs(Number(kesz.tax) - vartAdo) > 100) return biztos('szamla_ado');
+  if (!pi || typeof pi !== 'object' || !PI_RE.test(String(pi.id || '')) || !pi.client_secret) return biztos('szamla_pi');
+  // a PaymentIntent metadata-ja nelkul a webhook nem ismerne fel a rendelest: ha ez nem sikerul, a szamlat visszavonjuk (sima PI-ra esunk vissza)
+  let frissitve;
+  try {
+    frissitve = await stripe(k.env, 'POST', `/v1/payment_intents/${pi.id}`, {
+      description: leiras, receipt_email: r.email,
+      metadata: { ...meta, szamla_id: kesz.id, szamla_mod: 'invoice', ...(figy ? { szamla_figy: figy } : {}) },
+    });
+  } catch (e) {
+    await szamlaVoid(k, kesz.id);
+    throw e;
+  }
+  if (!frissitve.client_secret) frissitve.client_secret = pi.client_secret;
+  return frissitve;
+}
+
 async function fizetes(k) {
   const kapu = postKapu(k, 'fizetes');
   if (kapu) return kapu;
@@ -713,8 +819,24 @@ async function fizetes(k) {
   const cs = egysor(d.cs);
   let pi = null;
 
+  // Stripe-szamla mod: minden probalkozas uj szamla (a regit visszavonjuk); hiba eseten sima PaymentIntent, a szalon-level jelzi
+  const szamlaMod = szamlaBe(k.env, r.email);
+  if (szamlaMod) {
+    await szamlaRegiVisszavon(k, piId, cs);
+    try {
+      const sz = await szamlaPi(k, r, ar, leiras, meta, kulcs);
+      return json(200, {
+        pi: sz.id, client_secret: sz.client_secret, osszeg: Math.round(Number(sz.amount) / 100), penznem: 'HUF', rendeles_id: ADAT.rendelesAzonosito(sz.id),
+      });
+    } catch (e) {
+      console.error('ajandek: a Stripe-szamla letrehozasa nem sikerult, sima PaymentIntent (a szamlat kezzel kell kiallitani):', e && e.message, e && e.status, e && e.kod);
+      meta.szamla_mod = 'nincs';
+      meta.szamla_hiba = String((e && e.message) || 'ismeretlen').slice(0, 80);
+    }
+  }
+
   // termekvaltas / adatjavitas: ugyanaz a PI, ha meg fizetes elott all
-  if (piId && cs && PI_RE.test(piId) && cs.startsWith(piId + '_secret_')) {
+  if (!szamlaMod && piId && cs && PI_RE.test(piId) && cs.startsWith(piId + '_secret_')) {
     let regi = null;
     try {
       regi = await stripe(k.env, 'GET', `/v1/payment_intents/${piId}`);
@@ -1102,7 +1224,7 @@ async function fizetesEsemeny(k, obj, ok) {
         fizetesi_mod: i.fizetesi_mod, fizetve_ekkor: i.fizetve_ekkor, email: i.email, nev: md.nev,
         iranyitoszam: md.iranyitoszam, varos: md.varos, cim: md.cim, ceges_nev: md.ceges_nev, ceges_adoszam: md.ceges_adoszam,
         kod: i.kod, ervenyes_ig: i.ervenyes_ig, kiallit_url: kiallitUrl, azonnali, attr: md,
-        megajandekozott: md.szemelyre_nev,
+        megajandekozott: md.szemelyre_nev, szamla: szamlaInfo(md),
         ...(await szemelyreLeiras(k, i)),
       }),
     }],

@@ -631,6 +631,240 @@ describe('/fizetes', () => {
 });
 
 // --- /rendeles -------------------------------------------------------------------------------------------------
+// --- Stripe-szamla (AJANDEK_STRIPE_SZAMLA=1): tetelek + Stripe Tax -> a szamlabridge ezt olvassa elsokent -----------------------------
+// A regi fizetolinkek szamlai (szamlazz.hu, 2026-10-04): egyeni = 1 tetel 27%; paros = 1 tetel 27%; 4 kezes = 2 tetel (15 000 Ft TAM + 24 900 Ft 27%).
+describe('Stripe-szamla (AJANDEK_STRIPE_SZAMLA=1)', () => {
+  const ENV_SZ = () => ({ ...ENV, AJANDEK_STRIPE_SZAMLA: '1' });
+  const ujSzamla = async (extra) => {
+    const r = await hiv('POST', 'fizetes', { body: rendelesTorzs(extra), env: ENV_SZ() });
+    assert.equal(r.status, 200, r.body);
+    const pi = mock.allapot.pi(r.adat.pi);
+    return { r, pi, szamla: pi.invoice ? mock.allapot.szamla(pi.invoice) : null };
+  };
+  const sorok = (szamla) => szamla.lines.data.map((t) => ({ nev: t.description, osszeg: t.amount, kod: t.tax_code, behavior: t.tax_behavior }));
+
+  test('az adat: a sorok osszege = a termek ara, adokodok / nevek pontosan a regi fizetolinkeke', () => {
+    for (const t of Object.values(ADAT.TERMEKEK)) {
+      const sorokAdat = ADAT.szamlaTetelek(t.id);
+      assert.ok(sorokAdat && sorokAdat.length, t.id);
+      assert.equal(sorokAdat.reduce((o, x) => o + x.ft, 0), t.ar_ft, t.id + ' sorainak osszege');
+      for (const x of sorokAdat) assert.match(x.adokod, /^txcd_\d{8}$/);
+    }
+    assert.deepEqual(ADAT.szamlaTetelek('egyeni'), [{ nev: 'Egyéni Headspa Ajándékkártya 20% Márciusi kedvezménnyel - 50+30 perces', ft: 26900, adokod: 'txcd_20040009', afa: '27%' }]);
+    assert.deepEqual(ADAT.szamlaTetelek('paros').map((x) => [x.nev, x.ft, x.adokod]), [['MOSAIC Headspa Ajándékkártya 20% kedvezménnyel - 50+30 perces Páros', 53800, 'txcd_20040009']]);
+    assert.deepEqual(ADAT.szamlaTetelek('4kezes').map((x) => [x.nev, x.ft, x.adokod]), [
+      ["4 kezes Headspa Ajándékkártya - 50+30 perces (8695'03) - Az Áfa tv. 85.§ (1) b) pont alapján adómentes szolgáltatás", 15000, 'txcd_00000000'],
+      ['4 kezes Headspa Ajándékkártya - 50+30 perces (9623)', 24900, 'txcd_20040009'],
+    ]);
+    assert.equal(ADAT.szamlaTetelek('__proto__'), null);
+    assert.equal(ADAT.szamlaTetelek('arany'), null);
+  });
+
+  test('egyeni: 1 tetel (26 900 Ft, 27%, brutto), Stripe Tax: 5 718,90 Ft; a szamla PI-je fizetheto, metadata teljes', async () => {
+    const { r, pi, szamla } = await ujSzamla();
+    assert.equal(r.adat.osszeg, 26900);
+    assert.equal(pi.amount, 2690000);
+    assert.ok(szamla, 'a PI szamlahoz tartozik');
+    assert.equal(szamla.status, 'open');
+    assert.deepEqual(sorok(szamla), [{ nev: 'Egyéni Headspa Ajándékkártya 20% Márciusi kedvezménnyel - 50+30 perces', osszeg: 2690000, kod: 'txcd_20040009', behavior: 'inclusive' }]);
+    assert.equal(szamla.total, 2690000);
+    assert.equal(szamla.amount_due, 2690000);
+    assert.equal(szamla.tax, 571890); // a regi fizetolink Checkout-ja is ugyanezt adta (amount_tax 571890)
+    assert.equal(szamla.automatic_tax.status, 'complete');
+    assert.equal(szamla.collection_method, 'charge_automatically');
+    assert.equal(szamla.auto_advance, false);
+    assert.equal(pi.invoice, szamla.id);
+    assert.equal(pi.metadata.forras, 'ajandek-motor');
+    assert.equal(pi.metadata.szamla_id, szamla.id);
+    assert.equal(pi.metadata.szamla_mod, 'invoice');
+    assert.equal(pi.metadata.termek, 'egyeni');
+    assert.equal(pi.metadata.nev, 'Teszt Elek');
+    assert.equal(pi.metadata.szemelyre_nev, 'Kiss Anna');
+    assert.equal(pi.receipt_email, 'vevo@example.com');
+    assert.match(pi.description, /ajándékkártya - Egyéni Head Spa/);
+    assert.equal(r.adat.client_secret, pi.client_secret);
+    assert.equal(r.adat.rendeles_id, ADAT.rendelesAzonosito(pi.id));
+    // az ugyfel: szamlazasi nev + cim (a szamlabridge ebbol allitja a vevo adatait)
+    const u = mock.allapot.ugyfelek.get(szamla.customer);
+    assert.equal(u.name, 'Teszt Elek');
+    assert.equal(u.email, 'vevo@example.com');
+    assert.deepEqual(u.address, { line1: 'Bécsi út 2.', city: 'Budapest', postal_code: '1023', country: 'HU' });
+    assert.deepEqual(u.tax_ids, []);
+  });
+
+  test('4 kezes: KET tetel - 15 000 Ft nem adozo (TAM) + 24 900 Ft 27%; ossz 39 900 Ft, Stripe Tax: 5 293,70 Ft (mint a regi szamla)', async () => {
+    const { r, pi, szamla } = await ujSzamla({ termek: '4kezes' });
+    assert.equal(r.adat.osszeg, 39900);
+    assert.deepEqual(sorok(szamla), [
+      { nev: "4 kezes Headspa Ajándékkártya - 50+30 perces (8695'03) - Az Áfa tv. 85.§ (1) b) pont alapján adómentes szolgáltatás", osszeg: 1500000, kod: 'txcd_00000000', behavior: 'inclusive' },
+      { nev: '4 kezes Headspa Ajándékkártya - 50+30 perces (9623)', osszeg: 2490000, kod: 'txcd_20040009', behavior: 'inclusive' },
+    ]);
+    assert.equal(szamla.total, 3990000);
+    assert.equal(szamla.tax, 529370); // a regi 4 kezes Checkout-session: amount_tax 529370
+    assert.deepEqual(szamla.lines.data.map((t) => t.tax_amounts[0].amount), [0, 529370]);
+    assert.equal(pi.amount, 3990000);
+    assert.equal(pi.metadata.szamla_mod, 'invoice');
+  });
+
+  test('paros: 1 tetel (53 800 Ft, 27%), Stripe Tax: 11 437,80 Ft (mint a regi szamla)', async () => {
+    const { szamla } = await ujSzamla({ termek: 'paros' });
+    assert.deepEqual(sorok(szamla), [{ nev: 'MOSAIC Headspa Ajándékkártya 20% kedvezménnyel - 50+30 perces Páros', osszeg: 5380000, kod: 'txcd_20040009', behavior: 'inclusive' }]);
+    assert.equal(szamla.tax, 1143780);
+  });
+
+  test('a Stripe-keresek: sorrend, kotelezo parameterek (automatikus ado, brutto tetel, veglegesites PI-bovitessel), regi API-verzio, ujrajatszhato kulcsok', async () => {
+    const elotte = mock.allapot.keresek.length;
+    await ujSzamla({ termek: '4kezes' });
+    const k = mock.allapot.keresek.slice(elotte);
+    assert.deepEqual(k.filter((x) => x.method === 'POST').map((x) => x.path.replace(/in_[A-Za-z0-9]+/, 'in_X').replace(/pi_[A-Za-z0-9]+/, 'pi_X')), [
+      '/v1/customers', '/v1/invoiceitems', '/v1/invoiceitems', '/v1/invoices', '/v1/invoices/in_X/finalize', '/v1/payment_intents/pi_X',
+    ]);
+    const szamlaKeres = k.find((x) => x.path === '/v1/invoices');
+    assert.equal(szamlaKeres.params.automatic_tax.enabled, 'true');
+    assert.equal(szamlaKeres.params.auto_advance, 'false');
+    assert.equal(szamlaKeres.params.collection_method, 'charge_automatically');
+    assert.deepEqual(szamlaKeres.params.payment_settings.payment_method_types, ['card', 'link', 'revolut_pay']);
+    const fin = k.find((x) => x.path.endsWith('/finalize'));
+    assert.deepEqual(fin.params.expand, ['payment_intent']);
+    for (const x of k.filter((y) => y.method === 'POST' && y.path !== '/v1/payment_intents/' + y.path.split('/').pop())) assert.ok(x.idem && x.idem.startsWith('ah-sz-'), x.path);
+    assert.ok(k.every((x) => x.verzio === '2024-06-20'));
+    for (const x of k.filter((y) => y.path === '/v1/invoiceitems')) assert.equal(x.params.tax_behavior, 'inclusive');
+  });
+
+  test('ugyanaz a kerelem-kulcs ketszer (halozati ujraprobalas) -> EGY szamla, ugyanaz a PI', async () => {
+    const torzs = rendelesTorzs({ termek: '4kezes' });
+    const elotte = mock.allapot.szamlak.size;
+    const a = await hiv('POST', 'fizetes', { body: torzs, env: ENV_SZ() });
+    const b = await hiv('POST', 'fizetes', { body: torzs, env: ENV_SZ() });
+    assert.equal(a.status, 200);
+    assert.equal(b.status, 200);
+    assert.equal(a.adat.pi, b.adat.pi);
+    assert.equal(mock.allapot.szamlak.size, elotte + 1);
+  });
+
+  test('ujraprobalas (elutasitott kartya utan): az elozo, ki nem fizetett szamla visszavonva, uj szamla + uj PI', async () => {
+    const a = await ujSzamla();
+    mock.allapot.bukas(a.r.adat.pi);
+    const b = await hiv('POST', 'fizetes', { body: rendelesTorzs({ pi: a.r.adat.pi, cs: a.r.adat.client_secret }), env: ENV_SZ() });
+    assert.equal(b.status, 200, b.body);
+    assert.notEqual(b.adat.pi, a.r.adat.pi);
+    assert.equal(mock.allapot.szamla(a.szamla.id).status, 'void');
+    assert.equal(mock.allapot.pi(a.r.adat.pi).status, 'canceled');
+    const uj = mock.allapot.pi(b.adat.pi);
+    assert.equal(mock.allapot.szamla(uj.invoice).status, 'open');
+    // egy MAR kifizetett PI szamlajat nem vonjuk vissza (a kliens hibasan visszakuldene)
+    const c = await fizetettRendeles();
+    const cPi = mock.allapot.pi(c.pi);
+    const d2 = await hiv('POST', 'fizetes', { body: rendelesTorzs({ pi: c.pi, cs: c.client_secret }), env: ENV_SZ() });
+    assert.equal(d2.status, 200);
+    assert.ok(cPi.status === 'succeeded' && cPi.invoice === undefined);
+  });
+
+  test('ceges vevo: az adoszam hu_tin formaban az ugyfelen, az ugyfel neve a cegnev; ismeretlen alak -> ugyfel adoszam nelkul + figyelmezteto jel', async () => {
+    const a = await ujSzamla({ ceges: { nev: 'Minta & Társa Kft.', adoszam: '12345678142' } });
+    const u = mock.allapot.ugyfelek.get(a.szamla.customer);
+    assert.equal(u.name, 'Minta & Társa Kft.');
+    assert.deepEqual(u.tax_ids, [{ type: 'hu_tin', value: '12345678-1-42' }]);
+    assert.equal(a.pi.metadata.szamla_figy, undefined);
+    const b = await ujSzamla({ ceges: { nev: 'Minta Kft.', adoszam: 'HU 12345678' } });
+    assert.deepEqual(mock.allapot.ugyfelek.get(b.szamla.customer).tax_ids, []);
+    assert.equal(b.pi.metadata.szamla_figy, 'adoszam');
+    assert.equal(b.pi.metadata.szamla_mod, 'invoice');
+    // ha a Stripe maga utasitja el: ugyanaz
+    mock.allapot.hibaSzabaly((q) => (q.path === '/v1/customers' && q.params.tax_id_data ? 400 : 0));
+    try {
+      const c = await ujSzamla({ ceges: { nev: 'Minta Kft.', adoszam: '12345678-1-42' } });
+      assert.deepEqual(mock.allapot.ugyfelek.get(c.szamla.customer).tax_ids, []);
+      assert.equal(c.pi.metadata.szamla_figy, 'adoszam');
+    } finally { mock.allapot.hibaSzabaly(null); }
+  });
+
+  test('FAIL-OPEN: ha a szamla nem hozhato letre (pl. a korlatozott kulcsnak nincs joga), a fizetes MEGY, sima PI + a szalon-level kezi szamlat kér', async () => {
+    mock.allapot.hibaSzabaly((q) => (q.path === '/v1/customers' ? 403 : 0));
+    let a;
+    try {
+      a = await ujSzamla({ termek: '4kezes' });
+    } finally { mock.allapot.hibaSzabaly(null); }
+    assert.equal(a.r.adat.osszeg, 39900);
+    assert.equal(a.pi.invoice, undefined);
+    assert.equal(a.pi.amount, 3990000);
+    assert.equal(a.pi.metadata.forras, 'ajandek-motor');
+    assert.equal(a.pi.metadata.szamla_mod, 'nincs');
+    assert.match(a.pi.metadata.szamla_hiba, /403/);
+    mock.allapot.sikeresIt(a.r.adat.pi);
+    levelek = [];
+    assert.equal((await webhook(alairtEsemeny(a.r.adat.pi))).status, 200);
+    const szalon = levelek.find((l) => l.cimzett === 'szalon');
+    assert.match(szalon.html, /SZÁMLA – KÉZZEL KELL KIÁLLÍTANI/);
+    assert.match(szalon.html, /a szamlabridge <b>nem<\/b> készíti el automatikusan/);
+    assert.ok(szalon.html.includes('15.000 Ft · TAM (tárgyi adómentes)') && szalon.html.includes('24.900 Ft · 27%'));
+    assert.match(szalon.html, /A számlát kézzel kell kiállítani \(lásd fent\), ezért a Salonicban/);
+    assert.ok(!szalon.html.includes('automatikusan elkészíti'));
+  });
+
+  test('a Stripe Tax mas adot ad, mint a vart -> a szamla visszavonva, sima PI (NEM keszul rossz szamla), kezi szamla jelzes', async () => {
+    mock.allapot.adoSzazalek({ txcd_20040009: 0 });
+    let a;
+    try {
+      a = await ujSzamla();
+    } finally { mock.allapot.adoSzazalek({ txcd_20040009: 27 }); }
+    assert.equal(a.pi.invoice, undefined);
+    assert.equal(a.pi.metadata.szamla_mod, 'nincs');
+    assert.equal(a.pi.metadata.szamla_hiba, 'szamla_ado');
+    const voidolt = [...mock.allapot.szamlak.values()].filter((x) => x.metadata && x.metadata.forras === 'ajandek-motor' && x.status === 'void');
+    assert.ok(voidolt.length >= 1);
+    // a vart ado utan megint rendben megy
+    const b = await ujSzamla();
+    assert.equal(b.pi.metadata.szamla_mod, 'invoice');
+  });
+
+  test('a szalon-level (sikeres szamla): "automatikusan elkeszíti" + a varhato tetelek (4 kezes: TAM + 27%)', async () => {
+    const a = await ujSzamla({ termek: '4kezes' });
+    mock.allapot.sikeresIt(a.r.adat.pi);
+    levelek = [];
+    assert.equal((await webhook(alairtEsemeny(a.r.adat.pi))).status, 200);
+    const szalon = levelek.find((l) => l.cimzett === 'szalon');
+    assert.ok(szalon.html.includes('SZÁMLA'));
+    assert.match(szalon.html, /automatikusan elkészíti/);
+    assert.ok(szalon.html.includes('15.000 Ft · TAM (tárgyi adómentes)') && szalon.html.includes('24.900 Ft · 27%'));
+    assert.ok(!szalon.html.includes('KÉZZEL KELL KIÁLLÍTANI'));
+    // a kod / a vevo-level a szamla-modtol fuggetlenul ugyanaz (azonnali mod nelkul is a szokasos)
+    assert.ok(levelek.find((l) => l.cimzett === 'vevo@example.com'));
+    assert.equal(mock.allapot.pi(a.r.adat.pi).metadata.ertesites, '1');
+  });
+
+  test('"teszt" mod: csak a +szamlateszt cimkezesu e-mail kap Stripe-szamlat, a tobbi vevo a mostani (sima PI) uton marad', async () => {
+    const envT = { ...ENV, AJANDEK_STRIPE_SZAMLA: 'teszt' };
+    const szamlakElotte = mock.allapot.szamlak.size;
+    const sima = await hiv('POST', 'fizetes', { body: rendelesTorzs({ email: 'vevo@example.com' }), env: envT });
+    assert.equal(sima.status, 200);
+    assert.equal(mock.allapot.pi(sima.adat.pi).invoice, undefined);
+    assert.equal(mock.allapot.szamlak.size, szamlakElotte);
+    const proba = await hiv('POST', 'fizetes', { body: rendelesTorzs({ email: 'Feri+SzamlaTeszt@example.com' }), env: envT });
+    assert.equal(proba.status, 200);
+    const pi = mock.allapot.pi(proba.adat.pi);
+    assert.ok(pi.invoice && pi.metadata.szamla_mod === 'invoice');
+    assert.equal(mock.allapot.szamlak.size, szamlakElotte + 1);
+    // a "+szamlateszt" nem a helyi resz vegen (pl. a domainben) nem szamit
+    const nem = await hiv('POST', 'fizetes', { body: rendelesTorzs({ email: 'valaki@szamlateszt.hu' }), env: envT });
+    assert.equal(mock.allapot.pi(nem.adat.pi).invoice, undefined);
+  });
+
+  test('kapcsolo nelkul semmi nem valtozik: nincs ugyfel / szamla, sima PI; a szalon-level kezi szamlat kér (a mostani allapot)', async () => {
+    const szamlakElotte = mock.allapot.szamlak.size;
+    const ugyfelekElotte = mock.allapot.ugyfelek.size;
+    const a = await fizetettRendeles({ termek: '4kezes' });
+    assert.equal(mock.allapot.szamlak.size, szamlakElotte);
+    assert.equal(mock.allapot.ugyfelek.size, ugyfelekElotte);
+    const pi = mock.allapot.pi(a.pi);
+    assert.equal(pi.invoice, undefined);
+    assert.equal(pi.metadata.szamla_mod, undefined);
+    levelek = [];
+    assert.equal((await webhook(alairtEsemeny(a.pi))).status, 200);
+    assert.match(levelek.find((l) => l.cimzett === 'szalon').html, /SZÁMLA – KÉZZEL KELL KIÁLLÍTANI/);
+  });
+});
+
 describe('/rendeles', () => {
   test('rossz / hianyzo / mas PI-hez tartozo client_secret -> 403', async () => {
     const a = await ujRendeles();

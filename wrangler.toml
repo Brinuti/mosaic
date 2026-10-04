@@ -25,6 +25,7 @@ SMTP_USER = "mosaicheadspa@gmail.com"
 # wrangler.toml torli). Titkosak (Secret tipussal a feluleten): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK.
 STRIPE_PUBLISHABLE_KEY = "pk_live_51QhTxoFv8vc2ArnLJDN8P0UApI3h2BtAA5U4Yj2SlJYZQihjqw6Sz65iWAaRB8xtQSfCnDLn067Zij1CPz3NJKyT007JIHo3hu"   # NYILVANOS kulcs (a tulajdonos adta, 2026-10-04); a titkos kulcs (STRIPE_SECRET_KEY, korlatozott rk_live) es a STRIPE_WEBHOOK_SECRET a Cloudflare Production Secret-jei
 # AJANDEK_BAZIS_URL = "https://www.mosaicheadspa.hu"
+AJANDEK_STRIPE_SZAMLA = "teszt"   # Stripe-szamla (tetelek + Stripe Tax; a szamlabridge ezt olvassa elsokent, lasd AJANDEK.md 17. kor): "teszt" = csak a +szamlateszt cimkezesu e-mailu probavasarlasok; az igazolas utan "1" (minden fizetes). Hiba eseten sima PaymentIntent + kezi szamla jelzes.
 AJANDEK_AZONNALI = "1"   # a tulajdonos donotese (2026-10-04): bankkartyas rendelesnel a kartya a fizetes utan AZONNAL kimegy; a szalon a levelben kapott kodot viszi fel a Salonicba. Atutalasnal marad a kezi gomb.
 
 # PR-elonezetek (preview deployok): a "vars" nem orokodik, ezert az SMTP-ertekek itt ujra szerepelnek. A Stripe
@@ -37,6 +38,7 @@ SMTP_PORT = "465"
 SMTP_USER = "mosaicheadspa@gmail.com"
 STRIPE_PUBLISHABLE_KEY = "pk_test_51QhTxoFv8vc2ArnLyqmRz5giwCnlNAtTTygecEAnBRWbFmYrPWTYQtsCG3tSVI6hU3BJCBBKBNaMe6621Twfq40r00wzanIqTE"
 AJANDEK_AZONNALI = "1"
+AJANDEK_STRIPE_SZAMLA = "1"
 
 # A szemelyre szabott ajandekkartyak fotoi (Cloudflare KV, lasd AJANDEK.md "Foto-tarolas"): eles es elonezeti nevter kulon.
 # A kezelo az AJANDEK_FOTOK kotesen at olvassa / irja; nelkule a fotofeltoltes ki van kapcsolva.

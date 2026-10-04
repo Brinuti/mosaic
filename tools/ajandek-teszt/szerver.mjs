@@ -52,6 +52,7 @@ async function hatterInditas() {
       // a kezelo legalabb 32 karakteres titkot ker (kulonben 'nincs' mod)
       AJANDEK_TITOK: 'dev-titok-dev-titok-dev-titok-dev-titok',
       AJANDEK_AZONNALI: process.env.AZONNALI === '1' ? '1' : '',
+      AJANDEK_STRIPE_SZAMLA: process.env.SZAMLA === '1' ? '1' : '',
       STRIPE_API_BASE: mock.url,
       ...(process.env.TESZT_FOTO === 'nincs' ? {} : { AJANDEK_FOTOK: memoriaKv() }),
     };
