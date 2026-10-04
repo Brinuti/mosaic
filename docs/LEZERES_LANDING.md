@@ -1,18 +1,19 @@
-# Lézeres szőrtelenítés landing (`/lezeres-szortelenites-budapest-uj`)
+# Lézeres szőrtelenítés landing (`/lezeres-szortelenites-budapest`)
 
-Az új oldal a megadott terv alapján készült, a `/sminktetovalas-budapest` landing stílusában (Playfair Display + Jost, arany
-foglalás-gomb, sötétzöld foglaló-szekció). **Külön címen él** (`/lezeres-szortelenites-budapest-uj`, `noindex`, sehonnan nincs rá link, nem szerepel a sitemapben): a mostani, éles
-`/lezeres-szortelenites-budapest` oldalt (Wixes klón) NEM cseréli le. A tulajdonos döntése (2026-10-04): amíg nem jelzi, nem váltunk át.
-**Átváltás:** a fájl átnevezése `foglalas/lezeres-szortelenites-budapest.html`-re, a `noindex` meta törlése, a canonical / og:url javítása, a tesztek `OLDAL`
-útvonalának átírása és egy deploy (a mérés útvonal szerint működik: a `suti.js` pixel-listáján a `lezeres-szortelenites-budapest` szerepel; az `-uj`
-címen nincs mérőkód-pixel, és ezt nem is írtuk át). Visszaállítás átváltás után: a fájl törlése, a klón változatlanul megvan.
+Az oldal a megadott terv alapján készült, a `/sminktetovalas-budapest` landing stílusában (Playfair Display + Jost, arany
+foglalás-gomb, sötétzöld foglaló-szekció). **Élesben van az eredeti címen** (`/lezeres-szortelenites-budapest`, indexelhető, a sitemapben szerepel; a tulajdonos kifejezett
+kérésére, 2026-10-04): a korábbi Wixes klón helyét vette át (a `foglalas/*.html` felülírja a `klon/*.html` azonos nevű fájlját).
+- A **régi (Wixes) változat** rejtett címen megmaradt: `/lezeres-szortelenites-budapest-regi` (`klon/lezeres-szortelenites-budapest-regi.html` + `klon/m/…`; `noindex`, saját canonical, nincs rá link, nincs a sitemapben) – összehasonlításhoz és visszaálláshoz.
+- Az ideiglenes **`/lezeres-szortelenites-budapest-uj`** cím 301-gyel az eredeti címre irányít (`netlify/lib/utvonal.js`, `ATIRANYITASOK`).
+- **Visszaállítás a régi oldalra:** a `foglalas/lezeres-szortelenites-budapest.html` törlése (a klón `klon/lezeres-szortelenites-budapest.html` változatlanul megvan) + deploy; az `-uj` átirányítást is érdemes kivenni.
+- Mérés: a `suti.js` pixel-listáján a `lezeres-szortelenites-budapest` szerepel, ezért az oldal útvonal alapján megkapja a mérőkódokat (hozzájárulás után); kattintás-szintű események (pl. Salonic-átkattintás) ehhez az oldalhoz külön nincsenek.
 
 | Fájl | Szerepe |
 |---|---|
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (74 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (75 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje

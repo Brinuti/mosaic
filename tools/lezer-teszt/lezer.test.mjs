@@ -1,4 +1,4 @@
-// A /lezeres-szortelenites-budapest-uj landing tesztjei bongeszoben (Playwright), a helyi dist/ ellen. Kulso halozati forgalom nincs:
+// A /lezeres-szortelenites-budapest landing tesztjei bongeszoben (Playwright), a helyi dist/ ellen. Kulso halozati forgalom nincs:
 // minden nem helyi keres le van tiltva, a Salonic naptar-API-t a teszt hamisitja.
 //
 //   node tools/netlify-build.mjs && node --test tools/lezer-teszt/lezer.test.mjs
@@ -14,7 +14,7 @@ import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 
 const GYOKER = path.resolve(import.meta.dirname, '..', '..');
-const OLDAL = '/lezeres-szortelenites-budapest-uj';
+const OLDAL = '/lezeres-szortelenites-budapest';
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const UA_MOBIL = 'Mozilla/5.0 (Linux; Android 13; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36';
 const TIPUS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.txt': 'text/plain',
@@ -32,7 +32,7 @@ const { chromium } = playwright();
 let szerver, bazis, bongeszo;
 
 before(async () => {
-  assert.ok(fs.existsSync(path.join(GYOKER, 'dist', '_a', 'lezeres-szortelenites-budapest-uj.html')), 'Eloszor: node tools/netlify-build.mjs');
+  assert.ok(fs.existsSync(path.join(GYOKER, 'dist', '_a', 'lezeres-szortelenites-budapest.html')), 'Eloszor: node tools/netlify-build.mjs');
   const { fajlUtvonal } = await import(pathToFileURL(path.join(GYOKER, 'tools/serve-dist.mjs')).href);
   szerver = http.createServer((req, res) => {
     const u = new URL(req.url, 'http://x');
@@ -80,7 +80,8 @@ describe('oldal', () => {
     const { p, ctx, hibak, kulso } = await nyit();
     assert.match(await p.title(), /Lézeres szőrtelenítés Budapesten/);
     assert.equal(await p.locator('h1').count(), 1);
-    assert.equal(await p.locator('link[rel=canonical]').getAttribute('href'), 'https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest-uj');
+    assert.equal(await p.locator('link[rel=canonical]').getAttribute('href'), 'https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest');
+    assert.equal(await p.locator('meta[name=robots]').count(), 0, 'eles oldal: indexelheto (nincs noindex)');
     await p.waitForLoadState('networkidle');
     assert.deepEqual(hibak, []);
     // a Google-terkep csak a "funkcionalis" suti elfogadasa utan toltodik
@@ -118,7 +119,7 @@ describe('oldal', () => {
   });
 
   test('a regi, fotokat tartalmazo Egyedi csomag grafika nem szerepel az oldalon (intim terulet: nincs meztelen kep)', async () => {
-    const html = fs.readFileSync(path.join(GYOKER, 'foglalas', 'lezeres-szortelenites-budapest-uj.html'), 'utf8');
+    const html = fs.readFileSync(path.join(GYOKER, 'foglalas', 'lezeres-szortelenites-budapest.html'), 'utf8');
     assert.ok(!html.includes('8af672635311499ba75b593e0fb7af4f') && !html.includes('9c43d7be8ec84a5785a00f11315d03d1') && !html.includes('b3a5aa5289a9494b9eabbe574cf7a4d6'));
   });
 });
@@ -963,6 +964,24 @@ describe('a tizenharmadik kor: mobil finomitasok', () => {
     assert.equal((await p.textContent('#arlista .arlista-bevezeto')).trim(), 'Az árak egy kezelésre (alkalomra) vonatkoznak. A 8 alkalmas programban a 4. és a 8. alkalom ajándék, ezért csak 6 alkalmat fizetsz.');
     assert.equal((await p.textContent('.hero-szoveg > .kalk-jelzes')).replace(/\s+/g, ' ').trim(), 'Több területet szeretnél? Számold ki az árát →');
     await ctx.close();
+  });
+});
+
+describe('az atvaltas: eredeti cim, rejtett regi valtozat, atiranyitas', () => {
+  test('az -uj cim 301-gyel az eredeti cimre iranyit; a rejtett -regi valtozat noindex, sajat canonical-lal, es a fejlecben a regi (Wixes) oldal van', async () => {
+    const lekeres = (ut) => new Promise((ok, hiba) => http.get(bazis + ut, { headers: { 'user-agent': 'Mozilla/5.0' } }, (r) => { let s = ''; r.on('data', (c) => { s += c; }); r.on('end', () => ok({ status: r.statusCode, loc: r.headers.location, szoveg: s })); }).on('error', hiba));
+    const uj = await lekeres('/lezeres-szortelenites-budapest-uj');
+    assert.equal(uj.status, 301);
+    assert.equal(uj.loc, '/lezeres-szortelenites-budapest');
+    const regi = await lekeres('/lezeres-szortelenites-budapest-regi');
+    assert.equal(regi.status, 200);
+    assert.match(regi.szoveg, /<meta name="robots" content="noindex, nofollow"\/>/);
+    assert.match(regi.szoveg, /<link rel="canonical" href="https:\/\/www\.mosaicheadspa\.hu\/lezeres-szortelenites-budapest-regi"\/>/);
+    assert.ok(!regi.szoveg.includes('lezer-landing.css'), 'a regi valtozat a Wixes klon, nem az uj landing');
+    const eles = await lekeres('/lezeres-szortelenites-budapest');
+    assert.equal(eles.status, 200);
+    assert.ok(eles.szoveg.includes('lezer-landing.css'), 'az eredeti cimen az uj landing van');
+    assert.ok(!/<meta name="robots"/i.test(eles.szoveg), 'az eles oldal indexelheto (nincs robots meta)');
   });
 });
 

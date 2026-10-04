@@ -1,4 +1,4 @@
-// MOSAIC lezeres szortelenites landing (/lezeres-szortelenites-budapest-uj) - mukodes.
+// MOSAIC lezeres szortelenites landing (/lezeres-szortelenites-budapest) - mukodes.
 //
 //  1. Idopont-valaszto (#foglalas): havi naptar + a kivalasztott nap idopontjai a Salonic nyilvanos naptar-API-bol (ugyanaz a forras, mint a
 //     PMU landingen). Idopontot nem talalunk ki: ha az API nem valaszol, a Salonic-linkre vezetunk. Egy idopontra kattintva a Salonic
