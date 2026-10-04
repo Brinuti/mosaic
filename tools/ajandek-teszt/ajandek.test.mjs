@@ -277,6 +277,7 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.match(css, /\.ah-sticky \{ display: none; \}/, 'alapbol rejtett (asztalin nincs)');
     assert.match(css, /@media \(max-width: 640px\) \{\s*\.ah-sticky \{ display: flex;[^}]*position: fixed;/);
     assert.ok(js.includes("data-nezet') === 'landing'"), 'csak a landing nezetben latszik (nem a tervezoben / fizetesnel)');
+    assert.ok(js.includes("getElementById('SITE_FOOTER')"), 'a lablec eleresekor eltunik (a #mh-lablec display: contents, ezert a #SITE_FOOTER-t figyeljuk)');
     assert.ok(js.includes("$('ah-sticky-szoveg').textContent = c.hero_cta"), 'a gomb szovege a variant hero-gombja');
     // a sticky sav ara a legolcsobb termek (adatbol, nem kitalalt)
     assert.equal(Math.min(...Object.values(ADAT.TERMEKEK).map((t) => t.ar_ft)), 26900);

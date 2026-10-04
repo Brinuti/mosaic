@@ -1673,8 +1673,14 @@
     // a hero-gomb "elgorgetve": nincs a kepernyon, es a lap teteje fole kerult (nem alatta)
     new IntersectionObserver(function (es) { var r = es[0]; stickyAllapot.hero = r.isIntersecting || r.boundingClientRect.top > 0; stickyFrissit(); }).observe(hero);
     new IntersectionObserver(function (es) { stickyAllapot.valaszto = es[0].isIntersecting; stickyFrissit(); }).observe(valaszto);
-    var lablec = $('mh-lablec');
-    if (lablec) new IntersectionObserver(function (es) { stickyAllapot.lablec = es[0].isIntersecting; stickyFrissit(); }).observe(lablec);
+    // a lablec wrapper (#mh-lablec) display: contents, ezert a tenyleges lablecet (#SITE_FOOTER) figyeljuk; ha meg nincs a DOM-ban, a betoltes utan
+    function lablecFigyel() {
+      var lablec = document.getElementById('SITE_FOOTER');
+      if (!lablec) return false;
+      new IntersectionObserver(function (es) { stickyAllapot.lablec = es[0].isIntersecting; stickyFrissit(); }).observe(lablec);
+      return true;
+    }
+    if (!lablecFigyel()) window.addEventListener('load', lablecFigyel);
   }
 
   // ---------------------------------------------------------------- tovabb a fizetesre (history: a visszalepes a kivalasztott allapotba visz)
