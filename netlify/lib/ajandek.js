@@ -826,7 +826,7 @@ async function fizetes(k) {
     try {
       const sz = await szamlaPi(k, r, ar, leiras, meta, kulcs);
       return json(200, {
-        pi: sz.id, client_secret: sz.client_secret, osszeg: Math.round(Number(sz.amount) / 100), penznem: 'HUF', rendeles_id: ADAT.rendelesAzonosito(sz.id),
+        pi: sz.id, client_secret: sz.client_secret, osszeg: Math.round(Number(sz.amount) / 100), penznem: 'HUF', rendeles_id: ADAT.rendelesAzonosito(sz.id), szamla: 'stripe',
       });
     } catch (e) {
       console.error('ajandek: a Stripe-szamla letrehozasa nem sikerult, sima PaymentIntent (a szamlat kezzel kell kiallitani):', e && e.message, e && e.status, e && e.kod);
@@ -874,6 +874,8 @@ async function fizetes(k) {
     osszeg: Math.round(Number(pi.amount) / 100),
     penznem: 'HUF',
     rendeles_id: ADAT.rendelesAzonosito(pi.id),
+    // Stripe-szamla mod: ha a szamla nem jott letre, itt latszik (a fizetes ettol meg megy; a szalon-level kezi szamlat kér)
+    ...(szamlaMod ? { szamla: 'nincs', szamla_hiba: meta.szamla_hiba || '' } : {}),
   });
 }
 

@@ -663,6 +663,7 @@ describe('Stripe-szamla (AJANDEK_STRIPE_SZAMLA=1)', () => {
   test('egyeni: 1 tetel (26 900 Ft, 27%, brutto), Stripe Tax: 5 718,90 Ft; a szamla PI-je fizetheto, metadata teljes', async () => {
     const { r, pi, szamla } = await ujSzamla();
     assert.equal(r.adat.osszeg, 26900);
+    assert.equal(r.adat.szamla, 'stripe');
     assert.equal(pi.amount, 2690000);
     assert.ok(szamla, 'a PI szamlahoz tartozik');
     assert.equal(szamla.status, 'open');
@@ -786,6 +787,8 @@ describe('Stripe-szamla (AJANDEK_STRIPE_SZAMLA=1)', () => {
       a = await ujSzamla({ termek: '4kezes' });
     } finally { mock.allapot.hibaSzabaly(null); }
     assert.equal(a.r.adat.osszeg, 39900);
+    assert.equal(a.r.adat.szamla, 'nincs');
+    assert.match(a.r.adat.szamla_hiba, /403/);
     assert.equal(a.pi.invoice, undefined);
     assert.equal(a.pi.amount, 3990000);
     assert.equal(a.pi.metadata.forras, 'ajandek-motor');
