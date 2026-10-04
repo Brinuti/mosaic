@@ -38,7 +38,7 @@ after(async () => {
 });
 
 const rendeles = (extra = {}) => ({
-  termek: 'paros', email: 'vevo@example.com', nev: 'Adapter Anna', iranyitoszam: '1023', varos: 'Budapest', cim: 'Bécsi út 2.',
+  termek: 'paros', email: 'vevo@example.com', ajandekozott: 'Adapter Barbara', nev: 'Adapter Anna', iranyitoszam: '1023', varos: 'Budapest', cim: 'Bécsi út 2.',
   attr: { variant_id: 'general' }, kulcs: 'k-' + crypto.randomUUID(), ...extra,
 });
 function alairt(piId) {

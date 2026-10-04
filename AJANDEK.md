@@ -55,7 +55,7 @@ termék-kártya, rádiógomb: kép, név, „50 perc kezelés + 30 perc szárít
 lapozható sorban); külön „Valódi Google-vélemények” szekció (Trustindex); „Pontosan ezt kapja” (a szeánsz 15 elemének lapozója);
 „Ezt adod át neki” (fotó + a valódi kártya); „Miért MOSAIC?” (cím, elérhetőség + 14 képes, lapozható, nagyítható galéria); „Hogyan működik az ajándékozás?” + gyakori kérdések; a fizetési nézet
 két oszlopban (a tulajdonos 4. mockupja szerint): bal oldalt *2 Adatok* (mezőnként ikon, összecsukható „Céges számlát kérek”), jobb oldalt *1 Rendelésed* (kép, cím, tartalom, „Felhasználható 6 hónapig”, ár)
-és alatta *3 Fizetés* (Stripe Payment Element, „Biztonságos fizetés — ár”, „Inkább átutalással fizetnék”); mobilon egy oszlop, ragadós fizetés-sávval. A mockup kitalált elemei NEM kerültek át: „azonnali kézbesítés”, a mockup
+és alatta *3 Fizetés* (Stripe Payment Element, „Biztonságos fizetés — ár”; a fizetési mód választó része: Kártya/Revolut/Google Pay vagy Banki átutalás); mobilon egy oszlop, ragadós fizetés-sávval. A mockup kitalált elemei NEM kerültek át: „azonnali kézbesítés”, a mockup
 idézetei és vendégfeliratai (a videók alatt csak a vendég keresztneve és a videó hossza áll), a születésnapos mintaüzenet,
 generált belső terek és térkép, „Kolosy tér” (a cím: 1023 Budapest, Bécsi út 2.), „láthatóan szebb haj”.
 
@@ -251,8 +251,10 @@ Két eset van (a szalon eddigi gyakorlata szerint):
 
 1. **Kártya:** a Stripe webhook (`POST /api/ajandek/webhook`) két levelet küld: a szalonnak (rendelés, vevő adatai, javasolt kód,
    **„Kiállítom a kártyát”** gomb) és a vevőnek („megkaptuk a fizetésed”).
-2. **Utalás:** a vevő a fizetési oldalon az „Inkább átutalással fizetnék” linkre kattint, megadja a telefonszámát (kötelező, a
-   Salonic-utalványhoz kell) és opcionálisan a megajándékozott nevét + üzenetet. A rendszer a Stripe-ban egy **nyilvántartási
+2. **Utalás:** a vevő a fizetési oldalon a *Fizetési mód* választóban a „Banki átutalás”-t választja (a kártyamező eltűnik, a gomb „Rendelés
+   elküldése — ár” lesz, és figyelmeztetés jelenik meg: a kártyát csak az utalás visszaigazolása után tudjuk kiállítani, bankkártyánál azonnal
+   küldjük), megadja a telefonszámát (kötelező, a Salonic-utalványhoz kell; a mező az *Adatok* kártyában csak átutalásnál jelenik meg), a
+   szalonban átvételnél opcionálisan üzenetet is. A rendszer a Stripe-ban egy **nyilvántartási
    PaymentIntentet** hoz létre (`metadata.fizetesi_mod = atutalas`, `atu_ref = ATU-…`; **nem fizethető ki**, a `client_secret`-jét senki nem
    kapja meg), és két levelet küld: a vevőnek az utalási adatokat, a szalonnak az igényt a **„Az utalás beérkezett – kiállítom a
    kártyát”** gombbal és a Salonic-értékesítés közvetlen linkjével (`app.salonic.hu/promotion/giftCard/sale/<id>`, az id az
@@ -294,7 +296,7 @@ A háttér frissítése: Canva-tervmásolat („MOSAIC ajándékkártya háttér
 
 ### Átvétel és személyre szabás (2026-10-03)
 
-**Kezelés-bemutató (beágyazva, 2026-10-04-től nem felugró).** A 2. lépésben a kijelzett élmény videója (`<video controls>`, 9:16), a 3. lépésben cím, ár, leírás és a
+**Kezelés-bemutató (beágyazva, 2026-10-04-től nem felugró).** A 2. lépésben a kijelzett élmény videója (`<video controls>`, **3:4**, 540x720: a doboz képaránya pontosan a videóé, nincs sáv alatta/fölötte), a 3. lépésben cím, ár, leírás és a
 „Mi történik a kezelésen?” lista (összecsukva). A kijelzett élmény = a vevő választása, ennek hiányában az ajánlott (a variant előválasztása, egyébként az első a sorrendben), így a
 videó és a vásárlás-doboz mindig ki van töltve; a rádiógomb állítja be az `S.termek`-et (nincs görgetés, nincs felugró). A tartalom a
 `TERMEKEK.*.kezeles` mezőben van (`leiras`, `lepesek`, `video`). A videók: *egyéni* = a Meta-fiók „Headspa szeptember 20_ natív kezelés.mp4”
@@ -439,3 +441,29 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
 - **Fizetés:** egy kis laptop képernyőjére (1366 x 768, de 1280 x 600-ig tesztelve) elfér a fizetés gombbal együtt: bal oldalt *1 Rendelésed* (karcsú) és *2 Adatok* (a mezőkben ikon, az adatok két-három oszlopos rácsban), jobb oldalt *3 Fizetés*. Alacsony (≤ 720 px) képernyőn a Rendelésed kártya tovább tömörödik.
 - **Személyre szabó:** egy képernyőre elfér a „Tovább a fizetéshez” gombbal együtt (1366 x 650 px-en a gomb alja ~480 px): a kártya előlapja bal oldalt, jobb oldalt két oszlopban a vezérlők (design / fotó + idézet / név + gombok); a hátoldal a „Fordítsd meg a kártyát” linkkel nézhető meg.
 - **Hero:** a négy bizalmi elem (Google-értékelés, 6 hónapig érvényes, online megvásárolható, személyre szabható kártya) 1240 px-es szélességtől egy sorban, ikonnal együtt áll (alatta 2 x 2); a „Már van ajándékkártyád? Foglalj időpontot a kuponkóddal” sor lekerült (a beváltás a „Hogyan működik?” 5. lépésében és a GYIK-ben szerepel).
+
+## Videóbox-méretezés, ajándékozott neve, fizetési mód, a tulajdonos első kártyadizájnja (2026-10-04, a tulajdonos kérései)
+
+- **Háromoszlopos választó:** a videóbox képaránya pontosan a videóé (3:4; a három kezelés-videó és poszter 540x720, tiszta, elmosott sávok nélkül), és **ez adja a három lépés
+  magasságát** (1280 px-től három oszlop: termékek | videó ~390–400 px | vásárlás; 900–1279 px-en két oszlop + a vásárlás alatta; 900 px alatt egy oszlop). A termék-lista és a
+  vásárlás-doboz `contain: size`-zal nem számít bele a sor magasságába, a videóbox adja; tartalmuk beleférjen (ezért a termék-kártya csak a nevet, az időt, a főt és az árat mutatja,
+  a vásárlás-doboz szövegei rövidebbek). Ellenőrizve 1280–1920 px között mindhárom élménynél (a dobozok teteje/alja azonos, nincs túlcsordulás).
+- **Ajándékozott neve (kötelező):** az *Adatok* kártya első mezője (`ah-ajandekozott`, max. 40 karakter), a szerver `ajandekozott` mezője is kötelező (`/fizetes`, `/atutalas`).
+  A személyre szabó „Ajándékozott neve” mezőjével **egy érték** (`S.tervezo.nev`, mindkét mező egymást frissíti); a Stripe-rekordban `szemelyre_nev`, a szalon-levelekben
+  „Megajándékozott”, a Salonic-linkben `nameTo`; a kártyán a „NEKI” alatt jelenik meg (szalonban átvételnél a standard kártyán).
+  Sorrend a rácsban: ajándékozott neve | számlázási név, e-mail | telefon (csak átutalásnál), irányítószám | város | utca.
+- **Fizetési mód (egy helyen):** kártya/Revolut/Google Pay (Stripe Payment Element) vagy **Banki átutalás**. Átutalásnál nincs kártyamező, a gomb „Rendelés elküldése — ár”,
+  a „Fontos: átutalás esetén a kártyát csak az utalás visszaigazolása után tudjuk kiállítani, ezért nem kapod meg azonnal. Bankkártyás fizetésnél a kártyát automatikusan, azonnal
+  küldjük.” üzenettel; a külön „Inkább átutalással fizetnék” link és panel megszűnt. Elküldés után az utalási adatok a fizetés kártyában jelennek meg (a választó, a gomb és az
+  *Adatok* kártya letiltva). Az átutalás továbbra sem vásárlás (`bank_transfer_request`).
+- **Tulajdonos első kártyadizájnja (`smaragd`, a feltöltött terv):** zöld-arany, bal oldalt íves fotóablak, jobbra logó + idézet + „NEKI” + név; hátoldal: termék, érték, kód,
+  érvényesség. A terv előlapjáról/hátoldaláról a mintaszövegeket és a mintafotót kiszedtem (`assets/img/ajandek/kartya-smaragd-elol.jpg`, `-hat.jpg`, 930 x 577 px, a logó, a
+  keretek, a „NEKI”, az „UTALVÁNYKÓD” felirat, a lábléc a háttérképen marad). A sablon (`ajandek-kartya.js`) a dizájnnak **saját koordináta-teret és képarányt** enged
+  (`w`, `h`, `hatter`, `hat`): a lap képaránya 1,612 : 1; a nyomtató oldalon az A4 két felében középre igazítva áll (a hajtás a két fél között). A fotó az ívbe kerül
+  (kivágott ív + vékony arany szegély, a háttér vastag íve fölé), az **idézet és a név a biztonságos területen marad**: a betűméret lépcsőkben csökken a hosszal és a sorok számával
+  (idézet: 33 → 16 px a 930 px-es lapon, max. 160 karakter és 5 sor; név: 27 → 14 px, egy sor, max. 40 karakter), a dobozok `overflow: hidden`, így semmi nem lóg a levelekre,
+  a keretre vagy a logóra (160 karakteres idézettel, 40 karakteres névvel, 8 soros szöveggel ellenőrizve). **Fontos:** a feltöltött terv felbontása kicsi (930 px / 21 cm ≈ 113 dpi):
+  éles nyomtatáshoz a tulajdonostól kell a nagy felbontású (legalább 2480 x 1540 px) szövegmentes háttér; a többi három dizájn még helyőrző.
+- **Szövegek (a tulajdonos kérése):** „Mi az a Headspa és miért ilyen népszerű?” (alcímben a népszerűség okai); „Imádják a nők!” + „Nézd meg, mit mondanak a kezelés után :)”;
+  „Több mint 1.300 db 5 csillagos értékelés!” (**a hero és a Trustindex jelenleg 1.259 / 1255 db-ot mutat, ezért a „több mint 1.300”-at a tulajdonosnak meg kell erősítenie**);
+  „Kényeztetés a legmagasabb szinten”; „Személyre szabott ajándékkártya!” + a 3 kattintásos szerkesztést és az A5 méretet leíró bekezdés.

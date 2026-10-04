@@ -379,6 +379,8 @@ export function szemelyreSzabottKartyaOldal(d) {
 ${K.betuCss(d.bazis)}
 ${K.CSS}
 @page{size:A4 portrait;margin:0}
+/* az A4-es lap fele-fele: a (kepes) dizajnok sajat aranyu lapja a felek kozepen all, a hajtas a ket fel kozott */
+.ak-lap{aspect-ratio:794/1123;grid-template-rows:1fr 1fr;align-items:center;background:#fff}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:#e9e3d7;color:#2b2b2b;font:15px/1.55 "Helvetica Neue",Arial,Helvetica,sans-serif;padding:24px 12px 40px;-webkit-print-color-adjust:exact;print-color-adjust:exact}

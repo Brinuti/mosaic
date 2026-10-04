@@ -425,6 +425,10 @@ function rendelesAdat(d) {
   const email = egysor(d.email);
   if (!email) m.email = 'Add meg az e-mail-címed.';
   else if (email.length > 254 || !EMAIL_RE.test(email)) m.email = 'Ez nem tűnik érvényes e-mail-címnek.';
+  // az ajandekozott (aki a kartyat kapja) neve: a kartyara kerul, ezert kotelezo
+  const ajandekozott = egysor(d.ajandekozott);
+  if (!ajandekozott) m.ajandekozott = 'Add meg az ajándékozott nevét.';
+  else if (Array.from(ajandekozott).length > KARTYA.NEV_MAX) m.ajandekozott = `Az ajándékozott neve legfeljebb ${KARTYA.NEV_MAX} karakter lehet.`;
   const nev = egysor(d.nev);
   if (!nev) m.nev = 'Add meg a neved.';
   else if (nev.length > 120) m.nev = 'A név legfeljebb 120 karakter lehet.';
@@ -474,7 +478,7 @@ function rendelesAdat(d) {
   return {
     mezok: m,
     r: {
-      termek, email, nev, iranyitoszam, varos, cim, ceges_nev: cegesNev, ceges_adoszam: cegesAdoszam, attr: attrAdat(d.attr),
+      termek, email, ajandekozott, nev, iranyitoszam, varos, cim, ceges_nev: cegesNev, ceges_adoszam: cegesAdoszam, attr: attrAdat(d.attr),
       atvetel, szemelyre,
     },
   };
@@ -506,6 +510,8 @@ function fizetesMeta(r) {
       kartya_tema: r.szemelyre.tema, kartya_idezet: r.szemelyre.idezet, szemelyre_nev: r.szemelyre.nev,
       foto_id: r.szemelyre.foto_id, foto_poz: r.szemelyre.foto_poz,
     } : {}),
+    // a megajandekozott neve: a szemelyre szabott kartyan a tervezo neve, egyebkent az ajandekozott mezo (a ket mezo a weboldalon egy)
+    szemelyre_nev: (r.szemelyre && r.szemelyre.nev) || r.ajandekozott,
   });
 }
 
@@ -1207,7 +1213,8 @@ async function atutalas(k) {
   if (valasz) return valasz;
   if (egysor(d['bot-field'])) return json(200, { ok: true });
   const { mezok, r } = rendelesAdat(d);
-  const megajandekozott = egysor(d.megajandekozott);
+  // a megajandekozott neve: a (regi, kifejezett) 'megajandekozott' mezo, majd a tervezo neve, majd az ajandekozott mezo
+  const megajandekozott = egysor(d.megajandekozott) || (r.szemelyre && r.szemelyre.nev) || r.ajandekozott;
   if (megajandekozott.length > 80) mezok.megajandekozott = 'A név legfeljebb 80 karakter lehet.';
   const uzenet = tobbsor(d.uzenet);
   if (uzenet.length > 300) mezok.uzenet = 'Az üzenet legfeljebb 300 karakter lehet.';
@@ -1235,8 +1242,7 @@ async function atutalas(k) {
       description: `MOSAIC ajándékkártya - ÁTUTALÁSOS IGÉNY (nincs kifizetve) - ${ref}`,
       metadata: metaTisztit({
         ...fizetesMeta(r), fizetesi_mod: 'atutalas', atu_ref: ref, telefon,
-        // otthon nyomtatott kartyanal a nev a szemelyre szabobol jon (fizetesMeta), a szalonban atvetelnel az urlapbol
-        szemelyre_nev: megajandekozott || (r.szemelyre && r.szemelyre.nev) || '', szemelyre_uzenet: uzenet,
+        szemelyre_nev: megajandekozott, szemelyre_uzenet: uzenet,
       }),
     }, 'ah-atu-' + ref);
   } catch (e) {
@@ -1253,7 +1259,7 @@ async function atutalas(k) {
       ...L.szalonAtutalasLevel({
         ...kozos, email: r.email, nev: r.nev, telefon, iranyitoszam: r.iranyitoszam, varos: r.varos, cim: r.cim,
         ceges_nev: r.ceges_nev, ceges_adoszam: r.ceges_adoszam, megajandekozott, uzenet, oldal: r.attr.oldal,
-        kiallit_url: kiallitUrl, salonic_url: salonicKitoltoUrl(r.termek, { nev: r.nev, telefon, szemelyre_nev: megajandekozott || (r.szemelyre && r.szemelyre.nev) || '' }), salonic_nev: salonic ? salonic.nev : '', szalon_email: ADAT.SZALON.email,
+        kiallit_url: kiallitUrl, salonic_url: salonicKitoltoUrl(r.termek, { nev: r.nev, telefon, szemelyre_nev: megajandekozott }), salonic_nev: salonic ? salonic.nev : '', szalon_email: ADAT.SZALON.email,
         atvetel_szoveg: r.atvetel === 'szemelyesen' ? 'Személyesen, a szalonban (papír kártya, díszborítékban)' : r.atvetel === 'otthon' ? 'E-mailben, otthon kinyomtatja' : '',
         design_szoveg: r.szemelyre ? (KARTYA.tema(r.szemelyre.tema) || {}).nev || '' : '', idezet_szoveg: r.szemelyre ? r.szemelyre.idezet : '',
         foto_van: Boolean(r.szemelyre && r.szemelyre.foto_id),

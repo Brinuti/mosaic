@@ -51,7 +51,7 @@ async function hiv(method, ut, { body, query, headers = {}, env = ENV, most, kul
 }
 
 const rendelesTorzs = (extra = {}) => ({
-  termek: 'egyeni', email: 'vevo@example.com', nev: 'Teszt Elek', iranyitoszam: '1023', varos: 'Budapest', cim: 'Bécsi út 2.',
+  termek: 'egyeni', email: 'vevo@example.com', ajandekozott: 'Kiss Anna', nev: 'Teszt Elek', iranyitoszam: '1023', varos: 'Budapest', cim: 'Bécsi út 2.',
   ceges: null,
   attr: { variant_id: 'general', gift_context: 'general', utm_source: 'google', utm_medium: 'cpc', utm_campaign: 'oszi', gclid: 'gcl-123', oldal: '/ajandek?utm_source=google' },
   kulcs: 'k-' + crypto.randomUUID(),
@@ -176,6 +176,10 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     for (const jel of ['id="ah-lepesek"', 'id="ah-termek-racs"', 'id="ah-kiv-media"', 'id="ah-tovabb-gomb"', 'id="ah-osszesito-forma"', 'class="ah-kartya ah-urlap-adatok"', 'class="ah-kartya ah-urlap-fizetes"']) assert.ok(html.includes(jel), jel);
     assert.ok(html.includes('id="ah-fordit"') && !html.includes('ah-oldal-kapcsolo'), 'a kartya forgathato (Forditsd meg), nincs elol/hat valto');
     assert.ok(!html.includes('ah-hero-ar'), 'a hero-bol az "ar-tol" lekerult');
+    // fizetes: az ajandekozott neve, egy fizetesi mod valaszto (kartya / atutalas), nincs kulon "Inkabb atutalassal" link
+    for (const jel of ['id="ah-ajandekozott"', 'id="ah-telefon"', 'id="ah-fizmod"', 'name="fizmod" value="kartya"', 'name="fizmod" value="atutalas"', 'id="ah-atu-doboz"', 'id="ah-atutalas"']) assert.ok(html.includes(jel), jel);
+    assert.ok(!html.includes('ah-atutalas-gomb') && !html.includes('Inkább átutalással'), 'a regi atutalas-link kikerult');
+    assert.ok(html.includes('csak az utalás visszaigazolása után tudjuk kiállítani') && html.includes('Bankkártyás fizetésnél a kártyát automatikusan'), 'atutalasi figyelmeztetes');
     for (const t of Object.values(ADAT.TERMEKEK)) assert.ok(typeof t.kartya_sor === 'string' && t.kartya_sor.length > 10, t.id + ' kartya_sor');
   });
 
@@ -304,6 +308,12 @@ describe('/fizetes', () => {
     assert.ok(r.adat.mezok.termek);
     r = await hiv('POST', 'fizetes', { body: rendelesTorzs({ termek: 'constructor', email: 'a@b', iranyitoszam: '', varos: '' }) });
     assert.deepEqual(Object.keys(r.adat.mezok).sort(), ['email', 'iranyitoszam', 'termek', 'varos']);
+    // az ajandekozott (a kartyat kapo) neve kotelezo, legfeljebb 40 karakter
+    r = await hiv('POST', 'fizetes', { body: rendelesTorzs({ ajandekozott: '' }) });
+    assert.equal(r.status, 400);
+    assert.equal(typeof r.adat.mezok.ajandekozott, 'string');
+    r = await hiv('POST', 'fizetes', { body: rendelesTorzs({ ajandekozott: 'Á'.repeat(41) }) });
+    assert.ok(r.adat.mezok.ajandekozott);
     r = await hiv('POST', 'fizetes', { body: rendelesTorzs({ nev: 'x'.repeat(121), email: 'a'.repeat(250) + '@x.hu' }) });
     assert.ok(r.adat.mezok.nev && r.adat.mezok.email);
     r = await hiv('POST', 'fizetes', { body: rendelesTorzs({ ceges: { nev: 'Minta Kft.', adoszam: '' } }) });
@@ -359,6 +369,7 @@ describe('/fizetes', () => {
     assert.equal(pi.metadata.utm_source, 'meta');
     assert.equal(pi.metadata.fbclid, 'fb-1');
     assert.equal(pi.metadata.nev, 'Teszt Elek');
+    assert.equal(pi.metadata.szemelyre_nev, 'Kiss Anna', 'a megajandekozott neve (ajandekozott) a rekordban');
     assert.equal(pi.metadata.iranyitoszam, '1023');
     assert.equal(pi.metadata.varos, 'Budapest');
     assert.equal(pi.metadata.cim, 'Bécsi út 2.');
@@ -519,7 +530,8 @@ describe('/rendeles', () => {
     assert.equal(r.adat.attr.ttclid, 'tt-9');
     assert.equal(r.adat.attr.utm_term, null);
     assert.deepEqual(r.adat.kartya, { allapot: 'keszul', ervenyes_ig: null });
-    assert.equal(r.adat.szemelyre, null);
+    // a megajandekozott neve mar a rendeleskor megvan (ajandekozott), ez a vasarlas utani szemelyre szabo elotolti
+    assert.deepEqual(r.adat.szemelyre, { nev: 'Kiss Anna', uzenet: null, alkalom: null, atadas: null, idezet: null, tema: null, foto: false });
     assert.equal(r.headers['cache-control'], 'no-store');
 
     mock.allapot.bukas(a.pi);
@@ -829,7 +841,7 @@ describe('/szemelyre', () => {
       assert.equal(r.status, 400, mezo + '=' + ertek);
       assert.ok(r.adat.mezok[mezo]);
     }
-    assert.equal(mock.allapot.pi(a.pi).metadata.szemelyre_nev, undefined);
+    assert.equal(mock.allapot.pi(a.pi).metadata.szemelyre_nev, 'Kiss Anna'); // a rendeleskor megadott nev valtozatlan
   });
 
   test('fizetett PI-n ment, a valasz a /rendeles formaja; fizikai atadasnal szalon-ertesito (modositaskor ujra)', async () => {
@@ -927,7 +939,7 @@ describe('/kartya', () => {
       const sz = await hiv('POST', 'szemelyre', { body });
       assert.equal(sz.status, 403);
     }
-    assert.equal(mock.allapot.pi(a.pi).metadata.szemelyre_nev, undefined);
+    assert.equal(mock.allapot.pi(a.pi).metadata.szemelyre_nev, 'Kiss Anna'); // a rendeleskor megadott nev valtozatlan
     // a /rendeles valasza valtozatlan alaku: kartya.kod + kartya.url (a t-s link)
     const rr = await hiv('GET', 'rendeles', { query: { pi: a.pi, cs: a.client_secret } });
     assert.deepEqual(Object.keys(rr.adat.kartya).sort(), ['allapot', 'ervenyes_ig', 'kod', 'url']);
@@ -1167,11 +1179,20 @@ describe('/atutalas', () => {
     assert.ok(!g.body.includes('Titkos üzenet'), 'a kiallito oldal sem mutatja');
     // a kartyara a teljes uzenet kerul (a rekordban megmarad)
     assert.equal(mock.allapot.pi(pi.id).metadata.szemelyre_uzenet, 'Titkos üzenet a kártyára');
-    // megajandekozott neve nelkul nincs nameTo
+    // kifejezett megajandekozott nelkul a nameTo az ajandekozott mezo (a rendeleskor megadott nev)
     const r2 = await hiv('POST', 'atutalas', { body: rendelesTorzs({ termek: 'egyeni', telefon: TEL }) });
     const pi2 = atuPi(r2.adat.rendeles_ref);
     const g2 = await hiv('GET', 'kiallit', { query: { pi: pi2.id, t: await kiallitToken(ENV, pi2.id) } });
-    assert.ok(!('nameTo' in salonicAdat(g2.body).adat));
+    assert.equal(salonicAdat(g2.body).adat.nameTo, 'Kiss Anna');
+  });
+
+  test('az ajandekozott neve atutalasnal is kotelezo, a rekordba (szemelyre_nev) kerul', async () => {
+    let r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ ajandekozott: '', telefon: TEL }) });
+    assert.equal(r.status, 400);
+    assert.ok(r.adat.mezok.ajandekozott);
+    r = await hiv('POST', 'atutalas', { body: rendelesTorzs({ ajandekozott: 'Péter Zsófia', telefon: TEL }) });
+    assert.equal(r.status, 200);
+    assert.equal(atuPi(r.adat.rendeles_ref).metadata.szemelyre_nev, 'Péter Zsófia');
   });
 
   test('"MOSAIC kitolto" konyvjelzo: javascript: href (biztonsagos karakterek), a CSP-ben nincs unsafe-inline, a kiallito oldalon nincs szkript', async () => {
@@ -1608,7 +1629,7 @@ describe('/rendeles?rt= (csak olvaso token)', () => {
       const r = await hiv('POST', 'szemelyre', { body });
       assert.equal(r.status, 403);
     }
-    assert.equal(mock.allapot.pi(a.pi).metadata.szemelyre_nev, undefined);
+    assert.equal(mock.allapot.pi(a.pi).metadata.szemelyre_nev, 'Kiss Anna'); // a rendeleskor megadott nev valtozatlan
     // nyitott PI: az rt-vel nem lehet a meglevo PI-t modositani (uj PI jon letre)
     const b = await ujRendeles();
     const brt = await rendelesToken(ENV, b.pi);
@@ -1916,10 +1937,65 @@ describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
     assert.ok(hat.includes('ak-hat') && !hat.includes('ak-elol') && hat.includes('AK-TEST-0001') && hat.includes('26.900 Ft') && hat.includes('2027. április 4.') && !hat.includes('Ez a személyes idézet'));
   });
 
+  test('KEPES dizajn (smaragd, a tulajdonos terve): sajat aranyu lap, szovegmentes hatterkepek, a fotohely az ivben, a szovegek a biztonsagos teruleten', () => {
+    const t = K.tema('smaragd');
+    assert.ok(t && t.hatter && t.w === 930 && t.h === 577, 'a smaragd a feltoltott terv (930 x 577)');
+    for (const fajl of [t.hatter.elol, t.hatter.hat]) {
+      const ut = new URL('../../' + fajl.replace(/^\//, ''), import.meta.url);
+      assert.ok(fs.existsSync(ut), fajl + ' letezik');
+      assert.ok(fs.statSync(ut).size < 400 * 1024, fajl + ' kicsi (< 400 KB)');
+    }
+    const h = K.html({ ...minta, tema: 'smaragd' });
+    assert.ok(h.includes('aspect-ratio:930/577'), 'a lap sajat aranyu');
+    assert.ok(h.indexOf('ak-hat') < h.indexOf('ak-elol') && h.includes('kartya-smaragd-elol.jpg') && h.includes('kartya-smaragd-hat.jpg'));
+    const elol = K.html({ ...minta, tema: 'smaragd', oldal: 'elol' }), hat = K.html({ ...minta, tema: 'smaragd', oldal: 'hat' });
+    assert.ok(elol.includes('Ez a személyes idézet') && elol.includes('Nagy Mária') && !elol.includes('AK-TEST-0001') && !elol.includes('<small>NEKI</small>'), 'a "NEKI" a hatterkepen van');
+    for (const x of ['AK-TEST-0001', '26.900 Ft', '2027. április 4.', '50+30 perces egyéni MOSAIC', 'HEAD SPA KEZELÉS']) assert.ok(hat.includes(x), x);
+    // a fotohely a keretiven (a hatterkepen levo vekony arany vonalon) belul van, az ivbe illo: a fele szelessege <= a magassag
+    assert.ok(t.kep.alak === 'iv' && t.kep.h >= t.kep.w / 2);
+    // az idezet es a nev a fotohelytol jobbra, a hatterkep dobozaiban; egymast nem fedik, a lap szelen belul vannak
+    const atfed = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    assert.ok(t.idezet.x >= t.kep.x + t.kep.w && t.nevHely.x >= t.kep.x + t.kep.w);
+    assert.ok(!atfed(t.idezet, t.nevHely));
+    assert.ok(t.idezet.x + t.idezet.w <= 840 && t.nevHely.x + t.nevHely.w <= 840, 'nem er a jobb oldali levelekre / veneres teruletre');
+  });
+
+  test('KEPES dizajn: a betumeret a szoveg hosszatol (es a sorok szamatol) fugg, a leghosszabb idezet / nev is belefer a dobozba', () => {
+    const t = K.tema('smaragd');
+    const px = (html, osztaly) => Number(new RegExp('class="' + osztaly + '"[^>]*font-size:([0-9.]+)cqw').exec(html)[1]) * (t.w / 100);
+    const idezetPx = (szoveg) => px(K.html({ ...minta, tema: 'smaragd', idezet: szoveg, oldal: 'elol' }), 'ak-idezet');
+    const nevPx = (szoveg) => px(K.html({ ...minta, tema: 'smaragd', nev: szoveg, oldal: 'elol' }), 'ak-nev');
+    // folyamatosan csokken
+    let elozo = Infinity;
+    for (const n of [10, 40, 60, 90, 120, 160]) { const p = idezetPx('a'.repeat(n)); assert.ok(p <= elozo, 'az idezet merete nem no a hosszal'); elozo = p; }
+    // becsles: sorszam * sormagassag <= a doboz magassaga, es a karakterszam beleferjen (Playfair italic ~ 0.5 em atlagos szelesseg)
+    for (const n of [20, 40, 70, 100, 130, 160]) {
+      const p = idezetPx('a'.repeat(n)), sor = Math.floor(t.idezet.h / (p * 1.3)), sorban = Math.floor(t.idezet.w / (p * 0.5));
+      assert.ok(sor * sorban >= n * 1.12, n + ' karakter belefer (' + sor + ' sor x ' + sorban + ' karakter, ' + p.toFixed(1) + ' px)');
+    }
+    // kezi sortores: 6 rovid sor is a legkisebb lepcsot kapja, es a sorok beleferjenek
+    assert.equal(idezetPx(['a', 'b', 'c', 'd', 'e'].join(String.fromCharCode(10))), idezetPx('a'.repeat(160)));
+    // nev: egy sorban, a doboz szelessegen belul (a leggyakoribb hosszu es a legszelesebb betuk)
+    for (const n of [8, 16, 24, 32, 40]) {
+      const p = nevPx('n'.repeat(n));
+      assert.ok(n * p * 0.5 <= t.nevHely.w * 1.01, n + ' karakteres nev (' + p + ' px)');
+      assert.ok(p * 1.15 <= t.nevHely.h, 'a sor magassaga belefer');
+    }
+    assert.ok(K.CSS.includes('.ak-kepes .ak-nev{') && /white-space:nowrap/.test(K.CSS) && /overflow:hidden/.test(K.CSS));
+  });
+
+  test('a szerver-oldal (nyomtato oldal) az A4-es lap felein kozepre igazitja a dizajn sajat aranyu lapjait', async () => {
+    const L = await import('../../netlify/lib/ajandek-levelek.js');
+    const oldal = L.szemelyreSzabottKartyaOldal({ bazis: 'https://pelda.hu', tema: 'smaragd', idezet: 'Szia', nev: 'Réka', kartya_felirat: ['A', 'B'], ar_szoveg: '26.900 Ft', kod: 'AAAA-BBBB', ervenyes_ig: '2027-04-04' });
+    assert.ok(oldal.includes('.ak-lap{aspect-ratio:794/1123;grid-template-rows:1fr 1fr;align-items:center'), 'a ket fel kozepre igazitva');
+    assert.ok(oldal.includes('aspect-ratio:930/577') && oldal.includes('/assets/img/ajandek/kartya-smaragd-hat.jpg'));
+    assert.ok(oldal.includes('Réka') && oldal.includes('AAAA-BBBB'));
+  });
+
   test('minden dizajn fekvo lapon fer el: a fotohely, az idezet es a nev a lapon belul van, az idezet es a nev nem er a fotohelyre', () => {
     for (const t of K.TEMAK) {
       for (const [nev, r] of [['kep', t.kep], ['idezet', t.idezet], ['nevHely', t.nevHely]]) {
-        assert.ok(r.x >= 0 && r.y >= 0 && r.x + r.w <= K.LAP_W && r.y + r.h <= K.LAP_H, `${t.id}.${nev} a lapon belul`);
+        assert.ok(r.x >= 0 && r.y >= 0 && r.x + r.w <= (t.w || K.LAP_W) && r.y + r.h <= (t.h || K.LAP_H), `${t.id}.${nev} a lapon belul`);
       }
       const atfed = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
       assert.ok(!atfed(t.kep, t.idezet) && !atfed(t.kep, t.nevHely), `${t.id}: a szoveg nem fedi a fotot`);
