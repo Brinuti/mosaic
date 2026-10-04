@@ -827,4 +827,19 @@ describe('a hetedik kor visszajelzesei', () => {
     assert.match(szoveg, /^Ha egy életre elfelejtenéd a borotvát és a begyulladt szőrtüszőket, akkor igen\./);
     await ctx.close();
   });
+
+  test('szorbenoves-video: poszter + kattintasra betolto video; a fajl elerheto', async () => {
+    const { p, ctx } = await nyit();
+    await p.locator('.szorbenoves').scrollIntoViewIfNeeded();
+    assert.equal(await p.locator('.szorbenoves video').count(), 0, 'a video csak kattintasra toltodik be');
+    const forras = await p.getAttribute('#szorbenoves-video', 'data-video');
+    assert.equal(forras, '/assets/video/lezer-szorbenoves.mp4');
+    assert.equal(await p.evaluate(async (u) => (await fetch(u, { method: 'HEAD' })).status, forras), 200, 'a video fajl elerheto');
+    await p.click('#szorbenoves-video');
+    await p.waitForSelector('.szorbenoves video[controls]');
+    assert.equal(await p.getAttribute('.szorbenoves video source', 'src'), forras);
+    assert.equal(await p.getAttribute('.szorbenoves video', 'aria-label'), 'Szőrbenövés és begyulladt szőrtüszők: Zsófi videója');
+    await ctx.close();
+  });
 });
+

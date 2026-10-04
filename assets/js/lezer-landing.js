@@ -303,12 +303,11 @@
     fig.observe(foglalo);
   } else idopontokBetolt();
 
-  // --- Zsofi konzultacios videoja: kattintasra toltodik be (a poszter latszik addig; a 9 MB-os fajl csak ekkor), lejatszhato, vezerlokkel -----
-  const zv = $('zsofi-video');
-  if (zv) {
+  // --- videok (Zsofi konzultacios videoja, szorbenoves-video): kattintasra toltodnek be (a poszter latszik addig; a fajl csak ekkor), lejatszhatok, vezerlokkel -----
+  for (const zv of document.querySelectorAll('.video-kartya[data-video]')) {
     zv.addEventListener('click', () => {
       const poszter = zv.querySelector('img');
-      const v = elem('video', { controls: true, autoplay: true, playsinline: true, preload: 'auto', poster: poszter ? poszter.getAttribute('src') : false, 'aria-label': 'Zsófi konzultációs videója' });
+      const v = elem('video', { controls: true, autoplay: true, playsinline: true, preload: 'auto', poster: poszter ? poszter.getAttribute('src') : false, 'aria-label': zv.dataset.cim || 'Videó' });
       v.append(elem('source', { src: zv.dataset.video, type: 'video/mp4' }));
       const hely = elem('div', { class: 'video-kartya' }, v);
       zv.replaceWith(hely);
