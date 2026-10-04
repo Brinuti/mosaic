@@ -12,7 +12,7 @@ címen nincs mérőkód-pixel, és ezt nem is írtuk át). Visszaállítás átv
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (47 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (54 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje
@@ -31,12 +31,13 @@ kártyák semleges alakos ábrák (kiemelt testtájjal), az SVG-k a HTML elején
 „funkcionális” sütik elfogadása után), ami a `#velemenyek` szekcióhoz görget. A szekció az **eredeti Trustindex-embed** (`/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html`, ugyanaz,
 mint a főoldalon és az ajándékkártya-oldalon), iframe-ben; a sütik elfogadásáig (vagy a „Vélemények megjelenítése” gombig) helykitöltő áll a helyén. A „4,9” a tulajdonos megadott értéke.
 
-**Ikonok / illusztrációk:** a foglaló-motor saját, illusztrált képei (160×160, a `mosaic-engine` `assets/img/booking/` mappájából másolva ide: `assets/img/lezer-ikon/`;
-`la-*` = területek, `lp-*` = csomagok, `rz-*` = kis testrész-ikonok). **Ne rajzolj helyettük sajátot**: a tulajdonos ezeket készíttette erre a célra. Használat: a „Mennyibe kerül?”
-kártyák (`la-honalj`, `la-intim`, a „Hónalj + intim” a kettő együtt, `la-lab`), az árlista (csoportonként `la-*`/`lp-kis`, soronként `rz-*`/`la-arc`/`lp-*`) és a kalkulátor
-(gombok, csoportcímek, eredménysorok). Az ikonok egyetlen forrása az árlista HTML-je (a kalkulátor onnan másolja).
+**Ikonok / illusztrációk:** a tulajdonos által feltöltött látványtervekből (`intim.jpg` = „Mennyibe kerül?” kártyák, `testtajak.jpg` = árlista) kivágott képek az `assets/img/lezer-ikon/` mappában:
+`kartya-*.jpg` (a 4 „Mennyibe kerül?” kártya képe), `sor-<kulcs>.jpg` (az árlista soronkénti kerek ikonja, a `data-kulcs`-hoz igazítva), `cs-*.jpg` (az árlista csoportjelvényei).
+**Ne rajzolj helyettük sajátot.** A kalkulátor gombjai, csoportcímei és eredménysorai az árlista ikonjait másolják (egyetlen forrás: az `#arlista` HTML-je). A korábbi motor-ikonok (`la-/lp-/rz-`) már nincsenek használatban.
 
 **Zsófi:** a konzultációs videó (a régi oldal 44 mp-es videója, `assets/video/c2eb0f_ba9a927739a64ab090ddb79bc84c6dc0.mp4`) kattintásra tölt be (9 MB), mellette 4 képből álló, nagyítható galéria.
+
+**Mobil sticky sáv:** az `/oxigenterapia-budapest` oldal mintájára telefonon (≤ 700 px) alul rögzített sáv: arany „Szabad időpontok” gomb (a foglalóra ugrik) + kis „Ingyenes konzultáció” link. A hero gombjainak elgörgetése után jelenik meg, a foglaló szekciónál és az után nem látszik (`#sticky-cta`, `lezer-landing.js`).
 
 ## Árforrás
 
@@ -70,7 +71,7 @@ térképkép kikerült).
 
 ## Nyitott pontok (a tulajdonos döntése / adata kell)
 
-- **Eredmények (előtte/utána):** jelenleg egy valódi vendégfotó van (hónalj, a régi oldalról), a rács egy kártyás (`class="eredmeny-racs egy"`). További kártya: új `<article class="eredmeny-kartya">` valódi fotóval és adatokkal (terület, kezelések száma, időtáv), majd az `egy` osztály törlése. Adatot nem találunk ki.
+- **Eredmények (előtte/utána):** három valódi vendégfotó-kártya: hónalj (a régi oldalról), lábszár és arc (a tulajdonostól, 2026-10-04; `assets/img/lezer-eredmeny/`). Minden kép egy kompozit (balra előtte, jobbra utána, kb. 1,45:1), a „Előtte/Utána” címkét a CSS rakja rá (`.cimke`). Új kártya: új `<article class="eredmeny-kartya">` valódi fotóval és területtel; adatot (kezelésszám, időtáv) nem találunk ki. Telefonon oldalra görgethető sor.
 - A „4,9” és a Zsófi-szekció „4 év tapasztalat” a megadott tervből és a régi oldalról való.
 - A hero alcíme (**„a világ egyik legerősebb diódalézerével, az Elysion Pro-val”**): a régi oldal ezzel egyező állítása; ha a „világ első” volt a szándék, a szöveg a `.hero-al` sorban módosítható.
 

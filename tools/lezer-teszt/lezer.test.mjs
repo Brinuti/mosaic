@@ -112,7 +112,7 @@ describe('oldal', () => {
   test('nincs vizszintes gorgetes telefonon (390 px)', async () => {
     const { p, ctx } = await nyit({ mobil: true });
     await p.waitForLoadState('networkidle');
-    const m = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: innerWidth }));
+    const m = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: document.documentElement.clientWidth }));
     assert.ok(m.sw <= m.iw, `scrollWidth ${m.sw} > ${m.iw}`);
     await ctx.close();
   });
@@ -363,7 +363,7 @@ describe('idopont-valaszto: naptar (hamisitott Salonic-API)', () => {
     const { p, ctx } = await nyit({ mobil: true, api: () => idok(...SLOTOK) });
     await p.locator('#foglalo').scrollIntoViewIfNeeded();
     await kell(p);
-    const m = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: innerWidth, nap: document.querySelector('#naptar .naptar-nap').getBoundingClientRect().width }));
+    const m = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: document.documentElement.clientWidth, nap: document.querySelector('#naptar .naptar-nap').getBoundingClientRect().width }));
     assert.ok(m.sw <= m.iw, `scrollWidth ${m.sw} > ${m.iw}`);
     assert.ok(m.nap >= 30, 'a napok erintheto meretuek: ' + m.nap);
     await ctx.close();
@@ -431,11 +431,11 @@ describe('az uj tartalom (visszajelzesek alapjan)', () => {
     await ctx.close();
   });
 
-  test('a testtaji kartyak a foglalo-motor illusztralt kepeit hasznaljak (nem sajat rajz, nem foto)', async () => {
+  test('a testtaji kartyak a latvanyterv illusztralt kepeit hasznaljak (nem sajat rajz, nem foto)', async () => {
     const { p, ctx } = await nyit();
     assert.equal(await p.locator('.gyors-kartya svg').count(), 0, 'nincs sajat rajzolt SVG');
     const kepek = await p.$$eval('.gyors-kartya', (l) => l.map((a) => [...a.querySelectorAll('.abra-kep img')].map((i) => i.getAttribute('src').split('/').pop()).join('+')));
-    assert.deepEqual(kepek, ['la-honalj.jpg', 'la-intim.jpg', 'la-honalj.jpg+la-intim.jpg', 'la-lab.jpg']);
+    assert.deepEqual(kepek, ['kartya-honalj.jpg', 'kartya-intim.jpg', 'kartya-honalj_intim.jpg', 'kartya-lab.jpg']);
     await ctx.close();
   });
 
@@ -517,12 +517,12 @@ describe('a harmadik kor visszajelzesei', () => {
     const { p, ctx } = await nyit();
     const m = await p.$$eval('.szamolo-valaszto, .szamolo-eredmeny', (l) => l.map((e) => Math.round(e.getBoundingClientRect().height)));
     assert.equal(m[0], m[1], 'a ket doboz magassaga: ' + m);
-    assert.equal(await p.locator('#szamolo-valaszto .sz-chip img.ti-kep').count(), 17, 'minden gombon ikon (a motor illusztralt kepe)');
+    assert.equal(await p.locator('#szamolo-valaszto .sz-chip img.ti-kep').count(), 17, 'minden gombon ikon (a latvanyterv illusztralt kepe)');
     assert.ok((await p.locator('#szamolo-tartalom .sz-sorok img.ti-kep').count()) >= 3, 'az eredmeny soraiban is ikon');
     assert.equal(await p.locator('#arlista tbody tr .sor-ikon img.ti-kep').count(), 22, 'az arlista minden soraban ikon');
     assert.equal(await p.locator('#arlista .csoport-ikon img.ti-kep').count(), 7, 'az arlista minden csoportjanal ikon');
     const forrasok = await p.$$eval('img.ti-kep', (l) => [...new Set(l.map((i) => i.getAttribute('src').split('/').pop().split('?')[0].split('-')[0]))].sort());
-    assert.deepEqual(forrasok, ['la', 'lp', 'rz'], 'csak a motor la-/lp-/rz- kepei');
+    assert.deepEqual(forrasok, ['cs', 'sor'], 'csak a latvanyterv ikonjai (sor-/cs-)');
     assert.equal(await p.locator('svg.ti').count(), 0, 'nincs sajat rajzolt ikon');
     await ctx.close();
   });
@@ -592,8 +592,100 @@ describe('a harmadik kor visszajelzesei', () => {
     const { p, ctx } = await nyit({ mobil: true, api: () => idok(...SLOTOK) });
     await p.locator('#foglalo').scrollIntoViewIfNeeded();
     await p.waitForSelector('#naptar button.naptar-nap');
-    const m = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: innerWidth }));
+    const m = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: document.documentElement.clientWidth }));
     assert.ok(m.sw <= m.iw, `scrollWidth ${m.sw} > ${m.iw}`);
     await ctx.close();
   });
 });
+
+describe('mobil sticky CTA (mint az oxigen oldalon)', () => {
+  const lathato = (p) => p.$eval('#sticky-cta', (e) => e.classList.contains('lathato'));
+  const gorget = async (p, sel) => { await p.evaluate((s) => { document.documentElement.style.scrollBehavior = 'auto'; const e = document.querySelector(s); scrollTo(0, e.getBoundingClientRect().top + scrollY - 80); }, sel); await p.waitForTimeout(500); };
+
+  test('telefonon: a hero gombjai alatt nincs, utana latszik, a foglalonal es utana eltunik; a gomb a foglalora ugrik', async () => {
+    const { p, ctx } = await nyit({ mobil: true, api: () => idok(...SLOTOK) });
+    assert.equal(await lathato(p), false, 'az oldal tetejen nincs');
+    assert.equal(await p.getAttribute('#sticky-cta', 'aria-hidden'), 'true');
+    await gorget(p, '.tudod');
+    assert.equal(await lathato(p), true, 'a hero gombjai utan latszik');
+    assert.equal(await p.getAttribute('#sticky-cta', 'aria-hidden'), 'false');
+    const m = await p.$eval('#sticky-cta', (e) => { const r = e.getBoundingClientRect(); return { alja: Math.round(r.bottom), ablak: innerHeight, pozicio: getComputedStyle(e).position, ujra: [...e.querySelectorAll('a')].map((a) => a.getAttribute('href')) }; });
+    assert.equal(m.pozicio, 'fixed');
+    assert.equal(m.alja, m.ablak, 'az ablak aljan ul');
+    assert.equal(m.ujra[0], '#foglalas');
+    assert.match(m.ujra[1], /serviceId=476477|business=laser/);
+    assert.equal(await p.evaluate(() => document.body.classList.contains('sticky-be')), true);
+    await gorget(p, '#foglalas');
+    assert.equal(await lathato(p), false, 'a foglalo szekcional eltunik');
+    await gorget(p, '.helyszin');
+    assert.equal(await lathato(p), false, 'a foglalo utan sem jon vissza');
+    await gorget(p, '.zsofi');
+    assert.equal(await lathato(p), true, 'a foglalo felett (messze) ujra latszik');
+    await ctx.close();
+  });
+
+  test('a gomb a foglalora gorget', async () => {
+    const { p, ctx } = await nyit({ mobil: true, api: () => idok(...SLOTOK) });
+    // az elso latogatasnal a suti-sav fedi az also savot (mint az oxigen oldalon): elfogadas utan kattinthato
+    await p.getByRole('button', { name: 'Elfogadom' }).click();
+    await gorget(p, '.zsofi');
+    await p.click('#sticky-cta a.gomb');
+    await p.waitForFunction(() => { const t = document.getElementById('foglalas').getBoundingClientRect().top; return t < 200 && t > -400; }, null, { timeout: 8000 });
+    await ctx.close();
+  });
+
+  test('asztalon nincs sticky sav', async () => {
+    const { p, ctx } = await nyit();
+    assert.equal(await p.$eval('#sticky-cta', (e) => getComputedStyle(e).display), 'none');
+    await ctx.close();
+  });
+});
+
+describe('a latvanyterv szerinti ikonok es a tomorebb arlista', () => {
+  test('az arlista soronkent a sajat ikonjat hasznalja (sor-<kulcs>.jpg), csoportonkent cs-*.jpg', async () => {
+    const { p, ctx } = await nyit();
+    const sorok = await p.$$eval('#arlista tr[data-kulcs]', (l) => l.map((tr) => [tr.dataset.kulcs, tr.querySelector('.sor-ikon img').getAttribute('src').split('/').pop()]));
+    for (const [k, f] of sorok) assert.equal(f, `sor-${k}.jpg`);
+    const cs = await p.$$eval('#arlista .csoport-ikon img', (l) => l.map((i) => i.getAttribute('src').split('/').pop()));
+    assert.deepEqual(cs, ['cs-arc.jpg', 'cs-kar.jpg', 'cs-intim.jpg', 'cs-lab.jpg', 'cs-ferfi.jpg', 'cs-egyeb.jpg', 'cs-csomag.jpg']);
+    await ctx.close();
+  });
+
+  test('asztalon az arlista keskeny (<= 980 px), a sorok felekkora magassagúak (<= 64 px), a ket szamoszlop kozel van egymashoz', async () => {
+    const { p, ctx } = await nyit();
+    const dob = await p.$eval('.arlista-doboz', (e) => Math.round(e.getBoundingClientRect().width));
+    assert.ok(dob <= 980, 'a doboz szelessege: ' + dob);
+    const magas = await p.$$eval('#arlista tbody tr:not(:has(small))', (l) => l.map((tr) => Math.round(tr.getBoundingClientRect().height)));
+    assert.ok(magas.length >= 15);
+    for (const m of magas) assert.ok(m <= 64, 'sormagassag: ' + m);
+    // terulet-nev (sor-ikon + nev) es az alkalmankenti ar kozotti hely: a leghosszabb nev nelkuli soroknal is legfeljebb ~340 px
+    const rest = await p.$eval('#arlista tr[data-kulcs="bajusz"]', (tr) => { const n = tr.querySelector('.sor-nev').getBoundingClientRect(); const a = tr.querySelector('.ar-egy').getBoundingClientRect(); return Math.round(a.left - n.right); });
+    assert.ok(rest <= 340, 'a nev vege es az ar kozotti hely: ' + rest);
+    await ctx.close();
+  });
+
+  test('a Mennyibe kerul? szekcio: rombusz-elvalasztok, ajandek-ikonos 20%-os pill', async () => {
+    const { p, ctx } = await nyit();
+    assert.equal(await p.locator('#mennyibe .rombusz').count(), 5, 'cim alatt 1 + kartyankent 1');
+    assert.equal(await p.locator('#mennyibe p.kedv-sor svg.aj-ikon').count(), 1);
+    await ctx.close();
+  });
+});
+
+describe('eredmenyek: tobb valodi elotte/utana kartya', () => {
+  test('harom kartya (honalj, labszar, arc), mindegyik kepe betoltodik, a rács nem "egy" kartyas', async () => {
+    const { p, ctx } = await nyit();
+    await p.evaluate(() => document.querySelectorAll('#eredmenyek img[loading=lazy]').forEach((i) => { i.loading = 'eager'; }));
+    await p.locator('#eredmenyek').scrollIntoViewIfNeeded();
+    await p.waitForFunction(() => [...document.querySelectorAll('#eredmenyek img')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 8000 });
+    assert.equal(await p.locator('#eredmenyek .eredmeny-racs.egy').count(), 0);
+    const terulet = await p.$$eval('#eredmenyek .eredmeny-kartya dd', (l) => l.map((e) => e.textContent.trim()));
+    assert.deepEqual(terulet, ['Hónalj', 'Lábszár', 'Arc']);
+    assert.equal(await p.locator('#eredmenyek .cimke').count(), 6, 'kartyankent Elotte + Utana');
+    const m = await p.$$eval('#eredmenyek .eloutana', (l) => l.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; }));
+    assert.equal(new Set(m.map((x) => x.join('x'))).size, 1, 'egyforma meretu kepkeretek: ' + JSON.stringify(m));
+    assert.ok(m[0][0] >= 300, 'harom oszlop: ' + m[0][0]);
+    await ctx.close();
+  });
+});
+
