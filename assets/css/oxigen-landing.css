@@ -217,17 +217,6 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .hatas-forras { margin-top: 16px; font-size: 13px; color: var(--halk); line-height: 1.5; }
 
 /* --- milyen hajhullasokra mukodik + videok --- */
-.tipusok { padding: 20px 0 54px; background: var(--krem2); }
-.tipusok h2 { font-size: 36px; }
-.tipusok .lead { font-size: 16.5px; color: #3b4a49; }
-.tipus-racs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; }
-.tipus { background: #fff; border: 1px solid #eadfca; border-radius: 16px; padding: 24px 22px; box-shadow: var(--arnyek); }
-.tipus > svg { width: 44px; height: 44px; color: #b08b51; stroke-width: 1.4; display: block; margin-bottom: 10px; }
-.tipus h3 { font: 600 18px/1.3 var(--test); color: var(--szoveg); letter-spacing: 0; }
-.tipus p { font-size: 14.5px; color: #4a5757; margin-top: 8px; line-height: 1.55; min-height: 3.1em; }
-.tipus-cta { background: var(--lap); display: flex; flex-direction: column; align-items: flex-start; }
-.tipus-cta .gomb { margin-top: auto; align-self: flex-start; }
-.tipus-cta p { margin-bottom: 16px; }
 .yt-cim { font-size: 24px; margin-top: 40px; }
 .yt-racs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 18px; }
 .yt-csempe { display: flex; flex-direction: column; text-align: left; padding: 0; border: 1px solid #eadfca; border-radius: 14px; background: #fff; color: var(--szoveg); cursor: pointer; overflow: hidden; box-shadow: var(--arnyek); transition: transform .15s, box-shadow .2s; }
@@ -248,22 +237,6 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .yt-keret iframe { width: 100%; height: 100%; border: 0; display: block; }
 .yt-zar { position: absolute; top: -44px; right: 0; width: 38px; height: 38px; border-radius: 50%; border: 0; background: #fff; color: var(--sotet); font-size: 24px; line-height: 1; cursor: pointer; }
 .yt-ablak form { margin: 0; }
-
-/* --- mire szamithatsz + miert mukodik --- */
-.varhato { padding: 6px 0 54px; background: var(--krem2); }
-.varhato h2 { font-size: 36px; }
-.varhato-racs { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); gap: 24px; margin-top: 30px; align-items: stretch; }
-.hatas-racs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.hatas-csempe { display: flex; align-items: center; gap: 16px; background: #fff; border: 1px solid #eadfca; border-radius: 16px; padding: 18px 18px; box-shadow: var(--arnyek); }
-.hatas-ikon { flex: none; width: 62px; height: 62px; border-radius: 50%; background: #f4ead6; display: grid; place-items: center; color: #a98446; }
-.hatas-ikon svg { width: 36px; height: 36px; stroke-width: 1.6; }
-.hatas-csempe b { display: block; font: 600 15.5px/1.3 var(--test); color: var(--szoveg); }
-.hatas-csempe small { display: block; font-size: 13.5px; line-height: 1.35; color: #4a5757; margin-top: 3px; }
-.miert-mukodik { background: linear-gradient(160deg, var(--sotet2), var(--mely)); color: #e3ecea; border-radius: 18px; padding: 30px 32px; box-shadow: 0 18px 40px rgba(15, 58, 60, .25); display: flex; flex-direction: column; justify-content: center; }
-.miert-mukodik h3 { color: #fff; font-size: 28px; }
-.miert-mukodik p { font-size: 15.5px; line-height: 1.6; margin-top: 14px; color: #d3dedc; }
-.miert-mukodik p.mm-kiemelt { font: 500 21px/1.35 var(--cim); color: #e7cd92; }
-.miert-mukodik b { color: #fff; font-weight: 600; }
 
 /* --- eredmenyek --- */
 .eredmenyek { padding: 56px 0 60px; background: var(--krem2); }
@@ -319,42 +292,12 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .ti-link a { color: var(--sotet); }
 
 /* --- arak --- */
-.arak { padding: 40px 0 36px; background: var(--krem); }
-.arak h2 { font-size: 36px; }
-.arak-racs { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, .95fr); grid-template-areas: "cim ." "kartyak aside" "lab ."; column-gap: 40px; align-items: stretch; }
-.arak-cim { grid-area: cim; margin-bottom: 18px; }
-.ar-kartyak { grid-area: kartyak; }
-.alkalom { grid-area: aside; display: flex; flex-direction: column; }
-.arak-lab { grid-area: lab; }
-.ar-kartyak { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 0; }
-.ar-kartya { position: relative; background: #fff; border: 1px solid #e6d9bd; border-radius: 16px; padding: 18px 20px 16px; text-align: center; display: flex; flex-direction: column; box-shadow: var(--arnyek); }
-.ar-kartya.kiemelt { border-color: #c6a346; box-shadow: 0 0 0 2px #c6a346, 0 18px 40px rgba(160, 125, 40, .2); }
-.ar-kartya.kiemelt .osszeg { font-size: 38px; }
-.ar-kartya.gyengebb { background: #fbf8f2; border-color: #e6dcc6; box-shadow: none; }
-.ar-kartya.gyengebb .osszeg { font-size: 30px; color: #3b4a49; }
-.ar-badge { align-self: center; background: var(--arany-gomb); color: #fff; font: 600 11.5px/1 var(--test); letter-spacing: .08em; text-transform: uppercase; padding: 8px 14px; border-radius: 999px; margin-bottom: 10px; text-shadow: 0 1px 1px rgba(90, 62, 10, .25); }
-.ar-badge.halvany { background: transparent; color: var(--halk); border: 1px solid #d9ccb0; text-shadow: none; }
-.ar-kartya h3 { font: 600 17px/1.3 var(--test); color: var(--szoveg); }
-.ar-kartya .rovid { font-size: 14px; color: #4a5757; margin-top: 8px; line-height: 1.45; min-height: 0; }
-.ar-kartya .osszeg { font: 500 34px/1.1 var(--cim); color: var(--sotet); margin: 6px 0 10px; }
-.ar-kartya .gomb { align-self: center; padding: 11px 24px; }
-.ar-kartya .pipak { text-align: left; display: grid; gap: 5px; margin: 12px 0 0; font-size: 13.5px; }
-.ar-kartya .pipak li { display: flex; gap: 10px; align-items: flex-start; }
-.ar-kartya .pipak li::before { content: ''; flex: none; width: 18px; height: 18px; margin-top: 1px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a07f4b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5l5 5L20 6.5'/%3E%3C/svg%3E") center / contain no-repeat; }
-.ar-kartya .masodik { margin-top: auto; padding-top: 10px; font-size: 14px; font-weight: 600; color: var(--sotet); text-align: center; }
 .szep-sav img { width: 112px; height: auto; aspect-ratio: 1.74; object-fit: cover; border-radius: 10px; flex: none; }
 .szep-sav p { margin: 0; }
 .szep-sav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 14px; background: #fff; border: 1px solid #e3d6b8; border-radius: 14px; padding: 8px 18px; font-size: 15.5px; color: var(--sotet); text-align: left; }
 .szep-sav svg { flex: none; width: 34px; height: 34px; color: var(--arany); stroke-width: 1.4; }
 .szep-sav b { font-weight: 600; }
 .ar-lab { margin-top: 18px; font-size: 14.5px; text-align: center; color: #3b4a49; }
-.alkalom h2 { font-size: 30px; }
-.alkalom > p { font-size: 15px; color: #4a5757; margin-top: 12px; line-height: 1.55; }
-.alkalom > p.alkalom-tapasztalat { font-weight: 600; color: var(--sotet); font-size: 15.5px; }
-.alkalom-doboz { margin-top: auto; display: flex; align-items: center; gap: 18px; background: var(--lap); border: 1px solid #eadfca; border-radius: 16px; padding: 22px 22px; }
-.alkalom-doboz svg { flex: none; width: 52px; height: 52px; color: #b08b51; stroke-width: 1.3; }
-.alkalom-doboz p { font: 500 19px/1.35 var(--cim); color: var(--sotet); }
-
 /* --- miert maskepp --- */
 .miert { padding: 34px 0 40px; background: var(--krem); }
 .miert h2 { font-size: 36px; }
@@ -414,6 +357,149 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   body.sticky-be { padding-bottom: 76px; }
 }
 
+/* --- milyen hajhullasokra mukodik (kartyak ikonnal, a tulajdonos kepterve szerint) --- */
+.tipusok { padding: 56px 0 60px; background: linear-gradient(180deg, #f6efe2 0%, #f1e8d6 100%); }
+.tipusok h2 { font-size: clamp(32px, 3.6vw, 48px); line-height: 1.1; letter-spacing: -.02em; }
+.tipusok .lead { font-size: 17px; color: #3b4a49; margin-top: 14px; }
+.tipus-racs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-top: 38px; }
+.tipus { display: flex; align-items: center; gap: 22px; padding: 28px 26px; background: linear-gradient(180deg, #fff 0%, #fffdf8 100%); border: 1px solid #efe5d0; border-radius: 22px; box-shadow: 0 2px 4px rgba(60, 40, 15, .04), 0 18px 40px rgba(110, 80, 30, .1); }
+.tipus-ikon { flex: none; width: 74px; height: 74px; border-radius: 50%; display: grid; place-items: center; color: #a98446; background: radial-gradient(circle at 32% 26%, #fffdf7 0%, #f8eed8 72%); box-shadow: 0 10px 22px rgba(160, 125, 40, .2), inset 0 0 0 1px rgba(214, 185, 120, .5); }
+.tipus-ikon svg { width: 40px; height: 40px; stroke-width: 1.5; }
+.tipus-sz { min-width: 0; }
+.tipus h3 { font: 600 19px/1.3 var(--test); color: var(--szoveg); letter-spacing: 0; }
+.tipus p { font-size: 15px; color: #3f4e4e; margin-top: 8px; line-height: 1.55; }
+.tipus-cta { background: linear-gradient(180deg, #fcf4e2 0%, #f7ebd0 100%); border-color: #d9bd83; box-shadow: 0 14px 32px rgba(160, 125, 40, .14); }
+.tipus-cta p { margin-bottom: 16px; }
+.tipus-cta .gomb { background: rgba(255, 255, 255, .55); }
+
+/* --- mire szamithatsz + miert mukodik --- */
+.varhato { padding: 54px 0 66px; background: linear-gradient(180deg, #f1e8d6 0%, #f6efe3 100%); }
+.varhato h2 { font-size: clamp(32px, 3.6vw, 48px); letter-spacing: -.02em; }
+.varhato h2::after { content: ''; display: block; width: 120px; height: 2px; margin: 18px auto 0; background: linear-gradient(90deg, transparent, #c6a346, transparent); }
+.varhato-racs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 26px; margin-top: 40px; align-items: stretch; }
+.hatas-racs { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 18px; }
+.hatas-csempe { display: flex; align-items: center; gap: 18px; background: linear-gradient(180deg, #fffefb 0%, #fdf8ee 100%); border: 1px solid #efe3c9; border-radius: 18px; padding: 20px 20px; box-shadow: 0 2px 4px rgba(60, 40, 15, .04), 0 14px 30px rgba(120, 90, 30, .09); }
+.hatas-ikon { flex: none; width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center; color: #a47c35; background: radial-gradient(circle at 34% 28%, #fffaf0 0%, #f6e7c4 80%); box-shadow: 0 8px 18px rgba(160, 125, 40, .22), inset 0 0 0 2px rgba(205, 170, 85, .6); }
+.hatas-ikon svg { width: 38px; height: 38px; stroke-width: 1.6; }
+.hatas-csempe b { display: block; font: 500 19px/1.2 var(--cim); color: var(--sotet); letter-spacing: -.005em; }
+.hatas-csempe small { display: block; font-size: 14px; line-height: 1.4; color: #4a5757; margin-top: 5px; }
+.miert-mukodik { position: relative; overflow: hidden; background: linear-gradient(135deg, #123f41 0%, #0b2d2f 100%); color: #dfe9e7; border-radius: 22px; box-shadow: 0 26px 54px rgba(15, 58, 60, .3); min-height: 440px; }
+.mm-szoveg { position: relative; z-index: 2; width: 55%; padding: 40px 0 40px 38px; }
+.miert-mukodik h3 { color: #fff; font-size: 34px; letter-spacing: -.01em; }
+.miert-mukodik p { font-size: 15px; line-height: 1.65; margin-top: 14px; color: #d3dedc; }
+.miert-mukodik p.mm-kiemelt { font: 500 21px/1.35 var(--cim); color: #e7cd92; margin-top: 16px; }
+.miert-mukodik b { color: #fff; font-weight: 600; }
+.mm-foto { position: absolute; top: 0; right: 0; bottom: 0; width: 52%; }
+.mm-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 28% 50%; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 42%); mask-image: linear-gradient(90deg, transparent 0, #000 42%); }
+.mm-folikulus { position: absolute; z-index: 3; left: 56%; bottom: 22px; width: 168px; height: 168px; border-radius: 50%; overflow: hidden; border: 3px solid #dcbf74; background: #1b3a3c; box-shadow: 0 12px 30px rgba(0, 0, 0, .42); }
+.mm-folikulus img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.14); }
+
+/* --- arak: Mivel kezdjunk? --- */
+.arak { padding: 58px 0 44px; background: radial-gradient(900px 460px at 94% -8%, #fffaf0 0%, rgba(255, 250, 240, 0) 70%), var(--krem); }
+.arak-racs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.62fr); grid-template-areas: "cim cim cim" "k1 k2 aside" "lab lab ."; column-gap: 22px; align-items: stretch; }
+.arak-cim { grid-area: cim; margin-bottom: 28px; font-size: clamp(38px, 4.4vw, 58px); line-height: 1.05; letter-spacing: -.025em; }
+.ar-kartyak { display: contents; }
+.ar-kartya.kiemelt { grid-area: k1; }
+.ar-kartya.gyengebb { grid-area: k2; }
+.alkalom { grid-area: aside; }
+.arak-lab { grid-area: lab; }
+.ar-kartya { position: relative; background: linear-gradient(180deg, #fffefb 0%, #fffaf0 100%); border: 1px solid #ecdfc3; border-radius: 22px; padding: 24px 24px 20px; text-align: center; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(60, 40, 15, .04), 0 16px 36px rgba(110, 80, 30, .08); }
+.ar-kartya.kiemelt { border: 1.5px solid #cfae5a; background: linear-gradient(180deg, #fff 0%, #fffcf5 100%); box-shadow: 0 0 0 4px rgba(207, 174, 90, .1), 0 24px 50px rgba(160, 125, 40, .2); }
+.ar-kartya.gyengebb { background: linear-gradient(180deg, #fffdf9 0%, #fcf7ee 100%); }
+.ar-badge { align-self: center; background: var(--arany-gomb); color: #fff; font: 600 11.5px/1 var(--test); letter-spacing: .09em; text-transform: uppercase; padding: 10px 18px; border-radius: 999px; margin-bottom: 14px; text-shadow: 0 1px 1px rgba(90, 62, 10, .25); box-shadow: 0 6px 14px rgba(160, 125, 40, .24); }
+.ar-badge.halvany { background: #fbf6ea; color: var(--halk); border: 1px solid #e7dbc0; text-shadow: none; box-shadow: none; }
+.ar-kartya h3 { font: 500 25px/1.18 var(--cim); color: var(--sotet); letter-spacing: -.01em; }
+.ar-kartya .rovid { font-size: 15px; color: #3f4e4e; margin-top: 10px; line-height: 1.5; }
+.ar-kartya .osszeg { font: 500 52px/1.05 var(--cim); color: var(--sotet); margin: 12px 0 16px; letter-spacing: -.02em; }
+.ar-kartya.gyengebb .osszeg { font-size: 44px; }
+.ar-kartya .gomb { align-self: stretch; padding: 15px 22px; font-size: 16.5px; }
+.ar-kartya .pipak { text-align: left; display: grid; gap: 11px; margin: 22px 4px 0; font-size: 15px; color: #33433f; }
+.ar-kartya .pipak li { display: flex; gap: 13px; align-items: center; }
+.ar-kartya .pipak li::before { content: ''; flex: none; width: 24px; height: 24px; border-radius: 50%; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.500l4.500 4.500L19 7.500'/%3E%3C/svg%3E") center / 62% no-repeat, linear-gradient(180deg, #d9bb6a 0%, #b88e34 100%); box-shadow: 0 3px 7px rgba(160, 125, 40, .3); }
+.ar-kartya.gyengebb .pipak li::before { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a07f4b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.500l4.500 4.500L19 7.500'/%3E%3C/svg%3E") center / 62% no-repeat, #f6ebd2; box-shadow: inset 0 0 0 1px #e4d3ab; }
+.ar-kartya .masodik { margin: auto 4px 0; padding-top: 16px; border-top: 1px solid #ecdfc3; font-size: 15.5px; font-weight: 600; color: var(--sotet); text-align: center; }
+.ar-kartya.kiemelt .pipak { margin-bottom: 18px; }
+
+.alkalom { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: 1fr auto; column-gap: 28px; row-gap: 22px; padding-left: 6px; }
+.al-szoveg { min-width: 0; padding: 4px 26px 0 0; }
+.alkalom h2 { font-size: clamp(25px, 2.35vw, 31px); line-height: 1.1; letter-spacing: -.015em; }
+.al-szoveg > p { font-size: 15px; color: #4a5757; margin-top: 14px; line-height: 1.6; }
+.al-szoveg > p.alkalom-tapasztalat { margin-top: 20px; padding: 2px 0 2px 16px; border-left: 3px solid #d2ae5c; font-weight: 600; color: var(--sotet); font-size: 15.5px; line-height: 1.5; }
+.al-kep { min-width: 0; display: flex; flex-direction: column; }
+.al-fotok { position: relative; }
+.al-fotok figure { margin: 0; overflow: hidden; }
+.al-fotok img { width: 100%; height: 100%; object-fit: cover; object-position: 10% 30%; }
+.al-utana { position: relative; aspect-ratio: 1 / 1.18; border-radius: 24px; border: 3px solid #dcbf74; box-shadow: 0 18px 38px rgba(130, 98, 30, .26); }
+.al-elotte { position: absolute; left: -11%; bottom: -9%; width: 50%; aspect-ratio: 1 / 1.12; border-radius: 18px; border: 3px solid #fff; box-shadow: 0 14px 30px rgba(40, 30, 10, .3); }
+.al-cimke { position: absolute; font: 600 11.5px/1 var(--test); letter-spacing: .09em; text-transform: uppercase; padding: 8px 14px; border-radius: 999px; }
+.al-utana .al-cimke { top: 12px; right: 12px; background: rgba(243, 226, 176, .96); color: #5f4510; }
+.al-elotte .al-cimke { left: 8px; bottom: 8px; padding: 6px 11px; font-size: 10.5px; background: rgba(255, 255, 255, .92); color: #4a3a22; }
+.al-iv { position: absolute; left: 2%; top: 37%; width: 26%; height: auto; stroke: #f6e6b4; stroke-width: 2.6; z-index: 2; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .5)); }
+.al-skala { margin-top: 44px; }
+.al-pontok { display: flex; align-items: center; gap: 6px; }
+.al-pontok i { flex: none; width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid #c6a346; background: #fff; }
+.al-pontok i.vegso { border-color: #c6a346; background: #c6a346; }
+.al-vonal { flex: 1; height: 1.5px; background: #c6a346; position: relative; margin: 0 4px; }
+.al-vonal::after { content: ''; position: absolute; right: 0; top: -4px; width: 8px; height: 8px; border-top: 1.5px solid #c6a346; border-right: 1.5px solid #c6a346; transform: rotate(45deg); }
+.al-cimkek { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 12px; line-height: 1.3; color: #4a5757; }
+.al-cimkek span { display: block; }
+.al-cimkek b { display: block; font-size: 13px; color: var(--szoveg); }
+.al-cimkek span:last-child { text-align: right; }
+.al-forras { margin-top: 12px; font-size: 11.5px; color: var(--halk); text-align: right; }
+.alkalom-doboz { grid-column: 1 / -1; display: flex; align-items: center; gap: 22px; background: linear-gradient(180deg, #f8efdc 0%, #f3e7cd 100%); border: 1px solid #e8d9b5; border-radius: 18px; padding: 24px 28px; }
+.alkalom-doboz svg { flex: none; width: 54px; height: 54px; color: #b08b51; stroke-width: 1.3; padding-right: 22px; box-sizing: content-box; border-right: 1px solid #dcc994; }
+.alkalom-doboz p { font: 500 21px/1.35 var(--cim); color: var(--sotet); }
+
+@media (max-width: 1100px) {
+  .tipus-racs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .varhato-racs { grid-template-columns: 1fr; }
+  .miert-mukodik { min-height: 0; }
+  .mm-szoveg { width: 100%; padding: 34px 30px 0; }
+  .mm-foto { position: relative; width: 100%; height: 300px; margin-top: 18px; }
+  .mm-foto img { object-position: 50% 30%; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 36%); mask-image: linear-gradient(180deg, transparent 0, #000 36%); }
+  .mm-folikulus { left: auto; right: 26px; bottom: 22px; width: 160px; height: 160px; }
+  .arak-racs { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "cim cim" "k1 k2" "aside aside" "lab lab"; row-gap: 22px; }
+  .alkalom { margin-top: 10px; }
+}
+@media (max-width: 700px) {
+  .tipusok { padding: 42px 0 44px; }
+  .tipusok h2, .varhato h2 { font-size: 28px; }
+  .tipus-racs { grid-template-columns: 1fr; gap: 14px; margin-top: 26px; }
+  .tipus { align-items: flex-start; gap: 14px; padding: 16px 16px 18px; border-radius: 18px; }
+  .tipus-ikon { width: 52px; height: 52px; }
+  .tipus-ikon svg { width: 29px; height: 29px; }
+  .tipus h3 { font-size: 17px; }
+  .tipus p { font-size: 14px; margin-top: 5px; line-height: 1.5; }
+  .tipus-cta { align-items: flex-start; }
+  .varhato { padding: 42px 0 46px; }
+  .varhato h2::after { margin-top: 14px; width: 90px; }
+  .varhato-racs { margin-top: 28px; gap: 18px; }
+  .hatas-racs { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hatas-csempe { flex-direction: column; text-align: center; gap: 10px; padding: 16px 8px 18px; border-radius: 16px; }
+  .hatas-ikon { width: 56px; height: 56px; }
+  .hatas-ikon svg { width: 32px; height: 32px; }
+  .hatas-csempe b { font-size: 16px; }
+  .hatas-csempe small { font-size: 12.5px; margin-top: 3px; }
+  .mm-szoveg { padding: 28px 22px 0; }
+  .miert-mukodik h3 { font-size: 28px; }
+  .miert-mukodik p.mm-kiemelt { font-size: 19px; }
+  .mm-foto { height: 250px; }
+  .mm-folikulus { width: 128px; height: 128px; right: 18px; bottom: 16px; }
+  .arak { padding: 42px 0 36px; }
+  .arak-cim { font-size: 34px; margin-bottom: 20px; }
+  .arak-racs { grid-template-columns: 1fr; grid-template-areas: "cim" "k1" "k2" "aside" "lab"; row-gap: 16px; }
+  .ar-kartya { padding: 22px 18px 18px; border-radius: 18px; }
+  .ar-kartya h3 { font-size: 22px; }
+  .ar-kartya .osszeg { font-size: 44px; }
+  .ar-kartya.gyengebb .osszeg { font-size: 38px; }
+  .alkalom { grid-template-columns: 1fr; row-gap: 26px; padding-left: 0; margin-top: 14px; }
+  .alkalom h2 { font-size: 26px; }
+  .al-kep { width: min(270px, 74%); margin: 0 0 0 auto; }
+  .alkalom-doboz { gap: 14px; padding: 18px 16px; }
+  .alkalom-doboz svg { width: 40px; height: 40px; padding-right: 14px; }
+  .alkalom-doboz p { font-size: 17.5px; }
+}
+
 /* --- reszponziv --- */
 @media (max-width: 1100px) {
   .tartalom { width: min(var(--szeles), calc(100% - 48px)); }
@@ -432,11 +518,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .ba-sav { grid-auto-columns: calc((100% - 20px) / 2); }
   .video-racs { grid-template-columns: 300px minmax(0, 1fr); gap: 32px; }
   .szalon-racs { grid-template-columns: 1fr; gap: 24px; }
-  .tipus-racs { grid-template-columns: repeat(2, 1fr); }
-  .varhato-racs { grid-template-columns: 1fr; }
   .yt-racs { grid-template-columns: repeat(2, 1fr); }
-  .arak-racs { grid-template-columns: 1fr; grid-template-areas: "cim" "kartyak" "aside" "lab"; row-gap: 22px; }
-  .alkalom-doboz { margin-top: 20px; }
   .miert-racs { grid-template-columns: repeat(2, 1fr); }
   .arc-gyik-racs { grid-template-columns: 1fr; gap: 36px; }
   .arc-haj { position: static; }
@@ -481,21 +563,8 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .hero-galeria .lapozo.kovetkezo { right: 14px; }
   .szep-sav { font-size: 14.5px; padding: 14px 16px; }
   .jelek { padding: 44px 0 40px; }
-  .jelek h2, .kezelok h2, .elso h2, .folyamat h2, .eredmenyek h2, .video-sor h2, .arak h2, .miert h2 { font-size: 28px; }
+  .jelek h2, .kezelok h2, .elso h2, .folyamat h2, .eredmenyek h2, .video-sor h2, .miert h2 { font-size: 28px; }
   .jel-racs { gap: 12px; margin-top: 24px; }
-  .tipus-racs { grid-template-columns: 1fr; gap: 14px; }
-  .tipus p { min-height: 0; }
-  .hatas-racs { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .hatas-csempe { flex-direction: column; text-align: center; gap: 8px; padding: 14px 8px 16px; }
-  .hatas-ikon { width: 54px; height: 54px; }
-  .hatas-ikon svg { width: 32px; height: 32px; }
-  .hatas-csempe b { font-size: 14.5px; }
-  .hatas-csempe small { font-size: 12.5px; }
-  .varhato h2 { font-size: 28px; }
-  .miert-mukodik { padding: 24px 22px; }
-  .miert-mukodik h3 { font-size: 24px; }
-  .miert-mukodik p.mm-kiemelt { font-size: 19px; }
-  .tipusok h2 { font-size: 28px; }
   .yt-racs { grid-template-columns: 1fr 1fr; }
   .yt-cim { font-size: 21px; }
   .szep-sav img { width: 110px; }
@@ -541,8 +610,6 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .szoba-kepek img { flex: none; height: auto; min-height: 0; aspect-ratio: 1.4; }
   .szalon-kepek { gap: 10px; }
   .szalon h2 { font-size: 27px; }
-  .ar-kartyak { grid-template-columns: 1fr; }
-  .ar-kartya .rovid { min-height: 0; }
   .miert-racs { gap: 12px; }
   .miert-kartya { padding: 16px 12px; }
   .arc-haj { grid-template-columns: 1fr; row-gap: 16px; }

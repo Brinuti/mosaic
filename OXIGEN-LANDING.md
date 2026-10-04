@@ -41,6 +41,14 @@ A „Milyen hajhullásokra működik” és az „Az Oxygeni vendégeinek valós
 
 A „Mi történik az első kezeléseden?” kép magasságát a bal oszlop adja: a kép teteje a címmel, az alja a „Megnézem a kezelés részletes lépéseit” gomb aljával egyezik (a kép `position:absolute`, nem nyújtja a sort); a gomb a többi nagy gombbal egyforma méretű. Az „A kezelés lépésről lépésre” lenyitó jele nyíl (zárva lefelé, nyitva felfelé), nem plusz. A hero-galéria felirata mobilon rövid, egy soros: „Gyengébb panaszok 3–5 alkalom, súlyosabb 5–10 alkalom.” (`.sz-m`; asztalin a hosszú változat, `.sz-d`).
 
+## A három átszabott szekció (a tulajdonos képtervei alapján, 12. kör)
+
+A „Milyen hajhullásokra működik”, a „Mire számíthatsz / Miért működik?” és a „Mivel kezdjünk?” (árak) szekció a tulajdonos három képterve szerint készült újra (HTML/CSS, nem kép):
+
+- **Hajhullás-típusok** (`.tipus`): kártyák bal oldalt kerek, arany ikonnal (`.tipus-ikon`), jobbra cím + szöveg; az utolsó kártya a „Nem tudod, melyik a tied?” (kérdés-buborék ikon, krémszínű, körvonalas gomb).
+- **Mire számíthatsz / Miért működik?** (`#varhato-eredmeny`): 6 hatás-csempe arany gyűrűs ikonnal és serif címmel; jobbra sötétzöld „Miért működik?” kártya a valódi kezelés-fotóval (`oxigen-kezeles.jpg`, jobbra elhalványodó maszkkal) és kerek **szemléltető ábrával** (`folikulus-abra.jpg`: a hajhagymák oxigénnel, a tulajdonos képtervéből kivágott illusztráció). Mobilon a fotó a szöveg alá kerül, az ábra a fotó sarkában.
+- **Mivel kezdjünk?** (`#arak`): bal oldalt két kártya (arany keretes „Első kezelés” + halványabb „Csak állapotfelmérés”, arany/krém pipa-körökkel), jobb oldalt „Hány alkalommal érdemes számolnod?”: szöveg + arany szegélyes idézet, **valós előtte/utána** fotópár (`alkalom-elotte.jpg` / `alkalom-utana.jpg`, az `eredmeny-02.jpg` két fele; forrás: Oxygeni Hair, felirattal), a „2–3 alkalom látható változás → 5–7 alkalom drasztikus változás” skála és a „Nem kell több alkalmat előre kifizetned” doboz. Az előtte/utána fotók **nem** a képterv MI-generált arcai, hanem a régi oldal valódi képei; a tulajdonos saját vendégfotóra cserélheti (a fájlnevek ugyanazok maradhatnak).
+
 ## A kezelés lépésről lépésre (lenyitható)
 
 9 két soros lépés, alatta a **„Hogyan működik az oxigénterápia?”** blokk: a hatásmechanizmus az Oxygeni Hair & Skin oldala (oxygenihair.hu) alapján, saját megfogalmazásban, forrásmegjelöléssel (diagnózis, 100%-os tiszta oxigén magas nyomással a bazális sejtsorig, vitaminok/ásványi anyagok hordozása, sejtanyagcsere és vérkeringés, hajhagymák, kollagén/pH, védekezőképesség).
