@@ -112,9 +112,9 @@
         elem('span', { html: `${t.ikon}<span>${t.nev}<small>${t.teljes ? (egy ? 'teljes ár' : 'a legdrágább: teljes ár') : `50% kedvezmény · ${ft(t.ar)} helyett`}</small></span>` }),
         elem('span', { class: 'osszeg', szoveg: ft(t.fizet) })))),
       elem('div', { class: 'sz-ossz' }, elem('span', { szoveg: 'Alkalmanként' }), elem('b', { szoveg: ft(e.alkalom) })),
-      e.kedvezmeny ? elem('p', { class: 'sz-kedv', szoveg: `Csomagkedvezmény: ${ft(e.kedvezmeny)} alkalmanként` }) : null,
+      e.kedvezmeny ? elem('div', { class: 'sz-kedv', html: `<span>Csomagkedvezmény alkalmanként</span><span>−${ft(e.kedvezmeny)}</span>` }) : null,
       elem('div', { class: 'sz-elso', html: `<span>Az első kezelés 20% kedvezménnyel</span><b>${ft(e.elso)}</b>` }),
-      elem('div', { class: 'sz-program', html: `8 alkalmas program: csak 6 alkalmat fizetsz<b>${ft(e.program)}</b>A 4. és a 8. alkalom ajándék (${ft(e.ajandek)} értékben).` }),
+      elem('div', { class: 'sz-program', html: `<div class="sz-sor"><span>8 alkalmas program: csak 6 alkalmat fizetsz</span><b>${ft(e.program)}</b></div><small>A 4. és a 8. alkalom ajándék (${ft(e.ajandek)} értékben).</small>` }),
       elem('div', { class: 'sz-cta' },
         elem('a', { class: 'gomb gomb-arany gomb-szeles', href: '#foglalas', 'data-terulet': egy ? e.tetelek[0].kulcs : EGYEDI.kulcs, html: `${egy ? 'Időpontot foglalok' : 'Egyedi csomagot foglalok'} <span class="nyil">→</span>` }),
         elem('p', { class: 'sz-lab', szoveg: 'Az ár a program végéig fix. 8 alkalomból csak 6-ot fizetsz, 2 alkalom ajándék.' })));
