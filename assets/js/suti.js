@@ -21,12 +21,19 @@
 (function () {
   'use strict';
 
+  // Az ajandekkartya-oldal (/ajandek es a regi cimei) sikeres vasarlas utan egy lathatatlan, azonos eredetu keretben
+  // betolti a regi koszonooldalt (assets/js/ajandek.js, regiKonverzio; a keret data-ah-regi-konverzio attributumot visel), hogy
+  // a regi ajandekkartya-konverzio valtozatlanul lemenjen. Ez a SAJAT merokeretunk: itt a merokodoknak futniuk kell, a vasarlot
+  // pedig nem szabad kidobni az uj oldalrol - ezert az alabbi "keretben vagyunk" aggak erre nem vonatkoznak.
+  var MERO_KERET = false;
+  try { MERO_KERET = !!(window.frameElement && window.frameElement.hasAttribute('data-ah-regi-konverzio')); } catch (e) { /* idegen keret */ }
+
   // A foglalo oldal (/foglalo-proba) beagyazott Salonic-adatlapja sikeres foglalas utan a mi
   // koszonooldalunkra iranyit - a keretben (ha az idopont kozben elkelt, a fooldalunkra).
   // Ilyenkor itt semmi nem fut (meres sem): a foglalo oldal dont - a koszonooldalt a teljes
   // ablakban nyitja meg, igy a konverzio egyszer, a fo ablakban merodik (mint eddig).
   try {
-    if (window.top !== window.self && window.parent.location.hostname === location.hostname) {
+    if (!MERO_KERET && window.top !== window.self && window.parent.location.hostname === location.hostname) {
       document.documentElement.style.visibility = 'hidden';
       if (typeof window.parent.mhKeretbenOldal === 'function') window.parent.mhKeretbenOldal(location.href);
       else window.top.location.replace(location.href);
@@ -67,7 +74,7 @@
   var w = window, d = document;
   if (w.mhSuti) return;
 
-  // Keretbe agyazva (az osszehasonlito eszkoz) se sav, se meres.
+  // Keretbe agyazva (az osszehasonlito eszkoz) se sav, se meres - kiveve a sajat merokeretunket (MERO_KERET): ott meres van, sav nincs.
   var beagyazott = w.top !== w.self;
   var eles = ELES_DOMAINEK.indexOf(location.hostname) >= 0;
 
@@ -147,7 +154,7 @@
   var betoltve = {};
 
   function merokodok() {
-    if (!eles || beagyazott) return;
+    if (!eles || (beagyazott && !MERO_KERET)) return;
     var p = dontes || {};
 
     // GTM: a Wix is mindig betoltotte, a cimkeit a Consent Mode jelei engedik

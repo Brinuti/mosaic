@@ -87,6 +87,12 @@ http.createServer(async (req, res) => {
       res.writeHead(200, { 'content-type': TIPUS['.html'], 'cache-control': 'no-store' });
       return res.end(oldal(ut, mobil));
     }
+    // A regi koszono-oldal helyi helyettese a merokeret-tesztekhez: ugyanazt a suti.js-t tolti be, mint az eles (klon) oldal, es megjegyzi, hogy a
+    // keretben lefutott-e (window.__regiKoszono). A valodi oldal csak az eles buildben letezik (klon/success-ajandekkartya-stripe.html).
+    if (ut === '/success-ajandekkartya-stripe') {
+      res.writeHead(200, { 'content-type': TIPUS['.html'], 'cache-control': 'no-store' });
+      return res.end('<!doctype html><html lang="hu"><head><meta charset="utf-8"><title>Ajándékkártya: Sikeres vásárlás! (teszt)</title><script src="/assets/js/suti.js"></script></head><body><p>régi köszönőoldal (teszt)</p><script>window.__regiKoszono = { mhSuti: typeof window.mhSuti, rejtett: document.documentElement.style.visibility, keretben: window.top !== window.self };</script></body></html>');
+    }
     if (ut === '/__teszt/stripe-mock.js') {
       res.writeHead(200, { 'content-type': TIPUS['.js'], 'cache-control': 'no-store' });
       return res.end(fs.readFileSync(path.join(import.meta.dirname, 'stripe-mock.js')));
