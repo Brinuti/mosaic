@@ -184,12 +184,13 @@ p.kedv-sor { display: flex; align-items: center; gap: 10px; width: fit-content; 
 .alkalmas-kartya.nezzuk .ikon-kor { background: #f1e8d6; color: var(--arany); }
 .alkalmas-kartya.kerdezz .ikon-kor { background: var(--zsalya); color: var(--sotet); }
 /* a szorbenoves-video (Meta-hirdetes) a harom kartya alatt: kicsi, fuggoleges video + szoveg */
-.szorbenoves { display: grid; grid-template-columns: 200px 1fr; gap: 32px; align-items: center; width: min(720px, 100%); margin: 28px auto 0; padding: 20px 28px 20px 20px; background: #fff; border: 1px solid #e7eae3; border-radius: 16px; box-shadow: var(--arnyek); }
+.szorbenoves { display: grid; grid-template-columns: 200px 1fr; gap: 32px; align-items: center; width: min(720px, 100%); margin: 28px auto 0; padding: 20px 28px 20px 20px; background: linear-gradient(#f4efe4, #ede6d8); border: 1px solid #e3dbc9; border-radius: 16px; box-shadow: var(--arnyek); }
 .szorbenoves .video-kartya { max-width: 200px; border-radius: 14px; box-shadow: 0 10px 26px rgba(60, 40, 20, .16); }
 .szorbenoves .lejatszas { width: 56px; height: 56px; }
 .szorbenoves .lejatszas svg { width: 24px; height: 24px; margin-left: 3px; }
 .szorbenoves-szoveg h3 { font-size: 24px; }
-.szorbenoves-szoveg p { margin: 8px 0 16px; color: var(--halk); font-size: 16px; }
+.szorbenoves-szoveg p { margin: 8px 0 16px; color: #4f5a58; font-size: 16px; }
+.szorbenoves-szoveg p b { color: var(--sotet); }
 .alkalmas-kartya h3 { font-size: 22px; }
 .alkalmas-kartya p { flex: 1 0 auto; color: var(--halk); font-size: 15.5px; margin-bottom: 6px; }
 
