@@ -166,6 +166,15 @@ asztali és a mobil mappába is bemásolja).
   kattintásra; vélemények: Melitta saját Google-véleményei kártyákon (statikusan), link a
   Google-találatra.
 
+### 1.5d Ajándékkártya-vásárlási motor — `/ajandek`
+
+Hirdetési (fizetett) ajándékkártya-vásárlás: egy közös commerce motor + message-match variant réteg,
+beágyazott Stripe-checkouttal (`noindex`, nem linkelt). Fájlok: `foglalas/ajandek.html`,
+`assets/css/ajandek.css`, `assets/js/ajandek.js` + `ajandek-adat.js` (közös adat és **árak**),
+`netlify/lib/ajandek*.js` (szerver), `netlify/functions/ajandek.mjs` és
+`functions/api/ajandek/[[kind]].js` (adapterek). **Állapot, beállítás, élesítési ellenőrzőlista és
+tesztelés: [AJANDEK.md](AJANDEK.md).**
+
 ### 1.6 Videók
 
 Részletesen: **[VIDEOK.md](VIDEOK.md)** – leltár mind a 13 oldal videós dobozairól, és hogy

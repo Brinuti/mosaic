@@ -17,11 +17,13 @@ export const TELEFON = /iPhone|iPod|Android.*Mobile|Windows Phone|BlackBerry|IEM
 const ALNEVEK = { 'pricing-plans/list': 'pricing-plans-list' };
 
 export function utvonal(ut, ua) {
-  // fajlok (assets, sitemap, robots stb.) es a Netlify sajat utvonalai: valtozatlanul
-  if (/^\/(assets|\.netlify|_a|_m)\//.test(ut)) return null;
+  // fajlok (assets, sitemap, robots stb.), a Netlify sajat utvonalai es az API (/api/ajandek/*): valtozatlanul
+  if (/^\/(assets|\.netlify|_a|_m|api)\//.test(ut)) return null;
   if (/\.[a-z0-9]{2,5}$/i.test(ut) && !/\.html$/i.test(ut)) return null;
   // a regi klon-cimek es a per jel a vegen: 301 a Wix-szel azonos cimre
-  let tiszta = ut.replace(/^\/m\//, '/').replace(/\.html$/i, '').replace(/\/index$/, '/');
+  // A cim elejen allo tobbszoros perjel / visszaper (pl. '//evil.example/', vagy %2F%2F dekodolva) a Location fejlecben
+  // protokoll-relativ cimkent ertelmezodne (nyitott atiranyitas): egyetlen '/'-ra vonjuk ossze, es helyi cimre iranyitunk.
+  let tiszta = ut.replace(/^[/\\]+/, '/').replace(/^\/m\//, '/').replace(/\.html$/i, '').replace(/\/index$/, '/');
   if (tiszta.length > 1) tiszta = tiszta.replace(/\/+$/, '');
   if (!tiszta) tiszta = '/';
   if (tiszta !== ut) return { atiranyit: tiszta };

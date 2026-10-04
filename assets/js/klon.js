@@ -1189,6 +1189,9 @@
     uzenet.setAttribute('role', 'alert');
     gomb.after(uzenet);
     const mezo = (cimke) => [...urlap.querySelectorAll('input')].find((i) => (i.getAttribute('aria-label') || '').startsWith(cimke));
+    // a bongeszo automatikus kitoltese csak a megfelelo mezot toltse (a Wix-urlap mezoin nincs autocomplete: a telefonszam eleje a keresztnevbe is kerult)
+    const AUTOCOMPLETE = { 'Ajándékozott Teljes Neve': 'off', 'Fizető fél Vezetékneve': 'family-name', 'Fizető fél Keresztneve': 'given-name', 'E-mail cím': 'email', 'Telefonszámod': 'tel-national', 'Számlázási cím': 'street-address', 'Cégnév': 'organization', 'Cég adószám': 'off' };
+    for (const [cimke, ac] of Object.entries(AUTOCOMPLETE)) { const i = mezo(cimke); if (i) i.setAttribute('autocomplete', ac); }
 
     wixValasztok(urlap);
     urlap.addEventListener('input', (e) => e.target.classList.remove('mh-hibas'));
@@ -1205,13 +1208,27 @@
       }
       const kartya = urlap.querySelector('input[type=radio]:checked');
       if (!kartya) hibas = hibas || urlap.querySelector('input[type=radio]');
+      // a nev mezokben (ajandekozott, vezeteknev, keresztnev) nem lehet szamjegy / + jel / @: a telefonszam a telefon mezobe tartozik
+      let nevHiba = null;
+      for (const cimke of ['Ajándékozott Teljes Neve', 'Fizető fél Vezetékneve', 'Fizető fél Keresztneve']) {
+        const i = mezo(cimke);
+        const rossz = !!i && /[\d+@]/.test(i.value);
+        if (i) { i.setAttribute('aria-invalid', String(rossz || (i.required && !i.value.trim()))); i.classList.toggle('mh-hibas', rossz || (i.required && !i.value.trim())); }
+        if (rossz && !nevHiba) nevHiba = i;
+      }
       if (hibas) {
         uzenet.textContent = 'Kérlek, töltsd ki a csillaggal (*) jelölt mezőket, és válaszd ki a kártyát.';
         hibas.focus();
         return;
       }
+      if (nevHiba) {
+        uzenet.textContent = 'A név nem tartalmazhat számot vagy + jelet. A telefonszámot a telefon mezőbe írd.';
+        nevHiba.focus();
+        return;
+      }
       const adat = new URLSearchParams({ 'form-name': 'ajandekkartya', oldal: location.pathname.split('/').pop() || 'index.html' });
       for (const [cimke, nev] of URLAP_MEZOK) { const i = mezo(cimke); adat.set(nev, i ? i.value.trim() : ''); }
+      if (adat.get('telefon')) adat.set('telefon', wixTelefon(adat.get('telefon')) || adat.get('telefon'));   // pl. 305715516 -> +36305715516
       adat.set('kartya', kartya.getAttribute('aria-label') || kartya.value);
       adat.set('aszf', 'elfogadva');
       gomb.setAttribute('aria-disabled', 'true');
