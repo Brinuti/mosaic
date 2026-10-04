@@ -162,10 +162,12 @@
     try {
       const { n, cs, min } = csillagok(await tiLeker());
       if (n) $('te-db').textContent = new Intl.NumberFormat('hu-HU').format(+n).replace(/\s/g, '.') + ' Google-vélemény';
+      if (n && $('te-db-m')) $('te-db-m').textContent = new Intl.NumberFormat('hu-HU').format(+n).replace(/\s/g, '.');
       if (cs.length === 5) {
         const ossz = cs.reduce((x, y) => x + y, 0);
         $('te-csillagok').style.setProperty('--ert', (ossz / 5) * 100 + '%');
         $('te-csillagok').setAttribute('aria-label', '5 csillagból ' + String(ossz).replace('.', ','));
+        if ($('te-pont-m')) $('te-pont-m').textContent = ossz.toFixed(1).replace('.', ',');
       }
       if (min && min.trim()) $('te-minosites').textContent = min.trim().replace(/ értékelés$/i, '');
     } catch (e) { chipKesz = false; console.error(e); }
