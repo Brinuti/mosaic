@@ -26,7 +26,7 @@
 <body>
 <!--
   MOSAIC oxigenterapia landing - a tulajdonos kepernyoterve szerint (hero -> jelek -> allapotfelmeres -> kezelok ->
-  elso alkalom -> kezeles lepesei -> eredmenyek -> video -> belepesi lehetosegek -> miert maskepp -> arc+haj es GYIK -> zaro CTA).
+  elso alkalom -> kezeles lepesei -> eredmenyek -> video -> belepesi lehetosegek -> miert maskepp -> GYIK -> zaro CTA; az Arc + Haj blokk lekerult: nincs a Salonicban).
   A szekciok sorrendje es a CTA-hierarchia (hajkamera 4 990 Ft > elso kezeles 29 900 Ft) a terv resze.
   Foglalas: a CTA-k a Salonic oxigen-fiokjara (mosaic-oxigen) mutatnak, ugyanazokkal a linkekkel, mint a /idpontfoglalas;
   a build kozponti link-terkepe (tools/foglalo-atkotes.mjs) ezeket kesobb a kozos foglalora koti at, ha az uzletag kapcsoloja be van kapcsolva.
@@ -82,10 +82,12 @@
       <ul class="tenyek" aria-label="A legfontosabbak röviden">
         <li><span class="ikon-kor"><svg><use href="#i-kamera"/></svg></span><span>Hajkamerás<br>állapotfelmérés</span></li>
         <li><span class="ikon-kor"><svg><use href="#i-ajto"/></svg></span><span>Privát<br>kezelőszoba</span></li>
-        <li><span class="ikon-kor"><svg><use href="#i-ora"/></svg></span><span>120 perces<br>első kezelés</span></li>
+        <li><span class="ikon-kor"><svg><use href="#i-ora"/></svg></span><span>80 perces<br>első kezelés</span></li>
+        <li class="teny-m" title="SZÉP Kártyát is elfogadunk"><span class="ikon-kor"><svg><use href="#i-kartya"/></svg></span><span>SZÉP<br>Kártya</span></li>
+        <li class="teny-m"><a class="teny-google" href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener" data-cta="hero-google-badge" aria-label="Google-vélemények"><span class="ikon-kor"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg></span><span>vélemény</span></a></li>
       </ul>
       <div class="hero-cta">
-        <a class="gomb gomb-arany gomb-ketsoros" href="https://mosaic-oxigen.salonic.hu/selectEmployee/?placeId=14409&amp;serviceId=466110" target="_blank" rel="noopener" data-cta="hero-elso-kezeles"><span class="c">Első kezelést foglalok – 29 900 Ft <span class="nyil">→</span></span><span class="ar">Hajkamerás állapotfelméréssel együtt · 120 perc</span></a>
+        <a class="gomb gomb-arany gomb-ketsoros" href="https://mosaic-oxigen.salonic.hu/selectEmployee/?placeId=14409&amp;serviceId=466110" target="_blank" rel="noopener" data-cta="hero-elso-kezeles"><span class="c">Első kezelést foglalok – 29 900 Ft <span class="nyil">→</span></span><span class="ar">Hajkamerás állapotfelméréssel együtt · 80 perc</span></a>
         <a class="hero-link" href="https://mosaic-oxigen.salonic.hu/selectEmployee/?placeId=14409&amp;serviceId=466147" target="_blank" rel="noopener" data-cta="hero-allapotfelmeres"><u>Csak hajkamerás állapotfelmérés – 4&nbsp;990&nbsp;Ft</u> <span class="nyil">→</span></a>
       </div>
       <div class="hero-bizalom">
@@ -400,13 +402,13 @@
       <article class="ar-kartya kiemelt">
         <p class="ar-badge">Ha szeretnéd rögtön elkezdeni</p>
         <h3>Első oxigénterápiás hajkezelés + állapotfelmérés</h3>
-        <p class="rovid">Teljes értékű, 120 perces első kezelés, amely hajkamerás állapotfelméréssel indul.</p>
+        <p class="rovid">Teljes értékű, 80 perces első kezelés, amely hajkamerás állapotfelméréssel indul.</p>
         <p class="osszeg">29 900 Ft</p>
         <a class="gomb gomb-arany" href="https://mosaic-oxigen.salonic.hu/selectEmployee/?placeId=14409&amp;serviceId=466110" target="_blank" rel="noopener" data-cta="arak-elso-kezeles">Első kezelést foglalok <span class="nyil">→</span></a>
         <ul class="pipak">
           <li>Hajkamerás állapotfelmérés</li>
           <li>Személyre szabott kezelés</li>
-          <li>120 perces kezelés</li>
+          <li>80 perces kezelés</li>
           <li>Hajszárítás</li>
           <li>Javaslat a folytatásra</li>
         </ul>
@@ -462,29 +464,15 @@
   </div>
 </section>
 
-<!-- ============ 11. ARC + HAJ ES GYIK ============ -->
-<section class="arc-gyik" aria-labelledby="gyik-cim">
-  <div class="tartalom arc-gyik-racs">
-    <div class="arc-haj">
-      <img src="/assets/img/oxigen/arc-haj.jpg" alt="Arc- és fejmasszázs a kezelés közben" width="640" height="640" loading="lazy">
-      <div class="arc-szoveg">
-        <h2>Arc + Haj – egyszerre</h2>
-        <p>Ugyanannyi idő alatt az arcodra is hatunk: az oxigénnel anti-aging kezelést is kapsz a hajkezelés mellé.</p>
-        <div class="arc-arak">
-          <div class="arc-ar"><small>Első alkalom</small><b>39 900 Ft</b></div>
-          <div class="arc-ar"><small>2. alkalomtól</small><b>34 900 Ft</b></div>
-        </div>
-        <!-- Az Arc + Haj kezeles jelenleg nincs a Salonic oxigen-fiokjaban (csak 466147 / 466110 / 466158): telefonos idopont-kerest kinalunk, amig fel nem kerul. -->
-        <a class="gomb gomb-arany" href="tel:+36202474444" data-cta="arc-haj-telefon">Arc + Haj időpontot kérek <span class="nyil">→</span></a>
-      </div>
-      <p class="arc-tel">Telefonon: <a href="tel:+36202474444">06 20 247 4444</a></p>
-    </div>
+<!-- ============ 11. GYIK ============ -->
+<section class="gyik-szekcio" aria-labelledby="gyik-cim">
+  <div class="tartalom gyik-racs">
     <div class="gyik" id="gyik">
       <h2 id="gyik-cim">Gyakori kérdések</h2>
       <div class="gyik-lista">
         <details><summary>Hány alkalomra lesz szükségem?</summary><p>Ez a kiinduló állapottól függ: gyengébb panaszok esetén 3–5, súlyosabb panaszok esetén 5–10 alkalom. Vendégeink jellemzően már a második, harmadik alkalommal látják a változást, a drasztikus változáshoz általában 5–7 alkalom kell. A pontos számot az állapotfelmérés után tudjuk megmondani. Előre nem kell több alkalmat kifizetned.</p></details>
         <details><summary>Fájdalmas a kezelés?</summary><p>Nem. A kezelés fájdalommentes és tű nélküli: kényelmesen fekve, privát kezelőszobában zajlik.</p></details>
-        <details><summary>Mennyi ideig tart?</summary><p>Az első alkalom a hajkamerás állapotfelméréssel, a kezeléssel és a hajszárítással együtt kb. 120 perc. A további alkalmak is nagyjából ennyi ideig tartanak.</p></details>
+        <details><summary>Mennyi ideig tart?</summary><p>Az első alkalom a hajkamerás állapotfelméréssel, a kezeléssel és a hajszárítással együtt kb. 80 perc (1 óra 20 perc). A további alkalmak is nagyjából ennyi ideig tartanak.</p></details>
         <details><summary>Csak állapotfelmérésre is mehetek?</summary><p>Igen. A hajkamerás állapotfelmérés + konzultáció (4 990 Ft) kezelés nélkül is foglalható: megnézzük a fejbőröd állapotát, átbeszéljük a kérdéseidet, és javaslatot adunk a következő lépésre. Utána nincs kötelezettséged.</p></details>
         <details><summary>Az állapotfelmérés orvosi diagnózis?</summary><p>Nem. A hajkamerás vizsgálat a fejbőr és a hajszálak állapotának megfigyelésére szolgál, hogy a kezelést személyre szabhassuk. Nem helyettesíti az orvosi vizsgálatot, és nem állít fel orvosi diagnózist.</p></details>
         <details><summary>Hirtelen erős hajhullásom van. Foglaljak?</summary><p>Erős, hirtelen vagy ismeretlen eredetű hajhullásnál először érdemes orvoshoz (például bőrgyógyászhoz) fordulni, mert hátterében egészségügyi ok is állhat. Ha mellette szeretnéd felmérni a fejbőröd állapotát, szívesen megnézzük, és őszintén megmondjuk, miben tudunk segíteni.</p></details>
@@ -493,7 +481,7 @@
         <details><summary>Ki végzi a kezelést?</summary><p>Oxigénterápiás képzést elvégzett, gyakorlott kezelőink: Bozsoki-Harangozó Tündi, Szűcs Vivien és Menyhárt Móni. Foglaláskor kiválaszthatod, kinél szeretnél időpontot, vagy a legkorábbi szabad időpontot is választhatod.</p></details>
         <details><summary>Kinek nem ajánlott a kezelés?</summary><p>Ellenjavallat: láz, nátha, felső légúti hurut, erős allergia, bizonyos citosztatikus terápiák. Tartósan kizáró ok: spontán légmell az előzményben, jelentős obstruktív légúti betegség, súlyos asztma, COPD, egyes fülműtétek utáni állapot, kongenitális szferocitózis, pacemaker, gennyes, sebes, vérző fejbőr. Ha bizonytalan vagy, a foglalás előtt jelezd, és átbeszéljük.</p></details>
         <details><summary>Mire kell figyelnem a kezelés előtt és után?</summary><p>Előtte: a kezelés előtt 48 órával ne moss hajat, kerüld a kávét, az alkoholt és a szénsavas üdítőket, hajfestés, szőkítés vagy hajegyenesítés előtt és után pedig legalább 10 nap szünetet tarts. Utána: 24–48 óráig ne moss hajat, 12 óráig ne sportolj és ne szaunázz, 10 napig ne legyen hajfestés, szőkítés vagy vegyi kezelés.</p></details>
-        <details><summary>Mi történik, ha időpontot kell módosítanom?</summary><p>A foglalás után kapott visszaigazoló e-mailben található linken tudod módosítani vagy lemondani az időpontodat, vagy hívj minket a 06 20 247 4444-es számon. Kérjük, minél hamarabb jelezd, hogy más vendég is lefoglalhassa az időpontot.</p><p class="helyorzo">[A pontos módosítási határidő a szalon jóváhagyása után kerül ide.]</p></details>
+        <details><summary>Mi történik, ha időpontot kell módosítanom?</summary><p>A foglalás után kapott visszaigazoló e-mailben található linken tudod módosítani vagy lemondani az időpontodat, vagy hívj minket a 06 20 247 4444-es számon. Az időpont módosítását vagy lemondását legkésőbb az időpont előtt 24 órával kérjük jelezni, hogy más vendég is lefoglalhassa.</p></details>
         <details><summary>Hol találom a szalont?</summary><p>1023 Budapest, Bécsi út 2. (a Kolosy tér és a Zsigmond tér között). Nyitvatartás: hétfőtől péntekig 8:00–20:00, szombaton 9:00–18:00, vasárnap zárva. Telefon: 06 20 247 4444.</p></details>
       </div>
     </div>

@@ -4,7 +4,7 @@
 
 
 Az oldal a tulajdonos képernyőterve szerint készült (hero → jelek → állapotfelmérés → kezelők → első alkalom → kezelés lépései
-→ hajhullás-típusok → mire számíthatsz / miért működik → eredmények → videó → „Mivel kezdjünk?” (két belépési lehetőség) → miért más → Arc + Haj és GYIK → záró CTA). A PMU-landing (`/sminktetovalas-budapest`)
+→ hajhullás-típusok → mire számíthatsz / miért működik → eredmények → videó → „Mivel kezdjünk?” (két belépési lehetőség) → miért más → GYIK → záró CTA). A PMU-landing (`/sminktetovalas-budapest`)
 mintájára készült; a régi Wixes oldalt egyelőre nem váltja le (lásd fent), a csere után a Meta-pixel (Fodrász-pixel, `suti.js` `PIXEL_OLDALAK`) és a GTM útvonal-szabályai változatlanul érvényesek.
 
 ## Fájlok
@@ -14,7 +14,7 @@ mintájára készült; a régi Wixes oldalt egyelőre nem váltja le (lásd fent
 | oldal (szöveg, szerkezet) | `foglalas/oxigenterapia-budapest.html` |
 | stílus | `assets/css/oxigen-landing.css` (betűk, színek: ugyanaz, mint a PMU-landingé) |
 | működés (kezelők / eredmények lapozó, videó, Google-értékelés, CTA-mérés) | `assets/js/oxigen-landing.js` |
-| képek | `assets/img/oxigen/` (kezelők, előtte/utána, kezelés-képek, szalon, Arc + Haj) és a Wix-képek `assets/img/c2eb0f_…` |
+| képek | `assets/img/oxigen/` (kezelők, előtte/utána, kezelés-képek, szalon) és a Wix-képek `assets/img/c2eb0f_…` |
 | a „hajkamera-nézet” kép | `assets/img/oxigen/hajkamera-nezet.jpg` (960×640) — erősen nagyított, trichoszkópos jellegű, **MI-vel generált szemléltető kép** (nem vendégfotó), a tulajdonos kérésére felirat nélkül; valódi hajkamerás felvételre cserélhető |
 
 A fejlécet és a láblécet a build szúrja be (`<!--mh-fejlec-->`, `<!--mh-lablec-->`), mint a többi saját oldalon.
@@ -32,7 +32,7 @@ küldenek (a PMU-landing `pmu_landing_*` mintájára; ezekre GTM-címke nem figy
 
 ## Hero (mobil) és a zöld szekció
 
-A hero másodlagos linkje: „Csak hajkamerás állapotfelmérés – 4 990 Ft →” (nincs „Még nem vagy biztos?”). Mobilon a három badge, a SZÉP-sor és a Google-sor külső szélei pontosan a margónál vannak (flex, space-between), a galéria nyilai 4 px-re a kép szélétől. A zöld szekció címe („Akkor az oxigénterápia valószínűleg hatásos lesz nálad.”) az „Ismerősek ezek a jelek?” folytatása; tableten/mobilon a cím a kép **fölött** áll (a `.allapot-szoveg` `display:contents`, a h2 `order:-1`).
+A hero másodlagos linkje: „Csak hajkamerás állapotfelmérés – 4 990 Ft →” (nincs „Még nem vagy biztos?”). Mobilon **öt kerek badge egy sorban** (hajkamera, privát szoba, 80 perc, SZÉP Kártya, Google-„vélemény” G-logóval; a `.teny-m` elemek csak mobilon látszanak, a SZÉP/Google sor mobilon rejtett, asztalin változatlan); a sor külső szélei pontosan a margónál vannak (flex, space-between), a galéria nyilai 4 px-re a kép szélétől. A zöld szekció címe („Akkor az oxigénterápia valószínűleg hatásos lesz nálad.”) az „Ismerősek ezek a jelek?” folytatása; tableten/mobilon a cím a kép **fölött** áll (a `.allapot-szoveg` `display:contents`, a h2 `order:-1`).
 
 ## Fejléc
 
@@ -69,7 +69,7 @@ A „Milyen hajhullásokra működik”, a „Mire számíthatsz / Miért műkö
 
 ## CTA-hierarchia (intent szerint, mobilon is ebben a sorrendben)
 
-- **Hero:** elöl az arany „Első kezelést foglalok – 29 900 Ft” („Hajkamerás állapotfelméréssel együtt · 120 perc”), mögötte körvonalas: „Még nem vagy biztos? Hajkamerás állapotfelmérés – 4 990 Ft”.
+- **Hero:** elöl az arany „Első kezelést foglalok – 29 900 Ft” („Hajkamerás állapotfelméréssel együtt · 80 perc”), alatta kis link: „Csak hajkamerás állapotfelmérés – 4 990 Ft →”.
 - **Árak:** elöl a kiemelt kártya (Első oxigénterápiás hajkezelés + állapotfelmérés, 29 900 Ft, jelvény: „Ha szeretnéd rögtön elkezdeni”), utána a halványabb „Csak hajkamerás állapotfelmérés” (4 990 Ft, „Ha még nem tudod, neked való-e”).
 - **Záró sáv:** arany „Első kezelést foglalok”, mögötte körvonalas „Csak állapotfelmérés”.
 - **Mobil sticky sáv** (`#sticky-cta`, csak ≤700 px): a hero-gombok elgörgetése után látszik, a záró sávnál eltűnik; primary: „Első kezelés · 29 900 Ft”, mellette kis link: „Csak felmérés · 4 990 Ft”.
@@ -86,10 +86,11 @@ Az oldalon nincsenek a címek fölötti kis (sárga) alcímek. Az arany pill-gom
 
 - a három kezelő bemutatkozója **általános, személyes adat nélküli szöveg** (nincs róluk forrásunk): a valódi szakmai háttér a tulajdonostól kérendő; a nevek és a fotók a Salonic szakember-oldaláról vannak;
 - az előtte/utána képek az Oxygeni Hair márka referenciái; a „kétmillió elvégzett kezelésből 95%-nál pozitív változás” és a „3–5 / 5–10 alkalom” a tulajdonos megadott szövege;
-- az időpont-módosítás pontos határideje a GYIK-ban.
+- (nincs több helyőrző: az időpont-módosítás határideje a tulajdonos szerint **24 óra**, a GYIK-ban szerepel).
 
-## Nyitott pontok (döntés kell)
+## Döntések (2026-10-04, a tulajdonostól)
 
-- **Időtartam:** a képernyőterv és a régi oldal „120 perc”; a Salonic jelenleg 80 percet mutat az első kezelésre (a 120 perces változat kikerült, lásd `docs/booking-engine/DECISIONS.md` 16.). A 120 három helyen szerepel (hero, ár-kártya, GYIK).
-- **Arc + Haj:** a Salonic oxigén-fiókjában ma nincs ilyen szolgáltatás (csak 466147 / 466110 / 466158), ezért a gomb telefonos időpontkérésre (`tel:`) mutat.
+- **Időtartam:** az első kezelés **80 perc (1 óra 20 perc)**, mint a Salonicban; mindenhol így szerepel (hero, badge, ár-kártya, GYIK).
+- **Arc + Haj:** a Salonicban nincs, ezért a blokk **lekerült az oldalról** (a GYIK-szekció egyoszlopos, középre igazított).
+- **Időpont-módosítás:** legkésőbb 24 órával az időpont előtt.
 - A régi oldal gombjai az `/idpontfoglalas` elosztóra vittek; az új oldalé közvetlenül a Salonicra (mint a HeadSpa-oldalaké).
