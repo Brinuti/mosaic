@@ -1,0 +1,46 @@
+/* A MOSAIC fejlec es lablec kozos finomitasa (minden oldalon).
+   Egy forras, ket helyre kerul (tools/netlify-build.mjs):
+   - a Wixes (klon) oldalakba a beagyazott klon.css moge,
+   - a sajat oldalakba (a <!--mh-fejlec--> darabok) a fejlec moge.
+   Mobilon a Wix 320 px-es alapon dolgozik, ezek a px-ek is ahhoz valok. Ahol a Wix beegetett
+   ertekeit (sorok magassaga, margok, betumeret) kell felulirni, ott !important van. */
+
+/* ============ MOBIL FEJLEC: egy kicsit alacsonyabb, a sor tartalma picit feljebb ============ */
+.device-mobile-optimized [data-mesh-id="SITE_HEADERinlineContent-gridContainer"] { grid-template-rows: 46px 26px !important; }
+.device-mobile-optimized #comp-m3znboq3 { margin-top: 9px !important; }
+/* az "i" kep negyzetes: teljes egeszeben latszik (korabban 25x24-re vagva) */
+.device-mobile-optimized #comp-m7q6eklh { margin-top: 10px !important; width: 26px !important; height: 26px !important; }
+.device-mobile-optimized #comp-m7q6eklh a { height: 100% !important; width: 100% !important; overflow: visible !important; }
+.device-mobile-optimized #comp-m7q6eklh img { object-fit: contain !important; width: 100% !important; height: 100% !important; }
+.device-mobile-optimized #comp-m7jcfhgp { margin-top: 14px !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_TOGGLE { margin-top: -1px !important; }
+
+/* "Foglalas" gomb: ugyanaz a stilus, mint az uj oldalak aranyszinu gombja (puha arnyek, kozepre irt, nem csupa nagybetus) */
+.device-mobile-optimized #comp-mo70bxf7 { margin-top: 10px !important; width: 78px !important; height: 26px !important; left: 190px !important; }
+.device-mobile-optimized #comp-mo70bxf7 a { height: 100% !important; padding: 0 !important; box-shadow: 0 4px 12px rgba(150, 120, 40, .35) !important; }
+.device-mobile-optimized #comp-mo70bxf7 .StylableButton2545352419__container { width: 100% !important; height: 100% !important; justify-content: center !important; align-items: center !important; }
+.device-mobile-optimized #comp-mo70bxf7 .StylableButton2545352419__label { font: 500 11.5px/1 roboto, sans-serif !important; letter-spacing: .02em !important; margin: 0 !important; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); }
+
+/* ============ MOBIL AKCIOSAV: egy sorban, kisebb betu, lagy, elmosott ragyogas ============ */
+.device-mobile-optimized [data-mesh-id="comp-mpv0gaodinlineContent-gridContainer"] { grid-template-rows: 26px !important; }
+.device-mobile-optimized #comp-mpv0ivyk { margin: 0 !important; left: 0 !important; width: 100% !important; height: 26px !important; display: flex !important; align-items: center; justify-content: center; }
+.device-mobile-optimized #comp-mpv0ivyk p { font-size: 9.7px !important; line-height: 1 !important; white-space: nowrap; margin: 0 !important; }
+.device-mobile-optimized #comp-mpv0ivyk p * { font-size: inherit !important; }
+.device-mobile-optimized #comp-mpv0ganp { position: relative; z-index: 2; box-shadow: 0 5px 16px rgba(238, 5, 163, .38); }
+.device-mobile-optimized #bgLayers_comp-mpv0ganp::after { content: ''; position: absolute; inset: -6px; pointer-events: none; filter: blur(7px);
+  background: radial-gradient(60% 130% at 50% 0%, rgba(255, 160, 230, .55), rgba(255, 160, 230, 0) 72%),
+    linear-gradient(90deg, rgba(120, 0, 90, .35), rgba(120, 0, 90, 0) 24%, rgba(120, 0, 90, 0) 76%, rgba(120, 0, 90, .35)); }
+
+/* ============ LABLEC (asztalon es mobilon): kozepre, sotet zold hatter, aranyvonal, barati linkek ============ */
+#SITE_FOOTER #bgLayers_SITE_FOOTER .LNYVZi { background: linear-gradient(180deg, #14292c 0%, #0f2224 100%) !important; }
+#SITE_FOOTER { box-shadow: inset 0 1px 0 rgba(201, 178, 138, .38); }
+#comp-m40zyigs p { letter-spacing: .02em !important; color: rgba(255, 255, 255, .74) !important; line-height: 1.5 !important; text-align: center !important; }
+#comp-m40zyigs p * { text-decoration: none !important; letter-spacing: inherit !important; }
+#comp-m40zyigs a { color: #fff !important; border-bottom: 1px solid rgba(201, 178, 138, .6); padding-bottom: 1px; transition: color .2s, border-color .2s; }
+#comp-m40zyigs a:hover { color: #e6d3a1 !important; border-color: #e6d3a1; }
+/* asztalon: levegosebb */
+#comp-m40zyigs { margin-top: 20px !important; margin-bottom: 24px !important; }
+/* mobilon: egy sorban, kozepre */
+.device-mobile-optimized #SITE_FOOTER [data-mesh-id="SITE_FOOTERinlineContent-gridContainer"] { grid-template-rows: auto !important; }
+.device-mobile-optimized #comp-m40zyigs { margin: 14px 0 16px !important; left: 0 !important; width: 100% !important; height: auto !important; }
+.device-mobile-optimized #comp-m40zyigs p, .device-mobile-optimized #comp-m40zyigs p * { font-size: 11.5px !important; white-space: nowrap; }

@@ -333,7 +333,7 @@
     a.textContent = 'Süti beállítások';
     a.style.textDecoration = 'underline';
     a.addEventListener('click', function (e) { e.preventDefault(); mutat('settings'); });
-    kulso.after(d.createTextNode(' - '), a);
+    kulso.after(d.createTextNode(' · '), a);
   }
 
   function felepit() {
