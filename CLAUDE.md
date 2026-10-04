@@ -28,4 +28,8 @@
 - **Mérőkódok:** csak a `mosaicheadspa.hu` domainen futhatnak (`assets/js/suti.js`,
   `ELES_DOMAINEK`). Külső fiókban (Meta, GTM, GA, Google Ads, TikTok) semmit ne hozz létre és
   ne módosíts a felhasználó kifejezett kérése nélkül.
+- **Elemző Claude:** az elemző Claude is látja a repót. Kódot nem ír és nem mergel, a PR-hez
+  kommentben ír review-t. A review-t merge előtt mindig olvasd el, a jelzett hibát javítsd vagy
+  indokold meg, hogy miért nem. A teszt-naplókat a `meres-naplo` mappába írd. Ha a változtatás
+  mérést érint (mérőkód, eseménykövetés, pixel, GTM, konverzió), jelöld a PR-leírásban.
 - Commit-üzenet: magyarul, ékezet nélkül.
