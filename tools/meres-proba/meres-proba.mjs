@@ -34,6 +34,9 @@ SZENARIOK.headspa = { start: '/foglalo-motor?business=headspa', salonic: 'mosaic
 const sc = SZENARIOK[SZ];
 if (!sc) throw new Error('ismeretlen szenario: ' + SZ);
 const LANDING = arg('landing', '0') === '1';
+// --reteg 1: a foglalo a helyben nyilo retegben nyilik (a rejtett /booking-test oldalon, a klikk-azonositokkal), nem a /foglalo-motor oldalon
+const RETEG = arg('reteg', '0') === '1';
+const MAIN = RETEG ? '#mosaic-booking-layer main' : 'main'; // a /booking-test oldalnak is van <main>-je: a retegben keresunk
 // a Salonic altal elallitott koszonooldal-URL (a szimulalt atiranyitashoz es a natív alapvonalhoz)
 function koszonoUrl(host, start, sid) {
   const s = sc.sim;
@@ -173,36 +176,46 @@ try {
     await a.click();
     await page.waitForURL(/\/foglalo-motor/, { timeout: 30000 });
   } else {
+    if (RETEG) {
+      startUrl = BASE + '/booking-test' + (CLICK ? '?' + CLICK_QS : '');
+      idovonal.push({ t: mp(), esemeny: 'indulas (reteg)', url: startUrl, mod: MOD, szenario: SZ, overlay: !!OVERLAY });
+      await page.goto(startUrl, { waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 });
+      const opts = Object.fromEntries(new URL(BASE + sc.start).searchParams);
+      idovonal.push({ t: mp(), esemeny: 'openBooking', opts });
+      await page.evaluate((o) => window.openBooking(o), opts);
+    } else {
     startUrl = BASE + sc.start + (CLICK ? '&' + CLICK_QS : '');
     idovonal.push({ t: mp(), esemeny: 'indulas', url: startUrl, mod: MOD, szenario: SZ, overlay: !!OVERLAY });
     await page.goto(startUrl, { waitUntil: 'domcontentloaded' });
+    }
   }
-  await page.locator('main section').first().waitFor({ timeout: 30000 });
+  await page.locator(MAIN + ' section').first().waitFor({ timeout: 30000 });
   if (LANDING && sc.landing && sc.landing.engedMotor) { // pl. fodraszat: HA1 -> "Ingyenes konzultáció"
     await page.waitForTimeout(1500);
-    await (await elsoLathato(page.locator('main button', { hasText: sc.landing.engedMotor }))).click();
+    await (await elsoLathato(page.locator(MAIN + ' button', { hasText: sc.landing.engedMotor }))).click();
   }
-  for (const lepes of (sc.lepesek || [])) { await page.waitForTimeout(1200); await (await elsoLathato(page.locator('main button', { hasText: lepes }))).click(); idovonal.push({ t: mp(), esemeny: 'lepes: ' + lepes }); }
+  for (const lepes of (sc.lepesek || [])) { await page.waitForTimeout(1200); await (await elsoLathato(page.locator(MAIN + ' button', { hasText: lepes }))).click(); idovonal.push({ t: mp(), esemeny: 'lepes: ' + lepes }); }
   // lezer: terulet -> (kezeles)
   if (sc.terulet) {
     // a belepo-kerdes (LA1), ha az intent-belepes nincs meg az eles motorban: "Mar tudom, mit szeretnek"
     await page.waitForTimeout(1500);
-    const mar = page.locator('main button', { hasText: 'Már tudom' });
+    const mar = page.locator(MAIN + ' button', { hasText: 'Már tudom' });
     if (await mar.count()) { idovonal.push({ t: mp(), esemeny: 'LA1: "Már tudom" (az eles motor meg nem ismeri az intent-belepest)' }); await mar.first().click(); }
-    await (await elsoLathato(page.locator('main button', { hasText: sc.terulet }))).click();
+    await (await elsoLathato(page.locator(MAIN + ' button', { hasText: sc.terulet }))).click();
     await page.waitForTimeout(1500);
-    if (await page.locator('main button', { hasText: /Tovább az adatokhoz|További időpontok/ }).count() === 0) {
+    if (await page.locator(MAIN + ' button', { hasText: /Tovább az adatokhoz|További időpontok/ }).count() === 0) {
       const b = await elsoLathato(page.locator('.be-list button')); idovonal.push({ t: mp(), esemeny: 'kezeles', szoveg: (await b.textContent()).replace(/\s+/g, ' ').trim().slice(0, 120) }); await b.click();
     }
   }
-  await (await elsoLathato(page.locator('main button', { hasText: 'További időpontok' }))).click();
+  await (await elsoLathato(page.locator(MAIN + ' button', { hasText: 'További időpontok' }))).click();
   await elsoLathato(page.locator('.be-strip[aria-label="Nap"] .be-chip'));
   const napok = page.locator('.be-strip[aria-label="Nap"] .be-chip'); await napok.nth((await napok.count()) - 1).click();
   await page.waitForTimeout(800);
   const idok = page.locator('.be-time'); const db = await idok.count();
   const idoSzoveg = (await idok.nth(db - 1).textContent()).trim(); await idok.nth(db - 1).click();
   idovonal.push({ t: mp(), esemeny: 'idopont valasztva', ido: idoSzoveg });
-  await (await elsoLathato(page.locator('main button', { hasText: 'Tovább az adatokhoz' }))).click();
+  await (await elsoLathato(page.locator(MAIN + ' button', { hasText: 'Tovább az adatokhoz' }))).click();
   await page.locator('iframe').first().waitFor({ state: 'attached', timeout: 30000 });
   idovonal.push({ t: mp(), esemeny: 'Salonic-adatlap (iframe) betoltve' });
 
@@ -244,7 +257,7 @@ try {
 
 const sutik = (await context.cookies()).filter((c) => /^(_gcl|_fbc|_fbp|_ga|FPLC|FPID|FPGSID|FPAU|ttclid|_ttp|_tt_|consent)/i.test(c.name)).map((c) => ({ nev: c.name, ertek: String(c.value).slice(0, 90), domain: c.domain }));
 const vegeUrl = page.url();
-fs.writeFileSync(OUT, JSON.stringify({ szenario: SZ, mod: MOD, overlay: !!OVERLAY, landing: LANDING, clickids: CLICK, vegeUrl, idovonal, sutik, harmadikFelHostok: Object.fromEntries(harmadik), naplo }, null, 1));
+fs.writeFileSync(OUT, JSON.stringify({ szenario: SZ, mod: MOD, overlay: !!OVERLAY, reteg: RETEG, landing: LANDING, clickids: CLICK, vegeUrl, idovonal, sutik, harmadikFelHostok: Object.fromEntries(harmadik), naplo }, null, 1));
 console.log(`kesz: ${OUT} | meresi keresek: ${naplo.length} | vege: ${vegeUrl.slice(0, 120)}`);
 await browser.close();
 

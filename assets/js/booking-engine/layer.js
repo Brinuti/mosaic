@@ -51,13 +51,16 @@ export function isOpen() { return !!current; }
 /**
  * Megnyitja a foglalot.
  * opts: { business, service | service_id, category | service_category, intent, voucher } (mind opcionalis; ha nincs uzletag: szolgaltatas-elso kezdo allapot)
- * env:  { restored: true } ha az oldal mar ?booking=1-gyel toltodott be (nincs elozo bejegyzes, nem pusholunk); cssHref / fontsHref; opener (fokusz-visszaadas)
+ * env:  { restored: true } ha az oldal mar ?booking=1-gyel toltodott be (nincs elozo bejegyzes, nem pusholunk); cssHref / fontsHref; opener (fokusz-visszaadas);
+ *       urlAllapot: true -> az URL is frissul (?booking=1&business=...): alapbol NEM, mert a GTM History Change triggerei minden URL-valtozasnal
+ *       oldalmegtekintes-esemenyeket (Meta PageView, GA4 page_view / visit, Google Ads page_view) inditanak; csak GTM-kizaro szabaly utan kapcsolhato be
  */
 export function openBooking(opts = {}, env = {}) {
   const win = env.win || window; const doc = win.document;
   if (current) return current.engine;
   const context = normalizeOptions(opts);
   const restored = !!env.restored;
+  const urlAllapot = !!env.urlAllapot;
   const opener = env.opener || doc.activeElement;
 
   // --- gazdaelem + Shadow DOM -------------------------------------------------------------------------------------------------------
@@ -98,7 +101,8 @@ export function openBooking(opts = {}, env = {}) {
     q.set('source_page', sourcePage);
     return '?' + q.toString();
   })();
-  if (!restored) win.history.pushState({ beLayer: true, view: null, depth: 0 }, '', layerUrl(win.location.href, context));
+  // a vissza gomb a reteg-allapotokon at mukodik; az URL alapbol valtozatlan marad (lasd fent)
+  if (!restored) { const allapot = { beLayer: true, view: null, depth: 0 }; if (urlAllapot) win.history.pushState(allapot, '', layerUrl(win.location.href, context)); else win.history.pushState(allapot, ''); }
 
   // --- bezaras ---------------------------------------------------------------------------------------------------------------------
   let closed = false;
@@ -116,10 +120,10 @@ export function openBooking(opts = {}, env = {}) {
   }
   function requestClose() {
     if (closed) return;
-    if (restored) { win.history.replaceState(null, '', cleanUrl(win.location.href)); teardown(); return; }
+    if (restored) { if (urlAllapot) win.history.replaceState(null, '', cleanUrl(win.location.href)); teardown(); return; }
     const steps = (engine.state ? engine.state.depth : 0) + 1;
     win.history.go(-steps); // a popstate (onExit) zarja be a reteget es allitja vissza az eredeti cimet
-    win.setTimeout(() => { if (!closed) { win.history.replaceState(null, '', cleanUrl(win.location.href)); teardown(); } }, 800); // ha a bongeszo nem lepett vissza
+    win.setTimeout(() => { if (!closed) { if (urlAllapot) win.history.replaceState(null, '', cleanUrl(win.location.href)); teardown(); } }, 800); // ha a bongeszo nem lepett vissza
   }
   const onExit = () => teardown();
 
@@ -137,7 +141,7 @@ export function openBooking(opts = {}, env = {}) {
   shadow.querySelector('.be-backdrop').addEventListener('click', requestClose);
 
   // --- a motor ------------------------------------------------------------------------------------------------------------------------
-  const engine = startEngine({ root: body, win, doc, mode: 'layer', search: engineSearch, defaultBusiness: null, onClose: requestClose, onExit });
+  const engine = startEngine({ root: body, win, doc, mode: 'layer', search: engineSearch, defaultBusiness: null, onClose: requestClose, onExit, urlAllapot });
   current = { host, engine, close: requestClose, restored };
   win.requestAnimationFrame(() => { layerEl.classList.add('be-open'); panel.focus({ preventScroll: true }); });
   return engine;
