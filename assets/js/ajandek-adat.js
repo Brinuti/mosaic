@@ -25,6 +25,7 @@
       kartya_felirat: ['50+30 perces egyéni MOSAIC', 'HEAD SPA KEZELÉS'],
       fejlec: 'Teljes figyelem, csak neki.',
       osszefoglalo: '50 perc kezelés + 30 perc szárítás',
+      osszefoglalo_rovid: '50 + 30 perc',
       leiras: 'Teljes figyelem, mély kikapcsolódás, rendezett haj: a legegyszerűbb választás, ha egy embernek keresel igazán pihentető ajándékot.',
       tartalom: ['50 perc Head Spa', '30 perc szárítás', '1 fő', '6 hónapig felhasználható'],
       kartya_sor: 'Teljes, egyéni kényeztetés',
@@ -58,6 +59,7 @@
       kartya_felirat: ['50+30 perces 4 kezes MOSAIC', 'HEAD SPA KEZELÉS'],
       fejlec: 'Ha igazán különlegeset adnál.',
       osszefoglalo: '50 perc 4 kezes kezelés + 30 perc szárítás',
+      osszefoglalo_rovid: '50 + 30 perc',
       leiras: 'Két terapeuta dolgozik egyszerre: intenzívebb, különlegesebb Head Spa élmény.',
       tartalom: ['50 perc 4 kezes Head Spa', '30 perc szárítás', '1 fő', '2 terapeuta', '6 hónapig felhasználható'],
       kartya_sor: 'Két terapeuta, még különlegesebb élmény',
@@ -88,6 +90,7 @@
       kartya_felirat: ['50+30 perces páros MOSAIC', 'HEAD SPA KEZELÉS (2 FŐ)'],
       fejlec: 'Közös élmény két főre.',
       osszefoglalo: '50 perc kezelés + 30 perc szárítás / fő',
+      osszefoglalo_rovid: '50 + 30 perc / fő',
       leiras: 'Közös élmény, közös kikapcsolódás: barátnővel, anyukáddal vagy a pároddal.',
       tartalom: ['2 vendég', '2 terapeuta', 'egy közös időpont', '6 hónapig felhasználható'],
       kartya_sor: 'Közös élmény: barátnővel, anyukával, párral',
@@ -224,7 +227,7 @@
       // a hero videoja ("szöveg nélkül.mp4", APPROVED_BY_METADATA): a 24-36. masodperc 3:2-es kivagasa (hang nelkul, 1,1 MB); a fotó a poszter
       hero_media: { src: HERO_FOTO.src, alt: HERO_FOTO.alt, video: { src: '/assets/video/ajandek-hero-altalanos.mp4' }, forras: 'szöveg nélkül.mp4', status: 'APPROVED_BY_METADATA' },
       hero_trust: [
-        { csillag: true, szoveg: GOOGLE.pont + ' · ' + GOOGLE.darab, alszoveg: 'Google-vélemény', href: '#ah-google' },
+        { csillag: true, szoveg: GOOGLE.pont + ' · ' + GOOGLE.darab, alszoveg: 'Google-vélemény', alszoveg_rovid: 'vélemény', href: '#ah-google' },
         { ikon: 'calendar', szoveg: '6 hónapig', alszoveg: 'érvényes' },
         { ikon: 'monitor', szoveg: 'Online', alszoveg: 'megvásárolható' },
         { ikon: 'card', szoveg: 'Gyönyörű, személyre', alszoveg: 'szabható kártya' }

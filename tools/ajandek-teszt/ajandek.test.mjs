@@ -187,9 +187,13 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     // kartya-elonezet nagyitasa: nagyito gomb + ablak (elol / hat); a GYIK cime
     for (const jel of ['id="ah-nagyit"', 'id="ah-ak-nagy"', 'id="ah-ak-nagy-kartya"', 'id="ah-ak-nagy-fordit"']) assert.ok(html.includes(jel), jel);
     assert.ok(html.includes('<h2>Kérdésed van? Megválaszoltuk.</h2>') && !html.includes('Gyakori kérdések</h2>'), 'GYIK cim');
-    // fizetes: egymas alatti, egyforma sorok (accordion), nem a keskeny fulek
+    // fizetes: fulek a kartya-urlap felett (kartya, Revolut Pay, Google Pay) - a kartya az alapertelmezett
     const js = fs.readFileSync(new URL('../../assets/js/ajandek.js', import.meta.url), 'utf8');
-    assert.ok(/layout: { type: 'accordion', defaultCollapsed: false, radios: true, spacedAccordionItems: true }/.test(js) && !/type: 'tabs'/.test(js), 'fizetesi elem: accordion');
+    assert.ok(/layout: { type: 'tabs', defaultCollapsed: false }/.test(js) && js.includes("paymentMethodOrder: ['card', 'revolut_pay', 'google_pay']"), 'fizetesi elem: fulek, a kartya az elso');
+    // a felugro gombja a jobb (szoveg) oszlopban van, a design-valaszto mobilon legordulo, a termekeken rovid mobil szoveg
+    assert.ok(html.indexOf('id="ah-kez-valaszt"') > html.indexOf('ah-kez-szoveg') && html.indexOf('id="ah-kez-valaszt"') < html.indexOf('</dialog>', html.indexOf('ah-kez-szoveg')) && html.indexOf('ah-kez-torzs') < html.indexOf('id="ah-kez-valaszt"'), 'az Ezt valasztom a szoveg-oszlopban');
+    assert.ok(html.includes('id="ah-tema-nyit"') && html.includes('id="ah-tv-design"'), 'design legordulo');
+    for (const t of Object.values(ADAT.TERMEKEK)) assert.ok(t.osszefoglalo_rovid && t.osszefoglalo_rovid.length < t.osszefoglalo.length, t.id + ': rovid osszefoglalo');
     assert.ok(js.includes('function gorgessVideora') && js.includes('kivalaszt(r.value); gorgessVideora();'), 'mobilon a valasztas utan a videohoz gorget');
     for (const [id, t] of Object.entries(ADAT.TERMEKEK)) {
       const m = t.kezeles.menet;

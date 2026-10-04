@@ -248,7 +248,8 @@
       var tarto = t.href ? li.appendChild(h('a', { class: 'ah-bizalom-link', href: t.href, 'data-gorgess': String(t.href).replace(/^#/, '') })) : li;
       if (t.csillag) tarto.appendChild(h('span', { class: 'ah-csillag', 'aria-hidden': 'true', text: '★★★★★' }));
       else tarto.appendChild(ikonSpan(t.ikon));
-      tarto.appendChild(h('span', { class: 'ah-bizalom-szoveg' }, h('b', { text: t.szoveg }), h('small', { text: t.alszoveg })));
+      tarto.appendChild(h('span', { class: 'ah-bizalom-szoveg' }, h('b', { text: t.szoveg }),
+        t.alszoveg_rovid ? h('small', null, h('span', { class: 'ah-m-hosszu', text: t.alszoveg }), h('span', { class: 'ah-m-rovid', text: t.alszoveg_rovid })) : h('small', { text: t.alszoveg })));
       lista.appendChild(li);
     });
     var kep = $('ah-hero-kep');
@@ -437,6 +438,11 @@
         var d = f.contentDocument;
         if (!d || !d.body) return false;
         var kesz = !!d.querySelector('.ti-widget');
+        if (!d.getElementById('ah-ti-stilus') && d.head) {
+          var st = d.createElement('style'); st.id = 'ah-ti-stilus';
+          st.textContent = 'html body div.ti-controls-line,html body .ti-widget .ti-controls-line{display:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;visibility:hidden!important}';   // a lapozo-sav (gorgetosav) elrejtese; a kartyak huzassal tovabbra is lapozhatok
+          d.head.appendChild(st);
+        }
         var m = Math.max(d.body.scrollHeight, d.documentElement.scrollHeight);
         if (kesz && m > 60) {
           f.style.height = (m + 6) + 'px';
@@ -499,9 +505,10 @@
   }
   function kijelzett() { return S.termek && termek(S.termek) ? S.termek : ajanlottId(); }
   function termekKartya(t) {
-    var meta = [['clock', t.osszefoglalo], [t.vendeg_db > 1 ? 'users' : 'user', t.vendeg_db + ' fő']];
+    var meta = [['clock', t.osszefoglalo, t.osszefoglalo_rovid], [t.vendeg_db > 1 ? 'users' : 'user', t.vendeg_db + ' fő']];
     var lista = h('ul', { class: 'ah-termek-meta' });
-    meta.forEach(function (m) { if (m[1]) lista.appendChild(h('li', null, ikonSpan(m[0]), h('span', { text: m[1] }))); });
+    // mobilon a rovid szoveg latszik (.ah-m-rovid), asztalon a hosszu
+    meta.forEach(function (m) { if (m[1]) lista.appendChild(h('li', null, ikonSpan(m[0]), m[2] ? h('span', null, h('span', { class: 'ah-m-hosszu', text: m[1] }), h('span', { class: 'ah-m-rovid', text: m[2] })) : h('span', { text: m[1] }))); });
     var kep = h('span', { class: 'ah-termek-kep' });
     if (t.vizual && t.vizual.src) {
       kep.appendChild(h('img', { src: kepUt(t.vizual.src), alt: '', width: t.vizual.w || null, height: t.vizual.h || null, loading: 'lazy', decoding: 'async', style: t.vizual.poz ? 'object-position:' + t.vizual.poz : null }));
@@ -572,8 +579,13 @@
     var fej = lep && lep.querySelector('.ah-lepes-fej');
     if (!fej || !lista) return;
     if (lep.getBoundingClientRect().top < lista.getBoundingClientRect().bottom - 4) return;   // egymas mellett (asztali): nincs mit gorgetni
-    // a ragados fejlec (77 px) alatt: a 2. lepes cime a kepernyo tetejere kerul
-    setTimeout(function () { window.scrollTo({ top: Math.max(0, fej.getBoundingClientRect().top + window.pageYOffset - 92), behavior: csendesMozgas() ? 'auto' : 'smooth' }); }, 60);
+    // a ragados fejlec (az eles oldal fejlece, kb. 77 px) alatt: a 2. lepes CIME kerul a kepernyo tetejere (fejlec + 22 px), nem a video
+    function cel() { var fh = document.getElementById('SITE_HEADER'); return Math.max(0, fej.getBoundingClientRect().top + window.pageYOffset - ((fh ? fh.getBoundingClientRect().height : 77) + 22)); }
+    setTimeout(function () {
+      window.scrollTo({ top: cel(), behavior: csendesMozgas() ? 'auto' : 'smooth' });
+      // a gorgetes vegen (a kepek / a szoveg magassaga kozben valtozhat) szukseg eseten pontositunk
+      setTimeout(function () { if (Math.abs(cel() - window.pageYOffset) > 8) window.scrollTo({ top: cel(), behavior: 'auto' }); }, 900);
+    }, 60);
   }
   // a vevo valasztasa: a 2. es 3. lepes a helyen frissul (keskeny kepernyon a videohoz gorgetunk: gorgessVideora)
   function kivalaszt(id) {
@@ -789,6 +801,20 @@
       kep.innerHTML = KT.html(adat);
     });
   }
+  // mobilon a design-valaszto legordulo: a gomb a kivalasztott design mini kepet + nevet mutatja, a racs lenyilik
+  function temaNyitFrissit() {
+    var kep = $('ah-tema-nyit-kep'), nev = $('ah-tema-nyit-nev');
+    if (!kep || !nev || !KT) return;
+    var adat = kartyaAdat(); adat.tema = S.tervezo.tema; adat.oldal = 'elol';
+    kep.innerHTML = KT.html(adat);
+    nev.textContent = temaNev(S.tervezo.tema);
+  }
+  function temaLegordul(nyit) {
+    var tv = $('ah-tv-design'), g = $('ah-tema-nyit');
+    if (!tv || !g) return;
+    tv.classList.toggle('ah-tema-nyitva', !!nyit);
+    g.setAttribute('aria-expanded', nyit ? 'true' : 'false');
+  }
   function tervezoRender() {
     if (!KT) return;
     $('ah-ak-elonezet').innerHTML = KT.html(kartyaAdat());
@@ -807,6 +833,7 @@
       b.classList.toggle('ah-tema-valasztott', az);
     });
     temaMiniek();
+    temaNyitFrissit();
     var van = !!fotoUrl;
     $('ah-foto-blokk').hidden = !S.fotoLehet;
     $('ah-foto-torol').hidden = !van;
@@ -969,7 +996,11 @@
       S.tervezo.tema = b.getAttribute('data-tema-gomb');
       ment();
       tervezoRender();
+      temaLegordul(false);
     });
+    $('ah-tema-nyit').addEventListener('click', function () { temaLegordul(!$('ah-tv-design').classList.contains('ah-tema-nyitva')); });
+    document.addEventListener('click', function (ev) { var tv = $('ah-tv-design'); if (tv && tv.classList.contains('ah-tema-nyitva') && !(ev.target.closest && ev.target.closest('#ah-tv-design'))) temaLegordul(false); });
+    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && $('ah-tv-design') && $('ah-tv-design').classList.contains('ah-tema-nyitva')) { temaLegordul(false); fokusz($('ah-tema-nyit')); } });
     $('ah-foto-gomb').addEventListener('click', function () { $('ah-foto-fajl').click(); });
     $('ah-foto-fajl').addEventListener('change', function () { fotoBetolt(this.files && this.files[0]); });
     $('ah-foto-torol').addEventListener('click', fotoTorol);
@@ -1059,8 +1090,9 @@
       });
       stripeAdapter.osszeg = osszeg;
       stripeAdapter.elem = stripeAdapter.elements.create('payment', {
-        // egymas alatti, egyforma magas, teljes szelessegu sorok (rádiógombbal): mobilon a harmadik fül nem szorul össze, és nem lehet melléérinteni
-        layout: { type: 'accordion', defaultCollapsed: false, radios: true, spacedAccordionItems: true },
+        // fulek a kartya-urlap felett: a kartya alapbol kivalasztva, a Revolut Pay es a Google Pay mellette, mindig lathatoan (nem az urlap alatt)
+        layout: { type: 'tabs', defaultCollapsed: false },
+        paymentMethodOrder: ['card', 'revolut_pay', 'google_pay'],
         // a szamlazasi adatokat (nev, e-mail, cim) mi kerjuk be es adjuk at a megerositeskor
         fields: { billingDetails: { name: 'never', email: 'never', address: 'never' } }
       });

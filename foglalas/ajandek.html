@@ -251,7 +251,8 @@
           <li><span class="ah-ikon" data-ikon="phone" aria-hidden="true"></span><span><a href="tel:+36202474444">06 20 247 4444</a></span></li>
           <li><span class="ah-ikon" data-ikon="mail" aria-hidden="true"></span><span><a href="mailto:mosaicheadspa@gmail.com">mosaicheadspa@gmail.com</a></span></li>
         </ul>
-        <div class="ah-terkep" id="ah-terkep" data-src="https://www.openstreetmap.org/export/embed.html?bbox=19.0297%2C47.5217%2C19.0437%2C47.5277&amp;layer=mapnik&amp;marker=47.5247344%2C19.0367534">
+        <div class="ah-terkep" id="ah-terkep" data-src="https://www.openstreetmap.org/export/embed.html?bbox=19.0297%2C47.5201%2C19.0437%2C47.5261&amp;layer=mapnik&amp;marker=47.5247344%2C19.0367534">
+          <a class="ah-terkep-forras" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a>
           <button type="button" class="ah-terkep-gomb" id="ah-terkep-gomb"><span class="ah-ikon" data-ikon="pin" aria-hidden="true"></span><span>Térkép megjelenítése</span></button>
         </div>
         </div>
@@ -351,9 +352,9 @@
         <p class="ah-kez-utana" id="ah-kez-utana"></p>
         <p class="ah-kez-ido" id="ah-kez-ido"></p>
       </div>
+      <div class="ah-kez-ablak-lab"><button type="button" class="ah-gomb ah-gomb-fo" id="ah-kez-valaszt">Ezt választom</button></div>
     </div>
   </div>
-  <div class="ah-kez-ablak-lab"><button type="button" class="ah-gomb ah-gomb-fo" id="ah-kez-valaszt">Ezt választom</button></div>
 </dialog>
 <!-- a szemelyre szabo kartya-elonezetenek nagyitasa: nagy kartya (asztalon a kepernyohoz illesztve, mobilon ujjal mozgathato nagyitas) -->
 <dialog class="ah-lightbox ah-ak-nagy" id="ah-ak-nagy" aria-label="A kártya nagyban">
@@ -389,8 +390,11 @@
         </div>
       </div>
       <div class="ah-kartya ah-tervezo-vezerlok">
-        <div class="ah-tv-sor">
-          <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">1</span>Válassz designt</h3>
+        <div class="ah-tv-sor ah-tv-design" id="ah-tv-design">
+          <div class="ah-tema-fej">
+            <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">1</span>Válassz designt</h3>
+            <button type="button" class="ah-tema-nyit" id="ah-tema-nyit" aria-haspopup="true" aria-expanded="false" aria-controls="ah-tema-racs" aria-label="Design választása"><span class="ah-tema-nyit-kep" id="ah-tema-nyit-kep" aria-hidden="true"></span><span class="ah-tema-nyit-nev" id="ah-tema-nyit-nev">Smaragd</span><span class="ah-tema-nyit-nyil" aria-hidden="true"></span></button>
+          </div>
           <div class="ah-tema-racs" id="ah-tema-racs" role="radiogroup" aria-label="Kártya-design"></div>
         </div>
 
@@ -532,7 +536,7 @@
             <details class="ah-ceges" id="ah-ceges">
               <summary>
                 <span class="ah-ceges-ikon"><span class="ah-ikon" data-ikon="building" aria-hidden="true"></span></span>
-                <span class="ah-ceges-szoveg"><b>Céges számlát kérek</b><small>Add meg a céges adatokat a számlázáshoz.</small></span>
+                <span class="ah-ceges-szoveg"><b>Céges számlát kérek</b><small>Add meg a céges számlázási adatokat.</small></span>
                 <span class="ah-ceges-nyil"><span class="ah-ikon" data-ikon="chevron" aria-hidden="true"></span></span>
               </summary>
               <div class="ah-ceges-mezok">

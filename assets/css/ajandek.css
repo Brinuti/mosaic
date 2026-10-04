@@ -1207,3 +1207,117 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
   .ah-gomb-fizet { font-size: clamp(13.5px, 3.9vw, 16px); padding: 0 12px; gap: 6px; }
   .ah-gomb-fizet::after { display: none; }
 }
+
+/* =================== 7. kor (2026-10-04): felugro jobb oszlop, mobil felugro gorgetes nelkul, tervezo legordulo, rovid mobil szovegek =================== */
+
+/* felugro: a jobb oszlopban fentrol lefele: bevezeto, felsorolas, hajszaritas + idotartam, "Ezt valasztom" - a gomb alja pontosan a kep aljaval van egy vonalban */
+.ah-kez-szoveg .ah-kez-ablak-lab { margin-top: 14px; display: block; }
+.ah-kez-szoveg .ah-kez-ablak-lab .ah-gomb { width: 100%; min-width: 0; }
+@media (min-width: 720px) {
+  .ah-kez-szoveg .ah-kez-ablak-lab { margin-top: 16px; }
+  .ah-kez-ablak { padding-bottom: 28px; }
+}
+
+/* felugro mobilon: a kep balra, a szoveg + a gomb jobbra - az egesz egy kepernyon belul, gorgetes nelkul */
+@media (max-width: 719px) {
+  .ah-kez-ablak { width: calc(100vw - 16px); max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); padding: 14px 14px 14px; border-radius: 16px; }
+  .ah-kez-ablak-fej { gap: 10px; align-items: center; }
+  .ah-kez-ablak-fej h3 { font-size: clamp(17px, 5vw, 20px); line-height: 1.18; }
+  .ah-kez-ablak-bezar { width: 32px; height: 32px; }
+  .ah-kez-torzs { display: grid; grid-template-columns: minmax(96px, 33%) minmax(0, 1fr); gap: 12px; align-items: stretch; margin-top: 10px; }
+  .ah-kez-kepkeret { height: auto; min-height: 100%; border-radius: 10px; }
+  .ah-kez-szoveg { margin-top: 0; }
+  .ah-kez-bevezeto { display: none; }
+  .ah-kez-elemek { grid-template-columns: minmax(0, 1fr); gap: 6px; margin-bottom: 10px; }
+  .ah-kez-elemek li { font-size: 13px; line-height: 1.28; gap: 7px; }
+  .ah-kez-elemek .ah-ikon { width: 14px; height: 14px; margin-top: 1px; }
+  .ah-kez-vege { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--ah-vonal); display: grid; gap: 2px; }
+  .ah-kez-utana, .ah-kez-ido { font-size: 12.5px; line-height: 1.3; }
+  .ah-kez-szoveg .ah-kez-ablak-lab { margin-top: 10px; }
+  .ah-kez-szoveg .ah-kez-ablak-lab .ah-gomb { min-height: 42px; font-size: 15px; padding: 0 10px; }
+}
+
+/* a tervezo design-valasztoja mobilon legordulo (a mini kartyaval + nevvel), a racs lenyilo panel */
+.ah-tema-nyit { display: none; }
+.ah-tema-fej { display: block; }
+@media (max-width: 640px) {
+  .ah-tv-design { position: relative; }
+  .ah-tema-fej { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .ah-tema-fej .ah-urlap-cim { margin: 0; }
+  .ah-tema-nyit { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 3px 12px 3px 4px; border: 1px solid var(--ah-vonal); border-radius: 10px; background: #fff; color: var(--ah-petrol); font: inherit; font-size: 14px; cursor: pointer; }
+  .ah-tema-nyit:focus-visible { outline: 3px solid var(--ah-arany-sz); outline-offset: 2px; }
+  .ah-tema-nyit-kep { display: block; width: 54px; border-radius: 3px; overflow: hidden; pointer-events: none; }
+  .ah-tema-nyit-nyil { flex: none; width: 8px; height: 8px; margin: 0 2px 0 2px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform .2s; }
+  .ah-tema-nyitva .ah-tema-nyit-nyil { transform: translateY(2px) rotate(-135deg); }
+  .ah-tema-racs { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 30; padding: 8px; border: 1px solid var(--ah-vonal); border-radius: 12px; background: #fff; box-shadow: 0 14px 34px rgba(40, 34, 20, .22); }
+  .ah-tema-nyitva .ah-tema-racs { display: grid; }
+  /* szorosabb tervezo: a nev feljebb, a "Tovabb" es a "Kihagyom" kozott kevesebb hely */
+  .ah-tervezo-vezerlok { gap: 12px; padding-top: 14px; padding-bottom: 12px; }
+  .ah-tv-ketto { gap: 10px; }
+  .ah-szamlalo { margin: 2px 0 0; font-size: 12px; }
+  .ah-tv-alja { gap: 8px; margin-top: -2px; }
+  .ah-tv-kihagy { margin: 0; }
+  .ah-tv-kihagy .ah-link { min-height: 30px; padding: 2px 6px; }
+}
+
+/* a 3. lepes (Vedd meg) dobozaban a termek neve MINDIG egy sorban (nem tordelodik) */
+.ah-vasarlas-fej h4 { white-space: nowrap; min-width: 0; }
+.ah-vasarlas-fej .ah-ar { flex: none; white-space: nowrap; }
+@media (max-width: 640px) {
+  .ah-vasarlas-fej h4 { font-size: clamp(17px, 5.2vw, 23px); }
+  .ah-vasarlas-fej .ah-ar { font-size: clamp(17px, 5.2vw, 23px); }
+}
+@media (min-width: 1280px) and (max-width: 1400px) {
+  .ah-vasarlas-fej h4 { font-size: 24px; }
+  .ah-vasarlas-fej .ah-ar { font-size: 24px; }
+}
+
+/* mobil: rovidebb szovegek, hogy a valaszto minel hamarabb latszodjon */
+.ah-m-rovid { display: none; }
+@media (max-width: 640px) {
+  .ah-hero-media { max-height: 190px; }
+  .ah-hero-racs { padding: 14px 0 18px; }
+  .ah-hero-szoveg { gap: 10px; }
+  .ah-hero h1 { font-size: clamp(24px, 6.9vw, 30px); line-height: 1.12; }
+  .ah-hero .ah-lead { display: none; }
+  .ah-hero-gomb { margin-top: 0; }
+  .ah-hero-gomb .ah-gomb { min-height: 46px; padding: 0 22px; }
+  .ah-valaszto-kartya { width: min(100%, 210px); }
+  .ah-valaszto-fej { margin-bottom: 24px; }
+  #ah-l1-cim + p, #ah-l3-cim + p { display: none; }
+  .ah-m-hosszu { display: none; }
+  .ah-m-rovid { display: inline; }
+  .ah-termek-meta { display: flex; flex-wrap: wrap; gap: 2px 14px; }
+  .ah-vasarlas .ah-kez-leiras { display: none; }
+  .ah-vasarlas .ah-atvetel-szoveg small { display: none; }
+  .ah-vasarlas .ah-atvetel-opcio { padding-top: 12px; padding-bottom: 12px; }
+}
+
+/* mobil: a hero-jelvenyek (Google-velemeny + 6 honapig ervenyes) EGY sorban, mindketto szovege egy sorban, kisebb betuvel */
+@media (max-width: 640px) {
+  .ah-bizalom { display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 8px; margin: 0; }
+  .ah-bizalom li { flex: 0 1 auto; min-width: 0; align-items: center; gap: 6px; }
+  .ah-bizalom-link { gap: 6px; align-items: center; }
+  .ah-bizalom .ah-ikon { width: 20px; height: 20px; flex: none; }
+  .ah-bizalom .ah-csillag { font-size: 9.5px; letter-spacing: 0; flex: none; line-height: 1; }
+  .ah-bizalom-szoveg { flex-direction: row; align-items: baseline; gap: 4px; white-space: nowrap; line-height: 1.2; }
+  .ah-bizalom-szoveg b, .ah-bizalom-szoveg small { font-size: clamp(11px, 3.2vw, 12.5px); }
+  .ah-bizalom-szoveg b { font-weight: 500; }
+}
+
+/* mobil: a "Ceges szamlat kerek" doboz kisebb, a cim es az alcim egy-egy sorban; a fizetes cimebol a "Titkositott kapcsolat - Stripe" lakatos felirat kikerul */
+@media (max-width: 640px) {
+  .ah-urlap-biztonsag { display: none; }
+  .ah-ceges { padding: 0 12px; }
+  .ah-ceges summary { grid-template-columns: 24px minmax(0, 1fr) 18px; gap: 10px; padding: 8px 0; min-height: 36px; }
+  .ah-ceges-ikon .ah-ikon { width: 20px; height: 20px; }
+  .ah-ceges-szoveg b { font-size: clamp(15px, 4.4vw, 17px); white-space: nowrap; line-height: 1.2; }
+  .ah-ceges-szoveg small { font-size: clamp(11px, 3.2vw, 12.5px); white-space: nowrap; margin-top: 1px; }
+  .ah-bizalom .ah-csillag { display: inline-flex; align-items: center; height: 20px; }
+}
+
+/* terkep: csak a nagyitas (+ / -) marad; a terkep aljan levo hosszu OpenStreetMap-szoveg kilog -> az iframe magasabb a doboznal (az also sav levagva), egy pici "© OpenStreetMap" hivatkozas marad (a licenc kotelezo forrasmegjelolese) */
+.ah-terkep iframe { inset: auto; top: 0; left: 0; width: 100%; height: calc(100% + 96px); }
+.ah-terkep-forras { display: none; position: absolute; right: 0; bottom: 0; z-index: 2; padding: 1px 6px; border-radius: 6px 0 0 0; background: rgba(255, 255, 255, .82); font-size: 10px; line-height: 1.5; color: #4a5a5a; text-decoration: none; }
+.ah-terkep-forras:hover { text-decoration: underline; }
+.ah-terkep-kesz .ah-terkep-forras { display: block; }
