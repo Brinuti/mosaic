@@ -72,20 +72,30 @@
       </div>
       <figure class="hero-kep hero-galeria" aria-roledescription="carousel" aria-label="Így készül a szemöldöktetoválás: az előrajzolástól a gyógyult eredményig">
         <div class="galeria-sav" id="hero-galeria" tabindex="0">
-          <img class="galeria-kep" src="/assets/img/pmu/folyamat-1-elorajzolas.jpg" alt="A szemöldök formájának előrajzolása" width="1080" height="1080" fetchpriority="high">
-          <img class="galeria-kep" src="/assets/img/pmu/folyamat-2-munka.jpg" alt="Szemöldöktetoválás közben, közelről" width="1080" height="1080" loading="lazy" decoding="async">
-          <img class="galeria-kep" src="/assets/img/pmu/folyamat-3-munka-kozben.jpg" alt="Töreki Melitta munka közben" width="1080" height="1080" loading="lazy" decoding="async">
-          <img class="galeria-kep" src="/assets/img/pmu/folyamat-4-friss.jpg" alt="Frissen elkészült, természetes szemöldöktetoválás" width="1080" height="1080" loading="lazy" decoding="async">
-          <img class="galeria-kep" src="/assets/img/pmu/folyamat-5-gyogyult.jpg" alt="Gyógyult, természetes hatású szemöldök" width="1080" height="1080" loading="lazy" decoding="async">
+          <figure class="galeria-dia">
+            <img class="galeria-kep" src="/assets/img/pmu/tortenet-1-elorajzolas.jpg" alt="A szemöldök formájának előrajzolása" width="1080" height="1080" fetchpriority="high">
+            <figcaption class="galeria-felirat">Konzultáción előrajzolom neked, hogy lásd, milyen lesz.</figcaption>
+          </figure>
+          <figure class="galeria-dia">
+            <img class="galeria-kep" src="/assets/img/pmu/tortenet-2-munka.jpg" alt="Szemöldöktetoválás közben, közelről" width="1080" height="1080" loading="lazy" decoding="async">
+            <figcaption class="galeria-felirat galeria-felirat--felso">Addig finomítjuk, amíg tetszik. Utána kíméletesen, steril eszközökkel dolgozom.</figcaption>
+          </figure>
+          <figure class="galeria-dia">
+            <img class="galeria-kep" src="/assets/img/pmu/tortenet-3-friss.jpg" alt="Frissen elkészült, természetes szemöldöktetoválás" width="1080" height="1080" loading="lazy" decoding="async">
+            <figcaption class="galeria-felirat">A hatás harmonikus, és az arcodhoz illő lesz.</figcaption>
+          </figure>
+          <figure class="galeria-dia">
+            <img class="galeria-kep" src="/assets/img/pmu/tortenet-4-gyogyult.jpg" alt="Gyógyult, természetes hatású szemöldök" width="1080" height="1080" loading="lazy" decoding="async">
+            <figcaption class="galeria-felirat">A korrekció is benne van az árban.</figcaption>
+          </figure>
         </div>
         <button type="button" class="galeria-nyil galeria-elozo" id="galeria-elozo" aria-label="Előző kép">‹</button>
         <button type="button" class="galeria-nyil galeria-kov" id="galeria-kov" aria-label="Következő kép">›</button>
         <div class="galeria-pontok" id="galeria-pontok">
           <button type="button" aria-label="1. kép: előrajzolás" aria-current="true"></button>
           <button type="button" aria-label="2. kép: munka közben"></button>
-          <button type="button" aria-label="3. kép: munka közben, távolabbról"></button>
-          <button type="button" aria-label="4. kép: friss eredmény"></button>
-          <button type="button" aria-label="5. kép: gyógyult eredmény"></button>
+          <button type="button" aria-label="3. kép: friss eredmény"></button>
+          <button type="button" aria-label="4. kép: gyógyult eredmény"></button>
         </div>
       </figure>
     </div>
@@ -141,6 +151,51 @@
           <a class="gomb gomb-sotet gomb-kicsi" href="#mielott" data-cta="helyzet-ajak">Ez vagyok <span class="nyil">→</span></a>
         </div>
       </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 1c2. MIELOTT FOGLALSZ (a Melyik helyzet igaz rad? alatt) ============ -->
+<section class="mielott" id="mielott" aria-labelledby="mielott-cim">
+  <div class="tartalom">
+    <div class="cim-vonallal"><div><p class="felcim">Fontos információk</p><h2 id="mielott-cim">Mielőtt foglalsz</h2></div><span class="vonal" aria-hidden="true"></span></div>
+    <div class="mielott-racs">
+      <!-- harom jelentkezesi mod, novekvo elkotelezodes szerint: telefon < szemelyes konzultacio < kezeles -->
+      <div class="mielott-bal">
+        <h3>Melyik jelentkezés illik hozzád?</h3>
+        <ol class="utak">
+          <li>
+            <span class="ut-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/></svg></span>
+            <div><p class="ut-tipus">Telefonos konzultáció</p><h4>Még bizonytalan vagy, és kérdeznél?</h4><p>Először telefonon beszélgetünk: felhívlak, és mindent átbeszélünk.</p>
+            <button type="button" class="link-gomb" data-foglalo="lepes=visszahivas" data-cta="mielott-telefon">Visszahívást kérek <span class="nyil">→</span></button></div>
+          </li>
+          <li>
+            <span class="ut-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16zM14 7l3 3"/></svg></span>
+            <div><p class="ut-tipus">Személyes konzultáció <small>ingyenes</small></p><h4>Látni szeretnéd, hogyan állna?</h4><p>Gyere el személyesen: megtervezem és berajzolom, hogyan fog kinézni az új szemöldököd.</p>
+            <button type="button" class="link-gomb" data-foglalo="kezeles=konzultacio" data-cta="mielott-konzultacio">Személyes konzultációra foglalok <span class="nyil">→</span></button></div>
+          </li>
+          <li>
+            <span class="ut-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20c-4-2-7-5-7-9 2 0 4 1 5 3 0-4 1-7 2-9 1 2 2 5 2 9 1-2 3-3 5-3 0 4-3 7-7 9z"/></svg></span>
+            <div><p class="ut-tipus">Kezelés</p><h4>Már tudod, hogy szeretnéd?</h4><p>Az első alkalommal elkészítem. Ugyanúgy lesz tervezés és rajzolás – csak akkor már el is készül.</p>
+            <button type="button" class="gomb gomb-sotet gomb-kicsi" data-foglalo="lepes=szolg" data-cta="mielott-kezeles">Időpontot foglalok <span class="nyil">→</span></button></div>
+          </li>
+        </ol>
+      </div>
+      <div class="mielott-jobb konz">
+        <h3>Konzultáción berajzolom neked, hogyan fog kinézni</h3>
+        <p class="tisztelet-lead">Az ingyenes konzultáció pontosan erről szól.</p>
+        <p class="tisztelet-szoveg">Ha félsz, feltehetsz minden kérdést. A szemöldöködet pedig berajzolom neked, hogy lásd, hogyan fog kinézni – és addig finomítjuk, amíg nem tetszik.</p>
+        <div class="konz-montazs">
+          <figure>
+            <img src="/assets/img/pmu/konzultacio-elorajzolt-2.jpg" alt="Előrajzolt szemöldök a konzultáción" width="900" height="900" loading="lazy" decoding="async">
+            <figcaption class="konz-cimke">Előrajzolva</figcaption>
+          </figure>
+          <figure>
+            <img src="/assets/img/pmu/konzultacio-kesz.jpg" alt="Ugyanaz a szemöldök elkészülve" width="900" height="900" loading="lazy" decoding="async">
+            <figcaption class="konz-cimke">Kész szemöldök</figcaption>
+          </figure>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -363,51 +418,6 @@
       <a class="vel vel-mind" href="https://maps.google.com/?cid=5798992001252513942" target="_blank" rel="noopener" data-cta="velemenyek-google"><b>5,0</b><span class="csillagok" aria-hidden="true">★★★★★</span><span class="vel-mind-szoveg">7 vélemény a Google-on</span><span class="gomb gomb-sotet gomb-kicsi">Megnézem <span class="nyil">→</span></span></a>
     </div>
     <div class="vel-lapoz"><button type="button" id="vel-elozo" aria-label="Előző vélemények">‹</button><button type="button" id="vel-kov" aria-label="Következő vélemények">›</button></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 3c. MIELOTT FOGLALSZ ============ -->
-<section class="mielott" id="mielott" aria-labelledby="mielott-cim">
-  <div class="tartalom">
-    <div class="cim-vonallal"><div><p class="felcim">Fontos információk</p><h2 id="mielott-cim">Mielőtt foglalsz</h2></div><span class="vonal" aria-hidden="true"></span></div>
-    <div class="mielott-racs">
-      <!-- harom jelentkezesi mod, novekvo elkotelezodes szerint: telefon < szemelyes konzultacio < kezeles -->
-      <div class="mielott-bal">
-        <h3>Melyik jelentkezés illik hozzád?</h3>
-        <ol class="utak">
-          <li>
-            <span class="ut-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/></svg></span>
-            <div><p class="ut-tipus">Telefonos konzultáció</p><h4>Még bizonytalan vagy, és kérdeznél?</h4><p>Először telefonon beszélgetünk: felhívlak, és mindent átbeszélünk.</p>
-            <button type="button" class="link-gomb" data-foglalo="lepes=visszahivas" data-cta="mielott-telefon">Visszahívást kérek <span class="nyil">→</span></button></div>
-          </li>
-          <li>
-            <span class="ut-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16zM14 7l3 3"/></svg></span>
-            <div><p class="ut-tipus">Személyes konzultáció <small>ingyenes</small></p><h4>Látni szeretnéd, hogyan állna?</h4><p>Gyere el személyesen: megtervezem és berajzolom, hogyan fog kinézni az új szemöldököd.</p>
-            <button type="button" class="link-gomb" data-foglalo="kezeles=konzultacio" data-cta="mielott-konzultacio">Személyes konzultációra foglalok <span class="nyil">→</span></button></div>
-          </li>
-          <li>
-            <span class="ut-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20c-4-2-7-5-7-9 2 0 4 1 5 3 0-4 1-7 2-9 1 2 2 5 2 9 1-2 3-3 5-3 0 4-3 7-7 9z"/></svg></span>
-            <div><p class="ut-tipus">Kezelés</p><h4>Már tudod, hogy szeretnéd?</h4><p>Az első alkalommal elkészítem. Ugyanúgy lesz tervezés és rajzolás – csak akkor már el is készül.</p>
-            <button type="button" class="gomb gomb-sotet gomb-kicsi" data-foglalo="lepes=szolg" data-cta="mielott-kezeles">Időpontot foglalok <span class="nyil">→</span></button></div>
-          </li>
-        </ol>
-      </div>
-      <div class="mielott-jobb konz">
-        <h3>Konzultáción berajzolom neked, hogyan fog kinézni</h3>
-        <p class="tisztelet-lead">Az ingyenes konzultáció pontosan erről szól.</p>
-        <p class="tisztelet-szoveg">Ha félsz, feltehetsz minden kérdést. A szemöldöködet pedig berajzolom neked, hogy lásd, hogyan fog kinézni – és addig finomítjuk, amíg nem tetszik.</p>
-        <div class="konz-montazs">
-          <figure>
-            <img src="/assets/img/pmu/konzultacio-elorajzolt.jpg" alt="Előrajzolt szemöldök a konzultáción" width="900" height="900" loading="lazy" decoding="async">
-            <figcaption class="konz-cimke">Előrajzolva</figcaption>
-          </figure>
-          <figure>
-            <img src="/assets/img/pmu/konzultacio-kesz.jpg" alt="Ugyanaz a szemöldök elkészülve" width="900" height="900" loading="lazy" decoding="async">
-            <figcaption class="konz-cimke">Kész szemöldök</figcaption>
-          </figure>
-        </div>
-      </div>
     </div>
   </div>
 </section>
