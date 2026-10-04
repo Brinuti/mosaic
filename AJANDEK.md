@@ -4,7 +4,7 @@ Ajándékkártya-vásárlási folyamat (e-commerce, nem foglalás): **egy közö
 message-match variant réteg**. A fő mért esemény a **PAID PURCHASE** (a Stripe-fizetés
 beérkezése), nem a CTA-kattintás, nem a Stripe-kattintás, nem az űrlap-beküldés.
 
-> **Állapot (2026-10-03): P0 + az első persona-variantok kész** (`general`, `for_her`, `together_friend`, `together_mother`, `together_partner`; a `last_minute` nincs). Nem indexelhető (`noindex`), a
+> **Állapot (2026-10-04): P0 + a 6 variant (a tulajdonos variant-dokumentuma szerint: `general`, `friend`, `mother`, `for_her`, `partner`, `last_minute`) kész**; a nem validált assetek helyén a `general` asset látszik (lásd [Variantok](#variant-config-a-komponensfa-nem-változik-csak-a-tartalom)). Nem indexelhető (`noindex`), a
 > főoldalról nem linkelt, nincs a sitemapben. Amíg nincs Stripe-kulcs beállítva, a checkout
 > „az online fizetés nem érhető el” állapotot mutat – vásárolni nem lehet. **Élesítés előtt
 > végig kell menni az [élesítési ellenőrzőlistán](#élesítési-ellenőrzőlista).**
@@ -13,7 +13,7 @@ beérkezése), nem a CTA-kattintás, nem a Stripe-kattintás, nem az űrlap-bek�
 
 | P0 (kész) | P1 (később, ugyanebbe a motorba) |
 |---|---|
-| GENERAL hero, Gift Finder (1 kattintás, nincs reload), 3 termék, kiválasztott-állapot panel; a 4 persona-variant (`for_her`, `together_friend`, `together_mother`, `together_partner`) | `last_minute` variant (csak valódi teljesítési SLA mellett), P1 variant-szövegek jóváhagyása |
+| GENERAL hero, Gift Finder (1 kattintás, nincs reload), 3 termék, kiválasztott-állapot panel; a 6 variant (`general`, `friend`, `mother`, `for_her`, `partner`, `last_minute`) | a `NEEDS_MANUAL_VALIDATION` assetek (barátnős / páros / férfi-hook videók, TikTok-proofok) tulajdonosi validálása; a `last_minute` kézbesítési-idő állítása csak valódi SLA mellett |
 | beágyazott Stripe checkout (Payment Element), siker/hiba állapot, feldolgozás | |
 | vásárlás utáni személyre szabás, végleges order hub | |
 | purchase analytics, perzisztencia, variant-routing (ismeretlen → GENERAL) | |
@@ -60,12 +60,16 @@ generált belső terek és térkép, „Kolosy tér” (a cím: 1023 Budapest, B
 
 **Fotók és videók** (a tulajdonos Drive-mappájából, 2026-10-03; a Drive saját, 900–2000 px széles JPG-előnézete, az eredetiek 7 MB-osak):
 hero: DSC03646 (Mosaic fotózások / Renátó második fotózás); Egyéni: DSC03638; 4 kezes: DSC01452 (Ajándékkártya / Képek);
-„Ezt adod át neki”: DSC03651; szalon: DSC05642, DSC05648, DSC05660 (Renátó első fotózás); a páros kép a korábbi valódi fotó (egy nő és
+„Ezt adod át neki”: DSC01457 (korábban DSC03651); szalon: DSC05642, DSC05648, DSC05660 (Renátó első fotózás); a páros kép a korábbi valódi fotó (egy nő és
 egy férfi vendég, két terapeuta; „két barátnő” kép esetén a `TERMEKEK.paros.vizual`-t kell cserélni, a CSS kicsit világosítja).
 A négy vendég-videó (Zsóka, Zita, Kinga, Dóri) a Drive „Testimonial videók / 720P_Mosaic Testimonial” mappájából való (az eredetiek 720x1280,
 67–104 MB), **540x960-ra** átkódolva (`assets/video/ajandek-vendeg-*.mp4`, 4,7–8,7 MB): kicsit nagyobb a korábbi 360x640-nél, hogy jó minőségű
 legyen, de ne foglaljon sok helyet, és ne lassítsa az oldalt (a videó csak kattintásra tölt, `preload="none"`; a Cloudflare Pages 25 MiB-nál
 nagyobb fájlt nem fogad). A poszterkép a videó 0,4. másodpercéből való (a vendég arca látszik; 540 px széles JPEG).
+A hero- és Head Spa-videók a tulajdonos 2026-10-03-án jóváhagyott letöltéséből készültek („szöveg nélkül.mp4” 1080x1080 / 152 MB → `ajandek-headspa.mp4`
+640x640, 5,1 MB, és `ajandek-hero-altalanos.mp4`, 3:2 kivágás, 1,1 MB; „Anya-lánya.MP4” 9:16 → `ajandek-hero-anya-lanya.mp4`, 0,6 MB; „Hook1.MP4” 9:16 →
+`ajandek-hero-hook.mp4`, 0,3 MB; a hero-videók hang nélkül, `-crf 29–30 -maxrate 1100k`). A nagy eredetiek nincsenek a repóban. „Ezt adod át neki”: DSC01457
+(`atadas-kartya.jpg`, a Drive 1400 px-es előnézete).
 Újabb videó felvétele: letöltés, ffmpeg (`-vf scale=540:960 -c:v libx264 -preset slow -crf 26 -maxrate 750k -c:a aac -b:a 64k -ac 1 -movflags +faststart`), egy új
 `li` a `foglalas/ajandek.html` `ah-vendeg-lista`-jában (`data-vendeg`, `data-nev`, poszter: a Drive videó-miniatűrje).
 
@@ -80,19 +84,19 @@ oldalon, külön nézetben.
 | # | pont | állapot |
 |---|---|---|
 | 1 | Minimal header | **szándékosan eltér**: az élő oldal fejléce (a tulajdonos kérése: „menü és footer az éles oldalról”). A fizetési nézetre szűkített (minimal) fejléc külön kérésre készíthető |
-| 2 | Personafüggő felső rész | ✓ 5 variant: `general`, `for_her`, `together_friend`, `together_mother`, `together_partner` (`?variant=`): hero szöveg, CTA, terméksorrend, vendég-videók sorrendje. A hero képe egyelőre közös (nincs meleg páros fotó). A `last_minute` **nincs**: sebességet nem ígérhetünk valódi SLA nélkül. A variant-szövegek jóváhagyásra várnak |
+| 2 | Personafüggő felső rész | ✓ 6 variant (`?variant=general\|friend\|mother\|for_her\|partner\|last_minute`): hero cím / alcím / CTA / média, Gift Finder előválasztás, terméksorrend, megnyugtató sor; minden más közös. A `last_minute` **nem állít** kézbesítési időt (csak „Online megvásárolható.") |
 | 3 | Hero eladja az ajándékot és a Head Spa-t | ✓ |
-| 4 | Valódi MOSAIC fotó/videó a hero-ban | ✓ valódi fotó (arany zuhanyív); hero-videó nincs |
+| 4 | Valódi MOSAIC fotó/videó a hero-ban | ✓ valódi fotó + csendes hero-videó (`general`: „szöveg nélkül.mp4”, `mother`: „Anya-lánya.MP4”, `last_minute`: „Hook1.MP4” kivágás); a nem validált variantok a `general` médiát kapják |
 | 5 | Erős trust sor | ✓ 4,9 · 1.259, 6 hónap, online, személyre szabható kártya |
 | 6 | Gift Finder | ✓ |
 | 7 | 3 termék elkülönítve (ár + lényeg + CTA) | ✓ |
 | 8 | Persona szerinti terméksorrend | ✓ barátnő/anya/pár: Páros elöl; általános és „neki”: Egyéni |
-| 9 | „Ilyen a Head Spa” videós blokk | ✓ új (egy valódi MOSAIC kezelés-videó; a tulajdonos cserélheti: `HEADSPA_VIDEO`) |
+| 9 | „Ilyen a Head Spa” videós blokk | ✓ a tulajdonos „szöveg nélkül.mp4” felvétele (57 s, 640x640, hanggal; `HEADSPA_VIDEO`, négyzet alakú lejátszó) |
 | 10 | Benefit, nem technikai leírás | ✓ új (`BENEFITOK`: kikapcsolódás, masszázs, vízélmény, teljes figyelem, rendezett haj) |
 | 11 | Valódi videótestimonialok | ✓ 4 vendég |
 | 12 | Férfi intentnél női reakciók | ✓ mind a négy vendég nő; a `for_her` variant ezt a sorrendet adja |
 | 13 | „Pontosan ezt kapja” | ✓ új: időtartam, hány főre szól, ki végzi, fő elemek, helyszín, érvényesség, ár + gomb, termékenként |
-| 14 | „Ezt adod át neki” | ✓ a valódi kártya |
+| 14 | „Ezt adod át neki” | ✓ a valódi kártya + a DSC01457 fotó (Ajándékkártya / Képek; a variant-dokumentum szerint ennek a blokknak a közös fotója) |
 | 15 | MOSAIC / helyszín proof | ✓ szalonfotók, cím, nyitvatartás, térkép-link |
 | 16 | „Hogyan működik?” | ✓ 5 lépés: kiválasztás → személyre szabás → fizetés → átadás → beváltás |
 | 17 | Gift-specifikus GYIK | ✓ átírva: érvényesség, átvétel, személyre szabás, fizetés, beváltás, a 3 termék különbsége; a Head Spa-tudnivalók a végén |
@@ -137,12 +141,46 @@ vásárolok” link bármikor új vásárlást indít.
 
 ### Variant config (a komponensfa nem változik, csak a tartalom)
 
+Forrás: a tulajdonos variant-dokumentuma (`MOSAIC_GIFT_VARIANT_CONTENT_*`, 2026-10-03). **Egyetlen master landing van**; a variant csak a
+felső sales-állapotot cseréli: hero cím / alcím / média / CTA, a Gift Finder előválasztása, a terméksorrend, az első testimonial/proof
+és egy (max. 1) persona-megnyugtató sor. Közös (nem variant): fejléc, „Ilyen a Head Spa”, termékadat és ár, kártya-előnézet, MOSAIC-proof,
+„Hogyan működik?”, GYIK, checkout, fizetés, vásárlás utáni nézet, order hub.
+
 `VARIANTOK` az `ajandek-adat.js`-ben: `variant_id, hero_eyebrow, hero_title, hero_subtitle,
-hero_cta, hero_media, hero_trust, product_order, featured_proof, objection_title,
-objection_body, relationship, gift_context, occasion`. Routing: `?variant=<id>`; hiányzó,
-érvénytelen vagy ismeretlen érték (pl. `__proto__`) → **GENERAL**. A variant a sessionben
-megmarad, bekerül minden eseménybe és a PaymentIntent metadatába (a `purchase` ugyanahhoz a
-forrás/variant attribúcióhoz kötődik). A persona-variantok ugyanebben az objektumban vannak (`VARIANTOK`): a hero szöveg, a CTA, a terméksorrend (`product_order`) és a vendég-videók sorrendje (`vendeg_sorrend`) változik, minden más közös. Link: `/ajandek?variant=together_friend`.
+hero_cta, hero_media, hero_trust, gift_finder_preselect, product_order, vendeg_sorrend, featured_proof, reassurance,
+objection_title, objection_body, relationship, gift_context, occasion`.
+
+| variant | `?variant=` | előválasztás | terméksorrend | `gift_context` / `relationship` | hero média |
+|---|---|---|---|---|---|
+| általános | `general` | – | egyéni, 4 kezes, páros | general | „szöveg nélkül.mp4” kivágás ✓ |
+| barátnők | `friend` | ketten | páros, egyéni, 4 kezes | together / friend | ✗ NEEDS_MANUAL_VALIDATION → `general` média |
+| anya–lánya | `mother` | ketten | páros, egyéni, 4 kezes | together / mother | „Anya-lánya.MP4” kivágás ✓ |
+| neki (női címzett) | `for_her` | egyedül | egyéni, 4 kezes, páros | for_her / recipient_female | ✗ NEEDS_MANUAL_VALIDATION → `general` média |
+| pár | `partner` | ketten | páros, egyéni, 4 kezes | together / partner | ✗ NEEDS_MANUAL_VALIDATION → `general` média |
+| utolsó pillanat | `last_minute` | – | egyéni, 4 kezes, páros | last_minute / – (`occasion` az `?occasion=` URL-ből) | „Hook1.MP4” kezelés-képek kivágása ✓ (indítás előtt gyors vizuális QA) |
+
+**Hogyan kapcsol át a variant?** Nem magától: a variantot a **link** hordozza. Minden hirdetés / poszt / e-mail célcíme `…/ajandek?variant=<id>`
+(+ az `utm_*`, `gclid`, `fbclid`, `ttclid` paraméterek). A hiányzó, érvénytelen vagy ismeretlen érték (pl. `__proto__`) → **GENERAL**. A variant a
+sessionben megmarad (a vevő a Gift Finderben később mást is választhat), bekerül minden eseménybe és a PaymentIntent metadatába
+(`variant_id`, `gift_context`, `relationship`, `occasion`, `utm_*`, click-id-k), így a `purchase` ugyanahhoz a forrás/variant attribúcióhoz kötődik.
+
+**Tesztelés:** a teszt-módú oldalon (előnézet, `pk_test_` kulccsal) az oldal alján a „TESZT MÓD” szalagon **variant-kapcsoló** van
+(`general · friend · mother · for_her · partner · last_minute`); az éles oldalon ez nincs. Előnézeti linkek:
+`https://claude-ajandek-motor.mosaic-d77.pages.dev/ajandek?variant=<id>`. Helyben: `node tools/ajandek-teszt/szerver.mjs` →
+`http://localhost:4195/ajandek?variant=<id>`.
+
+**Asset-validálás** (a `hero_media.status` / `first_proof_javaslat.status` mező): csak a `APPROVED_BY_METADATA`, `APPROVED_BY_EXPLICIT_FILENAME`,
+`APPROVED_BY_FOLDER_CONTEXT` asset jelenhet meg; a `NEEDS_MANUAL_VALIDATION` assetet **nem** nevezzük ki magunk megfelelőnek: a variant ilyenkor a
+`general` médiát kapja (`hero_media_javaslat` őrzi az eredeti javaslatot, a teszt ellenőrzi). **A tulajdonosnak kell megnéznie és jóváhagynia:**
+„Új páros videó.MP4” (`friend`), „Férfi új Hook videók / 1.mov” (`for_her`), „Páros headspa kezelés 1.MP4” (`partner`), a TikTok-proofok
+(Losonczi Rita – `friend`, Győri Anett – `mother`), a „Karolin.mov” (`general` első proof), valamint a `for_her` / `partner` testimonial-poolból
+választott női / páros ajándék-reakció. A videók jóváhagyása után a `status` átírása és a média bekötése elég (nem kell kódot átalakítani).
+A „Hook1.MP4” egy hirdetés: a férfi-beszélős jelenetei („csak 200 darab”, „zárjuk a foglalást”, „csak két kattintás”) szűkösségi és gyorsasági
+állítást tartalmaznak, ezért **nem** kerültek be; a hero csak a kezelés-képek két szakaszát használja (a felirat-sáv nélkül).
+
+**Hero-videó:** a fotó az LCP-elem és a poszter; a csendes (hang nélküli, ismétlődő) videó a betöltés után indul, nem indul csendes-mozgás (`prefers-reduced-motion`)
+vagy adatkímélő mód / 2G esetén, és megáll, ha kikerül a képből. A hero médiája (fotó és videó, mind 3:2) asztali nézetben a hero jobb felén áll, a
+szöveg mellett (kivágás és közel-arany nélkül), mobilon felül.
 
 ## Mérés (dataLayer, GA4 ecommerce séma)
 

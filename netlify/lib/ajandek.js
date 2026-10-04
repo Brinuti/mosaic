@@ -408,7 +408,7 @@ function attrAdat(a) {
     variant_id: v.variant_id,
     gift_context: azon(a.gift_context) || v.gift_context || '',
     relationship: azon(a.relationship) || v.relationship || '',
-    occasion: azon(a.occasion) || v.occasion || '',
+    occasion: azon(a.occasion) || (v.occasion === 'dynamic' ? '' : v.occasion) || '',
     utm_source: sz(a.utm_source), utm_medium: sz(a.utm_medium), utm_campaign: sz(a.utm_campaign),
     utm_content: sz(a.utm_content), utm_term: sz(a.utm_term),
     gclid: sz(a.gclid, 500), fbclid: sz(a.fbclid, 500), ttclid: sz(a.ttclid, 500),

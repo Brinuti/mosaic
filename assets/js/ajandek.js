@@ -166,6 +166,8 @@
     tervezo: ujTervezo(tar.tervezo),                                  // a mini szemelyre szabo adatai
     fotoLehet: false                                                  // a szerver /beallitas jelzi: van-e foto-tarolo (KV)
   };
+  // a variant-link (?variant=) a Gift Finder elovalasztasat is beallitja (a vevo kesobbi valasztasa felulirja)
+  if (Q.has('variant')) S.finder = variant.gift_finder_preselect || null;
 
   function ment() {
     tarolas.ir({
@@ -182,7 +184,7 @@
   function kozosParam() {
     var p = { variant_id: S.variant.variant_id, gift_context: S.variant.gift_context };
     if (S.variant.relationship) p.relationship = S.variant.relationship;
-    var alk = S.variant.occasion || alkalomURL;
+    var alk = S.variant.occasion === 'dynamic' ? alkalomURL : (S.variant.occasion || alkalomURL);
     if (alk) p.occasion = alk;
     ATTR_KULCSOK.forEach(function (k) { if (S.attr[k]) p[k] = S.attr[k]; });
     return p;
@@ -227,6 +229,8 @@
     $('ah-hero-cim').textContent = c.hero_title;
     $('ah-hero-alcim').textContent = c.hero_subtitle;
     $('ah-hero-cta-szoveg').textContent = c.hero_cta;
+    var biz = $('ah-hero-biztositas');
+    if (biz) { biz.textContent = c.reassurance || ''; biz.hidden = !c.reassurance; }
     var lista = uresit($('ah-hero-bizalom'));
     c.hero_trust.forEach(function (t) {
       var li = h('li');
@@ -306,6 +310,35 @@
     });
   }
 
+  // A hero videoja: csak ha van (hero_media.video), a betoltes utan indul (a fotó az LCP-elem), nem indul csendes-mozgas
+  // vagy adatkimelo beallitasnal; a fotó marad a poszter, a video lagyan beuszik, amint lejatszik.
+  function heroVideo() {
+    var m = S.variant.hero_media, v = $('ah-hero-video');
+    if (!v || !m || !m.video || !m.video.src || csendesMozgas()) return;
+    try { if (navigator.connection && (navigator.connection.saveData || /(^|-)2g$/.test(navigator.connection.effectiveType || ''))) return; } catch (e) { /* nem baj */ }
+    // A bongeszo a lathatatlan (kijelzon kivuli / meg nem kiszamolt elrendezesu) nema videot "energiatakarekossagbol" megallitja,
+    // ezert a lejatszas a betoltott adat utan indul, es amikor a video ujra lathatova valik, folytatodik; kilepve a kepbol megall.
+    function inditas() {
+      function proba() {
+        var p = v.play();
+        if (p && p.catch) p.catch(function () { /* nem indult: marad a fotó */ });
+      }
+      v.addEventListener('playing', function () { v.classList.add('ah-megy'); }, { once: true });
+      v.addEventListener('canplay', proba, { once: true });
+      v.preload = 'auto';   // a HTML-ben "none" (a betoltesig nem tolt semmit); innen indul az adat
+      v.setAttribute('src', m.video.src);
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (lista) {
+          lista.forEach(function (e) {
+            if (e.isIntersecting) { if (v.paused && v.readyState >= 2) proba(); } else if (!v.paused) v.pause();
+          });
+        }, { threshold: 0.1 }).observe(v);
+      }
+    }
+    if (document.readyState === 'complete') setTimeout(inditas, 400);
+    else window.addEventListener('load', function () { setTimeout(inditas, 400); }, { once: true });
+  }
+
   // ---------------------------------------------------------------- SocialProof
   function proofRender() {
     var p = A.PROOFOK[S.variant.featured_proof] || A.PROOFOK.general;
@@ -320,7 +353,8 @@
   // ---------------------------------------------------------------- GiftFinder
   function finderRender() {
     var racs = uresit($('ah-finder-racs'));
-    A.FINDER.forEach(function (f) {
+    var sorrend = S.variant.product_order;
+    A.FINDER.slice().sort(function (a, b) { return sorrend.indexOf(a.termek) - sorrend.indexOf(b.termek); }).forEach(function (f) {
       var gomb = h('button', { type: 'button', class: 'ah-valasz', 'data-finder': f.id, 'aria-pressed': S.finder === f.id ? 'true' : 'false', title: f.nyil },
         ikonSpan(f.ikon || 'gift'), h('span', { class: 'ah-valasz-szoveg' }, h('strong', { text: f.cim }), h('span', { text: f.leiras })), ikonSpan('chevron'));
       racs.appendChild(gomb);
@@ -436,7 +470,10 @@
       var g = ev.target.closest ? ev.target.closest('[data-vendeg]') : null;
       if (!g) return;
       v.setAttribute('src', g.getAttribute('data-vendeg'));
-      abl.classList.toggle('ah-szeles', g.hasAttribute('data-szeles'));
+      // a lejatszo alakja a forras videohoz igazodik: alap 9:16 (vendeg-videok), data-forma="negyzet" 1:1, "szeles" 16:9
+      var forma = g.getAttribute('data-forma') || (g.hasAttribute('data-szeles') ? 'szeles' : '');
+      abl.classList.toggle('ah-szeles', forma === 'szeles');
+      abl.classList.toggle('ah-negyzet', forma === 'negyzet');
       abl.setAttribute('aria-label', (g.getAttribute('data-nev') || 'Vendég') + ' videója');
       if (abl.showModal) abl.showModal(); else abl.setAttribute('open', '');
       var p = v.play();
@@ -1406,7 +1443,12 @@
       S.azonnali = !!b.azonnali_kartya;
       S.fotoLehet = !!b.foto;
       if (S.mod === 'teszt') {
-        document.body.appendChild(h('div', { class: 'ah-teszt-szalag', text: 'TESZT MÓD — nem valódi fizetés, nem valódi rendelés.' }));
+        // teszt-modban a szalagon variant-kapcsolo is van (csak itt: az eles oldalon nincs): a link a ?variant= parametert allitja
+        var kapcsolo = h('span', { class: 'ah-teszt-var' }, 'Variáns: ');
+        Object.keys(A.VARIANTOK).forEach(function (id) {
+          kapcsolo.appendChild(h('a', { href: location.pathname + '?variant=' + id, text: id, 'aria-current': id === S.variant.variant_id ? 'true' : null }));
+        });
+        document.body.appendChild(h('div', { class: 'ah-teszt-szalag' }, h('span', { text: 'TESZT MÓD — nem valódi fizetés, nem valódi rendelés.' }), kapcsolo));
       }
     }).catch(function () { S.mod = 'nincs'; });
   }
@@ -1498,6 +1540,7 @@
     fotoVisszaallit().then(function () { if (S.allapot === 'tervezo') tervezoRender(); });
     menuAktiv();
     heroRender();
+    heroVideo();
     proofRender();
     finderRender();
     termekekRender();

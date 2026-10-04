@@ -106,7 +106,11 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 
 /* ---------- hero: teljes szelessegu meleg foto, a szoveg balra, kremszinu atmenet felett (mobilon a kep fent) ---------- */
 .ah-hero { position: relative; isolation: isolate; background: var(--ah-krem); overflow: clip; }
-.ah-hero-media { margin: 0; aspect-ratio: 3 / 2; max-height: 300px; width: 100%; }
+.ah-hero-media { position: relative; margin: 0; aspect-ratio: 3 / 2; max-height: 300px; width: 100%; }
+/* a hero videoja (ha van): a fotó fölött, lágyan beúszik, amint tényleg lejátszik; a fotó marad a poszter */
+.ah-hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .7s; }
+.ah-hero-video.ah-megy { opacity: 1; }
+.ah-hero-biztositas { font-size: 13.5px; color: var(--ah-halk); }
 .ah-hero-kep { width: 100%; height: 100%; object-fit: cover; object-position: 60% 44%; }
 .ah-hero-racs { padding: 26px 0 34px; }
 .ah-hero-szoveg { display: flex; flex-direction: column; gap: 14px; max-width: 620px; min-width: 0; }
@@ -125,16 +129,16 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-hero-bevaltas a { color: var(--ah-petrol); text-underline-offset: 3px; }
 @media (min-width: 900px) {
   .ah-hero { min-height: 450px; display: flex; align-items: center; }
-  .ah-hero-media { position: absolute; inset: 0; width: 100%; aspect-ratio: auto; max-height: none; z-index: -1; }
-  .ah-hero-kep { object-position: 70% 44%; }
-  .ah-hero-media::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, var(--ah-krem) 0, var(--ah-krem) 40%, rgba(251, 247, 239, .9) 48%, rgba(251, 247, 239, 0) 70%); }
+  /* a media (foto es video: mind 3:2) a hero jobb felen, a szoveg mellett - igy a videok kivagas nelkul, kozel-arany nelkul latszanak */
+  .ah-hero-media { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; aspect-ratio: auto; max-height: none; z-index: -1; }
+  .ah-hero-kep { object-position: 62% 40%; }
+  .ah-hero-media::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, var(--ah-krem) 0, rgba(251, 247, 239, .55) 7%, rgba(251, 247, 239, 0) 20%); }
   .ah-hero-racs { padding: 48px 0; }
-  .ah-hero-szoveg { gap: 16px; max-width: 640px; }
+  .ah-hero-szoveg { gap: 16px; max-width: min(640px, calc(50vw - max(var(--ah-gut), (100vw - var(--ah-szeles)) / 2) - 24px)); }
   .ah-hero h1 { max-width: 520px; }
   .ah-hero .ah-lead { max-width: 440px; }
   .ah-bizalom { grid-template-columns: 1fr 1fr; justify-content: start; gap: 14px 26px; max-width: 440px; }
 }
-@media (min-width: 1200px) { .ah-bizalom { grid-template-columns: repeat(4, auto); max-width: none; gap: 12px 22px; } .ah-bizalom-szoveg { white-space: nowrap; } }
 
 /* ---------- gift finder + termekek + kartya-elonezet: egy racs (mint a mockup) ---------- */
 .ah-valaszto { background: var(--ah-ivory) var(--ah-level-vilagos) no-repeat left -46px top 14px / 150px auto; padding: 36px 0 44px; border-top: 0; }
@@ -345,7 +349,7 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 /* ---------- ezt adod at neki: a valodi kartya + valodi foto ---------- */
 .ah-atadas-racs { display: grid; gap: 26px; align-items: center; }
 .ah-atadas-kep { position: relative; margin: 0 0 34px; }
-.ah-atadas-foto { width: 100%; height: auto; aspect-ratio: 5 / 4; object-fit: cover; object-position: 50% 52%; border-radius: 16px; box-shadow: var(--ah-arnyek); }
+.ah-atadas-foto { width: 100%; height: auto; aspect-ratio: 5 / 4; object-fit: cover; object-position: 38% 55%; border-radius: 16px; box-shadow: var(--ah-arnyek); }
 .ah-minta-atfedo { position: absolute; right: 5%; bottom: -34px; width: min(44%, 230px); }
 .ah-atadas-szoveg h2 { margin-bottom: 8px; }
 .ah-atadas-szoveg > .ah-halk { max-width: 520px; margin-bottom: 18px; }
@@ -386,7 +390,7 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 /* ---------- ilyen a Head Spa: video + elmeny-elemek ---------- */
 .ah-headspa { background: var(--ah-ivory); }
 .ah-headspa-racs { display: grid; gap: 24px; align-items: center; }
-.ah-headspa-video { position: relative; display: block; width: 100%; padding: 0; border: 0; border-radius: 16px; overflow: hidden; cursor: pointer; background: #1c2a29; aspect-ratio: 16 / 10; box-shadow: var(--ah-arnyek); }
+.ah-headspa-video { position: relative; display: block; width: 100%; padding: 0; border: 0; border-radius: 16px; overflow: hidden; cursor: pointer; background: #1c2a29; aspect-ratio: 1 / 1; max-width: 540px; margin: 0 auto; box-shadow: var(--ah-arnyek); }
 .ah-headspa-video img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
 .ah-headspa-video:hover img { transform: scale(1.03); }
 .ah-headspa-video::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 24, 22, 0) 50%, rgba(10, 24, 22, .7)); pointer-events: none; }
@@ -405,6 +409,9 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 /* a video modalis ablaka szeles (fekvo) videohoz */
 .ah-video-ablak.ah-szeles { width: min(980px, 94vw); }
 .ah-video-ablak.ah-szeles video { aspect-ratio: 16 / 9; }
+/* negyzet alaku forras (az "Ilyen a Head Spa" video): a doboz a kepernyo magassagahoz is igazodik */
+.ah-video-ablak.ah-negyzet { width: min(640px, 94vw, 86vh); }
+.ah-video-ablak.ah-negyzet video { aspect-ratio: 1 / 1; }
 
 /* ---------- pontosan ezt kapja ---------- */
 .ah-pontosan-racs { display: grid; gap: 16px; }
@@ -548,7 +555,9 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-noscript { padding: 20px var(--ah-gut); text-align: center; background: var(--ah-hiba-h); }
 
 /* teszt / demo szalag (csak a fejlesztoi kiszolgalon vagy Stripe teszt modban) */
-.ah-teszt-szalag { position: fixed; left: 0; right: 0; bottom: 0; z-index: 90; background: #f3e6c7; color: #5a4a22; text-align: center; font-size: 12px; padding: 6px 10px; border-top: 1px solid #d8c391; }
+.ah-teszt-szalag { position: fixed; left: 0; right: 0; bottom: 0; z-index: 90; background: #f3e6c7; color: #5a4a22; text-align: center; font-size: 12px; padding: 6px 10px; border-top: 1px solid #d8c391; display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 14px; }
+.ah-teszt-var a { color: #5a4a22; margin: 0 5px; text-underline-offset: 2px; }
+.ah-teszt-var a[aria-current="true"] { font-weight: 700; text-decoration: none; background: #fff6dc; padding: 1px 6px; border-radius: 4px; }
 
 /* Stripe Payment Element tarolo */
 #ah-fizetesi-elem { min-height: 44px; }

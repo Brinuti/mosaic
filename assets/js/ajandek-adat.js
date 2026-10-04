@@ -107,9 +107,9 @@
     }
   };
 
-  // "Ilyen a Head Spa": a kezelest bemutato video (valodi MOSAIC-felvetel; ha a tulajdonos sajat videot tolt fel, itt kell cserelni)
-  // + a vendeg szempontjabol megfogalmazott elmeny-elemek (nem technikai leiras)
-  var HEADSPA_VIDEO = { src: '/assets/video/c2eb0f_a772c9222aa949a0888a4aa2298ef0b5.mp4', poster: '/assets/img/ajandek/headspa-video-poszter.jpg', ido: '0:37' };
+  // "Ilyen a Head Spa": a kezelest bemutato video = a tulajdonos "szöveg nélkül.mp4" felvetele (APPROVED_BY_METADATA; 1080x1080 forras,
+  // weben 640x640, 5 MB; a "forma" a modalis lejatszo alakja). + a vendeg szempontjabol megfogalmazott elmeny-elemek (nem technikai leiras)
+  var HEADSPA_VIDEO = { src: '/assets/video/ajandek-headspa.mp4', poster: '/assets/img/ajandek/headspa-poszter.jpg', ido: '0:57', forma: 'negyzet', forras: 'szöveg nélkül.mp4' };
   var BENEFITOK = [
     { ikon: 'leaf', cim: 'Kikapcsolódás', szoveg: 'Nyugodt, privát környezet, nincs rohanás.' },
     { ikon: 'sparkle', cim: 'Fej-, arc- és nyakmasszázs', szoveg: 'Kézzel és eszközökkel végzett masszázs, gőzölés.' },
@@ -160,100 +160,142 @@
     }
   };
 
-  // A variant NEM kulon oldal: csak a hero szoveg/vizual, a termeksorrend, az elso proof, az
-  // ellenvetes-blokk es a CTA felirat cserelodhet. Minden mas (checkout, termekadat, fizetes,
-  // teljesites, meres) kozos. P0: csak a GENERAL el; a P1 variantok (for_her, together_friend,
-  // together_mother, together_partner, last_minute) ugyanebbe az objektumba kerulnek.
+  // A variant NEM kulon oldal: egyetlen master landing, csak a felso sales-allapot valtozik: a hero cim / alcim / CTA / media,
+  // a Gift Finder elovalasztasa, a termeksorrend, az elso testimonial/proof es egy persona-specifikus megnyugtato sor.
+  // Minden mas (fejlec, Head Spa-bemutato, termekadat / ar, kartya-elonezet, MOSAIC-proof, hogyan mukodik, GYIK, checkout,
+  // fizetes, vasarlas utan, order hub) kozos. Forras: a tulajdonos variant-dokumentuma (MOSAIC_GIFT_VARIANT_CONTENT_*, 2026-10-03).
+  //
+  // ASSET-VALIDALAS: csak valodi MOSAIC-asset hasznalhato. A hero_media / first_proof "status" mezo:
+  //   APPROVED_BY_METADATA | APPROVED_BY_EXPLICIT_FILENAME | APPROVED_BY_FOLDER_CONTEXT -> hasznalhato
+  //   NEEDS_MANUAL_VALIDATION -> NEM hasznalhato: a variant a GENERAL assetet kapja, amig a tulajdonos kezzel nem validalta
+  // (az eredeti javaslat a hero_media_javaslat / first_proof_javaslat mezoben marad). Az ervenytelen / hianyzo variant: GENERAL.
+  // A "gift_finder_preselect" ertekei a FINDER azonositoi: 'egyedul' (a dokumentumban for_one) | 'ketten' (together) | 'kulonleges'.
+  var ASSET_JO = { APPROVED_BY_METADATA: true, APPROVED_BY_EXPLICIT_FILENAME: true, APPROVED_BY_FOLDER_CONTEXT: true };
+  var HERO_FOTO = { src: '/assets/img/ajandek/hero.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt' };
   var VARIANTOK = {
     general: {
       variant_id: 'general',
       hero_eyebrow: 'MOSAIC HEAD SPA AJÁNDÉKKÁRTYA',
-      hero_title: 'Adj neki 80 percet, amikor végre csak vele foglalkoznak.',
-      hero_subtitle: 'Japán Head Spa élmény Budán: mély kikapcsolódás, digitális vagy nyomtatott ajándékkártyával.',
-      hero_cta: 'Ajándékkártya választása',
-      hero_media: {
-        src: '/assets/img/ajandek/hero.jpg',
-        alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt'
-      },
+      hero_title: 'Ajándékozz neki 80 percet, ami tényleg csak róla szól.',
+      hero_subtitle: 'Japán Head Spa élmény Budán, digitális vagy nyomtatott ajándékkártyával.',
+      hero_cta: 'Kiválasztom az ajándékot',
+      // a hero videoja ("szöveg nélkül.mp4", APPROVED_BY_METADATA): a 24-36. masodperc 3:2-es kivagasa (hang nelkul, 1,1 MB); a fotó a poszter
+      hero_media: { src: HERO_FOTO.src, alt: HERO_FOTO.alt, video: { src: '/assets/video/ajandek-hero-altalanos.mp4' }, forras: 'szöveg nélkül.mp4', status: 'APPROVED_BY_METADATA' },
       hero_trust: [
         { csillag: true, szoveg: GOOGLE.pont + ' · ' + GOOGLE.darab, alszoveg: 'Google-vélemény' },
         { ikon: 'calendar', szoveg: '6 hónapig', alszoveg: 'érvényes' },
         { ikon: 'monitor', szoveg: 'Online', alszoveg: 'megvásárolható' },
         { ikon: 'card', szoveg: 'Gyönyörű, személyre', alszoveg: 'szabható kártya' }
       ],
-      product_order: ['egyeni', 'paros', '4kezes'],
-      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
-      featured_proof: 'general',
-      objection_title: null,
-      objection_body: null,
-      relationship: null,
-      gift_context: 'general',
-      occasion: null
-    },
-    // Ferfi vasarlo, "neki" (a vendegvideok mind noi reakciok: azt bizonyitjak, hogy ennek tenyleg orulni fog)
-    for_her: {
-      variant_id: 'for_her',
-      hero_eyebrow: 'MOSAIC HEAD SPA AJÁNDÉKKÁRTYA',
-      hero_title: 'Ajándékozz neki 80 percet, ami tényleg csak róla szól.',
-      hero_subtitle: 'Japán Head Spa élmény Budán: ő kikapcsolódik, te pedig megkaptad a tökéletes ajándékot.',
-      hero_cta: 'Ajándékot választok neki',
-      hero_media: { src: '/assets/img/ajandek/hero.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt' },
-      hero_trust: null,
+      gift_finder_preselect: null,
       product_order: ['egyeni', '4kezes', 'paros'],
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      first_proof_javaslat: { forras: 'Karolin.mov', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Ellenőrizni: általános pozitív Head Spa testimonial-e; ne állítsuk róla, hogy ajándékba kapta, ha nem mondja.' },
       featured_proof: 'general',
+      reassurance: '6 hónapig felhasználható · online megvásárolható · az időpontot a megajándékozott később választja ki.',
       objection_title: null, objection_body: null,
-      relationship: null, gift_context: 'for_her', occasion: null
+      relationship: null, gift_context: 'general', occasion: null
     },
-    // Barat(no)ival
-    together_friend: {
-      variant_id: 'together_friend',
-      hero_eyebrow: 'MOSAIC PÁROS HEAD SPA AJÁNDÉKKÁRTYA',
-      hero_title: 'Menjetek el együtt, és töltsetek 80 percet csak egymásra.',
-      hero_subtitle: 'Páros Head Spa Budán: két vendég, két terapeuta, egy közös élmény barátnőddel.',
+    friend: {
+      variant_id: 'friend',
+      hero_eyebrow: 'KÖZÖS MOSAIC HEAD SPA ÉLMÉNY',
+      hero_title: 'Ne még egy tárgyat adjatok egymásnak. Menjetek inkább együtt.',
+      hero_subtitle: 'Közös Head Spa élmény két főre — amikor egyikőtöknek sem kell semmit megszerveznie.',
       hero_cta: 'Közös élményt választok',
-      hero_media: { src: '/assets/img/ajandek/hero.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt' },
-      hero_trust: null,
+      hero_media: { forras: 'Új páros videó.MP4', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Csak akkor FRIEND hero, ha ténylegesen két nő/barátnő látható. Ha nem, GENERAL fallback.' },
+      gift_finder_preselect: 'ketten',
       product_order: ['paros', 'egyeni', '4kezes'],
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      first_proof_javaslat: { forras: 'Losonczi Rita — páros TikTok poszt', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Ellenőrizni: barátnős/csajos kapcsolat és testimonial-jelleg; ha nem egyértelmű, validált barátnős videó a testimonial poolból.' },
       featured_proof: 'general',
+      reassurance: 'A program már készen van — csak az ajándékot kell kiválasztanod.',
       objection_title: null, objection_body: null,
       relationship: 'friend', gift_context: 'together', occasion: null
     },
-    // Anyukaval
-    together_mother: {
-      variant_id: 'together_mother',
-      hero_eyebrow: 'MOSAIC PÁROS HEAD SPA AJÁNDÉKKÁRTYA',
-      hero_title: 'Töltsetek együtt 80 percet, amikor végre csak rátok figyelnek.',
-      hero_subtitle: 'Páros Head Spa Budán: közös kikapcsolódás anyukáddal, egymás mellett.',
+    mother: {
+      variant_id: 'mother',
+      hero_eyebrow: 'KÖZÖS IDŐ ANYÁNAK ÉS LÁNYÁNAK',
+      hero_title: 'Adj neki közös időt — ne még egy dolgot.',
+      hero_subtitle: 'Páros Head Spa élmény anyának és lányának, ahol most egyikőtöknek sem kell másról gondoskodnia.',
       hero_cta: 'Közös élményt választok',
-      hero_media: { src: '/assets/img/ajandek/hero.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt' },
-      hero_trust: null,
+      // "Anya-lánya.MP4": a fajlnev egyertelmuen azonositja (APPROVED_BY_EXPLICIT_FILENAME). A forras fekvo-ellenes (9:16, feliratos);
+      // a hero a 71,5-79,5. masodperc (a szekben ulo paros) 3:2-es savja a felirat folott, hang nelkul (0,6 MB)
+      hero_media: { src: '/assets/img/ajandek/hero-anya-lanya.jpg', alt: 'Anya és lánya egymás mellett a MOSAIC szalonban', video: { src: '/assets/video/ajandek-hero-anya-lanya.mp4' }, forras: 'Anya-lánya.MP4', status: 'APPROVED_BY_EXPLICIT_FILENAME' },
+      gift_finder_preselect: 'ketten',
       product_order: ['paros', 'egyeni', '4kezes'],
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      first_proof_javaslat: { forras: 'Győri Anett — Moms / Páros TikTok', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Ellenőrizni: tényleges anya–lánya / anyának releváns proof-e; ha nem, validált releváns videó a testimonial poolból.' },
       featured_proof: 'general',
+      reassurance: 'Az együtt töltött idő maga az ajándék.',
       objection_title: null, objection_body: null,
       relationship: 'mother', gift_context: 'together', occasion: null
     },
-    // Parjaval
-    together_partner: {
-      variant_id: 'together_partner',
-      hero_eyebrow: 'MOSAIC PÁROS HEAD SPA AJÁNDÉKKÁRTYA',
-      hero_title: 'Egy közös élmény kettőtöknek: 80 perc, csak ti ketten.',
-      hero_subtitle: 'Páros Head Spa Budán: privát, csendes kezelőszobában, egymás mellett.',
-      hero_cta: 'Közös élményt választok',
-      hero_media: { src: '/assets/img/ajandek/hero.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt' },
-      hero_trust: null,
+    for_her: {
+      variant_id: 'for_her',
+      hero_eyebrow: 'AJÁNDÉK NEKI',
+      hero_title: 'Adj neki 80 percet, amikor végre semmiről nem kell gondoskodnia.',
+      hero_subtitle: 'MOSAIC Head Spa ajándékkártya — egy élmény, amit nem kell méretre, színre vagy ízlésre választanod.',
+      hero_cta: 'Ajándékot választok',
+      hero_media: { forras: 'Férfi új Hook videók / 1.mov', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'A mappa férfi hookként azonosított, de az 1.mov tartalmát ellenőrizni kell; ha nem ajándékozó férfi-intentre jó, GENERAL treatment hero.' },
+      gift_finder_preselect: 'egyedul',
+      product_order: ['egyeni', '4kezes', 'paros'],
+      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      first_proof_javaslat: { forras: 'Headspa testimonial pool — női ajándék-reakció', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Kötelező olyan női videót választani, amelyben a vendég ténylegesen ajándékba kapta / ajándékként ajánlja az élményt; nem állítható név alapján.' },
+      featured_proof: 'general',
+      reassurance: 'Nem kell tudnod, milyen kezelést választana magának.',
+      objection_title: null, objection_body: null,
+      relationship: 'recipient_female', gift_context: 'for_her', occasion: null
+    },
+    partner: {
+      variant_id: 'partner',
+      hero_eyebrow: 'PÁROS MOSAIC HEAD SPA',
+      hero_title: 'Egy randi, ahol most mindketten kikapcsoltok.',
+      hero_subtitle: 'Közös Head Spa élmény két főre — ajándék, amit nem csak átadsz, hanem együtt éltek át.',
+      hero_cta: 'Páros élményt választok',
+      hero_media: { forras: 'Páros headspa kezelés 1.MP4', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Csak valódi romantikus pár látható esetén PARTNER; ha két nő/barátnő vagy nem egyértelmű, GENERAL fallback. Romantikus vizuál GENERAL-ben tilos.' },
+      gift_finder_preselect: 'ketten',
       product_order: ['paros', 'egyeni', '4kezes'],
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      first_proof_javaslat: { forras: 'Páros testimonial', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Kizárólag valós romantikus/pár proof használható; ha nincs, GENERAL női proof fallback.' },
       featured_proof: 'general',
+      reassurance: 'Nem csak ő kap ajándékot — közös emlék lesz belőle.',
       objection_title: null, objection_body: null,
       relationship: 'partner', gift_context: 'together', occasion: null
+    },
+    last_minute: {
+      variant_id: 'last_minute',
+      hero_eyebrow: 'MOSAIC HEAD SPA AJÁNDÉKKÁRTYA',
+      hero_title: 'Ajándékot keresel az utolsó pillanatban?',
+      hero_subtitle: 'Válaszd ki online az élményt, fizesd ki néhány lépésben, majd személyre szabhatod az ajándékkártyát.',
+      hero_cta: 'Ajándékot választok',
+      // "Ajándékkártya / Hook1.MP4" (APPROVED_BY_FOLDER_CONTEXT: élesítés előtt gyors vizuális QA ajánlott). A forrás hirdetés: a
+      // férfi-beszélős jelenetek ("csak 200 darab", "zárjuk a foglalást", "csak két kattintás") NEM kerülnek be (nem igazolt szűkösség- és
+      // gyorsasági állítás); a hero csak a kezelés-képek két szakaszát használja (3,5-6 s + 8-10,5 s), a felirat-sáv nélkül (0,3 MB)
+      hero_media: { src: '/assets/img/ajandek/hero-hook.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt', video: { src: '/assets/video/ajandek-hero-hook.mp4' }, forras: 'Ajándékkártya / Hook1.MP4', status: 'APPROVED_BY_FOLDER_CONTEXT' },
+      gift_finder_preselect: null,
+      product_order: ['egyeni', '4kezes', 'paros'],
+      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      first_proof_javaslat: { forras: 'Ajándékkártya vizuál / DSC01457.jpg', status: 'APPROVED_BY_FOLDER_CONTEXT', validalas: 'Az "Ezt adod át neki" blokk fotója (közös).' },
+      featured_proof: 'general',
+      // Fontos: a kezbesitesi idore NEM teszunk allitast (se "azonnal", se "1 perc alatt", se "meg ma"), amig a teljesitesi SLA
+      // nincs egyetlen hiteles forrasbol igazolva - a megjeleno szoveg ezert csak az online vasarlast mondja
+      reassurance: 'Online megvásárolható.',
+      sla_megjegyzes: 'Kézbesítési időre csak igazolt fulfillment SLA alapján szabad állítást tenni.',
+      objection_title: null, objection_body: null,
+      relationship: null, gift_context: 'last_minute', occasion: 'dynamic'
     }
   };
 
-  // a variansok kozos bizalmi sora (a GENERAL sajat listaja ugyanez): ha egy variant nem ad meg sajatot, ez jelenik meg
-  Object.keys(VARIANTOK).forEach(function (k) { if (!VARIANTOK[k].hero_trust) VARIANTOK[k].hero_trust = VARIANTOK.general.hero_trust; });
+  // Kozos tartalek: a variant, ami nem ad sajat bizalmi sort, a GENERAL-et kapja; a nem validalt (NEEDS_MANUAL_VALIDATION) hero-asset
+  // helyett a GENERAL hero-assetje jelenik meg (az eredeti javaslat a hero_media_javaslat mezoben marad)
+  Object.keys(VARIANTOK).forEach(function (k) {
+    var v = VARIANTOK[k], g = VARIANTOK.general;
+    if (!v.hero_trust) v.hero_trust = g.hero_trust;
+    if (!v.hero_media || !ASSET_JO[v.hero_media.status] || !v.hero_media.src) {
+      v.hero_media_javaslat = v.hero_media || null;
+      v.hero_media = g.hero_media;
+    }
+  });
 
   var SZALON = {
     nev: 'MOSAIC Head Spa',
@@ -312,6 +354,7 @@
     PROOFOK: PROOFOK,
     GOOGLE: GOOGLE,
     VARIANTOK: VARIANTOK,
+    ASSET_JO: ASSET_JO,
     SZALON: SZALON,
     BANK: BANK,
     SALONIC_BAZIS: SALONIC_BAZIS,
