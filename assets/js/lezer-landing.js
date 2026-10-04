@@ -303,12 +303,11 @@
     fig.observe(foglalo);
   } else idopontokBetolt();
 
-  // --- Zsofi konzultacios videoja: kattintasra toltodik be (a poszter latszik addig; a 9 MB-os fajl csak ekkor), lejatszhato, vezerlokkel -----
-  const zv = $('zsofi-video');
-  if (zv) {
+  // --- videok (Zsofi konzultacios videoja, szorbenoves-video): kattintasra toltodnek be (a poszter latszik addig; a fajl csak ekkor), lejatszhatok, vezerlokkel -----
+  for (const zv of document.querySelectorAll('.video-kartya[data-video]')) {
     zv.addEventListener('click', () => {
       const poszter = zv.querySelector('img');
-      const v = elem('video', { controls: true, autoplay: true, playsinline: true, preload: 'auto', poster: poszter ? poszter.getAttribute('src') : false, 'aria-label': 'Zsófi konzultációs videója' });
+      const v = elem('video', { controls: true, autoplay: true, playsinline: true, preload: 'auto', poster: poszter ? poszter.getAttribute('src') : false, 'aria-label': zv.dataset.cim || 'Videó' });
       v.append(elem('source', { src: zv.dataset.video, type: 'video/mp4' }));
       const hely = elem('div', { class: 'video-kartya' }, v);
       zv.replaceWith(hely);
@@ -385,7 +384,8 @@
       sticky.querySelectorAll('a').forEach((a) => (lat ? a.removeAttribute('tabindex') : a.setAttribute('tabindex', '-1')));
       document.body.classList.toggle('sticky-be', lat);
     };
-    new IntersectionObserver((es) => { heroLatszik = es[0].isIntersecting; frissit(); }).observe(heroCta);
+    // a sav csak akkor jon be, ha a hero gombjai mar FELJEBB gorogtek a kepernyo tetejen (nem akkor, ha meg lejjebb vannak: kis telefonon a gombok az elso kepernyo alatt vannak)
+    new IntersectionObserver((es) => { heroLatszik = es[0].isIntersecting || es[0].boundingClientRect.top > 0; frissit(); }).observe(heroCta);
     // a foglalo szekcio kepernyon van, vagy mar elhagytuk (fentebb van): a foglalo maga a cel, ott / utana nincs szukseg a savra
     new IntersectionObserver((es) => { const r = es[es.length - 1]; vegen = r.isIntersecting || r.boundingClientRect.top < 0; frissit(); }).observe(foglSzekcio);
   }

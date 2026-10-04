@@ -12,7 +12,7 @@ címen nincs mérőkód-pixel, és ezt nem is írtuk át). Visszaállítás átv
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (60 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (65 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje
@@ -43,6 +43,8 @@ mint a főoldalon és az ajándékkártya-oldalon), iframe-ben; a sütik elfogad
 a kész csomagoknál a testrészek külön-külön vett összára áthúzva, pirossal (`data-reszek` + `.regi-ar`; a Man Totalnál a váll nélkül, mert annak nincs külön ára);
 a kalkulátorban több területnél az eredeti összeg áthúzva, egy területnél semmi (a `null` felirat hibája: a `replaceChildren` a `null`-t szövegként illeszti be, ezért kiszűrjük);
 a foglaló naptárában kör alakú szabad napok (mint a foglaló-motorban), a „Már jártál nálunk?” sor törölve; mobilon: a hero sorrendje cím → kép → többi szöveg (a cím 2 sorban), a hero és a Zsófi-szekció ikonjai 3 oszlopban, középre igazítva, rövidebb kalkulátor-lábjegyzet egy sorban, lefelé mutató nyíl, több hely az árlista csoportcímei alatt.
+
+**Hetedik kör (2026-10-04):** a „Mennyibe kerül?” kártyákon „/ alkalom” (nem „/ fizetős alkalom”); az Áll sornak nincs alcíme az árlistában; a mobil sticky sáv csak akkor jön be, ha a hero gombjai már felgörögtek a képernyő tetején (kis kijelzőn a gombok az első képernyő alatt vannak, ott a sáv betöltéskor nem látszik); mobilon a hero kicsit feljebb és kisebb leírással; asztalon a Zsófi-szekcióban a cím a videó tetejével, a galéria a videó aljával egy vonalban kezdődik/végződik, a gomb körül hellyel; a „Neked is jó választás?” első kártyája (Valószínűleg igen) új szöveggel (borotva, begyulladt szőrtüszők); a „Neked is jó választás?” szekció alatt a Meta-hirdetés videója („Zsófi szőrbenövés”, 39 mp, `assets/video/lezer-szorbenoves.mp4`, poszter: `assets/img/lezer-szorbenoves.jpg`; kattintásra tölt be, mint a Zsófi-videó).
 
 ## Árforrás
 
