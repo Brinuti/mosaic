@@ -138,7 +138,7 @@ await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'
 ok('bezaras utan a hatter nem inert, a gorgetes visszaall', await page.evaluate(() => [...document.body.children].every((e) => !e.inert) && getComputedStyle(document.documentElement).overflow !== 'hidden'));
 ok('H0 utan bezaras: eredeti cim', url(page).pathname + url(page).search === eredetiUrl, url(page).pathname + url(page).search);
 
-// --- design (2026-10-04): kepek / ikonok a valasztokon, HeadSpa ajandekkartya-kerdes, 1:30, egyenlo kartyak, fodrasz-elso, oxigen-szakember, PMU-naptar, 3 lepes ----
+// --- design (2026-10-04): kepek / ikonok a valasztokon, HeadSpa ajandekkartya-kerdes, egyenlo kartyak, fodrasz-elso, oxigen-szakember, PMU-naptar, 3 lepes ----
 async function kepekBetoltve(page, minDb, ido = 8000) {
   const t0 = Date.now(); let r = { db: 0, jo: 0 };
   while (Date.now() - t0 < ido) {
@@ -158,7 +158,7 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   ok('design | H0: mind az 5 szolgaltatas mellett kis kep (betoltott), egyforma kartyak', k.db === 5 && k.jo === 5 && (await egyenloMagas(page)).egyenlo, JSON.stringify(k));
   await zar(page);
 
-  // HeadSpa: ajandekkartya-kerdes -> elmenyek (1:30, ar jobbra) -> naptar -> adatlap; kuponkodos kartyak
+  // HeadSpa: ajandekkartya-kerdes -> elmenyek (ar jobbra) -> naptar -> adatlap; kuponkodos kartyak
   await nyit(page, { business: 'headspa' }); await varCim(page);
   const hs1 = await reteg(page).locator('.be-choice').allTextContents();
   ok('design | HeadSpa: elso kerdes "Ajandekkartyaval vagy anelkul foglalsz?", ket valasztas ikonnal', (await cimSzoveg(page)) === 'Ajándékkártyával vagy anélkül foglalsz?' && hs1.length === 2 && (await reteg(page).locator('.be-ikon').count()) === 2, hs1.map((x) => x.trim()).join(' | '));
@@ -169,19 +169,19 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   const arak = await reteg(page).locator('.be-choice-ar').allTextContents();
   const idok = await reteg(page).locator('.be-choice small').allTextContents();
   ok('design | HeadSpa: 3 elmeny kepekkel, arral jobbra, egyforma kartyak, nincs ajandekkartya-link alul', k.db === 3 && k.jo === 3 && arak.length === 3 && arak.every((a) => /\d\s?Ft/.test(a)) && (await egyenloMagas(page)).egyenlo && !(await reteg(page).locator('.be-more').count()), arak.join(' | '));
-  ok('design | HeadSpa: az idotartam 1 ora 30 perc (tulajdonos szerint)', idok.length === 3 && idok.every((x) => x.trim() === '1 óra 30 perc'), idok.join(' | '));
+  ok('design | HeadSpa: az idotartam a Salonic ideje (1 ora 20 perc)', idok.length === 3 && idok.every((x) => x.trim() === '1 óra 20 perc'), idok.join(' | '));
   await reteg(page).locator('#be-back').click(); await varCim(page); await page.waitForTimeout(300);
   await kattint(page, 'Ajándékkártyával (kuponkóddal)');
   const kuponAr = await reteg(page).locator('.be-choice-ar').allTextContents();
   const kuponSub = await reteg(page).locator('.be-choice small').allTextContents();
-  ok('design | HeadSpa kuponkodos kartyak: ugyanolyan formatum (kep, 1 ora 30 perc), jobbra "Kuponkoddal"', (await reteg(page).locator('.be-choice-img').count()) === 3 && kuponAr.length === 3 && kuponAr.every((a) => a.trim() === 'Kuponkóddal') && kuponSub.every((x) => x.trim() === '1 óra 30 perc'), kuponAr.join(' | ') + ' / ' + kuponSub.join(' | '));
+  ok('design | HeadSpa kuponkodos kartyak: ugyanolyan formatum (kep, idotartam), jobbra "Kuponkoddal"', (await reteg(page).locator('.be-choice-img').count()) === 3 && kuponAr.length === 3 && kuponAr.every((a) => a.trim() === 'Kuponkóddal') && kuponSub.every((x) => x.trim() === '1 óra 20 perc'), kuponAr.join(' | ') + ' / ' + kuponSub.join(' | '));
   await reteg(page).locator('#be-back').click(); await varCim(page); await page.waitForTimeout(300);
   await kattint(page, 'Normál foglalás'); await kattint(page, 'Egyéni HeadSpa');
   const nap = reteg(page).locator('.be-nnap.szabad');
   await nap.first().waitFor({ timeout: 20000 });
   const szabadDb = await nap.count(), idoDb = await reteg(page).locator('.be-idogomb').count();
   ok('design | HeadSpa idopont: a PMU-foglalo havi naptara (7 oszlopos racs, szabad napok zoldek, idopont-gombok)', (await reteg(page).locator('.be-hetnap').count()) === 7 && szabadDb > 3 && idoDb > 0, `szabad nap: ${szabadDb}, idopont: ${idoDb}`);
-  ok('design | HeadSpa idopont: a kezeles kepe a savban, 1:30, a kep es a Modositas nem er a sav szelehez', (await reteg(page).locator('.be-svc-img').count()) === 1 && /1 óra 30 perc/.test(await reteg(page).locator('.be-svc').first().textContent()) && await reteg(page).locator('.be-svc').first().evaluate((s) => { const r = s.getBoundingClientRect(); const i = s.querySelector('.be-svc-img').getBoundingClientRect(); const l = s.querySelector('.be-link').getBoundingClientRect(); return i.left - r.left >= 6 && r.right - l.right >= 10; }));
+  ok('design | HeadSpa idopont: a kezeles kepe a savban, 1 ora 20 perc, a kep es a Modositas nem er a sav szelehez', (await reteg(page).locator('.be-svc-img').count()) === 1 && /1 óra 20 perc/.test(await reteg(page).locator('.be-svc').first().textContent()) && await reteg(page).locator('.be-svc').first().evaluate((s) => { const r = s.getBoundingClientRect(); const i = s.querySelector('.be-svc-img').getBoundingClientRect(); const l = s.querySelector('.be-link').getBoundingClientRect(); return i.left - r.left >= 6 && r.right - l.right >= 10; }));
   ok('design | naptar: a lapozo nyilak SVG-k, a kor kozepen (nincs szoveg-jel)', (await reteg(page).locator('.be-lapoz svg').count()) === 2 && !(await reteg(page).locator('.be-lapoz').first().textContent()).trim());
   ok('design | HeadSpa idopont: az elso szabad nap elore kivalasztva, 5 oszlopos idoracs', (await reteg(page).locator('.be-nnap[aria-pressed="true"]').count()) === 1 && (await reteg(page).locator('.be-idolista').evaluate((e) => getComputedStyle(e).gridTemplateColumns.split(' ').length)) === 5);
   const elsoNap = await reteg(page).locator('.be-nap-cim').textContent();
@@ -200,7 +200,7 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   ok('design | adatlap alatt: nincs magyarazo szoveg, a "Masik idopontot valasztok" link (nem gomb)', !/Ha az űrlap helyett/.test(await reteg(page).locator('main').textContent()) && (await reteg(page).locator('.be-help .be-link').count()) === 1 && !(await reteg(page).locator('.be-help .be-btn').count()));
   const mini = reteg(page).locator('.be-mini');
   const miniLatszik = await mini.evaluate((e) => getComputedStyle(e).display !== 'none');
-  ok('design | adatlap: osszegzo-sor (' + (MOBIL ? 'mobilon rejtett' : 'asztalon latszik, 1:30') + ', mint a PMU-n)', MOBIL ? !miniLatszik : miniLatszik && (await mini.textContent()).includes(elsoIdo) && /1 óra 30 perc/.test(await mini.textContent()), (await mini.textContent()).replace(/\s+/g, ' ').slice(0, 90));
+  ok('design | adatlap: osszegzo-sor (' + (MOBIL ? 'mobilon rejtett' : 'asztalon latszik') + ', mint a PMU-n)', MOBIL ? !miniLatszik : miniLatszik && (await mini.textContent()).includes(elsoIdo) && /1 óra 20 perc/.test(await mini.textContent()), (await mini.textContent()).replace(/\s+/g, ' ').slice(0, 90));
   await reteg(page).locator('.be-help .be-link').click(); await page.waitForTimeout(800);
   ok('design | "Masik idopontot valasztok" -> vissza a naptarhoz, a kivalasztott nappal', (await reteg(page).locator('.be-nnap[aria-pressed="true"]').count()) === 1 && !!(await reteg(page).locator('.be-naptar').count()));
   await zar(page);
@@ -217,7 +217,8 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   if (/Melyiket választod/.test(await cimSzoveg(page))) { await reteg(page).locator('.be-choice').first().click(); await varCim(page); await page.waitForTimeout(500); }
   const szakCim = await cimSzoveg(page);
   const szakDb = await reteg(page).locator('.be-choice').count();
-  ok('design | Oxigen: a szakember-valaszto az idopont ELOTT, kepes kartyakon (nem legordulo)', /szakembert/.test(szakCim) && szakDb >= 3 && (await reteg(page).locator('select').count()) === 0 && (await reteg(page).locator('.be-choice-img').count()) >= 3, `${szakCim} (${szakDb} kartya)`);
+  k = await kepekBetoltve(page, 4);
+  ok('design | Oxigen: a szakember-valaszto az idopont ELOTT, kepes kartyakon (a Salonic fotoi, nem monogram, nem legordulo)', /szakembert/.test(szakCim) && szakDb >= 3 && (await reteg(page).locator('select').count()) === 0 && (await reteg(page).locator('img.be-choice-img').count()) === 3 && k.jo === k.db, `${szakCim} (${szakDb} kartya) ${JSON.stringify(k)}`);
   await reteg(page).locator('.be-choice').first().click();
   await reteg(page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
   ok('design | Oxigen: a valasztott szakember neve a savban, a naptar a szakember idopontjaival, nincs legordulo', (await reteg(page).locator('select').count()) === 0 && (await reteg(page).locator('.be-idogomb').count()) > 0 && /Bozsoki|Szűcs|Menyhárt/.test(await reteg(page).locator('.be-svc').first().textContent()), (await reteg(page).locator('.be-svc').first().textContent()).replace(/\s+/g, ' ').trim().slice(0, 100));

@@ -391,23 +391,23 @@ test('minden valasztokartya kepe (kulcs) letezo fajl: szolgaltatas-valaszto, Hea
     ...OXYGEN.intents.map((i) => i.kep),
     ...HAIR.intents.map((i) => i.kep),
     ...HAIR.staffPhotos.map(([, k]) => k),
+    ...OXYGEN.staffPhotos.map(([, k]) => k),
     ...LASER.copy.intro.map((o) => o.kep),
     ...LASER.areas.map((a) => a.kep),
   ];
-  assert.ok(kulcsok.length >= 28, `${kulcsok.length} kep`);
+  assert.ok(kulcsok.length >= 31, `${kulcsok.length} kep`);
   for (const k of kulcsok) { assert.ok(k, 'minden kartyanak van kepe'); assert.ok(fs.existsSync(kepFajl(k)), `hianyzik: assets/img/booking/${k}.jpg`); assert.ok(fs.statSync(kepFajl(k)).size < 30000, `${k}: kis kep (< 30 kB)`); }
   assert.equal(new Set(kulcsok).size, kulcsok.length, 'nincs ketszer hasznalt kulcs');
 });
 
-test('szovegek (tulajdonos, 2026-10-04): oxigen hajkamera, HeadSpa ajandekkartya-kerdes, kuponkodos kartyak, 1:30', () => {
+test('szovegek (tulajdonos, 2026-10-04): oxigen hajkamera, HeadSpa ajandekkartya-kerdes, kuponkodos kartyak', () => {
   const kamera = OXYGEN.intents.find((i) => i.key === 'camera');
   assert.equal(kamera.sub, 'Megnézzük a fejbőröd állapotát + átbeszéljük milyen eredményt várhatsz');
   assert.equal(HEADSPA.firstState, 'HS1');
   assert.equal(HEADSPA.copy.hs1Title, 'Ajándékkártyával vagy anélkül foglalsz?');
   assert.deepEqual(HEADSPA.copy.hs1.map((o) => [o.key, o.title]), [['voucher', 'Ajándékkártyával (kuponkóddal) foglalok'], ['normal', 'Normál foglalás kuponkód nélkül']]);
   assert.equal(HEADSPA.copy.voucherSettled, 'Kuponkóddal');
-  assert.equal(HEADSPA.durationOverride, 90, 'a HeadSpa-kezelesek 1:30 oraak (a Salonic 80 percet ad)');
-  for (const f of [OXYGEN, HAIR, LASER]) assert.ok(!f.durationOverride, f.business);
+  for (const f of [HEADSPA, OXYGEN, HAIR, LASER]) assert.ok(!f.durationOverride, f.business + ': az idotartam a Salonic ideje (a HeadSpa-nal 1:20, a tulajdonos megerositette)');
   assert.equal(HAIR.copy.staffListTitle, 'Melyik fodrászt választod?');
   assert.ok(OXYGEN.copy.staffListTitle && OXYGEN.copy.staffAny);
 });

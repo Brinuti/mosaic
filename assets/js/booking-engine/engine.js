@@ -136,8 +136,8 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     const a = flow.areaOf(svc); const t = flow.labelOf(svc).title;
     return a && a.key !== 'tobb' ? `${a.title} – ${t}` : t;
   };
-  // Idotartam: a tulajdonos szerint a HeadSpa-kezelesek 1:30 oraak (a Salonic 80 percet ad): flow.durationOverride; egyebkent a Salonic ideje
-  const dur = (svc) => flow.durationOverride || svc.durationMin || 0;
+  // Idotartam: a Salonic ideje (a HeadSpa-nal 1 ora 20 perc: a tulajdonos megerositette)
+  const dur = (svc) => svc.durationMin || 0;
   const durText = (svc) => (dur(svc) ? F.durationLabel(dur(svc)) : null);
   const serviceFacts = (svc) => [durText(svc), priceText(svc) || null].filter(Boolean).join(' · ');
   // A szakemberi kedvezmeny (pl. "Noel - 20% kedvezmeny!") az arban is latszik, ha a fodraszt elore valasztotta

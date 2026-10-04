@@ -17,6 +17,8 @@ export const OXYGEN = Object.freeze({
   afterService: 'OXS', // a szolgaltatas utan a szakember-valaszto, csak utana az idopont
   voucherState: null, // nincs ajandekkartya-ag
   showStaffFilter: true, // a szakember nem kotelezo: alapbol "barmely megfelelo", az idopont-naptar fole kerul egy szakember-valaszto
+  // az oxigen-szakemberek fotoi a Salonic fiok szakember-oldalarol (tools/booking-kepek-forras/); ujabb szakember fotoja nelkul monogram jelenik meg
+  staffPhotos: Object.freeze([[/tündi|tundi/i, 'staff-oxigen-tundi'], [/vivien/i, 'staff-oxigen-vivien'], [/móni|moni/i, 'staff-oxigen-moni']]),
   intents: Object.freeze([
     { key: 'camera', title: 'Hajkamerás vizsgálat', sub: 'Megnézzük a fejbőröd állapotát + átbeszéljük milyen eredményt várhatsz', kep: 'ox-camera', test: (s) => s.bookingType === 'consultation' },
     { key: 'first', title: 'Első oxigénterápiás kezelés', kep: 'ox-first', test: (s) => s.bookingType === 'first_treatment' },

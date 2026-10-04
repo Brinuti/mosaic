@@ -76,10 +76,10 @@ A Salonic nem minden helyen bontja az első és a következő alkalmat külön k
 ## Design-döntések 2026-10-04, 2. kör (a tulajdonos visszajelzései a preview-ra)
 
 - **HeadSpa első kérdése:** „Ajándékkártyával vagy anélkül foglalsz?” (Ajándékkártyával (kuponkóddal) foglalok / Normál foglalás kuponkód nélkül), utána az élmény-választás. Az ajándékkártya-vásárlás linkje kikerült a foglalóból (külön oldal).
-- **HeadSpa időtartam 1 óra 30 perc** (a Salonic 80 percet ad: ott javítandó; `durationOverride`). Kuponkódos kártyák ugyanolyan formátumban, az ár helyén „Kuponkóddal”.
+- **HeadSpa:** az időtartam a Salonic ideje, 1 óra 20 perc (a tulajdonos először 1:30-at kért, majd megerősítette, hogy 1:20 a helyes). Kuponkódos kártyák ugyanolyan formátumban, az ár helyén „Kuponkóddal”.
 - **Naptár / sáv:** szellősebb (a nap címe és a „Nem találok megfelelő időpontot” fölött több hely), a lapozó nyilak SVG-k, a körben középen; a kiválasztott szolgáltatás sávja krémszínű (nem hasonlít az opció-kártyákra), a kép nem ér a sáv széléhez, a „Módosítás” beljebb.
 - **Adatlap:** nincs „Előnézet · valódi foglalás” jelzés, a cím középen, nincs magyarázó szöveg alul, a „Másik időpontot választok” gomb helyett link.
 - **Fodrászat:** a **fodrász-választó a belépő pont** (fotók, „Mindegy”), csak utána a szolgáltatás; a választott fodrász kezelései és (Noelnél kedvezményes) árai látszanak; a kezelés-kártyák ikonnal és „X Ft-tól” árral (kevesebb info), a hajhosszok hajhossz-ikonnal. A `HA3` / `HA3B` megszűnt.
-- **Oxigén:** egyforma magas kártyák, a hajkamera pontos szövege: „Megnézzük a fejbőröd állapotát + átbeszéljük milyen eredményt várhatsz”; a **szakember az időpont előtt**, kártyákon (nem legördülő). Fotó nincs az oxigén-szakemberekről (monogram), pótlandó.
+- **Oxigén:** egyforma magas kártyák, a hajkamera pontos szövege: „Megnézzük a fejbőröd állapotát + átbeszéljük milyen eredményt várhatsz”; a **szakember az időpont előtt**, kártyákon (nem legördülő). A szakemberek fotója a Salonic-fiók szakember-oldaláról van (tulajdonosi útmutatás).
 - **Lézer:** egyforma kártyák; a terület-képeken nincs szöveg (a site képeinek szöveg nélküli vágata), a „Több terület” 4 terület egy mozaikképen; a csomagoknál az „állapotfelmérés + 20% kedvezménnyel” helyett a csomag testrészei kis ikonokkal (a site csomag-leírása szerint).
 - **Egyforma kártyák** a szolgáltatás-választókon (szolgáltatás-választó, HeadSpa, Oxigén, Fodrászat szándékok, Lézer).

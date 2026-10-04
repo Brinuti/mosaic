@@ -14,8 +14,6 @@ export const HEADSPA = Object.freeze({
   frame: Object.freeze({ crop: 100, visible: 1545 }), // az alap (egyeni CSS nelkuli) Salonic-kinezethez; a MOSAIC kozos CSS-sel a motor a tomor meretet hasznalja
   // Az elso kerdes az ajandekkartya (HS1: kuponkoddal vagy anelkul), utana az elmeny-valasztas (HS2 / HS3).
   firstState: 'HS1',
-  // A tulajdonos szerint a HeadSpa-kezelesek 1:30 oraak (a Salonic idotartama 80 perc): a megjelenitett idotartam ez; ha a Salonicban javul, ez elhagyhato.
-  durationOverride: 90,
   voucherState: 'HS3',
   showStaffFilter: false, // 11. dontes: a HeadSpa "munkatarsai" kezelo-helyek, a vendeg nem valaszt
   // HS2/HS3 kartyak. 8. dontes: az Egyeni = csak a "Relax" valtozat (a "Hair" nem foglalhato ebbol a foglalobol).

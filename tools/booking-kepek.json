@@ -203,5 +203,29 @@
     "fx": 0.5,
     "fy": 0.2,
     "zoom": 0.5
+  },
+  {
+    "kulcs": "staff-oxigen-tundi",
+    "forras": "tools/booking-kepek-forras/oxigen-tundi.png",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1,
+    "hatter": "#fbeede"
+  },
+  {
+    "kulcs": "staff-oxigen-vivien",
+    "forras": "tools/booking-kepek-forras/oxigen-vivien.png",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1,
+    "hatter": "#fbeede"
+  },
+  {
+    "kulcs": "staff-oxigen-moni",
+    "forras": "tools/booking-kepek-forras/oxigen-moni.png",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1,
+    "hatter": "#fbeede"
   }
 ]
