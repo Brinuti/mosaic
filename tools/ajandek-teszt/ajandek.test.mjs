@@ -134,7 +134,7 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
       if (v.hero_media.video) {
         const vf = new URL('../../' + v.hero_media.video.src.replace(/^\//, ''), import.meta.url);
         assert.ok(fs.existsSync(vf), k + ' hero-video');
-        assert.ok(fs.statSync(vf).size < 1.5e6, k + ' hero-video merete');
+        assert.ok(fs.statSync(vf).size < 4e6, k + ' hero-video merete (30 mp, negyzetes: <= 4 MB)');
       }
       // nem igazolt igeret sehol: nincs "azonnal", "perceken belul", "1 perc alatt", "meg ma"
       assert.doesNotMatch(JSON.stringify(v), /azonnal|perceken belül|perc alatt|még ma/i, k);
@@ -274,10 +274,10 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     for (const k of ['friend', 'partner']) {
       assert.notEqual(V[k].hero_media, G.hero_media, k + ' sajat hero-asset');
       assert.ok(['APPROVED_BY_METADATA', 'APPROVED_BY_FOLDER_CONTEXT', 'APPROVED_BY_EXPLICIT_FILENAME'].includes(V[k].hero_media.status), k + ' jovahagyott');
-      for (const ut of [V[k].hero_media.src, V[k].hero_media.video.src]) assert.ok(fs.existsSync(new URL('../../' + ut.slice(1), import.meta.url)) && fs.statSync(new URL('../../' + ut.slice(1), import.meta.url)).size < 1024 * 1024, k + ' fajl letezik, < 1 MB: ' + ut);
+      for (const ut of [V[k].hero_media.src, V[k].hero_media.video.src]) assert.ok(fs.existsSync(new URL('../../' + ut.slice(1), import.meta.url)) && fs.statSync(new URL('../../' + ut.slice(1), import.meta.url)).size < 5 * 1024 * 1024, k + ' fajl letezik, < 5 MB: ' + ut);
     }
-    assert.equal(V.friend.hero_media.video.src, '/assets/video/ajandek-hero-baratnok.mp4');
-    assert.equal(V.partner.hero_media.video.src, '/assets/video/ajandek-hero-partner.mp4');
+    assert.equal(V.friend.hero_media.video.src, '/assets/video/ajandek-hero-30-baratnok.mp4');
+    assert.equal(V.partner.hero_media.video.src, '/assets/video/ajandek-hero-30-partner.mp4');
     for (const k of ['for_her']) {
       assert.equal(V[k].hero_media, G.hero_media, k + ' fallback a GENERAL hero-assetre');
       assert.equal(V[k].hero_media_javaslat.status, 'NEEDS_MANUAL_VALIDATION', k);

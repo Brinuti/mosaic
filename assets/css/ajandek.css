@@ -106,7 +106,7 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 
 /* ---------- hero: teljes szelessegu meleg foto, a szoveg balra, kremszinu atmenet felett (mobilon a kep fent) ---------- */
 .ah-hero { position: relative; isolation: isolate; background: var(--ah-krem); overflow: clip; }
-.ah-hero-media { position: relative; margin: 0; aspect-ratio: 3 / 2; max-height: 300px; width: 100%; }
+.ah-hero-media { position: relative; margin: 0; aspect-ratio: 1 / 1; max-height: 460px; width: 100%; }
 /* a hero videoja (ha van): a fotó fölött, lágyan beúszik, amint tényleg lejátszik; a fotó marad a poszter */
 .ah-hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .7s; }
 .ah-hero-video.ah-megy { opacity: 1; }
@@ -1275,7 +1275,7 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 /* mobil: rovidebb szovegek, hogy a valaszto minel hamarabb latszodjon */
 .ah-m-rovid { display: none; }
 @media (max-width: 640px) {
-  .ah-hero-media { max-height: 190px; }
+  .ah-hero-media { max-height: none; }   /* a hero-kep / -video mobilon negyzetes (1:1): az allo videok nagyobban latszanak */
   .ah-hero-racs { padding: 14px 0 18px; }
   .ah-hero-szoveg { gap: 10px; }
   .ah-hero h1 { font-size: clamp(24px, 6.9vw, 30px); line-height: 1.12; }

@@ -216,7 +216,7 @@
   // (az eredeti javaslat a hero_media_javaslat / first_proof_javaslat mezoben marad). Az ervenytelen / hianyzo variant: GENERAL.
   // A "gift_finder_preselect" ertekei a FINDER azonositoi: 'egyedul' (a dokumentumban for_one) | 'ketten' (together) | 'kulonleges'.
   var ASSET_JO = { APPROVED_BY_METADATA: true, APPROVED_BY_EXPLICIT_FILENAME: true, APPROVED_BY_FOLDER_CONTEXT: true };
-  var HERO_FOTO = { src: '/assets/img/ajandek/hero.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt' };
+  var HERO_FOTO = { src: '/assets/img/ajandek/hero-30-altalanos.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt' };
   var VARIANTOK = {
     general: {
       variant_id: 'general',
@@ -225,7 +225,7 @@
       hero_subtitle: 'Japán Head Spa élmény Budán, digitális vagy nyomtatott ajándékkártyával.',
       hero_cta: 'Kiválasztom az ajándékot',
       // a hero videoja ("szöveg nélkül.mp4", APPROVED_BY_METADATA): a 24-36. masodperc 3:2-es kivagasa (hang nelkul, 1,1 MB); a fotó a poszter
-      hero_media: { src: HERO_FOTO.src, alt: HERO_FOTO.alt, video: { src: '/assets/video/ajandek-hero-altalanos.mp4' }, forras: 'szöveg nélkül.mp4', status: 'APPROVED_BY_METADATA' },
+      hero_media: { src: HERO_FOTO.src, alt: HERO_FOTO.alt, video: { src: '/assets/video/ajandek-hero-30-altalanos.mp4' }, forras: 'szöveg nélkül.mp4', status: 'APPROVED_BY_METADATA' },
       hero_trust: [
         { csillag: true, szoveg: GOOGLE.pont + ' · ' + GOOGLE.darab, alszoveg: 'Google-vélemény', alszoveg_rovid: 'vélemény', href: '#ah-google' },
         { ikon: 'calendar', szoveg: '6 hónapig', alszoveg: 'érvényes' },
@@ -250,7 +250,7 @@
       hero_cta: 'Közös élményt választok',
       // a tulajdonos kérése (2026-10-04): barátnők választják egymásnak, ezért a hero a páros kezelés videójának barátnős szakasza (két nő, fürdőlepedőben, pezsgővel; felülnézeti kép a két ágyról);
       // forrás: a Meta-fiók "Páros Headspa szept ajánlati WARM / Szept páros HEADSPA 20%" videója (ugyanaz, mint a Páros termék kezelés-videója), az árcsík és a felirat nélküli sáv, 3:2, hang nélkül (0,5 MB)
-      hero_media: { src: '/assets/img/ajandek/hero-baratnok.jpg', alt: 'Két barátnő fürdőlepedőben pezsgővel, majd egymás mellett a Head Spa kezelésen a MOSAIC-ban', video: { src: '/assets/video/ajandek-hero-baratnok.mp4' }, forras: 'Meta: Páros Headspa szept ajánlati WARM', status: 'APPROVED_BY_METADATA' },
+      hero_media: { src: '/assets/img/ajandek/hero-30-baratnok.jpg', alt: 'Két barátnő fürdőlepedőben pezsgővel, majd egymás mellett a Head Spa kezelésen a MOSAIC-ban', video: { src: '/assets/video/ajandek-hero-30-baratnok.mp4' }, forras: 'Meta: Páros Headspa szept ajánlati WARM', status: 'APPROVED_BY_METADATA' },
       gift_finder_preselect: 'ketten',
       product_order: ['paros', 'egyeni', '4kezes'],
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
@@ -268,7 +268,7 @@
       hero_cta: 'Közös élményt választok',
       // "Anya-lánya.MP4": a fajlnev egyertelmuen azonositja (APPROVED_BY_EXPLICIT_FILENAME). A forras fekvo-ellenes (9:16, feliratos);
       // a hero a 71,5-79,5. masodperc (a szekben ulo paros) 3:2-es savja a felirat folott, hang nelkul (0,6 MB)
-      hero_media: { src: '/assets/img/ajandek/hero-anya-lanya.jpg', alt: 'Anya és lánya egymás mellett a MOSAIC szalonban', video: { src: '/assets/video/ajandek-hero-anya-lanya.mp4' }, forras: 'Anya-lánya.MP4', status: 'APPROVED_BY_EXPLICIT_FILENAME' },
+      hero_media: { src: '/assets/img/ajandek/hero-30-anya.jpg', alt: 'Anya és lánya egymás mellett a MOSAIC szalonban', video: { src: '/assets/video/ajandek-hero-30-anya.mp4' }, forras: 'Anya-lánya.MP4', status: 'APPROVED_BY_EXPLICIT_FILENAME' },
       gift_finder_preselect: 'ketten',
       product_order: ['paros', 'egyeni', '4kezes'],
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
@@ -302,7 +302,7 @@
       hero_cta: 'Páros élményt választok',
       // a tulajdonos kérése (2026-10-04): valódi férfi + nő pár. Forrás: Drive "Headspa férfiaknak" mappa / "Páros kezelés.MP4" (a pár a váróban, fürdőlepedőben, pezsgővel: 22,9-24,1 mp, lassítva),
       // közte a kezelés pillanatai (női és férfi vendég); a felirat és a szöveg nélküli 3:2-es sáv, hang nélkül (0,6 MB)
-      hero_media: { src: '/assets/img/ajandek/hero-partner.jpg', alt: 'Egy pár fürdőlepedőben, pezsgővel a kezében a MOSAIC váróterében, a közös Head Spa előtt', video: { src: '/assets/video/ajandek-hero-partner.mp4' }, forras: 'Drive: Headspa férfiaknak / Páros kezelés.MP4', status: 'APPROVED_BY_FOLDER_CONTEXT' },
+      hero_media: { src: '/assets/img/ajandek/hero-30-partner.jpg', alt: 'Egy pár fürdőlepedőben, pezsgővel a kezében a MOSAIC váróterében, a közös Head Spa előtt', video: { src: '/assets/video/ajandek-hero-30-partner.mp4' }, forras: 'Drive: Headspa férfiaknak / Páros kezelés.MP4', status: 'APPROVED_BY_FOLDER_CONTEXT' },
       gift_finder_preselect: 'ketten',
       product_order: ['paros', 'egyeni', '4kezes'],
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
@@ -321,7 +321,7 @@
       // "Ajándékkártya / Hook1.MP4" (APPROVED_BY_FOLDER_CONTEXT: élesítés előtt gyors vizuális QA ajánlott). A forrás hirdetés: a
       // férfi-beszélős jelenetek ("csak 200 darab", "zárjuk a foglalást", "csak két kattintás") NEM kerülnek be (nem igazolt szűkösség- és
       // gyorsasági állítás); a hero csak a kezelés-képek két szakaszát használja (3,5-6 s + 8-10,5 s), a felirat-sáv nélkül (0,3 MB)
-      hero_media: { src: '/assets/img/ajandek/hero-hook.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt', video: { src: '/assets/video/ajandek-hero-hook.mp4' }, forras: 'Ajándékkártya / Hook1.MP4', status: 'APPROVED_BY_FOLDER_CONTEXT' },
+      hero_media: { src: '/assets/img/ajandek/hero-30-utolso-pillanat.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt', video: { src: '/assets/video/ajandek-hero-30-utolso-pillanat.mp4' }, forras: 'Ajándékkártya / Hook1.MP4', status: 'APPROVED_BY_FOLDER_CONTEXT' },
       gift_finder_preselect: null,
       product_order: ['egyeni', '4kezes', 'paros'],
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
