@@ -2,7 +2,7 @@
 @font-face { font-family: 'Jost'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/jost-400-latin-ext.woff2) format('woff2'); unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF; }
 @font-face { font-family: 'Jost'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/jost-400-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 
-:root {
+:root, :host {
   --sotet: #183033; --sotet2: #24453f; --kozep: #44595c; --halvany: #6d8285;
   --krem: #fbeede; --hatter: #fffaf4; --vonal: #e8ddcd; --feher: #fff;
   --arany: #b8955a; --zold: #3f7652; --hiba: #a33a2b;
@@ -17,7 +17,8 @@ a { color: inherit; }
 
 /* fejlec + lepesjelzo */
 .be-head { position: sticky; top: 0; z-index: 20; background: var(--hatter); border-bottom: 1px solid var(--vonal); padding: 6px 8px 8px; }
-.be-head-row { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; height: 44px; }
+.be-head-row { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; height: 44px; }
+.be-head-right { display: flex; justify-content: flex-end; min-width: 44px; }
 .be-h1 { margin: 0; text-align: center; font-weight: 400; font-size: var(--m-alap); letter-spacing: .02em; }
 .be-icon { width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: none; border-radius: 50%; cursor: pointer; text-decoration: none; }
 .be-icon:hover { background: var(--krem); }
@@ -115,3 +116,31 @@ a { color: inherit; }
 .be-consent input { width: 18px; height: 18px; accent-color: var(--sotet); margin: 1px 0 0; }
 
 @media (prefers-reduced-motion: reduce) { .be-spinner, .be-loading::before { animation: none; } }
+
+/* --- a foglalo shell-je (a motor maga epiti a fejlecet) es a helyben nyilo reteg --------------------------------------------------------- */
+/* Shadow DOM-ban a body-szabalyok nem ervenyesek: a gazdaelem viseli az alapbetut / szint. */
+:host { all: initial; display: block; font-family: 'Jost', 'Helvetica Neue', Arial, sans-serif; font-size: var(--m-alap); line-height: 1.45; color: var(--sotet); }
+.be-main-wide { max-width: none; padding: 0 0 24px; }
+.be-shell-pmu .be-h1, .be-shell-pmu .be-head-right > a { visibility: hidden; }
+.be-pmu-wrap { position: relative; min-height: 320px; }
+.be-pmu { display: block; width: 100%; height: 640px; border: 0; background: var(--hatter); }
+.be-pmu-wrap .be-loading { position: absolute; inset: 0; z-index: 1; background: var(--hatter); }
+
+.be-layer { position: fixed; inset: 0; display: flex; align-items: stretch; justify-content: center; }
+.be-backdrop { position: absolute; inset: 0; background: rgba(24, 48, 51, .55); opacity: 0; transition: opacity .2s ease; }
+.be-panel { position: relative; display: flex; flex-direction: column; width: 100%; height: 100%; background: var(--hatter); outline: none; opacity: 0; transform: translateY(28px); transition: transform .24s ease, opacity .2s ease; }
+.be-layer.be-open .be-backdrop { opacity: 1; }
+.be-layer.be-open .be-panel { opacity: 1; transform: none; }
+.be-panel-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+/* mobil: teljes kepernyos reteg (mini app) */
+@media (max-width: 699px) { .be-panel { height: 100vh; height: 100dvh; } .be-shell-layer .be-main { padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); } }
+/* asztali: kozepre nyilo panel */
+@media (min-width: 700px) {
+  .be-layer { align-items: center; }
+  .be-panel { width: min(640px, 94vw); height: min(860px, 92vh); border-radius: 18px; box-shadow: 0 24px 80px rgba(0, 0, 0, .35); overflow: hidden; }
+}
+.be-shell-layer { display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; }
+.be-shell-layer .be-head { position: static; flex: none; }
+.be-shell-layer .be-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.be-icon:focus-visible, .be-btn:focus-visible, .be-link:focus-visible, .be-time:focus-visible, .be-chip:focus-visible { outline: 2px solid var(--sotet); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .be-backdrop, .be-panel { transition: none; } }
