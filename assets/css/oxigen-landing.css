@@ -103,10 +103,10 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .te-csillagok::after { content: '★★★★★'; position: absolute; left: 0; top: 0; width: var(--ert, 100%); overflow: hidden; white-space: nowrap; color: #f4b400; }
 
 /* --- hero-galeria: elotte/utana fotok (a tulajdonos valogatja) --- */
-.hero-galeria { grid-area: gal; align-self: stretch; display: flex; flex-direction: column; margin-top: calc(clamp(38px, 4vw, 54px) * .24); position: relative; background: #fff; border: 1px solid #eadfca; border-radius: 22px; padding: 12px 12px 16px; box-shadow: 0 18px 40px rgba(60, 40, 20, .14); }
+.hero-galeria { grid-area: gal; min-width: 0; align-self: stretch; display: flex; flex-direction: column; margin-top: calc(clamp(38px, 4vw, 54px) * .24); position: relative; background: #fff; border: 1px solid #eadfca; border-radius: 22px; padding: 12px 12px 16px; box-shadow: 0 18px 40px rgba(60, 40, 20, .14); }
 .hg-sav { flex: 1; min-height: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; border-radius: 14px; }
 .hg-sav::-webkit-scrollbar { display: none; }
-.hg-dia { margin: 0; scroll-snap-align: start; display: flex; flex-direction: column; min-height: 0; }
+.hg-dia { margin: 0; min-width: 0; scroll-snap-align: start; display: flex; flex-direction: column; min-height: 0; }
 .hg-kep { position: relative; flex: 1; min-height: 260px; border-radius: 14px; overflow: hidden; background: #e6dfcf; }
 .hg-kep img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .hg-dia .cimke { position: absolute; bottom: 12px; background: rgba(20, 20, 20, .72); color: #fff; font: 600 11px/1 var(--test); letter-spacing: .12em; text-transform: uppercase; padding: 8px 12px; border-radius: 6px; }
@@ -115,6 +115,8 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .hg-dia figcaption { text-align: center; margin-top: 12px; }
 .hg-dia figcaption b { display: block; font: 600 15px/1.3 var(--test); color: var(--szoveg); }
 .hg-dia figcaption span { display: block; font-size: 13px; color: var(--halk); margin-top: 2px; }
+.hg-dia figcaption i { font-style: normal; }
+.hg-dia .sz-m { display: none; }
 .hg-pontok { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
 .hg-pontok button { width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 0; background: #d9ccb0; cursor: pointer; }
 .hg-pontok button[aria-current="true"] { background: #b89a52; transform: scale(1.25); }
@@ -137,7 +139,6 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .monitor { position: relative; margin: 0; background: #1a1a1a; border-radius: 18px; padding: 14px 14px 30px; box-shadow: 0 24px 50px rgba(0, 0, 0, .45), inset 0 0 0 1px #2c2c2c; transform: rotate(-1.2deg); }
 .monitor img { width: 100%; height: auto; aspect-ratio: 1.5; object-fit: cover; border-radius: 8px; }
 .monitor::after { content: ''; position: absolute; left: 50%; bottom: 10px; width: 34px; height: 5px; border-radius: 3px; background: #3a3a3a; transform: translateX(-50%); }
-.monitor figcaption { position: absolute; left: 26px; bottom: 36px; background: rgba(255, 255, 255, .88); color: #44352a; font: 600 10.5px/1 var(--test); letter-spacing: .14em; text-transform: uppercase; padding: 7px 11px; border-radius: 999px; }
 .allapot-szoveg { position: relative; }
 .allapot h2 { color: #fff; font-size: 40px; }
 .allapot-szoveg > p { color: #d3dedc; font-size: 16px; margin-top: 16px; }
@@ -179,8 +180,10 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .lepes3 h3 { font: 600 17px/1.3 var(--test); color: var(--szoveg); margin-top: 12px; }
 .lepes3 p { font-size: 14px; color: #4a5757; line-height: 1.5; margin-top: 6px; }
 .elso-link { margin-top: 30px; text-align: center; }
-.elso-kep { margin: 0; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 40px rgba(60, 40, 20, .16); min-height: 330px; }
-.elso-kep img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 62%; }
+.elso-link .gomb { padding: 16px 36px; font-size: 16px; }
+/* a kep magassagat a bal oszlop adja (a gomb aljaig er), a kep maga nem nyujtja a sort */
+.elso-kep { position: relative; margin: 0; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 40px rgba(60, 40, 20, .16); min-height: 330px; }
+.elso-kep img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 62%; }
 
 /* --- mit csinalunk --- */
 .folyamat { padding: 34px 0 62px; background: var(--krem); }
@@ -197,8 +200,8 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .protokoll { margin-top: 34px; background: var(--lap); border: 1px solid #eadfca; border-radius: 16px; }
 .protokoll summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 26px; font: 600 16px/1.3 var(--test); color: var(--sotet); }
 .protokoll summary::-webkit-details-marker { display: none; }
-.protokoll summary::after { content: '+'; font: 400 26px/1 var(--test); color: var(--arany); }
-.protokoll[open] summary::after { content: '–'; }
+.protokoll summary::after { content: ''; flex: none; width: 24px; height: 24px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a07f4b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v17M6 14l6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; transition: transform .2s; }
+.protokoll[open] summary::after { transform: rotate(180deg); }
 .protokoll ol { counter-reset: p; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 34px; padding: 6px 26px 8px; }
 .protokoll li { counter-increment: p; position: relative; padding-left: 52px; min-height: 40px; display: flex; flex-direction: column; justify-content: center; }
 .protokoll li::before { content: counter(p); position: absolute; left: 0; top: 50%; margin-top: -19px; width: 38px; height: 38px; border-radius: 50%; background: var(--arany-gomb); color: #fff; display: grid; place-items: center; font: 600 16px/1 var(--test); text-shadow: 0 1px 1px rgba(90, 62, 10, .28); }
@@ -469,7 +472,9 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .hg-kep { aspect-ratio: 1.7; }
   .hg-dia figcaption { margin-top: 8px; }
   .hg-dia figcaption b { font-size: 14px; }
-  .hg-dia figcaption span { font-size: 12.5px; }
+  .hg-dia figcaption span { font-size: clamp(10px, 3.3vw, 12.5px); white-space: nowrap; }
+  .hg-dia .sz-d { display: none; }
+  .hg-dia .sz-m { display: inline; }
   .hg-pontok { margin-top: 8px; }
   .hero-galeria .lapozo { width: 36px; height: 36px; margin-top: -18px; }
   .hero-galeria .lapozo.elozo { left: 14px; }
@@ -510,6 +515,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .lapozo.elozo { left: -8px; }
   .lapozo.kovetkezo { right: -8px; }
   .elso { padding: 40px 0 20px; }
+  .elso-link .gomb { width: 100%; padding: 15px 16px; font-size: 15.5px; white-space: nowrap; }
   .lepesek3 { grid-template-columns: 1fr; gap: 22px; }
   .lepes3:not(:last-child)::after { display: none; }
   .lepes3 .szam { font-size: 34px; }

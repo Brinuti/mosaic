@@ -13,7 +13,7 @@ ezért a Meta-pixel (Fodrász-pixel, `suti.js` `PIXEL_OLDALAK`) és a GTM útvon
 | stílus | `assets/css/oxigen-landing.css` (betűk, színek: ugyanaz, mint a PMU-landingé) |
 | működés (kezelők / eredmények lapozó, videó, Google-értékelés, CTA-mérés) | `assets/js/oxigen-landing.js` |
 | képek | `assets/img/oxigen/` (kezelők, előtte/utána, kezelés-képek, szalon, Arc + Haj) és a Wix-képek `assets/img/c2eb0f_…` |
-| a „hajkamera-nézet” kép | `assets/img/oxigen/hajkamera-nezet.jpg` (960×640) — erősen nagyított, trichoszkópos jellegű, **MI-vel generált szemléltető kép** (nem vendégfotó), „Illusztráció” felirattal; a tulajdonos valódi hajkamerás felvételére cserélhető |
+| a „hajkamera-nézet” kép | `assets/img/oxigen/hajkamera-nezet.jpg` (960×640) — erősen nagyított, trichoszkópos jellegű, **MI-vel generált szemléltető kép** (nem vendégfotó), a tulajdonos kérésére felirat nélkül; valódi hajkamerás felvételre cserélhető |
 
 A fejlécet és a láblécet a build szúrja be (`<!--mh-fejlec-->`, `<!--mh-lablec-->`), mint a többi saját oldalon.
 
@@ -38,6 +38,8 @@ küldenek (a PMU-landing `pmu_landing_*` mintájára; ezekre GTM-címke nem figy
 ## Mire számíthatsz az oxigénterápiától? / Miért működik?
 
 A „Milyen hajhullásokra működik” és az „Az Oxygeni vendégeinek valós javulásai” között (`#varhato-eredmeny`): bal oldalon 6 várható hatás saját grafikával (lassuló hajhullás, dúsuló haj, új hajszálak, jobb vérkeringés, élénkebb anyagcsere, egészségesebb fejbőr; az ikonok a lap saját SVG-szimbólumai, **nem** az Oxygeni képei), jobb oldalon a „Miért működik?” szöveg a tulajdonos magyarázata szerint (pontosan ott hat, ahol a probléma van: a hajhagymák mélyén; nem felszíni, nem kozmetikai kezelés; a magas tisztaságú oxigén vitaminokat visz a fejbőrbe; a hajhagymák normális működését állítja helyre). Mobilon a hatások 2 oszlopban állnak. A hajhullás-típus kártyák szövege egyforma hosszú (két sor).
+
+A „Mi történik az első kezeléseden?” kép magasságát a bal oszlop adja: a kép teteje a címmel, az alja a „Megnézem a kezelés részletes lépéseit” gomb aljával egyezik (a kép `position:absolute`, nem nyújtja a sort); a gomb a többi nagy gombbal egyforma méretű. Az „A kezelés lépésről lépésre” lenyitó jele nyíl (zárva lefelé, nyitva felfelé), nem plusz. A hero-galéria felirata mobilon rövid, egy soros: „Gyengébb panaszok 3–5 alkalom, súlyosabb 5–10 alkalom.” (`.sz-m`; asztalin a hosszú változat, `.sz-d`).
 
 ## A kezelés lépésről lépésre (lenyitható)
 
