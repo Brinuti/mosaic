@@ -179,6 +179,14 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     // fizetes: az ajandekozott neve, egy fizetesi mod valaszto (kartya / atutalas), nincs kulon "Inkabb atutalassal" link
     for (const jel of ['id="ah-ajandekozott"', 'id="ah-telefon"', 'id="ah-fizmod"', 'name="fizmod" value="kartya"', 'name="fizmod" value="atutalas"', 'id="ah-atu-doboz"', 'id="ah-atutalas"']) assert.ok(html.includes(jel), jel);
     assert.ok(!html.includes('ah-atutalas-gomb') && !html.includes('Inkább átutalással'), 'a regi atutalas-link kikerult');
+    // minden kartyan plusz sor: "Hogyan epul fel a kezeles?" (felugro, lepesekkel az eles oldalrol)
+    for (const jel of ['id="ah-kez-ablak"', 'id="ah-kez-lepesek"', 'id="ah-kez-valaszt"']) assert.ok(html.includes(jel), jel);
+    for (const [id, t] of Object.entries(ADAT.TERMEKEK)) {
+      const m = t.kezeles.menet;
+      assert.ok(Array.isArray(m) && m.length >= 5 && m.every((x) => Array.isArray(x) && x[0] && x[1]), id + ' kezeles-menet (cim + szoveg)');
+      assert.ok(m.some((x) => /hajsz[áa]r[ií]t/i.test(x[0])), id + ': a menet a hajszaritassal er veget');
+    }
+    assert.ok(fs.readFileSync(new URL('../../assets/js/ajandek.js', import.meta.url), 'utf8').includes('Hogyan épül fel a kezelés?'), 'a kartyak plusz sora');
     // 4. kor: a szemelyre szabo kartyaja fole cim + lefele nyil, fotoathelyezes nyilakkal, nincs "Aktualis ar" es adatok-segedszoveg
     for (const jel of ['class="ah-elo-cim"', 'Így fog kinézni', 'élő előnézet', 'id="ah-mozgat"']) assert.ok(html.includes(jel), jel);
     assert.ok(!html.includes('Aktuális ár') && !html.includes('Add meg az adataidat a vásárláshoz'), 'a torolt szovegek nincsenek');

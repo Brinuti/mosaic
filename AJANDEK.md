@@ -512,3 +512,7 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
 - **Canva (átutalásos kártya):** a fiókban vannak Brand Template-ek (a Canva-összekötő tud sablonból kitölteni és PDF-et exportálni); a kártya jelenleg a saját nyomtató oldalunkról készül
   (ugyanaz a dizájn, nem kell hozzá Canva). Ha a szalon Canvában akarja szerkeszteni: a smaragd lapokból Brand Template készíthető kitölthető mezőkkel (fotó, idézet, név, kód).
 - **Szabd személyre (szellősebb):** a három sor között nagyobb hely (20 px); a kártya egy kicsit lejjebb, fölötte „Így fog kinézni – élő előnézet” cím lefelé mutató nyíllal.
+- **„Hogyan épül fel a kezelés?” (minden termékkártyán):** plusz sor a kártyán az ár fölött; rákattintva felugró ablak nyílik a kezelés lépéseivel (`TERMEKEK.*.kezeles.menet`: az éles
+  ajándékkártya-oldalak „Mit tartalmaz a 80 perces (50+30) kényeztetés?” listái: egyéni: fejbőrkamerás diagnózis → pakolás → hajmosás → masszázs → gőzölés → hajszárítás; páros: ugyanez
+  kettőtöknek; 4 kezes: pakolás → hajmosás → 8 féle masszázs két gyógymasszőrrel → gőzölés → hajszárítás). Az ablakban „Ezt választom” gomb; a kártyán belüli gomb nem választja ki a terméket.
+  A három oszlop magassága közben változatlan (a kártyák sorai egyformák, a tartalom beleférnek: ellenőrizve 900–1920 px között).

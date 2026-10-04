@@ -334,6 +334,15 @@
 </dialog>
 
 <!-- vendeg-video: a modalis lejatszo (a kattintott kartya videoja, hang, vezerlok) -->
+<dialog class="ah-kez-ablak" id="ah-kez-ablak" aria-labelledby="ah-kez-ablak-cim">
+  <div class="ah-kez-ablak-fej">
+    <h3 id="ah-kez-ablak-cim"></h3>
+    <button type="button" class="ah-kez-ablak-bezar" id="ah-kez-bezar" aria-label="Bezárás"><span aria-hidden="true">×</span></button>
+  </div>
+  <p class="ah-kez-ablak-osszegzes" id="ah-kez-osszegzes"></p>
+  <ol class="ah-kez-lepesek" id="ah-kez-lepesek"></ol>
+  <div class="ah-kez-ablak-lab"><button type="button" class="ah-gomb ah-gomb-fo" id="ah-kez-valaszt">Ezt választom</button></div>
+</dialog>
 <dialog class="ah-video-ablak" id="ah-video-ablak" aria-label="Vendég-videó">
   <button type="button" class="ah-video-bezar" id="ah-video-bezar" aria-label="Bezárás">×</button>
   <video id="ah-video" controls playsinline preload="none"></video>

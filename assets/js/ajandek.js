@@ -89,6 +89,7 @@
     hourglass: '<path d="M7 4h10M7 20h10M8 4c0 4 4 5 4 8s-4 4-4 8M16 4c0 4-4 5-4 8s4 4 4 8"/>',
     shield: '<path d="M12 3.5l7 2.5v5.5c0 4.2-3 7.4-7 9-4-1.6-7-4.8-7-9V6z"/><path d="M9 12l2.2 2.2L15.5 10"/>',
     flip: '<path d="M4 12a8 8 0 0 1 13.6-5.7L20 8.5"/><path d="M20 4v4.5h-4.5"/><path d="M20 12a8 8 0 0 1-13.6 5.7L4 15.5"/><path d="M4 20v-4.5h4.5"/>',
+    list: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
     printer: '<path d="M7 9V4.5h10V9"/><path d="M7 17H5a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 5 9h14a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 19 17h-2"/><rect x="7" y="13.5" width="10" height="6.5" rx=".8"/>'
   };
   function ikonKitolt(span, nev) {
@@ -505,11 +506,48 @@
     if (t.vizual && t.vizual.src) {
       kep.appendChild(h('img', { src: kepUt(t.vizual.src), alt: '', width: t.vizual.w || null, height: t.vizual.h || null, loading: 'lazy', decoding: 'async', style: t.vizual.poz ? 'object-position:' + t.vizual.poz : null }));
     }
+    // plusz sor minden kártyán: a kezelés felépítése (felugró ablak); a gomb a kártyán belül sem választja ki a terméket
+    var menet = h('button', { type: 'button', class: 'ah-kez-link', 'data-kez': t.id, 'aria-haspopup': 'dialog' }, ikonSpan('list'), h('span', { text: 'Hogyan épül fel a kezelés?' }), ikonSpan('chevron'));
     return h('label', { class: 'ah-termek', id: 'ah-termek-' + t.id, 'data-termek': t.id },
       h('input', { type: 'radio', name: 'termek', value: t.id, class: 'ah-termek-radio' }),
       kep,
-      h('span', { class: 'ah-termek-test' }, h('strong', { class: 'ah-termek-nev', text: t.nev }), lista, h('span', { class: 'ah-ar', text: A.arSzoveg(t.ar_ft) })),
+      h('span', { class: 'ah-termek-test' }, h('strong', { class: 'ah-termek-nev', text: t.nev }), lista, menet, h('span', { class: 'ah-ar', text: A.arSzoveg(t.ar_ft) })),
       h('span', { class: 'ah-radio-jel', 'aria-hidden': 'true' }));
+  }
+  // a kezelés felépítése: felugró ablak (lépések az éles oldal ajándékkártya-oldalairól)
+  var kezTermek = null, kezFokusz = null;
+  function kezAblakNyit(id, forras) {
+    var t = termek(id), abl = $('ah-kez-ablak');
+    if (!t || !abl) return;
+    kezTermek = id; kezFokusz = forras || null;
+    $('ah-kez-ablak-cim').textContent = t.nev;
+    var p = t.pontosan || {};
+    $('ah-kez-osszegzes').textContent = [t.osszefoglalo, p.kezelo].filter(Boolean).join(' · ');
+    var lista = uresit($('ah-kez-lepesek'));
+    ((t.kezeles && t.kezeles.menet) || []).forEach(function (m, i) {
+      lista.appendChild(h('li', null, h('span', { class: 'ah-kez-szam', text: String(i + 1) }), h('div', null, h('strong', { text: m[0] }), h('span', { text: m[1] }))));
+    });
+    if (abl.showModal) abl.showModal(); else abl.setAttribute('open', '');
+    fokusz($('ah-kez-bezar'));
+  }
+  function kezAblakZar() {
+    var abl = $('ah-kez-ablak');
+    if (!abl) return;
+    if (abl.close) { if (abl.open) abl.close(); } else abl.removeAttribute('open');
+  }
+  function kezAblakBekot() {
+    var abl = $('ah-kez-ablak');
+    if (!abl) return;
+    $('ah-kez-bezar').addEventListener('click', kezAblakZar);
+    abl.addEventListener('click', function (ev) { if (ev.target === abl) kezAblakZar(); }); // a háttérre kattintva is bezárul
+    abl.addEventListener('close', function () { if (kezFokusz && kezFokusz.focus) { try { kezFokusz.focus(); } catch (e) { /* nem baj */ } } });
+    $('ah-kez-valaszt').addEventListener('click', function () { var id = kezTermek; kezFokusz = null; kezAblakZar(); if (id) kivalaszt(id); });
+    document.addEventListener('click', function (ev) {
+      var g = ev.target.closest ? ev.target.closest('.ah-kez-link') : null;
+      if (!g) return;
+      ev.preventDefault();
+      kezAblakNyit(g.getAttribute('data-kez'), g);
+    });
   }
   function termekekRender() {
     var racs = uresit($('ah-termek-racs'));
@@ -1565,6 +1603,7 @@
     $('ah-uj-vasarlas').addEventListener('click', ujVasarlas);
     $('ah-hero-cta').addEventListener('click', function (ev) { var f = $('ah-finder'); if (f) { ev.preventDefault(); gorgess(f, 'start'); } });
     vendegVideok();
+    kezAblakBekot();
     if (KT) tervezoBekot();
   }
 

@@ -1054,3 +1054,28 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-elo-cim small { font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ah-halk); }
 .ah-elo-nyil { width: 24px; height: 24px; margin-top: 2px; color: #c6a346; transform: rotate(90deg); }
 @media (min-width: 900px) { .ah-elo-cim { margin-top: 26px; } }
+
+/* "Hogyan epul fel a kezeles?" - plusz sor minden termek-kartyan + felugro ablak */
+.ah-kez-link { display: inline-flex; align-items: center; gap: 7px; justify-self: start; padding: 0; border: 0; background: none; font: inherit; font-size: 13px; line-height: 1.3; color: var(--ah-petrol); text-decoration: underline; text-decoration-color: rgba(23, 64, 63, .35); text-underline-offset: 3px; cursor: pointer; text-align: left; }
+.ah-kez-link:hover { text-decoration-color: var(--ah-petrol); }
+.ah-kez-link:focus-visible { outline: 3px solid var(--ah-arany-sz); outline-offset: 3px; border-radius: 4px; }
+.ah-kez-link .ah-ikon { width: 16px; height: 16px; flex: none; color: #c6a346; }
+.ah-kez-link .ah-ikon:last-child { width: 13px; height: 13px; }
+@media (min-width: 900px) and (max-width: 1279px) { .ah-lepesek { grid-template-columns: minmax(0, 1fr) minmax(380px, min(44%, 420px)); } }
+.ah-kez-ablak { width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 40px); margin: auto; padding: 24px 26px 22px; border: 0; border-radius: 18px; background: #fffdfa; color: var(--ah-szoveg, #243436); box-shadow: 0 24px 60px rgba(12, 24, 23, .35); overflow: auto; }
+.ah-kez-ablak:not([open]) { display: none; }
+.ah-kez-ablak::backdrop { background: rgba(12, 24, 23, .55); }
+.ah-kez-ablak-fej { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.ah-kez-ablak-fej h3 { font-size: 26px; line-height: 1.15; }
+.ah-kez-ablak-bezar { flex: none; width: 36px; height: 36px; border: 1px solid var(--ah-vonal); border-radius: 50%; background: #fff; color: var(--ah-petrol); font-size: 22px; line-height: 1; cursor: pointer; display: grid; place-items: center; padding: 0; }
+.ah-kez-ablak-bezar:hover { border-color: var(--ah-arany); }
+.ah-kez-ablak-osszegzes { margin: 6px 0 16px; font-size: 14.5px; color: var(--ah-halk); }
+.ah-kez-lepesek { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: kez; }
+.ah-kez-lepesek li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 14px; align-items: start; }
+.ah-kez-szam { width: 30px; height: 30px; border-radius: 50%; background: var(--ah-arany); color: #fff; display: grid; place-items: center; font-family: var(--ah-test); font-weight: 500; font-variant-numeric: lining-nums; font-size: 14px; line-height: 1; }
+.ah-kez-lepesek strong { display: block; font-family: var(--ah-cim); font-weight: 500; font-size: 18px; line-height: 1.2; color: var(--ah-petrol); }
+.ah-kez-lepesek li div span { display: block; margin-top: 2px; font-size: 14.5px; line-height: 1.45; color: #3f4f50; }
+.ah-kez-ablak-lab { margin-top: 20px; display: flex; justify-content: center; }
+.ah-kez-ablak-lab .ah-gomb { min-width: 220px; }
+@media (max-width: 479px) { .ah-kez-ablak { padding: 20px 18px 18px; } .ah-kez-ablak-fej h3 { font-size: 22px; } }
+@media (min-width: 780px) { .ah-lepes:not(.ah-lepes-3) > .ah-termekek { grid-auto-rows: minmax(0, 1fr); } }
