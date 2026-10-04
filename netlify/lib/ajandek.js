@@ -761,11 +761,9 @@ async function szamlaPi(k, r, ar, leiras, meta, kulcs) {
     customer: ugyfel.id, collection_method: 'charge_automatically', auto_advance: false, currency: 'huf',
     automatic_tax: { enabled: true }, pending_invoice_items_behavior: 'include', metadata: { forras: FORRAS },
   };
-  // A fizetesi modok: alapbol a Stripe szamla-sablonja szerint. FIGYELEM: a Payment Element dinamikus fizetesi modokkal (nincs paymentMethodTypes) csak
-  // olyan PaymentIntentet fogad el, amely NEM explicit payment_method_types-szal keszult; ha a szamla PI-je explicit listat kap, a megerosites hibaval all
-  // le. Ezert az explicit lista (AJANDEK_SZAMLA_FIZMODOK, pl. "card,link,revolut_pay") csak akkor allithato, ha a kliens Elements-e is ugyanazt a listat kapja.
-  const fizmodok = String(k.env.AJANDEK_SZAMLA_FIZMODOK || '').split(',').map((x) => x.trim()).filter((x) => /^[a-z_]+$/.test(x));
-  const szamla = await stripe(k.env, 'POST', '/v1/invoices', fizmodok.length ? { ...szamlaParam, payment_settings: { payment_method_types: fizmodok } } : szamlaParam, id('s'));
+  // A fizetesi modok: a szamla PI-je ugyanazt az EXPLICIT listat kapja, mint a Payment Element (ajandek-adat.js FIZETESI_MODOK); a dinamikus Element
+  // explicit listas PI-t nem fogad el, ezert a kliens Element-je is ezt a listat kapja.
+  const szamla = await stripe(k.env, 'POST', '/v1/invoices', { ...szamlaParam, payment_settings: { payment_method_types: ADAT.FIZETESI_MODOK } }, id('s'));
   const biztos = async (hiba) => { await szamlaVoid(k, szamla.id); throw new Error(hiba); };
   const kesz = await stripe(k.env, 'POST', `/v1/invoices/${szamla.id}/finalize`, { auto_advance: false, expand: ['payment_intent'] }, id('f'));
   const pi = kesz.payment_intent;
@@ -855,7 +853,7 @@ async function fizetes(k) {
 
   if (!pi) {
     const params = {
-      amount: ar * 100, currency: 'huf', automatic_payment_methods: { enabled: true },
+      amount: ar * 100, currency: 'huf', payment_method_types: ADAT.FIZETESI_MODOK,
       receipt_email: r.email, description: leiras, metadata: meta,
     };
     // ha a kliens egy mar nem modosithato PI-t kuldott vissza, ugyanazzal a kulccsal a regit kapnank vissza

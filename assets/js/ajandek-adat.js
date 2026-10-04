@@ -429,7 +429,14 @@
   };
   function szamlaTetelek(id) { return Object.prototype.hasOwnProperty.call(SZAMLA_TETELEK, id) ? SZAMLA_TETELEK[id] : null; }
 
+  // A FIZETESI MODOK: a Payment Element (kliens) es a PaymentIntent / Stripe-szamla (szerver) UGYANAZT az explicit listat kapja. A valodi Stripe.js ugyanis
+  // hibaval all le ("Payment details were collected through Stripe Elements using automatic payment methods and cannot be confirmed through the API
+  // configured with payment_method_types"), ha a dinamikus Element explicit mod-listas PaymentIntentet kap (a Stripe-szamla PI-je mindig explicit listas).
+  // Google Pay / Apple Pay a "card" resze. A lista a Stripe szamla-sablonjanak alapertelmezesevel is egyezik (card, revolut_pay).
+  var FIZETESI_MODOK = ['card', 'revolut_pay'];
+
   g.AJANDEK_ADAT = {
+    FIZETESI_MODOK: FIZETESI_MODOK,
     SZAMLA_TETELEK: SZAMLA_TETELEK,
     szamlaTetelek: szamlaTetelek,
     TERMEKEK: TERMEKEK,

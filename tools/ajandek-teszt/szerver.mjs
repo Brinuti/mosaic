@@ -103,6 +103,11 @@ http.createServer(async (req, res) => {
       res.writeHead(200, { 'content-type': 'application/json' });
       return res.end(JSON.stringify(elfogottLevelek));
     }
+    if (ut === '/__teszt/mock/pi-info' && mock) {
+      const x = mock.allapot.pi(u.searchParams.get('pi')) || {};
+      res.writeHead(200, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ tipusok: x.payment_method_types || null, auto: !!(x.automatic_payment_methods && x.automatic_payment_methods.enabled) }));
+    }
     if (ut.startsWith('/__teszt/mock/') && mock) {
       const pi = u.searchParams.get('pi');
       if (ut.endsWith('/siker')) mock.allapot.sikeresIt(pi, { mod: u.searchParams.get('mod') || 'card' });

@@ -508,7 +508,9 @@ describe('/fizetes', () => {
     assert.equal(pi.amount, 2690000);
     assert.equal(pi.amount % 100, 0);
     assert.equal(pi.currency, 'huf');
-    assert.deepEqual(pi.automatic_payment_methods, { enabled: true });
+    // explicit fizetesi mod-lista (a Payment Element ugyanezt kapja: lasd 'a Payment Element ES a PI / szamla ugyanazt az explicit fizetesi mod-listat kapja')
+    assert.deepEqual(pi.payment_method_types, ['card', 'revolut_pay']);
+    assert.equal(pi.automatic_payment_methods, null);
     assert.equal(pi.receipt_email, 'vevo@example.com');
     assert.equal(pi.description, 'MOSAIC Head Spa ajándékkártya - Egyéni Head Spa');
     assert.equal(pi.metadata.forras, 'ajandek-motor');
@@ -643,6 +645,20 @@ describe('Stripe-szamla (AJANDEK_STRIPE_SZAMLA=1)', () => {
   };
   const sorok = (szamla) => szamla.lines.data.map((t) => ({ nev: t.description, osszeg: t.amount, kod: t.tax_code, behavior: t.tax_behavior }));
 
+  test('a Payment Element ES a PI / szamla ugyanazt az explicit fizetesi mod-listat kapja (a valodi Stripe.js dinamikus Element + explicit PI -> IntegrationError)', async () => {
+    assert.deepEqual(ADAT.FIZETESI_MODOK, ['card', 'revolut_pay']);
+    const kliens = fs.readFileSync(new URL('../../assets/js/ajandek.js', import.meta.url), 'utf8');
+    assert.ok(kliens.includes('paymentMethodTypes: A.FIZETESI_MODOK.slice()'), 'a kliens Element-je explicit listat kap');
+    assert.ok(!kliens.includes('automatic_payment_methods'));
+    // sima PI es szamla-PI: ugyanaz az explicit lista, nem automatikus
+    const sima = mock.allapot.pi((await ujRendeles()).pi);
+    const { pi: szamlaPi } = await ujSzamla();
+    for (const x of [sima, szamlaPi]) {
+      assert.deepEqual(x.payment_method_types, ADAT.FIZETESI_MODOK);
+      assert.equal(x.automatic_payment_methods, null);
+    }
+  });
+
   test('az adat: a sorok osszege = a termek ara, adokodok / nevek pontosan a regi fizetolinkeke', () => {
     for (const t of Object.values(ADAT.TERMEKEK)) {
       const sorokAdat = ADAT.szamlaTetelek(t.id);
@@ -725,8 +741,7 @@ describe('Stripe-szamla (AJANDEK_STRIPE_SZAMLA=1)', () => {
     assert.equal(szamlaKeres.params.automatic_tax.enabled, 'true');
     assert.equal(szamlaKeres.params.auto_advance, 'false');
     assert.equal(szamlaKeres.params.collection_method, 'charge_automatically');
-    // alapbol NINCS explicit fizetesi mod-lista (a dinamikus Payment Elementtel csak az automatikus PI kompatibilis)
-    assert.equal(szamlaKeres.params.payment_settings, undefined);
+    assert.deepEqual(szamlaKeres.params.payment_settings.payment_method_types, ['card', 'revolut_pay']);
     const fin = k.find((x) => x.path.endsWith('/finalize'));
     assert.deepEqual(fin.params.expand, ['payment_intent']);
     for (const x of k.filter((y) => y.method === 'POST' && y.path !== '/v1/payment_intents/' + y.path.split('/').pop())) assert.ok(x.idem && x.idem.startsWith('ah-sz-'), x.path);

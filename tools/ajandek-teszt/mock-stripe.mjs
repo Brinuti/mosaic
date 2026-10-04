@@ -92,6 +92,8 @@ export async function mockStripeInditas({ port = 0, kulcsElotag = 'sk_test_mock'
       status: 'requires_payment_method', client_secret: `${id}_secret_${veletlen(25)}`, created: mp(),
       description: p.description ?? null, receipt_email: p.receipt_email ?? null, metadata: { ...md },
       automatic_payment_methods: p.automatic_payment_methods ? { enabled: String(p.automatic_payment_methods.enabled) === 'true' } : null,
+      // mint a Stripe: automatikus modnal a feloldott lista, explicit modnal a megadott lista
+      payment_method_types: p.payment_method_types ? Object.values(p.payment_method_types) : ['card'],
       latest_charge: null, last_payment_error: null, livemode: false,
     };
     pik.set(id, pi);
@@ -210,6 +212,8 @@ export async function mockStripeInditas({ port = 0, kulcsElotag = 'sk_test_mock'
     const pi = {
       id, object: 'payment_intent', amount: ossz, amount_received: 0, currency: 'huf', status: 'requires_payment_method',
       client_secret: `${id}_secret_${veletlen(25)}`, created: mp(), description: `Payment for Invoice`, receipt_email: null, metadata: {},
+      // a szamla PI-je MINDIG explicit listas (alapbol a szamla-sablon: card, revolut_pay), nem automatikus
+      payment_method_types: sz.payment_settings.payment_method_types || ['card', 'revolut_pay'],
       customer: sz.customer, invoice: sz.id, automatic_payment_methods: null, latest_charge: null, last_payment_error: null, livemode: false,
     };
     pik.set(id, pi);

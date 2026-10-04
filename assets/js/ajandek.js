@@ -1107,6 +1107,8 @@
       stripeAdapter.stripe = stripeAdapter.stripe || Stripe(S.publikusKulcs);
       stripeAdapter.elements = stripeAdapter.stripe.elements({
         mode: 'payment', amount: osszeg, currency: 'huf', locale: 'hu',
+        // a PaymentIntent / Stripe-szamla ugyanezt a listat kapja a szerveren (ajandek-adat.js FIZETESI_MODOK): enelkul a megerosites hibaval all le
+        paymentMethodTypes: A.FIZETESI_MODOK.slice(),
         appearance: {
           theme: 'stripe',
           variables: { colorPrimary: '#244a4d', colorBackground: '#ffffff', colorText: '#243436', colorDanger: '#8f3b2e', fontFamily: 'Jost, "Helvetica Neue", Arial, sans-serif', borderRadius: '12px', spacingUnit: '4px' }
