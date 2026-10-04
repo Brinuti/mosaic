@@ -1079,3 +1079,12 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-kez-ablak-lab .ah-gomb { min-width: 220px; }
 @media (max-width: 479px) { .ah-kez-ablak { padding: 20px 18px 18px; } .ah-kez-ablak-fej h3 { font-size: 22px; } }
 @media (min-width: 780px) { .ah-lepes:not(.ah-lepes-3) > .ah-termekek { grid-auto-rows: minmax(0, 1fr); } }
+
+/* "Rendelesed" doboz: nincs levelminta a hatterben */
+.ah-osszesito-test, .ah-osszesito:not(.ah-nyitva) .ah-osszesito-test { background: none; }
+
+/* vendegvelemenyek: piros, lefele mutato nyil a videokra */
+.ah-piros-nyil { display: block; justify-self: start; margin: 2px 0 0 14px; color: #e0262d; line-height: 0; animation: ah-nyil-pattan 1.6s ease-in-out infinite; }
+.ah-piros-nyil svg { display: block; width: 36px; height: 50px; filter: drop-shadow(0 2px 3px rgba(150, 20, 25, .25)); }
+@keyframes ah-nyil-pattan { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
+@media (prefers-reduced-motion: reduce) { .ah-piros-nyil { animation: none; } }

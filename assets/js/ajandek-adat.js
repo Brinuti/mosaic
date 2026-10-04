@@ -33,7 +33,7 @@
       vendeg_db: 1,
       // a Salonic utalvany-terméke (Marketing > Ajandekutalvanyok), a szalon "utalvany ertekesitesehez" (utalasos rendelesnel)
       salonic: { id: 4040, nev: '50 perces MOSAIC Head Spa kezelés + 30 perc hajszárítás-20% (26 900 Ft)' },
-      pontosan: { ido: '50 perc Head Spa + 30 perc hajszárítás', fo: '1 vendég', kezelo: 'Tapasztalt gyógymasszőr' },
+      pontosan: { ido: '50 perc Head Spa + 30 perc hajszárítás', fo: '1 vendég', kezelo: 'Tapasztalt, profi masszőr' },
       kezeles: {
         leiras: ['Személyre szabott hajápolási szeánsz mélyrelaxáló masszázs elemekkel: 50 perc Head Spa, utána 30 perc profi hajszárítás.'],
         // a kezelés menete: az éles ajándékkártya-oldalak "Mit tartalmaz a 80 perces (50+30) kényeztetés?" listája (a kártyák "Hogyan épül fel a kezelés?" ablaka)
@@ -41,7 +41,7 @@
           ['Fejbőrkamerás diagnózis', 'Ezzel kezdünk, hogy a fejbőrtípusodhoz illő kezelést kapd.'],
           ['Személyre szabott pakolás', 'Vegán OXYGENI pakolás a haj egészségéért.'],
           ['Mélytisztító hajmosás', 'A híres körvízsugaras terápiával, az eredeti Head Spa arany zuhanyívvel.'],
-          ['Intenzív masszázs', 'Fej-, arc-, dekoltázs- és kézmasszázs gyógymasszőrökkel.'],
+          ['Intenzív masszázs', 'Fej-, arc-, dekoltázs- és kézmasszázs profi masszőrökkel.'],
           ['Gőzölés', 'Teljes ellazulás.'],
           ['Hajszárítás (30 perc)', 'Befejezésként profi fodrászati beszárítás.']
         ],
@@ -67,13 +67,13 @@
       ar_ft: 39900,
       vendeg_db: 1,
       salonic: { id: 4000, nev: '50 perces 4 Kezes Headspa ajándékkártya - 39.900 Ft' },
-      pontosan: { ido: '50 perc 4 kezes Head Spa + 30 perc hajszárítás', fo: '1 vendég', kezelo: 'Két gyógymasszőr egyszerre, a végén profi fodrász szárít' },
+      pontosan: { ido: '50 perc 4 kezes Head Spa + 30 perc hajszárítás', fo: '1 vendég', kezelo: 'Két profi masszőr egyszerre, a végén profi fodrász szárít' },
       kezeles: {
-        leiras: ['A MOSAIC saját találmánya: két gyógymasszőr dolgozik egyszerre, a végén egy profi fodrász szárít, vagyis hárman kényeztetnek 50+30 percen át.'],
+        leiras: ['A MOSAIC saját találmánya: két profi masszőr dolgozik egyszerre, a végén egy profi fodrász szárít, vagyis hárman kényeztetnek 50+30 percen át.'],
         menet: [
           ['Személyre szabott pakolás', 'A fej- és arcbőrtípusodnak megfelelő, vegán és 100%-ban természetes OXYGENI pakolás.'],
           ['Mélytisztító hajmosás', 'Körvízsugaras terápiával, az arany zuhanyívvel.'],
-          ['8 féle masszázs, két gyógymasszőrrel egyszerre', 'Fej-, arc-, nyak-, dekoltázs-, kar-, kéz-, láb- és vállmasszázs.'],
+          ['8 féle masszázs, két profi masszőrrel egyszerre', 'Fej-, arc-, nyak-, dekoltázs-, kar-, kéz-, láb- és vállmasszázs.'],
           ['Gőzölés', 'Teljes ellazulás.'],
           ['Hajszárítás (30 perc)', 'Plusz 30 perc: hajszárítás profi minőségben.']
         ],
@@ -98,14 +98,14 @@
       ar_ft: 53800,
       vendeg_db: 2,
       salonic: { id: 4081, nev: '50 perces PÁROS MOSAIC Head Spa Ajándékutalvány -20% (53 800 Ft)' },
-      pontosan: { ido: '50 perc Head Spa + 30 perc hajszárítás fejenként', fo: '2 vendég, egymás mellett', kezelo: 'Két gyógymasszőr, egyszerre' },
+      pontosan: { ido: '50 perc Head Spa + 30 perc hajszárítás fejenként', fo: '2 vendég, egymás mellett', kezelo: 'Két profi masszőr, egyszerre' },
       kezeles: {
-        leiras: ['Ketten fekszetek egymás mellé egy privát, csendes kezelőszobában, két gyógymasszőr kényeztet titeket egyszerre: közös élmény barátnővel, anyukával vagy a párral.'],
+        leiras: ['Ketten fekszetek egymás mellé egy privát, csendes kezelőszobában, két profi masszőr kényeztet titeket egyszerre: közös élmény barátnővel, anyukával vagy a párral.'],
         menet: [
           ['Fejbőrkamerás diagnózis', 'Mindkettőtöknél ezzel kezdünk.'],
           ['Személyre szabott pakolás', 'Vegán OXYGENI pakolás a haj egészségéért, egyénileg.'],
           ['Mélytisztító hajmosás', 'A híres körvízsugaras terápiával.'],
-          ['Intenzív masszázs', 'Fej-, arc-, dekoltázs- és kézmasszázs gyógymasszőrökkel, egymás mellett.'],
+          ['Intenzív masszázs', 'Fej-, arc-, dekoltázs- és kézmasszázs profi masszőrökkel, egymás mellett.'],
           ['Gőzölés', 'Teljes ellazulás.'],
           ['Hajszárítás (30 perc)', 'Befejezésként profi fodrászati beszárítás fejenként.']
         ],
@@ -158,11 +158,11 @@
     ['galeria-14', 1000, 668, 'A MOSAIC bejárata a logóval']
   ].map(function (e) { return { src: '/assets/img/ajandek/' + e[0] + '.jpg', w: e[1], h: e[2], alt: e[3] }; });
   var BENEFITOK = [
-    { ikon: 'leaf', cim: 'Kikapcsolódás', szoveg: 'Nyugodt, privát környezet, nincs rohanás.' },
+    { ikon: 'leaf', cim: 'Teljes stresszoldás', szoveg: 'A kezelés teljes ideje a vendégről szól, nincs rohanás.' },
     { ikon: 'sparkle', cim: 'Fej-, arc- és nyakmasszázs', szoveg: 'Kézzel és eszközökkel végzett masszázs, gőzölés.' },
-    { ikon: 'waves', cim: 'Vízélmény', szoveg: 'A hajmosás az eredeti Head Spa arany zuhanyív alatt történik.' },
-    { ikon: 'heart', cim: 'Teljes figyelem', szoveg: 'A kezelés teljes ideje a vendégről szól.' },
-    { ikon: 'check', cim: 'Rendezett haj', szoveg: 'A végén profi hajszárítás is jár hozzá.' }
+    { ikon: 'waves', cim: 'Lazító fejzuhany', szoveg: 'A hajmosás az eredeti Head Spa arany zuhanyív alatt történik.' },
+    { ikon: 'heart', cim: 'Privát, csendes szoba', szoveg: 'Nyugodt, privát környezet.' },
+    { ikon: 'check', cim: 'Gyönyörű haj', szoveg: 'A végén profi hajszárítás is jár hozzá.' }
   ];
 
   var FINDER = [

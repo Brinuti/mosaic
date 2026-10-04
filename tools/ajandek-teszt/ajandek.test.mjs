@@ -208,7 +208,7 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     const css = fs.readFileSync(new URL('../../assets/css/ajandek.css', import.meta.url), 'utf8');
     assert.ok(css.includes('.ah-gomb-fo { background: linear-gradient(#c6a346, #d9c164)'), 'az elsodleges gomb a PMU-oldal arany atmenete');
     assert.ok(css.includes('.ah-hogyan-lepesek li > span:last-child { display: -webkit-box; -webkit-line-clamp: 2'), 'a lepes-szoveg 2 soros');
-    assert.ok(html.includes('csak az utalás visszaigazolása után tudjuk kiállítani') && html.includes('Bankkártyás fizetésnél a kártyát automatikusan'), 'atutalasi figyelmeztetes');
+    assert.ok(html.includes('csak az utalás visszaigazolása után tudjuk kiállítani') && html.includes('Bankkártyás fizetésnél az ajándékkártyát automatikusan'), 'atutalasi figyelmeztetes');
     for (const t of Object.values(ADAT.TERMEKEK)) assert.ok(typeof t.kartya_sor === 'string' && t.kartya_sor.length > 10, t.id + ' kartya_sor');
   });
 

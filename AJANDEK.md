@@ -516,3 +516,8 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
   ajándékkártya-oldalak „Mit tartalmaz a 80 perces (50+30) kényeztetés?” listái: egyéni: fejbőrkamerás diagnózis → pakolás → hajmosás → masszázs → gőzölés → hajszárítás; páros: ugyanez
   kettőtöknek; 4 kezes: pakolás → hajmosás → 8 féle masszázs két gyógymasszőrrel → gőzölés → hajszárítás). Az ablakban „Ezt választom” gomb; a kártyán belüli gomb nem választja ki a terméket.
   A három oszlop magassága közben változatlan (a kártyák sorai egyformák, a tartalom beleférnek: ellenőrizve 900–1920 px között).
+- **Szövegek (a tulajdonos listája):** „Válassz Headspa kezelést”; „Nézd meg, hogyan történik” + „Les bele videón, milyen!”; „gyógymasszőr” → „profi masszőr” mindenhol; a Headspa-előnyök: Teljes stresszoldás,
+  Lazító fejzuhany, Privát, csendes szoba, Gyönyörű haj; Átadás: „PDF formátumban”, „A4-es papírra nyomtatható” (Úgy van tervezve, hogy a nyomtatás után csak félbe kell hajtanod.),
+  „Személyre szabható” (a megajándékozott neve és üzenet vagy a fotótok is a kártyára kerül); fizetés: „Bankkártya, Revolut, Google Pay – Az ajándékkártyát azonnal küldjük”, „Banki átutalás – Utalás
+  után küldjük ki az ajándékkártyát”, a figyelmeztetésben „ajándékkártya”. A „Rendelésed” doboz hátteréből a levélminta kikerült. A vélemények alcíme alatt piros, lefelé mutató (finoman pattogó)
+  nyíl a videókra.
