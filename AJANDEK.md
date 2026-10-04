@@ -497,3 +497,17 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
 - **„TESZT MÓD” szalag (alul):** a tulajdonos kérése, hogy élesítéskor tűnjön el („majd szedd ki”). A szalag csak akkor jelenik meg, ha a szerver Stripe **teszt**-módot jelez
   (`S.mod === 'teszt'`, ugyanitt van a variáns-kapcsoló), így az éles Stripe-kulcsokra váltással magától megszűnik; az élesítési lépések közé tartozik az ellenőrzése. Addig marad,
   mert jelzi, hogy az előnézet nem valódi fizetés.
+
+## 4. kör (2026-10-04, a tulajdonos kérései)
+
+- **Mi az a Headspa / Átadás (nyilas kép):** a szöveg többé nem húzódik szét: a szöveg természetes magassága adja a sor magasságát, a kép/videó ehhez igazodik (a videóbox négyzetes
+  képe összenyomva, `object-fit: cover`; a nyilas képet legfeljebb ~9% vágja alul/felül, a feliratok megmaradnak; 1180 px alatt az Átadás egymás alatt áll).
+- **Miért a MOSAIC Headspa?:** a doboz alacsonyabb (a térkép a cím-lista mellett áll), így nincs nagy rés a jelvény és Feri idézete között; az alja továbbra is egy vonalban a dobozéval.
+- **Fotó áthelyezése:** a kártyán húzással (egér/érintés, `grab` kurzor) és a „Áthelyezés” nyilakkal (←↑↓→, 10%-os lépések); az első fotónál egy rövid „Húzd a fotót az igazításhoz”
+  jelzés látszik a kártyán (az első mozgatásra / nagyításra eltűnik). Nagyítás nélkül csak a kép túllógó tengelye mozdítható (a kép mindig kitölti az ívet).
+- **Szövegszín:** az idézet (#fbed94) és a név (#fdea91) a tulajdonos tervének sárgája (a feltöltött mockupról mérve).
+- **Törölt szövegek:** „Aktuális ár” a Rendelésed dobozban; „Add meg az adataidat a vásárláshoz és a számlázáshoz.” az Adatok címe mellől.
+- **Üzenet a kártyára (átutalás, szalonban átvétel):** a mező `szemelyre_uzenet` néven a Stripe-rekordba, a szalon-levélbe és a kártya-oldalra (`kartyaOldal`: név + üzenet) kerül;
+  az otthon nyomtatott (személyre szabott) kártyánál az üzenet a tervezőben megadott idézet.
+- **Canva (átutalásos kártya):** a fiókban vannak Brand Template-ek (a Canva-összekötő tud sablonból kitölteni és PDF-et exportálni); a kártya jelenleg a saját nyomtató oldalunkról készül
+  (ugyanaz a dizájn, nem kell hozzá Canva). Ha a szalon Canvában akarja szerkeszteni: a smaragd lapokból Brand Template készíthető kitölthető mezőkkel (fotó, idézet, név, kód).

@@ -242,6 +242,7 @@
       </div>
       <div class="ah-kartya ah-hely">
         <h3>Itt találsz minket</h3>
+        <div class="ah-hely-racs">
         <ul class="ah-hely-lista">
           <li><span class="ah-ikon" data-ikon="pin" aria-hidden="true"></span><span>1023 Budapest, Bécsi út 2.<small>A Zsigmond térnél</small></span></li>
           <li><span class="ah-ikon" data-ikon="clock" aria-hidden="true"></span><span>Hétfő–péntek: 8–20 óráig<small>Szombat: 9–18 óráig, vasárnap: zárva</small></span></li>
@@ -250,6 +251,7 @@
         </ul>
         <div class="ah-terkep" id="ah-terkep" data-src="https://www.openstreetmap.org/export/embed.html?bbox=19.0297%2C47.5217%2C19.0437%2C47.5277&amp;layer=mapnik&amp;marker=47.5247344%2C19.0367534">
           <button type="button" class="ah-terkep-gomb" id="ah-terkep-gomb"><span class="ah-ikon" data-ikon="pin" aria-hidden="true"></span><span>Térkép megjelenítése</span></button>
+        </div>
         </div>
         <p><a class="ah-link" href="https://www.google.com/maps/search/?api=1&amp;query=1023+Budapest+B%C3%A9csi+%C3%BAt+2" target="_blank" rel="noopener">Útvonal a térképen →</a></p>
       </div>
@@ -370,6 +372,13 @@
               <label for="ah-zoom">Nagyítás</label>
               <input type="range" id="ah-zoom" min="1" max="3" step="0.05" value="1">
             </div>
+            <div class="ah-mozgat" id="ah-mozgat" role="group" aria-label="A fotó áthelyezése" hidden>
+              <span class="ah-mozgat-cimke">Áthelyezés</span>
+              <button type="button" data-irany="1,0" aria-label="Fotó balra" title="Balra"><span aria-hidden="true">←</span></button>
+              <button type="button" data-irany="0,1" aria-label="Fotó fel" title="Fel"><span aria-hidden="true">↑</span></button>
+              <button type="button" data-irany="0,-1" aria-label="Fotó le" title="Le"><span aria-hidden="true">↓</span></button>
+              <button type="button" data-irany="-1,0" aria-label="Fotó jobbra" title="Jobbra"><span aria-hidden="true">→</span></button>
+            </div>
             <p class="ah-mezohiba" id="ah-foto-hiba" role="alert" hidden></p>
           </div>
           <div class="ah-tv-idezet">
@@ -420,7 +429,7 @@
           </div>
           <div class="ah-osszesen-sor">
             <div class="ah-felhasznalhato"><span class="ah-ikon" data-ikon="hourglass" aria-hidden="true"></span><span><small>Felhasználható</small><b>6 hónapig</b></span></div>
-            <p class="ah-osszesen-ar"><small>Aktuális ár</small><strong class="ah-ar" id="ah-osszesito-ar"></strong></p>
+            <p class="ah-osszesen-ar"><strong class="ah-ar" id="ah-osszesito-ar"></strong></p>
           </div>
           <p class="ah-osszesito-atvetel" id="ah-osszesito-atvetel"></p>
         </div>
@@ -440,7 +449,7 @@
 
         <div class="ah-urlap-oszlopok">
           <div class="ah-kartya ah-urlap-adatok" id="ah-urlap-adatok">
-            <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">2</span>Adatok <span class="ah-urlap-seg">Add meg az adataidat a vásárláshoz és a számlázáshoz.</span></h3>
+            <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">2</span>Adatok</h3>
             <div class="ah-mezo-racs" id="ah-mezo-racs">
               <div class="ah-mezo ah-mezo-ikonos">
                 <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="gift"></span></span>

@@ -44,7 +44,7 @@
           'A végén 30 perc profi hajszárítás'
         ],
         // a tulajdonos Meta-fiókjából ("Headspa szeptember 20_ natív kezelés.mp4"): a beégetett „szeptemberi akció" sáv és a záró kártya levágva (3:4, 0:55)
-        video: { src: '/assets/video/ajandek-kezeles-egyeni.mp4', poster: '/assets/img/ajandek/kezeles-egyeni.jpg', ido: '0:55' }
+        video: { src: '/assets/video/ajandek-kezeles-egyeni.mp4?v=2', poster: '/assets/img/ajandek/kezeles-egyeni.jpg?v=2', ido: '0:55' }
       },
       // valodi MOSAIC fotok (assets/img): egy terapeuta / ket terapeuta / ket vendeg
       vizual: { src: '/assets/img/ajandek/egyeni.jpg', alt: 'Egyéni Head Spa: a vendég hajmosása az arany zuhanyív alatt a MOSAIC-ban', w: 1100, h: 1650, poz: '50% 42%' }
@@ -74,8 +74,8 @@
           'A fej- és arcbőrtípusodnak megfelelő, természetes OXYGENI pakolás, gőzölés',
           'A végén 30 perc profi hajszárítás'
         ],
-        // a Meta-fiók 4 kezes videóihoz nincs letölthető fájl; ez a "Hook1.MP4" (Ajándékkártya mappa) 4 kezes szakasza (11-18,8 s), feliratokkal
-        video: { src: '/assets/video/ajandek-kezeles-4kezes.mp4', poster: '/assets/img/ajandek/kezeles-4kezes.jpg', ido: '0:40' }
+        // a Meta-fiók 4 kezes videóihoz nincs letölthető fájl; ez a "Hook1.MP4" (Ajándékkártya mappa) teljes hossza (39,5 s), feliratokkal; a ?v=2 a gyorsítótárat töri (a régi 7,8 s-os változat ott ragadt)
+        video: { src: '/assets/video/ajandek-kezeles-4kezes.mp4?v=2', poster: '/assets/img/ajandek/kezeles-4kezes.jpg?v=2', ido: '0:40' }
       },
       vizual: { src: '/assets/img/ajandek/negy-kezes.jpg', alt: '4 kezes Head Spa: két terapeuta dolgozik egyszerre egy vendégen a MOSAIC-ban', w: 1200, h: 800, poz: '50% 45%' }
     },
@@ -105,7 +105,7 @@
           '50 perc kezelés + 30 perc hajszárítás fejenként, egymás mellett'
         ],
         // a Meta-fiókból ("Szept páros HEADSPA 20_.mp4"): a beégetett „szeptemberi akció" sáv és a záró (akciós) kártya levágva (3:4, 0:29)
-        video: { src: '/assets/video/ajandek-kezeles-paros.mp4', poster: '/assets/img/ajandek/kezeles-paros.jpg', ido: '0:29' }
+        video: { src: '/assets/video/ajandek-kezeles-paros.mp4?v=2', poster: '/assets/img/ajandek/kezeles-paros.jpg?v=2', ido: '0:29' }
       },
       // a spec szerint a GENERAL vizual ket baratno (nem romantikus par); ez a MOSAIC egyetlen valodi paros fotoja
       // (ket vendeg, ket terapeuta, egymas mellett) - ha van baratnos kep, ide kell cserelni

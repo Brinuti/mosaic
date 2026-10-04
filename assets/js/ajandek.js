@@ -760,9 +760,14 @@
     $('ah-foto-blokk').hidden = !S.fotoLehet;
     $('ah-foto-torol').hidden = !van;
     $('ah-zoom-sor').hidden = !van;
+    $('ah-mozgat').hidden = !van;
     $('ah-zoom').value = String(S.tervezo.fotoPoz.z);
     $('ah-foto-gomb-szoveg').textContent = van ? 'Másik fotó választása' : 'Fotó feltöltése';
     $('ah-ak-elonezet').classList.toggle('ah-foto-van', van);
+    // az első fotó után egy rövid jelzés a kártyán: a fotó húzással is igazítható
+    if (van && !huzasJelezve && !$('ah-ak-elonezet').querySelector('.ah-huz-jelzo')) {
+      $('ah-ak-elonezet').appendChild(h('span', { class: 'ah-huz-jelzo', 'aria-hidden': 'true', text: '✥ Húzd a fotót az igazításhoz' }));
+    }
   }
   function tervezoMezokTolt() {
     $('ah-idezet').value = S.tervezo.idezet;
@@ -804,6 +809,23 @@
   }
   // A fotokivagas: a kartyan a fotohely (.ak-ablak) tartalma object-position + scale; a huzas a tartalmat koveti
   var huzas = null;
+  var huzasJelezve = false;   // az "Húzd a fotót" jelzés az első mozgatás / nagyítás után eltűnik
+  var mozgatIdo = null;
+  function huzasJelzoEltun() {
+    huzasJelezve = true;
+    var j = document.querySelector('#ah-ak-elonezet .ah-huz-jelzo');
+    if (j && j.parentNode) j.parentNode.removeChild(j);
+  }
+  // a fotó áthelyezése nyilakkal: dx = +1 -> a fotó jobbra megy (a fókuszpont balra), dy = +1 -> a fotó fel megy; a nagyított kép mozgási tere 0..100 %
+  function fotoMozgat(dx, dy) {
+    var p = S.tervezo.fotoPoz;
+    p.x = Math.min(100, Math.max(0, p.x - dx * 10));
+    p.y = Math.min(100, Math.max(0, p.y - dy * 10));
+    huzasJelzoEltun();
+    fotoStilus();
+    clearTimeout(mozgatIdo);
+    mozgatIdo = setTimeout(function () { ment(); temaMiniek(); }, 250);
+  }
   function fotoStilus() {
     var p = S.tervezo.fotoPoz;
     Array.prototype.forEach.call(document.querySelectorAll('#ah-ak-elonezet .ak-ablak img'), function (i) {
@@ -829,6 +851,7 @@
       huzas = { x: ev.clientX, y: ev.clientY, fw: r.width, fh: r.height, nw: kep.naturalWidth || 1, nh: kep.naturalHeight || 1, p0: { x: S.tervezo.fotoPoz.x, y: S.tervezo.fotoPoz.y } };
       try { doboz.setPointerCapture(ev.pointerId); } catch (e) { /* nem baj */ }
       doboz.classList.add('ah-huz');
+      huzasJelzoEltun();
       ev.preventDefault();
     });
     doboz.addEventListener('pointermove', function (ev) {
@@ -864,9 +887,16 @@
     $('ah-foto-torol').addEventListener('click', fotoTorol);
     $('ah-zoom').addEventListener('input', function () {
       S.tervezo.fotoPoz.z = Math.min(3, Math.max(1, Number(this.value) || 1));
+      huzasJelzoEltun();
       fotoStilus();
     });
     $('ah-zoom').addEventListener('change', function () { ment(); temaMiniek(); });
+    $('ah-mozgat').addEventListener('click', function (ev) {
+      var gomb = ev.target.closest ? ev.target.closest('button[data-irany]') : null;
+      if (!gomb) return;
+      var d = gomb.getAttribute('data-irany').split(',');
+      fotoMozgat(Number(d[0]) || 0, Number(d[1]) || 0);
+    });
     var idozito = null;
     $('ah-idezet').addEventListener('input', function () {
       // legfeljebb 5 sor: a szoveg a dizajn biztonsagos teruleten belul marad
@@ -1547,7 +1577,8 @@
       if (!S.publikusKulcs) S.mod = 'nincs';
       S.azonnali = !!b.azonnali_kartya;
       S.fotoLehet = !!b.foto;
-      if (S.mod === 'teszt') {
+      // a "TESZT MÓD" szalag alapból nem látszik (a tulajdonos kérése); csak a ?teszt=1 paraméterrel jelenik meg, a variáns-kapcsolóval együtt
+      if (S.mod === 'teszt' && /(^|[?&])teszt=1(&|$)/.test(location.search)) {
         // teszt-modban a szalagon variant-kapcsolo is van (csak itt: az eles oldalon nincs): a link a ?variant= parametert allitja
         var kapcsolo = h('span', { class: 'ah-teszt-var' }, 'Variáns: ');
         Object.keys(A.VARIANTOK).forEach(function (id) {
