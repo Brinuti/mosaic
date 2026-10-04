@@ -1,9 +1,11 @@
-# Oxigénterápia landing (`/oxigenterapia-budapest`)
+# Oxigénterápia landing (`/oxigenterapia-budapest-uj`)
+
+> **Élesítés (2026-10-04):** az oldal a **külön címen** él: `/oxigenterapia-budapest-uj` (`noindex, nofollow`, sehonnan nincs rá link, nincs a sitemapben, a Meta-pixel a slug miatt rajta nem tüzel). A régi `/oxigenterapia-budapest` (Wix-klon) változatlan. **Csere az eredeti címre** (csak a tulajdonos kifejezett kérésére): a `foglalas/oxigenterapia-budapest-uj.html` átnevezése `foglalas/oxigenterapia-budapest-uj.html`-re; benne a `robots noindex` meta törlése, a canonical és az `og:url` visszaírása a `/oxigenterapia-budapest` címre, a `<!--mh-menu-aktiv:…-->` jelölő törölhető; az `assets/js/suti.js` pixel-listája a slug (`oxigenterapia-budapest` → Fodrász-pixel) szerint magától működik; utána pixel-próba (`tools/meres-proba/pixel-proba.mjs`).
+
 
 Az oldal a tulajdonos képernyőterve szerint készült (hero → jelek → állapotfelmérés → kezelők → első alkalom → kezelés lépései
 → hajhullás-típusok → mire számíthatsz / miért működik → eredmények → videó → „Mivel kezdjünk?” (két belépési lehetőség) → miért más → Arc + Haj és GYIK → záró CTA). A PMU-landing (`/sminktetovalas-budapest`)
-mintájára a Wixről mentett régi oldal **helyére** kerül ugyanazon a címen (a `foglalas/` mappa fájlja felülírja a `klon/` azonos nevű oldalát),
-ezért a Meta-pixel (Fodrász-pixel, `suti.js` `PIXEL_OLDALAK`) és a GTM útvonal-szabályai változatlanul érvényesek.
+mintájára készült; a régi Wixes oldalt egyelőre nem váltja le (lásd fent), a csere után a Meta-pixel (Fodrász-pixel, `suti.js` `PIXEL_OLDALAK`) és a GTM útvonal-szabályai változatlanul érvényesek.
 
 ## Fájlok
 
