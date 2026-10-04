@@ -14,7 +14,7 @@ import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 
 const GYOKER = path.resolve(import.meta.dirname, '..', '..');
-const OLDAL = '/lezeres-szortelenites-budapest';
+const OLDAL = '/lezeres-szortelenites-budapest-uj';
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const UA_MOBIL = 'Mozilla/5.0 (Linux; Android 13; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36';
 const TIPUS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.txt': 'text/plain',
@@ -32,7 +32,7 @@ const { chromium } = playwright();
 let szerver, bazis, bongeszo;
 
 before(async () => {
-  assert.ok(fs.existsSync(path.join(GYOKER, 'dist', '_a', 'lezeres-szortelenites-budapest.html')), 'Eloszor: node tools/netlify-build.mjs');
+  assert.ok(fs.existsSync(path.join(GYOKER, 'dist', '_a', 'lezeres-szortelenites-budapest-uj.html')), 'Eloszor: node tools/netlify-build.mjs');
   const { fajlUtvonal } = await import(pathToFileURL(path.join(GYOKER, 'tools/serve-dist.mjs')).href);
   szerver = http.createServer((req, res) => {
     const u = new URL(req.url, 'http://x');
@@ -80,7 +80,7 @@ describe('oldal', () => {
     const { p, ctx, hibak, kulso } = await nyit();
     assert.match(await p.title(), /Lézeres szőrtelenítés Budapesten/);
     assert.equal(await p.locator('h1').count(), 1);
-    assert.equal(await p.locator('link[rel=canonical]').getAttribute('href'), 'https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest');
+    assert.equal(await p.locator('link[rel=canonical]').getAttribute('href'), 'https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest-uj');
     await p.waitForLoadState('networkidle');
     assert.deepEqual(hibak, []);
     // a Google-terkep csak a "funkcionalis" suti elfogadasa utan toltodik
@@ -118,7 +118,7 @@ describe('oldal', () => {
   });
 
   test('a regi, fotokat tartalmazo Egyedi csomag grafika nem szerepel az oldalon (intim terulet: nincs meztelen kep)', async () => {
-    const html = fs.readFileSync(path.join(GYOKER, 'foglalas', 'lezeres-szortelenites-budapest.html'), 'utf8');
+    const html = fs.readFileSync(path.join(GYOKER, 'foglalas', 'lezeres-szortelenites-budapest-uj.html'), 'utf8');
     assert.ok(!html.includes('8af672635311499ba75b593e0fb7af4f') && !html.includes('9c43d7be8ec84a5785a00f11315d03d1') && !html.includes('b3a5aa5289a9494b9eabbe574cf7a4d6'));
   });
 });
