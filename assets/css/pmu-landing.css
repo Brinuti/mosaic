@@ -913,3 +913,10 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
 
 /* ============ a sarga felcimek (Fontos informaciok, Elolleg nelkul ...) minden kijelzon kiesnek ============ */
 .felcim:not(.kicsi) { display: none; }
+
+/* ============ mobil: a konzultacios keppar (Elorajzolva / Kesz szemoldok) egymas alatt, majdnem teljes szelessegben ============ */
+@media (max-width: 700px) {
+  .mielott-jobb.konz { padding: 24px 12px 14px; }
+  .konz-montazs { grid-template-columns: 1fr; gap: 10px; padding-top: 16px; }
+  .konz-cimke { left: 10px; bottom: 10px; font-size: 12px; padding: 7px 13px; }
+}
