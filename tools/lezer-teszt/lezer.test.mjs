@@ -902,3 +902,29 @@ describe('a rozsaszin akcios sav nem latszik', () => {
   });
 });
 
+describe('a Google-ertekeles jelveny a hero-ban', () => {
+  for (const [nev, mobil, szeles] of [['asztal', false, 1440], ['telefon', true, 360]]) {
+    test(`${nev}: a 3 jelveny alatt van, nincs lefele nyil, a 4,9 / csillag / velemenyszam egyforma meretu, szebb (kerek) jelveny`, async () => {
+      const ctx = await bongeszo.newContext({ viewport: { width: szeles, height: 800 }, ...(mobil ? { userAgent: UA_MOBIL, isMobile: true, hasTouch: true } : {}) });
+      const p = await ctx.newPage();
+      await p.route(/^(?!http:\/\/localhost)/, (r) => r.abort());
+      await p.goto(bazis + OLDAL, { waitUntil: 'domcontentloaded' });
+      assert.equal(await p.locator('.google-nagy .g-le').count(), 0, 'nincs lefele nyil');
+      assert.ok(!/↓/.test(await p.textContent('.google-nagy')));
+      const m = await p.evaluate(() => {
+        const g = document.querySelector('.google-nagy'); const b = document.querySelector('.hero-bizalom').getBoundingClientRect(); const gr = g.getBoundingClientRect(); const cta = document.querySelector('.hero .cta-sor').getBoundingClientRect();
+        const fs = (e) => parseFloat(getComputedStyle(e).fontSize);
+        return { alatta: gr.top >= b.bottom - 1, ctaElott: gr.bottom <= cta.top + 1, pont: fs(g.querySelector('.g-pont')), nagyPont: fs(g.querySelector('.g-pont b')), db: fs(g.querySelector('.g-db')), csillag: fs(g.querySelector('.csillagok')), sugar: getComputedStyle(g).borderTopLeftRadius, magas: Math.round(gr.height), sz: Math.round(gr.width), sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth };
+      });
+      assert.ok(m.alatta, 'a harom jelveny alatt: ' + JSON.stringify(m));
+      assert.ok(m.ctaElott, 'a gombok folott');
+      assert.equal(m.nagyPont, m.pont, 'a 4,9 ugyanakkora, mint a /5: ' + JSON.stringify(m));
+      assert.ok(m.pont <= 16 && Math.abs(m.pont - m.db) <= 1.5, 'az ertek es a velemenyszam egyforma kicsi: ' + JSON.stringify(m));
+      assert.equal(m.sugar, '999px', 'kerek jelveny');
+      assert.ok(m.magas <= 52 || mobil, 'asztalon egy sor: ' + m.magas);
+      assert.ok(m.sw <= m.cw, 'nincs vizszintes gorgetes');
+      await ctx.close();
+    });
+  }
+});
+

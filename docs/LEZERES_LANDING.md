@@ -12,7 +12,7 @@ címen nincs mérőkód-pixel, és ezt nem is írtuk át). Visszaállítás átv
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (69 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (71 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje
@@ -51,6 +51,8 @@ Az egyedi csomagot („nagyon sokan szeretik”) említő sorok a hero-ban, a Me
 Minden gomb (`.gomb`) ugyanazt a betűt használja: Jost, 15 px, normál írásmód (nincs csupa nagybetűs gomb, nincs betűköz); a gombok mérete csak a belső margóban tér el.
 
 **Fejléc:** a fejléc felső, rózsaszín akciós sávját (`section#comp-mpv0ganp`, Wix-fejléc) ezen az oldalon elrejtjük (a `lezer-landing.css`-ben, ezért csak itt hat; a tulajdonos kérése, hogy helyet nyerjünk). A fejléc így 77 → 46 px (asztal) és 94 → 63 px (mobil); a görgetési eltolások (`scroll-padding-top`, `scroll-margin-top`) 76 px-esek.
+
+**Google-értékelés jelvény (hero):** a három jelvény (garancia / 20% kedvezmény / Kolosy tér) alatt, a gombok felett áll; kerek, krémes szélű jelvény (G-logó, 4,9/5, csillagok, „1 257 Google-vélemény”), az érték és a vélemények száma egyforma kicsi betűvel, lefelé mutató nyíl nélkül; továbbra is a `#velemenyek` szekcióra mutat.
 
 ## Árforrás
 

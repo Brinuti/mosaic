@@ -89,17 +89,17 @@ p.kedv-sor { display: flex; align-items: center; gap: 10px; width: fit-content; 
 .hero h1 { font-size: 54px; line-height: 1.04; letter-spacing: -.025em; color: #111f20; }
 .hero-ajanlat { font: 500 36px/1.12 var(--cim); color: var(--arany); margin-top: 14px; letter-spacing: -.01em; }
 .hero-al { font-size: 19px; line-height: 1.5; color: #2c3d3d; margin: 18px 0 26px; max-width: 520px; }
-.google-nagy { display: inline-flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e7eae3; border-radius: 14px; padding: 7px 12px 7px 10px; box-shadow: var(--arnyek); text-decoration: none; color: var(--szoveg); margin: 0 0 18px; transition: box-shadow .2s, transform .15s; }
-.google-nagy:hover { box-shadow: 0 10px 24px rgba(40, 30, 20, .14); transform: translateY(-1px); }
-.g-ikon { width: 22px !important; height: 22px !important; stroke: none; flex: none; }
-.g-pont { font: 400 14px/1 var(--test); color: var(--halk); }
-.g-pont b { font: 500 24px/1 var(--cim); color: var(--sotet); }
+.google-nagy { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(#fff, #fdfbf6); border: 1px solid #ebe3cf; border-radius: 999px; padding: 8px 18px 8px 12px; box-shadow: 0 6px 18px rgba(120, 90, 30, .1), 0 1px 2px rgba(40, 30, 20, .05); text-decoration: none; color: var(--szoveg); margin: 0 0 26px; transition: box-shadow .2s, transform .15s; }
+.google-nagy:hover { box-shadow: 0 10px 24px rgba(120, 90, 30, .18); transform: translateY(-1px); }
+.g-ikon { width: 24px !important; height: 24px !important; stroke: none; flex: none; }
+/* az ertek (4,9/5), a csillagok es a velemenyszam egyforma merettel: nincs kiemelt nagy szam */
+.g-pont { font: 600 15px/1 var(--test); color: var(--sotet); }
+.g-pont b { font: inherit; color: inherit; }
 .g-reszlet { display: flex; align-items: center; gap: 8px; line-height: 1.2; }
-.csillagok { color: #e2a83a; letter-spacing: 1px; font-size: 14px; }
-.g-db { font-size: 13px; color: #3d4b4b; white-space: nowrap; }
-.g-db b { color: var(--szoveg); }
-.g-le { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--bezs); display: grid; place-items: center; font-size: 13px; color: var(--sotet); }
-.hero-bizalom { list-style: none; margin: 0 0 30px; padding: 0; display: flex; flex-wrap: wrap; gap: 14px 30px; }
+.csillagok { color: #e2a83a; letter-spacing: 1px; font-size: 15px; }
+.g-db { font-size: 14px; color: #4f5a58; white-space: nowrap; padding-left: 10px; border-left: 1px solid #e6dfcd; }
+.g-db b { color: var(--szoveg); font-weight: 500; }
+.hero-bizalom { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-wrap: wrap; gap: 14px 30px; }
 .hero-bizalom li { display: flex; align-items: center; gap: 12px; line-height: 1.25; }
 .hero-bizalom b { display: block; font-size: 15.5px; color: var(--szoveg); }
 .hero-bizalom small { display: block; color: var(--halk); font-size: 12.5px; }
@@ -469,10 +469,14 @@ a.ido:hover { border-color: var(--arany); box-shadow: 0 6px 14px rgba(160, 127, 
   .hero-szoveg > .google-nagy { justify-self: start; }
   .hero-ajanlat { font-size: 24px; margin-top: 0; }
   .hero-al { font-size: 15px; line-height: 1.45; margin: 8px 0 14px; }
-  .google-nagy { gap: 8px; padding: 6px 10px 6px 8px; margin-bottom: 14px; }
-  .g-reszlet { flex-wrap: wrap; gap: 0 6px; }
-  .g-db { font-size: 12px; }
-  .hero-bizalom { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .google-nagy { gap: 8px; padding: 7px 14px 7px 10px; margin-bottom: 16px; max-width: 100%; }
+  .g-ikon { width: 22px !important; height: 22px !important; }
+  .g-pont { font-size: 14px; }
+  .g-reszlet { gap: 6px; }
+  .csillagok { font-size: 13px; letter-spacing: .5px; }
+  .g-db { font-size: 12.5px; padding-left: 8px; }
+  .hero-bizalom { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .hero-bizalom + .google-nagy { justify-self: center; }
   .hero-bizalom li { flex-direction: column; align-items: center; text-align: center; gap: 6px; font-size: 12.5px; }
   .hero-bizalom b { font-size: 13.5px; }
   .hero-bizalom small { font-size: 11.5px; }
