@@ -7,7 +7,8 @@
 //     terulet ki van jelolve, hogy lassa, hogy kalkulator; az elso kezeles 20% kedvezmennyel.
 //  3. Arforras: az #arlista tablazat sorai (data-ar, data-elso, data-tartalmaz) - a kalkulator es a valaszto ebbol olvas,
 //     igy az arakat egy helyen kell karbantartani.
-//  4. Apro segedek: data-terulet (a valasztot az adott teruletre allitja), data-gyik (kinyitja a GYIK-elemet), Google terkep, ertekelesek szama.
+//  4. Apro segedek: data-terulet (a valasztot az adott teruletre allitja), data-gyik (kinyitja a GYIK-elemet), Google terkep, ertekelesek szama,
+//     Zsofi videoja (kattintasra toltodik be) es kepgaleriaja, az eredeti Trustindex-embed (a sutik elfogadasa utan).
 (() => {
   'use strict';
 
@@ -53,7 +54,9 @@
     elso: tr.dataset.elso,
     tartalmaz: (tr.dataset.tartalmaz || '').split(',').filter(Boolean),
     csomag: !!tr.dataset.csomag,
-    csoport: tr.closest('.ar-csoport').querySelector('h3').childNodes[0].textContent.trim(),
+    csoport: tr.closest('.ar-csoport').querySelector('.csoport-nev').textContent.trim(),
+    csoportIkon: tr.closest('.ar-csoport').querySelector('.csoport-ikon').innerHTML, // az ikonok egyetlen forrasa az arlista (a motor testresz-ikonjai)
+    ikon: tr.querySelector('.sor-ikon').innerHTML,
   }));
   const AR = Object.fromEntries(SOROK.map((s) => [s.kulcs, s]));
   const SZOLGALTATAS = { ...AR, [EGYEDI.kulcs]: { ...EGYEDI, ar: 0, tartalmaz: [] } };
@@ -87,13 +90,13 @@
     hova.replaceChildren(
       elem('h3', { class: 'szamolo-cim', html: `<span class="szamolo-ikon">${CALC_IKON}</span>Árkalkulátor <small>Kattints a területekre: az ár azonnal frissül</small>` }),
       ...SZAMOLO_CSOPORTOK.map((cs) => elem('div', { class: 'sz-csoport' },
-        elem('div', { class: 'sz-csoport-nev', szoveg: cs }),
+        elem('div', { class: 'sz-csoport-nev', html: `${SOROK.find((s) => s.csoport === cs).csoportIkon}<span>${cs}</span>` }),
         elem('div', { class: 'sz-chipek' }, ...SOROK.filter((s) => !s.csomag && s.csoport === cs).map((s) => {
           const szulo = szuloje(s.kulcs);
           return elem('button', {
             type: 'button', class: 'sz-chip', 'data-kulcs': s.kulcs, 'aria-pressed': String(valasztott.has(s.kulcs)), disabled: !!szulo,
             title: szulo ? `Benne van a(z) ${szulo.nev} árában` : false,
-            html: `${s.nev.replace(/ \(.*/, '')} <small>${ft(s.ar)}</small>`,
+            html: `${s.ikon}<span>${s.nev.replace(/ \(.*/, '')}</span> <small>${ft(s.ar)}</small>`,
           });
         })))),
       // telefonon a gombok alatt van az eredmeny: egy ragados osszegsav mutatja az aktualis arat (tapra az eredmenyhez ugrik)
@@ -106,14 +109,15 @@
     const egy = e.tetelek.length === 1;
     tartalom.replaceChildren(
       elem('ul', { class: 'sz-sorok' }, ...e.tetelek.map((t) => elem('li', { class: t.teljes ? 'teljes' : '' },
-        elem('span', { html: `${t.nev}<small>${t.teljes ? (egy ? 'teljes ár' : 'a legdrágább: teljes ár') : `50% kedvezmény · ${ft(t.ar)} helyett`}</small>` }),
+        elem('span', { html: `${t.ikon}<span>${t.nev}<small>${t.teljes ? (egy ? 'teljes ár' : 'a legdrágább: teljes ár') : `50% kedvezmény · ${ft(t.ar)} helyett`}</small></span>` }),
         elem('span', { class: 'osszeg', szoveg: ft(t.fizet) })))),
       elem('div', { class: 'sz-ossz' }, elem('span', { szoveg: 'Alkalmanként' }), elem('b', { szoveg: ft(e.alkalom) })),
       e.kedvezmeny ? elem('p', { class: 'sz-kedv', szoveg: `Csomagkedvezmény: ${ft(e.kedvezmeny)} alkalmanként` }) : null,
       elem('div', { class: 'sz-elso', html: `<span>Az első kezelés 20% kedvezménnyel</span><b>${ft(e.elso)}</b>` }),
       elem('div', { class: 'sz-program', html: `8 alkalmas program: csak 6 alkalmat fizetsz<b>${ft(e.program)}</b>A 4. és a 8. alkalom ajándék (${ft(e.ajandek)} értékben).` }),
-      elem('a', { class: 'gomb gomb-arany gomb-szeles', href: '#foglalas', 'data-terulet': egy ? e.tetelek[0].kulcs : EGYEDI.kulcs, html: `${egy ? 'Időpontot foglalok' : 'Egyedi csomagot foglalok'} <span class="nyil">→</span>` }),
-      elem('p', { class: 'sz-lab', szoveg: 'Az ár a program végéig fix.' }));
+      elem('div', { class: 'sz-cta' },
+        elem('a', { class: 'gomb gomb-arany gomb-szeles', href: '#foglalas', 'data-terulet': egy ? e.tetelek[0].kulcs : EGYEDI.kulcs, html: `${egy ? 'Időpontot foglalok' : 'Egyedi csomagot foglalok'} <span class="nyil">→</span>` }),
+        elem('p', { class: 'sz-lab', szoveg: 'Az ár a program végéig fix. 8 alkalomból csak 6-ot fizetsz, 2 alkalom ajándék.' })));
   }
   $('szamolo-valaszto').addEventListener('click', (e) => {
     const b = e.target.closest('.sz-chip');
@@ -126,7 +130,6 @@
 
   // --- 1. idopont-valaszto (naptar) ------------------------------------------------------------------------------------------------
   const allapot = { mod: 'kezeles', terulet: 'honalj', napok: new Map(), nap: null, honap: null };
-  const CHIP_KULCSOK = [...document.querySelectorAll('#terulet-chipek .chip')].map((c) => c.dataset.terulet);
 
   const szolgaltatasId = () => (allapot.mod === 'konzult' ? KONZULT.elso : (SZOLGALTATAS[allapot.terulet] || {}).elso);
   const salonicUrl = (id) => `${SZALON.cim}/selectDate/?employeeId=${SZALON.kezelo}&placeId=${SZALON.placeId}&serviceId=${id}`;
@@ -178,7 +181,7 @@
     hova.replaceChildren(
       elem('p', { class: 'idok-cim', szoveg: fmt(lista[0], { month: 'long', day: 'numeric', weekday: 'long' }) }),
       elem('div', { class: 'ido-racs' }, ...lista.map((ts) => elem('a', {
-        class: 'ido', href: adatlapUrl(id, ts), target: '_blank', rel: 'noopener', 'aria-label': `${fmt(ts, { month: 'long', day: 'numeric' })} ${ora(ts)}`, szoveg: ora(ts),
+        class: 'ido', href: adatlapUrl(id, ts), 'aria-label': `${fmt(ts, { month: 'long', day: 'numeric' })} ${ora(ts)}`, szoveg: ora(ts),
       }))));
   }
   function napValaszt(iso) { allapot.nap = iso; naptarRajzol(); }
@@ -256,8 +259,7 @@
     $('lepes-terulet').hidden = konzult;
     $('lepes-idopont').querySelector('.szam').textContent = konzult ? '2' : '3';
     for (const r of document.querySelectorAll('input[name="mod"]')) r.checked = r.value === allapot.mod;
-    for (const c of document.querySelectorAll('#terulet-chipek .chip')) c.setAttribute('aria-pressed', String(c.dataset.terulet === allapot.terulet));
-    $('terulet-select').value = CHIP_KULCSOK.includes(allapot.terulet) ? '' : allapot.terulet;
+    $('terulet-select').value = allapot.terulet;
   }
   function beallit(mod, terulet) {
     if (terulet && !SZOLGALTATAS[terulet]) return;
@@ -268,14 +270,6 @@
     if ([allapot.mod, allapot.terulet].join() !== regi) idopontokBetolt();
   }
 
-  // a "masik terulet" legordulo: a chipekben nem szereplo teruletek es csomagok, csoportonkent
-  {
-    const sel = $('terulet-select');
-    const csoportok = new Map();
-    for (const s of SOROK) if (!CHIP_KULCSOK.includes(s.kulcs)) csoportok.set(s.csoport, [...(csoportok.get(s.csoport) || []), s]);
-    for (const [cs, lista] of csoportok) sel.append(elem('optgroup', { label: cs.replace(/ \(.*/, '') }, ...lista.map((s) => elem('option', { value: s.kulcs, szoveg: s.nev }))));
-  }
-  $('terulet-chipek').addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (c) beallit('kezeles', c.dataset.terulet); });
   $('terulet-select').addEventListener('change', (e) => { if (e.target.value) beallit('kezeles', e.target.value); });
   for (const r of document.querySelectorAll('input[name="mod"]')) r.addEventListener('change', () => beallit(r.value));
 
@@ -306,6 +300,77 @@
     const fig = new IntersectionObserver((t) => { if (t.some((x) => x.isIntersecting)) { fig.disconnect(); idopontokBetolt(); } }, { rootMargin: '600px 0px' });
     fig.observe(foglalo);
   } else idopontokBetolt();
+
+  // --- Zsofi konzultacios videoja: kattintasra toltodik be (a poszter latszik addig; a 9 MB-os fajl csak ekkor), lejatszhato, vezerlokkel -----
+  const zv = $('zsofi-video');
+  if (zv) {
+    zv.addEventListener('click', () => {
+      const poszter = zv.querySelector('img');
+      const v = elem('video', { controls: true, autoplay: true, playsinline: true, preload: 'auto', poster: poszter ? poszter.getAttribute('src') : false, 'aria-label': 'Zsófi konzultációs videója' });
+      v.append(elem('source', { src: zv.dataset.video, type: 'video/mp4' }));
+      const hely = elem('div', { class: 'video-kartya' }, v);
+      zv.replaceWith(hely);
+      v.play().catch(() => { /* a vezerlokkel inditja */ });
+    }, { once: true });
+  }
+
+  // --- Zsofi kepgaleria: kattintasra nagyban (lapozhato, Esc / hatterre kattintas bezarja) ------------------------------------------------
+  const gKepek = [...document.querySelectorAll('.galeria-kep')];
+  if (gKepek.length) {
+    const nagyito = elem('dialog', { class: 'nagyito', 'aria-label': 'Nagyított kép' });
+    const nagyKep = elem('img', { alt: '' });
+    let idx = 0;
+    const mutat = (i) => { idx = (i + gKepek.length) % gKepek.length; const im = gKepek[idx].querySelector('img'); nagyKep.src = gKepek[idx].dataset.nagy || im.src; nagyKep.alt = im.alt; };
+    nagyito.append(nagyKep,
+      elem('button', { type: 'button', class: 'zar', 'aria-label': 'Bezárás', szoveg: '×', onclick: () => nagyito.close() }),
+      elem('button', { type: 'button', class: 'elozo', 'aria-label': 'Előző kép', szoveg: '‹', onclick: () => mutat(idx - 1) }),
+      elem('button', { type: 'button', class: 'kov', 'aria-label': 'Következő kép', szoveg: '›', onclick: () => mutat(idx + 1) }));
+    nagyito.addEventListener('click', (e) => { if (e.target === nagyito) nagyito.close(); });
+    nagyito.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') mutat(idx - 1); if (e.key === 'ArrowRight') mutat(idx + 1); });
+    document.body.append(nagyito);
+    gKepek.forEach((g, i) => g.addEventListener('click', () => { mutat(i); nagyito.showModal(); }));
+  }
+
+  // --- Vendegertekelesek: az eredeti Trustindex-embed (ugyanaz, mint a fooldalon es az ajandekkartya oldalon), iframe-ben --------------------
+  // Harmadik fel: a "funkcionalis" sutik elfogadasa utan (vagy a gombra kattintva) toltodik be; addig helykitolto + gomb all a helyen.
+  // Az iframe azonos eredetu: a magassagat a widget tartalmahoz igazitjuk.
+  const tiDoboz = $('trustindex');
+  let tiBetoltve = false;
+  function trustindexBetolt() {
+    if (!tiDoboz || tiBetoltve) return;
+    tiBetoltve = true;
+    const f = elem('iframe', { class: 'ti-keret', src: tiDoboz.dataset.embed, title: 'Google-vélemények (Trustindex)', loading: 'lazy', scrolling: 'no' });
+    let proba = 0;
+    const meret = () => {
+      try {
+        const d = f.contentDocument;
+        const w = d && d.querySelector('.ti-widget');
+        if (!w) return false;
+        if (!d.getElementById('lezer-ti-stilus')) {
+          const st = d.createElement('style');
+          st.id = 'lezer-ti-stilus';
+          st.textContent = '@font-face{font-family:"Jost";font-style:normal;font-weight:400 600;font-display:swap;src:url(/assets/fonts/jost-400-latin.woff2) format("woff2")}'
+            + 'html body .ti-widget,html body .ti-widget *{font-family:"Jost","Helvetica Neue",Arial,sans-serif!important}'
+            + 'html,body{overflow:hidden!important}'
+            + 'html body div.ti-controls-line,html body .ti-widget .ti-controls-line{display:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;visibility:hidden!important}';
+          d.head.appendChild(st);
+        }
+        const m = Math.ceil(w.getBoundingClientRect().bottom + (parseFloat(d.defaultView.getComputedStyle(d.body).marginBottom) || 0) + 16);
+        if (m > 60) f.style.height = m + 'px';
+        return true;
+      } catch (hiba) { return true; }
+    };
+    const ido = setInterval(() => { proba++; meret(); if (proba > 60) clearInterval(ido); }, 500);
+    addEventListener('resize', meret);
+    tiDoboz.replaceChildren(f);
+  }
+  if (tiDoboz) {
+    $('ti-gomb').addEventListener('click', () => { if (window.mhSuti && window.mhSuti.enged) window.mhSuti.enged('fun'); trustindexBetolt(); });
+    if (window.mhSuti) {
+      if (window.mhSuti.engedely('fun')) trustindexBetolt();
+      window.mhSuti.figyel((d) => { if (d.fun) trustindexBetolt(); });
+    }
+  }
 
   // --- Google terkep: a funkcionalis sutik engedelyezese utan magatol, egyebkent a gombra kattintva toltodik be ----------------------
   function terkepBetolt() {
