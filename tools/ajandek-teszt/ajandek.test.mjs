@@ -202,6 +202,8 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.ok(html.indexOf('id="ah-kez-valaszt"') > html.indexOf('ah-kez-szoveg') && html.indexOf('id="ah-kez-valaszt"') < html.indexOf('</dialog>', html.indexOf('ah-kez-szoveg')) && html.indexOf('ah-kez-torzs') < html.indexOf('id="ah-kez-valaszt"'), 'az Ezt valasztom a szoveg-oszlopban');
     assert.ok(html.includes('id="ah-tema-nyit"') && html.includes('id="ah-tv-design"'), 'design legordulo');
     for (const t of Object.values(ADAT.TERMEKEK)) assert.ok(t.osszefoglalo_rovid && t.osszefoglalo_rovid.length < t.osszefoglalo.length, t.id + ': rovid osszefoglalo');
+    // minta-nezetek (a koszono allapotok megtekintese): csak teszt-modban, az eles Stripe-kulcsokkal magatol megszunnek
+    assert.ok(js.includes("S.mod === 'teszt' && Q.get('nezet') && demoNezet(") && js.includes("var DEMO_NEZETEK = ['keszul', 'kesz', 'szemelyre', 'szemelyre-kesz', 'atutalas', 'hiba', 'fuggoben']") && js.includes('if (S.demo) return;'), 'minta-nezetek: csak teszt-modban, nem tarolodnak');
     assert.ok(js.includes('function gorgessVideora') && js.includes('kivalaszt(r.value); gorgessVideora();'), 'mobilon a valasztas utan a videohoz gorget');
     for (const [id, t] of Object.entries(ADAT.TERMEKEK)) {
       const m = t.kezeles.menet;

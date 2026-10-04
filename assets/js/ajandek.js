@@ -180,6 +180,7 @@
   if (Q.has('variant')) S.finder = variant.gift_finder_preselect || null;
 
   function ment() {
+    if (S.demo) return;   // a ?nezet= minta-nezet (teszt-mod) nem tarolodik
     tarolas.ir({
       v: 1, variant_id: S.variant.variant_id, termek: S.termek, finder: S.finder, urlap: S.urlap,
       attr: S.attr, pi: S.pi, cs: S.cs, rt: S.rt, csak_olvas: S.csakOlvas, fizetes_inditva: S.fizetesInditva,
@@ -1742,6 +1743,39 @@
     } catch (e) { return {}; }
   }
 
+  // MINTA-NEZETEK (csak teszt-modban, ?nezet=<nev>): a fizetes utani "koszono" allapotok megtekintese valodi fizetes / rendeles / level nelkul.
+  // nevek: keszul | kesz | szemelyre | szemelyre-kesz | atutalas | hiba | fuggoben   (opcionalis: &termek=egyeni|4kezes|paros)
+  var DEMO_NEZETEK = ['keszul', 'kesz', 'szemelyre', 'szemelyre-kesz', 'atutalas', 'hiba', 'fuggoben'];
+  function demoNezet(nev) {
+    if (DEMO_NEZETEK.indexOf(nev) < 0) return false;
+    var tid = termek(Q.get('termek')) ? Q.get('termek') : 'paros', t = termek(tid);
+    S.demo = true; S.termek = tid; S.pi = null; S.cs = null; S.rt = null; S.csakOlvas = true; S.fizetesInditva = null;
+    var szemelyes = nev === 'szemelyre' || nev === 'szemelyre-kesz';
+    S.atvetel = szemelyes ? 'szemelyesen' : 'otthon';
+    S.urlap = Object.assign({}, S.urlap, { nev: 'Minta Vevő', email: 'minta@pelda.hu', ajandekozott: 'Réka', telefon: '+36 20 123 4567', iranyitoszam: '1023', varos: 'Budapest', cim: 'Minta utca 1.' });
+    if (nev === 'atutalas') {
+      S.fiz = 'atutalas';
+      allapotba('fizetes', { eroltet: true });
+      atutalasKesz($('ah-atutalas'), { email: 'minta@pelda.hu' }, { kedvezmenyezett: A.BANK.kedvezmenyezett, szamlaszam: A.BANK.szamlaszam, osszeg_ft: t.ar_ft, kozlemeny: 'ATU-MINTA1' });
+      window.scrollTo(0, 0);
+      return true;
+    }
+    if (nev === 'hiba' || nev === 'fuggoben') {
+      allapotba('feldolgozas', { eroltet: true });   // a hiba / a fuggo allapot csak a feldolgozasbol erheto el
+      if (nev === 'hiba') hibaAllapot('Minta: a bank elutasította a kártyát.'); else fuggoben();
+      return true;
+    }
+    S.rendeles = {
+      allapot: 'fizetve', termek: tid, kartya_cim: t.kartya_cim, osszeg: t.ar_ft, penznem: 'HUF', rendeles_id: 'MH-MINTA001', email: 'minta@pelda.hu', atvetel: S.atvetel,
+      szemelyre: szemelyes ? { nev: 'Réka' } : { tema: 'virag', nev: 'Réka', foto: false },
+      kartya: nev === 'kesz' ? { allapot: 'kesz', url: '/ajandek', ervenyes_ig: '2027-04-04' } : { allapot: 'keszul' }
+    };
+    S.fizetveIdo = Date.now();
+    allapotba('siker', { eroltet: true });
+    if (nev === 'szemelyre') allapotba('szemelyre', { eroltet: true }); else allapotba('osszegzo', { eroltet: true });
+    return true;
+  }
+
   function visszaallit() {
     var vissza = visszaAdat();
     var pi = vissza.payment_intent, cs = vissza.payment_intent_client_secret;
@@ -1832,6 +1866,8 @@
     ment();
     render();
     beallitasBetolt().then(function () {
+      // minta-nezet (csak teszt-modban, ?nezet=...): a koszono allapotok megtekintese valodi fizetes nelkul
+      if (S.mod === 'teszt' && Q.get('nezet') && demoNezet(String(Q.get('nezet')))) return;
       if (S.allapot === 'kivalasztva') { lepesekRender(); stripeElokeszit(); }
       if (S.allapot === 'tervezo') tervezoRender();
       if (S.allapot === 'fizetes' || S.allapot === 'hiba') fizetesiElemInit();
