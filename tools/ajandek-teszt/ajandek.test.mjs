@@ -179,6 +179,9 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     // fizetes: az ajandekozott neve, egy fizetesi mod valaszto (kartya / atutalas), nincs kulon "Inkabb atutalassal" link
     for (const jel of ['id="ah-ajandekozott"', 'id="ah-telefon"', 'id="ah-fizmod"', 'name="fizmod" value="kartya"', 'name="fizmod" value="atutalas"', 'id="ah-atu-doboz"', 'id="ah-atutalas"']) assert.ok(html.includes(jel), jel);
     assert.ok(!html.includes('ah-atutalas-gomb') && !html.includes('Inkább átutalással'), 'a regi atutalas-link kikerult');
+    // 4. kor: a szemelyre szabo kartyaja fole cim + lefele nyil, fotoathelyezes nyilakkal, nincs "Aktualis ar" es adatok-segedszoveg
+    for (const jel of ['class="ah-elo-cim"', 'Így fog kinézni', 'élő előnézet', 'id="ah-mozgat"']) assert.ok(html.includes(jel), jel);
+    assert.ok(!html.includes('Aktuális ár') && !html.includes('Add meg az adataidat a vásárláshoz'), 'a torolt szovegek nincsenek');
     // 2026-10-04, 3. kor: uj atadas-kep, pici terkep, nincs gomb Feri alatt, a tervezo gombja es a Kihagyom, a "szemelyre szabashoz" gomb
     for (const jel of ['atadas-szemelyre.jpg', 'id="ah-terkep"', 'openstreetmap.org/export/embed.html', 'class="ah-tv-kihagy"', 'id="ah-tovabb-gomb"><span>Tovább a személyre szabáshoz</span>']) assert.ok(html.includes(jel), jel);
     assert.ok(!html.includes('Ismerd meg a Head Spa-t') && !html.includes('ah-foto-tipp') && !html.includes('Húzással igazíthatod'), 'a Feri alatti gomb es a foto-tipp kikerult');

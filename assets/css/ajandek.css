@@ -1046,3 +1046,11 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-ak-doboz.ah-foto-van .ak-ablak { cursor: grab; touch-action: none; }
 .ah-ak-doboz.ah-huz .ak-ablak { cursor: grabbing; }
 .ah-huz-jelzo { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 6; padding: 5px 13px; border-radius: 99px; background: rgba(15, 38, 36, .8); color: #fff; font-size: 12.5px; white-space: nowrap; pointer-events: none; }
+
+/* Szabd szemelyre: szellosebb sorok; a kartya egy kicsit lejjebb, fole "Igy fog kinezni - elo elonezet" cim lefele mutato nyillal */
+.ah-tervezo-vezerlok { gap: 20px; }
+.ah-elo-cim { display: grid; justify-items: center; gap: 2px; margin: 4px 0 2px; text-align: center; color: var(--ah-petrol); }
+.ah-elo-cim strong { font-family: var(--ah-cim); font-weight: 400; font-size: 22px; line-height: 1.15; }
+.ah-elo-cim small { font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ah-halk); }
+.ah-elo-nyil { width: 24px; height: 24px; margin-top: 2px; color: #c6a346; transform: rotate(90deg); }
+@media (min-width: 900px) { .ah-elo-cim { margin-top: 26px; } }

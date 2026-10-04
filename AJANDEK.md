@@ -511,3 +511,4 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
   az otthon nyomtatott (személyre szabott) kártyánál az üzenet a tervezőben megadott idézet.
 - **Canva (átutalásos kártya):** a fiókban vannak Brand Template-ek (a Canva-összekötő tud sablonból kitölteni és PDF-et exportálni); a kártya jelenleg a saját nyomtató oldalunkról készül
   (ugyanaz a dizájn, nem kell hozzá Canva). Ha a szalon Canvában akarja szerkeszteni: a smaragd lapokból Brand Template készíthető kitölthető mezőkkel (fotó, idézet, név, kód).
+- **Szabd személyre (szellősebb):** a három sor között nagyobb hely (20 px); a kártya egy kicsit lejjebb, fölötte „Így fog kinézni – élő előnézet” cím lefelé mutató nyíllal.
