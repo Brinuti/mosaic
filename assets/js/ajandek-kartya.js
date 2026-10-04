@@ -16,7 +16,7 @@
 //     idezet: {x,y,w,h}, nevHely: {x,y,w,h} }
 // A fotohelyre kerulo kep a hatter FOLE kerul (a kulcs a keret: alak = iv | teglalap | kor | polaroid).
 //
-// KEPES dizajn (a tulajdonos altal feltoltott vegleges terv): a dizajnnak sajat koordinata-tere (w x h px) es ket HATTERKEPE van
+// KEPES dizajn (a tulajdonos altal feltoltott vegleges terv; MINDEN dizajn A5 fekvo, 210 x 148,5 mm = 1,414 : 1 - a hatterek a logot, a gyuruket es a feliratokat erintetlenul hagyo, csak az ures savokat nyujto atmeretezessel keszultek): a dizajnnak sajat koordinata-tere (w x h px) es ket HATTERKEPE van
 // (szovegmentes elolap + hatlap, a mintaszoveg es a mintafoto kiszedve). Az elolapon a fotohely (iv) a hatter FOLE kerul, az idezet es a
 // nev a dizajn "biztonsagos teruleten" belul marad (a levelek / a keret / a logo ele soha nem logik): a betumeret a szoveg hosszatol
 // fugg (lepcsok), a doboz overflow: hidden. A hatoldal szovegei (termek, ertek, kod, ervenyesseg) a hatterkep kiuresitett helyeire kerulnek.
@@ -45,36 +45,36 @@
   var TEMAK = [
     // Smaragd: a tulajdonos elso vegleges terve (930 x 577 px-es hatterkepek; a szovegek / a fotohely a kiuresitett helyeken)
     {
-      id: 'smaragd', nev: 'Smaragd', w: 930, h: 577,
+      id: 'smaragd', nev: 'Smaragd', w: 930, h: 658,
       hatter: { elol: '/assets/img/ajandek/kartya-smaragd-elol.jpg', hat: '/assets/img/ajandek/kartya-smaragd-hat.jpg' },
-      kep: { x: 81.5, y: 60.5, w: 326, h: 483, alak: 'iv' },
-      idezet: { x: 514, y: 266, w: 316, h: 123, lepcso: [[28, 33], [45, 30], [64, 23], [96, 20.5], [128, 18], [160, 16]] },
-      nevHely: { x: 532, y: 471, w: 280, h: 36, lepcso: [[16, 27], [24, 23], [32, 17.5], [40, 14]] },
-      hat: { termek: { x: 243, y: 143, w: 480, h: 84 }, ertek: { x: 285, y: 270, w: 400, h: 48 }, kod: { x: 264, y: 375, w: 440, h: 32 }, ervenyes: { x: 243, y: 452, w: 480, h: 30 } }
+      kep: { x: 81.5, y: 60.5, w: 326, h: 564, alak: 'iv' },
+      idezet: { x: 514, y: 266, w: 316, h: 196.6, lepcso: idezetLepcso(316, 196.6, 33) },
+      nevHely: { x: 532, y: 552, w: 280, h: 36, lepcso: nevLepcso(280, 36, 27) },
+      hat: { termek: { x: 243, y: 163.1, w: 480, h: 95.8 }, ertek: { x: 285, y: 307.9, w: 400, h: 54.7 }, kod: { x: 264, y: 427.6, w: 440, h: 36.5 }, ervenyes: { x: 243, y: 515.5, w: 480, h: 34.2 } }
     },
     // Szalag: pezsgőszínű, rózsaarany szalagokkal, kör alakú fotóablakkal (a tulajdonos 2. terve; 844 x 664 px-es háttérképek)
     {
-      id: 'szalag', nev: 'Szalag', w: 844, h: 664,
+      id: 'szalag', nev: 'Szalag', w: 939, h: 664,
       hatter: { elol: '/assets/img/ajandek/kartya-szalag-elol.jpg', hat: '/assets/img/ajandek/kartya-szalag-hat.jpg' },
       kep: { x: 42.2, y: 175.3, w: 322, h: 322, alak: 'kor', keret: false },
-      idezet: { x: 405, y: 285, w: 375, h: 145, lepcso: idezetLepcso(375, 145, 36) },
-      nevHely: { x: 415, y: 528, w: 320, h: 42, lepcso: nevLepcso(320, 42, 30) },
+      idezet: { x: 410.7, y: 285, w: 459.8, h: 145, lepcso: idezetLepcso(459.8, 145, 36) },
+      nevHely: { x: 422.9, y: 528, w: 392.4, h: 42, lepcso: nevLepcso(392.4, 42, 30) },
       szin: { idezet: '#442f16', nev: '#3a260d', termek: '#382711', ertek: '#694514', kod: '#3b260d', erv: '#4c3a20' },
       hat: {
-        termek: { x: 195, y: 262, w: 472, h: 90 }, ertek: { x: 402, y: 380, w: 200, h: 46, cimke: false }, kod: { x: 326, y: 480, w: 206, h: 34 }, ervenyes: { x: 270, y: 546, w: 322, h: 32 },
+        termek: { x: 216.9, y: 262, w: 525.1, h: 90 }, ertek: { x: 447.2, y: 380, w: 222.5, h: 46, cimke: false }, kod: { x: 362.7, y: 480, w: 229.2, h: 34 }, ervenyes: { x: 300.4, y: 546, w: 358.2, h: 32 },
         meret: { termek: [[25, 26], [30, 23], [200, 20]], ertek: 36, kod: [[10, 24], [18, 19], [26, 15], [60, 11]], erv: 19 }
       }
     },
     // Virág: rózsaszín, cseresznyevirágos, lekerekített téglalap fotóablakkal (a tulajdonos 3. terve; 934 x 592 px-es háttérképek)
     {
-      id: 'virag', nev: 'Virág', w: 934, h: 592,
+      id: 'virag', nev: 'Virág', w: 934, h: 660,
       hatter: { elol: '/assets/img/ajandek/kartya-virag-elol.jpg', hat: '/assets/img/ajandek/kartya-virag-hat.jpg' },
-      kep: { x: 75, y: 79, w: 296, h: 435, alak: 'sarok', sugar: 12, keret: false },
-      idezet: { x: 440, y: 318, w: 375, h: 112, lepcso: idezetLepcso(375, 112, 28) },
-      nevHely: { x: 450, y: 478, w: 355, h: 40, lepcso: nevLepcso(355, 40, 30) },
+      kep: { x: 75, y: 79, w: 296, h: 503, alak: 'sarok', sugar: 12, keret: false },
+      idezet: { x: 440, y: 321.5, w: 375, h: 175.6, lepcso: idezetLepcso(375, 175.6, 30) },
+      nevHely: { x: 450, y: 546, w: 355, h: 40, lepcso: nevLepcso(355, 40, 30) },
       szin: { idezet: '#9b6166', nev: '#96555c', termek: '#8f4c54', ertek: '#956a38', kod: '#914c53', erv: '#925c61' },
       hat: {
-        termek: { x: 200, y: 108, w: 552, h: 84 }, ertek: { x: 422, y: 255, w: 268, h: 52, cimke: false }, kod: { x: 349, y: 372, w: 262, h: 34 }, ervenyes: { x: 300, y: 462, w: 348, h: 32 },
+        termek: { x: 200, y: 120.4, w: 552, h: 93.6 }, ertek: { x: 422, y: 284.3, w: 330, h: 58, cimke: false }, kod: { x: 349, y: 414.7, w: 262, h: 37.9 }, ervenyes: { x: 300, y: 515.1, w: 348, h: 35.7 },
         meret: { termek: [[25, 28], [30, 25.5], [200, 22]], ertek: 50, kod: [[12, 30], [18, 24], [26, 18], [60, 13]], erv: 21 }
       }
     },

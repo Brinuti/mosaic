@@ -527,3 +527,14 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
   kiürített helyre kerül. A fotóablak a háttér aranykeretén belül marad (a keretet a háttérkép adja). Az idézet és a név betűmérete a dobozból **számolt lépcsők** szerint csökken (`idezetLepcso`,
   `nevLepcso`), a szövegszínek a tervekből mérve (szalag: barna, virág: mályva). A mintaszöveg (az előnézeten) most pontosan olyan színű, mint a beírt szöveg (nem halvány): nem változik a színe,
   amikor elkezdi írni. A nyomtató oldalon a magasabb lapok is elférnek az A4 felén (a lap szélessége a félmagasságból számolódik, középre igazítva).
+- **A5 képarány (minden dizájn):** a Smaragd, a Szalag és a Virág háttérképei eredetileg 1,61 / 1,27 / 1,58 arányúak voltak; mostantól mind **A5 fekvő (1,414 : 1)**, új grafika nélkül: az üres sávokat
+  nyújtottam (nem az egész képet), így a logó, a fotóablak gyűrűje és az aprószövegek nem torzulnak. Smaragd 930 x 658: az elöl a két elválasztó közötti üres idézet-sáv nyúlik (az ív magasabb), a hátoldal
+  egyenletesen; Virág 934 x 660: az akvarell-csík sávja nyúlik (a fotóablak magasabb); Szalag 939 x 664: oldalra nyúlik, a gyűrű (x < 380) és a logó sorai védettek, alatta a szöveg-oszlop szélesedik.
+  A szövegdobozok a megfelelően áthelyezett koordinátákkal (a dobozok az átméretezett háttérre illesztve); a teszt minden dizájnra ellenőrzi az A5 arányt.
+- **„Hogyan épül fel a kezelés?” felugró (átdolgozva):** a három kezelés saját szövege az **éles oldal árlistájának kezelés-kártyájáról**: egyéni = „50 perces MOSAIC ‘Relax’ Head Spa kezelés” (masszázs fókuszú,
+  hajápolási elemekkel; 11 elem), „4 Kezes” (6 pont, kiemelve: 2 profi masszőr, 8 féle masszázs), Páros (12 elem, kiemelve: arc radírozás, méregtelenítő arcpakolás, pezsgő); mindegyiknél „+ 30 perc kímélő
+  hajszárítás”, „Időtartam: 50+30 perc”, felül a kezelés alapképe. (A „gyógymasszőr” itt is „profi masszőr”.)
+- **Gombok a blokkokban (középen):** „Személyre szabott ajándékkártya!” → „Összeállítom a saját kártyámat”; „2 perc és már a Tiéd is!” → „Kezdem az ajándékozást”; „Imádják a nők!” → „Én is ilyen élményt ajándékozok”
+  (mind a kiválasztóra görget). A 2. lépés alcíme: „Indíts el a videót a kezelésről!”.
+- **„Kihagyom a személyre szabást” → melyik kártya?** A *standard* MOSAIC-kártya (az eredeti, fekete-arany Canva-terv, `kartya-hatter.jpg`, A4 félbehajtva): rajta a megajándékozott neve (az „Ajándékozott neve” mező),
+  üzenet (ha nincs: az alap mondat „Miképp szeretetem Feléd árad…”), a kezelés neve, az érték, a kód és az érvényesség. Otthon nyomtatott kártyánál nincs külön üzenet-lépés a fizetés után (szalonban átvételnél van).

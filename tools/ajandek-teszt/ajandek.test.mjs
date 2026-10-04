@@ -180,12 +180,16 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     for (const jel of ['id="ah-ajandekozott"', 'id="ah-telefon"', 'id="ah-fizmod"', 'name="fizmod" value="kartya"', 'name="fizmod" value="atutalas"', 'id="ah-atu-doboz"', 'id="ah-atutalas"']) assert.ok(html.includes(jel), jel);
     assert.ok(!html.includes('ah-atutalas-gomb') && !html.includes('Inkább átutalással'), 'a regi atutalas-link kikerult');
     // minden kartyan plusz sor: "Hogyan epul fel a kezeles?" (felugro, lepesekkel az eles oldalrol)
-    for (const jel of ['id="ah-kez-ablak"', 'id="ah-kez-lepesek"', 'id="ah-kez-valaszt"']) assert.ok(html.includes(jel), jel);
+    for (const jel of ['id="ah-kez-ablak"', 'id="ah-kez-elemek"', 'id="ah-kez-kep"', 'id="ah-kez-valaszt"']) assert.ok(html.includes(jel), jel);
     for (const [id, t] of Object.entries(ADAT.TERMEKEK)) {
       const m = t.kezeles.menet;
-      assert.ok(Array.isArray(m) && m.length >= 5 && m.every((x) => Array.isArray(x) && x[0] && x[1]), id + ' kezeles-menet (cim + szoveg)');
-      assert.ok(m.some((x) => /hajsz[áa]r[ií]t/i.test(x[0])), id + ': a menet a hajszaritassal er veget');
+      assert.ok(m && /Head Spa kezelés$/.test(m.nev) && Array.isArray(m.elemek) && m.elemek.length >= 6 && m.elemek.every((x) => typeof x[0] === 'string' && x[0].length > 3), id + ': az arlista kezeles-kartyaja (nev + elemek)');
+      assert.ok(/hajszárítás/.test(m.utana) && /50\+30/.test(m.ido), id + ': +30 perc hajszarítas, idotartam');
+      assert.doesNotMatch(JSON.stringify(m), /gyógymasszőr/, id + ': profi masszor (nem gyogymasszor)');
     }
+    // a harom kezeles szovege kulonbozo (egyeni = Relax, paros, 4 kezes)
+    assert.equal(new Set(Object.values(ADAT.TERMEKEK).map((t) => JSON.stringify(t.kezeles.menet))).size, Object.keys(ADAT.TERMEKEK).length, 'minden kezelesnek sajat szovege van');
+    assert.ok(ADAT.TERMEKEK.egyeni.kezeles.menet.nev.includes('"Relax"') && ADAT.TERMEKEK['4kezes'].kezeles.menet.nev.includes('"4 Kezes"'));
     assert.ok(fs.readFileSync(new URL('../../assets/js/ajandek.js', import.meta.url), 'utf8').includes('Hogyan épül fel a kezelés?'), 'a kartyak plusz sora');
     // 4. kor: a szemelyre szabo kartyaja fole cim + lefele nyil, fotoathelyezes nyilakkal, nincs "Aktualis ar" es adatok-segedszoveg
     for (const jel of ['class="ah-elo-cim"', 'Így fog kinézni', 'élő előnézet', 'id="ah-mozgat"']) assert.ok(html.includes(jel), jel);
@@ -1968,14 +1972,14 @@ describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
 
   test('KEPES dizajn (smaragd, a tulajdonos terve): sajat aranyu lap, szovegmentes hatterkepek, a fotohely az ivben, a szovegek a biztonsagos teruleten', () => {
     const t = K.tema('smaragd');
-    assert.ok(t && t.hatter && t.w === 930 && t.h === 577, 'a smaragd a feltoltott terv (930 x 577)');
+    assert.ok(t && t.hatter && t.w === 930 && t.h === 658, 'a smaragd a feltoltott terv (930 x 658, A5)');
     for (const fajl of [t.hatter.elol, t.hatter.hat]) {
       const ut = new URL('../../' + fajl.replace(/^\//, ''), import.meta.url);
       assert.ok(fs.existsSync(ut), fajl + ' letezik');
       assert.ok(fs.statSync(ut).size < 400 * 1024, fajl + ' kicsi (< 400 KB)');
     }
     const h = K.html({ ...minta, tema: 'smaragd' });
-    assert.ok(h.includes('aspect-ratio:930/577'), 'a lap sajat aranyu');
+    assert.ok(h.includes('aspect-ratio:930/658'), 'a lap sajat aranyu');
     assert.ok(h.indexOf('ak-hat') < h.indexOf('ak-elol') && h.includes('kartya-smaragd-elol.jpg') && h.includes('kartya-smaragd-hat.jpg'));
     const elol = K.html({ ...minta, tema: 'smaragd', oldal: 'elol' }), hat = K.html({ ...minta, tema: 'smaragd', oldal: 'hat' });
     assert.ok(elol.includes('Ez a személyes idézet') && elol.includes('Nagy Mária') && !elol.includes('AK-TEST-0001') && !elol.includes('<small>NEKI</small>'), 'a "NEKI" a hatterkepen van');
@@ -2017,7 +2021,7 @@ describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
     const L = await import('../../netlify/lib/ajandek-levelek.js');
     const oldal = L.szemelyreSzabottKartyaOldal({ bazis: 'https://pelda.hu', tema: 'smaragd', idezet: 'Szia', nev: 'Réka', kartya_felirat: ['A', 'B'], ar_szoveg: '26.900 Ft', kod: 'AAAA-BBBB', ervenyes_ig: '2027-04-04' });
     assert.ok(oldal.includes('aspect-ratio:794/1123;grid-template-rows:1fr 1fr;align-items:center') && oldal.includes('.ak-lap>.ak{width:min(100%,calc(70.71cqw * var(--ak-ar,1.4141)))'), 'a ket fel kozepre igazitva, a magasabb lapok is elferjenek');
-    assert.ok(oldal.includes('aspect-ratio:930/577') && oldal.includes('/assets/img/ajandek/kartya-smaragd-hat.jpg'));
+    assert.ok(oldal.includes('aspect-ratio:930/658') && oldal.includes('/assets/img/ajandek/kartya-smaragd-hat.jpg'));
     assert.ok(oldal.includes('Réka') && oldal.includes('AAAA-BBBB'));
   });
 
@@ -2026,6 +2030,8 @@ describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
     assert.deepEqual(kepesek.map((t) => t.id), ['smaragd', 'szalag', 'virag'], 'a harom feltoltott terv (sorrend: zold, szalag, virag)');
     assert.deepEqual(K.TEMAK.map((t) => t.id), ['smaragd', 'szalag', 'virag', 'krem', 'homok', 'feher'], 'a maradek harom elozetes marad');
     const atfed = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    // MINDEN dizajn A5 fekvo (210 x 148,5 mm): a lapok keparanya azonos, a nyomtato oldal felen pontosan elfer
+    for (const t of K.TEMAK) assert.ok(Math.abs((t.w || K.LAP_W) / (t.h || K.LAP_H) - 210 / 148.5) < 0.002, t.id + ' A5 keparany: ' + ((t.w || K.LAP_W) / (t.h || K.LAP_H)).toFixed(4));
     for (const t of kepesek) {
       for (const fajl of [t.hatter.elol, t.hatter.hat]) {
         const ut = new URL('../../' + fajl.replace(/^\//, ''), import.meta.url);

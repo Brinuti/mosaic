@@ -36,15 +36,13 @@
       pontosan: { ido: '50 perc Head Spa + 30 perc hajszárítás', fo: '1 vendég', kezelo: 'Tapasztalt, profi masszőr' },
       kezeles: {
         leiras: ['Személyre szabott hajápolási szeánsz mélyrelaxáló masszázs elemekkel: 50 perc Head Spa, utána 30 perc profi hajszárítás.'],
-        // a kezelés menete: az éles ajándékkártya-oldalak "Mit tartalmaz a 80 perces (50+30) kényeztetés?" listája (a kártyák "Hogyan épül fel a kezelés?" ablaka)
-        menet: [
-          ['Fejbőrkamerás diagnózis', 'Ezzel kezdünk, hogy a fejbőrtípusodhoz illő kezelést kapd.'],
-          ['Személyre szabott pakolás', 'Vegán OXYGENI pakolás a haj egészségéért.'],
-          ['Mélytisztító hajmosás', 'A híres körvízsugaras terápiával, az eredeti Head Spa arany zuhanyívvel.'],
-          ['Intenzív masszázs', 'Fej-, arc-, dekoltázs- és kézmasszázs profi masszőrökkel.'],
-          ['Gőzölés', 'Teljes ellazulás.'],
-          ['Hajszárítás (30 perc)', 'Befejezésként profi fodrászati beszárítás.']
-        ],
+        // a "Hogyan épül fel a kezelés?" felugró tartalma: az éles oldal árlistájának kezelés-kártyája (az egyéni = a "Relax" kezelés); a [szöveg, true] kiemelt elem
+        menet: {
+          nev: '50 perces MOSAIC "Relax" Head Spa kezelés',
+          bevezeto: 'Masszázs fókuszú kezelés, ami tartalmaz hajápolási elemeket is.',
+          elemek: [['Mélytisztító hajmosás'], ['Körvízsugaras terápia'], ['OXYGENI hajpakolás'], ['Fejmasszázs kézzel és eszközökkel'], ['Arctisztítás'], ['Arc tonizálás'], ['Arcmasszázs kézzel és választott eszközzel'], ['Nyak-, és vállmasszázs'], ['Dekoltázs masszázs'], ['Gőz terápia'], ['Fény terápia']],
+          utana: '+ 30 perc kímélő hajszárítás', ido: '50+30 perc'
+        },
         // a tulajdonos Meta-fiókjából ("Headspa szeptember 20_ natív kezelés.mp4"): a beégetett „szeptemberi akció" sáv és a záró kártya levágva (3:4, 0:55)
         video: { src: '/assets/video/ajandek-kezeles-egyeni.mp4?v=2', poster: '/assets/img/ajandek/kezeles-egyeni.jpg?v=2', ido: '0:55' }
       },
@@ -70,13 +68,12 @@
       pontosan: { ido: '50 perc 4 kezes Head Spa + 30 perc hajszárítás', fo: '1 vendég', kezelo: 'Két profi masszőr egyszerre, a végén profi fodrász szárít' },
       kezeles: {
         leiras: ['A MOSAIC saját találmánya: két profi masszőr dolgozik egyszerre, a végén egy profi fodrász szárít, vagyis hárman kényeztetnek 50+30 percen át.'],
-        menet: [
-          ['Személyre szabott pakolás', 'A fej- és arcbőrtípusodnak megfelelő, vegán és 100%-ban természetes OXYGENI pakolás.'],
-          ['Mélytisztító hajmosás', 'Körvízsugaras terápiával, az arany zuhanyívvel.'],
-          ['8 féle masszázs, két profi masszőrrel egyszerre', 'Fej-, arc-, nyak-, dekoltázs-, kar-, kéz-, láb- és vállmasszázs.'],
-          ['Gőzölés', 'Teljes ellazulás.'],
-          ['Hajszárítás (30 perc)', 'Plusz 30 perc: hajszárítás profi minőségben.']
-        ],
+        menet: {
+          nev: '50 perces MOSAIC "4 Kezes" Head Spa kezelés',
+          bevezeto: '',
+          elemek: [['Exkluzív, új szolgáltatás 2026 januártól'], ['A Headspa kezelések csúcsa'], ['2 profi masszőr kényeztet', true], ['8 féle masszázs', true], ['Profi, szalon szintű beszárítás'], ['Csak ajándékkártya készült']],
+          utana: '+ 30 perc kímélő hajszárítás', ido: '50+30 perc'
+        },
         // a Meta-fiók 4 kezes videóihoz nincs letölthető fájl; ez a "Hook1.MP4" (Ajándékkártya mappa) teljes hossza (39,5 s), feliratokkal; a ?v=2 a gyorsítótárat töri (a régi 7,8 s-os változat ott ragadt)
         video: { src: '/assets/video/ajandek-kezeles-4kezes.mp4?v=2', poster: '/assets/img/ajandek/kezeles-4kezes.jpg?v=2', ido: '0:40' }
       },
@@ -101,14 +98,12 @@
       pontosan: { ido: '50 perc Head Spa + 30 perc hajszárítás fejenként', fo: '2 vendég, egymás mellett', kezelo: 'Két profi masszőr, egyszerre' },
       kezeles: {
         leiras: ['Ketten fekszetek egymás mellé egy privát, csendes kezelőszobában, két profi masszőr kényeztet titeket egyszerre: közös élmény barátnővel, anyukával vagy a párral.'],
-        menet: [
-          ['Fejbőrkamerás diagnózis', 'Mindkettőtöknél ezzel kezdünk.'],
-          ['Személyre szabott pakolás', 'Vegán OXYGENI pakolás a haj egészségéért, egyénileg.'],
-          ['Mélytisztító hajmosás', 'A híres körvízsugaras terápiával.'],
-          ['Intenzív masszázs', 'Fej-, arc-, dekoltázs- és kézmasszázs profi masszőrökkel, egymás mellett.'],
-          ['Gőzölés', 'Teljes ellazulás.'],
-          ['Hajszárítás (30 perc)', 'Befejezésként profi fodrászati beszárítás fejenként.']
-        ],
+        menet: {
+          nev: '50 perces MOSAIC Páros Head Spa kezelés',
+          bevezeto: '',
+          elemek: [['Mélytisztító hajmosás'], ['Körvízsugaras terápia'], ['OXYGENI hajpakolás fejmasszázzsal'], ['Arctisztítás'], ['Arc radírozás', true], ['Arc tonizálás'], ['Arcmasszázs kézzel és választott eszközzel'], ['Méregtelenítő arcpakolás', true], ['Nyak-, és vállmasszázs'], ['Dekoltázs masszázs'], ['Gőz terápia'], ['Pezsgő alkoholos/alkohol mentes', true]],
+          utana: '+ 30 perc kímélő hajszárítás', ido: '50+30 perc'
+        },
         // a Meta-fiókból ("Szept páros HEADSPA 20_.mp4"): a beégetett „szeptemberi akció" sáv és a záró (akciós) kártya levágva (3:4, 0:29)
         video: { src: '/assets/video/ajandek-kezeles-paros.mp4?v=2', poster: '/assets/img/ajandek/kezeles-paros.jpg?v=2', ido: '0:29' }
       },

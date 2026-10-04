@@ -518,15 +518,19 @@
   var kezTermek = null, kezFokusz = null;
   function kezAblakNyit(id, forras) {
     var t = termek(id), abl = $('ah-kez-ablak');
-    if (!t || !abl) return;
+    var m = t && t.kezeles && t.kezeles.menet;
+    if (!t || !abl || !m) return;
     kezTermek = id; kezFokusz = forras || null;
-    $('ah-kez-ablak-cim').textContent = t.nev;
-    var p = t.pontosan || {};
-    $('ah-kez-osszegzes').textContent = [t.osszefoglalo, p.kezelo].filter(Boolean).join(' · ');
-    var lista = uresit($('ah-kez-lepesek'));
-    ((t.kezeles && t.kezeles.menet) || []).forEach(function (m, i) {
-      lista.appendChild(h('li', null, h('span', { class: 'ah-kez-szam', text: String(i + 1) }), h('div', null, h('strong', { text: m[0] }), h('span', { text: m[1] }))));
-    });
+    $('ah-kez-ablak-cim').textContent = m.nev;
+    // a kezelés alapképe (ugyanaz, mint a kártyán), hogy lássa, miről van szó
+    var kep = $('ah-kez-kep');
+    if (t.vizual && t.vizual.src) { kep.src = kepUt(t.vizual.src); kep.style.objectPosition = t.vizual.poz || '50% 50%'; kep.hidden = false; } else kep.hidden = true;
+    $('ah-kez-bevezeto').textContent = m.bevezeto || '';
+    $('ah-kez-bevezeto').hidden = !m.bevezeto;
+    var lista = uresit($('ah-kez-elemek'));
+    m.elemek.forEach(function (e) { lista.appendChild(h('li', e[1] ? { class: 'ah-kiemelt' } : null, ikonSpan('check'), h('span', { text: e[0] }))); });
+    $('ah-kez-utana').textContent = m.utana || '';
+    $('ah-kez-ido').textContent = m.ido ? 'Időtartam: ' + m.ido : '';
     if (abl.showModal) abl.showModal(); else abl.setAttribute('open', '');
     fokusz($('ah-kez-bezar'));
   }
