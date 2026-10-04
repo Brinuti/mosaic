@@ -12,7 +12,7 @@ címen nincs mérőkód-pixel, és ezt nem is írtuk át). Visszaállítás átv
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (46 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (47 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje
@@ -31,10 +31,12 @@ kártyák semleges alakos ábrák (kiemelt testtájjal), az SVG-k a HTML elején
 „funkcionális” sütik elfogadása után), ami a `#velemenyek` szekcióhoz görget. A szekció az **eredeti Trustindex-embed** (`/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html`, ugyanaz,
 mint a főoldalon és az ajándékkártya-oldalon), iframe-ben; a sütik elfogadásáig (vagy a „Vélemények megjelenítése” gombig) helykitöltő áll a helyén. A „4,9” a tulajdonos megadott értéke.
 
-**Ikonok:** a foglaló-motor testrész-ikonjai (`assets/js/booking-engine/ikonok.js`, 24×24 vonalas alak, a kiemelt rész arany), az árlistában (csoportonként és soronként)
-és a kalkulátor gombjain. Az ikonok egyetlen forrása az árlista HTML-je (a kalkulátor onnan másolja).
+**Ikonok / illusztrációk:** a foglaló-motor saját, illusztrált képei (160×160, a `mosaic-engine` `assets/img/booking/` mappájából másolva ide: `assets/img/lezer-ikon/`;
+`la-*` = területek, `lp-*` = csomagok, `rz-*` = kis testrész-ikonok). **Ne rajzolj helyettük sajátot**: a tulajdonos ezeket készíttette erre a célra. Használat: a „Mennyibe kerül?”
+kártyák (`la-honalj`, `la-intim`, a „Hónalj + intim” a kettő együtt, `la-lab`), az árlista (csoportonként `la-*`/`lp-kis`, soronként `rz-*`/`la-arc`/`lp-*`) és a kalkulátor
+(gombok, csoportcímek, eredménysorok). Az ikonok egyetlen forrása az árlista HTML-je (a kalkulátor onnan másolja).
 
-**Zsófi:** a konzultációs videó (a régi oldal 44 mp-es videója, `assets/video/c2eb0f_ba9a927739a64ab090ddb79bc84c6dc0.mp4`) kattintásra tölt be (9 MB), mellette 5 képből álló, nagyítható galéria.
+**Zsófi:** a konzultációs videó (a régi oldal 44 mp-es videója, `assets/video/c2eb0f_ba9a927739a64ab090ddb79bc84c6dc0.mp4`) kattintásra tölt be (9 MB), mellette 4 képből álló, nagyítható galéria.
 
 ## Árforrás
 
@@ -57,7 +59,7 @@ részek le vannak tiltva (nincs dupla számolás). A program: 6 fizetős alkalom
 
 ## Időpont-választó (naptár)
 
-Kompakt kártya: bal oldalt kezelés/konzultáció váltó és a terület legördülője (csempék nélkül), mellette a havi naptár és a nap időpontjai. A szabad napok kattinthatók, az első szabad nap alapból ki van jelölve, alatta a nap időpontjai. A szabad időpontokat a Salonic nyilvános
+Kompakt kártya: bal oldalt kezelés/konzultáció váltó és a terület legördülője (csempék nélkül), mellette a havi naptár (négyzet alapú napok, keskeny naptár) és a nap időpontjai; a kártya a szekció jobb oldalán áll, bal oldalt a cím és a felsorolás. A szabad napok kattinthatók, az első szabad nap alapból ki van jelölve, alatta a nap időpontjai. A szabad időpontokat a Salonic nyilvános
 naptár-API-ja adja (`api.salonic.hu/calendar/getAvailableTimes`, ugyanaz, mint a PMU landingen), amikor a szekció a képernyő közelébe ér. Időpontot nem találunk ki:
 ha az API nem válaszol, a Salonic foglaló linkjét kapja a látogató. Egy időpontra kattintva a Salonic `/guestData/` adatlapja nyílik ugyanabban a lapon (nincs felugró), az időponttal
 együtt (ugyanezt a címet nyitja a foglaló-motor is). A statikus linkek (ingyenes konzultáció) a build link-átkötésén mennek át (`tools/foglalo-atkotes.mjs`):

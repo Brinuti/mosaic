@@ -431,12 +431,11 @@ describe('az uj tartalom (visszajelzesek alapjan)', () => {
     await ctx.close();
   });
 
-  test('a testtaji kartyak abrak (nem fotok): 4 abra, mindegyiken kiemelt terulettel', async () => {
+  test('a testtaji kartyak a foglalo-motor illusztralt kepeit hasznaljak (nem sajat rajz, nem foto)', async () => {
     const { p, ctx } = await nyit();
-    assert.equal(await p.locator('.gyors-kartya svg.abra').count(), 4);
-    assert.equal(await p.locator('.gyors-kartya img').count(), 0);
-    const kiemelesek = await p.$$eval('.gyors-kartya', (l) => l.map((a) => [...a.querySelectorAll('svg.abra use')].map((u) => u.getAttribute('href')).join('+')));
-    assert.deepEqual(kiemelesek, ['#abra-alak+#abra-honalj', '#abra-alak+#abra-intim', '#abra-alak+#abra-honalj+#abra-intim', '#abra-alak+#abra-lab']);
+    assert.equal(await p.locator('.gyors-kartya svg').count(), 0, 'nincs sajat rajzolt SVG');
+    const kepek = await p.$$eval('.gyors-kartya', (l) => l.map((a) => [...a.querySelectorAll('.abra-kep img')].map((i) => i.getAttribute('src').split('/').pop()).join('+')));
+    assert.deepEqual(kepek, ['la-honalj.jpg', 'la-intim.jpg', 'la-honalj.jpg+la-intim.jpg', 'la-lab.jpg']);
     await ctx.close();
   });
 
@@ -504,6 +503,13 @@ describe('a harmadik kor visszajelzesei', () => {
     assert.equal(await p.locator('#foglalo .chip').count(), 0);
     const h = await p.$eval('#foglalo', (e) => e.getBoundingClientRect().height);
     assert.ok(h <= 400, 'a foglalo kartya magassaga: ' + h);
+    const sz = await p.$eval('#foglalo', (e) => e.getBoundingClientRect().width);
+    assert.ok(sz <= 880, 'a foglalo kartya szelessege (kisebb doboz): ' + sz);
+    // a naptar nem szetnyomott: negyzet alapu napok, szuk naptar
+    const nap = await p.$$eval('#naptar .naptar-nap', (l) => l.slice(0, 12).map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; }));
+    for (const [w, hh] of nap) assert.ok(Math.abs(w - hh) <= 1 && w >= 32, 'negyzet alapu nap: ' + w + 'x' + hh);
+    const nw = await p.$eval('#naptar', (e) => e.getBoundingClientRect().width);
+    assert.ok(nw <= 300, 'a naptar szelessege: ' + nw);
     await ctx.close();
   });
 
@@ -511,10 +517,21 @@ describe('a harmadik kor visszajelzesei', () => {
     const { p, ctx } = await nyit();
     const m = await p.$$eval('.szamolo-valaszto, .szamolo-eredmeny', (l) => l.map((e) => Math.round(e.getBoundingClientRect().height)));
     assert.equal(m[0], m[1], 'a ket doboz magassaga: ' + m);
-    assert.equal(await p.locator('#szamolo-valaszto .sz-chip svg.ti').count(), 17, 'minden gombon ikon');
-    assert.ok((await p.locator('#szamolo-tartalom .sz-sorok svg.ti').count()) >= 3, 'az eredmeny soraiban is ikon');
-    assert.equal(await p.locator('#arlista tbody tr .sor-ikon svg.ti').count(), 22, 'az arlista minden soraban ikon');
-    assert.equal(await p.locator('#arlista .csoport-ikon svg.ti').count(), 7, 'az arlista minden csoportjanal ikon');
+    assert.equal(await p.locator('#szamolo-valaszto .sz-chip img.ti-kep').count(), 17, 'minden gombon ikon (a motor illusztralt kepe)');
+    assert.ok((await p.locator('#szamolo-tartalom .sz-sorok img.ti-kep').count()) >= 3, 'az eredmeny soraiban is ikon');
+    assert.equal(await p.locator('#arlista tbody tr .sor-ikon img.ti-kep').count(), 22, 'az arlista minden soraban ikon');
+    assert.equal(await p.locator('#arlista .csoport-ikon img.ti-kep').count(), 7, 'az arlista minden csoportjanal ikon');
+    const forrasok = await p.$$eval('img.ti-kep', (l) => [...new Set(l.map((i) => i.getAttribute('src').split('/').pop().split('?')[0].split('-')[0]))].sort());
+    assert.deepEqual(forrasok, ['la', 'lp', 'rz'], 'csak a motor la-/lp-/rz- kepei');
+    assert.equal(await p.locator('svg.ti').count(), 0, 'nincs sajat rajzolt ikon');
+    await ctx.close();
+  });
+
+  test('a kalkulator arai egy oszlopban (jobbra igazitva) allnak, a 8 alkalmas programe is', async () => {
+    const { p, ctx } = await nyit();
+    const jobb = await p.$$eval('#szamolo-tartalom .osszeg, #szamolo-tartalom .sz-ossz b, #szamolo-tartalom .sz-kedv span:last-child, #szamolo-tartalom .sz-elso b, #szamolo-tartalom .sz-program b', (l) => l.map((e) => Math.round(e.getBoundingClientRect().right)));
+    assert.ok(jobb.length >= 7, 'arak: ' + jobb.length);
+    assert.equal(new Set(jobb).size, 1, 'az arak jobb szele azonos: ' + [...new Set(jobb)]);
     await ctx.close();
   });
 
@@ -562,7 +579,7 @@ describe('a harmadik kor visszajelzesei', () => {
     await p.waitForSelector('#zsofi video[controls]');
     assert.equal(await p.getAttribute('#zsofi video source', 'src'), forras);
     // galeria
-    assert.ok((await p.locator('.galeria-kep').count()) >= 4);
+    assert.equal(await p.locator('.galeria-kep').count(), 4, 'az elso ket (majdnem azonos) kep kozul az egyik kikerult');
     await p.locator('.galeria-kep').first().scrollIntoViewIfNeeded();
     await p.click('.galeria-kep >> nth=1');
     await p.waitForSelector('dialog.nagyito[open] img');
