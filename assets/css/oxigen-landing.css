@@ -427,15 +427,9 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .al-szoveg > p.alkalom-tapasztalat { margin-top: 20px; padding: 2px 0 2px 16px; border-left: 3px solid #d2ae5c; font-weight: 600; color: var(--sotet); font-size: 15.5px; line-height: 1.5; }
 .al-kep { min-width: 0; display: flex; flex-direction: column; }
 .al-fotok { position: relative; }
-.al-fotok figure { margin: 0; overflow: hidden; }
-.al-fotok img { width: 100%; height: 100%; object-fit: cover; object-position: 10% 30%; }
-.al-utana { position: relative; aspect-ratio: 1 / 1.18; border-radius: 24px; border: 3px solid #dcbf74; box-shadow: 0 18px 38px rgba(130, 98, 30, .26); }
-.al-elotte { position: absolute; left: -11%; bottom: -9%; width: 50%; aspect-ratio: 1 / 1.12; border-radius: 18px; border: 3px solid #fff; box-shadow: 0 14px 30px rgba(40, 30, 10, .3); }
-.al-cimke { position: absolute; font: 600 11.5px/1 var(--test); letter-spacing: .09em; text-transform: uppercase; padding: 8px 14px; border-radius: 999px; }
-.al-utana .al-cimke { top: 12px; right: 12px; background: rgba(243, 226, 176, .96); color: #5f4510; }
-.al-elotte .al-cimke { left: 8px; bottom: 8px; padding: 6px 11px; font-size: 10.5px; background: rgba(255, 255, 255, .92); color: #4a3a22; }
-.al-iv { position: absolute; left: 2%; top: 37%; width: 26%; height: auto; stroke: #f6e6b4; stroke-width: 2.6; z-index: 2; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .5)); }
-.al-skala { margin-top: 44px; }
+/* a kepterv kompoziciojat (2 foto + nyil + feliratok) egy kepkent tesszuk be; a lekerekitett, lagy szelu alakot maszk adja */
+.al-komp { display: block; width: 112.7%; max-width: none; height: auto; margin-left: -12.7%; -webkit-mask-image: url(/assets/img/oxigen/alkalom-kompozicio-maszk.png); mask-image: url(/assets/img/oxigen/alkalom-kompozicio-maszk.png); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.al-skala { margin-top: 10px; }
 .al-pontok { display: flex; align-items: center; gap: 6px; }
 .al-pontok i { flex: none; width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid #c6a346; background: #fff; }
 .al-pontok i.vegso { border-color: #c6a346; background: #c6a346; }
