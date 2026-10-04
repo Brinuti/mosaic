@@ -1,0 +1,57 @@
+Eles-atkotes (PR #114): valodi vegigfuto foglalasok az elesitett uton, osszefoglalo, 2026-10-04 (este)
+===================================================================================================
+
+Mi ez
+- A "Merest erinto: igen" PR (#114) elemzo-review szerinti blokkolo feltetele: veg-a-vegig teszt, platformonkenti konverzio-szamolassal es kattintas-azonositokkal.
+- 5 valodi foglalas + 1 kontroll-foglalas, mind az UJ uton: hirdetes-kattintas utanzata (gclid / fbclid / ttclid / utm) -> tartalmi oldal -> a rajta levo foglalo-gomb ->
+  felugro foglalo (reteg) -> valodi Salonic-foglalas -> koszonooldal a fo ablakban. Az "oxigen-reklam" szenario a regi /mosaic-hair-idopontfoglalas oldalrol indul
+  (4 aktiv Meta-hirdetes szovege linkeli): ures oldal, a foglalo magatol megnyilik, NINCS bezaro (X) gomb (bezaras_gomb=0 a naploban).
+- Futtatas: helyi build (ELES=1, tools/foglalo-atkotes.json: mind true), az eles tartomanyon (www.mosaicheadspa.hu-nak latszik), a kimeno meres alapbol tiltva es naplozva
+  (tools/meres-proba/tilt.mjs): a Google / Meta / TikTok / GA4 / Stape fele NEM ment ki semmi; a foglalasi jegyzettombbe sem irt a proba.
+- Parancs: node tools/meres-proba/meres-proba.mjs --szenario <headspa|hair|lezer|oxigen2|oxigenreklam> --mod valodi --popup 1 --clickids 1 --overlay dist
+  Kiertekeles: node tools/meres-proba/elemzes.mjs <naplo.json>  (a mai javitassal a POST-torzsben kotegelve kuldott GA4-esemenyeket is felismeri)
+
+A 6 foglalas lemondasa (a proba utan, a visszaigazolo e-mailek "Lemondom" linkjevel)
+- Mind a 6 lemondva ES ellenorizve: a Salonic "Foglalas reszletek" oldala mind a 6-nal "Idopont torolve!" (tools/meres-proba/foglalas-allapot.mjs).
+  (mosaicheadspa 85ebd7de..., mosaic-hair 49afb32c..., mosaic-elysion c1d5fd84..., mosaic-oxigen 5493c6bf..., 758cbcee..., d9931433...)
+
+Eredmeny platformonkent (egyedi konverzio; a reszletek a szenarionkenti naplokban)
+  szenario          Google Ads (egyedi cimke)      GA4 / Stape esemenyek (1-1x)                                   Meta (browser + CAPI azonos event_id, deduplikalt)        TikTok konverzio
+  HeadSpa           2 (nJFWC..., xIXsC...)         ads_conversion_Egy_b_Oldalbet_lt_s_www_1, ..._Id_pont_foglal_sa_Oldal_2, foglalas_ajikartya_ga4   CompleteRegistration, Schedule, HeadSpa_FoglalasElso   Schedule
+  Fodraszat         1 (DnDNC...)                   ads_conversion_Fodrasz_Foglalas_1, hair_book_appointment_first   Schedule, Fodrasz_Konzultacio                              Purchase
+  Lezer             2 (LXcLC..., 2jrCC...)         Szortelenites_elysion_ok, elysion_ok                             Schedule, Szor_Konzultacio                                 CompleteRegistration, Purchase
+  Oxigen (2.)       1 (pLhlC...)                   oxygen_headspa_second_appointment                                Oxigen_Visszajaro                                          Purchase
+  Oxigen regi oldal 1 (pLhlC...)                   oxygen_headspa_second_appointment                                Oxigen_Visszajaro                                          Purchase
+  Kontroll          1 (pLhlC...)                   oxygen_headspa_second_appointment                                Oxigen_Visszajaro                                          Purchase
+- Minden konverzios esemeny PONTOSAN EGYSZER fut (Google Ads: egy konverzio tobb csatornan = nem dupla; Meta: browser es CAPI azonos event_id-vel, a Meta egynek veszi;
+  TikTok: Purchase / Schedule / CompleteRegistration 1-1x). A koszonooldal Salonic-keretbol semmilyen meresi kerest nem indit (KERETBEN inditott: 0).
+- Kattintas-azonositok MIND az 5 (6) szenarioban atmennek a koszonooldalig: gclid (gclaw/gclid a Google Ads keresekben), fbclid -> _fbc (browser es CAPI is),
+  ttclid (TikTok context + cookie), utm_source / utm_medium (GA4 page_location / referrer), _gcl_aw / _fbc / ttclid sutik. Az "oxigen regi oldal" (ures oldal + bezarhatatlan
+  felugro) szenarioban is: gclid 17 Google Ads kereses, fbc a browser-pixel 2 keresen es a CAPI mind a 2 keresen, ttclid 10 TikTok kereson.
+
+Osszehasonlitas a korabbi (regi utas, 2026-10-03) valodi naplokkal (valodi-hair/-lezer/-oxigen2, elo-headspa-direkt, elo-hair-direkt)
+- Google Ads cimkek: AZONOSAK (HeadSpa 2, fodraszat 1, oxigen 1). Lezer: az 1. cimke azonos (LXcLC...), a 2. mas (2jrCC... vs cPOaC...), mert most MAS szolgaltatast
+  foglaltunk (ingyenes konzultacio zsofihoz vs ARC teljes arc); ugyanigy Meta Szor_Konzultacio vs Szor_FoglalasElso. Szolgaltatas-fuggo, nem utvonal-fuggo.
+- GA4 / Stape esemenyek: AZOK (HeadSpa 3, fodraszat 2, lezer 2, oxigen 1).
+- TikTok: ugyanaz a konverzios keszlet; kiegeszites: "ClickButton" (a TikTok pixel automatikus gombkattintas-esemenye a tartalmi oldalon, HeadSpa / lezer / oxigen);
+  nem konverzio. A TikTok pixel-keresek szama tobb (kb. 70 vs kb. 24), mert most a tartalmi oldal + a felugro + a Salonic-keret pixelei is benne vannak (a regi napló
+  kozvetlenul a motor-oldalrol indult).
+
+Megfigyelesek (nem blokkolo)
+1) GA4-szallitas: az oxigen "masodik alkalom" esemeny (oxygen_headspa_second_appointment) az egyik futasban kozvetlenul a Google-nek (region1.analytics.google.com +
+   measurement/conversion), a masikban a Stape-en at (stape.mosaicheadspa.hu/g/collect) ment; mindig PONTOSAN 1x. A hasonlo valtakozas munkamenetenkent mas oldalakon
+   is latszik (oxigen2: tartalmi oldal Stape, koszonooldal kozvetlen; oxigen-reklam: regi oldal kozvetlen, koszonooldal Stape), a regi-uti (10-03) oxigen naploban is
+   volt kozvetlen. A first_booking ertek NEM az ok (a kontroll first_booking=true-val is Stape-on ment). A GTM 146-os tag (GA4 - Oxigen terapy_second appointment)
+   trigger 194, nincs first_booking feltetel; Google Ads konverzio szandekosan nincs rajta (a tag megjegyzese szerint). Tehat az esemeny mindket uton megerkezik;
+   az ok (a Stape-szolgaltatasmunkas / szerver-oldali szallitas valtakozasa) nem az atkotestol fugg.
+2) A mellekelt elemzo-javitas: az elemzes.mjs korabban csak a lekerdezesben (GET) levo "en" mezot nezte, igy a POST-torzsben kotegelve kuldott GA4-esemenyeket
+   (pl. HeadSpa 3 esemeny) "0 fajta"-nak mutatta; javitva (enLista), a regi naplok ertekei igy egyeznek az ujakkal.
+3) Egy tesztben a vendegazonosito (g:NNN) ugyanaz a teszt-kartya, ezert az oxigen-reklam elso futasa first_booking=false volt (a masik oxigen-teszt meg nem volt lemondva);
+   a kontroll-futas first_booking=true.
+
+Ami NEM volt ebben a tesztben (nyitott, a tulajdonos feladata vagy kulon vizsgalat)
+- Google Ads felulet: a ket kodnelkuli (URL-szabalyos) elsodleges konverzio szabalyai csak a felulet bejelentkezesevel ellenorizhetok.
+- Valodi iPhone / Safari proba (a Safari mas viselkedese a felugroval kapcsolatban).
+- A masodlagos Google-konverzio "Dani_idopontfoglalas_uj_pageview" ertekei a regi foglalo-oldalra epulnek: a menubol / gombbol indulo foglalasoknal ez a pageview
+  megszunik (lasd az eles-atkotes-osszefoglalo "MERES: mi valtozik" pontjat).
+- A PMU (/sminktetovalas-budapest) beagyazott foglaloja valtozatlan; erre nem futott uj valodi teszt.

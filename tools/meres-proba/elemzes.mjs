@@ -33,11 +33,13 @@ kiir(`  EGYEDI Google Ads konverziok: ${gEgyedi.size}   (egy konverzio tobb csat
 
 // --- GA4 / stape ---
 const ga = L.filter((r) => (r.plat === 'ga4' && /g\/collect/.test(r.ut)) || (r.plat === 'stape' && /g\/collect/.test(r.ut)));
-const gaEv = new Map(); for (const r of ga) { const e = p1(r, 'en'); if (!e || NEM_KONV_GA.test(e)) continue; (gaEv.get(e) || gaEv.set(e, []).get(e)).push(r); }
+// a GA4 / stape esemenynev a lekerdezesben (GET) VAGY a torzsben (POST: tobb esemeny egy kereseben, soronkent) van
+const enLista = (r) => { const q = p1(r, 'en'); if (q) return [q]; return r.body ? String(r.body).split(/\r?\n/).map((l) => new URLSearchParams(l).get('en')).filter(Boolean) : []; };
+const gaEv = new Map(); for (const r of ga) for (const e of enLista(r)) { if (NEM_KONV_GA.test(e)) continue; (gaEv.get(e) || gaEv.set(e, []).get(e)).push(r); }
 kiir('\n--- GA4 (es stape g/collect): nem-oldalbetoltes esemenyek');
 for (const [e, rs] of gaEv) kiir(`  ${e}: ${rs.length} keres (${rs.map((r) => `${r.host.split('.')[0]}${r.ut.split('/').slice(-2).join('/')} [${kt(r)}]`).join(', ')})`);
-const adsConv = L.filter((r) => r.plat === 'ga4' && /measurement\/conversion/.test(r.ut) && p1(r, 'en') && !NEM_KONV_GA.test(p1(r, 'en')));
-kiir(`  GA4 -> Google Ads konverzio-importok (region1/measurement/conversion): ${adsConv.map((r) => p1(r, 'en')).join(', ') || '-'}`);
+const adsConv = L.filter((r) => r.plat === 'ga4' && /measurement\/conversion/.test(r.ut) && enLista(r).some((e) => !NEM_KONV_GA.test(e)));
+kiir(`  GA4 -> Google Ads konverzio-importok (region1/measurement/conversion): ${adsConv.flatMap((r) => enLista(r)).join(', ') || '-'}`);
 
 // --- META ---
 // a Meta-pixel a GET-keres mellett POST-tal (a sajat keretebol) is kuldhet: az esemeny / event_id a torzsben van
