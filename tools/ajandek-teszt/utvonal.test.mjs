@@ -33,3 +33,19 @@ test('a rendes cimek valtozatlanok', () => {
   assert.equal(utvonal('/api/ajandek/rendeles', UA), null);
   assert.equal(utvonal('/assets/img/x.jpg', UA), null);
 });
+
+test('a regi Wix-cimek (/contact, /services, /en) 301-gyel a nyitooldalra mennek, egy lepesben', () => {
+  for (const ut of ['/contact', '/services', '/en', '/contact/', '/services/', '/en/', '/en.html', '/m/contact']) {
+    assert.deepEqual(utvonal(ut, UA), { atiranyit: '/' }, ut);
+  }
+  // a mobil felhasznalo-azonosito sem szamit; a Location nem kulso cim
+  assert.deepEqual(utvonal('/en', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)'), { atiranyit: '/' });
+  // az ideiglenes lezer-cim tovabbra is az eredetire mutat, a hasonlo nevu cimek valtozatlanok
+  assert.deepEqual(utvonal('/lezeres-szortelenites-budapest-uj', UA), { atiranyit: '/lezeres-szortelenites-budapest' });
+  assert.deepEqual(utvonal('/lezeres-szortelenites-budapest-uj/', UA), { atiranyit: '/lezeres-szortelenites-budapest' });
+  assert.deepEqual(utvonal('/services-extra', UA), { atir: '/_a/services-extra' });
+  assert.deepEqual(utvonal('/english', UA), { atir: '/_a/english' });
+  // az objektum-prototipus kulcsai nem lehetnek atiranyitasok
+  assert.deepEqual(utvonal('/constructor', UA), { atir: '/_a/constructor' });
+  assert.deepEqual(utvonal('/__proto__', UA), { atir: '/_a/__proto__' });
+});
