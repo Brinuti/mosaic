@@ -41,6 +41,7 @@ const BELEPOK = [
 
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const eredmeny = [];
+let apiMock = null; // fuggveny(startDate, days) -> a Salonic naptar-API valasza (az "Elo foglaltsag" probahoz)
 let cssKesleltet = 0; // ms: a booking-engine.css kiszolgalasanak keslelteteset a "stilus elotti villanas" proba allitja
 const merEsem = []; // a FO ablak kimeno meresi kereseit gyujtjuk (a Salonic-keretet nem): a reteg hasznalata nem indithat meresi esemenyt
 const ok = (cimke, rendben, reszlet = '') => { eredmeny.push({ cimke, rendben, reszlet }); console.log(`${rendben ? 'OK  ' : 'HIBA'} ${cimke}${reszlet ? ' | ' + reszlet : ''}`); };
@@ -50,6 +51,7 @@ async function ujLap() {
   await ctx.route('**/*', async (route) => {
     const req = route.request(), url = req.url();
     let u; try { u = new URL(url); } catch (e) { return route.continue(); }
+    if (apiMock && /api\.salonic\.hu\/calendar\/getAvailableTimes/.test(url)) return route.fulfill({ status: 200, headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*' }, body: JSON.stringify(apiMock(+u.searchParams.get('startDate'), +u.searchParams.get('days'))) });
     if (cssKesleltet && /booking-engine\.css/.test(u.pathname)) await new Promise((r) => setTimeout(r, cssKesleltet));
     if (OVERLAY && u.origin === BAZIS && req.method() === 'GET') {
       const e = fajlUtvonal(decodeURIComponent(u.pathname), req.headers()['user-agent'] || ua);
@@ -185,7 +187,7 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   const nap = reteg(page).locator('.be-nnap.szabad');
   await nap.first().waitFor({ timeout: 20000 });
   const szabadDb = await nap.count(), idoDb = await reteg(page).locator('.be-idogomb').count();
-  ok('design | HeadSpa idopont: a PMU-foglalo havi naptara (7 oszlopos racs, szabad napok zoldek, idopont-gombok)', (await reteg(page).locator('.be-hetnap').count()) === 7 && szabadDb > 3 && idoDb > 0, `szabad nap: ${szabadDb}, idopont: ${idoDb}`);
+  ok('design | HeadSpa idopont: a PMU-foglalo havi naptara (7 oszlopos racs, szabad napok zoldek, idopont-gombok)', (await reteg(page).locator('.be-hetnap').count()) === 7 && szabadDb > 0 && idoDb > 0, `szabad nap: ${szabadDb}, idopont: ${idoDb}`);
   ok('design | HeadSpa idopont: a kezeles kepe a savban, 1 ora 20 perc, a kep es a Modositas nem er a sav szelehez', (await reteg(page).locator('.be-svc-img').count()) === 1 && /1 óra 20 perc/.test(await reteg(page).locator('.be-svc').first().textContent()) && await reteg(page).locator('.be-svc').first().evaluate((s) => { const r = s.getBoundingClientRect(); const i = s.querySelector('.be-svc-img').getBoundingClientRect(); const l = s.querySelector('.be-link').getBoundingClientRect(); return i.left - r.left >= 6 && r.right - l.right >= 10; }));
   ok('design | Egyeni HeadSpa: a Relax / Hair valtozat jeloles nem latszik (egy szolgaltatas)', !/Relax|Hair/.test(await reteg(page).locator('.be-svc').first().textContent()), (await reteg(page).locator('.be-svc b').first().textContent()).trim());
   ok('design | naptar: a lapozo nyilak SVG-k, a kor kozepen (nincs szoveg-jel)', (await reteg(page).locator('.be-lapoz svg').count()) === 2 && !(await reteg(page).locator('.be-lapoz').first().textContent()).trim());
@@ -226,7 +228,7 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   const szakDb = await reteg(page).locator('.be-choice').count();
   k = await kepekBetoltve(page, 4);
   ok('design | Oxigen: a szakember-valaszto az idopont ELOTT, kepes kartyakon (a Salonic fotoi, nem monogram, nem legordulo)', /szakembert/.test(szakCim) && szakDb >= 3 && (await reteg(page).locator('select').count()) === 0 && (await reteg(page).locator('img.be-choice-img').count()) === 4 && k.jo === k.db, `${szakCim} (${szakDb} kartya) ${JSON.stringify(k)}`);
-  await reteg(page).locator('.be-choice').first().click();
+  await reteg(page).locator('.be-choice:not(.be-choice-fo)').first().click();
   await reteg(page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
   ok('design | Oxigen: a valasztott szakember neve a savban, a naptar a szakember idopontjaival, nincs legordulo', (await reteg(page).locator('select').count()) === 0 && (await reteg(page).locator('.be-idogomb').count()) > 0 && /Bozsoki|Szűcs|Menyhárt/.test(await reteg(page).locator('.be-svc').first().textContent()), (await reteg(page).locator('.be-svc').first().textContent()).replace(/\s+/g, ' ').trim().slice(0, 100));
   await zar(page);
@@ -286,7 +288,7 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   // minden uzletag idopont-valasztoja a havi naptar (PMU); a szakember-valaszto kepes kartyakkal az idopont elott
   for (const [cimke, opts, szakember] of [['Oxigen 1. alkalom', { business: 'oxygen', service: '466110' }, true], ['Fodraszat konzultacio', { business: 'hair', service: 'konzult' }, false], ['Lezer konzultacio', { business: 'laser', service: 'konzult' }, false]]) {
     await nyit(page, opts);
-    if (szakember) { ok(`design | ${cimke}: a landing a szakember-valasztoval kezdodik`, /szakembert/.test(await cimSzoveg(page))); await reteg(page).locator('.be-choice').last().click(); }
+    if (szakember) { ok(`design | ${cimke}: a landing a szakember-valasztoval kezdodik`, /szakembert/.test(await cimSzoveg(page))); await reteg(page).locator('.be-choice', { hasText: 'Mindegy' }).click(); }
     await reteg(page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
     ok(`design | ${cimke}: az idopont-valaszto a havi naptar (nincs gyors idopontok / napszak-sav / legordulo)`, (await reteg(page).locator('.be-hetnap').count()) === 7 && (await reteg(page).locator('.be-idogomb').count()) > 0 && !(await reteg(page).locator('.be-day, .be-strip, select').count()));
     await reteg(page).locator('.be-idogomb').first().click();
@@ -512,6 +514,84 @@ const sor = pg.locator('[data-nezet=' + nezet + ']:not([hidden]) .kezelo-oszlop'
   await u.ctx.close();
 }
 
+// --- 2026-10-04 (7. kor): "Elo foglaltsag" sav a naptar alatt (valodi szabad idopontok), a szakember-valaszto "Mindegy"-je legfelul ----------------------------
+{
+  const alap = Math.floor(Date.now() / 86400000) * 86400; // a mai UTC nap eleje
+  const idopont = (nap, ora = 10) => alap + nap * 86400 + ora * 3600; // nap 1..6: a kovetkezo 7 napon belul; 10+: azon tul
+  let apiHivas = 0; // hany naptar-API kerest szolgalt ki a mock
+  const mockAlap = (idok) => (startDate, days) => {
+    apiHivas++;
+    const blocks = {}; let i = 0;
+    for (const ts of idok.filter((x) => x >= startDate && x < startDate + days * 86400)) { const nap = new Date(ts * 1000).toISOString().slice(0, 10); ((blocks[nap] ||= { 111: { employeeName: 'Teszt Szakember', slots: {} } })[111].slots)['s' + (i++)] = { timestamp: ts, formatted: '' }; }
+    return { status: 'success', data: { blocks, placeName: 'Mosaic Headspa', placeAddress: '1023 Budapest, Bécsi út 4.' } };
+  };
+  const sav = (pg) => pg.locator('#mosaic-booking-layer').locator('.be-elo');
+  async function eloLap(idok) {
+    apiMock = mockAlap(idok);
+    const u = await ujLap();
+    await u.page.addInitScript(() => { window.__MH_ELO_MS = 1500; });
+    await u.page.goto(BAZIS + OLDAL, { waitUntil: 'domcontentloaded' });
+    await u.page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 });
+    await u.page.evaluate(() => window.openBooking({ business: 'headspa', service: 'paros' }));
+    await sav(u.page).waitFor({ timeout: 25000 });
+    return u;
+  }
+  const szabadNapok = (pg) => pg.locator('#mosaic-booking-layer').locator('.be-nnap.szabad').count();
+
+  // 1. kevés szabad idopont a 7 napban: "mar csak 3 ... maradt", narancs (surgos) jelzes; kapacitas / esemeny nelkul nincs tovabbi sor
+  let u = await eloLap([idopont(1), idopont(2), idopont(3), idopont(10), idopont(20), idopont(40)]);
+  let s = sav(u.page);
+  const uz1 = (await s.locator('.be-elo-uzenet').textContent()).trim();
+  ok('elo foglaltsag: "A kovetkezo 7 napra mar csak 3 szabad idopont maradt." (a Salonic adatabol szamolva), "Elo foglaltsag" cim, surgos (narancs) jelzes', uz1 === 'A következő 7 napra már csak 3 szabad időpont maradt.' && (await s.locator('.be-elo-cim').textContent()) === 'Élő foglaltság' && /keves/.test(await s.getAttribute('class')), uz1);
+  ok('elo foglaltsag: kapacitas / foglalasi esemeny nelkul nincs "X%-a foglalt" es nincs "N perce foglaltak" sor; a segedsor: "Az elerhetoseg automatikusan frissul."', (await s.locator('.be-elo-sor').count()) === 0 && /automatikusan frissül/.test(await s.locator('.be-elo-also').textContent()), '');
+  const rend = await u.page.locator('#mosaic-booking-layer').evaluate((h) => { const r = h.shadowRoot; const n = r.querySelector('.be-naptar'); const e = r.querySelector('.be-elo'); const l = r.querySelector('.be-link-tavol'); return !!(n.compareDocumentPosition(e) & 4) && !!(e.compareDocumentPosition(l) & 4); });
+  ok('elo foglaltsag: a sav a naptar ALATT, a "Nem talalok megfelelo idopontot" fole van', rend);
+  const anim = await s.locator('.be-elo-pont').evaluate((e) => getComputedStyle(e).animationName);
+  ok('elo foglaltsag: egyetlen enyhe pulzalo pont (egy animacio, 2 mp-nel lassabb)', anim === 'be-elo-pulz' && (await s.locator('.be-elo-pont').evaluate((e) => parseFloat(getComputedStyle(e).animationDuration))) >= 2, anim);
+  // nem "ugralhat": valtozas nelkul a szoveg nem valtozik, es nincs valtozas-animacio (a hook 1,5 mp-es frissitesevel nezzuk)
+  const napokElobb = await szabadNapok(u.page);
+  await u.page.waitForTimeout(5000);
+  ok('elo foglaltsag: valtozas nelkul nem ugrik (a szoveg ugyanaz, nincs "Most frissult", nincs valtozas-animacio)', (await s.locator('.be-elo-uzenet').textContent()).trim() === uz1 && (await s.locator('.be-elo-cim').textContent()) === 'Élő foglaltság' && !(await s.locator('.be-elo-uzenet.valt').count()));
+  // valodi valtozas: az egyik idopont elfogy -> "Most frissult", "mar csak 2", a naptar is frissul
+  apiMock = mockAlap([idopont(1), idopont(3), idopont(10), idopont(20), idopont(40)]);
+  await s.locator('.be-elo-cim', { hasText: 'Most frissült' }).waitFor({ timeout: 9000 }).catch(() => {});
+  const uz2 = (await s.locator('.be-elo-uzenet').textContent()).trim();
+  ok('elo foglaltsag: valodi valtozaskor (egy idopont elfogyott) finoman frissul: "Most frissult", "mar csak 2", a naptar szabad napjai is', (await s.locator('.be-elo-cim').textContent()) === 'Most frissült' && uz2 === 'A következő 7 napra már csak 2 szabad időpont maradt.' && (await szabadNapok(u.page)) === napokElobb - 1, uz2 + ' | szabad napok: ' + napokElobb + ' -> ' + (await szabadNapok(u.page)));
+  await s.locator('.be-elo-cim', { hasText: 'Élő foglaltság' }).waitFor({ timeout: 16000 }).catch(() => {});
+  ok('elo foglaltsag: a "Most frissult" cim egy ido utan visszall "Elo foglaltsag"-ra, az uzenet a frissitett marad', (await s.locator('.be-elo-cim').textContent()) === 'Élő foglaltság' && (await s.locator('.be-elo-uzenet').textContent()).trim() === uz2);
+  // bezaras utan nincs halott idozito / halott motor: nem megy tovabb naptar-kereses, es a mentett allapotot sem irja felul
+  await u.page.locator('#mosaic-booking-layer').locator('#be-close').click();
+  await u.page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {});
+  await u.page.waitForTimeout(500);
+  const hivasZaraskor = apiHivas; const snapZaraskor = await u.page.evaluate(() => sessionStorage.getItem('mhFoglaloAllapot'));
+  await u.page.waitForTimeout(5000);
+  ok('elo foglaltsag: bezaras utan nem fut tovabb a frissites (nincs halott idozito), a mentett allapotot sem irja felul', apiHivas === hivasZaraskor && (await u.page.evaluate(() => sessionStorage.getItem('mhFoglaloAllapot'))) === snapZaraskor, 'API-hivas: ' + hivasZaraskor + ' -> ' + apiHivas);
+  await u.ctx.close();
+
+  // 2. sok szabad idopont: semleges megallapitas (nem allitunk szukoseget, ami nincs)
+  u = await eloLap([1, 2, 3, 4, 5, 6].flatMap((n) => [idopont(n, 9), idopont(n, 14)]).concat([idopont(20)]));
+  s = sav(u.page);
+  const uz3 = (await s.locator('.be-elo-uzenet').textContent()).trim();
+  ok('elo foglaltsag: sok szabad idopontnal semleges ("A kovetkezo 7 napra 12 szabad idopont van."), zold jelzes, nincs "mar csak"', uz3 === 'A következő 7 napra 12 szabad időpont van.' && /jo/.test(await s.getAttribute('class')) && !/már csak/.test(uz3), uz3);
+  await u.ctx.close();
+
+  // 3. nincs szabad idopont a 7 napban: ezt mondja, es a legkozelebbit
+  u = await eloLap([idopont(12), idopont(20)]);
+  s = sav(u.page);
+  const uz4 = (await s.locator('.be-elo-uzenet').textContent()).trim();
+  ok('elo foglaltsag: ha a 7 napban nincs szabad idopont, ezt mondja es megnevezi a legkozelebbit', /^A következő 7 napra nincs szabad időpont\. A legközelebbi: .+\.$/.test(uz4) && /nincs/.test(await s.getAttribute('class')), uz4);
+  await u.ctx.close();
+  apiMock = null;
+
+  // szakember-valaszto: a "Mindegy - a legkorabbi idopont erdekel" legfelul, elsodleges (kiemelt) opcio
+  for (const [cimke, opts] of [['Oxigen', { business: 'oxygen', service: '466110' }], ['Fodraszat', { business: 'hair' }]]) {
+    await nyit(page, opts); await varCim(page); await page.waitForTimeout(600);
+    const kartyak = await reteg(page).locator('.be-choice').evaluateAll((es) => es.map((e) => ({ szoveg: e.textContent.trim().slice(0, 40), fo: e.classList.contains('be-choice-fo') })));
+    ok('szakember-valaszto (' + cimke + '): a "Mindegy - a legkorabbi idopont erdekel" legfelul, kiemelt elsodleges opcio, utana a szakemberek', kartyak.length >= 3 && /Mindegy/.test(kartyak[0].szoveg) && kartyak[0].fo && kartyak.slice(1).every((k) => !k.fo && !/Mindegy/.test(k.szoveg)), kartyak.map((k) => k.szoveg).join(' | '));
+    await zar(page);
+  }
+}
+
 // --- sebesseg: a naptar mennyi ido alatt jelenik meg hideg gyorsitotarral (uj kontextus, nincs elomelegites), uzletagankent ------------------------
 const SEBESSEG = [['HeadSpa paros', { business: 'headspa', service: 'paros' }, null], ['Fodraszat konzultacio', { business: 'hair', service: 'konzult' }, null], ['Lezer konzultacio', { business: 'laser', service: 'konzult' }, null], ['Oxigen 1. alkalom', { business: 'oxygen', service: '466110' }, 'szakember']];
 for (const [cimke, opts, elso] of SEBESSEG) {
@@ -521,7 +601,7 @@ for (const [cimke, opts, elso] of SEBESSEG) {
   const t0 = Date.now();
   await u.page.evaluate((o) => window.openBooking(o), opts);
   let t1 = 0;
-  if (elso) { await u.page.locator('#mosaic-booking-layer').locator('.be-choice').first().waitFor({ timeout: 25000 }); t1 = Date.now() - t0; await u.page.locator('#mosaic-booking-layer').locator('.be-choice').last().click(); }
+  if (elso) { await u.page.locator('#mosaic-booking-layer').locator('.be-choice').first().waitFor({ timeout: 25000 }); t1 = Date.now() - t0; await u.page.locator('#mosaic-booking-layer').locator('.be-choice', { hasText: 'Mindegy' }).click(); }
   const t2 = Date.now();
   await u.page.locator('#mosaic-booking-layer').locator('.be-naptar').first().waitFor({ timeout: 25000 });
   const vazMs = Date.now() - t2;

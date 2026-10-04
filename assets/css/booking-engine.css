@@ -266,3 +266,22 @@ a { color: inherit; }
 .be-lepesek { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; counter-reset: s; text-align: left; }
 .be-lepesek li { counter-increment: s; display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; font-size: 13.5px; line-height: 1.35; }
 .be-lepesek li::before { content: counter(s); width: 22px; height: 22px; border-radius: 50%; background: var(--sotet); color: var(--krem); display: grid; place-items: center; font-size: var(--m-kicsi); font-weight: 700; }
+
+/* "Elo foglaltsag" sav az idopont-naptar alatt: valodi szabad idopontok, egyetlen enyhe pulzalo pont, nem ugralo szoveg */
+.be-elo { display: flex; gap: 10px; align-items: flex-start; margin: 24px 0 4px; padding: 12px 14px; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; --elo: 63, 118, 82; }
+.be-elo.keves { --elo: 224, 117, 43; }
+.be-elo.nincs { --elo: 109, 130, 133; }
+.be-elo-pont { flex: none; width: 11px; height: 11px; margin-top: 6px; border-radius: 50%; background: rgb(var(--elo)); animation: be-elo-pulz 2.8s ease-out infinite; }
+.be-elo.nincs .be-elo-pont { animation: none; }
+@keyframes be-elo-pulz { 0% { box-shadow: 0 0 0 0 rgba(var(--elo), .4); } 65%, 100% { box-shadow: 0 0 0 9px rgba(var(--elo), 0); } }
+.be-elo-szoveg { min-width: 0; text-align: left; }
+.be-elo-cim { display: block; font-size: 13px; font-weight: 700; letter-spacing: .01em; color: var(--sotet); }
+.be-elo-uzenet { display: block; margin-top: 1px; font-weight: 700; font-size: 14.5px; line-height: 1.35; }
+.be-elo-uzenet.valt { animation: be-elo-valt .6s ease-out; }
+@keyframes be-elo-valt { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+.be-elo-extra { display: block; }
+.be-elo-sor { display: block; margin-top: 3px; font-size: 13.5px; line-height: 1.35; color: var(--kozep); }
+.be-elo-also { display: block; margin-top: 3px; font-size: 12.5px; color: var(--halvany); }
+@media (prefers-reduced-motion: reduce) { .be-elo-pont, .be-elo-uzenet.valt { animation: none; } }
+/* szakember-valaszto: a "Mindegy" elsodleges opcio (kiemelt) */
+.be-choice.be-choice-fo { border-color: var(--arany); background: var(--krem); }

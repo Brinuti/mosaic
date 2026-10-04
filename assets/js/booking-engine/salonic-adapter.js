@@ -288,10 +288,10 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
   const CHUNK_DAYS = 31;
   const AVAIL_MS = 90 * 1000;
   const chunkCache = new Map();
-  function chunk(business, service, staffId, startDate, n) {
+  function chunk(business, service, staffId, startDate, n, fresh = false) {
     const key = [business, service.serviceId, staffId, startDate, n].join(':');
     const hit = chunkCache.get(key);
-    if (hit && now() - hit.t < AVAIL_MS) return hit.p;
+    if (!fresh && hit && now() - hit.t < AVAIL_MS) return hit.p;
     const p = fetchSlots(business, service, staffId, startDate, n);
     chunkCache.set(key, { t: now(), p });
     p.catch(() => { const c = chunkCache.get(key); if (c && c.p === p) chunkCache.delete(key); }); // hiba utan a kovetkezo hivas ujra probalja
@@ -301,15 +301,16 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
 
   /**
    * Szabad idopontok. from: unix mp (alap: most - 3 ora, hogy a budapesti nap elejet is tartalmazza), days: alap 14.
+   * fresh: a megosztott (90 mp-es) reszeredmenyt nem hasznalja, uj kerest kuld (az "Elo foglaltsag" frissitese).
    * firstDays + onMore: az elso firstDays nap azonnal visszater, a teljes (days napos) lista kesobb az onMore(lista | null, hiba) hivasban erkezik.
    */
-  async function getAvailability(business, serviceId, { staffId = ANY_STAFF, from, days = 14, minLeadMinutes = 0, firstDays = null, onMore = null } = {}) {
+  async function getAvailability(business, serviceId, { staffId = ANY_STAFF, from, days = 14, minLeadMinutes = 0, firstDays = null, onMore = null, fresh = false } = {}) {
     const service = await findService(business, serviceId);
     const base = from ?? Math.floor((Math.floor(now() / 1000) - 3 * 3600) / 300) * 300;
     const split = (off, n) => { const k = Math.ceil(n / CHUNK_DAYS); const per = Math.ceil(n / k); return Array.from({ length: k }, (_, i) => [off + i * per, Math.min(per, n - i * per)]).filter(([, d]) => d > 0); };
     const f = firstDays && firstDays < days ? firstDays : null;
     const plan = f ? [[0, f], ...split(f, days - f)] : split(0, days);
-    const lists = plan.map(([off, n]) => chunk(business, service, staffId, base + off * 86400, n));
+    const lists = plan.map(([off, n]) => chunk(business, service, staffId, base + off * 86400, n, fresh));
     const minUnix = Math.floor(now() / 1000) + minLeadMinutes * 60;
     const keep = (l) => l.filter((x) => x.start_unix > minUnix);
     const full = Promise.all(lists).then(mergeSlots);

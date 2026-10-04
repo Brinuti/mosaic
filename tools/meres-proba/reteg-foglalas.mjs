@@ -3,7 +3,7 @@
 //   node tools/meres-proba/reteg-foglalas.mjs --bazis https://www.mosaicheadspa.hu|https://<ag>.mosaic-d77.pages.dev --utvonal h0-headspa|hair-konzult|... [--overlay dist] [--mobil 1] [--out naplo.json]
 //
 // Utvonalak: h0-headspa (szolgaltatas-elso: Head Spa -> Egyeni HeadSpa -> havi naptar), hair-konzult, oxigen-2, lezer-konzult.
-// A kimeno meres (capig.stape.do is) alapbol tiltva (tilt.mjs), a naplo a tiltott kereseket is tartalmazza. A telefonszam: MERES_TELEFON (alap: a szalon szama).
+// A kimeno meres (capig.stape.do is) alapbol tiltva (tilt.mjs), a naplo a tiltott kereseket is tartalmazza. A telefonszam: MERES_TELEFON (alap: a tulajdonos sajat szama; a szalon szama egy valodi vendeg kartonjahoz tartozik a Salonicban).
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,7 +11,7 @@ import { UA, UA_MOBIL, platformOf, engedett, dnsArg, ures } from './tilt.mjs';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const BAZIS = arg('bazis', 'https://www.mosaicheadspa.hu'), UTVONAL = arg('utvonal', 'hair-konzult'), OVERLAY = arg('overlay', ''), MOBIL = arg('mobil', '0') === '1', OUT = arg('out', '');
-const TELEFON = process.env.MERES_TELEFON || '202474444';
+const TELEFON = process.env.MERES_TELEFON || '709420090'; // a +36 utani resz: a tulajdonos sajat szama (a szalon szama egy valodi vendeg kartonjara parosulna)
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 let fajlUtvonal = null;
 if (OVERLAY) ({ fajlUtvonal } = await import('../serve-dist.mjs'));
@@ -55,10 +55,11 @@ try {
   lepes('reteg megnyilt', { utvonal: UTVONAL, url: page.url().slice(0, 120) });
   if (UTVONAL === 'h0-headspa') {
     await (await lathato(reteg.locator('.be-choice', { hasText: 'Head Spa' }))).click(); lepes('H0: Head Spa');
-    const hs1 = reteg.locator('.be-choice', { hasText: 'Időpontot foglalok' }); // a regi motor HS1 lepese; az ujban a HS2 az elso
-    if (await hs1.count()) { await hs1.first().click(); lepes('HS1: Időpontot foglalok'); }
+    await (await lathato(reteg.locator('.be-choice', { hasText: 'Normál foglalás' }))).click(); lepes('HS1: Normál foglalás (kuponkód nélkül)');
     await (await lathato(reteg.locator('.be-choice', { hasText: 'Egyéni HeadSpa' }))).click(); lepes('HS2: Egyéni HeadSpa');
   }
+  // szakember-valaszto (oxigen / fodraszat): "Mindegy" (a Salonic oszt be)
+  if (/szakembert|fodrászt/.test(((await reteg.locator('.be-title').first().textContent()) || ''))) { await reteg.locator('.be-choice', { hasText: 'Mindegy' }).first().click(); lepes('szakember: Mindegy'); }
   // idopont: HeadSpan a PMU-foglalo havi naptara (az utolso szabad nap utolso idopontja), egyebkent a "tovabbi idopontok" naptar-sav
   await reteg.locator('.be-nnap.szabad, button:has-text("További időpontok")').first().waitFor({ state: 'visible', timeout: 25000 });
   let ido;
@@ -104,7 +105,7 @@ try {
   }
   const keretUrlok = page.frames().map((f) => f.url().slice(0, 120));
   lepes('vég', { veg, keretek: keretUrlok.filter((x) => !x.startsWith('about:')) });
-  const c6 = reteg.locator('.be-card');
+  const c6 = reteg.locator('.be-kosz-kartya');
   if (await c6.count()) lepes('sikerkepernyo kartya', { szoveg: (await c6.first().textContent()).replace(/\s+/g, ' ').trim().slice(0, 240) });
   await page.waitForTimeout(6000);
 } catch (e) { lepes('HIBA', { uzenet: String(e.message || e).slice(0, 300) }); }
