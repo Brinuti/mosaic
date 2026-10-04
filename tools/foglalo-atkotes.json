@@ -1,11 +1,14 @@
 {
-  "_leiras": "A Salonic foglalo-linkek atkotese a kozos foglalora (/foglalo-motor), uzletagankent. A szabalyok: tools/foglalo-atkotes.mjs. ELES oldalon (main) a 'kapcsolok' dont: false = a link marad Salonic-link (a kimenet bajtra azonos a mostanival), true = a foglalora mutat. Az atkapcsolas: a negy ertek egyszerre true, uj deploy; visszaallitas: false, uj deploy.",
+  "_leiras": "A foglalo-linkek atkotese a kozos foglalora (/foglalo-motor), kapcsolonkent: headspa / oxigen / fodraszat / lezer (a Salonic-linkek ES az oldalak gombjai az adott uzletagra), pmu (a PMU-oldalak gombjai a PMU foglalo retegere), fejlec (a fomenu FOGLALAS gombja az altalanos kezdoallapotra), regi (a regi foglalo-oldalak - /idpontfoglalas, /mosaic-hair-idopontfoglalas, /szortelenites-foglalas, /pmu-foglalas, /smink-foglalas, /naptar - ures oldal + bezarhatatlan felugro foglalo; a /fodraszat-foglalas es /kupon-utan-foglalas megszunt: 301 a fooldalra, netlify/lib/utvonal.js). A szabalyok: tools/foglalo-atkotes.mjs. ELES oldalon (main) a 'kapcsolok' dont: false = a link marad a regi (a kimenet bajtra azonos a mostanival), true = a foglalora mutat, es a foglalo HELYBEN, felugro retegben nyilik (asztalon es mobilon is). Visszaallitas: a kapcsolo false, uj deploy (vagy a Cloudflare Pages elozo deploymentje).",
   "kapcsolok": {
-    "headspa": false,
-    "oxigen": false,
-    "fodraszat": false,
-    "lezer": false
+    "headspa": true,
+    "oxigen": true,
+    "fodraszat": true,
+    "lezer": true,
+    "pmu": true,
+    "fejlec": true,
+    "regi": true
   },
-  "_elonezet": "true: a PR-elonezeteken es a helyi (nem eles) buildeken minden kapcsolo be van kapcsolva, hogy az atkotes kiprobalhato legyen; az eles oldalra (main) ez nem hat. A FOGLALO_ATKOTES=none|all|headspa,lezer kornyezeti valtozo felulir.",
+  "_elonezet": "true: a PR-elonezeteken es a helyi (nem eles) buildeken minden kapcsolo be van kapcsolva, hogy az atkotes kiprobalhato legyen. A FOGLALO_ATKOTES=none|all|headspa,lezer,pmu,fejlec kornyezeti valtozo felulir.",
   "elonezetBe": true
 }

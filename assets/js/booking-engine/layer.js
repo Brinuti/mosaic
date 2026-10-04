@@ -52,6 +52,8 @@ export function isOpen() { return !!current; }
  * Megnyitja a foglalot.
  * opts: { business, service | service_id, category | service_category, intent, voucher } (mind opcionalis; ha nincs uzletag: szolgaltatas-elso kezdo allapot)
  * env:  { restored: true } ha az oldal mar ?booking=1-gyel toltodott be (nincs elozo bejegyzes, nem pusholunk); cssHref / fontsHref; opener (fokusz-visszaadas);
+ *       zarhatatlan: true -> bezarhatatlan reteg (a regi foglalo-cimek ures oldalain): nincs X; a bongeszo vissza gombja az elso lepesnel elhagyja az oldalt
+ *       (nem marad ures oldal); a suti-sav (#mh-cc) az inert-bol kimarad, hogy a hozzajarulas megadhato maradjon
  *       urlAllapot: true -> az URL is frissul (?booking=1&business=...): alapbol NEM, mert a GTM History Change triggerei minden URL-valtozasnal
  *       oldalmegtekintes-esemenyeket (Meta PageView, GA4 page_view / visit, Google Ads page_view) inditanak; csak GTM-kizaro szabaly utan kapcsolhato be
  */
@@ -62,6 +64,7 @@ export function openBooking(opts = {}, env = {}) {
   const restored = !!env.restored;
   const urlAllapot = !!env.urlAllapot;
   const opener = env.opener || doc.activeElement;
+  const zarhatatlan = !!env.zarhatatlan;
 
   // --- gazdaelem + Shadow DOM -------------------------------------------------------------------------------------------------------
   const host = doc.createElement('div');
@@ -91,7 +94,7 @@ export function openBooking(opts = {}, env = {}) {
   html.style.overflow = 'hidden';
   if (scrollbar > 0) html.style.paddingRight = scrollbar + 'px';
   bodyEl.style.position = 'fixed'; bodyEl.style.top = '-' + scrollY + 'px'; bodyEl.style.width = '100%';
-  const inerted = [...doc.body.children].filter((el) => el !== host && !el.inert);
+  const inerted = [...doc.body.children].filter((el) => el !== host && !el.inert && !(zarhatatlan && (el.id === 'mh-cc' || el.id === 'mh-cc-reopen')));
   for (const el of inerted) el.inert = true;
   doc.body.append(host);
 
@@ -132,7 +135,9 @@ export function openBooking(opts = {}, env = {}) {
     win.history.go(-steps); // a popstate (onExit) zarja be a reteget es allitja vissza az eredeti cimet
     win.setTimeout(() => { if (!closed) { if (urlAllapot) win.history.replaceState(null, '', cleanUrl(win.location.href)); teardown(); } }, 800); // ha a bongeszo nem lepett vissza
   }
-  const onExit = () => teardown();
+  // Bezarhatatlan reteg: a visszalepes az elso lepesnel elhagyja az (ures) oldalt: vissza az elozo oldalra, ha nincs, a fooldalra (nem marad ures oldal)
+  const kilep = () => { const cim = win.location.href; win.history.back(); win.setTimeout(() => { if (win.location.href === cim) win.location.replace('/'); }, 700); };
+  const onExit = () => { teardown(); if (zarhatatlan) kilep(); };
 
   // --- billentyuzet: Esc nem zar, Tab a panelen belul marad -----------------------------------------------------------------------------
   const FOCUSABLE = 'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),iframe,[tabindex]:not([tabindex="-1"])';
@@ -148,7 +153,7 @@ export function openBooking(opts = {}, env = {}) {
   // (a hatterre kattintas SEM zar: csak az X)
 
   // --- a motor ------------------------------------------------------------------------------------------------------------------------
-  const engine = startEngine({ root: body, win, doc, mode: 'layer', search: engineSearch, defaultBusiness: null, onClose: requestClose, onExit, urlAllapot });
+  const engine = startEngine({ root: body, win, doc, mode: 'layer', search: engineSearch, defaultBusiness: null, onClose: requestClose, onExit, urlAllapot, closable: !zarhatatlan });
   current = { host, engine, close: requestClose, restored };
   // megjelenites: ha a stilus megerkezett (vagy 3 mp utan akkor is): a reteg lathatova valik es becsuszik
   let latszik = false;

@@ -86,3 +86,7 @@ Az időpont-naptár alatt egy sáv mutatja a szolgáltatás valódi szabad időp
 3. **GTM / mérés:** a motor `dataLayer`-be ír (`booking_*`), a réteg pedig most már GTM-es oldalon fut: át kell nézni, hogy semmilyen GTM-trigger nem reagál ezekre (olvasás), a konverziók továbbra is a köszönőoldalon futnak. A köztes lépés-események (GA4 `view_item`, `select_employee`, TikTok `ViewContent`) nem pótolódnak (tulajdonosi döntés).
 4. **Design:** a réteg és a H0 vizuális finomítása a végleges terv szerint (szövegek, ikonok, animáció).
 5. **Mobil kézi próba valódi telefonon** (iOS Safari: billentyűzet, görgetés az iframe-ben, `100dvh`).
+
+## Élesítés (2026-10-04, 9. kör)
+
+Az oldalakon a főmenü „FOGLALÁS” gombja és a foglalás-gombok (valamint a Salonic-linkek) a `/foglalo-motor?…` címre mutatnak, amit a launcher a helyi, felugró rétegben nyit meg (mobilon és asztalon is). A kapcsolók: `tools/foglalo-atkotes.json`. Részletek: DECISIONS.md „Élesítés”.

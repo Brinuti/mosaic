@@ -32,6 +32,7 @@ const BELEPOK = [
   ['Oxigen altalanos', { business: 'oxygen' }, 'Mit szeretnél foglalni?'],
   ['Oxigen 1. alkalom', { business: 'oxygen', service: '466110' }, 'Melyik szakembert választod?'],
   ['Oxigen 2. alkalomtol', { business: 'oxygen', service: '466158' }, 'Melyik szakembert választod?'],
+  ['Oxigen allapotfelmeres (uj oxigen-landing)', { business: 'oxygen', service: '466147' }, 'Válassz időpontot'], // egy szakember: nincs szakember-valaszto, egyenesen a naptar
   ['Lezer altalanos', { business: 'laser' }, null],
   ['Lezer konzultacio', { business: 'laser', service: 'konzult' }, 'Válassz időpontot'],
   ['Lezer elso idopontok', { business: 'laser', intent: 'first' }, 'Melyik területet szeretnéd?'],
@@ -690,21 +691,66 @@ const veg = url(page);
 ok('?booking=1 beerkezo link: a bezaras nem nyul az URL-hez (nincs extra oldalmegtekintes), a UTM / click ID megmarad', veg.searchParams.get('booking') === '1' && veg.searchParams.get('gclid') === 'TESZT123' && veg.searchParams.get('utm_source') === 'teszt' && !veg.hash, veg.search);
 
 // --- valodi landing-oldalak: a (linktermekbol kapott) foglalo-gombok a retegat nyitjak, nem navigalnak --------------------------------------------
-const LANDINGEK = ['/idpontfoglalas', '/lezeres-szortelenites-budapest', '/headspa-budapest-hungary', '/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel', '/szortelenites-foglalas']; // a /headspa-ajandekkartya a #64 (Gift Commerce Engine) ota az uj ajandekkartya-vasarlo oldal: nincs rajta foglalo-gomb
+// 2026-10-04 (elesites): a fomenu "FOGLALAS" gombja es az oldalak gombjai MINDEN oldalon a foglalo retegat nyitjak (asztalon es mobilon is); uzletagankent egy-ket jellemzo oldal
+const LANDINGEK = ['/lezeres-szortelenites-budapest', '/headspa-budapest-hungary', '/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel',
+  '/headspa-budapest', '/home', '/noi-fodraszat-budapest', '/balayage-haj-festes-budapest', '/oxigenterapia-budapest', '/vegleges-szortelenites-ferfiaknak', '/sminktetovalas-regi', '/ajandekkartya-szulinapra', '/aszf']; // a /headspa-ajandekkartya a #64 (Gift Commerce Engine) ota az uj ajandekkartya-vasarlo oldal: nincs rajta foglalo-gomb
 for (const lap of LANDINGEK) {
   await page.goto(BAZIS + lap, { waitUntil: 'domcontentloaded' });
   const van = await page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 }).then(() => true).catch(() => false);
   if (!van) { ok(lap + ' | launcher betoltodott', false); continue; }
   const hrefek = await page.$$eval('a[href*="foglalo-motor"]', (as) => [...new Set(as.map((a) => a.getAttribute('href')))]);
   ok(lap + ' | van motor-link (' + hrefek.length + ')', hrefek.length > 0);
-  for (const h of hrefek.slice(0, 7)) {
+  // a regi foglalo-oldalakra mutato gomb nem maradt (a hub-oldalak sajat fulei kivetel)
+  const regi = await page.$$eval('a[href]', (as) => as.map((a) => [a.getAttribute('href'), (a.textContent || '').replace(/\s+/g, ' ').trim()]).filter(([h]) => /^\/(idpontfoglalas|mosaic-hair-idopontfoglalas|szortelenites-foglalas|pmu-foglalas)\/?(\?|#|$)/.test(h)));
+  ok(lap + ' | nem maradt gomb a regi foglalo-oldalakra (' + regi.length + ')', regi.every(([h]) => h.split(/[?#]/)[0].replace(/\/$/, '') === lap), regi.slice(0, 3).map((r) => r.join(' ')).join(' | '));
+  // a fomenu "FOGLALAS" gombja: lathato, es az altalanos kezdoallapotot (Mit szeretnel foglalni?) nyitja a retegben
+  const menu = page.locator('a[href="/foglalo-motor"]:visible').first();
+  {
+    const lathato = (await menu.count()) > 0;
+    ok(lap + ' | fomenu: lathato FOGLALAS gomb a foglalora kotve', lathato, '');
+    if (lathato) {
+      await page.evaluate(() => { window.__marker = 'maradt'; });
+      await menu.click({ timeout: 8000 }).catch(() => page.evaluate(() => document.querySelector('a[href="/foglalo-motor"]').click()));
+      const cm = await varCim(page);
+      ok(lap + ' | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas)', cm === 'Mit szeretnél foglalni?' && url(page).pathname === lap && !url(page).hash && (await page.evaluate(() => window.__marker)) === 'maradt', 'cim="' + cm + '"');
+      await reteg(page).locator('#be-close').click().catch(() => {});
+      await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {});
+    }
+  }
+  for (const h of hrefek.filter((x) => x !== '/foglalo-motor').slice(0, 5)) {
     await page.evaluate((x) => { window.__marker = 'maradt'; [...document.querySelectorAll('a[href]')].find((a) => a.getAttribute('href') === x).click(); }, h);
-    const c = await varCim(page);
-    const u = url(page);
     const q = new URL(h, BAZIS).searchParams;
+    const pmu = q.get('business') === 'pmu';
+    const c = pmu ? ((await reteg(page).locator('iframe.be-pmu').waitFor({ timeout: 15000 }).then(() => 'PMU-keret').catch(() => null))) : await varCim(page);
+    const u = url(page);
     ok(lap + ' | CTA ' + h.replace('/foglalo-motor?', '') + ' -> reteg (az URL valtozatlan)', !!c && u.pathname === lap && !u.searchParams.has('booking') && !u.hash && (await page.evaluate(() => window.__marker)) === 'maradt', 'cim="' + c + '"');
     await reteg(page).locator('#be-close').click().catch(() => {});
     await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {});
+  }
+}
+// --- a regi foglalo-oldalak: ures oldal + bezarhatatlan felugro (a cim megmarad, a tartalom rejtett, a foglalo magatol megnyilik, nincs X); a kuponos oldalak 301 a fooldalra ---
+{
+  const URES = [['/idpontfoglalas', 'Mit szeretnél foglalni?'], ['/mosaic-hair-idopontfoglalas', 'Mit szeretnél foglalni?'], ['/szortelenites-foglalas', null], ['/pmu-foglalas', 'PMU'], ['/smink-foglalas', 'PMU'], ['/naptar', 'Mit szeretnél foglalni?']];
+  for (const [lap, vart] of URES) {
+    await page.goto(BAZIS + '/aszf', { waitUntil: 'domcontentloaded' }); // elozo oldal: innen lepunk a regi foglalo-oldalra (a visszalepes proba)
+    await page.evaluate(() => { try { sessionStorage.clear(); } catch (e) { /* nincs tarolo */ } }); // uj latogato: nincs mentett allapot (a 30 percen beluli ujranyitas ott folytatja, ahol tartott, es a vissza gomb elobb az elozo lepesre lep)
+    await page.goto(BAZIS + lap + '?utm_source=teszt&fbclid=TESZT', { waitUntil: 'domcontentloaded' });
+    const c = vart === 'PMU' ? ((await reteg(page).locator('iframe.be-pmu').waitFor({ timeout: 25000 }).then(() => 'PMU-keret').catch(() => null))) : await varCim(page);
+    ok(lap + ' | ures oldal: a foglalo MAGATOL megnyilik' + (vart && vart !== 'PMU' ? ' ("' + vart + '")' : vart ? ' (PMU-keret)' : ''), !!c && (!vart || vart === 'PMU' || c === vart), 'cim="' + c + '"');
+    await page.waitForTimeout(3000); // a PMU-keret betoltese utan (ember-szeru kesleltetes)
+    const allapot = await page.evaluate(() => { const s = document.getElementById('SITE_CONTAINER'); const b = document.getElementById('mh-cc'); return { tartalomRejtett: !s || getComputedStyle(s).display === 'none', mero: typeof window.openBooking === 'function', sutiSavInert: b ? b.inert : null, sutiSavZ: b ? getComputedStyle(b).zIndex : null, utvonal: location.pathname }; });
+    ok(lap + ' | ures oldal: a regi tartalom rejtett, az URL valtozatlan', allapot.tartalomRejtett && allapot.utvonal === lap, JSON.stringify(allapot));
+    ok(lap + ' | ures oldal: NINCS bezaras gomb (X), a foglalo kozepen / teljes kepernyon van', (await reteg(page).locator('#be-close').count()) === 0 && (await reteg(page).count()) === 1);
+    ok(lap + ' | ures oldal: a suti-sav a foglalo folott marad es kattinthato (a hozzajarulas megadhato)', allapot.sutiSavInert !== true && (allapot.sutiSavZ === null || +allapot.sutiSavZ > 2147483000), 'inert=' + allapot.sutiSavInert + ' z=' + allapot.sutiSavZ);
+    await page.keyboard.press('Escape'); await page.mouse.click(4, 4); await page.waitForTimeout(500);
+    ok(lap + ' | ures oldal: Esc es a hatterre kattintas sem zar (a foglalo marad)', (await reteg(page).count()) === 1);
+    await page.evaluate(() => history.back());
+    await page.waitForURL((u) => new URL(u).pathname !== lap, { timeout: 8000 }).catch(() => {});
+    ok(lap + ' | ures oldal: a bongeszo vissza gombja az elso lepesnel elhagyja az oldalt (nem marad ures oldal)', url(page).pathname === '/aszf' || url(page).pathname === '/', url(page).pathname);
+  }
+  for (const lap of ['/fodraszat-foglalas', '/kupon-utan-foglalas']) {
+    await page.goto(BAZIS + lap + '?utm_source=teszt', { waitUntil: 'domcontentloaded' });
+    ok(lap + ' | megszunt: 301 a fooldalra (az UTM megmarad)', url(page).pathname === '/' && url(page).searchParams.get('utm_source') === 'teszt', url(page).pathname + url(page).search);
   }
 }
 // --- meres-vedelem: a GTM-es landing-oldalon a reteg teljes hasznalata (nyitas, lepesek, adatlap, bezaras) nem indit meresi esemenyt a fo ablakbol ----
@@ -713,7 +759,7 @@ for (const lap of LANDINGEK) {
   await page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 });
   await page.waitForTimeout(9000); // a betoltes-kori meresi esemenyek lecsengenek
   const n0 = merEsem.length;
-  await page.evaluate(() => document.querySelector('a[href*="foglalo-motor"]').click());
+  await page.evaluate(() => document.querySelector('a[href*="foglalo-motor"][href*="service=konzult"]').click());
   await varCim(page); await page.waitForTimeout(2500);
   await reteg(page).locator('.be-idogomb').first().click(); await page.waitForTimeout(2500);
   await reteg(page).locator('iframe.be-iframe').waitFor({ timeout: 15000 }); await page.waitForTimeout(8000); // az idopont utan rogton az adatlap (nincs osszegzo kepernyo)
