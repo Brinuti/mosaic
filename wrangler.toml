@@ -7,6 +7,16 @@ name = "mosaicheadspa"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-09-01"
 
+# A foglalasi "jegyzettomb" (Cloudflare KV, lasd docs/booking-engine/DECISIONS.md): a valodi foglalasi esemenyek az "Elo foglaltsag" savhoz.
+# Eles es elonezeti nevter kulon. Az eles iras kapcsolo: ESEMENY_IRAS = "1" a [vars]-ban (a tulajdonos jovahagyasa utan; alapbol nincs).
+[[kv_namespaces]]
+binding = "ESEMENYEK"
+id = "4af9393f77f04123a9be887170a5d743"   # mosaic-foglalas-esemenyek
+
+[[env.preview.kv_namespaces]]
+binding = "ESEMENYEK"
+id = "b6a9eb3cb1c247a4be70787712fe1074"   # mosaic-foglalas-esemenyek-elonezet
+
 [vars]
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
