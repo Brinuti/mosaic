@@ -234,11 +234,13 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   k = await kepekBetoltve(page, 4);
   ok('design | Fodraszat: a fodrasz utan a szandekok (kepekkel)', (await cimSzoveg(page)) === 'Mit szeretnél?' && k.db >= 4 && k.jo === k.db, JSON.stringify(k));
   await kattint(page, 'Balayage');
-  ok('design | Fodraszat: kezelesek ikonnal es "-tol" arral (kevesebb info), foto nelkul', (await cimSzoveg(page)) === 'Melyik kezelés?' && (await reteg(page).locator('.be-ikon').count()) >= 2 && !(await reteg(page).locator('img.be-choice-img').count()) && (await reteg(page).locator('.be-choice-ar').count()) >= 2, (await reteg(page).locator('.be-choice-ar').allTextContents()).join(' | '));
+  k = await kepekBetoltve(page, 2);
+  ok('design | Fodraszat: kezelesek illusztraciokkal (a tulajdonos mintakepei) es "-tol" arral (kevesebb info)', (await cimSzoveg(page)) === 'Melyik kezelés?' && (await reteg(page).locator('img.be-choice-img').count()) >= 2 && !(await reteg(page).locator('.be-ikon').count()) && k.jo === k.db && (await reteg(page).locator('.be-choice-ar').count()) >= 2 && new Set(await reteg(page).locator('img.be-choice-img').evaluateAll((es) => es.map((e) => e.getAttribute('src')))).size === (await reteg(page).locator('img.be-choice-img').count()), (await reteg(page).locator('.be-choice-ar').allTextContents()).join(' | '));
   for (let i = 0; i < 3 && !/Milyen hosszú/.test(await cimSzoveg(page)); i++) { await reteg(page).locator('.be-choice').first().click(); await varCim(page); await page.waitForTimeout(500); if (/Milyen hosszú|Válassz időpontot/.test(await cimSzoveg(page))) break; }
   if (/Milyen hosszú/.test(await cimSzoveg(page))) {
-    const ik = await reteg(page).locator('.be-ikon').count(); const kul = await reteg(page).locator('.be-ikon').evaluateAll((es) => new Set(es.map((e) => e.innerHTML)).size);
-    ok('design | Fodraszat: hajhosszak mindegyike kulon hajhossz-ikonnal', ik >= 2 && kul === ik, `${ik} ikon, ${kul} kulonbozo`);
+    k = await kepekBetoltve(page, 2);
+    const hh = await reteg(page).locator('img.be-choice-img').evaluateAll((es) => es.map((e) => e.getAttribute('src').split('?')[0]));
+    ok('design | Fodraszat: hajhosszak mindegyike kulon hajhossz-illusztracioval', hh.length >= 2 && new Set(hh).size === hh.length && k.jo === k.db && hh.every((s) => /\/hh-/.test(s)), hh.map((s) => s.split('/').pop()).join(' | '));
     await reteg(page).locator('.be-choice').first().click();
   }
   await reteg(page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });

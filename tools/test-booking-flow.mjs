@@ -13,7 +13,7 @@ import {
 import { CHOOSER } from '../assets/js/booking-engine/families.js';
 import { HEADSPA } from '../assets/js/booking-engine/flows/headspa.js';
 import { OXYGEN } from '../assets/js/booking-engine/flows/oxygen.js';
-import { HAIR } from '../assets/js/booking-engine/flows/hair.js';
+import { HAIR, kezelesKep, hajhosszKep } from '../assets/js/booking-engine/flows/hair.js';
 import { LASER, AREAS, areaOf, labelOf, packageOf, areaIkon } from '../assets/js/booking-engine/flows/laser.js';
 import { IKONOK, hajhosszIkon, kezelesIkon } from '../assets/js/booking-engine/ikonok.js';
 import { classifyService } from '../assets/js/booking-engine/business-config.js';
@@ -417,6 +417,25 @@ test('minden valasztokartya kepe (kulcs) letezo fajl: szolgaltatas-valaszto, Hea
   assert.ok(kulcsok.length >= 31, `${kulcsok.length} kep`);
   for (const k of kulcsok) { assert.ok(k, 'minden kartyanak van kepe'); assert.ok(fs.existsSync(kepFajl(k)), `hianyzik: assets/img/booking/${k}.jpg`); assert.ok(fs.statSync(kepFajl(k)).size < 30000, `${k}: kis kep (< 30 kB)`); }
   assert.equal(new Set(kulcsok).size, kulcsok.length, 'nincs ketszer hasznalt kulcs');
+});
+
+test('fodraszat: minden szandek / kezelescsoport / hajhossz illusztracioja letezo fajl (a tulajdonos mintakepei)', () => {
+  const kulcsok = new Set();
+  for (const intent of HAIR.intents.filter((i) => !i.consult)) {
+    for (const g of groupServices(intentServices(hairServices, HAIR.intents, intent))) {
+      const k = kezelesKep(g.title);
+      assert.ok(k, `${g.title}: van kezeles-kep`); kulcsok.add(k);
+      for (const it of g.items) if (it.length) { const h = hajhosszKep(intent.key, it.length); assert.ok(h, `${g.title} / ${it.length}: van hajhossz-kep`); kulcsok.add(h); }
+    }
+  }
+  for (const k of kulcsok) assert.ok(fs.existsSync(kepFajl(k)), `hianyzik: ${k}`);
+  assert.equal(hajhosszKep('ujraepites', 'Hosszú haj'), 'hh-joico-hosszu');
+  assert.equal(hajhosszKep('szaritas', 'Hosszú haj'), 'hh-hosszu');
+  assert.equal(hajhosszKep('szaritas', 'Félhosszú haj'), 'hh-kozepes');
+  assert.equal(kezelesKep('Balayage / ombre / babylight + tőfestés + vágás + szárítás'), 'hk-balayage-tofestes');
+  assert.equal(kezelesKep('Tőfestés + Vágás + Szárítás'), 'hk-tofestes-vagas-szaritas');
+  assert.equal(kezelesKep('Női hajvágás + Szárítás'), 'hk-noi-vagas');
+  assert.equal(kezelesKep('Ismeretlen valami'), null);
 });
 
 test('szovegek (tulajdonos, 2026-10-04): oxigen hajkamera, HeadSpa ajandekkartya-kerdes, kuponkodos kartyak', () => {

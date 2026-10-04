@@ -96,3 +96,7 @@ A Salonic nem minden helyen bontja az első és a következő alkalmat külön k
 ## Egyéni HeadSpa: Relax + Hair egyben (2026-10-04)
 
 - A Salonicban a kuponos Egyéni **Relax** és **Hair** más időpontokat ad ki (Relax: okt. 26-tól; Hair: okt. 10, 17, 19, 26–29), pedig a tulajdonos szerint ugyanaz a szolgáltatás ugyanazokhoz a kezelőkhöz. A motor a kettőt egynek veszi (a naptár az unió), a Salonic-beli eltérés javítandó a Salonicban (a kuponos változatokhoz a normálhoz képest kevesebb kezelőhely és időpont van rendelve; a normál Relax és Hair időpontjai azonosak).
+
+## Fodrászat illusztrációk (2026-10-04, a tulajdonos mintaképei)
+
+- A fodrászat kártyái (szándékok, kezelések, hajhosszok) a tulajdonos által küldött illusztrált mintaképek szerint néznek ki; a bélyegek a mintaképekből vannak kivágva (`tools/booking-kepek.json`: `kivag`), a forrás-mintaképek a `tools/booking-kepek-forras/` mappában vannak. Jobb felbontású eredeti képekkel a `booking-kepek.json` forrása cserélhető. A korábbi fodrász-fotók (`hair-*`) és a hajhossz-/kezelés-vonalikonok csak tartalékként maradtak (ismeretlen kezelés / hajhossz).

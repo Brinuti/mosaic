@@ -56,41 +56,6 @@
     "zoom": 1
   },
   {
-    "kulcs": "hair-balayage",
-    "forras": "c2eb0f_e54771f7195c41e8b289074d80c7176e.jpg",
-    "fx": 0.5,
-    "fy": 0.5,
-    "zoom": 1
-  },
-  {
-    "kulcs": "hair-color",
-    "forras": "c2eb0f_d5771c1b288f452ebe82cd7012235422.jpg",
-    "fx": 0.5,
-    "fy": 0.5,
-    "zoom": 1
-  },
-  {
-    "kulcs": "hair-cut",
-    "forras": "c2eb0f_44a7fe204472462fadff7a6eb5668d24.jpg",
-    "fx": 0.5,
-    "fy": 0.5,
-    "zoom": 1
-  },
-  {
-    "kulcs": "hair-other",
-    "forras": "ac38c9a926cb4a69a6bb0340639d2b90.jpg",
-    "fx": 0.5,
-    "fy": 0.5,
-    "zoom": 1
-  },
-  {
-    "kulcs": "hair-consult",
-    "forras": "c2eb0f_882f3bd34e7646a2a59b0b85c2ae9ca4.jpg",
-    "fx": 0.5,
-    "fy": 0.5,
-    "zoom": 1
-  },
-  {
     "kulcs": "ox-camera",
     "forras": "c2eb0f_1ec2cdd2278548249644728823f3d1d7.jpg",
     "fx": 0.6,
@@ -227,5 +192,212 @@
     "fy": 0.5,
     "zoom": 1,
     "hatter": "#fbeede"
+  },
+  {
+    "kulcs": "hi-balayage",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-8.jpg",
+    "kivag": [
+      45,
+      113,
+      114
+    ]
+  },
+  {
+    "kulcs": "hi-festes",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-8.jpg",
+    "kivag": [
+      45,
+      270,
+      114
+    ]
+  },
+  {
+    "kulcs": "hi-vagas",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-8.jpg",
+    "kivag": [
+      47,
+      426,
+      114
+    ]
+  },
+  {
+    "kulcs": "hi-szaritas",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-8.jpg",
+    "kivag": [
+      46,
+      587,
+      114
+    ]
+  },
+  {
+    "kulcs": "hi-ujraepites",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-8.jpg",
+    "kivag": [
+      45,
+      750,
+      114
+    ]
+  },
+  {
+    "kulcs": "hi-pothaj",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-8.jpg",
+    "kivag": [
+      45,
+      914,
+      114
+    ]
+  },
+  {
+    "kulcs": "hi-konzultacio",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-8.jpg",
+    "kivag": [
+      45,
+      1078,
+      114
+    ]
+  },
+  {
+    "kulcs": "hk-balayage",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-13.jpg",
+    "kivag": [
+      108,
+      337,
+      100
+    ]
+  },
+  {
+    "kulcs": "hk-balayage-tofestes",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-13.jpg",
+    "kivag": [
+      108,
+      485,
+      100
+    ]
+  },
+  {
+    "kulcs": "hk-melir",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-13.jpg",
+    "kivag": [
+      108,
+      628,
+      100
+    ]
+  },
+  {
+    "kulcs": "hk-szokites",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-13.jpg",
+    "kivag": [
+      108,
+      767,
+      100
+    ]
+  },
+  {
+    "kulcs": "hk-teljes-festes",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-12.jpg",
+    "kivag": [
+      106,
+      242,
+      138
+    ]
+  },
+  {
+    "kulcs": "hk-tofestes-szaritas",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-12.jpg",
+    "kivag": [
+      106,
+      447,
+      138
+    ]
+  },
+  {
+    "kulcs": "hk-tofestes-vagas-szaritas",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-12.jpg",
+    "kivag": [
+      106,
+      652,
+      138
+    ]
+  },
+  {
+    "kulcs": "hk-ferfi-vagas",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-11.jpg",
+    "kivag": [
+      87,
+      333,
+      94
+    ]
+  },
+  {
+    "kulcs": "hk-noi-vagas",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-11.jpg",
+    "kivag": [
+      87,
+      469,
+      94
+    ]
+  },
+  {
+    "kulcs": "hh-rovid",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-10.jpg",
+    "kivag": [
+      56,
+      109,
+      128
+    ]
+  },
+  {
+    "kulcs": "hh-kozepes",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-10.jpg",
+    "kivag": [
+      56,
+      308,
+      128
+    ]
+  },
+  {
+    "kulcs": "hh-hosszu",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-10.jpg",
+    "kivag": [
+      56,
+      505,
+      128
+    ]
+  },
+  {
+    "kulcs": "hh-extra",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-10.jpg",
+    "kivag": [
+      56,
+      703,
+      128
+    ]
+  },
+  {
+    "kulcs": "hh-joico-felhosszu",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-9.jpg",
+    "kivag": [
+      79,
+      206,
+      136
+    ]
+  },
+  {
+    "kulcs": "hh-joico-hosszu",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-9.jpg",
+    "kivag": [
+      80,
+      406,
+      136
+    ]
+  },
+  {
+    "kulcs": "hh-joico-extra",
+    "forras": "tools/booking-kepek-forras/fodrasz-minta-9.jpg",
+    "kivag": [
+      80,
+      605,
+      136
+    ]
   }
 ]

@@ -383,11 +383,11 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
         if (g.items.length === 1) return chooseService(g.items[0].service, { next: F.next('HA2', 'service') });
         S.group = g; // tobb hajhossz-valtozat: HA2B
         return go(F.next('HA2', 'group'));
-      }, { ikon: kezelesIkon(g.title), ar: groupFrom(g) })))),
+      }, { kep: flow.kezelesKep ? flow.kezelesKep(g.title) : null, ikon: kezelesIkon(g.title), ar: groupFrom(g) })))),
     // Hajhosszok: a hossz ikonja segiti a kulonbseget
     HA2B: async () => h('section', {}, title(flow.copy.lengthTitle), note(S.group.title),
       h('div', { class: 'be-list' }, S.group.items.map((it) => bigButton(it.length || nameOf(it.service), durText(it.service), () => chooseService(it.service, { next: F.next('HA2B', 'service') }),
-        { ikon: hajhosszIkon(it.length), ar: staffPriceText(it.service) })))),
+        { kep: flow.hajhosszKep ? flow.hajhosszKep(S.intent && S.intent.intent.key, it.length) : null, ikon: hajhosszIkon(it.length), ar: staffPriceText(it.service) })))),
 
     // Lezer: konzultacio (egyenesen C1) / "Mar tudom" -> terulet -> kezeles / "Mar jarok" -> terulet -> kezeles (2. alkalomtol arak)
     LA1: async () => {
