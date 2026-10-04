@@ -50,6 +50,42 @@
     addEventListener('resize', allapot);
     allapot();
   }
+  // --- hero-galeria: egy dia egyszerre, pontokkal; magatol lapoz, amig a latogato bele nem nyul ------------
+  const hgSav = $('hg-sav');
+  if (hgSav) {
+    const diak = [...hgSav.children];
+    const pontok = $('hg-pontok');
+    let jelenlegi = 0, sajat = false, idozito = null;
+    const pontFrissit = () => [...pontok.children].forEach((p, i) => (i === jelenlegi ? p.setAttribute('aria-current', 'true') : p.removeAttribute('aria-current')));
+    const jelol = () => { // huzas / gorgetes utan a gorgetesi helyzetbol
+      jelenlegi = Math.min(diak.length - 1, Math.round(hgSav.scrollLeft / Math.max(1, hgSav.clientWidth)));
+      pontFrissit();
+    };
+    const menj = (i, sima = true) => {
+      jelenlegi = ((i % diak.length) + diak.length) % diak.length;
+      pontFrissit();
+      hgSav.scrollTo({ left: jelenlegi * hgSav.clientWidth, behavior: sima && !csokkentett ? 'smooth' : 'auto' });
+    };
+    diak.forEach((d, i) => {
+      const p = document.createElement('button');
+      p.type = 'button';
+      p.setAttribute('aria-label', (i + 1) + '. fotó');
+      p.addEventListener('click', () => menj(i));
+      pontok.append(p);
+    });
+    $('hg-elozo').addEventListener('click', () => menj(jelenlegi - 1));
+    $('hg-kovetkezo').addEventListener('click', () => menj(jelenlegi + 1));
+    hgSav.addEventListener('scroll', jelol, { passive: true });
+    addEventListener('resize', () => menj(jelenlegi, false));
+    jelol();
+    // automatikus lapozas: csak ha a latogato nem kerte a mozgas csokkentet, es csak amig nem nyult a galeriahoz
+    const megall = () => { sajat = true; clearInterval(idozito); };
+    ['pointerdown', 'keydown', 'touchstart', 'wheel'].forEach((e) => $('hero-galeria').addEventListener(e, megall, { passive: true, once: true }));
+    if (!csokkentett && diak.length > 1) {
+      idozito = setInterval(() => { if (!sajat && !document.hidden) menj(jelenlegi + 1); }, 6000);
+    }
+  }
+
   lapozo($('kezelo-sav'), $('kezelo-elozo'), $('kezelo-kovetkezo'), true);
   lapozo($('ba-sav'), $('ba-elozo'), $('ba-kovetkezo'), false);
 

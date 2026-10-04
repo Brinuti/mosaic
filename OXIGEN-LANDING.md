@@ -12,7 +12,7 @@ ezért a Meta-pixel (Fodrász-pixel, `suti.js` `PIXEL_OLDALAK`) és a GTM útvon
 | oldal (szöveg, szerkezet) | `foglalas/oxigenterapia-budapest.html` |
 | stílus | `assets/css/oxigen-landing.css` (betűk, színek: ugyanaz, mint a PMU-landingé) |
 | működés (kezelők / eredmények lapozó, videó, Google-értékelés, CTA-mérés) | `assets/js/oxigen-landing.js` |
-| képek | `assets/img/oxigen/` (kezelők, előtte/utána, kezelés-képek, Arc + Haj) és a Wix-képek `assets/img/c2eb0f_…` |
+| képek | `assets/img/oxigen/` (kezelők, előtte/utána, kezelés-képek, szalon, Arc + Haj) és a Wix-képek `assets/img/c2eb0f_…` |
 | a „hajkamera-nézet” rajz | `assets/img/oxigen/hajkamera-illusztracio.svg` (`node tools/oxigen-hajkamera-svg.mjs`) — rajz, nem vendégfotó, „Illusztráció” felirattal |
 
 A fejlécet és a láblécet a build szúrja be (`<!--mh-fejlec-->`, `<!--mh-lablec-->`), mint a többi saját oldalon.
@@ -28,11 +28,18 @@ Az oldalon belül **nincs `#horgony`-link**: a GTM History Change triggere minde
 gombok (`data-gorgetes`) JS-ből görgetnek. A CTA-kattintások `oxigen_landing_cta` (`data-cta` érték) és `oxigen_landing_video` dataLayer-eseményt
 küldenek (a PMU-landing `pmu_landing_*` mintájára; ezekre GTM-címke nem figyel).
 
+## Hero-galéria
+
+A hero jobb oldalán **valós előtte/utána fotók galériája** van (nem statikus kép): egy dia = egy `<figure class="hg-dia">` a HTML-ben; a pontokat, a nyilakat és a 6 másodperces automatikus lapozást (amíg a látogató bele nem nyúl; csökkentett mozgásnál nincs) az `oxigen-landing.js` adja. A benne lévő 4 kép **helyőrző** (a régi oldalon is szereplő Oxygeni Hair kép), a tulajdonos válogatja a valódiakat.
+
+## Alcímek, gombok
+
+Az oldalon nincsenek a címek fölötti kis (sárga) alcímek. Minden gomb ugyanaz az arany pill-gomb (a többi oldal aranygombja: `linear-gradient(#c6a346, #d9c164)`, fehér felirat). A SZÉP Kártya elfogadása a hero-ban, az árak alatt, a szalon-szakaszban és a GYIK-ban is szerepel.
+
 ## Validálásra váró helyőrzők (`[szögletes zárójeles]`, `.helyorzo`)
 
 - a három kezelő bemutatkozó szövege és szakmai háttere (a nevek és a fotók a Salonic szakember-oldaláról vannak);
-- az **előtte/utána** képek jelenleg az Oxygeni Hair (a kezeléshez használt márka) régi oldalon is szereplő képei, „forrás: Oxygeni Hair” jelöléssel;
-  saját vendég fotói, alkalomszámmal és hozzájárulással ide cserélendők;
+- a hero-galéria és az eredmények szakasz **előtte/utána** képei (az Oxygeni Hair régi oldalon is szereplő képei), amíg a tulajdonos ki nem választja a véglegeseket; az alattuk lévő mondat („kétmillió elvégzett kezelésből 95%-nál pozitív változás”) a tulajdonos megadott szövege;
 - az időpont-módosítás pontos határideje a GYIK-ban.
 
 ## Nyitott pontok (döntés kell)
