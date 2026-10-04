@@ -1,0 +1,137 @@
+# Booking Engine V1 – jóváhagyott döntések
+
+Minden döntés a tulajdonostól jött, 2026-10-03-án, a [PMU live audit és a Salonic readback](PMU_LIVE_ADAPTER_FINDINGS.md) után.
+
+| # | Kérdés | Döntés | Következmény |
+|---|---|---|---|
+| 1 | A 100 perces VIP Head Spa (53 800 Ft) online foglalható legyen? | **Már nincs VIP.** | A motorban nincs VIP. A Salonicban sincs. A weboldalon még szerepelhet: külön takarítás kell (lásd lent). |
+| 2 | Az Oxigén „Konzultáció + hajkamerás vizsgálat” (4 990 Ft) online foglalható legyen? | **Igen, és felkerült a Salonicba** (2026-10-03). | **Megoldva:** `466147` „AKCIÓS Hajkamerás vizsgálat és konzultáció”, 30 perc, 4 990 Ft, az Oxigén fiók „1. alkalom” kategóriájában. A besorolása automatikusan konzultáció. |
+| 3 | PMU eltávolítás online foglalható legyen? | **Nem, csak fotó alapján.** | Nincs Salonic-szolgáltatás. Az `removal` és a `photo_review_lead` nem foglalás, soha nem lehet `booking_completed`. |
+| 4 | A foglalások besorolása a hirdetési méréshez | **Jóváhagyva** (lásd lent). | `assets/js/booking-engine/business-config.js` |
+
+## Felület-döntések (2026-10-03, a UI építése előtt)
+
+| # | Kérdés | Döntés |
+|---|---|---|
+| 5 | Az adatok megadása (C4) és a foglalás létrehozása (C5) | **A Salonic beágyazott adatlapja** (mint a PMU-nál): saját űrlap nem lehetséges (reCAPTCHA, nincs foglalás-API). A foglaló az oldalunkon marad, az utolsó lépésben a Salonic űrlapja látszik benne. |
+| 6 | Melyik üzletággal kezdünk | **HeadSpa** |
+| 7 | „Értesítsetek, ha felszabadul hely” | **Az első verzióban kimarad**, csak a „Hívjatok vissza” marad. |
+| 8 | HeadSpa Egyéni: Relax vagy Hair | ~~Csak a Relax~~ **Módosítva 2026-10-04 (tulajdonos): a „Relax” és a „Hair” ugyanaz a szolgáltatás** (ugyanazok a kezelők), ezért egy „Egyéni HeadSpa” kártya, nincs választás: a naptár a két változat (kuponos és normál is) időpontjainak uniója, a foglalás arra a Salonic-szolgáltatásra megy, amelyiknek az időpontját választotta; a név változat-jelölés nélkül látszik. |
+| 9 | „Hívjatok vissza” | **Visszahívás-kérő űrlap**, a szalon e-mailt kap (új űrlap-típus: `motor-visszahivas`). |
+| 10 | „Időpont módosítása” a siker-oldalon | **Szöveg:** a módosító link a visszaigazoló e-mailben van. |
+| 11 | Szakember-választó a HeadSpa naptárában | **Nincs**, bárki megfelelő (a HeadSpa „munkatársai” kezelő-helyek). A Hair és az Oxigén alatt marad. |
+| 12 | A kész foglaló helye | **Rejtett próbaoldal** (`/foglalo-motor`, `noindex`, nincs rá link). Éles oldalba csak külön jóváhagyással kerül. |
+| 13 | „Ajándékkártyát vásárolok” gomb (HeadSpa) | **Az új ajándék-oldalra, ha kész** (a másik ablak építi). Addig a mostani `/headspa-ajandekkartya` oldalra mutat; az átkötés egy sor a `flows/headspa.js`-ben (`giftCardUrl`). |
+| 14 | A beágyazott Salonic-adatlap megjelenése | **Közös CSS minden üzletágra** (a tulajdonos javaslata): a PMU-nál már használt `salonic/pmu.css` általánosítása, `salonic/mosaic.css`. Fiókonként a Salonic „Egyedi CSS URL” beállítása kell hozzá; a motor ezt magától felismeri és ehhez igazítja a keretet. |
+| 16 | Oxigén első kezelés: 80 vagy 120 perces változat | **A 80 perces** (azonos ár, a weboldal is ezt linkeli). A tulajdonos a 120 perces változatot időközben kivette a Salonicból, így már csak egy van; ha újra felvennék, a motor rövid választást kínál (nem dönt a vendég helyett). |
+| 17 | Fodrászat: első képernyő csoportosítása | **Jóváhagyva:** Balayage / szőkítés (Balayage, Teljes szőkítés, Teljes melír / airtouch) · Hajfestés (Tőfestés szárítással és vágással, Teljes festés / elrontott festés korrekció) · Hajvágás (Női hajvágás + szárítás, Férfi hajvágás) · Egyéb (Női szárítás, Hajszerkezet újraépítés, Póthaj) · Nem tudom pontosan (ingyenes konzultáció, a Salonicban 30 perc, a tervben 15 perc állt: a Salonic értéke él). Ami egyik csoportba sem esik (új Salonic-kategória), az „Egyéb”-be kerül. |
+| 18 | Fodrászat: hajhossz | **Két lépés:** előbb a kezelés típusa (pl. Balayage), utána a hajhossz árral és idővel, mert a Salonicban hosszanként külön szolgáltatás van. |
+| 19 | Noel 20% kedvezménye (Fodrászat) | **A név mellett a felirat, az összegzésben a kedvezményes ár** (pl. 42 950 helyett 34 360 Ft; a Salonic űrlapja is ezt mutatja). „Bármely szakember” esetén a Salonic Noelhez is oszthat, ezért a kedvezményes ár is elfogadott az ellenőrzésben. |
+| 20 | Lézer: területek | **Jóváhagyva:** Arc (Teljes arc, Bajuszvonal, Állcsúcs + állkapocsvonal) · Hónalj · Kar (Alkar, Felkar, Teljes kar) · Intim (Bikini vonal, Teljes intim) · Láb (2 lábszár, 2 comb, 2 teljes láb) · Törzs (Hát, Mellkas, Has) · Több terület (akciós csomagok, egyedi csomag, egyéb testrészek). A területet a Salonic nevének előtagjából (ARC, TEST, INTIM, LÁBAK, FÉRFI, EGYÉB, AKCIÓ) olvassa a motor. A nevekből az előtag elmarad, a kedvezmény és az állapotfelmérés az ár mellett látszik. |
+| 21 | Lézer: egyedi csomag ára | **„Egyedi ár”**, foglalható marad (a Salonicban 0 Ft, a végső árat a helyszínen állítják be). A konzultáció „Ingyenes”. |
+| 22 | Lézer: „Már járok kezelésre” | **Ugyanazok a területek, utána a kezelés** a 2. alkalomtól árakkal (nem egy 23 soros lista). |
+| 23 | Az élesítés módja | **Mindent kipróbálunk nem élesben (rejtett oldalról), és utána egyszerre kapcsolunk át** (nem üzletáganként). |
+| 24 | Köszönőoldal az első ütemben | **A mostani köszönőoldal** (átadás a meglévő oldalnak, a mérés változatlan). A motor saját sikeroldala később. |
+| 25 | Lézeres konzultáció-naptár | **Az Elysion-fiók** (`476477`); a Hair-fiókbeli régi (`444584`) kivezetendő. |
+| 26 | Valódi próbafoglalások | **Jóváhagyva** üzletáganként egy (a HeadSpánál is), feltételekkel: név „TESZT – Claude”, fix e-mail és telefon, lista a végén (üzletág, perc pontos időpont, azonosító), platformonkénti (Google, Meta, TikTok) „pontosan egyszer” konverzió-ellenőrzés, e-mail és köszönőoldal ellenőrzése, a szalon lemondja a próbát, a vendéget nem törli. |
+| 27 | A próbafoglalások lemondása | **A „Lemondom” linkkel, a tulajdonos jóváhagyásával** (2026-10-03): a szalon helyett mi mondtuk le mind a négyet; a vendégkartonokat nem töröltük. A Salonic mindegyiknél visszaigazolta a lemondást. |
+| 28 | A gombok átkötése a motorra | **Build-időben, üzletáganként kapcsolóval** (`tools/foglalo-atkotes.json`), **élesben kikapcsolva**: kikapcsolva a build kimenete bájtra azonos a mostanival. A PMU és az ajándékkártya-vásárlás marad Salonic-link, a köszönőoldalakhoz (`success-*`, `*-ok`) nem nyúlunk. A lézeres „ELSŐ IDŐPONTOK” / „KEZELÉS IDŐPONTOK” gomb a motor új `intent=first` / `intent=returning` belépésére mutat (egyenesen a területválasztóra). Az átkapcsolás egyszerre, külön jóváhagyással. |
+| 29 | Hirdetési azonosítók a hand-off URL-ben | **A motor a Salonic köszönőoldal-URL-jének végére fűzi** a saját URL-jén kapott hirdetési azonosítókat (`gclid`, `fbclid`, `ttclid`, `utm_*` stb.), ha a Salonic nem hozta őket; a Salonic paraméterei bájtra érintetlenek. Indok: a hirdetésből közvetlenül a motorra érkező vendégnél a GA4 munkamenet-forrás elveszett, a három platform pedig csak a törékeny `document.referrer`-ből olvasta az azonosítót. A landingről érkezőnél az URL változatlan. Mérés: [MERES_ELLENORZES.md](MERES_ELLENORZES.md). |
+| 30 | Mérés-ellenőrzés az átkapcsolás előtt | **Automatizált böngészővel, kimenő kérések nélkül** (alapból tiltó, minden keretben naplózva): köszönőoldalanként minden címke / esemény egyszer, a motoron át azonosan a natív útvonallal; a keretben betöltött köszönőoldal 0 kérést küld; a kattintás-azonosítók és a GA4-forrás végigérnek (landing → motor, illetve közvetlen belépés a javítással). Az eszköz: `tools/meres-proba/`. |
+| 15 | Oxigén belépés | Egy kérdés (OX1): Hajkamerás vizsgálat / Első oxigénterápiás kezelés / Már jártam nálatok. Szakember nem kötelező: alapból „bármely megfelelő”, a naptárban választható. |
+
+**A tesztelés (frissítve 2026-10-03):** a Salonicnak nincs próbakörnyezete, ezért a foglalás-utáni ágakat eleinte mintanézettel és egységtesztekkel ellenőriztük; utána (23., 26. döntés) üzletáganként egy valódi próbafoglalás készült az éles, rejtett foglalón, majd le lett mondva: [PROBAFOGLALASOK.md](PROBAFOGLALASOK.md).
+
+**A mérés (eldöntve, 24. döntés):** a mai HeadSpa konverziós mérés a `/success-foglalas*` köszönőoldalak URL-paramétereire épül. Éles tartományon a motor sikeres foglalás után a **meglévő köszönőoldalt** nyitja meg ugyanazokkal a paraméterekkel, így a mérés változatlanul fut (a próbák ezt igazolták: Google, Meta egyszer, a TikTok pixel egyszer töltött). Előnézeten / helyben a motor a saját sikeroldalát mutatja.
+
+## Jóváhagyott besorolás
+
+- Ingyenes konzultáció → `consultation`.
+- Első fizetős alkalom → `first_treatment`.
+- „2. alkalomtól” vagy visszatérő foglalás → `returning_treatment`.
+- Kuponnal vagy ajándékkártyával jött foglalás → `voucher_redemption`: **nem számít új vendégnek**.
+- Ellenőrzésnek a Salonic saját új/visszatérő jelzése (`first_booking`) szolgál.
+
+A Salonic nem minden helyen bontja az első és a következő alkalmat külön kategóriára (HeadSpa normál foglalás, Hair, PMU). Ott a szolgáltatás `first_treatment`, és ha a Salonic a foglalás után `first_booking=false`-t jelez, a foglalás **visszatérőnek** számít.
+
+## Takarítási teendők (nem a motor feladata, külön jóváhagyás kell)
+
+- A VIP említése a weboldalon (HeadSpa oldalak, árlista, ajándékkártya).
+- A PMU eltávolítás: a `/eltavolitas-ok` köszönőoldal és a hozzá tartozó mérés használatban marad-e.
+
+## Döntések 2026-10-03 (az éles próbák után)
+
+- **A köztes lépés-események nem pótolódnak** (`view_item`, `select_employee` GA4; `ViewContent` TikTok): semmi nem épül rájuk, ezért a motor útján elmaradnak (C opció, [MERES_FOGLALASI_LEPESEK.md](MERES_FOGLALASI_LEPESEK.md)). A `/foglalo-motor` oldal nem kap mérőkódot, a GTM-hez és a stape-hez nem nyúlunk. A TikTok `InitiateCheckout` a Salonic-keretből továbbra is jön, de törékeny; ezt az átkapcsolás után figyeljük.
+- **Az átkapcsolás időpontja:** 2026-10-04, a design véglegesítése után, **minden üzletág egyszerre, a HeadSpával együtt** (négy kapcsoló, egy merge). A #71 (éles próbák naplói, dokumentáció) ugyanezzel a merge-dzsel megy.
+
+## Design-döntések 2026-10-04 (a tulajdonos kérései, csak előnézeten, az éles oldal nem változik)
+
+- **Kis kép minden szolgáltatás-választó mellett** (szolgáltatás-választó, HeadSpa, Oxigén, Fodrászat szándékok és a fodrászok, Lézer szándékok és területek): a kép a site saját képeiből készült (`tools/booking-kepek.json`, `tools/booking-kepek.mjs` → `assets/img/booking/*.jpg`, 160×160, ~6 kB). Akinek nincs fotója (új fodrász), az monogramot kap.
+- **Oxigén első képernyő:** kép + ár mindhárom választás mellett (az ár a Salonic aktuális ára; több változatnál „X Ft-tól”). A hajkamerás vizsgálat sora: „Bizonytalan vagy? Nézzük meg, mit adhat az oxigén.” (egy sor).
+- **Az időpont-választás MINDEN üzletágnál (HeadSpa, Oxigén, Fodrászat, Lézer) a PMU-foglaló naptára** (a tulajdonos kérése, 2026-10-04: „mindegyiknél kell a sminkes naptár”) egy az egyben (ugyanaz a hónap-rács, zöld szabad napok, 5 oszlopos időpont-rács, ugyanaz az időpont-szűrés: egész és fél órák, a negyed csak ha mellette nincs ilyen). 92 napra előre keres, mint a PMU. A gyors időpontok és a naptár-sáv / napszak-szűrő megszűnt. Szakember-választó az Oxigénnél marad (a naptár fölött, ha több szakember szabad); a Fodrászatnál a szakember-kérdés előbb jön, a Lézernél és a HeadSpánál nincs választás.
+- **Nincs összegző képernyő sehol**: az időpont kiválasztása után rögtön a Salonic adatlapja jön. A választott időpont összegzése az adatlap fölött marad (asztalon), mobilon rejtett (mint a PMU-n), a „Módosítás” az időpont-választóra vissza.
+- **A HeadSpa „Hogyan folytatnád?” (HS1) lépése megszűnt**: az élmény-választás az első képernyő, az ajándékkártya-beváltás és -vásárlás két link alatta (legkevesebb lépés).
+- **Salonic-adatlap = a PMU kinézete:** ezt a Salonic-fiók „Egyedi CSS URL” beállítása adja (`https://www.mosaicheadspa.hu/salonic/mosaic.css`), a motor ehhez méretez. Ez fiókonként a tulajdonos teendője (HeadSpa, Hair, Oxigén, Elysion); a beállítás a Salonic saját (natív) foglaló-oldalaira is hat. A keret a PMU-hoz hasonlóan teljes szélességű (nem csúszik ki).
+
+## Design-döntések 2026-10-04, 2. kör (a tulajdonos visszajelzései a preview-ra)
+
+- **HeadSpa első kérdése:** „Ajándékkártyával vagy anélkül foglalsz?” (Ajándékkártyával (kuponkóddal) foglalok / Normál foglalás kuponkód nélkül), utána az élmény-választás. Az ajándékkártya-vásárlás linkje kikerült a foglalóból (külön oldal).
+- **HeadSpa:** az időtartam a Salonic ideje, 1 óra 20 perc (a tulajdonos először 1:30-at kért, majd megerősítette, hogy 1:20 a helyes). Kuponkódos kártyák ugyanolyan formátumban, az ár helyén „Kuponkóddal”.
+- **Naptár / sáv:** szellősebb (a nap címe és a „Nem találok megfelelő időpontot” fölött több hely), a lapozó nyilak SVG-k, a körben középen; a kiválasztott szolgáltatás sávja krémszínű (nem hasonlít az opció-kártyákra), a kép nem ér a sáv széléhez, a „Módosítás” beljebb.
+- **Adatlap:** nincs „Előnézet · valódi foglalás” jelzés, a cím középen, nincs magyarázó szöveg alul, a „Másik időpontot választok” gomb helyett link.
+- **Fodrászat:** a **fodrász-választó a belépő pont** (fotók, „Mindegy”), csak utána a szolgáltatás; a választott fodrász kezelései és (Noelnél kedvezményes) árai látszanak; a kezelés-kártyák ikonnal és „X Ft-tól” árral (kevesebb info), a hajhosszok hajhossz-ikonnal. A `HA3` / `HA3B` megszűnt.
+- **Oxigén:** egyforma magas kártyák, a hajkamera pontos szövege: „Megnézzük a fejbőröd állapotát + átbeszéljük milyen eredményt várhatsz”; a **szakember az időpont előtt**, kártyákon (nem legördülő). A szakemberek fotója a Salonic-fiók szakember-oldaláról van (tulajdonosi útmutatás).
+- **Lézer:** egyforma kártyák; a terület-képeken nincs szöveg (a site képeinek szöveg nélküli vágata), a „Több terület” 4 terület egy mozaikképen; a csomagoknál az „állapotfelmérés + 20% kedvezménnyel” helyett a csomag testrészei kis ikonokkal (a site csomag-leírása szerint).
+- **Egyforma kártyák** a szolgáltatás-választókon (szolgáltatás-választó, HeadSpa, Oxigén, Fodrászat szándékok, Lézer).
+
+## Design-döntések 2026-10-04, 3. kör
+
+- **Címek mindenhol középre igazítva.** Az adatlap („Add meg az adataidat”) címe nincs kiírva (a képernyőolvasónak marad): mobilon az adatlap egy képernyőre fér görgetés nélkül (a keret a képernyő aljáig ér; a Salonic cookie-sávja a keret alján marad).
+- **Fodrászat:** nincs „Egyéb fodrászati szolgáltatás” kártya: az elemei (Női szárítás, Hajszerkezet újraépítés, Póthaj) külön kártyák, a szándék-lista sűrű (mobilon görgetés nélkül); az ismeretlen (új) Salonic-kategóriák rejtett „Egyéb” kártyába kerülnek, amíg nincs ilyen. Ahol nincs mit pontosítani (egy kezelés, egy hajhossz-csoport), a kártya rögtön továbbvisz.
+- **Lézer:** a „Több terület” neve **„Csomagok”**, és a lista elején áll; a terület-képek szövegmentesek és keret nélküliek; a Törzs egy valódi törzs-kép.
+- **Kártyák nem „kijelöltek”:** a hover-effektek csak egérrel (hover: hover) élnek, a kártyák hover-kerete megszűnt (érintésre nem marad kijelölt kártya).
+- **Kép-gyorsítótár:** a kártya-képek URL-je tartalom-hash-t kap, mert a `/assets/img/*` egy évig tárolható (a kicserélt kép különben nem jutna el a már látogató böngészőkhöz).
+- **Dátum-ellenőrzés (2026-10-04):** mind a 99 Salonic-szolgáltatásra a nyers naptár-API, az adapter és a naptár-nézet pontosan egyezik (nincs elveszett nap / időpont, a napok a budapesti naphoz igazodnak). A kuponkódos **Egyéni Relax** első szabad napja a Salonicban is okt. 26: a szolgáltatáshoz 3 kezelőhely van rendelve (a normál Egyénihez 4: hiányzik a „Négykezes Head spa”), és sokkal kevesebb időpontot ad ki (49 a normál 210 helyett). Ez Salonic-beállítás.
+
+## Egyéni HeadSpa: Relax + Hair egyben (2026-10-04)
+
+- A Salonicban a kuponos Egyéni **Relax** és **Hair** más időpontokat ad ki (Relax: okt. 26-tól; Hair: okt. 10, 17, 19, 26–29), pedig a tulajdonos szerint ugyanaz a szolgáltatás ugyanazokhoz a kezelőkhöz. A motor a kettőt egynek veszi (a naptár az unió), a Salonic-beli eltérés javítandó a Salonicban (a kuponos változatokhoz a normálhoz képest kevesebb kezelőhely és időpont van rendelve; a normál Relax és Hair időpontjai azonosak).
+
+## Fodrászat illusztrációk (2026-10-04, a tulajdonos mintaképei)
+
+- A fodrászat kártyái (szándékok, kezelések, hajhosszok) a tulajdonos által küldött illusztrált mintaképek szerint néznek ki; a bélyegek a mintaképekből vannak kivágva (`tools/booking-kepek.json`: `kivag`), a forrás-mintaképek a `tools/booking-kepek-forras/` mappában vannak. Jobb felbontású eredeti képekkel a `booking-kepek.json` forrása cserélhető. A korábbi fodrász-fotók (`hair-*`) és a hajhossz-/kezelés-vonalikonok csak tartalékként maradtak (ismeretlen kezelés / hajhossz).
+
+## Réteg-viselkedés és sebesség (2026-10-04, 4. kör, a tulajdonos kérései)
+
+- **A réteget csak a jobb felső X zárja be.** Az Esc és a háttérre kattintás nem zár (véletlenül kikattintva ne tűnjön el a foglaló, a vendég elvesztené, hol tart). A böngésző vissza gombja lépésenként visszalép, az első képernyőn bezár.
+- **Folytatás:** bezárás és újranyitás után (ugyanabból a belépésből: üzletág, szolgáltatás / kategória, szándék, ajándékkártya; 30 percig, `sessionStorage`, `mhFoglaloAllapot`) ott folytatja, ahol tartott: a nézet, a kiválasztott szolgáltatás / szándék / csoport / terület / szakember, és a naptárban a nézett nap és hónap. A korábbi útvonal (előzmény) is visszaáll, így a vissza gomb az előző nézetre lép, nem az első kérdésre. Kész foglalás (köszönőlap) vagy az első (belépő) kérdés megjelenésekor a mentés törlődik; ha a mentett adat már nem érvényes (a Salonicban megszűnt a szolgáltatás), a belépő állapot jön.
+- **Kattintható lépésjelző:** a kész lépések (✓) gombok: rájuk kattintva a vendég az adott lépés legutóbbi nézetére lép vissza (Szolgáltatás → az utolsó szolgáltatás-választó, Időpont → a naptár). Az aktuális és a következő lépés nem kattintható.
+- **Sebesség:** az idő-választás lassúsága a Salonic naptár-API-ból jött (a hívás ideje a napok számával nő: a fodrászatnál 92 nap ≈ 4,3 s, 14 nap ≈ 0,9 s; a szolgáltatás-lista fodrászatnál 15 oldal egymás után). A PMU-naptár ezért volt gyors: kevés adat, egy hívás. Javítás (az eredmény változatlan, a nyers API-val egyezően ellenőrizve): párhuzamos részekre bontott lekérés (≤ 31 nap), az első 14 nap külön, hamarabb érkezik (a naptár megnyílik, a többi napot a háttérben tölti és helyben frissíti), a szolgáltatás-oldalak párhuzamos letöltése, a naptár-azonosító beállítva (nincs külön lekérés), a megnyitás előtti előmelegítés (a CTA fölé vitt egérre / érintésre a Salonic-kapcsolat és a szolgáltatás-lista indul, a láthatóvá váló szolgáltatások első 14 napja előre letöltődik), tartós gyorsítótár (szolgáltatás-lista 10 perc, szakember-nevek 1 óra, `sessionStorage`), a naptár váza azonnal látszik. Mérés (hideg gyorsítótár, programból nyitva, a vendég előmelegítése nélkül): a naptár váza < 1 s, az első szabad nap HeadSpa ≈ 0,9 s, fodrászat ≈ 1,7 s, lézer ≈ 1,2 s, oxigén (a szakember-választó után) azonnal.
+
+## 5. kör (2026-10-04): villanások, sminktetováló-lépegetés, illusztrációk
+
+- **Nincs villanás bezáráskor.** A reteg-bezárás a böngésző-előzményeken át lép vissza, és ha a lépésszám nem pontos (a sminktetováló-keret saját `pushState`-ja a közös előzménybe került, a motor nem számolta), elavult réteg-bejegyzésre érkezett, amelynek nézete (a „Melitta”, azaz a sminktetováló-foglaló) felvillant. Javítás: (1) a réteg bezáráskor azonnal rejtetté válik és a motor már nem rajzol újra (`state.closing`), (2) a PMU-keret a rétegben (`?reteg=1`) nem ír közös előzményt: a lépéseit a réteg viszi a saját előzményeibe (`postMessage`: `{nezet, uj, idx}` a keretből, `{mhPmuNezet, idx}` a keretbe), így a lépésszám mindig pontos.
+- **Nincs stílus előtti villanás nyitáskor.** Hideg gyorsítótárnál (első megnyitás) a Shadow DOM stílusa később érkezik, addig a fejléc ikonjai (telefon) hatalmas, kék SVG-ként látszottak. A réteg a stílus megérkezéséig rejtett (`visibility: hidden`, 3 mp-es tartalékkal), utána csúszik be.
+- **A sminktetováló-motorban is működik a lépegetés** (`assets/js/foglalo-pmu.js`, a rétegben): a lépésjelző kész lépései kattinthatók (Kezelés, Időpont, ... az ágtól függően), a böngésző vissza / előre gombja lépésenként lép, a keret saját vissza nyila az előző lépésre visz, és bezárás / újranyitás után (30 perc, `sessionStorage`: `mh_pmu_allapot`) ott folytatja, ahol tartott (az útvonallal együtt: a vissza gomb az előző lépésre lép). Az adatlap (Salonic) és a feltöltött fotók nem állíthatók vissza: ott az előző nézetnél folytatja. A /sminktetovalas-budapest oldalba ágyazott foglaló (nincs `reteg=1`) a régi módon, saját előzményekkel működik.
+- **Fodrászat:** „Hajszerkezet újraépítés” → **„Joico hajszerkezet újraépítés”**.
+- **A maradék ikonok illusztrációra cserélve** (a tulajdonos mintaképeiből kivágva: `tools/booking-kepek-forras/lezer-minta-*.jpg`, `minta-*.jpg`; `tools/booking-kepek.json`): lézer-területek (`la-*`), lézer-csomagok / testrészek (`lp-*`), a csomagok testrész-jelvényei (`rz-*`), HeadSpa ajándék / naptár (`ik-ajandek`, `ik-naptar`), a „Mindegy” óra (`ik-mindegy`). A lézer-kezelések (terület szerint) a terület illusztrációját kapják. A vonalikonok (`ikonok.js`) tartalékként maradnak (kép betöltési hibája / ismeretlen elem).
+- **Lézer csomagok egy képernyőn:** a csomaglista sűrű (`.be-csomagok`: 42 px-es kép, 22 px-es jelvény-kép, kisebb cím): mind a 8 csomag elfér görgetés nélkül egy 390x844-es képernyőn (kisebb képernyőn görget).
+
+## Köszönő képernyők (2026-10-04, 6. kör, a tulajdonos kérései)
+
+- **A motor „Sikeres foglalás!” képernyője minden üzletágnál olyan, mint a sminktetováló köszönője:** kártya (dátum · idő, kezelés, ár · időtartam, cím) + térkép; a kezelő képe és neve („… vár téged”) **a kártyán belül, a szöveg és a térkép között** (nincs külön sor; minden köszönőn így: motor és PMU is); „Erősítsd meg egy érintéssel, hogy jössz!” + **Ott leszek ✓** (a szalon e-mailt kap: `motor-megerosites` űrlap, `netlify/lib/levelek.js`; mintanézetben nem megy el) + Naptárba teszem; alatta a „Mi történik most?” 3 pontja (`assets/js/booking-engine/koszono.js`: a meglévő köszönő oldalak szövegeiből: érkezz 15–20 perccel előbb; lézer: borotválás 24 órával előtte, nincs kozmetikum, napozás / szolárium 2 hétig; oxigén: 48 órával ne moss hajat, 10 nap szünet festés előtt / után; konzultációnál nincs kezelés előtti teendő).
+- **Kezelő a köszönőn:** fodrászat és oxigén: a választott (vagy a Salonic által jelzett) szakember fotóval és névvel; lézer: Zsófi (a lézeres oldal bemutatkozó képéből, `staff-zsofi`); **HeadSpa: nincs kezelő-sor** (szobák vannak, nem kezelők). Sminktetoválás: Töreki Melitta minden köszönőn (foglalás, személyes konzultáció, fotóküldés, telefonos konzultáció).
+- **Visszahívás-köszönő (motor):** „Visszahívást kértél!” + „Mi történik most?” (megkaptuk, kollégánk hamarosan felhív, ha szeretnéd, a hívás közben időpontot is választtok); időpont nincs benne (az űrlap nem kérdez időt), lépésjelző nincs, „Ha közben változik a terved, hívj” sor nincs (a PMU telefonos köszönőjén sem), a rétegben „Bezárás” gomb.
+- Mintanézetek üzletáganként: `/foglalo-motor?minta=siker&business=hair|oxygen|laser` (alapból HeadSpa). Élesben a motor a meglévő köszönő oldalakra ad át (mérés), a csere külön döntés (a címek maradnának, a tartalom az újra cserélődne, mint a `/pmu-ok`-nál).
+- **„Ott leszek”:** ma a szalon e-mailt kap (`motor-megerosites`, `pmu-megerosites`). A Salonic belső megjegyzésébe nem tudunk írni: a Salonic nyilvános oldalai és dokumentált integrációi (számlázás, Mailchimp, Facebook, Google Naptár) között nincs vendég-oldali megjegyzés-írás, és a foglalás utáni oldalon nincs a foglaláshoz tartozó kulcs (csak a vendég-azonosító). Megoldás csak Salonic-oldali API / webhook hozzáféréssel lenne (nyitott kérdés a Salonic felé).
+
+## Élő foglaltság sáv és a „Mindegy” a szakemberválasztóban (2026-10-04, 7. kör)
+
+- **„Élő foglaltság” sáv az időpont-naptár alatt** (`assets/js/booking-engine/elo-foglaltsag.js`, `engine.js` C1): kitalált százalék nélkül, a motor a Salonic naptár-API adatából számolja a szolgáltatáshoz tartozó VALÓDI szabad időpontokat a következő 7 napra (a választható, különböző kezdési időpontok; ugyanarra az időpontra több szakember is szabad lehet: az egy időpont; választott szakembernél az ő időpontjai; az Egyéni HeadSpa két Salonic-változatának uniója).
+  - **Elsődleges állapot:** „A következő 7 napra már csak N szabad időpont maradt.” (N ≤ 10); N ≤ 3-nál narancs jelzés; 10 fölött semleges „A következő 7 napra N szabad időpont van.” (nem állítunk szűkösséget, ami nincs); 0-nál „A következő 7 napra nincs szabad időpont. A legközelebbi: …”. Küszöbök: `KEVES = 10`, `SURGOS = 3` (az `elo-foglaltsag.js`-ben állítható).
+  - **Második állapot** („Ezen a héten az időpontok X%-a már foglalt.”): **csak kiszámítható kapacitásból**. A Salonic nyilvános naptár-API-ja csak a szabad időpontokat adja, a heti kapacitást (összes időpont, a foglaltakkal együtt) nem, ezért ma NEM jelenik meg. Kiszámíthatóvá válna a szakemberek tényleges heti beosztásából (Salonic-oldali adat) vagy a motor saját foglalási előzményéből. Megjelenítési küszöb: ≥ 50% (kisebb foglaltság nem mond semmit).
+  - **Harmadik állapot** („N perce foglaltak utoljára erre a kezelésre.”): **kizárólag valódi foglalási eseményből**. Ma nincs ilyen forrás (a Salonic nem ad ki foglalási eseményt, a vendég a foglalás után a meglévő köszönő oldalakra érkezik), ezért ma NEM jelenik meg. Valódi forráshoz szerver-oldali foglalási esemény kell (pl. a köszönő oldalról ellenőrzött jelzés egy Cloudflare-tárolóba, szolgáltatásonként); ez külön döntés (tárolás, visszaélés elleni védelem).
+  - **Frissítés:** oldalbetöltéskor az aktuális állapot; utána percenként (csak nyitott naptárnál és látható lapon, `ELO_MS`) friss lekérés a következő 7 napra (az adapter `fresh: true` opciója). Csak ha a szabad időpontok halmaza TÉNYLEG változott (elfogyott / felszabadult), akkor frissül a sáv és helyben a naptár is: a cím 12 másodpercre „Most frissült”, az üzenet finoman átúszik; változás nélkül semmi nem mozdul. A „Most frissült” a szabad időpontok tényleges változását jelzi (a Salonic nem árulja el, hogy foglalás vagy blokkolás volt, ezért nem állítjuk, hogy „foglaltak”).
+  - Egyetlen enyhe pulzáló pont (2,8 mp, `prefers-reduced-motion` esetén nincs). A segédsor: „Az elérhetőség automatikusan frissül.”
+- **Szakemberválasztó (fodrászat, oxigén):** a „Mindegy – a legkorábbi időpont érdekel” legfelül, kiemelt (arany keretes) elsődleges opció; utána a szakemberek.
+- **Hiba javítva (a bezárás után futó motor):** a bezárt (`destroy`) motor aszinkron utótagja (a naptár adata a bezárás után érkezett meg) felülírhatta a mentett állapotot (egy másik üzletág naptárával), és halott időzítőt indíthatott. Mostantól a bezárt motor nem ír előzményt, mentett állapotot és nem indít időzítőt (`destroyed` jelző).

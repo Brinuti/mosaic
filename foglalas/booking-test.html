@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Booking Engine – tesztút</title>
+<link rel="icon" href="/assets/img/c2eb0f_b001e2c55098446da3e38ff055e20354.png" type="image/png">
+<style>
+  :root { --sotet: #183033; --kozep: #44595c; --halvany: #6d8285; --krem: #fbeede; --hatter: #fffaf4; --vonal: #e8ddcd; --arany: #b8955a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--hatter); color: var(--sotet); font: 16px/1.5 'Jost', 'Helvetica Neue', Arial, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-weight: 400; font-size: 28px; margin: 8px 0 6px; }
+  h2 { font-weight: 400; font-size: 21px; margin: 30px 0 6px; padding-top: 14px; border-top: 1px solid var(--vonal); }
+  p, li { color: var(--kozep); }
+  .jel { display: inline-block; background: var(--krem); border-radius: 99px; padding: 3px 12px; font-size: 13px; color: var(--kozep); }
+  .gombok { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0 0; }
+  button.t, a.t { font: inherit; cursor: pointer; text-decoration: none; display: inline-flex; flex-direction: column; align-items: flex-start; gap: 1px; text-align: left; min-height: 52px; padding: 9px 16px; border: 1.5px solid var(--sotet); border-radius: 14px; background: #fff; color: var(--sotet); }
+  button.t:hover, a.t:hover, button.t:focus-visible { background: var(--sotet); color: var(--krem); outline: none; }
+  button.t small, a.t small { font-size: 12.5px; opacity: .75; }
+  code { background: var(--krem); border-radius: 6px; padding: 1px 6px; font-size: 13.5px; }
+  details { margin-top: 28px; border: 1px solid var(--vonal); border-radius: 12px; padding: 10px 16px; background: #fff; }
+  summary { cursor: pointer; font-weight: 700; }
+  ol { padding-left: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <span class="jel">rejtett tesztút · noindex · nincs rá link</span>
+  <h1>MOSAIC Booking Engine – tesztút</h1>
+  <p>Minden gomb <b>ugyanazt az egy foglalót</b> nyitja meg <b>ezen az oldalon, helyben</b> (mobilon teljes képernyős réteg, asztali gépen középső panel), csak más kezdőállapotban. Bezárás: a jobb felső <b>×</b>, az <b>Esc</b>, asztalon a háttérre kattintás; a böngésző <b>vissza</b> gombja is bezárja. Az oldal címe közben <b>nem változik</b> (szándékos: a GTM URL-változásra oldalmegtekintés-eseményeket indítana); a beérkező <code>?booking=1&amp;business=…</code> linket viszont megnyitja.</p>
+  <p><b>Figyelem:</b> a foglalók a Salonic <b>élő</b> naptárát használják. Ha végigviszel egy foglalást, az valódi foglalás lesz: használj „TESZT" nevet, és mondd le a visszaigazoló e-mailben lévő „Lemondom" linkkel. Ha nem küldöd el az adatlapot, az időpont 5 perc után magától felszabadul.</p>
+
+  <h2>Fő belépő: szolgaltatás-első kezdőoldal</h2>
+  <p>Aki nem konkrét szolgáltatás-oldalról jön (főmenü, kereső): először a szolgáltatást választja, utána megy tovább az ágon.</p>
+  <div class="gombok">
+    <button class="t" type="button" data-booking="{}">Foglalás (nincs ismert kontextus)<small>réteg · szolgáltatás-választó</small></button>
+    <a class="t" href="/foglalas">/foglalas oldal<small>ugyanez külön oldalon (fallback)</small></a>
+  </div>
+
+  <h2>Head Spa</h2>
+  <div class="gombok">
+    <button class="t" type="button" data-booking='{"business":"headspa"}'>Head Spa – általános<small>„Hogyan folytatnád?"</small></button>
+    <button class="t" type="button" data-booking='{"business":"headspa","service":"paros"}'>Páros Head Spa<small>rögtön a szabad időpontok</small></button>
+    <button class="t" type="button" data-booking='{"business":"headspa","voucher":"1"}'>Ajándékkártya beváltása<small>„Milyen ajándékkártyád van?"</small></button>
+  </div>
+
+  <h2>Fodrászat</h2>
+  <div class="gombok">
+    <button class="t" type="button" data-booking='{"business":"hair"}'>Fodrászat – főoldal<small>„Mit szeretnél?"</small></button>
+    <button class="t" type="button" data-booking='{"business":"hair","service_category":"balayage"}'>Balayage-landing<small>csak a kategória ismert: rövid pontosítás</small></button>
+    <button class="t" type="button" data-booking='{"business":"hair","service_category":"color"}'>Hajfestés-landing<small>kategória: hajfestés</small></button>
+    <button class="t" type="button" data-booking='{"business":"hair","service":"konzult"}'>Ingyenes konzultáció<small>rögtön a szabad időpontok</small></button>
+  </div>
+
+  <h2>Oxigénterápia</h2>
+  <div class="gombok">
+    <button class="t" type="button" data-booking='{"business":"oxygen"}'>Oxigén – általános<small>„Mit szeretnél foglalni?"</small></button>
+    <button class="t" type="button" data-booking='{"business":"oxygen","service":"466110"}'>1. alkalom<small>rögtön a szabad időpontok</small></button>
+    <button class="t" type="button" data-booking='{"business":"oxygen","service":"466158"}'>2. alkalomtól<small>rögtön a szabad időpontok</small></button>
+  </div>
+
+  <h2>Lézeres szőrtelenítés</h2>
+  <div class="gombok">
+    <button class="t" type="button" data-booking='{"business":"laser"}'>Lézer – általános<small>belépő kérdés</small></button>
+    <button class="t" type="button" data-booking='{"business":"laser","service":"konzult"}'>Konzultáció<small>rögtön a konzultációs időpontok</small></button>
+    <button class="t" type="button" data-booking='{"business":"laser","intent":"first"}'>Első időpontok<small>területválasztó</small></button>
+    <button class="t" type="button" data-booking='{"business":"laser","intent":"returning"}'>Kezelés időpontok<small>területválasztó (2. alkalomtól)</small></button>
+    <button class="t" type="button" data-booking='{"business":"laser","service_category":"arc"}'>Arc-landing<small>csak a terület ismert</small></button>
+  </div>
+
+  <h2>PMU (sminktetoválás)</h2>
+  <div class="gombok">
+    <button class="t" type="button" data-booking='{"business":"pmu"}'>PMU foglaló<small>a kész, saját PMU-folyamat a rétegben</small></button>
+  </div>
+
+  <h2>Valódi landing-oldalak</h2>
+  <p>Az előnézeten a landing-oldalak foglaló-gombjai is a réteget nyitják (nem visznek át másik oldalra):</p>
+  <div class="gombok">
+    <a class="t" href="/lezeres-szortelenites-budapest">Lézer-landing<small>/lezeres-szortelenites-budapest</small></a>
+    <a class="t" href="/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel">Fodrász-landing<small>/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel</small></a>
+    <a class="t" href="/headspa-budapest-hungary">Head Spa-landing<small>/headspa-budapest-hungary</small></a>
+    <a class="t" href="/sminktetovalas-budapest">PMU-landing<small>/sminktetovalas-budapest (a saját beágyazott foglalóval)</small></a>
+  </div>
+
+  <details>
+    <summary>Mit ellenőrizz (tesztlista)</summary>
+    <ol>
+      <li>Jó állapotból indul-e (nem kérdez rá arra, amit az oldal már tud)?</li>
+      <li>Valós Salonic időpontokat lát-e?</li>
+      <li>Helyesen foglal-e?</li>
+      <li>A jó szolgáltatás kerül-e a Salonicba?</li>
+      <li>A jó ár kerül-e be?</li>
+      <li>A visszaigazoló e-mail helyes-e?</li>
+      <li>A foglalás-azonosító rendben van-e?</li>
+      <li>A konverziós érték rendben van-e (csak az éles tartományon mérhető)?</li>
+      <li>A UTM / click ID megmarad-e (próbáld: <code>?utm_source=teszt&amp;utm_medium=cpc&amp;gclid=TESZT123</code> ezen az oldalon)?</li>
+      <li>Mobilon a vissza / bezárás jól működik-e?</li>
+    </ol>
+  </details>
+</main>
+<script type="module" src="/assets/js/booking-launcher.js"></script>
+</body>
+</html>

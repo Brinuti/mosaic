@@ -840,3 +840,90 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
 .te-csillagok { position: relative; display: inline-block; font-size: 15px; letter-spacing: 1px; line-height: 1; color: #dadce0; }
 .te-csillagok::before { content: '★★★★★'; }
 .te-csillagok::after { content: '★★★★★'; position: absolute; left: 0; top: 0; width: var(--ert, 100%); overflow: hidden; white-space: nowrap; color: #f4b400; }
+
+/* ============ hero-galeria: a teljes folyamat egy vendegen (1:1 minden kijelzon) ============ */
+.hero-kep.hero-galeria { aspect-ratio: 1 / 1; background: #e8e4dc; }
+.galeria-sav { display: flex; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+.galeria-sav::-webkit-scrollbar { display: none; }
+.galeria-sav:focus-visible { outline: 3px solid var(--arany, #c6a346); outline-offset: -3px; }
+.galeria-kep { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; scroll-snap-stop: always; }
+.galeria-nyil { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 40px; height: 40px; padding: 0 0 4px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .9); color: var(--sotet, #183033); font: 400 28px/1 var(--test, sans-serif); box-shadow: 0 4px 14px rgba(0, 0, 0, .22); cursor: pointer; display: grid; place-items: center; transition: opacity .2s; }
+.galeria-elozo { left: 10px; }
+.galeria-kov { right: 10px; }
+.galeria-nyil:disabled { opacity: 0; pointer-events: none; }
+.galeria-pontok { position: absolute; left: 0; right: 0; bottom: 6px; z-index: 2; display: flex; justify-content: center; }
+.galeria-pontok button { width: 24px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+.galeria-pontok button::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, .72); box-shadow: 0 0 0 1px rgba(0, 0, 0, .18); transition: width .2s, background .2s; }
+.galeria-pontok button[aria-current="true"]::before { width: 20px; border-radius: 4px; background: #fff; }
+@media (max-width: 700px) { .galeria-nyil { width: 34px; height: 34px; font-size: 24px; } .galeria-elozo { left: 8px; } .galeria-kov { right: 8px; } }
+
+/* ============ Mielott foglalsz, jobb oldal: berajzolom, hogyan fog kinezni (elorajzolt / kesz) ============ */
+.mielott-jobb.konz { display: flex; flex-direction: column; }
+.mielott-jobb.konz > h3 { font-size: 26px; line-height: 1.2; margin: 0 0 12px; }
+.mielott-jobb.konz .tisztelet-lead { margin: 0 0 8px !important; }
+.mielott-jobb.konz .tisztelet-szoveg { margin: 0; font-size: 15px; line-height: 1.55; }
+.konz-montazs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: auto; padding-top: 20px; }
+.konz-montazs figure { position: relative; margin: 0; aspect-ratio: 1 / 1; border-radius: 10px; overflow: hidden; background: #d9ddd2; }
+.konz-montazs img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.konz-cimke { position: absolute; left: 8px; bottom: 8px; padding: 6px 11px; border-radius: 999px; background: rgba(255, 255, 255, .93); color: var(--sotet, #183033); font: 600 11px/1 var(--test, sans-serif); letter-spacing: .08em; text-transform: uppercase; }
+
+/* ============ hero-galeria: sztori-feliratok (arcra nem lognak: kep-specifikus hely, halvany takaro) ============ */
+.galeria-dia { position: relative; flex: 0 0 100%; width: 100%; height: 100%; margin: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+.galeria-dia .galeria-kep { display: block; width: 100%; height: 100%; object-fit: cover; }
+.galeria-felirat { position: absolute; left: 0; right: 0; bottom: 0; padding: 44px 22px 36px; color: #fff; font: 500 17px/1.35 var(--test, sans-serif); text-align: center; text-wrap: balance; text-shadow: 0 1px 8px rgba(0, 0, 0, .5); background: linear-gradient(to top, rgba(12, 20, 22, .5), rgba(12, 20, 22, 0)); pointer-events: none; }
+.galeria-felirat--felso { top: 0; bottom: auto; padding: 20px 22px 44px; background: linear-gradient(to bottom, rgba(12, 20, 22, .5), rgba(12, 20, 22, 0)); }
+/* a lapozo pottyok minden kepen latszanak (also halvany sav + sotet gyuru) */
+.hero-galeria::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 52px; background: linear-gradient(to top, rgba(12, 20, 22, .4), rgba(12, 20, 22, 0)); pointer-events: none; z-index: 1; }
+.galeria-pontok { z-index: 2; bottom: 8px; }
+.galeria-pontok button::before { box-shadow: 0 0 0 1px rgba(0, 0, 0, .35), 0 1px 4px rgba(0, 0, 0, .3); }
+@media (max-width: 700px) {
+  .galeria-felirat { font-size: 13.5px; padding: 30px 14px 32px; }
+  .galeria-felirat--felso { padding: 14px 14px 30px; }
+}
+
+/* ============ Mielott foglalsz, jobb oldal: a cim asztalon egy sorban ============ */
+/* a szoveg szelessege ~23,7 x betumeret; a doboz belso szelessege 1102 px-nel ~437 px, 1440 px-nel ~526 px (afolott allando) */
+@media (min-width: 1101px) { .mielott-jobb.konz > h3 { font-size: clamp(16px, calc(5.6px + 1.02vw), 21px); white-space: nowrap; margin-right: 0; } }
+
+/* ============ terkep: ha a Google terkep betoltott, annak sajat kartyaja eleg (a MOSAIC-jelveny csak tartalek) ============ */
+.terkep.betoltve .terkep-ertekeles { display: none; }
+
+/* ============ alul a ket kep: fix keparanny, ne a szazalekos magassag adja (egyes bongeszokben egymasra logott) ============ */
+@media (max-width: 1100px) {
+  .hely-kepek { grid-template-rows: none; grid-template-columns: 1fr 1fr; }
+  .hely-kepek img { height: auto; min-height: 0; aspect-ratio: 4 / 3; }
+}
+
+/* ============ mobil: a cimek kozepre, a sarga felcimek kiesnek, a videokartya teljes szelessegu ============ */
+@media (max-width: 700px) {
+  .felcim:not(.kicsi) { display: none; }
+  main h2, main h2.nagy, .tartalom h2 { text-align: center; }
+  h2 + .lead, h2 + .halk { text-align: center; }
+  .cim-vonallal { display: block; }
+  .cim-vonallal .vonal { display: none; }
+  .mielott-jobb.konz > h3 { text-align: center; }
+  .szakember-video { width: 100%; padding: 8px 0 24px; }
+  .video-kartya { width: 100%; }
+  .video-kep { aspect-ratio: 1 / 1; }
+}
+
+/* ============ konzultacios doboz: cim, alcim es szoveg kozepre ============ */
+.mielott-jobb.konz, .mielott-jobb.konz > h3, .mielott-jobb.konz .tisztelet-lead, .mielott-jobb.konz .tisztelet-szoveg { text-align: center; }
+.mielott-jobb.konz .tisztelet-szoveg { max-width: 470px; margin-left: auto; margin-right: auto; text-wrap: balance; }
+
+/* ============ a sarga felcimek (Fontos informaciok, Elolleg nelkul ...) minden kijelzon kiesnek ============ */
+.felcim:not(.kicsi) { display: none; }
+
+/* ============ mobil: a konzultacios keppar (Elorajzolva / Kesz szemoldok) egymas alatt, majdnem teljes szelessegben ============ */
+@media (max-width: 700px) {
+  .mielott-jobb.konz { padding: 24px 12px 14px; }
+  .konz-montazs { grid-template-columns: 1fr; gap: 10px; padding-top: 16px; }
+  .konz-cimke { left: 10px; bottom: 10px; font-size: 12px; padding: 7px 13px; }
+}
+
+/* ============ asztalon (>= 1101 px) a galeria magassaga a bal oszlopeval egyezik: addig er le, ahol a Google-ertekeles vegzodik ============ */
+@media (min-width: 1101px) {
+  .hero-racs { align-items: stretch; }
+  .hero-kep.hero-galeria { aspect-ratio: auto; min-height: 400px; }
+  .hero-galeria .galeria-sav { position: absolute; inset: 0; height: auto; }
+}

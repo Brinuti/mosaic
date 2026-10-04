@@ -57,11 +57,25 @@ export const URLAPOK = {
       ['nev', 'Név'], ['telefon', 'Telefonszám'], ['mikor_nap', 'Melyik nap?'], ['mikor_napszak', 'Melyik napszakban?'],
     ], d),
   },
+  // az uj kozos foglalo (/foglalo-motor) "Hivjatok vissza" urlapja (nincs megfelelo idopont / technikai hiba)
+  'motor-visszahivas': {
+    targy: 'Foglaló – visszahívást kértek',
+    html: (d) => osszefoglalo('A foglaló egy látogatója visszahívást kért.', 'Beküldés összefoglalása:', [
+      ['nev', 'Név'], ['telefon', 'Telefonszám'], ['uzletag', 'Üzletág'], ['szolgaltatas', 'Szolgáltatás'], ['ok', 'Miért (nincs_idopont / technikai_hiba)'], ['forras', 'Honnan érkezett'],
+    ], d),
+  },
   // a koszonooldal "Ott leszek" gombja: a vendeg megerositette, hogy jon (a Salonicba kivulrol nem irhatunk)
   'pmu-megerosites': {
     targy: 'Sminktetoválás – a vendég megerősítette az időpontját',
     html: (d) => osszefoglalo('Egy vendég a köszönőoldalon megerősítette, hogy eljön („Ott leszek”).', 'Az időpont:', [
       ['idopont', 'Időpont'], ['kezeles', 'Kezelés'], ['ar', 'Ár'],
+    ], d),
+  },
+  // a foglalo (motor) koszono kepernyojenek "Ott leszek" gombja (minden uzletag; a Salonicba kivulrol nem irhatunk)
+  'motor-megerosites': {
+    targy: 'Foglaló – a vendég megerősítette az időpontját',
+    html: (d) => osszefoglalo('Egy vendég a foglaló köszönő képernyőjén megerősítette, hogy eljön („Ott leszek”).', 'Az időpont:', [
+      ['idopont', 'Időpont'], ['szolgaltatas', 'Szolgáltatás'], ['uzletag', 'Üzletág'], ['szakember', 'Szakember'],
     ], d),
   },
   'fodrasz-jelentkezes': {

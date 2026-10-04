@@ -12,7 +12,7 @@ import { execFileSync } from 'node:child_process';
 const OLDALBA_KERUL = [
   /^klon\//, /^assets\//, /^netlify\//, /^foglalas\//, /^salonic\//,
   /^netlify\.toml$/, /^package(-lock)?\.json$/, /^sitemap\.xml$/, /^robots\.txt$/,
-  /^tools\/netlify-build\.mjs$/, /^tools\/css-ritkitas\.mjs$/, /^tools\/fejlec-kivonat\.mjs$/,
+  /^tools\/netlify-build\.mjs$/, /^tools\/foglalo-atkotes\.(mjs|json)$/, /^tools\/css-ritkitas\.mjs$/, /^tools\/fejlec-kivonat\.mjs$/,
   /^tools\/lcp-elofeltoltes\.json$/, /^tools\/wix-sitemap\//,
 ];
 

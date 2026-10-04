@@ -1,0 +1,11 @@
+{
+  "_leiras": "A Salonic foglalo-linkek atkotese a kozos foglalora (/foglalo-motor), uzletagankent. A szabalyok: tools/foglalo-atkotes.mjs. ELES oldalon (main) a 'kapcsolok' dont: false = a link marad Salonic-link (a kimenet bajtra azonos a mostanival), true = a foglalora mutat. Az atkapcsolas: a negy ertek egyszerre true, uj deploy; visszaallitas: false, uj deploy.",
+  "kapcsolok": {
+    "headspa": false,
+    "oxigen": false,
+    "fodraszat": false,
+    "lezer": false
+  },
+  "_elonezet": "true: a PR-elonezeteken es a helyi (nem eles) buildeken minden kapcsolo be van kapcsolva, hogy az atkotes kiprobalhato legyen; az eles oldalra (main) ez nem hat. A FOGLALO_ATKOTES=none|all|headspa,lezer kornyezeti valtozo felulir.",
+  "elonezetBe": true
+}
