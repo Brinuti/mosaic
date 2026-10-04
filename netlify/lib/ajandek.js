@@ -781,7 +781,8 @@ async function szamlaPi(k, r, ar, leiras, meta, kulcs) {
   const vartAdo = tetelek.reduce((o, t) => o + (t.adokod === 'txcd_00000000' ? 0 : Math.round(t.ft * 100 * 27 / 127)), 0);
   // a kapott ado: az ado-sorok osszege (a Stripe ezt mindig kitolti), ennek hianyaban a `tax` mezo
   const kapottAdo = Array.isArray(kesz.total_tax_amounts) && kesz.total_tax_amounts.length ? kesz.total_tax_amounts.reduce((o, t) => o + Number(t.amount || 0), 0) : Number(kesz.tax || 0);
-  if (!Number.isFinite(kapottAdo) || Math.abs(kapottAdo - vartAdo) > 100) return biztos(`szamla_ado:${kapottAdo}/${vartAdo}`);
+  // AJANDEK_SZAMLA_ADO_ELLENORZES="0" csak az elonezeti (Stripe teszt-mod) kornyezetben: a teszt-modnak nincs sajat adoregisztracioja (0 ado), az eles mindig ellenoriz
+  if (String(k.env.AJANDEK_SZAMLA_ADO_ELLENORZES || '') !== '0' && (!Number.isFinite(kapottAdo) || Math.abs(kapottAdo - vartAdo) > 100)) return biztos(`szamla_ado:${kapottAdo}/${vartAdo}`);
   if (!pi || typeof pi !== 'object' || !PI_RE.test(String(pi.id || '')) || !pi.client_secret) return biztos('szamla_pi');
   // a PaymentIntent metadata-ja nelkul a webhook nem ismerne fel a rendelest: ha ez nem sikerul, a szamlat visszavonjuk (sima PI-ra esunk vissza)
   let frissitve;
