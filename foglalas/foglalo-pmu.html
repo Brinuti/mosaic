@@ -52,6 +52,11 @@
   .lepesjelzo li.most i { background: var(--sotet); border-color: var(--sotet); color: var(--krem); }
   .lepesjelzo li.kesz { color: var(--sotet); }
   .lepesjelzo li.kesz i { border-color: var(--sotet); color: var(--sotet); }
+  /* a kesz lepesek kattinthatok (vissza az adott lepesre) */
+  .lepesjelzo .lepes-gomb { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+  .lepesjelzo .lepes-gomb span { text-decoration: underline; text-decoration-color: var(--vonal); text-underline-offset: 3px; }
+  .lepesjelzo .lepes-gomb:focus-visible { outline: 2px solid var(--sotet); outline-offset: 2px; border-radius: 6px; }
+  @media (hover: hover) and (pointer: fine) { .lepesjelzo .lepes-gomb:hover span { text-decoration-color: var(--sotet); } }
   .ikon-gomb { width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: none; cursor: pointer; border-radius: 50%; text-decoration: none; }
   .ikon-gomb:hover { background: var(--krem); }
   .ikon-gomb svg { width: 22px; height: 22px; }
@@ -251,6 +256,16 @@
   [data-nezet=koszonjuk] .lepesek-lista li::before, [data-nezet=c-kesz] .lepesek-lista li::before { width: 22px; height: 22px; font-size: var(--m-kicsi); }
   [data-nezet=koszonjuk] h2.kozepre, [data-nezet=c-kesz] h2.kozepre { margin: 0; }
   [data-nezet=c-kesz] .osszegzes-kartya { margin: 12px 0 8px; padding: 10px 12px; }
+  .melitta.kezelo-sor { margin: 10px 0 4px; }
+  /* a kezelo (kep + nev + roviden) a kartyan belul: a szoveg es a terkep / a jobb szel kozott */
+  .kosz-kartya.van-kezelo { grid-template-columns: minmax(0, 1fr) 78px 96px; gap: 8px; }
+  .kosz-kartya.van-kezelo .adat b { font-size: 14px; }
+  .osszegzes-kartya .sor.van-kezelo { grid-template-columns: 40px minmax(0, 1fr) 78px; }
+  .kezelo-oszlop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; min-width: 0; }
+  .kezelo-oszlop img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: 50% 32%; }
+  .kezelo-oszlop b, .osszegzes-kartya .kezelo-oszlop b { display: block; font-size: var(--m-kicsi); line-height: 1.2; color: var(--sotet); }
+  .kezelo-oszlop small, .osszegzes-kartya .kezelo-oszlop small { display: block; font-size: 11.5px; line-height: 1.2; color: var(--kozep); }
+  @media (max-width: 359px) { .kosz-kartya.van-kezelo { grid-template-columns: minmax(0, 1fr) 70px 80px; } }
   .kosz-kartya { display: grid; grid-template-columns: 1fr 104px; gap: 10px; align-items: stretch; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; padding: 8px 8px 8px 12px; margin-top: 12px; }
   .kosz-kartya .adat { font-size: var(--m-kicsi); color: var(--kozep); line-height: 1.35; align-self: center; }
   .kosz-kartya .adat b { display: block; color: var(--sotet); font-size: var(--m-alap); }
@@ -505,7 +520,6 @@
     <div class="pipa-kor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
     <h2 class="kozepre">Telefonos konzultációt kértél!</h2>
     <div id="c-kesz-osszegzes"></div>
-    <p class="kozepre kicsi halk">Ha közben változik a terved, hívj: 06 20 247 4444.</p>
     <div class="utana utana-egy">
       <div>
         <h3>Mi történik most?</h3>

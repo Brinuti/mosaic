@@ -19,12 +19,13 @@
 export const TIMEZONE = 'Europe/Budapest';
 
 // Uzletagankent a technikai fiok (az auditbol; a 14585/10427 stb. a site kodjaban is igy szerepel).
+// calendarId: a Salonic naptar-azonositoja (uzletagonkent allando; ha a Salonic elutasitja, az adapter a selectDate oldalbol olvassa ki ujra).
 // specIds / employeeId csak ott kell, ahol a Salonic kategoriaoldala nem listaz (Lezer: egymunkatarsas, PMU: munkatarsoldal).
 export const BUSINESSES = Object.freeze({
-  headspa: { account: 'mosaicheadspa', host: 'https://mosaicheadspa.salonic.hu', placeId: 10427 },
-  hair: { account: 'mosaic-hair', host: 'https://mosaic-hair.salonic.hu', placeId: 10823 },
-  oxygen: { account: 'mosaic-oxigen', host: 'https://mosaic-oxigen.salonic.hu', placeId: 14409 },
-  laser: { account: 'mosaic-elysion', host: 'https://mosaic-elysion.salonic.hu', placeId: 14586, specIds: [66404, 66405] },
+  headspa: { account: 'mosaicheadspa', host: 'https://mosaicheadspa.salonic.hu', placeId: 10427, calendarId: 'ebf1c485-e15e-d57f-de78-284a6591ece4' },
+  hair: { account: 'mosaic-hair', host: 'https://mosaic-hair.salonic.hu', placeId: 10823, calendarId: 'f2bf7672-fa03-f092-e14b-fc23577e5ab2' },
+  oxygen: { account: 'mosaic-oxigen', host: 'https://mosaic-oxigen.salonic.hu', placeId: 14409, calendarId: 'de045315-2757-ad57-0d83-d86a7b287c78' },
+  laser: { account: 'mosaic-elysion', host: 'https://mosaic-elysion.salonic.hu', placeId: 14586, specIds: [66404, 66405], calendarId: '02742cf7-07cb-a3ef-fc7c-b871c86ce163' },
   pmu: { account: 'mosaic-pmu', host: 'https://mosaic-pmu.salonic.hu', placeId: 14585, employeeId: 32428 },
 });
 
@@ -181,13 +182,19 @@ export function verifyConfirmation(urlOrQuery, expected, businesses = BUSINESSES
 }
 
 // --- az adapter ---------------------------------------------------------------------------------------------------------
-export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () => Date.now(), timeoutMs = 15000, retries = 1, cacheMs = 5 * 60 * 1000, businesses = BUSINESSES } = {}) {
+export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () => Date.now(), timeoutMs = 15000, retries = 1, cacheMs = 5 * 60 * 1000, businesses = BUSINESSES, storage = null, persistMs = 10 * 60 * 1000 } = {}) {
   const cache = new Map(); // kulcs -> { t, v }
-  const cached = async (key, fn) => {
+  // A tartos (sessionStorage) gyorsitotar: a szolgaltatas-lista / hely ket oldalbetoltes kozott is megmarad (a foglalo masodik megnyitasa azonnali);
+  // az ar / idotartam legfeljebb persistMs-ig regi (a C4-nel az ar ellenorzese ugyis a Salonic atiranyitasa alapjan tortenik).
+  const readPersist = (key) => { if (!storage) return undefined; try { const j = JSON.parse(storage.getItem('mhSalonic:' + key)); if (j && now() - j.t < persistMs) return j.v; } catch (e) { /* hibas / hianyzo bejegyzes */ } return undefined; };
+  const writePersist = (key, v) => { if (!storage) return; try { storage.setItem('mhSalonic:' + key, JSON.stringify({ t: now(), v })); } catch (e) { /* tele / tiltott tarolo */ } };
+  const cached = async (key, fn, { persist = false } = {}) => {
     const c = cache.get(key);
     if (c && now() - c.t < cacheMs) return c.v;
+    if (persist) { const p = readPersist(key); if (p !== undefined) { cache.set(key, { t: now(), v: p }); return p; } }
     const v = await fn();
     cache.set(key, { t: now(), v });
+    if (persist) writePersist(key, v);
     return v;
   };
   const cfgOf = (business) => {
@@ -215,28 +222,27 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     throw last;
   }
 
-  async function getServices(business) {
+  // A szolgaltatas-lista + az egyeni CSS jele: a kategoria-oldalak PARHUZAMOSAN toltodnek (a fodraszatnal 14 oldal), a sorrend a kategoriak sorrendje marad.
+  const servicesRaw = (business) => cached('services:' + business, async () => {
     const cfg = cfgOf(business);
-    return cached('services:' + business, async () => {
-      const found = [];
-      let customCss = null;
-      const page = async (url) => { const t = await getText(url); customCss = customCss || parseCustomCss(t); return t; }; // az egyeni CSS jelet a mar letoltott oldalakbol olvassuk
-      const add = (list, spec) => { for (const s of list) if (!found.some((x) => x.serviceId === s.serviceId)) found.push({ ...s, specId: spec ? spec.specId : null, category: spec ? spec.name : null }); };
-      if (cfg.employeeId) add(parseServices(await page(`${cfg.host}/employees/${cfg.employeeId}/?placeId=${cfg.placeId}`)), null);
-      let specs = (cfg.specIds || []).map((id) => ({ specId: String(id), name: null }));
-      if (!specs.length && !cfg.employeeId) specs = parseSpecs(await page(`${cfg.host}/selectSpecialization/?placeId=${cfg.placeId}`));
-      for (const spec of specs) add(parseServices(await page(`${cfg.host}/showServices/?placeId=${cfg.placeId}&specId=${spec.specId}`)), spec);
-      if (!found.length) throw new SalonicError('PARSE', `Nem talaltam szolgaltatast: ${business}`, { business });
-      cache.set('css:' + business, { t: now(), v: customCss });
-      return found;
-    });
-  }
+    const found = [];
+    let customCss = null;
+    const page = async (url) => { const t = await getText(url); customCss = customCss || parseCustomCss(t); return t; }; // az egyeni CSS jelet a mar letoltott oldalakbol olvassuk
+    const add = (list, spec) => { for (const s of list) if (!found.some((x) => x.serviceId === s.serviceId)) found.push({ ...s, specId: spec ? spec.specId : null, category: spec ? spec.name : null }); };
+    if (cfg.employeeId) add(parseServices(await page(`${cfg.host}/employees/${cfg.employeeId}/?placeId=${cfg.placeId}`)), null);
+    let specs = (cfg.specIds || []).map((id) => ({ specId: String(id), name: null }));
+    if (!specs.length && !cfg.employeeId) specs = parseSpecs(await page(`${cfg.host}/selectSpecialization/?placeId=${cfg.placeId}`));
+    const oldalak = await Promise.all(specs.map((spec) => page(`${cfg.host}/showServices/?placeId=${cfg.placeId}&specId=${spec.specId}`)));
+    specs.forEach((spec, i) => add(parseServices(oldalak[i]), spec));
+    if (!found.length) throw new SalonicError('PARSE', `Nem talaltam szolgaltatast: ${business}`, { business });
+    return { found, customCss };
+  }, { persist: true });
+
+  async function getServices(business) { return (await servicesRaw(business)).found; }
 
   /** Az adatlap megjelenese: { customCss } - a MOSAIC kozos stiluslapjanak cime, ha a Salonic-fiok betolti; egyebkent null (alap kinezet). */
   async function getPresentation(business) {
-    await getServices(business);
-    const c = cache.get('css:' + business);
-    return { customCss: c ? c.v : null };
+    return { customCss: (await servicesRaw(business)).customCss || null };
   }
 
   async function findService(business, serviceId) {
@@ -245,27 +251,70 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     return s;
   }
 
-  const calendarId = (business, serviceId) => cached('calendar:' + business, async () => {
+  // A naptar-azonosito uzletagonkent allando (a szolgaltatasok kozott nem valtozik): a beallitott (cfg.calendarId) azonnal hasznalhato, nem kell hozza
+  // a selectDate oldal (0,8-2 mp). Ha a Salonic elutasitja (megvaltozott), a selectDate oldalbol olvassuk ki ujra.
+  const calendarFromPage = (business, serviceId) => cached('calendar:' + business, async () => {
     const cfg = cfgOf(business);
     const id = parseCalendarId(await getText(`${cfg.host}/selectDate/?employeeId=${ANY_STAFF}&placeId=${cfg.placeId}&serviceId=${serviceId}`));
     if (!id) throw new SalonicError('NO_CALENDAR', 'Nem talaltam naptar-azonositot', { business, serviceId });
     return id;
   });
+  const calendarOverride = new Map();
+  const calendarId = async (business, serviceId) => calendarOverride.get(business) || cfgOf(business).calendarId || calendarFromPage(business, serviceId);
 
-  /** Szabad idopontok. from: unix mp (alap: most - 3 ora, hogy a budapesti nap elejet is tartalmazza), days: alap 14. */
-  async function getAvailability(business, serviceId, { staffId = ANY_STAFF, from, days = 14, minLeadMinutes = 0 } = {}) {
+  // Egy naptar-API hivas: [startDate, startDate + days nap) szabad idopontjai (minden minLead-szuro nelkul; a hivo szur)
+  async function fetchSlots(business, service, staffId, startDate, days) {
     const cfg = cfgOf(business);
-    const service = await findService(business, serviceId);
-    const startDate = from ?? Math.floor(now() / 1000) - 3 * 3600;
-    const p = new URLSearchParams({
-      startDate, offset: 0, days, placeId: cfg.placeId, serviceId: service.serviceId, employeeId: staffId,
-      calendarId: await calendarId(business, service.serviceId), pref: '', apiVersion: 1, language: 'hu', excludeNonAcceptingEmployees: 0,
-    });
-    let json;
-    try { json = JSON.parse(await getText(API_URL + '?' + p)); } catch (e) { if (e instanceof SalonicError) throw e; throw new SalonicError('PARSE', 'A naptar-API valasza nem JSON', { business }); }
-    const d = json.data || {};
+    const run = async (calId) => {
+      const p = new URLSearchParams({ startDate, offset: 0, days, placeId: cfg.placeId, serviceId: service.serviceId, employeeId: staffId, calendarId: calId, pref: '', apiVersion: 1, language: 'hu', excludeNonAcceptingEmployees: 0 });
+      let json;
+      try { json = JSON.parse(await getText(API_URL + '?' + p)); } catch (e) { if (e instanceof SalonicError) throw e; throw new SalonicError('PARSE', 'A naptar-API valasza nem JSON', { business }); }
+      return json;
+    };
+    let json = await run(await calendarId(business, service.serviceId));
+    if ((!json || json.status !== 'success') && cfg.calendarId && !calendarOverride.has(business)) { // a beallitott azonosito mar nem jo: kiolvasas a Salonic oldalabol
+      const id = await calendarFromPage(business, service.serviceId);
+      if (id !== cfg.calendarId) { calendarOverride.set(business, id); json = await run(id); }
+    }
+    const d = (json && json.data) || {};
     if (d.placeName || d.placeAddress) cache.set('place:' + business, { t: now(), v: { name: clean(d.placeName) || null, address: clean(d.placeAddress) || null, phone: clean(d.placePhone) || null } });
-    return slotsFromApi(json, { business, service, minUnix: Math.floor(now() / 1000) + minLeadMinutes * 60 });
+    return slotsFromApi(json, { business, service, minUnix: 0 });
+  }
+
+  // A szabad idopontok: a keresett idoszak parhuzamos reszekre (legfeljebb CHUNK_DAYS nap) bontva toltodik (a Salonic naptar-API ideje a napok szamaval no:
+  // 92 nap a fodraszatnal 4 mp, 14 nap 1 mp); firstDays-szel az elso resz kulon, hamarabb erkezik (first), a teljes lista kesobb (full).
+  // Az egyes reszek rovid ideig (AVAIL_MS) megosztottak: az elolegzett (prefetch) kereses eredmenyet a megnyilo naptar azonnal megkapja. A kezdo idopont
+  // 5 percre kerekitett (a "most - 3 ora" korlat miatt ez artalmatlan), igy az elolegzett es a kesobbi kereses kulcsa megegyezik.
+  const CHUNK_DAYS = 31;
+  const AVAIL_MS = 90 * 1000;
+  const chunkCache = new Map();
+  function chunk(business, service, staffId, startDate, n) {
+    const key = [business, service.serviceId, staffId, startDate, n].join(':');
+    const hit = chunkCache.get(key);
+    if (hit && now() - hit.t < AVAIL_MS) return hit.p;
+    const p = fetchSlots(business, service, staffId, startDate, n);
+    chunkCache.set(key, { t: now(), p });
+    p.catch(() => { const c = chunkCache.get(key); if (c && c.p === p) chunkCache.delete(key); }); // hiba utan a kovetkezo hivas ujra probalja
+    return p;
+  }
+  const mergeSlots = (ls) => { const seen = new Set(); return ls.flat().filter((s) => (seen.has(s.slot_id) ? false : seen.add(s.slot_id))).sort((a, b) => a.start_unix - b.start_unix || String(a.staff_id).localeCompare(String(b.staff_id))); };
+
+  /**
+   * Szabad idopontok. from: unix mp (alap: most - 3 ora, hogy a budapesti nap elejet is tartalmazza), days: alap 14.
+   * firstDays + onMore: az elso firstDays nap azonnal visszater, a teljes (days napos) lista kesobb az onMore(lista | null, hiba) hivasban erkezik.
+   */
+  async function getAvailability(business, serviceId, { staffId = ANY_STAFF, from, days = 14, minLeadMinutes = 0, firstDays = null, onMore = null } = {}) {
+    const service = await findService(business, serviceId);
+    const base = from ?? Math.floor((Math.floor(now() / 1000) - 3 * 3600) / 300) * 300;
+    const split = (off, n) => { const k = Math.ceil(n / CHUNK_DAYS); const per = Math.ceil(n / k); return Array.from({ length: k }, (_, i) => [off + i * per, Math.min(per, n - i * per)]).filter(([, d]) => d > 0); };
+    const f = firstDays && firstDays < days ? firstDays : null;
+    const plan = f ? [[0, f], ...split(f, days - f)] : split(0, days);
+    const lists = plan.map(([off, n]) => chunk(business, service, staffId, base + off * 86400, n));
+    const minUnix = Math.floor(now() / 1000) + minLeadMinutes * 60;
+    const keep = (l) => l.filter((x) => x.start_unix > minUnix);
+    const full = Promise.all(lists).then(mergeSlots);
+    if (f && onMore) { full.then((l) => onMore(keep(l)), (e) => onMore(null, e)); return keep(await lists[0]); }
+    return keep(await full);
   }
 
   /** A helyszin neve, cime, telefonja (a naptar-API valaszabol; a cim nincs beleegetve). */
@@ -278,7 +327,7 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     return c2 ? c2.v : { name: null, address: null, phone: null };
   }
 
-  /** A szolgaltatashoz tartozo munkatarsak: azonosito a Salonic szolgaltatas-listajabol, nev a naptar-API-bol (csak ha van szabad idopontja a keretben). */
+  /** A szolgaltatashoz tartozo munkatarsak: azonosito a Salonic szolgaltatas-listajabol, nev a naptar-API-bol (csak ha van szabad idopontja a keretben: days nap). */
   async function getStaff(business, serviceId, { days = 60 } = {}) {
     const service = await findService(business, serviceId);
     const cfg = cfgOf(business);

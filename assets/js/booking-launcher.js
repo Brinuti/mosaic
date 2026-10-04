@@ -50,10 +50,24 @@ document.addEventListener('click', (e) => {
   megnyit(opts, { opener: el });
 });
 
-// a CTA fole vitt egerre / fokuszra mar toltjuk a foglalo kodjat (az elso megnyitas ne varakoztasson)
-const elolegez = (e) => { if (e.target.closest && e.target.closest('[data-booking], a[href*="foglalo-motor"]')) modul(); };
+// a CTA fole vitt egerre / erintesre / fokuszra mar toltjuk a foglalo kodjat, kapcsolatot epitunk a Salonichoz, es toltjuk a szolgaltatas-listat (az elso megnyitas ne varakoztasson)
+const melegitett = new WeakSet();
+const elolegez = (e) => {
+  const el = e.target.closest && e.target.closest('[data-booking], a[href*="foglalo-motor"]');
+  if (!el) return;
+  const m = modul();
+  if (melegitett.has(el)) return;
+  melegitett.add(el);
+  const opts = el.hasAttribute('data-booking') ? parseDataBooking(el.getAttribute('data-booking')) : optsFromLink(el);
+  if (opts) m.then((mod) => mod.warm && mod.warm(opts)).catch(() => {});
+};
 document.addEventListener('pointerover', elolegez, { passive: true });
+document.addEventListener('pointerdown', elolegez, { passive: true });
+document.addEventListener('touchstart', elolegez, { passive: true });
 document.addEventListener('focusin', elolegez);
+// a foglalo kodja az oldal betoltese utan, tetlen idoben is letoltodik (az elso kattintas ne varja be a modulokat)
+const tetlen = () => (window.requestIdleCallback ? window.requestIdleCallback(() => modul(), { timeout: 4000 }) : setTimeout(modul, 2500));
+if (document.readyState === 'complete') tetlen(); else window.addEventListener('load', tetlen, { once: true });
 
 function bookingParamok() {
   const q = new URLSearchParams(location.search);

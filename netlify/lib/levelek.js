@@ -71,6 +71,13 @@ export const URLAPOK = {
       ['idopont', 'Időpont'], ['kezeles', 'Kezelés'], ['ar', 'Ár'],
     ], d),
   },
+  // a foglalo (motor) koszono kepernyojenek "Ott leszek" gombja (minden uzletag; a Salonicba kivulrol nem irhatunk)
+  'motor-megerosites': {
+    targy: 'Foglaló – a vendég megerősítette az időpontját',
+    html: (d) => osszefoglalo('Egy vendég a foglaló köszönő képernyőjén megerősítette, hogy eljön („Ott leszek”).', 'Az időpont:', [
+      ['idopont', 'Időpont'], ['szolgaltatas', 'Szolgáltatás'], ['uzletag', 'Üzletág'], ['szakember', 'Szakember'],
+    ], d),
+  },
   'fodrasz-jelentkezes': {
     targy: 'Új fodrász jelentkezett',
     html: (d) => osszefoglalo(wixBevezeto('Fodrász'), 'Beküldés összefoglalása:', [

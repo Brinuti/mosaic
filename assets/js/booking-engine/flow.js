@@ -1,37 +1,36 @@
 // MOSAIC Booking Engine V1 - a folyamat tiszta (DOM-mentes, halozat-mentes) logikaja
 //
 // Allapotok a wireframe-ok szerint (docs: MOSAIC_HeadSpa_Booking_Engine_V1_Wireframe.md):
-//   HS1 intent, HS2 elmeny, HS3 ajandekkartya-tipus, C1 gyors idopontok, C2 naptar, C3 osszegzes,
+//   HS1 ajandekkartya-e, HS2 elmeny, HS3 ajandekkartya-elmeny, C1 idopont (a PMU-foglalo havi naptara; nincs osszegzo kepernyo),
 //   C4 vendegadatok (a Salonic beagyazott adatlapja), C5 rogzites, C6 siker, A1 nincs idopont, A2 elkelt, A3 technikai hiba.
 // Az utvonalak (ROUTES) pontosan a wireframe routing tablaja; a teszt ezt veti ossze vele.
 
 export const TIMEZONE = 'Europe/Budapest';
 
 // --- allapotgep -----------------------------------------------------------------------------------------------------------
-export const EXIT_GIFTCARD = 'EXIT_GIFTCARD'; // az ajandekkartya-vasarlas NEM foglalasi allapot: kilep a Gift Card funnelbe
 export const ROUTES = Object.freeze({
-  HS1: { book: 'HS2', voucher: 'HS3', giftcard: EXIT_GIFTCARD },
+  // HeadSpa: az elso kerdes az ajandekkartya (HS1: kuponkoddal -> HS3, anelkul -> HS2), utana az elmeny-valasztas
+  HS1: { voucher: 'HS3', normal: 'HS2' },
   HS2: { service: 'C1' },
   HS3: { service: 'C1' },
-  // Oxigen: egy belepesi kerdes (OX1); ha egy szandekhoz tobb Salonic-szolgaltatas tartozik, rovid valasztas (OX2) - csak C1 elott
-  OX1: { service: 'C1', variant: 'OX2' },
-  OX2: { service: 'C1' },
-  // Fodraszat: HA1 (mit szeretnel) -> HA2 (kezeles) -> [HA2B (hajhossz)] -> HA3 (van valasztott fodraszod?) -> [HA3B] -> C1;
-  // az ingyenes konzultacio (HA-CONSULT) egyenesen C1-re megy; konkret szolgaltatas landing a HA3-ra
+  // Oxigen: egy belepesi kerdes (OX1); ha egy szandekhoz tobb Salonic-szolgaltatas tartozik, rovid valasztas (OX2); utana a szakember-valaszto (OXS) es az idopont
+  OX1: { service: 'OXS', variant: 'OX2' },
+  OX2: { service: 'OXS' },
+  OXS: { next: 'C1' },
+  // Fodraszat: a BELEPO a fodrasz-valaszto (HA0), utana HA1 (mit szeretnel) -> HA2 (kezeles) -> [HA2B (hajhossz)] -> C1; kategoria-landing HA0 -> HA2,
+  // konkret szolgaltatas landing HA0 -> C1; az ingyenes konzultacio (HA1 "nem tudom") egyenesen C1-re megy
+  HA0: { all: 'HA1', intent: 'HA2', service: 'C1' },
   HA1: { intent: 'HA2', consult: 'C1' },
-  HA2: { group: 'HA2B', service: 'HA3' },
-  HA2B: { service: 'HA3' },
-  HA3: { any: 'C1', choose: 'HA3B' },
-  HA3B: { staff: 'C1' },
+  HA2: { group: 'HA2B', service: 'C1' },
+  HA2B: { service: 'C1' },
   // Lezer: LA1 (melyik ut illik rad) -> LA2 (terulet; "mar tudom") / LA3 (terulet; "mar jarok kezelesre") -> LA2B (kezeles) -> C1;
   // az ingyenes konzultacio egyenesen C1-re megy; szakember nincs (egy kezelo)
   LA1: { consult: 'C1', known: 'LA2', returning: 'LA3' },
   LA2: { area: 'LA2B', service: 'C1' },
   LA3: { area: 'LA2B', service: 'C1' },
   LA2B: { service: 'C1' },
-  C1: { slot: 'C3', more: 'C2', none: 'A1' },
-  C2: { slot: 'C3', none: 'A1' },
-  C3: { next: 'C4' },
+  // Nincs osszegzo kepernyo (design, 2026-10-04): az idopont kivalasztasa utan rogton a Salonic adatlapja (C4).
+  C1: { slot: 'C4', none: 'A1' },
   C4: { submit: 'C5' },
   C5: { success: 'C6', slot_lost: 'A2', error: 'A3' },
   A1: { callback: 'A1_SENT' },
@@ -47,7 +46,7 @@ export function next(state, event) {
 
 /**
  * Belepesi pont: konkret szolgaltatas ismert -> az uzletag "exact" allapota (alap: C1; Fodraszat: HA3, a szakember-kerdes); ajandekkartya-szandek -> HS3
- * (ha az uzletagnak van); egyebkent (generic) az uzletag elso allapota (HS1 / OX1 / HA1).
+ * (ha az uzletagnak van); egyebkent (generic) az uzletag elso allapota (HS1 / OX1 / HA0 / LA1).
  */
 export function entryState({ hasService, voucher, first = 'HS1', voucherState = 'HS3', exact = 'C1' }) {
   if (hasService) return exact;
@@ -122,11 +121,6 @@ const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export const dayKey = (unix) => fmt(unix, { year: 'numeric', month: '2-digit', day: '2-digit' }, 'sv-SE'); // 2026-10-03
 export const timeLabel = (unix) => fmt(unix, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); // 10:00
-export const hourOf = (unix) => +fmt(unix, { hour: 'numeric', hourCycle: 'h23' });
-
-/** Napszak a wireframe szuroje szerint: Delelott (12 ora elott), Delutan (12-18), Este (18-tol). */
-export const daypartOf = (unix) => { const h = hourOf(unix); return h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'; };
-export const DAYPARTS = Object.freeze([['any', 'Bármelyik'], ['morning', 'Délelőtt'], ['afternoon', 'Délután'], ['evening', 'Este']]);
 
 /** "Ma" / "Holnap" / "Hetfo". */
 export function dayLabel(unix, nowUnix) {
@@ -137,8 +131,6 @@ export function dayLabel(unix, nowUnix) {
 }
 /** "Szombat, okt. 3." (osszegzes, siker) */
 export const longDate = (unix) => `${cap(fmt(unix, { weekday: 'long' }))}, ${fmt(unix, { month: 'short', day: 'numeric' })}`;
-/** "Szo 3." (a naptar-sav gombjai) */
-export const stripLabel = (unix) => `${cap(fmt(unix, { weekday: 'short' }).replace(/\.$/, ''))} ${fmt(unix, { day: 'numeric' }).replace(/\.$/, '')}.`;
 
 // --- idopontok --------------------------------------------------------------------------------------------------------------
 /** Ugyanarra az idopontra tobb munkatars is lehet szabad: "barki megfelelo" nezetben egy idopont = egy bejegyzes. */
@@ -153,30 +145,32 @@ export function uniqueTimes(slots) {
   return out;
 }
 
-export function filterSlots(slots, { daypart = 'any', staffId = null, day = null } = {}) {
-  return slots.filter((s) => (daypart === 'any' || daypartOf(s.start_unix) === daypart)
-    && (!staffId || String(s.staff_id) === String(staffId))
-    && (!day || dayKey(s.start_unix) === day));
+export function filterSlots(slots, { staffId = null, day = null } = {}) {
+  return slots.filter((s) => (!staffId || String(s.staff_id) === String(staffId)) && (!day || dayKey(s.start_unix) === day));
 }
 
-/** C1: a legkozelebbi legfeljebb `max` (3-5) idopont, napok szerint csoportositva. */
-export function quickSlots(slots, { max = 5, nowUnix }) {
-  const picked = uniqueTimes(slots).slice(0, max);
-  const groups = [];
-  for (const s of picked) {
-    const key = dayKey(s.start_unix);
-    let g = groups[groups.length - 1];
-    if (!g || g.key !== key) { g = { key, label: dayLabel(s.start_unix, nowUnix), items: [] }; groups.push(g); }
-    g.items.push({ startUnix: s.start_unix, time: timeLabel(s.start_unix), slot: s });
-  }
-  return groups;
+// --- havi naptar (a PMU-foglalo naptara): csak a szabad napok aktivak, a valasztott nap idopontjai gombokban ----------------------------
+/** A havi naptar honapjai: a mai honaptol az utolso szabad idopontig / a keresesi hatarig (nowUnix + days nap), YYYY-MM kulccsal. */
+export function monthList(nowUnix, days = 92) {
+  const out = [];
+  for (let t = nowUnix; t <= nowUnix + days * 86400; t += 86400) { const k = dayKey(t).slice(0, 7); if (!out.includes(k)) out.push(k); }
+  return out;
 }
-
-/** C2: a napok, amelyekre van szabad idopont (a sav gombjai), az elso `max` nap. */
-export function availableDays(slots, { max = 14 } = {}) {
-  const seen = new Map();
-  for (const s of slots) if (!seen.has(dayKey(s.start_unix))) seen.set(dayKey(s.start_unix), s.start_unix);
-  return [...seen].slice(0, max).map(([key, unix]) => ({ key, unix, label: stripLabel(unix) }));
+/** Egy honap racsa hetfovel kezdve: { title: "2026. október" (a stilus nagybetuzi), cells: [{ blank: true } | { n, key, free }] }. */
+export function monthGrid(monthKeyStr, freeDays) {
+  const [y, m] = monthKeyStr.split('-').map(Number);
+  const first = Date.UTC(y, m - 1, 1, 10) / 1000;
+  const lead = (new Date(first * 1000).getUTCDay() + 6) % 7;
+  const dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const cells = Array.from({ length: lead }, () => ({ blank: true }));
+  for (let n = 1; n <= dim; n++) { const key = `${monthKeyStr}-${String(n).padStart(2, '0')}`; cells.push({ n, key, free: freeDays.has(key) }); }
+  return { title: fmt(first, { year: 'numeric', month: 'long' }), cells };
+}
+/** Egy nap idopontjai a PMU-foglalo szabalya szerint: az egesz es fel orakat mutatjuk, a negyedet csak ha mellette nincs ilyen. Egy idopont = egy bejegyzes. */
+export function dayTimes(slots, key) {
+  const nap = uniqueTimes(slots).filter((s) => dayKey(s.start_unix) === key);
+  const set = new Set(nap.map((s) => s.start_unix));
+  return nap.filter((s) => s.start_unix % 1800 === 0 || (!set.has(s.start_unix - 900) && !set.has(s.start_unix + 900)));
 }
 
 // --- megjelenites ------------------------------------------------------------------------------------------------------------
@@ -195,10 +189,18 @@ export function cardsFor(services, cards, { voucher = false } = {}) {
   const pool = services.filter((s) => (s.bookingType === 'voucher_redemption') === voucher);
   const out = [];
   for (const card of cards) {
-    const service = pool.find((s) => card.test(displayName(s.name)));
-    if (service) out.push({ card, service });
+    const mind = pool.filter((s) => card.test(displayName(s.name))); // a kartyahoz tartozo valtozatok (pl. az Egyeni "Relax" es "Hair"); az elso az elsodleges
+    if (mind.length) out.push({ card, service: mind[0], services: mind });
   }
   return out;
+}
+
+/**
+ * Tobb szolgaltatas-valtozat (ugyanaz a szolgaltatas, ugyanazok a kezelok) szabad idopontjainak uniója: idopont szerint rendezve, azonos idopontnal az elobbi
+ * valtozat elol (stabil sorrend); minden idopont megtartja a service_id-jat, igy a foglalas arra a valtozatra megy, amelyiknek az idopontja van.
+ */
+export function mergeVariantSlots(lists) {
+  return lists.flat().sort((a, b) => a.start_unix - b.start_unix);
 }
 
 /** ?service= (azonosito vagy kulcsszavak a nevben) -> szolgaltatas; az "exact service landing" belepeshez. */

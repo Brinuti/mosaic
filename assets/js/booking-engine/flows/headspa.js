@@ -12,26 +12,28 @@ export const HEADSPA = Object.freeze({
   // (~197 px) az iframe aljara fekszik, ezert a gomb + 24 px + a sav magassaga kell, hogy ne takarja el (a lablec 1571 px-nel kezdodik,
   // a sav alatt marad). A Salonic-fiok "Egyeni CSS URL" beallitasaval (mint a PMU-nal) ez egyszerusodik.
   frame: Object.freeze({ crop: 100, visible: 1545 }), // az alap (egyeni CSS nelkuli) Salonic-kinezethez; a MOSAIC kozos CSS-sel a motor a tomor meretet hasznalja
+  // Az elso kerdes az ajandekkartya (HS1: kuponkoddal vagy anelkul), utana az elmeny-valasztas (HS2 / HS3).
   firstState: 'HS1',
   voucherState: 'HS3',
-  giftCardUrl: '/headspa-ajandekkartya', // az ajandekkartya-vasarlas kilep a foglalasbol (Gift Card funnel)
   showStaffFilter: false, // 11. dontes: a HeadSpa "munkatarsai" kezelo-helyek, a vendeg nem valaszt
-  // HS2/HS3 kartyak. 8. dontes: az Egyeni = csak a "Relax" valtozat (a "Hair" nem foglalhato ebbol a foglalobol).
+  // HS2/HS3 kartyak. 8. dontes (2026-10-04 modositva): az Egyeni "Relax" es "Hair" valtozata ugyanaz a szolgaltatas (ugyanazok a kezelok), ezert egy kartya:
+  // a naptar a ket valtozat idopontjainak uniója, a foglalas arra a valtozatra megy, amelyiknek az idopontja van (flows/headspa.js egyesit, engine.js variantsFor).
   cards: Object.freeze([
-    { key: 'egyeni', title: 'Egyéni HeadSpa', test: (n) => /EGYÉNI/i.test(n) && /Relax/i.test(n) },
-    { key: 'paros', title: 'Páros HeadSpa', test: (n) => /PÁROS/i.test(n) },
-    { key: 'negykezes', title: '4 kezes HeadSpa', test: (n) => /NÉGYKEZES|4[ -]?KEZES/i.test(n) },
+    { key: 'egyeni', title: 'Egyéni HeadSpa', kep: 'hs-egyeni', test: (n) => /EGYÉNI/i.test(n) && /Relax|Hair/i.test(n) && !/NÉGYKEZES|4[ -]?KEZES/i.test(n) },
+    { key: 'paros', title: 'Páros HeadSpa', kep: 'hs-paros', test: (n) => /PÁROS/i.test(n) },
+    { key: 'negykezes', title: '4 kezes HeadSpa', kep: 'hs-negykezes', test: (n) => /NÉGYKEZES|4[ -]?KEZES/i.test(n) },
   ]),
+  // A valtozat-jeloles ("Relax" / "Hair") nelkuli, egységes szolgaltatas-nev: a naptar-savon es az osszegzesben nem latszik, melyik valtozatra megy a foglalas
+  egyesit: (nev) => String(nev).replace(/\s*["„”“]\s*(?:Relax|Hair)\s*["„”“]/i, '').replace(/\s+/g, ' ').trim(),
   copy: Object.freeze({
-    hs1Title: 'Hogyan folytatnád?',
+    hs1Title: 'Ajándékkártyával vagy anélkül foglalsz?',
     hs1: [
-      { key: 'book', title: 'Időpontot foglalok' },
-      { key: 'voucher', title: 'Ajándékkártyám van – beváltom' },
-      { key: 'giftcard', title: 'Ajándékkártyát vásárolok' },
+      { key: 'voucher', title: 'Ajándékkártyával (kuponkóddal) foglalok', ikon: 'ajandek', kep: 'ik-ajandek' },
+      { key: 'normal', title: 'Normál foglalás kuponkód nélkül', ikon: 'naptar', kep: 'ik-naptar' },
     ],
     hs2Title: 'Melyik HeadSpa élményt választod?',
     hs3Title: 'Milyen ajándékkártyád van?',
     hs3Note: 'Az ajándékkártyás foglalást a Salonic adatlapján kuponkóddal tudod rendezni.',
-    voucherSettled: 'Ajándékkártyával rendezve',
+    voucherSettled: 'Kuponkóddal',
   }),
 });

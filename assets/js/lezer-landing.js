@@ -88,7 +88,7 @@
     const hova = $('szamolo-valaszto');
     const e = szamol(valasztott);
     hova.replaceChildren(
-      elem('h3', { class: 'szamolo-cim', html: `<span class="szamolo-ikon">${CALC_IKON}</span>Árkalkulátor <small>Kattints a területekre: az ár azonnal frissül</small>` }),
+      elem('h3', { class: 'szamolo-cim', html: `<span class="szamolo-ikon">${CALC_IKON}</span>Árkalkulátor` }),
       ...SZAMOLO_CSOPORTOK.map((cs) => elem('div', { class: 'sz-csoport' },
         elem('div', { class: 'sz-csoport-nev', html: `${SOROK.find((s) => s.csoport === cs).csoportIkon}<span>${cs}</span>` }),
         elem('div', { class: 'sz-chipek' }, ...SOROK.filter((s) => !s.csomag && s.csoport === cs).map((s) => {
@@ -107,17 +107,19 @@
       return;
     }
     const egy = e.tetelek.length === 1;
-    tartalom.replaceChildren(
+    tartalom.replaceChildren(...[
       elem('ul', { class: 'sz-sorok' }, ...e.tetelek.map((t) => elem('li', { class: t.teljes ? 'teljes' : '' },
         elem('span', { html: `${t.ikon}<span>${t.nev}<small>${t.teljes ? (egy ? 'teljes ár' : 'a legdrágább: teljes ár') : `50% kedvezmény · ${ft(t.ar)} helyett`}</small></span>` }),
         elem('span', { class: 'osszeg', szoveg: ft(t.fizet) })))),
-      elem('div', { class: 'sz-ossz' }, elem('span', { szoveg: 'Alkalmanként' }), elem('b', { szoveg: ft(e.alkalom) })),
+      // tobb teruletnel az eredeti (kulon-kulon vett) ar athuzva, pirossal: lassa, mekkora a kedvezmeny; egy teruletnel nincs mit athuzni
+      elem('div', { class: 'sz-ossz' }, elem('span', { szoveg: 'Alkalmanként' }), elem('div', { class: 'sz-ar' }, e.kedvezmeny ? elem('s', { class: 'regi-ar', szoveg: ft(e.lista) }) : null, elem('b', { szoveg: ft(e.alkalom) }))),
       e.kedvezmeny ? elem('div', { class: 'sz-kedv', html: `<span>Csomagkedvezmény alkalmanként</span><span>−${ft(e.kedvezmeny)}</span>` }) : null,
       elem('div', { class: 'sz-elso', html: `<span>Az első kezelés 20% kedvezménnyel</span><b>${ft(e.elso)}</b>` }),
       elem('div', { class: 'sz-program', html: `<div class="sz-sor"><span>8 alkalmas program: csak 6 alkalmat fizetsz</span><b>${ft(e.program)}</b></div><small>A 4. és a 8. alkalom ajándék (${ft(e.ajandek)} értékben).</small>` }),
       elem('div', { class: 'sz-cta' },
         elem('a', { class: 'gomb gomb-arany gomb-szeles', href: '#foglalas', 'data-terulet': egy ? e.tetelek[0].kulcs : EGYEDI.kulcs, html: `${egy ? 'Időpontot foglalok' : 'Egyedi csomagot foglalok'} <span class="nyil">→</span>` }),
-        elem('p', { class: 'sz-lab', szoveg: 'Az ár a program végéig fix. 8 alkalomból csak 6-ot fizetsz, 2 alkalom ajándék.' })));
+        // telefonon rovidebb valtozat, hogy elferjen egy sorban
+        elem('p', { class: 'sz-lab', html: '<span class="hosszu">Az ár a program végéig fix. 8 alkalomból csak 6-ot fizetsz, 2 alkalom ajándék.</span><span class="rovid">Az ár fix, 8 alkalomból csak 6-ot fizetsz, 2 ajándék.</span>' }))].filter(Boolean));
   }
   $('szamolo-valaszto').addEventListener('click', (e) => {
     const b = e.target.closest('.sz-chip');
@@ -301,12 +303,11 @@
     fig.observe(foglalo);
   } else idopontokBetolt();
 
-  // --- Zsofi konzultacios videoja: kattintasra toltodik be (a poszter latszik addig; a 9 MB-os fajl csak ekkor), lejatszhato, vezerlokkel -----
-  const zv = $('zsofi-video');
-  if (zv) {
+  // --- videok (Zsofi konzultacios videoja, szorbenoves-video): kattintasra toltodnek be (a poszter latszik addig; a fajl csak ekkor), lejatszhatok, vezerlokkel -----
+  for (const zv of document.querySelectorAll('.video-kartya[data-video]')) {
     zv.addEventListener('click', () => {
       const poszter = zv.querySelector('img');
-      const v = elem('video', { controls: true, autoplay: true, playsinline: true, preload: 'auto', poster: poszter ? poszter.getAttribute('src') : false, 'aria-label': 'Zsófi konzultációs videója' });
+      const v = elem('video', { controls: true, autoplay: true, playsinline: true, preload: 'auto', poster: poszter ? poszter.getAttribute('src') : false, 'aria-label': zv.dataset.cim || 'Videó' });
       v.append(elem('source', { src: zv.dataset.video, type: 'video/mp4' }));
       const hely = elem('div', { class: 'video-kartya' }, v);
       zv.replaceWith(hely);
@@ -370,6 +371,23 @@
       if (window.mhSuti.engedely('fun')) trustindexBetolt();
       window.mhSuti.figyel((d) => { if (d.fun) trustindexBetolt(); });
     }
+  }
+
+  // --- mobil sticky CTA (csak telefonon latszik, lasd a CSS-t): a hero-gombok elgorgetese utan latszik, a foglalo szekciotol (es utana) eltunik ---
+  const sticky = $('sticky-cta'), heroCta = document.querySelector('.hero .cta-sor'), foglSzekcio = $('foglalas');
+  if (sticky && heroCta && foglSzekcio && 'IntersectionObserver' in window) {
+    let heroLatszik = true, vegen = false;
+    const frissit = () => {
+      const lat = !heroLatszik && !vegen;
+      sticky.classList.toggle('lathato', lat);
+      sticky.setAttribute('aria-hidden', lat ? 'false' : 'true');
+      sticky.querySelectorAll('a').forEach((a) => (lat ? a.removeAttribute('tabindex') : a.setAttribute('tabindex', '-1')));
+      document.body.classList.toggle('sticky-be', lat);
+    };
+    // a sav csak akkor jon be, ha a hero gombjai mar FELJEBB gorogtek a kepernyo tetejen (nem akkor, ha meg lejjebb vannak: kis telefonon a gombok az elso kepernyo alatt vannak)
+    new IntersectionObserver((es) => { heroLatszik = es[0].isIntersecting || es[0].boundingClientRect.top > 0; frissit(); }).observe(heroCta);
+    // a foglalo szekcio kepernyon van, vagy mar elhagytuk (fentebb van): a foglalo maga a cel, ott / utana nincs szukseg a savra
+    new IntersectionObserver((es) => { const r = es[es.length - 1]; vegen = r.isIntersecting || r.boundingClientRect.top < 0; frissit(); }).observe(foglSzekcio);
   }
 
   // --- Google terkep: a funkcionalis sutik engedelyezese utan magatol, egyebkent a gombra kattintva toltodik be ----------------------
