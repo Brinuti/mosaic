@@ -30,10 +30,14 @@ küldenek (a PMU-landing `pmu_landing_*` mintájára; ezekre GTM-címke nem figy
 
 ## Hero és eredmények
 
-- A H1 („Működő hajgyógyászati oxigénterápia hajhullás ellen”) a teljes szélességben, asztalon egy sorban áll; alatta: „Nem kozmetikai, hanem hajgyógyászati kezelés.”
+- A H1 („Működő hajgyógyászati oxigénterápia hajhullás ellen”) a bal blokkban áll; alatta: „Kétmillió elvégzett kezelésből 95%-os hatékonyság*”, lábjegyzet: „*Az Oxygeni statisztikája alapján”.
 - A hero jobb oldala **valós előtte/utána fotók galériája** (nem statikus kép): egy dia = egy `<figure class="hg-dia">`; a pontokat, nyilakat és a 6 mp-es automatikus lapozást (amíg a látogató bele nem nyúl; csökkentett mozgásnál nincs) az `oxigen-landing.js` adja. Felirat: „Gyengébb panaszok esetén 3–5 alkalom, súlyosabb panaszok esetén 5–10 alkalom.” A 5 jelenlegi kép **helyőrző** (hajhullás-referencia az Oxygeni-sorozatból), a tulajdonos válogatja a valódiakat (akár 10-et).
 - „Az Oxygeni vendégeinek valós javulásai”: a **régi oldal galériái, panaszonként, ugyanabban a sorrendben, mind a 21 kép** (`assets/img/oxigen/eredmeny-01..21.jpg`): hajhullás 12, korpás haj 3, pikkelysömör 3, seborrea 3, „Forrás: Oxygeni Hair” jelöléssel. A hero 5 képe ezek közül való (ismétlődik, amíg a tulajdonos ki nem választja a sajátokat).
-- **Vendégeink véleménye**: a MOSAIC Google-értékelései a Trustindex-widget adataiból (ugyanaz a widget, mint a régi oldalon: `cdn.trustindex.io`, azonosító az `oxigen-landing.js`-ben) lapozható kártyákon. Külső szolgáltató, ezért a süti-tájékoztató szerint „funkcionális”: csak hozzájárulás után tölt be, addig gombos helykitöltő áll. A widget általános MOSAIC-vélemények (HeadSpa, fodrászat) – oxigén-specifikus vélemény egyelőre nincs köztük.
+- **Vendégeink véleménye**: az **eredeti Trustindex-csúszka** (ugyanaz a widget, mint a főoldalon az „olvasd el vendégeinktől” résznél: `assets/embed/c2eb0f_95e68e62…`, Google-értékelés + 3 kártya) keretben. Külső szolgáltató, ezért a süti-tájékoztató szerint „funkcionális”: csak hozzájárulás után tölt be, addig gombos helykitöltő áll. A vélemények valós Google-értékelések, nem szerkesztettük őket; általános MOSAIC-vélemények (HeadSpa, fodrászat), oxigén-specifikus egyelőre nincs köztük.
+
+## A kezelés lépésről lépésre (lenyitható)
+
+9 két soros lépés, alatta a **„Hogyan működik az oxigénterápia?”** blokk: a hatásmechanizmus az Oxygeni Hair & Skin oldala (oxygenihair.hu) alapján, saját megfogalmazásban, forrásmegjelöléssel (diagnózis, 100%-os tiszta oxigén magas nyomással a bazális sejtsorig, vitaminok/ásványi anyagok hordozása, sejtanyagcsere és vérkeringés, hajhagymák, kollagén/pH, védekezőképesség).
 
 ## Alcímek, gombok
 

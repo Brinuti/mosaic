@@ -73,11 +73,12 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 
 /* --- hero --- */
 .hero { position: relative; overflow: hidden; background: linear-gradient(100deg, #fbf8f1 0%, #f6f0e4 100%); }
-.hero-cim { padding-top: 44px; white-space: nowrap; font-size: min(46px, 3.5vw); }
-.hero-racs { display: grid; grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr); gap: 44px; align-items: center; min-height: 520px; }
-.hero-szoveg { padding: 22px 0 46px; position: relative; z-index: 2; }
-.hero h1 { line-height: 1.1; letter-spacing: -.02em; color: #12272a; }
-.hero-al { font: 500 25px/1.3 var(--cim); color: var(--sotet); }
+.hero-racs { display: grid; grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr); gap: 44px; align-items: center; min-height: 590px; }
+.hero-szoveg { padding: 52px 0 50px; position: relative; z-index: 2; }
+.hero h1 { font-size: 50px; line-height: 1.07; letter-spacing: -.02em; color: #12272a; }
+.hero-al { font: 500 25px/1.3 var(--cim); color: var(--sotet); margin-top: 18px; font-variant-numeric: lining-nums; font-feature-settings: "lnum" 1; }
+.hero-al sup { font-size: .6em; vertical-align: super; line-height: 0; }
+.hero-lab { font-size: 13px; color: var(--halk); margin-top: 4px; }
 .hero-lead { font-size: 17px; line-height: 1.5; color: #2f4040; margin-top: 14px; max-width: 520px; }
 .tenyek { display: flex; flex-wrap: wrap; gap: 14px 28px; margin: 26px 0 28px; }
 .tenyek li { display: flex; align-items: center; gap: 12px; font-size: 14px; line-height: 1.25; color: #2a3a3a; }
@@ -197,7 +198,14 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .protokoll li::before { content: counter(p); position: absolute; left: 0; top: 50%; margin-top: -19px; width: 38px; height: 38px; border-radius: 50%; background: var(--arany-gomb); color: #fff; display: grid; place-items: center; font: 600 16px/1 var(--test); text-shadow: 0 1px 1px rgba(90, 62, 10, .28); }
 .protokoll li b { display: block; font: 600 15.5px/1.3 var(--test); color: var(--szoveg); white-space: nowrap; }
 .protokoll li span { display: block; font-size: 14px; color: #4a5757; line-height: 1.3; margin-top: 2px; white-space: nowrap; }
-.protokoll .megj { padding: 8px 26px 24px; font-size: 13.5px; color: var(--halk); }
+.hatas { margin: 12px 26px 26px; padding-top: 22px; border-top: 1px solid #e4d8bf; }
+.hatas h3 { font-size: 24px; }
+.hatas-bev { font-size: 15px; color: #3b4a49; margin-top: 8px; line-height: 1.55; }
+.protokoll .hatas ol { counter-reset: h; display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 16px; padding: 0; }
+.protokoll .hatas li { counter-increment: h; position: relative; display: block; min-height: 0; padding-left: 42px; font-size: 14.5px; line-height: 1.5; color: #3b4a49; }
+.protokoll .hatas li::before { content: counter(h); position: absolute; left: 0; top: 0; margin-top: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--arany-gomb); color: #fff; display: grid; place-items: center; font: 600 13.5px/1 var(--test); text-shadow: 0 1px 1px rgba(90, 62, 10, .28); }
+.protokoll .hatas li b { display: inline; white-space: normal; font: 600 14.5px/1.5 var(--test); color: var(--szoveg); }
+.hatas-forras { margin-top: 16px; font-size: 13px; color: var(--halk); line-height: 1.5; }
 
 /* --- eredmenyek --- */
 .eredmenyek { padding: 56px 0 60px; background: var(--krem2); }
@@ -248,16 +256,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .velemenyek h2 { font-size: 36px; }
 .ti-doboz { margin-top: 26px; min-height: 260px; }
 .ti-helykitolto { min-height: 260px; display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center; background: #fff; border: 1px solid #eadfca; border-radius: 16px; padding: 30px; color: var(--halk); }
-.ti-keret { position: relative; }
-.ti-fej { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; font-size: 15px; color: var(--szoveg); flex-wrap: wrap; }
-.ti-fej b { font-weight: 600; }
-.ti-sav { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 40px) / 3); gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 4px 2px 12px; }
-.ti-sav::-webkit-scrollbar { display: none; }
-.ti-kartya { scroll-snap-align: start; background: #fff; border: 1px solid #eadfca; border-radius: 16px; padding: 22px 22px 18px; box-shadow: var(--arnyek); display: flex; flex-direction: column; }
-.ti-csillag { color: #e2a83a; letter-spacing: 2px; font-size: 16px; }
-.ti-kartya > p:not(.ti-nev) { font-size: 15px; line-height: 1.55; color: #2f4040; margin-top: 10px; display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; flex: 1; }
-.ti-nev { margin-top: 14px; font-weight: 600; font-size: 14.5px; }
-.ti-nev small { display: block; font-weight: 400; font-size: 12.5px; color: var(--halk); margin-top: 1px; }
+.ti-doboz iframe { display: block; width: 100%; height: 352px; border: 0; background: transparent; }
 .ti-link { margin-top: 14px; font-size: 14.5px; }
 .ti-link a { color: var(--sotet); }
 
@@ -340,9 +339,9 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 /* --- reszponziv --- */
 @media (max-width: 1100px) {
   .tartalom { width: min(var(--szeles), calc(100% - 48px)); }
-  .hero-cim { white-space: normal; font-size: 40px; padding-top: 34px; }
+  .hero h1 { font-size: 42px; }
   .hero-racs { min-height: 0; grid-template-columns: 1fr; gap: 6px; }
-  .hero-szoveg { padding: 40px 0 18px; }
+  .hero-szoveg { padding: 38px 0 18px; }
   .hero-galeria { max-width: 640px; margin: 0 auto 36px; width: 100%; }
   .jel-racs { grid-template-columns: repeat(2, 1fr); }
   .allapot-racs { grid-template-columns: 1fr; gap: 34px; padding: 40px 0; }
@@ -350,7 +349,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .kezelo-sav { grid-auto-columns: calc((100% - 20px) / 2); }
   .elso-racs { grid-template-columns: 1fr; }
   .elso-kep { min-height: 0; aspect-ratio: 16 / 10; }
-  .ba-sav, .ti-sav { grid-auto-columns: calc((100% - 20px) / 2); }
+  .ba-sav { grid-auto-columns: calc((100% - 20px) / 2); }
   .video-racs { grid-template-columns: 300px minmax(0, 1fr); gap: 32px; }
   .szalon-racs { grid-template-columns: 1fr; gap: 24px; }
   .arak-racs { grid-template-columns: 1fr; grid-template-areas: "cim" "kartyak" "aside" "lab"; row-gap: 22px; }
@@ -365,7 +364,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   html { scroll-padding-top: 70px; }
   .tartalom { width: calc(100% - 32px); }
   :where(main, dialog) h2 { font-size: 30px; }
-  .hero-cim { font-size: 33px; padding-top: 26px; }
+  .hero h1 { font-size: 34px; }
   .hero-al { font-size: 20px; }
   .hero-lead { font-size: 16px; }
   .hero-szoveg { padding: 28px 0 22px; }
@@ -385,7 +384,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .jelek { padding: 44px 0 40px; }
   .jelek h2, .kezelok h2, .elso h2, .folyamat h2, .eredmenyek h2, .video-sor h2, .arak h2, .miert h2 { font-size: 28px; }
   .jel-racs { gap: 12px; margin-top: 24px; }
-  .ti-sav { grid-auto-columns: 88%; }
+  .ti-doboz iframe { height: 475px; }
   .velemenyek h2 { font-size: 28px; }
   .ba-fej h3 { font-size: 20px; }
   .jel { padding: 20px 12px 18px; }
@@ -411,7 +410,8 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .lk img { margin-top: 10px; aspect-ratio: 1.8; }
   .protokoll summary { padding: 16px 18px; font-size: 15px; }
   .protokoll ol { grid-template-columns: 1fr; padding: 4px 18px 6px; }
-  .protokoll .megj { padding: 8px 18px 20px; }
+  .hatas { margin: 8px 18px 20px; }
+  .hatas h3 { font-size: 21px; }
   .eredmenyek { padding: 42px 0 46px; }
   .ba-sav { grid-auto-columns: 88%; }
   .video-sor { padding: 42px 0 24px; }
@@ -437,7 +437,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .zaro-cta .gomb { width: 100%; }
 }
 @media (max-width: 400px) {
-  .hero-cim { font-size: 29px; }
+  .hero h1 { font-size: 30px; }
 }
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }

@@ -65,11 +65,11 @@
 
 <!-- ============ 1. HERO ============ -->
 <section class="hero">
-  <div class="tartalom">
-    <h1 class="hero-cim">Működő hajgyógyászati oxigénterápia hajhullás ellen</h1>
-    <div class="hero-racs">
+  <div class="tartalom hero-racs">
     <div class="hero-szoveg">
-      <p class="hero-al">Nem kozmetikai, hanem hajgyógyászati kezelés.</p>
+      <h1>Működő hajgyógyászati oxigénterápia hajhullás ellen</h1>
+      <p class="hero-al">Kétmillió elvégzett kezelésből<br>95%-os hatékonyság<sup>*</sup></p>
+      <p class="hero-lab">*Az Oxygeni statisztikája alapján</p>
       <p class="hero-lead">Az első alkalom hajkamerás állapotfelméréssel indul, majd a fejbőröd állapotához igazított kezelést és személyre szabott javaslatot kapsz.</p>
       <ul class="tenyek" aria-label="A legfontosabbak röviden">
         <li><span class="ikon-kor"><svg><use href="#i-kamera"/></svg></span><span>Hajkamerás<br>állapotfelmérés</span></li>
@@ -100,7 +100,6 @@
       <button type="button" class="lapozo elozo" id="hg-elozo" aria-label="Előző fotó"><svg><use href="#i-bal"/></svg></button>
       <button type="button" class="lapozo kovetkezo" id="hg-kovetkezo" aria-label="Következő fotó"><svg><use href="#i-jobb"/></svg></button>
       <div class="hg-pontok" id="hg-pontok"></div>
-    </div>
     </div>
   </div>
 </section>
@@ -207,7 +206,20 @@
         <li><b>Otthoni ápolás</b><span>Összeállítjuk az otthoni javaslatod.</span></li>
         <li><b>Hajszárítás</b><span>Kíméletesen megszárítjuk a hajad.</span></li>
       </ol>
-      <p class="megj">A kezelés a hajkamerás vizsgálat eredménye szerint személyre szabott: a lépések és a használt termékek hajtípustól és fejbőrállapottól függően változhatnak.</p>
+      <div class="hatas">
+        <h3>Hogyan működik az oxigénterápia?</h3>
+        <p class="hatas-bev">A kezelés az immunrendszer és a fejbőr saját védekezőképességének erősítésén alapul. Az Oxygeni Hair módszere szerint így zajlik:</p>
+        <ol>
+          <li><b>Fejbőrdiagnózis.</b> A kezelés előtt megvizsgáljuk a fejbőrt, hogy lássuk a hajhullás hátterét és a fejbőr állapotát.</li>
+          <li><b>Tiszta oxigén, magas nyomással.</b> 100%-os tisztaságú orvosi oxigént juttatunk a bőr felső rétegén át egészen a bazális réteg sejtsoráig, oda, ahol a tényleges sejtanyagcsere zajlik.</li>
+          <li><b>Az oxigén hordozó.</b> Magával viszi a vitaminokat és az ásványi anyagokat (organikus hatóanyagokat), így azok a hajhagymákhoz is eljutnak.</li>
+          <li><b>Élénkebb sejtműködés.</b> Az oxigén fokozza a sejtek anyagcseréjét, javítja a vérkeringést és segíti a méregtelenítést.</li>
+          <li><b>Erősebb hajhagymák.</b> A hajhagymák megfelelő oxigén-, vitamin- és ásványianyag-ellátást kapnak, ami megteremti az alapot az új, erős hajszálak növekedéséhez.</li>
+          <li><b>Regeneráció.</b> Az oxigén elősegíti a kollagénképződést, felerősíti az öngyógyító folyamatokat, és segít helyreállítani a fejbőr optimális pH-értékét.</li>
+          <li><b>Védekezőképesség.</b> A fejbőr visszanyeri nedvességtartalmát és immunitását, ezzel az Oxygeni szerint a hajhullás lassítható, megállítható.</li>
+        </ol>
+        <p class="hatas-forras">Forrás: Oxygeni Hair &amp; Skin (oxygenihair.hu). A kezelés a hajkamerás vizsgálat eredménye szerint személyre szabott, a lépések és a termékek hajtípustól és fejbőrállapottól függően változhatnak.</p>
+      </div>
     </details>
   </div>
 </section>
@@ -309,9 +321,9 @@
 <section class="velemenyek" id="velemenyek" aria-labelledby="velemenyek-cim">
   <div class="tartalom">
     <h2 id="velemenyek-cim" class="kozepre">Vendégeink véleménye</h2>
-    <!-- A MOSAIC Google-velemenyei a Trustindex-widget adataibol (ugyanaz a widget, mint a regi oldalon: cdn.trustindex.io). Kulso szolgaltato: a suti-tajekoztato szerint
-         "funkcionalis" - csak hozzajarulas utan toltodik be (oxigen-landing.js), addig egy gombos helykitolto all a helyen. -->
-    <div class="ti-doboz" id="ti-doboz">
+    <!-- Az eredeti Trustindex-csuszka (ugyanaz a widget, mint a fooldalon az "olvasd el vendegeinktol" resznel: assets/embed/c2eb0f_95e68e62...). Kulso szolgaltato:
+         a suti-tajekoztato szerint "funkcionalis" - csak hozzajarulas utan toltodik be (oxigen-landing.js), addig egy gombos helykitolto all a helyen. -->
+    <div class="ti-doboz" id="ti-doboz" data-forras="/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html">
       <div class="ti-helykitolto"><p>A vendégértékelések külső szolgáltatótól (Trustindex) töltődnek be.</p><button type="button" class="gomb gomb-arany gomb-kicsi" id="ti-gomb">Vélemények megjelenítése</button></div>
     </div>
     <p class="ti-link kozepre"><a href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener" data-cta="velemenyek-google">Összes vélemény a Google-on <span class="nyil">→</span></a></p>

@@ -111,7 +111,6 @@
   const TI = 'https://cdn.trustindex.io/widgets/8a/8a7562c424f027774456be130a1/content.html';
   let tiSzoveg = null;
   const tiLeker = () => (tiSzoveg ||= fetch(TI, { credentials: 'omit' }).then((r) => r.text()).then((t) => new DOMParser().parseFromString(t, 'text/html')));
-  const nevszep = (n) => n.trim().toLocaleLowerCase('hu').replace(/(^|[\s"“(-])(\p{L})/gu, (m, e, b) => e + b.toLocaleUpperCase('hu'));
   const csillagok = (d) => {
     const fej = d.querySelector('.ti-header');
     const db = ((fej && fej.querySelector('.ti-rating-text a')) || {}).textContent || '';
@@ -138,42 +137,16 @@
   }
   ertekelesFrissit();
 
-  // vendegvelemenyek: valos Google-velemenyek (Trustindex) lapozhato kartyakon; hozzajarulasig gombos helykitolto
+  // vendegvelemenyek: az eredeti Trustindex-csuszka keretben (kulso szolgaltato: csak hozzajarulas utan; addig gombos helykitolto)
   const tiDoboz = $('ti-doboz');
-  let velKesz = false;
-  async function velemenyekBetolt() {
-    if (velKesz || !tiDoboz || !(window.mhSuti ? mhSuti.engedely('fun') : true)) return;
-    velKesz = true;
-    try {
-      const d = await tiLeker();
-      const lista = [...d.querySelectorAll('.ti-review-item')].map((it) => {
-        const szoveg = ((it.querySelector('.ti-review-content') || {}).textContent || '').replace(/\(Google által fordítva[^)]*\)/i, '').replace(/\s+/g, ' ').trim();
-        return { szoveg, nev: ((it.querySelector('.ti-name') || {}).textContent || '').trim(), datum: ((it.querySelector('.ti-date') || {}).textContent || '').trim(), ertek: +(it.dataset.rating || 5) };
-      }).filter((v) => v.ertek >= 5 && v.szoveg.length >= 45 && !/^\+\d/.test(v.szoveg)).slice(0, 9);
-      if (!lista.length) throw new Error('nincs velemeny');
-      const { n, min } = csillagok(d);
-      const keret = document.createElement('div');
-      keret.className = 'ti-keret';
-      keret.innerHTML = '<div class="ti-fej"><span class="te-csillagok" style="--ert:100%" role="img" aria-label="5 csillagból 5"></span><b>' + (min ? min.trim().replace(/ értékelés$/i, '') : 'Kiváló') + '</b>' +
-        (n ? '<span>' + new Intl.NumberFormat('hu-HU').format(+n).replace(/\s/g, '.') + ' Google-vélemény</span>' : '') + '</div>' +
-        '<div class="ti-sav"></div><button type="button" class="lapozo elozo" aria-label="Előző vélemények" hidden><svg><use href="#i-bal"/></svg></button><button type="button" class="lapozo kovetkezo" aria-label="Következő vélemények" hidden><svg><use href="#i-jobb"/></svg></button>';
-      const sav = keret.querySelector('.ti-sav');
-      for (const v of lista) {
-        const k = document.createElement('article');
-        k.className = 'ti-kartya';
-        const cs = document.createElement('span'); cs.className = 'ti-csillag'; cs.setAttribute('aria-label', '5 csillag'); cs.textContent = '★★★★★';
-        const t = document.createElement('p'); t.textContent = v.szoveg;
-        const nev = document.createElement('p'); nev.className = 'ti-nev';
-        nev.append(nevszep(v.nev));
-        const kicsi = document.createElement('small'); kicsi.textContent = 'Google-vélemény · ' + v.datum;
-        nev.append(kicsi);
-        k.append(cs, t, nev);
-        sav.append(k);
-      }
-      tiDoboz.replaceChildren(keret);
-      lapozo(sav, keret.querySelector('.elozo'), keret.querySelector('.kovetkezo'), true);
-    } catch (e) { velKesz = false; console.error(e); }
-  }
+  const velemenyekBetolt = () => {
+    if (!tiDoboz || tiDoboz.querySelector('iframe') || !(window.mhSuti ? mhSuti.engedely('fun') : true)) return;
+    const f = document.createElement('iframe');
+    f.src = tiDoboz.dataset.forras;
+    f.title = 'Vendégértékelések (Trustindex)';
+    f.loading = 'lazy';
+    tiDoboz.replaceChildren(f);
+  };
   if (tiDoboz) {
     $('ti-gomb').addEventListener('click', () => { if (window.mhSuti) mhSuti.enged('fun'); else velemenyekBetolt(); });
     velemenyekBetolt();
