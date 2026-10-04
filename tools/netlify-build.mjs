@@ -47,6 +47,9 @@ fs.cpSync(path.join(ROOT, 'klon', 'm'), LAP_M, { recursive: true });
 // az asztali mappaba az asztali, a mobilba a mobil valtozat - pontosan ugyanaz, mint a tobbi oldalon.
 // Ugyanigy a <!--mh-lablec--> helyere a MOSAIC lablece.
 const FEJLEC = { [LAP_A]: 'asztali', [LAP_M]: 'mobil' };
+// A fejlec/lablec kozos finomitasa (mobil fejlec, akciosav, gomb, lablec): egy CSS-fajl, ket helyre kerul - a sajat oldalak fejlec-darabja moge itt,
+// a Wixes (klon) oldalak beagyazott klon.css-e moge lent (BEAGYAZOTT).
+const FEJLEC_CSS = fs.readFileSync(path.join(ROOT, 'assets/css/fejlec-lablec.css'), 'utf8');
 // A fejlec kivonata a /sminktetovalas-budapest oldalrol keszult, ott a "Sminktetovalas" az aktiv (kijelolt) menupont. Az a sajat oldal, amelyik
 // <!--mh-menu-aktiv:/utvonal--> jelolot tartalmaz, a sajat menupontjat kapja kijelolve (jelolo nelkul a fejlec valtozatlan marad).
 const aktivMenu = (fejlec, utvonal, mobil) => {
@@ -70,7 +73,9 @@ for (const f of fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.ends
     const resz = (jel, fajl) => forras.includes(jel) ? fs.readFileSync(path.join(ROOT, 'assets/fejlec', fajl + '.html'), 'utf8') : '';
     let fejlec = resz('<!--mh-fejlec-->', FEJLEC[m]);
     if (aktiv && fejlec) fejlec = aktivMenu(fejlec, aktiv, m === LAP_M);
-    const lablec = resz('<!--mh-lablec-->', 'lablec-' + FEJLEC[m]);
+    let lablec = resz('<!--mh-lablec-->', 'lablec-' + FEJLEC[m]);
+    const kozosCss = '<style data-forras="fejlec-lablec">' + FEJLEC_CSS + '</style>';
+    if (fejlec) fejlec += kozosCss; else if (lablec) lablec += kozosCss;
     fs.writeFileSync(path.join(m, f), forras.replace('<!--mh-fejlec-->', () => fejlec).replace('<!--mh-lablec-->', () => lablec));
   }
 }
@@ -242,7 +247,7 @@ const SAJAT_JS = fs.readdirSync(path.join(ROOT, 'assets/js')).filter((f) => f.en
 // A harom kis stiluslap (betuk + klon.css) beagyazva: kulon letoltesre varva blokkolnak
 // az elso megjelenitest. A relativ betu-hivatkozasokat abszolutra irjuk.
 const BEAGYAZOTT = ['wix-google-fonts.css', 'wix-fonts.css', 'klon.css'].map((f) => [f,
-  fs.readFileSync(path.join(ROOT, 'assets/css', f), 'utf8').replace(/url\((['"]?)\.\.\/fonts\//g, 'url($1/assets/fonts/')]);
+  fs.readFileSync(path.join(ROOT, 'assets/css', f), 'utf8').replace(/url\((['"]?)\.\.\/fonts\//g, 'url($1/assets/fonts/') + (f === 'klon.css' ? '\n' + FEJLEC_CSS : '')]);
 // A GYIK szovegeben is van foglalo-link (assets/js/gyik.js): ugyanaz az atkotes. A verziojel a dist/-beli (atirt) tartalombol
 // szamolodik, hogy az atirt szkript uj cimet kapjon (a regit a bongeszo egy evig tarthatja); atkotes nelkul a tartalom azonos.
 if (ATKOTES.size) {
@@ -255,10 +260,26 @@ const verzio = Object.fromEntries(SAJAT.map((f) => [f,
   crypto.createHash('sha1').update(fs.readFileSync(path.join(DIST, f))).digest('hex').slice(0, 10)]));
 // A sajat foglalo-oldalak (a motor / a PMU foglalo / a probaoldalak) maguk toltik a foglalot: ezekre a launcher nem kerul.
 const FOGLALO_OLDALAK = new Set(['foglalo-motor.html', 'foglalas.html', 'booking-test.html', 'foglalo-pmu.html', 'foglalo-proba.html', 'sminktetovalas-budapest.html']);
+// Szovegfinomitasok a kozos fejlecben/lableben. A Wixes oldalakban a szoveg HTML-entitasokkal van kodolva, a sajat darabokban sima betukkel: a mintak mindkettot elfogadjak.
+const ENTITAS = { 'á': '&aacute;', 'é': '&eacute;', 'ó': '&oacute;', 'ö': '&ouml;', 'ő': '&odblac;', 'ü': '&uuml;', 'ű': '&udblac;', 'í': '&iacute;', 'ú': '&uacute;', 'Á': '&Aacute;' };
+const TOLERANS = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[áéóöőüűíúÁ]/g, (c) => '(?:' + c + '|' + ENTITAS[c] + ')');
+const AKCIOSAV = new RegExp(TOLERANS('Októberi akció! - 20% kedvezmény minden headspa foglalásra + ajándékkártyára!'), 'g');
+const FOGLALAS_GOMB = new RegExp('(<a [^>]*style-mo70g2c7__root[^>]*aria-label=")' + TOLERANS('FOGLALÁS') + '("[^>]*><span class="StylableButton2545352419__container"><span class="StylableButton2545352419__label wixui-button__label" data-testid="stylablebutton-label">)' + TOLERANS('FOGLALÁS') + '(</span>)');
+function fejlecSzoveg(h, mobil) {
+  // lablec: az elvalasztok " - " helyett " · " (csak a szoveg-csomopontokban)
+  h = h.replace(/(<div id="comp-m40zyigs"[^>]*><p[^>]*>)([\s\S]*?)(<\/p>)/,
+    (m, a, tartalom, c) => a + tartalom.replace(/(^|>)([^<]*)/g, (mm, k, sz) => k + sz.replace(/ - /g, ' · ')) + c);
+  if (mobil) {
+    // az akciosav egy sorba ferjen (rovidebb szoveg), a fejlec gombja ne legyen csupa nagybetus
+    h = h.replace(AKCIOSAV, 'Októberi akció! 20% kedvezmény minden headspa + ajándékkártyára');
+    h = h.replace(FOGLALAS_GOMB, '$1Foglalás$2Foglalás$3');
+  }
+  return h;
+}
 for (const mappa of [LAP_A, LAP_M]) {
   for (const f of fs.readdirSync(mappa).filter((x) => x.endsWith('.html'))) {
     const p = path.join(mappa, f);
-    let h = ritkit(fs.readFileSync(p, 'utf8'), SAJAT_JS);
+    let h = fejlecSzoveg(ritkit(fs.readFileSync(p, 'utf8'), SAJAT_JS), mappa === LAP_M);
     // Ahol a foglalo-linkek a motorra mutatnak (bekapcsolt atkotes: elonezet / helyi build), ott a CTA a foglalot HELYBEN nyitja (reteg),
     // nem visz at a /foglalo-motor oldalra. Kikapcsolt atkotesnel (eles, ma) semmi nem valtozik.
     if (ATKOTES.size && !kihagyottOldal(f) && !FOGLALO_OLDALAK.has(f)) h = h.replace('</body>', '<script type="module" src="/assets/js/booking-launcher.js"></script></body>');
