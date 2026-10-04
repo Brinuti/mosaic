@@ -385,15 +385,14 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .hatas-csempe b { display: block; font: 500 19px/1.2 var(--cim); color: var(--sotet); letter-spacing: -.005em; }
 .hatas-csempe small { display: block; font-size: 14px; line-height: 1.4; color: #4a5757; margin-top: 5px; }
 .miert-mukodik { position: relative; overflow: hidden; background: linear-gradient(135deg, #123f41 0%, #0b2d2f 100%); color: #dfe9e7; border-radius: 22px; box-shadow: 0 26px 54px rgba(15, 58, 60, .3); min-height: 440px; }
-.mm-szoveg { position: relative; z-index: 2; width: 55%; padding: 40px 0 40px 38px; }
-.miert-mukodik h3 { color: #fff; font-size: 34px; letter-spacing: -.01em; }
-.miert-mukodik p { font-size: 15px; line-height: 1.65; margin-top: 14px; color: #d3dedc; }
-.miert-mukodik p.mm-kiemelt { font: 500 21px/1.35 var(--cim); color: #e7cd92; margin-top: 16px; }
+.mm-szoveg { position: relative; z-index: 2; width: 48%; padding: 34px 6px 34px 36px; }
+.miert-mukodik h3 { color: #fff; font-size: 30px; letter-spacing: -.01em; }
+.miert-mukodik p { font-size: 14.5px; line-height: 1.6; margin-top: 12px; color: #d3dedc; }
+.miert-mukodik p.mm-kiemelt { font: 500 19px/1.35 var(--cim); color: #e7cd92; margin-top: 14px; }
 .miert-mukodik b { color: #fff; font-weight: 600; }
-.mm-foto { position: absolute; top: 0; right: 0; bottom: 0; width: 52%; }
-.mm-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 28% 50%; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 42%); mask-image: linear-gradient(90deg, transparent 0, #000 42%); }
-.mm-folikulus { position: absolute; z-index: 3; left: 56%; bottom: 22px; width: 168px; height: 168px; border-radius: 50%; overflow: hidden; border: 3px solid #dcbf74; background: #1b3a3c; box-shadow: 0 12px 30px rgba(0, 0, 0, .42); }
-.mm-folikulus img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.14); }
+/* a kepterv AI-generalt kepe (vekony/miert.jpg kivagas): a kor (hajhagyma-nagyitas) a kepbe van sutve, ezert a kep nem vagodik; a bal szelet maszk halvanyitja (a kepterv szovege nem latszik) */
+.mm-foto { position: absolute; right: 0; bottom: 0; width: 52%; aspect-ratio: 487 / 570; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 9%); mask-image: linear-gradient(180deg, transparent 0, #000 9%); }
+.mm-foto img { display: block; width: 100%; height: 100%; -webkit-mask-image: linear-gradient(90deg, transparent 0, transparent 21%, #000 46%), radial-gradient(ellipse 27.9% 24% at 27.7% 76.3%, #000 97%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, transparent 21%, #000 46%), radial-gradient(ellipse 27.9% 24% at 27.7% 76.3%, #000 97%, transparent 100%); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
 
 /* --- arak: Mivel kezdjunk? --- */
 .arak { padding: 58px 0 44px; background: radial-gradient(900px 460px at 94% -8%, #fffaf0 0%, rgba(255, 250, 240, 0) 70%), var(--krem); }
@@ -450,9 +449,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .varhato-racs { grid-template-columns: 1fr; }
   .miert-mukodik { min-height: 0; }
   .mm-szoveg { width: 100%; padding: 34px 30px 0; }
-  .mm-foto { position: relative; width: 100%; height: 300px; margin-top: 18px; }
-  .mm-foto img { object-position: 50% 30%; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 36%); mask-image: linear-gradient(180deg, transparent 0, #000 36%); }
-  .mm-folikulus { left: auto; right: 26px; bottom: 22px; width: 160px; height: 160px; }
+  .mm-foto { position: relative; width: min(430px, 88%); margin: 8px 0 0 auto; }
   .arak-racs { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "cim cim" "k1 k2" "aside aside" "lab lab"; row-gap: 22px; }
   .alkalom { margin-top: 10px; }
 }
@@ -478,8 +475,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .mm-szoveg { padding: 28px 22px 0; }
   .miert-mukodik h3 { font-size: 28px; }
   .miert-mukodik p.mm-kiemelt { font-size: 19px; }
-  .mm-foto { height: 250px; }
-  .mm-folikulus { width: 128px; height: 128px; right: 18px; bottom: 16px; }
+  .mm-foto { width: min(380px, 92%); }
   .arak { padding: 42px 0 36px; }
   .arak-cim { font-size: 34px; margin-bottom: 20px; }
   .arak-racs { grid-template-columns: 1fr; grid-template-areas: "cim" "k1" "k2" "aside" "lab"; row-gap: 16px; }
