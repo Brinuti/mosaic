@@ -494,3 +494,6 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
 - **Szabd személyre:** több levegő a fejléc fölött és a két doboz előtt; a „Tovább” gomb pontosan a fölötte lévő (idézet) cella szélességű és a név-mezővel egy sorban; a
   „Kihagyom a személyre szabást” alul, középen; a „Telefonról is jó. Húzással igazíthatod.” sor kikerült.
 - **Gomb a választóban:** a személyre szabható digitális kártyánál „Tovább a személyre szabáshoz”, a szalonban átvételnél „Tovább a vásárláshoz”.
+- **„TESZT MÓD” szalag (alul):** a tulajdonos kérése, hogy élesítéskor tűnjön el („majd szedd ki”). A szalag csak akkor jelenik meg, ha a szerver Stripe **teszt**-módot jelez
+  (`S.mod === 'teszt'`, ugyanitt van a variáns-kapcsoló), így az éles Stripe-kulcsokra váltással magától megszűnik; az élesítési lépések közé tartozik az ellenőrzése. Addig marad,
+  mert jelzi, hogy az előnézet nem valódi fizetés.
