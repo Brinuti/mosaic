@@ -47,11 +47,30 @@ fs.cpSync(path.join(ROOT, 'klon', 'm'), LAP_M, { recursive: true });
 // az asztali mappaba az asztali, a mobilba a mobil valtozat - pontosan ugyanaz, mint a tobbi oldalon.
 // Ugyanigy a <!--mh-lablec--> helyere a MOSAIC lablece.
 const FEJLEC = { [LAP_A]: 'asztali', [LAP_M]: 'mobil' };
+// A fejlec kivonata a /sminktetovalas-budapest oldalrol keszult, ott a "Sminktetovalas" az aktiv (kijelolt) menupont. Az a sajat oldal, amelyik
+// <!--mh-menu-aktiv:/utvonal--> jelolot tartalmaz, a sajat menupontjat kapja kijelolve (jelolo nelkul a fejlec valtozatlan marad).
+const aktivMenu = (fejlec, utvonal, mobil) => {
+  const ut = utvonal.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
+  if (!mobil) {
+    return fejlec
+      .replace(/ data-is-current="true" aria-current="true"/g, ' data-is-current="false" aria-current="false"')
+      .replace(/ itemDepth02233374943--isCurrentPage/g, '')
+      .replace(new RegExp(`( data-is-current=)"false"( aria-current=)"false"(><div class="itemShared2352141355__rootContainer"><a data-item-label="true" data-testid="linkElement" href="${ut}" target="_self" class="itemDepth02233374943__root)`),
+        '$1"true"$2"true"$3 itemDepth02233374943--isCurrentPage');
+  }
+  return fejlec
+    .replace(/ aria-current="page"( class="[^"]*?) jqR3kU"/g, '$1"')
+    .replace(new RegExp(`(<li data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-\\d+") class="([^"]*)"(><div data-testid="itemWrapper" class="keDKhi"><span data-testid="linkWrapper" class="j945c8"><a data-testid="linkElement" href="${ut}")`),
+      '$1 aria-current="page" class="$2 jqR3kU"$3');
+};
 for (const f of fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.endsWith('.html'))) {
   const forras = fs.readFileSync(path.join(ROOT, 'foglalas', f), 'utf8');
+  const aktiv = (forras.match(/<!--mh-menu-aktiv:([^>]+?)-->/) || [])[1];
   for (const m of [LAP_A, LAP_M]) {
     const resz = (jel, fajl) => forras.includes(jel) ? fs.readFileSync(path.join(ROOT, 'assets/fejlec', fajl + '.html'), 'utf8') : '';
-    const fejlec = resz('<!--mh-fejlec-->', FEJLEC[m]), lablec = resz('<!--mh-lablec-->', 'lablec-' + FEJLEC[m]);
+    let fejlec = resz('<!--mh-fejlec-->', FEJLEC[m]);
+    if (aktiv && fejlec) fejlec = aktivMenu(fejlec, aktiv, m === LAP_M);
+    const lablec = resz('<!--mh-lablec-->', 'lablec-' + FEJLEC[m]);
     fs.writeFileSync(path.join(m, f), forras.replace('<!--mh-fejlec-->', () => fejlec).replace('<!--mh-lablec-->', () => lablec));
   }
 }
