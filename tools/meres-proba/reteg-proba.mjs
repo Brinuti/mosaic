@@ -41,6 +41,7 @@ const BELEPOK = [
 
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const eredmeny = [];
+let cssKesleltet = 0; // ms: a booking-engine.css kiszolgalasanak keslelteteset a "stilus elotti villanas" proba allitja
 const merEsem = []; // a FO ablak kimeno meresi kereseit gyujtjuk (a Salonic-keretet nem): a reteg hasznalata nem indithat meresi esemenyt
 const ok = (cimke, rendben, reszlet = '') => { eredmeny.push({ cimke, rendben, reszlet }); console.log(`${rendben ? 'OK  ' : 'HIBA'} ${cimke}${reszlet ? ' | ' + reszlet : ''}`); };
 
@@ -49,6 +50,7 @@ async function ujLap() {
   await ctx.route('**/*', async (route) => {
     const req = route.request(), url = req.url();
     let u; try { u = new URL(url); } catch (e) { return route.continue(); }
+    if (cssKesleltet && /booking-engine\.css/.test(u.pathname)) await new Promise((r) => setTimeout(r, cssKesleltet));
     if (OVERLAY && u.origin === BAZIS && req.method() === 'GET') {
       const e = fajlUtvonal(decodeURIComponent(u.pathname), req.headers()['user-agent'] || ua);
       if (e.atiranyit) return route.fulfill({ status: 301, headers: { location: encodeURI(e.atiranyit) + u.search } });
@@ -164,7 +166,7 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   // HeadSpa: ajandekkartya-kerdes -> elmenyek (ar jobbra) -> naptar -> adatlap; kuponkodos kartyak
   await nyit(page, { business: 'headspa' }); await varCim(page);
   const hs1 = await reteg(page).locator('.be-choice').allTextContents();
-  ok('design | HeadSpa: elso kerdes "Ajandekkartyaval vagy anelkul foglalsz?", ket valasztas ikonnal', (await cimSzoveg(page)) === 'Ajándékkártyával vagy anélkül foglalsz?' && hs1.length === 2 && (await reteg(page).locator('.be-ikon').count()) === 2, hs1.map((x) => x.trim()).join(' | '));
+  ok('design | HeadSpa: elso kerdes "Ajandekkartyaval vagy anelkul foglalsz?", ket valasztas illusztracioval (ajandek, naptar)', (await cimSzoveg(page)) === 'Ajándékkártyával vagy anélkül foglalsz?' && hs1.length === 2 && (await reteg(page).locator('img.be-choice-img').count()) === 2 && !(await reteg(page).locator('.be-ikon').count()), hs1.map((x) => x.trim()).join(' | '));
   const lepesek = (await reteg(page).locator('.be-steps li').allTextContents()).join('|');
   ok('design | lepesjelzo: 3 lepes (Szolgaltatas, Idopont, Adatok)', lepesek.replace(/\d/g, '') === 'Szolgáltatás|Időpont|Adatok', lepesek);
   await kattint(page, 'Normál foglalás');
@@ -223,7 +225,7 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   const szakCim = await cimSzoveg(page);
   const szakDb = await reteg(page).locator('.be-choice').count();
   k = await kepekBetoltve(page, 4);
-  ok('design | Oxigen: a szakember-valaszto az idopont ELOTT, kepes kartyakon (a Salonic fotoi, nem monogram, nem legordulo)', /szakembert/.test(szakCim) && szakDb >= 3 && (await reteg(page).locator('select').count()) === 0 && (await reteg(page).locator('img.be-choice-img').count()) === 3 && k.jo === k.db, `${szakCim} (${szakDb} kartya) ${JSON.stringify(k)}`);
+  ok('design | Oxigen: a szakember-valaszto az idopont ELOTT, kepes kartyakon (a Salonic fotoi, nem monogram, nem legordulo)', /szakembert/.test(szakCim) && szakDb >= 3 && (await reteg(page).locator('select').count()) === 0 && (await reteg(page).locator('img.be-choice-img').count()) === 4 && k.jo === k.db, `${szakCim} (${szakDb} kartya) ${JSON.stringify(k)}`);
   await reteg(page).locator('.be-choice').first().click();
   await reteg(page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
   ok('design | Oxigen: a valasztott szakember neve a savban, a naptar a szakember idopontjaival, nincs legordulo', (await reteg(page).locator('select').count()) === 0 && (await reteg(page).locator('.be-idogomb').count()) > 0 && /Bozsoki|Szűcs|Menyhárt/.test(await reteg(page).locator('.be-svc').first().textContent()), (await reteg(page).locator('.be-svc').first().textContent()).replace(/\s+/g, ' ').trim().slice(0, 100));
@@ -232,7 +234,7 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   // Fodraszat: a BELEPO a fodrasz-valaszto; utana szandekek, kezelesek (ikonnal), hajhosszok (hajhossz-ikonnal); a valasztott fodrasz idopontjai
   await nyit(page, { business: 'hair' }); await varCim(page); await page.waitForTimeout(1200);
   k = await kepekBetoltve(page, 3);
-  ok('design | Fodraszat: a belepo a fodrasz-valaszto (kepek, "Mindegy"), csak utana a szolgaltatas', (await cimSzoveg(page)) === 'Melyik fodrászt választod?' && k.db >= 4 && k.jo === k.db && (await reteg(page).locator('.be-ikon').count()) === 1, JSON.stringify(k));
+  ok('design | Fodraszat: a belepo a fodrasz-valaszto (kepek, "Mindegy"), csak utana a szolgaltatas', (await cimSzoveg(page)) === 'Melyik fodrászt választod?' && k.db >= 4 && k.jo === k.db && !(await reteg(page).locator('.be-ikon').count()) && (await reteg(page).locator('.be-choice', { hasText: 'Mindegy' }).locator('img.be-choice-img').count()) === 1, JSON.stringify(k));
   await kattint(page, 'Betti');
   k = await kepekBetoltve(page, 4);
   ok('design | Fodraszat: a fodrasz utan a szandekok (kepekkel)', (await cimSzoveg(page)) === 'Mit szeretnél?' && k.db >= 4 && k.jo === k.db, JSON.stringify(k));
@@ -272,7 +274,7 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   ok('design | minden cim kozepre igazitva', (await reteg(page).locator('.be-title').first().evaluate((e) => getComputedStyle(e).textAlign)) === 'center');
   await kattint(page, 'Mindegy');
   const szand = (await reteg(page).locator('.be-choice b').allTextContents()).map((x) => x.trim());
-  ok('design | Fodraszat: nincs "Egyeb fodraszati szolgaltatas", az elemei kulon kartyak', !szand.includes('Egyéb fodrászati szolgáltatás') && ['Női szárítás', 'Hajszerkezet újraépítés', 'Póthaj'].every((x) => szand.includes(x)), szand.join(' | '));
+  ok('design | Fodraszat: nincs "Egyeb fodraszati szolgaltatas", az elemei kulon kartyak', !szand.includes('Egyéb fodrászati szolgáltatás') && ['Női szárítás', 'Joico hajszerkezet újraépítés', 'Póthaj'].every((x) => szand.includes(x)), szand.join(' | '));
   if (MOBIL) { const gorg = await reteg(page).locator('.be-scroll').evaluate((e) => e.scrollHeight - e.clientHeight); ok('design | Fodraszat: a szandekok gorgetes nelkul elferenk mobilon', gorg <= 1, `tobblet: ${gorg}px`); }
   await zar(page);
   await nyit(page, { business: 'laser', intent: 'first' }); await varCim(page); await kepekBetoltve(page, 4);
@@ -356,6 +358,109 @@ const sav = (page) => reteg(page).locator('.be-steps').first();
   await zar(page);
   await nyit(page, { business: 'hair' }, { folytat: true });
   ok('folytatas: a 30 percnel regebbi mentes nem folytat (fodrasz-valaszto jon)', (await varCim(page)) === 'Melyik fodrászt választod?', await cimSzoveg(page));
+  await zar(page);
+}
+
+// --- 2026-10-04 (4. kor): villanasok, sminktetovalo-lepegetes, lezer-illusztraciok, csomag-lista egy kepernyon -----------------------------------------
+const VAR = 25000;
+// a bezaras kozben lathato allapotok (cim, PMU-keret) es a bezaras ideje
+async function zarFigyelve(page) {
+  await page.evaluate(() => {
+    window.__latott = []; window.__zarT0 = performance.now(); window.__zarT1 = null;
+    const mintaz = () => {
+      const h = document.getElementById('mosaic-booking-layer');
+      if (h) { const s = h.shadowRoot; const c = s.querySelector('.be-title'); window.__latott.push(getComputedStyle(h).visibility + '|' + (s.querySelector('iframe.be-pmu') ? 'PMU' : '') + '|' + (c ? c.textContent.trim().slice(0, 40) : '')); window.__raf = requestAnimationFrame(mintaz); }
+      else window.__zarT1 = performance.now();
+    };
+    mintaz();
+  });
+  await reteg(page).locator('#be-close').click();
+  await page.waitForFunction(() => window.__zarT1 !== null, null, { timeout: 8000 }).catch(() => {});
+  return page.evaluate(() => ({ ms: window.__zarT1 === null ? null : Math.round(window.__zarT1 - window.__zarT0), latott: [...new Set(window.__latott.filter((x) => !x.startsWith('hidden')))] }));
+}
+{
+  // 1. az elso megnyitasnal (a stilus kesve erkezik) a reteg nem villan fel stilus nelkul (nagy kek telefon-ikon)
+  cssKesleltet = 1200;
+  const u = await ujLap();
+  await u.page.goto(BAZIS + OLDAL, { waitUntil: 'domcontentloaded' });
+  await u.page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 });
+  await u.page.evaluate(() => {
+    window.__stilustalan = 0; window.__latszott = 0;
+    const mintaz = () => {
+      const h = document.getElementById('mosaic-booking-layer');
+      if (h) { const ikon = h.shadowRoot.querySelector('a.be-icon svg'); const lat = getComputedStyle(h).visibility !== 'hidden'; if (lat) { window.__latszott++; if (ikon && ikon.getBoundingClientRect().width > 60) window.__stilustalan++; } }
+      window.__raf = requestAnimationFrame(mintaz);
+    };
+    mintaz();
+    window.openBooking({ business: 'headspa' });
+  });
+  await u.page.waitForTimeout(2600);
+  const vill = await u.page.evaluate(() => ({ stilustalan: window.__stilustalan, latszott: window.__latszott, ikon: Math.round(document.getElementById('mosaic-booking-layer').shadowRoot.querySelector('a.be-icon svg').getBoundingClientRect().width) }));
+  ok('villanas: lassu stilusnal a reteg a stilus megerkezeseig rejtett (nincs stilus nelkuli nagy telefon-ikon), utana lathato, az ikon 22 px', vill.stilustalan === 0 && vill.latszott > 0 && vill.ikon < 40, JSON.stringify(vill));
+  await u.ctx.close();
+  cssKesleltet = 0;
+
+  // 2. sminktetovalo (PMU) a retegben: lepesjelzo, bongeszo vissza / elore, a keret sajat vissza nyila, bezaras (nem villan fel), folytatas
+  const F = () => reteg(page).frameLocator('iframe.be-pmu');
+  const pmuNezet = async () => F().locator('[data-nezet]:not([hidden])').first().getAttribute('data-nezet');
+  await nyit(page, {}); await varCim(page);
+  await kattint(page, 'Sminktetoválás');
+  await reteg(page).locator('iframe.be-pmu').waitFor({ timeout: VAR });
+  await F().locator('[data-nezet=kezdo]:not([hidden])').waitFor({ timeout: VAR });
+  await F().locator('[data-ugrik=szolg]').first().click();
+  await F().locator('.kezeles').first().waitFor({ timeout: VAR });
+  await F().locator('.kezeles').first().click();
+  await F().locator('.nnap.szabad').first().waitFor({ timeout: VAR });
+  await F().locator('.idogomb').first().click();
+  await F().locator('[data-nezet=kerdes]:not([hidden])').waitFor({ timeout: VAR });
+  ok('PMU: a lepesjelzo kesz lepesei (Kezeles, Idopont) kattinthatok', (await F().locator('#lepesjelzo .lepes-gomb').count()) === 2 && /Kérdés/.test(await F().locator('#lepesjelzo li.most').textContent()));
+  await F().locator('#lepesjelzo .lepes-gomb').first().click(); await page.waitForTimeout(600);
+  ok('PMU: a "Kezeles" lepesre kattintva vissza a kezelesvalasztora', (await pmuNezet()) === 'szolg');
+  await page.goBack(); await page.waitForTimeout(700);
+  const v1 = await pmuNezet(); const nyitva1 = (await reteg(page).count()) === 1;
+  await page.goBack(); await page.waitForTimeout(700);
+  const v2 = await pmuNezet();
+  await page.goForward(); await page.waitForTimeout(700);
+  const v3 = await pmuNezet();
+  ok('PMU: a bongeszo vissza / elore gombja lepesenkent lep (szolg <- kerdes <- ido, elore: kerdes), a reteg nyitva marad', v1 === 'kerdes' && nyitva1 && v2 === 'ido' && v3 === 'kerdes', [v1, v2, v3].join(' / '));
+  await page.goBack(); await page.waitForTimeout(500);
+  await F().locator('#vissza').click(); await page.waitForTimeout(600);
+  ok('PMU: a keret sajat vissza nyila az elozo lepesre visz', (await pmuNezet()) === 'szolg');
+  const zar1 = await zarFigyelve(page);
+  ok('bezaras PMU-bol: azonnal eltunik (nincs masik ablak villanasa)', zar1.ms !== null && zar1.ms < 700 && zar1.latott.every((x) => x.startsWith('visible|PMU')), JSON.stringify(zar1));
+  ok('bezaras utan az oldal ugyanott, nincs oldalvaltas', url(page).pathname + url(page).search === eredetiUrl && (await page.evaluate(() => window.__marker)) === 'maradt');
+  await nyit(page, {}, { folytat: true });
+  await reteg(page).locator('iframe.be-pmu').waitFor({ timeout: VAR });
+  await F().locator('[data-nezet]:not([hidden])').first().waitFor({ timeout: VAR });
+  await page.waitForTimeout(2500);
+  ok('PMU: ujranyitas utan ott folytatja, ahol tartott (kezelesvalaszto, nem az elso kepernyo)', (await pmuNezet()) === 'szolg', await pmuNezet());
+  await page.goBack(); await page.waitForTimeout(800);
+  ok('PMU: folytatas utan a bongeszo vissza gombja az elozo lepesre lep (a reteg nyitva marad)', (await pmuNezet()) === 'ido' && (await reteg(page).count()) === 1, await pmuNezet());
+  await zar(page);
+
+  // 3. PMU hasznalat utan egyetlen masik ablak bezarasakor sem villan fel a PMU (elavult elozmeny-bejegyzes)
+  for (const [cimke, opts, elo] of [['HeadSpa 2. kepernyo', { business: 'headspa' }, 'Normál foglalás'], ['Fodraszat belepo', { business: 'hair' }, null], ['Lezer csomagok', { business: 'laser', intent: 'first' }, 'Csomagok']]) {
+    await nyit(page, opts); await varCim(page); await page.waitForTimeout(500);
+    if (elo) await kattint(page, elo);
+    const z = await zarFigyelve(page);
+    ok('bezaras PMU hasznalat utan (' + cimke + '): azonnal eltunik, nem villan fel a PMU / masik nezet', z.ms !== null && z.ms < 700 && z.latott.every((x) => x.startsWith('visible||')) && z.latott.length === 1, JSON.stringify(z));
+  }
+
+  // 4. lezer: a kezelesek illusztraciokkal (terulet / csomag), a csomag-testreszek illusztracioval; a csomaglista egy kepernyore fer (mobilon is)
+  await nyit(page, { business: 'laser', intent: 'first' }); await varCim(page);
+  await kepekBetoltve(page, 4);
+  await kattint(page, 'Láb');
+  const labKartyak = await reteg(page).locator('.be-choice').count();
+  const labKepek = await reteg(page).locator('img.be-choice-img').count();
+  ok('lezer: a terulet kezelesei (Lab) az uzletag illusztracioival, nem vonalikonnal', labKartyak >= 1 && labKepek === labKartyak && !(await reteg(page).locator('.be-ikon').count()), labKepek + '/' + labKartyak);
+  await reteg(page).locator('#be-back').click(); await varCim(page); await page.waitForTimeout(300);
+  await kattint(page, 'Csomagok');
+  const cs = await kepekBetoltve(page, 8);
+  const resz = await reteg(page).locator('img.be-resz-kep').evaluateAll((es) => ({ db: es.length, jo: es.filter((e) => e.complete && e.naturalWidth > 0).length }));
+  ok('lezer csomagok: minden kartyan illusztracio, a testreszek jelvenyein is illusztracio (nincs vonalikon)', cs.db >= 8 && cs.jo === cs.db && resz.db >= 12 && resz.jo === resz.db && !(await reteg(page).locator('.be-ikon, .be-resz svg').count()), JSON.stringify(cs) + ' jelveny: ' + JSON.stringify(resz));
+  const gorg = await reteg(page).locator('.be-scroll').evaluate((e) => ({ tobblet: e.scrollHeight - e.clientHeight, kartya: e.querySelectorAll('.be-choice').length }));
+  if (MOBIL) ok('lezer csomagok (mobil, 390x844): az osszes csomag egy kepernyore fer, gorgetes nelkul', gorg.tobblet <= 1 && gorg.kartya >= 8, JSON.stringify(gorg));
+  else ok('lezer csomagok (asztali): mind a ' + gorg.kartya + ' csomag latszik', gorg.kartya >= 8, JSON.stringify(gorg));
   await zar(page);
 }
 

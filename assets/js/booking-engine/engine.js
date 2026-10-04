@@ -67,7 +67,7 @@ export function warmUp(opts = {}, doc = globalThis.document) {
 }
 const SNAP_KEY = 'mhFoglaloAllapot'; // a foglalo allapota (hol tart a vendeg): bezaras / ujranyitas utan folytathato
 const SNAP_MS = 30 * 60 * 1000;
-const SNAP_VIEWS = new Set(['HS2', 'HS3', 'OX2', 'OXS', 'HA1', 'HA2', 'HA2B', 'LA2', 'LA3', 'LA2B', 'C1', 'C4']);
+const SNAP_VIEWS = new Set(['PMU', 'HS2', 'HS3', 'OX2', 'OXS', 'HA1', 'HA2', 'HA2B', 'LA2', 'LA3', 'LA2B', 'C1', 'C4']);
 
 /**
  * A foglalo felulete. Ket modban fut ugyanez a kod:
@@ -137,7 +137,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       h('span', { class: 'be-choice-text' }, h('b', { text: title }), sub && !wide ? h('small', { text: sub }) : null),
       ar ? h('span', { class: 'be-choice-ar', text: ar }) : null, chevron(),
       wide ? h('small', { class: 'be-choice-wide', text: sub }) : null,
-      resz ? h('span', { class: 'be-reszek' }, resz.map((r) => h('span', { class: 'be-resz' }, icon(IKONOK[r.ikon] || '', 1.6), r.label))) : null);
+      resz ? h('span', { class: 'be-reszek' }, resz.map((r) => h('span', { class: 'be-resz' }, r.kep ? h('img', { class: 'be-resz-kep', src: kepSrc(r.kep), alt: '', width: '28', height: '28', onerror: (e) => e.currentTarget.remove() }) : icon(IKONOK[r.ikon] || '', 1.6), r.label))) : null);
   };
   const primary = (text, onclick, extra = {}) => h('button', { type: 'button', class: 'be-btn', onclick, ...extra }, text);
   const secondary = (text, onclick) => h('button', { type: 'button', class: 'be-btn be-btn-2', onclick }, text);
@@ -272,9 +272,15 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     HA2: () => S.intent, HA2B: () => S.group, LA2B: () => S.laserArea };
   const onPop = (e) => {
     // reteg-modban: a reteg megnyitasa elotti bejegyzesre lepett vissza -> a reteg bezarul (az oldal ugyanott marad)
-    if (layer && !(e.state && e.state.beLayer)) { if (onExit) onExit(); return; }
+    if (layer && (S.closing || !(e.state && e.state.beLayer))) { if (onExit) onExit(); return; }
     const view = e.state && e.state.view;
     S.depth = (e.state && e.state.depth) || 0;
+    // a sminktetovalo-keret egyik lepesere lepett vissza / elore: a keret mutatja a nezetet (nem rajzoljuk ujra a keretet)
+    if (view === 'PMU' && S.state === 'PMU' && S.pmuFrame && S.pmuFrame.contentWindow) {
+      S.nav.length = S.depth + 1;
+      S.pmuFrame.contentWindow.postMessage({ mhPmuNezet: e.state.pmu || 'kezdo', idx: e.state.pidx || 0 }, win.location.origin);
+      return;
+    }
     if (!view || (needs[view] && !needs[view]())) { S.depth = 0; S.nav = [entry()]; show(S.nav[0]); return; }
     show(view);
   };
@@ -352,6 +358,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   function saveSnapshot(state) {
     if (!store || S.adapterSample) return;
     try {
+      if (state === 'PMU' && !flow) { store.setItem(SNAP_KEY, JSON.stringify({ sig: S.sig, t: now(), business: 'pmu', view: 'PMU', path: [] })); return; } // a keret sajat allapota: foglalo-pmu.js
       if (!flow || !SNAP_VIEWS.has(state)) { store.removeItem(SNAP_KEY); return; } // belepo allapot / kesz foglalas: nincs mit visszaallitani
       store.setItem(SNAP_KEY, JSON.stringify({
         sig: S.sig, t: now(), business: flow.business, view: state === 'C4' ? 'C1' : state, voucher: !!S.voucher, serviceId: S.service ? S.service.serviceId : null, exact: !!S.exact,
@@ -366,7 +373,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     if (!store) return null;
     try {
       const snap = JSON.parse(store.getItem(SNAP_KEY));
-      if (!snap || snap.sig !== S.sig || now() - snap.t > SNAP_MS || !SNAP_VIEWS.has(snap.view) || !FLOWS[snap.business]) return null;
+      if (!snap || snap.sig !== S.sig || now() - snap.t > SNAP_MS || !SNAP_VIEWS.has(snap.view) || (snap.business !== 'pmu' && !FLOWS[snap.business])) return null;
       if (flow && flow.business !== snap.business) return null;
       return snap;
     } catch (e) { return null; }
@@ -424,16 +431,23 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     // a vegen a teljes ablakban nyilik a koszonooldal, a meres valtozatlan). A keret magassagat a beagyazott oldal jelzi (postMessage).
     PMU: async () => {
       if (!layer) { win.location.assign(PMU_PATH); return null; }
-      const frame = h('iframe', { class: 'be-pmu', title: 'Sminktetoválás időpontfoglalás', src: PMU_PATH + '?beagyazva=1' });
+      const frame = h('iframe', { class: 'be-pmu', title: 'Sminktetoválás időpontfoglalás', src: PMU_PATH + '?beagyazva=1&reteg=1' });
       const loading = h('p', { class: 'be-loading', role: 'status', text: 'Betöltés…' });
       const onMsg = (e) => {
         if (e.origin !== win.location.origin || e.source !== frame.contentWindow || !e.data || !e.data.mhFoglalo) return;
         if (e.data.magassag) frame.style.height = Math.max(e.data.magassag, 320) + 'px';
         loading.hidden = true;
         if (e.data.nezet) scrollEl.scrollTop = 0;
+        // uj lepes a keretben (a vendeg tovabblepett / a lepesjelzore kattintott): sajat elozmeny-bejegyzes, igy a bongeszo vissza gombja es a bezaras is pontos
+        if (e.data.nezet && e.data.uj && S.state === 'PMU' && !S.closing) {
+          S.depth += 1;
+          elozmeny('pushState', { view: 'PMU', pmu: e.data.nezet, pidx: e.data.idx || 0, depth: S.depth, beLayer: layer }, '#PMU');
+          S.nav[S.depth] = 'PMU'; S.nav.length = S.depth + 1;
+        }
       };
       win.addEventListener('message', onMsg);
-      S.pmuCleanup = () => win.removeEventListener('message', onMsg);
+      S.pmuFrame = frame;
+      S.pmuCleanup = () => { win.removeEventListener('message', onMsg); if (S.pmuFrame === frame) S.pmuFrame = null; };
       return h('section', { class: 'be-pmu-wrap' }, loading, frame);
     },
 
@@ -442,7 +456,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       track('booking_intent_selected', { step: 'HS1', reason: o.key });
       S.voucher = o.key === 'voucher';
       go(F.next('HS1', o.key));
-    }, { ikon: o.ikon })))),
+    }, { kep: o.kep, ikon: o.ikon })))),
     HS2: () => cardsView('HS2', false),
     HS3: () => cardsView('HS3', true),
 
@@ -531,13 +545,17 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     LA2: () => laserAreas('LA2', 'first_treatment', flow.copy.areaTitle),
     LA3: () => laserAreas('LA3', 'returning_treatment', flow.copy.returningTitle),
     // Kezelesek: ikon + cim + ar; a csomagoknal az "allapotfelmeres + kedvezmeny" helyett a csomag testreszei kis ikonokkal
-    LA2B: async () => h('section', {}, title(flow.copy.treatmentTitle), note(S.laserArea.area.title),
-      h('div', { class: 'be-list' }, S.laserArea.services.map((svc) => {
-        const l = flow.labelOf(svc);
-        const csomag = flow.packageOf ? flow.packageOf(svc) : null;
-        return bigButton(l.title, csomag && csomag.leiras ? csomag.leiras : durText(svc), () => chooseService(svc, { next: F.next('LA2B', 'service') }),
-          { ikon: csomag ? 'csomag' : flow.areaIkon(S.laserArea.area.key), ar: priceText(svc), resz: csomag && csomag.reszek.length ? csomag.reszek : null, pre: [svc] });
-      }))),
+    LA2B: async () => {
+      const csomagos = S.laserArea.services.some((svc) => { const c = flow.packageOf ? flow.packageOf(svc) : null; return c && c.reszek.length; });
+      return h('section', { class: csomagos ? 'be-csomagok' : '' }, title(flow.copy.treatmentTitle), note(S.laserArea.area.title),
+        h('div', { class: 'be-list' }, S.laserArea.services.map((svc) => {
+          const l = flow.labelOf(svc);
+          const csomag = flow.packageOf ? flow.packageOf(svc) : null;
+          const kep = (S.laserArea.area.key === 'tobb' && flow.packageKep ? flow.packageKep(svc) : null) || S.laserArea.area.kep;
+          return bigButton(l.title, csomag && csomag.leiras ? csomag.leiras : durText(svc), () => chooseService(svc, { next: F.next('LA2B', 'service') }),
+            { kep, ikon: csomag ? 'csomag' : flow.areaIkon(S.laserArea.area.key), ar: priceText(svc), resz: csomag && csomag.reszek.length ? csomag.reszek : null, pre: [svc] });
+        })));
+    },
 
     // C1: az idopont-valasztas MINDEN uzletagnal a PMU-foglalo havi naptara (assets/js/foglalo-pmu.js, rajzolNaptar) egy az egyben: csak a szabad napok aktivak,
     // az elso szabad nap elore kivalasztva, a nap idopontjai gombokban; egy erintes az idoponton = tovabb az adatlapra (nincs osszegzo kepernyo).
@@ -745,7 +763,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
           next();
         }, foto ? { kep: foto } : { monogram: nev.charAt(0).toUpperCase() });
       });
-      kartyak.push(bigButton(flow.copy.staffAny, null, () => { S.staff = null; S.staffLabel = null; track('booking_filter_used', { filter: 'staff_any' }); next(); }, { ikon: 'ora' }));
+      kartyak.push(bigButton(flow.copy.staffAny, null, () => { S.staff = null; S.staffLabel = null; track('booking_filter_used', { filter: 'staff_any' }); next(); }, { kep: 'ik-mindegy', ikon: 'ora' }));
       return h('section', {}, title(flow.copy.staffListTitle), h('div', { class: 'be-list be-egyenlo' }, kartyak));
     });
   }
@@ -876,6 +894,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     // Mentett allapot (bezaras / ujranyitas): ha van ehhez a belepeshez, a skeleton alatt visszaepitjuk, es ott folytatja, ahol tartott
     const snap = peekSnapshot();
     const folytat = async () => {
+      if (snap.view === 'PMU') { S.nav = [first]; ctx.business = 'pmu'; return go('PMU'); } // a sminktetovalo-keret maga folytatja
       const nezet = await restoreSnapshot(snap);
       if (!nezet) return show(first);
       S.nav = [first];

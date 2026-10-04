@@ -49,7 +49,7 @@ export const HAIR = Object.freeze({
     { key: 'cut', title: 'Hajvágás', kep: 'hi-vagas', categories: Object.freeze(['Női hajvágás + szárítás', 'Férfi hajvágás']) },
     // az "Egyeb fodraszati szolgaltatas" elemei kulon kartyak (nem kell kulon "egyeb" lepes)
     { key: 'szaritas', title: 'Női szárítás', kep: 'hi-szaritas', categories: Object.freeze(['Női szárítás']) },
-    { key: 'ujraepites', title: 'Hajszerkezet újraépítés', kep: 'hi-ujraepites', categories: Object.freeze(['Hajszerkezet újraépítés']) },
+    { key: 'ujraepites', title: 'Joico hajszerkezet újraépítés', kep: 'hi-ujraepites', categories: Object.freeze(['Hajszerkezet újraépítés']) },
     { key: 'pothaj', title: 'Póthaj', kep: 'hi-pothaj', categories: Object.freeze(['Póthaj']) },
     // az ismeretlen (uj) Salonic-kategoriak ide kerulnek, hogy ne vesszenek el; amig nincs ilyen, a kartya nem jelenik meg
     { key: 'other', title: 'Egyéb fodrászati szolgáltatás', ikon: 'haj', categories: Object.freeze([]), catchAll: true },

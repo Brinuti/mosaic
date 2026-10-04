@@ -65,10 +65,14 @@ A build (`tools/netlify-build.mjs`): a launcher verziójelei (`__MOTOR_VERZIO__`
 - **Lépésjelző:** a kész lépések gombok (`gotoStep`), a vissza gombbal egyenértékű (`history.go`).
 - **Gyors időpont-választás:** a launcher a CTA fölé vitt egérre / érintésre előmelegít (`layer.js` `warm` → `engine.js` `warmUp`: preconnect + szolgáltatás-lista + a szolgáltatás első 14 napja), a motor modulját üresjáratban tölti; a naptár váza azonnal látszik, az első 14 nap hamar jön, a többi a háttérben.
 
+- **Bezárás:** a réteg azonnal rejtetté válik, a motor nem rajzol újra (`state.closing`), majd a böngésző-előzmény visszaáll (`history.go`); a sminktetováló-keret lépései a réteg előzményeiben vannak (`?reteg=1`), így a lépésszám pontos.
+- **Nyitás:** a réteg a stílus megérkezéséig rejtett (nincs stílus nélküli villanás).
+- **Sminktetováló a rétegben:** kattintható lépésjelző, vissza / előre, folytatás (lásd DECISIONS.md „5. kör”).
+
 ## Ellenőrzés
 
 - `node --test tools/test-booking-layer.mjs tools/test-booking-flow.mjs …` (egységtesztek).
-- `node tools/meres-proba/reteg-proba.mjs --overlay dist [--mobil 1]`: böngészős próba (Playwright): 16 belépési pont (jó kezdőállapot, az URL nem változik, nincs oldalváltás, bezárás az X-szel), az Esc és a háttérre kattintás nem zár, vissza gomb, kattintható lépésjelző, folytatás újranyitás után (HeadSpa naptár + nap, fodrászat több lépcsős útvonal, lejárt mentés, másik belépés), sebesség-mérés (hideg gyorsítótár, négy üzletág), H0 végigjárás, fókusz-csapda, inert háttér, beérkező `?booking=1` link (UTM / click ID megmarad), a valódi landing-oldalak CTA-i, **mérés-védelem** (a GTM-es landing-oldalon a réteg teljes használata nem indít mérési kérést a fő ablakból), a PMU-landing és a köszönőoldalak launcher nélkül. Eredmény (2026-10-04, helyi build): asztali 161/161, mobil 163/163. A kimenő mérés alapból tiltva.
+- `node tools/meres-proba/reteg-proba.mjs --overlay dist [--mobil 1]`: böngészős próba (Playwright): 16 belépési pont (jó kezdőállapot, az URL nem változik, nincs oldalváltás, bezárás az X-szel), az Esc és a háttérre kattintás nem zár, vissza gomb, kattintható lépésjelző, folytatás újranyitás után (HeadSpa naptár + nap, fodrászat több lépcsős útvonal, lejárt mentés, másik belépés), sebesség-mérés (hideg gyorsítótár, négy üzletág), H0 végigjárás, fókusz-csapda, inert háttér, beérkező `?booking=1` link (UTM / click ID megmarad), a valódi landing-oldalak CTA-i, **mérés-védelem** (a GTM-es landing-oldalon a réteg teljes használata nem indít mérési kérést a fő ablakból), a PMU-landing és a köszönőoldalak launcher nélkül. Eredmény (2026-10-04, helyi build): asztali 176/176, mobil 178/178 (a 4. körtől: villanás-védelem, PMU-lépegetés és -folytatás, lézer-illusztrációk, csomaglista egy képernyőn). A kimenő mérés alapból tiltva.
 - Tesztlista a `/booking-test` oldalon (10 pont). A végigvitt foglalás valódi: „TESZT” név, a szalon telefonszáma, lemondás a „Lemondom” linkkel.
 
 ## Még nincs kész (következő körök)

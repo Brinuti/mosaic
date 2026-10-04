@@ -74,6 +74,9 @@ export function openBooking(opts = {}, env = {}) {
   const layerEl = shadow.querySelector('.be-layer');
   const panel = shadow.querySelector('.be-panel');
   const body = shadow.querySelector('.be-panel-body');
+  // A stilus megerkezeseig a reteg rejtett: stilus nelkul a fejlec ikonjai (pl. a telefon) hatalmas, kek SVG-kent villannanak fel (elso megnyitas, hideg gyorsitotar)
+  host.style.visibility = 'hidden';
+  const sheet = shadow.querySelector('link[rel="stylesheet"]');
   if (env.fontsHref && !doc.querySelector('link[data-be-fonts]')) { // a @font-face csak a dokumentumban mukodik (Shadow DOM-ban nem)
     const l = doc.createElement('link'); l.rel = 'stylesheet'; l.href = env.fontsHref; l.setAttribute('data-be-fonts', ''); doc.head.append(l);
   }
@@ -121,6 +124,10 @@ export function openBooking(opts = {}, env = {}) {
   function requestClose() {
     if (closed) return;
     if (restored) { if (urlAllapot) win.history.replaceState(null, '', cleanUrl(win.location.href)); teardown(); return; }
+    // A reteg AZONNAL eltunik, a motor pedig nem rajzol ujra: a visszalepes kozben a bongeszo egy korabbi (pl. elavult) reteg-bejegyzesre is erhet, annak
+    // a nezete nem villanhat fel (a sminktetovalo-keret sajat lepesei is a szulo elozmenyeibe kerulnek, igy a lepesszam pontos).
+    if (engine.state) engine.state.closing = true;
+    host.style.visibility = 'hidden';
     const steps = (engine.state ? engine.state.depth : 0) + 1;
     win.history.go(-steps); // a popstate (onExit) zarja be a reteget es allitja vissza az eredeti cimet
     win.setTimeout(() => { if (!closed) { if (urlAllapot) win.history.replaceState(null, '', cleanUrl(win.location.href)); teardown(); } }, 800); // ha a bongeszo nem lepett vissza
@@ -143,7 +150,15 @@ export function openBooking(opts = {}, env = {}) {
   // --- a motor ------------------------------------------------------------------------------------------------------------------------
   const engine = startEngine({ root: body, win, doc, mode: 'layer', search: engineSearch, defaultBusiness: null, onClose: requestClose, onExit, urlAllapot });
   current = { host, engine, close: requestClose, restored };
-  win.requestAnimationFrame(() => { layerEl.classList.add('be-open'); panel.focus({ preventScroll: true }); });
+  // megjelenites: ha a stilus megerkezett (vagy 3 mp utan akkor is): a reteg lathatova valik es becsuszik
+  let latszik = false;
+  const mutat = () => {
+    if (latszik || closed) return;
+    latszik = true;
+    host.style.visibility = '';
+    win.requestAnimationFrame(() => { layerEl.classList.add('be-open'); panel.focus({ preventScroll: true }); });
+  };
+  if (sheet && !sheet.sheet) { sheet.addEventListener('load', mutat); sheet.addEventListener('error', mutat); win.setTimeout(mutat, 3000); } else mutat();
   return engine;
 }
 

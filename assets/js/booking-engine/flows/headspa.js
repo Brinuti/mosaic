@@ -28,8 +28,8 @@ export const HEADSPA = Object.freeze({
   copy: Object.freeze({
     hs1Title: 'Ajándékkártyával vagy anélkül foglalsz?',
     hs1: [
-      { key: 'voucher', title: 'Ajándékkártyával (kuponkóddal) foglalok', ikon: 'ajandek' },
-      { key: 'normal', title: 'Normál foglalás kuponkód nélkül', ikon: 'naptar' },
+      { key: 'voucher', title: 'Ajándékkártyával (kuponkóddal) foglalok', ikon: 'ajandek', kep: 'ik-ajandek' },
+      { key: 'normal', title: 'Normál foglalás kuponkód nélkül', ikon: 'naptar', kep: 'ik-naptar' },
     ],
     hs2Title: 'Melyik HeadSpa élményt választod?',
     hs3Title: 'Milyen ajándékkártyád van?',

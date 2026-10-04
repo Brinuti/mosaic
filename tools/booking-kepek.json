@@ -99,53 +99,65 @@
   },
   {
     "kulcs": "la-arc",
-    "forras": "c2eb0f_fe2ae1a8676f4ef6ae77d9eeee0eece8.jpg",
-    "fx": 0.29,
-    "fy": 0.29,
-    "zoom": 0.46
+    "forras": "tools/booking-kepek-forras/lezer-minta-teruletek.jpg",
+    "kivag": [
+      316,
+      308,
+      94
+    ]
   },
   {
     "kulcs": "la-honalj",
-    "forras": "c2eb0f_d25d1e56510f4b9ea7b01672f0080456.jpg",
-    "fx": 0.5,
-    "fy": 0.5,
-    "zoom": 1
+    "forras": "tools/booking-kepek-forras/lezer-minta-teruletek.jpg",
+    "kivag": [
+      316,
+      440,
+      94
+    ]
   },
   {
     "kulcs": "la-kar",
-    "forras": "c2eb0f_b3a5aa5289a9494b9eabbe574cf7a4d6.jpg",
-    "fx": 0.42,
-    "fy": 0.36,
-    "zoom": 0.56
+    "forras": "tools/booking-kepek-forras/lezer-minta-teruletek.jpg",
+    "kivag": [
+      316,
+      572,
+      94
+    ]
   },
   {
     "kulcs": "la-intim",
-    "forras": "c2eb0f_9c43d7be8ec84a5785a00f11315d03d1.jpg",
-    "fx": 0.5,
-    "fy": 0.33,
-    "zoom": 0.46
+    "forras": "tools/booking-kepek-forras/lezer-minta-teruletek.jpg",
+    "kivag": [
+      316,
+      705,
+      94
+    ]
   },
   {
     "kulcs": "la-lab",
-    "forras": "c2eb0f_5ff7732abc6c49dca672097cfb4d2ced.jpg",
-    "fx": 0.3,
-    "fy": 0.3,
-    "zoom": 0.5
+    "forras": "tools/booking-kepek-forras/lezer-minta-teruletek.jpg",
+    "kivag": [
+      316,
+      835,
+      94
+    ]
   },
   {
     "kulcs": "la-torzs",
-    "forras": "11062b_ddae90f0cd0c4cffa2e32a09e5158a40.jpg",
-    "fx": 0.5,
-    "fy": 0.55,
-    "zoom": 0.62
+    "forras": "tools/booking-kepek-forras/lezer-minta-teruletek.jpg",
+    "kivag": [
+      316,
+      969,
+      94
+    ]
   },
   {
     "kulcs": "la-tobb",
-    "mozaik": [
-      "la-arc",
-      "la-kar",
-      "la-lab",
-      "la-honalj"
+    "forras": "tools/booking-kepek-forras/lezer-minta-teruletek.jpg",
+    "kivag": [
+      316,
+      179,
+      94
     ]
   },
   {
@@ -398,6 +410,177 @@
       80,
       605,
       136
+    ]
+  },
+  {
+    "kulcs": "lp-total",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-1.jpg",
+    "kivag": [
+      274,
+      344,
+      102
+    ]
+  },
+  {
+    "kulcs": "lp-man",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-1.jpg",
+    "kivag": [
+      274,
+      647,
+      102
+    ]
+  },
+  {
+    "kulcs": "lp-kis",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-1.jpg",
+    "kivag": [
+      274,
+      954,
+      102
+    ]
+  },
+  {
+    "kulcs": "lp-kozepes",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-1.jpg",
+    "kivag": [
+      274,
+      1101,
+      102
+    ]
+  },
+  {
+    "kulcs": "lp-egyedi",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-2.jpg",
+    "kivag": [
+      243,
+      209,
+      116
+    ]
+  },
+  {
+    "kulcs": "lp-basic",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-2.jpg",
+    "kivag": [
+      243,
+      399,
+      115
+    ]
+  },
+  {
+    "kulcs": "lp-medium",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-2.jpg",
+    "kivag": [
+      243,
+      632,
+      115
+    ]
+  },
+  {
+    "kulcs": "lp-summer",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-2.jpg",
+    "kivag": [
+      243,
+      867,
+      115
+    ]
+  },
+  {
+    "kulcs": "rz-lab",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-1.jpg",
+    "kivag": [
+      277,
+      471,
+      54
+    ]
+  },
+  {
+    "kulcs": "rz-kar",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-1.jpg",
+    "kivag": [
+      477,
+      471,
+      54
+    ]
+  },
+  {
+    "kulcs": "rz-honalj",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-1.jpg",
+    "kivag": [
+      676,
+      471,
+      54
+    ]
+  },
+  {
+    "kulcs": "rz-intim",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-1.jpg",
+    "kivag": [
+      277,
+      541,
+      54
+    ]
+  },
+  {
+    "kulcs": "rz-hat",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-1.jpg",
+    "kivag": [
+      276,
+      783,
+      54
+    ]
+  },
+  {
+    "kulcs": "rz-vall",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-1.jpg",
+    "kivag": [
+      417,
+      783,
+      54
+    ]
+  },
+  {
+    "kulcs": "rz-mellkas",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-1.jpg",
+    "kivag": [
+      558,
+      783,
+      56
+    ]
+  },
+  {
+    "kulcs": "rz-has",
+    "forras": "tools/booking-kepek-forras/lezer-minta-csomagok-1.jpg",
+    "kivag": [
+      743,
+      783,
+      54
+    ]
+  },
+  {
+    "kulcs": "ik-mindegy",
+    "forras": "tools/booking-kepek-forras/minta-mindegy.jpg",
+    "kivag": [
+      292,
+      678,
+      98
+    ]
+  },
+  {
+    "kulcs": "ik-ajandek",
+    "forras": "tools/booking-kepek-forras/minta-ajandek-naptar.jpg",
+    "kivag": [
+      103,
+      432,
+      115
+    ]
+  },
+  {
+    "kulcs": "ik-naptar",
+    "forras": "tools/booking-kepek-forras/minta-ajandek-naptar.jpg",
+    "kivag": [
+      103,
+      598,
+      115
     ]
   }
 ]

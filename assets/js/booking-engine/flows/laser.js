@@ -52,11 +52,22 @@ const PACKAGES = [
   { test: /^MAN TOTAL\b/i, reszek: [['Hát', 'hat'], ['Váll', 'vall'], ['Mellkas', 'mellkas'], ['Has', 'has'], ['Hónalj', 'honalj']] },
   { test: /^EGYEDI\b/i, leiras: 'Te válogatod össze a testrészeket' },
 ];
-/** A szolgaltatas csomag-e, es mik a testreszei: { reszek: [{ label, ikon }], leiras } vagy null. */
+/** A szolgaltatas csomag-e, es mik a testreszei: { reszek: [{ label, ikon, kep }], leiras } vagy null (kep: a testresz illusztracioja, assets/img/booking/rz-<ikon>.jpg). */
 export function packageOf(service) {
   const t = labelOf(service).title;
   const p = PACKAGES.find((x) => x.test.test(t));
-  return p ? { reszek: (p.reszek || []).map(([label, ikon]) => ({ label, ikon })), leiras: p.leiras || null } : null;
+  return p ? { reszek: (p.reszek || []).map(([label, ikon]) => ({ label, ikon, kep: 'rz-' + ikon })), leiras: p.leiras || null } : null;
+}
+
+// A csomagok / testreszek kartya-kepe (illusztracio a tulajdonos mintakepeibol: tools/booking-kepek-forras/lezer-minta-*.jpg); ismeretlen (uj) csomagnal a terulet kepe
+const PACKAGE_KEPEK = [
+  [/^EGYEDI\b/i, 'lp-egyedi'], [/^BASIC\b/i, 'lp-basic'], [/^MEDIUM\b/i, 'lp-medium'], [/^SUMMER\b/i, 'lp-summer'],
+  [/^MAN TOTAL\b/i, 'lp-man'], [/^TOTAL\b/i, 'lp-total'], [/^Kis testrész/i, 'lp-kis'], [/^Közepes testrész/i, 'lp-kozepes'],
+];
+export function packageKep(service) {
+  const t = labelOf(service).title;
+  const hit = PACKAGE_KEPEK.find(([re]) => re.test(t));
+  return hit ? hit[1] : null;
 }
 
 export const LASER = Object.freeze({
@@ -74,6 +85,7 @@ export const LASER = Object.freeze({
   areaOf,
   labelOf,
   packageOf,
+  packageKep,
   areaIkon,
   copy: Object.freeze({
     introTitle: 'Melyik út illik rád?',

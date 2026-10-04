@@ -52,6 +52,11 @@
   .lepesjelzo li.most i { background: var(--sotet); border-color: var(--sotet); color: var(--krem); }
   .lepesjelzo li.kesz { color: var(--sotet); }
   .lepesjelzo li.kesz i { border-color: var(--sotet); color: var(--sotet); }
+  /* a kesz lepesek kattinthatok (vissza az adott lepesre) */
+  .lepesjelzo .lepes-gomb { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+  .lepesjelzo .lepes-gomb span { text-decoration: underline; text-decoration-color: var(--vonal); text-underline-offset: 3px; }
+  .lepesjelzo .lepes-gomb:focus-visible { outline: 2px solid var(--sotet); outline-offset: 2px; border-radius: 6px; }
+  @media (hover: hover) and (pointer: fine) { .lepesjelzo .lepes-gomb:hover span { text-decoration-color: var(--sotet); } }
   .ikon-gomb { width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: none; cursor: pointer; border-radius: 50%; text-decoration: none; }
   .ikon-gomb:hover { background: var(--krem); }
   .ikon-gomb svg { width: 22px; height: 22px; }
