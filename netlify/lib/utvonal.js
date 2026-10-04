@@ -15,6 +15,8 @@ export const TELEFON = /iPhone|iPod|Android.*Mobile|Windows Phone|BlackBerry|IEM
 
 // A Wix nehany oldala tobbszintu cimen el; a klonban lapos fajlnevvel mentettuk.
 const ALNEVEK = { 'pricing-plans/list': 'pricing-plans-list' };
+// A lezeres landing a fejlesztes alatt a /lezeres-szortelenites-budapest-uj cimen allt (noindex); az atvaltas (2026-10-04) utan az eredeti cimen el.
+const ATIRANYITASOK = { '/lezeres-szortelenites-budapest-uj': '/lezeres-szortelenites-budapest' };
 
 export function utvonal(ut, ua) {
   // fajlok (assets, sitemap, robots stb.), a Netlify sajat utvonalai es az API (/api/ajandek/*): valtozatlanul
@@ -27,6 +29,8 @@ export function utvonal(ut, ua) {
   if (tiszta.length > 1) tiszta = tiszta.replace(/\/+$/, '');
   if (!tiszta) tiszta = '/';
   if (tiszta !== ut) return { atiranyit: tiszta };
+  // ideiglenes cimek, amelyek az eles oldalra iranyitanak (301)
+  if (ATIRANYITASOK[ut]) return { atiranyit: ATIRANYITASOK[ut] };
   // a blogbejegyzest a Wix a /post/ elotaggal is kiszolgalja (atiranyitas nelkul)
   // a nyitooldal fajlja 'fooldal' (a Netlify az 'index' nevet mappa-kezdolapnak venne
   // es /_a/-ra iranyitana at)
