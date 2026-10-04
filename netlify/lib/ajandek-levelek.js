@@ -391,7 +391,7 @@ body{background:#e9e3d7;color:#2b2b2b;font:15px/1.55 "Helvetica Neue",Arial,Helv
 #nyomtat{font:600 16px/1 "Helvetica Neue",Arial,sans-serif;background:#17403f;color:#fff;border:0;border-radius:4px;padding:14px 26px;cursor:pointer}
 #nyomtat:hover{background:#0f3130}
 .tipp{font-size:13px;color:#555;margin:12px auto 0;max-width:150mm}
-@media print{body{background:#fff;padding:0}.lap{width:210mm;height:297mm;overflow:hidden;box-shadow:none}.nem-nyomtat{display:none!important}}
+@media print{html,body{height:297mm;overflow:hidden}body{background:#fff;padding:0}.lap{width:210mm;height:297mm;overflow:hidden;box-shadow:none}.nem-nyomtat{display:none!important}}
 </style></head>
 <body><main>
 ${d.elonezet ? '<p class="jelzes nem-nyomtat">Előnézet a szalonnak: a vevő a kiállítás után kapja meg a végleges kártyát.</p>' : ''}
