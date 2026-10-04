@@ -612,7 +612,8 @@ describe('/webhook', () => {
     levelek = [];
     const jo = alairtEsemeny(a.pi);
     assert.equal((await hiv('POST', 'webhook', { body: jo.torzs })).status, 400);
-    assert.equal((await webhook({ torzs: jo.torzs, fejlec: jo.fejlec.replace(/v1=./, 'v1=0') })).status, 400);
+    // a hamis alairas: az elso hex jegy MAS legyen (ha az eredeti is 0 volt, 1-et irunk; a regi "v1=0" 1/16 eséllyel valtozatlan, azaz ervenyes alairas maradt)
+    assert.equal((await webhook({ torzs: jo.torzs, fejlec: jo.fejlec.replace(/v1=(.)/, (m, c) => 'v1=' + (c === '0' ? '1' : '0')) })).status, 400);
     assert.equal((await webhook({ torzs: jo.torzs + ' ', fejlec: jo.fejlec })).status, 400);
     assert.equal((await webhook(alairtEsemeny(a.pi, { titok: 'whsec_mas' }))).status, 400);
     const regi = alairtEsemeny(a.pi, { ts: Math.floor(Date.now() / 1000) - 301 });
