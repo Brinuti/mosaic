@@ -880,7 +880,7 @@ async function kiallitElokeszit(k, piNyers, tNyers) {
   const reszletek = (i.atutalas
     ? [['Azonosító (közlemény)', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Vevő neve', md.nev], ['Vevő e-mail', i.email],
       ['Vevő telefon', md.telefon], ['Megajándékozott', md.szemelyre_nev]]
-    : [['Rendelés', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Érvényes', i.ervenyes_ig ? L.datumIg(i.ervenyes_ig) : ''], ['Vevő', i.email]]
+    : [['Rendelés', i.rendeles_id], ['Termék', i.termek_nev], ['Összeg', i.osszeg_szoveg], ['Érvényes', i.ervenyes_ig ? L.datumIg(i.ervenyes_ig) : ''], ['Vevő', i.email], ['Megajándékozott', md.szemelyre_nev]]
   ).concat(szemelyreSorok);
   if (!i.fizetve && !i.atutalas) {
     return { valasz: await oldal(k, 409, 'A rendelés még nincs kifizetve', ['A kártyát csak sikeres fizetés után lehet kiállítani.'], { reszletek }) };
@@ -1102,6 +1102,7 @@ async function fizetesEsemeny(k, obj, ok) {
         fizetesi_mod: i.fizetesi_mod, fizetve_ekkor: i.fizetve_ekkor, email: i.email, nev: md.nev,
         iranyitoszam: md.iranyitoszam, varos: md.varos, cim: md.cim, ceges_nev: md.ceges_nev, ceges_adoszam: md.ceges_adoszam,
         kod: i.kod, ervenyes_ig: i.ervenyes_ig, kiallit_url: kiallitUrl, azonnali, attr: md,
+        megajandekozott: md.szemelyre_nev,
         ...(await szemelyreLeiras(k, i)),
       }),
     }],

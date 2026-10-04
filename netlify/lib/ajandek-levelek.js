@@ -67,7 +67,7 @@ const szamlazasiCim = (d) => [d.iranyitoszam, d.varos].filter(Boolean).join(' ')
 // --- fizetes utan: a szalon levele -----------------------------------------------------------------
 // d: { rendeles_id, pi, termek_nev, osszeg_szoveg, fizetesi_mod, fizetve_ekkor, email, nev, iranyitoszam,
 //      varos, cim, ceges_nev, ceges_adoszam, kod, ervenyes_ig, kiallit_url, azonnali, attr,
-//      atvetel_szoveg?, design_szoveg?, idezet_szoveg?, foto_van?, elonezet_url? }
+//      megajandekozott?, atvetel_szoveg?, design_szoveg?, idezet_szoveg?, foto_van?, elonezet_url? }
 export function szalonFizetveLevel(d) {
   const attr = d.attr || {};
   const forras = [attr.utm_source, attr.utm_medium, attr.utm_campaign].filter(Boolean).join(' / ');
@@ -81,7 +81,7 @@ ${gomb(d.kiallit_url, 'Kiállítom a kártyát')}
     html: `<div style="${betu};max-width:640px">
 <p><b>Új ajándékkártya-rendelés érkezett, a fizetés sikeres.</b></p>
 ${tabla([
-  ['Rendelés', d.rendeles_id], ['Termék', d.termek_nev], ['Összeg', d.osszeg_szoveg],
+  ['Rendelés', d.rendeles_id], ['Termék', d.termek_nev], ['Megajándékozott (kinek szól)', d.megajandekozott], ['Összeg', d.osszeg_szoveg],
   ['Fizetés módja', fizetesiModSzoveg(d.fizetesi_mod)], ['Fizetve', idopontHu(d.fizetve_ekkor)],
 ])}
 ${cim('A VEVŐ (SZÁMLÁZÁSI ADATOK)')}

@@ -707,6 +707,8 @@ describe('/webhook', () => {
     assert.ok(szalon.html.includes('1023 Budapest, Bécsi út 2.'));
     assert.ok(szalon.html.includes('Apple Pay'));
     assert.match(szalon.html, /100%-os kupont/);
+    // a megajandekozott neve (kinek szol) a szalon levelebol mindig kiolvashato - igy a papir kartyahoz nem kell ra kerdezni
+    assert.match(szalon.html, /Megajándékozott \(kinek szól\)[\s\S]{0,160}Kiss Anna/);
     const token = await kiallitToken(ENV, a.pi);
     assert.ok(szalon.html.includes(`${BAZIS}/api/ajandek/kiallit?pi=${a.pi}&amp;t=${token}`));
 
@@ -827,6 +829,7 @@ describe('/kiallit', () => {
       assert.ok(r.body.includes('A kupon kész – kiküldjük a kártyát'));
       assert.ok(r.body.includes(await kuponKod(ENV, a.pi)));
       assert.ok(r.body.includes('vevo@example.com'));
+      assert.match(r.body, /Megajándékozott[\s\S]{0,120}Kiss Anna/);   // a kiallito oldalon is latszik, kinek szol a kartya
       assert.ok(r.body.includes(a.rendeles_id));
       assert.match(r.headers['content-security-policy'], /form-action 'self'/);
     }
