@@ -16,7 +16,7 @@ Minden döntés a tulajdonostól jött, 2026-10-03-án, a [PMU live audit és a 
 | 5 | Az adatok megadása (C4) és a foglalás létrehozása (C5) | **A Salonic beágyazott adatlapja** (mint a PMU-nál): saját űrlap nem lehetséges (reCAPTCHA, nincs foglalás-API). A foglaló az oldalunkon marad, az utolsó lépésben a Salonic űrlapja látszik benne. |
 | 6 | Melyik üzletággal kezdünk | **HeadSpa** |
 | 7 | „Értesítsetek, ha felszabadul hely” | **Az első verzióban kimarad**, csak a „Hívjatok vissza” marad. |
-| 8 | HeadSpa Egyéni: Relax vagy Hair | **Csak a Relax**, nincs választás. A „Hair” változat (és a kuponos párja) ebből a foglalóból nem foglalható. |
+| 8 | HeadSpa Egyéni: Relax vagy Hair | ~~Csak a Relax~~ **Módosítva 2026-10-04 (tulajdonos): a „Relax” és a „Hair” ugyanaz a szolgáltatás** (ugyanazok a kezelők), ezért egy „Egyéni HeadSpa” kártya, nincs választás: a naptár a két változat (kuponos és normál is) időpontjainak uniója, a foglalás arra a Salonic-szolgáltatásra megy, amelyiknek az időpontját választotta; a név változat-jelölés nélkül látszik. |
 | 9 | „Hívjatok vissza” | **Visszahívás-kérő űrlap**, a szalon e-mailt kap (új űrlap-típus: `motor-visszahivas`). |
 | 10 | „Időpont módosítása” a siker-oldalon | **Szöveg:** a módosító link a visszaigazoló e-mailben van. |
 | 11 | Szakember-választó a HeadSpa naptárában | **Nincs**, bárki megfelelő (a HeadSpa „munkatársai” kezelő-helyek). A Hair és az Oxigén alatt marad. |
@@ -92,3 +92,7 @@ A Salonic nem minden helyen bontja az első és a következő alkalmat külön k
 - **Kártyák nem „kijelöltek”:** a hover-effektek csak egérrel (hover: hover) élnek, a kártyák hover-kerete megszűnt (érintésre nem marad kijelölt kártya).
 - **Kép-gyorsítótár:** a kártya-képek URL-je tartalom-hash-t kap, mert a `/assets/img/*` egy évig tárolható (a kicserélt kép különben nem jutna el a már látogató böngészőkhöz).
 - **Dátum-ellenőrzés (2026-10-04):** mind a 99 Salonic-szolgáltatásra a nyers naptár-API, az adapter és a naptár-nézet pontosan egyezik (nincs elveszett nap / időpont, a napok a budapesti naphoz igazodnak). A kuponkódos **Egyéni Relax** első szabad napja a Salonicban is okt. 26: a szolgáltatáshoz 3 kezelőhely van rendelve (a normál Egyénihez 4: hiányzik a „Négykezes Head spa”), és sokkal kevesebb időpontot ad ki (49 a normál 210 helyett). Ez Salonic-beállítás.
+
+## Egyéni HeadSpa: Relax + Hair egyben (2026-10-04)
+
+- A Salonicban a kuponos Egyéni **Relax** és **Hair** más időpontokat ad ki (Relax: okt. 26-tól; Hair: okt. 10, 17, 19, 26–29), pedig a tulajdonos szerint ugyanaz a szolgáltatás ugyanazokhoz a kezelőkhöz. A motor a kettőt egynek veszi (a naptár az unió), a Salonic-beli eltérés javítandó a Salonicban (a kuponos változatokhoz a normálhoz képest kevesebb kezelőhely és időpont van rendelve; a normál Relax és Hair időpontjai azonosak).

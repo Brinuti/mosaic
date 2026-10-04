@@ -189,10 +189,18 @@ export function cardsFor(services, cards, { voucher = false } = {}) {
   const pool = services.filter((s) => (s.bookingType === 'voucher_redemption') === voucher);
   const out = [];
   for (const card of cards) {
-    const service = pool.find((s) => card.test(displayName(s.name)));
-    if (service) out.push({ card, service });
+    const mind = pool.filter((s) => card.test(displayName(s.name))); // a kartyahoz tartozo valtozatok (pl. az Egyeni "Relax" es "Hair"); az elso az elsodleges
+    if (mind.length) out.push({ card, service: mind[0], services: mind });
   }
   return out;
+}
+
+/**
+ * Tobb szolgaltatas-valtozat (ugyanaz a szolgaltatas, ugyanazok a kezelok) szabad idopontjainak uniója: idopont szerint rendezve, azonos idopontnal az elobbi
+ * valtozat elol (stabil sorrend); minden idopont megtartja a service_id-jat, igy a foglalas arra a valtozatra megy, amelyiknek az idopontja van.
+ */
+export function mergeVariantSlots(lists) {
+  return lists.flat().sort((a, b) => a.start_unix - b.start_unix);
 }
 
 /** ?service= (azonosito vagy kulcsszavak a nevben) -> szolgaltatas; az "exact service landing" belepeshez. */

@@ -64,7 +64,15 @@ if (STILUS) {
   await page.waitForTimeout(1500); await kep('05b-headspa-adatlap-stilusos');
 }
 await zar();
-await nyit({ business: 'headspa', voucher: '1' }); await kep('06-headspa-kuponkodos-kartyak'); await zar();
+await nyit({ business: 'headspa', voucher: '1' }); await kep('06-headspa-kuponkodos-kartyak');
+// a kuponkodos Egyeni: a Relax es a Hair valtozat idopontjainak uniója egy naptarban
+await kattint('Egyéni HeadSpa'); await reteg.locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
+console.log('kuponkodos Egyeni: elso nap =', (await reteg.locator('.be-nap-cim').textContent()).trim(), '| szabad napok (honap):', await reteg.locator('.be-nnap.szabad').count());
+await kep('06b-headspa-kuponkodos-egyeni-naptar');
+// az elso idopontra kattintva az adatlap abba a Salonic-szolgaltatasba (Relax / Hair) foglal, amelyiknek az idopontja ez
+await reteg.locator('.be-idogomb').first().click(); await reteg.locator('iframe.be-iframe').waitFor({ timeout: 25000 });
+console.log('kuponkodos Egyeni: az adatlap szolgaltatas-azonositoja =', new URL(await reteg.locator('iframe.be-iframe').getAttribute('src')).searchParams.get('serviceId'));
+await zar();
 
 // Oxigén: kártyák -> (változat) -> szakember -> naptár
 await nyit({ business: 'oxygen' }); await kep('07-oxigen-kartyak');

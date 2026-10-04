@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   ROUTES, withAttribution, cardsFor, classifyRedirect, dayKey, dayLabel, displayName, durationLabel, entryState,
-  filterSlots, findByKey, formatPrice, groupFacts, groupServices, icsFor, intentCandidates, intentServices, longDate, monthGrid, monthList, dayTimes, next, parseContext, parseLength,
+  filterSlots, findByKey, formatPrice, groupFacts, groupServices, icsFor, intentCandidates, intentServices, longDate, mergeVariantSlots, monthGrid, monthList, dayTimes, next, parseContext, parseLength,
   priceFor, priceLabel, shouldHandoff, staffDiscountPercent, timeLabel, uniqueTimes,
 } from '../assets/js/booking-engine/flow.js';
 import { CHOOSER } from '../assets/js/booking-engine/families.js';
@@ -273,17 +273,35 @@ test('megjelenites: nev, ar, idotartam', () => {
   assert.equal(durationLabel(30), '30 perc');
 });
 
-test('HeadSpa kartyak a Salonic aktualis szolgaltatasaibol: 3 kartya, Egyeni = csak Relax, ajandekkartyahoz is', () => {
+test('HeadSpa kartyak a Salonic aktualis szolgaltatasaibol: 3 kartya, az Egyeni Relax + Hair egy kartyan, ajandekkartyahoz is', () => {
   const normal = cardsFor(headspaServices, HEADSPA.cards, { voucher: false });
   assert.deepEqual(normal.map((c) => c.card.key), ['egyeni', 'paros', 'negykezes']);
-  assert.match(normal[0].service.name, /Relax/);
-  assert.ok(!normal.some((c) => /"Hair"/.test(c.service.name)), 'a Hair valtozat nem kerul be');
-  assert.ok(normal.every((c) => c.service.bookingType !== 'voucher_redemption'));
+  assert.match(normal[0].service.name, /Relax/, 'az elsodleges valtozat a Relax');
+  assert.equal(normal[0].services.length, 2, 'az Egyeni kartyahoz a Relax es a Hair valtozat is tartozik (ugyanaz a szolgaltatas)');
+  assert.ok(normal[0].services.some((s) => /"Hair"/.test(s.name)) && normal[0].services.every((s) => /EGYÉNI/.test(s.name) && !/NÉGYKEZES/.test(s.name)));
+  assert.deepEqual(normal.slice(1).map((c) => c.services.length), [1, 1], 'a Paros es a Negykezes egy-egy szolgaltatas');
+  assert.ok(normal.every((c) => c.services.every((s) => s.bookingType !== 'voucher_redemption')));
   const voucher = cardsFor(headspaServices, HEADSPA.cards, { voucher: true });
   assert.deepEqual(voucher.map((c) => c.card.key), ['egyeni', 'paros', 'negykezes']);
-  assert.ok(voucher.every((c) => c.service.bookingType === 'voucher_redemption'));
+  assert.equal(voucher[0].services.length, 2, 'a kuponos Egyeni Relax + Hair is egy kartya');
+  assert.ok(voucher.every((c) => c.services.every((s) => s.bookingType === 'voucher_redemption')));
+  // a valtozat-jeloles nelkuli, egyseges nev (nem latszik, melyik valtozatra megy a foglalas)
+  const nevek = normal[0].services.map((s) => HEADSPA.egyesit(displayName(s.name)));
+  assert.equal(nevek[0], nevek[1]);
+  assert.ok(!/Relax|Hair/i.test(nevek[0]) && /EGYÉNI 50 perces MOSAIC Head Spa/.test(nevek[0]), nevek[0]);
+  assert.equal(HEADSPA.egyesit(displayName(normal[1].service.name)), displayName(normal[1].service.name), 'a Paros neve valtozatlan');
   assert.deepEqual(cardsFor([], HEADSPA.cards), [], 'ami nincs a Salonicban, nem jelenik meg');
   assert.ok(!HEADSPA.showStaffFilter);
+});
+
+test('mergeVariantSlots: a valtozatok idopontjainak uniója idorend szerint, azonos idopontnal az elso valtozat elol, a service_id megmarad', () => {
+  const relax = [{ start_unix: T(5, 12), service_id: 'R', staff_id: '1' }, { start_unix: T(6, 9), service_id: 'R', staff_id: '1' }];
+  const hair = [{ start_unix: T(5, 10), service_id: 'H', staff_id: '1' }, { start_unix: T(5, 12), service_id: 'H', staff_id: '2' }, { start_unix: T(7, 9), service_id: 'H', staff_id: '1' }];
+  const m = mergeVariantSlots([relax, hair]);
+  assert.deepEqual(m.map((s) => s.service_id), ['H', 'R', 'H', 'R', 'H']);
+  assert.deepEqual(m.map((s) => s.start_unix), [T(5, 10), T(5, 12), T(5, 12), T(6, 9), T(7, 9)]);
+  assert.equal(uniqueTimes(m).find((s) => s.start_unix === T(5, 12)).service_id, 'R', 'az azonos idopontot a Relax viszi (elso valtozat)');
+  assert.deepEqual(mergeVariantSlots([hair]).length, 3);
 });
 
 test('findByKey: azonosito vagy kulcsszavak; az ajandekkartyas es a normal kulon', () => {

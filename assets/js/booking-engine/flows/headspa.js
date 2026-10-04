@@ -16,12 +16,15 @@ export const HEADSPA = Object.freeze({
   firstState: 'HS1',
   voucherState: 'HS3',
   showStaffFilter: false, // 11. dontes: a HeadSpa "munkatarsai" kezelo-helyek, a vendeg nem valaszt
-  // HS2/HS3 kartyak. 8. dontes: az Egyeni = csak a "Relax" valtozat (a "Hair" nem foglalhato ebbol a foglalobol).
+  // HS2/HS3 kartyak. 8. dontes (2026-10-04 modositva): az Egyeni "Relax" es "Hair" valtozata ugyanaz a szolgaltatas (ugyanazok a kezelok), ezert egy kartya:
+  // a naptar a ket valtozat idopontjainak uniója, a foglalas arra a valtozatra megy, amelyiknek az idopontja van (flows/headspa.js egyesit, engine.js variantsFor).
   cards: Object.freeze([
-    { key: 'egyeni', title: 'Egyéni HeadSpa', kep: 'hs-egyeni', test: (n) => /EGYÉNI/i.test(n) && /Relax/i.test(n) },
+    { key: 'egyeni', title: 'Egyéni HeadSpa', kep: 'hs-egyeni', test: (n) => /EGYÉNI/i.test(n) && /Relax|Hair/i.test(n) && !/NÉGYKEZES|4[ -]?KEZES/i.test(n) },
     { key: 'paros', title: 'Páros HeadSpa', kep: 'hs-paros', test: (n) => /PÁROS/i.test(n) },
     { key: 'negykezes', title: '4 kezes HeadSpa', kep: 'hs-negykezes', test: (n) => /NÉGYKEZES|4[ -]?KEZES/i.test(n) },
   ]),
+  // A valtozat-jeloles ("Relax" / "Hair") nelkuli, egységes szolgaltatas-nev: a naptar-savon es az osszegzesben nem latszik, melyik valtozatra megy a foglalas
+  egyesit: (nev) => String(nev).replace(/\s*["„”“]\s*(?:Relax|Hair)\s*["„”“]/i, '').replace(/\s+/g, ' ').trim(),
   copy: Object.freeze({
     hs1Title: 'Ajándékkártyával vagy anélkül foglalsz?',
     hs1: [

@@ -73,7 +73,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   const S = {
     ctx, flow, state: null, depth: 0, services: null, voucher: ctx.voucher, service: null, exact: false,
     slots: [], slot: null, day: null, staff: null, place: null, expected: null, guestUrl: null, confirmation: null,
-    callbackReason: 'nincs_idopont', slotLostNote: false, intent: null, group: null, staffLabel: null, slotStaff: null, month: null, intentKey: null, staffCache: null,
+    callbackReason: 'nincs_idopont', slotLostNote: false, intent: null, group: null, staffLabel: null, slotStaff: null, month: null, intentKey: null, staffCache: null, variants: null,
   };
 
   // --- DOM-segedek ---------------------------------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   const priceText = (svc) => (svc.bookingType === 'voucher_redemption' ? flow.copy.voucherSettled : F.priceLabel(svc.activePrice, zeroLabel(svc)));
   // Lezer: a Salonic-nev elotag/akcios szoveg nelkul, a terulettel ("Kar - Alkar"); egyebkent a tiszta Salonic-nev
   const nameOf = (svc) => {
-    if (!flow.labelOf) return F.displayName(svc.name);
+    if (!flow.labelOf) return flow.egyesit ? flow.egyesit(F.displayName(svc.name)) : F.displayName(svc.name);
     const a = flow.areaOf(svc); const t = flow.labelOf(svc).title;
     return a && a.key !== 'tobb' ? `${a.title} – ${t}` : t;
   };
@@ -257,14 +257,23 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
     }
     return false;
   }
+  // A szolgaltatas valtozatai: ahol a business egyesit-ove tesz ket Salonic-szolgaltatast egyne (HeadSpa Egyeni Relax / Hair), azonos nevu, azonos fajtaju (kuponos / normal) tarsak
+  const variantsFor = (svc) => {
+    if (!flow.egyesit) return [svc];
+    const kupon = svc.bookingType === 'voucher_redemption'; const kulcs = flow.egyesit(F.displayName(svc.name));
+    const mind = (S.services || []).filter((x) => (x.bookingType === 'voucher_redemption') === kupon && flow.egyesit(F.displayName(x.name)) === kulcs);
+    return mind.length > 1 ? [svc, ...mind.filter((x) => x.serviceId !== svc.serviceId)] : [svc];
+  };
   async function loadSlots() {
-    S.slots = await adapter.getAvailability(flow.business, S.service.serviceId, { days: NAPTAR_NAP, minLeadMinutes: MIN_LEAD_MINUTES });
+    const vs = S.variants && S.variants.length > 1 ? S.variants : [S.service];
+    const lists = await Promise.all(vs.map((v) => adapter.getAvailability(flow.business, v.serviceId, { days: NAPTAR_NAP, minLeadMinutes: MIN_LEAD_MINUTES })));
+    S.slots = vs.length > 1 ? F.mergeVariantSlots(lists) : lists[0];
     S.day = null;
     return S.slots;
   }
   const serviceParams = (svc) => ({ service: nameOf(svc), service_id: svc.serviceId, booking_type: classifyService(flow.business, svc).bookingType, list_price: svc.listPrice, final_price: svc.activePrice, voucher: svc.bookingType === 'voucher_redemption' });
   function chooseService(svc, { exact = false, next = flow.afterService || 'C1' } = {}) {
-    S.service = svc; S.exact = exact; S.slot = null; S.slots = []; S.slotStaff = null;
+    S.service = svc; S.exact = exact; S.slot = null; S.slots = []; S.slotStaff = null; S.variants = variantsFor(svc);
     if (!flow.staffFirst) { S.staff = null; S.staffLabel = null; } // a fodraszatnal a fodrasz-valasztas elobb volt, megmarad
     track('booking_service_selected', serviceParams(svc));
     return go(next);
@@ -273,6 +282,8 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   // egyebkent "barmely megfelelo szakember" (a Salonic oszt be). Az idopont kivalasztasa utan rogton az adatlap (C4) jon.
   function pickSlot(slot, { fromFilter = false } = {}) {
     S.slot = slot;
+    // tobb valtozat (Egyeni Relax / Hair): a foglalas arra a valtozatra megy, amelyiknek az idopontja ez
+    if (S.variants && S.variants.length > 1) { const v = S.variants.find((x) => String(x.serviceId) === String(slot.service_id)); if (v) S.service = v; }
     S.slotStaff = fromFilter && S.staff ? { id: String(S.staff), label: slot.staff_label } : null;
     track('booking_slot_selected', { ...serviceParams(S.service), staff_id: S.slotStaff ? S.slotStaff.id : undefined });
     return go('C4');
@@ -706,7 +717,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
   function setBusiness(business) {
     flow = FLOWS[business];
     ctx.business = business;
-    Object.assign(S, { flow, services: null, voucher: false, service: null, exact: false, slots: [], slot: null, day: null, month: null, staff: null, place: null, expected: null, intentKey: null, staffCache: null,
+    Object.assign(S, { flow, services: null, voucher: false, service: null, exact: false, slots: [], slot: null, day: null, month: null, staff: null, place: null, expected: null, intentKey: null, staffCache: null, variants: null,
       guestUrl: null, confirmation: null, intent: null, group: null, staffLabel: null, slotStaff: null, candidates: null, laserArea: null, slotLostNote: false });
     tracker.setBusiness(business);
   }
@@ -734,7 +745,7 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
         // konkret szolgaltatas landing: az uzletag "exact" allapota (Fodraszat: HA3, a konzultacio egyenesen C1); nem kerdezzuk ujra a kezelest
         const svc = ctx.serviceKey ? F.findByKey(S.services, ctx.serviceKey, { voucher: S.voucher }) : null;
         if (svc) {
-          S.service = svc; S.exact = true; track('booking_service_selected', serviceParams(svc));
+          S.service = svc; S.exact = true; S.variants = variantsFor(svc); track('booking_service_selected', serviceParams(svc));
           first = svc.bookingType === 'consultation' ? 'C1' : F.entryState({ hasService: true, voucher: S.voucher, first: flow.firstState, voucherState: flow.voucherState, exact: flow.exactState });
         } else if (ctx.category && flow.intents) {
           // kategoria landing (?category=<szandek kulcsa>): csak a kategoria ismert -> a kezeles-pontositasra (HA2)
