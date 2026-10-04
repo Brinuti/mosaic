@@ -8,7 +8,7 @@ export const UA_MOBIL = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) 
 export const SZABALYOK = [
   ['google-ads', /^https:\/\/(www\.googleadservices\.com\/(pagead|ccm)\/|googleads\.g\.doubleclick\.net\/pagead\/|www\.google\.(com|hu)\/(pagead\/|rmkt\/|ccm\/)|pagead2\.googlesyndication\.com\/|ad\.doubleclick\.net\/)/],
   ['ga4', /^https:\/\/(region\d\.analytics\.google\.com\/|www\.google-analytics\.com\/|analytics\.google\.com\/|stats\.g\.doubleclick\.net\/g\/|www\.google\.hu\/ads\/ga-audiences)/],
-  ['stape', /^https:\/\/(stape\.mosaicheadspa\.hu\/(g\/collect|data|_\/)|capig\.stape\.[a-z]+\/)/],
+  ['stape', /^https:\/\/(stape\.mosaicheadspa\.hu\/(g\/collect|data|_\/)|capig\.stape\.[a-z]+\/|capi-pmu\.mosaicheadspa\.hu\/)/],
   ['meta', /^https:\/\/www\.facebook\.com\/tr[/?]/],
   ['tiktok', /^https:\/\/(analytics\.tiktok\.com\/api\/|analytics-ipv6\.tiktokw\.us\/|mcs\.tiktok\.com\/)/],
   ['zapier', /^https:\/\/hooks\.zapier\.com\//],
@@ -39,7 +39,7 @@ export const engedett = (url, method) => (/^https:\/\/([a-z0-9-]+\.)?mosaic-d77\
   || /^https:\/\/(www\.google\.com\/recaptcha\/|www\.gstatic\.com\/recaptcha\/|www\.recaptcha\.net\/)/.test(url)
   || (method === 'GET' && ENGEDETT_GET.some((re) => re.test(url)));
 
-export const DNS_TILTAS = ['capig.stape.do', 'capig.stape.de', 'capig.stape.io', 'analytics-ipv6.tiktokw.us', 'mcs.tiktok.com', 'hooks.zapier.com', 'region1.analytics.google.com',
+export const DNS_TILTAS = ['capig.stape.do', 'capig.stape.de', 'capig.stape.io', 'capi-pmu.mosaicheadspa.hu', 'analytics-ipv6.tiktokw.us', 'mcs.tiktok.com', 'hooks.zapier.com', 'region1.analytics.google.com',
   'www.googleadservices.com', 'googleads.g.doubleclick.net', 'ad.doubleclick.net', 'stats.g.doubleclick.net', 'pagead2.googlesyndication.com', 'www.google-analytics.com', 'analytics.google.com'];
 export const dnsArg = () => '--host-resolver-rules=' + DNS_TILTAS.map((h) => `MAP ${h} ~NOTFOUND`).join(', ');
 

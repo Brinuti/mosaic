@@ -1,0 +1,99 @@
+Uj foglalasi utak elo merese: PMU (beagyazott foglalo) es lezer (landing idopont-gombja) - 2026-10-04
+===========================================================================================================
+
+Mert: a /pmu-ok es az /elysion-ok koszonooldalon platformonkent hany konverzio megy ki, a kattintas-azonositokkal; PMU-nal a ket keret melyseg betoltodes
+es a teljes ablakos atadas; a "visszaugras" (bongeszo vissza) utan megy-e ki masodik konverzio.
+Eszkoz: tools/meres-proba/uj-utak-proba.mjs (Playwright, valodi Chrome), alapbol tiltott kimeno meres (tilt.mjs: Google, Meta, TikTok, Zapier, stape, capig.stape.*,
+capi-pmu.mosaicheadspa.hu - a capi-pmu host ezzel a vizsgalattal kerult fel a tiltolistara es a DNS-zarra; minden harmadik fel fele iras tiltva es naplozva).
+Kiindulas: https://www.mosaicheadspa.hu/<landing>?gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc, a hozzajarulas elore beallitva.
+
+Futasok (mindegyik az eles domainen)
+- VALODI foglalas (1-1): PMU 2026-10-04 21:19:45 UTC (Ajaktetovalas - Aquarell, okt. 31. 16:00), lezer 21:21:08 UTC (hónalj, okt. 31. 17:00; a landing sajat naptaraval).
+  Vendeg: "TESZT - Claude" jellegu nev, deakfi@grantis.hu, a tulajdonos sajat telefonszama. LEMONDVA: PMU 21:22:42, lezer 21:22:50 UTC (lemond.mjs, "Az idopont lemondasa
+  sikeres volt!"); a Salonic naptarban a ket idopont ujra szabad.
+- SZIMULALT Salonic-atiranyitas (--mod szim, foglalas NEM jon letre): ugyanaz a keret-atadas (PMU: a Salonic-keret a /pmu-ok-ra iranyit, ket keret melyen), + bongeszo "vissza" (--vissza 1).
+- NATIV alap (--mod nativ): a koszonooldal kozvetlenul a fo ablakban, Salonic-referrerrel (a regi, nem beagyazott utvonal).
+
+EREDMENY - PMU (/sminktetovalas-budapest -> beagyazott /foglalo-pmu -> Salonic-keret -> /pmu-ok a teljes ablakban)
+konverzio (platform | esemeny | [cimke] | [ertek])                                          valodi  szim    nativ   
+google-ads | conversion | LNuBCOKivIkd | 99000 | ccm                                        1       1       1       
+google-ads | conversion | LNuBCOKivIkd | 99000 | pagead                                     1       1       1       
+google-ads | conversion | LUiYCNWY-toc | 99000 | ccm                                        1       1       1       
+google-ads | conversion | LUiYCNWY-toc | 99000 | pagead                                     1       1       1       
+meta | PMU_Foglalas | 99000                                                                 1       1       1       
+meta | Schedule                                                                             1       1       1       
+stape(capi) | PMU_Foglalas                                                                  1       1       1       
+stape(capi) | Schedule                                                                      1       1       1       
+tiktok | Purchase | 99000                                                                   1       1       1       
+zapier | /hooks/catch/25416243/0xYgLEnqBPdjKSkG/                                            1       1       1       
+- Platformonkent PONTOSAN 1 konverzio a /pmu-ok-on: Meta PMU_Foglalas (99000 HUF, eid = pmuok-3354694-471034-1793458800, fbc megvan) + Schedule; a CAPI (capi-pmu) ugyanazzal
+  az eid-del PMU_Foglalas + Schedule; TikTok Purchase (99000, ttclid megvan); Zapier 1 hivas (a payloadban gclid + fbclid + ttclid). Google Ads: 2 KULON konverzios cimke
+  (LUiYCNWY-toc, LNuBCOKivIkd), mindegyik egyszer, 99000 HUF, oid = pmuok-3354694-471034-1793458800, gclaw = TESZT123; mindegyik ket vegponton (pagead/conversion + ccm/conversion) -
+  ugyanez jon a nativ utvonalon is (a tabla harom oszlopa azonos).
+- A keretekben (ket keret melyen, a Salonic-keretbol a /pmu-ok betoltese) NEM megy ki meres: a suti.js keretben nem mer, a foglalo a teljes ablakban nyitja meg a /pmu-ok oldalt (mh_proba=pmu).
+- "Visszaugras a #koszonjuk-ra": a jelenlegi kodban NINCS. A /pmu-ok maga a koszono oldal (foglalas/pmu-ok.html = a foglalo, KOSZ_OLDAL === 'ok'), a fo ablak a betoltes utan
+  nem navigal tovabb, es nincs pushState / replaceState / hashchange a koszono fazisban (naplozva: 0). A foglalo-pmu.js fejlec-kommentje ("a klon.js visszahoz a
+  koszonooldalra") 2026-10-03 ota elavult (a klon.js mar nem iranyit at).
+- Bongeszo "vissza" a /pmu-ok-rol (szimulalt futas): a fo ablak a landingre ter vissza; a kimeno meres csak lapbetoltes-jellegu (Meta PageView + CAPI PageView, GA4 page_view/visit,
+  Google Ads page_view/remarketing, TikTok Pageview): konverzio 0. (Megjegyzes: visszaterve a beagyazott foglalo az #adatok nezetre allit (replaceState naplozva): a vendeg az adatlapot ujra latja; ez uj foglalast csak akkor jelent, ha ujra elkuldi.)
+
+EREDMENY - Lezer (/lezeres-szortelenites-budapest idopont-gombja -> mosaic-elysion.salonic.hu/guestData -> /elysion-ok)
+konverzio (platform | esemeny | [cimke] | [ertek])                                          valodi  szim    nativ   
+ga4 | Szörtelenités_elysion_ok                                                              2       2       0       
+ga4 | elysion_ok | 15200                                                                    1       1       0       
+google-ads | conversion | LXcLCJ6ixPsb | 15200 | ccm                                        1       1       1       
+google-ads | conversion | LXcLCJ6ixPsb | 15200 | pagead                                     1       1       1       
+google-ads | conversion | cPOaCIHr9ogd | 15200 | ccm                                        1       1       1       
+google-ads | conversion | cPOaCIHr9ogd | 15200 | pagead                                     1       1       1       
+meta | Schedule                                                                             1       1       1       
+meta | Szor_FoglalasElso | 15200                                                            1       2       1       
+stape | Szörtelenités_elysion_ok                                                            0       0       1       
+stape | elysion_ok | 15200                                                                  0       0       1       
+stape(capi) | Schedule                                                                      1       1       1       
+stape(capi) | Szor_FoglalasElso                                                             1       1       1       
+tiktok | CompleteRegistration                                                               1       1       1       
+tiktok | Purchase | 15200                                                                   1       1       1       
+zapier | /hooks/catch/25416243/0xYgLEnqBPdjKSkG/                                            1       1       1       
+- Platformonkent 1 konverzio az /elysion-ok-on: Meta Schedule + Szor_FoglalasElso (15200 HUF, eid = elysionok-3353226-476488-1793462400, fbc megvan), CAPI ugyanazzal az eid-del;
+  TikTok CompleteRegistration + Purchase (15200, ttclid megvan); GA4 Szortelenites_elysion_ok + elysion_ok (15200 HUF); Zapier 1 hivas (gclid + fbclid + ttclid);
+  Google Ads 2 cimke (LXcLCJ6ixPsb, cPOaCIHr9ogd), egyenkent egyszer (+ ccm), 15200 HUF, gclaw = TESZT123.
+- A kattintas-azonositok a Salonic-oldalrol visszaerkezes utan is megvannak: _gcl_aw (GCL...TESZT123), _fbc (...TESZT456), ttclid (TESZT789...) sutik a landingtol a koszonooldalig
+  valtozatlanok; a konverzios keresekben: Google Ads gclaw, Meta/CAPI fbc, TikTok ttclid, Zapier mind a harom.
+- Kulonbsegek a nativ alaphoz kepest: (a) a GA4 szallitasi utja futasonkent valtozik (stape vagy kozvetlenul a Google fele, utobbinal egy /measurement/conversion hivas is) - mindig ugyanaz az
+  egy esemeny; (b) a szimulalt futasban a Meta Szor_FoglalasElso bongeszo-hit ketszer ment ugyanazzal az event_id-val (a teszt altal adott ures valasz miatti ujraprobalkozas lehet; a Meta event_id szerint
+  duplikaciot szur, a valodi futasban 1 db volt).
+
+AMIT NEM VIZSGALTUNK
+- A Salonic oldali termek-/ar-beallitasokat (a lezer landing "TEST - Teljes hónalj..." szolgaltatasa a Salonic-fiok sajat neve), a GTM-tagek beallitasait, a Google Ads / Meta / TikTok fiokok
+  tartalmat (kulso fiokokhoz nem nyultunk).
+- A MOBILOS utvonalat (csak asztali Chrome).
+- A kovetkezo, szerveroldali (Zapier) mereseket: lasd probafoglalasok-es-szerveroldali-meres-2026-10-04.txt - EZEK a bongeszo-tiltason kivul futnak.
+
+NYERS ADAT (a koszono fazis konverzios kerelmei, valodi futas; azonositok nelkul rovidítve)
+PMU:
+{"plat":"zapier","mely":0,"ut":"/hooks/catch/25416243/0xYgLEnqBPdjKSkG/","torzs_hossz":475,"gclid":true,"fbclid":true,"ttclid":true}
+{"plat":"google-ads","mely":0,"ut":"/pagead/conversion/16795940464/","en":"conversion","cimke":"LUiYCNWY-toc","ertek_param":"99000","penznem":"HUF","oid":"pmuok-3354694-471034-1793458800","gclaw":"TESZT123","gclid":true,"fbclid":false,"ttclid":false}
+{"plat":"google-ads","mely":0,"ut":"/pagead/conversion/16795940464/","en":"conversion","cimke":"LNuBCOKivIkd","ertek_param":"99000","penznem":"HUF","oid":"pmuok-3354694-471034-1793458800","gclaw":"TESZT123","gclid":true,"fbclid":false,"ttclid":false}
+{"plat":"google-ads","mely":0,"ut":"/ccm/conversion/16795940464/","en":"conversion","cimke":"LUiYCNWY-toc","ertek_param":"99000","penznem":"HUF","oid":"pmuok-3354694-471034-1793458800","gclaw":"TESZT123","gclid":true,"fbclid":false,"ttclid":false}
+{"plat":"google-ads","mely":0,"ut":"/ccm/conversion/16795940464/","en":"conversion","cimke":"LNuBCOKivIkd","ertek_param":"99000","penznem":"HUF","oid":"pmuok-3354694-471034-1793458800","gclaw":"TESZT123","gclid":true,"fbclid":false,"ttclid":false}
+{"plat":"stape","mely":0,"ut":"/events/d80615b8fa0b6c22f97217e9e0a9896c562a9eb58bbc3be6e25c59838cecf3","capi":true,"ev":"Schedule","pixel":"1019878750660854","eid":"ob3_plugin-set_873ccf52b3929e7795b78fcbd482a70b27f7f2fd897a5ee9bd3a1b6b41795fe8","gclid":false,"fbclid":true,"ttclid":false}
+{"plat":"meta","mely":0,"ut":"/tr/","ev":"Schedule","pixel":"1019878750660854","eid":"ob3_plugin-set_873ccf52b3929e7795b78fcbd482a70b27f7f2fd897a5ee9bd3a1b6b41795fe8","fbc":"fb.1.1791148766101.TESZT456","fbp":"fb.1.1791148766113.954743999452081397","ertek_param":null,"penznem":null,"oldal":"https://www.mosaicheadspa.hu/pmu-ok?first_booking=true&service=Ajaktetov%C3%A1l%C3%A1s+-+Aquarell+-+124.900+Ft+helyett+m","gclid":false,"fbclid":true,"ttclid":false}
+{"plat":"stape","mely":0,"ut":"/events/d80615b8fa0b6c22f97217e9e0a9896c562a9eb58bbc3be6e25c59838cecf3","capi":true,"ev":"PMU_Foglalas","pixel":"1019878750660854","eid":"pmuok-3354694-471034-1793458800","gclid":false,"fbclid":true,"ttclid":false}
+{"plat":"tiktok","mely":0,"ut":"/api/v2/pixel","ev":"Purchase","pixel":"CTDGK5BC77U0PIODKP30","ertek_param":99000,"oldal":"https://www.mosaicheadspa.hu/pmu-ok?first_booking=true&service=Ajaktetov%C3%A1l%C3%A1s+-+Aquarell+-+124.900+Ft+helyett+m","gclid":false,"fbclid":false,"ttclid":true}
+{"plat":"meta","mely":0,"ut":"/tr/","ev":"PMU_Foglalas","pixel":"1019878750660854","eid":"pmuok-3354694-471034-1793458800","fbc":"fb.1.1791148766101.TESZT456","fbp":"fb.1.1791148766113.954743999452081397","ertek_param":"99000","penznem":"HUF","oldal":"https://www.mosaicheadspa.hu/pmu-ok?first_booking=true&service=Ajaktetov%C3%A1l%C3%A1s+-+Aquarell+-+124.900+Ft+helyett+m","gclid":false,"fbclid":true,"ttclid":false}
+
+LEZER:
+{"plat":"stape","mely":0,"ut":"/events/d80615b8fa0b6c22f97217e9e0a9896c562a9eb58bbc3be6e25c59838cecf3","capi":true,"ev":"Schedule","pixel":"643342342027957","eid":"ob3_plugin-set_52cfb0b1ca342c4faeab323f9ab552d8654e7cb8796d88a6d418e7b7fddaba94","gclid":false,"fbclid":true,"ttclid":false}
+{"plat":"meta","mely":1,"ut":"/tr/","ev":"Schedule","pixel":"643342342027957","eid":"ob3_plugin-set_52cfb0b1ca342c4faeab323f9ab552d8654e7cb8796d88a6d418e7b7fddaba94","fbc":"fb.1.1791148848498.TESZT456","fbp":"fb.1.1791148848508.550474623393403115","ertek_param":null,"penznem":null,"oldal":"https://www.mosaicheadspa.hu/elysion-ok?first_booking=true&service=TEST+-+Teljes+h%C3%B3nalj+%2B+%C3%A1llapotfelm%C3%A9r","gclid":false,"fbclid":true,"ttclid":false}
+{"plat":"ga4","mely":0,"ut":"/measurement/conversion","esemenyek":["Szörtelenités_elysion_ok"],"en":"Szörtelenités_elysion_ok","ertek_param":null,"penznem":null,"oldal":"","gclid":true,"fbclid":false,"ttclid":false}
+{"plat":"ga4","mely":0,"ut":"/g/collect","esemenyek":["Szörtelenités_elysion_ok"],"en":"Szörtelenités_elysion_ok","ertek_param":null,"penznem":null,"oldal":"https://www.mosaicheadspa.hu/elysion-ok?first_booking=true&service=TEST+-+Teljes+h%C3%B3nalj+%2B+%C3%A1llapotfelm%C3%A9r","gclid":false,"fbclid":false,"ttclid":false}
+{"plat":"zapier","mely":0,"ut":"/hooks/catch/25416243/0xYgLEnqBPdjKSkG/","torzs_hossz":498,"gclid":true,"fbclid":true,"ttclid":true}
+{"plat":"google-ads","mely":0,"ut":"/pagead/conversion/16795940464/","en":"conversion","cimke":"LXcLCJ6ixPsb","ertek_param":"15200","penznem":"HUF","oid":"elysionok-3353226-476488-1793462400","gclaw":"TESZT123","gclid":true,"fbclid":false,"ttclid":false}
+{"plat":"google-ads","mely":0,"ut":"/pagead/conversion/16795940464/","en":"conversion","cimke":"cPOaCIHr9ogd","ertek_param":"15200","penznem":"HUF","oid":"elysionok-3353226-476488-1793462400","gclaw":"TESZT123","gclid":true,"fbclid":false,"ttclid":false}
+{"plat":"google-ads","mely":0,"ut":"/ccm/conversion/16795940464/","en":"conversion","cimke":"LXcLCJ6ixPsb","ertek_param":"15200","penznem":"HUF","oid":"elysionok-3353226-476488-1793462400","gclaw":"TESZT123","gclid":true,"fbclid":false,"ttclid":false}
+{"plat":"google-ads","mely":0,"ut":"/ccm/conversion/16795940464/","en":"conversion","cimke":"cPOaCIHr9ogd","ertek_param":"15200","penznem":"HUF","oid":"elysionok-3353226-476488-1793462400","gclaw":"TESZT123","gclid":true,"fbclid":false,"ttclid":false}
+{"plat":"tiktok","mely":0,"ut":"/api/v2/pixel","ev":"CompleteRegistration","pixel":"CTDGK5BC77U0PIODKP30","oldal":"https://www.mosaicheadspa.hu/elysion-ok?first_booking=true&service=TEST+-+Teljes+h%C3%B3nalj+%2B+%C3%A1llapotfelm%C3%A9r","gclid":false,"fbclid":false,"ttclid":true}
+{"plat":"stape","mely":0,"ut":"/events/d80615b8fa0b6c22f97217e9e0a9896c562a9eb58bbc3be6e25c59838cecf3","capi":true,"ev":"Szor_FoglalasElso","pixel":"643342342027957","eid":"elysionok-3353226-476488-1793462400","gclid":false,"fbclid":true,"ttclid":false}
+{"plat":"tiktok","mely":0,"ut":"/api/v2/pixel","ev":"Purchase","pixel":"CTDGK5BC77U0PIODKP30","ertek_param":15200,"oldal":"https://www.mosaicheadspa.hu/elysion-ok?first_booking=true&service=TEST+-+Teljes+h%C3%B3nalj+%2B+%C3%A1llapotfelm%C3%A9r","gclid":false,"fbclid":false,"ttclid":true}
+{"plat":"meta","mely":1,"ut":"/tr/","ev":"Szor_FoglalasElso","pixel":"643342342027957","eid":"elysionok-3353226-476488-1793462400","fbc":"fb.1.1791148848498.TESZT456","fbp":"fb.1.1791148848508.550474623393403115","ertek_param":"15200","penznem":"HUF","oldal":"https://www.mosaicheadspa.hu/elysion-ok?first_booking=true&service=TEST+-+Teljes+h%C3%B3nalj+%2B+%C3%A1llapotfelm%C3%A9r","gclid":false,"fbclid":true,"ttclid":false}
+{"plat":"ga4","mely":0,"ut":"/g/collect","esemenyek":["elysion_ok"],"en":"elysion_ok","ertek_param":"15200","penznem":"HUF","oldal":"https://www.mosaicheadspa.hu/elysion-ok?first_booking=true&service=TEST+-+Teljes+h%C3%B3nalj+%2B+%C3%A1llapotfelm%C3%A9r","gclid":false,"fbclid":false,"ttclid":false}
