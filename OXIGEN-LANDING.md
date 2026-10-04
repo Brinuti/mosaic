@@ -32,7 +32,7 @@ küldenek (a PMU-landing `pmu_landing_*` mintájára; ezekre GTM-címke nem figy
 
 ## Hero (mobil) és a zöld szekció
 
-A hero másodlagos linkje: „Csak hajkamerás állapotfelmérés – 4 990 Ft →” (nincs „Még nem vagy biztos?”). Mobilon **öt kerek badge egy sorban** (hajkamera, privát szoba, 80 perc, SZÉP Kártya, Google-„vélemény” G-logóval; a `.teny-m` elemek csak mobilon látszanak, a SZÉP/Google sor mobilon rejtett, asztalin változatlan); a sor külső szélei pontosan a margónál vannak (flex, space-between), a galéria nyilai 4 px-re a kép szélétől. A zöld szekció címe („Akkor az oxigénterápia valószínűleg hatásos lesz nálad.”) az „Ismerősek ezek a jelek?” folytatása; tableten/mobilon a cím a kép **fölött** áll (a `.allapot-szoveg` `display:contents`, a h2 `order:-1`).
+A hero másodlagos linkje: „Csak hajkamerás állapotfelmérés – 4 990 Ft →” (nincs „Még nem vagy biztos?”). Mobilon **öt kerek badge egy sorban, egyenlő osztásközzel** (5 egyenlő oszlop: hajkamera, privát szoba, 80 perc, SZÉP Kártya, Google: egyszínű G-logó, alatta „5,0” és a vélemények száma, amit az `oxigen-landing.js` a Trustindex-widgetből frissít, tartalék: 1.255; a `.teny-m` elemek csak mobilon látszanak, a SZÉP/Google sor mobilon rejtett, asztalin változatlan); a sor külső szélei pontosan a margónál vannak (flex, space-between), a galéria nyilai pontosan a kép szélén (mobil). A zöld szekció címe („Akkor az oxigénterápia valószínűleg hatásos lesz nálad.”) az „Ismerősek ezek a jelek?” folytatása; tableten/mobilon a cím a kép **fölött** áll (a `.allapot-szoveg` `display:contents`, a h2 `order:-1`).
 
 ## Fejléc
 
