@@ -1439,6 +1439,12 @@ describe('szemelyre szabott kartya (otthon nyomtatott)', () => {
     assert.ok(szalon.html.includes('Szalag') && szalon.html.includes('Pihenj sokat'));
     const elonezetUrl = /href="([^"]*\/api\/ajandek\/elonezet\?[^"]+)"/.exec(szalon.html)[1].replace(/&amp;/g, '&');
     assert.ok(elonezetUrl.startsWith(BAZIS));
+    // a vevo fotoja kozvetlenul a szalon leveleben is latszik (a foto sajat tokenjevel, ami tenyleg kiszolgalja a kepet)
+    const levelFotoUrl = /<img src="([^"]*\/api\/ajandek\/foto\?[^"]+)"/.exec(szalon.html)[1].replace(/&amp;/g, '&');
+    assert.ok(levelFotoUrl.startsWith(BAZIS) && levelFotoUrl.includes('id=' + fotoId));
+    const fotoValasz = await hiv('GET', 'foto', { query: Object.fromEntries(new URL(levelFotoUrl).searchParams), env });
+    assert.equal(fotoValasz.status, 200);
+    assert.match(fotoValasz.headers['content-type'], /^image\/jpeg/);
 
     // kiallitas a szalon kodjaval
     const t = await kiallitToken(env, r.adat.pi);
@@ -1543,6 +1549,7 @@ describe('szemelyre szabott kartya (otthon nyomtatott)', () => {
     assert.equal(kv.t.get('foto:' + f.adat.id).ttl, 400 * NAP);
     const szalon = levelek.find((l) => l.cimzett === 'szalon');
     assert.ok(szalon.html.includes('Homok') && szalon.html.includes('Pihenj egy jót!') && szalon.html.includes('/api/ajandek/elonezet?pi='));
+    assert.ok(szalon.html.includes('<img src="' + BAZIS + '/api/ajandek/foto?id=' + f.adat.id), 'az atutalasos igeny levelben is latszik a foto');
     const salonic = /href="https:\/\/app\.salonic\.hu[^"]+#mosaic=([^"]+)"/.exec(szalon.html);
     assert.equal(JSON.parse(decodeURIComponent(salonic[1].replace(/&#39;/g, "'"))).nameTo, 'Nagy Mária');
     // a kiallito oldal es az elonezet (kod nelkul, utalasnal a kod a kiallitaskor kerul ra)

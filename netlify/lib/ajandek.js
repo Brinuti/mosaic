@@ -1264,6 +1264,7 @@ async function atutalas(k) {
         atvetel_szoveg: r.atvetel === 'szemelyesen' ? 'Személyesen, a szalonban (papír kártya, díszborítékban)' : r.atvetel === 'otthon' ? 'E-mailben, otthon kinyomtatja' : '',
         design_szoveg: r.szemelyre ? (KARTYA.tema(r.szemelyre.tema) || {}).nev || '' : '', idezet_szoveg: r.szemelyre ? r.szemelyre.idezet : '',
         foto_van: Boolean(r.szemelyre && r.szemelyre.foto_id),
+        foto_url: r.szemelyre && r.szemelyre.foto_id ? `${k.bazis}/api/ajandek/foto?id=${r.szemelyre.foto_id}&t=${await fotoToken(k.env, r.szemelyre.foto_id)}` : '',
         elonezet_url: r.szemelyre ? `${k.bazis}/api/ajandek/elonezet?pi=${encodeURIComponent(pi.id)}&t=${await kiallitToken(k.env, pi.id)}` : '',
       }),
     });
@@ -1375,6 +1376,7 @@ async function szemelyreLeiras(k, i) {
     design_szoveg: szemelyre ? (KARTYA.tema(i.tema) || {}).nev || i.tema : '',
     idezet_szoveg: szemelyre ? i.idezet : '',
     foto_van: Boolean(szemelyre && i.foto_id),
+    foto_url: szemelyre && i.foto_id ? `${k.bazis}/api/ajandek/foto?id=${i.foto_id}&t=${await fotoToken(k.env, i.foto_id)}` : '',
     elonezet_url: szemelyre ? `${k.bazis}/api/ajandek/elonezet?pi=${encodeURIComponent(i.pi.id)}&t=${await kiallitToken(k.env, i.pi.id)}` : '',
   };
 }

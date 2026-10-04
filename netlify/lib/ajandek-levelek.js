@@ -58,6 +58,8 @@ const kodDoboz = (kod, ervenyesIg) => `<div style="margin:14px 0;padding:14px 18
 <div style="font:bold 24px/1.3 'Courier New',Courier,monospace;letter-spacing:2px;color:${PETROL_SOT}">${esc(kod)}</div>
 ${ervenyesIg ? `<div style="font-size:13px;color:#555">Érvényes: ${esc(datumIg(ervenyesIg))} (6 hónapig felhasználható)</div>` : ''}
 </div>`;
+// a vevo altal feltoltott foto (a szalon gyorsan lassa, megfelelo-e); az URL a foto sajat HMAC-tokenjet hordozza
+const fotoBlokk = (d) => (d.foto_url ? `<p style="margin:8px 0 10px"><img src="${esc(d.foto_url)}" alt="A vevő által feltöltött fotó" style="display:block;max-width:220px;max-height:280px;width:auto;height:auto;border-radius:6px;border:1px solid #ddd"><span style="font-size:12px;color:#777">A vevő által feltöltött fotó (a kártyán kivágva jelenik meg)</span></p>` : '');
 const lablec = (szalon) => `<p style="margin-top:28px;font-size:13px;color:#555"><b>${esc(szalon.nev)}</b><br>
 ${esc(szalon.cim)}<br>
 <b>${esc(szalon.telefon)}</b><br>
@@ -67,7 +69,7 @@ const szamlazasiCim = (d) => [d.iranyitoszam, d.varos].filter(Boolean).join(' ')
 // --- fizetes utan: a szalon levele -----------------------------------------------------------------
 // d: { rendeles_id, pi, termek_nev, osszeg_szoveg, fizetesi_mod, fizetve_ekkor, email, nev, iranyitoszam,
 //      varos, cim, ceges_nev, ceges_adoszam, kod, ervenyes_ig, kiallit_url, azonnali, attr,
-//      megajandekozott?, atvetel_szoveg?, design_szoveg?, idezet_szoveg?, foto_van?, elonezet_url? }
+//      megajandekozott?, atvetel_szoveg?, design_szoveg?, idezet_szoveg?, foto_van?, foto_url?, elonezet_url? }
 export function szalonFizetveLevel(d) {
   const attr = d.attr || {};
   const forras = [attr.utm_source, attr.utm_medium, attr.utm_campaign].filter(Boolean).join(' / ');
@@ -89,7 +91,7 @@ ${tabla([
   ['Név', d.nev], ['E-mail', d.email], ['Cím', szamlazasiCim(d)],
   ['Cégnév', d.ceges_nev], ['Adószám', d.ceges_adoszam],
 ])}
-${d.atvetel_szoveg ? `${cim('ÁTVÉTEL ÉS SZEMÉLYRE SZABÁS')}${tabla([['Átvétel', d.atvetel_szoveg], ['Kártya-design', d.design_szoveg], ['Idézet', d.idezet_szoveg], ['Saját fotó', d.design_szoveg ? (d.foto_van ? 'van' : 'nincs') : '']])}${d.elonezet_url ? `<p>A vevő személyre szabott kártyájának előnézete (design, fotó, idézet): <a href="${esc(d.elonezet_url)}">megnyitás új lapon</a></p>` : ''}` : ''}
+${d.atvetel_szoveg ? `${cim('ÁTVÉTEL ÉS SZEMÉLYRE SZABÁS')}${tabla([['Átvétel', d.atvetel_szoveg], ['Kártya-design', d.design_szoveg], ['Idézet', d.idezet_szoveg], ['Saját fotó', d.design_szoveg ? (d.foto_van ? 'van' : 'nincs') : '']])}${fotoBlokk(d)}${d.elonezet_url ? `<p>A vevő személyre szabott kártyájának előnézete (design, fotó, idézet): <a href="${esc(d.elonezet_url)}">megnyitás új lapon</a></p>` : ''}` : ''}
 ${cim('TEENDŐ: 100%-OS KUPON A SALONICBAN')}
 <p>A számlát a szamlabridge már elkészítette, ezért a Salonicban <b>nem utalvány-értékesítést</b>, hanem sima <b>100%-os kupont</b> hozz létre: a(z) <b>${esc(d.termek_nev)}</b> szolgáltatásra, egyszer felhasználható, érvényes ${esc(datumIg(d.ervenyes_ig))} (6 hónap).</p>
 ${kodDoboz(d.kod, d.ervenyes_ig)}
@@ -223,7 +225,7 @@ ${tabla([
 ${cim('A KÁRTYÁRA KERÜLŐ ADATOK')}
 ${tabla([['Megajándékozott', d.megajandekozott]])}
 ${d.uzenet ? `<p style="white-space:pre-line;border-left:3px solid ${ARANY};padding:4px 12px;margin:8px 0">${esc(d.uzenet)}</p>` : ''}
-${d.atvetel_szoveg ? `${cim('ÁTVÉTEL ÉS SZEMÉLYRE SZABÁS')}${tabla([['Átvétel', d.atvetel_szoveg], ['Kártya-design', d.design_szoveg], ['Idézet', d.idezet_szoveg], ['Saját fotó', d.design_szoveg ? (d.foto_van ? 'van' : 'nincs') : '']])}${d.elonezet_url ? `<p>A vevő személyre szabott kártyájának előnézete (design, fotó, idézet): <a href="${esc(d.elonezet_url)}">megnyitás új lapon</a></p>` : ''}` : ''}
+${d.atvetel_szoveg ? `${cim('ÁTVÉTEL ÉS SZEMÉLYRE SZABÁS')}${tabla([['Átvétel', d.atvetel_szoveg], ['Kártya-design', d.design_szoveg], ['Idézet', d.idezet_szoveg], ['Saját fotó', d.design_szoveg ? (d.foto_van ? 'van' : 'nincs') : '']])}${fotoBlokk(d)}${d.elonezet_url ? `<p>A vevő személyre szabott kártyájának előnézete (design, fotó, idézet): <a href="${esc(d.elonezet_url)}">megnyitás új lapon</a></p>` : ''}` : ''}
 ${cim('TEENDŐ, HA AZ UTALÁS BEÉRKEZETT')}
 <ol style="margin:0 0 12px 18px;padding:0">
 <li><b>Salonic:</b> utalvány-értékesítés (a számla miatt): ${d.salonic_url ? `<a href="${esc(d.salonic_url)}">Utalvány értékesítés megnyitása az adatokkal</a> – ${esc(d.salonic_nev || d.termek_nev)}` : esc(d.termek_nev)}. A megnyílt űrlapot a <b>MOSAIC kitöltő</b> könyvjelző egy kattintással kitölti (beállítása egyszeri, a lenti gombbal megnyíló oldalon van). Kézzel: Ajándékozó = a vevő; az <b>Ajándékozó e-mail címe</b> mezőbe a <b>szalon címét</b> (${esc(d.szalon_email || '')}) írd, hogy a Salonic ne küldjön saját levelet a vevőnek; fizetési mód: <b>Átutalás</b>; az „Ajándékozott e-mail címe” és a másolat-küldés jelölőnégyzet maradjon üresen. Az üzenetet a Salonicba nem kell beírni, a kártyára a MOSAIC írja.</li>
