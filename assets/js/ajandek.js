@@ -792,6 +792,8 @@
       felirat: t.kartya_felirat, ertek: t.ar_ft ? A.arSzoveg(t.ar_ft) : '', kod: null, ervenyes: null, minta: true
     };
   }
+  // van-e fotohelye a kivalasztott designnak (a krem / homok / feher egyszeru, foto nelkuli)
+  function temaFoto(id) { var t = KT && KT.tema(id); return !!(t && t.kep); }
   function temaMiniek() {
     if (!KT) return;
     KT.TEMAK.forEach(function (t) {
@@ -834,8 +836,13 @@
     });
     temaMiniek();
     temaNyitFrissit();
-    var van = !!fotoUrl;
-    $('ah-foto-blokk').hidden = !S.fotoLehet;
+    var fotoTema = temaFoto(S.tervezo.tema);
+    var van = !!fotoUrl && fotoTema;
+    $('ah-foto-blokk').hidden = !S.fotoLehet || !fotoTema;
+    var ketto = document.querySelector('.ah-tv-ketto');
+    if (ketto) ketto.classList.toggle('ah-nincs-foto', !S.fotoLehet || !fotoTema);
+    var idSzam = document.querySelector('.ah-tv-idezet .ah-lepes-szam');   // foto nelkul az idezet a 2. lepes
+    if (idSzam) idSzam.textContent = (!S.fotoLehet || !fotoTema) ? '2' : '3';
     $('ah-foto-torol').hidden = !van;
     $('ah-zoom-sor').hidden = !van;
     $('ah-mozgat').hidden = !van;
@@ -869,11 +876,12 @@
     tv.idezet = ($('ah-idezet').value || '').split('\n').slice(0, 5).join('\n').trim().slice(0, KT.IDEZET_MAX);
     tv.nev = ($('ah-tervezo-nev').value || '').trim().slice(0, KT.NEV_MAX);
     $('ah-ajandekozott').value = tv.nev;
-    tv.kihagyva = !(fotoUrl || tv.idezet || tv.nev); // semmit nem adott meg: a MOSAIC alap kartyaja
+    var fotoVan = !!fotoUrl && temaFoto(tv.tema);   // az egyszeru (krem / homok / feher) dizajnon nincs foto
+    tv.kihagyva = !(fotoVan || tv.idezet || tv.nev); // semmit nem adott meg: a MOSAIC alap kartyaja
     hibaMezo('ah-tervezo-hiba', '');
     var gomb = $('ah-tervezo-tovabb'), felirat = $('ah-tervezo-tovabb-szoveg');
     function vissza() { gomb.disabled = false; felirat.textContent = 'Tovább a fizetéshez'; }
-    if (fotoUrl && !tv.fotoId) {
+    if (fotoVan && !tv.fotoId) {
       gomb.disabled = true; felirat.textContent = 'Fotó feltöltése…';
       fotoFeltolt().then(function () { vissza(); ment(); fizetesre(); }).catch(function (e) {
         vissza();
@@ -1176,7 +1184,7 @@
   function szemelyreMezok() {
     if (S.atvetel !== 'otthon' || S.tervezo.kihagyva || !KT) return null;
     var tv = S.tervezo, m = { tema: tv.tema, idezet: tv.idezet, nev: tv.nev };
-    if (tv.fotoId) { m.foto_id = tv.fotoId; m.foto_poz = KT.pozIr(tv.fotoPoz); }
+    if (tv.fotoId && temaFoto(tv.tema)) { m.foto_id = tv.fotoId; m.foto_poz = KT.pozIr(tv.fotoPoz); }
     return m;
   }
 

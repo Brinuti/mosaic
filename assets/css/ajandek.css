@@ -1393,3 +1393,7 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 }
 /* az AJANLOTT jelzo ne takarja a termek arat */
 @media (max-width: 640px) { .ah-vasarlas .ah-atvetel { margin-top: 8px; } .ah-vasarlas .ah-ajanlott-jel { top: -8px; } }
+
+/* egyszeru, foto nelkuli dizajn: nincs foto-blokk, az idezet a teljes szelesseget kapja */
+@media (min-width: 900px) { .ah-tv-ketto.ah-nincs-foto { grid-template-columns: 1fr; } }
+.ah-tv-ketto.ah-nincs-foto #ah-foto-blokk { display: none; }

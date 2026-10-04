@@ -87,9 +87,10 @@
         betu: { termek: { fam: 'serif', ls: 0.133 }, kod: { ls: 0.53 }, erv: { fam: 'serif', ls: 0 } }
       }
     },
-    { id: 'krem', nev: 'Krém', kep: { x: 408, y: 44, w: 340, h: 474, alak: 'teglalap' }, oszlop: { x: 46, w: 336 }, idezet: { x: 54, y: 176, w: 320, h: 206 }, nevHely: { x: 54, y: 398, w: 320, h: 84 } },
-    { id: 'homok', nev: 'Homok', kep: { x: 48, y: 98, w: 366, h: 366, alak: 'kor' }, oszlop: { x: 430, w: 320 }, idezet: { x: 438, y: 176, w: 304, h: 206 }, nevHely: { x: 438, y: 398, w: 304, h: 84 } },
-    { id: 'feher', nev: 'Fehér', kep: { x: 56, y: 50, w: 340, h: 424, alak: 'polaroid' }, oszlop: { x: 424, w: 326 }, idezet: { x: 432, y: 176, w: 310, h: 206 }, nevHely: { x: 432, y: 398, w: 310, h: 84 } }
+    // Egyszeru, FOTO NELKULI dizajnok (a tulajdonos kerese): letisztult, minden kozepen; legfeljebb az idezet / uzenet es a megajandekozott neve kerul ra
+    { id: 'krem', nev: 'Krém', minimal: true, idezet: { x: 117, y: 168, w: 560, h: 204 }, nevHely: { x: 197, y: 398, w: 400, h: 92 } },
+    { id: 'homok', nev: 'Homok', minimal: true, idezet: { x: 117, y: 168, w: 560, h: 204 }, nevHely: { x: 197, y: 398, w: 400, h: 92 } },
+    { id: 'feher', nev: 'Fehér', minimal: true, idezet: { x: 117, y: 168, w: 560, h: 204 }, nevHely: { x: 197, y: 398, w: 400, h: 92 } }
   ];
 
   function tema(id) {
@@ -195,9 +196,29 @@
       + '</div>';
   }
 
+  // az ELOLAP (egyszeru, foto nelkuli dizajn): MOSAIC-felirat, "AJANDEKKARTYA", kozepen az idezet, alatta a "NEKI" + nev
+  function elolapMinimal(o, t) {
+    var idezet = String(o.idezet || '').trim();
+    var nev = String(o.nev || '').trim();
+    var iPx = lepcsoSor(idezet, idezetLepcso(t.idezet.w, t.idezet.h, 34), 34);
+    var nPx = lepcso(nev, [[20, 28], [30, 24], [60, 20]]);
+    return '<div class="ak ak-elol ak-min ak-t-' + esc(t.id) + '" data-tema="' + esc(t.id) + '">'
+      + '<span class="ak-keret" aria-hidden="true"></span>'
+      + '<p class="ak-brand" style="left:0;width:100%"><b>MOSAIC</b><small>HEADSPA AND HAIR</small></p>'
+      + '<p class="ak-cim" style="left:0;width:100%">AJÁNDÉKKÁRTYA</p>'
+      + '<span class="ak-min-vonal" style="top:' + TOP(150) + '" aria-hidden="true"></span>'
+      + '<p class="ak-idezet" style="' + KP(t.idezet) + ';font-size:' + CQ(iPx) + '">' + (idezet ? esc(idezet) : (o.minta ? '<span class="ak-halvany">Ide kerül az idézeted vagy az üzeneted.</span>' : '')) + '</p>'
+      + '<span class="ak-min-vonal" style="top:' + TOP(384) + '" aria-hidden="true"></span>'
+      + (nev || o.minta
+        ? '<p class="ak-neki" style="' + KP(t.nevHely) + '"><small>NEKI</small><span style="font-size:' + CQ(nPx) + '">' + (nev ? esc(nev) : (o.minta ? '<i class="ak-halvany">a megajándékozott neve</i>' : '')) + '</span></p>'
+        : '')
+      + '</div>';
+  }
+
   // az ELOLAP: a szemelyre szabott resz (a fotohely, az idezet es a nev a dizajn szerinti helyen)
   function elolap(o, t) {
     if (t.hatter) return elolapKepes(o, t);
+    if (t.minimal) return elolapMinimal(o, t);
     var idezet = String(o.idezet || '').trim();
     var nev = String(o.nev || '').trim();
     var kep = o.fotoSrc
@@ -258,6 +279,10 @@
     '.ak-t-feher{--ak-h:#ffffff;--ak-sz:#243436;--ak-a:#17403f;--ak-m:#ece7dd}',
     '.ak-keret{position:absolute;inset:' + CQ(14) + ';border:1px solid var(--ak-a);opacity:.7;pointer-events:none}',
     '.ak-t-krem .ak-keret,.ak-t-feher .ak-keret{border-width:2px;opacity:.55}',
+    '.ak-min-vonal{position:absolute;left:50%;width:' + CQ(84) + ';height:' + CQ(7) + ';transform:translateX(-50%);background:linear-gradient(90deg,var(--ak-a) 0 41%,transparent 41% 59%,var(--ak-a) 59% 100%) center / 100% 1px no-repeat;opacity:.85;pointer-events:none}',
+    '.ak-min-vonal::after{content:"";position:absolute;left:50%;top:50%;width:' + CQ(5) + ';height:' + CQ(5) + ';background:var(--ak-a);transform:translate(-50%,-50%) rotate(45deg)}',
+    '.ak-min .ak-idezet{text-wrap:balance;padding:0}',
+    '.ak-t-krem .ak-keret::after,.ak-t-homok .ak-keret::after{content:"";position:absolute;inset:' + CQ(5) + ';border:1px solid var(--ak-a);opacity:.6}',
     '.ak-brand{position:absolute;top:' + TOP(34) + ';display:grid;gap:' + CQ(3) + ';justify-items:center}',
     '.ak-brand b{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:' + CQ(27) + ';letter-spacing:.34em;padding-left:.34em;color:var(--ak-a)}',
     '.ak-brand small{font-size:' + CQ(8) + ';letter-spacing:.38em;padding-left:.38em}',

@@ -1384,12 +1384,12 @@ describe('szemelyre szabott kartya (otthon nyomtatott)', () => {
     const fotoId = f.adat.id;
     const r = await hiv('POST', 'fizetes', { env, body: rendelesTorzs({
       termek: 'paros', atvetel: 'otthon',
-      szemelyre: { tema: 'krem', idezet: 'A legszebb ajándék <b>te</b> vagy!\nPihenj sokat.', nev: 'Kovács Anna', foto_id: fotoId, foto_poz: '40,35,1.3' },
+      szemelyre: { tema: 'szalag', idezet: 'A legszebb ajándék <b>te</b> vagy!\nPihenj sokat.', nev: 'Kovács Anna', foto_id: fotoId, foto_poz: '40,35,1.3' },
     }) });
     assert.equal(r.status, 200, r.body);
     const md = mock.allapot.pi(r.adat.pi).metadata;
     assert.equal(md.atvetel, 'otthon');
-    assert.equal(md.kartya_tema, 'krem');
+    assert.equal(md.kartya_tema, 'szalag');
     assert.equal(md.kartya_idezet, 'A legszebb ajándék <b>te</b> vagy!\nPihenj sokat.');
     assert.equal(md.szemelyre_nev, 'Kovács Anna');
     assert.equal(md.foto_id, fotoId);
@@ -1401,21 +1401,21 @@ describe('szemelyre szabott kartya (otthon nyomtatott)', () => {
     assert.equal((await webhook(alairtEsemeny(r.adat.pi), { env })).status, 200);
     const szalon = levelek.find((l) => l.cimzett === 'szalon');
     assert.ok(szalon.html.includes('E-mailben, otthon kinyomtatja'));
-    assert.ok(szalon.html.includes('Krém') && szalon.html.includes('Pihenj sokat'));
+    assert.ok(szalon.html.includes('Szalag') && szalon.html.includes('Pihenj sokat'));
     const elonezetUrl = /href="([^"]*\/api\/ajandek\/elonezet\?[^"]+)"/.exec(szalon.html)[1].replace(/&amp;/g, '&');
     assert.ok(elonezetUrl.startsWith(BAZIS));
 
     // kiallitas a szalon kodjaval
     const t = await kiallitToken(env, r.adat.pi);
     const g = await hiv('GET', 'kiallit', { query: { pi: r.adat.pi, t }, env });
-    assert.ok(g.body.includes('Kártya-design') && g.body.includes('Krém'));
+    assert.ok(g.body.includes('Kártya-design') && g.body.includes('Szalag'));
     assert.ok(g.body.includes('/api/ajandek/elonezet?pi='), 'a kiallito oldalon az elonezet linkje');
     const p = await kiallitPost(r.adat.pi, t, { kod: 'GYOR1865', env });
     assert.equal(p.status, 200, p.body);
 
     const k = await hiv('GET', 'kartya', { query: { pi: r.adat.pi, t: await kartyaToken(env, r.adat.pi) }, env });
     assert.equal(k.status, 200);
-    assert.ok(k.body.includes('ak-t-krem'), 'a valasztott design');
+    assert.ok(k.body.includes('ak-t-szalag'), 'a valasztott design');
     assert.ok(k.body.includes('GYOR1865') && k.body.includes('Kovács Anna') && k.body.includes('Pihenj sokat'));
     assert.ok(k.body.includes('A legszebb ajándék &lt;b&gt;te&lt;/b&gt; vagy!'), 'az idezet escape-elve');
     assert.ok(!k.body.includes('<b>te</b>'));
@@ -1437,7 +1437,7 @@ describe('szemelyre szabott kartya (otthon nyomtatott)', () => {
     // a szalon elonezete (kiallit-tokennel): a kiallitas elott is megnezheto
     const e = await hiv('GET', 'elonezet', { query: { pi: r.adat.pi, t }, env });
     assert.equal(e.status, 200);
-    assert.ok(e.body.includes('Előnézet a szalonnak') && e.body.includes('ak-t-krem'));
+    assert.ok(e.body.includes('Előnézet a szalonnak') && e.body.includes('ak-t-szalag'));
     assert.equal((await hiv('GET', 'elonezet', { query: { pi: r.adat.pi, t: await kartyaToken(env, r.adat.pi) }, env })).status, 403, 'a kartya-token nem jo elonezethez');
   });
 
@@ -2093,13 +2093,30 @@ describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
     assert.match(K.html({ ...minta, tema: 'virag', oldal: 'elol' }), /ak-sarok ak-nincs-keret" style="[^"]*border-radius:/);
   });
 
+  test('egyszeru (krem / homok / feher) dizajnok: foto nelkul, minden kozepen; csak az idezet es a nev kerul ra, a leghosszabb szoveg is belefer', () => {
+    const egyszeru = K.TEMAK.filter((t) => t.minimal);
+    assert.deepEqual(egyszeru.map((t) => t.id), ['krem', 'homok', 'feher']);
+    for (const t of egyszeru) {
+      assert.ok(!t.kep && !t.hatter, t.id + ': nincs fotohely, nincs hatterkep');
+      const elol = K.html({ ...minta, tema: t.id, oldal: 'elol', fotoSrc: 'https://pelda.hu/x.jpg' }), hat = K.html({ ...minta, tema: t.id, oldal: 'hat' });
+      assert.ok(!elol.includes('ak-foto') && !elol.includes('<img') && !elol.includes('x.jpg'), t.id + ': a foto nem kerul ra, ha megadtak is');
+      assert.ok(elol.includes('ak-min') && elol.includes('Ez a személyes idézet') && elol.includes('Nagy Mária') && elol.includes('MOSAIC') && elol.includes('<small>NEKI</small>'), t.id + ' elolap');
+      assert.ok(hat.includes('AK-TEST-0001') && hat.includes('26.900 Ft'), t.id + ' hatlap');
+      // a leghosszabb idezet (160 karakter) belefer a dobozba (modell: 0,5 em szelesseg, 1,3 sormagassag, 12% veszteseg)
+      const px = Number(/class="ak-idezet"[^>]*font-size:([0-9.]+)cqw/.exec(K.html({ ...minta, tema: t.id, idezet: 'a'.repeat(160), oldal: 'elol' }))[1]) * (K.LAP_W / 100);
+      assert.ok(Math.floor(t.idezet.h / (px * 1.3)) * Math.floor(t.idezet.w / (px * 0.5)) >= 160 * 1.12, t.id + ': 160 karakter belefer (' + px.toFixed(1) + ' px)');
+    }
+  });
+
   test('minden dizajn fekvo lapon fer el: a fotohely, az idezet es a nev a lapon belul van, az idezet es a nev nem er a fotohelyre', () => {
     for (const t of K.TEMAK) {
       for (const [nev, r] of [['kep', t.kep], ['idezet', t.idezet], ['nevHely', t.nevHely]]) {
+        if (!r) { assert.ok(t.minimal && nev === 'kep', `${t.id}: csak az egyszeru dizajnon nincs fotohely`); continue; }
         assert.ok(r.x >= 0 && r.y >= 0 && r.x + r.w <= (t.w || K.LAP_W) && r.y + r.h <= (t.h || K.LAP_H), `${t.id}.${nev} a lapon belul`);
       }
       const atfed = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-      assert.ok(!atfed(t.kep, t.idezet) && !atfed(t.kep, t.nevHely), `${t.id}: a szoveg nem fedi a fotot`);
+      if (t.kep) assert.ok(!atfed(t.kep, t.idezet) && !atfed(t.kep, t.nevHely), `${t.id}: a szoveg nem fedi a fotot`);
+      assert.ok(!atfed(t.idezet, t.nevHely), `${t.id}: az idezet es a nev nem fedi egymast`);
     }
   });
 });
