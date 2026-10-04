@@ -70,4 +70,8 @@ if (/Van választott fodrászod/i.test(await reteg.locator('.be-title').first().
 }
 await zar();
 await nyit({ business: 'laser', intent: 'first' }); await kep('8-lezer-teruletek'); await zar();
+// az idopont-valaszto minden uzletagnal a havi naptar
+for (const [nev, o] of [['9-oxigen-naptar', { business: 'oxygen', service: '466110' }], ['10-fodraszat-naptar', { business: 'hair', service: 'konzult' }], ['11-lezer-naptar', { business: 'laser', service: 'konzult' }]]) {
+  await nyit(o); await reteg.locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 }); await kep(nev); await zar();
+}
 await browser.close();

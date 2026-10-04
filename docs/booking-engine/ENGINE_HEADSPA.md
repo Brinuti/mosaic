@@ -17,11 +17,11 @@ Döntések: [DECISIONS.md](DECISIONS.md). Adapter: [SALONIC_ADAPTER_CONTRACT.md]
 
 ## Folyamat (a wireframe szerint)
 
-**HeadSpa (2026-10-04, design 1. kör):** `HS2` (élmény: kép, időtartam, ár; alatta két link: ajándékkártya beváltása → `HS3`, ajándékkártya vásárlása → kilép a Gift Card funnelbe) → `CN` (a PMU-foglaló havi naptára: szabad napok, az első szabad nap előre kijelölve, a nap időpontjai gombokban, egy érintés az időponton = tovább) → `C4` (a Salonic beágyazott adatlapja) → `C5` (ellenőrzés) → `C6` (siker). **Nincs összegző képernyő** és nincs a `HS1` „Hogyan folytatnád?” lépés; a lépésjelző 3 lépés (Szolgáltatás, Időpont, Adatok). A többi üzletágon az időpont-választás a régi `C1` (legközelebbi időpontok, max. 5) → `C2` (naptár-sáv: nap, napszak, szakember) → `C4`. Mellékágak: `A1` nincs időpont (visszahívás-űrlap), `A2` elkelt vagy lejárt időpont, `A3` technikai hiba, `A3U` a foglalás feldolgozva, de nem ellenőrizhető. Az ajándékkártya-vásárlás kilép a `/headspa-ajandekkartya` oldalra.
+**HeadSpa (2026-10-04, design 1. kör):** `HS2` (élmény: kép, időtartam, ár; alatta két link: ajándékkártya beváltása → `HS3`, ajándékkártya vásárlása → kilép a Gift Card funnelbe) → `C1` (**az időpont-választás minden üzletágnál a PMU-foglaló havi naptára**: szabad napok, az első szabad nap előre kijelölve, a nap időpontjai gombokban, egy érintés az időponton = tovább) → `C4` (a Salonic beágyazott adatlapja) → `C5` (ellenőrzés) → `C6` (siker). **Nincs összegző képernyő**, nincs a `HS1` „Hogyan folytatnád?” lépés, és megszűnt a „legközelebbi időpontok” / naptár-sáv / napszak-szűrő (`C2`); a lépésjelző 3 lépés (Szolgáltatás, Időpont, Adatok). Szakember-választó az Oxigénnél van a naptár fölött (ha több szakember szabad); a Fodrászatnál a szakember-kérdés (`HA3` / `HA3B`) előbb jön, és a választott fodrász időpontjai látszanak. Mellékágak: `A1` nincs időpont (visszahívás-űrlap), `A2` elkelt vagy lejárt időpont, `A3` technikai hiba, `A3U` a foglalás feldolgozva, de nem ellenőrizhető. Az ajándékkártya-vásárlás kilép a `/headspa-ajandekkartya` oldalra.
 
 ## Oxigén (`business=oxygen`)
 
-`OX1` → `C1`: három belépési út (hajkamerás vizsgálat 4 990 Ft, első kezelés, már jártam nálatok). A szolgáltatást a besorolás (`bookingType`) választja, nem azonosító-lista, ezért az új Salonic-szolgáltatás magától megjelenik. Ha egy szándékhoz több Salonic-változat tartozik (az első kezelésnél: 80 és 120 perces, azonos áron), a motor rövid választást kínál (`OX2`), nem dönt a vendég helyett. A szakember nem kötelező: a naptárban (`C2`) választható, és a választott szakember végigmegy a Salonic-űrlapon.
+`OX1` → `C1`: három belépési út (hajkamerás vizsgálat 4 990 Ft, első kezelés, már jártam nálatok). A szolgáltatást a besorolás (`bookingType`) választja, nem azonosító-lista, ezért az új Salonic-szolgáltatás magától megjelenik. Ha egy szándékhoz több Salonic-változat tartozik (az első kezelésnél: 80 és 120 perces, azonos áron), a motor rövid választást kínál (`OX2`), nem dönt a vendég helyett. A szakember nem kötelező: az időpont-naptár fölötti választóban (`C1`) választható, és a választott szakember végigmegy a Salonic-űrlapon.
 
 ## Fodrászat (`business=hair`)
 
@@ -42,7 +42,7 @@ Bekapcsolás fiókonként (a tulajdonos teendője, a `salonic/mosaic.css` éles 
 ## Mi van letesztelve
 
 - 44 automatikus teszt (`node --test tools/test-*.mjs`): adapter, besorolás, folyamat-logika (a wireframe routing táblája szó szerint).
-- Böngészőben, élő Salonic-adatokkal, mobil és desktop nézetben: HS2 → CN (havi naptár) → C4 (az űrlap betöltődik, levágott Salonic-fejléccel; a többi üzletágon C1 → C2 → C4), konkrét szolgáltatásos belépés, mind a mintanézet.
+- Böngészőben, élő Salonic-adatokkal, mobil és desktop nézetben: HS2 → C1 (havi naptár, minden üzletágnál) → C4 (az űrlap betöltődik, levágott Salonic-fejléccel), konkrét szolgáltatásos belépés, mind a mintanézet.
 - Foglalás utáni ágak a Salonic átirányításának szimulálásával (`window.mhKeretbenOldal`): siker (C6, `booking_completed` a szintetikus azonosítóval), eltérő ár (A3U, `verify_failed`), elkelt időpont (A2).
 - Visszahívás-űrlap: helyi szerverre, a mezők és a validáció rendben.
 

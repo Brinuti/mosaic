@@ -209,7 +209,7 @@ try {
     if (await mar.count()) { idovonal.push({ t: mp(), esemeny: 'LA1: "Már tudom" (az eles motor meg nem ismeri az intent-belepest)' }); await mar.first().click(); }
     await (await elsoLathato(page.locator(MAIN + ' button', { hasText: sc.terulet }))).click();
     await page.waitForTimeout(1500);
-    if (await page.locator(MAIN + ' button', { hasText: /Tovább az adatokhoz|További időpontok/ }).count() === 0) {
+    if (await page.locator('.be-list button').count() > 0) { // kezeles-valasztas (LA2B), ha a teruleten tobb kezeles van; egy kezelesnel rogton az idopont-naptar jon
       const b = await elsoLathato(page.locator('.be-list button')); idovonal.push({ t: mp(), esemeny: 'kezeles', szoveg: (await b.textContent()).replace(/\s+/g, ' ').trim().slice(0, 120) }); await b.click();
     }
   }

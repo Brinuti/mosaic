@@ -1,7 +1,7 @@
 // A foglalo SAJAT OLDALAS (page) modjanak ellenorzese bongeszoben (Playwright), foglalas nelkul: /foglalas (szolgaltatas-elso) es /foglalo-motor.
 //
 //   node tools/meres-proba/oldal-proba.mjs [--overlay dist] [--bazis https://...] [--mobil 1]
-// Ugyanaz a motor, mint a retegben (mode 'page'): a lepesek az URL-be kerulnek (#HS2, #CN, ...), a vissza gomb lepesenkent visszalep.
+// Ugyanaz a motor, mint a retegben (mode 'page'): a lepesek az URL-be kerulnek (#HS2, #C1, ...), a vissza gomb lepesenkent visszalep.
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -48,12 +48,12 @@ await page.locator('.be-choice', { hasText: 'Head Spa' }).click();
 ok('/foglalas: Head Spa -> elmeny-valasztas (nincs HS1), URL #HS2', (await cim()).includes('Melyik HeadSpa élményt') && page.url().endsWith('#HS2'), page.url());
 await page.locator('.be-choice', { hasText: 'Egyéni HeadSpa' }).click();
 await page.locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
-ok('/foglalas: havi naptar (CN), URL #CN', page.url().endsWith('#CN') && (await page.locator('.be-idogomb').count()) > 0, page.url());
+ok('/foglalas: havi naptar (C1), URL #C1', page.url().endsWith('#C1') && (await page.locator('.be-idogomb').count()) > 0, page.url());
 await page.locator('.be-idogomb').first().click();
 await page.locator('iframe.be-iframe').waitFor({ timeout: 25000 });
 ok('/foglalas: idopont utan rogton az adatlap (#C4), nincs osszegzo', page.url().endsWith('#C4') && (await cim()).includes('Add meg az adataidat'), page.url());
 await page.goBack(); await page.waitForTimeout(800);
-ok('/foglalas: vissza gomb -> havi naptar, a kivalasztott nappal', page.url().endsWith('#CN') && (await page.locator('.be-nnap[aria-pressed="true"]').count()) === 1, page.url());
+ok('/foglalas: vissza gomb -> havi naptar, a kivalasztott nappal', page.url().endsWith('#C1') && (await page.locator('.be-nnap[aria-pressed="true"]').count()) === 1, page.url());
 await page.goBack(); await page.waitForTimeout(500);
 ok('/foglalas: vissza gomb -> elmeny-valasztas', (await cim()).includes('Melyik HeadSpa élményt'));
 

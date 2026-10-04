@@ -14,7 +14,6 @@ export const HEADSPA = Object.freeze({
   frame: Object.freeze({ crop: 100, visible: 1545 }), // az alap (egyeni CSS nelkuli) Salonic-kinezethez; a MOSAIC kozos CSS-sel a motor a tomor meretet hasznalja
   // Legkevesebb lepes: a belepes egyenesen az elmeny-valasztas (HS2); az ajandekkartya-beváltás / -vasarlas a HS2 aljan egy-egy link (a HS1 mar nem lepes).
   firstState: 'HS2',
-  naptar: true, // az idopont-valasztas a PMU-foglalo havi naptara (CN), nem a gyors idopontok (C1 / C2)
   voucherState: 'HS3',
   giftCardUrl: '/headspa-ajandekkartya', // az ajandekkartya-vasarlas kilep a foglalasbol (Gift Card funnel)
   showStaffFilter: false, // 11. dontes: a HeadSpa "munkatarsai" kezelo-helyek, a vendeg nem valaszt

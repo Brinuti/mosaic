@@ -13,7 +13,8 @@ export const HAIR = Object.freeze({
   exactState: 'HA3', // konkret szolgaltatas landing: a kezelest nem kerdezzuk ujra, a szakember-kerdes jon
   voucherState: null,
   giftCardUrl: null,
-  showStaffFilter: true, // a szakember nem kotelezo (HA3 alapbol "nincs"), a naptarban is valaszthato
+  showStaffFilter: true, // a szakember nem kotelezo (HA3 alapbol "nincs"); a vegen a Salonic-kartonon es a sikerkepernyon is latszik
+  staffUpfront: true, // a szakember-kerdes (HA3 / HA3B) az idopont elott jon: az idopont-naptarban nincs kulon szakember-valaszto
   // az alap (egyeni CSS nelkuli) Salonic-kinezethez: az "elkuldes" gomb alja 1532 px, a Salonic suti-savja ~197 px, a lablec 1679 px-nel kezdodik
   // (ugyanaz, mint az Oxigennel); a kozos CSS-sel a motor a tomor meretet hasznalja
   frame: Object.freeze({ crop: 100, visible: 1653 }),

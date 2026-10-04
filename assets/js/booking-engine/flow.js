@@ -1,7 +1,7 @@
 // MOSAIC Booking Engine V1 - a folyamat tiszta (DOM-mentes, halozat-mentes) logikaja
 //
 // Allapotok a wireframe-ok szerint (docs: MOSAIC_HeadSpa_Booking_Engine_V1_Wireframe.md):
-//   HS2 elmeny, HS3 ajandekkartya-tipus, C1 gyors idopontok, C2 naptar-sav, CN havi naptar (HeadSpa: a PMU-foglalo naptara; nincs osszegzo kepernyo),
+//   HS2 elmeny, HS3 ajandekkartya-tipus, C1 idopont (a PMU-foglalo havi naptara; nincs osszegzo kepernyo),
 //   C4 vendegadatok (a Salonic beagyazott adatlapja), C5 rogzites, C6 siker, A1 nincs idopont, A2 elkelt, A3 technikai hiba.
 // Az utvonalak (ROUTES) pontosan a wireframe routing tablaja; a teszt ezt veti ossze vele.
 
@@ -29,10 +29,8 @@ export const ROUTES = Object.freeze({
   LA2: { area: 'LA2B', service: 'C1' },
   LA3: { area: 'LA2B', service: 'C1' },
   LA2B: { service: 'C1' },
-  // Nincs osszegzo kepernyo (design, 2026-10-04): az idopont kivalasztasa utan rogton a Salonic adatlapja (C4). CN: a PMU-foglalo havi naptara (HeadSpa).
-  C1: { slot: 'C4', more: 'C2', none: 'A1' },
-  C2: { slot: 'C4', none: 'A1' },
-  CN: { slot: 'C4', none: 'A1' },
+  // Nincs osszegzo kepernyo (design, 2026-10-04): az idopont kivalasztasa utan rogton a Salonic adatlapja (C4).
+  C1: { slot: 'C4', none: 'A1' },
   C4: { submit: 'C5' },
   C5: { success: 'C6', slot_lost: 'A2', error: 'A3' },
   A1: { callback: 'A1_SENT' },
@@ -123,11 +121,6 @@ const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export const dayKey = (unix) => fmt(unix, { year: 'numeric', month: '2-digit', day: '2-digit' }, 'sv-SE'); // 2026-10-03
 export const timeLabel = (unix) => fmt(unix, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); // 10:00
-export const hourOf = (unix) => +fmt(unix, { hour: 'numeric', hourCycle: 'h23' });
-
-/** Napszak a wireframe szuroje szerint: Delelott (12 ora elott), Delutan (12-18), Este (18-tol). */
-export const daypartOf = (unix) => { const h = hourOf(unix); return h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'; };
-export const DAYPARTS = Object.freeze([['any', 'Bármelyik'], ['morning', 'Délelőtt'], ['afternoon', 'Délután'], ['evening', 'Este']]);
 
 /** "Ma" / "Holnap" / "Hetfo". */
 export function dayLabel(unix, nowUnix) {
@@ -138,8 +131,6 @@ export function dayLabel(unix, nowUnix) {
 }
 /** "Szombat, okt. 3." (osszegzes, siker) */
 export const longDate = (unix) => `${cap(fmt(unix, { weekday: 'long' }))}, ${fmt(unix, { month: 'short', day: 'numeric' })}`;
-/** "Szo 3." (a naptar-sav gombjai) */
-export const stripLabel = (unix) => `${cap(fmt(unix, { weekday: 'short' }).replace(/\.$/, ''))} ${fmt(unix, { day: 'numeric' }).replace(/\.$/, '')}.`;
 
 // --- idopontok --------------------------------------------------------------------------------------------------------------
 /** Ugyanarra az idopontra tobb munkatars is lehet szabad: "barki megfelelo" nezetben egy idopont = egy bejegyzes. */
@@ -154,30 +145,8 @@ export function uniqueTimes(slots) {
   return out;
 }
 
-export function filterSlots(slots, { daypart = 'any', staffId = null, day = null } = {}) {
-  return slots.filter((s) => (daypart === 'any' || daypartOf(s.start_unix) === daypart)
-    && (!staffId || String(s.staff_id) === String(staffId))
-    && (!day || dayKey(s.start_unix) === day));
-}
-
-/** C1: a legkozelebbi legfeljebb `max` (3-5) idopont, napok szerint csoportositva. */
-export function quickSlots(slots, { max = 5, nowUnix }) {
-  const picked = uniqueTimes(slots).slice(0, max);
-  const groups = [];
-  for (const s of picked) {
-    const key = dayKey(s.start_unix);
-    let g = groups[groups.length - 1];
-    if (!g || g.key !== key) { g = { key, label: dayLabel(s.start_unix, nowUnix), items: [] }; groups.push(g); }
-    g.items.push({ startUnix: s.start_unix, time: timeLabel(s.start_unix), slot: s });
-  }
-  return groups;
-}
-
-/** C2: a napok, amelyekre van szabad idopont (a sav gombjai), az elso `max` nap. */
-export function availableDays(slots, { max = 14 } = {}) {
-  const seen = new Map();
-  for (const s of slots) if (!seen.has(dayKey(s.start_unix))) seen.set(dayKey(s.start_unix), s.start_unix);
-  return [...seen].slice(0, max).map(([key, unix]) => ({ key, unix, label: stripLabel(unix) }));
+export function filterSlots(slots, { staffId = null, day = null } = {}) {
+  return slots.filter((s) => (!staffId || String(s.staff_id) === String(staffId)) && (!day || dayKey(s.start_unix) === day));
 }
 
 // --- havi naptar (a PMU-foglalo naptara): csak a szabad napok aktivak, a valasztott nap idopontjai gombokban ----------------------------

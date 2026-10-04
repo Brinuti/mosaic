@@ -6,9 +6,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  EXIT_GIFTCARD, ROUTES, withAttribution, availableDays, cardsFor, classifyRedirect, dayKey, dayLabel, daypartOf, displayName, durationLabel, entryState,
+  EXIT_GIFTCARD, ROUTES, withAttribution, cardsFor, classifyRedirect, dayKey, dayLabel, displayName, durationLabel, entryState,
   filterSlots, findByKey, formatPrice, groupFacts, groupServices, icsFor, intentCandidates, intentServices, longDate, monthGrid, monthList, dayTimes, next, parseContext, parseLength,
-  priceFor, priceLabel, quickSlots, shouldHandoff, staffDiscountPercent, stripLabel, timeLabel, uniqueTimes,
+  priceFor, priceLabel, shouldHandoff, staffDiscountPercent, timeLabel, uniqueTimes,
 } from '../assets/js/booking-engine/flow.js';
 import { CHOOSER } from '../assets/js/booking-engine/families.js';
 import { HEADSPA } from '../assets/js/booking-engine/flows/headspa.js';
@@ -32,12 +32,13 @@ test('a wireframe routing tablaja (HeadSpa) pontosan egyezik az utvonalakkal', (
   const rows = [
     // HeadSpa: az elmeny-valasztas (HS2) az elso allapot; alatta az ajandekkartya-bevaltas (HS3) es -vasarlas linkje
     ['HS2', 'service', 'C1'], ['HS2', 'voucher', 'HS3'], ['HS2', 'giftcard', EXIT_GIFTCARD], ['HS3', 'service', 'C1'],
-    // nincs osszegzo kepernyo: az idopont utan rogton az adatlap (C4); CN = a PMU-foglalo havi naptara
-    ['C1', 'slot', 'C4'], ['C1', 'more', 'C2'], ['C1', 'none', 'A1'], ['C2', 'slot', 'C4'], ['C2', 'none', 'A1'], ['CN', 'slot', 'C4'], ['CN', 'none', 'A1'],
+    // nincs osszegzo kepernyo: az idopont (C1, a PMU-foglalo havi naptara) utan rogton az adatlap (C4)
+    ['C1', 'slot', 'C4'], ['C1', 'none', 'A1'],
     ['C4', 'submit', 'C5'], ['C5', 'success', 'C6'], ['C5', 'slot_lost', 'A2'], ['C5', 'error', 'A3'],
   ];
   for (const [from, ev, to] of rows) assert.equal(next(from, ev), to, `${from} --${ev}--> ${to}`);
   assert.throws(() => next('C3', 'next'), /Ervenytelen/, 'az osszegzo kepernyo (C3) megszunt');
+  assert.throws(() => next('C1', 'more'), /Ervenytelen/, 'a gyors idopontok / naptar-sav (C2) megszunt: minden uzletagnal a havi naptar az idopont-valaszto');
   assert.throws(() => next('HS1', 'book'), /Ervenytelen/, 'a HS1 megszunt: a HeadSpa az elmeny-valasztassal indul');
   assert.throws(() => next('NINCS', 'x'));
   assert.ok(Object.isFrozen(ROUTES));
@@ -224,20 +225,15 @@ test('Oxigen szandekek a Salonic aktualis szolgaltatasaibol: hajkamera, elso (ke
   assert.ok(OXYGEN.showStaffFilter, 'az Oxigennel a szakember valaszthato');
 });
 
-test('ido: budapesti cimkek, napszakok es napnevek', () => {
+test('ido: budapesti cimkek es napnevek', () => {
   assert.equal(timeLabel(T(3, 10)), '10:00');
   assert.equal(timeLabel(T(3, 13, 30)), '13:30');
   assert.equal(dayKey(T(3, 23, 30)), '2026-10-03');
   assert.equal(dayKey(T(4, 0, 30)), '2026-10-04');
-  assert.equal(daypartOf(T(3, 11, 59)), 'morning');
-  assert.equal(daypartOf(T(3, 12)), 'afternoon');
-  assert.equal(daypartOf(T(3, 17, 59)), 'afternoon');
-  assert.equal(daypartOf(T(3, 18)), 'evening');
   assert.equal(dayLabel(T(3, 15), T(3, 9)), 'Ma');
   assert.equal(dayLabel(T(4, 15), T(3, 9)), 'Holnap');
   assert.equal(dayLabel(T(5, 15), T(3, 9)), 'Hétfő');
   assert.equal(longDate(T(3, 10)), 'Szombat, okt. 3.');
-  assert.equal(stripLabel(T(3, 10)), 'Szo 3.');
 });
 
 test('uniqueTimes: ugyanarra az idopontra egy bejegyzes, rendezve', () => {
@@ -246,26 +242,12 @@ test('uniqueTimes: ugyanarra az idopontra egy bejegyzes, rendezve', () => {
   assert.equal(u[0].staff_id, 'a');
 });
 
-test('quickSlots: legfeljebb 5 legkozelebbi idopont, napok szerint csoportositva', () => {
-  const slots = [T(3, 10), T(3, 11, 30), T(4, 14, 30), T(4, 16, 30), T(5, 9, 30), T(6, 9), T(7, 9)].map((t) => slot(t));
-  const g = quickSlots(slots, { max: 5, nowUnix: T(3, 9) });
-  assert.deepEqual(g.map((x) => [x.label, x.items.map((i) => i.time)]), [['Ma', ['10:00', '11:30']], ['Holnap', ['14:30', '16:30']], ['Hétfő', ['09:30']]]);
-  assert.equal(g.reduce((n, x) => n + x.items.length, 0), 5);
-  assert.deepEqual(quickSlots([], { nowUnix: T(3, 9) }), []);
-});
-
-test('filterSlots: napszak, munkatars, nap', () => {
+test('filterSlots: munkatars, nap', () => {
   const s = [slot(T(3, 10), 'a'), slot(T(3, 14), 'b'), slot(T(3, 19), 'a'), slot(T(4, 10), 'a')];
-  assert.equal(filterSlots(s, { daypart: 'morning' }).length, 2);
-  assert.equal(filterSlots(s, { daypart: 'evening' }).length, 1);
   assert.equal(filterSlots(s, { staffId: 'a' }).length, 3);
-  assert.equal(filterSlots(s, { day: '2026-10-03', daypart: 'afternoon' }).length, 1);
+  assert.equal(filterSlots(s, { day: '2026-10-03' }).length, 3);
+  assert.equal(filterSlots(s, { day: '2026-10-03', staffId: 'b' }).length, 1);
   assert.equal(filterSlots(s).length, 4);
-});
-
-test('availableDays: a napok, amelyekre van szabad idopont', () => {
-  const d = availableDays([slot(T(3, 10)), slot(T(3, 14)), slot(T(5, 9))]);
-  assert.deepEqual(d.map((x) => [x.key, x.label]), [['2026-10-03', 'Szo 3.'], ['2026-10-05', 'H 5.']]);
 });
 
 test('megjelenites: nev, ar, idotartam', () => {
@@ -418,8 +400,9 @@ test('az oxigen hajkamera-szoveg egy rovid mondat; a HeadSpa ajandekkartya-linkj
   assert.ok(kamera.sub.length <= 52 && !kamera.sub.includes('\n'));
   assert.ok(HEADSPA.copy.voucherLink && HEADSPA.copy.giftCardLink && HEADSPA.giftCardUrl);
   assert.equal(HEADSPA.firstState, 'HS2');
-  assert.equal(HEADSPA.naptar, true);
-  for (const f of [OXYGEN, HAIR, LASER]) assert.ok(!f.naptar, `${f.business}: a naptar-nezet csak a HeadSpae`);
+  // az idopont-valaszto mindenhol a havi naptar; a szakember-valaszto csak az Oxigennel van a naptar folott (a fodraszoknal a szakember-kerdes elobb jon)
+  assert.equal(HAIR.staffUpfront, true);
+  for (const f of [HEADSPA, OXYGEN, LASER]) assert.ok(!f.staffUpfront, f.business);
 });
 
 test('havi naptar: honapok a mai honaptol a keresesi hatarig, a racs hetfovel kezdodik, csak a szabad napok aktivak', () => {

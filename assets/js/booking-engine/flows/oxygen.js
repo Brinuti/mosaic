@@ -15,7 +15,7 @@ export const OXYGEN = Object.freeze({
   firstState: 'OX1',
   voucherState: null, // nincs ajandekkartya-ag
   giftCardUrl: null,
-  showStaffFilter: true, // a szakember nem kotelezo: alapbol "barmely megfelelo", a naptarban valaszthato
+  showStaffFilter: true, // a szakember nem kotelezo: alapbol "barmely megfelelo", az idopont-naptar fole kerul egy szakember-valaszto
   intents: Object.freeze([
     { key: 'camera', title: 'Hajkamerás vizsgálat', sub: 'Bizonytalan vagy? Nézzük meg, mit adhat az oxigén.', kep: 'ox-camera', test: (s) => s.bookingType === 'consultation' },
     { key: 'first', title: 'Első oxigénterápiás kezelés', kep: 'ox-first', test: (s) => s.bookingType === 'first_treatment' },

@@ -28,12 +28,12 @@ const BELEPOK = [
   ['Fodraszat altalanos', { business: 'hair' }, 'Mit szeretnél?'],
   ['Fodraszat balayage-kategoria', { business: 'hair', service_category: 'balayage' }, 'Melyik kezelés?'],
   ['Fodraszat hajfestes-kategoria', { business: 'hair', service_category: 'color' }, 'Melyik kezelés?'],
-  ['Fodraszat konzultacio', { business: 'hair', service: 'konzult' }, 'Legközelebbi szabad időpontok'],
+  ['Fodraszat konzultacio', { business: 'hair', service: 'konzult' }, 'Válassz időpontot'],
   ['Oxigen altalanos', { business: 'oxygen' }, 'Mit szeretnél foglalni?'],
-  ['Oxigen 1. alkalom', { business: 'oxygen', service: '466110' }, 'Legközelebbi szabad időpontok'],
-  ['Oxigen 2. alkalomtol', { business: 'oxygen', service: '466158' }, 'Legközelebbi szabad időpontok'],
+  ['Oxigen 1. alkalom', { business: 'oxygen', service: '466110' }, 'Válassz időpontot'],
+  ['Oxigen 2. alkalomtol', { business: 'oxygen', service: '466158' }, 'Válassz időpontot'],
   ['Lezer altalanos', { business: 'laser' }, null],
-  ['Lezer konzultacio', { business: 'laser', service: 'konzult' }, 'Legközelebbi szabad időpontok'],
+  ['Lezer konzultacio', { business: 'laser', service: 'konzult' }, 'Válassz időpontot'],
   ['Lezer elso idopontok', { business: 'laser', intent: 'first' }, 'Melyik területet szeretnéd?'],
   ['Lezer kezeles idopontok', { business: 'laser', intent: 'returning' }, 'Következő kezelés'],
   ['PMU', { business: 'pmu' }, 'PMU-keret'],
@@ -215,6 +215,11 @@ const zar = async (page) => { await reteg(page).locator('#be-close').click().cat
     await reteg(page).locator('.be-choice').nth(1).click(); await page.waitForTimeout(1500); await varCim(page);
     k = await kepekBetoltve(page, 1);
     ok('design | Fodraszat: a fodraszok mellett fotok (vagy monogram)', k.db >= 1 && k.jo === k.db, `${(await cim(page).textContent()).trim()} ${JSON.stringify(k)}`);
+    // a valasztott fodrasz idopontjai a naptarban (a szakember-kerdes elobb volt, a naptar folott nincs kulon valaszto)
+    await reteg(page).locator('.be-choice').first().click();
+    await reteg(page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
+    const savSzoveg = await reteg(page).locator('.be-svc').first().textContent();
+    ok('design | Fodraszat: a valasztott fodrasz idopontjai a naptarban, a fodrasz neve a savban', (await reteg(page).locator('select.be-select').count()) === 0 && (await reteg(page).locator('.be-idogomb').count()) > 0 && /Betti|Noel|Evelin/i.test(savSzoveg), savSzoveg.replace(/\s+/g, ' ').trim().slice(0, 100));
   } else ok('design | Fodraszat: fodrasz-valaszto (ennel a kezelesnel nincs)', true, hcim);
   await zar(page);
 
@@ -222,12 +227,32 @@ const zar = async (page) => { await reteg(page).locator('#be-close').click().cat
   k = await kepekBetoltve(page, 4);
   ok('design | Lezer: a teruletek mellett kep', k.db >= 4 && k.jo === k.db, JSON.stringify(k));
   await zar(page);
+
+  // minden uzletag idopont-valasztoja a havi naptar (PMU); szakember-valaszto csak az Oxigennel van a naptar folott
+  for (const [cimke, opts, staffSelect] of [['Oxigen 1. alkalom', { business: 'oxygen', service: '466110' }, true], ['Fodraszat konzultacio', { business: 'hair', service: 'konzult' }, false], ['Lezer konzultacio', { business: 'laser', service: 'konzult' }, false]]) {
+    await nyit(page, opts);
+    await reteg(page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
+    ok(`design | ${cimke}: az idopont-valaszto a havi naptar (nincs gyors idopontok / napszak-sav)`, (await reteg(page).locator('.be-hetnap').count()) === 7 && (await reteg(page).locator('.be-idogomb').count()) > 0 && !(await reteg(page).locator('.be-day, .be-strip, .be-chip').count()));
+    const sel = reteg(page).locator('select.be-select'); const selDb = await sel.count();
+    ok(`design | ${cimke}: szakember-valaszto a naptar folott: ${staffSelect ? 'van, ha tobb szakember szabad' : 'nincs'}`, staffSelect ? selDb <= 1 : selDb === 0, `select: ${selDb}`);
+    if (staffSelect && selDb === 1) {
+      const opciok = await sel.locator('option').count();
+      await sel.selectOption({ index: Math.min(1, opciok - 1) }); await page.waitForTimeout(300);
+      ok(`design | ${cimke}: szakember kivalasztasa utan a naptar helyben frissul`, (await reteg(page).locator('.be-nnap.szabad').count()) > 0 || (await reteg(page).locator('.be-alert').count()) === 1, `opciok: ${opciok}`);
+    }
+    if (await reteg(page).locator('.be-idogomb').count()) {
+      await reteg(page).locator('.be-idogomb').first().click();
+      await reteg(page).locator('iframe.be-iframe').waitFor({ timeout: 25000 });
+      ok(`design | ${cimke}: idopont utan rogton az adatlap`, (await cim(page).textContent()).includes('Add meg az adataidat'));
+    }
+    await zar(page);
+  }
 }
 
 // ujratoltes ?booking=1-gyel: a reteg ujra megnyilik; bezaras utan tiszta cim
 await page.goto(BAZIS + OLDAL + '?utm_source=teszt&utm_medium=cpc&gclid=TESZT123&booking=1&business=oxygen&service=466110', { waitUntil: 'domcontentloaded' });
 const c2 = await varCim(page);
-ok('ujratoltes (?booking=1): a reteg megnyilik a jo allapotban', !!c2 && c2.includes('Legközelebbi szabad időpontok'), `cim="${c2}"`);
+ok('ujratoltes (?booking=1): a reteg megnyilik a jo allapotban', !!c2 && c2.includes('Válassz időpontot'), `cim="${c2}"`);
 await reteg(page).locator('#be-close').click();
 await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {});
 const veg = url(page);
@@ -259,7 +284,7 @@ for (const lap of LANDINGEK) {
   const n0 = merEsem.length;
   await page.evaluate(() => document.querySelector('a[href*="foglalo-motor"]').click());
   await varCim(page); await page.waitForTimeout(2500);
-  await reteg(page).locator('.be-time').first().click(); await page.waitForTimeout(2500);
+  await reteg(page).locator('.be-idogomb').first().click(); await page.waitForTimeout(2500);
   await reteg(page).locator('iframe.be-iframe').waitFor({ timeout: 15000 }); await page.waitForTimeout(8000); // az idopont utan rogton az adatlap (nincs osszegzo kepernyo)
   await reteg(page).locator('#be-back').click(); await page.waitForTimeout(2500);
   await reteg(page).locator('#be-close').click();
