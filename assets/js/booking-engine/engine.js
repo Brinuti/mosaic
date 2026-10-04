@@ -395,7 +395,9 @@ export function startEngine({ root, doc = document, win = window, adapter = crea
       frame.addEventListener('load', () => { win.clearTimeout(slow); loading.hidden = true; frame.style.visibility = ''; win.setTimeout(() => { help.hidden = false; }, 2500); });
       // A Salonic 5 percig tartja fenn az idopontot, utana a sajat fooldalara dob: ezt mi is figyeljuk (4:50).
       S.holdTimer = win.setTimeout(() => { if (S.state === 'C4') { S.a2Reason = 'expired'; go('A2', { replace: true }); } }, HOLD_MS);
-      return h('section', {}, title('Add meg az adataidat'),
+      // Nem eles tartomanyon (elonezet / helyi) a Salonic az ELES koszonooldalra iranyit, ami a keretben nem ertesitheti a motort (idegen eredet), ezert itt a
+      // vegen a Salonic / koszonooldal keretbeli tartalma latszik, nem a motor sikerkepernyoje; a foglalas ettol fuggetlenul VALODI.
+      return h('section', {}, !HANDOFF && !S.adapterSample ? h('span', { class: 'be-proba', text: 'Előnézet · valódi foglalás' }) : null, title('Add meg az adataidat'),
         h('div', { class: 'be-mini' }, h('b', { text: `${F.longDate(S.slot.start_unix)} · ${F.timeLabel(S.slot.start_unix)}` }), h('span', { text: nameOf(S.service) }),
           link('Módosítás', () => win.history.go(-2))),
         h('div', { class: 'be-frame', 'data-styled': String(styled), style: `--visible:${geo.visible}px;--crop:${geo.crop}px` }, loading, frame), fallback, help);

@@ -76,11 +76,15 @@ export function openBooking(opts = {}, env = {}) {
   }
 
   // --- oldal: gorgetes-zar, inert hatter ---------------------------------------------------------------------------------------------
-  const html = doc.documentElement;
-  const prev = { overflow: html.style.overflow, paddingRight: html.style.paddingRight };
+  // A gorgetes-zar: a body "fixed", a jelenlegi pozicioval (top:-scrollY), igy a hatter vizualisan ugyanott marad (a Wix-klon oldalain a sima
+  // overflow:hidden a tetejere ugratna), bezaraskor visszagorgetunk. A gorgetosav helyet a html padding-right tartja.
+  const html = doc.documentElement, bodyEl = doc.body;
+  const scrollY = win.scrollY || html.scrollTop || 0;
+  const prev = { overflow: html.style.overflow, paddingRight: html.style.paddingRight, position: bodyEl.style.position, top: bodyEl.style.top, width: bodyEl.style.width };
   const scrollbar = win.innerWidth - html.clientWidth;
   html.style.overflow = 'hidden';
   if (scrollbar > 0) html.style.paddingRight = scrollbar + 'px';
+  bodyEl.style.position = 'fixed'; bodyEl.style.top = '-' + scrollY + 'px'; bodyEl.style.width = '100%';
   const inerted = [...doc.body.children].filter((el) => el !== host && !el.inert);
   for (const el of inerted) el.inert = true;
   doc.body.append(host);
@@ -104,6 +108,8 @@ export function openBooking(opts = {}, env = {}) {
     try { engine.destroy(); } catch (e) { /* a reteg akkor is bezarul */ }
     host.remove();
     html.style.overflow = prev.overflow; html.style.paddingRight = prev.paddingRight;
+    bodyEl.style.position = prev.position; bodyEl.style.top = prev.top; bodyEl.style.width = prev.width;
+    win.scrollTo(0, scrollY);
     for (const el of inerted) el.inert = false;
     current = null;
     if (opener && typeof opener.focus === 'function' && doc.contains(opener)) opener.focus({ preventScroll: true });
