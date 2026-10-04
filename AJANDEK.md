@@ -282,8 +282,7 @@ Két eset van (a szalon eddigi gyakorlata szerint):
 **Szamlabridge:** csak a Stripe-fizetésekből készít számlát. Utalásnál a számlát a Salonic utalvány-értékesítése készíti, ezért a
 nyilvántartási PI soha nem „succeeded” (a `payment_intent.succeeded` webhook nem fut rá, a szamlabridge nem számláz).
 
-Soha nem írunk „perceken belül”, „azonnal”, „ma” ígéretet, amíg ez nem garantált (`AJANDEK_AZONNALI=1` kapcsolja át, jelenleg ki van
-kapcsolva: ekkor a webhook rögtön kiállítja a kártyát, és a feliratok „perceken belül”-re váltanak).
+**A kártya kiküldése (a tulajdonos döntése, 2026-10-04): bankkártyás rendelésnél a kártya a fizetés után AZONNAL kimegy** (`AJANDEK_AZONNALI = "1"` a `wrangler.toml`-ban, élesben és az előnézeten is: a webhook rögtön kiállítja a kártyát, a vevő levele már a kártya linkjét és a kódot tartalmazza, a feliratok „perceken belül”-re váltanak). A kódot a rendszer adja (`AK-XXXX-XXXX`), a szalon **pontosan ezt a kódot** viszi fel kézzel a Salonic 100%-os kuponjára (a szalon levele ezt mondja, kiállító gomb nincs). Kockázat: amíg a szalon nem hozta létre a kupont, a vevő kódja a foglalásnál még nem működik, ezért a szalon levelét mielőbb el kell intézni. **Átutalásnál a kézi gomb marad** (az utalás megérkezését a szalon jelzi). Ha a kiállítást vissza kell váltani kézire: a `AJANDEK_AZONNALI` sort kell kivenni.
 
 **A kártya** (`/api/ajandek/kartya?pi=&t=`) a MOSAIC saját **Canva-terve** (A4 álló, sötétzöld-arany): a háttér
 `assets/img/ajandek/kartya-hatter.jpg` (a Canva-terv szövegmentes másolatából exportálva), erre írja a rendszer a megajándékozott
@@ -389,7 +388,7 @@ ne indítsunk hirdetést rá.)
 - [ ] **Stripe webhook-végpont** létrehozása (előbb teszt-módban a deploy preview címére, élesben csak külön jóváhagyással): `https://<host>/api/ajandek/webhook`, események: `payment_intent.succeeded`, `charge.refunded`, `charge.dispute.created` → a `whsec_…` a `STRIPE_WEBHOOK_SECRET`-be. A meglévő szamlabridge- és Zapier-webhookokhoz nem szabad nyúlni. *Teszt-módú végpont kész (`we_1UMVmpFv8vc2ArnLqiBzqIri`, a Cloudflare-előnézetre); az éles végpont az élesítés napján, külön jóváhagyással.*
 - [ ] **Apple Pay**: a `mosaicheadspa.hu` domain regisztrálása a Stripe-ban (Payment method domains) és a `/.well-known/apple-developer-merchantid-domain-association` fájl kiszolgálása (Google Pay és kártya enélkül is megy).
 - [ ] **Számla**: egy valódi (vagy teszt) fizetés után ellenőrizni, hogy a `szamlabridge` ebből is számlát készít (név, cím, ÁFA – a fizetőlinkek `automatic_tax`-szal mentek, ez nem).
-- [ ] **Teljesítési SLA**: eldönteni, hogy a kártya kiállítása automatikus-e (`AJANDEK_AZONNALI=1`) vagy a szalon kézi lépése; csak ennek megfelelő ígéret szerepelhet az oldalon.
+- [x] **Teljesítési SLA**: eldöntve (2026-10-04): bankkártyás rendelésnél automatikus, azonnali kiállítás (`AJANDEK_AZONNALI = "1"`); a szalon a levélben kapott kóddal hozza létre a Salonic-kupont; átutalásnál kézi gomb. Élesítéskor a `wrangler.toml` `[vars]` részében már benne van.
 - [ ] **Mérés (GTM, Google Ads, Meta, TikTok)**: NEM ennek a fejlesztésnek a része; külön munkaterületen, másodlagos konverzióként, a 2026-10-12-i kapuig párhuzamos teszttel állítja be egy külön ablak (a `purchase` esemény szerződése fent). Az `/ajandek` címet addig **ne** linkeljük és ne hirdessük.
 - [ ] **ÁSZF/impresszum**: a checkout-szöveg („fizetési kötelezettséggel jár”) jogi átnézése.
 - [ ] **Egy merge/nap** a Netlify-kredit miatt; a PR-előnézeten (deploy-preview) tesztelj.

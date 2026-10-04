@@ -785,6 +785,8 @@ describe('/webhook', () => {
     assert.ok(vevo.html.includes(kod));
     const szalon = levelek.find((l) => l.cimzett === 'szalon');
     assert.match(szalon.html, /már megkapta/);
+    assert.match(szalon.html, /pontosan ezt a kódot/);   // a vevo ezt a kodot kapta: a Salonicban is ez kell
+    assert.doesNotMatch(szalon.html, /Kiállítom a kártyát/);   // azonnali modban nincs kiallito gomb
     for (const l of levelek) assert.doesNotMatch(l.html, /perceken belül|azonnal/i);
     const r = await hiv('GET', 'rendeles', { query: { pi: a.pi, cs: a.client_secret }, env });
     assert.equal(r.adat.kartya.allapot, 'kesz');
