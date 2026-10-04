@@ -289,7 +289,7 @@
   <section class="ah-szekcio ah-info" id="ah-info" aria-labelledby="ah-hogyan-cim">
     <div class="ah-tartalom ah-info-racs ah-info-egy">
       <div class="ah-gyik">
-        <h2>Gyakori kérdések</h2>
+        <h2>Kérdésed van? Megválaszoltuk.</h2>
         <details><summary>Meddig érvényes az ajándékkártya?</summary><p>A vásárlás napjától számított 6 hónapig. A pontos lejárati dátum a kártyán is szerepel.</p></details>
         <details><summary>Hogyan kapom meg az ajándékkártyát?</summary><p>A fizetés után e-mailben visszaigazolást kapsz. Az ajándékkártya elkészültekor itt az oldalon és e-mailben is megjelenik, nyomtatható formában (kinyomtathatod, vagy PDF-ként mentheted).</p></details>
         <details><summary>Személyre szabhatom a kártyát?</summary><p>Igen, az otthon kinyomtatott kártyát: a fizetés előtt választhatsz designt, feltölthetsz egy fotót, és írhatsz rá idézetet vagy üzenetet. A szalonban átvett papír kártya a MOSAIC saját designjával készül.</p></details>
@@ -330,7 +330,7 @@
 
 <!-- galeria-nagyito: a kattintott kep nagyban, elozo / kovetkezo, nyilbillentyuk, huzas -->
 <dialog class="ah-lightbox" id="ah-lightbox" aria-label="Képnézegető">
-  <button type="button" class="ah-lb-bezar" id="ah-lb-bezar" aria-label="Bezárás">×</button>
+  <button type="button" class="ah-lb-bezar" id="ah-lb-bezar" aria-label="Bezárás"><svg class="ah-x-ikon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <button type="button" class="ah-lb-nyil ah-lb-elozo" id="ah-lb-elozo" aria-label="Előző kép"><span aria-hidden="true">‹</span></button>
   <figure class="ah-lb-kep"><img id="ah-lb-kep" alt=""><figcaption id="ah-lb-felirat"></figcaption></figure>
   <button type="button" class="ah-lb-nyil ah-lb-kovetkezo" id="ah-lb-kovetkezo" aria-label="Következő kép"><span aria-hidden="true">›</span></button>
@@ -340,17 +340,32 @@
 <dialog class="ah-kez-ablak" id="ah-kez-ablak" aria-labelledby="ah-kez-ablak-cim">
   <div class="ah-kez-ablak-fej">
     <h3 id="ah-kez-ablak-cim"></h3>
-    <button type="button" class="ah-kez-ablak-bezar" id="ah-kez-bezar" aria-label="Bezárás"><span aria-hidden="true">×</span></button>
+    <button type="button" class="ah-kez-ablak-bezar" id="ah-kez-bezar" aria-label="Bezárás"><svg class="ah-x-ikon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
-  <img class="ah-kez-kep" id="ah-kez-kep" alt="" width="1100" height="660" hidden>
-  <p class="ah-kez-bevezeto" id="ah-kez-bevezeto" hidden></p>
-  <ul class="ah-kez-elemek" id="ah-kez-elemek"></ul>
-  <p class="ah-kez-utana" id="ah-kez-utana"></p>
-  <p class="ah-kez-ido" id="ah-kez-ido"></p>
+  <div class="ah-kez-torzs">
+    <div class="ah-kez-kepkeret"><img class="ah-kez-kep" id="ah-kez-kep" alt="" hidden></div>
+    <div class="ah-kez-szoveg">
+      <p class="ah-kez-bevezeto" id="ah-kez-bevezeto" hidden></p>
+      <ul class="ah-kez-elemek" id="ah-kez-elemek"></ul>
+      <div class="ah-kez-vege">
+        <p class="ah-kez-utana" id="ah-kez-utana"></p>
+        <p class="ah-kez-ido" id="ah-kez-ido"></p>
+      </div>
+    </div>
+  </div>
   <div class="ah-kez-ablak-lab"><button type="button" class="ah-gomb ah-gomb-fo" id="ah-kez-valaszt">Ezt választom</button></div>
 </dialog>
+<!-- a szemelyre szabo kartya-elonezetenek nagyitasa: nagy kartya (asztalon a kepernyohoz illesztve, mobilon ujjal mozgathato nagyitas) -->
+<dialog class="ah-lightbox ah-ak-nagy" id="ah-ak-nagy" aria-label="A kártya nagyban">
+  <button type="button" class="ah-lb-bezar" id="ah-ak-nagy-bezar" aria-label="Bezárás"><svg class="ah-x-ikon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <div class="ah-ak-nagy-gorgeto" id="ah-ak-nagy-gorgeto"><div class="ah-ak-nagy-kartya" id="ah-ak-nagy-kartya"></div></div>
+  <div class="ah-ak-nagy-lab">
+    <button type="button" class="ah-link ah-ak-nagy-fordit" id="ah-ak-nagy-fordit"><span class="ah-ikon" data-ikon="flip" aria-hidden="true"></span><span id="ah-ak-nagy-fordit-szoveg">Fordítsd meg a kártyát</span></button>
+    <p class="ah-ak-nagy-seg">Húzd az ujjaddal a kártyát a körbenézéshez.</p>
+  </div>
+</dialog>
 <dialog class="ah-video-ablak" id="ah-video-ablak" aria-label="Vendég-videó">
-  <button type="button" class="ah-video-bezar" id="ah-video-bezar" aria-label="Bezárás">×</button>
+  <button type="button" class="ah-video-bezar" id="ah-video-bezar" aria-label="Bezárás"><svg class="ah-x-ikon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <video id="ah-video" controls playsinline preload="none"></video>
 </dialog>
 
@@ -367,8 +382,11 @@
     <div class="ah-tervezo-racs">
       <div class="ah-tervezo-elonezet">
         <p class="ah-elo-cim"><strong>Így fog kinézni</strong><small>élő előnézet</small><span class="ah-ikon ah-elo-nyil" data-ikon="arrow" aria-hidden="true"></span></p>
-        <div class="ah-ak-doboz" id="ah-ak-elonezet" aria-label="A kártya élő előnézete" role="img"></div>
-        <button type="button" class="ah-link ah-fordit" id="ah-fordit" aria-pressed="false"><span class="ah-ikon" data-ikon="flip" aria-hidden="true"></span><span id="ah-fordit-szoveg">Fordítsd meg a kártyát</span></button>
+        <div class="ah-ak-keret">
+          <div class="ah-ak-doboz" id="ah-ak-elonezet" aria-label="A kártya élő előnézete" role="img"></div>
+          <button type="button" class="ah-nagyit" id="ah-nagyit" aria-label="Kártya nagyítása" title="Nagyítás"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.2"/><path d="M15.2 15.2L20 20M10.5 8v5M8 10.5h5"/></svg></button>
+          <button type="button" class="ah-link ah-fordit" id="ah-fordit" aria-pressed="false"><span class="ah-ikon" data-ikon="flip" aria-hidden="true"></span><span id="ah-fordit-szoveg">Fordítsd meg a kártyát</span></button>
+        </div>
       </div>
       <div class="ah-kartya ah-tervezo-vezerlok">
         <div class="ah-tv-sor">

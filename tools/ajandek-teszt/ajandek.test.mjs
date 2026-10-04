@@ -181,6 +181,16 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.ok(!html.includes('ah-atutalas-gomb') && !html.includes('Inkább átutalással'), 'a regi atutalas-link kikerult');
     // minden kartyan plusz sor: "Hogyan epul fel a kezeles?" (felugro, lepesekkel az eles oldalrol)
     for (const jel of ['id="ah-kez-ablak"', 'id="ah-kez-elemek"', 'id="ah-kez-kep"', 'id="ah-kez-valaszt"']) assert.ok(html.includes(jel), jel);
+    // a felugro: a kep (allo) balra, a szoveg (bevezeto, lista, idotartam) jobbra, a gomb alul; a bezaro X svg (pontosan kozepen), nem betu
+    assert.ok(html.indexOf('ah-kez-kepkeret') < html.indexOf('ah-kez-szoveg') && html.indexOf('id="ah-kez-ido"') > html.indexOf('ah-kez-szoveg') && html.indexOf('id="ah-kez-valaszt"') > html.indexOf('id="ah-kez-ido"'), 'kep | szoveg + idotartam | gomb');
+    for (const az of ['ah-kez-bezar', 'ah-lb-bezar', 'ah-video-bezar', 'ah-ak-nagy-bezar']) assert.match(html, new RegExp('id="' + az + '"[^>]*><svg class="ah-x-ikon"'), az + ': svg X');
+    // kartya-elonezet nagyitasa: nagyito gomb + ablak (elol / hat); a GYIK cime
+    for (const jel of ['id="ah-nagyit"', 'id="ah-ak-nagy"', 'id="ah-ak-nagy-kartya"', 'id="ah-ak-nagy-fordit"']) assert.ok(html.includes(jel), jel);
+    assert.ok(html.includes('<h2>Kérdésed van? Megválaszoltuk.</h2>') && !html.includes('Gyakori kérdések</h2>'), 'GYIK cim');
+    // fizetes: egymas alatti, egyforma sorok (accordion), nem a keskeny fulek
+    const js = fs.readFileSync(new URL('../../assets/js/ajandek.js', import.meta.url), 'utf8');
+    assert.ok(/layout: { type: 'accordion', defaultCollapsed: false, radios: true, spacedAccordionItems: true }/.test(js) && !/type: 'tabs'/.test(js), 'fizetesi elem: accordion');
+    assert.ok(js.includes('function gorgessVideora') && js.includes('kivalaszt(r.value); gorgessVideora();'), 'mobilon a valasztas utan a videohoz gorget');
     for (const [id, t] of Object.entries(ADAT.TERMEKEK)) {
       const m = t.kezeles.menet;
       assert.ok(m && /Head Spa kezelés$/.test(m.nev) && Array.isArray(m.elemek) && m.elemek.length >= 6 && m.elemek.every((x) => typeof x[0] === 'string' && x[0].length > 3), id + ': az arlista kezeles-kartyaja (nev + elemek)');

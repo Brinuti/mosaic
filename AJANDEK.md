@@ -567,3 +567,22 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
    keveréke: ha a szöveg egymásra esik, a dizájn pontos).
 3. **Ami a leggyorsabb forrás:** Canva (A5 fekvő lap, a fiókban vannak Brand Template-ek, az összekötő tud exportálni) vagy Figma (A5 keret, 2480 x 1754) — a lényeg a fix A5 vászon és a valódi
    szöveg; réteg-export nem szükséges. ChatGPT-képgenerálás kevésbé megbízható (a méret és az arány nem pontos), ezért a feltöltött vászon mérete a hibaforrás: a teszt ezt ellenőrzi.
+
+## 6. kör (2026-10-04, a tulajdonos kérései)
+
+- **„Hogyan épül fel a kezelés?” felugró:** asztalon (720 px-től) a **kép balra, állóban** (a termékkártya képe, ugyanazzal a képkivágással), mellette a szöveg (bevezető, egyoszlopos felsorolás, „+ 30 perc kímélő
+  hajszárítás”, **Időtartam** – mind a jobb oszlopban), a kép pontosan olyan magas, mint a szöveg (a szöveg adja a magasságot, a kép `object-fit: cover`); az „Ezt választom” gomb alul középen. Mobilon (720 px alatt)
+  változatlan: a kép felül, alatta a szöveg. A bezáró **X svg** (nem betű), ezért pontosan a kör közepén áll – ugyanígy a képnézegető, a videó és az új nagyító bezáró gombján.
+- **Kártya-előnézet nagyítása (Szabd személyre):** az előnézeti kártyára kattintva / koppintva (a húzás a fotót mozgatja, nem nyit nagyítást), vagy a kártya jobb felső sarkában levő nagyító gombbal nagy kártya nyílik
+  (előlap / hátoldal, „Fordítsd meg” gombbal). Asztalon a képernyőhöz illesztve (`min(100%, (100dvh - 150px) * 1,4133)`), mobilon 220 vw széles, ujjal mozgatható (középre görgetve nyílik). Esc / X / az ablak üres
+  részére kattintás zár.
+- **Fizetési módok:** a Stripe Payment Element elrendezése `tabs` helyett `accordion` (rádiógombos, egymás alatti, **egyforma magas, teljes szélességű** sorok: Kártya, Revolut Pay, Google Pay), így mobilon a harmadik fül
+  nem szorul össze, és nem lehet mellé érinteni (a bejelentett „Google Pay-t választok, de a Revolut Pay jelölődik be” hiba oka a keskeny fülek voltak; ezt a tulajdonosnak telefonon újra ki kell próbálnia). A Revolut Pay
+  és a Google Pay **nem vonható egy dobozba**: a Revolut Pay nincs az Express Checkout Elementben (ott Apple Pay, Google Pay, Link, PayPal, Klarna, Amazon Pay van), a Payment Element módjait pedig nem lehet összevonni.
+- **Mobil (640 px alatt):** hero-jelvények: csak a Google-értékelés és a „6 hónapig érvényes”, egy sorban; a „Válaszd ki az ajándékot” cím nem látszik (csak a kártyakép, alatta több hely, majd „1 Válassz Headspa
+  kezelést”); a szekciócímek (és a rövid alcímek) középre; a GYIK címe mindenhol „Kérdésed van? Megválaszoltuk.”; a termékválasztás után (egymás alatti elrendezésben) **automatikusan a 2. lépéshez / videóhoz görget**
+  (`gorgessVideora`, a ragadós fejléc alá); a „Tovább a személyre szabáshoz” és a fizetés-gomb felirata egy sorban (360 px-en is), a gombok betűmérete a szélességhez igazodik.
+- **Szabd személyre (mobil):** kompakt fejléc (kisebb „Vissza az ajándékhoz”, kisebb, középre igazított cím), nincs „Így fog kinézni” felirat, a **design-választó 3 × 2**, a „Fotó törlése” a fotóválasztó gomb mellett, a
+  „Fordítsd meg” és a nagyítás gomb a kártya sarkában (kerek gombok): a kártya, a design-választó és a fotóbeállítások egy képernyőn látszanak.
+- **Fizetés (mobil):** a „Rendelésed” sor ára kisebb, mellette lefelé mutató nyíl (nyitva: felfelé), jelezve, hogy lenyitható. A „Biztonságos fizetés — ár” gomb egy sorban (nowrap, a betűméret a szélességgel arányos).
+- **Ismert, nem ehhez tartozó észrevétel:** az élő fejléc (Wix-klón) menüsora mobilon szélesebb a képernyőnél (`scrollWidth` ≈ 980 px); a tesztekben `overflow-x: clip`-pel kerüljük meg.
