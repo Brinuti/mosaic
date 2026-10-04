@@ -36,6 +36,8 @@ function memoriaKv() {
     async put(kulcs, ertek) { t.set(kulcs, new Uint8Array(ertek instanceof ArrayBuffer ? ertek : ertek.slice().buffer)); },
   };
 }
+// a regi ajandekkartya-cimek (a build ezeken is az uj oldalt adja, lasd tools/netlify-build.mjs)
+const REGI_CIMEK = new Set(['/headspa-ajandekkartya', '/4-kezes-headspa-ajandekkartya', '/ajandekkartya-szulinapra', '/ajandekkartya-ugc', '/headspa-ajandekkartya-anyukaknak', '/headspa-ajandekkartya-noknek', '/headspa-paros-csajos-ajandekkartya', '/japan-headspa-ajandekkartya']);
 let ajandekKezel = null, korlatAlaphelyzet = null, mock = null, env = {};
 
 async function hatterInditas() {
@@ -80,7 +82,7 @@ http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://localhost:' + PORT);
   const ut = decodeURIComponent(u.pathname);
   try {
-    if (ut === '/ajandek') {
+    if (ut === '/ajandek' || REGI_CIMEK.has(ut)) {
       const mobil = u.searchParams.get('m') === '1' || /iPhone|Android.*Mobile/i.test(req.headers['user-agent'] || '');
       res.writeHead(200, { 'content-type': TIPUS['.html'], 'cache-control': 'no-store' });
       return res.end(oldal(ut, mobil));

@@ -137,7 +137,9 @@
   var Q = new URLSearchParams(location.search);
 
   // variant: az URL-bol (ervenytelen/ismeretlen/hianyzo -> GENERAL), egyebkent a sessionbol; vegig megmarad
-  var variant = A.variantFeloldas(Q.has('variant') ? Q.get('variant') : tar.variant_id);
+  // (a regi ajandekkartya-cimeken a cim adja az alapertelmezett variantot: A.oldalAlapertek)
+  var oldalAlap = A.oldalAlapertek(location.pathname);
+  var variant = A.variantFeloldas(Q.has('variant') ? Q.get('variant') : (oldalAlap.variant || tar.variant_id));
 
   // attribucio: UTM-ek es kattintas-azonositok; uj kampany-kattintas felulirja, egyebkent a session orzi
   var attr = (tar.attr && typeof tar.attr === 'object') ? tar.attr : {};
@@ -147,7 +149,7 @@
     if (v) { if (!ujAttr) { attr = {}; ujAttr = true; } attr[k] = String(v).slice(0, 200); }
   });
   if (!attr.oldal) attr.oldal = location.pathname;
-  var alkalomURL = (Q.get('occasion') || '').trim().slice(0, 40);
+  var alkalomURL = (Q.get('occasion') || oldalAlap.alkalom || '').trim().slice(0, 40);
 
   var S = {
     allapot: 'bongeszes',
@@ -177,7 +179,7 @@
     fotoLehet: false                                                  // a szerver /beallitas jelzi: van-e foto-tarolo (KV)
   };
   // a variant-link (?variant=) a Gift Finder elovalasztasat is beallitja (a vevo kesobbi valasztasa felulirja)
-  if (Q.has('variant')) S.finder = variant.gift_finder_preselect || null;
+  if (Q.has('variant') || oldalAlap.variant) S.finder = variant.gift_finder_preselect || null;
 
   function ment() {
     if (S.demo) return;   // a ?nezet= minta-nezet (teszt-mod) nem tarolodik
@@ -516,7 +518,7 @@
   // igy a 2. (video) es a 3. (atvetel) lepes mindig ki van toltve. A vevo valasztasa (radio) allitja be az S.termek-et.
   function ajanlottId() {
     var f = S.finder ? A.FINDER.filter(function (x) { return x.id === S.finder; })[0] : null;
-    return (f && f.termek) || S.variant.product_order[0];
+    return (f && f.termek) || (oldalAlap.termek && termek(oldalAlap.termek) ? oldalAlap.termek : null) || S.variant.product_order[0];
   }
   function kijelzett() { return S.termek && termek(S.termek) ? S.termek : ajanlottId(); }
   function termekKartya(t) {
@@ -1460,6 +1462,24 @@
       product_type: t.product_type, quantity: 1, payment_method: r.fizetesi_mod || 'card',
       variant_id: attrSrv.variant_id || S.variant.variant_id
     });
+    regiKonverzio(ertek);
+  }
+  // A MOSAIC MOSTANI ajandekkartya-konverzioja a regi koszono-oldal betoltesere epul (/success-ajandekkartya-stripe?ertek=<Ft>&session_id=...,
+  // amelyre a Stripe-fizetolink iranyitott). A tulajdonos kerese (2026-10-04): az uj oldal MINDKET meresi utat viszi - a mostani konverziot
+  // valtozatlanul (ez az eles), es az uj purchase esemenyt (parhuzamosan). Ezert sikeres (szerver altal visszaigazolt) vasarlas utan, PaymentIntentenkent
+  // EGYSZER ugyanazt az oldalt toltjuk be egy lathatatlan, azonos eredetu keretben: a GTM / Meta / GA4 kodok pontosan ugy futnak, mint egy valodi
+  // oldalbetolteskor. A GTM-hez nem nyulunk. Csak az eles domainen (mint a suti.js merokodjai); teszt-modban ?meres_proba=1-gyel kiprobalhato.
+  var ELES_MERES = /^(www\.)?mosaicheadspa\.hu$/.test(location.hostname);
+  function regiKonverzio(ertek) {
+    if (!(ELES_MERES || (S.mod === 'teszt' && Q.get('meres_proba') === '1'))) return;
+    try {
+      var f = document.createElement('iframe');
+      f.src = '/success-ajandekkartya-stripe?ertek=' + encodeURIComponent(String(Math.round(Number(ertek) || 0))) + '&session_id=' + encodeURIComponent(S.pi);
+      f.setAttribute('aria-hidden', 'true'); f.setAttribute('tabindex', '-1'); f.setAttribute('title', '');
+      f.setAttribute('data-ah-regi-konverzio', '1');
+      f.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none';
+      document.body.appendChild(f);
+    } catch (e) { /* a meres hibaja nem allithatja meg a vasarlas utani nezetet */ }
   }
   function metaSor(dl, cimke, ertek) { dl.appendChild(h('div', null, h('dt', { text: cimke }), h('dd', { text: ertek }))); }
   var HONAPOK = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];

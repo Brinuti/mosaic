@@ -50,6 +50,31 @@ for (const f of fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.ends
     fs.writeFileSync(path.join(m, f), forras.replace('<!--mh-fejlec-->', () => fejlec).replace('<!--mh-lablec-->', () => lablec));
   }
 }
+// Az ELES ajandekkartya-oldalak cimeit az uj ajandekkartya-motor veszi at (a tulajdonos kerese, 2026-10-04): ugyanaz az oldal (foglalas/ajandek.html)
+// ezeken a cimeken is megjelenik (a cim dönti el a variantot: assets/js/ajandek-adat.js OLDAL_ALAPERTEK), indexelheto, sajat canonical-lal.
+// A regi (Wixes) oldal valtozatlanul megvan a klon/ mappaban; itt kulon, REJTETT cimen is elerheto (-regi: noindex, nincs link ra, nincs a
+// sitemapben) - visszaallashoz es osszehasonlitashoz. Az /ajandek cim marad (noindex): a levelekben / kampanyokban levo linkek tovabb mukodnek.
+const REGI_AJANDEK_CIMEK = ['headspa-ajandekkartya', '4-kezes-headspa-ajandekkartya', 'ajandekkartya-szulinapra', 'ajandekkartya-ugc',
+  'headspa-ajandekkartya-anyukaknak', 'headspa-ajandekkartya-noknek', 'headspa-paros-csajos-ajandekkartya', 'japan-headspa-ajandekkartya'];
+for (const m of [LAP_A, LAP_M]) {
+  const uj = fs.readFileSync(path.join(m, 'ajandek.html'), 'utf8');
+  for (const nev of REGI_AJANDEK_CIMEK) {
+    const regiFajl = path.join(m, nev + '.html');
+    if (fs.existsSync(regiFajl)) {
+      const regiCim = 'https://www.mosaicheadspa.hu/' + nev + '-regi';
+      let r = fs.readFileSync(regiFajl, 'utf8');
+      r = r.replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, '<link rel="canonical" href="' + regiCim + '">')
+        .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, '<meta property="og:url" content="' + regiCim + '">')
+        .replace(/<head>/i, '<head><meta name="robots" content="noindex, nofollow">');
+      fs.writeFileSync(path.join(m, nev + '-regi.html'), r);
+    }
+    const cim = 'https://www.mosaicheadspa.hu/' + nev;
+    fs.writeFileSync(regiFajl, uj
+      .replace(/<meta name="robots" content="[^"]*">\s*/i, '')
+      .replace('<link rel="canonical" href="https://www.mosaicheadspa.hu/ajandek">', '<link rel="canonical" href="' + cim + '">')
+      .replace('<meta property="og:url" content="https://www.mosaicheadspa.hu/ajandek">', '<meta property="og:url" content="' + cim + '">'));
+  }
+}
 // a nyitooldal a /_a/fooldal, /_m/fooldal fajlbol jon (lasd netlify/lib/utvonal.js)
 for (const m of [LAP_A, LAP_M]) fs.renameSync(path.join(m, 'index.html'), path.join(m, 'fooldal.html'));
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
@@ -123,6 +148,8 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   // a HTML-beagyazasok (GYIK, arlistak) csak keretben jelennek meg, onalloan ne indexelodjenek
   '/assets/embed/*',
   '  X-Robots-Tag: noindex',
+  // az /ajandek (a kampany- es levelbeli linkek cime) ugyanazt az oldalt adja, mint az eles ajandekkartya-cimek: ne indexelodjon ketszer
+  ...(ELES ? ['/ajandek', '  X-Robots-Tag: noindex'] : []),
   '',
 ].join('\n'));
 

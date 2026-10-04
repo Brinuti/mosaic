@@ -194,7 +194,7 @@
   // Valodi vendegvelemeny CSAK akkor mehet ide, ha letezik es a vendeg/Google-megjelenites
   // engedi. Soha ne generalj idezetet. A Google-osszegzes (GOOGLE) a tulajdonos 2026-10-03-i adata:
   // ha az ertekeles szama jelentosen valtozik, itt kell frissiteni.
-  var GOOGLE = { pont: '4,9', darab: '1.259' };
+  var GOOGLE = { pont: '4,9', darab: '1.257' };   // a Trustindex-widget szama (2026-10-04); idonkent frissitendo
   var GOOGLE_SZOVEG = GOOGLE.pont + ' · ' + GOOGLE.darab + ' Google-vélemény';
   var PROOFOK = {
     general: {
@@ -373,6 +373,23 @@
     return Object.prototype.hasOwnProperty.call(VARIANTOK, kulcs) ? VARIANTOK[kulcs] : VARIANTOK.general;
   }
 
+  // A regi (Wixes) ajandekkartya-oldalak cimeit az uj oldal veszi at (a tulajdonos kerese, 2026-10-04): a cim dönti el az alapertelmezett
+  // variantot (message-match), az elore kijelolt elmenyt es az alkalmat. Az URL-parameterek (?variant=, ?occasion=) felulirjak.
+  var OLDAL_ALAPERTEK = {
+    '/headspa-ajandekkartya': { variant: 'general' },
+    '/4-kezes-headspa-ajandekkartya': { variant: 'general', termek: '4kezes' },
+    '/ajandekkartya-szulinapra': { variant: 'general', alkalom: 'szuletesnap' },
+    '/ajandekkartya-ugc': { variant: 'general' },
+    '/headspa-ajandekkartya-anyukaknak': { variant: 'mother' },
+    '/headspa-ajandekkartya-noknek': { variant: 'for_her' },
+    '/headspa-paros-csajos-ajandekkartya': { variant: 'friend' },
+    '/japan-headspa-ajandekkartya': { variant: 'general' }
+  };
+  function oldalAlapertek(ut) {
+    var kulcs = String(ut == null ? '' : ut).replace(/\/+$/, '').toLowerCase();
+    return Object.prototype.hasOwnProperty.call(OLDAL_ALAPERTEK, kulcs) ? OLDAL_ALAPERTEK[kulcs] : {};
+  }
+
   // 26900 -> "26.900 Ft" (mint a MOSAIC oldalain mindenhol)
   function arSzoveg(ft) {
     return String(Math.round(Number(ft) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' Ft';
@@ -396,6 +413,8 @@
 
   g.AJANDEK_ADAT = {
     TERMEKEK: TERMEKEK,
+    OLDAL_ALAPERTEK: OLDAL_ALAPERTEK,
+    oldalAlapertek: oldalAlapertek,
     FINDER: FINDER,
     HEADSPA_VIDEO: HEADSPA_VIDEO,
     ELEMEK: ELEMEK,

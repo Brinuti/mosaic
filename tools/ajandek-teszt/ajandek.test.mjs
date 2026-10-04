@@ -268,6 +268,46 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.equal(V.general.hero_trust[0].href, '#ah-google');
   });
 
+  test('a regi ajandekkartya-cimeket az uj oldal veszi at: a cim adja az alapertelmezett variantot / elmenyt / alkalmat; a build, az LCP-terkep es a helyi szerver ugyanazt a 8 cimet ismeri', () => {
+    const f = (u) => new URL('../../' + u, import.meta.url);
+    const A = ADAT;
+    assert.equal(A.oldalAlapertek('/headspa-ajandekkartya-anyukaknak').variant, 'mother');
+    assert.equal(A.oldalAlapertek('/headspa-ajandekkartya-noknek').variant, 'for_her');
+    assert.equal(A.oldalAlapertek('/headspa-paros-csajos-ajandekkartya').variant, 'friend');
+    assert.deepEqual(A.oldalAlapertek('/4-kezes-headspa-ajandekkartya/'), { variant: 'general', termek: '4kezes' }, 'zaro perjel nem szamit');
+    assert.equal(A.oldalAlapertek('/ajandekkartya-szulinapra').alkalom, 'szuletesnap');
+    for (const ismeretlen of ['/ajandek', '/', '', null, undefined, '/constructor', '/__proto__', '/headspa-ajandekkartya-regi']) assert.deepEqual(A.oldalAlapertek(ismeretlen), {}, String(ismeretlen));
+    const cimek = Object.keys(A.OLDAL_ALAPERTEK).map((k) => k.slice(1)).sort();
+    assert.equal(cimek.length, 8);
+    for (const [ut, a] of Object.entries(A.OLDAL_ALAPERTEK)) {
+      assert.ok(A.VARIANTOK[a.variant], ut + ' variantja letezik');
+      if (a.termek) assert.ok(A.TERMEKEK[a.termek], ut + ' elmenye letezik');
+      assert.ok(fs.existsSync(f('klon' + ut + '.html')) && fs.existsSync(f('klon/m' + ut + '.html')), ut + ': a regi klon-oldal (asztali + mobil) megvan, ezt takarja az uj oldal');
+    }
+    // a build ugyanazt a 8 cimet irja at, az LCP-terkep mindegyiknek az uj hero-kepet adja
+    const build = fs.readFileSync(f('tools/netlify-build.mjs'), 'utf8');
+    const buildCimek = [...build.slice(build.indexOf('const REGI_AJANDEK_CIMEK'), build.indexOf(']', build.indexOf('const REGI_AJANDEK_CIMEK'))).matchAll(/'([a-z0-9-]+)'/g)].map((m) => m[1]).sort();
+    assert.deepEqual(buildCimek, cimek);
+    const lcp = JSON.parse(fs.readFileSync(f('tools/lcp-elofeltoltes.json'), 'utf8'));
+    for (const nev of cimek) for (const sz of ['mobil', 'asztali']) assert.equal(lcp[sz][nev], '/assets/img/ajandek/hero-30-altalanos.jpg', sz + ' ' + nev);
+    const szerver = fs.readFileSync(f('tools/ajandek-teszt/szerver.mjs'), 'utf8');
+    for (const nev of cimek) assert.ok(szerver.includes("'/" + nev + "'"), 'helyi szerver: ' + nev);
+    // az eles oldalon a regi cim a kanonikus: a build kiveszi a noindexet es atirja a canonical-t / og:url-t, a rejtett masolat noindex
+    assert.ok(build.includes("'-regi'") || build.includes("nev + '-regi.html'"));
+    assert.match(build, /noindex, nofollow/);
+  });
+
+  test('a MOSTANI konverzio es az uj purchase is megy: sikeres vasarlas utan a regi koszono-oldal (/success-ajandekkartya-stripe?ertek=<Ft>&session_id=<pi>) lathatatlan keretben toltodik be, egyszer, csak az eles domainen', () => {
+    const js = fs.readFileSync(new URL('../../assets/js/ajandek.js', import.meta.url), 'utf8');
+    assert.ok(js.includes("'/success-ajandekkartya-stripe?ertek=' + encodeURIComponent("), 'a regi fizetolink-atiranyitas ugyanazzal az ertek= parameterrel');
+    assert.ok(js.includes("'&session_id=' + encodeURIComponent(S.pi)"));
+    assert.match(js, /\^\(www\\\.\)\?mosaicheadspa\\\.hu\$/, 'csak az eles domain (mint a suti.js merokodjai)');
+    // a keret ugyanabban a purchaseMeres()-ben indul, mint az uj purchase: egyszer / PaymentIntent, a szerver altal visszaigazolt ertekkel
+    const resz = js.slice(js.indexOf('function purchaseMeres'), js.indexOf('function metaSor('));
+    assert.ok(resz.includes("mer('purchase'") && resz.includes('regiKonverzio(ertek)') && resz.includes("helyiOlvas(kulcs)"));
+    assert.ok(resz.indexOf("mer('purchase'") < resz.indexOf('regiKonverzio(ertek)'));
+  });
+
   test('mobil sticky sav (az oxigen-landing mintajara): van markup + CSS (csak mobilon), a gomb a landing #ah-finder-ere ugrik, a hero-gomb szoveget a variant adja', () => {
     const html = fs.readFileSync(new URL('../../foglalas/ajandek.html', import.meta.url), 'utf8');
     const css = fs.readFileSync(new URL('../../assets/css/ajandek.css', import.meta.url), 'utf8');
