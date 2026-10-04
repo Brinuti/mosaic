@@ -238,3 +238,28 @@ a { color: inherit; }
 .be-csomagok .be-resz { font-size: 12px; padding: 1px 9px 1px 3px; gap: 4px; }
 .be-csomagok .be-resz-kep { width: 22px; height: 22px; margin: 0; }
 .be-csomagok .be-resz svg { width: 22px; height: 22px; }
+
+/* koszono kepernyok: mint a sminktetovalo-foglalo (kartya + terkep, a kezelo kepe es neve, "Ott leszek", "Mi tortenik most?") */
+.be-success .be-tick { width: 52px; height: 52px; font-size: 28px; margin: 0 auto 6px; }
+.be-success .be-title { margin: 0 0 10px; }
+.be-kosz-kartya { display: grid; grid-template-columns: 1fr 104px; gap: 10px; align-items: stretch; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; padding: 8px 8px 8px 12px; text-align: left; }
+.be-kosz-adat { font-size: var(--m-kicsi); color: var(--kozep); line-height: 1.35; align-self: center; }
+.be-kosz-adat b { display: block; color: var(--sotet); font-size: var(--m-alap); font-weight: 700; }
+.be-kosz-cim { display: block; margin-top: 4px; color: var(--sotet); }
+.be-terkep { position: relative; display: block; border-radius: 10px; overflow: hidden; min-height: 96px; background: var(--krem); }
+.be-terkep iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
+.be-kezelo { display: grid; grid-template-columns: 48px 1fr; gap: 10px; align-items: center; text-align: left; margin-top: 10px; padding: 8px 10px; background: var(--feher); border: 1px solid var(--vonal); border-radius: 14px; }
+.be-kezelo-kep { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; object-position: 50% 32%; background: var(--krem); display: grid; place-items: center; font-size: 22px; color: var(--sotet); }
+.be-kezelo-szoveg b { display: block; font-weight: 700; }
+.be-kezelo-szoveg span { display: block; color: var(--kozep); font-size: var(--m-kicsi); line-height: 1.3; }
+.be-megerosit { text-align: center; font-weight: 700; margin: 14px 0 6px; }
+.be-ott-sor { display: grid; justify-items: center; gap: 4px; }
+.be-ott { width: 72%; min-height: 46px; font-size: var(--m-kicsi); letter-spacing: .05em; padding: 8px 10px; }
+.be-ott.kesz { background: var(--zold); }
+.be-naptar-link { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; padding: 4px 8px; color: var(--kozep); font-size: var(--m-kicsi); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.be-naptar-link svg { width: 16px; height: 16px; }
+.be-kicsi { font-size: var(--m-kicsi); margin: 4px 0 0; }
+.be-h3 { font-size: var(--m-alap); font-weight: 700; margin: 16px 0 0; text-align: left; }
+.be-lepesek { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; counter-reset: s; text-align: left; }
+.be-lepesek li { counter-increment: s; display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; font-size: 13.5px; line-height: 1.35; }
+.be-lepesek li::before { content: counter(s); width: 22px; height: 22px; border-radius: 50%; background: var(--sotet); color: var(--krem); display: grid; place-items: center; font-size: var(--m-kicsi); font-weight: 700; }

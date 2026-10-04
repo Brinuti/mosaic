@@ -90,6 +90,9 @@
     telefon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/></svg>',
   };
   const ikon = (nev) => elem('span', { html: IKON[nev], style: 'display:contents' });
+  // a koszono kepernyokon a kezelo (kep + nev): a kartya / terkep es a szoveg kozott
+  const MELITTA_KEP = '/assets/img/m/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326ef000.jpg';
+  const melittaSor = (szoveg) => elem('div', { class: 'melitta kezelo-sor' }, elem('img', { src: MELITTA_KEP, alt: 'Töreki Melitta' }), elem('div', {}, elem('b', { szoveg: 'Töreki Melitta' }), elem('span', { szoveg })));
   const ft = (n) => new Intl.NumberFormat('hu-HU').format(n) + ' Ft';
   const fmt = (ts, o) => new Intl.DateTimeFormat('hu-HU', { timeZone: ZONA, ...o }).format(new Date(ts * 1000));
   const napKulcs = (ts) => fmt(ts, { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\s/g, '');
@@ -497,6 +500,7 @@
         elem('span', { class: 'cim', szoveg: SZALON.cimSor })),
       elem('a', { class: 'terkep', href: terkep, target: '_blank', rel: 'noopener', 'aria-label': 'Megnyitás térképen' },
         elem('iframe', { src: 'https://www.google.com/maps?q=' + encodeURIComponent(SZALON.terkep) + '&z=15&output=embed', loading: 'lazy', tabindex: '-1', title: 'Térkép' }))));
+    $('koszono-osszegzes').append(melittaSor('vár téged a szalonban'));
     $('naptarhoz').onclick = () => {
       const t = (ts) => new Date(ts * 1000).toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
       const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MOSAIC//Foglalas//HU', 'BEGIN:VEVENT',
@@ -629,6 +633,7 @@
       ? elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Preferált időpont (nem végleges)' }), elem('div', { class: 'sor' }, ikon('naptar'),
         elem('span', {}, elem('b', { szoveg: teljes(allapot.slot) }), elem('span', { szoveg: k.cim + (k.valtozat ? ' – ' + k.valtozat : '') }))))
       : '');
+    $('foto-kesz-osszegzes').append(melittaSor('megnézi a fotódat, és hamarosan jelentkezik'));
     allapot.fotok = [];
     ugrik('foto-kesz');
   });
@@ -672,7 +677,7 @@
     if (c && !allapot.cKert) Object.assign(allapot, { cKert: true, cSav: c.cSav === 'Bármikor' ? null : c.cSav });
     if (!allapot.cKert && KOSZ_OLDAL === 'vh') allapot.cKert = true;
     if (!allapot.cKert) { mutat('kezdo'); return; }
-    $('c-kesz-osszegzes').replaceChildren(cOsszegzes('Ekkor hívlak'));
+    $('c-kesz-osszegzes').replaceChildren(cOsszegzes('Ekkor hívlak'), melittaSor('hamarosan felhív'));
     if (!KOSZ_OLDAL) history.replaceState({ nezet: 'c-kesz' }, '', location.pathname + location.search + '#visszahivas-kesz');
   };
 
@@ -719,6 +724,7 @@
       const ts = Math.floor(Date.now() / 86400000 + 7) * 86400 + 8 * 3600;
       $('foto-kesz-osszegzes').replaceChildren(elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Preferált időpont (nem végleges)' }), elem('div', { class: 'sor' }, ikon('naptar'),
         elem('span', {}, elem('b', { szoveg: teljes(ts) }), elem('span', { szoveg: 'Szemöldöktetoválás – Hibrid' })))));
+      $('foto-kesz-osszegzes').append(melittaSor('megnézi a fotódat, és hamarosan jelentkezik'));
       mutat('foto-kesz');
       return;
     }

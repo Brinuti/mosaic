@@ -16,6 +16,7 @@ import * as F from './flow.js';
 import { createTracker } from './tracking.js';
 import { CHOOSER, PMU_PATH } from './families.js';
 import { IKONOK, hajhosszIkon, kezelesIkon } from './ikonok.js';
+import { koszonoLepesek, VISSZAHIVAS_LEPESEK, LEZER_KEZELO } from './koszono.js';
 import { HEADSPA } from './flows/headspa.js';
 import { OXYGEN } from './flows/oxygen.js';
 import { HAIR } from './flows/hair.js';
@@ -662,13 +663,27 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       const rep = c ? c.reported : {};
       const voucher = S.service.bookingType === 'voucher_redemption';
       const price = voucher ? flow.copy.voucherSettled : F.priceLabel(rep.price ?? F.priceFor(S.service, curStaffLabel()), zeroLabel(S.service));
-      return h('section', { class: 'be-center be-success' }, h('div', { class: 'be-tick', 'aria-hidden': 'true', text: '✓' }), title('Foglalásod sikeres!'),
-        h('div', { class: 'be-card be-left' }, h('b', { class: 'be-card-title', text: nameOf(S.service) }),
-          summaryRows([['Időtartam', durText(S.service) || ''], ['Ár', price],
-            ['Dátum', F.longDate(S.slot.start_unix)], ['Időpont', F.timeLabel(S.slot.start_unix)], ['Szakember', flow.showStaffFilter ? (rep.employee || staffRow()) : ''], ['Helyszín', placeText()]])),
-        h('div', { class: 'be-actions' }, primary('Hozzáadás a naptárhoz', addToCalendar),
-          h('a', { class: 'be-btn be-btn-2', href: S.place && S.place.address ? F.mapsUrl(placeText()) : '#', target: '_blank', rel: 'noopener', text: 'Útvonaltervezés', hidden: !(S.place && S.place.address) })),
-        note('Időpont módosítása vagy lemondása: a visszaigazoló e-mailben lévő linkkel.'));
+      // Mint a sminktetovalo-foglalo koszonoje: kartya + terkep, a kezelo (kep + nev), "Ott leszek", naptar, "Mi tortenik most?"
+      const mikor = `${F.longDate(S.slot.start_unix)} · ${F.timeLabel(S.slot.start_unix)}`;
+      const hely = placeText();
+      const terkep = hely ? h('a', { class: 'be-terkep', href: F.mapsUrl(hely), target: '_blank', rel: 'noopener', 'aria-label': 'Megnyitás térképen' },
+        h('iframe', { src: 'https://www.google.com/maps?q=' + encodeURIComponent(hely) + '&z=15&output=embed', loading: 'lazy', tabindex: '-1', title: 'Térkép' })) : null;
+      const kartya = h('div', { class: 'be-kosz-kartya' }, h('span', { class: 'be-kosz-adat' }, h('b', { text: mikor }), h('b', { text: nameOf(S.service) }),
+        [price, durText(S.service)].filter(Boolean).join(' · '), S.place && S.place.address ? h('span', { class: 'be-kosz-cim', text: S.place.address }) : null), terkep);
+      const kezelo = thanksPractitioner(rep.employee);
+      const ott = h('button', { type: 'button', class: 'be-btn be-ott', text: 'Ott leszek ✓', onclick: (e) => {
+        const g = e.currentTarget; g.textContent = 'Köszönöm, várunk! ✓'; g.disabled = true; g.classList.add('kesz');
+        if (S.adapterSample) return; // mintanezet: nincs kuldes (nem megy e-mail a szalonnak)
+        const body = new URLSearchParams({ 'form-name': 'motor-megerosites', idopont: mikor, szolgaltatas: nameOf(S.service), uzletag: flow.business, szakember: kezelo ? kezelo.name : '', oldal: layer ? win.location.pathname : 'foglalo-motor' });
+        win.fetch('/', { method: 'POST', body, credentials: 'same-origin' }).catch((err) => console.error(err));
+      } });
+      const naptarba = h('button', { type: 'button', class: 'be-naptar-link', onclick: addToCalendar }, icon('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>', 1.8), 'Naptárba teszem');
+      return h('section', { class: 'be-center be-success' }, h('div', { class: 'be-tick', 'aria-hidden': 'true', text: '✓' }), title('Sikeres foglalás!'),
+        kartya, kezelo ? practitionerRow(kezelo, 'vár téged') : null,
+        h('p', { class: 'be-megerosit' }, 'Erősítsd meg egy érintéssel, hogy jössz! ', h('span', { 'aria-hidden': 'true', text: '↓' })),
+        h('div', { class: 'be-ott-sor' }, ott, naptarba),
+        note('Időpont módosítása vagy lemondása: a visszaigazoló e-mailben lévő linkkel.', 'be-kicsi'),
+        h('h3', { class: 'be-h3', text: 'Mi történik most?' }), stepList(koszonoLepesek(flow.business, S.service.bookingType)));
     },
 
     A1: async () => callbackView({ heading: 'Nincs megfelelő időpont?', intro: 'Hagyd meg a telefonszámod, és visszahívunk.' }),
@@ -808,7 +823,27 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       err, h('button', { type: 'submit', class: 'be-btn', text: 'Visszahívást kérek' }));
     return h('section', {}, title(heading), note(intro), form, h('a', { class: 'be-link', href: PHONE_HREF, text: `Vagy hívj most: ${PHONE}` }));
   }
-  const sentView = () => h('section', { class: 'be-center' }, h('div', { class: 'be-tick', 'aria-hidden': 'true', text: '✓' }), title('Visszahívást kértél!'), note('Hamarosan hívunk a megadott számon.'));
+  // A koszono kepernyok kozos reszei: szamozott lista, a kezelo sora (kep + nev), a kezelo azonositasa
+  const stepList = (items) => h('ol', { class: 'be-lepesek' }, items.map((t) => h('li', { text: t })));
+  const practitionerRow = (p, szoveg) => h('div', { class: 'be-kezelo' },
+    p.foto ? h('img', { class: 'be-kezelo-kep', src: kepSrc(p.foto), alt: p.name, width: '48', height: '48', onerror: (e) => e.currentTarget.remove() })
+      : h('span', { class: 'be-kezelo-kep', 'aria-hidden': 'true', text: p.name.charAt(0).toUpperCase() }),
+    h('span', { class: 'be-kezelo-szoveg' }, h('b', { text: p.name }), h('span', { text: szoveg })));
+  // Ahol van kezelo (fodraszat, oxigen: a valasztott / a Salonic altal jelzett szakember, fotoval; lezer: Zsofi), ott a koszonoben is megjelenik; a HeadSpanal szobak vannak, nem kezelok.
+  function thanksPractitioner(reported) {
+    if (flow.business === 'laser') return LEZER_KEZELO;
+    if (!flow.staffPhotos) return null;
+    const label = curStaffLabel() || reported;
+    if (!label) return null;
+    const name = staffName(label);
+    const foto = (flow.staffPhotos.find(([re]) => re.test(name)) || [])[1];
+    return foto ? { name, foto } : null;
+  }
+  const sentView = () => h('section', { class: 'be-center be-success' }, h('div', { class: 'be-tick', 'aria-hidden': 'true', text: '✓' }), title('Visszahívást kértél!'),
+    note('Hamarosan hívunk a megadott számon.'),
+    h('h3', { class: 'be-h3', text: 'Mi történik most?' }), stepList(VISSZAHIVAS_LEPESEK),
+    note(`Ha közben változik a terved, hívj: ${PHONE}.`, 'be-kicsi'),
+    layer ? h('div', { class: 'be-actions' }, secondary('Bezárás', () => { if (onClose) onClose(); })) : null);
 
   // --- naptar-fajl -------------------------------------------------------------------------------------------------------------------
   function addToCalendar() {
@@ -945,12 +980,19 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   function sample() {
     adapter = createSalonicAdapter(); // a mintanezet sajat, halozat-nelkuli adaptert hasznal (a megosztottat nem modositjuk)
     const t0 = Math.floor(now() / 86400000 + 2) * 86400 + 8 * 3600;
-    S.service = { serviceId: '0', name: 'EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás', durationMin: 80, activePrice: 26900, listPrice: null, bookingType: 'first_treatment' };
-    if (!flow) { flow = FLOWS.headspa; S.flow = flow; ctx.business = 'headspa'; } // a mintanezet HeadSpa-adatokkal dolgozik (nincs uzletag-valasztas)
+    if (!flow) { flow = FLOWS.headspa; S.flow = flow; ctx.business = 'headspa'; } // alapbol HeadSpa-adatokkal (?business=hair|oxygen|laser: az adott uzletag mintaadataival)
+    const MINTA = {
+      headspa: { svc: { name: 'EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás', durationMin: 80, activePrice: 26900 }, staff: null, employee: 'Mirage' },
+      hair: { svc: { name: 'Női hajvágás', durationMin: 60, activePrice: 12900 }, staff: 'Betti', employee: 'Betti' },
+      oxygen: { svc: { name: 'Első oxigénterápiás kezelés', durationMin: 45, activePrice: 9900 }, staff: 'Bozsoki - Harangozó Tündi', employee: 'Bozsoki - Harangozó Tündi' },
+      laser: { svc: { name: 'ARC - Teljes arc', durationMin: 30, activePrice: 24000 }, staff: null, employee: 'Zsófi' },
+    }[flow.business] || { svc: { name: 'Minta kezelés', durationMin: 60, activePrice: 10000 }, staff: null, employee: null };
+    S.service = { serviceId: '0', listPrice: null, bookingType: 'first_treatment', ...MINTA.svc };
+    if (MINTA.staff) S.slotStaff = { id: '1', label: MINTA.staff };
     S.slot = { start_unix: t0, staff_id: '1', staff_label: 'x', slot_id: 'minta' };
     S.slots = [0, 5400, 90000, 93600, 176400].map((d, i) => ({ start_unix: t0 + d, staff_id: '1', staff_label: 'x', slot_id: 'minta' + i, service_id: '0' }));
     S.place = { name: 'Mosaic Headspa', address: '1023 Budapest, Bécsi út 4. földszint 1. ajtó' };
-    S.confirmation = { reported: { price: 26900, employee: 'Mirage' } };
+    S.confirmation = { reported: { price: S.service.activePrice, employee: MINTA.employee } };
     const map = { siker: 'C6', elkelt: 'A2', hiba: 'A3', ellenorizetlen: 'A3U', 'nincs-idopont': 'A1', 'visszahivas-kesz': 'A1_SENT' };
     S.adapterSample = true;
     adapter.getAvailability = async () => S.slots; // mintanezetben nincs halozat

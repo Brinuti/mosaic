@@ -98,7 +98,7 @@ try {
   const t1 = Date.now(); let veg = null;
   while (Date.now() - t1 < 60000 && !veg) {
     const c = reteg.locator('.be-title'); const cim = (await c.count()) ? (await c.first().textContent()).trim() : '';
-    if (/Foglalásod sikeres|A foglalásodat feldolgoztuk|Ez az időpont közben elkelt|Most nem tudjuk/.test(cim)) veg = cim;
+    if (/Sikeres foglalás|Foglalásod sikeres|A foglalásodat feldolgoztuk|Ez az időpont közben elkelt|Most nem tudjuk/.test(cim)) veg = cim;
     else if (page.url().includes('bookingUrl=')) veg = 'A FO ABLAK koszonooldalra navigalt: ' + page.url().slice(0, 100);
     else await page.waitForTimeout(700);
   }

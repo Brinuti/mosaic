@@ -32,7 +32,7 @@ Minden oldal elérhető az előnézeten (`https://claude-booking-design-1.mosaic
 
 ## A motor saját végképernyői (mintanézet, foglalás nélkül; élesen a motor a fenti meglévő oldalakra ad át)
 
-- `/foglalo-motor?minta=siker` (Foglalásod sikeres!), `?minta=elkelt` (az időpont közben elkelt), `?minta=hiba`, `?minta=ellenorizetlen`
+- `/foglalo-motor?minta=siker` (Sikeres foglalás!; üzletáganként: `&business=hair`, `&business=oxygen`, `&business=laser`; a kezelő fotóval / névvel, „Ott leszek”, „Mi történik most?”), `?minta=elkelt` (az időpont közben elkelt), `?minta=hiba`, `?minta=ellenorizetlen`
 - visszahívás: `?minta=nincs-idopont` (visszahívás-kérő űrlap), `?minta=visszahivas-kesz` (Visszahívást kértél!)
 - PMU: `/foglalo-pmu?minta=kezeles#koszonjuk`, `/foglalo-pmu?minta=konz#koszonjuk-konzultacio`, `/foglalo-pmu?minta=visszahivas`, `/foglalo-pmu?minta=foto` (Megkaptam a fotódat!)
 

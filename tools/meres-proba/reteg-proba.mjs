@@ -464,6 +464,48 @@ async function zarFigyelve(page) {
   await zar(page);
 }
 
+// --- koszono kepernyok (mintanezet, foglalas es kuldes nelkul): minden uzletagnal egyforma, a PMU-koszono mintajara -------------------------------------
+{
+  const u = await ujLap(); const pg = u.page;
+  const posztok = []; pg.on('request', (r) => { if (r.method() === 'POST') posztok.push(r.url()); });
+  const MINTAK = [['HeadSpa', '', null], ['Fodraszat', '&business=hair', 'Betti'], ['Oxigen', '&business=oxygen', 'Bozsoki'], ['Lezer', '&business=laser', 'Zsófi']];
+  for (const [cimke, q, kezelo] of MINTAK) {
+    await pg.goto(BAZIS + '/foglalo-motor?minta=siker' + q, { waitUntil: 'domcontentloaded' });
+    await pg.locator('.be-success').waitFor({ timeout: 15000 });
+    await pg.waitForTimeout(600);
+    const cim = (await pg.locator('.be-success .be-title').textContent()).trim();
+    const lepesek = await pg.locator('.be-lepesek li').count();
+    const kezeloDb = await pg.locator('.be-kezelo').count();
+    const kezeloSzoveg = kezeloDb ? await pg.locator('.be-kezelo').first().textContent() : '';
+    const foto = kezeloDb ? await pg.locator('.be-kezelo img.be-kezelo-kep').evaluateAll((es) => es.map((e) => e.complete && e.naturalWidth > 0)) : [];
+    ok(`koszono (${cimke}): "Sikeres foglalas!", kartya + terkep, "Ott leszek", naptar, "Mi tortenik most?" (3 pont)`, cim === 'Sikeres foglalás!' && (await pg.locator('.be-kosz-kartya .be-terkep').count()) === 1 && (await pg.locator('.be-ott').count()) === 1
+      && (await pg.locator('.be-naptar-link').count()) === 1 && lepesek === 3 && /Ott leszek/.test(await pg.locator('.be-ott').textContent()), `${cim} / ${lepesek} pont`);
+    ok(`koszono (${cimke}): ${kezelo ? 'a kezelo (' + kezelo + ') kepe es neve a kartya es a "Ott leszek" kozott, "var teged"' : 'nincs kezelo-sor (szobak vannak, nem kezelok)'}`,
+      kezelo ? kezeloDb === 1 && kezeloSzoveg.includes(kezelo) && /vár téged/.test(kezeloSzoveg) && (cimke === 'Lezer' || (foto.length === 1 && foto[0])) : kezeloDb === 0, kezeloSzoveg.replace(/\s+/g, ' ').trim());
+    if (cimke === 'Lezer') ok('koszono (Lezer): a kezelesre vonatkozo tudnivalok (borotvalas, napozas)', /borotváld le/.test(await pg.locator('.be-lepesek').textContent()) && /napozást/.test(await pg.locator('.be-lepesek').textContent()));
+    if (cimke === 'Oxigen') ok('koszono (Oxigen): hajmosas / hajfestes tudnivalo', /48 órával ne moss hajat/.test(await pg.locator('.be-lepesek').textContent()));
+  }
+  // "Ott leszek": a gomb zold lesz, a mintanezetben NEM megy el kuldes (nem keletkezik e-mail a szalonnak)
+  await pg.goto(BAZIS + '/foglalo-motor?minta=siker&business=oxygen', { waitUntil: 'domcontentloaded' });
+  await pg.locator('.be-ott').waitFor({ timeout: 15000 });
+  await pg.locator('.be-ott').click(); await pg.waitForTimeout(500);
+  ok('koszono: az "Ott leszek" megerositi (zold, "Koszonom, varunk!"), mintanezetben nincs kuldes', /Köszönöm, várunk/.test(await pg.locator('.be-ott').textContent()) && await pg.locator('.be-ott').isDisabled() && posztok.length === 0, 'POST: ' + posztok.length);
+  // visszahivas utan: mi fog tortenni (idopont nelkul), nincs kezelo-sor
+  await pg.goto(BAZIS + '/foglalo-motor?minta=visszahivas-kesz', { waitUntil: 'domcontentloaded' });
+  await pg.locator('.be-success').waitFor({ timeout: 15000 });
+  const vhSzoveg = await pg.locator('main').textContent();
+  ok('koszono (visszahivas): "Visszahivast kertel!", "Mi tortenik most?" 3 pont, nincs idopont-allitas, nincs lepesjelzo', /Visszahívást kértél!/.test(vhSzoveg) && (await pg.locator('.be-lepesek li').count()) === 3 && /felhív a megadott számon/.test(vhSzoveg) && !(await pg.locator('.be-steps:not([hidden])').count()), '');
+  // sminktetovalo: a kezelo (Melitta) kepe es neve a kartya / terkep es a szoveg kozott, mindegyik koszonon
+  for (const [cimke, ut, nezet] of [['foglalas', '/foglalo-pmu?minta=kezeles#koszonjuk', 'koszonjuk'], ['szemelyes konzultacio', '/foglalo-pmu?minta=konz#koszonjuk-konzultacio', 'koszonjuk'], ['visszahivas', '/foglalo-pmu?minta=visszahivas', 'c-kesz'], ['fotokuldes', '/foglalo-pmu?minta=foto', 'foto-kesz']]) {
+    await pg.goto(BAZIS + ut, { waitUntil: 'domcontentloaded' });
+    await pg.locator('[data-nezet=' + nezet + ']:not([hidden])').waitFor({ timeout: 15000 });
+    await pg.waitForTimeout(400);
+    const sor = pg.locator('[data-nezet=' + nezet + ']:not([hidden]) .kezelo-sor');
+    ok('koszono (PMU ' + cimke + '): Toreki Melitta kepe es neve', (await sor.count()) === 1 && /Töreki Melitta/.test(await sor.textContent()) && await sor.locator('img').evaluate((e) => e.complete && e.naturalWidth > 0), (await sor.textContent()).replace(/\s+/g, ' ').trim());
+  }
+  await u.ctx.close();
+}
+
 // --- sebesseg: a naptar mennyi ido alatt jelenik meg hideg gyorsitotarral (uj kontextus, nincs elomelegites), uzletagankent ------------------------
 const SEBESSEG = [['HeadSpa paros', { business: 'headspa', service: 'paros' }, null], ['Fodraszat konzultacio', { business: 'hair', service: 'konzult' }, null], ['Lezer konzultacio', { business: 'laser', service: 'konzult' }, null], ['Oxigen 1. alkalom', { business: 'oxygen', service: '466110' }, 'szakember']];
 for (const [cimke, opts, elso] of SEBESSEG) {
