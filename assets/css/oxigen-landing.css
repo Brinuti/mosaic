@@ -73,10 +73,11 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 
 /* --- hero --- */
 .hero { position: relative; overflow: hidden; background: linear-gradient(100deg, #fbf8f1 0%, #f6f0e4 100%); }
-.hero-racs { display: grid; grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr); gap: 44px; align-items: center; min-height: 590px; }
-.hero-szoveg { padding: 52px 0 50px; position: relative; z-index: 2; }
-.hero h1 { font-size: 56px; line-height: 1.04; letter-spacing: -.02em; color: #12272a; }
-.hero-al { font: 500 24px/1.3 var(--cim); color: var(--sotet); margin-top: 18px; }
+.hero-cim { padding-top: 44px; white-space: nowrap; font-size: min(46px, 3.5vw); }
+.hero-racs { display: grid; grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr); gap: 44px; align-items: center; min-height: 520px; }
+.hero-szoveg { padding: 22px 0 46px; position: relative; z-index: 2; }
+.hero h1 { line-height: 1.1; letter-spacing: -.02em; color: #12272a; }
+.hero-al { font: 500 25px/1.3 var(--cim); color: var(--sotet); }
 .hero-lead { font-size: 17px; line-height: 1.5; color: #2f4040; margin-top: 14px; max-width: 520px; }
 .tenyek { display: flex; flex-wrap: wrap; gap: 14px 28px; margin: 26px 0 28px; }
 .tenyek li { display: flex; align-items: center; gap: 12px; font-size: 14px; line-height: 1.25; color: #2a3a3a; }
@@ -130,7 +131,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .monitor img { width: 100%; height: auto; aspect-ratio: 1.6; object-fit: cover; border-radius: 8px; }
 .monitor::after { content: ''; position: absolute; left: 50%; bottom: 10px; width: 34px; height: 5px; border-radius: 3px; background: #3a3a3a; transform: translateX(-50%); }
 .monitor figcaption { position: absolute; left: 26px; bottom: 36px; background: rgba(255, 255, 255, .88); color: #44352a; font: 600 10.5px/1 var(--test); letter-spacing: .14em; text-transform: uppercase; padding: 7px 11px; border-radius: 999px; }
-.allapot-szoveg { position: relative; padding-right: 150px; }
+.allapot-szoveg { position: relative; }
 .allapot h2 { color: #fff; font-size: 40px; }
 .allapot-szoveg > p { color: #d3dedc; font-size: 16px; margin-top: 16px; }
 .pipa-lista { display: grid; gap: 10px; margin-top: 18px; }
@@ -138,8 +139,6 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .pipa-lista li::before { content: ''; flex: none; width: 22px; height: 22px; margin-top: 0; border-radius: 50%; background: #c6a56a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230c3433' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center / 14px no-repeat; }
 .pipa-lista b { font-weight: 600; }
 .allapot-cta { margin-top: 24px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
-.allapot-cta small { font-size: 13px; color: #b9c8c6; max-width: 360px; line-height: 1.4; }
-.pecset { position: absolute; top: -4px; right: 0; width: 132px; height: 132px; border-radius: 50%; border: 1px solid #b89a63; display: grid; place-items: center; text-align: center; font: 500 11.5px/1.35 var(--test); letter-spacing: .2em; text-transform: uppercase; color: #d8bd8a; padding: 22px; }
 
 /* --- kezelok --- */
 .kezelok { padding: 58px 0 24px; background: var(--krem); }
@@ -203,19 +202,21 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 /* --- eredmenyek --- */
 .eredmenyek { padding: 56px 0 60px; background: var(--krem2); }
 .eredmenyek h2 { font-size: 38px; }
-.ba-keret { position: relative; margin-top: 30px; }
+.ba-csoport { margin-top: 38px; }
+.ba-csoport:first-of-type { margin-top: 30px; }
+.ba-fej { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.ba-fej h3 { font-size: 24px; }
+.ba-fej span { font-size: 13.5px; color: var(--halk); }
+.ba-keret { position: relative; }
 .ba-sav { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 40px) / 3); gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 4px 2px 12px; }
 .ba-sav::-webkit-scrollbar { display: none; }
-.ba { scroll-snap-align: start; margin: 0; background: #fff; border: 1px solid #eadfca; border-radius: 16px; padding: 10px 10px 18px; box-shadow: var(--arnyek); }
+.ba { scroll-snap-align: start; margin: 0; background: #fff; border: 1px solid #eadfca; border-radius: 16px; padding: 8px; box-shadow: var(--arnyek); }
 .ba-kep { position: relative; border-radius: 10px; overflow: hidden; background: #e6dfcf; }
 .ba-kep img { width: 100%; height: auto; aspect-ratio: 1.5; object-fit: cover; }
 .ba .cimke { position: absolute; bottom: 10px; background: rgba(20, 20, 20, .72); color: #fff; font: 600 10.5px/1 var(--test); letter-spacing: .12em; text-transform: uppercase; padding: 7px 11px; border-radius: 6px; }
 .ba .cimke.elotte { left: 10px; }
 .ba .cimke.utana { right: 10px; }
-.ba figcaption { text-align: center; margin-top: 14px; padding: 0 8px; }
-.ba figcaption b { display: block; font: 600 15px/1.3 var(--test); color: var(--szoveg); }
-.ba figcaption span { display: block; font-size: 13px; color: var(--halk); margin-top: 3px; }
-.ba-megj { margin-top: 18px; font-size: 16px; color: var(--sotet); line-height: 1.5; max-width: 760px; margin-left: auto; margin-right: auto; }
+.ba-megj { margin-top: 34px !important; margin-top: 18px; font-size: 16px; color: var(--sotet); line-height: 1.5; max-width: 760px; margin-left: auto; margin-right: auto; }
 .ba-megj b { font-weight: 600; }
 
 /* --- video + privat szfera --- */
@@ -241,6 +242,24 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .szoba-kepek figure { margin: 0; display: flex; flex-direction: column; min-height: 0; }
 .szoba-kepek img { flex: 1 1 0; min-height: 200px; width: 100%; height: 0; object-fit: cover; border-radius: 14px; box-shadow: var(--arnyek); }
 .szoba-kepek figcaption { font-size: 13.5px; color: var(--halk); margin-top: 8px; text-align: center; }
+
+/* --- vendegvelemenyek (Trustindex-widget keretben) --- */
+.velemenyek { padding: 22px 0 46px; background: var(--krem); }
+.velemenyek h2 { font-size: 36px; }
+.ti-doboz { margin-top: 26px; min-height: 260px; }
+.ti-helykitolto { min-height: 260px; display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center; background: #fff; border: 1px solid #eadfca; border-radius: 16px; padding: 30px; color: var(--halk); }
+.ti-keret { position: relative; }
+.ti-fej { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; font-size: 15px; color: var(--szoveg); flex-wrap: wrap; }
+.ti-fej b { font-weight: 600; }
+.ti-sav { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 40px) / 3); gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 4px 2px 12px; }
+.ti-sav::-webkit-scrollbar { display: none; }
+.ti-kartya { scroll-snap-align: start; background: #fff; border: 1px solid #eadfca; border-radius: 16px; padding: 22px 22px 18px; box-shadow: var(--arnyek); display: flex; flex-direction: column; }
+.ti-csillag { color: #e2a83a; letter-spacing: 2px; font-size: 16px; }
+.ti-kartya > p:not(.ti-nev) { font-size: 15px; line-height: 1.55; color: #2f4040; margin-top: 10px; display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; flex: 1; }
+.ti-nev { margin-top: 14px; font-weight: 600; font-size: 14.5px; }
+.ti-nev small { display: block; font-weight: 400; font-size: 12.5px; color: var(--halk); margin-top: 1px; }
+.ti-link { margin-top: 14px; font-size: 14.5px; }
+.ti-link a { color: var(--sotet); }
 
 /* --- arak --- */
 .arak { padding: 40px 0 36px; background: var(--krem); }
@@ -321,19 +340,17 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 /* --- reszponziv --- */
 @media (max-width: 1100px) {
   .tartalom { width: min(var(--szeles), calc(100% - 48px)); }
-  .hero h1 { font-size: 46px; }
+  .hero-cim { white-space: normal; font-size: 40px; padding-top: 34px; }
   .hero-racs { min-height: 0; grid-template-columns: 1fr; gap: 6px; }
   .hero-szoveg { padding: 40px 0 18px; }
   .hero-galeria { max-width: 640px; margin: 0 auto 36px; width: 100%; }
   .jel-racs { grid-template-columns: repeat(2, 1fr); }
   .allapot-racs { grid-template-columns: 1fr; gap: 34px; padding: 40px 0; }
   .monitor { max-width: 560px; margin: 0 auto; }
-  .allapot-szoveg { padding-right: 0; }
-  .pecset { position: static; width: 104px; height: 104px; margin-bottom: 18px; font-size: 10px; padding: 16px; }
   .kezelo-sav { grid-auto-columns: calc((100% - 20px) / 2); }
   .elso-racs { grid-template-columns: 1fr; }
   .elso-kep { min-height: 0; aspect-ratio: 16 / 10; }
-  .ba-sav { grid-auto-columns: calc((100% - 20px) / 2); }
+  .ba-sav, .ti-sav { grid-auto-columns: calc((100% - 20px) / 2); }
   .video-racs { grid-template-columns: 300px minmax(0, 1fr); gap: 32px; }
   .szalon-racs { grid-template-columns: 1fr; gap: 24px; }
   .arak-racs { grid-template-columns: 1fr; grid-template-areas: "cim" "kartyak" "aside" "lab"; row-gap: 22px; }
@@ -348,7 +365,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   html { scroll-padding-top: 70px; }
   .tartalom { width: calc(100% - 32px); }
   :where(main, dialog) h2 { font-size: 30px; }
-  .hero h1 { font-size: 36px; }
+  .hero-cim { font-size: 33px; padding-top: 26px; }
   .hero-al { font-size: 20px; }
   .hero-lead { font-size: 16px; }
   .hero-szoveg { padding: 28px 0 22px; }
@@ -368,6 +385,9 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .jelek { padding: 44px 0 40px; }
   .jelek h2, .kezelok h2, .elso h2, .folyamat h2, .eredmenyek h2, .video-sor h2, .arak h2, .miert h2 { font-size: 28px; }
   .jel-racs { gap: 12px; margin-top: 24px; }
+  .ti-sav { grid-auto-columns: 88%; }
+  .velemenyek h2 { font-size: 28px; }
+  .ba-fej h3 { font-size: 20px; }
   .jel { padding: 20px 12px 18px; }
   .jel svg { width: 46px; height: 46px; }
   .jel h3 { font-size: 15px; }
@@ -417,7 +437,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
   .zaro-cta .gomb { width: 100%; }
 }
 @media (max-width: 400px) {
-  .hero h1 { font-size: 32px; }
+  .hero-cim { font-size: 29px; }
 }
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }

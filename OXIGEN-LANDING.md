@@ -28,9 +28,12 @@ Az oldalon belül **nincs `#horgony`-link**: a GTM History Change triggere minde
 gombok (`data-gorgetes`) JS-ből görgetnek. A CTA-kattintások `oxigen_landing_cta` (`data-cta` érték) és `oxigen_landing_video` dataLayer-eseményt
 küldenek (a PMU-landing `pmu_landing_*` mintájára; ezekre GTM-címke nem figyel).
 
-## Hero-galéria
+## Hero és eredmények
 
-A hero jobb oldalán **valós előtte/utána fotók galériája** van (nem statikus kép): egy dia = egy `<figure class="hg-dia">` a HTML-ben; a pontokat, a nyilakat és a 6 másodperces automatikus lapozást (amíg a látogató bele nem nyúl; csökkentett mozgásnál nincs) az `oxigen-landing.js` adja. Az oldal **csak a hajhullásra** épül (a többi panaszra külön landing készül). A galériában az Oxygeni Hair 5 hajhullás-referenciája van (`assets/img/oxigen/hajhullas-1..5.jpg`), a felirat: „Gyengébb panaszok esetén 3–5 alkalom, súlyosabb panaszok esetén 5–10 alkalom.” Az „Az Oxygeni vendégeinek valós javulásai” sor **más** képeket mutat (`hajhullas-6..8.jpg`). A repóban összesen 8 hajhullás előtte/utána kép van (a régi Wix-oldal Oxygeni-sorozata); a tulajdonos által kiválasztott további fotók (akár 10 a galériába) ide veendők.
+- A H1 („Működő hajgyógyászati oxigénterápia hajhullás ellen”) a teljes szélességben, asztalon egy sorban áll; alatta: „Nem kozmetikai, hanem hajgyógyászati kezelés.”
+- A hero jobb oldala **valós előtte/utána fotók galériája** (nem statikus kép): egy dia = egy `<figure class="hg-dia">`; a pontokat, nyilakat és a 6 mp-es automatikus lapozást (amíg a látogató bele nem nyúl; csökkentett mozgásnál nincs) az `oxigen-landing.js` adja. Felirat: „Gyengébb panaszok esetén 3–5 alkalom, súlyosabb panaszok esetén 5–10 alkalom.” A 5 jelenlegi kép **helyőrző** (hajhullás-referencia az Oxygeni-sorozatból), a tulajdonos válogatja a valódiakat (akár 10-et).
+- „Az Oxygeni vendégeinek valós javulásai”: a **régi oldal galériái, panaszonként, ugyanabban a sorrendben, mind a 21 kép** (`assets/img/oxigen/eredmeny-01..21.jpg`): hajhullás 12, korpás haj 3, pikkelysömör 3, seborrea 3, „Forrás: Oxygeni Hair” jelöléssel. A hero 5 képe ezek közül való (ismétlődik, amíg a tulajdonos ki nem választja a sajátokat).
+- **Vendégeink véleménye**: a MOSAIC Google-értékelései a Trustindex-widget adataiból (ugyanaz a widget, mint a régi oldalon: `cdn.trustindex.io`, azonosító az `oxigen-landing.js`-ben) lapozható kártyákon. Külső szolgáltató, ezért a süti-tájékoztató szerint „funkcionális”: csak hozzájárulás után tölt be, addig gombos helykitöltő áll. A widget általános MOSAIC-vélemények (HeadSpa, fodrászat) – oxigén-specifikus vélemény egyelőre nincs köztük.
 
 ## Alcímek, gombok
 
@@ -38,7 +41,7 @@ Az oldalon nincsenek a címek fölötti kis (sárga) alcímek. Az arany pill-gom
 
 ## Validálásra váró helyőrzők (`[szögletes zárójeles]`, `.helyorzo`)
 
-- a három kezelő rövid bemutatkozója **általános szöveg** (oxigénterápiás képzés, gyakorlott kezelő, a kezelés menete; személyes adat nélkül, mert nincs forrásunk): a valódi szakmai háttér a tulajdonostól kérendő; a nevek és a fotók a Salonic szakember-oldaláról vannak;
+- a három kezelő bemutatkozója **általános, személyes adat nélküli szöveg** (nincs róluk forrásunk): a valódi szakmai háttér a tulajdonostól kérendő; a nevek és a fotók a Salonic szakember-oldaláról vannak;
 - az előtte/utána képek az Oxygeni Hair márka referenciái; a „kétmillió elvégzett kezelésből 95%-nál pozitív változás” és a „3–5 / 5–10 alkalom” a tulajdonos megadott szövege;
 - az időpont-módosítás pontos határideje a GYIK-ban.
 
