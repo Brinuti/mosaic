@@ -276,7 +276,7 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
       assert.ok(['APPROVED_BY_METADATA', 'APPROVED_BY_FOLDER_CONTEXT', 'APPROVED_BY_EXPLICIT_FILENAME'].includes(V[k].hero_media.status), k + ' jovahagyott');
       for (const ut of [V[k].hero_media.src, V[k].hero_media.video.src]) assert.ok(fs.existsSync(new URL('../../' + ut.slice(1), import.meta.url)) && fs.statSync(new URL('../../' + ut.slice(1), import.meta.url)).size < 5 * 1024 * 1024, k + ' fajl letezik, < 5 MB: ' + ut);
     }
-    assert.equal(V.friend.hero_media.video.src, '/assets/video/ajandek-hero-30-baratnok.mp4');
+    assert.equal(V.friend.hero_media.video.src, '/assets/video/ajandek-hero-baratnok-negyzet.mp4');
     assert.equal(V.partner.hero_media.video.src, '/assets/video/ajandek-hero-30-partner.mp4');
     for (const k of ['for_her']) {
       assert.equal(V[k].hero_media, G.hero_media, k + ' fallback a GENERAL hero-assetre');

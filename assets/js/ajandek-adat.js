@@ -250,7 +250,8 @@
       hero_cta: 'Közös élményt választok',
       // a tulajdonos kérése (2026-10-04): barátnők választják egymásnak, ezért a hero a páros kezelés videójának barátnős szakasza (két nő, fürdőlepedőben, pezsgővel; felülnézeti kép a két ágyról);
       // forrás: a Meta-fiók "Páros Headspa szept ajánlati WARM / Szept páros HEADSPA 20%" videója (ugyanaz, mint a Páros termék kezelés-videója), az árcsík és a felirat nélküli sáv, 3:2, hang nélkül (0,5 MB)
-      hero_media: { src: '/assets/img/ajandek/hero-30-baratnok.jpg', alt: 'Két barátnő fürdőlepedőben pezsgővel, majd egymás mellett a Head Spa kezelésen a MOSAIC-ban', video: { src: '/assets/video/ajandek-hero-30-baratnok.mp4' }, forras: 'Meta: Páros Headspa szept ajánlati WARM', status: 'APPROVED_BY_METADATA' },
+      // 2026-10-04: a tulajdonos a hosszabb (30 mp-es) montázs helyett ezt, a rövid, eredeti barátnős szakaszt kérte vissza (4,5 mp, ismétlődik); négyzetes (1:1) kerethez a 3:2-es képsáv a Páros kezelés-videó (`ajandek-kezeles-paros.mp4`) első 4,5 mp-éből, felirat nélkül, a keret szélén halvány elmosott sávval
+      hero_media: { src: '/assets/img/ajandek/hero-baratnok-negyzet.jpg', alt: 'Két barátnő fürdőlepedőben pezsgővel, majd egymás mellett a Head Spa kezelésen a MOSAIC-ban', video: { src: '/assets/video/ajandek-hero-baratnok-negyzet.mp4' }, forras: 'Meta: Páros Headspa szept ajánlati WARM', status: 'APPROVED_BY_METADATA' },
       gift_finder_preselect: 'ketten',
       product_order: ['paros', 'egyeni', '4kezes'],
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
