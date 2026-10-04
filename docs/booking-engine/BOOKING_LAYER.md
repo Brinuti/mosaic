@@ -50,7 +50,8 @@ A build (`tools/netlify-build.mjs`): a launcher verziójelei (`__MOTOR_VERZIO__`
 ## Design (2026-10-04, 1. kör; csak előnézeten, DECISIONS.md „Design-döntések”)
 
 - **Képek** minden szolgáltatás-választónál (`assets/img/booking/*.jpg`, kulcsok a `families.js`-ben és a `flows/*.js`-ben: `kep`); a fodrászok fotója: `flows/hair.js` `staffPhotos`.
-- **HeadSpa:** `HS2` az első képernyő (kép, időtartam, ár; alatta az ajándékkártya két linkje).
+- **HeadSpa:** az első kérdés az ajándékkártya (`HS1`: kuponkóddal / kuponkód nélkül), utána `HS2` / `HS3` (kép, 1 óra 30 perc, ár; kuponkódosnál „Kuponkóddal”).
+- **Fodrászat:** a belépő a fodrász-választó (`HA0`, fotókkal), csak utána a szolgáltatás; **Oxigén:** a szakember-választó (`OXS`) az időpont előtt, kártyákon, nem legördülőben. Az ikonok (`assets/js/booking-engine/ikonok.js`): hajhosszak, fodrászati kezelések, lézer-testrészek, ajándék, naptár.
 - **Időpont-választás (minden üzletág):** `C1` = a PMU-foglaló havi naptára (`flow.js`: `monthList`, `monthGrid`, `dayTimes`) → rögtön a Salonic adatlapja. Nincs összegző képernyő (`C3` megszűnt), nincs gyors-időpontos nézet és naptár-sáv (`C2` megszűnt), a lépésjelző 3 lépés. Szakember-választó csak az Oxigénnél van a naptár fölött.
 - **Adatlap:** teljes szélességű keret (nem csúszik ki), a választott időpont összegzése fölötte (asztalon). A PMU-val azonos kinézethez a Salonic-fiókban be kell állítani az „Egyedi CSS URL”-t (lásd ENGINE_HEADSPA.md, „Közös Salonic-CSS”).
 - Pillanatképek a nézetekről: `node tools/meres-proba/design-kepek.mjs --overlay dist --ki mappa [--mobil 1] [--stilus 1]`.

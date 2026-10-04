@@ -19,6 +19,9 @@ export const AREAS = Object.freeze([
 ]);
 
 export const areaOf = (service) => AREAS.find((a) => a.test(displayName(service.name)));
+// a terulet kartyaihoz az ikon (ikonok.js kulcsa); a "Tobb terulet" a csomag-ikon
+const AREA_IKON = { arc: 'arc', honalj: 'honalj', kar: 'kar', intim: 'intim', lab: 'lab', torzs: 'mellkas', tobb: 'csomag' };
+export const areaIkon = (key) => AREA_IKON[key] || 'csomag';
 
 const PREFIX = /^(ARC|TEST|INTIM|LÁBAK|FÉRFI|EGYÉB)\s*-\s*/i;
 const ASSESS = /\s*\+?\s*állap\w*felmérés/i; // a Salonic neveiben "allapofelmeres" es "allapotfelmeres" is van
@@ -38,6 +41,23 @@ export function labelOf(service) {
   return { title: t, tags };
 }
 
+// A csomagok testreszei: a MOSAIC lezeres oldalanak csomag-leirasa szerint (lezeres-szortelenites-budapest, "CSOMAGARAINK"); a Salonic neve csak a csomag nevet adja.
+// Az egyedi csomagnal a vendeg valogatja ossze a testreszeket. Ami nincs a listaban (uj csomag), annak nincs testresz-sora.
+const PACKAGES = [
+  { test: /^BASIC\b/i, reszek: [['Hónalj', 'honalj'], ['Teljes intim', 'intim']] },
+  { test: /^MEDIUM\b/i, reszek: [['Lábszár', 'lab'], ['Hónalj', 'honalj'], ['Intim', 'intim']] },
+  { test: /^SUMMER\b/i, reszek: [['Teljes láb', 'lab'], ['Hónalj', 'honalj'], ['Intim', 'intim']] },
+  { test: /^TOTAL\b/i, reszek: [['Teljes láb', 'lab'], ['Teljes kar', 'kar'], ['Hónalj', 'honalj'], ['Intim', 'intim']] },
+  { test: /^MAN TOTAL\b/i, reszek: [['Hát', 'hat'], ['Váll', 'vall'], ['Mellkas', 'mellkas'], ['Has', 'has'], ['Hónalj', 'honalj']] },
+  { test: /^EGYEDI\b/i, leiras: 'Te válogatod össze a testrészeket' },
+];
+/** A szolgaltatas csomag-e, es mik a testreszei: { reszek: [{ label, ikon }], leiras } vagy null. */
+export function packageOf(service) {
+  const t = labelOf(service).title;
+  const p = PACKAGES.find((x) => x.test.test(t));
+  return p ? { reszek: (p.reszek || []).map(([label, ikon]) => ({ label, ikon })), leiras: p.leiras || null } : null;
+}
+
 export const LASER = Object.freeze({
   business: 'laser',
   title: 'Időpontfoglalás',
@@ -45,7 +65,6 @@ export const LASER = Object.freeze({
   enginePath: '/foglalo-motor',
   firstState: 'LA1',
   voucherState: null,
-  giftCardUrl: null,
   showStaffFilter: false, // egyetlen kezelo (Elysion Pro Szortelenites): nincs mit valasztani
   zeroPriceLabel: 'Egyedi ár', // az egyedi csomag Salonic-ara 0 Ft (a vegso arat a helyszinen allitjak): a vendeg ne 0 Ft-ot lasson
   // az alap (egyeni CSS nelkuli) Salonic-kinezethez: az "elkuldes" gomb alja 1468 px + 24 px + a Salonic suti-savja (~197 px); a lablec 1615 px-nel kezdodik
@@ -53,6 +72,8 @@ export const LASER = Object.freeze({
   areas: AREAS,
   areaOf,
   labelOf,
+  packageOf,
+  areaIkon,
   copy: Object.freeze({
     introTitle: 'Melyik út illik rád?',
     intro: Object.freeze([

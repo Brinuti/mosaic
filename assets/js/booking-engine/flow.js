@@ -1,28 +1,28 @@
 // MOSAIC Booking Engine V1 - a folyamat tiszta (DOM-mentes, halozat-mentes) logikaja
 //
 // Allapotok a wireframe-ok szerint (docs: MOSAIC_HeadSpa_Booking_Engine_V1_Wireframe.md):
-//   HS2 elmeny, HS3 ajandekkartya-tipus, C1 idopont (a PMU-foglalo havi naptara; nincs osszegzo kepernyo),
+//   HS1 ajandekkartya-e, HS2 elmeny, HS3 ajandekkartya-elmeny, C1 idopont (a PMU-foglalo havi naptara; nincs osszegzo kepernyo),
 //   C4 vendegadatok (a Salonic beagyazott adatlapja), C5 rogzites, C6 siker, A1 nincs idopont, A2 elkelt, A3 technikai hiba.
 // Az utvonalak (ROUTES) pontosan a wireframe routing tablaja; a teszt ezt veti ossze vele.
 
 export const TIMEZONE = 'Europe/Budapest';
 
 // --- allapotgep -----------------------------------------------------------------------------------------------------------
-export const EXIT_GIFTCARD = 'EXIT_GIFTCARD'; // az ajandekkartya-vasarlas NEM foglalasi allapot: kilep a Gift Card funnelbe
 export const ROUTES = Object.freeze({
-  // HeadSpa: az elmeny-valasztas (HS2) az elso allapot; alatta ket link: ajandekkartya-bevaltas (HS3) es -vasarlas (kilep a Gift Card funnelbe)
-  HS2: { service: 'C1', voucher: 'HS3', giftcard: EXIT_GIFTCARD },
+  // HeadSpa: az elso kerdes az ajandekkartya (HS1: kuponkoddal -> HS3, anelkul -> HS2), utana az elmeny-valasztas
+  HS1: { voucher: 'HS3', normal: 'HS2' },
+  HS2: { service: 'C1' },
   HS3: { service: 'C1' },
-  // Oxigen: egy belepesi kerdes (OX1); ha egy szandekhoz tobb Salonic-szolgaltatas tartozik, rovid valasztas (OX2) - csak C1 elott
-  OX1: { service: 'C1', variant: 'OX2' },
-  OX2: { service: 'C1' },
-  // Fodraszat: HA1 (mit szeretnel) -> HA2 (kezeles) -> [HA2B (hajhossz)] -> HA3 (van valasztott fodraszod?) -> [HA3B] -> C1;
-  // az ingyenes konzultacio (HA-CONSULT) egyenesen C1-re megy; konkret szolgaltatas landing a HA3-ra
+  // Oxigen: egy belepesi kerdes (OX1); ha egy szandekhoz tobb Salonic-szolgaltatas tartozik, rovid valasztas (OX2); utana a szakember-valaszto (OXS) es az idopont
+  OX1: { service: 'OXS', variant: 'OX2' },
+  OX2: { service: 'OXS' },
+  OXS: { next: 'C1' },
+  // Fodraszat: a BELEPO a fodrasz-valaszto (HA0), utana HA1 (mit szeretnel) -> HA2 (kezeles) -> [HA2B (hajhossz)] -> C1; kategoria-landing HA0 -> HA2,
+  // konkret szolgaltatas landing HA0 -> C1; az ingyenes konzultacio (HA1 "nem tudom") egyenesen C1-re megy
+  HA0: { all: 'HA1', intent: 'HA2', service: 'C1' },
   HA1: { intent: 'HA2', consult: 'C1' },
-  HA2: { group: 'HA2B', service: 'HA3' },
-  HA2B: { service: 'HA3' },
-  HA3: { any: 'C1', choose: 'HA3B' },
-  HA3B: { staff: 'C1' },
+  HA2: { group: 'HA2B', service: 'C1' },
+  HA2B: { service: 'C1' },
   // Lezer: LA1 (melyik ut illik rad) -> LA2 (terulet; "mar tudom") / LA3 (terulet; "mar jarok kezelesre") -> LA2B (kezeles) -> C1;
   // az ingyenes konzultacio egyenesen C1-re megy; szakember nincs (egy kezelo)
   LA1: { consult: 'C1', known: 'LA2', returning: 'LA3' },
@@ -46,9 +46,9 @@ export function next(state, event) {
 
 /**
  * Belepesi pont: konkret szolgaltatas ismert -> az uzletag "exact" allapota (alap: C1; Fodraszat: HA3, a szakember-kerdes); ajandekkartya-szandek -> HS3
- * (ha az uzletagnak van); egyebkent (generic) az uzletag elso allapota (HS2 / OX1 / HA1).
+ * (ha az uzletagnak van); egyebkent (generic) az uzletag elso allapota (HS1 / OX1 / HA0 / LA1).
  */
-export function entryState({ hasService, voucher, first = 'HS2', voucherState = 'HS3', exact = 'C1' }) {
+export function entryState({ hasService, voucher, first = 'HS1', voucherState = 'HS3', exact = 'C1' }) {
   if (hasService) return exact;
   return voucher && voucherState ? voucherState : first;
 }

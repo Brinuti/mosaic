@@ -12,10 +12,11 @@ export const HEADSPA = Object.freeze({
   // (~197 px) az iframe aljara fekszik, ezert a gomb + 24 px + a sav magassaga kell, hogy ne takarja el (a lablec 1571 px-nel kezdodik,
   // a sav alatt marad). A Salonic-fiok "Egyeni CSS URL" beallitasaval (mint a PMU-nal) ez egyszerusodik.
   frame: Object.freeze({ crop: 100, visible: 1545 }), // az alap (egyeni CSS nelkuli) Salonic-kinezethez; a MOSAIC kozos CSS-sel a motor a tomor meretet hasznalja
-  // Legkevesebb lepes: a belepes egyenesen az elmeny-valasztas (HS2); az ajandekkartya-beváltás / -vasarlas a HS2 aljan egy-egy link (a HS1 mar nem lepes).
-  firstState: 'HS2',
+  // Az elso kerdes az ajandekkartya (HS1: kuponkoddal vagy anelkul), utana az elmeny-valasztas (HS2 / HS3).
+  firstState: 'HS1',
+  // A tulajdonos szerint a HeadSpa-kezelesek 1:30 oraak (a Salonic idotartama 80 perc): a megjelenitett idotartam ez; ha a Salonicban javul, ez elhagyhato.
+  durationOverride: 90,
   voucherState: 'HS3',
-  giftCardUrl: '/headspa-ajandekkartya', // az ajandekkartya-vasarlas kilep a foglalasbol (Gift Card funnel)
   showStaffFilter: false, // 11. dontes: a HeadSpa "munkatarsai" kezelo-helyek, a vendeg nem valaszt
   // HS2/HS3 kartyak. 8. dontes: az Egyeni = csak a "Relax" valtozat (a "Hair" nem foglalhato ebbol a foglalobol).
   cards: Object.freeze([
@@ -24,12 +25,14 @@ export const HEADSPA = Object.freeze({
     { key: 'negykezes', title: '4 kezes HeadSpa', kep: 'hs-negykezes', test: (n) => /NÉGYKEZES|4[ -]?KEZES/i.test(n) },
   ]),
   copy: Object.freeze({
-    // a HS2 (elmeny-valasztas) alatti ket link (a korabbi HS1 "Hogyan folytatnad?" lepes helyett)
-    voucherLink: 'Ajándékkártyám van – beváltom',
-    giftCardLink: 'Ajándékkártyát vásárolok',
+    hs1Title: 'Ajándékkártyával vagy anélkül foglalsz?',
+    hs1: [
+      { key: 'voucher', title: 'Ajándékkártyával (kuponkóddal) foglalok', ikon: 'ajandek' },
+      { key: 'normal', title: 'Normál foglalás kuponkód nélkül', ikon: 'naptar' },
+    ],
     hs2Title: 'Melyik HeadSpa élményt választod?',
     hs3Title: 'Milyen ajándékkártyád van?',
     hs3Note: 'Az ajándékkártyás foglalást a Salonic adatlapján kuponkóddal tudod rendezni.',
-    voucherSettled: 'Ajándékkártyával rendezve',
+    voucherSettled: 'Kuponkóddal',
   }),
 });

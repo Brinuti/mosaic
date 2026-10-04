@@ -1,7 +1,8 @@
 // Noi fodraszat uzletagi beallitas (wireframe: MOSAIC_Noi_Fodraszat_Booking_Engine_V1_Wireframe.md; dontesek: DECISIONS.md 17-19.)
 //
-// Nem mutatunk 40+ nyers Salonic-szolgaltatast: HA1 (mit szeretnel) -> HA2 (kezeles) -> HA2B (hajhossz) -> HA3 (van valasztott fodraszod?)
-// -> C1. Az ingyenes konzultacio egyenesen C1-re megy. Konkret szolgaltatas landing a HA3-ra erkezik (nem kerdezzuk ujra a kezelest).
+// A belepo pont a fodrasz-valaszto (HA0: kepes kartyak + "mindegy"), csak utana a szolgaltatas. Nem mutatunk 40+ nyers Salonic-szolgaltatast: HA1 (mit szeretnel)
+// -> HA2 (kezeles) -> HA2B (hajhossz) -> C1; a valasztott fodrasz kezeleseit mutatjuk. Az ingyenes konzultacio egyenesen C1-re megy.
+// Konkret szolgaltatas landing: a fodrasz-valasztoval kezdodik (csak a szolgaltatas fodraszai), a kezelest nem kerdezzuk ujra.
 // A szandekek a Salonic kategoria-nevei szerint jovahagyott csoportok (2026-10-03); amit egyik szandek sem igenyel, az az "Egyeb"-be kerul.
 
 export const HAIR = Object.freeze({
@@ -9,12 +10,11 @@ export const HAIR = Object.freeze({
   title: 'Időpontfoglalás',
   brand: 'MOSAIC Hair',
   enginePath: '/foglalo-motor',
-  firstState: 'HA1',
-  exactState: 'HA3', // konkret szolgaltatas landing: a kezelest nem kerdezzuk ujra, a szakember-kerdes jon
+  firstState: 'HA0',
+  exactState: 'HA0', // konkret szolgaltatas landing: a kezelest nem kerdezzuk ujra, a fodrasz-valaszto jon
   voucherState: null,
-  giftCardUrl: null,
-  showStaffFilter: true, // a szakember nem kotelezo (HA3 alapbol "nincs"); a vegen a Salonic-kartonon es a sikerkepernyon is latszik
-  staffUpfront: true, // a szakember-kerdes (HA3 / HA3B) az idopont elott jon: az idopont-naptarban nincs kulon szakember-valaszto
+  showStaffFilter: true, // a szakember nem kotelezo ("mindegy"); a vegen a Salonic-kartonon es a sikerkepernyon is latszik
+  staffFirst: true, // a fodrasz-valasztas a legelejen van: a kezeles-valasztas nem torli
   // az alap (egyeni CSS nelkuli) Salonic-kinezethez: az "elkuldes" gomb alja 1532 px, a Salonic suti-savja ~197 px, a lablec 1679 px-nel kezdodik
   // (ugyanaz, mint az Oxigennel); a kozos CSS-sel a motor a tomor meretet hasznalja
   frame: Object.freeze({ crop: 100, visible: 1653 }),
@@ -31,9 +31,7 @@ export const HAIR = Object.freeze({
     introTitle: 'Mit szeretnél?',
     groupTitle: 'Melyik kezelés?',
     lengthTitle: 'Milyen hosszú a hajad?',
-    staffTitle: 'Van választott fodrászod?',
-    staffNone: 'Nincs – a legkorábbi időpont érdekel',
-    staffChoose: 'Igen, választok fodrászt',
     staffListTitle: 'Melyik fodrászt választod?',
+    staffAny: 'Mindegy – a legkorábbi időpont érdekel',
   }),
 });

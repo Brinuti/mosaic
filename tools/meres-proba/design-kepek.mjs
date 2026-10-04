@@ -1,8 +1,9 @@
-// Pillanatkepek a foglalo-reteg kulcs-nezeteirol (a design ellenorzesehez): szolgaltatas-valaszto, HeadSpa, oxigen, fodraszat (fodraszok), lezer, havi naptar, adatlap.
+// Pillanatképek a foglaló-réteg kulcs-nézeteiről (a design ellenőrzéséhez): szolgáltatás-választó, HeadSpa (ajándékkártya-kérdés, élmények, kuponkódos kártyák,
+// naptár, adatlap), oxigén (kártyák, szakember), fodrászat (fodrász-választó, szándékok, kezelések, hajhosszok), lézer (területek, csomagok), naptárak.
 //
 //   node tools/meres-proba/design-kepek.mjs --overlay dist --ki mappa [--mobil 1] [--stilus 1] [--bazis https://...]
-// --stilus 1: az adatlapot a MOSAIC kozos Salonic-CSS-ével (salonic/mosaic.css) is megmutatja: ilyen lesz, ha a Salonic-fiokban az Egyedi CSS URL be van allitva.
-// A kimeno meres tiltva (tilt.mjs); az adatlap betoltese utan nem kuldunk el semmit (nincs foglalas).
+// --stilus 1: az adatlapot a MOSAIC közös Salonic-CSS-ével (salonic/mosaic.css) is megmutatja: ilyen lesz, ha a Salonic-fiókban az Egyedi CSS URL be van állítva.
+// A kimenő mérés tiltva (tilt.mjs); az adatlap betöltése után nem küldünk el semmit (nincs foglalás).
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -39,39 +40,53 @@ const page = await ctx.newPage();
 const reteg = page.locator('#mosaic-booking-layer');
 const elotag = MOBIL ? 'mobil' : 'asztali';
 const kep = async (nev) => { await page.waitForTimeout(900); await page.screenshot({ path: path.join(KI, `${elotag}-${nev}.png`) }); console.log('kep:', nev); };
-const cimre = async () => { await reteg.locator('.be-title').first().waitFor({ timeout: 25000 }); await page.waitForTimeout(700); };
+const cimre = async () => { await reteg.locator('.be-title').first().waitFor({ timeout: 25000 }); await page.waitForTimeout(900); };
 const zar = async () => { await reteg.locator('#be-close').click().catch(() => {}); await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {}); };
+const kattint = async (szoveg) => { await reteg.locator('.be-choice', { hasText: szoveg }).first().click(); await cimre(); };
 
 await page.goto(BAZIS + '/booking-test', { waitUntil: 'domcontentloaded' });
 await page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 });
 const nyit = async (o) => { await page.evaluate((x) => window.openBooking(x), o); await cimre(); };
 
-await nyit({}); await kep('1-h0-szolgaltatasok'); await zar();
-await nyit({ business: 'headspa' }); await kep('2-headspa-elmenyek');
-await reteg.locator('.be-choice', { hasText: 'Páros HeadSpa' }).click();
-await reteg.locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 }); await kep('3-headspa-naptar');
+await nyit({}); await kep('01-h0-szolgaltatasok'); await zar();
+
+// HeadSpa: ajándékkártya-kérdés -> élmények -> naptár -> adatlap; kuponkódos kártyák
+await nyit({ business: 'headspa' }); await kep('02-headspa-ajandekkartya-kerdes');
+await kattint('Normál foglalás'); await kep('03-headspa-elmenyek');
+await kattint('Páros HeadSpa');
+await reteg.locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 }); await kep('04-headspa-naptar');
 await reteg.locator('.be-idogomb').first().click();
-await reteg.locator('iframe.be-iframe').waitFor({ timeout: 25000 }); await page.waitForTimeout(6000); await kep('4-headspa-adatlap');
+await reteg.locator('iframe.be-iframe').waitFor({ timeout: 25000 }); await page.waitForTimeout(6000); await kep('05-headspa-adatlap');
 if (STILUS) {
-  // A Salonic-fiok "Egyedi CSS URL" beallitasa utani kinezet: a MOSAIC kozos CSS-t a keretbe injektaljuk, a keret meretet a stilusos meretre allitjuk (ugyanez tortenik, ha a fiokban be van allitva)
   const fr = page.frames().find((f) => /salonic\.hu\/guestData/.test(f.url()));
   await fr.addStyleTag({ content: fs.readFileSync(path.join(import.meta.dirname, '..', '..', 'salonic', 'mosaic.css'), 'utf8') });
   await reteg.locator('.be-frame').evaluate((e) => { e.style.setProperty('--visible', '735px'); e.style.setProperty('--crop', '78px'); e.dataset.styled = 'true'; });
-  await page.waitForTimeout(1500); await kep('4b-headspa-adatlap-stilusos');
-  await reteg.locator('.be-scroll').evaluate((e) => { e.scrollTop = e.scrollHeight; }); await kep('4c-headspa-adatlap-stilusos-alul');
+  await page.waitForTimeout(1500); await kep('05b-headspa-adatlap-stilusos');
 }
 await zar();
-await nyit({ business: 'oxygen' }); await kep('5-oxigen'); await zar();
-await nyit({ business: 'hair' }); await kep('6-fodraszat-szandekek');
-await reteg.locator('.be-choice', { hasText: 'Balayage' }).first().click(); await cimre();
-for (let i = 0; i < 3 && !/Van választott fodrászod/i.test(await reteg.locator('.be-title').first().textContent()); i++) { await reteg.locator('.be-choice').first().click(); await cimre(); }
-if (/Van választott fodrászod/i.test(await reteg.locator('.be-title').first().textContent())) {
-  await reteg.locator('.be-choice').nth(1).click(); await page.waitForTimeout(2000); await cimre(); await kep('7-fodraszat-fodraszok');
-}
-await zar();
-await nyit({ business: 'laser', intent: 'first' }); await kep('8-lezer-teruletek'); await zar();
-// az idopont-valaszto minden uzletagnal a havi naptar
-for (const [nev, o] of [['9-oxigen-naptar', { business: 'oxygen', service: '466110' }], ['10-fodraszat-naptar', { business: 'hair', service: 'konzult' }], ['11-lezer-naptar', { business: 'laser', service: 'konzult' }]]) {
-  await nyit(o); await reteg.locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 }); await kep(nev); await zar();
+await nyit({ business: 'headspa', voucher: '1' }); await kep('06-headspa-kuponkodos-kartyak'); await zar();
+
+// Oxigén: kártyák -> (változat) -> szakember -> naptár
+await nyit({ business: 'oxygen' }); await kep('07-oxigen-kartyak');
+await kattint('Első oxigénterápiás');
+if (/Melyiket választod/.test(await reteg.locator('.be-title').first().textContent())) await reteg.locator('.be-choice').first().click();
+await reteg.locator('.be-title', { hasText: 'szakembert' }).waitFor({ timeout: 25000 }); await page.waitForTimeout(1200); await kep('08-oxigen-szakember'); await zar();
+
+// Fodrászat: fodrász-választó (belépő) -> szándékok -> kezelések -> hajhosszok
+await nyit({ business: 'hair' }); await page.waitForTimeout(1500); await kep('09-fodraszat-fodrasz-valaszto');
+await kattint('Mindegy'); await kep('10-fodraszat-szandekek');
+await kattint('Balayage'); await kep('11-fodraszat-kezelesek');
+await reteg.locator('.be-choice').nth(1).click(); await cimre(); await kep('12-fodraszat-hajhosszok'); await zar();
+
+// Lézer: területek, csomagok, kar
+await nyit({ business: 'laser', intent: 'first' }); await kep('13-lezer-teruletek');
+await kattint('Több terület'); await kep('14-lezer-csomagok');
+await reteg.locator('#be-back').click(); await cimre(); await kattint('Kar'); await kep('15-lezer-kar-kezelesek'); await zar();
+
+// naptárak minden üzletágnál
+for (const [nev, o] of [['16-oxigen-naptar', { business: 'oxygen', service: '466110' }], ['17-fodraszat-naptar', { business: 'hair', service: 'konzult' }], ['18-lezer-naptar', { business: 'laser', service: 'konzult' }]]) {
+  await nyit(o);
+  if (/szakembert/.test(await reteg.locator('.be-title').first().textContent())) await reteg.locator('.be-choice').last().click();
+  await reteg.locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 }); await kep(nev); await zar();
 }
 await browser.close();

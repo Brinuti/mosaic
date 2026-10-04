@@ -45,7 +45,9 @@ const cim = async () => { const c = page.locator('.be-title').first(); await c.w
 await page.goto(BAZIS + '/foglalas', { waitUntil: 'domcontentloaded' });
 ok('/foglalas: szolgaltatas-valaszto kepekkel', (await cim()).includes('Mit szeretnél foglalni?') && (await page.locator('.be-choice-img').count()) === 5);
 await page.locator('.be-choice', { hasText: 'Head Spa' }).click();
-ok('/foglalas: Head Spa -> elmeny-valasztas (nincs HS1), URL #HS2', (await cim()).includes('Melyik HeadSpa élményt') && page.url().endsWith('#HS2'), page.url());
+ok('/foglalas: Head Spa -> ajandekkartya-kerdes (HS1), URL #HS1', (await cim()).includes('Ajándékkártyával vagy anélkül foglalsz?') && page.url().endsWith('#HS1'), page.url());
+await page.locator('.be-choice', { hasText: 'Normál foglalás' }).click();
+ok('/foglalas: Normal foglalas -> elmeny-valasztas, URL #HS2', (await cim()).includes('Melyik HeadSpa élményt') && page.url().endsWith('#HS2'), page.url());
 await page.locator('.be-choice', { hasText: 'Egyéni HeadSpa' }).click();
 await page.locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
 ok('/foglalas: havi naptar (C1), URL #C1', page.url().endsWith('#C1') && (await page.locator('.be-idogomb').count()) > 0, page.url());
@@ -59,7 +61,7 @@ ok('/foglalas: vissza gomb -> elmeny-valasztas', (await cim()).includes('Melyik 
 
 // /foglalo-motor: alap uzletag a HeadSpa -> az elmeny-valasztas az elso allapot
 await page.goto(BAZIS + '/foglalo-motor?business=headspa', { waitUntil: 'domcontentloaded' });
-ok('/foglalo-motor?business=headspa: elmeny-valasztas elso allapotkent', (await cim()).includes('Melyik HeadSpa élményt'));
+ok('/foglalo-motor?business=headspa: az ajandekkartya-kerdes az elso allapot', (await cim()).includes('Ajándékkártyával vagy anélkül foglalsz?'));
 await page.goto(BAZIS + '/foglalo-motor?business=headspa&voucher=1', { waitUntil: 'domcontentloaded' });
 ok('/foglalo-motor?...&voucher=1: ajandekkartya-bevaltas', (await cim()).includes('Milyen ajándékkártyád van?'));
 await page.goto(BAZIS + '/foglalo-motor?business=headspa&service=paros', { waitUntil: 'domcontentloaded' });

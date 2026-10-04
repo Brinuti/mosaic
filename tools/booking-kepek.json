@@ -1,205 +1,207 @@
 [
-    {
-        "kulcs":  "h0-headspa",
-        "forras":  "c2eb0f_28b6a0e799ce4ec88381b6b40e406fd6.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "h0-hair",
-        "forras":  "c2eb0f_4e8b1800c8a0486f9d98f720a2a61e31.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "h0-oxygen",
-        "forras":  "c2eb0f_d540831d3acb4a679ffc30073e58d2e2.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "h0-laser",
-        "forras":  "c2eb0f_1b8e1416336941f093dec78cdf068dc9.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "h0-pmu",
-        "forras":  "c2eb0f_b6b53c06750a4e21ad4f2ba20b82fb49.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "hs-egyeni",
-        "forras":  "c2eb0f_aab3792d7e0247748ef77f3b0fea566a.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "hs-paros",
-        "forras":  "c2eb0f_f6e7b88ba4974c659c3b6c0d5abe1905.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "hs-negykezes",
-        "forras":  "c2eb0f_895be890d71d488db23f5a05dd52c04b.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "hair-balayage",
-        "forras":  "c2eb0f_e54771f7195c41e8b289074d80c7176e.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "hair-color",
-        "forras":  "c2eb0f_d5771c1b288f452ebe82cd7012235422.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "hair-cut",
-        "forras":  "c2eb0f_44a7fe204472462fadff7a6eb5668d24.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "hair-other",
-        "forras":  "ac38c9a926cb4a69a6bb0340639d2b90.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "hair-consult",
-        "forras":  "c2eb0f_882f3bd34e7646a2a59b0b85c2ae9ca4.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "ox-camera",
-        "forras":  "c2eb0f_1ec2cdd2278548249644728823f3d1d7.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "ox-first",
-        "forras":  "c2eb0f_719d9e59218349e7baf727fc8f8d1fb0.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "ox-returning",
-        "forras":  "c2eb0f_98c230faf7d64d0aaac4472e10a7effb.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "la-consult",
-        "forras":  "c2eb0f_1b8e1416336941f093dec78cdf068dc9.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "la-known",
-        "forras":  "c2eb0f_07b1f4457d0646c984334c6fe8f166f6.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "la-returning",
-        "forras":  "c2eb0f_f5b87c4c4fd64d6d89f970a318a56da0.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "la-arc",
-        "forras":  "c2eb0f_fe2ae1a8676f4ef6ae77d9eeee0eece8.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "la-honalj",
-        "forras":  "c2eb0f_d25d1e56510f4b9ea7b01672f0080456.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "la-kar",
-        "forras":  "c2eb0f_b3a5aa5289a9494b9eabbe574cf7a4d6.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "la-intim",
-        "forras":  "c2eb0f_9c43d7be8ec84a5785a00f11315d03d1.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "la-lab",
-        "forras":  "c2eb0f_5ff7732abc6c49dca672097cfb4d2ced.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "la-torzs",
-        "forras":  "c2eb0f_7a25085734564994a814b9095b0a6e38.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "la-tobb",
-        "forras":  "c2eb0f_b93a709a951c401b9e44d4083dc5172d.jpg",
-        "fx":  0.5,
-        "fy":  0.5,
-        "zoom":  1
-    },
-    {
-        "kulcs":  "staff-betti",
-        "forras":  "c2eb0f_8810902e7d7342b7959bd326dd53a33e.jpg",
-        "fx":  0.41,
-        "fy":  0.31,
-        "zoom":  0.42
-    },
-    {
-        "kulcs":  "staff-noel",
-        "forras":  "c2eb0f_882f3bd34e7646a2a59b0b85c2ae9ca4.jpg",
-        "fx":  0.52,
-        "fy":  0.16,
-        "zoom":  0.38
-    },
-    {
-        "kulcs":  "staff-evelin",
-        "forras":  "c2eb0f_c6aaef2269904e078bfbfa8b142a24a3.jpg",
-        "fx":  0.5,
-        "fy":  0.2,
-        "zoom":  0.5
-    }
+  {
+    "kulcs": "h0-headspa",
+    "forras": "c2eb0f_28b6a0e799ce4ec88381b6b40e406fd6.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "h0-hair",
+    "forras": "c2eb0f_4e8b1800c8a0486f9d98f720a2a61e31.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "h0-oxygen",
+    "forras": "c2eb0f_d540831d3acb4a679ffc30073e58d2e2.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "h0-laser",
+    "forras": "c2eb0f_1b8e1416336941f093dec78cdf068dc9.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "h0-pmu",
+    "forras": "c2eb0f_b6b53c06750a4e21ad4f2ba20b82fb49.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "hs-egyeni",
+    "forras": "c2eb0f_aab3792d7e0247748ef77f3b0fea566a.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "hs-paros",
+    "forras": "c2eb0f_f6e7b88ba4974c659c3b6c0d5abe1905.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "hs-negykezes",
+    "forras": "c2eb0f_895be890d71d488db23f5a05dd52c04b.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "hair-balayage",
+    "forras": "c2eb0f_e54771f7195c41e8b289074d80c7176e.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "hair-color",
+    "forras": "c2eb0f_d5771c1b288f452ebe82cd7012235422.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "hair-cut",
+    "forras": "c2eb0f_44a7fe204472462fadff7a6eb5668d24.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "hair-other",
+    "forras": "ac38c9a926cb4a69a6bb0340639d2b90.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "hair-consult",
+    "forras": "c2eb0f_882f3bd34e7646a2a59b0b85c2ae9ca4.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "ox-camera",
+    "forras": "c2eb0f_1ec2cdd2278548249644728823f3d1d7.jpg",
+    "fx": 0.6,
+    "fy": 0.66,
+    "zoom": 0.55
+  },
+  {
+    "kulcs": "ox-first",
+    "forras": "c2eb0f_719d9e59218349e7baf727fc8f8d1fb0.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "ox-returning",
+    "forras": "c2eb0f_98c230faf7d64d0aaac4472e10a7effb.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "la-consult",
+    "forras": "c2eb0f_1b8e1416336941f093dec78cdf068dc9.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "la-known",
+    "forras": "c2eb0f_07b1f4457d0646c984334c6fe8f166f6.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "la-returning",
+    "forras": "c2eb0f_f5b87c4c4fd64d6d89f970a318a56da0.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "la-arc",
+    "forras": "c2eb0f_fe2ae1a8676f4ef6ae77d9eeee0eece8.jpg",
+    "fx": 0.29,
+    "fy": 0.29,
+    "zoom": 0.46
+  },
+  {
+    "kulcs": "la-honalj",
+    "forras": "c2eb0f_d25d1e56510f4b9ea7b01672f0080456.jpg",
+    "fx": 0.5,
+    "fy": 0.5,
+    "zoom": 1
+  },
+  {
+    "kulcs": "la-kar",
+    "forras": "c2eb0f_b3a5aa5289a9494b9eabbe574cf7a4d6.jpg",
+    "fx": 0.42,
+    "fy": 0.36,
+    "zoom": 0.56
+  },
+  {
+    "kulcs": "la-intim",
+    "forras": "c2eb0f_9c43d7be8ec84a5785a00f11315d03d1.jpg",
+    "fx": 0.5,
+    "fy": 0.33,
+    "zoom": 0.46
+  },
+  {
+    "kulcs": "la-lab",
+    "forras": "c2eb0f_5ff7732abc6c49dca672097cfb4d2ced.jpg",
+    "fx": 0.3,
+    "fy": 0.3,
+    "zoom": 0.5
+  },
+  {
+    "kulcs": "la-torzs",
+    "forras": "c2eb0f_7a25085734564994a814b9095b0a6e38.jpg",
+    "fx": 0.5,
+    "fy": 0.3,
+    "zoom": 0.5
+  },
+  {
+    "kulcs": "la-tobb",
+    "mozaik": [
+      "la-arc",
+      "la-kar",
+      "la-lab",
+      "la-honalj"
+    ]
+  },
+  {
+    "kulcs": "staff-betti",
+    "forras": "c2eb0f_8810902e7d7342b7959bd326dd53a33e.jpg",
+    "fx": 0.41,
+    "fy": 0.31,
+    "zoom": 0.42
+  },
+  {
+    "kulcs": "staff-noel",
+    "forras": "c2eb0f_882f3bd34e7646a2a59b0b85c2ae9ca4.jpg",
+    "fx": 0.52,
+    "fy": 0.16,
+    "zoom": 0.38
+  },
+  {
+    "kulcs": "staff-evelin",
+    "forras": "c2eb0f_c6aaef2269904e078bfbfa8b142a24a3.jpg",
+    "fx": 0.5,
+    "fy": 0.2,
+    "zoom": 0.5
+  }
 ]
