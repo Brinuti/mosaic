@@ -125,8 +125,6 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-bizalom-szoveg b { font-weight: 400; font-size: 14px; color: var(--ah-petrol); }
 .ah-bizalom-szoveg small { font-size: 12.5px; color: var(--ah-halk); }
 .ah-csillag { color: #c49a3a; font-size: 14px; letter-spacing: .04em; align-self: flex-start; margin-top: 2px; }
-.ah-hero-bevaltas { font-size: 14px; color: var(--ah-halk); }
-.ah-hero-bevaltas a { color: var(--ah-petrol); text-underline-offset: 3px; }
 @media (min-width: 900px) {
   .ah-hero { min-height: 450px; display: flex; align-items: center; }
   /* a media (foto es video: mind 3:2) a hero jobb felen, a szoveg mellett - igy a videok kivagas nelkul, kozel-arany nelkul latszanak */
@@ -851,3 +849,14 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-fordit { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 6px 4px; min-height: 36px; font-size: 15px; }
 .ah-fordit .ah-ikon { width: 20px; height: 20px; }
 @media (prefers-reduced-motion: reduce) { .ah-ak-doboz .ak-lap { transition: none; } }
+
+/* hero: a negy bizalmi elem (Google-ertekeles, 6 honap, online, szemelyre szabhato kartya) egy sorban, ikonnal egyutt (asztalon, ahol elfer) */
+@media (min-width: 1240px) {
+  .ah-bizalom { display: flex; flex-wrap: nowrap; justify-content: flex-start; gap: 0 15px; max-width: none; margin-top: 4px; }
+  .ah-bizalom li { flex: none; white-space: nowrap; gap: 7px; }
+  .ah-bizalom .ah-ikon { width: 24px; height: 24px; }
+  .ah-bizalom-link { gap: 7px; }
+  .ah-bizalom-szoveg b { font-size: 13.5px; }
+  .ah-bizalom-szoveg small { font-size: 12px; }
+  .ah-csillag { font-size: 12px; letter-spacing: .02em; margin-top: 0; }
+}
