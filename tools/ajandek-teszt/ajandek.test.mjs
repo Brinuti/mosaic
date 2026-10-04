@@ -671,6 +671,7 @@ describe('Stripe-szamla (AJANDEK_STRIPE_SZAMLA=1)', () => {
     assert.equal(szamla.total, 2690000);
     assert.equal(szamla.amount_due, 2690000);
     assert.equal(szamla.tax, 571890); // a regi fizetolink Checkout-ja is ugyanezt adta (amount_tax 571890)
+    assert.deepEqual(szamla.total_tax_amounts.map((t) => t.amount), [571890]);
     assert.equal(szamla.automatic_tax.status, 'complete');
     assert.equal(szamla.collection_method, 'charge_automatically');
     assert.equal(szamla.auto_advance, false);
@@ -813,7 +814,7 @@ describe('Stripe-szamla (AJANDEK_STRIPE_SZAMLA=1)', () => {
     } finally { mock.allapot.adoSzazalek({ txcd_20040009: 27 }); }
     assert.equal(a.pi.invoice, undefined);
     assert.equal(a.pi.metadata.szamla_mod, 'nincs');
-    assert.equal(a.pi.metadata.szamla_hiba, 'szamla_ado');
+    assert.equal(a.pi.metadata.szamla_hiba, 'szamla_ado:0/571890'); // kapott / vart ado (egyseg: 1/100 Ft)
     const voidolt = [...mock.allapot.szamlak.values()].filter((x) => x.metadata && x.metadata.forras === 'ajandek-motor' && x.status === 'void');
     assert.ok(voidolt.length >= 1);
     // a vart ado utan megint rendben megy

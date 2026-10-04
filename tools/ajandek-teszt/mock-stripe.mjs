@@ -202,6 +202,7 @@ export async function mockStripeInditas({ port = 0, kulcsElotag = 'sk_test_mock'
     sz.lines.data = sorok;
     sz.total = ossz;
     sz.tax = ado;
+    sz.total_tax_amounts = ado ? [{ amount: ado, inclusive: true, tax_rate: 'txr_mock' }] : [];
     sz.amount_due = ossz;
     sz.automatic_tax.status = sz.automatic_tax.enabled ? (helyJo ? 'complete' : 'requires_location_inputs') : null;
     sz.status = 'open';

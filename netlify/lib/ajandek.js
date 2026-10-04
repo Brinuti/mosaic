@@ -774,12 +774,14 @@ async function szamlaPi(k, r, ar, leiras, meta, kulcs) {
   const pi = kesz.payment_intent;
   if (!SZAMLA_ID_RE.test(String(kesz.id || ''))) return biztos('szamla_id');
   if (kesz.status !== 'open') return biztos('szamla_allapot');
-  if (!kesz.automatic_tax || kesz.automatic_tax.status !== 'complete') return biztos('szamla_ado_nem_kesz');
-  if (Number(kesz.amount_due) !== ar * 100 || Number(kesz.total) !== ar * 100) return biztos('szamla_osszeg');
-  if (!kesz.lines || !Array.isArray(kesz.lines.data) || kesz.lines.data.length !== tetelek.length) return biztos('szamla_sorok');
+  if (!kesz.automatic_tax || kesz.automatic_tax.status !== 'complete') return biztos('szamla_ado_nem_kesz:' + String(kesz.automatic_tax && (kesz.automatic_tax.status || kesz.automatic_tax.disabled_reason)));
+  if (Number(kesz.amount_due) !== ar * 100 || Number(kesz.total) !== ar * 100) return biztos(`szamla_osszeg:${kesz.amount_due}/${kesz.total}/${ar * 100}`);
+  if (!kesz.lines || !Array.isArray(kesz.lines.data) || kesz.lines.data.length !== tetelek.length) return biztos(`szamla_sorok:${kesz.lines && kesz.lines.data && kesz.lines.data.length}/${tetelek.length}`);
   // az ado: a 27%-os sorok brutto aranak 27/127-e (Stripe-kerekites: legfeljebb 1 forint = 100 egyseg elteres), a nem adozo sorokon 0
   const vartAdo = tetelek.reduce((o, t) => o + (t.adokod === 'txcd_00000000' ? 0 : Math.round(t.ft * 100 * 27 / 127)), 0);
-  if (Math.abs(Number(kesz.tax) - vartAdo) > 100) return biztos('szamla_ado');
+  // a kapott ado: az ado-sorok osszege (a Stripe ezt mindig kitolti), ennek hianyaban a `tax` mezo
+  const kapottAdo = Array.isArray(kesz.total_tax_amounts) && kesz.total_tax_amounts.length ? kesz.total_tax_amounts.reduce((o, t) => o + Number(t.amount || 0), 0) : Number(kesz.tax || 0);
+  if (!Number.isFinite(kapottAdo) || Math.abs(kapottAdo - vartAdo) > 100) return biztos(`szamla_ado:${kapottAdo}/${vartAdo}`);
   if (!pi || typeof pi !== 'object' || !PI_RE.test(String(pi.id || '')) || !pi.client_secret) return biztos('szamla_pi');
   // a PaymentIntent metadata-ja nelkul a webhook nem ismerne fel a rendelest: ha ez nem sikerul, a szamlat visszavonjuk (sima PI-ra esunk vissza)
   let frissitve;
