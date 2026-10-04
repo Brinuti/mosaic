@@ -601,7 +601,7 @@ const sor = pg.locator('[data-nezet=' + nezet + ']:not([hidden]) .kezelo-oszlop'
   await s.locator('.be-elo-sor', { hasText: 'órája' }).waitFor({ timeout: 9000 }).catch(() => {});
   const sor2 = (await s.locator('.be-elo-sor').first().textContent().catch(() => '')).trim();
   ok('jegyzettomb: a szamlalo percenkent leptet ("59 perce" -> "1 oraja foglaltak utoljara erre a kezelesre."), nincs valtozas-animacio, a cim marad', sor2 === '1 órája foglaltak utoljára erre a kezelésre.' && (await s.locator('.be-elo-cim').textContent()) === 'Élő foglaltság' && !(await s.locator('.be-elo-uzenet.valt').count()), sor2);
-  await u.page.waitForTimeout(3500);
+  await u.page.waitForTimeout(6500); // a 2. olvasas az 5. frissitesi korben jon (~7,5 mp a sav megjelenesetol)
   const olvasasok = esemenyNaplo.filter((e) => e.metodus === 'GET');
   ok('jegyzettomb: az olvasas a kezeles azonositoival megy (uzletag + szolgaltatas), ritkan (nem minden frissitesi korben): 2-3 olvasas ~12 mp alatt, iras nincs', olvasasok.length >= 2 && olvasasok.length <= 3 && /uzletag=headspa&szolgaltatas=\d+(,\d+)*$/.test(olvasasok[0].ut) && !esemenyNaplo.some((e) => e.metodus !== 'GET'), olvasasok.length + ' olvasas: ' + (olvasasok[0] || {}).ut);
   await u.ctx.close();
@@ -623,7 +623,7 @@ const sor = pg.locator('[data-nezet=' + nezet + ']:not([hidden]) .kezelo-oszlop'
     const ar = (((await reteg(pg).locator('.be-mini').textContent().catch(() => '')) || '').match(/(\d[\d\s\u00a0]*)\s*Ft/) || [])[1];
     const cena = ar ? ar.replace(/\D/g, '') : '1';
     const bu = new URL(keret); for (const [k, v] of Object.entries(felul)) bu.searchParams.set(k, v);
-    return { g, href: BAZIS + '/success-foglalas?first_booking=false&price=' + cena + '&employee=Teszt+Szakember&location=Budapest&service=Proba&g=2461999&bookingUrl=' + encodeURIComponent(bu.href) };
+    return { g, href: BAZIS + '/success-foglalas?first_booking=false&price=' + cena + '&employee=Teszt+Szakember&location=Budapest&service=Proba&g=g:2461999&bookingUrl=' + encodeURIComponent(bu.href) };
   };
   async function elokeszit() {
     const uu = await eloLap(IDOK, { oldal: OLDAL + '?atadas=0' });
@@ -690,7 +690,7 @@ const veg = url(page);
 ok('?booking=1 beerkezo link: a bezaras nem nyul az URL-hez (nincs extra oldalmegtekintes), a UTM / click ID megmarad', veg.searchParams.get('booking') === '1' && veg.searchParams.get('gclid') === 'TESZT123' && veg.searchParams.get('utm_source') === 'teszt' && !veg.hash, veg.search);
 
 // --- valodi landing-oldalak: a (linktermekbol kapott) foglalo-gombok a retegat nyitjak, nem navigalnak --------------------------------------------
-const LANDINGEK = ['/idpontfoglalas', '/lezeres-szortelenites-budapest', '/headspa-budapest-hungary', '/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel', '/szortelenites-foglalas', '/headspa-ajandekkartya'];
+const LANDINGEK = ['/idpontfoglalas', '/lezeres-szortelenites-budapest', '/headspa-budapest-hungary', '/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel', '/szortelenites-foglalas']; // a /headspa-ajandekkartya a #64 (Gift Commerce Engine) ota az uj ajandekkartya-vasarlo oldal: nincs rajta foglalo-gomb
 for (const lap of LANDINGEK) {
   await page.goto(BAZIS + lap, { waitUntil: 'domcontentloaded' });
   const van = await page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 }).then(() => true).catch(() => false);

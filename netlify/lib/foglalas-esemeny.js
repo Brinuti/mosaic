@@ -23,6 +23,8 @@ const MULT_MAX_MS = 60 * 60 * 1000; // a foglalas kezdete legfeljebb ennyivel le
 const JOVO_MAX_MS = 400 * 24 * 3600 * 1000; // ... es legfeljebb ennyivel a jovoben
 
 const SZAM = /^\d{1,12}$/;
+// A Salonic atiranyitasa a vendeg-azonositot "g:2038420" alakban adja (az elo proba mutatta meg): az elotag nem szamit, a szam az azonosito.
+const VENDEG = /^(?:g:)?(\d{1,12})$/;
 export const kulcs = (uzletag, szolgaltatas) => `u:${uzletag}:${szolgaltatas}`;
 
 /** A beirt jelzes ellenorzese. Vissza: { ok: true, adat } vagy { ok: false, hiba }. */
@@ -32,7 +34,8 @@ export function irasEllenorzes(test, nowMs) {
   if (!b || typeof b !== 'object' || Array.isArray(b)) return { ok: false, hiba: 'rossz_alak' };
   const uzletag = String(b.uzletag ?? '');
   const szolgaltatas = String(b.szolgaltatas ?? '');
-  const vendeg = String(b.vendeg ?? '');
+  const vendegM = VENDEG.exec(String(b.vendeg ?? ''));
+  const vendeg = vendegM ? vendegM[1] : '';
   const kezdes = Number(b.kezdes);
   if (!UZLETAGAK.includes(uzletag)) return { ok: false, hiba: 'ismeretlen_uzletag' };
   if (!SZAM.test(szolgaltatas)) return { ok: false, hiba: 'rossz_szolgaltatas' };
@@ -113,7 +116,7 @@ export async function kezel(request, env, nowMs = Date.now()) {
   if (test.length > MAX_TEST) return valasz(413, { hiba: 'tul_nagy' });
   const e = irasEllenorzes(test, nowMs);
   if (!e.ok) return valasz(400, { hiba: e.hiba });
-  const kihagy = String(env.ESEMENY_KIHAGY || '').split(',').map((x) => x.trim()).filter(Boolean);
+  const kihagy = String(env.ESEMENY_KIHAGY || '').split(',').map((x) => x.trim().replace(/^g:/, '')).filter(Boolean);
   try {
     const allapot = await ir(kv, e.adat, nowMs, { kihagy });
     return valasz(200, { irva: allapot === 'irva', ok: allapot });
