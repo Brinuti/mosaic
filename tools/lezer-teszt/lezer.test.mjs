@@ -371,9 +371,9 @@ describe('idopont-valaszto: naptar (hamisitott Salonic-API)', () => {
 });
 
 describe('osszekottetesek', () => {
-  test('a data-terulet gombok (arlista, kartyak, kalkulator) a valasztot az adott teruletre allitjak es oda gorgetnek', async () => {
+  test('a data-terulet gombok (kartyak, kalkulator) a valasztot az adott teruletre allitjak es oda gorgetnek', async () => {
     const { p, ctx } = await nyit({ api: () => idok(...SLOTOK) });
-    await p.click('.ar-csoport tr[data-kulcs="lab"] a[data-terulet]');
+    await p.click('.gyors-kartya[data-terulet="lab"]');
     await p.waitForFunction(() => document.getElementById('terulet-select').value === 'lab');
     await p.waitForFunction(() => /serviceId=476496/.test(document.querySelector('#idok a.ido')?.href || ''));
     // sima gorgetes: megvarjuk, mig a foglalo a kepernyo tetejere er
@@ -408,7 +408,7 @@ describe('az uj tartalom (visszajelzesek alapjan)', () => {
 
   test('a cim "garanciaval", az alcim a vilag egyik legerosebb lezerrel, alkalmankent fizetes, 4. es 8. ajandek, fenntarto kezelesek orokre felaron', async () => {
     const { p, ctx } = await nyit();
-    assert.equal((await p.textContent('h1')).trim(), 'Lézeres szőrtelenítés Budapesten garanciával');
+    assert.equal((await p.textContent('h1')).trim(), 'Lézeres szőrtelenítés 12 hónap garanciával');
     const al = await p.textContent('.hero-al');
     assert.match(al, /világ egyik legerősebb/);
     assert.match(al, /Elysion Pro/);
@@ -442,9 +442,10 @@ describe('az uj tartalom (visszajelzesek alapjan)', () => {
   test('az elso kezeles 20% kedvezmenyerol tobb helyen szol az oldal', async () => {
     const { p, ctx } = await nyit();
     const szoveg = await p.textContent('main');
-    assert.ok((szoveg.match(/20% kedvezmén/g) || []).length >= 5, 'a 20% kedvezmeny tobb helyen szerepel');
+    assert.ok((szoveg.match(/20% kedvezmén/g) || []).length >= 3, 'a 20% kedvezmeny tobb helyen szerepel (de nem ismetlodik folosleg)');
     assert.match(await p.textContent('.hero-bizalom'), /20% kedvezmény/);
-    assert.match(await p.textContent('#arlista .arlista-bevezeto'), /első kezelés 20% kedvezménnyel/);
+    assert.ok(!/20% kedvezmény/.test(await p.textContent('#arlista .arlista-bevezeto')), 'az arlista bevezetojeben nincs 20%-os mondat');
+    assert.ok(!/20% kedvezmény/.test(await p.textContent('.program')), 'a 8 kezeles szekcioban nincs 20%-os mondat');
     await ctx.close();
   });
 
@@ -546,16 +547,14 @@ describe('a harmadik kor visszajelzesei', () => {
     await ctx.close();
   });
 
-  test('az arlistaban a "8 alkalmas program" oszlop kozepre rendezett, az Idopont gombok aranyszinuek', async () => {
+  test('az arlistaban a "8 alkalmas program" oszlop kozepre rendezett, nincsenek Idopont gombok', async () => {
     const { p, ctx } = await nyit();
     const fej = await p.$eval('.ar-fejlec span:nth-child(4)', (e) => { const r = e.getBoundingClientRect(); return { kozep: Math.round(r.left + r.width / 2), align: getComputedStyle(e).textAlign }; });
     assert.equal(fej.align, 'center');
     const ertekek = await p.$$eval('#arlista tbody td.ar-prog', (l) => l.map((e) => { const r = document.createRange(); r.selectNodeContents(e); const b = r.getBoundingClientRect(); return Math.round(b.left + b.width / 2); }));
     for (const k of ertekek) assert.ok(Math.abs(k - fej.kozep) <= 3, `a program-ertek kozepe ${k} vs fejlec ${fej.kozep}`);
-    const hatterek = await p.$$eval('#arlista a.gomb-bezs', (l) => [...new Set(l.map((e) => getComputedStyle(e).backgroundImage))]);
-    assert.equal(hatterek.length, 1);
-    assert.match(hatterek[0], /linear-gradient/);
-    assert.ok(/rgb\(19\d, 16\d, 70\)|rgb\(198, 163, 70\)/.test(hatterek[0]), 'arany: ' + hatterek[0]);
+    assert.equal(await p.locator('#arlista a.gomb').count(), 0, 'nincs Idopont-gomb az arlistaban');
+    assert.equal(await p.locator('#arlista .ar-fejlec span').count(), 4, 'a fejlecben nincs gomb-oszlop');
     await ctx.close();
   });
 
@@ -865,14 +864,14 @@ describe('a kilencedik kor: szekciosorrend, kalkulator-jelzesek, egységes gombo
     await ctx.close();
   });
 
-  test('a kalkulatorra mutato linkek (hero, Mennyibe kerul, 8 kezeles, arlista): JS-gorgetessel ugranak, a #hash nem valtozik', async () => {
+  test('a kalkulatorra mutato linkek (hero, 8 kezeles): JS-gorgetessel ugranak, a #hash nem valtozik', async () => {
     const { p, ctx } = await nyit();
     const helyek = await p.$$eval('[data-szamolo]', (l) => l.map((a) => a.closest('section').className.split(' ')[0]));
-    assert.deepEqual(helyek, ['hero', 'gyors-arak', 'program', 'arlista']);
+    assert.deepEqual(helyek, ['hero', 'program']);
     await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
     await p.getByRole('button', { name: 'Elfogadom' }).click().catch(() => {});
-    await p.locator('.gyors-arak [data-szamolo]').scrollIntoViewIfNeeded();
-    await p.locator('.gyors-arak [data-szamolo]').click();
+    await p.locator('.program [data-szamolo]').scrollIntoViewIfNeeded();
+    await p.locator('.program [data-szamolo]').click();
     await p.waitForFunction(() => { const t = document.getElementById('szamolo').getBoundingClientRect().top; return t < 200 && t > -300; }, null, { timeout: 8000 });
     assert.equal(await p.evaluate(() => location.hash), '', 'nincs hash-valtozas (GTM History Change)');
     await ctx.close();
@@ -881,7 +880,7 @@ describe('a kilencedik kor: szekciosorrend, kalkulator-jelzesek, egységes gombo
   test('minden gomb betutipusa, merete es irasmodja azonos; nincs csupa nagybetus gomb', async () => {
     const { p, ctx } = await nyit();
     const m = await p.$$eval('a.gomb, button.gomb', (l) => l.map((e) => { const s = getComputedStyle(e); return [s.fontFamily.split(',')[0], s.fontSize, s.fontWeight, s.textTransform, s.letterSpacing].join('|'); }));
-    assert.ok(m.length >= 15, 'gombok szama: ' + m.length);
+    assert.ok(m.length >= 8, 'gombok szama: ' + m.length);
     const kulonbozo = [...new Set(m)];
     assert.equal(kulonbozo.length, 1, 'eltero gomb-tipografia: ' + JSON.stringify(kulonbozo));
     assert.match(kulonbozo[0], /\|15px\|400\|none\|(normal|0px)$/);
@@ -914,17 +913,56 @@ describe('a Google-ertekeles jelveny a hero-ban', () => {
       const m = await p.evaluate(() => {
         const g = document.querySelector('.google-nagy'); const b = document.querySelector('.hero-bizalom').getBoundingClientRect(); const gr = g.getBoundingClientRect(); const cta = document.querySelector('.hero .cta-sor').getBoundingClientRect();
         const fs = (e) => parseFloat(getComputedStyle(e).fontSize);
-        return { alatta: gr.top >= b.bottom - 1, ctaElott: gr.bottom <= cta.top + 1, pont: fs(g.querySelector('.g-pont')), nagyPont: fs(g.querySelector('.g-pont b')), db: fs(g.querySelector('.g-db')), csillag: fs(g.querySelector('.csillagok')), sugar: getComputedStyle(g).borderTopLeftRadius, magas: Math.round(gr.height), sz: Math.round(gr.width), sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth };
+        return { alatta: gr.top >= b.bottom - 1, ctaElott: gr.bottom <= cta.top + 1, pont: fs(g.querySelector('.g-pont')), nagyPont: fs(g.querySelector('.g-pont b')), db: fs(g.querySelector('.g-db')), csillag: fs(g.querySelector('.csillagok')), fonszin: getComputedStyle(g).backgroundColor, keret: getComputedStyle(g).borderTopWidth, arnyek: getComputedStyle(g).boxShadow, magas: Math.round(gr.height), sz: Math.round(gr.width), sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth };
       });
       assert.ok(m.alatta, 'a harom jelveny alatt: ' + JSON.stringify(m));
       assert.ok(m.ctaElott, 'a gombok folott');
       assert.equal(m.nagyPont, m.pont, 'a 4,9 ugyanakkora, mint a /5: ' + JSON.stringify(m));
       assert.ok(m.pont <= 16 && Math.abs(m.pont - m.db) <= 1.5, 'az ertek es a velemenyszam egyforma kicsi: ' + JSON.stringify(m));
-      assert.equal(m.sugar, '999px', 'kerek jelveny');
+      assert.equal(m.fonszin, 'rgba(0, 0, 0, 0)', 'nincs hatter (nem kartya, nem gomb)');
+      assert.equal(m.keret, '0px');
+      assert.equal(m.arnyek, 'none');
       assert.ok(m.magas <= 52 || mobil, 'asztalon egy sor: ' + m.magas);
       assert.ok(m.sw <= m.cw, 'nincs vizszintes gorgetes');
       await ctx.close();
     });
   }
+});
+
+describe('a tizenharmadik kor: mobil finomitasok', () => {
+  for (const w of [360, 390]) {
+    test(`telefon ${w}px: a harom jelveny a margoig er; a Google-sor nem kartya; az arlista ugyanolyan szeles, mint a kalkulator es az akkordionok; az orvosi jelveny kozepen, a video folott`, async () => {
+      const ctx = await bongeszo.newContext({ viewport: { width: w, height: 800 }, userAgent: UA_MOBIL, isMobile: true, hasTouch: true });
+      const p = await ctx.newPage();
+      await p.route(/^(?!http:\/\/localhost)/, (r) => r.abort());
+      await p.goto(bazis + OLDAL, { waitUntil: 'domcontentloaded' });
+      const m = await p.evaluate(() => {
+        const r = (e) => e.getBoundingClientRect();
+        const t = r(document.querySelector('.hero .tartalom')); const li = [...document.querySelectorAll('.hero-bizalom li')].map(r);
+        const ar = r(document.querySelector('.arlista-doboz')); const sz = r(document.querySelector('.szamolo-valaszto')); const ak = r(document.querySelector('.harmonika-racs details'));
+        const bd = r(document.querySelector('.orvosi-badge')); const vd = r(document.querySelector('#szorbenoves-video')); const dx = r(document.querySelector('.szorbenoves'));
+        const sor = document.querySelector('.hero-szoveg > .kalk-jelzes'); const kedv = document.querySelector('.gyors-arak p.kedv-sor');
+        const lh = (e) => parseFloat(getComputedStyle(e).lineHeight);
+        return { balMarg: Math.round(li[0].left - t.left), jobbMarg: Math.round(t.right - li[li.length - 1].right), arSz: Math.round(ar.width), kalkSz: Math.round(sz.width), akkSz: Math.round(ak.width),
+          badgeKozep: Math.round((bd.left + bd.width / 2) - (dx.left + dx.width / 2)), badgeVideoFolott: bd.bottom <= vd.top + 1, kalkSor: Math.round(r(sor).height / lh(sor)), kedvSor: (() => { const s = getComputedStyle(kedv); return Math.round((r(kedv).height - parseFloat(s.paddingTop) - parseFloat(s.paddingBottom) - parseFloat(s.borderTopWidth) - parseFloat(s.borderBottomWidth)) / lh(kedv)); })() };
+      });
+      assert.ok(Math.abs(m.balMarg) <= 1 && Math.abs(m.jobbMarg) <= 1, 'a jelvenyek a margoig: ' + JSON.stringify(m));
+      assert.ok(Math.abs(m.arSz - m.kalkSz) <= 1 && Math.abs(m.arSz - m.akkSz) <= 1, 'azonos szelesseg: ' + JSON.stringify(m));
+      assert.ok(Math.abs(m.badgeKozep) <= 1 && m.badgeVideoFolott, 'orvosi jelveny: ' + JSON.stringify(m));
+      assert.equal(m.kalkSor, 1, 'a kalkulator-sor egy sor');
+      assert.equal(m.kedvSor, 1, 'a 20%-os sav egy sor');
+      await ctx.close();
+    });
+  }
+
+  test('szovegek: Mennyibe kerul alcim, rovid 20%-os sav, nincs kalkulatoros sor ott; az arlista bevezetoje rovid', async () => {
+    const { p, ctx } = await nyit();
+    assert.equal((await p.textContent('#mennyibe .halk')).trim(), 'Bérlet helyett alkalmanként fizetsz.');
+    assert.equal((await p.textContent('#mennyibe p.kedv-sor')).trim(), 'Az első kezelés 20% kedvezménnyel');
+    assert.equal(await p.locator('#mennyibe [data-szamolo]').count(), 0);
+    assert.equal((await p.textContent('#arlista .arlista-bevezeto')).trim(), 'Az árak egy kezelésre (alkalomra) vonatkoznak. A 8 alkalmas programban a 4. és a 8. alkalom ajándék, ezért csak 6 alkalmat fizetsz.');
+    assert.equal((await p.textContent('.hero-szoveg > .kalk-jelzes')).replace(/\s+/g, ' ').trim(), 'Több területet szeretnél? Számold ki az árát →');
+    await ctx.close();
+  });
 });
 
