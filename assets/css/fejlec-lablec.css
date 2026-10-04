@@ -5,6 +5,14 @@
    Mobilon a Wix 320 px-es alapon dolgozik, ezek a px-ek is ahhoz valok. Ahol a Wix beegetett
    ertekeit (sorok magassaga, margok, betumeret) kell felulirni, ott !important van. */
 
+/* ============ ASZTALI FEJLEC: egyseges zold menucsik, mindenhol olyan, mint a sminktetovalas oldalon ============
+   A menusor 70 px magas, a logo felett es alatt ugyanannyi hely; az akcios sav (ha van) alatta marad. Csak az asztali
+   fejlecre vonatkozik (a mobilnak nincs #comp-m4lbfl1t menuje). */
+#SITE_HEADER:has(#comp-m4lbfl1t) [data-mesh-id="SITE_HEADERinlineContent-gridContainer"] { grid-template-rows: 70px auto !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m3znboq3 { margin-top: 8px !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m4lbfl1t { margin-top: 17px !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m7q6eklh, #SITE_HEADER:has(#comp-m4lbfl1t) #comp-m7jcfhgp { margin-top: 20px !important; }
+
 /* ============ MOBIL FEJLEC: egy kicsit alacsonyabb, a sor tartalma picit feljebb ============ */
 .device-mobile-optimized [data-mesh-id="SITE_HEADERinlineContent-gridContainer"] { grid-template-rows: 46px auto !important; }
 .device-mobile-optimized #comp-m3znboq3 { margin-top: 9px !important; }
