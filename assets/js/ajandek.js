@@ -1806,7 +1806,7 @@
     S.rendeles = {
       allapot: 'fizetve', termek: tid, kartya_cim: t.kartya_cim, osszeg: t.ar_ft, penznem: 'HUF', rendeles_id: 'MH-MINTA001', email: 'minta@pelda.hu', atvetel: S.atvetel,
       szemelyre: szemelyes ? { nev: 'Réka' } : { tema: 'virag', nev: 'Réka', foto: false },
-      kartya: nev === 'kesz' ? { allapot: 'kesz', url: '/ajandek', ervenyes_ig: '2027-04-04' } : { allapot: 'keszul' }
+      kartya: nev === 'kesz' || S.azonnali ? { allapot: 'kesz', url: '/ajandek', ervenyes_ig: '2027-04-04' } : { allapot: 'keszul' }
     };
     S.fizetveIdo = Date.now();
     allapotba('siker', { eroltet: true });
