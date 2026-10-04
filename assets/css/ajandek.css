@@ -1392,8 +1392,57 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
   .ah-vasarlas .ah-gomb-teljes { min-height: 46px; }
 }
 /* az AJANLOTT jelzo ne takarja a termek arat */
-@media (max-width: 640px) { .ah-vasarlas .ah-atvetel { margin-top: 8px; } .ah-vasarlas .ah-ajanlott-jel { top: -8px; } }
 
 /* egyszeru, foto nelkuli dizajn: nincs foto-blokk, az idezet a teljes szelesseget kapja */
 @media (min-width: 900px) { .ah-tv-ketto.ah-nincs-foto { grid-template-columns: 1fr; } }
 .ah-tv-ketto.ah-nincs-foto #ah-foto-blokk { display: none; }
+
+/* =================== 9. kor (2026-10-04): EGYSEGES BETUMERETEK - mint a sminktetovalas (PMU) oldalon =================== */
+/* Negy betumeret az egesz oldalon (+ a hero cime): b1 = szekciocim, b2 = alcim / termeknev / ar, b3 = szoveg / gomb, b4 = apro szoveg.
+   Ket betutipus: Playfair Display (cimek, nevek, arak) + Jost (szoveg). Mobilon kisebb lepcsok. A bevitelmezok 16 px-esek (iOS ne nagyitson rajtuk). */
+:root { --b1: 36px; --b2: 22px; --b3: 16px; --b4: 13px; --bh: 50px; }
+@media (max-width: 700px) { :root { --b1: 28px; --b2: 19px; --b3: 15px; --b4: 12.5px; --bh: 28px; } }
+
+/* b1: szekciocimek (a hero cime kulon: --bh) */
+#ah-landing h2, .ah-tervezo-fej h2, .ah-gyik h2, .ah-google-pont b { font-size: var(--b1) !important; }
+.ah-hero h1 { font-size: var(--bh) !important; }
+@media (max-width: 700px) { .ah-hero h1 { font-size: clamp(24px, 6.9vw, var(--bh)) !important; } }
+
+/* b2: alcimek, termeknevek, arak */
+#ah-landing h3, .ah-kez-ablak-fej h3, .ah-termek-nev, .ah-vasarlas-fej h4, .ah-ar, .ah-lead, .ah-elo-cim strong,
+.ah-urlap-adatok .ah-urlap-cim, .ah-urlap-fizetes .ah-urlap-cim, .ah-osszesito-cim, .ah-valasztott-cim,
+.ah-benefit-lista strong, .ah-forma-lista strong, .ah-hogyan-lepesek strong { font-size: var(--b2) !important; }
+
+/* b3: szoveg, gombok, listaelemek, kerdesek */
+body .ah-halk, .ah-tenyek li, .ah-benefit-lista li span, .ah-forma-lista li span, .ah-hogyan-lepesek li span,
+.ah-gyik summary, .ah-gyik p, .ah-gyik li, .ah-gyik a, .ah-google-pont span, .ah-hely-lista li, .ah-hely-lista a, .ah-hely-lista span,
+.ah-link, .ah-gomb, .ah-gomb span, .ah-terkep-gomb, .ah-terkep-gomb span, .ah-badge, .ah-badge b, .ah-badge span:not(.ah-badge-csillag),
+.ah-atvetel-szoveg strong, .ah-fizmod-szoveg strong, .ah-atvetel-cim, .ah-kez-leiras, .ah-kez-leiras p,
+.ah-proof-idezet p, .ah-alapito blockquote, .ah-vendeg-cimke b, .ah-elem-cimke b, #ah-landing figcaption b,
+.ah-kez-bevezeto, .ah-kez-elemek li span, .ah-kez-utana, .ah-tervezo-vezerlok .ah-urlap-cim, .ah-ceges-szoveg b,
+.ah-tema-nyit, .ah-felhasznalhato b, .ah-osszesito-vegosszeg, .ah-urlap-cim .ah-lepes-szam, .ah-osszesito-cim .ah-lepes-szam { font-size: var(--b3) !important; }
+
+/* b4: apro szoveg: feliratok, jelolok, leirasok, jogi sorok */
+#ah-landing small, #ah-fokusz small, #ah-fokusz label, #ah-landing label, .ah-kez-ablak small, .ah-bizalom-szoveg b, .ah-bizalom-szoveg small, .ah-hogyan-ikon b, .ah-lepes-szam,
+.ah-termek-meta li, .ah-termek-meta li span, .ah-kez-link, .ah-kez-link span, .ah-ti-megjegyzes, .ah-lepes-fej p, .ah-google-szam,
+.ah-proof-idezet footer, .ah-tema-nev, .ah-vissza, .ah-kez-ido, .ah-lista li, .ah-lista li span, .ah-osszesito-atvetel,
+.ah-urlap-biztonsag, .ah-biztonsag, .ah-segit-sor, .ah-jogi, .ah-jogi a, .ah-mezohiba, .ah-mozgat-seg, .ah-szamlalo { font-size: var(--b4) !important; }
+.ah-hely-lista small, .ah-badge small, .ah-osszesito-cimke, .ah-osszesito-cimke span { font-size: var(--b4) !important; }
+.ah-urlap-cim .ah-lepes-szam, .ah-osszesito-cim .ah-lepes-szam { font-size: var(--b3) !important; }
+
+/* apro, nagybetus cimke (AJANLOTT): a negy meret alatt egy apro jelolo-meret (mint a PMU-oldal 11 px-es cimkei) */
+.ah-ajanlott-jel { font-size: 11px !important; }
+
+/* a bevitelmezok mindig 16 px-esek (iOS-en a kisebb betu nagyitast okoz fokuszkor) */
+.ah-mezo input, .ah-mezo textarea, .ah-mezo select, .ah-tv-idezet textarea { font-size: 16px !important; }
+
+/* mobil: a felugro tomor, ezert ott a felsorolas / az "utana" sor apro szoveg */
+@media (max-width: 719px) { .ah-kez-elemek li span, .ah-kez-utana { font-size: var(--b4) !important; } }
+
+/* az AJANLOTT jelolo az elso opcio ALSO szelen, jobbra ul (nem takarja a termek nevet / arat, sem a szoveget) */
+.ah-vasarlas .ah-atvetel-opcio .ah-ajanlott-jel { top: auto; bottom: -9px; right: 12px; z-index: 2; }
+.ah-vasarlas .ah-atvetel { row-gap: 14px; }
+@media (max-width: 640px) { .ah-vasarlas .ah-atvetel { gap: 14px; } }
+
+/* mobil: a tervezo cime egy sorban marad (b2), igy a konfigurator egy kepernyore elfer */
+@media (max-width: 700px) { .ah-tervezo-fej h2 { font-size: var(--b2) !important; } }

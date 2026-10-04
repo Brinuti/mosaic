@@ -185,6 +185,10 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     const urlapHtml = html.slice(html.indexOf('id="ah-urlap"'), html.indexOf('id="ah-feldolgozas"'));
     assert.ok(!/placeholder=/.test(urlapHtml), 'a fizetesi urlapon nincs placeholder');
     assert.ok(!html.includes('id="ah-idezet-db"') && html.includes('id="ah-mozgat-seg"') && html.includes('Helyezd át a képet a kezeddel'), 'nincs karakterszamlalo; az athelyezes szoveges');
+    // egyseges betumeretek: negy meret valtozo (b1-b4 + hero) es ket betutipus (Playfair + Jost), mobilon kisebb lepcsok
+    const css = fs.readFileSync(new URL('../../assets/css/ajandek.css', import.meta.url), 'utf8');
+    assert.ok(/:root { --b1: 36px; --b2: 22px; --b3: 16px; --b4: 13px; --bh: 50px; }/.test(css) && /--b1: 28px; --b2: 19px; --b3: 15px; --b4: 12.5px; --bh: 28px/.test(css), 'a negy betumeret (asztali / mobil)');
+    for (const jel of ['#ah-landing h2', 'var(--b1)', 'var(--b2)', 'var(--b3)', 'var(--b4)', 'var(--bh)']) assert.ok(css.includes(jel), jel);
     // a felugro: a kep (allo) balra, a szoveg (bevezeto, lista, idotartam) jobbra, a gomb alul; a bezaro X svg (pontosan kozepen), nem betu
     assert.ok(html.indexOf('ah-kez-kepkeret') < html.indexOf('ah-kez-szoveg') && html.indexOf('id="ah-kez-ido"') > html.indexOf('ah-kez-szoveg') && html.indexOf('id="ah-kez-valaszt"') > html.indexOf('id="ah-kez-ido"'), 'kep | szoveg + idotartam | gomb');
     for (const az of ['ah-kez-bezar', 'ah-lb-bezar', 'ah-video-bezar', 'ah-ak-nagy-bezar']) assert.match(html, new RegExp('id="' + az + '"[^>]*><svg class="ah-x-ikon"'), az + ': svg X');
@@ -227,9 +231,9 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     const lepesek = hogyan.split('</strong><span>').slice(1).map((r) => r.slice(0, r.indexOf('</span>')));
     assert.equal(lepesek.length, 5);
     for (const sz of lepesek) assert.ok(sz.length <= 56, 'a lepes-szoveg ketsoros: ' + sz);
-    const css = fs.readFileSync(new URL('../../assets/css/ajandek.css', import.meta.url), 'utf8');
-    assert.ok(css.includes('.ah-gomb-fo { background: linear-gradient(#c6a346, #d9c164)'), 'az elsodleges gomb a PMU-oldal arany atmenete');
-    assert.ok(css.includes('.ah-hogyan-lepesek li > span:last-child { display: -webkit-box; -webkit-line-clamp: 2'), 'a lepes-szoveg 2 soros');
+    const betuCss = fs.readFileSync(new URL('../../assets/css/ajandek.css', import.meta.url), 'utf8');
+    assert.ok(betuCss.includes('.ah-gomb-fo { background: linear-gradient(#c6a346, #d9c164)'), 'az elsodleges gomb a PMU-oldal arany atmenete');
+    assert.ok(betuCss.includes('.ah-hogyan-lepesek li > span:last-child { display: -webkit-box; -webkit-line-clamp: 2'), 'a lepes-szoveg 2 soros');
     assert.ok(html.includes('csak az utalás visszaigazolása után tudjuk kiállítani') && html.includes('Bankkártyás fizetésnél az ajándékkártyát automatikusan'), 'atutalasi figyelmeztetes');
     for (const t of Object.values(ADAT.TERMEKEK)) assert.ok(typeof t.kartya_sor === 'string' && t.kartya_sor.length > 10, t.id + ' kartya_sor');
   });
