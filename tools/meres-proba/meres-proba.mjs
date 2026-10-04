@@ -246,8 +246,8 @@ try {
     if (MEGALL) { idovonal.push({ t: mp(), esemeny: 'megallas (--megall): az urlapot nem toltom ki' }); }
     else {
       const tolt = async (sel, ertek) => { const l = fr.locator(sel).first(); await l.click(); await l.pressSequentially(ertek, { delay: 45 }); }; // valodi billentyuleutesek: a telefonmezo (intl-tel-input) rejtett mezoi igy frissulnek
-      // A telefonszam a +36 elotti resz nelkul. Alapbol a SZALON szama (06 20 247 4444); a 2026-10-03-i probakhoz a tulajdonos sajat szamat (709420090) adtuk meg: MERES_TELEFON=709420090.
-      await tolt('#GuestDataForm_guestPhoneTemp', process.env.MERES_TELEFON || '202474444');
+      // A telefonszam a +36 elotti resz nelkul. Alapbol a tulajdonos SAJAT szama (709420090; 2026-10-04 ota, mert a szalon szama egy valodi vendeg kartonjara parosul a Salonicban); felulirhato: MERES_TELEFON.
+      await tolt('#GuestDataForm_guestPhoneTemp', process.env.MERES_TELEFON || '709420090');
       await tolt('#GuestDataForm_guestLastName', 'TESZT –');
       await tolt('#GuestDataForm_guestFirstName', 'Claude');
       await tolt('#GuestDataForm_guestEmail', 'deakfi@grantis.hu');

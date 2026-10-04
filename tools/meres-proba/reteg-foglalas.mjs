@@ -3,7 +3,7 @@
 //   node tools/meres-proba/reteg-foglalas.mjs --bazis https://www.mosaicheadspa.hu|https://<ag>.mosaic-d77.pages.dev --utvonal h0-headspa|hair-konzult|... [--overlay dist] [--mobil 1] [--out naplo.json]
 //
 // Utvonalak: h0-headspa (szolgaltatas-elso: Head Spa -> Egyeni HeadSpa -> havi naptar), hair-konzult, oxigen-2, lezer-konzult.
-// A kimeno meres (capig.stape.do is) alapbol tiltva (tilt.mjs), a naplo a tiltott kereseket is tartalmazza. A telefonszam: MERES_TELEFON (alap: a szalon szama).
+// A kimeno meres (capig.stape.do is) alapbol tiltva (tilt.mjs), a naplo a tiltott kereseket is tartalmazza. A telefonszam: MERES_TELEFON (alap: a tulajdonos sajat szama; a szalon szama egy valodi vendeg kartonjahoz tartozik a Salonicban).
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,7 +11,7 @@ import { UA, UA_MOBIL, platformOf, engedett, dnsArg, ures } from './tilt.mjs';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const BAZIS = arg('bazis', 'https://www.mosaicheadspa.hu'), UTVONAL = arg('utvonal', 'hair-konzult'), OVERLAY = arg('overlay', ''), MOBIL = arg('mobil', '0') === '1', OUT = arg('out', '');
-const TELEFON = process.env.MERES_TELEFON || '202474444';
+const TELEFON = process.env.MERES_TELEFON || '709420090'; // a +36 utani resz: a tulajdonos sajat szama (a szalon szama egy valodi vendeg kartonjara parosulna)
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 let fajlUtvonal = null;
 if (OVERLAY) ({ fajlUtvonal } = await import('../serve-dist.mjs'));

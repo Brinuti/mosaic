@@ -29,7 +29,7 @@ node tools/meres-proba/osszevet.mjs "cimke=naplo1.json" "cimke=naplo2.json"
 - `salonic-lepesek.mjs`: a Salonic **natív** útján (főoldal → szolgáltatás → munkatárs → időpont → adatlap) végigkattintva kiírja a `view_item` / `select_employee` (GA4) és a `ViewContent` / `InitiateCheckout` (TikTok) események tartalmát; foglalás nem jön létre. Eredmény: [MERES_FOGLALASI_LEPESEK.md](../../docs/booking-engine/MERES_FOGLALASI_LEPESEK.md).
 - `landing-sonda.mjs <útvonalak…>`: mely landingeken fut a Google-címke, a Meta-pixel és a TikTok-pixel, és kapják-e el a kattintás-azonosítót.
 
-A valódi foglalás próbaszáma alapból a **szalon** száma (06 20 247 4444); a 2026-10-03-i próbákhoz a tulajdonos saját számát adtuk meg (`MERES_TELEFON=709420090`, a +36 utáni rész).
+A valódi foglalás próbaszáma alapból a **tulajdonos saját száma** (+36 70 942 0090; `MERES_TELEFON`-nal felülírható, a +36 utáni résszel). 2026-10-04 óta nem a szalon száma: az egy valódi vendég (Koncz-Szabó Tünde) kartonjához tartozik a Salonicban, a próbafoglalás arra párosulna.
 
 A teszt a süti-hozzájárulást elfogadottnak tekinti (a saját tárolóba írja, mint a süti-sáv gombja), így a mérés teljes üzemben fut.
 
