@@ -17,6 +17,7 @@ import { createTracker } from './tracking.js';
 import { CHOOSER, PMU_PATH } from './families.js';
 import { IKONOK, hajhosszIkon, kezelesIkon } from './ikonok.js';
 import { koszonoLepesek, VISSZAHIVAS_LEPESEK, LEZER_KEZELO } from './koszono.js';
+import { ablakIdopontok, eloAllapot, frissites, ELO_NAP } from './elo-foglaltsag.js';
 import { HEADSPA } from './flows/headspa.js';
 import { OXYGEN } from './flows/oxygen.js';
 import { HAIR } from './flows/hair.js';
@@ -33,6 +34,7 @@ const kepSrc = (k) => KEP_UT + k + '.jpg?v=' + KEP_V;
 const NAPTAR_NAP = 92; // a havi naptar (C1) ennyi napra elore keres (mint a PMU-foglalo)
 const HETNAPOK = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
 const NO_STEPS = new Set(['C6', 'A1_SENT']); // kesz foglalas / kesz visszahivas-keres: nincs mit lepni
+const ELO_MS = 60 * 1000; // az "Elo foglaltsag" sav frissitese (csak nyitott naptarnal, lathato lapon); tesztben win.__MH_ELO_MS felulirja
 const MIN_LEAD_MINUTES = 30; // a fel oran belul kezdodo idopontot nem kinaljuk (mint a PMU foglalo)
 const HOLD_MS = 4 * 60 * 1000 + 50 * 1000; // a Salonic 5 percig tartja fenn a megnyitott idopontot
 // A Salonic-fiok betolti a MOSAIC kozos stiluslapjat (salonic/mosaic.css, vagy a PMU-nal pmu.css): a fejlec 70 px (a keret 78 px-t vag le),
@@ -80,6 +82,8 @@ const SNAP_VIEWS = new Set(['PMU', 'HS2', 'HS3', 'OX2', 'OXS', 'HA1', 'HA2', 'HA
 export function startEngine({ root, doc = document, win = window, adapter = sharedAdapter(), now = () => Date.now(),
   mode = 'page', search = null, defaultBusiness = 'headspa', onClose = null, onExit = null, urlAllapot = null }) {
   const layer = mode === 'layer';
+  // destroyed: a bezart (destroy-olt) motor aszinkron utotagja (pl. a naptar adata a bezaras utan erkezik meg) mar semmit nem irhat: se elozmenyt, se mentett allapotot, se idozitot
+  let destroyed = false;
   elokapcsol(doc, 'https://api.salonic.hu');
   // urlAllapot: a lepesek (#H0, #C1, ...) az URL-be kerulnek-e. Onallo oldalon igen (ott nincs GTM); a retegben alapbol NEM: a GTM History Change
   // triggerei minden URL-valtozasnal (pushState / replaceState / hash / vissza) Meta PageView-t, GA4 page_view / visit-et es Google Ads page_view-t inditanak.
@@ -244,8 +248,10 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   // --- navigacio ------------------------------------------------------------------------------------------------------------------
   let renderToken = 0;
   async function show(state) {
+    if (destroyed) return undefined;
     S.state = state;
     win.clearTimeout(S.holdTimer);
+    win.clearInterval(S.eloTimer); S.eloBar = null;
     if (S.pmuCleanup) { S.pmuCleanup(); S.pmuCleanup = null; }
     const token = ++renderToken;
     saveSnapshot(state);
@@ -261,6 +267,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     }
   }
   function go(state, { replace = false } = {}) {
+    if (destroyed) return undefined;
     if (replace) { elozmeny('replaceState', { view: state, depth: S.depth, beLayer: layer }, '#' + state); S.nav[S.depth] = state; }
     else { S.depth += 1; elozmeny('pushState', { view: state, depth: S.depth, beLayer: layer }, '#' + state); S.nav[S.depth] = state; S.nav.length = S.depth + 1; }
     return show(state);
@@ -316,6 +323,44 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     const mind = (S.services || []).filter((x) => (x.bookingType === 'voucher_redemption') === kupon && flow.egyesit(F.displayName(x.name)) === kulcs);
     return mind.length > 1 ? [svc, ...mind.filter((x) => x.serviceId !== svc.serviceId)] : [svc];
   };
+  // --- Elo foglaltsag sav (a naptar alatt): a szolgaltatashoz tartozo valodi szabad idopontok a kovetkezo 7 napra (elo-foglaltsag.js) ---------------------------
+  const eloPool = () => (S.staff ? F.filterSlots(S.slots, { staffId: S.staff }) : S.slots);
+  function eloSav() {
+    const pont = h('span', { class: 'be-elo-pont', 'aria-hidden': 'true' });
+    const cim = h('b', { class: 'be-elo-cim' }); const uz = h('span', { class: 'be-elo-uzenet' }); const extra = h('span', { class: 'be-elo-extra' }); const also = h('i', { class: 'be-elo-also' });
+    const el = h('div', { class: 'be-elo jo', role: 'status', 'aria-live': 'polite' }, pont, h('div', { class: 'be-elo-szoveg' }, cim, uz, extra, also));
+    let elozoUzenet = null; let frissultAmig = 0;
+    const rajzol = (valtozas = null) => {
+      if (valtozas) { frissultAmig = now() + 12000; win.setTimeout(() => { if (el.isConnected) rajzol(); }, 12100); } // 12 mp-ig "Most frissult", utana vissza "Elo foglaltsag"-ra
+      const pool = eloPool(); const idok = ablakIdopontok(pool, nowUnix(), ELO_NAP);
+      const elso = pool.length ? F.uniqueTimes(pool)[0] : null;
+      const a = eloAllapot({ szabad: idok.length, kovetkezo: !idok.length && elso ? F.longDate(elso.start_unix) : null, frissult: now() < frissultAmig ? 'valtozas' : null });
+      el.className = 'be-elo ' + a.hangulat;
+      cim.textContent = a.cim; also.textContent = a.also;
+      extra.replaceChildren(...a.extra.map((s) => h('span', { class: 'be-elo-sor', text: s })));
+      if (a.uzenet !== elozoUzenet) { uz.textContent = a.uzenet; if (elozoUzenet !== null) { uz.classList.remove('valt'); void uz.offsetWidth; uz.classList.add('valt'); } elozoUzenet = a.uzenet; }
+    };
+    return { el, rajzol };
+  }
+  // Percenkent (csak nyitott naptarnal, lathato lapon): friss lekeres a kovetkezo 7 napra; ha a szabad idopontok halmaza tenylegesen valtozott, a naptar es a sav helyben frissul
+  async function eloFrissit() {
+    if (destroyed || doc.hidden || S.state !== 'C1' || !S.eloBar || !S.service || S.eloBusy) return;
+    S.eloBusy = true; const bar = S.eloBar; const token = renderToken;
+    try {
+      const vs = S.variants && S.variants.length > 1 ? S.variants : [S.service];
+      const lists = await Promise.all(vs.map((v) => adapter.getAvailability(flow.business, v.serviceId, { days: ELO_NAP + 1, minLeadMinutes: MIN_LEAD_MINUTES, fresh: true })));
+      if (token !== renderToken || S.eloBar !== bar) return;
+      const uj = vs.length > 1 ? F.mergeVariantSlots(lists) : lists[0];
+      const hatar = nowUnix() + ELO_NAP * 86400;
+      const regi = ablakIdopontok(S.slots, nowUnix(), ELO_NAP); const ujIdok = ablakIdopontok(uj, nowUnix(), ELO_NAP);
+      const v = frissites(regi, ujIdok);
+      if (!v.valtozas) return;
+      S.slots = S.slots.filter((s) => s.start_unix > hatar).concat(uj.filter((s) => s.start_unix <= hatar)).sort((x, y) => x.start_unix - y.start_unix || String(x.staff_id).localeCompare(String(y.staff_id)));
+      if (S.repaint) S.repaint(); // a naptar (szabad napok, a nap idopontjai) helyben frissul
+      bar.rajzol(v.valtozas);
+    } catch (e) { /* a kovetkezo korben ujra probalja; a sav a legutobbi valodi allapotot mutatja */ } finally { S.eloBusy = false; }
+  }
+
   // Idopontok: az elso 14 nap azonnal (a naptar megnyilik), a tobbi (92 napig) parhuzamos reszekben, hatterben erkezik; megerkezesekor a naptar helyben frissul.
   async function loadSlots() {
     const vs = S.variants && S.variants.length > 1 ? S.variants : [S.service];
@@ -357,7 +402,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
 
   // --- allapot-megjegyzes: bezaras / ujranyitas utan ott folytatja, ahol tartott (ugyanabbol a belepesi kontextusbol, 30 percig) ---------------------------------------
   function saveSnapshot(state) {
-    if (!store || S.adapterSample) return;
+    if (destroyed || !store || S.adapterSample) return;
     try {
       if (state === 'PMU' && !flow) { store.setItem(SNAP_KEY, JSON.stringify({ sig: S.sig, t: now(), business: 'pmu', view: 'PMU', path: [] })); return; } // a keret sajat allapota: foglalo-pmu.js
       if (!flow || !SNAP_VIEWS.has(state)) { store.removeItem(SNAP_KEY); return; } // belepo allapot / kesz foglalas: nincs mit visszaallitani
@@ -562,6 +607,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     // az elso szabad nap elore kivalasztva, a nap idopontjai gombokban; egy erintes az idoponton = tovabb az adatlapra (nincs osszegzo kepernyo).
     C1: async () => {
       if (!S.slots.length) await loadSlots();
+      if (destroyed) return null;
       if (!S.slots.length && !S.slotsFull) await S.fullP; // az elso 14 napban nincs idopont: megvarjuk a teljes listat, mielott "nincs idopont"-ot mondunk
       if (S.restoreDay && !S.slotsFull && S.restoreDay > F.dayKey(nowUnix() + 14 * 86400)) await S.fullP; // a korabban nezett nap az elso 14 napon tul van: megvarjuk a teljes listat
       if (S.restoreDay) { S.day = S.restoreDay; S.month = S.restoreMonth; S.restoreDay = null; S.restoreMonth = null; } // visszaallitott allapot: a korabban nezett nap
@@ -599,11 +645,13 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       paint();
       S.repaint = paint; // a hatterben megerkezo tovabbi napok helyben frissitik a naptarat
       S.onMore = () => { if (S.state === 'C1' && S.repaint && naptar.isConnected) S.repaint(); };
+      const elo = eloSav(); S.eloBar = elo; elo.rajzol();
+      win.clearInterval(S.eloTimer); if (!destroyed) S.eloTimer = win.setInterval(eloFrissit, win.__MH_ELO_MS || ELO_MS);
       track('booking_slot_viewed', { ...track0, count: S.day ? F.dayTimes(S.staff ? F.filterSlots(S.slots, { staffId: S.staff }) : S.slots, S.day).length : 0 });
       // a cim a PMU-foglalon sincs kiirva (a lepesjelzo mutatja, hol tart); a kepernyoolvasonak es a fokusznak marad egy rejtett cim
       return h('section', {}, h('h2', { class: 'be-title be-sr', tabindex: '-1', text: 'Válassz időpontot' }),
         S.slotLostNote ? alertBox('Ez az időpont közben elkelt. Válassz egy másikat!') : null, serviceBar(S.exact ? null : () => win.history.back()),
-        naptar,
+        naptar, elo.el,
         link('Nem találok megfelelő időpontot', () => { S.callbackReason = 'nincs_idopont'; track('booking_no_slots', { ...track0, reason: 'user' }); go('A1'); }, 'be-link-tavol'));
     },
 
@@ -780,8 +828,10 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
           next();
         }, foto ? { kep: foto } : { monogram: nev.charAt(0).toUpperCase() });
       });
-      kartyak.push(bigButton(flow.copy.staffAny, null, () => { S.staff = null; S.staffLabel = null; track('booking_filter_used', { filter: 'staff_any' }); next(); }, { kep: 'ik-mindegy', ikon: 'ora' }));
-      return h('section', {}, title(flow.copy.staffListTitle), h('div', { class: 'be-list be-egyenlo' }, kartyak));
+      // "Mindegy: a legkorabbi idopont erdekel" legfelul, elsodleges opcioke (kiemelt kartya); utana a szakemberek
+      const mindegy = bigButton(flow.copy.staffAny, null, () => { S.staff = null; S.staffLabel = null; track('booking_filter_used', { filter: 'staff_any' }); next(); }, { kep: 'ik-mindegy', ikon: 'ora' });
+      mindegy.classList.add('be-choice-fo');
+      return h('section', {}, title(flow.copy.staffListTitle), h('div', { class: 'be-list be-egyenlo' }, [mindegy, ...kartyak]));
     });
   }
   // Tartalek: ha a motor vagy a Salonic adatai nem toltenek be, a vendeg a Salonic eredeti foglalojara kerulhet (nem szakad meg a foglalas)
@@ -890,9 +940,10 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   }
   win.mhKeretbenOldal = onSalonicRedirect;
   const destroy = () => {
+    destroyed = true;
     win.removeEventListener('popstate', onPop);
     win.removeEventListener('resize', onResize);
-    win.clearTimeout(S.holdTimer);
+    win.clearTimeout(S.holdTimer); win.clearInterval(S.eloTimer);
     if (S.pmuCleanup) { S.pmuCleanup(); S.pmuCleanup = null; }
     renderToken += 1; // a folyamatban levo betoltes eredmenyet mar nem rajzoljuk ki
     if (win.mhKeretbenOldal === onSalonicRedirect) delete win.mhKeretbenOldal;

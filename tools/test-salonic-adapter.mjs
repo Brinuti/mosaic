@@ -393,3 +393,18 @@ test('adapter (gyors): a szolgaltatas-lista tartos (storage) gyorsitotarbol is j
   await lejart.getServices('gyors');
   assert.equal(f.calls.filter((c) => /showServices/.test(c.url)).length, 6, '10 perc utan ujra tolt');
 });
+
+test('adapter (elo foglaltsag): a fresh kereses a 90 mp-es megosztott reszt kihagyja (uj halozati hivas), egyebkent a gyorsitotarbol jon', async () => {
+  let ido = nowFixed();
+  const f = fakeFetch(gyorsRoutes());
+  const a = createSalonicAdapter({ fetchImpl: f, now: () => ido, businesses: gyorsCfg });
+  const svc = (await a.getServices('gyors')).find((s) => s.durationMin);
+  const api = () => f.calls.filter((c) => /getAvailableTimes/.test(c.url)).length;
+  await a.getAvailability('gyors', svc.serviceId, { days: 8 });
+  assert.equal(api(), 1);
+  ido += 10000;
+  await a.getAvailability('gyors', svc.serviceId, { days: 8 });
+  assert.equal(api(), 1, 'friss kereses nelkul a gyorsitotarbol jon');
+  await a.getAvailability('gyors', svc.serviceId, { days: 8, fresh: true });
+  assert.equal(api(), 2, 'fresh: uj halozati hivas');
+});

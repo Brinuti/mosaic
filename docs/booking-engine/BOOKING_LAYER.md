@@ -58,6 +58,10 @@ A build (`tools/netlify-build.mjs`): a launcher verziójelei (`__MOTOR_VERZIO__`
 - **Adatlap:** teljes szélességű keret (nem csúszik ki), a választott időpont összegzése fölötte (asztalon). A PMU-val azonos kinézethez a Salonic-fiókban be kell állítani az „Egyedi CSS URL”-t (lásd ENGINE_HEADSPA.md, „Közös Salonic-CSS”).
 - Pillanatképek a nézetekről: `node tools/meres-proba/design-kepek.mjs --overlay dist --ki mappa [--mobil 1] [--stilus 1]`.
 
+## Élő foglaltság (2026-10-04, 7. kör)
+
+Az időpont-naptár alatt egy sáv mutatja a szolgáltatás valódi szabad időpontjainak számát a következő 7 napra (`elo-foglaltsag.js`); percenként frissül, csak valódi változásra mozdul; a heti foglaltság % és az „utoljára foglaltak” állapot csak kiszámítható / valódi adatból jelenik meg (ma egyik sem). Részletek: DECISIONS.md.
+
 ## Viselkedés (2026-10-04, 4. kör)
 
 - **Csak az X zár** (Esc / háttér nem); a böngésző vissza gombja lépésenként visszalép.
