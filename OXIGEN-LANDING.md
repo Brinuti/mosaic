@@ -30,13 +30,17 @@ Az oldalon belül **nincs `#horgony`-link**: a GTM History Change triggere minde
 gombok (`data-gorgetes`) JS-ből görgetnek. A CTA-kattintások `oxigen_landing_cta` (`data-cta` érték) és `oxigen_landing_video` dataLayer-eseményt
 küldenek (a PMU-landing `pmu_landing_*` mintájára; ezekre GTM-címke nem figyel).
 
+## Hero (mobil) és a zöld szekció
+
+A hero másodlagos linkje: „Csak hajkamerás állapotfelmérés – 4 990 Ft →” (nincs „Még nem vagy biztos?”). Mobilon a három badge, a SZÉP-sor és a Google-sor külső szélei pontosan a margónál vannak (flex, space-between), a galéria nyilai 4 px-re a kép szélétől. A zöld szekció címe („Akkor az oxigénterápia valószínűleg hatásos lesz nálad.”) az „Ismerősek ezek a jelek?” folytatása; tableten/mobilon a cím a kép **fölött** áll (a `.allapot-szoveg` `display:contents`, a h2 `order:-1`).
+
 ## Fejléc
 
 A MOSAIC fejléc piros akció-sávja (`#comp-mpv0ganp`, „Októberi akció…”) ezen a landingen **nincs** (a tulajdonos kérésére): az `oxigen-landing.css` elrejti (`display:none`), a fejléc ettől csak a menüsor magas (asztali 46 px, mobil 61 px), a tartalom feljebb kerül. A hero-galéria képaláírásában nincs „Hajhullás” cím, csak az alkalmak száma.
 
 ## Hero és eredmények
 
-- A H1 („Működő hajgyógyászati oxigénterápia hajhullás ellen”) a bal blokkban áll, két sorban (a méret a viewporthoz igazodik); a galéria teteje a cím nagybetűinek tetejéhez igazodik; alatta: „Kétmillió elvégzett kezelésből 95%-os hatékonyság*”, lábjegyzet: „*Az Oxygeni statisztikája alapján”.
+- A H1 („Működő oxigénterápia hajhullás és gyulladás ellen”; mobilon 2 sorban, a betűméret a szélességhez igazodik) a bal blokkban áll, két sorban (a méret a viewporthoz igazodik); a galéria teteje a cím nagybetűinek tetejéhez igazodik; alatta: „Kétmillió elvégzett kezelésből 95%-os hatékonyság*”, lábjegyzet: „*Az Oxygeni statisztikája alapján”.
 - A hero jobb oldala **valós előtte/utána fotók galériája** (nem statikus kép): egy dia = egy `<figure class="hg-dia">`; a pontokat, nyilakat és a 6 mp-es automatikus lapozást (amíg a látogató bele nem nyúl; csökkentett mozgásnál nincs) az `oxigen-landing.js` adja. Felirat: „Gyengébb panaszok esetén 3–5 alkalom, súlyosabb panaszok esetén 5–10 alkalom.” A 5 jelenlegi kép **helyőrző** (hajhullás-referencia az Oxygeni-sorozatból), a tulajdonos válogatja a valódiakat (akár 10-et).
 - „Az Oxygeni vendégeinek valós javulásai”: a **régi oldal galériái, panaszonként, ugyanabban a sorrendben, mind a 21 kép** (`assets/img/oxigen/eredmeny-01..21.jpg`): hajhullás 12, korpás haj 3, pikkelysömör 3, seborrea 3, „Forrás: Oxygeni Hair” jelöléssel. A hero 5 képe ezek közül való (ismétlődik, amíg a tulajdonos ki nem választja a sajátokat).
 - **Vendégeink véleménye**: az **eredeti Trustindex-csúszka** (ugyanaz a widget, mint a főoldalon az „olvasd el vendégeinktől” résznél: `assets/embed/c2eb0f_95e68e62…`, Google-értékelés + 3 kártya) keretben. Külső szolgáltató, ezért a süti-tájékoztató szerint „funkcionális”: csak hozzájárulás után tölt be, addig gombos helykitöltő áll. A vélemények valós Google-értékelések, nem szerkesztettük őket; általános MOSAIC-vélemények (HeadSpa, fodrászat), oxigén-specifikus egyelőre nincs köztük.
