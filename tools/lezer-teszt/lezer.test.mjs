@@ -269,6 +269,18 @@ describe('idopont-valaszto (hamisitott Salonic-API)', () => {
     await ctx.close();
   });
 
+  test('a 15 percenkenti kezdesekbol legalabb 1 ora kulonbsegu idopontokat mutat (nem 13:30 / 13:45 / 14:00)', async () => {
+    const t0 = Math.floor(holnap / 3600) * 3600 + 1800; // xx:30
+    const { p, ctx } = await nyit({ api: () => idok(t0, t0 + 900, t0 + 1800, t0 + 2700, t0 + 3600, t0 + 4500, t0 + 7200) });
+    await p.locator('#foglalo').scrollIntoViewIfNeeded();
+    await kell(p);
+    const idoPontok = await p.$$eval('#slotok a.slot b', (l) => l.map((b) => b.textContent));
+    assert.equal(idoPontok.length, 3);
+    const perc = idoPontok.map((x) => +x.slice(0, 2) * 60 + +x.slice(3));
+    assert.ok(perc[1] - perc[0] >= 60 && perc[2] - perc[1] >= 60, idoPontok.join());
+    await ctx.close();
+  });
+
   test('a nyil lapoz a tovabbi idopontokra, korbefordul', async () => {
     const { p, ctx } = await nyit({ api: () => idok(...SLOTOK) });
     await p.locator('#foglalo').scrollIntoViewIfNeeded();

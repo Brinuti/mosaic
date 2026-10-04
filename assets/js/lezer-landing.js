@@ -161,6 +161,9 @@
     return cache[id];
   }
 
+  /** A rendezett idobelyegekbol azokat tartja meg, amelyek az elozo megtartottol legalabb 1 orara vannak. */
+  const ritka = (k) => k.reduce((ki, ts) => (!ki.length || ts - ki[ki.length - 1] >= 3600 ? [...ki, ts] : ki), []);
+
   function slotokRajzol() {
     const hova = $('slotok'), tovabb = $('slot-tovabb'), uzenet = $('slot-uzenet');
     const id = szolgaltatasId();
@@ -191,7 +194,8 @@
     try {
       const k = await szabadKezdesek(id);
       if (en !== kerNo) return; // kozben masik teruletet valasztott
-      allapot.kezdesek = k.slice(0, SOR * 8);
+      // a Salonic 15 percenkent ad kezdest (13:30, 13:45, 14:00): a gombokon legalabb 1 ora kulonbsegu idopontokat mutatunk, a teljes lista a Salonicban van
+      allapot.kezdesek = ritka(k).slice(0, SOR * 8);
       if (!k.length) {
         hova.replaceChildren();
         uzenet.replaceChildren('A következő hetekre most nincs szabad időpont. ', elem('a', { href: salonicUrl(id), target: '_blank', rel: 'noopener', szoveg: 'Nézd meg a foglalórendszerben →' }));
