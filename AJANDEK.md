@@ -538,3 +538,6 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
   (mind a kiválasztóra görget). A 2. lépés alcíme: „Indíts el a videót a kezelésről!”.
 - **„Kihagyom a személyre szabást” → melyik kártya?** A *standard* MOSAIC-kártya (az eredeti, fekete-arany Canva-terv, `kartya-hatter.jpg`, A4 félbehajtva): rajta a megajándékozott neve (az „Ajándékozott neve” mező),
   üzenet (ha nincs: az alap mondat „Miképp szeretetem Feléd árad…”), a kezelés neve, az érték, a kód és az érvényesség. Otthon nyomtatott kártyánál nincs külön üzenet-lépés a fizetés után (szalonban átvételnél van).
+- **Gombok (pontosítás):** a „Személyre szabott ajándékkártya!” blokkban a gomb („Összeállítom a saját kártyámat”) a **szöveges oszlop alatt, középen** áll (nem az egész szekció alatt), és a kép alja pontosan a gomb
+  aljával van egy vonalban (1180 px-től egymás mellett; alatta egymás alatt). A „Kényeztetés a legmagasabb szinten” szekció alatt mégsem kell gomb (kikerült).
+- **ChatGPT-prompt a dizájnok újragyártásához:** `AJANDEK-CHATGPT-PROMPT.md` (A5 fekvő, 2480 x 1754 px, szövegmentes, magenta fotóablak, közös elrendezési rács, ellenőrzőlista).

@@ -1095,3 +1095,10 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 /* design-valaszto: a hat dizajn (smaragd, szalag, virag + a harom elozetes) egy sorban, ha elfer */
 .ah-tema-racs { grid-template-columns: repeat(auto-fill, minmax(84px, 100px)); }
 .ah-ak-doboz.ah-megfordit .ah-huz-jelzo { display: none; }
+
+/* Atadas: a gomb a szoveges oszlop aljan, kozepen; a kep alja pontosan a gomb aljaval egy vonalban (a sor magassagat a szoveg + gomb adja) */
+.ah-atadas-szoveg .ah-pontosan-cta { margin: 24px 0 0; text-align: center; }
+@media (min-width: 1180px) {
+  .ah-atadas-szoveg { display: flex; flex-direction: column; }
+  .ah-atadas-szoveg .ah-forma-lista { margin-top: auto; margin-bottom: auto; }
+}
