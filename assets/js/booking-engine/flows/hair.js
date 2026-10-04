@@ -22,7 +22,12 @@ export const HAIR = Object.freeze({
     { key: 'balayage', title: 'Balayage / szőkítés', kep: 'hair-balayage', categories: Object.freeze(['Balayage', 'Teljes szőkítés', 'Teljes melír / airtouch + vágás']) },
     { key: 'color', title: 'Hajfestés', kep: 'hair-color', categories: Object.freeze(['Tőfestés + szárítás', 'Tőfestés + vágás + szárítás', 'Elrontott festés korrekció / Teljes festés']) },
     { key: 'cut', title: 'Hajvágás', kep: 'hair-cut', categories: Object.freeze(['Női hajvágás + szárítás', 'Férfi hajvágás']) },
-    { key: 'other', title: 'Egyéb fodrászati szolgáltatás', kep: 'hair-other', categories: Object.freeze(['Női szárítás', 'Hajszerkezet újraépítés', 'Póthaj']), catchAll: true },
+    // az "Egyeb fodraszati szolgaltatas" elemei kulon kartyak (nem kell kulon "egyeb" lepes)
+    { key: 'szaritas', title: 'Női szárítás', ikon: 'szaritas', categories: Object.freeze(['Női szárítás']) },
+    { key: 'ujraepites', title: 'Hajszerkezet újraépítés', ikon: 'ujraepites', categories: Object.freeze(['Hajszerkezet újraépítés']) },
+    { key: 'pothaj', title: 'Póthaj', ikon: 'haj', categories: Object.freeze(['Póthaj']) },
+    // az ismeretlen (uj) Salonic-kategoriak ide kerulnek, hogy ne vesszenek el; amig nincs ilyen, a kartya nem jelenik meg
+    { key: 'other', title: 'Egyéb fodrászati szolgáltatás', ikon: 'haj', categories: Object.freeze([]), catchAll: true },
     { key: 'unsure', title: 'Nem tudom pontosan', sub: 'Ingyenes konzultáció', kep: 'hair-consult', consult: true },
   ]),
   // a fodraszok fotoi (a site sajat kepei, tools/booking-kepek.json); akinek nincs, annak monogram jelenik meg

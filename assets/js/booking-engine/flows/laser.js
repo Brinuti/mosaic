@@ -15,7 +15,8 @@ export const AREAS = Object.freeze([
   { key: 'intim', title: 'Intim', kep: 'la-intim', test: (n) => /^INTIM\s*-/i.test(n) },
   { key: 'lab', title: 'Láb', kep: 'la-lab', test: (n) => /^LÁBAK\s*-/i.test(n) },
   { key: 'torzs', title: 'Törzs', kep: 'la-torzs', test: (n) => /^FÉRFI\s*-/i.test(n) },
-  { key: 'tobb', title: 'Több terület', kep: 'la-tobb', test: () => true }, // akciós csomagok, egyedi csomag, egyéb testrészek
+  // "Csomagok": akciós csomagok, egyedi csomag, egyéb testrészek; a listában ELOL jelenik meg (elol: true), de az illesztésnél (areaOf) az utolsó, mert mindent elfog
+  { key: 'tobb', title: 'Csomagok', kep: 'la-tobb', elol: true, test: () => true },
 ]);
 
 export const areaOf = (service) => AREAS.find((a) => a.test(displayName(service.name)));

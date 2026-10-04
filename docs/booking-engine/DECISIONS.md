@@ -83,3 +83,12 @@ A Salonic nem minden helyen bontja az első és a következő alkalmat külön k
 - **Oxigén:** egyforma magas kártyák, a hajkamera pontos szövege: „Megnézzük a fejbőröd állapotát + átbeszéljük milyen eredményt várhatsz”; a **szakember az időpont előtt**, kártyákon (nem legördülő). A szakemberek fotója a Salonic-fiók szakember-oldaláról van (tulajdonosi útmutatás).
 - **Lézer:** egyforma kártyák; a terület-képeken nincs szöveg (a site képeinek szöveg nélküli vágata), a „Több terület” 4 terület egy mozaikképen; a csomagoknál az „állapotfelmérés + 20% kedvezménnyel” helyett a csomag testrészei kis ikonokkal (a site csomag-leírása szerint).
 - **Egyforma kártyák** a szolgáltatás-választókon (szolgáltatás-választó, HeadSpa, Oxigén, Fodrászat szándékok, Lézer).
+
+## Design-döntések 2026-10-04, 3. kör
+
+- **Címek mindenhol középre igazítva.** Az adatlap („Add meg az adataidat”) címe nincs kiírva (a képernyőolvasónak marad): mobilon az adatlap egy képernyőre fér görgetés nélkül (a keret a képernyő aljáig ér; a Salonic cookie-sávja a keret alján marad).
+- **Fodrászat:** nincs „Egyéb fodrászati szolgáltatás” kártya: az elemei (Női szárítás, Hajszerkezet újraépítés, Póthaj) külön kártyák, a szándék-lista sűrű (mobilon görgetés nélkül); az ismeretlen (új) Salonic-kategóriák rejtett „Egyéb” kártyába kerülnek, amíg nincs ilyen. Ahol nincs mit pontosítani (egy kezelés, egy hajhossz-csoport), a kártya rögtön továbbvisz.
+- **Lézer:** a „Több terület” neve **„Csomagok”**, és a lista elején áll; a terület-képek szövegmentesek és keret nélküliek; a Törzs egy valódi törzs-kép.
+- **Kártyák nem „kijelöltek”:** a hover-effektek csak egérrel (hover: hover) élnek, a kártyák hover-kerete megszűnt (érintésre nem marad kijelölt kártya).
+- **Kép-gyorsítótár:** a kártya-képek URL-je tartalom-hash-t kap, mert a `/assets/img/*` egy évig tárolható (a kicserélt kép különben nem jutna el a már látogató böngészőkhöz).
+- **Dátum-ellenőrzés (2026-10-04):** mind a 99 Salonic-szolgáltatásra a nyers naptár-API, az adapter és a naptár-nézet pontosan egyezik (nincs elveszett nap / időpont, a napok a budapesti naphoz igazodnak). A kuponkódos **Egyéni Relax** első szabad napja a Salonicban is okt. 26: a szolgáltatáshoz 3 kezelőhely van rendelve (a normál Egyénihez 4: hiányzik a „Négykezes Head spa”), és sokkal kevesebb időpontot ad ki (49 a normál 210 helyett). Ez Salonic-beállítás.

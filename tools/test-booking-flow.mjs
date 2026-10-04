@@ -89,7 +89,7 @@ test('Fodraszat: a belepo a fodrasz-valaszto (HA0), utana HA1 -> HA2 -> HA2B -> 
 test('Fodraszat: a 41 szolgaltatas mind besorolodik a jovahagyott szandekekbe, egy sem vész el', () => {
   assert.equal(hairServices.length, 41);
   const perIntent = Object.fromEntries(HAIR.intents.filter((i) => !i.consult).map((i) => [i.key, intentServices(hairServices, HAIR.intents, i)]));
-  assert.deepEqual(Object.fromEntries(Object.entries(perIntent).map(([k, v]) => [k, v.length])), { balayage: 14, color: 12, cut: 5, other: 9 });
+  assert.deepEqual(Object.fromEntries(Object.entries(perIntent).map(([k, v]) => [k, v.length])), { balayage: 14, color: 12, cut: 5, szaritas: 4, ujraepites: 3, pothaj: 2, other: 0 }, 'az "Egyeb" elemei kulon szandekok: Noi szaritas 4, Hajszerkezet ujraepites 3, Pothaj 2; az egyeb ures (ismeretlen kategoriara var)');
   const all = Object.values(perIntent).flat().map((s) => s.serviceId);
   assert.equal(new Set(all).size, 40, 'egy szolgaltatas csak egy szandekben');
   const consult = hairServices.filter((s) => s.bookingType === 'consultation');
@@ -97,7 +97,7 @@ test('Fodraszat: a 41 szolgaltatas mind besorolodik a jovahagyott szandekekbe, e
   assert.equal(all.length + consult.length, 41);
 });
 
-test('Fodraszat: uj, ismeretlen Salonic-kategoria az "Egyeb"-be kerul (nem vesz el)', () => {
+test('Fodraszat: uj, ismeretlen Salonic-kategoria az (alapbol rejtett) "Egyeb"-be kerul (nem vesz el)', () => {
   const novel = { serviceId: '777', name: 'Uj kezeles', category: 'Valami teljesen uj', bookingType: 'first_treatment', activePrice: 1000, durationMin: 30, staffIds: ['1'] };
   const other = HAIR.intents.find((i) => i.key === 'other');
   assert.ok(intentServices([...hairServices, novel], HAIR.intents, other).some((s) => s.serviceId === '777'));
@@ -124,8 +124,9 @@ test('groupServices: a hajhossz-valtozatok egy kezelesben; a szokimeres 4 eltero
   assert.equal(byIntent('color').length, 3);
   assert.equal(byIntent('cut').length, 2);
   assert.deepEqual(byIntent('cut').map((g) => g.items.length).sort(), [1, 4]);
-  const other = byIntent('other');
+  const other = [...byIntent('szaritas'), ...byIntent('ujraepites'), ...byIntent('pothaj')];
   assert.equal(other.length, 4, 'Noi szaritas, JOICO, Pothaj leszedes, Pothaj felrakas');
+  assert.equal(byIntent('other').length, 0, 'az Egyeb ures, amig nincs ismeretlen kategoria');
   for (const g of [...balayage, ...other]) for (let i = 1; i < g.items.length; i++) assert.ok(g.items[i - 1].service.durationMin <= g.items[i].service.durationMin);
 });
 
@@ -389,7 +390,7 @@ test('minden valasztokartya kepe (kulcs) letezo fajl: szolgaltatas-valaszto, Hea
     ...CHOOSER.families.map((f) => f.kep),
     ...HEADSPA.cards.map((c) => c.kep),
     ...OXYGEN.intents.map((i) => i.kep),
-    ...HAIR.intents.map((i) => i.kep),
+    ...HAIR.intents.filter((i) => i.kep).map((i) => i.kep),
     ...HAIR.staffPhotos.map(([, k]) => k),
     ...OXYGEN.staffPhotos.map(([, k]) => k),
     ...LASER.copy.intro.map((o) => o.kep),

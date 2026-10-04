@@ -68,7 +68,7 @@ async function ujLap() {
   const page = await ctx.newPage();
   const hibak = [];
   page.on('pageerror', (e) => hibak.push(String(e.message).slice(0, 160)));
-  page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource|net::ERR/.test(m.text())) hibak.push(m.text().slice(0, 160)); });
+  page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource|net::ERR|violates the following report-only Content Security Policy/.test(m.text())) hibak.push(m.text().slice(0, 160)); });
   return { ctx, page, hibak };
 }
 
@@ -195,7 +195,8 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   const elsoIdo = (await reteg(page).locator('.be-idogomb').first().textContent()).trim();
   await reteg(page).locator('.be-idogomb').first().click();
   await reteg(page).locator('iframe.be-iframe').waitFor({ timeout: 20000 });
-  ok('design | idopont utan ROGTON a Salonic adatlap, a cim kozepre rendezve, nincs "Elonezet / valodi foglalas" jelzes', (await cimSzoveg(page)).includes('Add meg az adataidat') && (await reteg(page).locator('.be-title-kozep').count()) === 1 && !(await reteg(page).locator('.be-proba').count()) && !/Előnézet/.test(await reteg(page).locator('main').textContent()));
+  ok('design | idopont utan ROGTON a Salonic adatlap, az "Add meg az adataidat" cim nincs kiirva, nincs "Elonezet / valodi foglalas" jelzes', (await cimSzoveg(page)).includes('Add meg az adataidat') && (await reteg(page).locator('main h2.be-title:not(.be-sr)').count()) === 0 && !(await reteg(page).locator('.be-proba').count()) && !/Előnézet/.test(await reteg(page).locator('main').textContent()));
+  if (MOBIL) { await page.waitForTimeout(600); const fr = await reteg(page).locator('.be-frame').evaluate((e) => ({ alja: Math.round(e.getBoundingClientRect().bottom), ablak: window.innerHeight })); ok('design | adatlap mobilon egy kepernyore fer, gorgetes nelkul (a keret alja az ablakon belul)', fr.alja <= fr.ablak, `keret alja ${fr.alja}px, ablak ${fr.ablak}px`); }
   await page.waitForTimeout(3500);
   ok('design | adatlap alatt: nincs magyarazo szoveg, a "Masik idopontot valasztok" link (nem gomb)', !/Ha az űrlap helyett/.test(await reteg(page).locator('main').textContent()) && (await reteg(page).locator('.be-help .be-link').count()) === 1 && !(await reteg(page).locator('.be-help .be-btn').count()));
   const mini = reteg(page).locator('.be-mini');
@@ -254,10 +255,24 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   await nyit(page, { business: 'laser', intent: 'first' }); await varCim(page);
   k = await kepekBetoltve(page, 4);
   ok('design | Lezer: a teruletek mellett kep, mind egyforma kartya', k.db >= 4 && k.jo === k.db && (await egyenloMagas(page)).egyenlo, JSON.stringify(k));
-  await kattint(page, 'Több terület');
+  await kattint(page, 'Csomagok');
   const csomagSzoveg = await reteg(page).locator('main').textContent();
   ok('design | Lezer csomagok: testreszek kis ikonokkal (nincs "allapotfelmeres" / "kedvezmennyel" felirat)', (await reteg(page).locator('.be-resz').count()) >= 8 && !/állap\w*felmér|kedvezménnyel/i.test(csomagSzoveg), `${await reteg(page).locator('.be-resz').count()} jelveny`);
   ok('design | Lezer csomagok: BASIC = Honalj + Teljes intim; az egyedi csomagnal a leiras', /Hónalj/.test(await reteg(page).locator('.be-choice', { hasText: 'BASIC' }).first().textContent()) && /Teljes intim/.test(await reteg(page).locator('.be-choice', { hasText: 'BASIC' }).first().textContent()) && /válogatod össze/.test(await reteg(page).locator('.be-choice', { hasText: 'EGYEDI' }).first().textContent()));
+  await zar(page);
+
+  // 5. visszajelzes-csomag: kozepre igazitott cimek, fodraszat "egyeb" elemei kulon (gorgetes nelkul), "Csomagok" elol, verzios kep-URL
+  await nyit(page, { business: 'hair' }); await varCim(page); await page.waitForTimeout(1000);
+  ok('design | minden cim kozepre igazitva', (await reteg(page).locator('.be-title').first().evaluate((e) => getComputedStyle(e).textAlign)) === 'center');
+  await kattint(page, 'Mindegy');
+  const szand = (await reteg(page).locator('.be-choice b').allTextContents()).map((x) => x.trim());
+  ok('design | Fodraszat: nincs "Egyeb fodraszati szolgaltatas", az elemei kulon kartyak', !szand.includes('Egyéb fodrászati szolgáltatás') && ['Női szárítás', 'Hajszerkezet újraépítés', 'Póthaj'].every((x) => szand.includes(x)), szand.join(' | '));
+  if (MOBIL) { const gorg = await reteg(page).locator('.be-scroll').evaluate((e) => e.scrollHeight - e.clientHeight); ok('design | Fodraszat: a szandekok gorgetes nelkul elferenk mobilon', gorg <= 1, `tobblet: ${gorg}px`); }
+  await zar(page);
+  await nyit(page, { business: 'laser', intent: 'first' }); await varCim(page); await kepekBetoltve(page, 4);
+  const teruletek = (await reteg(page).locator('.be-choice b').allTextContents()).map((x) => x.trim());
+  ok('design | Lezer: a "Csomagok" kartya van elol (nem "Tobb terulet")', teruletek[0] === 'Csomagok' && !teruletek.includes('Több terület'), teruletek.join(' | '));
+  ok('design | kepek verzios URL-lel (a kicserelt kep ne maradjon a gyorsitotarban)', await reteg(page).locator('img.be-choice-img').evaluateAll((es) => es.length > 0 && es.every((e) => /\.jpg\?v=\w{6,}/.test(e.getAttribute('src')))));
   await zar(page);
 
   // minden uzletag idopont-valasztoja a havi naptar (PMU); a szakember-valaszto kepes kartyakkal az idopont elott

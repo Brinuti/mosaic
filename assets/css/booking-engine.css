@@ -21,7 +21,6 @@ a { color: inherit; }
 .be-head-right { display: flex; justify-content: flex-end; min-width: 44px; }
 .be-h1 { margin: 0; text-align: center; font-weight: 400; font-size: var(--m-alap); letter-spacing: .02em; }
 .be-icon { width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: none; border-radius: 50%; cursor: pointer; text-decoration: none; }
-.be-icon:hover { background: var(--krem); }
 .be-icon svg { width: 22px; height: 22px; }
 .be-steps { display: flex; justify-content: center; gap: 2px; list-style: none; margin: 4px 0 0; padding: 0; }
 .be-steps li { flex: 1 1 0; max-width: 90px; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; position: relative; font-size: var(--m-kicsi); color: var(--halvany); }
@@ -35,8 +34,8 @@ a { color: inherit; }
 .be-steps li.done i { border-color: var(--sotet); }
 
 .be-main { max-width: 560px; margin: 0 auto; padding: 16px 16px 40px; }
-.be-title { font-weight: 400; font-size: var(--m-nagy); line-height: 1.2; margin: 4px 0 14px; outline: none; }
-.be-title-kozep { text-align: center; }
+.be-title { font-weight: 400; font-size: var(--m-nagy); line-height: 1.2; margin: 4px 0 14px; outline: none; text-align: center; }
+.be-title + .be-note { text-align: center; margin-top: -6px; }
 .be-note { color: var(--kozep); margin: 0 0 12px; }
 .be-loading { color: var(--kozep); padding: 24px 0; text-align: center; }
 .be-loading::before { content: ''; display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px; border: 2px solid var(--vonal); border-top-color: var(--sotet); border-radius: 50%; animation: be-spin .8s linear infinite; }
@@ -49,9 +48,15 @@ a { color: inherit; }
 .be-list { display: grid; gap: 10px; }
 /* a valasztolista kartyai egyforma magasak (a legmagasabbhoz igazodnak; a tartalom kozepre rendezve) */
 .be-egyenlo { grid-auto-rows: 1fr; }
+/* surun: 7-8 kartya is elfer egy mobilkepernyon */
+.be-suru { gap: 8px; }
+.be-suru .be-choice { min-height: 56px; padding: 4px 12px 4px 4px; }
+.be-suru .be-choice-img { width: 46px; height: 46px; }
+.be-suru .be-choice b { font-size: 16px; }
+.be-main-kompakt { padding-top: 8px; padding-bottom: 8px; }
 /* kep (vagy monogram) balra, cim + egy sor kozepen, jobbra az ar es a nyil - mint a PMU-foglalo kezelesvalasztoja */
 .be-choice { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 66px; text-align: left; background: var(--feher); border: 1.5px solid var(--vonal); border-radius: 12px; padding: 6px 12px 6px 6px; cursor: pointer; }
-.be-choice:hover, .be-choice:focus-visible { border-color: var(--sotet); outline: none; }
+.be-choice:focus-visible { border-color: var(--sotet); outline: none; }
 .be-choice-img { flex: none; width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: var(--krem); }
 .be-mono { display: grid; place-items: center; border-radius: 50%; font-size: 22px; color: var(--sotet); }
 .be-ikon { display: grid; place-items: center; color: var(--sotet); }
@@ -75,10 +80,8 @@ a { color: inherit; }
 
 /* gombok */
 .be-btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 54px; border: 0; border-radius: 999px; background: linear-gradient(#c6a346, #d9c164); color: #fff; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; font-size: var(--m-alap); cursor: pointer; text-decoration: none; padding: 12px 18px; }
-.be-btn:hover { background: var(--zold); text-shadow: none; }
 .be-btn[disabled] { opacity: .5; cursor: default; }
 .be-btn-2 { background: var(--feher); color: var(--sotet); border: 1.5px solid var(--sotet); text-shadow: none; }
-.be-btn-2:hover { background: var(--krem); }
 .be-link { display: block; margin: 0 auto; background: none; border: 0; padding: 8px 0; color: var(--sotet); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: center; }
 .be-actions { display: grid; gap: 10px; margin-top: 18px; }
 .be-actions + .be-note { margin-top: 18px; text-align: center; }
@@ -94,7 +97,7 @@ a { color: inherit; }
 .be-times { display: flex; flex-wrap: wrap; gap: 8px; }
 .be-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); margin: 12px 0; }
 .be-time { min-width: 86px; border: 1.5px solid var(--vonal); background: var(--feher); border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; }
-.be-time:hover, .be-time:focus-visible { background: var(--sotet); color: var(--krem); border-color: var(--sotet); outline: none; }
+.be-time:focus-visible { background: var(--sotet); color: var(--krem); border-color: var(--sotet); outline: none; }
 .be-label { display: block; font-weight: 700; margin: 14px 0 6px; }
 .be-select { width: 100%; min-height: 46px; margin-top: 6px; border: 1.5px solid var(--vonal); border-radius: 10px; background: var(--feher); padding: 0 12px; }
 
@@ -109,7 +112,6 @@ a { color: inherit; }
 .be-hetnap { text-align: center; font-size: var(--m-kicsi); color: var(--halvany); }
 .be-nnap { height: 36px; width: 36px; padding: 0; justify-self: center; border: 0; border-radius: 50%; background: transparent; cursor: pointer; font-weight: 700; color: var(--sotet); }
 .be-nnap.szabad { background: #dcebdf; color: var(--zold); }
-.be-nnap.szabad:hover { background: #c7dfcc; }
 .be-nnap[disabled] { color: #bdb4a8; cursor: default; font-weight: 400; }
 .be-nnap.be-ures { visibility: hidden; }
 .be-nnap[aria-pressed="true"] { background: var(--zold); color: #fff; }
@@ -170,6 +172,14 @@ a { color: inherit; }
 .be-consent input { width: 18px; height: 18px; accent-color: var(--sotet); margin: 1px 0 0; }
 
 @media (prefers-reduced-motion: reduce) { .be-spinner, .be-loading::before { animation: none; } }
+/* hover-effektek csak egerrel: erintesre nem marad "kijelolt" kartya / gomb */
+@media (hover: hover) and (pointer: fine) {
+  .be-icon:hover { background: var(--krem); }
+  .be-btn:hover { background: var(--zold); text-shadow: none; }
+  .be-btn-2:hover { background: var(--krem); }
+  .be-time:hover { background: var(--sotet); color: var(--krem); border-color: var(--sotet); }
+  .be-nnap.szabad:hover { background: #c7dfcc; }
+}
 
 /* --- a foglalo shell-je (a motor maga epiti a fejlecet) es a helyben nyilo reteg --------------------------------------------------------- */
 /* Shadow DOM-ban a body-szabalyok nem ervenyesek: a gazdaelem viseli az alapbetut / szint. */

@@ -71,10 +71,14 @@ const MOTOR_MODULOK = [];
   }
 })(path.join(DIST, 'assets/js/booking-engine'));
 MOTOR_MODULOK.sort();
-const MOTOR_VERZIO = crypto.createHash('sha1').update(MOTOR_MODULOK.map((p) => fs.readFileSync(p, 'utf8')).join('\n')).digest('hex').slice(0, 10);
+// A foglalo kis kepei (assets/img/booking/*) ugyanigy egy evig tarolhatok: a tartalom-hash-uk a motor kodjaba kerul (__KEP_VERZIO__: a kep-URL-ek ?v= jele),
+// igy egy kicserelt kep uj URL-t kap, es a motor verziojele is valtozik.
+const KEP_MAPPA = path.join(DIST, 'assets/img/booking');
+const KEP_VERZIO = crypto.createHash('sha1').update(fs.existsSync(KEP_MAPPA) ? fs.readdirSync(KEP_MAPPA).sort().map((f) => f + fs.readFileSync(path.join(KEP_MAPPA, f)).toString('base64')).join('\n') : '').digest('hex').slice(0, 10);
+const MOTOR_VERZIO = crypto.createHash('sha1').update(MOTOR_MODULOK.map((p) => fs.readFileSync(p, 'utf8')).join('\n') + KEP_VERZIO).digest('hex').slice(0, 10);
 for (const p of MOTOR_MODULOK) {
   const t = fs.readFileSync(p, 'utf8');
-  fs.writeFileSync(p, t.replace(/(from\s+['"])(\.{1,2}\/[^'"?]+\.js)(['"])/g, `$1$2?v=${MOTOR_VERZIO}$3`));
+  fs.writeFileSync(p, t.replace(/(from\s+['"])(\.{1,2}\/[^'"?]+\.js)(['"])/g, `$1$2?v=${MOTOR_VERZIO}$3`).split('__KEP_VERZIO__').join(KEP_VERZIO));
 }
 // A helyben nyilo foglalo-reteg inditoja (assets/js/booking-launcher.js) a motor es a stilusok tartalom-hash-et kapja (a /assets/js/* es a
 // /assets/css/* egy evig tarolhato): a __MOTOR_VERZIO__ / __CSS_VERZIO__ jeleket itt irjuk be, a launcher sajat ?v= jele ezutan szamolodik.

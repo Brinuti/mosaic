@@ -80,7 +80,7 @@ await reteg.locator('.be-choice').nth(1).click(); await cimre(); await kep('12-f
 
 // Lézer: területek, csomagok, kar
 await nyit({ business: 'laser', intent: 'first' }); await kep('13-lezer-teruletek');
-await kattint('Több terület'); await kep('14-lezer-csomagok');
+await kattint('Csomagok'); await kep('14-lezer-csomagok');
 await reteg.locator('#be-back').click(); await cimre(); await kattint('Kar'); await kep('15-lezer-kar-kezelesek'); await zar();
 
 // naptárak minden üzletágnál

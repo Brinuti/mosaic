@@ -27,6 +27,8 @@ export const IKONOK = Object.freeze({
   balayage: '<path d="M7 3.5c-1.6 4.2 1.6 6.4 0 10.5s1.6 5.4 0 6.5M12 3.5c-1.6 4.2 1.6 6.4 0 10.5s1.6 5.4 0 6.5M17 3.5c-1.6 4.2 1.6 6.4 0 10.5s1.6 5.4 0 6.5"/>',
   melir: '<path d="M5.5 3.5h5.2L9.2 20.5H4zM13.3 3.5h5.2L17 20.5h-5.2z"/><path d="M6.2 8.5h3.4M14 8.5h3.4"/>',
   szokites: '<path d="M12 3l1.9 5.4L19.5 10l-5.6 1.7L12 17l-1.9-5.3L4.5 10l5.6-1.6z"/><path d="M18.5 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>',
+  szaritas: '<rect x="3" y="6.5" width="13" height="7" rx="3.5"/><path d="M16 8.2l4.5-1.6v6.8L16 11.8M8.3 13.5L7 20h3.6l1-6.5"/>',
+  ujraepites: '<path d="M6.5 3.5c-1.6 4.2 1.6 6.4 0 10.5s1.6 5.4 0 6.5M12 3.5c-1.6 4.2 1.6 6.4 0 10.5s1.6 5.4 0 6.5"/><path d="M18.5 7.5v7M15 11h7"/>',
   haj: '<path d="M8 3.5c-2 4.3 2 6.6 0 11s2 4.2 1.5 6M13 3.5c-2 4.3 2 6.6 0 11s2 4.2 1.5 6M18 3.5c-2 4.3 2 6.6 0 11s2 4.2 1.5 6"/>',
   // --- testreszek (lezer): a kiemelt resz arany ---
   arc: KI('<circle class="hl hf" cx="12" cy="3.7" r="2.4"/>'),
