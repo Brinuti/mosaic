@@ -430,7 +430,7 @@
     if (!doboz || tiBetoltve) return;
     tiBetoltve = true;
     var tartalek = $('ah-proof');
-    var f = h('iframe', { class: 'ah-ti-keret', src: TI_KERET, title: 'Google-vélemények (Trustindex)', loading: 'lazy' });
+    var f = h('iframe', { class: 'ah-ti-keret', src: TI_KERET, title: 'Google-vélemények (Trustindex)', loading: 'lazy', scrolling: 'no' });   // scrolling=no: soha nincs gorgetosav az iframe-ben
     // az iframe azonos eredetu: a magassagat a tartalomhoz igazitjuk; a tartalek-kartya csak a valodi widget megjelenese utan tunik el
     var proba = 0;
     function meret() {
@@ -443,12 +443,22 @@
           st.textContent = '@font-face{font-family:"Jost";font-style:normal;font-weight:400 600;font-display:swap;src:url(/assets/fonts/jost-400-latin.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}'
             + '@font-face{font-family:"Jost";font-style:normal;font-weight:400 600;font-display:swap;src:url(/assets/fonts/jost-400-latin-ext.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1E00-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}'
             + 'html body .ti-widget,html body .ti-widget *{font-family:"Jost","Helvetica Neue",Arial,sans-serif!important}'
+            + 'html,body{overflow:hidden!important}'   // az iframe-ben soha ne legyen gorgetosav (a magassag a tartalomhoz igazodik)
             + 'html body div.ti-controls-line,html body .ti-widget .ti-controls-line{display:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;visibility:hidden!important}';   // a lapozo-sav (gorgetosav) elrejtese; a kartyak huzassal tovabbra is lapozhatok
           d.head.appendChild(st);
         }
-        var m = Math.max(d.body.scrollHeight, d.documentElement.scrollHeight);
+        // a tartalom magassaga (a betutipus betoltese / a tordeles valtozasa utan is kovetjuk: ResizeObserver + fonts.ready + hosszabb lekerdezes)
+        // a tartalom magassaga a WIDGET aljabol (a body / html a nezet magassagat veszi fel, abbol nem lehet merni: visszacsatolas lenne); + a body also margoja + ~16 px (arnyek)
+        var wd = d.querySelector('.ti-widget');
+        var m = wd ? Math.ceil(wd.getBoundingClientRect().bottom + (parseFloat(d.defaultView.getComputedStyle(d.body).marginBottom) || 0) + 16) : 0;
+        if (m < 60) m = Math.max(d.body.scrollHeight, d.documentElement.scrollHeight);
+        if (kesz && !f.ahKovet) {
+          f.ahKovet = true;
+          try { if (d.defaultView.ResizeObserver) new d.defaultView.ResizeObserver(function () { meret(); }).observe(d.querySelector('.ti-widget') || d.body); } catch (e) { /* nem baj */ }
+          try { if (d.fonts && d.fonts.ready) d.fonts.ready.then(function () { meret(); }); } catch (e) { /* nem baj */ }
+        }
         if (kesz && m > 60) {
-          f.style.height = (m + 6) + 'px';
+          f.style.height = m + 'px';
           if (tartalek) tartalek.hidden = true;
           var ossz = document.querySelector('.ah-google-ossz');   // a widget fejlecenek sajat osszegzese van: nem ismeteljuk
           if (ossz) ossz.hidden = true;
@@ -456,7 +466,7 @@
         return kesz;
       } catch (e) { if (tartalek) tartalek.hidden = true; return true; }
     }
-    var ido = setInterval(function () { proba++; if ((meret() && proba > 6) || proba > 60) clearInterval(ido); }, 400);
+    var ido = setInterval(function () { proba++; meret(); if (proba > 60) clearInterval(ido); }, 500);
     window.addEventListener('resize', meret);
     doboz.appendChild(f);
     if (tartalek) {
@@ -849,7 +859,6 @@
     $('ah-foto-torol').hidden = !van;
     $('ah-zoom-sor').hidden = !van;
     $('ah-mozgat').hidden = !van;
-    $('ah-mozgat-seg').hidden = !van;
     $('ah-zoom').value = String(S.tervezo.fotoPoz.z);
     // mobilon a rovid szoveg ("Másik fotó") latszik, hogy a gomb a cim mellett elferjen
     $('ah-foto-gomb-szoveg').innerHTML = van ? 'Másik fotó<span class="ah-m-hosszu"> választása</span>' : 'Fotó<span class="ah-m-hosszu"> feltöltése</span>';

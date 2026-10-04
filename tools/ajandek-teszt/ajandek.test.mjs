@@ -184,7 +184,7 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     // a fizetesi urlap mezoi uresek (nincs peldaszoveg: Kovacs Anna, 1024, Budapest, ...); a tervezo nincs szamlalo, az athelyezes szovegesen
     const urlapHtml = html.slice(html.indexOf('id="ah-urlap"'), html.indexOf('id="ah-feldolgozas"'));
     assert.ok(!/placeholder=/.test(urlapHtml), 'a fizetesi urlapon nincs placeholder');
-    assert.ok(!html.includes('id="ah-idezet-db"') && html.includes('id="ah-mozgat-seg"') && html.includes('Helyezd át a képet a kezeddel'), 'nincs karakterszamlalo; az athelyezes szoveges');
+    assert.ok(!html.includes('id="ah-idezet-db"') && !html.includes('ah-mozgat-seg') && fs.readFileSync(new URL('../../assets/js/ajandek.js', import.meta.url), 'utf8').includes('Húzd a fotót az igazításhoz'), 'nincs karakterszamlalo; az athelyezes csak a kartyan levo felirat');
     // egyseges betumeretek: negy meret valtozo (b1-b4 + hero) es ket betutipus (Playfair + Jost), mobilon kisebb lepcsok
     const css = fs.readFileSync(new URL('../../assets/css/ajandek.css', import.meta.url), 'utf8');
     assert.ok(/:root { --b1: 36px; --b2: 22px; --b3: 16px; --b4: 13px; --bh: 50px; }/.test(css) && /--b1: 28px; --b2: 19px; --b3: 15px; --b4: 12.5px; --bh: 28px/.test(css), 'a negy betumeret (asztali / mobil)');
