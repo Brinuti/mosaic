@@ -714,6 +714,14 @@
       BELEPES.koszonjuk();
       return;
     }
+    // ?minta=foto: a fotokuldes utani kepernyo (mintanezet, kuldes nelkul)
+    if (MINTA === 'foto') {
+      const ts = Math.floor(Date.now() / 86400000 + 7) * 86400 + 8 * 3600;
+      $('foto-kesz-osszegzes').replaceChildren(elem('div', { class: 'osszegzes-kartya' }, elem('div', { class: 'fejsor', szoveg: 'Preferált időpont (nem végleges)' }), elem('div', { class: 'sor' }, ikon('naptar'),
+        elem('span', {}, elem('b', { szoveg: teljes(ts) }), elem('span', { szoveg: 'Szemöldöktetoválás – Hibrid' })))));
+      mutat('foto-kesz');
+      return;
+    }
     if (MINTA === 'visszahivas' || (location.hash === '#visszahivas-kesz' && olvas(TAROLO_C))) {
       mutat('c-kesz');
       BELEPES['c-kesz']();

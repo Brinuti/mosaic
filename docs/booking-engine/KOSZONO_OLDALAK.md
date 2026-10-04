@@ -34,7 +34,7 @@ Minden oldal elérhető az előnézeten (`https://claude-booking-design-1.mosaic
 
 - `/foglalo-motor?minta=siker` (Foglalásod sikeres!), `?minta=elkelt` (az időpont közben elkelt), `?minta=hiba`, `?minta=ellenorizetlen`
 - visszahívás: `?minta=nincs-idopont` (visszahívás-kérő űrlap), `?minta=visszahivas-kesz` (Visszahívást kértél!)
-- PMU: `/foglalo-pmu?minta=kezeles#koszonjuk`, `/foglalo-pmu?minta=konz#koszonjuk-konzultacio`, `/foglalo-pmu?minta=visszahivas`
+- PMU: `/foglalo-pmu?minta=kezeles#koszonjuk`, `/foglalo-pmu?minta=konz#koszonjuk-konzultacio`, `/foglalo-pmu?minta=visszahivas`, `/foglalo-pmu?minta=foto` (Megkaptam a fotódat!)
 
 ## Megfigyelések (1. kör)
 
