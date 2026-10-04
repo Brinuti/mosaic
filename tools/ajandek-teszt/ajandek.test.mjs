@@ -2016,9 +2016,40 @@ describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
   test('a szerver-oldal (nyomtato oldal) az A4-es lap felein kozepre igazitja a dizajn sajat aranyu lapjait', async () => {
     const L = await import('../../netlify/lib/ajandek-levelek.js');
     const oldal = L.szemelyreSzabottKartyaOldal({ bazis: 'https://pelda.hu', tema: 'smaragd', idezet: 'Szia', nev: 'Réka', kartya_felirat: ['A', 'B'], ar_szoveg: '26.900 Ft', kod: 'AAAA-BBBB', ervenyes_ig: '2027-04-04' });
-    assert.ok(oldal.includes('.ak-lap{aspect-ratio:794/1123;grid-template-rows:1fr 1fr;align-items:center'), 'a ket fel kozepre igazitva');
+    assert.ok(oldal.includes('aspect-ratio:794/1123;grid-template-rows:1fr 1fr;align-items:center') && oldal.includes('.ak-lap>.ak{width:min(100%,calc(70.71cqw * var(--ak-ar,1.4141)))'), 'a ket fel kozepre igazitva, a magasabb lapok is elferjenek');
     assert.ok(oldal.includes('aspect-ratio:930/577') && oldal.includes('/assets/img/ajandek/kartya-smaragd-hat.jpg'));
     assert.ok(oldal.includes('Réka') && oldal.includes('AAAA-BBBB'));
+  });
+
+  test('minden KEPES dizajn (smaragd, szalag, virag): hatterkepek, alak, szovegdobozok a biztonsagos teruleten, a betumeret-lepcsok a dobozba illenek, a szinek a tervbol', () => {
+    const kepesek = K.TEMAK.filter((t) => t.hatter);
+    assert.deepEqual(kepesek.map((t) => t.id), ['smaragd', 'szalag', 'virag'], 'a harom feltoltott terv (sorrend: zold, szalag, virag)');
+    assert.deepEqual(K.TEMAK.map((t) => t.id), ['smaragd', 'szalag', 'virag', 'krem', 'homok', 'feher'], 'a maradek harom elozetes marad');
+    const atfed = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    for (const t of kepesek) {
+      for (const fajl of [t.hatter.elol, t.hatter.hat]) {
+        const ut = new URL('../../' + fajl.replace(/^\//, ''), import.meta.url);
+        assert.ok(fs.existsSync(ut) && fs.statSync(ut).size < 400 * 1024, t.id + ': ' + fajl);
+      }
+      assert.ok(['iv', 'kor', 'sarok'].includes(t.kep.alak), t.id + ' alak');
+      if (t.kep.alak === 'kor') assert.ok(Math.abs(t.kep.w - t.kep.h) < 1, t.id + ': a kor ablak kor alaku');
+      for (const [nev, r] of [['kep', t.kep], ['idezet', t.idezet], ['nevHely', t.nevHely], ...Object.entries(t.hat).filter(([k]) => k !== 'meret')]) {
+        assert.ok(r.x >= 0 && r.y >= 0 && r.x + r.w <= t.w && r.y + r.h <= t.h, t.id + '.' + nev + ' a lapon belul');
+      }
+      assert.ok(!atfed(t.kep, t.idezet) && !atfed(t.kep, t.nevHely) && !atfed(t.idezet, t.nevHely), t.id + ': nincs atfedes');
+      // a lepcsok: minden karakterszamhoz az idezet / a nev beleferjen a dobozba (modell: 0,5 em szelesseg, 1,3 em sormagassag, 12% tordelesi veszteseg)
+      for (const [n, px] of t.idezet.lepcso) assert.ok(Math.floor(t.idezet.w / (px * 0.5)) * Math.floor(t.idezet.h / (px * 1.3)) >= 1.12 * n, t.id + ' idezet ' + n + ' kar. ' + px + ' px');
+      for (const [n, px] of t.nevHely.lepcso) assert.ok(n * px * 0.5 <= t.nevHely.w + 0.5 && px * 1.15 <= t.nevHely.h + 0.1, t.id + ' nev ' + n + ' kar. ' + px + ' px');
+      const elol = K.html({ ...minta, tema: t.id, oldal: 'elol', fotoSrc: null }), hat = K.html({ ...minta, tema: t.id, oldal: 'hat' });
+      assert.ok(elol.includes('aspect-ratio:' + t.w + '/' + t.h) && elol.includes('--ak-ar:'), t.id + ' sajat keparany');
+      assert.ok(elol.includes('Ez a személyes idézet') && elol.includes('Nagy Mária') && hat.includes('AK-TEST-0001') && hat.includes('26.900 Ft'), t.id + ' tartalom');
+      if (t.szin) for (const k of ['idezet', 'nev']) assert.ok(elol.includes('color:' + t.szin[k]), t.id + ' ' + k + ' szin a tervbol');
+    }
+    // a mintaszoveg pontosan olyan szinu, mint a beirt (nem halvany)
+    assert.ok(K.CSS.includes('.ak-halvany{opacity:1}'));
+    // a szalag (kor) es a virag (lekerekitett teglalap) fotohelye
+    assert.ok(K.html({ ...minta, tema: 'szalag', oldal: 'elol' }).includes('ak-kor ak-nincs-keret'));
+    assert.match(K.html({ ...minta, tema: 'virag', oldal: 'elol' }), /ak-sarok ak-nincs-keret" style="[^"]*border-radius:/);
   });
 
   test('minden dizajn fekvo lapon fer el: a fotohely, az idezet es a nev a lapon belul van, az idezet es a nev nem er a fotohelyre', () => {

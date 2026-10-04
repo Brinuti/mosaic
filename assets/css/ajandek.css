@@ -1088,3 +1088,7 @@ body.ah { margin: 0; background: var(--ah-ivory); color: var(--ah-szoveg); font:
 .ah-piros-nyil svg { display: block; width: 36px; height: 50px; filter: drop-shadow(0 2px 3px rgba(150, 20, 25, .25)); }
 @keyframes ah-nyil-pattan { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
 @media (prefers-reduced-motion: reduce) { .ah-piros-nyil { animation: none; } }
+
+/* design-valaszto: a hat dizajn (smaragd, szalag, virag + a harom elozetes) egy sorban, ha elfer */
+.ah-tema-racs { grid-template-columns: repeat(auto-fill, minmax(84px, 100px)); }
+.ah-ak-doboz.ah-megfordit .ah-huz-jelzo { display: none; }

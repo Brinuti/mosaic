@@ -521,3 +521,9 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
   „Személyre szabható” (a megajándékozott neve és üzenet vagy a fotótok is a kártyára kerül); fizetés: „Bankkártya, Revolut, Google Pay – Az ajándékkártyát azonnal küldjük”, „Banki átutalás – Utalás
   után küldjük ki az ajándékkártyát”, a figyelmeztetésben „ajándékkártya”. A „Rendelésed” doboz hátteréből a levélminta kikerült. A vélemények alcíme alatt piros, lefelé mutató (finoman pattogó)
   nyíl a videókra.
+- **Két új kártyadizájn (a tulajdonos 2. és 3. terve):** `szalag` (pezsgőszínű, rózsaarany szalagok, **kör** fotóablak; 844 x 664 px) és `virag` (rózsaszín, cseresznyevirág, **lekerekített téglalap**
+  fotóablak; 934 x 592 px); sorrend: Smaragd, Szalag, Virág, majd a három előzetes (Krém, Homok, Fehér, változatlanul). A feltöltött tervekről a mintaszöveget és a mintafotót kiszedtem
+  (`assets/img/ajandek/kartya-szalag-*.jpg`, `kartya-virag-*.jpg`); a hátoldalon az „ÉRTÉKE” felirat, a kódkeret és a lábléc a háttérképen marad, a termék, az érték, a kód és az érvényesség a
+  kiürített helyre kerül. A fotóablak a háttér aranykeretén belül marad (a keretet a háttérkép adja). Az idézet és a név betűmérete a dobozból **számolt lépcsők** szerint csökken (`idezetLepcso`,
+  `nevLepcso`), a szövegszínek a tervekből mérve (szalag: barna, virág: mályva). A mintaszöveg (az előnézeten) most pontosan olyan színű, mint a beírt szöveg (nem halvány): nem változik a színe,
+  amikor elkezdi írni. A nyomtató oldalon a magasabb lapok is elférnek az A4 felén (a lap szélessége a félmagasságból számolódik, középre igazítva).

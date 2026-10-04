@@ -29,6 +29,19 @@
   var NEV_MAX = 40;
   var LAP_W = 794, LAP_H = 561.5;   // egy fekvo lap (az A4 fele), px
 
+  // betűméret-lépcsők a szövegdoboz méretéből (a dizájn saját koordináta-terében): az idézet (max. 160 karakter) / a név (max. 40 karakter, egy sor)
+  // mindig a dobozon belül marad. Modell: egy karakter átlag 0,5 em széles, a sormagasság 1,3 em, a tördelés 12% veszteség.
+  function idezetLepcso(w, hh, max) {
+    return [28, 45, 64, 96, 128, 160].map(function (n) {
+      var f = max;
+      while (f > 12 && Math.floor(w / (0.5 * f)) * Math.floor(hh / (1.3 * f)) < 1.12 * n) f -= 0.5;
+      return [n, f];
+    });
+  }
+  function nevLepcso(w, hh, max) {
+    return [16, 24, 32, 40].map(function (n) { return [n, Math.min(max, Math.floor(w / (0.5 * n) * 2) / 2, Math.floor(hh / 1.15 * 2) / 2)]; });
+  }
+
   var TEMAK = [
     // Smaragd: a tulajdonos elso vegleges terve (930 x 577 px-es hatterkepek; a szovegek / a fotohely a kiuresitett helyeken)
     {
@@ -38,6 +51,32 @@
       idezet: { x: 514, y: 266, w: 316, h: 123, lepcso: [[28, 33], [45, 30], [64, 23], [96, 20.5], [128, 18], [160, 16]] },
       nevHely: { x: 532, y: 471, w: 280, h: 36, lepcso: [[16, 27], [24, 23], [32, 17.5], [40, 14]] },
       hat: { termek: { x: 243, y: 143, w: 480, h: 84 }, ertek: { x: 285, y: 270, w: 400, h: 48 }, kod: { x: 264, y: 375, w: 440, h: 32 }, ervenyes: { x: 243, y: 452, w: 480, h: 30 } }
+    },
+    // Szalag: pezsgőszínű, rózsaarany szalagokkal, kör alakú fotóablakkal (a tulajdonos 2. terve; 844 x 664 px-es háttérképek)
+    {
+      id: 'szalag', nev: 'Szalag', w: 844, h: 664,
+      hatter: { elol: '/assets/img/ajandek/kartya-szalag-elol.jpg', hat: '/assets/img/ajandek/kartya-szalag-hat.jpg' },
+      kep: { x: 42.2, y: 175.3, w: 322, h: 322, alak: 'kor', keret: false },
+      idezet: { x: 405, y: 285, w: 375, h: 145, lepcso: idezetLepcso(375, 145, 36) },
+      nevHely: { x: 415, y: 528, w: 320, h: 42, lepcso: nevLepcso(320, 42, 30) },
+      szin: { idezet: '#442f16', nev: '#3a260d', termek: '#382711', ertek: '#694514', kod: '#3b260d', erv: '#4c3a20' },
+      hat: {
+        termek: { x: 195, y: 262, w: 472, h: 90 }, ertek: { x: 402, y: 380, w: 200, h: 46, cimke: false }, kod: { x: 326, y: 480, w: 206, h: 34 }, ervenyes: { x: 270, y: 546, w: 322, h: 32 },
+        meret: { termek: [[25, 26], [30, 23], [200, 20]], ertek: 36, kod: [[10, 24], [18, 19], [26, 15], [60, 11]], erv: 19 }
+      }
+    },
+    // Virág: rózsaszín, cseresznyevirágos, lekerekített téglalap fotóablakkal (a tulajdonos 3. terve; 934 x 592 px-es háttérképek)
+    {
+      id: 'virag', nev: 'Virág', w: 934, h: 592,
+      hatter: { elol: '/assets/img/ajandek/kartya-virag-elol.jpg', hat: '/assets/img/ajandek/kartya-virag-hat.jpg' },
+      kep: { x: 75, y: 79, w: 296, h: 435, alak: 'sarok', sugar: 12, keret: false },
+      idezet: { x: 440, y: 318, w: 375, h: 112, lepcso: idezetLepcso(375, 112, 28) },
+      nevHely: { x: 450, y: 478, w: 355, h: 40, lepcso: nevLepcso(355, 40, 30) },
+      szin: { idezet: '#9b6166', nev: '#96555c', termek: '#8f4c54', ertek: '#956a38', kod: '#914c53', erv: '#925c61' },
+      hat: {
+        termek: { x: 200, y: 108, w: 552, h: 84 }, ertek: { x: 422, y: 255, w: 268, h: 52, cimke: false }, kod: { x: 349, y: 372, w: 262, h: 34 }, ervenyes: { x: 300, y: 462, w: 348, h: 32 },
+        meret: { termek: [[25, 28], [30, 25.5], [200, 22]], ertek: 50, kod: [[12, 30], [18, 24], [26, 18], [60, 13]], erv: 21 }
+      }
     },
     { id: 'krem', nev: 'Krém', kep: { x: 408, y: 44, w: 340, h: 474, alak: 'teglalap' }, oszlop: { x: 46, w: 336 }, idezet: { x: 54, y: 176, w: 320, h: 206 }, nevHely: { x: 54, y: 398, w: 320, h: 84 } },
     { id: 'homok', nev: 'Homok', kep: { x: 48, y: 98, w: 366, h: 366, alak: 'kor' }, oszlop: { x: 430, w: 320 }, idezet: { x: 438, y: 176, w: 304, h: 206 }, nevHely: { x: 438, y: 398, w: 304, h: 84 } },
@@ -91,7 +130,7 @@
     return {
       KP: function (r) { return 'left:' + (r.x / (w / 100)).toFixed(3) + '%;top:' + (r.y / (hh / 100)).toFixed(3) + '%;width:' + (r.w / (w / 100)).toFixed(3) + '%;height:' + (r.h / (hh / 100)).toFixed(3) + '%'; },
       CQ: function (px) { return (px / (w / 100)).toFixed(3) + 'cqw'; },
-      arany: 'aspect-ratio:' + w + '/' + hh
+      arany: 'aspect-ratio:' + w + '/' + hh + ';--ak-ar:' + (w / hh).toFixed(4)
     };
   }
   // a betumeret-lepcso a szoveg hossza es a sorok szama szerint (a kezi sortoresek se vihessek a szoveget a dizajnra)
@@ -107,35 +146,39 @@
       : (o.minta ? '<span class="ak-hely"><svg viewBox="0 0 24 24" width="22%" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.2-2h6.6l1.2 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.4"/></svg><span>Itt lesz a fotód</span></span>' : '');
   }
 
-  // KEPES dizajn ELOLAPJA: hatterkep + fotohely (iv) + idezet + nev (a "NEKI" felirat a hatterkepen van)
+  // KEPES dizajn ELOLAPJA: hatterkep + fotohely (iv / kor / lekerekitett teglalap) + idezet + nev (a "NEKI" felirat a hatterkepen van)
   function elolapKepes(o, t) {
-    var G = geo(t);
+    var G = geo(t), sz = t.szin || {};
     var idezet = String(o.idezet || '').trim();
     var nev = String(o.nev || '').trim();
     var iPx = lepcsoSor(idezet, t.idezet.lepcso, 34);
     var nPx = lepcso(nev, t.nevHely.lepcso);
+    var fotoStilus = G.KP(t.kep) + (t.kep.alak === 'sarok' ? ';border-radius:' + G.CQ(t.kep.sugar || 0) : '');
     return '<div class="ak ak-elol ak-kepes ak-t-' + esc(t.id) + '" data-tema="' + esc(t.id) + '" style="' + G.arany + '">'
       + '<img class="ak-bg" src="' + esc(t.hatter.elol) + '" alt="" draggable="false">'
-      + '<div class="ak-foto ak-' + esc(t.kep.alak) + '" style="' + G.KP(t.kep) + '"><div class="ak-ablak">' + fotoTartalom(o) + '</div></div>'
-      + '<p class="ak-idezet" style="' + G.KP(t.idezet) + ';font-size:' + G.CQ(iPx) + '">' + (idezet ? esc(idezet) : (o.minta ? '<span class="ak-halvany">Ide kerül az idézeted vagy az üzeneted.</span>' : '')) + '</p>'
-      + '<p class="ak-nev" style="' + G.KP(t.nevHely) + ';font-size:' + G.CQ(nPx) + '">' + (nev ? '<span>' + esc(nev) + '</span>' : (o.minta ? '<span class="ak-halvany">a megajándékozott neve</span>' : '')) + '</p>'
+      + '<div class="ak-foto ak-' + esc(t.kep.alak) + (t.kep.keret === false ? ' ak-nincs-keret' : '') + '" style="' + fotoStilus + '"><div class="ak-ablak">' + fotoTartalom(o) + '</div></div>'
+      + '<p class="ak-idezet" style="' + G.KP(t.idezet) + ';font-size:' + G.CQ(iPx) + (sz.idezet ? ';color:' + sz.idezet : '') + '">' + (idezet ? esc(idezet) : (o.minta ? '<span class="ak-halvany">Ide kerül az idézeted vagy az üzeneted.</span>' : '')) + '</p>'
+      + '<p class="ak-nev" style="' + G.KP(t.nevHely) + ';font-size:' + G.CQ(nPx) + (sz.nev ? ';color:' + sz.nev : '') + '">' + (nev ? '<span>' + esc(nev) + '</span>' : (o.minta ? '<span class="ak-halvany">a megajándékozott neve</span>' : '')) + '</p>'
       + '</div>';
   }
   // KEPES dizajn HATOLDALA: hatterkep + a kiuresitett helyekre a termek, az ertek, a kod, az ervenyesseg
   function hatlapKepes(o, t) {
-    var G = geo(t), r = t.hat;
+    var G = geo(t), r = t.hat, sz = t.szin || {};
+    var m = r.meret || { termek: [[25, 28], [30, 25.5], [200, 22.5]], ertek: 44, kod: [[12, 26], [18, 21], [26, 16], [60, 11.5]], erv: 20 };
     var sorok = (o.felirat && o.felirat.length ? o.felirat : ['MOSAIC', 'HEAD SPA KEZELÉS']);
-    var hosszu = sorok.reduce(function (m, x) { return Math.max(m, String(x).length); }, 0);
-    var tPx = lepcso(new Array(hosszu + 1).join('x'), [[25, 28], [30, 25.5], [200, 22.5]]);
+    var hosszu = sorok.reduce(function (mx, x) { return Math.max(mx, String(x).length); }, 0);
+    var tPx = lepcso(new Array(hosszu + 1).join('x'), m.termek);
     var kod = o.kod || (o.minta ? 'XXXX-XXXX' : '');
-    var kPx = lepcso(kod, [[12, 26], [18, 21], [26, 16], [60, 11.5]]);
+    var kPx = lepcso(kod, m.kod);
     var erv = o.ervenyes ? 'Érvényes: ' + esc(o.ervenyes) : (o.minta ? 'Érvényes: a vásárlástól 6 hónapig' : '');
+    var szin = function (k) { return sz[k] ? ';color:' + sz[k] : ''; };
+    var cimkeVan = r.ertek.cimke !== false;
     return '<div class="ak ak-hat ak-kepes ak-t-' + esc(t.id) + '" data-tema="' + esc(t.id) + '" style="' + G.arany + '">'
       + '<img class="ak-bg" src="' + esc(t.hatter.hat) + '" alt="" draggable="false">'
-      + '<p class="ak-h-termek" style="' + G.KP(r.termek) + ';font-size:' + G.CQ(tPx) + '">' + sorok.map(esc).join('<br>') + '</p>'
-      + '<p class="ak-h-ertek" style="' + G.KP(r.ertek) + '"><span class="ak-h-cimke" style="font-size:' + G.CQ(15.5) + '">ÉRTÉKE</span><b style="font-size:' + G.CQ(44) + '">' + esc(o.ertek || '') + '</b></p>'
-      + '<p class="ak-h-kod" style="' + G.KP(r.kod) + ';font-size:' + G.CQ(kPx) + '">' + esc(kod) + '</p>'
-      + (erv ? '<p class="ak-h-erv" style="' + G.KP(r.ervenyes) + ';font-size:' + G.CQ(20) + '">' + erv + '</p>' : '')
+      + '<p class="ak-h-termek" style="' + G.KP(r.termek) + ';font-size:' + G.CQ(tPx) + szin('termek') + '">' + sorok.map(esc).join('<br>') + '</p>'
+      + '<p class="ak-h-ertek' + (cimkeVan ? '' : ' ak-bal') + '" style="' + G.KP(r.ertek) + '">' + (cimkeVan ? '<span class="ak-h-cimke" style="font-size:' + G.CQ(15.5) + '">ÉRTÉKE</span>' : '') + '<b style="font-size:' + G.CQ(m.ertek) + szin('ertek') + '">' + esc(o.ertek || '') + '</b></p>'
+      + '<p class="ak-h-kod" style="' + G.KP(r.kod) + ';font-size:' + G.CQ(kPx) + szin('kod') + '">' + esc(kod) + '</p>'
+      + (erv ? '<p class="ak-h-erv" style="' + G.KP(r.ervenyes) + ';font-size:' + G.CQ(m.erv) + szin('erv') + '">' + erv + '</p>' : '')
       + '</div>';
   }
 
@@ -222,17 +265,19 @@
     '.ak-neki{position:absolute;display:grid;align-content:center;justify-items:center;gap:' + CQ(2) + ';font-family:"Playfair Display",Georgia,serif;color:var(--ak-a);overflow:hidden}',
     '.ak-neki small{font-family:"Jost",sans-serif;color:var(--ak-sz)}',
     '.ak-neki span{font-style:italic;line-height:1.15}',
-    '.ak-halvany{opacity:.45}',
+    '.ak-halvany{opacity:1}',   // a mintaszöveg pontosan olyan színű, mint a beírt szöveg (nem változik, amikor elkezded írni)
     // KEPES dizajn (hatterkepes)
     '.ak-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}',
     '.ak-kepes{--ak-sz:#f1ddaa;--ak-a:#d9b866;background:#0b1f1b}',
     '.ak-kepes .ak-foto{background:transparent;box-sizing:border-box}',
     '.ak-kepes .ak-iv{border:max(1px,.16cqw) solid #d9b866;border-radius:999px 999px 0 0}',
+    '.ak-kepes .ak-foto.ak-nincs-keret{border:0}',
     '.ak-kepes .ak-idezet{color:#fbed94;line-height:1.3;text-wrap:balance;padding:0}',
     '.ak-kepes .ak-nev{position:absolute;display:flex;align-items:center;justify-content:center;font-family:"Playfair Display",Georgia,serif;font-style:italic;font-weight:400;line-height:1.15;color:#fdea91;white-space:nowrap;overflow:hidden}',
     '.ak-kepes .ak-nev span{display:block;max-width:100%;overflow:hidden}',
     '.ak-h-termek{position:absolute;display:grid;align-content:center;justify-items:center;line-height:1.46;letter-spacing:.1em;color:#efe6cf;overflow:hidden}',
     '.ak-h-ertek{position:absolute;display:flex;align-items:baseline;justify-content:center;gap:4.6cqw;overflow:hidden}',
+    '.ak-h-ertek.ak-bal{justify-content:flex-start}',
     '.ak-h-ertek .ak-h-cimke{letter-spacing:.24em;color:#e9dcb8}',
     '.ak-h-ertek b{font-family:"Playfair Display",Georgia,serif;font-weight:500;line-height:1;color:#f3dfa6;white-space:nowrap}',
     '.ak-h-kod{position:absolute;display:flex;align-items:center;justify-content:center;font-weight:400;letter-spacing:.2em;color:#f6f1e3;white-space:nowrap;overflow:hidden}',
