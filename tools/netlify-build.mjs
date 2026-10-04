@@ -23,7 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { ritkit } from './css-ritkitas.mjs';
-import { atkot, atkotSzoveg, kapcsolokBuildhez, kihagyottOldal, osszead, UZLETAGAK } from './foglalo-atkotes.mjs';
+import { atkot, atkotBelso, atkotSzoveg, kapcsolokBuildhez, kihagyottOldal, osszead, uresOldal, KAPCSOLOK } from './foglalo-atkotes.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -32,7 +32,7 @@ const ELES = process.env.ELES === '1' || (process.env.CF_PAGES === '1' && proces
 // A Salonic foglalo-linkek atkotese a kozos foglalora (/foglalo-motor), uzletagankent (tools/foglalo-atkotes.json): ami nincs bekapcsolva,
 // ahhoz a build nem nyul, a kimenet bajtra azonos a mostanival.
 const ATKOTES = kapcsolokBuildhez({ eles: ELES });
-let atkotesDb = Object.fromEntries(UZLETAGAK.map((k) => [k, 0]));
+let atkotesDb = Object.fromEntries(KAPCSOLOK.map((k) => [k, 0]));
 
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
@@ -282,7 +282,8 @@ for (const mappa of [LAP_A, LAP_M]) {
     let h = fejlecSzoveg(ritkit(fs.readFileSync(p, 'utf8'), SAJAT_JS), mappa === LAP_M);
     // Ahol a foglalo-linkek a motorra mutatnak (bekapcsolt atkotes: elonezet / helyi build), ott a CTA a foglalot HELYBEN nyitja (reteg),
     // nem visz at a /foglalo-motor oldalra. Kikapcsolt atkotesnel (eles, ma) semmi nem valtozik.
-    if (ATKOTES.size && !kihagyottOldal(f) && !FOGLALO_OLDALAK.has(f)) h = h.replace('</body>', '<script type="module" src="/assets/js/booking-launcher.js"></script></body>');
+    const launcherOldal = ATKOTES.size > 0 && !kihagyottOldal(f) && !FOGLALO_OLDALAK.has(f); // ahol a launcher rajta van, a foglalo-linkek a retegben nyilnak
+    if (launcherOldal) h = h.replace('</body>', '<script type="module" src="/assets/js/booking-launcher.js"></script></body>');
     for (const [fajl, css] of BEAGYAZOTT) {
       let elso = true;
       h = h.replace(new RegExp('<link rel="stylesheet" href="/assets/css/' + fajl.replace('.', '\\.') + '">', 'g'),
@@ -319,6 +320,10 @@ for (const mappa of [LAP_A, LAP_M]) {
     h = h.split("/assets/js/booking-engine/engine.js'").join(`/assets/js/booking-engine/engine.js?v=${MOTOR_VERZIO}'`);
     // Salonic foglalo-linkek -> /foglalo-motor (a koszonooldalakat kihagyja; kikapcsolva a szoveg valtozatlan)
     if (ATKOTES.size && !kihagyottOldal(f)) { const r = atkot(h, ATKOTES); h = r.html; atkotesDb = osszead(atkotesDb, r.db); }
+    // a sajat foglalo-oldalakra mutato linkek (fomenu "FOGLALAS" + az oldalak gombjai): csak ott, ahol a launcher rajta van (ugyanaz a reteg nyilik)
+    if (launcherOldal) { const r = atkotBelso(h, f, ATKOTES, { launcher: true }); h = r.html; atkotesDb = osszead(atkotesDb, r.db); }
+    // a regi foglalo-oldalak: ures oldal + bezarhatatlan felugro foglalo (a cim megmarad, a mero kod az oldalon marad)
+    if (launcherOldal) { const r = uresOldal(h, f, ATKOTES); h = r.html; atkotesDb = osszead(atkotesDb, r.db); }
     fs.writeFileSync(p, h);
   }
 }

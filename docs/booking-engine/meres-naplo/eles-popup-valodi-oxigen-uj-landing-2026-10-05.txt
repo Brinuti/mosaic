@@ -1,0 +1,134 @@
+Eles-atkotes: VALODI vegigfuto foglalas az elesitett uton, a main-nel EGYESITETT agon (a merge utan: az uj landingok mar az eredeti cimeken), 2026-10-05 (ejfel utan)
+Szenario: Oxigen: AZ UJ LANDING (main #109) elso kezeles gombja: AKCIOS Hajkamera-vizsgalat es konzultacio (4 990 Ft)
+Ut: hirdetes-kattintas utanzata (gclid=TESZT123, fbclid=TESZT456, ttclid=TESZT789, utm_source=teszt, utm_medium=cpc) -> /oxigenterapia-budapest -> a[href*="service=466147"] -> /foglalo-motor?business=oxygen&service=466147 (kozvetlenul a naptar) -> felugro foglalo -> Salonic -> /oxigenterapia-ok (a fo ablakban)
+Futtatas: helyi build a MERGE UTANI agbol (ELES=1, tools/foglalo-atkotes.json: mind true) az eles tartomanyon, node tools/meres-proba/meres-proba.mjs --szenario oxigen1 --mod valodi --popup 1 --clickids 1 --overlay dist
+A kimeno meres NEM ment ki (tools/meres-proba/tilt.mjs: naplozva es letiltva); a foglalasi jegyzettombbe a proba nem irt.
+A valodi Salonic-foglalast a proba lemondta es ellenorizte (Idopont torolve!), lasd az osszefoglalot.
+------------------------------------------------------------------------------------------------------------------------
+=== oxigen1 / valodi / helyi dist az eles tartomanyon / kattintas-azonositok: igen
+vege URL: https://www.mosaicheadspa.hu/oxigenterapia-ok?first_booking=true&service=AKCI%C3%93S+Hajkamer%C3%A1s+vizsg%C3%A1lat+%C3%A9s+konzult%C3%A1ci%C3%B3&category=Oxig%C3%A9nter%
+naplozott es LETILTOTT kimeno kereses: 123
+  a sajat oldal KERETBEN (a Salonic-iframe-ben betoltott koszonooldal) inditott meresi keres: 0  (a keretben a koszonooldal semmit nem kuld)
+  harmadik fel sajat keretebol (pl. Meta pixel-iframe): 46 (meta KERET(about:blank), ismeretlen-tiltott KERET(mosaic-oxigen.salonic.hu), google-ads KERET(mosaic-oxigen.salonic.hu), stape KERET(?), tiktok KERET(mosaic-oxigen.salonic.hu))
+  nem besorolt, de tiltott: GET connect.facebook.net/en_US/sdk.js | POST www.mosaicheadspa.hu/api/foglalas-esemeny
+
+--- GOOGLE ADS konverzio (en=conversion): egyedi konverziok (cimke | azonosito | ertek)
+  uImLCLLV-YgdEPDs9sg- | oid=oxigenterapi-3385031-466147-1793374200 | ertek=4990 HUF
+      -> 2 keres: googleadservices/pagead/conversion [FO], googleadservices/ccm/conversion [FO]
+  EGYEDI Google Ads konverziok: 1   (egy konverzio tobb csatornan megy: pagead/conversion, ccm/conversion, viewthroughconversion: ez NEM dupla)
+
+--- GA4 (es stape g/collect): nem-oldalbetoltes esemenyek
+  Oxigén_foglalás: 1 keres (stapeg/collect [FO])
+  GA4 -> Google Ads konverzio-importok (region1/measurement/conversion): -
+
+--- META
+  bongeszo (facebook.com/tr) PageView: 2 keres [FO,FO]  event_id=ob3_plugin-set_53aca8631...
+  bongeszo (facebook.com/tr) SubscribedButtonClick: 1 keres [KERET(about:blank)]  event_id=ob3_plugin-set_87a3d8120...
+  bongeszo (facebook.com/tr) SubmitApplication: 1 keres [KERET(about:blank)]  <- konverzio  event_id=ob3_plugin-set_1b7c544f6...
+  bongeszo (facebook.com/tr) Oxigen_Konzultacio: 1 keres [KERET(about:blank)]  <- konverzio  event_id=oxigenterapi-3385031-466...
+  szerveroldali CAPI (capig.stape) PageView: event_id=ob3_plugin-set_53aca8631806144...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) SubmitApplication: event_id=ob3_plugin-set_1b7c544f6ff810a...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) PageView: event_id=ob3_plugin-set_93db75f2504f870...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) Oxigen_Konzultacio 4990 HUF: event_id=oxigenterapi-3385031-466147-17...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  Meta konverzios esemeny-nevek (bongeszo + CAPI egyutt, deduplikalas utan): SubmitApplication [bongeszo 1, CAPI 1, azonos event_id]; Oxigen_Konzultacio [bongeszo 1, CAPI 1, azonos event_id]
+
+--- TIKTOK
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /ipv6/enrich_ipv6 [FO] esemeny: EnrichIpv6
+  POST /api/v2/pixel [FO] esemeny: LandingPageView
+  POST /api/v2/pixel [FO] esemeny: Pageview
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/pixel/act [FO] esemeny: (esemeny-kotegek, nem JSON-torzs)
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/pixel/act [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /ipv6/enrich_ipv6 [KERET(mosaic-oxigen.salonic.hu)] esemeny: EnrichIpv6
+  POST /api/v2/pixel [KERET(mosaic-oxigen.salonic.hu)] esemeny: LandingPageView
+  POST /api/v2/pixel [KERET(mosaic-oxigen.salonic.hu)] esemeny: Pageview
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel [KERET(mosaic-oxigen.salonic.hu)] esemeny: LandingPageView
+  POST /api/v2/pixel [KERET(mosaic-oxigen.salonic.hu)] esemeny: InitiateCheckout
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/inter [FO] esemeny: ?
+  POST /api/v2/pixel [FO] esemeny: EngagedSession
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /ipv6/enrich_ipv6 [KERET(mosaic-oxigen.salonic.hu)] esemeny: EnrichIpv6
+  POST /api/v2/pixel [KERET(mosaic-oxigen.salonic.hu)] esemeny: LandingPageView
+  POST /api/v2/pixel [KERET(mosaic-oxigen.salonic.hu)] esemeny: EnrichAM
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-oxigen.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/pixel [FO] esemeny: Pageview
+  POST /api/v2/pixel [FO] esemeny: Lead
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/pixel [FO] esemeny: Purchase
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/pixel/act [FO] esemeny: (esemeny-kotegek, nem JSON-torzs)
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  TikTok konverzios esemenyek: InitiateCheckout, EnrichAM, Lead, Purchase
+
+ZAPIER webhook: 1 keres [FO]
+
+=== OSSZEGZES: konverzio platformonkent (keretben + fo ablakban egyutt)
+  Google Ads : 1 egyedi konverzio (uImLCLLV-YgdEPDs9sg-)
+  GA4/stape  : 1 fajta nem-oldalbetoltes esemeny, mindegyik 1x a gyujto vegponton
+  Meta       : SubmitApplication, Oxigen_Konzultacio
+  TikTok     : InitiateCheckout, EnrichAM, Lead, Purchase; /api/v2/pixel keresek: 72
+  KERETBEN inditott: 0
+
+=== KATTINTAS-AZONOSITOK (gclid=TESZT123, fbclid=TESZT456, ttclid=TESZT789, utm_source=teszt, utm_medium=cpc)
+  Google Ads-kereses: gclid a "gclaw/gclid" mezoben: MEGVAN (19 keres; pl. TESZT123)
+  GA4/Ads-import:     gclid a "gclaw/gclid" mezoben: MEGVAN (1 keres)
+  Meta (facebook.com/tr): fbc mezo: MEGVAN (5 keres; fb.1.1791152596862.TESZT456)
+  Meta CAPI (capig.stape): fb.clickID/fbc a torzsben: MEGVAN (4/4 keres)
+  TikTok: ttclid (context.ad.callback / ttclid) a torzsben: MEGVAN (11/72 keres)
+  GA4 kampany-forras (cs/cm mezo, vagy utm a dl=page_location-ben): MEGVAN: cs=undefined cm=undefined
+  GA4 page_view / visit hitek (munkamenet-kezdet): 
+    en=page_view sid=1791152597 dl=https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TE dr=
+    en=visit sid=1791152597 dl=https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TE dr=
+    en=page_view sid=1791152597 dl=https://www.mosaicheadspa.hu/oxigenterapia-ok?first_booking= dr=https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TESZT123&fbclid=TESZT4
+    en=visit sid=1791152597 dl=https://www.mosaicheadspa.hu/oxigenterapia-ok?first_booking= dr=https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TESZT123&fbclid=TESZT4
+  referrer (dr/ref) a koszonooldalon: https://www.mosaicheadspa.hu/ | https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=
+  sutik a vegen: _fbc=fb.1.1791152596862.TESZT456 | _fbp=fb.1.1791152596873.64796563488231946 | _ga=GA1.1.1400210852.1791152597 | _ttp=3KFU1tyeQRZ3qPKFFIMyWhe25QU.17911525 | _tt_enable_cookie=1 | _ttp=01M44G7AKPQXRGGHJVYQ449RET_.tt.1.179 | ttclid=TESZT789.1791152597624 | _gcl_aw=GCL.1791152617.TESZT123 | _ga_H4206SQ0Q7=GS2.1.s1791152597$o1$g1$t1791152617$ | _gcl_au=1.1.1678138298.1791152597.-.-.179115
+
+engedett harmadik fel (csak szkript-betoltes): cdn.trustindex.io:5, www.googletagmanager.com:7, connect.facebook.net:4, analytics.tiktok.com:9, cdn.jsdelivr.net:2, fonts.googleapis.com:1, cdnjs.cloudflare.com:2, www.google.com:5, www.gstatic.com:5, fonts.gstatic.com:1

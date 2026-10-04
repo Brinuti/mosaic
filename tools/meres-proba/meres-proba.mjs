@@ -7,6 +7,10 @@
 //   --mod valodi   valodi foglalas a Salonic-urlappal (csak a kert szenarional; a lemondast kulon kell elvegezni)
 //   --overlay      az eles tartomany (www.mosaicheadspa.hu) oldalait a helyi dist/-bol szolgalja ki (meg nem deployolt valtozat kiprobalasa)
 //   --clickids 1   a foglalot hirdetesi kattintast utanzo URL-rol inditja (gclid, fbclid, ttclid, utm_*)
+//   --popup 1      az ELESITETT ut: hirdetes -> tartalmi oldal (kattintas-azonositokkal) -> a rajta levo gomb a foglalo FELUGRO ablakat nyitja -> Salonic -> koszonooldal
+//                  (--overlay dist: a link-atkotessel epitett dist; a szenario "popup" mezoje: oldal, gomb-szelektor, a kerdesekre valasztando kartyak; oxigenreklam: a regi
+//                  /mosaic-hair-idopontfoglalas oldal, ahol a foglalo MAGATOL nyilik meg, ures oldalon, bezarhatatlanul)
+//   --masodik 1    az utolso elotti szabad napot valasztja (ket valodi foglalas egymas utan ugyanabban a Salonic-fiokban: a Salonic 5 percig tartja a megnyitott idopontot)
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -31,12 +35,22 @@ const SZENARIOK = {
 // HeadSpa: a motor HS2 kartyavalasztasa utan jon az idopont (lepesek: a gombok szovege sorrendben; a '?' elotagu opcionalis: a regi motor HS1 lepese)
 SZENARIOK.headspa = { start: '/foglalo-motor?business=headspa', salonic: 'mosaicheadspa.salonic.hu', lepesek: ['?Időpontot foglalok', 'Egyéni HeadSpa'],
   sim: { ut: '/success-foglalas-egyeni', first: true, service: 'EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás', category: 'Head Spa', price: 26900, location: 'Mosaic Headspa', employee: 'Négykezes Head spa', employeeId: 29415, placeId: 10427, serviceId: 302342 } };
+// az elesitett ut (--popup 1): a tartalmi oldal, a rajta levo foglalo-gomb, es a foglalo kerdeseire valasztando kartyak (sorrendben, az elso illeszkedo; a naptarig)
+SZENARIOK.headspa.popup = { oldal: '/headspa-budapest', link: 'a[href*="business=headspa"]', valasztas: ['Normál foglalás', 'Egyéni HeadSpa'] };
+SZENARIOK.hair.popup = { oldal: '/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel', link: 'a[href*="business=hair"]', valasztas: ['Mindegy', 'Ingyenes konzultáció', 'Nem tudom'] };
+SZENARIOK.oxigen2.popup = { oldal: '/oxigenterapia-budapest', link: 'a[href*="business=oxygen"]', valasztas: ['Következő kezelés', 'Mindegy'] };
+SZENARIOK.lezer.popup = { oldal: '/lezeres-szortelenites-budapest', link: 'a[href*="business=laser"]:visible', valasztas: ['Ingyenes konzultációt kérek'] };
+// az ujonnan elesitett oxigen-landing (2026-10-04): az elso kezeles gombja kozvetlenul a naptarra visz (oxigenterapia-ok koszonooldal)
+SZENARIOK.oxigen1 = { ...SZENARIOK.oxigen2, popup: { oldal: '/oxigenterapia-budapest', link: 'a[href*="service=466147"]:visible', valasztas: ['Mindegy'] } };
+// a regi oxigen-hirdetes (4 aktiv Meta-hirdetes szovege) cime: ures oldal + bezarhatatlan felugro; a foglalo magatol megnyilik
+SZENARIOK.oxigenreklam = { ...SZENARIOK.oxigen2, popup: { oldal: '/mosaic-hair-idopontfoglalas', auto: true, valasztas: ['Következő kezelés', 'Mindegy'] } };
 const sc = SZENARIOK[SZ];
 if (!sc) throw new Error('ismeretlen szenario: ' + SZ);
 const LANDING = arg('landing', '0') === '1';
 // --reteg 1: a foglalo a helyben nyilo retegben nyilik (a rejtett /booking-test oldalon, a klikk-azonositokkal), nem a /foglalo-motor oldalon
 const RETEG = arg('reteg', '0') === '1';
-const MAIN = RETEG ? '#mosaic-booking-layer main' : 'main'; // a /booking-test oldalnak is van <main>-je: a retegben keresunk
+const POPUP = arg('popup', '0') === '1', MASODIK = arg('masodik', '0') === '1';
+const MAIN = (RETEG || POPUP) ? '#mosaic-booking-layer main' : 'main'; // a /booking-test oldalnak is van <main>-je: a retegben keresunk
 // a Salonic altal elallitott koszonooldal-URL (a szimulalt atiranyitashoz es a natív alapvonalhoz)
 function koszonoUrl(host, start, sid) {
   const s = sc.sim;
@@ -166,7 +180,33 @@ try {
     await page.waitForTimeout(15000);
   } else {
   let startUrl;
-  if (LANDING && sc.landing) {
+  if (POPUP) {
+    const P = sc.popup; if (!P) throw new Error('nincs popup-szenario: ' + SZ);
+    startUrl = BASE + P.oldal + (CLICK ? '?' + CLICK_QS : '');
+    idovonal.push({ t: mp(), esemeny: 'indulas: ' + (P.auto ? 'a regi foglalo-oldal (a foglalo magatol nyilik)' : 'tartalmi oldal (hirdetes-kattintas utanzata)'), url: startUrl, mod: MOD, szenario: SZ, overlay: !!OVERLAY });
+    await page.goto(startUrl, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(6000);
+    if (!P.auto) {
+      const a = page.locator(P.link).first();
+      idovonal.push({ t: mp(), esemeny: 'az oldal foglalo-gombja', href: await a.getAttribute('href') });
+      await a.evaluate((e) => e.removeAttribute('target'));
+      await a.click();
+    }
+    await page.locator('#mosaic-booking-layer .be-title').first().waitFor({ timeout: 30000 });
+    idovonal.push({ t: mp(), esemeny: 'felugro foglalo megnyilt', url: page.url().slice(0, 200), bezaras_gomb: await page.locator('#mosaic-booking-layer #be-close').count() });
+    // a kerdesekre valasztas (kartyak / gombok), a naptarig
+    for (let i = 0; i < 8; i++) {
+      await page.waitForTimeout(1500);
+      if (await page.locator('.be-nnap.szabad, #mosaic-booking-layer button:has-text("További időpontok")').count()) break;
+      let valasztott = null;
+      for (const sz of P.valasztas) {
+        const k = page.locator('#mosaic-booking-layer .be-choice, #mosaic-booking-layer .be-list button, #mosaic-booking-layer main button', { hasText: sz }).filter({ visible: true });
+        if (await k.count()) { valasztott = sz; await k.first().click(); break; }
+      }
+      if (!valasztott) throw new Error('nincs valaszthato kartya a kerdesre: ' + ((await page.locator('#mosaic-booking-layer .be-title').first().textContent().catch(() => '')) || '') + ' | ' + (await page.locator('#mosaic-booking-layer .be-choice, #mosaic-booking-layer main button').allTextContents()).map((x) => x.replace(/\s+/g, ' ').trim().slice(0, 40)).join(' / '));
+      idovonal.push({ t: mp(), esemeny: 'valasztas: ' + valasztott });
+    }
+  } else if (LANDING && sc.landing) {
     // "hirdetes -> landing -> motor": a landing a klikk-azonositokkal, majd a rajta levo gombbal a motorra (ugyanabban a lapban)
     await landingLepes();
     const a = page.locator(sc.landing.link).first();
@@ -191,18 +231,18 @@ try {
     }
   }
   await page.locator(MAIN + ' section').first().waitFor({ timeout: 30000 });
-  if (LANDING && sc.landing && sc.landing.engedMotor) { // pl. fodraszat: HA1 -> "Ingyenes konzultáció"
+  if (!POPUP && LANDING && sc.landing && sc.landing.engedMotor) { // pl. fodraszat: HA1 -> "Ingyenes konzultáció"
     await page.waitForTimeout(1500);
     await (await elsoLathato(page.locator(MAIN + ' button', { hasText: sc.landing.engedMotor }))).click();
   }
-  for (const lepes of (sc.lepesek || [])) {
+  for (const lepes of (POPUP ? [] : (sc.lepesek || []))) {
     await page.waitForTimeout(1200);
     const opcionalis = lepes.startsWith('?'), felirat = lepes.replace(/^\?/, '');
     if (opcionalis && !(await page.locator(MAIN + ' button', { hasText: felirat }).count())) { idovonal.push({ t: mp(), esemeny: 'lepes kihagyva (nincs ilyen gomb az ujabb motorban): ' + felirat }); continue; }
     await (await elsoLathato(page.locator(MAIN + ' button', { hasText: felirat }))).click(); idovonal.push({ t: mp(), esemeny: 'lepes: ' + felirat });
   }
   // lezer: terulet -> (kezeles)
-  if (sc.terulet) {
+  if (sc.terulet && !POPUP) {
     // a belepo-kerdes (LA1), ha az intent-belepes nincs meg az eles motorban: "Mar tudom, mit szeretnek"
     await page.waitForTimeout(1500);
     const mar = page.locator(MAIN + ' button', { hasText: 'Már tudom' });
@@ -218,7 +258,7 @@ try {
   let idoSzoveg;
   const szabadNapok = page.locator('.be-nnap.szabad');
   if (await szabadNapok.count()) {
-    await szabadNapok.nth((await szabadNapok.count()) - 1).click(); await page.waitForTimeout(500);
+    await szabadNapok.nth((await szabadNapok.count()) - 1 - (MASODIK && (await szabadNapok.count()) > 1 ? 1 : 0)).click(); await page.waitForTimeout(500);
     const gombok = page.locator('.be-idogomb'); const db = await gombok.count();
     idoSzoveg = (await gombok.nth(db - 1).textContent()).trim(); await gombok.nth(db - 1).click();
   } else {
@@ -275,7 +315,7 @@ try {
 
 const sutik = (await context.cookies()).filter((c) => /^(_gcl|_fbc|_fbp|_ga|FPLC|FPID|FPGSID|FPAU|ttclid|_ttp|_tt_|consent)/i.test(c.name)).map((c) => ({ nev: c.name, ertek: String(c.value).slice(0, 90), domain: c.domain }));
 const vegeUrl = page.url();
-fs.writeFileSync(OUT, JSON.stringify({ szenario: SZ, mod: MOD, overlay: !!OVERLAY, reteg: RETEG, landing: LANDING, clickids: CLICK, vegeUrl, idovonal, sutik, harmadikFelHostok: Object.fromEntries(harmadik), naplo }, null, 1));
+fs.writeFileSync(OUT, JSON.stringify({ szenario: SZ, mod: MOD, overlay: !!OVERLAY, reteg: RETEG, popup: POPUP, landing: LANDING, clickids: CLICK, vegeUrl, idovonal, sutik, harmadikFelHostok: Object.fromEntries(harmadik), naplo }, null, 1));
 console.log(`kesz: ${OUT} | meresi keresek: ${naplo.length} | vege: ${vegeUrl.slice(0, 120)}`);
 await browser.close();
 

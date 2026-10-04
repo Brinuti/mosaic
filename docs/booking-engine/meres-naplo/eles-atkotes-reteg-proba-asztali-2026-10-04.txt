@@ -1,0 +1,305 @@
+Foglalo-atkotes (elesites) reteg-proba, asztali
+Futtatas: 2026-10-04, helyi build (ELES=1, a tools/foglalo-atkotes.json kapcsolokkal: mind true), node tools/meres-proba/reteg-proba.mjs --overlay dist
+A kimeno meres (capig.stape.do, Meta, TikTok, GA4, Google Ads) alapbol tiltva (tools/meres-proba/tilt.mjs); a foglalasi jegyzettombbe a proba nem irhat.
+Eredmeny: 298 ellenorzes, 0 hiba.
+------------------------------------------------------------------------------------------------------------------------
+﻿OK   altalanos (nincs kontextus) | kezdo allapot | cim="Mit szeretnél foglalni?"
+OK   altalanos (nincs kontextus) | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   altalanos (nincs kontextus) | nincs oldalvaltas
+OK   altalanos (nincs kontextus) | bezaras (X) -> eredeti cim | /booking-test
+OK   HeadSpa altalanos | kezdo allapot | cim="Ajándékkártyával vagy anélkül foglalsz?"
+OK   HeadSpa altalanos | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   HeadSpa altalanos | nincs oldalvaltas
+OK   HeadSpa altalanos | bezaras (X) -> eredeti cim | /booking-test
+OK   HeadSpa paros | kezdo allapot | cim="Válassz időpontot"
+OK   HeadSpa paros | szolgaltatas-sav tartalmazza: Páros | PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)1 óra 20 p
+OK   HeadSpa paros | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   HeadSpa paros | nincs oldalvaltas
+OK   HeadSpa paros | bezaras (X) -> eredeti cim | /booking-test
+OK   HeadSpa ajandekkartya-bevaltas | kezdo allapot | cim="Milyen ajándékkártyád van?"
+OK   HeadSpa ajandekkartya-bevaltas | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   HeadSpa ajandekkartya-bevaltas | nincs oldalvaltas
+OK   HeadSpa ajandekkartya-bevaltas | bezaras (X) -> eredeti cim | /booking-test
+OK   Fodraszat altalanos | kezdo allapot | cim="Melyik fodrászt választod?"
+OK   Fodraszat altalanos | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   Fodraszat altalanos | nincs oldalvaltas
+OK   Fodraszat altalanos | bezaras (X) -> eredeti cim | /booking-test
+OK   Fodraszat balayage-kategoria | kezdo allapot | cim="Melyik fodrászt választod?"
+OK   Fodraszat balayage-kategoria | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   Fodraszat balayage-kategoria | nincs oldalvaltas
+OK   Fodraszat balayage-kategoria | bezaras (X) -> eredeti cim | /booking-test
+OK   Fodraszat hajfestes-kategoria | kezdo allapot | cim="Melyik fodrászt választod?"
+OK   Fodraszat hajfestes-kategoria | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   Fodraszat hajfestes-kategoria | nincs oldalvaltas
+OK   Fodraszat hajfestes-kategoria | bezaras (X) -> eredeti cim | /booking-test
+OK   Fodraszat konzultacio | kezdo allapot | cim="Válassz időpontot"
+OK   Fodraszat konzultacio | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   Fodraszat konzultacio | nincs oldalvaltas
+OK   Fodraszat konzultacio | bezaras (X) -> eredeti cim | /booking-test
+OK   Oxigen altalanos | kezdo allapot | cim="Mit szeretnél foglalni?"
+OK   Oxigen altalanos | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   Oxigen altalanos | nincs oldalvaltas
+OK   Oxigen altalanos | bezaras (X) -> eredeti cim | /booking-test
+OK   Oxigen 1. alkalom | kezdo allapot | cim="Melyik szakembert választod?"
+OK   Oxigen 1. alkalom | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   Oxigen 1. alkalom | nincs oldalvaltas
+OK   Oxigen 1. alkalom | bezaras (X) -> eredeti cim | /booking-test
+OK   Oxigen 2. alkalomtol | kezdo allapot | cim="Melyik szakembert választod?"
+OK   Oxigen 2. alkalomtol | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   Oxigen 2. alkalomtol | nincs oldalvaltas
+OK   Oxigen 2. alkalomtol | bezaras (X) -> eredeti cim | /booking-test
+OK   Oxigen allapotfelmeres (uj oxigen-landing) | kezdo allapot | cim="Válassz időpontot"
+OK   Oxigen allapotfelmeres (uj oxigen-landing) | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   Oxigen allapotfelmeres (uj oxigen-landing) | nincs oldalvaltas
+OK   Oxigen allapotfelmeres (uj oxigen-landing) | bezaras (X) -> eredeti cim | /booking-test
+OK   Lezer altalanos | kezdo allapot | cim="Melyik út illik rád?"
+OK   Lezer altalanos | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   Lezer altalanos | nincs oldalvaltas
+OK   Lezer altalanos | bezaras (X) -> eredeti cim | /booking-test
+OK   Lezer konzultacio | kezdo allapot | cim="Válassz időpontot"
+OK   Lezer konzultacio | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   Lezer konzultacio | nincs oldalvaltas
+OK   Lezer konzultacio | bezaras (X) -> eredeti cim | /booking-test
+OK   Lezer elso idopontok | kezdo allapot | cim="Melyik területet szeretnéd?"
+OK   Lezer elso idopontok | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   Lezer elso idopontok | nincs oldalvaltas
+OK   Lezer elso idopontok | bezaras (X) -> eredeti cim | /booking-test
+OK   Lezer kezeles idopontok | kezdo allapot | cim="Következő kezelés: melyik terület?"
+OK   Lezer kezeles idopontok | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   Lezer kezeles idopontok | nincs oldalvaltas
+OK   Lezer kezeles idopontok | bezaras (X) -> eredeti cim | /booking-test
+OK   PMU | PMU-keret src | /foglalo-pmu?beagyazva=1&reteg=1
+OK   PMU | kezdo allapot | cim="PMU-keret"
+OK   PMU | az URL NEM valtozik (a GTM History Change triggerei miatt) | /booking-test
+OK   PMU | nincs oldalvaltas
+OK   PMU | bezaras (X) -> eredeti cim | /booking-test
+OK   Esc NEM zarja be a retegat (csak az X)
+OK   a hatterre kattintas NEM zarja be a retegat
+OK   bongeszo vissza gomb bezarja a retegat
+OK   H0: Fodraszat -> Melyik fodraszt valasztod? (fodrasz-valaszto a belepo)
+OK   H0: fejlec vissza -> szolgaltatas-valaszto
+OK   H0: bongeszo vissza -> szolgaltatas-valaszto
+OK   fokusz a retegben marad (Tab) | DIV#mosaic-booking-layer
+OK   a hatter inert
+OK   bezaras utan a hatter nem inert, a gorgetes visszaall
+OK   H0 utan bezaras: eredeti cim | /booking-test
+OK   design | H0: mind az 5 szolgaltatas mellett kis kep (betoltott), egyforma kartyak | {"db":5,"jo":5}
+OK   design | HeadSpa: elso kerdes "Ajandekkartyaval vagy anelkul foglalsz?", ket valasztas illusztracioval (ajandek, naptar) | Ajándékkártyával (kuponkóddal) foglalok› | Normál foglalás kuponkód nélkül›
+OK   design | lepesjelzo: 3 lepes (Szolgaltatas, Idopont, Adatok) | 1Szolgáltatás|2Időpont|3Adatok
+OK   design | HeadSpa: 3 elmeny kepekkel, arral jobbra, egyforma kartyak, nincs ajandekkartya-link alul | 26 900 Ft | 53 800 Ft | 39 900 Ft
+OK   design | HeadSpa: az idotartam a Salonic ideje (1 ora 20 perc) | 1 óra 20 perc | 1 óra 20 perc | 1 óra 20 perc
+OK   design | HeadSpa kuponkodos kartyak: ugyanolyan formatum (kep, idotartam), jobbra "Kuponkoddal" | Kuponkóddal | Kuponkóddal | Kuponkóddal / 1 óra 20 perc | 1 óra 20 perc | 1 óra 20 perc
+OK   design | HeadSpa idopont: a PMU-foglalo havi naptara (7 oszlopos racs, szabad napok zoldek, idopont-gombok) | szabad nap: 16, idopont: 1
+OK   design | HeadSpa idopont: a kezeles kepe a savban, 1 ora 20 perc, a kep es a Modositas nem er a sav szelehez
+OK   design | Egyeni HeadSpa: a Relax / Hair valtozat jeloles nem latszik (egy szolgaltatas) | EGYÉNI 50 perces MOSAIC Head Spa kezelés + 30 perc hajszárítás
+OK   design | naptar: a lapozo nyilak SVG-k, a kor kozepen (nincs szoveg-jel)
+OK   design | HeadSpa idopont: az elso szabad nap elore kivalasztva, 5 oszlopos idoracs
+OK   design | HeadSpa idopont: masik nap -> masik cim, helyben | Kedd, okt. 6. -> Szerda, okt. 7.
+OK   design | naptar: szellosebb (a nap-cim es a "Nem talalok" fole van hely) | {"cimFelett":26,"linkFelett":141}
+OK   design | idopont utan ROGTON a Salonic adatlap, az "Add meg az adataidat" cim nincs kiirva, nincs "Elonezet / valodi foglalas" jelzes
+OK   design | adatlap alatt: nincs magyarazo szoveg, a "Masik idopontot valasztok" link (nem gomb)
+OK   design | adatlap: osszegzo-sor (asztalon latszik, mint a PMU-n) | Szerda, okt. 7. · 16:00EGYÉNI 50 perces MOSAIC Head Spa kezelés + 30 perc hajszárítás26 90
+OK   design | "Masik idopontot valasztok" -> vissza a naptarhoz, a kivalasztott nappal
+OK   design | Oxigen: 3 valasztas kepekkel es arakkal, MINDEGYIK KARTYA UGYANAKKORA | {"db":3,"jo":3} 4 990 Ft | 29 900 Ft | 26 000 Ft magassag 102/102/102
+OK   design | Oxigen: a hajkamera pontos szovege | Megnézzük a fejbőröd állapotát + átbeszéljük milyen eredményt várhatsz
+OK   design | Oxigen: a szakember-valaszto az idopont ELOTT, kepes kartyakon (a Salonic fotoi, nem monogram, nem legordulo) | Melyik szakembert választod? (4 kartya) {"db":4,"jo":4}
+OK   design | Oxigen: a valasztott szakember neve a savban, a naptar a szakember idopontjaival, nincs legordulo | Haj Oxigénterápia - 1. alkalom1 óra 20 perc · 29 900 Ft · Bozsoki - Harangozó TündiMódosítás
+OK   design | Fodraszat: a belepo a fodrasz-valaszto (kepek, "Mindegy"), csak utana a szolgaltatas | {"db":4,"jo":4}
+OK   design | Fodraszat: a fodrasz utan a szandekok (kepekkel) | {"db":7,"jo":7}
+OK   design | Fodraszat: kezelesek illusztraciokkal (a tulajdonos mintakepei) es "-tol" arral (kevesebb info) | 42 950 Ft-tól | 48 950 Ft-tól | 39 950 Ft-tól | 64 950 Ft
+OK   design | Fodraszat: hajhosszak mindegyike kulon hajhossz-illusztracioval | hh-kozepes.jpg | hh-hosszu.jpg | hh-extra.jpg
+OK   design | Fodraszat: a valasztott fodrasz (Betti) idopontjai a naptarban, a neve a savban, nincs legordulo | Balayage / ombre / babylight + vágás + szárítás - Közepes haj3 óra · 42 950 Ft · BettiMódosítás
+OK   design | Fodraszat kategoria-landing: elobb a fodrasz-valaszto
+OK   design | Fodraszat kategoria-landing: fodrasz utan a kezeles-pontositas
+OK   design | Lezer: a teruletek mellett kep, mind egyforma kartya | {"db":7,"jo":7}
+OK   design | Lezer csomagok: testreszek kis ikonokkal (nincs "allapotfelmeres" / "kedvezmennyel" felirat) | 17 jelveny
+OK   design | Lezer csomagok: BASIC = Honalj + Teljes intim; az egyedi csomagnal a leiras
+OK   design | minden cim kozepre igazitva
+OK   design | Fodraszat: nincs "Egyeb fodraszati szolgaltatas", az elemei kulon kartyak | Balayage / szőkítés | Hajfestés | Hajvágás | Női szárítás | Joico hajszerkezet újraépítés | Póthaj | Nem tudom pontosan
+OK   design | Lezer: a "Csomagok" kartya van elol (nem "Tobb terulet") | Csomagok | Arc | Hónalj | Kar | Intim | Láb | Törzs
+OK   design | kepek verzios URL-lel (a kicserelt kep ne maradjon a gyorsitotarban)
+OK   design | Oxigen 1. alkalom: a landing a szakember-valasztoval kezdodik
+OK   design | Oxigen 1. alkalom: az idopont-valaszto a havi naptar (nincs gyors idopontok / napszak-sav / legordulo)
+OK   design | Oxigen 1. alkalom: idopont utan rogton az adatlap
+OK   design | Fodraszat konzultacio: az idopont-valaszto a havi naptar (nincs gyors idopontok / napszak-sav / legordulo)
+OK   design | Fodraszat konzultacio: idopont utan rogton az adatlap
+OK   design | Lezer konzultacio: az idopont-valaszto a havi naptar (nincs gyors idopontok / napszak-sav / legordulo)
+OK   design | Lezer konzultacio: idopont utan rogton az adatlap
+OK   lepesjelzo: az elso kepernyon nincs kattinthato (kesz) lepes
+OK   lepesjelzo: a naptarnal a "Szolgaltatas" kesz es kattinthato (gomb), az "Idopont" az aktualis | ✓Szolgáltatás2Időpont3Adatok
+OK   lepesjelzo: a "Szolgaltatas"-ra kattintva vissza az elmeny-valasztora (nincs oldalvaltas) | Melyik HeadSpa élményt választod?
+OK   lepesjelzo: az adatlapnal a Szolgaltatas es az Idopont is kesz (gomb), az Adatok az aktualis | ✓Szolgáltatás✓Időpont3Adatok
+OK   lepesjelzo: az "Idopont"-ra kattintva vissza a naptarhoz (a Salonic-keret nelkul)
+OK   folytatas: ujranyitas utan a naptar nyilik (nem az elso kerdes), ugyanazzal a nappal, az Egyeni HeadSpa a savban | Szerda, okt. 7.
+OK   folytatas: a vissza gomb az elozo nezetre (elmeny-valaszto) lep, nem az elso kerdesre | Melyik HeadSpa élményt választod?
+OK   folytatas: es meg egyet vissza: az elso kerdes (Ajandekkartyaval vagy anelkul) | Ajándékkártyával vagy anélkül foglalsz?
+OK   folytatas: masik belepesnel (oxigen) nem a HeadSpa-allapot jon | Mit szeretnél foglalni?
+OK   folytatas (fodraszat): bezaras utan a kezeles-valasztonal folytatja | Melyik kezelés? -> Melyik kezelés?
+OK   folytatas (fodraszat): a vissza gomb a szandek-valasztora (Mit szeretnel?) lep | Mit szeretnél?
+OK   folytatas: a 30 percnel regebbi mentes nem folytat (fodrasz-valaszto jon) | Melyik fodrászt választod?
+OK   villanas: lassu stilusnal a reteg a stilus megerkezeseig rejtett (nincs stilus nelkuli nagy telefon-ikon), utana lathato, az ikon 22 px | {"stilustalan":0,"latszott":69,"ikon":22}
+OK   PMU: a lepesjelzo kesz lepesei (Kezeles, Idopont) kattinthatok
+OK   PMU: a "Kezeles" lepesre kattintva vissza a kezelesvalasztora
+OK   PMU: a bongeszo vissza / elore gombja lepesenkent lep (szolg <- kerdes <- ido, elore: kerdes), a reteg nyitva marad | kerdes / ido / kerdes
+OK   PMU: a keret sajat vissza nyila az elozo lepesre visz
+OK   bezaras PMU-bol: azonnal eltunik (nincs masik ablak villanasa) | {"ms":46,"latott":["visible|PMU|"]}
+OK   bezaras utan az oldal ugyanott, nincs oldalvaltas
+OK   PMU: ujranyitas utan ott folytatja, ahol tartott (kezelesvalaszto, nem az elso kepernyo) | szolg
+OK   PMU: folytatas utan a bongeszo vissza gombja az elozo lepesre lep (a reteg nyitva marad) | ido
+OK   bezaras PMU hasznalat utan (HeadSpa 2. kepernyo): azonnal eltunik, nem villan fel a PMU / masik nezet | {"ms":107,"latott":["visible||Melyik HeadSpa élményt választod?"]}
+OK   bezaras PMU hasznalat utan (Fodraszat belepo): azonnal eltunik, nem villan fel a PMU / masik nezet | {"ms":63,"latott":["visible||Melyik fodrászt választod?"]}
+OK   bezaras PMU hasznalat utan (Lezer csomagok): azonnal eltunik, nem villan fel a PMU / masik nezet | {"ms":48,"latott":["visible||Válaszd ki a pontos kezelést"]}
+OK   lezer: a terulet kezelesei (Lab) az uzletag illusztracioival, nem vonalikonnal | 3/3
+OK   lezer csomagok: minden kartyan illusztracio, a testreszek jelvenyein is illusztracio (nincs vonalikon) | {"db":8,"jo":8} jelveny: {"db":17,"jo":17}
+OK   lezer csomagok (asztali): mind a 8 csomag latszik | {"tobblet":0,"kartya":8}
+OK   koszono (HeadSpa): "Sikeres foglalas!", kartya + terkep, "Ott leszek", naptar, "Mi tortenik most?" (3 pont) | Sikeres foglalás! / 3 pont
+OK   koszono (HeadSpa): nincs kezelo (szobak vannak, nem kezelok): a kartya = szoveg + terkep | be-kosz-adat,be-terkep | 
+OK   koszono (Fodraszat): "Sikeres foglalas!", kartya + terkep, "Ott leszek", naptar, "Mi tortenik most?" (3 pont) | Sikeres foglalás! / 3 pont
+OK   koszono (Fodraszat): a kezelo (Betti) kepe es neve a kartyan belul, a szoveg es a terkep kozott, "var teged" | be-kosz-adat,be-kezelo,be-terkep | Bettivár téged
+OK   koszono (Oxigen): "Sikeres foglalas!", kartya + terkep, "Ott leszek", naptar, "Mi tortenik most?" (3 pont) | Sikeres foglalás! / 3 pont
+OK   koszono (Oxigen): a kezelo (Bozsoki) kepe es neve a kartyan belul, a szoveg es a terkep kozott, "var teged" | be-kosz-adat,be-kezelo,be-terkep | Bozsoki - Harangozó Tündivár téged
+OK   koszono (Oxigen): hajmosas / hajfestes tudnivalo
+OK   koszono (Lezer): "Sikeres foglalas!", kartya + terkep, "Ott leszek", naptar, "Mi tortenik most?" (3 pont) | Sikeres foglalás! / 3 pont
+OK   koszono (Lezer): a kezelo (Zsófi) kepe es neve a kartyan belul, a szoveg es a terkep kozott, "var teged" | be-kosz-adat,be-kezelo,be-terkep | Zsófivár téged
+OK   koszono (Lezer): a kezelesre vonatkozo tudnivalok (borotvalas, napozas)
+OK   koszono: az "Ott leszek" megerositi (zold, "Koszonom, varunk!"), mintanezetben nincs kuldes | POST: 0
+OK   koszono (visszahivas): "Visszahivast kertel!", "Mi tortenik most?" 3 pont, nincs idopont-allitas, nincs lepesjelzo, nincs "ha kozben valtozik a terved, hivj" sor
+OK   koszono (PMU foglalas): Toreki Melitta kepe es neve a kartyan belul (a szoveg es a terkep kozott) | Töreki Melittavár téged
+OK   koszono (PMU szemelyes konzultacio): Toreki Melitta kepe es neve a kartyan belul (a szoveg es a terkep kozott) | Töreki Melittavár téged
+OK   koszono (PMU visszahivas): Toreki Melitta kepe es neve a kartyan belul, nincs "ha kozben valtozik a terved, hivj" sor | Töreki Melittafelhív
+OK   koszono (PMU fotokuldes): Toreki Melitta kepe es neve a kartyan belul | Töreki Melittajelentkezik
+OK   elo foglaltsag: "A kovetkezo 7 napra mar csak 3 szabad idopont maradt." (a Salonic adatabol szamolva), "Elo foglaltsag" cim, surgos (narancs) jelzes | A következő 7 napra már csak 3 szabad időpont maradt.
+OK   elo foglaltsag: kapacitas / foglalasi esemeny nelkul nincs "X%-a foglalt" es nincs "N perce foglaltak" sor; a segedsor: "Az elerhetoseg automatikusan frissul."
+OK   elo foglaltsag: a sav a naptar ALATT, a "Nem talalok megfelelo idopontot" fole van
+OK   elo foglaltsag: egyetlen enyhe pulzalo pont (egy animacio, 2 mp-nel lassabb) | be-elo-pulz
+OK   elo foglaltsag: valtozas nelkul nem ugrik (a szoveg ugyanaz, nincs "Most frissult", nincs valtozas-animacio)
+OK   elo foglaltsag: valodi valtozaskor (egy idopont elfogyott) finoman frissul: "Most frissult", "mar csak 2", a naptar szabad napjai is | A következő 7 napra már csak 2 szabad időpont maradt. | szabad napok: 5 -> 4
+OK   elo foglaltsag: a "Most frissult" cim egy ido utan visszall "Elo foglaltsag"-ra, az uzenet a frissitett marad
+OK   elo foglaltsag: bezaras utan nem fut tovabb a frissites (nincs halott idozito), a mentett allapotot sem irja felul | API-hivas: 16 -> 16
+OK   elo foglaltsag: sok szabad idopontnal semleges ("A kovetkezo 7 napra 12 szabad idopont van."), zold jelzes, nincs "mar csak" | A következő 7 napra 12 szabad időpont van.
+OK   elo foglaltsag: ha a 7 napban nincs szabad idopont, ezt mondja es megnevezi a legkozelebbit | A következő 7 napra nincs szabad időpont. A legközelebbi: Péntek, okt. 16.
+OK   jegyzettomb: valodi bejegyzesnel a savban megjelenik: "59 perce foglaltak utoljara erre a kezelesre." (a masik sor valtozatlan) | 59 perce foglaltak utoljára erre a kezelésre.
+OK   jegyzettomb: a szamlalo percenkent leptet ("59 perce" -> "1 oraja foglaltak utoljara erre a kezelesre."), nincs valtozas-animacio, a cim marad | 1 órája foglaltak utoljára erre a kezelésre.
+OK   jegyzettomb: az olvasas a kezeles azonositoival megy (uzletag + szolgaltatas), ritkan (nem minden frissitesi korben): 2-3 olvasas ~12 mp alatt, iras nincs | 2 olvasas: /api/foglalas-esemeny?uzletag=headspa&szolgaltatas=302999
+OK   jegyzettomb: 25 oras bejegyzes -> nincs "N perce foglaltak" sor (csak az elsodleges uzenet)
+OK   jegyzettomb: ertelmetlen adat -> nincs "N perce foglaltak" sor (csak az elsodleges uzenet)
+OK   jegyzettomb: hianyzo adat -> nincs "N perce foglaltak" sor (csak az elsodleges uzenet)
+OK   jegyzettomb: ha a Salonic atiranyitasa NEM egyezik a vart valasztassal (masik idopont), nem keletkezik jelzes (nincs iras) | GET
+OK   jegyzettomb: megerositett foglalasnal EGY jelzes megy: uzletag, szolgaltatas, kezdes (a motor vart valasztasa), vendeg-azonosito (a Salonic atiranyitasabol) | 1 iras: {"uzletag":"headspa","szolgaltatas":"302999","kezdes":1791194400,"vendeg":"2461999"}
+OK   jegyzettomb: a jelzes nem tartalmaz szemelyes adatot (nev, e-mail, telefon), csak azonositokat es idot | {"uzletag":"headspa","szolgaltatas":"302999","kezdes":1791194400,"vendeg":"2461999"}
+OK   szakember-valaszto (Oxigen): a "Mindegy - a legkorabbi idopont erdekel" legfelul, kiemelt elsodleges opcio, utana a szakemberek | Mindegy – a legkorábbi időpont érdekel› | Bozsoki - Harangozó Tündi› | Szűcs Vivien› | Menyhárt Móni›
+OK   szakember-valaszto (Fodraszat): a "Mindegy - a legkorabbi idopont erdekel" legfelul, kiemelt elsodleges opcio, utana a szakemberek | Mindegy – a legkorábbi időpont érdekel› | Betti› | Noel20% kedvezmény› | Evelin›
+OK   sebesseg | HeadSpa paros: a naptar-vaz azonnal (<1,5 mp), az elso szabad nap hideg gyorsitotarral is gyors (<4 mp) | vaz 278 ms, elso szabad nap 646 ms
+OK   sebesseg | Fodraszat konzultacio: a naptar-vaz azonnal (<1,5 mp), az elso szabad nap hideg gyorsitotarral is gyors (<4 mp) | vaz 905 ms, elso szabad nap 1232 ms
+OK   sebesseg | Lezer konzultacio: a naptar-vaz azonnal (<1,5 mp), az elso szabad nap hideg gyorsitotarral is gyors (<4 mp) | vaz 367 ms, elso szabad nap 1287 ms
+OK   sebesseg | Oxigen 1. alkalom: a naptar-vaz azonnal (<1,5 mp), az elso szabad nap hideg gyorsitotarral is gyors (<4 mp) | vaz 3 ms, elso szabad nap 6 ms, szakember-valaszto 950 ms
+OK   ujratoltes (?booking=1): a reteg megnyilik a jo allapotban | cim="Melyik szakembert választod?"
+OK   ?booking=1 beerkezo link: a bezaras nem nyul az URL-hez (nincs extra oldalmegtekintes), a UTM / click ID megmarad | ?utm_source=teszt&utm_medium=cpc&gclid=TESZT123&booking=1&business=oxygen&service=466110
+OK   /lezeres-szortelenites-budapest | van motor-link (3)
+OK   /lezeres-szortelenites-budapest | nem maradt gomb a regi foglalo-oldalakra (0)
+OK   /lezeres-szortelenites-budapest | fomenu: lathato FOGLALAS gomb a foglalora kotve
+OK   /lezeres-szortelenites-budapest | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas) | cim="Mit szeretnél foglalni?"
+OK   /lezeres-szortelenites-budapest | CTA business=laser -> reteg (az URL valtozatlan) | cim="Melyik út illik rád?"
+OK   /lezeres-szortelenites-budapest | CTA business=laser&service=konzult -> reteg (az URL valtozatlan) | cim="Válassz időpontot"
+OK   /headspa-budapest-hungary | van motor-link (3)
+OK   /headspa-budapest-hungary | nem maradt gomb a regi foglalo-oldalakra (0)
+OK   /headspa-budapest-hungary | fomenu: lathato FOGLALAS gomb a foglalora kotve
+OK   /headspa-budapest-hungary | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas) | cim="Mit szeretnél foglalni?"
+OK   /headspa-budapest-hungary | CTA business=headspa -> reteg (az URL valtozatlan) | cim="Ajándékkártyával vagy anélkül foglalsz?"
+OK   /headspa-budapest-hungary | CTA business=headspa&service=paros -> reteg (az URL valtozatlan) | cim="Válassz időpontot"
+OK   /noi-fodrasz-budapesten-30-szazalek-kedvezmennyel | van motor-link (2)
+OK   /noi-fodrasz-budapesten-30-szazalek-kedvezmennyel | nem maradt gomb a regi foglalo-oldalakra (0)
+OK   /noi-fodrasz-budapesten-30-szazalek-kedvezmennyel | fomenu: lathato FOGLALAS gomb a foglalora kotve
+OK   /noi-fodrasz-budapesten-30-szazalek-kedvezmennyel | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas) | cim="Mit szeretnél foglalni?"
+OK   /noi-fodrasz-budapesten-30-szazalek-kedvezmennyel | CTA business=hair -> reteg (az URL valtozatlan) | cim="Melyik fodrászt választod?"
+OK   /headspa-budapest | van motor-link (2)
+OK   /headspa-budapest | nem maradt gomb a regi foglalo-oldalakra (0)
+OK   /headspa-budapest | fomenu: lathato FOGLALAS gomb a foglalora kotve
+OK   /headspa-budapest | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas) | cim="Mit szeretnél foglalni?"
+OK   /headspa-budapest | CTA business=headspa -> reteg (az URL valtozatlan) | cim="Ajándékkártyával vagy anélkül foglalsz?"
+OK   /home | van motor-link (3)
+OK   /home | nem maradt gomb a regi foglalo-oldalakra (0)
+OK   /home | fomenu: lathato FOGLALAS gomb a foglalora kotve
+OK   /home | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas) | cim="Mit szeretnél foglalni?"
+OK   /home | CTA business=headspa -> reteg (az URL valtozatlan) | cim="Ajándékkártyával vagy anélkül foglalsz?"
+OK   /home | CTA business=headspa&service=paros -> reteg (az URL valtozatlan) | cim="Válassz időpontot"
+OK   /noi-fodraszat-budapest | van motor-link (3)
+OK   /noi-fodraszat-budapest | nem maradt gomb a regi foglalo-oldalakra (0)
+OK   /noi-fodraszat-budapest | fomenu: lathato FOGLALAS gomb a foglalora kotve
+OK   /noi-fodraszat-budapest | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas) | cim="Mit szeretnél foglalni?"
+OK   /noi-fodraszat-budapest | CTA business=hair -> reteg (az URL valtozatlan) | cim="Melyik fodrászt választod?"
+OK   /noi-fodraszat-budapest | CTA business=hair&service=konzult -> reteg (az URL valtozatlan) | cim="Válassz időpontot"
+OK   /balayage-haj-festes-budapest | van motor-link (3)
+OK   /balayage-haj-festes-budapest | nem maradt gomb a regi foglalo-oldalakra (0)
+OK   /balayage-haj-festes-budapest | fomenu: lathato FOGLALAS gomb a foglalora kotve
+OK   /balayage-haj-festes-budapest | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas) | cim="Mit szeretnél foglalni?"
+OK   /balayage-haj-festes-budapest | CTA business=hair&service_category=balayage -> reteg (az URL valtozatlan) | cim="Melyik fodrászt választod?"
+OK   /balayage-haj-festes-budapest | CTA business=hair&service=konzult -> reteg (az URL valtozatlan) | cim="Válassz időpontot"
+OK   /oxigenterapia-budapest | van motor-link (2)
+OK   /oxigenterapia-budapest | nem maradt gomb a regi foglalo-oldalakra (0)
+OK   /oxigenterapia-budapest | fomenu: lathato FOGLALAS gomb a foglalora kotve
+OK   /oxigenterapia-budapest | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas) | cim="Mit szeretnél foglalni?"
+OK   /oxigenterapia-budapest | CTA business=oxygen -> reteg (az URL valtozatlan) | cim="Mit szeretnél foglalni?"
+OK   /vegleges-szortelenites-ferfiaknak | van motor-link (2)
+OK   /vegleges-szortelenites-ferfiaknak | nem maradt gomb a regi foglalo-oldalakra (0)
+OK   /vegleges-szortelenites-ferfiaknak | fomenu: lathato FOGLALAS gomb a foglalora kotve
+OK   /vegleges-szortelenites-ferfiaknak | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas) | cim="Mit szeretnél foglalni?"
+OK   /vegleges-szortelenites-ferfiaknak | CTA business=laser -> reteg (az URL valtozatlan) | cim="Melyik út illik rád?"
+OK   /sminktetovalas-regi | van motor-link (2)
+OK   /sminktetovalas-regi | nem maradt gomb a regi foglalo-oldalakra (0)
+OK   /sminktetovalas-regi | fomenu: lathato FOGLALAS gomb a foglalora kotve
+OK   /sminktetovalas-regi | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas) | cim="Mit szeretnél foglalni?"
+OK   /sminktetovalas-regi | CTA business=pmu -> reteg (az URL valtozatlan) | cim="PMU-keret"
+OK   /ajandekkartya-szulinapra | van motor-link (2)
+OK   /ajandekkartya-szulinapra | nem maradt gomb a regi foglalo-oldalakra (0)
+OK   /ajandekkartya-szulinapra | fomenu: lathato FOGLALAS gomb a foglalora kotve
+OK   /ajandekkartya-szulinapra | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas) | cim="Mit szeretnél foglalni?"
+OK   /ajandekkartya-szulinapra | CTA business=headspa -> reteg (az URL valtozatlan) | cim="Ajándékkártyával vagy anélkül foglalsz?"
+OK   /aszf | van motor-link (1)
+OK   /aszf | nem maradt gomb a regi foglalo-oldalakra (0)
+OK   /aszf | fomenu: lathato FOGLALAS gomb a foglalora kotve
+OK   /aszf | fomenu: FOGLALAS -> reteg, "Mit szeretnel foglalni?" (az URL valtozatlan, nincs oldalvaltas) | cim="Mit szeretnél foglalni?"
+OK   /idpontfoglalas | ures oldal: a foglalo MAGATOL megnyilik ("Mit szeretnél foglalni?") | cim="Mit szeretnél foglalni?"
+OK   /idpontfoglalas | ures oldal: a regi tartalom rejtett, az URL valtozatlan | {"tartalomRejtett":true,"mero":true,"sutiSavInert":false,"sutiSavZ":"2147483001","utvonal":"/idpontfoglalas"}
+OK   /idpontfoglalas | ures oldal: NINCS bezaras gomb (X), a foglalo kozepen / teljes kepernyon van
+OK   /idpontfoglalas | ures oldal: a suti-sav a foglalo folott marad es kattinthato (a hozzajarulas megadhato) | inert=false z=2147483001
+OK   /idpontfoglalas | ures oldal: Esc es a hatterre kattintas sem zar (a foglalo marad)
+OK   /idpontfoglalas | ures oldal: a bongeszo vissza gombja az elso lepesnel elhagyja az oldalt (nem marad ures oldal) | /aszf
+OK   /mosaic-hair-idopontfoglalas | ures oldal: a foglalo MAGATOL megnyilik ("Mit szeretnél foglalni?") | cim="Mit szeretnél foglalni?"
+OK   /mosaic-hair-idopontfoglalas | ures oldal: a regi tartalom rejtett, az URL valtozatlan | {"tartalomRejtett":true,"mero":true,"sutiSavInert":false,"sutiSavZ":"2147483001","utvonal":"/mosaic-hair-idopontfoglalas"}
+OK   /mosaic-hair-idopontfoglalas | ures oldal: NINCS bezaras gomb (X), a foglalo kozepen / teljes kepernyon van
+OK   /mosaic-hair-idopontfoglalas | ures oldal: a suti-sav a foglalo folott marad es kattinthato (a hozzajarulas megadhato) | inert=false z=2147483001
+OK   /mosaic-hair-idopontfoglalas | ures oldal: Esc es a hatterre kattintas sem zar (a foglalo marad)
+OK   /mosaic-hair-idopontfoglalas | ures oldal: a bongeszo vissza gombja az elso lepesnel elhagyja az oldalt (nem marad ures oldal) | /aszf
+OK   /szortelenites-foglalas | ures oldal: a foglalo MAGATOL megnyilik | cim="Melyik út illik rád?"
+OK   /szortelenites-foglalas | ures oldal: a regi tartalom rejtett, az URL valtozatlan | {"tartalomRejtett":true,"mero":true,"sutiSavInert":false,"sutiSavZ":"2147483001","utvonal":"/szortelenites-foglalas"}
+OK   /szortelenites-foglalas | ures oldal: NINCS bezaras gomb (X), a foglalo kozepen / teljes kepernyon van
+OK   /szortelenites-foglalas | ures oldal: a suti-sav a foglalo folott marad es kattinthato (a hozzajarulas megadhato) | inert=false z=2147483001
+OK   /szortelenites-foglalas | ures oldal: Esc es a hatterre kattintas sem zar (a foglalo marad)
+OK   /szortelenites-foglalas | ures oldal: a bongeszo vissza gombja az elso lepesnel elhagyja az oldalt (nem marad ures oldal) | /aszf
+OK   /pmu-foglalas | ures oldal: a foglalo MAGATOL megnyilik (PMU-keret) | cim="PMU-keret"
+OK   /pmu-foglalas | ures oldal: a regi tartalom rejtett, az URL valtozatlan | {"tartalomRejtett":true,"mero":true,"sutiSavInert":false,"sutiSavZ":"2147483001","utvonal":"/pmu-foglalas"}
+OK   /pmu-foglalas | ures oldal: NINCS bezaras gomb (X), a foglalo kozepen / teljes kepernyon van
+OK   /pmu-foglalas | ures oldal: a suti-sav a foglalo folott marad es kattinthato (a hozzajarulas megadhato) | inert=false z=2147483001
+OK   /pmu-foglalas | ures oldal: Esc es a hatterre kattintas sem zar (a foglalo marad)
+OK   /pmu-foglalas | ures oldal: a bongeszo vissza gombja az elso lepesnel elhagyja az oldalt (nem marad ures oldal) | /aszf
+OK   /smink-foglalas | ures oldal: a foglalo MAGATOL megnyilik (PMU-keret) | cim="PMU-keret"
+OK   /smink-foglalas | ures oldal: a regi tartalom rejtett, az URL valtozatlan | {"tartalomRejtett":true,"mero":true,"sutiSavInert":false,"sutiSavZ":"2147483001","utvonal":"/smink-foglalas"}
+OK   /smink-foglalas | ures oldal: NINCS bezaras gomb (X), a foglalo kozepen / teljes kepernyon van
+OK   /smink-foglalas | ures oldal: a suti-sav a foglalo folott marad es kattinthato (a hozzajarulas megadhato) | inert=false z=2147483001
+OK   /smink-foglalas | ures oldal: Esc es a hatterre kattintas sem zar (a foglalo marad)
+OK   /smink-foglalas | ures oldal: a bongeszo vissza gombja az elso lepesnel elhagyja az oldalt (nem marad ures oldal) | /aszf
+OK   /naptar | ures oldal: a foglalo MAGATOL megnyilik ("Mit szeretnél foglalni?") | cim="Mit szeretnél foglalni?"
+OK   /naptar | ures oldal: a regi tartalom rejtett, az URL valtozatlan | {"tartalomRejtett":true,"mero":true,"sutiSavInert":false,"sutiSavZ":"2147483001","utvonal":"/naptar"}
+OK   /naptar | ures oldal: NINCS bezaras gomb (X), a foglalo kozepen / teljes kepernyon van
+OK   /naptar | ures oldal: a suti-sav a foglalo folott marad es kattinthato (a hozzajarulas megadhato) | inert=false z=2147483001
+OK   /naptar | ures oldal: Esc es a hatterre kattintas sem zar (a foglalo marad)
+OK   /naptar | ures oldal: a bongeszo vissza gombja az elso lepesnel elhagyja az oldalt (nem marad ures oldal) | /aszf
+OK   /fodraszat-foglalas | megszunt: 301 a fooldalra (az UTM megmarad) | /?utm_source=teszt
+OK   /kupon-utan-foglalas | megszunt: 301 a fooldalra (az UTM megmarad) | /?utm_source=teszt
+OK   meres-vedelem: a reteg hasznalata (GTM-es oldalon) nem indit meresi kerest a fo ablakbol
+OK   /sminktetovalas-budapest | nincs launcher
+OK   /fodrasz-ok | nincs launcher
+OK   nincs JS-hiba a konzolon
+
+298 ellenorzes, 0 hiba (asztali)

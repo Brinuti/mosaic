@@ -82,7 +82,7 @@ const SNAP_VIEWS = new Set(['PMU', 'HS2', 'HS3', 'OX2', 'OXS', 'HA1', 'HA2', 'HA
  * defaultBusiness: ha az URL / a hivas nem nevezi meg az uzletagat: 'headspa' (a /foglalo-motor regi alapja) vagy null (-> H0, szolgaltatas-elso).
  */
 export function startEngine({ root, doc = document, win = window, adapter = sharedAdapter(), now = () => Date.now(),
-  mode = 'page', search = null, defaultBusiness = 'headspa', onClose = null, onExit = null, urlAllapot = null }) {
+  mode = 'page', search = null, defaultBusiness = 'headspa', onClose = null, onExit = null, urlAllapot = null, closable = true }) {
   const layer = mode === 'layer';
   // destroyed: a bezart (destroy-olt) motor aszinkron utotagja (pl. a naptar adata a bezaras utan erkezik meg) mar semmit nem irhat: se elozmenyt, se mentett allapotot, se idozitot
   let destroyed = false;
@@ -156,7 +156,8 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   // --- shell: fejlec (vissza, cim, hivas, [bezaras]) + lepesjelzo + gorgetheto tartalom ----------------------------------------------
   // Statikus ikon-szovegek (nem a Salonic adata): <template>-bol, mert az SVG-hez nevterezett elem kell.
   const icon = (inner, w = 2) => { const tpl = doc.createElement('template'); tpl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + w + '" aria-hidden="true">' + inner + '</svg>'; return tpl.content.firstChild; };
-  const closeBtn = layer ? h('button', { type: 'button', class: 'be-icon', id: 'be-close', 'aria-label': 'Bezárás', onclick: () => { if (onClose) onClose(); } }, icon('<path d="M6 6l12 12M18 6L6 18"/>')) : null;
+  // closable: false = bezarhatatlan reteg (a regi foglalo-cimek ures oldalai): nincs X, a callback utani "Bezaras" helyett "Vissza a fooldalra"
+  const closeBtn = layer && closable ? h('button', { type: 'button', class: 'be-icon', id: 'be-close', 'aria-label': 'Bezárás', onclick: () => { if (onClose) onClose(); } }, icon('<path d="M6 6l12 12M18 6L6 18"/>')) : null;
   const backBtn = h('button', { type: 'button', class: 'be-icon', id: 'be-back', 'aria-label': 'Vissza', style: 'visibility:hidden', onclick: () => win.history.back() }, icon('<path d="M15 5l-7 7 7 7"/>'));
   const stepsEl = h('ol', { class: 'be-steps', id: 'be-steps', 'aria-label': 'Hol tartasz', hidden: true });
   const mainEl = h('main', { class: 'be-main', id: 'be-root' }, h('p', { class: 'be-loading', role: 'status', text: 'Betöltés…' }));
@@ -917,7 +918,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   const sentView = () => h('section', { class: 'be-center be-success' }, h('div', { class: 'be-tick', 'aria-hidden': 'true', text: '✓' }), title('Visszahívást kértél!'),
     note('Hamarosan hívunk a megadott számon.'),
     h('h3', { class: 'be-h3', text: 'Mi történik most?' }), stepList(VISSZAHIVAS_LEPESEK),
-    layer ? h('div', { class: 'be-actions' }, secondary('Bezárás', () => { if (onClose) onClose(); })) : null);
+    layer ? h('div', { class: 'be-actions' }, closable ? secondary('Bezárás', () => { if (onClose) onClose(); }) : secondary('Vissza a főoldalra', () => win.location.assign('/'))) : null);
 
   // --- naptar-fajl -------------------------------------------------------------------------------------------------------------------
   function addToCalendar() {

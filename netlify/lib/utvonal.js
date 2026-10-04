@@ -13,6 +13,9 @@
 
 export const TELEFON = /iPhone|iPod|Android.*Mobile|Windows Phone|BlackBerry|IEMobile|Opera Mini/i;
 
+// A megszunt (lejart kuponos) foglalo-oldalak: 301 a fooldalra (a lekerdezes - UTM, click ID - megmarad). A tulajdonos dontese, 2026-10-04.
+const MEGSZUNT = new Set(['/fodraszat-foglalas', '/kupon-utan-foglalas']);
+
 // A Wix nehany oldala tobbszintu cimen el; a klonban lapos fajlnevvel mentettuk.
 const ALNEVEK = { 'pricing-plans/list': 'pricing-plans-list' };
 // A lezeres landing a fejlesztes alatt a /lezeres-szortelenites-budapest-uj cimen allt (noindex); az atvaltas (2026-10-04) utan az eredeti cimen el.
@@ -33,6 +36,7 @@ export function utvonal(ut, ua) {
   let tiszta = ut.replace(/^[/\\]+/, '/').replace(/^\/m\//, '/').replace(/\.html$/i, '').replace(/\/index$/, '/');
   if (tiszta.length > 1) tiszta = tiszta.replace(/\/+$/, '');
   if (!tiszta) tiszta = '/';
+  if (MEGSZUNT.has(tiszta)) return { atiranyit: '/' };
   // ideiglenes / regi cimek, amelyek az eles oldalra iranyitanak (301); a tisztitott cimre nezve, igy a '/en/' is egy lepesben ('/') er celba
   if (Object.hasOwn(ATIRANYITASOK, tiszta)) return { atiranyit: ATIRANYITASOK[tiszta] };
   if (tiszta !== ut) return { atiranyit: tiszta };

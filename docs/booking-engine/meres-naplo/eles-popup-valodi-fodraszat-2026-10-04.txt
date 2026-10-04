@@ -1,0 +1,135 @@
+Eles-atkotes: VALODI vegigfuto foglalas az ELESITETT uton (felugro foglalo), 2026-10-04
+Szenario: Fodraszat (ingyenes konzultacio)
+Ut: hirdetes-kattintas utanzata (gclid=TESZT123, fbclid=TESZT456, ttclid=TESZT789, utm_source=teszt, utm_medium=cpc) -> /noi-fodrasz-budapesten-30-szazalek-kedvezmennyel -> a[href*="business=hair"] -> /foglalo-motor?business=hair -> Salonic -> /fodrasz-ok (a fo ablakban)
+Futtatas: helyi build (ELES=1, tools/foglalo-atkotes.json: mind true) az eles tartomanyon, node tools/meres-proba/meres-proba.mjs --szenario hair --mod valodi --popup 1 --clickids 1 --overlay dist
+A kimeno meres (capig.stape, Meta, TikTok, GA4, Google Ads) NEM ment ki (tools/meres-proba/tilt.mjs: naplozva es letiltva); a foglalasi jegyzettombbe a proba nem irt.
+A valodi Salonic-foglalast a proba lemondta es ellenorizte (Idopont torolve!), lasd az osszefoglalot.
+Kiertekeles: node tools/meres-proba/elemzes.mjs (platformonkent egyedi konverziok, event_id-deduplikacio, kattintas-azonositok)
+------------------------------------------------------------------------------------------------------------------------
+=== hair / valodi / helyi dist az eles tartomanyon / kattintas-azonositok: igen
+vege URL: https://www.mosaicheadspa.hu/fodrasz-ok?first_booking=true&service=Fodr%C3%A1sz+konzult%C3%A1ci%C3%B3+%289.900+Ft+helyett+most+0+Ft%21%29&category=Ingyenes+Fodr%C3%A1sz+k
+naplozott es LETILTOTT kimeno kereses: 119
+  a sajat oldal KERETBEN (a Salonic-iframe-ben betoltott koszonooldal) inditott meresi keres: 0  (a keretben a koszonooldal semmit nem kuld)
+  harmadik fel sajat keretebol (pl. Meta pixel-iframe): 48 (stape KERET(?), meta KERET(about:blank), ismeretlen-tiltott KERET(mosaic-hair.salonic.hu), google-ads KERET(mosaic-hair.salonic.hu), tiktok KERET(mosaic-hair.salonic.hu))
+  nem besorolt, de tiltott: GET connect.facebook.net/en_US/sdk.js | POST www.mosaicheadspa.hu/api/foglalas-esemeny
+
+--- GOOGLE ADS konverzio (en=conversion): egyedi konverziok (cimke | azonosito | ertek)
+  DnDNCNTRiIkdEPDs9sg- | oid=fodraszok-3385039-232804-1793354400 | ertek=13000 HUF
+      -> 2 keres: googleadservices/pagead/conversion [FO], googleadservices/ccm/conversion [FO]
+  EGYEDI Google Ads konverziok: 1   (egy konverzio tobb csatornan megy: pagead/conversion, ccm/conversion, viewthroughconversion: ez NEM dupla)
+
+--- GA4 (es stape g/collect): nem-oldalbetoltes esemenyek
+  ads_conversion_Fodrasz_Foglalas_1: 1 keres (stapeg/collect [FO])
+  hair_book_appointment_first: 1 keres (stapeg/collect [FO])
+  GA4 -> Google Ads konverzio-importok (region1/measurement/conversion): -
+
+--- META
+  bongeszo (facebook.com/tr) PageView: 2 keres [FO,KERET(about:blank)]  event_id=ob3_plugin-set_4e190927e...
+  bongeszo (facebook.com/tr) SubscribedButtonClick: 1 keres [KERET(about:blank)]  event_id=ob3_plugin-set_14435e98e...
+  bongeszo (facebook.com/tr) Schedule: 1 keres [KERET(about:blank)]  <- konverzio  event_id=ob3_plugin-set_fcfebda44...
+  bongeszo (facebook.com/tr) Fodrasz_Konzultacio: 1 keres [KERET(about:blank)]  <- konverzio  event_id=fodraszok-3385039-232804...
+  szerveroldali CAPI (capig.stape) PageView: event_id=ob3_plugin-set_4e190927eb95344...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) Schedule: event_id=ob3_plugin-set_fcfebda4421a38c...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) PageView: event_id=ob3_plugin-set_b2d95df28083bcf...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) Fodrasz_Konzultacio 13000 HUF: event_id=fodraszok-3385039-232804-17933...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  Meta konverzios esemeny-nevek (bongeszo + CAPI egyutt, deduplikalas utan): Schedule [bongeszo 1, CAPI 1, azonos event_id]; Fodrasz_Konzultacio [bongeszo 1, CAPI 1, azonos event_id]
+
+--- TIKTOK
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /ipv6/enrich_ipv6 [FO] esemeny: EnrichIpv6
+  POST /api/v2/pixel [FO] esemeny: LandingPageView
+  POST /api/v2/pixel [FO] esemeny: Pageview
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/pixel/act [FO] esemeny: (esemeny-kotegek, nem JSON-torzs)
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/pixel/act [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/pixel/inter [FO] esemeny: ?
+  POST /api/v2/pixel [FO] esemeny: EngagedSession
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /ipv6/enrich_ipv6 [KERET(mosaic-hair.salonic.hu)] esemeny: EnrichIpv6
+  POST /api/v2/pixel [KERET(mosaic-hair.salonic.hu)] esemeny: LandingPageView
+  POST /api/v2/pixel [KERET(mosaic-hair.salonic.hu)] esemeny: Pageview
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel [KERET(mosaic-hair.salonic.hu)] esemeny: LandingPageView
+  POST /api/v2/pixel [KERET(mosaic-hair.salonic.hu)] esemeny: InitiateCheckout
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/act [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /ipv6/enrich_ipv6 [KERET(mosaic-hair.salonic.hu)] esemeny: EnrichIpv6
+  POST /api/v2/pixel [KERET(mosaic-hair.salonic.hu)] esemeny: LandingPageView
+  POST /api/v2/pixel [KERET(mosaic-hair.salonic.hu)] esemeny: EnrichAM
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/pixel/inter [FO] esemeny: ?
+  POST /api/v2/monitor [KERET(mosaic-hair.salonic.hu)] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/pixel [FO] esemeny: Pageview
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/pixel [FO] esemeny: Purchase
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/pixel/act [FO] esemeny: (esemeny-kotegek, nem JSON-torzs)
+  POST /api/v2/monitor [FO] esemeny: ?
+  POST /api/v2/monitor [FO] esemeny: ?
+  TikTok konverzios esemenyek: InitiateCheckout, EnrichAM, Purchase
+
+ZAPIER webhook: 1 keres [FO]
+
+=== OSSZEGZES: konverzio platformonkent (keretben + fo ablakban egyutt)
+  Google Ads : 1 egyedi konverzio (DnDNCNTRiIkdEPDs9sg-)
+  GA4/stape  : 2 fajta nem-oldalbetoltes esemeny, mindegyik 1/1x a gyujto vegponton
+  Meta       : Schedule, Fodrasz_Konzultacio
+  TikTok     : InitiateCheckout, EnrichAM, Purchase; /api/v2/pixel keresek: 71
+  KERETBEN inditott: 0
+
+=== KATTINTAS-AZONOSITOK (gclid=TESZT123, fbclid=TESZT456, ttclid=TESZT789, utm_source=teszt, utm_medium=cpc)
+  Google Ads-kereses: gclid a "gclaw/gclid" mezoben: MEGVAN (16 keres; pl. TESZT123)
+  GA4/Ads-import:     gclid a "gclaw/gclid" mezoben: NINCS
+  Meta (facebook.com/tr): fbc mezo: MEGVAN (5 keres; fb.1.1791150201277.TESZT456)
+  Meta CAPI (capig.stape): fb.clickID/fbc a torzsben: MEGVAN (4/4 keres)
+  TikTok: ttclid (context.ad.callback / ttclid) a torzsben: MEGVAN (11/71 keres)
+  GA4 kampany-forras (cs/cm mezo, vagy utm a dl=page_location-ben): MEGVAN: cs=undefined cm=undefined
+  GA4 page_view / visit hitek (munkamenet-kezdet): 
+    en=page_view sid=1791150201 dl=https://www.mosaicheadspa.hu/noi-fodrasz-budapesten-30-szaza dr=
+    en=visit sid=1791150201 dl=https://www.mosaicheadspa.hu/noi-fodrasz-budapesten-30-szaza dr=
+    en=page_view sid=1791150201 dl=https://www.mosaicheadspa.hu/fodrasz-ok?first_booking=true&s dr=https://www.mosaicheadspa.hu/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel?gc
+    en=visit sid=1791150201 dl=https://www.mosaicheadspa.hu/fodrasz-ok?first_booking=true&s dr=https://www.mosaicheadspa.hu/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel?gc
+  referrer (dr/ref) a koszonooldalon: https://www.mosaicheadspa.hu/ | https://www.mosaicheadspa.hu/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel?gclid=TESZT123&fbclid=TESZT456&t
+  sutik a vegen: _fbc=fb.1.1791150201277.TESZT456 | _fbp=fb.1.1791150201286.86818022348715074 | _ga=GA1.1.627525874.1791150201 | _ttp=3KFPAmEHyALwFA5WYzomYB6PzFk.17911502 | _tt_enable_cookie=1 | _ttp=01M44DY6XD84M1TZD81ZWGJKNJ_.tt.1.179 | ttclid=TESZT789.1791150201774 | FPID=FPID2.2.YzpL83xzR72mOnzR7ZRpB308gPVo | FPLC=p%2FO5YsnweKgEqyul2wpjmaB5OBkGaCGcJb | _gcl_aw=GCL.1791150227.TESZT123 | _ga_H4206SQ0Q7=GS2.1.s1791150201$o1$g1$t1791150226$ | _gcl_au=1.1.252739918.1791150201.-.-.1791150
+
+engedett harmadik fel (csak szkript-betoltes): cdn.trustindex.io:4, www.googletagmanager.com:8, connect.facebook.net:4, analytics.tiktok.com:9, cdn.jsdelivr.net:2, fonts.googleapis.com:1, cdnjs.cloudflare.com:2, www.google.com:5, www.gstatic.com:5, fonts.gstatic.com:1

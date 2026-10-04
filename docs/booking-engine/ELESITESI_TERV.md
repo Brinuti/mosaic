@@ -1,6 +1,6 @@
 # Élesítési terv – a közös foglaló bevezetése (HeadSpa, Oxigén, Fodrászat, Lézer)
 
-Állapot: 2026-10-03. A foglaló ma a rejtett `/foglalo-motor` oldalon van, **élesben semmi nem változott, a vendégek nem látják**. Ez a terv azt írja le, hogyan kerül élesbe úgy, hogy **a hirdetési mérés nem romlik**, és **bármikor visszaállítható**.
+Állapot: 2026-10-04: **az átkötés élesítve** (lásd a 9. pontot és a DECISIONS.md „Élesítés” szakaszát: a kapcsolók `true`, a foglaló a gombokból és a főmenüből helyben, felugró ablakban nyílik). Az eredeti terv állapota (2026-10-03): a foglaló a rejtett `/foglalo-motor` oldalon volt, **élesben semmi nem változott, a vendégek nem látták**. Ez a terv azt írja le, hogyan kerül élesbe úgy, hogy **a hirdetési mérés nem romlik**, és **bármikor visszaállítható**.
 
 ## 1. Alapelvek és jóváhagyott döntések
 
@@ -101,3 +101,7 @@ Ez **üzletáganként 1 valódi konverziót** jelent a hirdetési fiókokban (j�
 - **Gyors:** a térképben az üzletág kapcsolójának kikapcsolása, új deploy (néhány perc): a gombok újra a Salonic-linkekre mutatnak.
 - **Azonnali:** a Cloudflare Pages az előző deploymentre egy kattintással visszaállítható.
 - A Salonic-fiókban az „Egyedi CSS URL” mező kiürítése visszaadja az eredeti űrlap-kinézetet.
+
+## 9. Az élesítés (2026-10-04)
+
+A tulajdonos jóváhagyásával a hét kapcsoló (`headspa`, `oxigen`, `fodraszat`, `lezer`, `pmu`, `fejlec`, `regi`) `true`. A térkép a Salonic-linkeken kívül most a saját foglaló-oldalakra mutató linkeket is átköti (főmenü „FOGLALÁS” + az oldalak gombjai): leképezés és a nem érintett oldalak (köszönő oldalak, PMU-landing): DECISIONS.md „Élesítés”. A régi foglaló-oldalak (`/idpontfoglalas` stb.) üres oldal + bezárhatatlan felugró lettek, a két kuponos oldal 301 a főoldalra. Build: `node tools/netlify-build.mjs` (a `foglalo-atkotes:` sor kapcsolónként mutatja a darabszámot); ellenőrzés: `node --test tools/test-foglalo-atkotes.mjs`, `node tools/meres-proba/reteg-proba.mjs` (asztali + mobil, minden jellemző oldalon a főmenü és a gombok).
