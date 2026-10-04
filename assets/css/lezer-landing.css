@@ -28,7 +28,9 @@
   --arany-gomb: linear-gradient(#c6a346, #d9c164);
 }
 :where(main), :where(main) * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 90px; -webkit-text-size-adjust: 100%; }
+/* a fejlec felso, rozsaszin akcios savja (Wix-fejlec: section#comp-mpv0ganp) ezen az oldalon nem latszik (a tulajdonos kerese: ezzel is helyet nyerunk) */
+#comp-mpv0ganp { display: none !important; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; -webkit-text-size-adjust: 100%; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body { margin: 0; background: var(--krem); color: var(--szoveg); font: 400 16px/1.5 var(--test); -webkit-font-smoothing: antialiased; }
 main, main * { font-variant-numeric: lining-nums !important; }   /* a Playfair alapbol old-style szamjegyeket ad (az arakhoz egyenes kell); a font: roviditesek visszaallitanak, ezert !important */
@@ -239,7 +241,7 @@ dialog.nagyito img { display: block; max-width: 92vw; max-height: 86vh; border-r
 .nagyito .kov { right: -14px; top: 50%; margin-top: -22px; }
 
 /* --- 8b. velemenyek (az eredeti Trustindex-embed) --- */
-.velemenyek { padding: 60px 0 64px; background: #f7f8f6; border-top: 1px solid var(--vonal); scroll-margin-top: 90px; }
+.velemenyek { padding: 60px 0 64px; background: #f7f8f6; border-top: 1px solid var(--vonal); scroll-margin-top: 76px; }
 .ti-doboz { margin-top: 26px; min-height: 140px; }
 .ti-keret { display: block; width: 100%; height: 340px; border: 0; background: transparent; }
 .ti-hely { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 34px 20px; background: #fff; border: 1px solid #e7eae3; border-radius: 16px; box-shadow: var(--arnyek); }
@@ -357,7 +359,7 @@ dialog.nagyito img { display: block; max-width: 92vw; max-height: 86vh; border-r
 .pipa-lista { list-style: none; padding: 0; margin: 22px 0 0; display: grid; grid-template-columns: 1fr; gap: 12px; }
 .pipa-lista li { display: flex; align-items: center; gap: 12px; font-size: 16px; color: #eef0e6; }
 .pipa-lista svg { width: 24px; height: 24px; color: #d9b77e; flex: none; }
-.foglalo-kartya { background: #fbfaf7; color: var(--szoveg); border-radius: 20px; padding: 22px 26px 22px; box-shadow: 0 30px 70px rgba(0, 0, 0, .45), 0 0 0 1px rgba(255, 255, 255, .06); display: grid; grid-template-columns: 236px 1fr; gap: 20px 30px; align-items: start; scroll-margin-top: 90px; }
+.foglalo-kartya { background: #fbfaf7; color: var(--szoveg); border-radius: 20px; padding: 22px 26px 22px; box-shadow: 0 30px 70px rgba(0, 0, 0, .45), 0 0 0 1px rgba(255, 255, 255, .06); display: grid; grid-template-columns: 236px 1fr; gap: 20px 30px; align-items: start; scroll-margin-top: 76px; }
 .fogl-bal { display: grid; gap: 18px; align-content: start; }
 .fogl-naptar-racs { display: grid; grid-template-columns: 296px minmax(0, 1fr); gap: 20px; align-items: start; }
 .foglalo-kartya fieldset { border: 0; padding: 0; min-width: 0; }

@@ -12,7 +12,7 @@ címen nincs mérőkód-pixel, és ezt nem is írtuk át). Visszaállítás átv
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (68 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (69 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje
@@ -49,6 +49,8 @@ a foglaló naptárában kör alakú szabad napok (mint a foglaló-motorban), a �
 **Kilencedik kör (2026-10-04, a tulajdonos kérése az Oxigén-munkameneten át):** új szekciósorrend: hero → Mennyibe kerül? → Eredmények → 8 kezelés → Már tudod, mit szeretnél? → Garancia → Zsófi → Neked is jó választás? → Vélemények → Érdekelhet → Árlista → Kalkulátor → GYIK → Foglaló → Helyszín.
 Az egyedi csomagot („nagyon sokan szeretik”) említő sorok a hero-ban, a Mennyibe kerül?, a 8 kezelés és az árlista szekcióban a kalkulátorra linkelnek (`[data-szamolo]`: JS-gördítés, **nem** `#hash`, hogy a GTM „History Change” esemény ne induljon).
 Minden gomb (`.gomb`) ugyanazt a betűt használja: Jost, 15 px, normál írásmód (nincs csupa nagybetűs gomb, nincs betűköz); a gombok mérete csak a belső margóban tér el.
+
+**Fejléc:** a fejléc felső, rózsaszín akciós sávját (`section#comp-mpv0ganp`, Wix-fejléc) ezen az oldalon elrejtjük (a `lezer-landing.css`-ben, ezért csak itt hat; a tulajdonos kérése, hogy helyet nyerjünk). A fejléc így 77 → 46 px (asztal) és 94 → 63 px (mobil); a görgetési eltolások (`scroll-padding-top`, `scroll-margin-top`) 76 px-esek.
 
 ## Árforrás
 

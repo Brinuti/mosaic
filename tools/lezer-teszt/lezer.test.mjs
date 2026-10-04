@@ -889,3 +889,16 @@ describe('a kilencedik kor: szekciosorrend, kalkulator-jelzesek, egységes gombo
   });
 });
 
+describe('a rozsaszin akcios sav nem latszik', () => {
+  test('asztalon es telefonon sincs rozsaszin akcios sav a fejlecben; a fejlec alacsonyabb', async () => {
+    for (const mobil of [false, true]) {
+      const { p, ctx } = await nyit({ mobil });
+      const m = await p.evaluate(() => { const s = document.getElementById('comp-mpv0ganp'); const f = document.getElementById('SITE_HEADER'); return { sav: s ? getComputedStyle(s).display : 'nincs', magas: Math.round(f.getBoundingClientRect().height), szoveg: /Októberi akció/.test(f.innerText) }; });
+      assert.equal(m.sav, 'none', (mobil ? 'mobil' : 'asztal') + ': a sav el van rejtve');
+      assert.equal(m.szoveg, false, 'a sav szovege nem latszik');
+      assert.ok(m.magas <= 66, (mobil ? 'mobil' : 'asztal') + ': a fejlec magassaga: ' + m.magas);
+      await ctx.close();
+    }
+  });
+});
+
