@@ -65,3 +65,7 @@ Bekapcsolás fiókonként (a tulajdonos teendője, a `salonic/mosaic.css` éles 
 1. A mostani HeadSpa konverziós mérés (`/success-foglalas*` köszönőoldalak URL-paraméterei) és az új motor összekötése: a próbaoldal a sikert maga mutatja, és nem nyitja meg a köszönőoldalt.
 2. A HeadSpa-oldalak gombjainak átkötése `/foglalo-motor`-ra, A/B vagy fokozatos átállás, visszaállítási pont a jelenlegi folyamat.
 3. A VIP említésének takarítása a weboldalon.
+
+## Gyorsítás, folytatás (2026-10-04)
+
+Az időpont-választás gyorsítása és a réteg folytatása (kattintható lépésjelző, csak az X zár) leírása: DECISIONS.md „Réteg-viselkedés és sebesség”, BOOKING_LAYER.md „Viselkedés”. HeadSpa-ra vonatkozóan: a naptár az Egyéni HeadSpa két Salonic-változatának (Relax / Hair) uniója; a két változat időpontjai párhuzamosan töltődnek.

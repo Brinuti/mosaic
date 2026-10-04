@@ -7,7 +7,7 @@
 //   - Shadow DOM: az oldal (Wix-klon) stilusai nem szivarognak be, a foglalo stilusa nem szivarog ki
 // A szamlalas / hand-off a motoreben marad (engine.js): sikeres foglalas utan a meglevo koszonooldal nyilik meg, a meres valtozatlan.
 
-import { startEngine } from './engine.js';
+import { startEngine, warmUp } from './engine.js';
 
 const HOST_ID = 'mosaic-booking-layer';
 const CONTEXT_KEYS = ['business', 'service', 'category', 'voucher', 'intent']; // ezek kerulnek az URL-be; a tobbi (UTM, click ID) az oldal sajat URL-jen van
@@ -127,10 +127,10 @@ export function openBooking(opts = {}, env = {}) {
   }
   const onExit = () => teardown();
 
-  // --- billentyuzet: Esc bezar, Tab a panelen belul marad -----------------------------------------------------------------------------
+  // --- billentyuzet: Esc nem zar, Tab a panelen belul marad -----------------------------------------------------------------------------
   const FOCUSABLE = 'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),iframe,[tabindex]:not([tabindex="-1"])';
   shadow.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { e.stopPropagation(); requestClose(); return; }
+    if (e.key === 'Escape') { e.stopPropagation(); return; } // a foglalo nem zarodik be veletlenul: csak a jobb felso X zarja be (a bongeszo vissza gombja lepesenkent visszalep)
     if (e.key !== 'Tab') return;
     const list = [...panel.querySelectorAll(FOCUSABLE)].filter((el) => !el.hidden && el.getClientRects().length);
     if (!list.length) { e.preventDefault(); panel.focus(); return; }
@@ -138,7 +138,7 @@ export function openBooking(opts = {}, env = {}) {
     if (e.shiftKey && (active === first || active === panel)) { last.focus(); e.preventDefault(); }
     else if (!e.shiftKey && active === last) { first.focus(); e.preventDefault(); }
   });
-  shadow.querySelector('.be-backdrop').addEventListener('click', requestClose);
+  // (a hatterre kattintas SEM zar: csak az X)
 
   // --- a motor ------------------------------------------------------------------------------------------------------------------------
   const engine = startEngine({ root: body, win, doc, mode: 'layer', search: engineSearch, defaultBusiness: null, onClose: requestClose, onExit, urlAllapot });
@@ -148,3 +148,6 @@ export function openBooking(opts = {}, env = {}) {
 }
 
 export function closeBooking() { if (current) current.close(); }
+
+/** Elomelegites a CTA kontextusabol (a launcher a CTA fole vitt egerre / erintesre hivja): Salonic-kapcsolat + szolgaltatas-lista, adott szolgaltatasnal idopontok. */
+export function warm(opts = {}) { try { warmUp(normalizeOptions(opts)); } catch (e) { /* nem kritikus */ } }

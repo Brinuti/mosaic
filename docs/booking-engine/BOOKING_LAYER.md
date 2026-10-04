@@ -37,7 +37,8 @@ Elnevezések: `service_id` = `service`, `service_category` = `category` (a régi
 | Fájl | Szerep |
 |---|---|
 | `assets/js/booking-launcher.js` | apró indító: figyeli a CTA-kat, `window.openBooking / closeBooking`, `?booking=1` visszaállítás; a foglaló kódját az első megnyitáskor tölti |
-| `assets/js/booking-engine/layer.js` | a réteg: Shadow DOM, fókusz-csapda, Esc, inert háttér, görgetés-zár, URL-állapot (history) |
+| `assets/js/booking-engine/layer.js` | a réteg: Shadow DOM, fókusz-csapda (az Esc és a háttérre kattintás NEM zár, csak az X), inert háttér, görgetés-zár, URL-állapot (history) |
+| `assets/js/booking-engine/salonic-adapter.js` | a Salonic nyilvános oldalai + naptár-API; gyors lekérés (párhuzamos részek, progresszív betöltés, gyorsítótárak, `warmUp`) |
 | `assets/js/booking-engine/engine.js` | a motor komponensként (`mode: 'page' \| 'layer'`): saját fejléc / lépésjelző, cserélhető üzletág, H0 és PMU nézet, `destroy()` |
 | `assets/js/booking-engine/families.js` | a szolgáltatás-első kezdőállapot (H0) családjai (szövegek: javaslat) |
 | `assets/css/booking-engine.css`, `booking-fonts.css` | a stílus (a `@font-face` a dokumentumban kell legyen, a Shadow DOM-ban nem működik) |
@@ -57,10 +58,17 @@ A build (`tools/netlify-build.mjs`): a launcher verziójelei (`__MOTOR_VERZIO__`
 - **Adatlap:** teljes szélességű keret (nem csúszik ki), a választott időpont összegzése fölötte (asztalon). A PMU-val azonos kinézethez a Salonic-fiókban be kell állítani az „Egyedi CSS URL”-t (lásd ENGINE_HEADSPA.md, „Közös Salonic-CSS”).
 - Pillanatképek a nézetekről: `node tools/meres-proba/design-kepek.mjs --overlay dist --ki mappa [--mobil 1] [--stilus 1]`.
 
+## Viselkedés (2026-10-04, 4. kör)
+
+- **Csak az X zár** (Esc / háttér nem); a böngésző vissza gombja lépésenként visszalép.
+- **Folytatás:** újranyitáskor (ugyanabból a belépésből, 30 percig) ott folytatja, ahol tartott, az előzményekkel együtt (`sessionStorage`: `mhFoglaloAllapot`; `engine.js`: `saveSnapshot` / `peekSnapshot` / `restoreSnapshot`).
+- **Lépésjelző:** a kész lépések gombok (`gotoStep`), a vissza gombbal egyenértékű (`history.go`).
+- **Gyors időpont-választás:** a launcher a CTA fölé vitt egérre / érintésre előmelegít (`layer.js` `warm` → `engine.js` `warmUp`: preconnect + szolgáltatás-lista + a szolgáltatás első 14 napja), a motor modulját üresjáratban tölti; a naptár váza azonnal látszik, az első 14 nap hamar jön, a többi a háttérben.
+
 ## Ellenőrzés
 
 - `node --test tools/test-booking-layer.mjs tools/test-booking-flow.mjs …` (egységtesztek).
-- `node tools/meres-proba/reteg-proba.mjs --overlay dist [--mobil 1]`: böngészős próba (Playwright): 16 belépési pont (jó kezdőállapot, az URL nem változik, nincs oldalváltás, bezárás), Esc, vissza gomb, H0 végigjárás, fókusz-csapda, inert háttér, beérkező `?booking=1` link (UTM / click ID megmarad), a valódi landing-oldalak CTA-i, **mérés-védelem** (a GTM-es landing-oldalon a réteg teljes használata nem indít mérési kérést a fő ablakból), a PMU-landing és a köszönőoldalak launcher nélkül. Eredmény (2026-10-04): asztali 102/102, mobil 102/102. A kimenő mérés alapból tiltva.
+- `node tools/meres-proba/reteg-proba.mjs --overlay dist [--mobil 1]`: böngészős próba (Playwright): 16 belépési pont (jó kezdőállapot, az URL nem változik, nincs oldalváltás, bezárás az X-szel), az Esc és a háttérre kattintás nem zár, vissza gomb, kattintható lépésjelző, folytatás újranyitás után (HeadSpa naptár + nap, fodrászat több lépcsős útvonal, lejárt mentés, másik belépés), sebesség-mérés (hideg gyorsítótár, négy üzletág), H0 végigjárás, fókusz-csapda, inert háttér, beérkező `?booking=1` link (UTM / click ID megmarad), a valódi landing-oldalak CTA-i, **mérés-védelem** (a GTM-es landing-oldalon a réteg teljes használata nem indít mérési kérést a fő ablakból), a PMU-landing és a köszönőoldalak launcher nélkül. Eredmény (2026-10-04, helyi build): asztali 161/161, mobil 163/163. A kimenő mérés alapból tiltva.
 - Tesztlista a `/booking-test` oldalon (10 pont). A végigvitt foglalás valódi: „TESZT” név, a szalon telefonszáma, lemondás a „Lemondom” linkkel.
 
 ## Még nincs kész (következő körök)

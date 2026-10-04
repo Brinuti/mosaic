@@ -208,3 +208,17 @@ a { color: inherit; }
 .be-shell-layer .be-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 .be-icon:focus-visible, .be-btn:focus-visible, .be-link:focus-visible, .be-time:focus-visible, .be-nnap:focus-visible, .be-idogomb:focus-visible, .be-lapoz:focus-visible { outline: 2px solid var(--sotet); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .be-backdrop, .be-panel { transition: none; } }
+
+/* lepesjelzo: a kesz lepesek kattinthatok (vissza a legutobbi ilyen lepesre) */
+.be-step-btn { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+.be-step-btn span { text-decoration: underline; text-decoration-color: var(--vonal); text-underline-offset: 3px; }
+.be-step-btn:focus-visible { outline: 2px solid var(--sotet); outline-offset: 2px; border-radius: 6px; }
+@media (hover: hover) and (pointer: fine) { .be-step-btn:hover i { background: var(--krem); } .be-step-btn:hover span { text-decoration-color: var(--sotet); } }
+
+/* az idopont-naptar betoltes alatti vaza (azonnal latszik) es a hatterben erkezo tovabbi napok jelzese (a honapcim finoman villog, nincs elmozdulas) */
+.be-vaz .be-nnap { color: #cfc6ba; font-weight: 400; }
+.be-lapoz-ures { display: block; width: 38px; height: 38px; }
+.be-toltes { animation: be-pulz 1.1s ease-in-out infinite; }
+@keyframes be-pulz { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .be-toltes { animation: none; } }
+@media (max-width: 599px) { .be-lapoz-ures { width: 34px; height: 34px; } }

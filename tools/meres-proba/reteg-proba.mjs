@@ -2,8 +2,8 @@
 //
 //   node tools/meres-proba/reteg-proba.mjs [--overlay dist] [--bazis https://...] [--mobil 1] [--kepek mappa] [--oldal /booking-test]
 //
-// Minden belepesi pontnal: a CTA a retegben nyitja a foglalot (nem navigal), a jo kezdo allapotba er, az URL frissul (booking=1), a bezaras / Esc / vissza
-// gomb visszaviszi az eredeti cimre, az ujratoltes visszaallitja. A kimeno meres (capig.stape.do is) alapbol tiltva (tilt.mjs).
+// Minden belepesi pontnal: a CTA a retegben nyitja a foglalot (nem navigal), a jo kezdo allapotba er, az URL frissul (booking=1), a bezaras (X) / vissza
+// gomb visszaviszi az eredeti cimre (az Esc es a hatterre kattintas NEM zar), az ujratoltes visszaallitja; az ujranyitas ott folytatja, ahol tartott. A kimeno meres (capig.stape.do is) alapbol tiltva (tilt.mjs).
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -78,8 +78,8 @@ const cim = (page) => reteg(page).locator('.be-title').first();
 async function varCim(page, ido = 25000) { try { await cim(page).waitFor({ timeout: ido }); return (await cim(page).textContent()).trim(); } catch (e) { return null; } }
 const url = (page) => new URL(page.url());
 
-async function nyit(page, opts) {
-  await page.evaluate((o) => { window.__marker = 'maradt'; window.openBooking(o); }, opts);
+async function nyit(page, opts, { folytat = false } = {}) {
+  await page.evaluate(([o, f]) => { if (!f) { try { sessionStorage.removeItem('mhFoglaloAllapot'); } catch (e) { /* nincs tarolo */ } } window.__marker = 'maradt'; window.openBooking(o); }, [opts, folytat]);
 }
 
 const { ctx, page, hibak } = await ujLap();
@@ -111,8 +111,11 @@ for (const [cimke, opts, vart, extra] of BELEPOK) {
 // --- viselkedes: Esc, vissza gomb, ujratoltes, H0 -> agon -> vissza, fokusz-csapda -------------------------------------------------------
 await nyit(page, { business: 'hair' }); await varCim(page);
 await page.keyboard.press('Escape');
-await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {});
-ok('Esc bezarja a retegat', !(await reteg(page).count()) && url(page).search === new URL(BAZIS + eredetiUrl).search);
+await page.waitForTimeout(500);
+ok('Esc NEM zarja be a retegat (csak az X)', (await reteg(page).count()) === 1);
+await page.mouse.click(4, 4); // a panelen kivul (asztalon a hatterre, mobilon a panelre): nem zarhat be
+await page.waitForTimeout(500);
+ok('a hatterre kattintas NEM zarja be a retegat', (await reteg(page).count()) === 1);
 
 await nyit(page, { business: 'hair' }); await varCim(page);
 await page.goBack();
@@ -289,6 +292,90 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
     ok(`design | ${cimke}: idopont utan rogton az adatlap`, (await cimSzoveg(page)).includes('Add meg az adataidat'));
     await zar(page);
   }
+}
+
+// --- 2026-10-04 (3. kor): kattinthato lepesjelzo, folytatas ujranyitas utan, gyors naptar ----------------------------------------------------------
+const sav = (page) => reteg(page).locator('.be-steps').first();
+{
+  // HeadSpa: Szolgaltatas -> Idopont (naptar): a "Szolgaltatas" kesz lepes gomb, ra kattintva vissza az elmeny-valasztora
+  await nyit(page, { business: 'headspa' }); await varCim(page);
+  ok('lepesjelzo: az elso kepernyon nincs kattinthato (kesz) lepes', (await sav(page).locator('.be-step-btn').count()) === 0);
+  await kattint(page, 'Normál foglalás'); await kattint(page, 'Egyéni HeadSpa');
+  await reteg(page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
+  ok('lepesjelzo: a naptarnal a "Szolgaltatas" kesz es kattinthato (gomb), az "Idopont" az aktualis', (await sav(page).locator('li.done .be-step-btn').count()) === 1 && /Időpont/.test(await sav(page).locator('li.now').textContent()), (await sav(page).textContent()).replace(/\s+/g, ' '));
+  const elsoNap0 = await reteg(page).locator('.be-nap-cim').textContent();
+  await sav(page).locator('li.done .be-step-btn').click(); await page.waitForTimeout(700);
+  ok('lepesjelzo: a "Szolgaltatas"-ra kattintva vissza az elmeny-valasztora (nincs oldalvaltas)', (await reteg(page).locator('.be-nnap').count()) === 0 && (await reteg(page).locator('.be-choice').count()) >= 3 && /Szolgáltatás/.test(await sav(page).locator('li.now').textContent()) && (await page.evaluate(() => window.__marker)) === 'maradt', (await cimSzoveg(page)));
+  await kattint(page, 'Egyéni HeadSpa');
+  await reteg(page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
+  await reteg(page).locator('.be-idogomb').first().click();
+  await reteg(page).locator('iframe.be-iframe').waitFor({ timeout: 25000 });
+  ok('lepesjelzo: az adatlapnal a Szolgaltatas es az Idopont is kesz (gomb), az Adatok az aktualis', (await sav(page).locator('li.done .be-step-btn').count()) === 2 && /Adatok/.test(await sav(page).locator('li.now').textContent()), (await sav(page).textContent()).replace(/\s+/g, ' '));
+  await sav(page).locator('li.done .be-step-btn').nth(1).click(); await page.waitForTimeout(800);
+  ok('lepesjelzo: az "Idopont"-ra kattintva vissza a naptarhoz (a Salonic-keret nelkul)', (await reteg(page).locator('.be-nnap.szabad').count()) > 0 && (await reteg(page).locator('iframe.be-iframe').count()) === 0 && (await reteg(page).locator('.be-nnap[aria-pressed="true"]').count()) === 1);
+  await zar(page);
+
+  // folytatas: bezaras utan ugyanazzal a belepessel ott folytatja (naptar, kivalasztott nap), a vissza gomb az elozo nezetekre lep
+  await nyit(page, { business: 'headspa' }); await varCim(page);
+  await kattint(page, 'Normál foglalás'); await kattint(page, 'Egyéni HeadSpa');
+  await reteg(page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
+  if ((await reteg(page).locator('.be-nnap.szabad').count()) > 1) { await reteg(page).locator('.be-nnap.szabad').nth(1).click(); await page.waitForTimeout(300); }
+  const napElotte = await reteg(page).locator('.be-nap-cim').textContent();
+  await zar(page);
+  await nyit(page, { business: 'headspa' }, { folytat: true });
+  await reteg(page).locator('.be-naptar').first().waitFor({ timeout: 15000 });
+  await reteg(page).locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
+  ok('folytatas: ujranyitas utan a naptar nyilik (nem az elso kerdes), ugyanazzal a nappal, az Egyeni HeadSpa a savban', (await reteg(page).locator('.be-nap-cim').textContent()) === napElotte && /egyéni/i.test(await reteg(page).locator('.be-svc').first().textContent()), napElotte);
+  await reteg(page).locator('#be-back').click(); await varCim(page);
+  ok('folytatas: a vissza gomb az elozo nezetre (elmeny-valaszto) lep, nem az elso kerdesre', (await reteg(page).locator('.be-choice').count()) >= 3 && !/Ajándékkártyával vagy anélkül/.test(await cimSzoveg(page)), await cimSzoveg(page));
+  await reteg(page).locator('#be-back').click(); await varCim(page);
+  ok('folytatas: es meg egyet vissza: az elso kerdes (Ajandekkartyaval vagy anelkul)', /Ajándékkártyával vagy anélkül/.test(await cimSzoveg(page)), await cimSzoveg(page));
+  await zar(page);
+
+  // masik belepesi pontnal nem folytat (az uzletag-valaszto jon)
+  await nyit(page, { business: 'oxygen' }, { folytat: true }); await varCim(page);
+  ok('folytatas: masik belepesnel (oxigen) nem a HeadSpa-allapot jon', /Mit szeretnél foglalni\?/.test(await cimSzoveg(page)), await cimSzoveg(page));
+  await zar(page);
+
+  // fodraszat: tobblepcsos utvonal (fodrasz -> szandek -> kezeles): bezaras utan a kezeles-valasztonal folytatja
+  await nyit(page, { business: 'hair' }); await varCim(page); await page.waitForTimeout(800);
+  await kattint(page, 'Betti'); await kattint(page, 'Balayage');
+  const kezCim = await cimSzoveg(page);
+  await zar(page);
+  await nyit(page, { business: 'hair' }, { folytat: true });
+  const cimUj = await varCim(page);
+  ok('folytatas (fodraszat): bezaras utan a kezeles-valasztonal folytatja', kezCim === 'Melyik kezelés?' && cimUj === kezCim, `${kezCim} -> ${cimUj}`);
+  await reteg(page).locator('#be-back').click(); await varCim(page);
+  ok('folytatas (fodraszat): a vissza gomb a szandek-valasztora (Mit szeretnel?) lep', (await cimSzoveg(page)) === 'Mit szeretnél?', await cimSzoveg(page));
+  await zar(page);
+
+  // lejart (30 percnel regebbi) mentes nem folytat
+  await nyit(page, { business: 'hair' }); await varCim(page); await page.waitForTimeout(800);
+  await kattint(page, 'Betti'); await kattint(page, 'Balayage');
+  await page.evaluate(() => { const k = 'mhFoglaloAllapot'; const s = JSON.parse(sessionStorage.getItem(k)); s.t -= 31 * 60 * 1000; sessionStorage.setItem(k, JSON.stringify(s)); });
+  await zar(page);
+  await nyit(page, { business: 'hair' }, { folytat: true });
+  ok('folytatas: a 30 percnel regebbi mentes nem folytat (fodrasz-valaszto jon)', (await varCim(page)) === 'Melyik fodrászt választod?', await cimSzoveg(page));
+  await zar(page);
+}
+
+// --- sebesseg: a naptar mennyi ido alatt jelenik meg hideg gyorsitotarral (uj kontextus, nincs elomelegites), uzletagankent ------------------------
+const SEBESSEG = [['HeadSpa paros', { business: 'headspa', service: 'paros' }, null], ['Fodraszat konzultacio', { business: 'hair', service: 'konzult' }, null], ['Lezer konzultacio', { business: 'laser', service: 'konzult' }, null], ['Oxigen 1. alkalom', { business: 'oxygen', service: '466110' }, 'szakember']];
+for (const [cimke, opts, elso] of SEBESSEG) {
+  const u = await ujLap();
+  await u.page.goto(BAZIS + OLDAL, { waitUntil: 'domcontentloaded' });
+  await u.page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 });
+  const t0 = Date.now();
+  await u.page.evaluate((o) => window.openBooking(o), opts);
+  let t1 = 0;
+  if (elso) { await u.page.locator('#mosaic-booking-layer').locator('.be-choice').first().waitFor({ timeout: 25000 }); t1 = Date.now() - t0; await u.page.locator('#mosaic-booking-layer').locator('.be-choice').last().click(); }
+  const t2 = Date.now();
+  await u.page.locator('#mosaic-booking-layer').locator('.be-naptar').first().waitFor({ timeout: 25000 });
+  const vazMs = Date.now() - t2;
+  await u.page.locator('#mosaic-booking-layer').locator('.be-nnap.szabad').first().waitFor({ timeout: 25000 });
+  const szabadMs = Date.now() - t2;
+  ok(`sebesseg | ${cimke}: a naptar-vaz azonnal (<1,5 mp), az elso szabad nap hideg gyorsitotarral is gyors (<4 mp)`, vazMs < 1500 && szabadMs < 4000, `vaz ${vazMs} ms, elso szabad nap ${szabadMs} ms${elso ? ', szakember-valaszto ' + t1 + ' ms' : ''}`);
+  await u.ctx.close();
 }
 
 // ujratoltes ?booking=1-gyel: a reteg ujra megnyilik; bezaras utan tiszta cim
