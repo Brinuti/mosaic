@@ -174,6 +174,8 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.doesNotMatch(html, /id="ah-finder-racs"|ah-kezeles-ablak|ah-panel-mellek/, 'a Gift Finder gombjai, a felugro kezeles-ablak es a "Valasztott ajandek" osszegzo kikerult');
     // a valaszto resz a mockup szerint harom lepes (1 elmeny radio | 2 video | 3 atvetel + tovabb); a fizetes: Rendelesed + Adatok + Fizetes
     for (const jel of ['id="ah-lepesek"', 'id="ah-termek-racs"', 'id="ah-kiv-media"', 'id="ah-tovabb-gomb"', 'id="ah-osszesito-forma"', 'class="ah-kartya ah-urlap-adatok"', 'class="ah-kartya ah-urlap-fizetes"']) assert.ok(html.includes(jel), jel);
+    assert.ok(html.includes('id="ah-fordit"') && !html.includes('ah-oldal-kapcsolo'), 'a kartya forgathato (Forditsd meg), nincs elol/hat valto');
+    assert.ok(!html.includes('ah-hero-ar'), 'a hero-bol az "ar-tol" lekerult');
     for (const t of Object.values(ADAT.TERMEKEK)) assert.ok(typeof t.kartya_sor === 'string' && t.kartya_sor.length > 10, t.id + ' kartya_sor');
   });
 

@@ -104,7 +104,7 @@ oldalon, külön nézetben.
 | 18 | Embedded checkout ugyanazon az oldalon | ✓ |
 | 19 | E-mail + minimális adat | ⚠ a számlához név, irányítószám, város, utca is kell; csökkenthető, ha a számlázás (szamlabridge) nem igényli – döntés kell |
 | 20 | Apple Pay / Google Pay / kártya elsődleges | ✓ átutalás másodlagos link |
-| 21 | Ár mindig a CTA közelében | ✓ hero („26.900 Ft-tól”), kártyák, ablak, panel, fizetés gomb |
+| 21 | Ár mindig a CTA közelében | ✓ a termék-kártyákon, a 3. lépés dobozában (ár + „Tovább a vásárláshoz”), a Rendelésed kártyán és a fizetés gombon (2026-10-04-től a hero-ból a „26.900 Ft-tól” a tulajdonos kérésére lekerült) |
 | 22 | Nincs nem igazolt ígéret | ✓ a teszt ellenőrzi a variantokban; a kód-kommenteken kívül nincs „azonnal / perceken belül” |
 | 23 | Fizetés után a személyre szabás | ⚠ **a tulajdonos kérésére módosult**: az otthon nyomtatott kártya személyre szabása a fizetés **előtt** van (kihagyható: „Kihagyom”); a fizetés utáni név/üzenet csak személyes átvételnél marad |
 | 24 | Final Order Hub | ✓ |
@@ -429,6 +429,12 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
 - **Kártya-formátum (a tulajdonos kérése, 2026-10-04): fekvő, félbehajtott A4.** A személyre szabott (otthon nyomtatott) kártya sablonja (`assets/js/ajandek-kartya.js`) már nem egy álló A4
   lap, hanem az A4-es (álló) lapon **két fekvő lap** (egyenként 210 x 148,5 mm = 794 x 561,5 px, 1,414 : 1): felül a **hátoldal** (180°-kal elforgatva: a kártya adatai: termék, érték,
   utalványkód, érvényesség, cím), alul az **előlap** (a személyre szabott rész: fotó, idézet, „NEKI: név”). Félbehajtva egy 21 x 14,85 cm-es fekvő kártya lesz (a szaggatott vonal a hajtás).
-  A designer előnézete az előlapot és alatta a hátoldalt mutatja külön-külön; a végleges oldal (`szemelyreSzabottKartyaOldal`) pontosan egy A4-es lapra nyomtat. A négy dizajn továbbra is
+  A designer előnézete csak az előlapot mutatja, alatta egy „Fordítsd meg a kártyát” link 3D-ben megforgatja a hátoldalra (és vissza); a végleges oldal (`szemelyreSzabottKartyaOldal`) pontosan egy A4-es lapra nyomtat. A négy dizajn továbbra is
   ELŐZETES helyőrző: a végleges (Canva-ban készült) dizajnokat **fekvő, 21 x 14,85 cm-es** lapként kell készíteni (`TEMAK[].hatter` = szövegmentes hátterkép). A „standard” (szalon-)kártya
   (`kartyaOldal`, `kartya-hatter.jpg`) a tulajdonos eredeti Canva-terve: ugyanez a félbehajtott A4 (felül elforgatott fél), változatlan.
+
+## Kis laptopra szabott méretezés és a választó egységes magassága (2026-10-04, a tulajdonos kérése)
+
+- **Választó:** a „Válaszd ki az ajándékot” fejléc csak a címet és a kártya-képet tartalmazza (a hero-ban már elhangzott szövegek és a pipa-lista lekerültek); a három lépés (*Válassz élményt*, *Nézd meg, milyen*, *Vedd meg az ajándékkártyát*) **mindig azonos magas** (asztalon 610 px) és azonos vonalban kezdődik, bármelyik élmény van kijelölve; a 3. lépés leírása legfeljebb 4 sor. A számkörökben a szám pontosan középen áll (lining-számjegyek, nem a Playfair régi stílusú számjegyei).
+- **Fizetés:** egy kis laptop képernyőjére (1366 x 768, de 1280 x 600-ig tesztelve) elfér a fizetés gombbal együtt: bal oldalt *1 Rendelésed* (karcsú) és *2 Adatok* (a mezőkben ikon, az adatok két-három oszlopos rácsban), jobb oldalt *3 Fizetés*. Alacsony (≤ 720 px) képernyőn a Rendelésed kártya tovább tömörödik.
+- **Személyre szabó:** egy képernyőre elfér a „Tovább a fizetéshez” gombbal együtt (1366 x 650 px-en a gomb alja ~480 px): a kártya előlapja bal oldalt, jobb oldalt két oszlopban a vezérlők (design / fotó + idézet / név + gombok); a hátoldal a „Fordítsd meg a kártyát” linkkel nézhető meg.

@@ -88,6 +88,7 @@
     building: '<rect x="5.5" y="4" width="13" height="16" rx="1.5"/><path d="M9 8h2M13 8h2M9 12h2M13 12h2M10.5 20v-4h3v4"/>',
     hourglass: '<path d="M7 4h10M7 20h10M8 4c0 4 4 5 4 8s-4 4-4 8M16 4c0 4-4 5-4 8s4 4 4 8"/>',
     shield: '<path d="M12 3.5l7 2.5v5.5c0 4.2-3 7.4-7 9-4-1.6-7-4.8-7-9V6z"/><path d="M9 12l2.2 2.2L15.5 10"/>',
+    flip: '<path d="M4 12a8 8 0 0 1 13.6-5.7L20 8.5"/><path d="M20 4v4.5h-4.5"/><path d="M20 12a8 8 0 0 1-13.6 5.7L4 15.5"/><path d="M4 20v-4.5h4.5"/>',
     printer: '<path d="M7 9V4.5h10V9"/><path d="M7 17H5a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 5 9h14a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 19 17h-2"/><rect x="7" y="13.5" width="10" height="6.5" rx=".8"/>'
   };
   function ikonKitolt(span, nev) {
@@ -246,12 +247,6 @@
       tarto.appendChild(h('span', { class: 'ah-bizalom-szoveg' }, h('b', { text: t.szoveg }), h('small', { text: t.alszoveg })));
       lista.appendChild(li);
     });
-    // az ar mindig a CTA kozeleben: a legolcsobb ajandekkartya ara
-    var arEl = $('ah-hero-ar');
-    if (arEl) {
-      var min = Math.min.apply(null, Object.keys(A.TERMEKEK).map(function (k) { return A.TERMEKEK[k].ar_ft; }));
-      arEl.textContent = A.arSzoveg(min) + '-tól';
-    }
     var kep = $('ah-hero-kep');
     if (c.hero_media && c.hero_media.poz) kep.style.objectPosition = c.hero_media.poz;
     if (c.hero_media) {
@@ -520,8 +515,6 @@
     $('ah-kiv-ar').textContent = A.arSzoveg(t.ar_ft);
     var leiras = uresit($('ah-kiv-leiras'));
     (k.leiras && k.leiras.length ? k.leiras : [t.leiras]).forEach(function (sor) { leiras.appendChild(h('p', { text: sor })); });
-    var lista = uresit($('ah-kiv-lista'));
-    (k.lepesek || []).forEach(function (sor) { lista.appendChild(h('li', null, ikonSpan('check'), h('span', { text: sor }))); });
     // a kezeles videoja (TERMEKEK.*.kezeles.video, 9:16); csak akkor epitjuk ujra, ha masik termek lett kijelolve (a lejatszas ne szakadjon meg)
     if (mediaTermek !== id) {
       mediaTermek = id;
@@ -544,7 +537,7 @@
     kepBeallit($('ah-osszesito-kep'), t);
     var lista = uresit($('ah-osszesito-lista'));
     t.tartalom.filter(function (s) { return !/felhasználható/.test(s); }).forEach(function (sor) { lista.appendChild(listaSor(sor)); });
-    lista.appendChild(h('li', null, ikonSpan(S.atvetel === 'otthon' ? 'mail' : 'store'), h('span', { text: S.atvetel === 'otthon' ? 'Digitális ajándékkártya e-mailben' : 'Papír kártya, átvétel a szalonban' })));
+    lista.appendChild(h('li', null, ikonSpan(S.atvetel === 'otthon' ? 'mail' : 'store'), h('span', { text: S.atvetel === 'otthon' ? 'Kártya e-mailben' : 'Papír kártya a szalonban' })));
     $('ah-osszesito-forma').textContent = S.atvetel === 'otthon' ? 'Digitális ajándékkártya' : 'Átvétel a szalonban';
     var ar = A.arSzoveg(t.ar_ft);
     $('ah-osszesito-ar').textContent = ar;
@@ -788,6 +781,13 @@
   }
   function tervezoBekot() {
     var doboz = $('ah-ak-elonezet');
+    // a kartya megfordithato: csak az elolap latszik, alatta egy "Forditsd meg" link a hatoldalhoz (3D forgatas)
+    var fordit = $('ah-fordit');
+    if (fordit) fordit.addEventListener('click', function () {
+      var meg = doboz.classList.toggle('ah-megfordit');
+      fordit.setAttribute('aria-pressed', meg ? 'true' : 'false');
+      $('ah-fordit-szoveg').textContent = meg ? 'Vissza az előlapra' : 'Fordítsd meg a kártyát';
+    });
     doboz.addEventListener('pointerdown', function (ev) {
       var abl = ev.target.closest ? ev.target.closest('.ak-ablak') : null;
       var kep = abl && abl.querySelector('img');

@@ -67,7 +67,7 @@
         <p class="ah-felcim" id="ah-hero-eyebrow" hidden></p>
         <h1 id="ah-hero-cim">Adj neki 80 percet, amikor végre csak vele foglalkoznak.</h1>
         <p class="ah-lead" id="ah-hero-alcim">Japán Head Spa élmény Budán, digitális vagy nyomtatott ajándékkártyával.</p>
-        <p class="ah-hero-gomb"><a class="ah-gomb ah-gomb-fo" id="ah-hero-cta" href="#ah-finder"><span id="ah-hero-cta-szoveg">Ajándékkártya választása</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></a><span class="ah-hero-ar" id="ah-hero-ar"></span></p>
+        <p class="ah-hero-gomb"><a class="ah-gomb ah-gomb-fo" id="ah-hero-cta" href="#ah-finder"><span id="ah-hero-cta-szoveg">Ajándékkártya választása</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></a></p>
         <ul class="ah-bizalom" id="ah-hero-bizalom" aria-label="Röviden"></ul>
         <p class="ah-hero-biztositas" id="ah-hero-biztositas"></p>
         <p class="ah-hero-bevaltas">Már van ajándékkártyád? <a href="/idpontfoglalas">Foglalj időpontot a kuponkóddal →</a></p>
@@ -80,13 +80,6 @@
     <div class="ah-tartalom ah-valaszto-fej">
       <div class="ah-valaszto-szoveg">
         <h2 id="ah-finder-cim">Válaszd ki az ajándékot</h2>
-        <p class="ah-halk">Egyedül, ketten vagy valami igazán különlegeset: három élmény, mindegyik 50 perc kezelés + 30 perc hajszárítás.</p>
-        <ul class="ah-pipalista ah-pipalista-sor">
-          <li><span class="ah-ikon" data-ikon="check" aria-hidden="true"></span>Digitálisan vagy nyomtatható formában</li>
-          <li><span class="ah-ikon" data-ikon="check" aria-hidden="true"></span>Gyönyörű, egyedi design</li>
-          <li><span class="ah-ikon" data-ikon="check" aria-hidden="true"></span>Személyre szabható üzenettel</li>
-          <li><span class="ah-ikon" data-ikon="check" aria-hidden="true"></span>6 hónapig érvényes</li>
-        </ul>
       </div>
       <!-- a valodi MOSAIC ajandekkartya (Canva-terv, fekvo, 21 x 10 cm) -->
       <div class="ah-valaszto-kartya" aria-hidden="true"><img src="/assets/img/ajandek/kartya-elolap.jpg" width="1100" height="524" alt="" loading="lazy" decoding="async"></div>
@@ -100,22 +93,25 @@
       </section>
 
       <section class="ah-lepes" aria-labelledby="ah-l2-cim">
-        <header class="ah-lepes-fej"><span class="ah-lepes-szam">2</span><div><h3 id="ah-l2-cim">Nézd meg, milyen</h3><p>Ismerd meg közelebbről a kiválasztott élményt.</p></div></header>
+        <header class="ah-lepes-fej"><span class="ah-lepes-szam">2</span><div><h3 id="ah-l2-cim">Nézd meg, milyen</h3><p>Ismerd meg közelebbről az élményt.</p></div></header>
         <div class="ah-video-doboz" id="ah-kiv-media"></div>
       </section>
 
       <section class="ah-lepes ah-lepes-3" aria-labelledby="ah-l3-cim">
         <header class="ah-lepes-fej"><span class="ah-lepes-szam">3</span><div><h3 id="ah-l3-cim">Vedd meg az ajándékkártyát</h3><p>Válaszd ki a kézbesítési módot, és lepd meg szeretted!</p></div></header>
         <div class="ah-kartya ah-vasarlas" id="ah-kivalasztott" aria-live="polite">
-          <div class="ah-vasarlas-fej"><h4 id="ah-kiv-cim"></h4><strong class="ah-ar" id="ah-kiv-ar"></strong></div>
-          <div class="ah-kez-leiras" id="ah-kiv-leiras"></div>
-          <details class="ah-kez-reszletek"><summary>Mi történik a kezelésen?</summary><ul class="ah-lista ah-kez-lepesek" id="ah-kiv-lista"></ul></details>
-          <h4 class="ah-atvetel-cim">Milyen ajándékkártyát szeretnél?</h4>
-          <fieldset class="ah-atvetel" id="ah-atvetel">
-            <legend class="ah-lathatatlan-cim">Az ajándékkártya átvétele</legend>
+          <div class="ah-vasarlas-fent">
+            <div class="ah-vasarlas-fej"><h4 id="ah-kiv-cim"></h4><strong class="ah-ar" id="ah-kiv-ar"></strong></div>
+            <div class="ah-kez-leiras" id="ah-kiv-leiras"></div>
+          </div>
+          <div class="ah-vasarlas-kozep">
+            <h4 class="ah-atvetel-cim">Milyen ajándékkártyát szeretnél?</h4>
+            <fieldset class="ah-atvetel" id="ah-atvetel">
+              <legend class="ah-lathatatlan-cim">Az ajándékkártya átvétele</legend>
             <label class="ah-atvetel-opcio"><input type="radio" name="atvetel" value="otthon" checked><span class="ah-atvetel-ikon"><span class="ah-ikon" data-ikon="mail" aria-hidden="true"></span></span><span class="ah-atvetel-szoveg"><strong>Személyre szabható, digitális ajándékkártya</strong><small>A következő lépésben személyre szabhatod, e-mailben kapod meg, és kinyomtathatod.</small></span><span class="ah-ajanlott-jel">AJÁNLOTT</span></label>
             <label class="ah-atvetel-opcio"><input type="radio" name="atvetel" value="szemelyesen"><span class="ah-atvetel-ikon"><span class="ah-ikon" data-ikon="store" aria-hidden="true"></span></span><span class="ah-atvetel-szoveg"><strong>Eredeti, fizikai ajándékkártya – a szalonban veszem át</strong><small>Gyönyörű, fizikai kártya díszborítékban (1023 Budapest, Bécsi út 2.), személyre szabás nélkül.</small></span></label>
-          </fieldset>
+            </fieldset>
+          </div>
           <button type="button" class="ah-gomb ah-gomb-fo ah-gomb-teljes" id="ah-tovabb-gomb"><span>Tovább a vásárláshoz</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></button>
         </div>
       </section>
@@ -338,52 +334,58 @@
 
   <!-- MINI SZEMELYRE SZABO (csak az otthon kinyomtatott kartyahoz): dizajn + foto + idezet, elo elonezettel; a fizetes elott -->
   <section class="ah-tervezo" id="ah-tervezo" aria-labelledby="ah-tervezo-cim" hidden>
-    <div class="ah-fizetes-sor">
+    <div class="ah-tervezo-fej">
       <button type="button" class="ah-vissza" id="ah-tervezo-vissza"><span aria-hidden="true">←</span>&nbsp;Vissza az ajándékhoz</button>
-    </div>
-    <header class="ah-tervezo-fej">
       <h2 id="ah-tervezo-cim" tabindex="-1">Szabd személyre az ajándékkártyát</h2>
-      <p class="ah-halk">Válassz designt, tölts fel egy fotót, és írj rá egy idézetet vagy üzenetet. A személyre szabás az otthon kinyomtatott kártyára vonatkozik.</p>
-    </header>
+      <p class="ah-halk">Válassz designt, tölts fel egy fotót, és írj rá egy idézetet vagy üzenetet.</p>
+    </div>
     <div class="ah-tervezo-racs">
       <div class="ah-tervezo-elonezet">
         <div class="ah-ak-doboz" id="ah-ak-elonezet" aria-label="A kártya élő előnézete" role="img"></div>
-        <p class="ah-halk ah-kicsi">A kártya fekvő formátumú: A4-es lapra nyomtatod és félbehajtod, elöl a személyre szabott lap, hátul a kártya adatai. Az utalványkód akkor kerül rá, amikor a szalon kiállítja a kártyát.</p>
+        <button type="button" class="ah-link ah-fordit" id="ah-fordit" aria-pressed="false"><span class="ah-ikon" data-ikon="flip" aria-hidden="true"></span><span id="ah-fordit-szoveg">Fordítsd meg a kártyát</span></button>
       </div>
       <div class="ah-kartya ah-tervezo-vezerlok">
-        <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">1</span>Válassz designt</h3>
-        <div class="ah-tema-racs" id="ah-tema-racs" role="radiogroup" aria-label="Kártya-design"></div>
-
-        <div id="ah-foto-blokk">
-          <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">2</span>Fotó</h3>
-          <div class="ah-foto-vezerlo">
-            <input type="file" id="ah-foto-fajl" accept="image/*" hidden>
-            <button type="button" class="ah-gomb ah-gomb-kor" id="ah-foto-gomb"><span class="ah-ikon" data-ikon="camera" aria-hidden="true"></span><span id="ah-foto-gomb-szoveg">Fotó feltöltése</span></button>
-            <button type="button" class="ah-link" id="ah-foto-torol" hidden>Fotó törlése</button>
-          </div>
-          <div class="ah-zoom" id="ah-zoom-sor" hidden>
-            <label for="ah-zoom">Nagyítás</label>
-            <input type="range" id="ah-zoom" min="1" max="3" step="0.05" value="1">
-          </div>
-          <p class="ah-halk ah-kicsi" id="ah-foto-tipp">Bármilyen fotó jó (telefonról is). A fotót a kártya előnézetén húzva igazíthatod.</p>
-          <p class="ah-mezohiba" id="ah-foto-hiba" role="alert" hidden></p>
+        <div class="ah-tv-sor">
+          <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">1</span>Válassz designt</h3>
+          <div class="ah-tema-racs" id="ah-tema-racs" role="radiogroup" aria-label="Kártya-design"></div>
         </div>
 
-        <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">3</span>Idézet vagy üzenet</h3>
-        <div class="ah-mezo">
-          <label for="ah-idezet" class="ah-lathatatlan-cim">Idézet vagy üzenet</label>
-          <textarea id="ah-idezet" maxlength="160" rows="3" placeholder="Írd ide az idézetet vagy az üzenetet…"></textarea>
-          <p class="ah-szamlalo"><span id="ah-idezet-db">0</span>/160</p>
+        <div class="ah-tv-sor ah-tv-ketto">
+          <div id="ah-foto-blokk">
+            <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">2</span>Fotó</h3>
+            <div class="ah-foto-vezerlo">
+              <input type="file" id="ah-foto-fajl" accept="image/*" hidden>
+              <button type="button" class="ah-gomb ah-gomb-kor" id="ah-foto-gomb"><span class="ah-ikon" data-ikon="camera" aria-hidden="true"></span><span id="ah-foto-gomb-szoveg">Fotó feltöltése</span></button>
+              <button type="button" class="ah-link" id="ah-foto-torol" hidden>Fotó törlése</button>
+            </div>
+            <div class="ah-zoom" id="ah-zoom-sor" hidden>
+              <label for="ah-zoom">Nagyítás</label>
+              <input type="range" id="ah-zoom" min="1" max="3" step="0.05" value="1">
+            </div>
+            <p class="ah-halk ah-kicsi" id="ah-foto-tipp">Telefonról is jó. Húzással igazíthatod.</p>
+            <p class="ah-mezohiba" id="ah-foto-hiba" role="alert" hidden></p>
+          </div>
+          <div class="ah-tv-idezet">
+            <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">3</span>Idézet vagy üzenet</h3>
+            <div class="ah-mezo">
+              <label for="ah-idezet" class="ah-lathatatlan-cim">Idézet vagy üzenet</label>
+              <textarea id="ah-idezet" maxlength="160" rows="2" placeholder="Írd ide az idézetet vagy az üzenetet…"></textarea>
+              <p class="ah-szamlalo"><span id="ah-idezet-db">0</span>/160</p>
+            </div>
+          </div>
         </div>
-        <div class="ah-mezo">
-          <label for="ah-tervezo-nev">Kinek szól? (nem kötelező)</label>
-          <input id="ah-tervezo-nev" type="text" maxlength="40" autocomplete="off" placeholder="pl. Anna">
+
+        <div class="ah-tv-sor ah-tv-alja">
+          <div class="ah-mezo">
+            <label for="ah-tervezo-nev">Kinek szól? (nem kötelező)</label>
+            <input id="ah-tervezo-nev" type="text" maxlength="40" autocomplete="off" placeholder="pl. Anna">
+          </div>
+          <div class="ah-gombsor ah-gombsor-oszlop">
+            <button type="button" class="ah-gomb ah-gomb-fo ah-gomb-teljes" id="ah-tervezo-tovabb"><span id="ah-tervezo-tovabb-szoveg">Tovább a fizetéshez</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></button>
+            <button type="button" class="ah-link" id="ah-tervezo-kihagy">Kihagyom a személyre szabást</button>
+          </div>
         </div>
         <p class="ah-mezohiba" id="ah-tervezo-hiba" role="alert" hidden></p>
-        <div class="ah-gombsor ah-gombsor-oszlop">
-          <button type="button" class="ah-gomb ah-gomb-fo ah-gomb-teljes" id="ah-tervezo-tovabb"><span id="ah-tervezo-tovabb-szoveg">Tovább a fizetéshez</span><span class="ah-ikon" data-ikon="arrow" aria-hidden="true"></span></button>
-          <button type="button" class="ah-link" id="ah-tervezo-kihagy">Kihagyom a személyre szabást</button>
-        </div>
       </div>
     </div>
   </section>
@@ -432,36 +434,37 @@
         <div class="ah-urlap-oszlopok">
           <div class="ah-kartya ah-urlap-adatok">
             <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">2</span>Adatok <span class="ah-urlap-seg">Add meg az adataidat a vásárláshoz és a számlázáshoz.</span></h3>
-            <div class="ah-mezo ah-mezo-ikonos">
-              <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="mail"></span></span>
-              <label for="ah-email">E-mail címed</label>
-              <input id="ah-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="pl. te@emailcimed.hu" required>
-              <p class="ah-mezohiba" id="ah-email-hiba" hidden></p>
-            </div>
-            <div class="ah-mezo ah-mezo-ikonos">
-              <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="user"></span></span>
-              <label for="ah-nev">Számlázási név</label>
-              <input id="ah-nev" name="nev" type="text" autocomplete="name" maxlength="120" required>
-              <p class="ah-mezohiba" id="ah-nev-hiba" hidden></p>
-            </div>
-            <div class="ah-mezosor ah-mezo-ikonos-sor">
-              <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="pin"></span></span>
-              <div class="ah-mezo ah-mezo-kicsi">
+            <div class="ah-mezo-racs">
+              <div class="ah-mezo ah-mezo-ikonos">
+                <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="mail"></span></span>
+                <label for="ah-email">E-mail címed</label>
+                <input id="ah-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="pl. te@emailcimed.hu" required>
+                <p class="ah-mezohiba" id="ah-email-hiba" hidden></p>
+              </div>
+              <div class="ah-mezo ah-mezo-ikonos">
+                <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="user"></span></span>
+                <label for="ah-nev">Számlázási név</label>
+                <input id="ah-nev" name="nev" type="text" autocomplete="name" maxlength="120" placeholder="pl. Kovács Anna" required>
+                <p class="ah-mezohiba" id="ah-nev-hiba" hidden></p>
+              </div>
+              <div class="ah-mezo ah-mezo-ikonos">
+                <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="pin"></span></span>
                 <label for="ah-iranyitoszam">Irányítószám</label>
-                <input id="ah-iranyitoszam" name="iranyitoszam" type="text" autocomplete="postal-code" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" required>
+                <input id="ah-iranyitoszam" name="iranyitoszam" type="text" autocomplete="postal-code" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="1024" required>
                 <p class="ah-mezohiba" id="ah-iranyitoszam-hiba" hidden></p>
               </div>
-              <div class="ah-mezo">
+              <div class="ah-mezo ah-mezo-ikonos">
+                <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="building"></span></span>
                 <label for="ah-varos">Város</label>
-                <input id="ah-varos" name="varos" type="text" autocomplete="address-level2" maxlength="80" required>
+                <input id="ah-varos" name="varos" type="text" autocomplete="address-level2" maxlength="80" placeholder="Budapest" required>
                 <p class="ah-mezohiba" id="ah-varos-hiba" hidden></p>
               </div>
-            </div>
-            <div class="ah-mezo ah-mezo-ikonos">
-              <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="home"></span></span>
-              <label for="ah-cim">Utca, házszám</label>
-              <input id="ah-cim" name="cim" type="text" autocomplete="address-line1" maxlength="200" required>
-              <p class="ah-mezohiba" id="ah-cim-hiba" hidden></p>
+              <div class="ah-mezo ah-mezo-ikonos">
+                <span class="ah-mezo-ikon" aria-hidden="true"><span class="ah-ikon" data-ikon="home"></span></span>
+                <label for="ah-cim">Utca, házszám</label>
+                <input id="ah-cim" name="cim" type="text" autocomplete="address-line1" maxlength="200" placeholder="pl. Margit körút 1." required>
+                <p class="ah-mezohiba" id="ah-cim-hiba" hidden></p>
+              </div>
             </div>
 
             <details class="ah-ceges" id="ah-ceges">
@@ -488,7 +491,6 @@
             <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">3</span>Fizetés <span class="ah-urlap-biztonsag"><span class="ah-ikon" data-ikon="lock" aria-hidden="true"></span>Titkosított kapcsolat · Stripe</span></h3>
             <div class="ah-fizetesi-doboz" id="ah-fizetesi-doboz">
               <p class="ah-cimke">Fizetési mód</p>
-              <p class="ah-halk ah-kicsi">Apple Pay, Google Pay vagy bankkártya – ahol elérhető.</p>
               <div id="ah-fizetesi-elem" aria-live="polite"></div>
               <p class="ah-mezohiba" id="ah-fizetes-hiba" role="alert" hidden></p>
               <p class="ah-nincs-fizetes" id="ah-nincs-fizetes" hidden>Az online fizetés jelenleg nem érhető el. Próbáld újra később, vagy válaszd az átutalást, esetleg hívj minket: <a href="tel:+36202474444">06 20 247 4444</a>.</p>
