@@ -39,7 +39,9 @@ SZENARIOK.headspa = { start: '/foglalo-motor?business=headspa', salonic: 'mosaic
 SZENARIOK.headspa.popup = { oldal: '/headspa-budapest', link: 'a[href*="business=headspa"]', valasztas: ['Normál foglalás', 'Egyéni HeadSpa'] };
 SZENARIOK.hair.popup = { oldal: '/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel', link: 'a[href*="business=hair"]', valasztas: ['Mindegy', 'Ingyenes konzultáció', 'Nem tudom'] };
 SZENARIOK.oxigen2.popup = { oldal: '/oxigenterapia-budapest', link: 'a[href*="business=oxygen"]', valasztas: ['Következő kezelés', 'Mindegy'] };
-SZENARIOK.lezer.popup = { oldal: '/lezeres-szortelenites-budapest', link: 'a[href*="business=laser"]', valasztas: ['Ingyenes konzultációt kérek'] };
+SZENARIOK.lezer.popup = { oldal: '/lezeres-szortelenites-budapest', link: 'a[href*="business=laser"]:visible', valasztas: ['Ingyenes konzultációt kérek'] };
+// az ujonnan elesitett oxigen-landing (2026-10-04): az elso kezeles gombja kozvetlenul a naptarra visz (oxigenterapia-ok koszonooldal)
+SZENARIOK.oxigen1 = { ...SZENARIOK.oxigen2, popup: { oldal: '/oxigenterapia-budapest', link: 'a[href*="service=466147"]:visible', valasztas: ['Mindegy'] } };
 // a regi oxigen-hirdetes (4 aktiv Meta-hirdetes szovege) cime: ures oldal + bezarhatatlan felugro; a foglalo magatol megnyilik
 SZENARIOK.oxigenreklam = { ...SZENARIOK.oxigen2, popup: { oldal: '/mosaic-hair-idopontfoglalas', auto: true, valasztas: ['Következő kezelés', 'Mindegy'] } };
 const sc = SZENARIOK[SZ];

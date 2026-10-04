@@ -45,3 +45,20 @@ A Google-címkék a böngészőben három csatornán (`pagead/conversion`, `ccm/
 
 - A négy próbaidőpont lemondva (lásd fent); a szalon, ha tisztán akarja tartani, a Salonic-adminban a lemondott „Deák Ferenc István” (HeadSpa), „TESZT – Claude” (Oxigén, Fodrászat) és „teszt teszt” (Elysion) bejegyzéseket megtalálja; a vendégkartonok maradtak.
 - A próbaszám (tisztázva 2026-10-03): a próbafoglalásokhoz a tulajdonos saját telefonszámát (+36 70 942 0090) adtuk meg; az átkapcsolás után a próbákhoz (és minden további teszthez) a **szalon** számát kell megadni: 06 20 247 4444. A vendégeknek szóló helyeken (motor, hibaüzenetek, levelek, PMU-foglaló) a kódban már most a szalon száma áll; a tulajdonos száma csak a mérő-szkript próbaadataiban és ezekben a naplókban szerepel. A `meres-proba.mjs` alapértelmezett próbaszáma ezért a szalon száma (`MERES_TELEFON` környezeti változóval felülírható). A már létrejött Salonic-vendégkartonokon (TESZT – Claude, teszt teszt, a HeadSpa-nál a meglévő karton) a régi szám marad, amíg valaki a Salonic adminban át nem írja.
+
+## Harmadik kör – az élesítés (PR #114) végigfutó tesztjei (2026-10-04 késő este – 2026-10-05 éjfél után)
+
+Nyolc valódi próbafoglalás az **új úton** (hirdetés-kattintás utánzata → tartalmi oldal → gomb → felugró foglaló → Salonic → köszönőoldal; az „oxigén régi oldal” sorok: a régi `/mosaic-hair-idopontfoglalas` oldal, ahol a foglaló magától, bezárhatatlanul nyílik). Kimenő böngésző-mérés letiltva. **Mind a nyolc lemondva és ellenőrizve** (a Salonic „Foglalás részletei” oldala: „Időpont törölve!”). A mérési eredmény és az összevetés: [meres-naplo/eles-popup-valodi-osszefoglalo-2026-10-04.txt](meres-naplo/eles-popup-valodi-osszefoglalo-2026-10-04.txt); a szerveroldali (Zapier) események: [meres-naplo/eles-popup-probafoglalasok-es-szerveroldali-meres-2026-10-05.txt](meres-naplo/eles-popup-probafoglalasok-es-szerveroldali-meres-2026-10-05.txt).
+
+| # | Foglalás ideje (helyi) | Üzletág – szolgáltatás (vendégnév) | Foglalt időpont | Salonic foglalás-azonosító | Tranzakcióazonosító |
+|---|---|---|---|---|---|
+| 1 | 10-04 23:43 | HeadSpa Egyéni „Relax” (**kartonról: Deák Ferenc István**) | 2026-10-31 (szo) 17:30–18:50 | `85ebd7de-61c6-79fa-d1c5-c9303082fb23` | `hs-2038420-302342-1793464200` |
+| 2 | 10-04 23:43 | Fodrász konzultáció (TESZT – Claude) | 2026-10-30 (pé) 11:00–11:30 | `49afb32c-58e3-df95-c712-5303deaa6f3d` | `fodraszok-3385039-232804-1793354400` |
+| 3 | 10-04 23:44 | Lézer ingyenes konzultáció, régi tartalmi oldalról (teszt teszt) | 2026-10-31 (szo) 18:00–18:30 | `c1d5fd84-2643-9bc1-a1c1-fdf406f54cbe` | `elysionok-3353226-476477-1793466000` |
+| 4 | 10-04 23:45 | Oxigén „2. alkalomtól” (TESZT – Claude) | 2026-10-30 (pé) 12:30–13:50 | `5493c6bf-1792-1639-068e-c75f5ef7438a` | `oxigenterapi-3385031-466158-1793359800` |
+| 5 | 10-04 23:45 | Oxigén „2. alkalomtól”, a régi hirdetési oldalról (TESZT – Claude) | 2026-10-23 (pé) 12:30–13:50 | `758cbcee-1353-eca9-4e86-2dcfb22a7ae6` | `oxigenterapi-3385031-466158-1792751400` |
+| 6 | 10-05 00:06 | Oxigén „2. alkalomtól”, régi oldal, kontroll (TESZT – Claude) | 2026-10-30 (pé) 16:00–17:20 | `d9931433-da31-e2c6-9b36-5a0fb6d5c632` | `oxigenterapi-3385031-466158-1793372400` |
+| 7 | 10-05 00:23 | Oxigén AKCIÓS Hajkamerás vizsgálat (4 990 Ft), új landingről (TESZT – Claude) | 2026-10-30 (pé) 16:30–17:00 | `5b5030e5-7f87-3bd3-8adb-908ff0dfcd94` | `oxigenterapi-3385031-466147-1793374200` |
+| 8 | 10-05 00:24 | Lézer ingyenes konzultáció, új landingről (teszt teszt) | 2026-10-31 (szo) 18:30–19:00 | `4ac2550e-df13-8620-6f70-b360620ec331` | `elysionok-3353226-476477-1793467800` (azonos a 10-04-i #117 lista 14. sorával: a tranzakcióazonosító az időpontból képződik) |
+
+**Szerveroldali szivárgás:** a #1 HeadSpa-foglalás (valódi karton, a név nem „teszt”) **kiküldött 1 Meta „Contact” (event_id = a fenti foglalás-azonosító) és 1 TikTok szerveres eseményt (event_id `mail-85ebd7de-…`, érték 0)**; Google Ads: semmi. A többi hét foglalásnál a Zapier „teszt” név-védelme működött. Részletek, Zapier-futás-azonosítók: a fenti szerveroldali napló.

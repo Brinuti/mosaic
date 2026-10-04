@@ -11,9 +11,24 @@ Mi ez
 - Parancs: node tools/meres-proba/meres-proba.mjs --szenario <headspa|hair|lezer|oxigen2|oxigenreklam> --mod valodi --popup 1 --clickids 1 --overlay dist
   Kiertekeles: node tools/meres-proba/elemzes.mjs <naplo.json>  (a mai javitassal a POST-torzsben kotegelve kuldott GA4-esemenyeket is felismeri)
 
-A 6 foglalas lemondasa (a proba utan, a visszaigazolo e-mailek "Lemondom" linkjevel)
-- Mind a 6 lemondva ES ellenorizve: a Salonic "Foglalas reszletek" oldala mind a 6-nal "Idopont torolve!" (tools/meres-proba/foglalas-allapot.mjs).
-  (mosaicheadspa 85ebd7de..., mosaic-hair 49afb32c..., mosaic-elysion c1d5fd84..., mosaic-oxigen 5493c6bf..., 758cbcee..., d9931433...)
+A foglalasok lemondasa (a proba utan, a visszaigazolo e-mailek "Lemondom" linkjevel)
+- Mind a 8 (6 + 2, lasd lent) lemondva ES ellenorizve: a Salonic "Foglalas reszletek" oldala mind a 8-nal "Idopont torolve!" (tools/meres-proba/foglalas-allapot.mjs).
+  (mosaicheadspa 85ebd7de..., mosaic-hair 49afb32c..., mosaic-elysion c1d5fd84... es 4ac2550e..., mosaic-oxigen 5493c6bf..., 758cbcee..., d9931433... es 5b5030e5...)
+
+KIEGESZITES 2026-10-05 (ejfel utan): a main kozben megvaltozott, a PR agat egyesitettem vele (merge-commit a0a57e7; egyetlen utkozes: netlify/lib/utvonal.js,
+a MEGSZUNT 301 es az uj ATIRANYITASOK egyutt maradt). A main ujdonsagai: az uj oxigen-landing (#109) es az uj lezer-landing (#111) mar az eredeti cimeken
+(/oxigenterapia-budapest, /lezeres-szortelenites-budapest) el; a fenti "oxigen (2.)" es "lezer" futasok a regi Wix-klon tartalmi oldalrol indultak, ezert a
+merge UTANI agbol (uj build, ELES=1) az uj landingokrol is lefuttattam a valodi foglalast (2 uj foglalas, lemondva):
+  oxigen-uj-landing : a landing elso kezeles gombja (service=466147, AKCIOS Hajkamera-vizsgalat, 4 990 Ft) -> kozvetlenul a naptar -> /oxigenterapia-ok
+                      Google Ads 1 egyedi (uImLC... = a GTM 196-os tagja, "Oxigen - Hajkameras konzultacio", masodlagos konverzio), GA4 Oxigen_foglalas 1x,
+                      Meta SubmitApplication + Oxigen_Konzultacio (deduplikalt), TikTok Lead + Purchase 1-1x, gclid / fbc (browser + CAPI) / ttclid MEGVAN, KERETBEN inditott: 0
+                      (A 4 990 Ft-os vizsgalat SZANDEKOSAN sajat, masodlagos konverziot kap: a GTM 163-as trigger a price != 4990 feltettel kizarja az "elso foglalas"
+                      konverziobol (166-os tag), a 195-os trigger a 4990-et a 196-os taghez tereli; a koszonooldal es a GTM valtozatlan, ez nem az atkotes hatasa.)
+  lezer-uj-landing  : a landing ingyenes konzultacio gombja (service=konzult) -> /elysion-ok
+                      Google Ads 2 egyedi (LXcLC... = 169-es tag "elysion-ok" elsodleges; 2jrCC... = 192-es tag "Szor - Ingyenes konzultacio" masodlagos; azonosak a regi-oldalas futassal), GA4 Szortelenites_elysion_ok + elysion_ok 1-1x, Meta Schedule + Szor_Konzultacio,
+                      TikTok CompleteRegistration + Purchase 1-1x, gclid / fbc / ttclid MEGVAN, KERETBEN inditott: 0
+  (A lezer-uj-landing futasban a GA4 esemenyek kozvetlenul a Google-nek mentek, nem a Stape-en at: ugyanaz a valtakozo szallitas, mint az 1. megfigyelesben.)
+- A reteg-proba a merge utani agon: asztali 299 ellenorzes, 0 hiba; mobil 301 ellenorzes, 0 hiba (eles-atkotes-reteg-proba-asztali-merge-2026-10-05.txt, ...-mobil-merge-2026-10-05.txt).
 
 Eredmeny platformonkent (egyedi konverzio; a reszletek a szenarionkenti naplokban)
   szenario          Google Ads (egyedi cimke)      GA4 / Stape esemenyek (1-1x)                                   Meta (browser + CAPI azonos event_id, deduplikalt)        TikTok konverzio
