@@ -315,6 +315,15 @@
     }, { once: true });
   }
 
+  // --- a kalkulatorra mutato linkek ([data-szamolo]): JS-gorgetes, NEM #hash (a GTM "History Change" esemenyt ne indítsa) ---
+  document.addEventListener('click', (e) => {
+    const l = e.target.closest('[data-szamolo]');
+    if (!l) return;
+    e.preventDefault();
+    const c = $('szamolo');
+    if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
   // --- Zsofi kepgaleria: kattintasra nagyban (lapozhato, Esc / hatterre kattintas bezarja) ------------------------------------------------
   const gKepek = [...document.querySelectorAll('.galeria-kep')];
   if (gKepek.length) {

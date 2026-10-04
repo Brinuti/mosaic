@@ -850,3 +850,36 @@ describe('a hetedik kor visszajelzesei', () => {
   });
 });
 
+describe('a kilencedik kor: szekciosorrend, kalkulator-jelzesek, egységes gombok', () => {
+  test('szekciosorrend: mennyibe kerul -> eredmenyek -> 8 kezeles -> mar tudod -> garancia -> Zsofi -> neked is jo -> velemenyek', async () => {
+    const { p, ctx } = await nyit();
+    const sor = await p.$$eval('main > section', (l) => l.map((s) => s.className.split(' ')[0]));
+    assert.deepEqual(sor.slice(0, 9), ['hero', 'gyors-arak', 'eredmenyek', 'program', 'tudod', 'elonyok', 'zsofi', 'alkalmas', 'velemenyek']);
+    assert.deepEqual(sor.slice(-5), ['arlista', 'szamolo', 'gyik', 'foglalas', 'helyszin']);
+    await ctx.close();
+  });
+
+  test('a kalkulatorra mutato linkek (hero, Mennyibe kerul, 8 kezeles, arlista): JS-gorgetessel ugranak, a #hash nem valtozik', async () => {
+    const { p, ctx } = await nyit();
+    const helyek = await p.$$eval('[data-szamolo]', (l) => l.map((a) => a.closest('section').className.split(' ')[0]));
+    assert.deepEqual(helyek, ['hero', 'gyors-arak', 'program', 'arlista']);
+    await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
+    await p.getByRole('button', { name: 'Elfogadom' }).click().catch(() => {});
+    await p.locator('.gyors-arak [data-szamolo]').scrollIntoViewIfNeeded();
+    await p.locator('.gyors-arak [data-szamolo]').click();
+    await p.waitForFunction(() => { const t = document.getElementById('szamolo').getBoundingClientRect().top; return t < 200 && t > -300; }, null, { timeout: 8000 });
+    assert.equal(await p.evaluate(() => location.hash), '', 'nincs hash-valtozas (GTM History Change)');
+    await ctx.close();
+  });
+
+  test('minden gomb betutipusa, merete es irasmodja azonos; nincs csupa nagybetus gomb', async () => {
+    const { p, ctx } = await nyit();
+    const m = await p.$$eval('a.gomb, button.gomb', (l) => l.map((e) => { const s = getComputedStyle(e); return [s.fontFamily.split(',')[0], s.fontSize, s.fontWeight, s.textTransform, s.letterSpacing].join('|'); }));
+    assert.ok(m.length >= 15, 'gombok szama: ' + m.length);
+    const kulonbozo = [...new Set(m)];
+    assert.equal(kulonbozo.length, 1, 'eltero gomb-tipografia: ' + JSON.stringify(kulonbozo));
+    assert.match(kulonbozo[0], /\|15px\|400\|none\|(normal|0px)$/);
+    await ctx.close();
+  });
+});
+
