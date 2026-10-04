@@ -19,7 +19,7 @@ id = "b6a9eb3cb1c247a4be70787712fe1074"   # mosaic-foglalas-esemenyek-elonezet
 
 [vars]
 ESEMENY_IRAS = "1"   # a foglalasi jegyzettomb eles irasa BEKAPCSOLVA (a tulajdonos jovahagyta, 2026-10-04); kikapcsolas: a sor torlese
-ESEMENY_KIHAGY = "2038420"   # a tulajdonos proba-vendegkartyaja a HeadSpa Salonic-fiokban (a Salonic "g:2038420"); az ilyen foglalas nem kerul a jegyzettombbe
+ESEMENY_KIHAGY = "2038420,3385039,3385031,3353226"   # a tulajdonos proba-vendegkartyai (a Salonic g: azonositoi): HeadSpa 2038420, Hair 3385039, Oxigen 3385031, Elysion 3353226; az ilyen foglalas nem kerul a jegyzettombbe
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
 SMTP_USER = "mosaicheadspa@gmail.com"
