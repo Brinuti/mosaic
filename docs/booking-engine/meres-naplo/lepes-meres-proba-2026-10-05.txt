@@ -82,3 +82,12 @@ OK   5. robot (webdriver): a dataLayer ettol fuggetlenul megkapja a lepeseket (h
 - Kiprobalva a publikalas ELOTT, a GTM beepitett "Latest" kornyezetevel (52-es verzio), uj kodon (overlay dist): lepes-proba --ga4 1 --gtm-kornyezet 2:...: asztali 27 ellenorzes, 0 hiba; mobil 27 ellenorzes, 0 hiba;
   mind a 9 booking_* GA4-hit pontosan egyszer, a parameterek: booking_open / business / service / slot / form_start / submit / success: business, service_id, source_page; booking_slots_loaded: + epn.load_ms; booking_close: + ep.step=C6;
   nincs ep.step=, nincs ertek-oroklodes. A mostani (51-es) elo GTM-mel: 24 ellenorzes, 0 hiba. node --test tools/test-lepes-meres.mjs: 19 teszt, 0 hiba.
+
+=== 2026-10-05 delelott: a javitas eles, a GTM ujra kozzetetve, eles ellenorzes ===
+- 09:09:37 UTC a #123 merge (a javitas), a javitott lepes-meres.js 09:10:51 UTC-re elo.
+- ~09:11 UTC a GTM 52-es verzioja ujra kozzetve (a tulajdonos jovahagyasaval; ellenorizve: az elo verzio 52, 61 tag / 72 trigger / 64 valtozo).
+- ELES ellenorzes (www.mosaicheadspa.hu, overlay nelkul, a GA4-hitek a probaban elfogva, a Google-hoz nem jutnak el; a szamlalo-kereseket a proba elfogja):
+  lepes-proba.mjs --bazis https://www.mosaicheadspa.hu --ga4 1: asztali 27 ellenorzes, 0 hiba (ketszer futtatva), mobil 27 ellenorzes, 0 hiba.
+  Mind a 9 booking_* GA4-hit pontosan egyszer; a parameterek: business, service_id, source_page mindenhol; load_ms (epn.) csak a booking_slots_loaded-en, step csak a booking_close-on (C6);
+  nincs ertek-oroklodes, nincs ures parameter. (Egyes futasokban a hiteken ep.action_source=website is latszik: ezt a meglevo GTM-konfiguracio teszi minden GA4-esemenyre, nem a lepes-meres.)
+- A nevtelen szamlalo eles adatbazisa: csak valodi latogatok (a probak es a robotok nem irnak bele).
