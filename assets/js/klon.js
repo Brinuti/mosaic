@@ -1488,6 +1488,7 @@
   //     kilepo animacio nelkul (a Wixen is azonnal eltunik)
   const popupok = {};
   let nyitottPopup = null;
+  let popupZarElem = null;
   let popupNyito = null;
 
   function popupElem(id) {
@@ -1516,7 +1517,9 @@
     const doboz = gyoker.querySelector('.mh-popup-doboz');
     if (doboz) doboz.removeAttribute('data-motion-enter');
     gyoker.hidden = false;
-    document.documentElement.style.overflow = 'hidden';
+    // a gorgetes-zar: ahol a body a viewport-gorgeto (a html overflow-ja visible), a body-t zarjuk: a html overflow:hidden-je Chrome-ban az oldal tetejere ugratna es nem ugrana vissza
+    popupZarElem = getComputedStyle(document.documentElement).overflowY === 'visible' ? document.body : document.documentElement;
+    popupZarElem.style.overflow = 'hidden';
     nyitottPopup = gyoker;
     if (doboz) {
       // az animacio 0%-an meg nincs eltolas, ezert itt a vegleges helyet merjuk
@@ -1533,7 +1536,8 @@
     if (!nyitottPopup) return;
     nyitottPopup.hidden = true;
     nyitottPopup = null;
-    document.documentElement.style.overflow = '';
+    if (popupZarElem) popupZarElem.style.overflow = '';
+    popupZarElem = null;
     if (popupNyito) popupNyito.focus({ preventScroll: true });
     popupNyito = null;
   }

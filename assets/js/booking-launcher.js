@@ -18,9 +18,19 @@ const FONTS_HREF = '/assets/css/booking-fonts.css' + verzio(V_CSS);
 let betoltes = null;
 const modul = () => (betoltes ||= import('./booking-engine/layer.js' + verzio(V_MOTOR)));
 
+// Diagnosztika valodi eszkozon: ?mhdebug=1 mellett a kepernyon latszik, mi tortenik (assets/js/booking-debug.js); parameter nelkul nem toltodik
+if (/[?&]mhdebug=1/.test(location.search)) import('/assets/js/booking-debug.js?v=1').catch(() => {});
+const dbg = (s) => { if (window.__mhLog) window.__mhLog(s); };
+
 async function megnyit(opts, env = {}) {
-  const m = await modul();
-  return m.openBooking(opts, { cssHref: CSS_HREF, fontsHref: FONTS_HREF, ...env });
+  try {
+    dbg('launcher: megnyit indul ' + JSON.stringify(opts).slice(0, 70));
+    const m = await modul();
+    dbg('launcher: modul betoltve');
+    const r = m.openBooking(opts, { cssHref: CSS_HREF, fontsHref: FONTS_HREF, ...env });
+    dbg('launcher: openBooking visszaadott');
+    return r;
+  } catch (e) { dbg('launcher: MEGNYIT HIBA ' + (e && (e.message || e))); throw e; }
 }
 
 function parseDataBooking(s) {
@@ -41,6 +51,8 @@ window.openBooking = (opts, env) => megnyit(opts || {}, env);
 window.closeBooking = () => { if (betoltes) betoltes.then((m) => m.closeBooking()); };
 
 document.addEventListener('click', (e) => {
+  const el0 = e.target.closest && e.target.closest('[data-booking], a[href*="foglalo-motor"]');
+  if (el0 && (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)) dbg('launcher: a kattintast NEM kezeli: defaultPrevented=' + e.defaultPrevented + ' button=' + e.button + ' mod=' + (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey));
   if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // uj lapon / ablakban nyitast a bongeszore hagyjuk
   const el = e.target.closest && e.target.closest('[data-booking], a[href*="foglalo-motor"]');
   if (!el) return;
