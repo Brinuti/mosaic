@@ -18,6 +18,11 @@
 import { WorkerMailer } from 'worker-mailer';
 import { utvonal } from '../netlify/lib/utvonal.js';
 import { levelek } from '../netlify/lib/levelek.js';
+import { koszonoRogzit } from '../netlify/lib/ajandek.js';
+
+// A regi ajandekkartya-koszonooldal: sikeres vasarlas utan az /ajandek oldal egy lathatatlan keretben tolti be (hirdetesi
+// konverzio). A betoltest a rendeles (PaymentIntent) metadataba naplozzuk (koszono_ekkor): belso adat, hozzajarulastol fuggetlen.
+const KOSZONO_UT = '/success-ajandekkartya-stripe';
 
 // Minden mas host (*.pages.dev elonezetek) probacim: noindex + tilto robots.txt.
 const ELES_HOST = /^(www\.)?mosaicheadspa\.hu$/;
@@ -37,6 +42,16 @@ export async function onRequest(context) {
   }
   if (!eles && url.pathname === '/robots.txt') {
     return new Response(TILTO_ROBOTS, { headers: { 'content-type': 'text/plain; charset=utf-8', 'x-robots-tag': 'noindex' } });
+  }
+  if (request.method === 'GET' && url.pathname === KOSZONO_UT) {
+    const pi = url.searchParams.get('session_id');
+    if (pi && pi.startsWith('pi_') && typeof context.waitUntil === 'function') {
+      // a valaszt nem lassitja: a naplozas a hatterben fut, hibaja nem allitja meg az oldalt
+      context.waitUntil(koszonoRogzit({
+        env: context.env, pi, ip: request.headers.get('cf-connecting-ip') || undefined,
+        keret: request.headers.get('sec-fetch-dest') === 'iframe' ? 'keret' : 'oldal',
+      }));
+    }
   }
   const d = utvonal(decodeURIComponent(url.pathname), request.headers.get('user-agent'));
   if (!d) return context.next();

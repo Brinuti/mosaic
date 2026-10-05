@@ -23,6 +23,10 @@
   var API = '/api/ajandek/';
   var TAROLO = 'ah_v1';
   var ATTR_KULCSOK = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'gclid', 'fbclid', 'ttclid'];
+  // csak a rendeleshez (a fizetes kerelmehez, majd a PaymentIntent metadatajaba), a dataLayer-esemenyekbe NEM mennek
+  var ATTR_CSAK_RENDELES = ['gbraid', 'wbraid'];
+  // a hirdetesi kattintas-azonositok: a rendeleshez CSAK marketing-hozzajarulassal kerulnek (lasd szamlazasiAdat; a szerver is ellenorzi)
+  var HIRDETESI_AZONOSITOK = ['gclid', 'fbclid', 'ttclid', 'gbraid', 'wbraid'];
   var ATMENETEK = {
     bongeszes: ['kivalasztva'],
     kivalasztva: ['bongeszes', 'kivalasztva', 'tervezo', 'fizetes'],
@@ -144,9 +148,14 @@
   // attribucio: UTM-ek es kattintas-azonositok; uj kampany-kattintas felulirja, egyebkent a session orzi
   var attr = (tar.attr && typeof tar.attr === 'object') ? tar.attr : {};
   var ujAttr = false;
-  ATTR_KULCSOK.forEach(function (k) {
+  ATTR_KULCSOK.concat(ATTR_CSAK_RENDELES).forEach(function (k) {
     var v = Q.get(k);
-    if (v) { if (!ujAttr) { attr = {}; ujAttr = true; } attr[k] = String(v).slice(0, 200); }
+    if (v) {
+      if (!ujAttr) { attr = {}; ujAttr = true; }
+      attr[k] = String(v).slice(0, 200);
+      // a Meta "fbc" a kattintas idopontjat is tartalmazza: ha a _fbc suti nincs meg, ebbol allitjuk elo
+      if (k === 'fbclid') attr.fbclid_ido = Date.now();
+    }
   });
   if (!attr.oldal) attr.oldal = location.pathname;
   var alkalomURL = (Q.get('occasion') || oldalAlap.alkalom || '').trim().slice(0, 40);
@@ -1190,13 +1199,44 @@
     return o;
   }
   function szamlazasiAdat(o) {
+    var attr = Object.assign({}, kozosParam(), { oldal: S.attr.oldal }, rendelesAttr());
+    // marketing-hozzajarulas nelkul a hirdetesi kattintas-azonositok el sem indulnak a szerverre (a szerver is eldobja oket)
+    if (!hozzajarulas('adv')) HIRDETESI_AZONOSITOK.forEach(function (k) { delete attr[k]; });
     return {
       termek: S.termek, ajandekozott: o.ajandekozott, email: o.email, nev: o.nev, iranyitoszam: o.iranyitoszam, varos: o.varos, cim: o.cim,
       ceges: (o.ceges_nev || o.ceges_adoszam) ? { nev: o.ceges_nev, adoszam: o.ceges_adoszam } : null,
-      attr: Object.assign({}, kozosParam(), { oldal: S.attr.oldal }),
+      attr: attr,
+      mer: merAdat(),
       atvetel: S.atvetel,
       szemelyre: szemelyreMezok()
     };
+  }
+  // A szerveroldali vasarlasmeres adatai a rendeleshez (PaymentIntent metadata): gbraid / wbraid az URL-bol.
+  function rendelesAttr() {
+    var o = {};
+    ATTR_CSAK_RENDELES.forEach(function (k) { if (S.attr[k]) o[k] = S.attr[k]; });
+    return o;
+  }
+  function hozzajarulas(kategoria) {
+    try { return !!(window.mhSuti && window.mhSuti.engedely(kategoria)); } catch (e) { return false; }
+  }
+  function sutiErtek(nev) {
+    try {
+      var m = document.cookie.match(new RegExp('(?:^|;\\s*)' + nev + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : '';
+    } catch (e) { return ''; }
+  }
+  // A vevo suti-hozzajarulasa (statisztika, marketing) + a Meta-sutik (_fbp, _fbc). A szerver a hirdetesi adatokat (Meta-sutik, kattintas-
+  // azonositok) CSAK marketing-hozzajarulassal tarolja el; ide ezert hozzajarulas nelkul a sutik ertekei se kerulnek.
+  function merAdat() {
+    var m = { ana: hozzajarulas('ana'), adv: hozzajarulas('adv') };
+    if (m.adv) {
+      var fbp = sutiErtek('_fbp'), fbc = sutiErtek('_fbc');
+      if (!fbc && S.attr.fbclid) fbc = 'fb.1.' + (S.attr.fbclid_ido || Date.now()) + '.' + S.attr.fbclid;
+      if (fbp) m.fbp = fbp;
+      if (fbc) m.fbc = fbc;
+    }
+    return m;
   }
   // az otthon nyomtatott kartya szemelyre szabasa (ha a vevo adott meg valamit): a szerver ezeket a metadata-ba irja
   function szemelyreMezok() {

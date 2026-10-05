@@ -6,7 +6,7 @@ import test, { before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { mockStripeInditas } from './mock-stripe.mjs';
-import { ajandekKezel, kuponKod, kiallitToken, kartyaToken, rendelesToken, fotoToken, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
+import { ajandekKezel, koszonoRogzit, kuponKod, kiallitToken, kartyaToken, rendelesToken, fotoToken, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
 import vm from 'node:vm';
 import fs from 'node:fs';
 import { MASOL_JS, NYOMTAT_JS, SALONIC_KITOLTO_JS } from '../../netlify/lib/ajandek-levelek.js';
@@ -54,6 +54,8 @@ const rendelesTorzs = (extra = {}) => ({
   termek: 'egyeni', email: 'vevo@example.com', ajandekozott: 'Kiss Anna', nev: 'Teszt Elek', iranyitoszam: '1023', varos: 'Budapest', cim: 'Bécsi út 2.',
   ceges: null,
   attr: { variant_id: 'general', gift_context: 'general', utm_source: 'google', utm_medium: 'cpc', utm_campaign: 'oszi', gclid: 'gcl-123', oldal: '/ajandek?utm_source=google' },
+  // a vevo elfogadta a statisztika- es a marketing-sutit (a hirdetesi azonositok csak ilyenkor kerulnek a rendelesbe)
+  mer: { ana: true, adv: true },
   kulcs: 'k-' + crypto.randomUUID(),
   ...extra,
 });
@@ -2486,5 +2488,340 @@ describe('kartya-sablon: FEKVO, felbehajtott A4 (2026-10-04)', () => {
       if (t.kep) assert.ok(!atfed(t.kep, t.idezet) && !atfed(t.kep, t.nevHely), `${t.id}: a szoveg nem fedi a fotot`);
       assert.ok(!atfed(t.idezet, t.nevHely), `${t.id}: az idezet es a nev nem fedi egymast`);
     }
+  });
+});
+
+// --- szerveroldali vasarlasmeres adatai (2026-10-05) ----------------------------------------------------------------
+// A rendeles (PaymentIntent metadata) a szerveroldali vasarlasmeres (Stripe -> Google Ads / Meta) bemenete. A hirdetesi adatok
+// (kattintas-azonositok, Meta-sutik) CSAK marketing-hozzajarulassal kerulnek bele; a hozzajarulas allapota mindig.
+describe('szerveroldali meres adatai a rendelesben (hozzajarulas-fuggo)', () => {
+  const MER_ATTR = { variant_id: 'general', gift_context: 'general', utm_source: 'google', utm_medium: 'cpc', gclid: 'gcl-1', gbraid: 'gb-1', wbraid: 'wb-1', fbclid: 'fbclid-1', ttclid: 'tt-1', oldal: '/ajandek' };
+  const FBP = 'fb.1.1791178000000.1234567890';
+  const FBC = 'fb.1.1791178000000.AbCdEf_-123';
+  const HIRDETESI = ['gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid', 'fbp', 'fbc'];
+  const metaAdat = (a) => mock.allapot.pi(a.pi).metadata;
+
+  test('marketing-hozzajarulassal: a kattintas-azonositok es a Meta-sutik a PaymentIntent metadataba kerulnek', async () => {
+    const a = await ujRendeles({ attr: MER_ATTR, mer: { ana: true, adv: true, fbp: FBP, fbc: FBC } });
+    const md = metaAdat(a);
+    assert.equal(md.gclid, 'gcl-1');
+    assert.equal(md.gbraid, 'gb-1');
+    assert.equal(md.wbraid, 'wb-1');
+    assert.equal(md.fbclid, 'fbclid-1');
+    assert.equal(md.ttclid, 'tt-1');
+    assert.equal(md.fbp, FBP);
+    assert.equal(md.fbc, FBC);
+    assert.equal(md.hozz_ana, '1');
+    assert.equal(md.hozz_adv, '1');
+    assert.equal(md.utm_source, 'google');
+  });
+
+  test('hirdetesi hozzajarulas nelkul (adv: false): nincs kattintas-azonosito es Meta-suti, az UTM es a hozzajarulas allapota marad - akkor sem, ha a bongeszo elkuldi', async () => {
+    const a = await ujRendeles({ attr: MER_ATTR, mer: { ana: true, adv: false, fbp: FBP, fbc: FBC } });
+    const md = metaAdat(a);
+    for (const k of HIRDETESI) assert.equal(md[k], undefined, k + ' nem kerulhet a rendelesbe hozzajarulas nelkul');
+    assert.equal(md.hozz_ana, '1');
+    assert.equal(md.hozz_adv, '0');
+    assert.equal(md.utm_source, 'google');
+    assert.equal(md.utm_medium, 'cpc');
+    assert.equal(md.variant_id, 'general');
+  });
+
+  test('nincs hozzajarulas egyik kategoriara sem: mindket jelzo "0"', async () => {
+    const md = metaAdat(await ujRendeles({ attr: MER_ATTR, mer: { ana: false, adv: false } }));
+    assert.equal(md.hozz_ana, '0');
+    assert.equal(md.hozz_adv, '0');
+    for (const k of HIRDETESI) assert.equal(md[k], undefined, k);
+  });
+
+  test('a hozzajarulas jelzese hianyzik vagy nem logikai ertek: nem engedelyezett, nincs hirdetesi adat, a jelzok nincsenek a metadataban', async () => {
+    for (const mer of [undefined, null, 'igen', [true], 5, { adv: 'true' }, { ana: 1, adv: 1 }, {}]) {
+      const md = metaAdat(await ujRendeles({ attr: MER_ATTR, mer }));
+      for (const k of HIRDETESI) assert.equal(md[k], undefined, `${JSON.stringify(mer)}: ${k}`);
+      assert.equal(md.hozz_ana, undefined, JSON.stringify(mer));
+      assert.equal(md.hozz_adv, undefined, JSON.stringify(mer));
+      assert.equal(md.utm_source, 'google');
+    }
+  });
+
+  test('hibas formaju vagy rosszindulatu fbp / fbc nem kerul be (a hozzajarulas ettol meg szamit)', async () => {
+    const rossz = ['x', 'fb.1.12.5', 'fb.1.1791178000000.<script>', 'fb.9.1791178000000.1', 'fb.1.1791178000000.' + 'a'.repeat(401), 5, null, {}];
+    for (const x of rossz) {
+      const md = metaAdat(await ujRendeles({ attr: MER_ATTR, mer: { ana: true, adv: true, fbp: x, fbc: x } }));
+      assert.equal(md.fbp, undefined, String(x).slice(0, 30));
+      assert.equal(md.fbc, undefined, String(x).slice(0, 30));
+      assert.equal(md.hozz_adv, '1');
+      assert.equal(md.gclid, 'gcl-1');
+    }
+  });
+
+  test('termekvaltas / ujrairas: a hozzajarulas visszavonasa torli a korabban elmentett hirdetesi adatokat, a jelzo frissul', async () => {
+    const kulcs = 'k-' + crypto.randomUUID();
+    const a = await hiv('POST', 'fizetes', { body: rendelesTorzs({ kulcs, attr: MER_ATTR, mer: { ana: true, adv: true, fbp: FBP, fbc: FBC } }) });
+    assert.equal(a.status, 200, a.body);
+    let md = mock.allapot.pi(a.adat.pi).metadata;
+    assert.equal(md.gclid, 'gcl-1');
+    assert.equal(md.fbp, FBP);
+    const b = await hiv('POST', 'fizetes', { body: rendelesTorzs({ kulcs, termek: 'paros', pi: a.adat.pi, cs: a.adat.client_secret, attr: MER_ATTR, mer: { ana: true, adv: false, fbp: FBP, fbc: FBC } }) });
+    assert.equal(b.status, 200, b.body);
+    assert.equal(b.adat.pi, a.adat.pi, 'ugyanaz a PaymentIntent');
+    md = mock.allapot.pi(b.adat.pi).metadata;
+    for (const k of HIRDETESI) assert.equal(md[k], undefined, k + ' torolve');
+    assert.equal(md.hozz_adv, '0');
+    assert.equal(md.termek, 'paros');
+  });
+
+  test('atutalasos igeny: a hozzajarulas allapota es (hozzajarulassal) a Meta-sutik a nyilvantartasi rekordba kerulnek', async () => {
+    for (const [mer, vart] of [[{ ana: true, adv: true, fbp: FBP, fbc: FBC }, true], [{ ana: false, adv: false, fbp: FBP, fbc: FBC }, false]]) {
+      const torzs = rendelesTorzs({ attr: MER_ATTR, mer, telefon: '+36 20 123 4567', megajandekozott: 'Nagy Maria' });
+      delete torzs.kulcs;
+      const r = await hiv('POST', 'atutalas', { body: torzs });
+      assert.equal(r.status, 200, r.body);
+      const md = atuPi(r.adat.rendeles_ref).metadata;
+      assert.equal(md.hozz_adv, vart ? '1' : '0');
+      assert.equal(md.fbp, vart ? FBP : undefined);
+      assert.equal(md.gclid, vart ? 'gcl-1' : undefined);
+    }
+  });
+
+  test('a /rendeles valasza a meresi segedadatokat (Meta-sutik, gbraid, wbraid, hozzajarulas) nem adja ki a bongeszonek', async () => {
+    const a = await ujRendeles({ attr: MER_ATTR, mer: { ana: true, adv: true, fbp: FBP, fbc: FBC } });
+    const r = await hiv('GET', 'rendeles', { query: { pi: a.pi, cs: a.client_secret } });
+    assert.equal(r.status, 200);
+    for (const tilos of [FBP, FBC, 'gb-1', 'wb-1', 'hozz_adv', 'hozz_ana']) assert.ok(!r.body.includes(tilos), tilos + ' nem szerepelhet a valaszban');
+  });
+});
+
+// A regi koszonooldal (/success-ajandekkartya-stripe?session_id=pi_...) betoltesenek naplozasa a PI metadataba (belso adat).
+describe('rejtett koszonooldal naplozasa (koszonoRogzit)', () => {
+  test('sikeres rendelesnel az ELSO betoltest rogziti (idobelyeg + keret), a masodikat nem irja felul', async () => {
+    const a = await fizetettRendeles();
+    const ip = veletlenIp();
+    assert.equal(await koszonoRogzit({ env: ENV, pi: a.pi, ip, most: new Date('2026-10-05T05:30:00Z'), keret: 'keret' }), 'rogzitve');
+    const md1 = { ...mock.allapot.pi(a.pi).metadata };
+    assert.equal(md1.koszono_ekkor, '2026-10-05T05:30:00.000Z');
+    assert.equal(md1.koszono_keret, 'keret');
+    assert.equal(await koszonoRogzit({ env: ENV, pi: a.pi, ip, most: new Date('2026-10-05T06:00:00Z'), keret: 'oldal' }), 'mar_van');
+    assert.deepEqual(mock.allapot.pi(a.pi).metadata, md1, 'a masodik betoltes nem ir');
+  });
+
+  test('keret nelkul (kozvetlen oldalbetoltes) a keret erteke "oldal"; ismeretlen ertek is "oldal"', async () => {
+    for (const keret of [undefined, 'valami']) {
+      const a = await fizetettRendeles();
+      assert.equal(await koszonoRogzit({ env: ENV, pi: a.pi, ip: veletlenIp(), keret }), 'rogzitve');
+      assert.equal(mock.allapot.pi(a.pi).metadata.koszono_keret, 'oldal');
+    }
+  });
+
+  test('a naplo nem tartalmaz szemelyes adatot es nem erinti a tobbi metadatat', async () => {
+    const a = await fizetettRendeles();
+    const elotte = { ...mock.allapot.pi(a.pi).metadata };
+    await koszonoRogzit({ env: ENV, pi: a.pi, ip: veletlenIp(), keret: 'keret' });
+    const utana = mock.allapot.pi(a.pi).metadata;
+    const uj = Object.keys(utana).filter((k) => !(k in elotte)).sort();
+    assert.deepEqual(uj, ['koszono_ekkor', 'koszono_keret']);
+    for (const k of Object.keys(elotte)) assert.equal(utana[k], elotte[k], k);
+  });
+
+  test('nem fizetett (nyitott) rendelesnel nem naplozza', async () => {
+    const a = await ujRendeles();
+    assert.equal(await koszonoRogzit({ env: ENV, pi: a.pi, ip: veletlenIp(), keret: 'keret' }), 'kihagyva');
+    assert.equal(mock.allapot.pi(a.pi).metadata.koszono_ekkor, undefined);
+  });
+
+  test('atutalasos igeny (nyilvantartasi rekord) es idegen (nem ajandek-motor) PI nem naplozodik', async () => {
+    const torzs = rendelesTorzs({ telefon: '+36 20 123 4567', megajandekozott: 'Nagy Maria' });
+    delete torzs.kulcs;
+    const atu = await hiv('POST', 'atutalas', { body: torzs });
+    assert.equal(atu.status, 200, atu.body);
+    const rekord = atuPi(atu.adat.rendeles_ref);
+    mock.allapot.sikeresIt(rekord.id); // akkor sem: az utalas nem kartyas fizetes
+    assert.equal(await koszonoRogzit({ env: ENV, pi: rekord.id, ip: veletlenIp(), keret: 'keret' }), 'kihagyva');
+    assert.equal(mock.allapot.pi(rekord.id).metadata.koszono_ekkor, undefined);
+
+    const v = await fetch(mock.url + '/v1/payment_intents', {
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + ENV.STRIPE_SECRET_KEY, 'content-type': 'application/x-www-form-urlencoded' },
+      body: 'amount=1000000&currency=huf&metadata[forras]=fizetolink',
+    });
+    const idegen = await v.json();
+    mock.allapot.sikeresIt(idegen.id);
+    assert.equal(await koszonoRogzit({ env: ENV, pi: idegen.id, ip: veletlenIp(), keret: 'keret' }), 'kihagyva');
+    assert.equal(mock.allapot.pi(idegen.id).metadata.koszono_ekkor, undefined);
+  });
+
+  test('ervenytelen / hianyzo azonosito: nincs Stripe-hivas', async () => {
+    const elotte = mock.allapot.keresek.length;
+    for (const pi of [undefined, null, '', 'cs_test_123', 'pi_', 'pi_x', 'pi_' + 'x'.repeat(200), 'PI_abcdefghijkl', 'pi_abc defghij', 5, {}]) {
+      assert.equal(await koszonoRogzit({ env: ENV, pi, ip: veletlenIp(), keret: 'keret' }), 'kihagyva', String(pi).slice(0, 20));
+    }
+    assert.equal(mock.allapot.keresek.length, elotte);
+  });
+
+  test('kereskorlat: ugyanarrol az IP-rol 20 betoltes utan "korlat", mas IP tovabbra is mehet', async () => {
+    const a = await fizetettRendeles();
+    const ip = veletlenIp();
+    for (let i = 0; i < 20; i++) assert.notEqual(await koszonoRogzit({ env: ENV, pi: a.pi, ip, keret: 'keret' }), 'korlat', 'a ' + (i + 1) + '. meg mehet');
+    assert.equal(await koszonoRogzit({ env: ENV, pi: a.pi, ip, keret: 'keret' }), 'korlat');
+    assert.equal(await koszonoRogzit({ env: ENV, pi: a.pi, ip: veletlenIp(), keret: 'keret' }), 'mar_van');
+  });
+
+  test('Stripe elerhetetlen / nincs beallitas: nem dob, csak a visszateresi ertek jelzi', async () => {
+    const a = await fizetettRendeles();
+    assert.equal(await koszonoRogzit({ env: { ...ENV, STRIPE_API_BASE: 'http://127.0.0.1:9' }, pi: a.pi, ip: veletlenIp(), keret: 'keret' }), 'hiba');
+    assert.equal(await koszonoRogzit({ env: {}, pi: a.pi, ip: veletlenIp(), keret: 'keret' }), 'kihagyva');
+    assert.equal(await koszonoRogzit({ env: { ...ENV, AJANDEK_TITOK: 'rovid' }, pi: a.pi, ip: veletlenIp(), keret: 'keret' }), 'kihagyva');
+    assert.equal(mock.allapot.pi(a.pi).metadata.koszono_ekkor, undefined, 'semmi nem irodott');
+    mock.allapot.kovetkezoHiba(500, 1);
+    assert.equal(await koszonoRogzit({ env: ENV, pi: a.pi, ip: veletlenIp(), keret: 'keret' }), 'hiba');
+  });
+});
+
+// --- szerveroldali vasarlasmeres: Stripe-webhook -> Zapier "catch hook" (hozzajarulas-fuggo, 2026-10-05) ---------------
+describe('szerveroldali vasarlasmeres (webhook -> Zapier hook)', () => {
+  let hookSzerver;
+  let hookEnv;
+  let beerkezett = [];
+  let hookStatusz = 200;
+
+  before(async () => {
+    const http = await import('node:http');
+    hookSzerver = http.createServer((req, res) => {
+      let t = '';
+      req.on('data', (d) => { t += d; });
+      req.on('end', () => {
+        beerkezett.push({ url: req.url, tipus: req.headers['content-type'], torzs: t });
+        res.statusCode = hookStatusz;
+        res.setHeader('content-type', 'application/json');
+        res.end('{"status":"success"}');
+      });
+    });
+    await new Promise((ok) => hookSzerver.listen(0, '127.0.0.1', ok));
+    hookEnv = { ...ENV, MERES_HOOK_URL: `http://127.0.0.1:${hookSzerver.address().port}/hooks/catch/1/teszt/` };
+  });
+  after(async () => { await new Promise((ok) => hookSzerver.close(ok)); });
+
+  const MER_ATTR = { variant_id: 'general', gift_context: 'general', utm_source: 'google', utm_medium: 'cpc', utm_campaign: 'oszi', gclid: 'gcl-1', gbraid: 'gb-1', wbraid: 'wb-1', fbclid: 'fbclid-1', ttclid: 'tt-1', oldal: '/ajandek' };
+  const FBP = 'fb.1.1791178000000.1234567890';
+  const FBC = 'fb.1.1791178000000.AbCdEf_-123';
+  const hookbol = () => beerkezett.map((b) => JSON.parse(b.torzs));
+  const reset = () => { beerkezett = []; hookStatusz = 200; levelek = []; };
+  // fizetett rendeles + a webhook (a hook-os kornyezettel)
+  async function fizetesEsWebhook(extra = {}, env = hookEnv) {
+    const a = await fizetettRendeles(extra);
+    reset();
+    const r = await webhook(alairtEsemeny(a.pi), { env });
+    return { a, r, md: () => mock.allapot.pi(a.pi).metadata };
+  }
+
+  test('hirdetesi hozzajarulassal: egy lapos JSON megy a hookra (ertek, pi mint esemeny-azonosito, azonositok, e-mail), a rendelesen jelzo marad', async () => {
+    const { a, r, md } = await fizetesEsWebhook({ attr: MER_ATTR, mer: { ana: true, adv: true, fbp: FBP, fbc: FBC } });
+    assert.equal(r.status, 200);
+    assert.equal(beerkezett.length, 1);
+    assert.match(beerkezett[0].tipus, /application\/json/);
+    const p = hookbol()[0];
+    assert.equal(p.esemeny, 'ajandek_vasarlas');
+    assert.equal(p.pi, a.pi);
+    assert.equal(p.ertek, 26900);
+    assert.equal(p.penznem, 'HUF');
+    assert.match(p.ido, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    assert.equal(p.hozz_adv, true);
+    assert.equal(p.hozz_ana, true);
+    assert.equal(p.email, 'vevo@example.com');
+    assert.equal(p.nev, 'Teszt Elek');
+    assert.equal(p.termek, 'egyeni');
+    for (const [k, v] of Object.entries({ gclid: 'gcl-1', gbraid: 'gb-1', wbraid: 'wb-1', fbclid: 'fbclid-1', ttclid: 'tt-1', fbp: FBP, fbc: FBC, utm_source: 'google', utm_medium: 'cpc', utm_campaign: 'oszi' })) assert.equal(p[k], v, k);
+    assert.ok(!('gclid' in p) || typeof p.gclid === 'string');
+    assert.match(md().mer_kuldve, /^\d{4}-\d{2}-\d{2}T/);
+    // lapos: nincs beagyazott objektum
+    for (const v of Object.values(p)) assert.ok(v === null || typeof v !== 'object');
+  });
+
+  test('ugyanaz a rendeles ketszer / tobbszor (Stripe-ujrakuldes): a hookra csak EGYSZER megy', async () => {
+    const { a } = await fizetesEsWebhook({ attr: MER_ATTR, mer: { ana: true, adv: true } });
+    assert.equal(beerkezett.length, 1);
+    assert.equal((await webhook(alairtEsemeny(a.pi), { env: hookEnv })).status, 200);
+    assert.equal((await webhook(alairtEsemeny(a.pi), { env: hookEnv })).status, 200);
+    assert.equal(beerkezett.length, 1);
+  });
+
+  test('hirdetesi hozzajarulas NELKUL (adv: false): semmi nem megy ki, a rendelesen a dontes latszik', async () => {
+    const { r, md } = await fizetesEsWebhook({ attr: MER_ATTR, mer: { ana: true, adv: false, fbp: FBP, fbc: FBC } });
+    assert.equal(r.status, 200);
+    assert.equal(beerkezett.length, 0);
+    assert.equal(md().mer_kuldve, 'kihagyva:nincs_hozzajarulas');
+  });
+
+  test('ismeretlen hozzajarulas (a bongeszo nem kuldte): semmi nem megy ki', async () => {
+    const { r, md } = await fizetesEsWebhook({ attr: MER_ATTR, mer: undefined });
+    assert.equal(r.status, 200);
+    assert.equal(beerkezett.length, 0);
+    assert.equal(md().mer_kuldve, 'kihagyva:ismeretlen');
+  });
+
+  test('MERES_HOOK_URL nelkul a lepes nem tesz semmit: nincs kuldes, nincs metadata-iras', async () => {
+    const { r, md } = await fizetesEsWebhook({ attr: MER_ATTR, mer: { ana: true, adv: true } }, ENV);
+    assert.equal(r.status, 200);
+    assert.equal(beerkezett.length, 0);
+    assert.equal(md().mer_kuldve, undefined);
+  });
+
+  test('ervenytelen / idegen hook-cim nem kap semmit', async () => {
+    for (const url of ['https://evil.example/hooks/catch/1/x/', 'http://hooks.zapier.com/hooks/catch/1/x/', 'ftp://hooks.zapier.com/hooks/catch/1/x/', 'https://hooks.zapier.com.evil.example/hooks/catch/1/x/', 'https://hooks.zapier.com/hooks/catch/x/y/', 'javascript:1']) {
+      const { r, md } = await fizetesEsWebhook({ attr: MER_ATTR, mer: { ana: true, adv: true } }, { ...hookEnv, MERES_HOOK_URL: url });
+      assert.equal(r.status, 200, url);
+      assert.equal(beerkezett.length, 0, url);
+      assert.equal(md().mer_kuldve, undefined, url);
+    }
+  });
+
+  test('visszateritett rendelesrol nem megy ki mereses', async () => {
+    const a = await fizetettRendeles({ attr: MER_ATTR, mer: { ana: true, adv: true } });
+    mock.allapot.visszaterites(a.pi);
+    reset();
+    const r = await webhook(alairtEsemeny(a.pi), { env: hookEnv });
+    assert.equal(r.status, 200);
+    assert.equal(beerkezett.length, 0);
+    assert.equal(mock.allapot.pi(a.pi).metadata.mer_kuldve, 'kihagyva:visszaterites');
+  });
+
+  test('a hook hibaja (5xx): a levelek es a kartya kimennek, a webhook 500-at ad (Stripe ujraprobalja), az ujraprobalas csak a merest kuldi, a leveleket nem', async () => {
+    const a = await fizetettRendeles({ attr: MER_ATTR, mer: { ana: true, adv: true } });
+    reset();
+    hookStatusz = 503;
+    const e = alairtEsemeny(a.pi);
+    const r1 = await webhook(e, { env: hookEnv });
+    assert.equal(r1.status, 500);
+    assert.deepEqual(r1.adat, { hiba: 'meres' });
+    assert.equal(levelek.length, 2, 'a ket level kiment');
+    assert.equal(mock.allapot.pi(a.pi).metadata.ertesites, '1');
+    assert.equal(mock.allapot.pi(a.pi).metadata.mer_kuldve, undefined, 'nincs "elkuldve" jelzo');
+    // a hook helyreall -> az ujrakuldes kuldi a merest, a leveleket nem
+    hookStatusz = 200;
+    const r2 = await webhook(alairtEsemeny(a.pi), { env: hookEnv });
+    assert.equal(r2.status, 200);
+    assert.equal(levelek.length, 2, 'nincs dupla level');
+    assert.equal(hookbol().filter((p) => p.pi === a.pi).length, 2, '1 sikertelen + 1 sikeres kisérlet');
+    assert.match(mock.allapot.pi(a.pi).metadata.mer_kuldve, /^\d{4}-/);
+  });
+
+  test('a hook elerhetetlen (halozat): 500, de a levelek kimentek; nem idegen (nem ajandek-motor) PI-re kuld', async () => {
+    const a = await fizetettRendeles({ attr: MER_ATTR, mer: { ana: true, adv: true } });
+    reset();
+    const r = await webhook(alairtEsemeny(a.pi), { env: { ...hookEnv, MERES_HOOK_URL: 'http://127.0.0.1:9/hooks/catch/1/x/' } });
+    assert.equal(r.status, 500);
+    assert.equal(levelek.length, 2);
+
+    const v = await fetch(mock.url + '/v1/payment_intents', {
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + ENV.STRIPE_SECRET_KEY, 'content-type': 'application/x-www-form-urlencoded' },
+      body: 'amount=1000000&currency=huf&metadata[forras]=fizetolink&metadata[hozz_adv]=1',
+    });
+    const idegen = await v.json();
+    mock.allapot.sikeresIt(idegen.id);
+    reset();
+    const r2 = await webhook(alairtEsemeny(idegen.id, { metadata: { forras: 'fizetolink' } }), { env: hookEnv });
+    assert.equal(r2.status, 200);
+    assert.equal(beerkezett.length, 0);
   });
 });
