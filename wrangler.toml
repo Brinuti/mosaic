@@ -17,12 +17,25 @@ id = "4af9393f77f04123a9be887170a5d743"   # mosaic-foglalas-esemenyek
 binding = "ESEMENYEK"
 id = "b6a9eb3cb1c247a4be70787712fe1074"   # mosaic-foglalas-esemenyek-elonezet
 
+# A nevtelen foglalo-lepes szamlalo (Cloudflare D1, DECISION-LOG #88, lasd docs/booking-engine/LEPES_MERES.md): csak osszesitett napi darabszamok, suti / azonosito / szemelyes adat nelkul.
+# Eles es elonezeti adatbazis kulon. Az olvasas kulcsos (/api/foglalo-szamlalo?kulcs=...): ide a kulcs SHA-256-ja kerul, maga a kulcs nincs a kodban.
+[[d1_databases]]
+binding = "SZAMLALO_DB"
+database_name = "mosaic-foglalo-szamlalo"
+database_id = "2b6701fb-4b23-4e46-9b09-d5ba5eb8ba4e"
+
+[[env.preview.d1_databases]]
+binding = "SZAMLALO_DB"
+database_name = "mosaic-foglalo-szamlalo-elonezet"
+database_id = "08eb6f2f-180a-4352-a7f9-27333d5d6b5d"
+
 [vars]
 ESEMENY_IRAS = "1"   # a foglalasi jegyzettomb eles irasa BEKAPCSOLVA (a tulajdonos jovahagyta, 2026-10-04); kikapcsolas: a sor torlese
 ESEMENY_KIHAGY = "2038420,3385039,3385031,3353226"   # a tulajdonos proba-vendegkartyai (a Salonic g: azonositoi): HeadSpa 2038420, Hair 3385039, Oxigen 3385031, Elysion 3353226; az ilyen foglalas nem kerul a jegyzettombbe
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
 SMTP_USER = "mosaicheadspa@gmail.com"
+SZAMLALO_OLVASO_HASH = "d7122e43eeeca61db826d113cb06aa5028568fb63e57a00835978833b0a9b6a0"   # a foglalo-szamlalo olvaso kulcsanak SHA-256-ja (a kulcsot a tulajdonos kapta meg)
 # Gift Commerce Engine (/ajandek, lasd AJANDEK.md): a nem titkos valtozok IDE kellenek (a feluleten megadottakat a
 # wrangler.toml torli). Titkosak (Secret tipussal a feluleten): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK.
 STRIPE_PUBLISHABLE_KEY = "pk_live_51QhTxoFv8vc2ArnLJDN8P0UApI3h2BtAA5U4Yj2SlJYZQihjqw6Sz65iWAaRB8xtQSfCnDLn067Zij1CPz3NJKyT007JIHo3hu"   # NYILVANOS kulcs (a tulajdonos adta, 2026-10-04); a titkos kulcs (STRIPE_SECRET_KEY, korlatozott rk_live) es a STRIPE_WEBHOOK_SECRET a Cloudflare Production Secret-jei
@@ -38,6 +51,7 @@ AJANDEK_AZONNALI = "1"   # a tulajdonos donotese (2026-10-04): bankkartyas rende
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
 SMTP_USER = "mosaicheadspa@gmail.com"
+SZAMLALO_OLVASO_HASH = "d7122e43eeeca61db826d113cb06aa5028568fb63e57a00835978833b0a9b6a0"
 STRIPE_PUBLISHABLE_KEY = "pk_test_51QhTxoFv8vc2ArnLyqmRz5giwCnlNAtTTygecEAnBRWbFmYrPWTYQtsCG3tSVI6hU3BJCBBKBNaMe6621Twfq40r00wzanIqTE"
 AJANDEK_AZONNALI = "1"
 AJANDEK_STRIPE_SZAMLA = "1"

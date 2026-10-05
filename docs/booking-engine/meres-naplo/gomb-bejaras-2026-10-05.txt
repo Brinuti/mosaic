@@ -34,3 +34,11 @@ Kimeno meres mindharom profilban letiltva (a bejaro csak a sajat oldalunkat tolt
 
 Szandekosan valtozatlan: az ajandekkartya bankkartyas vasarlas (Salonic /giftcards/buy) es a regi (-regi) ajandekkartya-oldalak linkjei; a fejlec-menu GYIK / Kapcsolat linkjei
 (a fooldal szakaszaira visznek); a fooldali fodraszat "IDOPONT FOGLALAS" gombja (a hajfestes landingre visz, az eredeti Wix-viselkedes - a tulajdonos dontse, ha kozvetlenul a foglalot akarja).
+
+5. ELES ellenorzes a #121 mergelese utan (www.mosaicheadspa.hu, merge 2026-10-05 08:01:06 UTC, az uj klon.js 08:02:12 UTC-ra elo)
+   - javitott / erintett oldalak (fooldal, pmu-melitta, 30szazalek, sminktetovalas-budapest-rovid, szortelenites-5-dolog, fodrasz-allas-budapest, head-spa-allas,
+     ppc-allashirdetes, oxigenterapia-budapest, lezeres-szortelenites-budapest), valodi kattintassal:
+       asztali: 107 gomb, GYANUS 0 | mobil (Chrome): 108 gomb, GYANUS 0 | webkit (Safari-motor): 108 gomb, GYANUS 0
+     (FEHER 0, SEMMI 0, FEDI 0, HIBA 0; egyetlen SUTI_TAKAR: a lezeres landing mobil aljasavjat a suti-sav takarja, amig a latogato nem valaszt)
+   - a tobbi oldal valtozatlan: a build elotte-utana osszehasonlitva (a ?v= verziojelek nelkul) 202 oldal tartalmilag AZONOS, 6 valtozott (pmu-melitta, 30szazalek,
+     sminktetovalas-budapest-rovid, sminktetovalas-regi, es a ketto regi ures foglalo-oldal: idpontfoglalas, pmu-foglalas). A koszonooldalak (success-*, *-ok) nem valtoztak.
