@@ -10,6 +10,7 @@
 //   --popup 1      az ELESITETT ut: hirdetes -> tartalmi oldal (kattintas-azonositokkal) -> a rajta levo gomb a foglalo FELUGRO ablakat nyitja -> Salonic -> koszonooldal
 //                  (--overlay dist: a link-atkotessel epitett dist; a szenario "popup" mezoje: oldal, gomb-szelektor, a kerdesekre valasztando kartyak; oxigenreklam: a regi
 //                  /mosaic-hair-idopontfoglalas oldal, ahol a foglalo MAGATOL nyilik meg, ures oldalon, bezarhatatlanul)
+//   --sutik elutasit  a latogato a suti-sav "Elutasitom" gombjat nyomta (alapbol elfogadta): megmutatja, mit kuld az oldal a sutit elutasito vendegtol
 //   --masodik 1    az utolso elotti szabad napot valasztja (ket valodi foglalas egymas utan ugyanabban a Salonic-fiokban: a Salonic 5 percig tartja a megnyitott idopontot)
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
@@ -44,6 +45,11 @@ SZENARIOK.lezer.popup = { oldal: '/lezeres-szortelenites-budapest', link: 'a[hre
 SZENARIOK.oxigen1 = { ...SZENARIOK.oxigen2, popup: { oldal: '/oxigenterapia-budapest', link: 'a[href*="service=466147"]:visible', valasztas: ['Mindegy'] } };
 // a regi oxigen-hirdetes (4 aktiv Meta-hirdetes szovege) cime: ures oldal + bezarhatatlan felugro; a foglalo magatol megnyilik
 SZENARIOK.oxigenreklam = { ...SZENARIOK.oxigen2, popup: { oldal: '/mosaic-hair-idopontfoglalas', auto: true, valasztas: ['Következő kezelés', 'Mindegy'] } };
+// oxigen: ELSO kezeles (Haj Oxigenterapia - 1. alkalom, 466110): a regi hirdetes-cimen a foglalo magatol nyilik, az "Elso oxigenterapias kezeles" kartya (koszono: /oxigenterapia-ok)
+SZENARIOK.oxigen0 = { ...SZENARIOK.oxigen2, popup: { oldal: '/mosaic-hair-idopontfoglalas', auto: true, valasztas: ['Első oxigénterápiás kezelés', 'Mindegy'] },
+  sim: { ut: '/oxigenterapia-ok', first: true, service: 'Haj Oxigénterápia - 1. alkalom', category: 'Oxigénterápia - 1. alkalom', price: 26000, location: 'Mosaic Oxigén', employee: 'Menyhárt Móni', employeeId: 32969, placeId: 14409, serviceId: 466110 } };
+// fodraszat: FIZETOS kezeles (Noi hajvagas + szaritas, kozepes haj) a felugro foglalon at: a konzultacion kivuli szolgaltatas is atad-e a koszonooldalnak (2026-10-05: egy ilyen foglalas a Salonic sajat sikeroldalan maradt)
+SZENARIOK.hairvagas = { ...SZENARIOK.hair, popup: { oldal: '/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel', link: 'a[href*="business=hair"]', valasztas: ['Mindegy', 'Hajvágás', 'Női hajvágás', 'Közepes haj'] } };
 const sc = SZENARIOK[SZ];
 if (!sc) throw new Error('ismeretlen szenario: ' + SZ);
 const LANDING = arg('landing', '0') === '1';
@@ -102,9 +108,11 @@ const DNS_TILTAS = ['capig.stape.do', 'capig.stape.de', 'capig.stape.io', 'analy
 const browser = await chromium.launch({ executablePath: CHROME, headless: !FEJES, args: ['--disable-blink-features=AutomationControlled', '--host-resolver-rules=' + DNS_TILTAS.map((h) => `MAP ${h} ~NOTFOUND`).join(', ')] });
 const context = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 900 }, locale: 'hu-HU', timezoneId: 'Europe/Budapest', serviceWorkers: 'block' });
 // Hozzajarulas (a tulajdonos jovahagyasaval: "Elfogadom"): a sajat tarolonkba irva, mint a suti-sav gombja
-await context.addInitScript(() => {
-  try { if (/(^|\.)mosaicheadspa\.hu$/.test(location.hostname) && !localStorage.getItem('mh_cc')) localStorage.setItem('mh_cc', JSON.stringify({ v: 1, t: Date.now(), fun: true, ana: true, adv: true })); } catch (e) { /* nem baj */ }
-});
+// --sutik elutasit: a latogato a sav "Elutasitom" gombjat nyomta (mindharom kategoria nem): igy latszik, mit kuldenek az oldalak a sutit elutasito vendegtol
+const ELFOGAD = arg('sutik', 'elfogad') !== 'elutasit';
+await context.addInitScript((elfogad) => {
+  try { if (/(^|\.)mosaicheadspa\.hu$/.test(location.hostname) && !localStorage.getItem('mh_cc')) localStorage.setItem('mh_cc', JSON.stringify({ v: 1, t: Date.now(), fun: elfogad, ana: elfogad, adv: elfogad })); } catch (e) { /* nem baj */ }
+}, ELFOGAD);
 
 const TIPUS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.xml': 'application/xml', '.txt': 'text/plain', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.mp4': 'video/mp4', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.ico': 'image/x-icon' };
 let fajlUtvonal = null;

@@ -134,7 +134,8 @@
   const allapot = { mod: 'kezeles', terulet: 'honalj', napok: new Map(), nap: null, honap: null };
 
   const szolgaltatasId = () => (allapot.mod === 'konzult' ? KONZULT.elso : (SZOLGALTATAS[allapot.terulet] || {}).elso);
-  const salonicUrl = (id) => `${SZALON.cim}/selectDate/?employeeId=${SZALON.kezelo}&placeId=${SZALON.placeId}&serviceId=${id}`;
+  // Ha az API nem valaszol / nincs szabad nap: a helyben nyilo foglalo-motor (NEM kozvetlen Salonic-link: a Salonic sajat sikeroldalan vegzodo foglalas a meresben nem latszik)
+  const motorUrl = () => (allapot.mod === 'konzult' ? '/foglalo-motor?business=laser&service=konzult' : '/foglalo-motor?business=laser&intent=first');
   // a kivalasztott idopont adatlapja: az idopont mar benne van (ugyanezt a cimet nyitja a foglalo-motor is)
   const adatlapUrl = (id, ts) => `${SZALON.cim}/guestData/?anyone=true&employeeId=${SZALON.kezelo}&placeId=${SZALON.placeId}&serviceId=${id}&startDate=${ts}&back=`;
 
@@ -239,7 +240,7 @@
       allapot.napok = napok;
       if (!napok.size) {
         $('naptar').replaceChildren();
-        uzenet.replaceChildren('A következő hetekre most nincs szabad időpont. ', elem('a', { href: salonicUrl(id), target: '_blank', rel: 'noopener', szoveg: 'Nézd meg a foglalórendszerben →' }));
+        uzenet.replaceChildren('A következő hetekre most nincs szabad időpont. ', elem('a', { href: motorUrl(), szoveg: 'Nézd meg a foglalóban →' }));
         uzenet.hidden = false;
         return;
       }
@@ -251,7 +252,7 @@
       if (en !== kerNo) return;
       console.error(hiba);
       $('naptar').replaceChildren();
-      uzenet.replaceChildren('Most nem sikerült lekérni a szabad időpontokat. ', elem('a', { href: salonicUrl(id), target: '_blank', rel: 'noopener', szoveg: 'Nézd meg itt az összeset →' }));
+      uzenet.replaceChildren('Most nem sikerült lekérni a szabad időpontokat. ', elem('a', { href: motorUrl(), szoveg: 'Nézd meg itt az összeset →' }));
       uzenet.hidden = false;
     }
   }
