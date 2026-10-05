@@ -1226,7 +1226,7 @@ async function alairasJo(fejlec, torzs, titkok, most) {
   return false;
 }
 
-// --- szerveroldali vasarlasmeres (Stripe -> Zapier -> Google Ads offline konverzio + Meta CAPI Purchase) ----------------
+// --- szerveroldali vasarlasmeres (Stripe -> Zapier -> Google Ads offline konverzio + Meta CAPI egyedi esemeny) ---------
 // A bongeszos meres (GTM / pixel) reklamblokkolo, Safari-korlatozas vagy hibas rejtett koszonooldal miatt kimaradhat. Ez a SZERVER oldali
 // masodik ut: a sikeres fizetes utan egy Zapier "catch hook"-ra kuld egy lapos JSON-t (a hook cime a MERES_HOOK_URL titok, a repoban nincs).
 // SZABALYOK:
