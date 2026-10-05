@@ -14,6 +14,7 @@ import { createSalonicAdapter, BUSINESSES } from './salonic-adapter.js';
 import { classifyService, effectiveType, isAcquisition } from './business-config.js';
 import * as F from './flow.js';
 import { createTracker } from './tracking.js';
+import { createStepMeter } from './lepes-meres.js';
 import { CHOOSER, PMU_PATH } from './families.js';
 import { IKONOK, hajhosszIkon, kezelesIkon } from './ikonok.js';
 import { koszonoLepesek, VISSZAHIVAS_LEPESEK, LEZER_KEZELO } from './koszono.js';
@@ -108,6 +109,9 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   const store = (() => { try { return win.sessionStorage; } catch (e) { return null; } })();
   const tracker = createTracker({ ctx, doc, storage: store, now });
   const track = tracker.track;
+  // A lepes-meres (DECISION-LOG #88): GA4 dataLayer (csak statisztikai hozzajarulassal) + nevtelen belso szamlalo; lasd lepes-meres.js, docs/booking-engine/LEPES_MERES.md
+  const meter = createStepMeter({ win, ctx, ido: now });
+  const hibaTipus = (e) => (e && e.code === 'TIMEOUT' ? 'timeout' : e && e.code ? 'salonic_api' : 'client_error'); // a Salonic-adapter hibakodjai; minden mas (pl. rajzolasi hiba) client_error
 
   const S = {
     sig: [ctx.business || '', ctx.serviceKey || '', ctx.category || '', ctx.intent || '', ctx.voucher ? '1' : ''].join('|'), nav: [], slotsFull: true, fullP: null, slotsToken: 0, servicesP: null,
@@ -227,6 +231,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   const placeText = () => [S.place && S.place.name, S.place && S.place.address].filter(Boolean).join(', ');
 
   function setView(node, state) {
+    S.shown = state; // az utoljara megjelent nezet kodja (a hibakepernyo is: A3): a booking_close step-je ez
     mainEl.replaceChildren(node);
     mainEl.classList.toggle('be-main-wide', state === 'PMU');
     mainEl.classList.toggle('be-main-kompakt', state === 'C4'); // az adatlap-keret a kepernyo aljaig er (mobilon egy kepernyo)
@@ -266,6 +271,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       if (token !== renderToken) return;
       console.error(e);
       track('booking_error', { step: state, reason: (e && e.code) || 'load_failed' });
+      meter.error(hibaTipus(e), state);
       setView(loadError(), 'A3');
     }
   }
@@ -386,6 +392,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
 
   // Idopontok: az elso 14 nap azonnal (a naptar megnyilik), a tobbi (92 napig) parhuzamos reszekben, hatterben erkezik; megerkezesekor a naptar helyben frissul.
   async function loadSlots() {
+    const t0 = now();
     const vs = S.variants && S.variants.length > 1 ? S.variants : [S.service];
     const token = (S.slotsToken += 1);
     const full = vs.map(() => null); const eleje = [];
@@ -402,6 +409,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     }));
     if (!S.slotsFull || token !== S.slotsToken) S.slots = vs.length > 1 ? F.mergeVariantSlots(lists) : lists[0];
     S.day = null;
+    if (!destroyed && !S.adapterSample) meter.slotsLoaded(now() - t0); // az elso adat (14 nap) megerkezett: ennyi ideig tartott a vendegnek
     return S.slots;
   }
   const serviceParams = (svc) => ({ service: nameOf(svc), service_id: svc.serviceId, booking_type: classifyService(flow.business, svc).bookingType, list_price: svc.listPrice, final_price: svc.activePrice, voucher: svc.bookingType === 'voucher_redemption' });
@@ -409,6 +417,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     S.service = svc; S.exact = exact; S.slot = null; S.slots = []; S.slotStaff = null; S.variants = variantsFor(svc); S.slotsToken += 1; S.slotsFull = true;
     if (!flow.staffFirst) { S.staff = null; S.staffLabel = null; } // a fodraszatnal a fodrasz-valasztas elobb volt, megmarad
     track('booking_service_selected', serviceParams(svc));
+    meter.service(svc.serviceId);
     return go(next);
   }
   // fromFilter: a naptarban (C2) konkret szakembert valasztott a vendeg -> ez vegigmegy az adatlapon;
@@ -419,6 +428,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     if (S.variants && S.variants.length > 1) { const v = S.variants.find((x) => String(x.serviceId) === String(slot.service_id)); if (v) S.service = v; }
     S.slotStaff = fromFilter && S.staff ? { id: String(S.staff), label: slot.staff_label } : null;
     track('booking_slot_selected', { ...serviceParams(S.service), staff_id: S.slotStaff ? S.slotStaff.id : undefined });
+    meter.slot();
     return go('C4');
   }
   const staffRow = () => (flow.showStaffFilter ? (S.slotStaff ? S.slotStaff.label : 'Bármely megfelelő') : '');
@@ -634,7 +644,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       if (!S.slots.length && !S.slotsFull) await S.fullP; // az elso 14 napban nincs idopont: megvarjuk a teljes listat, mielott "nincs idopont"-ot mondunk
       if (S.restoreDay && !S.slotsFull && S.restoreDay > F.dayKey(nowUnix() + 14 * 86400)) await S.fullP; // a korabban nezett nap az elso 14 napon tul van: megvarjuk a teljes listat
       if (S.restoreDay) { S.day = S.restoreDay; S.month = S.restoreMonth; S.restoreDay = null; S.restoreMonth = null; } // visszaallitott allapot: a korabban nezett nap
-      if (!S.slots.length) { track('booking_no_slots', { ...serviceParams(S.service), step: 'C1' }); S.callbackReason = 'nincs_idopont'; go('A1', { replace: true }); return null; }
+      if (!S.slots.length) { track('booking_no_slots', { ...serviceParams(S.service), step: 'C1' }); meter.error('no_slots', 'C1'); S.callbackReason = 'nincs_idopont'; go('A1', { replace: true }); return null; }
       const hk = F.monthList(nowUnix(), NAPTAR_NAP);
       const track0 = { ...serviceParams(S.service), step: 'C1' };
       // honap- / nap- / szakembervaltasnal helyben rajzolunk ujra (nincs betoltes-villanas, a gorgetes marad), mint a PMU-foglalo
@@ -691,6 +701,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       S.expected = { ...b.expected, staffName: S.slotStaff ? S.slotStaff.label : undefined, activePrice: F.priceFor(S.service, S.slotStaff ? S.slotStaff.label : null), acceptablePrices: promoPrices };
       S.guestUrl = b.guestDataUrl;
       track('booking_details_started', { ...serviceParams(S.service), step: 'C4' }, { once: S.slot.slot_id });
+      meter.formStart(S.slot.slot_id);
       // A keret meretezese attol fugg, hogy a Salonic-fiok betolti-e a MOSAIC kozos CSS-et (a Salonic oldalabol felismerjuk).
       let styled = false;
       try { styled = !!(await adapter.getPresentation(flow.business)).customCss; } catch (e) { /* alap meret */ }
@@ -765,6 +776,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     A2: async () => {
       S.slotLostNote = true;
       track('booking_slot_lost', { ...serviceParams(S.service), step: 'C4' }, { once: S.slot && S.slot.slot_id });
+      meter.error(S.a2Reason === 'expired' ? 'hold_expired' : 'slot_lost', 'C4');
       await loadSlots();
       const alts = F.uniqueTimes(S.slots).slice(0, 4);
       const expired = S.a2Reason === 'expired';
@@ -878,9 +890,9 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       const f = e.currentTarget; const v = (n) => f.elements[n].value.trim();
       err.replaceChildren();
       const phoneDigits = v('telefon').replace(/\D/g, '');
-      if (v('nev').length < 2) { err.append(alertBox('Kérlek, add meg a neved.')); f.elements.nev.focus(); return; }
-      if (phoneDigits.length < 9 || phoneDigits.length > 13) { err.append(alertBox('Kérlek, érvényes telefonszámot adj meg.')); f.elements.telefon.focus(); return; }
-      if (!f.elements.hozzajarul.checked) { err.append(alertBox('Kérlek, fogadd el az adatkezelést, hogy visszahívhassunk.')); return; }
+      if (v('nev').length < 2) { meter.error('validation', S.state); err.append(alertBox('Kérlek, add meg a neved.')); f.elements.nev.focus(); return; }
+      if (phoneDigits.length < 9 || phoneDigits.length > 13) { meter.error('validation', S.state); err.append(alertBox('Kérlek, érvényes telefonszámot adj meg.')); f.elements.telefon.focus(); return; }
+      if (!f.elements.hozzajarul.checked) { meter.error('validation', S.state); err.append(alertBox('Kérlek, fogadd el az adatkezelést, hogy visszahívhassunk.')); return; }
       const btn = f.querySelector('button[type=submit]'); btn.disabled = true; const old = btn.textContent; btn.textContent = 'Küldés…';
       const body = new URLSearchParams({ 'form-name': 'motor-visszahivas', nev: v('nev'), telefon: v('telefon'), uzletag: flow.business, szolgaltatas: S.service ? nameOf(S.service) : '', ok: S.callbackReason, oldal: layer ? win.location.pathname : 'foglalo-motor', forras: ctx.sourcePage || '' });
       try {
@@ -890,7 +902,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
         track('booking_callback_requested', { ...(S.service ? serviceParams(S.service) : {}), reason: S.callbackReason });
         go(S.state === 'A3_CB' ? 'A3_SENT' : 'A1_SENT', { replace: true });
       } catch (x) {
-        console.error(x); btn.disabled = false; btn.textContent = old;
+        console.error(x); meter.error('callback_failed', S.state); btn.disabled = false; btn.textContent = old;
         err.append(alertBox(`Hiba történt a küldés közben. Kérlek, próbáld újra, vagy hívj minket: ${PHONE}.`));
       }
     } },
@@ -930,19 +942,21 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   // --- a Salonic adatlapja utan (C5) -----------------------------------------------------------------------------------------------
   // A suti.js (es ez a modul) a keretben betoltott sajat oldalunk cimet ide jelzi: elkelt idopont, visszaigazolas vagy ismeretlen.
   function onSalonicRedirect(href) {
+    meter.submit(S.slot && S.slot.slot_id); // az adatlap a sajat oldalunkra iranyitott vissza: a vendeg beadta (a Salonic-gomb nem megfigyelheto)
     go('C5', { replace: true });
     win.setTimeout(() => resolveRedirect(href), 700);
   }
   function resolveRedirect(href) {
     const kind = F.classifyRedirect(href, { enginePath: flow.enginePath });
-    if (kind === 'slot_lost') return go('A2', { replace: true });
+    if (kind === 'slot_lost') { meter.error('slot_lost', 'C5'); return go('A2', { replace: true }); }
     if (kind === 'confirmation') {
       // A Salonic csak sikeres foglalas utan iranyit a koszonooldalra, ezert a vendeget ellenorzestol fuggetlenul atadjuk a MEGLEVO
       // koszonooldalnak (eles tartomanyon): a mostani meres (konverziok, pixelek) azon fut valtozatlanul, egyszer, a fo ablakban.
       // Az ellenorzes eredmenye csak a sajat esemenyeinket (booking_completed / booking_error) szabja.
       const v = S.expected ? adapter.verifyConfirmation(href, S.expected) : null;
       if (v && v.ok) confirmed(v);
-      else track('booking_error', { ...(S.service ? serviceParams(S.service) : {}), step: 'C5', reason: v ? 'verify_failed' : 'no_expectation',
+      else meter.error('verify_failed', 'C5');
+      if (!(v && v.ok)) track('booking_error', { ...(S.service ? serviceParams(S.service) : {}), step: 'C5', reason: v ? 'verify_failed' : 'no_expectation',
         filter: v ? Object.entries(v.checks).filter(([, c]) => c.status === 'fail').map(([k]) => k).join(',') : undefined });
       // (a Salonic URL-je valtozatlan marad; csak a motor sajat URL-jen erkezett hirdetesi azonositok kerulnek a vegere, ha a Salonic nem hozta oket)
       if (HANDOFF) { win.location.assign(F.withAttribution(href, win.location.search)); return undefined; }
@@ -950,10 +964,12 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       return go(v && v.ok ? 'C6' : 'A3U', { replace: true });
     }
     track('booking_error', { ...serviceParams(S.service), step: 'C5', reason: 'unknown_redirect' });
+    meter.error('unknown_redirect', 'C5');
     return go('A3', { replace: true });
   }
   function confirmed(v) {
     S.confirmation = v;
+    meter.success(v.bookingRef);
     try { if (store) store.removeItem(SNAP_KEY); } catch (e) { /* nem kritikus */ }
     const cls = classifyService(flow.business, S.service);
     const type = effectiveType({ bookingType: cls.bookingType, splitByRuntime: cls.splitByRuntime, firstBooking: v.firstBooking });
@@ -973,6 +989,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   }
   win.mhKeretbenOldal = onSalonicRedirect;
   const destroy = () => {
+    if (layer && !destroyed) meter.close(S.shown || S.state); // a reteg bezarult: step = a nezet, ahol a vendeg bezarta
     destroyed = true;
     win.removeEventListener('popstate', onPop);
     win.removeEventListener('resize', onResize);
@@ -997,11 +1014,12 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     Object.assign(S, { flow, services: null, voucher: false, service: null, exact: false, slots: [], slot: null, day: null, month: null, staff: null, place: null, expected: null, intentKey: null, staffCache: null, variants: null, servicesP: null, slotsFull: true,
       guestUrl: null, confirmation: null, intent: null, group: null, staffLabel: null, slotStaff: null, candidates: null, laserArea: null, slotLostNote: false });
     tracker.setBusiness(business);
+    meter.business(business);
     if (BUSINESSES[business]) elokapcsol(doc, BUSINESSES[business].host);
   }
   function chooseFamily(fam) {
     track('booking_intent_selected', { step: 'H0', reason: fam.key });
-    if (fam.key === 'pmu') { ctx.business = 'pmu'; return go('PMU'); }
+    if (fam.key === 'pmu') { ctx.business = 'pmu'; meter.business('pmu'); return go('PMU'); }
     setBusiness(fam.business);
     return go(entry());
   }
@@ -1010,6 +1028,8 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     if (ctx.business && ctx.business !== 'pmu' && !flow) { setView(alertBox('Ismeretlen üzletág.'), 'A3'); return; }
     track('booking_open', { entry: ctx.serviceKey ? 'service' : ctx.category ? 'category' : 'generic', reason: layer ? 'layer' : 'page' });
     if (ctx.sample) return sample();
+    meter.open(); // (mintanezetben nincs meres)
+    if (ctx.business) meter.business(ctx.business); // a link mar megmondta az uzletagat: ez is az uzletag-lepes (a kezdo kepernyon valasztva a setBusiness / chooseFamily adja)
     let first = entry();
     // Mentett allapot (bezaras / ujranyitas): ha van ehhez a belepeshez, a skeleton alatt visszaepitjuk, es ott folytatja, ahol tartott
     const snap = peekSnapshot();
@@ -1039,7 +1059,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
         // konkret szolgaltatas landing: az uzletag "exact" allapota (Fodraszat: HA3, a konzultacio egyenesen C1); nem kerdezzuk ujra a kezelest
         const svc = ctx.serviceKey ? F.findByKey(S.services, ctx.serviceKey, { voucher: S.voucher }) : null;
         if (svc) {
-          S.service = svc; S.exact = true; S.variants = variantsFor(svc); track('booking_service_selected', serviceParams(svc));
+          S.service = svc; S.exact = true; S.variants = variantsFor(svc); track('booking_service_selected', serviceParams(svc)); meter.service(svc.serviceId);
           first = svc.bookingType === 'consultation' ? 'C1' : F.entryState({ hasService: true, voucher: S.voucher, first: flow.firstState, voucherState: flow.voucherState, exact: flow.exactState });
         } else if (ctx.category && flow.intents) {
           // kategoria landing (?category=<szandek kulcsa>): csak a kategoria ismert -> a kezeles-pontositasra (HA2)
@@ -1050,7 +1070,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
           // Lezer kategoria-landing (?category=<terulet kulcsa>, pl. arc): csak a terulet ismert -> a kezeles-pontositasra (LA2B)
           const area = flow.areas.find((a) => a.key === ctx.category);
           const services = area ? S.services.filter((s) => s.bookingType === 'first_treatment' && flow.areaOf(s).key === area.key) : [];
-          if (services.length === 1) { S.service = services[0]; S.exact = true; first = 'C1'; track('booking_service_selected', serviceParams(S.service)); }
+          if (services.length === 1) { S.service = services[0]; S.exact = true; first = 'C1'; track('booking_service_selected', serviceParams(S.service)); meter.service(S.service.serviceId); }
           else if (services.length) { S.laserArea = { area, services }; track('booking_intent_selected', { step: 'landing', reason: area.key }); first = 'LA2B'; }
         }
       } catch (e) { console.error(e); }

@@ -6,6 +6,8 @@
 //
 // Nem megfigyelheto esemeny: booking_submit - az "Idopont lefoglalasa" gomb a Salonic beagyazott adatlapjan van.
 
+import { RESERVED_BY_STEPS } from './lepes-meres.js';
+
 export const EVENTS = Object.freeze([
   'booking_open', 'booking_intent_selected', 'booking_service_selected', 'booking_filter_used', 'booking_slot_viewed',
   'booking_slot_selected', 'booking_details_started', 'booking_completed', 'booking_slot_lost', 'booking_no_slots',
@@ -34,6 +36,7 @@ export function createTracker({ ctx, dataLayer, doc = typeof document !== 'undef
   /** Egy esemeny a dataLayer-be. Ismeretlen esemenyt nem kuldunk (a szerzodes zart). Visszaadja a bejegyzest vagy null-t. */
   function track(event, params = {}, { once = null } = {}) {
     if (!EVENTS.includes(event)) { if (typeof console !== 'undefined') console.warn('Ismeretlen merasi esemeny:', event); return null; }
+    if (RESERVED_BY_STEPS.includes(event)) return null; // a booking_open / booking_error neveket a lepes-meres adja (lepes-meres.js, DECISION-LOG #88): egy lepesrol egy esemeny
     if (once && !onceKey('be_once_' + event + '_' + once)) return null;
     const entry = { event, ...base };
     for (const k of PARAMS) if (params[k] !== undefined && params[k] !== null && params[k] !== '') entry[k] = params[k];

@@ -1,0 +1,74 @@
+﻿Foglalo lepes-meres proba (DECISION-LOG #88), 2026-10-05
+=========================================================
+Futtatas: node tools/meres-proba/lepes-proba.mjs --overlay dist [--mobil 1]   (a PR build tartalma, helyi dist, a kimeno meres TILTVA: tilt.mjs)
+Mit mutat: a foglalo minden lepese PONTOSAN EGYSZER jon (dataLayer es nevtelen szamlalo), a booking_close.step jo, hozzajarulas nelkul a dataLayer ures de a szamlalo
+mindent kap, a robot nem szamolodik, nincs szemelyes adat, a lepesek nem inditanak konverziot / marketing-esemenyt. A Salonic naptar-API es az atiranyitas mockolt
+(nincs valodi foglalas), a szamlalo-keresek elfogva (a valodi vegpontra nem mentek).
+
+=== ASZTALI ===
+OK   1. teljes ut: a dataLayer-ben pontosan ez a 9 lepes jon, ebben a sorrendben, mind EGYSZER | booking_open > booking_business > booking_service > booking_slots_loaded > booking_slot > booking_form_start > booking_submit > booking_success > booking_close
+OK   1. teljes ut: minden esemenyen ott van a business, service_id, source_page | {"event":"booking_service","business":"headspa","service_id":"302999","source_page":"/paros-headspa-budapest","gtm.uniqueEventId":34}
+OK   1. teljes ut: a szolgaltatas-lepeseken (service..close) a service_id az igazi azonosito, nem "none" | none,none,302999,302999,302999,302999,302999,302999,302999
+OK   1. teljes ut: booking_slots_loaded.load_ms szam (>= 0) | load_ms=10
+OK   1. teljes ut: booking_close.step = C6 (a sikerkepernyon zartak be) | step=C6
+OK   1. teljes ut: nincs booking_error
+OK   1. teljes ut: a nevtelen szamlalo ugyanezt a 9 lepest kapta, egyszer-egyszer | open > business > service > slots_loaded > slot > form_start > submit > success > close
+OK   1. teljes ut: a szamlalo bezaras-lepese C6, a betoltesi ido szam, minden uzletag headspa | {"lepes":"close","uzletag":"headspa","tipus":"C6"}
+OK   1. teljes ut: a szamlalo-kereseket text/plain POST-kent kuldte (suti / fejlec nelkul), a torzs csak a zart mezoket tartalmazza
+OK   1. teljes ut: nincs szemelyes adat (nev, e-mail, telefon, foglalas-azonosito, URL-lekerdezes) sem a dataLayer-ben, sem a szamlalo kereseiben
+OK   1. teljes ut: a lepesek NEM inditottak konverziot / marketing-esemenyt (Meta, TikTok, Ads, Stape); GA4-ben legfeljebb booking_* (a GTM-trigger utan) | []
+OK   1. teljes ut: nincs JS-hiba
+OK   2. kezdo kepernyo: a megnyitaskor meg nincs uzletag (business=none), a valasztas utan booking_business (headspa), bezaraskor booking_close | booking_open > booking_business > booking_close | cimek: Mit szeretnél foglalni? / Ajándékkártyával vagy anélkül foglalsz?
+OK   2. kezdo kepernyo: a booking_close.step a HeadSpa-kezdo nezet (HS1), a business a bezaraskor mar headspa | {"event":"booking_close","business":"headspa","service_id":"none","source_page":"/paros-headspa-budapest","step":"HS1","gtm.uniqueEventId":36}
+OK   2b. bezaras a kezdo kepernyon: booking_open + booking_close(step=H0), business=none, egyik sem ketszer | [{"event":"booking_open","business":"none","service_id":"none","source_page":"/paros-headspa-budapest","gtm.uniqueEventId":31},{"event":"booking_close","business":"none","service_id":"none","source_page":"/paros-headspa-budapest","step":"H0","gtm.uniqueEventId":33}]
+OK   3. hozzajarulas nelkul: a dataLayer-ben EGYETLEN uj lepes-esemeny sincs
+OK   3. hozzajarulas nelkul: a nevtelen szamlalo megkapja: open, business, service, slots_loaded, slot, form_start, close(step=C4), egyszer-egyszer | open > business > service > slots_loaded > slot > form_start > close:C4
+OK   3. hozzajarulas nelkul: a lepesek nem inditottak semmilyen kimeno meresi kerest | []
+OK   4. nincs szabad idopont: pontosan egy booking_error, error_type=no_slots, aztan booking_close (step=A1) | booking_open > booking_business > booking_service > booking_slots_loaded > booking_error > booking_close | {"event":"booking_error","business":"headspa","service_id":"302999","source_page":"/paros-headspa-budapest","error_type":"no_slots","gtm.uniqueEventId":37}
+OK   4. nincs szabad idopont: a szamlalo is egy error(no_slots)-t kap | {"lepes":"error","uzletag":"headspa","tipus":"no_slots"}
+OK   4b. a Salonic-API hibaja: pontosan egy booking_error, error_type=salonic_api (nem client_error), booking_close step=A3 | booking_open > booking_business > booking_service > booking_error > booking_close | {"event":"booking_error","business":"headspa","service_id":"302999","source_page":"/paros-headspa-budapest","error_type":"salonic_api","gtm.uniqueEventId":35}
+OK   5. robot (webdriver): a nevtelen szamlaloba nem kerul semmi | 0 kuldes
+OK   5. robot (webdriver): a dataLayer ettol fuggetlenul megkapja a lepeseket (hozzajarulassal)
+
+23 ellenorzes, 0 hiba (asztali)
+
+=== MOBIL (390x844, iPhone UA) ===
+OK   1. teljes ut: a dataLayer-ben pontosan ez a 9 lepes jon, ebben a sorrendben, mind EGYSZER | booking_open > booking_business > booking_service > booking_slots_loaded > booking_slot > booking_form_start > booking_submit > booking_success > booking_close
+OK   1. teljes ut: minden esemenyen ott van a business, service_id, source_page | {"event":"booking_service","business":"headspa","service_id":"302999","source_page":"/paros-headspa-budapest","gtm.uniqueEventId":34}
+OK   1. teljes ut: a szolgaltatas-lepeseken (service..close) a service_id az igazi azonosito, nem "none" | none,none,302999,302999,302999,302999,302999,302999,302999
+OK   1. teljes ut: booking_slots_loaded.load_ms szam (>= 0) | load_ms=15
+OK   1. teljes ut: booking_close.step = C6 (a sikerkepernyon zartak be) | step=C6
+OK   1. teljes ut: nincs booking_error
+OK   1. teljes ut: a nevtelen szamlalo ugyanezt a 9 lepest kapta, egyszer-egyszer | open > business > service > slots_loaded > slot > form_start > submit > success > close
+OK   1. teljes ut: a szamlalo bezaras-lepese C6, a betoltesi ido szam, minden uzletag headspa | {"lepes":"close","uzletag":"headspa","tipus":"C6"}
+OK   1. teljes ut: a szamlalo-kereseket text/plain POST-kent kuldte (suti / fejlec nelkul), a torzs csak a zart mezoket tartalmazza
+OK   1. teljes ut: nincs szemelyes adat (nev, e-mail, telefon, foglalas-azonosito, URL-lekerdezes) sem a dataLayer-ben, sem a szamlalo kereseiben
+OK   1. teljes ut: a lepesek NEM inditottak konverziot / marketing-esemenyt (Meta, TikTok, Ads, Stape); GA4-ben legfeljebb booking_* (a GTM-trigger utan) | []
+OK   1. teljes ut: nincs JS-hiba
+OK   2. kezdo kepernyo: a megnyitaskor meg nincs uzletag (business=none), a valasztas utan booking_business (headspa), bezaraskor booking_close | booking_open > booking_business > booking_close | cimek: Mit szeretnél foglalni? / Ajándékkártyával vagy anélkül foglalsz?
+OK   2. kezdo kepernyo: a booking_close.step a HeadSpa-kezdo nezet (HS1), a business a bezaraskor mar headspa | {"event":"booking_close","business":"headspa","service_id":"none","source_page":"/paros-headspa-budapest","step":"HS1","gtm.uniqueEventId":36}
+OK   2b. bezaras a kezdo kepernyon: booking_open + booking_close(step=H0), business=none, egyik sem ketszer | [{"event":"booking_open","business":"none","service_id":"none","source_page":"/paros-headspa-budapest","gtm.uniqueEventId":31},{"event":"booking_close","business":"none","service_id":"none","source_page":"/paros-headspa-budapest","step":"H0","gtm.uniqueEventId":33}]
+OK   3. hozzajarulas nelkul: a dataLayer-ben EGYETLEN uj lepes-esemeny sincs
+OK   3. hozzajarulas nelkul: a nevtelen szamlalo megkapja: open, business, service, slots_loaded, slot, form_start, close(step=C4), egyszer-egyszer | open > business > service > slots_loaded > slot > form_start > close:C4
+OK   3. hozzajarulas nelkul: a lepesek nem inditottak semmilyen kimeno meresi kerest | []
+OK   4. nincs szabad idopont: pontosan egy booking_error, error_type=no_slots, aztan booking_close (step=A1) | booking_open > booking_business > booking_service > booking_slots_loaded > booking_error > booking_close | {"event":"booking_error","business":"headspa","service_id":"302999","source_page":"/paros-headspa-budapest","error_type":"no_slots","gtm.uniqueEventId":37}
+OK   4. nincs szabad idopont: a szamlalo is egy error(no_slots)-t kap | {"lepes":"error","uzletag":"headspa","tipus":"no_slots"}
+OK   4b. a Salonic-API hibaja: pontosan egy booking_error, error_type=salonic_api (nem client_error), booking_close step=A3 | booking_open > booking_business > booking_service > booking_error > booking_close | {"event":"booking_error","business":"headspa","service_id":"302999","source_page":"/paros-headspa-budapest","error_type":"salonic_api","gtm.uniqueEventId":35}
+OK   5. robot (webdriver): a nevtelen szamlaloba nem kerul semmi | 0 kuldes
+OK   5. robot (webdriver): a dataLayer ettol fuggetlenul megkapja a lepeseket (hozzajarulassal)
+
+23 ellenorzes, 0 hiba (mobil)
+
+=== A tobbi ellenorzes ugyanezen a buildon ===
+- node --test tools/test-*.mjs: 154 teszt, 153 sikeres, 0 hibas (1 kihagyott); ebbol uj: tools/test-lepes-meres.mjs (18 teszt: kliens-modul + szamlalo valodi SQLite-on)
+- node tools/meres-proba/reteg-proba.mjs --overlay dist: 311 ellenorzes, 0 hiba (asztali); --mobil 1: 313 ellenorzes, 0 hiba (a regi foglalo-reteg viselkedese valtozatlan)
+- GTM: az uj munkaterulet (61, "2026-10-05 foglalo lepes-meres GA4 (#88)") elo van keszitve, NINCS publikalva: 1 custom-event trigger (CE - foglalo lepes (booking_*)), 1 GA4 esemeny-tag
+  (GA4 - Foglalo lepes (booking_*)), 6 DataLayer-valtozo. Az alap munkaterulet (59) es a masik elokeszitett (60) nem valtozott.
+- D1: ket adatbazis (eles: mosaic-foglalo-szamlalo, elonezet: mosaic-foglalo-szamlalo-elonezet) + a ket tabla letrehozva; kotes: wrangler.toml (SZAMLALO_DB).
+
+=== A PR-elonezeten (claude-foglalo-lepes-meres.mosaic-d77.pages.dev), az ELONEZETI D1-gyel ===
+- Szamlalo vegpont (POST /api/foglalo-szamlalo, azonos eredet): 5 ervenyes keres -> 204 (open x2, slots_loaded 420 ms, error/no_slots, close/C1); idegen eredet -> 403; ismeretlen uzletag -> 400.
+- Olvasas: kulcs nelkul 404, rossz kulccsal 404; jo kulccsal 200, JSON (cache-control: no-store): hair: open 2, slots_loaded 1, error 1 (no_slots), close 1 (C1), betoltes db 1 / atlag 420 ms / max 420 / eloszlas lt500:1;
+  a CSV (nap;uzletag;lepes;tipus;darab) es az emberi HTML-nezet (formatum=html) is rendben. (A proba-sorokat utana toroltem az elonezeti adatbazisbol; az eles adatbazishoz nem nyultam.)
+- Gomb-bejaras az elonezeten (fooldal, paros-headspa-budapest, lezeres-szortelenites-budapest, oxigenterapia-budapest, 30szazalek, pmu-melitta, sminktetovalas-budapest),
+  mind a 3 profil: asztali 73 gomb, mobil 73, webkit 73; GYANUS 0 (FEHER 0, SEMMI 0, FEDI 0).
