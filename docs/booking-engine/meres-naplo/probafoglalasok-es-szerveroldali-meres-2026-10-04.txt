@@ -40,9 +40,17 @@ Megjegyzesek
 - A #1-#7 es a #11 szerveroldali esemenyei az "Uj online foglalas" ertesitobol indultak; az esemeny-azonosito a Salonic foglalas-azonosito (Meta event_id), igy a Meta oldalon
   a bookingId alapjan azonosithatok (a Zapier-futasok listajabol: 01a1055a-eea0..., 01a10566-0754..., 01a10567-bbd7..., 01a10567-bbfb..., 01a10569-6905..., 01a10575-e963..., 01a107db-bcdc..., 01a10859-e881...).
 - A 2026-10-03-i (tegnapi) probak is kikuldtek szerveroldali esemenyt (a nev-vedelem csak ma 07:57 ota van); ezeknek a listaja kulon vizsgalatot igenyel (a Zapier futas-elozmenyek 2026-10-02-ig vissza elerhetok).
-- AJANLAS (nem hajtottuk vegre, kulso fiok / eles folyamat): a vedelem bovitese a vendeg E-MAILJERE es TELEFONJARA is (deakfi@grantis.hu, a tulajdonos szama): igy a kartonbol vett nev nem szamit.
+- A vedelem BOVITESE (a tulajdonos jovahagyasaval megvalositva 2026-10-05, lasd a "Vedelem bovitese" reszt lent): a vendeg E-MAILJERE es TELEFONJARA is epul, igy a kartonbol vett nev nem szamit.
 - A Zapier "kulcstabla" hivas (browser -> hooks.zapier.com ...0xYgLEnqBPdjKSkG) a bongeszo-tiltas miatt a probakban nem ment ki: a kulcstablaban nincs sor, ezert a dusito Google-resz "no-keytable-row"-t mond.
 - A #4 sor Google Ads bovitett konverzioja a tiltas miatt nem letezo bongeszos konverziora hivatkozik (a Google valoszinuleg figyelmen kivul hagyja); a hivas viszont tenylegesen elment.
 
-Forrasok: Salonic ertesito- es lemondo e-mailek (mosaicheadspa@gmail.com), a Salonic nyilvanos naptar-API, Zapier futas-elozmenyek (workflow: Mosaic - Salonic level -> PII dusitas; Mosaic HeadSpa -> Meta CAPI; HeadSpa -> TikTok Events API;
-HeadSpa/Oxigen/Fodraszat -> Google Ads offline).
+VEDELEM BOVITESE (2026-10-05, ~05:45-05:50 UTC; a mero Zapier-folyamatok kodjaban, a weboldal kodja nem valtozott)
+- Szabaly (mind a 6 szerveroldali folyamatban ugyanaz a fuggveny, "tesztFoglalas"): a foglalas teszt, ha a NEV "teszt" szot tartalmaz, VAGY az E-MAIL a teszt-listan van (deakfi@grantis.hu, ferraj@gmail.com,
+  teszt@gmail.com, mosaicheadspa@gmail.com, salonicfoglalas@gmail.com), VAGY a TELEFONSZAM a tulajdonos / a szalon probaszamara vegzodik (709420090, 202474444). Teszt-foglalasbol nem megy ki szerveres esemeny
+  ("teszt-foglalas"). A vedelem a folyamat legelejen fut, minden uzletag-szuro elott.
+- Elesitve mind a 6 folyamatban: TikTok HeadSpa, Meta CAPI, Salonic level -> PII dusitas, Google Ads offline HeadSpa / Oxigen / Fodraszat. (A Lezer-foglalasokat a folyamatok eleve nem viszik tovabb.)
+- Probak (vazlat-futtatas elesites elott, a Salonic-azonosito nelkuli probalevellel, hogy semmi ne menjen ki): mind a 6 folyamatban a tulajdonos telefonszama + "valodi" kartonnev + nem teszt e-mail ->
+  "teszt-foglalas" (kihagyva). A teszt e-mail es a Koncz-jellegu szalon-telefon esetet a TikTok / Meta / dusitas / HeadSpa-Google-Ads folyamatok vazlatan probaltam ki (kihagyva). Egy teljesen ismeretlen vendeg
+  (masik nev, telefon, e-mail) NEM esik a vedelembe: az Oxigen- es a Fodraszat-folyamatban az uzletag-szuroig ment tovabb ("not-oxigen" / "not-hair"), vagyis sem a Google Adsnek, sem masnak nem ment ki semmi.
+- Ismert hatar: ha egy VALODI vendeg a szalon vagy a tulajdonos e-mail-cimet / telefonszamat adja meg (pl. a szalon sajat telefonja), az a foglalas sem kerul szerveres meresbe. Ez szandekos kompromisszum.
+- A tegnapi (2026-10-03) probak szerveroldali esemenyeit tovabbra sem soroltuk fel (lasd fent).

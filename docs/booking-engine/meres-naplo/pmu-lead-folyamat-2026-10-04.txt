@@ -28,8 +28,14 @@ VEGPONTTOL-VEGPONTIG PROBA (eles oldal, valodi urlap-POST; a telefonszam a tulaj
    (Mosaic PMU - weboldali vendegfotok / <datum> - <nev>); fotohiba nincs.
 A tesztsorok neve "TESZT - Claude (... torolheto)": a tabla "Oktober" lapjarol es a Drive-almappabol torolhetok.
 
+POTLAS (2026-10-05, a tulajdonos jovahagyasaval: "Igen, most azonnal")
+- A 2026-10-04 10:15-kor erkezett valodi fotokuldes (egy vendeg, 2 foto) a szalon postafiokjabol a folyamat kezi inditasaval (run_workflow, ugyanazzal a levellel) bekerult a tablazat "Oktober" lapjara (5. sor,
+  Szolgaltatas: "PMU - weboldal, fotot kuldott"; E oszlop: beerkezes ideje, e-mail, "2 foto (link: I oszlop)"; I oszlop: a vendeg Drive-almappaja, benne a 2 foto), 2026-10-05 05:40 UTC korul.
+- 05:43:28 UTC: a "melitta-pmu-oktober-sms" folyamat automatikusan lefutott a 5. sorra, az SMS kiment (a futas "sent: true", SMS-azonosito megvan, hibamentes; a kuldes ideje reggel van).
+- Ellenorzes: a sor es a Drive-mappa megvan; az SMS-kuldo szolgaltatas elfogadta az uzenetet (a futas "sent: true", hibamentes). A keszulek-oldali kezbesitest nem tudtuk ellenorizni.
+
 AMIT NEM VIZSGALTUNK / NYITOTT
-- A mai valodi lead (10:15, fotokuldes) kimaradt a tablazatbol es az SMS-bol; a levele a szalon postafiokjaban megvan (a fotokkal). Visszamenoleges potlasa SMS-t inditana egy valodi vendegnek (ejszaka):
-  a tulajdonos dontse el, potoljuk-e (javasolt: reggel).
+- (A korabban kimaradt valodi lead potlasa megtortent, lasd fent.)
+- A harom tesztsor ("TESZT - Claude ...") es az egy teszt Drive-almappa a tablazatban meg megvan, torolhetok (a tulajdonos dontse el / torolje).
 - A Meta-/TikTok-meresi esemeny az uj urlapokra szandekosan nincs (a tulajdonos: a 10-12-i kapura van felirva).
 - A "Foglalo - visszahivast kertek" (motor-visszahivas) es a "megerositette" levelek szandekosan NEM mennek a PMU-tablazatba.
