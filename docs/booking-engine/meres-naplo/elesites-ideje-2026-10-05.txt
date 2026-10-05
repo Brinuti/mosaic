@@ -6,6 +6,7 @@ Elemzo review #3 kerese: az elesites pontos ideje (UTC + deploy) a naploba, mert
 PR: #114 (claude/foglalo-elesites), merge-commit 8c59c470b15a2cb9f5e13ccb61a401cd54cb80de (a PR feje: 32b515ccd1c1098ff1097bc5bdd7546bdfff4268)
   Merge:  2026-10-04 22:48:01 UTC  (= 2026-10-05 00:48:01 helyi ido, CEST)
   Deploy: Cloudflare Pages (mosaic projekt) "success", befejezve 2026-10-04 22:49:22 UTC (= 00:49:22 CEST)
+          Cloudflare deploy-azonosito: 6f9bb624-c75d-4021-b53e-1f7fdf825941 (production, main, 8c59c47)
   => az eles oldal 2026-10-04 22:49:22 UTC-tol az UJ valtozat. (Az 22:48:28 UTC-s ellenorzes meg a regit adta: 200 a /kupon-utan-foglalas cimen;
      a 23:08:51 UTC-s ellenorzes mar 301-et, Location: /?utm_source=ellenorzes.)
   A merge elott a main 641ae58 volt (#116), a PR a main-nel egyesitve ment ki (merge-commit a0a57e7).
