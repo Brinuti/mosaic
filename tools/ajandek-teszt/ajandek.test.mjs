@@ -2704,11 +2704,12 @@ describe('szerveroldali vasarlasmeres (webhook -> Zapier hook)', () => {
   const MER_ATTR = { variant_id: 'general', gift_context: 'general', utm_source: 'google', utm_medium: 'cpc', utm_campaign: 'oszi', gclid: 'gcl-1', gbraid: 'gb-1', wbraid: 'wb-1', fbclid: 'fbclid-1', ttclid: 'tt-1', oldal: '/ajandek' };
   const FBP = 'fb.1.1791178000000.1234567890';
   const FBC = 'fb.1.1791178000000.AbCdEf_-123';
+  const VEVO = { email: 'kiss.anna@gmail.com', nev: 'Kiss Anna' };
   const hookbol = () => beerkezett.map((b) => JSON.parse(b.torzs));
   const reset = () => { beerkezett = []; hookStatusz = 200; levelek = []; };
   // fizetett rendeles + a webhook (a hook-os kornyezettel)
   async function fizetesEsWebhook(extra = {}, env = hookEnv) {
-    const a = await fizetettRendeles(extra);
+    const a = await fizetettRendeles({ ...VEVO, ...extra });
     reset();
     const r = await webhook(alairtEsemeny(a.pi), { env });
     return { a, r, md: () => mock.allapot.pi(a.pi).metadata };
@@ -2727,8 +2728,8 @@ describe('szerveroldali vasarlasmeres (webhook -> Zapier hook)', () => {
     assert.match(p.ido, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     assert.equal(p.hozz_adv, true);
     assert.equal(p.hozz_ana, true);
-    assert.equal(p.email, 'vevo@example.com');
-    assert.equal(p.nev, 'Teszt Elek');
+    assert.equal(p.email, 'kiss.anna@gmail.com');
+    assert.equal(p.nev, 'Kiss Anna');
     assert.equal(p.termek, 'egyeni');
     for (const [k, v] of Object.entries({ gclid: 'gcl-1', gbraid: 'gb-1', wbraid: 'wb-1', fbclid: 'fbclid-1', ttclid: 'tt-1', fbp: FBP, fbc: FBC, utm_source: 'google', utm_medium: 'cpc', utm_campaign: 'oszi' })) assert.equal(p[k], v, k);
     assert.ok(!('gclid' in p) || typeof p.gclid === 'string');
@@ -2776,7 +2777,7 @@ describe('szerveroldali vasarlasmeres (webhook -> Zapier hook)', () => {
   });
 
   test('visszateritett rendelesrol nem megy ki mereses', async () => {
-    const a = await fizetettRendeles({ attr: MER_ATTR, mer: { ana: true, adv: true } });
+    const a = await fizetettRendeles({ ...VEVO, attr: MER_ATTR, mer: { ana: true, adv: true } });
     mock.allapot.visszaterites(a.pi);
     reset();
     const r = await webhook(alairtEsemeny(a.pi), { env: hookEnv });
@@ -2786,7 +2787,7 @@ describe('szerveroldali vasarlasmeres (webhook -> Zapier hook)', () => {
   });
 
   test('a hook hibaja (5xx): a levelek es a kartya kimennek, a webhook 500-at ad (Stripe ujraprobalja), az ujraprobalas csak a merest kuldi, a leveleket nem', async () => {
-    const a = await fizetettRendeles({ attr: MER_ATTR, mer: { ana: true, adv: true } });
+    const a = await fizetettRendeles({ ...VEVO, attr: MER_ATTR, mer: { ana: true, adv: true } });
     reset();
     hookStatusz = 503;
     const e = alairtEsemeny(a.pi);
@@ -2806,7 +2807,7 @@ describe('szerveroldali vasarlasmeres (webhook -> Zapier hook)', () => {
   });
 
   test('a hook elerhetetlen (halozat): 500, de a levelek kimentek; nem idegen (nem ajandek-motor) PI-re kuld', async () => {
-    const a = await fizetettRendeles({ attr: MER_ATTR, mer: { ana: true, adv: true } });
+    const a = await fizetettRendeles({ ...VEVO, attr: MER_ATTR, mer: { ana: true, adv: true } });
     reset();
     const r = await webhook(alairtEsemeny(a.pi), { env: { ...hookEnv, MERES_HOOK_URL: 'http://127.0.0.1:9/hooks/catch/1/x/' } });
     assert.equal(r.status, 500);
@@ -2823,5 +2824,27 @@ describe('szerveroldali vasarlasmeres (webhook -> Zapier hook)', () => {
     const r2 = await webhook(alairtEsemeny(idegen.id, { metadata: { forras: 'fizetolink' } }), { env: hookEnv });
     assert.equal(r2.status, 200);
     assert.equal(beerkezett.length, 0);
+  });
+
+  test('teszt-vedelem (#84): TESZT / Claude / dryrun nevu, example.com / .org / .net (aldomain is) e-mailes fizetesbol semmi nem megy ki, a rendelesen "kihagyva:teszt" marad', async () => {
+    const esetek = [
+      { nev: 'Teszt Elek', email: 'kiss.anna@gmail.com' }, { nev: 'Claude', email: 'kiss.anna@gmail.com' }, { nev: 'Kiss Claude-dryrun', email: 'kiss.anna@gmail.com' },
+      { nev: 'Dryrun Anna', email: 'kiss.anna@gmail.com' }, { nev: 'Kiss Anna', email: 'claude-dryrun@example.com' }, { nev: 'Kiss Anna', email: 'x@mail.example.org' },
+      { nev: 'Kiss Anna', email: 'x@EXAMPLE.NET' }, { nev: 'TESZT', email: 'kiss.anna@gmail.com' },
+    ];
+    for (const e of esetek) {
+      const { r, md } = await fizetesEsWebhook({ ...e, attr: MER_ATTR, mer: { ana: true, adv: true } });
+      assert.equal(r.status, 200, JSON.stringify(e));
+      assert.equal(beerkezett.length, 0, 'nem megy ki: ' + JSON.stringify(e));
+      assert.equal(md().mer_kuldve, 'kihagyva:teszt', JSON.stringify(e));
+    }
+  });
+
+  test('a teszt-vedelem nem tilt valodi vevot: hasonlo nevek / domainek (Claudia, Teszler, example.com.hu, examples.com) mennek', async () => {
+    for (const e of [{ nev: 'Claudia Kiss', email: 'a@gmail.com' }, { nev: 'Teszler Anna', email: 'a@gmail.com' }, { nev: 'Kiss Anna', email: 'a@example.com.hu' }, { nev: 'Kiss Anna', email: 'a@examples.com' }, { nev: 'Dryrunner Zita', email: 'a@gmail.com' }]) {
+      const { r } = await fizetesEsWebhook({ ...e, attr: MER_ATTR, mer: { ana: true, adv: true } });
+      assert.equal(r.status, 200, JSON.stringify(e));
+      assert.equal(beerkezett.length, 1, 'kimegy: ' + JSON.stringify(e));
+    }
   });
 });

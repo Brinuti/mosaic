@@ -1240,6 +1240,9 @@ async function alairasJo(fejlec, torzs, titkok, most) {
 //  - MERES_HOOK_URL nelkul a lepes nem tesz semmit (nincs Stripe-hivas, nincs metadata-iras).
 const MERES_HOOK_RE = /^(https:\/\/hooks\.zapier\.com\/hooks\/catch\/\d+\/[A-Za-z0-9_-]+\/?|http:\/\/127\.0\.0\.1:\d+\/.*)$/; // a loopback csak a tesztekhez
 const MERES_IDOKORLAT_MS = 8000;
+// teszt-vedelem (#84): ilyen nevu / e-mail-domainu fizetesbol soha nem megy ki meresi esemeny (a Zapier-oldalon is ugyanez a szabaly)
+const MERES_TESZT_NEV_RE = /(^|[\s,.\-_])(teszt|claude|dryrun)($|[\s,.\-_])/i;
+const MERES_TESZT_EMAIL_RE = /@([a-z0-9-]+\.)*example\.(com|org|net)$/i;
 
 // -> 'kesz' | 'kihagyva' | 'hiba' (soha nem dob)
 async function meresKuld(k, piId) {
@@ -1251,17 +1254,22 @@ async function meresKuld(k, piId) {
     const md = pi.metadata || {};
     if (md.forras !== FORRAS || pi.status !== 'succeeded' || md.mer_kuldve) return 'kihagyva';
     const jelol = (ertek) => metaIrasCsendes(k, pi.id, { mer_kuldve: ertek }, 'mer_kuldve');
+    const ch = pi.latest_charge && typeof pi.latest_charge === 'object' ? pi.latest_charge : null;
+    const emailRaw = String(pi.receipt_email || (ch && ch.billing_details && ch.billing_details.email) || '').trim().toLowerCase();
+    // probavedelem (#84): TESZT / Claude / dryrun nevu, illetve example.com e-mailes fizetesbol semmi nem megy ki
+    if (MERES_TESZT_NEV_RE.test(String(md.nev || '')) || MERES_TESZT_EMAIL_RE.test(emailRaw)) {
+      await jelol('kihagyva:teszt');
+      return 'kihagyva';
+    }
     if (md.hozz_adv !== '1') {
       await jelol(md.hozz_adv === '0' ? 'kihagyva:nincs_hozzajarulas' : 'kihagyva:ismeretlen');
       return 'kihagyva';
     }
-    const ch = pi.latest_charge && typeof pi.latest_charge === 'object' ? pi.latest_charge : null;
     if (ch && (ch.refunded || ch.disputed || Number(ch.amount_refunded) > 0)) {
       await jelol('kihagyva:visszaterites');
       return 'kihagyva';
     }
     const tsMp = Number((ch && ch.created) || pi.created) || Math.floor(k.most.getTime() / 1000);
-    const emailRaw = String(pi.receipt_email || (ch && ch.billing_details && ch.billing_details.email) || '').trim().toLowerCase();
     // lapos JSON (a Zapier "catch hook" igy a legegyszerubb); az ures mezok kimaradnak
     const adat = {
       esemeny: 'ajandek_vasarlas', pi: pi.id, livemode: pi.livemode === true,
