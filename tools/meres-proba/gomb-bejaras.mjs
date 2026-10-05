@@ -1,5 +1,6 @@
 // Minden foglalas-jellegu gomb / link valodi kattintassal (vagy erintessel): mit csinal, es LATSZIK-E a foglalo? (a helyi dist-en)
-//   node tools/meres-proba/gomb-bejaras.mjs [--profil asztali|mobil|webkit] [--oldalak a,b] [--ki naplo.json]
+//   node tools/meres-proba/gomb-bejaras.mjs [--profil asztali|mobil|webkit] [--oldalak a,b] [--ki naplo.json] [--bazis URL] [--resz k/n] [--suti elfogad]
+// SUTI_TAKAR: a suti-sav takarja a gombot (nem hiba: a latogato a savot elobb lezarja; --suti elfogad kikapcsolja a savot)
 // Besorolas: RETEG (megnyilik ES kep alapjan lathato) | FEHER (megnyilik, de a kepernyon nem a foglalo latszik) | HORGONY (ugyanazon az oldalon gorget)
 //            ATVISZ (mas oldalra visz) | MASIK_LAP | TEL (tel: / mailto:) | SEMMI (nem tortenik semmi) | FEDI (valami takarja a gombot)
 // A "lathato" ellenorzes a kepernyokep pixeleit nezi: a foglalo panel hatterszine a panel sarkaiban (a "fehér képernyő" hiba: a reteg letrejott, de nem rajzolodott ki).
@@ -12,6 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 const arg = (n, d) => { const i = process.argv.indexOf('--' + n); return i > 0 ? process.argv[i + 1] : d; };
 const PROFIL = arg('profil', 'asztali'); const KI = arg('ki', ''); const SZURO = arg('oldalak', ''); const ONTESZT = arg('onteszt', '0') === '1'; // az ellenorzo onellenorzese: a megnyilt foglalot szandekosan lathatatlanna tesszuk, FEHER-t kell jelentenie
+const SUTI = arg('suti', ''); // --suti elfogad: a suti-sav "Elfogadom" gombjara kattint az oldal betoltese utan (a kimeno meres ettol meg le van tiltva), hogy a sav ne takarja a rogzitett aljasavot
 const ELES = arg('bazis', ''); // --bazis https://www.mosaicheadspa.hu: az eles oldalon (a kimeno meres akkor is le van tiltva)
 const DIST = path.resolve(import.meta.dirname, '..', '..', 'dist');
 const PORT = { asztali: 4192, mobil: 4193, webkit: 4194 }[PROFIL] || 4192; let BASE = ELES || ('http://localhost:' + PORT);
@@ -75,7 +77,7 @@ const eredmeny = [];
 for (const oldal of oldalak) {
   const url = BASE + '/' + (oldal === 'fooldal' ? '' : oldal);
   const p = await ctx.newPage();
-  const betolt = async () => { await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 }); await p.waitForTimeout(1800); };
+  const betolt = async () => { await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 }); await p.waitForTimeout(1800); if (SUTI === 'elfogad') { await p.evaluate(() => { const g = document.querySelector('#mh-cc [data-mh=accept]'); if (g) g.click(); }).catch(() => {}); await p.waitForTimeout(500); } };
   try { await betolt(); } catch (e) { eredmeny.push({ oldal, hiba: 'nem toltodik: ' + e.message.slice(0, 80) }); await p.close(); continue; }
   const cel = await p.evaluate(GYUJT);
   for (const c of cel) {
@@ -85,10 +87,13 @@ for (const oldal of oldalak) {
       if (!el) { besorol = 'NINCS_ELEM'; throw new Error('x'); }
       await el.evaluate((e) => { for (let d = e.closest('details'); d; d = d.parentElement && d.parentElement.closest('details')) d.open = true; e.scrollIntoView({ block: 'center', behavior: 'instant' }); }); await p.waitForTimeout(400); // a lenyilo (details) tartalmat a latogato is kinyitja; 'instant': az oldal CSS-e (scroll-behavior:smooth) ne animalja a gorgetest a meres kozben; // kozepre gorgetve: a rogzitett fejlec / aljasav (sticky) igy nem takarja; a szelen levo gombot a valodi latogato is lejjebb gorgeti
       // a kattintas helye: a link legnagyobb sora / darabja (a tobb soros, folyoszoveg-link teljes dobozanak kozepe lehet a sorok kozotti ures ter)
-      const doboz = await el.evaluate((e) => { const rs = [...e.getClientRects()].filter((r) => r.width > 4 && r.height > 4).sort((a, b) => b.width * b.height - a.width * a.height); const r = rs[0]; return r ? { x: r.left, y: r.top, width: r.width, height: r.height } : null; });
+      const mer = () => el.evaluate((e) => { const rs = [...e.getClientRects()].filter((r) => r.width > 4 && r.height > 4).sort((a, b) => b.width * b.height - a.width * a.height); const r = rs[0]; return r ? { x: r.left, y: r.top, width: r.width, height: r.height, vh: innerHeight } : null; });
+      let doboz = await mer();
+      // a rogzitett aljasav (sticky) gorgetes utan csusztatja be magat: ha a gomb a kepernyon kivul van, lejjebb gorgetunk, es ujra merunk
+      if (doboz && (doboz.y >= doboz.vh || doboz.y + doboz.height <= 0)) { await p.evaluate(() => scrollTo({ top: Math.round(document.documentElement.scrollHeight * 0.4), behavior: 'instant' })); await p.waitForTimeout(1000); doboz = await mer(); }
       if (!doboz) { besorol = 'NINCS_DOBOZ'; throw new Error('x'); }
       const x = doboz.x + doboz.width / 2, y = doboz.y + doboz.height / 2;
-      const fedett = await p.evaluate(([x, y, idx]) => { const all = [...document.querySelectorAll('a[href], button, [role=button], [role=link], [data-testid=linkElement]')]; const e = all[idx]; const q = document.elementFromPoint(x, y); return q && !(e === q || e.contains(q) || q.contains(e)) ? (q.tagName + '#' + q.id + '.' + String(q.className).slice(0, 40)) : ''; }, [x, y, c.idx]);
+      const fedett = await p.evaluate(([x, y, idx]) => { const all = [...document.querySelectorAll('a[href], button, [role=button], [role=link], [data-testid=linkElement]')]; const e = all[idx]; const q = document.elementFromPoint(x, y); return q && !(e === q || e.contains(q) || q.contains(e)) ? ((q.closest('#mh-cc') ? 'SUTI:' : '') + q.tagName + '#' + q.id + '.' + String(q.className).slice(0, 40)) : ''; }, [x, y, c.idx]);
       const url0 = p.url(); const lapok0 = ctx.pages().length; const sy0 = await p.evaluate(() => Math.round(scrollY)); const uiAllapot = () => p.evaluate(() => JSON.stringify({ hossz: document.body.innerHTML.length, exp: [...document.querySelectorAll('[aria-expanded]')].map((e) => e.getAttribute('aria-expanded')).join(','), nyitott: document.querySelectorAll('details[open], dialog[open], [aria-modal=true]').length, magas: document.documentElement.scrollHeight })); const ui0 = await uiAllapot();
       if (PROFIL === 'mobil') await p.touchscreen.tap(x, y); else await p.mouse.click(x, y);
       await p.waitForTimeout(1700);
@@ -106,7 +111,7 @@ for (const oldal of oldalak) {
       else if (url1 !== url0) { const hash = url1.split('#')[0] === url0.split('#')[0]; besorol = hash ? 'HORGONY' : 'ATVISZ'; reszlet = url1.replace(BASE, ''); }
       else if (/^#/.test(c.href) && Math.abs(sy1 - sy0) > 30) { besorol = 'HORGONY'; reszlet = `gorgetett ${sy0} -> ${sy1}`; }
       if (besorol === 'SEMMI' && !fedett && (await uiAllapot().catch(() => ui0)) !== ui0) { besorol = 'UI_VALTAS'; reszlet = 'az oldalon belul valtozott (lenyilo / panel), nem foglalo-gomb'; }
-      if (fedett && besorol === 'SEMMI') { besorol = 'FEDI'; reszlet = fedett; } else if (fedett) reszlet += (reszlet ? ' | ' : '') + 'fedte: ' + fedett;
+      if (fedett && besorol === 'SEMMI') { besorol = fedett.startsWith('SUTI:') ? 'SUTI_TAKAR' : 'FEDI'; reszlet = fedett; } else if (fedett) reszlet += (reszlet ? ' | ' : '') + 'fedte: ' + fedett;
       for (const q of ujlapok) await q.close().catch(() => {});
       if (reteg) { await p.evaluate(() => window.closeBooking && window.closeBooking()); await p.waitForTimeout(500); }
       if (besorol !== 'RETEG' && besorol !== 'TEL' && besorol !== 'MASIK_LAP') await betolt(); // tiszta oldal a kovetkezo gombhoz (egy nyitva maradt kep-nagyito / panel ne takarja a tobbit)
@@ -116,7 +121,7 @@ for (const oldal of oldalak) {
   await p.close();
   const sor = eredmeny.filter((r) => r.oldal === oldal);
   for (const r of sor.filter((q) => !['RETEG', 'TEL'].includes(q.besorol))) console.log('   - ' + r.besorol + ' | ' + r.tag + ' "' + r.szoveg + '" ' + r.href + ' target=' + r.target + ' | ' + r.reszlet);
-  console.log(`${oldal}: ${sor.length} elem | ` + ['RETEG', 'FEHER', 'HORGONY', 'ATVISZ', 'MASIK_LAP', 'TEL', 'UI_VALTAS', 'SEMMI', 'FEDI', 'HIBA'].map((k) => k + ':' + sor.filter((r) => r.besorol === k).length).join(' '));
+  console.log(`${oldal}: ${sor.length} elem | ` + ['RETEG', 'FEHER', 'HORGONY', 'ATVISZ', 'MASIK_LAP', 'TEL', 'UI_VALTAS', 'SUTI_TAKAR', 'SEMMI', 'FEDI', 'HIBA'].map((k) => k + ':' + sor.filter((r) => r.besorol === k).length).join(' '));
 }
 await b.close(); if (!ELES) szerver.close();
 if (KI) fs.writeFileSync(KI, JSON.stringify(eredmeny, null, 1));
