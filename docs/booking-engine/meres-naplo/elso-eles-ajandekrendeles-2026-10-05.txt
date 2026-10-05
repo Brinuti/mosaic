@@ -1,0 +1,27 @@
+Az ELSO VALODI ajandekkartya-rendeles (uj motor, /headspa-ajandekkartya cim) ellenorzese - 2026-10-05
+=========================================================================================================
+(A vevo adatai es a kuponkod szandekosan nincsenek a naplóban: a repo nyilvanos.)
+
+RENDELES
+- 2026-10-05 05:28 UTC (07:28 magyar ido): Paros Head Spa ajandekkartya, 53 800 Ft, Apple Pay (kartya), atvetel: otthon nyomtatja (szemelyre szabott, smaragd design, sajat fotoval).
+- Stripe: PaymentIntent pi_3UN4RX... sikeres, nincs visszateritesi vagy vitas bejegyzes; a Stripe-szamla (2B43EA58-0005) "paid".
+
+AMI RENDBEN VAN (ellenorizve)
+1. Fizetes + webhook: minden Stripe-esemeny kezbesitve (pending_webhooks 0); a PI metadata-ja szerint a kartya "kesz" (kartya_kesz=1, kiallitas 05:28:11 UTC, 4 mp-cel a fizetes utan).
+2. Stripe-szamla: 1 tetel "MOSAIC Headspa Ajandekkartya 20% kedvezmennyel - 50+30 perces Paros", 53 800 Ft brutto, 27% AFA (netto 42 362,20 + AFA 11 437,80) - pontosan a vart ertek.
+3. szamlabridge: a fizetes "Sikeres", a szamla "Kiallitva", szamlaszam E-BIG-2026-3193; a szamlatortenet szerint a szamla 07:28:14-kor (magyar ido), 3 mp-cel a fizetes utan keszult (webhook).
+4. E-mailek (szalon postafiok): "Uj ajandekkartya-rendeles (fizetve)" 05:28:13 UTC, a vevonek "Megkaptuk a fizetesed" 05:28:14 UTC (kuponkod + a kartya linkje + ervenyesseg 2027. aprilis 5.); a Stripe sajat ertesitoje 05:29:31 UTC.
+5. Az ajandekkartya oldala (a vevo levelebeli link): a szoveg (50+30 perces paros kezeles, 2 fo, 53.800 Ft, kod, "Ervenyes: 2027. aprilis 5-ig", idezet, megajandekozott neve) helyes; a hatlap, az elolap es a vevo feltoltott fotoja (1600x1600) betoltodott.
+
+AMI NEM RENDBEN / MEG NYITOTT
+A. A KUPON A SALONICBAN MEG NINCS FELVIVE (a szalon teendoje: a szalon-level "TEENDO: 100%-OS KUPON A SALONICBAN" resze). Ellenorzes a Salonic nyilvanos foglalasi urlapjan (Kuponkoddal / Ajandekkartyaval foglalok -> Paros -> idopont -> adatlap -> "Kupon / Ajandekutalvany kod" + "KOD ELLENORZESE"; nem kuldtem el foglalast): a valasz "A megadott kod sajnos nem hasznalhato!". A vevo kodja ezert foglalaskor most meg NEM mukodik; a tulajdonos megerositette, hogy a lanyok meg nem toltottek fel. Ujraellenorzes a feltoltes utan ugyanigy.
+B. A szamlazz.hu-ban kiallitott szamla TARTALMA (tetel, AFA, megjegyzes "Ajandekozott(ak) Neve(i)", vevo adatai, fizetesi mod) nem volt ellenorizheto: a szamlazz.hu a Chrome-ban kijelentkezett allapotban volt (a bongeszo mas fiok adatait toltotte ki, nem leptem be). A szamlabridge szerint a szamla kiallitva; a tetel a Stripe-szamlabol jon (lasd 2.).
+C. MERES (bongeszos): a fizetes utan a regi konverzio (rejtett /success-ajandekkartya-stripe keret) es az uj purchase esemeny a vevo bongeszojebol, a suti-hozzajarulastol fuggoen megy ki. Ma 06:06 UTC-kor (38 perccel a vasarlas utan) sem a GA4-ben (property 468699723; nincs "ajandek" utvonalu oldalmegtekintes, nincs purchase), sem a Google Adsben (nincs mai konverzio), sem a Meta WIX-pixel statisztikajaban (a 22:00 PDT oras meg hianyzik) nem latszik semmi - ez keses (GA4 / Ads / Meta orakat keshet) VAGY a vevo elutasitotta a sutiket, VAGY a rejtett keret nem toltodott be; ez a forrasokbol most nem dontheto el.
+   - A kodban az Apple Pay-es fizetes (confirmPayment, redirect: 'if_required') ugyanazon az uton halad (fizetesEllenorzes -> sikerre -> purchaseMeres -> regiKonverzio), tehat nincs olyan ag, ami kihagyna.
+   - A Netlify mar nem szolgal ki (az eles oldal Cloudflare Pages); a Cloudflare zona-forgalmi statisztikaja NEM megbizhato erre: a Pages altal kiszolgalt kerelmek nagy resze nem latszik benne (napi ~2,4 ezer kerelem, ebbol 35 darab 2xx, mikozben a GA4 59 oldalmegtekintest mutat). A statisztika szerint a /success-ajandekkartya-stripe cimre az utolso 24 oraban 1 kerelem volt (tegnap ~17:00 magyar ido, nem a vevotol), ma reggel 0 - ebbol a rejtett keret betoltodeserol NEM vonhato le kovetkeztetes.
+   - Tartos bizonyiteknak a szerveroldali naplozas hianyzik (a /success-ajandekkartya-stripe?session_id=pi_... kerelem megerkezese semmilyen tartos helyen nem latszik).
+D. A PaymentIntent metadata-ja NEM tartalmaz kattintas-azonositot (gclid, gbraid, wbraid, fbc, fbp, ttclid) es hozzajarulas-allapotot: a vasarlas utolag nem kotheto hirdeteshez, es szerveroldali vasarlasmeres (Stripe webhook -> Google Ads offline / Meta CAPI) most nincs: a Zapier "checkout.session.completed" webhook PaymentIntentet nem lat.
+
+KOVETKEZO LEPES (dontesre var): a szerveroldali vasarlasmeres megepitese, HOZZAJARULAS-FUGGOEN (csak akkor megy ki hirdetesi platformra, ha a vevo a marketing-sutit elfogadta; a hozzajarulas allapota a PI metadata-ba kerul): PI metadata (gclid/gbraid/wbraid/fbc/fbp/ttclid + hozzajarulas), Zapier: Stripe payment_intent.succeeded (forras=ajandek-motor) -> Google Ads offline konverzio + Meta CAPI Purchase (ertek + event_id=pi_... a deduplikaciohoz), eloszor MASODLAGOS konverzioakciokent a bongeszos mellett. Tartos naplozas a rejtett koszonooldal betoltodesehez (KV).
+
+Mérést érint: nem (csak naplo; semmi nem valtozott a kodban vagy a mero-folyamatokban).
