@@ -728,6 +728,23 @@ for (const lap of LANDINGEK) {
     await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {});
   }
 }
+// --- lejjebb gorgetett oldalon (2026-10-05): a gorgetes-zar NEM mozgatja az oldalt (korabban body fixed + top:-scrollY volt: telefonon a lap aljan a reteg letrejott, de FEHER kepernyo maradt) ---
+for (const lap of ['/', '/paros-headspa-budapest', '/lezeres-szortelenites-budapest', '/oxigenterapia-budapest']) {
+  await page.goto(BAZIS + lap, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 }).catch(() => {});
+  await page.evaluate(() => { window.scrollTo({ top: Math.round(document.documentElement.scrollHeight * 0.4), behavior: 'instant' }); return null; }); // a landingeken scroll-behavior:smooth lehet: azonnali ugras kell
+  await page.waitForTimeout(700);
+  const y0 = await page.evaluate(() => Math.round(window.scrollY));
+  await page.evaluate(() => { const a = [...document.querySelectorAll('a[href*="foglalo-motor?business"]')].filter((e) => e.getBoundingClientRect().height > 4).pop(); (a || document.querySelector('a[href*="foglalo-motor"]')).click(); });
+  await varCim(page);
+  const st = await page.evaluate(() => { const h = document.getElementById('mosaic-booking-layer'); const r = h.getBoundingClientRect(); const felso = document.elementsFromPoint(innerWidth / 2, innerHeight / 2)[0]; return { bodyPos: getComputedStyle(document.body).position, bodyTop: getComputedStyle(document.body).top, y: Math.round(scrollY), host: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], vw: innerWidth, vh: innerHeight, felul: felso === h }; });
+  ok(lap + ' | lejjebb gorgetve (y=' + y0 + '): a body NEM fixed / eltolt, az oldal helyzete megmarad', y0 > 500 && st.bodyPos !== 'fixed' && Math.abs(st.y - y0) <= 2, JSON.stringify(st));
+  ok(lap + ' | lejjebb gorgetve: a reteg a teljes ablakot fedi es legfelul van', st.host[0] === 0 && st.host[1] === 0 && st.host[2] === st.vw && st.host[3] === st.vh && st.felul, JSON.stringify(st));
+  await reteg(page).locator('#be-close').click().catch(() => {});
+  await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'), null, { timeout: 8000 }).catch(() => {});
+  const y1 = await page.evaluate(() => Math.round(scrollY));
+  ok(lap + ' | lejjebb gorgetve: bezaras utan az oldal ugyanott van, a gorgetes visszaall', Math.abs(y1 - y0) <= 2 && (await page.evaluate(() => getComputedStyle(document.body).overflow !== 'hidden' && getComputedStyle(document.documentElement).overflow !== 'hidden')), y0 + ' -> ' + y1);
+}
 // --- a regi foglalo-oldalak: ures oldal + bezarhatatlan felugro (a cim megmarad, a tartalom rejtett, a foglalo magatol megnyilik, nincs X); a kuponos oldalak 301 a fooldalra ---
 {
   const URES = [['/idpontfoglalas', 'Mit szeretnél foglalni?'], ['/mosaic-hair-idopontfoglalas', 'Mit szeretnél foglalni?'], ['/szortelenites-foglalas', null], ['/pmu-foglalas', 'PMU'], ['/smink-foglalas', 'PMU'], ['/naptar', 'Mit szeretnél foglalni?']];
