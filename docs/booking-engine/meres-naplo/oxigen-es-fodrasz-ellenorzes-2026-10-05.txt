@@ -1,0 +1,235 @@
+Oxigen- es fodraszat-ellenorzes (az elemzo 12:00-s leletei), 2026-10-05 ~12:20-12:50 (helyi ido)
+========================================================================================================
+
+KERES (elemzo, a tulajdonoson at):
+  1. Oxigen: ma 2 online foglalas jott (08:44 elso alkalom, 11:39 hajkamerás konzultacio), de a GA4-ben egyetlen /oxigenterapia-ok megtekintes sincs.
+     Letiltott kimeno meresu proba az oxigenes foglalasra a felugro foglalon at, a koszonooldalig; platformonkent pontosan 1 konverzio, a kattintas-azonositok atereljenek.
+     Ha a proba jo, akkor a vevok utasitottak el a sutiket.
+  2. Fodrasz: a ma 07:52-es foglalas a Salonic sajat oldalan ment vegig (mosaic-hair.salonic.hu/success/bookingDetails/...), nem a mi foglalonkon.
+     Keresd meg, honnan visz meg link kozvetlenul a Salonic foglalooldalara (regi gombok, e-mail- / SMS-sablonok, a mi kodunk); irj at mindent a /foglalo-motor-ra.
+
+EREDMENY ROVIDEN
+  1. OXIGEN: a proba JO (az eles oldalon, valtozatlan kodon): mindket oxigenes utvonal (hajkamera 466147, elso kezeles 466110) a felugro foglalon at a koszonooldalra er
+     (/oxigenterapia-ok), platformonkent PONTOSAN 1 konverzio, a gclid / fbc / ttclid vegigmegy. Ezenfelul FUGGETLEN bizonyitek, hogy a ket valodi vevo bongeszoje is
+     betoltotte a koszonooldalt: a Meta-pixel (ami sutitol fuggetlenul fut) mindket foglalasnal megkapta a konverziot (lasd lent). A GA4 hianya tehat a suti-elutasitas:
+     sutit elutasito latogatotol a GA4 csak sutimentes jelzest kap, ami nem jelenik meg a jelentesekben (lasd az "elutasito" futast).
+  2. FODRASZ: a mi kodunkban 4 helyen volt kozvetlen Salonic-foglalolink (mind atirva a motorra, vedoteszttel); a ma 07:52-es foglalas pontos utjat nem lehet
+     visszakovetni (lasd lent), a leggyanusabb utak a MI KODUNKON KIVULIEK.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+1. OXIGEN
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Futtatas: az ELES oldalon (www.mosaicheadspa.hu, a main-nel azonos kod; nincs overlay), node tools/meres-proba/meres-proba.mjs --szenario <x> --mod valodi --popup 1 --clickids 1
+A kimeno meres (Google Ads, GA4, stape / Meta CAPI, Meta, TikTok, Zapier) alapbol tiltott es naplozott (tilt.mjs + DNS-vedvonal): semmi nem ment ki.
+Valodi Salonic-foglalas "TESZT - Claude" nevvel (a Zapier-folyamatok teszt-vedelme kihagyja), MIND lemondva ("Az idopont lemondasa sikeres volt!").
+
+A) HAJKAMERAS KONZULTACIO (466147), az uj oxigen-landing elso gombjarol  [a 11:39-es valodi foglalas tipusa]
+=== oxigen1 / valodi / eles, valtozatlan / kattintas-azonositok: igen
+vege URL: https://www.mosaicheadspa.hu/oxigenterapia-ok?first_booking=true&service=AKCI%C3%93S+Hajkamer%C3%A1s+vizsg%C3%A1lat+%C3%A9s+konzult%C3%A1ci%C3%B3&category=Oxig%C3%A9nter%
+  bongeszo (facebook.com/tr) PageView: 2 keres [FO,KERET(about:blank)]  event_id=ob3_plugin-set_e02d63335...
+  bongeszo (facebook.com/tr) SubscribedButtonClick: 1 keres [KERET(about:blank)]  event_id=ob3_plugin-set_db3d3acf0...
+  bongeszo (facebook.com/tr) SubmitApplication: 1 keres [KERET(about:blank)]  <- konverzio  event_id=ob3_plugin-set_2f9ce8d68...
+  bongeszo (facebook.com/tr) Oxigen_Konzultacio: 1 keres [KERET(about:blank)]  <- konverzio  event_id=oxigenterapi-3385031-466...
+  szerveroldali CAPI (capig.stape) PageView: event_id=ob3_plugin-set_e02d633357d4ce2...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) SubmitApplication: event_id=ob3_plugin-set_2f9ce8d68f81829...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) PageView: event_id=ob3_plugin-set_fb3ec686cf5450e...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) Oxigen_Konzultacio 4990 HUF: event_id=oxigenterapi-3385031-466147-17...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  Meta konverzios esemeny-nevek (bongeszo + CAPI egyutt, deduplikalas utan): SubmitApplication [bongeszo 1, CAPI 1, azonos event_id]; Oxigen_Konzultacio [bongeszo 1, CAPI 1, azonos event_id]
+  TikTok konverzios esemenyek: InitiateCheckout, EnrichAM, Lead, Purchase
+ZAPIER webhook: 1 keres [FO]
+
+=== OSSZEGZES: konverzio platformonkent (keretben + fo ablakban egyutt)
+  Google Ads : 1 egyedi konverzio (uImLCLLV-YgdEPDs9sg-)
+  GA4/stape  : 9 fajta nem-oldalbetoltes esemeny, mindegyik 1/1/1/1/1/1/1/1/1x a gyujto vegponton
+  Meta       : SubmitApplication, Oxigen_Konzultacio
+  TikTok     : InitiateCheckout, EnrichAM, Lead, Purchase; /api/v2/pixel keresek: 72
+  KERETBEN inditott: 0
+
+=== KATTINTAS-AZONOSITOK (gclid=TESZT123, fbclid=TESZT456, ttclid=TESZT789, utm_source=teszt, utm_medium=cpc)
+  Google Ads-kereses: gclid a "gclaw/gclid" mezoben: MEGVAN (18 keres; pl. TESZT123)
+  GA4/Ads-import:     gclid a "gclaw/gclid" mezoben: NINCS
+  Meta (facebook.com/tr): fbc mezo: MEGVAN (5 keres; fb.1.1791195563927.TESZT456)
+  Meta CAPI (capig.stape): fb.clickID/fbc a torzsben: MEGVAN (4/4 keres)
+  TikTok: ttclid (context.ad.callback / ttclid) a torzsben: MEGVAN (11/72 keres)
+  GA4 kampany-forras (cs/cm mezo, vagy utm a dl=page_location-ben): MEGVAN: cs=undefined cm=undefined
+  GA4 page_view / visit hitek (munkamenet-kezdet): 
+    en=page_view sid=1791195563 dl=https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TE dr=
+    en=visit sid=1791195563 dl=https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TE dr=
+    en=page_view sid=1791195563 dl=https://www.mosaicheadspa.hu/oxigenterapia-ok?first_booking= dr=https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TESZT123&fbclid=TESZT4
+    en=visit sid=1791195563 dl=https://www.mosaicheadspa.hu/oxigenterapia-ok?first_booking= dr=https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TESZT123&fbclid=TESZT4
+  referrer (dr/ref) a koszonooldalon: https://www.mosaicheadspa.hu/ | https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=
+
+B) ELSO KEZELES (466110), a regi hirdetes-cimrol (/mosaic-hair-idopontfoglalas: a foglalo magatol nyilik)  [a 08:44-es valodi foglalas tipusa]
+=== oxigen0 / valodi / eles, valtozatlan / kattintas-azonositok: igen
+vege URL: https://www.mosaicheadspa.hu/oxigenterapia-ok?first_booking=true&service=Haj+Oxig%C3%A9nter%C3%A1pia+-+1.+alkalom&category=Oxig%C3%A9nter%C3%A1pia+-+1.alkalom&price=29900
+  bongeszo (facebook.com/tr) PageView: 2 keres [FO,FO]  event_id=ob3_plugin-set_86ac5e0c6...
+  bongeszo (facebook.com/tr) SubmitApplication: 1 keres [KERET(about:blank)]  <- konverzio  event_id=ob3_plugin-set_4e5507831...
+  bongeszo (facebook.com/tr) Oxigen_FoglalasElso: 1 keres [KERET(about:blank)]  <- konverzio  event_id=oxigenterapi-3385031-466...
+  szerveroldali CAPI (capig.stape) PageView: event_id=ob3_plugin-set_86ac5e0c64a0d6c...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) SubmitApplication: event_id=ob3_plugin-set_4e5507831611ed0...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) PageView: event_id=ob3_plugin-set_cea48e1490f9b8b...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) Oxigen_FoglalasElso 29900 HUF: event_id=oxigenterapi-3385031-466110-17...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  Meta konverzios esemeny-nevek (bongeszo + CAPI egyutt, deduplikalas utan): SubmitApplication [bongeszo 1, CAPI 1, azonos event_id]; Oxigen_FoglalasElso [bongeszo 1, CAPI 1, azonos event_id]
+  TikTok konverzios esemenyek: InitiateCheckout, EnrichAM, Lead, Purchase
+ZAPIER webhook: 1 keres [FO]
+
+=== OSSZEGZES: konverzio platformonkent (keretben + fo ablakban egyutt)
+  Google Ads : 1 egyedi konverzio (tZ7zCLnriqwcEPDs9sg-)
+  GA4/stape  : 10 fajta nem-oldalbetoltes esemeny, mindegyik 1/1/1/1/1/1/1/1/1/1x a gyujto vegponton
+  Meta       : SubmitApplication, Oxigen_FoglalasElso
+  TikTok     : InitiateCheckout, EnrichAM, Lead, Purchase; /api/v2/pixel keresek: 72
+  KERETBEN inditott: 0
+
+=== KATTINTAS-AZONOSITOK (gclid=TESZT123, fbclid=TESZT456, ttclid=TESZT789, utm_source=teszt, utm_medium=cpc)
+  Google Ads-kereses: gclid a "gclaw/gclid" mezoben: MEGVAN (21 keres; pl. TESZT123)
+  GA4/Ads-import:     gclid a "gclaw/gclid" mezoben: MEGVAN (2 keres)
+  Meta (facebook.com/tr): fbc mezo: MEGVAN (4 keres; fb.1.1791196211824.TESZT456)
+  Meta CAPI (capig.stape): fb.clickID/fbc a torzsben: MEGVAN (4/4 keres)
+  TikTok: ttclid (context.ad.callback / ttclid) a torzsben: MEGVAN (11/72 keres)
+  GA4 kampany-forras (cs/cm mezo, vagy utm a dl=page_location-ben): MEGVAN: cs=undefined cm=undefined
+  GA4 page_view / visit hitek (munkamenet-kezdet): 
+    en=page_view sid=1791196211 dl=https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas?gcl dr=
+    en=visit sid=1791196211 dl=https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas?gcl dr=
+    en=page_view sid=1791196211 dl=https://www.mosaicheadspa.hu/oxigenterapia-ok?first_booking= dr=https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas?gclid=TESZT123&fbclid=T
+    en=visit sid=1791196211 dl=https://www.mosaicheadspa.hu/oxigenterapia-ok?first_booking= dr=https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas?gclid=TESZT123&fbclid=T
+  referrer (dr/ref) a koszonooldalon: https://www.mosaicheadspa.hu/ | https://www.mosaicheadspa.hu/mosaic-hair-idopontfoglalas?gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_so
+
+C) SUTIT ELUTASITO LATOGATO (--sutik elutasit, szimulalt atiranyitas, foglalas NEM jon letre): mit kuld az oldal
+   (a koszonooldal az oxigen-masodik oldal szimulalt adataival; ugyanaz a suti-szabaly minden koszonooldalra)
+=== oxigen1 / szim / eles, valtozatlan / kattintas-azonositok: igen
+vege URL: https://www.mosaicheadspa.hu/oxigenterapia-masodik?first_booking=false&service=Haj+Oxig%C3%A9nter%C3%A1pia+-+2.+alkalomt%C3%B3l&category=Oxig%C3%A9nter%C3%A1pia+-+2.alkal
+  bongeszo (facebook.com/tr) PageView: 1 keres [FO]  event_id=ob3_plugin-set_0bb42801c...
+  bongeszo (facebook.com/tr) SubscribedButtonClick: 1 keres [KERET(about:blank)]  event_id=ob3_plugin-set_c85188fc5...
+  bongeszo (facebook.com/tr) Oxigen_Visszajaro: 1 keres [KERET(about:blank)]  <- konverzio  event_id=oxigenterapi-SZIM1793374...
+  szerveroldali CAPI (capig.stape) PageView: event_id=ob3_plugin-set_0bb42801c439e49...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) Oxigen_Visszajaro 26000 HUF: event_id=oxigenterapi-SZIM1793374200-46...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  Meta konverzios esemeny-nevek (bongeszo + CAPI egyutt, deduplikalas utan): Oxigen_Visszajaro [bongeszo 1, CAPI 1, azonos event_id]
+  TikTok konverzios esemenyek: -
+ZAPIER webhook: 1 keres [FO]
+
+=== OSSZEGZES: konverzio platformonkent (keretben + fo ablakban egyutt)
+  Google Ads : 1 egyedi konverzio (pLhlCISIp4kdEPDs9sg-)
+  GA4/stape  : 1 fajta nem-oldalbetoltes esemeny, mindegyik 1x a gyujto vegponton
+  Meta       : Oxigen_Visszajaro
+  TikTok     : (az esemeny neve csak a /pixel/act kotegben van); /api/v2/pixel keresek: 0
+  KERETBEN inditott: 0
+
+=== KATTINTAS-AZONOSITOK (gclid=TESZT123, fbclid=TESZT456, ttclid=TESZT789, utm_source=teszt, utm_medium=cpc)
+  Google Ads-kereses: gclid a "gclaw/gclid" mezoben: MEGVAN (7 keres; pl. TESZT123)
+  GA4/Ads-import:     gclid a "gclaw/gclid" mezoben: NINCS
+  Meta (facebook.com/tr): fbc mezo: MEGVAN (3 keres; fb.1.1791195915697.TESZT456)
+  Meta CAPI (capig.stape): fb.clickID/fbc a torzsben: MEGVAN (2/2 keres)
+  TikTok: ttclid (context.ad.callback / ttclid) a torzsben: NINCS
+  GA4 kampany-forras (cs/cm mezo, vagy utm a dl=page_location-ben): MEGVAN: cs=undefined cm=undefined
+  GA4 page_view / visit hitek (munkamenet-kezdet): 
+    en=page_view sid=1791195915 dl=https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TE dr=
+    en=visit sid=1791195915 dl=https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TE dr=
+    en=page_view sid=1791195925 dl=https://www.mosaicheadspa.hu/oxigenterapia-masodik?first_boo dr=https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TESZT123&fbclid=TESZT4
+    en=visit sid=1791195925 dl=https://www.mosaicheadspa.hu/oxigenterapia-masodik?first_boo dr=https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TESZT123&fbclid=TESZT4
+  referrer (dr/ref) a koszonooldalon: https://www.mosaicheadspa.hu/oxigenterapia-budapest?gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=
+   Ertelmezes: sutit elutasito latogatotol a Meta-pixel (a regi "szukseges" viselkedes szerint) KULD konverziot, a Google Ads sutimentes jelzest (pagead2.googlesyndication),
+   a GA4 sutimentes jelzest (minden oldal kulon munkamenet: sid kulon), a TikTok semmit. A GA4-jelentesek a sutimentes jelzest nem mutatjak (csak modelleles).
+
+D) A KET VALODI VEVO (fuggetlen ellenorzes, nem a proba)
+   - Meta-pixel (Fodrasz/Oxigen pixel 1361403694872594) esemenyei oraankent (a Meta idozona: PDT, a helyi ido -9 ora):
+       06:00Z-os ora (08:00 helyi): SubmitApplication 2, Contact 1     -> a 08:44-es elso-kezelesi foglalas: bongeszos SubmitApplication (+ CAPI, azonos event_id) es a Zapier Contact
+       09:00Z-os ora (11:00 helyi): Oxigen_Konzultacio 2, SubmitApplication 2, Contact 1  -> a 11:39-es hajkameras foglalas
+     A "2" a bongeszos + a szerveres (CAPI) esemeny, azonos event_id-vel (a Meta egy esemenykent szamolja); a Contact a Zapier-folyamat szerveres jelzese.
+     => mindket vevo bongeszoje betoltotte a koszonooldalt (a pixel arrol tuzel), tehat az atadas a felugro foglalobol mukodott.
+   - Belso, nevtelen szamlalo (D1 mosaic-foglalo-szamlalo, a #88 lepes-meres): oxigen "success" 2 (a 11:39-es es egy 12:23-as foglalas), submit 2: mindketto a felugro foglalon at ment.
+   - GA4 ma: /oxigenterapia-ok megtekintes 0; a mosaic-oxigen.salonic.hu oldalon a /success/bookingDetails/... megtekintesek a Salonic sajat oldalanak (a keretben es az e-mailbol megnyitott
+     reszletek-oldalnak) a megtekintesei, nem a mi koszonooldalunke.
+   KOVETKEZTETES: az elemzo feltevese helyes: a vevok elutasitottak a sutiket (a GA4 emiatt nem mutatja), a mérés mukodik.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+2. FODRASZ
+------------------------------------------------------------------------------------------------------------------------------------------------------
+A ma 07:52-es foglalas: Mosaic Hair, "Noi hajvagas + Szaritas - Kozepes haj", VISSZATERO vendeg (a fodraszati Zapier-folyamat "returning-guest" okkal kihagyta: ez az oka, hogy
+Google Ads / Meta jelzes nem is indult). A Meta Fodrasz-pixelen a 05:00Z-os oran csak a szerveroldali "Contact" jelent meg (a Zapier-folyamatbol), bongeszos SubmitApplication /
+Fodrasz_* esemeny NEM: a vendeg nem jutott el a mi koszonooldalunkig (a foglalas a Salonic sajat sikeroldalan ert veget).
+
+2.1 A MI KODUNKBAN TALALT KOZVETLEN SALONIC-FOGLALOLINKEK (mind atirva /foglalo-motor-ra; vedoteszt: tools/test-foglalo-atkotes.mjs "kliens-kod: nincs kozvetlen Salonic-link")
+   - assets/js/booking-engine/engine.js: a ket hibakepernyo ("Most nem sikerult betolteni az idopontokat" / "Most nem tudjuk veglegesiteni az online foglalast") "Foglalas a Salonic oldalan"
+     gombja a Salonic /selectSpecialization oldalara vitt, MINDEN uzletagnal (a fodraszatnal https://mosaic-hair.salonic.hu/selectSpecialization/?placeId=10823). Mostantol:
+     "Foglalas ujrakezdese" -> /foglalo-motor?business=<uzletag>. (Ellenorizve a hibakepernyon: fodrasz / oxigen / lezer.)
+   - assets/js/lezer-landing.js: a lezeres oldal naptaranak ket hibauzenete ("nincs szabad idopont" / "nem sikerult lekerni") a Salonic /selectDate oldalara vitt (uj lapon).
+     Mostantol: /foglalo-motor?business=laser&service=konzult (konzultacio) vagy &intent=first (kezeles).
+   - assets/js/foglalo.js (a rejtett /foglalo-proba oldal regi HeadSpa-foglaloja): hibauzenet "Foglalj itt" a Salonic-ra -> /foglalo-motor?business=headspa.
+   - A build link-atkotese (tools/foglalo-atkotes.mjs) a regi oldalak gombjait mar korabban atkototte: az eles build-ben egyetlen Salonic-foglalolink sem maradt a HTML-ben
+     (csak az ajandekkartya-VASARLAS /giftcards es az ajandekkartya-koszonooldal kuponos foglalo-linkje, ami szandekosan marad: a koszonooldal merese miatt).
+   SZANDEKOS KIVETEL (mindketto a sajat koszonooldalunkra ter vissza, MERT a Salonic atiranyit; a lezeres valodi proba ezt igazolta):
+   - engine.js: az urlap-keret tartaleka ("Nem jelenik meg az urlap? Nyisd meg itt": a kivalasztott idopont adatlapja a fo ablakban);
+   - lezer-landing.js: a naptar idopont-gombjai az idopontos Salonic-adatlapra visznek (a sajat naptar). VALODI proba (lezer, ingyenes konzultacio, ma 12:4x helyi):
+     az idopontra kattintva -> Salonic adatlap a fo ablakban -> kuldes -> /elysion-ok (a mi koszonooldalunk): 1 Google Ads konverzio, Meta Schedule + Szor_Konzultacio (+CAPI). Lemondva.
+
+2.2 A FIZETOS FODRASZATI FOGLALAS A FELUGRO FOGLALON AT (nem csak a konzultacio): valodi proba, "Ferfi hajvagas" (231549), lemondva
+=== hairvagas / valodi / eles, valtozatlan / kattintas-azonositok: igen
+vege URL: https://www.mosaicheadspa.hu/fodrasz-ok?first_booking=true&service=%F0%9F%92%87%E2%80%8D%E2%99%82%EF%B8%8F+F%C3%A9rfi+hajv%C3%A1g%C3%A1s&category=F%C3%A9rfi+hajv%C3%A1g%C
+  bongeszo (facebook.com/tr) PageView: 2 keres [FO,KERET(about:blank)]  event_id=ob3_plugin-set_e08cda076...
+  bongeszo (facebook.com/tr) SubscribedButtonClick: 1 keres [KERET(about:blank)]  event_id=ob3_plugin-set_8f5230ab8...
+  bongeszo (facebook.com/tr) Schedule: 1 keres [KERET(about:blank)]  <- konverzio  event_id=ob3_plugin-set_c71330d12...
+  bongeszo (facebook.com/tr) Fodrasz_FoglalasElso: 1 keres [KERET(about:blank)]  <- konverzio  event_id=fodraszok-3385039-231549...
+  szerveroldali CAPI (capig.stape) PageView: event_id=ob3_plugin-set_e08cda076da694f...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) Schedule: event_id=ob3_plugin-set_c71330d1272edfc...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) PageView: event_id=ob3_plugin-set_b041d615fd53cd2...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  szerveroldali CAPI (capig.stape) Fodrasz_FoglalasElso 7450 HUF: event_id=fodraszok-3385039-231549-17933...  == a bongeszo-esemennyel AZONOS event_id: a Meta deduplikalja (1 esemeny)
+  Meta konverzios esemeny-nevek (bongeszo + CAPI egyutt, deduplikalas utan): Schedule [bongeszo 1, CAPI 1, azonos event_id]; Fodrasz_FoglalasElso [bongeszo 1, CAPI 1, azonos event_id]
+  TikTok konverzios esemenyek: InitiateCheckout, EnrichAM, Purchase
+ZAPIER webhook: 1 keres [FO]
+
+=== OSSZEGZES: konverzio platformonkent (keretben + fo ablakban egyutt)
+  Google Ads : 1 egyedi konverzio (lR7hCNHRiIkdEPDs9sg-)
+  GA4/stape  : 8 fajta nem-oldalbetoltes esemeny, mindegyik 1/1/1/1/1/1/1/1x a gyujto vegponton
+  Meta       : Schedule, Fodrasz_FoglalasElso
+  TikTok     : InitiateCheckout, EnrichAM, Purchase; /api/v2/pixel keresek: 71
+  KERETBEN inditott: 0
+
+=== KATTINTAS-AZONOSITOK (gclid=TESZT123, fbclid=TESZT456, ttclid=TESZT789, utm_source=teszt, utm_medium=cpc)
+  Google Ads-kereses: gclid a "gclaw/gclid" mezoben: MEGVAN (18 keres; pl. TESZT123)
+  GA4/Ads-import:     gclid a "gclaw/gclid" mezoben: MEGVAN (1 keres)
+  Meta (facebook.com/tr): fbc mezo: MEGVAN (5 keres; fb.1.1791196296426.TESZT456)
+  Meta CAPI (capig.stape): fb.clickID/fbc a torzsben: MEGVAN (4/4 keres)
+  TikTok: ttclid (context.ad.callback / ttclid) a torzsben: MEGVAN (11/71 keres)
+  GA4 kampany-forras (cs/cm mezo, vagy utm a dl=page_location-ben): MEGVAN: cs=undefined cm=undefined
+  GA4 page_view / visit hitek (munkamenet-kezdet): 
+    en=page_view sid=1791196296 dl=https://www.mosaicheadspa.hu/noi-fodrasz-budapesten-30-szaza dr=
+    en=visit sid=1791196296 dl=https://www.mosaicheadspa.hu/noi-fodrasz-budapesten-30-szaza dr=
+    en=page_view sid=1791196296 dl=https://www.mosaicheadspa.hu/fodrasz-ok?first_booking=true&s dr=https://www.mosaicheadspa.hu/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel?gc
+    en=visit sid=1791196296 dl=https://www.mosaicheadspa.hu/fodrasz-ok?first_booking=true&s dr=https://www.mosaicheadspa.hu/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel?gc
+  referrer (dr/ref) a koszonooldalon: https://www.mosaicheadspa.hu/ | https://www.mosaicheadspa.hu/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel?gclid=TESZT123&fbclid=TESZT456&t
+   (A proba "Noi hajvagas"-t kert, a kartya-valasztas a "Hajvagas" csoport elso talalatara, a Ferfi hajvagasra esett: a lenyeg, hogy NEM a konzultacio, hanem fizetos kezeles.)
+   MEGJEGYZES: ebben az egy futasban a GA4-be a booking_submit / booking_success (lepes-meres #88) NEM erkezett meg (a booking_open ... booking_form_start igen; a belso szamlalo mind a
+   8 lepest megkapta). Az oxigen-futasokban mindketto megerkezett. Valoszinuleg az atadas utani oldalvaltas elnyeli az utolso GA4-kotegben levo ket esemenyt; egy futas kevés, figyelendo.
+
+2.3 HONNAN JONNEK A VENDEGEK A SALONIC FODRASZ-OLDALARA (GA4, 2026-09-20..10-05, a mosaic-hair.salonic.hu oldalon KEZDODO munkamenetek)
+   - mosaicheadspa.hu -> /selectSpecialization (169), /selectDate (35), /selectEmployee (8), /showServices (8): a REGI gombok (a 2026-10-04 22:48-as elesites elott); az elesites utan ilyen nincs.
+   - kozvetlen (direct): ~100 munkamenet, tobbsegben a Salonic fooldalan ('/', 28) vagy kozvetlenul egy idopont-valaszto oldalon (/selectDate, 20; /showServices, 13): konyvjelzo, uzenetben /
+     e-mailben kuldott link, Salonic-emlekezteto.
+   - google / organic: ~27 munkamenet: a Google a Salonic-oldalt maga is megjeleniti a talalatok kozott.
+   - facebook.com / m.facebook.com referral: ~12; ig / social: ~5 (Facebook-oldal gombja, Instagram-bio).
+   - email / referral / "2026" kampany: 2-3 munkamenet: a Salonic MINDEN e-mailjenek labjeleben ott a "Foglalj idopontot hozzank online - kattints ide" link (a visszaigazolo / emlekezteto e-mailben
+     is), ami https://mosaic-hair.salonic.hu/?utm_source=email&utm_medium=referral&utm_campaign=2026 -ra visz. Az "Uj idopont letrehozva" e-mail "Weboldal:" sora a mi oldalunkra mutat.
+   - fizetett (ig/fb/google/tiktok) munkamenetek, amelyek Salonic-oldalon kezdodtek: 2026-10-02-ig naponta tobb; 10-03 ota csak 1 (google, 10-04), ma 0 (a hirdetesek celoldala azota a sajat
+     oldalunk, vagy a kampany szunetel).
+   A 07:52-es vevo GA4-ben valo kovetese nem lehetseges (a Salonic-oldal GA-adata nem tartalmaz vendeg-azonositot); a visszatero vendegek jellemzo utja a Salonic e-mailek labjeleben levo
+   link, a konyvjelzo, a Salonic-emlekezteto SMS, a Google-talalat.
+
+2.4 AMIT NEM A KOD TUD ATIRNI (a fiok kezeloje / a szalon):
+   - Salonic: az e-mail- es SMS-sablonok lablecenek "Foglalj idopontot hozzank online - kattints ide" linkje (mind a 4 fiokban: mosaic-hair / -oxigen / -elysion / mosaicheadspa), a Salonic
+     "foglalasi oldal" cime. Ha a Salonic beallitasaiban atirhato a /foglalo-motor?business=... cimre, azt a szalonnak / a Salonic ugyfelszolgalatnak kell.
+   - Google cegprofil (Idopontfoglalas / Foglalas gomb, "Rezervalas" link), Instagram-bio, Facebook-oldal "Foglalas" gombja: ha Salonic-linkre mutatnak, a fiok kezeloje irhatja at.
+   - Google Ads: a MEGSZUNT / SZUNETELO kampanyok kiegeszitoi kozott van kozvetlen Salonic-link ("Arlista + Idopontok" -> mosaic-hair showServices; "Idopontot foglalok" -> mosaic-hair specId=59306;
+     "20% Akcio" -> mosaicheadspa showServices; "20% Akcio" PMU -> mosaic-pmu). Mind SZUNETELO kampanyban van (nincs elo hatasa); ha ujraindulnak, at kell irni. Az ENGEDELYEZETT
+     (HeadSpa) kampanyok minden celoldala a sajat oldalunk.
+   - Meta-hirdetesek: a hirdetesek celoldalat nem tudom olvasni (a Meta-fiok olvasasat az engedelyezo megtagadta); az elemzo / a tulajdonos ellenorizze (utm_campaign-ban kampany-azonosito).
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+KIEGESZITES (eszkozok, tisztasag)
+------------------------------------------------------------------------------------------------------------------------------------------------------
+- tools/meres-proba/meres-proba.mjs: uj kapcsolo --sutik elutasit (a latogato a sav "Elutasitom" gombjat nyomta); uj szenariok: oxigen0 (elso kezeles a regi hirdetes-cimrol), hairvagas
+  (fizetos fodraszati kezeles a felugro foglalon at).
+- tools/test-foglalo-atkotes.mjs: uj vedoteszt (kliens-kod: nincs kozvetlen Salonic-link); mutacios proba: a regi kodon elbukik (3 hely), az ujon zold.
+- tools/lezer-teszt/lezer.test.mjs: a ket lezeres hibauzenet linkje a foglalo-motorra mutat.
+- A lezer-teszt "rozsaszin akcios sav" tesztje mar a main-en is elbukik (nem ehhez a valtoztatashoz tartozik).
+- A valodi Zapier-futasok a tesztfoglalasokra: mind "teszt-foglalas" okkal kihagyva, kimeno muvelet nelkul (fodraszati Google Ads-folyamat, oxigen/fodrasz Meta- es TikTok-folyamat,
+  PII-dusitas); az Elysion-teszt (a karton neve "teszt teszt") is kihagyva.

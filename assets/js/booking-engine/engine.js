@@ -788,7 +788,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     },
     A3: async () => h('section', {}, title('Most nem tudjuk véglegesíteni az online foglalást.'), note(`Kérjük, próbáld újra, vagy kérj visszahívást, esetleg hívj minket: ${PHONE}.`),
       h('div', { class: 'be-actions' }, primary('Próbálom újra', () => retry()), secondary('Hívjatok vissza', () => { S.callbackReason = 'technikai_hiba'; go('A3_CB'); }),
-        salonicFallback(), h('a', { class: 'be-link', href: PHONE_HREF, text: `Hívás: ${PHONE}` }))),
+        restartLink(), h('a', { class: 'be-link', href: PHONE_HREF, text: `Hívás: ${PHONE}` }))),
     A3_CB: async () => callbackView({ heading: 'Visszahívást kérsz?', intro: 'Hagyd meg a telefonszámod, és visszahívunk.' }),
     A3U: async () => h('section', {}, title('A foglalásodat feldolgoztuk.'),
       note('A visszaigazolást nem tudtuk automatikusan ellenőrizni. Kérjük, nézd meg az e-mailedet: ott találod a foglalásod adatait. Ha nem érkezik levél, hívj minket.'),
@@ -870,11 +870,12 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       return h('section', {}, title(flow.copy.staffListTitle), h('div', { class: 'be-list be-egyenlo' }, [mindegy, ...kartyak]));
     });
   }
-  // Tartalek: ha a motor vagy a Salonic adatai nem toltenek be, a vendeg a Salonic eredeti foglalojara kerulhet (nem szakad meg a foglalas)
-  const salonicUrl = () => { const c = BUSINESSES[flow.business]; return c ? `${c.host}/selectSpecialization/?placeId=${c.placeId}` : null; };
-  const salonicFallback = () => (salonicUrl() ? h('a', { class: 'be-btn be-btn-2', href: salonicUrl(), text: 'Foglalás a Salonic oldalán' }) : null);
+  // Tartalek: ha a motor vagy a Salonic adatai nem toltenek be, a vendeg a motor oldalan ujrakezdheti a foglalast (teljes oldalbetoltes), vagy hivhat.
+  // Kozvetlen Salonic-link NINCS: a Salonic sajat sikeroldalan vegzodo foglalas a koszonooldalon futo meresben nem latszik (2026-10-05: egy fodraszati foglalas igy maradt ki).
+  const restartUrl = () => `${flow.enginePath || '/foglalo-motor'}?business=${encodeURIComponent(flow.business)}`;
+  const restartLink = () => h('a', { class: 'be-btn be-btn-2', href: restartUrl(), text: 'Foglalás újrakezdése' });
   const loadError = () => h('section', {}, title('Most nem sikerült betölteni az időpontokat.'), note(`Kérjük, próbáld újra pár perc múlva, vagy hívj minket: ${PHONE}.`),
-    h('div', { class: 'be-actions' }, primary('Újrapróbálom', () => show(S.state)), salonicFallback(), h('a', { class: 'be-btn be-btn-2', href: PHONE_HREF, text: `Hívás: ${PHONE}` })));
+    h('div', { class: 'be-actions' }, primary('Újrapróbálom', () => show(S.state)), restartLink(), h('a', { class: 'be-btn be-btn-2', href: PHONE_HREF, text: `Hívás: ${PHONE}` })));
 
   function retry() {
     if (S.slot && S.service) return go('C4', { replace: true }); // az adatlap ujratoltese; ha kozben mar rogzult, a Salonic elkelt idopontot jelez (A2)

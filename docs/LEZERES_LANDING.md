@@ -80,8 +80,8 @@ részek le vannak tiltva (nincs dupla számolás). A program: 6 fizetős alkalom
 
 Kompakt kártya: bal oldalt kezelés/konzultáció váltó és a terület legördülője (csempék nélkül), mellette a havi naptár (négyzet alapú napok, keskeny naptár) és a nap időpontjai; a kártya a szekció jobb oldalán áll, bal oldalt a cím és a felsorolás. A szabad napok kattinthatók, az első szabad nap alapból ki van jelölve, alatta a nap időpontjai. A szabad időpontokat a Salonic nyilvános
 naptár-API-ja adja (`api.salonic.hu/calendar/getAvailableTimes`, ugyanaz, mint a PMU landingen), amikor a szekció a képernyő közelébe ér. Időpontot nem találunk ki:
-ha az API nem válaszol, a Salonic foglaló linkjét kapja a látogató. Egy időpontra kattintva a Salonic `/guestData/` adatlapja nyílik ugyanabban a lapon (nincs felugró), az időponttal
-együtt (ugyanezt a címet nyitja a foglaló-motor is). A statikus linkek (ingyenes konzultáció) a build link-átkötésén mennek át (`tools/foglalo-atkotes.mjs`):
+ha az API nem válaszol (vagy nincs szabad nap), a foglaló-motor linkjét kapja a látogató (`/foglalo-motor?business=laser&service=konzult` / `&intent=first`; közvetlen Salonic-link nincs: 2026-10-05, lásd `docs/booking-engine/meres-naplo/oxigen-es-fodrasz-ellenorzes-2026-10-05.txt`). Egy időpontra kattintva a Salonic `/guestData/` adatlapja nyílik ugyanabban a lapon (nincs felugró), az időponttal
+együtt (ugyanezt a címet nyitja a foglaló-motor is; a Salonic ezután a mi `/elysion-ok` köszönőoldalunkra irányít, a mérés ott fut: valódi próbával ellenőrizve 2026-10-05). A statikus linkek (ingyenes konzultáció) a build link-átkötésén mennek át (`tools/foglalo-atkotes.mjs`):
 kikapcsolt átkötésnél (éles) Salonic-link, előnézeten a foglaló-réteg nyílik.
 
 **Helyszín:** Google térkép (iframe) a „funkcionális” sütik elfogadása után magától, egyébként a „Google térkép megjelenítése” gombra kattintva tölt be (a nagy statikus

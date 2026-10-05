@@ -97,7 +97,7 @@
     console.error(e);
     hova.replaceChildren(elem('div', { class: 'hiba' },
       'Most nem sikerült betölteni az adatokat. ',
-      elem('a', { href: SZALON.cim + '/selectSpecialization/?placeId=' + SZALON.placeId, szoveg: 'Foglalj itt' }),
+      elem('a', { href: '/foglalo-motor?business=headspa', szoveg: 'Foglalj itt' }), // nem kozvetlen Salonic-link: a foglalo-motoron at megy a foglalas (meres)
       '.'));
   }
 

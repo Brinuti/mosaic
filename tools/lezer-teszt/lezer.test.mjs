@@ -338,6 +338,7 @@ describe('idopont-valaszto: naptar (hamisitott Salonic-API)', () => {
     await p.locator('#foglalo').scrollIntoViewIfNeeded();
     await p.waitForSelector('#slot-uzenet:not([hidden])');
     assert.match(await p.textContent('#slot-uzenet'), /nincs szabad időpont/);
+    assert.equal(await p.locator('#slot-uzenet a').getAttribute('href'), '/foglalo-motor?business=laser&intent=first', 'a link a foglalo-motorra mutat (nem kozvetlen Salonic-link)');
     assert.equal(await p.locator('#naptar button.naptar-nap').count(), 0);
     await ctx.close();
   });
@@ -349,6 +350,7 @@ describe('idopont-valaszto: naptar (hamisitott Salonic-API)', () => {
     await p.locator('#foglalo').scrollIntoViewIfNeeded();
     await p.waitForSelector('#slot-uzenet:not([hidden])');
     assert.match(await p.textContent('#slot-uzenet'), /Most nem sikerült lekérni/);
+    assert.equal(await p.locator('#slot-uzenet a').getAttribute('href'), '/foglalo-motor?business=laser&intent=first', 'a link a foglalo-motorra mutat (nem kozvetlen Salonic-link)');
     await ctx.close();
     // 2) a regi naptar-azonosito mar nem jo: a Salonic oldalarol kiolvasott ujjal sikerul
     const hasznalt = [];

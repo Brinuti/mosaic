@@ -277,3 +277,33 @@ test('utvonal: a megszunt kuponos oldalak (/fodraszat-foglalas, /kupon-utan-fogl
   for (const ut of ['/fodraszat-foglalas', '/kupon-utan-foglalas', '/kupon-utan-foglalas/', '/fodraszat-foglalas.html']) assert.deepEqual(utvonal(ut, 'Mozilla/5.0'), { atiranyit: '/' }, ut);
   for (const ut of ['/idpontfoglalas', '/mosaic-hair-idopontfoglalas', '/szortelenites-foglalas', '/pmu-foglalas', '/smink-foglalas', '/naptar', '/headspa-budapest']) assert.ok(utvonal(ut, 'Mozilla/5.0').atir, ut + ': tovabbra is kiszolgalt oldal');
 });
+
+// --- a kliens-kod nem linkel kozvetlenul Salonic-foglalooldalra (2026-10-05: egy fodraszati foglalas a Salonic sajat sikeroldalan maradt, a koszonooldali meres nem latta) ---
+// Kivetel (szandekos, es mindketto a sajat koszonooldalunkra ter vissza a Salonic atiranyitasaval): az urlap-keret tartaleka ("Nyisd meg itt": a kivalasztott idopont adatlapja a fo ablakban)
+// es a lezeres oldal naptaranak idopont-gombjai (az idoponttal egyutt az adatlapra visznek).
+test('kliens-kod: nincs kozvetlen Salonic-link (href) a foglalo-gombok / hibauzenetek / tartalek-linkek kozott', () => {
+  const MINTA = /href['"]?\s*[:=]\s*[^,;)]*?(salonic|SZALON\.cim|\.host\b|guestUrl|adatlapUrl\()/i;
+  const ENGEDETT = [
+    /href:\s*S\.guestUrl,\s*target:\s*'_top'/, // engine.js: az urlap-keret tartaleka (a kivalasztott idopont adatlapja)
+    /href:\s*adatlapUrl\(id, ts\)/, // lezer-landing.js: egy idopontra kattintva az adatlapra visz
+    /rel="stylesheet" href="https:\/\/www\.mosaicheadspa\.hu\/salonic\//, // a salonic-adapter megjegyzese (nem link)
+  ];
+  const fajlok = [];
+  const jar = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) jar(p); else if (p.endsWith('.js')) fajlok.push(p); } };
+  jar(path.join(ROOT, 'assets/js'));
+  const talalat = [];
+  for (const f of fajlok) {
+    if (f.split(path.sep).join('/').endsWith('assets/js/gyik.js')) continue; // a Common Ninja GYIK szovege (nem a mi linkjeink)
+    fs.readFileSync(f, 'utf8').split('\n').forEach((sor, i) => {
+      if (MINTA.test(sor) && !ENGEDETT.some((re) => re.test(sor))) talalat.push(`${path.relative(ROOT, f)}:${i + 1}: ${sor.trim().slice(0, 140)}`);
+    });
+  }
+  assert.deepEqual(talalat, [], 'kozvetlen Salonic-link a kliens-kodban (a foglalo-motorra kell mutatnia: /foglalo-motor?business=...):\n' + talalat.join('\n'));
+  // a hibaernyok tartalek-linkje a motorra mutat
+  const motor = fs.readFileSync(path.join(ROOT, 'assets/js/booking-engine/engine.js'), 'utf8');
+  assert.match(motor, /restartUrl = \(\) => `\$\{flow\.enginePath \|\| '\/foglalo-motor'\}\?business=\$\{encodeURIComponent\(flow\.business\)\}`/);
+  assert.ok(!/Foglalás a Salonic oldalán/.test(motor), 'a "Foglalás a Salonic oldalán" tartalek-gomb megszunt');
+  const lezer = fs.readFileSync(path.join(ROOT, 'assets/js/lezer-landing.js'), 'utf8');
+  assert.match(lezer, /motorUrl = \(\) => \(allapot\.mod === 'konzult' \? '\/foglalo-motor\?business=laser&service=konzult' : '\/foglalo-motor\?business=laser&intent=first'\)/);
+  assert.equal((lezer.match(/href: motorUrl\(\)/g) || []).length, 2, 'a ket hibauzenet a foglalo-motorra mutat');
+});
