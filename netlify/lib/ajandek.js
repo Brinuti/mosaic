@@ -83,8 +83,15 @@ const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 
 const ATTR_KULCSOK = ['variant_id', 'gift_context', 'relationship', 'occasion', 'utm_source', 'utm_medium',
   'utm_campaign', 'utm_content', 'utm_term', 'gclid', 'fbclid', 'ttclid'];
+// Hirdetesi kattintas-azonositok: CSAK akkor kerulnek a rendelesbe (PI metadata), ha a vevo a marketing-sutit elfogadta
+// (a bongeszo kuldi a hozzajarulast; a szerver a hianyzo / hamis jelzest "nincs hozzajarulas"-nak veszi).
+const HIRDETESI_AZONOSITOK = ['gclid', 'fbclid', 'ttclid', 'gbraid', 'wbraid'];
+// Meresi segedadatok a PI metadataban: a hozzajarulas allapota (hozz_ana / hozz_adv: '1' | '0' | hianyzik = ismeretlen)
+// MINDIG; a Meta-sutik (fbc, fbp) es a gbraid / wbraid csak hirdetesi hozzajarulassal. A szerveroldali vasarlasmeres
+// (Stripe -> Google Ads / Meta) ezekbol dolgozik, es hozz_adv != '1' eseten nem kuld hirdetesi rendszernek semmit.
+const MER_KULCSOK = ['gbraid', 'wbraid', 'fbc', 'fbp', 'hozz_ana', 'hozz_adv'];
 // a /fizetes altal irt metadata-kulcsok (termekvaltaskor ezeket mind ujrairjuk / toroljuk)
-const FIZETES_META = ['forras', 'termek', 'product_type', ...ATTR_KULCSOK, 'oldal', 'nev', 'iranyitoszam',
+const FIZETES_META = ['forras', 'termek', 'product_type', ...ATTR_KULCSOK, ...MER_KULCSOK, 'oldal', 'nev', 'iranyitoszam',
   'varos', 'cim', 'ceges_nev', 'ceges_adoszam', 'kartya_cim', 'atvetel', 'kartya_tema', 'kartya_idezet', 'szemelyre_nev', 'foto_id', 'foto_poz',
   'szamla_id', 'szamla_mod', 'szamla_hiba', 'szamla_figy'];
 
@@ -311,6 +318,8 @@ const KORLATOK = {
   foto: [{ nev: 'ip', max: 12, ablak: 10 * PERC }, { nev: 'osszes', max: 300, ablak: 60 * PERC }],
   // levelet kuld tetszoleges cimre: IP-nkent szigoru, es a peldanyon osszesen is korlatos
   atutalas: [{ nev: 'ip', max: 3, ablak: 10 * PERC }, { nev: 'osszes', max: 30, ablak: 60 * PERC }],
+  // a rejtett koszonooldal betoltesenek naplozasa (Stripe-lekerest okoz): IP-nkent es a peldanyon osszesen is korlatos
+  koszono: [{ nev: 'ip', max: 20, ablak: 10 * PERC }, { nev: 'osszes', max: 600, ablak: 60 * PERC }],
 };
 const MAX_SZAMLALO = 5000;
 const szamlalok = new Map(); // kulcs -> { kezdet, db, ablak }
@@ -412,9 +421,36 @@ function attrAdat(a) {
     occasion: azon(a.occasion) || (v.occasion === 'dynamic' ? '' : v.occasion) || '',
     utm_source: sz(a.utm_source), utm_medium: sz(a.utm_medium), utm_campaign: sz(a.utm_campaign),
     utm_content: sz(a.utm_content), utm_term: sz(a.utm_term),
-    gclid: sz(a.gclid, 500), fbclid: sz(a.fbclid, 500), ttclid: sz(a.ttclid, 500),
+    gclid: sz(a.gclid, 500), fbclid: sz(a.fbclid, 500), ttclid: sz(a.ttclid, 500), gbraid: sz(a.gbraid, 500), wbraid: sz(a.wbraid, 500),
     oldal: sz(a.oldal, 500),
   };
+}
+
+// A Meta-sutik formaja: _fbp = fb.<0-2>.<ms ido>.<veletlen szam>, _fbc = fb.<0-2>.<ms ido>.<fbclid>
+const FBP_RE = /^fb\.[0-2]\.\d{10,14}\.\d{1,20}$/;
+const FBC_RE = /^fb\.[0-2]\.\d{10,14}\.[A-Za-z0-9_-]{1,400}$/;
+// A bongeszo altal kuldott hozzajarulas + Meta-sutik. { hozz_ana, hozz_adv, fbp, fbc, adv }: a hirdetesi adatok (fbp, fbc, es az
+// attr hirdetesi azonositoi) csak hirdetesi hozzajarulassal maradnak meg; a hozzajarulas jelzese hianyzo / nem logikai ertek = nem engedelyezett.
+function merAdat(m) {
+  m = m && typeof m === 'object' && !Array.isArray(m) ? m : {};
+  const ismert = typeof m.ana === 'boolean' || typeof m.adv === 'boolean';
+  const ana = m.ana === true;
+  const adv = m.adv === true;
+  const kisz = (x, re) => { const t = egysor(x); return adv && re.test(t) ? t : ''; };
+  return {
+    hozz_ana: ismert ? (ana ? '1' : '0') : '',
+    hozz_adv: ismert ? (adv ? '1' : '0') : '',
+    fbp: kisz(m.fbp, FBP_RE),
+    fbc: kisz(m.fbc, FBC_RE),
+    adv,
+  };
+}
+// hirdetesi hozzajarulas nelkul a kattintas-azonositok nem kerulnek a rendelesbe
+function attrHozzajarulassal(attr, mer) {
+  if (mer.adv) return attr;
+  const ki = { ...attr };
+  for (const k of HIRDETESI_AZONOSITOK) ki[k] = '';
+  return ki;
 }
 
 // A /fizetes es az /atutalas kozos mezoi. -> { mezok: {mezo: uzenet}, r: tiszta adat }
@@ -476,10 +512,12 @@ function rendelesAdat(d) {
       szemelyre = { tema, idezet, nev: szNev, foto_id: fotoId, foto_poz: fotoId ? KARTYA.pozIr(KARTYA.pozOlvas(egysor(sz.foto_poz))) : '' };
     }
   }
+  const mer = merAdat(d.mer);
   return {
     mezok: m,
     r: {
-      termek, email, ajandekozott, nev, iranyitoszam, varos, cim, ceges_nev: cegesNev, ceges_adoszam: cegesAdoszam, attr: attrAdat(d.attr),
+      termek, email, ajandekozott, nev, iranyitoszam, varos, cim, ceges_nev: cegesNev, ceges_adoszam: cegesAdoszam,
+      attr: attrHozzajarulassal(attrAdat(d.attr), mer), mer,
       atvetel, szemelyre,
     },
   };
@@ -504,6 +542,7 @@ function metaTisztit(md) {
 function fizetesMeta(r) {
   return metaTisztit({
     forras: FORRAS, termek: r.termek.id, product_type: r.termek.product_type, ...r.attr,
+    hozz_ana: r.mer.hozz_ana, hozz_adv: r.mer.hozz_adv, fbp: r.mer.fbp, fbc: r.mer.fbc,
     nev: r.nev, iranyitoszam: r.iranyitoszam, varos: r.varos, cim: r.cim,
     ceges_nev: r.ceges_nev, ceges_adoszam: r.ceges_adoszam, kartya_cim: r.termek.kartya_cim,
     atvetel: r.atvetel,
@@ -1187,10 +1226,85 @@ async function alairasJo(fejlec, torzs, titkok, most) {
   return false;
 }
 
+// --- szerveroldali vasarlasmeres (Stripe -> Zapier -> Google Ads offline konverzio + Meta CAPI egyedi esemeny) ---------
+// A bongeszos meres (GTM / pixel) reklamblokkolo, Safari-korlatozas vagy hibas rejtett koszonooldal miatt kimaradhat. Ez a SZERVER oldali
+// masodik ut: a sikeres fizetes utan egy Zapier "catch hook"-ra kuld egy lapos JSON-t (a hook cime a MERES_HOOK_URL titok, a repoban nincs).
+// SZABALYOK:
+//  - csak HIRDETESI (marketing) hozzajarulassal (PI metadata hozz_adv = '1', a bongeszo kuldte a rendeleskor); egyebkent SEMMI nem hagyja el a szerverunket
+//    (a rendelesen 'mer_kuldve: kihagyva:...' jelzo marad, hogy lassuk a dontest);
+//  - a hirdetesi azonositok (gclid, gbraid, wbraid, fbclid, ttclid, fbp, fbc) amugy is csak hozzajarulassal kerultek a rendelesbe;
+//  - visszateritett / vitatott rendelesrol nem megy;
+//  - rendelesenkent legfeljebb egyszer (mer_kuldve); a Zapier-oldali esemeny-azonosito a PI azonositoja (duplikacio ellen);
+//  - a hiba nem akadalyozza a leveleket / a kartyat: a webhook azok UTAN probalja, es csak a mereshiba miatt ad 5xx-et (a Stripe ujraprobalja,
+//    a level-lepesek idempotensek);
+//  - MERES_HOOK_URL nelkul a lepes nem tesz semmit (nincs Stripe-hivas, nincs metadata-iras).
+const MERES_HOOK_RE = /^(https:\/\/hooks\.zapier\.com\/hooks\/catch\/\d+\/[A-Za-z0-9_-]+\/?|http:\/\/127\.0\.0\.1:\d+\/.*)$/; // a loopback csak a tesztekhez
+const MERES_IDOKORLAT_MS = 8000;
+// teszt-vedelem (#84): ilyen nevu / e-mail-domainu fizetesbol soha nem megy ki meresi esemeny (a Zapier-oldalon is ugyanez a szabaly)
+const MERES_TESZT_NEV_RE = /(^|[\s,.\-_])(teszt|claude|dryrun)($|[\s,.\-_])/i;
+const MERES_TESZT_EMAIL_RE = /@([a-z0-9-]+\.)*example\.(com|org|net)$/i;
+
+// -> 'kesz' | 'kihagyva' | 'hiba' (soha nem dob)
+async function meresKuld(k, piId) {
+  try {
+    const hook = String(k.env.MERES_HOOK_URL || '').trim();
+    if (!hook) return 'kihagyva';
+    if (!MERES_HOOK_RE.test(hook)) { console.error('ajandek: MERES_HOOK_URL ervenytelen formatum'); return 'kihagyva'; }
+    const pi = await piLeker(k.env, piId);
+    const md = pi.metadata || {};
+    if (md.forras !== FORRAS || pi.status !== 'succeeded' || md.mer_kuldve) return 'kihagyva';
+    const jelol = (ertek) => metaIrasCsendes(k, pi.id, { mer_kuldve: ertek }, 'mer_kuldve');
+    const ch = pi.latest_charge && typeof pi.latest_charge === 'object' ? pi.latest_charge : null;
+    const emailRaw = String(pi.receipt_email || (ch && ch.billing_details && ch.billing_details.email) || '').trim().toLowerCase();
+    // probavedelem (#84): TESZT / Claude / dryrun nevu, illetve example.com e-mailes fizetesbol semmi nem megy ki
+    if (MERES_TESZT_NEV_RE.test(String(md.nev || '')) || MERES_TESZT_EMAIL_RE.test(emailRaw)) {
+      await jelol('kihagyva:teszt');
+      return 'kihagyva';
+    }
+    if (md.hozz_adv !== '1') {
+      await jelol(md.hozz_adv === '0' ? 'kihagyva:nincs_hozzajarulas' : 'kihagyva:ismeretlen');
+      return 'kihagyva';
+    }
+    if (ch && (ch.refunded || ch.disputed || Number(ch.amount_refunded) > 0)) {
+      await jelol('kihagyva:visszaterites');
+      return 'kihagyva';
+    }
+    const tsMp = Number((ch && ch.created) || pi.created) || Math.floor(k.most.getTime() / 1000);
+    // lapos JSON (a Zapier "catch hook" igy a legegyszerubb); az ures mezok kimaradnak
+    const adat = {
+      esemeny: 'ajandek_vasarlas', pi: pi.id, livemode: pi.livemode === true,
+      ertek: Math.round(Number(pi.amount_received || pi.amount) || 0) / 100, // a HUF-ot a Stripe fillerben (x100) adja
+      penznem: String(pi.currency || 'huf').toUpperCase(), ido: new Date(tsMp * 1000).toISOString(),
+      termek: md.termek, email: EMAIL_RE.test(emailRaw) ? emailRaw : '', nev: md.nev,
+      hozz_ana: md.hozz_ana === '1', hozz_adv: true,
+      gclid: md.gclid, gbraid: md.gbraid, wbraid: md.wbraid, fbclid: md.fbclid, ttclid: md.ttclid, fbp: md.fbp, fbc: md.fbc,
+      utm_source: md.utm_source, utm_medium: md.utm_medium, utm_campaign: md.utm_campaign,
+    };
+    for (const kulcs of Object.keys(adat)) if (adat[kulcs] === undefined || adat[kulcs] === '') delete adat[kulcs];
+    const jel = typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(MERES_IDOKORLAT_MS) : undefined;
+    const v = await fetch(hook, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(adat), signal: jel });
+    if (!v.ok) { console.error('ajandek: meres-kuldes - a hook hibat adott', pi.id, v.status); return 'hiba'; }
+    await jelol(k.most.toISOString());
+    return 'kesz';
+  } catch (e) {
+    console.error('ajandek: meres-kuldes hiba', piId, e && e.message);
+    return 'hiba';
+  }
+}
+
+// payment_intent.succeeded: levelek (fizetesEsemenyFo), majd a szerveroldali vasarlasmeres (meresKuld): a mereshiba csak 5xx-et okoz
+// (a Stripe ujraprobalja; a levelek ilyenkor mar idempotensen kihagyodnak), a levelhiba elobb kiadja a sajat 5xx-et.
+async function fizetesEsemeny(k, obj, ok) {
+  const v = await fizetesEsemenyFo(k, obj, ok);
+  if (v !== ok) return v;
+  if (!PI_RE.test(String(obj.id || ''))) return ok;
+  return (await meresKuld(k, obj.id)) === 'hiba' ? json(500, { hiba: 'meres' }) : ok;
+}
+
 // payment_intent.succeeded: szalon- es vevo-level. Minden level UTAN azonnal rogzitjuk a
 // reszallapotot (ertesites: 'szalon' / 'vevo' / '1'), hogy egy kesobbi hiba / idotullepes miatti
 // Stripe-ujrakuldes ne kuldjon dupla levelet.
-async function fizetesEsemeny(k, obj, ok) {
+async function fizetesEsemenyFo(k, obj, ok) {
   if (!PI_RE.test(String(obj.id || '')) || !obj.metadata || obj.metadata.forras !== FORRAS) return ok;
   // a PI-t a Stripe-tol kerdezzuk vissza (nem az esemeny tartalmanak hiszunk)
   let pi;
@@ -1550,6 +1664,34 @@ function bazisUrl(env, u) {
     if (b && /^https?:$/.test(new URL(b).protocol)) return b;
   } catch { /* ervenytelen: a keres origin-je */ }
   return u.origin;
+}
+
+// --- a rejtett koszonooldal betoltesenek naplozasa (BELSO adat: nem megy ki hirdetesi rendszerbe) --------------
+// Sikeres vasarlas utan az /ajandek oldal egy lathatatlan, azonos eredetu keretben betolti a regi koszonooldalt
+// (/success-ajandekkartya-stripe?ertek=<Ft>&session_id=<pi_...>), amelyre a hirdetesi konverzio (GTM) epul. Hogy ez
+// tenyleg betoltodott-e, SEHOL nem latszott (Pages-kerelmek naplaja nincs; a hirdetesi platformok hozzajarulastol es kesestol fuggnek).
+// A functions/[[path]].js ezert minden ilyen oldalbetoltesnel meghivja ezt: a PI metadataba ir egy idobelyeget
+// (koszono_ekkor, csak az ELSO betoltes) es a betoltes modjat (koszono_keret: keret | oldal). Hozzajarulastol fuggetlen,
+// szemelyes adatot nem tartalmaz, es SEMMIT nem kuld ki: a Stripe-ban a rendeles metadatajan olvashato.
+// -> 'rogzitve' | 'mar_van' | 'kihagyva' | 'korlat' | 'hiba' (soha nem dob)
+export async function koszonoRogzit({ env, pi, ip, most, keret } = {}) {
+  try {
+    const piId = typeof pi === 'string' ? pi.trim() : '';
+    if (!PI_RE.test(piId)) return 'kihagyva';
+    if (stripeMod(env || {}) === 'nincs') return 'kihagyva';
+    const t = most instanceof Date && !Number.isNaN(most.getTime()) ? most : new Date();
+    if (korlatTullepes('koszono', kliensIp({}, ip), t)) return 'korlat';
+    const regi = await piLeker(env, piId);
+    const md = regi.metadata || {};
+    // csak sikeres, ajandek-motoros kartyas rendeles; utalasos igeny (nincs fizetve) es idegen PI nem
+    if (md.forras !== FORRAS || regi.status !== 'succeeded' || atutalasos(md)) return 'kihagyva';
+    if (md.koszono_ekkor) return 'mar_van';
+    await piFrissit(env, piId, { metadata: { koszono_ekkor: t.toISOString(), koszono_keret: keret === 'keret' ? 'keret' : 'oldal' } });
+    return 'rogzitve';
+  } catch (e) {
+    console.error('ajandek: koszono-naplo hiba', e && e.message);
+    return 'hiba';
+  }
 }
 
 export async function ajandekKezel({ method, url, headers, text, env, kuld, most, ip } = {}) {
