@@ -29,6 +29,7 @@ const HOST = Object.freeze({
   oxigen: 'mosaic-oxigen.salonic.hu',
   hair: 'mosaic-hair.salonic.hu',
   elysion: 'mosaic-elysion.salonic.hu',
+  pmu: 'mosaic-pmu.salonic.hu',
 });
 
 // Egy szabaly: host + utvonal-elotag (+ lekerdezes-parameterek) -> a foglalo URL-je. A "kapcsolo" a 4 uzletag egyike.
@@ -53,6 +54,9 @@ export const SZABALYOK = Object.freeze([
   { kapcsolo: 'lezer', host: HOST.elysion, utvonal: '/selectDate', parameter: { serviceId: '476477' }, cel: { business: 'laser', service: 'konzult' } },
   { kapcsolo: 'lezer', host: HOST.elysion, utvonal: '/showServices', parameter: { specId: '66404' }, cel: { business: 'laser', intent: 'first' } }, // "ELSO IDOPONTOK"
   { kapcsolo: 'lezer', host: HOST.elysion, utvonal: '/showServices', parameter: { specId: '66405' }, cel: { business: 'laser', intent: 'returning' } }, // "KEZELES IDOPONTOK"
+  // --- PMU: a sminktetovalas-oldalak kozvetlen Salonic-gombjai a PMU foglalo retegere (a PMU-foglalo sajat, kesz folyamata); a foglalo sajat guestData-hivasa nem link, ahhoz nem nyulunk ---
+  { kapcsolo: 'pmu', host: HOST.pmu, utvonal: '/employees', cel: { business: 'pmu' } },
+  { kapcsolo: 'pmu', host: HOST.pmu, utvonal: '/selectDate', cel: { business: 'pmu' } },
 ]);
 
 const SALONIC_URL = /https?:\/\/[a-z0-9.-]*salonic\.hu[^"'<>\s)\\]*/gi;
@@ -74,7 +78,7 @@ export function celra(url, motor = MOTOR) {
 }
 
 const normKapcsolok = (kapcsolok) => (kapcsolok instanceof Set ? kapcsolok : new Set(Object.entries(kapcsolok || {}).filter(([, be]) => be).map(([k]) => k)));
-const jegyzek = (lista = UZLETAGAK) => Object.fromEntries(lista.map((k) => [k, 0]));
+const jegyzek = (lista = [...UZLETAGAK, 'pmu']) => Object.fromEntries(lista.map((k) => [k, 0]));
 
 /**
  * HTML-oldal: minden href="<Salonic-URL>" ertekere, ha a szabaly uzletaganak kapcsoloja be van kapcsolva, a foglalo URL-je kerul

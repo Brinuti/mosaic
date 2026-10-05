@@ -24,6 +24,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { ritkit } from './css-ritkitas.mjs';
 import { atkot, atkotBelso, atkotSzoveg, kapcsolokBuildhez, kihagyottOldal, osszead, uresOldal, KAPCSOLOK } from './foglalo-atkotes.mjs';
+import { popupAtkot } from './halott-popup.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -322,6 +323,8 @@ for (const mappa of [LAP_A, LAP_M]) {
     if (ATKOTES.size && !kihagyottOldal(f)) { const r = atkot(h, ATKOTES); h = r.html; atkotesDb = osszead(atkotesDb, r.db); }
     // a sajat foglalo-oldalakra mutato linkek (fomenu "FOGLALAS" + az oldalak gombjai): csak ott, ahol a launcher rajta van (ugyanaz a reteg nyilik)
     if (launcherOldal) { const r = atkotBelso(h, f, ATKOTES, { launcher: true }); h = r.html; atkotesDb = osszead(atkotesDb, r.db); }
+    // a Wix-felugro gombok, amelyekhez nincs felugro sablon (kupon-keres, telefonos konzultacio): a gomb a foglalora mutat, nem marad halott gomb (tools/halott-popup.mjs)
+    h = popupAtkot(h, f).html;
     // a regi foglalo-oldalak: ures oldal + bezarhatatlan felugro foglalo (a cim megmarad, a mero kod az oldalon marad)
     if (launcherOldal) { const r = uresOldal(h, f, ATKOTES); h = r.html; atkotesDb = osszead(atkotesDb, r.db); }
     fs.writeFileSync(p, h);
