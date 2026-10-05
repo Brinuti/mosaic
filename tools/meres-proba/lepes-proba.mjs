@@ -1,6 +1,9 @@
 // A foglalo lepes-merese (DECISION-LOG #88) bongeszoben, TILTOTT kimeno merressel: minden lepes pontosan egyszer jon-e, a bezarasnal jo-e a step.
 //
-//   node tools/meres-proba/lepes-proba.mjs [--overlay dist] [--bazis https://www.mosaicheadspa.hu] [--mobil 1] [--oldal /paros-headspa-budapest]
+//   node tools/meres-proba/lepes-proba.mjs [--overlay dist] [--bazis https://www.mosaicheadspa.hu] [--mobil 1] [--oldal /paros-headspa-budapest] [--ga4 1]
+// --gtm-kornyezet <id>:<auth>: a GTM-et NEM az eles (publikalt) valtozatbol toltjuk, hanem egy GTM-kornyezetbol (pl. a beepitett "Latest" = a legutobb letrehozott verzio: 2:u4SS...),
+//   igy a GA4-tag a PUBLIKALAS ELOTT kiprobalhato (a hitek elfogva, a Google-hoz sosem jutnak el). A kodok a GTM felulet Admin > Environments oldalan / az API-ban lathatok.
+// --ga4 1: a GTM-trigger PUBLIKALASA UTAN (vagy --gtm-kornyezettel az elott), az eles oldalon (nincs --overlay): a GA4-hitek (a Stape-en / Google-on at; a proba elfogja, a Google-hoz SOSEM jut el) minden lepesre megjelennek-e.
 //
 // Ket csatorna: (1) GA4 dataLayer (csak elfogadott statisztikai hozzajarulassal), (2) a nevtelen szamlalo (POST /api/foglalo-szamlalo; a proba elfogja es naplozza,
 // a valodi vegpontra SOSEM megy). A Salonic naptar-API mockolt (nincs valodi foglalas, nincs terheles), a Salonic-atiranyitas szimulalt (?atadas=0: a motor maga mutatja a sikert).
@@ -11,6 +14,8 @@ import path from 'node:path';
 import { UA, UA_MOBIL, platformOf, engedett, dnsArg, ures, esemenyIras, esemenyUres } from './tilt.mjs';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
+const GA4 = arg('ga4', '0') === '1';
+const GTM_KORNYEZET = (() => { const v = arg('gtm-kornyezet', ''); if (!v) return null; const [id, auth] = v.split(':'); return { id, auth }; })();
 const OVERLAY = arg('overlay', ''), MOBIL = arg('mobil', '0') === '1', OLDAL = arg('oldal', '/paros-headspa-budapest'), BAZIS = arg('bazis', 'https://www.mosaicheadspa.hu');
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 let fajlUtvonal = null;
@@ -55,12 +60,18 @@ async function ujLap({ hozzajarul, idok = [idopont(1), idopont(2), idopont(3)], 
       }
     }
     if (esemenyIras(url, req.method())) return route.fulfill(esemenyUres());
+    if (GTM_KORNYEZET && /^https:\/\/www\.googletagmanager\.com\/gtm\.js\?/.test(url)) return route.continue({ url: url + '&gtm_auth=' + GTM_KORNYEZET.auth + '&gtm_preview=env-' + GTM_KORNYEZET.id + '&gtm_cookies_win=x' });
     const plat = platformOf(url) || (engedett(url, req.method()) || u.origin === BAZIS ? null : 'tiltott');
     if (plat) {
       if (req.frame() && req.frame().parentFrame() === null) {
-        const q = Object.fromEntries(u.searchParams); let ev = '';
-        if (plat === 'meta') ev = new URLSearchParams(req.postData() || '').get('ev') || q.ev || ''; else if (plat === 'tiktok') { try { ev = JSON.parse(req.postData() || '{}').event || ''; } catch (e) { ev = ''; } } else ev = q.en || '';
-        naplo.mer.push({ plat, ev, ut: u.pathname.slice(0, 40) });
+        const q = Object.fromEntries(u.searchParams); let evek = [''];
+        if (plat === 'meta') evek = [new URLSearchParams(req.postData() || '').get('ev') || q.ev || '']; else if (plat === 'tiktok') { try { evek = [JSON.parse(req.postData() || '{}').event || '']; } catch (e) { evek = ['']; } }
+        else { // GA4 / Stape / Google Ads: az esemeny neve az URL-ben (en=) VAGY a torzsben (tobb esemeny egy keresben: soronkent egy)
+          const nev = new Set(); if (q.en) nev.add(q.en);
+          for (const sor of String(req.postData() || '').split(/\r?\n/)) { const m = /(?:^|&)en=([^&]+)/.exec(sor); if (m) nev.add(decodeURIComponent(m[1])); }
+          evek = nev.size ? [...nev] : [''];
+        }
+        for (const ev of evek) naplo.mer.push({ plat, ev, ut: u.pathname.slice(0, 40), nyers: /^booking_/.test(ev) ? (u.search + '\n' + (req.postData() || '')).slice(0, 4000) : '' });
       }
       return route.fulfill(ures(req));
     }
@@ -87,7 +98,7 @@ const szamlaloLepesek = (naplo) => naplo.szamlalo.map((s) => { try { return JSON
 const nevek = (lista) => lista.map((e) => e.event);
 // A foglalo lepesei utan (a nyitas elotti allapothoz kepest) erkezett kimeno meresi kerelmek: nem lehet koztuk konverzio / marketing-esemeny. Megengedett: a GA4 booking_* esemenyei (a GTM-trigger publikalasa utan,
 // csak hozzajarulassal) es a lap sajat, idozitett jelzesei (TikTok monitor, GA4 user_engagement / scroll, page_view): ezek nem a foglalotol jonnek.
-const LAP_JELZES = /^(|page_view|user_engagement|scroll|session_start|first_visit|PageView|ViewContent|pixel|monitor|enrich_ipv6|gtm\.[a-z]+)$/i;
+const LAP_JELZES = /^(|visit|page_view|user_engagement|scroll|session_start|first_visit|PageView|ViewContent|pixel|monitor|enrich_ipv6|gtm\.[a-z]+)$/i;
 const lepesMeres = (naplo) => naplo.mer.slice(naplo.alap).filter((x) => !(LAP_JELZES.test(x.ev) || /monitor|enrich_ipv6|\/pixel/.test(x.ut)));
 const csakGa4Booking = (lista) => lista.every((x) => /^booking_/.test(x.ev)); // (a GA4 a Stape-en at is mehet: plat = stape / ga4 / google-ads, az esemeny neve a lenyeg)
 const uj = (lista) => lista.filter((e) => UJ.has(e.event));
@@ -113,6 +124,8 @@ async function atiranyit(p) {
   await zar(u.page);
   const e = uj(await dl(u.page)); const sz = szamlaloLepesek(u.naplo);
   ok('1. teljes ut: a dataLayer-ben pontosan ez a 9 lepes jon, ebben a sorrendben, mind EGYSZER', JSON.stringify(nevek(e)) === JSON.stringify(SORREND), nevek(e).join(' > '));
+  // (a kulcsok megvannak, de ertekuk undefined: a GTM ezt torli a modellbol; az oroklodes ellen a --ga4 ellenorzes a valodi garancia)
+  ok('1. teljes ut: a dataLayer-ben a load_ms csak a slots_loaded-en, a step csak a close-on van, az error_type egyiken sem (nincs regi ertek a kulcsokban)', e.every((x) => (x.event === 'booking_slots_loaded') === (x.load_ms !== undefined)) && e.every((x) => (x.event === 'booking_close') === (x.step !== undefined)) && e.every((x) => x.error_type === undefined) && e[8].step === 'C6', JSON.stringify(e.map((x) => [x.event.replace('booking_', ''), x.load_ms, x.step, x.error_type])));
   ok('1. teljes ut: minden esemenyen ott van a business, service_id, source_page', e.every((x) => x.business === 'headspa' && typeof x.service_id === 'string' && x.source_page === OLDAL), JSON.stringify(e[2]));
   ok('1. teljes ut: a szolgaltatas-lepeseken (service..close) a service_id az igazi azonosito, nem "none"', e.slice(2).every((x) => /^\d+$/.test(x.service_id)) && e[0].service_id === 'none', e.map((x) => x.service_id).join(','));
   ok('1. teljes ut: booking_slots_loaded.load_ms szam (>= 0)', typeof e[3].load_ms === 'number' && e[3].load_ms >= 0 && e[3].load_ms < 60000, 'load_ms=' + e[3].load_ms);
@@ -123,6 +136,18 @@ async function atiranyit(p) {
   ok('1. teljes ut: a szamlalo-kereseket text/plain POST-kent kuldte (suti / fejlec nelkul), a torzs csak a zart mezoket tartalmazza', u.naplo.szamlalo.every((s) => s.metodus === 'POST' && /^text\/plain/.test(s.hdr)) && sz.every((s) => Object.keys(s).every((k) => ['lepes', 'uzletag', 'tipus', 'load_ms'].includes(k))), '');
   const mind = JSON.stringify([e, sz]);
   ok('1. teljes ut: nincs szemelyes adat (nev, e-mail, telefon, foglalas-azonosito, URL-lekerdezes) sem a dataLayer-ben, sem a szamlalo kereseiben', !/@|Teszt|\+36|g:2461999|atadas|bookingUrl|first_booking/.test(mind), '');
+  // a GA4 a gyors, egymas utani esemenyeket kotegelve, kesleltetve kuldi: --ga4 modban legfeljebb 15 mp-ig varjuk, mig mind a 9 megjelenik
+  if (GA4) for (let i = 0; i < 30 && !SORREND.every((n) => lepesMeres(u.naplo).some((x) => x.ev === n)); i++) await u.page.waitForTimeout(500);
+  const hitek = {}; for (const x of lepesMeres(u.naplo)) hitek[x.ev] = (hitek[x.ev] || 0) + 1;
+  console.log('INFO 1. teljes ut: a lepesek utan elfogott GA4-/Stape-hitek esemenyenkent: ' + JSON.stringify(hitek));
+  if (GA4) { // a hitek parameterei: az esemeny sorabol (a GA4 ep. = szoveg-, epn. = szam-parameter)
+    const par = {}; for (const x of lepesMeres(u.naplo)) if (x.nyers) { const sorok = x.nyers.split(/\r?\n|&(?=en=)/); const sor = sorok.find((s) => new RegExp('(^|&)en=' + x.ev + '(&|$)').test(s)) || x.nyers; par[x.ev] = [...sor.matchAll(/(?:^|&|\?)(epn?\.[a-z_]+)=([^&]*)/g)].map((m) => m[1] + '=' + decodeURIComponent(m[2])).join(' '); }
+    console.log('INFO 1. teljes ut (--ga4): a hitek parameterei: ' + JSON.stringify(par));
+    const van = (ev, k) => new RegExp('(^| )' + k + '=').test(par[ev] || '');
+    ok('1. teljes ut (--ga4): a GA4-hitekben NINCS ertek-oroklodes: csak az adott esemenynek ertelmezett parameter van rajta (load_ms csak a slots_loaded-en, step csak a close-on, error_type egyen sem)', SORREND.every((n) => (n === 'booking_slots_loaded') === van(n, 'epn.load_ms')) && SORREND.every((n) => (n === 'booking_close') === van(n, 'ep.step')) && SORREND.every((n) => !van(n, 'ep.error_type')), JSON.stringify(par).slice(0, 900));
+    ok('1. teljes ut (--ga4): a GA4-hitek hordozzak a business / service_id / source_page parametert (booking_open: business, service_id, source_page; booking_slots_loaded: load_ms; booking_close: step)', /ep\.business=headspa/.test(par.booking_service || '') && /ep\.service_id=\d+/.test(par.booking_service || '') && /ep\.source_page=/.test(par.booking_open || '') && /epn\.load_ms=\d+/.test(par.booking_slots_loaded || '') && /ep\.step=C6/.test(par.booking_close || ''), JSON.stringify(par).slice(0, 700));
+  }
+  if (GA4) ok('1. teljes ut (--ga4): mind a 9 booking_* esemeny elment a GA4 fele (elfogva), egyik sem tobbszor-annyi, mint kellene; nincs mas esemeny', SORREND.every((n) => hitek[n] >= 1) && Object.keys(hitek).every((n) => UJ.has(n)) && Object.values(hitek).every((n) => n <= 2), JSON.stringify(hitek));
   ok('1. teljes ut: a lepesek NEM inditottak konverziot / marketing-esemenyt (Meta, TikTok, Ads, Stape); GA4-ben legfeljebb booking_* (a GTM-trigger utan)', csakGa4Booking(lepesMeres(u.naplo)), JSON.stringify(lepesMeres(u.naplo)));
   ok('1. teljes ut: nincs JS-hiba', u.hibak.length === 0, u.hibak.join(' | '));
   await u.ctx.close();

@@ -72,3 +72,13 @@ OK   5. robot (webdriver): a dataLayer ettol fuggetlenul megkapja a lepeseket (h
   a CSV (nap;uzletag;lepes;tipus;darab) es az emberi HTML-nezet (formatum=html) is rendben. (A proba-sorokat utana toroltem az elonezeti adatbazisbol; az eles adatbazishoz nem nyultam.)
 - Gomb-bejaras az elonezeten (fooldal, paros-headspa-budapest, lezeres-szortelenites-budapest, oxigenterapia-budapest, 30szazalek, pmu-melitta, sminktetovalas-budapest),
   mind a 3 profil: asztali 73 gomb, mobil 73, webkit 73; GYANUS 0 (FEHER 0, SEMMI 0, FEDI 0).
+
+=== 2026-10-05 koraesti: eles kozzetetel, ertek-oroklodes talalata, javitas ===
+- 08:48:57 UTC a #122 merge (a szamlalo + a dataLayer-esemenyek elesben; a szamlalo vegpont 08:50:13 UTC-re elo, eles teszt: 204; a proba-sort torolve az eles adatbazisbol).
+- ~08:51 UTC a GTM 52-es verzio kozzetetele (a tulajdonos jovahagyasaval). Az eles oldalon a lepes-proba (--ga4 1, overlay nelkul; a GA4-hitek elfogva, a Google-hoz nem jutottak el) KIMUTATTA a hibat:
+  a GTM adatreteg-modellje megorzi az ertekeket, ezert a GA4-hitekben a booking_slot-on ep.step=C1 es epn.load_ms (egy korabbi esemenyrol orokolve), a booking_close-on epn.load_ms jelent meg.
+- ~08:59 UTC visszaallitottam az elo GTM-et a 51-es verziora (a GA4-tag nem fut; ellenorizve: az elo verzio 51, 60 tag / 71 trigger / 58 valtozo).
+- A javitas: minden esemeny mindharom valtozo-kulcsot felulirja (undefined-dal, ahol nem ertelmezett: a GTM torli, a GA4-tag nem kuldi). null-lal ures ertek ment volna (ep.step=), ez a GTM "Latest" kornyezeteben kiprobalva kiesett.
+- Kiprobalva a publikalas ELOTT, a GTM beepitett "Latest" kornyezetevel (52-es verzio), uj kodon (overlay dist): lepes-proba --ga4 1 --gtm-kornyezet 2:...: asztali 27 ellenorzes, 0 hiba; mobil 27 ellenorzes, 0 hiba;
+  mind a 9 booking_* GA4-hit pontosan egyszer, a parameterek: booking_open / business / service / slot / form_start / submit / success: business, service_id, source_page; booking_slots_loaded: + epn.load_ms; booking_close: + ep.step=C6;
+  nincs ep.step=, nincs ertek-oroklodes. A mostani (51-es) elo GTM-mel: 24 ellenorzes, 0 hiba. node --test tools/test-lepes-meres.mjs: 19 teszt, 0 hiba.

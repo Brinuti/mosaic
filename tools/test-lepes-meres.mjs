@@ -41,6 +41,18 @@ test('teljes sikeres ut: minden lepes pontosan egyszer, a parameterek jok, a dat
   assert.equal(w.kuldve.find((k) => k.lepes === 'slots_loaded').load_ms, 742);
 });
 
+test('minden esemeny mindharom valtozo kulcsot felulirja (load_ms, step, error_type: ertelmezetlen = undefined, a GTM ezt torli): a GTM adatreteg-modellje nem oroktet le ertekeket egyik esemenyrol a masikra', () => {
+  const w = ablak({ ana: true, proba: true }); const m = createStepMeter({ win: w, ctx: ctx() });
+  m.open(); m.service(1); m.slotsLoaded(33); m.slot(); m.error('timeout', 'C1'); m.close('C4');
+  for (const e of w.dataLayer) for (const k of ['load_ms', 'step', 'error_type']) assert.ok(k in e, `${e.event}: hianyzik a ${k} kulcs`);
+  const kulcs = (n) => w.dataLayer.find((e) => e.event === n);
+  assert.equal(kulcs('booking_slots_loaded').load_ms, 33); assert.equal(kulcs('booking_slots_loaded').step, undefined);
+  assert.deepEqual([kulcs('booking_slot').load_ms, kulcs('booking_slot').step, kulcs('booking_slot').error_type], [undefined, undefined, undefined], 'a booking_slot nem oroklik a korabbi load_ms-t');
+  assert.deepEqual([kulcs('booking_error').error_type, kulcs('booking_error').step, kulcs('booking_error').load_ms], ['timeout', undefined, undefined]);
+  assert.deepEqual([kulcs('booking_close').step, kulcs('booking_close').error_type, kulcs('booking_close').load_ms], ['C4', undefined, undefined], 'a booking_close nem oroklik a korabbi error_type-ot');
+  assert.deepEqual(w.dataLayer.filter((e) => e.event === 'booking_open' || e.event === 'booking_service').map((e) => [e.load_ms, e.step, e.error_type]), [[undefined, undefined, undefined], [undefined, undefined, undefined]]);
+});
+
 test('ismetlodo hivasok (ujrarajzolas) nem szamolnak ketszer: open, business, slots_loaded, form_start, submit, success, close, error', () => {
   const w = ablak({ ana: true, proba: true }); const m = createStepMeter({ win: w, ctx: ctx() });
   m.open(); m.open(); m.business('laser'); m.business('laser'); m.service(1); m.slotsLoaded(10); m.slotsLoaded(20); m.slot();

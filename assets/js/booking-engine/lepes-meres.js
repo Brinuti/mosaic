@@ -63,7 +63,11 @@ export function createStepMeter({ win = typeof window !== 'undefined' ? window :
   function jelez(lepes, { uzletag = allapot.business, extra = {}, szamlalo = {} } = {}) {
     try {
       const nev = ESEMENYEK[lepes];
-      const adat = { event: nev, business: uzletag, service_id: allapot.serviceId, source_page: forras, ...extra };
+      // A GTM adatreteg-modellje az ertekeket megorzi: ami egy korabbi esemenyen rajta volt (load_ms, step, error_type), a kovetkezo esemenyre is atorokolodne
+      // (pl. a booking_slot megkapna egy regi step-et, a booking_close egy regi error_type-ot). Ezert MINDEN esemeny mindhárom kulcsot felulirja: ami az adott
+      // esemenyen nem ertelmezett, az undefined: a GTM ezt TOROLNI a modellbol, es a GA4-tag a parametert nem kuldi el (a null-t ures ertekkent kuldene: ep.step=;
+      // kiprobalva a GTM 'Latest' kornyezeteben, lasd tools/meres-proba/lepes-proba.mjs --gtm-kornyezet).
+      const adat = { event: nev, business: uzletag, service_id: allapot.serviceId, source_page: forras, load_ms: undefined, step: undefined, error_type: undefined, ...extra };
       if (hozzajarult() && win) { (win.dataLayer = win.dataLayer || []).push(adat); }
       kuld({ lepes, uzletag, ...szamlalo });
     } catch (e) { /* nem kritikus */ }
