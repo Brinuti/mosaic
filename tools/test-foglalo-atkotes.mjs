@@ -8,7 +8,7 @@ import { atkot, atkotBelso, atkotSzoveg, belsoCel, beolvasKonfig, celra, kapcsol
 import { utvonal } from '../netlify/lib/utvonal.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
-const MIND = new Set(UZLETAGAK);
+const MIND = new Set([...UZLETAGAK, 'pmu']);
 const cel = (url) => celra(url)?.cel ?? null;
 
 test('szabalyok: a mostani Salonic-linkek mindegyike a megfelelo foglalo-URL-re kepezodik', () => {
@@ -35,10 +35,13 @@ test('szabalyok: a mostani Salonic-linkek mindegyike a megfelelo foglalo-URL-re 
   assert.equal(cel('https://mosaicheadspa.salonic.hu/showServices/?placeId=10427&amp;specId=41471'), '/foglalo-motor?business=headspa&voucher=1');
 });
 
-test('szabalyok: ami NEM megy at: PMU, ajandekkartya-vasarlas, fooldalak, naptar-API, ismeretlen szolgaltatas', () => {
+test('szabalyok: a PMU-oldalak kozvetlen Salonic-gombjai a PMU foglalo retegere mennek', () => {
+  assert.equal(cel('https://mosaic-pmu.salonic.hu/employees/32428/?placeId=14585'), '/foglalo-motor?business=pmu');
+  assert.equal(cel('https://mosaic-pmu.salonic.hu/selectDate/?startDate=1790408258&placeId=14585&employeeId=32428&serviceId=471160'), '/foglalo-motor?business=pmu');
+});
+
+test('szabalyok: ami NEM megy at: a PMU fooldala, ajandekkartya-vasarlas, fooldalak, naptar-API, ismeretlen szolgaltatas', () => {
   for (const u of [
-    'https://mosaic-pmu.salonic.hu/employees/32428/?placeId=14585',
-    'https://mosaic-pmu.salonic.hu/selectDate/?startDate=1790408258&placeId=14585&employeeId=32428&serviceId=471160',
     'https://mosaic-pmu.salonic.hu',
     'https://mosaicheadspa.salonic.hu/giftcards',
     'https://mosaicheadspa.salonic.hu/giftcards/buy/1-oras-mosaic-headspa-kezeles-2544',
@@ -52,7 +55,7 @@ test('szabalyok: ami NEM megy at: PMU, ajandekkartya-vasarlas, fooldalak, naptar
 });
 
 test('szabalyok: minden szabaly egyertelmu (nincs ket szabaly ugyanarra, a kapcsolo ervenyes uzletag)', () => {
-  for (const r of SZABALYOK) assert.ok(UZLETAGAK.includes(r.kapcsolo), r.kapcsolo);
+  for (const r of SZABALYOK) assert.ok(KAPCSOLOK.includes(r.kapcsolo), r.kapcsolo);
   const kulcs = SZABALYOK.map((r) => [r.host, r.utvonal, JSON.stringify(r.parameter || {})].join('|'));
   assert.equal(new Set(kulcs).size, kulcs.length);
   // a HeadSpa-ag ket szabalya (39592, 41471) kulonbozo celra mutat
@@ -71,20 +74,21 @@ test('atkot: kikapcsolva a szoveg bajtra azonos', () => {
   for (const ki of [new Set(), {}, { headspa: false, oxigen: false, fodraszat: false, lezer: false }, undefined]) {
     const r = atkot(MINTA, ki);
     assert.equal(r.html, MINTA);
-    assert.deepEqual(Object.values(r.db), [0, 0, 0, 0]);
+    assert.deepEqual(Object.values(r.db), [0, 0, 0, 0, 0]);
   }
 });
 
-test('atkot: uzletagankent kapcsolhato; a tobbi attributum (target, rel) es a PMU / ajandekkartya valtozatlan', () => {
+test('atkot: uzletagankent kapcsolhato; a tobbi attributum (target, rel) es az ajandekkartya valtozatlan', () => {
   const h = atkot(MINTA, { headspa: true }).html;
   assert.match(h, /<a data-testid="linkElement" href="\/foglalo-motor\?business=headspa" target="_blank" rel="noopener"><span>NORMÁL<\/span><\/a>/);
   assert.match(h, /href="https:\/\/mosaic-oxigen\.salonic\.hu\/selectEmployee\/\?placeId=14409&serviceId=466110"/, 'az oxigen kapcsolo ki van');
   assert.match(h, /href="https:\/\/mosaic-hair\.salonic\.hu/);
   const mind = atkot(MINTA, MIND);
-  assert.deepEqual(mind.db, { headspa: 1, oxigen: 1, fodraszat: 1, lezer: 1 });
+  assert.deepEqual(mind.db, { headspa: 1, oxigen: 1, fodraszat: 1, lezer: 1, pmu: 1 });
   assert.match(mind.html, /href="\/foglalo-motor\?business=oxygen&amp;service=466110" target="_blank"/, 'a HTML-ben az & &amp;');
   assert.match(mind.html, /href="\/foglalo-motor\?business=laser&amp;intent=first"/);
-  assert.match(mind.html, /href="https:\/\/mosaic-pmu\.salonic\.hu\/employees\/32428\/\?placeId=14585"/, 'PMU marad');
+  assert.match(mind.html, /href="\/foglalo-motor\?business=pmu"/, 'a PMU-gomb a PMU foglalora mutat');
+  assert.match(h, /href="https:\/\/mosaic-pmu\.salonic\.hu\/employees\/32428\/\?placeId=14585"/, 'a pmu kapcsolo ki van: marad');
   assert.match(mind.html, /href="https:\/\/mosaicheadspa\.salonic\.hu\/giftcards"/, 'ajandekkartya-vasarlas marad');
   assert.match(mind.html, /<a href="\/foglalas">sajat<\/a>/);
   // csak a lezer
@@ -124,7 +128,7 @@ test('konfig: minden kapcsolo szerepel; az eles allapot: MIND BE (a tulajdonos j
   assert.equal(k.elonezetBe, true);
 });
 
-test('az oldalak: minden foglalasi link atkothető, ami marad, az PMU / ajandekkartya / koszonooldal', () => {
+test('az oldalak: minden foglalasi link atkothető, ami marad, az ajandekkartya-vasarlas / koszonooldal', () => {
   const marad = [];
   let atkotheto = 0;
   for (const mappa of ['klon', 'klon/m']) {
@@ -136,18 +140,18 @@ test('az oldalak: minden foglalasi link atkothető, ami marad, az PMU / ajandekk
       assert.equal(atkot(html, new Set()).html, html, f);
       if (kihagyottOldal(f)) continue;
       for (const m of ki.html.matchAll(/href="(https?:\/\/[a-z0-9.-]*salonic\.hu[^"]*)"/gi)) {
-        if (!/mosaic-pmu\.salonic\.hu|\/giftcards/.test(m[1])) marad.push(`${mappa}/${f}: ${m[1]}`);
+        if (!/\/giftcards/.test(m[1])) marad.push(`${mappa}/${f}: ${m[1]}`);
       }
       // az atirt oldalon nincs visszamaradt, atkotheto Salonic-link
       for (const m of ki.html.matchAll(/href="(https?:\/\/[a-z0-9.-]*salonic\.hu[^"]*)"/gi)) assert.equal(celra(m[1]), null, `${mappa}/${f}: ${m[1]}`);
     }
   }
-  assert.deepEqual(marad, [], 'nem PMU / ajandekkartya Salonic-link maradt');
+  assert.deepEqual(marad, [], 'nem ajandekkartya-vasarlas Salonic-link maradt');
   assert.ok(atkotheto > 200, `varhatoan 230 koruli atkotheto link (${atkotheto})`);
-  // a PMU oldal es a PMU foglalo valtozatlan marad
+  // a PMU-oldalakon nem marad kozvetlen Salonic-gomb (a PMU foglalo reteg nyilik)
   for (const f of ['klon/pmu-foglalas.html', 'klon/sminktetovalas-budapest-rovid.html']) {
-    const html = fs.readFileSync(path.join(ROOT, f), 'utf8');
-    assert.equal(atkot(html, MIND).html, html, f + ': PMU-oldal nem valtozik');
+    const html = atkot(fs.readFileSync(path.join(ROOT, f), 'utf8'), MIND).html;
+    assert.doesNotMatch(html, /href="https:\/\/mosaic-pmu\.salonic\.hu/, f + ': marad kozvetlen PMU-Salonic link');
   }
 });
 

@@ -1068,8 +1068,18 @@
     window.scrollTo({ top: Math.max(0, y), behavior: sima ? 'smooth' : 'auto' });
   };
   const fajlnev = (ut) => (ut.split('/').pop() || 'index.html').replace(/\.html$/, '');
+  // Ami nincs a tablazatban (a Wix-adat csak a menupontokhoz kellett): a Wix az anchort a szekcio melle teszi, es az azonositok idobelyegbol kepzodnek,
+  // ezert a cel az a legnagyobb comp-azonositoju <section>, ami nem nagyobb az anchor azonositojanal. A tablazat mind a 19 ismert parjara ezt adja
+  // (tools/meres-proba/_horgony-teszt.mjs); enelkul a gomb ("TOBB INFOT KEREK!", "AZ 5 OK, ROVIDEN", ...) semmit nem csinalna.
+  const horgonyNorm = (id) => String(id).replace(/^(anchors|comp)-/, '').padEnd(10, '0');
+  const horgonySzekcio = (azon) => {
+    if (HORGONYOK[azon]) return HORGONYOK[azon];
+    const kulcs = horgonyNorm(azon); let jo = null;
+    for (const s of document.querySelectorAll('section[id^="comp-"]')) if (horgonyNorm(s.id) <= kulcs && (!jo || horgonyNorm(s.id) > horgonyNorm(jo))) jo = s.id;
+    return jo;
+  };
   for (const a of document.querySelectorAll('a[data-anchor]')) {
-    const szekcio = HORGONYOK[a.getAttribute('data-anchor')];
+    const szekcio = horgonySzekcio(a.getAttribute('data-anchor'));
     const href = a.getAttribute('href');
     if (!szekcio || !href) continue;
     a.setAttribute('href', href.split('#')[0] + '#' + szekcio);

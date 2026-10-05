@@ -1,0 +1,36 @@
+Gomb-bejaras (tools/meres-proba/gomb-bejaras.mjs), 2026-10-05
+================================================================
+
+Cel: az OSSZES oldal OSSZES foglalas-jellegu gombja / linkje valodi kattintassal (mobilon erintessel), kep alapu lathatosag-ellenorzessel,
+3 profilban: asztali (Chrome 1280x800), mobil (Chrome, 390x844, erintes), webkit (Safari-motor, iPhone 13).
+Kimeno meres mindharom profilban letiltva (a bejaro csak a sajat oldalunkat tolti be).
+
+1. Elso, ELES bejaras (www.mosaicheadspa.hu, a #119 feher-kepernyo javitas utan)
+   - asztali 469 gomb, mobil 272+ gomb: a javitott foglalo mindenhol megnyilik es LATSZIK (FEHER: 0).
+   - Talalt, valodi hibak (a bejaro elso valtozata sok teves riasztast is adott: fixen / animalva gorgetett oldalak, nyitva maradt kep-nagyito,
+     zart lenyilo, tobbsoros szoveglink kozepe, rogzitett aljasav, suti-sav):
+       * /pmu-melitta: "TELEFONOS KONZULTACIO!" (Wix-felugro, sablon nelkul) es 4 db "TOBB INFOT KEREK!"-jellegu gomb (Wix-horgony): semmit nem csinaltak
+       * /30szazalek: "KEREM A 30%-OS KUPONT!" (3x, Wix-felugro, sablon nelkul): semmit nem csinalt
+       * 13 oldal, 26 Wix-horgony gomb (lezeres landingek "AZ 5 OK, ROVIDEN", "MENNYIBE KERUL?", allas-hirdetesek "JELENTKEZEM!", ...): semmit nem csinaltak
+       * /sminktetovalas-budapest-rovid (+ archiv /sminktetovalas-regi): kozvetlen mosaic-pmu.salonic.hu gombok (mukodtek, de uj lapon a Salonic-ra vittek)
+
+2. Javitas: PR #121 (tools/halott-popup.mjs, assets/js/klon.js horgonySzekcio, tools/foglalo-atkotes.mjs PMU-szabaly) + tesztek
+   (tools/test-halott-gombok.mjs, tools/test-foglalo-atkotes.mjs). node --test tools/test-*.mjs: 135 sikeres, 0 hibas.
+
+3. Teljes bejaras a javitott buildre (helyi dist = a PR tartalma), mind a 3 profil, minden oldal
+   asztali: 835 gomb | mobil: 784 | webkit: 784. FEHER: 0, HIBA: 0 mindharom profilban.
+   A maradek SEMMI / FEDI talalatot egyenkent ellenoriztem; mind a bejaro korlatja volt, nem hiba:
+   - tobbsoros szoveglink ("Zsofi, szamold ki nekem a sajat csomagomat! >>", "ezen a feluleten. >>"): a link teljes dobozanak kozepe ures ter volt;
+     a bejaro mostantol a link legnagyobb sorara kattint -> asztali ujrafutas: 275 gomb, GYANUS 0
+   - rogzitett (sticky) aljasav a lezeres / oxigen landingeken mobilon: a sav gorgetes utan jon elo; a bejaro mostantol lejjebb gorget, es ha a suti-sav takarja,
+     SUTI_TAKAR-nak jelzi (nem hiba). Kulon meres (_sticky) suti elfogadasa utan, Chrome mobil + igazi WebKit: minden sticky gomb megnyitja a foglalot
+     (oxigen: "Elso kezeles", "Csak felmeres"; lezer: "Ingyenes konzultacio"; "Szabad idopontok" = #foglalas horgony, gorget).
+   - lenyilo / panel gombok (GYIK, "Ismerd meg Zsofit", PMU-urlap lepesek): UI_VALTAS (az oldalon belul nyitnak valamit, nem foglalo-gombok).
+
+4. A PR elonezeten (claude-halott-gombok.mosaic-d77.pages.dev): pmu-melitta, 30szazalek, sminktetovalas-budapest-rovid, szortelenites-5-dolog,
+   mind a 3 profilban: SEMMI 0, FEDI 0, FEHER 0 (a "TELEFONOS KONZULTACIO" gomb a PMU foglalot nyitja, a 4 horgony gomb odagorget, a 30szazalek 3 gombja a
+   fodraszat foglalot nyitja). Egy WebKit-futasban egy "Foglalas" fejlec-gomb SEMMI volt terheles alatt (3 bejaro parhuzamosan); egyedul ujrafuttatva rendben
+   (RETEG 8, SEMMI 0) - a bejaro mostantol ilyenkor 3 mp-cel kesobb meg egyszer megnezi.
+
+Szandekosan valtozatlan: az ajandekkartya bankkartyas vasarlas (Salonic /giftcards/buy) es a regi (-regi) ajandekkartya-oldalak linkjei; a fejlec-menu GYIK / Kapcsolat linkjei
+(a fooldal szakaszaira visznek); a fooldali fodraszat "IDOPONT FOGLALAS" gombja (a hajfestes landingre visz, az eredeti Wix-viselkedes - a tulajdonos dontse, ha kozvetlenul a foglalot akarja).
