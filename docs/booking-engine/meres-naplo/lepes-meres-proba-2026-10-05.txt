@@ -65,3 +65,10 @@ OK   5. robot (webdriver): a dataLayer ettol fuggetlenul megkapja a lepeseket (h
 - GTM: az uj munkaterulet (61, "2026-10-05 foglalo lepes-meres GA4 (#88)") elo van keszitve, NINCS publikalva: 1 custom-event trigger (CE - foglalo lepes (booking_*)), 1 GA4 esemeny-tag
   (GA4 - Foglalo lepes (booking_*)), 6 DataLayer-valtozo. Az alap munkaterulet (59) es a masik elokeszitett (60) nem valtozott.
 - D1: ket adatbazis (eles: mosaic-foglalo-szamlalo, elonezet: mosaic-foglalo-szamlalo-elonezet) + a ket tabla letrehozva; kotes: wrangler.toml (SZAMLALO_DB).
+
+=== A PR-elonezeten (claude-foglalo-lepes-meres.mosaic-d77.pages.dev), az ELONEZETI D1-gyel ===
+- Szamlalo vegpont (POST /api/foglalo-szamlalo, azonos eredet): 5 ervenyes keres -> 204 (open x2, slots_loaded 420 ms, error/no_slots, close/C1); idegen eredet -> 403; ismeretlen uzletag -> 400.
+- Olvasas: kulcs nelkul 404, rossz kulccsal 404; jo kulccsal 200, JSON (cache-control: no-store): hair: open 2, slots_loaded 1, error 1 (no_slots), close 1 (C1), betoltes db 1 / atlag 420 ms / max 420 / eloszlas lt500:1;
+  a CSV (nap;uzletag;lepes;tipus;darab) es az emberi HTML-nezet (formatum=html) is rendben. (A proba-sorokat utana toroltem az elonezeti adatbazisbol; az eles adatbazishoz nem nyultam.)
+- Gomb-bejaras az elonezeten (fooldal, paros-headspa-budapest, lezeres-szortelenites-budapest, oxigenterapia-budapest, 30szazalek, pmu-melitta, sminktetovalas-budapest),
+  mind a 3 profil: asztali 73 gomb, mobil 73, webkit 73; GYANUS 0 (FEHER 0, SEMMI 0, FEDI 0).
