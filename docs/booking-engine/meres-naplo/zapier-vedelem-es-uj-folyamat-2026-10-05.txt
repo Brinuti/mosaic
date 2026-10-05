@@ -1,0 +1,25 @@
+Zapier: a szerveroldali probavedelem verzioi (2026-10-05) + az uj ajandek-vasarlas folyamat allapota
+======================================================================================================
+
+1) PROBAVEDELEM BOVITESE (a tulajdonos 2026-10-05-i dontese; az elemzo kerese: melyik Zap, melyik verzio)
+Szabaly (mind a 6 folyamatban ugyanaz): a foglalas teszt, ha a NEV "teszt" szot tartalmaz, VAGY az E-MAIL a teszt-listan van, VAGY a TELEFON 709420090 / 202474444-re vegzodik -> "teszt-foglalas", semmi nem megy ki.
+
+ Folyamat                                                    | Workflow azonosito                       | Elesitett verzio (2026-10-05)
+ TikTok Events API (HeadSpa)                                 | 01a0e70e-2e0f-7969-8cd4-ad1476062710     | 01a10a96-3bfe-7eaf-b320-d68c49095d9c
+ Meta CAPI (Salonic foglalas -> Contact)                     | 01a0e724-8a41-70ac-9d6d-e040060d4f7b     | 01a10a97-4b93-78c8-90f9-6216f2dbf18b
+ PII dusitas (TikTok + Google bovitett, nem-HeadSpa uzletagak)| 01a0e91e-a0e5-7758-878c-74079c459f81     | 01a10a98-8915-723f-87e3-9a4465bbff46
+ Google Ads offline - HeadSpa                                | 01a0e393-17e5-7a02-93c8-31b37b195af3     | 01a10a99-a178-78b6-a8ff-8eca89779947
+ Google Ads offline - Oxigen                                 | 01a0e72c-1703-77e8-a66c-2cfd9450273b     | 01a10a9c-5912-7b96-90c0-cdd993ead088
+ Google Ads offline - Fodraszat                              | 01a0e752-61b5-715c-a4f9-d1b32252b753     | 01a10a9c-6288-73c0-ac5d-f7d59a487db6
+
+Bizonyitas: mindegyik folyamat vazlatan a tulajdonos telefonszamaval + "valodi" kartonnevvel + nem teszt e-maillel futtatott probalevel "teszt-foglalas"-t adott (nem ment ki semmi); az Oxigen- es a Fodraszat-folyamatban egy ismeretlen vendeg (masik nev / telefon / e-mail) az uzletag-szuroig ment tovabb ("not-oxigen" / "not-hair": a probalevelben nincs Salonic-azonosito, igy sem a Google Adsnek, sem masnak nem ment ki semmi).
+MEG NYITOTT (az elemzo kerese): egy valodi PRÓBAFOGLALAS a valos (Deak F. I.) kartonon, ami az ELES futasokban is bizonyitja, hogy semmi nem megy ki (list_workflow_runs kind=live: "teszt-foglalas"); egyelore a vazlat-futtatasok bizonyitanak. A tesztlista nem tartalmazza a ferencistvandeak@gmail.com cimet (az elemzo listajaban szerepel): hozzaadasa kulon, hat folyamaton vegzendo kor (az uj ajandek-folyamat listajaban mar benne van).
+
+2) UJ FOLYAMAT: "Mosaic Ajandekkartya - Stripe vasarlas -> Meta Purchase + Google Ads offline konverzio (szerveroldali, hozzajarulas-fuggo)"
+ Workflow azonosito: 01a10ac7-8fbb-70aa-b3b4-70b117b39205 (privat, KIKAPCSOLT, nincs publikalt verzio); vazlat: 01a10ac7-ba53-746c-b1b8-5340a4a96abe (revizio 1). Trigger: Webhooks by Zapier "catch hook" (hook_v2) - a hook cime a publikalaskor jon letre; a Cloudflare webhook MERES_HOOK_URL titokja.
+ Lepesek: 1) Meta Conversions API "Purchase" a HeadSpa pixelre (3473839859576758; event_id = PaymentIntent azonosito, ertek, e-mail, fbc, fbp; nem eles esemeny: test_event_code TEST81080); 2) Google Ads offline konverzio a MASODLAGOS "HeadSpa - Ajandekkartya online (szerver, B-teszt)" (7801343216) akciora (gclid > wbraid > gbraid + e-mail, order_id = PI azonosito; nem eles esemenynel kihagyva).
+ Vedelmek: a kuldo oldal (netlify/lib/ajandek.js) csak hozzajarulassal kuld; itt is: hozz_adv=false -> kihagyva; teszt e-mail / TESZT nev -> kihagyva; nem HUF / hibas ertek / nem pi_ azonosito -> kihagyva.
+ Vazlat-probak (2026-10-05 06:38 UTC): (A) nem eles vasarlas + hozzajarulas: a Meta teszt-esemenyt elfogadta (_events_received: 1; csak a Test Events fulon latszik), a Google kihagyva ("test-mode"); (B) teszt e-mail (eles esemeny): "teszt-vasarlas", semmi nem ment; (C) hozzajarulas nelkul: "no-ad-consent"; (D) idegen esemeny: "not-ajandek-vasarlas".
+ ELESITES: a tulajdonos jovahagyasaval (kulso fiok): a folyamat publikalasa, a MERES_HOOK_URL beallitasa Cloudflare Secretkent, a PR (#120) merge-e az elemzo review-ja es a zold CI utan.
+
+Merest erint: nem (csak naplo).
