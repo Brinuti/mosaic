@@ -92,8 +92,10 @@ for (const oldal of oldalak) {
       const url0 = p.url(); const lapok0 = ctx.pages().length; const sy0 = await p.evaluate(() => Math.round(scrollY)); const uiAllapot = () => p.evaluate(() => JSON.stringify({ hossz: document.body.innerHTML.length, exp: [...document.querySelectorAll('[aria-expanded]')].map((e) => e.getAttribute('aria-expanded')).join(','), nyitott: document.querySelectorAll('details[open], dialog[open], [aria-modal=true]').length, magas: document.documentElement.scrollHeight })); const ui0 = await uiAllapot();
       if (PROFIL === 'mobil') await p.touchscreen.tap(x, y); else await p.mouse.click(x, y);
       await p.waitForTimeout(1700);
-      const reteg = await p.evaluate(() => !!document.getElementById('mosaic-booking-layer'));
-      const url1 = p.url(); const ujlapok = ctx.pages().slice(lapok0); const sy1 = await p.evaluate(() => Math.round(scrollY)).catch(() => sy0);
+      const allapot = async () => ({ reteg: await p.evaluate(() => !!document.getElementById('mosaic-booking-layer')), url1: p.url(), ujlapok: ctx.pages().slice(lapok0), sy1: await p.evaluate(() => Math.round(scrollY)).catch(() => sy0) });
+      let { reteg, url1, ujlapok, sy1 } = await allapot();
+      // terheles alatt (tobb bejaro parhuzamosan) a foglalo kesobb nyilhat: ha semmi nem tortent, meg egyszer megnezzuk, mielott SEMMI-nek mondjuk
+      if (!reteg && url1 === url0 && !ujlapok.length && !/^(tel|mailto):/i.test(c.href)) { await p.waitForTimeout(3000); ({ reteg, url1, ujlapok, sy1 } = await allapot()); }
       if (reteg) {
         await p.waitForTimeout(700);
         if (ONTESZT) { await p.evaluate(() => { document.getElementById('mosaic-booking-layer').style.opacity = '0'; }); await p.waitForTimeout(250); }

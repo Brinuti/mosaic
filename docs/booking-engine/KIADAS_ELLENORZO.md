@@ -20,8 +20,16 @@ Az élesítés (#114, 00:49) után telefonon (iPhone Safari és Chrome Android i
 
 1. `node --test tools/test-*.mjs` – tartalmazza a `tools/test-gorgeteszar.mjs`-t: tiltja a `body` rögzítését / eltolását a forrásban.
 2. `node tools/netlify-build.mjs` (ELES=1), majd `node tools/meres-proba/reteg-proba.mjs --overlay dist` és `... --mobil 1` – tartalmazza a **lejjebb görgetett oldalon** nyitás ellenőrzését (a body nem fixed, a pozíció megmarad, a réteg a teljes ablakot fedi és legfelül van, bezárás után ugyanott vagyunk).
-3. **Teljes gomb-bejárás, a kép alapján is**: `node tools/meres-proba/gomb-bejaras.mjs --profil asztali|mobil|webkit` – az **összes** oldal **összes** foglalás-jellegű gombját / linkjét valódi kattintással (mobilon érintéssel) meghívja, és a kép pixelei alapján ellenőrzi, hogy a foglaló panel háttérszíne látszik-e (nem fehér, nem az oldal). Kimenet: `RETEG` (rendben) / `FEHER` (megnyílt, de nem látszik: **hiba**, a futás 2-es kóddal áll le) / `SEMMI`, `FEDI` (nem történik semmi / valami takarja) / `HORGONY`, `ATVISZ`, `MASIK_LAP`, `TEL` (várt viselkedések). Mindhárom profil kell: asztali, mobil (Chrome), webkit (Safari-motor, iPhone-profil).
+3. **Teljes gomb-bejárás, a kép alapján is**: `node tools/meres-proba/gomb-bejaras.mjs --profil asztali|mobil|webkit` – az **összes** oldal **összes** foglalás-jellegű gombját / linkjét valódi kattintással (mobilon érintéssel) meghívja, és a kép pixelei alapján ellenőrzi, hogy a foglaló panel háttérszíne látszik-e (nem fehér, nem az oldal). Kimenet: `RETEG` (rendben) / `FEHER` (megnyílt, de nem látszik: **hiba**, a futás 2-es kóddal áll le) / `SEMMI`, `FEDI` (nem történik semmi / valami takarja: **hiba**) / `HORGONY`, `ATVISZ`, `MASIK_LAP`, `TEL`, `UI_VALTAS` (várt viselkedések). Mindhárom profil kell: asztali, mobil (Chrome), webkit (Safari-motor, iPhone-profil).
 4. Éles kiadás után ugyanezek az **éles oldalon** is (`--bazis https://www.mosaicheadspa.hu`), letiltott kimenő méréssel.
+
+## Halott gombok (2026-10-05, második kör)
+
+A „nem csinál semmit” gomb másik osztálya: a Wix-ból átvett oldalakon a **felugró űrlap** (data-popupid) és a **Wix-horgony** (data-anchor) gombjai. A felugróhoz a sablon nem került át (`/30szazalek` „KÉREM A 30%-OS KUPONT!”, `/pmu-melitta` „TELEFONOS KONZULTÁCIÓ!”), a horgonyhoz a `klon.js` táblázata nem ismerte a célszekciót (`/pmu-melitta` „TÖBB INFÓT KÉREK!”, lézeres landingek, állás-hirdetések; összesen 13 oldal, 26 gomb). Javítás: `tools/halott-popup.mjs` (a felugró-gomb a foglalóra mutat), `klon.js` `horgonySzekcio` (általános szabály: a legnagyobb `comp-` azonosítójú `<section>`, ami nem nagyobb az anchor azonosítójánál; a 19 ismert párra 19/19).
+
+- **Teszt:** `node --test tools/test-halott-gombok.mjs` – nem maradhat sablon nélküli felugró-gomb, és minden saját oldali horgonynak van célszekciója. Új Wix-oldal bemásolásakor ez jelzi, ha újra halott gomb kerülne be.
+- **Bejáró:** a `gomb-bejaras.mjs` a horgony- és felugró-gombokat is bejárja; `UI_VALTAS` = a gomb az oldalon belül nyit valamit (lenyíló, panel), nem foglaló; `SEMMI` = tényleg semmi nem történt (**hiba**).
+- **A bejáró téves riasztásai ellen:** a gombot középre görgeti (azonnali, nem sima görgetéssel), kinyitja a lenyílókat, a link legnagyobb sorára kattint (a többsoros szöveglink teljes dobozának közepe lehet üres), minden gomb után tiszta oldalt tölt, és ha semmi nem történt, még egyszer megnézi (terhelés alatt a foglaló később nyílhat).
 
 ## Ha mégis valaki hibát jelez (valódi telefonon)
 
