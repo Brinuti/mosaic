@@ -56,7 +56,6 @@
     csomag: !!tr.dataset.csomag,
     csoport: tr.closest('.ar-csoport').querySelector('.csoport-nev').textContent.trim(),
     csoportIkon: tr.closest('.ar-csoport').querySelector('.csoport-ikon').innerHTML, // az ikonok egyetlen forrasa az arlista (a motor testresz-ikonjai)
-    ikon: tr.querySelector('.sor-ikon').innerHTML,
   }));
   const AR = Object.fromEntries(SOROK.map((s) => [s.kulcs, s]));
   const SZOLGALTATAS = { ...AR, [EGYEDI.kulcs]: { ...EGYEDI, ar: 0, tartalmaz: [] } };
@@ -96,7 +95,7 @@
           return elem('button', {
             type: 'button', class: 'sz-chip', 'data-kulcs': s.kulcs, 'aria-pressed': String(valasztott.has(s.kulcs)), disabled: !!szulo,
             title: szulo ? `Benne van a(z) ${szulo.nev} árában` : false,
-            html: `${s.ikon}<span>${s.nev.replace(/ \(.*/, '')}</span> <small>${ft(s.ar)}</small>`,
+            html: `<span>${s.nev.replace(/ \(.*/, '')}</span> <small>${ft(s.ar)}</small>`,
           });
         })))),
       // telefonon a gombok alatt van az eredmeny: egy ragados osszegsav mutatja az aktualis arat (tapra az eredmenyhez ugrik)
@@ -109,7 +108,7 @@
     const egy = e.tetelek.length === 1;
     tartalom.replaceChildren(...[
       elem('ul', { class: 'sz-sorok' }, ...e.tetelek.map((t) => elem('li', { class: t.teljes ? 'teljes' : '' },
-        elem('span', { html: `${t.ikon}<span>${t.nev}<small>${t.teljes ? (egy ? 'teljes ár' : 'a legdrágább: teljes ár') : `50% kedvezmény · ${ft(t.ar)} helyett`}</small></span>` }),
+        elem('span', { html: `<span>${t.nev}<small>${t.teljes ? (egy ? 'teljes ár' : 'a legdrágább: teljes ár') : `50% kedvezmény · ${ft(t.ar)} helyett`}</small></span>` }),
         elem('span', { class: 'osszeg', szoveg: ft(t.fizet) })))),
       // tobb teruletnel az eredeti (kulon-kulon vett) ar athuzva, pirossal: lassa, mekkora a kedvezmeny; egy teruletnel nincs mit athuzni
       elem('div', { class: 'sz-ossz' }, elem('span', { szoveg: 'Alkalmanként' }), elem('div', { class: 'sz-ar' }, e.kedvezmeny ? elem('s', { class: 'regi-ar', szoveg: ft(e.lista) }) : null, elem('b', { szoveg: ft(e.alkalom) }))),
@@ -317,11 +316,12 @@
   }
 
   // --- a kalkulatorra mutato linkek ([data-szamolo]): JS-gorgetes, NEM #hash (a GTM "History Change" esemenyt ne indítsa) ---
+  // (és a [data-gorgetes="<id>"] linkek is: pl. "Mutasd az eredményeket" -> #eredmenyek, szintén hash nélkül)
   document.addEventListener('click', (e) => {
-    const l = e.target.closest('[data-szamolo]');
+    const l = e.target.closest('[data-szamolo], [data-gorgetes]');
     if (!l) return;
     e.preventDefault();
-    const c = $('szamolo');
+    const c = $(l.hasAttribute('data-szamolo') ? 'szamolo' : l.getAttribute('data-gorgetes'));
     if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
@@ -350,7 +350,7 @@
   function trustindexBetolt() {
     if (!tiDoboz || tiBetoltve) return;
     tiBetoltve = true;
-    const f = elem('iframe', { class: 'ti-keret', src: tiDoboz.dataset.embed, title: 'Google-vélemények (Trustindex)', loading: 'lazy', scrolling: 'no' });
+    const f = elem('iframe', { class: 'ti-keret', src: tiDoboz.dataset.embed, title: 'Google-vélemények (Trustindex)', loading: 'eager', scrolling: 'no' });  // nem lazy: a hozzajarulas utan azonnal toltodjon, ne csak gorgetesre
     let proba = 0, legnagyobb = 0;
     const meret = (nullaz) => {
       try {
@@ -383,21 +383,26 @@
     }
   }
 
-  // --- mobil sticky CTA (csak telefonon latszik, lasd a CSS-t): a hero-gombok elgorgetese utan latszik, a foglalo szekciotol (es utana) eltunik ---
-  const sticky = $('sticky-cta'), heroCta = document.querySelector('.hero .cta-sor'), foglSzekcio = $('foglalas');
-  if (sticky && heroCta && foglSzekcio && 'IntersectionObserver' in window) {
-    let heroLatszik = true, vegen = false;
+  // --- mobil sticky CTA (csak telefonon latszik, lasd a CSS-t): nem rogton jon be: csak az elso, 4 kepes szekcio (Mennyibe kerul?) elgorgetese utan
+  //     (a tulajdonos kerese: 3-4 kep utan); a foglalo szekciotol (es utana) eltunik. Gorgetes-figyelo (nem IntersectionObserver): az gyors ugrasnal,
+  //     amikor a szekcio soha nem kerul a kepernyore (pl. horgonylink, gyors lendites), nem jelezne.
+  const sticky = $('sticky-cta'), kepesSzekcio = $('mennyibe'), foglSzekcio = $('foglalas');
+  if (sticky && kepesSzekcio && foglSzekcio) {
+    let ido = 0;
     const frissit = () => {
-      const lat = !heroLatszik && !vegen;
+      ido = 0;
+      const tulVan = kepesSzekcio.getBoundingClientRect().bottom <= 0;   // az elso, 4 kepes szekcio mar elgorgetve
+      const vegen = foglSzekcio.getBoundingClientRect().top < innerHeight; // a foglalo kepernyon van, vagy mar elhagytuk: ott maga a foglalo a cel
+      const lat = tulVan && !vegen;
       sticky.classList.toggle('lathato', lat);
       sticky.setAttribute('aria-hidden', lat ? 'false' : 'true');
       sticky.querySelectorAll('a').forEach((a) => (lat ? a.removeAttribute('tabindex') : a.setAttribute('tabindex', '-1')));
       document.body.classList.toggle('sticky-be', lat);
     };
-    // a sav csak akkor jon be, ha a hero gombjai mar FELJEBB gorogtek a kepernyo tetejen (nem akkor, ha meg lejjebb vannak: kis telefonon a gombok az elso kepernyo alatt vannak)
-    new IntersectionObserver((es) => { heroLatszik = es[0].isIntersecting || es[0].boundingClientRect.top > 0; frissit(); }).observe(heroCta);
-    // a foglalo szekcio kepernyon van, vagy mar elhagytuk (fentebb van): a foglalo maga a cel, ott / utana nincs szukseg a savra
-    new IntersectionObserver((es) => { const r = es[es.length - 1]; vegen = r.isIntersecting || r.boundingClientRect.top < 0; frissit(); }).observe(foglSzekcio);
+    const kesleltet = () => { if (!ido) ido = requestAnimationFrame(frissit); };
+    addEventListener('scroll', kesleltet, { passive: true });
+    addEventListener('resize', kesleltet);
+    frissit();
   }
 
   // --- Google terkep: a funkcionalis sutik engedelyezese utan magatol, egyebkent a gombra kattintva toltodik be ----------------------

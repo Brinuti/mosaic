@@ -13,7 +13,7 @@ kérésére, 2026-10-04): a korábbi Wixes klón helyét vette át (a `foglalas/
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (75 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (79 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje
@@ -51,11 +51,15 @@ a foglaló naptárában kör alakú szabad napok (mint a foglaló-motorban), a �
 Az egyedi csomagot („nagyon sokan szeretik”) említő sorok a hero-ban, a Mennyibe kerül?, a 8 kezelés és az árlista szekcióban a kalkulátorra linkelnek (`[data-szamolo]`: JS-gördítés, **nem** `#hash`, hogy a GTM „History Change” esemény ne induljon).
 Minden gomb (`.gomb`) ugyanazt a betűt használja: Jost, 15 px, normál írásmód (nincs csupa nagybetűs gomb, nincs betűköz); a gombok mérete csak a belső margóban tér el.
 
-**Fejléc:** a fejléc felső, rózsaszín akciós sávját (`section#comp-mpv0ganp`, Wix-fejléc) ezen az oldalon elrejtjük (a `lezer-landing.css`-ben, ezért csak itt hat; a tulajdonos kérése, hogy helyet nyerjünk). A fejléc így 77 → 46 px (asztal) és 94 → 63 px (mobil); a görgetési eltolások (`scroll-padding-top`, `scroll-margin-top`) 76 px-esek.
+**Fejléc:** a fejléc felső, rózsaszín akciós sávját (`section#comp-mpv0ganp`, Wix-fejléc) ezen az oldalon elrejtjük (a `lezer-landing.css`-ben, ezért csak itt hat; a tulajdonos kérése, hogy helyet nyerjünk). A fejléc így 77 → 46 px (asztal) és 94 → 63 px (mobil); a görgetési eltolások (`scroll-padding-top`, `scroll-margin-top`) 84 px-esek.
 
 **Google-értékelés jelvény (hero):** a három jelvény (garancia / 20% kedvezmény / Kolosy tér) alatt, a gombok felett áll; kerek, krémes szélű jelvény (G-logó, 4,9/5, csillagok, „1 257 Google-vélemény”), az érték és a vélemények száma egyforma kicsi betűvel, lefelé mutató nyíl nélkül; továbbra is a `#velemenyek` szekcióra mutat.
 
 **Tizenharmadik kör (2026-10-04, mobil finomítások):** a fő cím „Lézeres szőrtelenítés 12 hónap garanciával”; a három jelvény (garancia / 20% / Kolosy tér) a bal és a jobb margóig ér; a Google-értékelés sor nem kártya (nem néz ki gombnak); a hero kalkulátor-sora: „Több területet szeretnél? Számold ki az árát →”; a „Mennyibe kerül?” alcíme „Bérlet helyett alkalmanként fizetsz.”, a 20%-os sáv „Az első kezelés 20% kedvezménnyel” (egy sor), ott nincs kalkulátoros sor; a 8 kezelés szekcióban nincs 20%-os mondat; az árlista bevezetője rövid, **az árlistában nincs „Időpont” gomb** (és nincs gomb-oszlop); mobilon az árlista ugyanolyan széles (16 px-es margók), mint a kalkulátor és az akkordionok; az „Orvosi ajánlással” jelvény mobilon középen, a videó fölött; a vélemény-widget iframe magassága folyamatosan követi a tartalmat (csak nő), hogy a lapozó hosszabb kártyái ne vágódjanak le.
+
+**Tizennegyedik kör (2026-10-06):** az árlistában és a kalkulátorban csak a fő testtájak (csoportok) kapnak képet (`cs-*.jpg`), a soronkénti / gombonkénti ikonok kikerültek (a `sor-*.jpg` fájlok törölve); a Zsófi-szekció első jelvénye „8000+ óra tapasztalat”; a Trustindex-keret `loading="eager"` (a lézeres, az Oxigén és az ajándékkártya oldalon is), vagyis hozzájárulás után azonnal töltődik, nem csak odagörgetéskor (hozzájárulás előtt továbbra is gombos helykitöltő áll: harmadik fél, funkcionális süti); a helyszín-szekció képe fix 190 px magas (iOS Safari-n a rács-elem képén a `height: 100%` nem oldódott fel, és a kép a láblécbe lógott).
+
+**Mobil sticky sáv + eredmény-link (2026-10-06, a tulajdonos kérése az Oxigén-munkameneten át):** a sticky sáv nem rögtön jelenik meg: csak az első, 4 képes szekció (Mennyibe kerül?) elgörgetése után (IntersectionObserver a `#mennyibe` szekción: `!isIntersecting && bottom <= 0`), a foglalónál eltűnik. A hero értékelés-sorában („4,9/5 … Google-vélemény”) mellette „Mutasd az eredményeket →” link áll (`data-gorgetes="eredmenyek"`: JS-gördítés az Eredmények szekcióhoz, nem `#hash`, a GTM History Change miatt).
 
 ## Árforrás
 

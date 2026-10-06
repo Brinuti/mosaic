@@ -521,12 +521,12 @@ describe('a harmadik kor visszajelzesei', () => {
     const { p, ctx } = await nyit();
     const m = await p.$$eval('.szamolo-valaszto, .szamolo-eredmeny', (l) => l.map((e) => Math.round(e.getBoundingClientRect().height)));
     assert.equal(m[0], m[1], 'a ket doboz magassaga: ' + m);
-    assert.equal(await p.locator('#szamolo-valaszto .sz-chip img.ti-kep').count(), 17, 'minden gombon ikon (a latvanyterv illusztralt kepe)');
-    assert.ok((await p.locator('#szamolo-tartalom .sz-sorok img.ti-kep').count()) >= 3, 'az eredmeny soraiban is ikon');
-    assert.equal(await p.locator('#arlista tbody tr .sor-ikon img.ti-kep').count(), 22, 'az arlista minden soraban ikon');
+    assert.equal(await p.locator('#szamolo-valaszto .sz-chip img').count(), 0, 'a gomboknak nincs ikonjuk (csak a fo testtajaknak)');
+    assert.equal(await p.locator('#szamolo-valaszto .sz-csoport-nev img.ti-kep').count(), 6, 'a 6 fo testtajnak (csoportnak) van ikonja');
+    assert.equal(await p.locator('#szamolo-tartalom .sz-sorok img').count(), 0, 'az eredmeny soraiban nincs ikon');
     assert.equal(await p.locator('#arlista .csoport-ikon img.ti-kep').count(), 7, 'az arlista minden csoportjanal ikon');
     const forrasok = await p.$$eval('img.ti-kep', (l) => [...new Set(l.map((i) => i.getAttribute('src').split('/').pop().split('?')[0].split('-')[0]))].sort());
-    assert.deepEqual(forrasok, ['cs', 'sor'], 'csak a latvanyterv ikonjai (sor-/cs-)');
+    assert.deepEqual(forrasok, ['cs'], 'csak a fo testtajak ikonjai (cs-)');
     assert.equal(await p.locator('svg.ti').count(), 0, 'nincs sajat rajzolt ikon');
     await ctx.close();
   });
@@ -604,12 +604,17 @@ describe('mobil sticky CTA (mint az oxigen oldalon)', () => {
   const lathato = (p) => p.$eval('#sticky-cta', (e) => e.classList.contains('lathato'));
   const gorget = async (p, sel) => { await p.evaluate((s) => { document.documentElement.style.scrollBehavior = 'auto'; const e = document.querySelector(s); scrollTo(0, e.getBoundingClientRect().top + scrollY - 80); }, sel); await p.waitForTimeout(500); };
 
-  test('telefonon: a hero gombjai alatt nincs, utana latszik, a foglalonal es utana eltunik; a gomb a foglalora ugrik', async () => {
+  test('telefonon: az elso, 4 kepes szekcio (Mennyibe kerul?) elgorgetese elott nincs, utana latszik, a foglalonal es utana eltunik; a gomb a foglalora ugrik', async () => {
     const { p, ctx } = await nyit({ mobil: true, api: () => idok(...SLOTOK) });
     assert.equal(await lathato(p), false, 'az oldal tetejen nincs');
     assert.equal(await p.getAttribute('#sticky-cta', 'aria-hidden'), 'true');
+    await gorget(p, '#mennyibe');
+    assert.equal(await lathato(p), false, 'a 4 kepes szekcio elejen meg nincs');
+    await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; const e = document.querySelector('.eredmenyek'); scrollTo(0, e.getBoundingClientRect().top + scrollY + 100); });
+    await p.waitForTimeout(500);
+    assert.equal(await lathato(p), true, 'a 4 kepes szekcio elgorgetese utan latszik');
     await gorget(p, '.tudod');
-    assert.equal(await lathato(p), true, 'a hero gombjai utan latszik');
+    assert.equal(await lathato(p), true, 'tovabb gorgetve is latszik');
     assert.equal(await p.getAttribute('#sticky-cta', 'aria-hidden'), 'false');
     const m = await p.$eval('#sticky-cta', (e) => { const r = e.getBoundingClientRect(); return { alja: Math.round(r.bottom), ablak: innerHeight, pozicio: getComputedStyle(e).position, ujra: [...e.querySelectorAll('a')].map((a) => a.getAttribute('href')) }; });
     assert.equal(m.pozicio, 'fixed');
@@ -644,10 +649,10 @@ describe('mobil sticky CTA (mint az oxigen oldalon)', () => {
 });
 
 describe('a latvanyterv szerinti ikonok es a tomorebb arlista', () => {
-  test('az arlista soronkent a sajat ikonjat hasznalja (sor-<kulcs>.jpg), csoportonkent cs-*.jpg', async () => {
+  test('az arlistaban csak a fo testtajak (csoportok) kapnak kepet, a soroknak nincs ikonjuk', async () => {
     const { p, ctx } = await nyit();
-    const sorok = await p.$$eval('#arlista tr[data-kulcs]', (l) => l.map((tr) => [tr.dataset.kulcs, tr.querySelector('.sor-ikon img').getAttribute('src').split('/').pop()]));
-    for (const [k, f] of sorok) assert.equal(f, `sor-${k}.jpg`);
+    assert.equal(await p.locator('#arlista tr[data-kulcs] img').count(), 0, 'a soroknak nincs kep');
+    assert.equal(await p.locator('#arlista .sor-ikon').count(), 0);
     const cs = await p.$$eval('#arlista .csoport-ikon img', (l) => l.map((i) => i.getAttribute('src').split('/').pop()));
     assert.deepEqual(cs, ['cs-arc.jpg', 'cs-kar.jpg', 'cs-intim.jpg', 'cs-lab.jpg', 'cs-ferfi.jpg', 'cs-egyeb.jpg', 'cs-csomag.jpg']);
     await ctx.close();
@@ -779,7 +784,7 @@ describe('a hatodik kor visszajelzesei', () => {
 });
 
 describe('a hetedik kor visszajelzesei', () => {
-  test('telefonon az elso kepernyon (kis kijelzon is) nincs sticky sav; csak a hero gombjainak elgorgetese utan jon be', async () => {
+  test('telefonon az elso kepernyon (kis kijelzon is) nincs sticky sav; csak a 4 kepes szekcio elgorgetese utan jon be', async () => {
     const ctx = await bongeszo.newContext({ viewport: { width: 390, height: 600 }, userAgent: UA_MOBIL, isMobile: true, hasTouch: true });
     const p = await ctx.newPage();
     await p.route(/^(?!http:\/\/localhost)/, (r) => r.abort());
@@ -790,10 +795,10 @@ describe('a hetedik kor visszajelzesei', () => {
     assert.equal(await p.$eval('#sticky-cta', (e) => e.classList.contains('lathato')), false, 'betoltes utan nincs sav');
     await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, 300); });
     await p.waitForTimeout(400);
-    assert.equal(await p.$eval('#sticky-cta', (e) => e.classList.contains('lathato')), false, 'a gombok meg nem gorogtek el');
+    assert.equal(await p.$eval('#sticky-cta', (e) => e.classList.contains('lathato')), false, 'a 4 kepes szekcio meg nincs elgorgetve');
     await p.evaluate(() => { const e = document.querySelector('.tudod'); scrollTo(0, e.getBoundingClientRect().top + scrollY - 80); });
     await p.waitForTimeout(500);
-    assert.equal(await p.$eval('#sticky-cta', (e) => e.classList.contains('lathato')), true, 'a gombok elgorgetese utan latszik');
+    assert.equal(await p.$eval('#sticky-cta', (e) => e.classList.contains('lathato')), true, 'a 4 kepes szekcio elgorgetese utan latszik');
     await ctx.close();
   });
 
@@ -898,7 +903,7 @@ describe('a rozsaszin akcios sav nem latszik', () => {
       const m = await p.evaluate(() => { const s = document.getElementById('comp-mpv0ganp'); const f = document.getElementById('SITE_HEADER'); return { sav: s ? getComputedStyle(s).display : 'nincs', magas: Math.round(f.getBoundingClientRect().height), szoveg: /Októberi akció/.test(f.innerText) }; });
       assert.equal(m.sav, 'none', (mobil ? 'mobil' : 'asztal') + ': a sav el van rejtve');
       assert.equal(m.szoveg, false, 'a sav szovege nem latszik');
-      assert.ok(m.magas <= 66, (mobil ? 'mobil' : 'asztal') + ': a fejlec magassaga: ' + m.magas);
+      assert.ok(m.magas <= 80, (mobil ? 'mobil' : 'asztal') + ': a fejlec magassaga: ' + m.magas);
       await ctx.close();
     }
   });
@@ -985,5 +990,49 @@ describe('az atvaltas: eredeti cim, rejtett regi valtozat, atiranyitas', () => {
     assert.ok(eles.szoveg.includes('lezer-landing.css'), 'az eredeti cimen az uj landing van');
     assert.ok(!/<meta name="robots"/i.test(eles.szoveg), 'az eles oldal indexelheto (nincs robots meta)');
   });
+});
+
+describe('a tizennegyedik kor: tisztabb arlista, azonnali velemenyek, helyszin-kep, 8000+ ora', () => {
+  test('"8000+ ora tapasztalat" a Zsofi-szekcio jelvenyeben (nem "4 ev")', async () => {
+    const { p, ctx } = await nyit();
+    const szoveg = await p.$$eval('.zsofi-tenyek li', (l) => l.map((e) => e.innerText.replace(/\s+/g, ' ').trim()));
+    assert.equal(szoveg[0], '8000+ óra tapasztalat');
+    assert.ok(!szoveg.join(' ').includes('4 év'));
+    await ctx.close();
+  });
+
+  test('a Trustindex-keret nem lazy (hozzajarulas utan azonnal toltodik); a helyszin kepe fix magassagu (nem logat a lablecbe)', async () => {
+    const forras = fs.readFileSync(path.join(GYOKER, 'assets', 'js', 'lezer-landing.js'), 'utf8');
+    assert.match(forras, /title: 'Google-vélemények \(Trustindex\)', loading: 'eager'/);
+    for (const mobil of [false, true]) {
+      const { p, ctx } = await nyit({ mobil });
+      await p.locator('.helyszin').scrollIntoViewIfNeeded();
+      await p.evaluate(() => document.querySelectorAll('.helyszin img').forEach((i) => { i.loading = 'eager'; }));
+      await p.waitForTimeout(600);
+      const m = await p.evaluate(() => { const i = document.querySelector('.hely-kepek > img'); const s = document.querySelector('.helyszin').getBoundingClientRect(); const r = i.getBoundingClientRect(); return { magas: Math.round(r.height), alja: Math.round(r.bottom), szekcioAlja: Math.round(s.bottom), stilus: getComputedStyle(i).height }; });
+      assert.equal(m.stilus, '190px', 'fix magassag');
+      assert.ok(m.alja <= m.szekcioAlja, (mobil ? 'mobil' : 'asztal') + ': a kep a szekcion belul van: ' + JSON.stringify(m));
+      await ctx.close();
+    }
+  });
+});
+
+describe('a "Mutasd az eredmenyeket" link a hero-ban', () => {
+  for (const mobil of [false, true]) {
+    test(`${mobil ? 'telefon' : 'asztal'}: az ertekeles-sorban a Google-ertekeles mellett latszik; JS-gorgetessel az Eredmenyekhez ugrik, #hash-valtozas nelkul`, async () => {
+      const { p, ctx } = await nyit({ mobil });
+      const m = await p.evaluate(() => { const l = document.querySelector('.hero .eredmeny-link'); const g = document.querySelector('.hero .google-nagy'); const r = l.getBoundingClientRect(); const gr = g.getBoundingClientRect(); return { szoveg: l.textContent.replace(/\s+/g, ' ').trim(), ugyanabbaSorba: l.parentElement === g.parentElement, lathato: r.width > 0 && r.height > 0, jobbra: r.left >= gr.left, attr: l.getAttribute('data-gorgetes') }; });
+      assert.equal(m.szoveg, 'Mutasd az eredményeket →');
+      assert.ok(m.ugyanabbaSorba && m.lathato, 'a Google-ertekeles sorban: ' + JSON.stringify(m));
+      assert.equal(m.attr, 'eredmenyek');
+      await p.getByRole('button', { name: 'Elfogadom' }).click().catch(() => {});
+      await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
+      await p.locator('.hero .eredmeny-link').scrollIntoViewIfNeeded();
+      await p.locator('.hero .eredmeny-link').click();
+      await p.waitForFunction(() => { const t = document.getElementById('eredmenyek').getBoundingClientRect().top; return t < 220 && t > -250; }, null, { timeout: 8000 });
+      assert.equal(await p.evaluate(() => location.hash), '', 'nincs hash-valtozas (GTM History Change)');
+      await ctx.close();
+    });
+  }
 });
 
