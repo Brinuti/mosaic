@@ -13,7 +13,7 @@ kérésére, 2026-10-04): a korábbi Wixes klón helyét vette át (a `foglalas/
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (81 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (84 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje
@@ -61,7 +61,7 @@ Minden gomb (`.gomb`) ugyanazt a betűt használja: Jost, 15 px, normál írásm
 
 **Mobil sticky sáv + eredmény-link (2026-10-06, a tulajdonos kérése az Oxigén-munkameneten át):** a sticky sáv nem rögtön jelenik meg: csak az első, 4 képes szekció (Mennyibe kerül?) elgörgetése után (IntersectionObserver a `#mennyibe` szekción: `!isIntersecting && bottom <= 0`), a foglalónál eltűnik. A hero értékelés-sorában („4,9/5 … Google-vélemény”) mellette „Mutasd az eredményeket →” link áll (`data-gorgetes="eredmenyek"`: JS-gördítés az Eredmények szekcióhoz, nem `#hash`, a GTM History Change miatt).
 
-**Foglaló-szekció időpontjai → foglaló-motor (2026-10-06, a tulajdonos kérése):** a naptár időpontjai már nem a Salonic oldalára visznek, hanem a helyben nyíló foglaló-motorba (réteg): `/foglalo-motor?business=laser&service=<Salonic-azonosító | konzult>` (a launcher, `assets/js/booking-launcher.js`, elfogja a kattintást; ugyanúgy működik, mint a fejléc „Ingyenes konzultáció” gombja; JS nélkül a `/foglalo-motor` oldalra visz). A motor az adott szolgáltatás időpont-naptárával nyílik; a kiválasztott időpont időbélyege az `a.ido[data-ido]` attribútumban van (a motor jelenleg nem fogad kezdő-időpontot).
+**Foglaló-szekció időpontjai → foglaló-motor (2026-10-06, a tulajdonos kérése):** a naptár időpontjai már nem a Salonic oldalára visznek, hanem a helyben nyíló foglaló-motorba (réteg): `/foglalo-motor?business=laser&service=<Salonic-azonosító | konzult>` (a launcher, `assets/js/booking-launcher.js`, elfogja a kattintást; ugyanúgy működik, mint a fejléc „Ingyenes konzultáció” gombja; JS nélkül a `/foglalo-motor` oldalra visz). A kiválasztott időpont időbélyegét a link a `&start=<unix>` paraméterben viszi (`a.ido[data-ido]` ugyanez): a motor **kihagyja a naptárat, és rögtön a foglalási űrlapot (Salonic-adatlap) mutatja arra az időpontra** (2026-10-06, a tulajdonos kérése; részletek: `docs/booking-engine/BOOKING_LAYER.md`). Vissza gombbal a naptár nyílik a kiválasztott napon / időponton; ha az időpont közben elkelt, a naptár a „közben elkelt” figyelmeztetéssel. A tesztek az időpontokat 9:00 UTC-re igazítják, így nem lógnak át éjfélen.
 
 ## Árforrás
 

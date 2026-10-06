@@ -46,6 +46,16 @@ test('normalizeOptions / layerUrl: a kuponkod (kupon) a CTA-bol atmegy a kontext
   assert.equal(layerUrl('https://www.mosaicheadspa.hu/headspa-budapest', normalizeOptions({ business: 'headspa', kupon: 'NYAR20' })), '/headspa-budapest?booking=1&business=headspa', 'a kod nem kerul az elozmeny-URL-be');
 });
 
+test('normalizeOptions / layerUrl: az elovalasztott idopont (start) a kontextusba megy (a motor onnan veszi), de NEM kerul az URL-allapotba; rossz ertek eldobodik', () => {
+  assert.deepEqual(normalizeOptions({ business: 'laser', service: '476488', start: '1791000000' }), { business: 'laser', service: '476488', start: '1791000000' });
+  assert.deepEqual(normalizeOptions({ business: 'laser', service: '476488', start: 1791000000 }), { business: 'laser', service: '476488', start: '1791000000' });
+  assert.deepEqual(normalizeOptions(new URLSearchParams('booking=1&business=laser&service=konzult&start=1791000000')), { business: 'laser', service: 'konzult', start: '1791000000' });
+  assert.deepEqual(normalizeOptions({ business: 'laser', start: 'holnap' }), { business: 'laser' });
+  assert.deepEqual(normalizeOptions({ business: 'laser', start: '12' }), { business: 'laser' });
+  assert.equal(layerUrl('https://x.hu/p', { business: 'laser', service: '476488', start: '1791000000' }), '/p?booking=1&business=laser&service=476488');
+  assert.equal(cleanUrl('https://x.hu/p?booking=1&business=laser&start=1791000000'), '/p');
+});
+
 test('parseContext: uzletag nelkul a defaultBusiness (HeadSpa a /foglalo-motor alapja, null a /foglalas-nal es a retegnel)', () => {
   assert.equal(parseContext('').business, 'headspa');
   assert.equal(parseContext('', '', '', { defaultBusiness: null }).business, null);

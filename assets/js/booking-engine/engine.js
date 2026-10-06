@@ -1102,7 +1102,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     if (ctx.business) meter.business(ctx.business); // a link mar megmondta az uzletagat: ez is az uzletag-lepes (a kezdo kepernyon valasztva a setBusiness / chooseFamily adja)
     let first = entry();
     // Mentett allapot (bezaras / ujranyitas): ha van ehhez a belepeshez, a skeleton alatt visszaepitjuk, es ott folytatja, ahol tartott
-    const snap = peekSnapshot();
+    const snap = ctx.start ? null : peekSnapshot(); // az oldalon mar kivalasztott idopont (?start) elsobbseget elvez a mentett allapottal szemben
     const folytat = async () => {
       if (snap.view === 'PMU') { S.nav = [first]; ctx.business = 'pmu'; return go('PMU'); } // a sminktetovalo-keret maga folytatja
       const nezet = await restoreSnapshot(snap);
@@ -1149,8 +1149,27 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     if (ctx.staffKey && first === 'C1' && S.service && flow.showStaffFilter && !S.staff) {
       try { const m = F.findStaff(await staffChoices([S.service]), ctx.staffKey); if (m) { S.staff = m.id; S.staffLabel = m.label; track('booking_filter_used', { filter: 'staff_link' }); } } catch (e) { /* a naptar szakember nelkul is megnyilik */ }
     }
+    // Idopont-link (?start=<unix>): a vendeg az oldalon mar idopontot valasztott -> kihagyjuk a naptarat, rogton az adatlap (C4) jon. A naptar a vissza gombbal
+    // elerheto (a kivalasztott nap elore beallitva); ha az idopont kozben elkelt (vagy nincs ilyen), a naptar nyilik meg a "kozben elkelt" figyelmeztetessel.
+    let elore = null;
+    if (ctx.start && first === 'C1' && S.service && !S.slot) {
+      try {
+        await loadSlots();
+        if (destroyed) return undefined;
+        const keres = () => F.uniqueTimes(S.staff ? F.filterSlots(S.slots, { staffId: S.staff }) : S.slots).find((s) => s.start_unix === ctx.start) || null;
+        elore = keres();
+        if (!elore && !S.slotsFull && ctx.start > nowUnix() + 14 * 86400) { await S.fullP; elore = keres(); } // az elso 14 napon tuli idopont: a teljes lista kell
+        if (destroyed) return undefined;
+        S.day = F.dayKey(ctx.start); S.month = null; // a naptar (vissza gomb / elkelt idopont) erre a napra all, ha van rajta szabad idopont
+        if (!elore) S.slotLostNote = true;
+      } catch (e) { /* a naptar a megszokott modon probalkozik */ }
+    }
     elozmeny('replaceState', { view: first, depth: 0, beLayer: layer, biz: ctx.business || null }, win.location.pathname + win.location.search + '#' + first);
     S.nav = [first];
+    if (elore) {
+      track('booking_slot_viewed', { ...serviceParams(S.service), step: 'C1', count: F.dayTimes(S.slots, S.day).length }); // az idopontokat az oldalon latta: a tolcser (megtekintes > kivalasztas) egyben marad
+      return pickSlot(elore, { fromFilter: !!S.staff });
+    }
     if (snap) { setView(h('p', { class: 'be-loading', role: 'status', text: 'Betöltés…' }), first); return folytat(); }
     return show(first);
   }

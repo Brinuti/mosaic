@@ -51,7 +51,7 @@ before(async () => {
 after(async () => { await bongeszo?.close(); szerver?.close(); });
 
 /** Uj oldal: kulso forgalom tiltva, a Salonic-API hamisitva. `api` = (url) => JSON-objektum. */
-async function nyit({ mobil = false, api, meres } = {}) {
+async function nyit({ mobil = false, api, meres, szalon } = {}) {
   const ctx = await bongeszo.newContext({
     viewport: { width: mobil ? 390 : 1440, height: mobil ? 844 : 900 },
     ...(mobil ? { userAgent: UA_MOBIL, isMobile: true, hasTouch: true } : {}),
@@ -66,12 +66,15 @@ async function nyit({ mobil = false, api, meres } = {}) {
     const o = api ? api(r.request().url()) : { status: 'success', data: { blocks: {} } };
     r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
   });
+  // szalon: a Salonic-oldalak (szolgaltatas-lista, adatlap) mockja a motor tesztjehez: (url) => html | null
+  if (szalon) await p.route('https://mosaic-elysion.salonic.hu/**', (r) => { const h = szalon(r.request().url()); if (h === null) return r.abort(); return r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: h }); });
   await p.goto(bazis + OLDAL, { waitUntil: 'domcontentloaded' });
   return { p, ctx, hibak, kulso };
 }
 /** Az API-valasz: a megadott idobelyegek egy kezelonel. */
 const idok = (...ts) => ({ status: 'success', data: { blocks: { 32417: { k1: { slots: Object.fromEntries(ts.map((t, i) => ['s' + i, { timestamp: t }])) } } } } });
-const holnap = Math.floor(Date.now() / 1000) + 2 * 86400;
+const holnapNyers = Math.floor(Date.now() / 1000) + 2 * 86400;
+const holnap = holnapNyers - (holnapNyers % 86400) + 9 * 3600; // 9:00 UTC (10-11 ora, budapesti ido): a teszt-idopontok soha nem lognak at ejfelen masik napra, barmikor fut a teszt
 const SLOTOK = [holnap, holnap + 3600, holnap + 7200, holnap + 10800, holnap + 14400, holnap + 18000, holnap + 21600];
 const szamjegy = (s) => +String(s).replace(/\D/g, '');
 
@@ -259,7 +262,7 @@ describe('idopont-valaszto: naptar (hamisitott Salonic-API)', () => {
     const linkek = await idoLinkek(p);
     assert.ok(linkek.length >= 1);
     assert.equal(await p.locator('#idok a.ido[target]').count(), 0, 'az idopont nem nyilik uj lapon / felugroban');
-    for (const x of linkek) assert.match(x, /^\/foglalo-motor\?business=laser&service=476488#\d+$/);
+    for (const x of linkek) assert.match(x, /^\/foglalo-motor\?business=laser&service=476488&start=(\d+)#\1$/, 'a link az idopont idobelyegeit is viszi (start)');
     assert.equal(hivasok[0].get('serviceId'), '476488');
     assert.equal(hivasok[0].get('placeId'), '14586');
     await ctx.close();
@@ -1046,7 +1049,7 @@ describe('a foglalo szekcio idopontjai a helyben nyilo foglalo-motorba (retegbe)
     await p.locator('#foglalo').scrollIntoViewIfNeeded();
     await p.waitForSelector('#idok a.ido');
     const kezdetiUt = await p.evaluate(() => location.pathname);
-    assert.match(await p.getAttribute('#idok a.ido', 'href'), /^\/foglalo-motor\?business=laser&service=476488$/);
+    assert.match(await p.getAttribute('#idok a.ido', 'href'), /^\/foglalo-motor\?business=laser&service=476488&start=\d+$/);
     await p.click('#idok a.ido');
     await p.waitForSelector('#mosaic-booking-layer', { state: 'attached', timeout: 10000 });
     assert.equal(await p.evaluate(() => location.pathname), kezdetiUt, 'az oldal nem navigalt el');
@@ -1063,9 +1066,82 @@ describe('a foglalo szekcio idopontjai a helyben nyilo foglalo-motorba (retegbe)
     await p.waitForFunction(() => /service=konzult/.test(document.querySelector('#idok a.ido')?.getAttribute('href') || ''));
     await p.click('#idok a.ido');
     await p.waitForSelector('#mosaic-booking-layer', { state: 'attached', timeout: 10000 });
-    assert.equal(await p.getAttribute('#idok a.ido', 'href'), '/foglalo-motor?business=laser&service=konzult');
+    assert.match(await p.getAttribute('#idok a.ido', 'href'), /^\/foglalo-motor\?business=laser&service=konzult&start=\d+$/);
     assert.ok(p.url().startsWith(bazis + OLDAL), 'a bongeszo az oldalon maradt: ' + p.url());
     await ctx.close();
   });
 });
 
+describe('az idopontra kattintva a motor a naptar nelkul, rogton az adatlapra (foglalasi urlapra) visz', () => {
+  const SZOLGALTATASOK = '<input data-id="476488" data-duration="60" data-price="15200" data-name="Hónalj - Teljes hónalj" data-employees="32417">'
+    + '<input data-id="476477" data-duration="30" data-price="0" data-name="Ingyenes konzultáció" data-employees="32417">';
+  const szalon = (url) => (/showServices/.test(url) ? '<html><body>' + SZOLGALTATASOK + '</body></html>' : /guestData/.test(url) ? '<html><body>adatlap</body></html>' : '<html><body></body></html>');
+  const ido = (ts) => new Intl.DateTimeFormat('hu-HU', { timeZone: 'Europe/Budapest', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(ts * 1000));
+  /** A reteg (Shadow DOM) pillanatnyi allapota. */
+  const reteg = (p) => p.evaluate(() => {
+    const gazda = document.getElementById('mosaic-booking-layer');
+    const r = gazda && gazda.shadowRoot;
+    if (!r) return null;
+    const f = r.querySelector('iframe.be-iframe');
+    return { keret: f ? f.getAttribute('src') : null, naptar: !!r.querySelector('.be-naptar'), kivalasztott: [...r.querySelectorAll('.be-idogomb[aria-pressed="true"]')].map((b) => b.textContent.trim()), szoveg: r.textContent.replace(/\s+/g, ' ') };
+  });
+  async function kattint(p, valasztas) {
+    await p.getByRole('button', { name: 'Elfogadom' }).click().catch(() => {});
+    await p.locator('#foglalo').scrollIntoViewIfNeeded();
+    if (valasztas) await valasztas();
+    await p.waitForSelector('#idok a.ido');
+  }
+
+  test('a kivalasztott idopont utan nem a naptar, hanem a foglalasi urlap (Salonic adatlap) nyilik, pontosan arra az idopontra; a vissza gomb a naptarra visz, a kivalasztott napon', async () => {
+    const { p, ctx } = await nyit({ api: () => idok(...SLOTOK), szalon });
+    await kattint(p);
+    const ts = +(await p.locator('#idok a.ido').last().getAttribute('data-ido')); // az utolso idopont: nem az alapertelmezett
+    await p.locator('#idok a.ido').last().click();
+    await p.waitForFunction(() => { const r = document.getElementById('mosaic-booking-layer'); return !!(r && r.shadowRoot && r.shadowRoot.querySelector('iframe.be-iframe')); }, null, { timeout: 15000 });
+    const a = await reteg(p);
+    const u = new URL(a.keret);
+    assert.equal(u.pathname, '/guestData/');
+    assert.equal(u.searchParams.get('serviceId'), '476488');
+    assert.equal(u.searchParams.get('startDate'), String(ts), 'a Salonic adatlap pontosan a kattintott idopontra szol');
+    assert.equal(a.naptar, false, 'nincs naptar: a vendeg nem valaszt ujra');
+    assert.ok(p.url().startsWith(bazis + OLDAL), 'az oldal nem navigalt el');
+    // vissza: a naptar, a kivalasztott napon es idopontnal
+    await p.goBack();
+    await p.waitForFunction(() => { const r = document.getElementById('mosaic-booking-layer'); return !!(r && r.shadowRoot && r.shadowRoot.querySelector('.be-naptar')); }, null, { timeout: 15000 });
+    const b = await reteg(p);
+    assert.deepEqual(b.kivalasztott, [ido(ts)], 'a naptar a kivalasztott idopontot mutatja: ' + JSON.stringify(b));
+    await ctx.close();
+  });
+
+  test('ingyenes konzultacio modban a konzultacio idopontja ugyanigy rogton az urlapra visz (mobilon is)', async () => {
+    for (const mobil of [false, true]) {
+      const { p, ctx } = await nyit({ mobil, api: () => idok(...SLOTOK), szalon });
+      await kattint(p, async () => { await p.click('#foglalo input[value="konzult"]'); await p.waitForFunction(() => /service=konzult/.test(document.querySelector('#idok a.ido')?.getAttribute('href') || '')); });
+      const ts = +(await p.locator('#idok a.ido').first().getAttribute('data-ido'));
+      await p.locator('#idok a.ido').first().click();
+      await p.waitForFunction(() => { const r = document.getElementById('mosaic-booking-layer'); return !!(r && r.shadowRoot && r.shadowRoot.querySelector('iframe.be-iframe')); }, null, { timeout: 15000 });
+      const a = await reteg(p);
+      const u = new URL(a.keret);
+      assert.equal(u.searchParams.get('serviceId'), '476477', (mobil ? 'mobil' : 'asztali') + ': a konzultacio');
+      assert.equal(u.searchParams.get('startDate'), String(ts));
+      assert.equal(a.naptar, false);
+      await ctx.close();
+    }
+  });
+
+  test('ha az idopont kozben elkelt, a naptar nyilik meg a "kozben elkelt" figyelmeztetessel (nem hiba, nem ures ures)', async () => {
+    let elkelt = false;
+    const { p, ctx } = await nyit({ api: () => idok(...(elkelt ? SLOTOK.slice(1) : SLOTOK)), szalon });
+    await kattint(p);
+    const ts = +(await p.locator('#idok a.ido').first().getAttribute('data-ido'));
+    assert.equal(ts, SLOTOK[0]);
+    elkelt = true; // a motor mar a frissitett listat kapja: az elso idopont eltunt
+    await p.locator('#idok a.ido').first().click();
+    await p.waitForFunction(() => { const r = document.getElementById('mosaic-booking-layer'); return !!(r && r.shadowRoot && r.shadowRoot.querySelector('.be-naptar')); }, null, { timeout: 15000 });
+    const a = await reteg(p);
+    assert.equal(a.keret, null, 'nincs adatlap az elkelt idopontra');
+    assert.match(a.szoveg, /közben elkelt/);
+    assert.ok(!a.kivalasztott.includes(ido(ts)), 'az elkelt idopont nincs kijelolve');
+    await ctx.close();
+  });
+});

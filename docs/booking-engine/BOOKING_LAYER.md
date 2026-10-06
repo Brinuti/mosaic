@@ -24,6 +24,7 @@ openBooking({ business: 'headspa', service: 'paros' })            // rögtön a 
 openBooking({ business: 'oxygen', service: '466158' })            // Salonic-azonosító vagy kulcsszó
 openBooking({ business: 'laser', intent: 'first' })               // területválasztó
 openBooking({ business: 'headspa', voucher: true })               // ajándékkártya-beváltás
+openBooking({ business: 'laser', service: '476488', start: 1791000000 })  // már kiválasztott időpont (unix mp): a naptár kimarad, rögtön az adatlap
 openBooking({ business: 'pmu' })                                  // a saját PMU-folyamat
 openBooking({})                                                   // nincs kontextus: szolgáltatás-első kezdőoldal (H0)
 ```
@@ -31,6 +32,8 @@ openBooking({})                                                   // nincs konte
 HTML-ből: `<button data-booking='{"business":"hair","service_category":"balayage"}'>` (vagy `data-booking="business=hair&category=balayage"`), illetve a linktérképen át kerülő `<a href="/foglalo-motor?business=…">` hivatkozások a **rétegben** nyílnak (JS nélkül a `/foglalo-motor` oldalra visznek: fallback). Új/Ctrl-kattintás a böngészőre marad.
 
 Elnevezések: `service_id` = `service`, `service_category` = `category` (a régi nevek elsőbbséget élveznek).
+
+**Már kiválasztott időpont (`start=<unix másodperc>`, 2026-10-06):** ha az oldalon (pl. a lézeres landing foglaló-szekciójában) a vendég már napot és időpontot választott, a link / hívás a `start` paraméterrel viszi át az időbélyeget (a Salonic naptár-API `timestamp`-je, ugyanaz, amit a motor `start_unix`-ként használ). Csak **konkrét szolgáltatásnál** (`service=…`, a kezdő állapot az időpont-naptár `C1`) érvényes; a motor ilyenkor kihagyja a naptárat, és rögtön az adatlapot (`C4`) mutatja arra az időpontra (a `booking_slot_viewed` → `booking_slot_selected` → `booking_details_started` események sorrendje és paraméterei ugyanazok, mint a naptáras úton; `meres-naplo/lezer-idopont-start-2026-10-06.txt`). A böngésző vissza gombja a naptárra visz, a kiválasztott napon és időponton. Ha az időpont közben elkelt (a motor friss listájában nincs), a naptár nyílik meg a „Ez az időpont közben elkelt” figyelmeztetéssel. A `start` az URL-állapotba nem kerül, és a mentett állapotot (30 perces folytatás) felülírja; érvénytelen érték (nem egész szám / nem ésszerű időbélyeg) figyelmen kívül marad (`flow.js: cleanStart`).
 
 ## Fájlok
 
