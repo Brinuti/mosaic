@@ -1,0 +1,276 @@
+{
+ "megjegyzes": "A meres_kuldes tabla (elonezeti D1) osszes, SAJAT szallitoval (kuldo=kozvetlen) kikuldott, elkuldve allapotu sora a 2026-10-06-i QA-2 futasokrol. Lekerdezve a futasok utan. A korabbi Composio-s Meta-sorok (12 db, kuldo=composio:*) ervenytelenitettek es nincsenek itt.",
+ "osszesen_platformonkent": {
+  "meta": 14,
+  "tiktok": 10,
+  "ga4": 7
+ },
+ "a_6_eset": {
+  "meta": 12,
+  "tiktok": 4,
+  "ga4": 6
+ },
+ "megszakitott_elso_headspa_kiserlet": {
+  "meta": 2,
+  "tiktok": 2,
+  "ga4": 1,
+  "megjegyzes": "Az elso HeadSpa-futas: a hivo-szkriptben egy elkallodott kommentsor miatt a vendeg (e-mail/telefon) es az uj_vendeg mezo kimaradt, ezert em/ph nelkul ment; a foglalast lemondtam, a hat esetet uj foglalasokkal futtattam ujra. A kuldes viszont mar megtortent: ez a GA4 7. (foglalas_elso) esemenye.",
+  "booking_id": "mb_0muwwdc5g6idu33v33ntind",
+  "salonic_uuid": "a82cb39c-7f34-e940-2caf-4fe09582acf9",
+  "lemondva": true
+ },
+ "tiktok_ujrafuttatas": {
+  "tiktok": 4
+ },
+ "dedup_ellenorzes": "SELECT esemeny_id, platform, COUNT(*) FROM meres_kuldes GROUP BY esemeny_id, platform HAVING COUNT(*)>1 -> 0 sor (egy esemeny + platform parra egy sor van; a lemondas utani ismetles mar_kuldve).",
+ "sorok": [
+  {
+   "sor_id": 49,
+   "esemeny_id": "FoglalasElso:mb_0muwwdc5g6idu33v33ntind",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:33:20Z",
+   "csoport": "megszakitott_elso_headspa_kiserlet (hibas hivo-szkript: vendeg nelkul; lemondva)"
+  },
+  {
+   "sor_id": 50,
+   "esemeny_id": "FoglalasElso:mb_0muwwdc5g6idu33v33ntind",
+   "platform": "tiktok",
+   "http_status": 200,
+   "utc": "2026-10-06T16:33:20Z",
+   "csoport": "megszakitott_elso_headspa_kiserlet (hibas hivo-szkript: vendeg nelkul; lemondva)"
+  },
+  {
+   "sor_id": 52,
+   "esemeny_id": "FoglalasElso:mb_0muwwdc5g6idu33v33ntind",
+   "platform": "ga4",
+   "http_status": 204,
+   "utc": "2026-10-06T16:33:20Z",
+   "csoport": "megszakitott_elso_headspa_kiserlet (hibas hivo-szkript: vendeg nelkul; lemondva)"
+  },
+  {
+   "sor_id": 53,
+   "esemeny_id": "Schedule:mb_0muwwdc5g6idu33v33ntind",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:33:20Z",
+   "csoport": "megszakitott_elso_headspa_kiserlet (hibas hivo-szkript: vendeg nelkul; lemondva)"
+  },
+  {
+   "sor_id": 54,
+   "esemeny_id": "Schedule:mb_0muwwdc5g6idu33v33ntind",
+   "platform": "tiktok",
+   "http_status": 200,
+   "utc": "2026-10-06T16:33:20Z",
+   "csoport": "megszakitott_elso_headspa_kiserlet (hibas hivo-szkript: vendeg nelkul; lemondva)"
+  },
+  {
+   "sor_id": 57,
+   "esemeny_id": "FoglalasElso:mb_0muwwfe8qpioj7cf5nz1dyl",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:34:49Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 58,
+   "esemeny_id": "FoglalasElso:mb_0muwwfdhhsffnttqjsa8mh3",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:34:49Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 59,
+   "esemeny_id": "FoglalasElso:mb_0muwwfdhhsffnttqjsa8mh3",
+   "platform": "tiktok",
+   "http_status": 200,
+   "utc": "2026-10-06T16:34:49Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 60,
+   "esemeny_id": "Konzultacio:mb_0muwwfdl3j7j2dtbgvufrq8",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:34:50Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 61,
+   "esemeny_id": "FoglalasElso:mb_0muwwfhg4dvbshd76re7zq6",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:34:50Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 65,
+   "esemeny_id": "Konzultacio:mb_0muwwfdxtq0ijjk42xift2i",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:34:50Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 69,
+   "esemeny_id": "FoglalasElso:mb_0muwwfdhhsffnttqjsa8mh3",
+   "platform": "ga4",
+   "http_status": 204,
+   "utc": "2026-10-06T16:34:49Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 71,
+   "esemeny_id": "FoglalasElso:mb_0muwwfe8qpioj7cf5nz1dyl",
+   "platform": "ga4",
+   "http_status": 204,
+   "utc": "2026-10-06T16:34:49Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 73,
+   "esemeny_id": "Konzultacio:mb_0muwwfdl3j7j2dtbgvufrq8",
+   "platform": "ga4",
+   "http_status": 204,
+   "utc": "2026-10-06T16:34:50Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 74,
+   "esemeny_id": "FoglalasElso:mb_0muwwfhg4dvbshd76re7zq6",
+   "platform": "ga4",
+   "http_status": 204,
+   "utc": "2026-10-06T16:34:50Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 75,
+   "esemeny_id": "Schedule:mb_0muwwfdhhsffnttqjsa8mh3",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:34:49Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 77,
+   "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwwfdl3j7j2dtbgvufrq8",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:34:50Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 78,
+   "esemeny_id": "Schedule:mb_0muwwfdhhsffnttqjsa8mh3",
+   "platform": "tiktok",
+   "http_status": 200,
+   "utc": "2026-10-06T16:34:49Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 79,
+   "esemeny_id": "Konzultacio:mb_0muwwfdxtq0ijjk42xift2i",
+   "platform": "ga4",
+   "http_status": 204,
+   "utc": "2026-10-06T16:34:50Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 80,
+   "esemeny_id": "Schedule:mb_0muwwfhg4dvbshd76re7zq6",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:34:50Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 81,
+   "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwwfe8qpioj7cf5nz1dyl",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:34:49Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 85,
+   "esemeny_id": "Schedule:mb_0muwwfdxtq0ijjk42xift2i",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:34:50Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 113,
+   "esemeny_id": "Ajandekkartya:pi_3UNbMeFv8vc2ArnL1QOIrbHS",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:38:21Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 114,
+   "esemeny_id": "Ajandekkartya:pi_3UNbMeFv8vc2ArnL1QOIrbHS",
+   "platform": "tiktok",
+   "http_status": 200,
+   "utc": "2026-10-06T16:38:21Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 116,
+   "esemeny_id": "Ajandekkartya:pi_3UNbMeFv8vc2ArnL1QOIrbHS",
+   "platform": "ga4",
+   "http_status": 204,
+   "utc": "2026-10-06T16:38:21Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 117,
+   "esemeny_id": "Schedule:pi_3UNbMeFv8vc2ArnL1QOIrbHS",
+   "platform": "meta",
+   "http_status": 200,
+   "utc": "2026-10-06T16:38:21Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 118,
+   "esemeny_id": "Schedule:pi_3UNbMeFv8vc2ArnL1QOIrbHS",
+   "platform": "tiktok",
+   "http_status": 200,
+   "utc": "2026-10-06T16:38:21Z",
+   "csoport": "a_6_eset"
+  },
+  {
+   "sor_id": 122,
+   "esemeny_id": "FoglalasElso:mb_0muwx6k95zoi77fq2imuerx",
+   "platform": "tiktok",
+   "http_status": 200,
+   "utc": "2026-10-06T16:55:54Z",
+   "csoport": "tiktok_ujrafuttatas (TEST83543; meta/google/ga4 vészkapcsolóval kikapcsolva)"
+  },
+  {
+   "sor_id": 126,
+   "esemeny_id": "Schedule:mb_0muwx6k95zoi77fq2imuerx",
+   "platform": "tiktok",
+   "http_status": 200,
+   "utc": "2026-10-06T16:55:54Z",
+   "csoport": "tiktok_ujrafuttatas (TEST83543; meta/google/ga4 vészkapcsolóval kikapcsolva)"
+  },
+  {
+   "sor_id": 130,
+   "esemeny_id": "Ajandekkartya:pi_3UNbfMFv8vc2ArnL1auT7pae",
+   "platform": "tiktok",
+   "http_status": 200,
+   "utc": "2026-10-06T16:57:41Z",
+   "csoport": "tiktok_ujrafuttatas (TEST83543; meta/google/ga4 vészkapcsolóval kikapcsolva)"
+  },
+  {
+   "sor_id": 134,
+   "esemeny_id": "Schedule:pi_3UNbfMFv8vc2ArnL1auT7pae",
+   "platform": "tiktok",
+   "http_status": 200,
+   "utc": "2026-10-06T16:57:41Z",
+   "csoport": "tiktok_ujrafuttatas (TEST83543; meta/google/ga4 vészkapcsolóval kikapcsolva)"
+  }
+ ]
+}

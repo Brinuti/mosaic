@@ -1,0 +1,225 @@
+# QA-2 – TIKTOK: pontosan mit küldtünk, mit válaszolt a platform
+
+Forrás: a szerveres naplók (`meres_kuldes` sorai), a teljes kiküldött törzzsel és a platform teljes válaszával. A hitelesítő token (`Access-Token` fejléc) nincs naplózva, csak a fejléc **neve**. Sorok: 4, ebből `elkuldve`: 4.
+
+## FoglalasElso → HeadSpa_FoglalasElso (`elkuldve`) – sor #122
+
+- esemény-azonosító: `FoglalasElso:mb_0muwx6k95zoi77fq2imuerx`
+- naplófájl: `qa2-tiktok-headspa-szerver-2026-10-06.json`, küldve (UTC): 2026-10-06T16:55:54.000Z, küldő: kozvetlen, próbálkozás: 1
+- kérés: `POST https://business-api.tiktok.com/open_api/v1.3/event/track/`, fejlécek (csak nevek): content-type, access-token
+- cél: `{"pixel_code":"DB2GTTJC77UE4D1NE4MG","nev":"MOSAIC ARNYEK meres-teszt","test_event_code":"TEST83543"}`
+
+**Kiküldött törzs (teljes):**
+
+```json
+{
+  "event_source": "web",
+  "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+  "test_event_code": "TEST83543",
+  "data": [
+    {
+      "event": "HeadSpa_FoglalasElso",
+      "event_time": 1791305689,
+      "event_id": "FoglalasElso:mb_0muwx6k95zoi77fq2imuerx",
+      "user": {
+        "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+        "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+        "external_id": "19fc1adfa441e456f40dd2924e30db241e6b5bc31876005e39457544b21309de",
+        "ttclid": "E.C.P.TESZT_HEADSPA_MUWX6H84_TTCLID",
+        "ttp": "TESZT_HEADSPA_MUWX6H84_ttp_zj04rnhtwc",
+        "ip": "160.79.106.21",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+      },
+      "properties": {
+        "currency": "HUF",
+        "value": 53800,
+        "content_type": "product",
+        "contents": [
+          {
+            "content_id": "headspa_foglalaselso",
+            "content_name": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+            "quantity": 1,
+            "price": 53800
+          }
+        ],
+        "order_id": "mb_0muwx6k95zoi77fq2imuerx"
+      },
+      "page": {
+        "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros"
+      }
+    }
+  ]
+}
+```
+
+**A platform válasza:** HTTP 200
+
+```json
+{"code": 0, "message": "OK", "request_id": "20261006165556D3A017533C739ECF7E9E", "data": {}}
+```
+
+## Schedule → CompletePayment (`elkuldve`) – sor #126
+
+- esemény-azonosító: `Schedule:mb_0muwx6k95zoi77fq2imuerx`
+- naplófájl: `qa2-tiktok-headspa-szerver-2026-10-06.json`, küldve (UTC): 2026-10-06T16:55:54.000Z, küldő: kozvetlen, próbálkozás: 1
+- kérés: `POST https://business-api.tiktok.com/open_api/v1.3/event/track/`, fejlécek (csak nevek): content-type, access-token
+- cél: `{"pixel_code":"DB2GTTJC77UE4D1NE4MG","nev":"MOSAIC ARNYEK meres-teszt","test_event_code":"TEST83543"}`
+
+**Kiküldött törzs (teljes):**
+
+```json
+{
+  "event_source": "web",
+  "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+  "test_event_code": "TEST83543",
+  "data": [
+    {
+      "event": "CompletePayment",
+      "event_time": 1791305689,
+      "event_id": "Schedule:mb_0muwx6k95zoi77fq2imuerx",
+      "user": {
+        "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+        "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+        "external_id": "19fc1adfa441e456f40dd2924e30db241e6b5bc31876005e39457544b21309de",
+        "ttclid": "E.C.P.TESZT_HEADSPA_MUWX6H84_TTCLID",
+        "ttp": "TESZT_HEADSPA_MUWX6H84_ttp_zj04rnhtwc",
+        "ip": "160.79.106.21",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+      },
+      "properties": {
+        "currency": "HUF",
+        "value": 53800,
+        "content_type": "product",
+        "contents": [
+          {
+            "content_id": "headspa_schedule",
+            "content_name": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+            "quantity": 1,
+            "price": 53800
+          }
+        ],
+        "order_id": "mb_0muwx6k95zoi77fq2imuerx"
+      },
+      "page": {
+        "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros"
+      }
+    }
+  ]
+}
+```
+
+**A platform válasza:** HTTP 200
+
+```json
+{"code": 0, "message": "OK", "request_id": "20261006165558B9F8A7428CDFBA1B2F13", "data": {}}
+```
+
+## Ajandekkartya → HeadSpa_Ajandekkartya (`elkuldve`) – sor #130
+
+- esemény-azonosító: `Ajandekkartya:pi_3UNbfMFv8vc2ArnL1auT7pae`
+- naplófájl: `qa2-tiktok-kartya-szerver-2026-10-06.json`, küldve (UTC): 2026-10-06T16:57:41.000Z, küldő: kozvetlen, próbálkozás: 1
+- kérés: `POST https://business-api.tiktok.com/open_api/v1.3/event/track/`, fejlécek (csak nevek): content-type, access-token
+- cél: `{"pixel_code":"DB2GTTJC77UE4D1NE4MG","nev":"MOSAIC ARNYEK meres-teszt","test_event_code":"TEST83543"}`
+
+**Kiküldött törzs (teljes):**
+
+```json
+{
+  "event_source": "web",
+  "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+  "test_event_code": "TEST83543",
+  "data": [
+    {
+      "event": "HeadSpa_Ajandekkartya",
+      "event_time": 1791305804,
+      "event_id": "Ajandekkartya:pi_3UNbfMFv8vc2ArnL1auT7pae",
+      "user": {
+        "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+        "external_id": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+        "ttclid": "E.C.P.TESZT_AJANDEK_MUWX7O8A_TTCLID",
+        "ttp": "TESZT_AJANDEK_MUWX7O8A_ttp_hoaauj9gsm",
+        "ip": "160.79.106.23",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+      },
+      "properties": {
+        "currency": "HUF",
+        "value": 26900,
+        "content_type": "product",
+        "contents": [
+          {
+            "content_id": "ajandekkartya",
+            "content_name": "egyeni",
+            "quantity": 1,
+            "price": 26900
+          }
+        ],
+        "order_id": "pi_3UNbfMFv8vc2ArnL1auT7pae"
+      },
+      "page": {
+        "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/ajandek"
+      }
+    }
+  ]
+}
+```
+
+**A platform válasza:** HTTP 200
+
+```json
+{"code": 0, "message": "OK", "request_id": "20261006165743A477879190B99D19FA83", "data": {}}
+```
+
+## Schedule → CompletePayment (`elkuldve`) – sor #134
+
+- esemény-azonosító: `Schedule:pi_3UNbfMFv8vc2ArnL1auT7pae`
+- naplófájl: `qa2-tiktok-kartya-szerver-2026-10-06.json`, küldve (UTC): 2026-10-06T16:57:41.000Z, küldő: kozvetlen, próbálkozás: 1
+- kérés: `POST https://business-api.tiktok.com/open_api/v1.3/event/track/`, fejlécek (csak nevek): content-type, access-token
+- cél: `{"pixel_code":"DB2GTTJC77UE4D1NE4MG","nev":"MOSAIC ARNYEK meres-teszt","test_event_code":"TEST83543"}`
+
+**Kiküldött törzs (teljes):**
+
+```json
+{
+  "event_source": "web",
+  "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+  "test_event_code": "TEST83543",
+  "data": [
+    {
+      "event": "CompletePayment",
+      "event_time": 1791305804,
+      "event_id": "Schedule:pi_3UNbfMFv8vc2ArnL1auT7pae",
+      "user": {
+        "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+        "external_id": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+        "ttclid": "E.C.P.TESZT_AJANDEK_MUWX7O8A_TTCLID",
+        "ttp": "TESZT_AJANDEK_MUWX7O8A_ttp_hoaauj9gsm",
+        "ip": "160.79.106.23",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+      },
+      "properties": {
+        "currency": "HUF",
+        "value": 26900,
+        "content_type": "product",
+        "contents": [
+          {
+            "content_id": "ajandekkartya",
+            "content_name": "egyeni",
+            "quantity": 1,
+            "price": 26900
+          }
+        ],
+        "order_id": "pi_3UNbfMFv8vc2ArnL1auT7pae"
+      },
+      "page": {
+        "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/ajandek"
+      }
+    }
+  ]
+}
+```
+
+**A platform válasza:** HTTP 200
+
+```json
+{"code": 0, "message": "OK", "request_id": "202610061657441EB81C715C60BA9B9A61", "data": {}}
+```

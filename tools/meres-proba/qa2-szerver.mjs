@@ -27,6 +27,8 @@ const kerelem = {
   uuid: be.salonic_uuid, host: be.salonic_host, felado: arg('felado', undefined), szolgaltatas: q.service, munkatarsak: [], ld: start ? { startDate: new Date(start * 1000).toISOString() } : null,
   level_datuma: arg('level-ido'), ar: arg('ar') ? Number(arg('ar')) : (/^\d+$/.test(String(q.price || '')) ? Number(q.price) : undefined), vendeg: { email: arg('email', 'deakfi@grantis.hu'), telefon: arg('telefon', '+36 70 942 0090') }, uj_vendeg: ujVendeg,
 };
+// vedelem: egy felkesz kerelem (pl. elkallodott sor miatt hianyzo vendeg / uj_vendeg) NE menjen ki: a kikuldott esemeny a platformokon (Meta, TikTok, GA4) nem vonhato vissza
+if (!kerelem.uuid || !kerelem.host || !kerelem.vendeg || !kerelem.vendeg.email || !kerelem.vendeg.telefon || !kerelem.level_datuma || kerelem.ar === undefined || !kerelem.ld) { console.error('HIBA: felkesz kerelem, nem kuldom ki:', Object.keys(kerelem).filter((k) => kerelem[k] === undefined || kerelem[k] === null || kerelem[k] === '').join(', ') || 'vendeg'); process.exit(3); }
 const t0 = new Date().toISOString();
 const r = await fetch(`${BAZIS}/api/foglalas-egyeztetes`, { method: 'POST', headers: H, body: JSON.stringify(kerelem) });
 const valasz = await r.json();
