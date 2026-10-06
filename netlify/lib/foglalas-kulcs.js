@@ -307,7 +307,8 @@ export async function kulcsJeloltek(db, kulcs, now = Date.now()) {
 export async function kulcsAtadas(db, { kulcs, regi, uj, ok }, now = Date.now()) {
   await sema(db);
   const t = sec(now);
-  if (uj) await db.prepare("UPDATE foglalas_kulcs SET booking_id = ?3, service_id = ?4, forras = 'atadas', letrehozva = ?5, lejar = ?6 WHERE kulcs = ?1 AND booking_id = ?2").bind(kulcs, regi, uj.booking_id, uj.service_id || null, uj.ido || t, t + MEGORZES_NAP * 86400).run();
+  if (uj && regi) await db.prepare("UPDATE foglalas_kulcs SET booking_id = ?3, service_id = ?4, forras = 'atadas', letrehozva = ?5, lejar = ?6 WHERE kulcs = ?1 AND booking_id = ?2").bind(kulcs, regi, uj.booking_id, uj.service_id || null, uj.ido || t, t + MEGORZES_NAP * 86400).run();
+  else if (uj) await db.prepare("INSERT INTO foglalas_kulcs (kulcs, booking_id, service_id, forras, letrehozva, lejar) VALUES (?1, ?2, ?3, 'atadas', ?4, ?5) ON CONFLICT(kulcs) DO NOTHING").bind(kulcs, uj.booking_id, uj.service_id || null, uj.ido || t, t + MEGORZES_NAP * 86400).run(); // szabad kulcs birtokbavetele (nincs regi birtokos)
   else await db.prepare('DELETE FROM foglalas_kulcs WHERE kulcs = ?1 AND booking_id = ?2').bind(kulcs, regi).run();
   await db.prepare('INSERT INTO foglalas_kulcs_atadas (kulcs, booking_id_regi, booking_id_uj, ok, ido) VALUES (?1, ?2, ?3, ?4, ?5)').bind(kulcs, regi, uj ? uj.booking_id : null, ok, t).run();
 }
@@ -493,11 +494,11 @@ export async function egyeztet(db, mezok, deps) {
     if (!szabad.length) return { allapot: 'nincs', kulcs: k, miert: 'minden jelolt mar mas foglalasra kiment' };
     if (szabad.length === 1) {
       if (leveldatum != null && Math.abs(szabad[0].ido - leveldatum) > TURES_EGY_MP) return { allapot: 'nincs', kulcs: k, miert: 'az egyetlen jelolt tul regi ehhez a levelhez (' + Math.round((leveldatum - szabad[0].ido) / 60) + ' perc)' };
-      return { allapot: 'valasztott', kulcs: k, jelolt: szabad[0], atadas };
+      return { allapot: 'valasztott', kulcs: k, jelolt: szabad[0], atadas, szabadKulcs: !birtokos };
     }
     if (leveldatum == null) return { allapot: 'ellentmondas', kulcs: k, miert: 'tobb szabad jelolt, a level datuma nelkul nem egyertelmu' };
     const rend = szabad.map((c) => ({ c, d: Math.abs(c.ido - leveldatum) })).sort((x, y) => x.d - y.d);
-    if (rend[0].d <= TURES_TOBB_MP && rend[1].d > TURES_TOBB_MP) return { allapot: 'valasztott', kulcs: k, jelolt: rend[0].c, atadas, idoalapu: true };
+    if (rend[0].d <= TURES_TOBB_MP && rend[1].d > TURES_TOBB_MP) return { allapot: 'valasztott', kulcs: k, jelolt: rend[0].c, atadas, szabadKulcs: !birtokos, idoalapu: true };
     return { allapot: 'ellentmondas', kulcs: k, miert: 'tobb szabad jelolt, az idoalapu parositas nem egyertelmu' };
   }
   const eredmenyek = [];
@@ -514,6 +515,16 @@ export async function egyeztet(db, mezok, deps) {
   }
   if (talalatok.length) {
     const e0 = talalatok[0], r = { kulcs: e0.kulcs, booking_id: e0.jelolt.booking_id, service_id: e0.jelolt.service_id };
+    // A KULCS BIRTOKA csak a JELOLT (ez a foglalas) ELO ellenorzese utan kerulhet at (felszabadult vagy szabad kulcs): torolt vagy nem ellenorizheto jelolt nem kaphat kulcsot.
+    //   aktiv -> atkerulhet; torolve -> a parositas (esemeny-azonosito) megmarad, de a kulcs NEM kerul at (felszabadul); nem ellenorizheto -> ujraprobalas (nem dont).
+    const atvetel = !!(e0.atadas || e0.szabadKulcs);
+    let jeloltAllapot = null;
+    if (atvetel) {
+      const elo = await foglalasAllapot({ host: mezok.host, uuid: mezok.uuid, fetchImpl: deps.fetchImpl });
+      jeloltAllapot = elo.allapot;
+      nyom.jelolt_ellenorzes = { kulcs: r.kulcs, jelolt_booking_id: r.booking_id, jelolt_uuid: mezok.uuid, elo_allapot: elo.allapot, miert: elo.miert || null, atvetel: e0.atadas ? 'felszabadult kulcs' : 'szabad kulcs' };
+      if (jeloltAllapot === 'ismeretlen') return ujraprobal('a kulcs atvetele elott a jelolt (ez a foglalas) elo allapota nem ellenorizheto: ' + (elo.miert || 'ismeretlen'));
+    }
     const serviceEgyezik = serviceId ? r.service_id === serviceId : (ellenorzoServiceIds && ellenorzoServiceIds.length ? ellenorzoServiceIds.includes(r.service_id) : null);
     if (serviceEgyezik === false) { // a kulcs egyezik, a szolgaltatas nem: ellentmondas (kulcs-utkozes gyanu), nem kuldunk
       await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, service_id = ?6, riasztas = 1, frissitve = ?7 WHERE uuid = ?1').bind(mezok.uuid, 'ellentmondas', probalkozas, r.kulcs, kulcsForras, serviceId, t).run();
@@ -530,18 +541,32 @@ export async function egyeztet(db, mezok, deps) {
       await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, service_id = ?6, riasztas = 1, kovetkezo = NULL, frissitve = ?7 WHERE uuid = ?1').bind(mezok.uuid, 'ellentmondas', probalkozas, r.kulcs, kulcsForras, r.service_id, t).run();
       return { allapot: 'ellentmondas', kuldheto: false, duplikalt: false, riasztas: true, probalkozas, miert: 'a kulcshoz tartozo booking_id mar mas Salonic-foglalasra kiment', kulcs: r.kulcs, kulcs_forras: kulcsForras, nyom };
     }
-    if (kuldheto && e0.atadas) { await kulcsAtadas(db, { kulcs: r.kulcs, regi: e0.atadas.regi, uj: e0.jelolt, ok: e0.atadas.ok }, now); nyom.kulcs_atadas = { kulcs: r.kulcs, regi: e0.atadas.regi, uj: r.booking_id, ok: e0.atadas.ok }; }
-    return { allapot: 'parositott', kuldheto, duplikalt: !kuldheto, booking_id: r.booking_id, esemeny_id: r.booking_id, kulcs: r.kulcs, kulcs_forras: kulcsForras, service_egyezik: serviceEgyezik, probalkozas, riasztas: false, keses: sor.allapot === 'parositatlan', kulcs_atadva: !!(kuldheto && e0.atadas), nyom };
+    let kulcsAtvett = false;
+    if (kuldheto && atvetel) {
+      if (jeloltAllapot === 'aktiv') {
+        const ok = (e0.atadas ? e0.atadas.ok : 'szabad kulcs') + '; a jelolt elo ellenorzese: aktiv';
+        await kulcsAtadas(db, { kulcs: r.kulcs, regi: e0.atadas ? e0.atadas.regi : null, uj: e0.jelolt, ok }, now); kulcsAtvett = true;
+        nyom.kulcs_atadas = { kulcs: r.kulcs, regi: e0.atadas ? e0.atadas.regi : null, uj: r.booking_id, ok };
+      } else if (e0.atadas) { // a regi birtokos torolve, de a jelolt nem aktiv: a kulcs szabad lesz, nem kerul at
+        const ok = 'a birtokos torolve, de a jelolt elo allapota: ' + jeloltAllapot + ' - a kulcs felszabadult, NEM kerult at';
+        await kulcsAtadas(db, { kulcs: r.kulcs, regi: e0.atadas.regi, uj: null, ok }, now);
+        nyom.kulcs_atadas = { kulcs: r.kulcs, regi: e0.atadas.regi, uj: null, ok };
+      }
+    }
+    return { allapot: 'parositott', kuldheto, duplikalt: !kuldheto, booking_id: r.booking_id, esemeny_id: r.booking_id, kulcs: r.kulcs, kulcs_forras: kulcsForras, service_egyezik: serviceEgyezik, probalkozas, riasztas: false, keses: sor.allapot === 'parositatlan', kulcs_atadva: kulcsAtvett, jelolt_elo_allapot: jeloltAllapot, nyom };
   }
   // nincs talalat: ujraprobalas 1, 3, 10, 30 perc; az 5. keres (1 azonnali + 4 ujra) utan parositatlan + riasztas
-  const miertNincs = (eredmenyek.find((e) => e.allapot === 'varakozas') || eredmenyek.find((e) => e.miert) || {}).miert || null;
-  const ujra = UJRAPROBA_MP[probalkozas - 1];
-  if (ujra === undefined) {
-    await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, kovetkezo = NULL, riasztas = 1, frissitve = ?6 WHERE uuid = ?1').bind(mezok.uuid, 'parositatlan', probalkozas, jeloltek[0] || null, kulcsForras, t).run();
-    return { allapot: 'parositatlan', kuldheto: false, riasztas: true, probalkozas, kulcs: jeloltek[0] || null, kulcs_forras: kulcsForras, miert: miertNincs, nyom };
+  return ujraprobal((eredmenyek.find((e) => e.allapot === 'varakozas') || eredmenyek.find((e) => e.miert) || {}).miert || null);
+
+  async function ujraprobal(miertNincs) {
+    const ujra = UJRAPROBA_MP[probalkozas - 1];
+    if (ujra === undefined) {
+      await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, kovetkezo = NULL, riasztas = 1, frissitve = ?6 WHERE uuid = ?1').bind(mezok.uuid, 'parositatlan', probalkozas, jeloltek[0] || null, kulcsForras, t).run();
+      return { allapot: 'parositatlan', kuldheto: false, riasztas: true, probalkozas, kulcs: jeloltek[0] || null, kulcs_forras: kulcsForras, miert: miertNincs, nyom };
+    }
+    await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, kovetkezo = ?6, frissitve = ?7 WHERE uuid = ?1').bind(mezok.uuid, 'fuggoben', probalkozas, jeloltek[0] || null, kulcsForras, t + ujra, t).run();
+    return { allapot: 'fuggoben', kuldheto: false, riasztas: false, probalkozas, ujraprobal_mp: ujra, kulcs: jeloltek[0] || null, kulcs_forras: kulcsForras, miert: miertNincs, nyom };
   }
-  await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, kovetkezo = ?6, frissitve = ?7 WHERE uuid = ?1').bind(mezok.uuid, 'fuggoben', probalkozas, jeloltek[0] || null, kulcsForras, t + ujra, t).run();
-  return { allapot: 'fuggoben', kuldheto: false, riasztas: false, probalkozas, ujraprobal_mp: ujra, kulcs: jeloltek[0] || null, kulcs_forras: kulcsForras, miert: miertNincs, nyom };
 }
 
 /** A parositatlan / ellentmondo foglalasok (a riasztas listaja). */
@@ -579,12 +604,13 @@ export async function lemondasKezel(db, mezok, deps) {
     if (!kuldve) { eredmenyek.push({ kulcs: k, tulajdonos: birtokos.booking_id, eredmeny: 'nem ellenorizheto: a birtokos foglalas Salonic-UUID-ja ismeretlen (a letrehozasi level meg nem parositott)' }); await naplo(k, birtokos.booking_id, null, null, 'nem ellenorizheto: nincs UUID'); continue; }
     const elo = await foglalasAllapot({ host: hostnev, uuid: kuldve.uuid, fetchImpl: deps.fetchImpl });
     if (elo.allapot === 'torolve') {
+      // CSAK felszabadit: a jeloltek (meg nem parositott foglalasok) Salonic-UUID-ja itt ismeretlen, elo allapotukat nem tudjuk ellenorizni - a kulcs birtoka a jelolt SAJAT levelenel
+      // kerul at, a jelolt elo ellenorzese UTAN (egyeztet: jelolt_ellenorzes).
       const lista = await kulcsJeloltek(db, k, now);
-      const szabad = lista.filter((c) => !c.kuldve_uuid && c.booking_id !== birtokos.booking_id);
-      const kovetkezo = szabad.length === 1 ? szabad[0] : null;
-      await kulcsAtadas(db, { kulcs: k, regi: birtokos.booking_id, uj: kovetkezo, ok: 'lemondasi ertesito + elo ellenorzes: a birtokos (' + kuldve.uuid.slice(0, 8) + ') torolve' }, now);
-      const em = kovetkezo ? 'felszabadult es atkerult: ' + kovetkezo.booking_id : 'felszabadult';
-      eredmenyek.push({ kulcs: k, tulajdonos: birtokos.booking_id, tulajdonos_uuid: kuldve.uuid, elo_allapot: 'torolve', eredmeny: em, atadva: kovetkezo ? kovetkezo.booking_id : null });
+      const varakozo = lista.filter((c) => !c.kuldve_uuid && c.booking_id !== birtokos.booking_id).length;
+      await kulcsAtadas(db, { kulcs: k, regi: birtokos.booking_id, uj: null, ok: 'lemondasi ertesito + elo ellenorzes: a birtokos (' + kuldve.uuid.slice(0, 8) + ') torolve; a kulcs felszabadult (a jeloltek elo ellenorzese a sajat levelukkel tortenik)' }, now);
+      const em = varakozo ? `felszabadult (${varakozo} jelolt var a sajat levelere: ott, elo ellenorzes utan kapja meg)` : 'felszabadult';
+      eredmenyek.push({ kulcs: k, tulajdonos: birtokos.booking_id, tulajdonos_uuid: kuldve.uuid, elo_allapot: 'torolve', eredmeny: em, atadva: null, varakozo_jeloltek: varakozo });
       await naplo(k, birtokos.booking_id, kuldve.uuid, 'torolve', em);
     } else {
       const em = elo.allapot === 'aktiv' ? 'a birtokos foglalas EL: a kulcs nem szabadul fel (az ertesito mas, korabbi foglalasra vonatkozik)' : 'nem ellenorizheto: ' + (elo.miert || elo.allapot);

@@ -420,6 +420,7 @@ test('SORREND 1/3: B a kulcsot foglaltnak talalja (A mar kiment) -> az A Salonic
   const rb = await egyeztet(L.adb, bMezok(L), L.deps());
   assert.deepEqual({ a: rb.allapot, k: rb.kuldheto, e: rb.esemeny_id, atadva: rb.kulcs_atadva }, { a: 'parositott', k: true, e: BB, atadva: true });
   assert.equal(rb.nyom.birtokos_ellenorzes.elo_allapot, 'torolve'); assert.equal(rb.nyom.birtokos_ellenorzes.birtokos_uuid, UUID);
+  assert.equal(rb.nyom.jelolt_ellenorzes.elo_allapot, 'aktiv', 'a kulcs atkerulese elott a JELOLT (B) elo allapota is ellenorizve'); assert.equal(rb.jelolt_elo_allapot, 'aktiv');
   assert.equal((await kulcsKeres(L.adb, KULCS, L.t())).booking_id, BB, 'a kulcs birtoka B');
   assert.equal(L.db.prepare('SELECT COUNT(*) AS n FROM foglalas_kulcs_atadas').get().n, 1);
   assert.equal(L.db.prepare('SELECT COUNT(*) AS n FROM foglalas_egyeztetes WHERE kuldve IS NOT NULL').get().n, 2, 'ket foglalas, ket esemeny, mindegyik egyszer');
@@ -439,15 +440,37 @@ test('SORREND 1/3 (fordito): ha A ELO -> B ELLENTMONDAS + riasztas, nem kuld, a 
   assert.deepEqual({ a: rv.allapot, k: rv.kuldheto, r: rv.riasztas }, { a: 'fuggoben', k: false, r: false }); assert.match(rv.miert, /nem ellenorizheto/);
 });
 
-test('SORREND 2/3: az A LEMONDASI ertesitoje B e-mailje ELOTT ert ide (B koszonooldala mar iras): a kulcs felszabadul es B-hez kerul, B e-mailje ezutan egyszeruen parosit', async () => {
+test('SORREND 2/3: az A LEMONDASI ertesitoje B e-mailje ELOTT ert ide (B koszonooldala mar iras): a kulcs CSAK felszabadul (a jelolt elo allapota itt nem ellenorizheto), B levelenel - elo ellenorzes utan - veszi at', async () => {
   const L = await lanc(); L.t.tick(3600); L.allapotok[UUID] = 'torolve';
   assert.equal((await kulcsIras(L.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, L.t())).utkozes, true);
   const n = await lemondasKezel(L.adb, NOTICE(L.t), L.deps());
-  assert.deepEqual({ a: n.allapot, e: n.eredmenyek[0].elo_allapot, atadva: n.eredmenyek[0].atadva }, { a: 'lemondas', e: 'torolve', atadva: BB });
-  assert.equal((await kulcsKeres(L.adb, KULCS, L.t())).booking_id, BB);
+  assert.deepEqual({ a: n.allapot, e: n.eredmenyek[0].elo_allapot, atadva: n.eredmenyek[0].atadva, v: n.eredmenyek[0].varakozo_jeloltek }, { a: 'lemondas', e: 'torolve', atadva: null, v: 1 }, 'nincs atadas jelolt-ellenorzes nelkul');
+  assert.equal(await kulcsKeres(L.adb, KULCS, L.t()), null, 'a kulcs szabad (B meg nem veheti at: nincs UUID-ja)');
   const rb = await egyeztet(L.adb, bMezok(L), L.deps());
-  assert.deepEqual({ a: rb.allapot, k: rb.kuldheto, e: rb.esemeny_id, atadva: rb.kulcs_atadva }, { a: 'parositott', k: true, e: BB, atadva: false }, 'a birtok mar B-nel van: nincs ujabb atadas');
-  assert.equal(L.db.prepare('SELECT COUNT(*) AS n FROM foglalas_kulcs_atadas').get().n, 1);
+  assert.deepEqual({ a: rb.allapot, k: rb.kuldheto, e: rb.esemeny_id, atvett: rb.kulcs_atadva, elo: rb.jelolt_elo_allapot }, { a: 'parositott', k: true, e: BB, atvett: true, elo: 'aktiv' });
+  assert.equal(rb.nyom.jelolt_ellenorzes.atvetel, 'szabad kulcs'); assert.equal((await kulcsKeres(L.adb, KULCS, L.t())).booking_id, BB);
+  assert.equal(L.db.prepare('SELECT COUNT(*) AS n FROM foglalas_kulcs_atadas').get().n, 2, 'felszabadulas + atvetel, mindketto naplozva');
+});
+
+test('A KULCS BIRTOKA csak a JELOLT elo ellenorzese utan kerul at: a jelolt (B) torolt -> a regi birtokos torolve de B nem kap kulcsot (a kulcs felszabadul, a parositas megmarad); a jelolt nem ellenorizheto -> ujraprobalas, nincs atadas', async () => {
+  // torolt jelolt
+  const L = await lanc(); L.t.tick(3600); L.allapotok[UUID] = 'torolve'; L.allapotok[UB] = 'torolve';
+  await kulcsIras(L.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, L.t());
+  const rb = await egyeztet(L.adb, bMezok(L), L.deps());
+  assert.deepEqual({ a: rb.allapot, e: rb.esemeny_id, atvett: rb.kulcs_atadva, elo: rb.jelolt_elo_allapot, f: rb.kulcs_forras }, { a: 'parositott', e: BB, atvett: false, elo: 'torolve', f: 'nevtabla' }, 'az 1. ag nincs (torolt), a parositas igen');
+  assert.equal(await kulcsKeres(L.adb, KULCS, L.t()), null, 'a torolt jelolt nem kapta meg a kulcsot; a kulcs szabad');
+  assert.match(L.db.prepare('SELECT ok FROM foglalas_kulcs_atadas ORDER BY id DESC LIMIT 1').get().ok, /NEM kerult at/);
+  // nem ellenorizheto jelolt: a regi birtokos torolve, de B oldala hibat ad
+  const M = await lanc(); M.t.tick(3600); M.allapotok[UUID] = 'torolve'; M.allapotok[UB] = 'hiba';
+  await kulcsIras(M.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, M.t());
+  const rv = await egyeztet(M.adb, bMezok(M), M.deps());
+  assert.deepEqual({ a: rv.allapot, k: rv.kuldheto }, { a: 'fuggoben', k: false }); assert.match(rv.miert, /nem ellenorizheto/);
+  assert.equal((await kulcsKeres(M.adb, KULCS, M.t())).booking_id, BA, 'a kulcs nem kerult at');
+  assert.equal(M.db.prepare('SELECT COUNT(*) AS n FROM foglalas_kulcs_atadas').get().n, 0);
+  // az oldal visszajon: a masodik probalkozas (a 60 mp utan) mar atvesz
+  M.allapotok[UB] = 'aktiv'; M.t.tick(61);
+  const rv2 = await egyeztet(M.adb, bMezok(M), M.deps());
+  assert.deepEqual({ a: rv2.allapot, k: rv2.kuldheto, e: rv2.esemeny_id, atvett: rv2.kulcs_atadva }, { a: 'parositott', k: true, e: BB, atvett: true });
 });
 
 test('SORREND 2/3 (valtozat): az A lemondasi ertesitoje a B FOGLALAS ELOTT ert ide: a kulcs szabad lesz, B koszonooldala mar rendesen ir, B parosit', async () => {
