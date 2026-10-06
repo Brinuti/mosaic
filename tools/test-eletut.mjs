@@ -288,6 +288,15 @@ test('/api/foglalas-eletut: megjelent / nem_jelent_meg a kulcsbol vett kezdes ut
   const hal = await (await kezelEletut(ker({ uuid: UUID, allapot: 'nem_jelent_meg' }), k3.env, { fetchImpl: async () => { throw new Error('halozat'); }, now: () => NOW })).json(); assert.equal(hal.allapot, 'halasztva');
   const fu = await (await kezelEletut(ker({ muvelet: 'fuggo' }), k3.env, { fetchImpl: salonic('visszaigazolt'), now: () => NOW })).json(); assert.deepEqual([fu.ok, fu.feldolgozott], [true, 0]);
 });
+test('/api/foglalas-eletut: az elo ellenorzes a HELYES Salonic-hostot kerdezi MIND AZ OT uzletagnal (regresszio: a HOSTOK oxygen / laser / hair kulcsai mások, mint a meres headspa / fodrasz / oxigen / szor / pmu)', async () => {
+  const hostok = { headspa: 'mosaicheadspa.salonic.hu', fodrasz: 'mosaic-hair.salonic.hu', oxigen: 'mosaic-oxigen.salonic.hu', szor: 'mosaic-elysion.salonic.hu', pmu: 'mosaic-pmu.salonic.hu' };
+  for (const [uzletag, host] of Object.entries(hostok)) {
+    const k = await vegpontKornyezet({ fk: { uzletag }, kulcs: `10427|24354|${Math.floor(NOW / 1000) - 7200}` }); const kerdezett = [];
+    const fetchImpl = async (u) => { kerdezett.push(new URL(u).hostname); return { ok: true, status: 200, url: u, text: async () => reszletek('visszaigazolt', UUID, Math.floor(NOW / 1000) - 7200) }; };
+    const r = await (await kezelEletut(ker({ uuid: UUID, allapot: 'nem_jelent_meg' }), k.env, { fetchImpl, now: () => NOW })).json();
+    assert.deepEqual([uzletag, r.allapot, kerdezett.filter((h) => h.endsWith('.salonic.hu'))], [uzletag, 'kesz', [host]], `${uzletag}: a Salonic-oldal lekerdezese a ${host} hostra megy, nem "halasztva"`);
+  }
+});
 test('/api/meres-admin: ajandek_visszaterites_ujra / ajandek_teszt_visszateritese - kulcsos, ervenytelen pi / osszeg 400, a kezelo (deps) megkapja a pi-t es az osszeget; kezelo nelkul 501', async () => {
   const k = await vegpontKornyezet(); let latott = null;
   const adm = (body, deps = {}) => kezelAdmin(new Request(`https://x.pages.dev/api/meres-admin?kulcs=${KULCS}`, { method: 'POST', body: JSON.stringify(body) }), k.env, deps);

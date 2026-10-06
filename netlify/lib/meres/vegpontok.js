@@ -1,8 +1,9 @@
 // QA-2 vegpontok: /api/meres-erkezes (a bongeszo irja: kattintasazonositok, UTM, sutik, hozzajarulas) es /api/meres-admin (kulcsos: naplo, vészkapcsolo, kulso szallito visszaigazolasa)
-import { azonosEredet, foglalasAllapot, HOSTOK, kulcsEllenorzes, sema as kulcsSema, UUID_MINTA, valasz } from '../foglalas-kulcs.js';
+import { azonosEredet, foglalasAllapot, kulcsEllenorzes, sema as kulcsSema, UUID_MINTA, valasz } from '../foglalas-kulcs.js';
 import { erkezesMent, fuggoKuldesek, kapcsoloBeallit, kapcsolokOlvas, kuldesMegerosit, naploLeker } from './elosztas.js';
 import { eletutFeldolgoz, eletutOlvas, eletutRiasztasok, fuggoFeldolgoz } from './eletut.js';
 import { kezdesAKulcsbol } from './eletut-modell.js';
+import { SALONIC_UZLETAG } from './esemeny-modell.js';
 
 /** POST /api/meres-erkezes (azonos eredet; a bongeszo nem ker valaszt a foglalas folyamataban: a hiba nem akaszthat meg semmit). A "ip" / "ua" a keresbol jon, nem a torzsbol. */
 export async function kezelErkezes(request, env, deps = {}) {
@@ -69,7 +70,8 @@ async function foglalasFeloldas(db, { uuid, bookingId }) {
     : await db.prepare('SELECT uuid, booking_id, kulcs FROM foglalas_egyeztetes WHERE booking_id = ?1 AND kuldve IS NOT NULL').bind(bookingId).first();
   if (!sor) return { bookingId: bookingId || null, uuid: uuid || null, host: null, start: null };
   const k = await db.prepare('SELECT uzletag FROM meres_kuldes WHERE source_id = ?1 LIMIT 1').bind(sor.booking_id).first();
-  const host = k ? (Object.entries(HOSTOK).find(([, c]) => c.uzletag === k.uzletag) || [])[0] || null : null;
+  // a meres-uzletag (headspa / fodrasz / oxigen / szor / pmu) -> Salonic-host: SALONIC_UZLETAG (a HOSTOK a Salonic-adapter kulcsait hasznalja: oxygen / laser / hair, az mas)
+  const host = k ? (Object.entries(SALONIC_UZLETAG).find(([, u]) => u === k.uzletag) || [])[0] || null : null;
   return { bookingId: sor.booking_id, uuid: sor.uuid, host, start: kezdesAKulcsbol(sor.kulcs) };
 }
 const feloldo = (db, fetchImpl) => async (sid) => {

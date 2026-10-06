@@ -1,0 +1,1034 @@
+{
+ "nev": "lemondas",
+ "bazis": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev",
+ "megjegyzes": "TESZT - Claude foglalas; nyelo mod: a kerelmek elkeszulnek es naplozodnak, de semerre nem mennek ki",
+ "lepesek": [
+  {
+   "ido": "2026-10-06T18:36:50.855Z",
+   "lepes": "foglalas letrehozva (Salonic, TESZT - Claude) + level -> /api/foglalas-egyeztetes",
+   "eset": "headspa",
+   "salonic_uuid": "b10a9aa2-91f1-8e8d-1672-bad1a9b456ae",
+   "salonic_host": "mosaicheadspa.salonic.hu",
+   "booking_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+   "kezdes_unix": 1793469600,
+   "egyeztetes": {
+    "allapot": "parositott",
+    "kuldheto": true,
+    "esemeny_kuldes": {
+     "allapot": "kesz",
+     "elo_allapot": "aktiv",
+     "jelleg": "elso"
+    }
+   },
+   "lemondo_url_van": true
+  },
+  {
+   "ido": "2026-10-06T18:36:57.488Z",
+   "lepes": "naplo (alapesemenyek, lemondas elott)",
+   "booking_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+   "eletut": {
+    "ok": true,
+    "source_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+    "allapot": null,
+    "naplo": [],
+    "kuldesek": []
+   },
+   "kuldesi_sorok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "meta",
+     "platform_nev": "HeadSpa_FoglalasElso",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 53800,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "HeadSpa_FoglalasElso",
+         "event_time": 1791311742,
+         "event_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+         "action_source": "website",
+         "event_source_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/success-foglalas-paros",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "19fc1adfa441e456f40dd2924e30db241e6b5bc31876005e39457544b21309de"
+          ],
+          "client_ip_address": "160.79.106.16",
+          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "fbc": "fb.1.1791311784000.IwAR_TESZT_HEADSPA_MUX0S73B_FBCLID",
+          "fbp": "fb.1.1791306779000.5355347533"
+         },
+         "custom_data": {
+          "value": 53800,
+          "currency": "HUF",
+          "order_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+          "content_name": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+          "content_category": "headspa",
+          "esemeny_tipus": "alap",
+          "ertek_forras": "tenyleges_ar",
+          "salonic_ar": 53800,
+          "utm_source": "facebook",
+          "utm_campaign": "qa2_headspa_utolso"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "tiktok",
+     "platform_nev": "HeadSpa_FoglalasElso",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 53800,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "HeadSpa_FoglalasElso",
+         "event_time": 1791311742,
+         "event_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "19fc1adfa441e456f40dd2924e30db241e6b5bc31876005e39457544b21309de",
+          "ttclid": "E.C.P.TESZT_HEADSPA_MUX0S73B_TTCLID",
+          "ttp": "TESZT_HEADSPA_MUX0S73B_ttp_6361kx0u0n",
+          "ip": "160.79.106.16",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+         },
+         "properties": {
+          "currency": "HUF",
+          "value": 53800,
+          "content_type": "product",
+          "contents": [
+           {
+            "content_id": "headspa_foglalaselso",
+            "content_name": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+            "quantity": 1,
+            "price": 53800
+           }
+          ],
+          "order_id": "mb_0mux0sb207nmwqxa1iyd3l3"
+         },
+         "page": {
+          "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/success-foglalas-paros"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "google",
+     "platform_nev": "ARNYEK-7825199989",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 53800,
+     "indok": null,
+     "kerelem": {
+      "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "customer_id": "6088874770",
+       "conversion_action_id": "7825199989",
+       "athidalas": "zapier-webhook"
+      },
+      "body": {
+       "conversion_action_id": "7825199989",
+       "wbraid": "CoMKCQ_TESZT_HEADSPA_MUX0S73B_WBRAID",
+       "conversion_date_time": "2026-10-06 20:35:42+02:00",
+       "value": 53800,
+       "currency": "HUF",
+       "order_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+       "ad_user_data": "GRANTED"
+      }
+     }
+    },
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "ga4",
+     "platform_nev": "foglalas_elso",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 53800,
+     "indok": null,
+     "kerelem": {
+      "url": "https://www.google-analytics.com/mp/collect?measurement_id=G-M5MLRLNQBP",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "measurement_id": "G-M5MLRLNQBP"
+      },
+      "body": {
+       "client_id": "912676792.1791225379",
+       "timestamp_micros": "1791311742000000",
+       "consent": {
+        "ad_user_data": "GRANTED",
+        "ad_personalization": "GRANTED"
+       },
+       "events": [
+        {
+         "name": "foglalas_elso",
+         "params": {
+          "session_id": "1791310579",
+          "engagement_time_msec": 1,
+          "value": 53800,
+          "currency": "HUF",
+          "esemeny_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+          "uzletag": "headspa",
+          "ertek_forras": "tenyleges_ar",
+          "salonic_ar": 53800,
+          "source": "facebook",
+          "medium": "paid",
+          "campaign": "qa2_headspa_utolso"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "meta",
+     "platform_nev": "Schedule",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 53800,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "Schedule",
+         "event_time": 1791311742,
+         "event_id": "Schedule:mb_0mux0sb207nmwqxa1iyd3l3",
+         "action_source": "website",
+         "event_source_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/success-foglalas-paros",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "19fc1adfa441e456f40dd2924e30db241e6b5bc31876005e39457544b21309de"
+          ],
+          "client_ip_address": "160.79.106.16",
+          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "fbc": "fb.1.1791311784000.IwAR_TESZT_HEADSPA_MUX0S73B_FBCLID",
+          "fbp": "fb.1.1791306779000.5355347533"
+         },
+         "custom_data": {
+          "value": 53800,
+          "currency": "HUF",
+          "order_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+          "content_name": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+          "content_category": "headspa",
+          "esemeny_tipus": "ernyo",
+          "ertek_forras": "tenyleges_ar",
+          "salonic_ar": 53800,
+          "utm_source": "facebook",
+          "utm_campaign": "qa2_headspa_utolso"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "tiktok",
+     "platform_nev": "CompletePayment",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 53800,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "CompletePayment",
+         "event_time": 1791311742,
+         "event_id": "Schedule:mb_0mux0sb207nmwqxa1iyd3l3",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "19fc1adfa441e456f40dd2924e30db241e6b5bc31876005e39457544b21309de",
+          "ttclid": "E.C.P.TESZT_HEADSPA_MUX0S73B_TTCLID",
+          "ttp": "TESZT_HEADSPA_MUX0S73B_ttp_6361kx0u0n",
+          "ip": "160.79.106.16",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+         },
+         "properties": {
+          "currency": "HUF",
+          "value": 53800,
+          "content_type": "product",
+          "contents": [
+           {
+            "content_id": "headspa_schedule",
+            "content_name": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+            "quantity": 1,
+            "price": 53800
+           }
+          ],
+          "order_id": "mb_0mux0sb207nmwqxa1iyd3l3"
+         },
+         "page": {
+          "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/success-foglalas-paros"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "google",
+     "platform_nev": null,
+     "allapot": "kihagyva",
+     "http_status": null,
+     "kuldo": null,
+     "ertek": 53800,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+     "kerelem": null
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "ga4",
+     "platform_nev": null,
+     "allapot": "kihagyva",
+     "http_status": null,
+     "kuldo": null,
+     "ertek": 53800,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
+     "kerelem": null
+    }
+   ]
+  },
+  {
+   "ido": "2026-10-06T18:36:59.742Z",
+   "lepes": "POST /api/foglalas-eletut lemondva (a foglalas meg AKTIV: elutasitas)",
+   "kerelem": {
+    "uuid": "b10a9aa2-91f1-8e8d-1672-bad1a9b456ae",
+    "allapot": "lemondva",
+    "forras": "eletut-e2e"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "allapot": "nem_torolve",
+    "miert": "a foglalas a Salonicban meg el: nem vonjuk vissza",
+    "eletut_allapot": null
+   }
+  },
+  {
+   "ido": "2026-10-06T18:37:13.261Z",
+   "lepes": "lemondas (Salonic lemondo link)",
+   "lemondas_ideje": "2026-10-06T18:36:59.797Z",
+   "eredmeny": "SIKERES: lemondás visszaigazolva",
+   "salonic_allapot": "LEMONDVA"
+  },
+  {
+   "ido": "2026-10-06T18:37:15.981Z",
+   "lepes": "POST /api/foglalas-eletut lemondva (lemondas utan)",
+   "kerelem": {
+    "uuid": "b10a9aa2-91f1-8e8d-1672-bad1a9b456ae",
+    "allapot": "lemondva",
+    "forras": "eletut-e2e"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "allapot": "kesz",
+    "source_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+    "uzletag": "headspa",
+    "eletut_allapot": "lemondva",
+    "elozo": null,
+    "elo_allapot": "torolve",
+    "cellak": [
+     {
+      "platform": "google",
+      "esemeny_id": "Visszavonas:FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+      "platform_nev": "ARNYEK-RETRACTION-7825199989",
+      "allapot": "dryrun",
+      "http_status": 200,
+      "kuldo": "nyelo"
+     }
+    ]
+   }
+  },
+  {
+   "ido": "2026-10-06T18:37:22.692Z",
+   "lepes": "POST /api/foglalas-eletut lemondva (ismetles)",
+   "kerelem": {
+    "uuid": "b10a9aa2-91f1-8e8d-1672-bad1a9b456ae",
+    "allapot": "lemondva",
+    "forras": "eletut-e2e"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "allapot": "mar_kuldve",
+    "source_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+    "uzletag": "headspa",
+    "eletut_allapot": "lemondva",
+    "elozo": "lemondva",
+    "elo_allapot": "torolve",
+    "cellak": [
+     {
+      "platform": "google",
+      "esemeny_id": "Visszavonas:FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+      "platform_nev": "ARNYEK-RETRACTION-7825199989",
+      "allapot": "dryrun",
+      "indok": "dryRun: a Zap validalta, de nem irt (eles: GOOGLE_KORREKCIO_ELES=1)",
+      "http_status": 200,
+      "duplikalt": true
+     }
+    ]
+   }
+  },
+  {
+   "ido": "2026-10-06T18:37:24.250Z",
+   "lepes": "POST /api/foglalas-eletut nem_jelent_meg (ellentmondo allapot)",
+   "kerelem": {
+    "uuid": "b10a9aa2-91f1-8e8d-1672-bad1a9b456ae",
+    "allapot": "nem_jelent_meg",
+    "forras": "eletut-e2e"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "allapot": "ellentmondas",
+    "riasztas": true,
+    "miert": "ellentmondas: a foglalas allapota mar \"lemondva\", az uj \"nem_jelent_meg\"",
+    "eletut_allapot": "lemondva"
+   }
+  },
+  {
+   "ido": "2026-10-06T18:37:25.791Z",
+   "lepes": "POST /api/foglalas-eletut megjelent (ellentmondo allapot)",
+   "kerelem": {
+    "uuid": "b10a9aa2-91f1-8e8d-1672-bad1a9b456ae",
+    "allapot": "megjelent",
+    "forras": "eletut-e2e"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "allapot": "ellentmondas",
+    "riasztas": true,
+    "miert": "ellentmondas: a foglalas allapota mar \"lemondva\", az uj \"megjelent\"",
+    "eletut_allapot": "lemondva"
+   }
+  },
+  {
+   "ido": "2026-10-06T18:37:26.910Z",
+   "lepes": "naplo (vegso)",
+   "booking_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+   "eletut": {
+    "ok": true,
+    "source_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+    "allapot": {
+     "source_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+     "uzletag": "headspa",
+     "allapot": "lemondva",
+     "elozo": null,
+     "ido": 1791311834,
+     "forras": "eletut-e2e",
+     "osszeg_filler": null,
+     "visszateritett_filler": 0,
+     "frissitve": 1791311834
+    },
+    "naplo": [
+     {
+      "id": 1,
+      "source_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+      "bejovo": "{\"allapot\":\"lemondva\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "nem_torolve",
+      "allapot_elotte": null,
+      "allapot_utana": null,
+      "ido": 1791311818
+     },
+     {
+      "id": 2,
+      "source_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+      "bejovo": "{\"allapot\":\"lemondva\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "kesz: google=dryrun",
+      "allapot_elotte": null,
+      "allapot_utana": "lemondva",
+      "ido": 1791311834
+     },
+     {
+      "id": 3,
+      "source_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+      "bejovo": "{\"allapot\":\"lemondva\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "mar_kuldve: google=dryrun",
+      "allapot_elotte": "lemondva",
+      "allapot_utana": "lemondva",
+      "ido": 1791311841
+     },
+     {
+      "id": 4,
+      "source_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+      "bejovo": "{\"allapot\":\"nem_jelent_meg\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "ellentmondas: a foglalas allapota mar \"lemondva\", az uj \"nem_jelent_meg\"",
+      "allapot_elotte": "lemondva",
+      "allapot_utana": "lemondva",
+      "ido": 1791311843
+     },
+     {
+      "id": 5,
+      "source_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+      "bejovo": "{\"allapot\":\"megjelent\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "ellentmondas: a foglalas allapota mar \"lemondva\", az uj \"megjelent\"",
+      "allapot_elotte": "lemondva",
+      "allapot_utana": "lemondva",
+      "ido": 1791311845
+     }
+    ],
+    "kuldesek": [
+     {
+      "id": 9,
+      "esemeny_id": "Visszavonas:FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+      "esemeny_nev": "Visszavonas",
+      "esemeny_tipus": "eletut",
+      "platform": "google",
+      "platform_nev": "ARNYEK-RETRACTION-7825199989",
+      "uzletag": "headspa",
+      "source_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+      "allapot": "dryrun",
+      "indok": "dryRun: a Zap validalta, de nem irt (eles: GOOGLE_KORREKCIO_ELES=1)",
+      "ertek": null,
+      "penznem": null,
+      "hozzajarulas": null,
+      "kerelem": {
+       "url": "zapier-webhook: GOOGLE_KORREKCIO_WEBHOOK_URL (titok, nem naplozott)",
+       "method": "POST",
+       "fejlec_nevek": [
+        "content-type"
+       ],
+       "cel": {
+        "customer_id": "6088874770",
+        "conversion_action_id": "7825199989",
+        "athidalas": "zapier-webhook",
+        "muvelet": "RETRACTION",
+        "dry_run": true
+       },
+       "body": {
+        "adjustments": [
+         {
+          "type": "RETRACTION",
+          "orderId": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+          "conversionActionId": "7825199989",
+          "adjustmentDateTime": "2026-10-06 20:37:14+02:00",
+          "note": "lemondva: mb_0mux0sb207nmwqxa1iyd3l3"
+         }
+        ],
+        "dryRun": true
+       }
+      },
+      "http_status": 200,
+      "platform_valasz": "{\"nyelo\":true,\"megjegyzes\":\"NYELO MOD: a kerelem nem ment ki sehova (MERES_KULDES_MOD=nyelo)\"}",
+      "kuldo": "nyelo",
+      "probalkozas": 1,
+      "letrehozva": 1791311834,
+      "frissitve": 1791311834
+     }
+    ]
+   },
+   "kuldesi_sorok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "meta",
+     "platform_nev": "HeadSpa_FoglalasElso",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 53800,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "HeadSpa_FoglalasElso",
+         "event_time": 1791311742,
+         "event_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+         "action_source": "website",
+         "event_source_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/success-foglalas-paros",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "19fc1adfa441e456f40dd2924e30db241e6b5bc31876005e39457544b21309de"
+          ],
+          "client_ip_address": "160.79.106.16",
+          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "fbc": "fb.1.1791311784000.IwAR_TESZT_HEADSPA_MUX0S73B_FBCLID",
+          "fbp": "fb.1.1791306779000.5355347533"
+         },
+         "custom_data": {
+          "value": 53800,
+          "currency": "HUF",
+          "order_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+          "content_name": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+          "content_category": "headspa",
+          "esemeny_tipus": "alap",
+          "ertek_forras": "tenyleges_ar",
+          "salonic_ar": 53800,
+          "utm_source": "facebook",
+          "utm_campaign": "qa2_headspa_utolso"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "tiktok",
+     "platform_nev": "HeadSpa_FoglalasElso",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 53800,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "HeadSpa_FoglalasElso",
+         "event_time": 1791311742,
+         "event_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "19fc1adfa441e456f40dd2924e30db241e6b5bc31876005e39457544b21309de",
+          "ttclid": "E.C.P.TESZT_HEADSPA_MUX0S73B_TTCLID",
+          "ttp": "TESZT_HEADSPA_MUX0S73B_ttp_6361kx0u0n",
+          "ip": "160.79.106.16",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+         },
+         "properties": {
+          "currency": "HUF",
+          "value": 53800,
+          "content_type": "product",
+          "contents": [
+           {
+            "content_id": "headspa_foglalaselso",
+            "content_name": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+            "quantity": 1,
+            "price": 53800
+           }
+          ],
+          "order_id": "mb_0mux0sb207nmwqxa1iyd3l3"
+         },
+         "page": {
+          "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/success-foglalas-paros"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "google",
+     "platform_nev": "ARNYEK-7825199989",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 53800,
+     "indok": null,
+     "kerelem": {
+      "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "customer_id": "6088874770",
+       "conversion_action_id": "7825199989",
+       "athidalas": "zapier-webhook"
+      },
+      "body": {
+       "conversion_action_id": "7825199989",
+       "wbraid": "CoMKCQ_TESZT_HEADSPA_MUX0S73B_WBRAID",
+       "conversion_date_time": "2026-10-06 20:35:42+02:00",
+       "value": 53800,
+       "currency": "HUF",
+       "order_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+       "ad_user_data": "GRANTED"
+      }
+     }
+    },
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "ga4",
+     "platform_nev": "foglalas_elso",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 53800,
+     "indok": null,
+     "kerelem": {
+      "url": "https://www.google-analytics.com/mp/collect?measurement_id=G-M5MLRLNQBP",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "measurement_id": "G-M5MLRLNQBP"
+      },
+      "body": {
+       "client_id": "912676792.1791225379",
+       "timestamp_micros": "1791311742000000",
+       "consent": {
+        "ad_user_data": "GRANTED",
+        "ad_personalization": "GRANTED"
+       },
+       "events": [
+        {
+         "name": "foglalas_elso",
+         "params": {
+          "session_id": "1791310579",
+          "engagement_time_msec": 1,
+          "value": 53800,
+          "currency": "HUF",
+          "esemeny_id": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+          "uzletag": "headspa",
+          "ertek_forras": "tenyleges_ar",
+          "salonic_ar": 53800,
+          "source": "facebook",
+          "medium": "paid",
+          "campaign": "qa2_headspa_utolso"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "meta",
+     "platform_nev": "Schedule",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 53800,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "Schedule",
+         "event_time": 1791311742,
+         "event_id": "Schedule:mb_0mux0sb207nmwqxa1iyd3l3",
+         "action_source": "website",
+         "event_source_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/success-foglalas-paros",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "19fc1adfa441e456f40dd2924e30db241e6b5bc31876005e39457544b21309de"
+          ],
+          "client_ip_address": "160.79.106.16",
+          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "fbc": "fb.1.1791311784000.IwAR_TESZT_HEADSPA_MUX0S73B_FBCLID",
+          "fbp": "fb.1.1791306779000.5355347533"
+         },
+         "custom_data": {
+          "value": 53800,
+          "currency": "HUF",
+          "order_id": "mb_0mux0sb207nmwqxa1iyd3l3",
+          "content_name": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+          "content_category": "headspa",
+          "esemeny_tipus": "ernyo",
+          "ertek_forras": "tenyleges_ar",
+          "salonic_ar": 53800,
+          "utm_source": "facebook",
+          "utm_campaign": "qa2_headspa_utolso"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "tiktok",
+     "platform_nev": "CompletePayment",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 53800,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "CompletePayment",
+         "event_time": 1791311742,
+         "event_id": "Schedule:mb_0mux0sb207nmwqxa1iyd3l3",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "19fc1adfa441e456f40dd2924e30db241e6b5bc31876005e39457544b21309de",
+          "ttclid": "E.C.P.TESZT_HEADSPA_MUX0S73B_TTCLID",
+          "ttp": "TESZT_HEADSPA_MUX0S73B_ttp_6361kx0u0n",
+          "ip": "160.79.106.16",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+         },
+         "properties": {
+          "currency": "HUF",
+          "value": 53800,
+          "content_type": "product",
+          "contents": [
+           {
+            "content_id": "headspa_schedule",
+            "content_name": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+            "quantity": 1,
+            "price": 53800
+           }
+          ],
+          "order_id": "mb_0mux0sb207nmwqxa1iyd3l3"
+         },
+         "page": {
+          "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/success-foglalas-paros"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "google",
+     "platform_nev": null,
+     "allapot": "kihagyva",
+     "http_status": null,
+     "kuldo": null,
+     "ertek": 53800,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+     "kerelem": null
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "ga4",
+     "platform_nev": null,
+     "allapot": "kihagyva",
+     "http_status": null,
+     "kuldo": null,
+     "ertek": 53800,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
+     "kerelem": null
+    },
+    {
+     "esemeny_id": "Visszavonas:FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+     "esemeny_nev": "Visszavonas",
+     "esemeny_tipus": "eletut",
+     "platform": "google",
+     "platform_nev": "ARNYEK-RETRACTION-7825199989",
+     "allapot": "dryrun",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": null,
+     "indok": "dryRun: a Zap validalta, de nem irt (eles: GOOGLE_KORREKCIO_ELES=1)",
+     "kerelem": {
+      "url": "zapier-webhook: GOOGLE_KORREKCIO_WEBHOOK_URL (titok, nem naplozott)",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "customer_id": "6088874770",
+       "conversion_action_id": "7825199989",
+       "athidalas": "zapier-webhook",
+       "muvelet": "RETRACTION",
+       "dry_run": true
+      },
+      "body": {
+       "adjustments": [
+        {
+         "type": "RETRACTION",
+         "orderId": "FoglalasElso:mb_0mux0sb207nmwqxa1iyd3l3",
+         "conversionActionId": "7825199989",
+         "adjustmentDateTime": "2026-10-06 20:37:14+02:00",
+         "note": "lemondva: mb_0mux0sb207nmwqxa1iyd3l3"
+        }
+       ],
+       "dryRun": true
+      }
+     }
+    }
+   ]
+  }
+ ]
+}
