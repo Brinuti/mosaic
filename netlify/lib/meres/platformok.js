@@ -89,8 +89,9 @@ export function tiktokKerelem(e, ctx, env = {}) {
 
 /**
  * Google Ads (ARNYEK masodlagos akciok): a szerver NEM hiv kozvetlenul Google-t (az OAuth access token 1 ora utan lejar); a #89-es minta szerint egy ZAPIER-WEBHOOKNAK szol
- * (GOOGLE_ARNYEK_WEBHOOK_URL, titok), a Zap tolti fel a masodlagos ARNYEK akciokba. A torzs: { conversion_action_id, gclid | gbraid | wbraid, conversion_date_time, value, currency, order_id }
- * + extrak (a Zap figyelmen kivul hagyhatja): event_id, a hozzajarulasi jel, es CSAK hozzajarulassal a hash-elt e-mail / telefon (SZ-38).
+ * (GOOGLE_ARNYEK_WEBHOOK_URL, titok); a Zap (csak a 10 ARNYEK akciora ir, elo azonositot visszautasit) tolti fel a masodlagos ARNYEK akciokba. A torzs PONTOSAN a Zap mezoi:
+ * { conversion_action_id, gclid | wbraid | gbraid (egy), conversion_date_time, value, currency: 'HUF', order_id (= event_id), ad_user_data: 'GRANTED' | 'DENIED' }.
+ * ad_user_data = a valos suti-hozzajarulas (marketing); dontes nelkul DENIED (nincs hozzajarulas). Hash-elt azonosito / egyeb mezo nem megy (a Zap nem veszi at).
  */
 export function googleKerelem(e, ctx, env = {}) {
   if (e.tipus !== 'alap' || e.nev === 'Visszajaro') return { kihagyva: 'a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)' };
@@ -101,9 +102,8 @@ export function googleKerelem(e, ctx, env = {}) {
   if (!click) return { kihagyva: 'nincs Google-kattintasazonosito (gclid / gbraid / wbraid): a feltoltes kattintas-alapu' };
   const szab = ctx.hozz.google;
   const body = tisztit({
-    conversion_action_id: akcioId, [click.tipus]: click.ertek, conversion_date_time: googleIdo(ctx.fk.ido), value: egesz(e.ertek), currency: 'HUF', order_id: ctx.fk.source_entity_id,
-    event_id: e.esemeny_id, ad_user_data: szab.jel.ad_user_data, ad_personalization: szab.jel.ad_personalization,
-    hashed_email: szab.felhasznaloi_adat ? ctx.hash.em : null, hashed_phone: szab.felhasznaloi_adat ? ctx.hash.ph_e164 : null,
+    conversion_action_id: akcioId, [click.tipus]: click.ertek, conversion_date_time: googleIdo(ctx.fk.ido), value: egesz(e.ertek), currency: 'HUF', order_id: e.esemeny_id,
+    ad_user_data: szab.jel.ad_user_data === 'GRANTED' ? 'GRANTED' : 'DENIED',
   });
   return { platform: 'google', platform_nev: `ARNYEK-${akcioId}`, url: 'zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)', method: 'POST', fejlec_nevek: ['content-type'], cel: { customer_id: ARNYEK.google.customerId, conversion_action_id: akcioId, athidalas: 'zapier-webhook' }, body };
 }

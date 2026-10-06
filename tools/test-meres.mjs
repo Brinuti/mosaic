@@ -165,19 +165,21 @@ test('TikTok kerelem: ARNYEK pixel + test_event_code, ttclid + ttp, E.164 hash; 
   assert.match(tiktokKerelem(alap, ctx, { ...ENV, TIKTOK_ARNYEK_PIXEL: ELO_CELOK.tiktok[0] }).tiltva, /ARNYEK/);
   assert.equal(ARNYEK.tiktok.pixelCode, 'DB2GTTJC77UE4D1NE4MG');
 });
-test('Google kerelem (Zapier-webhook): csak alapesemeny, csak az "ARNYEK" masodlagos akcioba, a legfrissebb kattintasazonosito, a megallapodott torzs; hash / jel csak extra, hozzajarulas nelkul hash nincs', async () => {
+test('Google kerelem (Zapier-webhook): csak alapesemeny, csak az "ARNYEK" masodlagos akcioba, a legfrissebb kattintasazonosito, PONTOSAN a Zap mezoi (order_id = event_id, ad_user_data GRANTED / DENIED)', async () => {
   const ctx = await ctxEpit(); const [alap, ernyo] = esemenyek(ctx.fk);
   const k = googleKerelem(alap, ctx, {}); const c = k.body;
   assert.match(k.url, /zapier-webhook/); assert.ok(!/hooks\.zapier\.com/.test(k.url), 'a webhook-cim titok: nem kerul a naploba');
-  assert.deepEqual([c.conversion_action_id, c.wbraid, c.gclid, c.conversion_date_time, c.value, c.currency, c.order_id], ['7825199989', 'CoMKCQ_wbraid_TESZT_0123', undefined, googleIdo(ctx.fk.ido), 26900, 'HUF', BID]);
-  assert.deepEqual([c.ad_user_data, c.ad_personalization, c.event_id], ['GRANTED', 'GRANTED', `FoglalasElso:${BID}`]);
-  assert.deepEqual([c.hashed_email, c.hashed_phone], [await sha256hex('teszt.claude@example.com'), await sha256hex('+36709420090')]);
+  assert.deepEqual([c.conversion_action_id, c.wbraid, c.gclid, c.conversion_date_time, c.value, c.currency, c.order_id], ['7825199989', 'CoMKCQ_wbraid_TESZT_0123', undefined, googleIdo(ctx.fk.ido), 26900, 'HUF', `FoglalasElso:${BID}`]);
+  assert.equal(c.order_id, alap.esemeny_id, 'order_id = event_id');
+  assert.equal(c.ad_user_data, 'GRANTED');
+  assert.deepEqual(Object.keys(c).sort(), ['ad_user_data', 'conversion_action_id', 'conversion_date_time', 'currency', 'order_id', 'value', 'wbraid'], 'csak a Zap mezoi: nincs hash, ad_personalization, event_id');
   assert.ok(!('conversions' in c) && !('validateOnly' in c) && !('userIdentifiers' in c), 'nincs kozvetlen Google Ads API-keres: az access token 1 ora utan lejarna');
   assert.match(googleKerelem(ernyo, ctx, {}).kihagyva, /alapesemeny/);
   assert.match(googleKerelem(esemenyek(await ctxEpit({ jelleg: 'visszajaro' }).then((x) => x.fk))[0], ctx, {}).kihagyva, /alapesemeny/);
   const nincsHozz = await ctxEpit({}, { ana: false, adv: false });
   const k2 = googleKerelem(alap, nincsHozz, {}).body;
   assert.deepEqual([k2.hashed_email, k2.hashed_phone, k2.ad_user_data], [undefined, undefined, 'DENIED']);
+  assert.equal(googleKerelem(alap, await ctxEpit({}, {}), {}).body.ad_user_data, 'DENIED', 'dontes nelkul nincs hozzajarulas: DENIED (a Zap csak GRANTED / DENIED-et kap)');
   assert.match(googleKerelem(alap, await ctxEpit({}, undefined, { fbp: ctx.erk.fbp }), {}).kihagyva, /kattintasazonosito/, 'kattintasazonosito nelkul nincs feltoltes');
   // minden uzletag / alapesemeny az ARNYEK akciora mutat, soha az elo (elsodleges) akciora
   for (const [uzletag, akciok] of Object.entries(ARNYEK.google.akciok)) for (const nev of Object.keys(akciok)) {

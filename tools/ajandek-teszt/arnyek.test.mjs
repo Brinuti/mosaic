@@ -69,7 +69,7 @@ test('AJANDEKKARTYA (Stripe-kartya): a webhookbol, pi_ azonositoval: Ajandekkart
   assert.ok(ar > 0 && meta.every((d) => d.custom_data.value === ar && d.custom_data.currency === 'HUF' && d.custom_data.order_id === pi && d.user_data.em && d.user_data.fbc && d.user_data.fbp));
   assert.ok(meta.every((d) => !d.user_data.ph), 'a kartyas vasarlasnal telefonszamot a Stripe-fizetes nem gyujt: csak e-mail-hash megy (a valos adat)');
   assert.deepEqual(platformHivasok.filter((h) => h.kulcs === 'tiktok').map((h) => h.body.data[0].event), ['HeadSpa_Ajandekkartya', 'CompletePayment']);
-  assert.deepEqual([platformHivasok.filter((h) => h.kulcs === 'google')[0].body.conversion_action_id, platformHivasok.filter((h) => h.kulcs === 'google')[0].body.order_id], ['7825199992', pi]);
+  assert.deepEqual([platformHivasok.filter((h) => h.kulcs === 'google')[0].body.conversion_action_id, platformHivasok.filter((h) => h.kulcs === 'google')[0].body.order_id], ['7825199992', `Ajandekkartya:${pi}`]);
   assert.equal(platformHivasok.filter((h) => h.kulcs === 'ga4')[0].body.events[0].params.transaction_id, pi);
   const naplo = await naploLeker(DB, pi); assert.equal(naplo.kuldesek.filter((k) => k.allapot === 'elkuldve').length, 6); assert.ok(naplo.kuldesek.every((k) => k.source_id === pi));
   assert.equal(JSON.stringify(mock.allapot.pi(pi).metadata).includes('esemeny'), JSON.stringify(mdElotte).includes('esemeny'), 'az elosztas nem ir a PI metadataba');
