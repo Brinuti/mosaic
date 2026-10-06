@@ -25,6 +25,17 @@ test('cleanUrl: a booking-parameterek es a hash nelkul, a tobbi megmarad', () =>
   assert.equal(cleanUrl('https://x.hu/p?booking=1'), '/p');
 });
 
+test('normalizeOptions / layerUrl: a munkatars (staff) a CTA-bol atmegy a kontextusba es az URL-allapotba; alias, tiszta ertek', () => {
+  assert.equal(normalizeOptions({ business: 'hair', staff: 'betti' }).staff, 'betti');
+  assert.equal(normalizeOptions(new URLSearchParams('business=hair&staff=betti')).staff, 'betti');
+  assert.equal(normalizeOptions({ business: 'hair', munkatars: 'Noel' }).staff, 'Noel');
+  assert.equal(normalizeOptions({ business: 'hair', szakember: 'evelin' }).staff, 'evelin');
+  assert.equal('staff' in normalizeOptions({ business: 'hair' }), false);
+  assert.equal('staff' in normalizeOptions({ business: 'hair', staff: '<x>' }), false, 'ervenytelen ertek kidobva');
+  assert.match(layerUrl('https://www.mosaicheadspa.hu/noi-fodraszat-budapest', normalizeOptions({ business: 'hair', staff: 'betti' })), /^\/noi-fodraszat-budapest\?booking=1&business=hair&staff=betti$/);
+  assert.equal(cleanUrl('https://www.mosaicheadspa.hu/x?booking=1&business=hair&staff=betti&utm_source=a'), '/x?utm_source=a', 'bezaraskor a staff is kikerul a cimsorbol');
+});
+
 test('parseContext: uzletag nelkul a defaultBusiness (HeadSpa a /foglalo-motor alapja, null a /foglalas-nal es a retegnel)', () => {
   assert.equal(parseContext('').business, 'headspa');
   assert.equal(parseContext('', '', '', { defaultBusiness: null }).business, null);

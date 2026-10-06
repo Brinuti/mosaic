@@ -114,7 +114,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   const hibaTipus = (e) => (e && e.code === 'TIMEOUT' ? 'timeout' : e && e.code ? 'salonic_api' : 'client_error'); // a Salonic-adapter hibakodjai; minden mas (pl. rajzolasi hiba) client_error
 
   const S = {
-    sig: [ctx.business || '', ctx.serviceKey || '', ctx.category || '', ctx.intent || '', ctx.voucher ? '1' : ''].join('|'), nav: [], slotsFull: true, fullP: null, slotsToken: 0, servicesP: null,
+    sig: [ctx.business || '', ctx.serviceKey || '', ctx.category || '', ctx.intent || '', ctx.voucher ? '1' : '', ctx.staffKey || ''].join('|'), nav: [], slotsFull: true, fullP: null, slotsToken: 0, servicesP: null,
     ctx, flow, state: null, depth: 0, services: null, voucher: ctx.voucher, service: null, exact: false,
     slots: [], slot: null, day: null, staff: null, place: null, expected: null, guestUrl: null, confirmation: null,
     callbackReason: 'nincs_idopont', slotLostNote: false, intent: null, group: null, staffLabel: null, slotStaff: null, month: null, intentKey: null, staffCache: null, variants: null,
@@ -833,14 +833,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     if (S.staffCache && S.staffCache.key === key) return S.staffCache.list;
     const tkulcs = 'mhSzakember:' + flow.business + ':' + services.length + ':' + [...key].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7); // tartos (sessionStorage) gyorsitotar, 1 oraig
     try { const m = JSON.parse(store && store.getItem(tkulcs)); if (m && now() - m.t < 3600000) { S.staffCache = { key, list: m.list }; return m.list; } } catch (e) { /* nincs / hibas */ }
-    let left = new Set(services.flatMap((s) => s.staffIds || []).map(String));
-    const picks = []; const rest = [...services];
-    while (left.size && rest.length) {
-      rest.sort((x, y) => (y.staffIds || []).filter((id) => left.has(String(id))).length - (x.staffIds || []).filter((id) => left.has(String(id))).length);
-      const s = rest.shift(); const gain = (s.staffIds || []).filter((id) => left.has(String(id)));
-      if (!gain.length) break;
-      picks.push(s); gain.forEach((id) => left.delete(String(id)));
-    }
+    const picks = F.staffCoverServices(services); // (a mohó lefedes a flow.js-ben: a munkatars-link lista-keszitoje is ezt hasznalja)
     const lists = await Promise.all(picks.map((s) => adapter.getStaff(flow.business, s.serviceId, { days: 14 }).catch(() => []))); // a nevek 14 nap idopontjaibol (gyors); aki ket hétig nem foglalhato, nem lathato
     const names = new Map();
     for (const l of lists) for (const x of l) if (x.staff_label && !names.has(String(x.staff_id))) names.set(String(x.staff_id), x.staff_label);
@@ -856,6 +849,9 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
         next({ replace: true });
         return null;
       }
+      // munkatars-link (?staff=betti): ha a link egy szakembert nevez meg, es o a listaban van, a valaszto kimarad (mint az egyetlen szakembernel); nincs ilyen / nem egyertelmu: a valaszto jelenik meg
+      const linkelt = ctx.staffKey ? F.findStaff(list, ctx.staffKey) : null;
+      if (linkelt) { S.staff = linkelt.id; S.staffLabel = linkelt.label; track('booking_filter_used', { filter: 'staff_link' }); next({ replace: true }); return null; }
       const kartyak = list.map((x) => {
         const nev = staffName(x.label);
         const foto = ((flow.staffPhotos || []).find(([re]) => re.test(nev)) || [])[1];
@@ -867,7 +863,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       // "Mindegy: a legkorabbi idopont erdekel" legfelul, elsodleges opcioke (kiemelt kartya); utana a szakemberek
       const mindegy = bigButton(flow.copy.staffAny, null, () => { S.staff = null; S.staffLabel = null; track('booking_filter_used', { filter: 'staff_any' }); next(); }, { kep: 'ik-mindegy', ikon: 'ora' });
       mindegy.classList.add('be-choice-fo');
-      return h('section', {}, title(flow.copy.staffListTitle), h('div', { class: 'be-list be-egyenlo' }, [mindegy, ...kartyak]));
+      return h('section', {}, title(flow.copy.staffListTitle), ctx.staffKey ? note('A linkben megadott munkatársat most nem találjuk (vagy nincs szabad időpontja). Válassz az alábbiak közül:') : null, h('div', { class: 'be-list be-egyenlo' }, [mindegy, ...kartyak]));
     });
   }
   // Tartalek: ha a motor vagy a Salonic adatai nem toltenek be, a vendeg a motor oldalan ujrakezdheti a foglalast (teljes oldalbetoltes), vagy hivhat.
@@ -1075,6 +1071,10 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
           else if (services.length) { S.laserArea = { area, services }; track('booking_intent_selected', { step: 'landing', reason: area.key }); first = 'LA2B'; }
         }
       } catch (e) { console.error(e); }
+    }
+    // munkatars-link + egyenesen az idopont-naptarra (pl. konzultacio): a szakember beallitasa (a szakember-valaszto ilyenkor nem jon elo)
+    if (ctx.staffKey && first === 'C1' && S.service && flow.showStaffFilter && !S.staff) {
+      try { const m = F.findStaff(await staffChoices([S.service]), ctx.staffKey); if (m) { S.staff = m.id; S.staffLabel = m.label; track('booking_filter_used', { filter: 'staff_link' }); } } catch (e) { /* a naptar szakember nelkul is megnyilik */ }
     }
     elozmeny('replaceState', { view: first, depth: 0, beLayer: layer }, win.location.pathname + win.location.search + '#' + first);
     S.nav = [first];

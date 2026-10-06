@@ -316,7 +316,7 @@ test('findByKey: azonosito vagy kulcsszavak; az ajandekkartyas es a normal kulon
 
 test('parseContext: input szerzodes, mérési parameterek, source_page', () => {
   const c = parseContext('?business=headspa&service=paros&voucher=1&utm_source=google&gclid=abc&fbclid=f1&ttclid=t1&minta=siker', 'https://www.mosaicheadspa.hu/headspa-budapest', 'https://www.mosaicheadspa.hu');
-  assert.deepEqual(c, { business: 'headspa', serviceKey: 'paros', category: null, voucher: true, intent: null, sourcePage: '/headspa-budapest', attribution: { utm_source: 'google', gclid: 'abc', fbclid: 'f1', ttclid: 't1' }, sample: 'siker' });
+  assert.deepEqual(c, { business: 'headspa', serviceKey: 'paros', category: null, voucher: true, intent: null, staffKey: null, sourcePage: '/headspa-budapest', attribution: { utm_source: 'google', gclid: 'abc', fbclid: 'f1', ttclid: 't1' }, sample: 'siker' });
   assert.equal(parseContext('?business=hair&category=balayage').category, 'balayage');
   // lezer: ?intent=first | returning (a regi "Elso idopontok" / "Kezeles idopontok" gombok); az ajandekkartya-szandek (intent=voucher) valtozatlan
   assert.equal(parseContext('?business=laser&intent=first').intent, 'first');
@@ -326,6 +326,43 @@ test('parseContext: input szerzodes, mérési parameterek, source_page', () => {
   assert.equal(parseContext('', 'https://masik.hu/x', 'https://www.mosaicheadspa.hu').sourcePage, '', 'idegen referrer nem source_page');
   assert.equal(parseContext('?source_page=/x').sourcePage, '/x');
   assert.equal(parseContext('').business, 'headspa');
+});
+
+test('munkatars-link (?staff=): findStaff - azonosito vagy a nev szavai, ekezet- es kisbetu-fuggetlen, a kedvezmeny-cimke nelkul; csak egyertelmu talalat', async () => {
+  const { findStaff, staffLinkKey, staffDisplayName, cleanStaffKey, staffCoverServices } = await import('../assets/js/booking-engine/flow.js');
+  const hair = [{ id: '30114', label: 'Betti' }, { id: '23694', label: 'Noel - 20% kedvezmény!' }, { id: '41001', label: 'Evelin' }];
+  const oxi = [{ id: '5001', label: 'Bozsoki - Harangozó Tündi' }, { id: '5002', label: 'Vivien' }, { id: '5003', label: 'Móni' }, { id: '5004', label: 'Nagy Móni' }];
+  assert.equal(findStaff(hair, 'betti').id, '30114');
+  assert.equal(findStaff(hair, 'BETTI').id, '30114');
+  assert.equal(findStaff(hair, 'noel').id, '23694', 'a kedvezmeny-cimke nem resze a nevnek');
+  assert.equal(findStaff(hair, '41001').id, '41001', 'Salonic azonosito');
+  assert.equal(findStaff(oxi, 'tundi').id, '5001', 'ekezet nelkul: Tündi');
+  assert.equal(findStaff(oxi, 'Tündi').id, '5001');
+  assert.equal(findStaff(oxi, 'bozsoki-harangozo-tundi').id, '5001', 'a teljes nev kotojellel');
+  assert.equal(findStaff(oxi, 'vivien').id, '5002');
+  assert.equal(findStaff(oxi, 'moni'), null, 'ket szakemberre is illik (Moni, Nagy Moni): nem talalgatunk');
+  assert.equal(findStaff(oxi, 'nagy-moni').id, '5004');
+  for (const rossz of ['', null, undefined, 'senki', 'betti; drop', '<script>', 'a'.repeat(61)]) assert.equal(findStaff(hair, rossz), null, String(rossz));
+  assert.equal(findStaff([], 'betti'), null);
+  assert.equal(staffDisplayName('Noel - 20% kedvezmény!'), 'Noel');
+  assert.equal(cleanStaffKey(' betti '), 'betti'); assert.equal(cleanStaffKey('x@y'), null);
+  // az ajanlott kulcs: az utolso szo (keresztnev), ha egyedi; kulonben a teljes nev; kulonben az azonosito; es MINDIG visszakeresheto
+  assert.deepEqual(hair.map((x) => staffLinkKey(x.label, hair)), ['betti', 'noel', 'evelin']);
+  assert.deepEqual(oxi.map((x) => staffLinkKey(x.label, oxi)), ['tundi', 'vivien', 'moni', 'nagy-moni'].map((k, i) => (i === 2 ? '5003' : k)), 'a "Moni" nem egyedi (Nagy Moni is): azonosito');
+  for (const lista of [hair, oxi]) for (const x of lista) assert.equal(findStaff(lista, staffLinkKey(x.label, lista)).id, x.id, x.label);
+  // a lefedo szolgaltatas-valasztas (a nevekhez annyi naptar-lekeres kell, ahany szolgaltatas a lefedeshez kell)
+  const svc = [{ serviceId: 'a', staffIds: ['1', '2'] }, { serviceId: 'b', staffIds: ['2', '3'] }, { serviceId: 'c', staffIds: ['3'] }, { serviceId: 'd', staffIds: [] }];
+  assert.deepEqual(staffCoverServices(svc).map((s) => s.serviceId).sort(), ['a', 'b']);
+  assert.deepEqual(staffCoverServices([{ serviceId: 'x', staffIds: [] }]), []);
+});
+
+test('parseContext: ?staff= (alias: munkatars, szakember), csak ervenyes ertek', () => {
+  assert.equal(parseContext('?business=hair&staff=betti').staffKey, 'betti');
+  assert.equal(parseContext('?business=hair&munkatars=Tündi').staffKey, 'Tündi');
+  assert.equal(parseContext('?business=hair&szakember=noel').staffKey, 'noel');
+  assert.equal(parseContext('?business=hair').staffKey, null);
+  assert.equal(parseContext('?business=hair&staff=%3Cscript%3E').staffKey, null);
+  assert.equal(parseContext('?business=hair&staff=').staffKey, null);
 });
 
 test('classifyRedirect: elkelt idopont (fooldal / foglalo), visszaigazolas, ismeretlen', () => {

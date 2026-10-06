@@ -108,6 +108,48 @@ export function groupFacts(group) {
 
 /** A Salonic szakemberi cimkeje ("Noel - 20% kedvezmeny!") a kedvezmeny szazalekat tartalmazza; 0, ha nincs. */
 export const staffDiscountPercent = (label) => { const m = /(\d{1,2})\s*%\s*kedvezm/i.exec(label || ''); return m ? +m[1] : 0; };
+// --- munkatars-link: ?staff=betti (a szakember a linkben, a valaszto kimarad) -------------------------------------------------------------
+const foldText = (t) => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+/** A szakember neve a kedvezmeny-cimke nelkul ("Noel - 20% kedvezmeny!" -> "Noel"). */
+export const staffDisplayName = (label) => String(label || '').replace(/\s*-\s*\d{1,2}\s*%\s*kedvezm.*$/i, '').trim();
+const nameTokens = (label) => foldText(staffDisplayName(label)).split(/[^a-z0-9]+/).filter(Boolean);
+/** Az ervenyes ?staff= ertek (betu, szam, szokoz, kotojel, alahuzas, pont; legfeljebb 60 karakter), kulonben null. */
+export const cleanStaffKey = (v) => (v && /^[\p{L}\p{N}_ .-]{1,60}$/u.test(String(v).trim()) ? String(v).trim() : null);
+/**
+ * ?staff= -> szakember a listabol ([{ id, label }]): a Salonic azonosito, VAGY a nev szavai (ekezet- es kisbetu-fuggetlen, a kedvezmeny-cimke nelkul):
+ * "betti", "tundi", "bozsoki-harangozo-tundi". Csak egyertelmu talalat: ha tobb szakemberre is illik (vagy egyre sem), null (a valaszto jelenik meg).
+ */
+export function findStaff(list, key) {
+  const k = cleanStaffKey(key);
+  if (!k || !list || !list.length) return null;
+  const byId = list.filter((x) => String(x.id) === k);
+  if (byId.length === 1) return byId[0];
+  const words = foldText(k).split(/[^a-z0-9]+/).filter(Boolean);
+  if (!words.length) return null;
+  const m = list.filter((x) => { const t = nameTokens(x.label); return words.every((w) => t.includes(w)); });
+  return m.length === 1 ? m[0] : null;
+}
+/** A szakemberhez ajanlott ?staff= kulcs: a nev utolso szava (keresztnev; "Bozsoki - Harangozo Tundi" -> "tundi"), ha egyedi a listaban; kulonben a teljes nev kotojellel; kulonben a Salonic azonosito. */
+export function staffLinkKey(label, list) {
+  const t = nameTokens(label);
+  const self = (x) => x && String(x.label) === String(label);
+  for (const k of [t[t.length - 1], t.join('-')]) if (k && self(findStaff(list, k))) return k;
+  const e = list.find((x) => String(x.label) === String(label));
+  return e ? String(e.id) : null;
+}
+/** A legkevesebb szolgaltatas (mohó lefedes), amelynek szakember-azonositoi egyutt lefedik a lista osszes szakemberet: annyi naptar-lekeres kell a nevekhez. */
+export function staffCoverServices(services) {
+  const left = new Set(services.flatMap((s) => s.staffIds || []).map(String));
+  const picks = []; const rest = [...services];
+  while (left.size && rest.length) {
+    rest.sort((x, y) => (y.staffIds || []).filter((id) => left.has(String(id))).length - (x.staffIds || []).filter((id) => left.has(String(id))).length);
+    const s = rest.shift(); const gain = (s.staffIds || []).filter((id) => left.has(String(id)));
+    if (!gain.length) break;
+    picks.push(s); gain.forEach((id) => left.delete(String(id)));
+  }
+  return picks;
+}
+
 /** A szolgaltatas ara az adott szakemberrel (a szakemberi kedvezmennyel; nincs kedvezmeny = a Salonic ara). */
 export function priceFor(service, staffLabel) {
   if (service.activePrice === null || service.activePrice === undefined) return null;
@@ -227,6 +269,7 @@ export function parseContext(search, referrer = '', origin = '', { defaultBusine
     category: q.get('category') || q.get('service_category') || null, // kategoria-landing: a szandek kulcsa (pl. balayage) -> kozvetlenul a kezeles-valasztasra
     voucher: q.get('voucher') === '1' || q.get('intent') === 'voucher',
     intent: q.get('intent') || null, // lezer: first | returning (a regi "Elso idopontok" / "Kezeles idopontok" gombok) -> egyenesen a terulet-valasztasra
+    staffKey: cleanStaffKey(q.get('staff') || q.get('munkatars') || q.get('szakember')), // munkatars-link: ?staff=betti (a szakember-valaszto kimarad)
     sourcePage,
     attribution,
     sample: q.get('minta') || null,
