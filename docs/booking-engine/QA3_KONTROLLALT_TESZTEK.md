@@ -2,6 +2,19 @@
 
 Állapot: 2026-10-06 (terv). Futtatás: **2026-10-07, 10:00–18:00 (Budapest)** a **PR #128 előnézetén** (`https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev`), **kód- és ág-módosítás nélkül** (nincs push a `claude/mosaic-meres-qa-1-rrbwkk` ágra, nincs deploy; a tesztek csak HTTP-hívások és böngészős foglalások). Az eszköz és a terv a `claude/mosaic-meres-eletut` ágon (PR #138) van, a #128-at nem érinti.
 
+## Elfogadási mérce (egyeztetve Ferivel, 2026-10-06)
+**Háttér:** a #128 árnyékmérésben a párosítás a köszönőoldali **böngészős írásra** épül, ami csak az előnézeten fut; az éles oldalon ki van kapcsolva. Ezért a 24 órás ablakban minden **valódi** Salonic-foglalás `parositatlan` + riasztás állapotban zárul, kiküldött esemény nélkül (igazolva: a 2026-10-06 20:43-as valódi fodrász-foglalás, `f6e5962c-ebc8-a129-0a75-7cc985f63ee0`, 5 próba, 0 küldés).
+
+**A mérce:**
+- **Valódi foglalások (24 órás ablak):** minden valódi Salonic-foglalás levele **1:1** beérkezik és rögzül (a Salonic valódi foglalás-listájához képest, UUID-nként a `foglalas_egyeztetes` soraiban); **0 élő küldés**, és a valódi foglalásokra egyáltalán **0 küldés** (az elvárt végállapot a tervezett `parositatlan` + riasztás). A **párosítás a valódi foglalásokon nem mérhető** (nincs böngészős írás), ezért a „0 téves párosítás” itt üres állítás, és nem is ezen mérjük.
+- **TESZT-esetek (a #128 előnézetén):** a teljes lánc – párosítás → platformküldés – `booking_id`-szinten **1:1** (lásd az esetek táblázatát).
+
+**Pontosítások a mérce értelmezéséhez:**
+1. **Nevező:** a valódi foglalások számlálásához a Salonic valódi foglalás-listája kell a 24 órás ablakra; a TESZT-foglalások kiszűrése a Salonic-oldalon a vendégnév („TESZT – Claude”) alapján megy, mert az adatbázis a nevet nem tárolja.
+2. **Lemondási értesítők:** a valódi lemondási értesítő időpont + szakember alapján párosít, a TESZT-eszközök pedig mindig ugyanazt az utolsó szabad időpontot foglalják, ezért egy valódi lemondás egy régi TESZT-kulcsot is felszabadíthat (2026-10-06-án 6 `felszabadult` sor a `foglalas_lemondas`-ban). Ez naplózási zaj, nem küldés: a „téves párosítás” definíciójából a lemondásnál felszabadult TESZT-kulcsokat ki kell zárni, vagy külön kell számolni.
+3. **Riasztás:** a valódi foglalások miatt a riasztási lista (`GET ?riasztas=1`) a #128-on tartósan nem üres; ez a **várt állapot**, a riasztás-darabszám itt nem egészségjelző.
+4. **A PASS nem jelent éles készenlétet:** a teljes lánc csak az előnézeten bizonyított. A valódi forgalom párosítási aránya – és az `uj_vendeg`, az ár és a szolgáltatásnév kinyerése a valódi levelekből, ami csak párosítás után számít – mindaddig **nem mért**, amíg az éles köszönőoldal írása nincs bekapcsolva. Éles indulás előtt a valódi foglalásokra **külön kapuként** meg kell ismételni a mérést.
+
 ## Szabályok
 - Minden tesztfoglalás neve **„TESZT – Claude”** (így kiszűrhető a valódi 24 órás listából; e-mail `deakfi@grantis.hu`), és a futtató a foglalást a vizsgálat végén lemondja (hibával megszakadt esetnél is).
 - **Csak árnyék-célok:** Meta dataset `28616665324611098` (`test_event_code` `TEST83939`), TikTok ARNYEK pixel `DB2GTTJC77UE4D1NE4MG` (`TEST83543`), GA4 teszt-property `G-M5MLRLNQBP`, Google Ads `ARNYEK` másodlagos akciók (Zapier-webhookon át). Az éles pixelekre / property-re / akciókra a kód nem tud küldeni (a célok kódban rögzítettek). A vészkapcsolókhoz (`meres_kapcsolo`) nem nyúlunk.
