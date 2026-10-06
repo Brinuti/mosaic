@@ -3,7 +3,7 @@
 Állapot: 2026-10-06, a mérési munkamenet (Zapier) hívójához. A végpont a **PR-előnézeten** él (`https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev`); az éles oldalon nincs kötve (503 / 404). Háttér: `BOOKING_ID.md` (kulcs-tábla, párosítás), `QA2_ARNYEK.md` (árnyék-küldés).
 
 ## Hitelesítés
-- `POST https://<előnézet>/api/foglalas-egyeztetes`, `content-type: application/json`, a törzs legfeljebb 20 000 bájt.
+- `POST https://<előnézet>/api/foglalas-egyeztetes`, `content-type: application/json`, a törzs legfeljebb 256 KB (262 144 karakter; efelett `413`) – egy teljes levél-HTML is elfér.
 - Kulcs: **`x-egyeztetes-kulcs: <kulcs>` fejléc** (vagy `?kulcs=`). A kulcs SHA-256-ja az `EGYEZTETES_KULCS_HASH` preview-változóban van; a kulcs maga a Zapier Storage-ban (a Zap onnan olvassa), a repóban és a naplókban nincs. **Kulcs nélkül / rossz kulccsal a válasz `404 {"ok":false}`.** (A kulcsot 2026-10-06-án újragenerálták; a régi kulcs érvénytelen.)
 
 ## 1. Létrehozó levél („Új időpont létrehozva” / „Új online foglalás érkezett”)

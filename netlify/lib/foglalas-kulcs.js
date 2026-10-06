@@ -16,6 +16,7 @@
 import { BUSINESSES } from '../../assets/js/booking-engine/salonic-adapter.js';
 
 export const MEGORZES_NAP = 180;
+export const EGYEZTETES_MAX_BAJT = 262144; // a POST /api/foglalas-egyeztetes torzsenek felso hatara (korabban 20 000: a teljes level-HTML ennel nagyobb)
 export const UJRAPROBA_MP = Object.freeze([60, 180, 600, 1800]); // az 1., 3., 10., 30. perc
 export const ID_MINTA = /^mb_[a-z0-9]{12,40}$/;
 export const UUID_MINTA = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -673,7 +674,7 @@ export async function kezelEgyeztetes(request, env, deps = {}) {
   const url = new URL(request.url);
   if (request.method === 'POST') {
     const szoveg = await request.text();
-    if (szoveg.length > 20000) return valasz(413, { ok: false, miert: 'tul nagy' });
+    if (szoveg.length > EGYEZTETES_MAX_BAJT) return valasz(413, { ok: false, miert: 'tul nagy' }); // a teljes level-HTML (email_html) akar 100+ KB is lehet
     let o; try { o = JSON.parse(szoveg); } catch (e) { return valasz(400, { ok: false, miert: 'nem JSON' }); }
     if (!o || typeof o !== 'object') return valasz(400, { ok: false, miert: 'nem objektum' });
     if (o.nevtabla === 'frissit') { // a nevtabla kenyszeritett frissitese (napi frissites: a tabla maximum 24 oras)

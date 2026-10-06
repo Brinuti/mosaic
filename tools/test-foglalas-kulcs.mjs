@@ -588,3 +588,9 @@ test('emailElemzes: a szalonnak szolo "Uj online foglalas erkezett" level "Fogla
   assert.deepEqual([a.uuid, a.host], [u, 'mosaicheadspa.salonic.hu']);
   assert.deepEqual([emailElemzes(`<a href="https://mosaic-pmu.salonic.hu/calendar/showBooking/?x=1&amp;bookingId=${u}">x</a>`).uuid, emailElemzes(`<a href="https://evil.example.com/calendar/showBooking/?bookingId=${u}">x</a>`).uuid], [u, null]);
 });
+test('/api/foglalas-egyeztetes: a torzs felso hatara 256 KB (egy teljes level-HTML elfer), efelett 413', async () => {
+  const { db, ...D } = d1(); const e = { KULCS_DB: { prepare: D.prepare, batch: D.batch }, EGYEZTETES_KULCS_HASH: crypto.createHash('sha256').update('k').digest('hex') };
+  const post = (body) => kezelEgyeztetes(new Request('https://x.pages.dev/api/foglalas-egyeztetes', { method: 'POST', headers: { 'x-egyeztetes-kulcs': 'k' }, body }), e, { fetchImpl: async () => ({ status: 404, text: async () => '' }) });
+  assert.notEqual((await post(JSON.stringify({ email_html: 'x'.repeat(120000) }))).status, 413, '120 KB level-HTML elfogadott');
+  assert.equal((await post(JSON.stringify({ email_html: 'x'.repeat(300000) }))).status, 413);
+});
