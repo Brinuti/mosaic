@@ -1,0 +1,31 @@
+<!--
+  A Google Tag Manager (GTM-PST2HB22) "Custom HTML" cimkeje: a kuponkod beirasa a Salonic adatlapra.
+  Ez a forras; a GTM-ben ugyanez fut (cimke neve: "Salonic adatlap - kuponkod kitoltese"). A teszt (tools/meres-proba/kupon-proba.mjs) ugyanezt a szkriptet tolti be.
+
+  Hogyan mukodik (docs/booking-engine/KUPON_LINK.md):
+   - A foglalonk az adatlap keretenek NEVEBEN (iframe name="mhk:NYAR20") adja at a kodot: nincs az URL-ben, igy nem kerul analitikaba / referrerbe.
+   - Az adatlapon (mosaicheadspa.salonic.hu/guestData/...) ez a szkript a window.name-bol olvassa, beirja a "Kupon / Ajandekutalvany kod" mezobe (#GuestDataForm_couponCode),
+     es lefuttatja a Salonic sajat ellenorzeset (keyup), mintha a vendeg gepelte volna be; majd szol a foglalonak (postMessage), hogy megtortent.
+   - Ha a mezo mar ki van toltve (a vendeg beirt valamit), nem irja felul. Ha nincs nev (nem a mi foglalonkbol jott a vendeg), nem tesz semmit.
+
+  GTM-beallitas: trigger = Page View; feltetel: Page Hostname vege ".salonic.hu" ES Page Path eleje "/guestData"; Consent: nincs tovabbi kovetelmeny (funkcionalis, nem meres).
+-->
+<script>
+(function () {
+  try {
+    var m = /^mhk:([A-Za-z0-9_-]{3,40})$/.exec(window.name || '');
+    if (!m) return;
+    var kod = m[1], probak = 0;
+    (function tolt() {
+      var mezo = document.getElementById('GuestDataForm_couponCode');
+      var jq = window.jQuery;
+      if (!mezo || !jq) { if (++probak < 60) setTimeout(tolt, 100); return; }
+      if (mezo.value) return;
+      window.name = '';
+      mezo.value = kod;
+      jq(mezo).trigger('keyup');
+      try { window.parent.postMessage({ mhKupon: 'ok' }, '*'); } catch (e) {}
+    })();
+  } catch (e) {}
+})();
+</script>

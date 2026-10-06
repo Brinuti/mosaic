@@ -254,6 +254,11 @@ export function findByKey(services, key, { voucher = false } = {}) {
   return pool.find((s) => s.serviceId === String(key)) || pool.find((s) => words.length && words.every((w) => norm(displayName(s.name)).includes(w))) || null;
 }
 
+// --- kuponkod a linkbol: ?kupon=NYAR20 (az adatlapon a Salonic "Kupon / Ajandekutalvany kod" mezojebe kerul) ---------------------------------
+// Betu, szam, kotojel, alahuzas; 3-40 karakter. A launcher (assets/js/booking-launcher.js) ugyanezt a szabalyt hasznalja (a teszt egyezteti).
+export const COUPON_RE = /^[A-Za-z0-9_-]{3,40}$/;
+export const cleanCoupon = (v) => { const s = v === null || v === undefined ? '' : String(v).trim(); return COUPON_RE.test(s) ? s : null; };
+
 // --- belepesi kontextus -------------------------------------------------------------------------------------------------------
 // defaultBusiness: ha az URL nem nevezi meg az uzletagat: a /foglalo-motor oldalon HeadSpa (alap), a /foglalas oldalon es a retegben null
 // -> a szolgaltatas-elso kezdo allapot (H0). Az aliasok (service_id, service_category) a CTA-hivasokhoz (openBooking) valok.
@@ -270,6 +275,7 @@ export function parseContext(search, referrer = '', origin = '', { defaultBusine
     voucher: q.get('voucher') === '1' || q.get('intent') === 'voucher',
     intent: q.get('intent') || null, // lezer: first | returning (a regi "Elso idopontok" / "Kezeles idopontok" gombok) -> egyenesen a terulet-valasztasra
     staffKey: cleanStaffKey(q.get('staff') || q.get('munkatars') || q.get('szakember')), // munkatars-link: ?staff=betti (a szakember-valaszto kimarad)
+    coupon: cleanCoupon(q.get('kupon') || q.get('kuponkod') || q.get('coupon')), // ?kupon=NYAR20: az adatlapon a kupon mezobe kerul (a kod NEM kerul meresbe, logba)
     sourcePage,
     attribution,
     sample: q.get('minta') || null,

@@ -78,6 +78,7 @@ export const LASER = Object.freeze({
   firstState: 'LA1',
   voucherState: null,
   showStaffFilter: false, // egyetlen kezelo (Elysion Pro Szortelenites): nincs mit valasztani
+  acceptsCoupon: false, // a lezeres Salonic-fiok adatlapjan nincs "Kupon / Ajandekutalvany kod" mezo (ellenorizve 2026-10-06): a ?kupon= itt nem tesz semmit
   zeroPriceLabel: 'Egyedi ár', // az egyedi csomag Salonic-ara 0 Ft (a vegso arat a helyszinen allitjak): a vendeg ne 0 Ft-ot lasson
   // az alap (egyeni CSS nelkuli) Salonic-kinezethez: az "elkuldes" gomb alja 1468 px + 24 px + a Salonic suti-savja (~197 px); a lablec 1615 px-nel kezdodik
   frame: Object.freeze({ crop: 100, visible: 1589 }),
