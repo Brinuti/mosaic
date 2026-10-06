@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import {
   HOSTOK, MEGORZES_NAP, UJRAPROBA_MP, bookingUrlElemzes, budapestUnix, egyeztet, emailElemzes, emailKulcsNevtablabol, evKovetkeztet, idopontSzovegElemzes, isoUnix, kezelEgyeztetes, kezelKulcs,
-  kulcsIras, kulcsKepez, kulcsKeres, modositasOldalElemzes, nevtablaBetolt, nevtablaMent, nevtablaSalonicbol, norm, reszletekOldalElemzes, riasztasok, salonicOldalKulcs, sema,
+  foglalasAllapot, kulcsJeloltek, lemondasKezel, munkatarsNevOldalbol, kulcsIras, kulcsKepez, kulcsKeres, modositasOldalElemzes, nevtablaBetolt, nevtablaMent, nevtablaSalonicbol, norm, reszletekOldalElemzes, riasztasok, salonicOldalKulcs, sema,
 } from '../netlify/lib/foglalas-kulcs.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -362,4 +362,200 @@ test('koszonooldali szkript: nincs back -> a foglalo kontextusabol (csak ha a sz
   assert.equal(koszonoFuttat({ search: '?first_booking=true&price=0' }).hivasok.length, 0, 'nincs bookingUrl');
   assert.equal(koszonoFuttat({ search: '?bookingUrl=' + encodeURIComponent('https://evil.example.com/guestData/?back=' + BID) }).hivasok.length, 0, 'idegen host');
   assert.equal(koszonoFuttat({ search: '?bookingUrl=' + encodeURIComponent('https://mosaic-hair.salonic.hu/masik/?back=' + BID) }).hivasok.length, 0, 'nem /guestData/');
+});
+
+
+// === kulcs-utkozes: elo ellenorzes, lemondasi ertesito, sorrend-fuggetlenseg (QA-1 ujrateszt kiegeszites) ===============================================================
+const BA = BID, BB = 'mb_0muwqbbbbbbbbbbbbbbbbbb', UB = '11111111-2222-3333-4444-555555555555';
+const bUrl = (id) => BOOKING_URL.replace(BID, id);
+const levelIdo = (ms) => new Date(ms - 8000).toISOString(); // a Salonic a levelet masodpercekkel a foglalas utan kuldi
+const UUID_MINTA_T = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
+// a Salonic "szerver" UUID-nkenti ELO allapottal: 'aktiv' (a valodi megtekintes oldal) | 'torolve' ("Idopont torolve!") | 'hiba'
+const eloFetch = (allapotok) => async (url) => {
+  const u = String(url); const uuid = (u.match(UUID_MINTA_T) || [])[0]; const all = uuid && allapotok[uuid];
+  const nem = { ok: false, status: all === 'hiba' ? 500 : 404, url: u, text: async () => '' };
+  if (!all || all === 'hiba') return nem;
+  const ok = (szoveg) => ({ ok: true, status: 200, url: u, text: async () => szoveg });
+  if (u.includes('/booking/bookingDetails/')) return ok(all === 'torolve' ? fx('kulcs-torolve-hu.html') : fx('kulcs-bookingDetails-hair.html').split(UUID).join(uuid));
+  if (u.includes('/selectDate/?startDate=')) return all === 'torolve' ? nem : ok(fx('kulcs-selectDate-modositas-hair.html'));
+  return nem;
+};
+const NOTICE = (t) => ({ felado: 'Mosaic Hair', szolgaltatas: 'Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)', idopontSzoveg: 'Október 20. (kedd) 18:00 - 18:30', munkatarsak: ['Noel - 20% kedvezmény!'], leveldatum: new Date(t()).toISOString() });
+/** A foglalas (A): a koszonooldal ir, az e-mail parositja (kuldve). */
+async function lanc() {
+  const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch }; const t = ora();
+  await nevtablaMent(adb, tablaHair(), t());
+  await kulcsIras(adb, { bookingId: BA, bookingUrl: bUrl(BA) }, t());
+  const allapotok = { [UUID]: 'aktiv', [UB]: 'aktiv' };
+  const deps = () => ({ fetchImpl: eloFetch(allapotok), now: t });
+  const ra = await egyeztet(adb, MEZOK(), deps());
+  return { db, adb, t, allapotok, deps, ra };
+}
+const bMezok = (L) => ({ ...MEZOK(), uuid: UB, leveldatum: levelIdo(L.t()) });
+
+test('foglalasAllapot: elo / torolve (magyar es angol oldal) / ismeretlen; idegen host es rossz uuid nem kerdezheto', async () => {
+  const f = (szoveg, status = 200) => async () => ({ ok: status === 200, status, url: 'x', text: async () => szoveg });
+  assert.equal((await foglalasAllapot({ host: 'mosaic-hair.salonic.hu', uuid: UUID, fetchImpl: f(fx('kulcs-bookingDetails-hair.html')) })).allapot, 'aktiv');
+  assert.equal((await foglalasAllapot({ host: 'mosaic-hair.salonic.hu', uuid: UUID, fetchImpl: f(fx('kulcs-torolve-hu.html')) })).allapot, 'torolve');
+  assert.equal((await foglalasAllapot({ host: 'mosaicheadspa.salonic.hu', uuid: UUID, fetchImpl: f(fx('kulcs-torolve-en.html')) })).allapot, 'torolve', 'angol "Appointment deleted!"');
+  assert.equal((await foglalasAllapot({ host: 'mosaicheadspa.salonic.hu', uuid: UUID, fetchImpl: f(fx('kulcs-aktiv-headspa-en.html')) })).allapot, 'aktiv', 'angol "Confirmed"');
+  assert.equal((await foglalasAllapot({ host: 'mosaic-hair.salonic.hu', uuid: UUID, fetchImpl: f('', 500) })).allapot, 'ismeretlen');
+  assert.equal((await foglalasAllapot({ host: 'mosaic-hair.salonic.hu', uuid: UUID, fetchImpl: f('<html>valami mas</html>') })).allapot, 'ismeretlen');
+  assert.equal((await foglalasAllapot({ host: 'evil.example.com', uuid: UUID, fetchImpl: f('') })).allapot, 'ismeretlen');
+  assert.equal((await foglalasAllapot({ host: 'mosaic-hair.salonic.hu', uuid: 'nem-uuid', fetchImpl: f('') })).allapot, 'ismeretlen');
+});
+
+test('a LEMONDASI ertesito (magyar es angol): nincs UUID / link / JSON-LD; a szalon neve a zaro sorbol, a szolgaltatas / idopont / munkatars a szurke dobozbol es a munkatars-reszbol; tipus = lemondas', () => {
+  const hu = emailElemzes(fx('kulcs-lemondas-hair-hu.html'));
+  assert.deepEqual({ tipus: hu.tipus, uuid: hu.uuid, felado: hu.felado, szolgaltatas: hu.szolgaltatas, idopont: hu.idopontSzoveg, munk: hu.munkatarsak, ld: hu.ld }, { tipus: 'lemondas', uuid: null, felado: 'Mosaic Hair', szolgaltatas: '💇‍♂️ Férfi hajvágás', idopont: 'Október 30. (péntek) 19:30 - 20:00', munk: ['Evelin'], ld: null });
+  const en = emailElemzes(fx('kulcs-lemondas-headspa-en.html'));
+  assert.deepEqual({ tipus: en.tipus, uuid: en.uuid, felado: en.felado, szolgaltatas: en.szolgaltatas, idopont: en.idopontSzoveg, munk: en.munkatarsak }, { tipus: 'lemondas', uuid: null, felado: 'Mosaic Headspa', szolgaltatas: '💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)', idopont: 'October 31. (Saturday) 15:30 - 16:50', munk: ['Páros kezelés'] });
+  assert.equal(emailElemzes(fx('kulcs-email-hair.html')).tipus, 'letrehozva'); assert.equal(emailElemzes(fx('kulcs-email-headspa-en.html')).tipus, 'letrehozva');
+});
+
+test('SORREND 1/3: B a kulcsot foglaltnak talalja (A mar kiment) -> az A Salonic-oldala ELO ellenorizve: TOROLVE -> B kapja a kulcsot, B esemenye a sajat booking_id-ja', async () => {
+  const L = await lanc(); assert.equal(L.ra.kuldheto, true); assert.equal(L.ra.esemeny_id, BA);
+  L.t.tick(3600); L.allapotok[UUID] = 'torolve';
+  assert.equal((await kulcsIras(L.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, L.t())).utkozes, true, 'B koszonooldala: a kulcs foglalt');
+  const rb = await egyeztet(L.adb, bMezok(L), L.deps());
+  assert.deepEqual({ a: rb.allapot, k: rb.kuldheto, e: rb.esemeny_id, atadva: rb.kulcs_atadva }, { a: 'parositott', k: true, e: BB, atadva: true });
+  assert.equal(rb.nyom.birtokos_ellenorzes.elo_allapot, 'torolve'); assert.equal(rb.nyom.birtokos_ellenorzes.birtokos_uuid, UUID);
+  assert.equal((await kulcsKeres(L.adb, KULCS, L.t())).booking_id, BB, 'a kulcs birtoka B');
+  assert.equal(L.db.prepare('SELECT COUNT(*) AS n FROM foglalas_kulcs_atadas').get().n, 1);
+  assert.equal(L.db.prepare('SELECT COUNT(*) AS n FROM foglalas_egyeztetes WHERE kuldve IS NOT NULL').get().n, 2, 'ket foglalas, ket esemeny, mindegyik egyszer');
+});
+
+test('SORREND 1/3 (fordito): ha A ELO -> B ELLENTMONDAS + riasztas, nem kuld, a kulcs A-nal marad; ha A oldala nem ellenorizheto -> varakozas (ujraprobalas), nem dont', async () => {
+  const L = await lanc(); L.t.tick(3600);
+  await kulcsIras(L.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, L.t());
+  const rb = await egyeztet(L.adb, bMezok(L), L.deps()); // A aktiv
+  assert.deepEqual({ a: rb.allapot, k: rb.kuldheto, r: rb.riasztas }, { a: 'ellentmondas', k: false, r: true });
+  assert.match(rb.miert, /ELO Salonic-foglalas/); assert.equal((await kulcsKeres(L.adb, KULCS, L.t())).booking_id, BA);
+  assert.deepEqual((await riasztasok(L.adb)).map((x) => [x.uuid, x.allapot]), [[UB, 'ellentmondas']]);
+  // nem ellenorizheto (az A oldala hibat ad): nem dont, ujraprobal
+  const M = await lanc(); M.t.tick(3600); M.allapotok[UUID] = 'hiba';
+  await kulcsIras(M.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, M.t());
+  const rv = await egyeztet(M.adb, bMezok(M), M.deps());
+  assert.deepEqual({ a: rv.allapot, k: rv.kuldheto, r: rv.riasztas }, { a: 'fuggoben', k: false, r: false }); assert.match(rv.miert, /nem ellenorizheto/);
+});
+
+test('SORREND 2/3: az A LEMONDASI ertesitoje B e-mailje ELOTT ert ide (B koszonooldala mar iras): a kulcs felszabadul es B-hez kerul, B e-mailje ezutan egyszeruen parosit', async () => {
+  const L = await lanc(); L.t.tick(3600); L.allapotok[UUID] = 'torolve';
+  assert.equal((await kulcsIras(L.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, L.t())).utkozes, true);
+  const n = await lemondasKezel(L.adb, NOTICE(L.t), L.deps());
+  assert.deepEqual({ a: n.allapot, e: n.eredmenyek[0].elo_allapot, atadva: n.eredmenyek[0].atadva }, { a: 'lemondas', e: 'torolve', atadva: BB });
+  assert.equal((await kulcsKeres(L.adb, KULCS, L.t())).booking_id, BB);
+  const rb = await egyeztet(L.adb, bMezok(L), L.deps());
+  assert.deepEqual({ a: rb.allapot, k: rb.kuldheto, e: rb.esemeny_id, atadva: rb.kulcs_atadva }, { a: 'parositott', k: true, e: BB, atadva: false }, 'a birtok mar B-nel van: nincs ujabb atadas');
+  assert.equal(L.db.prepare('SELECT COUNT(*) AS n FROM foglalas_kulcs_atadas').get().n, 1);
+});
+
+test('SORREND 2/3 (valtozat): az A lemondasi ertesitoje a B FOGLALAS ELOTT ert ide: a kulcs szabad lesz, B koszonooldala mar rendesen ir, B parosit', async () => {
+  const L = await lanc(); L.t.tick(3600); L.allapotok[UUID] = 'torolve';
+  const n = await lemondasKezel(L.adb, NOTICE(L.t), L.deps());
+  assert.equal(n.eredmenyek[0].eredmeny, 'felszabadult'); assert.equal(await kulcsKeres(L.adb, KULCS, L.t()), null, 'a kulcs szabad');
+  L.t.tick(600);
+  const kb = await kulcsIras(L.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, L.t()); assert.deepEqual({ i: kb.irva, u: kb.utkozes }, { i: true, u: false });
+  const rb = await egyeztet(L.adb, bMezok(L), L.deps());
+  assert.deepEqual({ a: rb.allapot, k: rb.kuldheto, e: rb.esemeny_id }, { a: 'parositott', k: true, e: BB });
+});
+
+test('SORREND 3/3: az A lemondasi ertesitoje B e-mailje UTAN ert ide: B mar megkapta a kulcsot (elo ellenorzes), az ertesito a B-t (ELO) nem szabadithatja fel', async () => {
+  const L = await lanc(); L.t.tick(3600); L.allapotok[UUID] = 'torolve';
+  await kulcsIras(L.adb, { bookingId: BB, bookingUrl: bUrl(BB) }, L.t());
+  const rb = await egyeztet(L.adb, bMezok(L), L.deps()); assert.equal(rb.esemeny_id, BB); assert.equal(rb.kulcs_atadva, true);
+  L.t.tick(30);
+  const n = await lemondasKezel(L.adb, NOTICE(L.t), L.deps());
+  assert.equal(n.eredmenyek[0].elo_allapot, 'aktiv'); assert.match(n.eredmenyek[0].eredmeny, /EL: a kulcs nem szabadul fel/);
+  assert.equal((await kulcsKeres(L.adb, KULCS, L.t())).booking_id, BB, 'B kulcsa megmaradt');
+  assert.equal(L.db.prepare('SELECT COUNT(*) AS n FROM foglalas_kulcs_atadas').get().n, 1, 'nem volt ujabb atadas');
+});
+
+test('az A letrehozasi levele NEM volt feldolgozva (nincs UUID-ja a tablaban): a levelek ideje dont (a koszonooldali iras ideje a level datumahoz legkozelebbi), mindket foglalas a sajat id-jat kapja, barmilyen sorrendben', async () => {
+  const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch }; const t = ora(); await nevtablaMent(adb, tablaHair(), t());
+  const aIdo = t(); await kulcsIras(adb, { bookingId: BA, bookingUrl: bUrl(BA) }, aIdo);
+  t.tick(3600); const bIdo = t(); await kulcsIras(adb, { bookingId: BB, bookingUrl: bUrl(BB) }, bIdo);
+  const allapotok = { [UUID]: 'torolve', [UB]: 'aktiv' }; const deps = { fetchImpl: eloFetch(allapotok), now: t };
+  const rb = await egyeztet(adb, { ...MEZOK(), uuid: UB, leveldatum: levelIdo(bIdo) }, deps);   // B levele elobb
+  assert.deepEqual({ a: rb.allapot, k: rb.kuldheto, e: rb.esemeny_id }, { a: 'parositott', k: true, e: BB });
+  const ra = await egyeztet(adb, { ...MEZOK(), leveldatum: levelIdo(aIdo) }, deps);              // A KESEI levele (a foglalasa mar torolve: 1. ag nincs, nevtabla)
+  assert.deepEqual({ a: ra.allapot, k: ra.kuldheto, e: ra.esemeny_id, f: ra.kulcs_forras }, { a: 'parositott', k: true, e: BA, f: 'nevtabla' });
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM foglalas_egyeztetes WHERE kuldve IS NOT NULL').get().n, 2);
+});
+
+test('nem egyertelmu idoalapu parositas (ket szabad jelolt a levelhez 5 percen belul) -> ELLENTMONDAS + riasztas; az egyetlen, de napokkal regebbi jelolt nem parosit (ujraprobalas)', async () => {
+  const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch }; const t = ora();
+  const t0 = t(); await kulcsIras(adb, { bookingId: BA, bookingUrl: bUrl(BA) }, t0); await kulcsIras(adb, { bookingId: BB, bookingUrl: bUrl(BB) }, t0 + 60000);
+  const deps = { fetchImpl: eloFetch({ [UB]: 'aktiv' }), now: t };
+  const r = await egyeztet(adb, { ...MEZOK(), uuid: UB, leveldatum: levelIdo(t0 + 30000) }, deps);
+  assert.deepEqual({ a: r.allapot, k: r.kuldheto, r: r.riasztas }, { a: 'ellentmondas', k: false, r: true }); assert.match(r.miert, /nem egyertelmu/);
+  const M = d1(); const mdb = { prepare: M.prepare, batch: M.batch }; const t2 = ora(); const k0 = t2();
+  await kulcsIras(mdb, { bookingId: BA, bookingUrl: bUrl(BA) }, k0);
+  const r2 = await egyeztet(mdb, { ...MEZOK(), uuid: UB, leveldatum: levelIdo(k0 + 3 * 86400 * 1000) }, { fetchImpl: eloFetch({ [UB]: 'aktiv' }), now: t2 });
+  assert.deepEqual({ a: r2.allapot, k: r2.kuldheto }, { a: 'fuggoben', k: false }); assert.match(r2.miert, /tul regi/);
+});
+
+const tablaHeadspa = () => ({ frissitve: 1, helyek: [{ placeId: 10427, nev: 'Mosaic Headspa' }],
+  munkatarsak: [{ placeId: 10427, employeeId: 24354, nev: 'Páros kezelés' }, { placeId: 10427, employeeId: 27076, nev: 'Mirage Egyéni kezelő - Május' }, { placeId: 10427, employeeId: 24065, nev: 'Mirage Egyéni kezelő' }],
+  szolgaltatasok: [{ placeId: 10427, serviceId: '302999', nev: '💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)' }] });
+
+test('TARTALEK AG, HeadSpa ANGOL level: a foglalas a level feldolgozasa elott torolve (1. ag nem megy) -> a nevtablabol parosit (forras: nevtabla); az angol LEMONDASI ertesito a kulcsot felszabaditja (elo ellenorzessel)', async () => {
+  const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch }; const t = ora(Date.UTC(2026, 9, 6, 13, 58, 27)); await nevtablaMent(adb, tablaHeadspa(), t());
+  const HID = 'mb_0muwquipszezqbdrx782d6m', HUUID = '5a784724-399a-2c64-a88d-d189c675c88a';
+  await kulcsIras(adb, { bookingId: HID, bookingUrl: 'https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793457000&back=' + HID }, t());
+  const e = emailElemzes(fx('kulcs-email-headspa-en.html'));
+  const levelM = { uuid: e.uuid, host: e.host, felado: e.felado, szolgaltatas: e.szolgaltatas, idopontSzoveg: e.idopontSzoveg, munkatarsak: e.munkatarsak, ld: e.ld, leveldatum: '2026-10-06T13:58:24Z' };
+  const deps = { fetchImpl: eloFetch({ [HUUID]: 'torolve' }), now: t };
+  const r = await egyeztet(adb, levelM, deps);
+  assert.deepEqual({ a: r.allapot, k: r.kuldheto, e: r.esemeny_id, f: r.kulcs_forras, kulcs: r.kulcs, ag1: r.nyom.ag1.ok, miert: r.nyom.ag1.miert }, { a: 'parositott', k: true, e: HID, f: 'nevtabla', kulcs: '10427|24354|1793457000', ag1: false, miert: 'a foglalas torolve' });
+  const n = emailElemzes(fx('kulcs-lemondas-headspa-en.html'));
+  const lm = await lemondasKezel(adb, { felado: n.felado, szolgaltatas: n.szolgaltatas, idopontSzoveg: n.idopontSzoveg, munkatarsak: n.munkatarsak, leveldatum: '2026-10-06T14:02:04Z' }, deps);
+  assert.deepEqual({ a: lm.allapot, kulcs: lm.eredmenyek[0].kulcs, elo: lm.eredmenyek[0].elo_allapot, e: lm.eredmenyek[0].eredmeny }, { a: 'lemondas', kulcs: '10427|24354|1793457000', elo: 'torolve', e: 'felszabadult' });
+  assert.equal(await kulcsKeres(adb, '10427|24354|1793457000', t()), null);
+});
+
+test('ISMERETLEN munkatars-nev -> a fiok nevtablaja CELZOTTAN ujraepul (csak az a fiok, legfeljebb 10 percenkent), a keresest egyszer megismetli', async () => {
+  const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch }; const t = ora(Date.UTC(2026, 9, 6, 13, 58, 27));
+  const hianyos = { ...tablaHeadspa(), munkatarsak: [{ placeId: 10427, employeeId: 24065, nev: 'Mirage Egyéni kezelő' }] }; await nevtablaMent(adb, hianyos, t());
+  const HID = 'mb_0muwquipszezqbdrx782d6m', HUUID = '5a784724-399a-2c64-a88d-d189c675c88a';
+  await kulcsIras(adb, { bookingId: HID, bookingUrl: 'https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793457000&back=' + HID }, t());
+  const e = emailElemzes(fx('kulcs-email-headspa-en.html')); const hivasok = [];
+  const deps = { fetchImpl: eloFetch({ [HUUID]: 'torolve' }), now: t, nevtablaFrissito: async (uzletag) => { hivasok.push(uzletag); return tablaHeadspa(); } };
+  const levelM = { uuid: e.uuid, host: e.host, felado: e.felado, szolgaltatas: e.szolgaltatas, idopontSzoveg: e.idopontSzoveg, munkatarsak: e.munkatarsak, ld: e.ld, leveldatum: '2026-10-06T13:58:24Z' };
+  const r0 = await egyeztet(adb, levelM, deps);   // az epp most mentett tabla friss: a celzott ujraepites 10 percen belul nem fut
+  assert.equal(r0.allapot, 'fuggoben'); assert.deepEqual(hivasok, []); t.tick(61);
+  t.tick(11 * 60);
+  const r = await egyeztet(adb, levelM, deps);    // 10 perc utan: celzott ujraepites, majd parosit
+  assert.deepEqual(hivasok, ['headspa'], 'csak a HeadSpa fiok');
+  assert.deepEqual({ a: r.allapot, k: r.kuldheto, f: r.kulcs_forras }, { a: 'parositott', k: true, f: 'nevtabla' }); assert.equal(r.nyom.ag2.nevtabla_celzott_ujraepites, 'headspa');
+});
+
+test('nevtablaSalonicbol (HeadSpa / Elysion): MINDEN munkatars-azonosito a szolgaltatas-listabol, a nev a nyilvanos /employees/<id> oldal cimebol (a szabad idopont nelkuli is); az altalanos cim nem nev; a naptar-API neve alias', async () => {
+  const oldal = (cim) => `<html><head><title>${cim}</title></head><body></body></html>`;
+  const fetchImpl = async (u) => {
+    const s = String(u); const ok = (h, status = 200) => ({ ok: status === 200, status, url: s, text: async () => h });
+    if (s.includes('/employees/?placeId=')) return ok(oldal('Mosaic Headspa appointment online booking'));
+    if (s.endsWith('/employees/24065')) return ok(oldal('Mosaic Headspa - Mirage Egyéni kezelő'));
+    if (s.endsWith('/employees/27076')) return ok(oldal('Mosaic Headspa - Mirage Egyéni kezelő - Május'));
+    if (s.endsWith('/employees/24354')) return ok(oldal('Mosaic Headspa - Páros kezelés'));
+    if (s.endsWith('/employees/99999')) return ok(oldal('Mosaic Headspa online időpontfoglalás')); // nem munkatars-oldal
+    return ok('', 404);
+  };
+  const adapterGyar = () => ({
+    getPlace: async () => ({ name: 'Mosaic Headspa' }),
+    getServices: async () => [{ serviceId: '302342', name: 'Egyéni', staffIds: ['24065', '27076', '99999'] }, { serviceId: '302999', name: 'Páros', staffIds: ['24354'] }],
+    getStaff: async (uz, sid) => (sid === '302342' ? [{ staff_id: '24065', staff_label: 'Mirage Egyéni kezelő (naptár)' }, { staff_id: '27076', staff_label: null }] : [{ staff_id: '24354', staff_label: 'Páros kezelés' }]),
+  });
+  const tabla = await nevtablaSalonicbol({ fetchImpl, adapterGyar, uzletagok: ['headspa'] });
+  const nevek = {}; for (const m of tabla.munkatarsak) (nevek[m.employeeId] = nevek[m.employeeId] || []).push(m.nev);
+  assert.deepEqual(nevek, { 24065: ['Mirage Egyéni kezelő', 'Mirage Egyéni kezelő (naptár)'], 27076: ['Mirage Egyéni kezelő - Május'], 24354: ['Páros kezelés'] }, 'a szabad idopont nelkuli 27076 is megvan; az alias is');
+  assert.deepEqual(tabla.hianyzoNevek, [{ placeId: 10427, employeeId: 99999 }], 'a nev nelkuli azonosito jelezve');
+  assert.equal(munkatarsNevOldalbol(oldal('Mosaic Hair - Noel - 20% kedvezmény!'), 'Mosaic Hair'), 'Noel - 20% kedvezmény!');
+  assert.equal(munkatarsNevOldalbol(oldal('Mosaic Oxigén online időpontfoglalás'), 'Mosaic Hair'), null);
+  assert.equal(munkatarsNevOldalbol(oldal('Mas Szalon - Valaki'), 'Mosaic Hair'), null, 'mas fiok neve nem fogadhato el');
+  // az alias-sorok mentese / betoltese: azonos employeeId, ket nev, nem duplaz
+  const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch }; await nevtablaMent(adb, tabla, 1000); await nevtablaMent(adb, tabla, 2000);
+  const be = await nevtablaBetolt(adb); assert.equal(be.munkatarsak.filter((m) => m.employeeId === 24065).length, 2); assert.equal(be.munkatarsak.length, 4);
+  const jelolt = emailKulcsNevtablabol({ felado: 'Mosaic Headspa', szolgaltatas: 'Páros', munkatarsak: ['Mirage Egyéni kezelő - Május'], idopontSzoveg: 'October 31. (Saturday) 15:30', ld: { startDate: '2026-10-31T15:30:00+01:00' } }, be, 1);
+  assert.deepEqual(jelolt.kulcsok, ['10427|27076|1793457000'], 'a 27076-os (kulonbozo nevu) munkatars nem keveredik a 24065-oel');
 });

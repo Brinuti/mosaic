@@ -26,7 +26,7 @@ const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ?
 const BAZIS = arg('bazis', ''), UTVONAL = arg('utvonal', 'hair-konzult'), OUT = arg('out', ''), SZARAZ = arg('szaraz', '0') === '1', KOSZONO = arg('koszono', '0') === '1';
 if (!/^https:\/\/[a-z0-9-]+\.mosaic-d77\.pages\.dev$/.test(BAZIS)) throw new Error('csak PR-elonezeten fut (--bazis https://<ag>.mosaic-d77.pages.dev); az eles domainre nem engedett: ' + BAZIS);
 const TELEFON = process.env.MERES_TELEFON || '709420090'; // a +36 utani resz: a tulajdonos sajat szama
-const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const CHROME = process.env.CHROME_UTVONAL || (process.platform === 'win32' ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : '/opt/pw-browsers/chromium-1194/chrome-linux/chrome');
 const T0 = Date.now(); const mp = () => Date.now() - T0;
 const idovonal = [], naplo = [];
 const lepes = (esemeny, extra = {}) => { idovonal.push({ t: mp(), esemeny, ...extra }); console.log(`[${String(mp()).padStart(6)}ms] ${esemeny}`, Object.keys(extra).length ? JSON.stringify(extra).slice(0, 400) : ''); };
