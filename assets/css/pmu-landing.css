@@ -927,3 +927,62 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
   .hero-kep.hero-galeria { aspect-ratio: auto; min-height: 400px; }
   .hero-galeria .galeria-sav { position: absolute; inset: 0; height: auto; }
 }
+
+/* ============ HARMAS GARANCIA ============ */
+.garancia { padding: 58px 0 50px; background: #f7f8f6; }
+.garancia h2 { font-size: 42px; }
+.garancia > .tartalom > .halk { margin-top: 10px; }
+.garancia-racs { list-style: none; margin: 30px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.garancia-kartya { background: #fff; border: 1px solid #e7eae3; border-radius: 16px; padding: 30px 26px 28px; text-align: center; box-shadow: var(--arnyek); display: flex; flex-direction: column; align-items: center; }
+.garancia-jelveny { position: relative; flex: none; width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(145deg, #e8d596, #b8963f 55%, #d9c164); box-shadow: 0 10px 22px rgba(150, 120, 40, .3); }
+.garancia-jelveny::before { content: ''; position: absolute; inset: 5px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .6); }
+.garancia-jelveny > span { width: 66px; height: 66px; border-radius: 50%; background: var(--sotet); display: grid; place-items: center; }
+.garancia-jelveny svg { width: 30px; height: 30px; fill: none; stroke: #f1e2b4; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.garancia-sorszam { font: 600 11px/1 var(--test) !important; letter-spacing: .18em; text-transform: uppercase; color: var(--arany) !important; margin: 20px 0 8px; }
+.garancia-kartya h3 { font: 500 22px/1.2 var(--cim); color: var(--sotet); }
+.garancia-kartya p { font-size: 14.5px; color: #3f4b4b; line-height: 1.55; margin-top: 12px; }
+.garancia-kartya .garancia-sorszam { margin-top: 20px; }
+.garancia-megj { margin-top: 20px; font-size: 13px; color: var(--halk); }
+
+/* ============ FOGLALAS UTAN 24 ORAN BELUL HIVLAK ============ */
+.hivas { padding: 58px 0; background: linear-gradient(#eef0ea, #e7eae2); border-top: 1px solid var(--vonal); }
+.hivas-racs { display: grid; grid-template-columns: 390px 1fr; gap: 54px; align-items: center; }
+.hivas-kep { margin: 0; position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 40px rgba(60, 40, 20, .14); aspect-ratio: 4 / 5; background: #dfe3d8; }
+.hivas-kep img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.hivas-cimke { position: absolute; left: 14px; bottom: 14px; padding: 7px 13px; border-radius: 999px; background: rgba(255, 255, 255, .93); color: var(--sotet); font: 600 11px/1 var(--test); letter-spacing: .08em; text-transform: uppercase; }
+.hivas-szoveg h2 { font-size: 40px; line-height: 1.12; }
+.hivas-szoveg .lead { font-size: 17px; margin-top: 14px; }
+.hivas-lepesek { list-style: none; margin: 26px 0 0; padding: 0; display: grid; gap: 16px; }
+.hivas-lepesek li { display: grid; grid-template-columns: 40px 1fr; gap: 16px; align-items: start; }
+.hivas-szam { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(#c6a346, #d9c164); color: #fff; font: 500 17px/1 var(--cim); box-shadow: 0 4px 12px rgba(150, 120, 40, .25); }
+.hivas-lepesek b { display: block; font: 500 20px/1.25 var(--cim); color: var(--sotet); }
+.hivas-lepesek p { font-size: 14.5px; color: #3f4b4b; margin-top: 4px; line-height: 1.5; }
+.hivas-megj { margin-top: 22px; font-size: 14.5px; color: #3f4b4b; font-style: italic; }
+.hivas-gombok { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 22px; }
+
+@media (max-width: 1100px) {
+  .garancia-racs { grid-template-columns: 1fr; }
+  .hivas-racs { grid-template-columns: 1fr; gap: 28px; }
+  .hivas-kep { max-width: 420px; margin: 0 auto; width: 100%; }
+}
+@media (max-width: 700px) {
+  .garancia, .hivas { padding-top: 36px !important; padding-bottom: 36px !important; }
+  .garancia h2, .hivas-szoveg h2 { font-size: var(--b1); line-height: 1.12; }
+  .garancia-racs { margin-top: 20px; gap: 12px; }
+  .garancia-kartya { display: grid; grid-template-columns: 58px 1fr; column-gap: 14px; align-items: start; text-align: left; padding: 16px 16px 18px; }
+  .garancia-jelveny { grid-row: 1 / span 3; width: 58px; height: 58px; box-shadow: 0 6px 14px rgba(150, 120, 40, .28); }
+  .garancia-jelveny::before { inset: 3px; }
+  .garancia-jelveny > span { width: 44px; height: 44px; }
+  .garancia-jelveny svg { width: 21px; height: 21px; }
+  .garancia-kartya .garancia-sorszam { margin: 2px 0 4px; font-size: 10px !important; }
+  .garancia-kartya h3 { font-size: 19px; }
+  .garancia-kartya p { font-size: 14px; margin-top: 8px; }
+  .garancia-megj { font-size: 12.5px; }
+  .hivas-szoveg { text-align: left; }
+  .hivas-szoveg h2 { text-align: center; }
+  .hivas-szoveg .lead { text-align: center; font-size: var(--b3); }
+  .hivas-lepesek b { font-size: 18px; }
+  .hivas-gombok { justify-content: center; }
+  .hivas-gombok .gomb { width: 100%; }
+  .hivas-megj { text-align: center; }
+}
