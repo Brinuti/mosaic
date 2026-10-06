@@ -4,7 +4,8 @@
 //   node tools/meres-proba/qa2-eset.mjs --bazis https://<ag>.mosaic-d77.pages.dev --eset headspa|fodrasz|oxigen|szor|pmu [--profil teljes|nincs|ana|dontes_nelkul] [--out naplo.json] [--start <unix>]
 //   utana: node tools/meres-proba/lemond.mjs <a kiirt lemondo-URL>   (a szerveres lepes UTAN: az esemenyek kuldesekor a foglalasnak aktivnak kell lennie - elo allapot-ellenorzes)
 //
-// eset -> utvonal: headspa = PAROS HeadSpa; fodrasz = fodraszati konzultacio; oxigen = hajkamera-vizsgalat (akcios, 4 990 Ft); szor = lezeres konzultacio; pmu = PMU ingyenes konzultacio (sajat PMU-foglalo)
+// eset -> utvonal: headspa = PAROS HeadSpa; fodrasz = fodraszati konzultacio; oxigen = hajkamera-vizsgalat (akcios konzultacio, 4 990 Ft); oxigen-elso = FIZETOS elso oxigenterapias kezeles; szor = lezeres konzultacio;
+//   pmu = PMU ingyenes konzultacio; pmu-kezeles = FIZETOS PMU kezeles (sajat PMU-foglalo)
 // A KIMENO MERES (GA4, Meta, TikTok, Google Ads, Stape, Zapier) tiltott (tilt.mjs); az eles koszonooldal betoltese is (az eles oldal kodja nem fut). Csak elonezeten fut.
 // SZINTETIKUS adatok (a naplo ezt jelzi): a kattintasazonositok formailag ervenyes, TESZT-jelolesu ertekek; a _fbp / _ttp / _ga sutiket a teszt allitja be (az elonezeten nem fut pixel / GA).
 import { chromium } from 'playwright-core';
@@ -21,6 +22,9 @@ const ESETEK = {
   oxigen: { opts: { business: 'oxygen' }, szakember: 'mindegy', uzletag: 'oxigen', lepesek: ['Hajkamerás vizsgálat'] },
   szor: { opts: { business: 'laser', service: 'konzult' }, szakember: 'mindegy', uzletag: 'szor' },
   pmu: { pmu: true, uzletag: 'pmu' },
+  // FIZETOS elso kezeles (a konzultacio-ertek nem fedi): a tenyleges ar megy
+  'oxigen-elso': { opts: { business: 'oxygen' }, szakember: 'mindegy', uzletag: 'oxigen', lepesek: ['Első oxigénterápiás kezelés'] },
+  'pmu-kezeles': { pmu: true, pmuKezeles: true, uzletag: 'pmu' },
 };
 const E = ESETEK[ESET]; if (!E) throw new Error('ismeretlen eset: ' + ESET);
 const PROFILOK = { teljes: { ana: true, adv: true, fun: true }, nincs: { ana: false, adv: false, fun: false }, ana: { ana: true, adv: false, fun: true }, dontes_nelkul: null };
@@ -86,7 +90,7 @@ try {
     // sajat PMU-foglalo: ingyenes konzultacio (a lista aljan), utolso szabad nap utolso idopontja, "ez lesz az elso"
     await page.getByRole('button', { name: /IDŐPONTOT FOGLALOK/i }).first().click().catch(async () => { await page.locator('text=/IDŐPONTOT FOGLALOK/i').first().click(); });
     await page.waitForSelector('#kezelesek .kezeles', { timeout: 30000 });
-    const kez = page.locator('#kezelesek .kezeles'); await kez.last().click(); lepes('PMU: kezeles = ' + ((await kez.last().textContent()) || '').replace(/\s+/g, ' ').trim().slice(0, 80));
+    const kez = page.locator('#kezelesek .kezeles'); const kezValasztott = E.pmuKezeles ? kez.first() : kez.last(); const kezSzoveg = ((await kezValasztott.textContent()) || '').replace(/\s+/g, ' ').trim().slice(0, 100); await kezValasztott.click(); lepes('PMU: kezeles = ' + kezSzoveg);
     await page.waitForSelector('.nnap.szabad', { timeout: 45000 });
     const napok = page.locator('.nnap.szabad'); await napok.nth((await napok.count()) - 1).click(); await page.waitForTimeout(600);
     const idok = page.locator('.idogomb'); const db = await idok.count(); const ido = (await idok.nth(db - 1).textContent()).trim(); await idok.nth(db - 1).click();

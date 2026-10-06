@@ -22,9 +22,10 @@ if (arg('naplo', '0') === '1') {
 }
 const q = be.koszono_query || {}; const start = be.bookingUrl_elemzes && be.bookingUrl_elemzes.startUnix;
 const ujVendeg = { igen: true, nem: false }[arg('uj-vendeg', 'igen')] ?? undefined;
+// ar: alapbol a Salonic-atiranyitas price parametere (= a levelbeli tenyleges ar)
 const kerelem = {
   uuid: be.salonic_uuid, host: be.salonic_host, felado: arg('felado', undefined), szolgaltatas: q.service, munkatarsak: [], ld: start ? { startDate: new Date(start * 1000).toISOString() } : null,
-  level_datuma: arg('level-ido'), ar: arg('ar') ? Number(arg('ar')) : undefined, vendeg: { email: arg('email', 'deakfi@grantis.hu'), telefon: arg('telefon', '+36 70 942 0090') }, uj_vendeg: ujVendeg,
+  level_datuma: arg('level-ido'), ar: arg('ar') ? Number(arg('ar')) : (/^\d+$/.test(String(q.price || '')) ? Number(q.price) : undefined), vendeg: { email: arg('email', 'deakfi@grantis.hu'), telefon: arg('telefon', '+36 70 942 0090') }, uj_vendeg: ujVendeg,
 };
 const t0 = new Date().toISOString();
 const r = await fetch(`${BAZIS}/api/foglalas-egyeztetes`, { method: 'POST', headers: H, body: JSON.stringify(kerelem) });

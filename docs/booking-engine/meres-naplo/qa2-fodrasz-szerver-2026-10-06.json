@@ -1,8 +1,8 @@
 {
  "eset": "fodrasz",
- "hivas_ideje": "2026-10-06T15:44:01.810Z",
+ "hivas_ideje": "2026-10-06T16:34:46.064Z",
  "kerelem_maszkolt": {
-  "uuid": "05cee0c2-bb66-94a6-8251-4751bdd8ae54",
+  "uuid": "a6fd2f34-4b2e-c51d-038f-4177b8f98d56",
   "host": "mosaic-hair.salonic.hu",
   "felado": "Mosaic Hair",
   "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
@@ -10,7 +10,7 @@
   "ld": {
    "startDate": "2026-10-20T16:00:00.000Z"
   },
-  "level_datuma": "2026-10-06T15:42:27Z",
+  "level_datuma": "2026-10-06T16:33:46Z",
   "ar": 0,
   "vendeg": "<maszkolva: e-mail + telefon>",
   "uj_vendeg": true
@@ -24,32 +24,32 @@
   "allapot": "parositott",
   "kuldheto": true,
   "duplikalt": false,
-  "booking_id": "mb_0muwuk8x04a47mummxji596",
-  "esemeny_id": "mb_0muwuk8x04a47mummxji596",
+  "booking_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
+  "esemeny_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
   "kulcs": "10823|25095|1792512000",
   "kulcs_forras": "salonic-oldal",
   "service_egyezik": true,
   "probalkozas": 1,
   "riasztas": false,
   "keses": false,
-  "kulcs_atadva": false,
-  "jelolt_elo_allapot": null,
+  "kulcs_atadva": true,
+  "jelolt_elo_allapot": "aktiv",
   "nyom": {
-   "uuid": "05cee0c2-bb66-94a6-8251-4751bdd8ae54",
+   "uuid": "a6fd2f34-4b2e-c51d-038f-4177b8f98d56",
    "host": "mosaic-hair.salonic.hu",
    "ag1": {
     "ok": true,
     "miert": null,
     "lepesek": [
      {
-      "url": "/booking/bookingDetails/05cee0c2-bb66-94a6-8251-4751bdd8ae54",
+      "url": "/booking/bookingDetails/a6fd2f34-4b2e-c51d-038f-4177b8f98d56",
       "status": 200,
-      "vegso": "/booking/bookingDetails/05cee0c2-bb66-94a6-8251-4751bdd8ae54"
+      "vegso": "/booking/bookingDetails/a6fd2f34-4b2e-c51d-038f-4177b8f98d56"
      },
      {
-      "url": "/selectDate/?startDate=1792512000&bookingId=05cee0c2-bb66-94a6-8251-4751bdd8ae54",
+      "url": "/selectDate/?startDate=1792512000&bookingId=a6fd2f34-4b2e-c51d-038f-4177b8f98d56",
       "status": 200,
-      "vegso": "/selectDate/?startDate=1792512000&bookingId=05cee0c2-bb66-94a6-8251-4751bdd8ae54"
+      "vegso": "/selectDate/?startDate=1792512000&bookingId=a6fd2f34-4b2e-c51d-038f-4177b8f98d56"
      }
     ],
     "kulcs": "10823|25095|1792512000",
@@ -73,17 +73,30 @@
        "booking_id": "mb_0muwuk8x04a47mummxji596",
        "service_id": "232804",
        "ido": 1791301351,
+       "kuldve_uuid": "05cee0c2-bb66-94a6-8251-4751bdd8ae54"
+      },
+      {
+       "booking_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
+       "service_id": "232804",
+       "ido": 1791304484,
        "kuldve_uuid": null
       }
      ]
     }
    ],
+   "birtokos_ellenorzes": {
+    "kulcs": "10823|25095|1792512000",
+    "birtokos_booking_id": "mb_0muwuk8x04a47mummxji596",
+    "birtokos_uuid": "05cee0c2-bb66-94a6-8251-4751bdd8ae54",
+    "elo_allapot": "torolve",
+    "miert": null
+   },
    "talalatok": [
     {
      "kulcs": "10823|25095|1792512000",
-     "booking_id": "mb_0muwuk8x04a47mummxji596",
+     "booking_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
      "service_id": "232804",
-     "forras": "koszonooldal"
+     "forras": "atadas"
     }
    ],
    "valasztas": [
@@ -92,64 +105,84 @@
      "allapot": "valasztott",
      "miert": null
     }
-   ]
+   ],
+   "jelolt_ellenorzes": {
+    "kulcs": "10823|25095|1792512000",
+    "jelolt_booking_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
+    "jelolt_uuid": "a6fd2f34-4b2e-c51d-038f-4177b8f98d56",
+    "elo_allapot": "aktiv",
+    "miert": null,
+    "atvetel": "felszabadult kulcs"
+   },
+   "kulcs_atadas": {
+    "kulcs": "10823|25095|1792512000",
+    "regi": "mb_0muwuk8x04a47mummxji596",
+    "uj": "mb_0muwwfdl3j7j2dtbgvufrq8",
+    "ok": "a birtokos Salonic-foglalas (05cee0c2) torolve - elo ellenorzes; a jelolt elo ellenorzese: aktiv"
+   }
   },
   "esemeny_kuldes": {
    "allapot": "kesz",
-   "source_id": "mb_0muwuk8x04a47mummxji596",
+   "source_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
    "erkezesi_adat": true,
    "esemenyek": [
     {
-     "esemeny_id": "Konzultacio:mb_0muwuk8x04a47mummxji596",
+     "esemeny_id": "Konzultacio:mb_0muwwfdl3j7j2dtbgvufrq8",
      "nev": "Konzultacio",
      "tipus": "alap",
-     "ertek": 0,
+     "ertek": 13000,
+     "ertek_forras": "konzultacio_tabla",
+     "salonic_ar": 0,
+     "nyitott": false,
      "platformok": {
       "meta": {
-       "id": 9,
-       "allapot": "nincs_hitelesites",
-       "http_status": null
+       "id": 60,
+       "allapot": "elkuldve",
+       "http_status": 200
       },
       "tiktok": {
-       "id": 10,
+       "id": 64,
        "allapot": "kihagyva",
        "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont"
       },
       "google": {
-       "id": 11,
+       "id": 68,
        "allapot": "nincs_hitelesites",
        "http_status": null
       },
       "ga4": {
-       "id": 12,
-       "allapot": "tiltva",
-       "indok": "nincs GA4_TESZT_MEASUREMENT_ID (teszt-property): a GA4-be csak teszt-property-be kuldunk"
+       "id": 73,
+       "allapot": "elkuldve",
+       "http_status": 204
       }
      }
     },
     {
-     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwuk8x04a47mummxji596",
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwwfdl3j7j2dtbgvufrq8",
      "nev": "Fodrasz_AkviziciosFoglalas",
      "tipus": "ernyo",
-     "ertek": 0,
+     "ertek": 13000,
+     "ertek_forras": "konzultacio_tabla",
+     "salonic_ar": 0,
+     "nyitott": false,
      "platformok": {
       "meta": {
-       "id": 13,
-       "allapot": "nincs_hitelesites",
-       "http_status": null
+       "id": 77,
+       "allapot": "elkuldve",
+       "http_status": 200
       },
       "tiktok": {
-       "id": 14,
+       "id": 82,
        "allapot": "kihagyva",
        "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont"
       },
       "google": {
-       "id": 15,
+       "id": 86,
        "allapot": "kihagyva",
        "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
       },
       "ga4": {
-       "id": 16,
+       "id": 90,
        "allapot": "kihagyva",
        "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
       }
@@ -160,38 +193,39 @@
    "jelleg": "konzultacio",
    "kupon": false,
    "uj_vendeg": true,
-   "ertek": 0,
+   "salonic_ar": 0,
+   "ertek": 13000,
    "ar_forras": "bejovo",
    "uzletag": "fodrasz"
   }
  },
  "szerveres_naplo_nyers": {
   "ok": true,
-  "source_id": "mb_0muwuk8x04a47mummxji596",
+  "source_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
   "erkezes": {
-   "source_id": "mb_0muwuk8x04a47mummxji596",
+   "source_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
    "uzletag": "fodrasz",
    "tipus": "foglalas",
    "attr": {
     "google": {
      "gclid": {
-      "ertek": "Cj0KCQjw_TESZT_FODRASZ_MUWUK4UJ_GCLID",
-      "ts": 1791301328
+      "ertek": "Cj0KCQjw_TESZT_FODRASZ_MUWWF9N9_GCLID",
+      "ts": 1791304460
      },
      "wbraid": {
-      "ertek": "CoMKCQ_TESZT_FODRASZ_MUWUK4UJ_WBRAID",
-      "ts": 1791301330
+      "ertek": "CoMKCQ_TESZT_FODRASZ_MUWWF9N9_WBRAID",
+      "ts": 1791304462
      }
     },
     "meta": {
-     "fbc": "fb.1.1791301330000.IwAR_TESZT_FODRASZ_MUWUK4UJ_FBCLID",
-     "fbclid": "IwAR_TESZT_FODRASZ_MUWUK4UJ_FBCLID",
-     "ts": 1791301330
+     "fbc": "fb.1.1791304462000.IwAR_TESZT_FODRASZ_MUWWF9N9_FBCLID",
+     "fbclid": "IwAR_TESZT_FODRASZ_MUWWF9N9_FBCLID",
+     "ts": 1791304462
     },
     "tiktok": {
      "ttclid": {
-      "ertek": "E.C.P.TESZT_FODRASZ_MUWUK4UJ_TTCLID",
-      "ts": 1791301330
+      "ertek": "E.C.P.TESZT_FODRASZ_MUWWF9N9_TTCLID",
+      "ts": 1791304462
      }
     },
     "utm_elso": {
@@ -199,19 +233,19 @@
      "medium": "cpc",
      "campaign": "qa2_fodrasz_elso",
      "content": "hirdetes_a",
-     "ts": 1791301328
+     "ts": 1791304460
     },
     "utm_utolso": {
      "source": "facebook",
      "medium": "paid",
      "campaign": "qa2_fodrasz_utolso",
-     "ts": 1791301330
+     "ts": 1791304462
     },
-    "fbp": "fb.1.1791296325000.7495613386",
-    "ttp": "TESZT_FODRASZ_MUWUK4UJ_ttp_5vxm5r7y6u",
+    "fbp": "fb.1.1791299457000.2484503274",
+    "ttp": "TESZT_FODRASZ_MUWWF9N9_ttp_xjrck1xh81",
     "ga4": {
-     "client_id": "460485025.1791214925",
-     "session_id": "1791300125",
+     "client_id": "232800017.1791218057",
+     "session_id": "1791303257",
      "measurement_id": "G-H4206SQ0Q7"
     }
    },
@@ -232,24 +266,24 @@
     "ar": 0,
     "g": "g:3385039",
     "munkatars": "",
-    "bookingUrl": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwuk8x04a47mummxji596"
+    "bookingUrl": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwwfdl3j7j2dtbgvufrq8"
    },
-   "ido": 1791301351,
-   "frissitve": 1791301351
+   "ido": 1791304484,
+   "frissitve": 1791304484
   },
   "kuldesek": [
    {
-    "id": 9,
-    "esemeny_id": "Konzultacio:mb_0muwuk8x04a47mummxji596",
+    "id": 60,
+    "esemeny_id": "Konzultacio:mb_0muwwfdl3j7j2dtbgvufrq8",
     "esemeny_nev": "Konzultacio",
     "esemeny_tipus": "alap",
     "platform": "meta",
     "platform_nev": "Fodrasz_Konzultacio",
     "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
-    "allapot": "nincs_hitelesites",
-    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
-    "ertek": 0,
+    "source_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 13000,
     "penznem": "HUF",
     "hozzajarulas": {
      "allapot": {
@@ -269,7 +303,7 @@
      }
     },
     "kerelem": {
-     "url": "https://graph.facebook.com/v21.0/28616665324611098/events",
+     "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
      "method": "POST",
      "fejlec_nevek": [
       "content-type"
@@ -277,14 +311,14 @@
      "cel": {
       "dataset": "28616665324611098",
       "nev": "MOSAIC ARNYEK meres-teszt",
-      "test_event_code": "TEST_MOSAIC_QA2"
+      "test_event_code": "TEST83939"
      },
      "body": {
       "data": [
        {
         "event_name": "Fodrasz_Konzultacio",
-        "event_time": 1791301347,
-        "event_id": "Konzultacio:mb_0muwuk8x04a47mummxji596",
+        "event_time": 1791304426,
+        "event_id": "Konzultacio:mb_0muwwfdl3j7j2dtbgvufrq8",
         "action_source": "website",
         "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok",
         "user_data": {
@@ -297,46 +331,48 @@
          "external_id": [
           "8fdd2bcc592b5b820a428065a5da514301da48af03b26ec795749efa0c2d7558"
          ],
-         "client_ip_address": "160.79.106.xxx",
+         "client_ip_address": "160.79.106.133",
          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-         "fbc": "fb.1.1791301330000.IwAR_TESZT_FODRASZ_MUWUK4UJ_FBCLID",
-         "fbp": "fb.1.1791296325000.7495613386"
+         "fbc": "fb.1.1791304462000.IwAR_TESZT_FODRASZ_MUWWF9N9_FBCLID",
+         "fbp": "fb.1.1791299457000.2484503274"
         },
         "custom_data": {
-         "value": 0,
+         "value": 13000,
          "currency": "HUF",
-         "order_id": "mb_0muwuk8x04a47mummxji596",
+         "order_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
          "content_name": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
          "content_category": "fodrasz",
          "esemeny_tipus": "alap",
+         "ertek_forras": "konzultacio_tabla",
+         "salonic_ar": 0,
          "utm_source": "facebook",
          "utm_campaign": "qa2_fodrasz_utolso"
         }
        }
       ],
-      "test_event_code": "TEST_MOSAIC_QA2",
+      "test_event_code": "TEST83939",
       "partner_agent": "mosaic-qa2-arnyek"
      }
     },
-    "http_status": null,
-    "platform_valasz": null,
+    "http_status": 200,
+    "platform_valasz": "{\"events_received\":1,\"messages\":[],\"fbtrace_id\":\"AithF4Xjw4zSUKN6ThYRZ4R\"}",
     "kuldo": "kozvetlen",
     "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
+    "letrehozva": 1791304490,
+    "frissitve": 1791304490
    },
    {
-    "id": 10,
-    "esemeny_id": "Konzultacio:mb_0muwuk8x04a47mummxji596",
+    "id": 64,
+    "esemeny_id": "Konzultacio:mb_0muwwfdl3j7j2dtbgvufrq8",
     "esemeny_nev": "Konzultacio",
     "esemeny_tipus": "alap",
     "platform": "tiktok",
     "platform_nev": null,
     "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
+    "source_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
     "allapot": "kihagyva",
     "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
-    "ertek": 0,
+    "ertek": 13000,
     "penznem": "HUF",
     "hozzajarulas": {
      "allapot": {
@@ -360,21 +396,21 @@
     "platform_valasz": null,
     "kuldo": null,
     "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
+    "letrehozva": 1791304490,
+    "frissitve": 1791304490
    },
    {
-    "id": 11,
-    "esemeny_id": "Konzultacio:mb_0muwuk8x04a47mummxji596",
+    "id": 68,
+    "esemeny_id": "Konzultacio:mb_0muwwfdl3j7j2dtbgvufrq8",
     "esemeny_nev": "Konzultacio",
     "esemeny_tipus": "alap",
     "platform": "google",
     "platform_nev": "ARNYEK-7825200898",
     "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
+    "source_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
     "allapot": "nincs_hitelesites",
     "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
-    "ertek": 0,
+    "ertek": 13000,
     "penznem": "HUF",
     "hozzajarulas": {
      "allapot": {
@@ -394,57 +430,47 @@
      }
     },
     "kerelem": {
-     "url": "https://googleads.googleapis.com/v21/customers/6088874770:uploadClickConversions",
+     "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
      "method": "POST",
      "fejlec_nevek": [
-      "content-type",
-      "authorization",
-      "developer-token",
-      "login-customer-id"
+      "content-type"
      ],
      "cel": {
       "customer_id": "6088874770",
-      "conversion_action": "7825200898",
-      "validate_only": true
+      "conversion_action_id": "7825200898",
+      "athidalas": "zapier-webhook"
      },
      "body": {
-      "conversions": [
-       {
-        "conversionAction": "customers/6088874770/conversionActions/7825200898",
-        "conversionDateTime": "2026-10-06 17:42:27+02:00",
-        "conversionValue": 0,
-        "currencyCode": "HUF",
-        "orderId": "mb_0muwuk8x04a47mummxji596",
-        "wbraid": "CoMKCQ_TESZT_FODRASZ_MUWUK4UJ_WBRAID",
-        "consent": {
-         "adUserData": "DENIED",
-         "adPersonalization": "DENIED"
-        }
-       }
-      ],
-      "partialFailure": true,
-      "validateOnly": true
+      "conversion_action_id": "7825200898",
+      "wbraid": "CoMKCQ_TESZT_FODRASZ_MUWWF9N9_WBRAID",
+      "conversion_date_time": "2026-10-06 18:33:46+02:00",
+      "value": 13000,
+      "currency": "HUF",
+      "order_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
+      "event_id": "Konzultacio:mb_0muwwfdl3j7j2dtbgvufrq8",
+      "ad_user_data": "DENIED",
+      "ad_personalization": "DENIED"
      }
     },
     "http_status": null,
     "platform_valasz": null,
     "kuldo": "kozvetlen",
     "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
+    "letrehozva": 1791304490,
+    "frissitve": 1791304490
    },
    {
-    "id": 12,
-    "esemeny_id": "Konzultacio:mb_0muwuk8x04a47mummxji596",
+    "id": 73,
+    "esemeny_id": "Konzultacio:mb_0muwwfdl3j7j2dtbgvufrq8",
     "esemeny_nev": "Konzultacio",
     "esemeny_tipus": "alap",
     "platform": "ga4",
-    "platform_nev": null,
+    "platform_nev": "konzultacio",
     "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
-    "allapot": "tiltva",
-    "indok": "nincs GA4_TESZT_MEASUREMENT_ID (teszt-property): a GA4-be csak teszt-property-be kuldunk",
-    "ertek": 0,
+    "source_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 13000,
     "penznem": "HUF",
     "hozzajarulas": {
      "allapot": {
@@ -463,26 +489,61 @@
       "megjegyzes": "valos jel (DENIED); a GA4 felé nincs hash-elt azonosito"
      }
     },
-    "kerelem": null,
-    "http_status": null,
-    "platform_valasz": null,
-    "kuldo": null,
+    "kerelem": {
+     "url": "https://www.google-analytics.com/mp/collect?measurement_id=G-M5MLRLNQBP",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "measurement_id": "G-M5MLRLNQBP"
+     },
+     "body": {
+      "client_id": "232800017.1791218057",
+      "timestamp_micros": "1791304426000000",
+      "consent": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "events": [
+       {
+        "name": "konzultacio",
+        "params": {
+         "session_id": "1791303257",
+         "engagement_time_msec": 1,
+         "value": 13000,
+         "currency": "HUF",
+         "esemeny_id": "Konzultacio:mb_0muwwfdl3j7j2dtbgvufrq8",
+         "uzletag": "fodrasz",
+         "ertek_forras": "konzultacio_tabla",
+         "salonic_ar": 0,
+         "source": "facebook",
+         "medium": "paid",
+         "campaign": "qa2_fodrasz_utolso"
+        }
+       }
+      ]
+     }
+    },
+    "http_status": 204,
+    "platform_valasz": "{\"ga4_validacio\":{\"vegpont\":\"/debug/mp/collect\",\"validationMessages\":[]},\"collect_status\":204,\"collect_valasz\":\"\"}",
+    "kuldo": "kozvetlen",
     "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
+    "letrehozva": 1791304490,
+    "frissitve": 1791304490
    },
    {
-    "id": 13,
-    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwuk8x04a47mummxji596",
+    "id": 77,
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwwfdl3j7j2dtbgvufrq8",
     "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
     "esemeny_tipus": "ernyo",
     "platform": "meta",
     "platform_nev": "Fodrasz_AkviziciosFoglalas",
     "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
-    "allapot": "nincs_hitelesites",
-    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
-    "ertek": 0,
+    "source_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 13000,
     "penznem": "HUF",
     "hozzajarulas": {
      "allapot": {
@@ -502,7 +563,7 @@
      }
     },
     "kerelem": {
-     "url": "https://graph.facebook.com/v21.0/28616665324611098/events",
+     "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
      "method": "POST",
      "fejlec_nevek": [
       "content-type"
@@ -510,14 +571,14 @@
      "cel": {
       "dataset": "28616665324611098",
       "nev": "MOSAIC ARNYEK meres-teszt",
-      "test_event_code": "TEST_MOSAIC_QA2"
+      "test_event_code": "TEST83939"
      },
      "body": {
       "data": [
        {
         "event_name": "Fodrasz_AkviziciosFoglalas",
-        "event_time": 1791301347,
-        "event_id": "Fodrasz_AkviziciosFoglalas:mb_0muwuk8x04a47mummxji596",
+        "event_time": 1791304426,
+        "event_id": "Fodrasz_AkviziciosFoglalas:mb_0muwwfdl3j7j2dtbgvufrq8",
         "action_source": "website",
         "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok",
         "user_data": {
@@ -530,555 +591,48 @@
          "external_id": [
           "8fdd2bcc592b5b820a428065a5da514301da48af03b26ec795749efa0c2d7558"
          ],
-         "client_ip_address": "160.79.106.xxx",
+         "client_ip_address": "160.79.106.133",
          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-         "fbc": "fb.1.1791301330000.IwAR_TESZT_FODRASZ_MUWUK4UJ_FBCLID",
-         "fbp": "fb.1.1791296325000.7495613386"
+         "fbc": "fb.1.1791304462000.IwAR_TESZT_FODRASZ_MUWWF9N9_FBCLID",
+         "fbp": "fb.1.1791299457000.2484503274"
         },
         "custom_data": {
-         "value": 0,
+         "value": 13000,
          "currency": "HUF",
-         "order_id": "mb_0muwuk8x04a47mummxji596",
+         "order_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
          "content_name": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
          "content_category": "fodrasz",
          "esemeny_tipus": "ernyo",
+         "ertek_forras": "konzultacio_tabla",
+         "salonic_ar": 0,
          "utm_source": "facebook",
          "utm_campaign": "qa2_fodrasz_utolso"
         }
        }
       ],
-      "test_event_code": "TEST_MOSAIC_QA2",
-      "partner_agent": "mosaic-qa2-arnyek"
-     }
-    },
-    "http_status": null,
-    "platform_valasz": null,
-    "kuldo": "kozvetlen",
-    "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
-   },
-   {
-    "id": 14,
-    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwuk8x04a47mummxji596",
-    "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
-    "esemeny_tipus": "ernyo",
-    "platform": "tiktok",
-    "platform_nev": null,
-    "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
-    "allapot": "kihagyva",
-    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
-    "ertek": 0,
-    "penznem": "HUF",
-    "hozzajarulas": {
-     "allapot": {
-      "ana": false,
-      "adv": false,
-      "fun": false,
-      "dontes": true
-     },
-     "szabaly": {
-      "kuldheto": true,
-      "felhasznaloi_adat": true,
-      "jel": {
-       "ad_user_data": "DENIED",
-       "ad_personalization": "DENIED"
-      },
-      "megjegyzes": "hozzajarulas nelkul is kuldjuk (SZ-38)"
-     }
-    },
-    "kerelem": null,
-    "http_status": null,
-    "platform_valasz": null,
-    "kuldo": null,
-    "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
-   },
-   {
-    "id": 15,
-    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwuk8x04a47mummxji596",
-    "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
-    "esemeny_tipus": "ernyo",
-    "platform": "google",
-    "platform_nev": null,
-    "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
-    "allapot": "kihagyva",
-    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
-    "ertek": 0,
-    "penznem": "HUF",
-    "hozzajarulas": {
-     "allapot": {
-      "ana": false,
-      "adv": false,
-      "fun": false,
-      "dontes": true
-     },
-     "szabaly": {
-      "kuldheto": true,
-      "felhasznaloi_adat": false,
-      "jel": {
-       "ad_user_data": "DENIED",
-       "ad_personalization": "DENIED"
-      },
-      "megjegyzes": "valos jel (DENIED), hash-elt azonosito nelkul"
-     }
-    },
-    "kerelem": null,
-    "http_status": null,
-    "platform_valasz": null,
-    "kuldo": null,
-    "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
-   },
-   {
-    "id": 16,
-    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwuk8x04a47mummxji596",
-    "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
-    "esemeny_tipus": "ernyo",
-    "platform": "ga4",
-    "platform_nev": null,
-    "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
-    "allapot": "kihagyva",
-    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
-    "ertek": 0,
-    "penznem": "HUF",
-    "hozzajarulas": {
-     "allapot": {
-      "ana": false,
-      "adv": false,
-      "fun": false,
-      "dontes": true
-     },
-     "szabaly": {
-      "kuldheto": true,
-      "felhasznaloi_adat": false,
-      "jel": {
-       "ad_user_data": "DENIED",
-       "ad_personalization": "DENIED"
-      },
-      "megjegyzes": "valos jel (DENIED); a GA4 felé nincs hash-elt azonosito"
-     }
-    },
-    "kerelem": null,
-    "http_status": null,
-    "platform_valasz": null,
-    "kuldo": null,
-    "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
-   }
-  ]
- },
- "szerveres_naplo_vegso": {
-  "ok": true,
-  "source_id": "mb_0muwuk8x04a47mummxji596",
-  "erkezes": {
-   "source_id": "mb_0muwuk8x04a47mummxji596",
-   "uzletag": "fodrasz",
-   "tipus": "foglalas",
-   "attr": {
-    "google": {
-     "gclid": {
-      "ertek": "Cj0KCQjw_TESZT_FODRASZ_MUWUK4UJ_GCLID",
-      "ts": 1791301328
-     },
-     "wbraid": {
-      "ertek": "CoMKCQ_TESZT_FODRASZ_MUWUK4UJ_WBRAID",
-      "ts": 1791301330
-     }
-    },
-    "meta": {
-     "fbc": "fb.1.1791301330000.IwAR_TESZT_FODRASZ_MUWUK4UJ_FBCLID",
-     "fbclid": "IwAR_TESZT_FODRASZ_MUWUK4UJ_FBCLID",
-     "ts": 1791301330
-    },
-    "tiktok": {
-     "ttclid": {
-      "ertek": "E.C.P.TESZT_FODRASZ_MUWUK4UJ_TTCLID",
-      "ts": 1791301330
-     }
-    },
-    "utm_elso": {
-     "source": "google",
-     "medium": "cpc",
-     "campaign": "qa2_fodrasz_elso",
-     "content": "hirdetes_a",
-     "ts": 1791301328
-    },
-    "utm_utolso": {
-     "source": "facebook",
-     "medium": "paid",
-     "campaign": "qa2_fodrasz_utolso",
-     "ts": 1791301330
-    },
-    "fbp": "fb.1.1791296325000.7495613386",
-    "ttp": "TESZT_FODRASZ_MUWUK4UJ_ttp_5vxm5r7y6u",
-    "ga4": {
-     "client_id": "460485025.1791214925",
-     "session_id": "1791300125",
-     "measurement_id": "G-H4206SQ0Q7"
-    }
-   },
-   "hozz": {
-    "ana": false,
-    "adv": false,
-    "fun": false,
-    "dontes": true
-   },
-   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-   "ip": "160.79.106.xxx",
-   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok",
-   "bongeszo": {
-    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok",
-    "first_booking": true,
-    "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
-    "kategoria": "",
-    "ar": 0,
-    "g": "g:3385039",
-    "munkatars": "",
-    "bookingUrl": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwuk8x04a47mummxji596"
-   },
-   "ido": 1791301351,
-   "frissitve": 1791301351
-  },
-  "kuldesek": [
-   {
-    "id": 9,
-    "esemeny_id": "Konzultacio:mb_0muwuk8x04a47mummxji596",
-    "esemeny_nev": "Konzultacio",
-    "esemeny_tipus": "alap",
-    "platform": "meta",
-    "platform_nev": "Fodrasz_Konzultacio",
-    "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
-    "allapot": "elkuldve",
-    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
-    "ertek": 0,
-    "penznem": "HUF",
-    "hozzajarulas": {
-     "allapot": {
-      "ana": false,
-      "adv": false,
-      "fun": false,
-      "dontes": true
-     },
-     "szabaly": {
-      "kuldheto": true,
-      "felhasznaloi_adat": true,
-      "jel": {
-       "ad_user_data": "DENIED",
-       "ad_personalization": "DENIED"
-      },
-      "megjegyzes": "hozzajarulas nelkul is kuldjuk (SZ-38)"
-     }
-    },
-    "kerelem": {
-     "url": "https://graph.facebook.com/v21.0/28616665324611098/events",
-     "method": "POST",
-     "fejlec_nevek": [
-      "content-type"
-     ],
-     "cel": {
-      "dataset": "28616665324611098",
-      "nev": "MOSAIC ARNYEK meres-teszt",
-      "test_event_code": "TEST_MOSAIC_QA2"
-     },
-     "body": {
-      "data": [
-       {
-        "event_name": "Fodrasz_Konzultacio",
-        "event_time": 1791301347,
-        "event_id": "Konzultacio:mb_0muwuk8x04a47mummxji596",
-        "action_source": "website",
-        "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok",
-        "user_data": {
-         "em": [
-          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
-         ],
-         "ph": [
-          "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
-         ],
-         "external_id": [
-          "8fdd2bcc592b5b820a428065a5da514301da48af03b26ec795749efa0c2d7558"
-         ],
-         "client_ip_address": "160.79.106.xxx",
-         "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-         "fbc": "fb.1.1791301330000.IwAR_TESZT_FODRASZ_MUWUK4UJ_FBCLID",
-         "fbp": "fb.1.1791296325000.7495613386"
-        },
-        "custom_data": {
-         "value": 0,
-         "currency": "HUF",
-         "order_id": "mb_0muwuk8x04a47mummxji596",
-         "content_name": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
-         "content_category": "fodrasz",
-         "esemeny_tipus": "alap",
-         "utm_source": "facebook",
-         "utm_campaign": "qa2_fodrasz_utolso"
-        }
-       }
-      ],
-      "test_event_code": "TEST_MOSAIC_QA2",
+      "test_event_code": "TEST83939",
       "partner_agent": "mosaic-qa2-arnyek"
      }
     },
     "http_status": 200,
-    "platform_valasz": "{\"successful\":true,\"data\":{\"events_received\":4,\"fbtrace_id\":\"A1g7gUPBo4pTL-2A_1-G2xP\",\"messages\":[]}}",
-    "kuldo": "composio:METAADS_SEND_CONVERSION_EVENTS",
-    "probalkozas": 2,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301490
-   },
-   {
-    "id": 10,
-    "esemeny_id": "Konzultacio:mb_0muwuk8x04a47mummxji596",
-    "esemeny_nev": "Konzultacio",
-    "esemeny_tipus": "alap",
-    "platform": "tiktok",
-    "platform_nev": null,
-    "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
-    "allapot": "kihagyva",
-    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
-    "ertek": 0,
-    "penznem": "HUF",
-    "hozzajarulas": {
-     "allapot": {
-      "ana": false,
-      "adv": false,
-      "fun": false,
-      "dontes": true
-     },
-     "szabaly": {
-      "kuldheto": true,
-      "felhasznaloi_adat": true,
-      "jel": {
-       "ad_user_data": "DENIED",
-       "ad_personalization": "DENIED"
-      },
-      "megjegyzes": "hozzajarulas nelkul is kuldjuk (SZ-38)"
-     }
-    },
-    "kerelem": null,
-    "http_status": null,
-    "platform_valasz": null,
-    "kuldo": null,
-    "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
-   },
-   {
-    "id": 11,
-    "esemeny_id": "Konzultacio:mb_0muwuk8x04a47mummxji596",
-    "esemeny_nev": "Konzultacio",
-    "esemeny_tipus": "alap",
-    "platform": "google",
-    "platform_nev": "ARNYEK-7825200898",
-    "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
-    "allapot": "nincs_hitelesites",
-    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
-    "ertek": 0,
-    "penznem": "HUF",
-    "hozzajarulas": {
-     "allapot": {
-      "ana": false,
-      "adv": false,
-      "fun": false,
-      "dontes": true
-     },
-     "szabaly": {
-      "kuldheto": true,
-      "felhasznaloi_adat": false,
-      "jel": {
-       "ad_user_data": "DENIED",
-       "ad_personalization": "DENIED"
-      },
-      "megjegyzes": "valos jel (DENIED), hash-elt azonosito nelkul"
-     }
-    },
-    "kerelem": {
-     "url": "https://googleads.googleapis.com/v21/customers/6088874770:uploadClickConversions",
-     "method": "POST",
-     "fejlec_nevek": [
-      "content-type",
-      "authorization",
-      "developer-token",
-      "login-customer-id"
-     ],
-     "cel": {
-      "customer_id": "6088874770",
-      "conversion_action": "7825200898",
-      "validate_only": true
-     },
-     "body": {
-      "conversions": [
-       {
-        "conversionAction": "customers/6088874770/conversionActions/7825200898",
-        "conversionDateTime": "2026-10-06 17:42:27+02:00",
-        "conversionValue": 0,
-        "currencyCode": "HUF",
-        "orderId": "mb_0muwuk8x04a47mummxji596",
-        "wbraid": "CoMKCQ_TESZT_FODRASZ_MUWUK4UJ_WBRAID",
-        "consent": {
-         "adUserData": "DENIED",
-         "adPersonalization": "DENIED"
-        }
-       }
-      ],
-      "partialFailure": true,
-      "validateOnly": true
-     }
-    },
-    "http_status": null,
-    "platform_valasz": null,
+    "platform_valasz": "{\"events_received\":1,\"messages\":[],\"fbtrace_id\":\"AvPypZwhgWCiIdKHIurBE9r\"}",
     "kuldo": "kozvetlen",
     "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
+    "letrehozva": 1791304490,
+    "frissitve": 1791304490
    },
    {
-    "id": 12,
-    "esemeny_id": "Konzultacio:mb_0muwuk8x04a47mummxji596",
-    "esemeny_nev": "Konzultacio",
-    "esemeny_tipus": "alap",
-    "platform": "ga4",
-    "platform_nev": null,
-    "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
-    "allapot": "tiltva",
-    "indok": "nincs GA4_TESZT_MEASUREMENT_ID (teszt-property): a GA4-be csak teszt-property-be kuldunk",
-    "ertek": 0,
-    "penznem": "HUF",
-    "hozzajarulas": {
-     "allapot": {
-      "ana": false,
-      "adv": false,
-      "fun": false,
-      "dontes": true
-     },
-     "szabaly": {
-      "kuldheto": true,
-      "felhasznaloi_adat": false,
-      "jel": {
-       "ad_user_data": "DENIED",
-       "ad_personalization": "DENIED"
-      },
-      "megjegyzes": "valos jel (DENIED); a GA4 felé nincs hash-elt azonosito"
-     }
-    },
-    "kerelem": null,
-    "http_status": null,
-    "platform_valasz": null,
-    "kuldo": null,
-    "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
-   },
-   {
-    "id": 13,
-    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwuk8x04a47mummxji596",
-    "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
-    "esemeny_tipus": "ernyo",
-    "platform": "meta",
-    "platform_nev": "Fodrasz_AkviziciosFoglalas",
-    "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
-    "allapot": "elkuldve",
-    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
-    "ertek": 0,
-    "penznem": "HUF",
-    "hozzajarulas": {
-     "allapot": {
-      "ana": false,
-      "adv": false,
-      "fun": false,
-      "dontes": true
-     },
-     "szabaly": {
-      "kuldheto": true,
-      "felhasznaloi_adat": true,
-      "jel": {
-       "ad_user_data": "DENIED",
-       "ad_personalization": "DENIED"
-      },
-      "megjegyzes": "hozzajarulas nelkul is kuldjuk (SZ-38)"
-     }
-    },
-    "kerelem": {
-     "url": "https://graph.facebook.com/v21.0/28616665324611098/events",
-     "method": "POST",
-     "fejlec_nevek": [
-      "content-type"
-     ],
-     "cel": {
-      "dataset": "28616665324611098",
-      "nev": "MOSAIC ARNYEK meres-teszt",
-      "test_event_code": "TEST_MOSAIC_QA2"
-     },
-     "body": {
-      "data": [
-       {
-        "event_name": "Fodrasz_AkviziciosFoglalas",
-        "event_time": 1791301347,
-        "event_id": "Fodrasz_AkviziciosFoglalas:mb_0muwuk8x04a47mummxji596",
-        "action_source": "website",
-        "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok",
-        "user_data": {
-         "em": [
-          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
-         ],
-         "ph": [
-          "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
-         ],
-         "external_id": [
-          "8fdd2bcc592b5b820a428065a5da514301da48af03b26ec795749efa0c2d7558"
-         ],
-         "client_ip_address": "160.79.106.xxx",
-         "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-         "fbc": "fb.1.1791301330000.IwAR_TESZT_FODRASZ_MUWUK4UJ_FBCLID",
-         "fbp": "fb.1.1791296325000.7495613386"
-        },
-        "custom_data": {
-         "value": 0,
-         "currency": "HUF",
-         "order_id": "mb_0muwuk8x04a47mummxji596",
-         "content_name": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
-         "content_category": "fodrasz",
-         "esemeny_tipus": "ernyo",
-         "utm_source": "facebook",
-         "utm_campaign": "qa2_fodrasz_utolso"
-        }
-       }
-      ],
-      "test_event_code": "TEST_MOSAIC_QA2",
-      "partner_agent": "mosaic-qa2-arnyek"
-     }
-    },
-    "http_status": 200,
-    "platform_valasz": "{\"successful\":true,\"data\":{\"events_received\":4,\"fbtrace_id\":\"A1g7gUPBo4pTL-2A_1-G2xP\",\"messages\":[]}}",
-    "kuldo": "composio:METAADS_SEND_CONVERSION_EVENTS",
-    "probalkozas": 2,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301490
-   },
-   {
-    "id": 14,
-    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwuk8x04a47mummxji596",
+    "id": 82,
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwwfdl3j7j2dtbgvufrq8",
     "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
     "esemeny_tipus": "ernyo",
     "platform": "tiktok",
     "platform_nev": null,
     "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
+    "source_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
     "allapot": "kihagyva",
     "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
-    "ertek": 0,
+    "ertek": 13000,
     "penznem": "HUF",
     "hozzajarulas": {
      "allapot": {
@@ -1102,21 +656,21 @@
     "platform_valasz": null,
     "kuldo": null,
     "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
+    "letrehozva": 1791304490,
+    "frissitve": 1791304490
    },
    {
-    "id": 15,
-    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwuk8x04a47mummxji596",
+    "id": 86,
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwwfdl3j7j2dtbgvufrq8",
     "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
     "esemeny_tipus": "ernyo",
     "platform": "google",
     "platform_nev": null,
     "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
+    "source_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
     "allapot": "kihagyva",
     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
-    "ertek": 0,
+    "ertek": 13000,
     "penznem": "HUF",
     "hozzajarulas": {
      "allapot": {
@@ -1140,21 +694,21 @@
     "platform_valasz": null,
     "kuldo": null,
     "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
+    "letrehozva": 1791304490,
+    "frissitve": 1791304490
    },
    {
-    "id": 16,
-    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwuk8x04a47mummxji596",
+    "id": 90,
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwwfdl3j7j2dtbgvufrq8",
     "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
     "esemeny_tipus": "ernyo",
     "platform": "ga4",
     "platform_nev": null,
     "uzletag": "fodrasz",
-    "source_id": "mb_0muwuk8x04a47mummxji596",
+    "source_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
     "allapot": "kihagyva",
     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
-    "ertek": 0,
+    "ertek": 13000,
     "penznem": "HUF",
     "hozzajarulas": {
      "allapot": {
@@ -1178,20 +732,9 @@
     "platform_valasz": null,
     "kuldo": null,
     "probalkozas": 1,
-    "letrehozva": 1791301444,
-    "frissitve": 1791301444
+    "letrehozva": 1791304490,
+    "frissitve": 1791304490
    }
   ]
- },
- "kulso_szallito_nyers_valasz": {
-  "megjegyzes": "Meta-tesztkuldes a Composio METAADS_SEND_CONVERSION_EVENTS eszkozen at (mosaic-meta fiok), az ARNYEK dataset-re (28616665324611098), test_event_code-dal (SZINTETIKUS: TEST_MOSAIC_QA2). A fodrasz- es a szor-eset 4 esemenye egy hivasban ment (a szerveres naplo sorai: 9, 13 = fodrasz; 17, 21 = szor); custom_data csak value / currency / order_id; IP nelkul (a naplozott IP maszkolt).",
-  "platform_valasz_nyers": {
-   "successful": true,
-   "data": {
-    "events_received": 4,
-    "fbtrace_id": "A1g7gUPBo4pTL-2A_1-G2xP",
-    "messages": []
-   }
-  }
  }
 }

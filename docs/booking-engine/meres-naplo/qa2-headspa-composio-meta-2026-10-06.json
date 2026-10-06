@@ -1,5 +1,0 @@
-{
-  "megjegyzes": "A Meta-tesztkuldes a Composio METAADS_SEND_CONVERSION_EVENTS eszkozen at ment (mosaic-meta fiok), az ARNYEK dataset-re (28616665324611098), test_event_code-dal. A szerveres naplo 'nincs_hitelesites' sorainak kerelmebol (hash-ek valtozatlanul: em / ph / external_id, fbc, fbp, user agent, ertek, order_id); az eszkoz custom_data-ja csak value / currency / order_id mezoket fogad (content_name, utm_*, esemeny_tipus kimaradt), a naplozott IP maszkolt, ezert IP nelkul ment. A tesztkod SZINTETIKUS (TEST_MOSAIC_QA2): az Esemenykezelo valodi teszt-kodjat a tulajdonos oldalan lehet kiolvasni.",
-  "kuldott_esemenyek": ["HeadSpa_FoglalasElso / FoglalasElso:mb_0muwuh6ca29y120gpx6aziw", "Schedule / Schedule:mb_0muwuh6ca29y120gpx6aziw"],
-  "platform_valasz_nyers": {"successful": true, "data": {"events_received": 2, "fbtrace_id": "AO5LU2Jm9HCTiqVQre9sD26", "messages": []}}
-}
