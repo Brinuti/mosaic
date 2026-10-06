@@ -1,0 +1,48 @@
+QA-1: a foglalo sajat booking_id-ja - mit fogad el a Salonic adatlap-cime (2026-10-06, csak olvasas + szaraz futas; valodi foglalas NEM jott letre)
+=====================================================================================================================================
+
+Modszer: curl (bongeszo-szeru fejlecekkel, suti-tarolóval) a Salonic /guestData/ cimere; mindegyik valtozat KULON, kb. 2-4 het mulva levo idopontra
+(a Salonic az adatlap megnyitasakor ~5 percre "tartja" az idopontot, ugyanarra masodjara mar a fooldalra dob - igy a valtozatok nem hasznalhattak ugyanazt az idopontot).
+Foglalas nem jott letre, adat nem keluldott be. Minden keres a szalon naptaraban egy-egy tavoli idopontot ~5 percre foglalt.
+
+1) EMPLOYEEID=-1 (barmelyik szakember), ismeretlen parameter -> a Salonic a kanonikus cimre iranyit, az ismeretlent ELDOBJA
+   fodraszat, ingyenes konzultacio (232804), uj idopontonkent:
+   +mosaic_booking_id=MB-TEST123  -> .../guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=...&back=      (parameter nincs)
+   +comment=MB-TEST123            -> ugyanaz, parameter nincs;  +utm_source=x  -> ugyanaz;  a textarea (GuestDataForm_guestComment) ures marad
+
+2) EMPLOYEEID=-1 + back=<ertek> -> a back MEGMARAD
+   .../guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1793712600&back=MBX9-4
+   a MBX9-4 3 helyen: a bejelentkezes-link back-parametereben, az urlap action-jeben, a $.ajax('/guestData/?...&back=MBX9-4') foglalas-kuldo cimben
+
+3) KANONIKUS CIM (anyone=true&employeeId=<konkret>&...&back=) + ismeretlen parameter -> nem iranyit at, a parameter megmarad
+   &mosaic_booking_id=MBX9-1 / &comment=MBX9-2 / &GuestDataForm[guestComment]=MBX9-3: mind a cimben, az urlap action-jeben, az AJAX-cimben; a textarea ures marad
+   (az urlap mezoi URL-bol nem tolthetok elo)
+
+4) A "back" hordozo mind a 4 vizsgalt Salonic-fiokon, "barmelyik" (-1) es konkret szakembernel is (modszer: 1 idopont / eset)
+   headspa (302342) -1  -> ...?anyone=true&employeeId=29415&...&back=MBX9-headspa-0 | action: igen | AJAX: igen
+   headspa            24989 -> ...?placeId=10427&serviceId=302342&employeeId=24989&startDate=...&back=MBX9-headspa-1 | action: igen | AJAX: igen
+   oxygen  (466147) -1  -> igen / igen / igen;     konkret (31988): igen / igen / igen
+   laser   (476477) -1  -> igen / igen / igen;     konkret (32417): igen / igen / igen
+   hair    (232804) -1  -> igen / igen / igen;     konkret (26064): igen / igen / igen
+   (konkret szakembernel a Salonic nem irányít át, a cimet bajra megtartja, a parameterek sorrendjevel egyutt)
+
+5) A Salonic adatlap sajat JS-e (handleSuccess): a siker utan window.location.assign(response.redirect.url); a dataLayer-be
+   transaction_id = response.booking.id (a Salonic foglalas-UUID-ja), value = response.booking.priceTotal. A fiok sajat GTM-je (GTM-PST2HB22) az adatlapon fut.
+   Hogy a redirect.url / bookingUrl tartalmazza-e a back-et: NEM merheto foglalas nelkul.
+
+6) SZARAZ FUTAS az ELONEZETEN (https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev, node tools/meres-proba/booking-id-valodi.mjs --szaraz 1), kimeno meres tiltva
+   [  1194ms] a motor megnyitasa elott a kontextus  {"kontextus":null}
+   [  2964ms] reteg megnyilt (a folyamat eleje)     {"azonosito":"mb_0muwowb7c2grmyxin1a864a"}
+   [  5458ms] idopont valasztva (az utolso szabad nap utolso idopontja)
+   [  9981ms] Salonic-adatlap betoltve
+              src:      https://mosaic-hair.salonic.hu/guestData/?placeId=10823&serviceId=232804&employeeId=-1&startDate=1792512000&back=mb_0muwowb7c2grmyxin1a864a
+              betoltott: https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwowb7c2grmyxin1a864a
+   [ 10021ms] az adatlap urlapjanak action-je:  /guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwowb7c2grmyxin1a864a  -> tartalmazza az azonositot: igen
+   Tiltott kimeno meresi kerelmek (a Salonic-adatlap sajat GTM-je es a lap sajat mereskodese; mind elfogva, semmi nem jutott ki): google-ads 7, stape 1, tiktok 8, meta-sdk 1. JS-hiba: nincs.
+
+7) VALODI FOGLALAS (a redirect / e-mail visszhangjanak merese): a futtatas (booking-id-valodi.mjs, utana lemond.mjs) ebben a munkamenetben az engedelyezo
+   szuro altal MEGTAGADVA (valos tranzakcio a Salonicban) - NEM futott le, a foglalas letrejotte, a visszhang es az e-mail tartalma nem mert.
+
+Regresszio: node --test tools/test-*.mjs -> 171 teszt, 170 ok, 0 hiba, 1 kihagyott (a LIVE=1-es elo proba).
+reteg-proba.mjs --overlay dist: 311 ellenorzes; a valtoztatassal ket futasban 1, illetve 2 "sebesseg" hiba (naptar-vaz < 1,5 mp: 1878 / 1888 ms; az elso szabad nap < 4 mp)
+- a valtoztatas NELKULI alapallapoton (a HEAD, kulon worktree-ben epitett dist) UGYANEZ a ket hiba van (1863 / 1874 ms, 311 ellenorzesbol 2 hiba): a sandbox halozati sebessege, nem a valtoztatas.
