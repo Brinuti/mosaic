@@ -120,6 +120,32 @@ for (const [business, { flow, services, lista }] of Object.entries(ADAT)) {
   } else console.log('INFO: nincs olyan hair konzultacio, amit konkret munkatars vegez - a konzultacios eset kimarad');
 }
 
+// --- 1c) a link PONTOSAN igy, ahogy a vendeg megnyitja: a /foglalo-motor oldal kozvetlenul (nem a reteg a mas oldalon), a megadott cimen ------------------------------
+for (const [business, { flow, services, lista }] of Object.entries(ADAT)) {
+  for (const x of lista) {
+    const kulcs = staffLinkKey(x.label, lista); const nev = staffDisplayName(x.label);
+    const svc = services.find((s) => s.durationMin && s.bookingType !== 'consultation' && (s.staffIds || []).map(String).includes(String(x.id)));
+    // a) csak uzletag + munkatars (a legegyszerubb link): a szakember-valaszto nem jelenhet meg
+    let u = await ujLap();
+    await u.page.goto(BAZIS + '/foglalo-motor?business=' + business + '&staff=' + kulcs, { waitUntil: 'domcontentloaded' });
+    const c = await u.page.locator('.be-title').first().textContent({ timeout: 40000 }).then((s) => s.trim()).catch(() => null);
+    ok(`LINK /foglalo-motor?business=${business}&staff=${kulcs}: a szakember-valaszto nem jelenik meg (cim: ${c})`, !!c && c !== flow.copy.staffListTitle, '');
+    await u.ctx.close();
+    // b) uzletag + munkatars + szolgaltatas: egyenesen a naptar, a munkatars neve a fejlecben, az adatlap az o azonositojaval
+    if (!svc) continue;
+    u = await ujLap();
+    await u.page.goto(BAZIS + '/foglalo-motor?business=' + business + '&staff=' + kulcs + '&service=' + svc.serviceId, { waitUntil: 'domcontentloaded' });
+    await u.page.locator('.be-nnap.szabad').first().waitFor({ timeout: 40000 }).catch(() => {});
+    const fej = ((await u.page.locator('.be-svc small').first().textContent({ timeout: 3000 }).catch(() => '')) || '').trim();
+    ok(`LINK /foglalo-motor?business=${business}&staff=${kulcs}&service=...: a naptar a(z) ${nev} neveivel (${fej})`, fej.includes(nev), '');
+    await u.page.locator('.be-idogomb').first().click().catch(() => {});
+    await u.page.waitForTimeout(2500);
+    const g = u.naplo.guest.at(-1) || {};
+    ok(`LINK ${business} / ${nev}: a Salonic adatlap az o azonositojaval (employeeId=${x.id}) nyilik`, String(g.employeeId) === String(x.id), JSON.stringify(g).slice(0, 110));
+    await u.ctx.close();
+  }
+}
+
 // --- 2) ismeretlen kulcs: a valaszto jelenik meg, megjegyzessel; a foglalas nem akad el ----------------------------------------------------------------------
 for (const [business, { flow }] of Object.entries(ADAT)) {
   const u = await ujLap();
