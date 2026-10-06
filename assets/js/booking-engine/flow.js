@@ -112,6 +112,8 @@ export const staffDiscountPercent = (label) => { const m = /(\d{1,2})\s*%\s*kedv
 const foldText = (t) => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 /** A szakember neve a kedvezmeny-cimke nelkul ("Noel - 20% kedvezmeny!" -> "Noel"). */
 export const staffDisplayName = (label) => String(label || '').replace(/\s*-\s*\d{1,2}\s*%\s*kedvezm.*$/i, '').trim();
+/** A rovid nev (a keresztnev: a magyar nevsorrendben az utolso szo), pl. "Bozsoki - Harangozo Tundi" -> "Tundi"; a fejlecben, ha a teljes nev nem fer el. */
+export const staffShortName = (label) => { const n = staffDisplayName(label); const t = n.split(/\s+/).filter((x) => /[\p{L}\p{N}]/u.test(x)); return t.length ? t[t.length - 1] : n; };
 const nameTokens = (label) => foldText(staffDisplayName(label)).split(/[^a-z0-9]+/).filter(Boolean);
 /** Az ervenyes ?staff= ertek (betu, szam, szokoz, kotojel, alahuzas, pont; legfeljebb 60 karakter), kulonben null. */
 export const cleanStaffKey = (v) => (v && /^[\p{L}\p{N}_ .-]{1,60}$/u.test(String(v).trim()) ? String(v).trim() : null);

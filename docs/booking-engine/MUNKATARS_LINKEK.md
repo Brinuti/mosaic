@@ -19,12 +19,14 @@ Bármelyik foglaló-linkhez hozzáadható a `staff=<kulcs>`:
 - **Ha a munkatárs nem található** (elírt kulcs, vagy a következő 14 napban nincs szabad ideje): a szakember-választó jelenik meg, egy rövid megjegyzéssel. Hibaüzenet nincs, a foglalás nem akad el.
 - **Új munkatárs:** nem kell kódot módosítani. Amint a Salonic-ban foglalható (van szabad időpontja), a neve alapján működik a kulcsa; az alábbi lista a `node tools/munkatars-linkek.mjs --md docs/booking-engine/MUNKATARS_LINKEK.md` paranccsal frissíthető (csak olvas, nem foglal). Fotó nélkül monogram jelenik meg a választóban; fotót a `flows/hair.js` / `flows/oxygen.js` `staffPhotos` listája ad.
 - **Egy kezelős üzletágak:** a lézeres szőrtelenítésnél (Zsófi), a Head Spa-nál (a „munkatársak" kezelőhelyek, a vendég nem választ) és a sminktetoválásnál (Melitta, külön foglaló) nincs szakember-választó, ezért a munkatárs-link ugyanaz, mint az üzletági link (`?staff=` megadható, de nem változtat semmit). Ha később ott is több szakember lesz, a választó bekapcsolása után a `?staff=` automatikusan működik.
+- **A fejléc cime (minden foglaló-nézetben):** egy sorban az üzletág és – ha a vendég (linkből vagy a választóból) munkatársat választott – a keresztneve: „Időpontfoglalás · Fodrászat · Noel". A telefon és az X gomb mellett mobilon is elfér: ami nem fér el, azt a motor lépésenként elhagyja (előbb az „Időpontfoglalás" szót, aztán kisebb betű), a hosszú teljes nevet („Bozsoki - Harangozó Tündi") a keresztnév („Tündi") váltja; a teljes név a kezelés-sorban látszik. A kezdőképernyőn (még nincs üzletág) csak „Időpontfoglalás" áll. Munkatársat csak ott írunk ki, ahol a vendég választ (fodrászat, oxigénterápia).
 - **Mérés:** a szakember a linkből választódik: `booking_filter_used` (`filter: staff_link`) a régi mérési szerződésben; a GA4-be menő lépés-események (#88) nem változtak.
 
 ## Tesztek
 
 - `node --test tools/test-booking-flow.mjs tools/test-booking-layer.mjs` (a kulcs-keresés, az ajánlott kulcs, a kontextus-átadás),
 - `node tools/meres-proba/munkatars-proba.mjs` – böngészőben, a Salonic jelenlegi adataival: minden munkatárs-linkre a választó kimarad, a fejlécben a munkatárs neve látszik, a naptár az ő időpontjait mutatja; ismeretlen kulcsra a választó jelenik meg.
+- `node tools/meres-proba/fejlec-proba.mjs [--overlay dist] [--kep mappa]` – a fejléc címe 320–1280 px között (telefon, tablet, asztali), minden üzletágra és minden munkatársra: egy sor, nem vágódik le, nem ér a telefon / X gombhoz; a `--kep` mappába képeket ment szemrevételezéshez (386 ellenőrzés, 0 hiba).
 
 ## A munkatársak linkjei (a Salonic aktuális adataiból)
 
