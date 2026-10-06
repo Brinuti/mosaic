@@ -6,7 +6,7 @@ import test, { before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { mockStripeInditas } from './mock-stripe.mjs';
-import { ajandekKezel, koszonoRogzit, kuponKod, kiallitToken, kartyaToken, rendelesToken, fotoToken, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
+import { ajandekKezel, koszonoRogzit, kuponKod, kodEgysegesit, kiallitToken, kartyaToken, rendelesToken, fotoToken, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
 import vm from 'node:vm';
 import fs from 'node:fs';
 import { MASOL_JS, NYOMTAT_JS, SALONIC_KITOLTO_JS } from '../../netlify/lib/ajandek-levelek.js';
@@ -18,7 +18,7 @@ const SZALON = ADAT.SZALON;
 const BAZIS = 'https://teszt.mosaicheadspa.hu';
 const WHSEC = 'whsec_teszt_titok';
 const TITOK = 'teszt-titok-teszt-titok-teszt-titok-0123456789';
-const KOD_RE = /^AK-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/;
+const KOD_RE = /^AK[0-9A-HJKMNP-TV-Z]{8}$/; // kotojel nelkul: a Salonic nem fogad el kotojeles kuponkodot
 // a kereskorlat IP-nkent szamol: alapbol minden hivas sajat (veletlen) IP-rol jon
 const veletlenIp = () => `10.${crypto.randomInt(256)}.${crypto.randomInt(256)}.${crypto.randomInt(256)}`;
 
@@ -96,7 +96,7 @@ function vartKod(titok, piId) {
   const abc = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
   let s = '';
   for (let i = 7; i >= 0; i--) s += abc[Number((n >> BigInt(5 * i)) & 31n)];
-  return `AK-${s.slice(0, 4)}-${s.slice(4)}`;
+  return `AK${s}`;
 }
 
 // --- kozos adat -------------------------------------------------------------------------------------------
@@ -956,7 +956,7 @@ describe('/rendeles', () => {
     assert.equal(r.adat.kartya.allapot, 'keszul');
     assert.equal(r.adat.kartya.kod, undefined, 'a kod csak kesz kartyanal');
     assert.equal(r.adat.kartya.url, undefined);
-    assert.doesNotMatch(r.body, /AK-[0-9A-Z]{4}-[0-9A-Z]{4}/);
+    assert.doesNotMatch(r.body, /\bAK[0-9A-HJKMNP-TV-Z]{8}\b/);
   });
 
   test('ervenyes_ig: a vasarlas BUDAPESTI napjatol 6 honap (honap vegere igazitva)', async () => {
@@ -1304,7 +1304,7 @@ describe('/kartya', () => {
     assert.equal(r.headers['cache-control'], 'no-store');
     assert.match(r.body, /Készítjük az ajándékkártyádat…/);
     assert.match(r.body, /<meta http-equiv="refresh" content="20">/);
-    assert.doesNotMatch(r.body, /AK-[0-9A-Z]{4}-[0-9A-Z]{4}/);
+    assert.doesNotMatch(r.body, /\bAK[0-9A-HJKMNP-TV-Z]{8}\b/);
     r = await hiv('GET', 'kartya', { query: { pi: a.pi, cs: a.pi + '_secret_x' } });
     assert.equal(r.status, 403);
     assert.match(r.headers['content-type'], /text\/html/);
@@ -1317,7 +1317,7 @@ describe('/kartya', () => {
     let r = await hiv('GET', 'kartya', { query: { pi: a.pi, t } });
     assert.equal(r.status, 409);
     assert.match(r.body, /Készítjük az ajándékkártyádat…/);
-    assert.doesNotMatch(r.body, /AK-[0-9A-Z]{4}-[0-9A-Z]{4}/);
+    assert.doesNotMatch(r.body, /\bAK[0-9A-HJKMNP-TV-Z]{8}\b/);
     // rossz token, masik PI tokenje, a kiallito token, nagybetus hamis, hianyzo pi
     const masik = await fizetettRendeles();
     for (const query of [
@@ -1330,7 +1330,7 @@ describe('/kartya', () => {
     ]) {
       r = await hiv('GET', 'kartya', { query });
       assert.equal(r.status, 403, JSON.stringify(query));
-      assert.doesNotMatch(r.body, /AK-[0-9A-Z]{4}-[0-9A-Z]{4}/);
+      assert.doesNotMatch(r.body, /\bAK[0-9A-HJKMNP-TV-Z]{8}\b/);
     }
     assert.equal((await kiallitPost(a.pi, await kiallitToken(ENV, a.pi))).status, 200);
     r = await hiv('GET', 'kartya', { query: { pi: a.pi, t } });
@@ -1513,7 +1513,7 @@ describe('/atutalas', () => {
     // a kartya-oldal addig nem "kesz"
     let g = await hiv('GET', 'kartya', { query: { pi: pi.id, t: await kartyaToken(ENV, pi.id) } });
     assert.equal(g.status, 409);
-    assert.doesNotMatch(g.body, /AK-/);
+    assert.doesNotMatch(g.body, /\bAK[0-9A-HJKMNP-TV-Z]{8}\b/);
     // GET: megerosito oldal, ures kod-mezo, a vevo/megajandekozott adataival es a Salonic-linkkel; nem modosit, nem kuld
     const meta0 = JSON.stringify(mock.allapot.pi(pi.id).metadata);
     g = await hiv('GET', 'kiallit', { query: { pi: pi.id, t } });
@@ -1523,7 +1523,7 @@ describe('/atutalas', () => {
     assert.ok(g.body.includes('Teszt Vevő') && g.body.includes('Anna') && g.body.includes(TEL));
     assert.ok(g.body.includes(r.adat.rendeles_ref));
     assert.ok(g.body.includes('https://app.salonic.hu/promotion/giftCard/sale/4081'));
-    assert.ok(!g.body.includes('AK-'), 'utalasnal nincs javasolt AK- kod');
+    assert.doesNotMatch(g.body, /\bAK[0-9A-HJKMNP-TV-Z]{8}\b/, 'utalasnal nincs javasolt AK kod');
     // Salonic: egy kattintasos kitolto (a link hash-e), nincs soronkenti masolas, az uzenet nem latszik
     assert.ok(g.body.includes('#mosaic='));
     assert.ok(!g.body.includes('data-masol'));
@@ -1557,7 +1557,7 @@ describe('/atutalas', () => {
     const l = levelek[0];
     assert.equal(l.cimzett, 'vevo@example.com');
     assert.ok(l.html.includes('GYOR1865'));
-    assert.ok(!l.html.includes('AK-'));
+    assert.doesNotMatch(l.html, /\bAK[0-9A-HJKMNP-TV-Z]{8}\b/);
     assert.ok(l.html.includes(`${BAZIS}/api/ajandek/kartya?pi=${pi.id}&amp;t=${await kartyaToken(ENV, pi.id)}`));
     assert.ok(l.html.includes('2027. április 5-ig'), 'ervenyesseg a jovahagyas napjatol 6 honap');
     // masodszor nem megy ujabb level, a kod nem valtozik
@@ -2085,14 +2085,14 @@ describe('visszaterites / vita (chargeback)', () => {
     assert.equal(r.adat.visszavonva, true);
     assert.deepEqual(Object.keys(r.adat.kartya).sort(), ['allapot', 'ervenyes_ig']);
     assert.equal(r.adat.kartya.allapot, 'visszavonva');
-    assert.doesNotMatch(r.body, /AK-[0-9A-Z]{4}-[0-9A-Z]{4}/);
+    assert.doesNotMatch(r.body, /\bAK[0-9A-HJKMNP-TV-Z]{8}\b/);
     assert.doesNotMatch(r.body, /api\/ajandek\/kartya/);
     // a kartya-oldal (t es cs) 409 barati oldal, kod nelkul
     for (const query of [{ pi: a.pi, t: await kartyaToken(ENV, a.pi) }, alap]) {
       const k = await hiv('GET', 'kartya', { query });
       assert.equal(k.status, 409);
       assert.match(k.body, /visszatérítés\/vita tartozik, a kártya nem használható/);
-      assert.doesNotMatch(k.body, /AK-[0-9A-Z]{4}-[0-9A-Z]{4}/);
+      assert.doesNotMatch(k.body, /\bAK[0-9A-HJKMNP-TV-Z]{8}\b/);
     }
     // szemelyre szabas sem
     assert.equal((await hiv('POST', 'szemelyre', { body: { ...alap, nev: 'X' } })).status, 409);
@@ -2332,7 +2332,7 @@ describe('metadata-iras minden level utan (nincs dupla level)', () => {
 
 // --- kuponkod ------------------------------------------------------------------------------------------------------------------
 describe('kuponkod', () => {
-  test('determinisztikus, AK-XXXX-XXXX Crockford, az AJANDEK_TITOK HMAC-javal', async () => {
+  test('determinisztikus, AKXXXXXXXX (kotojel nelkul) Crockford, az AJANDEK_TITOK HMAC-javal', async () => {
     const k1 = await kuponKod(ENV, 'pi_3UMSqdTesztAzonosito');
     assert.equal(k1, await kuponKod(ENV, 'pi_3UMSqdTesztAzonosito'));
     assert.match(k1, KOD_RE);
@@ -2340,6 +2340,49 @@ describe('kuponkod', () => {
     assert.notEqual(k1, await kuponKod(ENV, 'pi_3UMSqdMasikAzonosito'));
     assert.notEqual(k1, await kuponKod({ ...ENV, AJANDEK_TITOK: TITOK + 'x' }, 'pi_3UMSqdTesztAzonosito'));
     for (let i = 0; i < 200; i++) assert.match(await kuponKod(ENV, 'pi_' + i.toString(36).padStart(10, 'x')), KOD_RE);
+  });
+
+  test('NINCS kotojel: a Salonic nem fogad el kotojeles kuponkodot - 500 generalt kod egyike sem tartalmaz kotojelet, 10 karakter', async () => {
+    for (let i = 0; i < 500; i++) {
+      const k = await kuponKod(ENV, 'pi_' + i.toString(36).padStart(12, 'y'));
+      assert.ok(!k.includes('-'), k);
+      assert.equal(k.length, 10, k);
+      assert.match(k, /^AK[0-9A-Z]{8}$/);
+    }
+  });
+  test('regi (kotojeles) kodu rendeles: a kiallito urlap es a kartya KOTOJEL NELKUL mutatja a kodot; a szalon altal beirt kod valtozatlan', async () => {
+    const a = await fizetettRendeles({ termek: 'egyeni' });
+    await webhook(alairtEsemeny(a.pi));
+    // az elso eles rendeles allapota: a metadata-ban a regi, kotojeles generalt kod
+    const fr = await fetch(mock.url + '/v1/payment_intents/' + a.pi, { method: 'POST', headers: { authorization: 'Bearer sk_test_mock_123', 'content-type': 'application/x-www-form-urlencoded' }, body: 'metadata[kod]=AK-VN6G-27P9' });
+    assert.equal(fr.status, 200);
+    assert.equal(mock.allapot.pi(a.pi).metadata.kod, 'AK-VN6G-27P9');
+    const t = await kiallitToken(ENV, a.pi);
+    const g = await hiv('GET', 'kiallit', { query: { pi: a.pi, t } });
+    assert.ok(g.body.includes('name="kod" value="AKVN6G27P9"'), 'a kiallito urlap alapertelmezett kodja kotojel nelkul');
+    assert.ok(!g.body.includes('AK-VN6G-27P9'), 'a kiallito urlapon nincs kotojeles valtozat');
+    // a szalon a regi alakot hagyja jova (pl. a levelbol masolta): a metadata-ban a regi alak marad, a kartya mar kotojel nelkul mutatja
+    assert.equal((await kiallitPost(a.pi, t, { kod: 'AK-VN6G-27P9' })).status, 200);
+    assert.equal(mock.allapot.pi(a.pi).metadata.kod, 'AK-VN6G-27P9');
+    const k = await hiv('GET', 'kartya', { query: { pi: a.pi, t: await kartyaToken(ENV, a.pi) } });
+    assert.equal(k.status, 200);
+    assert.ok(k.body.includes('AKVN6G27P9'), 'a kartyan kotojel nelkul');
+    assert.ok(!k.body.includes('AK-VN6G-27P9'), 'a kartyan nincs kotojeles valtozat');
+    assert.ok(levelek.some((l) => l.html.includes('AKVN6G27P9') && !l.html.includes('AK-VN6G-27P9')), 'a vevo levele is kotojel nelkul');
+    // a szalon altal beirt kod valtozatlan (akar kotojeles is)
+    const b = await fizetettRendeles({ termek: 'egyeni' });
+    await webhook(alairtEsemeny(b.pi));
+    assert.equal((await kiallitPost(b.pi, await kiallitToken(ENV, b.pi), { kod: 'SajatKupon-7' })).status, 200);
+    const k2 = await hiv('GET', 'kartya', { query: { pi: b.pi, t: await kartyaToken(ENV, b.pi) } });
+    assert.ok(k2.body.includes('SajatKupon-7'));
+  });
+  test('kodEgysegesit: a regi kotojeles generalt kod (AK-XXXX-XXXX) kotojel nelkul jelenik meg; a szalon altal beirt kodok valtozatlanok', () => {
+    assert.equal(kodEgysegesit('AK-VN6G-27P9'), 'AKVN6G27P9');
+    assert.equal(kodEgysegesit(' AK-VN6G-27P9 '), 'AKVN6G27P9');
+    assert.equal(kodEgysegesit('AKVN6G27P9'), 'AKVN6G27P9');
+    for (const sajat of ['GYOR1865', 'SajatKupon-7', 'AK-TEUT-0001', 'AK-VN6G-27P', 'ak-vn6g-27p9', 'XAK-VN6G-27P9', '']) assert.equal(kodEgysegesit(sajat), sajat);
+    assert.equal(kodEgysegesit(undefined), undefined);
+    assert.equal(kodEgysegesit(null), null);
   });
 });
 
