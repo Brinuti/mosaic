@@ -89,19 +89,25 @@
   lapozo($('kezelo-sav'), $('kezelo-elozo'), $('kezelo-kovetkezo'), true);
   document.querySelectorAll('.ba-keret').forEach((k) => lapozo(k.querySelector('.ba-sav'), k.querySelector('.elozo'), k.querySelector('.kovetkezo'), true));
 
-  // --- mobil sticky CTA: a hero-gombok elgorgetese utan latszik, a zaro savnal eltunik ---
-  const sticky = $('sticky-cta'), heroCta = document.querySelector('.hero-cta'), zaro = document.querySelector('.zaro');
-  if (sticky && heroCta && zaro && 'IntersectionObserver' in window) {
-    let heroLatszik = true, vegen = false;
+  // --- mobil sticky CTA: NEM rogton jelenik meg: csak a "jelek" szekcio (4 kep) elgorgetese utan; a zaro savnal (es utana) eltunik ---
+  // Gorgetes-figyelo, nem IntersectionObserver: az IO csak akkor jelez, ha a szekcio athalad a kepernyon; gyors ugrasnal / gorgetes-linknel
+  // (a szekcio soha nem kerul a kepernyore) nem jelezne, es a sav sosem jonne be.
+  const sticky = $('sticky-cta'), jelek = document.querySelector('.jelek'), zaro = document.querySelector('.zaro');
+  if (sticky && jelek && zaro) {
+    let kesz = true;
     const frissit = () => {
-      const lat = !heroLatszik && !vegen;
+      kesz = true;
+      const lat = jelek.getBoundingClientRect().bottom <= 0 && zaro.getBoundingClientRect().top >= innerHeight;
+      if (sticky.classList.contains('lathato') === lat) return;
       sticky.classList.toggle('lathato', lat);
       sticky.setAttribute('aria-hidden', lat ? 'false' : 'true');
       sticky.querySelectorAll('a').forEach((a) => (lat ? a.removeAttribute('tabindex') : a.setAttribute('tabindex', '-1')));
       document.body.classList.toggle('sticky-be', lat);
     };
-    new IntersectionObserver((es) => { heroLatszik = es[0].isIntersecting; frissit(); }).observe(heroCta);
-    new IntersectionObserver((es) => { vegen = es[0].isIntersecting; frissit(); }).observe(zaro);
+    const kerd = () => { if (kesz) { kesz = false; requestAnimationFrame(frissit); } };
+    addEventListener('scroll', kerd, { passive: true });
+    addEventListener('resize', kerd);
+    frissit();
   }
 
   // --- YouTube-videok (az Oxygeni Hair and Skin csatornajarol): csak kattintasra toltodnek be, youtube-nocookie ---
@@ -167,7 +173,7 @@
         const ossz = cs.reduce((x, y) => x + y, 0);
         $('te-csillagok').style.setProperty('--ert', (ossz / 5) * 100 + '%');
         $('te-csillagok').setAttribute('aria-label', '5 csillagból ' + String(ossz).replace('.', ','));
-        if ($('te-pont-m')) $('te-pont-m').textContent = ossz.toFixed(1).replace('.', ',');
+        if ($('te-cs-m')) { $('te-cs-m').style.setProperty('--ert', (ossz / 5) * 100 + '%'); $('te-cs-m').setAttribute('aria-label', '5 csillagból ' + String(ossz).replace('.', ',')); }
       }
       if (min && min.trim()) $('te-minosites').textContent = min.trim().replace(/ értékelés$/i, '');
     } catch (e) { chipKesz = false; console.error(e); }
