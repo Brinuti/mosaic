@@ -73,7 +73,7 @@ const meres = (p) => p.evaluate(() => {
   const lathato = [...h1.children].filter((c) => !(c.classList.contains('be-h1-a') && h1.classList.contains('be-h1-rovid'))).map((c) => c.textContent).join(' ');
   return { szoveg: h1.textContent.replace(/\s+/g, ' ').trim(), lathato: lathato.replace(/\s+/g, ' ').trim(), rovid: h1.classList.contains('be-h1-rovid'), kicsi: h1.classList.contains('be-h1-kicsi'),
     levagva: h1.scrollWidth > h1.clientWidth + 1, h1: rc(h1), tel: rc(tel), x: rc(x), vissza: rc(vissza), panel: rc(panel), vw: window.innerWidth, font: getComputedStyle(h1).fontSize,
-    sorok: Math.round(h1.getBoundingClientRect().height / parseFloat(getComputedStyle(h1).lineHeight || 20)) };
+    sorok: Math.round((h1.getBoundingClientRect().height - parseFloat(getComputedStyle(h1).paddingTop) - parseFloat(getComputedStyle(h1).paddingBottom)) / parseFloat(getComputedStyle(h1).lineHeight || 20)) }; // (a fuggoleges kitoltes a talalati teruletet adja, nem sort)
 });
 const SZELESSEGEK = [320, 360, 375, 390, 430, 768, 1280];
 let kepSzam = 0;

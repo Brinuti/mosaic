@@ -165,7 +165,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   const icon = (inner, w = 2) => { const tpl = doc.createElement('template'); tpl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + w + '" aria-hidden="true">' + inner + '</svg>'; return tpl.content.firstChild; };
   // closable: false = bezarhatatlan reteg (a regi foglalo-cimek ures oldalai): nincs X, a callback utani "Bezaras" helyett "Vissza a fooldalra"
   const closeBtn = layer && closable ? h('button', { type: 'button', class: 'be-icon', id: 'be-close', 'aria-label': 'Bezárás', onclick: () => { if (onClose) onClose(); } }, icon('<path d="M6 6l12 12M18 6L6 18"/>')) : null;
-  const backBtn = h('button', { type: 'button', class: 'be-icon', id: 'be-back', 'aria-label': 'Vissza', style: 'visibility:hidden', onclick: () => win.history.back() }, icon('<path d="M15 5l-7 7 7 7"/>'));
+  const backBtn = h('button', { type: 'button', class: 'be-icon', id: 'be-back', 'aria-label': 'Vissza', style: 'visibility:hidden', onclick: () => (S.depth > 0 ? win.history.back() : switchBusiness()) }, icon('<path d="M15 5l-7 7 7 7"/>'));
   const stepsEl = h('ol', { class: 'be-steps', id: 'be-steps', 'aria-label': 'Hol tartasz', hidden: true });
   // A fejlec cime egy sorban: "Időpontfoglalás · Fodrászat · Noel" (az uzletag es - ha a vendeg valasztott - a munkatars neve). Ami nem fer el (mobil: a telefon es az X is a sorban van),
   // azt lepesenkent elhagyja a fitHead: elobb az "Időpontfoglalás" szo (a kepernyoolvasonak megmarad), aztan kisebb betu, a legvegen "…".
@@ -248,14 +248,23 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     h1El.classList.add('be-h1-kicsi');
   };
   // Az uzletag a flow-bol (a valasztokartya neve); a munkatars csak ott, ahol a vendeg szakembert valaszt (fodrasz, oxigen), a keresztneve
-  const headTitle = () => {
-    const fam = flow && ctx.business ? CHOOSER.families.find((f) => f.business === ctx.business) : null;
+  const headTitle = (state) => {
+    const fam = flow && ctx.business && state !== 'H0' ? CHOOSER.families.find((f) => f.business === ctx.business) : null; // a kezdokepernyon (uzletag-valaszto) nincs uzletag a cimben
     const label = fam && flow.showStaffFilter ? curStaffLabel() : null;
     return { biz: fam ? fam.title : '', label };
   };
-  const setHead = () => {
-    const { biz, label } = headTitle();
-    h1B.textContent = biz;
+  // Uzletag-valtas: a fejlec uzletag-neve es a legelso kepernyo vissza nyila az uzletag-valasztora (H0) visz. Nem valtunk ott, ahol adat vesznne el / mar nincs hova
+  // (az adatlap a Salonic keretben: C4; rogzites: C5; kesz foglalas / visszahivas-keres; PMU: sajat folyamata van; maga a valaszto: H0).
+  const valthato = (state) => !!flow && !!ctx.business && ctx.business !== 'pmu' && !['H0', 'PMU', 'C4', 'C5', 'C6'].includes(state) && !/_SENT$/.test(state);
+  function switchBusiness() {
+    if (destroyed || !valthato(S.state)) return undefined;
+    S.switchFrom = { business: ctx.business, depth: S.depth }; // ha ugyanazt valasztja ujra, visszalep oda, ahol tartott (nem kezdi elolrol)
+    return go('H0');
+  }
+  const setHead = (state) => {
+    const { biz, label } = headTitle(state);
+    if (biz && valthato(state)) h1B.replaceChildren(h('button', { type: 'button', class: 'be-h1-valt', 'aria-label': 'Üzletág váltása (most: ' + biz + ')', onclick: switchBusiness }, biz, icon('<path d="M6 9l6 6 6-6"/>', 2.2)));
+    else h1B.textContent = biz;
     h1C.textContent = label ? F.staffShortName(label) : ''; // a keresztnev ("Tündi"): a teljes nev ("Bozsoki - Harangozó Tündi") mobilon nem fer el; a kezeles-sorban latszik
     h1El.classList.toggle('be-h1-van', !!biz);
     fitHead();
@@ -270,7 +279,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     mainEl.classList.toggle('be-main-wide', state === 'PMU');
     mainEl.classList.toggle('be-main-kompakt', state === 'C4'); // az adatlap-keret a kepernyo aljaig er (mobilon egy kepernyo)
     shell.classList.toggle('be-shell-pmu', state === 'PMU'); // a PMU-foglalonak sajat fejlece van: a motoreben csak a bezaras marad
-    setHead();
+    setHead(state);
     const step = STEP_OF[state];
     const steps = stepsEl;
     if (steps) {
@@ -282,7 +291,8 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
           i < step ? h('button', { type: 'button', class: 'be-step-btn', 'aria-label': t + ': vissza erre a lepesre', onclick: () => gotoStep(i) }, bel) : bel);
       }));
     }
-    backBtn.style.visibility = S.depth > 0 && state !== 'C6' && !/_SENT$/.test(state) ? 'visible' : 'hidden';
+    backBtn.style.visibility = (S.depth > 0 && state !== 'C6' && !/_SENT$/.test(state)) || (S.depth === 0 && valthato(state)) ? 'visible' : 'hidden';
+    backBtn.setAttribute('aria-label', S.depth > 0 ? 'Vissza' : 'Másik üzletág választása'); // a legelso kepernyon a nyil az uzletag-valasztora visz
     if (layer) scrollEl.scrollTop = 0; else win.scrollTo(0, 0);
     const t = mainEl.querySelector('.be-title');
     if (t) t.focus({ preventScroll: true });
@@ -313,8 +323,8 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   }
   function go(state, { replace = false } = {}) {
     if (destroyed) return undefined;
-    if (replace) { elozmeny('replaceState', { view: state, depth: S.depth, beLayer: layer }, '#' + state); S.nav[S.depth] = state; }
-    else { S.depth += 1; elozmeny('pushState', { view: state, depth: S.depth, beLayer: layer }, '#' + state); S.nav[S.depth] = state; S.nav.length = S.depth + 1; }
+    if (replace) { elozmeny('replaceState', { view: state, depth: S.depth, beLayer: layer, biz: ctx.business || null }, '#' + state); S.nav[S.depth] = state; }
+    else { S.depth += 1; elozmeny('pushState', { view: state, depth: S.depth, beLayer: layer, biz: ctx.business || null }, '#' + state); S.nav[S.depth] = state; S.nav.length = S.depth + 1; }
     return show(state);
   }
   // A lepesjelzo kesz lepesere kattintva: vissza a legutobbi olyan nezetre, ami ahhoz a lepeshez tartozik (history.go: a popstate rajzol)
@@ -334,6 +344,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       S.pmuFrame.contentWindow.postMessage({ mhPmuNezet: e.state.pmu || 'kezdo', idx: e.state.pidx || 0 }, win.location.origin);
       return;
     }
+    if (view && view !== 'H0' && e.state.biz !== undefined && e.state.biz !== (ctx.business || null)) { S.nav.length = S.depth + 1; S.nav[S.depth] = 'H0'; show('H0'); return; } // a valtas elotti uzletag nezete: itt mar a valaszto
     if (!view || (needs[view] && !needs[view]())) { S.depth = 0; S.nav = [entry()]; show(S.nav[0]); return; }
     show(view);
   };
@@ -1075,6 +1086,8 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     if (BUSINESSES[business]) elokapcsol(doc, BUSINESSES[business].host);
   }
   function chooseFamily(fam) {
+    const valtas = S.switchFrom; S.switchFrom = null;
+    if (valtas && fam.key !== 'pmu' && fam.business === valtas.business && S.depth === valtas.depth + 1) { win.history.back(); return undefined; } // ugyanazt valasztotta: marad, ahol tartott
     track('booking_intent_selected', { step: 'H0', reason: fam.key });
     if (fam.key === 'pmu') { ctx.business = 'pmu'; meter.business('pmu'); return go('PMU'); }
     setBusiness(fam.business);
@@ -1098,11 +1111,11 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       if (nezet === first) return show(nezet);
       // a korabbi utvonal visszaepitese (csak tortenet-bejegyzesek): a vissza gomb es a lepesjelzo a megelozo nezetekre lep, nem a belepo allapotra
       const ut = (snap.path || []).filter((v) => v !== nezet && v !== first && (!needs[v] || needs[v]()));
-      for (const v of ut) { S.depth += 1; elozmeny('pushState', { view: v, depth: S.depth, beLayer: layer }, '#' + v); S.nav[S.depth] = v; }
+      for (const v of ut) { S.depth += 1; elozmeny('pushState', { view: v, depth: S.depth, beLayer: layer, biz: ctx.business || null }, '#' + v); S.nav[S.depth] = v; }
       return go(nezet);
     };
     if (!flow) { // H0 vagy PMU: nincs mit pontositani
-      elozmeny('replaceState', { view: first, depth: 0, beLayer: layer }, win.location.pathname + win.location.search + '#' + first);
+      elozmeny('replaceState', { view: first, depth: 0, beLayer: layer, biz: ctx.business || null }, win.location.pathname + win.location.search + '#' + first);
       S.nav = [first];
       if (snap && first === 'H0') { setView(h('p', { class: 'be-loading', role: 'status', text: 'Betöltés…' }), first); return folytat(); }
       return show(first);
@@ -1136,7 +1149,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     if (ctx.staffKey && first === 'C1' && S.service && flow.showStaffFilter && !S.staff) {
       try { const m = F.findStaff(await staffChoices([S.service]), ctx.staffKey); if (m) { S.staff = m.id; S.staffLabel = m.label; track('booking_filter_used', { filter: 'staff_link' }); } } catch (e) { /* a naptar szakember nelkul is megnyilik */ }
     }
-    elozmeny('replaceState', { view: first, depth: 0, beLayer: layer }, win.location.pathname + win.location.search + '#' + first);
+    elozmeny('replaceState', { view: first, depth: 0, beLayer: layer, biz: ctx.business || null }, win.location.pathname + win.location.search + '#' + first);
     S.nav = [first];
     if (snap) { setView(h('p', { class: 'be-loading', role: 'status', text: 'Betöltés…' }), first); return folytat(); }
     return show(first);
