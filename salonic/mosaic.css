@@ -223,3 +223,14 @@ body[class*="customer-mosaic"] .btn-success:hover, body[class*="customer-mosaic"
   body[class*="customer-mosaic"] span.d-block.mb-3 { margin: 0 !important; font-size: 10.5px !important; line-height: 1.25 !important; }
   body[class*="customer-mosaic"] .btn-submit-booking { height: 40px !important; margin-top: 4px !important; }
 }
+
+/* --- Sutisav (cookieconsent) kompakt ----------------------------------------------------------------------------------------------
+ * A Salonic sajat, kotelezo sutisavja ("Az oldal hasznalataval hozzajarulsz a cookie-k ..." + "Elfogadom"). A foglalo keskeny keretebe (telefon) agyazva
+ * az alapmerete (lebego, edgeless tema) 16 px-es szoveggel, a szoveg ALATT teljes szelessegu gombbal ~200 px: az urlap harmadat takarta. Itt: kisebb betu, a gomb a szoveg MELLETT
+ * (oszlop helyett sor), igy ~70 px. Tartalma (szoveg, link, "Elfogadom") valtozatlan; a Salonic hatterszine / gombszine marad.
+ */
+body[class*="customer-mosaic"] .cc-window { flex-direction: row !important; align-items: stretch !important; font-size: 11.5px !important; line-height: 1.3 !important; max-width: none !important; left: 0 !important; right: 0 !important; bottom: 0 !important; }
+body[class*="customer-mosaic"] .cc-window .cc-message { margin: 8px 10px !important; flex: 1 1 auto !important; }
+body[class*="customer-mosaic"] .cc-window .cc-message .cc-link { padding: 0 0 0 2px !important; opacity: 1 !important; }
+body[class*="customer-mosaic"] .cc-window .cc-compliance { flex: 0 0 auto !important; width: 96px; display: flex !important; align-items: stretch !important; }
+body[class*="customer-mosaic"] .cc-window .cc-compliance .cc-btn { width: 100% !important; min-width: 0 !important; padding: 0 6px !important; margin: 0 !important; height: auto !important; flex: 1 1 auto !important; font-size: 12px !important; line-height: 1.2 !important; display: flex !important; align-items: center; justify-content: center; }

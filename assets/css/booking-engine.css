@@ -19,13 +19,18 @@ a { color: inherit; }
 .be-head { position: sticky; top: 0; z-index: 20; background: var(--hatter); border-bottom: 1px solid var(--vonal); padding: 6px 8px 8px; }
 .be-head-row { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; height: 44px; }
 .be-head-right { display: flex; justify-content: flex-end; min-width: 44px; }
-.be-h1 { position: relative; margin: 0; min-width: 0; text-align: center; font-weight: 400; font-size: var(--m-alap); letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.be-h1 { position: relative; margin: -11px 0; padding: 11px 0; min-width: 0; text-align: center; font-weight: 400; font-size: var(--m-alap); letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* a cim egy sorban: "Időpontfoglalás · Fodrászat · Noel"; ami nem fer el, azt a motor lepesenkent elhagyja (fitHead): elobb az elso szo, aztan kisebb betu */
 .be-h1-b:not(:empty)::before, .be-h1-c:not(:empty)::before { content: ' · '; color: var(--halvany); }
 .be-h1-van .be-h1-a { color: var(--kozep); }
 .be-h1-rovid .be-h1-a { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .be-h1-rovid .be-h1-b::before { content: none; }
 .be-h1-kicsi { font-size: 13px; letter-spacing: 0; }
+/* az uzletag neve kattinthato (uzletag-valtas): lenyilo nyil, a talalati terulet a fejlec magassagaig er */
+.be-h1-valt { font: inherit; letter-spacing: inherit; color: inherit; background: none; border: 0; padding: 11px 6px; margin: -11px -6px; cursor: pointer; border-radius: 8px; }
+.be-h1-valt svg { width: 11px; height: 11px; margin-left: 3px; vertical-align: -1px; color: var(--halvany); }
+.be-h1-valt:hover { text-decoration: underline; text-underline-offset: 3px; }
+.be-h1-valt:focus-visible { outline: 2px solid var(--sotet); outline-offset: -2px; }
 .be-icon { width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: none; border-radius: 50%; cursor: pointer; text-decoration: none; }
 .be-icon svg { width: 22px; height: 22px; }
 .be-steps { display: flex; justify-content: center; gap: 2px; list-style: none; margin: 4px 0 0; padding: 0; }
