@@ -107,6 +107,9 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   } catch (e) { /* idegen oldal kereteben */ }
 
   const store = (() => { try { return win.sessionStorage; } catch (e) { return null; } })();
+  // Kuponkod: a linkbol / CTA-bol (ctx.coupon), vagy amit az oldalra erkezeskor a launcher megjegyzett (munkamenet). A kod sehova nem kerul meresbe.
+  const KUPON_KULCS = 'mh_kupon';
+  try { if (ctx.coupon && store) store.setItem(KUPON_KULCS, ctx.coupon); else if (!ctx.coupon && store) ctx.coupon = F.cleanCoupon(store.getItem(KUPON_KULCS)); } catch (e) { /* nem kritikus */ }
   const tracker = createTracker({ ctx, doc, storage: store, now });
   const track = tracker.track;
   // A lepes-meres (DECISION-LOG #88): GA4 dataLayer (csak statisztikai hozzajarulassal) + nevtelen belso szamlalo; lasd lepes-meres.js, docs/booking-engine/LEPES_MERES.md
@@ -293,6 +296,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     win.clearTimeout(S.holdTimer);
     win.clearInterval(S.eloTimer); S.eloBar = null;
     if (S.pmuCleanup) { S.pmuCleanup(); S.pmuCleanup = null; }
+    if (S.kuponCleanup) { S.kuponCleanup(); S.kuponCleanup = null; }
     const token = ++renderToken;
     saveSnapshot(state);
     setView(skeleton[state] && S.service ? skeleton[state]() : h('p', { class: 'be-loading', role: 'status', text: 'Betöltés…' }), state);
@@ -742,7 +746,28 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       const fallback = h('p', { class: 'be-note be-center', hidden: true }, 'Nem jelenik meg az űrlap? ', h('a', { href: S.guestUrl, target: '_top', text: 'Nyisd meg itt' }), '.');
       // ha az urlap helyett a Salonic fooldala latszik (az idopontot kozben mas foglalta), innen lehet masikat valasztani: link, nem gomb
       const help = h('div', { class: 'be-help', hidden: true }, link('Másik időpontot választok', () => win.history.back()));
-      const frame = h('iframe', { class: 'be-iframe', title: 'Foglalás véglegesítése', src: S.guestUrl, style: 'visibility:hidden' });
+      // Kuponkod: a Salonic nem veszi at a linkbol, ezert a keret NEVEBEN (window.name) adjuk at: nincs az URL-ben (nem kerul analitikaba / referrerbe); az adatlapon futo
+      // kis szkript (a GTM-ben: salonic/gtm-kupon-kitolto.html) beirja a kupon mezobe, es visszaszol (postMessage), hogy megtortent.
+      const kupon = flow.acceptsCoupon === false ? null : ctx.coupon || null;
+      const frame = h('iframe', { class: 'be-iframe', title: 'Foglalás véglegesítése', src: S.guestUrl, ...(kupon ? { name: 'mhk:' + kupon } : {}), style: 'visibility:hidden' });
+      let kuponSor = null;
+      if (kupon) {
+        const allapot = h('span', { class: 'be-kupon-allapot' });
+        const masol = h('button', { type: 'button', class: 'be-link', hidden: true, text: 'Másolás', onclick: async () => {
+          try { await win.navigator.clipboard.writeText(kupon); masol.textContent = 'Kimásolva ✓'; } catch (e) { masol.textContent = kupon; }
+        } });
+        kuponSor = h('p', { class: 'be-kupon', role: 'status' }, 'Kuponkód: ', h('b', { text: kupon }), allapot, ' ', masol);
+        let beirva = false;
+        const onKupon = (e) => {
+          if (e.source !== frame.contentWindow || !e.data || e.data.mhKupon !== 'ok') return;
+          beirva = true; allapot.textContent = ' · beírtuk az űrlapba ✓'; masol.hidden = true; if (S.fitFrame) S.fitFrame();
+        };
+        win.addEventListener('message', onKupon);
+        // ha az adatlap betoltese utan nem jon visszajelzes (pl. a hirdetes-blokkolo letiltotta a szkriptet): kezi tartalek, a kod egy erintessel kimasolhato
+        let kesleltetes = null;
+        frame.addEventListener('load', () => { kesleltetes = win.setTimeout(() => { if (!beirva) { allapot.textContent = ' · ha nem látod az űrlapban, másold be a Kupon mezőbe: '; masol.hidden = false; if (S.fitFrame) S.fitFrame(); } }, 4000); });
+        S.kuponCleanup = () => { win.removeEventListener('message', onKupon); if (kesleltetes) win.clearTimeout(kesleltetes); };
+      }
       const slow = win.setTimeout(() => { fallback.hidden = false; help.hidden = false; }, 6000);
       frame.addEventListener('load', () => { win.clearTimeout(slow); loading.hidden = true; frame.style.visibility = ''; win.setTimeout(() => { help.hidden = false; }, 2500); });
       // A Salonic 5 percig tartja fenn az idopontot, utana a sajat fooldalara dob: ezt mi is figyeljuk (4:50).
@@ -766,7 +791,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
           h('span', { class: 'be-mini-text' }, h('b', { text: `${F.longDate(S.slot.start_unix)} · ${F.timeLabel(S.slot.start_unix)}` }), h('span', { text: nameOf(S.service) }),
             h('span', { class: 'be-halk', text: [priceNow(), durText(S.service)].filter(Boolean).join(' · ') })),
           link('Módosítás', () => win.history.back())),
-        box, fallback, help);
+        kuponSor, box, fallback, help);
     },
 
     C5: async () => h('section', { class: 'be-center' }, h('div', { class: 'be-spinner', 'aria-hidden': 'true' }), title('Időpontod rögzítése…'),
@@ -999,6 +1024,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   function confirmed(v) {
     S.confirmation = v;
     meter.success(v.bookingRef);
+    try { if (store) store.removeItem(KUPON_KULCS); } catch (e) { /* nem kritikus */ } // a kupon elfogyott: a kovetkezo foglalasra nem tesszuk be ujra
     try { if (store) store.removeItem(SNAP_KEY); } catch (e) { /* nem kritikus */ }
     const cls = classifyService(flow.business, S.service);
     const type = effectiveType({ bookingType: cls.bookingType, splitByRuntime: cls.splitByRuntime, firstBooking: v.firstBooking });
@@ -1025,6 +1051,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     if (headRo) headRo.disconnect();
     win.clearTimeout(S.holdTimer); win.clearInterval(S.eloTimer);
     if (S.pmuCleanup) { S.pmuCleanup(); S.pmuCleanup = null; }
+    if (S.kuponCleanup) { S.kuponCleanup(); S.kuponCleanup = null; }
     renderToken += 1; // a folyamatban levo betoltes eredmenyet mar nem rajzoljuk ki
     if (win.mhKeretbenOldal === onSalonicRedirect) delete win.mhKeretbenOldal;
     S.onMore = null; S.repaint = null; S.fitFrame = null;

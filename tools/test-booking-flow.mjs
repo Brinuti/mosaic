@@ -316,7 +316,7 @@ test('findByKey: azonosito vagy kulcsszavak; az ajandekkartyas es a normal kulon
 
 test('parseContext: input szerzodes, mérési parameterek, source_page', () => {
   const c = parseContext('?business=headspa&service=paros&voucher=1&utm_source=google&gclid=abc&fbclid=f1&ttclid=t1&minta=siker', 'https://www.mosaicheadspa.hu/headspa-budapest', 'https://www.mosaicheadspa.hu');
-  assert.deepEqual(c, { business: 'headspa', serviceKey: 'paros', category: null, voucher: true, intent: null, staffKey: null, sourcePage: '/headspa-budapest', attribution: { utm_source: 'google', gclid: 'abc', fbclid: 'f1', ttclid: 't1' }, sample: 'siker' });
+  assert.deepEqual(c, { business: 'headspa', serviceKey: 'paros', category: null, voucher: true, intent: null, staffKey: null, coupon: null, sourcePage: '/headspa-budapest', attribution: { utm_source: 'google', gclid: 'abc', fbclid: 'f1', ttclid: 't1' }, sample: 'siker' });
   assert.equal(parseContext('?business=hair&category=balayage').category, 'balayage');
   // lezer: ?intent=first | returning (a regi "Elso idopontok" / "Kezeles idopontok" gombok); az ajandekkartya-szandek (intent=voucher) valtozatlan
   assert.equal(parseContext('?business=laser&intent=first').intent, 'first');
@@ -326,6 +326,23 @@ test('parseContext: input szerzodes, mérési parameterek, source_page', () => {
   assert.equal(parseContext('', 'https://masik.hu/x', 'https://www.mosaicheadspa.hu').sourcePage, '', 'idegen referrer nem source_page');
   assert.equal(parseContext('?source_page=/x').sourcePage, '/x');
   assert.equal(parseContext('').business, 'headspa');
+});
+
+test('kuponkod a linkbol (?kupon=): cleanCoupon szabaly, parseContext, a launcher ugyanazt a szabalyt hasznalja', async () => {
+  const { cleanCoupon, COUPON_RE } = await import('../assets/js/booking-engine/flow.js');
+  for (const jo of ['NYAR20', 'nyar-20', 'AJ_2026', 'abc', 'A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0']) assert.equal(cleanCoupon(jo), jo, jo);
+  assert.equal(cleanCoupon('  NYAR20 '), 'NYAR20', 'a szokozt levagja');
+  for (const rossz of ['', null, undefined, 'ab', 'NYAR 20', 'NYAR20!', '<script>', 'a'.repeat(41), 'ÁRNYÉK', "x'y", 'a=b&c=d', '../etc']) assert.equal(cleanCoupon(rossz), null, String(rossz));
+  assert.equal(parseContext('?business=hair&kupon=NYAR20').coupon, 'NYAR20');
+  assert.equal(parseContext('?kuponkod=NYAR20').coupon, 'NYAR20');
+  assert.equal(parseContext('?coupon=NYAR20').coupon, 'NYAR20');
+  assert.equal(parseContext('?kupon=NYAR%2020').coupon, null, 'szokoz a kodban: ervenytelen');
+  assert.equal(parseContext('?business=hair').coupon, null);
+  // a launcher (minden oldalon fut, ezert onallo, bemasolt szabaly) ugyanazt a regexet hasznalja, mint a flow.js
+  const fs = await import('node:fs');
+  const launcher = fs.readFileSync(new URL('../assets/js/booking-launcher.js', import.meta.url), 'utf8');
+  assert.ok(launcher.includes('/^[A-Za-z0-9_-]{3,40}$/'), 'a launcher kupon-szabalya egyezik a flow.COUPON_RE-vel');
+  assert.equal(COUPON_RE.source, '^[A-Za-z0-9_-]{3,40}$');
 });
 
 test('munkatars-link (?staff=): findStaff - azonosito vagy a nev szavai, ekezet- es kisbetu-fuggetlen, a kedvezmeny-cimke nelkul; csak egyertelmu talalat', async () => {

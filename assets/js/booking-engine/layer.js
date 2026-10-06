@@ -8,7 +8,7 @@
 // A szamlalas / hand-off a motoreben marad (engine.js): sikeres foglalas utan a meglevo koszonooldal nyilik meg, a meres valtozatlan.
 
 import { startEngine, warmUp } from './engine.js';
-import { cleanStaffKey } from './flow.js';
+import { cleanStaffKey, cleanCoupon } from './flow.js';
 
 const HOST_ID = 'mosaic-booking-layer';
 const CONTEXT_KEYS = ['business', 'service', 'category', 'voucher', 'intent', 'staff']; // ezek kerulnek az URL-be; a tobbi (UTM, click ID) az oldal sajat URL-jen van
@@ -26,6 +26,7 @@ export function normalizeOptions(o = {}) {
     intent: get('intent'),
     staff: cleanStaffKey(get('staff', 'munkatars', 'szakember')), // munkatars-link: a szakember a CTA-ban (pl. data-booking="business=hair&staff=betti")
     voucher: get('voucher') && get('voucher') !== '0' && get('voucher') !== 'false' ? '1' : null,
+    kupon: cleanCoupon(get('kupon', 'kuponkod', 'coupon')), // kuponkod: az adatlapon a kupon mezobe kerul (a motor a kontextusbol, nem az URL-allapotbol veszi)
   };
   return Object.fromEntries(Object.entries(out).filter(([, v]) => v));
 }
@@ -36,7 +37,7 @@ export function layerUrl(href, opts) {
   for (const k of BOOKING_KEYS) u.searchParams.delete(k);
   u.hash = '';
   u.searchParams.set('booking', '1');
-  for (const [k, v] of Object.entries(opts)) u.searchParams.set(k, v);
+  for (const [k, v] of Object.entries(opts)) if (k !== 'kupon') u.searchParams.set(k, v); // a kuponkod nem kerul az (elozmeny-)URL-be
   return u.pathname + u.search;
 }
 

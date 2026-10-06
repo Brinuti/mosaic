@@ -77,6 +77,14 @@ document.addEventListener('pointerover', elolegez, { passive: true });
 document.addEventListener('pointerdown', elolegez, { passive: true });
 document.addEventListener('touchstart', elolegez, { passive: true });
 document.addEventListener('focusin', elolegez);
+// Kuponkod az oldal sajat URL-jen (?kupon=NYAR20): megjegyezzuk a munkamenet vegeig (sessionStorage), igy a foglalo barmelyik oldalrol, barmelyik gombbal nyitva
+// beirja a kodot a Salonic adatlapra. Szabaly: ugyanaz, mint flow.cleanCoupon (a teszt ellenorzi). A kod nem kerul meresbe, URL-be, logba.
+try {
+  const kq = new URLSearchParams(location.search);
+  const kod = String(kq.get('kupon') || kq.get('kuponkod') || kq.get('coupon') || '').trim();
+  if (/^[A-Za-z0-9_-]{3,40}$/.test(kod)) sessionStorage.setItem('mh_kupon', kod);
+} catch (e) { /* nincs sessionStorage: a kupon csak az aktualis oldal URL-jerol mukodik */ }
+
 // a foglalo kodja az oldal betoltese utan, tetlen idoben is letoltodik (az elso kattintas ne varja be a modulokat)
 const tetlen = () => (window.requestIdleCallback ? window.requestIdleCallback(() => modul(), { timeout: 4000 }) : setTimeout(modul, 2500));
 if (document.readyState === 'complete') tetlen(); else window.addEventListener('load', tetlen, { once: true });
