@@ -1,6 +1,6 @@
 # QA-2 árnyék-mérés – teszteset-összefoglaló (2026-10-06)
 
-**Ez a futás a SAJÁT szállítónkkal ment** (Cloudflare-előnézet → Meta CAPI, TikTok Events API, GA4 Measurement Protocol); a Composio-s Meta-küldés érvénytelenítve (nem hiteles bizonyíték: csak `custom_data`-t vitt, `user_data` nélkül), a régi naplók törölve. A Google a Zapier-webhookon át megy (`GOOGLE_ARNYEK_WEBHOOK_URL`), a Zap még nem létezik: a kérés elkészül, `nincs_hitelesites`.
+**Ez a futás a SAJÁT szállítónkkal ment** (Cloudflare-előnézet → Meta CAPI, TikTok Events API, GA4 Measurement Protocol); a Composio-s Meta-küldés érvénytelenítve (nem hiteles bizonyíték: csak `custom_data`-t vitt, `user_data` nélkül), a régi naplók törölve. A Google a Zapier-webhookon át megy (`GOOGLE_ARNYEK_WEBHOOK_URL`); **ebben a (korábbi) futásban a Zap még nem létezett**, ezért a Google-sorok `nincs_hitelesites` maradtak; a Google-ág a hat esetre a Zap elkészülte után újrafutott: `qa2-google-ujrafuttatas-2026-10-06.md` (kiküldött törzs + a Zap futása).
 
 Nyers naplók: `qa2-<eset>-bongeszo-…json` (böngészős: érkezési adatok, kérések/válaszok), `qa2-<eset>-szerver-…json` (szerveres: párosítás + **a teljes kiküldött payload** + platformválasz). Az IP a naplóban a teszt saját (futtató) IP-je; a naplózás teljes módja csak az előnézeten van bekapcsolva (`MERES_NAPLO_TELJES`).
 

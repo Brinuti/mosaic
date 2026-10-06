@@ -1,0 +1,607 @@
+{
+ "eset": "fodrasz",
+ "hivas_ideje": "2026-10-06T17:13:04.948Z",
+ "kerelem_maszkolt": {
+  "uuid": "1b4afba0-6a6d-9bba-df33-64daf03b6fb0",
+  "host": "mosaic-hair.salonic.hu",
+  "felado": "Mosaic Hair",
+  "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+  "munkatarsak": [],
+  "ld": {
+   "startDate": "2026-10-20T16:00:00.000Z"
+  },
+  "level_datuma": "2026-10-06T17:12:04Z",
+  "ar": 0,
+  "vendeg": "<maszkolva: e-mail + telefon>",
+  "uj_vendeg": true
+ },
+ "szimulalt": {
+  "uj_vendeg": true,
+  "megjegyzes": "a Salonic \"uj vendeg\" jelzeset a teszt szimulalja; az ar a Salonic-level \"Price / Fizetendo varhatoan\" sorabol"
+ },
+ "egyeztetes_valasz_nyers": {
+  "ok": true,
+  "allapot": "parositott",
+  "kuldheto": true,
+  "duplikalt": false,
+  "booking_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+  "esemeny_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+  "kulcs": "10823|25095|1792512000",
+  "kulcs_forras": "salonic-oldal",
+  "service_egyezik": true,
+  "probalkozas": 1,
+  "riasztas": false,
+  "keses": false,
+  "kulcs_atadva": true,
+  "jelolt_elo_allapot": "aktiv",
+  "nyom": {
+   "uuid": "1b4afba0-6a6d-9bba-df33-64daf03b6fb0",
+   "host": "mosaic-hair.salonic.hu",
+   "ag1": {
+    "ok": true,
+    "miert": null,
+    "lepesek": [
+     {
+      "url": "/booking/bookingDetails/1b4afba0-6a6d-9bba-df33-64daf03b6fb0",
+      "status": 200,
+      "vegso": "/booking/bookingDetails/1b4afba0-6a6d-9bba-df33-64daf03b6fb0"
+     },
+     {
+      "url": "/selectDate/?startDate=1792512000&bookingId=1b4afba0-6a6d-9bba-df33-64daf03b6fb0",
+      "status": 200,
+      "vegso": "/selectDate/?startDate=1792512000&bookingId=1b4afba0-6a6d-9bba-df33-64daf03b6fb0"
+     }
+    ],
+    "kulcs": "10823|25095|1792512000",
+    "serviceId": "232804"
+   },
+   "jeloltKulcsok": [
+    "10823|25095|1792512000"
+   ],
+   "kulcsForras": "salonic-oldal",
+   "jeloltek": [
+    {
+     "kulcs": "10823|25095|1792512000",
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsrowg490clturxk7vtw",
+       "service_id": "232804",
+       "ido": 1791298336,
+       "kuldve_uuid": "a61035c1-37b3-324b-6654-f589d5ccf7d4"
+      },
+      {
+       "booking_id": "mb_0muwuk8x04a47mummxji596",
+       "service_id": "232804",
+       "ido": 1791301351,
+       "kuldve_uuid": "05cee0c2-bb66-94a6-8251-4751bdd8ae54"
+      },
+      {
+       "booking_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
+       "service_id": "232804",
+       "ido": 1791304484,
+       "kuldve_uuid": "a6fd2f34-4b2e-c51d-038f-4177b8f98d56"
+      },
+      {
+       "booking_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+       "service_id": "232804",
+       "ido": 1791306783,
+       "kuldve_uuid": null
+      }
+     ]
+    }
+   ],
+   "birtokos_ellenorzes": {
+    "kulcs": "10823|25095|1792512000",
+    "birtokos_booking_id": "mb_0muwwfdl3j7j2dtbgvufrq8",
+    "birtokos_uuid": "a6fd2f34-4b2e-c51d-038f-4177b8f98d56",
+    "elo_allapot": "torolve",
+    "miert": null
+   },
+   "talalatok": [
+    {
+     "kulcs": "10823|25095|1792512000",
+     "booking_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+     "service_id": "232804",
+     "forras": "atadas"
+    }
+   ],
+   "valasztas": [
+    {
+     "kulcs": "10823|25095|1792512000",
+     "allapot": "valasztott",
+     "miert": null
+    }
+   ],
+   "jelolt_ellenorzes": {
+    "kulcs": "10823|25095|1792512000",
+    "jelolt_booking_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+    "jelolt_uuid": "1b4afba0-6a6d-9bba-df33-64daf03b6fb0",
+    "elo_allapot": "aktiv",
+    "miert": null,
+    "atvetel": "felszabadult kulcs"
+   },
+   "kulcs_atadas": {
+    "kulcs": "10823|25095|1792512000",
+    "regi": "mb_0muwwfdl3j7j2dtbgvufrq8",
+    "uj": "mb_0muwxsqvgpdgxsok1p5zo8n",
+    "ok": "a birtokos Salonic-foglalas (a6fd2f34) torolve - elo ellenorzes; a jelolt elo ellenorzese: aktiv"
+   }
+  },
+  "esemeny_kuldes": {
+   "allapot": "kesz",
+   "source_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+   "erkezesi_adat": true,
+   "esemenyek": [
+    {
+     "esemeny_id": "Konzultacio:mb_0muwxsqvgpdgxsok1p5zo8n",
+     "nev": "Konzultacio",
+     "tipus": "alap",
+     "ertek": 13000,
+     "ertek_forras": "konzultacio_tabla",
+     "salonic_ar": 0,
+     "nyitott": false,
+     "platformok": {
+      "meta": {
+       "id": 145,
+       "allapot": "kihagyva",
+       "indok": "veszkapcsolo: platform:meta"
+      },
+      "tiktok": {
+       "id": 146,
+       "allapot": "kihagyva",
+       "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont"
+      },
+      "google": {
+       "id": 147,
+       "allapot": "elkuldve",
+       "http_status": 200
+      },
+      "ga4": {
+       "id": 148,
+       "allapot": "kihagyva",
+       "indok": "veszkapcsolo: platform:ga4"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwxsqvgpdgxsok1p5zo8n",
+     "nev": "Fodrasz_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "ertek": 13000,
+     "ertek_forras": "konzultacio_tabla",
+     "salonic_ar": 0,
+     "nyitott": false,
+     "platformok": {
+      "meta": {
+       "id": 149,
+       "allapot": "kihagyva",
+       "indok": "veszkapcsolo: platform:meta"
+      },
+      "tiktok": {
+       "id": 150,
+       "allapot": "kihagyva",
+       "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont"
+      },
+      "google": {
+       "id": 151,
+       "allapot": "kihagyva",
+       "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+      },
+      "ga4": {
+       "id": 152,
+       "allapot": "kihagyva",
+       "indok": "veszkapcsolo: platform:ga4"
+      }
+     }
+    }
+   ],
+   "elo_allapot": "aktiv",
+   "jelleg": "konzultacio",
+   "kupon": false,
+   "uj_vendeg": true,
+   "salonic_ar": 0,
+   "ertek": 13000,
+   "ar_forras": "bejovo",
+   "uzletag": "fodrasz"
+  }
+ },
+ "szerveres_naplo_nyers": {
+  "ok": true,
+  "source_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+  "erkezes": {
+   "source_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+   "uzletag": "fodrasz",
+   "tipus": "foglalas",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_FODRASZ_MUWXSO0J_GCLID",
+      "ts": 1791306763
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_FODRASZ_MUWXSO0J_WBRAID",
+      "ts": 1791306766
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791306766000.IwAR_TESZT_FODRASZ_MUWXSO0J_FBCLID",
+     "fbclid": "IwAR_TESZT_FODRASZ_MUWXSO0J_FBCLID",
+     "ts": 1791306766
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_FODRASZ_MUWXSO0J_TTCLID",
+      "ts": 1791306766
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_fodrasz_elso",
+     "content": "hirdetes_a",
+     "ts": 1791306763
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_fodrasz_utolso",
+     "ts": 1791306766
+    },
+    "fbp": "fb.1.1791301762000.8767597685",
+    "ttp": "TESZT_FODRASZ_MUWXSO0J_ttp_neounfscoy",
+    "ga4": {
+     "client_id": "494669894.1791220362",
+     "session_id": "1791305562",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": false,
+    "adv": false,
+    "fun": false,
+    "dontes": true
+   },
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+   "ip": "160.79.106.xxx",
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok",
+   "bongeszo": {
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok",
+    "first_booking": true,
+    "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+    "kategoria": "",
+    "ar": 0,
+    "g": "g:3385039",
+    "munkatars": "",
+    "bookingUrl": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwxsqvgpdgxsok1p5zo8n"
+   },
+   "ido": 1791306783,
+   "frissitve": 1791306783
+  },
+  "kuldesek": [
+   {
+    "id": 145,
+    "esemeny_id": "Konzultacio:mb_0muwxsqvgpdgxsok1p5zo8n",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "meta",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:meta",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": false,
+      "adv": false,
+      "fun": false,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "hozzajarulas nelkul is kuldjuk (SZ-38)"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306789,
+    "frissitve": 1791306789
+   },
+   {
+    "id": 146,
+    "esemeny_id": "Konzultacio:mb_0muwxsqvgpdgxsok1p5zo8n",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+    "allapot": "kihagyva",
+    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": false,
+      "adv": false,
+      "fun": false,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "hozzajarulas nelkul is kuldjuk (SZ-38)"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306789,
+    "frissitve": 1791306789
+   },
+   {
+    "id": 147,
+    "esemeny_id": "Konzultacio:mb_0muwxsqvgpdgxsok1p5zo8n",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "google",
+    "platform_nev": "ARNYEK-7825200898",
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": false,
+      "adv": false,
+      "fun": false,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "valos jel (DENIED), hash-elt azonosito nelkul"
+     }
+    },
+    "kerelem": {
+     "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "customer_id": "6088874770",
+      "conversion_action_id": "7825200898",
+      "athidalas": "zapier-webhook"
+     },
+     "body": {
+      "conversion_action_id": "7825200898",
+      "wbraid": "CoMKCQ_TESZT_FODRASZ_MUWXSO0J_WBRAID",
+      "conversion_date_time": "2026-10-06 19:12:04+02:00",
+      "value": 13000,
+      "currency": "HUF",
+      "order_id": "Konzultacio:mb_0muwxsqvgpdgxsok1p5zo8n",
+      "ad_user_data": "DENIED"
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"attempt\":\"01a11234-77fb-b7b0-19d0-3db819c9ec7d\",\"id\":\"01a11234-77fb-b7b0-19d0-3db819c9ec7d\",\"request_id\":\"01a11234-77fb-b7b0-19d0-3db819c9ec7d\",\"status\":\"success\"}\n",
+    "kuldo": "zapier-webhook",
+    "probalkozas": 1,
+    "letrehozva": 1791306789,
+    "frissitve": 1791306789
+   },
+   {
+    "id": 148,
+    "esemeny_id": "Konzultacio:mb_0muwxsqvgpdgxsok1p5zo8n",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:ga4",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": false,
+      "adv": false,
+      "fun": false,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "valos jel (DENIED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306789,
+    "frissitve": 1791306789
+   },
+   {
+    "id": 149,
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwxsqvgpdgxsok1p5zo8n",
+    "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "meta",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:meta",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": false,
+      "adv": false,
+      "fun": false,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "hozzajarulas nelkul is kuldjuk (SZ-38)"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306789,
+    "frissitve": 1791306789
+   },
+   {
+    "id": 150,
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwxsqvgpdgxsok1p5zo8n",
+    "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+    "allapot": "kihagyva",
+    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": false,
+      "adv": false,
+      "fun": false,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "hozzajarulas nelkul is kuldjuk (SZ-38)"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306789,
+    "frissitve": 1791306789
+   },
+   {
+    "id": 151,
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwxsqvgpdgxsok1p5zo8n",
+    "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "google",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": false,
+      "adv": false,
+      "fun": false,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "valos jel (DENIED), hash-elt azonosito nelkul"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306789,
+    "frissitve": 1791306789
+   },
+   {
+    "id": 152,
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwxsqvgpdgxsok1p5zo8n",
+    "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muwxsqvgpdgxsok1p5zo8n",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:ga4",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": false,
+      "adv": false,
+      "fun": false,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "valos jel (DENIED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306789,
+    "frissitve": 1791306789
+   }
+  ]
+ }
+}
