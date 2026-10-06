@@ -71,7 +71,7 @@ AJANDEK_SZAMLA_ADO_ELLENORZES = "0"   # CSAK elonezet: a Stripe teszt-modnak nin
 # Titok nelkul a kerelem elkeszul es naplozodik ("nincs_hitelesites"), kuldes nem tortenik.
 MERES_ELOSZTO = "1"
 META_TESZT_KOD = "TEST83939"            # a Meta Esemenykezelo "Teszteszemenyek" kodja (dataset 28616665324611098, MOSAIC ARNYEK meres-teszt)
-TIKTOK_TESZT_KOD = "TEST_MOSAIC_QA2"    # SZINTETIKUS: a TikTok Esemenykezelo teszteszemeny-kodjara cserelendo (valtozo-csere, kodvaltoztatas nelkul)
+TIKTOK_TESZT_KOD = "TEST83543"         # a TikTok Esemenykezelo "Teszteszemenyek" kodja (ARNYEK pixel DB2GTTJC77UE4D1NE4MG); a korabbi szintetikus TEST_MOSAIC_QA2 helyett (2026-10-06)
 GA4_TESZT_MEASUREMENT_ID = "G-M5MLRLNQBP"   # a GA4 TESZT-property (az elo G-H4206SQ0Q7 a kodban tiltott); a Measurement Protocol secret: GA4_TESZT_API_SECRET (titok)
 MERES_NAPLO_TELJES = "1"                # CSAK elonezet (sajat teszt-IP): a naploban a TELJES kikuldott payload; ott, ahol nincs beallitva, a nyers IP maszkolt
 
