@@ -28,8 +28,6 @@ export const ELO_CELOK = Object.freeze({
   google_primary: ['7030256606', '7497019094', '7497204933', '7497204930', '7821698547', '7801471836', '7801343216', '7803645055', '7803499839'],
 });
 export const PLATFORMOK = Object.freeze(['meta', 'tiktok', 'google', 'ga4']);
-// melyik uzletagnal melyik platformra kuldunk alapbol (a veszkapcsolo ezt tovabb szukitheti): a TikTok csak a HeadSpa-ra hirdet (DECISION #5)
-export const ALAP_UZLETAG_PLATFORM = Object.freeze({ meta: ['headspa', 'fodrasz', 'oxigen', 'szor', 'pmu'], tiktok: ['headspa'], google: ['headspa', 'fodrasz', 'oxigen', 'szor', 'pmu'], ga4: ['headspa', 'fodrasz', 'oxigen', 'szor', 'pmu'] });
 
 const GA4_NEV = { FoglalasElso: 'foglalas_elso', Konzultacio: 'konzultacio', Visszajaro: 'visszajaro', Ajandekkartya: 'purchase' };
 
@@ -75,8 +73,10 @@ export function tiktokKerelem(e, ctx, env = {}) {
   const teszt = env && env.TIKTOK_TESZT_KOD;
   if (!teszt) return { tiltva: 'nincs TIKTOK_TESZT_KOD: TikToknak csak tesztkoddal kuldunk' };
   const szab = ctx.hozz.tiktok;
-  // HeadSpa ernyo (uj vendeg foglalas + ajandekkartya) = CompletePayment (DECISION: a CompletePayment csak ez); minden mas egyedi esemenynev
-  const nev = e.tipus === 'ernyo' && ctx.fk.uzletag === 'headspa' ? 'CompletePayment' : metaNev(e, ctx.fk.uzletag);
+  // MINDEN uzletag megy az ARNYEK pixelre (jovahagyott architektura 7. pont). Alapesemeny: a Meta-val egyezo egyedi nev (Fodrasz_Konzultacio, Szor_FoglalasElso ...);
+  // ernyo: HeadSpa = CompletePayment (kompatibilitas), a tobbi uzletag = Schedule. Nem-HeadSpa esemeny SOHA nem lehet CompletePayment (DECISION 10-06, MERES-KONVERZIO-TERKEP 4. pont).
+  const nev = e.tipus === 'ernyo' ? (ctx.fk.uzletag === 'headspa' ? 'CompletePayment' : 'Schedule') : metaNev(e, ctx.fk.uzletag);
+  if (nev === 'CompletePayment' && ctx.fk.uzletag !== 'headspa') return { tiltva: 'nem-HeadSpa esemeny nem lehet CompletePayment' };
   const user = tisztit({ email: ctx.hash.em && szab.felhasznaloi_adat ? ctx.hash.em : null, phone: ctx.hash.ph_e164 && szab.felhasznaloi_adat ? ctx.hash.ph_e164 : null, external_id: ctx.hash.ext, ttclid: ctx.erk.tiktok && ctx.erk.tiktok.ttclid && ctx.erk.tiktok.ttclid.ertek, ttp: ctx.erk.ttp, ip: ctx.ip, user_agent: ctx.ua });
   const kod = ctx.fk.tipus === 'ajandekkartya' ? 'ajandekkartya' : `${ctx.fk.uzletag}_${e.nev}`.toLowerCase();
   const adat = tisztit({

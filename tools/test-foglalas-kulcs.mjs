@@ -582,3 +582,9 @@ test('nevtablaSalonicbol (HeadSpa / Elysion): MINDEN munkatars-azonosito a szolg
   const jelolt = emailKulcsNevtablabol({ felado: 'Mosaic Headspa', szolgaltatas: 'Páros', munkatarsak: ['Mirage Egyéni kezelő - Május'], idopontSzoveg: 'October 31. (Saturday) 15:30', ld: { startDate: '2026-10-31T15:30:00+01:00' } }, be, 1);
   assert.deepEqual(jelolt.kulcsok, ['10427|27076|1793457000'], 'a 27076-os (kulonbozo nevu) munkatars nem keveredik a 24065-oel');
 });
+test('emailElemzes: a szalonnak szolo "Uj online foglalas erkezett" level "Foglalas megtekintese" linkjebol (calendar/showBooking/?bookingId=) is kiolvassa a UUID-t es a hostot; idegen host nem fogadhato el', () => {
+  const u = '2aae042b-7acf-30e2-017f-66febe61e2e3';
+  const a = emailElemzes(`<a href="https://mosaicheadspa.salonic.hu/calendar/showBooking/?bookingId=${u}">Foglalás megtekintése</a>`);
+  assert.deepEqual([a.uuid, a.host], [u, 'mosaicheadspa.salonic.hu']);
+  assert.deepEqual([emailElemzes(`<a href="https://mosaic-pmu.salonic.hu/calendar/showBooking/?x=1&amp;bookingId=${u}">x</a>`).uuid, emailElemzes(`<a href="https://evil.example.com/calendar/showBooking/?bookingId=${u}">x</a>`).uuid], [u, null]);
+});

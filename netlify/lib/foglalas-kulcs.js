@@ -179,7 +179,9 @@ const entitas = (s) => String(s).replace(/&amp;/g, '&').replace(/&quot;/g, '"').
  */
 export function emailElemzes(html) {
   const h = String(html || '');
-  const link = h.match(/https:\/\/([a-z0-9-]+\.salonic\.hu)\/booking\/(?:bookingDetails|cancelBooking)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/);
+  const UUID_RE = '([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})';
+  // a vendegnek szolo level "Foglalas reszletek" / "Lemondom" linkje, VAGY a szalonnak szolo "Uj online foglalas erkezett" level "Foglalas megtekintese" linkje (calendar/showBooking/?bookingId=<uuid>)
+  const link = h.match(new RegExp('https://([a-z0-9-]+\\.salonic\\.hu)/booking/(?:bookingDetails|cancelBooking)/' + UUID_RE)) || h.match(new RegExp('https://([a-z0-9-]+\\.salonic\\.hu)/calendar/showBooking/\\?(?:[^"\'<>\\s]*?&(?:amp;)?)?bookingId=' + UUID_RE));
   const feladoH2 = (h.match(/<h2>([^<]+)<\/h2>\s*<\/div>/) || [])[1]; // magyar sablon: a fejlecben a szalon neve; az angol (HeadSpa) sablonban logo van, szoveg nincs
   const doboz = h.match(/padding: 20px; width: 90%;border-radius: 5px">\s*<h2>([^<]+)<\/h2>\s*([^<]*?)\s*<br/);
   const reszek = h.split(/(?:Munkatársak|Employees)<\/h3>/)[1]; // az angol sablonban "Employees"

@@ -13,17 +13,19 @@ export const SOURCE_ID_MINTA = /^(mb_[a-z0-9]{12,40}|pi_[A-Za-z0-9]{8,80}|ATU-[A
 const KONZULTACIO = /konzult|hajkamer/i; // ugyanaz a szabaly, mint a foglalo-motorban (business-config.js CONSULT)
 
 /**
- * A KONZULTACIO esemeny erteke (DECISION-LOG #98: "a konzultacio a valos ertekevel megy", KONVERZIO-TERV 2.1 / 2.2; nem a Salonic ara, ami ingyenes konzultacional 0 Ft).
- * Kepelet: konzultacio erteke = (megjelent / BRUTTO foglalas) x (vendegge valas) x (atlagos elso foglalas) - Drive: KONVERZIO-KONZULTACIO-2026-09-28.md 3. pont.
- *   szor: 71% x 59% x 64 100 Ft = 27 000 Ft (merve);  fodrasz: 71% x 70% x 26 190 Ft = 13 000 Ft (a 70% / 71% HIPOTEZIS, de a rogzitett ertek);
- *   oxigen, pmu, headspa: NINCS rogzitett ertek (a terv szerint "nem elesitheto") -> null = NYITOTT: az esemeny NEM megy ki (sem 0-val, sem a Salonic araval), a naploban "nyitott".
- * Felulirhato / kiegeszitheto a MERES_KONZULTACIO_ERTEK kornyezeti valtozoval (JSON: {"oxigen": 4600}); egy helyen, kodvaltoztatas nelkul.
+ * A KONZULTACIO esemeny erteke (DECISION-LOG #98 / #100 / #101: "a konzultacio a valos ertekevel megy"; nem a Salonic ara, ami ingyenes konzultacional 0 Ft, az oxigen akcios vizsgalatnal 4 990 Ft).
+ * A rogzitett ertek (konfiguralhato tabla; a Salonic ara csak a naplo "salonic_ar" mezojeben latszik):
+ *   szor 27 000 Ft (meres: 71% x 59% x 64 100 Ft), fodrasz 13 000 Ft (71% x 70% x 26 190 Ft, hipotezis, de rogzitett), PMU 13 800 Ft (#100 / #101),
+ *   oxigen AKCIOS hajkamera-vizsgalat + konzultacio 8 900 Ft (#100 / #101; a vizsgalat dijat IS tartalmazza: nem adodik hozza a Salonic-ar).
+ * HeadSpa: NINCS konzultacio-ag (#101): a HeadSpa "konzultacio" nevu foglalasbol nem kepzunk esemenyt (esemenyek() ures listat ad).
+ * Ha egy uzletag erteke nincs (null), az esemeny NYITOTT: nem megy ki (sem 0-val, sem a Salonic araval), a naploban "nyitott".
+ * Felulirhato / kiegeszitheto a MERES_KONZULTACIO_ERTEK kornyezeti valtozoval (JSON: {"oxigen": 8900}); egy helyen, kodvaltoztatas nelkul.
  */
-export const KONZULTACIO_ERTEK = Object.freeze({ szor: 27000, fodrasz: 13000, oxigen: null, pmu: null, headspa: null });
+export const KONZULTACIO_ERTEK = Object.freeze({ szor: 27000, fodrasz: 13000, oxigen: 8900, pmu: 13800 });
 export function konzultacioTabla(env = {}) {
   let ext = {}; try { ext = env && env.MERES_KONZULTACIO_ERTEK ? JSON.parse(env.MERES_KONZULTACIO_ERTEK) : {}; } catch (e) { ext = {}; }
   const t = { ...KONZULTACIO_ERTEK };
-  for (const u of UZLETAGAK) if (u in ext && (ext[u] === null || (Number.isFinite(Number(ext[u])) && Number(ext[u]) >= 0))) t[u] = ext[u] === null ? null : Math.round(Number(ext[u]));
+  for (const u of UZLETAGAK) if (u !== 'headspa' && u in ext && (ext[u] === null || (Number.isFinite(Number(ext[u])) && Number(ext[u]) >= 0))) t[u] = ext[u] === null ? null : Math.round(Number(ext[u]));
   return t;
 }
 const KUPON = /kupon/i;                    // pl. "KUPONKODDAL - ... HeadSpa kezeles"
@@ -52,6 +54,7 @@ export function esemenyek(fk, tabla = KONZULTACIO_ERTEK) {
   const alap = fk.tipus === 'ajandekkartya' ? 'Ajandekkartya'
     : fk.jelleg === 'elso' ? 'FoglalasElso' : fk.jelleg === 'konzultacio' ? 'Konzultacio' : fk.jelleg === 'visszajaro' ? 'Visszajaro' : null;
   if (!alap) return [];
+  if (fk.uzletag === 'headspa' && alap === 'Konzultacio') return []; // HeadSpa: nincs konzultacio-ag (#101)
   const lista = [{ nev: alap, tipus: 'alap' }];
   // ernyo: visszajaro es kupon soha; HeadSpa: uj vendeg foglalasa + ajandekkartya; szor / PMU / fodrasz / oxigen: elso foglalas + konzultacio
   const ernyoJogosult = !fk.kupon && alap !== 'Visszajaro' && (fk.uzletag === 'headspa' ? (alap === 'FoglalasElso' || alap === 'Ajandekkartya') : (alap === 'FoglalasElso' || alap === 'Konzultacio'));

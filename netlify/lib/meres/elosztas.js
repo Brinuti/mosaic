@@ -9,7 +9,7 @@ import { esemenyek, konzultacioTabla, SOURCE_ID_MINTA, UZLETAGAK } from './eseme
 import { hashEmail, hashTelefon, hashAzonosito } from './hash.js';
 import { erkezesTisztit } from './erkezes.js';
 import { hozzajarulasTisztit, platformSzabaly } from './hozzajarulas.js';
-import { KEREM_EPITO, kuldes, PLATFORMOK, ALAP_UZLETAG_PLATFORM } from './platformok.js';
+import { KEREM_EPITO, kuldes, PLATFORMOK } from './platformok.js';
 
 const SEMA = [
   'CREATE TABLE IF NOT EXISTS meres_erkezes (source_id TEXT PRIMARY KEY, uzletag TEXT NOT NULL, tipus TEXT NOT NULL, attr TEXT NOT NULL, hozz TEXT NOT NULL, ua TEXT, ip TEXT, oldal TEXT, bongeszo TEXT, ido INTEGER NOT NULL, frissitve INTEGER NOT NULL) WITHOUT ROWID',
@@ -141,8 +141,7 @@ export async function elosztas(db, fk, deps = {}) {
     const sor = { esemeny_id: e.esemeny_id, nev: e.nev, tipus: e.tipus, ertek: e.ertek, ertek_forras: e.ertek_forras, salonic_ar: e.salonic_ar, nyitott: e.nyitott, platformok: {} };
     for (const platform of PLATFORMOK) {
       let mezok;
-      if (!ALAP_UZLETAG_PLATFORM[platform].includes(fk.uzletag)) mezok = { allapot: 'kihagyva', indok: 'a platform erre az uzletagra nem hirdet / nincs arnyek-celpont' };
-      else if (kikapcsolva(kapcsolok, fk.uzletag, platform)) mezok = { allapot: 'kihagyva', indok: 'veszkapcsolo: ' + kikapcsolva(kapcsolok, fk.uzletag, platform) };
+      if (kikapcsolva(kapcsolok, fk.uzletag, platform)) mezok = { allapot: 'kihagyva', indok: 'veszkapcsolo: ' + kikapcsolva(kapcsolok, fk.uzletag, platform) };
       else if (elo === 'torolve') mezok = { allapot: 'kihagyva', indok: 'a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)' };
       else if (elo === 'ismeretlen') mezok = { allapot: 'halasztva', indok: 'a foglalas elo allapota nem ellenorizheto: az esemeny nem megy ki, amig nem tudjuk, hogy a foglalas el' };
       else {
