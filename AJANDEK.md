@@ -241,7 +241,7 @@ Két eset van (a szalon eddigi gyakorlata szerint):
 | | bankkártya (Stripe) | utalás |
 |---|---|---|
 | Salonic | sima **100%-os kupon** (a számlát a szamlabridge már kiállította) | **utalvány-értékesítés** (fizetési mód: Átutalás; ez készíti a számlát, és a Salonic a saját utalványkódját mindig felismeri foglalásnál) |
-| a kód | a levélben javasolt `AK-XXXX-XXXX` (átírható) | a Salonic adja (pl. `GYOR1865`), a szalon írja be |
+| a kód | a levélben javasolt `AKXXXXXXXX`, kötőjel nélkül (átírható) | a Salonic adja (pl. `GYOR1865`), a szalon írja be |
 | rendelésazonosító | `MH-XXXXXXXX` | `ATU-XXXXXX` (ez a bankkivonat közleménye) |
 
 1. **Kártya:** a Stripe webhook (`POST /api/ajandek/webhook`) két levelet küld: a szalonnak (rendelés, vevő adatai, javasolt kód,
@@ -277,7 +277,7 @@ Két eset van (a szalon eddigi gyakorlata szerint):
 **Szamlabridge:** csak a Stripe-fizetésekből készít számlát. Utalásnál a számlát a Salonic utalvány-értékesítése készíti, ezért a
 nyilvántartási PI soha nem „succeeded” (a `payment_intent.succeeded` webhook nem fut rá, a szamlabridge nem számláz).
 
-**A kártya kiküldése (a tulajdonos döntése, 2026-10-04): bankkártyás rendelésnél a kártya a fizetés után AZONNAL kimegy** (`AJANDEK_AZONNALI = "1"` a `wrangler.toml`-ban, élesben és az előnézeten is: a webhook rögtön kiállítja a kártyát, a vevő levele már a kártya linkjét és a kódot tartalmazza, a feliratok „perceken belül”-re váltanak). A kódot a rendszer adja (`AK-XXXX-XXXX`), a szalon **pontosan ezt a kódot** viszi fel kézzel a Salonic 100%-os kuponjára (a szalon levele ezt mondja, kiállító gomb nincs). Kockázat: amíg a szalon nem hozta létre a kupont, a vevő kódja a foglalásnál még nem működik, ezért a szalon levelét mielőbb el kell intézni. **Átutalásnál a kézi gomb marad** (az utalás megérkezését a szalon jelzi). Ha a kiállítást vissza kell váltani kézire: a `AJANDEK_AZONNALI` sort kell kivenni.
+**A kártya kiküldése (a tulajdonos döntése, 2026-10-04): bankkártyás rendelésnél a kártya a fizetés után AZONNAL kimegy** (`AJANDEK_AZONNALI = "1"` a `wrangler.toml`-ban, élesben és az előnézeten is: a webhook rögtön kiállítja a kártyát, a vevő levele már a kártya linkjét és a kódot tartalmazza, a feliratok „perceken belül”-re váltanak). A kódot a rendszer adja (`AKXXXXXXXX`, **kötőjel nélkül**: a Salonic nem fogad el kötőjeles kuponkódot, 2026-10-06; a korábbi, kötőjeles `AK-XXXX-XXXX` kódú rendelések a kártyán, a levélben és a kiállító oldalon is kötőjel nélkül jelennek meg: `kodEgysegesit`), a szalon **pontosan ezt a kódot** viszi fel kézzel a Salonic 100%-os kuponjára (a szalon levele ezt mondja, kiállító gomb nincs). Kockázat: amíg a szalon nem hozta létre a kupont, a vevő kódja a foglalásnál még nem működik, ezért a szalon levelét mielőbb el kell intézni. **Átutalásnál a kézi gomb marad** (az utalás megérkezését a szalon jelzi). Ha a kiállítást vissza kell váltani kézire: a `AJANDEK_AZONNALI` sort kell kivenni.
 
 **A kártya** (`/api/ajandek/kartya?pi=&t=`) a MOSAIC saját **Canva-terve** (A4 álló, sötétzöld-arany): a háttér
 `assets/img/ajandek/kartya-hatter.jpg` (a Canva-terv szövegmentes másolatából exportálva), erre írja a rendszer a megajándékozott

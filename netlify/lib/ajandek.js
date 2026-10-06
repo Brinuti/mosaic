@@ -216,15 +216,21 @@ async function titok(env) {
   return enc.encode(titokSzoveg(env));
 }
 
-// KOD: 'AK-XXXX-XXXX' (a rendelesszam MH-, igy a ketto nem osszetevesztheto) - az HMAC-SHA256(titok, 'kod:' + piId) elso 5 bajtja (40 bit) Crockford base32-ben
+// KOD: 'AKXXXXXXXX' (a rendelesszam MH-, igy a ketto nem osszetevesztheto) - az HMAC-SHA256(titok, 'kod:' + piId) elso 5 bajtja (40 bit) Crockford base32-ben.
+// KOTOJEL NELKUL: a Salonic nem fogad el kotojeles kuponkodot (2026-10-06, a szalon jelezte); a regi 'AK-XXXX-XXXX' formatum megjelenitese: kodEgysegesit.
 export async function kuponKod(env, piId) {
   const b = await hmac(await titok(env), 'kod:' + piId);
   let n = 0;
   for (let i = 0; i < 5; i++) n = n * 256 + b[i];
   let s = '';
   for (let i = 7; i >= 0; i--) s += CROCKFORD[Math.floor(n / 2 ** (5 * i)) % 32];
-  return `AK-${s.slice(0, 4)}-${s.slice(4)}`;
+  return `AK${s}`;
 }
+
+// A regi, kotojeles generalt kod (AK-XXXX-XXXX: a 2026-10-06 elott kiallitott rendelesek metadataja) kotojel nelkul jelenik meg (kartya, level, kiallito oldal):
+// a Salonic nem fogad el kotojeles kuponkodot, a szalon kotojel nelkul vitte fel. A szalon altal beirt kodokhoz (pl. GYOR1865, SajatKupon-7) nem nyulunk.
+const REGI_KOD_RE = /^AK-([0-9A-HJKMNP-TV-Z]{4})-([0-9A-HJKMNP-TV-Z]{4})$/;
+export const kodEgysegesit = (v) => { const m = REGI_KOD_RE.exec(typeof v === 'string' ? v.trim() : ''); return m ? `AK${m[1]}${m[2]}` : v; };
 
 export async function kiallitToken(env, piId) {
   return hex(await hmac(await titok(env), 'kiallit:' + piId));
@@ -631,7 +637,7 @@ async function rendelesInfo(k, pi) {
     fizetesi_mod: atu ? 'atutalas' : fizetesiMod(ch),
     // kartyas fizetesnel a webhook a metadataba is beirja (titokcsere utan is ugyanaz maradjon); a szalon a
     // kiallitaskor felulirhatja (a Salonicban letrehozott kupon / utalvany kodja). Utalasnal CSAK a szalon adja meg.
-    kod: fizetve ? (md.kod || (atu ? null : await kuponKod(k.env, pi.id))) : null,
+    kod: fizetve ? (kodEgysegesit(md.kod) || (atu ? null : await kuponKod(k.env, pi.id))) : null,
     javasolt_kod: atu ? '' : await kuponKod(k.env, pi.id),
     // tovabbithato link (az ajandekozottnak is): kulon token, client_secret NELKUL
     kartya_url: fizetve ? `${k.bazis}/api/ajandek/kartya?pi=${encodeURIComponent(pi.id)}&t=${await kartyaToken(k.env, pi.id)}` : null,
@@ -1125,7 +1131,7 @@ async function kiallitUrlap(k, e, hiba) {
       action: k.u.pathname,
       rejtett: { pi: e.piId, t: e.t },
       mezok: [{
-        nev: 'kod', max: 40, kotelezo: true, ertek: atu ? '' : (e.i.md.kod || e.i.javasolt_kod || ''),
+        nev: 'kod', max: 40, kotelezo: true, ertek: atu ? '' : (kodEgysegesit(e.i.md.kod) || e.i.javasolt_kod || ''),
         cimke: atu ? 'Utalványkód (a Salonic utalvány-értékesítésből)' : 'Kupon kódja (a Salonicban létrehozott 100%-os kupon)',
         megjegyzes: atu ? 'Például: GYOR1865. Ez a kód kerül a kártyára, és ezzel foglal majd a vendég.'
           : 'Alapból a javasolt kód áll itt; ha a Salonicban mást adtál meg, írd át arra.',
