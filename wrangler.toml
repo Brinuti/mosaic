@@ -29,6 +29,14 @@ binding = "SZAMLALO_DB"
 database_name = "mosaic-foglalo-szamlalo-elonezet"
 database_id = "08eb6f2f-180a-4352-a7f9-27333d5d6b5d"
 
+# A foglalas-kulcs tabla (Cloudflare D1, QA-1 folytatas, lasd docs/booking-engine/BOOKING_ID.md): a foglalo sajat booking_id-je <-> a Salonic-foglalas parositasa.
+# Szemelyes adat nincs benne. CSAK ELONEZETKENT kotve (a PR-elonezet kulon adatbazist hasznal); az eles kotes (database_name = "mosaic-foglalas-kulcs", [[d1_databases]] binding = "KULCS_DB")
+# az elesites donteseig hianyzik: az eles /api/foglalas-kulcs 503-at ad, a koszonooldali iro ezt elnyeli (a foglalas ettol nem akad el).
+[[env.preview.d1_databases]]
+binding = "KULCS_DB"
+database_name = "mosaic-foglalas-kulcs-elonezet"
+database_id = "628113fe-9793-450d-baad-fc77814995eb"
+
 [vars]
 ESEMENY_IRAS = "1"   # a foglalasi jegyzettomb eles irasa BEKAPCSOLVA (a tulajdonos jovahagyta, 2026-10-04); kikapcsolas: a sor torlese
 ESEMENY_KIHAGY = "2038420,3385039,3385031,3353226"   # a tulajdonos proba-vendegkartyai (a Salonic g: azonositoi): HeadSpa 2038420, Hair 3385039, Oxigen 3385031, Elysion 3353226; az ilyen foglalas nem kerul a jegyzettombbe
@@ -52,6 +60,7 @@ SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
 SMTP_USER = "mosaicheadspa@gmail.com"
 SZAMLALO_OLVASO_HASH = "d7122e43eeeca61db826d113cb06aa5028568fb63e57a00835978833b0a9b6a0"
+EGYEZTETES_KULCS_HASH = "04fbe0cc4e571ff62ee6d760b1bb1ce694cbf726930a95f4a669c7dbaa372b60"   # a foglalas-kulcs / parositas vegpontok kulcsanak SHA-256-ja (CSAK elonezet; a kulcs maga nincs a kodban)
 STRIPE_PUBLISHABLE_KEY = "pk_test_51QhTxoFv8vc2ArnLyqmRz5giwCnlNAtTTygecEAnBRWbFmYrPWTYQtsCG3tSVI6hU3BJCBBKBNaMe6621Twfq40r00wzanIqTE"
 AJANDEK_AZONNALI = "1"
 AJANDEK_STRIPE_SZAMLA = "1"

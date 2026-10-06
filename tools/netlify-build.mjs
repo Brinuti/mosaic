@@ -259,6 +259,9 @@ if (ATKOTES.size) {
 }
 const verzio = Object.fromEntries(SAJAT.map((f) => [f,
   crypto.createHash('sha1').update(fs.readFileSync(path.join(DIST, f))).digest('hex').slice(0, 10)]));
+// A Salonic-foglalas utani koszonooldalak (a Salonic ide iranyit sikeres foglalas utan; lasd docs/booking-engine/KOSZONO_OLDALAK.md): ide kerul a kulcs-iro.
+const FOGLALAS_KOSZONO = new Set(['ajikartya-ok', 'eltavolitas-ok', 'elysion-ok', 'fodrasz-ok', 'foglalas-ok', 'korrekcio-ok', 'oxigenterapia-ok', 'pmu-ok', 'szor-konzi-ok', 'szortelenites-ok',
+  'success-foglalas', 'success-foglalas-4kezes', 'success-foglalas-egyeni', 'success-foglalas-egyeni-vip', 'success-foglalas-paros', 'success-foglalas-paros-vip'].map((x) => x + '.html'));
 // A sajat foglalo-oldalak (a motor / a PMU foglalo / a probaoldalak) maguk toltik a foglalot: ezekre a launcher nem kerul.
 const FOGLALO_OLDALAK = new Set(['foglalo-motor.html', 'foglalas.html', 'booking-test.html', 'foglalo-pmu.html', 'foglalo-proba.html', 'sminktetovalas-budapest.html']);
 // Szovegfinomitasok a kozos fejlecben/lableben. A Wixes oldalakban a szoveg HTML-entitasokkal van kodolva, a sajat darabokban sima betukkel: a mintak mindkettot elfogadjak.
@@ -285,6 +288,9 @@ for (const mappa of [LAP_A, LAP_M]) {
     // nem visz at a /foglalo-motor oldalra. Kikapcsolt atkotesnel (eles, ma) semmi nem valtozik.
     const launcherOldal = ATKOTES.size > 0 && !kihagyottOldal(f) && !FOGLALO_OLDALAK.has(f); // ahol a launcher rajta van, a foglalo-linkek a retegben nyilnak
     if (launcherOldal) h = h.replace('</body>', '<script type="module" src="/assets/js/booking-launcher.js"></script></body>');
+    // A Salonic-foglalas utani koszonooldalakra a sajat kulcs-iro kerul (assets/js/foglalas-kulcs.js: a bookingUrl-bol kulcs -> booking_id, lasd docs/booking-engine/BOOKING_ID.md);
+    // bookingUrl nelkul semmit nem csinal.
+    if (FOGLALAS_KOSZONO.has(f)) h = h.replace('</body>', '<script src="/assets/js/foglalas-kulcs.js" defer></script></body>');
     for (const [fajl, css] of BEAGYAZOTT) {
       let elso = true;
       h = h.replace(new RegExp('<link rel="stylesheet" href="/assets/css/' + fajl.replace('.', '\\.') + '">', 'g'),
