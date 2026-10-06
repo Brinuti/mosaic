@@ -137,7 +137,9 @@
   // Ha az API nem valaszol / nincs szabad nap: a helyben nyilo foglalo-motor (NEM kozvetlen Salonic-link: a Salonic sajat sikeroldalan vegzodo foglalas a meresben nem latszik)
   const motorUrl = () => (allapot.mod === 'konzult' ? '/foglalo-motor?business=laser&service=konzult' : '/foglalo-motor?business=laser&intent=first');
   // a kivalasztott idopont adatlapja: az idopont mar benne van (ugyanezt a cimet nyitja a foglalo-motor is)
-  const adatlapUrl = (id, ts) => `${SZALON.cim}/guestData/?anyone=true&employeeId=${SZALON.kezelo}&placeId=${SZALON.placeId}&serviceId=${id}&startDate=${ts}&back=`;
+  // sajat foglalas-azonosito (booking_id, QA-1/QA-2): ugyanaz az alak, mint assets/js/booking-engine/booking-id.js (mb_ + base36 ido + 14 veletlen karakter); a Salonic a "back" parameterben visszaadja
+  const ujFoglalasAzon = () => { const b = new Uint8Array(14); if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(b); else for (let i = 0; i < 14; i++) b[i] = Math.floor(Math.random() * 256); const A = '0123456789abcdefghijklmnopqrstuvwxyz'; return 'mb_' + Date.now().toString(36).padStart(9, '0').slice(-9) + Array.from(b, (x) => A[x % 36]).join(''); };
+  const adatlapUrl = (id, ts) => `${SZALON.cim}/guestData/?anyone=true&employeeId=${SZALON.kezelo}&placeId=${SZALON.placeId}&serviceId=${id}&startDate=${ts}&back=${ujFoglalasAzon()}`; // minden idopont-linkhez sajat azonosito (a koszonooldali kulcs-iro ebbol parosit)
 
   function leker(url, o = {}) {
     const ab = new AbortController();

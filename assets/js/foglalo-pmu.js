@@ -432,7 +432,11 @@
     if (allapot.kerdesValasz !== 'elso') { allapot.kerdesCel = 'adatok'; ugrik('kerdes'); return; }
     $('adatok-osszegzes').replaceChildren(miniOsszegzes());
     const k = allapot.kezeles;
-    const url = SZALON.cim + '/guestData/?' + new URLSearchParams({ placeId: SZALON.placeId, serviceId: k.id, employeeId: -1, startDate: allapot.slot });
+    // sajat foglalas-azonosito (booking_id, QA-1/QA-2): ugyanaz az alak, mint assets/js/booking-engine/booking-id.js (mb_ + base36 ido + 14 veletlen karakter); a Salonic a "back" parameterben visszaadja
+    const ujFoglalasAzon = () => { const b = new Uint8Array(14); if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(b); else for (let i = 0; i < 14; i++) b[i] = Math.floor(Math.random() * 256); const A = '0123456789abcdefghijklmnopqrstuvwxyz'; return 'mb_' + Date.now().toString(36).padStart(9, '0').slice(-9) + Array.from(b, (x) => A[x % 36]).join(''); };
+    const bid = ujFoglalasAzon();
+    try { sessionStorage.setItem('mhBookingCtx', JSON.stringify({ id: bid, created: Date.now(), seen: Date.now(), business: 'pmu', source_page: 'foglalo-pmu', service_id: String(k.id), slot_unix: +allapot.slot, staff_id: '-1', carrier: 'back', sent_at: Date.now(), returned: null, completed_at: null })); } catch (e) { /* privat mod: a "back" parameter akkor is viszi az azonositot */ }
+    const url = SZALON.cim + '/guestData/?' + new URLSearchParams({ placeId: SZALON.placeId, serviceId: k.id, employeeId: -1, startDate: allapot.slot, back: bid });
     // a koszonooldalnak (a /pmu-ok meres utan ide jovunk vissza)
     tarol(TAROLO, { ts: allapot.slot, perc: k.perc, nev: k.egyeb ? k.nev : k.cim + (k.valtozat ? ' – ' + k.valtozat : ''), ar: arSzoveg(k), foto: k.foto, tipus: /konzult/i.test(k.nev) ? 'konz' : 'kezeles' });
     $('salonic-link').href = url;

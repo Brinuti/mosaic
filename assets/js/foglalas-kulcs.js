@@ -22,6 +22,14 @@
       } catch (e) { /* nincs / hibas kontextus */ }
     }
     if (!id) return;
+    // QA-2: az erkezesi adatok (kattintasazonositok, UTM, sutik, hozzajarulas) a foglalas azonositojaval - a szerver-oldali mereshez (assets/js/attribucio.js; szemelyes adat nem megy)
+    try {
+      var UZLETAG = { 'mosaicheadspa.salonic.hu': 'headspa', 'mosaic-hair.salonic.hu': 'fodrasz', 'mosaic-oxigen.salonic.hu': 'oxigen', 'mosaic-elysion.salonic.hu': 'szor', 'mosaic-pmu.salonic.hu': 'pmu' };
+      if (window.mhAttribucio && UZLETAG[u.hostname]) {
+        var fb = q.get('first_booking'), ar = String(q.get('price') || '').replace(/\D/g, '');
+        window.mhAttribucio.kuld({ source_id: id, uzletag: UZLETAG[u.hostname], tipus: 'foglalas', szolgaltatas: q.get('service') || undefined, ar: ar ? +ar : undefined, first_booking: fb === 'true' ? true : fb === 'false' ? false : null, g: q.get('g') || undefined, bookingUrl: bu });
+      }
+    } catch (e) { /* a koszonooldal ettol nem akadhat el */ }
     var jel = 'mhKulcsIrva:' + id;
     try { if (sessionStorage.getItem(jel)) return; } catch (e) { /* privat mod: nem blokkolunk */ }
     window.mhKulcsEredmeny = { bookingId: id, forras: forras, allapot: 'kuldve' }; // csak az ellenorzo proba olvassa

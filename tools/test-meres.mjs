@@ -439,3 +439,55 @@ test('HTTP /api/meres-erkezes: azonos eredet kell (403), tul nagy 413, nem JSON 
   const ok = await kezelErkezes(kerErkezes(HAIR_ERK()), e, { now: () => NOW }); assert.equal(ok.status, 200);
   assert.ok((await ok.json()).mezok.includes('google'));
 });
+
+// --- bongeszo: assets/js/attribucio.js (vm-ben, hamis window / document / tarolo) -------------------------------------------------------------
+import vm from 'node:vm';
+const ATTR_FORRAS = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'assets', 'js', 'attribucio.js'), 'utf8');
+const tarolo = (kezdo = {}) => { const m = new Map(Object.entries(kezdo)); return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k), _m: m }; };
+function bongeszo({ host = 'x.pages.dev', search = '', cookie = '', ls = tarolo(), ss = tarolo(), fetchImpl } = {}) {
+  const hivasok = [];
+  const win = { top: null };
+  const ctx = {
+    window: win, document: { get cookie() { return cookie; } }, localStorage: ls, sessionStorage: ss, location: { hostname: host, search, origin: 'https://' + host, pathname: '/foglalas-ok' }, URLSearchParams, Date, JSON, Math, Promise, String, Object, encodeURIComponent, decodeURIComponent, RegExp,
+    fetch: fetchImpl || (async (u, o) => { hivasok.push({ u, body: JSON.parse(o.body) }); return { ok: true, status: 200, json: async () => ({ ok: true }) }; }),
+  };
+  win.top = win; win.self = win; ctx.window = win; Object.assign(win, ctx); ctx.self = win;
+  vm.createContext(win); vm.runInContext(ATTR_FORRAS, win);
+  return { win, hivasok, ls, ss };
+}
+test('attribucio.js: kattintasazonositok platformonkent kulon + idobelyeg, elso / utolso UTM, _fbp / _ttp, GA4 client_id + session_id; a szerver hibak nelkul fogadja', async () => {
+  const { win, ls } = bongeszo({ search: `?gclid=${GCLID}&fbclid=IwAR_fbclid_TESZT_01&ttclid=E.C.P.ttclid_TESZT_01&utm_source=google&utm_medium=cpc&utm_campaign=elso`, cookie: `_fbp=fb.1.1759759200000.1234567890; _ttp=ttp_TESZT_0123456789abcdef; _ga=GA1.1.1234567890.1759759200; _ga_H4206SQ0Q7=GS2.1.s1759759200$o1$g0$t1759759200$j60$l0$h0` });
+  const p = JSON.parse(JSON.stringify(win.mhAttribucio.pillanatkep())); // a vm-bol jovo objektum prototipusa mas
+  assert.equal(p.google.gclid.ertek, GCLID); assert.ok(p.google.gclid.ts > 1.7e9);
+  assert.equal(p.meta.fbclid, 'IwAR_fbclid_TESZT_01'); assert.match(p.meta.fbc, /^fb\.1\.\d{13}\.IwAR_fbclid_TESZT_01$/);
+  assert.equal(p.tiktok.ttclid.ertek, 'E.C.P.ttclid_TESZT_01'); assert.equal(p.fbp, 'fb.1.1759759200000.1234567890'); assert.equal(p.ttp, 'ttp_TESZT_0123456789abcdef');
+  assert.deepEqual(p.ga4, { client_id: '1234567890.1759759200', session_id: '1759759200', measurement_id: 'G-H4206SQ0Q7' });
+  assert.equal(p.utm_elso.campaign, 'elso'); assert.equal(p.utm_utolso.campaign, 'elso');
+  const { adat, hibak } = erkezesTisztit(JSON.parse(JSON.stringify(p)), Date.now()); assert.deepEqual(hibak, []); assert.ok(adat.google.gclid && adat.meta.fbc && adat.tiktok && adat.fbp && adat.ttp && adat.ga4.session_id);
+  // masodik latogatas: uj Google-kattintas (wbraid) + uj UTM; a gclid, a TikTok-kattintas es az elso UTM marad
+  const b2 = bongeszo({ ls, search: '?wbraid=CoMKCQ_wbraid_TESZT_0123&utm_source=facebook&utm_campaign=utolso' });
+  const q = JSON.parse(JSON.stringify(b2.win.mhAttribucio.pillanatkep()));
+  assert.ok(q.google.gclid && q.google.wbraid, 'a regi gclid megmarad, a wbraid kulon jon'); assert.ok(q.tiktok.ttclid);
+  assert.equal(q.utm_elso.campaign, 'elso'); assert.equal(q.utm_utolso.campaign, 'utolso'); assert.equal(q.utm_utolso.source, 'facebook');
+  // GS1 formatumu session-sutit is ert
+  assert.equal(bongeszo({ cookie: '_ga=GA1.1.1234567890.1759759200; _ga_H4206SQ0Q7=GS1.1.1759759201.3.1.1759759300.0.0.0' }).win.mhAttribucio.pillanatkep().ga4.session_id, '1759759201');
+});
+test('attribucio.js: hibas / injektalt URL-parameter nem kerul be; hozzajarulas az mh_cc-bol (dontes nelkul ures); az eles domainen alapbol NEM fut', () => {
+  const { win } = bongeszo({ search: '?gclid=<script>&fbclid=x&ttclid=%00&utm_source=' + 'a'.repeat(300) });
+  const p = JSON.parse(JSON.stringify(win.mhAttribucio.pillanatkep())); assert.ok(!p.google && !p.tiktok && !(p.meta && p.meta.fbclid)); assert.equal(p.utm_utolso.source.length, 120);
+  assert.deepEqual(JSON.parse(JSON.stringify(win.mhAttribucio.hozzajarulas())), {});
+  const dontessel = bongeszo({ ls: tarolo({ mh_cc: JSON.stringify({ v: 1, t: Date.now(), fun: true, ana: false, adv: false }) }) });
+  assert.deepEqual(JSON.parse(JSON.stringify(dontessel.win.mhAttribucio.hozzajarulas())), { ana: false, adv: false, fun: true });
+  for (const host of ['www.mosaicheadspa.hu', 'mosaicheadspa.hu']) assert.equal(bongeszo({ host, search: `?gclid=${GCLID}` }).win.mhAttribucio, undefined, host);
+});
+test('attribucio.js kuld(): a foglalas azonositojaval POST /api/meres-erkezes (szemelyes adat nelkul), egyszer; a szerver hibaja nem akadalyoz', async () => {
+  const b = bongeszo({ search: `?gclid=${GCLID}`, ls: tarolo({ mh_cc: JSON.stringify({ v: 1, t: Date.now(), fun: true, ana: true, adv: true }) }) });
+  const r = await b.win.mhAttribucio.kuld({ source_id: BID, uzletag: 'headspa', tipus: 'foglalas', szolgaltatas: 'HeadSpa', ar: 26900, first_booking: true });
+  assert.equal(r.allapot, 'valasz'); assert.equal(b.hivasok.length, 1);
+  assert.equal(b.hivasok[0].u, '/api/meres-erkezes'); const body = b.hivasok[0].body;
+  assert.deepEqual([body.source_id, body.uzletag, body.attr.google.gclid.ertek, body.hozz.adv, body.oldal], [BID, 'headspa', GCLID, true, 'https://x.pages.dev/foglalas-ok']);
+  assert.ok(!/@|telefon|email/i.test(JSON.stringify(body)));
+  assert.equal((await b.win.mhAttribucio.kuld({ source_id: BID, uzletag: 'headspa' })).allapot, 'mar_kuldve');
+  const rossz = bongeszo({ fetchImpl: async () => { throw new Error('offline'); } });
+  assert.equal((await rossz.win.mhAttribucio.kuld({ source_id: BID, uzletag: 'headspa' })).allapot, 'hiba');
+});
