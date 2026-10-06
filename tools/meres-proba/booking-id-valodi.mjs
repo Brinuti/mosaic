@@ -5,8 +5,7 @@
 //   --szaraz 1: szaraz futas - a valodi Salonic-adatlapig megy (az idopontot ~5 percre tartja, foglalas NEM jon letre), kitoltes es kuldes nelkul
 //   utvonalak (mind az UTOLSO szabad nap UTOLSO idopontjara foglal, nem foglal el kozeli idopontot):
 //     hair-konzult (alap)            fodraszat, ingyenes konzultacio, "Mindegy" szakember (a Salonic oszt be)
-//     hair-konzult-szakember         ugyanaz, KONKRET szakemberrel (az elso, nem "Mindegy" kartya)
-//     oxigen-vizsgalat-szakember     oxigen, AKCIOS hajkameras vizsgalat (466147), KONKRET szakemberrel
+//     hair-vagas-szakember           fodraszat, fizetos Noi hajvagas (Kozepes haj), KONKRET szakemberrel (az elso, nem "Mindegy" kartya): konkret employeeId megy az adatlap cimere
 //     headspa-paros                  HeadSpa, PAROS kezeles
 //     lezer-konzult                  lezer, ingyenes konzultacio
 //
@@ -67,8 +66,8 @@ try {
   await page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 });
   const UTVONALAK = {
     'hair-konzult': { opts: { business: 'hair', service: 'konzult' }, szakember: 'mindegy' },
-    'hair-konzult-szakember': { opts: { business: 'hair', service: 'konzult' }, szakember: 'konkret' },
-    'oxigen-vizsgalat-szakember': { opts: { business: 'oxygen', service: '466147' }, szakember: 'konkret' },
+    // A szakember-valaszto (HA0 fodraszatnal) CSAK akkor jelenik meg, ha a szolgaltatas nincs kulccsal megadva; konkret szakembernel a foglalo az adatlap cimere is konkret employeeId-t tesz.
+    'hair-vagas-szakember': { opts: { business: 'hair' }, szakember: 'konkret', lepesek: ['Hajvágás', 'Női hajvágás', 'Közepes haj'] },
     'headspa-paros': { opts: { business: 'headspa', service: 'paros' }, szakember: 'mindegy' },
     'lezer-konzult': { opts: { business: 'laser', service: 'konzult' }, szakember: 'mindegy' },
   };
@@ -87,6 +86,7 @@ try {
       await kartya.click(); osszefoglalo.valasztott_szakember = nev; lepes('szakember: KONKRET', { nev });
     } else { await reteg.locator('.be-choice', { hasText: 'Mindegy' }).first().click(); lepes('szakember: Mindegy (a Salonic oszt be)'); }
   }
+  for (const szoveg of utv.lepesek || []) { await (await lathato(reteg.locator('.be-choice', { hasText: szoveg }))).click(); lepes('valasztas: ' + szoveg); }
   await reteg.locator('.be-nnap.szabad, button:has-text("További időpontok")').first().waitFor({ state: 'visible', timeout: 25000 });
   let ido;
   const szabadNapok = reteg.locator('.be-nnap.szabad');
