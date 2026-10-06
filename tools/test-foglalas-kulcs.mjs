@@ -123,6 +123,30 @@ test('emailElemzes: a valodi Salonic-level (feladonev, szolgaltatas, idopont-szo
 });
 
 // --- kulcs-tabla ------------------------------------------------------------------------------------------------------------------------
+test('ANGOL HeadSpa-level: az emailElemzes a felado nevet a JSON-LD-bol, a munkatarsat az "Employees" reszbol olvassa; az angol honap / hetnap is megy; a 2. ag a paros kulcsot adja', () => {
+  const html = fx('kulcs-email-headspa-en.html');
+  const e = emailElemzes(html);
+  const PUUID = '5a784724-399a-2c64-a88d-d189c675c88a';
+  assert.deepEqual({ uuid: e.uuid, host: e.host, felado: e.felado, szolgaltatas: e.szolgaltatas, idopontSzoveg: e.idopontSzoveg, munkatarsak: e.munkatarsak },
+    { uuid: PUUID, host: 'mosaicheadspa.salonic.hu', felado: 'Mosaic Headspa', szolgaltatas: '💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)', idopontSzoveg: 'October 31. (Saturday) 15:30 - 16:50', munkatarsak: ['Páros kezelés'] });
+  assert.equal(e.ld.startDate, '2026-10-31T15:30:00+01:00');
+  assert.ok(!/placeId|serviceId|employeeId/.test(html));
+  // angol szoveg: honap + hetnap; az ev a level datuma alapjan, elorefele; a hetnap validal
+  const sz = idopontSzovegElemzes(e.idopontSzoveg);
+  assert.deepEqual(sz, { ho: 10, nap: 31, hetnap: 'saturday', ora: 15, perc: 30 });
+  assert.equal(evKovetkeztet(sz, Date.parse('2026-10-06T13:58:24Z') / 1000), 1793457000, '2026-10-31 15:30 (CET, UTC+1) = 1793457000');
+  assert.equal(evKovetkeztet(idopontSzovegElemzes('October 31. (Saturday) 15:30'), Date.parse('2026-11-02T10:00:00Z') / 1000), null, 'a hetnap (angolul is) validal: a level utan 3 even belul nincs szombati okt. 31.');
+  assert.equal(evKovetkeztet(idopontSzovegElemzes('October 31. (Sunday) 15:30'), Date.parse('2026-10-06T13:58:24Z') / 1000), budapestUnix(2027, 10, 31, 15, 30), 'a hetnap dont az evrol: a vasarnapi okt. 31. 2027-ben van (a mostani level evben nem szombat-egyezes)');
+  assert.equal(evKovetkeztet(idopontSzovegElemzes('December 24. (Thursday) 10:00'), Date.parse('2026-10-06T13:58:24Z') / 1000), budapestUnix(2026, 12, 24, 10, 0));
+  // 2. ag: nevtabla (felado -> placeId, munkatars -> employeeId, szolgaltatas -> serviceId); a paros kezeles EGY (virtualis) munkatars -> EGY kulcs
+  const tabla = { frissitve: 1, helyek: [{ placeId: 10427, nev: 'Mosaic Headspa' }, { placeId: 10823, nev: 'Mosaic Hair' }], munkatarsak: [{ placeId: 10427, employeeId: 24354, nev: 'Páros kezelés' }, { placeId: 10427, employeeId: 24989, nev: 'Máté' }],
+    szolgaltatasok: [{ placeId: 10427, serviceId: '302999', nev: '💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)' }] };
+  const r = emailKulcsNevtablabol(e, tabla, Date.parse('2026-10-06T13:58:24Z') / 1000);
+  assert.deepEqual({ ok: r.ok, kulcsok: r.kulcsok, serviceId: r.serviceId, forras: r.nyom.idopontForras }, { ok: true, kulcsok: ['10427|24354|1793457000'], serviceId: '302999', forras: 'ld+json' });
+  const csakSzoveg = emailKulcsNevtablabol({ ...e, ld: null }, tabla, Date.parse('2026-10-06T13:58:24Z') / 1000);
+  assert.deepEqual(csakSzoveg.kulcsok, ['10427|24354|1793457000'], 'JSON-LD nelkul az angol szovegbol ugyanaz a kulcs');
+});
+
 test('kulcsIras: elso iras beker; ugyanaz ismet idempotens; MAS booking_id nem ir felul (utkozes naplozva)', async () => {
   const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch };
   const t = ora();
@@ -169,8 +193,12 @@ test('egyeztet (1. ag): a koszonooldal mar irt -> az e-mail megtalalja, kuldheto
     return { ...r, text: async () => txt };
   };
   const r2 = await egyeztet(adb, { ...MEZOK(), uuid: MASIK }, { fetchImpl: fetch2, now: t });
-  assert.equal(r2.allapot, 'parositott'); assert.equal(r2.kuldheto, false, 'a booking_id-re mar ment esemeny');
+  assert.equal(r2.allapot, 'ellentmondas', 'MAS UUID ugyanarra a kulcsra = kulcs-utkozes (pl. lemondas utan ujrafoglalt idopont): nem kuldunk, de nem is nyeljuk el csendben');
+  assert.equal(r2.kuldheto, false, 'a booking_id-re mar ment esemeny'); assert.equal(r2.riasztas, true);
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM foglalas_egyeztetes WHERE kuldve IS NOT NULL').get().n, 1, 'osszesen egy kikuldott esemeny');
+  assert.deepEqual((await riasztasok(adb)).map((x) => [x.uuid, x.allapot]), [[MASIK, 'ellentmondas']], 'a riasztas listajan latszik');
+  const ism = await egyeztet(adb, { ...MEZOK(), uuid: MASIK }, { fetchImpl: fetch2, now: t }); // ujrafuttatva sem kuldhet, a riasztas marad
+  assert.deepEqual({ a: ism.allapot, k: ism.kuldheto }, { a: 'ellentmondas', k: false });
 });
 
 test('egyeztet: ujraprobalas 1, 3, 10, 30 perc; a korai kerest nem szamoljuk; az 5. keres utan parositatlan + riasztas; KESOBBI talalat is parosit (egyszer kuldheto)', async () => {

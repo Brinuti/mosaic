@@ -57,8 +57,12 @@ export function bookingUrlElemzes(bookingUrl) {
 }
 
 // --- idopont (magyar szoveg / ISO) -> unix ---------------------------------------------------------------------------------------------
-const HONAPOK = { 'január': 1, 'február': 2, 'március': 3, 'április': 4, 'május': 5, 'június': 6, 'július': 7, 'augusztus': 8, 'szeptember': 9, 'október': 10, 'november': 11, 'december': 12 };
-const NAPNEVEK = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
+// A Salonic a levelet a fiok nyelven kuldi: a Mosaic Hair magyarul, a HeadSpa fiok ANGOLUL ("October 31. (Saturday) 15:30 - 16:50") - mindketto ugyanabban a "Honap nap. (hetnap) ora:perc" alakban.
+const HONAPOK = {
+  'január': 1, 'február': 2, 'március': 3, 'április': 4, 'május': 5, 'június': 6, 'július': 7, 'augusztus': 8, 'szeptember': 9, 'október': 10, 'november': 11, 'december': 12,
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6, july: 7, august: 8, september: 9, october: 10, // (a november / december magyarul es angolul azonos)
+};
+const NAPNEVEK = [['vasárnap', 'sunday'], ['hétfő', 'monday'], ['kedd', 'tuesday'], ['szerda', 'wednesday'], ['csütörtök', 'thursday'], ['péntek', 'friday'], ['szombat', 'saturday']];
 
 /** A budapesti helyi ido (ev, ho, nap, ora, perc) -> UTC unix masodperc (a nyari / teli idoszamitas az Intl-bol). */
 export function budapestUnix(ev, ho, nap, ora, perc) {
@@ -88,7 +92,7 @@ export function evKovetkeztet(szovegAdat, leveluUnix) {
   for (let ev = kezdoEv; ev <= kezdoEv + 3; ev++) {
     const d = new Date(Date.UTC(ev, szovegAdat.ho - 1, szovegAdat.nap));
     if (d.getUTCMonth() !== szovegAdat.ho - 1) continue; // pl. feb. 30.
-    if (szovegAdat.hetnap && NAPNEVEK[d.getUTCDay()] !== szovegAdat.hetnap) continue;
+    if (szovegAdat.hetnap && !NAPNEVEK[d.getUTCDay()].includes(szovegAdat.hetnap)) continue;
     const unix = budapestUnix(ev, szovegAdat.ho, szovegAdat.nap, szovegAdat.ora, szovegAdat.perc);
     if (unix >= leveluUnix - 3600) return unix;
   }
@@ -155,9 +159,9 @@ const entitas = (s) => String(s).replace(/&amp;/g, '&').replace(/&quot;/g, '"').
 export function emailElemzes(html) {
   const h = String(html || '');
   const link = h.match(/https:\/\/([a-z0-9-]+\.salonic\.hu)\/booking\/(?:bookingDetails|cancelBooking)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/);
-  const felado = (h.match(/<h2>([^<]+)<\/h2>\s*<\/div>/) || [])[1];
+  const feladoH2 = (h.match(/<h2>([^<]+)<\/h2>\s*<\/div>/) || [])[1]; // magyar sablon: a fejlecben a szalon neve; az angol (HeadSpa) sablonban logo van, szoveg nincs
   const doboz = h.match(/padding: 20px; width: 90%;border-radius: 5px">\s*<h2>([^<]+)<\/h2>\s*([^<]*?)\s*<br/);
-  const reszek = h.split(/Munkatársak<\/h3>/)[1];
+  const reszek = h.split(/(?:Munkatársak|Employees)<\/h3>/)[1]; // az angol sablonban "Employees"
   const munkatarsak = [];
   if (reszek) {
     const terulet = reszek.split(/class="btn btn-primary"/)[0];
@@ -166,6 +170,7 @@ export function emailElemzes(html) {
   let ld = null;
   const j = h.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
   if (j) { try { const o = JSON.parse(j[1]); ld = { startDate: o.reservationFor && o.reservationFor.startDate || null, reservationNumber: o.reservationNumber || null, szolgaltatas: o.reservationFor && o.reservationFor.name || null, hely: o.reservationFor && o.reservationFor.location && o.reservationFor.location.name || null }; } catch (e) { ld = null; } }
+  const felado = feladoH2 || (ld && ld.hely) || null; // az angol sablonban a JSON-LD helynev (location.name) a szalon neve
   return { uuid: link ? link[2] : null, host: link ? link[1] : null, felado: felado ? entitas(felado) : null, szolgaltatas: doboz ? entitas(doboz[1]) : null, idopontSzoveg: doboz ? entitas(doboz[2]) : null, munkatarsak, ld };
 }
 
@@ -371,7 +376,11 @@ export async function egyeztet(db, mezok, deps) {
       const u = await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, service_id = ?6, booking_id = ?7, kuldve = ?8, riasztas = 0, kovetkezo = NULL, frissitve = ?8 WHERE uuid = ?1 AND kuldve IS NULL')
         .bind(mezok.uuid, 'parositott', probalkozas, r.kulcs, kulcsForras, r.service_id, r.booking_id, t).run();
       kuldheto = !!(u.meta && u.meta.changes > 0);
-    } catch (e) { kuldheto = false; nyom.egyediIndex = 'a booking_id-ra mar ment esemeny (mas UUID-rol)'; }
+    } catch (e) { // a booking_id-ra mar ment esemeny MAS Salonic-foglalasrol: ugyanaz a kulcs ket foglalas (pl. lemondas utan ujrafoglalt idopont) - nem kuldunk, LATHATO riasztassal (nem nyelheti el csendben)
+      nyom.egyediIndex = 'a booking_id-ra mar ment esemeny (mas UUID-rol)';
+      await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, service_id = ?6, riasztas = 1, kovetkezo = NULL, frissitve = ?7 WHERE uuid = ?1').bind(mezok.uuid, 'ellentmondas', probalkozas, r.kulcs, kulcsForras, r.service_id, t).run();
+      return { allapot: 'ellentmondas', kuldheto: false, duplikalt: false, riasztas: true, probalkozas, miert: 'a kulcshoz tartozo booking_id mar mas Salonic-foglalasra kiment (kulcs-utkozes: ujrafoglalt idopont?)', kulcs: r.kulcs, kulcs_forras: kulcsForras, nyom };
+    }
     return { allapot: 'parositott', kuldheto, duplikalt: !kuldheto, booking_id: r.booking_id, esemeny_id: r.booking_id, kulcs: r.kulcs, kulcs_forras: kulcsForras, service_egyezik: serviceEgyezik, probalkozas, riasztas: false, keses: sor.allapot === 'parositatlan', nyom };
   }
   // nincs talalat: ujraprobalas 1, 3, 10, 30 perc; az 5. keres (1 azonnali + 4 ujra) utan parositatlan + riasztas
