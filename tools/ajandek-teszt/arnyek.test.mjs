@@ -29,20 +29,21 @@ function d1() {
 }
 let mock, ENV, DB; const platformHivasok = []; const levelek = [];
 const igazFetch = globalThis.fetch;
-const PLATFORM_HOSTOK = ['graph.facebook.com', 'business-api.tiktok.com', 'googleads.googleapis.com', 'google-analytics.com'];
+const PLATFORM_HOSTOK = ['graph.facebook.com', 'business-api.tiktok.com', 'hooks.zapier.com', 'google-analytics.com'];
 before(async () => {
   mock = await mockStripeInditas();
   // a platform-hivasokat elfogjuk (NEM mennek ki a halozatra); a Stripe-mock hivasai valodiak (helyi)
   globalThis.fetch = async (url, o) => {
     const u = String(url); const p = PLATFORM_HOSTOK.findIndex((h) => u.includes(h));
     if (p < 0) return igazFetch(url, o);
+    if (u.includes('/debug/mp/collect')) return { status: 200, text: async () => JSON.stringify({ validationMessages: [] }) };
     const kulcs = ['meta', 'tiktok', 'google', 'ga4'][p]; platformHivasok.push({ kulcs, url: u, body: JSON.parse(o.body) });
     return { status: 200, text: async () => JSON.stringify({ meta: { events_received: 1, fbtrace_id: 'x' }, tiktok: { code: 0, message: 'OK' }, google: { results: [{}] }, ga4: {} }[kulcs]) };
   };
 });
 after(async () => { globalThis.fetch = igazFetch; await mock.bezar(); });
 const ujKornyezet = (extra = {}) => { DB = d1(); platformHivasok.length = 0; levelek.length = 0; return { STRIPE_SECRET_KEY: 'sk_test_mock_123', STRIPE_PUBLISHABLE_KEY: 'pk_test_mock_123', STRIPE_WEBHOOK_SECRET: WHSEC, STRIPE_API_BASE: mock.url, AJANDEK_TITOK: TITOK,
-  KULCS_DB: DB, MERES_ELOSZTO: '1', META_TESZT_KOD: 'TEST12345', TIKTOK_TESZT_KOD: 'TEST67890', GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001', META_CAPI_TOKEN: 't', TIKTOK_EVENTS_TOKEN: 't', GOOGLE_ADS_ACCESS_TOKEN: 't', GOOGLE_ADS_DEVELOPER_TOKEN: 't', GA4_TESZT_API_SECRET: 't', ...extra }; };
+  KULCS_DB: DB, MERES_ELOSZTO: '1', META_TESZT_KOD: 'TEST12345', TIKTOK_TESZT_KOD: 'TEST67890', GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001', META_CAPI_TOKEN: 't', TIKTOK_EVENTS_TOKEN: 't', GOOGLE_ARNYEK_WEBHOOK_URL: 'https://hooks.zapier.com/hooks/catch/1/teszt/', GA4_TESZT_API_SECRET: 't', ...extra }; };
 const ip = () => `10.${crypto.randomInt(256)}.${crypto.randomInt(256)}.${crypto.randomInt(256)}`;
 async function hiv(method, ut, { body, headers = {}, env, most } = {}) {
   const text = body === undefined ? '' : typeof body === 'string' ? body : JSON.stringify(body);
@@ -68,7 +69,7 @@ test('AJANDEKKARTYA (Stripe-kartya): a webhookbol, pi_ azonositoval: Ajandekkart
   assert.ok(ar > 0 && meta.every((d) => d.custom_data.value === ar && d.custom_data.currency === 'HUF' && d.custom_data.order_id === pi && d.user_data.em && d.user_data.fbc && d.user_data.fbp));
   assert.ok(meta.every((d) => !d.user_data.ph), 'a kartyas vasarlasnal telefonszamot a Stripe-fizetes nem gyujt: csak e-mail-hash megy (a valos adat)');
   assert.deepEqual(platformHivasok.filter((h) => h.kulcs === 'tiktok').map((h) => h.body.data[0].event), ['HeadSpa_Ajandekkartya', 'CompletePayment']);
-  assert.equal(platformHivasok.filter((h) => h.kulcs === 'google')[0].body.conversions[0].conversionAction, 'customers/6088874770/conversionActions/7825199992');
+  assert.deepEqual([platformHivasok.filter((h) => h.kulcs === 'google')[0].body.conversion_action_id, platformHivasok.filter((h) => h.kulcs === 'google')[0].body.order_id], ['7825199992', pi]);
   assert.equal(platformHivasok.filter((h) => h.kulcs === 'ga4')[0].body.events[0].params.transaction_id, pi);
   const naplo = await naploLeker(DB, pi); assert.equal(naplo.kuldesek.filter((k) => k.allapot === 'elkuldve').length, 6); assert.ok(naplo.kuldesek.every((k) => k.source_id === pi));
   assert.equal(JSON.stringify(mock.allapot.pi(pi).metadata).includes('esemeny'), JSON.stringify(mdElotte).includes('esemeny'), 'az elosztas nem ir a PI metadataba');

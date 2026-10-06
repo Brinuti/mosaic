@@ -3,15 +3,15 @@
 //
 // ARNYEKMOD VEDELMEK (a kodban, nem csak beallitasban): a celpont kizarolag az arnyek-celpont; el pixelre / property-re / elo konverzios akciora a keres NEM allithato ossze:
 //   Meta: csak a "MOSAIC ARNYEK meres-teszt" dataset (28616665324611098) + KOTELEZO test_event_code; TikTok: csak az "ARNYEK" pixel + test_event_code;
-//   Google Ads: csak a 7825199989-7825200916 "ARNYEK - ..." masodlagos UPLOAD_CLICKS akciok; GA4: csak teszt-property (az elo G-H4206SQ0Q7 tiltott).
+//   Google Ads: csak a 7825199989-7825200916 "ARNYEK - ..." masodlagos UPLOAD_CLICKS akciok (Zapier-webhookon at); GA4: csak teszt-property (az elo G-H4206SQ0Q7 tiltott).
 import { metaNev } from './esemeny-modell.js';
 import { googleKattintas, metaFbc } from './erkezes.js';
 
 export const ARNYEK = Object.freeze({
-  meta: Object.freeze({ datasetId: '28616665324611098', nev: 'MOSAIC ARNYEK meres-teszt', apiVerzio: 'v21.0' }),
+  meta: Object.freeze({ datasetId: '28616665324611098', nev: 'MOSAIC ARNYEK meres-teszt', apiVerzio: 'v23.0' }), // a Graph API verzio felulirhato: META_API_VERSION (a v21.0 2026 oktoberben lejar)
   tiktok: Object.freeze({ pixelCode: 'DB2GTTJC77UE4D1NE4MG', pixelId: '7693568787819921416', nev: 'MOSAIC ARNYEK meres-teszt' }),
   google: Object.freeze({
-    customerId: '6088874770', apiVerzio: 'v21',
+    customerId: '6088874770',
     // alapesemeny -> "ARNYEK - ..." masodlagos UPLOAD_CLICKS akcio (a Google-ban visszajaro / ernyo arnyek-akcio nincs: oda nem kuldunk)
     akciok: Object.freeze({
       headspa: { FoglalasElso: '7825199989', Ajandekkartya: '7825199992' },
@@ -64,9 +64,9 @@ export function metaKerelem(e, ctx, env = {}) {
   const adat = tisztit({
     event_name: nev, event_time: ctx.fk.ido, event_id: e.esemeny_id, action_source: 'website', event_source_url: ctx.oldal,
     user_data: ud,
-    custom_data: tisztit({ value: egesz(e.ertek), currency: 'HUF', order_id: ctx.fk.source_entity_id, content_name: ctx.fk.szolgaltatas, content_category: ctx.fk.uzletag, esemeny_tipus: e.tipus, utm_source: ctx.erk.utm_utolso && ctx.erk.utm_utolso.source, utm_campaign: ctx.erk.utm_utolso && ctx.erk.utm_utolso.campaign }),
+    custom_data: tisztit({ value: egesz(e.ertek), currency: 'HUF', order_id: ctx.fk.source_entity_id, content_name: ctx.fk.szolgaltatas, content_category: ctx.fk.uzletag, esemeny_tipus: e.tipus, ertek_forras: e.ertek_forras, salonic_ar: e.salonic_ar, utm_source: ctx.erk.utm_utolso && ctx.erk.utm_utolso.source, utm_campaign: ctx.erk.utm_utolso && ctx.erk.utm_utolso.campaign }),
   });
-  return { platform: 'meta', platform_nev: nev, url: `https://graph.facebook.com/${ARNYEK.meta.apiVerzio}/${dataset}/events`, method: 'POST', fejlec_nevek: ['content-type'], cel: { dataset, nev: ARNYEK.meta.nev, test_event_code: teszt }, body: { data: [adat], test_event_code: teszt, partner_agent: 'mosaic-qa2-arnyek' } };
+  return { platform: 'meta', platform_nev: nev, url: `https://graph.facebook.com/${(env && env.META_API_VERSION) || ARNYEK.meta.apiVerzio}/${dataset}/events`, method: 'POST', fejlec_nevek: ['content-type'], cel: { dataset, nev: ARNYEK.meta.nev, test_event_code: teszt }, body: { data: [adat], test_event_code: teszt, partner_agent: 'mosaic-qa2-arnyek' } };
 }
 
 export function tiktokKerelem(e, ctx, env = {}) {
@@ -87,23 +87,25 @@ export function tiktokKerelem(e, ctx, env = {}) {
   return { platform: 'tiktok', platform_nev: nev, url: 'https://business-api.tiktok.com/open_api/v1.3/event/track/', method: 'POST', fejlec_nevek: ['content-type', 'access-token'], cel: { pixel_code: pixel, nev: ARNYEK.tiktok.nev, test_event_code: teszt }, body: { event_source: 'web', event_source_id: pixel, test_event_code: teszt, data: [adat] } };
 }
 
+/**
+ * Google Ads (ARNYEK masodlagos akciok): a szerver NEM hiv kozvetlenul Google-t (az OAuth access token 1 ora utan lejar); a #89-es minta szerint egy ZAPIER-WEBHOOKNAK szol
+ * (GOOGLE_ARNYEK_WEBHOOK_URL, titok), a Zap tolti fel a masodlagos ARNYEK akciokba. A torzs: { conversion_action_id, gclid | gbraid | wbraid, conversion_date_time, value, currency, order_id }
+ * + extrak (a Zap figyelmen kivul hagyhatja): event_id, a hozzajarulasi jel, es CSAK hozzajarulassal a hash-elt e-mail / telefon (SZ-38).
+ */
 export function googleKerelem(e, ctx, env = {}) {
   if (e.tipus !== 'alap' || e.nev === 'Visszajaro') return { kihagyva: 'a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)' };
   const akcioId = ARNYEK.google.akciok[ctx.fk.uzletag] && ARNYEK.google.akciok[ctx.fk.uzletag][e.nev];
   if (!akcioId) return { kihagyva: `nincs "ARNYEK" masodlagos akcio ehhez: ${ctx.fk.uzletag} / ${e.nev}` };
   if (ELO_CELOK.google_primary.includes(akcioId)) return { tiltva: 'elo konverzios akcio: nem kuldhetunk' };
-  const szab = ctx.hozz.google;
   const click = googleKattintas(ctx.erk);
-  const azon = [];
-  if (szab.felhasznaloi_adat) { if (ctx.hash.em) azon.push({ hashedEmail: ctx.hash.em }); if (ctx.hash.ph_e164) azon.push({ hashedPhoneNumber: ctx.hash.ph_e164 }); }
-  const konv = tisztit({
-    conversionAction: `customers/${ARNYEK.google.customerId}/conversionActions/${akcioId}`, conversionDateTime: googleIdo(ctx.fk.ido), conversionValue: egesz(e.ertek), currencyCode: 'HUF', orderId: ctx.fk.source_entity_id,
-    gclid: click && click.tipus === 'gclid' ? click.ertek : null, wbraid: click && click.tipus === 'wbraid' ? click.ertek : null, gbraid: click && click.tipus === 'gbraid' ? click.ertek : null,
-    userIdentifiers: azon,
-    consent: { adUserData: szab.jel.ad_user_data, adPersonalization: szab.jel.ad_personalization },
+  if (!click) return { kihagyva: 'nincs Google-kattintasazonosito (gclid / gbraid / wbraid): a feltoltes kattintas-alapu' };
+  const szab = ctx.hozz.google;
+  const body = tisztit({
+    conversion_action_id: akcioId, [click.tipus]: click.ertek, conversion_date_time: googleIdo(ctx.fk.ido), value: egesz(e.ertek), currency: 'HUF', order_id: ctx.fk.source_entity_id,
+    event_id: e.esemeny_id, ad_user_data: szab.jel.ad_user_data, ad_personalization: szab.jel.ad_personalization,
+    hashed_email: szab.felhasznaloi_adat ? ctx.hash.em : null, hashed_phone: szab.felhasznaloi_adat ? ctx.hash.ph_e164 : null,
   });
-  const validateOnly = !(env && String(env.GOOGLE_ADS_ELES_KULDES) === '1'); // alap: csak ervenyesites (validateOnly) - a masodlagos akcioba valodi feltoltest csak kifejezetten engedelyezve
-  return { platform: 'google', platform_nev: `ARNYEK-${akcioId}`, url: `https://googleads.googleapis.com/${ARNYEK.google.apiVerzio}/customers/${ARNYEK.google.customerId}:uploadClickConversions`, method: 'POST', fejlec_nevek: ['content-type', 'authorization', 'developer-token', 'login-customer-id'], cel: { customer_id: ARNYEK.google.customerId, conversion_action: akcioId, validate_only: validateOnly }, body: { conversions: [konv], partialFailure: true, validateOnly } };
+  return { platform: 'google', platform_nev: `ARNYEK-${akcioId}`, url: 'zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)', method: 'POST', fejlec_nevek: ['content-type'], cel: { customer_id: ARNYEK.google.customerId, conversion_action_id: akcioId, athidalas: 'zapier-webhook' }, body };
 }
 
 export function ga4Kerelem(e, ctx, env = {}) {
@@ -114,7 +116,7 @@ export function ga4Kerelem(e, ctx, env = {}) {
   const ga = ctx.erk.ga4 || {};
   if (!ga.client_id) return { tiltva: 'nincs GA4 client_id (nincs _ga suti): a Measurement Protocol client_id nelkul nem kuldheto' };
   const szab = ctx.hozz.ga4;
-  const params = tisztit({ session_id: ga.session_id, engagement_time_msec: 1, value: egesz(e.ertek), currency: 'HUF', transaction_id: e.nev === 'Ajandekkartya' ? ctx.fk.source_entity_id : null, esemeny_id: e.esemeny_id, uzletag: ctx.fk.uzletag,
+  const params = tisztit({ session_id: ga.session_id, engagement_time_msec: 1, value: egesz(e.ertek), currency: 'HUF', transaction_id: e.nev === 'Ajandekkartya' ? ctx.fk.source_entity_id : null, esemeny_id: e.esemeny_id, uzletag: ctx.fk.uzletag, ertek_forras: e.ertek_forras, salonic_ar: e.salonic_ar,
     items: e.nev === 'Ajandekkartya' ? [{ item_id: ctx.fk.szolgaltatas || 'ajandekkartya', item_name: ctx.fk.szolgaltatas || 'Ajandekkartya', price: egesz(e.ertek), quantity: 1 }] : null,
     source: ctx.erk.utm_utolso && ctx.erk.utm_utolso.source, medium: ctx.erk.utm_utolso && ctx.erk.utm_utolso.medium, campaign: ctx.erk.utm_utolso && ctx.erk.utm_utolso.campaign });
   const consent = szab.jel.ad_user_data === 'UNSPECIFIED' ? null : { ad_user_data: szab.jel.ad_user_data, ad_personalization: szab.jel.ad_personalization };
@@ -122,24 +124,35 @@ export function ga4Kerelem(e, ctx, env = {}) {
 }
 export const KEREM_EPITO = { meta: metaKerelem, tiktok: tiktokKerelem, google: googleKerelem, ga4: ga4Kerelem };
 
+const ZAPIER_HOOK_RE = /^(https:\/\/hooks\.zapier\.com\/hooks\/catch\/\d+\/[A-Za-z0-9_-]+\/?|http:\/\/127\.0\.0\.1:\d+\/.*)$/; // a loopback csak a tesztekhez (mint az ajandek.js MERES_HOOK_RE)
 /**
- * Szallito: a titkokat (token / api_secret) CSAK itt, a kornyezetbol adjuk a kereshez; a naplozott kerelembe nem kerulnek.
+ * Szallito: a titkokat (token / api_secret / webhook-cim) CSAK itt, a kornyezetbol adjuk a kereshez; a naplozott kerelembe nem kerulnek.
+ * Google: a Zapier-webhook (2xx = atvette). GA4: elobb a Measurement Protocol VALIDALO vegpontja (/debug/mp/collect), csak tiszta validacio utan a valodi /mp/collect.
  * -> { allapot: 'elkuldve' | 'hiba' | 'nincs_hitelesites', http_status, valasz (szoveg, max 2000), kuldo }
  */
 export async function kuldes(kerelem, env = {}, fetchImpl = fetch, ms = 8000) {
-  const titkos = { meta: env.META_CAPI_TOKEN, tiktok: env.TIKTOK_EVENTS_TOKEN, google: env.GOOGLE_ADS_ACCESS_TOKEN && env.GOOGLE_ADS_DEVELOPER_TOKEN, ga4: env.GA4_TESZT_API_SECRET };
+  const titkos = { meta: env.META_CAPI_TOKEN, tiktok: env.TIKTOK_EVENTS_TOKEN, google: env.GOOGLE_ARNYEK_WEBHOOK_URL, ga4: env.GA4_TESZT_API_SECRET };
   if (!titkos[kerelem.platform]) return { allapot: 'nincs_hitelesites', http_status: null, valasz: null, kuldo: 'kozvetlen' };
   let url = kerelem.url; const fejlec = { 'content-type': 'application/json' };
   if (kerelem.platform === 'meta') url += '?access_token=' + encodeURIComponent(env.META_CAPI_TOKEN);
   if (kerelem.platform === 'tiktok') fejlec['access-token'] = env.TIKTOK_EVENTS_TOKEN;
-  if (kerelem.platform === 'google') { fejlec.authorization = 'Bearer ' + env.GOOGLE_ADS_ACCESS_TOKEN; fejlec['developer-token'] = env.GOOGLE_ADS_DEVELOPER_TOKEN; if (env.GOOGLE_ADS_LOGIN_CUSTOMER_ID) fejlec['login-customer-id'] = env.GOOGLE_ADS_LOGIN_CUSTOMER_ID; }
+  if (kerelem.platform === 'google') { url = String(env.GOOGLE_ARNYEK_WEBHOOK_URL).trim(); if (!ZAPIER_HOOK_RE.test(url)) return { allapot: 'hiba', http_status: null, valasz: 'ervenytelen GOOGLE_ARNYEK_WEBHOOK_URL formatum', kuldo: 'zapier' }; }
   if (kerelem.platform === 'ga4') url += '&api_secret=' + encodeURIComponent(env.GA4_TESZT_API_SECRET);
+  const kuldo = kerelem.platform === 'google' ? 'zapier-webhook' : 'kozvetlen';
   const ab = new AbortController(); const t = setTimeout(() => ab.abort(), ms);
   try {
+    let elozo = null;
+    if (kerelem.platform === 'ga4' && String(env.GA4_VALIDALAS) !== '0') {
+      const dr = await fetchImpl(url.replace('/mp/collect', '/debug/mp/collect'), { method: 'POST', headers: fejlec, body: JSON.stringify(kerelem.body), signal: ab.signal });
+      const dszoveg = (await dr.text()).slice(0, 1500); let dj = null; try { dj = JSON.parse(dszoveg); } catch (x) { /* nem JSON */ }
+      if (!(dr.status >= 200 && dr.status < 300) || !dj || (dj.validationMessages || []).length) return { allapot: 'hiba', http_status: dr.status, valasz: 'GA4 validacio (/debug/mp/collect): ' + dszoveg, kuldo };
+      elozo = { ga4_validacio: { vegpont: '/debug/mp/collect', validationMessages: dj.validationMessages || [] } };
+    }
     const r = await fetchImpl(url, { method: kerelem.method, headers: fejlec, body: JSON.stringify(kerelem.body), signal: ab.signal });
     const szoveg = (await r.text()).slice(0, 2000);
     let j = null; try { j = JSON.parse(szoveg); } catch (x) { /* nem JSON */ }
-    const ok = r.status >= 200 && r.status < 300 && (kerelem.platform === 'meta' ? j && j.events_received >= 1 : kerelem.platform === 'tiktok' ? j && j.code === 0 : kerelem.platform === 'google' ? !(j && j.partialFailureError) : true);
-    return { allapot: ok ? 'elkuldve' : 'hiba', http_status: r.status, valasz: szoveg, kuldo: 'kozvetlen' };
-  } catch (e) { return { allapot: 'hiba', http_status: null, valasz: 'halozati hiba: ' + String(e && e.message || e).slice(0, 200), kuldo: 'kozvetlen' }; } finally { clearTimeout(t); }
+    const ok = r.status >= 200 && r.status < 300 && (kerelem.platform === 'meta' ? j && j.events_received >= 1 : kerelem.platform === 'tiktok' ? j && j.code === 0 : true);
+    const valasz = elozo ? JSON.stringify({ ...elozo, collect_status: r.status, collect_valasz: szoveg }) : szoveg;
+    return { allapot: ok ? 'elkuldve' : 'hiba', http_status: r.status, valasz, kuldo };
+  } catch (e) { return { allapot: 'hiba', http_status: null, valasz: 'halozati hiba: ' + String(e && e.message || e).slice(0, 200), kuldo }; } finally { clearTimeout(t); }
 }

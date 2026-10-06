@@ -21,5 +21,5 @@ export async function foglalasEsemenyKuldes({ db, env, mezok, bejovo = {}, eredm
   const v = (bejovo.vendeg && typeof bejovo.vendeg === 'object') ? bejovo.vendeg : {};
   const fk = { tipus: 'foglalas', uzletag, source_entity_id: sourceId, jelleg, kupon, ertek: ar ?? 0, ido, szolgaltatas: mezok.szolgaltatas || b.szolgaltatas || null, vendeg: { email: v.email, telefon: v.telefon, g: b.g || null }, oldal: b.oldal || null, uuid: mezok.uuid };
   const r = await elosztas(db, fk, { env, fetchImpl, now, kuldo, eloEllenorzes: async () => (await foglalasAllapot({ host: mezok.host, uuid: mezok.uuid, fetchImpl })).allapot });
-  return { ...r, jelleg, kupon, uj_vendeg: ujVendeg, ertek: fk.ertek, ar_forras: bejovo.ar != null ? 'bejovo' : html.ar != null ? 'level' : b.ar != null ? 'bongeszo' : 'nincs', uzletag };
+  return { ...r, jelleg, kupon, uj_vendeg: ujVendeg, salonic_ar: fk.ertek, ertek: (r.esemenyek && r.esemenyek[0] ? r.esemenyek[0].ertek : null), ar_forras: bejovo.ar != null ? 'bejovo' : html.ar != null ? 'level' : b.ar != null ? 'bongeszo' : 'nincs', uzletag };
 }

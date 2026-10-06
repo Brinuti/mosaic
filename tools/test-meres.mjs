@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { esemenyek, esemenyId, foglalasJelleg, metaNev, SOURCE_ID_MINTA, ERNYOESEMENYEK } from '../netlify/lib/meres/esemeny-modell.js';
+import { esemenyek, esemenyId, foglalasJelleg, metaNev, SOURCE_ID_MINTA, ERNYOESEMENYEK, KONZULTACIO_ERTEK, konzultacioTabla } from '../netlify/lib/meres/esemeny-modell.js';
 import { hashEmail, hashTelefon, sha256hex, telefonSzamjegy } from '../netlify/lib/meres/hash.js';
 import { erkezesTisztit, googleKattintas, metaFbc } from '../netlify/lib/meres/erkezes.js';
 import { hozzajarulasTisztit, platformSzabaly } from '../netlify/lib/meres/hozzajarulas.js';
@@ -140,7 +140,7 @@ const ENV = { META_TESZT_KOD: 'TEST12345', TIKTOK_TESZT_KOD: 'TEST67890', GA4_TE
 test('Meta CAPI kerelem: ARNYEK dataset + test_event_code, event_id, ertek HUF, hash-elt em / ph, fbc, fbp, order_id; tesztkod nelkul TILTVA; elo dataset TILTVA', async () => {
   const ctx = await ctxEpit(); const [alap, ernyo] = esemenyek(ctx.fk);
   const k = metaKerelem(alap, ctx, ENV);
-  assert.equal(k.url, 'https://graph.facebook.com/v21.0/28616665324611098/events'); assert.equal(k.body.test_event_code, 'TEST12345');
+  assert.equal(k.url, 'https://graph.facebook.com/v23.0/28616665324611098/events'); assert.equal(k.body.test_event_code, 'TEST12345');
   const d = k.body.data[0];
   assert.deepEqual([d.event_name, d.event_id, d.event_time, d.action_source], ['HeadSpa_FoglalasElso', `FoglalasElso:${BID}`, IDO, 'website']);
   assert.deepEqual([d.custom_data.value, d.custom_data.currency, d.custom_data.order_id], [26900, 'HUF', BID]);
@@ -165,25 +165,26 @@ test('TikTok kerelem: ARNYEK pixel + test_event_code, ttclid + ttp, E.164 hash; 
   assert.match(tiktokKerelem(alap, ctx, { ...ENV, TIKTOK_ARNYEK_PIXEL: ELO_CELOK.tiktok[0] }).tiltva, /ARNYEK/);
   assert.equal(ARNYEK.tiktok.pixelCode, 'DB2GTTJC77UE4D1NE4MG');
 });
-test('Google kerelem: csak alapesemeny, csak az "ARNYEK" masodlagos akcioba, a legfrissebb kattintasazonosito, valos hozzajarulasi jel; alapbol validateOnly', async () => {
+test('Google kerelem (Zapier-webhook): csak alapesemeny, csak az "ARNYEK" masodlagos akcioba, a legfrissebb kattintasazonosito, a megallapodott torzs; hash / jel csak extra, hozzajarulas nelkul hash nincs', async () => {
   const ctx = await ctxEpit(); const [alap, ernyo] = esemenyek(ctx.fk);
-  const k = googleKerelem(alap, ctx, {}); const c = k.body.conversions[0];
-  assert.equal(c.conversionAction, 'customers/6088874770/conversionActions/7825199989');
-  assert.deepEqual([c.wbraid, c.gclid, c.conversionValue, c.currencyCode, c.orderId], ['CoMKCQ_wbraid_TESZT_0123', undefined, 26900, 'HUF', BID]);
-  assert.deepEqual(c.consent, { adUserData: 'GRANTED', adPersonalization: 'GRANTED' });
-  assert.deepEqual(c.userIdentifiers, [{ hashedEmail: await sha256hex('teszt.claude@example.com') }, { hashedPhoneNumber: await sha256hex('+36709420090') }]);
-  assert.equal(k.body.validateOnly, true); assert.equal(googleKerelem(alap, ctx, { GOOGLE_ADS_ELES_KULDES: '1' }).body.validateOnly, false);
+  const k = googleKerelem(alap, ctx, {}); const c = k.body;
+  assert.match(k.url, /zapier-webhook/); assert.ok(!/hooks\.zapier\.com/.test(k.url), 'a webhook-cim titok: nem kerul a naploba');
+  assert.deepEqual([c.conversion_action_id, c.wbraid, c.gclid, c.conversion_date_time, c.value, c.currency, c.order_id], ['7825199989', 'CoMKCQ_wbraid_TESZT_0123', undefined, googleIdo(ctx.fk.ido), 26900, 'HUF', BID]);
+  assert.deepEqual([c.ad_user_data, c.ad_personalization, c.event_id], ['GRANTED', 'GRANTED', `FoglalasElso:${BID}`]);
+  assert.deepEqual([c.hashed_email, c.hashed_phone], [await sha256hex('teszt.claude@example.com'), await sha256hex('+36709420090')]);
+  assert.ok(!('conversions' in c) && !('validateOnly' in c) && !('userIdentifiers' in c), 'nincs kozvetlen Google Ads API-keres: az access token 1 ora utan lejarna');
   assert.match(googleKerelem(ernyo, ctx, {}).kihagyva, /alapesemeny/);
   assert.match(googleKerelem(esemenyek(await ctxEpit({ jelleg: 'visszajaro' }).then((x) => x.fk))[0], ctx, {}).kihagyva, /alapesemeny/);
   const nincsHozz = await ctxEpit({}, { ana: false, adv: false });
-  const k2 = googleKerelem(alap, nincsHozz, {}).body.conversions[0];
-  assert.deepEqual([k2.userIdentifiers, k2.consent.adUserData], [undefined, 'DENIED']);
+  const k2 = googleKerelem(alap, nincsHozz, {}).body;
+  assert.deepEqual([k2.hashed_email, k2.hashed_phone, k2.ad_user_data], [undefined, undefined, 'DENIED']);
+  assert.match(googleKerelem(alap, await ctxEpit({}, undefined, { fbp: ctx.erk.fbp }), {}).kihagyva, /kattintasazonosito/, 'kattintasazonosito nelkul nincs feltoltes');
   // minden uzletag / alapesemeny az ARNYEK akciora mutat, soha az elo (elsodleges) akciora
   for (const [uzletag, akciok] of Object.entries(ARNYEK.google.akciok)) for (const nev of Object.keys(akciok)) {
     const ex = esemenyek(await ctxEpit({ uzletag, jelleg: nev === 'Konzultacio' ? 'konzultacio' : 'elso', tipus: nev === 'Ajandekkartya' ? 'ajandekkartya' : 'foglalas' }).then((x) => x.fk)).find((e) => e.nev === nev);
-    const cx = await ctxEpit({ uzletag }); const kk = googleKerelem(ex, cx, {});
-    assert.match(kk.body.conversions[0].conversionAction, /conversionActions\/78(2519998\d|2519999\d|252008\d\d|252009\d\d|2520\d{4})$/, uzletag + nev);
-    assert.ok(!ELO_CELOK.google_primary.some((id) => kk.body.conversions[0].conversionAction.endsWith('/' + id)));
+    const cx = await ctxEpit({ uzletag }); const kk = googleKerelem({ ...ex, ertek: ex.ertek ?? 1 }, cx, {});
+    assert.match(kk.body.conversion_action_id, /^78(2519998\d|2519999\d|252008\d\d|252009\d\d|2520\d{4})$/, uzletag + nev);
+    assert.ok(!ELO_CELOK.google_primary.includes(kk.body.conversion_action_id));
   }
   assert.match(googleKerelem({ nev: 'Ajandekkartya', tipus: 'alap', ertek: 1 }, await ctxEpit({ uzletag: 'szor' }), {}).kihagyva, /nincs "ARNYEK"/);
 });
@@ -227,8 +228,8 @@ test('kuldes: titok nelkul "nincs_hitelesites" (a kerelem kesz marad); a titok C
 
 // --- elosztas ------------------------------------------------------------------------------------------------------------------------------------
 const SIKER = { meta: { events_received: 1, fbtrace_id: 'x' }, tiktok: { code: 0, message: 'OK' }, google: { results: [{}] }, ga4: {} };
-const TELJES_ENV = { ...ENV, MERES_ELOSZTO: '1', META_CAPI_TOKEN: 't', TIKTOK_EVENTS_TOKEN: 't', GOOGLE_ADS_ACCESS_TOKEN: 't', GOOGLE_ADS_DEVELOPER_TOKEN: 't', GA4_TESZT_API_SECRET: 't' };
-const hamis = () => { const hivasok = []; const f = async (url, o) => { const p = ['graph.facebook.com', 'business-api.tiktok.com', 'googleads.googleapis.com', 'google-analytics.com'].findIndex((h) => String(url).includes(h)); const kulcs = ['meta', 'tiktok', 'google', 'ga4'][p]; hivasok.push({ kulcs, url: String(url), body: JSON.parse(o.body) }); return { status: 200, text: async () => JSON.stringify(SIKER[kulcs]) }; }; return { f, hivasok }; };
+const TELJES_ENV = { ...ENV, MERES_ELOSZTO: '1', META_CAPI_TOKEN: 't', TIKTOK_EVENTS_TOKEN: 't', GOOGLE_ARNYEK_WEBHOOK_URL: 'https://hooks.zapier.com/hooks/catch/1/teszt/', GA4_TESZT_API_SECRET: 't' };
+const hamis = () => { const hivasok = []; const f = async (url, o) => { if (String(url).includes('/debug/mp/collect')) return { status: 200, text: async () => JSON.stringify({ validationMessages: [] }) }; const p = ['graph.facebook.com', 'business-api.tiktok.com', 'hooks.zapier.com', 'google-analytics.com'].findIndex((h) => String(url).includes(h)); const kulcs = ['meta', 'tiktok', 'google', 'ga4'][p]; hivasok.push({ kulcs, url: String(url), body: JSON.parse(o.body) }); return { status: 200, text: async () => JSON.stringify(SIKER[kulcs]) }; }; return { f, hivasok }; };
 const erkBe = (o = {}) => ({ source_id: BID, uzletag: 'headspa', attr: BE(), hozz: { ana: true, adv: true, fun: true }, ua: 'UA TESZT', ip: '203.0.113.7', oldal: 'https://www.mosaicheadspa.hu/koszonjuk', ...o });
 
 test('elosztas: MERES_ELOSZTO nelkul nem fut le (nincs kuldes, nincs naplo)', async () => {
@@ -262,7 +263,7 @@ test('elosztas: DUPLIKACIOSZURES - ugyanaz az esemeny ujrahivva sem megy ki kets
   assert.equal(hivasok.length, elso, 'a masodik hivas nem kuld'); assert.equal(r2.allapot, 'mar_kuldve', 'minden cella vegleges: nincs teendo, elo lekeres sem kell');
   // hiba -> ujraprobalhato
   const db2 = d1(); let n = 0; const hibas = async () => { n++; return { status: n === 1 ? 500 : 200, text: async () => JSON.stringify(n === 1 ? { error: 'x' } : { events_received: 1 }) }; };
-  const env = { ...TELJES_ENV, MERES_ELOSZTO: '1', TIKTOK_EVENTS_TOKEN: '', GOOGLE_ADS_ACCESS_TOKEN: '', GA4_TESZT_API_SECRET: '' };
+  const env = { ...TELJES_ENV, MERES_ELOSZTO: '1', TIKTOK_EVENTS_TOKEN: '', GOOGLE_ARNYEK_WEBHOOK_URL: '', GA4_TESZT_API_SECRET: '' };
   await elosztas(db2, FK({ uzletag: 'szor', jelleg: 'konzultacio' }), { env, fetchImpl: hibas, now: () => NOW });
   assert.equal((await naploLeker(db2, BID)).kuldesek.find((k) => k.platform === 'meta' && k.esemeny_tipus === 'alap').allapot, 'hiba');
   await elosztas(db2, FK({ uzletag: 'szor', jelleg: 'konzultacio' }), { env, fetchImpl: hibas, now: () => NOW + 5000 });
@@ -304,7 +305,7 @@ test('elosztas: a "tiltva" cella (pl. hianyzo tesztkod) a beallitas utan ujrapro
   const r = await elosztas(db, FK(), { env: TELJES_ENV, fetchImpl: f, now: () => NOW + 1000 });
   assert.equal(r.allapot, 'kesz'); assert.equal(hivasok.filter((h) => h.kulcs === 'meta').length, 2); assert.equal(hivasok.length, n0 + 2, 'csak a korabban tiltott Meta-cellak mentek ki');
 });
-test('elosztas: Visszajaro csak alapesemeny (nincs ernyo, a Google-ba a visszajaro nem megy), kupon nem ernyo; konzultacio erteke a valos ertek', async () => {
+test('elosztas: Visszajaro csak alapesemeny (nincs ernyo, a Google-ba a visszajaro nem megy), kupon nem ernyo; a konzultacio ertek-tablabol (szor 27 000)', async () => {
   const db = d1(); const { f, hivasok } = hamis(); await erkezesMent(db, erkBe(), NOW);
   await elosztas(db, FK({ jelleg: 'visszajaro' }), { env: TELJES_ENV, fetchImpl: f, now: () => NOW });
   assert.ok(!hivasok.some((h) => h.kulcs === 'google'));
@@ -312,7 +313,7 @@ test('elosztas: Visszajaro csak alapesemeny (nincs ernyo, a Google-ba a visszaja
   const n = await naploLeker(db, BID); assert.equal(new Set(n.kuldesek.map((k) => k.esemeny_nev)).size, 1); assert.equal(n.kuldesek[0].esemeny_nev, 'Visszajaro');
   const db2 = d1(); const g = hamis();
   await elosztas(db2, FK({ uzletag: 'szor', jelleg: 'konzultacio', ertek: 4900 }), { env: TELJES_ENV, fetchImpl: g.f, now: () => NOW });
-  assert.equal(g.hivasok.find((h) => h.kulcs === 'meta').body.data[0].custom_data.value, 4900);
+  assert.equal(g.hivasok.find((h) => h.kulcs === 'meta').body.data[0].custom_data.value, 27000, 'szor konzultacio: a rogzitett ertek, nem a Salonic 4 900 Ft-ja');
 });
 test('elosztas: hitelesites nelkuli platform = "nincs_hitelesites" + kesz kerelem; kulso szallito megerositheti a platform valaszaval; a megerositett nem megy ujra', async () => {
   const db = d1(); const { f, hivasok } = hamis(); await erkezesMent(db, erkBe(), NOW);
@@ -343,7 +344,7 @@ test('elosztas: hozzajarulas nelkul - Meta / TikTok megy (azonositokkal), Google
   await erkezesMent(db, erkBe({ hozz: { ana: false, adv: false, fun: false } }), NOW);
   await elosztas(db, FK(), { env: TELJES_ENV, fetchImpl: f, now: () => NOW });
   const m = hivasok.find((h) => h.kulcs === 'meta').body.data[0].user_data; assert.ok(m.em && m.ph);
-  const g = hivasok.find((h) => h.kulcs === 'google').body.conversions[0]; assert.deepEqual([g.userIdentifiers, g.consent.adUserData], [undefined, 'DENIED']);
+  const g = hivasok.find((h) => h.kulcs === 'google').body; assert.deepEqual([g.hashed_email, g.hashed_phone, g.ad_user_data], [undefined, undefined, 'DENIED']);
   const h = (await naploLeker(db, BID)).kuldesek.find((k) => k.platform === 'google').hozzajarulas; assert.equal(h.allapot.adv, false); assert.equal(h.szabaly.jel.ad_user_data, 'DENIED');
 });
 
@@ -365,6 +366,7 @@ function halozat({ salonic = 'aktiv' } = {}) { // salonic: 'aktiv' | 'torolve' |
   const hivasok = []; let reszletekSzam = 0;
   const f = async (url, o = {}) => {
     const u = String(url);
+    if (u.includes('/debug/mp/collect')) return { status: 200, text: async () => JSON.stringify({ validationMessages: [] }) };
     if (u.includes('/booking/bookingDetails/')) {
       const allapot = Array.isArray(salonic) ? salonic[Math.min(reszletekSzam++, salonic.length - 1)] : salonic;
       if (allapot === 'hiba') return { ok: false, status: 500, url: u, text: async () => '' };
@@ -372,7 +374,7 @@ function halozat({ salonic = 'aktiv' } = {}) { // salonic: 'aktiv' | 'torolve' |
       return { ok: true, status: 200, url: u, text: async () => szoveg };
     }
     if (u.includes('/selectDate/')) return { ok: true, status: 200, url: u, text: async () => fx('kulcs-selectDate-modositas-hair.html') };
-    const kulcs = ['meta', 'tiktok', 'google', 'ga4'][['graph.facebook.com', 'business-api.tiktok.com', 'googleads.googleapis.com', 'google-analytics.com'].findIndex((h) => u.includes(h))];
+    const kulcs = ['meta', 'tiktok', 'google', 'ga4'][['graph.facebook.com', 'business-api.tiktok.com', 'hooks.zapier.com', 'google-analytics.com'].findIndex((h) => u.includes(h))];
     hivasok.push({ kulcs, url: u, body: JSON.parse(o.body) });
     return { status: 200, text: async () => JSON.stringify(SIKER[kulcs]) };
   };
@@ -396,11 +398,11 @@ test('VEGPONTTOL VEGPONTIG: bongeszo erkezesi adat -> parositas -> esemenyek (Ko
   const post = async (body) => (await kezelEgyeztetes(egyeztetKer(body), e, { fetchImpl: f, now: t, esemenyKuldo: foglalasEsemenyKuldes })).json();
   const r = await post(LEVEL());
   assert.deepEqual([r.allapot, r.kuldheto, r.booking_id], ['parositott', true, BID]);
-  assert.deepEqual([r.esemeny_kuldes.allapot, r.esemeny_kuldes.jelleg, r.esemeny_kuldes.uzletag, r.esemeny_kuldes.ertek, r.esemeny_kuldes.elo_allapot, r.esemeny_kuldes.ar_forras], ['kesz', 'konzultacio', 'fodrasz', 0, 'aktiv', 'level']);
+  assert.deepEqual([r.esemeny_kuldes.allapot, r.esemeny_kuldes.jelleg, r.esemeny_kuldes.uzletag, r.esemeny_kuldes.ertek, r.esemeny_kuldes.elo_allapot, r.esemeny_kuldes.ar_forras], ['kesz', 'konzultacio', 'fodrasz', 13000, 'aktiv', 'level']); // a konzultacio ertek-tablabol (a Salonic-ar 0 Ft)
   const meta = hivasok.filter((h) => h.kulcs === 'meta').map((h) => h.body.data[0]);
   assert.deepEqual(meta.map((d) => [d.event_name, d.event_id]), [['Fodrasz_Konzultacio', `Konzultacio:${BID}`], ['Fodrasz_AkviziciosFoglalas', `Fodrasz_AkviziciosFoglalas:${BID}`]]);
-  assert.ok(meta.every((d) => d.custom_data.currency === 'HUF' && d.user_data.em && d.user_data.fbc && d.user_data.fbp));
-  assert.deepEqual(hivasok.filter((h) => h.kulcs === 'google').map((h) => h.body.conversions[0].conversionAction), ['customers/6088874770/conversionActions/7825200898']);
+  assert.ok(meta.every((d) => d.custom_data.currency === 'HUF' && d.custom_data.value === 13000 && d.custom_data.salonic_ar === 0 && d.custom_data.ertek_forras === 'konzultacio_tabla' && d.user_data.em && d.user_data.fbc && d.user_data.fbp));
+  assert.deepEqual(hivasok.filter((h) => h.kulcs === 'google').map((h) => [h.body.conversion_action_id, h.body.value]), [['7825200898', 13000]]);
   assert.equal(hivasok.filter((h) => h.kulcs === 'tiktok').length, 0, 'a TikTok csak a HeadSpa-ra hirdet');
   assert.equal(hivasok.filter((h) => h.kulcs === 'ga4').length, 1);
   const n = hivasok.length;
@@ -500,4 +502,65 @@ test('/api/meres-admin ajandek_ujra: kulcsos, ervenytelen pi 400, a kezelo (deps
   assert.deepEqual(await (await adm({ muvelet: 'ajandek_ujra', pi: 'pi_3Sabc123XYZabc456', mod: 'atutalas' })).json(), { ok: true, allapot: 'kesz' });
   assert.deepEqual(hivasok, [['pi_3Sabc123XYZabc456', 'atutalas']]);
   assert.equal((await kezelAdmin(new Request(`https://x.pages.dev/api/meres-admin?kulcs=${KULCS_SZOVEG}`, { method: 'POST', body: JSON.stringify({ muvelet: 'ajandek_ujra', pi: 'pi_3Sabc123XYZabc456' }) }), e)).status, 501);
+});
+
+// --- QA-2 felulvizsgalat utan: konzultacio-ertek tabla, "nyitott", Zapier-webhook, GA4 validalas, teljes payload naplo ------------------------------------------
+test('konzultacio ERTEKE (#98): ertek-tabla (szor 27 000, fodrasz 13 000), NEM a Salonic ara; oxigen / pmu / headspa NYITOTT (nincs rogzitett ertek), a tenyleges ar (FoglalasElso) valtozatlan', () => {
+  assert.deepEqual({ ...KONZULTACIO_ERTEK }, { szor: 27000, fodrasz: 13000, oxigen: null, pmu: null, headspa: null });
+  const szor = esemenyek(FK({ uzletag: 'szor', jelleg: 'konzultacio', ertek: 0 }));
+  assert.deepEqual(szor.map((e) => [e.nev, e.ertek, e.salonic_ar, e.ertek_forras, e.nyitott]), [['Konzultacio', 27000, 0, 'konzultacio_tabla', false], ['Schedule', 27000, 0, 'konzultacio_tabla', false]]);
+  assert.equal(esemenyek(FK({ uzletag: 'fodrasz', jelleg: 'konzultacio', ertek: 0 }))[1].ertek, 13000, 'az ernyo is a konzultacio-ertekkel megy');
+  for (const uzletag of ['oxigen', 'pmu', 'headspa']) {
+    const l = esemenyek(FK({ uzletag, jelleg: 'konzultacio', ertek: 4990 }));
+    assert.ok(l.length && l.every((e) => e.nyitott === true && e.ertek === null && e.salonic_ar === 4990 && /nincs rogzitve/.test(e.nyitott_ok)), uzletag + ': nem 0, nem a Salonic ara: nyitott');
+  }
+  const elso = esemenyek(FK({ uzletag: 'oxigen', jelleg: 'elso', ertek: 29900 }));
+  assert.ok(elso.every((e) => e.nyitott === false && e.ertek === 29900 && e.ertek_forras === 'tenyleges_ar'), 'a fizetos elso kezeles a tenyleges arral megy');
+  // felulirhato egy helyen (env): oxigen 4 600; ervenytelen ertek / hibas JSON = marad az alap
+  assert.equal(konzultacioTabla({ MERES_KONZULTACIO_ERTEK: '{"oxigen":4600,"szor":"x"}' }).oxigen, 4600); assert.equal(konzultacioTabla({ MERES_KONZULTACIO_ERTEK: '{"oxigen":4600,"szor":"x"}' }).szor, 27000);
+  assert.deepEqual({ ...konzultacioTabla({ MERES_KONZULTACIO_ERTEK: 'nem json' }) }, { ...KONZULTACIO_ERTEK });
+});
+test('elosztas: a NYITOTT konzultacio-ertek nem megy ki SEHOVA (sem 0-val, sem a Salonic araval), a naploban "nyitott"; az ertek rogzitese utan (env) ugyanaz az esemeny kimegy', async () => {
+  const db = d1(); const { f, hivasok } = hamis(); await erkezesMent(db, erkBe({ uzletag: 'oxigen' }), NOW);
+  const fk = FK({ uzletag: 'oxigen', jelleg: 'konzultacio', ertek: 4990 });
+  const r = await elosztas(db, fk, { env: TELJES_ENV, fetchImpl: f, now: () => NOW });
+  assert.equal(hivasok.length, 0); assert.ok(r.esemenyek.every((e) => e.nyitott === true));
+  const n = await naploLeker(db, BID);
+  assert.ok(n.kuldesek.length > 0 && n.kuldesek.every((k) => ['nyitott', 'kihagyva'].includes(k.allapot) && (k.allapot === 'kihagyva' || /nincs rogzitve/.test(k.indok))), 'minden cella nyitott / modell szerint kihagyott');
+  assert.ok(n.kuldesek.some((k) => k.allapot === 'nyitott' && k.platform === 'meta'));
+  const r2 = await elosztas(db, fk, { env: TELJES_ENV, fetchImpl: f, now: () => NOW + 1000 }); assert.equal(r2.allapot, 'mar_kuldve', 'tovabbra is nyitott: nincs teendo, elo lekeres sem kell'); assert.equal(hivasok.length, 0);
+  await elosztas(db, fk, { env: { ...TELJES_ENV, MERES_KONZULTACIO_ERTEK: '{"oxigen":4600}' }, fetchImpl: f, now: () => NOW + 2000 });
+  const meta = hivasok.filter((h) => h.kulcs === 'meta').map((h) => h.body.data[0].custom_data);
+  assert.deepEqual(meta.map((c) => [c.value, c.salonic_ar, c.ertek_forras]), [[4600, 4990, 'konzultacio_tabla'], [4600, 4990, 'konzultacio_tabla']]);
+});
+test('szallito: Google = Zapier-webhook (a cim titok, nem naplozott; ervenytelen cim = hiba), GA4 = elobb /debug/mp/collect validalas, csak tiszta validacio utan a valodi kuldes', async () => {
+  const ctx = await ctxEpit(); const [alap] = esemenyek(ctx.fk);
+  const g = googleKerelem(alap, ctx, {});
+  assert.equal((await kuldes(g, {}, valasz(200, {}))).allapot, 'nincs_hitelesites');
+  assert.equal((await kuldes(g, { GOOGLE_ARNYEK_WEBHOOK_URL: 'https://evil.example.com/x' }, valasz(200, {}))).allapot, 'hiba');
+  let latott; const f = async (u, o) => { latott = { u, o }; return { status: 200, text: async () => JSON.stringify({ status: 'success', id: 'abc' }) }; };
+  const r = await kuldes(g, { GOOGLE_ARNYEK_WEBHOOK_URL: 'https://hooks.zapier.com/hooks/catch/123/AbC_def/' }, f);
+  assert.deepEqual([r.allapot, r.kuldo, latott.u, JSON.parse(latott.o.body).conversion_action_id], ['elkuldve', 'zapier-webhook', 'https://hooks.zapier.com/hooks/catch/123/AbC_def/', '7825199989']);
+  assert.ok(!JSON.stringify(g).includes('AbC_def'));
+  // GA4
+  const ga = ga4Kerelem(alap, ctx, ENV); const hivasok = [];
+  const jo = async (u) => { hivasok.push(String(u)); return { status: String(u).includes('/debug/') ? 200 : 204, text: async () => (String(u).includes('/debug/') ? JSON.stringify({ validationMessages: [] }) : '') }; };
+  const rg = await kuldes(ga, { ...ENV, GA4_TESZT_API_SECRET: 'sec' }, jo);
+  assert.equal(rg.allapot, 'elkuldve'); assert.deepEqual(hivasok.map((u) => u.includes('/debug/mp/collect') ? 'debug' : 'collect'), ['debug', 'collect']); assert.ok(hivasok.every((u) => u.includes('api_secret=sec')));
+  assert.deepEqual(JSON.parse(rg.valasz).ga4_validacio.validationMessages, []);
+  const rossz = []; const roszValidacio = async (u) => { rossz.push(String(u)); return { status: 200, text: async () => JSON.stringify({ validationMessages: [{ fieldPath: 'events', description: 'x', validationCode: 'VALUE_INVALID' }] }) }; };
+  const rr = await kuldes(ga, { ...ENV, GA4_TESZT_API_SECRET: 'sec' }, roszValidacio);
+  assert.equal(rr.allapot, 'hiba'); assert.match(rr.valasz, /validationMessages/); assert.equal(rossz.length, 1, 'validacios hiba utan a valodi /mp/collect nem hivodik');
+});
+test('Meta API-verzio felulirhato (META_API_VERSION), alap v23.0; a TELJES kikuldott payload a naploban (MERES_NAPLO_TELJES=1): em / ph hash, fbc, fbp, client_ip, user_agent, event_id; kapcsolo nelkul az IP maszkolt', async () => {
+  const ctx = await ctxEpit(); const [alap] = esemenyek(ctx.fk);
+  assert.match(metaKerelem(alap, ctx, { ...ENV, META_API_VERSION: 'v24.0' }).url, /\/v24\.0\//); assert.match(metaKerelem(alap, ctx, ENV).url, /\/v23\.0\//);
+  for (const [env, vartIp] of [[{ ...TELJES_ENV, MERES_NAPLO_TELJES: '1' }, '203.0.113.7'], [TELJES_ENV, '203.0.113.xxx']]) {
+    const db = d1(); const { f } = hamis(); await erkezesMent(db, erkBe(), NOW);
+    await elosztas(db, FK(), { env, fetchImpl: f, now: () => NOW });
+    const sor = (await naploLeker(db, BID)).kuldesek.find((k) => k.platform === 'meta' && k.esemeny_tipus === 'alap');
+    const u = sor.kerelem.body.data[0].user_data;
+    assert.equal(u.client_ip_address, vartIp); assert.ok(u.em[0].length === 64 && u.ph[0].length === 64 && u.fbc && u.fbp && u.client_user_agent === 'UA TESZT' && sor.kerelem.body.data[0].event_id === `FoglalasElso:${BID}`);
+    assert.ok(!/access_token|"t"/.test(JSON.stringify(sor.kerelem)), 'a token / titok sosem kerul a naploba');
+  }
 });

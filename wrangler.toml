@@ -66,12 +66,14 @@ AJANDEK_AZONNALI = "1"
 AJANDEK_STRIPE_SZAMLA = "1"
 AJANDEK_SZAMLA_ADO_ELLENORZES = "0"   # CSAK elonezet: a Stripe teszt-modnak nincs adoregisztracioja (0 ado), igy az ado-ellenorzes kikapcsolva; az eles mindig ellenoriz
 # QA-2 ARNYEK-MERES (DECISION-LOG #99; lasd docs/booking-engine/QA2_ARNYEK.md): CSAK ELONEZET. Az eles ([vars]) NEM kapja meg: ott az elosztas ki van kapcsolva (MERES_ELOSZTO hianyzik).
-# A kuldes kizarolag az ARNYEK-celpontokra mehet (kodban rogzitve: platformok.js), tesztkoddal. A tesztkodok ide kerulnek (nem titkosak); a hitelesito titkok
-# (META_CAPI_TOKEN, TIKTOK_EVENTS_TOKEN, GOOGLE_ADS_ACCESS_TOKEN + GOOGLE_ADS_DEVELOPER_TOKEN, GA4_TESZT_API_SECRET) es a GA4_TESZT_MEASUREMENT_ID a Cloudflare feluleten, Preview / Secret.
+# A kuldes kizarolag az ARNYEK-celpontokra mehet (kodban rogzitve: netlify/lib/meres/platformok.js), tesztkoddal. A nem titkos ertekek ITT vannak; a titkok a Cloudflare feluleten / API-n,
+# Preview / Secret tipussal: META_CAPI_TOKEN, TIKTOK_EVENTS_TOKEN, GA4_TESZT_API_SECRET (beallitva 2026-10-06), GOOGLE_ARNYEK_WEBHOOK_URL (a Zapier-webhook; a Zap-et a meresi munkamenet epiti).
 # Titok nelkul a kerelem elkeszul es naplozodik ("nincs_hitelesites"), kuldes nem tortenik.
 MERES_ELOSZTO = "1"
-META_TESZT_KOD = "TEST_MOSAIC_QA2"      # a Meta Esemenykezelo "Teszteszemenyek" kodjara cserelendo (valtozo-csere, kodvaltoztatas nelkul)
-TIKTOK_TESZT_KOD = "TEST_MOSAIC_QA2"    # a TikTok Esemenykezelo teszteszemeny-kodjara cserelendo
+META_TESZT_KOD = "TEST83939"            # a Meta Esemenykezelo "Teszteszemenyek" kodja (dataset 28616665324611098, MOSAIC ARNYEK meres-teszt)
+TIKTOK_TESZT_KOD = "TEST_MOSAIC_QA2"    # SZINTETIKUS: a TikTok Esemenykezelo teszteszemeny-kodjara cserelendo (valtozo-csere, kodvaltoztatas nelkul)
+GA4_TESZT_MEASUREMENT_ID = "G-M5MLRLNQBP"   # a GA4 TESZT-property (az elo G-H4206SQ0Q7 a kodban tiltott); a Measurement Protocol secret: GA4_TESZT_API_SECRET (titok)
+MERES_NAPLO_TELJES = "1"                # CSAK elonezet (sajat teszt-IP): a naploban a TELJES kikuldott payload; ott, ahol nincs beallitva, a nyers IP maszkolt
 
 # A szemelyre szabott ajandekkartyak fotoi (Cloudflare KV, lasd AJANDEK.md "Foto-tarolas"): eles es elonezeti nevter kulon.
 # A kezelo az AJANDEK_FOTOK kotesen at olvassa / irja; nelkule a fotofeltoltes ki van kapcsolva.

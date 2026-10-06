@@ -11,6 +11,21 @@ export const SALONIC_UZLETAG = Object.freeze({ 'mosaicheadspa.salonic.hu': 'head
 export const SOURCE_ID_MINTA = /^(mb_[a-z0-9]{12,40}|pi_[A-Za-z0-9]{8,80}|ATU-[A-Z0-9]{4,12})$/;
 
 const KONZULTACIO = /konzult|hajkamer/i; // ugyanaz a szabaly, mint a foglalo-motorban (business-config.js CONSULT)
+
+/**
+ * A KONZULTACIO esemeny erteke (DECISION-LOG #98: "a konzultacio a valos ertekevel megy", KONVERZIO-TERV 2.1 / 2.2; nem a Salonic ara, ami ingyenes konzultacional 0 Ft).
+ * Kepelet: konzultacio erteke = (megjelent / BRUTTO foglalas) x (vendegge valas) x (atlagos elso foglalas) - Drive: KONVERZIO-KONZULTACIO-2026-09-28.md 3. pont.
+ *   szor: 71% x 59% x 64 100 Ft = 27 000 Ft (merve);  fodrasz: 71% x 70% x 26 190 Ft = 13 000 Ft (a 70% / 71% HIPOTEZIS, de a rogzitett ertek);
+ *   oxigen, pmu, headspa: NINCS rogzitett ertek (a terv szerint "nem elesitheto") -> null = NYITOTT: az esemeny NEM megy ki (sem 0-val, sem a Salonic araval), a naploban "nyitott".
+ * Felulirhato / kiegeszitheto a MERES_KONZULTACIO_ERTEK kornyezeti valtozoval (JSON: {"oxigen": 4600}); egy helyen, kodvaltoztatas nelkul.
+ */
+export const KONZULTACIO_ERTEK = Object.freeze({ szor: 27000, fodrasz: 13000, oxigen: null, pmu: null, headspa: null });
+export function konzultacioTabla(env = {}) {
+  let ext = {}; try { ext = env && env.MERES_KONZULTACIO_ERTEK ? JSON.parse(env.MERES_KONZULTACIO_ERTEK) : {}; } catch (e) { ext = {}; }
+  const t = { ...KONZULTACIO_ERTEK };
+  for (const u of UZLETAGAK) if (u in ext && (ext[u] === null || (Number.isFinite(Number(ext[u])) && Number(ext[u]) >= 0))) t[u] = ext[u] === null ? null : Math.round(Number(ext[u]));
+  return t;
+}
 const KUPON = /kupon/i;                    // pl. "KUPONKODDAL - ... HeadSpa kezeles"
 
 /**
@@ -29,10 +44,10 @@ export function foglalasJelleg({ szolgaltatasNev = '', ujVendeg = null, kategori
  * Forras-entitas: { tipus: 'foglalas' | 'ajandekkartya', uzletag, source_entity_id, jelleg?, kupon?, ertek, penznem }.
  * -> az elkuldendo esemenyek: [{ nev, tipus: 'alap' | 'ernyo', esemeny_id, ertek, penznem }]
  */
-export function esemenyek(fk) {
+export function esemenyek(fk, tabla = KONZULTACIO_ERTEK) {
   if (!fk || !UZLETAGAK.includes(fk.uzletag)) return [];
   if (!SOURCE_ID_MINTA.test(String(fk.source_entity_id || ''))) return [];
-  const ertek = Number.isFinite(Number(fk.ertek)) ? Math.max(0, Math.round(Number(fk.ertek))) : 0;
+  const salonicAr = Number.isFinite(Number(fk.ertek)) ? Math.max(0, Math.round(Number(fk.ertek))) : 0; // a tenyleges ar (Salonic-level / Stripe)
   const penznem = 'HUF';
   const alap = fk.tipus === 'ajandekkartya' ? 'Ajandekkartya'
     : fk.jelleg === 'elso' ? 'FoglalasElso' : fk.jelleg === 'konzultacio' ? 'Konzultacio' : fk.jelleg === 'visszajaro' ? 'Visszajaro' : null;
@@ -41,7 +56,13 @@ export function esemenyek(fk) {
   // ernyo: visszajaro es kupon soha; HeadSpa: uj vendeg foglalasa + ajandekkartya; szor / PMU / fodrasz / oxigen: elso foglalas + konzultacio
   const ernyoJogosult = !fk.kupon && alap !== 'Visszajaro' && (fk.uzletag === 'headspa' ? (alap === 'FoglalasElso' || alap === 'Ajandekkartya') : (alap === 'FoglalasElso' || alap === 'Konzultacio'));
   if (ernyoJogosult) lista.push({ nev: ERNYOESEMENYEK[fk.uzletag], tipus: 'ernyo' });
-  return lista.map((e) => ({ ...e, esemeny_id: esemenyId(e.nev, fk.source_entity_id), ertek, penznem }));
+  // ertek: a tenyleges ar; KONZULTACIO (es a belole kepzett ernyo) a rogzitett konzultacio-ertek; ha az nincs rogzitve: NYITOTT (nem megy ki)
+  const konz = alap === 'Konzultacio';
+  const konzErtek = konz ? tabla[fk.uzletag] : undefined;
+  const nyitott = konz && !(Number.isFinite(Number(konzErtek)) && konzErtek !== null);
+  const ertek = konz ? (nyitott ? null : Math.round(Number(konzErtek))) : salonicAr;
+  const ertekForras = konz ? 'konzultacio_tabla' : 'tenyleges_ar';
+  return lista.map((e) => ({ ...e, esemeny_id: esemenyId(e.nev, fk.source_entity_id), ertek, penznem, salonic_ar: salonicAr, ertek_forras: ertekForras, nyitott, ...(nyitott ? { nyitott_ok: `a konzultacio erteke nincs rogzitve (${fk.uzletag}): nem kuldjuk sem 0-val, sem a Salonic araval` } : {}) }));
 }
 export const esemenyId = (nev, sourceId) => `${nev}:${sourceId}`;
 
