@@ -1,0 +1,24 @@
+=== Lezer landing: az idopontra kattintas a foglalo-szekcioban (?start) - mereshez kapcsolodo esemenysor, helyi dist, hamisitott Salonic (2026-10-06)
+Eszkoz: Playwright + helyi Chrome, a helyi dist/ az -uj-bol eredeti cimre kerult landing (/lezeres-szortelenites-budapest), kulso halozat tiltva,
+a Salonic naptar-API es a szolgaltatas-lista hamisitva (Hónalj - Teljes hónalj, 476488). Nincs valodi foglalas, nincs kulso keres (mero / pixel nem fut).
+Mit nezunk: a motor booking_* dataLayer-esemenyei ugyanazok-e az uj (naptar nelkuli) es a regi (naptaros) uton.
+
+--- A) UJ: a landing foglalo-szekciojaban idopontra kattintva (?start): naptar nelkul az adatlapra
+  booking_open  business=laser service_id=none source_page=/lezeres-szortelenites-budapest
+  booking_business  business=laser service_id=none
+  booking_service_selected  business=laser service_id=476488 booking_type=first_treatment final_price=15200 voucher=false
+  booking_service  business=laser service_id=476488
+  booking_slots_loaded  business=laser service_id=476488 load_ms=3
+  booking_slot_viewed  business=laser service_id=476488 step=C1 count=3          <- a motor kuldi (a vendeg az oldalon latta az idopontokat), igy a tolcser egyben marad
+  booking_slot_selected  business=laser service_id=476488
+  booking_slot  business=laser service_id=476488
+  booking_details_started  business=laser service_id=476488 step=C4
+  booking_form_start  business=laser service_id=476488
+
+--- B) REGI: a motor naptaraban idopontot valasztva (a fejlec / nyitott motor), mint eddig
+  booking_open, booking_business, booking_service_selected, booking_service, booking_slots_loaded, booking_slot_viewed (step=C1 count=3),
+  booking_slot_selected, booking_slot, booking_details_started (step=C4), booking_form_start   -> SORRENDRE ES PARAMETEREKRE AZONOS az A) uttal.
+
+Kovetkezmeny: a mar meglevo esemenyek, a lepes-meres (booking_* lepesek) es a konverzios esemenyek valtozatlanok; uj esemeny nincs, uj parameter nincs.
+Egyetlen kulonbseg: az Idopont-lepes (C1) kepernyoje nem jelenik meg a vendegnek -> ott nincs naptar-kattintas (booking_filter_used, a naptar sajat interakcioi);
+a booking_slot_selected a landing-kattintas utan azonnal erkezik. (A landing-kattintas maga nem kuld kulon esemenyt.)

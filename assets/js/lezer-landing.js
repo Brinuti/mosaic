@@ -138,7 +138,7 @@
   // az idopontra kattintva a helyben nyilo foglalo-motor (reteg) nyilik meg, az adott szolgaltatas idopont-naptaraval (mint a fejlec "Ingyenes konzultacio" gombja):
   // NEM visz a Salonic oldalara. A launcher (assets/js/booking-launcher.js) elfogja a /foglalo-motor linkeket; JS nelkul a /foglalo-motor oldalra visz.
   // Az idopont idobelyege a data-ido attributumban van (a motor mindig a szolgaltatas aktualis szabad idopontjait mutatja).
-  const motorIdopontUrl = (id) => `/foglalo-motor?business=laser&service=${id === KONZULT.elso ? 'konzult' : id}`;
+  const motorIdopontUrl = (id, ts) => `/foglalo-motor?business=laser&service=${id === KONZULT.elso ? 'konzult' : id}&start=${ts}`;
 
   function leker(url, o = {}) {
     const ab = new AbortController();
@@ -185,7 +185,7 @@
     hova.replaceChildren(
       elem('p', { class: 'idok-cim', szoveg: fmt(lista[0], { month: 'long', day: 'numeric', weekday: 'long' }) }),
       elem('div', { class: 'ido-racs' }, ...lista.map((ts) => elem('a', {
-        class: 'ido', href: motorIdopontUrl(id), 'data-ido': ts, 'aria-label': `${fmt(ts, { month: 'long', day: 'numeric' })} ${ora(ts)}`, szoveg: ora(ts),
+        class: 'ido', href: motorIdopontUrl(id, ts), 'data-ido': ts, 'aria-label': `${fmt(ts, { month: 'long', day: 'numeric' })} ${ora(ts)}`, szoveg: ora(ts),
       }))));
   }
   function napValaszt(iso) { allapot.nap = iso; naptarRajzol(); }

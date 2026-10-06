@@ -261,6 +261,10 @@ export function findByKey(services, key, { voucher = false } = {}) {
 export const COUPON_RE = /^[A-Za-z0-9_-]{3,40}$/;
 export const cleanCoupon = (v) => { const s = v === null || v === undefined ? '' : String(v).trim(); return COUPON_RE.test(s) ? s : null; };
 
+// Idopont-link (?start=<unix masodperc>): a vendeg az oldalon (pl. a lezeres landing foglalo-szekcioja) mar idopontot valasztott -> a motor a naptar nelkul,
+// rogton az adatlapra visz (ha az idopont meg szabad). Egesz szam, ertelmes idotartomanyban; minden mas: nincs elovalasztott idopont.
+export const cleanStart = (v) => { const n = v === null || v === undefined || v === '' ? NaN : Number(v); return Number.isInteger(n) && n > 1.5e9 && n < 4e9 ? n : null; };
+
 // --- belepesi kontextus -------------------------------------------------------------------------------------------------------
 // defaultBusiness: ha az URL nem nevezi meg az uzletagat: a /foglalo-motor oldalon HeadSpa (alap), a /foglalas oldalon es a retegben null
 // -> a szolgaltatas-elso kezdo allapot (H0). Az aliasok (service_id, service_category) a CTA-hivasokhoz (openBooking) valok.
@@ -278,6 +282,7 @@ export function parseContext(search, referrer = '', origin = '', { defaultBusine
     intent: q.get('intent') || null, // lezer: first | returning (a regi "Elso idopontok" / "Kezeles idopontok" gombok) -> egyenesen a terulet-valasztasra
     staffKey: cleanStaffKey(q.get('staff') || q.get('munkatars') || q.get('szakember')), // munkatars-link: ?staff=betti (a szakember-valaszto kimarad)
     coupon: cleanCoupon(q.get('kupon') || q.get('kuponkod') || q.get('coupon')), // ?kupon=NYAR20: az adatlapon a kupon mezobe kerul (a kod NEM kerul meresbe, logba)
+    start: cleanStart(q.get('start')), // ?start=<unix>: a mar kivalasztott idopont (konkret szolgaltatasnal): a naptar kimarad, rogton az adatlap
     sourcePage,
     attribution,
     sample: q.get('minta') || null,
