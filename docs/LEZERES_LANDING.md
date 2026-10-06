@@ -13,7 +13,7 @@ kérésére, 2026-10-04): a korábbi Wixes klón helyét vette át (a `foglalas/
 | `foglalas/lezeres-szortelenites-budapest.html` | az oldal (fejléc/lábléc a build-ből, `<!--mh-fejlec-->`) |
 | `assets/css/lezer-landing.css` | önálló stíluslap (a PMU stílusát nem érinti) |
 | `assets/js/lezer-landing.js` | időpont-választó, kalkulátor, apróbb segédek |
-| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (79 db) |
+| `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (81 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
 ## Szekciók sorrendje
@@ -60,6 +60,8 @@ Minden gomb (`.gomb`) ugyanazt a betűt használja: Jost, 15 px, normál írásm
 **Tizennegyedik kör (2026-10-06):** az árlistában és a kalkulátorban csak a fő testtájak (csoportok) kapnak képet (`cs-*.jpg`), a soronkénti / gombonkénti ikonok kikerültek (a `sor-*.jpg` fájlok törölve); a Zsófi-szekció első jelvénye „8000+ óra tapasztalat”; a Trustindex-keret `loading="eager"` (a lézeres, az Oxigén és az ajándékkártya oldalon is), vagyis hozzájárulás után azonnal töltődik, nem csak odagörgetéskor (hozzájárulás előtt továbbra is gombos helykitöltő áll: harmadik fél, funkcionális süti); a helyszín-szekció képe fix 190 px magas (iOS Safari-n a rács-elem képén a `height: 100%` nem oldódott fel, és a kép a láblécbe lógott).
 
 **Mobil sticky sáv + eredmény-link (2026-10-06, a tulajdonos kérése az Oxigén-munkameneten át):** a sticky sáv nem rögtön jelenik meg: csak az első, 4 képes szekció (Mennyibe kerül?) elgörgetése után (IntersectionObserver a `#mennyibe` szekción: `!isIntersecting && bottom <= 0`), a foglalónál eltűnik. A hero értékelés-sorában („4,9/5 … Google-vélemény”) mellette „Mutasd az eredményeket →” link áll (`data-gorgetes="eredmenyek"`: JS-gördítés az Eredmények szekcióhoz, nem `#hash`, a GTM History Change miatt).
+
+**Foglaló-szekció időpontjai → foglaló-motor (2026-10-06, a tulajdonos kérése):** a naptár időpontjai már nem a Salonic oldalára visznek, hanem a helyben nyíló foglaló-motorba (réteg): `/foglalo-motor?business=laser&service=<Salonic-azonosító | konzult>` (a launcher, `assets/js/booking-launcher.js`, elfogja a kattintást; ugyanúgy működik, mint a fejléc „Ingyenes konzultáció” gombja; JS nélkül a `/foglalo-motor` oldalra visz). A motor az adott szolgáltatás időpont-naptárával nyílik; a kiválasztott időpont időbélyege az `a.ido[data-ido]` attribútumban van (a motor jelenleg nem fogad kezdő-időpontot).
 
 ## Árforrás
 

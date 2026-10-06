@@ -2,7 +2,7 @@
 //
 //  1. Idopont-valaszto (#foglalas): havi naptar + a kivalasztott nap idopontjai a Salonic nyilvanos naptar-API-bol (ugyanaz a forras, mint a
 //     PMU landingen). Idopontot nem talalunk ki: ha az API nem valaszol, a Salonic-linkre vezetunk. Egy idopontra kattintva a Salonic
-//     /guestData/ adatlapja nyilik (az idopont mar kivalasztva).
+//     foglalo-motor (reteg) nyilik az adott szolgaltatas idopont-naptaraval.
 //  2. Kalkulator (#szamolo): a legdragabb terulet teljes aron, minden tovabbi terulet 50%-on (akkor is, ha nagy terulet). Alapbol nehany
 //     terulet ki van jelolve, hogy lassa, hogy kalkulator; az elso kezeles 20% kedvezmennyel.
 //  3. Arforras: az #arlista tablazat sorai (data-ar, data-elso, data-tartalmaz) - a kalkulator es a valaszto ebbol olvas,
@@ -135,8 +135,10 @@
   const szolgaltatasId = () => (allapot.mod === 'konzult' ? KONZULT.elso : (SZOLGALTATAS[allapot.terulet] || {}).elso);
   // Ha az API nem valaszol / nincs szabad nap: a helyben nyilo foglalo-motor (NEM kozvetlen Salonic-link: a Salonic sajat sikeroldalan vegzodo foglalas a meresben nem latszik)
   const motorUrl = () => (allapot.mod === 'konzult' ? '/foglalo-motor?business=laser&service=konzult' : '/foglalo-motor?business=laser&intent=first');
-  // a kivalasztott idopont adatlapja: az idopont mar benne van (ugyanezt a cimet nyitja a foglalo-motor is)
-  const adatlapUrl = (id, ts) => `${SZALON.cim}/guestData/?anyone=true&employeeId=${SZALON.kezelo}&placeId=${SZALON.placeId}&serviceId=${id}&startDate=${ts}&back=`;
+  // az idopontra kattintva a helyben nyilo foglalo-motor (reteg) nyilik meg, az adott szolgaltatas idopont-naptaraval (mint a fejlec "Ingyenes konzultacio" gombja):
+  // NEM visz a Salonic oldalara. A launcher (assets/js/booking-launcher.js) elfogja a /foglalo-motor linkeket; JS nelkul a /foglalo-motor oldalra visz.
+  // Az idopont idobelyege a data-ido attributumban van (a motor mindig a szolgaltatas aktualis szabad idopontjait mutatja).
+  const motorIdopontUrl = (id) => `/foglalo-motor?business=laser&service=${id === KONZULT.elso ? 'konzult' : id}`;
 
   function leker(url, o = {}) {
     const ab = new AbortController();
@@ -183,7 +185,7 @@
     hova.replaceChildren(
       elem('p', { class: 'idok-cim', szoveg: fmt(lista[0], { month: 'long', day: 'numeric', weekday: 'long' }) }),
       elem('div', { class: 'ido-racs' }, ...lista.map((ts) => elem('a', {
-        class: 'ido', href: adatlapUrl(id, ts), 'aria-label': `${fmt(ts, { month: 'long', day: 'numeric' })} ${ora(ts)}`, szoveg: ora(ts),
+        class: 'ido', href: motorIdopontUrl(id), 'data-ido': ts, 'aria-label': `${fmt(ts, { month: 'long', day: 'numeric' })} ${ora(ts)}`, szoveg: ora(ts),
       }))));
   }
   function napValaszt(iso) { allapot.nap = iso; naptarRajzol(); }

@@ -242,7 +242,7 @@ describe('kalkulator: a legdragabb teruletet teljes aron, a tobbit 50%-on', () =
 
 describe('idopont-valaszto: naptar (hamisitott Salonic-API)', () => {
   const kell = (p) => p.waitForSelector('#naptar button.naptar-nap');
-  const idoLinkek = (p) => p.$$eval('#idok a.ido', (l) => l.map((a) => a.href));
+  const idoLinkek = (p) => p.$$eval('#idok a.ido', (l) => l.map((a) => a.getAttribute('href') + '#' + a.dataset.ido));
   const idoCimkek = (p) => p.$$eval('#idok a.ido', (l) => l.map((a) => a.textContent));
 
   test('naptart mutat (nem "tovabbi idopontok" gombot): az elso szabad nap alapbol kijelolve, a napok idopontjai latszanak, a hónap neve + lapozo', async () => {
@@ -255,11 +255,11 @@ describe('idopont-valaszto: naptar (hamisitott Salonic-API)', () => {
     assert.match(await p.textContent('#naptar .naptar-fej b'), /\d{4}\. \p{L}+/u);
     assert.equal(await p.locator('#naptar button.naptar-nap[aria-pressed="true"]').count(), 1, 'az elso szabad nap kijelolve');
     assert.equal(await p.locator('#naptar .naptar-hetnap').count(), 7);
-    // az idopontok a kivalasztott nap idopontjai, kozvetlenul a foglalasi adatlapra mutatnak (az idopont benne van)
+    // az idopontok a kivalasztott nap idopontjai; a helyben nyilo foglalo-motorra (reteg) mutatnak (nem a Salonic oldalara)
     const linkek = await idoLinkek(p);
     assert.ok(linkek.length >= 1);
-    assert.equal(await p.locator('#idok a.ido[target]').count(), 0, 'az idopont nem nyilik uj lapon / felugroban (a helyben nyilo uj motor lesz itt)');
-    for (const x of linkek) assert.match(x, /^https:\/\/mosaic-elysion\.salonic\.hu\/guestData\/\?anyone=true&employeeId=32417&placeId=14586&serviceId=476488&startDate=\d+&back=$/);
+    assert.equal(await p.locator('#idok a.ido[target]').count(), 0, 'az idopont nem nyilik uj lapon / felugroban');
+    for (const x of linkek) assert.match(x, /^\/foglalo-motor\?business=laser&service=476488#\d+$/);
     assert.equal(hivasok[0].get('serviceId'), '476488');
     assert.equal(hivasok[0].get('placeId'), '14586');
     await ctx.close();
@@ -275,12 +275,12 @@ describe('idopont-valaszto: naptar (hamisitott Salonic-API)', () => {
     assert.ok((await p.locator('#naptar span.naptar-nap').count()) >= 20, 'a tobbi nap nem kattinthato');
     const elsoLinkek = await idoLinkek(p);
     assert.equal(elsoLinkek.length, 2);
-    assert.ok(elsoLinkek[0].includes(`startDate=${holnap}&`) && elsoLinkek[1].includes(`startDate=${holnap + 3600}&`));
+    assert.ok(elsoLinkek[0].endsWith(`#${holnap}`) && elsoLinkek[1].endsWith(`#${holnap + 3600}`));
     await p.click('#naptar button.naptar-nap[aria-pressed="false"]');
-    await p.waitForFunction((t) => document.querySelector('#idok a.ido')?.href.includes('startDate=' + t), nap2);
+    await p.waitForFunction((t) => document.querySelector('#idok a.ido')?.dataset.ido === String(t), nap2);
     const masodik = await idoLinkek(p);
     assert.equal(masodik.length, 2);
-    assert.ok(masodik[1].includes(`startDate=${nap2 + 1800}&`));
+    assert.ok(masodik[1].endsWith(`#${nap2 + 1800}`));
     assert.equal(await p.locator('#naptar button.naptar-nap[aria-pressed="true"]').count(), 1);
     await ctx.close();
   });
@@ -305,7 +305,7 @@ describe('idopont-valaszto: naptar (hamisitott Salonic-API)', () => {
     const { p, ctx } = await nyit({ api: (u) => { hivott.push(new URL(u).searchParams.get('serviceId')); return idok(...SLOTOK); } });
     await p.locator('#foglalo').scrollIntoViewIfNeeded();
     await kell(p);
-    const vart = (id) => p.waitForFunction((x) => document.querySelector('#idok a.ido')?.href.includes('serviceId=' + x), id);
+    const vart = (id) => p.waitForFunction((x) => document.querySelector('#idok a.ido')?.getAttribute('href').includes('service=' + x), id);
     assert.equal(await p.locator('#terulet-chipek, .chip').count(), 0, 'nincsenek csempek / gombok a teruletvalasztonal, csak a legordulo');
     await p.selectOption('#terulet-select', 'intim');
     await vart('476493');
@@ -324,7 +324,7 @@ describe('idopont-valaszto: naptar (hamisitott Salonic-API)', () => {
     await p.locator('#foglalo').scrollIntoViewIfNeeded();
     await kell(p);
     await p.check('input[name="mod"][value="konzult"]');
-    await p.waitForFunction(() => /serviceId=476477/.test(document.querySelector('#idok a.ido')?.href || ''));
+    await p.waitForFunction(() => /service=konzult/.test(document.querySelector('#idok a.ido')?.getAttribute('href') || ''));
     assert.equal(await p.locator('#lepes-terulet').isHidden(), true);
     assert.equal(await p.textContent('#lepes-idopont .szam'), '2');
     await p.check('input[name="mod"][value="kezeles"]');
@@ -378,7 +378,7 @@ describe('osszekottetesek', () => {
     const { p, ctx } = await nyit({ api: () => idok(...SLOTOK) });
     await p.click('.gyors-kartya[data-terulet="lab"]');
     await p.waitForFunction(() => document.getElementById('terulet-select').value === 'lab');
-    await p.waitForFunction(() => /serviceId=476496/.test(document.querySelector('#idok a.ido')?.href || ''));
+    await p.waitForFunction(() => /service=476496/.test(document.querySelector('#idok a.ido')?.getAttribute('href') || ''));
     // sima gorgetes: megvarjuk, mig a foglalo a kepernyo tetejere er
     await p.waitForFunction(() => { const t = document.getElementById('foglalo').getBoundingClientRect().top; return t < 200 && t > -100; }, null, { timeout: 8000 });
     await ctx.close();
@@ -1035,5 +1035,37 @@ describe('a "Mutasd az eredmenyeket" link a hero-ban', () => {
       await ctx.close();
     });
   }
+});
+
+describe('a foglalo szekcio idopontjai a helyben nyilo foglalo-motorba (retegbe) torkollnak', () => {
+  test('egy idopontra kattintva a reteg nyilik meg az adott szolgaltatassal (nincs oldalvaltas, nincs uj ablak / Salonic-oldal)', async () => {
+    const { p, ctx } = await nyit({ api: () => idok(...SLOTOK) });
+    const ujLapok = [];
+    ctx.on('page', (x) => ujLapok.push(x.url()));
+    await p.getByRole('button', { name: 'Elfogadom' }).click().catch(() => {});
+    await p.locator('#foglalo').scrollIntoViewIfNeeded();
+    await p.waitForSelector('#idok a.ido');
+    const kezdetiUt = await p.evaluate(() => location.pathname);
+    assert.match(await p.getAttribute('#idok a.ido', 'href'), /^\/foglalo-motor\?business=laser&service=476488$/);
+    await p.click('#idok a.ido');
+    await p.waitForSelector('#mosaic-booking-layer', { state: 'attached', timeout: 10000 });
+    assert.equal(await p.evaluate(() => location.pathname), kezdetiUt, 'az oldal nem navigalt el');
+    assert.ok(p.url().startsWith(bazis + OLDAL), 'a bongeszo az oldalon maradt (a reteg a helyben nyilik): ' + p.url());
+    assert.equal(ujLapok.length, 0, 'nem nyilt uj ablak');
+    await ctx.close();
+  });
+
+  test('ingyenes konzultacio modban a konzultacio-szolgaltatas (service=konzult) nyilik meg', async () => {
+    const { p, ctx } = await nyit({ api: () => idok(...SLOTOK) });
+    await p.getByRole('button', { name: 'Elfogadom' }).click().catch(() => {});
+    await p.locator('#foglalo').scrollIntoViewIfNeeded();
+    await p.click('#foglalo input[value="konzult"]');
+    await p.waitForFunction(() => /service=konzult/.test(document.querySelector('#idok a.ido')?.getAttribute('href') || ''));
+    await p.click('#idok a.ido');
+    await p.waitForSelector('#mosaic-booking-layer', { state: 'attached', timeout: 10000 });
+    assert.equal(await p.getAttribute('#idok a.ido', 'href'), '/foglalo-motor?business=laser&service=konzult');
+    assert.ok(p.url().startsWith(bazis + OLDAL), 'a bongeszo az oldalon maradt: ' + p.url());
+    await ctx.close();
+  });
 });
 
