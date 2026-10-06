@@ -37,7 +37,7 @@ A hero másodlagos linkje: „Csak hajkamerás állapotfelmérés – 4 990 Ft �
 ## Sorrend, mobil sticky sáv, „Mutasd az eredményeket” (2026-10-06)
 
 - **Szekciósorrend:** hero → Ismerősek ezek a jelek? → zöld (Akkor az oxigénterápia valószínűleg hatásos lesz nálad.) → **Eredmények** → Ők fognak veled foglalkozni (kezelők) → első kezelés → lépések → típusok → mire számíthatsz → videó → vélemények → árak → miért más → GYIK → szalon → záró.
-- **Mobil sticky sáv:** nem rögtön jelenik meg; csak a „jelek” szekció (4 illusztráció) elgörgetése után, a záró sávnál eltűnik (`oxigen-landing.js`, IntersectionObserver a `.jelek`-en).
+- **Mobil sticky sáv:** nem rögtön jelenik meg; csak a „jelek” szekció (4 illusztráció) elgörgetése után, a záró sávnál eltűnik (`oxigen-landing.js`, görgetés-figyelő a `.jelek` alsó élén; IntersectionObserver helyett, mert az gyors ugrásnál / görgető-linknél nem jelez, és a sáv sosem jönne be).
 - **Mobil hero:** az „*Az Oxygeni statisztikája alapján” sor mellett látszó link: „Mutasd az eredményeket →” (`data-gorgetes="eredmenyek"`, JS-gördítés, nincs #hash).
 - **Google-badge (mobil):** egyszínű G, alatta 5 sárga csillag és „1255 vélemény” (a szám és a csillagok a Trustindex-widgetből frissülnek).
 
