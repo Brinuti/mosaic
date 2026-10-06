@@ -166,7 +166,7 @@ export async function elosztas(db, fk, deps = {}) {
   }
   return osszefoglalo;
 }
-function maszkolt(body) { // a naplozott kerelemben a nyers IP maszkolt (a kuldott kerelemben valodi)
+export function maszkolt(body) { // a naplozott kerelemben a nyers IP maszkolt (a kuldott kerelemben valodi)
   const s = JSON.stringify(body, (k, v) => (k === 'client_ip_address' || k === 'ip' ? maszkIp(v) : v));
   return JSON.parse(s);
 }

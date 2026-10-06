@@ -2,6 +2,7 @@
 // ugyanabbol a webhookbol hivja a netlify/lib/ajandek.js (egy masodik webhook / masodik fogyaszto nincs), ugyanazzal az azonositoval (a Stripe pi_); utalasos kartyanal a sajat
 // rendeles-azonosito (ATU-...), es a konverzio a TENYLEGES befizetesnel all elo (a szalon igazolja: kiallit), az igenyles kulon esemeny (bank_transfer_request, a regi ut).
 import { elosztas } from './elosztas.js';
+import { visszateritesFeldolgoz } from './eletut.js';
 
 const atutalasos = (md) => Boolean(md) && md.fizetesi_mod === 'atutalas';
 const charge = (pi) => (pi && pi.latest_charge && typeof pi.latest_charge === 'object' ? pi.latest_charge : null);
@@ -37,4 +38,18 @@ export async function ajandekEsemenyKuldes({ db, env, pi, mod, piLeker, fetchImp
   if (f.kihagyva) return { allapot: 'kihagyva', miert: f.kihagyva };
   const r = await elosztas(db, f.fk, { env, fetchImpl, now, kuldo, eloEllenorzes: async () => ajandekEloAllapot(await piLeker(pi.id), mod) });
   return { ...r, forras: f.fk.forras, ertek: f.fk.ertek };
+}
+
+/**
+ * VISSZATERITES-korrekcio (DECISION #102): a Stripe-tol UJRA lekerdezett PaymentIntent (latest_charge kibontva) kumulalt visszateritett osszege alapjan: teljes -> Google RETRACTION, reszleges -> Google RESTATEMENT
+ * (az uj ertek), mindket esetben GA4 "refund" (lasd eletut.js visszateritesFeldolgoz). Utalasos kartyanal nincs Stripe-visszaterites: kihagyva. Idempotens (a kumulalt osszeg szerint).
+ */
+export async function ajandekVisszateritesKorrekcio({ db, env, pi, fetchImpl, now, kuldo, forras }) {
+  const md = (pi && pi.metadata) || {};
+  if (atutalasos(md)) return { allapot: 'kihagyva', miert: 'utalasos rendeles: a visszaterites nem a Stripe-on megy' };
+  const ch = charge(pi);
+  if (!ch) return { allapot: 'kihagyva', miert: 'nincs (kibontott) terheles a PaymentIntenten' };
+  const osszeg = Math.round(Number(pi.amount_received || pi.amount)), vissza = Math.round(Number(ch.amount_refunded) || 0);
+  if (!(vissza > 0)) return { allapot: 'kihagyva', miert: 'a terheles nincs visszateritve' };
+  return visszateritesFeldolgoz(db, { source_id: pi.id, osszeg_filler: osszeg, visszateritett_filler: vissza, ido: null, forras: forras || 'stripe_webhook' }, { env, fetchImpl, now, kuldo });
 }
