@@ -32,6 +32,14 @@ export const BUSINESSES = Object.freeze({
 const API_URL = 'https://api.salonic.hu/calendar/getAvailableTimes';
 const ANY_STAFF = -1;
 
+// A sajat foglalas-azonosito (booking_id) atadasa a Salonicnak (QA-1, DECISION-LOG #97: correlation_id).
+// Merve (2026-10-06, mind az 5 Salonic-fiok kozul 4-en: HeadSpa, Oxigen, Lezer, Fodraszat; "barmelyik" es konkret munkatarsnal is): a Salonic az adatlap
+// (/guestData/) cimenek ISMERETLEN parametereit eldobja, ha az employeeId=-1 ("barmelyik") es athivja a kanonikus cimre - a "back" parametert viszont
+// megorzi, es ott van az adatlap urlapjanak action-jeben es a foglalas-kuldes (AJAX) cimeben is. Ezert a "back" a hordozo.
+// Hogy a sikeres foglalas utani atiranyitas (bookingUrl) vagy az ertesito e-mail visszaadja-e: lasd docs/booking-engine/BOOKING_ID.md (a merest ott rogzitjuk).
+export const BOOKING_ID_PARAM = 'back';
+export const BOOKING_ID_PATTERN = /^[A-Za-z0-9_-]{8,64}$/; // URL-biztos, szemelyes adat nelkul; ennel mast nem adunk at
+
 export class SalonicError extends Error {
   constructor(code, message, extra = {}) {
     super(message);
@@ -134,8 +142,21 @@ export function slotsFromApi(json, ctx) {
 }
 
 /**
+ * A sajat azonosito visszhangja a Salonic atiranyitasaban: a koszonooldal sajat parameterei kozott, a bookingUrl (a Salonic adatlap cime) parameterei kozott.
+ * Visszaad: { sent, returned, where } - sent: a beginBooking-nak atadott azonosito (vagy null); where: "param:<nev>" | "bookingUrl:<nev>" | null.
+ * Csak a PONTOS egyezes szamit (egy mas, regi azonosito nem "visszhang").
+ */
+export function echoedBookingId(query, bookingUrl, id) {
+  const sent = id && BOOKING_ID_PATTERN.test(String(id)) ? String(id) : null;
+  if (!sent) return { sent: null, returned: false, where: null };
+  const find = (params, prefix) => { for (const [k, v] of params) if (v === sent) return `${prefix}:${k}`; return null; };
+  const where = find(query, 'param') || (bookingUrl ? find(bookingUrl.searchParams, 'bookingUrl') : null);
+  return { sent, returned: where !== null, where };
+}
+
+/**
  * A Salonic sikeres foglalas utani atiranyitasanak ellenorzese a vart valasztassal szemben.
- * expected: { business, serviceId, startUnix, staffId (-1 = barki), staffName?, activePrice }.
+ * expected: { business, serviceId, startUnix, staffId (-1 = barki), staffName?, activePrice, bookingId? }.
  * Kliensoldali (URL), ezert csak "atiranyitas-alapu" bizonyitek. booking_id nincs: bookingRef szintetikus (g-serviceId-startDate).
  */
 export function verifyConfirmation(urlOrQuery, expected, businesses = BUSINESSES) {
@@ -174,7 +195,8 @@ export function verifyConfirmation(urlOrQuery, expected, businesses = BUSINESSES
     ok,
     checks,
     bookingRef: q.get('g') && buServiceId && buStart !== null ? `${q.get('g')}-${buServiceId}-${buStart}` : null,
-    bookingRefKind: 'synthetic', // a Salonic nem ad booking_id-t az atiranyitasban
+    bookingRefKind: 'synthetic', // a Salonic sajat foglalas-azonositot nem ad az atiranyitasban
+    bookingId: echoedBookingId(q, bu, expected.bookingId), // a SAJAT azonosito (beginBooking-nak atadva): visszajott-e es hol; nem szab ok-ot (egy hianyzo visszhang nem hamis foglalas)
     firstBooking: q.get('first_booking') === 'true', // a Salonic sajat uj/visszatero jelzese (acquisition guardrail alapja)
     reported: { price, employee, location: q.get('location'), service: q.get('service'), guestId: q.get('g') },
     attestation: 'redirect-url: kliensoldali, nem szerver-oldali ellenorzes',
@@ -338,22 +360,27 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     return ids.map((id) => ({ staff_id: id, staff_label: names.get(id) ?? null }));
   }
 
-  /** Foglalas inditasa: a Salonic adatlap cime (iframe-be vagy tartalekkent uj lapon). Ismeretlen szolgaltatasra nem ad cimet. */
-  async function beginBooking({ business, serviceId, startUnix, staffId = ANY_STAFF }) {
+  /**
+   * Foglalas inditasa: a Salonic adatlap cime (iframe-be vagy tartalekkent uj lapon). Ismeretlen szolgaltatasra nem ad cimet.
+   * bookingId (opcionalis): a sajat foglalas-azonosito; a BOOKING_ID_PARAM ("back") parameterkent kerul az adatlap cimere. Ervenytelen (nem URL-biztos) azonositot nem adunk at.
+   */
+  async function beginBooking({ business, serviceId, startUnix, staffId = ANY_STAFF, bookingId = null }) {
     const cfg = cfgOf(business);
     const service = await findService(business, serviceId);
     if (!Number.isInteger(startUnix)) throw new SalonicError('PARSE', 'startUnix kotelezo (egesz, unix mp)');
     const q = new URLSearchParams({ placeId: cfg.placeId, serviceId: service.serviceId, employeeId: staffId, startDate: startUnix });
+    const id = bookingId && BOOKING_ID_PATTERN.test(String(bookingId)) ? String(bookingId) : null;
+    if (id) q.set(BOOKING_ID_PARAM, id);
     return {
       guestDataUrl: `${cfg.host}/guestData/?${q}`,
-      expected: { business, serviceId: service.serviceId, startUnix, staffId, activePrice: service.activePrice },
+      expected: { business, serviceId: service.serviceId, startUnix, staffId, activePrice: service.activePrice, ...(id ? { bookingId: id } : {}) },
     };
   }
 
   const notSupported = (name) => async () => { throw new SalonicError('NOT_SUPPORTED', `${name}: a Salonic nyilvanos feluleten nincs ilyen muvelet (lasd docs/booking-engine/PMU_LIVE_ADAPTER_FINDINGS.md)`); };
 
   return {
-    capabilities: Object.freeze({ createBooking: false, getBooking: false, updateBooking: false, bookingId: 'synthetic', priceReadback: 'redirect-attested' }),
+    capabilities: Object.freeze({ createBooking: false, getBooking: false, updateBooking: false, bookingId: 'synthetic', ownBookingIdCarrier: BOOKING_ID_PARAM, priceReadback: 'redirect-attested' }),
     businesses: Object.keys(businesses),
     getServices, getStaff, getAvailability, getPlace, getPresentation, beginBooking,
     verifyConfirmation: (url, expected) => verifyConfirmation(url, expected, businesses),

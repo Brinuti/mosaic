@@ -14,6 +14,7 @@ import { createSalonicAdapter, BUSINESSES } from './salonic-adapter.js';
 import { classifyService, effectiveType, isAcquisition } from './business-config.js';
 import * as F from './flow.js';
 import { createTracker } from './tracking.js';
+import { createBookingContext } from './booking-id.js';
 import { createStepMeter } from './lepes-meres.js';
 import { CHOOSER, PMU_PATH } from './families.js';
 import { IKONOK, hajhosszIkon, kezelesIkon } from './ikonok.js';
@@ -107,7 +108,12 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   } catch (e) { /* idegen oldal kereteben */ }
 
   const store = (() => { try { return win.sessionStorage; } catch (e) { return null; } })();
-  const tracker = createTracker({ ctx, doc, storage: store, now });
+  // A sajat foglalas-azonosito (booking_id, QA-1) a folyamat ELEJEN szuletik es a bongeszo meresi kontextusaba (sessionStorage: mhBookingCtx) kerul: ugyanabban a
+  // munkamenetben a koszonooldal is olvassa. Ha a vendeg bezarja / ujranyitja a foglalot, az ugyanahhoz a (lezaratlan, 30 percnel nem regebbi) foglalashoz tartozik.
+  // Mintanezetben nincs tarolas. Az azonositot a C4 adja at a Salonicnak (adapter.beginBooking), a visszhangot a resolveRedirect olvassa.
+  const bk = createBookingContext({ storage: ctx.sample ? null : store, now });
+  const bkCtx = bk.begin({ business: ctx.business, source_page: ctx.sourcePage });
+  const tracker = createTracker({ ctx, doc, storage: store, now, bookingId: bkCtx.id });
   const track = tracker.track;
   // A lepes-meres (DECISION-LOG #88): GA4 dataLayer (csak statisztikai hozzajarulassal) + nevtelen belso szamlalo; lasd lepes-meres.js, docs/booking-engine/LEPES_MERES.md
   const meter = createStepMeter({ win, ctx, ido: now });
@@ -694,7 +700,10 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       // latszik a motornak; a masik munkamenet altal tartott idopontot a naptar-API nem rejti el, ezt az alabbi segito sor kezeli.)
       const slotAtStart = S.slot; // az ellenorzes az adatlap betoltesevel parhuzamosan fut: elkelt idopontnal az eredmeny erkezesekor lep at az A2-re
       if (!S.adapterSample) slotStillFree().then((szabad) => { if (!szabad && S.state === 'C4' && S.slot === slotAtStart) { S.a2Reason = 'taken'; go('A2', { replace: true }); } });
-      const b = await adapter.beginBooking({ business: flow.business, serviceId: S.service.serviceId, startUnix: S.slot.start_unix, staffId: S.slotStaff ? S.slotStaff.id : -1 });
+      // A sajat foglalas-azonosito az adatlap cimere kerul (a Salonic a "back" parametert megorzi, lasd salonic-adapter.js); ha az elozo foglalas mar lezarult, uj azonositot kap.
+      const bookingId = bk.begin({ business: flow.business }).id; tracker.setBookingId(bookingId);
+      const b = await adapter.beginBooking({ business: flow.business, serviceId: S.service.serviceId, startUnix: S.slot.start_unix, staffId: S.slotStaff ? S.slotStaff.id : -1, bookingId });
+      bk.update({ business: flow.business, service_id: S.service.serviceId, slot_unix: S.slot.start_unix, staff_id: S.slotStaff ? S.slotStaff.id : -1, carrier: b.expected.bookingId ? 'back' : null, sent_at: now() });
       // Elvart ar: a szakemberi kedvezmennyel (ha konkret szakembert valasztott); "barmely szakember" eseten a Salonic a kedvezmenyes
       // szakemberhez is oszthat, ezert annak az ara is elfogadhato. Ami eltér, A3U (nem ellenorizheto), nem hamis siker.
       const promoPrices = S.slotStaff ? [] : [...new Set(S.slots.map((s) => F.priceFor(S.service, s.staff_label)).filter((p) => p !== null && p !== S.service.activePrice))];
@@ -970,12 +979,13 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   }
   function confirmed(v) {
     S.confirmation = v;
+    bk.complete(v.bookingId); // a kontextus lezarul (a koszonooldal meg olvashatja; a kovetkezo foglalas uj azonositot kap)
     meter.success(v.bookingRef);
     try { if (store) store.removeItem(SNAP_KEY); } catch (e) { /* nem kritikus */ }
     const cls = classifyService(flow.business, S.service);
     const type = effectiveType({ bookingType: cls.bookingType, splitByRuntime: cls.splitByRuntime, firstBooking: v.firstBooking });
     track('booking_completed', {
-      ...serviceParams(S.service), booking_type: type, booking_id: v.bookingRef, final_price: v.reported.price ?? S.service.activePrice,
+      ...serviceParams(S.service), booking_type: type, booking_ref: v.bookingRef, booking_id_echo: v.bookingId && v.bookingId.returned ? v.bookingId.where : 'none', final_price: v.reported.price ?? S.service.activePrice,
       new_or_returning: v.firstBooking ? 'new' : 'returning', acquisition: isAcquisition({ bookingType: cls.bookingType, splitByRuntime: cls.splitByRuntime, firstBooking: v.firstBooking }),
     }, { once: v.bookingRef });
     jegyzettombIr(v);
@@ -1015,6 +1025,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     Object.assign(S, { flow, services: null, voucher: false, service: null, exact: false, slots: [], slot: null, day: null, month: null, staff: null, place: null, expected: null, intentKey: null, staffCache: null, variants: null, servicesP: null, slotsFull: true,
       guestUrl: null, confirmation: null, intent: null, group: null, staffLabel: null, slotStaff: null, candidates: null, laserArea: null, slotLostNote: false });
     tracker.setBusiness(business);
+    bk.update({ business });
     meter.business(business);
     if (BUSINESSES[business]) elokapcsol(doc, BUSINESSES[business].host);
   }

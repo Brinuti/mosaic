@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  BUSINESSES, SalonicError, createSalonicAdapter, decodeEntities, parseCalendarId, parseCustomCss, parseServices, parseSpecs, slotsFromApi, verifyConfirmation,
+  BOOKING_ID_PARAM, BUSINESSES, SalonicError, createSalonicAdapter, decodeEntities, echoedBookingId, parseCalendarId, parseCustomCss, parseServices, parseSpecs, slotsFromApi, verifyConfirmation,
 } from '../assets/js/booking-engine/salonic-adapter.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -272,7 +272,7 @@ test('adapter: ismeretlen szolgaltatas / uzletag, nem tamogatott muveletek', asy
   await assert.rejects(() => a.beginBooking({ business: 'pmu', serviceId: '999', startUnix: 1 }), (e) => e.code === 'SERVICE_NOT_FOUND');
   await assert.rejects(() => a.getServices('nincs'), (e) => e.code === 'UNKNOWN_BUSINESS');
   for (const m of ['createBooking', 'getBooking', 'updateBooking']) await assert.rejects(() => a[m]({}), (e) => e.code === 'NOT_SUPPORTED');
-  assert.deepEqual({ ...a.capabilities }, { createBooking: false, getBooking: false, updateBooking: false, bookingId: 'synthetic', priceReadback: 'redirect-attested' });
+  assert.deepEqual({ ...a.capabilities }, { createBooking: false, getBooking: false, updateBooking: false, bookingId: 'synthetic', ownBookingIdCarrier: 'back', priceReadback: 'redirect-attested' });
 });
 
 test('adapter: 5xx-re egyszer ujraprobal, 404-re nem, halozati hibara hibat dob', async () => {
@@ -407,4 +407,59 @@ test('adapter (elo foglaltsag): a fresh kereses a 90 mp-es megosztott reszt kiha
   assert.equal(api(), 1, 'friss kereses nelkul a gyorsitotarbol jon');
   await a.getAvailability('gyors', svc.serviceId, { days: 8, fresh: true });
   assert.equal(api(), 2, 'fresh: uj halozati hivas');
+});
+
+// --- a sajat foglalas-azonosito (booking_id, QA-1) atadasa es visszhangja ---------------------------------------------------------------
+const MB = 'mb_k3x9a1b2c3d4e5f6g7h8i9';
+
+test('beginBooking: a sajat azonosito a "back" parameterkent az adatlap cimere kerul, az expected-ben is ott van', async () => {
+  const f = fakeFetch([[/\/employees\/32428\//, ok(fx('pmu-employees.html'))]]);
+  const a = createSalonicAdapter({ fetchImpl: f, now: () => 0 });
+  const svc = (await a.getServices('pmu'))[1];
+  const b = await a.beginBooking({ business: 'pmu', serviceId: svc.serviceId, startUnix: 1791360000, bookingId: MB });
+  const u = new URL(b.guestDataUrl);
+  assert.equal(BOOKING_ID_PARAM, 'back');
+  assert.equal(u.searchParams.get('back'), MB);
+  assert.equal(u.searchParams.get('startDate'), '1791360000', 'a tobbi parameter valtozatlan');
+  assert.equal(u.searchParams.get('serviceId'), '471034');
+  assert.equal(b.expected.bookingId, MB);
+  assert.ok(f.calls.every((c) => c.method === 'GET'));
+});
+
+test('beginBooking: ervenytelen (nem URL-biztos / tul rovid / tul hosszu) azonositot nem ad at; azonosito nelkul a cim bajtra a regi', async () => {
+  const f = fakeFetch([[/\/employees\/32428\//, ok(fx('pmu-employees.html'))]]);
+  const a = createSalonicAdapter({ fetchImpl: f, now: () => 0 });
+  const svc = (await a.getServices('pmu'))[1];
+  const sima = await a.beginBooking({ business: 'pmu', serviceId: svc.serviceId, startUnix: 1791360000 });
+  assert.ok(!/back=/.test(sima.guestDataUrl) && !('bookingId' in sima.expected));
+  for (const rossz of ['', 'rovid', 'x'.repeat(65), 'van szokoz es &', 'a=b&c=d', '../../etc', null, undefined]) {
+    const b = await a.beginBooking({ business: 'pmu', serviceId: svc.serviceId, startUnix: 1791360000, bookingId: rossz });
+    assert.equal(b.guestDataUrl, sima.guestDataUrl, 'rossz azonosito: a cim valtozatlan: ' + JSON.stringify(rossz));
+    assert.ok(!('bookingId' in b.expected));
+  }
+});
+
+test('echoedBookingId: a koszonooldal sajat parametere, a bookingUrl parametere; csak a pontos egyezes szamit', () => {
+  const bu = (extra) => new URL('https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1793120400&back=' + extra);
+  assert.deepEqual(echoedBookingId(new URLSearchParams(), bu(MB), MB), { sent: MB, returned: true, where: 'bookingUrl:back' });
+  assert.deepEqual(echoedBookingId(new URLSearchParams({ back: MB }), null, MB), { sent: MB, returned: true, where: 'param:back' });
+  assert.deepEqual(echoedBookingId(new URLSearchParams({ ref: MB }), bu(''), MB), { sent: MB, returned: true, where: 'param:ref' });
+  assert.deepEqual(echoedBookingId(new URLSearchParams(), bu(''), MB), { sent: MB, returned: false, where: null }, 'a Salonic ures back-et ad: nincs visszhang');
+  assert.deepEqual(echoedBookingId(new URLSearchParams(), bu('mb_masikazonosito123456'), MB), { sent: MB, returned: false, where: null }, 'mas azonosito nem visszhang');
+  assert.deepEqual(echoedBookingId(new URLSearchParams({ back: MB }), null, undefined), { sent: null, returned: false, where: null }, 'nincs elkuldott azonosito: nincs mit visszahozni');
+  assert.deepEqual(echoedBookingId(new URLSearchParams({ back: 'rossz azonosito' }), null, 'rossz azonosito'), { sent: null, returned: false, where: null });
+});
+
+test('verifyConfirmation: a sajat azonosito visszhangja nem befolyasolja az ok-ot (hianyzo visszhang nem hamis foglalas)', () => {
+  const sajat = { ...pmuExpected, bookingId: MB };
+  const visszahozta = verifyConfirmation(redirect({ bookingUrl: bookingUrl('https://mosaic-pmu.salonic.hu', 14585, '471153', START) + '&back=' + MB }), sajat);
+  assert.equal(visszahozta.ok, true);
+  assert.deepEqual(visszahozta.bookingId, { sent: MB, returned: true, where: 'bookingUrl:back' });
+  assert.equal(visszahozta.checks.slot.status, 'pass', 'a bookingUrl tobbi parametere a "back" mellett is olvashato');
+  assert.equal(visszahozta.bookingRef, `abc123-471153-${START}`, 'a szintetikus hivatkozas valtozatlan');
+  const nem = verifyConfirmation(redirect(), sajat);
+  assert.equal(nem.ok, true);
+  assert.deepEqual(nem.bookingId, { sent: MB, returned: false, where: null });
+  const nelkul = verifyConfirmation(redirect(), pmuExpected);
+  assert.deepEqual(nelkul.bookingId, { sent: null, returned: false, where: null });
 });
