@@ -195,7 +195,9 @@ export function emailElemzes(html) {
   const zaro = (h.match(/(?:Üdvözlettel|Regards)\s*[:,]\s*([^<\n]+)/) || [])[1]; // a sor vegen <br> (magyar) vagy </div> (angol) all
   const felado = feladoH2 || (ld && ld.hely) || zaro || null;
   const tipus = /sikeresen lemondtad|has been cancel+ed/i.test(h) ? 'lemondas' : (link && ld ? 'letrehozva' : null); // a lemondasi ertesitoben nincs UUID-link
-  return { tipus, uuid: link ? link[2] : null, host: link ? link[1] : null, felado: felado ? entitas(felado) : null, szolgaltatas: doboz ? entitas(doboz[1]) : null, idopontSzoveg: doboz ? entitas(doboz[2]) : null, munkatarsak, ld };
+  const arM = h.match(/(?:Price|Fizetend[őo]\s+v[áa]rhat[óo]an|Fizetend[őo])\s*:\s*([\d\s\u00a0.]*\d)\s*(?:Ft|HUF)/i); // "Fizetendő várhatóan: 13 950 Ft *" / "Price: 53 800 Ft *": a tenyleges ar (az esemeny erteke)
+  const ar = arM ? Number(arM[1].replace(/\D/g, '')) : null;
+  return { tipus, ar, uuid: link ? link[2] : null, host: link ? link[1] : null, felado: felado ? entitas(felado) : null, szolgaltatas: doboz ? entitas(doboz[1]) : null, idopontSzoveg: doboz ? entitas(doboz[2]) : null, munkatarsak, ld };
 }
 
 // --- nevfordito tabla (2. ag) --------------------------------------------------------------------------------------------------------------
@@ -623,7 +625,7 @@ export async function lemondasKezel(db, mezok, deps) {
 
 // --- HTTP ----------------------------------------------------------------------------------------------------------------------------------
 const JSON_FEJ = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' };
-const valasz = (status, o) => new Response(JSON.stringify(o), { status, headers: JSON_FEJ });
+export const valasz = (status, o) => new Response(JSON.stringify(o), { status, headers: JSON_FEJ });
 const sha256hex = async (s) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map((b) => b.toString(16).padStart(2, '0')).join('');
 /** Az olvaso / e-mail-oldali kulcs ellenorzese: a kulcs SHA-256-ja az EGYEZTETES_KULCS_HASH valtozoban van (a kulcs maga nincs a kodban); kulcs nelkul / rossz kulccsal 404. */
 export async function kulcsEllenorzes(request, env) {
@@ -634,7 +636,7 @@ export async function kulcsEllenorzes(request, env) {
   for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ (hash.charCodeAt(i) || 0);
   return d === 0 && a.length === hash.length;
 }
-const azonosEredet = (request) => {
+export const azonosEredet = (request) => {
   const o = request.headers.get('origin');
   if (o) { try { return new URL(o).host === new URL(request.url).host; } catch (e) { return false; } }
   return request.headers.get('sec-fetch-site') === 'same-origin';
@@ -685,6 +687,12 @@ export async function kezelEgyeztetes(request, env, deps = {}) {
       return valasz(200, { ok: true, tipus: 'lemondas', ...r });
     }
     const r = await egyeztet(env.KULCS_DB, mezok, fuggosegek);
+    // QA-2 ARNYEK: a parositott foglalasra az esemenyek kuldese (alap + ernyo); a kuldes az elo allapot ellenorzese UTAN fut, es sosem akaszthatja meg a parositast.
+    // Minden "parositott" valasznal lefut (az elosztas idempotens: a mar vegleges cellara nem kuld ujra), igy a halasztott kuldes a level ismetlesekor potolhato.
+    if (deps.esemenyKuldo && r.allapot === 'parositott' && r.booking_id && String(env.MERES_ELOSZTO) === '1') {
+      try { r.esemeny_kuldes = await deps.esemenyKuldo({ db: env.KULCS_DB, env, mezok, bejovo: o, eredmeny: r, fetchImpl: fuggosegek.fetchImpl, now: deps.now }); }
+      catch (e) { r.esemeny_kuldes = { allapot: 'hiba', miert: String(e && e.message || e).slice(0, 200) }; }
+    }
     return valasz(200, { ok: true, ...r });
   }
   if (request.method === 'GET') {

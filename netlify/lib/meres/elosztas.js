@@ -21,7 +21,8 @@ const SEMA = [
 const kesz = new WeakSet();
 export async function meresSema(db) { if (kesz.has(db)) return; await db.batch(SEMA.map((s) => db.prepare(s))); kesz.add(db); }
 const sec = (now) => Math.floor(now / 1000);
-const ISMETELHETO = ['hiba', 'tiltva', 'kihagyva', 'halasztva'];
+// Ujraprobalhato sor: hiba, tiltas (a beallitas kozben valtozhat), halasztas, a veszkapcsolo miatt kihagyott; a modell szerint kihagyott / lemondott / elkuldott sor VEGLEGES.
+const ujraprobalhato = (sor, t) => ['hiba', 'tiltva', 'halasztva'].includes(sor.allapot) || (sor.allapot === 'kihagyva' && /^veszkapcsolo/.test(sor.indok || '')) || (sor.allapot === 'folyamatban' && t - sor.frissitve > ELAKADAS_MP);
 const MAX_PROBA = 3;
 const ELAKADAS_MP = 120;
 const MEGORZES_NAP = 30; // az erkezesi sor (IP, user agent) 30 nap utan torlodik
@@ -110,18 +111,22 @@ export async function elosztas(db, fk, deps = {}) {
   ctxAlap.hash = { em: await hashEmail(v.email), ph_meta: await hashTelefon(v.telefon), ph_e164: await hashTelefon(v.telefon, { plusz: true }), ext: await hashAzonosito(v.g || v.email) };
   const osszefoglalo = { allapot: 'kesz', source_id: fk.source_entity_id, erkezesi_adat: !!erkRow, esemenyek: [] };
 
-  // esemeny kuldese ELOTT elo allapot-ellenorzes
+  // minden (esemeny, platform) cella mar VEGLEGES (elkuldve / modell szerint kihagyva / lemondva): nincs teendo, elo lekeres sem kell (az ismetelt hivas olcso es nem kuld)
+  const { results: meglevok } = await db.prepare('SELECT esemeny_id, platform, allapot, indok, frissitve FROM meres_kuldes WHERE source_id = ?1').bind(fk.source_entity_id).all();
+  const teendo = lista.some((e) => PLATFORMOK.some((p) => { const m = (meglevok || []).find((x) => x.esemeny_id === e.esemeny_id && x.platform === p); return !m || ujraprobalhato(m, t); }));
+  if (!teendo) return { ...osszefoglalo, allapot: 'mar_kuldve', miert: 'minden esemeny / platform cella mar vegleges allapotu' };
+
+  // esemeny kuldese ELOTT elo allapot-ellenorzes (a levelek sorrendjetol fuggetlen: mindig az aktualis allapot)
   let elo = 'nincs_ellenorzes';
   if (deps.eloEllenorzes) {
     try { elo = await deps.eloEllenorzes(); } catch (e) { elo = 'ismeretlen'; }
     osszefoglalo.elo_allapot = elo;
-    if (elo === 'ismeretlen') return { ...osszefoglalo, allapot: 'halasztva', miert: 'a foglalas elo allapota nem ellenorizheto az esemeny kuldese elott' };
+    if (elo === 'ismeretlen') { osszefoglalo.allapot = 'halasztva'; osszefoglalo.miert = 'a foglalas elo allapota nem ellenorizheto az esemeny kuldese elott'; osszefoglalo.ujraprobal_mp = 180; }
   }
   const naploz = async (e, platform, mezok) => {
     const sor = { esemeny_id: e.esemeny_id, esemeny_nev: e.nev, esemeny_tipus: e.tipus, platform, platform_nev: null, uzletag: fk.uzletag, source_id: fk.source_entity_id, ertek: e.ertek, penznem: e.penznem, hozzajarulas: JSON.stringify({ allapot: hozz, szabaly: ctxAlap.hozz[platform] }), allapot: 'tiltva', indok: null, kerelem: null, http_status: null, platform_valasz: null, kuldo: null, ...mezok };
     const meglevo = await db.prepare('SELECT id, allapot, probalkozas, frissitve FROM meres_kuldes WHERE esemeny_id = ?1 AND platform = ?2').bind(e.esemeny_id, platform).first();
-    const elakadt = meglevo && meglevo.allapot === 'folyamatban' && t - meglevo.frissitve > ELAKADAS_MP; // egy megszakadt hivas sora ne maradjon vegleg "folyamatban"
-    if (meglevo && !elakadt && !ISMETELHETO.includes(meglevo.allapot)) return { id: meglevo.id, allapot: meglevo.allapot, duplikalt: true };
+    if (meglevo && !ujraprobalhato(meglevo, t)) return { id: meglevo.id, allapot: meglevo.allapot, duplikalt: true }; // egy megszakadt hivas sora (folyamatban) ELAKADAS_MP utan ujraprobalhato
     if (meglevo && meglevo.probalkozas >= MAX_PROBA && meglevo.allapot === 'hiba') return { id: meglevo.id, allapot: 'hiba', duplikalt: true, indok: 'tul sok sikertelen probalkozas' };
     if (meglevo) { await db.prepare('UPDATE meres_kuldes SET allapot = ?2, indok = ?3, platform_nev = ?4, kerelem = ?5, http_status = ?6, platform_valasz = ?7, kuldo = ?8, hozzajarulas = ?9, ertek = ?10, probalkozas = probalkozas + 1, frissitve = ?11 WHERE id = ?1').bind(meglevo.id, sor.allapot, sor.indok, sor.platform_nev, sor.kerelem, sor.http_status, sor.platform_valasz, sor.kuldo, sor.hozzajarulas, sor.ertek, t).run(); return { id: meglevo.id, allapot: sor.allapot }; }
     const r = await db.prepare('INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, indok, ertek, penznem, hozzajarulas, kerelem, http_status, platform_valasz, kuldo, probalkozas, letrehozva, frissitve) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,1,?17,?17) ON CONFLICT(esemeny_id, platform) DO NOTHING')
@@ -139,6 +144,7 @@ export async function elosztas(db, fk, deps = {}) {
       if (!ALAP_UZLETAG_PLATFORM[platform].includes(fk.uzletag)) mezok = { allapot: 'kihagyva', indok: 'a platform erre az uzletagra nem hirdet / nincs arnyek-celpont' };
       else if (kikapcsolva(kapcsolok, fk.uzletag, platform)) mezok = { allapot: 'kihagyva', indok: 'veszkapcsolo: ' + kikapcsolva(kapcsolok, fk.uzletag, platform) };
       else if (elo === 'torolve') mezok = { allapot: 'kihagyva', indok: 'a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)' };
+      else if (elo === 'ismeretlen') mezok = { allapot: 'halasztva', indok: 'a foglalas elo allapota nem ellenorizheto: az esemeny nem megy ki, amig nem tudjuk, hogy a foglalas el' };
       else {
         const kerelem = KEREM_EPITO[platform](e, ctxAlap, env);
         if (kerelem.kihagyva) mezok = { allapot: 'kihagyva', indok: kerelem.kihagyva };

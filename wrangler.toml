@@ -65,6 +65,13 @@ STRIPE_PUBLISHABLE_KEY = "pk_test_51QhTxoFv8vc2ArnLyqmRz5giwCnlNAtTTygecEAnBRWbF
 AJANDEK_AZONNALI = "1"
 AJANDEK_STRIPE_SZAMLA = "1"
 AJANDEK_SZAMLA_ADO_ELLENORZES = "0"   # CSAK elonezet: a Stripe teszt-modnak nincs adoregisztracioja (0 ado), igy az ado-ellenorzes kikapcsolva; az eles mindig ellenoriz
+# QA-2 ARNYEK-MERES (DECISION-LOG #99; lasd docs/booking-engine/QA2_ARNYEK.md): CSAK ELONEZET. Az eles ([vars]) NEM kapja meg: ott az elosztas ki van kapcsolva (MERES_ELOSZTO hianyzik).
+# A kuldes kizarolag az ARNYEK-celpontokra mehet (kodban rogzitve: platformok.js), tesztkoddal. A tesztkodok ide kerulnek (nem titkosak); a hitelesito titkok
+# (META_CAPI_TOKEN, TIKTOK_EVENTS_TOKEN, GOOGLE_ADS_ACCESS_TOKEN + GOOGLE_ADS_DEVELOPER_TOKEN, GA4_TESZT_API_SECRET) es a GA4_TESZT_MEASUREMENT_ID a Cloudflare feluleten, Preview / Secret.
+# Titok nelkul a kerelem elkeszul es naplozodik ("nincs_hitelesites"), kuldes nem tortenik.
+MERES_ELOSZTO = "1"
+META_TESZT_KOD = "TEST_MOSAIC_QA2"      # a Meta Esemenykezelo "Teszteszemenyek" kodjara cserelendo (valtozo-csere, kodvaltoztatas nelkul)
+TIKTOK_TESZT_KOD = "TEST_MOSAIC_QA2"    # a TikTok Esemenykezelo teszteszemeny-kodjara cserelendo
 
 # A szemelyre szabott ajandekkartyak fotoi (Cloudflare KV, lasd AJANDEK.md "Foto-tarolas"): eles es elonezeti nevter kulon.
 # A kezelo az AJANDEK_FOTOK kotesen at olvassa / irja; nelkule a fotofeltoltes ki van kapcsolva.
