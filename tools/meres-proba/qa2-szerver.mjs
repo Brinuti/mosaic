@@ -15,7 +15,7 @@ const be = JSON.parse(fs.readFileSync(arg('bongeszo'), 'utf8'));
 if (arg('fuggo', '0') === '1') { const r = await fetch(`${BAZIS}/api/meres-admin?fuggo=1`, { headers: H }); console.log(JSON.stringify(await r.json())); process.exit(0); }
 // --naplo 1: csak a szerveres naplo ujraolvasasa (a kulso szallito visszaigazolasa UTAN), a --out fajlba "szerveres_naplo_vegso" kulcs ala; --kulso <json-fajl>: a kulso szallito nyers valasza (pl. Composio)
 if (arg('naplo', '0') === '1') {
-  const sid0 = be.booking_id; const n = await (await fetch(`${BAZIS}/api/meres-admin?source_id=${encodeURIComponent(sid0)}`, { headers: H })).json();
+  const sid0 = be.booking_id || be.pi; const n = await (await fetch(`${BAZIS}/api/meres-admin?source_id=${encodeURIComponent(sid0)}`, { headers: H })).json();
   if (arg('out')) { const k = fs.existsSync(arg('out')) ? JSON.parse(fs.readFileSync(arg('out'), 'utf8')) : {}; k.szerveres_naplo_vegso = n; if (arg('kulso')) k.kulso_szallito_nyers_valasz = JSON.parse(fs.readFileSync(arg('kulso'), 'utf8')); fs.writeFileSync(arg('out'), JSON.stringify(k, null, 1)); }
   for (const k of n.kuldesek) console.log(`  ${k.esemeny_nev.padEnd(26)} ${k.platform.padEnd(7)} ${k.allapot.padEnd(18)} http=${k.http_status ?? '-'} ${k.kuldo || ''} ${k.platform_valasz ? '| ' + k.platform_valasz.slice(0, 90) : ''}`);
   process.exit(0);

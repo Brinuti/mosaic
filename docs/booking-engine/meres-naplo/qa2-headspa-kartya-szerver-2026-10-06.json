@@ -1,0 +1,618 @@
+{
+ "szerveres_naplo_vegso": {
+  "ok": true,
+  "source_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+  "erkezes": {
+   "source_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+   "uzletag": "headspa",
+   "tipus": "ajandekkartya",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_AJANDEK_MUWUUSSC_GCLID",
+      "ts": 1791301824
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_AJANDEK_MUWUUSSC_WBRAID",
+      "ts": 1791301827
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791301827000.IwAR_TESZT_AJANDEK_MUWUUSSC_FBCLID",
+     "fbclid": "IwAR_TESZT_AJANDEK_MUWUUSSC_FBCLID",
+     "ts": 1791301827
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_AJANDEK_MUWUUSSC_TTCLID",
+      "ts": 1791301827
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_ajandek_elso",
+     "ts": 1791301824
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_ajandek_utolso",
+     "ts": 1791301827
+    },
+    "fbp": "fb.1.1791296823000.5479927473",
+    "ttp": "TESZT_AJANDEK_MUWUUSSC_ttp_ez3awv13js",
+    "ga4": {
+     "client_id": "482243159.1791215423",
+     "session_id": "1791300623",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true,
+    "dontes": true
+   },
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+   "ip": "160.79.106.xxx",
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/ajandek",
+   "bongeszo": {
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/ajandek",
+    "first_booking": null,
+    "szolgaltatas": "Egyéni MOSAIC Head Spa ajándékkártya",
+    "kategoria": "",
+    "ar": 26900,
+    "g": "",
+    "munkatars": "",
+    "bookingUrl": ""
+   },
+   "ido": 1791301838,
+   "frissitve": 1791301838
+  },
+  "kuldesek": [
+   {
+    "id": 41,
+    "esemeny_id": "Ajandekkartya:pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "esemeny_nev": "Ajandekkartya",
+    "esemeny_tipus": "alap",
+    "platform": "meta",
+    "platform_nev": "HeadSpa_Ajandekkartya",
+    "uzletag": "headspa",
+    "source_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "allapot": "elkuldve",
+    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://graph.facebook.com/v21.0/28616665324611098/events",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "dataset": "28616665324611098",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST_MOSAIC_QA2"
+     },
+     "body": {
+      "data": [
+       {
+        "event_name": "HeadSpa_Ajandekkartya",
+        "event_time": 1791301845,
+        "event_id": "Ajandekkartya:pi_3UNadVFv8vc2ArnL1qqzRaOH",
+        "action_source": "website",
+        "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/ajandek",
+        "user_data": {
+         "em": [
+          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         ],
+         "external_id": [
+          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         ],
+         "client_ip_address": "160.79.106.xxx",
+         "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+         "fbc": "fb.1.1791301827000.IwAR_TESZT_AJANDEK_MUWUUSSC_FBCLID",
+         "fbp": "fb.1.1791296823000.5479927473"
+        },
+        "custom_data": {
+         "value": 26900,
+         "currency": "HUF",
+         "order_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+         "content_name": "egyeni",
+         "content_category": "headspa",
+         "esemeny_tipus": "alap",
+         "utm_source": "facebook",
+         "utm_campaign": "qa2_ajandek_utolso"
+        }
+       }
+      ],
+      "test_event_code": "TEST_MOSAIC_QA2",
+      "partner_agent": "mosaic-qa2-arnyek"
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"successful\":true,\"data\":{\"events_received\":2,\"fbtrace_id\":\"AKLF3KBA4SlMEHYkCqApzlv\",\"messages\":[]}}",
+    "kuldo": "composio:METAADS_SEND_CONVERSION_EVENTS",
+    "probalkozas": 2,
+    "letrehozva": 1791301912,
+    "frissitve": 1791301945
+   },
+   {
+    "id": 42,
+    "esemeny_id": "Ajandekkartya:pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "esemeny_nev": "Ajandekkartya",
+    "esemeny_tipus": "alap",
+    "platform": "tiktok",
+    "platform_nev": "HeadSpa_Ajandekkartya",
+    "uzletag": "headspa",
+    "source_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "allapot": "nincs_hitelesites",
+    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type",
+      "access-token"
+     ],
+     "cel": {
+      "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST_MOSAIC_QA2"
+     },
+     "body": {
+      "event_source": "web",
+      "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+      "test_event_code": "TEST_MOSAIC_QA2",
+      "data": [
+       {
+        "event": "HeadSpa_Ajandekkartya",
+        "event_time": 1791301845,
+        "event_id": "Ajandekkartya:pi_3UNadVFv8vc2ArnL1qqzRaOH",
+        "user": {
+         "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+         "external_id": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+         "ttclid": "E.C.P.TESZT_AJANDEK_MUWUUSSC_TTCLID",
+         "ttp": "TESZT_AJANDEK_MUWUUSSC_ttp_ez3awv13js",
+         "ip": "160.79.106.xxx",
+         "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        },
+        "properties": {
+         "currency": "HUF",
+         "value": 26900,
+         "content_type": "product",
+         "contents": [
+          {
+           "content_id": "ajandekkartya",
+           "content_name": "egyeni",
+           "quantity": 1,
+           "price": 26900
+          }
+         ],
+         "order_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH"
+        },
+        "page": {
+         "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/ajandek"
+        }
+       }
+      ]
+     }
+    },
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791301912,
+    "frissitve": 1791301912
+   },
+   {
+    "id": 43,
+    "esemeny_id": "Ajandekkartya:pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "esemeny_nev": "Ajandekkartya",
+    "esemeny_tipus": "alap",
+    "platform": "google",
+    "platform_nev": "ARNYEK-7825199992",
+    "uzletag": "headspa",
+    "source_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "allapot": "nincs_hitelesites",
+    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://googleads.googleapis.com/v21/customers/6088874770:uploadClickConversions",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type",
+      "authorization",
+      "developer-token",
+      "login-customer-id"
+     ],
+     "cel": {
+      "customer_id": "6088874770",
+      "conversion_action": "7825199992",
+      "validate_only": true
+     },
+     "body": {
+      "conversions": [
+       {
+        "conversionAction": "customers/6088874770/conversionActions/7825199992",
+        "conversionDateTime": "2026-10-06 17:50:45+02:00",
+        "conversionValue": 26900,
+        "currencyCode": "HUF",
+        "orderId": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+        "wbraid": "CoMKCQ_TESZT_AJANDEK_MUWUUSSC_WBRAID",
+        "userIdentifiers": [
+         {
+          "hashedEmail": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         }
+        ],
+        "consent": {
+         "adUserData": "GRANTED",
+         "adPersonalization": "GRANTED"
+        }
+       }
+      ],
+      "partialFailure": true,
+      "validateOnly": true
+     }
+    },
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791301912,
+    "frissitve": 1791301912
+   },
+   {
+    "id": 44,
+    "esemeny_id": "Ajandekkartya:pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "esemeny_nev": "Ajandekkartya",
+    "esemeny_tipus": "alap",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "headspa",
+    "source_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "allapot": "tiltva",
+    "indok": "nincs GA4_TESZT_MEASUREMENT_ID (teszt-property): a GA4-be csak teszt-property-be kuldunk",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301912,
+    "frissitve": 1791301912
+   },
+   {
+    "id": 45,
+    "esemeny_id": "Schedule:pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "meta",
+    "platform_nev": "Schedule",
+    "uzletag": "headspa",
+    "source_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "allapot": "elkuldve",
+    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://graph.facebook.com/v21.0/28616665324611098/events",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "dataset": "28616665324611098",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST_MOSAIC_QA2"
+     },
+     "body": {
+      "data": [
+       {
+        "event_name": "Schedule",
+        "event_time": 1791301845,
+        "event_id": "Schedule:pi_3UNadVFv8vc2ArnL1qqzRaOH",
+        "action_source": "website",
+        "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/ajandek",
+        "user_data": {
+         "em": [
+          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         ],
+         "external_id": [
+          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         ],
+         "client_ip_address": "160.79.106.xxx",
+         "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+         "fbc": "fb.1.1791301827000.IwAR_TESZT_AJANDEK_MUWUUSSC_FBCLID",
+         "fbp": "fb.1.1791296823000.5479927473"
+        },
+        "custom_data": {
+         "value": 26900,
+         "currency": "HUF",
+         "order_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+         "content_name": "egyeni",
+         "content_category": "headspa",
+         "esemeny_tipus": "ernyo",
+         "utm_source": "facebook",
+         "utm_campaign": "qa2_ajandek_utolso"
+        }
+       }
+      ],
+      "test_event_code": "TEST_MOSAIC_QA2",
+      "partner_agent": "mosaic-qa2-arnyek"
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"successful\":true,\"data\":{\"events_received\":2,\"fbtrace_id\":\"AKLF3KBA4SlMEHYkCqApzlv\",\"messages\":[]}}",
+    "kuldo": "composio:METAADS_SEND_CONVERSION_EVENTS",
+    "probalkozas": 2,
+    "letrehozva": 1791301912,
+    "frissitve": 1791301946
+   },
+   {
+    "id": 46,
+    "esemeny_id": "Schedule:pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "tiktok",
+    "platform_nev": "CompletePayment",
+    "uzletag": "headspa",
+    "source_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "allapot": "nincs_hitelesites",
+    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type",
+      "access-token"
+     ],
+     "cel": {
+      "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST_MOSAIC_QA2"
+     },
+     "body": {
+      "event_source": "web",
+      "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+      "test_event_code": "TEST_MOSAIC_QA2",
+      "data": [
+       {
+        "event": "CompletePayment",
+        "event_time": 1791301845,
+        "event_id": "Schedule:pi_3UNadVFv8vc2ArnL1qqzRaOH",
+        "user": {
+         "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+         "external_id": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+         "ttclid": "E.C.P.TESZT_AJANDEK_MUWUUSSC_TTCLID",
+         "ttp": "TESZT_AJANDEK_MUWUUSSC_ttp_ez3awv13js",
+         "ip": "160.79.106.xxx",
+         "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        },
+        "properties": {
+         "currency": "HUF",
+         "value": 26900,
+         "content_type": "product",
+         "contents": [
+          {
+           "content_id": "ajandekkartya",
+           "content_name": "egyeni",
+           "quantity": 1,
+           "price": 26900
+          }
+         ],
+         "order_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH"
+        },
+        "page": {
+         "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/ajandek"
+        }
+       }
+      ]
+     }
+    },
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791301912,
+    "frissitve": 1791301912
+   },
+   {
+    "id": 47,
+    "esemeny_id": "Schedule:pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "google",
+    "platform_nev": null,
+    "uzletag": "headspa",
+    "source_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301912,
+    "frissitve": 1791301912
+   },
+   {
+    "id": 48,
+    "esemeny_id": "Schedule:pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "headspa",
+    "source_id": "pi_3UNadVFv8vc2ArnL1qqzRaOH",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301912,
+    "frissitve": 1791301912
+   }
+  ]
+ },
+ "kulso_szallito_nyers_valasz": {
+  "megjegyzes": "Meta-tesztkuldes a Composio METAADS_SEND_CONVERSION_EVENTS eszkozen at (mosaic-meta fiok), az ARNYEK dataset-re (28616665324611098), test_event_code-dal (SZINTETIKUS: TEST_MOSAIC_QA2). Az ajandekkartya-vasarlas (valodi Stripe TESZT-modu fizetes, pi_3UNadVFv8vc2ArnL1qqzRaOH) ket esemenye; a szerveres naplo sorai: 41, 45. Telefonszam nincs (a kartyas fizetes nem gyujt).",
+  "platform_valasz_nyers": {
+   "successful": true,
+   "data": {
+    "events_received": 2,
+    "fbtrace_id": "AKLF3KBA4SlMEHYkCqApzlv",
+    "messages": []
+   }
+  }
+ }
+}

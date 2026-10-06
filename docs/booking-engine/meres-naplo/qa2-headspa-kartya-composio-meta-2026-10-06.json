@@ -1,0 +1,4 @@
+{
+  "megjegyzes": "Meta-tesztkuldes a Composio METAADS_SEND_CONVERSION_EVENTS eszkozen at (mosaic-meta fiok), az ARNYEK dataset-re (28616665324611098), test_event_code-dal (SZINTETIKUS: TEST_MOSAIC_QA2). Az ajandekkartya-vasarlas (valodi Stripe TESZT-modu fizetes, pi_3UNadVFv8vc2ArnL1qqzRaOH) ket esemenye; a szerveres naplo sorai: 41, 45. Telefonszam nincs (a kartyas fizetes nem gyujt).",
+  "platform_valasz_nyers": {"successful": true, "data": {"events_received": 2, "fbtrace_id": "AKLF3KBA4SlMEHYkCqApzlv", "messages": []}}
+}
