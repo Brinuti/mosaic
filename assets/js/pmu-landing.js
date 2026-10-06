@@ -192,6 +192,17 @@
     keretIgazit();
   });
 
+  // --- gorgetes egy szekcioig (data-gorgetes="<szekcio id>"): sima gorgetes, URL-hash nelkul (a hash-valtas a GTM History Change triggerét inditana) ---
+  document.addEventListener('click', (e) => {
+    const g = e.target.closest('[data-gorgetes]');
+    const cel = g && $(g.dataset.gorgetes);
+    if (!cel) return;
+    e.preventDefault();
+    const fej = document.getElementById('SITE_HEADER');
+    const fejAlja = fej && /fixed|sticky/.test(getComputedStyle(fej).position) ? Math.max(0, fej.getBoundingClientRect().bottom) : 0;
+    scrollTo({ top: Math.max(0, cel.getBoundingClientRect().top + scrollY - fejAlja - 8), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  });
+
   // --- eredmenyek: Szemoldok / Ajak szuro, eloszor 12 kep ----------------------------------------
   const refRacs = $('esetek');
   const ELSO = 16;

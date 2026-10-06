@@ -986,3 +986,10 @@ dialog::backdrop { background: rgba(15, 30, 30, .45); }
   .hivas-gombok .gomb { width: 100%; }
   .hivas-megj { text-align: center; }
 }
+
+/* ============ hero: "Mutasd az eredményeket" link (csak mobilon; az Eredmények szekcióhoz görget, hash nélkül) ============ */
+.eredmeny-link { display: none; }
+@media (max-width: 700px) {
+  .bizalom { gap: 8px 16px; }
+  .eredmeny-link { display: inline-flex; align-items: center; gap: 6px; padding: 4px 2px; font: 500 14px/1.2 var(--test); color: var(--sotet); }
+}
