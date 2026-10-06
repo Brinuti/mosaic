@@ -10,10 +10,34 @@
 - **TESZT-esetek (a #128 előnézetén):** a teljes lánc – párosítás → platformküldés – `booking_id`-szinten **1:1** (lásd az esetek táblázatát).
 
 **Pontosítások a mérce értelmezéséhez:**
-1. **Nevező:** a valódi foglalások számlálásához a Salonic valódi foglalás-listája kell a 24 órás ablakra; a TESZT-foglalások kiszűrése a Salonic-oldalon a vendégnév („TESZT – Claude”) alapján megy, mert az adatbázis a nevet nem tárolja.
-2. **Lemondási értesítők:** a valódi lemondási értesítő időpont + szakember alapján párosít, a TESZT-eszközök pedig mindig ugyanazt az utolsó szabad időpontot foglalják, ezért egy valódi lemondás egy régi TESZT-kulcsot is felszabadíthat (2026-10-06-án 6 `felszabadult` sor a `foglalas_lemondas`-ban). Ez naplózási zaj, nem küldés: a „téves párosítás” definíciójából a lemondásnál felszabadult TESZT-kulcsokat ki kell zárni, vagy külön kell számolni.
+1. **Nevező:** a valódi foglalások számlálásához a **Salonic aktív foglalásai + a törölt foglalások exportja ugyanarra a 24 órás ablakra** kell (a sima export a lemondottakat nem tartalmazza, pedig a lemondott foglalás levele is beérkezik). **Ellenőrző forrásként** a Gmail Salonic-levelei jönnek, **UUID-nként** (a levelekből csak az UUID-t és a levél idejét vesszük ki; a vendég személyes adata nem kerül sem a naplóba, sem a dokumentumokba). A TESZT-foglalások kiszűrése a Salonic-oldalon a vendégnév („TESZT – Claude”) alapján megy, mert az adatbázis a nevet nem tárolja.
+2. **Lemondási értesítők:** a valódi lemondási értesítő időpont + szakember alapján párosít, a TESZT-eszközök pedig mindig ugyanazt az utolsó szabad időpontot foglalják, ezért egy valódi lemondás egy régi TESZT-kulcsot is felszabadíthat (2026-10-06-án 6 `felszabadult` sor a `foglalas_lemondas`-ban). Ez naplózási zaj, nem küldés: a lemondásnál felszabadult TESZT-kulcsokat a kimeneti táblázatban **külön sorban** számoljuk, **nem** a téves párosítások között.
 3. **Riasztás:** a valódi foglalások miatt a riasztási lista (`GET ?riasztas=1`) a #128-on tartósan nem üres; ez a **várt állapot**, a riasztás-darabszám itt nem egészségjelző.
-4. **A PASS nem jelent éles készenlétet:** a teljes lánc csak az előnézeten bizonyított. A valódi forgalom párosítási aránya – és az `uj_vendeg`, az ár és a szolgáltatásnév kinyerése a valódi levelekből, ami csak párosítás után számít – mindaddig **nem mért**, amíg az éles köszönőoldal írása nincs bekapcsolva. Éles indulás előtt a valódi foglalásokra **külön kapuként** meg kell ismételni a mérést.
+4. **A PASS nem jelent éles készenlétet:** a teljes lánc csak az előnézeten bizonyított; a valódi forgalomra vonatkozó, még nem mért feltételek az **ÉLES-KAPU feltételei** között vannak (lásd alább).
+
+### Kimeneti táblázat a valódi foglalásokhoz (24 órás ablak)
+| sor | forrás | elvárt |
+|---|---|---|
+| Salonic aktív foglalások (valódi) | Salonic | – (nevező része) |
+| Salonic törölt foglalások (valódi, export) | Salonic törölt-export | – (nevező része) |
+| Gmail Salonic-levelek, UUID-nként (valódi) | Gmail | egyezik a Salonic-listával |
+| beérkezett és rögzült (`foglalas_egyeztetes` sor UUID-nként) | #128 D1, csak olvasás | = nevező (1:1); hiányzó / többlet külön felsorolva |
+| `parositatlan` + riasztás | #128 D1 | a valódi foglalások (az elvárt végállapot) |
+| kiment esemény a valódi foglalásokra (bármely platform, árnyék is) | `meres_kuldes` | **0** |
+| élő küldés | – | **0** |
+| téves párosítás (valódi foglalás párosult) | `foglalas_egyeztetes.booking_id` | **0** (üres állítás, lásd fent) |
+| lemondásnál felszabadult TESZT-kulcsok (**külön sor**) | `foglalas_lemondas` | csak tájékoztató darabszám |
+
+## ÉLES-KAPU feltételei (a mérés élesítése előtt)
+*Megjegyzés: a repóban nem volt korábbi ÉLES-KAPU lista, ezért itt indul; ha a lista máshol él (DECISION-LOG / Drive), oda is át kell vezetni.*
+
+**Éles indulás előtt a valódi foglalásokra külön kapuként meg kell ismételni a mérést** – a QA-3 PASS ezt nem helyettesíti. A kapu csak azután mérhető, hogy az éles köszönőoldal böngészős írása be van kapcsolva (addig a valódi foglalások nem párosodnak). A kapu mérendő feltételei, valódi foglalásokon:
+1. **párosítási arány** (a valódi foglalások hány százaléka párosodik helyesen, `booking_id`-szinten);
+2. **`uj_vendeg`** helyes kinyerése a valódi levelekből (a Salonic jelzése szerint);
+3. **ár** helyes kinyerése a valódi levelekből (a tényleges ár, vs. a Salonic);
+4. **szolgáltatásnév** helyes kinyerése a valódi levelekből (a kupon- és konzultáció-felismerés alapja).
+
+A küszöbértékeket (pl. párosítási arány) a QA-3 eredménye után, a mérési munkamenettel és Ferivel kell rögzíteni; itt számot nem állítunk be.
 
 ## Szabályok
 - Minden tesztfoglalás neve **„TESZT – Claude”** (így kiszűrhető a valódi 24 órás listából; e-mail `deakfi@grantis.hu`), és a futtató a foglalást a vizsgálat végén lemondja (hibával megszakadt esetnél is).
