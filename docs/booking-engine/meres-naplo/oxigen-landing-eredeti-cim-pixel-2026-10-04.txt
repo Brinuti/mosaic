@@ -1,0 +1,256 @@
+MOSAIC - Oxigen-landing az EREDETI cimre (PR #109): Meta-pixel teszt-naplo
+Keszult: 2026-10-04T21:24:57.018Z (UTC) | eles deploy: 2026-10-04 20:57 UTC (merge 52d8728) | suti.js: valtozatlan (az oldal-lista mar tartalmazta: oxigenterapia-budapest -> Fodrasz-pixel 1361403694872594)
+Mi valtozott: a foglalas/oxigenterapia-budapest.html (uj landing) felulirja a klon/ regi Wixes oldalt ugyanazon a cimen (/oxigenterapia-budapest); noindex ki, canonical az eredeti cimre. A merest NEM modositottuk (suti.js, GTM, pixel-listak valtozatlanok); az oldal slugja ugyanaz, ezert ugyanaz a pixel indul.
+Modszer: tools/meres-proba/pixel-proba.mjs, ?fbclid=TESZTPIXEL, valodi Chrome (hozzajarulassal), a kimeno merest (capig.stape.*, Google, TikTok, Zapier) alapbol tilto szuro (tilt.mjs) fogta: semmi nem jutott el a hirdetesi fiokokba. Az eles domain csak olvasva lett betoltve (1-1 oldalbetoltes).
+
+1) Elotte / utana (ugyanaz a vizsgalat, az oldal a /oxigenterapia-budapest)
+  ELOTTE (regi Wixes oldal, eles)       | 2026-10-04T14:39:59.561Z | asztali | eles domain | allapot 200 | pixel ["1361403694872594"] | PageView {"1361403694872594":1} | CAPI PageView 1 | dupla-init 0 | _fbc igen | _fbp igen | Google/TikTok/Zapier 0 | ismeretlen tiltott kerelem 0
+  UTANA, deploy elott (helyi dist)      | 2026-10-04T20:54:03.563Z | asztali | helyi dist | allapot 200 | pixel ["1361403694872594"] | PageView {"1361403694872594":1} | CAPI PageView 1 | dupla-init 0 | _fbc igen | _fbp igen | Google/TikTok/Zapier 0 | ismeretlen tiltott kerelem 0
+  UTANA, deploy utan (eles, asztali)    | 2026-10-04T21:24:26.419Z | asztali | eles domain | allapot 200 | pixel ["1361403694872594"] | PageView {"1361403694872594":1} | CAPI PageView 1 | dupla-init 0 | _fbc igen | _fbp igen | Google/TikTok/Zapier 0 | ismeretlen tiltott kerelem 0
+  UTANA, deploy utan (eles, mobil)      | 2026-10-04T21:24:36.417Z | mobil | eles domain | allapot 200 | pixel ["1361403694872594"] | PageView {"1361403694872594":1} | CAPI PageView 1 | dupla-init 0 | _fbc igen | _fbp igen | Google/TikTok/Zapier 0 | ismeretlen tiltott kerelem 0
+   Az eles oldal cime a deploy utan: "Oxigénterápia hajhullás ellen Budapesten – hajkamerás állapotfelmérés | MOSAIC" (az uj landing; a regi: "Hajgyogyaszati Oxigenterapia Budapesten").
+
+2) Osszevetes (tools/meres-proba/pixel-proba.mjs --osszevet elotte utana): oldalak: 1 -> 1 | eltero: 0 (pixel-azonosito, PageView, CAPI PageView, esemenyek, Google/TikTok, dupla-init: azonos)
+
+3) A korabbi probacim (/oxigenterapia-budapest-uj, 2026-10-04 17:53 UTC, helyi dist): oldalKulcs oxigenterapia-budapest-uj, elvart pixel: nincs, pixel nem indult, PageView 0, CAPI 0 (a slug nincs a listan: a rejtett probacimen nem ment semmi a hirdetesi fiokba). Az atkoltozes (20:57 UTC) utan a -uj cim csak meta-refresh + noindex atiranyitas az eredeti cimre (a pixel az eredeti cimen indul).
+
+4) Amit NEM vizsgaltunk
+- Valodi (nem tiltott) esemeny az eles fiokban: nem inditottunk; a kattintas-/Stripe-/foglalasi lepeseket ez a landing nem erinti (a CTA-k kozvetlen Salonic-linkek, a GTM History Change miatt az oldalon nincs #horgony-link).
+- A landing sajat dataLayer-esemenyei (oxigen_landing_cta / oxigen_landing_video): GTM-cimke nem figyel rajuk (a PMU-landing mintaja); a pixel-proba nem merte.
+
+5) Nyers eredmenyek (pixel-proba JSON-ok)
+--- pixel-elo.json
+{
+ "ido": "2026-10-04T14:39:59.561Z",
+ "overlay": false,
+ "mobil": false,
+ "hozzajarulas": true,
+ "fbclid": "TESZTPIXEL",
+ "oldalak": {
+  "oxigenterapia-budapest": {
+   "nev": "oxigenterapia-budapest",
+   "allapot": 200,
+   "hiba": null,
+   "oldalKulcs": "oxigenterapia-budapest",
+   "oldalKulcsAzonos": true,
+   "elvartPixel": "1361403694872594",
+   "pixelek": [
+    "1361403694872594"
+   ],
+   "fbqGetState": [
+    "1361403694872594"
+   ],
+   "pixelKonfigBetoltes": [
+    "1361403694872594"
+   ],
+   "pageViewPixelenkent": {
+    "1361403694872594": 1
+   },
+   "capiPageView": 1,
+   "capiPixel": [
+    "1361403694872594"
+   ],
+   "esemenyek": {},
+   "google": [],
+   "ga4esemenyek": [],
+   "tiktok": [],
+   "zapier": 0,
+   "duplikaltFigyelmeztetes": 0,
+   "konzolPixel": [],
+   "fbc": "fb.1.1791124792360.TESZTPIXEL",
+   "fbcTartalmazza": true,
+   "fbp": true,
+   "metaKerelmekFbc": 1,
+   "stripeLinkek": 0,
+   "stripeKattintasUtan": 0,
+   "stripePelda": null,
+   "tiltottIsmeretlen": []
+  }
+ }
+}
+--- pixel-eles.json
+{
+ "ido": "2026-10-04T20:54:03.563Z",
+ "overlay": true,
+ "mobil": false,
+ "hozzajarulas": true,
+ "fbclid": "TESZTPIXEL",
+ "oldalak": {
+  "oxigenterapia-budapest": {
+   "nev": "oxigenterapia-budapest",
+   "allapot": 200,
+   "hiba": null,
+   "oldalKulcs": "oxigenterapia-budapest",
+   "oldalKulcsAzonos": true,
+   "elvartPixel": "1361403694872594",
+   "pixelek": [
+    "1361403694872594"
+   ],
+   "fbqGetState": [
+    "1361403694872594"
+   ],
+   "pixelKonfigBetoltes": [
+    "1361403694872594"
+   ],
+   "pageViewPixelenkent": {
+    "1361403694872594": 1
+   },
+   "capiPageView": 1,
+   "capiPixel": [
+    "1361403694872594"
+   ],
+   "esemenyek": {},
+   "google": [],
+   "ga4esemenyek": [],
+   "tiktok": [],
+   "zapier": 0,
+   "duplikaltFigyelmeztetes": 0,
+   "konzolPixel": [],
+   "fbc": "fb.1.1791147235952.TESZTPIXEL",
+   "fbcTartalmazza": true,
+   "fbp": true,
+   "metaKerelmekFbc": 1,
+   "stripeLinkek": 0,
+   "stripeKattintasUtan": 0,
+   "stripePelda": null,
+   "tiltottIsmeretlen": []
+  }
+ }
+}
+--- pixel-eles-elo.json
+{
+ "ido": "2026-10-04T21:24:26.419Z",
+ "overlay": false,
+ "mobil": false,
+ "hozzajarulas": true,
+ "fbclid": "TESZTPIXEL",
+ "oldalak": {
+  "oxigenterapia-budapest": {
+   "nev": "oxigenterapia-budapest",
+   "allapot": 200,
+   "hiba": null,
+   "oldalKulcs": "oxigenterapia-budapest",
+   "oldalKulcsAzonos": true,
+   "elvartPixel": "1361403694872594",
+   "pixelek": [
+    "1361403694872594"
+   ],
+   "fbqGetState": [
+    "1361403694872594"
+   ],
+   "pixelKonfigBetoltes": [
+    "1361403694872594"
+   ],
+   "pageViewPixelenkent": {
+    "1361403694872594": 1
+   },
+   "capiPageView": 1,
+   "capiPixel": [
+    "1361403694872594"
+   ],
+   "esemenyek": {},
+   "google": [],
+   "ga4esemenyek": [],
+   "tiktok": [],
+   "zapier": 0,
+   "duplikaltFigyelmeztetes": 0,
+   "konzolPixel": [],
+   "fbc": "fb.1.1791149058958.TESZTPIXEL",
+   "fbcTartalmazza": true,
+   "fbp": true,
+   "metaKerelmekFbc": 1,
+   "stripeLinkek": 0,
+   "stripeKattintasUtan": 0,
+   "stripePelda": null,
+   "tiltottIsmeretlen": []
+  }
+ }
+}
+--- pixel-eles-elo-mobil.json
+{
+ "ido": "2026-10-04T21:24:36.417Z",
+ "overlay": false,
+ "mobil": true,
+ "hozzajarulas": true,
+ "fbclid": "TESZTPIXEL",
+ "oldalak": {
+  "oxigenterapia-budapest": {
+   "nev": "oxigenterapia-budapest",
+   "allapot": 200,
+   "hiba": null,
+   "oldalKulcs": "oxigenterapia-budapest",
+   "oldalKulcsAzonos": true,
+   "elvartPixel": "1361403694872594",
+   "pixelek": [
+    "1361403694872594"
+   ],
+   "fbqGetState": [
+    "1361403694872594"
+   ],
+   "pixelKonfigBetoltes": [
+    "1361403694872594"
+   ],
+   "pageViewPixelenkent": {
+    "1361403694872594": 1
+   },
+   "capiPageView": 1,
+   "capiPixel": [
+    "1361403694872594"
+   ],
+   "esemenyek": {},
+   "google": [],
+   "ga4esemenyek": [],
+   "tiktok": [],
+   "zapier": 0,
+   "duplikaltFigyelmeztetes": 0,
+   "konzolPixel": [],
+   "fbc": "fb.1.1791149069030.TESZTPIXEL",
+   "fbcTartalmazza": true,
+   "fbp": true,
+   "metaKerelmekFbc": 1,
+   "stripeLinkek": 0,
+   "stripeKattintasUtan": 0,
+   "stripePelda": null,
+   "tiltottIsmeretlen": []
+  }
+ }
+}
+--- pixel-uj15.json
+{
+ "ido": "2026-10-04T17:53:15.674Z",
+ "overlay": true,
+ "mobil": false,
+ "hozzajarulas": true,
+ "fbclid": "TESZTPIXEL",
+ "oldalak": {
+  "oxigenterapia-budapest-uj": {
+   "nev": "oxigenterapia-budapest-uj",
+   "allapot": 200,
+   "hiba": null,
+   "oldalKulcs": "oxigenterapia-budapest-uj",
+   "oldalKulcsAzonos": true,
+   "elvartPixel": null,
+   "pixelek": [],
+   "fbqGetState": null,
+   "pixelKonfigBetoltes": [],
+   "pageViewPixelenkent": {},
+   "capiPageView": 0,
+   "capiPixel": [],
+   "esemenyek": {},
+   "google": [],
+   "ga4esemenyek": [],
+   "tiktok": [],
+   "zapier": 0,
+   "duplikaltFigyelmeztetes": 0,
+   "konzolPixel": [],
+   "fbc": null,
+   "fbcTartalmazza": false,
+   "fbp": false,
+   "metaKerelmekFbc": 0,
+   "stripeLinkek": 0,
+   "stripeKattintasUtan": 0,
+   "stripePelda": null,
+   "tiltottIsmeretlen": []
+  }
+ }
+}
