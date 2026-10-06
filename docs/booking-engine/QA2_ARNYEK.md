@@ -80,6 +80,27 @@ Mind a hat küldés: HTTP 200 a Zapier catch-hook-tól (`{"status":"success",…
 
 **Két próbahívás a Zapnek, nem a szerverről** (a teszt-fejlesztés közben, curl-lel): (1) `?dryrun=true` **a lekérdezésben** – ezt a Zap **nem** dryrunként értelmezte (`querystring.dryrun`), hanem **éles feltöltésként** futtatta: **1 szintetikus konverzió** ment az ARNYEK **7825199989** akcióra (`order_id` `FoglalasElso:mb_dryrun_proba`, `wbraid` `CoMKCQ_TESZT_DRYRUN_WBRAID`, 53 800 Ft); valódi kattintásra nem illeszkedhet, élő akcióhoz nem nyúlt. (2) `dryrun: true` **a JSON-törzsben** – helyesen nem küldött, csak visszaadta a kész kérést (`keres`, `dryrun: true`, `Konzultacio:mb_dryrun_body`). A tanulság: **a `dryrun` a törzsben legyen**.
 
+### 6/c. 3. kör – 8 eset, MIND A NÉGY árnyékcélra (2026-10-06, a TikTok-ág minden üzletágra, az új konzultáció-értékekkel)
+
+Új szabályok ebben a körben: **TikTok minden üzletágra** (alap = a Meta-val egyező egyedi név, ernyő: HeadSpa `CompletePayment`, a többi `Schedule`; nem-HeadSpa esemény soha nem `CompletePayment`), **konzultáció-értékek** PMU 13 800 / oxigén akciós 8 900 / szőr 27 000 / fodrász 13 000 Ft, **HeadSpa-konzultáció ág ki** (#100 / #101). A vészkapcsolók mind be voltak kapcsolva (nem kapcsoltam ki semmit); a Meta `TEST83939`, a TikTok `TEST83543`, a GA4 a teszt-property (`G-M5MLRLNQBP`, előbb `/debug/mp/collect`), a Google az ARNYEK Zap (`GOOGLE_ARNYEK_WEBHOOK_URL`). A nyolc eset **új** foglalásokkal / vásárlással, „TESZT – Claude”, a szerveres lépés után azonnal lemondva:
+
+| eset | érték (HUF) | Meta | TikTok | GA4 | Google (akció) |
+|---|---|---|---|---|---|
+| HeadSpa (fizetős) | 53 800 | `HeadSpa_FoglalasElso` + `Schedule` | `HeadSpa_FoglalasElso` + `CompletePayment` | `foglalas_elso` | 7825199989 |
+| HeadSpa ajándékkártya (Stripe teszt) | 26 900 | `HeadSpa_Ajandekkartya` + `Schedule` | `HeadSpa_Ajandekkartya` + `CompletePayment` | `purchase` | 7825199992 |
+| fodrász konzultáció | 13 000 | `Fodrasz_Konzultacio` + `Fodrasz_AkviziciosFoglalas` | `Fodrasz_Konzultacio` + `Schedule` | `konzultacio` | 7825200898 |
+| szőr konzultáció | 27 000 | `Szor_Konzultacio` + `Schedule` | `Szor_Konzultacio` + `Schedule` | `konzultacio` | 7825200910 |
+| oxigén (fizetős első kezelés) | 29 900 | `Oxigen_FoglalasElso` + `Oxigen_AkviziciosFoglalas` | `Oxigen_FoglalasElso` + `Schedule` | `foglalas_elso` | 7825200901 |
+| PMU (fizetős kezelés) | 99 000 | `PMU_FoglalasElso` + `Schedule` | `PMU_FoglalasElso` + `Schedule` | `foglalas_elso` | 7825200913 |
+| **PMU konzultáció** | **13 800** | `PMU_Konzultacio` + `Schedule` | `PMU_Konzultacio` + `Schedule` | `konzultacio` | 7825200916 |
+| **oxigén AKCIÓS konzultáció** (Salonic: 4 990 Ft) | **8 900** (a díjat is tartalmazza) | `Oxigen_Konzultacio` + `Oxigen_AkviziciosFoglalas` | `Oxigen_Konzultacio` + `Schedule` | `konzultacio` | 7825200904 |
+
+Esetenként az alap- és az ernyőesemény **közös `source_entity_id`-val, külön `event_id`-val** megy (pl. PMU-konzultáció: `PMU_Konzultacio`, `Konzultacio:<booking_id>`, 13 800 HUF + `Schedule`, `Schedule:<booking_id>`, 13 800 HUF). A Google-sorok a Zap futásával párosítva (mind a 8: `finished`, `sent: true`, `requestId`). **Bizonyítékok** (D1 lekérdezések a futás után; `meres-naplo/qa2-kor3-egyeztetes-2026-10-06.json`):
+- A köri sorok: Meta 16, TikTok 16, GA4 8 (+ 8 ernyő `kihagyva`), Google 8 (+ 8 ernyő `kihagyva`) = **48 elküldött**; esetenként Meta 2 + TikTok 2 + GA4 1 + Google 1.
+- **0 dupla:** `SELECT COUNT(*) FROM (SELECT esemeny_id, platform FROM meres_kuldes GROUP BY esemeny_id, platform HAVING COUNT(*) > 1)` → **0** (a teljes táblára, az összes körre).
+- **0 élő küldés:** a saját szállítóval elküldött összes sor (Meta 30, TikTok 26, GA4 15, Google 14, mind a körök együtt) célpontja az ARNYEK-halmazba esik (Meta dataset 28616665324611098 + `TEST83939`; TikTok pixel DB2GTTJC77UE4D1NE4MG + tesztkód; GA4 G-M5MLRLNQBP; Google 7825199989–7825200916); élő célpont: **0**.
+- **Életút-napló** (esetenként: `qa2-kor3-<eset>-eletut-2026-10-06.json`, összefoglaló: `qa2-kor3-osszefoglalo-2026-10-06.md`): létrehozva → a levél feldolgozása (élő állapot `aktiv`, 6 kiküldött cella) → lemondás (visszaigazolva) → a Salonic-oldal „LEMONDVA” → **a levél ismétlése lemondás után: `mar_kuldve`, 0 új esemény**; a kártyánál a webhook-ág második újrajátszása `mar_kuldve`. Az életút-események (Google RETRACTION, no-show, megjelent / fizetett) **nincsenek megépítve** – lásd 7. pont.
+
 ## 7. Amit ez a kör nem tudott / nyitott – tényként
 
 1. **Google Ads:** a Zapier-átjátszó kész és a hat esetre lefutott (6/b.). Amit nem láttam: hogy a Google Ads **elfogadja-e** a szintetikus `wbraid` értékeket (egy valódi kattintásra nem illeszkednek) – ez a Google Ads konverzió-feltöltési diagnosztikájából derül ki, ahhoz nincs olvasó hozzáférésem. A Zap a `sent: true`-t és a feltöltő lépés `completed` állapotát adta. A webhook csak átvételi visszaigazolást ad; a tényleges eredményt a Zapier futás-előzményeiből olvastam ki.
@@ -91,6 +112,7 @@ Mind a hat küldés: HTTP 200 a Zapier catch-hook-tól (`{"status":"success",…
 7. **`event_source_url`** az előnézeten az előnézeti köszönőoldal; élesen az éles köszönőoldal lesz.
 8. A böngészős próbákban a `_fbp` / `_ttp` / `_ga` sütiket és a kattintásazonosítókat a teszt állította be (az előnézeten nem fut pixel / GA); a szerver-oldali útvonal ettől független.
 9. A naplóban a nyers IP az előnézeti teszt saját IP-je (`MERES_NAPLO_TELJES`); éles beállításban maszkolt marad.
+10. **Életút-események:** a lemondás / no-show / megjelent / fizetett események (Google valódi visszavonás, Meta / TikTok diagnosztikai esemény, DECISION #97 életút) **nincsenek megépítve** a QA-2 árnyékmódban; a lemondást a küldés előtti élő ellenőrzés kezeli (lemondott foglalás eseménye nem megy ki), és a lemondási értesítő (`tipus: lemondas`) a kulcsot szabadítja fel. A levél-oldali hívó Zap (`/api/foglalas-egyeztetes`) leírása: `EGYEZTETES_HIVAS.md`; a Zapet a mérési munkamenet építi, a kulcs a Zapier Storage-ban van.
 
 ## 8. Fájlok
 

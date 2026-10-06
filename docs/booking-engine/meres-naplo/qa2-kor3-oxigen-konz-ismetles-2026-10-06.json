@@ -1,0 +1,688 @@
+{
+ "eset": "oxigen",
+ "hivas_ideje": "2026-10-06T17:46:53.774Z",
+ "kerelem_maszkolt": {
+  "uuid": "591c230e-7061-8c30-01d3-3c9fc8fa85d7",
+  "host": "mosaic-oxigen.salonic.hu",
+  "felado": "Mosaic Oxigén",
+  "szolgaltatas": "AKCIÓS Hajkamerás vizsgálat és konzultáció",
+  "munkatarsak": [],
+  "ld": {
+   "startDate": "2026-10-20T14:30:00.000Z"
+  },
+  "level_datuma": "2026-10-06T17:45:30Z",
+  "ar": 4990,
+  "vendeg": "<maszkolva: e-mail + telefon>",
+  "uj_vendeg": true
+ },
+ "szimulalt": {
+  "uj_vendeg": true,
+  "megjegyzes": "a Salonic \"uj vendeg\" jelzeset a teszt szimulalja; az ar a Salonic-level \"Price / Fizetendo varhatoan\" sorabol"
+ },
+ "egyeztetes_valasz_nyers": {
+  "ok": true,
+  "allapot": "parositott",
+  "kuldheto": false,
+  "duplikalt": true,
+  "booking_id": "mb_0muwyzpyo43v6l6gmynvha3",
+  "esemeny_id": "mb_0muwyzpyo43v6l6gmynvha3",
+  "kulcs": "14409|32009|1792506600",
+  "kulcs_forras": "salonic-oldal",
+  "probalkozas": 1,
+  "riasztas": false,
+  "nyom": {
+   "uuid": "591c230e-7061-8c30-01d3-3c9fc8fa85d7",
+   "host": "mosaic-oxigen.salonic.hu"
+  },
+  "esemeny_kuldes": {
+   "allapot": "mar_kuldve",
+   "source_id": "mb_0muwyzpyo43v6l6gmynvha3",
+   "erkezesi_adat": true,
+   "esemenyek": [],
+   "miert": "minden esemeny / platform cella mar vegleges allapotu",
+   "jelleg": "konzultacio",
+   "kupon": false,
+   "uj_vendeg": true,
+   "salonic_ar": 4990,
+   "ertek": null,
+   "ar_forras": "bejovo",
+   "uzletag": "oxigen"
+  }
+ },
+ "szerveres_naplo_nyers": {
+  "ok": true,
+  "source_id": "mb_0muwyzpyo43v6l6gmynvha3",
+  "erkezes": {
+   "source_id": "mb_0muwyzpyo43v6l6gmynvha3",
+   "uzletag": "oxigen",
+   "tipus": "foglalas",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_OXIGEN_MUWYZN4O_GCLID",
+      "ts": 1791308768
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_OXIGEN_MUWYZN4O_WBRAID",
+      "ts": 1791308771
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791308771000.IwAR_TESZT_OXIGEN_MUWYZN4O_FBCLID",
+     "fbclid": "IwAR_TESZT_OXIGEN_MUWYZN4O_FBCLID",
+     "ts": 1791308771
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_OXIGEN_MUWYZN4O_TTCLID",
+      "ts": 1791308771
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_oxigen_elso",
+     "content": "hirdetes_a",
+     "ts": 1791308768
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_oxigen_utolso",
+     "ts": 1791308771
+    },
+    "fbp": "fb.1.1791303767000.7211896767",
+    "ttp": "TESZT_OXIGEN_MUWYZN4O_ttp_gnndtahgjx",
+    "ga4": {
+     "client_id": "125554130.1791222367",
+     "session_id": "1791307567",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true,
+    "dontes": true
+   },
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+   "ip": "160.79.106.xxx",
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok",
+   "bongeszo": {
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok",
+    "first_booking": true,
+    "szolgaltatas": "AKCIÓS Hajkamerás vizsgálat és konzultáció",
+    "kategoria": "",
+    "ar": 4990,
+    "g": "g:3385031",
+    "munkatars": "",
+    "bookingUrl": "https://mosaic-oxigen.salonic.hu/guestData/?anyone=true&employeeId=32009&placeId=14409&serviceId=466147&startDate=1792506600&back=mb_0muwyzpyo43v6l6gmynvha3"
+   },
+   "ido": 1791308788,
+   "frissitve": 1791308788
+  },
+  "kuldesek": [
+   {
+    "id": 233,
+    "esemeny_id": "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "meta",
+    "platform_nev": "Oxigen_Konzultacio",
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwyzpyo43v6l6gmynvha3",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 8900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "dataset": "28616665324611098",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST83939"
+     },
+     "body": {
+      "data": [
+       {
+        "event_name": "Oxigen_Konzultacio",
+        "event_time": 1791308730,
+        "event_id": "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+        "action_source": "website",
+        "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok",
+        "user_data": {
+         "em": [
+          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         ],
+         "ph": [
+          "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+         ],
+         "external_id": [
+          "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346"
+         ],
+         "client_ip_address": "160.79.106.136",
+         "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+         "fbc": "fb.1.1791308771000.IwAR_TESZT_OXIGEN_MUWYZN4O_FBCLID",
+         "fbp": "fb.1.1791303767000.7211896767"
+        },
+        "custom_data": {
+         "value": 8900,
+         "currency": "HUF",
+         "order_id": "mb_0muwyzpyo43v6l6gmynvha3",
+         "content_name": "AKCIÓS Hajkamerás vizsgálat és konzultáció",
+         "content_category": "oxigen",
+         "esemeny_tipus": "alap",
+         "ertek_forras": "konzultacio_tabla",
+         "salonic_ar": 4990,
+         "utm_source": "facebook",
+         "utm_campaign": "qa2_oxigen_utolso"
+        }
+       }
+      ],
+      "test_event_code": "TEST83939",
+      "partner_agent": "mosaic-qa2-arnyek"
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"events_received\":1,\"messages\":[],\"fbtrace_id\":\"AvfJ6re5_62WOdhPPZzks47\"}",
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791308793,
+    "frissitve": 1791308793
+   },
+   {
+    "id": 234,
+    "esemeny_id": "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "tiktok",
+    "platform_nev": "Oxigen_Konzultacio",
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwyzpyo43v6l6gmynvha3",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 8900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type",
+      "access-token"
+     ],
+     "cel": {
+      "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST83543"
+     },
+     "body": {
+      "event_source": "web",
+      "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+      "test_event_code": "TEST83543",
+      "data": [
+       {
+        "event": "Oxigen_Konzultacio",
+        "event_time": 1791308730,
+        "event_id": "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+        "user": {
+         "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+         "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+         "external_id": "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346",
+         "ttclid": "E.C.P.TESZT_OXIGEN_MUWYZN4O_TTCLID",
+         "ttp": "TESZT_OXIGEN_MUWYZN4O_ttp_gnndtahgjx",
+         "ip": "160.79.106.136",
+         "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        },
+        "properties": {
+         "currency": "HUF",
+         "value": 8900,
+         "content_type": "product",
+         "contents": [
+          {
+           "content_id": "oxigen_konzultacio",
+           "content_name": "AKCIÓS Hajkamerás vizsgálat és konzultáció",
+           "quantity": 1,
+           "price": 8900
+          }
+         ],
+         "order_id": "mb_0muwyzpyo43v6l6gmynvha3"
+        },
+        "page": {
+         "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok"
+        }
+       }
+      ]
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"code\": 0, \"message\": \"OK\", \"request_id\": \"202610061746356987C81C6FC92FB58AAD\", \"data\": {}}",
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791308793,
+    "frissitve": 1791308793
+   },
+   {
+    "id": 235,
+    "esemeny_id": "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "google",
+    "platform_nev": "ARNYEK-7825200904",
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwyzpyo43v6l6gmynvha3",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 8900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "customer_id": "6088874770",
+      "conversion_action_id": "7825200904",
+      "athidalas": "zapier-webhook"
+     },
+     "body": {
+      "conversion_action_id": "7825200904",
+      "wbraid": "CoMKCQ_TESZT_OXIGEN_MUWYZN4O_WBRAID",
+      "conversion_date_time": "2026-10-06 19:45:30+02:00",
+      "value": 8900,
+      "currency": "HUF",
+      "order_id": "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+      "ad_user_data": "GRANTED"
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"attempt\":\"01a11253-11ed-8929-ec8c-5c275ec7b230\",\"id\":\"01a11253-11ed-8929-ec8c-5c275ec7b230\",\"request_id\":\"01a11253-11ed-8929-ec8c-5c275ec7b230\",\"status\":\"success\"}\n",
+    "kuldo": "zapier-webhook",
+    "probalkozas": 1,
+    "letrehozva": 1791308793,
+    "frissitve": 1791308793
+   },
+   {
+    "id": 236,
+    "esemeny_id": "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "ga4",
+    "platform_nev": "konzultacio",
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwyzpyo43v6l6gmynvha3",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 8900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": {
+     "url": "https://www.google-analytics.com/mp/collect?measurement_id=G-M5MLRLNQBP",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "measurement_id": "G-M5MLRLNQBP"
+     },
+     "body": {
+      "client_id": "125554130.1791222367",
+      "timestamp_micros": "1791308730000000",
+      "consent": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "events": [
+       {
+        "name": "konzultacio",
+        "params": {
+         "session_id": "1791307567",
+         "engagement_time_msec": 1,
+         "value": 8900,
+         "currency": "HUF",
+         "esemeny_id": "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+         "uzletag": "oxigen",
+         "ertek_forras": "konzultacio_tabla",
+         "salonic_ar": 4990,
+         "source": "facebook",
+         "medium": "paid",
+         "campaign": "qa2_oxigen_utolso"
+        }
+       }
+      ]
+     }
+    },
+    "http_status": 204,
+    "platform_valasz": "{\"ga4_validacio\":{\"vegpont\":\"/debug/mp/collect\",\"validationMessages\":[]},\"collect_status\":204,\"collect_valasz\":\"\"}",
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791308793,
+    "frissitve": 1791308793
+   },
+   {
+    "id": 237,
+    "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwyzpyo43v6l6gmynvha3",
+    "esemeny_nev": "Oxigen_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "meta",
+    "platform_nev": "Oxigen_AkviziciosFoglalas",
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwyzpyo43v6l6gmynvha3",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 8900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "dataset": "28616665324611098",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST83939"
+     },
+     "body": {
+      "data": [
+       {
+        "event_name": "Oxigen_AkviziciosFoglalas",
+        "event_time": 1791308730,
+        "event_id": "Oxigen_AkviziciosFoglalas:mb_0muwyzpyo43v6l6gmynvha3",
+        "action_source": "website",
+        "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok",
+        "user_data": {
+         "em": [
+          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         ],
+         "ph": [
+          "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+         ],
+         "external_id": [
+          "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346"
+         ],
+         "client_ip_address": "160.79.106.136",
+         "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+         "fbc": "fb.1.1791308771000.IwAR_TESZT_OXIGEN_MUWYZN4O_FBCLID",
+         "fbp": "fb.1.1791303767000.7211896767"
+        },
+        "custom_data": {
+         "value": 8900,
+         "currency": "HUF",
+         "order_id": "mb_0muwyzpyo43v6l6gmynvha3",
+         "content_name": "AKCIÓS Hajkamerás vizsgálat és konzultáció",
+         "content_category": "oxigen",
+         "esemeny_tipus": "ernyo",
+         "ertek_forras": "konzultacio_tabla",
+         "salonic_ar": 4990,
+         "utm_source": "facebook",
+         "utm_campaign": "qa2_oxigen_utolso"
+        }
+       }
+      ],
+      "test_event_code": "TEST83939",
+      "partner_agent": "mosaic-qa2-arnyek"
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"events_received\":1,\"messages\":[],\"fbtrace_id\":\"AgrDoWP9oD5kzv7yvOznTM7\"}",
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791308793,
+    "frissitve": 1791308793
+   },
+   {
+    "id": 238,
+    "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwyzpyo43v6l6gmynvha3",
+    "esemeny_nev": "Oxigen_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "tiktok",
+    "platform_nev": "Schedule",
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwyzpyo43v6l6gmynvha3",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 8900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type",
+      "access-token"
+     ],
+     "cel": {
+      "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST83543"
+     },
+     "body": {
+      "event_source": "web",
+      "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+      "test_event_code": "TEST83543",
+      "data": [
+       {
+        "event": "Schedule",
+        "event_time": 1791308730,
+        "event_id": "Oxigen_AkviziciosFoglalas:mb_0muwyzpyo43v6l6gmynvha3",
+        "user": {
+         "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+         "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+         "external_id": "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346",
+         "ttclid": "E.C.P.TESZT_OXIGEN_MUWYZN4O_TTCLID",
+         "ttp": "TESZT_OXIGEN_MUWYZN4O_ttp_gnndtahgjx",
+         "ip": "160.79.106.136",
+         "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        },
+        "properties": {
+         "currency": "HUF",
+         "value": 8900,
+         "content_type": "product",
+         "contents": [
+          {
+           "content_id": "oxigen_oxigen_akviziciosfoglalas",
+           "content_name": "AKCIÓS Hajkamerás vizsgálat és konzultáció",
+           "quantity": 1,
+           "price": 8900
+          }
+         ],
+         "order_id": "mb_0muwyzpyo43v6l6gmynvha3"
+        },
+        "page": {
+         "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok"
+        }
+       }
+      ]
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"code\": 0, \"message\": \"OK\", \"request_id\": \"202610061746386987C81C6FC92FB58BFD\", \"data\": {}}",
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791308793,
+    "frissitve": 1791308793
+   },
+   {
+    "id": 239,
+    "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwyzpyo43v6l6gmynvha3",
+    "esemeny_nev": "Oxigen_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "google",
+    "platform_nev": null,
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwyzpyo43v6l6gmynvha3",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+    "ertek": 8900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791308793,
+    "frissitve": 1791308793
+   },
+   {
+    "id": 240,
+    "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwyzpyo43v6l6gmynvha3",
+    "esemeny_nev": "Oxigen_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwyzpyo43v6l6gmynvha3",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
+    "ertek": 8900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791308793,
+    "frissitve": 1791308793
+   }
+  ]
+ }
+}
