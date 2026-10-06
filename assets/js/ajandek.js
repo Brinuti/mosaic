@@ -443,7 +443,7 @@
     if (!doboz || tiBetoltve) return;
     tiBetoltve = true;
     var tartalek = $('ah-proof');
-    var f = h('iframe', { class: 'ah-ti-keret', src: TI_KERET, title: 'Google-vélemények (Trustindex)', loading: 'lazy', scrolling: 'no' });   // scrolling=no: soha nincs gorgetosav az iframe-ben
+    var f = h('iframe', { class: 'ah-ti-keret', src: TI_KERET, title: 'Google-vélemények (Trustindex)', loading: 'eager', scrolling: 'no' });   // scrolling=no: soha nincs gorgetosav az iframe-ben
     // az iframe azonos eredetu: a magassagat a tartalomhoz igazitjuk; a tartalek-kartya csak a valodi widget megjelenese utan tunik el
     var proba = 0;
     function meret() {

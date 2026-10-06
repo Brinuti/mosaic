@@ -181,7 +181,7 @@
     const f = document.createElement('iframe');
     f.src = tiDoboz.dataset.forras;
     f.title = 'Vendégértékelések (Trustindex)';
-    f.loading = 'lazy';
+    f.loading = 'eager'; // nem lazy: a hozzajarulas utan azonnal toltodjon (ne csak gorgetesre)
     tiDoboz.replaceChildren(f);
   };
   if (tiDoboz) {
