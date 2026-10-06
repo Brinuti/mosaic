@@ -24,8 +24,8 @@
 </head>
 <body>
 <!--
-  MOSAIC oxigenterapia landing - a tulajdonos kepernyoterve szerint (hero -> jelek -> allapotfelmeres -> kezelok ->
-  elso alkalom -> kezeles lepesei -> eredmenyek -> video -> belepesi lehetosegek -> miert maskepp -> GYIK -> zaro CTA; az Arc + Haj blokk lekerult: nincs a Salonicban).
+  MOSAIC oxigenterapia landing - a tulajdonos kepernyoterve szerint (hero -> jelek -> allapotfelmeres -> eredmenyek -> kezelok ->
+  elso alkalom -> kezeles lepesei -> video -> belepesi lehetosegek -> miert maskepp -> GYIK -> zaro CTA; az Arc + Haj blokk lekerult: nincs a Salonicban).
   A szekciok sorrendje es a CTA-hierarchia (hajkamera 4 990 Ft > elso kezeles 29 900 Ft) a terv resze.
   Foglalas: a CTA-k a Salonic oxigen-fiokjara (mosaic-oxigen) mutatnak, ugyanazokkal a linkekkel, mint a /idpontfoglalas;
   a build kozponti link-terkepe (tools/foglalo-atkotes.mjs) ezeket kesobb a kozos foglalora koti at, ha az uzletag kapcsoloja be van kapcsolva.
@@ -76,14 +76,14 @@
     <h1>Működő oxigénterápia hajhullás és gyulladás ellen</h1>
     <div class="hero-szoveg">
       <p class="hero-al">Kétmillió elvégzett kezelésből 95%-os hatékonyság<sup>*</sup></p>
-      <p class="hero-lab">*Az Oxygeni statisztikája alapján</p>
+      <p class="hero-lab"><span>*Az Oxygeni statisztikája alapján</span><button type="button" class="hero-eredmeny-link" data-gorgetes="eredmenyek" data-cta="hero-eredmenyek">Mutasd az eredményeket <span class="nyil">→</span></button></p>
       <p class="hero-lead">Az első kezelés hajkamerás állapotfelméréssel indul, majd a fejbőröd állapotához igazított kezelést és személyre szabott javaslatot kapsz.</p>
       <ul class="tenyek" aria-label="A legfontosabbak röviden">
         <li><span class="ikon-kor"><svg><use href="#i-kamera"/></svg></span><span>Hajkamerás<br>állapot&shy;felmérés</span></li>
         <li><span class="ikon-kor"><svg><use href="#i-ajto"/></svg></span><span>Privát<br>kezelő&shy;szoba</span></li>
         <li><span class="ikon-kor"><svg><use href="#i-ora"/></svg></span><span>80 perces<br>első kezelés</span></li>
         <li class="teny-m" title="SZÉP Kártyát is elfogadunk"><span class="ikon-kor"><svg><use href="#i-kartya"/></svg></span><span>SZÉP<br>Kártya</span></li>
-        <li class="teny-m"><a class="teny-google" href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener" data-cta="hero-google-badge" aria-label="Google-értékelés: 5,0, 1255 vélemény"><span class="ikon-kor"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg></span><span><span id="te-pont-m">5,0</span><br><span id="te-db-m">1.255</span></span></a></li>
+        <li class="teny-m"><a class="teny-google" href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener" data-cta="hero-google-badge" aria-label="Google-értékelés: 5 csillag, 1255 vélemény"><span class="ikon-kor"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg></span><span><span class="te-csillagok te-cs-m" id="te-cs-m" role="img" aria-label="5 csillagból 5" style="--ert:100%"></span><br><span class="te-db-sor"><span id="te-db-m">1255</span> vélemény</span></span></a></li>
       </ul>
       <div class="hero-cta">
         <a class="gomb gomb-arany gomb-ketsoros" href="https://mosaic-oxigen.salonic.hu/selectEmployee/?placeId=14409&amp;serviceId=466110" target="_blank" rel="noopener" data-cta="hero-elso-kezeles"><span class="c">Első kezelést foglalok – 29 900 Ft <span class="nyil">→</span></span><span class="ar">Hajkamerás állapotfelméréssel együtt · 80 perc</span></a>
@@ -146,6 +146,72 @@
         <a class="gomb gomb-feher gomb-ketsoros" href="https://mosaic-oxigen.salonic.hu/selectEmployee/?placeId=14409&amp;serviceId=466147" target="_blank" rel="noopener" data-cta="allapot-allapotfelmeres"><span class="c">Állapotfelmérést szeretnék</span><span class="ar">– 4 990 Ft <span class="nyil">→</span></span></a>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ============ 7. EREDMENYEK ============ -->
+<section class="eredmenyek" id="eredmenyek" aria-labelledby="eredmenyek-cim">
+  <div class="tartalom">
+    <h2 id="eredmenyek-cim" class="kozepre">Az Oxygeni vendégeinek valós javulásai</h2>
+    <!-- A regi oldal eredmeny-galeriai, panaszonkent, ugyanabban a sorrendben (Oxygeni Hair kepei): hajhullas 12, korpas 3, pikkelysomor 3, seborrea 3. -->
+    <div class="ba-csoport">
+      <div class="ba-fej"><h3>Látható eredmények hajhullás esetén</h3><span>Forrás: Oxygeni Hair</span></div>
+      <div class="ba-keret">
+        <div class="ba-sav">
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-01.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-02.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-03.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-04.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-05.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-06.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-07.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-08.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-09.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-10.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-11.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-12.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+        </div>
+        <button type="button" class="lapozo elozo" aria-label="Előző eredmények" hidden><svg><use href="#i-bal"/></svg></button>
+        <button type="button" class="lapozo kovetkezo" aria-label="Következő eredmények" hidden><svg><use href="#i-jobb"/></svg></button>
+      </div>
+    </div>
+    <div class="ba-csoport">
+      <div class="ba-fej"><h3>Valós eredmények korpás haj esetén</h3><span>Forrás: Oxygeni Hair</span></div>
+      <div class="ba-keret">
+        <div class="ba-sav">
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-13.jpg" alt="Korpás haj: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-14.jpg" alt="Korpás haj: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-15.jpg" alt="Korpás haj: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+        </div>
+        <button type="button" class="lapozo elozo" aria-label="Előző eredmények" hidden><svg><use href="#i-bal"/></svg></button>
+        <button type="button" class="lapozo kovetkezo" aria-label="Következő eredmények" hidden><svg><use href="#i-jobb"/></svg></button>
+      </div>
+    </div>
+    <div class="ba-csoport">
+      <div class="ba-fej"><h3>Átütő eredmények pikkelysömör esetén</h3><span>Forrás: Oxygeni Hair</span></div>
+      <div class="ba-keret">
+        <div class="ba-sav">
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-16.jpg" alt="Pikkelysömör: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-17.jpg" alt="Pikkelysömör: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-18.jpg" alt="Pikkelysömör: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+        </div>
+        <button type="button" class="lapozo elozo" aria-label="Előző eredmények" hidden><svg><use href="#i-bal"/></svg></button>
+        <button type="button" class="lapozo kovetkezo" aria-label="Következő eredmények" hidden><svg><use href="#i-jobb"/></svg></button>
+      </div>
+    </div>
+    <div class="ba-csoport">
+      <div class="ba-fej"><h3>Szembetűnő eredmények seborrea esetén</h3><span>Forrás: Oxygeni Hair</span></div>
+      <div class="ba-keret">
+        <div class="ba-sav">
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-19.jpg" alt="Seborrea: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-20.jpg" alt="Seborrea: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-21.jpg" alt="Seborrea: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+        </div>
+        <button type="button" class="lapozo elozo" aria-label="Előző eredmények" hidden><svg><use href="#i-bal"/></svg></button>
+        <button type="button" class="lapozo kovetkezo" aria-label="Következő eredmények" hidden><svg><use href="#i-jobb"/></svg></button>
+      </div>
+    </div>
+    <p class="ba-megj kozepre"><b>Valós előtte/utána fotók.</b> Kétmillió elvégzett kezelésből 95%-nál pozitív változás – ez a teljes Oxygeni-statisztika.</p>
   </div>
 </section>
 
@@ -283,72 +349,6 @@
         <div class="mm-foto"><img src="/assets/img/oxigen/miert-foto.webp" alt="Szemléltető kép: a kezelő az oxigént a fejbőrre juttatja; a kiemelt kör a hajhagymák táplálását mutatja" width="487" height="640" loading="lazy"></div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- ============ 7. EREDMENYEK ============ -->
-<section class="eredmenyek" id="eredmenyek" aria-labelledby="eredmenyek-cim">
-  <div class="tartalom">
-    <h2 id="eredmenyek-cim" class="kozepre">Az Oxygeni vendégeinek valós javulásai</h2>
-    <!-- A regi oldal eredmeny-galeriai, panaszonkent, ugyanabban a sorrendben (Oxygeni Hair kepei): hajhullas 12, korpas 3, pikkelysomor 3, seborrea 3. -->
-    <div class="ba-csoport">
-      <div class="ba-fej"><h3>Látható eredmények hajhullás esetén</h3><span>Forrás: Oxygeni Hair</span></div>
-      <div class="ba-keret">
-        <div class="ba-sav">
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-01.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-02.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-03.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-04.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-05.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-06.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-07.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-08.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-09.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-10.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-11.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-12.jpg" alt="Hajhullás: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-        </div>
-        <button type="button" class="lapozo elozo" aria-label="Előző eredmények" hidden><svg><use href="#i-bal"/></svg></button>
-        <button type="button" class="lapozo kovetkezo" aria-label="Következő eredmények" hidden><svg><use href="#i-jobb"/></svg></button>
-      </div>
-    </div>
-    <div class="ba-csoport">
-      <div class="ba-fej"><h3>Valós eredmények korpás haj esetén</h3><span>Forrás: Oxygeni Hair</span></div>
-      <div class="ba-keret">
-        <div class="ba-sav">
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-13.jpg" alt="Korpás haj: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-14.jpg" alt="Korpás haj: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-15.jpg" alt="Korpás haj: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-        </div>
-        <button type="button" class="lapozo elozo" aria-label="Előző eredmények" hidden><svg><use href="#i-bal"/></svg></button>
-        <button type="button" class="lapozo kovetkezo" aria-label="Következő eredmények" hidden><svg><use href="#i-jobb"/></svg></button>
-      </div>
-    </div>
-    <div class="ba-csoport">
-      <div class="ba-fej"><h3>Átütő eredmények pikkelysömör esetén</h3><span>Forrás: Oxygeni Hair</span></div>
-      <div class="ba-keret">
-        <div class="ba-sav">
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-16.jpg" alt="Pikkelysömör: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-17.jpg" alt="Pikkelysömör: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-18.jpg" alt="Pikkelysömör: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-        </div>
-        <button type="button" class="lapozo elozo" aria-label="Előző eredmények" hidden><svg><use href="#i-bal"/></svg></button>
-        <button type="button" class="lapozo kovetkezo" aria-label="Következő eredmények" hidden><svg><use href="#i-jobb"/></svg></button>
-      </div>
-    </div>
-    <div class="ba-csoport">
-      <div class="ba-fej"><h3>Szembetűnő eredmények seborrea esetén</h3><span>Forrás: Oxygeni Hair</span></div>
-      <div class="ba-keret">
-        <div class="ba-sav">
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-19.jpg" alt="Seborrea: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-20.jpg" alt="Seborrea: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/eredmeny-21.jpg" alt="Seborrea: előtte és utána" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
-        </div>
-        <button type="button" class="lapozo elozo" aria-label="Előző eredmények" hidden><svg><use href="#i-bal"/></svg></button>
-        <button type="button" class="lapozo kovetkezo" aria-label="Következő eredmények" hidden><svg><use href="#i-jobb"/></svg></button>
-      </div>
-    </div>
-    <p class="ba-megj kozepre"><b>Valós előtte/utána fotók.</b> Kétmillió elvégzett kezelésből 95%-nál pozitív változás – ez a teljes Oxygeni-statisztika.</p>
   </div>
 </section>
 

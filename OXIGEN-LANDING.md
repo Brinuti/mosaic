@@ -34,6 +34,13 @@ küldenek (a PMU-landing `pmu_landing_*` mintájára; ezekre GTM-címke nem figy
 
 A hero másodlagos linkje: „Csak hajkamerás állapotfelmérés – 4 990 Ft →” (nincs „Még nem vagy biztos?”). Mobilon **öt kerek badge egy sorban, egyenlő osztásközzel** (5 egyenlő oszlop: hajkamera, privát szoba, 80 perc, SZÉP Kártya, Google: egyszínű G-logó, alatta „5,0” és a vélemények száma, amit az `oxigen-landing.js` a Trustindex-widgetből frissít, tartalék: 1.255; a `.teny-m` elemek csak mobilon látszanak, a SZÉP/Google sor mobilon rejtett, asztalin változatlan); a sor külső szélei pontosan a margónál vannak (flex, space-between), a galéria nyilai pontosan a kép szélén (mobil). A zöld szekció címe („Akkor az oxigénterápia valószínűleg hatásos lesz nálad.”) az „Ismerősek ezek a jelek?” folytatása; tableten/mobilon a cím a kép **fölött** áll (a `.allapot-szoveg` `display:contents`, a h2 `order:-1`).
 
+## Sorrend, mobil sticky sáv, „Mutasd az eredményeket” (2026-10-06)
+
+- **Szekciósorrend:** hero → Ismerősek ezek a jelek? → zöld (Akkor az oxigénterápia valószínűleg hatásos lesz nálad.) → **Eredmények** → Ők fognak veled foglalkozni (kezelők) → első kezelés → lépések → típusok → mire számíthatsz → videó → vélemények → árak → miért más → GYIK → szalon → záró.
+- **Mobil sticky sáv:** nem rögtön jelenik meg; csak a „jelek” szekció (4 illusztráció) elgörgetése után, a záró sávnál eltűnik (`oxigen-landing.js`, IntersectionObserver a `.jelek`-en).
+- **Mobil hero:** az „*Az Oxygeni statisztikája alapján” sor mellett látszó link: „Mutasd az eredményeket →” (`data-gorgetes="eredmenyek"`, JS-gördítés, nincs #hash).
+- **Google-badge (mobil):** egyszínű G, alatta 5 sárga csillag és „1255 vélemény” (a szám és a csillagok a Trustindex-widgetből frissülnek).
+
 ## Fejléc
 
 A MOSAIC fejléc piros akció-sávja (`#comp-mpv0ganp`, „Októberi akció…”) ezen a landingen **nincs** (a tulajdonos kérésére): az `oxigen-landing.css` elrejti (`display:none`), a fejléc ettől csak a menüsor magas (asztali 46 px, mobil 61 px), a tartalom feljebb kerül. A hero-galéria képaláírásában nincs „Hajhullás” cím, csak az alkalmak száma.
