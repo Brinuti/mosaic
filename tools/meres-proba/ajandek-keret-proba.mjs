@@ -29,6 +29,7 @@ const mer = []; // a kimeno meresi kereseket csak naplozzuk (tilt.mjs: tiltva)
 await ctx.route('**/*', async (route) => {
   const req = route.request(), url = req.url(); let u; try { u = new URL(url); } catch (e) { return route.continue(); }
   if (/\/api\/ajandek\/rendeles/.test(u.pathname) && u.searchParams.get('pi') === PI) {
+    await new Promise((ok) => setTimeout(ok, 1500)); // a valodi szerver a Stripe-tol kerdezi vissza a fizetest: nem azonnali (a beallitas-lekeres elobb megerkezik)
     return route.fulfill({ status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: JSON.stringify({
       allapot: 'fizetve', visszavonva: false, rendeles_id: 'TESZT-KERET', atvetel: 'otthon', termek: 'egyeni', termek_nev: 'Egyéni Head Spa ajándékkártya (TESZT)', kartya_cim: 'Egyéni Head Spa',
       osszeg: ERTEK, penznem: 'HUF', email: 'keret-proba@example.com', fizetesi_mod: 'card', fizetve_ekkor: new Date().toISOString(), attr: {}, kartya: { allapot: 'keszul', ervenyes_ig: '2027-04-04' }, szemelyre: null }) });
@@ -47,6 +48,8 @@ await ctx.route('**/*', async (route) => {
   return route.continue();
 });
 const page = await ctx.newPage();
+const DEBUG = arg('debug', '0') === '1'; const hivasok = [];
+if (DEBUG) page.on('request', (r) => { if (/\/api\/ajandek\//.test(r.url())) hivasok.push(Date.now() % 100000 + ' ' + r.method() + ' ' + new URL(r.url()).pathname + new URL(r.url()).search.slice(0, 40)); });
 const hibak = []; page.on('pageerror', (e) => hibak.push(String(e.message).slice(0, 160)));
 const qs = MERES_PROBA ? '&meres_proba=1' : '';
 
@@ -62,6 +65,7 @@ await page.goto(`${BAZIS}${LANDING}?variant=${encodeURIComponent(variant)}&payme
 await page.waitForSelector('[data-ah-regi-konverzio]', { state: 'attached', timeout: 25000 }).catch(() => {});
 await page.waitForTimeout(6000);
 const fo = new URL(page.url());
+if (DEBUG) { console.log('DEBUG api-hivasok:', hivasok.join(' | ')); console.log('DEBUG allapot:', JSON.stringify(await page.evaluate(() => (window.__ajandek && window.__ajandek.allapot ? window.__ajandek.allapot() : null)).catch(() => null))); console.log('DEBUG url:', page.url()); }
 ok('a vevo az uj oldalon marad: a cimsor nem valt /success-ajandekkartya-stripe-ra', fo.pathname === LANDING && !/success-ajandekkartya/.test(page.url()), fo.pathname);
 ok('a [data-ah-regi-konverzio] keret letezik', (await page.locator('[data-ah-regi-konverzio]').count()) === 1);
 const keret = page.frames().find((f) => f.parentFrame() && /success-ajandekkartya-stripe/.test(f.url()));
