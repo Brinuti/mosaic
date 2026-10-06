@@ -649,7 +649,7 @@ export async function kezelEgyeztetes(request, env, deps = {}) {
     if (o.nevtabla === 'frissit') { // a nevtabla kenyszeritett frissitese (napi frissites: a tabla maximum 24 oras)
       if (!deps.nevtablaFrissito) return valasz(501, { ok: false, miert: 'nincs frissito' });
       const uj = await deps.nevtablaFrissito(typeof o.uzletag === 'string' ? o.uzletag : undefined); const db = await nevtablaMent(env.KULCS_DB, uj, deps.now ? deps.now() : Date.now());
-      return valasz(200, { ok: true, sorok: db, helyek: uj.helyek.length, munkatarsak: uj.munkatarsak.length, szolgaltatasok: uj.szolgaltatasok.length });
+      return valasz(200, { ok: true, sorok: db, helyek: uj.helyek.length, munkatarsak: uj.munkatarsak.length, szolgaltatasok: uj.szolgaltatasok.length, nev_nelkuli_azonositok: uj.hianyzoNevek || [] });
     }
     let mezok = { uuid: o.uuid, host: o.host, felado: o.felado, szolgaltatas: o.szolgaltatas, idopontSzoveg: o.idopont_szoveg, munkatarsak: Array.isArray(o.munkatarsak) ? o.munkatarsak.map(String).slice(0, 10) : [], ld: o.ld || null, leveldatum: o.level_datuma, diagnosztika: o.diagnosztika === true };
     if (typeof o.email_html === 'string') { const e = emailElemzes(o.email_html); mezok = { ...mezok, uuid: mezok.uuid || e.uuid, host: mezok.host || e.host, felado: mezok.felado || e.felado, szolgaltatas: mezok.szolgaltatas || e.szolgaltatas, idopontSzoveg: mezok.idopontSzoveg || e.idopontSzoveg, munkatarsak: mezok.munkatarsak.length ? mezok.munkatarsak : e.munkatarsak, ld: mezok.ld || e.ld }; }

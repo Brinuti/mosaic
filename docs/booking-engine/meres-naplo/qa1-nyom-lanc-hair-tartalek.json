@@ -1,0 +1,368 @@
+{
+ "cim": "QA-1 ujrateszt: Hair (MAGYAR level) tartalek ag valodi leveleken",
+ "ido": "2026-10-06 14:52-14:55 UTC",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "kulcs": "10823|25095|1792512000",
+ "lepesek": [
+  {
+   "lepes": "H5: a valodi foglalas (Hair, MAGYAR); a kulcsot a lemondott (a) foglalas birtokolta",
+   "nyers": {
+    "azonosito": "mb_0muwsrowg490clturxk7vtw",
+    "bookingUrl": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwsrowg490clturxk7vtw",
+    "salonic_uuid": "a61035c1-37b3-324b-6654-f589d5ccf7d4",
+    "kulcs_a_bookingUrlbol": {
+     "ok": true,
+     "host": "mosaic-hair.salonic.hu",
+     "uzletag": "hair",
+     "placeId": 10823,
+     "employeeId": 25095,
+     "serviceId": "232804",
+     "startUnix": 1792512000,
+     "kulcs": "10823|25095|1792512000",
+     "bookingId": "mb_0muwsrowg490clturxk7vtw"
+    },
+    "kulcs_iras": {
+     "bookingId": "mb_0muwsrowg490clturxk7vtw",
+     "forras": "back",
+     "allapot": "valasz",
+     "status": 200,
+     "valasz": {
+      "ok": true,
+      "irva": false,
+      "idempotens": false,
+      "utkozes": true,
+      "kulcs": "10823|25095|1792512000",
+      "serviceId": "232804",
+      "meglevoBookingId": "mb_0muwqohjz6g47mfu3pibpj0"
+     }
+    },
+    "kulcstabla_rekord": {
+     "ok": true,
+     "kulcs": "10823|25095|1792512000",
+     "rekord": {
+      "kulcs": "10823|25095|1792512000",
+      "booking_id": "mb_0muwqohjz6g47mfu3pibpj0",
+      "service_id": "232804",
+      "forras": "back",
+      "letrehozva": 1791294828,
+      "lejar": 1806846828
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwqohjz6g47mfu3pibpj0",
+       "service_id": "232804",
+       "ido": 1791294828,
+       "kuldve_uuid": "a736b1a2-bc92-1cfb-bdf7-01b8098d1a4c"
+      },
+      {
+       "booking_id": "mb_0muwsrowg490clturxk7vtw",
+       "service_id": "232804",
+       "ido": 1791298336,
+       "kuldve_uuid": null
+      }
+     ]
+    }
+   },
+   "megjegyzes": "azonnal lemondva (14:52:33Z), a levele csak ezutan lett feldolgozva"
+  },
+  {
+   "lepes": "H5: a letrehozasi level (MAGYAR) feldolgozasa a torles UTAN: 1. ag nem megy -> TARTALEK AG (nevtabla); a kulcs birtokosa az (a) foglalas, torolve (elo ellenorzes) -> atadas H5-nek",
+   "nyers": {
+    "eset": "H5) Hair, MAGYAR level, a foglalas a level feldolgozasa elott torolve: TARTALEK AG (nevtabla) + a kulcsot a lemondott (a) foglalas birtokolja (elo ellenorzes)",
+    "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+    "ido": "2026-10-06T14:53:04.628Z",
+    "booking_id": "mb_0muwsrowg490clturxk7vtw",
+    "bookingUrl_teljes": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwsrowg490clturxk7vtw",
+    "kulcs_a_bookingUrlbol": {
+     "ok": true,
+     "host": "mosaic-hair.salonic.hu",
+     "uzletag": "hair",
+     "placeId": 10823,
+     "employeeId": 25095,
+     "serviceId": "232804",
+     "startUnix": 1792512000,
+     "kulcs": "10823|25095|1792512000",
+     "bookingId": "mb_0muwsrowg490clturxk7vtw"
+    },
+    "koszonooldal_kulcs_iras": {
+     "bookingId": "mb_0muwsrowg490clturxk7vtw",
+     "forras": "back",
+     "allapot": "valasz",
+     "status": 200,
+     "valasz": {
+      "ok": true,
+      "irva": false,
+      "idempotens": false,
+      "utkozes": true,
+      "kulcs": "10823|25095|1792512000",
+      "serviceId": "232804",
+      "meglevoBookingId": "mb_0muwqohjz6g47mfu3pibpj0"
+     }
+    },
+    "kulcstabla_rekord_a_koszonooldal_utan": {
+     "ok": true,
+     "kulcs": "10823|25095|1792512000",
+     "rekord": {
+      "kulcs": "10823|25095|1792512000",
+      "booking_id": "mb_0muwqohjz6g47mfu3pibpj0",
+      "service_id": "232804",
+      "forras": "back",
+      "letrehozva": 1791294828,
+      "lejar": 1806846828
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwqohjz6g47mfu3pibpj0",
+       "service_id": "232804",
+       "ido": 1791294828,
+       "kuldve_uuid": "a736b1a2-bc92-1cfb-bdf7-01b8098d1a4c"
+      },
+      {
+       "booking_id": "mb_0muwsrowg490clturxk7vtw",
+       "service_id": "232804",
+       "ido": 1791298336,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "kulcstabla_a_parositas_elott": {
+     "ok": true,
+     "kulcs": "10823|25095|1792512000",
+     "rekord": {
+      "kulcs": "10823|25095|1792512000",
+      "booking_id": "mb_0muwqohjz6g47mfu3pibpj0",
+      "service_id": "232804",
+      "forras": "back",
+      "letrehozva": 1791294828,
+      "lejar": 1806846828
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwqohjz6g47mfu3pibpj0",
+       "service_id": "232804",
+       "ido": 1791294828,
+       "kuldve_uuid": "a736b1a2-bc92-1cfb-bdf7-01b8098d1a4c"
+      },
+      {
+       "booking_id": "mb_0muwsrowg490clturxk7vtw",
+       "service_id": "232804",
+       "ido": 1791298336,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "email_relevans_mezok": {
+     "felado": "Mosaic Hair",
+     "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+     "munkatarsak": [
+      "Noel - 20% kedvezmény!"
+     ],
+     "idopont_szoveg": "Október 20. (kedd) 18:00 - 18:30",
+     "level_datuma": "2026-10-06T14:52:13Z",
+     "ld_startDate": "2026-10-20T18:00:00+02:00",
+     "salonic_uuid": "a61035c1-37b3-324b-6654-f589d5ccf7d4",
+     "host": "mosaic-hair.salonic.hu"
+    },
+    "email_kulcs_1_ag_salonic_oldalak": {
+     "kulcs": null,
+     "serviceId": null,
+     "ok": false,
+     "miert": "a foglalas torolve",
+     "lepesek": [
+      {
+       "url": "/booking/bookingDetails/a61035c1-37b3-324b-6654-f589d5ccf7d4",
+       "status": 200,
+       "vegso": "/booking/deleteSuccess/a61035c1-37b3-324b-6654-f589d5ccf7d4"
+      }
+     ]
+    },
+    "email_kulcs_2_ag_nevtabla": {
+     "ok": true,
+     "miert": null,
+     "felado": "Mosaic Hair",
+     "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+     "munkatarsak": [
+      "Noel - 20% kedvezmény!"
+     ],
+     "idopontSzoveg": "Október 20. (kedd) 18:00 - 18:30",
+     "idopontForras": "ld+json",
+     "startUnix": 1792512000,
+     "ldUnix": 1792512000,
+     "szovegUnix": 1792512000,
+     "jeloltEmployeeIds": [
+      25095
+     ],
+     "serviceIds": [
+      "232804"
+     ],
+     "kulcsok": [
+      "10823|25095|1792512000"
+     ],
+     "serviceId": "232804"
+    },
+    "kulcs_jeloltek_a_keresnel": [
+     {
+      "kulcs": "10823|25095|1792512000",
+      "jeloltek": [
+       {
+        "booking_id": "mb_0muwqohjz6g47mfu3pibpj0",
+        "service_id": "232804",
+        "ido": 1791294828,
+        "kuldve_uuid": "a736b1a2-bc92-1cfb-bdf7-01b8098d1a4c"
+       },
+       {
+        "booking_id": "mb_0muwsrowg490clturxk7vtw",
+        "service_id": "232804",
+        "ido": 1791298336,
+        "kuldve_uuid": null
+       }
+      ]
+     }
+    ],
+    "birtokos_elo_ellenorzes": {
+     "kulcs": "10823|25095|1792512000",
+     "birtokos_booking_id": "mb_0muwqohjz6g47mfu3pibpj0",
+     "birtokos_uuid": "a736b1a2-bc92-1cfb-bdf7-01b8098d1a4c",
+     "elo_allapot": "torolve",
+     "miert": null
+    },
+    "valasztas": [
+     {
+      "kulcs": "10823|25095|1792512000",
+      "allapot": "valasztott",
+      "miert": null
+     }
+    ],
+    "kulcs_atadas": {
+     "kulcs": "10823|25095|1792512000",
+     "regi": "mb_0muwqohjz6g47mfu3pibpj0",
+     "uj": "mb_0muwsrowg490clturxk7vtw",
+     "ok": "a birtokos Salonic-foglalas (a736b1a2) torolve - elo ellenorzes"
+    },
+    "kulcstabla_a_parositas_utan": {
+     "kulcs": "10823|25095|1792512000",
+     "booking_id": "mb_0muwsrowg490clturxk7vtw",
+     "service_id": "232804",
+     "forras": "atadas",
+     "letrehozva": 1791298336,
+     "lejar": 1806850380
+    },
+    "kulcs_jeloltek_a_parositas_utan": [
+     {
+      "booking_id": "mb_0muwsrowg490clturxk7vtw",
+      "service_id": "232804",
+      "ido": 1791298336,
+      "kuldve_uuid": "a61035c1-37b3-324b-6654-f589d5ccf7d4"
+     }
+    ],
+    "kereses_eredmenye": {
+     "allapot": "parositott",
+     "kuldheto": true,
+     "duplikalt": false,
+     "kulcs": "10823|25095|1792512000",
+     "kulcs_forras": "nevtabla",
+     "service_egyezik": true,
+     "probalkozas": 1,
+     "riasztas": false,
+     "miert": null,
+     "kulcs_atadva": true,
+     "talalatok": [
+      {
+       "kulcs": "10823|25095|1792512000",
+       "booking_id": "mb_0muwsrowg490clturxk7vtw",
+       "service_id": "232804",
+       "forras": "atadas"
+      }
+     ]
+    },
+    "kapott_esemenyazonosito": "mb_0muwsrowg490clturxk7vtw",
+    "azonosito_egyezik_a_bongeszovel": true,
+    "masodik_kereses_ugyanarra": {
+     "allapot": "parositott",
+     "kuldheto": false,
+     "duplikalt": true,
+     "esemeny_id": "mb_0muwsrowg490clturxk7vtw"
+    },
+    "http": {
+     "elso": 200,
+     "masodik": 200
+    }
+   }
+  },
+  {
+   "lepes": "H5: a MAGYAR lemondasi ertesito: a kulcs felszabadul",
+   "nyers": {
+    "eset": "H5) Hair MAGYAR LEMONDASI ertesito: a kulcs felszabadulasa (elo ellenorzessel)",
+    "mod": "lemondas",
+    "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+    "ido": "2026-10-06T14:53:12.673Z",
+    "lemondott_foglalas": {
+     "booking_id": "mb_0muwsrowg490clturxk7vtw",
+     "salonic_uuid": "a61035c1-37b3-324b-6654-f589d5ccf7d4"
+    },
+    "email_relevans_mezok": {
+     "felado": "Mosaic Hair",
+     "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+     "munkatarsak": [
+      "Noel - 20% kedvezmény!"
+     ],
+     "idopont_szoveg": "Október 20. (kedd) 18:00 - 18:30",
+     "level_datuma": "2026-10-06T14:52:30Z",
+     "tipus": "lemondas (nincs UUID / link / JSON-LD)"
+    },
+    "kulcs_a_nevtablabol": "10823|25095|1792512000",
+    "nevtabla_nyom": {
+     "ok": true,
+     "miert": null,
+     "felado": "Mosaic Hair",
+     "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+     "munkatarsak": [
+      "Noel - 20% kedvezmény!"
+     ],
+     "idopontSzoveg": "Október 20. (kedd) 18:00 - 18:30",
+     "idopontForras": "szoveg",
+     "startUnix": 1792512000,
+     "ldUnix": null,
+     "szovegUnix": 1792512000,
+     "jeloltEmployeeIds": [
+      25095
+     ],
+     "serviceIds": [
+      "232804"
+     ],
+     "kulcsok": [
+      "10823|25095|1792512000"
+     ],
+     "serviceId": "232804"
+    },
+    "eredmeny": {
+     "allapot": "lemondas",
+     "eredmenyek": [
+      {
+       "kulcs": "10823|25095|1792512000",
+       "tulajdonos": "mb_0muwsrowg490clturxk7vtw",
+       "tulajdonos_uuid": "a61035c1-37b3-324b-6654-f589d5ccf7d4",
+       "elo_allapot": "torolve",
+       "eredmeny": "felszabadult",
+       "atadva": null
+      }
+     ]
+    },
+    "kulcstabla_a_feldolgozas_utan": {
+     "ok": true,
+     "kulcs": "10823|25095|1792512000",
+     "rekord": null,
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsrowg490clturxk7vtw",
+       "service_id": "232804",
+       "ido": 1791298336,
+       "kuldve_uuid": "a61035c1-37b3-324b-6654-f589d5ccf7d4"
+      }
+     ]
+    },
+    "http": 200
+   }
+  }
+ ]
+}

@@ -1,6 +1,6 @@
 // VALODI (azonnal lemondando) probafoglalas a PR-ELONEZETEN: visszajon-e a foglalo SAJAT booking_id-ja (QA-1) a Salonic sikeres foglalas utani atiranyitasaban?
 //
-//   node tools/meres-proba/booking-id-valodi.mjs --bazis https://<ag>.mosaic-d77.pages.dev [--utvonal <utvonal>] [--out naplo.json] [--szaraz 1]
+//   node tools/meres-proba/booking-id-valodi.mjs --bazis https://<ag>.mosaic-d77.pages.dev [--utvonal <utvonal>] [--out naplo.json] [--szaraz 1] [--start <unix>]
 //   utana: node tools/meres-proba/lemond.mjs <a kiirt lemondo-URL>
 //   --szaraz 1: szaraz futas - a valodi Salonic-adatlapig megy (az idopontot ~5 percre tartja, foglalas NEM jon letre), kitoltes es kuldes nelkul
 //   utvonalak (mind az UTOLSO szabad nap UTOLSO idopontjara foglal, nem foglal el kozeli idopontot):
@@ -23,6 +23,7 @@ import { UA, UA_MOBIL, platformOf, engedett, dnsArg, ures, esemenyIras, esemenyU
 import { bookingUrlElemzes } from '../../netlify/lib/foglalas-kulcs.js';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
+const START = arg('start', ''); // opcionalis: pontos idopont (unix masodperc)
 const BAZIS = arg('bazis', ''), UTVONAL = arg('utvonal', 'hair-konzult'), OUT = arg('out', ''), SZARAZ = arg('szaraz', '0') === '1', KOSZONO = arg('koszono', '0') === '1';
 if (!/^https:\/\/[a-z0-9-]+\.mosaic-d77\.pages\.dev$/.test(BAZIS)) throw new Error('csak PR-elonezeten fut (--bazis https://<ag>.mosaic-d77.pages.dev); az eles domainre nem engedett: ' + BAZIS);
 const TELEFON = process.env.MERES_TELEFON || '709420090'; // a +36 utani resz: a tulajdonos sajat szama
@@ -90,7 +91,15 @@ try {
   await reteg.locator('.be-nnap.szabad, button:has-text("További időpontok")').first().waitFor({ state: 'visible', timeout: 25000 });
   let ido;
   const szabadNapok = reteg.locator('.be-nnap.szabad');
-  if (await szabadNapok.count()) {
+  if (START) { // --start <unix>: PONTOSAN ez az idopont (a kulcs-lancos probakhoz kell, hogy ugyanarra a kulcsra foglaljon; az "utolso szabad nap" a betoltes idejetol fugg)
+    const r = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Budapest', hourCycle: 'h23', day: 'numeric', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date(Number(START) * 1000)).map((p) => [p.type, p.value]));
+    const napGomb = reteg.locator('.be-nnap.szabad').filter({ hasText: new RegExp('^' + Number(r.day) + '$') });
+    await napGomb.first().waitFor({ state: 'visible', timeout: 45000 }); await napGomb.first().click(); await page.waitForTimeout(600);
+    const cimke = r.hour + ':' + r.minute;
+    const gomb = reteg.locator('.be-idogomb').filter({ hasText: new RegExp('^\\s*' + cimke + '\\s*$') });
+    try { await gomb.first().waitFor({ state: 'visible', timeout: 20000 }); } catch (e) { throw new Error('a(z) ' + cimke + ' idopont nem szabad; a nap szabad idopontjai: ' + JSON.stringify((await reteg.locator('.be-idogomb').allInnerTexts()).map((x) => x.trim()))); }
+    ido = cimke; await gomb.first().click();
+  } else if (await szabadNapok.count()) {
     await szabadNapok.nth((await szabadNapok.count()) - 1).click(); await page.waitForTimeout(500);
     const gombok = reteg.locator('.be-idogomb'); const db = await gombok.count();
     ido = (await gombok.nth(db - 1).textContent()).trim(); await gombok.nth(db - 1).click();

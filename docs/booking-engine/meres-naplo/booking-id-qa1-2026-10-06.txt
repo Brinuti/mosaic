@@ -83,3 +83,20 @@ Nem ellenorzott: a 61 cimke / 72 trigger feltetelei, a Stape szerver-kontener, a
    Szintetikus (valodi foglalas nelkul) utkozes-bemutato az elonezeti API-n: qa1-nyom-szintetikus-utkozes.json (idempotens iras, utkozes naplozva, ugyanarra a kulcsra MAS UUID -> ellentmondas + riasztas, korai ujrakeres, piros szalag).
    Az elonezeti adatbazisban 10 szintetikus foglalas_egyeztetes sor (3 riasztas) maradt: torlesukat az automata jogosultsag-ellenorzes megtagadta, nem erolkodtem; az eles adatbazist nem erinti.
    Regresszio: node --test tools/test-*.mjs -> 192 teszt, 191 ok, 1 kihagyott (LIVE=1-es elo proba); tools/test-foglalas-kulcs.mjs: 21 teszt, mind ok.
+
+9) QA-1 UJRATESZT KIEGESZITES (2026-10-06 14:00 - 15:05 UTC): elo ellenorzes a foglalt kulcsra, lemondasi ertesito, teljes nevtabla, tartalek ag valodi leveleken
+   reszletek: ../BOOKING_ID.md "Kulcs-utkozes kezelese"; nyers nyomok: qa1-nyom-lanc-headspa-sorrendek.json, qa1-nyom-lanc-hair-tartalek.json, qa1-nyom-elysion-nevtabla.json, qa1-nevtabla-2026-10-06.json
+   Szabaly: ha B a kulcsot foglaltnak talalja (a birtokos mar kiment masik UUID-ra), a birtokos Salonic-oldala ELOBEN ellenorizve: torolve -> B kapja a kulcsot; el -> ellentmondas + riasztas;
+            nem ellenorizheto -> ujraprobalas. A lemondasi ertesitoben NINCS UUID / link / JSON-LD (csak szalon-nev a zaro sorban, szolgaltatas, munkatars, idopont-szoveg) -> kulcs a nevtablabol.
+   Nevtabla: HeadSpa 5, Elysion 1, Hair 3, Oxigen 3, PMU 1 munkatars (13), 107 szolgaltatas, nev nelkuli azonosito nincs; a HeadSpa 27076 ("Mirage Egyeni kezelo - Majus") a nyilvanos /employees/<id> oldalbol.
+   Valodi foglalasok (azonnal lemondva; mindegyikbol pontosan egy esemeny, a sajat booking_id-vel):
+      H1  mb_0muwsdxoovp3rbsnmni2v54  10427|24354|1792497600  HeadSpa ANGOL level a torles UTAN feldolgozva -> ag1 "a foglalas torolve", NEVTABLA dont; angol lemondasi ertesito -> felszabadult
+      H2  mb_0muwsjdj4li1goksjq4s898  10427|24354|1793457000  (a (c) kulcsa; koszonooldal utkozes:true) SORREND A: B levele az A=(c) ertesitoje ELOTT -> elo ellenorzes torolve -> atadas; (c) ertesitoje B UTAN -> H2 el, nem szabadul fel
+      H3  mb_0muwsq9w44g65t4prwo21m2  10427|24354|1793457000  (utkozes:true) SORREND B: az A=H2 ertesitoje B levele ELOTT -> torolve -> a kulcs H3-e; H3 levele egyenes parositas
+      H4  mb_0muwsxcwo4g8rv24oo137ih  10427|24354|1793457000  az A=H3 ertesitoje a foglalas ELOTT -> kulcs szabad; koszonooldal irva:true, utkozes:false; levele parosit
+      H5  mb_0muwsrowg490clturxk7vtw  10823|25095|1792512000  Hair MAGYAR level a torles UTAN -> NEVTABLA dont; a kulcs birtokosa az (a) foglalas (torolve, elo ellenorzes) -> atadas; magyar lemondasi ertesito -> felszabadult
+   NEGATIV: ket ELO foglalas azonos kulccsal (A = valodi H4, B'' = szintetikus mb_szintetikusnegativ0001 + szintetikus UUID): elo ellenorzes aktiv -> ellentmondas + riasztas, nincs esemeny.
+   Elysion: a valodi 2026-10-05 level mezoibol a nevtabla kulcsot kepez: 14586|32417|1793467800, serviceId 476477 (kulcs-tabla rekord nincs -> nincs parositas).
+   Megfigyeles: a lemondott idopont a Salonic naptar-API szabad-listajaban ~4 perc mulva jelenik meg ujra (14:46:37 lemondas -> 14:50:45 szabad).
+   Az elonezeti adatbazisban a szintetikus bemutatok foglalas_egyeztetes sorai (kb. 12, ebbol 4 riasztas) benne maradtak: a szelesebb torlest az automata jogosultsag-ellenorzes megtagadta; a szintetikus kulcs- es jelolt-sorokat toroltem.
+   Regresszio: node --test tools/test-*.mjs -> 204 teszt, 203 ok, 1 kihagyott (LIVE=1); tools/test-foglalas-kulcs.mjs: 33 teszt, mind ok.
