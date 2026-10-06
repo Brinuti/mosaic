@@ -8,9 +8,10 @@
 // A szamlalas / hand-off a motoreben marad (engine.js): sikeres foglalas utan a meglevo koszonooldal nyilik meg, a meres valtozatlan.
 
 import { startEngine, warmUp } from './engine.js';
+import { cleanStaffKey } from './flow.js';
 
 const HOST_ID = 'mosaic-booking-layer';
-const CONTEXT_KEYS = ['business', 'service', 'category', 'voucher', 'intent']; // ezek kerulnek az URL-be; a tobbi (UTM, click ID) az oldal sajat URL-jen van
+const CONTEXT_KEYS = ['business', 'service', 'category', 'voucher', 'intent', 'staff']; // ezek kerulnek az URL-be; a tobbi (UTM, click ID) az oldal sajat URL-jen van
 const BOOKING_KEYS = [...CONTEXT_KEYS, 'booking', 'service_id', 'service_category', 'source_page'];
 
 let current = null;
@@ -23,6 +24,7 @@ export function normalizeOptions(o = {}) {
     service: get('service', 'service_id'),
     category: get('category', 'service_category'),
     intent: get('intent'),
+    staff: cleanStaffKey(get('staff', 'munkatars', 'szakember')), // munkatars-link: a szakember a CTA-ban (pl. data-booking="business=hair&staff=betti")
     voucher: get('voucher') && get('voucher') !== '0' && get('voucher') !== 'false' ? '1' : null,
   };
   return Object.fromEntries(Object.entries(out).filter(([, v]) => v));
