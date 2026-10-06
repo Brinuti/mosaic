@@ -67,3 +67,19 @@ reteg-proba.mjs --overlay dist: 311 ellenorzes; a valtoztatassal ket futasban 1,
 GTM (olvasas, eles v52 "2026-10-05 foglalo lepes-meres GA4 (#88)", mind a 64 valtozo): a bookingUrl-t feldolgozo valtozok (175, 182, 193, 208) kizarolag
 new URL(bookingUrl).searchParams.get('serviceId' / 'startDate')-tel olvasnak; reguláris kifejezes a bookingUrl-re nincs -> a "&back=mb_..." veg nem erinti oket.
 Nem ellenorzott: a 61 cimke / 72 trigger feltetelei, a Stape szerver-kontener, a koszonooldalrol a Zapier fele menno hivasok. (A Tag Manager API ketszer 429-et adott, a masodik probalkozas sikerult.)
+
+8) QA-1 FOLYTATAS (2026-10-06 13:40 - 14:20 UTC): kulcs-tabla + e-mail-oldali parositas; reszletek: ../BOOKING_ID.md "Parositas a Salonic e-mailhez"
+   1. lepes (Foglalas megtekintese oldal): csak startDate (a "Foglalas modositasa" link), azonositok NINCSENEK; a modositas oldal (/selectDate/?startDate=..&bookingId=<UUID>) JS-beallitasa adja a placeId / employeeId / serviceId-t.
+      -> e-mail oldali kulcs: UUID -> 2 GET (csak olvasas) -> placeId|employeeId|startUnix; tartalek: nevfordito tabla + az e-mail JSON-LD / szoveges datuma (ev a level datuma alapjan, elorefele).
+   Valodi probafoglalasok az ELONEZETEN ("TESZT - Claude", azonnal lemondva, kimeno meres tiltva, az eles koszonooldal nem toltodott be); nyers nyomok: qa1-nyom-*.json
+      a) barmelyik szakember     mb_0muwqohjz6g47mfu3pibpj0  10823|25095|1792512000  1. ag = 2. ag; parositott, esemeny_id = booking_id
+      b0) oxigen (kiegeszito)    mb_0muwqq2tg3m5t6esi1uyzo4  14409|32009|1793374200  1. ag = 2. ag (szovegbol); parositott
+      b) konkret szakember, mas szolgaltatas (hair, 231538)
+                                 mb_0muwqsub5wg61rqiuebgskn  10823|23694|1792512000  1. ag = 2. ag (szovegbol); parositott; AZONOS idopont mint (a), de mas employeeId -> mas kulcs, nincs utkozes
+      c) paros HeadSpa (302999)  mb_0muwquipszezqbdrx782d6m  10427|24354|1793457000  1. ag = 2. ag (JSON-LD); parositott; EGY virtualis munkatars ("Paros kezeles", 24354) -> EGY kulcs, NINCS utkozes
+         az (c) level ANGOL (Appointment created / Employees / "October 31. (Saturday) 15:30 - 16:50", logo a fejlecben) -> az elemzo javitva (JSON-LD helynev, angol honap/hetnap), fixture + teszt
+         lemondas (c): lemond.mjs -> "Your booking has been cancelled!"; a reszletek oldal: "Appointment deleted!" (302 -> torolve oldal)
+   Mind a negy foglalas lemondva. Az (a)-(c) mindegyiknel: a koszonooldali iras irva:true, utkozes:false; a 2. keresesre duplikalt (egy foglalasbol egy esemeny).
+   Szintetikus (valodi foglalas nelkul) utkozes-bemutato az elonezeti API-n: qa1-nyom-szintetikus-utkozes.json (idempotens iras, utkozes naplozva, ugyanarra a kulcsra MAS UUID -> ellentmondas + riasztas, korai ujrakeres, piros szalag).
+   Az elonezeti adatbazisban 10 szintetikus foglalas_egyeztetes sor (3 riasztas) maradt: torlesukat az automata jogosultsag-ellenorzes megtagadta, nem erolkodtem; az eles adatbazist nem erinti.
+   Regresszio: node --test tools/test-*.mjs -> 192 teszt, 191 ok, 1 kihagyott (LIVE=1-es elo proba); tools/test-foglalas-kulcs.mjs: 21 teszt, mind ok.

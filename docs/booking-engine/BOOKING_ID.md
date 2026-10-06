@@ -57,6 +57,79 @@ Egy foglalás, az előnézeten (`claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.d
 - A Salonic saját foglalás-UUID-ját (`86fd2256-…`) a szkript az AJAX-válaszból nem tudta kiolvasni (a keret a válasz után azonnal navigál), ezért a lemondó linket a visszaigazoló e-mailből vettem. Egy következő futás előtt a szkriptet erre érdemes javítani (a POST elfogása `route.fetch`-csel).
 - Az éles oldalon (`HANDOFF`) a köszönőoldal a fő ablakban nyílik ugyanezzel a címmel, ezért a `bookingUrl`-ben ott lesz az azonosító; a motor a `bookingId.returned`-et a `booking_completed.booking_id_echo`-ba írja, a kontextus lezárul.
 
+## Párosítás a Salonic e-mailhez: kulcs-tábla (QA-1 folytatás, 2026-10-06)
+
+Tény: az értesítő e-mailben **nincs** `placeId` / `serviceId` / `employeeId` és nincs `mb_…`; csak a feladónév, a szolgáltatás neve, a munkatárs neve, az időpont szövege (év és időzóna nélkül) és a Salonic-UUID (a „Foglalás részletek” / lemondó linkben, a JSON-LD `reservationNumber`-ében). A köszönőoldal viszont tudja a `booking_id`-t és a teljes `bookingUrl`-t. Az összekötő: egy **kulcs**, amit mindkét oldal ugyanúgy képez.
+
+### 1. lépés – ad-e azonosítót a „Foglalás megtekintése” oldal? (döntés)
+
+| Oldal | Mi van rajta |
+|---|---|
+| `/booking/bookingDetails/<UUID>` („Foglalás megtekintése”) | **csak a `startDate`** (a „Foglalás módosítása” link: `/selectDate/?startDate=<unix>&bookingId=<UUID>`); `serviceId` / `employeeId` / `placeId` **nincs** |
+| `/selectDate/?startDate=…&bookingId=<UUID>` (egy lépéssel tovább) | a naptár JS-beállításában `placeId`, `employeeId`, `serviceId` |
+| az e-mail JSON-LD-je | `startDate` időzóna-eltolással (pl. `2026-10-31T15:30:00+01:00`) |
+
+Döntés: az **e-mailes oldal a Salonic-oldalakból képez kulcsot** (1. ág: UUID → két GET, csak olvasás): ez adja a valódi `employeeId`-t és `startDate`-et, így nincs szükség név-fordításra. A **névfordító tábla a tartalék** (2. ág), és a diagnosztikai futásban mindig kiszámoljuk mindkettőt, hogy lássuk, egyeznek-e.
+
+### Kulcs és kulcs-tábla
+
+- **Kanonikus kulcs:** `placeId|employeeId|startUnix` (`startUnix` = Europe/Budapest → UTC Unix másodperc), pl. `10823|25095|1792512000`. A `serviceId` csak **ellenőrző mező** (eltérés = `ellentmondas`, nem küldünk). A „bármelyik szakember” (`employeeId=-1`) esetben a Salonic a kanonikus címre irányít a **kiosztott** `employeeId`-vel, a kulcs ezt használja – mindkét oldalon ugyanaz.
+- **Köszönőoldal (saját kód, nem GTM):** `assets/js/foglalas-kulcs.js` (a `tools/netlify-build.mjs` illeszti be a köszönőoldalakba) a `bookingUrl`-ből (`back=<booking_id>`; tartalékban a `mhBookingCtx` kontextusból, ha a szolgáltatás és az időpont egyezik) → `POST /api/foglalas-kulcs`. Az írás: **egy kulcshoz egy `booking_id`**, felülírás nélkül, idempotens (ugyanaz újra = nincs hatás; más `booking_id` = ütközés, naplózva, nem ír felül), megőrzés **180 nap**. Tábla: D1 `foglalas_kulcs`, ütközések: `foglalas_kulcs_utkozes`.
+- **E-mail oldal:** `POST /api/foglalas-egyeztetes` (olvasó kulcs a `x-egyeztetes-kulcs` fejlécben; a kulcs SHA-256-ja az `EGYEZTETES_KULCS_HASH` változóban, kulcs nélkül 404). Bemenet: a levél HTML-je (`email_html`) vagy a kinyert mezők + a levél dátuma. A év a **levél dátuma alapján, előrefelé** (a hétnap neve validál; magyar és angol hónap-/hétnapnevek).
+- **Újrapróbálás:** 1, 3, 10, 30 perc (a korai kérést nem számoljuk); az 5. sikertelen keresés után **`parositatlan`** állapot + **látható riasztás**: `GET /api/foglalas-egyeztetes?riasztas=1` (JSON) vagy `…&formatum=html` (piros szalag).
+- **Egy foglalásból egy esemény:** az esemény-azonosító = a `booking_id`; `kuldheto=true` csak az első sikeres párosításnál (a Salonic-UUID-ra és – részleges egyedi indexszel – a `booking_id`-ra is egyszer), minden további keresés `duplikalt=true`, akkor is, ha a keresés később többször sikerül.
+
+### Próbák az előnézeten („TESZT – Claude”, azonnal lemondva; élesre semmi, élő pixelre semmi)
+
+Nyers nyomok (booking_id, teljes `bookingUrl`, abból képzett kulcs, kulcs-tábla-rekord, az e-mail releváns mezői, az e-mailből képzett kulcs mindkét ágon, a keresés eredménye, a kapott esemény-azonosító, a második keresés): `meres-naplo/qa1-nyom-*.json`.
+
+| Eset | booking_id | Kulcs (a `bookingUrl`-ből) | E-mail-oldali kulcs (1. ág / 2. ág) | Eredmény | Nyom |
+|---|---|---|---|---|---|
+| a) „bármelyik szakember” (hair, ingyenes konzultáció, 232804) | `mb_0muwqohjz6g47mfu3pibpj0` | `10823\|25095\|1792512000` | azonos / azonos (JSON-LD) | `parositott`, esemény-azonosító = booking_id; a 2. keresés `duplikalt` | `qa1-nyom-a-barmelyik-szakember.json` |
+| b) konkrét szakember (Betti), eltérő szolgáltatás (női hajvágás, 231538), hair | `mb_0muwqsub5wg61rqiuebgskn` | `10823\|23694\|1792512000` | azonos / azonos (a levél *szövegéből*, JSON-LD nélkül) | `parositott`; ugyanaz az időpont, mint (a)-nál, de **más `employeeId` → más kulcs, nincs ütközés** | `qa1-nyom-b-konkret-szakember-mas-szolgaltatas.json` |
+| b0) kiegészítő: oxigén, fizetős szolgáltatás (466147), a Salonic osztotta a szakembert | `mb_0muwqq2tg3m5t6esi1uyzo4` | `14409\|32009\|1793374200` | azonos / azonos (szövegből) | `parositott` | `qa1-nyom-b0-oxigen-konkret-szakember.json` |
+| c) **páros HeadSpa** (302999) | `mb_0muwquipszezqbdrx782d6m` | `10427\|24354\|1793457000` | azonos / azonos (JSON-LD) | `parositott` | `qa1-nyom-c-paros-headspa.json` |
+
+A (b) esetben a Salonic nem irányít át (konkrét `employeeId`): a `bookingUrl` változatlan sorrendű, `anyone=true` nélkül, és a `back` ott is megmaradt. A (b) és (b0) e-mail oldali futása JSON-LD nélkül ment (csak a levél szövege), így a szöveg + előrefelé következtetett év útvonal (`idopontForras: szoveg`) is ki lett próbálva; az (a) és (c) a JSON-LD-t használta.
+
+### (c) Páros HeadSpa – ütközik-e a kulcs? (külön jelentés)
+
+**Nem ütközik.** A Salonic a páros kezelést **egyetlen virtuális munkatársként** („Páros kezelés”, `employeeId=24354`) kezeli, nem két emberként, ezért a foglalásból **egy** kulcs lesz (`10427|24354|1793457000`): a köszönőoldali írás `irva:true, utkozes:false`, az e-mail oldal egyetlen jelöltet talál, a két ág egyezik, esemény-azonosító = `mb_0muwquipszezqbdrx782d6m`, egy esemény. Fontos mellékfelfedezés: a **HeadSpa-fiók (c) e-mailje angol volt** („Appointment created”, „Employees”, „October 31. (Saturday) 15:30 - 16:50”, a fejlécben logó van, nem a szalon neve) – ezt a magyar-sablonos elemző eredetileg nem érte volna el; javítva (a szalon neve a JSON-LD `location.name`-ből, angol hónap- és hétnapnevek), valódi levél-fixture-rel és teszttel. A lemondás is angol oldalon történt („Your booking has been cancelled!”; a részletek oldalon „Appointment deleted!”), a `lemond.mjs` ezt most kezeli.
+
+**Nem próbált:** hogy a Salonic enged-e két párost ugyanarra a páros-időpontra egyszerre (ehhez két valódi foglalás kellene). Ha enged, a két foglalás kulcsa megegyezne – ez az alábbi ütközés-eset, nem maradna észrevétlen.
+
+### Ütközés (ugyanaz a kulcs, két foglalás) – szintetikus bemutató az előnézeti API-n, valódi foglalás nélkül
+
+Nyers: `meres-naplo/qa1-nyom-szintetikus-utkozes.json` (szintetikus időpont: 2027-03-17 10:30, kulcs `10427|24354|1805275800`; a booking_id-k `mb_szintetikus…` előtaggal).
+
+| Lépés | Eredmény |
+|---|---|
+| köszönőoldal ír | `irva:true` |
+| ugyanaz újra | `idempotens:true` |
+| **más** booking_id ugyanarra a kulcsra | `utkozes:true`, a meglévő nem íródik felül, a `foglalas_kulcs_utkozes`-be naplózva |
+| e-mail #1 (angol HeadSpa-levél HTML-je, a szalon neve a JSON-LD-ből) | `parositott`, `kuldheto:true`, esemény-azonosító = az első booking_id, forrás `nevtabla` |
+| ugyanaz az e-mail újra | `duplikalt:true`, `kuldheto:false` |
+| e-mail #2 (**más** UUID, ugyanaz a kulcs = újrafoglalt időpont) | **`ellentmondas`, `kuldheto:false`, `riasztas:true`** – nem küld, de nem is nyeli el csendben; megjelenik a riasztás-listán és a piros szalagos HTML-en |
+| e-mail #3, olyan kulcs, amit a köszönőoldal nem írt | `fuggoben`, újrapróbálás 60 mp múlva; azonnali ismétlés `korai`, nem számít próbálkozásnak |
+
+(Az 1, 3, 10, 30 perces újrapróbálást és az 5. keresés utáni `parositatlan` állapotot a `tools/test-foglalas-kulcs.mjs` állított órával bizonyítja; az előnézeten 44 percet nem vártam ki.)
+
+### Megállapítások és korlátok
+
+1. **Újrafoglalt időpont (lemondás után ugyanaz a kulcs):** a második foglalás köszönőoldala `utkozes`-t kap (naplózva), az e-mailje a **meglévő** `booking_id`-re találna, ami már kiment egy másik UUID-ról → `ellentmondas` + riasztás, a második foglalásból **nem megy esemény**. Ez látható, nem csendes, de a második konverzió hiányzik. Lehetséges javítás (nem készült el): a lemondás-értesítő e-mailnél a kulcs felszabadítása; vagy a függő (még nem küldött) `booking_id`-k sorrend szerinti párosítása. Valódi példa a lehetőségre: a 13:15-ös próba és az (a) eset ugyanarra az időpontra és ugyanahhoz a szakemberhez (Noel, 2026-10-20 18:00) szólt – a 13:15-ös még a kulcs-tábla előtt volt, ezért nem ütközött.
+2. **Lemondott foglalásnál az 1. ág nem működik** (a részletek oldal „törölve”); ilyenkor csak a névfordító tábla (2. ág) marad.
+3. **A névfordító tábla nem teljes:** a munkatársak a fiókok `/employees` oldaláról jönnek; ahol nincs ilyen oldal (a kód szerint pl. a HeadSpa, Elysion), a naptár-API első 3 szolgáltatásának 30 napos szakember-listája adja a neveket – a ritkán szereplő (vagy virtuális) erőforrások hiányozhatnak. A tábla lusta frissítésű (a 2. ág használatakor, ha 24 óránál régebbi, újraépül; a Pages-en nincs ütemező), kényszerítve: `POST {nevtabla:"frissit"}`. Az 1. ág ezért az elsődleges.
+4. **A Salonic-oldalakra támaszkodó 1. ág** két olvasó GET-et csinál a Salonic-hostra; ha a Salonic az oldalak szerkezetét megváltoztatja, az elemzők (fixture-ökkel tesztelve) elbuknak, és a 2. ág veszi át – a diagnosztikai mód (`diagnosztika:true`) a két ágat együtt számolja, így az eltérés látható.
+5. **Személyes adat:** a kulcs-tábla csak a kulcsot, a `booking_id`-t, a `serviceId`-t és időbélyegeket tárolja; név, e-mail, telefon nincs benne. A nyers nyomokban sincs.
+6. **Az előnézeti adatbázisban** (nem az éles) a szintetikus bemutató `foglalas_egyeztetes` sorai (10 db, köztük 3 `ellentmondas` riasztás, `mb_szintetikus…` booking_id-jű sorok) benne maradtak: a törlésüket az automata jogosultság-ellenőrzés megtagadta, ezért nem erőltettem. Az előnézeti riasztás-oldal emiatt 3 szintetikus riasztást mutat; az éles adatbázisra ez nem hat.
+
+### Élesítés előtt (nincs production-kötés, a végpontok éles oldalon 503 / 404-et adnak)
+
+1. D1 adatbázis létrehozása `mosaic-foglalas-kulcs` néven, kötés `KULCS_DB` néven a `wrangler.toml` `[[d1_databases]]` blokkjában (az előnézetnek már van: `mosaic-foglalas-kulcs-elonezet`).
+2. `EGYEZTETES_KULCS_HASH` a `[vars]`-ban (az olvasó kulcs SHA-256-ja; a kulcs maga Secret/jelszókezelőben, nem a repóban).
+3. A köszönőoldali szkript csak a `FOGLALAS_KOSZONO` listában szereplő oldalakra kerül (`tools/netlify-build.mjs`); a PMU / lézer közvetlen Salonic-linkjeire nem terjed ki.
+4. Az e-mail oldali hívó (pl. a Salonic-levélből induló Zapier-folyamat) hívja a `/api/foglalas-egyeztetes`-t – ez külső fiókot érintő beállítás, **nem készült el** (kifejezett kérés nélkül nem nyúlok Zapier / Meta / GTM / GA / Ads / TikTok fiókokhoz).
+
 ## Ami még hátravan
 
 1. **Éles hatás előtt** (a PR draft, nincs mergelve, élesre semmi nem ment):
@@ -64,7 +137,7 @@ Egy foglalás, az előnézeten (`claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.d
    - **Nem ellenőrzött:** a 61 címke és 72 trigger feltételei (URL-szűrők), a Stape szerver-konténer, a köszönőoldalról a Zapier felé menő hívások (WIX-MERES.md 4.8).
 2. **Mit lehet erre építeni:**
    - A köszönőoldal a `bookingUrl`-ből (`back`) vagy a `mhBookingCtx` kontextusból (ugyanaz a lapfül, azonos eredet) olvashatja a saját azonosítót; a köszönőoldali (böngészős) mérés így megkapja.
-   - **Szerver-oldalon az e-mailből induló Zapier-folyamatok az azonosítót nem kapják meg** (az e-mailben nincs). Szerver-oldali párosításhoz egy további Salonic-oldali lehetőség (nem próbáltam, külső fiókot nem módosítottam): a Salonic adatlapján a fiók saját GTM-je fut (`GTM-PST2HB22`), és a foglalás végén `dataLayer.push({event:'purchase', ecommerce:{transaction_id: <Salonic foglalás-UUID>}})` történik; az adatlap címében ott a `back=<azonosító>`, így a GTM-ből a kettő összekapcsolható (azonosító ↔ Salonic UUID, pl. egy saját végpontra küldve) – ez GTM-módosítás, kifejezett kérés nélkül nem nyúlok hozzá.
+   - **Szerver-oldalon az e-mailből induló Zapier-folyamatok az azonosítót nem kapják meg** (az e-mailben nincs) – erre készült a fenti „Párosítás” (kulcs-tábla + `/api/foglalas-egyeztetes`), amit az e-mail oldali hívónak kell meghívnia. Szerver-oldali párosításhoz egy további Salonic-oldali lehetőség (nem próbáltam, külső fiókot nem módosítottam): a Salonic adatlapján a fiók saját GTM-je fut (`GTM-PST2HB22`), és a foglalás végén `dataLayer.push({event:'purchase', ecommerce:{transaction_id: <Salonic foglalás-UUID>}})` történik; az adatlap címében ott a `back=<azonosító>`, így a GTM-ből a kettő összekapcsolható (azonosító ↔ Salonic UUID, pl. egy saját végpontra küldve) – ez GTM-módosítás, kifejezett kérés nélkül nem nyúlok hozzá.
 3. A PMU-foglaló (`foglalo-pmu.js`) és a lézer-landing közvetlen Salonic-linkjei (`lezer-landing.js`) nem a motoron mennek, ezekre az azonosító nem terjed ki.
 
 ## Kikapcsolás
