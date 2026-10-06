@@ -167,11 +167,17 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   const closeBtn = layer && closable ? h('button', { type: 'button', class: 'be-icon', id: 'be-close', 'aria-label': 'Bezárás', onclick: () => { if (onClose) onClose(); } }, icon('<path d="M6 6l12 12M18 6L6 18"/>')) : null;
   const backBtn = h('button', { type: 'button', class: 'be-icon', id: 'be-back', 'aria-label': 'Vissza', style: 'visibility:hidden', onclick: () => win.history.back() }, icon('<path d="M15 5l-7 7 7 7"/>'));
   const stepsEl = h('ol', { class: 'be-steps', id: 'be-steps', 'aria-label': 'Hol tartasz', hidden: true });
+  // A fejlec cime egy sorban: "Időpontfoglalás · Fodrászat · Noel" (az uzletag es - ha a vendeg valasztott - a munkatars neve). Ami nem fer el (mobil: a telefon es az X is a sorban van),
+  // azt lepesenkent elhagyja a fitHead: elobb az "Időpontfoglalás" szo (a kepernyoolvasonak megmarad), aztan kisebb betu, a legvegen "…".
+  const h1A = h('span', { class: 'be-h1-a', text: 'Időpontfoglalás' });
+  const h1B = h('span', { class: 'be-h1-b' });
+  const h1C = h('span', { class: 'be-h1-c' });
+  const h1El = h('h1', { class: 'be-h1', id: 'be-h1' }, h1A, h1B, h1C);
   const mainEl = h('main', { class: 'be-main', id: 'be-root' }, h('p', { class: 'be-loading', role: 'status', text: 'Betöltés…' }));
   const scrollEl = h('div', { class: 'be-scroll' }, mainEl);
   shell = h('div', { class: 'be-shell' + (layer ? ' be-shell-layer' : '') },
     h('header', { class: 'be-head' },
-      h('div', { class: 'be-head-row' }, backBtn, h('h1', { class: 'be-h1', id: 'be-h1', text: 'Időpontfoglalás' }),
+      h('div', { class: 'be-head-row' }, backBtn, h1El,
         h('div', { class: 'be-head-right' }, h('a', { class: 'be-icon', href: PHONE_HREF, 'aria-label': 'Hívás: ' + PHONE }, icon('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/>', 1.8)), closeBtn)),
       stepsEl),
     scrollEl);
@@ -233,12 +239,38 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   const summaryRows = (rows) => h('dl', { class: 'be-rows' }, rows.filter(([, v]) => v).map(([k, v]) => h('div', {}, h('dt', { text: k }), h('dd', { text: v }))));
   const placeText = () => [S.place && S.place.name, S.place && S.place.address].filter(Boolean).join(', ');
 
+  const fitHead = () => {
+    h1El.classList.remove('be-h1-rovid', 'be-h1-kicsi');
+    const sorba = () => h1El.scrollWidth <= h1El.clientWidth + 1; // (zart retegnel 0 = elfer; a ResizeObserver nyitaskor ujra igazit)
+    if (sorba()) return;
+    h1El.classList.add('be-h1-rovid');
+    if (sorba()) return;
+    h1El.classList.add('be-h1-kicsi');
+  };
+  // Az uzletag a flow-bol (a valasztokartya neve); a munkatars csak ott, ahol a vendeg szakembert valaszt (fodrasz, oxigen), a keresztneve
+  const headTitle = () => {
+    const fam = flow && ctx.business ? CHOOSER.families.find((f) => f.business === ctx.business) : null;
+    const label = fam && flow.showStaffFilter ? curStaffLabel() : null;
+    return { biz: fam ? fam.title : '', label };
+  };
+  const setHead = () => {
+    const { biz, label } = headTitle();
+    h1B.textContent = biz;
+    h1C.textContent = label ? F.staffShortName(label) : ''; // a keresztnev ("Tündi"): a teljes nev ("Bozsoki - Harangozó Tündi") mobilon nem fer el; a kezeles-sorban latszik
+    h1El.classList.toggle('be-h1-van', !!biz);
+    fitHead();
+  };
+  let headRo = null;
+  if (win.ResizeObserver) { headRo = new win.ResizeObserver(() => fitHead()); headRo.observe(h1El); }
+  if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(() => { if (!destroyed) fitHead(); }).catch(() => {});
+
   function setView(node, state) {
     S.shown = state; // az utoljara megjelent nezet kodja (a hibakepernyo is: A3): a booking_close step-je ez
     mainEl.replaceChildren(node);
     mainEl.classList.toggle('be-main-wide', state === 'PMU');
     mainEl.classList.toggle('be-main-kompakt', state === 'C4'); // az adatlap-keret a kepernyo aljaig er (mobilon egy kepernyo)
     shell.classList.toggle('be-shell-pmu', state === 'PMU'); // a PMU-foglalonak sajat fejlece van: a motoreben csak a bezaras marad
+    setHead();
     const step = STEP_OF[state];
     const steps = stepsEl;
     if (steps) {
@@ -1016,6 +1048,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     destroyed = true;
     win.removeEventListener('popstate', onPop);
     win.removeEventListener('resize', onResize);
+    if (headRo) headRo.disconnect();
     win.clearTimeout(S.holdTimer); win.clearInterval(S.eloTimer);
     if (S.pmuCleanup) { S.pmuCleanup(); S.pmuCleanup = null; }
     if (S.kuponCleanup) { S.kuponCleanup(); S.kuponCleanup = null; }
