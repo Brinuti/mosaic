@@ -38,4 +38,5 @@ A kód a linkben van, tehát aki a linket látja, látja a kódot. Marketing-kup
 
 ## GTM
 - Account `6261444190`, konténer `202031443` (`GTM-PST2HB22`). Munkaterület: **62**; új trigger **234**, új cimke **235**; létrehozott verzió: **53** (= az élő 52 + ez a cimke). Visszaállítás, ha gond lenne: az 52-es verzió közzététele.
-- Közzététel: a 53-as verzió publikálása (a tulajdonos jóváhagyásával), a repo-változtatás (PR) élesítése után – vagy előtte is: a cimke addig nem csinál semmit, amíg a foglaló nem ad át kódot (ablak-név nélkül azonnal kilép).
+- **Élesben:** a repo-változtatás (PR #137) és a GTM 53-as verziója **2026-10-06-tól él** (a tulajdonos jóváhagyásával). Élesen ellenőrizve a valódi Salonic adatlapokon (`kupon-salonic-proba.mjs`, `--uzletag hair|oxygen|headspa`, hamis kóddal; mind 8/8, a hair mobilon is).
+- A cimke addig sem csinál semmit, amíg a foglaló nem ad át kódot: ablak-név nélkül azonnal kilép.

@@ -1,9 +1,9 @@
 // A kuponkod VALODI Salonic adatlapon (nem szimulalt): a GTM-cimke (docs/booking-engine/gtm-kupon-kitolto.html) tenyleg beirja-e a kodot a kupon mezobe, es elindul-e a Salonic sajat ellenorzese.
 //
-//   node tools/meres-proba/kupon-salonic-proba.mjs --overlay dist [--mobil 1] [--gtm-kornyezet 2:<kod>]
+//   node tools/meres-proba/kupon-salonic-proba.mjs [--overlay dist] [--bazis https://...] [--mobil 1] [--gtm-kornyezet 2:<kod>] [--kontroll 1]
 //
 // --gtm-kornyezet <id>:<auth>: a GTM-et NEM az eles (publikalt) valtozatbol toltjuk, hanem egy GTM-kornyezetbol (a beepitett "Latest" = a legutobb letrehozott, MEG NEM publikalt
-//   verzio: 2:<kod>), igy a cimke a PUBLIKALAS ELOTT kiprobalhato. Nelkule (kontroll) az eles valtozat fut: ott a mezo uresen marad, amig a cimke nincs kozzetetelve.
+//   verzio: 2:<kod>), igy a cimke a PUBLIKALAS ELOTT kiprobalhato. Nelkule az ELES valtozat fut (a cimke 2026-10-06 ota el, GTM 53): a mezo kitoltodik; `--kontroll 1` = a cimke nelkuli allapot (a mezo ures marad, a foglalo a kezi tartalekot mutatja).
 // A valodi adatlapot a proba a LEGTAVOLABBI szabad idopontra iranyitja (a Salonic 5 percre "tartja": igy senki foglalasat nem zavarja), foglalas nincs, a "kod ellenorzese" a Salonic
 // olvaso (nem beváltó) hivasa, hamis kodra. Kimeno meres (GA4, Meta, TikTok, Ads, Stape, Zapier) tiltva (tilt.mjs).
 import { chromium } from 'playwright-core';
@@ -15,6 +15,8 @@ import { staffCoverServices } from '../../assets/js/booking-engine/flow.js';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const OVERLAY = arg('overlay', ''), MOBIL = arg('mobil', '0') === '1', OLDAL = arg('oldal', '/booking-test'), BAZIS = arg('bazis', 'https://www.mosaicheadspa.hu');
+const UZ = arg('uzletag', 'hair'); // hair | oxygen | headspa (a Salonic-fiokjuk: mosaic-hair / mosaic-oxigen / mosaicheadspa); a lezer fiokban nincs kupon mezo
+const KONTROLL = arg('kontroll', '0') === '1'; // az ELES GTM-ben a cimke NINCS kozzetetve (a 2026-10-06 elotti allapot): a mezo ures marad
 const GTM_KORNYEZET = (() => { const v = arg('gtm-kornyezet', ''); if (!v) return null; const [id, auth] = v.split(':'); return { id, auth }; })();
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 let fajlUtvonal = null;
@@ -25,11 +27,11 @@ const eredmeny = [];
 const ok = (cimke, rendben, reszlet = '') => { eredmeny.push({ cimke, rendben }); console.log(`${rendben ? 'OK  ' : 'HIBA'} ${cimke}${reszlet ? ' | ' + reszlet : ''}`); };
 
 const adapter = createSalonicAdapter({ fetchImpl: (u, o) => fetch(u, o) });
-const services = (await adapter.getServices('hair')).filter((s) => s.bookingType !== 'voucher_redemption' && !/ajándékkártya|ajandekkartya|kupon/i.test(s.name));
+const services = (await adapter.getServices(UZ)).filter((s) => s.bookingType !== 'voucher_redemption' && !/ajándékkártya|ajandekkartya|kupon/i.test(s.name));
 let SVC = null, STAFF = null;
-for (const s of staffCoverServices(services)) { const st = (await adapter.getStaff('hair', s.serviceId, { days: 60 }))[0]; if (st && s.durationMin && s.bookingType !== 'consultation') { SVC = s; STAFF = st; break; } }
-const tavoli = (await adapter.getAvailability('hair', SVC.serviceId, { days: 90, staffId: STAFF.staff_id })).at(-1);
-const TAVOLI_URL = (await adapter.beginBooking({ business: 'hair', serviceId: SVC.serviceId, startUnix: tavoli.start_unix, staffId: tavoli.staff_id })).guestDataUrl;
+for (const s of staffCoverServices(services)) { const st = (await adapter.getStaff(UZ, s.serviceId, { days: 60 }))[0]; if (st && s.durationMin && s.bookingType !== 'consultation') { SVC = s; STAFF = st; break; } }
+const tavoli = (await adapter.getAvailability(UZ, SVC.serviceId, { days: 90, staffId: STAFF.staff_id })).at(-1);
+const TAVOLI_URL = (await adapter.beginBooking({ business: UZ, serviceId: SVC.serviceId, startUnix: tavoli.start_unix, staffId: tavoli.staff_id })).guestDataUrl;
 
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const ctx = await browser.newContext({ userAgent: MOBIL ? UA_MOBIL : UA, viewport: MOBIL ? { width: 390, height: 844 } : { width: 1280, height: 900 }, locale: 'hu-HU', timezoneId: 'Europe/Budapest', serviceWorkers: 'block', isMobile: MOBIL, hasTouch: MOBIL });
@@ -61,7 +63,7 @@ const hibak = []; page.on('pageerror', (e) => hibak.push(String(e.message).slice
 await page.goto(BAZIS + OLDAL, { waitUntil: 'domcontentloaded' });
 await page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 });
 const L = page.locator('#mosaic-booking-layer');
-await page.evaluate((o) => window.openBooking(o), { business: 'hair', service: SVC.serviceId, staff: STAFF.staff_id, kupon: KOD });
+await page.evaluate((o) => window.openBooking(o), { business: UZ, service: SVC.serviceId, staff: STAFF.staff_id, kupon: KOD });
 await L.locator('.be-nnap.szabad').first().waitFor({ timeout: 40000 });
 await L.locator('.be-idogomb').first().click();
 await page.waitForFunction(() => !!document.querySelector('#mosaic-booking-layer')?.shadowRoot?.querySelector('iframe.be-iframe'), null, { timeout: 25000 });
@@ -75,13 +77,14 @@ if (frame) {
   const a = await frame.evaluate(() => ({ nev: window.name, mezo: (document.getElementById('GuestDataForm_couponCode') || {}).value, uzenet: (document.querySelector('#GuestDataForm_couponCode')?.closest('.mb-3, .form-group, div')?.parentElement?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 140), gtm: Object.keys(window.google_tag_manager || {}).filter((k) => /^GTM-/.test(k)) }));
   const sor = ((await L.locator('.be-kupon').first().textContent({ timeout: 1000 }).catch(() => '')) || '').replace(/\s+/g, ' ').trim();
   console.log('  adatlap:', JSON.stringify(a), '| gtm.js a kornyezetbol:', naplo.gtmKornyezet, '| foglalo-sor:', sor);
-  if (GTM_KORNYEZET) {
-    ok('GTM (Latest kornyezet): a valodi adatlapon a kupon mezo ki van toltve a kuppal', a.mezo === KOD, JSON.stringify(a.mezo));
-    ok('GTM (Latest kornyezet): a Salonic sajat ellenorzese lefutott a kodra (hamis kod: "nem hasznalhato")', naplo.ellenorzes.some((p) => new RegExp('code=' + KOD).test(p || '')) && /nem használható/.test(a.uzenet), (naplo.ellenorzes.at(-1) || '') + ' | ' + a.uzenet);
-    ok('GTM (Latest kornyezet): a foglalo is latja a visszajelzest ("beirtuk az urlapba")', /beírtuk az űrlapba/.test(sor), sor);
-    ok('GTM (Latest kornyezet): a keret neve torolve (a kod nem marad ott)', a.nev === '', JSON.stringify(a.nev));
+  if (!KONTROLL) {
+    const cim = GTM_KORNYEZET ? 'GTM (Latest kornyezet)' : 'GTM (eles)';
+    ok(cim + ': a valodi adatlapon a kupon mezo ki van toltve a kuppal', a.mezo === KOD, JSON.stringify(a.mezo));
+    ok(cim + ': a Salonic sajat ellenorzese lefutott a kodra (hamis kod: "nem hasznalhato")', naplo.ellenorzes.some((p) => new RegExp('code=' + KOD).test(p || '')) && /nem használható/.test(a.uzenet), (naplo.ellenorzes.at(-1) || '') + ' | ' + a.uzenet);
+    ok(cim + ': a foglalo is latja a visszajelzest ("beirtuk az urlapba")', /beírtuk az űrlapba/.test(sor), sor);
+    ok(cim + ': a keret neve torolve (a kod nem marad ott)', a.nev === '', JSON.stringify(a.nev));
   } else {
-    ok('KONTROLL (eles GTM, a cimke meg nincs kozzetetve): a mezo ures marad', a.mezo === '', JSON.stringify(a.mezo));
+    ok('KONTROLL (a cimke nincs a GTM-ben): a mezo ures marad', a.mezo === '', JSON.stringify(a.mezo));
     ok('KONTROLL: a foglalo a kezi tartalekot mutatja (4 mp utan: kod + Masolas)', /másold be/.test(sor), sor);
   }
 }
@@ -93,5 +96,5 @@ ok('nincs JS-hiba az oldalunkon', hibak.length === 0, hibak.join(' | '));
 console.log(`  kimeno meres tiltva: ${naplo.tiltott} kereses (a Google-hoz / Meta-hoz / TikTokhoz semmi nem jutott el)`);
 await browser.close();
 const hibas = eredmeny.filter((e) => !e.rendben);
-console.log(`\n${eredmeny.length} ellenorzes, ${hibas.length} hiba${MOBIL ? ' (mobil)' : ' (asztali)'}${GTM_KORNYEZET ? ' [GTM Latest]' : ' [GTM eles, kontroll]'}`);
+console.log(`\n${eredmeny.length} ellenorzes, ${hibas.length} hiba${MOBIL ? ' (mobil)' : ' (asztali)'}${GTM_KORNYEZET ? ' [GTM Latest]' : KONTROLL ? ' [kontroll]' : ' [GTM eles]'}`);
 if (hibas.length) { for (const e of hibas) console.log('  HIBA:', e.cimke); process.exit(1); }
