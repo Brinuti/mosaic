@@ -329,7 +329,7 @@ test('parseContext: input szerzodes, mérési parameterek, source_page', () => {
 });
 
 test('munkatars-link (?staff=): findStaff - azonosito vagy a nev szavai, ekezet- es kisbetu-fuggetlen, a kedvezmeny-cimke nelkul; csak egyertelmu talalat', async () => {
-  const { findStaff, staffLinkKey, staffDisplayName, cleanStaffKey, staffCoverServices } = await import('../assets/js/booking-engine/flow.js');
+  const { findStaff, staffLinkKey, staffDisplayName, staffShortName, cleanStaffKey, staffCoverServices } = await import('../assets/js/booking-engine/flow.js');
   const hair = [{ id: '30114', label: 'Betti' }, { id: '23694', label: 'Noel - 20% kedvezmény!' }, { id: '41001', label: 'Evelin' }];
   const oxi = [{ id: '5001', label: 'Bozsoki - Harangozó Tündi' }, { id: '5002', label: 'Vivien' }, { id: '5003', label: 'Móni' }, { id: '5004', label: 'Nagy Móni' }];
   assert.equal(findStaff(hair, 'betti').id, '30114');
@@ -345,6 +345,13 @@ test('munkatars-link (?staff=): findStaff - azonosito vagy a nev szavai, ekezet-
   for (const rossz of ['', null, undefined, 'senki', 'betti; drop', '<script>', 'a'.repeat(61)]) assert.equal(findStaff(hair, rossz), null, String(rossz));
   assert.equal(findStaff([], 'betti'), null);
   assert.equal(staffDisplayName('Noel - 20% kedvezmény!'), 'Noel');
+  // a fejlec rovid neve: a keresztnev (a magyar nevsorrendben az utolso szo), a kedvezmeny-felirat nelkul
+  assert.equal(staffShortName('Bozsoki - Harangozó Tündi'), 'Tündi');
+  assert.equal(staffShortName('Szűcs Vivien'), 'Vivien');
+  assert.equal(staffShortName('Noel - 20% kedvezmény!'), 'Noel');
+  assert.equal(staffShortName('Betti'), 'Betti');
+  assert.equal(staffShortName(''), '');
+  assert.equal(staffShortName(null), '');
   assert.equal(cleanStaffKey(' betti '), 'betti'); assert.equal(cleanStaffKey('x@y'), null);
   // az ajanlott kulcs: az utolso szo (keresztnev), ha egyedi; kulonben a teljes nev; kulonben az azonosito; es MINDIG visszakeresheto
   assert.deepEqual(hair.map((x) => staffLinkKey(x.label, hair)), ['betti', 'noel', 'evelin']);
