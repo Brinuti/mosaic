@@ -2,7 +2,7 @@
 // folyamat is (Salonic-level -> parositas -> esemenyek kuldese). A valasz tartalmazza a kuldes osszefoglalojat; utana a szerveres NAPLO (/api/meres-admin) a platformvalaszokkal.
 //
 //   EGYEZTETES_KULCS=... node tools/meres-proba/qa2-szerver.mjs --bazis <elonezet> --bongeszo <qa2-*-bongeszo-*.json> --level-ido <ISO> [--ar <Ft>] [--email deakfi@grantis.hu] [--telefon "+36 70 942 0090"]
-//        [--uj-vendeg igen|nem|nincs] [--out szerver.json] [--fuggo 1]
+//        [--uj-vendeg igen|nem|nincs] [--szolgaltatas <nev>: a level szolgaltatas-neve SZIMULALVA (pl. kuponos: "KUPONKODDAL - ...")] [--out szerver.json] [--fuggo 1]
 //   --fuggo 1: a "nincs_hitelesites" kerelmek listaja (a kulso szallitonak: pl. a Composio-s Meta-tesztkuldes), kuldes nelkul.
 // A "uj vendeg" jelzest a Salonic maga adja (a valodi folyamatban a Salonic-level / -jelzes); itt a teszt SZIMULALJA (a TESZT-vendeg a Salonicban mar nem uj), a naplo ezt jelzi.
 import fs from 'node:fs';
@@ -24,7 +24,7 @@ const q = be.koszono_query || {}; const start = be.bookingUrl_elemzes && be.book
 const ujVendeg = { igen: true, nem: false }[arg('uj-vendeg', 'igen')] ?? undefined;
 // ar: alapbol a Salonic-atiranyitas price parametere (= a levelbeli tenyleges ar)
 const kerelem = {
-  uuid: be.salonic_uuid, host: be.salonic_host, felado: arg('felado', undefined), szolgaltatas: q.service, munkatarsak: [], ld: start ? { startDate: new Date(start * 1000).toISOString() } : null,
+  uuid: be.salonic_uuid, host: be.salonic_host, felado: arg('felado', undefined), szolgaltatas: arg('szolgaltatas') || q.service, munkatarsak: [], ld: start ? { startDate: new Date(start * 1000).toISOString() } : null,
   level_datuma: arg('level-ido'), ar: arg('ar') ? Number(arg('ar')) : (/^\d+$/.test(String(q.price || '')) ? Number(q.price) : undefined), vendeg: { email: arg('email', 'deakfi@grantis.hu'), telefon: arg('telefon', '+36 70 942 0090') }, uj_vendeg: ujVendeg,
 };
 // vedelem: egy felkesz kerelem (pl. elkallodott sor miatt hianyzo vendeg / uj_vendeg) NE menjen ki: a kikuldott esemeny a platformokon (Meta, TikTok, GA4) nem vonhato vissza

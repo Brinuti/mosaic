@@ -1,0 +1,6 @@
+{"ido":"2026-10-06T18:53:03.987Z","muvelet":"ajandek_teszt_visszateritese","osszeg_huf":"3000","valasz":{"ok":true,"refund_id":"re_3UNdSbFv8vc2ArnL0txg2Z5G","osszeg_filler":300000,"allapot":"succeeded"}}
+{"ido":"2026-10-06T18:53:05.605Z","muvelet":"ajandek_visszaterites_ujra","osszeg_huf":null,"valasz":{"ok":true,"allapot":"kesz"}}
+{"ido":"2026-10-06T18:53:06.650Z","muvelet":"ajandek_visszaterites_ujra","osszeg_huf":null,"valasz":{"ok":true,"allapot":"mar_kuldve"}}
+{"ido":"2026-10-06T18:53:07.897Z","muvelet":"ajandek_teszt_visszateritese","osszeg_huf":"23900","valasz":{"ok":true,"refund_id":"re_3UNdSbFv8vc2ArnL0iBkmsWi","osszeg_filler":2390000,"allapot":"succeeded"}}
+{"ido":"2026-10-06T18:53:09.781Z","muvelet":"ajandek_visszaterites_ujra","osszeg_huf":null,"valasz":{"ok":true,"allapot":"kesz"}}
+{"ido":"2026-10-06T18:53:10.776Z","muvelet":"ajandek_visszaterites_ujra","osszeg_huf":null,"valasz":{"ok":true,"allapot":"mar_kuldve"}}

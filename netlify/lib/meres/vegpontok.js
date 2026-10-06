@@ -84,7 +84,7 @@ const feloldo = (db, fetchImpl) => async (sid) => {
  *   POST { uuid | booking_id, allapot: 'lemondva' | 'nem_jelent_meg' | 'megjelent', ido?: ISO-8601 (mikor tortent), forras?: string, vendeg?: { email, telefon } }
  *        -> { allapot: kesz | mar_kuldve | halasztva | ellentmondas | korai | nem_torolve | torolt_foglalas | ismeretlen_foglalas | ki | ervenytelen, eletut_allapot, cellak: [..] }
  *   POST { muvelet: 'fuggo' }  -> a halasztott / eles-re varo cellak ujrafeldolgozasa (idozitett hivo)
- *   GET  ?source_id=mb_.. -> az eletut-allapot + naplo + cellak;  GET ?riasztas=1 -> az ellentmondo / elutasitott bejegyzesek
+ *   GET  ?source_id=mb_.. | pi_.. -> az eletut-allapot + naplo + cellak;  GET ?riasztas=1 -> az ellentmondo / elutasitott bejegyzesek
  */
 export async function kezelEletut(request, env, deps = {}) {
   if (!env || !env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
@@ -94,7 +94,7 @@ export async function kezelEletut(request, env, deps = {}) {
     const url = new URL(request.url);
     if (url.searchParams.get('riasztas') === '1') { const l = await eletutRiasztasok(db); return valasz(200, { ok: true, db: l.length, riasztas: l.length > 0, lista: l }); }
     const sid = url.searchParams.get('source_id') || '';
-    if (!/^mb_[a-z0-9]{12,40}$/.test(sid)) return valasz(400, { ok: false, miert: 'source_id (mb_...) / riasztas kell' });
+    if (!/^(mb_[a-z0-9]{12,40}|pi_[A-Za-z0-9]{8,80})$/.test(sid)) return valasz(400, { ok: false, miert: 'source_id (mb_... foglalas / pi_... ajandekkartya) / riasztas kell' });
     return valasz(200, { ok: true, source_id: sid, ...(await eletutOlvas(db, sid)) });
   }
   if (request.method !== 'POST') return valasz(405, { ok: false });

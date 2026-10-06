@@ -470,6 +470,847 @@
     "ujraprobal_mp": 180,
     "eletut_allapot": null
    }
+  },
+  {
+   "ido": "2026-10-06T18:47:46.226Z",
+   "lepes": "POST /api/foglalas-eletut nem_jelent_meg (javitott build: ismetles (a valodi elso feldolgozas a varakozo ciklusban futott, forras eletut-e2e-varakozas))",
+   "kerelem": {
+    "uuid": "74c76e6b-fc51-7684-e188-887a5d28a4b0",
+    "allapot": "nem_jelent_meg",
+    "forras": "eletut-e2e"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "allapot": "mar_kuldve",
+    "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+    "uzletag": "oxigen",
+    "eletut_allapot": "nem_jelent_meg",
+    "elozo": "nem_jelent_meg",
+    "elo_allapot": "aktiv",
+    "cellak": [
+     {
+      "platform": "google",
+      "esemeny_id": "Visszavonas:FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+      "platform_nev": "ARNYEK-RETRACTION-7825200901",
+      "allapot": "dryrun",
+      "indok": "dryRun: a Zap validalta, de nem irt (eles: GOOGLE_KORREKCIO_ELES=1)",
+      "http_status": 200,
+      "duplikalt": true
+     },
+     {
+      "platform": "meta",
+      "esemeny_id": "NemJelentMeg:mb_0mux0wexegw9c2al2hw93j5",
+      "platform_nev": "Oxigen_NemJelentMeg",
+      "allapot": "elkuldve",
+      "indok": null,
+      "http_status": 200,
+      "duplikalt": true
+     },
+     {
+      "platform": "tiktok",
+      "esemeny_id": "NemJelentMeg:mb_0mux0wexegw9c2al2hw93j5",
+      "platform_nev": "Oxigen_NemJelentMeg",
+      "allapot": "elkuldve",
+      "indok": null,
+      "http_status": 200,
+      "duplikalt": true
+     }
+    ]
+   }
+  },
+  {
+   "ido": "2026-10-06T18:47:47.533Z",
+   "lepes": "naplo (vegso)",
+   "booking_id": "mb_0mux0wexegw9c2al2hw93j5",
+   "eletut": {
+    "ok": true,
+    "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+    "allapot": {
+     "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+     "uzletag": "oxigen",
+     "allapot": "nem_jelent_meg",
+     "elozo": null,
+     "ido": 1791312449,
+     "forras": "eletut-e2e-varakozas",
+     "osszeg_filler": null,
+     "visszateritett_filler": 0,
+     "frissitve": 1791312449
+    },
+    "naplo": [
+     {
+      "id": 10,
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "bejovo": "{\"allapot\":\"nem_jelent_meg\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "halasztva: a foglalas elo allapota nem ellenorizheto",
+      "allapot_elotte": null,
+      "allapot_utana": null,
+      "ido": 1791312042
+     },
+     {
+      "id": 11,
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "bejovo": "{\"allapot\":\"nem_jelent_meg\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "halasztva: a foglalas elo allapota nem ellenorizheto",
+      "allapot_elotte": null,
+      "allapot_utana": null,
+      "ido": 1791312043
+     },
+     {
+      "id": 12,
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "bejovo": "{\"allapot\":\"nem_jelent_meg\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "halasztva: a foglalas elo allapota nem ellenorizheto",
+      "allapot_elotte": null,
+      "allapot_utana": null,
+      "ido": 1791312128
+     },
+     {
+      "id": 13,
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "bejovo": "{\"allapot\":\"nem_jelent_meg\",\"ido\":null,\"forras\":\"eletut-e2e-varakozas\",\"vendeg\":null}",
+      "eredmeny": "halasztva: a foglalas elo allapota nem ellenorizheto",
+      "allapot_elotte": null,
+      "allapot_utana": null,
+      "ido": 1791312366
+     },
+     {
+      "id": 14,
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "bejovo": "{\"allapot\":\"nem_jelent_meg\",\"ido\":null,\"forras\":\"eletut-e2e-varakozas\",\"vendeg\":null}",
+      "eredmeny": "halasztva: a foglalas elo allapota nem ellenorizheto",
+      "allapot_elotte": null,
+      "allapot_utana": null,
+      "ido": 1791312383
+     },
+     {
+      "id": 15,
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "bejovo": "{\"allapot\":\"nem_jelent_meg\",\"ido\":null,\"forras\":\"eletut-e2e-varakozas\",\"vendeg\":null}",
+      "eredmeny": "halasztva: a foglalas elo allapota nem ellenorizheto",
+      "allapot_elotte": null,
+      "allapot_utana": null,
+      "ido": 1791312399
+     },
+     {
+      "id": 16,
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "bejovo": "{\"allapot\":\"nem_jelent_meg\",\"ido\":null,\"forras\":\"eletut-e2e-varakozas\",\"vendeg\":null}",
+      "eredmeny": "halasztva: a foglalas elo allapota nem ellenorizheto",
+      "allapot_elotte": null,
+      "allapot_utana": null,
+      "ido": 1791312415
+     },
+     {
+      "id": 17,
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "bejovo": "{\"allapot\":\"nem_jelent_meg\",\"ido\":null,\"forras\":\"eletut-e2e-varakozas\",\"vendeg\":null}",
+      "eredmeny": "halasztva: a foglalas elo allapota nem ellenorizheto",
+      "allapot_elotte": null,
+      "allapot_utana": null,
+      "ido": 1791312432
+     },
+     {
+      "id": 18,
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "bejovo": "{\"allapot\":\"nem_jelent_meg\",\"ido\":null,\"forras\":\"eletut-e2e-varakozas\",\"vendeg\":null}",
+      "eredmeny": "kesz: google=dryrun, meta=elkuldve, tiktok=elkuldve",
+      "allapot_elotte": null,
+      "allapot_utana": "nem_jelent_meg",
+      "ido": 1791312449
+     },
+     {
+      "id": 19,
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "bejovo": "{\"allapot\":\"nem_jelent_meg\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "mar_kuldve: google=dryrun, meta=elkuldve, tiktok=elkuldve",
+      "allapot_elotte": "nem_jelent_meg",
+      "allapot_utana": "nem_jelent_meg",
+      "ido": 1791312464
+     }
+    ],
+    "kuldesek": [
+     {
+      "id": 28,
+      "esemeny_id": "Visszavonas:FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+      "esemeny_nev": "Visszavonas",
+      "esemeny_tipus": "eletut",
+      "platform": "google",
+      "platform_nev": "ARNYEK-RETRACTION-7825200901",
+      "uzletag": "oxigen",
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "allapot": "dryrun",
+      "indok": "dryRun: a Zap validalta, de nem irt (eles: GOOGLE_KORREKCIO_ELES=1)",
+      "ertek": null,
+      "penznem": null,
+      "hozzajarulas": null,
+      "kerelem": {
+       "url": "zapier-webhook: GOOGLE_KORREKCIO_WEBHOOK_URL (titok, nem naplozott)",
+       "method": "POST",
+       "fejlec_nevek": [
+        "content-type"
+       ],
+       "cel": {
+        "customer_id": "6088874770",
+        "conversion_action_id": "7825200901",
+        "athidalas": "zapier-webhook",
+        "muvelet": "RETRACTION",
+        "dry_run": true
+       },
+       "body": {
+        "adjustments": [
+         {
+          "type": "RETRACTION",
+          "orderId": "FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+          "conversionActionId": "7825200901",
+          "adjustmentDateTime": "2026-10-06 20:47:29+02:00",
+          "note": "nem_jelent_meg: mb_0mux0wexegw9c2al2hw93j5"
+         }
+        ],
+        "dryRun": true
+       }
+      },
+      "http_status": 200,
+      "platform_valasz": "{\"nyelo\":true,\"megjegyzes\":\"NYELO MOD: a kerelem nem ment ki sehova (MERES_KULDES_MOD=nyelo)\"}",
+      "kuldo": "nyelo",
+      "probalkozas": 1,
+      "letrehozva": 1791312449,
+      "frissitve": 1791312449
+     },
+     {
+      "id": 29,
+      "esemeny_id": "NemJelentMeg:mb_0mux0wexegw9c2al2hw93j5",
+      "esemeny_nev": "Oxigen_NemJelentMeg",
+      "esemeny_tipus": "eletut",
+      "platform": "meta",
+      "platform_nev": "Oxigen_NemJelentMeg",
+      "uzletag": "oxigen",
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "allapot": "elkuldve",
+      "indok": null,
+      "ertek": null,
+      "penznem": null,
+      "hozzajarulas": null,
+      "kerelem": {
+       "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+       "method": "POST",
+       "fejlec_nevek": [
+        "content-type"
+       ],
+       "cel": {
+        "dataset": "28616665324611098",
+        "nev": "MOSAIC ARNYEK meres-teszt",
+        "test_event_code": "TEST83939"
+       },
+       "body": {
+        "data": [
+         {
+          "event_name": "Oxigen_NemJelentMeg",
+          "event_time": 1791312449,
+          "event_id": "NemJelentMeg:mb_0mux0wexegw9c2al2hw93j5",
+          "action_source": "other",
+          "user_data": {
+           "em": [
+            "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+           ],
+           "ph": [
+            "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+           ],
+           "external_id": [
+            "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346"
+           ],
+           "fbc": "fb.1.1791311976000.IwAR_TESZT_OXIGEN-ELSO_MUX0WC35_FBCLID",
+           "fbp": "fb.1.1791306972000.2405807951"
+          },
+          "custom_data": {
+           "esemeny_tipus": "diagnosztika",
+           "eletut_allapot": "nem_jelent_meg",
+           "order_id": "mb_0mux0wexegw9c2al2hw93j5",
+           "content_category": "oxigen"
+          }
+         }
+        ],
+        "test_event_code": "TEST83939",
+        "partner_agent": "mosaic-qa2-arnyek"
+       }
+      },
+      "http_status": 200,
+      "platform_valasz": "{\"nyelo\":true,\"megjegyzes\":\"NYELO MOD: a kerelem nem ment ki sehova (MERES_KULDES_MOD=nyelo)\"}",
+      "kuldo": "nyelo",
+      "probalkozas": 1,
+      "letrehozva": 1791312449,
+      "frissitve": 1791312449
+     },
+     {
+      "id": 30,
+      "esemeny_id": "NemJelentMeg:mb_0mux0wexegw9c2al2hw93j5",
+      "esemeny_nev": "Oxigen_NemJelentMeg",
+      "esemeny_tipus": "eletut",
+      "platform": "tiktok",
+      "platform_nev": "Oxigen_NemJelentMeg",
+      "uzletag": "oxigen",
+      "source_id": "mb_0mux0wexegw9c2al2hw93j5",
+      "allapot": "elkuldve",
+      "indok": null,
+      "ertek": null,
+      "penznem": null,
+      "hozzajarulas": null,
+      "kerelem": {
+       "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+       "method": "POST",
+       "fejlec_nevek": [
+        "content-type",
+        "access-token"
+       ],
+       "cel": {
+        "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+        "nev": "MOSAIC ARNYEK meres-teszt",
+        "test_event_code": "TEST83543"
+       },
+       "body": {
+        "event_source": "web",
+        "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+        "test_event_code": "TEST83543",
+        "data": [
+         {
+          "event": "Oxigen_NemJelentMeg",
+          "event_time": 1791312449,
+          "event_id": "NemJelentMeg:mb_0mux0wexegw9c2al2hw93j5",
+          "user": {
+           "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+           "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+           "external_id": "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346",
+           "ttclid": "E.C.P.TESZT_OXIGEN-ELSO_MUX0WC35_TTCLID",
+           "ttp": "TESZT_OXIGEN-ELSO_MUX0WC35_ttp_5nwje8lfem"
+          },
+          "properties": {
+           "order_id": "mb_0mux0wexegw9c2al2hw93j5",
+           "content_type": "product"
+          }
+         }
+        ]
+       }
+      },
+      "http_status": 200,
+      "platform_valasz": "{\"nyelo\":true,\"megjegyzes\":\"NYELO MOD: a kerelem nem ment ki sehova (MERES_KULDES_MOD=nyelo)\"}",
+      "kuldo": "nyelo",
+      "probalkozas": 1,
+      "letrehozva": 1791312449,
+      "frissitve": 1791312449
+     }
+    ]
+   },
+   "kuldesi_sorok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "meta",
+     "platform_nev": "Oxigen_FoglalasElso",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 29900,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "Oxigen_FoglalasElso",
+         "event_time": 1791311933,
+         "event_id": "FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+         "action_source": "website",
+         "event_source_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/oxigenterapia-ok",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346"
+          ],
+          "client_ip_address": "160.79.106.140",
+          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "fbc": "fb.1.1791311976000.IwAR_TESZT_OXIGEN-ELSO_MUX0WC35_FBCLID",
+          "fbp": "fb.1.1791306972000.2405807951"
+         },
+         "custom_data": {
+          "value": 29900,
+          "currency": "HUF",
+          "order_id": "mb_0mux0wexegw9c2al2hw93j5",
+          "content_name": "Haj Oxigénterápia - 1. alkalom",
+          "content_category": "oxigen",
+          "esemeny_tipus": "alap",
+          "ertek_forras": "tenyleges_ar",
+          "salonic_ar": 29900,
+          "utm_source": "facebook",
+          "utm_campaign": "qa2_oxigen-elso_utolso"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "tiktok",
+     "platform_nev": "Oxigen_FoglalasElso",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 29900,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "Oxigen_FoglalasElso",
+         "event_time": 1791311933,
+         "event_id": "FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346",
+          "ttclid": "E.C.P.TESZT_OXIGEN-ELSO_MUX0WC35_TTCLID",
+          "ttp": "TESZT_OXIGEN-ELSO_MUX0WC35_ttp_5nwje8lfem",
+          "ip": "160.79.106.140",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+         },
+         "properties": {
+          "currency": "HUF",
+          "value": 29900,
+          "content_type": "product",
+          "contents": [
+           {
+            "content_id": "oxigen_foglalaselso",
+            "content_name": "Haj Oxigénterápia - 1. alkalom",
+            "quantity": 1,
+            "price": 29900
+           }
+          ],
+          "order_id": "mb_0mux0wexegw9c2al2hw93j5"
+         },
+         "page": {
+          "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/oxigenterapia-ok"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "google",
+     "platform_nev": "ARNYEK-7825200901",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 29900,
+     "indok": null,
+     "kerelem": {
+      "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "customer_id": "6088874770",
+       "conversion_action_id": "7825200901",
+       "athidalas": "zapier-webhook"
+      },
+      "body": {
+       "conversion_action_id": "7825200901",
+       "wbraid": "CoMKCQ_TESZT_OXIGEN-ELSO_MUX0WC35_WBRAID",
+       "conversion_date_time": "2026-10-06 20:38:53+02:00",
+       "value": 29900,
+       "currency": "HUF",
+       "order_id": "FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+       "ad_user_data": "DENIED"
+      }
+     }
+    },
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "ga4",
+     "platform_nev": "foglalas_elso",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 29900,
+     "indok": null,
+     "kerelem": {
+      "url": "https://www.google-analytics.com/mp/collect?measurement_id=G-M5MLRLNQBP",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "measurement_id": "G-M5MLRLNQBP"
+      },
+      "body": {
+       "client_id": "568598388.1791225572",
+       "timestamp_micros": "1791311933000000",
+       "consent": {
+        "ad_user_data": "DENIED",
+        "ad_personalization": "DENIED"
+       },
+       "events": [
+        {
+         "name": "foglalas_elso",
+         "params": {
+          "session_id": "1791310772",
+          "engagement_time_msec": 1,
+          "value": 29900,
+          "currency": "HUF",
+          "esemeny_id": "FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+          "uzletag": "oxigen",
+          "ertek_forras": "tenyleges_ar",
+          "salonic_ar": 29900,
+          "source": "facebook",
+          "medium": "paid",
+          "campaign": "qa2_oxigen-elso_utolso"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0mux0wexegw9c2al2hw93j5",
+     "esemeny_nev": "Oxigen_AkviziciosFoglalas",
+     "esemeny_tipus": "ernyo",
+     "platform": "meta",
+     "platform_nev": "Oxigen_AkviziciosFoglalas",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 29900,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "Oxigen_AkviziciosFoglalas",
+         "event_time": 1791311933,
+         "event_id": "Oxigen_AkviziciosFoglalas:mb_0mux0wexegw9c2al2hw93j5",
+         "action_source": "website",
+         "event_source_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/oxigenterapia-ok",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346"
+          ],
+          "client_ip_address": "160.79.106.140",
+          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "fbc": "fb.1.1791311976000.IwAR_TESZT_OXIGEN-ELSO_MUX0WC35_FBCLID",
+          "fbp": "fb.1.1791306972000.2405807951"
+         },
+         "custom_data": {
+          "value": 29900,
+          "currency": "HUF",
+          "order_id": "mb_0mux0wexegw9c2al2hw93j5",
+          "content_name": "Haj Oxigénterápia - 1. alkalom",
+          "content_category": "oxigen",
+          "esemeny_tipus": "ernyo",
+          "ertek_forras": "tenyleges_ar",
+          "salonic_ar": 29900,
+          "utm_source": "facebook",
+          "utm_campaign": "qa2_oxigen-elso_utolso"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0mux0wexegw9c2al2hw93j5",
+     "esemeny_nev": "Oxigen_AkviziciosFoglalas",
+     "esemeny_tipus": "ernyo",
+     "platform": "tiktok",
+     "platform_nev": "Schedule",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 29900,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "Schedule",
+         "event_time": 1791311933,
+         "event_id": "Oxigen_AkviziciosFoglalas:mb_0mux0wexegw9c2al2hw93j5",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346",
+          "ttclid": "E.C.P.TESZT_OXIGEN-ELSO_MUX0WC35_TTCLID",
+          "ttp": "TESZT_OXIGEN-ELSO_MUX0WC35_ttp_5nwje8lfem",
+          "ip": "160.79.106.140",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+         },
+         "properties": {
+          "currency": "HUF",
+          "value": 29900,
+          "content_type": "product",
+          "contents": [
+           {
+            "content_id": "oxigen_oxigen_akviziciosfoglalas",
+            "content_name": "Haj Oxigénterápia - 1. alkalom",
+            "quantity": 1,
+            "price": 29900
+           }
+          ],
+          "order_id": "mb_0mux0wexegw9c2al2hw93j5"
+         },
+         "page": {
+          "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/oxigenterapia-ok"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0mux0wexegw9c2al2hw93j5",
+     "esemeny_nev": "Oxigen_AkviziciosFoglalas",
+     "esemeny_tipus": "ernyo",
+     "platform": "google",
+     "platform_nev": null,
+     "allapot": "kihagyva",
+     "http_status": null,
+     "kuldo": null,
+     "ertek": 29900,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+     "kerelem": null
+    },
+    {
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0mux0wexegw9c2al2hw93j5",
+     "esemeny_nev": "Oxigen_AkviziciosFoglalas",
+     "esemeny_tipus": "ernyo",
+     "platform": "ga4",
+     "platform_nev": null,
+     "allapot": "kihagyva",
+     "http_status": null,
+     "kuldo": null,
+     "ertek": 29900,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
+     "kerelem": null
+    },
+    {
+     "esemeny_id": "Visszavonas:FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+     "esemeny_nev": "Visszavonas",
+     "esemeny_tipus": "eletut",
+     "platform": "google",
+     "platform_nev": "ARNYEK-RETRACTION-7825200901",
+     "allapot": "dryrun",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": null,
+     "indok": "dryRun: a Zap validalta, de nem irt (eles: GOOGLE_KORREKCIO_ELES=1)",
+     "kerelem": {
+      "url": "zapier-webhook: GOOGLE_KORREKCIO_WEBHOOK_URL (titok, nem naplozott)",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "customer_id": "6088874770",
+       "conversion_action_id": "7825200901",
+       "athidalas": "zapier-webhook",
+       "muvelet": "RETRACTION",
+       "dry_run": true
+      },
+      "body": {
+       "adjustments": [
+        {
+         "type": "RETRACTION",
+         "orderId": "FoglalasElso:mb_0mux0wexegw9c2al2hw93j5",
+         "conversionActionId": "7825200901",
+         "adjustmentDateTime": "2026-10-06 20:47:29+02:00",
+         "note": "nem_jelent_meg: mb_0mux0wexegw9c2al2hw93j5"
+        }
+       ],
+       "dryRun": true
+      }
+     }
+    },
+    {
+     "esemeny_id": "NemJelentMeg:mb_0mux0wexegw9c2al2hw93j5",
+     "esemeny_nev": "Oxigen_NemJelentMeg",
+     "esemeny_tipus": "eletut",
+     "platform": "meta",
+     "platform_nev": "Oxigen_NemJelentMeg",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": null,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "Oxigen_NemJelentMeg",
+         "event_time": 1791312449,
+         "event_id": "NemJelentMeg:mb_0mux0wexegw9c2al2hw93j5",
+         "action_source": "other",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346"
+          ],
+          "fbc": "fb.1.1791311976000.IwAR_TESZT_OXIGEN-ELSO_MUX0WC35_FBCLID",
+          "fbp": "fb.1.1791306972000.2405807951"
+         },
+         "custom_data": {
+          "esemeny_tipus": "diagnosztika",
+          "eletut_allapot": "nem_jelent_meg",
+          "order_id": "mb_0mux0wexegw9c2al2hw93j5",
+          "content_category": "oxigen"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "NemJelentMeg:mb_0mux0wexegw9c2al2hw93j5",
+     "esemeny_nev": "Oxigen_NemJelentMeg",
+     "esemeny_tipus": "eletut",
+     "platform": "tiktok",
+     "platform_nev": "Oxigen_NemJelentMeg",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": null,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "Oxigen_NemJelentMeg",
+         "event_time": 1791312449,
+         "event_id": "NemJelentMeg:mb_0mux0wexegw9c2al2hw93j5",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346",
+          "ttclid": "E.C.P.TESZT_OXIGEN-ELSO_MUX0WC35_TTCLID",
+          "ttp": "TESZT_OXIGEN-ELSO_MUX0WC35_ttp_5nwje8lfem"
+         },
+         "properties": {
+          "order_id": "mb_0mux0wexegw9c2al2hw93j5",
+          "content_type": "product"
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "ido": "2026-10-06T18:48:01.721Z",
+   "lepes": "lemondas (Salonic lemondo link)",
+   "lemondas_ideje": "2026-10-06T18:47:47.709Z",
+   "eredmeny": "SIKERES: lemondás visszaigazolva",
+   "salonic_allapot": "LEMONDVA"
   }
  ]
 }

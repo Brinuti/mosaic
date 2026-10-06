@@ -277,6 +277,7 @@ test('/api/foglalas-eletut: kulcs nelkul / rossz kulccsal 404; ervenytelen bemen
   assert.deepEqual([tr.ok, tr.allapot, tr.eletut_allapot, tr.cellak.map((c) => c.platform)], [true, 'kesz', 'lemondva', ['google']]);
   const g = await (await kezelEletut(ker(`?source_id=${BID}`, KULCS, 'GET'), k.env)).json(); assert.deepEqual([g.allapot.allapot, g.naplo.length >= 2, g.kuldesek.length], ['lemondva', true, 1]);
   const lista = await (await kezelEletut(ker('?riasztas=1', KULCS, 'GET'), k.env)).json(); assert.equal(lista.db, 1, 'a nem_torolve elutasitas a riasztas-listan');
+  assert.equal((await kezelEletut(ker('?source_id=rossz', KULCS, 'GET'), k.env)).status, 400); const gp = await kezelEletut(ker(`?source_id=${PI}`, KULCS, 'GET'), k.env); assert.deepEqual([gp.status, (await gp.json()).kuldesek.length], [200, 0], 'ajandekkartya (pi_) azonositoval is olvashato');
 });
 test('/api/foglalas-eletut: megjelent / nem_jelent_meg a kulcsbol vett kezdes utan; booking_id-vel is hivhato; halasztva, ha a Salonic nem erheto el; "fuggo" muvelet', async () => {
   const k = await vegpontKornyezet({ kulcs: `10427|24354|${Math.floor(NOW / 1000) + 86400}` });

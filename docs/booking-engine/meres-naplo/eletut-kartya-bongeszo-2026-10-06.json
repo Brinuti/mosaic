@@ -1,0 +1,338 @@
+{
+ "bazis": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev",
+ "eset": "headspa-kartya",
+ "hozzajarulas_profil": "teljes",
+ "hozzajarulas": {
+  "ana": true,
+  "adv": true,
+  "fun": true
+ },
+ "szintetikus_adatok": {
+  "megjegyzes": "a kattintasazonositok es a sutik SZINTETIKUSAK; a Stripe-fizetes VALODI teszt-modu (4242 kartya, nincs valodi penzmozgas)",
+  "elso_latogatas": {
+   "utm_source": "google",
+   "utm_medium": "cpc",
+   "utm_campaign": "qa2_ajandek_elso",
+   "gclid": "Cj0KCQjw_TESZT_AJANDEK_MUX1BGF5_GCLID"
+  },
+  "utolso_latogatas": {
+   "utm_source": "facebook",
+   "utm_medium": "paid",
+   "utm_campaign": "qa2_ajandek_utolso",
+   "fbclid": "IwAR_TESZT_AJANDEK_MUX1BGF5_FBCLID",
+   "ttclid": "E.C.P.TESZT_AJANDEK_MUX1BGF5_TTCLID",
+   "wbraid": "CoMKCQ_TESZT_AJANDEK_MUX1BGF5_WBRAID"
+  },
+  "sutik": {
+   "_fbp": "fb.1.1791307678000.7966731226",
+   "_ttp": "TESZT_AJANDEK_MUX1BGF5_ttp_1nsbcf7m2j",
+   "_ga": "GA1.1.520004934.1791226278",
+   "_ga_H4206SQ0Q7": "GS2.1.s1791311478$o1$g1$t1791312078$j0$l0$h0"
+  }
+ },
+ "pillanatkep_a_vasarlas_elott": {
+  "google": {
+   "gclid": {
+    "ertek": "Cj0KCQjw_TESZT_AJANDEK_MUX1BGF5_GCLID",
+    "ts": 1791312679
+   },
+   "wbraid": {
+    "ertek": "CoMKCQ_TESZT_AJANDEK_MUX1BGF5_WBRAID",
+    "ts": 1791312681
+   }
+  },
+  "meta": {
+   "fbc": "fb.1.1791312681000.IwAR_TESZT_AJANDEK_MUX1BGF5_FBCLID",
+   "fbclid": "IwAR_TESZT_AJANDEK_MUX1BGF5_FBCLID",
+   "ts": 1791312681
+  },
+  "tiktok": {
+   "ttclid": {
+    "ertek": "E.C.P.TESZT_AJANDEK_MUX1BGF5_TTCLID",
+    "ts": 1791312681
+   }
+  },
+  "utm_elso": {
+   "source": "google",
+   "medium": "cpc",
+   "campaign": "qa2_ajandek_elso",
+   "ts": 1791312679
+  },
+  "utm_utolso": {
+   "source": "facebook",
+   "medium": "paid",
+   "campaign": "qa2_ajandek_utolso",
+   "ts": 1791312681
+  },
+  "fbp": "fb.1.1791307678000.7966731226",
+  "ttp": "TESZT_AJANDEK_MUX1BGF5_ttp_1nsbcf7m2j",
+  "ga4": {
+   "client_id": "520004934.1791226278",
+   "session_id": "1791311478",
+   "measurement_id": "G-H4206SQ0Q7"
+  }
+ },
+ "pi": "pi_3UNdSbFv8vc2ArnL0qLwY94B",
+ "mhAttribucioEredmeny": {
+  "source_id": "pi_3UNdSbFv8vc2ArnL0qLwY94B",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "frissitve": true,
+   "hibak": [],
+   "mezok": [
+    "google",
+    "meta",
+    "tiktok",
+    "utm_elso",
+    "utm_utolso",
+    "fbp",
+    "ttp",
+    "ga4"
+   ]
+  },
+  "kuldott": {
+   "source_id": "pi_3UNdSbFv8vc2ArnL0qLwY94B",
+   "uzletag": "headspa",
+   "tipus": "ajandekkartya",
+   "szolgaltatas": "Egyéni MOSAIC Head Spa ajándékkártya",
+   "ar": 26900,
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_AJANDEK_MUX1BGF5_GCLID",
+      "ts": 1791312679
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_AJANDEK_MUX1BGF5_WBRAID",
+      "ts": 1791312681
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791312681000.IwAR_TESZT_AJANDEK_MUX1BGF5_FBCLID",
+     "fbclid": "IwAR_TESZT_AJANDEK_MUX1BGF5_FBCLID",
+     "ts": 1791312681
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_AJANDEK_MUX1BGF5_TTCLID",
+      "ts": 1791312681
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_ajandek_elso",
+     "ts": 1791312679
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_ajandek_utolso",
+     "ts": 1791312681
+    },
+    "fbp": "fb.1.1791307678000.7966731226",
+    "ttp": "TESZT_AJANDEK_MUX1BGF5_ttp_1nsbcf7m2j",
+    "ga4": {
+     "client_id": "520004934.1791226278",
+     "session_id": "1791311478",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true
+   },
+   "oldal": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/ajandek"
+  }
+ },
+ "vegallapot_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/ajandek?utm_source=facebook&utm_medium=paid&utm_campaign=qa2_ajandek_utolso&fbclid=IwAR_TESZT_AJANDEK_MUX1BGF5_FBCLID&ttclid=E.C.P.TESZT_AJANDEK_MUX1BGF5_TTCLID&wbraid=CoMKCQ_TESZT_AJANDEK_MUX1BGF5_WBRAID",
+ "oldal_szoveg": "Ugrás a tartalomra Head Spa Szőrtelenítés Fodrászat Oxigénterápia Sminktetoválás Ajándékkártya FOGLALÁS GYIK Kapcsolat Októberi akció! - 20% kedvezmény minden headspa foglalásra + ajándékkártyára! Minden kész. Ajándékkártya Egyéni MOSAIC Head Spa ajándékkártya Összeg 26.900 Ft Rendelés #MH-0QLWY94B ",
+ "idovonal": [
+  {
+   "t": 3411,
+   "esemeny": "1. latogatas (Google-hirdetes)"
+  },
+  {
+   "t": 3885,
+   "esemeny": "2. latogatas (Meta / TikTok / wbraid)"
+  },
+  {
+   "t": 7012,
+   "esemeny": "tovabb a szemelyre szabashoz"
+  },
+  {
+   "t": 7095,
+   "esemeny": "tovabb a fizeteshez"
+  },
+  {
+   "t": 7546,
+   "esemeny": "szamlazasi adatok kitoltve"
+  },
+  {
+   "t": 11468,
+   "esemeny": "Stripe teszt-kartya kitoltve (4242)"
+  },
+  {
+   "t": 11534,
+   "esemeny": "fizetes elinditva",
+   "ido": "2026-10-06T18:51:29.647Z"
+  },
+  {
+   "t": 77553,
+   "esemeny": "vasarlas vege",
+   "pi": "pi_3UNdSbFv8vc2ArnL0qLwY94B",
+   "attribucio": "valasz",
+   "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/ajandek?utm_source=facebook&utm_medium=paid&utm_campaign=qa2_aja"
+  }
+ ],
+ "sajat_keresek_nyers": [
+  {
+   "t": 11569,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/api/ajandek/fizetes",
+   "torzs": {
+    "termek": "egyeni",
+    "ajandekozott": "<maszkolva>",
+    "email": "<maszkolva>",
+    "nev": "<maszkolva>",
+    "iranyitoszam": "1023",
+    "varos": "Budapest",
+    "cim": "<maszkolva>",
+    "ceges": null,
+    "attr": {
+     "variant_id": "general",
+     "gift_context": "general",
+     "utm_source": "facebook",
+     "utm_medium": "paid",
+     "utm_campaign": "qa2_ajandek_utolso",
+     "fbclid": "IwAR_TESZT_AJANDEK_MUX1BGF5_FBCLID",
+     "ttclid": "E.C.P.TESZT_AJANDEK_MUX1BGF5_TTCLID",
+     "oldal": "/ajandek",
+     "wbraid": "CoMKCQ_TESZT_AJANDEK_MUX1BGF5_WBRAID"
+    },
+    "mer": {
+     "ana": true,
+     "adv": true,
+     "fbp": "fb.1.1791307678000.7966731226",
+     "fbc": "fb.1.1791312681856.IwAR_TESZT_AJANDEK_MUX1BGF5_FBCLID"
+    },
+    "atvetel": "otthon",
+    "szemelyre": null,
+    "kulcs": "4f83be300c36cd9a09f0bf99",
+    "bot-field": ""
+   }
+  },
+  {
+   "t": 16321,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "source_id": "pi_3UNdSbFv8vc2ArnL0qLwY94B",
+    "uzletag": "headspa",
+    "tipus": "ajandekkartya",
+    "szolgaltatas": "Egyéni MOSAIC Head Spa ajándékkártya",
+    "ar": 26900,
+    "attr": {
+     "google": {
+      "gclid": {
+       "ertek": "Cj0KCQjw_TESZT_AJANDEK_MUX1BGF5_GCLID",
+       "ts": 1791312679
+      },
+      "wbraid": {
+       "ertek": "CoMKCQ_TESZT_AJANDEK_MUX1BGF5_WBRAID",
+       "ts": 1791312681
+      }
+     },
+     "meta": {
+      "fbc": "fb.1.1791312681000.IwAR_TESZT_AJANDEK_MUX1BGF5_FBCLID",
+      "fbclid": "IwAR_TESZT_AJANDEK_MUX1BGF5_FBCLID",
+      "ts": 1791312681
+     },
+     "tiktok": {
+      "ttclid": {
+       "ertek": "E.C.P.TESZT_AJANDEK_MUX1BGF5_TTCLID",
+       "ts": 1791312681
+      }
+     },
+     "utm_elso": {
+      "source": "google",
+      "medium": "cpc",
+      "campaign": "qa2_ajandek_elso",
+      "ts": 1791312679
+     },
+     "utm_utolso": {
+      "source": "facebook",
+      "medium": "paid",
+      "campaign": "qa2_ajandek_utolso",
+      "ts": 1791312681
+     },
+     "fbp": "fb.1.1791307678000.7966731226",
+     "ttp": "TESZT_AJANDEK_MUX1BGF5_ttp_1nsbcf7m2j",
+     "ga4": {
+      "client_id": "520004934.1791226278",
+      "session_id": "1791311478",
+      "measurement_id": "G-H4206SQ0Q7"
+     }
+    },
+    "hozz": {
+     "ana": true,
+     "adv": true,
+     "fun": true
+    },
+    "oldal": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/ajandek"
+   }
+  },
+  {
+   "t": 16322,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/api/ajandek/fizetes",
+   "torzs": {
+    "pi": "pi_3UNdSbFv8vc2ArnL0qLwY94B",
+    "client_secret": "<kihagyva>",
+    "osszeg": 26900,
+    "penznem": "HUF",
+    "rendeles_id": "MH-0QLWY94B",
+    "szamla": "stripe",
+    "szamla_pi": {
+     "tipusok": [
+      "card",
+      "revolut_pay"
+     ],
+     "auto": null
+    }
+   }
+  },
+  {
+   "t": 16671,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "ok": true,
+    "frissitve": true,
+    "hibak": [],
+    "mezok": [
+     "google",
+     "meta",
+     "tiktok",
+     "utm_elso",
+     "utm_utolso",
+     "fbp",
+     "ttp",
+     "ga4"
+    ]
+   }
+  }
+ ],
+ "tiltott_kimeno_keresek": {
+  "tiltott pay.google.com/gp/p/js/pay.js": 1,
+  "tiltott b.stripecdn.com/stripethirdparty-srv/assets/v35.2/HCaptchaInvisible.html": 1
+ },
+ "js_hibak": []
+}

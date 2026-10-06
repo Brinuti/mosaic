@@ -23,10 +23,10 @@ Egy foglalásnak **egy** lezáró állapota lehet. Azonos állapot ismét = idem
 - Meta / TikTok felé a létrehozáskori IP / user agent **nem** megy (az esemény offline történik), a `em` / `ph` / `external_id` / `fbc` / `fbp` (Meta), `email` / `phone` / `external_id` / `ttclid` / `ttp` (TikTok) igen.
 - Élő Salonic-ellenőrzés a kérés idején: `lemondva` csak „törölve” oldalra; `megjelent` / `nem_jelent_meg` csak nem törölt foglalásra és **az időpont kezdete után** (a kezdés a párosítási kulcsból jön: `placeId|employeeId|startUnix`).
 - Válasz (`200`): `{ ok, allapot, source_id, uzletag, eletut_allapot, elozo, elo_allapot, cellak[] }`; `allapot` =
-  `kesz` (kiment / dryRun) · `mar_kuldve` (ismétlés) · `halasztva` (a Salonic-oldal nem ellenőrizhető → `ujraprobal_mp`: 180; vagy egy cella halasztott → 3600) · `ellentmondas` (+ `riasztas: true`) · `korai` (az időpont még nem kezdődött el) · `nem_torolve` (lemondás, de a foglalás él) · `torolt_foglalas` (megjelent / nem_jelent_meg törölt foglalásra) · `ismeretlen_foglalas` (nincs páros) · `ervenytelen` · `ki` (nincs bekapcsolva).
+  `kesz` (kiment / dryRun) · `mar_kuldve` (ismétlés) · `halasztva` (a Salonic-oldal nem ellenőrizhető → `ujraprobal_mp`: 180, ilyenkor **nem tárolunk függő sort: a hívó ismétli** ugyanazzal a kéréssel; vagy egy cella halasztott → 3600, ezt a `fuggo` művelet is felveszi) · `ellentmondas` (+ `riasztas: true`) · `korai` (az időpont még nem kezdődött el) · `nem_torolve` (lemondás, de a foglalás él) · `torolt_foglalas` (megjelent / nem_jelent_meg törölt foglalásra) · `ismeretlen_foglalas` (nincs páros) · `ervenytelen` · `ki` (nincs bekapcsolva).
   `cellak[]`: `{ platform, esemeny_id, platform_nev, allapot, http_status, kuldo, duplikalt? }`.
 - `POST {"muvelet":"fuggo"}`: a halasztott / hibás / (élesítés után) dryRun cellák újrafeldolgozása (időzített hívónak, pl. óránként egy Zap).
-- `GET ?source_id=mb_…`: az életút-állapot + napló + cellák; `GET ?riasztas=1`: az ellentmondó / elutasított bejegyzések.
+- `GET ?source_id=mb_…` (foglalás) vagy `pi_…` (ajándékkártya): az életút-állapot + napló + cellák; `GET ?riasztas=1`: az ellentmondó / elutasított bejegyzések.
 
 ### A lemondási értesítő
 A `/api/foglalas-egyeztetes` `tipus: lemondas` hívása (a Salonic lemondási levele) a kulcs felszabadítása mellett — ha a kulcs tulajdonosa élő ellenőrzéssel `torolve` — a foglalás `lemondva` állapotát is elindítja (`eredmenyek[].eletut`). Csak `MERES_ELOSZTO=1` és `MERES_ELETUT=1` mellett; hiba esetén `eletut: {allapot: "hiba"}`, a kulcs-felszabadítást nem érinti.
