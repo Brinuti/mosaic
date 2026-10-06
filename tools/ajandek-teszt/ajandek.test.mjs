@@ -340,6 +340,51 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.ok(!js.slice(js.indexOf('function purchaseMeres'), js.indexOf('function metaSor(')).includes('generate_lead'));
   });
 
+  test('az utalasos igenyles a klon.js wixLead-jet hivja (window.mhWixLead), es PONTOSAN azt adja, mint a regi "Ajandekkartya " urlap: sorrend, cimke, form_id, user_data (cegmezokkel is); a tartalek is ugyanazt a sorrendet adja', async () => {
+    const vm = (await import('node:vm')).default;
+    const klon = fs.readFileSync(new URL('../../assets/js/klon.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+    const ajandek = fs.readFileSync(new URL('../../assets/js/ajandek.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+    // a valodi forraskod: a klon.js wixLead + segedei (a kiajanlas soraig), az ajandek.js regiUtalasLead + kulcs-listaja
+    assert.ok(klon.includes('window.mhWixLead = wixLead;'), 'a klon.js kiajanlja a wixLead-et');
+    const klonResz = klon.slice(klon.indexOf('  const WIX_UD ='), klon.indexOf('window.mhWixLead = wixLead;') + 'window.mhWixLead = wixLead;'.length);
+    const ajResz = ajandek.slice(ajandek.indexOf('  var REGI_URLAP_KULCSOK ='), ajandek.indexOf('// ---------------------------------------------------------------- PurchaseSuccess'));
+    const futtat = (klonBe, kodReszlet) => {
+      const w = { dataLayer: [], gtagHivasok: [] }; w.gtag = (...a) => w.gtagHivasok.push(a);
+      const ctx = vm.createContext({ window: w, S: { termek: 'egyeni' }, termek: () => ({ kartya_cim: 'Egyéni Head Spa' }), URLSearchParams });
+      vm.runInContext('(function () {\n' + (klonBe ? klonResz : '') + '\n' + ajResz + '\n' + kodReszlet + '\n})()', ctx);
+      return JSON.parse(JSON.stringify({ dl: w.dataLayer, gtag: w.gtagHivasok }));
+    };
+    // a REGI urlap hivasa (assets/js/klon.js, az "Ajandekkartya " urlap bekuldese): ugyanaz a mezo-lista, a form_id es az extra
+    const REGI_KULCSOK = [['keresztnev', 'fizeto_fel_keresztneve'], ['vezeteknev', 'fizeto_fel_vezetekneve'], ['email', 'e_mail_cim'], ['telefon', 'telefonszam'], ['szamlazasi_cim', 'cim'], ['cegnev', 'cegnev_opcionalis'], ['adoszam', 'ceg_adoszam_opcionalis'], ['ajandekozott', 'ajandekozott_neve'], ['kartya', 'milyen_kartyat_kersz']];
+    assert.ok(klon.includes("wixLead(adat, [['keresztnev', 'fizeto_fel_keresztneve'], ['vezeteknev', 'fizeto_fel_vezetekneve'], ['email', 'e_mail_cim'],"), 'a regi urlap hivasa a klon.js-ben valtozatlan');
+    assert.ok(klon.includes("'Ajándékkártya ', '7715ab48-7c85-4c1c-8fbc-a38c1cb1a23c', { form_field_d3ec: true });"));
+    const regiHivas = (v) => 'window.mhWixLead(new URLSearchParams(' + JSON.stringify(v) + '), ' + JSON.stringify(REGI_KULCSOK) + ", 'Ajándékkártya ', '7715ab48-7c85-4c1c-8fbc-a38c1cb1a23c', { form_field_d3ec: true });";
+    const uj = (o) => 'regiUtalasLead(' + JSON.stringify(o) + ');';
+    // 1) maganeszemely, 2) ceges szamla: az uj ut = a regi ut, bajtra
+    const mind = [
+      [{ nev: 'Kovács Anna', email: 'anna@pelda.hu', telefon: '06 30 571 5516', iranyitoszam: '1023', varos: 'Budapest', cim: 'Bécsi út 2.', ajandekozott: 'Nagy Eszter', ceges_nev: '', ceges_adoszam: '' },
+        { vezeteknev: 'Kovács', keresztnev: 'Anna', email: 'anna@pelda.hu', telefon: '+36305715516', szamlazasi_cim: '1023 Budapest Bécsi út 2.', cegnev: '', adoszam: '', ajandekozott: 'Nagy Eszter', kartya: 'Egyéni Head Spa' }],
+      [{ nev: 'Szabó Péter Pál', email: 'peter@pelda.hu', telefon: '+36 20 111 2222', iranyitoszam: '1052', varos: 'Budapest', cim: 'Váci utca 1.', ajandekozott: 'Kiss Réka', ceges_nev: 'Példa Kft.', ceges_adoszam: '12345678-1-42' },
+        { vezeteknev: 'Szabó', keresztnev: 'Péter Pál', email: 'peter@pelda.hu', telefon: '+36201112222', szamlazasi_cim: '1052 Budapest Váci utca 1.', cegnev: 'Példa Kft.', adoszam: '12345678-1-42', ajandekozott: 'Kiss Réka', kartya: 'Egyéni Head Spa' }],
+    ];
+    for (const [o, regiUrlap] of mind) {
+      const ujUt = futtat(true, uj(o)), regiUt = futtat(true, regiHivas(regiUrlap));
+      assert.deepEqual(ujUt, regiUt, 'az uj utalasos lead azonos a regi urlap leadjevel: ' + o.nev);
+      assert.deepEqual(ujUt.dl.map((e) => e.event || (e.ecommerce === null ? 'ecommerce:null' : '?')), ['lead', 'ecommerce:null', 'generate_lead']);
+      assert.equal(ujUt.dl[2].form_id, '7715ab48-7c85-4c1c-8fbc-a38c1cb1a23c');
+      assert.equal(ujUt.dl[2].label, 'Form name: Ajándékkártya ');
+      assert.equal(ujUt.dl[2].user_data.email, o.email); assert.ok(/^\+36\d{9}$/.test(ujUt.dl[2].user_data.phone_number));
+      assert.equal(ujUt.dl[2].user_data.form_field_d3ec, true);
+      assert.equal('cegnev_opcionalis' in ujUt.dl[2].user_data, !!o.ceges_nev, 'a cegmezok csak kitoltve kerulnek bele (mint a regi urlapnal)');
+      assert.deepEqual(ujUt.gtag, [['event', 'generate_lead', { event_category: 'contact', event_action: 'Submitted', event_label: 'Form name: Ajándékkártya ' }]]);
+    }
+    // 3) tartalek (a klon.js nem toltodott be): ugyanaz a sorrend, cimke, form_id, e-mail / telefon
+    const tart = futtat(false, uj(mind[0][0]));
+    assert.deepEqual(tart.dl.map((e) => e.event || (e.ecommerce === null ? 'ecommerce:null' : '?')), ['lead', 'ecommerce:null', 'generate_lead']);
+    assert.equal(tart.dl[2].form_id, '7715ab48-7c85-4c1c-8fbc-a38c1cb1a23c'); assert.equal(tart.dl[2].label, 'Form name: Ajándékkártya ');
+    assert.equal(tart.dl[2].user_data.email, 'anna@pelda.hu'); assert.equal(tart.dl[2].user_data.phone_number, '+36305715516');
+  });
+
   test('mobil sticky sav (az oxigen-landing mintajara): van markup + CSS (csak mobilon), a gomb a landing #ah-finder-ere ugrik, a hero-gomb szoveget a variant adja', () => {
     const html = fs.readFileSync(new URL('../../foglalas/ajandek.html', import.meta.url), 'utf8');
     const css = fs.readFileSync(new URL('../../assets/css/ajandek.css', import.meta.url), 'utf8');

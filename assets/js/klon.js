@@ -1149,6 +1149,9 @@
     dl.push({ event: 'generate_lead', lead_category: 'contact', label: cimke, form_id: formId, user_data: wixUserData(ertekek) });
     if (window.gtag) window.gtag('event', 'generate_lead', { event_category: 'contact', event_action: 'Submitted', event_label: cimke });
   }
+  // Az ajandekkartya-motor (/ajandek, assets/js/ajandek.js) az utalasos igenyleskor UGYANEZT a fuggvenyt hivja, a regi "Ajandekkartya " urlap hivasanak
+  // ugyanazzal a kulcs-listajaval es form_id-javal: igy az utalasos konverzio (lead -> ecommerce:null -> generate_lead, user_data) a regivel azonos.
+  window.mhWixLead = wixLead;
 
   // A Wix radiogombjai nem <label>-ben vannak, es a kijeloles latszatat is a
   // Wix JS-e rajzolja (data-checked + "...--checked" osztaly): ezt itt potoljuk.
