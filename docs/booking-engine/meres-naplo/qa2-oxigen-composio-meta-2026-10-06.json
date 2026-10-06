@@ -1,0 +1,4 @@
+{
+  "megjegyzes": "Meta-tesztkuldes a Composio METAADS_SEND_CONVERSION_EVENTS eszkozen at (mosaic-meta fiok), az ARNYEK dataset-re (28616665324611098), test_event_code-dal (SZINTETIKUS: TEST_MOSAIC_QA2). A PMU- es az oxigen-eset 4 esemenye egy hivasban ment (a szerveres naplo sorai: 25, 29 = PMU; 33, 37 = oxigen); custom_data csak value / currency / order_id; IP nelkul (a naplozott IP maszkolt).",
+  "platform_valasz_nyers": {"successful": true, "data": {"events_received": 4, "fbtrace_id": "AlmOq7eH0a8XV3CONaO22SA", "messages": []}}
+}

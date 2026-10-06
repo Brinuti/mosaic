@@ -1,0 +1,1207 @@
+{
+ "eset": "pmu",
+ "hivas_ideje": "2026-10-06T15:47:17.138Z",
+ "kerelem_maszkolt": {
+  "uuid": "c8a75129-f148-79df-b610-8fb53f0101b2",
+  "host": "mosaic-pmu.salonic.hu",
+  "felado": "Mosaic PMU",
+  "szolgaltatas": "Ingyenes konzultáció",
+  "munkatarsak": [],
+  "ld": {
+   "startDate": "2026-10-31T18:30:00.000Z"
+  },
+  "level_datuma": "2026-10-06T15:46:13Z",
+  "ar": 0,
+  "vendeg": "<maszkolva: e-mail + telefon>",
+  "uj_vendeg": true
+ },
+ "szimulalt": {
+  "uj_vendeg": true,
+  "megjegyzes": "a Salonic \"uj vendeg\" jelzeset a teszt szimulalja; az ar a Salonic-level \"Price / Fizetendo varhatoan\" sorabol"
+ },
+ "egyeztetes_valasz_nyers": {
+  "ok": true,
+  "allapot": "parositott",
+  "kuldheto": true,
+  "duplikalt": false,
+  "booking_id": "mb_0muwup5ext3ny5b7gqlswik",
+  "esemeny_id": "mb_0muwup5ext3ny5b7gqlswik",
+  "kulcs": "14585|32428|1793471400",
+  "kulcs_forras": "salonic-oldal",
+  "service_egyezik": true,
+  "probalkozas": 1,
+  "riasztas": false,
+  "keses": false,
+  "kulcs_atadva": false,
+  "jelolt_elo_allapot": null,
+  "nyom": {
+   "uuid": "c8a75129-f148-79df-b610-8fb53f0101b2",
+   "host": "mosaic-pmu.salonic.hu",
+   "ag1": {
+    "ok": true,
+    "miert": null,
+    "lepesek": [
+     {
+      "url": "/booking/bookingDetails/c8a75129-f148-79df-b610-8fb53f0101b2",
+      "status": 200,
+      "vegso": "/booking/bookingDetails/c8a75129-f148-79df-b610-8fb53f0101b2"
+     },
+     {
+      "url": "/selectDate/?startDate=1793471400&bookingId=c8a75129-f148-79df-b610-8fb53f0101b2",
+      "status": 200,
+      "vegso": "/selectDate/?startDate=1793471400&bookingId=c8a75129-f148-79df-b610-8fb53f0101b2"
+     }
+    ],
+    "kulcs": "14585|32428|1793471400",
+    "serviceId": "471160"
+   },
+   "jeloltKulcsok": [
+    "14585|32428|1793471400"
+   ],
+   "kulcsForras": "salonic-oldal",
+   "jeloltek": [
+    {
+     "kulcs": "14585|32428|1793471400",
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwup5ext3ny5b7gqlswik",
+       "service_id": "471160",
+       "ido": 1791301577,
+       "kuldve_uuid": null
+      }
+     ]
+    }
+   ],
+   "talalatok": [
+    {
+     "kulcs": "14585|32428|1793471400",
+     "booking_id": "mb_0muwup5ext3ny5b7gqlswik",
+     "service_id": "471160",
+     "forras": "koszonooldal"
+    }
+   ],
+   "valasztas": [
+    {
+     "kulcs": "14585|32428|1793471400",
+     "allapot": "valasztott",
+     "miert": null
+    }
+   ]
+  },
+  "esemeny_kuldes": {
+   "allapot": "kesz",
+   "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+   "erkezesi_adat": true,
+   "esemenyek": [
+    {
+     "esemeny_id": "Konzultacio:mb_0muwup5ext3ny5b7gqlswik",
+     "nev": "Konzultacio",
+     "tipus": "alap",
+     "ertek": 0,
+     "platformok": {
+      "meta": {
+       "id": 25,
+       "allapot": "nincs_hitelesites",
+       "http_status": null
+      },
+      "tiktok": {
+       "id": 26,
+       "allapot": "kihagyva",
+       "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont"
+      },
+      "google": {
+       "id": 27,
+       "allapot": "nincs_hitelesites",
+       "http_status": null
+      },
+      "ga4": {
+       "id": 28,
+       "allapot": "tiltva",
+       "indok": "nincs GA4_TESZT_MEASUREMENT_ID (teszt-property): a GA4-be csak teszt-property-be kuldunk"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muwup5ext3ny5b7gqlswik",
+     "nev": "Schedule",
+     "tipus": "ernyo",
+     "ertek": 0,
+     "platformok": {
+      "meta": {
+       "id": 29,
+       "allapot": "nincs_hitelesites",
+       "http_status": null
+      },
+      "tiktok": {
+       "id": 30,
+       "allapot": "kihagyva",
+       "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont"
+      },
+      "google": {
+       "id": 31,
+       "allapot": "kihagyva",
+       "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+      },
+      "ga4": {
+       "id": 32,
+       "allapot": "kihagyva",
+       "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+      }
+     }
+    }
+   ],
+   "elo_allapot": "aktiv",
+   "jelleg": "konzultacio",
+   "kupon": false,
+   "uj_vendeg": true,
+   "ertek": 0,
+   "ar_forras": "bejovo",
+   "uzletag": "pmu"
+  }
+ },
+ "szerveres_naplo_nyers": {
+  "ok": true,
+  "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+  "erkezes": {
+   "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+   "uzletag": "pmu",
+   "tipus": "foglalas",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_PMU_MUWUOZQU_GCLID",
+      "ts": 1791301553
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_PMU_MUWUOZQU_WBRAID",
+      "ts": 1791301555
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791301555000.IwAR_TESZT_PMU_MUWUOZQU_FBCLID",
+     "fbclid": "IwAR_TESZT_PMU_MUWUOZQU_FBCLID",
+     "ts": 1791301555
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_PMU_MUWUOZQU_TTCLID",
+      "ts": 1791301555
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_pmu_elso",
+     "content": "hirdetes_a",
+     "ts": 1791301553
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_pmu_utolso",
+     "ts": 1791301555
+    },
+    "fbp": "fb.1.1791296552000.9788913501",
+    "ttp": "TESZT_PMU_MUWUOZQU_ttp_pkr6y59inn",
+    "ga4": {
+     "client_id": "641940850.1791215152",
+     "session_id": "1791300352",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true,
+    "dontes": true
+   },
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+   "ip": "160.79.106.xxx",
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok",
+   "bongeszo": {
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok",
+    "first_booking": true,
+    "szolgaltatas": "Ingyenes konzultáció",
+    "kategoria": "",
+    "ar": 0,
+    "g": "g:3354694",
+    "munkatars": "",
+    "bookingUrl": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471160&startDate=1793471400&back=mb_0muwup5ext3ny5b7gqlswik"
+   },
+   "ido": 1791301577,
+   "frissitve": 1791301577
+  },
+  "kuldesek": [
+   {
+    "id": 25,
+    "esemeny_id": "Konzultacio:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "meta",
+    "platform_nev": "PMU_Konzultacio",
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "nincs_hitelesites",
+    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://graph.facebook.com/v21.0/28616665324611098/events",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "dataset": "28616665324611098",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST_MOSAIC_QA2"
+     },
+     "body": {
+      "data": [
+       {
+        "event_name": "PMU_Konzultacio",
+        "event_time": 1791301573,
+        "event_id": "Konzultacio:mb_0muwup5ext3ny5b7gqlswik",
+        "action_source": "website",
+        "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok",
+        "user_data": {
+         "em": [
+          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         ],
+         "ph": [
+          "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+         ],
+         "external_id": [
+          "2692ece9a48e345a8b1119f7b02ad2da3e89aac6d1eb13c9da9e18af6c2983d7"
+         ],
+         "client_ip_address": "160.79.106.xxx",
+         "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+         "fbc": "fb.1.1791301555000.IwAR_TESZT_PMU_MUWUOZQU_FBCLID",
+         "fbp": "fb.1.1791296552000.9788913501"
+        },
+        "custom_data": {
+         "value": 0,
+         "currency": "HUF",
+         "order_id": "mb_0muwup5ext3ny5b7gqlswik",
+         "content_name": "Ingyenes konzultáció",
+         "content_category": "pmu",
+         "esemeny_tipus": "alap",
+         "utm_source": "facebook",
+         "utm_campaign": "qa2_pmu_utolso"
+        }
+       }
+      ],
+      "test_event_code": "TEST_MOSAIC_QA2",
+      "partner_agent": "mosaic-qa2-arnyek"
+     }
+    },
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   },
+   {
+    "id": 26,
+    "esemeny_id": "Konzultacio:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "kihagyva",
+    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   },
+   {
+    "id": 27,
+    "esemeny_id": "Konzultacio:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "google",
+    "platform_nev": "ARNYEK-7825200916",
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "nincs_hitelesites",
+    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://googleads.googleapis.com/v21/customers/6088874770:uploadClickConversions",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type",
+      "authorization",
+      "developer-token",
+      "login-customer-id"
+     ],
+     "cel": {
+      "customer_id": "6088874770",
+      "conversion_action": "7825200916",
+      "validate_only": true
+     },
+     "body": {
+      "conversions": [
+       {
+        "conversionAction": "customers/6088874770/conversionActions/7825200916",
+        "conversionDateTime": "2026-10-06 17:46:13+02:00",
+        "conversionValue": 0,
+        "currencyCode": "HUF",
+        "orderId": "mb_0muwup5ext3ny5b7gqlswik",
+        "wbraid": "CoMKCQ_TESZT_PMU_MUWUOZQU_WBRAID",
+        "userIdentifiers": [
+         {
+          "hashedEmail": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         },
+         {
+          "hashedPhoneNumber": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4"
+         }
+        ],
+        "consent": {
+         "adUserData": "GRANTED",
+         "adPersonalization": "GRANTED"
+        }
+       }
+      ],
+      "partialFailure": true,
+      "validateOnly": true
+     }
+    },
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   },
+   {
+    "id": 28,
+    "esemeny_id": "Konzultacio:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "tiltva",
+    "indok": "nincs GA4_TESZT_MEASUREMENT_ID (teszt-property): a GA4-be csak teszt-property-be kuldunk",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   },
+   {
+    "id": 29,
+    "esemeny_id": "Schedule:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "meta",
+    "platform_nev": "Schedule",
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "nincs_hitelesites",
+    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://graph.facebook.com/v21.0/28616665324611098/events",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "dataset": "28616665324611098",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST_MOSAIC_QA2"
+     },
+     "body": {
+      "data": [
+       {
+        "event_name": "Schedule",
+        "event_time": 1791301573,
+        "event_id": "Schedule:mb_0muwup5ext3ny5b7gqlswik",
+        "action_source": "website",
+        "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok",
+        "user_data": {
+         "em": [
+          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         ],
+         "ph": [
+          "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+         ],
+         "external_id": [
+          "2692ece9a48e345a8b1119f7b02ad2da3e89aac6d1eb13c9da9e18af6c2983d7"
+         ],
+         "client_ip_address": "160.79.106.xxx",
+         "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+         "fbc": "fb.1.1791301555000.IwAR_TESZT_PMU_MUWUOZQU_FBCLID",
+         "fbp": "fb.1.1791296552000.9788913501"
+        },
+        "custom_data": {
+         "value": 0,
+         "currency": "HUF",
+         "order_id": "mb_0muwup5ext3ny5b7gqlswik",
+         "content_name": "Ingyenes konzultáció",
+         "content_category": "pmu",
+         "esemeny_tipus": "ernyo",
+         "utm_source": "facebook",
+         "utm_campaign": "qa2_pmu_utolso"
+        }
+       }
+      ],
+      "test_event_code": "TEST_MOSAIC_QA2",
+      "partner_agent": "mosaic-qa2-arnyek"
+     }
+    },
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   },
+   {
+    "id": 30,
+    "esemeny_id": "Schedule:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "kihagyva",
+    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   },
+   {
+    "id": 31,
+    "esemeny_id": "Schedule:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "google",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   },
+   {
+    "id": 32,
+    "esemeny_id": "Schedule:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   }
+  ]
+ },
+ "szerveres_naplo_vegso": {
+  "ok": true,
+  "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+  "erkezes": {
+   "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+   "uzletag": "pmu",
+   "tipus": "foglalas",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_PMU_MUWUOZQU_GCLID",
+      "ts": 1791301553
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_PMU_MUWUOZQU_WBRAID",
+      "ts": 1791301555
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791301555000.IwAR_TESZT_PMU_MUWUOZQU_FBCLID",
+     "fbclid": "IwAR_TESZT_PMU_MUWUOZQU_FBCLID",
+     "ts": 1791301555
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_PMU_MUWUOZQU_TTCLID",
+      "ts": 1791301555
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_pmu_elso",
+     "content": "hirdetes_a",
+     "ts": 1791301553
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_pmu_utolso",
+     "ts": 1791301555
+    },
+    "fbp": "fb.1.1791296552000.9788913501",
+    "ttp": "TESZT_PMU_MUWUOZQU_ttp_pkr6y59inn",
+    "ga4": {
+     "client_id": "641940850.1791215152",
+     "session_id": "1791300352",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true,
+    "dontes": true
+   },
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+   "ip": "160.79.106.xxx",
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok",
+   "bongeszo": {
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok",
+    "first_booking": true,
+    "szolgaltatas": "Ingyenes konzultáció",
+    "kategoria": "",
+    "ar": 0,
+    "g": "g:3354694",
+    "munkatars": "",
+    "bookingUrl": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471160&startDate=1793471400&back=mb_0muwup5ext3ny5b7gqlswik"
+   },
+   "ido": 1791301577,
+   "frissitve": 1791301577
+  },
+  "kuldesek": [
+   {
+    "id": 25,
+    "esemeny_id": "Konzultacio:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "meta",
+    "platform_nev": "PMU_Konzultacio",
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "elkuldve",
+    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://graph.facebook.com/v21.0/28616665324611098/events",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "dataset": "28616665324611098",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST_MOSAIC_QA2"
+     },
+     "body": {
+      "data": [
+       {
+        "event_name": "PMU_Konzultacio",
+        "event_time": 1791301573,
+        "event_id": "Konzultacio:mb_0muwup5ext3ny5b7gqlswik",
+        "action_source": "website",
+        "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok",
+        "user_data": {
+         "em": [
+          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         ],
+         "ph": [
+          "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+         ],
+         "external_id": [
+          "2692ece9a48e345a8b1119f7b02ad2da3e89aac6d1eb13c9da9e18af6c2983d7"
+         ],
+         "client_ip_address": "160.79.106.xxx",
+         "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+         "fbc": "fb.1.1791301555000.IwAR_TESZT_PMU_MUWUOZQU_FBCLID",
+         "fbp": "fb.1.1791296552000.9788913501"
+        },
+        "custom_data": {
+         "value": 0,
+         "currency": "HUF",
+         "order_id": "mb_0muwup5ext3ny5b7gqlswik",
+         "content_name": "Ingyenes konzultáció",
+         "content_category": "pmu",
+         "esemeny_tipus": "alap",
+         "utm_source": "facebook",
+         "utm_campaign": "qa2_pmu_utolso"
+        }
+       }
+      ],
+      "test_event_code": "TEST_MOSAIC_QA2",
+      "partner_agent": "mosaic-qa2-arnyek"
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"successful\":true,\"data\":{\"events_received\":4,\"fbtrace_id\":\"AlmOq7eH0a8XV3CONaO22SA\",\"messages\":[]}}",
+    "kuldo": "composio:METAADS_SEND_CONVERSION_EVENTS",
+    "probalkozas": 2,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301692
+   },
+   {
+    "id": 26,
+    "esemeny_id": "Konzultacio:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "kihagyva",
+    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   },
+   {
+    "id": 27,
+    "esemeny_id": "Konzultacio:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "google",
+    "platform_nev": "ARNYEK-7825200916",
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "nincs_hitelesites",
+    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://googleads.googleapis.com/v21/customers/6088874770:uploadClickConversions",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type",
+      "authorization",
+      "developer-token",
+      "login-customer-id"
+     ],
+     "cel": {
+      "customer_id": "6088874770",
+      "conversion_action": "7825200916",
+      "validate_only": true
+     },
+     "body": {
+      "conversions": [
+       {
+        "conversionAction": "customers/6088874770/conversionActions/7825200916",
+        "conversionDateTime": "2026-10-06 17:46:13+02:00",
+        "conversionValue": 0,
+        "currencyCode": "HUF",
+        "orderId": "mb_0muwup5ext3ny5b7gqlswik",
+        "wbraid": "CoMKCQ_TESZT_PMU_MUWUOZQU_WBRAID",
+        "userIdentifiers": [
+         {
+          "hashedEmail": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         },
+         {
+          "hashedPhoneNumber": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4"
+         }
+        ],
+        "consent": {
+         "adUserData": "GRANTED",
+         "adPersonalization": "GRANTED"
+        }
+       }
+      ],
+      "partialFailure": true,
+      "validateOnly": true
+     }
+    },
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   },
+   {
+    "id": 28,
+    "esemeny_id": "Konzultacio:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "tiltva",
+    "indok": "nincs GA4_TESZT_MEASUREMENT_ID (teszt-property): a GA4-be csak teszt-property-be kuldunk",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   },
+   {
+    "id": 29,
+    "esemeny_id": "Schedule:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "meta",
+    "platform_nev": "Schedule",
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "elkuldve",
+    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "https://graph.facebook.com/v21.0/28616665324611098/events",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "dataset": "28616665324611098",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST_MOSAIC_QA2"
+     },
+     "body": {
+      "data": [
+       {
+        "event_name": "Schedule",
+        "event_time": 1791301573,
+        "event_id": "Schedule:mb_0muwup5ext3ny5b7gqlswik",
+        "action_source": "website",
+        "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok",
+        "user_data": {
+         "em": [
+          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         ],
+         "ph": [
+          "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+         ],
+         "external_id": [
+          "2692ece9a48e345a8b1119f7b02ad2da3e89aac6d1eb13c9da9e18af6c2983d7"
+         ],
+         "client_ip_address": "160.79.106.xxx",
+         "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+         "fbc": "fb.1.1791301555000.IwAR_TESZT_PMU_MUWUOZQU_FBCLID",
+         "fbp": "fb.1.1791296552000.9788913501"
+        },
+        "custom_data": {
+         "value": 0,
+         "currency": "HUF",
+         "order_id": "mb_0muwup5ext3ny5b7gqlswik",
+         "content_name": "Ingyenes konzultáció",
+         "content_category": "pmu",
+         "esemeny_tipus": "ernyo",
+         "utm_source": "facebook",
+         "utm_campaign": "qa2_pmu_utolso"
+        }
+       }
+      ],
+      "test_event_code": "TEST_MOSAIC_QA2",
+      "partner_agent": "mosaic-qa2-arnyek"
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"successful\":true,\"data\":{\"events_received\":4,\"fbtrace_id\":\"AlmOq7eH0a8XV3CONaO22SA\",\"messages\":[]}}",
+    "kuldo": "composio:METAADS_SEND_CONVERSION_EVENTS",
+    "probalkozas": 2,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301693
+   },
+   {
+    "id": 30,
+    "esemeny_id": "Schedule:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "kihagyva",
+    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   },
+   {
+    "id": 31,
+    "esemeny_id": "Schedule:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "google",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   },
+   {
+    "id": 32,
+    "esemeny_id": "Schedule:mb_0muwup5ext3ny5b7gqlswik",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwup5ext3ny5b7gqlswik",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
+    "ertek": 0,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791301639,
+    "frissitve": 1791301639
+   }
+  ]
+ },
+ "kulso_szallito_nyers_valasz": {
+  "megjegyzes": "Meta-tesztkuldes a Composio METAADS_SEND_CONVERSION_EVENTS eszkozen at (mosaic-meta fiok), az ARNYEK dataset-re (28616665324611098), test_event_code-dal (SZINTETIKUS: TEST_MOSAIC_QA2). A PMU- es az oxigen-eset 4 esemenye egy hivasban ment (a szerveres naplo sorai: 25, 29 = PMU; 33, 37 = oxigen); custom_data csak value / currency / order_id; IP nelkul (a naplozott IP maszkolt).",
+  "platform_valasz_nyers": {
+   "successful": true,
+   "data": {
+    "events_received": 4,
+    "fbtrace_id": "AlmOq7eH0a8XV3CONaO22SA",
+    "messages": []
+   }
+  }
+ }
+}

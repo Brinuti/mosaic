@@ -1319,6 +1319,9 @@ async function arnyekMeres(k, piId, mod, pi = null) {
   }
 }
 
+/** A webhook-ut kovetve manualisan (kulcsos /api/meres-admin 'ajandek_ujra'): ugyanaz az arnyek-ut, a PaymentIntentet a Stripe-tol kerdezi. -> arnyekMeres allapota. */
+export const arnyekMeresUjra = (env, piId, mod, most = new Date()) => arnyekMeres({ env, most }, piId, mod);
+
 // payment_intent.succeeded: levelek (fizetesEsemenyFo), majd a szerveroldali vasarlasmeres (meresKuld): a mereshiba csak 5xx-et okoz
 // (a Stripe ujraprobalja; a levelek ilyenkor mar idempotensen kihagyodnak), a levelhiba elobb kiadja a sajat 5xx-et.
 async function fizetesEsemeny(k, obj, ok) {

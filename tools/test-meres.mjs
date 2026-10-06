@@ -491,3 +491,13 @@ test('attribucio.js kuld(): a foglalas azonositojaval POST /api/meres-erkezes (s
   const rossz = bongeszo({ fetchImpl: async () => { throw new Error('offline'); } });
   assert.equal((await rossz.win.mhAttribucio.kuld({ source_id: BID, uzletag: 'headspa' })).allapot, 'hiba');
 });
+test('/api/meres-admin ajandek_ujra: kulcsos, ervenytelen pi 400, a kezelo (deps.ajandekUjra) megkapja a pi-t es a modot', async () => {
+  const D = d1(); const e = HTTP_ENV(D); const hivasok = [];
+  const ujra = async (env, pi, mod) => { hivasok.push([pi, mod]); return 'kesz'; };
+  const adm = (body, kulcs = KULCS_SZOVEG) => kezelAdmin(new Request(`https://x.pages.dev/api/meres-admin?kulcs=${kulcs}`, { method: 'POST', body: JSON.stringify(body) }), e, { ajandekUjra: ujra, now: () => NOW });
+  assert.equal((await adm({ muvelet: 'ajandek_ujra', pi: 'pi_3Sabc123XYZabc456' }, 'rossz')).status, 404);
+  assert.equal((await adm({ muvelet: 'ajandek_ujra', pi: 'nem_pi' })).status, 400);
+  assert.deepEqual(await (await adm({ muvelet: 'ajandek_ujra', pi: 'pi_3Sabc123XYZabc456', mod: 'atutalas' })).json(), { ok: true, allapot: 'kesz' });
+  assert.deepEqual(hivasok, [['pi_3Sabc123XYZabc456', 'atutalas']]);
+  assert.equal((await kezelAdmin(new Request(`https://x.pages.dev/api/meres-admin?kulcs=${KULCS_SZOVEG}`, { method: 'POST', body: JSON.stringify({ muvelet: 'ajandek_ujra', pi: 'pi_3Sabc123XYZabc456' }) }), e)).status, 501);
+});

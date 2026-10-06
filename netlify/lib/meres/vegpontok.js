@@ -33,6 +33,12 @@ export async function kezelAdmin(request, env, deps = {}) {
     let o; try { o = JSON.parse(szoveg); } catch (e) { return valasz(400, { ok: false, miert: 'nem JSON' }); }
     const most = deps.now ? deps.now() : Date.now();
     if (o.muvelet === 'kapcsolo') return valasz(200, await kapcsoloBeallit(env.KULCS_DB, { uzletag: o.uzletag || null, platform: o.platform || null, be: o.be === true, ok: typeof o.ok === 'string' ? o.ok.slice(0, 200) : null }, most));
+    // ajandekkartya: a webhook-ut MANUALIS ujrajatszasa (pl. elonezeten, ahol a Stripe nem erte el a webhookot): ugyanaz a kod fut (arnyekMeres), a PaymentIntentet a Stripe-tol kerdezi; kulcsos, csak MERES_ELOSZTO=1 mellett kuld
+    if (o.muvelet === 'ajandek_ujra') {
+      if (!deps.ajandekUjra) return valasz(501, { ok: false, miert: 'nincs ajandek-ujrajatszas' });
+      if (!/^pi_[A-Za-z0-9]{8,80}$/.test(String(o.pi || ''))) return valasz(400, { ok: false, miert: 'ervenytelen pi' });
+      return valasz(200, { ok: true, allapot: await deps.ajandekUjra(env, o.pi, o.mod === 'atutalas' ? 'atutalas' : 'kartya', new Date(most)) });
+    }
     if (o.muvelet === 'megerosit') return valasz(200, await kuldesMegerosit(env.KULCS_DB, { id: Number(o.id), allapot: o.allapot, http_status: o.http_status, valasz: o.valasz, kuldo: o.kuldo }, most));
     return valasz(400, { ok: false, miert: 'ismeretlen muvelet' });
   }
