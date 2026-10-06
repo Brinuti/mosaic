@@ -46,3 +46,7 @@ Foglalas nem jott letre, adat nem keluldott be. Minden keres a szalon naptaraban
 Regresszio: node --test tools/test-*.mjs -> 171 teszt, 170 ok, 0 hiba, 1 kihagyott (a LIVE=1-es elo proba).
 reteg-proba.mjs --overlay dist: 311 ellenorzes; a valtoztatassal ket futasban 1, illetve 2 "sebesseg" hiba (naptar-vaz < 1,5 mp: 1878 / 1888 ms; az elso szabad nap < 4 mp)
 - a valtoztatas NELKULI alapallapoton (a HEAD, kulon worktree-ben epitett dist) UGYANEZ a ket hiba van (1863 / 1874 ms, 311 ellenorzesbol 2 hiba): a sandbox halozati sebessege, nem a valtoztatas.
+
+GTM (olvasas, eles v52 "2026-10-05 foglalo lepes-meres GA4 (#88)", mind a 64 valtozo): a bookingUrl-t feldolgozo valtozok (175, 182, 193, 208) kizarolag
+new URL(bookingUrl).searchParams.get('serviceId' / 'startDate')-tel olvasnak; reguláris kifejezes a bookingUrl-re nincs -> a "&back=mb_..." veg nem erinti oket.
+Nem ellenorzott: a 61 cimke / 72 trigger feltetelei, a Stape szerver-kontener, a koszonooldalrol a Zapier fele menno hivasok. (A Tag Manager API ketszer 429-et adott, a masodik probalkozas sikerult.)
