@@ -1,0 +1,315 @@
+{
+ "eset": "darabszam-ellenorzes",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07-javitas-utan",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T18:36:25.638Z",
+   "lepes": "eset: darabszam-ellenorzes",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  },
+  {
+   "ido": "2026-10-07T18:36:25.639Z",
+   "lepes": "keso Zap-levelekre varunk 240 mp-et, utana a naplok ujraolvasasa"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "dupla-level-eltero-jelzes (mb_0muyfyhmpngcyfwhxh610o2): kiment darabszam (Meta, TikTok, GA4, Google)",
+   "elvart": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "tenyleges": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "dupla-level-eltero-jelzes: egy alapesemeny-tipus; minden esemeny_id a sajat booking_id-jat hordozza",
+   "elvart": [
+    1,
+    true
+   ],
+   "tenyleges": [
+    1,
+    true
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "dupla-level-eltero-jelzes-forditva (mb_0muyfzk6f9ennm7kg4ohtsl): kiment darabszam (Meta, TikTok, GA4, Google)",
+   "elvart": [
+    1,
+    1,
+    1,
+    0
+   ],
+   "tenyleges": [
+    1,
+    1,
+    1,
+    0
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "dupla-level-eltero-jelzes-forditva: egy alapesemeny-tipus; minden esemeny_id a sajat booking_id-jat hordozza",
+   "elvart": [
+    1,
+    true
+   ],
+   "tenyleges": [
+    1,
+    true
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "paros-headspa (mb_0muyg0j20fdc4lsvjeqq7e8): kiment darabszam (Meta, TikTok, GA4, Google)",
+   "elvart": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "tenyleges": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "paros-headspa: egy alapesemeny-tipus; minden esemeny_id a sajat booking_id-jat hordozza",
+   "elvart": [
+    1,
+    true
+   ],
+   "tenyleges": [
+    1,
+    true
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "elso-foglalas (mb_0muyg1iww188bnn9ae630b5): kiment darabszam (Meta, TikTok, GA4, Google)",
+   "elvart": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "tenyleges": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "elso-foglalas: egy alapesemeny-tipus; minden esemeny_id a sajat booking_id-jat hordozza",
+   "elvart": [
+    1,
+    true
+   ],
+   "tenyleges": [
+    1,
+    true
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "valodi-visszajaro (mb_0muyg2i568qbmcz2ddia3ap): kiment darabszam (Meta, TikTok, GA4, Google)",
+   "elvart": [
+    1,
+    1,
+    1,
+    0
+   ],
+   "tenyleges": [
+    1,
+    1,
+    1,
+    0
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "valodi-visszajaro: egy alapesemeny-tipus; minden esemeny_id a sajat booking_id-jat hordozza",
+   "elvart": [
+    1,
+    true
+   ],
+   "tenyleges": [
+    1,
+    true
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "dupla-level (mb_0muyg79cp8kx61q2q1jo3lf): kiment darabszam (Meta, TikTok, GA4, Google)",
+   "elvart": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "tenyleges": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "dupla-level: egy alapesemeny-tipus; minden esemeny_id a sajat booking_id-jat hordozza",
+   "elvart": [
+    1,
+    true
+   ],
+   "tenyleges": [
+    1,
+    true
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "platformonkenti OSSZES kiment darabszam (Meta, TikTok, GA4, Google)",
+   "elvart": [
+    10,
+    10,
+    6,
+    4
+   ],
+   "tenyleges": [
+    10,
+    10,
+    6,
+    4
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "esemeny_id duplazas: egyetlen (esemeny_id, platform) sem fordul elo ketszer az osszes kor-foglalas soraban",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  }
+ ],
+ "szimulalt": [],
+ "esetenkent": [
+  {
+   "eset": "dupla-level-eltero-jelzes",
+   "booking_id": "mb_0muyfyhmpngcyfwhxh610o2",
+   "kiment": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "elvart": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "sorok": 8
+  },
+  {
+   "eset": "dupla-level-eltero-jelzes-forditva",
+   "booking_id": "mb_0muyfzk6f9ennm7kg4ohtsl",
+   "kiment": {
+    "meta": 1,
+    "tiktok": 1,
+    "ga4": 1,
+    "google": 0
+   },
+   "elvart": {
+    "meta": 1,
+    "tiktok": 1,
+    "ga4": 1,
+    "google": 0
+   },
+   "sorok": 4
+  },
+  {
+   "eset": "paros-headspa",
+   "booking_id": "mb_0muyg0j20fdc4lsvjeqq7e8",
+   "kiment": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "elvart": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "sorok": 8
+  },
+  {
+   "eset": "elso-foglalas",
+   "booking_id": "mb_0muyg1iww188bnn9ae630b5",
+   "kiment": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "elvart": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "sorok": 8
+  },
+  {
+   "eset": "valodi-visszajaro",
+   "booking_id": "mb_0muyg2i568qbmcz2ddia3ap",
+   "kiment": {
+    "meta": 1,
+    "tiktok": 1,
+    "ga4": 1,
+    "google": 0
+   },
+   "elvart": {
+    "meta": 1,
+    "tiktok": 1,
+    "ga4": 1,
+    "google": 0
+   },
+   "sorok": 4
+  },
+  {
+   "eset": "dupla-level",
+   "booking_id": "mb_0muyg79cp8kx61q2q1jo3lf",
+   "kiment": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "elvart": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "sorok": 8
+  }
+ ],
+ "eredmeny": "PASS"
+}
