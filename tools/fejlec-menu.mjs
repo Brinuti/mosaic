@@ -14,6 +14,10 @@ const PAROS_CIM = 'Páros Head Spa';
 const PAROS = '/paros-headspa-budapest';
 const NYELV_EN = '<!--mh-nyelv:en-->';
 const HEADER = /<header id="SITE_HEADER"[\s\S]*?<\/header>/;
+// A "Kapcsolat" es a "GYIK" fomenupont (2026-10-07) onallo oldalra visz: /kapcsolat, /gyik (a Wixben a nyitooldal szekcioira ugrottak: /#comp-m3znoarb, /#comp-m4l2o45p)
+const MENU_ATIRANYITAS = [[/href="\/#comp-m3znoarb"/g, 'href="/kapcsolat"'], [/href="\/#comp-m4l2o45p"/g, 'href="/gyik"']];
+// (a Wix a horgony-linkekre data-anchor attributumot tett: az uj, valodi oldal-linkeken ez felesleges es a kijelolt menupont felismeresit is zavarja)
+const menuLinkek = (h) => MENU_ATIRANYITAS.reduce((x, [re, uj]) => x.replace(re, uj), h).replace(/ data-anchor="[^"]*"( href="\/(?:kapcsolat|gyik)")/g, '$1');
 
 // --- Paros Head Spa onallo fomenupont ---------------------------------------------------------------------------------------------------------------
 // asztali: a lenyilo (itemDepth1) eleme kikerul, helyette fomenupont (itemDepth0) a Szortelenites ele
@@ -130,10 +134,10 @@ const AKCIOSAV_HU = /Okt(?:ó|&oacute;)beri akci(?:ó|&oacute;)! - 20% kedvezm(?
 const AKCIOSAV_HU_ROVID = /Okt(?:ó|&oacute;)beri akci(?:ó|&oacute;)! 20% kedvezm(?:é|&eacute;)ny minden headspa \+ aj(?:á|&aacute;)nd(?:é|&eacute;)kk(?:á|&aacute;)rty(?:á|&aacute;)ra/g;
 function angolMenu(h, mobil) {
   // a GYIK pont a magyar nyitooldal GYIK-jara visz: az angol oldalakon elmarad
-  h = h.replace(/<li class="itemDepth02233374943__itemWrapper wixui-horizontal-menu__item"(?:(?!<\/li>)[\s\S])*?href="\/#comp-m4l2o45p"(?:(?!<\/li>)[\s\S])*?<\/li>/, '')
-    .replace(/<li data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-\d+"(?:(?!<\/li>)[\s\S])*?href="\/#comp-m4l2o45p"(?:(?!<\/li>)[\s\S])*?<\/li>/, '');
+  h = h.replace(/<li class="itemDepth02233374943__itemWrapper wixui-horizontal-menu__item"(?:(?!<\/li>)[\s\S])*?href="\/gyik"(?:(?!<\/li>)[\s\S])*?<\/li>/, '')
+    .replace(/<li data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-\d+"(?:(?!<\/li>)[\s\S])*?href="\/gyik"(?:(?!<\/li>)[\s\S])*?<\/li>/, '');
   // a Kapcsolat pont az angol oldal sajat elerhetoseg-szekciojara ugrik (id="helyszin")
-  h = h.replace(/href="\/#comp-m3znoarb"/g, 'href="#helyszin"');
+  h = h.replace(/href="\/kapcsolat"/g, 'href="#helyszin"');
   h = h.replace(/(href="#helyszin"[^>]*>(?:<div[^>]*>)?(?:<span[^>]*>)?)[^<]+(?=<)/g, '$1Contact');
   for (const [href, cim] of ANGOL_CIMKEK) {
     h = h.replace(new RegExp('(href="' + regex(href) + '"[^>]*>(?:<div[^>]*>)?(?:<span[^>]*>)?)[^<]+(?=<)', 'g'), (m, k) => k + cim);
@@ -159,6 +163,7 @@ const LABLEC_SZOVEG = {
     linkek2: [['/lezeres-szortelenites-budapest', 'Szőrtelenítés'], ['/noi-fodraszat-budapest', 'Fodrászat'], ['/oxigenterapia-budapest', 'Oxigénterápia'], ['/sminktetovalas-budapest', 'Sminktetoválás'], ['/ajandekkartya', 'Ajándékkártya']],
     jog: '© Big in Japan Kft. · <a href="/aszf">ÁSZF</a> · <a href="/impresszum">Impresszum</a> · <a id="mh-cc-lablec" href="#">Süti beállítások</a>',
     nyelv: ['/headspa-budapest-hungary', 'en', 'English'],
+    tovabb: '<p class="mhl-tovabb"><a href="/kapcsolat">Kapcsolat és üzenetküldés →</a><br><a href="/gyik">Gyakori kérdések</a></p>',
   },
   en: {
     marka: 'Head Spa, hairdressing, laser hair removal and oxygen therapy in Budapest’s 3rd district.',
@@ -182,7 +187,7 @@ function lablecHtml(nyelv) {
     '<nav class="mhl-oszlop" aria-label="' + t.headspa + '"><h3>' + t.headspa + '</h3>' + lista(t.linkek1) + '</nav>' +
     (t.linkek2.length ? '<nav class="mhl-oszlop" aria-label="' + t.szolg + '"><h3>' + t.szolg + '</h3>' + lista(t.linkek2) + '</nav>' : '') +
     '<div class="mhl-oszlop mhl-elerh"><h3>' + t.elerh.replace(/&/g, '&amp;') + '</h3><p>' + t.cim + '</p>' +
-    '<p><a href="tel:+36202474444">+36 20 247 4444</a><br><a href="mailto:mosaicheadspa@gmail.com">mosaicheadspa@gmail.com</a></p><p>' + t.ora + '</p></div>' +
+    '<p><a href="tel:+36202474444">+36 20 247 4444</a><br><a href="mailto:mosaicheadspa@gmail.com">mosaicheadspa@gmail.com</a></p><p>' + t.ora + '</p>' + (t.tovabb || '') + '</div>' +
     '</div>' +
     '<div id="comp-m40zyigs" class="mhl-also"><p>' + t.jog + '</p><a class="mhl-nyelv" href="' + t.nyelv[0] + '" hreflang="' + t.nyelv[1] + '" lang="' + t.nyelv[1] + '">' + GLOBUSZ + t.nyelv[2] + '</a></div>' +
     '</footer>';
@@ -196,6 +201,7 @@ function lablec(html, nyelv) {
 export function fejlecAtalakit(html, mobil, angol = html.includes(NYELV_EN)) {
   html = ajandekMenu(html, mobil);
   html = html.replace(HEADER, (h) => {
+    h = menuLinkek(h);
     h = parosFomenu(h, mobil);
     h = nyelvJelveny(h, angol, mobil);
     if (mobil) h = ajandekNyitva(h);
