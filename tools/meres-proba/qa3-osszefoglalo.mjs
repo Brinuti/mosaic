@@ -13,13 +13,14 @@ const ESETEK = [
   ['suti-elutasitas', '7. Süti-elutasítás: Meta + TikTok küld, Google + GA4 elutasított jelzést kap'], ['kattintas-tiktok-meta', '8a. Kattintás TikTokról, foglalás Metáról'], ['kattintas-meta-google', '8b. Kattintás Metáról, foglalás Google-ről'],
   ['ajandek-visszaterites', '9. Ajándékkártya-visszatérítés: semmilyen hamis esemény nem megy ki'],
 ];
-const EXTRA = [['dupla-level-eltero-jelzes', 'X1. EXTRA (nem a 9 eset): két levél ugyanarra a foglalásra, ELTÉRŐ „új vendég” jelzéssel']];
+const EXTRA = [['dupla-level-eltero-jelzes', 'X1. EXTRA (nem a 9 eset): két levél ugyanarra a foglalásra, ELTÉRŐ „új vendég” jelzéssel (új → nem új)'], ['dupla-level-eltero-jelzes-forditva', 'X1b. EXTRA: ugyanaz FORDÍTOTT sorrendben (nem új → új)']];
 const ft = (n) => (n === null || n === undefined ? '–' : new Intl.NumberFormat('hu-HU').format(n).replace(/ /g, ' '));
 const ki = [`# QA-3 kontrollált tesztek (${NAP})`, '',
   '**Célok** (csak árnyék): Meta dataset 28616665324611098 (`test_event_code` TEST83939) · TikTok ARNYEK pixel DB2GTTJC77UE4D1NE4MG (`test_event_code` TEST83543) · GA4 teszt-property G-M5MLRLNQBP · Google Ads ARNYEK másodlagos akciók (Zapier-webhookon át). Minden foglalás „TESZT – Claude” néven (a valódi 24 órás listából kiszűrhető). A vizsgált előnézet kódja és ága nem változott.', '',
   '| eset | booking_id / PI | eredmény |', '|---|---|---|'];
 const reszletek = []; let pass = 0, ossz = 0;
-for (const [k, cim, extra] of [...ESETEK, ...EXTRA.map((x) => [...x, true])]) {
+const CSAK_EXTRA = arg('extra-csak', '0') === '1'; // --extra-csak 1: csak az EXTRA esetek (pl. az X1 javitas utani ujrafuttatas, kulon --nap neven)
+for (const [k, cim, extra] of [...(CSAK_EXTRA ? [] : ESETEK), ...EXTRA.map((x) => [...x, true]), ...(CSAK_EXTRA ? ESETEK.filter(([k2]) => ['dupla-level'].includes(k2)).map((x) => [...x, true]) : [])]) {
   let o; try { o = JSON.parse(fs.readFileSync(`${D}qa3-${k}-${NAP}.json`, 'utf8')); } catch { ki.push(`| ${cim} | – | (nem futott) |`); continue; }
   if (!extra) { ossz++; if (o.eredmeny === 'PASS') pass++; }
   ki.push(`| ${cim} | \`${o.booking_id || o.pi || '–'}\` | **${o.eredmeny}** |`);
@@ -39,6 +40,6 @@ for (const [k, cim, extra] of [...ESETEK, ...EXTRA.map((x) => [...x, true])]) {
   for (const c of o.ellenorzesek || []) { const s = (v) => String(typeof v === 'string' ? v : JSON.stringify(v)).replace(/\|/g, '/').slice(0, 110); r.push(`| ${c.leiras.replace(/\|/g, '/')} | ${s(c.elvart)} | ${s(c.tenyleges)} | ${c.ok ? 'PASS' : '**FAIL**'} |`); }
   reszletek.push(r.join('\n'), '');
 }
-ki.push('', `**Összesítés (a 9 eset, 14 futás):** ${pass} / ${ossz} PASS. Az EXTRA (X1) eset külön, nem számít bele.`, '', ...reszletek);
+ki.push('', CSAK_EXTRA ? '**Újrafuttatás (csak az X1 és a páros HeadSpa esetek).**' : `**Összesítés (a 9 eset, 14 futás):** ${pass} / ${ossz} PASS. Az EXTRA (X1) eset külön, nem számít bele.`, '', ...reszletek);
 fs.writeFileSync(`${D}qa3-osszefoglalo-${NAP}.md`, ki.join('\n'));
 console.log(JSON.stringify({ nap: NAP, esetek: ossz, pass }));

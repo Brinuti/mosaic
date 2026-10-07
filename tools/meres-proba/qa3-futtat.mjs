@@ -1,7 +1,7 @@
 // QA-3 KONTROLLALT TESZTEK (2026-10-07, DECISION #102 utan): egy eset = valodi, "TESZT - Claude" nevu probafoglalas(ok) a MEGADOTT elonezeten, KOD- ES BRANCH-MODOSITAS NELKUL; csak arnyek-celok
 // (Meta TEST83939, TikTok TEST83543, GA4 teszt-property, Google ARNYEK akciok). Minden eset: booking_id, platformonkenti kiment esemeny_id-k, ELVART es TENYLEGES eredmeny, PASS / FAIL.
 //   EGYEZTETES_KULCS=... node tools/meres-proba/qa3-futtat.mjs --bazis https://<elonezet>.mosaic-d77.pages.dev --eset <nev> [--nap 2026-10-07] [--refund-bazis https://<masik-elonezet>.mosaic-d77.pages.dev] [--szaraz 1]
-// esetek: (extra: dupla-level-eltero-jelzes) ujratoltes | dupla-level | lemondas-elotte | lemondas-utana | visszajaro | kupon | konz-szor | konz-fodrasz | konz-pmu | konz-oxigen | suti-elutasitas | kattintas-tiktok-meta | kattintas-meta-google | ajandek-visszaterites
+// esetek: (extra: dupla-level-eltero-jelzes, dupla-level-eltero-jelzes-forditva) ujratoltes | dupla-level | lemondas-elotte | lemondas-utana | visszajaro | kupon | konz-szor | konz-fodrasz | konz-pmu | konz-oxigen | suti-elutasitas | kattintas-tiktok-meta | kattintas-meta-google | ajandek-visszaterites
 // Kimenet: docs/booking-engine/meres-naplo/qa3-<eset>-<nap>.json (nyers valaszok + ellenorzesek); osszefoglalo: tools/meres-proba/qa3-osszefoglalo.mjs. A kulcs soha nem kerul a kimenetbe.
 // Az "elvart" oszlop a DOKUMENTALT szabalybol jon (QA2_ARNYEK.md, esemeny-modell.js szabalyai), nem a kodbol szamolt ertekbol; eltereskor a FAIL a lelet, nem a teszt javitando.
 // Versenyhelyzet: az elo Salonic-level-Zap ugyanazokat a leveleket maga is tovabbitja az elonezet vegpontjara; ha o er oda elobb, az 1. sajat hivas "mar_kuldve" (a cellak vegesek) - ezt a teszt elfogadja, es jelzi.
@@ -117,6 +117,18 @@ async function futtat() {
       ell('1. level utan kiment (Meta, TikTok, Google, GA4): alap + ernyo', [2, 2, 1, 1], [o1.elkuldve.meta.length, o1.elkuldve.tiktok.length, o1.elkuldve.google.length, o1.elkuldve.ga4.length]);
       ell('2. level (eltero jelzes): a valasz szerint nincs uj kuldes', 'mar_kuldve', e2.esemeny_kuldes && e2.esemeny_kuldes.allapot);
       ell('egy foglalasbol EGY alapesemeny: a naploban csak FoglalasElso alap-esemeny van (nincs Visszajaro)', ['FoglalasElso'], [...new Set(n2.kuldesek.filter((k) => k.esemeny_tipus === 'alap').map((k) => k.esemeny_id.split(':')[0]))]);
+      ell('a 2. level utan a kiment esemenyek szama valtozatlan', o1.elkuldve.meta.length + o1.elkuldve.tiktok.length + o1.elkuldve.google.length + o1.elkuldve.ga4.length, o2.elkuldve.meta.length + o2.elkuldve.tiktok.length + o2.elkuldve.google.length + o2.elkuldve.ga4.length);
+      break;
+    }
+    case 'dupla-level-eltero-jelzes-forditva': { // EXTRA (X1, a javitas utan): ugyanaz FORDITOTT sorrendben - az 1. level "nem uj vendeg", a 2. "uj vendeg": a Visszajaro marad, a 2. level nem kuld FoglalasElso / ernyo esemenyt
+      const b = foglal('headspa', 'teljes'); const e1 = level(b, '', { ujVendeg: 'nem' }); const n1 = await naplo(b.booking_id); const o1 = osszegez(n1);
+      const e2 = level(b, '2', { ujVendeg: 'igen' }); const n2 = await naplo(b.booking_id); const o2 = osszegez(n2);
+      kimenet.szimulalt.push('az 1. level "uj vendeg: nem", a 2. level "uj vendeg: igen"; mindket level a SAJAT szallitobol (a Zap sajat levele ettol fuggetlenul erkezhet)');
+      Object.assign(kimenet, { booking_id: b.booking_id, salonic_uuid: b.salonic_uuid, esemeny_idk: o2, lemondas: lemond(b), elso_level_utan: { sorok: n1.kuldesek.length, elkuldve: [o1.elkuldve.meta.length, o1.elkuldve.tiktok.length, o1.elkuldve.google.length, o1.elkuldve.ga4.length] } });
+      elsoHivas(e1);
+      ell('1. level utan kiment (Meta, TikTok, Google, GA4): csak a Visszajaro alapesemeny (Google-akcio nincs, ernyo nincs)', [1, 1, 0, 1], [o1.elkuldve.meta.length, o1.elkuldve.tiktok.length, o1.elkuldve.google.length, o1.elkuldve.ga4.length]);
+      ell('2. level (eltero jelzes): a valasz szerint nincs uj kuldes', 'mar_kuldve', e2.esemeny_kuldes && e2.esemeny_kuldes.allapot);
+      ell('egy foglalasbol EGY alapesemeny: a naploban csak Visszajaro alap-esemeny van (nincs FoglalasElso, nincs ernyo)', [['Visszajaro'], 0], [[...new Set(n2.kuldesek.filter((k) => k.esemeny_tipus === 'alap').map((k) => k.esemeny_id.split(':')[0]))], n2.kuldesek.filter((k) => k.esemeny_tipus === 'ernyo').length]);
       ell('a 2. level utan a kiment esemenyek szama valtozatlan', o1.elkuldve.meta.length + o1.elkuldve.tiktok.length + o1.elkuldve.google.length + o1.elkuldve.ga4.length, o2.elkuldve.meta.length + o2.elkuldve.tiktok.length + o2.elkuldve.google.length + o2.elkuldve.ga4.length);
       break;
     }
