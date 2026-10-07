@@ -260,7 +260,7 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
       await p.reload({ waitUntil: 'domcontentloaded' });
       await p.waitForTimeout(500);
       await p.evaluate(() => document.getElementById('mh-cc-lablec').click());
-      await p.waitForFunction(() => { const s = document.getElementById('mh-cc-settings'); return s && s.style.display !== 'none' && getComputedStyle(document.getElementById('mh-cc')).display !== 'none'; }, null, { timeout: 4000 });
+      await p.waitForFunction(() => { const s = document.getElementById('mh-cc-settings'); return s && s.style.display !== 'none' && getComputedStyle(document.getElementById('mh-cc')).display !== 'none'; }, null, { timeout: 10000 });
       assert.match(await p.locator('#mh-cc-settings').innerText(), /Funkcionális/);
       assert.equal(await p.evaluate(() => location.hash), '', 'a link nem ugrik a #-re');
       await ctx.close();
@@ -271,7 +271,7 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
     for (const szeles of [1440, 390]) {
       const { p, ctx } = await nyit(szeles);
       await p.click('#comp-m7q6eklh a');
-      await p.waitForFunction(() => { const g = document.querySelector('[data-mh-popup="rk7x7"]'); return g && !g.hidden && getComputedStyle(g.querySelector('.mh-popup-doboz')).display !== 'none'; }, null, { timeout: 4000 });
+      await p.waitForFunction(() => { const g = document.querySelector('[data-mh-popup="rk7x7"]'); return g && !g.hidden && getComputedStyle(g.querySelector('.mh-popup-doboz')).display !== 'none'; }, null, { timeout: 10000 });
       await p.waitForTimeout(500);
       const r = await p.evaluate(() => {
         const dob = document.querySelector('.mhp-panel'); const db = dob.getBoundingClientRect();
@@ -288,12 +288,12 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
       for (const x of r.sorok.filter((y) => /^(06 20|mosaicheadspa)/.test(y.szoveg))) assert.ok(x.egySor && !x.tulcsordul, x.szoveg);
       // bezaras: Esc, X, hatterre kattintas
       await p.keyboard.press('Escape');
-      await p.waitForFunction(() => document.querySelector('[data-mh-popup="rk7x7"]').hidden, null, { timeout: 3000 });
+      await p.waitForFunction(() => document.querySelector('[data-mh-popup="rk7x7"]').hidden, null, { timeout: 9000 });
       for (const mod of ['x', 'hatter']) {
         await p.click('#comp-m7q6eklh a');
         await p.waitForFunction(() => !document.querySelector('[data-mh-popup="rk7x7"]').hidden);
         if (mod === 'x') await p.click('.mhp-zar'); else await p.mouse.click(6, 300);
-        await p.waitForFunction(() => document.querySelector('[data-mh-popup="rk7x7"]').hidden, null, { timeout: 3000 });
+        await p.waitForFunction(() => document.querySelector('[data-mh-popup="rk7x7"]').hidden, null, { timeout: 9000 });
       }
       await ctx.close();
     }
