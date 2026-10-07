@@ -64,7 +64,7 @@ async function hiv(method, ut, { body, query, headers = {}, env = ENV, most } = 
   return { ...v, adat };
 }
 const torzs = (extra = {}) => ({
-  termek: 'lezer30', email: 'vevo@example.com', ajandekozott: 'Kiss Anna', nev: 'Teszt Elek', iranyitoszam: '1023', varos: 'Budapest', cim: 'Bécsi út 2.',
+  termek: 'basic', email: 'vevo@example.com', ajandekozott: 'Kiss Anna', nev: 'Teszt Elek', iranyitoszam: '1023', varos: 'Budapest', cim: 'Bécsi út 2.',
   ceges: null, attr: { variant_id: 'general', oldal: '/lezeres-ajandekkartya' }, mer: { ana: false, adv: false }, kulcs: 'k-' + crypto.randomUUID(), ...extra,
 });
 function alairt(piId, { titok = WHSEC, tipus = 'payment_intent.succeeded' } = {}) {
@@ -94,9 +94,9 @@ describe('lezeres kereskedo: kornyezet es adat', () => {
     const f = lezerKornyezet({ LEZER_STRIPE_SECRET_KEY: 'rk_live_l', LEZER_STRIPE_PUBLISHABLE_KEY: 'pk_live_l', LEZER_STRIPE_WEBHOOK_SECRET: 'whsec_l', LEZER_SZAMLAZZ_AGENT_KULCS: 'lk', LEZER_AJANDEK_TITOK: 'masik' });
     assert.deepEqual([f.STRIPE_SECRET_KEY, f.STRIPE_PUBLISHABLE_KEY, f.STRIPE_WEBHOOK_SECRET, f.SZAMLAZZ_AGENT_KULCS, f.AJANDEK_TITOK], ['rk_live_l', 'pk_live_l', 'whsec_l', 'lk', 'masik']);
   });
-  test('a termekek: fix osszegek, a szamla-tetel osszege = az ar, AAM; sajat azonositok (a HeadSpa-ekkel nem keverednek)', () => {
+  test('a termekek: a 6 jovahagyott kartya, a szamla-tetel osszege = az ar, AAM; sajat azonositok (a HeadSpa-ekkel nem keverednek)', () => {
     const idk = Object.keys(LEZER.TERMEKEK);
-    assert.deepEqual(idk, ['lezer30', 'lezer50', 'lezer100', 'lezer200']);
+    assert.deepEqual(idk, ['honalj', 'basic', 'lab', 'summer', 'total', 'mantotal']);
     for (const id of idk) {
       const t = LEZER.TERMEKEK[id];
       const sor = LEZER.szamlaTetelek(id);
@@ -104,19 +104,34 @@ describe('lezeres kereskedo: kornyezet es adat', () => {
       assert.ok(sor.every((x) => x.afa === 'AAM'), id);
       assert.ok(!(id in HEADSPA.TERMEKEK));
       assert.match(t.kartya_cim, /Lézeres szőrtelenítés ajándékkártya/);
-      assert.deepEqual(t.kartya_felirat, ['MOSAIC LÉZERES', 'SZŐRTELENÍTÉS']);
+      assert.equal(t.kartya_felirat[0], 'LÉZERES SZŐRTELENÍTÉS');
+      // a nev nem ismetli az arat (az ar-soron latszik), a szamla-tetel viszont igen
+      assert.doesNotMatch(t.nev + t.kartya_cim, /\d/, id);
+      assert.match(sor[0].nev, new RegExp(`^MOSAIC lézeres szőrtelenítés ajándékkártya – ${t.nev} – ${LEZER.arSzoveg(t.ar_ft).replace('.', '\\.')} értékben$`), id);
     }
     assert.equal(LEZER.szamlaTetelek('egyeni'), null);
     assert.equal(LEZER.szamlaTetelek('__proto__'), null);
     assert.equal(LEZER.rendelesAzonosito('pi_3UNinYFv8vc2ArnL1mioRQd1'), 'LZ-1MIORQD1');
     assert.equal(HEADSPA.rendelesAzonosito('pi_3UNinYFv8vc2ArnL1mioRQd1'), 'MH-1MIORQD1');
   });
+  test('az arak es a szolgaltatas-azonositok egyeznek a Salonic "1. alkalom" szolgaltatasaival (docs pillanatkep, 2026-10-07)', () => {
+    const j = JSON.parse(fs.readFileSync(new URL('../../docs/booking-engine/SALONIC_SERVICE_STAFF_MAPPING_CURRENT.json', import.meta.url), 'utf8'));
+    const lezer = new Map(j.services.filter((x) => x.business === 'laser').map((x) => [Number(x.salonic_service_id), x]));
+    for (const [id, t] of Object.entries(LEZER.TERMEKEK)) {
+      const sz = t.salonic_szolgaltatas;
+      const x = lezer.get(sz.id);
+      assert.ok(x, `${id}: nincs ilyen Salonic-szolgaltatas (${sz.id})`);
+      assert.equal(String(x.salonic_spec_id), '66404', id);   // az "1. alkalom" (allapotfelmeressel)
+      assert.equal(x.active_price, t.ar_ft, `${id}: az ar nem egyezik a Salonic-szal`);
+      assert.equal(String(x.service_name_raw).replace(/^[^\p{L}]+/u, ''), sz.nev, id);
+    }
+  });
   test('a kliens-oldali lezeres adat sehol nem hivatkozik a HeadSpa-termekekre / video-adatra', () => {
     assert.deepEqual(LEZER.FINDER, []);
     assert.equal(LEZER.HEADSPA_VIDEO, null);
     assert.deepEqual(LEZER.ELEMEK, []);
     assert.equal(LEZER.ATVETELEK.length, 1);
-    assert.equal(LEZER.oldalAlapertek('/lezeres-ajandekkartya/').termek, 'lezer50');
+    assert.equal(LEZER.oldalAlapertek('/lezeres-ajandekkartya/').termek, 'basic');
     assert.ok(LEZER.TERMEKEK[LEZER.oldalAlapertek('/lezeres-ajandekkartya').termek]);
   });
   test('beallitas: a lezeres publikus kulcs, a HeadSpa-e soha', async () => {
@@ -132,13 +147,13 @@ describe('lezeres kereskedo: kornyezet es adat', () => {
 
 describe('lezeres kereskedo: rendeles (/fizetes)', () => {
   test('PaymentIntent a termek fix osszegevel, lezeres leirassal, LZ- azonositoval; kartya + Revolut Pay; szamla-mod: agent', async () => {
-    const r = await hiv('POST', 'fizetes', { body: torzs({ termek: 'lezer50' }) });
+    const r = await hiv('POST', 'fizetes', { body: torzs({ termek: 'summer' }) });
     assert.equal(r.status, 200, r.body);
     const pi = mock.allapot.pi(r.adat.pi);
-    assert.equal(pi.amount, 5000000);
+    assert.equal(pi.amount, 6680000);
     assert.equal(pi.currency, 'huf');
     assert.match(pi.description, /^MOSAIC lézeres szőrtelenítés ajándékkártya - /);
-    assert.equal(pi.metadata.termek, 'lezer50');
+    assert.equal(pi.metadata.termek, 'summer');
     assert.equal(pi.metadata.szamla_mod, 'agent');
     assert.equal(pi.metadata.szamla_id, undefined);
     assert.deepEqual([...(pi.payment_method_types || [])].sort(), ['card', 'revolut_pay']);
@@ -173,16 +188,16 @@ describe('lezeres kereskedo: rendeles (/fizetes)', () => {
 describe('lezeres kereskedo: fizetes utan (webhook): szamla a Szamlazz.hu-n, levelek, kod', () => {
   test('sikeres fizetes: a szamla a vasarlaskor (egyszer), AAM-tetellel; a vevo kodot es kartyat kap kotojel nelkul; a szalon "kupon" teendot', async () => {
     szamlazzKeresek = []; levelek = []; szamlazzValasz = null;
-    const a = await fizetett({ termek: 'lezer30', szemelyre: null });
+    const a = await fizetett({ termek: 'basic', szemelyre: null });
     assert.equal((await webhook(alairt(a.pi))).status, 200);
     assert.equal(szamlazzKeresek.length, 1);
     const xml = szamlazzKeresek[0];
     assert.match(xml, /<szamlaagentkulcs>titkos-agent-kulcs-teszt<\/szamlaagentkulcs>/);
     assert.doesNotMatch(xml, /HEADSPA/);
     assert.match(xml, new RegExp(`<rendelesSzam>${a.rendeles_id}</rendelesSzam>`));
-    assert.match(xml, /<megnevezes>MOSAIC lézeres szőrtelenítés ajándékkártya – 30\.000 Ft értékben<\/megnevezes>/);
+    assert.match(xml, /<megnevezes>MOSAIC lézeres szőrtelenítés ajándékkártya – Basic csomag – 36\.400 Ft értékben<\/megnevezes>/);
     assert.match(xml, /<afakulcs>AAM<\/afakulcs>/);
-    assert.match(xml, /<bruttoErtek>30000<\/bruttoErtek>/);
+    assert.match(xml, /<bruttoErtek>36400<\/bruttoErtek>/);
     assert.match(xml, /<email>vevo@example.com<\/email>/);
     assert.doesNotMatch(xml, /<elonezetpdf>true/);
     const pi = mock.allapot.pi(a.pi);
@@ -197,8 +212,10 @@ describe('lezeres kereskedo: fizetes utan (webhook): szamla a Szamlazz.hu-n, lev
     assert.match(vevo.html, /lezeres-szortelenites-budapest/);
     assert.match(szalon.html, /automatikusan kiállítottuk/);
     assert.match(szalon.html, /E-LZ-2026-1/);
-    assert.match(szalon.html, /fix összegű kupont/);
-    assert.match(szalon.html, /30\.000 Ft/);
+    assert.match(szalon.html, /100%-os kupont/);
+    assert.match(szalon.html, /AKCIÓ - BASIC CSOMAG - Állapofelmérés -20% kedvezménnyel/);   // a pontos Salonic-szolgaltatas neve
+    assert.match(szalon.html, /36\.400 Ft/);
+    assert.doesNotMatch(szalon.html, /maradék/);
     const kod = (/AK[0-9A-HJKMNP-TV-Z]{8}/.exec(szalon.html) || [])[0];
     assert.match(kod, KOD_RE);
     assert.ok(vevo.html.includes(kod));
@@ -212,7 +229,7 @@ describe('lezeres kereskedo: fizetes utan (webhook): szamla a Szamlazz.hu-n, lev
     assert.equal(kartya.status, 200, kartya.body.slice(0, 200));
     assert.match(kartya.body, /\/assets\/img\/ajandek\/kartya-hatter-lezer\.jpg/);
     assert.doesNotMatch(kartya.body, /kartya-hatter\.jpg/);
-    assert.match(kartya.body, /MOSAIC LÉZERES<br>SZŐRTELENÍTÉS/);
+    assert.match(kartya.body, /LÉZERES SZŐRTELENÍTÉS<br>BASIC CSOMAG/);
     assert.ok(fs.existsSync(new URL('../../assets/img/ajandek/kartya-hatter-lezer.jpg', import.meta.url)));
     const { kartyaOldal } = await import('../../netlify/lib/ajandek-levelek.js');
     const headspa = kartyaOldal({ bazis: 'https://x.hu', kod: 'AKABCDEFGH', ar_szoveg: '26.900 Ft', ervenyes_ig: '2027-04-07' });

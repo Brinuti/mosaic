@@ -11,7 +11,7 @@
 <meta name="description" content="Fix összegű ajándékkártya a MOSAIC lézeres szőrtelenítésére Budapesten: online megvásárolható, személyre szabható, 6 hónapig felhasználható.">
 <meta property="og:title" content="MOSAIC lézeres szőrtelenítés ajándékkártya">
 <meta property="og:description" content="Ajándékozz lézeres szőrtelenítést: fix összegű, személyre szabható ajándékkártya.">
-<meta property="og:image" content="https://www.mosaicheadspa.hu/assets/img/c2eb0f_095b37f37006437d8942bb760bc4740b.jpg">
+<meta property="og:image" content="https://www.mosaicheadspa.hu/assets/img/ajandek/hero-lezer-ajandek.jpg">
 <meta property="og:url" content="https://www.mosaicheadspa.hu/lezeres-ajandekkartya">
 <meta property="og:site_name" content="MOSAIC Headspa">
 <meta property="og:type" content="website">
@@ -21,7 +21,18 @@
 <link rel="stylesheet" href="/assets/css/wix-fonts.css">
 <link rel="stylesheet" href="/assets/css/ajandek.css">
 <!-- a fejlec felso, rozsaszin akcios savja (HeadSpa-akcio: "headspa foglalasra + ajandekkartyara") a lezeres oldalon felrevezeto, ezert nem latszik (mint a lezeres landingon) -->
-<style>#comp-mpv0ganp{display:none!important}</style>
+<style>#comp-mpv0ganp{display:none!important}
+/* a "személyre szabott kártya" kép (1101x909) telefonon se legyen levágva (az alap-stílus a HeadSpa-kép 1200x1097 arányára készült) */
+@media (max-width:899px){.ah-atadas-foto{aspect-ratio:1101/909;object-position:50% 50%}}
+/* a 6 kartya kepe ugyanaz lenne: nincs kis kep, igy a nev / a tartalom / az ar elfer (asztalon a harom lepes magassagaba kerul) */
+.ah-termek{grid-template-columns:minmax(0,1fr)}
+.ah-termek-kep{display:none}
+@media (min-width:780px){
+  .ah-termek-test{grid-template-columns:minmax(0,1fr) auto;column-gap:10px;align-items:center;align-content:center}
+  .ah-termek-nev{grid-column:1;padding-right:0;font-size:19px}
+  .ah-termek-meta{grid-column:1}
+  .ah-termek .ah-ar{grid-column:2;grid-row:1 / span 2;align-self:center;margin:0 42px 0 0;font-size:20px;white-space:nowrap}
+}</style>
 <script>
 /* A Stripe-visszateres (payment_intent, payment_intent_client_secret, redirect_status) es a levelbeli rendeles-link
    (rendeles, rt) parametereit KIVESSZUK a cimsorbol, MIELOTT a suti.js / GTM beolvasna az oldal cimet: a client_secret
@@ -63,7 +74,7 @@
   <!-- HERO: teljes szelessegu foto, a szoveg balra egy kremszinu atmenet felett (a szoveg az assets/js/ajandek-adat-lezer.js VARIANTOK-bol jon) -->
   <section class="ah-hero" id="ah-hero" aria-labelledby="ah-hero-cim">
     <figure class="ah-hero-media">
-      <img class="ah-hero-kep" id="ah-hero-kep" src="/assets/img/c2eb0f_095b37f37006437d8942bb760bc4740b.jpg" width="850" height="875" alt="Zsófi, a MOSAIC lézeres szőrtelenítés szakértője" fetchpriority="high" style="object-position:50% 30%">
+      <img class="ah-hero-kep" id="ah-hero-kep" src="/assets/img/ajandek/hero-lezer-ajandek.jpg" width="1200" height="960" alt="Lézeres szőrtelenítés kezelés a MOSAIC-ban, előtérben a személyre szabott ajándékkártya" fetchpriority="high" style="object-position:60% 55%">
       <video class="ah-hero-video" id="ah-hero-video" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" hidden></video>
     </figure>
     <div class="ah-tartalom ah-hero-racs">
@@ -88,7 +99,7 @@
 
     <div class="ah-tartalom ah-lepesek" id="ah-lepesek">
       <section class="ah-lepes" aria-labelledby="ah-l1-cim">
-        <header class="ah-lepes-fej"><span class="ah-lepes-szam">1</span><div><h3 id="ah-l1-cim">Válassz kártyát</h3><p>Az ajándékozott bármelyik lézeres kezelésre felhasználhatja.</p></div></header>
+        <header class="ah-lepes-fej"><span class="ah-lepes-szam">1</span><div><h3 id="ah-l1-cim">Válassz kártyát</h3><p>Terület vagy kész csomag: az ajándékozott az első kezelést kapja.</p></div></header>
         <div class="ah-termekek" id="ah-termek-racs" role="radiogroup" aria-labelledby="ah-l1-cim"></div>
       </section>
 
@@ -125,7 +136,7 @@
         <p class="ah-halk">Öt egyszerű lépés a kiválasztástól a beváltásig.</p>
       </header>
       <ol class="ah-hogyan-lepesek">
-        <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="gift" aria-hidden="true"></span><b>1</b></span><strong>Kiválasztod</strong><span>az ajándékkártya értékét.</span></li>
+        <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="gift" aria-hidden="true"></span><b>1</b></span><strong>Kiválasztod</strong><span>a területet vagy a kész csomagot.</span></li>
         <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="pencil" aria-hidden="true"></span><b>2</b></span><strong>Személyre szabod</strong><span>Design, fotó és idézet, ha szeretnéd.</span></li>
         <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="card" aria-hidden="true"></span><b>3</b></span><strong>Kifizeted</strong><span>Bankkártyával vagy digitális tárcával.</span></li>
         <li><span class="ah-hogyan-ikon"><span class="ah-ikon" data-ikon="mail" aria-hidden="true"></span><b>4</b></span><strong>Átadod</strong><span>E-mailben megkapod: kinyomtatod vagy továbbküldöd.</span></li>
@@ -139,7 +150,7 @@
   <section class="ah-szekcio ah-atadas" id="ah-atadas" aria-labelledby="ah-atadas-cim">
     <div class="ah-tartalom ah-atadas-racs">
       <div class="ah-atadas-kep">
-        <img class="ah-atadas-foto" src="/assets/img/ajandek/atadas-szemelyre.jpg" width="1200" height="1097" alt="A személyre szabott ajándékkártya: bármilyen fotót feltölthetsz, bármit ráírhatsz, és a megajándékozott nevét is" loading="lazy" decoding="async">
+        <img class="ah-atadas-foto" src="/assets/img/ajandek/atadas-szemelyre-lezer.jpg" width="1101" height="909" alt="A személyre szabott lézeres ajándékkártya: bármilyen fotót feltölthetsz, bármit ráírhatsz, és a megajándékozott nevét is" loading="lazy" decoding="async">
       </div>
       <div class="ah-atadas-szoveg">
         <h2 id="ah-atadas-cim">Személyre szabott ajándékkártya!</h2>
@@ -217,13 +228,14 @@
     <div class="ah-tartalom ah-info-racs ah-info-egy">
       <div class="ah-gyik">
         <h2 id="ah-gyik-cim">Kérdésed van? Megválaszoltuk.</h2>
-        <details><summary>Mire használható az ajándékkártya?</summary><p>A MOSAIC lézeres szőrtelenítésén, bármelyik testtájra. Az ajándékozott maga választja ki, melyik területet szeretné kezeltetni. Ha a kezelés ára kevesebb a kártya értékénél, a maradék összeg is felhasználható (a kártya érvényességi idején belül).</p></details>
+        <details><summary>Mit kap az ajándékozott?</summary><p>A kiválasztott terület vagy csomag első lézeres kezelését, állapotfelméréssel együtt (kb. 60–120 perc, a csomagtól függően). Az első alkalommal felmérjük a bőr- és szőrtípust, és el is kezdjük a kezelést. A további alkalmakat a megszokott áron foglalhatja (a 8 alkalmas programban a 4. és a 8. alkalom ajándék).</p></details>
+        <details><summary>Miben különböznek a csomagok?</summary><p>A Hónalj és a Teljes láb egy-egy terület. A Basic (hónalj + teljes intim + fenékcsík), a Summer (teljes láb + hónalj + intim + fenékcsík) és a Total (teljes láb + teljes kar + hónalj + intim) több területet fed le egy alkalommal, a Man Total (hát + váll + mellkas + has + hónalj) férfiaknak szól. A csomagban a területek külön-külön vett árához képest kedvezőbb az ár.</p></details>
         <details><summary>Meddig érvényes az ajándékkártya?</summary><p>A vásárlás napjától számított 6 hónapig. A pontos lejárati dátum a kártyán is szerepel.</p></details>
         <details><summary>Hogyan kapom meg az ajándékkártyát?</summary><p>A fizetés után e-mailben visszaigazolást kapsz. Az ajándékkártya elkészültekor itt az oldalon és e-mailben is megjelenik, nyomtatható formában (kinyomtathatod, vagy PDF-ként mentheted).</p></details>
         <details><summary>Személyre szabhatom a kártyát?</summary><p>Igen: a fizetés előtt választhatsz designt, feltölthetsz egy fotót, és írhatsz rá idézetet vagy üzenetet.</p></details>
         <details><summary>Hogyan fizethetek?</summary><p>Bankkártyával, Google Pay-jel vagy Revolut Pay-jel. Átutalást ennél az ajándékkártyánál egyelőre nem tudunk fogadni.</p></details>
         <details><summary>Kaphatok céges számlát?</summary><p>Ennél az ajándékkártyánál a számlát magánszemély nevére tudjuk kiállítani, céges számlát nem. A számlát a vásárláskor állítjuk ki, és e-mailben küldjük.</p></details>
-        <details><summary>Hogyan váltható be?</summary><p>Az <a href="/lezeres-szortelenites-budapest">online időpontfoglalásnál</a> a kártyán lévő kuponkódot add meg a „kuponkód” mezőben. A kártya névre szól és 6 hónapig érvényes. Ha elakadsz, hívj minket: <a href="tel:+36202474444">06 20 247 4444</a>.</p></details>
+        <details><summary>Hogyan váltható be?</summary><p>Az <a href="/lezeres-szortelenites-budapest">online időpontfoglalásnál</a> válaszd ki a kártyán szereplő területet vagy csomagot (az első kezelést), és a „kuponkód” mezőbe írd be a kártyán lévő kódot. A kártya 6 hónapig érvényes. Ha elakadsz, hívj minket: <a href="tel:+36202474444">06 20 247 4444</a>.</p></details>
       </div>
     </div>
   </section>
@@ -547,7 +559,7 @@
         <div class="ah-gombsor ah-gombsor-oszlop" id="ah-osszegzo-gombok"></div>
         <div class="ah-segedszoveg" id="ah-bevaltas" hidden>
           <h3>Hogyan váltható be?</h3>
-          <p>Az <a href="/lezeres-szortelenites-budapest">online időpontfoglalásnál</a> a kártyán lévő kuponkódot add meg a „kuponkód” mezőben. A kártya névre szól és 6 hónapig érvényes.</p>
+          <p>Az <a href="/lezeres-szortelenites-budapest">online időpontfoglalásnál</a> válaszd ki a kártyán szereplő területet vagy csomagot, és a „kuponkód” mezőbe írd be a kártyán lévő kódot. A kártya 6 hónapig érvényes.</p>
         </div>
         <div class="ah-segedszoveg" id="ah-nyomtatas" hidden>
           <h3>Nyomtatási útmutató</h3>
