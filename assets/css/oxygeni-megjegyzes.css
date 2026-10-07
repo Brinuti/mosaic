@@ -1,0 +1,8 @@
+/* A /headspa-termekek-oxygeni oldal "Termekek es ajandekok" blokkja (2026-10-07): nalunk nem lehet termeket vasarolni, a Head Spa kezelesek csak OXYGENI termekekkel; az Oxigenterapia ajandek-termekei */
+.megj-racs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 920px; margin: 0 auto; }
+.megj-kartya { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 26px 26px 24px; background: #fff; border-radius: 18px; box-shadow: var(--arnyek); }
+.megj-kartya h3 { margin: 4px 0 0; font: 500 22px/1.25 var(--cim); color: var(--sotet); }
+.megj-kartya p { margin: 0; font-size: 16.5px; line-height: 1.6; color: var(--szoveg); }
+.megj-kartya .gomb { margin-top: auto; }
+.megj-kartya .ikon-kor svg { width: 21px; height: 21px; }
+@media (max-width: 760px) { .megj-racs { grid-template-columns: 1fr; } .megj-kartya { padding: 22px 20px 20px; } .megj-kartya h3 { font-size: 20px; } }
