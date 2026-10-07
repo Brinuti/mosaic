@@ -125,6 +125,17 @@ describe('az oxigénes ajándékkártya a menüben, a választón és az oxigén
     tartalmaz('@media (max-width: 599px) {\n  .av-racs { grid-template-columns: minmax(0, 1fr); }');
   });
 
+  test('az oxigénes oldalak a saját, "MOSAIC OXIGÉNTERÁPIA" feliratú személyre szabott kártyaképet használják (nem a HeadSpa-felirato vagy lézeres változatot)', () => {
+    const kep = '/assets/img/ajandek/atadas-szemelyre-oxigen.jpg';
+    assert.ok(fs.existsSync(path.join(GYOKER, kep.slice(1))), kep);
+    for (const f of ['oxigen-ajandekkartya.html', 'oxigenterapia-budapest.html']) {
+      const h = olvas('foglalas', f);
+      assert.equal(db(h, kep), 1, f);
+      assert.ok(!h.includes('/ajandek/atadas-szemelyre.jpg'), f + ': nincs HeadSpa-feliratú kép');
+      assert.ok(!h.includes('/ajandek/atadas-szemelyre-lezer.jpg'), f + ': nincs lézeres kép');
+    }
+  });
+
   test('az oxigén landingen a "Személyre szabott ajándékkártya" sáv az árak után, a "Miért más nálunk" előtt áll, és a /oxigen-ajandekkartya oldalra visz (közvetlen link, nem hash)', () => {
     const h = olvas('foglalas', 'oxigenterapia-budapest.html');
     const arak = h.indexOf('<section class="arak"');
