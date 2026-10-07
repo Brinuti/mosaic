@@ -1,0 +1,110 @@
+{
+ "eset": "dupla-level",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07-r7-utan",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T20:13:24.446Z",
+   "lepes": "eset: dupla-level",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "1. hivas: parositas + esemenyek (vagy az elo Zap mar elintezte: mar_kuldve)",
+   "elvart": "parositott + kesz | mar_kuldve",
+   "tenyleges": "parositott + kesz",
+   "ok": true
+  },
+  {
+   "leiras": "2. hivas (ugyanaz a level): mar_kuldve",
+   "elvart": "mar_kuldve",
+   "tenyleges": "mar_kuldve",
+   "ok": true
+  },
+  {
+   "leiras": "2. hivas: duplikalt jelzes",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-sorok szama",
+   "elvart": 8,
+   "tenyleges": 8,
+   "ok": true
+  },
+  {
+   "leiras": "nincs dupla (esemeny_id, platform)",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  }
+ ],
+ "szimulalt": [],
+ "booking_id": "mb_0muyjoz9mtufugd58fwq41a",
+ "salonic_uuid": "fc70da25-448d-ddfb-c7f3-9ef917d73f59",
+ "esemeny_idk": {
+  "sorok": 8,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyjoz9mtufugd58fwq41a",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muyjoz9mtufugd58fwq41a",
+     "nev": "Schedule",
+     "ertek": 53800
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyjoz9mtufugd58fwq41a",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muyjoz9mtufugd58fwq41a",
+     "nev": "CompletePayment",
+     "ertek": 53800
+    }
+   ],
+   "google": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyjoz9mtufugd58fwq41a",
+     "nev": "ARNYEK-7825199989",
+     "ertek": 53800
+    }
+   ],
+   "ga4": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyjoz9mtufugd58fwq41a",
+     "nev": "foglalas_elso",
+     "ertek": 53800
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Schedule:mb_0muyjoz9mtufugd58fwq41a",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   },
+   {
+    "esemeny_id": "Schedule:mb_0muyjoz9mtufugd58fwq41a",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}

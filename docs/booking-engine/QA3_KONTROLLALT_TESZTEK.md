@@ -132,3 +132,36 @@ A visszatérítést a Stripe teszt-módú kulcsával kell létrehozni. A vizsgá
    - `REAL`: a valódi vendég-foglalások;
    - `UNKNOWN`: ami egyik osztályba sem sorolható – a csomagban külön sor, nem találgatjuk.
 4. **A kör végén háromutas egyeztetés (Claude): Salonic online foglalás = Gmail UUID = #128 `foglalas_egyeztetes` sor.** UUID-nként: van-e mindhárom helyen (hiányzó láb külön lista); vendégadat nélkül (UUID, üzletág, létrehozás / lemondás ideje, állapot, párosított, küldési sorok); a TESZT-osztályok szerint bontva. Az 1. és 2. forrás (Salonic aktív + törölt export, Gmail UUID-lista) a mérési munkamenet csomagjából jön; Claude nem kéri Feritől és nem olvassa a Gmailt / Salonicot.
+
+## Az új, tiszta 24 órás QA-3 ablak (R1–R7 mind PASS) – rögzítve 2026-10-07 22:19 Budapest (20:19 UTC)
+**Az R1–R7 újrateszt az R7-javítást tartalmazó kódon (#128 `ca2ff64`, élesedés 2026-10-07 20:45:53 Budapest / 18:45:53 UTC): 7 / 7 eset PASS** (futás: 21:50:33 → 22:18:14 Budapest; `--nap 2026-10-07-r7-utan`; nyers naplók és összefoglaló: `meres-naplo/qa3-*-2026-10-07-r7-utan.json`, `qa3-osszefoglalo-2026-10-07-r7-utan.md`):
+
+| eset | booking_id | eredmény |
+|---|---|---|
+| R1a (új → nem új) | `mb_0muyjg8cxm5jhu0se5dt3bc` | PASS |
+| R1b (nem új → új) | `mb_0muyjh8mtg7mp4jlzzwhpge` | PASS |
+| R2 páros HeadSpa (valódi minta) | `mb_0muyji8447cpxnjj2gtmbqk` | PASS |
+| R3 fizetős első foglalás | `mb_0muyjj838g82bj12rmyeq98` | PASS |
+| R4 valódi visszajáró (a Zap valódi levele) | `mb_0muyjk7f4pp91jaz21pxc2m` | PASS |
+| R5 ugyanaz a levél kétszer | `mb_0muyjoz9mtufugd58fwq41a` | PASS |
+| R6 darabszám + duplázás (R1–R5) | – | PASS: Meta 10, TikTok 10, GA4 6, Google 4 = elvárt, 0 dupla |
+| R7 `fuggoben` lezárása (a köszönőoldali kulcs-írás blokkolva, az élő Zap próbái) | `mb_0muyivlh3cdjvdf0e8tk2te` (UUID `ab2e46ff-4039-4d0e-b570-bc97bd56348e`) | PASS: `nincs sor → fuggoben/1 → /2 → /3 → parositatlan/4` (a 4. próbánál, 22:06:18 Budapest), `riasztas = 1` (a listában egyszer), 0 `meres_kuldes`, a késői szimulált level `parositatlan` / `kuldheto: false` / `lezart: true`, az állapot változatlan |
+
+(Az R7 előzetes, megszakadt futása – a konténer újraindult – a D1-ből ugyanezt mutatta: `011d67f0-…`, `parositatlan`, 4 próba, riasztás 1, 0 küldés; lásd `qa3-fuggoben-lezaras-megszakadt-futas-2026-10-07-r7-utan.md`.)
+
+**Az ablak (pontos):**
+- **Kezdete: 2026-10-07 22:20:00 Budapest = 2026-10-07 20:20:00 UTC**
+- **Zárása: 2026-10-08 22:20:00 Budapest = 2026-10-08 20:20:00 UTC**
+- A kiértékelés az ablak vége után **45–60 perccel** jön (2026-10-08 23:05–23:20 Budapest, 21:05–21:20 UTC); a zárásnál Feri belép az 5 Salonic-fiókba (aktív + törölt export). **QA-3 FINAL PASS csak ennek az ablaknak a hibamentes lezárása után adható** (a GPT-től).
+
+**Az ablak alatt (tiszta kör szabályai):**
+- A #128 ága és előnézete **változatlan** (fej: `ca2ff64`); nincs push, nincs deploy rá.
+- A kill switchekhez (`meres_kapcsolo`) és a Zaphoz (01a1125b) nem nyúlunk.
+- Claude **nem hoz létre TESZT-foglalást** az ablak alatt (a Zap a Feri-féle / más tesztleveleket úgyis továbbítja: azok `OTHER_TEST`). Az ablakba eső, a retest foglalásaihoz tartozó késői Zap-levelek `CONTROLLED_TEST` (a lista: `meres-naplo/qa3-teszt-uuid-lista-2026-10-08-ablak.txt`).
+- A #138 ág változhat (nem a mért kód).
+
+**A zárás utáni teendő (Claude) – a számláló és a háromutas egyeztetés:**
+1. A #128 D1-ből (csak olvasás, vendégadat nélkül) a `foglalas_egyeztetes` sorok az ablakra (`letrehozva` ≥ 20:20:00 UTC és < 2026-10-08 20:20:00 UTC), négy osztályban: `CONTROLLED_TEST` (a fenti lista), `OTHER_TEST` (tesztnév / korábbi QA-UUID – a mérési munkamenet listája), `REAL`, `UNKNOWN`. A felszabadult kulcsok (`foglalas_lemondas.eredmeny = 'felszabadult'`) külön sorban.
+2. **Háromutas egyeztetés:** Salonic online foglalás = Gmail UUID = #128 sor, UUID-nként; a hiányzó lábak külön listán. A Salonic-export és a Gmail UUID-lista a mérési munkamenet csomagjából jön.
+3. Az állapotok: a lezárás utáni elvárás szerint a valódi foglalások `parositatlan` + riasztás (nem `fuggoben`), 0 küldés; a lusta lezárás a számlálás előtt lefut (egy kulcsos GET elég).
+4. A nyers számok értelmezés nélkül, előbb Ferinek.

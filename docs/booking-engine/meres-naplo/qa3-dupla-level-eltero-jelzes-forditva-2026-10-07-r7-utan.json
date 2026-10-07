@@ -1,0 +1,133 @@
+{
+ "eset": "dupla-level-eltero-jelzes-forditva",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07-r7-utan",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T20:07:23.256Z",
+   "lepes": "eset: dupla-level-eltero-jelzes-forditva",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "1. hivas: parositas + esemenyek (vagy az elo Zap mar elintezte: mar_kuldve)",
+   "elvart": "parositott + kesz | mar_kuldve",
+   "tenyleges": "parositott + kesz",
+   "ok": true
+  },
+  {
+   "leiras": "1. level utan kiment (Meta, TikTok, Google, GA4): csak a Visszajaro alapesemeny (Google-akcio nincs, ernyo nincs)",
+   "elvart": [
+    1,
+    1,
+    0,
+    1
+   ],
+   "tenyleges": [
+    1,
+    1,
+    0,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "2. level (eltero jelzes): a valasz szerint nincs uj kuldes",
+   "elvart": "mar_kuldve",
+   "tenyleges": "mar_kuldve",
+   "ok": true
+  },
+  {
+   "leiras": "javitott kod: a 2. level eltero jelzese latszik (jelleg_rogzites.eltero), de a rogzitett jelleg az 1. levele marad",
+   "elvart": [
+    "visszajaro",
+    true,
+    "elso"
+   ],
+   "tenyleges": [
+    "visszajaro",
+    true,
+    "elso"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "egy foglalasbol EGY alapesemeny: a naploban csak Visszajaro alap-esemeny van (nincs FoglalasElso, nincs ernyo)",
+   "elvart": [
+    [
+     "Visszajaro"
+    ],
+    0
+   ],
+   "tenyleges": [
+    [
+     "Visszajaro"
+    ],
+    0
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "a 2. level utan a kiment esemenyek szama valtozatlan",
+   "elvart": 3,
+   "tenyleges": 3,
+   "ok": true
+  }
+ ],
+ "szimulalt": [
+  "az 1. level \"uj vendeg: nem\", a 2. level \"uj vendeg: igen\"; mindket level a SAJAT szallitobol (a Zap sajat levele ettol fuggetlenul erkezhet)"
+ ],
+ "booking_id": "mb_0muyjh8mtg7mp4jlzzwhpge",
+ "salonic_uuid": "4ddfdc09-a826-ef9d-69cb-5562c32443fa",
+ "esemeny_idk": {
+  "sorok": 4,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "Visszajaro:mb_0muyjh8mtg7mp4jlzzwhpge",
+     "nev": "HeadSpa_Visszajaro",
+     "ertek": 53800
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "Visszajaro:mb_0muyjh8mtg7mp4jlzzwhpge",
+     "nev": "HeadSpa_Visszajaro",
+     "ertek": 53800
+    }
+   ],
+   "google": [],
+   "ga4": [
+    {
+     "esemeny_id": "Visszajaro:mb_0muyjh8mtg7mp4jlzzwhpge",
+     "nev": "visszajaro",
+     "ertek": 53800
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Visszajaro:mb_0muyjh8mtg7mp4jlzzwhpge",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "elso_level_utan": {
+  "sorok": 4,
+  "elkuldve": [
+   1,
+   1,
+   0,
+   1
+  ]
+ },
+ "eredmeny": "PASS"
+}

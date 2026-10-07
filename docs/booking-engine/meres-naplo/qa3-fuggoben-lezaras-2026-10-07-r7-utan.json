@@ -1,0 +1,166 @@
+{
+ "eset": "fuggoben-lezaras",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07-r7-utan",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T19:50:33.527Z",
+   "lepes": "eset: fuggoben-lezaras",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  },
+  {
+   "ido": "2026-10-07T19:50:54.797Z",
+   "lepes": "az elo Zap probait varjuk (legfeljebb 25 perc); allapot-lekerdezes 20 mp-enkent",
+   "uuid": "ab2e46ff-4039-4d0e-b570-bc97bd56348e"
+  },
+  {
+   "ido": "2026-10-07T19:50:55.539Z",
+   "lepes": "allapot",
+   "allapot": "nincs sor"
+  },
+  {
+   "ido": "2026-10-07T19:51:57.632Z",
+   "lepes": "allapot",
+   "allapot": "fuggoben/1"
+  },
+  {
+   "ido": "2026-10-07T19:52:59.055Z",
+   "lepes": "allapot",
+   "allapot": "fuggoben/2"
+  },
+  {
+   "ido": "2026-10-07T19:56:03.794Z",
+   "lepes": "allapot",
+   "allapot": "fuggoben/3"
+  },
+  {
+   "ido": "2026-10-07T20:06:18.318Z",
+   "lepes": "allapot",
+   "allapot": "parositatlan/4"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "a Zap valodi levele megerkezett (a sor letrejott)",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  },
+  {
+   "leiras": "AUTOMATIKUS lezaras: a vegallapot parositatlan (a fuggoben nem vegallapot)",
+   "elvart": "parositatlan",
+   "tenyleges": "parositatlan",
+   "ok": true
+  },
+  {
+   "leiras": "egyszeri riasztas: riasztas = 1, a riasztas-listaban pontosan egyszer",
+   "elvart": [
+    1,
+    1
+   ],
+   "tenyleges": [
+    1,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "0 kuldes: nincs meres_kuldes sor, nincs booking_id parositas, nincs kuldve jelzes",
+   "elvart": [
+    0,
+    null,
+    null
+   ],
+   "tenyleges": [
+    0,
+    null,
+    null
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "(informacio) a lezaras a 4. (utolso) probanal tortent (probalkozas = 4); kevesebb = a lusta lezaras zarta le",
+   "elvart": 4,
+   "tenyleges": 4,
+   "ok": true
+  },
+  {
+   "leiras": "kesobbi (szimulalt) level: a valasz parositatlan, kuldheto: false, lezart: true, nincs uj riasztas",
+   "elvart": [
+    "parositatlan",
+    false,
+    true,
+    false
+   ],
+   "tenyleges": [
+    "parositatlan",
+    false,
+    true,
+    false
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "a kesobbi level utan: az allapot / probalkozas / riasztas valtozatlan, 0 kuldes",
+   "elvart": [
+    "parositatlan",
+    4,
+    1,
+    0
+   ],
+   "tenyleges": [
+    "parositatlan",
+    4,
+    1,
+    0
+   ],
+   "ok": true
+  }
+ ],
+ "szimulalt": [
+  "a koszonooldali kulcs-iras (POST /api/foglalas-kulcs) a bongeszoben blokkolva (503): a foglalas igy sosem parosithato - ez az eles oldal helyzete; a levelek / probak a VALODI, elo Zaptol jonnek (0, ~1, ~4, ~14,5 perc), a vegen egyetlen szimulalt kesobbi level"
+ ],
+ "booking_id": "mb_0muyivlh3cdjvdf0e8tk2te",
+ "salonic_uuid": "ab2e46ff-4039-4d0e-b570-bc97bd56348e",
+ "allapot_elozmeny": [
+  "nincs sor",
+  "fuggoben/1",
+  "fuggoben/2",
+  "fuggoben/3",
+  "parositatlan/4"
+ ],
+ "lezaras_ota_perc": 15.4,
+ "sor_a_lezaras_utan": {
+  "allapot": "parositatlan",
+  "probalkozas": 4,
+  "riasztas": 1,
+  "kulcs_forras": "salonic-oldal",
+  "booking_id": null,
+  "kuldve": null,
+  "letrehozva": 1791402699,
+  "frissitve": 1791403570
+ },
+ "kesobbi_level_valasz": {
+  "allapot": "parositatlan",
+  "kuldheto": false,
+  "lezart": true,
+  "riasztas": false,
+  "duplikalt": true
+ },
+ "esemeny_idk": {
+  "sorok": 0,
+  "elkuldve": {
+   "meta": [],
+   "tiktok": [],
+   "google": [],
+   "ga4": []
+  },
+  "nem_ment_ki": []
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}

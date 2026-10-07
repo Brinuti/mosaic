@@ -1,0 +1,114 @@
+{
+ "eset": "headspa",
+ "hivas_ideje": "2026-10-07T20:06:19.173Z",
+ "kerelem_maszkolt": {
+  "uuid": "ab2e46ff-4039-4d0e-b570-bc97bd56348e",
+  "host": "mosaicheadspa.salonic.hu",
+  "felado": "Mosaic Headspa",
+  "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+  "munkatarsak": [
+   "Páros kezelés"
+  ],
+  "ld": {
+   "startDate": "2026-10-31T18:00:00.000Z"
+  },
+  "level_datuma": "2026-10-07T20:05:19Z",
+  "ar": 53800,
+  "vendeg": "<maszkolva: e-mail + telefon>",
+  "uj_vendeg": true
+ },
+ "szimulalt": {
+  "uj_vendeg": true,
+  "megjegyzes": "a Salonic \"uj vendeg\" jelzeset a teszt szimulalja; az ar a Salonic-level \"Price / Fizetendo varhatoan\" sorabol"
+ },
+ "egyeztetes_valasz_nyers": {
+  "ok": true,
+  "allapot": "parositatlan",
+  "kuldheto": false,
+  "duplikalt": true,
+  "lezart": true,
+  "booking_id": null,
+  "kulcs": "10427|24354|1793469600",
+  "kulcs_forras": "salonic-oldal",
+  "probalkozas": 4,
+  "riasztas": false,
+  "nyom": {
+   "uuid": "ab2e46ff-4039-4d0e-b570-bc97bd56348e",
+   "host": "mosaicheadspa.salonic.hu"
+  }
+ },
+ "szerveres_naplo_nyers": {
+  "ok": true,
+  "source_id": "mb_0muyivlh3cdjvdf0e8tk2te",
+  "erkezes": {
+   "source_id": "mb_0muyivlh3cdjvdf0e8tk2te",
+   "uzletag": "headspa",
+   "tipus": "foglalas",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_HEADSPA_MUYIVIMU_GCLID",
+      "ts": 1791402634
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_HEADSPA_MUYIVIMU_WBRAID",
+      "ts": 1791402637
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791402637000.IwAR_TESZT_HEADSPA_MUYIVIMU_FBCLID",
+     "fbclid": "IwAR_TESZT_HEADSPA_MUYIVIMU_FBCLID",
+     "ts": 1791402637
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_HEADSPA_MUYIVIMU_TTCLID",
+      "ts": 1791402637
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_headspa_elso",
+     "content": "hirdetes_a",
+     "ts": 1791402634
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_headspa_utolso",
+     "ts": 1791402637
+    },
+    "fbp": "fb.1.1791397633000.5602878489",
+    "ttp": "TESZT_HEADSPA_MUYIVIMU_ttp_mqbjnsduqk",
+    "ga4": {
+     "client_id": "160827264.1791316233",
+     "session_id": "1791401433",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true,
+    "dontes": true
+   },
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+   "ip": "160.79.106.xxx",
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros",
+   "bongeszo": {
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros",
+    "first_booking": true,
+    "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+    "kategoria": "",
+    "ar": 53800,
+    "g": "g:3390977",
+    "munkatars": "",
+    "bookingUrl": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793469600&back=mb_0muyivlh3cdjvdf0e8tk2te"
+   },
+   "ido": 1791402654,
+   "frissitve": 1791402654
+  },
+  "kuldesek": []
+ }
+}
