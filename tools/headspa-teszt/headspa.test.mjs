@@ -9,6 +9,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
 import { szerverInditas, GYOKER } from './szerver.mjs';
 
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
@@ -20,7 +21,7 @@ function playwright() {
 }
 const { chromium } = playwright();
 
-// nev: a vegleges (eredeti) cim; az uj oldal addig a -uj cimen el (noindex); a cim / H1 / kulcsszovegek a regi oldal tartalmabol valok
+// nev: az eredeti cim (2026-10-07 ota az uj oldal el itt; a regi Wixes valtozat a -regi cimen, az -uj cim 301-gyel ide iranyit); a cim / H1 / kulcsszovegek a regi oldal tartalmabol valok
 const OLDALAK = [
   { nev: 'headspa-budapest', cim: 'A legjobb Head Spa Budapesten? Ilyen a MOSAIC', h1: 'Head Spa Budapest: A MOSAIC Head Spa a legjobb?', videok: 17,
     szoveg: ['Mi az a Head Spa és honnan származik?', 'Mitől más a MOSAIC Head Spa Budapest?', 'Mennyibe kerül és hogy néz ki egy Head Spa kezelés a MOSAIC-ban?', 'Milyen pozitív hatásai vannak a Head Spa-nak?',
@@ -50,7 +51,7 @@ before(async () => {
 after(async () => { await bongeszo?.close(); szerver?.close(); });
 
 /** Uj oldal: kulso forgalom tiltva (naplozva), hibak gyujtve. */
-async function nyit(nev, { szeles = 1440, suti = false, uj = true } = {}) {
+async function nyit(nev, { szeles = 1440, suti = false } = {}) {
   const mobil = szeles < 700;
   const ctx = await bongeszo.newContext({ viewport: { width: szeles, height: mobil ? 844 : 900 }, ...(mobil ? { userAgent: UA_MOBIL, isMobile: true, hasTouch: true } : {}) });
   const p = await ctx.newPage();
@@ -59,7 +60,7 @@ async function nyit(nev, { szeles = 1440, suti = false, uj = true } = {}) {
   p.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) hibak.push('console: ' + m.text()); });
   p.on('response', (r) => { if (r.status() >= 400 && r.url().startsWith(bazis)) nincs.push(r.status() + ' ' + r.url().replace(bazis, '')); });
   await p.route(/^(?!http:\/\/localhost)/, (r) => { kulso.push(r.request().url()); r.abort(); });
-  await p.goto(`${bazis}/${nev}${uj ? '-uj' : ''}`, { waitUntil: 'domcontentloaded' });
+  await p.goto(`${bazis}/${nev}`, { waitUntil: 'domcontentloaded' });
   if (suti) await p.getByRole('button', { name: 'Elfogadom' }).click();
   await p.evaluate(async () => { document.documentElement.style.scrollBehavior = 'auto'; for (let y = 0; y < document.documentElement.scrollHeight; y += 500) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); } window.scrollTo(0, 0); });
   await p.waitForLoadState('networkidle').catch(() => {});
@@ -72,7 +73,7 @@ const fajlLetezik = (href) => {
 };
 
 for (const o of OLDALAK) {
-  describe(`/${o.nev}-uj`, () => {
+  describe(`/${o.nev}`, () => {
     test('betoltodik hibak nelkul: nincs konzol-hiba, 404, torott kep; egyetlen H1; az eredeti oldal cime / H1-je', async () => {
       const { p, ctx, hibak, nincs } = await nyit(o.nev);
       assert.equal(await p.title(), o.cim);
@@ -86,10 +87,11 @@ for (const o of OLDALAK) {
       await ctx.close();
     });
 
-    test('a kozos szerkezet: noindex + sajat canonical (a csere elott), fejlec, a fejlec akcios savja a MOSAIC szinvilagaban (nem rozsaszin), ujszeru oldalstilus, lablec', async () => {
+    test('a kozos szerkezet: eredeti canonical, indexelhetoseg, fejlec, a fejlec akcios savja a MOSAIC szinvilagaban (nem rozsaszin), ujszeru oldalstilus, lablec', async () => {
       const { p, ctx } = await nyit(o.nev);
-      assert.equal(await p.getAttribute('meta[name=robots]', 'content'), 'noindex, nofollow');
-      assert.equal(await p.getAttribute('link[rel=canonical]', 'href'), `https://www.mosaicheadspa.hu/${o.nev}-uj`);
+      // indexelheto (nincs robots meta); a kedvezmeny oldal a regi oldalhoz hasonloan noindex marad
+      if (o.noindexEredeti) assert.equal(await p.getAttribute('meta[name=robots]', 'content'), 'noindex'); else assert.equal(await p.locator('meta[name=robots]').count(), 0, 'indexelheto oldal');
+      assert.equal(await p.getAttribute('link[rel=canonical]', 'href'), `https://www.mosaicheadspa.hu/${o.nev}`);
       assert.equal(await p.locator('header, #SITE_HEADER, [id^="comp-"]').count() > 0, true, 'a MOSAIC fejlec megvan');
       // az akcios sav a fejlece (a kozos fejlec-lablec.css stilusozza): latszik, halvany arany hatter, sotetzold felirat, a kedvezmeny oldalra mutat; nincs sajat masodik sav
       assert.equal(await p.locator('a.akcio-sav').count(), 0, 'nincs sajat akcio-sav (a fejlec savja veszi at a helyet)');
@@ -134,7 +136,7 @@ for (const o of OLDALAK) {
     });
 
     test('a Google terkep (harmadik fel) a suti-hozzajarulas elott nem toltodik; nincs tobb kulso keres, mint a lezeres landingen (a kozos fejlec / lablec es a mindig azonnali Trustindex-velemenyek)', async () => {
-      const alap = await nyit('lezeres-szortelenites-budapest', { uj: false });
+      const alap = await nyit('lezeres-szortelenites-budapest');
       const { ctx, kulso } = await nyit(o.nev);
       assert.deepEqual(kulso.filter((u) => !alap.kulso.includes(u)), [], 'tobbletkeresek suti nelkul');
       assert.deepEqual(kulso.filter((u) => /google\.com\/maps/.test(u)), [], 'terkep suti nelkul');
@@ -248,5 +250,47 @@ describe('a komponensek mukodese', () => {
     assert.equal(await p.locator('#sajto + section#videok > .tartalom > :first-child.szekcio-fej').count(), 1, 'a videok szekcio a fejleccel kezdodik (nincs elotte kep)');
     assert.equal(await p.locator('#videok figure.kep-fig').count(), 0);
     await ctx.close();
+  });
+});
+
+describe('a csere: az -uj cimek atiranyitanak, a regi (Wixes) valtozat rejtett -regi cimen megvan', () => {
+  test('az -uj cimek 301-gyel az eredeti cimre iranyitanak (asztalon es telefonon is)', async () => {
+    const { utvonal } = await import(pathToFileURL(path.join(GYOKER, 'netlify', 'lib', 'utvonal.js')).href);
+    for (const o of OLDALAK) {
+      for (const ua of ['Mozilla/5.0 (Windows NT 10.0; Win64; x64)', UA_MOBIL]) assert.deepEqual(utvonal(`/${o.nev}-uj`, ua), { atiranyit: `/${o.nev}` }, o.nev);
+      // az eredeti cim tovabbra is az oldalfajlra mutat (asztali / mobil)
+      assert.deepEqual(utvonal(`/${o.nev}`, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'), { atir: `/_a/${o.nev}` });
+      assert.deepEqual(utvonal(`/${o.nev}`, UA_MOBIL), { atir: `/_m/${o.nev}` });
+      // a rejtett regi valtozat sajat cimen
+      assert.deepEqual(utvonal(`/${o.nev}-regi`, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'), { atir: `/_a/${o.nev}-regi` });
+    }
+  });
+
+  test('a regi Wixes valtozat (-regi) megvan asztali es mobil valtozatban: noindex, sajat canonical, a regi cim; az eredeti klon-fajl valtozatlanul visszaallithato', () => {
+    for (const o of OLDALAK) {
+      for (const mappa of ['klon', path.join('klon', 'm')]) {
+        const regi = fs.readFileSync(path.join(GYOKER, mappa, `${o.nev}-regi.html`), 'utf8');
+        assert.match(regi, /<meta name="robots" content="noindex(, nofollow)?"\/>/, `${mappa}/${o.nev}-regi noindex`);
+        assert.ok(regi.includes(`<link rel="canonical" href="https://www.mosaicheadspa.hu/${o.nev}-regi"/>`), 'canonical');
+        assert.ok(regi.includes(`<meta property="og:url" content="https://www.mosaicheadspa.hu/${o.nev}-regi"/>`), 'og:url');
+        assert.ok(regi.includes('<title>' + o.cim.replace(/&/g, '&amp;') + '</title>') || regi.includes('<title>' + o.cim + '</title>'), 'a regi oldal cime');
+        assert.ok(fs.existsSync(path.join(GYOKER, mappa, `${o.nev}.html`)), 'az eredeti klon-fajl megvan (visszaallitashoz)');
+      }
+      assert.ok(fs.existsSync(path.join(GYOKER, 'foglalas', `${o.nev}.html`)) && !fs.existsSync(path.join(GYOKER, 'foglalas', `${o.nev}-uj.html`)), 'az uj oldal az eredeti neven van');
+    }
+  });
+
+  test('az LCP-elotoltes tablaban az uj oldalak hero-kepei szerepelnek (nincs a regi Wixes kep); a kepnelkuli oldalaknak nincs bejegyzese', () => {
+    const lcp = JSON.parse(fs.readFileSync(path.join(GYOKER, 'tools', 'lcp-elofeltoltes.json'), 'utf8'));
+    for (const mod of ['asztali', 'mobil']) {
+      assert.equal(lcp[mod]['headspa-arak-budapest'], undefined);
+      assert.equal(lcp[mod]['head-spa-velemenyek'], undefined);
+      for (const nev of ['headspa-budapest', 'head-spa-kedvezmeny', 'headspa-termekek-oxygeni']) {
+        const kep = lcp[mod][nev];
+        assert.ok(kep && fs.existsSync(path.join(GYOKER, kep)), `${mod}/${nev}: ${kep}`);
+        const html = fs.readFileSync(path.join(GYOKER, 'foglalas', `${nev}.html`), 'utf8');
+        assert.ok(html.includes(kep), `${mod}/${nev}: a hero-kep az uj oldalon van`);
+      }
+    }
   });
 });
