@@ -8,7 +8,8 @@
 //
 // Beallitas (wrangler.toml / Cloudflare): LIFECYCLE_DB (D1), LIFECYCLE_KULCS_HASH (a kulcs SHA-256-ja; a kulcs maga az utemezoben / Zapier-ben van),
 // LIFECYCLE_MOD, LIFECYCLE_UZLETAGOK, SIMPLESMS_FELHASZNALO / SIMPLESMS_DOMAIN (nem titkos), SIMPLESMS_JELSZO (Secret), SMTP_* (mint az urlap-leveleknel).
-import { ingest, tick, napi, megerosit, reszletekUrl, allapot, beallitas } from './engine.js';
+import { ingest, tick, napi, megerosit, reszletekUrl, foglalasNezet, allapot, beallitas } from './engine.js';
+import { foglalasOldal, nemTalalhato } from './oldal.js';
 import { kuldokKeszit, smsKesz, emailKesz, smsEgyenleg, smsConnectProba } from './kuldok.js';
 import { UZLETAGAK, SZALON, tisztaNev } from './uzletag.js';
 import { datumSzoveg, idopontSzoveg } from './ido.js';
@@ -102,9 +103,9 @@ const BOT = /bot|crawl|spider|preview|facebookexternal|whatsapp|telegram|slackbo
 export async function reszletek(request, env) {
   if (!env.LIFECYCLE_DB) return new Response('nincs', { status: 404 });
   const kod = new URL(request.url).pathname.split('/').filter(Boolean)[1] || '';
-  const u = /^[0-9a-f]{10}$/.test(kod) ? await reszletekUrl(env.LIFECYCLE_DB, kod) : null;
-  if (!u) return html('Nem találom a foglalást', '<h1>Nem találom ezt a foglalást</h1><p>Ha módosítani szeretnél, hívj minket: ' + esc(SZALON.telefon) + '.</p>', 404);
-  return new Response(null, { status: 302, headers: { location: u, 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
+  const f = /^[0-9a-f]{10}$/.test(kod) ? await foglalasNezet(env.LIFECYCLE_DB, kod) : null;
+  if (!f) return nemTalalhato();
+  return foglalasOldal(f); // a Salonic vendeg-oldala a SAJAT oldalunkba agyazva (iframe), nem a Salonicra visszuk a vendeget
 }
 
 export async function megerosites(request, env) {
@@ -117,7 +118,7 @@ export async function megerosites(request, env) {
   if (!r.ok) return html('Nem találom a foglalást', '<h1>Nem találom ezt a foglalást</h1><p>Hívj minket: ' + esc(SZALON.telefon) + '.</p>', 404);
   const f = r.f; const uz = UZLETAGAK[f.uzletag];
   if (f.allapot !== 'aktiv') return html('Lemondott időpont', `<h1>Ez az időpont már le lett mondva</h1><p>Ha szeretnél újat, itt választhatsz:</p><p><a class="gomb" href="${esc(uz.foglalasUrl)}">Új időpontot választok</a></p>`);
-  const reszl = await reszletekUrl(env.LIFECYCLE_DB, kod);
+  const reszl = `/f/${kod}`; // a foglalas-kezelo oldal a sajat oldalunkon (a Salonic-oldal abban van beagyazva)
   return html('Időpont megerősítve', `<h1>Köszönjük, megerősítettük az időpontodat!</h1>
 <div class="doboz"><b>${esc(tisztaNev(f.szolgaltatas))}</b><br>${esc(datumSzoveg(f.kezdet))}, ${esc(idopontSzoveg(f.kezdet))}<br>${esc(SZALON.cim)}</div>
 <p>Várunk! Ha mégis változna valami, itt tudod módosítani:</p>

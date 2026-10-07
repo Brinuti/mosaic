@@ -320,6 +320,14 @@ export async function megerosit(db, token, most) {
   return { ok: true, f };
 }
 
+/** /f/<token>: a foglalas adatai az "A foglalasod" oldalhoz (a Salonic-oldal URL-je csak a mi oldalunkba agyazva jelenik meg; szintetikus azonositonal nincs). */
+export async function foglalasNezet(db, token) {
+  const f = await elso(db, 'SELECT id, uzletag, fiok, allapot, kezdet, szolgaltatas, token FROM foglalasok WHERE token = ?1', String(token || ''));
+  if (!f) return null;
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(f.id);
+  return { ...f, salonicUrl: uuid ? `https://${f.fiok}.salonic.hu/booking/bookingDetails/${f.id}` : null };
+}
+
 /** /f/<token>: a Salonic vendeg-oldalara visz (reszletek / modositas / lemondas); szintetikus azonositonal az uzletag oldalara. */
 export async function reszletekUrl(db, token) {
   const f = await elso(db, 'SELECT id, uzletag, fiok FROM foglalasok WHERE token = ?1', String(token || ''));

@@ -413,7 +413,21 @@ test('http: kulcsos vegpontok, megerosito oldal, rovid link', async () => {
   assert.match(await bot.text(), /nyisd meg a linket/);
   assert.equal((await megerosites(new Request('https://x.test/m/0000000000'), env)).status, 404);
   const r = await reszletek(new Request(`https://x.test/f/${f.token}`), env);
-  assert.equal(r.status, 302); assert.equal(r.headers.get('location'), `https://mosaic-hair.salonic.hu/booking/bookingDetails/${UUID1}`);
+  // a rovid link a SAJAT oldalunkat adja ("A foglalasod"), a Salonic-oldal abban iframe-ben van (latogatot nem viszunk a Salonicra)
+  assert.equal(r.status, 200); assert.equal(r.headers.get('location'), null); assert.match(r.headers.get('content-type'), /text\/html/);
+  const oldal = await r.text();
+  assert.match(oldal, new RegExp(`<iframe id="foglalas" title="A foglalásod" src="https://mosaic-hair\\.salonic\\.hu/booking/bookingDetails/${UUID1}"`));
+  assert.match(oldal, /Új időpontot foglalok/); assert.match(oldal, /noindex/); assert.equal(r.headers.get('referrer-policy'), 'origin');
+  assert.ok(!/<a [^>]*href="https:\/\/[a-z-]*\.?salonic\.hu/.test(oldal), 'az oldalon nincs link a Salonicra');
+  assert.equal((await reszletek(new Request('https://x.test/f/0000000000'), env)).status, 404);
+  // lemondott foglalas: nincs iframe, uj idopont-valaszto
+  await db.sqlite.prepare("UPDATE foglalasok SET allapot = 'lemondva'").run();
+  const lemondott = await (await reszletek(new Request(`https://x.test/f/${f.token}`), env)).text();
+  assert.match(lemondott, /Ez az időpont le lett mondva/); assert.ok(!/<iframe/.test(lemondott));
+  await db.sqlite.prepare("UPDATE foglalasok SET allapot = 'aktiv'").run();
+  // a megerosito oldal a foglalas-kezelo oldalra linkel (nem a Salonicra)
+  const m2 = await (await megerosites(new Request(`https://x.test/m/${f.token}`, { headers: { 'user-agent': 'Mozilla/5.0 (Linux; Android 14)' } }), env)).text();
+  assert.ok(m2.includes(`href="/f/${f.token}"`) && !/salonic\.hu/.test(m2));
   const t = await (await api(kerees('/api/lifecycle/teszt-torol', { kulcs }), env)).json();
   assert.equal(t.torolt, 1);
 });
