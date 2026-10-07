@@ -38,10 +38,19 @@ function hamisNaptar(napok, orak) {
   for (const n of napok) for (const h of orak) slots['s' + i++] = { timestamp: Math.floor(Date.UTC(ma.getUTCFullYear(), ma.getUTCMonth(), ma.getUTCDate() + n, h) / 1000) };
   return { status: 'success', data: { blocks: { 24354: { k1: { slots } } } } };
 }
-const TI_HTML = '<html><body><div class="ti-header"><div class="ti-rating-text"><a href="#">1 300 vélemény</a></div></div></body></html>';
+const velemeny = (nev, datum, szoveg, { nyelv = 'hu', kep = false, pont = '5.0' } = {}) => '<div class="ti-review-item source-Google" data-language="' + nyelv + '" data-rating="' + pont + '"><div class="ti-inner">'
+  + '<div class="ti-review-text-container ti-review-content">' + (kep ? '<div class="ti-review-image"><img src="x.jpg" alt=""><div class="ti-more-image-count">+0</div></div>' : '') + '<!-- R-CONTENT -->' + szoveg + '<!-- R-CONTENT --></div>'
+  + '<div class="ti-review-header"><div class="ti-profile-details"><div class="ti-name"><a href="#">' + nev + '</a></div><div class="ti-date">' + datum + '</div></div></div></div></div>';
+const TI_HTML = '<html><body><div class="ti-header"><div class="ti-rating-text"><a href="#">1 300 vélemény</a></div></div><div class="ti-reviews-container">'
+  + velemeny('TESZT ANNA', '2026.10.07.', 'Páros kezelésen voltunk a barátnőmmel, nagyon kellemes volt minden.', { kep: true })
+  + velemeny('MÁSIK ELEK', '2026.10.06.', 'Egyedül voltam, nagyon jó volt az egész kezelés, ajánlom.')
+  + velemeny('KIS BÉLA', '2026.10.05.', 'Párban jöttünk a feleségemmel, csodálatos élmény volt, biztosan jövünk.')
+  + velemeny('JOHN SMITH', '2026.10.04.', 'We came as a pair, it was a great couple spa experience, thank you.', { nyelv: 'en' })
+  + velemeny('NAGY ÉVA', '2026.10.03.', 'Anyukámmal páros kezelésen vettünk részt, mindketten nagyon elégedettek vagyunk.')
+  + '</div></body></html>';
 
 /** Oldal megnyitasa: kulso forgalom tiltva (naplozva), a Salonic-API / Trustindex hamisitva. api: false = az API hibaval er veget */
-async function nyit({ szeles = 1440, api = hamisNaptar([1, 2, 3, 5, 6, 8, 9], [8, 9, 10, 12, 14, 15, 16]), host = 'localhost', gorgetve = true } = {}) {
+async function nyit({ szeles = 1440, api = hamisNaptar([1, 2, 3, 5, 6, 8, 9], [8, 9, 10, 12, 14, 15, 16]), host = 'localhost', gorgetve = true, ti = true } = {}) {
   const mobil = szeles < 700;
   const ctx = await bongeszo.newContext({ viewport: { width: szeles, height: mobil ? 844 : 900 }, ...(mobil ? { userAgent: UA_MOBIL, isMobile: true, hasTouch: true } : {}) });
   const p = await ctx.newPage();
@@ -56,7 +65,7 @@ async function nyit({ szeles = 1440, api = hamisNaptar([1, 2, 3, 5, 6, 8, 9], [8
       apiKeresek.push(new URL(u).searchParams);
       return api ? r.fulfill({ status: 200, headers: cors, body: JSON.stringify(api) }) : r.abort();
     }
-    if (u.startsWith('https://cdn.trustindex.io/widgets/')) return r.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*', 'content-type': 'text/html' }, body: TI_HTML });
+    if (u.startsWith('https://cdn.trustindex.io/widgets/')) return !ti ? r.abort() : r.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*', 'content-type': 'text/html' }, body: TI_HTML });
     kulso.push(u); return r.abort();
   });
   await p.goto(`http://${host}:${port}/${OLDAL}`, { waitUntil: 'domcontentloaded' });
@@ -293,7 +302,7 @@ describe('/paros-headspa-budapest-uj', () => {
     assert.equal(await p.locator('#lepes-pontok span.aktiv').count(), 1);
     assert.equal(await p.$eval('#lepes-sor', (e) => e.scrollWidth > e.clientWidth + 100), true, 'oldalra gorgetheto');
     await p.evaluate(() => { const s = document.getElementById('lepes-sor'); s.scrollTo({ left: s.scrollWidth, behavior: 'auto' }); });
-    await p.waitForTimeout(400);
+    await p.waitForFunction(() => document.querySelector('#lepes-pontok span:last-child').classList.contains('aktiv'), null, { timeout: 4000 }).catch(() => {});
     assert.equal(await p.$eval('#lepes-pontok span:last-child', (e) => e.classList.contains('aktiv')), true);
     await ctx.close();
   });
@@ -353,16 +362,23 @@ describe('/paros-headspa-budapest-uj', () => {
     await m.ctx.close();
   });
 
-  test('"Ők már kipróbálták ketten.": 3 valódi páros Google-vélemény (a widget szerint frissülve), a vendégvideók; a képek a szalon valódi páros felvételeiből vannak (assets/img/paros/)', async () => {
+  test('"Ők már kipróbálták ketten.": a páros kezelésről szóló valódi Google-vélemények a widget adataiból frissülnek (csak páros / párban, magyar, 5 csillag; nincs "+0" képszámláló; a nevek rendezve), a widget nélkül a valódi tartalék; a képek a szalon valódi páros felvételeiből vannak', async () => {
     const { p, ctx } = await nyit();
-    const idezetek = await p.$$eval('.idezet', (l) => l.map((f) => ({ szoveg: f.querySelector('blockquote').textContent, nev: f.querySelector('figcaption b').textContent })));
-    assert.equal(idezetek.length, 3);
-    for (const i of idezetek) assert.match(i.szoveg, /p[áa]ros|p[áa]rban/i, 'a velemeny a paros kezelesrol szol: ' + i.szoveg);
-    // a teszt hamis widgetje nem tartalmaz ti-review-item-et: a HTML-beli (valodi) tartalek all, szo szerint
-    assert.ok(idezetek.some((i) => i.nev === 'Viktória Fodor' && /anyukámmal/.test(i.szoveg)));
+    await p.waitForFunction(() => [...document.querySelectorAll('.idezet figcaption b')].some((b) => b.textContent === 'Teszt Anna'), null, { timeout: 8000 });
+    const idezetek = await p.$$eval('.idezet', (l) => l.map((f) => ({ szoveg: f.querySelector('blockquote').textContent, nev: f.querySelector('figcaption b').textContent, datum: f.querySelector('figcaption small').textContent })));
+    assert.deepEqual(idezetek.map((i) => i.nev), ['Teszt Anna', 'Kis Béla', 'Nagy Éva'], 'a nem páros / angol vélemény kimarad, a nevek rendezve');
+    for (const i of idezetek) { assert.match(i.szoveg, /p[áa]ros|p[áa]rban/i); assert.ok(!/\+0|\+\d/.test(i.szoveg), 'nincs képszámláló a szövegben: ' + i.szoveg); }
+    assert.equal(idezetek[0].szoveg, 'Páros kezelésen voltunk a barátnőmmel, nagyon kellemes volt minden.');
+    assert.equal(idezetek[0].datum, 'Google vélemény · 2026.10.07.');
     const kepek = await p.$$eval('img[src*="/assets/img/paros/"]', (l) => l.map((i) => i.getAttribute('src')));
     for (const k of ['kivel-baratnok', 'kivel-anya-lanya', 'kivel-par', 'pill-baratnok', 'pill-anya-lanya', 'pill-par', 'lepes-egyszerre', 'lepes-50perc', 'ajanlat-kep', 'ido-kep']) assert.ok(kepek.some((s) => s.includes(k)), 'hianyzo kep: ' + k);
     await ctx.close();
+    // a widget nem erheto el: a HTML-beli valodi tartalek velemenyek maradnak
+    const be = await nyit({ ti: false });
+    await be.p.waitForTimeout(1500);
+    const tartalek = await be.p.$$eval('.idezet figcaption b', (l) => l.map((b) => b.textContent));
+    assert.deepEqual(tartalek, ['Viktória Fodor', 'Erzsó Szabó', 'Zsófi Schmidt-Podányi']);
+    await be.ctx.close();
   });
 
   test('csak a sajat kereteink: nincs kulso keres a Salonic-API-n es a Trustindexen kivul (a kepek, videok, fontok a sajat tarhelyrol)', async () => {
