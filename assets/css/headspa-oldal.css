@@ -212,6 +212,7 @@ p.kedv-sor { display: flex; align-items: center; gap: 10px; width: fit-content; 
 
 /* a Head Spa csomagok (4 kartya): ugyanaz az arkartya az arak es a kedvezmeny oldalon */
 .csomag-racs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: stretch; }
+.csomag-racs.harom { grid-template-columns: repeat(3, 1fr); max-width: 1000px; margin: 0 auto; }
 .csomag { position: relative; display: flex; flex-direction: column; background: #fff; border: 1px solid #e7eae3; border-radius: 22px; padding: 30px 24px 26px; box-shadow: var(--arnyek); }
 .csomag-kep { margin: -30px -24px 20px; border-radius: 22px 22px 0 0; overflow: hidden; aspect-ratio: 4 / 3; background: #e0e4db; }
 .csomag-kep img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -290,6 +291,8 @@ p.kedv-sor { display: flex; align-items: center; gap: 10px; width: fit-content; 
 .velemenyek-doboz { max-width: 1000px; margin: 0 auto; }
 .ti-doboz { margin-top: 10px; min-height: 140px; }
 .ti-keret { display: block; width: 100%; height: 340px; border: 0; background: transparent; }
+.ti-tobb { margin-top: 22px; }
+.ti-link { margin-top: 14px; font-size: 15px; }
 .ti-hely { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 34px 20px; background: #fff; border: 1px dashed #d8dccf; border-radius: 16px; }
 .ti-hely p { color: var(--halk); font-size: 15.5px; }
 
@@ -324,6 +327,8 @@ p.kedv-sor { display: flex; align-items: center; gap: 10px; width: fit-content; 
   .hero h1, .oldal-fej h1, .akcio-fo h1 { font-size: 40px; }
   .hero-kep { aspect-ratio: 1.5; max-height: 460px; justify-self: stretch; }
   .csomag-racs { grid-template-columns: repeat(2, 1fr); }
+  .csomag-racs.harom { grid-template-columns: repeat(2, 1fr); max-width: none; }
+  .csomag-racs.harom > :last-child { grid-column: 1 / -1; max-width: 480px; justify-self: center; width: 100%; }
   .hatas-racs, .hu-racs { grid-template-columns: 1fr; }
   .ar-racs { grid-template-columns: 1fr; }
   .video-racs.allo, .video-racs.allo.negy { grid-template-columns: repeat(3, 1fr); }
@@ -369,6 +374,8 @@ p.kedv-sor { display: flex; align-items: center; gap: 10px; width: fit-content; 
   .video-play svg { width: 18px; height: 18px; }
   .korhinta-gomb { display: none; }
   .csomag-racs { grid-template-columns: 1fr; }
+  .csomag-racs.harom { grid-template-columns: 1fr; max-width: none; }
+  .csomag-racs.harom > :last-child { max-width: none; }
   .csomag { padding: 26px 20px 22px; }
   .csomag-kep { margin: -26px -20px 18px; aspect-ratio: 16 / 10; }
   .pipak.ketoszlop { grid-template-columns: 1fr; }
