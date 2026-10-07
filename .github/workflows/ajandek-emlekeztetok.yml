@@ -1,0 +1,32 @@
+# Ajandekkartya: az elhagyott (befejezetlen) fizetesek emlekeztetoi.
+# Felorankent meghivja a motor vedett vegpontjat (netlify/lib/ajandek.js: "emlekeztetok"), ami a Stripe-ban atnezi a kozelmult rendeleseit, es a befejezetlenekre
+# legfeljebb KET emlekezteto levelet kuld (kb. 1 ora, majd masnap; csak 8-20 ora kozott; a mar fizetoknek / teszt- / atutalasos rendelesekre nem).
+# A hivas biztonsagos es ismetelheto (a bejegyzes a Stripe PaymentIntent metadataban van): egy kimaradt vagy ketszer futo ora nem okoz duplikatumot.
+# Titok: AJANDEK_EMLEKEZTETO_KULCS (GitHub: Settings > Secrets and variables > Actions; Cloudflare Production: ugyanaz az ertek, Secret tipussal).
+name: Ajandekkartya emlekeztetok
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: ajandek-emlekeztetok
+  cancel-in-progress: false
+jobs:
+  futtat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Emlekeztetok futtatasa (HeadSpa, lezeres, oxigen)
+        env:
+          KULCS: ${{ secrets.AJANDEK_EMLEKEZTETO_KULCS }}
+        run: |
+          test -n "$KULCS" || { echo "Nincs AJANDEK_EMLEKEZTETO_KULCS titok"; exit 1; }
+          hiba=0
+          for ut in ajandek ajandek-lezer ajandek-oxigen; do
+            kod=$(curl -sS --max-time 90 -o valasz.json -w '%{http_code}' -X POST -H "Authorization: Bearer $KULCS" "https://www.mosaicheadspa.hu/api/$ut/emlekeztetok" || echo "000")
+            echo "$ut -> $kod $(head -c 400 valasz.json 2>/dev/null)"
+            # a HeadSpa hibaja a futast pirosra festi; a lezeres / oxigenes meg nem biztos, hogy be van allitva (503 = nincs_beallitva: rendben)
+            if [ "$ut" = "ajandek" ] && [ "$kod" != "200" ]; then hiba=1; fi
+          done
+          exit $hiba

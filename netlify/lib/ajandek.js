@@ -1499,6 +1499,101 @@ async function webhook(k) {
 }
 
 // Telefonszam: a Salonic utalvany-ertekesitesehez kell (kotelezo mezo ott). Csak szamok, +, szokoz, kotojel, zarojel, perjel.
+// --- elhagyott fizetes: emlekezteto levelek -----------------------------------------------------------------------
+// Az idozitett hivas (GitHub Actions, felorankent: .github/workflows/ajandek-emlekeztetok.yml) hivja: POST <elotag>emlekeztetok, Authorization: Bearer
+// <AJANDEK_EMLEKEZTETO_KULCS>. Atnezi a kozelmult PaymentIntentjeit (Stripe), es a befejezetlen vasarlasoknak (a PI nincs kifizetve) legfeljebb KET
+// emlekeztetot kuld: az elsot kb. 1 ora, a masodikat az elsot koveto napon (>= 22 ora). Nem kuld, ha a vevo (ugyanaz az e-mail) kozben fizetett,
+// atutalast valasztott, a rendeles tesztrendeles ("TESZT" nev), vagy ejszaka van (csak 8-20 ora kozott). Az allapot a PI metadataban van
+// (emlekezteto_1 / emlekezteto_2: ISO idopont), a bejegyzes a KULDES ELOTT tortenik (igy egy egyidejű / ismetelt futas sem kuld duplat); ha a kuldes
+// sikertelen, a bejegyzes torlodik, es a kovetkezo futas ujraprobal.
+const EMLEKEZTETO_ABLAK_MP = 6 * 24 * 3600;      // ennyi idore visszamenoleg nezzuk a rendeleseket
+const EMLEKEZTETO_1_MIN_MP = 60 * 60;            // az elso level legkorabban 1 oras elhagyas utan
+const EMLEKEZTETO_1_MAX_MP = 48 * 3600;          // ... es legkesobb 48 oraval a rendeles utan (kesobb mar nem erdemes)
+const EMLEKEZTETO_2_KOZ_MP = 22 * 3600;          // a masodik legkorabban 22 oraval az elso utan
+const EMLEKEZTETO_2_MAX_MP = 5 * 24 * 3600;      // ... es legkesobb 5 nappal a rendeles utan
+const EMLEKEZTETO_MAX_FUTAS = 20;                // egy futasban legfeljebb ennyi level
+const EMLEKEZTETO_ORA = [8, 20];                 // budapesti ido: 8:00-tol 20:00-ig kuldunk
+const NYITOTT_PI = new Set(['requires_payment_method', 'requires_action', 'requires_confirmation']);
+
+function budapestiOra(d) {
+  try {
+    const o = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Budapest', hour: 'numeric', hourCycle: 'h23' }).formatToParts(d).find((x) => x.type === 'hour');
+    return Number(o && o.value);
+  } catch { return d.getUTCHours() + 2; }
+}
+
+async function emlekeztetok(k) {
+  const kulcs = String(k.env.AJANDEK_EMLEKEZTETO_KULCS || '').trim();
+  if (kulcs.length < 24) return json(503, { hiba: 'nincs_beallitva' });                  // kulcs nelkul nem fut (fail closed)
+  const hitel = String(k.h.authorization || '').replace(/^Bearer\s+/i, '').trim();
+  if (!egyenlo(hitel, kulcs)) return json(401, { hiba: 'jogosultsag' });
+  if (!beallitva(k.env)) return json(503, { hiba: 'nincs_beallitva' });
+  const most = k.most;
+  const mostMp = Math.floor(most.getTime() / 1000);
+  const ora = budapestiOra(most);
+  if (!(ora >= EMLEKEZTETO_ORA[0] && ora < EMLEKEZTETO_ORA[1])) return json(200, { ok: true, kihagyva: 'ejszaka', kuldve: 0 });
+  // a kozelmult PaymentIntentjei (lapozva, legfeljebb 5 x 100)
+  const lista = [];
+  let utolso = null;
+  for (let oldal = 0; oldal < 5; oldal++) {
+    const r = await stripe(k.env, 'GET', '/v1/payment_intents', { limit: 100, created: { gte: mostMp - EMLEKEZTETO_ABLAK_MP }, ...(utolso ? { starting_after: utolso } : {}) });
+    const adat = Array.isArray(r.data) ? r.data : [];
+    lista.push(...adat);
+    if (!r.has_more || !adat.length) break;
+    utolso = adat[adat.length - 1].id;
+  }
+  const emailKulcs = (pi) => String(pi.receipt_email || '').trim().toLowerCase();
+  const sajatRendeles = (pi) => pi.metadata && pi.metadata.forras === 'ajandek-motor' && sajat(ADAT.TERMEKEK, pi.metadata.termek);
+  // ki fizetett mar (az utolso kifizetett rendeles ideje e-mailenkent)
+  const fizetett = new Map();
+  for (const pi of lista) {
+    if (!sajatRendeles(pi) || pi.status !== 'succeeded' || !emailKulcs(pi)) continue;
+    fizetett.set(emailKulcs(pi), Math.max(fizetett.get(emailKulcs(pi)) || 0, Number(pi.created) || 0));
+  }
+  // e-mailenkent a legujabb nyitott (befejezetlen) rendeles
+  const jeloltek = new Map();
+  for (const pi of lista) {
+    if (!sajatRendeles(pi) || !NYITOTT_PI.has(pi.status)) continue;
+    const em = emailKulcs(pi);
+    if (!EMAIL_RE.test(em) || atutalasos(pi.metadata)) continue;
+    if (MERES_TESZT_NEV_RE.test(String(pi.metadata.nev || '')) || MERES_TESZT_EMAIL_RE.test(em)) continue;   // tesztrendeles: nem kuldunk
+    if (!jeloltek.has(em) || Number(pi.created) > Number(jeloltek.get(em).created)) jeloltek.set(em, pi);
+  }
+  let kuldve = 0; const kihagyva = { kozben_fizetett: 0, nem_esedekes: 0, hiba: 0 };
+  const sorban = [...jeloltek.entries()].sort((a, b) => Number(a[1].created) - Number(b[1].created));
+  for (const [em, pi] of sorban) {
+    if (kuldve >= EMLEKEZTETO_MAX_FUTAS) break;
+    if ((fizetett.get(em) || 0) >= Number(pi.created) - 3600) { kihagyva.kozben_fizetett++; continue; }   // a vevo kozben (vagy nem sokkal elotte) fizetett
+    const md = pi.metadata || {};
+    const kor = mostMp - Number(pi.created);
+    const e1 = Date.parse(md.emlekezteto_1 || '');
+    let sorszam = 0;
+    if (!md.emlekezteto_1) { if (kor >= EMLEKEZTETO_1_MIN_MP && kor <= EMLEKEZTETO_1_MAX_MP) sorszam = 1; }
+    else if (!md.emlekezteto_2 && Number.isFinite(e1)) { if (mostMp - Math.floor(e1 / 1000) >= EMLEKEZTETO_2_KOZ_MP && kor <= EMLEKEZTETO_2_MAX_MP) sorszam = 2; }
+    if (!sorszam) { kihagyva.nem_esedekes++; continue; }
+    const termek = ADAT.TERMEKEK[md.termek];
+    const utvonal = /^\/[a-z0-9-]{3,80}$/i.test(String(md.oldal || '')) ? md.oldal : (Object.keys(ADAT.OLDAL_ALAPERTEK || {})[0] || '');
+    const url = new URL(k.bazis + (utvonal || '/'));
+    url.searchParams.set('utm_source', 'emlekezteto'); url.searchParams.set('utm_medium', 'email'); url.searchParams.set('utm_campaign', 'ajandek-elhagyott-' + sorszam);
+    const level = L.vevoEmlekeztetoLevel({
+      sorszam, nev: md.nev || 'Vásárlónk', kartya_cim: md.kartya_cim || (termek && termek.kartya_cim) || '', osszeg_szoveg: ADAT.arSzoveg(Number(pi.amount) / 100),
+      megajandekozott: md.szemelyre_nev || '', oldal_url: url.toString(), szalon: ADAT.SZALON,
+    });
+    const kulcsNev = 'emlekezteto_' + sorszam;
+    // 1) bejegyzes, 2) kuldes; sikertelen kuldesnel a bejegyzes torlodik (ures ertek = a Stripe torli a kulcsot)
+    try { await piFrissit(k.env, pi.id, { metadata: { [kulcsNev]: most.toISOString() } }); } catch (e) { console.error('ajandek: emlekezteto bejegyzes hiba', pi.id, e && e.message); kihagyva.hiba++; continue; }
+    try {
+      await levelKuld(k, { cimzett: em, valasz: 'szalon', ...level });
+      kuldve++;
+    } catch (e) {
+      console.error('ajandek: emlekezteto kuldes hiba', pi.id, e && e.message);
+      kihagyva.hiba++;
+      await metaIrasCsendes(k, pi.id, { [kulcsNev]: '' }, 'emlekezteto visszavonas');
+    }
+  }
+  return json(200, { ok: true, vizsgalt: lista.length, jeloltek: jeloltek.size, kuldve, kihagyva });
+}
+
 function telefonTisztit(v) {
   const t = egysor(v);
   if (!/^\+?[0-9][0-9 ()\/.-]{5,24}$/.test(t)) return '';
@@ -1701,6 +1796,7 @@ const UTAK = new Map([
   ['kartya', { GET: kartya }],
   ['kiallit', { GET: kiallitMegerosites, POST: kiallit }],
   ['webhook', { POST: webhook }],
+  ['emlekeztetok', { POST: emlekeztetok }],
   ['atutalas', { POST: atutalas }],
   ['foto', { POST: fotoFeltoltes, GET: fotoLetoltes }],
   ['elonezet', { GET: kartyaElonezet }],

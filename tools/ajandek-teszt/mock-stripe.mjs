@@ -1,6 +1,7 @@
 // Hordozhato Stripe REST-mock a Gift Commerce Engine tesztjeihez (node:http, fuggoseg nelkul).
 // Csak azt tudja, amit a netlify/lib/ajandek.js hasznal:
 //   POST /v1/payment_intents            letrehozas (form-encoded; Idempotency-Key tamogatas)
+//   GET  /v1/payment_intents            lista (created[gte], limit, starting_after; legujabb elol; has_more)
 //   GET  /v1/payment_intents/:id        lekeres (expand[]=latest_charge)
 //   POST /v1/payment_intents/:id        frissites (amount, receipt_email, description, metadata osszefesules;
 //                                       metadata[kulcs]= ures ertek torli)
@@ -252,6 +253,16 @@ export async function mockStripeInditas({ port = 0, kulcsElotag = 'sk_test_mock'
       return ch ? { status: 200, json: masol(ch) } : hiba(404, 'invalid_request_error', `No such charge: '${chm[1]}'`, 'resource_missing', 'charge');
     }
 
+    if (u.pathname === '/v1/payment_intents' && req.method === 'GET') {
+      const gte = Number(parameterek.created && parameterek.created.gte) || 0;
+      const lim = Math.max(1, Math.min(100, Number(parameterek.limit) || 10));
+      let lista = [...pik.values()].filter((x) => Number(x.created) >= gte).sort((a, b2) => Number(b2.created) - Number(a.created) || (a.id < b2.id ? 1 : -1));
+      if (parameterek.starting_after) {
+        const i = lista.findIndex((x) => x.id === parameterek.starting_after);
+        lista = i >= 0 ? lista.slice(i + 1) : [];
+      }
+      return { status: 200, json: { object: 'list', url: '/v1/payment_intents', has_more: lista.length > lim, data: lista.slice(0, lim).map((x) => masol(kifejt(x))) } };
+    }
     if (u.pathname === '/v1/payment_intents' && req.method === 'POST') {
       if (idemKulcs) {
         const regi = idem.get(idemKulcs);
@@ -371,6 +382,8 @@ export async function mockStripeInditas({ port = 0, kulcsElotag = 'sk_test_mock'
     get szamlak() { return szamlak; },
     get ugyfelek() { return ugyfelek; },
     get szamlaTetelek() { return szamlaTetelek; },
+    // a rendeles letrehozasi idejenek atallitasa (unix mp): az emlekezteto-teszteknek (a mult "elhagyott" rendelesei)
+    korBeallit(piId, created) { (pik.get(piId) || nemLetezo(piId)).created = created; },
     // lekerdezok
     pi: (id) => (pik.has(id) ? masol(pik.get(id)) : null),
     get pik() { return pik; },

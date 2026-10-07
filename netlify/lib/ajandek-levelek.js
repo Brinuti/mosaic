@@ -153,6 +153,27 @@ ${lablec(d.szalon)}
   };
 }
 
+// --- elhagyott fizetes: emlekezteto a vevonek (1. kb. 1 ora mulva, 2. masnap) --------------------------------------
+// d: { sorszam: 1 | 2, nev, kartya_cim, osszeg_szoveg, megajandekozott?, oldal_url, szalon }
+export function vevoEmlekeztetoLevel(d) {
+  const masodik = Number(d.sorszam) === 2;
+  const kinek = d.megajandekozott ? ` (${esc(d.megajandekozott)} részére)` : '';
+  return {
+    targy: masodik ? `Még aktuális az ajándékkártya? – ${marka(d).nev}` : `Elakadt az ajándékkártya megvásárlása? – ${marka(d).nev}`,
+    html: `<div style="${betu};max-width:600px">
+<p>Kedves ${esc(d.nev)}!</p>
+${masodik
+    ? `<p>Nemrég elkezdted megvenni a(z) „${esc(d.kartya_cim)}” ajándékkártyát${kinek}, de a fizetés nem fejeződött be. Ha még szeretnéd, itt gyorsan befejezheted:</p>`
+    : `<p>Láttuk, hogy elkezdted megvenni a(z) „${esc(d.kartya_cim)}” ajándékkártyát${kinek} (${esc(d.osszeg_szoveg)}), de a fizetés nem fejeződött be.</p>
+<p>Ha a bank vagy a kártya elutasította, ne aggódj: megpróbálhatod másik kártyával, Revolut Pay-jel vagy Google Pay-jel, de a kártyád limitjét is megemelheted a bankodnál. Itt folytathatod:</p>`}
+${gomb(d.oldal_url, 'Folytatom a vásárlást')}
+<p>Ha elakadnál vagy kérdésed van, csak válaszolj erre a levélre, vagy hívj: <b>${esc(d.szalon.telefon)}</b>.</p>
+${masodik ? '<p style="font-size:13px;color:#555">Ha már nem aktuális, nem kell semmit tenni: több levelet nem küldünk.</p>' : ''}
+${lablec(d.szalon)}
+</div>`,
+  };
+}
+
 // --- a szalon kiallitotta: a vevo levele a kartya linkjevel ------------------------------------------
 // d: { rendeles_id, kartya_cim, nev, kartya_url, kod, ervenyes_ig, szalon }
 export function vevoKartyaKeszLevel(d) {
