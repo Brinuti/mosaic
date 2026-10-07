@@ -101,6 +101,8 @@
     email: 'mosaicheadspa@gmail.com',
     foglalas_url: 'https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest',
     foglalas_szoveg: 'mosaicheadspa.hu/lezeres-szortelenites-budapest',
+    // a nyomtathato A4 kartya hattere: a HeadSpa-terv, a bal alsó foto Zsófi konzultacios kepere cserelve (az arany iv, a szovegek, a logo valtozatlanok)
+    kartya_hatter: '/assets/img/ajandek/kartya-hatter-lezer.jpg',
     // a szalonnak szolo level "kupont fel kell vinni" blokkja: a lezeres kartya osszeg-kupon (fix ertek), nem kezeles-kupon
     kupon_cim: 'Fel kell vinni egy összeg-kupont a Salonicba (Elysion)',
     kupon_szoveg: 'ezért a Salonicban <b>nem utalvány-értékesítést</b>, hanem egy <b>{osszeg}</b> értékű, fix összegű kupont (utalványt) hozz létre a lézeres szőrtelenítés szolgáltatásaira. <b>A kártya maradék összege is felhasználható</b>, ezért olyan kupon kell, amiből a maradék megmarad (nem 100%-os, és nem egyszer használatos). Érvényes {ervenyes} (6 hónap). A kuponkód pontosan egyezzen az alábbival (kötőjel nélkül).'

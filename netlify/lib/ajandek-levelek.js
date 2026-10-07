@@ -61,7 +61,7 @@ ${ervenyesIg ? `<div style="font-size:13px;color:#555">Érvényes: ${esc(datumIg
 // a vevo altal feltoltott foto (a szalon gyorsan lassa, megfelelo-e); az URL a foto sajat HMAC-tokenjet hordozza
 const fotoBlokk = (d) => (d.foto_url ? `<p style="margin:8px 0 10px"><img src="${esc(d.foto_url)}" alt="A vevő által feltöltött fotó" style="display:block;max-width:220px;max-height:280px;width:auto;height:auto;border-radius:6px;border:1px solid #ddd"><span style="font-size:12px;color:#777">A vevő által feltöltött fotó (a kártyán kivágva jelenik meg)</span></p>` : '');
 // A kereskedo marka-adatai: a motor a d.marka-t (= a kereskedo SZALON-objektuma) minden sablonnak atadja; nelkule a HeadSpa alapertek.
-const MARKA_ALAP = { nev: 'MOSAIC Head Spa', foglalas_url: 'https://www.mosaicheadspa.hu/idpontfoglalas', foglalas_szoveg: 'mosaicheadspa.hu/idpontfoglalas' };
+const MARKA_ALAP = { nev: 'MOSAIC Head Spa', foglalas_url: 'https://www.mosaicheadspa.hu/idpontfoglalas', foglalas_szoveg: 'mosaicheadspa.hu/idpontfoglalas', kartya_hatter: '/assets/img/ajandek/kartya-hatter.jpg' };
 const marka = (d) => ({ ...MARKA_ALAP, ...((d && (d.marka || d.szalon)) || {}) });
 const lablec = (szalon) => `<p style="margin-top:28px;font-size:13px;color:#555"><b>${esc(szalon.nev)}</b><br>
 ${esc(szalon.cim)}<br>
@@ -466,7 +466,7 @@ body{background:#e9e3d7;color:#2b2b2b;font:15px/1.55 "Helvetica Neue",Arial,Helv
 </style></head>
 <body><main>
 <section class="lap" aria-label="Ajándékkártya">
-<img class="hatter" src="${bazis}/assets/img/ajandek/kartya-hatter.jpg" alt="" width="2382" height="3369">
+<img class="hatter" src="${bazis}${esc(marka(d).kartya_hatter)}" alt="" width="2382" height="3369">
 <p class="k f180 uzenet" style="font-size:${CQ(meretSor(uzenet, [[120, 18.6], [190, 15.5], [300, 12.5]]))}">${esc(uzenet)}</p>
 <p class="k f180 nev" style="font-size:${CQ(meretSor(nev, [[22, 40.1], [30, 32], [60, 24]]))}">${esc(nev)}</p>
 <p class="k termek">${felirat}</p>

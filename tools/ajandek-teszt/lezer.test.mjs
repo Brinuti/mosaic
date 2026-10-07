@@ -204,6 +204,21 @@ describe('lezeres kereskedo: fizetes utan (webhook): szamla a Szamlazz.hu-n, lev
     assert.ok(vevo.html.includes(kod));
     assert.doesNotMatch(szalon.html + vevo.html, /AK-[0-9A-Z]{4}-/);
   });
+  test('a nyomtathato kartya a lezeres hatterrel (a bal also foto Zsofi kepe) jelenik meg; a HeadSpa kartya hattere valtozatlan', async () => {
+    szamlazzKeresek = []; levelek = []; szamlazzValasz = null;
+    const a = await fizetett();
+    assert.equal((await webhook(alairt(a.pi))).status, 200);
+    const kartya = await hiv('GET', 'kartya', { query: { pi: a.pi, t: await motor.kartyaToken(ENV, a.pi) } });
+    assert.equal(kartya.status, 200, kartya.body.slice(0, 200));
+    assert.match(kartya.body, /\/assets\/img\/ajandek\/kartya-hatter-lezer\.jpg/);
+    assert.doesNotMatch(kartya.body, /kartya-hatter\.jpg/);
+    assert.match(kartya.body, /MOSAIC LÉZERES<br>SZŐRTELENÍTÉS/);
+    assert.ok(fs.existsSync(new URL('../../assets/img/ajandek/kartya-hatter-lezer.jpg', import.meta.url)));
+    const { kartyaOldal } = await import('../../netlify/lib/ajandek-levelek.js');
+    const headspa = kartyaOldal({ bazis: 'https://x.hu', kod: 'AKABCDEFGH', ar_szoveg: '26.900 Ft', ervenyes_ig: '2027-04-07' });
+    assert.match(headspa, /\/assets\/img\/ajandek\/kartya-hatter\.jpg/);
+    assert.doesNotMatch(headspa, /lezer/i);
+  });
   test('a webhook ismetlese NEM allit ki masodik szamlat es nem kuld uj levelet', async () => {
     szamlazzKeresek = []; levelek = []; szamlazzValasz = null;
     const a = await fizetett();

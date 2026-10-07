@@ -718,4 +718,6 @@ A motor (`netlify/lib/ajandek.js`) már **kereskedő-gyár**: `ajandekMotor(ADAT
 
 **Salonic:** a lézeres kártya kódját a szalon a HeadSpa-hoz hasonlóan kézzel viszi fel, de itt **fix összegű kupont** (nem 100%-os kupont): a szalon-levél ezt írja (`SZALON.kupon_szoveg`). **A maradék összeg is felhasználható** (a tulajdonos döntése, 2026-10-07): az oldal és a levelek ezt állítják, ezért a Salonicban olyan kuponnak / utalványnak kell készülnie, amiből a maradék megmarad (nem 100%-os, nem egyszer használatos) – ezt a szalonnak a Saloniccal ellenőriznie kell; a kupon-teendő a szalon-levélben van (`SZALON.kupon_szoveg`).
 
+**Nyomtatható A4 kártya:** a HeadSpa-terv (`kartya-hatter.jpg`), a bal alsó fotó (az arany ív két oldalán) Zsófi konzultációs képére cserélve: `assets/img/ajandek/kartya-hatter-lezer.jpg` (a `SZALON.kartya_hatter`-ből; az alap a HeadSpa-háttér). Újragenerálás: `tools/kartya-hatter/lezer-hatter.mjs` (a böngésző canvas-ával; az arany ív és minden szöveg változatlan).
+
 **Helyi próba:** `node tools/ajandek-teszt/szerver.mjs` (vagy a `ajandek` indító) → `http://localhost:4195/lezeres-ajandekkartya` (mock Stripe + Számlázz-csonk: `/__teszt/szamlazz-keresek`; a webhookot a próba maga küldi, lásd `tools/ajandek-teszt/lezer.test.mjs`). Tesztek: `node --test "tools/ajandek-teszt/*.test.mjs"` (a `lezer.test.mjs` és a `szamlazz-agent.test.mjs` az új).
