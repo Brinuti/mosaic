@@ -1,0 +1,186 @@
+{
+ "eset": "paros-headspa",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07-javitas-utan",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T18:30:24.809Z",
+   "lepes": "eset: paros-headspa",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "1. hivas: parositas + esemenyek (vagy az elo Zap mar elintezte: mar_kuldve)",
+   "elvart": "parositott + kesz | mar_kuldve",
+   "tenyleges": "parositott + kesz",
+   "ok": true
+  },
+  {
+   "leiras": "javitott kod fut: a valasz tartalmazza a jelleg_rogzites mezot, az 1. level nem elter",
+   "elvart": [
+    true,
+    false
+   ],
+   "tenyleges": [
+    true,
+    false
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "az 1. level utan Meta + TikTok: alap + ernyo; Google + GA4: csak az alap",
+   "elvart": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "tenyleges": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-nevek (Meta)",
+   "elvart": [
+    "HeadSpa_FoglalasElso",
+    "Schedule"
+   ],
+   "tenyleges": [
+    "HeadSpa_FoglalasElso",
+    "Schedule"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-nevek (TikTok)",
+   "elvart": [
+    "CompletePayment",
+    "HeadSpa_FoglalasElso"
+   ],
+   "tenyleges": [
+    "CompletePayment",
+    "HeadSpa_FoglalasElso"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "2. level (azonos booking_id, azonos jelzes): a valasz mar_kuldve, az eltero-jelzes NEM aktiv",
+   "elvart": [
+    "mar_kuldve",
+    false
+   ],
+   "tenyleges": [
+    "mar_kuldve",
+    false
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "a 2. level semmit nem kuldott: a kiment esemenyek es a sorok szama valtozatlan",
+   "elvart": [
+    8,
+    6
+   ],
+   "tenyleges": [
+    8,
+    6
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "egy alapesemeny-tipus (FoglalasElso)",
+   "elvart": [
+    "FoglalasElso"
+   ],
+   "tenyleges": [
+    "FoglalasElso"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "kuldott ertek = a tenyleges ar (> 0), Meta alap = TikTok alap",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  },
+  {
+   "leiras": "nincs dupla (esemeny_id, platform)",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  }
+ ],
+ "szimulalt": [
+  "a 2. level a valodi mintaban csak a mosaicheadspa@ cimre megy; a /api/foglalas-egyeztetes bemenetben NINCS cimzett-mezo, ezert a futtato ezt nem tudja kifejezni: a szerver szamara a 2. level azonos uuid-ju (booking_id) es azonos jelzesu level (a mai 10 levelpar alapjan; TENY, ket par megnezve: a ket valodi level torzse karakterre azonos - 19 493 es 19 634 karakter, 0 elteres - csak a cimzett mas, hianyzo mezo nincs, ezert a szimulacio pontos)"
+ ],
+ "booking_id": "mb_0muyg0j20fdc4lsvjeqq7e8",
+ "salonic_uuid": "c3c7ed02-ded7-a432-6a73-3ac261e0f5df",
+ "esemeny_idk": {
+  "sorok": 8,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyg0j20fdc4lsvjeqq7e8",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muyg0j20fdc4lsvjeqq7e8",
+     "nev": "Schedule",
+     "ertek": 53800
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyg0j20fdc4lsvjeqq7e8",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muyg0j20fdc4lsvjeqq7e8",
+     "nev": "CompletePayment",
+     "ertek": 53800
+    }
+   ],
+   "google": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyg0j20fdc4lsvjeqq7e8",
+     "nev": "ARNYEK-7825199989",
+     "ertek": 53800
+    }
+   ],
+   "ga4": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyg0j20fdc4lsvjeqq7e8",
+     "nev": "foglalas_elso",
+     "ertek": 53800
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Schedule:mb_0muyg0j20fdc4lsvjeqq7e8",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   },
+   {
+    "esemeny_id": "Schedule:mb_0muyg0j20fdc4lsvjeqq7e8",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}
