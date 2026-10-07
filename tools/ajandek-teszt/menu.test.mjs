@@ -123,6 +123,11 @@ describe('az oxigénes ajándékkártya a menüben, a választón és az oxigén
     tartalmaz('.av-kartya:last-child:nth-child(odd) { grid-column: 1 / -1; flex-direction: row; }');
     // telefonon egy oszlop
     tartalmaz('@media (max-width: 599px) {\n  .av-racs { grid-template-columns: minmax(0, 1fr); }');
+    // telefonon mind a HÁROM kártya látszik egy képernyőn (tömör, vízszintes kártyák: kép balra, szöveg jobbra)
+    tartalmaz('MIND A HAROM kartya latszik egy kepernyon');
+    tartalmaz('.av-kartya { flex-direction: row; border-radius: 14px; }');
+    tartalmaz('.av-kep { flex: none; width: 36%; height: auto; aspect-ratio: auto; align-self: stretch; }');
+    tartalmaz('-webkit-line-clamp: 2;');
   });
 
   test('a kártyák alcíme előtt sehol nincs kis csillag-ikon (a Head Spa, lézeres és oxigénes adatban sem)', () => {

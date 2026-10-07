@@ -73,6 +73,19 @@ body.av { margin: 0; background: var(--hatter); color: var(--szoveg); font: 400 
   .av h2 { font-size: 22px; }
   .av-gomb { align-self: stretch; justify-content: center; }
 }
+/* telefon (599 px-ig): MIND A HAROM kartya latszik egy kepernyon, gorgetes nelkul: tomor, vizszintes kartyak (kep balra, szoveg jobbra) */
+@media (max-width: 599px) {
+  .av-fo { padding: 14px 14px 28px; }
+  .av h1 { font-size: 25px; }
+  .av-bev { margin-top: 8px; font-size: 14.5px; line-height: 1.4; }
+  .av-racs { gap: 10px; margin-top: 16px; }
+  .av-kartya { flex-direction: row; border-radius: 14px; }
+  .av-kep { flex: none; width: 36%; height: auto; aspect-ratio: auto; align-self: stretch; }
+  .av-test { padding: 10px 12px 12px; justify-content: center; }
+  .av h2 { font-size: 17px; line-height: 1.15; }
+  .av-szoveg { margin: 4px 0 8px; font-size: 13px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .av-gomb { align-self: flex-start; justify-content: flex-start; margin-top: 0; padding: 8px 14px; gap: 6px; font-size: 13px; }
+}
 </style>
 <script src="/assets/js/suti.js"></script>
 </head>
