@@ -63,8 +63,28 @@ function postas(env) {
   };
 }
 
+// IDEIGLENES hibakereso (csak az elonezeti / nem eles gazdakon): megmutatja, melyik LEZER_* beallitas van meg a kornyezetben (az ertek SOHA nem latszik,
+// csak hogy van-e, a kulcs fajtaja es a hossza). Az eles domainen nem erheto el. A beallitas ellenorzese utan torolni.
+function diag(context) {
+  const e = context.env || {};
+  const j = (n) => {
+    const v = String(e[n] || '').trim();
+    if (!v) return { van: false };
+    const m = /^(sk_test|rk_test|sk_live|rk_live|pk_test|pk_live|whsec)_/.exec(v);
+    return { van: true, fajta: m ? m[1] : 'ismeretlen', hossz: v.length };
+  };
+  return new Response(JSON.stringify({
+    kornyezet: e.ESEMENY_IRAS ? 'production-szeru (ESEMENY_IRAS van)' : 'preview-szeru',
+    LEZER_STRIPE_SECRET_KEY: j('LEZER_STRIPE_SECRET_KEY'), LEZER_STRIPE_PUBLISHABLE_KEY: j('LEZER_STRIPE_PUBLISHABLE_KEY'),
+    LEZER_STRIPE_WEBHOOK_SECRET: j('LEZER_STRIPE_WEBHOOK_SECRET'), LEZER_SZAMLAZZ_AGENT_KULCS: { van: !!String(e.LEZER_SZAMLAZZ_AGENT_KULCS || '').trim(), hossz: String(e.LEZER_SZAMLAZZ_AGENT_KULCS || '').trim().length },
+    AJANDEK_TITOK: { van: String(e.AJANDEK_TITOK || '').length >= 32 }, SZAMLA_ELONEZET: String(e.SZAMLA_ELONEZET || ''),
+  }), { headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
+}
+
 export async function onRequest(context) {
   const { request } = context;
+  const url = new URL(request.url);
+  if (url.pathname.endsWith('/__diag') && !/^(www\.)?mosaicheadspa\.hu$/.test(url.hostname)) return diag(context);
   const env = lezerKornyezet(context.env || {});
   // a tul nagy torzset be sem olvassuk (content-length, illetve olvasas kozbeni korlat)
   const t = await keresTorzs(request);
