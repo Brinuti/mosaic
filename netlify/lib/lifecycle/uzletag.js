@@ -1,5 +1,5 @@
 // Uzletag-felismeres, szolgaltatas-nevek tisztitasa, szegmensek, idotartam (a Salonic-pillanatkepbol).
-import snapshot from './szolgaltatasok.json' with { type: 'json' };
+import snapshot from './szolgaltatasok.js';
 
 const OLDAL = 'https://www.mosaicheadspa.hu';
 

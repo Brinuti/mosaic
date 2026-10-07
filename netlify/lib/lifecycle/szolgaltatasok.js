@@ -1,4 +1,5 @@
-{
+// GENERALT: node tools/lifecycle-szolgaltatasok.mjs (a Salonic-szolgaltatasok pillanatkepe: nev, idotartam)
+export default {
  "forras": "SALONIC_SERVICE_STAFF_MAPPING_CURRENT.json",
  "kelt": "2026-10-03T15:13:38.153Z",
  "szolgaltatasok": [
@@ -538,4 +539,4 @@
    "perc": 30
   }
  ]
-}
+};
