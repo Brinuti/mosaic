@@ -1,4 +1,4 @@
-// Az új főoldal (/fooldal-uj) böngészős tesztjei (Playwright). Nincs dist/ és nincs külső hálózat: a könnyű helyi szerver
+// Az új főoldal (/) böngészős tesztjei (Playwright). Nincs dist/ és nincs külső hálózat: a könnyű helyi szerver
 // (tools/headspa-teszt/szerver.mjs) állítja össze az oldalt a build logikájával (fejléc / lábléc / közös CSS), minden külső kérés tiltott.
 //
 //   node --test tools/fooldal-teszt/fooldal.test.mjs
@@ -20,7 +20,7 @@ function playwright() {
   throw new Error('playwright-core nem található (PLAYWRIGHT_UTVONAL)');
 }
 const { chromium } = playwright();
-const OLDAL = 'fooldal-uj';
+const OLDAL = '';
 
 let szerver, bazis, bongeszo;
 before(async () => {
@@ -52,14 +52,14 @@ const belsoOldalVan = (href) => {
   return ['klon', 'foglalas'].some((m) => fs.existsSync(path.join(GYOKER, m, ut + '.html'))) || ['foglalo-motor'].includes(ut);
 };
 
-describe('/fooldal-uj', () => {
-  test('betöltődik hibák nélkül: nincs konzol-hiba, 404, törött kép; egyetlen H1; cím, noindex, canonical', async () => {
+describe('/ (főoldal)', () => {
+  test('betöltődik hibák nélkül: nincs konzol-hiba, 404, törött kép; egyetlen H1; cím, indexelhető, canonical', async () => {
     const { p, ctx, hibak, nincs } = await nyit();
     assert.equal(await p.title(), 'Japán Head Spa Budapesten – 50 perc kezelés + 30 perc hajszárítás | MOSAIC');
     assert.equal(await p.locator('h1').count(), 1, 'egyetlen H1');
     assert.match((await p.textContent('h1')).replace(/\s+/g, ' ').trim(), /^Japán Head Spa Budapesten – 50 perc kezelés \+ 30 perc profi hajszárítás$/);
-    assert.equal(await p.getAttribute('meta[name=robots]', 'content'), 'noindex, nofollow', 'amíg az -uj cím: nem indexelődik');
-    assert.equal(await p.getAttribute('link[rel=canonical]', 'href'), 'https://www.mosaicheadspa.hu/fooldal-uj');
+    assert.equal(await p.locator('meta[name=robots]').count(), 0, 'indexelhető (nincs robots meta)');
+    assert.equal(await p.getAttribute('link[rel=canonical]', 'href'), 'https://www.mosaicheadspa.hu/');
     const torott = await p.$$eval('img', (l) => l.filter((i) => i.complete && i.naturalWidth === 0).map((i) => i.currentSrc || i.src));
     assert.deepEqual(torott, [], 'törött képek');
     assert.equal(await p.$$eval('img:not([alt])', (l) => l.length), 0, 'minden képnek van alt attribútuma');

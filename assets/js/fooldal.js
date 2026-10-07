@@ -1,4 +1,4 @@
-// MOSAIC főoldal (/fooldal-uj) - működés.
+// MOSAIC főoldal (/) - működés.
 //  1. Videók: a [data-video] kártyák a saját tárhelyről (assets/video) egy felugró lejátszóban (<dialog>) indítják a videót; csak kattintásra töltődik.
 //  2. Körhinta ([data-korhinta]): oldalra görgethető sor előző / következő gombokkal.
 //  3. Hatások-fülek (zsíros / száraz / hajhullás).

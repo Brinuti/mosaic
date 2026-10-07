@@ -1,14 +1,14 @@
-# Új főoldal (`/fooldal-uj`)
+# Új főoldal (`/`)
 
 A tulajdonos 2026-10-07-i látványterve alapján készült főoldal, a mostani landingek (Head Spa, lézer, oxigén) arculatában.
-**Ideiglenes cím: `/fooldal-uj`** (noindex, nincs rá link, nincs a sitemapben). A mostani főoldal (`klon/index.html`, a Wixes klón) változatlanul él;
-a csere a főoldal címére csak kifejezett kérésre történik (lásd lent).
+**ÉLES a főoldal címén (2026-10-07).** A tulajdonos szabálya: most csak azok az oldalak cserélődnek, ahol a tartalomhoz nem nyúlunk, csak a megjelenés új; a főoldal régi tartalma teljes egészében megmaradt.
+A régi (Wixes) főoldal rejtett címen él: `/fooldal-regi` (noindex, saját canonical); az `-uj` cím 301-gyel a főoldalra visz. Visszaállítás: lásd lent.
 
 ## Fájlok
 
 | Fájl | Mire való |
 |---|---|
-| `foglalas/fooldal-uj.html` | az oldal (egy fájl, a `<!--mh-fejlec-->` / `<!--mh-lablec-->` jelölőket a build tölti ki a közös fejléccel / lábléccel) |
+| `foglalas/index.html` | az oldal (egy fájl, a `<!--mh-fejlec-->` / `<!--mh-lablec-->` jelölőket a build tölti ki a közös fejléccel / lábléccel) |
 | `assets/css/fooldal.css` | önálló stíluslap (más oldalt nem érint) |
 | `assets/js/fooldal.js` | működés: videó-felugró, körhinta, hatás-fülek, Trustindex, térkép, CTA-mérés, mobil sticky CTA |
 | `assets/img/fooldal/*.jpg` + `assets/img/m/fooldal/*.jpg` | a Drive „Renátó” fotózásaiból (kezelés + szalon), asztali és mobil méretben |
@@ -42,12 +42,14 @@ Utána a mostani főoldal tartalma, szebb elrendezésben és a valódi fotókkal
 
 **Mérést érint: csak előkészítés.** A CTA-k `data-cta` attribútuma `fooldal_cta` eseményt (`{event:'fooldal_cta', cta:'<név>'}`), a videók `fooldal_video` eseményt küldenek a `dataLayer`-be (mint a páros / lézer landingeken). A GTM-ben ehhez **nincs trigger**, a Meta-pixel / suti.js lista nem módosult; a `-uj` oldalon pixel nem fut. A foglalás-gombok `/foglalo-motor?business=headspa…` linkek: a launcher és a motor mérése (`booking_*`) változatlan.
 
-## Csere a főoldal címére (csak kifejezett kérésre)
+## A csere megtörtént (2026-10-07) - és a visszaállítás
 
-1. `git mv foglalas/fooldal-uj.html foglalas/index.html` – a build a `foglalas/` fájljait a klón fölé másolja, és az `index.html`-ből lesz a nyitóoldal (`fooldal.html`).
-2. Az oldalban: `canonical` és `og:url` → `https://www.mosaicheadspa.hu/`, a `noindex` meta törlése, a hero-kép `og:image` marad.
-3. A régi (Wixes) főoldal rejtett címen megmarad: `klon/index.html` → `klon/fooldal-regi.html` és `klon/m/index.html` → `klon/m/fooldal-regi.html` (noindex + saját canonical, mint a Head Spa oldalak `-regi` változata).
-4. `netlify/lib/utvonal.js` `ATIRANYITASOK`: `'/fooldal-uj': '/'`.
-5. `tools/lcp-elofeltoltes.json`: a nyitóoldal (`index`) sora az új hero-képre (`/assets/img/fooldal/hero.jpg`) vagy törlendő (az oldal maga előtölti).
-6. Az `-uj` teszt `OLDAL` állandója és a cím-teszt frissítendő; élesben: főoldal 200, `-regi` 200, `-uj` 301, GTM-trigger-ellenőrzés (a főoldal Wix-azonosítós gombjaira épülő triggerek!), pixel-próba a csere előtt / után.
-7. Visszaállítás: a `foglalas/index.html` törlése (a klón főoldala újra előjön), az `-uj` átirányítás törlése.
+Ami történt: `git mv foglalas/fooldal-uj.html foglalas/index.html` (a build a `foglalas/` fájljait a klón fölé másolja, az `index.html`-ből lesz a nyitóoldal);
+`canonical` / `og:url` a főoldalra, a `noindex` törölve; a régi Wixes főoldal `klon/fooldal-regi.html` + `klon/m/fooldal-regi.html` néven (noindex, saját canonical), az eredeti
+`klon/index.html` + `klon/m/index.html` megmaradt; `netlify/lib/utvonal.js`: `'/fooldal-uj': '/'`; `tools/lcp-elofeltoltes.json`: a régi `fooldal` sorok törölve (az oldal maga előtölti a hero-képet);
+a `/gyik` generátor (`tools/gyik-oldal.mjs`) forrása `foglalas/index.html`.
+
+Mérés: a GTM éles verziójában (53) egyetlen trigger sem a főoldal Wix-azonosítós gombjaira vagy a `/` útvonalra épül (csak egyedi események, köszönőoldalak, Salonic-gazdagépek, `booking_*`),
+a Meta-pixel útvonal-listáján az `index` szerepel (a nyitóoldal ugyanúgy kapja, mint eddig). A főoldal saját eseményei: `fooldal_cta`, `fooldal_video` (dataLayer, nincs GTM-trigger).
+
+**Visszaállítás:** a `foglalas/index.html` törlése (a klón főoldala újra előjön), az `-uj` átirányítás törlése az `utvonal.js`-ből, a `fooldal` sorok visszaírása az LCP-táblába (régi értékek: git előzmény).
