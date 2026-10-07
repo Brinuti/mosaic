@@ -107,4 +107,11 @@ describe('a build bekotese', () => {
     const css = olvas('assets', 'css', 'fejlec-lablec.css');
     assert.match(css, /#MENU_AS_CONTAINER_EXPANDABLE_MENU \{ --item-height: 40px !important; margin-top: 58px !important; \}/);
   });
+
+  test('a menu sajat gorgetosava a kepernyon belul marad (a fejlec zoomja miatt a klon.js adja a --mh-menu-max erteket)', () => {
+    const css = olvas('assets', 'css', 'fejlec-lablec.css');
+    assert.match(css, /#inlineContentParent-MENU_AS_CONTAINER \{ max-height: var\(--mh-menu-max, 100vh\) !important; \}/);
+    const js = olvas('assets', 'js', 'klon.js');
+    assert.match(js, /menu\.style\.setProperty\('--mh-menu-max', Math\.floor\(window\.innerHeight \/ nagyitas\) \+ 'px'\)/);
+  });
 });
