@@ -148,9 +148,11 @@ describe('az oxigénes ajándékkártya a menüben, a választón és az oxigén
 
 describe('a build bekotese', () => {
   test('a sajat oldalak fejlecere es a Wixes oldalakra is rakerul az atalakitas', () => {
-    assert.match(build, /import \{ ajandekMenu \} from '\.\/ajandek-menu\.mjs';/);
-    assert.match(build, /let fejlec = ajandekMenu\(resz\('<!--mh-fejlec-->', FEJLEC\[m\]\), m === LAP_M\)/);
-    assert.match(build, /function fejlecSzoveg\(h, mobil\) \{[^]*?h = ajandekMenu\(h, mobil\);/);
+    // a build a tools/fejlec-menu.mjs-t hivja (az az Ajandekkartya lenyilot is elvegzi, lasd ajandekMenu), igy minden oldalra ugyanaz kerul
+    assert.match(build, /import \{ fejlecAtalakit, ANGOL_JELOLO \} from '\.\/fejlec-menu\.mjs';/);
+    assert.match(build, /let fejlec = fejlecAtalakit\(resz\('<!--mh-fejlec-->', FEJLEC\[m\]\), m === LAP_M, angol\)/);
+    assert.match(build, /function fejlecSzoveg\(h, mobil\) \{[^]*?h = fejlecAtalakit\(h, mobil\);/);
+    assert.match(olvas('tools', 'fejlec-menu.mjs'), /import \{ ajandekMenu \} from '\.\/ajandek-menu\.mjs';/);
   });
 
   test('a mobil menu tomoritese a kozos CSS-ben van (minden oldalra)', () => {

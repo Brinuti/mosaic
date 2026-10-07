@@ -322,9 +322,15 @@
   // "Suti beallitasok" link a lablecben, az "ASZF - Impresszum" sor vegen - a
   // tajekoztato szerint itt lehet a hozzajarulast utolag modositani vagy visszavonni.
   function lableclink() {
+    // a kozos lablec (tools/fejlec-menu.mjs) mar tartalmazza a linket: csak a kattintast kell ra kotni (korabban a sajat oldalak lablec-darabjaban beegetett link "halott" volt)
+    var van = d.getElementById('mh-cc-lablec');
+    if (van) {
+      if (!van.getAttribute('data-mh-kotve')) { van.setAttribute('data-mh-kotve', '1'); van.addEventListener('click', function (e) { e.preventDefault(); mutat('settings'); }); }
+      return;
+    }
     var cel = null, linkek = d.querySelectorAll('a[href$="/impresszum"], a[href$="impresszum.html"]');
     for (var i = 0; i < linkek.length; i++) if (linkek[i].closest('footer')) cel = linkek[i];
-    if (!cel || d.getElementById('mh-cc-lablec')) return;
+    if (!cel) return;
     var kulso = cel.parentElement && cel.parentElement.tagName === 'SPAN' ? cel.parentElement : cel;
     var a = d.createElement('a');
     a.id = 'mh-cc-lablec';
