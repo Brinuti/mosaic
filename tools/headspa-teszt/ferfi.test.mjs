@@ -143,6 +143,7 @@ describe(`/${NEV}`, () => {
     sorok.forEach((s, i) => {
       if (i > arStart && i < arVeg) return;
       if (/^\d\d:\d\d$/.test(s)) return;
+      if (/^Ár: 50 perc \+ 30 perc szárítás - 32\.900 Ft helyett 29\.900 Ft$/.test(s)) return;   // a hero ar-sora a mai (oktoberi) arra frissitve: 26.900 Ft (lasd a hero-ar tesztet)
       const n = norm(s);
       if (n.length < 3 || uj.includes(n)) return;
       hianyzik.push(s);
@@ -156,7 +157,7 @@ describe(`/${NEV}`, () => {
   test('a fo szovegek, cimek es a hero: ar-sav, Google-ertekeles, cimek sorrendje', async () => {
     const { p, ctx } = await nyit();
     const szoveg = (await p.evaluate(() => document.querySelector('main').innerText)).replace(/\s+/g, ' ');
-    for (const s of ['Ha szereted a masszázst, és igényes vagy a hajadra, akkor a Head Spa kezelésünket imádni fogod.', '1023 Bécsi út 2 (A Kolosy térnél)', 'Ár: 50 perc + 30 perc szárítás - 32.900 Ft helyett 29.900 Ft', 'Google 4,9/5 - Kiváló',
+    for (const s of ['Ha szereted a masszázst, és igényes vagy a hajadra, akkor a Head Spa kezelésünket imádni fogod.', '1023 Bécsi út 2 (A Kolosy térnél)', 'Ár: 50 perc + 30 perc szárítás - 32.900 Ft helyett 26.900 Ft', 'Google 4,9/5 - Kiváló',
       'Több szalont leteszteltem, hogy, megalkossam számodra a tökéletes Férfi Head Spa kezelést.', 'Az okosgyűrűm azt hitte, hogy alszom!', 'Mitől más a MOSAIC Férfi Head Spa kezelés?', 'A rendszeres Head Spa hatásai',
       'Zsíros fejbőr esetén', 'Száraz fejbőr esetén', 'Hajhullás esetén', 'Tapasztalt gyógymasszőrök kényeztetnek.', '100%-ban organikus, vegán OXYGENI termékeket használunk',
       'Mint a Mozaik darabkáit, úgy rakhatod össze a saját Férfi Head Spa kezelésed!', 'Egy MOSAIC Headspa szeánsz elemei', 'Csak tökéletes frizurával engedünk el!', 'Már a megérkezés is ellazít majd',
@@ -169,6 +170,19 @@ describe(`/${NEV}`, () => {
     for (const s of sorrend) { const k = h2.findIndex((x, j) => j >= i && x.startsWith(s)); assert.ok(k >= 0, 'H2 hianyzik / rossz sorrend: ' + s); i = k + 1; }
     // a hero-gombok
     assert.deepEqual(await p.$$eval('.hero a.gomb', (l) => l.map((a) => [a.textContent.replace(/\s+/g, ' ').trim(), a.getAttribute('href')])), [['Időpontfoglalás →', FOGLALO], ['Ajándékkártya →', '/headspa-ajandekkartya']]);
+    await ctx.close();
+  });
+
+  test('a hero ar-sora egyezik az arlistaval: "32.900 Ft helyett 26.900 Ft" (a 2. csomag ara), nincs 29.900 Ft az oldalon', async () => {
+    const { p, ctx } = await nyit();
+    const hero = await p.$eval('.hero-ar', (e) => e.innerText.replace(/\s+/g, ' ').trim());
+    assert.equal(hero, 'Ár: 50 perc + 30 perc szárítás - 32.900 Ft helyett 26.900 Ft');
+    const csomagAr = await p.$eval('.csomag:nth-child(2) .ar-uj', (e) => e.textContent.trim());
+    const csomagRegi = await p.$eval('.csomag:nth-child(2) .ar-regi s', (e) => e.textContent.trim());
+    assert.ok(hero.includes(`${csomagRegi} helyett ${csomagAr}`), 'a hero ar-sora = a Head Spa kezeles csomag ara: ' + csomagRegi + ' / ' + csomagAr);
+    assert.equal(csomagAr, '26.900 Ft');
+    assert.equal((await p.evaluate(() => document.querySelector('main').innerText)).includes('29.900'), false, 'nincs 29.900 az oldalon');
+    assert.equal(fs.readFileSync(path.join(GYOKER, 'foglalas', NEV + '.html'), 'utf8').includes('29.900'), false, 'nincs 29.900 a forrasban');
     await ctx.close();
   });
 
