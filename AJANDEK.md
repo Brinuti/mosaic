@@ -734,6 +734,31 @@ Két ajándékkártya van (Head Spa és lézeres szőrtelenítés), ezért a fő
 
 Teszt: `node --test tools/ajandek-teszt/menu.test.mjs` (statikus: minden fejléc-változaton pontosan egyszer alakul át, kijelölés, a választó oldal, a build bekötése).
 
+## Oxigénterápia ajándékkártya (2026-10-07, a tulajdonos kérése): harmadik „kereskedő” a motorban
+
+Ugyanaz a kereskedő-gyár, mint a lézeres kártyánál (`ajandekMotor(ADAT, { elotag })`), a kibocsátó **Bozsoki - Harangozó Tünde e.v.** (Új KATA, alanyi adómentes; saját Stripe-fiók: „Mosaic Oxigén Terápia”, `acct_1UNS5dHZOCZhis2v`; saját Számlázz.hu-fiók, Számla Agent). **Rejtetten megy fel** (noindex, nincs link rá a menüben / az oxigén landingen, a kulcsok beállításáig az API 503-at ad); a bekapcsolás a tulajdonos döntése.
+
+| | Oxigén |
+|---|---|
+| Oldal | `/oxigen-ajandekkartya` (`foglalas/oxigen-ajandekkartya.html`, noindex) |
+| Adat | `assets/js/ajandek-adat-oxigen.js` (a HeadSpa adatra épül, mint a lézeres) |
+| API | `/api/ajandek-oxigen/*` (`functions/api/ajandek-oxigen/[[kind]].js`) |
+| Környezet | `netlify/lib/ajandek-oxigen-env.js`: az `OXIGEN_*` beállítások a motor neveire képezve; a HeadSpa és a lézeres kulcsok **soha** nem folynak át (teszt igazolja) |
+| Rendelés-azonosító | `OX-…` |
+| Kártyák | **Hajkamerás vizsgálat 4 990** (Salonic 466147), **Első kezelés 29 900** (466110), **5 kezelés 130 000** (5 × 26 000, 466158), **10 kezelés 260 000** (10 × 26 000, 466158). Az 5 és 10 kezelésre szóló kártya a *további* alkalmakra szól (a 2. alkalomtól); az első kezelés külön ajándékozható. Az árak a Salonic (mosaic-oxigen) listaárai, a teszt ellenőrzi |
+| Termékajándék | az oxigén oldal bérlet-ajándéka az ajándékkártyához is jár: **5 kezelés: 1 literes Oxygeni sampon (19 800 Ft)**, **10 kezelés: sampon + 1 literes balzsam (28 000 Ft), összesen 47 800 Ft**. A tulajdonos kérése: nem a vásárláskor, hanem a kártya átvételekor / beváltásakor (az első felhasználáskor) adja át a szalon; ezt a kártya leírása, a GYIK és a szalon-levél („Ne felejtsd: …”, termék `szalon_megjegyzes`) is megírja |
+| Salonic | a szalon minden eladáshoz **egy** 100%-os kupont hoz létre az adott szolgáltatásra; az 5 / 10 kezelésesnél a kupon „darabszáma” (felhasználások száma) 5, illetve 10 – a szalon-levél megmondja (`salonic_szolgaltatas.felhasznalas`) |
+| Számla | Számlázz.hu Számla Agent, vásárláskor, AAM tétel (`MOSAIC oxigénterápia ajándékkártya – 5 kezelés – 130.000 Ft értékben`); céges számla, átutalás, papír kártya nincs |
+| Mérés | nincs (`MERES: false`, `MERES_REGI: false`, nincs szerveroldali Zapier-mérés) |
+
+**Titkok** (Cloudflare Pages > mosaic > Variables and secrets, **Secret** típus, Production / Preview külön): `OXIGEN_STRIPE_SECRET_KEY` (Production: korlátozott `rk_live_…`: PaymentIntents Write + Charges and Refunds Read; Preview: a Stripe sandbox `sk_test_…`), `OXIGEN_STRIPE_WEBHOOK_SECRET` (`whsec_…`: https://\<host\>/api/ajandek-oxigen/webhook, események: `payment_intent.succeeded`, `charge.refunded`, `charge.dispute.created`), `OXIGEN_SZAMLAZZ_AGENT_KULCS` (Számlázz.hu főoldal > Vezérlőpult > „Számla Agent kulcsok”). Nyilvános kulcsok a `wrangler.toml`-ban (`OXIGEN_STRIPE_PUBLISHABLE_KEY`: pk_live / a sandbox pk_test; az előnézeten `SZAMLA_ELONEZET = "1"`: csak előnézeti PDF). **Tanulság:** a Stripe-oldal szövegéből (`find` / accessibility-fa) olvasott kulcs **csonkolódhat** – a nyilvános kulcsot mindig ellenőrizd (`curl -u KULCS: https://api.stripe.com/v1/tokens -d card[number]=4242…`: érvénytelen kulcsra „Invalid API Key”, érvényesre „…unsupported for publishable key tokenization”).
+
+**Képek:** `assets/img/ajandek/hero-oxigen-ajandek.jpg` (hajkamerás felmérés + a saját kártya-renderelő, kész: a helyi szerveren készült), `kartya-hatter-oxigen.jpg` (`tools/kartya-hatter/oxigen-hatter.mjs`), a „személyre szabott kártya” mockup a HeadSpa-é (`atadas-szemelyre.jpg`, általános), a kártyák fotói az `assets/img/oxigen/` mappából; kezelés-videó egyelőre nincs (a doboz a fotót mutatja).
+
+**Helyi próba:** `node tools/ajandek-teszt/szerver.mjs` → `http://localhost:4195/oxigen-ajandekkartya` (mock Stripe + Számlázz-csonk). Tesztek: `node --test "tools/ajandek-teszt/oxigen.test.mjs"` (20 teszt; a teljes csomag: `node --test "tools/ajandek-teszt/*.test.mjs"`).
+
+**Bekapcsolás (a tulajdonos döntése után):** a fő menü „Ajándékkártya” lenyílójába és a `/ajandekkartya` választó oldalra a harmadik kártya (`tools/ajandek-menu.mjs` `AJANDEK_MENU.elemek` + `foglalas/ajandekkartya.html`), az oxigén landingre az „Ajándékkártya” gomb, a `menu.test.mjs` frissítése.
+
 ## Elhagyott fizetés: emlékeztető levelek (2026-10-07, a tulajdonos kérése)
 
 Ha a vevő megadta az adatait, de a fizetés nem fejeződött be (a bank elutasította, a Revolut Pay lejárt, bezárta az oldalt), a rendelés PaymentIntentje „nyitott” marad a Stripe-ban, a vevő e-mail-címével és a kártya típusával. Erre épül az emlékeztető: **legfeljebb két levél** vevőnként.

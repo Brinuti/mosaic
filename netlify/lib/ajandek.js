@@ -643,7 +643,10 @@ async function rendelesInfo(k, pi) {
     foto_id: FOTO_ID_RE.test(md.foto_id || '') ? md.foto_id : '',
     termek_nev: termek ? termek.nev : (md.termek || ''),
     // a szalon-levelben: melyik Salonic-szolgaltatasra kell a 100%-os kupont letrehozni (kereskedo-adat, ha van)
-    salonic_szolgaltatas: termek && termek.salonic_szolgaltatas ? termek.salonic_szolgaltatas.nev : '',
+    // (ha a kartya tobb alkalomra szol, a "felhasznalas" szoveg is ott van: pl. "5-ször felhasználható kupon")
+    salonic_szolgaltatas: termek && termek.salonic_szolgaltatas ? termek.salonic_szolgaltatas.nev + (termek.salonic_szolgaltatas.felhasznalas ? ' – ' + termek.salonic_szolgaltatas.felhasznalas : '') : '',
+    // a szalon-levelbe kerulo kulon megjegyzes (pl. a kartyahoz jaro termekajandek, amit a beváltáskor kell atadni)
+    szalon_megjegyzes: termek && termek.szalon_megjegyzes ? termek.szalon_megjegyzes : '',
     kartya_cim: md.kartya_cim || (termek ? termek.kartya_cim : ''),
     osszeg: Math.round(Number(pi.amount) / 100),
     osszeg_szoveg: ADAT.arSzoveg(Number(pi.amount) / 100),
@@ -1397,7 +1400,7 @@ async function fizetesEsemenyFo(k, obj, ok) {
       cimzett: 'szalon',
       valasz: i.email || undefined,
       ...L.szalonFizetveLevel({
-        rendeles_id: i.rendeles_id, pi: pi.id, termek_nev: i.termek_nev, salonic_szolgaltatas: i.salonic_szolgaltatas, osszeg_szoveg: i.osszeg_szoveg,
+        rendeles_id: i.rendeles_id, pi: pi.id, termek_nev: i.termek_nev, salonic_szolgaltatas: i.salonic_szolgaltatas, szalon_megjegyzes: i.szalon_megjegyzes, osszeg_szoveg: i.osszeg_szoveg,
         fizetesi_mod: i.fizetesi_mod, fizetve_ekkor: i.fizetve_ekkor, email: i.email, nev: md.nev,
         iranyitoszam: md.iranyitoszam, varos: md.varos, cim: md.cim, ceges_nev: md.ceges_nev, ceges_adoszam: md.ceges_adoszam,
         kod: i.kod, ervenyes_ig: i.ervenyes_ig, kiallit_url: kiallitUrl, azonnali, attr: md,

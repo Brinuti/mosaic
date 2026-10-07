@@ -44,6 +44,9 @@ AJANDEK_STRIPE_SZAMLA = "1"   # Stripe-szamla (tetelek + Stripe Tax; a szamlabri
 # Lezeres szortelenites ajandekkartya (/lezeres-ajandekkartya, /api/ajandek-lezer/*): a lezeres Stripe-fiok NYILVANOS kulcsa (pk_live_...). A titkok (Secret tipussal a feluleten):
 # LEZER_STRIPE_SECRET_KEY (rk_live_...), LEZER_STRIPE_WEBHOOK_SECRET (whsec_...), LEZER_SZAMLAZZ_AGENT_KULCS. Lasd AJANDEK.md "Lezeres ajandekkartya".
 LEZER_STRIPE_PUBLISHABLE_KEY = "pk_live_51TyudCKks72Z28LB8hKnhfWnQr1G7fOUgOs85iHpCQvV8zwSX72U0GGjWp9vl5Zb3v3IZpcv9HGjvegoeUzHI28g00O6KiW93Q"
+# Oxigenterapia ajandekkartya (/oxigen-ajandekkartya, /api/ajandek-oxigen/*): az oxigenes Stripe-fiok (Mosaic Oxigen Terapia, Bozsoki - Harangozo Tunde e.v.) NYILVANOS kulcsa (pk_live_...).
+# A titkok (Secret tipussal a feluleten): OXIGEN_STRIPE_SECRET_KEY (rk_live_...), OXIGEN_STRIPE_WEBHOOK_SECRET (whsec_...), OXIGEN_SZAMLAZZ_AGENT_KULCS. Lasd AJANDEK.md "Oxigenterapia ajandekkartya".
+OXIGEN_STRIPE_PUBLISHABLE_KEY = "pk_live_51UNS5dHZOCZhis2vYHLGzbBvGtbhTQwp4AYOcDbq5ByRFNgGNDTOuQLPYIn6VKaazQVfkOt4NRzFl1c0EKfRveeG00lC3pZhI2"
 AJANDEK_AZONNALI = "1"   # a tulajdonos donotese (2026-10-04): bankkartyas rendelesnel a kartya a fizetes utan AZONNAL kimegy; a szalon a levelben kapott kodot viszi fel a Salonicba. Atutalasnal marad a kezi gomb.
 
 # PR-elonezetek (preview deployok): a "vars" nem orokodik, ezert az SMTP-ertekek itt ujra szerepelnek. A Stripe
@@ -60,6 +63,8 @@ AJANDEK_AZONNALI = "1"
 AJANDEK_STRIPE_SZAMLA = "1"
 # Lezeres kartya, elonezet: a Stripe SANDBOX (teszt) nyilvanos kulcsa, es a Szamlazz.hu-n CSAK elonezeti PDF keszul (valodi szamla nem: a valodi Agent-kulcs az elonezeten is ott van)
 LEZER_STRIPE_PUBLISHABLE_KEY = "pk_test_51TyudCKks72Z28LBIs0ejfk1gxD7q5eVctHYTfsUNvEvjSmfPpUGu0CcMyQ3gWEmQqkG47yUHhCGE8Ul2MIuEjTM00snYwmYyg"
+# Oxigenes kartya, elonezet: az oxigenes Stripe-fiok SANDBOX (teszt) nyilvanos kulcsa (a Szamlazz.hu-n itt is csak elonezeti PDF keszul: SZAMLA_ELONEZET)
+OXIGEN_STRIPE_PUBLISHABLE_KEY = "pk_test_51UNS5dHZOCZhis2vCq59kelGDQCCiDd2Iz17PNJNgNwzqGWx2r8A2LkhJJlBGZUsfXxWVqhVlMNpz8uRGuF8SF7200wPsFLXeK"
 SZAMLA_ELONEZET = "1"
 AJANDEK_SZAMLA_ADO_ELLENORZES = "0"   # CSAK elonezet: a Stripe teszt-modnak nincs adoregisztracioja (0 ado), igy az ado-ellenorzes kikapcsolva; az eles mindig ellenoriz
 
