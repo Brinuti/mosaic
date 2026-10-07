@@ -8,6 +8,7 @@
 // - /api/ajandek/*      a valodi kezelo (netlify/lib/ajandek.js) egy MOCK Stripe-API ellen
 // - /lezeres-ajandekkartya + /api/ajandek-lezer/*   a lezeres kereskedo (ajandekMotor + ajandek-adat-lezer.js), ugyanazzal a mock Stripe-pal;
 //                       a Szamlazz.hu helyett egy helyi csonk (SZAMLAZZ_AGENT_URL: a /__teszt/szamlazz); a keresek a /__teszt/szamlazz-keresek alatt
+// - /oxigen-ajandekkartya + /api/ajandek-oxigen/*   az oxigenterapia kereskedo (ajandekMotor + ajandek-adat-oxigen.js): ugyanaz, mint a lezeres (mock Stripe, Szamlazz-csonk)
 // - /__teszt/stripe-mock.js   bongeszos Stripe.js-mock (a valodi js.stripe.com helyett)
 // - /__teszt/levelek    a kikuldott (elfogott) e-mailek JSON-ban; DELETE: torles
 // - /__teszt/mock/...   a mock Stripe vezerlese (siker / bukas)
@@ -42,6 +43,7 @@ function memoriaKv() {
 const REGI_CIMEK = new Set(['/headspa-ajandekkartya', '/4-kezes-headspa-ajandekkartya', '/ajandekkartya-szulinapra', '/ajandekkartya-ugc', '/headspa-ajandekkartya-anyukaknak', '/headspa-ajandekkartya-noknek', '/headspa-paros-csajos-ajandekkartya', '/japan-headspa-ajandekkartya']);
 let ajandekKezel = null, korlatAlaphelyzet = null, mock = null, env = {};
 let lezerKezel = null, lezerEnv = {};
+let oxigenKezel = null, oxigenEnv = {};
 const szamlazzKeresek = [];
 
 async function hatterInditas() {
@@ -68,6 +70,16 @@ async function hatterInditas() {
     lezerEnv = lezerKornyezet({
       LEZER_STRIPE_SECRET_KEY: 'sk_test_mock_dev', LEZER_STRIPE_PUBLISHABLE_KEY: 'pk_test_mock_dev', LEZER_STRIPE_WEBHOOK_SECRET: 'whsec_mock_lezer_dev',
       LEZER_SZAMLAZZ_AGENT_KULCS: 'dev-agent-kulcs', AJANDEK_TITOK: env.AJANDEK_TITOK, AJANDEK_AZONNALI: env.AJANDEK_AZONNALI, STRIPE_API_BASE: mock.url,
+      SZAMLAZZ_AGENT_URL: 'http://127.0.0.1:' + PORT + '/__teszt/szamlazz',
+      ...(process.env.TESZT_FOTO === 'nincs' ? {} : { AJANDEK_FOTOK: env.AJANDEK_FOTOK }),
+    });
+    // az oxigenterapia kereskedo: sajat adat + sajat kornyezet (sem a HeadSpa, sem a lezeres kulcsai nincsenek benne)
+    await import('../../assets/js/ajandek-adat-oxigen.js');
+    const { oxigenKornyezet } = await import('../../netlify/lib/ajandek-oxigen-env.js');
+    oxigenKezel = ajandekMotor(globalThis.AJANDEK_ADAT_OXIGEN, { elotag: '/api/ajandek-oxigen/' }).ajandekKezel;
+    oxigenEnv = oxigenKornyezet({
+      OXIGEN_STRIPE_SECRET_KEY: 'sk_test_mock_dev', OXIGEN_STRIPE_PUBLISHABLE_KEY: 'pk_test_mock_dev', OXIGEN_STRIPE_WEBHOOK_SECRET: 'whsec_mock_oxigen_dev',
+      OXIGEN_SZAMLAZZ_AGENT_KULCS: 'dev-agent-kulcs', AJANDEK_TITOK: env.AJANDEK_TITOK, AJANDEK_AZONNALI: env.AJANDEK_AZONNALI, STRIPE_API_BASE: mock.url,
       SZAMLAZZ_AGENT_URL: 'http://127.0.0.1:' + PORT + '/__teszt/szamlazz',
       ...(process.env.TESZT_FOTO === 'nincs' ? {} : { AJANDEK_FOTOK: env.AJANDEK_FOTOK }),
     });
@@ -107,6 +119,11 @@ http.createServer(async (req, res) => {
       const mobil = u.searchParams.get('m') === '1' || /iPhone|Android.*Mobile/i.test(req.headers['user-agent'] || '');
       res.writeHead(200, { 'content-type': TIPUS['.html'], 'cache-control': 'no-store' });
       return res.end(oldal(ut, mobil, 'lezeres-ajandekkartya.html'));
+    }
+    if (ut === '/oxigen-ajandekkartya') {
+      const mobil = u.searchParams.get('m') === '1' || /iPhone|Android.*Mobile/i.test(req.headers['user-agent'] || '');
+      res.writeHead(200, { 'content-type': TIPUS['.html'], 'cache-control': 'no-store' });
+      return res.end(oldal(ut, mobil, 'oxigen-ajandekkartya.html'));
     }
     // a Szamlazz.hu Szamla Agent helyi csonkja: elmenti a keres XML-jet, sikeres valaszt ad
     if (ut === '/__teszt/szamlazz') {
@@ -154,6 +171,18 @@ http.createServer(async (req, res) => {
       const fejlecek = Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k.toLowerCase(), String(v)]));
       const v = await lezerKezel({
         method: req.method, url: 'http://localhost:' + PORT + req.url, headers: fejlecek, text: szoveg, env: lezerEnv,
+        kuld: async (level) => { elfogottLevelek.push({ ...level, ido: new Date().toISOString() }); },
+      });
+      res.writeHead(v.status, v.headers);
+      return res.end(v.body);
+    }
+    if (ut.startsWith('/api/ajandek-oxigen/') && oxigenKezel) {
+      res.setHeader('cache-control', 'no-store');
+      if (process.env.KORLAT !== '1' && korlatAlaphelyzet) korlatAlaphelyzet();
+      const szoveg = req.method === 'GET' || req.method === 'HEAD' ? '' : await torzs(req);
+      const fejlecek = Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k.toLowerCase(), String(v)]));
+      const v = await oxigenKezel({
+        method: req.method, url: 'http://localhost:' + PORT + req.url, headers: fejlecek, text: szoveg, env: oxigenEnv,
         kuld: async (level) => { elfogottLevelek.push({ ...level, ido: new Date().toISOString() }); },
       });
       res.writeHead(v.status, v.headers);
