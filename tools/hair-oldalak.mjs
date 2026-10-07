@@ -113,7 +113,7 @@ if (import.meta.url === new URL('file:///' + process.argv[1].replace(/\\/g, '/')
   for (const kulcs of Object.keys(LAPOK)) {
     const uj = oldal(kulcs);
     if (ellenoriz) {
-      const regi = fs.existsSync(fajl(kulcs)) ? fs.readFileSync(fajl(kulcs), 'utf8') : null;
+      const regi = fs.existsSync(fajl(kulcs)) ? fs.readFileSync(fajl(kulcs), 'utf8').replace(/\r\n/g, '\n') : null; // Windowson az autocrlf CRLF-et ir a munkamappaba
       if (regi !== uj) { console.log('ELTER: ' + path.relative(GYOKER, fajl(kulcs))); elteres++; }
     } else { fs.writeFileSync(fajl(kulcs), uj); console.log(`kiirva: foglalas/${LAPOK[kulcs].fajl}.html (${Math.round(uj.length / 1024)} KB)`); }
   }
