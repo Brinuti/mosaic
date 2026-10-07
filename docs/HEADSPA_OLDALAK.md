@@ -1,20 +1,22 @@
-# Head Spa oldalak – új szerkezet (2026-10-07)
+# Head Spa oldalak – új szerkezet (2026-10-07, ÉLESBEN az eredeti címeken)
 
-A régi, Wixes kinézetű Head Spa oldalak a lézeres / sminktetováló / oxigénterápia landingek szerkezetében, betűivel és színeivel (Playfair Display + Jost, arany gombok,
+A korábbi, Wixes kinézetű Head Spa oldalak a lézeres / sminktetováló / oxigénterápia landingek szerkezetében, betűivel és színeivel (Playfair Display + Jost, arany gombok,
 krém háttér, sötétzöld, fehér kártyák, rombusz-elválasztó). **A tartalom (szövegek, árak, képek, videók, linkek) szó szerint a régiből van** – a régi oldal minden sora
 megvan az újban (a kinyert tartalom és az új oldal összevetése: 0 hiányzó mondat; az egyetlen eltérés a videók hosszának írása: `00:36` helyett `0:36`, a gombfeliratok kisbetűssé tétele és a
 lásd alább felsorolt szándékos eltérések).
 
-**Cím:** a szabály szerint (meglévő linket csak kifejezett kérésre cserélünk) az új oldalak ideiglenesen **`-uj` címen** élnek, `noindex, nofollow`, saját canonical-lal, sehonnan nincs rájuk link, nincsenek a sitemapben.
-A régi oldalak a `klon/` mappában változatlanul megvannak és élesek.
+**Cím (2026-10-07 óta, a tulajdonos kifejezett kérésére: „mehet az élesítés”):** az új oldalak az **eredeti címeken élnek** (a `foglalas/*.html` felülírja a `klon/*.html` azonos nevű fájlját).
+- A régi, Wixes változat **rejtett `-regi` címen** megmaradt (`klon/<név>-regi.html` + `klon/m/<név>-regi.html`; `noindex`, saját canonical, nincs rá link, nincs a sitemapben) – összehasonlításhoz és visszaállításhoz.
+- Az ideiglenes `-uj` címek 301-gyel az eredeti címre irányítanak (`netlify/lib/utvonal.js`, `ATIRANYITASOK`).
+- A `head-spa-kedvezmeny` oldal a régihez hasonlóan `noindex` maradt; a többi indexelhető.
 
-| Új (ideiglenes) cím | Forrás | Régi (éles) oldal |
+| Cím | Forrás | Rejtett régi változat |
 |---|---|---|
-| `/headspa-budapest-uj` | `foglalas/headspa-budapest-uj.html` | `/headspa-budapest` (a hosszú cikk) |
-| `/headspa-arak-budapest-uj` | `foglalas/headspa-arak-budapest-uj.html` | `/headspa-arak-budapest` |
-| `/head-spa-kedvezmeny-uj` | `foglalas/head-spa-kedvezmeny-uj.html` | `/head-spa-kedvezmeny` (a régi `noindex` volt: ez is az marad) |
-| `/headspa-termekek-oxygeni-uj` | `foglalas/headspa-termekek-oxygeni-uj.html` | `/headspa-termekek-oxygeni` |
-| `/head-spa-velemenyek-uj` | `foglalas/head-spa-velemenyek-uj.html` | `/head-spa-velemenyek` |
+| `/headspa-budapest` (a hosszú cikk) | `foglalas/headspa-budapest.html` | `/headspa-budapest-regi` |
+| `/headspa-arak-budapest` | `foglalas/headspa-arak-budapest.html` | `/headspa-arak-budapest-regi` |
+| `/head-spa-kedvezmeny` | `foglalas/head-spa-kedvezmeny.html` | `/head-spa-kedvezmeny-regi` |
+| `/headspa-termekek-oxygeni` | `foglalas/headspa-termekek-oxygeni.html` | `/headspa-termekek-oxygeni-regi` |
+| `/head-spa-velemenyek` | `foglalas/head-spa-velemenyek.html` | `/head-spa-velemenyek-regi` |
 
 Közös fájlok: `assets/css/headspa-oldal.css` (a komponensek), `assets/js/headspa-oldal.js` (videó-lejátszó, képsorozat, Trustindex / térkép, mobil sticky CTA),
 `tools/headspa-teszt/` (tesztek + könnyű szerver). A fejlécet / láblécet a build szúrja be (`<!--mh-fejlec-->`, `<!--mh-lablec-->`), a foglalás-gombok `/foglalo-motor?business=headspa`
@@ -40,14 +42,10 @@ linkek: a launcher a helyben nyíló foglalóban (rétegben) nyitja őket, mint 
 - A hosszú cikkhez új „Itt találsz meg minket” szekció (cím, elérhetőség, nyitvatartás, térkép) készült az árak oldal azonos blokkjából; a cikk végén a kapcsolódó szöveg és gombok változatlanok.
 - A cikk videóinak keresőmotoros leírása (JSON-LD `VideoObject`) mind a 15 videóra a saját tárhelyes fájlokra mutat (a régi oldal 8 videója Wix-CDN-es, lejáró hivatkozásokkal szerepelt).
 
-## Csere az eredeti címre (csak kifejezett kérésre)
-Mint a lézeres / oxigén oldalnál (`docs/LEZERES_LANDING.md`, `OXIGEN-LANDING.md`):
-1. `git mv foglalas/<név>-uj.html foglalas/<név>.html` (a `foglalas/*.html` felülírja a `klon/<név>.html` fájlt); a `canonical` és `og:url` az eredeti címre; a `noindex, nofollow` kivétele (**a `head-spa-kedvezmeny` oldalon marad `noindex`**, mint a régin).
-2. A régi Wixes változat rejtett címre: `klon/<név>.html` + `klon/m/<név>.html` → `<név>-regi.html` (noindex, saját canonical, mint `klon/lezeres-szortelenites-budapest-regi.html`); az `-uj` cím 301-gyel az eredetire (`netlify/lib/utvonal.js`, `ATIRANYITASOK`).
-3. `tools/lcp-elofeltoltes.json`: az öt oldal régi LCP-sorainak (mobil + asztali) kivétele.
-4. A `<!--mh-menu-aktiv:…-->` jelölők már az eredeti utakat nevezik meg; a mérés (suti.js pixel-lista) útvonal-alapú, az eredeti címen változatlanul működik.
-5. A teszt (`tools/headspa-teszt/headspa.test.mjs`) a `-uj` címekre épül: csere után a `nyit()` és az elvárt `canonical` / `robots` igazítandó.
+## Visszaállítás a régi oldalra (ha kellene)
+Oldalanként: a `foglalas/<név>.html` törlése (a `klon/<név>.html` változatlanul megvan, ezt szolgálja ki újra a build), a `tools/lcp-elofeltoltes.json` régi sorainak visszaírása (git előzmény), az `-uj` átirányítás kivétele a `netlify/lib/utvonal.js`-ből.
+Az oldal mérése útvonal-alapú (`suti.js` pixel-lista), az eredeti címen változatlanul működik; a GTM-ben (mind a 71 trigger átnézve) nincs Wix-elemhez kötött kattintás-trigger az öt oldalon: a kattintás-triggerek csak a Salonic oldalain futnak, a többi köszönőoldal / dataLayer-esemény alapú.
 
 ## Tesztek
-`node --test tools/headspa-teszt/headspa.test.mjs` (47 teszt, nincs `dist/`, nincs külső hálózat): cím / H1 / egy H1; noindex + canonical; a régi tartalom kulcsmondatai és árai; foglalás-linkek a foglalóra, belső linkek létező oldalakra;
+`node --test tools/headspa-teszt/headspa.test.mjs` (50 teszt, nincs `dist/`, nincs külső hálózat): cím / H1 / egy H1; noindex + canonical; a régi tartalom kulcsmondatai és árai; foglalás-linkek a foglalóra, belső linkek létező oldalakra;
 a vélemények mindig azonnal megjelennek, a térkép hozzájárulás előtt nem; a csomagok képei; nincs vízszintes görgetés telefonon / tableten / asztalon; videó-lejátszó; képsor; sticky CTA; a 4 csomag ára.

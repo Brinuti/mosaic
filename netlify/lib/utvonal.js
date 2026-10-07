@@ -23,6 +23,11 @@ const ALNEVEK = { 'pricing-plans/list': 'pricing-plans-list' };
 // (a lekerdezes - gclid, fbclid, utm_* - megmarad: a functions/[[path]].js hozzafuzi a url.search-et).
 const ATIRANYITASOK = {
   '/lezeres-szortelenites-budapest-uj': '/lezeres-szortelenites-budapest',
+  '/headspa-budapest-uj': '/headspa-budapest',
+  '/headspa-arak-budapest-uj': '/headspa-arak-budapest',
+  '/head-spa-kedvezmeny-uj': '/head-spa-kedvezmeny',
+  '/headspa-termekek-oxygeni-uj': '/headspa-termekek-oxygeni',
+  '/head-spa-velemenyek-uj': '/head-spa-velemenyek',
   '/contact': '/', '/services': '/', '/en': '/',
 };
 
