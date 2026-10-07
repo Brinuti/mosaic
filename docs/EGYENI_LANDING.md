@@ -47,7 +47,7 @@ A „Még több időpont” a `/foglalo-motor?business=headspa&service=egyeni` c
 - **Vélemények:** a mockup három kitalált idézete („Kata”, „Eszter”, „Dóri”) helyett az élő Trustindex-vélemények (azonnal, hozzájárulás nélkül, a tulajdonos 2026-10-07-i kérése szerint), mellette a valódi vendégvideók. A „ötcsillagos értékelés” szöveg is kimaradt (az átlag 4,9, nem minden vélemény öt csillagos): „valódi vendégvélemény”.
   A szám az élő Trustindex-adat (tartalék érték: 1 257), a „4,9” a tulajdonos megadott értéke.
 - **„Mire helyezzük inkább a hangsúlyt?”:** két tájékoztató csempe (nem választó): a foglalás ettől nem változik (a motor az Egyéni „Relax” és „Hair” változatát egy szolgáltatásként kezeli, ugyanaz az ár, ugyanazok a kezelők), a szalon árlistája szerint a hajkamerás diagnosztika és konzultáció „igény szerint” jár a kezeléshez.
-- **Nyitvatartás:** a mockup „H–Szo 9:00–20:00” helyett a szalon valódi nyitvatartása (H–P 8:00–20:00, Szo 9:00–18:00, vasárnap zárva).
+- **Nyitvatartás:** a mockup „H–Szo 9:00–20:00” helyett a szalon valódi nyitvatartása (H–Szo 8:00–20:00, vasárnap zárva (a szombat 2026-10-07 óta 8–20, a tulajdonos kérésére)).
 - **Cím:** „1023 Budapest, Bécsi út 2. (Kolosy tér)”, a mockup „II. kerület” szövege nélkül (a régi oldalak „3rd district” és „II. kerület” között ellentmondanak; a tulajdonos döntse el, ha kell).
 - **Ár:** 26 900 Ft (a Salonic szerinti ár: a listaár 32 900 Ft, az októberi 20%-os kedvezménnyel 26 900 Ft). Az oldal a listaárat és az „októberi” szót nem tünteti fel (mint a mockup), hogy az akció végén ne maradjon elavult szöveg; az ár a HTML-ben van (hero, ajánlat, záró gomb).
 - **„Mit tartalmaz pontosan?”:** a szalon árlista-oldalának szó szerinti listája (`foglalas/headspa-arak-budapest.html`).

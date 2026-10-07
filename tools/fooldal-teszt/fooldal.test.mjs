@@ -249,7 +249,7 @@ describe('/fooldal-uj', () => {
       'Arcmasszázs', 'Mélytisztító hajmosás', 'Fejbőr masszírozó fésű', '20 ujjas fejmasszírozó', 'Arcroller', 'Hajmasszírozó körkefe', 'Nézd, mekkora élmény!', 'Páros Head Spa a MOSAIC-ban!',
       'A fejbőröd azt kapja, amire szüksége van!', 'A rendszeres Head Spa hatásai', 'Tapasztalt gyógymasszőrök kényeztetnek.', 'Csak tökéletes szárítással engedünk el!', '100%-ban organikus, vegán OXYGENI termékeket használunk',
       'Ilyen gyönyörűen felújított szalonban várunk', 'A legszebb önmagad adjuk neked ajándékba.', 'A MOSAIC oázis a testednek és a lelkednek.', '1023 Budapest, Bécsi út 2.', '06 20 247 4444', 'mosaicheadspa@gmail.com',
-      'Hétfő – Péntek: 8:00 – 20:00', 'Szombat: 9:00 – 18:00', 'Vasárnap: zárva', 'SZÉP Kártyát is elfogadunk', 'Deák Ferenc István']) assert.ok(szoveg.includes(s), 'hiányzik: ' + s);
+      'Hétfő – Péntek: 8:00 – 20:00', 'Szombat: 8:00 – 20:00', 'Vasárnap: zárva', 'SZÉP Kártyát is elfogadunk', 'Deák Ferenc István']) assert.ok(szoveg.includes(s), 'hiányzik: ' + s);
     await ctx.close();
   });
 });
