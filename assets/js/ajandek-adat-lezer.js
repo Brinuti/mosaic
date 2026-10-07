@@ -86,8 +86,8 @@
       hero_title: 'Ajándékozz lézeres szőrtelenítést.',
       hero_subtitle: 'Válassz területet vagy kész csomagot: az ajándékozott az első kezelést kapja állapotfelméréssel, digitális vagy kinyomtatott ajándékkártyán.',
       hero_cta: 'Kiválasztom a kártyát',
-      // a Drive "szőrtelenítés képek" mappa DSC07827 fotója (kezeles) + a sajat kartya-renderelo (smaragd, lezeres idezet) ferdén ráhelyezve; a lézeres landing hero-jától eltér
-      hero_media: { src: '/assets/img/ajandek/hero-lezer-ajandek.jpg', alt: 'Lézeres szőrtelenítés kezelés a MOSAIC-ban, előtérben a személyre szabott ajándékkártya', forras: 'Drive: szőrtelenítés képek / DSC07827 + kártya', status: 'APPROVED_BY_FOLDER_CONTEXT' },
+      // a Drive "szőrtelenítés képek" mappa DSC07846 fotója (konzultacio, "Megerdemled" plakat) + a sajat kartya-renderelo (smaragd, lezeres idezet) ferdén ráhelyezve; a lézeres landing hero-jától eltér
+      hero_media: { src: '/assets/img/ajandek/hero-lezer-ajandek.jpg', alt: 'Zsófi és egy vendég a MOSAIC lézeres szőrtelenítés konzultációján, előtérben a személyre szabott ajándékkártya', forras: 'Drive: szőrtelenítés képek / DSC07846 + kártya (DSC07827)', status: 'APPROVED_BY_FOLDER_CONTEXT' },
       hero_trust: [
         { csillag: true, szoveg: H.GOOGLE.pont + ' · ' + H.GOOGLE.darab, alszoveg: 'Google-vélemény', alszoveg_rovid: 'vélemény', href: '#ah-google' },
         { ikon: 'calendar', szoveg: '6 hónapig', alszoveg: 'érvényes' },
