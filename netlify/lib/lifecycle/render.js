@@ -171,7 +171,7 @@ export function emailKirajzol(uz, ert, { surgos = false } = {}) {
 /** Belso feladat-level (telefonos hivas) a szalonnak: vendeg-adatok + a hivasi szkript. */
 export function feladatKirajzol(uz, ert, f) {
   const blokkok = [
-    { t: 'p', sorok: ['Telefonos feladat: a motor nem hív, csak jelzi, kit érdemes hívni. A szkript a dokumentum szerinti irányelv, nem kötelező szöveg.'] },
+    { t: 'p', sorok: ['Telefonos feladat: a motor nem hív, csak jelzi, kit érdemes hívni. A szkript ajánlott irányvonal, nem kötelező szöveg.'] },
     { t: 'box', elemek: [`${f.nev || 'vendég'}`, `Telefon: ${f.telefon || '-'}`, `E-mail: ${f.email || '-'}`, `${ert['szolgáltatás']}`, `${ert['dátum']}, ${ert['időpont']}${ert['munkatárs'] ? ` (${ert['munkatárs']})` : ''}`] },
     ...blokkokKitolt(uz.torzs, ert),
   ];

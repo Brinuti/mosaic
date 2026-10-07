@@ -118,7 +118,7 @@ export default {
         'Ha van 1-2 kép, ami tetszik, elég ha elmented a telefonodra; az időpontodon együtt megnézzük. A formát és a színirányt előre megtervezzük, és csak akkor kezdünk, amikor te is jóváhagytad.',
         'Van gyógyszer, friss esztétikai beavatkozás, bőrprobléma vagy ajaknál herpeszhajlam, amit jó lenne előre tudnom?',
         'Van még valami, amire most szívesen válaszoljak?',
-        'Belső jegyzet (implementációs megjegyzés): A hívás célja nem "rábeszélés". Egy valódi kétely felszínre hozása és tisztázása. A tulajdonosi memo szerint ne kérjünk feleslegesen fotóbeküldést csak azért, hogy interakció legyen.',
+        'Megjegyzés a hívónak: A hívás célja nem "rábeszélés". Egy valódi kétely felszínre hozása és tisztázása. A tulajdonosi memo szerint ne kérjünk feleslegesen fotóbeküldést csak azért, hogy interakció legyen.',
       ],
     },
     {

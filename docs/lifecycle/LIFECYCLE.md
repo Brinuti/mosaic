@@ -47,13 +47,14 @@ SMS 8:00–20:30, e-mail 7:00–21:00 között (az ablakon kívüli esedékessé
 
 - **Áthelyezés**: ugyanaz a foglalás új időponttal; a régi időponthoz tartozó függő üzenetek újraszámolódnak (T-72 / T-24 az új időpontra), a már elküldött tartalmi e-mail nem ismétlődik, a T0 nem megy újra; azonnali „megvan az új időpontod” SMS.
 - **Lemondás**: minden függő üzenet törlődik; azonnali lemondás-visszaigazolás (SMS + e-mail) átfoglalási linkkel.
+  *A Salonic lemondás-értesítője NEM tartalmazza a foglalás azonosítóját* (az új foglalás és az áthelyezés értesítője igen), ezért a lemondott foglalást a **vendég (telefon vagy e-mail) + üzletág + az időpont** alapján keressük meg az aktív foglalások közt; a ketszer érkező lemondás a 15 percen belül lemondottra illeszkedik (nem lesz két lemondás-üzenet). Ha nincs találat, külön „lemondva” sor jön létre (és kimegy a lemondás-visszaigazolás).
 - A **„megjelent / no-show”** állapotról a Salonic **nem küld semmit**, ezért a no-show recovery SMS (`COMMON-NOSHOW-SMS`) nincs automatikusan indítva (a katalógusban megvan; kell hozzá egy jelzés a szalonból).
 
 ## Üzenet-katalógus
 
 `netlify/lib/lifecycle/katalog/` (`SEMA.md` a formátum; üzletáganként egy fájl + `kozos.js`). A szöveg a dokumentum szerint; **fix ár / százalék / hónapnév nincs a szövegben** (a dokumentum szabálya; a katalógus-teszt ellenőrzi); az `{aktuális_ár}` / `{aktuális_ajánlat}` soraiból jelenleg semmi nem jelenik meg (nincs garantáltan aktuális ár-forrás). A „48 órás lemondási szabály” **nincs** sehol (tulajdonosi döntés).
 A telefonos hívások (HeadSpa páros/négykezes, fodrász konzultáció/nagy festés, oxigén új vendég, lézer új vendég, PMU minden online foglaló) **belső feladat-e-mailek a szalonnak** (`csatorna: 'feladat'`): a motor nem hív, jelzi, kit érdemes hívni a szkripttel. Teszt-vendégnél a feladat-e-mail a teszt-címre megy.
-Ékezetes SMS-nél (UCS-2) **70 karakter / szegmens (összefűzve 67)**: a hosszú SMS-ek 3–5 szegmensnek számítanak a SimpleSMS-ben (a tényleges szegmensszám a `kuldesek.szegmens_db`-ben van).
+Ékezetes SMS-nél (UCS-2) **70 karakter / szegmens (összefűzve 67)**: a hosszú SMS-ek 3–5 szegmensnek számítanak a SimpleSMS-ben (a tényleges szegmensszám a `kuldesek.szegmens_db`-ben van). **Költség: kb. 17 Ft / szegmens** (a próbáknál mért: 4–5 szegmenses SMS ≈ 70–85 Ft, a T-24 SMS 3 szegmens ≈ 51 Ft), azaz egy teljes lánc (T0 + T-72 + T-24) vendégenként kb. 200–250 Ft SMS-díj.
 
 ## Konfiguráció
 
@@ -66,6 +67,8 @@ Zapier: `lifecycle-bejovo` (id `01a1168a-afbf-7ee9-94c3-6e5be524b6be`) és `life
 
 - Állapot (személyes adat nélkül): `GET /api/lifecycle/allapot` + `x-lifecycle-kulcs` fejléc.
 - SMS-egyenleg: naponta egyszer ellenőrzi; a küszöb alatt e-mail megy a szalonnak.
+- SimpleSMS-kapcsolat ellenőrzése (jelszó nem látszik): `POST /api/lifecycle/sms-proba` (kulcsos) → `{eredmeny:[{ok, uzenet}], egyenleg}`. Hiba esetén a `felhasznalok: ["…"]` tömbbel több felhasználónév-jelölt is kipróbálható.
+- Időszimuláció (csak `teszt` / `ki` módban): a `tick` / `bejovo` kérés törzsében `{"most": <epoch mp>}` a „mostot” felülírja (a T-72 / T-24 / tartalmi üzenetek próbájához). Élesben mindig a valódi idő számít.
 - Adatvédelem: a foglalás személyes adatai (név, telefon, e-mail) az időpont után **60 nappal törlődnek** (napi karbantartás); a tranzakciós üzenetekhez nem kell marketing-hozzájárulás.
 - Régi, generikus Salonic T-48 e-mail emlékeztetők: élesítéskor a Salonicban ki kell kapcsolni (különben az új T-72 / T-24 lánccal párhuzamosan mennek).
 - Napi 80 befogadásnál (és a napi SimpleSMS-egyenleg-riasztásnál) kisebb a visszaélés kockázata is: a belépő kulcs ismerete nélkül nincs hívható végpont.
