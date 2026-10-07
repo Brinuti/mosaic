@@ -1527,11 +1527,18 @@ async function emlekeztetok(k) {
   if (kulcs.length < 24) return json(503, { hiba: 'nincs_beallitva' });                  // kulcs nelkul nem fut (fail closed)
   const hitel = String(k.h.authorization || '').replace(/^Bearer\s+/i, '').trim();
   if (!egyenlo(hitel, kulcs)) return json(401, { hiba: 'jogosultsag' });
-  if (!beallitva(k.env)) return json(503, { hiba: 'nincs_beallitva' });
+  const e = await emlekeztetoMag(k);
+  return e.hiba ? json(503, { hiba: e.hiba }) : json(200, e);
+}
+
+// A belso futtatas: a hitelesites (Bearer) nelkul, mert nem HTTP-bol jon, hanem az oldal-hivasokbol inditott hatterfeladatbol
+// (functions/api/ajandek/[[kind]].js -> netlify/lib/ajandek-emlekezteto-inditas.js); a HTTP-vegpont (fent) kezi / kulso inditashoz marad.
+async function emlekeztetoMag(k) {
+  if (!beallitva(k.env)) return { hiba: 'nincs_beallitva' };
   const most = k.most;
   const mostMp = Math.floor(most.getTime() / 1000);
   const ora = budapestiOra(most);
-  if (!(ora >= EMLEKEZTETO_ORA[0] && ora < EMLEKEZTETO_ORA[1])) return json(200, { ok: true, kihagyva: 'ejszaka', kuldve: 0 });
+  if (!(ora >= EMLEKEZTETO_ORA[0] && ora < EMLEKEZTETO_ORA[1])) return { ok: true, kihagyva: 'ejszaka', kuldve: 0 };
   // a kozelmult PaymentIntentjei (lapozva, legfeljebb 5 x 100)
   const lista = [];
   let utolso = null;
@@ -1591,7 +1598,15 @@ async function emlekeztetok(k) {
       await metaIrasCsendes(k, pi.id, { [kulcsNev]: '' }, 'emlekezteto visszavonas');
     }
   }
-  return json(200, { ok: true, vizsgalt: lista.length, jeloltek: jeloltek.size, kuldve, kihagyva });
+  return { ok: true, vizsgalt: lista.length, jeloltek: jeloltek.size, kuldve, kihagyva };
+}
+
+// kivulrol hivhato (a Pages-fuggveny hatterfeladata): { env, kuld, most?, url } -> { ok, kuldve, ... } | { hiba }
+async function emlekeztetoFuttat({ env, kuld, most, url } = {}) {
+  const e = env || {};
+  let u;
+  try { u = new URL(url || 'https://www.mosaicheadspa.hu/'); } catch { u = new URL('https://www.mosaicheadspa.hu/'); }
+  return emlekeztetoMag({ env: e, kuld, most: most instanceof Date && !Number.isNaN(most.getTime()) ? most : new Date(), h: {}, bazis: bazisUrl(e, u) });
 }
 
 function telefonTisztit(v) {
@@ -1887,9 +1902,9 @@ async function ajandekKezel({ method, url, headers, text, env, kuld, most, ip } 
   }
 }
 
-  return { keresTorzs, kuponKod, kodEgysegesit, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet, _korlatMeret, fotoToken, koszonoRogzit, ajandekKezel };
+  return { keresTorzs, kuponKod, kodEgysegesit, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet, _korlatMeret, fotoToken, koszonoRogzit, ajandekKezel, emlekeztetoFuttat };
 }
 
 // Az alap (HeadSpa) peldany: ugyanazok az exportok, mint a gyar bevezetese elott.
 const alap = ajandekMotor(globalThis.AJANDEK_ADAT);
-export const { keresTorzs, kuponKod, kodEgysegesit, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet, _korlatMeret, fotoToken, koszonoRogzit, ajandekKezel } = alap;
+export const { keresTorzs, kuponKod, kodEgysegesit, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet, _korlatMeret, fotoToken, koszonoRogzit, ajandekKezel, emlekeztetoFuttat } = alap;

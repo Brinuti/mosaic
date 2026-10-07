@@ -1,13 +1,14 @@
 // Az elhagyott fizetes emlekeztetoi (POST /api/ajandek/emlekeztetok) - Node beepitett tesztfuttato:
 //   node --test "tools/ajandek-teszt/emlekezteto.test.mjs"
-// A kezelot kozvetlenul hivjuk, a Stripe helyett a helyi mock fut (mock-stripe.mjs: a PaymentIntent-lista is), levelet a "kuld" fuggveny gyujti.
+// A kezelot kozvetlenul hivjuk (a HTTP-vegpontot es a belso futtatast, emlekeztetoFuttat, is), a Stripe helyett a helyi mock fut (mock-stripe.mjs: a PaymentIntent-lista is), levelet a "kuld" fuggveny gyujti.
 // Az idot a "most" parameter adja (budapesti delben), a rendelesek letrehozasi idejet a mock.allapot.korBeallit allitja.
 import test, { before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { mockStripeInditas } from './mock-stripe.mjs';
-import { ajandekKezel, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
+import { ajandekKezel, emlekeztetoFuttat, _korlatAlaphelyzet } from '../../netlify/lib/ajandek.js';
+import { emlekeztetoIndit, KOZ_MS, _alaphelyzet } from '../../netlify/lib/ajandek-emlekezteto-inditas.js';
 
 const BAZIS = 'https://teszt.mosaicheadspa.hu';
 const TITOK = 'teszt-titok-teszt-titok-teszt-titok-0123456789';
@@ -187,13 +188,94 @@ describe('emlekezteto: kuldes', () => {
   });
 });
 
+describe('emlekezteto: belso futtatas (kulcs nelkul) es a hatterinditas', () => {
+  test('az emlekeztetoFuttat (az oldalbetoltesbol inditott hatterfeladat) a HTTP-kulcs nelkul is fut, ugyanazokkal a szabalyokkal', async () => {
+    tiszta();
+    await elhagyott({ email: 'belso@gmail.com' }, 2);
+    const env = { ...ENV, AJANDEK_EMLEKEZTETO_KULCS: '' };
+    const r = await emlekeztetoFuttat({ env, kuld: async (l) => { levelek.push(l); }, most: DEL, url: BAZIS + '/api/ajandek/beallitas' });
+    assert.equal(r.kuldve, 1);
+    assert.equal(levelek[0].cimzett, 'belso@gmail.com');
+    assert.match(levelek[0].html, /^<div[\s\S]*teszt\.mosaicheadspa\.hu\/headspa-ajandekkartya\?utm_source=emlekezteto/);
+    // Stripe-kulcs nelkul nem fut
+    const nincs = await emlekeztetoFuttat({ env: { AJANDEK_TITOK: TITOK }, kuld: async () => {}, most: DEL, url: BAZIS });
+    assert.equal(nincs.hiba, 'nincs_beallitva');
+  });
+
+  const ELES = 'https://www.mosaicheadspa.hu/api/ajandek/beallitas';
+  const kesz = () => {
+    const h = { hivasok: 0, tasks: [], zarva: 0, kv: new Map(), kvPut: [] };
+    h.waitUntil = (p) => { h.tasks.push(p); };
+    h.futtat = async () => { h.hivasok++; return { ok: true, kuldve: 1 }; };
+    h.postasKeszit = () => ({ kuld: async () => {}, zar: async () => { h.zarva++; } });
+    h.env = { AJANDEK_FOTOK: { get: async (k) => h.kv.get(k) || null, put: async (k, v, o) => { h.kv.set(k, v); h.kvPut.push([k, o]); } } };
+    return h;
+  };
+  const indit = (h, extra = {}) => emlekeztetoIndit({ waitUntil: h.waitUntil, env: h.env, url: ELES, futtat: h.futtat, postasKeszit: h.postasKeszit, ...extra });
+
+  test('csak az eles oldalon indul (az elonezeten nem, kiveve AJANDEK_EMLEKEZTETO=1); AJANDEK_EMLEKEZTETO=0 kikapcsolja', async () => {
+    _alaphelyzet();
+    let h = kesz();
+    assert.equal(indit(h, { url: 'https://claude-valami.mosaic-d77.pages.dev/api/ajandek/beallitas' }), false);
+    assert.equal(h.tasks.length, 0);
+    h = kesz(); h.env.AJANDEK_EMLEKEZTETO = '1';
+    assert.equal(indit(h, { url: 'https://claude-valami.mosaic-d77.pages.dev/api/ajandek/beallitas' }), true);
+    await Promise.all(h.tasks);
+    assert.equal(h.hivasok, 1);
+    _alaphelyzet();
+    h = kesz(); h.env.AJANDEK_EMLEKEZTETO = '0';
+    assert.equal(indit(h), false);
+    // hianyzo fuggosegek / ervenytelen url: nem dob, nem indul
+    assert.equal(emlekeztetoIndit({}), false);
+    assert.equal(indit(kesz(), { url: 'nem-url' }), false);
+  });
+
+  test('legfeljebb 20 percenkent: az elso hivas indit, a masodik nem; 21 perc mulva ujra; a hatterfeladat lefut, az SMTP-kapcsolat lezarul', async () => {
+    _alaphelyzet();
+    const h = kesz();
+    let ido = 10_000_000;
+    const ma = () => ido;
+    assert.equal(indit(h, { ma }), true);
+    assert.equal(indit(h, { ma }), false);
+    ido += KOZ_MS - 1;
+    assert.equal(indit(h, { ma }), false);
+    await Promise.all(h.tasks);
+    assert.equal(h.hivasok, 1);
+    assert.equal(h.zarva, 1);
+    ido += 2;
+    // a KV-zar a TTL-en belul meg ott van (ugyanabban az idoben mas isolate nem fut)
+    assert.equal(indit(h, { ma }), true);
+    await Promise.all(h.tasks);
+    assert.equal(h.hivasok, 1, 'a KV-zar megakadalyozza a masodik futast');
+    h.kv.clear();
+    ido += KOZ_MS + 1;
+    assert.equal(indit(h, { ma }), true);
+    await Promise.all(h.tasks);
+    assert.equal(h.hivasok, 2);
+    assert.deepEqual(h.kvPut.map(([k, o]) => [k, o.expirationTtl]), [['emlekezteto_zar', 900], ['emlekezteto_zar', 900]]);
+  });
+
+  test('a futtatas hibaja nem dob (az oldal betoltese nem serul), a postas ilyenkor is lezarul; KV nelkul is fut', async () => {
+    _alaphelyzet();
+    const h = kesz();
+    h.env = {};
+    h.futtat = async () => { throw new Error('Stripe le'); };
+    assert.equal(indit(h), true);
+    await Promise.all(h.tasks);
+    assert.equal(h.zarva, 1);
+    _alaphelyzet();
+    const g = kesz(); g.env = {};
+    assert.equal(indit(g), true);
+    await Promise.all(g.tasks);
+    assert.equal(g.hivasok, 1, 'KV nelkul a memoria-szabaly dolgozik');
+  });
+});
+
 describe('emlekezteto: bekotes', () => {
-  test('az idozitett GitHub-feladat a motor vegpontjait hivja a titkos kulccsal (a kulcs nincs a fajlban)', () => {
-    const y = fs.readFileSync(new URL('../../.github/workflows/ajandek-emlekeztetok.yml', import.meta.url), 'utf8');
-    assert.match(y, /cron: '\*\/30 \* \* \* \*'/);
-    assert.match(y, /secrets\.AJANDEK_EMLEKEZTETO_KULCS/);
-    assert.match(y, /for ut in ajandek ajandek-lezer ajandek-oxigen/);
-    assert.match(y, /api\/\$ut\/emlekeztetok/);
-    assert.doesNotMatch(y, /Bearer [A-Za-z0-9]{20,}/);
+  test('a HeadSpa fuggveny az oldalbetoltes (GET .../beallitas) utan inditja a hatterfeladatot; nincs kulso idozito / titok a repoban', () => {
+    const f = fs.readFileSync(new URL('../../functions/api/ajandek/[[kind]].js', import.meta.url), 'utf8');
+    assert.ok(f.includes("import { emlekeztetoIndit } from '../../../netlify/lib/ajandek-emlekezteto-inditas.js';"));
+    assert.ok(f.includes("request.method === 'GET'") && f.includes('beallitas') && f.includes('emlekeztetoIndit({ waitUntil:'));
+    assert.ok(!fs.existsSync(new URL('../../.github/workflows/ajandek-emlekeztetok.yml', import.meta.url)), 'nincs GitHub-ütemező: a hatterinditas az oldalbetoltesbol jon');
   });
 });
