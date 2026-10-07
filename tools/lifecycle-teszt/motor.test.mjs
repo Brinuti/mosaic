@@ -419,3 +419,39 @@ test('beallitas: alapertelmezett mod teszt; ismeretlen ertek -> teszt', () => {
   assert.equal(beallitas({}).mod, 'teszt'); assert.equal(beallitas({ LIFECYCLE_MOD: 'valami' }).mod, 'teszt');
   assert.equal(beallitas({ LIFECYCLE_MOD: 'elo' }).mod, 'elo');
 });
+
+test('motor: a Salonic minden foglalasrol KET levelet kuld - egyidejuleg is csak egy foglalas es egy uzenet-sor lesz', async () => {
+  const db = d1(); const k = hamisKuldok(); const env = { LIFECYCLE_MOD: 'teszt' };
+  const level = (uzenetId) => foglaltLevel({ uzenetId, nev: 'Deák Ferenc István', email: 'ferraj@gmail.com', tel: '06709420090', fiok: 'mosaicheadspa', kuldo: 'Mosaic Headspa <app@salonic.hu>', szolg: '💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás', munka: 'Négykezes Head spa', datum: 'október 21. (szerda) 12:30' });
+  const [a, b] = await Promise.all([ingest(db, env, level('ket-level-1'), MOST), ingest(db, env, level('ket-level-2'), MOST)]);
+  assert.equal([a, b].filter((x) => x.duplikalt).length, 1);
+  assert.equal((await db.sqlite.prepare('SELECT COUNT(*) AS n FROM foglalasok').get()).n, 1);
+  const f = await db.sqlite.prepare('SELECT teszt, telefon FROM foglalasok').get();
+  assert.equal(f.teszt, 1); assert.equal(f.telefon, '+36709420090'); // a tulajdonos telefonja / e-mailje teszt-vendeg
+  assert.equal((await tick(db, env, k, MOST)).elkuldve, 2);
+  // a ketszer erkezo atfoglalas / lemondas sem ketszerezodik
+  const at = (id) => athelyezettLevel({ uzenetId: id });
+  const r1 = await ingest(db, env, at('at-1'), MOST + 60); const r2 = await ingest(db, env, at('at-2'), MOST + 61);
+  assert.equal(r1.duplikalt, undefined); assert.equal(r2.duplikalt, true);
+  assert.equal((await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-RESCHEDULE-%'").get()).n, 1);
+  const l1 = await ingest(db, env, lemondottLevel({ uzenetId: 'le-1', datum: 'november 26. (csütörtök) 17:30' }), MOST + 120);
+  const l2 = await ingest(db, env, lemondottLevel({ uzenetId: 'le-2', datum: 'november 26. (csütörtök) 17:30' }), MOST + 121);
+  assert.equal(l1.duplikalt, undefined); assert.equal(l2.duplikalt, true);
+  assert.equal((await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-CANCEL-%'").get()).n, 2);
+});
+
+test('motor: megszakadt feldolgozas ujraprobalhato (ketszer erkezo level nem nyeli el a hibat)', async () => {
+  const db = d1(); const env = { LIFECYCLE_MOD: 'teszt' };
+  // 1) hiba a feldolgozas kozben: a "feldolgozas" sor torlodik, igy az ujraprobalkozas tenylegesen felveszi a foglalast
+  const rossz = { prepare: (sql) => { if (/INSERT INTO kuldesek/.test(sql) && !rossz.volt) { rossz.volt = true; throw new Error('szimulalt D1-hiba'); } return db.prepare(sql); }, batch: (x) => db.batch(x) };
+  await assert.rejects(() => ingest(rossz, env, foglaltLevel({ uzenetId: 'hibas-1' }), MOST), /szimulalt D1-hiba/);
+  assert.equal((await db.sqlite.prepare("SELECT COUNT(*) AS n FROM esemenyek WHERE forras_id = 'hibas-1'").get()).n, 0);
+  const ujra = await ingest(db, env, foglaltLevel({ uzenetId: 'hibas-1' }), MOST + 30);
+  assert.equal(ujra.ok, true); assert.equal(ujra.duplikalt, undefined);
+  // 2) a "feldolgozas" allapotban ragadt sor (megszakadt futas) 2 perc utan ujrainditja a feldolgozast
+  const db2 = d1();
+  await db2.sqlite.prepare("INSERT INTO esemenyek (ido, tipus, forras_id) VALUES (?, 'ingest:feldolgozas', 'ragadt-1')").run(MOST);
+  assert.equal((await ingest(db2, env, foglaltLevel({ uzenetId: 'ragadt-1', uuid: UUID2 }), MOST + 30)).duplikalt, true); // 30 mp: meg fut
+  const r = await ingest(db2, env, foglaltLevel({ uzenetId: 'ragadt-1', uuid: UUID2 }), MOST + 300);
+  assert.equal(r.ok, true); assert.equal(r.duplikalt, undefined);
+});

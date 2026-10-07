@@ -19,7 +19,8 @@ export function beallitas(env = {}) {
   return {
     mod: ['ki', 'teszt', 'elo'].includes(env.LIFECYCLE_MOD) ? env.LIFECYCLE_MOD : 'teszt',
     elo: new Set(lista(env.LIFECYCLE_UZLETAGOK)),
-    tesztEmail: new Set(lista(env.LIFECYCLE_TESZT_EMAIL, 'deakfi@grantis.hu,ferencistvandeak@gmail.com')),
+    tesztEmail: new Set(lista(env.LIFECYCLE_TESZT_EMAIL, 'deakfi@grantis.hu,ferencistvandeak@gmail.com,ferraj@gmail.com')),
+    tesztTelefon: new Set(lista(env.LIFECYCLE_TESZT_TELEFON, '+36709420090')),
     szalonEmail: env.LIFECYCLE_SZALON_EMAIL || 'mosaicheadspa@gmail.com',
     tesztFeladatEmail: env.LIFECYCLE_TESZT_FELADAT_EMAIL || 'deakfi@grantis.hu',
     napiPlafon: Number(env.LIFECYCLE_NAPI_PLAFON || 80),
@@ -27,7 +28,7 @@ export function beallitas(env = {}) {
     base: env.LIFECYCLE_BASE_URL || ALAP_URL,
   };
 }
-export const tesztVendeg = (cfg, { email, nev }) => cfg.tesztEmail.has(String(email || '').toLowerCase()) || /^TESZT\b/i.test(nev || '');
+export const tesztVendeg = (cfg, { email, nev, telefon }) => cfg.tesztEmail.has(String(email || '').toLowerCase()) || cfg.tesztTelefon.has(String(telefon || '')) || /^TESZT\b/i.test(nev || '');
 export function engedelyezett(cfg, f) {
   if (cfg.mod === 'ki') return false;
   if (f.teszt) return true;
@@ -85,8 +86,23 @@ export async function ingest(db, env, level, most) {
   // ismetlodes-szuro: ugyanaz a level ketszer (Zapier ujrafuttatas) nem hoz letre semmit
   if (forras) {
     const r = await futtat(db, 'INSERT OR IGNORE INTO esemenyek (ido, tipus, foglalas_id, forras_id) VALUES (?1, ?2, NULL, ?3)', most, 'ingest:feldolgozas', forras);
-    if (r.meta && r.meta.changes === 0) return { ok: true, duplikalt: true };
+    if (r.meta && r.meta.changes === 0) {
+      // ugyanaz a level mar feldolgozva = ismetlodes; de ha egy korabbi feldolgozas megszakadt (2+ perce "feldolgozas" allapotban ragadt), ujrainditjuk
+      const volt = await elso(db, 'SELECT tipus, ido FROM esemenyek WHERE forras_id = ?1', forras);
+      if (!(volt && volt.tipus === 'ingest:feldolgozas' && most - volt.ido > 120)) return { ok: true, duplikalt: true };
+      await futtat(db, 'UPDATE esemenyek SET ido = ?2 WHERE forras_id = ?1', forras, most);
+    }
   }
+  try {
+    return await feldolgoz(db, cfg, e, forras, most);
+  } catch (hiba) {
+    // hiba eseten a "feldolgozas" sor torlodik, hogy a Zapier ujraprobalkozasa tenylegesen feldolgozza a levelet
+    if (forras) await futtat(db, "DELETE FROM esemenyek WHERE forras_id = ?1 AND tipus = 'ingest:feldolgozas'", forras);
+    throw hiba;
+  }
+}
+
+async function feldolgoz(db, cfg, e, forras, most) {
   const mai = await elso(db, "SELECT COUNT(*) AS n FROM esemenyek WHERE tipus LIKE 'ingest:%' AND ido > ?1", most - NAP);
   if (mai && mai.n > cfg.napiPlafon) {
     if (forras) await futtat(db, "UPDATE esemenyek SET tipus = 'ingest:plafon' WHERE forras_id = ?1", forras);
@@ -95,49 +111,61 @@ export async function ingest(db, env, level, most) {
 
   const telefon = normalizal(e.telefonNyers);
   const id = e.foglalasId || szintetikusId(e.uzletag, e.email, telefon, e.kezdet);
-  const teszt = tesztVendeg(cfg, e) ? 1 : 0;
+  const teszt = tesztVendeg(cfg, { email: e.email, nev: e.nev, telefon }) ? 1 : 0;
   const szeg = szegmensCimkek(e.uzletag, e.szolgaltatas);
   const nevek = { nev: e.nev || null, keresztnev: keresztnev(e.nev), telefon, email: e.email || null };
   const fiok = e.fiok || UZLETAGAK[e.uzletag].fiok;
   const tervAlap = { uzletag: e.uzletag, szegmensek: szeg, kezdet: e.kezdet };
   let eredmeny;
 
+  // a Salonic MINDEN foglalasrol ket levelet kuld (ket cimzett-lista), egyidejuleg is megerkezhetnek: az azonosito egyedi (ON CONFLICT), a masodik "duplikalt"
   const beszur = async (allapot) => futtat(db,
     `INSERT INTO foglalasok (id, uzletag, fiok, nev, keresztnev, telefon, email, szolgaltatas, szegmens, munkatars, kezdet, letrehozva, allapot, token, teszt)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)`,
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)
+     ON CONFLICT(id) DO NOTHING`,
     id, e.uzletag, fiok, nevek.nev, nevek.keresztnev, nevek.telefon, nevek.email, e.szolgaltatas, szeg.join(','), e.munkatars || null, e.kezdet, most, allapot, veletlen(10), teszt);
 
   if (e.tipus === 'foglalt') {
     const volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', id);
-    if (volt && volt.allapot === 'aktiv' && volt.kezdet === e.kezdet) eredmeny = { ok: true, tipus: 'foglalt', foglalasId: id, duplikalt: true };
+    const vanTerv = volt ? !!(await elso(db, 'SELECT 1 AS x FROM kuldesek WHERE foglalas_id = ?1 LIMIT 1', id)) : false;
+    if (volt && volt.allapot === 'aktiv' && volt.kezdet === e.kezdet && vanTerv) eredmeny = { ok: true, tipus: 'foglalt', foglalasId: id, duplikalt: true };
     else {
-      if (!volt) await beszur('aktiv');
+      let ujSor = false;
+      if (!volt) { const b = await beszur('aktiv'); ujSor = !(b.meta && b.meta.changes === 0); }
       else await futtat(db, "UPDATE foglalasok SET allapot = 'aktiv', kezdet = ?2, letrehozva = ?3, szolgaltatas = ?4, szegmens = ?5, munkatars = ?6, megerositve = NULL WHERE id = ?1", id, e.kezdet, most, e.szolgaltatas, szeg.join(','), e.munkatars || null);
-      await tervMent(db, id, tervez(tervAlap, most));
-      eredmeny = { ok: true, tipus: 'foglalt', foglalasId: id };
+      if (!volt && !ujSor) eredmeny = { ok: true, tipus: 'foglalt', foglalasId: id, duplikalt: true }; // egy egyideju masik level mar felvette
+      else { await tervMent(db, id, tervez(tervAlap, most)); eredmeny = { ok: true, tipus: 'foglalt', foglalasId: id }; }
     }
   } else if (e.tipus === 'athelyezve') {
     let volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', id);
     if (!volt && e.regiKezdet) volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', szintetikusId(e.uzletag, e.email, telefon, e.regiKezdet));
     const fid = volt ? volt.id : id;
-    if (volt) await futtat(db, "UPDATE foglalasok SET allapot = 'aktiv', kezdet = ?2, szolgaltatas = ?3, szegmens = ?4, munkatars = ?5, modositva = ?6, megerositve = NULL WHERE id = ?1", fid, e.kezdet, e.szolgaltatas, szeg.join(','), e.munkatars || null, most);
-    else await beszur('aktiv');
-    await tervMent(db, fid, tervez(tervAlap, most, { athelyezes: true }), { reset: ['t72', 't24'] });
-    const n = (await elso(db, "SELECT COUNT(*) AS n FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id LIKE 'COMMON-RESCHEDULE-%'", fid)).n;
-    await azonnaliUzenetek(db, fid, [`COMMON-RESCHEDULE-SMS#${n + 1}`], most);
-    eredmeny = { ok: true, tipus: 'athelyezve', foglalasId: fid, ismeretlenVolt: !volt };
+    const voltAtfoglalas = volt ? !!(await elso(db, "SELECT 1 AS x FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id LIKE 'COMMON-RESCHEDULE-%' LIMIT 1", fid)) : false;
+    if (volt && volt.allapot === 'aktiv' && volt.kezdet === e.kezdet && voltAtfoglalas) eredmeny = { ok: true, tipus: 'athelyezve', foglalasId: fid, duplikalt: true }; // a masodik (ketszer erkezo) level
+    else {
+      if (volt) await futtat(db, "UPDATE foglalasok SET allapot = 'aktiv', kezdet = ?2, szolgaltatas = ?3, szegmens = ?4, munkatars = ?5, modositva = ?6, megerositve = NULL WHERE id = ?1", fid, e.kezdet, e.szolgaltatas, szeg.join(','), e.munkatars || null, most);
+      else await beszur('aktiv');
+      await tervMent(db, fid, tervez(tervAlap, most, { athelyezes: true }), { reset: ['t72', 't24'] });
+      const n = (await elso(db, "SELECT COUNT(*) AS n FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id LIKE 'COMMON-RESCHEDULE-%'", fid)).n;
+      await azonnaliUzenetek(db, fid, [`COMMON-RESCHEDULE-SMS#${n + 1}`], most);
+      eredmeny = { ok: true, tipus: 'athelyezve', foglalasId: fid, ismeretlenVolt: !volt };
+    }
   } else { // lemondva
     let volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', id);
     if (!volt) volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', szintetikusId(e.uzletag, e.email, telefon, e.kezdet));
     const fid = volt ? volt.id : id;
-    if (volt) {
-      await futtat(db, "UPDATE foglalasok SET allapot = 'lemondva', modositva = ?2 WHERE id = ?1", fid, most);
-      await futtat(db, "UPDATE kuldesek SET allapot = 'torolve', ok = 'lemondva' WHERE foglalas_id = ?1 AND allapot IN ('fuggoben', 'kuldes')", fid);
-    } else await beszur('lemondva');
-    await azonnaliUzenetek(db, fid, ['COMMON-CANCEL-SMS', 'COMMON-CANCEL-EMAIL'], most);
-    eredmeny = { ok: true, tipus: 'lemondva', foglalasId: fid, ismeretlenVolt: !volt };
+    const voltLemondas = volt ? !!(await elso(db, "SELECT 1 AS x FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id = 'COMMON-CANCEL-SMS' LIMIT 1", fid)) : false;
+    if (volt && volt.allapot === 'lemondva' && voltLemondas) eredmeny = { ok: true, tipus: 'lemondva', foglalasId: fid, duplikalt: true };
+    else {
+      if (volt) {
+        await futtat(db, "UPDATE foglalasok SET allapot = 'lemondva', modositva = ?2 WHERE id = ?1", fid, most);
+        await futtat(db, "UPDATE kuldesek SET allapot = 'torolve', ok = 'lemondva' WHERE foglalas_id = ?1 AND allapot IN ('fuggoben', 'kuldes')", fid);
+      } else await beszur('lemondva');
+      await azonnaliUzenetek(db, fid, ['COMMON-CANCEL-SMS', 'COMMON-CANCEL-EMAIL'], most);
+      eredmeny = { ok: true, tipus: 'lemondva', foglalasId: fid, ismeretlenVolt: !volt };
+    }
   }
-  if (forras) await futtat(db, 'UPDATE esemenyek SET tipus = ?2, foglalas_id = ?3, reszlet = ?4 WHERE forras_id = ?1', forras, `ingest:${e.tipus}`, eredmeny.foglalasId, JSON.stringify({ uzletag: e.uzletag, teszt: !!teszt }));
+  if (forras) await futtat(db, 'UPDATE esemenyek SET tipus = ?2, foglalas_id = ?3, reszlet = ?4 WHERE forras_id = ?1', forras, `ingest:${e.tipus}`, eredmeny.foglalasId, JSON.stringify({ uzletag: e.uzletag, teszt: !!teszt, duplikalt: !!eredmeny.duplikalt }));
   return eredmeny;
 }
 
