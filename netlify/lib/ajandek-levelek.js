@@ -60,10 +60,13 @@ ${ervenyesIg ? `<div style="font-size:13px;color:#555">Érvényes: ${esc(datumIg
 </div>`;
 // a vevo altal feltoltott foto (a szalon gyorsan lassa, megfelelo-e); az URL a foto sajat HMAC-tokenjet hordozza
 const fotoBlokk = (d) => (d.foto_url ? `<p style="margin:8px 0 10px"><img src="${esc(d.foto_url)}" alt="A vevő által feltöltött fotó" style="display:block;max-width:220px;max-height:280px;width:auto;height:auto;border-radius:6px;border:1px solid #ddd"><span style="font-size:12px;color:#777">A vevő által feltöltött fotó (a kártyán kivágva jelenik meg)</span></p>` : '');
+// A kereskedo marka-adatai: a motor a d.marka-t (= a kereskedo SZALON-objektuma) minden sablonnak atadja; nelkule a HeadSpa alapertek.
+const MARKA_ALAP = { nev: 'MOSAIC Head Spa', foglalas_url: 'https://www.mosaicheadspa.hu/idpontfoglalas', foglalas_szoveg: 'mosaicheadspa.hu/idpontfoglalas' };
+const marka = (d) => ({ ...MARKA_ALAP, ...((d && (d.marka || d.szalon)) || {}) });
 const lablec = (szalon) => `<p style="margin-top:28px;font-size:13px;color:#555"><b>${esc(szalon.nev)}</b><br>
 ${esc(szalon.cim)}<br>
 <b>${esc(szalon.telefon)}</b><br>
-<a href="https://www.mosaicheadspa.hu/idpontfoglalas"><b>Időpont foglalás</b></a></p>`;
+<a href="${esc(marka({ szalon }).foglalas_url)}"><b>Időpont foglalás</b></a></p>`;
 const ftHu = (n) => String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' Ft';
 // A SZAMLA blokk (a szalon-level fizetve): a varhato tetelek es az allapot. d.szamla = { mod: 'invoice' | 'nincs', hiba?, figy?, tetelek: [{ nev, ft, afa }] }
 const szamlaBlokk = (d) => {
@@ -74,7 +77,10 @@ const szamlaBlokk = (d) => {
   if (sz.mod === 'invoice') {
     return `${cim('SZÁMLA')}<p>A számlát a szamlabridge a Stripe-számla tételeiből <b>automatikusan elkészíti</b> a szamlazz.hu-ban (a vevő e-mailben kapja). A várt tételek:</p>${tabla(sorok)}${figy}`;
   }
-  return `${cim('SZÁMLA – KÉZZEL KELL KIÁLLÍTANI')}<p style="color:#b00020"><b>Figyelem:</b> ennél a rendelésnél a szamlabridge <b>nem</b> készíti el automatikusan a számlát (nem jött létre tételes Stripe-számla${sz.hiba ? `; ok: ${esc(sz.hiba)}` : ''}). Kérjük, állítsd ki a szamlazz.hu-ban a vevő fenti adataival, ezekkel a tételekkel (fizetési mód: Stripe):</p>${tabla(sorok)}${figy}`;
+  if (sz.mod === 'agent') {
+    return `${cim('SZÁMLA')}<p>A számlát a Számlázz.hu-ban <b>automatikusan kiállítottuk</b>${sz.szam && sz.szam !== 'MAR_VAN' ? `: <b>${esc(sz.szam)}</b>` : ''}; a vevő e-mailben kapja. Tételek:</p>${tabla(sorok)}`;
+  }
+  return `${cim('SZÁMLA – KÉZZEL KELL KIÁLLÍTANI')}<p style="color:#b00020"><b>Figyelem:</b> ennél a rendelésnél ${sz.agent ? 'a Számlázz.hu-s automatikus számlakiállítás <b>nem sikerült</b>' : 'a szamlabridge <b>nem</b> készíti el automatikusan a számlát (nem jött létre tételes Stripe-számla'}${sz.hiba ? `; ok: ${esc(sz.hiba)}` : ''}${sz.agent ? '' : ')'}. Kérjük, állítsd ki a szamlazz.hu-ban a vevő fenti adataival, ezekkel a tételekkel (fizetési mód: Stripe):</p>${tabla(sorok)}${figy}`;
 };
 const szamlazasiCim = (d) => [d.iranyitoszam, d.varos].filter(Boolean).join(' ') + (d.cim ? ', ' + d.cim : '');
 
@@ -105,8 +111,8 @@ ${tabla([
 ])}
 ${d.atvetel_szoveg ? `${cim('ÁTVÉTEL ÉS SZEMÉLYRE SZABÁS')}${tabla([['Átvétel', d.atvetel_szoveg], ['Kártya-design', d.design_szoveg], ['Idézet', d.idezet_szoveg], ['Saját fotó', d.design_szoveg ? (d.foto_van ? 'van' : 'nincs') : '']])}${fotoBlokk(d)}${d.elonezet_url ? `<p>A vevő személyre szabott kártyájának előnézete (design, fotó, idézet): <a href="${esc(d.elonezet_url)}">megnyitás új lapon</a></p>` : ''}` : ''}
 ${szamlaBlokk(d)}
-${cim('TEENDŐ: 100%-OS KUPON A SALONICBAN')}
-<p>${!d.szamla ? 'A számlát a szamlabridge már elkészítette' : d.szamla.mod === 'invoice' ? 'A számlát a szamlabridge automatikusan elkészíti' : 'A számlát kézzel kell kiállítani (lásd fent)'}, ezért a Salonicban <b>nem utalvány-értékesítést</b>, hanem sima <b>100%-os kupont</b> hozz létre: a(z) <b>${esc(d.termek_nev)}</b> szolgáltatásra, egyszer felhasználható, érvényes ${esc(datumIg(d.ervenyes_ig))} (6 hónap).</p>
+${cim(marka(d).kupon_cim || 'TEENDŐ: 100%-OS KUPON A SALONICBAN')}
+<p>${!d.szamla ? 'A számlát a szamlabridge már elkészítette' : d.szamla.mod === 'invoice' ? 'A számlát a szamlabridge automatikusan elkészíti' : d.szamla.mod === 'agent' ? 'A számlát a Számlázz.hu-ban automatikusan kiállítottuk' : 'A számlát kézzel kell kiállítani (lásd fent)'}, ${marka(d).kupon_szoveg ? String(marka(d).kupon_szoveg).replace('{osszeg}', esc(d.osszeg_szoveg)).replace('{termek}', esc(d.termek_nev)).replace('{ervenyes}', esc(datumIg(d.ervenyes_ig))) : `ezért a Salonicban <b>nem utalvány-értékesítést</b>, hanem sima <b>100%-os kupont</b> hozz létre: a(z) <b>${esc(d.termek_nev)}</b> szolgáltatásra, egyszer felhasználható, érvényes ${esc(datumIg(d.ervenyes_ig))} (6 hónap).`}</p>
 ${kodDoboz(d.kod, d.ervenyes_ig)}
 ${d.azonnali
     ? ''
@@ -140,7 +146,7 @@ ${gomb(d.kartya_url, 'Ajándékkártya megnyitása')}`
 <p>A rendelésed állapotát itt is megnézheted:</p>
 ${gomb(d.rendeles_url, 'A rendelésem')}`}
 ${cim('ÍGY LEHET FELHASZNÁLNI')}
-<p>Az ajándékkártyán lévő kódot az online időpontfoglalásnál (<a href="https://www.mosaicheadspa.hu/idpontfoglalas">mosaicheadspa.hu/idpontfoglalas</a>) a „kuponkód” mezőbe kell beírni. A kártya a vásárlástól számítva 6 hónapig használható fel.</p>
+<p>Az ajándékkártyán lévő kódot az online időpontfoglalásnál (<a href="${esc(marka(d).foglalas_url)}">${esc(marka(d).foglalas_szoveg)}</a>) a „kuponkód” mezőbe kell beírni. A kártya a vásárlástól számítva 6 hónapig használható fel.</p>
 <p>Ha kérdésed van, csak válaszolj erre a levélre! :)</p>
 ${lablec(d.szalon)}
 </div>`,
@@ -151,7 +157,7 @@ ${lablec(d.szalon)}
 // d: { rendeles_id, kartya_cim, nev, kartya_url, kod, ervenyes_ig, szalon }
 export function vevoKartyaKeszLevel(d) {
   return {
-    targy: `Elkészült az ajándékkártyád – MOSAIC Head Spa (${d.rendeles_id})`,
+    targy: `Elkészült az ajándékkártyád – ${marka(d).nev} (${d.rendeles_id})`,
     html: `<div style="${betu};max-width:600px">
 <p>Kedves ${esc(d.nev)}!</p>
 <p>Elkészült a(z) „${esc(d.kartya_cim)}” ajándékkártyád.</p>
@@ -160,7 +166,7 @@ ${kodDoboz(d.kod, d.ervenyes_ig)}
 ${gomb(d.kartya_url, 'Ajándékkártya megnyitása')}
 <p style="font-size:13px;color:#555">Ha a gomb nem működik, ezt a címet nyisd meg: <a href="${esc(d.kartya_url)}">${esc(d.kartya_url)}</a></p>
 ${cim('ÍGY LEHET FELHASZNÁLNI')}
-<p>Az online időpontfoglalásnál (<a href="https://www.mosaicheadspa.hu/idpontfoglalas">mosaicheadspa.hu/idpontfoglalas</a>) a „kuponkód” mezőbe kell beírni a kódot.</p>
+<p>Az online időpontfoglalásnál (<a href="${esc(marka(d).foglalas_url)}">${esc(marka(d).foglalas_szoveg)}</a>) a „kuponkód” mezőbe kell beírni a kódot.</p>
 <p>Ha kérdésed van, csak válaszolj erre a levélre! :)</p>
 <p style="font-size:12px;color:#888">Rendelésazonosító: ${esc(d.rendeles_id)}</p>
 ${lablec(d.szalon)}
@@ -337,10 +343,10 @@ export function egyszeruOldal(d) {
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 ${d.frissit ? `<meta http-equiv="refresh" content="${Number(d.frissit) | 0}">` : ''}
-<title>${esc(d.cim)} | MOSAIC Head Spa</title>
+<title>${esc(d.cim)} | ${esc(marka(d).nev)}</title>
 <style>${OLDAL_CSS}</style></head>
 <body><main class="doboz">
-<img class="logo-sav" src="${esc(d.bazis)}/assets/img/logo-143x54@2x.png" width="143" height="54" alt="MOSAIC Head Spa">
+<img class="logo-sav" src="${esc(d.bazis)}/assets/img/logo-143x54@2x.png" width="143" height="54" alt="${esc(marka(d).nev)}">
 <h1>${esc(d.cim)}</h1>
 ${(d.bekezdesek || []).map((b) => `<p>${esc(b)}</p>`).join('\n')}
 ${d.reszletek && d.reszletek.length ? tabla(d.reszletek) : ''}
@@ -391,7 +397,7 @@ export function szemelyreSzabottKartyaOldal(d) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<title>MOSAIC Head Spa ajándékkártya${d.elonezet ? ' – előnézet' : ''}</title>
+<title>${esc(marka(d).nev)} ajándékkártya${d.elonezet ? ' – előnézet' : ''}</title>
 <style>
 ${K.betuCss(d.bazis)}
 ${K.CSS}
@@ -415,7 +421,7 @@ ${d.elonezet ? '<p class="jelzes nem-nyomtat">Előnézet a szalonnak: a vevő a 
 <section class="lap" aria-label="Ajándékkártya">${kartya}</section>
 <div class="gombsor nem-nyomtat">
 <button type="button" id="nyomtat">Nyomtatás / Mentés PDF-ként</button>
-<p class="tipp">Tipp: a lapot A4-es papírra nyomtasd (álló tájolás), majd hajtsd félbe a szaggatott vonal mentén: elöl a személyre szabott lap, hátul a kártya adatai lesznek. A nyomtatási ablakban a „Mentés PDF-ként” célt választva PDF-et kapsz, amit e-mailben is továbbküldhetsz. A kódot az online időpontfoglalásnál (mosaicheadspa.hu/idpontfoglalas) add meg. Nyomtatáskor kapcsold be a háttérszínek / háttérgrafika nyomtatását.</p>
+<p class="tipp">Tipp: a lapot A4-es papírra nyomtasd (álló tájolás), majd hajtsd félbe a szaggatott vonal mentén: elöl a személyre szabott lap, hátul a kártya adatai lesznek. A nyomtatási ablakban a „Mentés PDF-ként” célt választva PDF-et kapsz, amit e-mailben is továbbküldhetsz. A kódot az online időpontfoglalásnál (${esc(marka(d).foglalas_szoveg)}) add meg. Nyomtatáskor kapcsold be a háttérszínek / háttérgrafika nyomtatását.</p>
 </div>
 </main>
 <script>${NYOMTAT_JS}</script>
@@ -434,7 +440,7 @@ export function kartyaOldal(d) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<title>MOSAIC Head Spa ajándékkártya – ${esc(d.kod)}</title>
+<title>${esc(marka(d).nev)} ajándékkártya – ${esc(d.kod)}</title>
 <style>
 ${betu(400, 'hanken-grotesk-400')}
 ${betu(600, 'hanken-grotesk-600')}
@@ -470,7 +476,7 @@ body{background:#e9e3d7;color:#2b2b2b;font:15px/1.55 "Helvetica Neue",Arial,Helv
 </section>
 <div class="gombsor nem-nyomtat">
 <button type="button" id="nyomtat">Nyomtatás / Mentés PDF-ként</button>
-<p class="tipp">Tipp: a nyomtatási ablakban a „Mentés PDF-ként” célt választva PDF-et kapsz, amit e-mailben is továbbküldhetsz. A kódot az online időpontfoglalásnál (mosaicheadspa.hu/idpontfoglalas) add meg.</p>
+<p class="tipp">Tipp: a nyomtatási ablakban a „Mentés PDF-ként” célt választva PDF-et kapsz, amit e-mailben is továbbküldhetsz. A kódot az online időpontfoglalásnál (${esc(marka(d).foglalas_szoveg)}) add meg.</p>
 </div>
 </main>
 <script>${NYOMTAT_JS}</script>
