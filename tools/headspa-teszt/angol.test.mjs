@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
 import { szerverInditas, GYOKER } from './szerver.mjs';
 
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
@@ -21,7 +22,7 @@ function playwright() {
 }
 const { chromium } = playwright();
 
-const NEV = 'headspa-budapest-hungary-uj';
+const NEV = 'headspa-budapest-hungary';
 const FORRAS = fs.readFileSync(path.join(GYOKER, 'foglalas', NEV + '.html'), 'utf8');
 const NEZETEK = [['telefon', 390], ['tablet', 768], ['asztal', 1440]];
 
@@ -58,7 +59,7 @@ const lathatoSzoveg = (p) => p.evaluate(() => document.querySelector('main').inn
 // a lathato szoveg + az alt / aria-label / title attributumok (a kepek es gombok feliratai is angolok legyenek)
 const mindenSzoveg = (p) => p.evaluate(() => document.querySelector('main').innerText + '\n' + [...document.querySelectorAll('main [alt], main [aria-label], main [title]')].map((e) => [e.getAttribute('alt'), e.getAttribute('aria-label'), e.getAttribute('title')].filter(Boolean).join('\n')).join('\n') + '\n' + document.title);
 
-describe('/headspa-budapest-hungary-uj (angol oldal)', () => {
+describe('/headspa-budapest-hungary (angol oldal)', () => {
   test('betoltodik hibak nelkul: angol cim, <html lang="en">, egyetlen H1, nincs konzol-hiba, 404, torott kep; minden kepnek van alt-ja, szelessege / magassaga', async () => {
     const { p, ctx, hibak, nincs } = await nyit(NEV);
     assert.equal(await p.title(), 'Head Spa Budapest - Hungary - 3rd district.');
@@ -76,9 +77,9 @@ describe('/headspa-budapest-hungary-uj (angol oldal)', () => {
     await ctx.close();
   });
 
-  test('uj oldal-szabalyok: noindex + nofollow, sajat (-uj) canonical es og:url, angol meta / og; fejlec / nyelv-jelolo / menu-jelolo / lablec a forrasban; nincs hreflang, nincs a sitemapben, nincs ravezeto link', async () => {
+  test('eredeti cim: indexelheto, sajat canonical es og:url, angol meta / og; fejlec / nyelv-jelolo / menu-jelolo / lablec a forrasban; nincs hreflang; az -uj cim 301, a regi Wixes valtozat -regi cimen', async () => {
     const { p, ctx } = await nyit(NEV);
-    assert.equal(await p.getAttribute('meta[name=robots]', 'content'), 'noindex, nofollow');
+    assert.equal(await p.locator('meta[name=robots]').count(), 0, 'indexelheto');
     const cim = `https://www.mosaicheadspa.hu/${NEV}`;
     assert.equal(await p.getAttribute('link[rel=canonical]', 'href'), cim);
     assert.equal(await p.getAttribute('meta[property="og:url"]', 'content'), cim);
@@ -92,12 +93,15 @@ describe('/headspa-budapest-hungary-uj (angol oldal)', () => {
     assert.match(FORRAS, /<!--mh-fejlec-->\r?\n<!--mh-nyelv:en-->\r?\n<!--mh-menu-aktiv:\/headspa-budapest-hungary-->/);
     assert.ok(FORRAS.indexOf('<!--mh-lablec-->') > FORRAS.indexOf('</main>'), 'lablec a main utan');
     for (const s of ['/assets/js/klon.js', '/assets/js/headspa-oldal.js', '/assets/js/headspa-en.js', '/assets/css/headspa-oldal.css', '/assets/css/headspa-en.css']) assert.ok(FORRAS.includes(s), s);
-    // nincs a sitemapben, es egyetlen oldal sem linkel ra
-    assert.ok(!fs.readFileSync(path.join(GYOKER, 'sitemap.xml'), 'utf8').includes(NEV), 'nincs a sitemapben');
-    for (const mappa of ['foglalas', 'klon', path.join('klon', 'm')]) {
-      for (const f of fs.readdirSync(path.join(GYOKER, mappa)).filter((x) => x.endsWith('.html') && x !== NEV + '.html')) {
-        assert.ok(!fs.readFileSync(path.join(GYOKER, mappa, f), 'utf8').includes(NEV), `${mappa}/${f} linkel az -uj oldalra`);
-      }
+    // a csere utan: az -uj cim 301, a regi (Wixes) valtozat rejtett -regi cimen (noindex, sajat canonical), az uj oldal az eredeti neven
+    const { utvonal } = await import(pathToFileURL(path.join(GYOKER, 'netlify', 'lib', 'utvonal.js')).href);
+    assert.deepEqual(utvonal(`/${NEV}-uj`, 'Mozilla/5.0 (Windows NT 10.0)'), { atiranyit: `/${NEV}` }, 'az -uj cim 301');
+    assert.ok(!fs.existsSync(path.join(GYOKER, 'foglalas', NEV + '-uj.html')), 'nincs tobbe -uj fajl');
+    for (const mappa of ['klon', path.join('klon', 'm')]) {
+      const regi = fs.readFileSync(path.join(GYOKER, mappa, NEV + '-regi.html'), 'utf8');
+      assert.match(regi, /<meta name="robots" content="noindex(, nofollow)?"\/>/, mappa + ' regi: noindex');
+      assert.ok(regi.includes(`<link rel="canonical" href="https://www.mosaicheadspa.hu/${NEV}-regi"/>`), mappa + ' regi: canonical');
+      assert.ok(fs.existsSync(path.join(GYOKER, mappa, NEV + '.html')), mappa + ': az eredeti klon-fajl megvan (visszaallitashoz)');
     }
     // betutipusok: Playfair Display + Jost, mint a tobbi uj Head Spa oldalon
     assert.match(await p.evaluate(() => getComputedStyle(document.querySelector('main h1')).fontFamily), /Playfair Display/);

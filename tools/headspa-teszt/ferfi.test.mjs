@@ -1,4 +1,4 @@
-// A Head Spa Ferfiaknak oldal (uj szerkezet, ideiglenes cim: /headspa-ferfiaknak-uj) bongeszos tesztjei (Playwright).
+// A Head Spa Ferfiaknak oldal (uj szerkezet; 2026-10-07 ota az eredeti cimen el: /headspa-ferfiaknak) bongeszos tesztjei (Playwright).
 // Nincs dist/ es nincs kulso halozat: a konnyu helyi szerver (szerver.mjs) allitja ossze az oldalt, minden kulso keres tiltott.
 //
 //   node --test tools/headspa-teszt/ferfi.test.mjs
@@ -9,6 +9,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
 import { szerverInditas, GYOKER } from './szerver.mjs';
 
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
@@ -20,7 +21,7 @@ function playwright() {
 }
 const { chromium } = playwright();
 
-const NEV = 'headspa-ferfiaknak-uj';
+const NEV = 'headspa-ferfiaknak';
 const CIM = 'Head Spa Férfiaknak? Főleg ha kopasz vagy!';
 const H1 = 'Head Spa Férfiaknak. Ennél jobban semmi nem nyugtat meg.';
 const FOGLALO = '/foglalo-motor?business=headspa';
@@ -72,25 +73,21 @@ describe(`/${NEV}`, () => {
     await ctx.close();
   });
 
-  test('ideiglenes cim: noindex + sajat (-uj) canonical / og:url; nincs ravezeto link sehonnan, nincs a sitemapben', () => {
+  test('eredeti cim: indexelheto (nincs robots meta), canonical / og:url az eredeti cim; az -uj cim 301, a regi Wixes valtozat rejtett -regi cimen', async () => {
     const forras = fs.readFileSync(path.join(GYOKER, 'foglalas', NEV + '.html'), 'utf8');
-    assert.match(forras, /<meta name="robots" content="noindex, nofollow">/);
+    assert.ok(!/<meta name="robots"/.test(forras), 'indexelheto');
     assert.ok(forras.includes(`<link rel="canonical" href="https://www.mosaicheadspa.hu/${NEV}">`), 'canonical');
     assert.ok(forras.includes(`<meta property="og:url" content="https://www.mosaicheadspa.hu/${NEV}">`), 'og:url');
-    // sehol a repoban (oldalak, fejlec / lablec reszek, sitemap, atiranyitasok) nem hivatkozik ra senki (a sajat fajlja es ez a teszt kivetelevel)
-    const bejar = (mappa, talalat = []) => {
-      for (const e of fs.readdirSync(mappa, { withFileTypes: true })) {
-        if (['node_modules', '.git', 'dist'].includes(e.name)) continue;
-        const f = path.join(mappa, e.name);
-        if (e.isDirectory()) bejar(f, talalat);
-        else if (/\.(html|js|mjs|json|xml|txt|toml|css|md)$/.test(e.name) && fs.statSync(f).size < 4e6 && fs.readFileSync(f, 'utf8').includes(NEV)) talalat.push(path.relative(GYOKER, f).replace(/\\/g, '/'));
-      }
-      return talalat;
-    };
-    const hivatkozok = ['klon', 'foglalas', 'assets', 'netlify', 'functions', 'tools', 'src', 'salonic'].flatMap((m) => (fs.existsSync(path.join(GYOKER, m)) ? bejar(path.join(GYOKER, m)) : []))
-      .filter((f) => !['foglalas/headspa-ferfiaknak-uj.html', 'tools/headspa-teszt/ferfi.test.mjs'].includes(f));
-    assert.deepEqual(hivatkozok, [], 'ravezeto hivatkozas az -uj cimre');
-    for (const f of ['sitemap.xml', 'robots.txt']) if (fs.existsSync(path.join(GYOKER, f))) assert.ok(!fs.readFileSync(path.join(GYOKER, f), 'utf8').includes(NEV), f);
+    // a csere utan: az -uj cim 301, a regi (Wixes) valtozat rejtett -regi cimen (noindex, sajat canonical), az uj oldal az eredeti neven
+    const { utvonal } = await import(pathToFileURL(path.join(GYOKER, 'netlify', 'lib', 'utvonal.js')).href);
+    assert.deepEqual(utvonal(`/${NEV}-uj`, 'Mozilla/5.0 (Windows NT 10.0)'), { atiranyit: `/${NEV}` }, 'az -uj cim 301');
+    assert.ok(!fs.existsSync(path.join(GYOKER, 'foglalas', NEV + '-uj.html')), 'nincs tobbe -uj fajl');
+    for (const mappa of ['klon', path.join('klon', 'm')]) {
+      const regi = fs.readFileSync(path.join(GYOKER, mappa, NEV + '-regi.html'), 'utf8');
+      assert.match(regi, /<meta name="robots" content="noindex(, nofollow)?"\/>/, mappa + ' regi: noindex');
+      assert.ok(regi.includes(`<link rel="canonical" href="https://www.mosaicheadspa.hu/${NEV}-regi"/>`), mappa + ' regi: canonical');
+      assert.ok(fs.existsSync(path.join(GYOKER, mappa, NEV + '.html')), mappa + ': az eredeti klon-fajl megvan (visszaallitashoz)');
+    }
   });
 
   test('a kozos szerkezet: fejlec (aktiv menu), a fejlec akcios savja a MOSAIC szinvilagaban, Playfair / Jost betuk, lablec, mobil sticky CTA elem; nincs Wix-maradvany', async () => {

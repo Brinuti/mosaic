@@ -28,6 +28,8 @@ const ATIRANYITASOK = {
   '/head-spa-kedvezmeny-uj': '/head-spa-kedvezmeny',
   '/headspa-termekek-oxygeni-uj': '/headspa-termekek-oxygeni',
   '/head-spa-velemenyek-uj': '/head-spa-velemenyek',
+  '/headspa-ferfiaknak-uj': '/headspa-ferfiaknak',
+  '/headspa-budapest-hungary-uj': '/headspa-budapest-hungary',
   '/contact': '/', '/services': '/', '/en': '/',
 };
 
