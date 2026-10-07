@@ -143,6 +143,7 @@ describe(`/${NEV}`, () => {
     sorok.forEach((s, i) => {
       if (i > arStart && i < arVeg) return;
       if (/^\d\d:\d\d$/.test(s)) return;
+      if (s === '9:00 - 18:00') return;   // a szombati nyitvatartas 8:00 - 20:00-ra valtozott (a tulajdonos dontese: szombaton is nyitva; lasd a nyitvatartas tesztet)
       if (/^Ár: 50 perc \+ 30 perc szárítás - 32\.900 Ft helyett 29\.900 Ft$/.test(s)) return;   // a hero ar-sora a mai (oktoberi) arra frissitve: 26.900 Ft (lasd a hero-ar tesztet)
       const n = norm(s);
       if (n.length < 3 || uj.includes(n)) return;
@@ -183,6 +184,16 @@ describe(`/${NEV}`, () => {
     assert.equal(csomagAr, '26.900 Ft');
     assert.equal((await p.evaluate(() => document.querySelector('main').innerText)).includes('29.900'), false, 'nincs 29.900 az oldalon');
     assert.equal(fs.readFileSync(path.join(GYOKER, 'foglalas', NEV + '.html'), 'utf8').includes('29.900'), false, 'nincs 29.900 a forrasban');
+    await ctx.close();
+  });
+
+  test('nyitvatartas: hetfo - pentek es szombat 8:00 - 20:00, vasarnap zarva; nincs regi szombati (9:00 - 18:00) nyitvatartas', async () => {
+    const { p, ctx } = await nyit();
+    const sor = await p.$eval('#helyszin .hely-sor:nth-child(4) p', (e) => e.innerText.replace(/\s+/g, ' ').trim());
+    assert.equal(sor, 'Nyitvatartásunk Hétfő - Péntek: 8:00 – 20:00 Szombat: 8:00 – 20:00 Vasárnap: ZÁRVA');
+    const forras = fs.readFileSync(path.join(GYOKER, 'foglalas', NEV + '.html'), 'utf8');
+    assert.equal(/9:00\s*[-–]\s*18:00/.test(forras), false, 'nincs 9:00 - 18:00 a forrasban');
+    assert.equal((await p.evaluate(() => document.querySelector('main').innerText)).includes('18:00'), false, 'nincs 18:00 az oldal szovegeben');
     await ctx.close();
   });
 
@@ -249,7 +260,9 @@ describe(`/${NEV}`, () => {
     const uj = fs.readFileSync(path.join(GYOKER, 'foglalas', NEV + '.html'), 'utf8').replace(/\r\n/g, '\n');
     const blokk = (h) => h.match(/    <div class="csomag-racs harom">[\s\S]*?\n    <\/div>\n/)[0];
     assert.equal(blokk(uj), blokk(arak), 'az ar-blokk szo szerint az arak oldal blokkja');
-    // minden csomagnak van betoltott kepe
+    // minden csomagnak van betoltott kepe (kesleltetett kepek: a szekciot a kepernyore gorgetjuk, es megvarjuk a betoltest)
+    await p.locator('#arak').scrollIntoViewIfNeeded();
+    await p.waitForFunction(() => [...document.querySelectorAll('.csomag .csomag-kep img')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 15000 });
     const kepek = await p.$$eval('.csomag .csomag-kep img', (l) => l.map((i) => ({ ok: i.complete && i.naturalWidth > 0, alt: i.alt })));
     assert.equal(kepek.length, 3);
     for (const k of kepek) { assert.ok(k.ok); assert.ok(k.alt.length > 10); }
