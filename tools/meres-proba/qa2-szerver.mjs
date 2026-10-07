@@ -24,7 +24,8 @@ const q = be.koszono_query || {}; const start = be.bookingUrl_elemzes && be.book
 const ujVendeg = { igen: true, nem: false }[arg('uj-vendeg', 'igen')] ?? undefined;
 // ar: alapbol a Salonic-atiranyitas price parametere (= a levelbeli tenyleges ar)
 const kerelem = {
-  uuid: be.salonic_uuid, host: be.salonic_host, felado: arg('felado', undefined), szolgaltatas: arg('szolgaltatas') || q.service, munkatarsak: [], ld: start ? { startDate: new Date(start * 1000).toISOString() } : null,
+  uuid: be.salonic_uuid, host: be.salonic_host, felado: arg('felado', undefined), szolgaltatas: arg('szolgaltatas') || q.service, munkatarsak: arg('munkatars') ? arg('munkatars').split('|').filter(Boolean) : (q.employee ? [q.employee] : []), // a valodi level a munkatars nevet is tartalmazza (a nevtabla-tartalek agnak kell: pl. a level a lemondas UTAN erkezik)
+   ld: start ? { startDate: new Date(start * 1000).toISOString() } : null,
   level_datuma: arg('level-ido'), ar: arg('ar') ? Number(arg('ar')) : (/^\d+$/.test(String(q.price || '')) ? Number(q.price) : undefined), vendeg: { email: arg('email', 'deakfi@grantis.hu'), telefon: arg('telefon', '+36 70 942 0090') }, uj_vendeg: ujVendeg,
 };
 // vedelem: egy felkesz kerelem (pl. elkallodott sor miatt hianyzo vendeg / uj_vendeg) NE menjen ki: a kikuldott esemeny a platformokon (Meta, TikTok, GA4) nem vonhato vissza

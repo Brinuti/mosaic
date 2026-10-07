@@ -1,0 +1,77 @@
+{
+ "eset": "kupon",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T08:07:37.247Z",
+   "lepes": "eset: kupon",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "ernyoesemeny nincs (egyetlen \"ernyo\" sor sem)",
+   "elvart": 0,
+   "tenyleges": 0,
+   "ok": true
+  },
+  {
+   "leiras": "alapesemeny kiment (FoglalasElso)",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  },
+  {
+   "leiras": "kuldott ertek = a levelbeli ar (0 Ft)",
+   "elvart": 0,
+   "tenyleges": 0,
+   "ok": true
+  }
+ ],
+ "szimulalt": [
+  "a level szolgaltatas-neve szimulalva: \"KUPONKÓDDAL - PÁROS MOSAIC Head Spa kezelés\" es ar: 0 Ft (valodi kuponkodos foglalashoz ervenyes Salonic-kuponkod kell; a foglalas maga normal HeadSpa foglalas)"
+ ],
+ "booking_id": "mb_0muxtrm0s7td3j77go0c4rf",
+ "salonic_uuid": "a80eb74b-8218-eccc-3bc5-ddf3ec9f80a0",
+ "esemeny_idk": {
+  "sorok": 4,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtrm0s7td3j77go0c4rf",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 0
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtrm0s7td3j77go0c4rf",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 0
+    }
+   ],
+   "google": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtrm0s7td3j77go0c4rf",
+     "nev": "ARNYEK-7825199989",
+     "ertek": 0
+    }
+   ],
+   "ga4": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtrm0s7td3j77go0c4rf",
+     "nev": "foglalas_elso",
+     "ertek": 0
+    }
+   ]
+  },
+  "nem_ment_ki": []
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}

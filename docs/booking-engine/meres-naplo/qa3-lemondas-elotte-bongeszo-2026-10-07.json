@@ -1,0 +1,445 @@
+{
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "eset": "fodrasz",
+ "uzletag": "fodrasz",
+ "hozzajarulas_profil": "teljes",
+ "hozzajarulas": {
+  "ana": true,
+  "adv": true,
+  "fun": true
+ },
+ "szintetikus_adatok": {
+  "megjegyzes": "a kattintasazonositok es a sutik SZINTETIKUSAK (TESZT-jelolesuek); az elonezeten nem fut pixel / GA, ezert a sutiket a teszt allitja be",
+  "elso_latogatas": {
+   "utm_source": "google",
+   "utm_medium": "cpc",
+   "utm_campaign": "qa2_fodrasz_elso",
+   "utm_content": "hirdetes_a",
+   "gclid": "Cj0KCQjw_TESZT_FODRASZ_MUXTOCGL_GCLID"
+  },
+  "utolso_latogatas": {
+   "utm_source": "facebook",
+   "utm_medium": "paid",
+   "utm_campaign": "qa2_fodrasz_utolso",
+   "fbclid": "IwAR_TESZT_FODRASZ_MUXTOCGL_FBCLID",
+   "ttclid": "E.C.P.TESZT_FODRASZ_MUXTOCGL_TTCLID",
+   "wbraid": "CoMKCQ_TESZT_FODRASZ_MUXTOCGL_WBRAID"
+  },
+  "sutik": {
+   "_fbp": "fb.1.1791355308000.9854529281",
+   "_ttp": "TESZT_FODRASZ_MUXTOCGL_ttp_my3ozl1470",
+   "_ga": "GA1.1.532012155.1791273908",
+   "_ga_H4206SQ0Q7": "GS2.1.s1791359108$o1$g1$t1791359708$j0$l0$h0"
+  }
+ },
+ "pillanatkep_a_foglalas_elott": {
+  "google": {
+   "gclid": {
+    "ertek": "Cj0KCQjw_TESZT_FODRASZ_MUXTOCGL_GCLID",
+    "ts": 1791360309
+   },
+   "wbraid": {
+    "ertek": "CoMKCQ_TESZT_FODRASZ_MUXTOCGL_WBRAID",
+    "ts": 1791360312
+   }
+  },
+  "meta": {
+   "fbc": "fb.1.1791360312000.IwAR_TESZT_FODRASZ_MUXTOCGL_FBCLID",
+   "fbclid": "IwAR_TESZT_FODRASZ_MUXTOCGL_FBCLID",
+   "ts": 1791360312
+  },
+  "tiktok": {
+   "ttclid": {
+    "ertek": "E.C.P.TESZT_FODRASZ_MUXTOCGL_TTCLID",
+    "ts": 1791360312
+   }
+  },
+  "utm_elso": {
+   "source": "google",
+   "medium": "cpc",
+   "campaign": "qa2_fodrasz_elso",
+   "content": "hirdetes_a",
+   "ts": 1791360309
+  },
+  "utm_utolso": {
+   "source": "facebook",
+   "medium": "paid",
+   "campaign": "qa2_fodrasz_utolso",
+   "ts": 1791360312
+  },
+  "fbp": "fb.1.1791355308000.9854529281",
+  "ttp": "TESZT_FODRASZ_MUXTOCGL_ttp_my3ozl1470",
+  "ga4": {
+   "client_id": "532012155.1791273908",
+   "session_id": "1791359108",
+   "measurement_id": "G-H4206SQ0Q7"
+  }
+ },
+ "iframe_src": "https://mosaic-hair.salonic.hu/guestData/?placeId=10823&serviceId=232804&employeeId=-1&startDate=1792585800&back=mb_0muxtofbcegaa8wjnnyl927",
+ "azonosito_a_keret_cimeben": "mb_0muxtofbcegaa8wjnnyl927",
+ "keret_url": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=26064&placeId=10823&serviceId=232804&startDate=1792585800&back=mb_0muxtofbcegaa8wjnnyl927",
+ "kontextus": {
+  "id": "mb_0muxtofbcegaa8wjnnyl927",
+  "created": 1791360312456,
+  "seen": 1791360316353,
+  "business": "hair",
+  "source_page": "/booking-test",
+  "service_id": "232804",
+  "slot_unix": 1792585800,
+  "staff_id": "-1",
+  "carrier": "back",
+  "sent_at": 1791360316353,
+  "returned": null,
+  "completed_at": null
+ },
+ "salonic_status": 200,
+ "redirect_url": "https://mosaicheadspa.hu/fodrasz-ok?first_booking=true&service=Fodr%C3%A1sz+konzult%C3%A1ci%C3%B3+%289.900+Ft+helyett+most+0+Ft%21%29&category=Ingyenes+Fodr%C3%A1sz+konzult%C3%A1ci%C3%B3&price=0&location=Mosaic+Hair&employee=Evelin&g=g:3385039&bookingUrl=https%3A%2F%2Fmosaic-hair.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D26064%26placeId%3D10823%26serviceId%3D232804%26startDate%3D1792585800%26back%3Dmb_0muxtofbcegaa8wjnnyl927",
+ "salonic_uuid": "cfc95e2c-f58c-f067-5cb0-8d14f5d88243",
+ "kereten_at_probalt_eles_navigaciok": [
+  "https://mosaicheadspa.hu/fodrasz-ok?first_booking=true&service=Fodr%C3%A1sz+konzult%C3%A1ci%C3%B3+%289.900+Ft+helyett+most+0+Ft%21%29&category=Ingyenes+Fodr%C3%A1sz+konzult%C3%A1ci%C3%B3&price=0&location=Mosaic+Hair&employee=Evelin&g=g:3385039&bookingUrl=https%3A%2F%2Fmosaic-hair.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D26064%26placeId%3D10823%26serviceId%3D232804%26startDate%3D1792585800%26back%3Dmb_0muxtofbcegaa8wjnnyl927"
+ ],
+ "salonic_host": "mosaic-hair.salonic.hu",
+ "lemondo_url": "https://mosaic-hair.salonic.hu/booking/cancelBooking/cfc95e2c-f58c-f067-5cb0-8d14f5d88243",
+ "koszono_query": {
+  "first_booking": "true",
+  "service": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+  "category": "Ingyenes Fodrász konzultáció",
+  "price": "0",
+  "location": "Mosaic Hair",
+  "employee": "Evelin",
+  "g": "g:3385039",
+  "bookingUrl": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=26064&placeId=10823&serviceId=232804&startDate=1792585800&back=mb_0muxtofbcegaa8wjnnyl927"
+ },
+ "bookingUrl": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=26064&placeId=10823&serviceId=232804&startDate=1792585800&back=mb_0muxtofbcegaa8wjnnyl927",
+ "bookingUrl_elemzes": {
+  "ok": true,
+  "host": "mosaic-hair.salonic.hu",
+  "uzletag": "hair",
+  "placeId": 10823,
+  "employeeId": 26064,
+  "serviceId": "232804",
+  "startUnix": 1792585800,
+  "kulcs": "10823|26064|1792585800",
+  "bookingId": "mb_0muxtofbcegaa8wjnnyl927"
+ },
+ "booking_id": "mb_0muxtofbcegaa8wjnnyl927",
+ "koszono_elonezeti_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok?first_booking=true&service=Fodr%C3%A1sz+konzult%C3%A1ci%C3%B3+%289.900+Ft+helyett+most+0+Ft%21%29&category=Ingyenes+Fodr%C3%A1sz+konzult%C3%A1ci%C3%B3&price=0&location=Mosaic+Hair&employee=Evelin&g=g:3385039&bookingUrl=https%3A%2F%2Fmosaic-hair.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D26064%26placeId%3D10823%26serviceId%3D232804%26startDate%3D1792585800%26back%3Dmb_0muxtofbcegaa8wjnnyl927",
+ "mhAttribucioEredmeny": {
+  "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "frissitve": true,
+   "hibak": [],
+   "mezok": [
+    "google",
+    "meta",
+    "tiktok",
+    "utm_elso",
+    "utm_utolso",
+    "fbp",
+    "ttp",
+    "ga4"
+   ]
+  },
+  "kuldott": {
+   "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+   "uzletag": "fodrasz",
+   "tipus": "foglalas",
+   "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+   "ar": 0,
+   "first_booking": true,
+   "g": "g:3385039",
+   "bookingUrl": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=26064&placeId=10823&serviceId=232804&startDate=1792585800&back=mb_0muxtofbcegaa8wjnnyl927",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_FODRASZ_MUXTOCGL_GCLID",
+      "ts": 1791360309
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_FODRASZ_MUXTOCGL_WBRAID",
+      "ts": 1791360312
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791360312000.IwAR_TESZT_FODRASZ_MUXTOCGL_FBCLID",
+     "fbclid": "IwAR_TESZT_FODRASZ_MUXTOCGL_FBCLID",
+     "ts": 1791360312
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_FODRASZ_MUXTOCGL_TTCLID",
+      "ts": 1791360312
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_fodrasz_elso",
+     "content": "hirdetes_a",
+     "ts": 1791360309
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_fodrasz_utolso",
+     "ts": 1791360312
+    },
+    "fbp": "fb.1.1791355308000.9854529281",
+    "ttp": "TESZT_FODRASZ_MUXTOCGL_ttp_my3ozl1470",
+    "ga4": {
+     "client_id": "532012155.1791273908",
+     "session_id": "1791359108",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true
+   },
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok"
+  }
+ },
+ "mhKulcsEredmeny": {
+  "bookingId": "mb_0muxtofbcegaa8wjnnyl927",
+  "forras": "back",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "irva": true,
+   "idempotens": false,
+   "utkozes": false,
+   "kulcs": "10823|26064|1792585800",
+   "serviceId": "232804"
+  }
+ },
+ "tarolo": {
+  "mh_attr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_FODRASZ_MUXTOCGL_GCLID\",\"ts\":1791360309},\"wbraid\":{\"ertek\":\"CoMKCQ_TESZT_FODRASZ_MUXTOCGL_WBRAID\",\"ts\":1791360312}},\"utm_utolso\":{\"source\":\"facebook\",\"medium\":\"paid\",\"campaign\":\"qa2_fodrasz_utolso\",\"ts\":1791360312},\"utm_elso\":{\"source\":\"google\",\"medium\":\"cpc\",\"campaign\":\"qa2_fodrasz_elso\",\"content\":\"hirdetes_a\",\"ts\":1791360309},\"meta\":{\"fbclid\":\"IwAR_TESZT_FODRASZ_MUXTOCGL_FBCLID\",\"ts\":1791360312},\"tiktok\":{\"ttclid\":{\"ertek\":\"E.C.P.TESZT_FODRASZ_MUXTOCGL_TTCLID\",\"ts\":1791360312}}}",
+  "mh_cc": "{\"v\":1,\"t\":1791360309678,\"ana\":true,\"adv\":true,\"fun\":true}",
+  "sutik_nevei": [
+   "_fbp",
+   "_ttp",
+   "_ga",
+   "_ga_H4206SQ0Q7"
+  ]
+ },
+ "idovonal": [
+  {
+   "t": 1046,
+   "esemeny": "1. latogatas (Google-hirdetes)",
+   "url": "/booking-test?utm_source=google&utm_medium=cpc&utm_campaign=qa2_fodrasz_elso&utm_content=hirdetes_a&gclid=Cj0KCQjw_TESZT_FODRASZ_MUXTOCGL_GCLID"
+  },
+  {
+   "t": 3451,
+   "esemeny": "2. latogatas (Meta / TikTok / Google wbraid)",
+   "pillanatkep": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_FODRASZ_MUXTOCGL_GCLID",
+      "ts": 1791360309
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_FODRASZ_MUXTOCGL_WBRAID",
+      "ts": 1791360312
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791360312000.IwAR_TESZT_FODRASZ_MUXTOCGL_FBCLID",
+     "fbclid": "IwAR_TESZT_FODRASZ_MUXTOCGL_FBCLID",
+     "ts": 1791360312
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_FODRASZ_MUXTOCGL_TTCLID",
+      "ts": 1791360312
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_fodrasz_elso",
+     "content": "hirdetes_a",
+     "ts": 1791360309
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_fodrasz_utolso",
+     "ts": 1791360312
+    },
+    "fbp": "fb.1.1791355308000.9854529281",
+    "ttp": "TESZT_FODRASZ_MUXTOCGL_ttp_my3ozl1470",
+    "ga4": {
+     "client_id": "532012155.1791273908",
+     "session_id": "1791359108",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   }
+  },
+  {
+   "t": 5125,
+   "esemeny": "reteg megnyilt",
+   "azonosito": "mb_0muxtofbcegaa8wjnnyl927"
+  },
+  {
+   "t": 7627,
+   "esemeny": "idopont valasztva (az utolso szabad nap utolso idopontja)",
+   "ido": "14:30"
+  },
+  {
+   "t": 12145,
+   "esemeny": "Salonic-adatlap betoltve",
+   "back": "mb_0muxtofbcegaa8wjnnyl927"
+  },
+  {
+   "t": 14816,
+   "esemeny": "urlap kitoltve, kuldes",
+   "ido": "2026-10-07T08:05:23.573Z"
+  },
+  {
+   "t": 19514,
+   "esemeny": "foglalas-kuldes valasza",
+   "uuid": "cfc95e2c-f58c-f067-5cb0-8d14f5d88243",
+   "redirect": "https://mosaicheadspa.hu/fodrasz-ok?first_booking=true&service=Fodr%C3%A1sz+konzult%C3%A1ci%C3%B3+%289.900+Ft+helyett+most+0+Ft%21%29&category=Ingyenes+Fodr%C3%A1sz+konzult%C3%A1ci%C3%B3&price=0&location=Mosaic+Hair&employee=Evelin&g=g:3385039&bookingUrl=https%3A%2F%2Fmosaic-hair.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D26064%26placeId%3D10823%26serviceId%3D232804%26startDate%3D1792585800%26back%3Dmb_0muxtofbcegaa8wjnnyl927"
+  },
+  {
+   "t": 21041,
+   "esemeny": "koszonooldal (elonezet)",
+   "booking_id": "mb_0muxtofbcegaa8wjnnyl927",
+   "attribucio": "valasz",
+   "kulcs_iras": "valasz"
+  }
+ ],
+ "sajat_keresek_nyers": [
+  {
+   "t": 19949,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+    "uzletag": "fodrasz",
+    "tipus": "foglalas",
+    "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+    "ar": 0,
+    "first_booking": true,
+    "g": "g:3385039",
+    "bookingUrl": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=26064&placeId=10823&serviceId=232804&startDate=1792585800&back=mb_0muxtofbcegaa8wjnnyl927",
+    "attr": {
+     "google": {
+      "gclid": {
+       "ertek": "Cj0KCQjw_TESZT_FODRASZ_MUXTOCGL_GCLID",
+       "ts": 1791360309
+      },
+      "wbraid": {
+       "ertek": "CoMKCQ_TESZT_FODRASZ_MUXTOCGL_WBRAID",
+       "ts": 1791360312
+      }
+     },
+     "meta": {
+      "fbc": "fb.1.1791360312000.IwAR_TESZT_FODRASZ_MUXTOCGL_FBCLID",
+      "fbclid": "IwAR_TESZT_FODRASZ_MUXTOCGL_FBCLID",
+      "ts": 1791360312
+     },
+     "tiktok": {
+      "ttclid": {
+       "ertek": "E.C.P.TESZT_FODRASZ_MUXTOCGL_TTCLID",
+       "ts": 1791360312
+      }
+     },
+     "utm_elso": {
+      "source": "google",
+      "medium": "cpc",
+      "campaign": "qa2_fodrasz_elso",
+      "content": "hirdetes_a",
+      "ts": 1791360309
+     },
+     "utm_utolso": {
+      "source": "facebook",
+      "medium": "paid",
+      "campaign": "qa2_fodrasz_utolso",
+      "ts": 1791360312
+     },
+     "fbp": "fb.1.1791355308000.9854529281",
+     "ttp": "TESZT_FODRASZ_MUXTOCGL_ttp_my3ozl1470",
+     "ga4": {
+      "client_id": "532012155.1791273908",
+      "session_id": "1791359108",
+      "measurement_id": "G-H4206SQ0Q7"
+     }
+    },
+    "hozz": {
+     "ana": true,
+     "adv": true,
+     "fun": true
+    },
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok"
+   }
+  },
+  {
+   "t": 19950,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-kulcs",
+   "torzs": {
+    "booking_id": "mb_0muxtofbcegaa8wjnnyl927",
+    "booking_url": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=26064&placeId=10823&serviceId=232804&startDate=1792585800&back=mb_0muxtofbcegaa8wjnnyl927",
+    "forras": "back"
+   }
+  },
+  {
+   "t": 20915,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "ok": true,
+    "frissitve": true,
+    "hibak": [],
+    "mezok": [
+     "google",
+     "meta",
+     "tiktok",
+     "utm_elso",
+     "utm_utolso",
+     "fbp",
+     "ttp",
+     "ga4"
+    ]
+   }
+  },
+  {
+   "t": 21026,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-kulcs",
+   "torzs": {
+    "ok": true,
+    "irva": true,
+    "idempotens": false,
+    "utkozes": false,
+    "kulcs": "10823|26064|1792585800",
+    "serviceId": "232804"
+   }
+  }
+ ],
+ "tiltott_kimeno_keresek": {
+  "tiltott connect.facebook.net/en_US/sdk.js": 1,
+  "google-ads www.google.com/ccm/collect": 3,
+  "google-ads googleads.g.doubleclick.net/pagead/viewthroughconversion/16795940464/": 4,
+  "google-ads www.google.com/rmkt/collect/16795940464/": 4,
+  "stape stape.mosaicheadspa.hu/_/service_worker/69f0/sw_iframe.html": 1,
+  "tiktok analytics-ipv6.tiktokw.us/ipv6/enrich_ipv6": 2,
+  "tiktok analytics.tiktok.com/api/v2/pixel": 6,
+  "tiktok analytics.tiktok.com/api/v2/pixel/act": 5,
+  "tiktok analytics.tiktok.com/api/v2/monitor": 5,
+  "google-ads www.google.com/pagead/form-data/16795940464": 1,
+  "google-ads www.google.com/ccm/form-data/16795940464": 1
+ },
+ "js_hibak": [],
+ "konzol": []
+}

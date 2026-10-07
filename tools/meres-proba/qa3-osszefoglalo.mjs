@@ -13,14 +13,15 @@ const ESETEK = [
   ['suti-elutasitas', '7. Süti-elutasítás: Meta + TikTok küld, Google + GA4 elutasított jelzést kap'], ['kattintas-tiktok-meta', '8a. Kattintás TikTokról, foglalás Metáról'], ['kattintas-meta-google', '8b. Kattintás Metáról, foglalás Google-ről'],
   ['ajandek-visszaterites', '9. Ajándékkártya-visszatérítés: semmilyen hamis esemény nem megy ki'],
 ];
+const EXTRA = [['dupla-level-eltero-jelzes', 'X1. EXTRA (nem a 9 eset): két levél ugyanarra a foglalásra, ELTÉRŐ „új vendég” jelzéssel']];
 const ft = (n) => (n === null || n === undefined ? '–' : new Intl.NumberFormat('hu-HU').format(n).replace(/ /g, ' '));
 const ki = [`# QA-3 kontrollált tesztek (${NAP})`, '',
   '**Célok** (csak árnyék): Meta dataset 28616665324611098 (`test_event_code` TEST83939) · TikTok ARNYEK pixel DB2GTTJC77UE4D1NE4MG (`test_event_code` TEST83543) · GA4 teszt-property G-M5MLRLNQBP · Google Ads ARNYEK másodlagos akciók (Zapier-webhookon át). Minden foglalás „TESZT – Claude” néven (a valódi 24 órás listából kiszűrhető). A vizsgált előnézet kódja és ága nem változott.', '',
   '| eset | booking_id / PI | eredmény |', '|---|---|---|'];
 const reszletek = []; let pass = 0, ossz = 0;
-for (const [k, cim] of ESETEK) {
+for (const [k, cim, extra] of [...ESETEK, ...EXTRA.map((x) => [...x, true])]) {
   let o; try { o = JSON.parse(fs.readFileSync(`${D}qa3-${k}-${NAP}.json`, 'utf8')); } catch { ki.push(`| ${cim} | – | (nem futott) |`); continue; }
-  ossz++; if (o.eredmeny === 'PASS') pass++;
+  if (!extra) { ossz++; if (o.eredmeny === 'PASS') pass++; }
   ki.push(`| ${cim} | \`${o.booking_id || o.pi || '–'}\` | **${o.eredmeny}** |`);
   const r = [`## ${cim}`, '', `- előnézet: \`${o.bazis}\`; azonosító: \`${o.booking_id || o.pi || '–'}\`${o.salonic_uuid ? `; Salonic-foglalás: \`${o.salonic_uuid}\`` : ''}`];
   if (o.kattintas) r.push(`- kattintás: 1. látogatás ${o.kattintas.elso}, 2. látogatás ${o.kattintas.utolso}`);
@@ -38,6 +39,6 @@ for (const [k, cim] of ESETEK) {
   for (const c of o.ellenorzesek || []) { const s = (v) => String(typeof v === 'string' ? v : JSON.stringify(v)).replace(/\|/g, '/').slice(0, 110); r.push(`| ${c.leiras.replace(/\|/g, '/')} | ${s(c.elvart)} | ${s(c.tenyleges)} | ${c.ok ? 'PASS' : '**FAIL**'} |`); }
   reszletek.push(r.join('\n'), '');
 }
-ki.push('', `**Összesítés:** ${pass} / ${ossz} eset PASS.`, '', ...reszletek);
+ki.push('', `**Összesítés (a 9 eset, 14 futás):** ${pass} / ${ossz} PASS. Az EXTRA (X1) eset külön, nem számít bele.`, '', ...reszletek);
 fs.writeFileSync(`${D}qa3-osszefoglalo-${NAP}.md`, ki.join('\n'));
 console.log(JSON.stringify({ nap: NAP, esetek: ossz, pass }));

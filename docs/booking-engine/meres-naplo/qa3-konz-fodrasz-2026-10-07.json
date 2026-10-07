@@ -1,0 +1,126 @@
+{
+ "eset": "konz-fodrasz",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T08:09:03.797Z",
+   "lepes": "eset: konz-fodrasz",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "1. hivas: parositas + esemenyek (vagy az elo Zap mar elintezte: mar_kuldve)",
+   "elvart": "parositott + kesz | mar_kuldve",
+   "tenyleges": "parositott + kesz",
+   "ok": true
+  },
+  {
+   "leiras": "kuldott ertek (a fodrasz konzultacio-ertek, HUF)",
+   "elvart": 13000,
+   "tenyleges": 13000,
+   "ok": true
+  },
+  {
+   "leiras": "az ernyo ugyanazzal az ertekkel",
+   "elvart": 13000,
+   "tenyleges": 13000,
+   "ok": true
+  },
+  {
+   "leiras": "Meta + TikTok: alap + ernyo; Google + GA4: csak az alap",
+   "elvart": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "tenyleges": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-nevek (Meta)",
+   "elvart": [
+    "Fodrasz_AkviziciosFoglalas",
+    "Fodrasz_Konzultacio"
+   ],
+   "tenyleges": [
+    "Fodrasz_AkviziciosFoglalas",
+    "Fodrasz_Konzultacio"
+   ],
+   "ok": true
+  }
+ ],
+ "szimulalt": [],
+ "booking_id": "mb_0muxttgwl1ignomdxhj0i6o",
+ "salonic_uuid": "a232a61f-0c0a-5aff-aba1-d6cf38ba0b80",
+ "esemeny_idk": {
+  "sorok": 8,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "Konzultacio:mb_0muxttgwl1ignomdxhj0i6o",
+     "nev": "Fodrasz_Konzultacio",
+     "ertek": 13000
+    },
+    {
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxttgwl1ignomdxhj0i6o",
+     "nev": "Fodrasz_AkviziciosFoglalas",
+     "ertek": 13000
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "Konzultacio:mb_0muxttgwl1ignomdxhj0i6o",
+     "nev": "Fodrasz_Konzultacio",
+     "ertek": 13000
+    },
+    {
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxttgwl1ignomdxhj0i6o",
+     "nev": "Schedule",
+     "ertek": 13000
+    }
+   ],
+   "google": [
+    {
+     "esemeny_id": "Konzultacio:mb_0muxttgwl1ignomdxhj0i6o",
+     "nev": "ARNYEK-7825200898",
+     "ertek": 13000
+    }
+   ],
+   "ga4": [
+    {
+     "esemeny_id": "Konzultacio:mb_0muxttgwl1ignomdxhj0i6o",
+     "nev": "konzultacio",
+     "ertek": 13000
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxttgwl1ignomdxhj0i6o",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   },
+   {
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxttgwl1ignomdxhj0i6o",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}

@@ -1,0 +1,66 @@
+{
+ "eset": "lemondas-elotte",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T08:03:40.030Z",
+   "lepes": "eset: lemondas-elotte",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  },
+  {
+   "ido": "2026-10-07T08:04:24.779Z",
+   "lepes": "a level valasza",
+   "allapot": "fuggoben"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "Salonic-allapot a lemondas utan",
+   "elvart": "LEMONDVA",
+   "tenyleges": "LEMONDVA",
+   "ok": true
+  },
+  {
+   "leiras": "kiment esemenyek (Meta / TikTok / GA4 / Google)",
+   "elvart": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "tenyleges": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "minden cella \"kihagyva\" a lemondas miatt",
+   "elvart": true,
+   "tenyleges": false,
+   "ok": false
+  }
+ ],
+ "szimulalt": [],
+ "booking_id": "mb_0muxtmj9dzxu6qljg4fgtt7",
+ "salonic_uuid": "ae23b0d3-c351-7a17-6f23-1c155bbd2056",
+ "esemeny_idk": {
+  "sorok": 0,
+  "elkuldve": {
+   "meta": [],
+   "tiktok": [],
+   "google": [],
+   "ga4": []
+  },
+  "nem_ment_ki": []
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "FAIL (1 / 3)"
+}

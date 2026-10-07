@@ -1,0 +1,276 @@
+{
+ "eset": "ujratoltes",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T08:01:30.172Z",
+   "lepes": "eset: ujratoltes",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  },
+  {
+   "ido": "2026-10-07T08:02:10.735Z",
+   "lepes": "F5 x2 + vissza / elore gomb a koszonooldalon kesz; a bongeszo megvarja a level feldolgozasat"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "1. hivas: parositas + esemenyek (vagy az elo Zap mar elintezte: mar_kuldve)",
+   "elvart": "parositott + kesz | mar_kuldve",
+   "tenyleges": "parositott + kesz",
+   "ok": true
+  },
+  {
+   "leiras": "az erkezesi adat mar a level elott tarolva van (a koszonooldal irta)",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-sorok a level utan (4 alap + 4 ernyo)",
+   "elvart": 8,
+   "tenyleges": 8,
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-sorok a level UTANI F5 / vissza gomb utan (valtozatlan)",
+   "elvart": 8,
+   "tenyleges": 8,
+   "ok": true
+  },
+  {
+   "leiras": "az erkezesi adat a level utani F5 utan valtozatlan (kiment esemeny utan nem modosul)",
+   "elvart": "{\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_HEADSPA_MUXTJOMX_GCLID\",\"ts\":1791360095},\"wbraid\":{\"ertek\":\"CoMKCQ_TESZT_HEADSPA_MUXTJOMX_WBRAID\",\"ts\":1791360097}},\"meta\":{\"fbc\":\"fb.1.1791360097000.IwAR_TESZT_HEADSPA_MUXTJOMX_FBCLID\",\"fbclid\":\"IwAR_TESZT_HEADSPA_MUXTJOMX_FBCLID\",\"ts\":1791360097},\"tiktok\":{\"ttclid\":{\"ertek\":\"E.C.P.TESZT_HEADSPA_MUXTJOMX_TTCLID\",\"ts\":1791360097}},\"utm_elso\":{\"source\":\"google\",\"medium\":\"cpc\",\"campaign\":\"qa2_headspa_elso\",\"content\":\"hirdetes_a\",\"ts\":1791360095},\"utm_utolso\":{\"source\":\"facebook\",\"medium\":\"paid\",\"campaign\":\"qa2_headspa_utolso\",\"ts\":1791360097},\"fbp\":\"fb.1.1791355091000.5376280759\",\"ttp\":\"TESZT_HEADSPA_MUXTJOMX_ttp_z2fiwkolfo\",\"ga4\":{\"client_id\":\"672945289.1791273691\",\"session_id\":\"1791358891\",\"measurement_id\":\"G-H4206SQ0Q7\"}}",
+   "tenyleges": "{\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_HEADSPA_MUXTJOMX_GCLID\",\"ts\":1791360095},\"wbraid\":{\"ertek\":\"CoMKCQ_TESZT_HEADSPA_MUXTJOMX_WBRAID\",\"ts\":1791360097}},\"meta\":{\"fbc\":\"fb.1.1791360097000.IwAR_TESZT_HEADSPA_MUXTJOMX_FBCLID\",\"fbclid\":\"IwAR_TESZT_HEADSPA_MUXTJOMX_FBCLID\",\"ts\":1791360097},\"tiktok\":{\"ttclid\":{\"ertek\":\"E.C.P.TESZT_HEADSPA_MUXTJOMX_TTCLID\",\"ts\":1791360097}},\"utm_elso\":{\"source\":\"google\",\"medium\":\"cpc\",\"campaign\":\"qa2_headspa_elso\",\"content\":\"hirdetes_a\",\"ts\":1791360095},\"utm_utolso\":{\"source\":\"facebook\",\"medium\":\"paid\",\"campaign\":\"qa2_headspa_utolso\",\"ts\":1791360097},\"fbp\":\"fb.1.1791355091000.5376280759\",\"ttp\":\"TESZT_HEADSPA_MUXTJOMX_ttp_z2fiwkolfo\",\"ga4\":{\"client_id\":\"672945289.1791273691\",\"session_id\":\"1791358891\",\"measurement_id\":\"G-H4206SQ0Q7\"}}",
+   "ok": true
+  },
+  {
+   "leiras": "2. level (ismetles): nincs uj kuldes",
+   "elvart": "mar_kuldve",
+   "tenyleges": "mar_kuldve",
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-sorok az ismetelt level utan",
+   "elvart": 8,
+   "tenyleges": 8,
+   "ok": true
+  },
+  {
+   "leiras": "nincs dupla (esemeny_id, platform)",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  },
+  {
+   "leiras": "a bongeszoben mind a 7 lepes lefutott (betoltes, F5 x2, vissza, elore, F5 + vissza a level utan)",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  },
+  {
+   "leiras": "a vissza gomb a foglalo-oldalra visz, az elore gomb vissza a koszonooldalra",
+   "elvart": [
+    true,
+    true
+   ],
+   "tenyleges": [
+    true,
+    true
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "(informacio) az erkezesi / kulcs-iras POST-ja ujratolteskor nem ismetlodik a bongeszobol",
+   "elvart": 2,
+   "tenyleges": 2,
+   "ok": true
+  }
+ ],
+ "szimulalt": [],
+ "erkezes_a_level_elott": {
+  "source_id": "mb_0muxtjtr3gin6qhbck3u8xp",
+  "uzletag": "headspa",
+  "tipus": "foglalas",
+  "attr": {
+   "google": {
+    "gclid": {
+     "ertek": "Cj0KCQjw_TESZT_HEADSPA_MUXTJOMX_GCLID",
+     "ts": 1791360095
+    },
+    "wbraid": {
+     "ertek": "CoMKCQ_TESZT_HEADSPA_MUXTJOMX_WBRAID",
+     "ts": 1791360097
+    }
+   },
+   "meta": {
+    "fbc": "fb.1.1791360097000.IwAR_TESZT_HEADSPA_MUXTJOMX_FBCLID",
+    "fbclid": "IwAR_TESZT_HEADSPA_MUXTJOMX_FBCLID",
+    "ts": 1791360097
+   },
+   "tiktok": {
+    "ttclid": {
+     "ertek": "E.C.P.TESZT_HEADSPA_MUXTJOMX_TTCLID",
+     "ts": 1791360097
+    }
+   },
+   "utm_elso": {
+    "source": "google",
+    "medium": "cpc",
+    "campaign": "qa2_headspa_elso",
+    "content": "hirdetes_a",
+    "ts": 1791360095
+   },
+   "utm_utolso": {
+    "source": "facebook",
+    "medium": "paid",
+    "campaign": "qa2_headspa_utolso",
+    "ts": 1791360097
+   },
+   "fbp": "fb.1.1791355091000.5376280759",
+   "ttp": "TESZT_HEADSPA_MUXTJOMX_ttp_z2fiwkolfo",
+   "ga4": {
+    "client_id": "672945289.1791273691",
+    "session_id": "1791358891",
+    "measurement_id": "G-H4206SQ0Q7"
+   }
+  },
+  "hozz": {
+   "ana": true,
+   "adv": true,
+   "fun": true,
+   "dontes": true
+  },
+  "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+  "ip": "160.79.106.xxx",
+  "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros",
+  "bongeszo": {
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros",
+   "first_booking": true,
+   "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+   "kategoria": "",
+   "ar": 53800,
+   "g": "g:3390977",
+   "munkatars": "",
+   "bookingUrl": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793469600&back=mb_0muxtjtr3gin6qhbck3u8xp"
+  },
+  "ido": 1791360115,
+  "frissitve": 1791360115
+ },
+ "booking_id": "mb_0muxtjtr3gin6qhbck3u8xp",
+ "salonic_uuid": "b5e746b0-08cd-8981-7890-ab87c14aa83e",
+ "koszono_ujratoltes": [
+  {
+   "lepes": "elso betoltes",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros",
+   "post_keresek_osszesen": 2,
+   "attribucio": "valasz",
+   "kulcs_iras": "valasz"
+  },
+  {
+   "lepes": "ujratoltes #1 (F5)",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros",
+   "post_keresek_osszesen": 2,
+   "attribucio": null,
+   "kulcs_iras": null
+  },
+  {
+   "lepes": "ujratoltes #2 (F5)",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros",
+   "post_keresek_osszesen": 2,
+   "attribucio": null,
+   "kulcs_iras": null
+  },
+  {
+   "lepes": "VISSZA gomb",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/booking-test",
+   "post_keresek_osszesen": 2,
+   "attribucio": null,
+   "kulcs_iras": null
+  },
+  {
+   "lepes": "ELORE gomb (vissza a koszonooldalra)",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros",
+   "post_keresek_osszesen": 2,
+   "attribucio": null,
+   "kulcs_iras": null
+  },
+  {
+   "lepes": "ujratoltes a level feldolgozasa UTAN",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros",
+   "post_keresek_osszesen": 2,
+   "attribucio": null,
+   "kulcs_iras": null
+  },
+  {
+   "lepes": "VISSZA gomb a level feldolgozasa UTAN",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/booking-test",
+   "post_keresek_osszesen": 2,
+   "attribucio": null,
+   "kulcs_iras": null
+  }
+ ],
+ "esemeny_idk": {
+  "sorok": 8,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtjtr3gin6qhbck3u8xp",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muxtjtr3gin6qhbck3u8xp",
+     "nev": "Schedule",
+     "ertek": 53800
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtjtr3gin6qhbck3u8xp",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muxtjtr3gin6qhbck3u8xp",
+     "nev": "CompletePayment",
+     "ertek": 53800
+    }
+   ],
+   "google": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtjtr3gin6qhbck3u8xp",
+     "nev": "ARNYEK-7825199989",
+     "ertek": 53800
+    }
+   ],
+   "ga4": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtjtr3gin6qhbck3u8xp",
+     "nev": "foglalas_elso",
+     "ertek": 53800
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Schedule:mb_0muxtjtr3gin6qhbck3u8xp",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   },
+   {
+    "esemeny_id": "Schedule:mb_0muxtjtr3gin6qhbck3u8xp",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}

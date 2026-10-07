@@ -1,0 +1,191 @@
+{
+ "eset": "ajandek-visszaterites",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T08:14:00.732Z",
+   "lepes": "eset: ajandek-visszaterites",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  },
+  {
+   "ido": "2026-10-07T08:15:25.340Z",
+   "lepes": "vasarlas + esemenyek",
+   "pi": "pi_3UNpzOFv8vc2ArnL1ex8M5fO",
+   "ujra": "kesz",
+   "sorok": 8,
+   "osszeg": 26900
+  },
+  {
+   "ido": "2026-10-07T08:15:26.842Z",
+   "lepes": "reszleges (3 000 Ft) Stripe teszt-visszaterites",
+   "ok": true,
+   "refund_id": "re_3UNpzOFv8vc2ArnL1SVkpwnT"
+  },
+  {
+   "ido": "2026-10-07T08:15:28.952Z",
+   "lepes": "maradek (23900 Ft) Stripe teszt-visszaterites = teljes",
+   "ok": true,
+   "refund_id": "re_3UNpzOFv8vc2ArnL1VebcvGS"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "a vasarlas esemenyei kimentek (Meta / TikTok alap, Google, GA4)",
+   "elvart": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "tenyleges": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "mindket Stripe teszt-visszaterites letrejott",
+   "elvart": [
+    true,
+    true
+   ],
+   "tenyleges": [
+    true,
+    true
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-sorok a reszleges visszaterites utan (valtozatlan)",
+   "elvart": 8,
+   "tenyleges": 8,
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-sorok a teljes visszaterites utan (valtozatlan)",
+   "elvart": 8,
+   "tenyleges": 8,
+   "ok": true
+  },
+  {
+   "leiras": "nincs Visszavonas / Korrekcio / Visszaterites / eletut sor: SEMMILYEN hamis esemeny nem ment ki",
+   "elvart": false,
+   "tenyleges": false,
+   "ok": true
+  },
+  {
+   "leiras": "az ujrajatszas a visszaterites utan: nincs uj kuldes",
+   "elvart": "mar_kuldve",
+   "tenyleges": "mar_kuldve",
+   "ok": true
+  },
+  {
+   "leiras": "nincs dupla (esemeny_id, platform)",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  }
+ ],
+ "szimulalt": [],
+ "pi": "pi_3UNpzOFv8vc2ArnL1ex8M5fO",
+ "visszateritesek": [
+  {
+   "osszeg_huf": 3000,
+   "valasz": {
+    "ok": true,
+    "refund_id": "re_3UNpzOFv8vc2ArnL1SVkpwnT",
+    "osszeg_filler": 300000,
+    "allapot": "succeeded"
+   }
+  },
+  {
+   "osszeg_huf": 23900,
+   "valasz": {
+    "ok": true,
+    "refund_id": "re_3UNpzOFv8vc2ArnL1VebcvGS",
+    "osszeg_filler": 2390000,
+    "allapot": "succeeded"
+   }
+  }
+ ],
+ "ajandek_ujra_valaszok": [
+  {
+   "ok": true,
+   "allapot": "kesz"
+  },
+  {
+   "ok": true,
+   "allapot": "mar_kuldve"
+  },
+  {
+   "ok": true,
+   "allapot": "mar_kuldve"
+  },
+  {
+   "ok": true,
+   "allapot": "mar_kuldve"
+  }
+ ],
+ "esemeny_idk": {
+  "sorok": 8,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "Ajandekkartya:pi_3UNpzOFv8vc2ArnL1ex8M5fO",
+     "nev": "HeadSpa_Ajandekkartya",
+     "ertek": 26900
+    },
+    {
+     "esemeny_id": "Schedule:pi_3UNpzOFv8vc2ArnL1ex8M5fO",
+     "nev": "Schedule",
+     "ertek": 26900
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "Ajandekkartya:pi_3UNpzOFv8vc2ArnL1ex8M5fO",
+     "nev": "HeadSpa_Ajandekkartya",
+     "ertek": 26900
+    },
+    {
+     "esemeny_id": "Schedule:pi_3UNpzOFv8vc2ArnL1ex8M5fO",
+     "nev": "CompletePayment",
+     "ertek": 26900
+    }
+   ],
+   "google": [
+    {
+     "esemeny_id": "Ajandekkartya:pi_3UNpzOFv8vc2ArnL1ex8M5fO",
+     "nev": "ARNYEK-7825199992",
+     "ertek": 26900
+    }
+   ],
+   "ga4": [
+    {
+     "esemeny_id": "Ajandekkartya:pi_3UNpzOFv8vc2ArnL1ex8M5fO",
+     "nev": "purchase",
+     "ertek": 26900
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Schedule:pi_3UNpzOFv8vc2ArnL1ex8M5fO",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   },
+   {
+    "esemeny_id": "Schedule:pi_3UNpzOFv8vc2ArnL1ex8M5fO",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+   }
+  ]
+ },
+ "eredmeny": "PASS"
+}

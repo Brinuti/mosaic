@@ -1,7 +1,7 @@
 // QA-3 KONTROLLALT TESZTEK (2026-10-07, DECISION #102 utan): egy eset = valodi, "TESZT - Claude" nevu probafoglalas(ok) a MEGADOTT elonezeten, KOD- ES BRANCH-MODOSITAS NELKUL; csak arnyek-celok
 // (Meta TEST83939, TikTok TEST83543, GA4 teszt-property, Google ARNYEK akciok). Minden eset: booking_id, platformonkenti kiment esemeny_id-k, ELVART es TENYLEGES eredmeny, PASS / FAIL.
 //   EGYEZTETES_KULCS=... node tools/meres-proba/qa3-futtat.mjs --bazis https://<elonezet>.mosaic-d77.pages.dev --eset <nev> [--nap 2026-10-07] [--refund-bazis https://<masik-elonezet>.mosaic-d77.pages.dev] [--szaraz 1]
-// esetek: ujratoltes | dupla-level | lemondas-elotte | lemondas-utana | visszajaro | kupon | konz-szor | konz-fodrasz | konz-pmu | konz-oxigen | suti-elutasitas | kattintas-tiktok-meta | kattintas-meta-google | ajandek-visszaterites
+// esetek: (extra: dupla-level-eltero-jelzes) ujratoltes | dupla-level | lemondas-elotte | lemondas-utana | visszajaro | kupon | konz-szor | konz-fodrasz | konz-pmu | konz-oxigen | suti-elutasitas | kattintas-tiktok-meta | kattintas-meta-google | ajandek-visszaterites
 // Kimenet: docs/booking-engine/meres-naplo/qa3-<eset>-<nap>.json (nyers valaszok + ellenorzesek); osszefoglalo: tools/meres-proba/qa3-osszefoglalo.mjs. A kulcs soha nem kerul a kimenetbe.
 // Az "elvart" oszlop a DOKUMENTALT szabalybol jon (QA2_ARNYEK.md, esemeny-modell.js szabalyai), nem a kodbol szamolt ertekbol; eltereskor a FAIL a lelet, nem a teszt javitando.
 // Versenyhelyzet: az elo Salonic-level-Zap ugyanazokat a leveleket maga is tovabbitja az elonezet vegpontjara; ha o er oda elobb, az 1. sajat hivas "mar_kuldve" (a cellak vegesek) - ezt a teszt elfogadja, es jelzi.
@@ -106,6 +106,18 @@ async function futtat() {
       ell('2. hivas (ugyanaz a level): mar_kuldve', 'mar_kuldve', e2.esemeny_kuldes && e2.esemeny_kuldes.allapot);
       ell('2. hivas: duplikalt jelzes', true, e2.duplikalt);
       ell('esemeny-sorok szama', 8, n.kuldesek.length); ell('nincs dupla (esemeny_id, platform)', true, egyedi(n));
+      break;
+    }
+    case 'dupla-level-eltero-jelzes': { // EXTRA (nem a 9 eset): ket level ugyanarra a foglalasra ELTERO "uj vendeg" jelzessel (a Zap sajat levele a TESZT-vendegre uj_vendeg=false-t ad): egy foglalasbol egy alapesemeny?
+      const b = foglal('headspa', 'teljes'); const e1 = level(b, '', { ujVendeg: 'igen' }); const n1 = await naplo(b.booking_id); const o1 = osszegez(n1);
+      const e2 = level(b, '2', { ujVendeg: 'nem' }); const n2 = await naplo(b.booking_id); const o2 = osszegez(n2);
+      kimenet.szimulalt.push('az 1. level "uj vendeg: igen", a 2. level "uj vendeg: nem" (a Zap sajat levele a TESZT-vendegre ezt adja); a 2. level az 1. utan masodpercekkel megy, a Zap levele ekkor meg nem erkezett meg');
+      Object.assign(kimenet, { booking_id: b.booking_id, salonic_uuid: b.salonic_uuid, esemeny_idk: o2, lemondas: lemond(b), elso_level_utan: { sorok: n1.kuldesek.length, elkuldve: [o1.elkuldve.meta.length, o1.elkuldve.tiktok.length, o1.elkuldve.google.length, o1.elkuldve.ga4.length] } });
+      elsoHivas(e1);
+      ell('1. level utan kiment (Meta, TikTok, Google, GA4): alap + ernyo', [2, 2, 1, 1], [o1.elkuldve.meta.length, o1.elkuldve.tiktok.length, o1.elkuldve.google.length, o1.elkuldve.ga4.length]);
+      ell('2. level (eltero jelzes): a valasz szerint nincs uj kuldes', 'mar_kuldve', e2.esemeny_kuldes && e2.esemeny_kuldes.allapot);
+      ell('egy foglalasbol EGY alapesemeny: a naploban csak FoglalasElso alap-esemeny van (nincs Visszajaro)', ['FoglalasElso'], [...new Set(n2.kuldesek.filter((k) => k.esemeny_tipus === 'alap').map((k) => k.esemeny_id.split(':')[0]))]);
+      ell('a 2. level utan a kiment esemenyek szama valtozatlan', o1.elkuldve.meta.length + o1.elkuldve.tiktok.length + o1.elkuldve.google.length + o1.elkuldve.ga4.length, o2.elkuldve.meta.length + o2.elkuldve.tiktok.length + o2.elkuldve.google.length + o2.elkuldve.ga4.length);
       break;
     }
     case 'lemondas-elotte': { // 3a. a foglalas LEMONDVA, MIELOTT a level feldolgozasra kerul: nem mehet ki konverzio
