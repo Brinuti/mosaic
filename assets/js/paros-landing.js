@@ -244,7 +244,9 @@
     const talalat = [];
     for (const it of d.querySelectorAll('.ti-review-item')) {
       const pont = parseFloat(it.getAttribute('data-rating') || '0');
-      const sz = ((it.querySelector('.ti-review-content') || {}).textContent || '').replace(/\s+/g, ' ').trim();
+      const tartalom = it.querySelector('.ti-review-content');
+      if (tartalom) tartalom.querySelectorAll('.ti-review-image, .ti-more-image-count').forEach((x) => x.remove()); // a velemenyhez csatolt kep es a "+0" szamlalo nem resze a szovegnek
+      const sz = ((tartalom || {}).textContent || '').replace(/\s+/g, ' ').trim();
       const nev = ((it.querySelector('.ti-name') || {}).textContent || '').replace(/\s+/g, ' ').trim();
       const datum = ((it.querySelector('.ti-date') || {}).textContent || '').trim();
       // csak a paros / parban kezelesrol szolo, magyar, 5 csillagos, ertelmes hosszu velemenyek (a widget sorrendje: legujabb elol)
