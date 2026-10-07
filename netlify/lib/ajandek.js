@@ -643,7 +643,8 @@ async function rendelesInfo(k, pi) {
     foto_id: FOTO_ID_RE.test(md.foto_id || '') ? md.foto_id : '',
     termek_nev: termek ? termek.nev : (md.termek || ''),
     // a szalon-levelben: melyik Salonic-szolgaltatasra kell a 100%-os kupont letrehozni (kereskedo-adat, ha van)
-    salonic_szolgaltatas: termek && termek.salonic_szolgaltatas ? termek.salonic_szolgaltatas.nev : '',
+    // (ha a kartya tobb alkalomra szol, a "felhasznalas" szoveg is ott van: pl. "5-ször felhasználható kupon")
+    salonic_szolgaltatas: termek && termek.salonic_szolgaltatas ? termek.salonic_szolgaltatas.nev + (termek.salonic_szolgaltatas.felhasznalas ? ' – ' + termek.salonic_szolgaltatas.felhasznalas : '') : '',
     kartya_cim: md.kartya_cim || (termek ? termek.kartya_cim : ''),
     osszeg: Math.round(Number(pi.amount) / 100),
     osszeg_szoveg: ADAT.arSzoveg(Number(pi.amount) / 100),
