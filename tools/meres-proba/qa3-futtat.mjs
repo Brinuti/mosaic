@@ -1,7 +1,7 @@
 // QA-3 KONTROLLALT TESZTEK (2026-10-07, DECISION #102 utan): egy eset = valodi, "TESZT - Claude" nevu probafoglalas(ok) a MEGADOTT elonezeten, KOD- ES BRANCH-MODOSITAS NELKUL; csak arnyek-celok
 // (Meta TEST83939, TikTok TEST83543, GA4 teszt-property, Google ARNYEK akciok). Minden eset: booking_id, platformonkenti kiment esemeny_id-k, ELVART es TENYLEGES eredmeny, PASS / FAIL.
 //   EGYEZTETES_KULCS=... node tools/meres-proba/qa3-futtat.mjs --bazis https://<elonezet>.mosaic-d77.pages.dev --eset <nev> [--nap 2026-10-07] [--refund-bazis https://<masik-elonezet>.mosaic-d77.pages.dev] [--szaraz 1]
-// X1-javitas utani ujrateszt (R1-R6): dupla-level-eltero-jelzes (+ -forditva) | paros-headspa | elso-foglalas | valodi-visszajaro | dupla-level | darabszam-ellenorzes (utoljara futtatando)
+// X1-javitas utani ujrateszt (R1-R6; R1 = a KET sorrend, csak akkor PASS, ha mindketto PASS): dupla-level-eltero-jelzes + dupla-level-eltero-jelzes-forditva | paros-headspa | elso-foglalas | valodi-visszajaro | dupla-level | darabszam-ellenorzes (utoljara futtatando)
 // esetek: (extra: dupla-level-eltero-jelzes, dupla-level-eltero-jelzes-forditva) ujratoltes | dupla-level | lemondas-elotte | lemondas-utana | visszajaro | kupon | konz-szor | konz-fodrasz | konz-pmu | konz-oxigen | suti-elutasitas | kattintas-tiktok-meta | kattintas-meta-google | ajandek-visszaterites
 // Kimenet: docs/booking-engine/meres-naplo/qa3-<eset>-<nap>.json (nyers valaszok + ellenorzesek); osszefoglalo: tools/meres-proba/qa3-osszefoglalo.mjs. A kulcs soha nem kerul a kimenetbe.
 // Az "elvart" oszlop a DOKUMENTALT szabalybol jon (QA2_ARNYEK.md, esemeny-modell.js szabalyai), nem a kodbol szamolt ertekbol; eltereskor a FAIL a lelet, nem a teszt javitando.
@@ -136,12 +136,16 @@ async function futtat() {
       ell('a 2. level utan a kiment esemenyek szama valtozatlan', o1.elkuldve.meta.length + o1.elkuldve.tiktok.length + o1.elkuldve.google.length + o1.elkuldve.ga4.length, o2.elkuldve.meta.length + o2.elkuldve.tiktok.length + o2.elkuldve.google.length + o2.elkuldve.ga4.length);
       break;
     }
-    case 'paros-headspa': { // R2 (X1-javitas utani ujrateszt): a megszokott PAROS HeadSpa foglalas, uj vendeg: alap + ernyo valtozatlanul kimegy, a rogzites nem zavarja
-      const b = foglal('headspa', 'teljes'); const e = level(b, ''); elsoHivas(e); const n = await naplo(b.booking_id); const o = osszegez(n);
+    case 'paros-headspa': { // R2 (X1-javitas utani ujrateszt): a VALODI paros HeadSpa minta (a mai 10 levelpar alapjan): ket level, AZONOS foglalasi azonosito es AZONOS "uj vendeg" jelzes; a 2. level csak a mosaicheadspa@ cimre megy -> a 2. level semmit ne kuldjon
+      const b = foglal('headspa', 'teljes'); const e = level(b, ''); elsoHivas(e); const n1 = await naplo(b.booking_id); const o1 = osszegez(n1);
+      const e2 = level(b, '2'); const n = await naplo(b.booking_id); const o = osszegez(n); // ugyanaz az uuid / booking_id, ugyanaz az "uj vendeg: igen" jelzes
+      kimenet.szimulalt.push('a 2. level a valodi mintaban csak a mosaicheadspa@ cimre megy; a /api/foglalas-egyeztetes bemenetben NINCS cimzett-mezo, ezert a futtato ezt nem tudja kifejezni: a szerver szamara a 2. level azonos uuid-ju (booking_id) es azonos jelzesu level (a mai 10 levelpar alapjan; a ket level tovabbi kulonbsege nem ismert)');
       Object.assign(kimenet, { booking_id: b.booking_id, salonic_uuid: b.salonic_uuid, esemeny_idk: o, lemondas: lemond(b) });
       ell('javitott kod fut: a valasz tartalmazza a jelleg_rogzites mezot, az 1. level nem elter', [true, false], [Boolean(rogzites(e)), rogzites(e) ? rogzites(e).eltero : null], !e.esemeny_kuldes || e.esemeny_kuldes.allapot === 'mar_kuldve' || (Boolean(rogzites(e)) && !rogzites(e).eltero));
-      ell('Meta + TikTok: alap + ernyo; Google + GA4: csak az alap', [2, 2, 1, 1], [o.elkuldve.meta.length, o.elkuldve.tiktok.length, o.elkuldve.google.length, o.elkuldve.ga4.length]);
+      ell('az 1. level utan Meta + TikTok: alap + ernyo; Google + GA4: csak az alap', [2, 2, 1, 1], [o1.elkuldve.meta.length, o1.elkuldve.tiktok.length, o1.elkuldve.google.length, o1.elkuldve.ga4.length]);
       ell('esemeny-nevek (Meta)', ['HeadSpa_FoglalasElso', 'Schedule'], nevek(o, 'meta')); ell('esemeny-nevek (TikTok)', ['CompletePayment', 'HeadSpa_FoglalasElso'], nevek(o, 'tiktok'));
+      ell('2. level (azonos booking_id, azonos jelzes): a valasz mar_kuldve, az eltero-jelzes NEM aktiv', ['mar_kuldve', false], [e2.esemeny_kuldes && e2.esemeny_kuldes.allapot, rogzites(e2) ? rogzites(e2).eltero : null]);
+      ell('a 2. level semmit nem kuldott: a kiment esemenyek es a sorok szama valtozatlan', [n1.kuldesek.length, o1.elkuldve.meta.length + o1.elkuldve.tiktok.length + o1.elkuldve.google.length + o1.elkuldve.ga4.length], [n.kuldesek.length, o.elkuldve.meta.length + o.elkuldve.tiktok.length + o.elkuldve.google.length + o.elkuldve.ga4.length]);
       ell('egy alapesemeny-tipus (FoglalasElso)', ['FoglalasElso'], [...new Set(n.kuldesek.filter((k) => k.esemeny_tipus === 'alap').map((k) => k.esemeny_id.split(':')[0]))]);
       ell('kuldott ertek = a tenyleges ar (> 0), Meta alap = TikTok alap', true, ((sor(n, 'alap', 'meta') || {}).ertek > 0) && (sor(n, 'alap', 'meta') || {}).ertek === (sor(n, 'alap', 'tiktok') || {}).ertek);
       ell('nincs dupla (esemeny_id, platform)', true, egyedi(n));

@@ -110,13 +110,14 @@ A visszatérítést a Stripe teszt-módú kulcsával kell létrehozni. A vizsgá
 
    | # | eset | futtató `--eset` | elvárt (Meta, TikTok, GA4, Google) |
    |---|---|---|---|
-   | R1 | X1: két levél, eltérő jelzéssel (új → nem új); extraként fordítva is (nem új → új) | `dupla-level-eltero-jelzes` (+ `-forditva`) | 2, 2, 1, 1 (fordítva: 1, 1, 1, 0); a 2. levél nem küld semmit |
-   | R2 | páros HeadSpa, új vendég | `paros-headspa` | 2, 2, 1, 1 |
+   | R1 | X1: két levél, eltérő jelzéssel – **KÉT sorrend, mindkettő kötelező**: (a) új → nem új, (b) nem új → új. A Zap és a futtató levele bármelyik sorrendben megérkezhet, ezért a javításnak mindkét irányban jónak kell lennie. **Az R1 csak akkor PASS, ha mindkét futás PASS** (a 6 eset száma ettől nem nő) | `dupla-level-eltero-jelzes` (a) + `dupla-level-eltero-jelzes-forditva` (b) | (a) 2, 2, 1, 1; (b) 1, 1, 1, 0; mindkettőben a 2. levél nem küld semmit |
+   | R2 | páros HeadSpa, a **valódi minta** szerint (TÉNY a Gmail-ben megnézett mai 10 levélpár alapján: mindkét levél ugyanazt az „új vendég” jelzést hordozza, a foglalási azonosító ugyanaz, a 2. levél csak a `mosaicheadspa@` címre megy): két levél, azonos booking_id, azonos jelzés. A páros foglalás élesben tehát nem hoz ellentmondó jelzést; az X1 a Zap és a futtató versenyéből ered, és akkor fordulhat elő élesben, ha két forrás eltérő jelzést ad ugyanarra a foglalásra | `paros-headspa` | az 1. levél után 2, 2, 1, 1; **a 2. levél semmit nem küld** (`mar_kuldve`, eltérés-jelzés nincs) |
    | R3 | normál (fizetős) első foglalás, nem konzultáció | `elso-foglalas` (oxigénterápiás első kezelés) | 2, 2, 1, 1; `FoglalasElso`, nem `Konzultacio` |
    | R4 | valódi visszajáró: **nincs szimulált levél**, az élő Zap valódi Salonic-levelét várjuk | `valodi-visszajaro` | 1, 1, 1, 0; csak `Visszajaro`, ernyő nincs |
    | R5 | ugyanaz a levél kétszer | `dupla-level` | 2, 2, 1, 1; a 2. hívás `mar_kuldve` |
    | R6 | platformonkénti darabszám és `esemeny_id` duplázás-ellenőrzés az R1–R5 foglalásain, a késő Zap-levelek után is | `darabszam-ellenorzes` (utoljára, késleltetéssel) | az összeg = az elvárt összeg; 0 dupla `(esemeny_id, platform)`; foglalásonként egy alapesemény-típus |
 
+   Az R2 korlátja (a naplóban is szerepel): a `/api/foglalas-egyeztetes` bemenetnek nincs címzett-mezője, ezért a „2. levél csak a `mosaicheadspa@` címre megy” a szimulációban nem fejezhető ki; a szerver számára a 2. levél azonos azonosítójú, azonos jelzésű levél. A két valódi levél további eltérése nem ismert.
    Az eltérést (elvárt ≠ tényleges) a futtató minden ellenőrzésnél naplózza; a Zap-versenyhelyzet (ha a Zap levele hamarabb ér oda, az ő jellege rögzül az adott TESZT-foglalásnál) a naplóban külön látszik.
 3. **Ha mind a 6 eset PASS**, indul az **új, tiszta 24 órás QA-3 ablak** (az ablak kezdete: az újrateszt zöld lezárása után, javítási kódváltozás nélkül, a rögzített dátum-idővel). A valódi foglalások számlálása (a fenti mérce) erre az új ablakra történik.
 4. **QA-3 FINAL PASS csak ennek az új 24 órás ablaknak a hibamentes lezárása után adható.** A mai 14 futás és az újrateszt nem elég hozzá. A QA-3 PASS továbbra sem élesítési készség: az ÉLES-KAPU feltételei külön állnak.
