@@ -111,6 +111,20 @@ describe('az oxigénes ajándékkártya a menüben, a választón és az oxigén
     }
   });
 
+  test('a választó rácsa: három oszlop 800 px-ig, tableten kettő (a harmadik kártya teljes sort kap), telefonon egy oszlop', () => {
+    const css = olvas('foglalas', 'ajandekkartya.html').split('\r\n').join('\n');
+    const tartalmaz = (reszlet) => assert.ok(css.includes(reszlet), reszlet);
+    tartalmaz('.av-racs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px;');
+    assert.ok(!css.includes('auto-fit'), 'nem auto-fit: az 906 px körüli váltás miatt lett túl gyorsan két oszlop');
+    // három oszlop végig 1020 px-től egészen 800 px-ig (szűkebb közzel, tömörebb kártyával)
+    tartalmaz('@media (max-width: 1020px) {\n  .av-racs { gap: 18px; }');
+    // tablet állóban kettő, a harmadik kártya egész sor
+    tartalmaz('@media (min-width: 600px) and (max-width: 799px) {\n  .av-racs { grid-template-columns: repeat(2, minmax(0, 1fr));');
+    tartalmaz('.av-kartya:last-child:nth-child(odd) { grid-column: 1 / -1; flex-direction: row; }');
+    // telefonon egy oszlop
+    tartalmaz('@media (max-width: 599px) {\n  .av-racs { grid-template-columns: minmax(0, 1fr); }');
+  });
+
   test('az oxigén landingen a "Személyre szabott ajándékkártya" sáv az árak után, a "Miért más nálunk" előtt áll, és a /oxigen-ajandekkartya oldalra visz (közvetlen link, nem hash)', () => {
     const h = olvas('foglalas', 'oxigenterapia-budapest.html');
     const arak = h.indexOf('<section class="arak"');

@@ -30,7 +30,7 @@ body.av { margin: 0; background: var(--hatter); color: var(--szoveg); font: 400 
 .av-fejlec { text-align: center; }
 .av h1 { margin: 0; font: 500 clamp(28px, 4.4vw, 42px)/1.18 var(--cim); color: var(--sotet); }
 .av-bev { max-width: 560px; margin: 14px auto 0; color: var(--halk); font-size: 17px; }
-.av-racs { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 28px; margin-top: 36px; }
+.av-racs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; margin-top: 36px; }
 .av-kartya { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--vonal); border-radius: 18px; overflow: hidden; color: inherit; text-decoration: none;
   box-shadow: 0 1px 2px rgba(40, 30, 20, .04), 0 8px 24px rgba(40, 30, 20, .06); transition: transform .2s, box-shadow .2s; }
 .av-kartya:hover, .av-kartya:focus-visible { transform: translateY(-3px); box-shadow: 0 2px 4px rgba(40, 30, 20, .06), 0 14px 32px rgba(40, 30, 20, .12); }
@@ -46,9 +46,28 @@ body.av { margin: 0; background: var(--hatter); color: var(--szoveg); font: 400 
 .av-kartya:hover .av-nyil { transform: translateX(3px); }
 /* a fejlec felso rozsaszin akcios savja a Head Spa akciorol szol: a lezeres kartya melle felrevezeto, ezert ezen a valasztoon nem latszik (mint a lezeres oldalakon) */
 #comp-mpv0ganp { display: none !important; }
+/* kis laptop, tablet fekvo, szukitett ablak: tovabbra is HAROM oszlop (800 px-ig), csak szukebb kozokkel es tomorebb kartyaval */
+@media (max-width: 1020px) {
+  .av-racs { gap: 18px; }
+  .av-test { padding: 16px 16px 20px; }
+  .av h2 { font-size: 21px; }
+  .av-szoveg { margin: 8px 0 16px; font-size: 15px; }
+  .av-gomb { padding: 11px 18px; gap: 8px; font-size: 14px; }
+}
+/* tablet allo (600-799 px): ket oszlop; a harmadik kartya egesz sort kap, vizszintes elrendezessel (nem marad egyedul, fel szelessegben) */
+@media (min-width: 600px) and (max-width: 799px) {
+  .av-racs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .av-kartya:last-child:nth-child(odd) { grid-column: 1 / -1; flex-direction: row; }
+  .av-kartya:last-child:nth-child(odd) .av-kep { flex: none; width: 46%; height: auto; aspect-ratio: auto; align-self: stretch; }
+  .av-kartya:last-child:nth-child(odd) .av-test { justify-content: center; padding: 22px 24px 24px; }
+}
+/* telefon (599 px-ig): egy oszlop */
+@media (max-width: 599px) {
+  .av-racs { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 719px) {
   .av-fo { padding: 26px 16px 52px; }
-  .av-racs { grid-template-columns: minmax(0, 1fr); gap: 20px; margin-top: 26px; }
+  .av-racs { gap: 20px; margin-top: 26px; }
   .av-bev { font-size: 16px; }
   .av-test { padding: 18px 18px 22px; }
   .av h2 { font-size: 22px; }
