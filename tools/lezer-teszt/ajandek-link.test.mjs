@@ -1,6 +1,6 @@
 // A lezeres landing ajandekkartya-linkjei (statikus, build / bongeszo nelkul):
 //   node --test tools/lezer-teszt/ajandek-link.test.mjs
-// A landing hero-jaban egy "Ajandekkartya" gomb, a garancia utan egy kulon szekcio visz a /lezeres-ajandekkartya oldalra (kozvetlen oldal-link, nem hash).
+// A landing hero-jaban egy "Ajandekkartya" gomb (az "Ingyenes konzultacio" elott, az pedig csak szoveges link), a garancia utan egy kulon szekcio visz a /lezeres-ajandekkartya oldalra (kozvetlen oldal-link, nem hash).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -18,6 +18,18 @@ test('a hero gombsorban van "Ajandekkartya" gomb: kozvetlen oldal-link (nem hash
   assert.match(link, /class="gomb /);
   assert.doesNotMatch(link, /target=|salonic|href="#/);
   assert.match(sor, />Ajándékkártya <span class="nyil">/);
+});
+
+test('a hero gombsorban a sorrend: idopontok gomb, Ajandekkartya gomb, utana az "Ingyenes konzultacio" mar csak szoveges link (nem gomb)', () => {
+  const sor = h.slice(h.indexOf('<div class="cta-sor">'), h.indexOf('</div>', h.indexOf('<div class="cta-sor">')));
+  const linkek = [...sor.matchAll(/<a\b[^>]*>[^<]*(?:<span[^>]*>[^<]*<\/span>)?[^<]*<\/a>/g)].map((m) => m[0]);
+  assert.equal(linkek.length, 3, 'harom elem a hero gombsorban');
+  assert.match(linkek[0], /class="gomb gomb-arany gomb-nagy" href="#foglalas"/);
+  assert.match(linkek[1], new RegExp('class="gomb gomb-korvonal" href="' + CEL + '"'));
+  assert.match(linkek[2], /^<a class="cta-link" href="https:\/\/mosaic-elysion\.salonic\.hu\/selectDate\/\?employeeId=32417&amp;placeId=14586&amp;serviceId=476477" target="_blank" rel="noopener">Ingyenes konzultáció <span class="nyil">/);
+  assert.doesNotMatch(linkek[2], /class="[^"]*\bgomb\b/);
+  assert.match(css, /\.cta-link \{[^}]*text-decoration: underline/);
+  assert.match(css, /\.cta-sor \.cta-link \{ text-align: center; \}/, 'mobilon a szoveges link kozepre kerul');
 });
 
 test('az ajandekkartya-szekcio a garancia utan, Zsofi elott all, a CTA ugyanoda visz; a kep letezik', () => {

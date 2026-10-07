@@ -62,3 +62,11 @@
 [class*="StylableButton2545352419__root"]:not(:hover) { background-image: linear-gradient(#c6a346, #d9c164) !important; }
 [class*="StylableButton2545352419__root"] { box-shadow: 0 6px 18px rgba(150, 120, 40, .22) !important; }
 [class*="StylableButton2545352419__root"] [class*="StylableButton2545352419__label"] { font-family: 'Jost', 'Helvetica Neue', Arial, sans-serif !important; font-weight: 500 !important; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); }
+
+/* ============ MOBIL MENU (a hamburger-gombbal nyilo menu): tomorebb, hogy a teljes menu egyszerre latszodjon ============
+   A Wix a sorokat 56 px-esre allitotta (a 320 px-es alapon), a menut pedig 98 px-rel a fejlec ala: igy a kilenc menupont egy kb. 660 px magas
+   telefonkepernyon lecsuszott az aljarol (az almenu megnyitasa utan meg inkabb). Most a sorok 40 px-esek, az also sor kozelebb van a fejleckez,
+   a lenyilo (almenu) sorai kisebbek es halvanyabb hatterun. A Wix ertekeit az ID-s szabaly allitja, ezert !important kell. */
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU { --item-height: 40px !important; margin-top: 58px !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .wixui-vertical-menu__submenu { --item-height: 36px !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .wixui-vertical-menu__submenu > li { background-color: rgba(255, 255, 255, .07) !important; }
