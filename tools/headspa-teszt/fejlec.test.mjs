@@ -29,6 +29,8 @@ describe('a fejlec-darabok (sajat oldalak)', () => {
       const h = fejlecResz(uj);
       assert.equal(fejlecAtalakit(uj, mobil), uj, 'ismetelhetetlen-biztos');
       assert.equal(db(h, PAROS), 1, 'pontosan egy Paros link a fejlecben');
+      assert.equal(db(h, 'href="/arlista"'), 1, 'pontosan egy Árlista link a fejlecben (a FOGLALÁS előtt)');
+      assert.ok(h.indexOf('href="/arlista"') < h.indexOf('href="/gyik"'), 'az Árlista a GYIK előtt');
       if (mobil) {
         const sor = h.match(/<li data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-paros"[^>]*>[\s\S]*?<\/li>/)[0];
         assert.ok(sor.includes(PAROS), 'onallo (fo)sor');
@@ -67,7 +69,7 @@ describe('a fejlec-darabok (sajat oldalak)', () => {
       assert.equal(db(uj, '<template id="mh-popup-rk7x7">'), 1);
       const t = uj.slice(uj.indexOf('<template id="mh-popup-rk7x7">'), uj.indexOf('</template>', uj.indexOf('<template id="mh-popup-rk7x7">')));
       for (const resz of ['class="mh-popup-gyoker mhp"', 'data-mh-popup="rk7x7"', 'class="mh-popup-doboz mhp-panel"', 'data-mh-popup-zar', 'A legfontosabb infók', 'Ahol elérsz minket', '1023 Budapest, Bécsi út 2.', 'href="tel:+36202474444"',
-        'href="mailto:mosaicheadspa@gmail.com"', '<b>Hétfő – Szombat:</b> 8:00 – 20:00', '<b>Vasárnap:</b> zárva', 'href="/headspa-arak-budapest"', 'href="/foglalo-motor?business=headspa"', 'href="/ajandekkartya"']) assert.ok(t.includes(resz), resz);
+        'href="mailto:mosaicheadspa@gmail.com"', '<b>Hétfő – Szombat:</b> 8:00 – 20:00', '<b>Vasárnap:</b> zárva', 'href="/arlista"', 'Árlista és időpontok', 'href="/foglalo-motor?business=headspa"', 'href="/ajandekkartya"']) assert.ok(t.includes(resz), resz);
       assert.ok(!/9[:.]00|9-18|9–18|Szo:/.test(t.replace(/<[^>]+>/g, ' ')), 'nincs regi szombati nyitvatartas');
       assert.ok(!t.includes('wixui') && !t.includes('POPUPS_ROOT'), 'a Wixes ablak helyett');
       assert.equal(fejlecAtalakit(uj, mobil), uj);
@@ -171,7 +173,7 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
   };
 
   for (const szeles of [1920, 1440, 1280, 1100]) {
-    test(`asztali ${szeles} px: mind a 10 fomenupont egy sorban, a menu nem lóg a logo / "i" / EN ele, vizszintes gorgetes nincs`, async () => {
+    test(`asztali ${szeles} px: mind a 11 fomenupont egy sorban, a menu nem lóg a logo / "i" / EN ele, vizszintes gorgetes nincs`, async () => {
       const { p, ctx } = await nyit(szeles);
       const r = await p.evaluate(() => {
         const lis = [...document.querySelectorAll('#comp-m4lbfl1t nav > ul > li')];
@@ -180,7 +182,8 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
         return { n: lis.length, cimek, sorok: new Set(lis.map((l) => Math.round(b(l).top))).size, utolso: Math.max(...lis.map((l) => b(l).right)), elso: Math.min(...lis.map((l) => b(l).left)),
           logo: b(document.querySelector('#comp-m3znboq3')).right, ikon: b(document.querySelector('#comp-m7q6eklh')), nyelv: b(document.querySelector('#comp-m7jcfhgp')), vizsz: document.documentElement.scrollWidth - innerWidth };
       });
-      assert.equal(r.n, 10, r.cimek.join(','));
+      assert.equal(r.n, 11, r.cimek.join(','));
+      assert.deepEqual(r.cimek.slice(-4), ['Árlista', 'FOGLALÁS', 'GYIK', 'Kapcsolat'], 'az Árlista a FOGLALÁS előtt');
       assert.deepEqual(r.cimek.slice(0, 3), ['Head Spa', 'Páros Head Spa', 'Szőrtelenítés']);
       assert.equal(r.sorok, 1);
       assert.ok(r.utolso <= r.ikon.left - 4, `a menu vege (${Math.round(r.utolso)}) az "i" elott van (${Math.round(r.ikon.left)})`);
@@ -283,7 +286,7 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
       assert.match(r.szoveg, /Vasárnap:\s*zárva/);
       assert.ok(!/9:00|9-18/.test(r.szoveg), 'nincs regi nyitvatartas');
       assert.ok(Math.abs(r.jobb - r.ablak) <= 1 && r.bal >= -1, 'a panel jobbrol, az ablakon belul');
-      const nyitv = r.sorok.find((x) => /Hétfő – Szombat/.test(x.szoveg)); const ar = r.sorok.find((x) => /árak és időpontok/.test(x.szoveg));
+      const nyitv = r.sorok.find((x) => /Hétfő – Szombat/.test(x.szoveg)); const ar = r.sorok.find((x) => /Árlista és időpontok/.test(x.szoveg));
       for (const [nev, x] of [['nyitvatartas', nyitv], ['arlista-link', ar]]) { assert.ok(x, nev); assert.ok(x.egySor, `${szeles}px: a ${nev} egy sorban van: ${x.szoveg}`); assert.ok(!x.tulcsordul, `${szeles}px: a ${nev} nem lóg ki`); }
       for (const x of r.sorok.filter((y) => /^(06 20|mosaicheadspa)/.test(y.szoveg))) assert.ok(x.egySor && !x.tulcsordul, x.szoveg);
       // bezaras: Esc, X, hatterre kattintas

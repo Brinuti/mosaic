@@ -195,7 +195,7 @@ describe('a build bekotese', () => {
 
   test('a mobil menu tomoritese a kozos CSS-ben van (minden oldalra)', () => {
     const css = olvas('assets', 'css', 'fejlec-lablec.css');
-    assert.match(css, /#MENU_AS_CONTAINER_EXPANDABLE_MENU \{ --item-height: 37px !important; margin-top: 58px !important; \}/);
+    assert.match(css, /#MENU_AS_CONTAINER_EXPANDABLE_MENU \{ --item-height: 35px !important; margin-top: 56px !important; \}/);
   });
 
   test('a menu sajat gorgetosava a kepernyon belul marad (a fejlec zoomja miatt a klon.js adja a --mh-menu-max erteket)', () => {
