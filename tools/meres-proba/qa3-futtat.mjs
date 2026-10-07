@@ -1,7 +1,7 @@
 // QA-3 KONTROLLALT TESZTEK (2026-10-07, DECISION #102 utan): egy eset = valodi, "TESZT - Claude" nevu probafoglalas(ok) a MEGADOTT elonezeten, KOD- ES BRANCH-MODOSITAS NELKUL; csak arnyek-celok
 // (Meta TEST83939, TikTok TEST83543, GA4 teszt-property, Google ARNYEK akciok). Minden eset: booking_id, platformonkenti kiment esemeny_id-k, ELVART es TENYLEGES eredmeny, PASS / FAIL.
 //   EGYEZTETES_KULCS=... node tools/meres-proba/qa3-futtat.mjs --bazis https://<elonezet>.mosaic-d77.pages.dev --eset <nev> [--nap 2026-10-07] [--refund-bazis https://<masik-elonezet>.mosaic-d77.pages.dev] [--szaraz 1]
-// X1-javitas utani ujrateszt (R1-R6; R1 = a KET sorrend, csak akkor PASS, ha mindketto PASS): dupla-level-eltero-jelzes + dupla-level-eltero-jelzes-forditva | paros-headspa | elso-foglalas | valodi-visszajaro | dupla-level | darabszam-ellenorzes (utoljara futtatando)
+// X1-javitas utani ujrateszt (R1-R7; R1 = a KET sorrend, csak akkor PASS, ha mindketto PASS; R7 = fuggoben-lezaras, ~17-25 perc): dupla-level-eltero-jelzes + dupla-level-eltero-jelzes-forditva | paros-headspa | elso-foglalas | valodi-visszajaro | dupla-level | darabszam-ellenorzes (utoljara futtatando)
 // esetek: (extra: dupla-level-eltero-jelzes, dupla-level-eltero-jelzes-forditva) ujratoltes | dupla-level | lemondas-elotte | lemondas-utana | visszajaro | kupon | konz-szor | konz-fodrasz | konz-pmu | konz-oxigen | suti-elutasitas | kattintas-tiktok-meta | kattintas-meta-google | ajandek-visszaterites
 // Kimenet: docs/booking-engine/meres-naplo/qa3-<eset>-<nap>.json (nyers valaszok + ellenorzesek); osszefoglalo: tools/meres-proba/qa3-osszefoglalo.mjs. A kulcs soha nem kerul a kimenetbe.
 // Az "elvart" oszlop a DOKUMENTALT szabalybol jon (QA2_ARNYEK.md, esemeny-modell.js szabalyai), nem a kodbol szamolt ertekbol; eltereskor a FAIL a lelet, nem a teszt javitando.
@@ -191,6 +191,25 @@ async function futtat() {
       kimenet.esetenkent = reszek;
       ell('platformonkenti OSSZES kiment darabszam (Meta, TikTok, GA4, Google)', [vart.meta, vart.tiktok, vart.ga4, vart.google], [osszes.meta, osszes.tiktok, osszes.ga4, osszes.google]);
       ell('esemeny_id duplazas: egyetlen (esemeny_id, platform) sem fordul elo ketszer az osszes kor-foglalas soraban', true, new Set(mind.map((x) => x.esemeny_id + '|' + x.platform)).size === mind.length);
+      break;
+    }
+    case 'fuggoben-lezaras': { // R7 (DONTES #108): a "fuggoben" nem lehet vegallapot - a parositatlan foglalas az utolso proba utan AUTOMATIKUSAN parositatlan + egyszeri riasztas, 0 kuldes; a kesobbi proba sem kuld
+      const b = foglal('headspa', 'teljes', ['--nincs-kulcsiras', '1']); // valodi foglalas, a koszonooldali kulcs-iras BLOKKOLVA: soha nem parosithato (mint az eles oldalon)
+      kimenet.szimulalt.push('a koszonooldali kulcs-iras (POST /api/foglalas-kulcs) a bongeszoben blokkolva (503): a foglalas igy sosem parosithato - ez az eles oldal helyzete; a levelek / probak a VALODI, elo Zaptol jonnek (0, ~1, ~4, ~14,5 perc), a vegen egyetlen szimulalt kesobbi level');
+      const uuid = b.salonic_uuid; lep('az elo Zap probait varjuk (legfeljebb 25 perc); allapot-lekerdezes 20 mp-enkent', { uuid });
+      let sor = null, t0 = Date.now(); const elozmeny = [];
+      while (Date.now() - t0 < 1500000) { const g = await get(`/api/foglalas-egyeztetes?uuid=${uuid}`); sor = g && g.allapot || null; const kv = sor ? `${sor.allapot}/${sor.probalkozas}` : 'nincs sor'; if (elozmeny[elozmeny.length - 1] !== kv) { elozmeny.push(kv); lep('allapot', { allapot: kv }); } if (sor && sor.allapot === 'parositatlan') break; await varj(20000); }
+      const percek = Math.round((Date.now() - t0) / 6000) / 10; const naplo1 = await naplo(b.booking_id); const lista = await get('/api/foglalas-egyeztetes?riasztas=1');
+      const darabLista = ((lista && lista.lista) || []).filter((x) => x.uuid === uuid).length;
+      const e2 = level(b, '2'); const sor2 = (await get(`/api/foglalas-egyeztetes?uuid=${uuid}`)).allapot || null; const naplo2 = await naplo(b.booking_id);
+      Object.assign(kimenet, { booking_id: b.booking_id, salonic_uuid: uuid, allapot_elozmeny: elozmeny, lezaras_ota_perc: percek, sor_a_lezaras_utan: sor && { allapot: sor.allapot, probalkozas: sor.probalkozas, riasztas: sor.riasztas, kulcs_forras: sor.kulcs_forras, booking_id: sor.booking_id, kuldve: sor.kuldve, letrehozva: sor.letrehozva, frissitve: sor.frissitve }, kesobbi_level_valasz: { allapot: e2.allapot, kuldheto: e2.kuldheto, lezart: e2.lezart, riasztas: e2.riasztas, duplikalt: e2.duplikalt }, esemeny_idk: osszegez(naplo2), lemondas: lemond(b) });
+      ell('a Zap valodi levele megerkezett (a sor letrejott)', true, Boolean(sor));
+      ell('AUTOMATIKUS lezaras: a vegallapot parositatlan (a fuggoben nem vegallapot)', 'parositatlan', sor && sor.allapot);
+      ell('egyszeri riasztas: riasztas = 1, a riasztas-listaban pontosan egyszer', [1, 1], [sor && sor.riasztas, darabLista]);
+      ell('0 kuldes: nincs meres_kuldes sor, nincs booking_id parositas, nincs kuldve jelzes', [0, null, null], [naplo1.kuldesek.length, sor && (sor.booking_id || null), sor && (sor.kuldve || null)]);
+      ell('(informacio) a lezaras a 4. (utolso) probanal tortent (probalkozas = 4); kevesebb = a lusta lezaras zarta le', 4, sor && sor.probalkozas, true);
+      ell('kesobbi (szimulalt) level: a valasz parositatlan, kuldheto: false, lezart: true, nincs uj riasztas', ['parositatlan', false, true, false], [e2.allapot, e2.kuldheto, e2.lezart, e2.riasztas]);
+      ell('a kesobbi level utan: az allapot / probalkozas / riasztas valtozatlan, 0 kuldes', [sor && sor.allapot, sor && sor.probalkozas, sor && sor.riasztas, 0], [sor2 && sor2.allapot, sor2 && sor2.probalkozas, sor2 && sor2.riasztas, naplo2.kuldesek.length]);
       break;
     }
     case 'lemondas-elotte': { // 3a. a foglalas LEMONDVA, MIELOTT a level feldolgozasra kerul: nem mehet ki konverzio

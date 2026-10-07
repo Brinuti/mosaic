@@ -16,6 +16,7 @@ import { bookingUrlElemzes } from '../../netlify/lib/foglalas-kulcs.js';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const BAZIS = arg('bazis', ''), ESET = arg('eset', ''), PROFIL = arg('profil', 'teljes'), OUT = arg('out', ''), START = arg('start', '');
+const NINCS_KULCSIRAS = arg('nincs-kulcsiras', '0') === '1'; // R7 (DONTES #108): a koszonooldali kulcs-iras (POST /api/foglalas-kulcs) blokkolva -> a foglalas SOHA nem parosithato (mint az eles oldalon, ahol nincs iras)
 if (!/^https:\/\/[a-z0-9-]+\.mosaic-d77\.pages\.dev$/.test(BAZIS)) throw new Error('csak PR-elonezeten fut (--bazis https://<ag>.mosaic-d77.pages.dev)');
 const ESETEK = {
   headspa: { opts: { business: 'headspa', service: 'paros' }, szakember: 'mindegy', uzletag: 'headspa' },
@@ -34,7 +35,7 @@ const HOZZ = PROFILOK[PROFIL];
 const TELEFON = process.env.MERES_TELEFON || '709420090';
 const CHROME = process.env.CHROME_UTVONAL || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const T0 = Date.now(); const mp = () => Date.now() - T0;
-const idovonal = [], tiltott = [], sajatKeresek = [], hibak = [], konzol = [];
+const idovonal = [], tiltott = [], sajatKeresek = [], hibak = [], konzol = [], kulcsirasBlokkolva = [];
 const lepes = (esemeny, extra = {}) => { idovonal.push({ t: mp(), esemeny, ...extra }); console.log(`[${String(mp()).padStart(6)}ms] ${esemeny}`, Object.keys(extra).length ? JSON.stringify(extra).slice(0, 300) : ''); };
 
 // SZINTETIKUS arkezesi adatok (formailag ervenyes, TESZT-jelolesu); esetenkent egyedi
@@ -63,6 +64,7 @@ await ctx.route('**/*', async (route) => {
     kuldes = { status: resp.status(), url, json: j, szoveg: j ? null : (szoveg || '').slice(0, 300) };
     return route.fulfill({ response: resp, body: szoveg === null ? undefined : szoveg });
   }
+  if (NINCS_KULCSIRAS && /\/api\/foglalas-kulcs(\?|$)/.test(url) && req.method() !== 'GET') { kulcsirasBlokkolva.push({ t: mp(), metodus: req.method(), ut: u.pathname }); return route.fulfill({ status: 503, headers: { 'content-type': 'application/json' }, body: '{"ok":false,"miert":"R7: a kulcs-iras blokkolva (teszt)"}' }); }
   if (esemenyIras(url, req.method())) return route.fulfill(esemenyUres());
   const plat = platformOf(url) || (engedett(url, req.method()) ? null : 'tiltott');
   if (plat) { tiltott.push({ t: mp(), plat, metodus: req.method(), host: u.host, ut: u.pathname.slice(0, 60) }); return route.fulfill(ures(req)); }
@@ -169,5 +171,5 @@ try {
 } catch (e) { lepes('HIBA', { uzenet: String(e.message || e).slice(0, 300) }); o.hiba = String(e.message || e).slice(0, 300); }
 const keresek = {}; for (const n of tiltott) { const k = `${n.plat} ${n.host}${n.ut}`; keresek[k] = (keresek[k] || 0) + 1; }
 console.log('Tiltott / naplozott kimeno keresek (semmi nem ment ki):', JSON.stringify(keresek)); console.log('JS-hibak:', hibak.length ? hibak.join(' | ') : 'nincs');
-if (OUT) fs.writeFileSync(OUT, JSON.stringify({ ...o, idovonal, sajat_keresek_nyers: sajatKeresek, tiltott_kimeno_keresek: keresek, js_hibak: hibak, konzol }, null, 1));
+if (OUT) fs.writeFileSync(OUT, JSON.stringify({ ...o, idovonal, sajat_keresek_nyers: sajatKeresek, tiltott_kimeno_keresek: keresek, ...(NINCS_KULCSIRAS ? { kulcsiras_blokkolva: kulcsirasBlokkolva } : {}), js_hibak: hibak, konzol }, null, 1));
 await browser.close();
