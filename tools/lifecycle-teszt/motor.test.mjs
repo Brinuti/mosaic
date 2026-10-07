@@ -444,6 +444,30 @@ test('motor: a Salonic minden foglalasrol KET levelet kuld - egyidejuleg is csak
   assert.equal((await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-CANCEL-%'").get()).n, 2);
 });
 
+test('motor: regi (keso erkezo) level - a T0 es a lemondas-visszaigazolas nem megy ki, de az allapot frissul; a friss igen', async () => {
+  const db = d1(); const k = hamisKuldok(); const env = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair' };
+  const REKA = { nev: 'Kiss Réka', tel: '06201112222', email: 'kiss.reka@example.com' };
+  const regi = MOST - 20 * ORA;
+  const r = await ingest(db, env, { ...foglaltLevel({ ...REKA }), kuldve: regi }, MOST);
+  assert.equal(r.ok, true);
+  const t = await tick(db, env, k, MOST, { foglalasId: r.foglalasId });
+  assert.equal(t.elkuldve, 0); // a T0 SMS + e-mail a level idejehez kepest 20 oras: kesett
+  assert.equal((await db.sqlite.prepare("SELECT ok FROM kuldesek WHERE uzenet_id = 'HAIR-SMS-01'").get()).ok, 'keso');
+  // a regi lemondas-level: a foglalas lemondva, a T-72 / T-24 nem megy, de a visszaigazolas sem
+  const l = await ingest(db, env, { ...lemondottLevel({ ...REKA }), kuldve: regi }, MOST + 60);
+  assert.equal(l.tipus, 'lemondva'); assert.equal(l.ismeretlenVolt, false);
+  assert.equal((await tick(db, env, k, MOST + 120)).elkuldve, 0);
+  assert.equal((await db.sqlite.prepare('SELECT allapot FROM foglalasok').get()).allapot, 'lemondva');
+  // friss level (10 perces): a T0 kimegy
+  const db2 = d1(); const k2 = hamisKuldok();
+  const r2 = await ingest(db2, env, { ...foglaltLevel({ ...REKA }), kuldve: MOST - 600 }, MOST);
+  assert.equal((await tick(db2, env, k2, MOST, { foglalasId: r2.foglalasId })).elkuldve, 2);
+  // jovobeli / ervenytelen kuldesi ido: a valodi "most" szamit
+  const db3 = d1(); const k3 = hamisKuldok();
+  const r3 = await ingest(db3, env, { ...foglaltLevel({ ...REKA }), kuldve: MOST + 99999 }, MOST);
+  assert.equal((await tick(db3, env, k3, MOST, { foglalasId: r3.foglalasId })).elkuldve, 2);
+});
+
 test('motor: megszakadt feldolgozas ujraprobalhato (ketszer erkezo level nem nyeli el a hibat)', async () => {
   const db = d1(); const env = { LIFECYCLE_MOD: 'teszt' };
   // 1) hiba a feldolgozas kozben: a "feldolgozas" sor torlodik, igy az ujraprobalkozas tenylegesen felveszi a foglalast

@@ -58,7 +58,7 @@ export async function api(request, env, ctx) {
   if (resz === 'bejovo') {
     const k = kuldokKeszit(env);
     try {
-      const e = await ingest(db, env, { uzenetId: torzs.uzenetId, targy: torzs.targy, kuldo: torzs.kuldo, szoveg: torzs.szoveg, html: torzs.html }, most);
+      const e = await ingest(db, env, { uzenetId: torzs.uzenetId, targy: torzs.targy, kuldo: torzs.kuldo, szoveg: torzs.szoveg, html: torzs.html, kuldve: torzs.kuldve }, most);
       let kuldes = null;
       if (e.ok && e.foglalasId && !e.duplikalt) kuldes = await tick(db, env, k, most, { foglalasId: e.foglalasId, base });
       return json({ ...e, kuldes });

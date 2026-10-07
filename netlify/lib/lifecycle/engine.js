@@ -23,7 +23,7 @@ export function beallitas(env = {}) {
     tesztTelefon: new Set(lista(env.LIFECYCLE_TESZT_TELEFON, '+36709420090')),
     szalonEmail: env.LIFECYCLE_SZALON_EMAIL || 'mosaicheadspa@gmail.com',
     tesztFeladatEmail: env.LIFECYCLE_TESZT_FELADAT_EMAIL || 'deakfi@grantis.hu',
-    napiPlafon: Number(env.LIFECYCLE_NAPI_PLAFON || 80),
+    napiPlafon: Number(env.LIFECYCLE_NAPI_PLAFON || 300),
     smsKuszob: Number(env.LIFECYCLE_SMS_KUSZOB || 3000),
     base: env.LIFECYCLE_BASE_URL || ALAP_URL,
   };
@@ -87,6 +87,9 @@ export async function ingest(db, env, level, most) {
   const cfg = beallitas(env);
   const forras = String(level.uzenetId || '') || null;
   const e = ertelmez(level, most);
+  // a level kuldesenek ideje (Zapier: a Gmail "date" mezoje): a regi, kesve erkezo levelnel az azonnali uzenetek esedekessege a level ideje -> a kesesi szabaly kihagyja oket
+  const kuldve = Number(level.kuldve);
+  const alapIdo = Number.isFinite(kuldve) && kuldve > 1.6e9 && kuldve <= most ? Math.floor(kuldve) : most;
   if (!e.ok) {
     await naplo(db, most, 'ingest:kihagyva', null, forras, { miert: e.miert, targy: String(level.targy || '').replace(/-\s.*$/, '').slice(0, 60) });
     return { ok: false, miert: e.miert };
@@ -102,7 +105,7 @@ export async function ingest(db, env, level, most) {
     }
   }
   try {
-    return await feldolgoz(db, cfg, e, forras, most);
+    return await feldolgoz(db, cfg, e, forras, most, alapIdo);
   } catch (hiba) {
     // hiba eseten a "feldolgozas" sor torlodik, hogy a Zapier ujraprobalkozasa tenylegesen feldolgozza a levelet
     if (forras) await futtat(db, "DELETE FROM esemenyek WHERE forras_id = ?1 AND tipus = 'ingest:feldolgozas'", forras);
@@ -110,7 +113,7 @@ export async function ingest(db, env, level, most) {
   }
 }
 
-async function feldolgoz(db, cfg, e, forras, most) {
+async function feldolgoz(db, cfg, e, forras, most, alapIdo = most) {
   const mai = await elso(db, "SELECT COUNT(*) AS n FROM esemenyek WHERE tipus LIKE 'ingest:%' AND ido > ?1", most - NAP);
   if (mai && mai.n > cfg.napiPlafon) {
     if (forras) await futtat(db, "UPDATE esemenyek SET tipus = 'ingest:plafon' WHERE forras_id = ?1", forras);
@@ -142,7 +145,7 @@ async function feldolgoz(db, cfg, e, forras, most) {
       if (!volt) { const b = await beszur('aktiv'); ujSor = !(b.meta && b.meta.changes === 0); }
       else await futtat(db, "UPDATE foglalasok SET allapot = 'aktiv', kezdet = ?2, letrehozva = ?3, szolgaltatas = ?4, szegmens = ?5, munkatars = ?6, megerositve = NULL WHERE id = ?1", id, e.kezdet, most, e.szolgaltatas, szeg.join(','), e.munkatars || null);
       if (!volt && !ujSor) eredmeny = { ok: true, tipus: 'foglalt', foglalasId: id, duplikalt: true }; // egy egyideju masik level mar felvette
-      else { await tervMent(db, id, tervez(tervAlap, most)); eredmeny = { ok: true, tipus: 'foglalt', foglalasId: id }; }
+      else { await tervMent(db, id, tervez(tervAlap, alapIdo)); eredmeny = { ok: true, tipus: 'foglalt', foglalasId: id }; }
     }
   } else if (e.tipus === 'athelyezve') {
     let volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', id);
@@ -154,9 +157,9 @@ async function feldolgoz(db, cfg, e, forras, most) {
     else {
       if (volt) await futtat(db, "UPDATE foglalasok SET allapot = 'aktiv', kezdet = ?2, szolgaltatas = ?3, szegmens = ?4, munkatars = ?5, modositva = ?6, megerositve = NULL WHERE id = ?1", fid, e.kezdet, e.szolgaltatas, szeg.join(','), e.munkatars || null, most);
       else await beszur('aktiv');
-      await tervMent(db, fid, tervez(tervAlap, most, { athelyezes: true }), { reset: ['t72', 't24'] });
+      await tervMent(db, fid, tervez(tervAlap, alapIdo, { athelyezes: true }), { reset: ['t72', 't24'] });
       const n = (await elso(db, "SELECT COUNT(*) AS n FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id LIKE 'COMMON-RESCHEDULE-%'", fid)).n;
-      await azonnaliUzenetek(db, fid, [`COMMON-RESCHEDULE-SMS#${n + 1}`], most);
+      await azonnaliUzenetek(db, fid, [`COMMON-RESCHEDULE-SMS#${n + 1}`], alapIdo);
       eredmeny = { ok: true, tipus: 'athelyezve', foglalasId: fid, ismeretlenVolt: !volt };
     }
   } else { // lemondva
@@ -172,7 +175,7 @@ async function feldolgoz(db, cfg, e, forras, most) {
         await futtat(db, "UPDATE foglalasok SET allapot = 'lemondva', modositva = ?2 WHERE id = ?1", fid, most);
         await futtat(db, "UPDATE kuldesek SET allapot = 'torolve', ok = 'lemondva' WHERE foglalas_id = ?1 AND allapot IN ('fuggoben', 'kuldes')", fid);
       } else await beszur('lemondva');
-      await azonnaliUzenetek(db, fid, ['COMMON-CANCEL-SMS', 'COMMON-CANCEL-EMAIL'], most);
+      await azonnaliUzenetek(db, fid, ['COMMON-CANCEL-SMS', 'COMMON-CANCEL-EMAIL'], alapIdo);
       eredmeny = { ok: true, tipus: 'lemondva', foglalasId: fid, ismeretlenVolt: !volt };
     }
   }

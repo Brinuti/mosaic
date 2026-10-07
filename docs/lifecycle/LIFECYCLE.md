@@ -60,7 +60,7 @@ A telefonos hívások (HeadSpa páros/négykezes, fodrász konzultáció/nagy fe
 
 `wrangler.toml` (nem titkos): `LIFECYCLE_MOD`, `LIFECYCLE_UZLETAGOK`, `LIFECYCLE_KULCS_HASH` (a belépő kulcs SHA-256-ja), `SIMPLESMS_FELHASZNALO` (`ferraj@gmail.com`: a SimpleSMS „Felhasználó” oszlopa, NEM a „Felhasználó neve”), `SIMPLESMS_DOMAIN` (`mosaicheadspa.hu`), D1: `LIFECYCLE_DB` (eles: `mosaic-lifecycle`, előnézet: `mosaic-lifecycle-elonezet`).
 Titkok (Cloudflare, Secret, **Production és Preview külön**): `SIMPLESMS_JELSZO` (a SimpleSMS API-jelszó), `SMTP_PASS` (meglévő). A belépő kulcs a két Zapier-láncban van beágyazva (a repóban csak a hash-e).
-Opcionális: `LIFECYCLE_SZALON_EMAIL` (alap: mosaicheadspa@gmail.com), `LIFECYCLE_TESZT_EMAIL`, `LIFECYCLE_TESZT_TELEFON`, `LIFECYCLE_NAPI_PLAFON` (alap 80 befogadás / nap), `LIFECYCLE_SMS_KUSZOB` (alacsony egyenleg-riasztás, alap 3000), `LIFECYCLE_BASE_URL`.
+Opcionális: `LIFECYCLE_SZALON_EMAIL` (alap: mosaicheadspa@gmail.com), `LIFECYCLE_TESZT_EMAIL`, `LIFECYCLE_TESZT_TELEFON`, `LIFECYCLE_NAPI_PLAFON` (alap 300 befogadott levél / nap; egy foglalás 2 levél), `LIFECYCLE_SMS_KUSZOB` (alacsony egyenleg-riasztás, alap 3000), `LIFECYCLE_BASE_URL`.
 Zapier: `lifecycle-bejovo` (id `01a1168a-afbf-7ee9-94c3-6e5be524b6be`) és `lifecycle-tick` (id `01a1169c-7353-708d-8801-912e783e8424`); a **cél-cím** (`CEL`) a kódjukban van: előnézet → éles átállásnál új verzióban `https://www.mosaicheadspa.hu`-ra kell átírni. A sandbox csak engedélyezett hosztokat ér el, ezért a hívás a „Webhooks by Zapier” (custom request) akción megy.
 
 ## Üzem
@@ -71,7 +71,7 @@ Zapier: `lifecycle-bejovo` (id `01a1168a-afbf-7ee9-94c3-6e5be524b6be`) és `life
 - Időszimuláció (csak `teszt` / `ki` módban): a `tick` / `bejovo` kérés törzsében `{"most": <epoch mp>}` a „mostot” felülírja (a T-72 / T-24 / tartalmi üzenetek próbájához). Élesben mindig a valódi idő számít.
 - Adatvédelem: a foglalás személyes adatai (név, telefon, e-mail) az időpont után **60 nappal törlődnek** (napi karbantartás); a tranzakciós üzenetekhez nem kell marketing-hozzájárulás.
 - Régi, generikus Salonic T-48 e-mail emlékeztetők: élesítéskor a Salonicban ki kell kapcsolni (különben az új T-72 / T-24 lánccal párhuzamosan mennek).
-- Napi 80 befogadásnál (és a napi SimpleSMS-egyenleg-riasztásnál) kisebb a visszaélés kockázata is: a belépő kulcs ismerete nélkül nincs hívható végpont.
+- Napi 300 befogadott levélnél (és a napi SimpleSMS-egyenleg-riasztásnál) kisebb a visszaélés kockázata is: a belépő kulcs ismerete nélkül nincs hívható végpont.
 
 ## Tesztek
 
