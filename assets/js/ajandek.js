@@ -529,7 +529,7 @@
     var meta = [[t.osszefoglalo_ikon || 'clock', t.osszefoglalo, t.osszefoglalo_rovid], t.vendeg_db ? [t.vendeg_db > 1 ? 'users' : 'user', t.vendeg_db + ' fő'] : (t.meta2 ? ['clock', t.meta2, t.meta2_rovid] : [null, null])];
     var lista = h('ul', { class: 'ah-termek-meta' });
     // mobilon a rovid szoveg latszik (.ah-m-rovid), asztalon a hosszu
-    meta.forEach(function (m) { if (m[1]) lista.appendChild(h('li', null, ikonSpan(m[0]), m[2] ? h('span', null, h('span', { class: 'ah-m-hosszu', text: m[1] }), h('span', { class: 'ah-m-rovid', text: m[2] })) : h('span', { text: m[1] }))); });
+    meta.forEach(function (m) { if (m[1]) lista.appendChild(h('li', m[0] === 'nincs' ? { class: 'ah-ikon-nelkul' } : null, m[0] === 'nincs' ? null : ikonSpan(m[0]), m[2] ? h('span', null, h('span', { class: 'ah-m-hosszu', text: m[1] }), h('span', { class: 'ah-m-rovid', text: m[2] })) : h('span', { text: m[1] }))); });
     var kep = h('span', { class: 'ah-termek-kep' });
     if (t.vizual && t.vizual.src) {
       kep.appendChild(h('img', { src: kepUt(t.vizual.src), alt: '', width: t.vizual.w || null, height: t.vizual.h || null, loading: 'lazy', decoding: 'async', style: t.vizual.poz ? 'object-position:' + t.vizual.poz : null }));

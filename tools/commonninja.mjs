@@ -15,6 +15,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { salonicArak, noelKedvezmeny } from './hair-oldalak/regi-arlista.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const EMBED = path.join(ROOT, 'assets/embed');
@@ -37,6 +38,11 @@ const JAVITASOK = {
   'c2eb0f_ebe819c8a20603ef818d0ff477702c21': [['34.950 Ft helyett 35.160 Ft', '34.950 Ft helyett 27.960 Ft']],
 };
 const javit = (nev, x) => (JAVITASOK[nev] || []).reduce((a, [rossz, jo]) => (a === rossz ? jo : a), x);
+
+// A fodraszat-arlistak (Betti, Noel) ARAIT a foglalo (Salonic) adataibol irjuk fel (tools/hair-oldalak/regi-arlista.mjs): a Common Ninja-ban kezzel vezetett
+// tablazat nem frissult a Salonic-arakkal (2026-10-07: a Betti-tablaban a "Teljes festes" es a "Teljes melir" sora fel volt cserelve, a szokites 1000 Ft-tal
+// olcsobb volt). A Betti-tabla a listaar (a kozponti, a Betti es az Evelin oldal ezt mutatja), a Noel-tabla a Salonic-felirat szerinti kedvezmennyel.
+const SALONIC_TABLAK = { c2eb0f_89f74d4c7a84ec25afa7aad7f0133562: 0, c2eb0f_ebe819c8a20603ef818d0ff477702c21: noelKedvezmeny() };
 
 const gyik = {}, arlistak = {};
 for (const f of fs.readdirSync(EMBED).filter((x) => x.endsWith('.html'))) {
@@ -68,7 +74,8 @@ for (const f of fs.readdirSync(EMBED).filter((x) => x.endsWith('.html'))) {
       fejlec: adat.columns.map((c) => szoveg(c.content && c.content.text)),
       sorok: adat.rows.map((r) => r.cells.map((c) => javit(nev, szoveg(c.content && c.content.text)))),
     };
-    console.log(`${nev}: tablazat "${w.pluginData.name}", ${arlistak[nev].sorok.length} sor`);
+    if (nev in SALONIC_TABLAK) arlistak[nev].sorok = salonicArak(arlistak[nev].sorok, SALONIC_TABLAK[nev]);
+    console.log(`${nev}: tablazat "${w.pluginData.name}", ${arlistak[nev].sorok.length} sor${nev in SALONIC_TABLAK ? ' (arak: Salonic)' : ''}`);
   } else {
     console.log(`${nev}: ismeretlen tipus (${w.appMeta.type})`);
   }

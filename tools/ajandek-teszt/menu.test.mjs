@@ -96,16 +96,97 @@ describe('a valaszto oldal (/ajandekkartya)', () => {
   }
 });
 
+describe('az oxigénes ajándékkártya a menüben, a választón és az oxigén landingen', () => {
+  test('a lenyílóban három kártya van (Head Spa, Szőrtelenítés, Oxigénterápia), a választó oldalon is három, mindegyik a saját oldalra visz', () => {
+    assert.deepEqual(AJANDEK_MENU.elemek.map((e) => e.utvonal), ['/headspa-ajandekkartya', '/lezeres-ajandekkartya', '/oxigen-ajandekkartya']);
+    const lap = olvas('foglalas', 'ajandekkartya.html');
+    assert.equal(db(lap, 'class="av-kartya"'), 3);
+    assert.match(lap, /<a class="av-kartya" href="\/oxigen-ajandekkartya">/);
+    assert.match(lap, /Oxigénterápia ajándékkártya<\/h2>/);
+    assert.ok(fs.existsSync(path.join(GYOKER, 'assets', 'img', 'ajandek', 'valaszto-oxigen.jpg')));
+    for (const nev of ['asztali', 'mobil']) {
+      const fejlec = ajandekMenu(olvas('assets', 'fejlec', nev + '.html'), nev === 'mobil');
+      assert.ok(fejlec.includes('>Oxigénterápia ajándékkártya<'), nev);
+      assert.equal(db(fejlec, 'href="/oxigen-ajandekkartya"'), 1, nev);
+    }
+  });
+
+  test('a választó rácsa: három oszlop 800 px-ig, tableten kettő (a harmadik kártya teljes sort kap), telefonon egy oszlop', () => {
+    const css = olvas('foglalas', 'ajandekkartya.html').split('\r\n').join('\n');
+    const tartalmaz = (reszlet) => assert.ok(css.includes(reszlet), reszlet);
+    tartalmaz('.av-racs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px;');
+    assert.ok(!css.includes('auto-fit'), 'nem auto-fit: az 906 px körüli váltás miatt lett túl gyorsan két oszlop');
+    // három oszlop végig 1020 px-től egészen 800 px-ig (szűkebb közzel, tömörebb kártyával)
+    tartalmaz('@media (max-width: 1020px) {\n  .av-racs { gap: 18px; }');
+    // tablet állóban kettő, a harmadik kártya egész sor
+    tartalmaz('@media (min-width: 600px) and (max-width: 799px) {\n  .av-racs { grid-template-columns: repeat(2, minmax(0, 1fr));');
+    tartalmaz('.av-kartya:last-child:nth-child(odd) { grid-column: 1 / -1; flex-direction: row; }');
+    // telefonon egy oszlop
+    tartalmaz('@media (max-width: 599px) {\n  .av-racs { grid-template-columns: minmax(0, 1fr); }');
+  });
+
+  test('az oxigénes ajándékkártya hero-ja előtte-utána videó (a Meta-fiók "Oxigénhajterápia" videója), nem a kezelésről készült fotó', () => {
+    const adat = olvas('assets', 'js', 'ajandek-adat-oxigen.js');
+    const html = olvas('foglalas', 'oxigen-ajandekkartya.html');
+    const poster = '/assets/img/ajandek/hero-oxigen-elotte-utana.jpg';
+    const klip = '/assets/video/ajandek-hero-oxigen-elotte-utana.mp4';
+    for (const f of [poster, klip]) assert.ok(fs.existsSync(path.join(GYOKER, f.slice(1))), f);
+    assert.equal(db(adat, "hero_media: { src: '" + poster + "'"), 1);
+    assert.equal(db(adat, "video: { src: '" + klip + "' }"), 1);
+    assert.ok(adat.includes('video_id 1413460453443369'), 'a forrás a Meta-videó azonosítójával együtt dokumentált');
+    assert.equal(db(html, 'src="' + poster + '"'), 1);
+    assert.ok(!html.includes('hero-oxigen-ajandek.jpg" width'), 'a régi, kezelést mutató hero-kép nincs a hero-ban');
+    // a videó nincs "hidden"-re téve (különben nem látszik és nem játszódik le), némított + ismétlődő
+    const tag = /<video class="ah-hero-video" id="ah-hero-video"[^>]*>/.exec(html)[0];
+    assert.ok(!/\shidden[\s>]/.test(tag) && /\bmuted\b/.test(tag) && /\bloop\b/.test(tag) && /\bplaysinline\b/.test(tag), tag);
+    // a videó mérete mobilra is elfogadható (egy fájl, 720x720)
+    assert.ok(fs.statSync(path.join(GYOKER, klip.slice(1))).size < 2 * 1024 * 1024);
+  });
+
+  test('az oxigénes oldalak a saját, "MOSAIC OXIGÉNTERÁPIA" feliratú személyre szabott kártyaképet használják (nem a HeadSpa-felirato vagy lézeres változatot)', () => {
+    const kep = '/assets/img/ajandek/atadas-szemelyre-oxigen.jpg';
+    assert.ok(fs.existsSync(path.join(GYOKER, kep.slice(1))), kep);
+    for (const f of ['oxigen-ajandekkartya.html', 'oxigenterapia-budapest.html']) {
+      const h = olvas('foglalas', f);
+      assert.equal(db(h, kep), 1, f);
+      assert.ok(!h.includes('/ajandek/atadas-szemelyre.jpg'), f + ': nincs HeadSpa-feliratú kép');
+      assert.ok(!h.includes('/ajandek/atadas-szemelyre-lezer.jpg'), f + ': nincs lézeres kép');
+    }
+  });
+
+  test('az oxigén landingen a "Személyre szabott ajándékkártya" sáv az árak után, a "Miért más nálunk" előtt áll, és a /oxigen-ajandekkartya oldalra visz (közvetlen link, nem hash)', () => {
+    const h = olvas('foglalas', 'oxigenterapia-budapest.html');
+    const arak = h.indexOf('<section class="arak"');
+    const sav = h.indexOf('<section class="ajk" id="ajandek"');
+    const miert = h.indexOf('<section class="miert"');
+    assert.ok(arak > 0 && sav > arak && miert > sav, 'sorrend: árak -> ajándékkártya sáv -> miért más nálunk');
+    const szekcio = h.slice(sav, h.indexOf('</section>', sav));
+    assert.match(szekcio, /<h2 id="ajk-cim">Személyre szabott ajándékkártya!<\/h2>/);
+    assert.match(szekcio, /<a class="gomb gomb-arany" href="\/oxigen-ajandekkartya">Ajándékkártyát választok <span class="nyil">/);
+    assert.equal(db(szekcio, 'href="#'), 0, 'nincs hash-link (a GTM History Change ne induljon)');
+    assert.doesNotMatch(szekcio, /target=|salonic/);
+    const kep = /src="(\/assets\/img\/[^"]+)"/.exec(szekcio)[1];
+    assert.ok(fs.existsSync(path.join(GYOKER, kep)), kep);
+    // a hero gombjai (a bevezetesi hierarchia) valtozatlanok
+    assert.match(h, /data-cta="hero-elso-kezeles"/);
+    const css = olvas('assets', 'css', 'oxigen-landing.css');
+    for (const sel of ['.ajk {', '.ajk-racs {', '.ajk-lista {']) assert.ok(css.includes(sel), sel);
+    assert.match(css, /@media \(max-width: 700px\) \{ \.ajk \{/);
+  });
+});
+
 describe('a build bekotese', () => {
   test('a sajat oldalak fejlecere es a Wixes oldalakra is rakerul az atalakitas', () => {
-    assert.match(build, /import \{ ajandekMenu \} from '\.\/ajandek-menu\.mjs';/);
-    assert.match(build, /let fejlec = ajandekMenu\(resz\('<!--mh-fejlec-->', FEJLEC\[m\]\), m === LAP_M\)/);
-    assert.match(build, /function fejlecSzoveg\(h, mobil\) \{[^]*?h = ajandekMenu\(h, mobil\);/);
+    // a build a tools/fejlec-menu.mjs-t hivja (az az Ajandekkartya lenyilot is elvegzi, lasd ajandekMenu), igy minden oldalra ugyanaz kerul
+    assert.match(build, /import \{ fejlecAtalakit, ANGOL_JELOLO \} from '\.\/fejlec-menu\.mjs';/);
+    assert.match(build, /let fejlec = fejlecAtalakit\(resz\('<!--mh-fejlec-->', FEJLEC\[m\]\), m === LAP_M, angol\)/);
+    assert.match(build, /function fejlecSzoveg\(h, mobil\) \{[^]*?h = fejlecAtalakit\(h, mobil\);/);
+    assert.match(olvas('tools', 'fejlec-menu.mjs'), /import \{ ajandekMenu \} from '\.\/ajandek-menu\.mjs';/);
   });
 
   test('a mobil menu tomoritese a kozos CSS-ben van (minden oldalra)', () => {
     const css = olvas('assets', 'css', 'fejlec-lablec.css');
-    assert.match(css, /#MENU_AS_CONTAINER_EXPANDABLE_MENU \{ --item-height: 40px !important; margin-top: 58px !important; \}/);
+    assert.match(css, /#MENU_AS_CONTAINER_EXPANDABLE_MENU \{ --item-height: 37px !important; margin-top: 58px !important; \}/);
   });
 
   test('a menu sajat gorgetosava a kepernyon belul marad (a fejlec zoomja miatt a klon.js adja a --mh-menu-max erteket)', () => {

@@ -31,15 +31,15 @@
       mit: 'Az első oxigénterápiás kezelés', rovid: 'Az első oxigénterápiás kezelés, kb. 80 perc',
       leiras: 'Az első oxigénterápiás hajkezelés a MOSAIC-ban, kb. 80 perc.',
       sal: { id: 466110, nev: 'Haj Oxigénterápia - 1. alkalom', spec: 64122, felh: 'egyszer felhasználható kupon' } },
-    { id: 'ot', nev: '5 kezelés', felirat: '5 KEZELÉS', alkalom: 5, egysegar: 26000, perc: 80, vizual: KEP_KEZELES,
-      mit: '5 oxigénterápiás kezelés (a 2. alkalomtól)', rovid: '5 további kezelés + 1 literes Oxygeni sampon ajándékba',
+    { id: 'ot', nev: '5 alkalmas bérlet', felirat: '5 ALKALMAS BÉRLET', alkalom: 5, egysegar: 26000, perc: 80, vizual: KEP_KEZELES,
+      mit: '5 oxigénterápiás kezelés (a 2. alkalomtól)', rovid: '5 további kezelésre szóló bérlet + 1 literes Oxygeni sampon ajándékba',
       ajandek: [{ nev: '1 literes Oxygeni sampon', ertek: 19800 }],
-      leiras: 'Öt további oxigénterápiás kezelés (az első kezelést követő alkalmak), alkalmanként kb. 80 perc.',
+      leiras: 'Öt további oxigénterápiás kezelésre szóló bérlet (az első kezelést követő alkalmak), alkalmanként kb. 80 perc.',
       sal: { id: 466158, nev: 'Haj Oxigénterápia - 2. alkalomtól', spec: 64128, felh: '5-ször felhasználható kupon (a kupon „darabszáma” 5)' } },
-    { id: 'tiz', nev: '10 kezelés', felirat: '10 KEZELÉS', alkalom: 10, egysegar: 26000, perc: 80, vizual: KEP_KEZELES,
-      mit: '10 oxigénterápiás kezelés (a 2. alkalomtól)', rovid: '10 további kezelés + sampon és balzsam ajándékba',
+    { id: 'tiz', nev: '10 alkalmas bérlet', felirat: '10 ALKALMAS BÉRLET', alkalom: 10, egysegar: 26000, perc: 80, vizual: KEP_KEZELES,
+      mit: '10 oxigénterápiás kezelés (a 2. alkalomtól)', rovid: '10 további kezelésre szóló bérlet + sampon és balzsam ajándékba',
       ajandek: [{ nev: '1 literes Oxygeni sampon', ertek: 19800 }, { nev: '1 literes Oxygeni balzsam', ertek: 28000 }],
-      leiras: 'Tíz további oxigénterápiás kezelés (az első kezelést követő alkalmak), alkalmanként kb. 80 perc.',
+      leiras: 'Tíz további oxigénterápiás kezelésre szóló bérlet (az első kezelést követő alkalmak), alkalmanként kb. 80 perc.',
       sal: { id: 466158, nev: 'Haj Oxigénterápia - 2. alkalomtól', spec: 64128, felh: '10-szer felhasználható kupon (a kupon „darabszáma” 10)' } }
   ];
 
@@ -60,7 +60,7 @@
       kartya_felirat: ['OXIGÉNTERÁPIA', c.felirat],
       osszefoglalo: c.rovid,
       osszefoglalo_rovid: tobb ? 'A 2. alkalomtól szóló kezelések + termékajándék' : c.rovid,
-      osszefoglalo_ikon: 'sparkle',
+      osszefoglalo_ikon: 'nincs', // a tulajdonos kerese (2026-10-07): az alcim alatt nincs kis csillag-ikon
       leiras: c.nev + ': ' + c.leiras,
       tartalom: [c.mit, tobb ? 'Alkalmanként kb. ' + c.perc + ' perc' : 'Kb. ' + c.perc + ' perc'].concat(ajandekSzoveg ? ['Ajándék: ' + ajandekSzoveg] : [], ['6 hónapig felhasználható']),
       kartya_sor: 'Oxigénterápia – ' + c.nev,
@@ -95,9 +95,9 @@
       variant_id: 'general',
       hero_eyebrow: 'MOSAIC OXIGÉNTERÁPIA',
       hero_title: 'Ajándékozz oxigénterápiát.',
-      hero_subtitle: 'Hajkamerás vizsgálat, az első kezelés vagy több kezelésre szóló ajándék: digitális vagy kinyomtatott ajándékkártyán, személyre szabva.',
+      hero_subtitle: 'Hajkamerás vizsgálat, az első kezelés vagy 5 / 10 alkalmas bérlet: digitális vagy kinyomtatott ajándékkártyán, személyre szabva.',
       hero_cta: 'Kiválasztom a kártyát',
-      hero_media: { src: '/assets/img/ajandek/hero-oxigen-ajandek.jpg', alt: 'Hajkamerás állapotfelmérés a MOSAIC oxigénterápián, előtérben a személyre szabott ajándékkártya', forras: 'assets/img/oxigen/oxigen-kezeles.jpg + a sajat kartya-renderelo', status: 'APPROVED_BY_FOLDER_CONTEXT' },
+      hero_media: { src: '/assets/img/ajandek/hero-oxigen-elotte-utana.jpg', alt: 'Oxigénterápia hajkezelés előtte és utána: korpás, zsíros fejbőr a kezelés előtt, tiszta és egészséges a kezelés után', video: { src: '/assets/video/ajandek-hero-oxigen-elotte-utana.mp4' }, forras: 'Meta: oxigen videó előtte-utána (Oxigénhajterápia ->, video_id 1413460453443369)', status: 'APPROVED_BY_METADATA' },
       hero_trust: [
         { csillag: true, szoveg: H.GOOGLE.pont + ' · ' + H.GOOGLE.darab, alszoveg: 'Google-vélemény', alszoveg_rovid: 'vélemény', href: '#ah-google' },
         { ikon: 'calendar', szoveg: '6 hónapig', alszoveg: 'érvényes' },
