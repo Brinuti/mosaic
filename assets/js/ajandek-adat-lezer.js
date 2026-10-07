@@ -16,28 +16,30 @@
   var H = g.AJANDEK_ADAT;
   if (!H) throw new Error('ajandek-adat-lezer: elobb az ajandek-adat.js kell');
 
-  var ERTEKEK = [30000, 50000, 100000, 200000];
+  // a kartyak nevei: az osszeg kulon latszik az ar-soron, ezert a nev NEM ismetli (mini / klasszik / premium / exkluziv)
+  var ERTEKEK = [[30000, 'Mini'], [50000, 'Klasszik'], [100000, 'Prémium'], [200000, 'Exkluzív']];
   var KEP = { src: '/assets/img/c2eb0f_f5b87c4c4fd64d6d89f970a318a56da0.jpg', alt: 'Lézeres szőrtelenítés kezelés a MOSAIC-ban', w: 700, h: 927, poz: '50% 40%' };
 
   function ft(n) { return H.arSzoveg(n); }
   var TERMEKEK = {};
   var SZAMLA_TETELEK = {};
-  ERTEKEK.forEach(function (n) {
+  ERTEKEK.forEach(function (e) {
+    var n = e[0], kartyaNev = e[1];
     var id = 'lezer' + (n / 1000);
     TERMEKEK[id] = {
       id: id,
       product_type: 'lezer-ertek',
       item_id: 'mosaic-lezer-ajandekkartya-' + (n / 1000),
-      nev: ft(n) + ' értékű kártya',
-      kartya_cim: 'Lézeres szőrtelenítés ajándékkártya – ' + ft(n),
+      nev: kartyaNev + ' kártya',
+      kartya_cim: 'Lézeres szőrtelenítés ajándékkártya – ' + kartyaNev,
       // a nyomtathato kartyan a savba kerulo felirat (2 sor, nagybetusen jelenik meg); az ertek a felirat alatt kulon latszik
       kartya_felirat: ['MOSAIC LÉZERES', 'SZŐRTELENÍTÉS'],
       osszefoglalo: 'Bármelyik lézeres kezelésre',
       osszefoglalo_rovid: 'Bármelyik kezelésre',
       osszefoglalo_ikon: 'gift',
       leiras: 'Fix összegű ajándékkártya: az ajándékozott maga választja ki, melyik testtájat szeretné kezeltetni.',
-      tartalom: [ft(n) + ' érték', 'Bármelyik lézeres kezelésre', '6 hónapig felhasználható'],
-      kartya_sor: 'Lézeres szőrtelenítés ' + ft(n) + ' értékben',
+      tartalom: ['Bármelyik lézeres kezelésre', '6 hónapig felhasználható'],
+      kartya_sor: 'Lézeres szőrtelenítés – ' + kartyaNev,
       ar_ft: n,
       vendeg_db: 0,
       pontosan: { ido: 'Bármelyik lézeres kezelésre', fo: '1 vendég', kezelo: 'Zsófi, a MOSAIC lézeres szakértője' },
@@ -47,8 +49,8 @@
           'Az ajándékozott az online időpontfoglalásnál a kártyán lévő kuponkóddal váltja be.'
         ],
         menet: null,
-        // Zsofi konzultacios videoja (9:16, az eles lezeres oldal videoja)
-        video: { src: '/assets/video/c2eb0f_ba9a927739a64ab090ddb79bc84c6dc0.mp4', poster: '/assets/img/c2eb0f_ba9a927739a64ab090ddb79bc84c6dc0f000.jpg', ido: '0:44' }
+        // a kezeles lepeseit bemutato video (a Meta-hirdetesi fiok "szőrtelenítés lépések" videoja, 9:16, 720p, 47 mp, 4,7 MB)
+        video: { src: '/assets/video/lezer-lepesek.mp4', poster: '/assets/img/lezer-lepesek-poszter.jpg', ido: '0:47' }
       },
       vizual: KEP
     };

@@ -693,7 +693,7 @@ A motor (`netlify/lib/ajandek.js`) már **kereskedő-gyár**: `ajandekMotor(ADAT
 | Oldal | `/ajandek` + a régi címek | `/lezeres-ajandekkartya` (noindex, nincs link rá; a lézeres landingre a tulajdonos jóváhagyása után kerül) |
 | Adat | `assets/js/ajandek-adat.js` | `assets/js/ajandek-adat-lezer.js` (a HeadSpa adatra épül: segédek, fizetési módok; a termékek, szövegek, szalon-adatok sajátok) |
 | API | `/api/ajandek/*` (`functions/api/ajandek/[[kind]].js`) | `/api/ajandek-lezer/*` (`functions/api/ajandek-lezer/[[kind]].js`) |
-| Termékek | egyéni / 4 kezes / páros | **fix összegek**: 30 / 50 / 100 / 200 ezer Ft (`lezer30…lezer200`; az összegek csak az adatfájlban vannak; a tulajdonos döntése, 2026-10-07); a maradék összeg is felhasználható |
+| Termékek | egyéni / 4 kezes / páros | **fix összegek, névvel**: Mini 30.000 / Klasszik 50.000 / Prémium 100.000 / Exkluzív 200.000 Ft (`lezer30…lezer200`; a név nem ismétli az összeget; a kezelés-videó a Meta-fiók „szőrtelenítés lépések” videója: `assets/video/lezer-lepesek.mp4`, poszter: `assets/img/lezer-lepesek-poszter.jpg`; az összegek csak az adatfájlban vannak; a tulajdonos döntése, 2026-10-07); a maradék összeg is felhasználható |
 | Rendelés-azonosító | `MH-…` | `LZ-…` |
 | Számla | Stripe-számla → szamlabridge → Számlázz.hu | **Számlázz.hu Számla Agent**, vásárláskor (`netlify/lib/szamlazz-agent.js`), a számlán AAM (alanyi adómentes) tétel |
 | Céges számla / átutalás / papír kártya | van | **nincs** (új KATA: az Agent vállalkozásnak nem számláz; első körben nincs átutalás; nincs papír lézeres kártya) |
