@@ -24,6 +24,13 @@ ${mezok.filter(([k]) => d[k]).map(([k, c]) => `<p style="margin:0 0 10px">${esc(
 const wixBevezeto = (urlapNev) => `A(z) MOSAIC Headspa egy látogatója beküldte az űrlapodat (${esc(urlapNev)})`;
 
 export const URLAPOK = {
+  // a /kapcsolat oldal uzenetkuldo urlapja (2026-10-07): a szalon ertesitest kap, a valasz-cim a latogato e-mail cime (levelek() allitja be)
+  kapcsolat: {
+    targy: 'Új üzenet a weboldal Kapcsolat oldaláról',
+    html: (d) => osszefoglalo('A MOSAIC Headspa weboldalán a Kapcsolat űrlapon üzenetet küldtek.', 'Az üzenet:', [
+      ['nev', 'Név'], ['email', 'E-mail'], ['telefon', 'Telefonszám'], ['tema', 'Téma'], ['uzenet', 'Üzenet'], ['hozzajarulas', 'ÁSZF + adatkezelés elfogadva'],
+    ], d),
+  },
   ajandekkartya: {
     targy: 'Ajándékkártya  Előreutalásos ajándékkártyát vett',
     html: (d) => osszefoglalo('A site visitor just submitted your form Ajándékkártya on MOSAIC Headspa', 'A vásárlás adatai:', [
