@@ -32,11 +32,13 @@
       leiras: 'Az első oxigénterápiás hajkezelés a MOSAIC-ban, kb. 80 perc.',
       sal: { id: 466110, nev: 'Haj Oxigénterápia - 1. alkalom', spec: 64122, felh: 'egyszer felhasználható kupon' } },
     { id: 'ot', nev: '5 kezelés', felirat: '5 KEZELÉS', alkalom: 5, egysegar: 26000, perc: 80, vizual: KEP_KEZELES,
-      mit: '5 oxigénterápiás kezelés (a 2. alkalomtól)', rovid: '5 további kezelés, alkalmanként kb. 80 perc',
+      mit: '5 oxigénterápiás kezelés (a 2. alkalomtól)', rovid: '5 további kezelés + 1 literes Oxygeni sampon ajándékba',
+      ajandek: [{ nev: '1 literes Oxygeni sampon', ertek: 19800 }],
       leiras: 'Öt további oxigénterápiás kezelés (az első kezelést követő alkalmak), alkalmanként kb. 80 perc.',
       sal: { id: 466158, nev: 'Haj Oxigénterápia - 2. alkalomtól', spec: 64128, felh: '5-ször felhasználható kupon (a kupon „darabszáma” 5)' } },
     { id: 'tiz', nev: '10 kezelés', felirat: '10 KEZELÉS', alkalom: 10, egysegar: 26000, perc: 80, vizual: KEP_KEZELES,
-      mit: '10 oxigénterápiás kezelés (a 2. alkalomtól)', rovid: '10 további kezelés, alkalmanként kb. 80 perc',
+      mit: '10 oxigénterápiás kezelés (a 2. alkalomtól)', rovid: '10 további kezelés + sampon és balzsam ajándékba',
+      ajandek: [{ nev: '1 literes Oxygeni sampon', ertek: 19800 }, { nev: '1 literes Oxygeni balzsam', ertek: 28000 }],
       leiras: 'Tíz további oxigénterápiás kezelés (az első kezelést követő alkalmak), alkalmanként kb. 80 perc.',
       sal: { id: 466158, nev: 'Haj Oxigénterápia - 2. alkalomtól', spec: 64128, felh: '10-szer felhasználható kupon (a kupon „darabszáma” 10)' } }
   ];
@@ -46,6 +48,8 @@
   var SZAMLA_TETELEK = {};
   CSOMAGOK.forEach(function (c) {
     var id = c.id, ar = c.alkalom * c.egysegar, tobb = c.alkalom > 1;
+    // a termekajandek (a bérlet mellé jár az oxigén oldalon is): a kartya atvételekor / beváltásakor adja át a szalon
+    var ajandekSzoveg = (c.ajandek || []).map(function (a) { return a.nev + ' (' + ft(a.ertek) + ' értékben)'; }).join(' + ');
     TERMEKEK[id] = {
       id: id,
       product_type: 'oxigen-' + id,
@@ -55,23 +59,26 @@
       // a nyomtathato kartyan a savba kerulo felirat (2 sor, nagybetusen jelenik meg); az ertek a felirat alatt kulon latszik
       kartya_felirat: ['OXIGÉNTERÁPIA', c.felirat],
       osszefoglalo: c.rovid,
-      osszefoglalo_rovid: tobb ? 'A 2. alkalomtól szóló kezelések' : c.rovid,
+      osszefoglalo_rovid: tobb ? 'A 2. alkalomtól szóló kezelések + termékajándék' : c.rovid,
       osszefoglalo_ikon: 'sparkle',
       leiras: c.nev + ': ' + c.leiras,
-      tartalom: [c.mit, tobb ? 'Alkalmanként kb. ' + c.perc + ' perc' : 'Kb. ' + c.perc + ' perc', '6 hónapig felhasználható'],
+      tartalom: [c.mit, tobb ? 'Alkalmanként kb. ' + c.perc + ' perc' : 'Kb. ' + c.perc + ' perc'].concat(ajandekSzoveg ? ['Ajándék: ' + ajandekSzoveg] : [], ['6 hónapig felhasználható']),
       kartya_sor: 'Oxigénterápia – ' + c.nev,
       ar_ft: ar,
       vendeg_db: 0,
       // a szalon-levelben: melyik Salonic-szolgaltatasra, hany felhasznalasra kell a 100%-os kupont letrehozni
       salonic_szolgaltatas: { id: c.sal.id, nev: c.sal.nev, spec: c.sal.spec, felhasznalas: c.sal.felh },
       alkalom: c.alkalom,
+      // a szalon-levelben: a termekajandekot a kartya atvetelekor / beváltásakor kell odaadni (nem a vasarlaskor)
+      szalon_megjegyzes: ajandekSzoveg ? 'A kártyához termékajándék jár: ' + ajandekSzoveg + '. Ezt nem most, hanem a kártya átvételekor / beváltásakor (az első felhasználáskor) add át a vendégnek.' : '',
       pontosan: { ido: tobb ? c.alkalom + ' × kb. ' + c.perc + ' perc' : 'kb. ' + c.perc + ' perc', fo: '1 vendég', kezelo: 'a MOSAIC oxigénterápiás szakemberei' },
       kezeles: {
         leiras: [
           c.leiras,
+          ajandekSzoveg ? 'A kártyához termékajándék is jár: ' + ajandekSzoveg + '. Ezt a kártya beváltásakor, a szalonban adjuk át.' : null,
           tobb ? 'Az ajándékozott az online időpontfoglalásnál, a kártyán lévő kuponkóddal váltja be, alkalmanként egyszer (összesen ' + c.alkalom + ' alkalomra jó). Az első kezelés külön foglalható.'
                : 'Az ajándékozott az online időpontfoglalásnál, a kártyán lévő kuponkóddal váltja be.'
-        ],
+        ].filter(Boolean),
         menet: null
         // videot egyelore nem mutatunk (nincs jovahagyott oxigenes kezeles-videó): a doboz a kezeles fotojat mutatja, felirat nelkul
       },

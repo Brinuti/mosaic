@@ -114,6 +114,7 @@ ${szamlaBlokk(d)}
 ${cim(marka(d).kupon_cim || 'TEENDŐ: 100%-OS KUPON A SALONICBAN')}
 <p>${!d.szamla ? 'A számlát a szamlabridge már elkészítette' : d.szamla.mod === 'invoice' ? 'A számlát a szamlabridge automatikusan elkészíti' : d.szamla.mod === 'agent' ? 'A számlát a Számlázz.hu-ban automatikusan kiállítottuk' : 'A számlát kézzel kell kiállítani (lásd fent)'}, ${marka(d).kupon_szoveg ? String(marka(d).kupon_szoveg).replace('{osszeg}', esc(d.osszeg_szoveg)).replace('{termek}', esc(d.termek_nev)).replace('{szolgaltatas}', esc(d.salonic_szolgaltatas || d.termek_nev)).replace('{ervenyes}', esc(datumIg(d.ervenyes_ig))) : `ezért a Salonicban <b>nem utalvány-értékesítést</b>, hanem sima <b>100%-os kupont</b> hozz létre: a(z) <b>${esc(d.termek_nev)}</b> szolgáltatásra, egyszer felhasználható, érvényes ${esc(datumIg(d.ervenyes_ig))} (6 hónap).`}</p>
 ${kodDoboz(d.kod, d.ervenyes_ig)}
+${d.szalon_megjegyzes ? `<p><b>Ne felejtsd:</b> ${esc(d.szalon_megjegyzes)}</p>` : ''}
 ${d.azonnali
     ? ''
     : `<p style="font-size:13px;color:#555">A fenti kód csak javaslat: bármilyen kódot használhatsz, a kiállító oldalon azt add meg, amit a Salonicban létrehoztál.</p>`}

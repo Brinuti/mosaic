@@ -249,6 +249,22 @@ describe('oxigenes kereskedo: fizetes utan (webhook): szamla a Szamlazz.hu-n, le
     assert.ok(vevo.html.includes(kod));
     assert.doesNotMatch(szalon.html + vevo.html, /AK-[0-9A-Z]{4}-/);
   });
+  test('termekajandek: az 5 kezelesesnel sampon, a 10 kezelesesnel sampon + balzsam (az oxigen oldal berlet-ajandeka); a szalon-level szerint a beváltáskor kell atadni; az 1 kezelesesnel nincs', async () => {
+    const t = OXIGEN.TERMEKEK;
+    assert.match(t.ot.tartalom.join(' | '), /Ajándék: 1 literes Oxygeni sampon \(19\.800 Ft értékben\)/);
+    assert.match(t.tiz.tartalom.join(' | '), /Ajándék: 1 literes Oxygeni sampon \(19\.800 Ft értékben\) \+ 1 literes Oxygeni balzsam \(28\.000 Ft értékben\)/);
+    for (const id of ['kamera', 'elso']) { assert.ok(!t[id].tartalom.some((x) => /Ajándék/.test(x)), id); assert.equal(t[id].szalon_megjegyzes, '', id); assert.ok(!t[id].kezeles.leiras.some((x) => x == null), id); }
+    levelek = [];
+    for (const [termek, szoveg, nincs] of [['ot', /termékajándék jár: 1 literes Oxygeni sampon \(19\.800 Ft értékben\)\. Ezt nem most, hanem a kártya átvételekor/, /balzsam/], ['tiz', /sampon \(19\.800 Ft értékben\) \+ 1 literes Oxygeni balzsam \(28\.000 Ft értékben\)\. Ezt nem most/, null], ['elso', null, /termékajándék|Ne felejtsd/]]) {
+      levelek = [];
+      const a = await fizetett({ termek });
+      assert.equal((await webhook(alairt(a.pi))).status, 200);
+      const szalon = levelek.find((l) => l.cimzett === 'szalon').html;
+      if (szoveg) assert.match(szalon, szoveg, termek);
+      if (nincs) assert.doesNotMatch(szalon, nincs, termek);
+      assert.doesNotMatch(levelek.find((l) => l.cimzett === 'vevo@example.com').html, /Ne felejtsd/, 'a vevo-level nem kap szalon-megjegyzest');
+    }
+  });
   test('az 1 kezelesre szolo kartyanal a szalon-level "egyszer felhasznalhato" kupont kér a megfelelo szolgaltatasra', async () => {
     szamlazzKeresek = []; levelek = []; szamlazzValasz = null;
     for (const [termek, szoveg] of [['kamera', /AKCIÓS Hajkamerás vizsgálat és konzultáció – egyszer felhasználható kupon/], ['elso', /Haj Oxigénterápia - 1\. alkalom – egyszer felhasználható kupon/], ['tiz', /Haj Oxigénterápia - 2\. alkalomtól – 10-szer felhasználható kupon/]]) {
