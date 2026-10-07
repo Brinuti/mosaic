@@ -22,6 +22,7 @@ const ALNEVEK = { 'pricing-plans/list': 'pricing-plans-list' };
 // A regi Wix-cimek (/contact, /services, /en) 404-et adtak, de a hirdetesekbol meg jon rajuk forgalom (2026-10-04): 301 a nyitooldalra
 // (a lekerdezes - gclid, fbclid, utm_* - megmarad: a functions/[[path]].js hozzafuzi a url.search-et).
 const ATIRANYITASOK = {
+  '/fooldal-uj': '/',
   '/lezeres-szortelenites-budapest-uj': '/lezeres-szortelenites-budapest',
   '/headspa-budapest-uj': '/headspa-budapest',
   '/headspa-arak-budapest-uj': '/headspa-arak-budapest',
