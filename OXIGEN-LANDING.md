@@ -104,17 +104,17 @@ Az oldalon nincsenek a címek fölötti kis (sárga) alcímek. Az arany pill-gom
 
 ## Ajándék sampon-minta + 5/10 alkalmas bérlet (2026-10-07)
 
-Új szekció (`#berlet`, `.ajandekok`) az „Mivel kezdjünk?” (árak) szekció után, a „Miért más nálunk” előtt; sötét zöld háttér, két kártya:
+Új szekció (`#berlet`, `.ajandekok`) a Vélemények után, az „Mivel kezdjünk?” (árak) szekció előtt (a tulajdonos kérésére feljebb hozva); sötét zöld háttér, két kártya:
 
 - **Ajándék Oxygeni sampon-minta minden konzultáció mellé** (fotó: `assets/img/oxigen/ajandek-minta.webp`, a tulajdonos képéből kivágva és enyhén retusálva).
 - **5 vagy 10 alkalmas bérlet, termékajándékkal** (fotó: `ajandek-berlet.webp`, a kis mintaüveg a háttér kitöltésével kiretusálva, hogy ne tűnjön ajándéknak a bérletnél):
   - **5 alkalom = 130 000 Ft** (5 × 26 000), ajándék: 1 literes Oxygeni sampon (**19 800 Ft** értékben);
   - **10 alkalom = 260 000 Ft** (10 × 26 000), ajándék: 1 literes sampon + 1 literes balzsam (**19 800 + 28 000 = 47 800 Ft** értékben);
-  - mindkettő legalább fél évre elegendő adag; a dobozokban látványos „Ennyit spórolsz” sáv, az áthúzott ár az Oxygeni webshop ára.
+  - mindkettő legalább fél évre elegendő adag; a dobozokban az ajándék áthúzott webshop-ára mellett „0 Ft”, alatta látványos „Ennyit spórolsz” sáv (nincs magyarázó szöveg, a tulajdonos kérésére).
 
 Szabályok / döntések:
 - **Az első kezelés (29 900 Ft) külön van, a bérlet a további alkalmakra szól** (tulajdonosi pontosítás, 2026-10-07). A bérlet **nem ad forintkedvezményt**: az ár = alkalmankénti fizetés (26 000 Ft/alkalom); az előny a termékajándék.
-- **Piaci ár forrása:** az Oxygeni hivatalos magyar webshopja (webshop.oxygenihair.com), 2026-10-07: Hair Loss Shampoo 1000 ml = 19 800 Ft, Hair Loss Mask 1000 ml = 28 000 Ft (a „balzsam” az Oxygeni vonalon a Hair Loss Mask, ami a leírása szerint kondicionálóként is használható). Ha az árak változnak, a HTML-ben (`.b-piac`, `.b-sporolas`, az `.aj-alcim` és a GYIK) át kell írni; a forrás-sor a szekció alján linkel.
+- **Piaci ár forrása:** az Oxygeni hivatalos magyar webshopja (webshop.oxygenihair.com), 2026-10-07: Hair Loss Shampoo 1000 ml = 19 800 Ft, Hair Loss Mask 1000 ml = 28 000 Ft (a „balzsam” az Oxygeni vonalon a Hair Loss Mask, ami a leírása szerint kondicionálóként is használható). Ha az árak változnak, a HTML-ben (`.b-arak s`, `.b-sporolas`, az `.aj-alcim` és a GYIK) át kell írni. Az oldalon nincs forrás-sor / „áthúzott ár” magyarázat (tulajdonosi kérés: kevesebb szöveg).
 - Az oldalon továbbra is igaz: **nincs kötelező bérlet** (a szekcióban és a GYIK-ban is így szerepel).
 - A „konzultáció” = hajkamerás állapotfelmérés + konzultáció (a 4 990 Ft-os, illetve az első kezelés része); az „ingyenes” szó direkt nincs ott, mert az állapotfelmérés fizetős.
 - A bérletnek nincs gombja (a tulajdonos kérésére); a vásárlás útja nincs az oldalon kidolgozva. Nincs `data-cta`, nem küld mérési eseményt.
