@@ -9,7 +9,8 @@
 //   STRIPE_PUBLISHABLE_KEY, AJANDEK_BAZIS_URL, AJANDEK_AZONNALI (nem titkos: a wrangler.toml [vars]
 //   reszebe, mert ha van wrangler.toml, a feluleten megadott nem titkos valtozokat a Cloudflare torli).
 import { WorkerMailer } from 'worker-mailer';
-import { ajandekKezel, keresTorzs } from '../../../netlify/lib/ajandek.js';
+import { ajandekKezel, keresTorzs, emlekeztetoFuttat } from '../../../netlify/lib/ajandek.js';
+import { emlekeztetoIndit } from '../../../netlify/lib/ajandek-emlekezteto-inditas.js';
 
 // Egy keresen belul egy SMTP-kapcsolat; a levelek sorban mennek ki rajta.
 function postas(env) {
@@ -72,6 +73,13 @@ export async function onRequest(context) {
     });
   } finally {
     await p.zar();
+  }
+  // Az ajandekkartya-oldal minden betoltese (GET .../beallitas) elinditja a hatterben az elhagyott fizetesek emlekeztetoit (legfeljebb 20 percenkent;
+  // csak az eles oldalon; kikapcsolni: AJANDEK_EMLEKEZTETO = 0). A valaszt nem lassitja, a hibaja nem allitja meg az oldalt.
+  if (request.method === 'GET' && /\/beallitas\/?$/.test(new URL(request.url).pathname)) {
+    try {
+      emlekeztetoIndit({ waitUntil: context.waitUntil && context.waitUntil.bind(context), env, url: request.url, futtat: emlekeztetoFuttat, postasKeszit: postas });
+    } catch (e) { console.error('ajandek: emlekezteto inditas hiba', e && e.message); }
   }
   return new Response(v.body, { status: v.status, headers: v.headers });
 }
