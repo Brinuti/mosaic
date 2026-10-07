@@ -118,8 +118,8 @@ describe('oxigenes kereskedo: kornyezet es adat', () => {
       assert.ok(!(id in LEZER.TERMEKEK), id);
       assert.match(t.kartya_cim, /Oxigénterápia ajándékkártya/);
       assert.equal(t.kartya_felirat[0], 'OXIGÉNTERÁPIA');
-      // a nev nem ismetli az arat (az ar-soron latszik), a szamla-tetel viszont igen; az "5 kezelés" / "10 kezelés" nev a darabszamot mondja, nem az arat
-      assert.doesNotMatch(t.nev.replace(/^(5|10) kezelés$/, 'X'), /\d/, id);
+      // a nev nem ismetli az arat (az ar-soron latszik), a szamla-tetel viszont igen; az "5 alkalmas bérlet" / "10 alkalmas bérlet" nev a darabszamot mondja, nem az arat
+      assert.doesNotMatch(t.nev.replace(/^(5|10) alkalmas bérlet$/, 'X'), /\d/, id);
       assert.match(sor[0].nev, new RegExp(`^MOSAIC oxigénterápia ajándékkártya – ${t.nev} – ${OXIGEN.arSzoveg(t.ar_ft).replace('.', '\\.')} értékben$`), id);
     }
     // a HeadSpa "egyeni" stb. nincs az oxigenes adatban
@@ -222,7 +222,7 @@ describe('oxigenes kereskedo: fizetes utan (webhook): szamla a Szamlazz.hu-n, le
     assert.match(xml, /<szamlaagentkulcs>titkos-oxigen-agent-kulcs-teszt<\/szamlaagentkulcs>/);
     assert.doesNotMatch(xml, /HEADSPA|LEZER/);
     assert.match(xml, new RegExp(`<rendelesSzam>${a.rendeles_id}</rendelesSzam>`));
-    assert.match(xml, /<megnevezes>MOSAIC oxigénterápia ajándékkártya – 5 kezelés – 130\.000 Ft értékben<\/megnevezes>/);
+    assert.match(xml, /<megnevezes>MOSAIC oxigénterápia ajándékkártya – 5 alkalmas bérlet – 130\.000 Ft értékben<\/megnevezes>/);
     assert.match(xml, /<afakulcs>AAM<\/afakulcs>/);
     assert.match(xml, /<bruttoErtek>130000<\/bruttoErtek>/);
     assert.match(xml, /<email>vevo@example.com<\/email>/);
@@ -282,7 +282,7 @@ describe('oxigenes kereskedo: fizetes utan (webhook): szamla a Szamlazz.hu-n, le
     assert.equal(kartya.status, 200, kartya.body.slice(0, 200));
     assert.match(kartya.body, /\/assets\/img\/ajandek\/kartya-hatter-oxigen\.jpg/);
     assert.doesNotMatch(kartya.body, /kartya-hatter\.jpg|kartya-hatter-lezer/);
-    assert.match(kartya.body, /OXIGÉNTERÁPIA<br>10 KEZELÉS/);
+    assert.match(kartya.body, /OXIGÉNTERÁPIA<br>10 ALKALMAS BÉRLET/);
     assert.ok(fs.existsSync(new URL('../../assets/img/ajandek/kartya-hatter-oxigen.jpg', import.meta.url)));
     const { kartyaOldal } = await import('../../netlify/lib/ajandek-levelek.js');
     const headspa = kartyaOldal({ bazis: 'https://x.hu', kod: 'AKABCDEFGH', ar_szoveg: '26.900 Ft', ervenyes_ig: '2027-04-07' });
