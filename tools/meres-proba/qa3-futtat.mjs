@@ -1,6 +1,7 @@
 // QA-3 KONTROLLALT TESZTEK (2026-10-07, DECISION #102 utan): egy eset = valodi, "TESZT - Claude" nevu probafoglalas(ok) a MEGADOTT elonezeten, KOD- ES BRANCH-MODOSITAS NELKUL; csak arnyek-celok
 // (Meta TEST83939, TikTok TEST83543, GA4 teszt-property, Google ARNYEK akciok). Minden eset: booking_id, platformonkenti kiment esemeny_id-k, ELVART es TENYLEGES eredmeny, PASS / FAIL.
 //   EGYEZTETES_KULCS=... node tools/meres-proba/qa3-futtat.mjs --bazis https://<elonezet>.mosaic-d77.pages.dev --eset <nev> [--nap 2026-10-07] [--refund-bazis https://<masik-elonezet>.mosaic-d77.pages.dev] [--szaraz 1]
+// X1-javitas utani ujrateszt (R1-R6): dupla-level-eltero-jelzes (+ -forditva) | paros-headspa | elso-foglalas | valodi-visszajaro | dupla-level | darabszam-ellenorzes (utoljara futtatando)
 // esetek: (extra: dupla-level-eltero-jelzes, dupla-level-eltero-jelzes-forditva) ujratoltes | dupla-level | lemondas-elotte | lemondas-utana | visszajaro | kupon | konz-szor | konz-fodrasz | konz-pmu | konz-oxigen | suti-elutasitas | kattintas-tiktok-meta | kattintas-meta-google | ajandek-visszaterites
 // Kimenet: docs/booking-engine/meres-naplo/qa3-<eset>-<nap>.json (nyers valaszok + ellenorzesek); osszefoglalo: tools/meres-proba/qa3-osszefoglalo.mjs. A kulcs soha nem kerul a kimenetbe.
 // Az "elvart" oszlop a DOKUMENTALT szabalybol jon (QA2_ARNYEK.md, esemeny-modell.js szabalyai), nem a kodbol szamolt ertekbol; eltereskor a FAIL a lelet, nem a teszt javitando.
@@ -60,6 +61,7 @@ function osszegez(n) {
   for (const k of n.kuldesek) { if (k.allapot === 'elkuldve') o.elkuldve[k.platform].push({ esemeny_id: k.esemeny_id, nev: k.platform_nev || k.esemeny_nev, ertek: k.ertek }); else o.nem_ment_ki.push({ esemeny_id: k.esemeny_id, platform: k.platform, allapot: k.allapot, indok: k.indok }); }
   return o;
 }
+const rogzites = (e) => (e && e.esemeny_kuldes && e.esemeny_kuldes.jelleg_rogzites) || null; // X1-javitas: az elso level jellege rogzul; a valasz jelzi, ha egy kesobbi level jelzese elter
 const egyedi = (n) => new Set(n.kuldesek.map((k) => k.esemeny_id + '|' + k.platform)).size === n.kuldesek.length;
 const sor = (n, tipus, platform) => n.kuldesek.find((k) => k.esemeny_tipus === tipus && k.platform === platform);
 const nevek = (o, p) => o.elkuldve[p].map((x) => x.nev).sort();
@@ -116,6 +118,7 @@ async function futtat() {
       elsoHivas(e1);
       ell('1. level utan kiment (Meta, TikTok, Google, GA4): alap + ernyo', [2, 2, 1, 1], [o1.elkuldve.meta.length, o1.elkuldve.tiktok.length, o1.elkuldve.google.length, o1.elkuldve.ga4.length]);
       ell('2. level (eltero jelzes): a valasz szerint nincs uj kuldes', 'mar_kuldve', e2.esemeny_kuldes && e2.esemeny_kuldes.allapot);
+      ell('javitott kod: a 2. level eltero jelzese latszik (jelleg_rogzites.eltero), de a rogzitett jelleg az 1. levele marad', ['elso', true, 'visszajaro'], [e2.esemeny_kuldes && e2.esemeny_kuldes.jelleg, (rogzites(e2) || {}).eltero, (rogzites(e2) || {}).kapott_jelleg]);
       ell('egy foglalasbol EGY alapesemeny: a naploban csak FoglalasElso alap-esemeny van (nincs Visszajaro)', ['FoglalasElso'], [...new Set(n2.kuldesek.filter((k) => k.esemeny_tipus === 'alap').map((k) => k.esemeny_id.split(':')[0]))]);
       ell('a 2. level utan a kiment esemenyek szama valtozatlan', o1.elkuldve.meta.length + o1.elkuldve.tiktok.length + o1.elkuldve.google.length + o1.elkuldve.ga4.length, o2.elkuldve.meta.length + o2.elkuldve.tiktok.length + o2.elkuldve.google.length + o2.elkuldve.ga4.length);
       break;
@@ -128,8 +131,62 @@ async function futtat() {
       elsoHivas(e1);
       ell('1. level utan kiment (Meta, TikTok, Google, GA4): csak a Visszajaro alapesemeny (Google-akcio nincs, ernyo nincs)', [1, 1, 0, 1], [o1.elkuldve.meta.length, o1.elkuldve.tiktok.length, o1.elkuldve.google.length, o1.elkuldve.ga4.length]);
       ell('2. level (eltero jelzes): a valasz szerint nincs uj kuldes', 'mar_kuldve', e2.esemeny_kuldes && e2.esemeny_kuldes.allapot);
+      ell('javitott kod: a 2. level eltero jelzese latszik (jelleg_rogzites.eltero), de a rogzitett jelleg az 1. levele marad', ['visszajaro', true, 'elso'], [e2.esemeny_kuldes && e2.esemeny_kuldes.jelleg, (rogzites(e2) || {}).eltero, (rogzites(e2) || {}).kapott_jelleg]);
       ell('egy foglalasbol EGY alapesemeny: a naploban csak Visszajaro alap-esemeny van (nincs FoglalasElso, nincs ernyo)', [['Visszajaro'], 0], [[...new Set(n2.kuldesek.filter((k) => k.esemeny_tipus === 'alap').map((k) => k.esemeny_id.split(':')[0]))], n2.kuldesek.filter((k) => k.esemeny_tipus === 'ernyo').length]);
       ell('a 2. level utan a kiment esemenyek szama valtozatlan', o1.elkuldve.meta.length + o1.elkuldve.tiktok.length + o1.elkuldve.google.length + o1.elkuldve.ga4.length, o2.elkuldve.meta.length + o2.elkuldve.tiktok.length + o2.elkuldve.google.length + o2.elkuldve.ga4.length);
+      break;
+    }
+    case 'paros-headspa': { // R2 (X1-javitas utani ujrateszt): a megszokott PAROS HeadSpa foglalas, uj vendeg: alap + ernyo valtozatlanul kimegy, a rogzites nem zavarja
+      const b = foglal('headspa', 'teljes'); const e = level(b, ''); elsoHivas(e); const n = await naplo(b.booking_id); const o = osszegez(n);
+      Object.assign(kimenet, { booking_id: b.booking_id, salonic_uuid: b.salonic_uuid, esemeny_idk: o, lemondas: lemond(b) });
+      ell('javitott kod fut: a valasz tartalmazza a jelleg_rogzites mezot, az 1. level nem elter', [true, false], [Boolean(rogzites(e)), rogzites(e) ? rogzites(e).eltero : null], !e.esemeny_kuldes || e.esemeny_kuldes.allapot === 'mar_kuldve' || (Boolean(rogzites(e)) && !rogzites(e).eltero));
+      ell('Meta + TikTok: alap + ernyo; Google + GA4: csak az alap', [2, 2, 1, 1], [o.elkuldve.meta.length, o.elkuldve.tiktok.length, o.elkuldve.google.length, o.elkuldve.ga4.length]);
+      ell('esemeny-nevek (Meta)', ['HeadSpa_FoglalasElso', 'Schedule'], nevek(o, 'meta')); ell('esemeny-nevek (TikTok)', ['CompletePayment', 'HeadSpa_FoglalasElso'], nevek(o, 'tiktok'));
+      ell('egy alapesemeny-tipus (FoglalasElso)', ['FoglalasElso'], [...new Set(n.kuldesek.filter((k) => k.esemeny_tipus === 'alap').map((k) => k.esemeny_id.split(':')[0]))]);
+      ell('kuldott ertek = a tenyleges ar (> 0), Meta alap = TikTok alap', true, ((sor(n, 'alap', 'meta') || {}).ertek > 0) && (sor(n, 'alap', 'meta') || {}).ertek === (sor(n, 'alap', 'tiktok') || {}).ertek);
+      ell('nincs dupla (esemeny_id, platform)', true, egyedi(n));
+      break;
+    }
+    case 'elso-foglalas': { // R3: NORMAL (fizetos) elso foglalas, nem konzultacio es nem HeadSpa: az oxigenterapias elso kezeles
+      const b = foglal('oxigen-elso', 'teljes'); const e = level(b, ''); elsoHivas(e); const n = await naplo(b.booking_id); const o = osszegez(n);
+      Object.assign(kimenet, { booking_id: b.booking_id, salonic_uuid: b.salonic_uuid, esemeny_idk: o, lemondas: lemond(b) });
+      ell('javitott kod fut: a valasz tartalmazza a jelleg_rogzites mezot, az 1. level nem elter', [true, false], [Boolean(rogzites(e)), rogzites(e) ? rogzites(e).eltero : null], !e.esemeny_kuldes || e.esemeny_kuldes.allapot === 'mar_kuldve' || (Boolean(rogzites(e)) && !rogzites(e).eltero));
+      ell('Meta + TikTok: alap + ernyo; Google + GA4: csak az alap', [2, 2, 1, 1], [o.elkuldve.meta.length, o.elkuldve.tiktok.length, o.elkuldve.google.length, o.elkuldve.ga4.length]);
+      ell('esemeny-nevek (Meta)', ['Oxigen_AkviziciosFoglalas', 'Oxigen_FoglalasElso'], nevek(o, 'meta')); ell('esemeny-nevek (TikTok)', ['Oxigen_FoglalasElso', 'Schedule'], nevek(o, 'tiktok'));
+      ell('egy alapesemeny-tipus (FoglalasElso), NEM konzultacio', ['FoglalasElso'], [...new Set(n.kuldesek.filter((k) => k.esemeny_tipus === 'alap').map((k) => k.esemeny_id.split(':')[0]))]);
+      ell('kuldott ertek = a tenyleges ar (> 0, nem a konzultacio-ertek)', true, ((sor(n, 'alap', 'meta') || {}).ertek > 0) && (sor(n, 'alap', 'meta') || {}).ertek !== KONZ_ERTEK.oxigen);
+      ell('nincs dupla (esemeny_id, platform)', true, egyedi(n));
+      break;
+    }
+    case 'valodi-visszajaro': { // R4: VALODI visszajaro: NINCS szimulalt level - az elo Zap a valodi Salonic-levelet tovabbitja, a Salonic-vendegrekord szerint a TESZT-vendeg nem uj
+      const b = foglal('headspa', 'teljes'); lep('nincs szimulalt level: az elo Zap sajat (valodi Salonic) levelet varjuk (legfeljebb 12 perc)');
+      let n = { kuldesek: [] }; const t0 = Date.now();
+      while (Date.now() - t0 < 720000) { n = await naplo(b.booking_id); if ((n.kuldesek || []).some((k) => k.esemeny_tipus === 'alap' && ['elkuldve', 'kihagyva', 'halasztva', 'tiltva'].includes(k.allapot))) break; await varj(10000); }
+      const elso = Math.round((Date.now() - t0) / 1000); await varj(60000); n = await naplo(b.booking_id); const o = osszegez(n); // meg 60 mp: egy esetleges 2. level se hozzon masik alapesemenyt
+      Object.assign(kimenet, { booking_id: b.booking_id, salonic_uuid: b.salonic_uuid, esemeny_idk: o, zap_level_varakozas_mp: elso, lemondas: lemond(b) });
+      ell('a Zap levele megerkezett es feldolgozodott (van alapesemeny sor)', true, n.kuldesek.some((k) => k.esemeny_tipus === 'alap'));
+      ell('alapesemeny: csak Visszajaro (a valodi Salonic-jelzes szerint nem uj vendeg), ernyo nincs', [['Visszajaro'], 0], [[...new Set(n.kuldesek.filter((k) => k.esemeny_tipus === 'alap').map((k) => k.esemeny_id.split(':')[0]))], n.kuldesek.filter((k) => k.esemeny_tipus === 'ernyo').length]);
+      ell('Meta / TikTok / GA4: kiment; Google: nem', [1, 1, 1, 0], [o.elkuldve.meta.length, o.elkuldve.tiktok.length, o.elkuldve.ga4.length, o.elkuldve.google.length]);
+      ell('Meta-nev', ['HeadSpa_Visszajaro'], nevek(o, 'meta'));
+      ell('nincs dupla (esemeny_id, platform)', true, egyedi(n));
+      break;
+    }
+    case 'darabszam-ellenorzes': { // R6: az R1-R5 esetek egyutt: platformonkenti darabszam + esemeny_id duplazas-ellenorzes (a keso Zap-levelek utan is)
+      const KOR = [['dupla-level-eltero-jelzes', [2, 2, 1, 1]], ['dupla-level-eltero-jelzes-forditva', [1, 1, 1, 0]], ['paros-headspa', [2, 2, 1, 1]], ['elso-foglalas', [2, 2, 1, 1]], ['valodi-visszajaro', [1, 1, 1, 0]], ['dupla-level', [2, 2, 1, 1]]]; // [Meta, TikTok, GA4, Google]
+      const vara = Number(arg('varakozas-mp', '240')); lep(`keso Zap-levelekre varunk ${vara} mp-et, utana a naplok ujraolvasasa`); await varj(vara * 1000);
+      const osszes = { meta: 0, tiktok: 0, ga4: 0, google: 0 }, vart = { meta: 0, tiktok: 0, ga4: 0, google: 0 }, mind = []; const reszek = [];
+      for (const [k, v] of KOR) {
+        let o; try { o = olvas(`${DIR}/qa3-${k}-${NAP}.json`); } catch { ell(`${k}: a futas naploja megvan`, true, false); continue; }
+        const n = await naplo(o.booking_id); mind.push(...n.kuldesek); const e = osszegez(n);
+        const db = { meta: e.elkuldve.meta.length, tiktok: e.elkuldve.tiktok.length, ga4: e.elkuldve.ga4.length, google: e.elkuldve.google.length };
+        for (const [i, p] of ['meta', 'tiktok', 'ga4', 'google'].entries()) { osszes[p] += db[p]; vart[p] += v[i]; }
+        reszek.push({ eset: k, booking_id: o.booking_id, kiment: db, elvart: Object.fromEntries(['meta', 'tiktok', 'ga4', 'google'].map((p, i) => [p, v[i]])), sorok: n.kuldesek.length });
+        ell(`${k} (${o.booking_id}): kiment darabszam (Meta, TikTok, GA4, Google)`, v, [db.meta, db.tiktok, db.ga4, db.google]);
+        ell(`${k}: egy alapesemeny-tipus; minden esemeny_id a sajat booking_id-jat hordozza`, [1, true], [new Set(n.kuldesek.filter((x) => x.esemeny_tipus === 'alap').map((x) => x.esemeny_id.split(':')[0])).size, n.kuldesek.every((x) => x.esemeny_id.endsWith(':' + o.booking_id))]);
+      }
+      kimenet.esetenkent = reszek;
+      ell('platformonkenti OSSZES kiment darabszam (Meta, TikTok, GA4, Google)', [vart.meta, vart.tiktok, vart.ga4, vart.google], [osszes.meta, osszes.tiktok, osszes.ga4, osszes.google]);
+      ell('esemeny_id duplazas: egyetlen (esemeny_id, platform) sem fordul elo ketszer az osszes kor-foglalas soraban', true, new Set(mind.map((x) => x.esemeny_id + '|' + x.platform)).size === mind.length);
       break;
     }
     case 'lemondas-elotte': { // 3a. a foglalas LEMONDVA, MIELOTT a level feldolgozasra kerul: nem mehet ki konverzio

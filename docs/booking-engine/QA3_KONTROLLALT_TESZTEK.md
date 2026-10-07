@@ -99,3 +99,24 @@ A visszatérítést a Stripe teszt-módú kulcsával kell létrehozni. A vizsgá
 - **EXTRA eset (nem a 9 eset), `dupla-level-eltero-jelzes`: FAIL (3/5).** Két levél ugyanarra az **élő** foglalásra, az elsőben `uj_vendeg: igen`, a másodikban `nem` (a Zap levele ezt adja): az 1. levél után 6 esemény ment ki (FoglalasElso + Schedule), a 2. levél után **9** — a 2. levél `Visszajaro:<booking_id>` alapeseményt is kiküldte Metára, TikTokra és GA4-re (`allapot: kesz`, nem `mar_kuldve`). Vagyis a deduplikáció az esemény-névre (`esemeny_id`) kulcsol, nem a foglalásra: eltérő „új vendég” jelzésű két levél egy foglalásra két alapesemény-típust küldhet ki. Mérés (árnyék-célok, TESZT-foglalás); a #128 kódja nem változott. A döntés a mérési munkamenetre / Ferire vár.
 - **9. eset:** a két Stripe teszt-visszatérítést (3 000 Ft, majd a maradék 23 900 Ft) a #138 előnézete hozta létre a megosztott teszt-kulccsal; a #128-on a visszatérítések után nem lett új sor, az újrajátszás `mar_kuldve`.
 
+
+## QA-3 állapota és a lezárás szabálya (2026-10-07 este; a GPT döntése szerint)
+
+**Állapot: IN_PROGRESS, 1 BLOCKER – X1.** A 9 eset 14 futása PASS, de az X1 (két levél, eltérő „új vendég” jelzéssel: egy foglalásból két alapesemény-típus) blokkoló. A QA-3 ezért **nem** zárható le a mai futással.
+
+**Teendők sorrendben:**
+1. Az X1-javítás (az alapesemény típusa foglalásonként az első levélnél rögzül: `netlify/lib/meres/jelleg-rogzites.js`, lásd `QA2_ARNYEK.md`) a #128 ágra **2026-10-07 20:15 (Budapest) után**, a QA-3 nyers számainak átadása után megy; addig a #128-hoz nem nyúlunk.
+2. **Célzott regressziós újrateszt a #128 előnézetén, 6 eset** (a futtató: `tools/meres-proba/qa3-futtat.mjs`, kimenet: `meres-naplo/qa3-<eset>-2026-10-07-javitas-utan.json`; az eredeti X1 FAIL naplók érintetlenek maradnak):
+
+   | # | eset | futtató `--eset` | elvárt (Meta, TikTok, GA4, Google) |
+   |---|---|---|---|
+   | R1 | X1: két levél, eltérő jelzéssel (új → nem új); extraként fordítva is (nem új → új) | `dupla-level-eltero-jelzes` (+ `-forditva`) | 2, 2, 1, 1 (fordítva: 1, 1, 1, 0); a 2. levél nem küld semmit |
+   | R2 | páros HeadSpa, új vendég | `paros-headspa` | 2, 2, 1, 1 |
+   | R3 | normál (fizetős) első foglalás, nem konzultáció | `elso-foglalas` (oxigénterápiás első kezelés) | 2, 2, 1, 1; `FoglalasElso`, nem `Konzultacio` |
+   | R4 | valódi visszajáró: **nincs szimulált levél**, az élő Zap valódi Salonic-levelét várjuk | `valodi-visszajaro` | 1, 1, 1, 0; csak `Visszajaro`, ernyő nincs |
+   | R5 | ugyanaz a levél kétszer | `dupla-level` | 2, 2, 1, 1; a 2. hívás `mar_kuldve` |
+   | R6 | platformonkénti darabszám és `esemeny_id` duplázás-ellenőrzés az R1–R5 foglalásain, a késő Zap-levelek után is | `darabszam-ellenorzes` (utoljára, késleltetéssel) | az összeg = az elvárt összeg; 0 dupla `(esemeny_id, platform)`; foglalásonként egy alapesemény-típus |
+
+   Az eltérést (elvárt ≠ tényleges) a futtató minden ellenőrzésnél naplózza; a Zap-versenyhelyzet (ha a Zap levele hamarabb ér oda, az ő jellege rögzül az adott TESZT-foglalásnál) a naplóban külön látszik.
+3. **Ha mind a 6 eset PASS**, indul az **új, tiszta 24 órás QA-3 ablak** (az ablak kezdete: az újrateszt zöld lezárása után, javítási kódváltozás nélkül, a rögzített dátum-idővel). A valódi foglalások számlálása (a fenti mérce) erre az új ablakra történik.
+4. **QA-3 FINAL PASS csak ennek az új 24 órás ablaknak a hibamentes lezárása után adható.** A mai 14 futás és az újrateszt nem elég hozzá. A QA-3 PASS továbbra sem élesítési készség: az ÉLES-KAPU feltételei külön állnak.
