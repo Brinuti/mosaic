@@ -8,19 +8,33 @@ sötétzöld hangsúly, krém háttér). **Ideiglenes címen él**: `/paros-head
 |---|---|
 | `foglalas/paros-headspa-budapest-uj.html` | az oldal (fejléc / lábléc a build-ből: `<!--mh-fejlec-->`, `<!--mh-lablec-->`, `<!--mh-menu-aktiv:/paros-headspa-budapest-->`) |
 | `assets/css/paros-landing.css` | önálló stíluslap (a többi landing stílusát nem érinti) |
-| `assets/js/paros-landing.js` | szabad időpontok (Salonic-API), vendégvideók, Trustindex, mobil sticky CTA, képsor-pontok |
-| `tools/paros-teszt/paros.test.mjs` | böngészős tesztek (18 db, nincs `dist/`, nincs külső hálózat): `node --test tools/paros-teszt/paros.test.mjs` |
+| `assets/js/paros-landing.js` | hero-videó, szabad időpontok (Salonic-API), páros Google-vélemények, vendégvideók, Trustindex, mobil sticky CTA, képsor-pontok |
+| `assets/img/paros/`, `assets/video/paros-hero-asztal.mp4`, `paros-hero-mobil.mp4` | a szalon valódi páros felvételeiből vágott képek és a hero mozgó videója (lásd lent) |
+| `tools/paros-teszt/paros.test.mjs` | böngészős tesztek (21 db, nincs `dist/`, nincs külső hálózat): `node --test tools/paros-teszt/paros.test.mjs` |
 
 ## Szekciók (asztalon, a terv sorrendjében)
 
-Hero (sötét fotóháttér, H1, ár 53 800 Ft / 2 fő, „Megnézem a szabad időpontokat”, ajándékkártya-link, Google-értékelés sor, 3 jelvény) → **Kivel jönnél?** (4 kártya) →
-**Ők már kipróbálták.** (4 valódi vendégvideó + a Trustindex-vélemények) → **Így telik a közös HeadSpa élmény** (5 lépés) → sötét sáv („Nem két külön kezelés… Egy közös élmény.”) →
-**Ajánlat** (53 800 Ft, „Tartalmazza” lista) → **Legközelebbi szabad Páros HeadSpa időpontok** → **Miért jönnek…** (6 csempe) → **Valódi pillanatok** (3 kártya) → **GYIK** (12 kérdés).
+Oldal-menü (a terv felső sávja: „Páros HeadSpa” · Az élmény · Vélemények · Mit tartalmaz? · GYIK · Ajándékkártya · Szabad időpontok gomb; a fejléc alatt ragad, telefonon rejtett) →
+Hero (**mozgó videó** a páros kezelőből, H1, ár 53 800 Ft / 2 fő, „Megnézem a szabad időpontokat”, ajándékkártya-link, Google-értékelés sor, 3 jelvény) → **Kivel jönnél?** (4 kártya valódi fotóval) →
+**Ők már kipróbálták ketten.** (3 valódi páros Google-vélemény idézve + a vendégvideók + a Trustindex-vélemények) → **Így telik a közös HeadSpa élmény** (5 lépés, számozott fotókkal) →
+fotóhátteres sötét sáv („Nem két külön kezelés… Egy közös élmény.”) → **Ajánlat** (53 800 Ft, „Tartalmazza” lista, fotó) → **Legközelebbi szabad Páros HeadSpa időpontok** → **Miért jönnek…** (6 csempe) →
+**Valódi pillanatok** (3 kártya) → **GYIK** (12 kérdés).
 **Telefonon** (a terv szerint): hero → szabad időpontok → Kivel jönnél? → … (a `main` flex-oszlop, `order`), a GYIK után csak mobilon látszik az ajándékkártya-doboz és a záró felhívás
 („Kivel kapcsolnál ki egy kicsit?”); alul sticky „Szabad időpontok” sáv (a hero gombjának elgörgetése után jön be, amíg az időpont-szekció a képernyőn van, nem látszik).
 
 A fejlécet / láblécet a közös build adja (nem a terv saját, egyszerűsített fejléce): minden oldal fejléce egy helyről jön. A fejléc rózsaszín akciós sávja ezen az oldalon rejtett (mint a lézeres / oxigén landingen).
 Nincs felcím (arany cím a főcím felett) sehol (a tulajdonos korábbi kérése).
+
+## Hero-videó és képek (a szalon valódi felvételei, 2026-10-07)
+
+A tulajdonos kérésére (az első változat „puritán” volt) a Drive-ból és a közösségi oldalakról a legjobb valódi páros felvételek kerültek az oldalra (a Drive kapcsolat a deakfi@grantis.hu fiókot éri el):
+- **Hero (mozgó videó):** a Drive „Páros kezelés” nyers 4K felvételeiből (`paros_kezeles (14) / (44) / (45) / (94).MOV`: a páros kezelő, két gyógymasszőr, két vendég egymás mellett) vágott, ~17 mp-es, hang nélküli, ismétlődő
+  montázs (lassú kamera-eltolás, keresztátúsztatás): asztalon széles 1760×734 (`paros-hero-asztal.mp4`, 2,7 MB), telefonon álló 720×1140 (`paros-hero-mobil.mp4`, 1,6 MB), H.264. A fénykép (poszter, `assets/img/paros/hero-asztal.jpg`, `hero-mobil.jpg`)
+  azonnal látszik, a videófájl csak az oldal betöltése után kezd letöltődni; **nem töltődik** csökkentett mozgás beállításnál, adatspóroló módban és lassú (2G) kapcsolaton; ha a hero kikerül a képernyőről, megáll.
+- **Kivel jönnél? / Valódi pillanatok:** barátnők (a „Páros csajos érzelmes / márciusi páros” videó képkockái), anya-lánya (az „Anya-lánya” videó), pár (a „Páros kezelés” videó vendégpárja a váróban). Az ajándékkártya-kártya az ajándékkártya-oldal fotója.
+- **Lépések, ajánlat, időpont-kártya:** a páros kezelő nyers felvételeiből kimetszett képek (`lepes-egyszerre`, `lepes-50perc`, `ajanlat-kep`, `ido-kep`); az 1. és 2. lépés (váró, fejbőrkamera) a meglévő szalonfotók.
+- Az Instagram (@mosaicheadspa) bejelentkezés nélkül nem nézhető; a Facebook-oldal (Mosaic Headspa and Hair) fotói nagyrészt grafikák / kezelő-portrék, páros kezelés nincs közöttük: a Drive felvételei jobbak voltak.
+- Az éles `.mp4` fájlok forrása a Drive (nyers felvételek); újravágás: ffmpeg (`crop` + `scale` + `xfade`), a lépések a PR-leírásban.
 
 ## Szabad időpontok (`#idopontok`)
 
@@ -36,10 +50,10 @@ jelennek meg **MINTA időpontok**, „MINTA időpontok” felirattal (hogy a kin
 
 ## Ami a mockuphoz képest szándékosan más (nincs kitalált adat)
 
-- **Képek:** a szalon valódi fotói (a páros kezelő fotója, a váró, a fejbőrkamera, a hajszárítás stb.), nem a mockup MI-generált képei. A „Kivel jönnél?” és a „Valódi pillanatok” kártyáin ugyanaz a három valódi
-  páros / barátnős / anya-lánya fotó áll (több ilyen fotó nincs a repóban): ha lesz több, cserélhető.
-- **„Ők már kipróbálták.”:** a mockup három párjának videója („Dóra és Fanni”, „Kata és Lili”, „Anna és Péter”) nem létezik; helyette a szalon valódi vendégvideói állnak (`ajandek-vendeg-zsoka/zita/kinga/dori.mp4`, a vendég keresztnevével,
-  ugyanazok, mint az ajándékkártya-oldalon), a címük nem állítja, hogy párok. Idézet / csillagos vélemény nincs kitalálva; a Google-vélemények a Trustindex-widgetből jönnek (azonnal, hozzájárulás nélkül, a tulajdonos 2026-10-07-i kérése szerint).
+- **Képek / videó:** a szalon valódi felvételei (lásd fent), nem a mockup MI-generált képei.
+- **„Ők már kipróbálták ketten.”:** a mockup három párjának videója és idézete („Dóra és Fanni”, „Kata és Lili”, „Anna és Péter”) nem létezik. Helyette **három valódi, a páros kezelésről szóló Google-vélemény** áll szó szerint idézve (a névvel és a dátummal;
+  az éles oldalon a JS a Trustindex-widget aktuális adataiból a legújabb három, magyar nyelvű, 5 csillagos, „páros / párban” szót tartalmazó véleményre frissíti, a HTML-ben a 2026.09.-i három a tartalék), alatta a szalon valódi vendégvideói
+  (`ajandek-vendeg-zsoka/zita/kinga/dori.mp4`, keresztnévvel; ugyanazok, mint az ajándékkártya-oldalon, nem állítják, hogy párok). Utána a Trustindex-vélemények (azonnal, hozzájárulás nélkül, a tulajdonos 2026-10-07-i kérése szerint).
 - **Értékelés:** „4,9 Google · N+ vendégvélemény”: az N a Trustindex-widget aktuális adata (tartalék érték: 1 257), a „4,9” a tulajdonos megadott értéke (mint a lézeres oldalon).
 - **Ár:** 53 800 Ft / 2 fő, 26 900 Ft / fő (a Salonic szerinti ár; az októberi 20%-os kedvezmény listaára 65 900 Ft, ezt a terv nem mutatja, nem is tüntettem fel). Ha az akció véget ér, a Salonic-ár változik: az oldalon az ár a HTML-ben van (hero, ajánlat, időpont-oldalkártya, záró felhívás).
 - **GYIK-válaszok:** a meglévő tartalomra épülnek (a régi páros oldal, a Head Spa cikk, az ajándékkártya GYIK), de **a tulajdonosnak ellenőrizni kell** (különösen: „Kell frissen mosott hajjal érkezni?”, „Beszélgethetünk kezelés közben?”,

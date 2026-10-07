@@ -90,7 +90,7 @@ describe('/paros-headspa-budapest-uj', () => {
     const sorrend = await p.$$eval('main > section', (l) => l.map((s) => s.id));
     assert.deepEqual(sorrend, ['hero', 'kivel', 'velemenyek', 'elmeny', 'kozos', 'ajanlat', 'idopontok', 'miert', 'pillanatok', 'gyik', 'ajandek', 'zaro']);
     const h2 = await p.$$eval('main h2', (l) => l.map((x) => x.innerText.replace(/\s+/g, ' ').trim()));
-    for (const k of ['Kivel jönnél?', 'Ők már kipróbálták.', 'Így telik a közös HeadSpa élmény', 'Nem két külön kezelés ugyanabban az időpontban. Egy közös élmény.', 'Közös HeadSpa élmény 2 fő részére',
+    for (const k of ['Kivel jönnél?', 'Ők már kipróbálták ketten.', 'Így telik a közös HeadSpa élmény', 'Nem két külön kezelés ugyanabban az időpontban. Egy közös élmény.', 'Közös HeadSpa élmény 2 fő részére',
       'Legközelebbi szabad Páros HeadSpa időpontok', 'Miért jönnek Páros HeadSpa-ra a MOSAIC-ba?', 'Amit Páros HeadSpa előtt általában megkérdeztek']) assert.ok(h2.includes(k), 'hianyzo cim: ' + k);
     // a hero-ban a fo cim elott nincs felcim
     assert.equal(await p.$$eval('.hero-szoveg > *:first-child', (l) => l[0].tagName), 'H1');
@@ -130,7 +130,7 @@ describe('/paros-headspa-budapest-uj', () => {
     await p.waitForFunction(() => Math.abs(document.getElementById('idopontok').getBoundingClientRect().top) < 120, null, { timeout: 5000 }).catch(() => {});
     assert.equal(p.url(), elotte, 'nincs #hash');
     const top = await p.$eval('#idopontok', (e) => Math.round(e.getBoundingClientRect().top));
-    assert.ok(Math.abs(top) < 120, 'az idopontok szekcio a kepernyo tetejen van: ' + top);
+    assert.ok(top > 60 && top < 180, 'az idopontok szekcio a fejlec + oldal-menu alatt, a kepernyo tetejen van: ' + top); // asztalon 140 px a gorgetesi eltolas (fejlec + oldal-menu)
     await ctx.close();
   });
 
@@ -223,7 +223,7 @@ describe('/paros-headspa-budapest-uj', () => {
   test('ertekelesek szama: a hero / miert-szekcio szama a Trustindex aktualis adatabol frissul (tartalek: 1 257), a "+" jel marad', async () => {
     const { p, ctx } = await nyit();
     await p.waitForFunction(() => document.querySelector('[data-ertekeles-db]').textContent === '1 300');
-    assert.deepEqual(await p.$$eval('[data-ertekeles-db]', (l) => l.map((e) => e.textContent)), ['1 300', '1 300']);
+    assert.deepEqual(await p.$$eval('[data-ertekeles-db]', (l) => l.map((e) => e.textContent)), ['1 300', '1 300', '1 300']); // hero, velemenyek-sor, Miert jonnek
     assert.match(await p.getAttribute('.google-nagy', 'aria-label'), /1300 Google-vélemény/);
     assert.match(await p.textContent('.google-nagy'), /4,9 Google\s*·\s*1 300\+ vendégvélemény/);
     await ctx.close();
@@ -306,6 +306,62 @@ describe('/paros-headspa-budapest-uj', () => {
     assert.deepEqual(dl.map((x) => x.cta), ['kozos-idopontok']);
     const sav = await p.evaluate(() => { const s = document.getElementById('comp-mpv0ganp'); return s ? getComputedStyle(s).display : 'nincs'; });
     assert.ok(['none', 'nincs'].includes(sav), 'akcios sav: ' + sav);
+    await ctx.close();
+  });
+
+
+  test('hero: mozgo video (a paros kezelobol): az allokep azonnal latszik, a video a betoltes utan indul, telefonon a fuggoleges valtozat; csokkentett mozgasnal nem toltodik', async () => {
+    const { p, ctx } = await nyit();
+    await p.waitForFunction(() => document.getElementById('hero-video').classList.contains('aktiv'), null, { timeout: 15000 });
+    const v = await p.$eval('#hero-video', (e) => ({ src: e.currentSrc, muted: e.muted, loop: e.loop, paused: e.paused, t: e.currentTime, w: e.videoWidth, h: e.videoHeight, ah: e.getAttribute('aria-hidden') }));
+    assert.match(v.src, /\/assets\/video\/paros-hero-asztal\.mp4$/);
+    assert.equal(v.muted, true); assert.equal(v.loop, true); assert.equal(v.ah, 'true');
+    assert.ok(v.w > v.h * 2, 'szeles (asztali) video: ' + v.w + 'x' + v.h);
+    assert.equal(await p.$eval('.hero-hatter', (e) => e.complete && e.naturalWidth > 0), true, 'az allokep is megvan');
+    await ctx.close();
+    const m = await nyit({ szeles: 390 });
+    await m.p.waitForFunction(() => document.getElementById('hero-video').classList.contains('aktiv'), null, { timeout: 15000 });
+    const mv = await m.p.$eval('#hero-video', (e) => ({ src: e.currentSrc, w: e.videoWidth, h: e.videoHeight }));
+    assert.match(mv.src, /paros-hero-mobil\.mp4$/);
+    assert.ok(mv.h > mv.w, 'allo (mobil) video: ' + mv.w + 'x' + mv.h);
+    await m.ctx.close();
+    // csokkentett mozgas: a video fajl nem toltodik (csak az allokep)
+    const c2 = await bongeszo.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+    const p2 = await c2.newPage();
+    await p2.route(/^(?!http:\/\/localhost)/, (r) => r.abort());
+    await p2.goto(`http://localhost:${port}/${OLDAL}`, { waitUntil: 'load' });
+    await p2.waitForTimeout(1500);
+    assert.equal(await p2.$eval('#hero-video', (e) => e.getAttribute('src')), null, 'nincs video-forras');
+    await c2.close();
+  });
+
+  test('az oldal-menu (asztalon): 5 pont + Szabad idopontok gomb, a fejlec alatt ragados; telefonon rejtett; a pontok a szekciokhoz gorgetnek (nincs #hash)', async () => {
+    const { p, ctx } = await nyit();
+    const pontok = await p.$$eval('.oldal-menu ul a', (l) => l.map((a) => a.textContent.trim()));
+    assert.deepEqual(pontok, ['Az élmény', 'Vélemények', 'Mit tartalmaz?', 'GYIK', 'Ajándékkártya']);
+    assert.equal(await p.$eval('.oldal-menu', (e) => getComputedStyle(e).position), 'sticky');
+    await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, 2500); });
+    await p.waitForTimeout(300);
+    assert.ok(await p.$eval('.oldal-menu', (e) => { const r = e.getBoundingClientRect(); return r.top >= 0 && r.top < 140 && r.height > 40; }), 'gorgetes kozben is latszik');
+    const elotte = p.url();
+    await p.click('.oldal-menu ul a[data-cta="menu-gyik"]');
+    await p.waitForFunction(() => { const r = document.getElementById('gyik').getBoundingClientRect(); return r.top > 60 && r.top < 260; }, null, { timeout: 5000 });
+    assert.equal(p.url(), elotte);
+    await ctx.close();
+    const m = await nyit({ szeles: 390 });
+    assert.equal(await m.p.$eval('.oldal-menu', (e) => getComputedStyle(e).display), 'none');
+    await m.ctx.close();
+  });
+
+  test('"Ők már kipróbálták ketten.": 3 valódi páros Google-vélemény (a widget szerint frissülve), a vendégvideók; a képek a szalon valódi páros felvételeiből vannak (assets/img/paros/)', async () => {
+    const { p, ctx } = await nyit();
+    const idezetek = await p.$$eval('.idezet', (l) => l.map((f) => ({ szoveg: f.querySelector('blockquote').textContent, nev: f.querySelector('figcaption b').textContent })));
+    assert.equal(idezetek.length, 3);
+    for (const i of idezetek) assert.match(i.szoveg, /p[áa]ros|p[áa]rban/i, 'a velemeny a paros kezelesrol szol: ' + i.szoveg);
+    // a teszt hamis widgetje nem tartalmaz ti-review-item-et: a HTML-beli (valodi) tartalek all, szo szerint
+    assert.ok(idezetek.some((i) => i.nev === 'Viktória Fodor' && /anyukámmal/.test(i.szoveg)));
+    const kepek = await p.$$eval('img[src*="/assets/img/paros/"]', (l) => l.map((i) => i.getAttribute('src')));
+    for (const k of ['kivel-baratnok', 'kivel-anya-lanya', 'kivel-par', 'pill-baratnok', 'pill-anya-lanya', 'pill-par', 'lepes-egyszerre', 'lepes-50perc', 'ajanlat-kep', 'ido-kep']) assert.ok(kepek.some((s) => s.includes(k)), 'hianyzo kep: ' + k);
     await ctx.close();
   });
 

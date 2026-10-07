@@ -4,7 +4,8 @@
 //     lezeres / PMU landingen). Idopontot nem talalunk ki: ha az API nem valaszol, a foglalo-motorra vezetunk. Egy idopontra kattintva a helyben nyilo
 //     foglalo-motor (reteg) nyilik meg a Paros szolgaltatassal es az idopont idobelyegevel (&start=<unix>): rogton az adatlap (docs/booking-engine/BOOKING_LAYER.md).
 //     Csak az elonezeten (*.pages.dev, localhost) - ahol a Salonic CORS-a miatt a valodi idopontok nem toltodnek be - jelennek meg MINTA idopontok, jelolve.
-//  2. Vendegvideok (kattintasra toltodnek be), a Trustindex-velemenyek (MINDIG azonnal), az ertekelesek szama (a widget aktualis adata), mobil sticky CTA,
+//  2. Hero: mozgo video a paros kezelobol. Vendegvideok (kattintasra toltodnek be), a paros kezelesrol szolo valodi Google-velemenyek es az ertekelesek szama
+//     (a Trustindex-widget aktualis adata), a Trustindex-velemenyek (MINDIG azonnal), mobil sticky CTA,
 //     a lepesek kepsorozatanak pontjai, gorgetes (URL-valtozas nelkul: a GTM "History Change" ne induljon).
 (() => {
   'use strict';
@@ -234,18 +235,56 @@
   }
   trustindexBetolt();
 
-  // --- ertekelesek szama: a Trustindex-widget aktualis adata; a HTML-ben a tartalek ertek all ----------------------------------------------
+  // --- ertekelesek szama + a paros kezelesrol szolo VALODI Google-velemenyek: a Trustindex-widget aktualis adata; a HTML-ben tartalek (szo szerinti, valodi) ertekek allnak ---------
   const TI = 'https://cdn.trustindex.io/widgets/8a/8a7562c424f027774456be130a1/content.html';
+  const nevRendez = (s) => s.toLowerCase().replace(/(^|[\s\-“"'’])(\p{L})/gu, (m, k, b) => k + b.toUpperCase());
+  function idezetekFrissit(d) {
+    const hova = $('idezetek');
+    if (!hova) return;
+    const talalat = [];
+    for (const it of d.querySelectorAll('.ti-review-item')) {
+      const pont = parseFloat(it.getAttribute('data-rating') || '0');
+      const sz = ((it.querySelector('.ti-review-content') || {}).textContent || '').replace(/\s+/g, ' ').trim();
+      const nev = ((it.querySelector('.ti-name') || {}).textContent || '').replace(/\s+/g, ' ').trim();
+      const datum = ((it.querySelector('.ti-date') || {}).textContent || '').trim();
+      // csak a paros / parban kezelesrol szolo, magyar, 5 csillagos, ertelmes hosszu velemenyek (a widget sorrendje: legujabb elol)
+      if (pont >= 5 && it.getAttribute('data-language') === 'hu' && /p[áa]ros|p[áa]rban/i.test(sz) && sz.length >= 40 && sz.length <= 240 && nev && !/[&@]/.test(nev)) talalat.push({ sz, nev: nevRendez(nev), datum });
+      if (talalat.length === 3) break;
+    }
+    if (talalat.length < 3) return; // kevesebb: marad a HTML-beli tartalek
+    hova.replaceChildren(...talalat.map((t) => elem('figure', { class: 'idezet' },
+      elem('span', { class: 'csillagok', 'aria-label': '5 csillag', szoveg: '★★★★★' }),
+      elem('blockquote', { szoveg: t.sz }),
+      elem('figcaption', {}, elem('span', { class: 'avatar', 'aria-hidden': 'true', szoveg: t.nev.charAt(0) }),
+        elem('span', {}, elem('b', { szoveg: t.nev }), elem('small', { szoveg: 'Google vélemény' + (t.datum ? ' · ' + t.datum : '') }))))));
+  }
   (async () => {
     try {
       const d = new DOMParser().parseFromString(await (await fetch(TI, { credentials: 'omit' })).text(), 'text/html');
       const a = d.querySelector('.ti-header .ti-rating-text a');
       const n = ((a && a.textContent.match(/\d[\d\s.]*/)) || [''])[0].replace(/\D/g, '');
-      if (!n) return;
-      for (const e of document.querySelectorAll('[data-ertekeles-db]')) e.textContent = szam(+n);
-      for (const l of document.querySelectorAll('.google-nagy[aria-label]')) l.setAttribute('aria-label', l.getAttribute('aria-label').replace(/\d+ Google-vélemény/, `${n} Google-vélemény`));
+      if (n) {
+        for (const e of document.querySelectorAll('[data-ertekeles-db]')) e.textContent = szam(+n);
+        for (const l of document.querySelectorAll('.google-nagy[aria-label]')) l.setAttribute('aria-label', l.getAttribute('aria-label').replace(/\d+ Google-vélemény/, `${n} Google-vélemény`));
+      }
+      idezetekFrissit(d);
     } catch (hiba) { console.error(hiba); }
   })();
+
+  // --- hero: mozgo video a paros kezelobol (telefonon a fuggoleges valtozat). A fenykep (poszter) azonnal latszik, a videofajl csak az oldal betoltese utan,
+  //     lassu / adatspóroló kapcsolaton vagy csokkentett mozgas mellett egyaltalan nem toltodik. ----------------------------------------------------------
+  const hv = $('hero-video');
+  if (hv && !csokkentett && !(navigator.connection && (navigator.connection.saveData || /(^|-)2g$/.test(navigator.connection.effectiveType || '')))) {
+    const indit = () => {
+      hv.src = matchMedia('(max-width: 700px)').matches ? hv.dataset.mobil : hv.dataset.asztal;
+      hv.addEventListener('playing', () => hv.classList.add('aktiv'), { once: true });
+      hv.play().catch(() => { /* a poszter marad */ });
+      if ('IntersectionObserver' in window) { // ha a hero kikerul a kepernyorol, a video megall (energia, adat)
+        new IntersectionObserver((t) => { for (const x of t) { if (x.isIntersecting) hv.play().catch(() => {}); else hv.pause(); } }, { threshold: 0.05 }).observe(hv);
+      }
+    };
+    if (document.readyState === 'complete') indit(); else addEventListener('load', indit, { once: true });
+  }
 
   // --- mobil sticky CTA: a hero gombjanak elgorgetese utan jon be, es amig az idopont-szekcio a kepernyon van, nem latszik (maga a szekcio a cel).
   //     Gorgetes-figyelo (nem IntersectionObserver): az gyors ugrasnal / gorgeto-linknel nem jelezne. ----------------------------------------
