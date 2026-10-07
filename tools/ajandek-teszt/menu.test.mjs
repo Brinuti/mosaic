@@ -125,6 +125,24 @@ describe('az oxigénes ajándékkártya a menüben, a választón és az oxigén
     tartalmaz('@media (max-width: 599px) {\n  .av-racs { grid-template-columns: minmax(0, 1fr); }');
   });
 
+  test('az oxigénes ajándékkártya hero-ja előtte-utána videó (a Meta-fiók "Oxigénhajterápia" videója), nem a kezelésről készült fotó', () => {
+    const adat = olvas('assets', 'js', 'ajandek-adat-oxigen.js');
+    const html = olvas('foglalas', 'oxigen-ajandekkartya.html');
+    const poster = '/assets/img/ajandek/hero-oxigen-elotte-utana.jpg';
+    const klip = '/assets/video/ajandek-hero-oxigen-elotte-utana.mp4';
+    for (const f of [poster, klip]) assert.ok(fs.existsSync(path.join(GYOKER, f.slice(1))), f);
+    assert.equal(db(adat, "hero_media: { src: '" + poster + "'"), 1);
+    assert.equal(db(adat, "video: { src: '" + klip + "' }"), 1);
+    assert.ok(adat.includes('video_id 1413460453443369'), 'a forrás a Meta-videó azonosítójával együtt dokumentált');
+    assert.equal(db(html, 'src="' + poster + '"'), 1);
+    assert.ok(!html.includes('hero-oxigen-ajandek.jpg" width'), 'a régi, kezelést mutató hero-kép nincs a hero-ban');
+    // a videó nincs "hidden"-re téve (különben nem látszik és nem játszódik le), némított + ismétlődő
+    const tag = /<video class="ah-hero-video" id="ah-hero-video"[^>]*>/.exec(html)[0];
+    assert.ok(!/\shidden[\s>]/.test(tag) && /\bmuted\b/.test(tag) && /\bloop\b/.test(tag) && /\bplaysinline\b/.test(tag), tag);
+    // a videó mérete mobilra is elfogadható (egy fájl, 720x720)
+    assert.ok(fs.statSync(path.join(GYOKER, klip.slice(1))).size < 2 * 1024 * 1024);
+  });
+
   test('az oxigénes oldalak a saját, "MOSAIC OXIGÉNTERÁPIA" feliratú személyre szabott kártyaképet használják (nem a HeadSpa-felirato vagy lézeres változatot)', () => {
     const kep = '/assets/img/ajandek/atadas-szemelyre-oxigen.jpg';
     assert.ok(fs.existsSync(path.join(GYOKER, kep.slice(1))), kep);
