@@ -53,7 +53,7 @@
       kartya_felirat: ['LÉZERES SZŐRTELENÍTÉS', c.felirat],
       osszefoglalo: c.rovid,   // a lista egy sorba fer (a 6 kartya a harom lepes magassagaba kerul); a teljes szoveg a jobb oldali doboz leirasaban van
       osszefoglalo_rovid: c.rovid,
-      osszefoglalo_ikon: 'sparkle',
+      osszefoglalo_ikon: 'nincs', // a tulajdonos kerese (2026-10-07): az alcim elott nincs kis csillag-ikon (mint az oxigenes kartyakon)
       leiras: c.nev + ': az első lézeres kezelés állapotfelméréssel.',
       tartalom: [c.mit, 'Az első kezelés + állapotfelmérés', '6 hónapig felhasználható'],
       kartya_sor: 'Lézeres szőrtelenítés – ' + c.nev,

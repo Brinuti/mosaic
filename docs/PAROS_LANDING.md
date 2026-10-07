@@ -28,11 +28,12 @@ Nincs felcím (arany cím a főcím felett) sehol (a tulajdonos korábbi kérés
 ## Hero-videó és képek (a szalon valódi felvételei, 2026-10-07)
 
 A tulajdonos kérésére (az első változat „puritán” volt) a Drive-ból és a közösségi oldalakról a legjobb valódi páros felvételek kerültek az oldalra (a Drive kapcsolat a deakfi@grantis.hu fiókot éri el):
-- **Hero (mozgó videó):** a Drive „Páros kezelés” nyers 4K felvételeiből (`paros_kezeles (14) / (44) / (45) / (94).MOV`: a páros kezelő, két gyógymasszőr, két vendég egymás mellett) vágott, ~17 mp-es, hang nélküli, ismétlődő
-  montázs (lassú kamera-eltolás, keresztátúsztatás): asztalon széles 1760×734 (`paros-hero-asztal.mp4`, 2,7 MB), telefonon álló 720×1140 (`paros-hero-mobil.mp4`, 1,6 MB), H.264. A fénykép (poszter, `assets/img/paros/hero-asztal.jpg`, `hero-mobil.jpg`)
+- **Hero (mozgó videó):** a Drive „Páros kezelés” nyers 4K felvételeiből (`paros_kezeles (44) / (45) / (94).MOV`: a páros kezelő, két gyógymasszőr, két vendég egymás mellett) vágott, ~14 mp-es, hang nélküli, ismétlődő
+  montázs (lassú kamera-eltolás, rövid sötétbe úsztatás a klipek között, kissé világosítva): asztalon széles 1760×734 (`paros-hero-asztal.mp4`, 2,7 MB), telefonon álló 720×1140 (`paros-hero-mobil.mp4`, 1,6 MB), H.264. A fénykép (poszter, `assets/img/paros/hero-asztal.jpg`, `hero-mobil.jpg`)
   azonnal látszik, a videófájl csak az oldal betöltése után kezd letöltődni; **nem töltődik** csökkentett mozgás beállításnál, adatspóroló módban és lassú (2G) kapcsolaton; ha a hero kikerül a képernyőről, megáll.
 - **Kivel jönnél? / Valódi pillanatok:** barátnők (a „Páros csajos érzelmes / márciusi páros” videó képkockái), anya-lánya (az „Anya-lánya” videó), pár (a „Páros kezelés” videó vendégpárja a váróban). Az ajándékkártya-kártya az ajándékkártya-oldal fotója.
 - **Lépések, ajánlat, időpont-kártya:** a páros kezelő nyers felvételeiből kimetszett képek (`lepes-egyszerre`, `lepes-50perc`, `ajanlat-kep`, `ido-kep`); az 1. és 2. lépés (váró, fejbőrkamera) a meglévő szalonfotók.
+- - A Trustindex-vélemény szövegéből a JS kiveszi a csatolt képet és a "+0" képszámlálót (hiba volt: "+0Isteni élmény…"; teszt védi).
 - Az Instagram (@mosaicheadspa) bejelentkezés nélkül nem nézhető; a Facebook-oldal (Mosaic Headspa and Hair) fotói nagyrészt grafikák / kezelő-portrék, páros kezelés nincs közöttük: a Drive felvételei jobbak voltak.
 - Az éles `.mp4` fájlok forrása a Drive (nyers felvételek); újravágás: ffmpeg (`crop` + `scale` + `xfade`), a lépések a PR-leírásban.
 
