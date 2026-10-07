@@ -221,8 +221,15 @@
       fig.observe(v);
     }
   }
-  // a hero kepe (LCP) elobb: a klipek az oldal betoltese utan indulnak
-  if (document.readyState === 'complete') klipInditas(); else addEventListener('load', klipInditas, { once: true });
+  // a hero kepe (LCP) elobb: a klipek akkor indulnak, amikor a hero kepe betoltott (legfeljebb 3 mp mulva akkor is): nem kell megvarni a lassu kulso elemeket (Trustindex)
+  let klipKezdve = false;
+  const klipKezd = () => { if (klipKezdve) return; klipKezdve = true; klipInditas(); };
+  const heroKep = document.querySelector('.hero-hatter');
+  if (heroKep && !heroKep.complete) {
+    heroKep.addEventListener('load', klipKezd, { once: true });
+    heroKep.addEventListener('error', klipKezd, { once: true });
+    setTimeout(klipKezd, 3000);
+  } else klipKezd();
 
   // --- hangos vendegvideok: felugro ablak (a gomb nyitja, a video csak ekkor toltodik be) -----------------------------------------------
   const dlg = $('lb'), lbTart = $('lb-tartalom');
