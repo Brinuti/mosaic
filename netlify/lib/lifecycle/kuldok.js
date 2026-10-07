@@ -47,7 +47,7 @@ export async function smsKuld(env, { telefon, szoveg }, fetchFn = fetch) {
   let j; try { j = JSON.parse(t); } catch { j = null; }
   const hiba = !r.ok || (j && (j.error || j.errors || j.status === 'error')) || /^\s*(error|hiba)/i.test(t);
   if (hiba) { if (r.status === 401) tokenGyorsitotar = null; throw new Error(`SimpleSMS sendSMS hiba: ${t.slice(0, 200)}`); }
-  const id = j ? (j.sms_id ?? j.id ?? j.data?.sms_id ?? j.data ?? t) : t;
+  const id = j ? (j.sms_id ?? j.id ?? j.response ?? j.data?.sms_id ?? j.data ?? t) : t;
   return { id: String(typeof id === 'object' ? JSON.stringify(id) : id).slice(0, 80) };
 }
 
@@ -57,7 +57,7 @@ export async function smsEgyenleg(env, fetchFn = fetch) {
   const r = await fetchFn(`${SMS_ALAP}/getCreditNumber`, { headers: { Authorization: `Bearer ${token}` } });
   const t = (await r.text()).trim();
   let j; try { j = JSON.parse(t); } catch { j = null; }
-  const v = j ? (j.credit ?? j.balance ?? j.data ?? j.response ?? Object.values(j)[0]) : t;
+  const v = j ? (j.credit ?? j.balance ?? j.response ?? j.data ?? Object.values(j)[0]) : t;
   const n = Number(String(v).replace(/[^\d.,-]/g, '').replace(',', '.'));
   return Number.isFinite(n) ? n : null;
 }

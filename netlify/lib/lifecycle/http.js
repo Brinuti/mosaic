@@ -77,7 +77,8 @@ export async function api(request, env, ctx) {
     const jeloltek = Array.isArray(torzs.felhasznalok) && torzs.felhasznalok.length ? torzs.felhasznalok.slice(0, 5) : [env.SIMPLESMS_FELHASZNALO || 'mosaic'];
     const eredmeny = [];
     for (const nev of jeloltek) eredmeny.push(await smsConnectProba(env, String(nev).slice(0, 80)));
-    return json({ domain: env.SIMPLESMS_DOMAIN || 'mosaicheadspa.hu', eredmeny });
+    let egyenleg = null; try { egyenleg = await smsEgyenleg(env); } catch (e) { egyenleg = `hiba: ${String(e && e.message).slice(0, 80)}`; }
+    return json({ domain: env.SIMPLESMS_DOMAIN || 'mosaicheadspa.hu', eredmeny, egyenleg });
   }
   if (resz === 'teszt-torol') {
     if (cfg.mod === 'elo' && !torzs.biztos) return json({ hiba: 'elo modban csak biztos:true-val' }, 409);
