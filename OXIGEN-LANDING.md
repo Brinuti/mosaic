@@ -107,11 +107,14 @@ Az oldalon nincsenek a címek fölötti kis (sárga) alcímek. Az arany pill-gom
 Új szekció (`#berlet`, `.ajandekok`) az „Mivel kezdjünk?” (árak) szekció után, a „Miért más nálunk” előtt; sötét zöld háttér, két kártya:
 
 - **Ajándék Oxygeni sampon-minta minden konzultáció mellé** (fotó: `assets/img/oxigen/ajandek-minta.webp`, a tulajdonos képéből kivágva és enyhén retusálva).
-- **5 vagy 10 alkalmas bérlet, termékajándékkal** (fotó: `ajandek-berlet.webp`): **5 alkalom = 133 900 Ft** (ajándék: 1 literes Oxygeni sampon), **10 alkalom = 263 900 Ft** (ajándék: 1 literes sampon + balzsam); mindkettő legalább fél évre elegendő adag.
+- **5 vagy 10 alkalmas bérlet, termékajándékkal** (fotó: `ajandek-berlet.webp`, a kis mintaüveg a háttér kitöltésével kiretusálva, hogy ne tűnjön ajándéknak a bérletnél):
+  - **5 alkalom = 130 000 Ft** (5 × 26 000), ajándék: 1 literes Oxygeni sampon (**19 800 Ft** értékben);
+  - **10 alkalom = 260 000 Ft** (10 × 26 000), ajándék: 1 literes sampon + 1 literes balzsam (**19 800 + 28 000 = 47 800 Ft** értékben);
+  - mindkettő legalább fél évre elegendő adag; a dobozokban látványos „Ennyit spórolsz” sáv, az áthúzott ár az Oxygeni webshop ára.
 
 Szabályok / döntések:
-- A bérlet **nem ad forintkedvezményt**: az ár = az alkalmankénti fizetés összege (1. alkalom 29 900 Ft + a továbbiak 26 000 Ft/alkalom: 29 900 + 4 × 26 000 = 133 900; 29 900 + 9 × 26 000 = 263 900). Ha a Salonic-ár változik, a két összeget és a `b-szamitas` sorokat is át kell írni (a HTML-ben megjegyzés jelzi a képletet).
+- **Az első kezelés (29 900 Ft) külön van, a bérlet a további alkalmakra szól** (tulajdonosi pontosítás, 2026-10-07). A bérlet **nem ad forintkedvezményt**: az ár = alkalmankénti fizetés (26 000 Ft/alkalom); az előny a termékajándék.
+- **Piaci ár forrása:** az Oxygeni hivatalos magyar webshopja (webshop.oxygenihair.com), 2026-10-07: Hair Loss Shampoo 1000 ml = 19 800 Ft, Hair Loss Mask 1000 ml = 28 000 Ft (a „balzsam” az Oxygeni vonalon a Hair Loss Mask, ami a leírása szerint kondicionálóként is használható). Ha az árak változnak, a HTML-ben (`.b-piac`, `.b-sporolas`, az `.aj-alcim` és a GYIK) át kell írni; a forrás-sor a szekció alján linkel.
 - Az oldalon továbbra is igaz: **nincs kötelező bérlet** (a szekcióban és a GYIK-ban is így szerepel).
 - A „konzultáció” = hajkamerás állapotfelmérés + konzultáció (a 4 990 Ft-os, illetve az első kezelés része); az „ingyenes” szó direkt nincs ott, mert az állapotfelmérés fizetős.
-- A bérlet vásárlási útja nincs a Salonicban/oldalon kidolgozva: a gomb csak telefonhívás (`tel:`), `data-cta` nélkül, így nem küld mérési eseményt.
-- A balzsamról nincs fotó, ezért csak szöveg szerepel; az ajándék nevét (Oxygeni balzsam) a tulajdonos adta.
+- A bérletnek nincs gombja (a tulajdonos kérésére); a vásárlás útja nincs az oldalon kidolgozva. Nincs `data-cta`, nem küld mérési eseményt.
