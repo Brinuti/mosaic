@@ -20,8 +20,10 @@
   if (!A) { return; }
   var KT = window.AJANDEK_KARTYA || null;
 
-  var API = '/api/ajandek/';
-  var TAROLO = 'ah_v1';
+  // kereskedo (HeadSpa / lezer): az API-elotag es a bongeszo-tarolo kulcsai az ADAT-bol (a HeadSpa alapertekei valtozatlanok)
+  var API = A.API_ELOTAG || '/api/ajandek/';
+  var KE = A.TAROLO_ELOTAG || 'ah';
+  var TAROLO = KE + '_v1';
   var ATTR_KULCSOK = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'gclid', 'fbclid', 'ttclid'];
   // csak a rendeleshez (a fizetes kerelmehez, majd a PaymentIntent metadatajaba), a dataLayer-esemenyekbe NEM mennek
   var ATTR_CSAK_RENDELES = ['gbraid', 'wbraid'];
@@ -215,6 +217,7 @@
     return { item_id: t.item_id, item_name: t.nev, item_category: 'Ajándékkártya', item_category2: t.product_type, price: t.ar_ft, quantity: 1 };
   }
   function mer(nev, tartalom, egyszer) {
+    if (A.MERES === false) return false; // a lezeres kartya egyelore nem kuld dataLayer-esemenyt (a mero-fiokok beallitasa a meres-felelos dolga)
     if (egyszer) { if (kuldott[egyszer]) return false; kuldott[egyszer] = true; }
     var dl = window.dataLayer = window.dataLayer || [];
     dl.push({ ecommerce: null });
@@ -498,7 +501,7 @@
       if (doboz.querySelector('iframe')) return;
       var f = document.createElement('iframe');
       f.src = doboz.getAttribute('data-src');
-      f.title = 'A MOSAIC Head Spa a térképen (OpenStreetMap)';
+      f.title = 'A ' + ((A.SZALON && A.SZALON.nev) || 'MOSAIC Head Spa') + ' a térképen (OpenStreetMap)';
       f.loading = 'lazy';
       f.referrerPolicy = 'no-referrer';
       doboz.appendChild(f);
@@ -531,7 +534,7 @@
   }
   function kijelzett() { return S.termek && termek(S.termek) ? S.termek : ajanlottId(); }
   function termekKartya(t) {
-    var meta = [['clock', t.osszefoglalo, t.osszefoglalo_rovid], [t.vendeg_db > 1 ? 'users' : 'user', t.vendeg_db + ' fő']];
+    var meta = [[t.osszefoglalo_ikon || 'clock', t.osszefoglalo, t.osszefoglalo_rovid], t.vendeg_db ? [t.vendeg_db > 1 ? 'users' : 'user', t.vendeg_db + ' fő'] : (t.meta2 ? ['clock', t.meta2, t.meta2_rovid] : [null, null])];
     var lista = h('ul', { class: 'ah-termek-meta' });
     // mobilon a rovid szoveg latszik (.ah-m-rovid), asztalon a hosszu
     meta.forEach(function (m) { if (m[1]) lista.appendChild(h('li', null, ikonSpan(m[0]), m[2] ? h('span', null, h('span', { class: 'ah-m-hosszu', text: m[1] }), h('span', { class: 'ah-m-rovid', text: m[2] })) : h('span', { text: m[1] }))); });
@@ -540,7 +543,7 @@
       kep.appendChild(h('img', { src: kepUt(t.vizual.src), alt: '', width: t.vizual.w || null, height: t.vizual.h || null, loading: 'lazy', decoding: 'async', style: t.vizual.poz ? 'object-position:' + t.vizual.poz : null }));
     }
     // plusz sor minden kártyán: a kezelés felépítése (felugró ablak); a gomb a kártyán belül sem választja ki a terméket
-    var menet = h('button', { type: 'button', class: 'ah-kez-link', 'data-kez': t.id, 'aria-haspopup': 'dialog' }, ikonSpan('list'), h('span', { text: 'Hogyan épül fel a kezelés?' }), ikonSpan('chevron'));
+    var menet = t.kezeles && t.kezeles.menet ? h('button', { type: 'button', class: 'ah-kez-link', 'data-kez': t.id, 'aria-haspopup': 'dialog' }, ikonSpan('list'), h('span', { text: 'Hogyan épül fel a kezelés?' }), ikonSpan('chevron')) : null;
     return h('label', { class: 'ah-termek', id: 'ah-termek-' + t.id, 'data-termek': t.id },
       h('input', { type: 'radio', name: 'termek', value: t.id, class: 'ah-termek-radio' }),
       kep,
@@ -644,7 +647,7 @@
       } else {
         media.appendChild(h('figure', { class: 'ah-kez-hamarosan' },
           poszter ? h('img', { src: kepUt(poszter), alt: (t.vizual && t.vizual.alt) || '', loading: 'lazy', decoding: 'async' }) : null,
-          h('figcaption', { text: 'A kezelés videója hamarosan itt lesz.' })));
+          A.VIDEO_FELIRAT === '' ? null : h('figcaption', { text: A.VIDEO_FELIRAT || 'A kezelés videója hamarosan itt lesz.' })));
       }
     }
     atvetelRender();
@@ -735,9 +738,9 @@
       kihagyva: !!m.kihagyva
     };
   }
-  function fotoTarolasOlvas() { try { return sessionStorage.getItem('ah_foto') || null; } catch (e) { return null; } }
+  function fotoTarolasOlvas() { try { return sessionStorage.getItem(KE + '_foto') || null; } catch (e) { return null; } }
   function fotoTarolasIr(adat) {
-    try { if (adat) sessionStorage.setItem('ah_foto', adat); else sessionStorage.removeItem('ah_foto'); } catch (e) { /* tul nagy / privat ablak: a foto csak ebben az oldalbetoltesben el */ }
+    try { if (adat) sessionStorage.setItem(KE + '_foto', adat); else sessionStorage.removeItem(KE + '_foto'); } catch (e) { /* tul nagy / privat ablak: a foto csak ebben az oldalbetoltesben el */ }
   }
   function fotoBeallit(blob, adat) {
     if (fotoUrl) { try { URL.revokeObjectURL(fotoUrl); } catch (e) { /* nem baj */ } }
@@ -1471,6 +1474,7 @@
   // pontosan az assets/js/klon.js wixLead sorrendjeben: lead -> ecommerce:null -> generate_lead), hogy az utalasos meres valtozatlan maradjon.
   // A bank_transfer_request az uj meresi szerzodes resze marad. Rendelesenkent egyszer fut (az atutalasKesz csak szerveroldali siker utan hivodik).
   function regiUtalasLead(o) {
+    if (A.MERES_REGI === false) return;
     try {
       var cimke = 'Form name: Ajándékkártya ';
       var nevek = String(o.nev || '').trim().split(/\s+/);
@@ -1537,6 +1541,7 @@
   // oldalbetolteskor. A GTM-hez nem nyulunk. Csak az eles domainen (mint a suti.js merokodjai); teszt-modban ?meres_proba=1-gyel kiprobalhato.
   var ELES_MERES = /^(www\.)?mosaicheadspa\.hu$/.test(location.hostname);
   function regiKonverzio(ertek) {
+    if (A.MERES_REGI === false) return; // a lezeres kartya NEM a HeadSpa-konverzioba szamit
     if (!(ELES_MERES || (S.mod === 'teszt' && Q.get('meres_proba') === '1'))) return;
     try {
       var f = document.createElement('iframe');
@@ -1662,10 +1667,11 @@
     if (kesz) gombok.appendChild(h('a', { class: 'ah-gomb ah-gomb-fo', href: r.kartya.url, target: '_blank', rel: 'noopener', text: 'Ajándékkártya letöltése' }));
     else gombok.appendChild(h('button', { type: 'button', class: 'ah-gomb ah-gomb-fo', disabled: true, 'aria-disabled': 'true', text: 'Készítjük az ajándékkártyádat…' }));
     if (kesz) {
-      var targy = 'Ajándék a MOSAIC Head Spa-ba';
+      var marka = (A.SZALON && A.SZALON.nev) || 'MOSAIC Head Spa';
+      var targy = A.EMAIL_TARGY || 'Ajándék a MOSAIC Head Spa-ba';
       // a szerver abszolut URL-t ad (levelekben is ez megy); relativ esetre a sajat origin kerul elé
       var kartyaUrl = /^https?:\/\//.test(r.kartya.url) ? r.kartya.url : location.origin + r.kartya.url;
-      var torzs = (r.szemelyre && r.szemelyre.nev ? r.szemelyre.nev + ', ' : '') + 'ez a MOSAIC Head Spa ajándékkártyád: ' + kartyaUrl;
+      var torzs = (r.szemelyre && r.szemelyre.nev ? r.szemelyre.nev + ', ' : '') + 'ez a ' + marka + ' ajándékkártyád: ' + kartyaUrl;
       gombok.appendChild(h('a', { class: 'ah-gomb ah-gomb-kor', href: 'mailto:?subject=' + encodeURIComponent(targy) + '&body=' + encodeURIComponent(torzs), text: 'Elküldöm e-mailben' }));
     }
     gombok.appendChild(h('button', { type: 'button', class: 'ah-gomb ah-gomb-kor', 'data-valtas': 'ah-bevaltas', text: 'Hogyan váltható be?' }));
@@ -1861,8 +1867,8 @@
   // beolvashatta volna a cimet (a client_secret nem kerulhet a meresbe).
   function visszaAdat() {
     try {
-      var v = JSON.parse(sessionStorage.getItem('ah_vissza') || '{}');
-      sessionStorage.removeItem('ah_vissza');
+      var v = JSON.parse(sessionStorage.getItem(KE + '_vissza') || '{}');
+      sessionStorage.removeItem(KE + '_vissza');
       return v && typeof v === 'object' ? v : {};
     } catch (e) { return {}; }
   }
@@ -1972,6 +1978,9 @@
   function init() {
     // a statikus tartalom a config-bol (a komponensfa nem valtozik, csak a tartalom)
     ikonokKitolt(document);
+    // kereskedo-korlatok: ceges szamla / banki atutalas tiltva (uj KATA: vallalkozasnak nem szamlazhat; lezeres kartya: csak bankkartya / tarca)
+    if (A.CEGES_SZAMLA === false && $('ah-ceges')) $('ah-ceges').hidden = true;
+    if (A.ATUTALAS === false && $('ah-fizmod')) $('ah-fizmod').hidden = true;
     if (KT && !document.getElementById('ah-ak-css')) { var st = document.createElement('style'); st.id = 'ah-ak-css'; st.textContent = KT.CSS; document.head.appendChild(st); }
     fotoVisszaallit().then(function () { if (S.allapot === 'tervezo') tervezoRender(); });
     menuAktiv();

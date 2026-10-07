@@ -51,12 +51,11 @@
 //   STRIPE_API_VERSION       alapbol STRIPE_VERZIO
 import '../../assets/js/ajandek-adat.js';
 import '../../assets/js/ajandek-kartya.js';
-import * as L from './ajandek-levelek.js';
+import * as L0 from './ajandek-levelek.js';
+import { szamlaKiallit, budapestiNap } from './szamlazz-agent.js';
 
-const ADAT = globalThis.AJANDEK_ADAT;
 const KARTYA = globalThis.AJANDEK_KARTYA;
 
-const ELOTAG = '/api/ajandek/';
 const FORRAS = 'ajandek-motor';
 const STRIPE_ALAP = 'https://api.stripe.com';
 // rogzitett API-verzio: a latest_charge mezo es a valaszok formaja ne a fiok alapbeallitasan muljon
@@ -66,6 +65,15 @@ export const MAX_TORZS = 32 * 1024;
 export const MAX_WEBHOOK = 512 * 1024;
 // a foto-feltoltes torzse: 700 KB-os JPEG base64-ben ~ 934 KB + a JSON-burkolat
 export const MAX_FOTO_TORZS = 1024 * 1024;
+
+// ===================================================================================================================
+// A MOTOR-GYAR: minden kereskedo (HeadSpa, lezeres szortelenites) sajat peldanyt kap: sajat adat (termekek, szalon, szovegek),
+// sajat API-elotag, sajat kereskorlat-szamlalok. A HeadSpa peldany a fajl vegen van (alap export). A kereskedo Stripe-kulcsait,
+// webhook-titkat stb. a hivo adja a kereshez tartozo env-ben (lasd functions/api/ajandek-lezer/[[kind]].js: LEZER_* -> STRIPE_*).
+// ===================================================================================================================
+export function ajandekMotor(ADAT, { elotag: ELOTAG = '/api/ajandek/' } = {}) {
+  // a levelek / oldalak sablonjai a kereskedo marka-adatait (nev, foglalas-link) a d.marka-bol kapjak: minden hivasnak automatikusan atadjuk
+  const L = Object.fromEntries(Object.entries(L0).map(([nev, f]) => [nev, typeof f === 'function' ? (d, ...tobbi) => f({ marka: ADAT.SZALON, ...d }, ...tobbi) : f]));
 const FOTO_MAX_BAJT = 700 * 1024;
 const FOTO_ID_RE = /^[A-Z0-9]{24}$/;
 const FOTO_TTL_FELTOLTES = 3 * 24 * 3600;   // csatolatlan (meg nem rendeleshez kotott) feltoltes
@@ -139,7 +147,7 @@ const visszavonvaOldal = (k, reszletek) => oldal(k, 409, 'Ez az ajándékkártya
 
 // A platform-adapterek kozos segedje: a keres torzse meretkorlattal. A tul nagy torzset NEM olvassa
 // be (content-length alapjan azonnal, kulonben olvasas kozben all meg). -> { text } | { valasz: 413 }
-export async function keresTorzs(request) {
+async function keresTorzs(request) {
   if (request.method === 'GET' || request.method === 'HEAD') return { text: '' };
   let max = MAX_TORZS;
   try {
@@ -218,7 +226,7 @@ async function titok(env) {
 
 // KOD: 'AKXXXXXXXX' (a rendelesszam MH-, igy a ketto nem osszetevesztheto) - az HMAC-SHA256(titok, 'kod:' + piId) elso 5 bajtja (40 bit) Crockford base32-ben.
 // KOTOJEL NELKUL: a Salonic nem fogad el kotojeles kuponkodot (2026-10-06, a szalon jelezte); a regi 'AK-XXXX-XXXX' formatum megjelenitese: kodEgysegesit.
-export async function kuponKod(env, piId) {
+async function kuponKod(env, piId) {
   const b = await hmac(await titok(env), 'kod:' + piId);
   let n = 0;
   for (let i = 0; i < 5; i++) n = n * 256 + b[i];
@@ -230,21 +238,21 @@ export async function kuponKod(env, piId) {
 // A regi, kotojeles generalt kod (AK-XXXX-XXXX: a 2026-10-06 elott kiallitott rendelesek metadataja) kotojel nelkul jelenik meg (kartya, level, kiallito oldal):
 // a Salonic nem fogad el kotojeles kuponkodot, a szalon kotojel nelkul vitte fel. A szalon altal beirt kodokhoz (pl. GYOR1865, SajatKupon-7) nem nyulunk.
 const REGI_KOD_RE = /^AK-([0-9A-HJKMNP-TV-Z]{4})-([0-9A-HJKMNP-TV-Z]{4})$/;
-export const kodEgysegesit = (v) => { const m = REGI_KOD_RE.exec(typeof v === 'string' ? v.trim() : ''); return m ? `AK${m[1]}${m[2]}` : v; };
+const kodEgysegesit = (v) => { const m = REGI_KOD_RE.exec(typeof v === 'string' ? v.trim() : ''); return m ? `AK${m[1]}${m[2]}` : v; };
 
-export async function kiallitToken(env, piId) {
+async function kiallitToken(env, piId) {
   return hex(await hmac(await titok(env), 'kiallit:' + piId));
 }
 
 // A nyomtathato kartya tovabbithato linkjenek tokenje: CSAK a kartya-oldalt nyitja meg (a vevo
 // e-mailjet mutato /rendeles-hez es a modosito /szemelyre-hez nem ad hozzaferest, mint a client_secret).
-export async function kartyaToken(env, piId) {
+async function kartyaToken(env, piId) {
   return hex(await hmac(await titok(env), 'kartya:' + piId));
 }
 
 // A rendeles-oldal levelben kuldott linkjenek tokenje: CSAK olvasas (/rendeles); a /szemelyre-hez,
 // a /fizetes-hez nem jo. Igy a client_secret nem kerul e-mailbe / URL-be.
-export async function rendelesToken(env, piId) {
+async function rendelesToken(env, piId) {
   return hex(await hmac(await titok(env), 'rendeles:' + piId));
 }
 
@@ -331,10 +339,10 @@ const MAX_SZAMLALO = 5000;
 const szamlalok = new Map(); // kulcs -> { kezdet, db, ablak }
 
 // csak tesztekhez / a helyi fejlesztoi kiszolgalohoz
-export function _korlatAlaphelyzet() {
+function _korlatAlaphelyzet() {
   szamlalok.clear();
 }
-export const _korlatMeret = () => szamlalok.size;
+const _korlatMeret = () => szamlalok.size;
 
 function szamlaloTakarit(t) {
   for (const [kulcs, s] of szamlalok) if (t - s.kezdet >= s.ablak) szamlalok.delete(kulcs);
@@ -498,9 +506,12 @@ function rendelesAdat(d) {
       }
     }
   }
+  if (ADAT.CEGES_SZAMLA === false && (cegesNev || cegesAdoszam)) m['ceges.nev'] = 'Ennél az ajándékkártyánál céges számlát nem tudunk kiállítani, csak magánszemélynek.';
   // hogyan veszi at a kartyat; az otthon nyomtatott kartya szemelyre szabhato (dizajn + foto + idezet + nev)
   const atvetel = egysor(d.atvetel);
   if (atvetel && atvetel !== 'otthon' && atvetel !== 'szemelyesen') m.atvetel = 'Válaszd ki, hogyan veszed át az ajándékkártyát.';
+  // ahol nincs papir kartya (pl. lezeres ajandekkartya), csak az e-mailben kuldott, otthon kinyomtathato kartya van
+  if (ADAT.SZEMELYES_ATVETEL === false && atvetel === 'szemelyesen') m.atvetel = 'Ennél az ajándékkártyánál csak e-mailben küldött, kinyomtatható kártya van.';
   let szemelyre = null;
   const sz = d.szemelyre;
   if (sz && typeof sz === 'object' && !Array.isArray(sz)) {
@@ -551,6 +562,8 @@ function fizetesMeta(r) {
     hozz_ana: r.mer.hozz_ana, hozz_adv: r.mer.hozz_adv, fbp: r.mer.fbp, fbc: r.mer.fbc,
     nev: r.nev, iranyitoszam: r.iranyitoszam, varos: r.varos, cim: r.cim,
     ceges_nev: r.ceges_nev, ceges_adoszam: r.ceges_adoszam, kartya_cim: r.termek.kartya_cim,
+    // lezeres kereskedo: a szamlat a webhook allitja ki a Szamlazz.hu Szamla Agenttel (szamla_mod = 'agent')
+    szamla_mod: ADAT.SZAMLAZAS ? 'agent' : '',
     atvetel: r.atvetel,
     ...(r.szemelyre ? {
       kartya_tema: r.szemelyre.tema, kartya_idezet: r.szemelyre.idezet, szemelyre_nev: r.szemelyre.nev,
@@ -629,6 +642,8 @@ async function rendelesInfo(k, pi) {
     idezet: md.kartya_idezet || '',
     foto_id: FOTO_ID_RE.test(md.foto_id || '') ? md.foto_id : '',
     termek_nev: termek ? termek.nev : (md.termek || ''),
+    // a szalon-levelben: melyik Salonic-szolgaltatasra kell a 100%-os kupont letrehozni (kereskedo-adat, ha van)
+    salonic_szolgaltatas: termek && termek.salonic_szolgaltatas ? termek.salonic_szolgaltatas.nev : '',
     kartya_cim: md.kartya_cim || (termek ? termek.kartya_cim : ''),
     osszeg: Math.round(Number(pi.amount) / 100),
     osszeg_szoveg: ADAT.arSzoveg(Number(pi.amount) / 100),
@@ -640,7 +655,7 @@ async function rendelesInfo(k, pi) {
     kod: fizetve ? (kodEgysegesit(md.kod) || (atu ? null : await kuponKod(k.env, pi.id))) : null,
     javasolt_kod: atu ? '' : await kuponKod(k.env, pi.id),
     // tovabbithato link (az ajandekozottnak is): kulon token, client_secret NELKUL
-    kartya_url: fizetve ? `${k.bazis}/api/ajandek/kartya?pi=${encodeURIComponent(pi.id)}&t=${await kartyaToken(k.env, pi.id)}` : null,
+    kartya_url: fizetve ? `${k.bazis}${ELOTAG}kartya?pi=${encodeURIComponent(pi.id)}&t=${await kartyaToken(k.env, pi.id)}` : null,
     // a levelben kuldott rendeles-link: csak olvaso token, client_secret NELKUL
     rendeles_url: `${k.bazis}/ajandek?rendeles=${encodeURIComponent(pi.id)}&rt=${await rendelesToken(k.env, pi.id)}`,
   };
@@ -748,9 +763,45 @@ const szamlaBe = (env, email) => {
 };
 const SZAMLA_ID_RE = /^in_[A-Za-z0-9]{8,80}$/;
 const szamlaInfo = (md) => ({
-  mod: md.szamla_mod === 'invoice' ? 'invoice' : 'nincs', hiba: md.szamla_hiba || '', figy: md.szamla_figy || '',
+  mod: md.szamla_mod === 'invoice' ? 'invoice' : (md.szamla_mod === 'agent' && md.szamla_szam ? 'agent' : 'nincs'), agent: md.szamla_mod === 'agent', szam: md.szamla_szam || '',
+  hiba: md.szamla_hiba || '', figy: md.szamla_figy || '',
   tetelek: (ADAT.szamlaTetelek(md.termek) || []).map((t) => ({ nev: t.nev, ft: t.ft, afa: t.afa })),
 });
+
+// --- lezeres kereskedo: szamlazas kozvetlenul a Szamlazz.hu Szamla Agenttel (nincs Stripe-szamla / szamlabridge) -----------------------------
+// A webhook (payment_intent.succeeded) hivja, a szalon-level ELOTT. A szamla szamat / hibajat a PaymentIntent metadataba irjuk (szamla_szam / szamla_hiba), igy
+// egy ismetelt webhook nem allit ki masodikat (es a Szamlazz.hu fiokban a rendelesszam-ismetlodes tiltasa is vedi). Hiba eseten NEM dob: a szalon-level
+// "SZAMLA - KEZZEL KELL KIALLITANI" blokkot kap. Kornyezet: SZAMLAZZ_AGENT_KULCS (titok), SZAMLA_ELONEZET='1' (elonezeti kornyezet: nem allit ki szamlat).
+async function szamlaAgentKiallit(k, pi, i) {
+  const md = pi.metadata || {};
+  if (!ADAT.SZAMLAZAS || md.szamla_mod !== 'agent' || md.szamla_szam || md.szamla_hiba) return;
+  const jelol = async (m) => {
+    Object.assign(md, m);
+    try { await piFrissit(k.env, pi.id, { metadata: m }); } catch (e) { console.error('ajandek: szamla-jelzo iras nem sikerult', pi.id, e && e.message); }
+  };
+  const kulcs = String(k.env.SZAMLAZZ_AGENT_KULCS || '').trim();
+  if (!kulcs) return jelol({ szamla_hiba: 'nincs_agent_kulcs' });
+  const tetelek = ADAT.szamlaTetelek(md.termek);
+  if (!tetelek || !tetelek.length) return jelol({ szamla_hiba: 'nincs_tetel' });
+  if (tetelek.reduce((o, t) => o + t.ft, 0) * 100 !== Number(pi.amount_received || pi.amount)) return jelol({ szamla_hiba: 'osszeg_elteres' });
+  const adat = {
+    kulcs, elonezet: String(k.env.SZAMLA_ELONEZET || '') === '1', nap: budapestiNap(k.most),
+    fizmod: (ADAT.SZAMLAZAS && ADAT.SZAMLAZAS.fizmod) || 'Stripe', rendelesSzam: ADAT.rendelesAzonosito(pi.id), kulsoAzon: pi.id,
+    megjegyzes: md.szemelyre_nev ? `Ajándékozott neve: ${md.szemelyre_nev}` : '', emailReplyto: ADAT.SZALON.email,
+    vevo: { nev: md.nev, irsz: md.iranyitoszam, telepules: md.varos, cim: md.cim, email: i.email },
+    tetelek: tetelek.map((t) => ({ nev: t.nev, ft: t.ft, afa: t.afa || 'AAM' })),
+  };
+  const opc = agentBeallitas(k.env);
+  let r = await szamlaKiallit(adat, opc);
+  if (!r.ok && r.ujraproba) r = await szamlaKiallit(adat, opc); // atmeneti hiba: egy ujraproba (a rendelesszam-vedelem miatt nem allithat ki duplat)
+  if (r.ok) return jelol({ szamla_szam: r.szamlaszam || (adat.elonezet ? 'ELONEZET' : 'ISMERETLEN'), szamla_ekkor: k.most.toISOString() });
+  if (r.duplikalt) return jelol({ szamla_szam: 'MAR_VAN', szamla_ekkor: k.most.toISOString() });
+  console.error('ajandek: a Szamlazz.hu-s szamla nem sikerult', pi.id, r.hibakod, r.hibauzenet);
+  return jelol({ szamla_hiba: String(`${r.hibakod || ''}: ${r.hibauzenet || 'ismeretlen'}`).slice(0, 150) });
+}
+
+// a Szamlazz.hu Agent cime: CSAK a tesztekhez feluliarhato (loopback); eles kornyezetben mindig a valodi cim
+const agentBeallitas = (env) => (/^http:\/\/127\.0\.0\.1:\d+\//.test(String(env.SZAMLAZZ_AGENT_URL || '')) ? { url: String(env.SZAMLAZZ_AGENT_URL) } : {});
 
 async function szamlaVoid(k, id) {
   try {
@@ -859,7 +910,7 @@ async function fizetes(k) {
 
   const ar = arFt(r.termek);
   const meta = fizetesMeta(r);
-  const leiras = `MOSAIC Head Spa ajándékkártya - ${r.termek.nev}`;
+  const leiras = `${ADAT.LEIRAS_ELOTAG || 'MOSAIC Head Spa ajándékkártya'} - ${r.termek.nev}`;
   const piId = egysor(d.pi);
   const cs = egysor(d.cs);
   let pi = null;
@@ -1327,6 +1378,8 @@ async function fizetesEsemenyFo(k, obj, ok) {
   const i = await rendelesInfo(k, pi);
   // mar visszaterítettek / vitatjak: sikerlevel nem megy (a visszavonasrol kulon level szol)
   if (i.visszavonva) return ok;
+  // lezeres kereskedo: a szamla kozvetlenul a Szamlazz.hu-ban (a sajat hibaja soha nem allitja meg a leveleket: a szalon-level jelzi, ha kezzel kell)
+  await szamlaAgentKiallit(k, pi, i);
 
   // elotte: a kod (es azonnali modban a kiallitas) rogzitese - ha ez nem sikerul, meg nem ment ki
   // semmi, a Stripe ujraprobalhatja (Stripe-hiba -> 502)
@@ -1338,13 +1391,13 @@ async function fizetesEsemenyFo(k, obj, ok) {
   }
   if (Object.keys(elo).length) await piFrissit(k.env, pi.id, { metadata: elo });
 
-  const kiallitUrl = `${k.bazis}/api/ajandek/kiallit?pi=${encodeURIComponent(pi.id)}&t=${await kiallitToken(k.env, pi.id)}`;
+  const kiallitUrl = `${k.bazis}${ELOTAG}kiallit?pi=${encodeURIComponent(pi.id)}&t=${await kiallitToken(k.env, pi.id)}`;
   const levelek = [
     ['szalon', {
       cimzett: 'szalon',
       valasz: i.email || undefined,
       ...L.szalonFizetveLevel({
-        rendeles_id: i.rendeles_id, pi: pi.id, termek_nev: i.termek_nev, osszeg_szoveg: i.osszeg_szoveg,
+        rendeles_id: i.rendeles_id, pi: pi.id, termek_nev: i.termek_nev, salonic_szolgaltatas: i.salonic_szolgaltatas, osszeg_szoveg: i.osszeg_szoveg,
         fizetesi_mod: i.fizetesi_mod, fizetve_ekkor: i.fizetve_ekkor, email: i.email, nev: md.nev,
         iranyitoszam: md.iranyitoszam, varos: md.varos, cim: md.cim, ceges_nev: md.ceges_nev, ceges_adoszam: md.ceges_adoszam,
         kod: i.kod, ervenyes_ig: i.ervenyes_ig, kiallit_url: kiallitUrl, azonnali, attr: md,
@@ -1496,7 +1549,7 @@ async function atutalas(k) {
     console.error('ajandek: atutalas - Stripe-hiba', ref, e && e.message);
     return json(502, { hiba: 'stripe' });
   }
-  const kiallitUrl = `${k.bazis}/api/ajandek/kiallit?pi=${encodeURIComponent(pi.id)}&t=${await kiallitToken(k.env, pi.id)}`;
+  const kiallitUrl = `${k.bazis}${ELOTAG}kiallit?pi=${encodeURIComponent(pi.id)}&t=${await kiallitToken(k.env, pi.id)}`;
   const salonic = r.termek.salonic || null;
   // a szalon levele nelkul az igeny elveszne: ha az nem megy ki, hibat adunk
   try {
@@ -1510,8 +1563,8 @@ async function atutalas(k) {
         atvetel_szoveg: r.atvetel === 'szemelyesen' ? 'Személyesen, a szalonban (papír kártya, díszborítékban)' : r.atvetel === 'otthon' ? 'E-mailben, otthon kinyomtatja' : '',
         design_szoveg: r.szemelyre ? (KARTYA.tema(r.szemelyre.tema) || {}).nev || '' : '', idezet_szoveg: r.szemelyre ? r.szemelyre.idezet : '',
         foto_van: Boolean(r.szemelyre && r.szemelyre.foto_id),
-        foto_url: r.szemelyre && r.szemelyre.foto_id ? `${k.bazis}/api/ajandek/foto?id=${r.szemelyre.foto_id}&t=${await fotoToken(k.env, r.szemelyre.foto_id)}` : '',
-        elonezet_url: r.szemelyre ? `${k.bazis}/api/ajandek/elonezet?pi=${encodeURIComponent(pi.id)}&t=${await kiallitToken(k.env, pi.id)}` : '',
+        foto_url: r.szemelyre && r.szemelyre.foto_id ? `${k.bazis}${ELOTAG}foto?id=${r.szemelyre.foto_id}&t=${await fotoToken(k.env, r.szemelyre.foto_id)}` : '',
+        elonezet_url: r.szemelyre ? `${k.bazis}${ELOTAG}elonezet?pi=${encodeURIComponent(pi.id)}&t=${await kiallitToken(k.env, pi.id)}` : '',
       }),
     });
   } catch (e) {
@@ -1542,7 +1595,7 @@ async function atutalas(k) {
 // beirja hosszu (400 napos) ervenyessegre. A kepet az id + HMAC-token mutatja meg (a kartya-oldal / elonezet linkjeben).
 const fotoTar = (env) => (env && env.AJANDEK_FOTOK && typeof env.AJANDEK_FOTOK.get === 'function' && typeof env.AJANDEK_FOTOK.put === 'function' ? env.AJANDEK_FOTOK : null);
 
-export async function fotoToken(env, id) {
+async function fotoToken(env, id) {
   return hex(await hmac(await titok(env), 'foto:' + id));
 }
 
@@ -1605,7 +1658,7 @@ async function fotoCsatolasEllenorzes(k, r) {
 
 // A szemelyre szabott kartya oldala (a vevo kartyaja es a szalon elonezete). elonezet: a kod / ervenyesseg meg nem vegleges.
 async function szemelyreSzabottOldal(k, i, opciok = {}) {
-  const fotoSrc = i.foto_id ? `${k.bazis}/api/ajandek/foto?id=${i.foto_id}&t=${await fotoToken(k.env, i.foto_id)}` : null;
+  const fotoSrc = i.foto_id ? `${k.bazis}${ELOTAG}foto?id=${i.foto_id}&t=${await fotoToken(k.env, i.foto_id)}` : null;
   return html(k, 200, L.szemelyreSzabottKartyaOldal({
     bazis: k.bazis, tema: i.tema, idezet: i.idezet, nev: i.md.szemelyre_nev || '', foto_src: fotoSrc, foto_poz: i.md.foto_poz || '',
     kartya_felirat: i.termek ? i.termek.kartya_felirat : null, ar_szoveg: i.osszeg_szoveg,
@@ -1622,8 +1675,8 @@ async function szemelyreLeiras(k, i) {
     design_szoveg: szemelyre ? (KARTYA.tema(i.tema) || {}).nev || i.tema : '',
     idezet_szoveg: szemelyre ? i.idezet : '',
     foto_van: Boolean(szemelyre && i.foto_id),
-    foto_url: szemelyre && i.foto_id ? `${k.bazis}/api/ajandek/foto?id=${i.foto_id}&t=${await fotoToken(k.env, i.foto_id)}` : '',
-    elonezet_url: szemelyre ? `${k.bazis}/api/ajandek/elonezet?pi=${encodeURIComponent(i.pi.id)}&t=${await kiallitToken(k.env, i.pi.id)}` : '',
+    foto_url: szemelyre && i.foto_id ? `${k.bazis}${ELOTAG}foto?id=${i.foto_id}&t=${await fotoToken(k.env, i.foto_id)}` : '',
+    elonezet_url: szemelyre ? `${k.bazis}${ELOTAG}elonezet?pi=${encodeURIComponent(i.pi.id)}&t=${await kiallitToken(k.env, i.pi.id)}` : '',
   };
 }
 
@@ -1680,7 +1733,7 @@ function bazisUrl(env, u) {
 // (koszono_ekkor, csak az ELSO betoltes) es a betoltes modjat (koszono_keret: keret | oldal). Hozzajarulastol fuggetlen,
 // szemelyes adatot nem tartalmaz, es SEMMIT nem kuld ki: a Stripe-ban a rendeles metadatajan olvashato.
 // -> 'rogzitve' | 'mar_van' | 'kihagyva' | 'korlat' | 'hiba' (soha nem dob)
-export async function koszonoRogzit({ env, pi, ip, most, keret } = {}) {
+async function koszonoRogzit({ env, pi, ip, most, keret } = {}) {
   try {
     const piId = typeof pi === 'string' ? pi.trim() : '';
     if (!PI_RE.test(piId)) return 'kihagyva';
@@ -1700,7 +1753,7 @@ export async function koszonoRogzit({ env, pi, ip, most, keret } = {}) {
   }
 }
 
-export async function ajandekKezel({ method, url, headers, text, env, kuld, most, ip } = {}) {
+async function ajandekKezel({ method, url, headers, text, env, kuld, most, ip } = {}) {
   let u;
   try { u = new URL(url); } catch { return json(400, { hiba: 'ervenytelen' }); }
   const h = fejlecek(headers);
@@ -1718,6 +1771,7 @@ export async function ajandekKezel({ method, url, headers, text, env, kuld, most
   k.bazis = bazisUrl(k.env, u);
   if (!u.pathname.startsWith(ELOTAG)) return json(404, { hiba: 'nincs' });
   const ut = u.pathname.slice(ELOTAG.length).replace(/\/+$/, '');
+  if (ADAT.ATUTALAS === false && ut === 'atutalas') return json(404, { hiba: 'nincs' });
   const vegpont = UTAK.get(ut);
   if (!vegpont) return json(404, { hiba: 'nincs' });
   const fv = sajat(vegpont, k.method) ? vegpont[k.method] : null;
@@ -1736,3 +1790,10 @@ export async function ajandekKezel({ method, url, headers, text, env, kuld, most
     return stripeHiba ? json(502, { hiba: 'stripe' }) : json(500, { hiba: 'belso' });
   }
 }
+
+  return { keresTorzs, kuponKod, kodEgysegesit, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet, _korlatMeret, fotoToken, koszonoRogzit, ajandekKezel };
+}
+
+// Az alap (HeadSpa) peldany: ugyanazok az exportok, mint a gyar bevezetese elott.
+const alap = ajandekMotor(globalThis.AJANDEK_ADAT);
+export const { keresTorzs, kuponKod, kodEgysegesit, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet, _korlatMeret, fotoToken, koszonoRogzit, ajandekKezel } = alap;

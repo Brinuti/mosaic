@@ -212,7 +212,7 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   '/assets/embed/*',
   '  X-Robots-Tag: noindex',
   // az /ajandek (a kampany- es levelbeli linkek cime) ugyanazt az oldalt adja, mint az eles ajandekkartya-cimek: ne indexelodjon ketszer
-  ...(ELES ? ['/ajandek', '  X-Robots-Tag: noindex'] : []),
+  ...(ELES ? ['/ajandek', '  X-Robots-Tag: noindex', '/lezeres-ajandekkartya', '  X-Robots-Tag: noindex'] : []),
   '',
 ].join('\n'));
 

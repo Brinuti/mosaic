@@ -683,3 +683,43 @@ találtuk meg (2026-10-03), a helyi teszt addig nem fogta meg.
 **Beállítás (Cloudflare):** `MERES_HOOK_URL` = a Zapier „catch hook” címe, **Secret** típusú változóként (Production; a cím a repóban nincs, mert aki ismeri, hamis vásárlást küldhet). Az elsődleges (böngészős) konverzió változatlan; az új szerveres konverzió először másodlagosként fut mellette – csak akkor lehet elsődleges, ha a darabszámok egyeznek.
 
 **Tesztek:** `node --test "tools/ajandek-teszt/*.test.mjs"` (+32 teszt: hozzájárulás-függő metadata, hibás fbp / fbc, termékváltás, átutalás, a köszönőoldal-napló minden ága, a hook küldése / ismétlése / hibája / idegen cím, visszatérítés). Böngészős próba (helyi kiszolgáló, mock Stripe): a fizetési kérésben `mer` + `attr` hozzájárulással / nélküle (mindhárom eset ellenőrizve), a dataLayer-eseményekben nincs új adat.
+
+## Lézeres szőrtelenítés ajándékkártya (2026-10-07, a tulajdonos kérése): második „kereskedő” a motorban
+
+A motor (`netlify/lib/ajandek.js`) már **kereskedő-gyár**: `ajandekMotor(ADAT, { elotag })` egy kereskedő saját példányát adja (a HeadSpa példány az alapértelmezett exportok, változatlanul). Az első új kereskedő a **lézeres szőrtelenítés** (Zsófi egyéni vállalkozó: saját Stripe-fiók, saját Számlázz.hu-fiók). A HeadSpa-kártyák viselkedése nem változott (a teljes teszt-csomag zöld).
+
+| | HeadSpa | Lézer |
+|---|---|---|
+| Oldal | `/ajandek` + a régi címek | `/lezeres-ajandekkartya` (noindex, nincs link rá; a lézeres landingre a tulajdonos jóváhagyása után kerül) |
+| Adat | `assets/js/ajandek-adat.js` | `assets/js/ajandek-adat-lezer.js` (a HeadSpa adatra épül: segédek, fizetési módok; a termékek, szövegek, szalon-adatok sajátok) |
+| API | `/api/ajandek/*` (`functions/api/ajandek/[[kind]].js`) | `/api/ajandek-lezer/*` (`functions/api/ajandek-lezer/[[kind]].js`) |
+| Termékek | egyéni / 4 kezes / páros | **6 kártya, egy-egy kezelés ELSŐ alkalma állapotfelméréssel** (a Salonic „1. alkalom” szolgáltatásainak áraival, 2026-10-07): Hónalj 15.200, Basic csomag 36.400, Teljes láb 47.200, Summer csomag 66.800, Total csomag 86.000, Man Total csomag 54.400 Ft (`honalj`, `basic`, `lab`, `summer`, `total`, `mantotal`; a nevek nem ismétlik az árat; az árak és a Salonic-azonosítók csak az adatfájlban vannak, a teszt a `docs/booking-engine/SALONIC_SERVICE_STAFF_MAPPING_CURRENT.json` pillanatképpel veti össze). A kezelés-videó a Meta-fiók „szőrtelenítés lépések” videója (`assets/video/lezer-lepesek.mp4`) |
+| Rendelés-azonosító | `MH-…` | `LZ-…` |
+| Számla | Stripe-számla → szamlabridge → Számlázz.hu | **Számlázz.hu Számla Agent**, vásárláskor (`netlify/lib/szamlazz-agent.js`), a számlán AAM (alanyi adómentes) tétel |
+| Céges számla / átutalás / papír kártya | van | **nincs** (új KATA: az Agent vállalkozásnak nem számláz; első körben nincs átutalás; nincs papír lézeres kártya) |
+| Mérés | dataLayer + régi konverzió | **nincs** dataLayer-esemény (`MERES: false`), nincs régi konverzió-keret (`MERES_REGI: false`), nincs szerveroldali Zapier-mérés; a mérő-fiókok beállítása külön döntés |
+
+**Kereskedő-beállítások az adatban** (az `ajandek.js` és a szerver olvassa): `SZAMLAZAS`, `CEGES_SZAMLA`, `ATUTALAS`, `SZEMELYES_ATVETEL`, `MERES`, `MERES_REGI`, `API_ELOTAG`, `TAROLO_ELOTAG`, `LEIRAS_ELOTAG`, `EMAIL_TARGY`, `VIDEO_FELIRAT`; az e-mailek és oldalak márkája a `SZALON` objektumból jön (`nev`, `foglalas_url`, `kupon_cim`, `kupon_szoveg`).
+
+**Környezet** (`netlify/lib/ajandek-lezer-env.js`, tesztelve): a `LEZER_*` beállítások a motor általános neveire képezve; a HeadSpa Stripe-kulcsai **soha** nem folynak át (ha a lézeres kulcs hiányzik, a motor nem fut, nem a HeadSpa fiókjával dolgozik).
+
+| Név | Típus | Hova |
+|---|---|---|
+| `LEZER_STRIPE_PUBLISHABLE_KEY` | nyilvános | `wrangler.toml` (`[vars]`: pk_live, `[env.preview.vars]`: a Stripe sandbox pk_test) |
+| `SZAMLA_ELONEZET = "1"` | nem titkos | csak `[env.preview.vars]`: az előnézeten a Számlázz.hu-n **csak előnézeti PDF** készül, valódi számla nem |
+| `LEZER_STRIPE_SECRET_KEY` | **Secret** | Cloudflare: Production `rk_live_…` (korlátozott: PaymentIntents: Write, Charges and Refunds: Read), Preview `sk_test_…` (a Stripe sandbox) |
+| `LEZER_STRIPE_WEBHOOK_SECRET` | **Secret** | a webhook (`https://<host>/api/ajandek-lezer/webhook`, események: `payment_intent.succeeded`, `charge.refunded`, `charge.dispute.created`) aláíró titka; Production és Preview külön |
+| `LEZER_SZAMLAZZ_AGENT_KULCS` | **Secret** | a Számlázz.hu Számla Agent kulcs (Production és Preview) |
+| `SMTP_*`, `AJANDEK_TITOK`, `AJANDEK_BAZIS_URL`, `AJANDEK_AZONNALI`, `AJANDEK_FOTOK` (KV) | közös | a HeadSpa-val azonos |
+
+**Számla (Számla Agent):** a webhook (`payment_intent.succeeded`) után, a kártya kiállítása előtt (`szamlaAgentKiallit`): multipart POST a `https://www.szamlazz.hu/szamla/` címre, XML-lel (a mezők sorrendje az XSD-é; `valaszVerzio=2`). A **rendelésszám** (`LZ-…`) a duplikálás elleni védelem (a fiókban be van kapcsolva): a webhook ismétlése nem állít ki második számlát. Siker: a PaymentIntent metaadatában `szamla_szam`; hiba: `szamla_hiba` + a szalon levelében „SZÁMLA – KÉZZEL KELL KIÁLLÍTANI”, a vevő a kártyát ettől függetlenül megkapja. Átmeneti hiba (hálózat, 5xx) esetén egy újrapróba. **A valódi Számlázz.hu-val ez még nem lett kipróbálva** (csak mock-kal): az első előnézeti vásárlás (`SZAMLA_ELONEZET=1`) igazolja az XML-t, mielőtt éles számla készülne.
+
+**Stripe-oldali teendők (Zsófi fiókjában, ezeket csak ő/a tulajdonos teheti meg):** Google Pay és Revolut Pay bekapcsolva (kész); a bankkártya-kivonaton megjelenő név a fiók szintű „Statement descriptor” (jelenleg `ELYSION PRO`; a kért név: `MOSAIC LEZERES SZORTEL`, 22 karakter a határ) – Settings → Business → Public details; Apple Pay-domain (`www.mosaicheadspa.hu`, Payment method domains) – nélküle csak az iPhone-os Apple Pay gomb hiányzik; a webhook; a korlátozott kulcs (a létrehozást a Stripe e-mailben megerősítteti a fiók tulajdonosával).
+
+**Salonic:** a Salonicban csak kedvezmény-kupon van (nincs érték-utalvány, nincs maradék-egyenleg), ezért **minden kártya egy konkrét szolgáltatásra (az „1. alkalom” szolgáltatásra) szóló, 100%-os, egyszer felhasználható kupon**, mint a HeadSpa-nál. A szalon-levél ezt írja, a pontos Salonic-szolgáltatás nevével (`termek.salonic_szolgaltatas`, a szöveg: `SZALON.kupon_szoveg`). A kuponkód a levélben kapott, kötőjel nélküli kód. A kártya csak az első kezelést fedezi; a folytatás a megszokott áron megy (a 8 alkalmas programban a 4. és a 8. alkalom ajándék).
+
+**Nyomtatható A4 kártya:** a HeadSpa-terv (`kartya-hatter.jpg`), a bal alsó fotó (az arany ív két oldalán) Zsófi konzultációs képére cserélve: `assets/img/ajandek/kartya-hatter-lezer.jpg` (a `SZALON.kartya_hatter`-ből; az alap a HeadSpa-háttér). Újragenerálás: `tools/kartya-hatter/lezer-hatter.mjs` (a böngésző canvas-ával; az arany ív és minden szöveg változatlan).
+
+**Képek (2026-10-07):** a hero a Drive „szőrtelenítés képek” mappa DSC07846 fotója (Zsófi és a vendég a konzultáción, a háttérben a „Megérdemled” plakát) + a saját kártya-renderelő (smaragd, lézeres idézet, a fotóíven a DSC07827 kezelés-fotó) ferdén ráhelyezve (`assets/img/ajandek/hero-lezer-ajandek.jpg`, 1200 × 960; a kártya a levágás-biztos sávban áll, hogy telefonon / asztalon se vágódjon le); a „Személyre szabott ajándékkártya” szekció képe a lézeres mockup (`assets/img/ajandek/atadas-szemelyre-lezer.jpg`). A kártyák listájában nincs kis kép (mind ugyanaz lenne), asztalon az ár a név mellett áll.
+
+**Helyi próba:** `node tools/ajandek-teszt/szerver.mjs` (vagy a `ajandek` indító) → `http://localhost:4195/lezeres-ajandekkartya` (mock Stripe + Számlázz-csonk: `/__teszt/szamlazz-keresek`; a webhookot a próba maga küldi, lásd `tools/ajandek-teszt/lezer.test.mjs`). Tesztek: `node --test "tools/ajandek-teszt/*.test.mjs"` (a `lezer.test.mjs` és a `szamlazz-agent.test.mjs` az új).
