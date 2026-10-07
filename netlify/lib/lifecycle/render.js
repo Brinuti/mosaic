@@ -1,12 +1,21 @@
 // Uzenet-kirajzolas: helyorzok kitoltese (SMS / e-mail / belso feladat-level) es az e-mail HTML + szoveges valtozata.
 import { HELYORZOK } from './katalog/ertekek.js';
-import { UZLETAGAK, SZALON, rovidNev, tisztaNev, idotartamPerc } from './uzletag.js';
-import { datumSzoveg, datumRagos, idopontSzoveg, napNev, idotartamSzoveg } from './ido.js';
+import { UZLETAGAK, SZALON, rovidNev, tisztaNev, idotartamPerc, uzletaggal } from './uzletag.js';
+import { datumSzoveg, datumRagos, idopontSzoveg, napNev, idotartamSzoveg, napKezdet } from './ido.js';
 import { smsSzegmens } from './telefon.js';
 
 export const ALAP_URL = 'https://www.mosaicheadspa.hu';
 // nem munkatars-nev: a Salonic "Munkatars" mezoje lehet szoba/kezelo-tipus is
 const NEM_NEV = /kezel[oő]|head ?spa|bárki|barki|szőrtelenít|szortelenit|elysion|pmu$/i;
+
+/** "Tegnap nem találkoztunk" / "Ma nem találkoztunk" / "A … időpontodon nem találkoztunk": a küldés napja szerint (most: a küldés ideje, epoch mp). */
+export function nemTalalkoztunk(kezdet, most) {
+  if (!most) return 'Tegnap nem találkoztunk';
+  const kulonbseg = Math.round((napKezdet(most) - napKezdet(kezdet)) / 86400);
+  if (kulonbseg <= 0) return 'Ma nem találkoztunk';
+  if (kulonbseg === 1) return 'Tegnap nem találkoztunk';
+  return `A ${datumSzoveg(kezdet)} ${idopontSzoveg(kezdet)}-ra szóló időpontodon nem találkoztunk`;
+}
 
 /**
  * A foglalas helyorzo-ertekei. mod: 'sms' (rovid szolgaltatas-nev) | 'email'. A null ertek = ismeretlen.
@@ -22,7 +31,7 @@ export function ertekek(f, mod = 'email', opc = {}) {
   return {
     'keresztnév': f.keresztnev || null,
     'dátum': datumSzoveg(f.kezdet), 'dátum_ragos': datumRagos(f.kezdet), 'nap': napNev(f.kezdet), 'időpont': idopontSzoveg(f.kezdet),
-    'szolgáltatás': mod === 'sms' ? rovidNev(f.szolgaltatas) : tisztaNev(f.szolgaltatas),
+    'szolgáltatás': mod === 'sms' ? uzletaggal(f.uzletag, rovidNev(f.szolgaltatas)) : uzletaggal(f.uzletag, tisztaNev(f.szolgaltatas), true),
     'munkatárs': munkatars, 'fodrász': munkatars,
     'várható_időtartam': idotartamSzoveg(perc),
     'aktuális_ár': null, 'aktuális_ajánlat': null,
@@ -30,6 +39,7 @@ export function ertekek(f, mod = 'email', opc = {}) {
     'foglalás_link': uz.foglalasUrl, 'navigáció_link': SZALON.navigacioUrl, 'eredmények_link': uz.eredmenyekUrl, 'videó_link': uz.videoUrl,
     'új_dátum': opc.ujKezdet ? datumSzoveg(opc.ujKezdet) : datumSzoveg(f.kezdet), 'új_időpont': opc.ujKezdet ? idopontSzoveg(opc.ujKezdet) : idopontSzoveg(f.kezdet),
     'telefon': SZALON.telefon, 'cím': SZALON.cim,
+    'nem_találkoztunk': nemTalalkoztunk(f.kezdet, opc.most),
     _uzletag: f.uzletag,
   };
 }

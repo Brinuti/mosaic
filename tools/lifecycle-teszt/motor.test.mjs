@@ -9,11 +9,11 @@ import { ertelmez, htmlSzoveg } from '../../netlify/lib/lifecycle/parser.js';
 import { helyi, helyiEpoch, huDatumEpoch, datumRagos, napRag, idotartamSzoveg, ablakba } from '../../netlify/lib/lifecycle/ido.js';
 import { normalizal, simpleSmsBontas, smsSzegmens } from '../../netlify/lib/lifecycle/telefon.js';
 import { keresztnev } from '../../netlify/lib/lifecycle/nevek.js';
-import { szegmensek, tisztaNev, rovidNev, idotartamPerc } from '../../netlify/lib/lifecycle/uzletag.js';
+import { szegmensek, tisztaNev, rovidNev, idotartamPerc, uzletaggal } from '../../netlify/lib/lifecycle/uzletag.js';
 import { tervez, tartalomKeret } from '../../netlify/lib/lifecycle/terv.js';
 import { KATALOG, KOZOS } from '../../netlify/lib/lifecycle/katalog/index.js';
-import { ertekek, smsKirajzol, emailKirajzol, feladatKirajzol, ragoz } from '../../netlify/lib/lifecycle/render.js';
-import { ingest, tick, megerosit, reszletekUrl, napi, beallitas } from '../../netlify/lib/lifecycle/engine.js';
+import { ertekek, smsKirajzol, emailKirajzol, feladatKirajzol, ragoz, nemTalalkoztunk } from '../../netlify/lib/lifecycle/render.js';
+import { ingest, tick, megerosit, reszletekUrl, napi, beallitas, nemJelentIdo } from '../../netlify/lib/lifecycle/engine.js';
 import { api, megerosites, reszletek } from '../../netlify/lib/lifecycle/http.js';
 
 const SEMA = fs.readFileSync(new URL('../../netlify/lib/lifecycle/sema.sql', import.meta.url), 'utf8');
@@ -55,9 +55,9 @@ const athelyezettLevel = ({ uzenetId = 'm1', regi = 'november 25. (szerda) 16:00
   uzenetId, targy: `Foglalás módosítva vendég által: ${szolg}`, kuldo: 'Mosaic Hair <app@salonic.hu>',
   html: html('Az alábbi foglalás módosítva lett vendég által:', ['Foglaló adatai:', `Név: ${nev}`, `Mobiltelefonszám: ${tel}`, `E-mail cím: ${email}`, `RÉGI dátum: ${regi}`, `Új dátum: ${uj}`, `1. Szolgáltatás: ${szolg}`, 'Tervezett kezdés: 17:30', 'Munkatárs: Betti', 'Várható időtartam: 3 óra *'], uuid),
 });
-const lemondottLevel = ({ uzenetId = 'l1', datum = 'november 25. (szerda) 16:00', uuid = null, szolg = '👱‍♀️ Tőfestés + Szárítás - Hosszú haj', nev = 'Teszt Elek', tel = '06301234567', email = 'teszt.elek@example.com' } = {}) => ({
+const lemondottLevel = ({ uzenetId = 'l1', datum = 'november 25. (szerda) 16:00', uuid = null, szolg = '👱‍♀️ Tőfestés + Szárítás - Hosszú haj', nev = 'Teszt Elek', tel = '06301234567', email = 'teszt.elek@example.com', ok = 'Próbafoglalás (TESZT), lemondva' } = {}) => ({
   uzenetId, targy: `Foglalás lemondás - ${nev} - ${szolg}`, kuldo: 'Mosaic Hair <app@salonic.hu>',
-  html: html('Az alábbi időpontot a vendég lemondta:', [`Lemondás oka: Próbafoglalás (TESZT), lemondva${datum}`, `Szolgáltatás: ${szolg}`, 'Munkatárs: Betti', 'Foglaló adatai:', `Név: ${nev}`, `Mobiltelefonszám: ${tel}`, `E-mail cím: ${email}`], uuid),
+  html: html('Az alábbi időpontot a vendég lemondta:', [`Lemondás oka: ${ok}${datum}`, `Szolgáltatás: ${szolg}`, 'Munkatárs: Betti', 'Foglaló adatai:', `Név: ${nev}`, `Mobiltelefonszám: ${tel}`, `E-mail cím: ${email}`], uuid),
 });
 const MOST = Date.UTC(2026, 9, 7, 8, 0) / 1000; // 2026-10-07 10:00 (nyari ido)
 
@@ -442,6 +442,85 @@ test('motor: a Salonic minden foglalasrol KET levelet kuld - egyidejuleg is csak
   const l2 = await ingest(db, env, lemondottLevel({ uzenetId: 'le-2', ...DEAK, datum: 'november 26. (csütörtök) 17:30' }), MOST + 121);
   assert.equal(l1.duplikalt, undefined); assert.equal(l2.duplikalt, true);
   assert.equal((await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-CANCEL-%'").get()).n, 2);
+});
+
+test('motor: NO-SHOW - a szalon az idopont utan torli: nem lemondas-visszaigazolas, hanem "nem talalkoztunk" SMS + e-mail masnap 10:00-kor', async () => {
+  const db = d1(); const k = hamisKuldok(); const env = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair' };
+  const REKA = { nev: 'Kiss Réka', tel: '06201112222', email: 'kiss.reka@example.com' };
+  const r = await ingest(db, env, foglaltLevel({ ...REKA }), MOST); // november 25. 16:00
+  await tick(db, env, k, MOST, { foglalasId: r.foglalasId });
+  const elotte = k.ki.sms.length;
+  // az idopont napjan 17:30-kor a szalon kitorli a foglalast
+  const jelzes = helyiEpoch(2026, 11, 25, 17, 30);
+  const n = await ingest(db, env, lemondottLevel({ ...REKA, uzenetId: 'ns-1', ok: '' }), jelzes);
+  assert.equal(n.tipus, 'nem_jelent_meg'); assert.equal(n.foglalasId, UUID1); assert.equal(n.ismeretlenVolt, false);
+  assert.equal((await db.sqlite.prepare('SELECT allapot FROM foglalasok').get()).allapot, 'nem_jelent_meg');
+  // lemondas-visszaigazolas NEM megy; a no-show 20 perccel kesobb meg nem esedekes
+  assert.equal((await tick(db, env, k, jelzes + 1200)).elkuldve, 0);
+  assert.equal(k.ki.sms.length, elotte);
+  // masnap 10:00 utan: SMS + e-mail, "Tegnap nem talalkoztunk", uj foglalasi linkkel
+  const masnap = helyiEpoch(2026, 11, 26, 10, 5);
+  const t = await tick(db, env, k, masnap);
+  assert.equal(t.elkuldve, 2);
+  const sms = k.ki.sms[k.ki.sms.length - 1].szoveg; const mail = k.ki.email[k.ki.email.length - 1];
+  assert.match(sms, /Szia Réka! Tegnap nem találkoztunk, reméljük, minden rendben van/); assert.match(sms, /mosaicheadspa\.hu\/noi-fodraszat-budapest/);
+  assert.match(mail.targy, /Nem találkoztunk/); assert.match(mail.szoveg, /Tegnap nem találkoztunk/); assert.match(mail.szoveg, /Új időpontot választok/);
+  assert.ok(!k.ki.sms.some((x) => /töröltük/.test(x.szoveg)) && !k.ki.email.some((m) => /töröltük/.test(m.targy)));
+  // a Salonic ket levelet kuld: a masodik nem ketszerez
+  const n2 = await ingest(db, env, lemondottLevel({ ...REKA, uzenetId: 'ns-2', ok: '' }), jelzes + 3);
+  assert.equal(n2.duplikalt, true);
+  assert.equal((await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-NOSHOW-%'").get()).n, 2);
+});
+
+test('motor: NO-SHOW jelzes az okban ("Nem jelent meg") az idopont ELOTT is; a sima lemondas valtozatlan; a regi (3 napnal regebbi) torles csendes', async () => {
+  const env = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair' };
+  const REKA = { nev: 'Kiss Réka', tel: '06201112222', email: 'kiss.reka@example.com' };
+  // 1) az ok megjeloli: a szalon a nap folyaman, az idopont elott torolt egy "nem jelent meg" jelolest
+  const db = d1();
+  await ingest(db, env, foglaltLevel({ ...REKA }), MOST);
+  const n = await ingest(db, env, lemondottLevel({ ...REKA, ok: 'Nem jelent meg' }), MOST + 7200);
+  assert.equal(n.tipus, 'nem_jelent_meg');
+  // 2) sima vendeg-lemondas (ok: mas): lemondas-visszaigazolas, nem no-show
+  const db2 = d1(); const k2 = hamisKuldok();
+  await ingest(db2, env, foglaltLevel({ ...REKA }), MOST);
+  const l = await ingest(db2, env, lemondottLevel({ ...REKA, ok: 'Közbejött valami' }), MOST + 7200);
+  assert.equal(l.tipus, 'lemondva'); await tick(db2, env, k2, MOST + 7300);
+  assert.ok(k2.ki.sms.some((x) => /töröltük/.test(x.szoveg)));
+  // 3) 3 napnal regebbi, mar elmult idopont torlese: csendben lemondva, semmi nem megy ki
+  const db3 = d1(); const k3 = hamisKuldok();
+  await ingest(db3, env, foglaltLevel({ ...REKA }), MOST);
+  const regi = await ingest(db3, env, lemondottLevel({ ...REKA }), helyiEpoch(2026, 11, 30, 12, 0));
+  assert.equal(regi.tipus, 'lemondva');
+  assert.equal((await tick(db3, env, k3, helyiEpoch(2026, 11, 30, 12, 30))).elkuldve, 0);
+  // 4) ismeretlen (a rendszer inditasa elotti) foglalas no-show-ja: a levelbol is megy az SMS + e-mail
+  const db4 = d1(); const k4 = hamisKuldok();
+  const u = await ingest(db4, env, lemondottLevel({ ...REKA, ok: '' }), helyiEpoch(2026, 11, 25, 18, 0));
+  assert.equal(u.tipus, 'nem_jelent_meg'); assert.equal(u.ismeretlenVolt, true);
+  assert.equal((await tick(db4, env, k4, helyiEpoch(2026, 11, 26, 10, 10))).elkuldve, 2);
+});
+
+test('no-show kuldesi ido: az idopont napjan masnap 10:00; kesobb nappal fel ora mulva, reggel 10:00, este masnap 10:00', () => {
+  const kezdet = helyiEpoch(2026, 11, 25, 16, 0);
+  assert.equal(helyi(nemJelentIdo(helyiEpoch(2026, 11, 25, 17, 30), kezdet)).kulcs, '2026-11-26 10:00');
+  assert.equal(helyi(nemJelentIdo(helyiEpoch(2026, 11, 25, 23, 0), kezdet)).kulcs, '2026-11-26 10:00');
+  assert.equal(helyi(nemJelentIdo(helyiEpoch(2026, 11, 26, 8, 0), kezdet)).kulcs, '2026-11-26 10:00');
+  assert.equal(helyi(nemJelentIdo(helyiEpoch(2026, 11, 26, 13, 0), kezdet)).kulcs, '2026-11-26 13:30');
+  assert.equal(helyi(nemJelentIdo(helyiEpoch(2026, 11, 26, 21, 0), kezdet)).kulcs, '2026-11-27 10:00');
+  assert.equal(nemTalalkoztunk(kezdet, helyiEpoch(2026, 11, 25, 18, 0)), 'Ma nem találkoztunk');
+  assert.equal(nemTalalkoztunk(kezdet, helyiEpoch(2026, 11, 26, 10, 0)), 'Tegnap nem találkoztunk');
+  assert.match(nemTalalkoztunk(kezdet, helyiEpoch(2026, 11, 27, 10, 0)), /^A november 25\. \(szerda\) 16:00-ra szóló időpontodon nem találkoztunk$/);
+});
+
+test('szolgaltatas-nev: az altalanos neveknel (Ingyenes konzultacio, Korrekcio) az uzletag szava is benne van, SMS-ben es e-mailben egyarant', () => {
+  assert.equal(uzletaggal('laser', 'Ingyenes konzultáció'), 'szőrtelenítés ingyenes konzultáció');
+  assert.equal(uzletaggal('laser', 'Ingyenes konzultáció', true), 'Szőrtelenítés ingyenes konzultáció');
+  assert.equal(uzletaggal('pmu', 'Ingyenes konzultáció'), 'sminktetoválás ingyenes konzultáció');
+  assert.equal(uzletaggal('oxygen', 'Haj Oxigénterápia - 1. alkalom'), 'Haj Oxigénterápia - 1. alkalom'); // mar elarulja
+  assert.equal(uzletaggal('hair', 'Fodrász konzultáció'), 'Fodrász konzultáció');
+  const f = { id: 'x', uzletag: 'laser', fiok: 'mosaic-elysion', nev: 'Minta Réka', keresztnev: 'Réka', telefon: '+36201234567', email: 'a@b.hu', szolgaltatas: 'Ingyenes konzultáció zsófihoz!', szegmens: ['konzultacio'], munkatars: 'Zsófi', kezdet: helyiEpoch(2026, 11, 25, 16, 0), letrehozva: MOST, token: 'a1b2c3d4e5' };
+  assert.equal(ertekek(f, 'sms')['szolgáltatás'], 'szőrtelenítés ingyenes konzultáció');
+  assert.equal(ertekek(f, 'email')['szolgáltatás'], 'Szőrtelenítés ingyenes konzultáció');
+  assert.equal(ragoz(ertekek(f, 'sms')['szolgáltatás'], 'ra'), 'szőrtelenítés ingyenes konzultációra');
 });
 
 test('motor: regi (keso erkezo) level - a T0 es a lemondas-visszaigazolas nem megy ki, de az allapot frissul; a friss igen', async () => {

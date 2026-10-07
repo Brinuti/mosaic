@@ -54,7 +54,28 @@ export function tisztaNev(szolgaltatas) {
   t = t.replace(/\s*[+-]\s*állap\S*(\s+-?\d+%\s*kedvezménnyel)?/gi, '');
   t = t.replace(/\s*-\s*[\d.\s]*(FT\s*)?KEDVEZMÉNNYEL.*$/i, '');
   t = t.replace(/\s*\(TE RAKOD ÖSSZE!\)/i, '');
+  t = t.replace(/\s+zsófihoz!?\s*$/i, ''); // "Ingyenes konzultáció zsófihoz!" -> "Ingyenes konzultáció" (a munkatárs külön helyőrző; a toldalékolás is így helyes)
   return t.replace(/\s{2,}/g, ' ').replace(/[\s-]+$/, '').trim() || String(szolgaltatas || '').trim();
+}
+
+/** Az üzletág szava, ha a szolgáltatás neve önmagában nem árulja el, melyik üzletágé ("Ingyenes konzultáció", "Korrekció"). */
+const UZLETAG_SZO = { headspa: 'HeadSpa', hair: 'fodrász', oxygen: 'oxigénterápia', laser: 'szőrtelenítés', pmu: 'sminktetoválás' };
+/** Ezek a szavak a szolgáltatás nevében már elárulják az üzletágat: ilyenkor nem kell elé az üzletág szava. */
+const UZLETAG_JEL = {
+  headspa: /head\s?spa/i,
+  hair: /fodr[aá]sz|haj|v[aá]g[aá]s|fest[eé]s|balayage|melír|ombr[eé]|sz[aá]r[ií]t[aá]s|kontúr|szőkít/i,
+  oxygen: /oxig[eé]n|oxygen/i,
+  laser: /sz[őo]rtelen[ií]t|l[eé]zer|laser|elysion/i,
+  pmu: /sminktet|pmu|szem[oö]ld[oö]k|ajaktet|szemh[eé]j|szemkont/i,
+};
+/** A szolgáltatás neve az üzletág szavával, ha az általános ("Ingyenes konzultáció" -> "szőrtelenítés ingyenes konzultáció"; nagy: nagy kezdőbetűvel, az e-mailek dobozába). */
+export function uzletaggal(uzletag, nev, nagy = false) {
+  const t = String(nev || '').trim();
+  const szo = UZLETAG_SZO[uzletag];
+  if (!t || !szo || (UZLETAG_JEL[uzletag] && UZLETAG_JEL[uzletag].test(t))) return t;
+  const kisbetus = t.charAt(0).toLowerCase() + t.slice(1);
+  const kapcsolt = `${szo} ${kisbetus}`;
+  return nagy ? kapcsolt.charAt(0).toUpperCase() + kapcsolt.slice(1) : kapcsolt;
 }
 
 /** Rovid nev az SMS-hez (kb. 42 karakter, szohataron vagva). */

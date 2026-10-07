@@ -26,7 +26,21 @@ export default {
     },
     {
       id: 'COMMON-NOSHOW-SMS', csatorna: 'sms', mikor: { tipus: 'nem_jelent_meg' },
-      szoveg: 'Szia {keresztnév}! Tegnap nem találkoztunk, reméljük, minden rendben van. Ha csak az időpont csúszott el, itt egyből tudsz újat választani: {foglalás_link}. Ha kérdésed van, hívj nyugodtan: {telefon}. MOSAIC',
+      szoveg: 'Szia {keresztnév}! {nem_találkoztunk}, reméljük, minden rendben van. Ha csak az időpont csúszott el, itt egyből tudsz újat választani: {foglalás_link}. Ha kérdésed van, hívj nyugodtan: {telefon}. MOSAIC',
+    },
+    {
+      id: 'COMMON-NOSHOW-EMAIL', csatorna: 'email', mikor: { tipus: 'nem_jelent_meg' },
+      targy: 'Nem találkoztunk - szeretnél új időpontot?',
+      elotag: 'Ha csak az időpont csúszott el, innen egyből tudsz újat választani.',
+      torzs: [
+        'Szia {keresztnév}!',
+        '{nem_találkoztunk}, reméljük, minden rendben van.',
+        { doboz: ['{szolgáltatás}', '{dátum}, {időpont}'] },
+        'Előfordul, hogy közbejön valami. Ha csak az időpont csúszott el, nem kell elölről kezdened, itt rögtön választhatsz másikat:',
+        { gomb: { felirat: 'Új időpontot választok', link: '{foglalás_link}' } },
+        'Ha kérdésed van, hívj nyugodtan: {telefon}.',
+        { alairas: 'MOSAIC' },
+      ],
     },
   ],
 };

@@ -10,7 +10,7 @@ import { keresztnev } from './nevek.js';
 import { szegmensek as szegmensCimkek, UZLETAGAK } from './uzletag.js';
 import { tervez, keres, KESES_PLAFON, surgos } from './terv.js';
 import { ertekek, smsKirajzol, emailKirajzol, feladatKirajzol, ALAP_URL } from './render.js';
-import { helyi } from './ido.js';
+import { helyi, helyiEpoch } from './ido.js';
 
 const NAP = 86400;
 
@@ -63,6 +63,18 @@ export async function tervMent(db, foglalasId, terv, { reset = [] } = {}) {
   for (const k of terv.kihagyva) if (!letezo.has(k.uzenet_id)) stmts.push(keszit(db, "INSERT OR IGNORE INTO kuldesek (foglalas_id, uzenet_id, csatorna, esedekes, allapot, ok) VALUES (?1, ?2, ?3, 0, 'kihagyva', ?4)", foglalasId, k.uzenet_id, k.csatorna || 'sms', k.ok));
   if (stmts.length) await db.batch(stmts);
 }
+
+/** A no-show SMS / e-mail kuldesi ideje: ha a jelzes az idopont napjan jott, masnap 10:00 (dokumentum); kesobb: nappal fel oraval kesobb, reggel 10:00, este masnap 10:00. */
+export function nemJelentIdo(alap, kezdet) {
+  const lk = helyi(kezdet); const la = helyi(alap);
+  const ora = la.h + la.mi / 60;
+  const masnap10 = () => { const k = helyi(alap + NAP); return helyiEpoch(k.y, k.m, k.d, 10, 0); };
+  if (lk.y === la.y && lk.m === la.m && lk.d === la.d) return masnap10();
+  if (ora < 9.5) return helyiEpoch(la.y, la.m, la.d, 10, 0);
+  if (ora <= 19.5) return alap + 1800;
+  return masnap10();
+}
+const NEM_JELENT_MEG_JELZES = /nem\s*jelent\s*meg|nem\s*j[öo]tt\s*el|nem\s*[ée]rkezett\s*meg|no[\s-]*show/i;
 
 async function azonnaliUzenetek(db, foglalasId, uzenetIdk, most) {
   const stmts = uzenetIdk.map((id) => keszit(db, "INSERT OR IGNORE INTO kuldesek (foglalas_id, uzenet_id, csatorna, esedekes, allapot) VALUES (?1, ?2, ?3, ?4, 'fuggoben')", foglalasId, id, /-EMAIL(-|$)/.test(id) ? 'email' : 'sms', most));
@@ -162,6 +174,23 @@ async function feldolgoz(db, cfg, e, forras, most, alapIdo = most) {
       await azonnaliUzenetek(db, fid, [`COMMON-RESCHEDULE-SMS#${n + 1}`], alapIdo);
       eredmeny = { ok: true, tipus: 'athelyezve', foglalasId: fid, ismeretlenVolt: !volt };
     }
+  } else if (e.tipus === 'lemondva' && ((NEM_JELENT_MEG_JELZES.test(e.lemondasOka || '') || e.kezdet <= alapIdo) && alapIdo - e.kezdet <= 3 * NAP)) {
+    // NO-SHOW: a szalon torolte az idopontot (a vendeg a lemondasi hatarido utan mar nem mondhatja le; vagy az ok megjeloli: "nem jelent meg").
+    // A lemondas-visszaigazolas helyett "nem talalkoztunk" SMS + e-mail megy, uj foglalasi linkkel.
+    let volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', id);
+    if (!volt) volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', szintetikusId(e.uzletag, e.email, telefon, e.kezdet));
+    if (!volt) volt = await vendegFoglalasa(db, e.uzletag, e.email, telefon, e.kezdet, 'aktiv') || await vendegFoglalasa(db, e.uzletag, e.email, telefon, e.kezdet, 'nem_jelent_meg', most - 900);
+    const fid = volt ? volt.id : id;
+    const voltJelzes = volt ? !!(await elso(db, "SELECT 1 AS x FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id = 'COMMON-NOSHOW-SMS' LIMIT 1", fid)) : false;
+    if (volt && volt.allapot === 'nem_jelent_meg' && voltJelzes) eredmeny = { ok: true, tipus: 'nem_jelent_meg', foglalasId: fid, duplikalt: true };
+    else {
+      if (volt) {
+        await futtat(db, "UPDATE foglalasok SET allapot = 'nem_jelent_meg', modositva = ?2 WHERE id = ?1", fid, most);
+        await futtat(db, "UPDATE kuldesek SET allapot = 'torolve', ok = 'nem_jelent_meg' WHERE foglalas_id = ?1 AND allapot IN ('fuggoben', 'kuldes')", fid);
+      } else await beszur('nem_jelent_meg');
+      await azonnaliUzenetek(db, fid, ['COMMON-NOSHOW-SMS', 'COMMON-NOSHOW-EMAIL'], nemJelentIdo(alapIdo, e.kezdet));
+      eredmeny = { ok: true, tipus: 'nem_jelent_meg', foglalasId: fid, ismeretlenVolt: !volt };
+    }
   } else { // lemondva
     let volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', id);
     if (!volt) volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', szintetikusId(e.uzletag, e.email, telefon, e.kezdet));
@@ -175,11 +204,11 @@ async function feldolgoz(db, cfg, e, forras, most, alapIdo = most) {
         await futtat(db, "UPDATE foglalasok SET allapot = 'lemondva', modositva = ?2 WHERE id = ?1", fid, most);
         await futtat(db, "UPDATE kuldesek SET allapot = 'torolve', ok = 'lemondva' WHERE foglalas_id = ?1 AND allapot IN ('fuggoben', 'kuldes')", fid);
       } else await beszur('lemondva');
-      await azonnaliUzenetek(db, fid, ['COMMON-CANCEL-SMS', 'COMMON-CANCEL-EMAIL'], alapIdo);
+      if (e.kezdet > alapIdo) await azonnaliUzenetek(db, fid, ['COMMON-CANCEL-SMS', 'COMMON-CANCEL-EMAIL'], alapIdo); // a regen elmult idopontra nincs lemondas-visszaigazolas
       eredmeny = { ok: true, tipus: 'lemondva', foglalasId: fid, ismeretlenVolt: !volt };
     }
   }
-  if (forras) await futtat(db, 'UPDATE esemenyek SET tipus = ?2, foglalas_id = ?3, reszlet = ?4 WHERE forras_id = ?1', forras, `ingest:${e.tipus}`, eredmeny.foglalasId, JSON.stringify({ uzletag: e.uzletag, teszt: !!teszt, duplikalt: !!eredmeny.duplikalt }));
+  if (forras) await futtat(db, 'UPDATE esemenyek SET tipus = ?2, foglalas_id = ?3, reszlet = ?4 WHERE forras_id = ?1', forras, `ingest:${eredmeny.tipus || e.tipus}`, eredmeny.foglalasId, JSON.stringify({ uzletag: e.uzletag, teszt: !!teszt, duplikalt: !!eredmeny.duplikalt }));
   return eredmeny;
 }
 
@@ -214,7 +243,7 @@ export async function tick(db, env, kuldok, most, opc = {}) {
     else if (r.allapot !== 'aktiv') { await lezar('torolve', `allapot:${r.allapot}`); continue; }
     else if (r.kezdet <= most) { await lezar('torolve', 'az_idopont_elmult'); continue; }
 
-    const t0szeru = ['t0', 'feladat_t0', 'lemondva', 'athelyezve'].includes(tipus);
+    const t0szeru = ['t0', 'feladat_t0', 'lemondva', 'athelyezve', 'nem_jelent_meg'].includes(tipus);
     const plafon = t0szeru ? KESES_PLAFON.t0 : uz.csatorna === 'feladat' ? 6 * 3600 : KESES_PLAFON.egyeb;
     if (!engedelyezett(cfg, { teszt: r.teszt, uzletag: r.uzletag })) {
       if (most - r.esedekes > plafon) await lezar('kihagyva', 'nem_elo_mod:keso'); else ossz.varakozik += 1;
@@ -228,7 +257,7 @@ export async function tick(db, env, kuldok, most, opc = {}) {
     if (claim.meta && claim.meta.changes === 0) continue;
 
     try {
-      const ert = ertekek(f, uz.csatorna === 'sms' ? 'sms' : 'email', { base });
+      const ert = ertekek(f, uz.csatorna === 'sms' ? 'sms' : 'email', { base, most });
       let azon;
       if (uz.csatorna === 'sms') {
         if (!r.telefon) { await lezar('kihagyva', 'nincs_telefon'); continue; }

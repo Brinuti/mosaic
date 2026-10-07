@@ -87,5 +87,7 @@ export function ertelmez(level, most) {
   if (!uzletag) return { ok: false, miert: 'ismeretlen uzletag' };
   const foglalasId = azon ? (azon[1] || azon[2]).toLowerCase() : null;
 
-  return { ok: true, tipus: t.tipus, uzletag, fiok, foglalasId, nev, telefonNyers, email, szolgaltatas, szolgaltatasok, munkatars, kezdet, regiKezdet };
+  // a lemondas oka (a datum odaragad utana: levagjuk) - a no-show jelzes felismeresehez
+  const lemondasOka = (ertekek['lemondás oka'] || '').replace(/\s*(január|február|március|április|május|június|július|augusztus|szeptember|október|november|december)\s+\d{1,2}\..*$/i, '').trim();
+  return { ok: true, tipus: t.tipus, uzletag, fiok, foglalasId, nev, telefonNyers, email, szolgaltatas, szolgaltatasok, munkatars, kezdet, regiKezdet, lemondasOka };
 }

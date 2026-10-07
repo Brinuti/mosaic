@@ -14,7 +14,7 @@ export const HELYORZOK = Object.freeze({
   'várható_időtartam': { opcionalis: true, leiras: '"1 óra 20 perc" (a Salonic-pillanatképből)' },
   'aktuális_ár': { opcionalis: true, leiras: 'jelenleg NINCS garantáltan aktuális ár-forrás: a sor kimarad' },
   'aktuális_ajánlat': { opcionalis: true, leiras: 'jelenleg nincs garantált ajánlat-forrás: a sor kimarad' },
-  'foglalás_részletei_link': { leiras: 'a Salonic vendég-oldala: részletek / módosítás' },
+  'foglalás_részletei_link': { leiras: 'a saját oldalunk: részletek / módosítás (mosaicheadspa.hu/f/<kód>; a Salonic-oldal a mi oldalunkba ágyazva)' },
   'módosítás_link': { leiras: 'ugyanaz, mint a részletek (itt tud átfoglalni / módosítani)' },
   'megerősítés_link': { leiras: 'egykattintásos megerősítés (mosaicheadspa.hu/api/lifecycle/megerosites...)' },
   'foglalás_link': { leiras: 'új időpont foglalása (az üzletág oldala)' },
@@ -25,6 +25,7 @@ export const HELYORZOK = Object.freeze({
   'új_időpont': { leiras: 'áthelyezésnél az új időpont' },
   'telefon': { leiras: 'a szalon telefonszáma: 06 20 247 4444' },
   'cím': { leiras: '1023 Budapest, Bécsi út 2.' },
+  'nem_találkoztunk': { leiras: 'no-show üzenethez: "Tegnap nem találkoztunk" / "Ma nem találkoztunk" / "A … időpontodon nem találkoztunk" (a küldés napja szerint)' },
 });
 
 export const CSATORNAK = Object.freeze(['sms', 'email', 'feladat']);
