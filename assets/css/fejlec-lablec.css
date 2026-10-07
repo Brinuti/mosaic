@@ -73,6 +73,12 @@
   #SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has([data-testid="positionBox"]) .itemDepth02233374943__label { padding-right: 12px; }
 }
 
+/* 980 px alatt (tablet allo helyzetben, keskeny asztali ablak): a fejlec ugyanugy 980 px szeles marad, mint a Wix-oldalak (az oldal ugyis legalabb 980 px szeles),
+   igy a 11 menupont nem csuszik ra a Foglalas / i / EN gombokra (2026-10-07, a tablet-eszrevetel nyoman) */
+@media (max-width: 979px) {
+  html #SITE_HEADER:has(#comp-m4lbfl1t) { min-width: 980px !important; }
+}
+
 /* ============ MOBIL FEJLEC: egy kicsit alacsonyabb, a sor tartalma picit feljebb ============ */
 .device-mobile-optimized [data-mesh-id="SITE_HEADERinlineContent-gridContainer"] { grid-template-rows: 46px auto !important; }
 .device-mobile-optimized #comp-m3znboq3 { margin-top: 9px !important; }
