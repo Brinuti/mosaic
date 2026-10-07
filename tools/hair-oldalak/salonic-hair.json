@@ -1,0 +1,592 @@
+{
+ "lekerve": "2026-10-07",
+ "forras": "mosaic-hair.salonic.hu (nyilvanos szolgaltatas-oldalak), csak olvasas",
+ "fodraszok": [
+  {
+   "id": "23694",
+   "kulcs": "betti",
+   "nev": "Betti",
+   "kedvezmeny": 0
+  },
+  {
+   "id": "25095",
+   "kulcs": "noel",
+   "nev": "Noel",
+   "kedvezmeny": 20
+  },
+  {
+   "id": "26064",
+   "kulcs": "evelin",
+   "nev": "Evelin",
+   "kedvezmeny": 0
+  }
+ ],
+ "szolgaltatasok": [
+  {
+   "id": "231532",
+   "kat": "Balayage",
+   "nev": "Balayage / ombre / babylight + vágás + szárítás",
+   "hossz": "kozepes",
+   "perc": 180,
+   "ar": 42950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231533",
+   "kat": "Balayage",
+   "nev": "Balayage / ombre / babylight + vágás + szárítás",
+   "hossz": "hosszu",
+   "perc": 210,
+   "ar": 47950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "470829",
+   "kat": "Balayage",
+   "nev": "Balayage / ombre / babylight + vágás + szárítás",
+   "hossz": "extra",
+   "perc": 240,
+   "ar": 54950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "440294",
+   "kat": "Balayage",
+   "nev": "Balayage / ombre / babylight +tőfestés+ vágás + szárítás",
+   "hossz": "kozepes",
+   "perc": 210,
+   "ar": 48950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "440295",
+   "kat": "Balayage",
+   "nev": "Balayage / ombre / babylight +tőfestés+ vágás + szárítás",
+   "hossz": "hosszu",
+   "perc": 240,
+   "ar": 52950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "470831",
+   "kat": "Balayage",
+   "nev": "Balayage / ombre / babylight +tőfestés+ vágás + szárítás",
+   "hossz": "extra",
+   "perc": 270,
+   "ar": 59950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "395330",
+   "kat": "Elrontott festés korrekció / Teljes festés",
+   "nev": "Teljes festés/ Supernatural Color",
+   "hossz": "rovid",
+   "perc": 120,
+   "ar": 32950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "395337",
+   "kat": "Elrontott festés korrekció / Teljes festés",
+   "nev": "Teljes festés/ Supernatural Color",
+   "hossz": "kozepes",
+   "perc": 150,
+   "ar": 39950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "395338",
+   "kat": "Elrontott festés korrekció / Teljes festés",
+   "nev": "Teljes festés/ Supernatural Color",
+   "hossz": "hosszu",
+   "perc": 180,
+   "ar": 44950,
+   "regiAr": null,
+   "fodraszok": [
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "470827",
+   "kat": "Elrontott festés korrekció / Teljes festés",
+   "nev": "Teljes festés/Supernatural Color",
+   "hossz": "extra",
+   "perc": 210,
+   "ar": 48950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231549",
+   "kat": "Férfi hajvágás",
+   "nev": "Férfi hajvágás",
+   "hossz": null,
+   "perc": 30,
+   "ar": 7450,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "26064"
+   ]
+  },
+  {
+   "id": "401929",
+   "kat": "Hajszerkezet újraépítés",
+   "nev": "JOICO 4 lépéses hajújraépítő kezelés",
+   "hossz": "felhosszu",
+   "perc": 120,
+   "ar": 19950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "401930",
+   "kat": "Hajszerkezet újraépítés",
+   "nev": "JOICO 4 lépéses hajújraépítő kezelés",
+   "hossz": "hosszu",
+   "perc": 120,
+   "ar": 22950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "470835",
+   "kat": "Hajszerkezet újraépítés",
+   "nev": "JOICO 4 lépéses hajújraépítő kezelés",
+   "hossz": "extra",
+   "perc": 150,
+   "ar": 25950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "232804",
+   "kat": "Ingyenes Fodrász konzultáció",
+   "nev": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+   "hossz": null,
+   "perc": 30,
+   "ar": 0,
+   "regiAr": 9900,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231537",
+   "kat": "Női hajvágás + szárítás",
+   "nev": "Női hajvágás + Szárítás",
+   "hossz": "rovid",
+   "perc": 60,
+   "ar": 11950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231538",
+   "kat": "Női hajvágás + szárítás",
+   "nev": "Női hajvágás + Szárítás",
+   "hossz": "kozepes",
+   "perc": 60,
+   "ar": 13950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231539",
+   "kat": "Női hajvágás + szárítás",
+   "nev": "Női hajvágás + Szárítás",
+   "hossz": "hosszu",
+   "perc": 90,
+   "ar": 14950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "470823",
+   "kat": "Női hajvágás + szárítás",
+   "nev": "Női hajvágás + Szárítás",
+   "hossz": "extra",
+   "perc": 120,
+   "ar": 16950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231534",
+   "kat": "Női szárítás",
+   "nev": "Női szárítás",
+   "hossz": "rovid",
+   "perc": 30,
+   "ar": 7350,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231535",
+   "kat": "Női szárítás",
+   "nev": "Női szárítás",
+   "hossz": "kozepes",
+   "perc": 60,
+   "ar": 8950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231536",
+   "kat": "Női szárítás",
+   "nev": "Női szárítás",
+   "hossz": "hosszu",
+   "perc": 60,
+   "ar": 9950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "470822",
+   "kat": "Női szárítás",
+   "nev": "Női szárítás",
+   "hossz": "extra",
+   "perc": 90,
+   "ar": 12950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "233949",
+   "kat": "Póthaj",
+   "nev": "Póthaj leszedés",
+   "hossz": null,
+   "perc": 90,
+   "ar": 10000,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "26064"
+   ]
+  },
+  {
+   "id": "233950",
+   "kat": "Póthaj",
+   "nev": "Póthaj felrakás (350 Ft / Tincs)",
+   "hossz": null,
+   "perc": 90,
+   "ar": 35000,
+   "regiAr": null,
+   "fodraszok": [
+    "26064"
+   ]
+  },
+  {
+   "id": "231546",
+   "kat": "Teljes melír / airtouch + vágás",
+   "nev": "Teljes melír / airtouch + vágás + szárítás",
+   "hossz": "rovid",
+   "perc": 150,
+   "ar": 39950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231547",
+   "kat": "Teljes melír / airtouch + vágás",
+   "nev": "Teljes melír / airtouch + vágás + szárítás",
+   "hossz": "kozepes",
+   "perc": 210,
+   "ar": 47950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231548",
+   "kat": "Teljes melír / airtouch + vágás",
+   "nev": "Teljes melír / airtouch + vágás + szárítás",
+   "hossz": "hosszu",
+   "perc": 270,
+   "ar": 60950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "470834",
+   "kat": "Teljes melír / airtouch + vágás",
+   "nev": "Teljes melír / airtouch + vágás + szárítás",
+   "hossz": "extra",
+   "perc": 270,
+   "ar": 64950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "395926",
+   "kat": "Teljes szőkítés",
+   "nev": "Teljes szőkítés/ korrekció- vágással",
+   "hossz": "rovid",
+   "perc": 180,
+   "ar": 39950,
+   "regiAr": null,
+   "fodraszok": [
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "395927",
+   "kat": "Teljes szőkítés",
+   "nev": "Teljes szőkítés/korrekció- vágással",
+   "hossz": "kozepes",
+   "perc": 210,
+   "ar": 47950,
+   "regiAr": null,
+   "fodraszok": [
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "395928",
+   "kat": "Teljes szőkítés",
+   "nev": "Teljes szőkítés/korrekció - vágással",
+   "hossz": "hosszu",
+   "perc": 270,
+   "ar": 60950,
+   "regiAr": null,
+   "fodraszok": [
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "470836",
+   "kat": "Teljes szőkítés",
+   "nev": "Teljes szőkítés /korrekció- vágással",
+   "hossz": "extra",
+   "perc": 300,
+   "ar": 64950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231540",
+   "kat": "Tőfestés + szárítás",
+   "nev": "Tőfestés + Szárítás",
+   "hossz": "rovid",
+   "perc": 90,
+   "ar": 23950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231541",
+   "kat": "Tőfestés + szárítás",
+   "nev": "Tőfestés + Szárítás",
+   "hossz": "kozepes",
+   "perc": 120,
+   "ar": 24950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231542",
+   "kat": "Tőfestés + szárítás",
+   "nev": "Tőfestés + Szárítás",
+   "hossz": "hosszu",
+   "perc": 120,
+   "ar": 25950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "470824",
+   "kat": "Tőfestés + szárítás",
+   "nev": "Tőfestés + Szárítás",
+   "hossz": "extra",
+   "perc": 150,
+   "ar": 28950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231543",
+   "kat": "Tőfestés + vágás + szárítás",
+   "nev": "Tőfestés + Vágás + Szárítás",
+   "hossz": "rovid",
+   "perc": 120,
+   "ar": 26950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231544",
+   "kat": "Tőfestés + vágás + szárítás",
+   "nev": "Tőfestés + Vágás + Szárítás",
+   "hossz": "kozepes",
+   "perc": 150,
+   "ar": 28950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "231545",
+   "kat": "Tőfestés + vágás + szárítás",
+   "nev": "Tőfestés + Vágás + Szárítás",
+   "hossz": "hosszu",
+   "perc": 180,
+   "ar": 31950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  },
+  {
+   "id": "470837",
+   "kat": "Tőfestés + vágás + szárítás",
+   "nev": "Tőfestés + Vágás + Szárítás",
+   "hossz": "extra",
+   "perc": 210,
+   "ar": 34950,
+   "regiAr": null,
+   "fodraszok": [
+    "23694",
+    "25095",
+    "26064"
+   ]
+  }
+ ]
+}
