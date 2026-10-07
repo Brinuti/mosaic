@@ -30,6 +30,11 @@ Az alábbiakat a régi munkamenet emlékeztetői (`trig_01LXkGLQSPJUv7GAbG9vcVAF
 
 Időzóna: október 7-én Budapest = UTC+2 (CEST), a váltás október 25-én.
 
+### 2b. Frissítés (2026-10-07 ~18:40 UTC): mi történt 20:25 után, és a DÖNTÉS #108
+- **18:25:5x UTC: az X1-javítás pusholva a #128-ra** (`2e9f7d6` → `385cb77`); az előnézet élesedett **18:27:18 UTC**-kor. Újrateszt (`--nap 2026-10-07-javitas-utan`): **R1a, R1b, R2, R3, R4, R5 PASS**; az R6 és az összefoglaló: lásd az issue #167-et és a `meres-naplo/qa3-*-2026-10-07-javitas-utan.json` fájlokat.
+- **DÖNTÉS #108 (GPT + Feri):** a `fuggoben` végállapot hiba → automatikus `parositatlan` + egyszeri riasztás + 0 küldés, és a későbbi próba se küldjön semmit; új eset **R7**; az új 24 órás kör csak **R1–R7 mind zöld** esetén indul (az R7-javítást tartalmazó kódon); a kiértékelés az ablak vége után 45–60 perccel; **tesztszűrés négy osztályban** (`CONTROLLED_TEST`, `OTHER_TEST`, `REAL`, `UNKNOWN`); a kör végén **háromutas egyeztetés** (Salonic online foglalás = Gmail UUID = #128 sor). Részletek: `QA3_KONTROLLALT_TESZTEK.md` „DÖNTÉS #108”.
+- **Az R7-javítás a #128-ra az R1–R6 újrateszt után mehet** (Feri kifejezett engedélye). A mért ok: a Zap 4 próbát tesz (0, ~1, ~4, ~14,5 perc), a végpont (`UJRAPROBA_MP = [60, 180, 600, 1800]`) 5 próbát várt → a 4. próba után a sor `fuggoben` marad (a mai ablakban 23 nem-TESZT sor). Terv: a lezárás a **4. (utolsó) próbánál** történik, a `parositatlan` lezárt állapot (a késői párosítás sem küld), plusz „lusta” lezárás a következő kérésnél a lejárt `kovetkezo`-jű `fuggoben` soroknak (a 23 mai sor is lezáródik). Ezután R1–R6 **újra** az új kódon + az R7, és csak ha mind zöld, indulhat az új 24 órás kör.
+
 ## 3. Kemény szabályok (ne szegd meg)
 - **Magyarul** beszélj Ferivel; **mindent te csinálsz** (csak az marad Ferire, ami technikailag csak az övé: pl. bejelentkezés, engedély).
 - **#128 ág: ma 20:15 (Budapest) előtt nincs push, nincs deploy**; a Zap (01a1125b), a kill switchek (`meres_kapcsolo`) és a #128 D1 **csak olvasható** (nem írható) ugyanennyi ideig.
