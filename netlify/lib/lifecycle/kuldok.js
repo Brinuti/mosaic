@@ -6,7 +6,7 @@ const SMS_ALAP = 'https://api.simplesms.hu/rest/SMSapi';
 
 /** A SimpleSMS beallitasai a kornyezetbol: felhasznalo + domain nem titkos (wrangler.toml), a jelszo Secret. */
 export function smsBeallitas(env) {
-  return { felhasznalo: env.SIMPLESMS_FELHASZNALO || 'mosaic', domain: env.SIMPLESMS_DOMAIN || 'mosaicheadspa.hu', jelszo: env.SIMPLESMS_JELSZO || '' };
+  return { felhasznalo: env.SIMPLESMS_FELHASZNALO || 'mosaic', domain: env.SIMPLESMS_DOMAIN || 'mosaicheadspa.hu', jelszo: String(env.SIMPLESMS_JELSZO || '').trim() };
 }
 export const smsKesz = (env) => !!smsBeallitas(env).jelszo;
 export const emailKesz = (env) => !!env.SMTP_PASS;
@@ -24,6 +24,17 @@ async function smsToken(env, fetchFn) {
   const lejar = j.expires_in ? Date.parse(j.expires_in) : NaN;
   tokenGyorsitotar = { token, lejar: Number.isFinite(lejar) ? lejar : Date.now() + 10 * 60000 };
   return token;
+}
+
+/** Diagnosztika: a megadott felhasznalonevvel sikerul-e a connect (a token nem tarolodik, a jelszo nem jelenik meg). */
+export async function smsConnectProba(env, felhasznalo, fetchFn = fetch) {
+  const b = smsBeallitas(env);
+  if (!b.jelszo) return { felhasznalo, ok: false, uzenet: 'SIMPLESMS_JELSZO nincs beallitva' };
+  const r = await fetchFn(`${SMS_ALAP}/connect`, { method: 'POST', body: new URLSearchParams({ username: felhasznalo, password: b.jelszo, domain: b.domain }) });
+  const t = (await r.text()).trim();
+  let j; try { j = JSON.parse(t); } catch { j = null; }
+  const token = j && (j.access_token || j.data?.access_token);
+  return { felhasznalo, ok: !!token, uzenet: token ? 'connect ok' : t.slice(0, 160), jelszoHossz: b.jelszo.length };
 }
 
 /** SMS kuldese. telefon: '+36301234567'. Visszaad: { id } vagy hibat dob. */

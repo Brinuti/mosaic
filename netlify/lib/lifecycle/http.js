@@ -9,7 +9,7 @@
 // Beallitas (wrangler.toml / Cloudflare): LIFECYCLE_DB (D1), LIFECYCLE_KULCS_HASH (a kulcs SHA-256-ja; a kulcs maga az utemezoben / Zapier-ben van),
 // LIFECYCLE_MOD, LIFECYCLE_UZLETAGOK, SIMPLESMS_FELHASZNALO / SIMPLESMS_DOMAIN (nem titkos), SIMPLESMS_JELSZO (Secret), SMTP_* (mint az urlap-leveleknel).
 import { ingest, tick, napi, megerosit, reszletekUrl, allapot, beallitas } from './engine.js';
-import { kuldokKeszit, smsKesz, emailKesz, smsEgyenleg } from './kuldok.js';
+import { kuldokKeszit, smsKesz, emailKesz, smsEgyenleg, smsConnectProba } from './kuldok.js';
 import { UZLETAGAK, SZALON, tisztaNev } from './uzletag.js';
 import { datumSzoveg, idopontSzoveg } from './ido.js';
 
@@ -72,6 +72,12 @@ export async function api(request, env, ctx) {
       const n = await napi(db, env, kk, most);
       return json({ tick: t, napi: n });
     } finally { await k.lezar(); }
+  }
+  if (resz === 'sms-proba') { // diagnosztika: melyik felhasznalonevvel megy a SimpleSMS connect (jelszo nem latszik)
+    const jeloltek = Array.isArray(torzs.felhasznalok) && torzs.felhasznalok.length ? torzs.felhasznalok.slice(0, 5) : [env.SIMPLESMS_FELHASZNALO || 'mosaic'];
+    const eredmeny = [];
+    for (const nev of jeloltek) eredmeny.push(await smsConnectProba(env, String(nev).slice(0, 80)));
+    return json({ domain: env.SIMPLESMS_DOMAIN || 'mosaicheadspa.hu', eredmeny });
   }
   if (resz === 'teszt-torol') {
     if (cfg.mod === 'elo' && !torzs.biztos) return json({ hiba: 'elo modban csak biztos:true-val' }, 409);
