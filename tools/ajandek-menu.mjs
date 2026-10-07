@@ -15,6 +15,7 @@ export const AJANDEK_MENU = {
   elemek: [
     { cim: 'Head Spa ajándékkártya', utvonal: '/headspa-ajandekkartya' },
     { cim: 'Szőrtelenítés ajándékkártya', utvonal: '/lezeres-ajandekkartya' },
+    { cim: 'Oxigénterápia ajándékkártya', utvonal: '/oxigen-ajandekkartya' },
   ],
 };
 

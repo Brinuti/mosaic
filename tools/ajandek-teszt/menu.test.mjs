@@ -96,6 +96,42 @@ describe('a valaszto oldal (/ajandekkartya)', () => {
   }
 });
 
+describe('az oxigénes ajándékkártya a menüben, a választón és az oxigén landingen', () => {
+  test('a lenyílóban három kártya van (Head Spa, Szőrtelenítés, Oxigénterápia), a választó oldalon is három, mindegyik a saját oldalra visz', () => {
+    assert.deepEqual(AJANDEK_MENU.elemek.map((e) => e.utvonal), ['/headspa-ajandekkartya', '/lezeres-ajandekkartya', '/oxigen-ajandekkartya']);
+    const lap = olvas('foglalas', 'ajandekkartya.html');
+    assert.equal(db(lap, 'class="av-kartya"'), 3);
+    assert.match(lap, /<a class="av-kartya" href="\/oxigen-ajandekkartya">/);
+    assert.match(lap, /Oxigénterápia ajándékkártya<\/h2>/);
+    assert.ok(fs.existsSync(path.join(GYOKER, 'assets', 'img', 'ajandek', 'valaszto-oxigen.jpg')));
+    for (const nev of ['asztali', 'mobil']) {
+      const fejlec = ajandekMenu(olvas('assets', 'fejlec', nev + '.html'), nev === 'mobil');
+      assert.ok(fejlec.includes('>Oxigénterápia ajándékkártya<'), nev);
+      assert.equal(db(fejlec, 'href="/oxigen-ajandekkartya"'), 1, nev);
+    }
+  });
+
+  test('az oxigén landingen a "Személyre szabott ajándékkártya" sáv az árak után, a "Miért más nálunk" előtt áll, és a /oxigen-ajandekkartya oldalra visz (közvetlen link, nem hash)', () => {
+    const h = olvas('foglalas', 'oxigenterapia-budapest.html');
+    const arak = h.indexOf('<section class="arak"');
+    const sav = h.indexOf('<section class="ajk" id="ajandek"');
+    const miert = h.indexOf('<section class="miert"');
+    assert.ok(arak > 0 && sav > arak && miert > sav, 'sorrend: árak -> ajándékkártya sáv -> miért más nálunk');
+    const szekcio = h.slice(sav, h.indexOf('</section>', sav));
+    assert.match(szekcio, /<h2 id="ajk-cim">Személyre szabott ajándékkártya!<\/h2>/);
+    assert.match(szekcio, /<a class="gomb gomb-arany" href="\/oxigen-ajandekkartya">Ajándékkártyát választok <span class="nyil">/);
+    assert.equal(db(szekcio, 'href="#'), 0, 'nincs hash-link (a GTM History Change ne induljon)');
+    assert.doesNotMatch(szekcio, /target=|salonic/);
+    const kep = /src="(\/assets\/img\/[^"]+)"/.exec(szekcio)[1];
+    assert.ok(fs.existsSync(path.join(GYOKER, kep)), kep);
+    // a hero gombjai (a bevezetesi hierarchia) valtozatlanok
+    assert.match(h, /data-cta="hero-elso-kezeles"/);
+    const css = olvas('assets', 'css', 'oxigen-landing.css');
+    for (const sel of ['.ajk {', '.ajk-racs {', '.ajk-lista {']) assert.ok(css.includes(sel), sel);
+    assert.match(css, /@media \(max-width: 700px\) \{ \.ajk \{/);
+  });
+});
+
 describe('a build bekotese', () => {
   test('a sajat oldalak fejlecere es a Wixes oldalakra is rakerul az atalakitas', () => {
     assert.match(build, /import \{ ajandekMenu \} from '\.\/ajandek-menu\.mjs';/);

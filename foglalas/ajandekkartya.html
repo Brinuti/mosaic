@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- AJANDEKKARTYA VALASZTO (/ajandekkartya): a fomenu "Ajandekkartya" pontjara kattintva ez nyilik, innen lehet valasztani a ket ajandekkartya kozul
-     (Head Spa: /headspa-ajandekkartya, lezeres szortelenites: /lezeres-ajandekkartya). Nagyon egyszeru oldal, nincs rajta motor, nincs rajta meres a suti.js-en kivul.
+     (Head Spa: /headspa-ajandekkartya, lezeres szortelenites: /lezeres-ajandekkartya, oxigenterapia: /oxigen-ajandekkartya). Nagyon egyszeru oldal, nincs rajta motor, nincs rajta meres a suti.js-en kivul.
      Nem indexelheto (a keresoknek a ket valodi ajandekkartya-oldal szamit, ez csak a valaszto). A fomenu lenyiloja: tools/ajandek-menu.mjs -->
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://www.mosaicheadspa.hu/ajandekkartya">
 <title>Ajándékkártya – válassz kártyát | MOSAIC</title>
-<meta name="description" content="MOSAIC ajándékkártya: válassz a Head Spa és a lézeres szőrtelenítés ajándékkártya között. Online megvásárolható, 6 hónapig felhasználható.">
+<meta name="description" content="MOSAIC ajándékkártya: válassz a Head Spa, a lézeres szőrtelenítés és az oxigénterápia ajándékkártya között. Online megvásárolható, 6 hónapig felhasználható.">
 <meta property="og:title" content="MOSAIC ajándékkártya – válassz kártyát">
-<meta property="og:description" content="Head Spa vagy lézeres szőrtelenítés ajándékkártya: online megvásárolható, 6 hónapig felhasználható.">
+<meta property="og:description" content="Head Spa, lézeres szőrtelenítés vagy oxigénterápia ajándékkártya: online megvásárolható, 6 hónapig felhasználható.">
 <meta property="og:image" content="https://www.mosaicheadspa.hu/assets/img/ajandek/valaszto-headspa.jpg">
 <meta property="og:url" content="https://www.mosaicheadspa.hu/ajandekkartya">
 <meta property="og:site_name" content="MOSAIC Headspa">
@@ -26,11 +26,11 @@
   --cim: 'Playfair Display', Georgia, 'Times New Roman', serif; --test: 'Jost', 'Helvetica Neue', Arial, sans-serif; }
 body.av { margin: 0; background: var(--hatter); color: var(--szoveg); font: 400 17px/1.55 var(--test); -webkit-text-size-adjust: 100%; }
 .av *, .av *::before, .av *::after { box-sizing: border-box; }
-.av-fo { max-width: 1020px; margin: 0 auto; padding: 44px 20px 72px; }
+.av-fo { max-width: 1120px; margin: 0 auto; padding: 44px 20px 72px; }
 .av-fejlec { text-align: center; }
 .av h1 { margin: 0; font: 500 clamp(28px, 4.4vw, 42px)/1.18 var(--cim); color: var(--sotet); }
 .av-bev { max-width: 560px; margin: 14px auto 0; color: var(--halk); font-size: 17px; }
-.av-racs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; margin-top: 36px; }
+.av-racs { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 28px; margin-top: 36px; }
 .av-kartya { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--vonal); border-radius: 18px; overflow: hidden; color: inherit; text-decoration: none;
   box-shadow: 0 1px 2px rgba(40, 30, 20, .04), 0 8px 24px rgba(40, 30, 20, .06); transition: transform .2s, box-shadow .2s; }
 .av-kartya:hover, .av-kartya:focus-visible { transform: translateY(-3px); box-shadow: 0 2px 4px rgba(40, 30, 20, .06), 0 14px 32px rgba(40, 30, 20, .12); }
@@ -65,7 +65,7 @@ body.av { margin: 0; background: var(--hatter); color: var(--szoveg); font: 400 
 <main class="av-fo">
   <div class="av-fejlec">
     <h1>Melyik ajándékkártyát választod?</h1>
-    <p class="av-bev">Két kártya közül választhatsz. Mindkettőt online megveheted, és 6 hónapig felhasználható.</p>
+    <p class="av-bev">Három kártya közül választhatsz. Mindegyiket online megveheted, és 6 hónapig felhasználható.</p>
   </div>
 
   <div class="av-racs">
@@ -83,6 +83,14 @@ body.av { margin: 0; background: var(--hatter); color: var(--szoveg); font: 400 
         <h2>Szőrtelenítés ajándékkártya</h2>
         <span class="av-szoveg">Lézeres szőrtelenítés ajándékba: válassz hónaljat, lábat vagy teljes csomagot. E-mailben kapod meg, és ki is nyomtathatod.</span>
         <span class="av-gomb">Szőrtelenítés kártyák <span class="av-nyil" aria-hidden="true">→</span></span>
+      </span>
+    </a>
+    <a class="av-kartya" href="/oxigen-ajandekkartya">
+      <img class="av-kep" src="/assets/img/ajandek/valaszto-oxigen.jpg" alt="Oxigénterápiás hajkezelés a MOSAIC-ban: a kezelő a vendég fejbőrét kezeli" width="960" height="640" loading="lazy" decoding="async">
+      <span class="av-test">
+        <h2>Oxigénterápia ajándékkártya</h2>
+        <span class="av-szoveg">Hajkamerás vizsgálat, az első kezelés vagy 5–10 kezelésre szóló ajándék. E-mailben kapod meg, és ki is nyomtathatod.</span>
+        <span class="av-gomb">Oxigénterápia kártyák <span class="av-nyil" aria-hidden="true">→</span></span>
       </span>
     </a>
   </div>
