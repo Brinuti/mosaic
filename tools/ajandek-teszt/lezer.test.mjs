@@ -96,7 +96,7 @@ describe('lezeres kereskedo: kornyezet es adat', () => {
   });
   test('a termekek: fix osszegek, a szamla-tetel osszege = az ar, AAM; sajat azonositok (a HeadSpa-ekkel nem keverednek)', () => {
     const idk = Object.keys(LEZER.TERMEKEK);
-    assert.deepEqual(idk, ['lezer20', 'lezer30', 'lezer50', 'lezer100']);
+    assert.deepEqual(idk, ['lezer30', 'lezer50', 'lezer100', 'lezer200']);
     for (const id of idk) {
       const t = LEZER.TERMEKEK[id];
       const sor = LEZER.szamlaTetelek(id);

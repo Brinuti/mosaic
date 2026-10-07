@@ -7,7 +7,7 @@
 //
 // OSSZEGEK: fix ertekű ajandekkartyak, a vendeg barmelyik lezeres kezelesre felhasznalhatja. Az osszegeket CSAK ITT kell atirni
 // (a szerver ebbol szamolja a PaymentIntent osszeget es a Szamlazz.hu-tetelt, a bongeszo ebbol irja ki az arat).
-// A tulajdonos javaslata (2026-10-07): 20 000 / 30 000 / 50 000 / 100 000 Ft - veglegesites a tulajdonos dolga.
+// A tulajdonos dontese (2026-10-07): 30 000 / 50 000 / 100 000 / 200 000 Ft. A maradek osszeg is felhasznalhato (a kartya ervenessegi idejen belul).
 //
 // SZAMLA: a Szamlazz.hu Szamla Agenttel, a vasarlaskor (a HeadSpa-hoz hasonloan). A kibocsato "uj KATA", alanyi adomentes (AAM):
 // az Agent az ujKATA-s fiokbol vallalkozasnak nem szamlazhat, ezert ceges szamla NINCS; a tetelen az AAM-jelzes szerepel.
@@ -16,7 +16,7 @@
   var H = g.AJANDEK_ADAT;
   if (!H) throw new Error('ajandek-adat-lezer: elobb az ajandek-adat.js kell');
 
-  var ERTEKEK = [20000, 30000, 50000, 100000];
+  var ERTEKEK = [30000, 50000, 100000, 200000];
   var KEP = { src: '/assets/img/c2eb0f_f5b87c4c4fd64d6d89f970a318a56da0.jpg', alt: 'Lézeres szőrtelenítés kezelés a MOSAIC-ban', w: 700, h: 927, poz: '50% 40%' };
 
   function ft(n) { return H.arSzoveg(n); }
@@ -43,7 +43,7 @@
       pontosan: { ido: 'Bármelyik lézeres kezelésre', fo: '1 vendég', kezelo: 'Zsófi, a MOSAIC lézeres szakértője' },
       kezeles: {
         leiras: [
-          'Az ajándékkártya értéke a MOSAIC lézeres szőrtelenítésén használható fel, bármelyik testtájra.',
+          'Az ajándékkártya értéke a MOSAIC lézeres szőrtelenítésén használható fel, bármelyik testtájra. Ha a kezelés ára kevesebb a kártya értékénél, a maradék összeg is felhasználható.',
           'Az ajándékozott az online időpontfoglalásnál a kártyán lévő kuponkóddal váltja be.'
         ],
         menet: null,
@@ -103,7 +103,7 @@
     foglalas_szoveg: 'mosaicheadspa.hu/lezeres-szortelenites-budapest',
     // a szalonnak szolo level "kupont fel kell vinni" blokkja: a lezeres kartya osszeg-kupon (fix ertek), nem kezeles-kupon
     kupon_cim: 'Fel kell vinni egy összeg-kupont a Salonicba (Elysion)',
-    kupon_szoveg: 'ezért a Salonicban <b>nem utalvány-értékesítést</b>, hanem egy <b>{osszeg}</b> értékű, fix összegű kupont hozz létre a lézeres szőrtelenítés szolgáltatásaira, egyszer felhasználható, érvényes {ervenyes} (6 hónap). A kuponkód pontosan egyezzen az alábbival (kötőjel nélkül).'
+    kupon_szoveg: 'ezért a Salonicban <b>nem utalvány-értékesítést</b>, hanem egy <b>{osszeg}</b> értékű, fix összegű kupont (utalványt) hozz létre a lézeres szőrtelenítés szolgáltatásaira. <b>A kártya maradék összege is felhasználható</b>, ezért olyan kupon kell, amiből a maradék megmarad (nem 100%-os, és nem egyszer használatos). Érvényes {ervenyes} (6 hónap). A kuponkód pontosan egyezzen az alábbival (kötőjel nélkül).'
   };
 
   // oldal-cim -> alapertelmezett termek (a kartyak oldal-cime a /lezeres-ajandekkartya; a variant mindig a GENERAL)

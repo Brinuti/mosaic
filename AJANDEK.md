@@ -693,7 +693,7 @@ A motor (`netlify/lib/ajandek.js`) már **kereskedő-gyár**: `ajandekMotor(ADAT
 | Oldal | `/ajandek` + a régi címek | `/lezeres-ajandekkartya` (noindex, nincs link rá; a lézeres landingre a tulajdonos jóváhagyása után kerül) |
 | Adat | `assets/js/ajandek-adat.js` | `assets/js/ajandek-adat-lezer.js` (a HeadSpa adatra épül: segédek, fizetési módok; a termékek, szövegek, szalon-adatok sajátok) |
 | API | `/api/ajandek/*` (`functions/api/ajandek/[[kind]].js`) | `/api/ajandek-lezer/*` (`functions/api/ajandek-lezer/[[kind]].js`) |
-| Termékek | egyéni / 4 kezes / páros | **fix összegek**: 20 / 30 / 50 / 100 ezer Ft (`lezer20…lezer100`; az összegek csak az adatfájlban vannak) |
+| Termékek | egyéni / 4 kezes / páros | **fix összegek**: 30 / 50 / 100 / 200 ezer Ft (`lezer30…lezer200`; az összegek csak az adatfájlban vannak; a tulajdonos döntése, 2026-10-07); a maradék összeg is felhasználható |
 | Rendelés-azonosító | `MH-…` | `LZ-…` |
 | Számla | Stripe-számla → szamlabridge → Számlázz.hu | **Számlázz.hu Számla Agent**, vásárláskor (`netlify/lib/szamlazz-agent.js`), a számlán AAM (alanyi adómentes) tétel |
 | Céges számla / átutalás / papír kártya | van | **nincs** (új KATA: az Agent vállalkozásnak nem számláz; első körben nincs átutalás; nincs papír lézeres kártya) |
@@ -716,6 +716,6 @@ A motor (`netlify/lib/ajandek.js`) már **kereskedő-gyár**: `ajandekMotor(ADAT
 
 **Stripe-oldali teendők (Zsófi fiókjában, ezeket csak ő/a tulajdonos teheti meg):** Google Pay és Revolut Pay bekapcsolva (kész); a bankkártya-kivonaton megjelenő név a fiók szintű „Statement descriptor” (jelenleg `ELYSION PRO`; a kért név: `MOSAIC LEZERES SZORTEL`, 22 karakter a határ) – Settings → Business → Public details; Apple Pay-domain (`www.mosaicheadspa.hu`, Payment method domains) – nélküle csak az iPhone-os Apple Pay gomb hiányzik; a webhook; a korlátozott kulcs (a létrehozást a Stripe e-mailben megerősítteti a fiók tulajdonosával).
 
-**Salonic:** a lézeres kártya kódját a szalon a HeadSpa-hoz hasonlóan kézzel viszi fel, de itt **fix összegű kupont** (nem 100%-os kupont): a szalon-levél ezt írja (`SZALON.kupon_szoveg`). Eldöntendő a szalonnal: a maradék összeg sorsa (ha a kezelés olcsóbb a kártya értékénél) – az oldal erről nem állít semmit.
+**Salonic:** a lézeres kártya kódját a szalon a HeadSpa-hoz hasonlóan kézzel viszi fel, de itt **fix összegű kupont** (nem 100%-os kupont): a szalon-levél ezt írja (`SZALON.kupon_szoveg`). **A maradék összeg is felhasználható** (a tulajdonos döntése, 2026-10-07): az oldal és a levelek ezt állítják, ezért a Salonicban olyan kuponnak / utalványnak kell készülnie, amiből a maradék megmarad (nem 100%-os, nem egyszer használatos) – ezt a szalonnak a Saloniccal ellenőriznie kell; a kupon-teendő a szalon-levélben van (`SZALON.kupon_szoveg`).
 
 **Helyi próba:** `node tools/ajandek-teszt/szerver.mjs` (vagy a `ajandek` indító) → `http://localhost:4195/lezeres-ajandekkartya` (mock Stripe + Számlázz-csonk: `/__teszt/szamlazz-keresek`; a webhookot a próba maga küldi, lásd `tools/ajandek-teszt/lezer.test.mjs`). Tesztek: `node --test "tools/ajandek-teszt/*.test.mjs"` (a `lezer.test.mjs` és a `szamlazz-agent.test.mjs` az új).
