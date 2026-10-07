@@ -2,7 +2,7 @@
 //
 //   node --test tools/arlista-teszt/arlista.test.mjs
 //
-// Kornyezeti valtozok: CHROME_UTVONAL, PLAYWRIGHT_UTVONAL (lasd tools/headspa-teszt/headspa.test.mjs).
+// Kornyezeti valtozok: CHROME_UTVONAL, PLAYWRIGHT_UTVONAL (lasd tools/headspa-teszt/headspa.test.mjs); ARLISTA_BAZIS: a bongeszos reszt egy mar kint levo cimen futtatja (pl. PR-elonezet).
 // Ket resz: (1) forras-ellenorzesek bongeszo nelkul: az oldal egyezik a generator kimenetevel, minden ar visszavezetheto a forrasra, a forrasok egymassal
 // (es a Salonic-pillanatkepevel) is egyeznek; (2) bongeszos: szuro, kereso, hash, Noel-kapcsolo, tulcsordulas, ar-oszlopok, ertintes-cel.
 import test, { before, after, describe } from 'node:test';
@@ -162,7 +162,8 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
     const keres = [process.env.PLAYWRIGHT_UTVONAL, path.join(GYOKER, 'node_modules'), path.join(GYOKER, '..', 'mosaic-engine', 'node_modules')].filter(Boolean);
     let pw; for (const k of keres) { try { pw = createRequire(path.join(k, 'x.js'))('playwright-core'); break; } catch { /* kovetkezo */ } }
     if (!pw) throw new Error('playwright-core nem talalhato (PLAYWRIGHT_UTVONAL)');
-    ({ szerver, bazis } = await szerverInditas());
+    if (process.env.ARLISTA_BAZIS) { bazis = process.env.ARLISTA_BAZIS.replace(/\/$/, ''); szerver = { close() {} }; }   // pl. a PR Cloudflare-elonezete: ARLISTA_BAZIS=https://<ag>.mosaic-d77.pages.dev
+    else ({ szerver, bazis } = await szerverInditas());
     bongeszo = await pw.chromium.launch({ executablePath: process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', headless: true });
   });
   after(async () => { await bongeszo.close(); szerver.close(); });
@@ -175,7 +176,7 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
     const KULSO_OK = /^https:\/\/cdn\.trustindex\.io\/assets\/js\/richsnippet\.js/;   // a Trustindex rich-snippet minden oldalon betoltodik (suti.js)
     p.on('pageerror', (e) => hibak.push('pageerror: ' + e.message));
     p.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) hibak.push('console: ' + m.text()); });
-    await p.route(/^(?!http:\/\/localhost)/, (r) => { if (!KULSO_OK.test(r.request().url())) kulso.push(r.request().url()); r.abort(); });
+    await p.route((u) => !u.href.startsWith(bazis + '/'), (r) => { if (!KULSO_OK.test(r.request().url())) kulso.push(r.request().url()); r.abort(); });
     await p.goto(bazis + ut, { waitUntil: 'domcontentloaded' });
     await p.waitForLoadState('networkidle').catch(() => {});
     if (gorget && js) await p.evaluate(async () => { document.documentElement.style.scrollBehavior = 'auto'; for (let y = 0; y < document.documentElement.scrollHeight; y += 600) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 20)); } window.scrollTo(0, 0); });
