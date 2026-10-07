@@ -1,0 +1,62 @@
+/* MOSAIC Head Spa Ferfiaknak (/headspa-ferfiaknak): oldal-specifikus kiegeszitesek a headspa-oldal.css kozos komponenseihez.
+   A headspa-oldal.css utan toltodik; onallo fajl, a tobbi Head Spa oldalt nem erinti. */
+
+/* --- hero: felkover bevezeto, ar-sav, Google-ertekeles (a regi oldal "Google 4,9/5 - Kivalo" sora) --- */
+.hero-al.felkover { font-weight: 500; color: var(--sotet); }
+.hero-forras { font-size: 15.5px; }
+.hero-ar { display: inline-block; justify-self: start; margin-top: 22px; padding: 9px 18px; border-radius: 14px; background: #f6efdc; border: 1px solid #ecdcb6; color: #6f5420; font-size: 15.5px; line-height: 1.45; }
+.hero-ar i { font-style: normal; }
+.hero-ar b { font-weight: 500; color: var(--sotet); }
+.hero-ertekeles { margin-top: 18px; }
+.google-nagy .g-csillagok { display: block; width: 96px; height: auto; }
+.google-nagy .g-szoveg { font: 500 15px/1.2 var(--test); color: var(--sotet); }
+
+/* --- cikk-szoveg kiegeszitesek --- */
+.cikk p.felkover { font-weight: 500; color: var(--sotet); }
+.cikk p.kiemel.felkover { font-weight: 400; }
+.kep-fig a.nagyit { display: block; border-radius: 20px; cursor: zoom-in; }
+.kep-fig a.nagyit:hover img { box-shadow: 0 26px 56px rgba(60, 40, 20, .2); }
+.kep-fig.kozep { max-width: 980px; margin: 0 auto; }
+
+/* --- halvany hatterkep a szekcio mogott (a regi oldal hatterkepei; a tartalom fole kerul) --- */
+.szekcio.hatterkepes { position: relative; overflow: hidden; isolation: isolate; }
+.hatterkep { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; opacity: .14; pointer-events: none; }
+#gyik .hatterkep { opacity: .1; }
+
+/* --- a 15 szeansz-elem video: 5 oszlop (asztalon 3 sor), tableten 3, telefonon 2 --- */
+.video-racs.ot-oszlop { grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.video-racs.ot-oszlop .video-cim { font-size: 16px; left: 12px; right: 12px; bottom: 11px; }
+.video-racs.ot-oszlop .video-play { width: 50px; height: 50px; margin: -25px 0 0 -25px; }
+
+/* --- a megerkezes-galeria: nagyobb kepek --- */
+.korhinta.nagy-elem .korhinta-sav > * { flex-basis: min(88%, 580px); }
+
+/* --- GYIK (nativ <details> harmonika) --- */
+.gyik { max-width: 860px; margin: 0 auto; display: grid; gap: 10px; }
+.gyik details { background: #fff; border: 1px solid var(--vonal); border-radius: 16px; box-shadow: var(--arnyek); }
+.gyik details[open] { border-color: #e6d391; }
+.gyik summary { position: relative; list-style: none; cursor: pointer; padding: 18px 58px 18px 22px; font: 500 18px/1.35 var(--cim); color: var(--sotet); border-radius: 16px; }
+.gyik summary::-webkit-details-marker { display: none; }
+.gyik summary::after { content: ''; position: absolute; right: 24px; top: 50%; width: 10px; height: 10px; margin-top: -8px; border-right: 2px solid var(--arany); border-bottom: 2px solid var(--arany); transform: rotate(45deg); transition: transform .2s, margin-top .2s; }
+.gyik details[open] summary::after { transform: rotate(-135deg); margin-top: -2px; }
+.gyik summary:hover { background: #fbf9f3; }
+.gyik .gy-valasz { padding: 0 22px 20px; font-size: 16.5px; line-height: 1.65; color: #25373a; }
+.gyik .gy-valasz p + p, .gyik .gy-valasz p + ul { margin-top: 10px; }
+.gyik .gy-valasz ul { padding-left: 20px; display: grid; gap: 6px; }
+
+@media (max-width: 1024px) {
+  .video-racs.ot-oszlop { grid-template-columns: repeat(3, 1fr); }
+  .fel-racs > .kep-fig { width: 100%; max-width: 560px; justify-self: center; }   /* tableten az egyoszlopos kepek ne legyenek tulmeretezettek */
+}
+@media (max-width: 700px) {
+  .fel-racs > .kep-fig { max-width: none; }
+}
+@media (max-width: 700px) {
+  .hero-ar { font-size: 14.5px; }
+  .video-racs.ot-oszlop { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .video-racs.ot-oszlop .video-cim { font-size: 14px; left: 10px; right: 10px; bottom: 9px; }
+  .video-racs.ot-oszlop .video-play { width: 42px; height: 42px; margin: -21px 0 0 -21px; }
+  .gyik summary { padding: 15px 50px 15px 18px; font-size: 16.5px; }
+  .gyik summary::after { right: 20px; }
+  .gyik .gy-valasz { padding: 0 18px 18px; font-size: 16px; }
+}
