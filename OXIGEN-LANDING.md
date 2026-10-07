@@ -101,3 +101,17 @@ Az oldalon nincsenek a címek fölötti kis (sárga) alcímek. Az arany pill-gom
 - **Arc + Haj:** a Salonicban nincs, ezért a blokk **lekerült az oldalról** (a GYIK-szekció egyoszlopos, középre igazított).
 - **Időpont-módosítás:** legkésőbb 24 órával az időpont előtt.
 - A régi oldal gombjai az `/idpontfoglalas` elosztóra vittek; az új oldalé közvetlenül a Salonicra (mint a HeadSpa-oldalaké).
+
+## Ajándék sampon-minta + 5/10 alkalmas bérlet (2026-10-07)
+
+Új szekció (`#berlet`, `.ajandekok`) az „Mivel kezdjünk?” (árak) szekció után, a „Miért más nálunk” előtt; sötét zöld háttér, két kártya:
+
+- **Ajándék Oxygeni sampon-minta minden konzultáció mellé** (fotó: `assets/img/oxigen/ajandek-minta.webp`, a tulajdonos képéből kivágva és enyhén retusálva).
+- **5 vagy 10 alkalmas bérlet, termékajándékkal** (fotó: `ajandek-berlet.webp`): **5 alkalom = 133 900 Ft** (ajándék: 1 literes Oxygeni sampon), **10 alkalom = 263 900 Ft** (ajándék: 1 literes sampon + balzsam); mindkettő legalább fél évre elegendő adag.
+
+Szabályok / döntések:
+- A bérlet **nem ad forintkedvezményt**: az ár = az alkalmankénti fizetés összege (1. alkalom 29 900 Ft + a továbbiak 26 000 Ft/alkalom: 29 900 + 4 × 26 000 = 133 900; 29 900 + 9 × 26 000 = 263 900). Ha a Salonic-ár változik, a két összeget és a `b-szamitas` sorokat is át kell írni (a HTML-ben megjegyzés jelzi a képletet).
+- Az oldalon továbbra is igaz: **nincs kötelező bérlet** (a szekcióban és a GYIK-ban is így szerepel).
+- A „konzultáció” = hajkamerás állapotfelmérés + konzultáció (a 4 990 Ft-os, illetve az első kezelés része); az „ingyenes” szó direkt nincs ott, mert az állapotfelmérés fizetős.
+- A bérlet vásárlási útja nincs a Salonicban/oldalon kidolgozva: a gomb csak telefonhívás (`tel:`), `data-cta` nélkül, így nem küld mérési eseményt.
+- A balzsamról nincs fotó, ezért csak szöveg szerepel; az ajándék nevét (Oxygeni balzsam) a tulajdonos adta.
