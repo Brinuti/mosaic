@@ -38,6 +38,25 @@ const mobilParos = (aktiv) =>
   '<div data-testid="itemWrapper" class="keDKhi"><span data-testid="linkWrapper" class="j945c8">' +
   '<a data-testid="linkElement" href="' + PAROS + '" target="_self" class="G7GdaI wixui-vertical-menu__item-label">' + PAROS_CIM + '</a></span></div></li>';
 
+// --- Arlista: onallo fomenupont (a FOGLALAS elott), 2026-10-07: egyetlen arlista minden uzletagnak (/arlista) ---
+const ARLISTA = '/arlista';
+const ARLISTA_CIM = 'Árlista';
+const ASZTALI_FOGLALAS = /<li class="itemDepth02233374943__itemWrapper wixui-horizontal-menu__item"(?:(?!<\/li>)[\s\S])*?href="\/idpontfoglalas"/;
+const MOBIL_FOGLALAS = /<li data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-\d+"(?:(?!<\/li>)[\s\S])*?href="\/idpontfoglalas"/;
+const asztaliArlista = () =>
+  '<li class="itemDepth02233374943__itemWrapper wixui-horizontal-menu__item" data-testid="menuItemDepth0" data-item-depth="0" data-is-current="false" aria-current="false">' +
+  '<div class="itemShared2352141355__rootContainer"><a data-item-label="true" data-testid="linkElement" href="' + ARLISTA + '" target="_self" ' +
+  'class="itemDepth02233374943__root StylableHorizontalMenu3372578893__menuItem itemShared2352141355__menuItem" tabindex="0">' +
+  '<div class="itemDepth02233374943__container"><span class="itemDepth02233374943__label wixui-horizontal-menu__item-label">' + ARLISTA_CIM + '</span></div></a></div></li>';
+const mobilArlista = () =>
+  '<li data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-arlista" class="FWN1UT GrMktH WIf5uD wixui-vertical-menu__item">' +
+  '<div data-testid="itemWrapper" class="keDKhi"><span data-testid="linkWrapper" class="j945c8">' +
+  '<a data-testid="linkElement" href="' + ARLISTA + '" target="_self" class="G7GdaI wixui-vertical-menu__item-label">' + ARLISTA_CIM + '</a></span></div></li>';
+function arlistaFomenu(h, mobil) {
+  if (h.includes('href="' + ARLISTA + '"')) return h;   // mar atalakitott
+  return h.replace(mobil ? MOBIL_FOGLALAS : ASZTALI_FOGLALAS, (m) => (mobil ? mobilArlista() : asztaliArlista()) + m);
+}
+
 function parosFomenu(h, mobil) {
   if (mobil) {
     const m = h.match(MOBIL_PAROS_ALMENU);
@@ -84,13 +103,13 @@ const POPUP_SZOVEG = {
     cim: 'Infó', felcim: 'MOSAIC Head Spa and Hair', h2: 'A legfontosabb infók', bezar: 'Bezárás',
     elerh: 'Ahol elérsz minket', cim1: '1023 Budapest, Bécsi út 2.', cim2: '(A Zsigmond térnél)', tel: '06 20 247 4444',
     ora: 'Nyitvatartásunk', oraSor1: ['Hétfő – Szombat:', '8:00 – 20:00'], oraSor2: ['Vasárnap:', 'zárva'],
-    arak: 'Árlista, csomagok, foglalás', arLink: 'Head Spa árak és időpontok', foglalas: 'Időpontfoglalás', ajandek: 'Ajándékkártya',
+    arak: 'Árlista, csomagok, foglalás', arLink: 'Árlista és időpontok', foglalas: 'Időpontfoglalás', ajandek: 'Ajándékkártya',
   },
   en: {
     cim: 'Info', felcim: 'MOSAIC Head Spa and Hair', h2: 'The most important info', bezar: 'Close',
     elerh: 'Where to find us', cim1: '1023 Budapest, Bécsi út 2.', cim2: '(Near Zsigmond tér)', tel: '+36 20 247 4444',
     ora: 'Opening hours', oraSor1: ['Monday – Saturday:', '8:00 – 20:00'], oraSor2: ['Sunday:', 'closed'],
-    arak: 'Prices, packages, booking', arLink: 'Head Spa prices & times', foglalas: 'Book now', ajandek: 'Gift card',
+    arak: 'Prices, packages, booking', arLink: 'Price list & booking', foglalas: 'Book now', ajandek: 'Gift card',
   },
 };
 const MAPS = 'https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202.';
@@ -110,7 +129,7 @@ function popupHtml(nyelv) {
     sor('ora', '<b>' + t.oraSor1[0] + '</b> ' + t.oraSor1[1]) +
     '<p class="mhp-sor mhp-sor-masodik"><span class="mhp-ikon" aria-hidden="true"></span><span class="mhp-szoveg"><b>' + t.oraSor2[0] + '</b> ' + t.oraSor2[1] + '</span></p></div>' +
     '<div class="mhp-csoport"><h3>' + t.arak + '</h3>' +
-    sor('naptar', t.arLink + ' <span class="mhp-nyil" aria-hidden="true">→</span>', 'a', ' href="/headspa-arak-budapest"') +
+    sor('naptar', t.arLink + ' <span class="mhp-nyil" aria-hidden="true">→</span>', 'a', ' href="/arlista"') +
     '<div class="mhp-gombok"><a class="mhp-gomb mhp-arany" href="/foglalo-motor?business=headspa">' + t.foglalas + ' <span aria-hidden="true">→</span></a>' +
     '<a class="mhp-gomb mhp-korvonal" href="/ajandekkartya">' + t.ajandek + ' <span aria-hidden="true">→</span></a></div></div>' +
     '</aside></div>';
@@ -127,7 +146,7 @@ const ANGOL_CIMKEK = [
   ['/head-spa-velemenyek', 'Head Spa reviews'], ['/headspa-termekek-oxygeni', 'OXYGENI products'], ['/lezeres-szortelenites-budapest', 'Laser hair removal'],
   ['/noi-fodraszat-budapest', 'Hairdressing'], ['/noi-fodrasz-budapest-balayage-hajfestes#comp-m5p3vmyh', 'Hairdressing prices'], ['/oxigenterapia-budapest', 'Oxygen therapy'],
   ['/sminktetovalas-budapest', 'Permanent makeup'], ['/ajandekkartya', 'Gift card'], ['/headspa-ajandekkartya', 'Head Spa gift card'],
-  ['/lezeres-ajandekkartya', 'Hair removal gift card'], ['/oxigen-ajandekkartya', 'Oxygen therapy gift card'], ['/idpontfoglalas', 'BOOKING'],
+  ['/lezeres-ajandekkartya', 'Hair removal gift card'], ['/oxigen-ajandekkartya', 'Oxygen therapy gift card'], [ARLISTA, 'Price list'], ['/idpontfoglalas', 'BOOKING'],
 ];
 const regex = (s) => s.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
 const AKCIOSAV_HU = /Okt(?:ó|&oacute;)beri akci(?:ó|&oacute;)! - 20% kedvezm(?:é|&eacute;)ny minden headspa foglal(?:á|&aacute;)sra \+ aj(?:á|&aacute;)nd(?:é|&eacute;)kk(?:á|&aacute;)rty(?:á|&aacute;)ra!/g;
@@ -160,7 +179,7 @@ const LABLEC_SZOVEG = {
     cim: '1023 Budapest, Bécsi út 2.<br>A Kolosy és a Zsigmond tér között.',
     ora: 'Hétfő – Szombat: 8:00 – 20:00<br>Vasárnap: ZÁRVA',
     linkek1: [['/', 'Head Spa kezelések'], [PAROS, 'Páros Head Spa'], ['/headspa-ferfiaknak', 'Head Spa Férfiaknak'], ['/headspa-arak-budapest', 'Csomagok és árak'], ['/head-spa-velemenyek', 'Vélemények'], ['/headspa-termekek-oxygeni', 'OXYGENI termékek']],
-    linkek2: [['/lezeres-szortelenites-budapest', 'Szőrtelenítés'], ['/noi-fodraszat-budapest', 'Fodrászat'], ['/oxigenterapia-budapest', 'Oxigénterápia'], ['/sminktetovalas-budapest', 'Sminktetoválás'], ['/ajandekkartya', 'Ajándékkártya']],
+    linkek2: [['/lezeres-szortelenites-budapest', 'Szőrtelenítés'], ['/noi-fodraszat-budapest', 'Fodrászat'], ['/oxigenterapia-budapest', 'Oxigénterápia'], ['/sminktetovalas-budapest', 'Sminktetoválás'], ['/ajandekkartya', 'Ajándékkártya'], ['/arlista', 'Árlista']],
     jog: '© Big in Japan Kft. · <a href="/aszf">ÁSZF</a> · <a href="/impresszum">Impresszum</a> · <a id="mh-cc-lablec" href="#">Süti beállítások</a>',
     nyelv: ['/headspa-budapest-hungary', 'en', 'English'],
     tovabb: '<p class="mhl-tovabb"><a href="/kapcsolat">Kapcsolat és üzenetküldés →</a><br><a href="/gyik">Gyakori kérdések</a></p>',
@@ -203,6 +222,7 @@ export function fejlecAtalakit(html, mobil, angol = html.includes(NYELV_EN)) {
   html = html.replace(HEADER, (h) => {
     h = menuLinkek(h);
     h = parosFomenu(h, mobil);
+    h = arlistaFomenu(h, mobil);
     h = nyelvJelveny(h, angol, mobil);
     if (mobil) h = ajandekNyitva(h);
     return angol ? angolMenu(h, mobil) : h;
