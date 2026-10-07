@@ -97,7 +97,7 @@
       hero_title: 'Ajándékozz oxigénterápiát.',
       hero_subtitle: 'Hajkamerás vizsgálat, az első kezelés vagy 5 / 10 alkalmas bérlet: digitális vagy kinyomtatott ajándékkártyán, személyre szabva.',
       hero_cta: 'Kiválasztom a kártyát',
-      hero_media: { src: '/assets/img/ajandek/hero-oxigen-ajandek.jpg', alt: 'Hajkamerás állapotfelmérés a MOSAIC oxigénterápián, előtérben a személyre szabott ajándékkártya', forras: 'assets/img/oxigen/oxigen-kezeles.jpg + a sajat kartya-renderelo', status: 'APPROVED_BY_FOLDER_CONTEXT' },
+      hero_media: { src: '/assets/img/ajandek/hero-oxigen-elotte-utana.jpg', alt: 'Oxigénterápia hajkezelés előtte és utána: korpás, zsíros fejbőr a kezelés előtt, tiszta és egészséges a kezelés után', video: { src: '/assets/video/ajandek-hero-oxigen-elotte-utana.mp4' }, forras: 'Meta: oxigen videó előtte-utána (Oxigénhajterápia ->, video_id 1413460453443369)', status: 'APPROVED_BY_METADATA' },
       hero_trust: [
         { csillag: true, szoveg: H.GOOGLE.pont + ' · ' + H.GOOGLE.darab, alszoveg: 'Google-vélemény', alszoveg_rovid: 'vélemény', href: '#ah-google' },
         { ikon: 'calendar', szoveg: '6 hónapig', alszoveg: 'érvényes' },
