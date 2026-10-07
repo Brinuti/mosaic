@@ -25,6 +25,7 @@ import crypto from 'node:crypto';
 import { ritkit } from './css-ritkitas.mjs';
 import { atkot, atkotBelso, atkotSzoveg, kapcsolokBuildhez, kihagyottOldal, osszead, uresOldal, KAPCSOLOK } from './foglalo-atkotes.mjs';
 import { popupAtkot } from './halott-popup.mjs';
+import { ajandekMenu } from './ajandek-menu.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -59,7 +60,7 @@ const aktivMenu = (fejlec, utvonal, mobil) => {
     return fejlec
       .replace(/ data-is-current="true" aria-current="true"/g, ' data-is-current="false" aria-current="false"')
       .replace(/ itemDepth02233374943--isCurrentPage/g, '')
-      .replace(new RegExp(`( data-is-current=)"false"( aria-current=)"false"(><div class="itemShared2352141355__rootContainer"><a data-item-label="true" data-testid="linkElement" href="${ut}" target="_self" class="itemDepth02233374943__root)`),
+      .replace(new RegExp(`( data-is-current=)"false"( aria-current=)"false"(><div class="itemShared2352141355__rootContainer(?: itemShared2352141355--isRow)?"><a data-item-label="true" data-testid="linkElement" href="${ut}" target="_self" class="itemDepth02233374943__root)`),
         '$1"true"$2"true"$3 itemDepth02233374943--isCurrentPage');
   }
   return fejlec
@@ -72,7 +73,7 @@ for (const f of fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.ends
   const aktiv = (forras.match(/<!--mh-menu-aktiv:([^>]+?)-->/) || [])[1];
   for (const m of [LAP_A, LAP_M]) {
     const resz = (jel, fajl) => forras.includes(jel) ? fs.readFileSync(path.join(ROOT, 'assets/fejlec', fajl + '.html'), 'utf8') : '';
-    let fejlec = resz('<!--mh-fejlec-->', FEJLEC[m]);
+    let fejlec = ajandekMenu(resz('<!--mh-fejlec-->', FEJLEC[m]), m === LAP_M); // az Ajandekkartya fomenupont lenyiloja (tools/ajandek-menu.mjs)
     if (aktiv && fejlec) fejlec = aktivMenu(fejlec, aktiv, m === LAP_M);
     let lablec = resz('<!--mh-lablec-->', 'lablec-' + FEJLEC[m]);
     const kozosCss = '<style data-forras="fejlec-lablec">' + FEJLEC_CSS + '</style>';
@@ -212,7 +213,8 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   '/assets/embed/*',
   '  X-Robots-Tag: noindex',
   // az /ajandek (a kampany- es levelbeli linkek cime) ugyanazt az oldalt adja, mint az eles ajandekkartya-cimek: ne indexelodjon ketszer
-  ...(ELES ? ['/ajandek', '  X-Robots-Tag: noindex', '/lezeres-ajandekkartya', '  X-Robots-Tag: noindex'] : []),
+  // (a /ajandekkartya a fomenu valaszto oldala: szinten noindex, a keresoknek a ket valodi ajandekkartya-oldal szamit)
+  ...(ELES ? ['/ajandek', '  X-Robots-Tag: noindex', '/lezeres-ajandekkartya', '  X-Robots-Tag: noindex', '/ajandekkartya', '  X-Robots-Tag: noindex'] : []),
   '',
 ].join('\n'));
 
@@ -267,6 +269,8 @@ const TOLERANS = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[áé�
 const AKCIOSAV = new RegExp(TOLERANS('Októberi akció! - 20% kedvezmény minden headspa foglalásra + ajándékkártyára!'), 'g');
 const FOGLALAS_GOMB = new RegExp('(<a [^>]*style-mo70g2c7__root[^>]*aria-label=")' + TOLERANS('FOGLALÁS') + '("[^>]*><span class="StylableButton2545352419__container"><span class="StylableButton2545352419__label wixui-button__label" data-testid="stylablebutton-label">)' + TOLERANS('FOGLALÁS') + '(</span>)');
 function fejlecSzoveg(h, mobil) {
+  // a Wixes oldalak beegetett fomenujeben az Ajandekkartya menupont lenyilo lesz (a sajat oldalak darabjain mar megtortent: ismetelve nem csinal semmit)
+  h = ajandekMenu(h, mobil);
   // lablec: az elvalasztok " - " helyett " · " (csak a szoveg-csomopontokban)
   h = h.replace(/(<div id="comp-m40zyigs"[^>]*><p[^>]*>)([\s\S]*?)(<\/p>)/,
     (m, a, tartalom, c) => a + tartalom.replace(/(^|>)([^<]*)/g, (mm, k, sz) => k + sz.replace(/ - /g, ' · ')) + c);

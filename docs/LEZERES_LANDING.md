@@ -18,7 +18,7 @@ kérésére, 2026-10-04): a korábbi Wixes klón helyét vette át (a `foglalas/
 
 ## Ajándékkártya (2026-10-07, a tulajdonos kérése)
 
-A hero gombsorában a „Szabad kezelési időpontok” és az „Ingyenes konzultáció” mellett egy harmadik, **„Ajándékkártya”** gomb áll: közvetlen oldal-link a `/lezeres-ajandekkartya` oldalra (nem hash, nem Salonic, ugyanabban az ablakban). A garancia után, Zsófi előtt külön szekció (`#ajandek`, `.ajk`): „Személyre szabott ajándékkártya!”, a lézeres mockup-kép (`assets/img/ajandek/atadas-szemelyre-lezer.jpg`), három pont (PDF, személyre szabható, 6 hónap) és az „Ajándékkártyát választok” gomb. A kártya-oldal és a vásárlás leírása: `AJANDEK.md` („Lézeres szőrtelenítés ajándékkártya”). Teszt: `node --test tools/lezer-teszt/ajandek-link.test.mjs` (statikus, build nélkül).
+A hero gombsorában a „Szabad kezelési időpontok” gomb mellett egy **„Ajándékkártya”** gomb áll, utána (2026-10-07, a tulajdonos kérése) az „Ingyenes konzultáció” már csak egyszerű, aláhúzott szöveges link (`.cta-link`, nem gomb; mobilon középre kerül). Az Ajándékkártya gomb közvetlen oldal-link a `/lezeres-ajandekkartya` oldalra (nem hash, nem Salonic, ugyanabban az ablakban). A garancia után, Zsófi előtt külön szekció (`#ajandek`, `.ajk`): „Személyre szabott ajándékkártya!”, a lézeres mockup-kép (`assets/img/ajandek/atadas-szemelyre-lezer.jpg`), három pont (PDF, személyre szabható, 6 hónap) és az „Ajándékkártyát választok” gomb. A kártya-oldal és a vásárlás leírása: `AJANDEK.md` („Lézeres szőrtelenítés ajándékkártya”). Teszt: `node --test tools/lezer-teszt/ajandek-link.test.mjs` (statikus, build nélkül).
 
 ## Szekciók sorrendje
 

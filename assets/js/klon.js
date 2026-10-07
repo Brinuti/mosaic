@@ -35,6 +35,17 @@
     };
     const valt = () => allit(menu.getAttribute('data-undisplayed') !== 'false');
 
+    // A fejlec a 320 px-es Wix-alapra van megrajzolva, es (a fejlec-darab szkriptje) a keszulek szelessegere nagyitja (zoom): a fix pozicionalt menu
+    // 100vh magassaga ezert a nagyitas aranyaval nagyobb a kepernyonel, az also sorok (pl. a Head Spa lenyilo utan a Kapcsolat) elerhetetlenek lennek.
+    // A menu sajat gorgetosavjat a kepernyo magassagara korlatozzuk (CSS: --mh-menu-max, assets/css/fejlec-lablec.css); a Wixes oldalakon (320 px-es
+    // nezet) az arany 1, ott valtozatlan.
+    const menuMagassag = () => {
+      const nagyitas = document.documentElement.clientWidth / 320;
+      if (nagyitas > 0) menu.style.setProperty('--mh-menu-max', Math.floor(window.innerHeight / nagyitas) + 'px');
+    };
+    menuMagassag();
+    window.addEventListener('resize', menuMagassag);
+
     kapcsolo.addEventListener('click', valt);
     kapcsolo.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); valt(); }
