@@ -42,6 +42,16 @@ linkek: a launcher a helyben nyíló foglalóban (rétegben) nyitja őket, mint 
 - A hosszú cikkhez új „Itt találsz meg minket” szekció (cím, elérhetőség, nyitvatartás, térkép) készült az árak oldal azonos blokkjából; a cikk végén a kapcsolódó szöveg és gombok változatlanok.
 - A cikk videóinak keresőmotoros leírása (JSON-LD `VideoObject`) mind a 15 videóra a saját tárhelyes fájlokra mutat (a régi oldal 8 videója Wix-CDN-es, lejáró hivatkozásokkal szerepelt).
 
+## Az angol oldal (`/headspa-budapest-hungary-uj`, 2026-10-07, még nem éles)
+A founder-hangú angol oldal ("I'm Ferenc István Deák, the founder…") ugyanebben a szerkezetben: `foglalas/headspa-budapest-hungary-uj.html` (`lang="en"`, `noindex, nofollow`, saját `-uj` canonical, nincs rá link, nincs a sitemapben;
+a régi Wixes oldal az eredeti címen, a `klon/` mappában változatlanul él). Saját fájlok: `assets/css/headspa-en.css` (ár-sáv a hero-ban, „röviden” sáv, Google-értékelés kártya, kép-páros, EUR-sor) és `assets/js/headspa-en.js`
+(a közös `headspa-oldal.js` magyar feliratait – videó-lejátszó, térkép – angolra cseréli); a közös fájlok változatlanok. A fejléc után a `<!--mh-nyelv:en-->` jelölő jelzi a közös fejlécnek az angol menüfeliratokat.
+Adatfrissítések a régi angol oldalhoz képest: ár 29,900 HUF / 75 EUR → 26,900 HUF (≈ €67; 32,900 helyett, 20% októberi kedvezmény, visszavonásig), „4 Hands” 39,900 (49,900 helyett), páros 53,800 (65,900 helyett), minden kezelés 50+30 perc;
+egyetlen 50 perces kezelés (a hajkamerás diagnosztika kérdés alapján, opcionális); Google 4,8 → 4.9/5, 1,262 vélemény (statikus jelvény, mert a Trustindex-widget magyar véleményeket mutat); telefon `+36 20 247 4444`; fodrász Betti (18 év) → Evelin (4 év, `/noi-hajfestes-budapest`);
+ajándékkártya: a régi Salonic bankkártyás link és az utalás-gomb helyett `/headspa-ajandekkartya`. A régi „Egy MOSAIC Headspa szeánsz elemei” felirat, a magyar videócímek / alt szövegek angolra cserélve; a dekoratív recepciós fotó (magyar táblával) és a két nagy háttérkép kimaradt.
+Élesítés (a tulajdonos kérésére): a fájl átnevezése `foglalas/headspa-budapest-hungary.html`-re, `noindex` ki, canonical / og:url az eredeti cím, `-uj` → 301 a `netlify/lib/utvonal.js`-ben; a régi Wixes változat rejtett `-regi` címen megtartható, ahogy a többi Head Spa oldalnál.
+Teszt: `node --test tools/headspa-teszt/angol.test.mjs` (15 teszt).
+
 ## Visszaállítás a régi oldalra (ha kellene)
 Oldalanként: a `foglalas/<név>.html` törlése (a `klon/<név>.html` változatlanul megvan, ezt szolgálja ki újra a build), a `tools/lcp-elofeltoltes.json` régi sorainak visszaírása (git előzmény), az `-uj` átirányítás kivétele a `netlify/lib/utvonal.js`-ből.
 Az oldal mérése útvonal-alapú (`suti.js` pixel-lista), az eredeti címen változatlanul működik; a GTM-ben (mind a 71 trigger átnézve) nincs Wix-elemhez kötött kattintás-trigger az öt oldalon: a kattintás-triggerek csak a Salonic oldalain futnak, a többi köszönőoldal / dataLayer-esemény alapú.
