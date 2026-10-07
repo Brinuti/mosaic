@@ -62,11 +62,33 @@
   // --- 3. vendegertekelesek (Trustindex) es Google terkep ------------------------------------------------------------------------------
   const tiDoboz = $('trustindex');
   let tiBetoltve = false;
+  // Racs-nezet (data-racs): a Trustindex-csuszka (100 kartya van a widgetben) helyett TOBB kartya latszik egyszerre (asztalon 3 oszlop x 3 sor, telefonon 4),
+  // a "Meg tobb velemeny" gomb lepesenkent tovabbiakat mutat (legfeljebb 3x annyit). A widget sajat kinezete marad, csak az elrendezes valtozik.
+  const RACS = !!(tiDoboz && tiDoboz.hasAttribute('data-racs'));
+  const RACS_CSS = 'html body .ti-widget .ti-reviews-container{overflow:visible!important;height:auto!important}'
+    + 'html body .ti-widget .ti-reviews-container-wrapper{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;transform:none!important;width:auto!important;height:auto!important;position:static!important;left:auto!important;margin:0!important;padding:0!important}'
+    + 'html body .ti-widget .ti-review-item{position:static!important;left:auto!important;width:auto!important;max-width:none!important;margin:0!important;float:none!important;transform:none!important}'
+    + 'html body .ti-widget .ti-controls,html body .ti-widget .ti-controls-line{display:none!important}'
+    + 'html body .ti-widget .ti-widget-header{margin-bottom:16px!important}'
+    + '@media (max-width:819px){html body .ti-widget .ti-reviews-container-wrapper{grid-template-columns:repeat(2,minmax(0,1fr))}}'
+    + '@media (max-width:519px){html body .ti-widget .ti-reviews-container-wrapper{grid-template-columns:1fr}}';
+  let racsN = 0, racsMax = 0, racsLepes = 0;
   function trustindexBetolt() {
     if (!tiDoboz || tiBetoltve) return;
     tiBetoltve = true;
     const f = elem('iframe', { class: 'ti-keret', src: tiDoboz.dataset.embed, title: 'Google-vélemények (Trustindex)', loading: 'eager', scrolling: 'no' });
     let proba = 0, legnagyobb = 0;
+    const racsFrissit = (d) => {
+      const stilus = d.getElementById('hs-ti-db');
+      if (stilus) stilus.textContent = 'html body .ti-widget .ti-review-item:nth-child(n+' + (racsN + 1) + '){display:none!important}';
+      const db = d.querySelectorAll('.ti-review-item').length;
+      const sor = $('ti-tobb-sor');
+      if (sor) sor.hidden = !(db > racsN && racsN < racsMax);
+    };
+    const tobb = $('ti-tobb');
+    if (RACS && tobb) tobb.addEventListener('click', () => {
+      try { racsN = Math.min(racsN + racsLepes, racsMax); racsFrissit(f.contentDocument); meret(true); } catch (hiba) { /* a keret nem erheto el */ }
+    });
     const meret = (nullaz) => {
       try {
         const d = f.contentDocument;
@@ -80,6 +102,15 @@
             + 'html,body{overflow:hidden!important}'
             + 'html body div.ti-controls-line,html body .ti-widget .ti-controls-line{display:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;visibility:hidden!important}';
           d.head.appendChild(st);
+        }
+        if (RACS && !d.getElementById('hs-ti-racs')) {
+          const rs = d.createElement('style'); rs.id = 'hs-ti-racs'; rs.textContent = RACS_CSS; d.head.appendChild(rs);
+          const db = d.createElement('style'); db.id = 'hs-ti-db'; d.head.appendChild(db);
+          const sz = f.clientWidth || tiDoboz.clientWidth;
+          racsLepes = sz >= 820 ? 9 : sz >= 520 ? 6 : 4;   // egy lepes = 3 oszlop x 3 sor / 2 x 3 / 4 kartya
+          racsMax = racsLepes * 3;
+          racsN = racsLepes;
+          racsFrissit(d);
         }
         const m = Math.ceil(w.getBoundingClientRect().bottom + (parseFloat(d.defaultView.getComputedStyle(d.body).marginBottom) || 0) + 16);
         if (m > 60 && (nullaz || m > legnagyobb)) { legnagyobb = m; f.style.height = m + 'px'; }

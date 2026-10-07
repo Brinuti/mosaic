@@ -51,7 +51,7 @@ before(async () => {
 after(async () => { await bongeszo?.close(); szerver?.close(); });
 
 /** Uj oldal: kulso forgalom tiltva (naplozva), hibak gyujtve. */
-async function nyit(nev, { szeles = 1440, suti = false } = {}) {
+async function nyit(nev, { szeles = 1440, suti = false, extra = null } = {}) {
   const mobil = szeles < 700;
   const ctx = await bongeszo.newContext({ viewport: { width: szeles, height: mobil ? 844 : 900 }, ...(mobil ? { userAgent: UA_MOBIL, isMobile: true, hasTouch: true } : {}) });
   const p = await ctx.newPage();
@@ -60,6 +60,7 @@ async function nyit(nev, { szeles = 1440, suti = false } = {}) {
   p.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) hibak.push('console: ' + m.text()); });
   p.on('response', (r) => { if (r.status() >= 400 && r.url().startsWith(bazis)) nincs.push(r.status() + ' ' + r.url().replace(bazis, '')); });
   await p.route(/^(?!http:\/\/localhost)/, (r) => { kulso.push(r.request().url()); r.abort(); });
+  if (extra) await extra(p);
   await p.goto(`${bazis}/${nev}`, { waitUntil: 'domcontentloaded' });
   if (suti) await p.getByRole('button', { name: 'Elfogadom' }).click();
   await p.evaluate(async () => { document.documentElement.style.scrollBehavior = 'auto'; for (let y = 0; y < document.documentElement.scrollHeight; y += 500) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); } window.scrollTo(0, 0); });
@@ -228,17 +229,24 @@ describe('a komponensek mukodese', () => {
     await t.ctx.close();
   });
 
-  test('az arak es a kedvezmeny oldalon a 4 csomag ara, a regi ar athuzva, kepe van mindegyiknek, es mind a 4 Foglalok gomb a foglalo-motorra mutat', async () => {
+  test('az arak es a kedvezmeny oldalon 3 csomag van (4 Kezes, EGY 50 perces Head Spa kezeles, Paros): ar, athuzott regi ar, kep, Foglalok gomb; nincs kulon Relax / Hair', async () => {
     for (const nev of ['headspa-arak-budapest', 'head-spa-kedvezmeny']) {
       const { p, ctx } = await nyit(nev);
-      assert.equal(await p.locator('.csomag').count(), 4, nev);
-      assert.deepEqual(await p.$$eval('.csomag .ar-uj', (l) => l.map((e) => e.textContent.trim())), ['39.900 Ft', '26.900 Ft', '26.900 Ft', '53.800 Ft']);
-      assert.deepEqual(await p.$$eval('.csomag .ar-regi s', (l) => l.map((e) => e.textContent.trim())), ['49.900 Ft', '32.900 Ft', '32.900 Ft', '65.900 Ft']);
-      assert.deepEqual(await p.$$eval('.csomag a.gomb', (l) => l.map((a) => a.getAttribute('href'))), Array(4).fill('/foglalo-motor?business=headspa'));
+      assert.equal(await p.locator('.csomag').count(), 3, nev);
+      assert.deepEqual(await p.$$eval('.csomag h3', (l) => l.map((e) => e.textContent.replace(/\s+/g, ' ').trim())), ['50 perces MOSAIC„4 Kezes” Head Spa kezelés', '50 perces MOSAICHead Spa kezelés', '50 perces MOSAICPáros Head Spa kezelés']);
+      const szoveg = await p.evaluate(() => document.querySelector('main').innerText);
+      assert.ok(!/„Relax”|„Hair”|"Relax"|"Hair"/.test(szoveg), 'nincs kulon Relax / Hair kezeles');
+      assert.deepEqual(await p.$$eval('.csomag .ar-uj', (l) => l.map((e) => e.textContent.trim())), ['39.900 Ft', '26.900 Ft', '53.800 Ft']);
+      assert.deepEqual(await p.$$eval('.csomag .ar-regi s', (l) => l.map((e) => e.textContent.trim())), ['49.900 Ft', '32.900 Ft', '65.900 Ft']);
+      assert.deepEqual(await p.$$eval('.csomag a.gomb', (l) => l.map((a) => a.getAttribute('href'))), Array(3).fill('/foglalo-motor?business=headspa'));
+      // az egyesitett kezelesben a hajkamerás diagnosztika kerdes alapjan, igeny szerint eldonthetõ
+      const kozep = await p.$eval('.csomag:nth-child(2)', (e) => e.innerText.replace(/\s+/g, ' '));
+      assert.match(kozep, /Hajkamerás diagnosztika és konzultáció – igény szerint, kérdés alapján eldöntheted/);
+      for (const sor of ['Mélytisztító hajmosás', 'Körvízsugaras terápia', 'OXYGENI hajpakolás', 'Fejmasszázs kézzel és eszközökkel', 'Arcmasszázs kézzel és választott eszközzel', 'Fény terápia', '+ 30 perc kímélő hajszárítás', 'Időtartam: 50+30 perc']) assert.ok(kozep.includes(sor), sor);
       // az arlista kepes: minden csomag tetejen egy-egy (kulonbozo) kep, betoltve, a kartya szelessegeben
       const kepek = await p.$$eval('.csomag .csomag-kep img', (l) => l.map((i) => ({ src: i.getAttribute('src'), ok: i.complete && i.naturalWidth > 0, alt: i.alt, sz: Math.round(i.getBoundingClientRect().width), kartyaSz: Math.round(i.closest('.csomag').getBoundingClientRect().width) })));
-      assert.equal(kepek.length, 4, nev + ': minden csomagnak van kepe');
-      assert.equal(new Set(kepek.map((k) => k.src)).size, 4, 'kulonbozo kepek');
+      assert.equal(kepek.length, 3, nev + ': minden csomagnak van kepe');
+      assert.equal(new Set(kepek.map((k) => k.src)).size, 3, 'kulonbozo kepek');
       for (const k of kepek) { assert.ok(k.ok, 'betoltodik: ' + k.src); assert.ok(k.alt.length > 10, 'alt: ' + k.src); assert.ok(Math.abs(k.sz - k.kartyaSz) <= 2, 'a kep a kartya teljes szelessegeben: ' + JSON.stringify(k)); }
       await ctx.close();
     }
@@ -291,6 +299,39 @@ describe('a csere: az -uj cimek atiranyitanak, a regi (Wixes) valtozat rejtett -
         const html = fs.readFileSync(path.join(GYOKER, 'foglalas', `${nev}.html`), 'utf8');
         assert.ok(html.includes(kep), `${mod}/${nev}: a hero-kep az uj oldalon van`);
       }
+    }
+  });
+
+  test('a velemenyek oldalon sokkal tobb Trustindex-kartya latszik egyszerre (asztalon 3x3, telefonon 4), es a "Meg tobb velemeny" gomb lepesenkent tovabbiakat mutat', async () => {
+    // a Trustindex loader kamu valtozata: ugyanolyan szerkezet (ti-widget > ti-reviews-container-wrapper > ti-review-item), 40 kartya
+    const kamu = (p) => p.route('https://cdn.trustindex.io/loader.js**', (r) => r.fulfill({ status: 200, contentType: 'application/javascript', body: `
+      (() => { const w = document.createElement('div'); w.className = 'ti-widget'; let h = '<div class="ti-widget-container ti-col-3"><div class="ti-widget-header">Google 4,9</div><div class="ti-reviews-container"><div class="ti-controls"></div><div class="ti-reviews-container-wrapper">';
+        for (let i = 1; i <= 40; i++) h += '<div class="ti-review-item" style="position:relative"><div class="ti-inner" style="height:150px">Velemeny ' + i + '</div></div>';
+        h += '</div><div class="ti-controls-line"></div></div></div>'; w.innerHTML = h; document.body.appendChild(w); })();` }));
+    const allapot = (p) => p.evaluate(() => {
+      const f = document.querySelector('#trustindex iframe'); const d = f.contentDocument;
+      const lat = [...d.querySelectorAll('.ti-review-item')].filter((e) => getComputedStyle(e).display !== 'none');
+      return { latszo: lat.length, ossz: d.querySelectorAll('.ti-review-item').length, oszlop: new Set(lat.map((e) => Math.round(e.getBoundingClientRect().left))).size, gomb: !document.getElementById('ti-tobb-sor').hidden, magas: Math.round(f.getBoundingClientRect().height) };
+    });
+    for (const [szeles, lepesek, oszlop] of [[1440, [9, 18, 27], 3], [390, [4, 8, 12], 1]]) {
+      const { p, ctx } = await nyit('head-spa-velemenyek', { szeles, extra: kamu });
+      await p.waitForFunction(() => { const f = document.querySelector('#trustindex iframe'); const d = f && f.contentDocument; return d && d.querySelectorAll('.ti-review-item').length === 40 && !document.getElementById('ti-tobb-sor').hidden; }, null, { timeout: 10000 });
+      let a = await allapot(p);
+      assert.equal(a.ossz, 40);
+      assert.equal(a.latszo, lepesek[0], `${szeles}px: kezdetben ennyi kartya latszik`);
+      assert.equal(a.oszlop, oszlop, `${szeles}px: oszlopok szama`);
+      assert.equal(a.gomb, true);
+      for (const cel of lepesek.slice(1)) {
+        const elotte = a.magas;
+        await p.click('#ti-tobb');
+        await p.waitForFunction((n) => { const f = document.querySelector('#trustindex iframe'); return [...f.contentDocument.querySelectorAll('.ti-review-item')].filter((e) => getComputedStyle(e).display !== 'none').length === n; }, cel);
+        await p.waitForFunction((m) => document.querySelector('#trustindex iframe').getBoundingClientRect().height > m, elotte, { timeout: 6000 });   // a keret magassaga kovet
+        a = await allapot(p);
+        assert.equal(a.latszo, cel, `${szeles}px: a gomb utan ennyi kartya latszik`);
+      }
+      assert.equal(a.gomb, false, `${szeles}px: a maximum utan nincs tobb gomb (nem rengeteg kartya)`);
+      assert.ok(await p.locator('.ti-link a[href*="google.com/maps"]').count() === 1, 'osszes velemeny a Google-on link');
+      await ctx.close();
     }
   });
 });
