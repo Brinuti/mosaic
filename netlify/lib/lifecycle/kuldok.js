@@ -6,7 +6,7 @@ const SMS_ALAP = 'https://api.simplesms.hu/rest/SMSapi';
 
 /** A SimpleSMS beallitasai a kornyezetbol: felhasznalo + domain nem titkos (wrangler.toml), a jelszo Secret. */
 export function smsBeallitas(env) {
-  return { felhasznalo: env.SIMPLESMS_FELHASZNALO || 'mosaic', domain: env.SIMPLESMS_DOMAIN || 'mosaicheadspa.hu', jelszo: String(env.SIMPLESMS_JELSZO || '').trim() };
+  return { felhasznalo: env.SIMPLESMS_FELHASZNALO || 'ferraj@gmail.com', domain: env.SIMPLESMS_DOMAIN || 'mosaicheadspa.hu', jelszo: String(env.SIMPLESMS_JELSZO || '').trim() };
 }
 export const smsKesz = (env) => !!smsBeallitas(env).jelszo;
 export const emailKesz = (env) => !!env.SMTP_PASS;
