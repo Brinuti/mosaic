@@ -80,12 +80,9 @@
 .device-mobile-optimized #comp-m7q6eklh { margin-top: 10px !important; width: 26px !important; height: 26px !important; }
 .device-mobile-optimized #comp-m7q6eklh a { height: 100% !important; width: 100% !important; overflow: visible !important; }
 .device-mobile-optimized #comp-m7q6eklh img { object-fit: contain !important; width: 100% !important; height: 100% !important; }
-.device-mobile-optimized #comp-m7jcfhgp { margin-top: 12px !important; left: 142px !important; width: 40px !important; height: 22px !important; }
 .device-mobile-optimized #comp-m7q6eklh { left: 108px !important; }
-/* az "i" es a nyelvi jelveny: ugyanaz az arany korvonalas megjelenes, mint asztalon, kisebben */
+/* az "i": ugyanaz az arany korvonalas megjelenes, mint asztalon, kisebben (a mobil fejlecben csak a logo, az "i", a Foglalas gomb es a hamburger van) */
 .device-mobile-optimized #comp-m7q6eklh a::before { border-width: 1.2px; font-size: 15px; }
-.device-mobile-optimized .mh-nyelv { padding: 0 !important; gap: 0; border-width: 1.2px; font-size: 10.5px; letter-spacing: .1em; }
-.device-mobile-optimized .mh-nyelv .mh-glob { display: none; }
 .device-mobile-optimized #MENU_AS_CONTAINER_TOGGLE { margin-top: -1px !important; }
 
 /* "Foglalas" gomb: ugyanaz a stilus, mint az uj oldalak aranyszinu gombja (puha arnyek, kozepre irt, nem csupa nagybetus) */
@@ -146,6 +143,54 @@
   #SITE_FOOTER .mhl-also p { font-size: 12.5px; }
 }
 
+/* ============ "i" (INFO) FELUGRO ABLAK (2026-10-07): az oldal stilusaban (krem hatter, Playfair cim, arany reszletek), jobbrol uszik be ============
+   A HTML-jet a build (tools/fejlec-menu.mjs) irja be a Wixes ablak helyett; a klon.js nyitja / zarja (X, Esc, hatterre kattintas).
+   Telefonon a nyitvatartas es az arlista-link egy-egy sorba fer (nowrap), a cim lehet ket soros. */
+.mh-popup-gyoker.mhp { position: fixed; inset: 0; z-index: 2147482000; }
+.mh-popup-gyoker.mhp[hidden] { display: none; }
+.mhp *, .mhp *::before, .mhp *::after { box-sizing: border-box; }
+.mhp .mhp-fatyol { position: fixed; inset: 0; background: rgba(10, 26, 28, .58); }
+.mhp .mhp-panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(430px, 100%); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  background: #f6f4ec; color: #1b2e2f; padding: 34px 30px 30px; font: 400 16px/1.5 'Jost', 'Helvetica Neue', Arial, sans-serif; box-shadow: -18px 0 50px rgba(6, 18, 20, .35);
+  border-left: 1px solid rgba(201, 169, 106, .5); animation: mhp-be .32s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes mhp-be { from { transform: translateX(46px); opacity: 0; } to { transform: none; opacity: 1; } }
+.mhp .mhp-zar { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0; border: 1px solid #dce0d6; border-radius: 50%; background: #fff; color: #0f3a3c; cursor: pointer; transition: background .2s, border-color .2s; }
+.mhp .mhp-zar:hover { background: #f1e9d2; border-color: #c9a96a; }
+.mhp .mhp-zar svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.mhp .mhp-felcim { margin: 0 0 6px; padding-right: 52px; font: 500 12.5px/1.3 'Jost', sans-serif; letter-spacing: .18em; text-transform: uppercase; color: #a07f4b; }
+.mhp h2 { margin: 0 0 22px; padding-right: 48px; font: 500 30px/1.15 'Playfair Display', Georgia, 'Times New Roman', serif; color: #0f3a3c; }
+.mhp .mhp-csoport { margin: 0 0 22px; padding: 18px 18px 8px; background: #fff; border-radius: 16px; box-shadow: 0 1px 2px rgba(40, 30, 20, .04), 0 8px 24px rgba(40, 30, 20, .06); }
+.mhp h3 { margin: 0 0 10px; font: 500 12.5px/1.3 'Jost', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #a07f4b; }
+.mhp .mhp-sor { display: flex; align-items: center; gap: 13px; margin: 0 0 10px; color: inherit; text-decoration: none; font-size: 16px; }
+.mhp a.mhp-sor:hover .mhp-szoveg { color: #a07f4b; }
+.mhp .mhp-ikon { flex: none; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #e6ebe7; color: #3f7652; }
+.mhp .mhp-ikon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.mhp .mhp-szoveg { min-width: 0; transition: color .2s; }
+.mhp .mhp-szoveg small { display: block; font-size: 13.5px; color: #5c6766; }
+.mhp .mhp-szoveg b { font-weight: 500; }
+.mhp .mhp-nyil { color: #a07f4b; margin-left: 2px; }
+.mhp .mhp-sor-masodik { margin-top: -4px; }
+.mhp .mhp-sor-masodik .mhp-ikon { background: transparent; }
+.mhp .mhp-gombok { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 12px; }
+.mhp .mhp-gomb { display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1 1 140px; padding: 12px 16px; border-radius: 999px; text-decoration: none; font: 500 15px/1 'Jost', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .05em; white-space: nowrap; transition: transform .2s, box-shadow .2s, background .2s; }
+.mhp .mhp-arany { background: linear-gradient(#c6a346, #d9c164); color: #1d2a26; box-shadow: 0 6px 16px rgba(150, 120, 40, .3); }
+.mhp .mhp-arany:hover { transform: translateY(-1px); box-shadow: 0 9px 20px rgba(150, 120, 40, .4); }
+.mhp .mhp-korvonal { border: 1.5px solid #0f3a3c; color: #0f3a3c; background: transparent; }
+.mhp .mhp-korvonal:hover { background: rgba(15, 58, 60, .07); }
+@media (max-width: 560px) {
+  .mhp .mhp-panel { padding: 26px 18px 22px; }
+  .mhp h2 { font-size: 25px; margin-bottom: 16px; }
+  .mhp .mhp-csoport { padding: 14px 14px 5px; margin-bottom: 16px; border-radius: 14px; }
+  .mhp .mhp-sor { gap: 10px; font-size: 14px; margin-bottom: 8px; }
+  .mhp .mhp-ikon { width: 30px; height: 30px; }
+  .mhp .mhp-ikon svg { width: 15px; height: 15px; }
+  .mhp .mhp-sor .mhp-szoveg { white-space: nowrap; }
+  .mhp .mhp-sor .mhp-szoveg small { white-space: normal; font-size: 12px; }
+  .mhp .mhp-gomb { flex-basis: 120px; padding: 11px 10px; font-size: 13.5px; }
+  .mhp h3 { font-size: 11.5px; margin-bottom: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { .mhp .mhp-panel { animation: none; } }
+
 /* ============ GOMBOK (minden Wixes oldalon, asztalon es mobilon): arany szin, Jost betu, puha arnyek ============
    Ugyanaz a kinezet, mint a sminktetovalas es az uj oldalak gombjain. A szoveg nagy/kis betuje es a meret a Wixben marad. */
 @font-face { font-family: 'Jost'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/jost-400-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
@@ -159,13 +204,13 @@
    A Wix a sorokat 56 px-esre allitotta (a 320 px-es alapon), a menut pedig 98 px-rel a fejlec ala: igy a kilenc menupont egy kb. 660 px magas
    telefonkepernyon lecsuszott az aljarol (az almenu megnyitasa utan meg inkabb). Most a sorok 40 px-esek, az also sor kozelebb van a fejleckez,
    a lenyilo (almenu) sorai kisebbek es halvanyabb hatterun. A Wix ertekeit az ID-s szabaly allitja, ezert !important kell. */
-.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU { --item-height: 40px !important; margin-top: 58px !important; }
-.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .wixui-vertical-menu__submenu { --item-height: 36px !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU { --item-height: 37px !important; margin-top: 58px !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .wixui-vertical-menu__submenu { --item-height: 33px !important; }
 .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .wixui-vertical-menu__submenu > li { background-color: rgba(255, 255, 255, .07) !important; }
 /* a mobil menu megjelenese (2026-10-07): balra igazitott sorok (a Wix jobbrol-balra iranyt es jobbra zart szoveget hasznalt), Jost betu, finom vonalak, kijelolt = arany, FOGLALAS = arany gomb */
 .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU { --item-depth0-direction: ltr; --item-depth1-direction: ltr; --item-depth0-align: left; --item-depth1-align: left; --text-align: left; --padding-start-lvl1: 26px; --padding-start-lvl2: 24px; --arrowColor: 230, 211, 161; }
-.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .G7GdaI { font: 400 16.5px/40px 'Jost', 'Helvetica Neue', Arial, sans-serif !important; letter-spacing: .04em !important; color: #fff !important; }
-.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .wixui-vertical-menu__submenu .G7GdaI { font-size: 13.4px !important; line-height: 36px !important; color: rgba(255, 255, 255, .88) !important; letter-spacing: .01em !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .G7GdaI { font: 400 16px/37px 'Jost', 'Helvetica Neue', Arial, sans-serif !important; letter-spacing: .04em !important; color: #fff !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .wixui-vertical-menu__submenu .G7GdaI { font-size: 13.4px !important; line-height: 33px !important; color: rgba(255, 255, 255, .88) !important; letter-spacing: .01em !important; }
 .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU > ul > li { border-bottom: 1px solid rgba(201, 169, 106, .16); }
 .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .jqR3kU > div .G7GdaI, .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU li:has(> .tFexI9 .jqR3kU) > div .G7GdaI { color: #e6d3a1 !important; }
 .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .jqR3kU > div, .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .jqR3kU > .keDKhi { background-color: rgba(201, 169, 106, .12) !important; }

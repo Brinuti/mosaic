@@ -116,7 +116,7 @@ describe('/egyeni-headspa-budapest-uj', () => {
       'Lelassulsz.', 'Kienged a feszültség.', 'Úgy állsz fel, hogy jól is nézel ki.', 'Megérkezel', 'Elkezdődik a Head Spa', 'Jön a rész, amiért mindenki beleszeret', 'Arc, nyak, váll', 'Nem vizes hajjal mész haza',
       'Mire helyezzük inkább a hangsúlyt?', 'Inkább relaxálni szeretnék', 'Inkább a hajam / fejbőröm a fókusz', 'Mit tartalmaz pontosan?', 'Mélytisztító hajmosás', 'Körvízsugaras terápia', 'OXYGENI hajpakolás',
       'Hajkamerás diagnosztika és konzultáció, igény szerint', '+ 30 perc kímélő hajszárítás', 'Digitálisan is megkapod', 'Fizikai kártyaként is kérheted', 'Az időpontot az ajándékozott választja ki',
-      'Gyógymasszőrök kezelnek', 'Privát, csendes kezelők', 'Prémium, vegán OXYGENI termékek', 'Két barátnővel', 'Anya-lánya', 'Páróddal', 'H–P 8:00–20:00, Szo 9:00–18:00 (vasárnap zárva)', 'Adj magadnak 80 percet.',
+      'Gyógymasszőrök kezelnek', 'Privát, csendes kezelők', 'Prémium, vegán OXYGENI termékek', 'Két barátnővel', 'Anya-lánya', 'Páróddal', 'H–Szo 8:00–20:00 (vasárnap zárva)', 'Adj magadnak 80 percet.',
       'Foglalok · 26 900 Ft']) assert.ok(t.includes(k), 'hianyzik: ' + k);
     assert.equal(await p.locator('.harmonika-racs details').count(), 8, '8 GYIK-kerdes');
     assert.equal(await p.$$eval('.harmonika-racs details > p', (l) => l.filter((x) => x.textContent.trim().length < 30).length), 0, 'nincs ures valasz');
