@@ -17,6 +17,8 @@ const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\
 const UA_MOBIL = 'Mozilla/5.0 (Linux; Android 13; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36';
 const adat = await import(pathToFileURL(path.join(GYOKER, 'tools/hair-oldalak/adat.mjs')).href);
 const gen = await import(pathToFileURL(path.join(GYOKER, 'tools/hair-oldalak.mjs')).href);
+const regiArlista = await import(pathToFileURL(path.join(GYOKER, 'tools/hair-oldalak/regi-arlista.mjs')).href);
+const arlistak = (() => { const t = fs.readFileSync(path.join(GYOKER, 'assets/js/arlistak.js'), 'utf8'); return JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1)); })();
 const { szerverInditas } = await import(pathToFileURL(path.join(GYOKER, 'tools/headspa-teszt/szerver.mjs')).href);
 const { LAPOK, FODRASZOK, PILLANATKEP } = adat;
 const KULCSOK = Object.keys(LAPOK);
@@ -138,6 +140,40 @@ describe('tartalom: nincs kitalalt / igazolatlan allitas', () => {
   test('a Salonic-pillanatkep friss volt (legfeljebb 30 napos): ha regi, frissitsd (node tools/hair-oldalak/salonic-pillanatkep.mjs)', () => {
     const nap = (Date.now() - new Date(PILLANATKEP.lekerve).getTime()) / 86400000;
     assert.ok(nap < 30, `a pillanatkep ${Math.round(nap)} napos`);
+  });
+});
+
+// ======================= a REGI (eles) fodraszat-oldalak arai a Salonic szerint =======================
+describe('a mostani (Wixes) fodrász-oldalak árai egyeznek a Salonic-pillanatképpel', () => {
+  const BETTI_TABLA = 'c2eb0f_89f74d4c7a84ec25afa7aad7f0133562', NOEL_TABLA = 'c2eb0f_ebe819c8a20603ef818d0ff477702c21';
+  const regiSzoveg = (lap, mappa = 'klon') => fs.readFileSync(path.join(GYOKER, mappa, lap + '.html'), 'utf8').replace(/<[^>]+>/g, '').replace(/&nbsp;|&oacute;|&aacute;|&Aacute;|&iacute;|&eacute;/g, (m) => ({ '&nbsp;': ' ', '&oacute;': 'ó', '&aacute;': 'á', '&Aacute;': 'Á', '&iacute;': 'í', '&eacute;': 'é' }[m])).replace(/\s+/g, ' ');
+
+  test('az arlistak.js Betti- es Noel-tablaja pontosan a Salonic-arakat tartalmazza (node tools/commonninja.mjs --helyi frissiti)', () => {
+    for (const [azon, kedv] of [[BETTI_TABLA, 0], [NOEL_TABLA, regiArlista.noelKedvezmeny()]]) {
+      const tabla = arlistak[azon];
+      assert.deepEqual(tabla.sorok, regiArlista.salonicArak(tabla.sorok, kedv), `${tabla.nev}: elter a Salonic-pillanatkeptol`);
+    }
+  });
+  test('a korabban hibas sorok javitva vannak: teljes festes / teljes melir / teljes szokites', () => {
+    const sor = (azon, nev) => arlistak[azon].sorok.find((s) => s[0] === nev).slice(1);
+    assert.deepEqual(sor(BETTI_TABLA, 'Teljes festés / korrekció'), ['32.950 Ft', '39.950 Ft', '44.950 Ft', '48.950 Ft']);
+    assert.deepEqual(sor(BETTI_TABLA, 'Teljes Melír / Airtouch'), ['39.950 Ft', '47.950 Ft', '60.950 Ft', '64.950 Ft']);
+    assert.deepEqual(sor(BETTI_TABLA, 'Teljes szőkítés'), ['39.950 Ft', '47.950 Ft', '60.950 Ft', '64.950 Ft']);
+    assert.deepEqual(sor(NOEL_TABLA, 'Teljes szőkítés'), ['39.950 Ft helyett 31.960 Ft', '47.950 Ft helyett 38.360 Ft', '60.950 Ft helyett 48.760 Ft', '64.950 Ft helyett 51.960 Ft']);
+    assert.ok(arlistak[BETTI_TABLA].sorok.some((s) => s[0].startsWith('JOICO')) && !JSON.stringify(arlistak).includes('JOCIO'));
+  });
+  test('a regi oldalak "Ár: ...-tól" szövegei a Salonic legolcsóbb árai (Noelnél a kedvezménnyel), a tőfestés ára nem ígér vágást', () => {
+    const fen = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const vart = (fod) => [adat.szandekAdat('balayage', fod).tol, adat.katAdat('Női szárítás', fod).tol, adat.katAdat('Női hajvágás + szárítás', fod).tol, adat.katAdat('Tőfestés + szárítás', fod).tol, adat.katAdat('Elrontott festés korrekció / Teljes festés', fod).tol].map(fen);
+    for (const [lap, fod] of [['noi-fodraszat-budapest', null], ['noi-fodrasz-budapest-balayage-hajfestes', null], ['noi-hajfestes-budapest', null], ['balayage-haj-festes-budapest', 'noel']]) {
+      for (const mappa of ['klon', 'klon/m']) {
+        const t = regiSzoveg(lap, mappa);
+        const talalt = [...t.matchAll(/Ár ?: ?(\d{1,2}\.\d{3}) Ft/g)].map((m) => m[1]);
+        const akcios = [...t.matchAll(/Akciós Ár: (\d{1,2}\.\d{3}) Ft/g)].map((m) => m[1]);
+        assert.deepEqual(fod ? akcios : talalt, vart(fod), `${mappa}/${lap}: a szoveges arak elternek a Salonictol`);
+        assert.ok(!/23\.950 Ft - ?tól \(vágással|19\.160 Ft - ?tól \(vágással/.test(t), `${mappa}/${lap}: a tofestes ara nem tartalmaz vagast`);
+      }
+    }
   });
 });
 
@@ -275,8 +311,8 @@ describe('bongeszoben', { concurrency: false }, () => {
 
   test('a Google-ertekeles-sav a Trustindex AKTUALIS adatabol toltodik (nincs beegetett szam), a velemeny-keret betolt', async () => {
     const { p, ctx } = await ujOldal('kozpont');
-    await p.waitForTimeout(500);
     const csip = p.locator('#g-chip');
+    await csip.waitFor({ state: 'visible', timeout: 10000 }); // terheles alatt (lassu gep) a hamisitott valasz is kesik
     assert.equal(await csip.isVisible(), true);
     assert.match(await p.locator('#g-szoveg').textContent(), /Kiváló · 1 257 Google-vélemény/);
     assert.equal(await p.locator('#g-csillag').evaluate((e) => e.style.getPropertyValue('--ert')), '90%');
@@ -295,15 +331,15 @@ describe('bongeszoben', { concurrency: false }, () => {
 
   test('legkozelebbi szabad konzultacio: a Salonic naptarabol toltodik, a link a motor start= idopontjara mutat; hiba eseten rejtve marad', async () => {
     const { p, ctx } = await ujOldal('betti');
-    await p.waitForTimeout(700);
     const sor = p.locator('.hero .kovetkezo');
+    await sor.waitFor({ state: 'visible', timeout: 10000 }); // a lekeres az oldal "ures" idejeben indul (requestIdleCallback, legfeljebb 2,5 s kesessel)
     assert.equal(await sor.isVisible(), true);
     assert.match(await sor.locator('a').textContent(), /^(Ma|Holnap|Péntek|Hétfő|Kedd|Szerda|Csütörtök|Szombat|Vasárnap|\S+) \d{1,2}:\d{2}$/);
     const href = await sor.locator('a').getAttribute('href');
     assert.match(href, /^\/foglalo-motor\?business=hair&staff=betti&service=konzultacio&start=\d{10}$/);
     await ctx.close();
     const h = await ujOldal('betti', { salonic: 'hiba' });
-    await h.p.waitForTimeout(700);
+    await h.p.waitForTimeout(4500); // a hibas valasz is megerkezik (a requestIdleCallback legfeljebb 2,5 s), utana is rejtve marad
     assert.equal(await h.p.locator('.hero .kovetkezo').isHidden(), true);
     await h.ctx.close();
   });
