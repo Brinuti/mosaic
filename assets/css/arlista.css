@@ -126,6 +126,9 @@ main.arl-oldal { min-height: 60vh; }
 .arl-vege p { margin: 10px auto 0; max-width: 560px; font-size: 17px; }
 .arl-vege .cta-sor { justify-content: center; }
 .arl-vege .gomb { min-height: 48px; }
+.arl-vege-link { margin: 14px 0 0 !important; }
+.arl-vege-link a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--sotet); font-size: 15.5px; text-decoration: underline; text-underline-offset: 3px; }
+.arl-vege-link a:hover { color: var(--arany); }
 
 /* ---------- telefon ---------- */
 @media (max-width: 700px) {

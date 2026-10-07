@@ -222,8 +222,8 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
         ['/', '/lezeres-szortelenites-budapest', '/noi-fodraszat-budapest', '/oxigenterapia-budapest', '/sminktetovalas-budapest', '/ajandekkartya']);
       assert.deepEqual(by.ajandekkartya.csop, ['/headspa-ajandekkartya', '/lezeres-ajandekkartya', '/oxigen-ajandekkartya']);
       assert.deepEqual(by.szortelenites.kalk, ['/lezeres-szortelenites-budapest#szamolo']);
-      const tel = await p.$$eval('.arl-vege a', (l) => l.map((a) => a.getAttribute('href')));
-      assert.deepEqual(tel, ['tel:+36202474444', 'mailto:mosaicheadspa@gmail.com']);
+      const tel = await p.$$eval('.arl-vege a', (l) => l.map((a) => a.getAttribute('href')));   // a /kapcsolat es a /gyik oldal a #173-mal kerult a main-be
+      assert.deepEqual(tel, ['tel:+36202474444', '/kapcsolat', '/gyik']);
       await ctx.close();
     });
 
