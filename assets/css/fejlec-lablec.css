@@ -78,3 +78,4 @@
 #comp-mpv0ganp [data-testid="colorUnderlay"] { background-color: #f6efdc !important; }
 #comp-mpv0ganp { box-shadow: inset 0 -1px 0 #ecdcb6; }
 #comp-mpv0ganp a, #comp-mpv0ganp a span { color: #0f3a3c !important; }
+#comp-mpv0gaod { box-shadow: 0 5px 16px rgba(150, 120, 40, .2) !important; }   /* a Wix rozsaszin arnyeka helyett halvany arany */
