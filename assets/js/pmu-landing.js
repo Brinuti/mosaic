@@ -248,11 +248,11 @@
   });
 
   // --- terkep: a MOSAIC Google-ertekelese a Trustindex-widget aktualis tartalmabol ----------------------
-  // A Trustindex a suti-tajekoztato szerint "funkcionalis" szolgaltatas: csak ennek engedelyezese utan kerdezzuk le.
+  // A Trustindex-adatot (ertekelesek szama) azonnal lekerdezzuk: a velemenyek mindig azonnal megjelennek (a tulajdonos kerese, 2026-10-07).
   const TI = 'https://cdn.trustindex.io/widgets/8a/8a7562c424f027774456be130a1/content.html';
   let tiKesz = false;
   async function ertekelesFrissit() {
-    if (tiKesz || !$('te-db') || !(window.mhSuti && mhSuti.engedely('fun'))) return;
+    if (tiKesz || !$('te-db')) return;
     tiKesz = true;
     try {
       const d = new DOMParser().parseFromString(await (await fetch(TI, { credentials: 'omit' })).text(), 'text/html');
@@ -271,7 +271,6 @@
     } catch (e) { tiKesz = false; console.error(e); }
   }
   ertekelesFrissit();
-  if (window.mhSuti && mhSuti.figyel) mhSuti.figyel(ertekelesFrissit);
 
   // --- velemenyek: lapozhato sor ---------------------------------------------------------------------
   const velRacs = $('vel-racs');

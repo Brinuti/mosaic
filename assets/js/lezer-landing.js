@@ -345,7 +345,7 @@
   }
 
   // --- Vendegertekelesek: az eredeti Trustindex-embed (ugyanaz, mint a fooldalon es az ajandekkartya oldalon), iframe-ben --------------------
-  // Harmadik fel: a "funkcionalis" sutik elfogadasa utan (vagy a gombra kattintva) toltodik be; addig helykitolto + gomb all a helyen.
+  // A velemenyek MINDIG azonnal megjelennek (a tulajdonos kerese, 2026-10-07): nincs hozzajarulas-kapu; a HTML-beli "betoltese" szoveg csak a keret megjeleneseig all a helyen.
   // Az iframe azonos eredetu: a magassagat a widget tartalmahoz igazitjuk.
   const tiDoboz = $('trustindex');
   let tiBetoltve = false;
@@ -377,13 +377,8 @@
     addEventListener('resize', () => meret(true));
     tiDoboz.replaceChildren(f);
   }
-  if (tiDoboz) {
-    $('ti-gomb').addEventListener('click', () => { if (window.mhSuti && window.mhSuti.enged) window.mhSuti.enged('fun'); trustindexBetolt(); });
-    if (window.mhSuti) {
-      if (window.mhSuti.engedely('fun')) trustindexBetolt();
-      window.mhSuti.figyel((d) => { if (d.fun) trustindexBetolt(); });
-    }
-  }
+  // A velemenyek MINDIG azonnal megjelennek (a tulajdonos kerese, 2026-10-07): nincs hozzajarulas-kapu.
+  if (tiDoboz) trustindexBetolt();
 
   // --- mobil sticky CTA (csak telefonon latszik, lasd a CSS-t): nem rogton jon be: csak az elso, 4 kepes szekcio (Mennyibe kerul?) elgorgetese utan
   //     (a tulajdonos kerese: 3-4 kep utan); a foglalo szekciotol (es utana) eltunik. Gorgetes-figyelo (nem IntersectionObserver): az gyors ugrasnal,
@@ -425,7 +420,7 @@
   const TI = 'https://cdn.trustindex.io/widgets/8a/8a7562c424f027774456be130a1/content.html';
   let tiKesz = false;
   async function ertekelesFrissit() {
-    if (tiKesz || !(window.mhSuti && window.mhSuti.engedely('fun'))) return;
+    if (tiKesz) return;
     tiKesz = true;
     try {
       const d = new DOMParser().parseFromString(await (await fetch(TI, { credentials: 'omit' })).text(), 'text/html');
@@ -437,5 +432,4 @@
     } catch (hiba) { tiKesz = false; console.error(hiba); }
   }
   ertekelesFrissit();
-  if (window.mhSuti && window.mhSuti.figyel) window.mhSuti.figyel(ertekelesFrissit);
 })();
