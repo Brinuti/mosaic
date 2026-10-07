@@ -636,12 +636,15 @@
     return h;
   };
 
+  // A vendegertekelesek (Trustindex) MINDIG azonnal megjelennek (a tulajdonos kerese, 2026-10-07): nincs hozzajarulas-kapu; a tobbi harmadik fel
+  // (Google terkep, YouTube) tovabbra is csak a "funkcionalis" sutik engedelyezese utan toltodik.
+  const trustindex = (fajta) => !!EMBEDEK[fajta] && EMBEDEK[fajta][1] === 'Trustindex';
   const kitolt = (engedve) => {
     for (const [azon, fajta] of Object.entries(BEAGYAZASOK)) {
       const doboz = document.getElementById(azon);
       if (!doboz) continue;
       const most = doboz.firstElementChild;
-      if (engedve) {
+      if (engedve || trustindex(fajta)) {
         if (most && most.tagName === 'IFRAME') continue;
         doboz.replaceChildren(keret(fajta));
       } else if (!most) {

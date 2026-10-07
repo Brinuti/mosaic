@@ -148,7 +148,7 @@
   }
 
   // --- a MOSAIC Google-ertekelese es velemenyei a Trustindex-widget aktualis tartalmabol -----------------------------
-  // A Trustindex a suti-tajekoztato szerint "funkcionalis" szolgaltatas: csak ennek engedelyezese utan kerdezzuk le (egyszer).
+  // A Trustindex-adatot (ertekelesek szama, csillagok) azonnal lekerdezzuk (egyszer): a velemenyek mindig azonnal megjelennek (a tulajdonos kerese, 2026-10-07).
   const TI = 'https://cdn.trustindex.io/widgets/8a/8a7562c424f027774456be130a1/content.html';
   let tiSzoveg = null;
   const tiLeker = () => (tiSzoveg ||= fetch(TI, { credentials: 'omit' }).then((r) => r.text()).then((t) => new DOMParser().parseFromString(t, 'text/html')));
@@ -163,7 +163,7 @@
 
   let chipKesz = false;
   async function ertekelesFrissit() {
-    if (chipKesz || !$('te-db') || !(window.mhSuti && mhSuti.engedely('fun'))) return;
+    if (chipKesz || !$('te-db')) return;
     chipKesz = true;
     try {
       const { n, cs, min } = csillagok(await tiLeker());
@@ -183,17 +183,13 @@
   // vendegvelemenyek: az eredeti Trustindex-csuszka keretben (kulso szolgaltato: csak hozzajarulas utan; addig gombos helykitolto)
   const tiDoboz = $('ti-doboz');
   const velemenyekBetolt = () => {
-    if (!tiDoboz || tiDoboz.querySelector('iframe') || !(window.mhSuti ? mhSuti.engedely('fun') : true)) return;
+    if (!tiDoboz || tiDoboz.querySelector('iframe')) return;
     const f = document.createElement('iframe');
     f.src = tiDoboz.dataset.forras;
     f.title = 'Vendégértékelések (Trustindex)';
     f.loading = 'eager'; // nem lazy: a hozzajarulas utan azonnal toltodjon (ne csak gorgetesre)
     tiDoboz.replaceChildren(f);
   };
-  if (tiDoboz) {
-    $('ti-gomb').addEventListener('click', () => { if (window.mhSuti) mhSuti.enged('fun'); else velemenyekBetolt(); });
-    velemenyekBetolt();
-  }
-
-  if (window.mhSuti && mhSuti.figyel) mhSuti.figyel(() => { ertekelesFrissit(); velemenyekBetolt(); });
+  // A velemenyek MINDIG azonnal megjelennek (a tulajdonos kerese, 2026-10-07): nincs hozzajarulas-kapu.
+  if (tiDoboz) velemenyekBetolt();
 })();

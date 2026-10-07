@@ -28,8 +28,7 @@
   --arany-gomb: linear-gradient(#c6a346, #d9c164);
 }
 :where(main), :where(main) * { box-sizing: border-box; }
-/* a fejlec felso, rozsaszin akcios savja (Wix-fejlec: section#comp-mpv0ganp) ezen az oldalon nem latszik (a tulajdonos kerese: ezzel is helyet nyerunk) */
-#comp-mpv0ganp { display: none !important; }
+/* a fejlec felso akcios savja (Wix-fejlec: section#comp-mpv0ganp) ezeken a Head Spa oldalakon latszik; a stilusa a kozos fejlec-lablec.css-ben van */
 html { scroll-behavior: smooth; scroll-padding-top: 84px; -webkit-text-size-adjust: 100%; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body { margin: 0; background: var(--krem); color: var(--szoveg); font: 400 16px/1.5 var(--test); -webkit-font-smoothing: antialiased; }
@@ -101,10 +100,6 @@ p.kedv-sor { display: flex; align-items: center; gap: 10px; width: fit-content; 
    head-spa-velemenyek): ugyanaz a szerkezet, betu- es szinvilag, mint a lezeres / sminktetovalas / oxigenterapia landingeken.
    ==================================================================================================================================== */
 
-/* --- akcio-sav: a fejlec rozsaszin savja (#comp-mpv0ganp) helyett, az oldal szinvilaganak megfeleloen --- */
-.akcio-sav { display: block; text-align: center; background: #f6efdc; border-bottom: 1px solid #ecdcb6; color: #6f5420; font: 400 14.5px/1.35 var(--test); padding: 10px 16px; text-decoration: none; }
-.akcio-sav b { font-weight: 500; color: var(--sotet); }
-.akcio-sav:hover b { text-decoration: underline; text-underline-offset: 3px; }
 
 /* --- hero (kep + szoveg) es kompakt oldalfej --- */
 .hero { padding: 48px 0 64px; background: radial-gradient(120% 90% at 85% 10%, #e9ebe3 0%, transparent 60%), linear-gradient(#f6f7f3, #f0f1eb); }
@@ -218,6 +213,8 @@ p.kedv-sor { display: flex; align-items: center; gap: 10px; width: fit-content; 
 /* a Head Spa csomagok (4 kartya): ugyanaz az arkartya az arak es a kedvezmeny oldalon */
 .csomag-racs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: stretch; }
 .csomag { position: relative; display: flex; flex-direction: column; background: #fff; border: 1px solid #e7eae3; border-radius: 22px; padding: 30px 24px 26px; box-shadow: var(--arnyek); }
+.csomag-kep { margin: -30px -24px 20px; border-radius: 22px 22px 0 0; overflow: hidden; aspect-ratio: 4 / 3; background: #e0e4db; }
+.csomag-kep img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .csomag.kiemelt { border-color: #d9c164; box-shadow: 0 0 0 1px #e6d391, 0 18px 40px rgba(150, 120, 40, .16); }
 .csomag-jelveny { align-self: flex-start; padding: 5px 13px; border-radius: 999px; background: #f6efdc; border: 1px solid #ecdcb6; color: #6f5420; font-size: 13px; line-height: 1.3; margin-bottom: 14px; }
 .csomag h3 { font-size: 23px; line-height: 1.2; }
@@ -373,6 +370,7 @@ p.kedv-sor { display: flex; align-items: center; gap: 10px; width: fit-content; 
   .korhinta-gomb { display: none; }
   .csomag-racs { grid-template-columns: 1fr; }
   .csomag { padding: 26px 20px 22px; }
+  .csomag-kep { margin: -26px -20px 18px; aspect-ratio: 16 / 10; }
   .pipak.ketoszlop { grid-template-columns: 1fr; }
   .szep-sav h2, .negy-kezes h2 { font-size: 28px; }
   .reszlet-doboz { padding: 24px 20px; }

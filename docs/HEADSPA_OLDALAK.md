@@ -27,7 +27,10 @@ linkek: a launcher a helyben nyíló foglalóban (rétegben) nyitja őket, mint 
 - `.korhinta` (gördíthető képsor, előző / következő gomb), `.helyszin` + `.terkep` (a Google-térkép csak a „funkcionális” sütik elfogadása után / gombra), `.ti-doboz` (Trustindex, ugyanaz az embed, mint a lézeres oldalon), `.sticky-cta` (mobilon, a hero után).
 
 ## Szándékos eltérések a régi oldaltól
-- **Rózsaszín akciósáv** (a fejléc `#comp-mpv0ganp` eleme) az új oldalakon – mint a többi landingen – rejtett; helyette azonos szöveggel és linkkel egy `.akcio-sav` csík van a tartalom tetején a szín­világhoz igazítva (törölhető, ha nem kell).
+- **Akciósáv** (a fejléc `#comp-mpv0ganp` eleme, a Wix rózsaszín csíkja): a MOSAIC színvilágában (halvány arany háttér, sötétzöld felirat) látszik, ugyanazzal a szöveggel és linkkel. A stílus a közös `assets/css/fejlec-lablec.css`-ben van, ezért **minden oldalon egységes**, ahol a sáv látszik (a többi, még Wixes Head Spa jellegű oldalon is); a lézeres / oxigén / sminktetováló / ajándékkártya landingeken a saját CSS rejti, ott nem látszik. (A korábbi, külön `.akcio-sav` csík megszűnt.)
+- **Az árlista (csomagok) képes** (2026-10-07, a tulajdonos kérése): mind a 4 csomag tetején egy kép (4 Kezes: `assets/img/ajandek/negy-kezes.jpg`, Relax: `kezeles-egyeni.jpg`, Hair: hajkamerás fejbőrvizsgálat, Páros: két vendég egymás mellett) – az árak és a kedvezmény oldalon is.
+- **A vendégértékelések (Trustindex) mindig azonnal megjelennek**, süti-hozzájárulás és gomb nélkül – a Head Spa oldalakon és minden más oldalon is (lézeres, oxigén, ajándékkártya oldalak, a Wixes oldalak beágyazásai). A Google térkép továbbra is csak hozzájárulás után (vagy gombra) töltődik. Jogi döntés a tulajdonosé: a Trustindex így a hozzájárulás előtt is kap kérést, a süti-tájékoztató „funkcionális” besorolása ezzel nem egyezik, érdemes frissíteni.
+- A vélemények oldalról a négy cikk alatti nagy, gyertyás kép (`DSC05687.jpg`) kikerült.
 - A régi `✔️` emojik és a mutató emojik (👇 💓 🌿 👆) elmaradtak (ikon-lista, illetve nincs rájuk szükség); a hangulatjelek (🙂 :)) maradtak.
 - Egyetlen H1 oldalanként (a régi oldalakon több volt, az árak oldalon a H1 „SZÉP Kártyát is elfogadunk” volt): az árak oldalon „Head Spa Csomagok és Árak” a H1; a kedvezmény oldalon az „AZ AKCIÓ RÉSZLETEI” H2.
 - A vélemények oldal egyik címéből hiányzott az első betű („lyen lesz a hajad…”): javítva („Milyen lesz a hajad a kezelés után?”); a „Kinek ajánlott” idézetnek nem volt záró idézőjele: pótolva.
@@ -46,5 +49,5 @@ Mint a lézeres / oxigén oldalnál (`docs/LEZERES_LANDING.md`, `OXIGEN-LANDING.
 5. A teszt (`tools/headspa-teszt/headspa.test.mjs`) a `-uj` címekre épül: csere után a `nyit()` és az elvárt `canonical` / `robots` igazítandó.
 
 ## Tesztek
-`node --test tools/headspa-teszt/headspa.test.mjs` (46 teszt, nincs `dist/`, nincs külső hálózat): cím / H1 / egy H1; noindex + canonical; a régi tartalom kulcsmondatai és árai; foglalás-linkek a foglalóra, belső linkek létező oldalakra;
-hozzájárulás előtt nincs harmadik fél (Trustindex-értékelések, térkép); nincs vízszintes görgetés telefonon / tableten / asztalon; videó-lejátszó; képsor; sticky CTA; a 4 csomag ára.
+`node --test tools/headspa-teszt/headspa.test.mjs` (47 teszt, nincs `dist/`, nincs külső hálózat): cím / H1 / egy H1; noindex + canonical; a régi tartalom kulcsmondatai és árai; foglalás-linkek a foglalóra, belső linkek létező oldalakra;
+a vélemények mindig azonnal megjelennek, a térkép hozzájárulás előtt nem; a csomagok képei; nincs vízszintes görgetés telefonon / tableten / asztalon; videó-lejátszó; képsor; sticky CTA; a 4 csomag ára.

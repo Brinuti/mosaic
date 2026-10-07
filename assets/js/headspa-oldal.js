@@ -1,7 +1,7 @@
 // MOSAIC Head Spa oldalak (headspa-budapest, headspa-arak-budapest, head-spa-kedvezmeny, headspa-termekek-oxygeni, head-spa-velemenyek) - mukodes.
 //  1. Videok: a [data-video] gombok a sajat tarhelyrol (assets/video) egy felugro lejatszoban (<dialog>) inditjak a videot; csak kattintasra toltodik.
 //  2. Korhinta (.korhinta): kep-sorozat gorgetheto savban, elozo / kovetkezo gombokkal.
-//  3. Vendegertekelesek (Trustindex) es Google terkep: harmadik fel, a "funkcionalis" sutik elfogadasa utan (vagy a gombra kattintva) toltodnek be.
+//  3. Vendegertekelesek (Trustindex): MINDIG azonnal megjelennek (nincs hozzajarulas-kapu); a Google terkep harmadik fel: a "funkcionalis" sutik elfogadasa utan (vagy a gombra kattintva) toltodik be.
 //  4. Mobil sticky CTA: a hero elgorgetese utan jelenik meg, a helyszin szekcional (es utana) eltunik.
 // A szkript nem kuld meresi esemenyt (a foglalas-gombok a /foglalo-motor linkek: a launcher es a motor kezeli oket).
 (() => {
@@ -90,13 +90,7 @@
     addEventListener('resize', () => meret(true));
     tiDoboz.replaceChildren(f);
   }
-  if (tiDoboz) {
-    $('ti-gomb').addEventListener('click', () => { if (window.mhSuti && window.mhSuti.enged) window.mhSuti.enged('fun'); trustindexBetolt(); });
-    if (window.mhSuti) {
-      if (window.mhSuti.engedely('fun')) trustindexBetolt();
-      window.mhSuti.figyel((d) => { if (d.fun) trustindexBetolt(); });
-    }
-  }
+  if (tiDoboz) trustindexBetolt();   // a velemenyek MINDIG azonnal megjelennek (a tulajdonos kerese, 2026-10-07): nincs hozzajarulas-kapu
   function terkepBetolt() {
     const t = $('terkep');
     if (!t || t.querySelector('iframe')) return;

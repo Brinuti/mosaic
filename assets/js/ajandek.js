@@ -514,16 +514,8 @@
     });
     try { if (window.mhSuti && window.mhSuti.figyel) window.mhSuti.figyel(function () { if (engedelyezve()) betolt(); }); } catch (e) { /* nem baj */ }
   }
-  function trustindexInit() {
-    var gomb = $('ah-ti-gomb');
-    var engedelyezve = function () { try { return !!(window.mhSuti && window.mhSuti.engedely('fun')); } catch (e) { return false; } };
-    if (engedelyezve()) { trustindexBetolt(); return; }
-    if (gomb) gomb.addEventListener('click', function () {
-      try { if (window.mhSuti && window.mhSuti.enged) window.mhSuti.enged('fun'); } catch (e) { /* nem baj */ }
-      trustindexBetolt();
-    });
-    try { if (window.mhSuti && window.mhSuti.figyel) window.mhSuti.figyel(function () { if (engedelyezve()) trustindexBetolt(); }); } catch (e) { /* nem baj */ }
-  }
+  // A velemenyek MINDIG azonnal megjelennek (a tulajdonos kerese, 2026-10-07): nincs hozzajarulas-kapu.
+  function trustindexInit() { trustindexBetolt(); }
 
   // ---------------------------------------------------------------- ProductGrid / ProductCard (1. lepes: elmeny-valasztas, radio)
   // A kijelzett termek: a valasztott, ennek hianyaban az ajanlott (a variant elovalasztasa, egyebkent az elso a variant sorrendjeben);

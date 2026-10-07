@@ -27,6 +27,7 @@ export async function szerverInditas() {
     const m = mobil ? 'mobil' : 'asztali';
     const resz = (jel, fajl) => (forras.includes(jel) ? fs.readFileSync(path.join(GYOKER, 'assets/fejlec', fajl + '.html'), 'utf8') : '');
     let fejlec = ajandekMenu(resz('<!--mh-fejlec-->', m), mobil);
+    if (mobil) fejlec = fejlec.replace('Októberi akció! - 20% kedvezmény minden headspa foglalásra + ajándékkártyára!', 'Októberi akció! 20% kedvezmény minden headspa + ajándékkártyára'); // mint a build mobil fejlece
     if (aktiv && fejlec) fejlec = aktivMenu(fejlec, aktiv, mobil);
     let lablec = resz('<!--mh-lablec-->', 'lablec-' + m);
     const kozos = '<style data-forras="fejlec-lablec">' + fejlecCss + '</style>';

@@ -490,15 +490,14 @@ describe('a harmadik kor visszajelzesei', () => {
     await ctx.close();
   });
 
-  test('a velemenyek az eredeti Trustindex-embed: sutik nelkul helykitolto + gomb, a gomb betolti az embedet (a fooldal / ajandekkartya oldal beagyazasa)', async () => {
+  test('a velemenyek az eredeti Trustindex-embed (a fooldal / ajandekkartya oldal beagyazasa): MINDIG azonnal megjelennek, suti-hozzajarulas es gomb nelkul is (a tulajdonos kerese, 2026-10-07)', async () => {
     const { p, ctx } = await nyit();
     assert.equal(await p.locator('#velemenyek .vel').count(), 0, 'nincsenek sajat (kezzel irt) kartyak');
-    assert.equal(await p.locator('#ti-hely').isVisible(), true);
-    assert.equal(await p.locator('#trustindex iframe').count(), 0, 'sutik nelkul nincs kulso tartalom');
-    await p.click('#ti-gomb');
-    await p.waitForSelector('#trustindex iframe.ti-keret');
+    await p.waitForSelector('#trustindex iframe.ti-keret', { timeout: 4000 });
     assert.equal(await p.getAttribute('#trustindex iframe', 'src'), '/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html');
-    assert.equal(await p.locator('#ti-hely').count(), 0);
+    assert.equal(await p.locator('#ti-hely').count(), 0, 'a helykitolto lecserelodott');
+    assert.equal(await p.locator('#ti-gomb').count(), 0, 'nincs hozzajarulas-gomb');
+    assert.equal(await p.getAttribute('#trustindex iframe', 'loading'), 'eager');
     await ctx.close();
   });
 

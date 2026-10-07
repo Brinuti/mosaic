@@ -72,3 +72,9 @@
 .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .wixui-vertical-menu__submenu > li { background-color: rgba(255, 255, 255, .07) !important; }
 /* ha a lenyilok (pl. a Head Spa 8 almenupontja) miatt a menu hosszabb, mint a kepernyo, a menu SAJAT gorgetosavja a kepernyon belul marad: az utolso sor (Kapcsolat) is elerheto */
 .device-mobile-optimized #inlineContentParent-MENU_AS_CONTAINER { max-height: var(--mh-menu-max, 100vh) !important; }
+
+/* A fejlec felso akcios savja (Wix: section#comp-mpv0ganp): rozsaszin helyett a MOSAIC szinvilaga (halvany arany hatter, sotetzold felirat) - minden oldalon egyseges
+   (a lezeres / oxigen / sminktetovalas / ajandekkartya landingeken a sajat CSS rejti, ott nem latszik). */
+#comp-mpv0ganp [data-testid="colorUnderlay"] { background-color: #f6efdc !important; }
+#comp-mpv0ganp { box-shadow: inset 0 -1px 0 #ecdcb6; }
+#comp-mpv0ganp a, #comp-mpv0ganp a span { color: #0f3a3c !important; }
