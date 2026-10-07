@@ -29,7 +29,24 @@ binding = "SZAMLALO_DB"
 database_name = "mosaic-foglalo-szamlalo-elonezet"
 database_id = "08eb6f2f-180a-4352-a7f9-27333d5d6b5d"
 
+# Foglalas -> megjelenes (booking-to-show) emlekezteto-rendszer (Cloudflare D1; docs/lifecycle/LIFECYCLE.md): foglalasok + kuldesi sor. Szemelyes adat (nev, telefon, e-mail) a kuldeshez;
+# az idopont utan 60 nappal a napi karbantartas torli. Eles es elonezeti adatbazis kulon.
+[[d1_databases]]
+binding = "LIFECYCLE_DB"
+database_name = "mosaic-lifecycle"
+database_id = "9732506b-1f3c-4378-85dc-aa3c70a25817"
+
+[[env.preview.d1_databases]]
+binding = "LIFECYCLE_DB"
+database_name = "mosaic-lifecycle-elonezet"
+database_id = "bd58da1d-a9f0-4b76-ad0b-13aedfc67192"
+
 [vars]
+LIFECYCLE_MOD = "teszt"   # ki | teszt (CSAK a teszt-vendegeknek megy uzenet) | elo (az LIFECYCLE_UZLETAGOK uzletagainak vendegeinek is)
+LIFECYCLE_UZLETAGOK = "headspa,hair,oxygen,laser,pmu"
+LIFECYCLE_KULCS_HASH = "322afd9d7799312f4a74dc94ed69568f597687c458bf7e0ce521156e8e26af44"   # a bejovo / tick vegpontok kulcsanak SHA-256-ja (a kulcs a Zapier-lancokban van)
+SIMPLESMS_FELHASZNALO = "mosaic"
+SIMPLESMS_DOMAIN = "mosaicheadspa.hu"   # a jelszo: SIMPLESMS_JELSZO (Secret, Production + Preview)
 ESEMENY_IRAS = "1"   # a foglalasi jegyzettomb eles irasa BEKAPCSOLVA (a tulajdonos jovahagyta, 2026-10-04); kikapcsolas: a sor torlese
 ESEMENY_KIHAGY = "2038420,3385039,3385031,3353226"   # a tulajdonos proba-vendegkartyai (a Salonic g: azonositoi): HeadSpa 2038420, Hair 3385039, Oxigen 3385031, Elysion 3353226; az ilyen foglalas nem kerul a jegyzettombbe
 SMTP_HOST = "smtp.gmail.com"
@@ -54,6 +71,11 @@ AJANDEK_AZONNALI = "1"   # a tulajdonos donotese (2026-10-04): bankkartyas rende
 # A titkok (STRIPE_SECRET_KEY = sk_test_..., STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK, MAIL_TO, SMTP_PASS) a Cloudflare feluleten,
 # a Preview kornyezetben, Secret tipussal vannak.
 [env.preview.vars]
+LIFECYCLE_MOD = "teszt"   # ki | teszt (CSAK a teszt-vendegeknek megy uzenet) | elo (az LIFECYCLE_UZLETAGOK uzletagainak vendegeinek is)
+LIFECYCLE_UZLETAGOK = "headspa,hair,oxygen,laser,pmu"
+LIFECYCLE_KULCS_HASH = "322afd9d7799312f4a74dc94ed69568f597687c458bf7e0ce521156e8e26af44"   # a bejovo / tick vegpontok kulcsanak SHA-256-ja (a kulcs a Zapier-lancokban van)
+SIMPLESMS_FELHASZNALO = "mosaic"
+SIMPLESMS_DOMAIN = "mosaicheadspa.hu"   # a jelszo: SIMPLESMS_JELSZO (Secret, Production + Preview)
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
 SMTP_USER = "mosaicheadspa@gmail.com"

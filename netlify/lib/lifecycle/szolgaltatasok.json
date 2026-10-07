@@ -1,0 +1,541 @@
+{
+ "forras": "SALONIC_SERVICE_STAFF_MAPPING_CURRENT.json",
+ "kelt": "2026-10-03T15:13:38.153Z",
+ "szolgaltatasok": [
+  {
+   "uzletag": "headspa",
+   "nev": "💆‍♀️ EGYÉNI 50 perces MOSAIC \"Relax\" Head Spa kezelés + 30 perc hajszárítás",
+   "perc": 80
+  },
+  {
+   "uzletag": "headspa",
+   "nev": "💆‍♀️ EGYÉNI 50 perces MOSAIC \"Hair\" Head Spa kezelés + 30 perc hajszárítás",
+   "perc": 80
+  },
+  {
+   "uzletag": "headspa",
+   "nev": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+   "perc": 80
+  },
+  {
+   "uzletag": "headspa",
+   "nev": "💆‍♀️ NÉGYKEZES EGYÉNI 50 perces MOSAIC Head Spa kezelés + 30 perc hajszárítás",
+   "perc": 80
+  },
+  {
+   "uzletag": "headspa",
+   "nev": "KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces MOSAIC \"Relax\" Head Spa kezelés + 30 perc hajszárítás",
+   "perc": 80
+  },
+  {
+   "uzletag": "headspa",
+   "nev": "KUPONKÓDDAL - 💆‍♀️ EGYÉNI 50 perces MOSAIC \"Hair\" Head Spa kezelés + 30 perc hajszárítás",
+   "perc": 80
+  },
+  {
+   "uzletag": "headspa",
+   "nev": "KUPONKÓDDAL - 💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+   "perc": 80
+  },
+  {
+   "uzletag": "headspa",
+   "nev": "KUPONKÓDDAL - 💆‍♀️ NÉGYKEZES EGYÉNI 50 perces MOSAIC Head Spa kezelés + 30 perc hajszárítás",
+   "perc": 80
+  },
+  {
+   "uzletag": "hair",
+   "nev": "☀ Balayage / ombre / babylight + vágás + szárítás - Közepes haj",
+   "perc": 180
+  },
+  {
+   "uzletag": "hair",
+   "nev": "☀ Balayage / ombre / babylight + vágás + szárítás - Hosszú haj",
+   "perc": 210
+  },
+  {
+   "uzletag": "hair",
+   "nev": "☀ Balayage / ombre / babylight + vágás + szárítás - Extra Hosszú haj",
+   "perc": 240
+  },
+  {
+   "uzletag": "hair",
+   "nev": "☀ Balayage / ombre / babylight +tőfestés+ vágás + szárítás - Közepes haj",
+   "perc": 210
+  },
+  {
+   "uzletag": "hair",
+   "nev": "☀ Balayage / ombre / babylight +tőfestés+ vágás + szárítás - Hosszú haj",
+   "perc": 240
+  },
+  {
+   "uzletag": "hair",
+   "nev": "☀ Balayage / ombre / babylight +tőfestés+ vágás + szárítás - Extra Hosszú haj",
+   "perc": 270
+  },
+  {
+   "uzletag": "hair",
+   "nev": "Teljes festés/ Supernatural Color- Rövid haj",
+   "perc": 120
+  },
+  {
+   "uzletag": "hair",
+   "nev": "Teljes festés/ Supernatural Color- Közepes haj",
+   "perc": 150
+  },
+  {
+   "uzletag": "hair",
+   "nev": "Teljes festés/ Supernatural Color- Hosszú haj",
+   "perc": 180
+  },
+  {
+   "uzletag": "hair",
+   "nev": "Teljes festés/Supernatural Color- Extra Hosszú haj",
+   "perc": 210
+  },
+  {
+   "uzletag": "hair",
+   "nev": "💇‍♂️ Férfi hajvágás",
+   "perc": 30
+  },
+  {
+   "uzletag": "hair",
+   "nev": "JOICO 4 lépéses hajújraépítő kezelés - félhosszú haj",
+   "perc": 120
+  },
+  {
+   "uzletag": "hair",
+   "nev": "JOICO 4 lépéses hajújraépítő kezelés - hosszú haj",
+   "perc": 120
+  },
+  {
+   "uzletag": "hair",
+   "nev": "JOICO 4 lépéses hajújraépítő kezelés - Extra Hosszú haj",
+   "perc": 150
+  },
+  {
+   "uzletag": "hair",
+   "nev": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+   "perc": 30
+  },
+  {
+   "uzletag": "hair",
+   "nev": "✂ Női hajvágás + Szárítás - Rövid haj",
+   "perc": 60
+  },
+  {
+   "uzletag": "hair",
+   "nev": "✂ Női hajvágás + Szárítás - Közepes haj",
+   "perc": 60
+  },
+  {
+   "uzletag": "hair",
+   "nev": "✂ Női hajvágás + Szárítás - Hosszú haj",
+   "perc": 90
+  },
+  {
+   "uzletag": "hair",
+   "nev": "✂ Női hajvágás + Szárítás - Extra Hosszú haj",
+   "perc": 120
+  },
+  {
+   "uzletag": "hair",
+   "nev": "🌊 Női szárítás - Rövid haj",
+   "perc": 30
+  },
+  {
+   "uzletag": "hair",
+   "nev": "🌊 Női szárítás - Közepes haj",
+   "perc": 60
+  },
+  {
+   "uzletag": "hair",
+   "nev": "🌊 Női szárítás - Hosszú haj",
+   "perc": 60
+  },
+  {
+   "uzletag": "hair",
+   "nev": "🌊 Női szárítás - Extra Hosszú haj",
+   "perc": 90
+  },
+  {
+   "uzletag": "hair",
+   "nev": "Póthaj leszedés",
+   "perc": 90
+  },
+  {
+   "uzletag": "hair",
+   "nev": "Póthaj felrakás (350 Ft / Tincs)",
+   "perc": 90
+  },
+  {
+   "uzletag": "hair",
+   "nev": "🖌 Teljes melír / airtouch + vágás + szárítás - Rövid haj",
+   "perc": 150
+  },
+  {
+   "uzletag": "hair",
+   "nev": "🖌 Teljes melír / airtouch + vágás + szárítás - Közepes haj",
+   "perc": 210
+  },
+  {
+   "uzletag": "hair",
+   "nev": "🖌 Teljes melír / airtouch + vágás + szárítás - Hosszú haj",
+   "perc": 270
+  },
+  {
+   "uzletag": "hair",
+   "nev": "🖌 Teljes melír / airtouch + vágás + szárítás - Extra Hosszú haj",
+   "perc": 270
+  },
+  {
+   "uzletag": "hair",
+   "nev": "Teljes szőkítés/ korrekció- vágással - Rövid haj",
+   "perc": 180
+  },
+  {
+   "uzletag": "hair",
+   "nev": "Teljes szőkítés/korrekció- vágással - Közepes haj",
+   "perc": 210
+  },
+  {
+   "uzletag": "hair",
+   "nev": "Teljes szőkítés/korrekció - vágással - Hosszú haj",
+   "perc": 270
+  },
+  {
+   "uzletag": "hair",
+   "nev": "Teljes szőkítés /korrekció- vágással - Extra Hosszú haj",
+   "perc": 300
+  },
+  {
+   "uzletag": "hair",
+   "nev": "👱‍♀️ Tőfestés + Szárítás - Rövid haj",
+   "perc": 90
+  },
+  {
+   "uzletag": "hair",
+   "nev": "👱‍♀️ Tőfestés + Szárítás - Közepes haj",
+   "perc": 120
+  },
+  {
+   "uzletag": "hair",
+   "nev": "👱‍♀️ Tőfestés + Szárítás - Hosszú haj",
+   "perc": 120
+  },
+  {
+   "uzletag": "hair",
+   "nev": "👱‍♀️ Tőfestés + Szárítás - Extra Hosszú haj",
+   "perc": 150
+  },
+  {
+   "uzletag": "hair",
+   "nev": "👱‍♀️✂ Tőfestés + Vágás + Szárítás - Rövid haj",
+   "perc": 120
+  },
+  {
+   "uzletag": "hair",
+   "nev": "👱‍♀️✂ Tőfestés + Vágás + Szárítás - Közepes haj",
+   "perc": 150
+  },
+  {
+   "uzletag": "hair",
+   "nev": "👱‍♀️✂ Tőfestés + Vágás + Szárítás - Hosszú haj",
+   "perc": 180
+  },
+  {
+   "uzletag": "hair",
+   "nev": "👱‍♀️✂ Tőfestés + Vágás + Szárítás - Extra Hosszú haj",
+   "perc": 210
+  },
+  {
+   "uzletag": "oxygen",
+   "nev": "Haj Oxigénterápia - 1. alkalom",
+   "perc": 80
+  },
+  {
+   "uzletag": "oxygen",
+   "nev": "👩 Haj Oxigénterápia - 2. alkalomtól",
+   "perc": 80
+  },
+  {
+   "uzletag": "pmu",
+   "nev": "Ingyenes konzultáció",
+   "perc": 30
+  },
+  {
+   "uzletag": "pmu",
+   "nev": "Ajaktetoválás - Aquarell - 124.900 Ft helyett most",
+   "perc": 120
+  },
+  {
+   "uzletag": "pmu",
+   "nev": "Ajaktetoválás - Rúzs hatású - 134.900 Ft helyett most",
+   "perc": 120
+  },
+  {
+   "uzletag": "pmu",
+   "nev": "Szemöldök tetoválás - Hibrid - 99.000 Ft helyett most",
+   "perc": 90
+  },
+  {
+   "uzletag": "pmu",
+   "nev": "Szemöldök tetoválás - Soft powder - 99.000 Ft helyett most",
+   "perc": 90
+  },
+  {
+   "uzletag": "pmu",
+   "nev": "Szempilla sűrítés - 59.000 Ft helyett most",
+   "perc": 60
+  },
+  {
+   "uzletag": "pmu",
+   "nev": "Szemhéj tetoválás - Füstös - 79.000 Ft helyett most",
+   "perc": 120
+  },
+  {
+   "uzletag": "pmu",
+   "nev": "Korrekció",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "Ingyenes konzultáció zsófihoz!",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "⭐ AKCIÓ - EGYEDI CSOMAG (TE RAKOD ÖSSZE!) - 50% KEDVEZMÉNNYEL + állapofelmérés",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "🪒 AKCIÓ - BASIC CSOMAG - Állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "🔥 AKCIÓ - MEDIUM CSOMAG + állapofelmérés -20% kedvezménnyel",
+   "perc": 90
+  },
+  {
+   "uzletag": "laser",
+   "nev": "🌞 AKCIÓ - SUMMER CSOMAG + állapofelmérés -20% kedvezménnyel",
+   "perc": 120
+  },
+  {
+   "uzletag": "laser",
+   "nev": "👑 AKCIÓ - TOTAL CSOMAG + állapofelmérés -20% kedvezménnyel",
+   "perc": 90
+  },
+  {
+   "uzletag": "laser",
+   "nev": "🧔 AKCIÓ - MAN TOTAL CSOMAG + állapofelmérés -20% kedvezménnyel",
+   "perc": 120
+  },
+  {
+   "uzletag": "laser",
+   "nev": "ARC - Teljes arc + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "ARC - Bajuszvonal + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "ARC - Állcsúcs + állkapocsvonal + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "TEST - Teljes hónalj + állapotfelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "TEST - Alkar + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "TEST - Felkar + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "TEST - Teljes kar + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "INTIM - Bikini vonal + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "INTIM - Teljes Intim + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "LÁBAK - 2 Lábszár + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "LÁBAK - 2 Comb + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "LÁBAK - 2 Teljes láb + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "FÉRFI - Hát + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "FÉRFI - Mellkas + állapofelmérés -20% kedvezménnyel",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "FÉRFI - Has + állapofelmérés",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "EGYÉB - Kis testrész + állapofelmérés",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "EGYÉB - Közepes testrész + állapofelmérés",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "⭐ AKCIÓ - EGYEDI CSOMAG (TE RAKOD ÖSSZE!) - 50% KEDVEZMÉNNYEL",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "🪒 AKCIÓ - BASIC CSOMAG - 9.500 FT KEDVEZMÉNNYEL",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "🔥 AKCIÓ - MEDIUM CSOMAG - 27.000 FT KEDVEZMÉNNYEL",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "🌞 AKCIÓ - SUMMER CSOMAG - 30.500 FT KEDVEZMÉNNYEL",
+   "perc": 90
+  },
+  {
+   "uzletag": "laser",
+   "nev": "👑 AKCIÓ - TOTAL CSOMAG - 48.500 FT KEDVEZMÉNNYEL",
+   "perc": 90
+  },
+  {
+   "uzletag": "laser",
+   "nev": "🧔 AKCIÓ - MAN TOTAL CSOMAG - 32.000 FT KEDVEZMÉNNYEL",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "ARC - Bajuszvonal",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "ARC - Állcsúcs + állkapocsvonal",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "ARC - Teljes arc",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "TEST - Teljes hónalj",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "TEST - Alkar",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "TEST - Felkar",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "TEST - Teljes kar",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "INTIM - Bikini vonal",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "INTIM - Teljes Intim",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "LÁBAK - 2 Lábszár",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "LÁBAK - 2 Comb",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "LÁBAK - 2 Teljes láb",
+   "perc": 60
+  },
+  {
+   "uzletag": "laser",
+   "nev": "FÉRFI - Hát",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "FÉRFI - Mellkas",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "FÉRFI - Has",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "EGYÉB - Kis testrész",
+   "perc": 30
+  },
+  {
+   "uzletag": "laser",
+   "nev": "EGYÉB - Közepes testrész",
+   "perc": 30
+  },
+  {
+   "uzletag": "oxygen",
+   "nev": "AKCIÓS Hajkamerás vizsgálat és konzultáció",
+   "perc": 30
+  }
+ ]
+}

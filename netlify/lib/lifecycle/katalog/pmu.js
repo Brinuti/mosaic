@@ -1,0 +1,154 @@
+// PMU / sminktetovalas - booking-to-show uzenetlanc (MOSAIC_booking_to_show_lifecycle_2026-10-07.pdf, 7. fejezet). A szoveg a dokumentum szerint, szo szerint.
+// A katalogus-formatum leirasa: netlify/lib/lifecycle/katalog/SEMA.md. Szegmensek: konzultacio (ingyenes), fizetos (uj kezeles), korrekcio, eltavolitas.
+export default {
+  uzletag: 'pmu',
+  uzenetek: [
+    {
+      // T0 SMS: a "Melitta 24 oran belul felhiv" a korrekciora es eltavolitasra nem igaz, ezert azokra nem megy
+      id: 'PMU-SMS-01', csatorna: 'sms', mikor: { tipus: 't0' }, szegmensek: ['fizetos', 'konzultacio'],
+      szoveg: 'Szia {keresztnév}! Megvan a PMU időpontod: {dátum} {időpont}, {szolgáltatás}, MOSAIC - Bécsi út 2. Melitta 24 órán belül felhív, hogy legyen lehetőséged kérdezni. Részletek: {foglalás_részletei_link}.',
+    },
+    {
+      id: 'PMU-EMAIL-01', csatorna: 'email', mikor: { tipus: 't0' }, szegmensek: ['fizetos'],
+      targy: 'Megvan az időpontod Melittához',
+      elotag: 'Előbb megtervezitek, csak utána kezdődik a tetoválás.',
+      torzs: [
+        'Szia {keresztnév}!',
+        'Megvan az időpontod Melittához: {dátum} {időpont}, {szolgáltatás}.',
+        'Az első és legfontosabb dolog: nem úgy érkezel, hogy leülsz, és rögtön elkezdjük a tetoválást.',
+        'Előtte átbeszélitek, mit szeretnél és mitől tartasz. A formát és a színirányt előre, személyre szabottan megtervezitek, és Melitta csak akkor kezdi el a tetoválást, amikor te is jóváhagytad.',
+        'A jelenlegi szolgáltatáscsomagban a konzultáció és tervezés része a kezelésnek. Az új szemöldök-, ajak- és szemkörnyéki PMU kezeléseknél a weboldal szerint a 4-7 héten belüli korrekció is benne van az árban.',
+        'A foglalásod:',
+        { doboz: ['{szolgáltatás}', '{dátum}, {időpont}', 'Ár: {aktuális_ár}', 'Helyszín: 1023 Budapest, Bécsi út 2.'] },
+        'Melitta 24 órán belül felhív. Nyugodtan mondd el neki azt is, amitől esetleg tartasz - túl sötét szín, túl erős forma, fájdalom, gyógyulás vagy bármi más.',
+        'Foglalás részletei / módosítás:',
+        { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
+        'Várunk,',
+        { alairas: 'MOSAIC PMU' },
+      ],
+    },
+    {
+      id: 'PMU-EMAIL-02', csatorna: 'email', mikor: { tipus: 'tartalom', utan_napok: 2, min_lead_nap: 5 }, sorrend: 1, szegmensek: ['fizetos', 'konzultacio'],
+      targy: 'A természetes eredmény a tervezésnél kezdődik',
+      elotag: 'A formát és a színt előre látod - és csak a jóváhagyásod után indulunk.',
+      torzs: [
+        'Szia {keresztnév}!',
+        'A természetes hatás nem az utolsó lépésnél dől el - már a tervezésnél.',
+        'Melitta az arcformádhoz, a mimikádhoz, a haj- és bőrszínedhez, ajaknál pedig a természetes formához és alapszínhez igazítja a tervet. A forma és a színirány előtted készül, és addig finomítjátok, amíg azt nem érzed: igen, ez én vagyok.',
+        'Ez a legfontosabb kontrollod a kezelés előtt: nem kell "rábíznod magad" valamire, amit csak a végén látsz.',
+        'Ha szeretnél előre megnézni Melitta munkáit, itt találod őket:',
+        { gomb: { felirat: 'Megnézem Melitta munkáit', link: '{eredmények_link}' } },
+        'A te időpontod: {dátum} {időpont}.',
+        { alairas: 'MOSAIC PMU' },
+      ],
+    },
+    {
+      id: 'PMU-EMAIL-03', csatorna: 'email', mikor: { tipus: 'tartalom', elott_napok: 8, min_lead_nap: 10 }, sorrend: 2, szegmensek: ['fizetos'],
+      targy: 'Fontos: a friss szín nem a végeredmény',
+      elotag: 'Mit fogsz látni az első napokban, és mikor érdemes megítélni az eredményt?',
+      torzs: [
+        'Szia {keresztnév}!',
+        'Egy dolgot nagyon szeretnénk, ha már a kezelés előtt tudnál: a friss sminktetoválás nem a végleges eredmény.',
+        'A friss szín intenzívebbnek tűnhet. Ajaktetoválás után átmeneti duzzanat is előfordulhat. A kezelt terület a gyógyulás során változik, hámlik és halványul; a lágyabb, gyógyult eredményt általában 4-6 hét után lehet igazán megítélni.',
+        'Ezért Melitta nem a "friss fotóra" tervez, hanem arra, milyen legyen a gyógyult végeredmény.',
+        'A kezelés után részletes ápolási tanácsot kapsz, és a jelenlegi ajánlat szerint ápolókrémet is adunk. A szükséges korrekciót 4-7 hét körül egyeztetitek.',
+        'Ha ezt előre tudod, sokkal nyugodtabb lesz az első néhány nap is.',
+        'Találkozunk {dátum_ragos}.',
+        { alairas: 'MOSAIC PMU' },
+      ],
+    },
+    {
+      id: 'PMU-EMAIL-04', csatorna: 'email', mikor: { tipus: 'tartalom', elott_napok: 6, min_lead_nap: 21 }, sorrend: 3, szegmensek: ['fizetos'],
+      targy: 'Ki fog dolgozni az arcodon?',
+      elotag: 'Melitta szakmai háttere - és miért a gyógyult eredmény számít igazán.',
+      torzs: [
+        'Szia {keresztnév}!',
+        'Még van egy kis idő az időpontodig, ezért csak röviden bemutatjuk, kinek a kezébe érkezel.',
+        'Töreki Melitta az aktuális MOSAIC oldal szerint 5 éve dolgozik sminktetoválóként és oktatóként. 2025-ben a WULOP Italia milánói verseny Eyebrow Shading kategóriájában 3. helyezést ért el.',
+        'De a te szempontodból ennél fontosabb, hogy a munkáinak célja a természetes, harmonikus hatás: ne "a tetoválást" vegyék észre, hanem azt, hogy az arcod rendezettebb, frissebb és arányosabb lett.',
+        'Itt érdemes nemcsak friss, hanem gyógyult eredményeket is nézni:',
+        { gomb: { felirat: 'Megnézem a munkákat', link: '{eredmények_link}' } },
+        'Várunk,',
+        { alairas: 'MOSAIC PMU' },
+      ],
+    },
+    {
+      id: 'PMU-EMAIL-05', csatorna: 'email', mikor: { tipus: 't72' }, szegmensek: ['fizetos'],
+      targy: '3 nap múlva találkozunk - erre figyelj addig',
+      elotag: 'Rövid felkészülés, hogy nyugodtan és biztonságosan induljon a kezelés.',
+      torzs: [
+        'Szia {keresztnév}!',
+        '3 nap múlva találkozunk. A kezelés előtt kérünk még néhány dolgot:',
+        {
+          lista: [
+            'Ha van 1-2 referencia, ami tetszik, mentsd el a telefonodra. Nem kell elküldened előre.',
+            'Ha a gyógyszereidben, egészségi állapotodban vagy a kezelt terület állapotában bármi változott a foglalás óta, jelezd Melittának.',
+            'Friss Botox/filler, napégés vagy más friss beavatkozás esetén mindenképp egyeztess előre.',
+            'Ajaktetoválásnál, ha herpeszhajlamod van, ezt is beszéljétek át előre.',
+            'Gyógyszert ne hagyj el és ne változtass rajta saját döntésből; ha kérdéses, előbb egyeztess az orvosoddal és Melittával.',
+          ],
+        },
+        'A kezelés előtt a formát és a színirányt együtt tervezitek meg, és csak a jóváhagyásod után kezdődik a tetoválás.',
+        'Ha változott az időpontod lehetősége, itt tudod áttenni:',
+        { gomb: { felirat: 'Itt tudom áttenni', link: '{módosítás_link}' } },
+        'Várunk,',
+        { alairas: 'MOSAIC PMU' },
+      ],
+    },
+    {
+      id: 'PMU-SMS-02', csatorna: 'sms', mikor: { tipus: 't72' }, szegmensek: ['fizetos'],
+      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor vár Melitta {szolgáltatás}-ra. Ha jössz: {megerősítés_link}. Ha változott valami: {módosítás_link}. A fontos felkészülést e-mailben is elküldtük. MOSAIC',
+    },
+    {
+      // konzultációra és korrekcióra nem megy T-72 prep e-mail (PMU-EMAIL-05 csak új fizetős kezelésre): náluk a mondat kimarad
+      id: 'PMU-SMS-02B', csatorna: 'sms', mikor: { tipus: 't72' }, szegmensek: ['konzultacio', 'korrekcio'],
+      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor vár Melitta {szolgáltatás}-ra. Ha jössz: {megerősítés_link}. Ha változott valami: {módosítás_link}. MOSAIC',
+    },
+    {
+      id: 'PMU-SMS-03', csatorna: 'sms', mikor: { tipus: 't24' }, nem_szegmensek: ['eltavolitas'],
+      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor vár Melitta a MOSAIC-ban, 1023 Budapest, Bécsi út 2. Ha új gyógyszer, friss beavatkozás, napégés vagy ajaknál herpeszhajlam miatt kérdésed van, kérlek jelezd előre: 06 20 247 4444. Várunk!',
+    },
+    {
+      // PMU-CALL-01: Melitta 24 oran beluli hivasa (a motor nem hiv, hanem belso e-mailben jelzi, kit kell hivni). Korrekcional/eltavolitasnal nincs hivas.
+      id: 'PMU-CALL-01', csatorna: 'feladat', mikor: { tipus: 'feladat_t0' }, szegmensek: ['fizetos', 'konzultacio'],
+      targy: 'PMU - hívandó vendég (24 órán belül)',
+      torzs: [
+        'Szia {keresztnév}, Melitta vagyok a MOSAIC-ból. Láttam, hogy {dátum} {időpont}-ra foglaltál {szolgáltatás}-ra. Azért hívlak, hogy ne úgy gyere majd, hogy közben maradt benned kérdés.',
+        'Volt már korábban sminktetoválásod? Mi az, amit most leginkább szeretnél elérni - és van valami, amitől kifejezetten tartasz?',
+        'Ha van 1-2 kép, ami tetszik, elég ha elmented a telefonodra; az időpontodon együtt megnézzük. A formát és a színirányt előre megtervezzük, és csak akkor kezdünk, amikor te is jóváhagytad.',
+        'Van gyógyszer, friss esztétikai beavatkozás, bőrprobléma vagy ajaknál herpeszhajlam, amit jó lenne előre tudnom?',
+        'Van még valami, amire most szívesen válaszoljak?',
+        'Belső jegyzet (implementációs megjegyzés): A hívás célja nem "rábeszélés". Egy valódi kétely felszínre hozása és tisztázása. A tulajdonosi memo szerint ne kérjünk feleslegesen fotóbeküldést csak azért, hogy interakció legyen.',
+      ],
+    },
+    {
+      // 7.4: az ingyenes konzultacio rovidített sorozata (a dokumentum azonositoja: PMU-KONZ-EMAIL-01)
+      id: 'PMU-KONZ-EMAIL-01', csatorna: 'email', mikor: { tipus: 't0' }, szegmensek: ['konzultacio'],
+      targy: 'Megvan az ingyenes konzultációd Melittához',
+      elotag: 'Kötelezettség nélkül átbeszélitek, mi illik hozzád és mire számíthatsz.',
+      torzs: [
+        'Szia {keresztnév}!',
+        'Megvan az ingyenes konzultációs időpontod Melittához: {dátum} {időpont}.',
+        'Ez nem egy "mini kezelés" és nem kötelez semmire. Arra való, hogy nyugodtan átbeszéljétek, mit szeretnél, mi illik az arcodhoz, milyen technika lehet jó, és minden kérdésedre választ kapj, mielőtt döntesz.',
+        'Ha van 1-2 referencia, ami tetszik, mentsd el a telefonodra.',
+        'Melitta 24 órán belül felhív, így már előtte is kérdezhetsz.',
+        'Helyszín: 1023 Budapest, Bécsi út 2.',
+        'Részletek/módosítás:',
+        { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
+        'Várunk,',
+        { alairas: 'MOSAIC PMU' },
+      ],
+    },
+  ],
+  megjegyzesek: [
+    'A 7. fejezet bevezetője (Ajánlat- és forrászár: az októberi árak forintban, a "20% októberi kedvezmény", a korrekció/aftercare/gyógyulás összefoglaló) nem üzenet-szöveg, ezért nem került át; az üzenetek egyike sem tartalmaz fix összeget, százalékot vagy hónapnevet, így mondatot nem kellett kihagyni.',
+    'PMU-EMAIL-01: az "Ár: {aktuális_ár}" sor átvéve; a motor automatikusan kihagyja, amíg nincs garantáltan aktuális ár-forrás.',
+    'PMU-EMAIL-03: a "Találkozunk {dátum}-án." mondat "Találkozunk {dátum_ragos}." alakban szerepel (a ragozást a motor végzi).',
+    'Szegmensek (értelmezés): PMU-SMS-01 és PMU-CALL-01 csak fizetos + konzultacio (a "Melitta 24 órán belül felhív" a korrekcióra és eltávolításra nem igaz; a dokumentum szerint korrekciónál nincs nurture, eltávolításnál külön út); PMU-EMAIL-01/03/04/05 csak fizetos (a "korrekció benne van az árban", forma/szín/gyógyulás ígéretek az eltávolításra és korrekcióra nem mehetnek); PMU-EMAIL-02 fizetos + konzultacio (a doc: ingyenes konzultáció max. 1 trust e-mail); PMU-KONZ-EMAIL-01 csak konzultacio; PMU-SMS-02/03 minden szegmensre, kivéve eltavolitas (a T-24 SMS a korrekcióra is jó).',
+    'Tartalmi e-mailek időzítése a táblázat szerint: PMU-EMAIL-02 = T+1..3 nap -> utan_napok 2 (5+ nap lead time); PMU-EMAIL-03 = T-10..7 nap -> elott_napok 8 (10+ nap); PMU-EMAIL-04 = T-7..5 nap -> elott_napok 6 (21+ nap, a 3. tartalmi levél).',
+    'Nincs katalógus-szöveg a korrekció és az eltávolítás T0 visszaigazolására, valamint a "specifikus prep" T-72 e-mailre (a dokumentum csak a szegmentálásban említi; a szöveg nincs megírva): ezekre a T0 SMS/e-mail és a PMU-EMAIL-05 nem megy ki, csak a PMU-SMS-02/03 (korrekció) és a közös üzenetek.',
+    'PMU-SMS-02 "A fontos felkészülést e-mailben is elküldtük." mondata a konzultációs és korrekciós foglalásokra pontatlan lehet, mert a T-72 prep e-mail (PMU-EMAIL-05) csak a fizetos szegmensnek megy; a szöveg a dokumentum szerinti, szó szerint.',
+    'PMU-EMAIL-03/04 időfüggő állításai (ápolókrém "a jelenlegi ajánlat szerint", "5 éve dolgozik az aktuális MOSAIC oldal szerint", 2025-ös WULOP Italia 3. helyezés) a dokumentum szerint, szó szerint; ha az oldal tartalma változik, ezeket felül kell vizsgálni.',
+    'PMU-CALL-01: a dokumentum "Implementációs megjegyzés"-e a feladat-e-mail utolsó, belső jegyzet-bekezdése (a szalonnak szól, nem a vendégnek mondandó szöveg).',
+  ],
+};
