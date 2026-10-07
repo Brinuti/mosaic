@@ -665,6 +665,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 @media (max-width: 700px) {
   .ajandekok { padding: 42px 0 48px; }
   .aj-fej { margin-bottom: 26px; }
+  .aj-szoveg .aj-badge { display: flex; width: fit-content; margin-left: auto; margin-right: auto; }
   .aj-kartya, .aj-minta, .aj-berlet { grid-template-columns: minmax(0, 1fr); gap: 22px; padding: 20px 16px 24px; border-radius: 22px; }
   .aj-kartya + .aj-kartya { margin-top: 20px; }
   .aj-berlet .aj-kep { order: 0; }
