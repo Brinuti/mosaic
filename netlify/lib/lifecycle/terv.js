@@ -35,14 +35,14 @@ export function keres(uzletag, id) { return [...uzenetek(uzletag), ...KOZOS.uzen
  * @param {{uzletag:string, szegmensek:string[], kezdet:number}} f  a foglalas (kezdet = epoch mp)
  * @param {number} alap  a kiindulo idopont (a foglalas / az atfoglalas pillanata, epoch mp)
  * @param {{athelyezes?:boolean}} [opciok]  athelyezes: a T0 uzenetek nem mennek ujra
- * @returns {{ terv: {uzenet_id:string, csatorna:string, tipus:string, esedekes:number}[], kihagyva: {uzenet_id:string, ok:string}[] }}
+ * @returns {{ terv: {uzenet_id:string, csatorna:string, tipus:string, esedekes:number}[], kihagyva: {uzenet_id:string, csatorna:string, ok:string}[] }}
  */
 export function tervez(f, alap, opciok = {}) {
   const lead = f.kezdet - alap; // masodperc
   const leadNap = lead / NAP;
   const terv = []; const kihagyva = [];
   const be = (u, esedekes) => terv.push({ uzenet_id: u.id, csatorna: u.csatorna, tipus: u.mikor.tipus, esedekes });
-  const ki = (u, ok) => kihagyva.push({ uzenet_id: u.id, ok });
+  const ki = (u, ok) => kihagyva.push({ uzenet_id: u.id, csatorna: u.csatorna, ok });
   const ablakos = (u, t) => { const [a, b] = ABLAK[u.csatorna]; return ablakba(t, a, b); };
 
   const tartalmiak = [];

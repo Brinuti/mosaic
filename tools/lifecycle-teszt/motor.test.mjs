@@ -44,19 +44,20 @@ function hamisKuldok() {
 // ---- ertesito-minták (kitalalt vendegek, a Salonic tenyleges formaja szerint) --------------------------------------------------------------------
 const UUID1 = '0b1c2d3e-4f50-4a61-8b72-93a4b5c6d7e8';
 const UUID2 = '11111111-2222-4333-8444-555555555555';
+// uuid nelkul (null): nincs "Foglalas megtekintese" link - a Salonic lemondas-ertesitoje ilyen (nem tartalmazza a foglalas azonositojat)
 const html = (cim, sorok, uuid, fiok = 'mosaic-hair') => `<html><head><style>.x{}</style></head><body><table><tr><td>${cim}</td></tr>${sorok.map((s) => `<tr><td>${s}</td></tr>`).join('')}
-<tr><td><a href="https://app.salonic.hu/backend/signin/?customer=${fiok}&amp;redirect=%2Fcalendar%2FshowBooking%2F%3FbookingId%3D${uuid}">Foglalás megtekintése</a></td></tr>
+${uuid ? `<tr><td><a href="https://app.salonic.hu/backend/signin/?customer=${fiok}&amp;redirect=%2Fcalendar%2FshowBooking%2F%3FbookingId%3D${uuid}">Foglalás megtekintése</a></td></tr>` : ''}
 <tr><td>Magyar fejlesztésű online naptár és időpontfoglaló rendszer</td></tr></table></body></html>`;
 function foglaltLevel({ uzenetId = 'g1', nev = 'Teszt Elek', tel = '06301234567', email = 'teszt.elek@example.com', szolg = '👱‍♀️ Tőfestés + Szárítás - Hosszú haj', munka = 'Betti', datum = 'november 25. (szerda) 16:00', uuid = UUID1, fiok = 'mosaic-hair', kuldo = 'Mosaic Hair <app@salonic.hu>' } = {}) {
   return { uzenetId, targy: `Új online foglalás érkezett: ${szolg}`, kuldo, html: html('Új online foglalás érkezett az alábbi adatokkal, melyet a rendszer automatikusan jóváhagyott:', ['Foglaló adatai:', `Név: ${nev}`, `Mobiltelefonszám: ${tel}`, `E-mail cím: ${email}`, 'Időpont adatok:', `Szolgáltatás: ${szolg}`, `Munkatárs: ${munka}`, `Kezdő dátum: ${datum}`], uuid, fiok) };
 }
-const athelyezettLevel = ({ uzenetId = 'm1', regi = 'november 25. (szerda) 16:00', uj = 'november 26. (csütörtök) 17:30', uuid = UUID1, szolg = '👱‍♀️ Tőfestés + Szárítás - Hosszú haj' } = {}) => ({
+const athelyezettLevel = ({ uzenetId = 'm1', regi = 'november 25. (szerda) 16:00', uj = 'november 26. (csütörtök) 17:30', uuid = UUID1, szolg = '👱‍♀️ Tőfestés + Szárítás - Hosszú haj', nev = 'Teszt Elek', tel = '06301234567', email = 'teszt.elek@example.com' } = {}) => ({
   uzenetId, targy: `Foglalás módosítva vendég által: ${szolg}`, kuldo: 'Mosaic Hair <app@salonic.hu>',
-  html: html('Az alábbi foglalás módosítva lett vendég által:', ['Foglaló adatai:', 'Név: Teszt Elek', 'Mobiltelefonszám: 06301234567', 'E-mail cím: teszt.elek@example.com', `RÉGI dátum: ${regi}`, `Új dátum: ${uj}`, `1. Szolgáltatás: ${szolg}`, 'Tervezett kezdés: 17:30', 'Munkatárs: Betti', 'Várható időtartam: 3 óra *'], uuid),
+  html: html('Az alábbi foglalás módosítva lett vendég által:', ['Foglaló adatai:', `Név: ${nev}`, `Mobiltelefonszám: ${tel}`, `E-mail cím: ${email}`, `RÉGI dátum: ${regi}`, `Új dátum: ${uj}`, `1. Szolgáltatás: ${szolg}`, 'Tervezett kezdés: 17:30', 'Munkatárs: Betti', 'Várható időtartam: 3 óra *'], uuid),
 });
-const lemondottLevel = ({ uzenetId = 'l1', datum = 'november 25. (szerda) 16:00', uuid = UUID1, szolg = '👱‍♀️ Tőfestés + Szárítás - Hosszú haj' } = {}) => ({
-  uzenetId, targy: `Foglalás lemondás - Teszt Elek - ${szolg}`, kuldo: 'Mosaic Hair <app@salonic.hu>',
-  html: html('Az alábbi időpontot a vendég lemondta:', [`Lemondás oka: Próbafoglalás (TESZT), lemondva${datum}`, `Szolgáltatás: ${szolg}`, 'Munkatárs: Betti', 'Foglaló adatai:', 'Név: Teszt Elek', 'Mobiltelefonszám: 06301234567', 'E-mail cím: teszt.elek@example.com'], uuid),
+const lemondottLevel = ({ uzenetId = 'l1', datum = 'november 25. (szerda) 16:00', uuid = null, szolg = '👱‍♀️ Tőfestés + Szárítás - Hosszú haj', nev = 'Teszt Elek', tel = '06301234567', email = 'teszt.elek@example.com' } = {}) => ({
+  uzenetId, targy: `Foglalás lemondás - ${nev} - ${szolg}`, kuldo: 'Mosaic Hair <app@salonic.hu>',
+  html: html('Az alábbi időpontot a vendég lemondta:', [`Lemondás oka: Próbafoglalás (TESZT), lemondva${datum}`, `Szolgáltatás: ${szolg}`, 'Munkatárs: Betti', 'Foglaló adatai:', `Név: ${nev}`, `Mobiltelefonszám: ${tel}`, `E-mail cím: ${email}`], uuid),
 });
 const MOST = Date.UTC(2026, 9, 7, 8, 0) / 1000; // 2026-10-07 10:00 (nyari ido)
 
@@ -295,7 +296,8 @@ test('motor: atfoglalas -> uj idopont, T0 nem ismetlodik, T-72/T-24 ujraszamolva
   assert.equal(k.ki.sms.length, 1);
   const f0 = await db.sqlite.prepare('SELECT kezdet, token FROM foglalasok').get();
   // atfoglalas egy nappal kesobbre
-  const a = await ingest(db, env, athelyezettLevel(), MOST + 3600);
+  const REKA = { nev: 'Kiss Réka', tel: '06201112222', email: 'kiss.reka@example.com' };
+  const a = await ingest(db, env, athelyezettLevel(REKA), MOST + 3600);
   assert.equal(a.tipus, 'athelyezve'); assert.equal(a.foglalasId, UUID1);
   const f1 = await db.sqlite.prepare('SELECT kezdet, token FROM foglalasok').get();
   assert.equal(f1.kezdet, helyiEpoch(2026, 11, 26, 17, 30)); assert.equal(f1.token, f0.token); assert.ok(f1.kezdet > f0.kezdet);
@@ -305,7 +307,8 @@ test('motor: atfoglalas -> uj idopont, T0 nem ismetlodik, T-72/T-24 ujraszamolva
   const t72 = await db.sqlite.prepare("SELECT esedekes FROM kuldesek WHERE uzenet_id = 'HAIR-SMS-02'").get();
   assert.ok(Math.abs(t72.esedekes - (f1.kezdet - 72 * ORA)) <= 8 * ORA); // ablakba igazitva, az UJ idopont szerint
   // lemondas
-  const l = await ingest(db, env, lemondottLevel({ datum: 'november 26. (csütörtök) 17:30' }), MOST + 7200);
+  const l = await ingest(db, env, lemondottLevel({ ...REKA, datum: 'november 26. (csütörtök) 17:30' }), MOST + 7200);
+  assert.equal(l.foglalasId, UUID1); assert.equal(l.ismeretlenVolt, false); // a lemondas-ertesito nem hordoz azonositot: a vendeg + idopont alapjan talalja meg
   assert.equal(l.tipus, 'lemondva');
   const maradt = await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE allapot = 'fuggoben' AND uzenet_id NOT LIKE 'COMMON-%'").get();
   assert.equal(maradt.n, 0);
@@ -430,12 +433,13 @@ test('motor: a Salonic minden foglalasrol KET levelet kuld - egyidejuleg is csak
   assert.equal(f.teszt, 1); assert.equal(f.telefon, '+36709420090'); // a tulajdonos telefonja / e-mailje teszt-vendeg
   assert.equal((await tick(db, env, k, MOST)).elkuldve, 2);
   // a ketszer erkezo atfoglalas / lemondas sem ketszerezodik
-  const at = (id) => athelyezettLevel({ uzenetId: id });
+  const DEAK = { nev: 'Deák Ferenc István', tel: '06709420090', email: 'ferraj@gmail.com' };
+  const at = (id) => athelyezettLevel({ uzenetId: id, ...DEAK });
   const r1 = await ingest(db, env, at('at-1'), MOST + 60); const r2 = await ingest(db, env, at('at-2'), MOST + 61);
   assert.equal(r1.duplikalt, undefined); assert.equal(r2.duplikalt, true);
   assert.equal((await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-RESCHEDULE-%'").get()).n, 1);
-  const l1 = await ingest(db, env, lemondottLevel({ uzenetId: 'le-1', datum: 'november 26. (csütörtök) 17:30' }), MOST + 120);
-  const l2 = await ingest(db, env, lemondottLevel({ uzenetId: 'le-2', datum: 'november 26. (csütörtök) 17:30' }), MOST + 121);
+  const l1 = await ingest(db, env, lemondottLevel({ uzenetId: 'le-1', ...DEAK, datum: 'november 26. (csütörtök) 17:30' }), MOST + 120);
+  const l2 = await ingest(db, env, lemondottLevel({ uzenetId: 'le-2', ...DEAK, datum: 'november 26. (csütörtök) 17:30' }), MOST + 121);
   assert.equal(l1.duplikalt, undefined); assert.equal(l2.duplikalt, true);
   assert.equal((await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-CANCEL-%'").get()).n, 2);
 });

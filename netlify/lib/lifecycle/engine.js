@@ -60,13 +60,21 @@ export async function tervMent(db, foglalasId, terv, { reset = [] } = {}) {
     else if (ujraIndithato.has(a) || reset.includes(p.tipus)) stmts.push(keszit(db, "UPDATE kuldesek SET esedekes = ?3, allapot = 'fuggoben', ok = NULL, probalkozas = 0, elkuldve = NULL, hiba = NULL WHERE foglalas_id = ?1 AND uzenet_id = ?2", foglalasId, p.uzenet_id, p.esedekes));
   }
   for (const [id, a] of letezo) if (a === 'fuggoben' && !tervezett.has(id) && !id.startsWith('COMMON-')) stmts.push(keszit(db, "UPDATE kuldesek SET allapot = 'torolve', ok = 'ujratervezes' WHERE foglalas_id = ?1 AND uzenet_id = ?2", foglalasId, id));
-  for (const k of terv.kihagyva) if (!letezo.has(k.uzenet_id)) stmts.push(keszit(db, "INSERT OR IGNORE INTO kuldesek (foglalas_id, uzenet_id, csatorna, esedekes, allapot, ok) VALUES (?1, ?2, ?3, 0, 'kihagyva', ?4)", foglalasId, k.uzenet_id, 'sms', k.ok));
+  for (const k of terv.kihagyva) if (!letezo.has(k.uzenet_id)) stmts.push(keszit(db, "INSERT OR IGNORE INTO kuldesek (foglalas_id, uzenet_id, csatorna, esedekes, allapot, ok) VALUES (?1, ?2, ?3, 0, 'kihagyva', ?4)", foglalasId, k.uzenet_id, k.csatorna || 'sms', k.ok));
   if (stmts.length) await db.batch(stmts);
 }
 
 async function azonnaliUzenetek(db, foglalasId, uzenetIdk, most) {
   const stmts = uzenetIdk.map((id) => keszit(db, "INSERT OR IGNORE INTO kuldesek (foglalas_id, uzenet_id, csatorna, esedekes, allapot) VALUES (?1, ?2, ?3, ?4, 'fuggoben')", foglalasId, id, id.includes('-EMAIL-') ? 'email' : 'sms', most));
   if (stmts.length) await db.batch(stmts);
+}
+
+/** A vendeg (telefon vagy e-mail) adott allapotu foglalasa az uzletagban, adott idopontra. lemondvaOta: lemondott foglalasnal ennyi ideje (epoch) modosult legkorabban. */
+async function vendegFoglalasa(db, uzletag, email, telefon, kezdet, allapot, lemondvaOta = 0) {
+  if (!kezdet) return null;
+  const sorok = await mind(db, 'SELECT * FROM foglalasok WHERE uzletag = ?1 AND kezdet = ?2 AND allapot = ?3 AND COALESCE(modositva, 0) >= ?4 ORDER BY letrehozva DESC', uzletag, kezdet, allapot, lemondvaOta);
+  const mail = String(email || '').trim().toLowerCase();
+  return sorok.find((r) => (telefon && r.telefon === telefon) || (mail && String(r.email || '').toLowerCase() === mail)) || null;
 }
 
 // ---- befogadas (ingest) ------------------------------------------------------------------------------------------------------------------------
@@ -139,6 +147,7 @@ async function feldolgoz(db, cfg, e, forras, most) {
   } else if (e.tipus === 'athelyezve') {
     let volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', id);
     if (!volt && e.regiKezdet) volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', szintetikusId(e.uzletag, e.email, telefon, e.regiKezdet));
+    if (!volt && e.regiKezdet) volt = await vendegFoglalasa(db, e.uzletag, e.email, telefon, e.regiKezdet, 'aktiv');
     const fid = volt ? volt.id : id;
     const voltAtfoglalas = volt ? !!(await elso(db, "SELECT 1 AS x FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id LIKE 'COMMON-RESCHEDULE-%' LIMIT 1", fid)) : false;
     if (volt && volt.allapot === 'aktiv' && volt.kezdet === e.kezdet && voltAtfoglalas) eredmeny = { ok: true, tipus: 'athelyezve', foglalasId: fid, duplikalt: true }; // a masodik (ketszer erkezo) level
@@ -153,6 +162,8 @@ async function feldolgoz(db, cfg, e, forras, most) {
   } else { // lemondva
     let volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', id);
     if (!volt) volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', szintetikusId(e.uzletag, e.email, telefon, e.kezdet));
+    // a Salonic lemondas-ertesitoje nem tartalmazza a foglalas azonositojat: a vendeg (telefon / e-mail) + uzletag + idopont alapjan keressuk meg
+    if (!volt) volt = await vendegFoglalasa(db, e.uzletag, e.email, telefon, e.kezdet, 'aktiv') || await vendegFoglalasa(db, e.uzletag, e.email, telefon, e.kezdet, 'lemondva', most - 900);
     const fid = volt ? volt.id : id;
     const voltLemondas = volt ? !!(await elso(db, "SELECT 1 AS x FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id = 'COMMON-CANCEL-SMS' LIMIT 1", fid)) : false;
     if (volt && volt.allapot === 'lemondva' && voltLemondas) eredmeny = { ok: true, tipus: 'lemondva', foglalasId: fid, duplikalt: true };
