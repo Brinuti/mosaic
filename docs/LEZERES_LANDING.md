@@ -16,6 +16,10 @@ kérésére, 2026-10-04): a korábbi Wixes klón helyét vette át (a `foglalas/
 | `tools/lezer-teszt/lezer.test.mjs` | böngészős tesztek (84 db) |
 | `tools/netlify-build.mjs` | `<!--mh-menu-aktiv:/útvonal-->` jelölő: a „Szőrtelenítés” menüpont legyen kijelölve (jelölő nélkül a fejléc változatlan) |
 
+## Ajándékkártya (2026-10-07, a tulajdonos kérése)
+
+A hero gombsorában a „Szabad kezelési időpontok” és az „Ingyenes konzultáció” mellett egy harmadik, **„Ajándékkártya”** gomb áll: közvetlen oldal-link a `/lezeres-ajandekkartya` oldalra (nem hash, nem Salonic, ugyanabban az ablakban). A garancia után, Zsófi előtt külön szekció (`#ajandek`, `.ajk`): „Személyre szabott ajándékkártya!”, a lézeres mockup-kép (`assets/img/ajandek/atadas-szemelyre-lezer.jpg`), három pont (PDF, személyre szabható, 6 hónap) és az „Ajándékkártyát választok” gomb. A kártya-oldal és a vásárlás leírása: `AJANDEK.md` („Lézeres szőrtelenítés ajándékkártya”). Teszt: `node --test tools/lezer-teszt/ajandek-link.test.mjs` (statikus, build nélkül).
+
 ## Szekciók sorrendje
 
 Hero (cím: „Lézeres szőrtelenítés Budapesten garanciával”, kis, kattintható **4,9/5 + pontos Google-értékelésszám**, ami a véleményekhez görget) →
