@@ -11,7 +11,7 @@ const TIPUS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '
   '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.txt': 'text/plain' };
 
 export async function szerverInditas() {
-  const { ajandekMenu } = await import(pathToFileURL(path.join(GYOKER, 'tools/ajandek-menu.mjs')).href);
+  const { fejlecAtalakit, ANGOL_JELOLO } = await import(pathToFileURL(path.join(GYOKER, 'tools/fejlec-menu.mjs')).href);
   const fejlecCss = fs.readFileSync(path.join(GYOKER, 'assets/css/fejlec-lablec.css'), 'utf8');
   const aktivMenu = (fejlec, utvonal, mobil) => {
     const ut = utvonal.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
@@ -26,10 +26,11 @@ export async function szerverInditas() {
     const aktiv = (forras.match(/<!--mh-menu-aktiv:([^>]+?)-->/) || [])[1];
     const m = mobil ? 'mobil' : 'asztali';
     const resz = (jel, fajl) => (forras.includes(jel) ? fs.readFileSync(path.join(GYOKER, 'assets/fejlec', fajl + '.html'), 'utf8') : '');
-    let fejlec = ajandekMenu(resz('<!--mh-fejlec-->', m), mobil);
+    const angol = forras.includes(ANGOL_JELOLO);
+    let fejlec = fejlecAtalakit(resz('<!--mh-fejlec-->', m), mobil, angol);
     if (mobil) fejlec = fejlec.replace('Októberi akció! - 20% kedvezmény minden headspa foglalásra + ajándékkártyára!', 'Októberi akció! 20% kedvezmény minden headspa + ajándékkártyára'); // mint a build mobil fejlece
     if (aktiv && fejlec) fejlec = aktivMenu(fejlec, aktiv, mobil);
-    let lablec = resz('<!--mh-lablec-->', 'lablec-' + m);
+    let lablec = fejlecAtalakit(resz('<!--mh-lablec-->', 'lablec-' + m), mobil, angol);
     const kozos = '<style data-forras="fejlec-lablec">' + fejlecCss + '</style>';
     if (fejlec) fejlec += kozos; else if (lablec) lablec += kozos;
     return forras.replace('<!--mh-fejlec-->', () => fejlec).replace('<!--mh-lablec-->', () => lablec);
