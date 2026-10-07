@@ -125,6 +125,15 @@ describe('az oxigénes ajándékkártya a menüben, a választón és az oxigén
     tartalmaz('@media (max-width: 599px) {\n  .av-racs { grid-template-columns: minmax(0, 1fr); }');
   });
 
+  test('a kártyák alcíme előtt sehol nincs kis csillag-ikon (a Head Spa, lézeres és oxigénes adatban sem)', () => {
+    for (const f of ['ajandek-adat.js', 'ajandek-adat-lezer.js', 'ajandek-adat-oxigen.js']) {
+      const adat = olvas('assets', 'js', f);
+      assert.ok(!/osszefoglalo_ikon:\s*'sparkle'/.test(adat), f + ': az alcím előtt nincs sparkle');
+    }
+    assert.ok(/osszefoglalo_ikon: 'nincs'/.test(olvas('assets', 'js', 'ajandek-adat-lezer.js')), 'lézeres kártyák: ikon nélkül');
+    assert.ok(/osszefoglalo_ikon: 'nincs'/.test(olvas('assets', 'js', 'ajandek-adat-oxigen.js')), 'oxigénes kártyák: ikon nélkül');
+  });
+
   test('az oxigénes ajándékkártya hero-ja előtte-utána videó (a Meta-fiók "Oxigénhajterápia" videója), nem a kezelésről készült fotó', () => {
     const adat = olvas('assets', 'js', 'ajandek-adat-oxigen.js');
     const html = olvas('foglalas', 'oxigen-ajandekkartya.html');
