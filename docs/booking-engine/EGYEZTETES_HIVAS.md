@@ -25,7 +25,7 @@ Egy hívás egy levélre. A végpont a Salonic UUID-jából (`uuid` + `host`) k�
 
 **Válasz** (`200`): `{ ok, allapot, kuldheto, duplikalt, booking_id, esemeny_id, kulcs, kulcs_forras, probalkozas, ujraprobal_mp, riasztas, nyom, esemeny_kuldes }`
 - `allapot`: `parositott` · `fuggoben` · `parositatlan` · `ellentmondas` · `ervenytelen` (hibás UUID).
-- **`fuggoben`**: a böngésző köszönőoldali írása még nem érkezett meg → **ismételd `ujraprobal_mp` másodperc múlva** (1., 3., 10., 30. perc: 60 / 180 / 600 / 1800 mp; a 4. sikertelen után `parositatlan` + riasztás: `GET ?riasztas=1`). Idő előtti ismétlés: `korai: true`, nem számít próbálkozásnak.
+- **`fuggoben`**: a böngésző köszönőoldali írása még nem érkezett meg → **ismételd `ujraprobal_mp` másodperc múlva** (1., 3., 10. perc: 60 / 180 / 600 mp; a **4. (utolsó) sikertelen próba után a rekord automatikusan `parositatlan` + egyszeri riasztás** – `GET ?riasztas=1` –, és a `parositatlan` lezárt: a későbbi próba `lezart: true`, `kuldheto: false`, nem párosít és nem küld; DÖNTÉS #108). Idő előtti ismétlés: `korai: true`, nem számít próbálkozásnak.
 - `ellentmondas`: két élő foglalás ugyanazzal a kulccsal: nem küld, riasztás.
 - `esemeny_kuldes` (csak `parositott` és `MERES_ELOSZTO=1` mellett): `allapot` = `kesz` (kiment; `esemenyek[]` cellánként: platform, állapot, HTTP) · `mar_kuldve` (ismétlés: minden cella végleges, **nincs új küldés**) · **`halasztva`** (a foglalás élő állapota nem ellenőrizhető: ismételd `ujraprobal_mp` = 180 mp múlva) · `nincs_esemeny` (pl. HeadSpa-konzultáció: nincs ilyen ág) · `nincs_uzletag` · `ki` · `hiba`; továbbá `elo_allapot` (`aktiv` / `torolve`), `jelleg`, `uj_vendeg`, `salonic_ar`, `ertek`, `ar_forras`, `uzletag`. **Lemondott (`torolve`) foglalásra nem megy ki esemény.**
 - A levél ismétlése biztonságos: ugyanarra a UUID-ra `duplikalt: true`, `kuldheto: false`, nincs új küldés.
@@ -78,5 +78,5 @@ curl -X POST 'https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/fogl
 ## Mit csinál a Zap, lépésenként
 1. Trigger: a Salonic-levél (létrehozó vagy lemondó).
 2. Létrehozó: `uuid` + `host` a linkből, `vendeg`, `uj_vendeg`, `level_datuma`, `szolgaltatas`, `ar` → `POST`.
-3. Ha `allapot = "fuggoben"` vagy `esemeny_kuldes.allapot = "halasztva"`: várj `ujraprobal_mp` másodpercet, és hívd újra ugyanazzal a törzzsel (max. 4 próbálkozás).
+3. Ha `allapot = "fuggoben"` vagy `esemeny_kuldes.allapot = "halasztva"`: várj `ujraprobal_mp` másodpercet, és hívd újra ugyanazzal a törzzsel (max. 4 próbálkozás; a 4. sikertelen válasza már `parositatlan`, nincs további teendő).
 4. Lemondó: `tipus = "lemondas"` + a levél mezői → `POST` (sorrendjük a létrehozó leveleké mellett nem számít).

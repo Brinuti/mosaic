@@ -10,7 +10,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import {
-  HOSTOK, MEGORZES_NAP, UJRAPROBA_MP, bookingUrlElemzes, budapestUnix, egyeztet, emailElemzes, emailKulcsNevtablabol, evKovetkeztet, idopontSzovegElemzes, isoUnix, kezelEgyeztetes, kezelKulcs,
+  HOSTOK, LEJART_TURES_MP, MEGORZES_NAP, UJRAPROBA_MP, egyeztetesAllapot, veglegesLejart, bookingUrlElemzes, budapestUnix, egyeztet, emailElemzes, emailKulcsNevtablabol, evKovetkeztet, idopontSzovegElemzes, isoUnix, kezelEgyeztetes, kezelKulcs,
   foglalasAllapot, kulcsJeloltek, lemondasKezel, munkatarsNevOldalbol, kulcsIras, kulcsKepez, kulcsKeres, modositasOldalElemzes, nevtablaBetolt, nevtablaMent, nevtablaSalonicbol, norm, reszletekOldalElemzes, riasztasok, salonicOldalKulcs, sema,
 } from '../netlify/lib/foglalas-kulcs.js';
 
@@ -201,23 +201,62 @@ test('egyeztet (1. ag): a koszonooldal mar irt -> az e-mail megtalalja, kuldheto
   assert.deepEqual({ a: ism.allapot, k: ism.kuldheto }, { a: 'ellentmondas', k: false });
 });
 
-test('egyeztet: ujraprobalas 1, 3, 10, 30 perc; a korai kerest nem szamoljuk; az 5. keres utan parositatlan + riasztas; KESOBBI talalat is parosit (egyszer kuldheto)', async () => {
+test('egyeztet: ujraprobalas 1, 3, 10 perc; a korai kerest nem szamoljuk; a 4. (utolso) keres utan AUTOMATIKUSAN parositatlan + egyszeri riasztas; a parositatlan LEZART: a kesobbi proba sem parosit, sem kuld (DONTES #108)', async () => {
   const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch }; const t = ora();
   const deps = { fetchImpl: salonicFetch(), now: t };
-  assert.deepEqual([...UJRAPROBA_MP], [60, 180, 600, 1800]);
+  assert.deepEqual([...UJRAPROBA_MP], [60, 180, 600]);
   const lepesek = [];
   let r = await egyeztet(adb, MEZOK(), deps); lepesek.push([r.allapot, r.probalkozas, r.ujraprobal_mp]);
   r = await egyeztet(adb, MEZOK(), deps); assert.deepEqual([r.allapot, r.korai], ['fuggoben', true], 'a koran jott keres nem szamit probalkozasnak'); assert.equal(r.probalkozas, 1);
-  for (const var_mp of [60, 180, 600, 1800]) { t.tick(var_mp); r = await egyeztet(adb, MEZOK(), deps); lepesek.push([r.allapot, r.probalkozas, r.ujraprobal_mp]); }
-  assert.deepEqual(lepesek, [['fuggoben', 1, 60], ['fuggoben', 2, 180], ['fuggoben', 3, 600], ['fuggoben', 4, 1800], ['parositatlan', 5, undefined]]);
+  for (const var_mp of [60, 180, 600]) { t.tick(var_mp); r = await egyeztet(adb, MEZOK(), deps); lepesek.push([r.allapot, r.probalkozas, r.ujraprobal_mp]); }
+  assert.deepEqual(lepesek, [['fuggoben', 1, 60], ['fuggoben', 2, 180], ['fuggoben', 3, 600], ['parositatlan', 4, undefined]], 'a 4. proba (a hivo Zap utolso probaja) lezarja a rekordot: a fuggoben nem lehet vegallapot');
   assert.equal(r.riasztas, true); assert.equal(r.kuldheto, false);
+  const sor = await egyeztetesAllapot(adb, UUID); assert.deepEqual([sor.allapot, sor.riasztas, sor.kovetkezo, sor.probalkozas], ['parositatlan', 1, null, 4]);
   assert.equal((await riasztasok(adb)).length, 1);
-  // a koszonooldal kesve ir -> a kovetkezo keres parosit (egyszer)
+  // LEZART: a koszonooldal kesve ir, a kovetkezo proba MEGIS nem parosit es nem kuld; a riasztas egyszeri (nem nol, nem ketszerezodik)
   await kulcsIras(adb, { bookingId: BID, bookingUrl: BOOKING_URL }, t());
-  const k1 = await egyeztet(adb, MEZOK(), deps);
-  assert.deepEqual({ a: k1.allapot, k: k1.kuldheto, keses: k1.keses, r: k1.riasztas }, { a: 'parositott', k: true, keses: true, r: false });
-  const k2 = await egyeztet(adb, MEZOK(), deps); assert.deepEqual({ k: k2.kuldheto, d: k2.duplikalt }, { k: false, d: true });
-  assert.equal((await riasztasok(adb)).length, 0, 'a riasztas megszunt');
+  for (let i = 0; i < 3; i++) {
+    t.tick(1900); const k = await egyeztet(adb, MEZOK(), deps);
+    assert.deepEqual({ a: k.allapot, k: k.kuldheto, lezart: k.lezart, r: k.riasztas, b: k.booking_id }, { a: 'parositatlan', k: false, lezart: true, r: false, b: null });
+  }
+  const sor2 = await egyeztetesAllapot(adb, UUID); assert.deepEqual([sor2.allapot, sor2.riasztas, sor2.probalkozas, sor2.kuldve ?? null, sor2.booking_id ?? null], ['parositatlan', 1, 4, null, null], 'a lezart sor nem valtozik');
+  assert.equal((await riasztasok(adb)).length, 1, 'a riasztas egyszeri: ugyanaz az egy sor marad');
+});
+
+test('veglegesLejart: a lejart (a vart kovetkezo proba + turesi ido utan sem jott proba) fuggoben sor automatikusan parositatlan + riasztas, 0 kuldes; a friss, a kuldott es a mar lezart sort nem erinti; ismetelve nem riaszt ujra', async () => {
+  const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch }; const t = ora();
+  const deps = { fetchImpl: salonicFetch(), now: t };
+  const r = await egyeztet(adb, MEZOK(), deps); assert.equal(r.allapot, 'fuggoben'); // 1. proba: kovetkezo = +60 mp
+  assert.equal(await veglegesLejart(adb, t()), 0, 'a friss sor nem zarodik le');
+  t.tick(60 + LEJART_TURES_MP); assert.equal(await veglegesLejart(adb, t()), 0, 'a vart idopont + turesi ido pontosan: meg nem lejart');
+  t.tick(1); assert.equal(await veglegesLejart(adb, t()), 1, 'a vart idopont + turesi ido utan sem jott proba: lezarodik');
+  const sor = await egyeztetesAllapot(adb, UUID); assert.deepEqual([sor.allapot, sor.riasztas, sor.kovetkezo, sor.probalkozas], ['parositatlan', 1, null, 1]);
+  assert.equal(await veglegesLejart(adb, t() + 3600_000), 0, 'ismetelve nem zar le semmit ujra (a riasztas egyszeri)');
+  assert.equal((await riasztasok(adb)).length, 1);
+  // a lezart sor a kesobbi leveleknel sem kuld: kulcs-iras utan is parositatlan
+  await kulcsIras(adb, { bookingId: BID, bookingUrl: BOOKING_URL }, t());
+  const k = await egyeztet(adb, MEZOK(), deps); assert.deepEqual({ a: k.allapot, k: k.kuldheto }, { a: 'parositatlan', k: false });
+  // a kuldott (parositott) sort a lusta lezaras sosem erinti
+  const { db: db2, ...D2 } = d1(); const adb2 = { prepare: D2.prepare, batch: D2.batch }; const t2 = ora();
+  await kulcsIras(adb2, { bookingId: BID, bookingUrl: BOOKING_URL }, t2());
+  const p = await egyeztet(adb2, MEZOK(), { fetchImpl: salonicFetch(), now: t2 }); assert.equal(p.allapot, 'parositott');
+  t2.tick(86400); assert.equal(await veglegesLejart(adb2, t2()), 0); assert.equal((await egyeztetesAllapot(adb2, UUID)).allapot, 'parositott');
+});
+
+test('veglegesLejart: a kovetkezo nelkuli (megszakadt) fuggoben sor 1 ora utan zarodik; a HTTP kezelo minden kerensnel lefuttatja (a lejart sor a kovetkezo kereskor parositatlan, a valaszban nincs kuldes)', async () => {
+  const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch }; const t = ora();
+  await sema(adb);
+  await adb.prepare("INSERT INTO foglalas_egyeztetes (uuid, allapot, probalkozas, kovetkezo, riasztas, letrehozva, frissitve) VALUES ('99999999-8888-7777-6666-555555555555', 'fuggoben', 4, ?1, 0, ?2, ?2)").bind(Math.floor(t() / 1000) + 1800, Math.floor(t() / 1000)).run(); // a Zap 4. probaja utan: kovetkezo = +30 perc (a regi utemezes)
+  await adb.prepare("INSERT INTO foglalas_egyeztetes (uuid, allapot, probalkozas, kovetkezo, riasztas, letrehozva, frissitve) VALUES ('99999999-8888-7777-6666-444444444444', 'fuggoben', 0, NULL, 0, ?1, ?1)").bind(Math.floor(t() / 1000)).run();
+  t.tick(1800 + LEJART_TURES_MP + 10); assert.equal(await veglegesLejart(adb, t()), 1, 'csak a kovetkezo-s sor jart le; a kovetkezo nelkuli meg friss');
+  t.tick(3600); assert.equal(await veglegesLejart(adb, t()), 1, 'a kovetkezo nelkuli sor 1 ora utan zarodik');
+  assert.deepEqual((await riasztasok(adb)).map((x) => x.allapot), ['parositatlan', 'parositatlan']);
+  // HTTP: egy ujabb lejart sor a kovetkezo (barmilyen) kerensnel zarodik le
+  await adb.prepare("INSERT INTO foglalas_egyeztetes (uuid, allapot, probalkozas, kovetkezo, riasztas, letrehozva, frissitve) VALUES ('99999999-8888-7777-6666-333333333333', 'fuggoben', 4, ?1, 0, ?2, ?2)").bind(Math.floor(t() / 1000) + 10, Math.floor(t() / 1000)).run();
+  t.tick(10 + LEJART_TURES_MP + 1);
+  const e = { KULCS_DB: adb, EGYEZTETES_KULCS_HASH: crypto.createHash('sha256').update(KULCS_SZOVEG).digest('hex') };
+  const g = await (await kezelEgyeztetes(new Request(`https://x.pages.dev/api/foglalas-egyeztetes?kulcs=${KULCS_SZOVEG}&uuid=99999999-8888-7777-6666-333333333333`), e, { now: t })).json();
+  assert.deepEqual([g.ok, g.allapot.allapot, g.allapot.riasztas], [true, 'parositatlan', 1]);
 });
 
 test('egyeztet: ellentmondas (a serviceId nem egyezik a kulccsal) nem kuld; ervenytelen UUID elutasitva', async () => {

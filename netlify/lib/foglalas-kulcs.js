@@ -9,7 +9,8 @@
 //   E-MAIL-OLDAL (a Salonic ertesito e-mailje) -> POST /api/foglalas-egyeztetes {uuid, host, ...}: a kulcsot a Salonic oldalairol kepezi (1. ag: a UUID-bol a
 //       "Foglalas megtekintese" oldal startDate-je + a "Foglalas modositasa" oldal placeId / employeeId / serviceId-je), ha az nem megy: 2. ag: nevfordito tabla
 //       (felado -> placeId, munkatars -> employeeId, szolgaltatas -> serviceId) + a levelbol az idopont (JSON-LD startDate, vagy a szoveg: az ev a level datuma alapjan, elorefele).
-//       Ujraprobalas: 1, 3, 10, 30 perc; ezutan "parositatlan" + riaszas. Egy foglalasbol csak EGY esemeny: a kuldheto=true csak egyszer (UUID-nkent es booking_id-nkent is).
+//       Ujraprobalas: 1, 3, 10 perc (a hivo Zap legfeljebb 4 probat tesz: 0, ~1, ~4, ~14,5 perc); a 4. (utolso) proba utan a rekord AUTOMATIKUSAN "parositatlan" + egyszeri riaszas (DONTES #108: a "fuggoben" nem lehet vegallapot);
+//       a "parositatlan" LEZART: a kesobbi proba sem parosit, sem kuld (0 kuldes); a lejart "fuggoben" sorokat a kovetkezo kerensnel egy "lusta" lezaras (veglegesLejart) is lezarja. Egy foglalasbol csak EGY esemeny: a kuldheto=true csak egyszer (UUID-nkent es booking_id-nkent is).
 //
 // A tarolt adat: kulcs (szamok), booking_id (veletlen), serviceId, a Salonic UUID. Szemelyes adat (nev, e-mail, telefon) NINCS.
 
@@ -17,7 +18,9 @@ import { BUSINESSES } from '../../assets/js/booking-engine/salonic-adapter.js';
 
 export const MEGORZES_NAP = 180;
 export const EGYEZTETES_MAX_BAJT = 262144; // a POST /api/foglalas-egyeztetes torzsenek felso hatara (korabban 20 000: a teljes level-HTML ennel nagyobb)
-export const UJRAPROBA_MP = Object.freeze([60, 180, 600, 1800]); // az 1., 3., 10., 30. perc
+export const UJRAPROBA_MP = Object.freeze([60, 180, 600]); // az 1., 3., 10. perc: 4 proba osszesen (a hivo Zap max. 4 probat tesz) - a 4. utan parositatlan + riasztas
+export const LEJART_TURES_MP = 300; // egy "fuggoben" sor a vart kovetkezo proba ideje + ennyi mp utan (proba nelkul) lezarodik; proba nelkuli (kovetkezo nelkuli) sorra: 1 ora
+export const LEJART_KOVETKEZO_NELKUL_MP = 3600;
 export const ID_MINTA = /^mb_[a-z0-9]{12,40}$/;
 export const UUID_MINTA = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const TIMEZONE = 'Europe/Budapest';
@@ -455,6 +458,8 @@ export async function egyeztet(db, mezok, deps) {
   let sor = await db.prepare('SELECT * FROM foglalas_egyeztetes WHERE uuid = ?1').bind(mezok.uuid).first();
   const nyom = { uuid: mezok.uuid, host: mezok.host || null };
   if (sor && sor.kuldve) return { allapot: 'parositott', kuldheto: false, duplikalt: true, booking_id: sor.booking_id, esemeny_id: sor.booking_id, kulcs: sor.kulcs, kulcs_forras: sor.kulcs_forras, probalkozas: sor.probalkozas, riasztas: false, nyom };
+  // DONTES #108: a "parositatlan" LEZART allapot - a kesobbi proba (akar van mar kulcs, akar nincs) sem parosit, sem kuld; a riasztas egyszeri (mar be van allitva)
+  if (sor && sor.allapot === 'parositatlan') return { allapot: 'parositatlan', kuldheto: false, duplikalt: true, lezart: true, booking_id: null, kulcs: sor.kulcs, kulcs_forras: sor.kulcs_forras, probalkozas: sor.probalkozas, riasztas: false, nyom };
   if (sor && sor.allapot === 'fuggoben' && sor.kovetkezo && t < sor.kovetkezo) return { allapot: 'fuggoben', kuldheto: false, probalkozas: sor.probalkozas, ujraprobal_mp: sor.kovetkezo - t, riasztas: false, korai: true, nyom };
   if (!sor) {
     await db.prepare('INSERT INTO foglalas_egyeztetes (uuid, allapot, probalkozas, letrehozva, frissitve) VALUES (?1, ?2, 0, ?3, ?3) ON CONFLICT(uuid) DO NOTHING').bind(mezok.uuid, 'fuggoben', t).run();
@@ -560,7 +565,7 @@ export async function egyeztet(db, mezok, deps) {
     }
     return { allapot: 'parositott', kuldheto, duplikalt: !kuldheto, booking_id: r.booking_id, esemeny_id: r.booking_id, kulcs: r.kulcs, kulcs_forras: kulcsForras, service_egyezik: serviceEgyezik, probalkozas, riasztas: false, keses: sor.allapot === 'parositatlan', kulcs_atadva: kulcsAtvett, jelolt_elo_allapot: jeloltAllapot, nyom };
   }
-  // nincs talalat: ujraprobalas 1, 3, 10, 30 perc; az 5. keres (1 azonnali + 4 ujra) utan parositatlan + riasztas
+  // nincs talalat: ujraprobalas 1, 3, 10 perc; a 4. keres (1 azonnali + 3 ujra) utan parositatlan + riasztas (lezart)
   return ujraprobal((eredmenyek.find((e) => e.allapot === 'varakozas') || eredmenyek.find((e) => e.miert) || {}).miert || null);
 
   async function ujraprobal(miertNincs) {
@@ -572,6 +577,19 @@ export async function egyeztet(db, mezok, deps) {
     await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, kovetkezo = ?6, frissitve = ?7 WHERE uuid = ?1').bind(mezok.uuid, 'fuggoben', probalkozas, jeloltek[0] || null, kulcsForras, t + ujra, t).run();
     return { allapot: 'fuggoben', kuldheto: false, riasztas: false, probalkozas, ujraprobal_mp: ujra, kulcs: jeloltek[0] || null, kulcs_forras: kulcsForras, miert: miertNincs, nyom };
   }
+}
+
+/**
+ * Lusta lezaras (DONTES #108): a lejart "fuggoben" sorok AUTOMATIKUSAN "parositatlan" + egyszeri riasztas lesznek (0 kuldes: a parositatlan sosem kuld).
+ * Lejart: a vart kovetkezo proba ideje + LEJART_TURES_MP mulva sem jott proba (a hivo - a Zap - kevesebb probat tett, mint amit az utemezes varna), vagy a sorhoz
+ * nem tartozik kovetkezo proba es LEJART_KOVETKEZO_NELKUL_MP ota nem frissult. A kuldott (kuldve) sort sosem erinti. Minden kerensnel lefut (olcso, egyetlen UPDATE).
+ * -> a lezart sorok szama.
+ */
+export async function veglegesLejart(db, now = Date.now()) {
+  await sema(db);
+  const t = sec(now);
+  const r = await db.prepare("UPDATE foglalas_egyeztetes SET allapot = 'parositatlan', riasztas = 1, kovetkezo = NULL, frissitve = ?1 WHERE allapot = 'fuggoben' AND kuldve IS NULL AND ((kovetkezo IS NOT NULL AND kovetkezo + ?2 < ?1) OR (kovetkezo IS NULL AND frissitve + ?3 < ?1))").bind(t, LEJART_TURES_MP, LEJART_KOVETKEZO_NELKUL_MP).run();
+  return (r && r.meta && r.meta.changes) || 0;
 }
 
 /** A parositatlan / ellentmondo foglalasok (a riasztas listaja). */
@@ -672,6 +690,7 @@ export async function kezelEgyeztetes(request, env, deps = {}) {
   if (!env || !env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
   if (!(await kulcsEllenorzes(request, env))) return valasz(404, { ok: false });
   const url = new URL(request.url);
+  try { await veglegesLejart(env.KULCS_DB, deps.now ? deps.now() : Date.now()); } catch (e) { /* a lezaras sosem akaszthatja meg a kerest */ }
   if (request.method === 'POST') {
     const szoveg = await request.text();
     if (szoveg.length > EGYEZTETES_MAX_BAJT) return valasz(413, { ok: false, miert: 'tul nagy' }); // a teljes level-HTML (email_html) akar 100+ KB is lehet
