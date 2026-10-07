@@ -126,8 +126,25 @@ describe('az oxigénes ajándékkártya a menüben, a választón és az oxigén
     // telefonon mind a HÁROM kártya látszik egy képernyőn (tömör, vízszintes kártyák: kép balra, szöveg jobbra)
     tartalmaz('MIND A HAROM kartya latszik egy kepernyon');
     tartalmaz('.av-kartya { flex-direction: row; border-radius: 14px; }');
-    tartalmaz('.av-kep { flex: none; width: 36%; height: auto; aspect-ratio: auto; align-self: stretch; }');
+    tartalmaz('.av-kep { flex: none; width: 36%; height: auto; aspect-ratio: auto; align-self: stretch; object-position: 80% 50%; }');
     tartalmaz('-webkit-line-clamp: 2;');
+  });
+
+  test('a választón mindhárom kártya fotóján „Személyre szabható" jelvény van (saját fotóval, saját szöveggel), és a fotókon ott a mintakártya', () => {
+    const lap = olvas('foglalas', 'ajandekkartya.html').split('\r\n').join('\n');
+    assert.equal(db(lap, '<span class="av-jelveny">'), 3);
+    assert.equal(db(lap, '<b>Személyre szabható</b><small>saját fotóval, saját szöveggel</small>'), 3);
+    // mindhárom fotó alt szövege jelzi a rajta lévő személyre szabott kártyát
+    const kepek = [...lap.matchAll(/<img class="av-kep"[^>]*alt="([^"]*)"/g)].map((m) => m[1]);
+    assert.equal(kepek.length, 3);
+    for (const alt of kepek) assert.ok(/személyre szabott ajándékkártya/.test(alt), alt);
+    // a jelvény a fotó jobb felső sarkában (asztalon / tableten), telefonon és a tablet vízszintes kártyáján a fotó jobb felső sarkában
+    assert.ok(lap.includes('.av-jelveny { position: absolute; top: 12px; right: 12px;'));
+    assert.ok(lap.includes('.av-kartya:last-child:nth-child(odd) .av-jelveny { right: auto; left: calc(46% - 12px); transform: translateX(-100%); }'));
+    assert.ok(lap.includes('.av-jelveny { top: 7px; right: auto; left: calc(36% - 7px); transform: translateX(-100%);'));
+    // a mobilon levágott fotón is látszik a kártya (jobbra igazítva)
+    assert.ok(lap.includes('align-self: stretch; object-position: 80% 50%; }'));
+    for (const f of ['valaszto-headspa.jpg', 'valaszto-lezer.jpg', 'valaszto-oxigen.jpg']) assert.ok(fs.existsSync(path.join(GYOKER, 'assets', 'img', 'ajandek', f)), f);
   });
 
   test('a kártyák alcíme előtt sehol nincs kis csillag-ikon (a Head Spa, lézeres és oxigénes adatban sem)', () => {
