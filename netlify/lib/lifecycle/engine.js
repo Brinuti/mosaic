@@ -65,7 +65,7 @@ export async function tervMent(db, foglalasId, terv, { reset = [] } = {}) {
 }
 
 async function azonnaliUzenetek(db, foglalasId, uzenetIdk, most) {
-  const stmts = uzenetIdk.map((id) => keszit(db, "INSERT OR IGNORE INTO kuldesek (foglalas_id, uzenet_id, csatorna, esedekes, allapot) VALUES (?1, ?2, ?3, ?4, 'fuggoben')", foglalasId, id, id.includes('-EMAIL-') ? 'email' : 'sms', most));
+  const stmts = uzenetIdk.map((id) => keszit(db, "INSERT OR IGNORE INTO kuldesek (foglalas_id, uzenet_id, csatorna, esedekes, allapot) VALUES (?1, ?2, ?3, ?4, 'fuggoben')", foglalasId, id, /-EMAIL(-|$)/.test(id) ? 'email' : 'sms', most));
   if (stmts.length) await db.batch(stmts);
 }
 
