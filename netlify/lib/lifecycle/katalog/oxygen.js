@@ -74,7 +74,9 @@ export default {
       elotag: 'Tiszta, száraz haj - és minden mást együtt megnézünk.',
       torzs: [
         'Szia {keresztnév}!',
-        'Már közel van az időpontod, ezért csak a gyakorlati rész:',
+        'Már közel van az időpontod:',
+        { doboz: ['{szolgáltatás}', '{dátum}, {időpont}'] },
+        'Ezért csak a gyakorlati rész:',
         { lista: [
           'tiszta, száraz hajjal érkezz',
           'tervezz {várható_időtartam} időt',

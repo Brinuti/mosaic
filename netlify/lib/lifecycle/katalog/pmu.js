@@ -103,7 +103,9 @@ export default {
       elotag: 'Rövid felkészülés, hogy nyugodtan és biztonságosan induljon a kezelés.',
       torzs: [
         'Szia {keresztnév}!',
-        '3 nap múlva találkozunk. A kezelés előtt kérünk még néhány dolgot:',
+        '3 nap múlva találkozunk:',
+        { doboz: ['{szolgáltatás}', '{dátum}, {időpont}'] },
+        'A kezelés előtt kérünk még néhány dolgot:',
         {
           lista: [
             'Ha van 1-2 referencia, ami tetszik, mentsd el a telefonodra. Nem kell elküldened előre.',

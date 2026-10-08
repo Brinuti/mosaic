@@ -99,7 +99,9 @@ export default {
       torzs: [
         'Szia {keresztnév}!',
         { kep: { src: 'laser/varo-recepcio.jpg', alt: 'A MOSAIC váró- és recepciós tere zöld bársonyfotelekkel és a MOSAIC emblémával', felirat: 'A MOSAIC váró- és recepciós tere' } },
-        '3 nap múlva találkozunk. Ahhoz, hogy aznap biztonságosan és időben tudjunk kezelni, kérjük figyelj ezekre:',
+        '3 nap múlva találkozunk:',
+        { doboz: ['{szolgáltatás}', '{dátum}, {időpont}'] },
+        'Ahhoz, hogy aznap biztonságosan és időben tudjunk kezelni, kérjük figyelj ezekre:',
         {
           szamozott: [
             'A kezelendő területet kb. 24 órával előtte borotváld le.',
