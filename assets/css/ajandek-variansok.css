@@ -1,0 +1,129 @@
+/* A harom regi (Wixes) hirdetesi ajandekkartya-oldal ujrastilusa (headspa-ajandakkartya-fiataloknak, headspa-ajándékkártya-ezo, headspa-self-care).
+   A headspa-oldal.css komponenseire epul (hero, szekcio, fel-racs, cikk, gomb, video-kartya, korhinta, helyszin); itt csak ami az oldalakra jellemzo.
+   Generalja: tools/ajandek-variansok/gen.mjs. */
+
+/* --- hero --- */
+.ajv-hero h1 { font-size: 42px; line-height: 1.14; }
+.ajv-hero .hero-al { max-width: 560px; }
+.ajv-hero .hero-al b { font-weight: 500; color: var(--sotet); }
+.ajv-ertekeles { display: flex; align-items: center; gap: 10px; margin-top: 22px; font-size: 15.5px; color: #2c3d3d; }
+.ajv-ertekeles b { font-weight: 500; color: var(--sotet); }
+.ajv-akcio { margin-top: 22px; background: #f6efdc; border: 1px solid #ecdcb6; border-left: 5px solid #c6a346; border-radius: 16px; padding: 18px 22px 20px; box-shadow: var(--arnyek); max-width: 560px; }
+.ajv-akcio-cim { font: 500 21px/1.25 var(--cim); color: var(--sotet); }
+.ajv-akcio-cim b { font-weight: 500; }
+.ajv-akcio ul { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 8px; font-size: 16px; line-height: 1.45; color: #3a4a45; }
+.ajv-akcio li b { font-weight: 500; color: var(--sotet); }
+.ajv-hero-kepek { display: grid; gap: 14px; align-content: start; }
+.ajv-hero-kepek .hero-kep { aspect-ratio: 1.25; max-height: 440px; }
+.ajv-kicsik { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.ajv-kicsik img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 16px; box-shadow: var(--arnyek); background: #e0e4db; }
+
+/* --- egyetlen videokartya (bemutatkozas, bemutato) --- */
+.video-egy { width: 100%; max-width: 420px; margin: 0 auto; }
+.video-egy .video-kartya { aspect-ratio: 16 / 9; }
+
+/* --- szoveg-elemek a cikk-oszlopban --- */
+.cikk .ajv-hangos { font: 400 22px/1.45 var(--cim); color: var(--sotet); margin: 0 0 16px; }
+.cikk .ajv-hangos b { background: none; font-weight: 400; }
+.cikk .ajv-kiemel { border-left: 3px solid #c9ad6a; padding: 4px 0 4px 20px; font: italic 400 20px/1.5 var(--cim); color: var(--sotet); margin: 0 0 18px; }
+.cikk .ajv-kiemel b { background: none; font-weight: 400; }
+.cikk .ajv-al-cim { font-size: 24px; margin: 26px 0 14px; }
+.cikk .ajv-lista { list-style: none; padding: 0; margin: 0 0 18px; display: grid; gap: 10px; }
+.cikk .ajv-lista li { font-size: 17px; line-height: 1.55; color: #25373a; padding: 12px 16px; background: #f7f8f6; border: 1px solid var(--vonal); border-radius: 14px; }
+
+/* --- vendegvideok hatterkeppel --- */
+.ajv-hatterkepes { position: relative; overflow: hidden; background: #10221f; border: 0; }
+.ajv-hatterkep { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .38; }
+.ajv-hatterkepes::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(10, 25, 24, .5), rgba(10, 25, 24, .8)); pointer-events: none; }
+.ajv-hatterkepes .tartalom { z-index: 1; }
+.ajv-hatterkepes h2 { color: #fff; }
+.ajv-hatterkepes .lead { color: #e9eee9; }
+.ajv-hatterkepes .rombusz::before { background: linear-gradient(90deg, transparent, #e0c887 24%, #e0c887 76%, transparent); }
+
+/* --- lepesek --- */
+.ajv-lepesek { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; counter-reset: lepes; }
+.ajv-lepesek > li { position: relative; padding: 2px 0 2px 52px; font-size: 17px; line-height: 1.6; color: #25373a; counter-increment: lepes; }
+.ajv-lepesek > li::before { content: counter(lepes); position: absolute; left: 0; top: 0; width: 36px; height: 36px; border-radius: 50%; background: #f6efdc; border: 1px solid #ecdcb6; color: #6f5420; display: grid; place-items: center; font: 500 18px/1 var(--cim); }
+.ajv-lepesek b { font-weight: 500; color: var(--sotet); background: linear-gradient(transparent 64%, #f1e6c4 64%); }
+.ajv-lepesek a { color: var(--sotet); text-underline-offset: 3px; }
+.ajv-lepesek-kozep { max-width: 760px; margin: 0 auto 36px; }
+.ajv-szuk { max-width: 860px; }
+
+/* --- bankkartyas termekek --- */
+.ajv-termekek { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 34px; align-items: stretch; }
+.ajv-termek { position: relative; display: flex; flex-direction: column; background: #fff; border: 1px solid #e7eae3; border-radius: 22px; padding: 0 24px 26px; box-shadow: var(--arnyek); overflow: hidden; }
+.ajv-termek.kiemelt { border-color: #d9c164; box-shadow: 0 0 0 1px #e6d391, 0 18px 40px rgba(150, 120, 40, .16); }
+.ajv-termek-kep { margin: 0 -24px 20px; aspect-ratio: 4 / 3; background: #e0e4db; overflow: hidden; }
+.ajv-termek-kep img { width: 100%; height: 100%; object-fit: cover; }
+.ajv-termek h3 { font-size: 22px; line-height: 1.22; }
+.ajv-termek-leiras { margin-top: 10px; font-size: 15.5px; line-height: 1.55; color: #3d4b4b; }
+.ajv-termek-ar { margin-top: auto; padding-top: 18px; font-size: 16px; line-height: 1.4; color: #3a4a45; }
+.ajv-termek-ar b { font-weight: 500; color: var(--sotet); }
+.ajv-termek .gomb { margin-top: 14px; width: 100%; }
+.ajv-termek-kedv { margin-top: 10px; text-align: center; font-size: 14px; color: #8a6c3e; }
+.ajv-termek-kedv b { font-weight: 500; }
+
+/* --- atutalasos urlap --- */
+.ajv-urlap { background: #fff; border: 1px solid #ecdcb6; border-radius: 22px; padding: 30px 32px 32px; box-shadow: var(--arnyek); }
+.ajv-mezok { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+.ajv-mezo { display: block; }
+.ajv-mezo > span { display: block; margin-bottom: 6px; font-size: 14.5px; color: #3a4a45; }
+.ajv-mezo input[type=text], .ajv-mezo input[type=email], .ajv-mezo input[type=tel] { width: 100%; height: 48px; padding: 0 14px; border: 1px solid #cfd5c9; border-radius: 12px; background: #fcfcfa; font: 400 16px/1.2 var(--test); color: var(--szoveg); }
+.ajv-mezo input:focus { outline: 2px solid var(--arany); outline-offset: 1px; border-color: var(--arany); }
+.ajv-mezo .hiba { display: none; margin-top: 5px; font-size: 13.5px; font-style: normal; color: #b3261e; }
+.ajv-mezo:has(.mh-hibas) .hiba { display: block; }
+.ajv-urlap .mh-hibas { border-color: #b3261e !important; }
+.ajv-kartyak { margin: 24px 0 0; padding: 0; border: 0; display: grid; gap: 10px; }
+.ajv-kartyak legend { padding: 0; margin-bottom: 10px; font-size: 14.5px; color: #3a4a45; }
+.ajv-valasz { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 1px solid #cfd5c9; border-radius: 14px; background: #fcfcfa; cursor: pointer; font-size: 16px; line-height: 1.45; color: var(--szoveg); }
+.ajv-valasz:has(input:checked) { border-color: #c6a346; background: #fbf6ea; box-shadow: 0 0 0 1px #e6d391; }
+.ajv-valasz input, .ajv-hozzajarul input { flex: none; width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--zold); }
+.ajv-hozzajarul { display: flex; align-items: flex-start; gap: 12px; margin: 22px 0 0; font-size: 15.5px; line-height: 1.45; cursor: pointer; }
+.ajv-hozzajarul:has(.mh-hibas) { color: #b3261e; }
+.ajv-urlap .gomb-nagy { margin-top: 24px; width: 100%; }
+.ajv-urlap .gomb[aria-disabled=true] { opacity: .6; pointer-events: none; }
+.mh-urlap-uzenet { margin-top: 14px; font-size: 15px; line-height: 1.45; color: #b3261e; }
+.mh-urlap-uzenet:empty { display: none; }
+
+/* --- GYIK --- */
+.gyik { display: grid; gap: 10px; }
+.gyik details { background: #fff; border: 1px solid #e7eae3; border-radius: 14px; box-shadow: 0 1px 2px rgba(40, 30, 20, .04); }
+.gyik summary { cursor: pointer; list-style: none; position: relative; padding: 16px 52px 16px 20px; min-height: 52px; display: flex; align-items: center; font: 500 18px/1.35 var(--cim); color: var(--sotet); }
+.gyik summary::-webkit-details-marker { display: none; }
+.gyik summary::after { content: ''; position: absolute; right: 22px; top: 50%; width: 9px; height: 9px; margin-top: -7px; border-right: 1.8px solid #a07f4b; border-bottom: 1.8px solid #a07f4b; transform: rotate(45deg); transition: transform .2s; }
+.gyik details[open] summary::after { transform: rotate(225deg); margin-top: -2px; }
+.gyik details[open] summary { color: #111f20; }
+.gyik .gy-valasz { padding: 0 20px 18px; font-size: 16.5px; line-height: 1.65; color: #25373a; }
+.gyik .gy-valasz p { margin: 0 0 10px; }
+.gyik .gy-valasz p:last-child { margin-bottom: 0; }
+.gyik .gy-valasz a { color: var(--sotet); text-underline-offset: 3px; }
+
+/* --- galeria --- */
+.korhinta.nagy-elem .korhinta-sav > * { flex-basis: min(86%, 440px); }
+
+/* ====== tablet ====== */
+@media (max-width: 1024px) {
+  .ajv-hero h1 { font-size: 36px; }
+  .ajv-hero-kepek .hero-kep { aspect-ratio: 1.5; max-height: 420px; }
+  .ajv-termekek { grid-template-columns: repeat(2, 1fr); }
+  .ajv-termekek > :last-child { grid-column: 1 / -1; max-width: 480px; justify-self: center; width: 100%; }
+}
+
+/* ====== telefon ====== */
+@media (max-width: 700px) {
+  .ajv-hero h1 { font-size: clamp(24px, 7vw, 30px); }
+  .ajv-hero-kepek { order: 2; margin: 12px 0 16px; }
+  .ajv-hero-kepek .hero-kep { order: 0; margin: 0; aspect-ratio: 1.3; }
+  .ajv-kicsik { gap: 8px; }
+  .ajv-kicsik img { border-radius: 12px; }
+  .ajv-akcio { padding: 16px 16px 18px; }
+  .cikk .ajv-hangos { font-size: 20px; }
+  .ajv-lepesek > li { font-size: 16.5px; padding-left: 46px; }
+  .ajv-lepesek > li::before { width: 32px; height: 32px; font-size: 16px; }
+  .ajv-termekek { grid-template-columns: 1fr; }
+  .ajv-termekek > :last-child { max-width: none; }
+  .ajv-urlap { padding: 22px 18px 24px; border-radius: 18px; }
+  .ajv-mezok { grid-template-columns: 1fr; gap: 14px; }
+  .gyik summary { font-size: 16.5px; padding: 14px 46px 14px 16px; }
+  .gyik .gy-valasz { padding: 0 16px 16px; font-size: 16px; }
+}

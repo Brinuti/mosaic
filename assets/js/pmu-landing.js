@@ -1,4 +1,4 @@
-// MOSAIC sminktetovalas landing (/pmu-sminktetovalas) - a jovahagyott asztali terv mukodese.
+// MOSAIC sminktetovalas landing (/sminktetovalas-budapest; a regi /pmu-sminktetovalas ide iranyit) - a jovahagyott asztali terv mukodese.
 //
 // Foglalo (4. resz): a megtervezett foglalasi folyamat (/foglalo-pmu?beagyazva=1) keretben - a
 // kezeles -> idopont -> kerdes (NEM: commitment, IGEN: foto, naptar nelkul) -> adatok logika ott el.
@@ -167,13 +167,13 @@
   const keret = $('foglalo');
   const ALAP = '/foglalo-pmu?beagyazva=1';
   let nezetek = 0;
-  keret.addEventListener('load', () => { nezetek = 0; });
   addEventListener('message', (e) => {
     if (e.origin !== location.origin || e.source !== keret.contentWindow || !e.data || !e.data.mhFoglalo) return;
     if (e.data.magassag) keret.style.height = e.data.magassag + 'px';
     // az elso (betolteskori) nezetnel nem gorgetunk
     // mobilon minden lepesvaltaskor a keret teteje a fejlec ala kerul, igy az adott lepes egesze a kepernyon van
-    if (e.data.nezet && nezetek++ && (mobil() || keret.getBoundingClientRect().top < 0)) keretIgazit();
+    // (a keret atmeretezese utan igazitunk: pl. a lejatszott, nagyra nyitott video utan a keret jocskan osszemegy)
+    if (e.data.nezet && nezetek++) setTimeout(() => { if (mobil() || keret.getBoundingClientRect().top < 0) keretIgazit(); }, 120);
   });
   const mobil = () => matchMedia('(max-width: 700px)').matches;
   function keretIgazit() {
@@ -187,8 +187,20 @@
     if (!g) return;
     e.preventDefault();
     keret.loading = 'eager';
+    nezetek = 0; // az uj betoltes elso nezetenel nem gorgetunk
     keret.src = ALAP + '&' + g.dataset.foglalo;
     keretIgazit();
+  });
+
+  // --- gorgetes egy szekcioig (data-gorgetes="<szekcio id>"): sima gorgetes, URL-hash nelkul (a hash-valtas a GTM History Change triggerét inditana) ---
+  document.addEventListener('click', (e) => {
+    const g = e.target.closest('[data-gorgetes]');
+    const cel = g && $(g.dataset.gorgetes);
+    if (!cel) return;
+    e.preventDefault();
+    const fej = document.getElementById('SITE_HEADER');
+    const fejAlja = fej && /fixed|sticky/.test(getComputedStyle(fej).position) ? Math.max(0, fej.getBoundingClientRect().bottom) : 0;
+    scrollTo({ top: Math.max(0, cel.getBoundingClientRect().top + scrollY - fejAlja - 8), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   });
 
   // --- eredmenyek: Szemoldok / Ajak szuro, eloszor 12 kep ----------------------------------------
@@ -236,11 +248,11 @@
   });
 
   // --- terkep: a MOSAIC Google-ertekelese a Trustindex-widget aktualis tartalmabol ----------------------
-  // A Trustindex a suti-tajekoztato szerint "funkcionalis" szolgaltatas: csak ennek engedelyezese utan kerdezzuk le.
+  // A Trustindex-adatot (ertekelesek szama) azonnal lekerdezzuk: a velemenyek mindig azonnal megjelennek (a tulajdonos kerese, 2026-10-07).
   const TI = 'https://cdn.trustindex.io/widgets/8a/8a7562c424f027774456be130a1/content.html';
   let tiKesz = false;
   async function ertekelesFrissit() {
-    if (tiKesz || !$('te-db') || !(window.mhSuti && mhSuti.engedely('fun'))) return;
+    if (tiKesz || !$('te-db')) return;
     tiKesz = true;
     try {
       const d = new DOMParser().parseFromString(await (await fetch(TI, { credentials: 'omit' })).text(), 'text/html');
@@ -252,14 +264,13 @@
       if (n) $('te-db').textContent = new Intl.NumberFormat('hu-HU').format(+n).replace(/\s/g, '.') + ' Google-vélemény';
       if (cs.length === 5) {
         const ossz = cs.reduce((a, b) => a + b, 0);
-        $('te-csillagok').textContent = cs.map((x) => (x === 1 ? '★' : x ? '⯪' : '☆')).join('');
+        $('te-csillagok').style.setProperty('--ert', (ossz / 5) * 100 + '%');
         $('te-csillagok').setAttribute('aria-label', '5 csillagból ' + String(ossz).replace('.', ','));
       }
       if (min && min.trim()) $('te-minosites').textContent = min.trim().replace(/ értékelés$/i, '');
     } catch (e) { tiKesz = false; console.error(e); }
   }
   ertekelesFrissit();
-  if (window.mhSuti && mhSuti.figyel) mhSuti.figyel(ertekelesFrissit);
 
   // --- velemenyek: lapozhato sor ---------------------------------------------------------------------
   const velRacs = $('vel-racs');
@@ -273,6 +284,48 @@
   velRacs.addEventListener('scroll', velAllapot, { passive: true });
   addEventListener('resize', velAllapot);
   velAllapot();
+
+  // --- hero-galeria: a folyamat lepesei (elorajzolas -> munka -> gyogyult), 1:1, huzhato ---------------
+  (() => {
+    const sav = $('hero-galeria');
+    const pontok = [...document.querySelectorAll('#galeria-pontok button')];
+    if (!sav || !pontok.length) return;
+    const db = sav.children.length;
+    const elozo = $('galeria-elozo'), kov = $('galeria-kov');
+    // a szelesseg betoltes elejen meg 0 lehet (elrendezes elott): ilyenkor az elso kep az aktualis
+    const aktualis = () => (sav.clientWidth ? Math.max(0, Math.min(db - 1, Math.round(sav.scrollLeft / sav.clientWidth))) : 0);
+    const frissit = () => {
+      const i = aktualis();
+      pontok.forEach((p, n) => p.setAttribute('aria-current', String(n === i)));
+      elozo.disabled = i === 0;
+      kov.disabled = i === db - 1;
+    };
+    const ugrik = (i) => sav.scrollTo({
+      left: Math.max(0, Math.min(db - 1, i)) * sav.clientWidth,
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+    let kocka = 0;
+    sav.addEventListener('scroll', () => { cancelAnimationFrame(kocka); kocka = requestAnimationFrame(frissit); }, { passive: true });
+    elozo.addEventListener('click', () => ugrik(aktualis() - 1));
+    kov.addEventListener('click', () => ugrik(aktualis() + 1));
+    pontok.forEach((p, n) => p.addEventListener('click', () => ugrik(n)));
+    sav.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      ugrik(aktualis() + (e.key === 'ArrowRight' ? 1 : -1));
+    });
+    // atmeretezeskor (pl. telefon forgatasa) maradjon ugyanazon a kepen
+    let meret = sav.clientWidth;
+    addEventListener('resize', () => {
+      if (sav.clientWidth === meret) return;
+      const i = Math.round(sav.scrollLeft / (meret || 1));
+      meret = sav.clientWidth;
+      sav.scrollTo({ left: i * meret, behavior: 'auto' });
+    });
+    frissit();
+    addEventListener('load', frissit);
+    if (window.ResizeObserver) new ResizeObserver(frissit).observe(sav);
+  })();
 
   // --- video (Google Drive, allo formatum): csak kattintasra toltodik be ------------------------------
   const VIDEO = 'https://drive.google.com/file/d/1HaOg3JRFZmDfUAJ0rgHAtzW2UndqO09i/preview';
@@ -293,6 +346,7 @@
       src: 'https://www.google.com/maps?q=' + encodeURIComponent('MOSAIC Head Spa, 1023 Budapest, Bécsi út 2.') + '&output=embed',
     }));
     $('terkep').querySelector('.terkep-kep').style.cssText = 'background:none;inset:auto 0 0 auto;width:auto;height:auto';
+    $('terkep').classList.add('betoltve');
   }
   if (window.mhSuti) { terkep(window.mhSuti.engedely('fun')); window.mhSuti.figyel((d) => terkep(d.fun)); }
 })();

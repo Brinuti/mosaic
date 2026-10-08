@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Időpontfoglalás – MOSAIC</title>
+<link rel="icon" href="/assets/img/c2eb0f_b001e2c55098446da3e38ff055e20354.png" type="image/png">
+<link rel="stylesheet" href="/assets/css/booking-engine.css">
+</head>
+<body>
+<!-- MOSAIC Booking Engine V1 - rejtett probaoldal (noindex, nincs ra link): /foglalo-motor?business=headspa
+     Belepesi kontextus: ?business=&service=<azonosito|kulcsszavak>&voucher=1&source_page=&utm_*=&gclid=&fbclid=&ttclid=
+     Mintanezet foglalas nelkul: ?minta=siker|elkelt|hiba|ellenorizetlen|nincs-idopont|visszahivas-kesz -->
+<div id="be-app"></div>
+<noscript><main class="be-main"><p class="be-alert">A foglaláshoz JavaScript szükséges. Hívj minket: <a href="tel:+36202474444">06 20 247 4444</a>.</p></main></noscript>
+
+<!-- a Netlify ebbol ismeri fel az urlapot (a JS kuldi be); a Cloudflare-fuggveny a form-name alapjan kezeli -->
+<form name="motor-visszahivas" data-netlify="true" netlify-honeypot="bot-field" hidden><input name="bot-field"><input name="nev"><input name="telefon"><input name="uzletag"><input name="szolgaltatas"><input name="ok"><input name="oldal"><input name="forras"></form>
+<form name="motor-megerosites" data-netlify="true" netlify-honeypot="bot-field" hidden><input name="bot-field"><input name="idopont"><input name="szolgaltatas"><input name="uzletag"><input name="szakember"><input name="oldal"></form>
+
+<script type="module">
+  import { startEngine } from '/assets/js/booking-engine/engine.js';
+  startEngine({ root: document.getElementById('be-app') });
+</script>
+</body>
+</html>

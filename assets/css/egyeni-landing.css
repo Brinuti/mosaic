@@ -1,0 +1,435 @@
+/* MOSAIC Egyeni Head Spa landing (/egyeni-headspa-budapest, jelenleg -uj cimen).
+   Betuk: Playfair Display (cimek, sajat tarhelyrol) + Jost (szoveg); szinek, gombok, kartyak: mint a paros / lezeres / oxigen landing
+   (arany foglalas-gomb, sotetzold hangsuly, krem hatter). Onallo fajl: a tobbi landing stilusat nem erinti. */
+@font-face { font-family: 'Playfair Display'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/playfair-display-400-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Playfair Display'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/playfair-display-400-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Playfair Display'; font-style: normal; font-weight: 500; font-display: swap; src: url(/assets/fonts/playfair-display-500-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Playfair Display'; font-style: normal; font-weight: 500; font-display: swap; src: url(/assets/fonts/playfair-display-500-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Jost'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/jost-400-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Jost'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/jost-400-latin-ext.woff2) format('woff2'); unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+
+:root {
+  --sotet: #0f3a3c;      /* cimek, kitoltott elemek */
+  --szoveg: #1b2e2f;
+  --halk: #5c6766;
+  --arany: #a07f4b;      /* kiemelt szavak */
+  --arany-vilagos: #f1deae;
+  --krem: #f3f4ef;       /* oldal-hatter */
+  --bezs: #e2e5db;
+  --vonal: #dce0d6;
+  --zold: #3f7652;       /* MOSAIC-zold (hover, pipak) */
+  --cim: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --test: 'Jost', 'Helvetica Neue', Arial, sans-serif;
+  --szeles: 1200px;
+  --arnyek: 0 1px 2px rgba(40, 30, 20, .04), 0 8px 24px rgba(40, 30, 20, .06);
+  --arany-gomb: linear-gradient(#c6a346, #d9c164);
+  --sav-hatter: radial-gradient(120% 140% at 85% 30%, #24413f 0%, #183033 45%, #10221f 100%);
+}
+:where(main), :where(main) * { box-sizing: border-box; }
+/* a fejlec felso, rozsaszin akcios savja (Wix-fejlec: section#comp-mpv0ganp) ezen az oldalon nem latszik: a landing a sajat felsoval indul (mint a paros / lezeres / oxigen landing) */
+#comp-mpv0ganp { display: none !important; }
+html { scroll-behavior: smooth; scroll-padding-top: 84px; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--krem); color: var(--szoveg); font: 400 16px/1.5 var(--test); -webkit-font-smoothing: antialiased; }
+main, main * { font-variant-numeric: lining-nums !important; }   /* a Playfair alapbol old-style szamjegyeket ad (az arakhoz egyenes kell) */
+:where(main) img { display: block; max-width: 100%; }
+:where(main) a { color: inherit; }
+:where(main) :is(button, input, select, textarea) { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+:where(main) svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+:where(main) :is(h1, h2, h3) { font-family: var(--cim); font-weight: 500; color: var(--sotet); margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+:where(main) h2 { font-size: 40px; line-height: 1.12; }
+:where(main) h3 { font-size: 20px; line-height: 1.25; }
+:where(main) :is(p, dl, dd, ul, ol, fieldset) { margin: 0; }
+:where(main) :is(b, strong) { font-weight: 500; }
+:where(main) :focus-visible { outline: 2px solid var(--arany); outline-offset: 3px; }
+main { display: flex; flex-direction: column; }
+.tartalom { width: min(var(--szeles), calc(100% - 64px)); margin: 0 auto; position: relative; }
+.kozepre { text-align: center; }
+.halk { color: var(--halk); }
+.kicsi { font-size: 13.5px; }
+.al-cim { margin-top: 10px; font-size: 17px; }
+.nyil { display: inline-block; transition: transform .2s; }
+a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
+.ikon-kor { flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--bezs); display: inline-grid; place-items: center; color: #8a6c3e; }
+.ikon-kor svg { width: 21px; height: 21px; }
+.szekcio { padding: 64px 0 68px; }
+.szekcio.bezs { background: #f7f8f6; border-top: 1px solid var(--vonal); border-bottom: 1px solid var(--vonal); }
+.csontvaz { background: linear-gradient(90deg, #fff 0%, #f1f2ed 50%, #fff 100%) 0 0 / 200% 100%; animation: csillog 1.4s infinite linear; }
+@keyframes csillog { to { background-position: -200% 0; } }
+
+/* --- gombok --- */
+.gomb { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid transparent; border-radius: 999px; padding: 12px 26px; font: 400 15px/1.2 var(--test); text-decoration: none; cursor: pointer; transition: background .2s, transform .1s, box-shadow .2s, color .2s; letter-spacing: 0; text-transform: none; }
+.gomb:active { transform: translateY(1px); }
+.gomb-arany { background: var(--arany-gomb); color: #fff; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); box-shadow: 0 6px 18px rgba(150, 120, 40, .22); }
+.gomb-arany:hover { background: var(--zold); text-shadow: none; }
+.gomb-nagy { padding: 17px 34px; }
+.gomb-szeles { width: 100%; }
+.link-gomb { background: none; border: 0; padding: 0; color: var(--sotet); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: 14.5px; }
+.link-nyil { display: inline-block; color: var(--sotet); font-weight: 500; font-size: 15px; text-decoration: none; }
+.link-nyil:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+/* --- Google-ertekeles sor --- */
+.google-nagy { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; text-decoration: none; color: inherit; }
+.g-ikon { width: 22px !important; height: 22px !important; stroke: none; flex: none; }
+.csillagok { color: #e2a83a; letter-spacing: 1px; font-size: 15px; }
+.g-pont { font-size: 14.5px; }
+.g-db { font-size: 14.5px; }
+.google-nagy:hover .g-db { text-decoration: underline; text-underline-offset: 3px; }
+
+/* --- mozgokepes keretek: a video a keretet tolti ki; a nyitokep (poster) addig latszik, amig a klip nem indul --- */
+.klip-kartya { position: relative; overflow: hidden; border-radius: 16px; background: #10221f; isolation: isolate; }
+.klip-kartya > video, .klip-kartya > img { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; }
+button.klip-kartya { display: block; width: 100%; padding: 0; border: 0; cursor: pointer; text-align: left; }
+.kartya-szoveg { position: absolute; left: 0; right: 0; bottom: 0; padding: 60px 20px 20px; color: #fff; background: linear-gradient(transparent, rgba(8, 22, 22, .88)); }
+.kartya-szoveg h3 { color: var(--arany-vilagos); font-size: 26px; line-height: 1.15; }
+.kartya-szoveg p { margin-top: 8px; font-size: 14.5px; line-height: 1.45; color: #eef0e6; }
+.kartya-szoveg b { font: 500 17px/1.25 var(--cim); }
+.lejatszas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 72px; height: 72px; border-radius: 50%; background: rgba(255, 255, 255, .93); color: var(--sotet); display: grid; place-items: center; box-shadow: 0 10px 30px rgba(0, 0, 0, .3); transition: transform .2s; }
+.lejatszas svg { width: 30px; height: 30px; fill: currentColor; stroke: none; margin-left: 4px; }
+:is(button, a):hover > .lejatszas { transform: translate(-50%, -50%) scale(1.07); }
+.video-cimke { position: absolute; left: 16px; bottom: 14px; padding: 6px 13px; border-radius: 999px; background: rgba(8, 22, 22, .66); color: #fff; font-size: 13px; }
+
+/* --- 1. hero: sotet fotohatter + mozgokep, bal oldalon a szoveg --- */
+.hero { position: relative; isolation: isolate; overflow: hidden; background: #10221f; color: #fff; }
+.hero-hatter, .hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 45%; }
+.hero-hatter { z-index: -3; }
+.hero-video { z-index: -2; opacity: 0; transition: opacity 1.6s ease; }
+.hero-video.lejatszik { opacity: 1; }
+.hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(10, 28, 29, .94) 0%, rgba(10, 28, 29, .82) 34%, rgba(10, 28, 29, .32) 64%, rgba(10, 28, 29, .1) 100%), linear-gradient(0deg, rgba(10, 28, 29, .6), transparent 34%); }
+.hero-tart { min-height: 640px; display: flex; align-items: center; padding: 64px 0; }
+.hero-szoveg { max-width: 600px; }
+.hero h1 { color: #fff; font-size: 54px; line-height: 1.06; letter-spacing: -.02em; }
+.hero-al { margin: 18px 0 16px; max-width: 520px; font-size: 18.5px; line-height: 1.5; color: #eef0e6; }
+.hero-ar { margin: 0 0 18px; }
+.hero-ar b { font: 500 48px/1.1 var(--cim); color: var(--arany-vilagos); white-space: nowrap; }
+.hero-jelvenyek { display: flex; flex-wrap: wrap; gap: 12px 24px; list-style: none; padding: 0; margin: 0 0 26px; }
+.hero-jelvenyek li { display: flex; align-items: center; gap: 10px; font-size: 14.5px; color: #f3f4ef; }
+.hero .ikon-kor { width: 34px; height: 34px; background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .26); color: var(--arany-vilagos); }
+.hero .ikon-kor svg { width: 17px; height: 17px; }
+.hero-ajandek { margin-top: 14px; font-size: 14.5px; color: #eef0e6; }
+.hero-ajandek a { color: #fff; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.hero .google-nagy { margin-top: 22px; color: #fff; }
+.hero .g-db { color: #e4e8de; }
+.hero-cim { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; color: #d6dcd2; }
+.hero-cim svg { width: 18px; height: 18px; color: var(--arany-vilagos); flex: none; }
+.hero-lejatszas { position: absolute; right: 0; bottom: 44px; display: flex; align-items: center; gap: 16px; padding: 0; border: 0; background: none; color: #fff; cursor: pointer; text-align: left; }
+.hero-lejatszas .lejatszas { position: static; transform: none; width: 78px; height: 78px; background: rgba(255, 255, 255, .16); color: #fff; border: 1.5px solid rgba(255, 255, 255, .8); backdrop-filter: blur(6px); box-shadow: 0 10px 34px rgba(0, 0, 0, .35); }
+.hero-lejatszas:hover .lejatszas { background: rgba(255, 255, 255, .3); transform: scale(1.06); }
+.hero-lejatszas-szoveg b { display: block; font: 500 17px/1.25 var(--cim); }
+.hero-lejatszas-szoveg small { font-size: 13.5px; color: #d6dcd2; }
+
+/* --- 2. milyen erzes? --- */
+.erzes-racs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 32px; }
+.erzes-kartya { aspect-ratio: 4 / 3; box-shadow: 0 14px 34px rgba(40, 30, 20, .14); }
+
+/* --- sotet savok (kozos) --- */
+.sav { position: relative; isolation: isolate; overflow: hidden; padding: 64px 0 68px; background: var(--sav-hatter); color: #e9ebe0; }
+.sav h2 { color: #f3f3ec; font-size: 38px; }
+.sav-video { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
+.ajandek-sav::before, .meg-sosem::before, .zaro::before { content: ''; position: absolute; inset: 0; z-index: -1; background: rgba(10, 28, 29, .72); }
+.ajandek-sav::before { background: linear-gradient(90deg, rgba(10, 28, 29, .55) 0%, rgba(10, 28, 29, .8) 100%); }
+.meg-sosem::before { background: linear-gradient(270deg, rgba(10, 28, 29, .94) 0%, rgba(10, 28, 29, .8) 42%, rgba(10, 28, 29, .12) 82%); }
+.zaro::before { background: linear-gradient(0deg, rgba(10, 28, 29, .78), rgba(10, 28, 29, .6)); }
+
+/* --- 3. nehez elmagyarazni --- */
+.mutat-racs { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 56px; align-items: center; }
+.mutat-video { aspect-ratio: 16 / 9; border-radius: 20px; box-shadow: 0 24px 56px rgba(0, 0, 0, .4); }
+.mutat-szoveg h2 { font-size: 40px; }
+.mutat-szoveg p { margin: 16px 0 26px; max-width: 420px; font-size: 17px; line-height: 1.55; color: #d9ded3; }
+
+/* --- 4. mi tortenik a 80 percben --- */
+.lepes-sor { list-style: none; padding: 0; margin: 38px 0 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 26px; }
+.lepes-sor li { position: relative; display: flex; flex-direction: column; }
+.lepes-sor li:not(:last-child)::after { content: '›'; position: absolute; right: -20px; bottom: 56px; width: 14px; text-align: center; font: 300 28px/1 var(--test); color: var(--arany); }
+.lepes-fej { display: flex; align-items: flex-start; gap: 10px; min-height: 52px; }
+.lepes-szam { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--arany-gomb); color: #fff; font: 500 17px/1 var(--cim); text-shadow: 0 1px 2px rgba(80, 60, 10, .3); }
+.lepes-sor h3 { font-size: 17.5px; line-height: 1.25; padding-top: 3px; }
+.lepes-sor p { margin-top: 8px; font-size: 14.5px; line-height: 1.5; color: var(--halk); }
+.lepes-media { position: relative; margin-top: 14px; aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden; background: #e0e4db; box-shadow: var(--arnyek); }
+.lepes-media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.lepes-media .kep-felso { object-position: 50% 22%; }
+.lepes-sor li > p { flex: 1; }
+.pontok { display: none; }
+
+/* --- 5. ertekelesek (sotet sav) + vendegvideok --- */
+.vel-racs { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 52px; align-items: center; }
+.vel-szam { margin: 26px 0 4px; font: 500 78px/1 var(--cim); color: var(--arany-vilagos); letter-spacing: -.02em; white-space: nowrap; }
+.vel-szam span { font-size: 54px; }
+.vel-csillag { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; font-size: 17px; color: #fff; }
+.vel-csillag .csillagok { font-size: 19px; }
+.vel-al { margin: 6px 0 26px; font-size: 16px; color: #d3d9cf; }
+.ti-doboz { min-height: 150px; padding: 14px; background: #fff; border-radius: 20px; box-shadow: 0 24px 54px rgba(0, 0, 0, .3); }
+.ti-keret { display: block; width: 100%; height: 340px; border: 0; background: transparent; }
+.ti-hely { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 34px 20px; }
+.ti-hely p { color: var(--halk); font-size: 15.5px; }
+.videok-cim { margin-top: 52px; color: #f3f3ec; font-size: 26px; }
+.videok { list-style: none; padding: 0; margin: 26px 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.video-kartya { position: relative; display: block; width: 100%; aspect-ratio: 9 / 16; padding: 0; border: 0; border-radius: 18px; overflow: hidden; cursor: pointer; background: #1c3636; box-shadow: 0 16px 38px rgba(0, 0, 0, .38); text-align: left; }
+.video-kartya img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.video-kartya .lejatszas { top: 44%; width: 66px; height: 66px; }
+.video-felirat { position: absolute; left: 0; right: 0; bottom: 0; padding: 54px 16px 16px; color: #fff; background: linear-gradient(transparent, rgba(10, 25, 25, .86)); }
+.video-felirat b { display: block; font: 500 20px/1.2 var(--cim); }
+.video-felirat small { display: block; margin-top: 3px; font-size: 13px; opacity: .92; }
+
+/* --- 6. ajanlat + hangsuly + szabad idopontok --- */
+.ido-racs { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, .85fr) minmax(0, 1.5fr); gap: 20px; margin-top: 30px; align-items: stretch; }
+.ajanlat-kartya, .hangsuly-kartya, .ido-kartya { background: #fff; border: 1px solid #e7eae3; border-radius: 22px; box-shadow: var(--arnyek); padding: 28px 26px 26px; }
+.ajanlat-kartya { display: flex; flex-direction: column; }
+.ajanlat-fej { font: 600 12px/1 var(--test); letter-spacing: .2em; text-transform: uppercase; color: var(--arany); }
+.ajanlat-nev { margin-top: 12px; font: 500 21px/1.3 var(--cim); color: var(--sotet); }
+.ajanlat-ar { margin: 14px 0 18px; }
+.ajanlat-ar b { font: 500 48px/1.05 var(--cim); color: var(--sotet); white-space: nowrap; }
+.pipa-lista { list-style: none; padding: 0; margin: 0; display: grid; gap: 9px; }
+.pipa-lista li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; line-height: 1.4; color: #2c3d3d; }
+.pipa-lista svg { flex: none; width: 21px; height: 21px; margin-top: 1px; color: var(--zold); }
+.tartalmazza { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--vonal); }
+.tartalmazza summary { list-style: none; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 15px; font-weight: 500; color: var(--sotet); }
+.tartalmazza summary::-webkit-details-marker { display: none; }
+.tartalmazza summary::after { content: '+'; font: 300 24px/1 var(--test); color: var(--arany); transition: transform .2s; }
+.tartalmazza[open] summary::after { transform: rotate(45deg); }
+.tartalmazza ul { margin: 12px 0 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14.5px; line-height: 1.45; color: #3d4b4b; }
+.hangsuly-kartya { display: flex; flex-direction: column; gap: 6px; }
+.hangsuly-kartya h3 { font-size: 22px; }
+.hangsuly-racs { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0 4px; }
+.hangsuly { position: relative; isolation: isolate; overflow: hidden; min-height: 220px; border-radius: 14px; background: #10221f; }
+.hangsuly > img, .hangsuly > video { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; }
+.hangsuly .kartya-szoveg { padding: 44px 12px 12px; }
+.hangsuly .kartya-szoveg b { font-size: 14.5px; }
+.hangsuly-megj { margin-bottom: 10px; }
+.hangsuly-kartya .gomb { margin-top: auto; text-align: center; }
+.ido-kartya { display: flex; flex-direction: column; }
+.ido-kartya h3 { font-size: 22px; margin-bottom: 14px; }
+.napok-keret { display: flex; align-items: flex-start; gap: 10px; }
+.napok { flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 20px) / 3); gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; padding-bottom: 2px; }
+.napok::-webkit-scrollbar { display: none; }
+.napok-csontvaz { grid-column: 1 / -1; height: 230px; border-radius: 12px; }
+.nap-oszlop { scroll-snap-align: start; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.nap-fej { text-align: center; line-height: 1.25; padding: 8px 2px 10px; border-bottom: 1px solid var(--vonal); }
+.nap-fej b { display: block; font: 500 17px/1.2 var(--cim); color: var(--sotet); }
+.nap-fej span { font-size: 13.5px; color: var(--halk); }
+.nap-idok { display: flex; flex-direction: column; gap: 8px; }
+a.ido { display: grid; place-items: center; padding: 11px 2px; border: 1px solid var(--vonal); border-radius: 10px; background: #fff; text-decoration: none; font: 500 16px/1 var(--cim); color: var(--sotet); transition: border-color .15s, box-shadow .15s, background .15s, color .15s; }
+a.ido:hover, a.ido:focus-visible { background: var(--sotet); border-color: var(--sotet); color: #fff; box-shadow: 0 6px 14px rgba(15, 58, 60, .2); }
+.napok-nyil { flex: none; align-self: center; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--vonal); background: #fff; display: grid; place-items: center; cursor: pointer; color: var(--sotet); box-shadow: var(--arnyek); }
+.napok-nyil:hover:not(:disabled) { border-color: var(--sotet); }
+.napok-nyil svg { width: 18px; height: 18px; }
+.napok-nyil.vissza svg { transform: rotate(180deg); }
+.slot-uzenet { margin-top: 10px; font-size: 14.5px; }
+.slot-uzenet a { color: var(--sotet); text-underline-offset: 3px; }
+.ido-lab { margin: 16px 0 14px; }
+.ido-klip { flex: 1; min-height: 150px; margin-top: 20px; border-radius: 14px; }
+.ido-klip > video { object-position: 50% 36%; }
+.ido-kartya .link-nyil { margin-top: auto; }
+
+/* --- 7. ajandekkartya (sotet sav, mozgokepes hatter) --- */
+.ajandek-racs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 60px; align-items: center; }
+.ajandek-kartya { width: 100%; height: auto; border-radius: 18px; box-shadow: 0 30px 60px rgba(0, 0, 0, .5); transform: rotate(-2.5deg); }
+.ajandek-szoveg p { margin: 12px 0 20px; font-size: 18px; color: #e6eadf; }
+.ajandek-szoveg .pipa-lista { margin-bottom: 28px; }
+.ajandek-szoveg .pipa-lista li { color: #eef0e6; font-size: 16px; }
+.ajandek-szoveg .pipa-lista svg { color: var(--arany-vilagos); }
+
+/* --- 8. mitol mas --- */
+.miert-racs { list-style: none; padding: 0; margin: 34px 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.miert-racs li { display: flex; flex-direction: column; background: #fff; border: 1px solid #e7eae3; border-radius: 18px; overflow: hidden; box-shadow: var(--arnyek); }
+.miert-media { position: relative; aspect-ratio: 4 / 3; background: #e0e4db; }
+.miert-media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.miert-media.klip-kartya { border-radius: 0; }
+.miert-racs h3 { margin: 18px 18px 0; font-size: 19px; }
+.miert-racs p { margin: 8px 18px 22px; font-size: 14.5px; line-height: 1.5; color: var(--halk); }
+
+/* --- 9. meg sosem voltal Head Span --- */
+.meg-sosem-tart { min-height: 400px; display: flex; justify-content: flex-end; align-items: center; padding: 20px 0; }
+.meg-sosem-szoveg { max-width: 540px; }
+.meg-sosem-szoveg p { margin: 16px 0 26px; font-size: 16.5px; line-height: 1.6; color: #e1e6db; }
+
+/* --- 10. inkabb ketten --- */
+.ketten-racs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 32px; }
+.ketten-kartya { aspect-ratio: 5 / 4; box-shadow: 0 14px 34px rgba(40, 30, 20, .14); }
+.ketten-kartya .kartya-szoveg b { font-size: 22px; }
+.ketten-gomb { grid-column: 1 / -1; justify-self: center; margin-top: 10px; }
+
+/* --- 11. GYIK + helyszin --- */
+.gyik-racs { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 44px; align-items: start; }
+.gyik h2 { font-size: 34px; }
+.harmonika-racs { display: grid; gap: 8px; margin-top: 24px; }
+.harmonika-racs details { background: #edefea; border-radius: 8px; scroll-margin-top: 90px; }
+.harmonika-racs summary { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 20px; font-size: 16px; cursor: pointer; color: #26393a; }
+.harmonika-racs summary::-webkit-details-marker { display: none; }
+.harmonika-racs summary::after { content: '+'; font: 300 26px/1 var(--test); color: var(--arany); transition: transform .2s; flex: none; }
+.harmonika-racs details[open] summary::after { transform: rotate(45deg); }
+.harmonika-racs details > p { padding: 0 20px 14px; font-size: 15px; line-height: 1.6; color: #3d4b4b; }
+.harmonika-racs details a { color: var(--sotet); text-underline-offset: 3px; font-weight: 500; }
+.hely-kartya { background: #fff; border: 1px solid #e7eae3; border-radius: 20px; overflow: hidden; box-shadow: var(--arnyek); }
+.hely-kartya > img { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: 50% 40%; }
+.hely-szoveg { padding: 22px 24px 26px; }
+.hely-szoveg h3 { font-size: 22px; }
+.hely-cim-sor { margin: 6px 0 16px; font-size: 15px; color: var(--halk); }
+.hely-lista { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.hely-lista li { display: flex; align-items: center; gap: 12px; font-size: 14.5px; line-height: 1.4; color: #2c3d3d; }
+.hely-lista .ikon-kor { width: 38px; height: 38px; }
+.hely-lista .ikon-kor svg { width: 18px; height: 18px; }
+
+/* --- 12. zaro felhivas --- */
+.zaro { padding: 0; }
+.zaro-tart { min-height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 56px 0; }
+.zaro h2 { font-size: 46px; }
+.zaro-al { margin: 12px 0 26px; font-size: 18px; color: #e6eadf; }
+.zaro .hero-ajandek { margin-top: 16px; }
+.zaro-google { margin-top: 18px; font-size: 14.5px; color: #e4e8de; }
+
+/* --- hangos videok felugro ablaka --- */
+.lb { width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; overflow: hidden; }
+.lb::backdrop { background: rgba(6, 18, 18, .92); }
+.lb-tartalom { display: grid; place-items: center; width: 100%; height: 100%; padding: 56px 16px 24px; }
+.lb video { display: block; max-width: min(94vw, 1100px); max-height: calc(100vh - 96px); max-height: calc(100dvh - 96px); border-radius: 12px; background: #000; box-shadow: 0 30px 80px rgba(0, 0, 0, .6); }
+.lb-be { position: fixed; top: 14px; right: 14px; z-index: 2; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .5); background: rgba(255, 255, 255, .12); color: #fff; cursor: pointer; }
+.lb-be svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }   /* a felugro ablak a main-en kivul van: a main svg-stilusa nem erinti */
+.lb-be:hover { background: rgba(255, 255, 255, .28); }
+
+/* --- mobil sticky CTA --- */
+.sticky-cta { display: none; }
+
+/* ====== tablet ====== */
+@media (max-width: 1180px) {
+  .ido-racs { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .ido-kartya { grid-column: 1 / -1; }
+  .lepes-sor { gap: 18px; }
+  .lepes-sor li:not(:last-child)::after { display: none; }
+}
+@media (max-width: 1024px) {
+  .tartalom { width: calc(100% - 48px); }
+  :where(main) h2 { font-size: 34px; }
+  .sav h2, .mutat-szoveg h2 { font-size: 32px; }
+  .hero h1 { font-size: 44px; }
+  .hero-tart { min-height: 0; padding: 52px 0 130px; }
+  .hero-lejatszas { bottom: 34px; }
+  .erzes-racs { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .kartya-szoveg h3 { font-size: 21px; }
+  .mutat-racs, .vel-racs, .ajandek-racs { grid-template-columns: 1fr; gap: 34px; }
+  .mutat-video { max-width: 720px; }
+  .lepes-sor { grid-template-columns: repeat(3, 1fr); }
+  .videok { grid-template-columns: repeat(2, 1fr); }
+  .miert-racs { grid-template-columns: repeat(2, 1fr); }
+  .ketten-racs { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .gyik-racs { grid-template-columns: 1fr; }
+  .meg-sosem-tart { justify-content: flex-start; }
+  .meg-sosem::before { background: linear-gradient(0deg, rgba(10, 28, 29, .92), rgba(10, 28, 29, .6)); }
+  .ajandek-kartya { max-width: 520px; }
+}
+
+/* ====== telefon ====== */
+@media (max-width: 700px) {
+  .sticky-cta { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: rgba(250, 246, 238, .97); box-shadow: 0 -6px 22px rgba(60, 40, 15, .16); transform: translateY(115%); transition: transform .25s ease; }
+  .sticky-cta.lathato { transform: none; }
+  .sticky-cta .gomb { padding: 14px 16px; }
+  body.sticky-be { padding-bottom: 76px; }
+  .tartalom { width: calc(100% - 32px); }
+  :where(main) h2 { font-size: 28px; }
+  :where(main) h3 { font-size: 18px; }
+  .gomb { white-space: normal; text-align: center; }
+  .gomb-nagy { padding: 15px 24px; }
+  .szekcio { padding: 40px 0 44px; }
+  .sav { padding: 44px 0 48px; }
+  .sav h2, .mutat-szoveg h2 { font-size: 26px; }
+  .al-cim { font-size: 15.5px; }
+  /* sorrend telefonon: hero -> szabad idopontok -> milyen erzes -> a tobbi (a paros landing mintajara) */
+  main > section { order: 4; }
+  main > .hero { order: 0; }
+  main > .idopontok { order: 1; }
+  main > .erzes { order: 2; }
+  main > .mutat { order: 3; }
+
+  /* telefonon a kep / mozgokep felul latszik, es a sotet hatterbe megy at, ahol a szoveg kezdodik */
+  .hero::before { background: linear-gradient(180deg, rgba(16, 34, 31, .08) 0, rgba(16, 34, 31, .1) 110px, #10221f 300px, #10221f 100%); }
+  .hero-hatter, .hero-video { bottom: auto; height: 300px; object-position: 66% 38%; }
+  .hero-tart { display: block; padding: 232px 0 26px; }
+  .hero-szoveg { max-width: none; }
+  .hero h1 { font-size: clamp(28px, 8vw, 34px); line-height: 1.1; }
+  .hero-al { margin: 12px 0 12px; font-size: 15px; }
+  .hero-ar { margin-bottom: 12px; }
+  .hero-ar b { font-size: 36px; }
+  .hero-jelvenyek { gap: 8px 16px; margin-bottom: 18px; }
+  .hero-jelvenyek li { font-size: 13px; gap: 7px; }
+  .hero .ikon-kor { width: 28px; height: 28px; }
+  .hero .ikon-kor svg { width: 14px; height: 14px; }
+  .hero .cta-sor .gomb { width: 100%; }
+  .hero-ajandek { text-align: center; font-size: 13.5px; }
+  .hero .google-nagy { margin-top: 16px; width: 100%; justify-content: center; font-size: 13px; }
+  .g-pont, .g-db { font-size: 13px; }
+  .csillagok { font-size: 13px; }
+  .hero-cim { justify-content: center; font-size: 13px; }
+  .hero-lejatszas { position: static; margin: 18px auto 0; justify-content: center; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .18); width: 100%; }
+  .hero-lejatszas .lejatszas { width: 54px; height: 54px; }
+  .hero-lejatszas .lejatszas svg { width: 22px; height: 22px; }
+
+  .idopontok { padding: 30px 0 34px; border-top: 0; }
+  .idopontok h2 { font-size: 24px; }
+  .ido-racs { grid-template-columns: 1fr; gap: 14px; margin-top: 18px; }
+  .ido-kartya { order: -1; }
+  .ajanlat-kartya, .hangsuly-kartya, .ido-kartya { padding: 20px 16px 20px; border-radius: 18px; }
+  .ajanlat-ar b { font-size: 40px; }
+  .napok-keret { gap: 6px; }
+  .napok { gap: 8px; }
+  a.ido { padding: 10px 2px; font-size: 15px; }
+  .napok-nyil { width: 34px; height: 34px; }
+  .hangsuly-racs { gap: 8px; }
+  .ido-klip { display: none; }
+
+  .erzes-racs { grid-template-columns: 1fr; gap: 12px; margin-top: 20px; }
+  .erzes-kartya { aspect-ratio: 16 / 11; }
+  .kartya-szoveg { padding: 50px 16px 16px; }
+  .kartya-szoveg h3 { font-size: 22px; }
+
+  .mutat-racs { gap: 22px; }
+  .mutat-szoveg p { font-size: 15.5px; margin: 12px 0 20px; }
+  .mutat-szoveg .gomb { width: 100%; }
+  .lejatszas { width: 60px; height: 60px; }
+  .lejatszas svg { width: 25px; height: 25px; }
+
+  /* vendegvideok, lepesek: oldalra gorgetheto sor */
+  .videok, .lepes-sor { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; margin: 22px -16px 0; padding: 4px 16px 12px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .videok::-webkit-scrollbar, .lepes-sor::-webkit-scrollbar { display: none; }
+  .videok li { flex: 0 0 62%; scroll-snap-align: center; }
+  .lepes-sor li { flex: 0 0 78%; scroll-snap-align: center; }
+  .lepes-fej { min-height: 0; }
+  .lepes-sor p { flex: none; }
+  .pontok { display: flex; justify-content: center; gap: 7px; margin-top: 4px; }
+  .pontok span { width: 7px; height: 7px; border-radius: 50%; background: #cdd2c6; transition: background .2s, transform .2s; }
+  .sav .pontok span { background: rgba(255, 255, 255, .28); }
+  .pontok span.aktiv { background: var(--arany); transform: scale(1.25); }
+
+  .vel-racs { gap: 24px; }
+  .vel-szam { margin-top: 14px; font-size: 56px; }
+  .vel-szam span { font-size: 40px; }
+  .vel-al { margin-bottom: 18px; }
+  .vel-bal .gomb { width: 100%; }
+  .ti-doboz { padding: 8px; border-radius: 16px; }
+  .videok-cim { margin-top: 34px; font-size: 21px; }
+
+  .ajandek-racs { gap: 26px; }
+  .ajandek-kartya { transform: none; }
+  .ajandek-szoveg .gomb { width: 100%; }
+
+  .miert-racs { grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+  .miert-racs h3 { margin: 12px 12px 0; font-size: 15.5px; }
+  .miert-racs p { margin: 6px 12px 16px; font-size: 13px; }
+  .meg-sosem-tart { min-height: 0; padding: 150px 0 0; }
+  .meg-sosem-szoveg .gomb { width: 100%; }
+
+  .ketten-racs { grid-template-columns: 1fr; gap: 12px; margin-top: 22px; }
+  .ketten-kartya { aspect-ratio: 16 / 10; }
+  .ketten-gomb { width: 100%; }
+
+  .gyik h2 { font-size: 26px; }
+  .harmonika-racs { margin-top: 18px; }
+  .harmonika-racs summary { padding: 13px 16px; font-size: 15px; }
+  .harmonika-racs details > p { padding: 0 16px 14px; font-size: 14.5px; }
+
+  .zaro-tart { min-height: 0; padding: 46px 0 50px; }
+  .zaro h2 { font-size: 30px; }
+  .zaro .cta-sor, .zaro .cta-sor .gomb { width: 100%; }
+  .lb-tartalom { padding: 60px 0 20px; }
+  .lb video { max-width: 100vw; border-radius: 0; }
+}

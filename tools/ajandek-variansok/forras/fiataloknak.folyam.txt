@@ -1,0 +1,119 @@
+  103 KEP    x784 w592 h621 /assets/img/c2eb0f_159a37af224544a5ad517896a34f9a0a.jpg
+  103 KEP    x1376 w592 h621 /assets/img/c2eb0f_da1d4728a7c8428d9d62aab8e8a964f0.jpg
+  103 KEP    x1968 w592 h621 /assets/img/c2eb0f_2c17645e97d943fda9265b973f1bb6a9.jpg
+  103 KEP    x3744 w592 h621 /assets/img/c2eb0f_f6d843060c324eeeb0df5c16f73ec149.jpg
+  136 H2     x115 w485 40px 🎁 A legkülönlegesebb élmény ajándékba: Mosaic Head Spa rituálé
+  321 SZ     x113 w485 16px <b>Lepd meg a legjobb barátnődet, a tesódat (vagy dobd be tippként a pasidnak 😉) ezzel az exkluzív rituáléval! </b>
+  407 SZ     x113 w485 16px <b>Ez az a gift, amivel garantáltan felejthetetlen élménybe lesz része!</b>
+  482 GOMB   x113 w244 10px 💳KÁRTYÁVAL VESZEM!  -> /headspa-ajandekkartya#comp-m7ipdoiu
+  482 GOMB   x359 w244 10px 💵 UTALÁSSAL VESZEM!  -> /headspa-ajandekkartya#comp-m7io5w8m
+  573 SZ     x235 w173 17px Google 4,8/5 - Kiváló
+  630 SZ     x115 w470 16px <b>✅ 20% júliusi AKCIÓ!</b>
+  661 SZ     x115 w356 14px 💳 Egyéni Head Spa: <b>32.900 Ft helyett 26.900 Ft</b>
+  680 SZ     x115 w356 14px 💳 4 Kezes Egyéni Head Spa <b>49 .900 Ft helyett  39.900 Ft</b>
+  700 SZ     x115 w356 14px 💳 Páros Head Spa <b>65.900 Ft helyett 53.800 Ft</b>
+  850 KEP    x10 w611 h815 /assets/img/36b443_d5fd03efcebc4970ac2d0d9fed5ff377f000.jpg
+ 1005 H1     x659 w592 40px center <b>Ajándékozd a tökéletes mentális reset🧘‍♀️ és glow-up✨ élményét!</b>
+ 1128 SZ     x659 w583 17px center Havonta <b>több száz fiatal lány, hölgy, és influenszer jár a MOSAIC Head Spa-ba</b>, mert a munka és a social media folyamatos zaja mellett nálunk találnak egy helyet, ahol végre <b>teljesen offline-ba tehetik magukat</b>.
+ 1224 SZ     x659 w583 17px center <b>A csajok imádják, hogy a hajuk elképesztően selymes, fényes és egészséges lesz. 🤗</b>
+ 1295 SZ     x659 w583 17px center <b>Kizárólag szakképzett gyógymasszőrökkel dolgozunk, privát, csendes kezelőkben</b>, hogy a rituálé valóban pihentető és prémium legyen, mindezt 270 négyzetméteren.
+ 1390 SZ     x659 w583 17px center <b>800+ vendégünk 4.9⭐-os értékelése a garancia, hogy a szerencsés, akinek adod imádni fogja. 🥰</b>
+ 1801 KEP    x80 w808 h560 /assets/img/c2eb0f_02cc834d046d4906a0ea6e3d480f7790.jpg  [alt: welovebudapest-mosaic-headspa.jpg]
+ 1946 H1     x659 w592 40px center <b>MOST 20% NYÁRI AKCIÓ </b>- Minden Head Spa Élmény🎁Ajándékkártyára!
+ 2117 SZ     x659 w583 17px center <i><b>Az ajándékkártya NÉVRE SZÓL és 6 hónapig beváltható! </b></i><b>😘</b>
+ 2162 GOMB   x833 w244 10px BŐVEBBEN >>  -> /4-kezes-headspa-ajandekkartya
+ 2505 KEP    x0 w1440 h830 /assets/img/c2eb0f_8c347f764efd4b94997943270259bfce.jpg  [alt: DSC05687.jpg]
+ 2558 H2     x230 w980 40px center <b>Nézd meg vendégeink videóit! 💆‍♀️</b>
+ 2629 SZ     x405 w629 16px center Ilyen kényeztető élményben lesz része barátnődnek vagy szerettednek 😘
+ 2672 KEP    x267 w280 h510 /assets/img/c2eb0f_7c74e304d3394deeb1101d7612e658cef001.jpg
+ 2672 KEP    x570 w280 h510 /assets/img/c2eb0f_ecca71a0b1ec412cbb80698cfd5cc50ff001.jpg
+ 2672 KEP    x879 w280 h510 /assets/img/c2eb0f_3b9f1c40760f4809b8e590f7ca2b0329f002.jpg
+ 3394 H2     x724 w485 30px <b>☝️Nézd meg a bemutató videót a felejthetetlen HeadSpa szeánszról! 😘</b><br> <br> <b>"Úristen!"</b> - Ez a leggyakoribb reakció, amikor egy vendégünk befekszik a MOSAIC Head Spa ágyába, és elindul a szertartás.
+ 3420 KEP    x230 w480 h735 /assets/img/c2eb0f_7c74e304d3394deeb1101d7612e658cef000.jpg
+ 3659 H2     x724 w485 30px <b>(Nézd meg a videót! 😉) </b>
+ 3733 SZ     x724 w485 22px <b>Mit tartalmaz a 80 perces autentikus HeadSpa rituálé?</b>
+ 3799 SZ     x724 w485 17px ✅ Fejbőrkamerás diagnózissal kezdünk
+ 3825 SZ     x724 w485 17px ✅ Személyre szabott, <b>vegán OXYGENI pakolás</b> a haj egészségéért,
+ 3876 SZ     x724 w485 17px ✅ Mélytisztító hajmosás és <b>a híres  körvízsugaras terápia,</b>
+ 3901 SZ     x724 w485 17px ✅ Intenzív <b>fej-, arc-, dekoltázs- és kézmasszázs</b> gyógymasszőrökkel,
+ 3952 SZ     x724 w485 17px ✅ Gőzölés és <b>teljes ellazulás,</b>
+ 3978 SZ     x724 w485 17px ✅ Befejezésként: <b>profi női fodrászati beszárítás</b>, hogy a tükörbe nézve is tökéletes legyen az élmény.
+ 4054 SZ     x724 w485 17px <b>Ajándékozd ezt a felejthetetlen teljes testi-lelki megújulást</b> Magyarország legnagyobb (270 m2) és legluxusabb HeadSpa szalonjába!
+ 4156 SZ     x724 w485 17px <b>Legyél Te az, aki idén a  legkülönlegesebb ajándék ot adja! 😘</b>
+ 4266 KEP    x718 w528 h440 /assets/img/c2eb0f_159a37af224544a5ad517896a34f9a0a.jpg  [alt: mosaic-headspa-ajandekkartya.jpg]
+ 4276 H2     x244 w451 50px center <b>Így működik a MOSAIC Head Spa ajándékkártya </b>
+ 4420 H2     x276 w419 18px left <b>Gyorsan és biztonságosan meg tudod venni</b> itt a weboldalunkon keresztül.
+ 4464 H2     x276 w419 18px left <b>Bankkártyás</b> fizetéssel vagy <b>előreutalással.</b>
+ 4486 H2     x276 w419 18px left A rendszer azonnal küld neked <b>számlát</b> a vásárlásról.
+ 4508 H2     x276 w419 18px left Mindkét esetben <b>szép pdf-ben 24 órán belül átküldjük az e-mail címedre a kártyát,</b> amit ki tudsz nyomtatni, <b>de a szalonban is átveheted, papír alapon díszborítékban. (Bécsi út 2 - A 3.ker Zsigmond térnél)</b>
+ 4618 H2     x276 w419 18px left Az ajándékkártya<b> névre szól és 6 hónapig érvényes.</b>
+ 4640 H2     x276 w419 18px left <b>Csak a kártyán lévő kuponkódot kell megadni</b> foglaláskor és a rendszer jóváírja a 100% kedvezményt.
+ 4740 GOMB   x475 w244 10px 💳KÁRTYÁVAL VESZEM!  -> /headspa-ajandekkartya#comp-m7ipdoiu
+ 4740 GOMB   x721 w244 10px 💵 UTALÁSSAL VESZEM!  -> /headspa-ajandekkartya#comp-m7io5w8m
+ 4833 KEP    x0 w1440 h1803 /assets/img/c2eb0f_984c2348443b404f8be9e1a273aefd59.jpg  [alt: mosaic-headspa-kezeloszoba.jpg]
+ 4864 H2     x459 w507 35px center <b>👇Bankkártyás megrendelés👇</b>
+ 4934 SZ     x249 w961 16px center Ha papír alapúajándékkártyát szeretnél azt H-SZO 9 és 19 óra között átveheted a szalonban (1023 Bp Bécsi út 2.), ha pedig nyomtatandó (PDF) ajándékkártyát szeretnél azt is mi küldjük majd neked e-mailben.
+ 5049 KEP    x249 w322 h242 /assets/img/c2eb0f_968e13bc871b401f849c42c2f87439a8.jpg
+ 5049 KEP    x605 w600 h396 /assets/img/c2eb0f_f6e7b88ba4974c659c3b6c0d5abe1905.jpg
+ 5309 H1     x164 w494 40px center Egyéni Head Spa ajándékkártya
+ 5405 SZ     x271 w278 17px center A teljes testi-lelki feltöltődésért és gyönyörű hajért.
+ 5465 H1     x614 w582 40px center Páros Head Spa ajándékkártya
+ 5515 SZ     x649 w513 17px center Ha a kényeztetést együtt szeretnétek átélni.
+ 5569 SZ     x275 w278 17px center <b>50+30 perces, 32.900 Ft helyett:</b>
+ 5605 GOMB   x292 w244 10px MEGVESZEM: 26.900 FT  -> https://buy.stripe.com/5kQcN56RK6Mb7VC3pf7g40j
+ 5620 SZ     x766 w278 17px center <b>50+30 perces, 65.900 Ft helyett:</b>
+ 5650 GOMB   x787 w244 10px MEGVESZEM: 53.800 FT  -> https://buy.stripe.com/cNi8wP6RK8Ujfo41h77g40k
+ 5668 SZ     x271 w287 14px center <b>20% júliusi kedvezménnyel!</b>
+ 5712 SZ     x766 w287 14px center <b>20% júliusi  kedvezménnyel!</b>
+ 5823 KEP    x431 w600 h396 /assets/img/c2eb0f_9012c8b41e804e09b3b36dffbbca7eaa.jpg  [alt: 4-kezes-headspa-4.jpg]
+ 6239 H1     x440 w582 40px center <b>ÚJDONSÁG! - 4 kezes Headspa PREMIUM Ajándékkártya!</b>
+ 6335 SZ     x475 w513 17px center 2 gyógymasszőr kényezteti Őt 8 féle masszázzsal, a legteljesebb Ajándék Nőknek!
+ 6416 SZ     x592 w278 16px center <b>50+30 perces, 49.900 Ft helyett most:</b>
+ 6444 GOMB   x613 w244 10px MEGVESZEM: 39.900 FT  -> https://buy.stripe.com/3cIeVd7VOc6va3K7Fv7g40i
+ 6505 SZ     x591 w287 14px center <b>20% júliusi kedvezménnyel!</b>
+ 6703 H2     x403 w634 35px center <b>👇Előreutalásos megrendelés👇</b>
+ 6773 SZ     x431 w575 16px center A vásárlás menete:
+ 6835 SZ     x658 w165 16px center <b>Töltsd ki a lenti űrlapot.</b>
+ 6863 SZ     x513 w456 16px center <b>Megjelenik a számlaszámunk</b>, melyre várjuk a <b>vásárlás összegét.</b>
+ 6892 SZ     x526 w431 16px center <b>Az utalási bizonylatot küldd</b> a <a href="mailto:mosaicheadspa@gmail.com">mosaicheadspa@gmail.com</a>-ra.
+ 6921 SZ     x540 w403 16px center <b>A nyomtatható ajándékkártyát e-mailben</b> küldjük el neked.
+ 6950 SZ     x502 w479 16px center <b>Ha papír alapon + borítékkal is szeretnéd az ajándékutalványt,</b> akkor nyitvatartási időben a szalonunkban át tudod venni.
+ 7071 SZ     x494 w452 10px <b>Ajándékozott Teljes Neve* Fizető fél Vezetékneve* Fizető fél Keresztneve* E-mail cím (Ahova a pdf-et kéred)* Telefonszámod amin elérünk* Számlázási cím (magán vagy céges)* Cégnév (Ha céges számlát kérsz) Cég adószám (Ha céges számlát kérsz) Milyen kártyát kérsz?*  LIMITÁLT - 50 perces 4 Kezes Headspa ajándékkártya - 39.900 Ft (20% kedvezmény)  Egyéni 50 perces Headspa kezelés - 26.900 Ft (20% kedvezmény)  Páros 50 perces Headspa kezelés - 53.800 Ft (20% kedvezmény) A Mosaic Headspa ÁSZF-jét elolvastam és elfogadom.* Megveszem! Átutalási kötelezettség mellett.</b>
+ 8239 H2     x473 w507 35px center <b>Gyakran Ismételt Kérdések</b>
+ 8327 GOMB   x387 w702 17px left Előreutalás vagy Bankkártya - mi a különbség?
+ 8388 GOMB   x387 w702 17px left Mikor és hogyan kapom meg az ajándékkártyát?
+ 8449 GOMB   x387 w702 17px left Hova kell utalnom a 29.900 vagy 59.800 forintot?
+ 8509 GOMB   x387 w702 17px left Hogyan tudom felhasználni az ajándékkártyát?
+ 8570 GOMB   x387 w702 17px left Átruházható az ajándékkártya?
+ 8631 GOMB   x387 w702 17px left Meddig érvényes az ajándékkártya?
+ 8692 GOMB   x387 w702 17px left Visszaváltható az ajándékkártya?
+ 8753 GOMB   x387 w702 17px left Hány ajándékkártyát vehetek?
+ 8813 GOMB   x387 w702 17px left Hol és mikor tudom személyesen átvenni a papír alapú ajándékkártyát?
+ 8914 H2     x224 w980 40px center <b>Ilyen gyönyörűen szalonban várjuk majd Őt 🥰</b>
+ 9016 KEP    x230 w980 h536 /assets/img/c2eb0f_ac85eea74409484091e12f8d72fbee98.jpg
+ 9016 KEP    x1210 w980 h536 /assets/img/c2eb0f_aa3b2f8ec7564c87bf16836d7d3b29d6.jpg
+ 9016 KEP    x2190 w980 h536 /assets/img/c2eb0f_00a2f4bd0e9b4325b2d02e77edb874e9.jpg
+ 9016 KEP    x17870 w980 h536 /assets/img/c2eb0f_e9339a3f8c784c08839518f96a6cf19d.jpg
+ 9768 KEP    x719 w721 h524 /assets/img/c2eb0f_5fad37708d0d465aa83ff2fcfe0628cf.webp  [alt: headspa_mockup.webp]
+ 9841 H2     x118 w485 40px center <b>Vedd meg ajándékba 1 perc alatt! </b>
+ 9960 SZ     x115 w485 16px center Ajándékkártyánkat a vásárlás után <b>digitális (PDF) formátumban e-mailben is elküldjük, illetve lehetőséged van azt ízléses borítékban, papír alapon is átvenni szalonunkban.</b>
+10047 SZ     x115 w485 16px center <br> <b>A vásárláshoz először válaszd ki, a fizetés módját:</b>
+10150 GOMB   x117 w223 10px ELŐRE UTALÁSSAL  -> /headspa-ajandekkartya#comp-m7io5w8m
+10150 GOMB   x380 w223 10px BANKKÁRTYÁVAL  -> /headspa-ajandekkartya#comp-m7ipdoiu
+10292 KEP    x0 w1440 h872 /assets/img/11062b_c676302884b34e2eacc489eede7cbc47.jpg  [alt: Spa Salts and Stones]
+10372 H2     x258 w932 40px center Itt találsz meg minket
+10487 H3     x258 w247 26px Címünk
+10487 H3     x572 w257 26px Ahol elérsz minket
+10487 H3     x887 w280 26px Nyitvatartásunk
+10536 SZ     x572 w257 16px 06 20 247 4444
+10539 SZ     x258 w247 16px 1023 Budapest Bécsi út 2.<br> A Kolosy és a Zsigmond tér között.
+10540 SZ     x887 w103 16px Hétfő - Péntek
+10540 SZ     x990 w200 16px 8:00 – 20:00
+10565 SZ     x572 w257 16px mosaicheadspa@gmail.com
+10568 SZ     x887 w95 16px Szombat
+10568 SZ     x990 w200 16px 8:00 – 20:00
+10596 SZ     x887 w95 16px Vasárnap
+10596 SZ     x990 w200 16px ZÁRVA
+10625 GOMB   x572 w223 10px IDŐPONTFOGLALÁS  -> /foglalo-motor?business=headspa
+10701 GOMB   x572 w223 10px AJÁNDÉKKÁRTYA  -> /headspa-ajandekkartya#comp-m7ipdoiu
+10784 IFRAME x234 w980 h350 https://www.google.com/maps?q=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202.&output=embed

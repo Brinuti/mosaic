@@ -1,0 +1,234 @@
+/* A MOSAIC fejlec, lablec es gombok kozos finomitasa (minden oldalon).
+   Egy forras, ket helyre kerul (tools/netlify-build.mjs):
+   - a Wixes (klon) oldalakba a beagyazott klon.css moge,
+   - a sajat oldalakba (a <!--mh-fejlec--> darabok) a fejlec moge.
+   Mobilon a Wix 320 px-es alapon dolgozik, ezek a px-ek is ahhoz valok. Ahol a Wix beegetett
+   ertekeit (sorok magassaga, margok, betumeret) kell felulirni, ott !important van. */
+
+/* ============ ASZTALI FEJLEC (megujitva 2026-10-07): levegosebb, szelesebb, egyseges mindenhol ============
+   A menusor 72 px magas zold csik, a tartalom legfeljebb 1240 px szeles (a Wix 980 px-es oszlopa helyett), igy a 10 menupont (a Paros Head Spa is) elfer.
+   Jost betu, finom arany alahuzas a kijelolt / ravitt pontnal, a FOGLALAS arany gomb, a lenyilo lekerekitett kartya, az "i" es az EN jelveny arany korvonalas.
+   Csak az asztali fejlecre vonatkozik (a mobilnak nincs #comp-m4lbfl1t menuje). A Wix beegetett ertekeit (margo, left, szelesseg) !important irja felul. */
+#SITE_HEADER:has(#comp-m4lbfl1t) { --mh-w: min(1240px, calc(100% - 40px)); --mh-arany: #c9a96a; --mh-vilagos: #e6d3a1; box-shadow: 0 8px 26px rgba(8, 22, 24, .22); }
+#SITE_HEADER:has(#comp-m4lbfl1t) [data-mesh-id="SITE_HEADERinlineContent-gridContainer"] { grid-template-rows: 72px auto !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #bgLayers_SITE_HEADER .LNYVZi { background: linear-gradient(180deg, #1a3437 0%, #152c2f 100%) !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m3znboq3 { margin-left: calc((100% - var(--mh-w)) / 2) !important; left: 0 !important; margin-top: 9px !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m4lbfl1t { margin-left: calc((100% - var(--mh-w)) / 2) !important; left: 171px !important; margin-top: 19px !important; width: calc(var(--mh-w) - 171px - 124px) !important; height: 34px !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m4lbfl1t nav { width: 100% !important; height: 34px !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m4lbfl1t nav > ul { width: 100% !important; flex-wrap: nowrap !important; justify-content: space-between !important; align-items: center; height: 34px !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m4lbfl1t li[data-testid="menuItemDepth0"] { flex: 0 0 auto !important; width: auto !important; height: 34px !important; display: flex; align-items: center; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m4lbfl1t li[data-testid="menuItemDepth0"] > div { width: auto !important; display: flex; align-items: center; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m4lbfl1t li[data-testid="menuItemDepth0"] > div > a { width: auto !important; height: auto !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m4lbfl1t [class*="itemDepth02233374943__container"] { width: auto !important; padding: 0 !important; }
+/* a Wix a kijelolt oldal menupontja kore keretet rajzolt: helyette csak az arany alahuzas */
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m4lbfl1t li[data-testid="menuItemDepth0"] > div > a { border: 0 !important; background: none !important; box-shadow: none !important; border-radius: 0 !important; }
+/* a menupont felirata: Jost, a kepernyo szelessegehez igazodo meret, finom arany alahuzas ravitelre / a kijelolt oldalnal */
+#SITE_HEADER:has(#comp-m4lbfl1t) .itemDepth02233374943__label { position: relative; display: inline-block; font: 400 clamp(10.8px, .9vw, 13.6px)/1.2 'Jost', 'Helvetica Neue', Arial, sans-serif !important; letter-spacing: .035em !important; color: rgba(255, 255, 255, .9) !important; white-space: nowrap; padding: 8px 0; transition: color .2s; }
+#SITE_HEADER:has(#comp-m4lbfl1t) .itemDepth02233374943__label::after { content: ''; position: absolute; left: 0; right: 0; bottom: 1px; height: 2px; border-radius: 2px; background: var(--mh-arany); transform: scaleX(0); transform-origin: 50% 50%; transition: transform .25s ease; }
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:hover > div .itemDepth02233374943__label,
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"][data-is-current="true"] .itemDepth02233374943__label,
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has([data-is-current="true"]) .itemDepth02233374943__label { color: var(--mh-vilagos) !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:hover > div .itemDepth02233374943__label::after,
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"][data-is-current="true"] .itemDepth02233374943__label::after,
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has([data-is-current="true"]) .itemDepth02233374943__label::after { transform: scaleX(1); }
+/* a lenyilot jelzo kis nyil a felirat mellett */
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m4lbfl1t [class*="accessibilityIconWrapper"] { display: none !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has([data-testid="positionBox"]) .itemDepth02233374943__label { padding-right: 15px; }
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has([data-testid="positionBox"]) .itemDepth02233374943__label::before { content: ''; position: absolute; right: 2px; top: 50%; width: 5px; height: 5px; margin-top: -4px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); opacity: .75; transition: transform .2s, margin-top .2s; }
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has([data-testid="positionBox"]):hover .itemDepth02233374943__label::before { transform: rotate(225deg); margin-top: -1px; }
+/* FOGLALAS: arany gomb a menusorban */
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) .itemDepth02233374943__label { padding: 9px 18px; border-radius: 999px; background: linear-gradient(#c6a346, #d9c164); color: #1d2a26 !important; font-weight: 500 !important; letter-spacing: .08em !important; box-shadow: 0 5px 14px rgba(150, 120, 40, .32); text-shadow: 0 1px 1px rgba(255, 255, 255, .25); transition: transform .2s, box-shadow .2s; }
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) .itemDepth02233374943__label::after { display: none; }
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]):hover .itemDepth02233374943__label { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(150, 120, 40, .4); }
+/* lenyilo: lekerekitett kartya, arany hajszalvonal, puha arnyek */
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"] { position: relative !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="itemDepth02233374943__positionBox"] { position: absolute !important; top: 100% !important; bottom: auto !important; left: 50% !important; right: auto !important; width: max-content !important; min-width: 250px; margin: 0 !important; padding-top: 14px; transform: translateX(-50%); }
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="submenu815198092__listWrapper"] { column-count: 1 !important; width: auto !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="submenu815198092__pageWrapper"] { margin: 0 !important; width: 100% !important; justify-content: flex-start; }
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="submenu815198092__menuItem"] { padding: 0 !important; margin: 0 0 2px !important; background: transparent !important; border: 0 !important; display: block; }
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="submenu815198092__root"] { background: #1a3437 !important; border: 1px solid rgba(201, 169, 106, .38) !important; border-radius: 14px !important; padding: 8px !important; box-shadow: 0 22px 46px rgba(6, 18, 20, .45) !important; width: 100%; }
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="itemDepth12472627565__itemWrapper"] { height: auto !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="itemDepth12472627565__container"] { padding: 9px 14px !important; border-radius: 9px; transition: background .18s; }
+#SITE_HEADER:has(#comp-m4lbfl1t) .itemDepth12472627565__label { font: 400 14.5px/1.3 'Jost', 'Helvetica Neue', Arial, sans-serif !important; letter-spacing: .02em !important; color: rgba(255, 255, 255, .92) !important; white-space: nowrap; transition: color .18s; }
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="itemDepth12472627565__itemWrapper"]:hover [class*="itemDepth12472627565__container"] { background: rgba(201, 169, 106, .16); }
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="itemDepth12472627565__itemWrapper"]:hover .itemDepth12472627565__label,
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="itemDepth12472627565__itemWrapper"][data-is-current="true"] .itemDepth12472627565__label { color: var(--mh-vilagos) !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="itemDepth12472627565__itemWrapper"][data-is-current="true"] [class*="itemDepth12472627565__container"] { background: rgba(201, 169, 106, .1); }
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="itemDepth12472627565--isCurrentPage"] .itemDepth12472627565__label { text-decoration: none !important; color: var(--mh-vilagos) !important; }
+/* jobb oldal: "i" (info) es nyelvi jelveny */
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m7q6eklh { margin-left: calc((100% - var(--mh-w)) / 2) !important; left: calc(var(--mh-w) - 104px) !important; margin-top: 19px !important; width: 34px !important; height: 34px !important; }
+#SITE_HEADER:has(#comp-m4lbfl1t) #comp-m7jcfhgp { margin-left: calc((100% - var(--mh-w)) / 2) !important; left: calc(var(--mh-w) - 60px) !important; margin-top: 19px !important; width: 60px !important; height: 34px !important; }
+#comp-m7q6eklh a { position: relative; display: block; width: 100%; height: 100%; }
+#comp-m7q6eklh img { opacity: 0 !important; }
+#comp-m7q6eklh a::before { content: 'i'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border: 1.5px solid rgba(230, 211, 161, .75); border-radius: 50%; color: #e6d3a1; font: italic 500 19px/1 'Playfair Display', Georgia, serif; transition: background .2s, border-color .2s, color .2s; }
+#comp-m7q6eklh a:hover::before { background: rgba(201, 169, 106, .18); border-color: #e6d3a1; }
+.mh-nyelv { display: inline-flex !important; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; height: 100%; width: 100%; padding: 0 11px; border: 1.5px solid rgba(230, 211, 161, .6); border-radius: 999px; color: #e6d3a1; text-decoration: none; font: 500 12.5px/1 'Jost', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .14em; white-space: nowrap; transition: background .2s, border-color .2s; }
+.mh-nyelv:hover { background: rgba(201, 169, 106, .18); border-color: #e6d3a1; }
+.mh-nyelv .mh-glob { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; opacity: .9; }
+.mh-nyelv span { padding-left: .14em; }
+/* nagyon keskeny asztali ablak (~1080 px alatt): kisebb betu es szukebb gomb, hogy a 10 menupont akkor is elférjen */
+@media (max-width: 1080px) {
+  #SITE_HEADER:has(#comp-m4lbfl1t) .itemDepth02233374943__label { font-size: 10.6px !important; letter-spacing: 0 !important; }
+  #SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) .itemDepth02233374943__label { padding: 8px 12px; }
+  #SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has([data-testid="positionBox"]) .itemDepth02233374943__label { padding-right: 12px; }
+}
+
+/* 980 px alatt (tablet allo helyzetben, keskeny asztali ablak): a fejlec ugyanugy 980 px szeles marad, mint a Wix-oldalak (az oldal ugyis legalabb 980 px szeles),
+   igy a 11 menupont nem csuszik ra a Foglalas / i / EN gombokra (2026-10-07, a tablet-eszrevetel nyoman) */
+@media (max-width: 979px) {
+  html #SITE_HEADER:has(#comp-m4lbfl1t) { min-width: 980px !important; }
+}
+
+/* ============ MOBIL FEJLEC: egy kicsit alacsonyabb, a sor tartalma picit feljebb ============ */
+.device-mobile-optimized [data-mesh-id="SITE_HEADERinlineContent-gridContainer"] { grid-template-rows: 46px auto !important; }
+.device-mobile-optimized #comp-m3znboq3 { margin-top: 9px !important; }
+/* az "i" kep negyzetes: teljes egeszeben latszik (korabban 25x24-re vagva) */
+.device-mobile-optimized #comp-m7q6eklh { margin-top: 10px !important; width: 26px !important; height: 26px !important; }
+.device-mobile-optimized #comp-m7q6eklh a { height: 100% !important; width: 100% !important; overflow: visible !important; }
+.device-mobile-optimized #comp-m7q6eklh img { object-fit: contain !important; width: 100% !important; height: 100% !important; }
+.device-mobile-optimized #comp-m7q6eklh { left: 108px !important; }
+/* az "i": ugyanaz az arany korvonalas megjelenes, mint asztalon, kisebben (a mobil fejlecben csak a logo, az "i", a Foglalas gomb es a hamburger van) */
+.device-mobile-optimized #comp-m7q6eklh a::before { border-width: 1.2px; font-size: 15px; }
+.device-mobile-optimized #MENU_AS_CONTAINER_TOGGLE { margin-top: -1px !important; }
+
+/* "Foglalas" gomb: ugyanaz a stilus, mint az uj oldalak aranyszinu gombja (puha arnyek, kozepre irt, nem csupa nagybetus) */
+.device-mobile-optimized #comp-mo70bxf7 { margin-top: 10px !important; width: 78px !important; height: 26px !important; left: 190px !important; }
+.device-mobile-optimized #comp-mo70bxf7 a { height: 100% !important; padding: 0 !important; box-shadow: 0 4px 12px rgba(150, 120, 40, .35) !important; }
+.device-mobile-optimized #comp-mo70bxf7 .StylableButton2545352419__container { width: 100% !important; height: 100% !important; justify-content: center !important; align-items: center !important; }
+.device-mobile-optimized #comp-mo70bxf7 .StylableButton2545352419__label { font: 500 11.5px/1 'Jost', 'Helvetica Neue', Arial, sans-serif !important; letter-spacing: .02em !important; margin: 0 !important; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); }
+
+/* ============ MOBIL AKCIOSAV: egy sorban, kisebb betu, lagy, elmosott ragyogas ============ */
+.device-mobile-optimized [data-mesh-id="comp-mpv0gaodinlineContent-gridContainer"] { grid-template-rows: 26px !important; }
+.device-mobile-optimized #comp-mpv0ivyk { margin: 0 !important; left: 0 !important; width: 100% !important; height: 26px !important; display: flex !important; align-items: center; justify-content: center; }
+.device-mobile-optimized #comp-mpv0ivyk p { font-size: 9.7px !important; line-height: 1 !important; white-space: nowrap; margin: 0 !important; }
+.device-mobile-optimized #comp-mpv0ivyk p * { font-size: inherit !important; }
+/* a ragyogas a sav oszlopan van (ahol a sav el van rejtve, pl. a PMU/lezeres landingen, ott semmi nem latszik belole) */
+.device-mobile-optimized #comp-mpv0gaod { box-shadow: 0 5px 16px rgba(238, 5, 163, .38); }
+.device-mobile-optimized #bgLayers_comp-mpv0gaod::after { content: ''; position: absolute; inset: -6px; pointer-events: none; filter: blur(7px);
+  background: radial-gradient(60% 130% at 50% 0%, rgba(255, 160, 230, .55), rgba(255, 160, 230, 0) 72%),
+    linear-gradient(90deg, rgba(120, 0, 90, .35), rgba(120, 0, 90, 0) 24%, rgba(120, 0, 90, 0) 76%, rgba(120, 0, 90, .35)); }
+
+/* ============ LABLEC (megujitva 2026-10-07): tobboszlopos, sotet zold, arany hajszalvonal ============
+   A lablec HTML-jet a build (tools/fejlec-menu.mjs) irja be minden oldalra (a Wixes oldalakba es a sajat oldalak darabjaiba egyarant); a Wix lablec-csik helyett.
+   Asztalon 4 oszlop (marka + gomb, Head Spa, szolgaltatasok, elerhetoseg), keskenyebben 2, telefonon 1; alul a jogi sor (ASZF - Impresszum - Suti beallitasok) es a nyelvvalto. */
+#SITE_FOOTER.mh-lablec-uj { display: block !important; height: auto !important; min-height: 0 !important; box-sizing: border-box; padding: 56px 24px 0; background: linear-gradient(180deg, #14292c 0%, #0e2022 100%); box-shadow: inset 0 1px 0 rgba(201, 169, 106, .42); color: rgba(255, 255, 255, .74); font: 400 15px/1.6 'Jost', 'Helvetica Neue', Arial, sans-serif; text-align: left; }
+#SITE_FOOTER.mh-lablec-uj *, #SITE_FOOTER.mh-lablec-uj *::before, #SITE_FOOTER.mh-lablec-uj *::after { box-sizing: border-box; }
+#SITE_FOOTER .mhl-belso { max-width: 1160px; margin: 0 auto; display: grid; grid-template-columns: minmax(230px, 1.3fr) 1fr 1.2fr; gap: 38px 52px; padding-bottom: 42px; }
+#SITE_FOOTER .mhl-belso:has(> nav:nth-of-type(2)) { grid-template-columns: minmax(230px, 1.3fr) 1fr 1fr 1.2fr; }
+#SITE_FOOTER .mhl-oszlop { min-width: 0; }
+#SITE_FOOTER h3 { margin: 0 0 16px; font: 500 19px/1.2 'Playfair Display', Georgia, 'Times New Roman', serif; letter-spacing: .01em; color: #e6d3a1; }
+#SITE_FOOTER p { margin: 0 0 14px; font: inherit; color: inherit; }
+#SITE_FOOTER a { color: rgba(255, 255, 255, .82); text-decoration: none; transition: color .2s, border-color .2s, transform .2s; }
+#SITE_FOOTER a:hover { color: #e6d3a1; }
+#SITE_FOOTER .mhl-logo { display: inline-block; margin: 0 0 16px; }
+#SITE_FOOTER .mhl-logo img { display: block; width: 143px; height: auto; max-width: 100%; }
+#SITE_FOOTER .mhl-marka p { max-width: 330px; margin-bottom: 22px; }
+#SITE_FOOTER .mhl-gomb { display: inline-flex; align-items: center; gap: 8px; padding: 12px 26px; border-radius: 999px; background: linear-gradient(#c6a346, #d9c164); color: #1d2a26; font: 500 14.5px/1 'Jost', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .06em; box-shadow: 0 6px 18px rgba(150, 120, 40, .32); }
+#SITE_FOOTER .mhl-gomb:hover { color: #1d2a26; transform: translateY(-1px); box-shadow: 0 9px 22px rgba(150, 120, 40, .42); }
+#SITE_FOOTER nav.mhl-oszlop a { display: block; padding: 4px 0; font-size: 15px; }
+#SITE_FOOTER nav.mhl-oszlop a:hover { transform: translateX(3px); }
+#SITE_FOOTER .mhl-elerh a { border-bottom: 1px solid rgba(201, 169, 106, .45); padding-bottom: 1px; }
+#SITE_FOOTER .mhl-also { position: static !important; width: 100% !important; height: auto !important; left: auto !important; max-width: 1160px; margin: 0 auto !important; padding: 18px 0 24px; border-top: 1px solid rgba(201, 169, 106, .22); display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+#SITE_FOOTER .mhl-also p { margin: 0; font-size: 13.5px; color: rgba(255, 255, 255, .62); letter-spacing: .02em; }
+#SITE_FOOTER .mhl-also p a { white-space: nowrap; color: rgba(255, 255, 255, .85); border-bottom: 1px solid rgba(201, 169, 106, .55); padding-bottom: 1px; }
+#SITE_FOOTER .mhl-also p a:hover { color: #e6d3a1; border-color: #e6d3a1; }
+#SITE_FOOTER .mhl-nyelv { display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border: 1px solid rgba(230, 211, 161, .45); border-radius: 999px; color: #e6d3a1; font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; }
+#SITE_FOOTER .mhl-nyelv:hover { background: rgba(201, 169, 106, .16); border-color: #e6d3a1; }
+#SITE_FOOTER .mhl-nyelv .mh-glob { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+@media (max-width: 900px) {
+  #SITE_FOOTER .mhl-belso, #SITE_FOOTER .mhl-belso:has(> nav:nth-of-type(2)) { grid-template-columns: 1fr 1fr; gap: 32px 32px; }
+  #SITE_FOOTER .mhl-marka { grid-column: 1 / -1; }
+}
+@media (max-width: 560px) {
+  #SITE_FOOTER.mh-lablec-uj { padding: 38px 22px 0; font-size: 14px; }
+  #SITE_FOOTER .mhl-belso, #SITE_FOOTER .mhl-belso:has(> nav:nth-of-type(2)) { grid-template-columns: 1fr 1fr; gap: 28px 22px; padding-bottom: 30px; }
+  #SITE_FOOTER .mhl-marka, #SITE_FOOTER .mhl-elerh { grid-column: 1 / -1; }
+  #SITE_FOOTER nav.mhl-oszlop a { font-size: 14px; }
+  #SITE_FOOTER h3 { font-size: 17px; margin-bottom: 10px; }
+  #SITE_FOOTER .mhl-also { flex-direction: column; text-align: center; padding: 16px 0 22px; }
+  #SITE_FOOTER .mhl-also p { font-size: 12.5px; }
+}
+
+/* ============ "i" (INFO) FELUGRO ABLAK (2026-10-07): az oldal stilusaban (krem hatter, Playfair cim, arany reszletek), jobbrol uszik be ============
+   A HTML-jet a build (tools/fejlec-menu.mjs) irja be a Wixes ablak helyett; a klon.js nyitja / zarja (X, Esc, hatterre kattintas).
+   Telefonon a nyitvatartas es az arlista-link egy-egy sorba fer (nowrap), a cim lehet ket soros. */
+.mh-popup-gyoker.mhp { position: fixed; inset: 0; z-index: 2147482000; }
+.mh-popup-gyoker.mhp[hidden] { display: none; }
+.mhp *, .mhp *::before, .mhp *::after { box-sizing: border-box; }
+.mhp .mhp-fatyol { position: fixed; inset: 0; background: rgba(10, 26, 28, .58); }
+.mhp .mhp-panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(430px, 100%); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  background: #f6f4ec; color: #1b2e2f; padding: 34px 30px 30px; font: 400 16px/1.5 'Jost', 'Helvetica Neue', Arial, sans-serif; box-shadow: -18px 0 50px rgba(6, 18, 20, .35);
+  border-left: 1px solid rgba(201, 169, 106, .5); animation: mhp-be .32s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes mhp-be { from { transform: translateX(46px); opacity: 0; } to { transform: none; opacity: 1; } }
+.mhp .mhp-zar { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0; border: 1px solid #dce0d6; border-radius: 50%; background: #fff; color: #0f3a3c; cursor: pointer; transition: background .2s, border-color .2s; }
+.mhp .mhp-zar:hover { background: #f1e9d2; border-color: #c9a96a; }
+.mhp .mhp-zar svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.mhp .mhp-felcim { margin: 0 0 6px; padding-right: 52px; font: 500 12.5px/1.3 'Jost', sans-serif; letter-spacing: .18em; text-transform: uppercase; color: #a07f4b; }
+.mhp h2 { margin: 0 0 22px; padding-right: 48px; font: 500 30px/1.15 'Playfair Display', Georgia, 'Times New Roman', serif; color: #0f3a3c; }
+.mhp .mhp-csoport { margin: 0 0 22px; padding: 18px 18px 8px; background: #fff; border-radius: 16px; box-shadow: 0 1px 2px rgba(40, 30, 20, .04), 0 8px 24px rgba(40, 30, 20, .06); }
+.mhp h3 { margin: 0 0 10px; font: 500 12.5px/1.3 'Jost', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #a07f4b; }
+.mhp .mhp-sor { display: flex; align-items: center; gap: 13px; margin: 0 0 10px; color: inherit; text-decoration: none; font-size: 16px; }
+.mhp a.mhp-sor:hover .mhp-szoveg { color: #a07f4b; }
+.mhp .mhp-ikon { flex: none; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #e6ebe7; color: #3f7652; }
+.mhp .mhp-ikon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.mhp .mhp-szoveg { min-width: 0; transition: color .2s; }
+.mhp .mhp-szoveg small { display: block; font-size: 13.5px; color: #5c6766; }
+.mhp .mhp-szoveg b { font-weight: 500; }
+.mhp .mhp-nyil { color: #a07f4b; margin-left: 2px; }
+.mhp .mhp-sor-masodik { margin-top: -4px; }
+.mhp .mhp-sor-masodik .mhp-ikon { background: transparent; }
+.mhp .mhp-gombok { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 12px; }
+.mhp .mhp-gomb { display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1 1 140px; padding: 12px 16px; border-radius: 999px; text-decoration: none; font: 500 15px/1 'Jost', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .05em; white-space: nowrap; transition: transform .2s, box-shadow .2s, background .2s; }
+.mhp .mhp-arany { background: linear-gradient(#c6a346, #d9c164); color: #1d2a26; box-shadow: 0 6px 16px rgba(150, 120, 40, .3); }
+.mhp .mhp-arany:hover { transform: translateY(-1px); box-shadow: 0 9px 20px rgba(150, 120, 40, .4); }
+.mhp .mhp-korvonal { border: 1.5px solid #0f3a3c; color: #0f3a3c; background: transparent; }
+.mhp .mhp-korvonal:hover { background: rgba(15, 58, 60, .07); }
+@media (max-width: 560px) {
+  .mhp .mhp-panel { padding: 26px 18px 22px; }
+  .mhp h2 { font-size: 25px; margin-bottom: 16px; }
+  .mhp .mhp-csoport { padding: 14px 14px 5px; margin-bottom: 16px; border-radius: 14px; }
+  .mhp .mhp-sor { gap: 10px; font-size: 14px; margin-bottom: 8px; }
+  .mhp .mhp-ikon { width: 30px; height: 30px; }
+  .mhp .mhp-ikon svg { width: 15px; height: 15px; }
+  .mhp .mhp-sor .mhp-szoveg { white-space: nowrap; }
+  .mhp .mhp-sor .mhp-szoveg small { white-space: normal; font-size: 12px; }
+  .mhp .mhp-gomb { flex-basis: 120px; padding: 11px 10px; font-size: 13.5px; }
+  .mhp h3 { font-size: 11.5px; margin-bottom: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { .mhp .mhp-panel { animation: none; } }
+
+/* ============ GOMBOK (minden Wixes oldalon, asztalon es mobilon): arany szin, Jost betu, puha arnyek ============
+   Ugyanaz a kinezet, mint a sminktetovalas es az uj oldalak gombjain. A szoveg nagy/kis betuje es a meret a Wixben marad. */
+@font-face { font-family: 'Jost'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/jost-400-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Jost'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/jost-400-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+/* egyseges arany (a nehany "hamisitott sarga" gombot is: IDOPONT FOGLALAS, JELENTKEZEM!, VISSZAHIVAST KEREK!); a hover-allapot marad a Wixe */
+[class*="StylableButton2545352419__root"]:not(:hover) { background-image: linear-gradient(#c6a346, #d9c164) !important; }
+[class*="StylableButton2545352419__root"] { box-shadow: 0 6px 18px rgba(150, 120, 40, .22) !important; }
+[class*="StylableButton2545352419__root"] [class*="StylableButton2545352419__label"] { font-family: 'Jost', 'Helvetica Neue', Arial, sans-serif !important; font-weight: 500 !important; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); }
+
+/* ============ MOBIL MENU (a hamburger-gombbal nyilo menu): tomorebb, hogy a teljes menu egyszerre latszodjon ============
+   A Wix a sorokat 56 px-esre allitotta (a 320 px-es alapon), a menut pedig 98 px-rel a fejlec ala: igy a kilenc menupont egy kb. 660 px magas
+   telefonkepernyon lecsuszott az aljarol (az almenu megnyitasa utan meg inkabb). Most a sorok 40 px-esek, az also sor kozelebb van a fejleckez,
+   a lenyilo (almenu) sorai kisebbek es halvanyabb hatterun. A Wix ertekeit az ID-s szabaly allitja, ezert !important kell. */
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU { --item-height: 35px !important; margin-top: 56px !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .wixui-vertical-menu__submenu { --item-height: 31px !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .wixui-vertical-menu__submenu > li { background-color: rgba(255, 255, 255, .07) !important; }
+/* a mobil menu megjelenese (2026-10-07): balra igazitott sorok (a Wix jobbrol-balra iranyt es jobbra zart szoveget hasznalt), Jost betu, finom vonalak, kijelolt = arany, FOGLALAS = arany gomb */
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU { --item-depth0-direction: ltr; --item-depth1-direction: ltr; --item-depth0-align: left; --item-depth1-align: left; --text-align: left; --padding-start-lvl1: 26px; --padding-start-lvl2: 24px; --arrowColor: 230, 211, 161; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .G7GdaI { font: 400 15.5px/35px 'Jost', 'Helvetica Neue', Arial, sans-serif !important; letter-spacing: .04em !important; color: #fff !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .wixui-vertical-menu__submenu .G7GdaI { font-size: 13.2px !important; line-height: 31px !important; color: rgba(255, 255, 255, .88) !important; letter-spacing: .01em !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU > ul > li { border-bottom: 1px solid rgba(201, 169, 106, .16); }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .jqR3kU > div .G7GdaI, .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU li:has(> .tFexI9 .jqR3kU) > div .G7GdaI { color: #e6d3a1 !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .jqR3kU > div, .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .jqR3kU > .keDKhi { background-color: rgba(201, 169, 106, .12) !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU > ul > li:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) { border-bottom: 0; padding: 8px 22px 6px; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU > ul > li:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) > div { height: 38px; border-radius: 999px; background: linear-gradient(#c6a346, #d9c164) !important; box-shadow: 0 5px 14px rgba(150, 120, 40, .3); }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU > ul > li:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) .G7GdaI { color: #1d2a26 !important; line-height: 38px !important; text-align: center; padding: 0 !important; font-weight: 500 !important; letter-spacing: .1em !important; }
+/* ha a lenyilok (pl. a Head Spa 8 almenupontja) miatt a menu hosszabb, mint a kepernyo, a menu SAJAT gorgetosavja a kepernyon belul marad: az utolso sor (Kapcsolat) is elerheto */
+.device-mobile-optimized #inlineContentParent-MENU_AS_CONTAINER { max-height: var(--mh-menu-max, 100vh) !important; }
+
+/* A fejlec felso akcios savja (Wix: section#comp-mpv0ganp): rozsaszin helyett a MOSAIC szinvilaga (halvany arany hatter, sotetzold felirat) - minden oldalon egyseges
+   (a lezeres / oxigen / sminktetovalas / ajandekkartya landingeken a sajat CSS rejti, ott nem latszik). */
+#comp-mpv0ganp [data-testid="colorUnderlay"] { background-color: #f6efdc !important; }
+#comp-mpv0ganp { box-shadow: inset 0 -1px 0 #ecdcb6; }
+#comp-mpv0ganp a, #comp-mpv0ganp a span { color: #0f3a3c !important; }
+#comp-mpv0gaod { box-shadow: 0 5px 16px rgba(150, 120, 40, .2) !important; }   /* a Wix rozsaszin arnyeka helyett halvany arany */

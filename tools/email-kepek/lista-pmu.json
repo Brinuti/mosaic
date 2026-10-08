@@ -1,0 +1,107 @@
+{
+  "megjegyzes": [
+    "A keszit.py nem tud kozelebb vagni (a vagas mindig a teljes szelessegbol indul), ezert harom kep elore kivagott reszletbol keszul; a kivagasok a tools/email-kepek/forras-pmu/ alatt vannak (PIL crop, JPEG q86-90):",
+    "tools/email-kepek/forras-pmu/melitta-arc.jpg = assets/img/pmu/melitta-hivas-2.jpg (900x1125) crop (206, 92, 706, 592): a kerek portre (szemely blokk) arca;",
+    "tools/email-kepek/forras-pmu/elorajzolt-szemoldok.jpg = assets/img/pmu/konzultacio-elorajzolt-3.jpg (900x900) crop (317, 250, 877, 810);",
+    "tools/email-kepek/forras-pmu/elkeszult-szemoldok.jpg = assets/img/pmu/konzultacio-kesz-2.jpg (900x900) crop (282, 90, 842, 650): a szemoldok kozelebbrol, hogy az elotte-utana par kis kepen is latszodjon.",
+    "A \"drive\" mezos tetelek forrasa a MOSAIC Drive-mappa egy kepe (a fajl azonosito a \"drive\" mezoben); a nagy felbontasu forras nincs a repoban, a kicsinyitett (<=1500 px) valtozatot a Zapier-es atviteli cso (tools/email-kepek/README.md) hozza le a drive-jelolt/forras/ mappaba."
+  ],
+  "kepek": [
+    {
+      "ki": "pmu/elorajzolas-ceruza.jpg",
+      "forras": "assets/img/pmu/tortenet-1-elorajzolas.jpg",
+      "mod": "szeles",
+      "fokusz": [
+        0.5,
+        0.15
+      ]
+    },
+    {
+      "ki": "pmu/elorajzolt-konzultacio.jpg",
+      "forras": "tools/email-kepek/forras-pmu/elorajzolt-szemoldok.jpg",
+      "mod": "kepek"
+    },
+    {
+      "ki": "pmu/elkeszult-szemoldok.jpg",
+      "forras": "tools/email-kepek/forras-pmu/elkeszult-szemoldok.jpg",
+      "mod": "kepek"
+    },
+    {
+      "ki": "pmu/munka-szemoldok-1.jpg",
+      "forras": "assets/img/c2eb0f_ceb2371e35aa4f98a8c83030af918811.jpg",
+      "mod": "kepek"
+    },
+    {
+      "ki": "pmu/munka-szemoldok-2.jpg",
+      "forras": "assets/img/c2eb0f_5bbec0e6bf3841f8b2b34facf142777a.jpg",
+      "mod": "kepek"
+    },
+    {
+      "ki": "pmu/munka-szemoldok-3.jpg",
+      "forras": "assets/img/c2eb0f_6192c7cbded04f37b2ee8983838b3850.jpg",
+      "mod": "kepek"
+    },
+    {
+      "ki": "pmu/friss-szemoldok.jpg",
+      "forras": "assets/img/pmu/tortenet-3-friss.jpg",
+      "mod": "kepek"
+    },
+    {
+      "ki": "pmu/gyogyult-szemoldok.jpg",
+      "forras": "assets/img/pmu/tortenet-4-gyogyult.jpg",
+      "mod": "kepek"
+    },
+    {
+      "ki": "pmu/gyogyult-termeszetes.jpg",
+      "forras": "assets/img/pmu/tortenet-5-termeszetes.jpg",
+      "mod": "szeles",
+      "fokusz": [
+        0.5,
+        0.0
+      ]
+    },
+    {
+      "ki": "pmu/melitta-portre.jpg",
+      "forras": "tools/email-kepek/forras-pmu/melitta-arc.jpg",
+      "mod": "negyzet"
+    },
+    {
+      "ki": "pmu/melitta-munka.jpg",
+      "forras": "assets/img/c2eb0f_b72c6b0a862d4a0ba31e58a6ea868fe8.jpg",
+      "mod": "szeles",
+      "fokusz": [
+        0.5,
+        0.65
+      ]
+    },
+    {
+      "ki": "pmu/munka-szemoldok-kozeli.jpg",
+      "forras": "assets/img/c2eb0f_e6bcf204c9164857a3c5ae2ed41b71c7.jpg",
+      "mod": "kepek"
+    },
+    {
+      "ki": "pmu/munka-ajak.jpg",
+      "forras": "assets/img/c2eb0f_014b63526bc644c7a234475fb367a963.jpg",
+      "mod": "kepek"
+    },
+    {
+      "ki": "pmu/gyogyult-portre.jpg",
+      "forras": "assets/img/pmu/gyogyult-szoke.jpg",
+      "mod": "kepek",
+      "fokusz": [
+        0.5,
+        0.3
+      ]
+    },
+    {
+      "ki": "pmu/szalon.jpg",
+      "forras": "tools/email-kepek/drive-jelolt/forras/258.jpg",
+      "mod": "szeles",
+      "fokusz": [
+        0.5,
+        0.5
+      ],
+      "drive": "1dmb_0e2ZJlsUHhPc44rpNYdDR8SnA1zi"
+    }
+  ]
+}

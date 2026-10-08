@@ -57,3 +57,8 @@ Helyi próba: `npx wrangler pages dev dist` (az SMTP-beállítások a `.dev.vars
 5. **Ellenőrzés:** lapok mobilon és asztalin, egy űrlap-beküldés, GA4 és Meta valós idejű nézet.
 6. **Netlify:** a `mosaicheadspa` projektet le lehet állítani, az előfizetést vissza lehet
    mondani. A `mosaic-pmu-sms` projekt is a Netlifyn van – előbb azt is át kell nézni.
+
+## Titkok és kapcsolók a költözés után
+
+- Salonic-naptár jelölése („Ott leszek”): lásd [docs/SALONIC_JELOLES.md](docs/SALONIC_JELOLES.md) –
+  `SALONIC_PMU_JELSZO` (Secret). Jelszó nélkül a funkció nem csinál semmit.

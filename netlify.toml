@@ -4,9 +4,11 @@
 [build]
   command = "node tools/netlify-build.mjs"
   publish = "dist"
-  # minden eles deploy kreditbe kerul: ha csak dokumentacio vagy segedeszkoz
-  # valtozott, a build kimarad (tools/netlify-kihagy.mjs)
-  ignore = "node tools/netlify-kihagy.mjs"
+  # A Netlify 2026-10-08 ota NEM epit: az oldalt a Cloudflare Pages publikalja (a PR-ok
+  # elonezete is ott van), a Netlify minden buildje (az elonezetek is) kreditbe kerulne.
+  # Ujra bekapcsolas: az alabbi sor torlese / a kovetkezore csereje:
+  #   ignore = "node tools/netlify-kihagy.mjs"
+  ignore = "exit 0"
 
 [build.environment]
   NODE_VERSION = "20"

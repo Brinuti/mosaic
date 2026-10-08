@@ -1,0 +1,123 @@
+// Oxigenterapia - booking-to-show uzenetlanc (MOSAIC_booking_to_show_lifecycle_2026-10-07.pdf, 5. fejezet). A szoveg a dokumentum szerint, szo szerint.
+// A katalogus-formatum leirasa: netlify/lib/lifecycle/katalog/SEMA.md. Az arak / akciok / honapnevek NEM kerulnek a szovegbe (lasd: megjegyzesek).
+export default {
+  uzletag: 'oxygen',
+  uzenetek: [
+    {
+      id: 'OX-SMS-01', csatorna: 'sms', mikor: { tipus: 't0' },
+      szoveg: 'Szia {keresztnév}! Megvan az időpontod: {dátum} {időpont}, {szolgáltatás}. MOSAIC, 1023 Budapest, Bécsi út 2. Részletek/módosítás: {foglalás_részletei_link}. Várunk!',
+    },
+    {
+      id: 'OX-EMAIL-01', csatorna: 'email', mikor: { tipus: 't0' }, szegmensek: ['konzultacio', 'elso'],
+      targy: 'Megvan az oxigénterápia időpontod',
+      elotag: 'Nem találgatással kezdünk: előbb megnézzük, honnan indulsz.',
+      torzs: [
+        'Szia {keresztnév}!',
+        'Megvan az időpontod: {dátum} {időpont}, {szolgáltatás}.',
+        'Az oxigénterápiánál nem abból indulunk ki, hogy "mindenkinek ugyanaz kell". Előbb megnézzük, honnan indulsz.',
+        'Ha konzultációra foglaltál, hajkamerával megnézzük a fejbőröd állapotát, átbeszéljük, mit tapasztalsz, és elmondjuk, milyen lehetőségek reálisak nálad. Nem kötelező azonnal kezelés mellett döntened.',
+        'Ha első kezelésre foglaltál, a kezelés előtt ugyanígy állapotfelmérés és kezelési terv készül, és ez alapján választjuk ki a kezelés menetét.',
+        'Kérjük, tiszta, száraz hajjal érkezz.',
+        'Helyszín: 1023 Budapest, Bécsi út 2.',
+        'Foglalás részletei / módosítás:',
+        { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
+        'Várunk,',
+        { alairas: 'MOSAIC Head Spa and Hair' },
+      ],
+    },
+    {
+      id: 'OX-EMAIL-02', csatorna: 'email', mikor: { tipus: 'tartalom', utan_napok: 2, min_lead_nap: 5 }, sorrend: 1, szegmensek: ['konzultacio', 'elso'],
+      targy: 'Mit fogunk megnézni a hajkamerával?',
+      elotag: 'Az első alkalom célja: kevesebb találgatás, több konkrétum.',
+      torzs: [
+        'Szia {keresztnév}!',
+        { kepek: [
+          { src: 'oxygen/hajkamera-vizsgalat.jpg', alt: 'A vendég a kezelőágyon fekszik, a kezelő a fejbőrt vizsgálja, a tableten a hajkamera képe látszik', felirat: 'A tableten a hajkamera képe látszik' },
+          { src: 'oxygen/hajkamera-nagyitott.jpg', alt: 'Szemléltető kép: a hajkamera erősen nagyított képe a fejbőrről, a hajhagymákról és a hajszálakról', felirat: 'Szemléltető kép: a hajkamera nagyított képe a fejbőrről' },
+        ] },
+        'Sokan azért érkeznek bizonytalanul, mert már rengeteg általános tanácsot hallottak a hajukról. Nálunk pont ezt szeretnénk elkerülni.',
+        'A hajkamera arra jó, hogy ne csak találgassunk. Megnézzük a fejbőr felszínét és azokat a jeleket, amelyek a személyre szabott kezelés megtervezéséhez fontosak lehetnek. Utána átbeszéljük veled, mit látunk és mi az, amit reálisan érdemes csinálni.',
+        'Az OXYGENI termékeket sem sablonból választjuk: a kezelési tervhez igazítjuk őket.',
+        { kep: { src: 'oxygen/kezeles-kozben.jpg', alt: 'Oxigénterápiás kezelés a MOSAIC kezelőszobájában: a kezelő a fekvő vendég fejbőrén dolgozik', felirat: 'Oxigénterápiás kezelés közben' } },
+        'A cél nem az, hogy nagy ígéretet tegyünk az első öt percben. A cél, hogy érthetően lásd, miért ezt a következő lépést javasoljuk.',
+        'Ha szeretnéd előre megnézni, milyen egy kezelés:',
+        { video: { src: 'oxygen/video-kezeles.jpg', alt: 'A kezelő a MOSAIC kezelőszobájában a fekvő vendég fejbőrével foglalkozik; lejátszás gomb a videó előképén', felirat: 'Így zajlik egy oxigénterápiás kezelés', link: '{videó_link}' } },
+        { gomb: { felirat: 'Megnézem a videót', link: '{videó_link}' } },
+        'Találkozunk {dátum_ragos}.',
+        { alairas: 'MOSAIC Head Spa and Hair' },
+      ],
+    },
+    {
+      id: 'OX-EMAIL-03', csatorna: 'email', mikor: { tipus: 'tartalom', elott_napok: 6, min_lead_nap: 10 }, sorrend: 2, szegmensek: ['konzultacio', 'elso'],
+      targy: 'Mire érdemes reálisan számítanod?',
+      elotag: 'Az első alkalom után legyen világos terved - ne csak egy újabb ígéreted.',
+      torzs: [
+        'Szia {keresztnév}!',
+        'Egy fontos dolgot érdemes előre tudnod: az oxigénterápia nem "egy alkalmas csodakezelésként" van felépítve.',
+        'A kezelési tervet a kiindulási állapotod alapján állítjuk össze. A jelenlegi szolgáltatási logika jellemzően 5-10 alkalmas kúrával és 1-2 hetes ritmussal számol, de a neked javasolt ütemet a kezelő az állapotfelmérés után mondja meg.',
+        { kepek: [
+          { src: 'oxygen/eredmeny-hajhullas.jpg', alt: 'Hajhullás: egy Oxygeni-vendég fejtetője felülnézetben a kezelések előtt (bal oldalt) és után (jobb oldalt)', felirat: 'Hajhullás: egy Oxygeni-vendég előtte és utána. Az eredmény egyénenként eltérő.' },
+          { src: 'oxygen/eredmeny-korpa.jpg', alt: 'Korpás fejbőr: egy Oxygeni-vendég tarkója a kezelések előtt (bal oldalt) és után (jobb oldalt)', felirat: 'Korpás fejbőr: egy Oxygeni-vendég előtte és utána. Az eredmény egyénenként eltérő.' },
+        ] },
+        'Ezért az első alkalom legfontosabb eredménye nem egy marketingígéret, hanem az, hogy tisztábban lásd: mit érdemes csinálni, milyen ritmusban, és mikor van értelme kontrollálni a változást.',
+        { ertekeles: true },
+        'A te időpontod: {dátum} {időpont}.',
+        'Várunk,',
+        { alairas: 'MOSAIC Head Spa and Hair' },
+      ],
+    },
+    {
+      id: 'OX-SMS-02', csatorna: 'sms', mikor: { tipus: 't72' },
+      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor várunk {szolgáltatás}-ra. Ha jössz: {megerősítés_link}. Ha változott valami, itt tudod áttenni: {módosítás_link}. Kérjük, tiszta, száraz hajjal érkezz. MOSAIC',
+    },
+    {
+      id: 'OX-EMAIL-04', csatorna: 'email', mikor: { tipus: 't72' }, szegmensek: ['konzultacio', 'elso'],
+      targy: 'Már csak ennyit kérünk az időpontod előtt',
+      elotag: 'Tiszta, száraz haj - és minden mást együtt megnézünk.',
+      torzs: [
+        'Szia {keresztnév}!',
+        'Már közel van az időpontod, ezért csak a gyakorlati rész:',
+        { lista: [
+          'tiszta, száraz hajjal érkezz',
+          'tervezz {várható_időtartam} időt',
+          'a címed: 1023 Budapest, Bécsi út 2.',
+          'ha az állapotfelmérés előtt bármi fontos új információ van, amit szeretnél elmondani a kezelőnek, nyugodtan írd össze magadnak.',
+        ] },
+        { kep: { src: 'oxygen/varo.jpg', alt: 'A MOSAIC váró tere zöld bársonyfotelekkel, meleg fényekkel és fa padlóval', felirat: 'Ilyen helyen várunk: a MOSAIC váró tere' } },
+        'Ha közbejött valami, itt tudod áttenni:',
+        { gomb: { felirat: 'Itt tudom áttenni', link: '{módosítás_link}' } },
+        'Várunk,',
+        { alairas: 'MOSAIC Head Spa and Hair' },
+      ],
+    },
+    {
+      id: 'OX-SMS-03', csatorna: 'sms', mikor: { tipus: 't24' },
+      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor várunk a MOSAIC-ban, 1023 Budapest, Bécsi út 2. Kérjük, tiszta, száraz hajjal érkezz, és tervezz {várható_időtartam} időt. Várunk!',
+    },
+    {
+      // OX-CALL-01: telefonos feladat a szalonnak (a motor nem hiv, hanem belso e-mailben jelzi, kit kell hivni). A dokumentumban nincs targy: a headspa minta szerint.
+      id: 'OX-CALL-01', csatorna: 'feladat', mikor: { tipus: 'feladat', elott_ora: 48 }, szegmensek: ['konzultacio', 'elso'],
+      targy: 'Oxigénterápia - hívandó vendég',
+      torzs: [
+        'Szia {keresztnév}, a MOSAIC-tól hívlak. {nap} {időpont}-ra van időpontod {szolgáltatás}-ra, csak szeretném megerősíteni, hogy minden rendben van-e.',
+        'Az első alkalommal hajkamerával is megnézzük a fejbőröd állapotát. Röviden megkérdezhetem, mi az, ami miatt most elindultál: inkább hajhullás, zsírosodás, szárazság, viszketés vagy valami más?',
+        'Nem kell most diagnózist felállítanunk telefonon; csak szeretném, hogy a kezelő már tudja, mire figyeljen.',
+        'Kérlek, tiszta, száraz hajjal gyere. Van bármi kérdésed az első alkalom előtt?',
+      ],
+    },
+  ],
+  megjegyzesek: [
+    'Ár/akció: az "Ajánlat- és forrászár" blokk fix összegei (konzultáció, kezelés, Arc + Haj) és a "Júniusban 10%" / 50%-os konzultációs kedvezmény NEM került át; az üzenetek dokumentum-szövege egyébként sem tartalmaz árat, így nem maradt ki üzenetsor, és {aktuális_ár} / {aktuális_ajánlat} sor sincs (az ár csak aktuális bookingadatból jöhet, a júniusi promóciót tilos továbbvinni).',
+    'OX-EMAIL-03: a "PLAN-D-ben rögzített jelenlegi szolgáltatási logika..." belső hivatkozás az ügyfél felé így szól: "A jelenlegi szolgáltatási logika jellemzően 5-10 alkalmas kúrával és 1-2 hetes ritmussal számol..." (a "PLAN-D-ben rögzített" kifejezés kimaradt; az 5-10 alkalom / 1-2 hét a dokumentum szerint marad, nem ár és nem százalék).',
+    'Gyógyulási garancia / diagnózis: a dokumentum elve szerint nem adtunk hozzá ilyen állítást; a szövegek a dokumentum eredeti mondatai.',
+    'PDF-tördelési hibák javítva: a sortörések összefűzve (OX-SMS-01..03, OX-EMAIL-01..04, OX-CALL-01).',
+    '"Találkozunk {dátum}-án." (OX-EMAIL-02) -> "Találkozunk {dátum_ragos}." (a ragozást a motor végzi).',
+    'Önálló soros linkek gombbá alakítva, a bevezető mondat külön bekezdés: OX-EMAIL-01 (foglalás részletei / módosítás), OX-EMAIL-02 ({videó_link}), OX-EMAIL-04 ({módosítás_link}); a gomb-feliratok saját javaslatok ("Foglalás megtekintése / módosítása", "Megnézem a videót", "Itt tudom áttenni").',
+    'Szegmensek: OX-EMAIL-01..04 és OX-CALL-01 csak konzultacio/elso (a doc: "új vendég", "konzultáció / első kezelés"). Az SMS-ek (OX-SMS-01/02/03) szegmens-megkötés nélkül minden vendégnek mennek: az 5.1 C. pont (visszatérő kúravendég) szerint ők is kapnak T0 + T-72/T-24 üzenetet, bár az 5.2 táblázat a T-72 / T-24 sorban "új vendéget" ír.',
+    'Időzítés: "T+1..3 nap" -> OX-EMAIL-02 utan_napok: 2 (min_lead_nap 5, sorrend 1); "T-7..5 nap" -> OX-EMAIL-03 elott_napok: 6 (min_lead_nap 10, sorrend 2); OX-CALL-01 "T-24..48 Telefon" -> elott_ora: 48.',
+    'OX-EMAIL-04: a doc "csak ha a prep még nem ment ki e-mailben" feltétele a formátumban nem fejezhető ki (a T0 e-mail is kéri a tiszta, száraz hajat); a katalógusban t72, csak konzultacio/elso; a duplikálás-szűrést a motor döntse el. A felsorolás pontosvesszői (tördelés) elmaradtak.',
+    'OX-EMAIL-01 nem kapott surgos_kiegeszites blokkot: a dokumentum nem ír elő ilyet, és a kritikus előkészület (tiszta, száraz haj, cím) már benne van a T0 szövegben.',
+    'OX-CALL-01: a dokumentumban nincs tárgy-sor; a "Oxigénterápia - hívandó vendég" tárgy a headspa minta (HS-CALL-01) alapján készült.',
+    'OX-SMS-03 / OX-EMAIL-04: a {várható_időtartam} opcionális helyőrző; ismeretlen értéknél az e-mail felsorolás-sora kimarad, az SMS-03 viszont egy mondaton belül tartalmazza ("...és tervezz {várható_időtartam} időt.") - a motor SMS-ben csak a mondatrészt hagyja el, ne az egész üzenetet.',
+  ],
+};

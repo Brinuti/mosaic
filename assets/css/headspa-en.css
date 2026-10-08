@@ -1,0 +1,83 @@
+/* MOSAIC Head Spa - az ANGOL oldal (/headspa-budapest-hungary) kiegeszito stilusai.
+   A kozos komponensek (hero, szekciok, cikk, csomagok, videok, korhinta, helyszin, sticky CTA) a headspa-oldal.css-ben vannak; ez a fajl csak az angol oldal
+   sajat elemeit adja hozza (arsav a hero-ban, "roviden" sav, Google-ertekeles kartya, kep-paros, EUR-sor). Onallo fajl: a tobbi oldalt nem erinti. */
+
+/* --- hero: felcim, cim-sor, ar-sav, Google-ertekeles --- */
+.felcim { margin: 0 0 14px; font: 500 13px/1.2 var(--test); letter-spacing: .16em; text-transform: uppercase; color: #8a6c3e; }
+.hero-cim { display: flex; align-items: center; gap: 8px; }
+.ikon-mini { flex: none; width: 18px; height: 18px; color: #8a6c3e; }
+.ikon-mini svg { width: 18px; height: 18px; }
+.ar-sav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 18px; padding: 14px 20px; max-width: 540px; background: #fff; border: 1px solid #ecdcb6; border-radius: 18px; box-shadow: var(--arnyek); }
+.ar-sav-cim { flex: 1 1 100%; font-size: 14.5px; color: var(--halk); }
+.ar-sav-ar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; }
+.ar-sav-ar b { font: 500 32px/1.1 var(--cim); color: var(--sotet); white-space: nowrap; }
+.ar-sav-ar small { font-size: 14.5px; color: #6f5420; }
+.ar-reg { font-size: 14px; color: var(--halk); }
+.ar-reg s { text-decoration-thickness: 1.5px; }
+.ar-sav .csomag-jelveny { margin: 0 0 0 auto; align-self: center; }
+.hero-google { margin-top: 16px; }
+.hero-google .g-reszlet { flex-wrap: wrap; row-gap: 4px; }
+
+/* --- "roviden" sav a hero alatt --- */
+.fakt-sav { background: #fff; border-bottom: 1px solid var(--vonal); padding: 26px 0; }
+.fakt-racs { display: grid; grid-template-columns: repeat(4, 1fr); }
+.fakt { display: flex; align-items: center; gap: 14px; padding: 4px 24px; border-left: 1px solid var(--vonal); }
+.fakt:first-child { border-left: 0; padding-left: 0; }
+.fakt p { font-size: 14.5px; line-height: 1.35; color: var(--halk); }
+.fakt b { display: block; margin-bottom: 2px; font: 500 17px/1.25 var(--cim); color: var(--sotet); }
+
+/* --- egy nagy video (a bemutato-video es a "ilyen egy MOSAIC Head Spa kezeles" video; negyzetes poszter) --- */
+.video-egy { max-width: 440px; margin: 0 auto; width: 100%; }
+.video-egy .video-kartya, .video-kartya.negyzet { aspect-ratio: 1 / 1; }
+
+/* --- Google-ertekeles kartya (statikus; a Trustindex-widget magyar velemenyeket mutat, ezert angolul csak ez a jelveny) --- */
+.ertekeles-kartya { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 14px 22px; max-width: 820px; margin: 44px auto 0; padding: 22px 28px; background: #fff; border: 1px solid #ecdcb6; border-radius: 22px; box-shadow: var(--arnyek); text-decoration: none; color: var(--szoveg); transition: box-shadow .2s, transform .15s; }
+.ertekeles-kartya:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(40, 30, 20, .14); }
+.ertekeles-kartya .g-ikon { width: 34px !important; height: 34px !important; }
+.ertekeles-pont { font: 500 52px/1 var(--cim); color: var(--sotet); }
+.ertekeles-reszlet { display: flex; flex-direction: column; gap: 4px; font-size: 15.5px; }
+.ertekeles-reszlet .csillagok { font-size: 20px; }
+.ertekeles-reszlet b { font-weight: 500; }
+.ertekeles-gomb { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border: 1px solid var(--sotet); border-radius: 999px; font-size: 15px; color: var(--sotet); transition: background .2s; }
+.ertekeles-kartya:hover .ertekeles-gomb { background: rgba(15, 58, 60, .06); }
+
+/* --- kep-paros (a legszebb verzio: ket kep egymas mellett, alairassal) --- */
+.kep-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.kep-duo .kep-fig img { aspect-ratio: 4 / 5; object-fit: cover; }
+.kep-duo .kep-fig:last-of-type img { object-position: 38% 50%; }
+.kep-duo .kep-alairas { grid-column: 1 / -1; margin: 0; font: italic 400 16px/1.45 var(--cim); color: #7a6335; text-align: center; }
+
+/* --- apro kiegeszitesek --- */
+.cikk a.gomb-arany { color: #fff; }   /* a .cikk a (sotetzold link) ne vegye at a kitoltott arany gombok feliratat: ugyanolyan feher, mint a hero gombjain */
+.agy-kep { max-width: 980px; margin: 0 auto; }
+.keskeny { max-width: 380px; width: 100%; margin: 0 auto; }
+.cikk p.cim-sor { margin-top: -2px; font-weight: 500; color: var(--sotet); }
+.ar-euro { margin-top: 2px; font-size: 14.5px; color: #6f5420; }
+.szep-alul { margin-top: 64px; padding-top: 48px; border-top: 1px solid var(--vonal); }
+.terkep-megj { max-width: 280px; font-size: 13.5px !important; color: var(--halk); }
+
+/* ====== tablet ====== */
+@media (max-width: 1024px) {
+  .fakt-racs { grid-template-columns: 1fr 1fr; gap: 20px 12px; }
+  .fakt, .fakt:first-child { border-left: 0; padding: 0; }
+  .ar-sav { max-width: none; }
+  .kep-duo { max-width: 640px; margin: 0 auto; }
+  .szep-alul { margin-top: 48px; padding-top: 36px; }
+}
+
+/* ====== telefon ====== */
+@media (max-width: 700px) {
+  .hero-szoveg > .felcim { order: 0; margin: 2px 0 8px; font-size: 12px; }
+  .hero-cim { margin-top: 10px; }
+  .ar-sav { padding: 12px 16px; }
+  .ar-sav-ar b { font-size: 28px; }
+  .ar-sav .csomag-jelveny { margin-left: 0; }
+  .fakt-sav { padding: 22px 0; }
+  .fakt-racs { grid-template-columns: 1fr; gap: 16px; }
+  .ertekeles-kartya { margin-top: 32px; padding: 20px 18px; flex-direction: column; text-align: center; }
+  .ertekeles-reszlet { align-items: center; }
+  .video-racs.allo.harom > :last-child { grid-column: 1 / -1; width: calc(50% - 6px); justify-self: center; }
+  .kep-duo { gap: 10px; }
+  .agy-kep { margin-left: -6px; margin-right: -6px; }
+  .szep-alul { margin-top: 40px; padding-top: 30px; }
+}

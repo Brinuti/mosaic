@@ -1,0 +1,1 @@
+{ "permissions": { "allow": ["Bash(node tools/meres-proba/booking-id-valodi.mjs:*)", "Bash(node tools/meres-proba/lemond.mjs:*)"] } }

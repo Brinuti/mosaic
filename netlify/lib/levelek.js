@@ -24,6 +24,13 @@ ${mezok.filter(([k]) => d[k]).map(([k, c]) => `<p style="margin:0 0 10px">${esc(
 const wixBevezeto = (urlapNev) => `A(z) MOSAIC Headspa egy látogatója beküldte az űrlapodat (${esc(urlapNev)})`;
 
 export const URLAPOK = {
+  // a /kapcsolat oldal uzenetkuldo urlapja (2026-10-07): a szalon ertesitest kap, a valasz-cim a latogato e-mail cime (levelek() allitja be)
+  kapcsolat: {
+    targy: 'Új üzenet a weboldal Kapcsolat oldaláról',
+    html: (d) => osszefoglalo('A MOSAIC Headspa weboldalán a Kapcsolat űrlapon üzenetet küldtek.', 'Az üzenet:', [
+      ['nev', 'Név'], ['email', 'E-mail'], ['telefon', 'Telefonszám'], ['tema', 'Téma'], ['uzenet', 'Üzenet'], ['hozzajarulas', 'ÁSZF + adatkezelés elfogadva'],
+    ], d),
+  },
   ajandekkartya: {
     targy: 'Ajándékkártya  Előreutalásos ajándékkártyát vett',
     html: (d) => osszefoglalo('A site visitor just submitted your form Ajándékkártya on MOSAIC Headspa', 'A vásárlás adatai:', [
@@ -42,18 +49,40 @@ export const URLAPOK = {
       ['volt_mar_tetovalasa', 'Volt már korábban tetoválásod?'], ['megjegyzes', 'Mit beszéljünk át a foglalás előtt?'],
     ], d),
   },
-  // a /foglalo-pmu probaoldal urlapjai (B/D ag: foto; C ag: visszahivas)
+  // a sminktetovalas-foglalo (/foglalo-pmu, a /sminktetovalas-budapest oldalba agyazva is) urlapjai
+  // (B/D ag: foto; C ag: visszahivas) - a 'pmu-proba-' urlapnev torteneti, ez mar az eles folyamat
   'pmu-proba-foto': {
-    targy: '[PRÓBA] Sminktetoválás – fotó érkezett',
-    html: (d) => osszefoglalo('A sminktetoválás-foglaló (próba) egy látogatója fotót küldött.', 'Beküldés összefoglalása:', [
+    targy: 'Sminktetoválás – fotó érkezett',
+    html: (d) => osszefoglalo('A sminktetoválás-foglaló egy látogatója fotót küldött.', 'Beküldés összefoglalása:', [
       ['ag', 'Ág'], ['nev', 'Név'], ['telefon', 'Telefonszám'], ['email', 'E-mail'], ['kezeles', 'Kezelés / terület'],
       ['idopont', 'Választott időpont'], ...Array.from({ length: 5 }, (_, i) => [`foto${i + 1}`, `Fotó ${i + 1}`]),
     ], d),
   },
   'pmu-proba-visszahivas': {
-    targy: '[PRÓBA] Sminktetoválás – visszahívást kértek (10 perces konzultáció)',
-    html: (d) => osszefoglalo('A sminktetoválás-foglaló (próba) egy látogatója visszahívást kért.', 'Beküldés összefoglalása:', [
+    targy: 'Sminktetoválás – visszahívást kértek (10 perces konzultáció)',
+    html: (d) => osszefoglalo('A sminktetoválás-foglaló egy látogatója visszahívást kért.', 'Beküldés összefoglalása:', [
       ['nev', 'Név'], ['telefon', 'Telefonszám'], ['mikor_nap', 'Melyik nap?'], ['mikor_napszak', 'Melyik napszakban?'],
+    ], d),
+  },
+  // az uj kozos foglalo (/foglalo-motor) "Hivjatok vissza" urlapja (nincs megfelelo idopont / technikai hiba)
+  'motor-visszahivas': {
+    targy: 'Foglaló – visszahívást kértek',
+    html: (d) => osszefoglalo('A foglaló egy látogatója visszahívást kért.', 'Beküldés összefoglalása:', [
+      ['nev', 'Név'], ['telefon', 'Telefonszám'], ['uzletag', 'Üzletág'], ['szolgaltatas', 'Szolgáltatás'], ['ok', 'Miért (nincs_idopont / technikai_hiba)'], ['forras', 'Honnan érkezett'],
+    ], d),
+  },
+  // a koszonooldal "Ott leszek" gombja: a vendeg megerositette, hogy jon (a Salonicba kivulrol nem irhatunk)
+  'pmu-megerosites': {
+    targy: 'Sminktetoválás – a vendég megerősítette az időpontját',
+    html: (d) => osszefoglalo('Egy vendég a köszönőoldalon megerősítette, hogy eljön („Ott leszek”).', 'Az időpont:', [
+      ['idopont', 'Időpont'], ['kezeles', 'Kezelés'], ['ar', 'Ár'],
+    ], d),
+  },
+  // a foglalo (motor) koszono kepernyojenek "Ott leszek" gombja (minden uzletag; a Salonicba kivulrol nem irhatunk)
+  'motor-megerosites': {
+    targy: 'Foglaló – a vendég megerősítette az időpontját',
+    html: (d) => osszefoglalo('Egy vendég a foglaló köszönő képernyőjén megerősítette, hogy eljön („Ott leszek”).', 'Az időpont:', [
+      ['idopont', 'Időpont'], ['szolgaltatas', 'Szolgáltatás'], ['uzletag', 'Üzletág'], ['szakember', 'Szakember'],
     ], d),
   },
   'fodrasz-jelentkezes': {
@@ -119,8 +148,7 @@ export function levelek(urlap, d) {
   const leiras = URLAPOK[urlap];
   if (!leiras) return null;
   const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email || '') ? d.email : undefined;
-  // a pmu-proba-* urlapokat az eles /pmu-sminktetovalas landing is hasznalja (beagyazott foglalo): onnan nem proba
-  const targy = d.oldal === 'pmu-sminktetovalas' ? leiras.targy.replace(/^\[PRÓBA\]\s*/, '') : leiras.targy;
+  const targy = leiras.targy;
   const ki = [{ cimzett: 'szalon', valasz: email, targy, html: leiras.html(d) }];
   if (leiras.vevo && email) {
     ki.push({ cimzett: email, valasz: 'szalon', targy: 'MOSAIC ajándékkártya utalási adatok + infók', html: vevoLevel(d) });

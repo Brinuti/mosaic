@@ -1,0 +1,36 @@
+Foglalo-atkotes (elesites): merest erinto osszefoglalo, 2026-10-04
+================================================================
+
+Mit valtoztat (a vendeg szemszogebol)
+- A fomenu "FOGLALAS" gombja es az oldalak foglalas-gombjai (valamint a Salonic-linkek) a /foglalo-motor?... cimre mutatnak; a launcher (booking-launcher.js) a helyi, felugro retegben nyitja
+  (asztalon es mobilon), JS nelkul a /foglalo-motor oldalra visz.
+- A regi foglalo-oldalak (/idpontfoglalas, /mosaic-hair-idopontfoglalas, /szortelenites-foglalas, /pmu-foglalas, /smink-foglalas, /naptar): ures oldal + bezarhatatlan felugro foglalo.
+  A /fodraszat-foglalas es a /kupon-utan-foglalas 301 a fooldalra (az UTM megmarad).
+
+Build-szamok (node tools/netlify-build.mjs, ELES=1; a "foglalo-atkotes:" sor): headspa 247, oxigen 66, fodraszat 120, lezer 454, pmu 20, fejlec 228, regi 12.
+
+MERES: mit nem erint
+- A koszonooldalak (success-*, *-ok, oxigenterapia-masodik, pmu-vh), ahol a konverziok futnak: NEM kapnak launchert, a linkjeik valtozatlanok (a menu "FOGLALAS" pontja a regi cimre mutat,
+  ami most a bezarhatatlan felugrot nyitja); tartalmukban egyetlen foglalas-gomb van: success-ajandekkartya-stripe "Idopontfoglalas kuponkoddal" (Salonic, valtozatlan).
+- A /sminktetovalas-budapest PMU-landing (sajat beagyazott foglalo, launcher nelkul): valtozatlan.
+- A GTM, a suti.js, a pixelek, a Stape: nem valtoztak. Az ures regi oldalakon a meroarkod (GTM, suti-sav, pixelek) fut, a suti-sav a foglalo FOLOTT latszik es kattinthato.
+- A foglalas vegen a meglevo koszonooldal tolt be a fo ablakban (atadas), a mereshez tartozo URL-parameterek valtozatlanok.
+
+MERES: mi valtozik
+- A menubol / gombbol a regi foglalo-oldal (pl. /idpontfoglalas) mar nem toltodik be: az ott keletkezo oldalmegtekintesek (pl. Meta PageView az oldalon) a belso navigaciobol elmaradnak.
+  A kozvetlen latogatasok (hirdetes, profil, konyvjelzo) tovabbra is szamitanak (a merokod az ures oldalon fut).
+- Az oldalak (kb. 190) a betoltes utan tetlen idoben letoltik a foglalo kodjat (launcher): kb. 67 KB (brotli) / 209 KB nyers (engine + stilus), a betoltes (LCP) utan.
+
+GTM-konteiner atnezese (www.mosaicheadspa.hu, GTM-PST2HB22; csak olvasas, 71 trigger)
+- Nincs a SAJAT oldalunk foglalas-linkjeire (/idpontfoglalas, Salonic-linkek) epulo kattintas-trigger.
+- A click-triggerek a Salonic-oldalak urlapmezoire epulnek (Click ID: button-submit-booking, GuestDataForm_customFields_..., hostname: *.salonic.hu); a konverziok a koszonooldalak
+  oldalmegtekintesi triggerei (/fodrasz-ok, /oxigenterapia-ok, /oxigenterapia-masodik, /elysion-ok, /szortelenites-ok, /pmu-ok, /success-foglalas*, /success-ajandekkartya*).
+
+Hirdetesek (2026-10-04, csak olvasas)
+- Meta (Mosaicheadspa.hu hirdetesek fiok 560662246028147), 69 aktiv hirdetes: csak a hirdetes-szoveg latszik (a gomb celjat az API nem adja ki). 4 hirdetes szovege linkeli a /mosaic-hair-idopontfoglalas cimet
+  (Uj Hook2 - DANI UJRAVAGOTT; Betti - Renato3 - DANI UJRAVAGOTT; oxigen video elotte-utana; nativ oxigen elotte utana - Copy). A tobbi tartalmi oldalra mutat
+  (head-spa-kedvezmeny, lezeres-szortelenites-budapest, sminktetovalas-budapest, ajandekkartya-oldalak, paros-headspa-budapest, balayage-haj-festes-budapest).
+- TikTok (MOSAIC Headspa fiok): 3 futo hirdetes -> /japan-headspa-ajandekkartya es a fooldal.
+- Google Ads: nem ellenorizheto (nincs hozzaferes).
+
+Elo ellenorzes a jegyzettombrol (korabbi PR-ok): lasd DECISIONS.md "Foglalasi jegyzettomb".

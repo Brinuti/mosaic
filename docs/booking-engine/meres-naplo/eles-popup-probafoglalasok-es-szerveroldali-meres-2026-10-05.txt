@@ -1,0 +1,49 @@
+Az eles-atkotes (PR #114) valodi probafoglalasai (2026-10-04 este - 2026-10-05 ejfel utan) es a belolük kimenő SZERVEROLDALI meres
+=====================================================================================================================
+
+Az elemzo review #2 ket kerese: (1) a probafoglalasok kerüljenek be a kiszuresi listaba idoponttal es teljes tranzakcio-azonositoval; (2) a HeadSpa-futas melyik kartonra
+ment, es kuldott-e szerveroldali (Meta Contact / TikTok) esemenyt. A formatum a #117 (claude/pmu-laser-proba) "probafoglalasok-es-szerveroldali-meres" naplojat koveti.
+
+Idok: helyi ido (CEST, UTC+2); a "foglalas ideje" a Salonic visszaigazolo e-mail "modifiedTime" erteke. "Tranzakcio" = a GTM koszonooldali azonositoja (Google Ads order_id, a naplobol mert).
+A Salonic-azonosito a TELJES foglalas-azonosito (a visszaigazolo e-mail "Lemondom" linkjebol; ez a Meta CAPI event_id, a TikTok event_id "mail-<azonosito>").
+LEMONDVA: mind a 8 lemondva a visszaigazolo e-mail linkjevel ("Probafoglalas (TESZT), lemondva"), es ellenorizve: a Salonic "Foglalas reszletei" oldala mind a 8-nal "Idopont torolve!"
+(tools/meres-proba/foglalas-allapot.mjs, 2026-10-05 ejfel utan; a lemondasok 00:0x - 00:3x kozott tortentek, a foglalas utan par perccel; a pontos ido a Salonic lemondo e-mailjeiben van).
+
+#  Foglalas ideje | Uzletag - szolgaltatas (vendeg) | Idopont | Salonic foglalas-azonosito | Tranzakcio | Lemondva
+-- --------------- | ------------------------------- | ------- | -------------------------- | ---------- | --------
+1  10-04 23:43:00 | HeadSpa Egyeni Relax (karton: Deak F. I.) | okt. 31. (szo) 17:30-18:50 | 85ebd7de-61c6-79fa-d1c5-c9303082fb23 | hs-2038420-302342-1793464200 | igen (Idopont torolve)
+2  10-04 23:43:43 | Fodraszat konzultacio (TESZT - Claude) | okt. 30. (pe) 11:00-11:30 | 49afb32c-58e3-df95-c712-5303deaa6f3d | fodraszok-3385039-232804-1793354400 | igen
+3  10-04 23:44:24 | Lezer ingyenes konzultacio, regi tartalmi oldalrol (teszt teszt) | okt. 31. (szo) 18:00-18:30 | c1d5fd84-2643-9bc1-a1c1-fdf406f54cbe | elysionok-3353226-476477-1793466000 | igen
+4  10-04 23:45:06 | Oxigen "2. alkalomtol" (TESZT - Claude) | okt. 30. (pe) 12:30-13:50 | 5493c6bf-1792-1639-068e-c75f5ef7438a | oxigenterapi-3385031-466158-1793359800 | igen
+5  10-04 23:45:46 | Oxigen "2. alkalomtol", a regi /mosaic-hair-idopontfoglalas oldalrol (TESZT - Claude) | okt. 23. (pe) 12:30-13:50 | 758cbcee-1353-eca9-4e86-2dcfb22a7ae6 | oxigenterapi-3385031-466158-1792751400 | igen
+6  10-05 00:06:13 | Oxigen "2. alkalomtol", regi oldal, KONTROLL (TESZT - Claude) | okt. 30. (pe) 16:00-17:20 | d9931433-da31-e2c6-9b36-5a0fb6d5c632 | oxigenterapi-3385031-466158-1793372400 | igen
+7  10-05 00:23:35 | Oxigen AKCIOS Hajkamera-vizsgalat (4 990 Ft), az UJ landingrol (TESZT - Claude) | okt. 30. (pe) 16:30-17:00 | 5b5030e5-7f87-3bd3-8adb-908ff0dfcd94 | oxigenterapi-3385031-466147-1793374200 | igen
+8  10-05 00:24:19 | Lezer ingyenes konzultacio, az UJ landingrol (teszt teszt) | okt. 31. (szo) 18:30-19:00 | 4ac2550e-df13-8620-6f70-b360620ec331 | elysionok-3353226-476477-1793467800 (UGYANAZ, mint a #117 #14-es sora: a tranzakcio-azonosito az idopontbol kepzodik) | igen
+
+A HeadSpa-futas (#1) kartonja: a HeadSpa-fiok MEGLEVO vendegkartonja (Salonic g:2038420, nev: "Deak Ferenc Istvan"), ugyanaz, mint a korabbi HeadSpa-probaknal (#117: #1, #3, #11).
+A tobbi: oxigen es fodraszat "TESZT - Claude" kartonok (g:3385031, g:3385039), lezer "teszt teszt" karton (g:3353226).
+
+SZERVEROLDALI esemenyek (Zapier futas-elozmenyek; a bongeszo-tiltas ezeket nem fogja meg)
+- #1 HeadSpa: KIMENT (a vedelem a "teszt" nevre epul, a karton neve "Deak Ferenc Istvan"):
+    * Meta Conversions API "Contact": Zapier-futas 01a108e0-4f82-7758-ba45-40dba9ec8b1e ("Mosaic HeadSpa - Salonic foglalas -> Meta CAPI"), 21:44:40 - 21:45:53 UTC,
+      lepes send-meta-capi-event kesz, sent=true, events_received=1, HeadSpa-pixel 3473839859576758, event_id = Salonic foglalas-azonosito (85ebd7de-...), eventTime 21:43:00 UTC,
+      kulcstabla-sor nem volt (rowFound=false: a bongeszo-tiltas miatt), email+telefon hash-elve megy (hasEmail/hasPhone=true), nincs fbc/fbp/user-agent.
+    * TikTok szerveres esemeny (HeadSpaFoglalas): Zapier-futas 01a108df-9fef-74c5-a15b-e53367d9a96b ("Mosaic HeadSpa - Salonic foglalas -> TikTok Events API"), 21:43:55 UTC,
+      sent=true, value=0, event_id = mail-85ebd7de-61c6-79fa-d1c5-c9303082fb23, content_id = headspa_foglalas_visszajaro, newGuest=false.
+    * Google Ads offline konverzio: KIHAGYVA (reason=returning-guest): Zapier-futas 01a108e0-3bd7-7e66-b9c4-7b3bd341aeec.
+    * PII-dusitas (TikTok + Google bovitett konverzio, nem-HeadSpa uzletagak): kihagyva (reason=not-target-business): 01a108df-8791-7358-993f-9a76dfefbb28.
+- #2 Fodraszat, #4 Oxigen, #6 Oxigen, #7 Oxigen: a "Mosaic - Salonic level -> PII dusitas" folyamat KIHAGYTA (reason=teszt-foglalas, skipped=true):
+    futas-azonositok: 01a108df-87df-75cf-9d6a-7ef4da7bd93c (#2), 01a108e1-6ad1-7864-acb1-f26c5d4b44fb (#4/#5 idejen), 01a108f4-b34e-7e41-b061-3f50017667c3 (#6),
+    01a10905-1ffe-727b-b3f5-22bdee2312cf (#7). A HeadSpa-folyamatok (Meta / TikTok / Google) a nem-HeadSpa foglalasokra is futottak (a keresesuk minden "Uj online foglalas"
+    levelre illeszkedik), de a megnyitott futasok mind KIHAGYTAK (reason=teszt-foglalas, skipped=true): Meta 01a108e1-e00f-7a54-b2ce-57de90b0aca4 (oxigen) es
+    01a10905-d278-7611-8720-83c5e707d9f6 (#8 lezer), TikTok 01a108e1-574f-7989-9953-a5cc02b71a0d (lezer). A tobbi nem-HeadSpa foglalas HeadSpa-folyamat-futasat (pl. 01a108e0-4ef9-...,
+    01a108e0-4ed0-..., 01a108df-9fd9-..., 01a10904-24d3-..., 01a108f5-d5de-..., 01a10905-efdd-...) kulon nem nyitottam meg; a vendegnev ("teszt teszt" / "TESZT - Claude") ugyanaz a vedett
+    minta, amit a #117 #12-#14 sorai is "semmi (vedelem)"-nek mutattak.
+- Osszesen KIMENT az esti probakbol: 1 Meta "Contact" + 1 TikTok szerveres esemeny (mindketto a #1 HeadSpa-foglalasbol, ertek 0), Google Ads: semmi.
+- Ez a #117-ben mar leirt rés (a vedelem a nevre epul, a HeadSpa-karton nevet kap), nem uj hiba, de ez a futas is beleesett. Az esemenyek a Meta Events Managerben / a TikTok Events Managerben a
+  fenti event_id alapjan azonosithatok es a riportokbol kiszurhetok (a Meta CAPI esemeny torlese nem lehetseges).
+- JAVASLAT (nem hajtottam vegre: eles Zapier-folyamat, kulso fiok): a "teszt-foglalas" vedelem bovitese a vendeg E-MAILJERE / TELEFONJARA (a probakban a tulajdonos e-mailje es telefonszama van megadva), vagy a
+  HeadSpa-probakhoz kulon, nem a valodi kartonra parosulo e-mail + telefon (igy a Salonic uj, "TESZT" nevu kartont hoz letre). A kovetkezo HeadSpa-probakat addig ezekkel vagy hagyjuk ki.
+
+Megjegyzes: a Zapier-futasok a 2026-10-04 22:2x - 22:3x UTC-s ablakban a harom nem-HeadSpa folyamatnal egy "EGYENI 50 perces ... Head Spa" targyu levelre is futottak 22:29 UTC-kor; ez NEM ezekbol a probakbol
+szarmazik (az utolso proba-foglalas 22:24 UTC-kor volt) - kulon eredetu (valos vagy mas teszt) foglalas.

@@ -1,0 +1,101 @@
+{
+  "status": "success",
+  "data": {
+    "dateText": "Mai nap",
+    "date": "2026-10-03",
+    "placeName": "Mosaic Hair",
+    "placeAddress": "1023 Budapest Bécsi út 4 fszt. 1.",
+    "placePhone": "06202474444",
+    "blocks": {
+      "1791041004": {
+        "23694": {
+          "employeeName": "Betti",
+          "slots": []
+        },
+        "26064": {
+          "employeeName": "Evelin",
+          "slots": []
+        }
+      },
+      "1791151200": {
+        "23694": {
+          "employeeName": "Betti",
+          "slots": {
+            "11:30": {
+              "timestamp": 1791192600,
+              "formatted": "11:30",
+              "formattedFull": "október 5. (hétfő) 11:30"
+            },
+            "17:00": {
+              "timestamp": 1791212400,
+              "formatted": "17:00",
+              "formattedFull": "október 5. (hétfő) 17:00"
+            }
+          }
+        }
+      },
+      "1791237600": {
+        "23694": {
+          "employeeName": "Betti",
+          "slots": {
+            "10:45": {
+              "timestamp": 1791276300,
+              "formatted": "10:45",
+              "formattedFull": "október 6. (kedd) 10:45"
+            },
+            "11:00": {
+              "timestamp": 1791277200,
+              "formatted": "11:00",
+              "formattedFull": "október 6. (kedd) 11:00"
+            }
+          }
+        },
+        "25095": {
+          "employeeName": "Noel - 20% kedvezmény!",
+          "slots": {}
+        },
+        "26064": {
+          "employeeName": "Evelin",
+          "slots": {
+            "08:00": {
+              "timestamp": 1791266400,
+              "formatted": "08:00",
+              "formattedFull": "október 6. (kedd) 08:00"
+            }
+          }
+        }
+      },
+      "1791324000": {
+        "23694": {
+          "employeeName": "Betti",
+          "slots": {}
+        },
+        "25095": {
+          "employeeName": "Noel - 20% kedvezmény!",
+          "slots": {
+            "10:00": {
+              "timestamp": 1791360000,
+              "formatted": "10:00",
+              "formattedFull": "október 7. (szerda) 10:00"
+            }
+          }
+        },
+        "26064": {
+          "employeeName": "Evelin",
+          "slots": {
+            "11:30": {
+              "timestamp": 1791365400,
+              "formatted": "11:30",
+              "formattedFull": "október 7. (szerda) 11:30"
+            },
+            "14:00": {
+              "timestamp": 1791374400,
+              "formatted": "14:00",
+              "formattedFull": "október 7. (szerda) 14:00"
+            }
+          }
+        }
+      }
+    }
+  }
+}

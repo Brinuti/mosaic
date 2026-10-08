@@ -35,6 +35,17 @@
     };
     const valt = () => allit(menu.getAttribute('data-undisplayed') !== 'false');
 
+    // A fejlec a 320 px-es Wix-alapra van megrajzolva, es (a fejlec-darab szkriptje) a keszulek szelessegere nagyitja (zoom): a fix pozicionalt menu
+    // 100vh magassaga ezert a nagyitas aranyaval nagyobb a kepernyonel, az also sorok (pl. a Head Spa lenyilo utan a Kapcsolat) elerhetetlenek lennek.
+    // A menu sajat gorgetosavjat a kepernyo magassagara korlatozzuk (CSS: --mh-menu-max, assets/css/fejlec-lablec.css); a Wixes oldalakon (320 px-es
+    // nezet) az arany 1, ott valtozatlan.
+    const menuMagassag = () => {
+      const nagyitas = document.documentElement.clientWidth / 320;
+      if (nagyitas > 0) menu.style.setProperty('--mh-menu-max', Math.floor(window.innerHeight / nagyitas) + 'px');
+    };
+    menuMagassag();
+    window.addEventListener('resize', menuMagassag);
+
     kapcsolo.addEventListener('click', valt);
     kapcsolo.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); valt(); }
@@ -99,20 +110,8 @@
     'comp-m73bstee': 'c2eb0f_909ce4959fe24f4f984d8953fd315d67.mp4',
     'comp-m7j9ka9m1': 'c2eb0f_cc22b1baf4c64848938cb7d48575b561.mp4',
   };
-  // A sminktetovalas foglalo probaoldala (/foglalo-pmu) a sikeres foglalas utan ide, a koszonooldalra
-  // (pl. /pmu-ok) kuldi a vendeget mh_proba=pmu jellel: itt lefut a megszokott meres, majd
-  // visszaterunk a proba sajat koszonooldalara.
-  // mh_proba=pmu: foglalas a /pmu-ok oldalon at; mh_proba=vh: telefonos konzultacio a /pmu-vh oldalon at
-  const mhProba = (location.search.match(/[?&]mh_proba=(pmu|vh)(&|$)/) || [])[1];
-  if (mhProba) {
-    const fedo = document.createElement('div');
-    fedo.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#fffaf4;color:#183033;display:grid;place-items:center;font:18px lato,Arial,sans-serif';
-    fedo.textContent = mhProba === 'vh' ? 'Kérésed rögzítése…' : 'Foglalásod rögzítése…';
-    document.body.appendChild(fedo);
-    const cel = mhProba === 'vh' ? '/foglalo-pmu#visszahivas-kesz' : '/foglalo-pmu#koszonjuk';
-    const tovabb = () => setTimeout(() => location.replace(cel), 3500);
-    if (document.readyState === 'complete') tovabb(); else addEventListener('load', tovabb);
-  }
+  // (A /pmu-ok es /pmu-vh koszonooldal 2026-10-03 ota a foglalo sajat oldala - foglalas/pmu-ok.html,
+  // foglalas/pmu-vh.html -, a meres ott fut; innen mar nem iranyitunk at.)
 
   // a sajat utvonalunkbol olvassuk ki, hova mutassanak a tarsfajlok (klon/ vagy klon/m/)
   const sajatSrc = (document.currentScript && document.currentScript.src) || '';
@@ -637,12 +636,15 @@
     return h;
   };
 
+  // A vendegertekelesek (Trustindex) MINDIG azonnal megjelennek (a tulajdonos kerese, 2026-10-07): nincs hozzajarulas-kapu; a tobbi harmadik fel
+  // (Google terkep, YouTube) tovabbra is csak a "funkcionalis" sutik engedelyezese utan toltodik.
+  const trustindex = (fajta) => !!EMBEDEK[fajta] && EMBEDEK[fajta][1] === 'Trustindex';
   const kitolt = (engedve) => {
     for (const [azon, fajta] of Object.entries(BEAGYAZASOK)) {
       const doboz = document.getElementById(azon);
       if (!doboz) continue;
       const most = doboz.firstElementChild;
-      if (engedve) {
+      if (engedve || trustindex(fajta)) {
         if (most && most.tagName === 'IFRAME') continue;
         doboz.replaceChildren(keret(fajta));
       } else if (!most) {
@@ -1080,8 +1082,18 @@
     window.scrollTo({ top: Math.max(0, y), behavior: sima ? 'smooth' : 'auto' });
   };
   const fajlnev = (ut) => (ut.split('/').pop() || 'index.html').replace(/\.html$/, '');
+  // Ami nincs a tablazatban (a Wix-adat csak a menupontokhoz kellett): a Wix az anchort a szekcio melle teszi, es az azonositok idobelyegbol kepzodnek,
+  // ezert a cel az a legnagyobb comp-azonositoju <section>, ami nem nagyobb az anchor azonositojanal. A tablazat mind a 19 ismert parjara ezt adja
+  // (tools/meres-proba/_horgony-teszt.mjs); enelkul a gomb ("TOBB INFOT KEREK!", "AZ 5 OK, ROVIDEN", ...) semmit nem csinalna.
+  const horgonyNorm = (id) => String(id).replace(/^(anchors|comp)-/, '').padEnd(10, '0');
+  const horgonySzekcio = (azon) => {
+    if (HORGONYOK[azon]) return HORGONYOK[azon];
+    const kulcs = horgonyNorm(azon); let jo = null;
+    for (const s of document.querySelectorAll('section[id^="comp-"]')) if (horgonyNorm(s.id) <= kulcs && (!jo || horgonyNorm(s.id) > horgonyNorm(jo))) jo = s.id;
+    return jo;
+  };
   for (const a of document.querySelectorAll('a[data-anchor]')) {
-    const szekcio = HORGONYOK[a.getAttribute('data-anchor')];
+    const szekcio = horgonySzekcio(a.getAttribute('data-anchor'));
     const href = a.getAttribute('href');
     if (!szekcio || !href) continue;
     a.setAttribute('href', href.split('#')[0] + '#' + szekcio);
@@ -1151,6 +1163,9 @@
     dl.push({ event: 'generate_lead', lead_category: 'contact', label: cimke, form_id: formId, user_data: wixUserData(ertekek) });
     if (window.gtag) window.gtag('event', 'generate_lead', { event_category: 'contact', event_action: 'Submitted', event_label: cimke });
   }
+  // Az ajandekkartya-motor (/ajandek, assets/js/ajandek.js) az utalasos igenyleskor UGYANEZT a fuggvenyt hivja, a regi "Ajandekkartya " urlap hivasanak
+  // ugyanazzal a kulcs-listajaval es form_id-javal: igy az utalasos konverzio (lead -> ecommerce:null -> generate_lead, user_data) a regivel azonos.
+  window.mhWixLead = wixLead;
 
   // A Wix radiogombjai nem <label>-ben vannak, es a kijeloles latszatat is a
   // Wix JS-e rajzolja (data-checked + "...--checked" osztaly): ezt itt potoljuk.
@@ -1201,6 +1216,9 @@
     uzenet.setAttribute('role', 'alert');
     gomb.after(uzenet);
     const mezo = (cimke) => [...urlap.querySelectorAll('input')].find((i) => (i.getAttribute('aria-label') || '').startsWith(cimke));
+    // a bongeszo automatikus kitoltese csak a megfelelo mezot toltse (a Wix-urlap mezoin nincs autocomplete: a telefonszam eleje a keresztnevbe is kerult)
+    const AUTOCOMPLETE = { 'Ajándékozott Teljes Neve': 'off', 'Fizető fél Vezetékneve': 'family-name', 'Fizető fél Keresztneve': 'given-name', 'E-mail cím': 'email', 'Telefonszámod': 'tel-national', 'Számlázási cím': 'street-address', 'Cégnév': 'organization', 'Cég adószám': 'off' };
+    for (const [cimke, ac] of Object.entries(AUTOCOMPLETE)) { const i = mezo(cimke); if (i) i.setAttribute('autocomplete', ac); }
 
     wixValasztok(urlap);
     urlap.addEventListener('input', (e) => e.target.classList.remove('mh-hibas'));
@@ -1217,13 +1235,27 @@
       }
       const kartya = urlap.querySelector('input[type=radio]:checked');
       if (!kartya) hibas = hibas || urlap.querySelector('input[type=radio]');
+      // a nev mezokben (ajandekozott, vezeteknev, keresztnev) nem lehet szamjegy / + jel / @: a telefonszam a telefon mezobe tartozik
+      let nevHiba = null;
+      for (const cimke of ['Ajándékozott Teljes Neve', 'Fizető fél Vezetékneve', 'Fizető fél Keresztneve']) {
+        const i = mezo(cimke);
+        const rossz = !!i && /[\d+@]/.test(i.value);
+        if (i) { i.setAttribute('aria-invalid', String(rossz || (i.required && !i.value.trim()))); i.classList.toggle('mh-hibas', rossz || (i.required && !i.value.trim())); }
+        if (rossz && !nevHiba) nevHiba = i;
+      }
       if (hibas) {
         uzenet.textContent = 'Kérlek, töltsd ki a csillaggal (*) jelölt mezőket, és válaszd ki a kártyát.';
         hibas.focus();
         return;
       }
+      if (nevHiba) {
+        uzenet.textContent = 'A név nem tartalmazhat számot vagy + jelet. A telefonszámot a telefon mezőbe írd.';
+        nevHiba.focus();
+        return;
+      }
       const adat = new URLSearchParams({ 'form-name': 'ajandekkartya', oldal: location.pathname.split('/').pop() || 'index.html' });
       for (const [cimke, nev] of URLAP_MEZOK) { const i = mezo(cimke); adat.set(nev, i ? i.value.trim() : ''); }
+      if (adat.get('telefon')) adat.set('telefon', wixTelefon(adat.get('telefon')) || adat.get('telefon'));   // pl. 305715516 -> +36305715516
       adat.set('kartya', kartya.getAttribute('aria-label') || kartya.value);
       adat.set('aszf', 'elfogadva');
       gomb.setAttribute('aria-disabled', 'true');
@@ -1483,6 +1515,7 @@
   //     kilepo animacio nelkul (a Wixen is azonnal eltunik)
   const popupok = {};
   let nyitottPopup = null;
+  let popupZarElem = null;
   let popupNyito = null;
 
   function popupElem(id) {
@@ -1511,7 +1544,9 @@
     const doboz = gyoker.querySelector('.mh-popup-doboz');
     if (doboz) doboz.removeAttribute('data-motion-enter');
     gyoker.hidden = false;
-    document.documentElement.style.overflow = 'hidden';
+    // a gorgetes-zar: ahol a body a viewport-gorgeto (a html overflow-ja visible), a body-t zarjuk: a html overflow:hidden-je Chrome-ban az oldal tetejere ugratna es nem ugrana vissza
+    popupZarElem = getComputedStyle(document.documentElement).overflowY === 'visible' ? document.body : document.documentElement;
+    popupZarElem.style.overflow = 'hidden';
     nyitottPopup = gyoker;
     if (doboz) {
       // az animacio 0%-an meg nincs eltolas, ezert itt a vegleges helyet merjuk
@@ -1528,7 +1563,8 @@
     if (!nyitottPopup) return;
     nyitottPopup.hidden = true;
     nyitottPopup = null;
-    document.documentElement.style.overflow = '';
+    if (popupZarElem) popupZarElem.style.overflow = '';
+    popupZarElem = null;
     if (popupNyito) popupNyito.focus({ preventScroll: true });
     popupNyito = null;
   }

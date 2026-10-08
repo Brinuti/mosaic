@@ -23,11 +23,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { ritkit } from './css-ritkitas.mjs';
+import { atkot, atkotBelso, atkotSzoveg, kapcsolokBuildhez, kihagyottOldal, osszead, uresOldal, KAPCSOLOK } from './foglalo-atkotes.mjs';
+import { popupAtkot } from './halott-popup.mjs';
+import { fejlecAtalakit, ANGOL_JELOLO } from './fejlec-menu.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 // Cloudflare Pages-en a main ag buildje az eles (a *.pages.dev cimeken a functions/[[path]].js ad noindexet)
 const ELES = process.env.ELES === '1' || (process.env.CF_PAGES === '1' && process.env.CF_PAGES_BRANCH === 'main');
+// A Salonic foglalo-linkek atkotese a kozos foglalora (/foglalo-motor), uzletagankent (tools/foglalo-atkotes.json): ami nincs bekapcsolva,
+// ahhoz a build nem nyul, a kimenet bajtra azonos a mostanival.
+const ATKOTES = kapcsolokBuildhez({ eles: ELES });
+let atkotesDb = Object.fromEntries(KAPCSOLOK.map((k) => [k, 0]));
 
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
@@ -42,19 +49,99 @@ fs.cpSync(path.join(ROOT, 'klon', 'm'), LAP_M, { recursive: true });
 // az asztali mappaba az asztali, a mobilba a mobil valtozat - pontosan ugyanaz, mint a tobbi oldalon.
 // Ugyanigy a <!--mh-lablec--> helyere a MOSAIC lablece.
 const FEJLEC = { [LAP_A]: 'asztali', [LAP_M]: 'mobil' };
+// A fejlec/lablec kozos finomitasa (mobil fejlec, akciosav, gomb, lablec): egy CSS-fajl, ket helyre kerul - a sajat oldalak fejlec-darabja moge itt,
+// a Wixes (klon) oldalak beagyazott klon.css-e moge lent (BEAGYAZOTT).
+const FEJLEC_CSS = fs.readFileSync(path.join(ROOT, 'assets/css/fejlec-lablec.css'), 'utf8');
+// A fejlec kivonata a /sminktetovalas-budapest oldalrol keszult, ott a "Sminktetovalas" az aktiv (kijelolt) menupont. Az a sajat oldal, amelyik
+// <!--mh-menu-aktiv:/utvonal--> jelolot tartalmaz, a sajat menupontjat kapja kijelolve (jelolo nelkul a fejlec valtozatlan marad).
+const aktivMenu = (fejlec, utvonal, mobil) => {
+  const ut = utvonal.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
+  if (!mobil) {
+    return fejlec
+      .replace(/ data-is-current="true" aria-current="true"/g, ' data-is-current="false" aria-current="false"')
+      .replace(/ itemDepth02233374943--isCurrentPage/g, '')
+      .replace(new RegExp(`( data-is-current=)"false"( aria-current=)"false"(><div class="itemShared2352141355__rootContainer(?: itemShared2352141355--isRow)?"><a data-item-label="true" data-testid="linkElement" href="${ut}" target="_self" class="itemDepth02233374943__root)`),
+        '$1"true"$2"true"$3 itemDepth02233374943--isCurrentPage');
+  }
+  return fejlec
+    .replace(/ aria-current="page"( class="[^"]*?) jqR3kU"/g, '$1"')
+    .replace(new RegExp(`(<li data-testid="MENU_AS_CONTAINER_EXPANDABLE_MENU-\\d+") class="([^"]*)"(><div data-testid="itemWrapper" class="keDKhi"><span data-testid="linkWrapper" class="j945c8"><a data-testid="linkElement" href="${ut}")`),
+      '$1 aria-current="page" class="$2 jqR3kU"$3');
+};
 for (const f of fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.endsWith('.html'))) {
   const forras = fs.readFileSync(path.join(ROOT, 'foglalas', f), 'utf8');
+  const aktiv = (forras.match(/<!--mh-menu-aktiv:([^>]+?)-->/) || [])[1];
+  const angol = forras.includes(ANGOL_JELOLO);   // angol oldal: angol menucimkek / lablec (tools/fejlec-menu.mjs)
   for (const m of [LAP_A, LAP_M]) {
     const resz = (jel, fajl) => forras.includes(jel) ? fs.readFileSync(path.join(ROOT, 'assets/fejlec', fajl + '.html'), 'utf8') : '';
-    const fejlec = resz('<!--mh-fejlec-->', FEJLEC[m]), lablec = resz('<!--mh-lablec-->', 'lablec-' + FEJLEC[m]);
+    let fejlec = fejlecAtalakit(resz('<!--mh-fejlec-->', FEJLEC[m]), m === LAP_M, angol); // az Ajandekkartya lenyilo, az onallo Paros Head Spa pont, az EN jelveny (tools/ajandek-menu.mjs, tools/fejlec-menu.mjs)
+    if (aktiv && fejlec) fejlec = aktivMenu(fejlec, aktiv, m === LAP_M);
+    let lablec = fejlecAtalakit(resz('<!--mh-lablec-->', 'lablec-' + FEJLEC[m]), m === LAP_M, angol);   // az uj lablec
+    const kozosCss = '<style data-forras="fejlec-lablec">' + FEJLEC_CSS + '</style>';
+    if (fejlec) fejlec += kozosCss; else if (lablec) lablec += kozosCss;
     fs.writeFileSync(path.join(m, f), forras.replace('<!--mh-fejlec-->', () => fejlec).replace('<!--mh-lablec-->', () => lablec));
+  }
+}
+// Az ELES ajandekkartya-oldalak cimeit az uj ajandekkartya-motor veszi at (a tulajdonos kerese, 2026-10-04): ugyanaz az oldal (foglalas/ajandek.html)
+// ezeken a cimeken is megjelenik (a cim dönti el a variantot: assets/js/ajandek-adat.js OLDAL_ALAPERTEK), indexelheto, sajat canonical-lal.
+// A regi (Wixes) oldal valtozatlanul megvan a klon/ mappaban; itt kulon, REJTETT cimen is elerheto (-regi: noindex, nincs link ra, nincs a
+// sitemapben) - visszaallashoz es osszehasonlitashoz. Az /ajandek cim marad (noindex): a levelekben / kampanyokban levo linkek tovabb mukodnek.
+const REGI_AJANDEK_CIMEK = ['headspa-ajandekkartya', '4-kezes-headspa-ajandekkartya', 'ajandekkartya-szulinapra', 'ajandekkartya-ugc',
+  'headspa-ajandekkartya-anyukaknak', 'headspa-ajandekkartya-noknek', 'headspa-paros-csajos-ajandekkartya', 'japan-headspa-ajandekkartya'];
+for (const m of [LAP_A, LAP_M]) {
+  const uj = fs.readFileSync(path.join(m, 'ajandek.html'), 'utf8');
+  for (const nev of REGI_AJANDEK_CIMEK) {
+    const regiFajl = path.join(m, nev + '.html');
+    if (fs.existsSync(regiFajl)) {
+      const regiCim = 'https://www.mosaicheadspa.hu/' + nev + '-regi';
+      let r = fs.readFileSync(regiFajl, 'utf8');
+      r = r.replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, '<link rel="canonical" href="' + regiCim + '">')
+        .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, '<meta property="og:url" content="' + regiCim + '">')
+        .replace(/<head>/i, '<head><meta name="robots" content="noindex, nofollow">');
+      fs.writeFileSync(path.join(m, nev + '-regi.html'), r);
+    }
+    const cim = 'https://www.mosaicheadspa.hu/' + nev;
+    fs.writeFileSync(regiFajl, uj
+      .replace(/<meta name="robots" content="[^"]*">\s*/i, '')
+      .replace('<link rel="canonical" href="https://www.mosaicheadspa.hu/ajandek">', '<link rel="canonical" href="' + cim + '">')
+      .replace('<meta property="og:url" content="https://www.mosaicheadspa.hu/ajandek">', '<meta property="og:url" content="' + cim + '">'));
   }
 }
 // a nyitooldal a /_a/fooldal, /_m/fooldal fajlbol jon (lasd netlify/lib/utvonal.js)
 for (const m of [LAP_A, LAP_M]) fs.renameSync(path.join(m, 'index.html'), path.join(m, 'fooldal.html'));
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
+// Apple Pay: a Stripe nyilvanos domain-ellenorzo fajlja (https://stripe.com/files/apple-pay/apple-developer-merchantid-domain-association,
+// ugyanaz minden Stripe-kereskedonek) a /.well-known/ alatt, statikusan (nincs fuggvenyhivas). A domain regisztralasa a Stripe-ban (Payment method domains).
+fs.cpSync(path.join(ROOT, 'well-known'), path.join(DIST, '.well-known'), { recursive: true });
 // a Salonic foglalo oldalainak egyedi CSS-e (a Salonic "Egyedi CSS URL" beallitasa tolti be)
 fs.cpSync(path.join(ROOT, 'salonic'), path.join(DIST, 'salonic'), { recursive: true });
+// A foglalo (assets/js/booking-engine/**) moduljai egymast verziojel nelkul importaljak, a /assets/js/* viszont egy evig tarolhato
+// (immutable): egy motor-javitas nem jutna el a mar betoltott bongeszokhoz (a tobbi sajat szkript az oldalakban kap ?v= jelet, ezek nem).
+// A modulok tartalom-hash-eibol egy kozos verziojelet szamolunk, es beirjuk a modulok egymasra hivatkozasaiba es a foglalo-oldal importjaba.
+const MOTOR_MODULOK = [];
+(function bejar(mappa) {
+  for (const e of fs.readdirSync(mappa, { withFileTypes: true })) {
+    const p = path.join(mappa, e.name);
+    if (e.isDirectory()) bejar(p); else if (e.name.endsWith('.js')) MOTOR_MODULOK.push(p);
+  }
+})(path.join(DIST, 'assets/js/booking-engine'));
+MOTOR_MODULOK.sort();
+// A foglalo kis kepei (assets/img/booking/*) ugyanigy egy evig tarolhatok: a tartalom-hash-uk a motor kodjaba kerul (__KEP_VERZIO__: a kep-URL-ek ?v= jele),
+// igy egy kicserelt kep uj URL-t kap, es a motor verziojele is valtozik.
+const KEP_MAPPA = path.join(DIST, 'assets/img/booking');
+const KEP_VERZIO = crypto.createHash('sha1').update(fs.existsSync(KEP_MAPPA) ? fs.readdirSync(KEP_MAPPA).sort().map((f) => f + fs.readFileSync(path.join(KEP_MAPPA, f)).toString('base64')).join('\n') : '').digest('hex').slice(0, 10);
+const MOTOR_VERZIO = crypto.createHash('sha1').update(MOTOR_MODULOK.map((p) => fs.readFileSync(p, 'utf8')).join('\n') + KEP_VERZIO).digest('hex').slice(0, 10);
+for (const p of MOTOR_MODULOK) {
+  const t = fs.readFileSync(p, 'utf8');
+  fs.writeFileSync(p, t.replace(/(from\s+['"])(\.{1,2}\/[^'"?]+\.js)(['"])/g, `$1$2?v=${MOTOR_VERZIO}$3`).split('__KEP_VERZIO__').join(KEP_VERZIO));
+}
+// A helyben nyilo foglalo-reteg inditoja (assets/js/booking-launcher.js) a motor es a stilusok tartalom-hash-et kapja (a /assets/js/* es a
+// /assets/css/* egy evig tarolhato): a __MOTOR_VERZIO__ / __CSS_VERZIO__ jeleket itt irjuk be, a launcher sajat ?v= jele ezutan szamolodik.
+const CSS_VERZIO = crypto.createHash('sha1').update(['booking-engine.css', 'booking-fonts.css'].map((c) => fs.readFileSync(path.join(DIST, 'assets/css', c), 'utf8')).join('\n')).digest('hex').slice(0, 10);
+{
+  const p = path.join(DIST, 'assets/js/booking-launcher.js');
+  fs.writeFileSync(p, fs.readFileSync(p, 'utf8').split('__MOTOR_VERZIO__').join(MOTOR_VERZIO).split('__CSS_VERZIO__').join(CSS_VERZIO));
+}
 // Mobilkepek (assets/img/m/, tools/mobil-kepek.py): ami ott nincs (mar eleve kicsi),
 // azt valtozatlanul bemasoljuk, igy a mobil oldal minden kepe megvan az m/ mappaban is.
 const IMG = path.join(DIST, 'assets', 'img'), IMG_M = path.join(IMG, 'm');
@@ -84,7 +171,7 @@ fs.writeFileSync(path.join(DIST, '_redirects'), '');
 fs.writeFileSync(path.join(DIST, '_routes.json'), JSON.stringify({
   version: 1,
   include: ['/*'],
-  exclude: ['/assets/*', '/_a/*', '/_m/*', '/salonic/*', '/favicon.ico',
+  exclude: ['/assets/*', '/_a/*', '/_m/*', '/salonic/*', '/.well-known/*', '/favicon.ico',
     ...fs.readdirSync(DIST).filter((f) => f.endsWith('.xml')).map((f) => '/' + f)],
 }, null, 1));
 // 404-es lap: a Cloudflare Pages ennek hianyaban a nyitooldalt adna minden
@@ -120,9 +207,15 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   '/salonic/*',
   '  Cache-Control: public, max-age=0, must-revalidate',
   '  Access-Control-Allow-Origin: *',
+  '/.well-known/*',
+  '  Content-Type: text/plain; charset=utf-8',
+  '  Cache-Control: public, max-age=0, must-revalidate',
   // a HTML-beagyazasok (GYIK, arlistak) csak keretben jelennek meg, onalloan ne indexelodjenek
   '/assets/embed/*',
   '  X-Robots-Tag: noindex',
+  // az /ajandek (a kampany- es levelbeli linkek cime) ugyanazt az oldalt adja, mint az eles ajandekkartya-cimek: ne indexelodjon ketszer
+  // (a /ajandekkartya a fomenu valaszto oldala: szinten noindex). Az /oxigen-ajandekkartya 2026-10-08 ota indexelheto (a tulajdonos kerese; a sitemapben is szerepel).
+  ...(ELES ? ['/ajandek', '  X-Robots-Tag: noindex', '/lezeres-ajandekkartya', '  X-Robots-Tag: noindex', '/ajandekkartya', '  X-Robots-Tag: noindex'] : []),
   '',
 ].join('\n'));
 
@@ -152,18 +245,51 @@ const KATTINTOS = Object.fromEntries([...kattintosBlokk.matchAll(/'(comp-[a-z0-9
 const LEJATSZO_GOMB = '<button type="button" class="mh-video-gomb" aria-label="Videó lejátszása"><svg viewBox="0 0 40 40" width="50" height="50" fill="currentColor" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="rgba(0,0,0,.35)" stroke="currentColor" stroke-width="2"/><path d="M16 12.5v15l12-7.5z"/></svg></button>';
 // A sajat szkriptek szovege: a CSS-ritkitas ezekben is keresi az osztalyneveket (amit a
 // klon.js futas kozben tesz ki, annak a stilusa is maradjon meg).
-const SAJAT_JS = fs.readdirSync(path.join(ROOT, 'assets/js')).filter((f) => f.endsWith('.js'))
+// (a booking-launcher.js nem hoz letre oldal-elemet, a szovegeben levo szavak (pl. "category") ne tartsanak meg felesleges CSS-szabalyt)
+const SAJAT_JS = fs.readdirSync(path.join(ROOT, 'assets/js')).filter((f) => f.endsWith('.js') && f !== 'booking-launcher.js')
   .map((f) => fs.readFileSync(path.join(ROOT, 'assets/js', f), 'utf8')).join('\n');
 // A harom kis stiluslap (betuk + klon.css) beagyazva: kulon letoltesre varva blokkolnak
 // az elso megjelenitest. A relativ betu-hivatkozasokat abszolutra irjuk.
 const BEAGYAZOTT = ['wix-google-fonts.css', 'wix-fonts.css', 'klon.css'].map((f) => [f,
-  fs.readFileSync(path.join(ROOT, 'assets/css', f), 'utf8').replace(/url\((['"]?)\.\.\/fonts\//g, 'url($1/assets/fonts/')]);
+  fs.readFileSync(path.join(ROOT, 'assets/css', f), 'utf8').replace(/url\((['"]?)\.\.\/fonts\//g, 'url($1/assets/fonts/') + (f === 'klon.css' ? '\n' + FEJLEC_CSS : '')]);
+// A GYIK szovegeben is van foglalo-link (assets/js/gyik.js): ugyanaz az atkotes. A verziojel a dist/-beli (atirt) tartalombol
+// szamolodik, hogy az atirt szkript uj cimet kapjon (a regit a bongeszo egy evig tarthatja); atkotes nelkul a tartalom azonos.
+if (ATKOTES.size) {
+  const gyik = path.join(DIST, 'assets/js/gyik.js');
+  const r = atkotSzoveg(fs.readFileSync(gyik, 'utf8'), ATKOTES);
+  fs.writeFileSync(gyik, r.szoveg);
+  atkotesDb = osszead(atkotesDb, r.db);
+}
 const verzio = Object.fromEntries(SAJAT.map((f) => [f,
-  crypto.createHash('sha1').update(fs.readFileSync(path.join(ROOT, f))).digest('hex').slice(0, 10)]));
+  crypto.createHash('sha1').update(fs.readFileSync(path.join(DIST, f))).digest('hex').slice(0, 10)]));
+// A sajat foglalo-oldalak (a motor / a PMU foglalo / a probaoldalak) maguk toltik a foglalot: ezekre a launcher nem kerul.
+const FOGLALO_OLDALAK = new Set(['foglalo-motor.html', 'foglalas.html', 'booking-test.html', 'foglalo-pmu.html', 'foglalo-proba.html', 'sminktetovalas-budapest.html']);
+// Szovegfinomitasok a kozos fejlecben/lableben. A Wixes oldalakban a szoveg HTML-entitasokkal van kodolva, a sajat darabokban sima betukkel: a mintak mindkettot elfogadjak.
+const ENTITAS = { 'á': '&aacute;', 'é': '&eacute;', 'ó': '&oacute;', 'ö': '&ouml;', 'ő': '&odblac;', 'ü': '&uuml;', 'ű': '&udblac;', 'í': '&iacute;', 'ú': '&uacute;', 'Á': '&Aacute;' };
+const TOLERANS = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[áéóöőüűíúÁ]/g, (c) => '(?:' + c + '|' + ENTITAS[c] + ')');
+const AKCIOSAV = new RegExp(TOLERANS('Októberi akció! - 20% kedvezmény minden headspa foglalásra + ajándékkártyára!'), 'g');
+const FOGLALAS_GOMB = new RegExp('(<a [^>]*style-mo70g2c7__root[^>]*aria-label=")' + TOLERANS('FOGLALÁS') + '("[^>]*><span class="StylableButton2545352419__container"><span class="StylableButton2545352419__label wixui-button__label" data-testid="stylablebutton-label">)' + TOLERANS('FOGLALÁS') + '(</span>)');
+function fejlecSzoveg(h, mobil) {
+  // a Wixes oldalak beegetett fomenujeben az Ajandekkartya menupont lenyilo lesz (a sajat oldalak darabjain mar megtortent: ismetelve nem csinal semmit)
+  h = fejlecAtalakit(h, mobil);
+  // lablec: az elvalasztok " - " helyett " · " (csak a szoveg-csomopontokban)
+  h = h.replace(/(<div id="comp-m40zyigs"[^>]*><p[^>]*>)([\s\S]*?)(<\/p>)/,
+    (m, a, tartalom, c) => a + tartalom.replace(/(^|>)([^<]*)/g, (mm, k, sz) => k + sz.replace(/ - /g, ' · ')) + c);
+  if (mobil) {
+    // az akciosav egy sorba ferjen (rovidebb szoveg), a fejlec gombja ne legyen csupa nagybetus
+    h = h.replace(AKCIOSAV, 'Októberi akció! 20% kedvezmény minden headspa + ajándékkártyára');
+    h = h.replace(FOGLALAS_GOMB, '$1Foglalás$2Foglalás$3');
+  }
+  return h;
+}
 for (const mappa of [LAP_A, LAP_M]) {
   for (const f of fs.readdirSync(mappa).filter((x) => x.endsWith('.html'))) {
     const p = path.join(mappa, f);
-    let h = ritkit(fs.readFileSync(p, 'utf8'), SAJAT_JS);
+    let h = fejlecSzoveg(ritkit(fs.readFileSync(p, 'utf8'), SAJAT_JS), mappa === LAP_M);
+    // Ahol a foglalo-linkek a motorra mutatnak (bekapcsolt atkotes: elonezet / helyi build), ott a CTA a foglalot HELYBEN nyitja (reteg),
+    // nem visz at a /foglalo-motor oldalra. Kikapcsolt atkotesnel (eles, ma) semmi nem valtozik.
+    const launcherOldal = ATKOTES.size > 0 && !kihagyottOldal(f) && !FOGLALO_OLDALAK.has(f); // ahol a launcher rajta van, a foglalo-linkek a retegben nyilnak
+    if (launcherOldal) h = h.replace('</body>', '<script type="module" src="/assets/js/booking-launcher.js"></script></body>');
     for (const [fajl, css] of BEAGYAZOTT) {
       let elso = true;
       h = h.replace(new RegExp('<link rel="stylesheet" href="/assets/css/' + fajl.replace('.', '\\.') + '">', 'g'),
@@ -196,6 +322,16 @@ for (const mappa of [LAP_A, LAP_M]) {
     }
     // mobilon a kisebb kepvaltozatok (a teljes URL-ek - og:image, JSON-LD - maradnak)
     if (mappa === LAP_M) h = h.replace(/(["'(\s,])\/assets\/img\/(?!m\/)/g, '$1/assets/img/m/');
+    // a foglalo-oldal importja a motor verzios cimere mutat (lasd MOTOR_VERZIO)
+    h = h.split("/assets/js/booking-engine/engine.js'").join(`/assets/js/booking-engine/engine.js?v=${MOTOR_VERZIO}'`);
+    // Salonic foglalo-linkek -> /foglalo-motor (a koszonooldalakat kihagyja; kikapcsolva a szoveg valtozatlan)
+    if (ATKOTES.size && !kihagyottOldal(f)) { const r = atkot(h, ATKOTES); h = r.html; atkotesDb = osszead(atkotesDb, r.db); }
+    // a sajat foglalo-oldalakra mutato linkek (fomenu "FOGLALAS" + az oldalak gombjai): csak ott, ahol a launcher rajta van (ugyanaz a reteg nyilik)
+    if (launcherOldal) { const r = atkotBelso(h, f, ATKOTES, { launcher: true }); h = r.html; atkotesDb = osszead(atkotesDb, r.db); }
+    // a Wix-felugro gombok, amelyekhez nincs felugro sablon (kupon-keres, telefonos konzultacio): a gomb a foglalora mutat, nem marad halott gomb (tools/halott-popup.mjs)
+    h = popupAtkot(h, f).html;
+    // a regi foglalo-oldalak: ures oldal + bezarhatatlan felugro foglalo (a cim megmarad, a mero kod az oldalon marad)
+    if (launcherOldal) { const r = uresOldal(h, f, ATKOTES); h = r.html; atkotesDb = osszead(atkotesDb, r.db); }
     fs.writeFileSync(p, h);
   }
 }
@@ -203,3 +339,4 @@ for (const mappa of [LAP_A, LAP_M]) {
 const html = fs.readdirSync(LAP_A).filter((f) => f.endsWith('.html')).length;
 const mobil = fs.readdirSync(LAP_M).filter((f) => f.endsWith('.html')).length;
 console.log(`dist/ kesz: ${html} asztali + ${mobil} mobil oldal, ${ELES ? 'ELES (indexelheto)' : 'PROBA (noindex)'}`);
+console.log(`foglalo-atkotes: ${ATKOTES.size ? [...ATKOTES].map((k) => `${k} ${atkotesDb[k]}`).join(', ') : 'kikapcsolva (a linkek Salonic-linkek maradnak)'}`);

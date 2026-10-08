@@ -21,12 +21,19 @@
 (function () {
   'use strict';
 
+  // Az ajandekkartya-oldal (/ajandek es a regi cimei) sikeres vasarlas utan egy lathatatlan, azonos eredetu keretben
+  // betolti a regi koszonooldalt (assets/js/ajandek.js, regiKonverzio; a keret data-ah-regi-konverzio attributumot visel), hogy
+  // a regi ajandekkartya-konverzio valtozatlanul lemenjen. Ez a SAJAT merokeretunk: itt a merokodoknak futniuk kell, a vasarlot
+  // pedig nem szabad kidobni az uj oldalrol - ezert az alabbi "keretben vagyunk" aggak erre nem vonatkoznak.
+  var MERO_KERET = false;
+  try { MERO_KERET = !!(window.frameElement && window.frameElement.hasAttribute('data-ah-regi-konverzio')); } catch (e) { /* idegen keret */ }
+
   // A foglalo oldal (/foglalo-proba) beagyazott Salonic-adatlapja sikeres foglalas utan a mi
   // koszonooldalunkra iranyit - a keretben (ha az idopont kozben elkelt, a fooldalunkra).
   // Ilyenkor itt semmi nem fut (meres sem): a foglalo oldal dont - a koszonooldalt a teljes
   // ablakban nyitja meg, igy a konverzio egyszer, a fo ablakban merodik (mint eddig).
   try {
-    if (window.top !== window.self && window.parent.location.hostname === location.hostname) {
+    if (!MERO_KERET && window.top !== window.self && window.parent.location.hostname === location.hostname) {
       document.documentElement.style.visibility = 'hidden';
       if (typeof window.parent.mhKeretbenOldal === 'function') window.parent.mhKeretbenOldal(location.href);
       else window.top.location.replace(location.href);
@@ -40,13 +47,18 @@
   // Meta-pixelek oldalanként, pontosan a Wix egyeni kodjainak oldal-beallitasa
   // szerint (Headspa / PMU / Fodrasz / Szor). A Wixen "szukseges" kategoriaban
   // voltak, igy hozzajarulastol fuggetlenul futottak - az adatsor miatt itt is.
+  // 2026-10: a Meta-hirdetesek ajandekkartya- es kampany-landingjei is felkerultek (a Wixen
+  // erkezo forgalom egy resze ilyen oldalon landolt, es nem volt _fbc / _fbp). A
+  // ppc-allashirdetes (allasos hirdetes) SZANDEKOSAN kimarad a Meta-meresbol; alapertelmezett
+  // pixel nincs: csak a felsorolt oldal kap pixelt. A tulajdonos kifejezett listaja szerint SZANDEKOSAN
+  // pixel nelkul: ppc-allashirdetes, allashirdetes-ok, aszf, headspa-termekek-oxygeni.
   var PIXEL_HEADSPA = '3473839859576758', PIXEL_PMU = '1019878750660854',
     PIXEL_FODRASZ = '1361403694872594', PIXEL_SZOR = '643342342027957';
   var PIXEL_OLDALAK = {};
-  [[PIXEL_HEADSPA, 'index home success-foglalas-egyeni-vip success-foglalas head-spa-kedvezmeny headspa-kupon headspa-ferfiaknak headspa-ajandekkartya success-elofizetes headspa-10szazalek-kedvezmennyel headspa-arak-budapest headspa-elofizetes success-foglalas-4kezes ajikartya-ok headspa-budapest-hungary head-spa-velemenyek foglalas-ok success-foglalas-paros headspa-budapest success-foglalas-paros-vip success-ajandekkartya-stripe 4-kezes-headspa-ajandekkartya paros-headspa-budapest success-ajandekkartya success-foglalas-egyeni'],
-    [PIXEL_PMU, 'korrekcio-ok pmu-ok sminktetovalas-budapest eltavolitas-ok pmu-vh pmu-lead-ok'],
-    [PIXEL_FODRASZ, 'fodraszat-foglalas balayage-haj-festes-budapest fodrasz-ok noi-fodrasz-budapesten-30-szazalek-kedvezmennyel noi-fodraszat-szoke noi-fodraszat-hullam 30szazalek oxigenterapia-ok noi-fodraszat-budapest noi-fodrasz-budapest-balayage-hajfestes noi-hajfestes-budapest oxigenterapia-budapest'],
-    [PIXEL_SZOR, 'lezeres-szortelenites-budapest szortelenites-foglalas elysion-ok szor-konzi-ok szortelenites-ok']
+  [[PIXEL_HEADSPA, 'index home success-foglalas-egyeni-vip success-foglalas head-spa-kedvezmeny headspa-kupon headspa-ferfiaknak headspa-ajandekkartya ajandek success-elofizetes headspa-10szazalek-kedvezmennyel headspa-arak-budapest headspa-elofizetes success-foglalas-4kezes ajikartya-ok headspa-budapest-hungary head-spa-velemenyek foglalas-ok success-foglalas-paros headspa-budapest success-foglalas-paros-vip success-ajandekkartya-stripe 4-kezes-headspa-ajandekkartya paros-headspa-budapest success-ajandekkartya success-foglalas-egyeni japan-headspa-ajandekkartya headspa-ajandekkartya-anyukaknak headspa-ajándékkártya-ezo headspa-ajandakkartya-fiataloknak headspa-paros-csajos-ajandekkartya headspa-self-care idpontfoglalas headspa-ajandekkartya-noknek'],
+    [PIXEL_PMU, 'korrekcio-ok pmu-ok sminktetovalas-budapest eltavolitas-ok pmu-vh pmu-lead-ok sminktetovalas-budapest-rovid pmu-melitta pmu-foglalas'],
+    [PIXEL_FODRASZ, 'fodraszat-foglalas balayage-haj-festes-budapest fodrasz-ok noi-fodrasz-budapesten-30-szazalek-kedvezmennyel noi-fodraszat-szoke noi-fodraszat-hullam 30szazalek oxigenterapia-ok noi-fodraszat-budapest noi-fodrasz-budapest-balayage-hajfestes noi-hajfestes-budapest oxigenterapia-budapest oxigenterapia-ferfiaknak mosaic-hair-idopontfoglalas'],
+    [PIXEL_SZOR, 'lezeres-szortelenites-budapest szortelenites-foglalas elysion-ok szor-konzi-ok szortelenites-ok szortelenites-zsofi-rovid szortelenites-lezeres-kezeles-folyamata szortelenites-5-dolog szortelenites-zsofi-bemutatkozo szortelenites-zsofi-vendeg szőrtelenítés-zsófi-3 szőrtelenítés-zsófi-csomagok vegleges-szortelenites-ferfiaknak']
   ].forEach(function (s) { s[1].split(' ').forEach(function (o) { PIXEL_OLDALAK[o] = s[0]; }); });
   // az oldal Wix-beli neve az URL-bol ("/" -> index; a /m/ elotag es a .html nelkul)
   var OLDAL = decodeURIComponent(location.pathname).replace(/^\/(m\/)?/, '').replace(/\.html$/, '').replace(/\/$/, '') || 'index';
@@ -62,7 +74,7 @@
   var w = window, d = document;
   if (w.mhSuti) return;
 
-  // Keretbe agyazva (az osszehasonlito eszkoz) se sav, se meres.
+  // Keretbe agyazva (az osszehasonlito eszkoz) se sav, se meres - kiveve a sajat merokeretunket (MERO_KERET): ott meres van, sav nincs.
   var beagyazott = w.top !== w.self;
   var eles = ELES_DOMAINEK.indexOf(location.hostname) >= 0;
 
@@ -142,7 +154,7 @@
   var betoltve = {};
 
   function merokodok() {
-    if (!eles || beagyazott) return;
+    if (!eles || (beagyazott && !MERO_KERET)) return;
     var p = dontes || {};
 
     // GTM: a Wix is mindig betoltotte, a cimkeit a Consent Mode jelei engedik
@@ -310,9 +322,15 @@
   // "Suti beallitasok" link a lablecben, az "ASZF - Impresszum" sor vegen - a
   // tajekoztato szerint itt lehet a hozzajarulast utolag modositani vagy visszavonni.
   function lableclink() {
+    // a kozos lablec (tools/fejlec-menu.mjs) mar tartalmazza a linket: csak a kattintast kell ra kotni (korabban a sajat oldalak lablec-darabjaban beegetett link "halott" volt)
+    var van = d.getElementById('mh-cc-lablec');
+    if (van) {
+      if (!van.getAttribute('data-mh-kotve')) { van.setAttribute('data-mh-kotve', '1'); van.addEventListener('click', function (e) { e.preventDefault(); mutat('settings'); }); }
+      return;
+    }
     var cel = null, linkek = d.querySelectorAll('a[href$="/impresszum"], a[href$="impresszum.html"]');
     for (var i = 0; i < linkek.length; i++) if (linkek[i].closest('footer')) cel = linkek[i];
-    if (!cel || d.getElementById('mh-cc-lablec')) return;
+    if (!cel) return;
     var kulso = cel.parentElement && cel.parentElement.tagName === 'SPAN' ? cel.parentElement : cel;
     var a = d.createElement('a');
     a.id = 'mh-cc-lablec';
@@ -321,7 +339,7 @@
     a.textContent = 'Süti beállítások';
     a.style.textDecoration = 'underline';
     a.addEventListener('click', function (e) { e.preventDefault(); mutat('settings'); });
-    kulso.after(d.createTextNode(' - '), a);
+    kulso.after(d.createTextNode(' · '), a);
   }
 
   function felepit() {

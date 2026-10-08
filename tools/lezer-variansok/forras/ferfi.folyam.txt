@@ -1,0 +1,140 @@
+  103 KEP    x720 w720 h700 /assets/img/c2eb0f_ed3e3ce785064556bc644c86c7777436.jpg  [alt: ferfi-elytion-pro.jpg]
+  134 H2     x195 w409 38px <b>Végleges</b> Lézeres szőrtelenítés férfiaknak<br> <b>8 alkalommal - 6 áráért</b>, 12 hónap garanciával!
+  308 SZ     x195 w409 17px <b>Életreszóló simaság a világ elsőszámú lézerével, 4 év tapasztalattal és 1 év garanciával!</b>
+  356 SZ     x195 w409 15px <i>1023 Bécsi út 2 (A Kolosy térnél)</i>
+  420 GOMB   x192 w223 10px IDŐPONTFOGLALÁS!  -> /foglalo-motor?business=laser
+  522 SZ     x192 w405 15px <b>✅ 8 alkalom elég ✅ 2 ajándék ✅ bérlet helyett alkalmanként fizetsz.</b>
+  569 SZ     x194 w405 15px <b>20% májusi kedvezménnyel! - A csomagokra is!</b>
+  595 SZ     x194 w162 17px <b><a href="/lezeres-szortelenites-budapest#comp-mlgjpxi2">Mutasd az árakat! >></a></b>
+  626 SZ     x309 w218 17px <b>Google 4,9 - 831 értékelés</b>
+  943 KEP    x80 w1280 h627 /assets/img/c2eb0f_d25d1e56510f4b9ea7b01672f0080456.jpg  [alt: brutalis-simasag.jpg]
+  943 KEP    x888 w472 h627 /assets/img/c2eb0f_1aa35b8ff0f4417abff9e955399b5dc2.jpg  [alt: zsofi-konzultacio.jpg]
+  983 H1     x195 w592 40px center Ingyenes konzultációval várlak! :)
+ 1030 SZ     x286 w409 17px ✅ kockázatmentes ✅ kötelezettségmentes ✅ 0 ft
+ 1080 SZ     x206 w592 17px <b>Szia, Zsófi vagyok!</b><br>
+ 1127 SZ     x206 w592 17px Tudom, hogy tele vagy kérdőjelekkel: <br>
+ 1175 SZ     x206 w592 17px <b><i>"Fájni fog?", "Megég a bőröm?", "Biztos, hogy végleges lesz?" , "Férfiként milyen lesz levetkőzni?"</i> - Ez tök normális! Emlékszem én is, hogy izgultam :)</b>
+ 1246 SZ     x206 w592 17px Ne félj, a konzultációm pont ezeket oszlatja el! Leülünk egy kávéra, őszintén átbeszéljük a kérdéseidet, megnézem a bőr- és szőrtípusodat, megmutatom a gépet is és azt is, <b>hogy hány alkalomra lesz szükséged a véglegességhez.</b>
+ 1342 SZ     x206 w592 17px Nem fogok rád tukmálni semmilyen bérletet. 4 év és 8000+ óra tapasztalat után hidd el, megvan a vendégköröm :)<br> <br> <b>Az ingyenes konzultáció nekünk is érdekünk</b>, hiszen csak azt a vendéget vállaljuk el, akinél tényleg 100%-os és biztonságos eredményt tudunk elérni.
+ 1484 SZ     x206 w592 17px A MOSAIC-ban tiéd az időm és a figyelmem. A gombra kattinta foglalhatsz.
+ 1643 GOMB   x601 w223 10px IDŐPONTOK >>  -> /foglalo-motor?business=laser
+ 1912 KEP    x80 w1280 h580 /assets/img/c2eb0f_d25d1e56510f4b9ea7b01672f0080456.jpg  [alt: brutalis-simasag.jpg]
+ 1912 KEP    x80 w472 h580 /assets/img/c2eb0f_c3f7766324e44b979d6649aad8258c67.jpg  [alt: elotte-utana.jpg]
+ 1952 H1     x666 w592 32px center Felejtsd el a pengét / gyantát egy életre!
+ 1990 SZ     x757 w409 17px center <b>Már az első alkalom után látványos!</b>
+ 2040 SZ     x677 w592 17px <b>1. A Világélvonalbeli Technológia:</b> Az Elysion Pro-val, a világ egyik legerősebb diódalézerével dolgozunk. Ultrarövid impulzusokkal, fájdalommentesen pusztítja el a szőrtüszőket a mélyben, miközben a bőrfelszín teljesen sértetlen marad.<br>
+ 2135 SZ     x677 w592 17px <b>2. Miért Végleges:</b> A kúra során a biológiai ciklusokat követve minden egyes szőrszálat a saját aktív (anagén) fázisában "kapunk el", így <b>a kezelt szőrszálak soha többet nem nőnek vissza.</b><br>
+ 2230 SZ     x677 w592 17px <b>3. Ezért extra sima</b>: A "megsütött" szálak a kezelés után 10-15 nappal maguktól, gyökerestől távoznak, míg a borotvával csak a szőrszálak kilógó részét éred el.
+ 2608 H2     x230 w980 40px center Mit jelent a Rögzített ár és a Garancia?👇
+ 2711 KEP    x357 w342 h349 /assets/img/c2eb0f_bfd0d43979b243029c8c13a12fd27f4a.png  [alt: argarancia.png]
+ 2718 SZ     x742 w435 17px ✅ <b>ÁRGARANCIA: Fix 8 alkalom a végleges hatáshoz és ebből csak 6 alkalmat fizetsz, de azt sem előre, hanem alkalmanként. (A 4.és a 8. ajándék)</b>
+ 2813 SZ     x742 w435 17px <b>✅ 12 HÓNAP GARANCIA: </b>Ha a 8. kezelés után 12 hónapig visszanőne a szőr, azt ingyen eltávolítjuk!<br> <br> <b>✅ VÉGLEGESSÉG GARANCIA: </b>A 12 hónap letelte után az éves fenntartó kezeléseket örökre 50% kedvezménnyel veheted igénybe.
+ 2982 GOMB   x809 w272 10px IDŐPONTFOGLALÁS  -> /foglalo-motor?business=laser
+ 3039 SZ     x742 w405 15px center <b>20% májusi kedvezménnyel! - A csomagokra is!</b>
+ 3220 H1     x282 w902 40px center Zsófi vagyok a MOSAIC, Elysion Pro szakértője
+ 3322 KEP    x330 w500 h497 /assets/img/c2eb0f_c17bd26dfee2426eaed165824e02c7e6.jpg  [alt: zsofi-elysion-pro-vegleges-szortelenites2.jpg]
+ 3322 SZ     x863 w347 17px <b>Több mint 3 év és 8.000+ óra tapasztalattal óvatos és profi társad leszek a szőrtelenség felé vezető úton.</b>
+ 3417 SZ     x863 w347 17px Rengeteg férfi vendégem van ezért megértem, ha nem akarsz egy női szalonba járni. A MOSAIC-ot 2 férfi alapította, hogy teljesen UNISEX legyen és te is jól érezd magad.
+ 3512 SZ     x863 w347 17px <br> A legmagasabb szakmai protokoll szerint, biztonságosan, fájdalommentesen és bármikor elérhetően melletted leszek.<br> <br> A MOSAIC lényege nem a futószalag, hanem a minőség, ezért egy 60 perces első konzultációval várlak, ahol összerakjuk a kezelési terved és már el is kezdjük a legelső kezelésed! :)
+ 3815 GOMB   x888 w272 10px IDŐPONTFOGLALÁS  -> /foglalo-motor?business=laser
+ 3886 SZ     x830 w405 15px center <b>20% májusi kedvezménnyel! - A csomagokra is!</b>
+ 3949 KEP    x719 w721 h836 /assets/img/c2eb0f_460501b259d84a40a4ae33c365b26162.jpg  [alt: zsofi-elysion-pro-vegleges-szortelenites1.jpg]
+ 3986 H1     x115 w534 40px center Mi történik az első alkalommal?
+ 4103 SZ     x115 w517 17px <b>A többszázezres bérlet tukmálása helyett</b> mi 3 dolgot szeretnénk neked "eladni": Eredményt, biztonságot és odafigyelést, hogy jó helyen vagy.
+ 4199 H4     x115 w517 17px <b>MI TÖRTÉNIK a 60 perces konzultáción?</b>
+ 4246 SZ     x145 w486 17px <b>Bőr- és Szőrdiagnosztika:</b> Egy speciális skála (Fitzpatrick) alapján meghatározzuk a bőrtípusodat és a szőrszálaid vastagságát.
+ 4294 SZ     x145 w486 17px <b>Kockázatszűrés: </b>Átbeszéljük a kizáró okokat (pl. fényérzékenyítő gyógyszerek, hormonális betegségek), hogy garantáljuk a biztonságodat.
+ 4365 SZ     x145 w486 17px <b>Első kezelés:</b> A bőrtípusodnak megfelelően elkezdjük a legelső kezelést, amelynek hatása látványos lesz!
+ 4413 SZ     x145 w486 17px <b>Kezelési Terv:</b> Megbecsüljük, hány alkalomra lesz szükséged a végleges eredményhez, és ehhez fix árat kapsz, ami nem változhat.
+ 4508 H4     x115 w517 17px <b>MI NEM TÖRTÉNIK? </b>
+ 4555 SZ     x145 w486 17px <b>Nincs tukmálás:</b> Nem kell megvenned egy többszázezres bérletet ,mert nálunk csak alkalmanként fizetsz.
+ 4603 SZ     x145 w486 17px <b>Nincs kapkodás:</b> Figyelek rád így biztonságban érezheted magad.
+ 4627 SZ     x145 w486 17px <b>Nincs fájdalom: </b>Az Elysion Pro gép Crystal Freeze rendszere a kezelés alatt végig 5°C-ra hűti a bőrödet, ami blokkolja a hőérzetet, így a kellemetlenség minimálisra csökken.
+ 4845 KEP    x949 w431 h563 /assets/img/c2eb0f_4cb15e060d1b429587b20e702b3312df.jpg  [alt: zsofi-elysion-pro-vegleges-szortelenites3.jpg]
+ 4893 H2     x230 w541 40px A 3 legfontosabb kérdés!
+ 4950 SZ     x230 w541 20px Zsófi válaszol
+ 5036 SZ     x230 w563 17px <b>1. Mennyire tartós?</b> Végleges. A lézer nemcsak a felszíni szőrszálat égeti el, hanem a szőrtüszőben lévő növekedési sejteket pusztítja el a hő által. Mivel a "gyökér" megsemmisül, a szőr fizikailag képtelen visszanőni.
+ 5132 SZ     x230 w563 17px <b>2. Mennyire biztonságos? </b>Maximálisan. Az Elysion Pro szelektív módon működik: a lézerfény kizárólag a szőrszál sötét pigmentjében nyelődik el, a környező bőrszövetet érintetlenül hagyja, így nincs égési sérülés vagy bőrkárosodás.
+ 5251 SZ     x230 w563 17px <b>3. Mennyire fáj?</b> Gyakorlatilag fájdalommentes. A kezelőfejbe épített Crystal Freeze rendszer folyamatosan 5°C-ra hűti a bőrt, ami természetes érzéstelenítőként hat. A forróság helyett így csak enyhe, tolerálható csipkelődést érzel.
+ 5528 KEP    x60 w431 h362 /assets/img/c2eb0f_c44d6debeaae4fe091432bb010cc859d.jpg  [alt: zsofi-elysion-pro-vegleges-szortelenites4.jpg]
+ 5576 H2     x661 w541 40px <b>CSAK NÁLUNK!</b>
+ 5633 SZ     x661 w541 20px Ingyenes kontroll bármikor!
+ 5719 SZ     x661 w563 17px <b>Nem lesz rá szükséged.</b> De ha mégis úgy érzed, hogy kérdésed van, nézzünk rá, gyulladt vagy tanácsra van szükséged bármikor várlak szeretettel ingyenes kontroll időponton, amit ugyanolyan könnyen bármikor online le tudsz foglalni mint a normál kezelést!
+ 6010 KEP    x949 w431 h645 /assets/img/11062b_ddae90f0cd0c4cffa2e32a09e5158a40.jpg  [alt: Black And White Portrait]
+ 6061 H2     x215 w541 40px Kezelés előtt
+ 6113 SZ     x250 w548 17px Legalább 24 órával borotváld le az érintett területet
+ 6137 SZ     x250 w548 17px A kezelés napján ne használj testápolót, olajat, dezodort vagy egyéb kozmetikumot a kezelt felületen.
+ 6185 SZ     x250 w548 17px Kerüld a napozást és a szolárium használatát a kezelés előtti 2 hétben.
+ 6255 H2     x215 w541 40px Kezelés után
+ 6308 SZ     x245 w548 17px A kezelést követő 24–48 órában kerüld a forró fürdőt, szaunát, uszodát és az intenzív testmozgást.
+ 6355 SZ     x245 w548 17px A kezelt területet ne érje közvetlen napfény, és a kezelést követő 2 hétben kerüld a napozást, valamint a szolárium használatát.
+ 6403 SZ     x245 w548 17px A kezelés után enyhe bőrpír, melegségérzet vagy érzékenység előfordulhat, ez természetes reakció, és 48 órán belül elmúlik.
+ 6450 SZ     x245 w548 17px A szőrszálak a kezelést követő 1–3 héten belül fokozatosan kihullanak. Ez a folyamat természetes, kérjük, ne gyantázd és ne csipesszel távolítsd el őket.Amennyiben szükséges, kizárólag BOROTVÁT használj.
+ 6522 SZ     x245 w548 17px Amennyiben szükséges, a kezelt területet aloe vera spray-vel befújhatod a bőr komfortérzetének támogatása érdekében.
+ 6569 SZ     x245 w548 17px Ha a kezelt felületen tartós irritáció, hólyagosodás, szokatlan bőrtünet vagy kellemetlen érzés jelentkezik, kérjük, időben jelezd felénk.
+ 6715 KEP    x0 w1440 h1673 /assets/img/c2eb0f_8c347f764efd4b94997943270259bfce.jpg  [alt: DSC05687.jpg]
+ 6802 H2     x230 w980 40px center <b>BÉRLET ÁRAINK - NINCS BÉRLET!</b><br> <b>Nem kell többszázezer forintot előre kifizetned!<br> </b>3 kedvezményünket alkalmanként is megkapod!
+ 6961 KEP    x420 w600 h331 /assets/img/c2eb0f_4afa5a45a0b5482cb6e66bf49a751949.jpg  [alt: 3-kedvezmeny.jpg]
+ 7307 SZ     x300 w858 17px center <b>A MOSAIC hűségkártyája</b> elköteleződés <b>és egy nagyobb összeg kezdeti befizetése nélkül</b> valósítják meg, hogy mégis a legkedvezőbb áron vihesd végig a maximum 8 alkalmas Elysion Pro szőrtelenítési "kúrát". Így működik:
+ 7379 SZ     x300 w858 17px center 1. <b>Az első alkalommal</b> - az állapotfelméréssel egybekötve bármilyen kezelést is kezdesz el <b>20% kedvezményt kapsz rá!</b>
+ 7450 SZ     x300 w858 17px center 2.<b>A Csomagok érik meg a legjobban!</b> A legnagyobb testrész normál áras, de <b>minden további testrészt 50% kedvezménnyel vehetsz igénybe!</b>
+ 7522 SZ     x300 w858 17px center 3. <b>A 8-ból 2 alkalom ajándék! </b>Nem kelll megvenned semmilyen bérletet előre mert a 4. és a 8.alkalmat úgy is ajándékba adjuk, hogy alkalmanként fizetsz.
+ 7593 SZ     x300 w858 17px center <b>Tehát a 8 alkalmas hűségprogram valójában csak 6 alkalom árába kerül!</b><br> <br> Az első alkalommal kiállítunk neked egy hűségkártyát amit mindig pecsételünk.<br> Így nincs többszázezres költség, beragadt pénz vagy le nem járt alkalom!<br> <br> <b>Görgess lejjebb az árlistánkhoz!</b>
+ 7755 KEP    x297 w864 h474 /assets/img/c2eb0f_77ff06afd6e24086b39e991fe7c3d880.jpg  [alt: mosaic-kedvezmenyek.jpg]
+ 8259 GOMB   x607 w223 10px IDŐPONTFOGLALÁS  -> /foglalo-motor?business=laser
+ 8331 SZ     x512 w405 15px center <b>20% májusi kedvezménnyel! - A csomagokra is!</b>
+ 8439 H2     x230 w980 40px center Durván megéri - Szőrtelenítés <b>CSOMAGÁRAINK</b>
+ 8483 SZ     x477 w524 14px center <b><i>A legnagyobb testrész normál áron - minden további testrész FÉLÁRON!<br> A 8 alkalomból csak 6-ot fizetsz 2 alkalom ajándék! (A 4. és a 8.alkalom)</i></b>
+ 8562 SZ     x40 w1360 10px <b>EGYEDI TE VÁLOGATOD ÖSSZE A CSOMAG TESTRÉSZEIT!</b>A legnagyobb testrész normál áron Minden további testrész 50% kedvezménnyel azaz féláron! <b>Csomagkedvezmény: Minden további testrész 50%-os áron! Ár: Egyéni</b> <a href="/foglalo-motor?business=laser">FOGLALOK! </a><b>20% májusi kedvezménnyel!<br> PLUSZ a 8 alkalomból csak 6-ot fizetsz mert 2 ajándék! MAN TOTAL HÁT + MELLKAS + HAS + HÓNALJ</b>Teljes Hát + Teljes Váll + Mellkas + Has + Hónalj azaz teljes felsőtest Ha külön vennéd: 99.000 Ft / alk. <b>Csomagkedvezmény: 32.000 Ft Ár: 68 .000 Ft / alkalom</b> <a href="/foglalo-motor?business=laser">FOGLALOK! </a><b>20% májusi kedvezménnyel!<br> PLUSZ a 8 alkalomból csak 6-ot fizetsz mert 2 ajándék!</b>
+ 9629 H2     x230 w980 40px center Szőrtelenítés <b>ÁRAINK</b> csak testrészekre
+ 9673 SZ     x447 w549 14px center <b><i>8 alkalmas bérletben csak 6 alkalmat fizetsz - a 4. és 8. ajándék!</i></b>
+ 9732 SZ     x40 w1360 10px <b>HÁT / MELL / HAS - ÁRAK</b> Férfi hát alkalmi: 36.000 Ft Férfi hát 8 alkalom: 216.000 Ft <b>Kedvezmény mert csak 6 alkalmat fizetsz: 72.000 Ft</b> Férfi mellkas alkalmi: 32.000 Ft Férfi mellkas 8 alkalom: 192.000 Ft <b>Kedvezmény: 64.000 Ft</b> Férfi has alkalmi: 32.000 Ft Férfi has 8 alkalom: 192.000 Ft <b>Kedvezmény: 64.000 Ft</b> <a href="/foglalo-motor?business=laser">FOGLALOK! </a><b>20% májusi kedvezménnyel! ARC ÁRAK</b> Bajusz alkalmi: 12.000 Ft Bajusz 8 alkalom: 72.000 Ft <b>Kedvezmény mert csak 6 alkalmat fizetsz: 24.000 Ft</b> Áll alkalmi: 12.000 Ft<br> Áll 8 alkalom: 72.000 Ft <b>Kedvezmény: 24.000 Ft</b> Teljes arc alkalmi: 30.000 Ft Teljes arc 8 alkalom: 180.000 Ft <b>Kedvezmény: 60.000 Ft</b> <a href="/foglalo-motor?business=laser">FOGLALOK! </a><b>20% májusi kedvezménnyel! TEST ÁRAK</b> Hónalj alkalmi: 19.000 Ft Hónalj 8 alkalom: 96.000 Ft <b>Kedvezmény mert csak 6 alkalmat fizetsz: 38.000 Ft</b> Alkar alkalmi: 24.000 Ft Alkar 8 alkalom: 144.000 Ft <b>Kedvezmény: 48.000 Ft</b> Felkar alkalmi: 24.000 Ft Felkar 8 alkalom: 144.000 Ft <b>Kedvezmény: 48.000 Ft</b> Teljes kar alkalmi: 42.000 Ft Teljes kar 8 alkalom: 252.000 Ft <b>Kedvezmény: 84.000 Ft</b> <a href="/foglalo-motor?business=laser">FOGLALOK! </a><b>20% májusi kedvezménnyel! 2 LÁB - ÁRAK</b> Lábszár alkalmi: 35.000 Ft Lábszár 8 alkalom: 210.000 Ft <b>Kedvezmény mert csak 6 alkalmat fizetsz: 70.000 Ft</b> Comb alkalmi: 35.000 Ft Comb 8 alkalom: 210.000 Ft <b>Kedvezmény: 70.000 Ft</b> Teljes láb alkalmi: 59.000 Ft Teljes láb 8 alkalom: 354.000 Ft <b>Kedvezmény: 118.000 Ft</b> <a href="/foglalo-motor?business=laser">FOGLALOK! </a><b>20% májusi kedvezménnyel!</b>
+10811 H1     x254 w902 40px center A MOSAIC-ot imádják vendégeink
+10890 IFRAME x469 w472 h317 https://www.mosaicheadspa.hu/assets/embed/c2eb0f_614b09d160b9382c4cffcde6d7828dcb.html
+11302 H2     x224 w980 40px center Ilyen gyönyörűen felújított szalonban várunk👇
+11404 KEP    x230 w980 h536 /assets/img/c2eb0f_ac85eea74409484091e12f8d72fbee98.jpg
+11404 KEP    x1210 w980 h536 /assets/img/c2eb0f_aa3b2f8ec7564c87bf16836d7d3b29d6.jpg
+12156 KEP    x115 w549 h824 /assets/img/46d9635a1b5a42fb9dfb97ebaeacbc72.jpg  [alt: Smiling Tattooed Man]
+12251 H2     x834 w501 40px center Ha most belevágsz nyárra elfelejtheted a gyantát!
+12398 SZ     x834 w501 17px center A gondtalan nyár nem júniusban kezdődik, hanem most.
+12445 SZ     x834 w501 17px center Legyél nyárra a legjobb formádban – felesleges szőrzet, kipattogzás és borotválkozás utáni irritáció nélkül. A MOSAIC-nál még pont időben vagy, hogy belevágj a végleges lézeres szőrtelenítésbe.
+12541 SZ     x834 w501 17px center Nálunk nincs sablonos megoldás és felesleges kockázat: a kezdő állapotfelmérésen a csúcstechnológiás Elysion Pro lézerünket pontosan a te bőrödre és szőrtípusodra kalibráljuk a maximális hatékonyság érdekében.
+12660 SZ     x834 w501 17px center Attól tartasz, hogy fájni fog? Felejtsd el. A kezelés gyors és teljesen fájdalommentes. Nem kell összeszorított fogakkal feszengened – egyszerűen csak dőlj hátra, amíg mi profin elintézzük a nemkívánatos szőrzetet, hogy nyáron már ne legyen vele gondod.
+12779 SZ     x834 w501 17px center Kezdd el most, hogy nyáron már csak a lazítással foglalkozhass!
+12847 GOMB   x968 w223 10px IDŐPONTFOGLALÁS  -> /foglalo-motor?business=laser
+12908 SZ     x890 w405 15px center <b>20% májusi kedvezménnyel! - A csomagokra is!</b>
+13116 KEP    x80 w808 h362 /assets/img/c2eb0f_3603018cb350411cbd011ea589e25639.jpg  [alt: szepek.jpg]
+13292 H1     x664 w583 40px center SZÉP Kártyát is elfogadunk
+13355 GOMB   x854 w223 10px IDŐPONT FOGLALÁS  -> /foglalo-motor?business=laser
+13416 SZ     x770 w405 15px center <b>20% májusi kedvezménnyel! - A csomagokra is!</b>
+13562 KEP    x0 w1440 h820 /assets/img/nsplsh_38734f5a4a384a46305338.jpg  [alt: Image by Sora Sagano]
+13663 H2     x283 w907 40px center A leggyakoribb szőrtelenítés kérdések<br>
+13713 GOMB   x428 w642 17px left 1. Fájdalmas a lézeres szőrtelenítés?
+13774 GOMB   x428 w642 17px left 2. Hány alkalomra van szükség a végleges eredményhez?
+13834 GOMB   x428 w642 17px left 3. Mehetek szoláriumba vagy napozni a kezelés után?
+13895 GOMB   x428 w642 17px left 4. Tényleg "örökre" eltűnik a szőr?
+13956 GOMB   x428 w642 17px left 5. Mit kezdjek a szőrrel két kezelés között? (Növeszteni kell?)
+14017 GOMB   x428 w642 17px left 6. Hogyan kell készülnöm az első alkalomra?
+14078 GOMB   x428 w642 17px left 7. Mi a különbség az IPL, az Alexandrit és a Ti lézeretek között?
+14138 GOMB   x428 w642 17px left 8. Intim területen is biztonságos?
+14199 GOMB   x428 w642 17px left 9. Van megoldás a szőrbenövésekre?
+14260 GOMB   x428 w642 17px left 10. Kinek NEM javasolt a kezelés?
+14382 KEP    x0 w1440 h871 /assets/img/11062b_c676302884b34e2eacc489eede7cbc47.jpg  [alt: Spa Salts and Stones]
+14462 H2     x258 w932 40px center Itt találsz meg minket
+14577 H3     x258 w247 26px Címünk
+14577 H3     x572 w257 26px Ahol elérsz minket
+14577 H3     x887 w280 26px Nyitvatartásunk
+14624 SZ     x572 w257 16px 06 20 247 4444
+14627 SZ     x258 w247 16px 1023 Budapest Bécsi út 2.<br> A Kolosy és a Zsigmond tér között.
+14628 SZ     x887 w103 16px Hétfő - Péntek
+14628 SZ     x990 w200 16px 8:00 – 20:00
+14653 SZ     x572 w257 16px mosaicheadspa@gmail.com
+14656 SZ     x887 w95 16px Szombat
+14656 SZ     x990 w200 16px 8:00 – 20:00
+14684 SZ     x887 w95 16px Vasárnap
+14684 SZ     x990 w200 16px ZÁRVA
+14712 GOMB   x572 w223 10px IDŐPONTFOGLALÁS  -> /foglalo-motor?business=laser
+14776 SZ     x498 w405 15px center <b>20% májusi kedvezménnyel! - A csomagokra is!</b>
+15003 SZ     x545 w359 14px center Térkép: a tartalom külső szolgáltatótól (Google) töltődik be.
+15033 GOMB   x642 w164 14px center Térkép megjelenítése
+15080 GOMB   x640 w167 13px center Megnyitás a Google Térképen  -> https://www.google.com/maps/search/?api=1&query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202.
