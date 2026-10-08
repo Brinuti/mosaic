@@ -41,25 +41,25 @@ export default {
         { ertekeles: true },
         {
           kepek: [
-            { src: 'hair/betti-munkak-1.jpg', alt: 'Világos, szőke, hullámos haj hátulról – Betti valódi vendégmunkája', felirat: 'Világos szőke' },
-            { src: 'hair/betti-munkak-2.jpg', alt: 'Karamellbarna, hullámos hajvég – Betti valódi vendégmunkája', felirat: 'Karamellbarna' },
-            { src: 'hair/betti-munkak-3.jpg', alt: 'Frissen vágott, réz árnyalatú bob fazon hátulról – Betti valódi vendégmunkája', felirat: 'Frissen vágott bob' },
+            { src: 'hair/betti-munkak-1.jpg', alt: 'Világos, szőke, hullámos haj hátulról – Betti valódi vendégmunkája' },
+            { src: 'hair/betti-munkak-2.jpg', alt: 'Karamellbarna, hullámos hajvég – Betti valódi vendégmunkája' },
+            { src: 'hair/betti-munkak-3.jpg', alt: 'Frissen vágott, réz árnyalatú bob fazon hátulról – Betti valódi vendégmunkája' },
           ],
           ha_munkatars: ['Betti'],
         },
         {
           kepek: [
-            { src: 'hair/noel-munkak-1.jpg', alt: 'Világos, szőke, hullámos haj hátulról – Noel valódi vendégmunkája', felirat: 'Világos szőke' },
-            { src: 'hair/noel-munkak-2.jpg', alt: 'Barnából szőkébe átmenő, hullámos haj – Noel valódi vendégmunkája', felirat: 'Barna-szőke átmenet' },
-            { src: 'hair/noel-munkak-3.jpg', alt: 'Hosszú, sötét, fényes haj – Noel valódi vendégmunkája', felirat: 'Sötét, fényes haj' },
+            { src: 'hair/noel-munkak-1.jpg', alt: 'Világos, szőke, hullámos haj hátulról – Noel valódi vendégmunkája' },
+            { src: 'hair/noel-munkak-2.jpg', alt: 'Barnából szőkébe átmenő, hullámos haj – Noel valódi vendégmunkája' },
+            { src: 'hair/noel-munkak-3.jpg', alt: 'Hosszú, sötét, fényes haj – Noel valódi vendégmunkája' },
           ],
           ha_munkatars: ['Noel'],
         },
         {
           kepek: [
-            { src: 'hair/evelin-munkak-1.jpg', alt: 'Szőke árnyalatú, hullámos, hosszú haj hátulról – Evelin valódi vendégmunkája', felirat: 'Szőke árnyalatok' },
-            { src: 'hair/evelin-munkak-2.jpg', alt: 'Karamell átmenetes, hullámos vállig érő haj – Evelin valódi vendégmunkája', felirat: 'Karamell átmenet' },
-            { src: 'hair/evelin-munkak-3.jpg', alt: 'Sötétbarna, hullámos haj réz árnyalatú végekkel – Evelin valódi vendégmunkája', felirat: 'Sötétbarna, réz végekkel' },
+            { src: 'hair/evelin-munkak-1.jpg', alt: 'Szőke árnyalatú, hullámos, hosszú haj hátulról – Evelin valódi vendégmunkája' },
+            { src: 'hair/evelin-munkak-2.jpg', alt: 'Karamell átmenetes, hullámos vállig érő haj – Evelin valódi vendégmunkája' },
+            { src: 'hair/evelin-munkak-3.jpg', alt: 'Sötétbarna, hullámos haj réz árnyalatú végekkel – Evelin valódi vendégmunkája' },
           ],
           ha_munkatars: ['Evelin'],
         },
@@ -85,8 +85,8 @@ export default {
         // valodi vendegmunkak a nagyobb szinvaltoztatasokbol (meleg barna-rez / szoke balayage / vilagos szoke); nincs igeret, csak keszult munkak
         {
           kepek: [
-            { src: 'hair/valtozas-1.jpg', alt: 'Barnából karamell és réz árnyalatba átmenő, hullámos haj – valódi MOSAIC Hair vendégmunka', felirat: 'Meleg barna-réz átmenet' },
-            { src: 'hair/valtozas-2.jpg', alt: 'Hosszú, hullámos, szőke haj lágy balayage-átmenettel – valódi MOSAIC Hair vendégmunka', felirat: 'Szőke balayage-átmenet' },
+            { src: 'hair/valtozas-1.jpg', alt: 'Barnából karamell és réz árnyalatba átmenő, hullámos haj – valódi MOSAIC Hair vendégmunka', felirat: 'Réz-barna' },
+            { src: 'hair/valtozas-2.jpg', alt: 'Hosszú, hullámos, szőke haj lágy balayage-átmenettel – valódi MOSAIC Hair vendégmunka', felirat: 'Szőke balayage' },
             { src: 'hair/valtozas-3.jpg', alt: 'Hosszú, egyenes, nagyon világos szőke haj – valódi MOSAIC Hair vendégmunka', felirat: 'Világos szőke' },
           ],
         },

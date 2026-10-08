@@ -37,7 +37,7 @@ export default {
         { kep: { src: 'pmu/elorajzolas-ceruza.jpg', alt: 'A szemöldök formájának előrajzolása ceruzával, a tetoválás előtt', felirat: 'A forma előrajzolása a tetoválás előtt' } },
         'Melitta az arcformádhoz, a mimikádhoz, a haj- és bőrszínedhez, ajaknál pedig a természetes formához és alapszínhez igazítja a tervet. A forma és a színirány előtted készül, és addig finomítjátok, amíg azt nem érzed: igen, ez én vagyok.',
         { kepek: [
-          { src: 'pmu/elorajzolt-konzultacio.jpg', alt: 'Előrajzolt szemöldök a konzultáción', felirat: 'Előrajzolva a konzultáción' },
+          { src: 'pmu/elorajzolt-konzultacio.jpg', alt: 'Előrajzolt szemöldök a konzultáción', felirat: 'Előrajzolva' },
           { src: 'pmu/elkeszult-szemoldok.jpg', alt: 'Ugyanaz a szemöldök elkészülve', felirat: 'Ugyanaz, elkészülve' },
         ] },
         'Ez a legfontosabb kontrollod a kezelés előtt: nem kell "rábíznod magad" valamire, amit csak a végén látsz.',
@@ -83,10 +83,10 @@ export default {
         'Még van egy kis idő az időpontodig, ezért csak röviden bemutatjuk, kinek a kezébe érkezel.',
         { szemely: { src: 'pmu/melitta-portre.jpg', nev: 'Töreki Melitta', szerep: 'Sminktetováló és oktató' } },
         'Töreki Melitta az aktuális MOSAIC oldal szerint 5 éve dolgozik sminktetoválóként és oktatóként. 2025-ben a WULOP Italia milánói verseny Eyebrow Shading kategóriájában 3. helyezést ért el.',
-        { kep: { src: 'pmu/melitta-munka.jpg', alt: 'Melitta munka közben: pigmentálás egy vendég szemöldökén', felirat: 'Melitta munka közben' } },
+        { kep: { src: 'pmu/melitta-munka.jpg', alt: 'Melitta munka közben, sminktetoválás egy vendégen', felirat: 'Melitta munka közben' } },
         'De a te szempontodból ennél fontosabb, hogy a munkáinak célja a természetes, harmonikus hatás: ne "a tetoválást" vegyék észre, hanem azt, hogy az arcod rendezettebb, frissebb és arányosabb lett.',
         { velemeny: 'pmu-claudia' },
-        { velemeny: 'pmu-melitta-farkas' },
+        { velemeny: 'pmu-gloria' },
         { ertekeles: true },
         { kepek: [
           { src: 'pmu/munka-szemoldok-kozeli.jpg', alt: 'Szemöldöktetoválás közelről - Melitta munkája' },
