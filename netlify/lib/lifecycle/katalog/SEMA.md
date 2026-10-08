@@ -15,7 +15,7 @@ az üzenet-azonosítókat is (pl. `OX-SMS-01`).
 | mező | jelentés |
 |---|---|
 | `id` | a dokumentum azonosítója (`OX-SMS-01`, `OX-EMAIL-03`, `OX-CALL-01`); az üzletágon belül egyedi |
-| `csatorna` | `sms` \| `email` \| `feladat` (a telefonos hívás belső e-mail a szalonnak, kit kell hívni) |
+| `csatorna` | `sms` \| `email` (`feladat` – belső „hívandó vendég” e-mail – már NINCS: a tulajdonos kérése, 2026-10-08; a katalógus-teszt tiltja) |
 | `mikor` | lásd lent |
 | `szegmensek` | (nem kötelező) a foglalásnak legalább az egyik megadott szegmens-címkével rendelkeznie kell |
 | `nem_szegmensek` | (nem kötelező) ha a foglalásnak bármelyik itt felsorolt címkéje megvan, az üzenet kimarad |
@@ -54,7 +54,10 @@ Ha a dokumentumban nincs szegmens-megkötés, ne adj meg `szegmensek`-et (minden
 - `{ doboz: ['sor', 'sor'] }` kiemelt foglalás-doboz (a doc "A foglalásod:" blokkja); a helyőrzős sor kimarad, ha nem ismert
 - `{ gomb: { felirat: '...', link: '{foglalás_részletei_link}' } }` gomb – ha a dokumentumban egy link önálló sorban áll egy bevezető mondat után ("Foglalás részletei / módosítás: {link}")
   → a bevezető mondat külön bekezdés, a link gomb; a felirat rövid ige ("Foglalás megtekintése", "Megnézem a videót", "Itt tudom áttenni")
-- `{ alairas: 'MOSAIC' }` záró aláírás-sor (a dokumentum szerinti: `MOSAIC`, `MOSAIC Hair`, `MOSAIC Oxigénterápia`, `MOSAIC Lézeres szőrtelenítés`, `MOSAIC PMU`); a "Várunk," stb. egy előző bekezdés
+- **Nincs aláírás-blokk**: a level lábléce mutatja a „MOSAIC Head Spa and Hair” nevet (a tulajdonos kérése, 2026-10-08); a „Várunk,” stb. egy sima bekezdés.
+- `{ kep: { src, alt, felirat?, link?, szelesseg? } }`, `{ kepek: [...] }`, `{ video: { src, alt, felirat, link, szelesseg? } }`, `{ szemely: ... }`, `{ velemeny: 'id' }`, `{ ertekeles: true }` (Google-linkkel): minden kép linkelt (alap: `{eredmények_link}`), hogy a levelező ne kínáljon „Letöltés” gombot; `szelesseg` = megjelenítési szélesség px-ben (állóképes előképekhez ~240–340; a kép szélessége legalább 1,6-szerese legyen).
+- `{ doboz: [...] }`: az időpontot (az `óra:perc` sort) félkövéren, nagyobban mutatja – minden időpont-említést ebbe tegyél (`{ doboz: ['{szolgáltatás}', '{dátum}, {időpont}'] }`).
+- A gombok a levélben középen, a weboldal arany gombjának kinézetével jelennek meg (a katalógusban csak felirat + link kell).
 
 SMS-ben a linkek sima helyőrzők a szövegben.
 

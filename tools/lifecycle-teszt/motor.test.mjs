@@ -190,9 +190,9 @@ test('terv: lead-time szabaly (dokumentum 1.3)', () => {
   // szegmens-szuro: visszatero oxigen vendeg nem kap nurture / prep e-mailt
   const vis = tervez({ uzletag: 'oxygen', szegmensek: ['visszatero'], kezdet: kez(400) }, MOST).terv.map((x) => x.uzenet_id);
   assert.deepEqual(vis.sort(), ['OX-SMS-01', 'OX-SMS-02', 'OX-SMS-03']);
-  // PMU: a hivas azonnal (feladat_t0); korrekcio: csak SMS-ek
+  // PMU: nincs belso "hivando vendeg" feladat-level (a tulajdonos kerese, 2026-10-08); korrekcio: csak SMS-ek
   const pmu = tervez({ uzletag: 'pmu', szegmensek: ['fizetos'], kezdet: kez(400) }, MOST).terv.map((x) => x.uzenet_id);
-  assert.ok(pmu.includes('PMU-CALL-01') && pmu.includes('PMU-EMAIL-01') && pmu.includes('PMU-EMAIL-05'));
+  assert.ok(!pmu.some((x) => /-CALL-/.test(x)) && pmu.includes('PMU-EMAIL-01') && pmu.includes('PMU-EMAIL-05'));
   const korr = tervez({ uzletag: 'pmu', szegmensek: ['korrekcio'], kezdet: kez(400) }, MOST).terv.map((x) => x.uzenet_id);
   assert.deepEqual(korr.sort(), ['PMU-SMS-02B', 'PMU-SMS-03']);
 });
@@ -221,10 +221,18 @@ test('kirajzolas: minden katalogus-uzenet minden szegmensre hibatlan', () => {
             assert.ok(!/ !|\s,|\s\./.test(k.szoveg), `${uz.id}: irasjel-hiba: ${k.szoveg}`);
             if (!f.keresztnev) assert.ok(!/Szia [A-ZÁÉÍÓÖŐÚÜŰ]/.test(k.szoveg) || /Szia (Tünde|Móni)/.test(k.szoveg) === false, uz.id);
           } else {
-            const k = uz.csatorna === 'feladat' ? feladatKirajzol(uz, ert, f) : emailKirajzol(uz, ert, { surgos: true });
+            assert.notEqual(uz.csatorna, 'feladat', `${uz.id}: nincs belso feladat-level`);
+            const k = emailKirajzol(uz, ert, { surgos: true });
             assert.ok(!/[{}]|undefined|null/.test(k.targy + k.szoveg), `${uz.id}: maradt helyorzo`);
             assert.ok(!/<[a-z]+[^>]*>\s*<\/p>/.test(k.html), `${uz.id}: ures bekezdes`);
             assert.ok(k.html.includes('MOSAIC') && k.szoveg.length > 60);
+            // a tulajdonos kerese (2026-10-08): nincs kulon alairas (a lablec mutatja a nevet), a gombok kozepen vannak, a kepek mind linkeltek
+            assert.equal((k.html.match(/MOSAIC Head Spa and Hair/g) || []).length, 2, `${uz.id}: a nev csak a logo alt-jaban es a lablecben szerepel (nincs kulon alairas)`);
+            for (const m of k.html.matchAll(/<img [^>]*src="[^"]*\/assets\/email\/[^"]*"[^>]*>/g)) {
+              const elotte = k.html.slice(Math.max(0, m.index - 400), m.index);
+              assert.ok(/<a [^>]*href="[^"]+"[^>]*>\s*$/.test(elotte), `${uz.id}: a kep nincs linkelve (a levelezo letoltes-gombot kinalna): ${m[0].slice(0, 80)}`);
+            }
+            if ((uz.torzs || []).some((x) => x && x.gomb)) assert.ok(/<td align="center"[^>]*bgcolor="#c6a346"/.test(k.html), `${uz.id}: a gomb kozepen, a weboldal arany gombjaval`);
           }
           darab += 1;
         }
@@ -340,7 +348,7 @@ test('motor: T-72 es T-24 az idejen megy; a megerositett vendegnek a T-72 SMS ki
   assert.equal(await reszletekUrl(db, 'nincsilyen0'), null);
 });
 
-test('motor: surgos foglalas (<30 ora): T0 e-mail a kritikus kiegeszitessel; PMU-hivas feladat-level a szalonnak', async () => {
+test('motor: surgos foglalas (<30 ora): T0 e-mail a kritikus kiegeszitessel; PMU: nincs belso hivando-vendeg level', async () => {
   const db = d1(); const k = hamisKuldok(); const env = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'laser,pmu' };
   const holnap = helyiEpoch(2026, 10, 8, 9, 0);
   const r = await ingest(db, env, foglaltLevel({ ...KULSO_VENDEG, tel: '06201112222', szolg: 'TEST - Teljes hónalj + állapotfelmérés -20% kedvezménnyel', munka: 'Elysion Pro Szőrtelenítés', fiok: 'mosaic-elysion', kuldo: 'Mosaic Elysion <app@salonic.hu>', datum: 'október 8. (csütörtök) 09:00' }), MOST);
@@ -348,13 +356,11 @@ test('motor: surgos foglalas (<30 ora): T0 e-mail a kritikus kiegeszitessel; PMU
   await tick(db, env, k, MOST, { foglalasId: r.foglalasId });
   const lev = k.ki.email[0];
   assert.match(lev.szoveg, /borotváld le/); // a surgos_kiegeszites bekerult
-  // PMU: a hivas-feladat azonnal megy a szalonnak
+  // PMU: a szalonnak nem megy belso "hivando vendeg" level, csak a vendeg uzenetei
   const db2 = d1(); const k2 = hamisKuldok();
   const p = await ingest(db2, env, foglaltLevel({ uzenetId: 'p1', uuid: UUID2, ...KULSO_VENDEG, tel: '06201112222', szolg: 'Ajaktetoválás - Aquarell - 124.900 Ft helyett most', munka: 'Melitta', fiok: 'mosaic-pmu', kuldo: 'Mosaic PMU <app@salonic.hu>', datum: 'november 20. (péntek) 14:00' }), MOST);
   await tick(db2, env, k2, MOST + 120, { foglalasId: p.foglalasId });
-  const feladat = k2.ki.email.find((m) => /hívandó/i.test(m.targy));
-  assert.ok(feladat && feladat.to === 'mosaicheadspa@gmail.com', JSON.stringify(k2.ki.email.map((m) => m.targy)));
-  assert.match(feladat.szoveg, /Telefon: \+36201112222/);
+  assert.ok(!k2.ki.email.some((m) => /hívandó/i.test(m.targy)), JSON.stringify(k2.ki.email.map((m) => m.targy)));
   assert.ok(k2.ki.email.some((m) => /Megvan az időpontod Melittához/.test(m.targy)));
 });
 

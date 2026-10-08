@@ -42,16 +42,6 @@
       "mod": "kepek"
     },
     {
-      "ki": "pmu/friss-szemoldok.jpg",
-      "forras": "assets/img/pmu/tortenet-3-friss.jpg",
-      "mod": "kepek"
-    },
-    {
-      "ki": "pmu/gyogyult-szemoldok.jpg",
-      "forras": "assets/img/pmu/tortenet-4-gyogyult.jpg",
-      "mod": "kepek"
-    },
-    {
       "ki": "pmu/gyogyult-termeszetes.jpg",
       "forras": "assets/img/pmu/tortenet-5-termeszetes.jpg",
       "mod": "szeles",
@@ -102,6 +92,71 @@
         0.5
       ],
       "drive": "1dmb_0e2ZJlsUHhPc44rpNYdDR8SnA1zi"
+    },
+    {
+      "ki": "pmu/melitta-dij.jpg",
+      "forras": "assets/img/c2eb0f_567cfb0230ba49c089087cf55d6ead4e.jpg",
+      "mod": "szeles",
+      "arany": [
+        4,
+        5
+      ],
+      "szelesseg": 880,
+      "fokusz": [
+        0.5,
+        0.3
+      ]
+    },
+    {
+      "ki": "pmu/szoke-friss.jpg",
+      "forras": "assets/img/pmu/tortenet-3-friss.jpg",
+      "mod": "kepek",
+      "arany": [
+        1,
+        1
+      ],
+      "fokusz": [
+        0.5,
+        0.45
+      ]
+    },
+    {
+      "ki": "pmu/szoke-gyogyult.jpg",
+      "forras": "assets/img/pmu/tortenet-4-gyogyult.jpg",
+      "mod": "kepek",
+      "arany": [
+        1,
+        1
+      ],
+      "fokusz": [
+        0.5,
+        0.45
+      ]
+    },
+    {
+      "ki": "pmu/melitta-video.jpg",
+      "forras": "assets/img/c2eb0f_a4af4c18f0f64aff93f4c57ed0fb326ef000.jpg",
+      "mod": "szeles",
+      "arany": [
+        9,
+        16
+      ],
+      "szelesseg": 740,
+      "lejatszo": true
+    },
+    {
+      "ki": "pmu/melitta-var.jpg",
+      "forras": "assets/img/pmu/melitta-hivas-2.jpg",
+      "mod": "szeles",
+      "arany": [
+        4,
+        5
+      ],
+      "szelesseg": 680,
+      "fokusz": [
+        0.5,
+        0.3
+      ]
     }
   ]
 }

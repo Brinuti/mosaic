@@ -277,6 +277,8 @@ a { color: inherit; }
 .be-naptar-link svg { width: 16px; height: 16px; }
 .be-kicsi { font-size: var(--m-kicsi); margin: 4px 0 0; }
 .be-h3 { font-size: var(--m-alap); font-weight: 700; margin: 16px 0 0; text-align: left; }
+.be-tudnivalok { text-align: left; }
+.be-tudnivalok-video { display: block; width: min(100%, 250px); margin: 10px auto 0; border-radius: 12px; background: #111; }
 .be-lepesek { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; counter-reset: s; text-align: left; }
 .be-lepesek li { counter-increment: s; display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; font-size: 13.5px; line-height: 1.35; }
 .be-lepesek li::before { content: counter(s); width: 22px; height: 22px; border-radius: 50%; background: var(--sotet); color: var(--krem); display: grid; place-items: center; font-size: var(--m-kicsi); font-weight: 700; }

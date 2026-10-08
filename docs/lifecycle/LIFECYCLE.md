@@ -53,7 +53,19 @@ SMS 8:00–20:30, e-mail 7:00–21:00 között (az ablakon kívüli esedékessé
 ## Üzenet-katalógus
 
 `netlify/lib/lifecycle/katalog/` (`SEMA.md` a formátum; üzletáganként egy fájl + `kozos.js`). A szöveg a dokumentum szerint; **fix ár / százalék / hónapnév nincs a szövegben** (a dokumentum szabálya; a katalógus-teszt ellenőrzi); az `{aktuális_ár}` / `{aktuális_ajánlat}` soraiból jelenleg semmi nem jelenik meg (nincs garantáltan aktuális ár-forrás). A „48 órás lemondási szabály” **nincs** sehol (tulajdonosi döntés).
-A telefonos hívások (HeadSpa páros/négykezes, fodrász konzultáció/nagy festés, oxigén új vendég, lézer új vendég, PMU minden online foglaló) **belső feladat-e-mailek a szalonnak** (`csatorna: 'feladat'`): a motor nem hív, jelzi, kit érdemes hívni a szkripttel. Teszt-vendégnél a feladat-e-mail a teszt-címre megy.
+**Belső „hívandó vendég” feladat-levelek nincsenek** (a tulajdonos kérése, 2026-10-08: a szalonnak szóló belső értesítőt nem kell kiküldeni): a katalógusból kikerültek a `*-CALL-01` üzenetek. (A motor `feladat` csatorna-kódja megmaradt, de nincs mit kiküldenie; a katalógus-teszt tiltja új feladat-üzenet felvételét.)
+
+### Levél-szabályok (a tulajdonos kérései, 2026-10-08)
+
+- **Nincs külön aláírás** a levél törzsében („MOSAIC Head Spa and Hair”): a lábléc mutatja a nevet (a katalógusban nincs `alairas` blokk; a teszt ellenőrzi).
+- **Gombok középen**, a weboldal arany gombjának kinézetével (arany átmenet, fehér felirat, lekerekített, nyíllal: „… →”).
+- **Az időpont kiemelve** a lemondás-levélhez hasonló bézs dobozban (`doboz`: szolgáltatás félkövéren, a dátum + óra félkövéren, nagyobb betűvel); minden levélben, ahol időpont szerepel.
+- **Minden kép linkelt** (alapból az üzletág eredmények-szekciójára), így a levelező (pl. Gmail) nem kínál „Letöltés” gombot a képen; a teszt ellenőrzi.
+- **A linkek közvetlenül a szekcióhoz visznek** (`#horgony`): HeadSpa vendégvideók `/head-spa-velemenyek#vendegek`, teljes élmény videók `#videok`; oxigén kezelés-videó `/oxigenterapia-budapest#video`; lézer Zsófi-videó `/lezeres-szortelenites-budapest#zsofi`; PMU Melitta `/sminktetovalas-budapest#melitta`; **fodrásznál a lefoglalt fodrász saját oldala**: a munkái szekciónál (`{eredmények_link}`) és a konzultációs videójánál (`{videó_link}`) – `uzletag.js` `HAIR_FODRASZOK`.
+- **Videó a levélben:** a leveleken a videó előkép-képe (lejátszás jellel) látszik, rákattintva a videóhoz / szekcióhoz visz (a levelezők nem játszanak videót). Állóképes (portré) videóknál a blokk `szelesseg` mezője a megjelenítési szélesség (kb. 240–260 px, középre igazítva).
+- **Google-vélemény:** az `ertekeles` blokk (csillagok + „4,9 / 5 a Google-on”) a MOSAIC Google-adatlapjára (`GOOGLE_VELEMENYEK_URL`, `render.js`) mutat.
+- HeadSpa: egyféle időpont foglalható, ezért nincs „Hair HeadSpa / mikrokamera” szöveg és kép; a T0 levél a „legfontosabb tudnivalók” videót tartalmazza (ugyanaz, mint a régi `/success-foglalas*` köszönőoldalon, és most az új foglaló végképernyőjén is: `engine.js`, `.be-tudnivalok-video`).
+- A fodrász-T0 levélben a lefoglalt fodrász képe, a +2 napos levélben a konzultációs videója van.
 Ékezetes SMS-nél (UCS-2) **70 karakter / szegmens (összefűzve 67)**: a hosszú SMS-ek 3–5 szegmensnek számítanak a SimpleSMS-ben (a tényleges szegmensszám a `kuldesek.szegmens_db`-ben van). **Költség: kb. 17 Ft / szegmens** (a próbáknál mért: 4–5 szegmenses SMS ≈ 70–85 Ft, a T-24 SMS 3 szegmens ≈ 51 Ft), azaz egy teljes lánc (T0 + T-72 + T-24) vendégenként kb. 200–250 Ft SMS-díj.
 
 ## Konfiguráció
@@ -83,10 +95,10 @@ Valódi próba: `tools/meres-proba/reteg-foglalas.mjs` (valódi próbafoglalás,
 
 ## Minta-levelek (az e-mailek formázásához)
 
-`tools/lifecycle-teszt/minta-levelek.mjs` az összes e-mail-sablonból (20 tartalmi / T0 / T-72 e-mail, 5 belső hívási feladat-levél, lemondás, no-show = 27 db) egy-egy mintafoglalást készít a `deakfi@grantis.hu` címre (`MINTA_EMAIL` környezeti változóval átírható).
+`tools/lifecycle-teszt/minta-levelek.mjs` az összes e-mail-sablonból (20 tartalmi / T0 / T-72 e-mail, lemondás, no-show = 22 db) egy-egy mintafoglalást készít a `deakfi@grantis.hu` címre (`MINTA_EMAIL` környezeti változóval átírható).
 A levél a **valódi úton** megy ki (SMTP, az üzletág neve a feladó), ugyanazzal a HTML-lel, mint a vendégeknek – a Gmail-eszközzel (MCP) **nem** szabad küldeni: az a háttérszíneket kiszedi, a fejléc és a gomb láthatatlan lesz.
 
-1. `node tools/lifecycle-teszt/minta-levelek.mjs [AZONOSÍTÓ,AZONOSÍTÓ] > minta.sql` (lista nélkül mind a 27; pl. `PMU-EMAIL-01,COMMON-NOSHOW-EMAIL`)
+1. `node tools/lifecycle-teszt/minta-levelek.mjs [AZONOSÍTÓ,AZONOSÍTÓ] > minta.sql` (lista nélkül mind a 22; pl. `PMU-EMAIL-01,COMMON-NOSHOW-EMAIL`)
 2. A kimenet két SQL-utasítás (a `-- ketto` sor választja el): futtasd az **előnézeti** D1-en (`mosaic-lifecycle-elonezet`).
 3. Indítsd el a Zapier `lifecycle-tick` folyamatot (vagy várd az órás futást): kiviszi a leveleket. Figyelem: a tick az előnézeti adatbázis **minden** esedékes teszt-vendég üzenetét kiküldi.
 4. Takarítás: `DELETE FROM kuldesek WHERE foglalas_id LIKE 'MINTA-%'; DELETE FROM foglalasok WHERE id LIKE 'MINTA-%';`

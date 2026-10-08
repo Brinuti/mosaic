@@ -9,7 +9,7 @@ python3 -I tools/email-kepek/keszit.py                  # minden lista-*.json
 python3 -I tools/email-kepek/keszit.py lista-pmu.json   # egy üzletág
 ```
 
-A `lista-<üzletág>.json` tételei megadják a forrást (`forras`), a kimeneti nevet (`ki`), a vágás módját (`mod`: `szeles` / `kepek` / `negyzet`) és a fókuszpontot. Két fajta forrás van:
+A `lista-<üzletág>.json` tételei megadják a forrást (`forras`), a kimeneti nevet (`ki`), a vágás módját (`mod`: `szeles` / `kepek` / `negyzet`) és a fókuszpontot. Kimenetenként megadható `kocka` (egy videó egy képkockája, ffmpeg kell: `FFMPEG` környezeti változó vagy PATH) és állóképes (portré) videó-előkép (`arany: [9, 16]`, `lejatszo: true`; a katalógus-blokk `szelesseg` mezője a megjelenítési szélesség). A lezeres „8 kezelés, csak 6-ot fizetsz” ábra az oldal képernyőképe: `node tools/email-kepek/program-kepernyokep.mjs` (Playwright). Két fajta forrás van:
 
 - **az oldal saját képe** (`assets/img/...`): a repóban van, a lista közvetlenül újrafuttatható (a kiválasztáshoz: `oldal-kepek.py`);
 - **Drive-kép** (`"drive": "<fájlazonosító>"` mezős tételek): a MOSAIC Drive-mappa egy fotója (profi fotózások, oxigén-, szőrtelenítés-, PMU-mappák). A nagy felbontású forrás szándékosan **nincs a repóban**; az átviteli cső a Drive-ból egy kicsinyített (≤ 1500 px, JPEG-re alakított) másolatot tesz a `tools/email-kepek/drive-jelolt/forras/<szám>.jpg` helyre, ahonnan a `keszit.py` dolgozik. A `<szám>` a Drive-index sorszáma; a kép azonosítóját a lista `drive` mezője tartalmazza.

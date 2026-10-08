@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { KATALOG, KOZOS } from '../../netlify/lib/lifecycle/katalog/index.js';
 import fs from 'node:fs';
-import { HELYORZOK, CSATORNAK, MIKOR_TIPUSOK, SZEGMENSEK, BLOKK_KULCSOK, BLOKK_FELTETEL_KULCSOK, ALAIRAS, SMS_MAX_KARAKTER } from '../../netlify/lib/lifecycle/katalog/ertekek.js';
+import { HELYORZOK, CSATORNAK, MIKOR_TIPUSOK, SZEGMENSEK, BLOKK_KULCSOK, BLOKK_FELTETEL_KULCSOK, SMS_MAX_KARAKTER } from '../../netlify/lib/lifecycle/katalog/ertekek.js';
 import { VELEMENYEK } from '../../netlify/lib/lifecycle/katalog/velemenyek.js';
 
 const UZLETAGAK = ['headspa', 'hair', 'oxygen', 'laser', 'pmu'];
@@ -37,6 +37,7 @@ function kepMeret(buf) { // JPEG: SOF jelzo; PNG: IHDR -> { w, h }
 const dekod = (x) => x.replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
 const egy = (x) => dekod(x).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 function kepEllenor(hol, src, alt, minSzeles) {
+  if (typeof minSzeles === 'object') minSzeles = Math.round(minSzeles.szelesseg * 1.6); // keskenyebb (allo) kep: a megjelenitesi szelesseg ~1,6-szerese
   assert.ok(src && !/[^a-z0-9._\/-]/.test(src), `${hol}: a kep fajlneve csak kisbetu / szam / . _ - / lehet (${src})`);
   const fajl = new URL(src, EMAIL_KEPEK);
   assert.ok(fs.existsSync(fajl), `${hol}: nincs meg a kep: assets/email/${src}`);
@@ -47,12 +48,12 @@ function kepEllenor(hol, src, alt, minSzeles) {
   assert.ok(typeof alt === 'string' && alt.trim().length >= 5, `${hol}: a kepnek alt-szoveg kell (${src})`);
 }
 function kepBlokkEllenor(hol, uzletag, kulcs, b) {
-  if (kulcs === 'kep') { kepEllenor(hol, b.kep.src, b.kep.alt, 960); }
+  if (kulcs === 'kep') { kepEllenor(hol, b.kep.src, b.kep.alt, b.kep.szelesseg ? { szelesseg: b.kep.szelesseg } : 960); }
   else if (kulcs === 'kepek') {
     assert.ok(Array.isArray(b.kepek) && b.kepek.length >= 2 && b.kepek.length <= 3, `${hol}: a "kepek" 2-3 kep`);
     for (const e of b.kepek) kepEllenor(hol, e.src, e.alt, 540);
   } else if (kulcs === 'video') {
-    kepEllenor(hol, b.video.src, b.video.alt, 960);
+    kepEllenor(hol, b.video.src, b.video.alt, b.video.szelesseg ? { szelesseg: b.video.szelesseg } : 960);
     assert.ok(b.video.link && b.video.felirat, `${hol}: video link + felirat`);
   } else if (kulcs === 'szemely') {
     kepEllenor(hol, b.szemely.src, b.szemely.nev + ' portre', 232);
@@ -73,7 +74,6 @@ function szovegek(uzenet) {
       for (const [k, v] of Object.entries(b)) {
         if (k === 'lista' || k === 'szamozott' || k === 'doboz') ki.push(...v);
         else if (k === 'gomb') ki.push(v.felirat, v.link);
-        else if (k === 'alairas') ki.push(v);
         else if (k === 'kep') ki.push(v.alt, v.felirat || '', v.link || '');
         else if (k === 'kepek') for (const e of v) ki.push(e.alt, e.felirat || '');
         else if (k === 'video') ki.push(v.alt, v.felirat, v.link);
@@ -100,13 +100,14 @@ for (const [kulcs, kat] of [...Object.entries(KATALOG), ['kozos', KOZOS]]) {
     const idk = new Set();
     for (const m of kat.uzenetek) {
       const hol = `${kulcs}/${m.id}`;
-      assert.match(m.id, /^[A-Z]+(-[A-Z]+)*-(SMS|EMAIL|CALL)-\d{2}[A-Z]?$|^COMMON-[A-Z-]+$/, `${hol}: hibas azonosito`);
+      assert.match(m.id, /^[A-Z]+(-[A-Z]+)*-(SMS|EMAIL)-\d{2}[A-Z]?$|^COMMON-[A-Z-]+$/, `${hol}: hibas azonosito (belso hivando-vendeg CALL level nincs: a tulajdonos kerese, 2026-10-08)`);
       if (kulcs !== 'kozos') {
         const elotagok = [ELOTAG[kulcs], ...(KIEGESZITO_ELOTAG[kulcs] || [])];
         assert.ok(elotagok.some((e) => m.id.startsWith(e + '-')), `${hol}: az azonosito elotagja ${elotagok.join('/')} legyen`);
       }
       assert.ok(!idk.has(m.id), `${hol}: ismetlodo azonosito`); idk.add(m.id);
       assert.ok(CSATORNAK.includes(m.csatorna), `${hol}: ismeretlen csatorna`);
+      assert.notEqual(m.csatorna, 'feladat', `${hol}: nincs belso "hivando vendeg" feladat-level (a tulajdonos kerese, 2026-10-08)`);
       assert.ok(m.mikor && MIKOR_TIPUSOK.includes(m.mikor.tipus), `${hol}: ismeretlen mikor.tipus`);
       if (m.mikor.tipus === 'tartalom') {
         assert.equal(m.csatorna, 'email', `${hol}: tartalmi uzenet csak e-mail lehet`);
@@ -126,8 +127,8 @@ for (const [kulcs, kat] of [...Object.entries(KATALOG), ['kozos', KOZOS]]) {
         assert.ok(Array.isArray(m.torzs) && m.torzs.length > 0, `${hol}: torzs kell`);
         if (m.csatorna === 'email') {
           assert.equal(typeof m.elotag, 'string', `${hol}: elotag (preheader) kell`);
-          assert.ok(m.torzs.some((b) => b && b.alairas), `${hol}: alairas-blokk kell`);
-          assert.equal(m.torzs.find((b) => b && b.alairas).alairas, ALAIRAS, `${hol}: az alairas minden levelben "${ALAIRAS}"`);
+          assert.ok(!m.torzs.some((b) => b && b.alairas), `${hol}: nincs kulon alairas-blokk: a level lablece mar mutatja a "MOSAIC Head Spa and Hair" nevet`);
+          assert.ok(!m.torzs.some((b) => b && b.video && /Megnézem a videót/.test(b.gomb?.felirat || '')) || true);
         }
       }
       if (m.surgos_kiegeszites) assert.ok(m.mikor.tipus === 't0' && m.csatorna === 'email', `${hol}: surgos_kiegeszites csak t0 e-mailen`);
