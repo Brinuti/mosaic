@@ -92,7 +92,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .hero { position: relative; isolation: isolate; overflow: hidden; background: #f4efe4; }
 .hero::before { content: ''; position: absolute; inset: 0; z-index: -2; background: radial-gradient(70% 90% at 20% 30%, #faf6ec 0%, transparent 70%); }
 .hero-hatter { position: absolute; top: 0; right: 0; bottom: 0; width: 60%; z-index: -1; background: #10282a; }
-.hero-hatter img, .hero-hatter video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+.hero-hatter img, .hero-hatter video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 80%; }
 .hero-hatter::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #f4efe4 0%, rgba(244, 239, 228, .82) 9%, rgba(244, 239, 228, 0) 42%); }
 .hero-tart { min-height: 640px; display: flex; align-items: center; padding: 64px 0 72px; }
 .hero-szoveg { max-width: 600px; }
@@ -103,8 +103,8 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .hero-jelveny { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; padding: 8px 18px; border-radius: 999px; background: #f6efdc; border: 1px solid #e6d3a2; color: #6f5420; font-size: 15.5px; box-shadow: 0 6px 18px rgba(150, 120, 40, .12); }
 .hero-jelveny svg { width: 18px; height: 18px; color: #b98f3a; }
 .hero-ar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; margin-top: 14px; }
-.hero-ar s { font-size: 17px; color: #8a9390; text-decoration-thickness: 1.5px; }
-.hero-ar b { font: 500 30px/1.1 var(--cim); color: var(--sotet); white-space: nowrap; }
+.hero-ar s { font-size: 15px; color: #8a9390; text-decoration-thickness: 1.5px; }
+.hero-ar b { font: 500 24px/1.1 var(--cim); color: var(--sotet); white-space: nowrap; }
 .hero-ar-al { margin-top: 2px; font-size: 16px; color: var(--halk); }
 .hero .cta-sor { margin-top: 24px; }
 /* hangot a videóra (a régi főoldal „Hangot rá!” gombja) */
@@ -162,12 +162,12 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
 /* --- 5. ajándékkártya --- */
 .ajandek { background: linear-gradient(100deg, #f1e3dc 0%, #f6ecdf 52%, #f4efe4 100%); overflow: hidden; }
 .ajandek-racs { width: min(1360px, 100%); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); align-items: center; }
-.ajandek-kep { position: relative; min-height: 560px; }
+.ajandek-kep { position: relative; aspect-ratio: 1 / .95; }
 .ajandek-kep::before { content: ''; position: absolute; left: -10%; right: 6%; top: 8%; bottom: 8%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 255, 255, .75), rgba(255, 255, 255, 0)); }
-.kartya-egy { position: absolute; width: min(430px, 64%); height: auto; border-radius: 14px; box-shadow: 0 24px 54px rgba(70, 40, 30, .28), 0 4px 10px rgba(70, 40, 30, .14); transition: transform .5s ease; }
-.k1 { left: 12%; top: 11%; transform: rotate(-9deg); }
-.k2 { left: 34%; top: 38%; transform: rotate(6deg); }
-.k3 { left: 17%; top: 56%; transform: rotate(-3deg); }
+.kartya-egy { position: absolute; width: 64%; height: auto; border-radius: 14px; box-shadow: 0 24px 54px rgba(70, 40, 30, .28), 0 4px 10px rgba(70, 40, 30, .14); transition: transform .5s ease; }
+.k1 { left: 12%; top: 5%; transform: rotate(-9deg); }
+.k2 { left: 30%; top: 27%; transform: rotate(6deg); }
+.k3 { left: 14%; top: 47%; transform: rotate(-3deg); }
 .ajandek:hover .k1 { transform: rotate(-11deg) translate(-6px, -4px); }
 .ajandek:hover .k2 { transform: rotate(8deg) translate(8px, 0); }
 .ajandek-szoveg { padding: 64px max(32px, calc((100vw - 1200px) / 2)) 64px 40px; max-width: 760px; }
@@ -372,7 +372,7 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
   .h1-fo { font-size: 36px; white-space: normal; }
   .h1-al { font-size: 25px; }
   .hero-al { font-size: 17px; }
-  .hero-ar b { font-size: 28px; }
+  .hero-ar b { font-size: 23px; }
 }
 
 /* ====== tablet ====== */
@@ -386,10 +386,8 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
   .elm-racs { grid-template-columns: 1fr 1fr; }
   .elm-racs > :last-child { grid-column: 1 / -1; max-width: 560px; justify-self: center; width: 100%; }
   .ajandek-racs { grid-template-columns: 1fr; }
-  .ajandek-kep { min-height: 420px; order: 2; }
+  .ajandek-kep { order: 2; width: min(620px, 100%); margin: 0 auto; }
   .ajandek-szoveg { padding: 56px 24px 8px; max-width: none; }
-  .k1 { left: 8%; top: 10%; } .k2 { left: 36%; top: 34%; } .k3 { left: 12%; top: 50%; }
-  .kartya-egy { width: min(400px, 56%); }
   .korhinta-sav > li { flex-basis: calc((100% - 3 * 16px) / 4); }
   .korhinta-sav.videok-fekvo > li { flex-basis: calc((100% - 18px) / 2); }
   .kapsz-racs { grid-template-columns: 300px minmax(0, 1fr); gap: 40px; }
@@ -410,7 +408,7 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
 @media (max-width: 860px) {
   /* hero: felül a kép (lágy átmenettel a krémbe), alatta a szöveg */
   .hero-hatter { position: relative; width: 100%; height: 280px; }
-  .hero-hatter video { object-position: 50% 38%; }
+  .hero-hatter video { object-position: 50% 100%; }
   .hero-hatter::after { background: linear-gradient(0deg, #f4efe4 0%, rgba(244, 239, 228, .7) 16%, rgba(244, 239, 228, 0) 46%); }
   .hero-tart { display: block; padding: 0 0 36px; margin-top: -34px; }
   .hero-szoveg { max-width: none; }
@@ -419,8 +417,8 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
   .hero-al { margin-top: 14px; font-size: 16.5px; }
   .hero-jelveny { margin-top: 16px; font-size: 14.5px; padding: 7px 15px; }
   .hero-ar { margin-top: 10px; gap: 2px 14px; }
-  .hero-ar s { font-size: 14px; }
-  .hero-ar b { font-size: 24px; }
+  .hero-ar s { font-size: 13px; }
+  .hero-ar b { font-size: 20px; }
   .hero-ar-al { font-size: 15px; }
   .hero .cta-sor { margin-top: 18px; gap: 10px; }
   .hero-hang { right: 12px; bottom: 44px; }
@@ -465,8 +463,9 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
 
   .szol-racs { flex-direction: column; flex-wrap: nowrap; gap: 10px; margin-top: 24px; }
   .szol-kartya { flex: none; flex-direction: row; align-items: stretch; border-radius: 14px; }
-  .szol-kartya > img { width: 104px; height: 104px; flex: none; }
-  .szol-szoveg { padding: 12px 14px; gap: 4px; justify-content: center; }
+  .szol-kartya { height: 112px; }
+  .szol-kartya > img { width: 112px; height: 112px; flex: none; }
+  .szol-szoveg { padding: 10px 14px; gap: 3px; justify-content: center; overflow: hidden; }
   .szol-szoveg h3 { font-size: 15px; }
   .szol-szoveg p { font-size: 13.5px; }
   .szol-link { padding-top: 2px; font-size: 14px; }
@@ -480,9 +479,6 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
   .elm-pont { display: none; }
   .elm-lab a { display: block; }
 
-  .ajandek-kep { min-height: 330px; }
-  .kartya-egy { width: 66%; }
-  .k1 { left: 5%; top: 6%; } .k2 { left: 30%; top: 30%; } .k3 { left: 4%; top: 52%; }
   .ajandek-szoveg { padding: 40px 16px 6px; }
   .ajandek-szoveg h2 { font-size: 29px; }
   .ajandek-mondat { font-size: 20px; }
