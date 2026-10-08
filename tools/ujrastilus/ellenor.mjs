@@ -36,7 +36,7 @@ const b = await chromium_launch();
 async function chromium_launch() { const { chromium } = playwright(); return chromium.launch({ executablePath: CHROME, headless: true }); }
 let hiba = 0;
 for (const mobil of [false, true]) {
-  const ctx = await b.newContext({ viewport: { width: mobil ? 390 : 1440, height: mobil ? 844 : 900 }, ...(mobil ? { userAgent: UA, isMobile: true, hasTouch: true } : {}) });
+  const ctx = await b.newContext({ ignoreHTTPSErrors: !!process.env.HTTPS_HIBA_NEM_BAJ, viewport: { width: mobil ? 390 : 1440, height: mobil ? 844 : 900 }, ...(mobil ? { userAgent: UA, isMobile: true, hasTouch: true } : {}) });
   const p = await ctx.newPage();
   const hibak = [], http404 = [];
   p.on('pageerror', (e) => hibak.push('pageerror: ' + e.message.slice(0, 120)));

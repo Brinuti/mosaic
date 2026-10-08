@@ -23,10 +23,12 @@ if (!URL_ || !KI || !NEV) { console.error('hasznalat: node tools/ujrastilus/foly
 fs.mkdirSync(KI, { recursive: true });
 const { chromium } = playwright();
 const b = await chromium.launch({ executablePath: CHROME, headless: true });
-const p = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+const p = await (await b.newContext({ viewport: { width: 1440, height: 900 }, ignoreHTTPSErrors: !!process.env.HTTPS_HIBA_NEM_BAJ })).newPage();
 await p.goto(URL_, { waitUntil: 'networkidle', timeout: 60000 }).catch(() => {});
 await p.getByRole('button', { name: 'Elfogadom' }).click().catch(() => {});
-await p.evaluate(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += 400) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 110)); } window.scrollTo(0, 0); });
+// a gorgetes lepese / varakozasa kornyezeti valtozoval lassithato (FOLYAM_LEPES px, FOLYAM_VARAKOZAS ms): a Wix lusta kepei / megjelenes-animacioi gyors gorgetesnel nem mindig toltodnek be
+const LEPES = +process.env.FOLYAM_LEPES || 400, VARAKOZAS = +process.env.FOLYAM_VARAKOZAS || 110;
+await p.evaluate(async ([lepes, varakozas]) => { for (let y = 0; y < document.documentElement.scrollHeight; y += lepes) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, varakozas)); } window.scrollTo(0, 0); }, [LEPES, VARAKOZAS]);
 await p.waitForTimeout(800);
 
 const adat = await p.evaluate(() => ({
