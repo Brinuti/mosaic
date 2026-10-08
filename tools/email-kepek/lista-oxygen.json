@@ -62,6 +62,34 @@
         0.5,
         0.5
       ]
+    },
+    {
+      "ki": "oxygen/sampon.jpg",
+      "forras": "assets/img/oxigen/ajandek-berlet.webp",
+      "mod": "szeles",
+      "arany": [
+        3,
+        4
+      ],
+      "szelesseg": 780,
+      "fokusz": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "ki": "oxygen/miert-mukodik.jpg",
+      "forras": "assets/img/oxigen/miert-foto.webp",
+      "mod": "szeles",
+      "arany": [
+        487,
+        640
+      ],
+      "szelesseg": 487,
+      "fokusz": [
+        0.5,
+        0.5
+      ]
     }
   ],
   "megjegyzes": [
