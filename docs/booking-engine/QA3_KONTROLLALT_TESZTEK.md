@@ -133,6 +133,42 @@ A visszatérítést a Stripe teszt-módú kulcsával kell létrehozni. A vizsgá
    - `UNKNOWN`: ami egyik osztályba sem sorolható – a csomagban külön sor, nem találgatjuk.
 4. **A kör végén háromutas egyeztetés (Claude): Salonic online foglalás = Gmail UUID = #128 `foglalas_egyeztetes` sor.** UUID-nként: van-e mindhárom helyen (hiányzó láb külön lista); vendégadat nélkül (UUID, üzletág, létrehozás / lemondás ideje, állapot, párosított, küldési sorok); a TESZT-osztályok szerint bontva. Az 1. és 2. forrás (Salonic aktív + törölt export, Gmail UUID-lista) a mérési munkamenet csomagjából jön; Claude nem kéri Feritől és nem olvassa a Gmailt / Salonicot.
 
+## A tesztszűrés pontos szabálya (Feri kérése, 2026-10-08): a Zap `tesztFoglalas`-szűrőjével azonos alap, négy osztály
+**Miért nem a #128 kódjában:** a #128 az ablak alatt (2026-10-07 22:20 → 2026-10-08 22:20 Budapest) **változatlan** (fej: `ca2ff64`), és a `foglalas_egyeztetes` tábla szándékosan **nem tárol vendégadatot** (név, e-mail, telefon nincs benne). A besorolás ezért a **zárás utáni számláló + háromutas egyeztetés** eszköze (`tools/meres-proba/qa3-haromutas.mjs`, a #138 ágon; a mérésre és a #128-ra nincs hatása), és a vendégmezőket a mérési munkamenet csomagjának **Gmail-oldali** adatából olvassa (nem Gmailből, nem Salonicból: azt Claude nem olvassa).
+
+**A szabály forrása (olvasva, a Zap érintetlen):** Zapier workflow `01a0e724-8a41-70ac-9d6d-e040060d4f7b` („Mosaic HeadSpa - Salonic foglalás → Meta CAPI (PII B-teszt)”), verzió `01a10a97-4b93-78c8-90f9-6216f2dbf18b` (2026-10-05 05:44 UTC), a `tesztFoglalas` függvény. A Zap a levél „Név”, „Mobiltelefonszám” és „E-mail cím” mezőjén keres; **bármelyik találat → próbafoglalás**:
+1. **név:** `/(^|[\s,.-])teszt($|[\s,.-])/i` – a „teszt” **önálló szó** (szóköz, vessző, pont vagy kötőjel határolja), kis/nagybetű mindegy;
+2. **e-mail:** (kisbetűsítve) szerepel a Zap `TESZT_EMAILEK` listáján (5 cím: a két üzleti postafiók, két tulajdonosi cím és egy általános próbacím);
+3. **telefon:** a számjegyei az egyik Zap-beli telefon-végződéssel végződnek (két tulajdonosi / próba szám; formátum mindegy: `+36`, `06`, szóköz, kötőjel).
+A listák **személyes adatok**, ezért **nincsenek a repóban**: a Drive `QA3-OSZTALYOZO-SZABALY.json` fájlban vannak (a Zap kódjából másolva), a futtatás `--szabaly` kapcsolóval olvassa.
+
+**Besorolás (UUID-nként, ebben a sorrendben; az első találat dönt):**
+| # | osztály | feltétel | okkód |
+|---|---|---|---|
+| 1 | `CONTROLLED_TEST` | UUID a futtatói listán (`qa3-teszt-uuid-lista-2026-10-08-ablak.txt`) | `lista:controlled` |
+| 2 | `OTHER_TEST` | UUID a korábbi QA / mérési munkamenet listáján (`qa3-other-test-uuid-lista-*.txt`, + a csomag listája) | `lista:other` |
+| 3 | `OTHER_TEST` | a **Zap-szabály** talál (név / e-mail / telefon, lásd fent) | `zap:nev`, `zap:email`, `zap:telefon` |
+| 4 | `OTHER_TEST` | a dokumentált tesztnevek egyike (DÖNTÉS #108 / a TESZT-mappa): „TESZT – Claude”, „TESZT Claude”, „Feri teszt”, „teszt teszt”, „Próbafoglalás (TESZT)” (szóköz- és kötőjel-normalizálva, tartalmazás) | `ismert-nev` |
+| 5 | `UNKNOWN` | **nem a szokott teszt-azonosítóval megy, de gyanús, vagy nem értékelhető** (soha nem REAL): a név tartalmazza a `teszt` / `test` / `próba` / `claude` töredéket, de a Zap-szabály nem találta el (pl. „TESZT–Claude” szóköz nélkül, „Tesztelek Elek”); az e-mail tartalmaz `teszt` / `test` / `proba` / `claude` töredéket, vagy a `gyanusEmailReszek` valamelyikét; a telefon utolsó 6 számjegye egyezik egy Zap-végződéssel, de a teljes végződés nem; hiányzik a név, vagy az e-mail és a telefon is; **nincs Gmail-adat az UUID-hoz**; a foglalás **Feri jelzett próbasávjába** esik (`probasavok.json`, lásd lent) | `kozeli:nev-resz`, `kozeli:email-resz`, `kozeli:telefon`, `hianyzo:nev`, `hianyzo:email-es-telefon`, `nincs-gmail-adat`, `probasav` |
+| 6 | `REAL` | **pozitív bizonyíték**: van Gmail-adat (név + e-mail vagy telefon), a Zap-szabály és minden gyanújel negatív, nem esik próbasávba | `pozitiv:nincs-tesztjel` |
+
+**A háromutas egyeztetésben** (`qa3-haromutas-<nap>.md/.json`): osztályonként külön sor; **az `OTHER_TEST` külön sor, bontva (`uuid-lista` / `zap-szabaly` / `ismert-nev`), és a `REAL` számba nem kerül bele** (a `real_szam` mező és a „REAL” sor kizárólag a `REAL` osztályt számolja); az `UNKNOWN` külön lista okkóddal; a lemondásnál felszabadult kulcsok külön sor; a hiányzó lábak (S = Salonic, G = Gmail, D = #128 sor) külön lista. Vendégadat a kimenetben nincs (a teszt ezt ellenőrzi).
+
+**Kimondott korlátok (nem elrejtve):**
+- **Egy próba, amely semmilyen tesztjelet nem visel** (valódinak látszó név, nem listás e-mail és telefon), adatból **nem különböztethető meg a valódi foglalástól**. Ellene két védelem van: (a) a **próbasáv**: ha Feri a próbafoglalása idősávját (vagy nevét) megadja a mérési munkamenetnek, az `[{"tol":"…Z","ig":"…Z","megjegyzes":"Feri próbája"}]` formában a csomagba kerül, és a sávba eső, egyébként REAL foglalás `UNKNOWN` lesz (a sáv csak REAL → UNKNOWN irányban hat; tesztjelet nem töröl); (b) ha az UUID-t megadja, `OTHER_TEST` (a lista erősebb). Ha egyik sincs, az ilyen próba a `REAL` mezőbe kerülhet – ezt a számláló nem tudja kivédeni.
+- **A Zap-szabály maga lyukas** (a szűrő forrásából, ellenőrizve): a név-minta **nem találja** a „Próbafoglalás (TESZT)” és a „TESZT–Claude” (kötőjellel, szóköz nélkül) nevet és a „Tesztelek” kezdetű neveket; ugyanakkor a „Teszt” **vezetéknevű valódi vendéget** (pl. „Nagy Teszt Anna”) tévesen próbának veszi. Az első kettő a mi besorolásunkban nem veszik el (`ismert-nev` → `OTHER_TEST`, illetve `kozeli:nev-resz` → `UNKNOWN`), a második `OTHER_TEST` / `zap-szabaly` sorban látszik az okkóddal, ezért a bontás átnézhető. A Zap módosítása nem a mi feladatunk (külső fiók, Feri kérése nélkül nem nyúlunk hozzá).
+- **Paritás-ellenőrzés zárás előtt:** olvasd újra a Zapet (`get_workflow` `01a0e724-…`), és hasonlítsd össze a `current_version.id`-t (`01a10a97-4b93-78c8-90f9-6216f2dbf18b`) és a `TESZT_EMAILEK` / telefon-végződések listáját a `szabaly.json`-nal; ha változott, frissítsd a fájlt, és a naplóba írd be.
+- Az egységteszt (`node --test tools/test-qa3-osztaly.mjs`, 10 teszt) a Zap kódjának szó szerinti másolatával veti össze a függvényt 140 név × telefon × e-mail kombináción, szöveges és strukturált bemenettel.
+
+**Futtatás (zárás után):**
+```
+node tools/meres-proba/qa3-haromutas.mjs --d1 d1.json --gmail gmail.json --salonic salonic.json --szabaly szabaly.json \
+  --controlled docs/booking-engine/meres-naplo/qa3-teszt-uuid-lista-2026-10-08-ablak.txt \
+  --other docs/booking-engine/meres-naplo/qa3-other-test-uuid-lista-2026-10-07.txt[,<a csomag listája>] \
+  [--probasavok probasavok.json] --tol 2026-10-07T20:20:00Z --ig 2026-10-08T20:20:00Z --nap 2026-10-08 --felszabadult <N>
+```
+`d1.json` = a lenti „Az én számlálóm” SQL kimenete (a Cloudflare MCP kimenete közvetlenül jó); `gmail.json` = `[{"uuid","nev","email","telefon"}]` (vagy `{"uuid","szoveg"}` a levéltörzzsel); `salonic.json` = `[{"uuid","allapot":"aktiv"|"torolt"}]`. A **vendégadatot tartalmazó fájlok (`gmail.json`, `szabaly.json`) a repón kívül maradnak** (scratchpad); a kimenet (`qa3-haromutas-<nap>.json/.md`) vendégadat nélküli, az mehet a repóba.
+
 ## Az új, tiszta 24 órás QA-3 ablak (R1–R7 mind PASS) – rögzítve 2026-10-07 22:19 Budapest (20:19 UTC)
 **Az R1–R7 újrateszt az R7-javítást tartalmazó kódon (#128 `ca2ff64`, élesedés 2026-10-07 20:45:53 Budapest / 18:45:53 UTC): 7 / 7 eset PASS** (futás: 21:50:33 → 22:18:14 Budapest; `--nap 2026-10-07-r7-utan`; nyers naplók és összefoglaló: `meres-naplo/qa3-*-2026-10-07-r7-utan.json`, `qa3-osszefoglalo-2026-10-07-r7-utan.md`):
 
@@ -162,6 +198,6 @@ A visszatérítést a Stripe teszt-módú kulcsával kell létrehozni. A vizsgá
 
 **A zárás utáni teendő (Claude) – a számláló és a háromutas egyeztetés:**
 1. A #128 D1-ből (csak olvasás, vendégadat nélkül) a `foglalas_egyeztetes` sorok az ablakra (`letrehozva` ≥ 20:20:00 UTC és < 2026-10-08 20:20:00 UTC), négy osztályban: `CONTROLLED_TEST` (a fenti lista), `OTHER_TEST` (tesztnév / korábbi QA-UUID – a mérési munkamenet listája), `REAL`, `UNKNOWN`. A felszabadult kulcsok (`foglalas_lemondas.eredmeny = 'felszabadult'`) külön sorban.
-2. **Háromutas egyeztetés:** Salonic online foglalás = Gmail UUID = #128 sor, UUID-nként; a hiányzó lábak külön listán. A Salonic-export és a Gmail UUID-lista a mérési munkamenet csomagjából jön.
+2. **Háromutas egyeztetés:** Salonic online foglalás = Gmail UUID = #128 sor, UUID-nként; a hiányzó lábak külön listán. A Salonic-export és a Gmail UUID-lista a mérési munkamenet csomagjából jön. **A besorolást és az egyeztetést az `qa3-haromutas.mjs` végzi a fenti „A tesztszűrés pontos szabálya” szerint** (az `OTHER_TEST` külön sor, nem része a `REAL` számnak; az `UNKNOWN` külön lista; a Feri-féle próbák az ablak alatt `OTHER_TEST` / `UNKNOWN`, soha `REAL`).
 3. Az állapotok: a lezárás utáni elvárás szerint a valódi foglalások `parositatlan` + riasztás (nem `fuggoben`), 0 küldés; a lusta lezárás a számlálás előtt lefut (egy kulcsos GET elég).
 4. A nyers számok értelmezés nélkül, előbb Ferinek.

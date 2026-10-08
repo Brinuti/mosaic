@@ -4,6 +4,28 @@ Készült: **2026-10-07 ~14:50 UTC (16:50 Budapest)**, a heti keret lejárta el�
 
 > Szabály ehhez a fájlhoz: **titok soha nem kerül ide** (egyeztető kulcs, tokenek, webhook-URL-ek). Csak a helyük van megnevezve.
 
+## ⚠ AKTUÁLIS ÁLLAPOT (2026-10-08, ez az érvényes; az 1., 2. és 6. szakasz történeti – a 0. szakasz 4. pontja is elavult: a 20:05 / 20:25-ös lépés lefutott)
+| | |
+|---|---|
+| **QA-3** | **IN_PROGRESS.** Az X1 és a `fuggoben`-végállapot (R7) hibát javítottuk; **R1–R7: 7 / 7 PASS** (2026-10-07 22:18 Budapest). Az **új, tiszta 24 órás ablak fut: 2026-10-07 22:20:00 → 2026-10-08 22:20:00 Budapest** (= 20:20:00 UTC → 20:20:00 UTC). |
+| **#128** (`claude/mosaic-meres-qa-1-rrbwkk`) | **fej: `ca2ff64`; az ablak végéig NINCS push, NINCS deploy** (ellenőrizd: `git ls-remote origin claude/mosaic-meres-qa-1-rrbwkk`). Előnézet: `https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev`. A kill switchekhez (`meres_kapcsolo`) és a Zaphoz (`01a1125b`) nem nyúlunk; Claude nem hoz létre TESZT-foglalást. |
+| **#138** (`claude/mosaic-meres-eletut`) | az eszközök és a bizonyítékok ága (ide pusholsz; minden push egy Cloudflare-build, ezért gyűjtsd). Itt van a besoroló: `tools/meres-proba/qa3-haromutas.mjs` + `qa3-osztaly-lib.mjs`, tesztje `tools/test-qa3-osztaly.mjs`. |
+| **Feri az ablak alatt is próbafoglalást csinál** | ezeket a besoroló `OTHER_TEST`-be teszi (a Zap `tesztFoglalas`-szabályával azonos alapon), az `UNKNOWN`-ba, ha nem a szokott azonosítóval mennek – **soha nem `REAL`-be**. A pontos szabály: `QA3_KONTROLLALT_TESZTEK.md` „A tesztszűrés pontos szabálya”. |
+| **FINAL PASS** | **csak** ennek az ablaknak a hibamentes lezárása után, **és csak a GPT / Feri adhatja**; te soha nem mondod ki. A QA-3 PASS ≠ éles készenlét (ÉLES-KAPU külön). |
+
+**Mi a teendő a zárásnál (2026-10-08 22:20 Budapest / 20:20 UTC UTÁN).** A régi munkamenet emlékeztetője (`trig_012aa97K88PGkhPBpuYaCQJm`, 2026-10-08T20:25:00Z) csak abban a munkamenetben fut. **Mielőtt hozzákezdesz, nézd meg a Drive `FOLYAMAT-NAPLO.md` tetejét: ha ott már van „ZÁRÁS” bejegyzés, ne csináld meg újra.** Ha nincs, első lépésként írj be egy „ZÁRÁS ELINDULT (új ablak)” bejegyzést (kettős futás ellen).
+1. `git fetch`; ellenőrizd: a #128 feje még `ca2ff64`-gyel kezdődik (ha más: **állj meg, jelentsd**, a kör nem tiszta).
+2. **Kulcs** a Zapier Storage `egyeztetes_kulcs` kulcsáról (4. szakasz), 600-as jogú, repón kívüli fájlba; az értéket sehova ne írd ki.
+3. **Egy kulcsos GET** a lusta lezárás lefuttatására (csak az ablak vége után): `curl -s -H "x-egyeztetes-kulcs: $(cat <kulcsfájl>)" "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-egyeztetes?uuid=ab2e46ff-4039-4d0e-b570-bc97bd56348e" >/dev/null` (az R7-es UUID; a kimenetet ne naplózd).
+4. **Számláló a #128 D1-ből** (Cloudflare MCP `d1_database_query`, `628113fe-9793-450d-baad-fc77814995eb`, csak olvasás, vendégadat nincs): a `QA3_KONTROLLALT_TESZTEK.md` „Az én számlálóm” SQL-je, az ablak epoch-határaival: **`letrehozva >= 1791404400 AND letrehozva < 1791490800`** (2026-10-07 20:20:00 → 2026-10-08 20:20:00 UTC). A felszabadult kulcsok: `SELECT count(*) FROM foglalas_lemondas WHERE eredmeny = 'felszabadult' AND ido >= 1791404400 AND ido < 1791490800`. Mentsd `d1.json`-ba (scratchpad).
+5. **A mérési munkamenet csomagja** (Salonic aktív + törölt export UUID-nként, Gmail UUID-lista **névvel / e-maillel / telefonnal** a besoroláshoz, az OTHER_TEST lista, Feri próbasávjai): Feri hozza át a mérési munkamenetből; **te nem kéred külön Feritől, és nem olvasod a Gmailt / Salonicot**. Ha még nincs meg, a 3–4. lépés eredményét (nyers számláló) jelentsd, és írd le, hogy a csomag hiányzik.
+6. **Szabály-paritás:** `get_workflow` `01a0e724-8a41-70ac-9d6d-e040060d4f7b` (Zapier MCP, olvasás), hasonlítsd a `current_version.id`-t (`01a10a97-4b93-78c8-90f9-6216f2dbf18b`) és a `TESZT_EMAILEK` / telefon-végződések listáját a Drive `QA3-OSZTALYOZO-SZABALY.json`-nal.
+7. **Besorolás + háromutas egyeztetés:** `node tools/meres-proba/qa3-haromutas.mjs …` (parancs: `QA3_KONTROLLALT_TESZTEK.md`); a kimenetet (`meres-naplo/qa3-haromutas-2026-10-08.md/.json`, vendégadat nélkül) commitold a #138 ágra.
+8. **Nyers számok Ferinek** (osztályonként; az OTHER_TEST külön sor; a REAL szám nélküle; UNKNOWN lista; hiányzó lábak; felszabadult kulcsok külön sor), **értelmezés és PASS/FAIL ítélet nélkül.** A Drive-naplóba és az issue #167-be is bejegyzés kerül.
+9. A kiértékelés az ablak vége után 45–60 perccel (23:05–23:20 Budapest) jön a GPT-től; Feri addigra belép az 5 Salonic-fiókba.
+
+**Drive** (Feri Google Drive-ja, a `FOLYAMAT-NAPLO.md` mappájában; Zapier Google Drive-on át – `google_drive_make_api_get_request` / `…_mutating_request`): `FOLYAMAT-NAPLO.md` (futó napló, legújabb felül), `MERES-ATADAS-UJ-ABLAK.md` (kezdd itt + a Ferinek szóló kezdő szöveg), `ATADAS_FOLYTATAS.md`, `QA3_KONTROLLALT_TESZTEK.md` (másolatok), `QA3-UUID-LISTAK.txt`, `QA3-OSZTALYOZO-SZABALY.json` (a Zap-szabály pontos listái; **személyes adat, a repóba nem kerül**).
+
 ## 0. Az első 5 perc (új munkamenet)
 1. Olvasd el a repó `CLAUDE.md`-jét (**magyarul kommunikálj Ferivel; mindent te csinálsz; commit-üzenet magyarul, ékezet nélkül**, a trailerekkel: `Co-Authored-By: …` és `Claude-Session: <az új munkamenet URL-je>`; PR-leírás végén a `🤖 Generated with [Claude Code](https://claude.com/claude-code)` sor).
 2. Olvasd el: **ezt a fájlt**, a `QA3_KONTROLLALT_TESZTEK.md`-t (mérce, „QA-3 állapota és a lezárás szabálya”, „Ismert zaj”), a `QA2_ARNYEK.md`-t (eseménymodell), az `ELETUT.md`-t (életút), az `EGYEZTETES_HIVAS.md`-t (végpont-bemenet).
