@@ -1,0 +1,168 @@
+/* A 7 regi (Wixes) lezeres szortelenites hirdetesi oldal ujrastilusa (szortelenites-5-dolog, -zsofi-rovid, -zsofi-vendeg, -zsofi-bemutatkozo, -lezeres-kezeles-folyamata,
+   szőrtelenítés-zsófi-3, szőrtelenítés-zsófi-csomagok). A headspa-oldal.css komponenseire epul (hero, szekcio, fel-racs, cikk, gomb, video-kartya, korhinta, helyszin);
+   itt csak ami ezekre az oldalakra jellemzo. Generalja: tools/lezer-variansok/gen.mjs. Onallo fajl: mas oldal stilusat nem erinti. */
+
+/* --- hero --- */
+.lv-hero h1 { font-size: 44px; line-height: 1.12; }
+.lv-hero .hero-al { max-width: 560px; }
+.lv-hero .hero-al b { font-weight: 500; color: var(--sotet); }
+.lv-sor { margin-top: 14px; max-width: 580px; font-size: 16px; line-height: 1.5; color: #2c3d3d; }
+.lv-sor a { color: var(--sotet); text-underline-offset: 3px; }
+.lv-ertekeles { display: flex; align-items: center; gap: 12px; margin-top: 20px; font-size: 16px; color: #2c3d3d; }
+.lv-ertekeles img { width: 108px; height: auto; flex: none; }
+.lv-ertekeles b { font-weight: 500; color: var(--sotet); }
+.lv-hero-kep { aspect-ratio: 1.12; max-height: 560px; }
+.lv-link { font-weight: 500; }
+
+/* --- ingyenes konzultacio (sotet szekcio) --- */
+.lv-sotet { background: linear-gradient(135deg, #12302f, #1c4a47); color: #e9eee9; }
+.lv-sotet .szekcio-fej h2 { color: #fff; }
+.lv-sotet .lead { color: #e9eee9; }
+.lv-sotet .rombusz::before { background: linear-gradient(90deg, transparent, #e0c887 24%, #e0c887 76%, transparent); }
+.lv-sotet .cikk p { color: #e4ebe6; }
+.lv-sotet .cikk p b { color: #fff; background: none; font-weight: 500; }
+.lv-konz { grid-template-columns: 1.25fr .75fr; }
+.video-egy { width: 100%; max-width: 330px; margin: 0 auto; }
+
+/* --- valtozo szakasz (5 ok / szempontok / vendeg-tortenet / a kezeles folyamata ...) --- */
+.lv-valt { grid-template-columns: .85fr 1.15fr; }
+.lv-valt-kep img { width: 100%; height: auto; }
+.cikk .lv-alcim { margin: -6px 0 20px; font: 500 21px/1.35 var(--cim); color: #8a6c3e; }
+.cikk .lv-alcim b { background: none; font-weight: 500; color: #8a6c3e; }
+.lv-jelvenyek { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 26px; }
+.lv-jelvenyek img { width: 104px; height: auto; }
+
+/* --- Elysion Pro osszehasonlitas --- */
+.lv-vs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: stretch; }
+.lv-vs-oszlop { display: flex; flex-direction: column; background: #fff; border: 1px solid #e7eae3; border-radius: 20px; overflow: hidden; box-shadow: var(--arnyek); }
+.lv-vs-oszlop figure { margin: 0; background: #e0e4db; }
+.lv-vs-oszlop img { width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; object-position: 50% 30%; }
+.lv-vs-oszlop h3 { padding: 18px 20px 4px; text-align: center; font-size: 21px; line-height: 1.25; }
+.lv-vs-oszlop ul { list-style: none; margin: 0; padding: 12px 22px 24px; display: grid; gap: 10px; font-size: 16px; line-height: 1.45; color: #25373a; }
+.lv-vs-oszlop li b { font-weight: 500; color: var(--sotet); }
+.lv-vs-oszlop.kiemelt { border-color: #d9c164; box-shadow: 0 0 0 1px #e6d391, 0 18px 40px rgba(150, 120, 40, .16); }
+
+/* --- garancia, kisebb kepes szakaszok --- */
+.lv-garancia { grid-template-columns: .55fr 1.45fr; }
+.lv-kicsi img { max-width: 460px; margin: 0 auto; }
+.lv-garancia .lv-kicsi img { max-width: 340px; box-shadow: none; background: none; }
+
+/* --- hatterkepes szakaszok (berlet helyett, nyari ajanlat, GYIK) --- */
+.lv-hatterkepes { position: relative; overflow: hidden; background: #10221f; border: 0; }
+.lv-hatterkep { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .38; }
+.lv-hatterkepes::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(10, 25, 24, .5), rgba(10, 25, 24, .8)); pointer-events: none; }
+.lv-hatterkepes > .tartalom { z-index: 1; }
+.lv-hatterkepes .szekcio-fej h2 { color: #fff; }
+.lv-hatterkepes .lead { color: #e9eee9; }
+.lv-hatterkepes .szekcio-fej h2 { font-size: 34px; }
+.lv-hatterkepes .kozepre-sor .link-gomb, .lv-hatterkepes .link-gomb { color: #fff; }
+.lv-hatterkepes .lv-kartya .link-gomb { color: var(--sotet); }
+.lv-hatterkepes .rombusz::before { background: linear-gradient(90deg, transparent, #e0c887 24%, #e0c887 76%, transparent); }
+.lv-berlet { display: grid; grid-template-columns: .9fr 1.1fr; gap: 40px; align-items: center; }
+.lv-berlet .kep-fig img { max-width: 560px; margin: 0 auto; }
+.lv-pontok { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: pont; }
+.lv-pontok li { position: relative; padding: 18px 22px 18px 70px; border-radius: 16px; background: rgba(255, 255, 255, .95); color: #25373a; font-size: 17px; line-height: 1.6; }
+.lv-pontok li::before { counter-increment: pont; content: counter(pont); position: absolute; left: 20px; top: 16px; width: 36px; height: 36px; border-radius: 50%; background: var(--arany-gomb); color: #fff; font: 500 19px/36px var(--cim); text-align: center; }
+.lv-hatterkepes .lv-kartya { background: rgba(255, 255, 255, .96); border-radius: 22px; padding: 38px 36px; box-shadow: 0 18px 44px rgba(0, 0, 0, .22); }
+.lv-hatterkepes .lv-kartya h2 { color: var(--sotet); font-size: 32px; }
+.lv-szuk { max-width: 860px; }
+
+/* --- egyedi csomag peldak --- */
+.lv-peldak { list-style: none; margin: 0 0 20px; padding: 16px 20px; display: grid; gap: 8px; background: #f6efdc; border-left: 5px solid #c6a346; border-radius: 12px; font-size: 16.5px; line-height: 1.5; color: #25373a; }
+
+/* --- arkartyak (csomagarak, testreszarak) --- */
+.lv-dolt { font-style: italic; }
+.lv-csomagok { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; align-items: stretch; }
+.lv-csomag, .lv-tr-csoport { display: flex; flex-direction: column; background: #fff; border: 1px solid #e7eae3; border-radius: 20px; overflow: hidden; box-shadow: var(--arnyek); padding: 0 18px 22px; text-align: center; }
+.lv-kartya-kep { margin: 0 -18px 16px; background: #e0e4db; }
+.lv-kartya-kep img { width: 100%; height: auto; }
+.lv-csomag h3, .lv-tr-csoport h3 { font-size: 17px; line-height: 1.3; text-transform: uppercase; letter-spacing: .02em; }
+.lv-csomag-nev { display: block; margin-bottom: 4px; font: 500 15px/1.2 var(--test); letter-spacing: .14em; color: var(--arany); }
+.lv-csomag-leiras { margin-top: 10px; font-size: 13.5px; line-height: 1.45; color: #5c6766; }
+.lv-csomag-prog { margin-top: 16px; font-size: 16px; color: var(--sotet); }
+.lv-csomag-ar { margin-top: 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: #6f5420; }
+.lv-csomag-ar s { font-size: 15px; color: #6b7473; }
+.lv-csomag-ar.szoveges b { font: 500 18px/1.35 var(--cim); }
+.lv-csomag-ar b { font: 500 26px/1.15 var(--cim); color: #8a6c3e; }
+.lv-csomag-garancia { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 6px; font-size: 13.5px; line-height: 1.4; color: #3a4a45; text-align: left; }
+.lv-csomag-garancia b { font-weight: 500; color: var(--sotet); }
+.lv-csomag-per { margin-top: 14px; font-size: 15px; line-height: 1.45; color: #25373a; }
+.lv-csomag-per b { font-weight: 500; color: #8a6c3e; }
+.lv-csomag-sporolsz { margin-top: 8px; font-size: 15px; color: #25373a; }
+.lv-csomag-sporolsz b { font-weight: 500; color: var(--sotet); }
+.lv-csomag .gomb, .lv-tr-csoport .gomb { margin-top: auto; align-self: stretch; }
+.lv-csomag-sporolsz + .gomb, .lv-csomag-per + .gomb { margin-top: 18px; }
+.lv-csomag > .gomb { margin-top: auto; }
+.lv-csomag .lv-csomag-per, .lv-csomag .lv-csomag-sporolsz { flex: none; }
+.lv-testresz { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: stretch; }
+.lv-tr-csoport h3 { margin-bottom: 8px; color: #8a6c3e; }
+.lv-tr-csoport dl { display: grid; gap: 12px; margin: 8px 0 18px; text-align: left; }
+.lv-tr-tetel { padding: 12px 14px; border-radius: 12px; background: #f7f8f6; font-size: 14.5px; line-height: 1.45; color: #3a4a45; }
+.lv-tr-tetel dt { display: none; }
+.lv-tr-tetel dd { margin: 0; }
+.lv-tr-tetel b { font-weight: 500; color: var(--sotet); }
+.lv-tr-kedv { margin-top: 4px !important; color: #8a6c3e; }
+.lv-tr-kedv b { color: #8a6c3e; }
+
+/* --- listak a cikk-oszlopban --- */
+.lv-lista { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 10px; }
+.lv-lista li { padding: 12px 16px; border-left: 3px solid #c9ad6a; background: #fff; border-radius: 0 12px 12px 0; font-size: 16.5px; line-height: 1.55; color: #25373a; box-shadow: 0 1px 2px rgba(40, 30, 20, .04); }
+.lv-lista li b, .lv-pontok b, .lv-peldak b, .lv-sor b { font-weight: 500; color: var(--sotet); background: linear-gradient(transparent 64%, #f1e6c4 64%); }
+.cikk h3 { margin: 26px 0 14px; font-size: 24px; }
+.cikk h2 + h3 { margin-top: 0; }
+
+/* --- GYIK (harmonika) --- */
+.gyik { display: grid; gap: 10px; }
+.gyik details { background: #fff; border: 1px solid #e7eae3; border-radius: 14px; box-shadow: 0 1px 2px rgba(40, 30, 20, .04); }
+.gyik summary { cursor: pointer; list-style: none; position: relative; padding: 16px 52px 16px 20px; min-height: 52px; display: flex; align-items: center; font: 500 18px/1.35 var(--cim); color: var(--sotet); }
+.gyik summary::-webkit-details-marker { display: none; }
+.gyik summary::after { content: ''; position: absolute; right: 22px; top: 50%; width: 9px; height: 9px; margin-top: -7px; border-right: 1.8px solid #a07f4b; border-bottom: 1.8px solid #a07f4b; transform: rotate(45deg); transition: transform .2s; }
+.gyik details[open] summary::after { transform: rotate(225deg); margin-top: -2px; }
+.gyik details[open] summary { color: #111f20; }
+.gyik .gy-valasz { padding: 0 20px 18px; font-size: 16.5px; line-height: 1.65; color: #25373a; }
+.gyik .gy-valasz p { margin: 0 0 10px; }
+.gyik .gy-valasz p:last-child { margin-bottom: 0; }
+.gyik .gy-valasz ul { margin: 0 0 10px; padding-left: 22px; }
+.gyik .gy-valasz a { color: var(--sotet); text-underline-offset: 3px; }
+
+/* --- galeria --- */
+.korhinta.nagy-elem .korhinta-sav > * { flex-basis: min(86%, 440px); }
+
+/* --- helyszin --- */
+.helyszin { padding-top: 0; }
+.lv-hely-kep { margin: 0 0 48px; max-height: 300px; overflow: hidden; }
+.lv-hely-kep img { width: 100%; height: 300px; object-fit: cover; }
+.lv-hely-jobb .lv-kicsi img { max-width: 100%; }
+.lv-hely-jobb { align-self: start; }
+.lv-hely-jobb p { margin: 14px 0 0; }
+
+/* a hosszu szoveg melletti kep gorgetesnel vele marad (asztalon) */
+@media (min-width: 1025px) { .lv-valt-kep { position: sticky; top: 120px; align-self: start; } }
+
+/* ====== tablet ====== */
+@media (max-width: 1024px) {
+  .lv-hero h1 { font-size: 36px; }
+  .lv-vs { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
+  .lv-csomagok { grid-template-columns: repeat(3, 1fr); }
+  .lv-testresz { grid-template-columns: repeat(2, 1fr); }
+  .lv-berlet { grid-template-columns: 1fr; }
+  .lv-valt, .lv-garancia, .lv-konz { grid-template-columns: 1fr; }
+  .lv-hero-kep { aspect-ratio: 1.3; max-height: 440px; }
+}
+
+/* ====== telefon ====== */
+@media (max-width: 700px) {
+  .lv-hero h1 { font-size: clamp(24px, 7vw, 30px); }
+  .lv-hero-kep { order: -1; aspect-ratio: 1.3; }
+  .lv-csomagok, .lv-testresz { grid-template-columns: 1fr; }
+  .lv-kartya-kep img { aspect-ratio: 16 / 9; object-fit: cover; object-position: 50% 30%; }
+  .lv-pontok li { padding: 16px 16px 16px 60px; font-size: 16.5px; }
+  .lv-pontok li::before { left: 14px; }
+  .lv-hatterkepes .lv-kartya { padding: 26px 20px; }
+  .lv-hatterkepes .lv-kartya h2 { font-size: 26px; }
+  .lv-jelvenyek img { width: 84px; }
+  .lv-hely-kep, .lv-hely-kep img { max-height: 200px; height: 200px; }
+  .gyik summary { font-size: 16.5px; padding: 14px 46px 14px 16px; }
+  .gyik .gy-valasz { padding: 0 16px 16px; font-size: 16px; }
+  .cikk h3 { font-size: 21px; }
+}
