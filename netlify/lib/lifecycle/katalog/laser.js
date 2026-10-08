@@ -53,7 +53,7 @@ export default {
       elotag: 'Nem mindenkinek ugyanaz a beállítás és ugyanaz a kezelési út.',
       torzs: [
         'Szia {keresztnév}!',
-        { kep: { src: 'laser/kezelohelyiseg.jpg', alt: 'A MOSAIC lézeres kezelőhelyisége: kezelőágy és az Elysion Pro lézer', felirat: 'A kezelőhelyiség az Elysion Pro lézerrel' } },
+        { kep: { src: 'laser/kezelohelyiseg.jpg', alt: 'Lézeres szőrtelenítés közben a MOSAIC kezelőhelyiségében: a kezelő védőszemüvegben az Elysion Pro lézerrel dolgozik', felirat: 'A kezelőhelyiség az Elysion Pro lézerrel' } },
         'A lézeres szőrtelenítésnél az egyik legfontosabb kérdés nem az, hogy "mennyire erős a gép", hanem hogy a te bőr- és szőrtípusodhoz hogyan használjuk.',
         'Az első alkalom előtt ezért megnézzük a kezelendő területet, a bőröd és a szőröd jellemzőit, és ez alapján állítjuk be az Elysion Pro kezelést.',
         // Zsófi az egyetlen lezeres kezelo (a lezeres oldal: "Zsófival fogsz találkozni"); a Salonic munkatars-neve itt "Elysion Pro Szőrtelenítés" (a motor kiszűri), ezert nincs ha_munkatars feltetel

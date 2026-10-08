@@ -32,14 +32,14 @@ export default {
       torzs: [
         'Szia {keresztnév}!',
         'Ha még nem voltál HeadSpán, valószínűleg nehéz pontosan elképzelni, mi történik majd. Ezért röviden megmutatjuk.',
-        { kep: { src: 'headspa/megerkezes-recepcio.jpg', alt: 'A MOSAIC váró- és recepciós tere zöld bársonyfotelekkel, meleg fényekkel' } },
+        { kep: { src: 'headspa/megerkezes-recepcio.jpg', alt: 'A MOSAIC recepciós pultja a logóval, arany macskaszoborral és meleg fényekkel' } },
         'Amikor megérkezel, nem kell sietned. Leülsz, átbeszéljük, mire van szükséged, és a foglalt kezelésed szerint elindul a HeadSpa.',
         'A kezelés alatt a hangsúly a lassú, nyugodt ritmuson van: tisztítás, ápolás és masszázs. Hair HeadSpánál előtte mikrokamerával is megnézzük a fejbőröd állapotát.',
         {
           kepek: [
             { src: 'headspa/kezeles-mikrokamera.jpg', alt: 'Mikrokamerás fejbőrvizsgálat: a vendég fekszik, a kezelő a fejbőrön vezeti a kamerát, a tableten látszik a kép', felirat: 'Mikrokamera · Hair HeadSpa' },
-            { src: 'headspa/kezeles-hajmosas.jpg', alt: 'A haj a HeadSpa kezelőágy körvízsugara alatt, hajmosás közben', felirat: 'Hajmosás' },
-            { src: 'headspa/kezeles-masszazs.jpg', alt: 'Egy vendég ellazulva fekszik a kezelőágyon, a masszőr két kézzel masszírozza', felirat: 'Masszázs' },
+            { src: 'headspa/kezeles-hajmosas.jpg', alt: 'A kezelő kék szilikon fejbőrmasszírozóval masszírozza a vendég fejbőrét a HeadSpa mosóágyon, hajmosás közben', felirat: 'Hajmosás' },
+            { src: 'headspa/kezeles-masszazs.jpg', alt: 'Egy vendég ellazulva fekszik, a masszőr két kézzel masszírozza a fejét és az arcát', felirat: 'Masszázs' },
           ],
         },
         'A végén nem vizes hajjal engedünk el: a hajszárítás a szolgáltatás része, így rendezett hajjal tudsz továbbindulni.',

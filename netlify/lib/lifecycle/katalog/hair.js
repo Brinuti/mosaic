@@ -36,7 +36,7 @@ export default {
         'Ezért nálunk az első lépés mindig a megbeszélés. {fodrász} megnézi a hajad kiindulási állapotát, az arcodhoz és a hajadhoz illő lehetőségeket, és csak olyan eredményt terveztek meg, ami a te hajadból reálisan elérhető.',
         { kep: { src: 'hair/betti-portre.jpg', alt: 'Betti, a MOSAIC Hair fodrásza mosolyogva áll a szalonban', felirat: 'Betti – festés, balayage, melír és személyre szabott női frizurák' }, ha_munkatars: ['Betti'] },
         { kep: { src: 'hair/noel-munka.jpg', alt: 'Noel, a MOSAIC Hair fodrásza egy vendég hajával dolgozik', felirat: 'Noel – balayage és precíz festések, természetes hatású árnyalatok' }, ha_munkatars: ['Noel'] },
-        { kep: { src: 'hair/evelin-munka.jpg', alt: 'Evelin, a MOSAIC Hair fodrásza hajfestés közben', felirat: 'Evelin – hajfestés, hajvágás és hajhosszabbítás (póthaj)' }, ha_munkatars: ['Evelin'] },
+        { kep: { src: 'hair/evelin-portre.jpg', alt: 'Evelin, a MOSAIC Hair fodrásza mosolyogva áll a szalonban', felirat: 'Evelin – hajfestés, hajvágás és hajhosszabbítás (póthaj)' }, ha_munkatars: ['Evelin'] },
         { velemeny: 'hair-eva', ha_munkatars: ['Evelin'] },
         { ertekeles: true },
         {

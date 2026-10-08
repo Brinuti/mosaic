@@ -117,7 +117,7 @@ export default {
         },
         'A kezelés előtt a formát és a színirányt együtt tervezitek meg, és csak a jóváhagyásod után kezdődik a tetoválás.',
         { velemeny: 'pmu-alexandra' },
-        { kep: { src: 'pmu/szalon.jpg', alt: 'A MOSAIC szalon bejárati tere a recepcióval és a zöld fotelekkel', felirat: 'Itt találkozunk: MOSAIC, 1023 Budapest, Bécsi út 2.' } },
+        { kep: { src: 'pmu/szalon.jpg', alt: 'A MOSAIC sminktetováló szobája gyűrűs lámpával és kezelőággyal, a kezelő munka közben', felirat: 'Itt találkozunk: MOSAIC, 1023 Budapest, Bécsi út 2.' } },
         'Ha változott az időpontod lehetősége, itt tudod áttenni:',
         { gomb: { felirat: 'Itt tudom áttenni', link: '{módosítás_link}' } },
         'Várunk,',

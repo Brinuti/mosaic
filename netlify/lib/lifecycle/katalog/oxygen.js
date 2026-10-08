@@ -38,7 +38,7 @@ export default {
         'Sokan azért érkeznek bizonytalanul, mert már rengeteg általános tanácsot hallottak a hajukról. Nálunk pont ezt szeretnénk elkerülni.',
         'A hajkamera arra jó, hogy ne csak találgassunk. Megnézzük a fejbőr felszínét és azokat a jeleket, amelyek a személyre szabott kezelés megtervezéséhez fontosak lehetnek. Utána átbeszéljük veled, mit látunk és mi az, amit reálisan érdemes csinálni.',
         'Az OXYGENI termékeket sem sablonból választjuk: a kezelési tervhez igazítjuk őket.',
-        { kep: { src: 'oxygen/kezeles-kozben.jpg', alt: 'Oxigénterápiás kezelés közben: a kezelő OXYGENI feliratú kötényben dolgozik a vendég fejbőrén', felirat: 'Oxigénterápiás kezelés közben' } },
+        { kep: { src: 'oxygen/kezeles-kozben.jpg', alt: 'Oxigénterápiás kezelés a MOSAIC kezelőszobájában: a kezelő a fekvő vendég fejbőrén dolgozik', felirat: 'Oxigénterápiás kezelés közben' } },
         'A cél nem az, hogy nagy ígéretet tegyünk az első öt percben. A cél, hogy érthetően lásd, miért ezt a következő lépést javasoljuk.',
         'Ha szeretnéd előre megnézni, milyen egy kezelés:',
         { video: { src: 'oxygen/video-kezeles.jpg', alt: 'A kezelő a MOSAIC kezelőszobájában a fekvő vendég fejbőrével foglalkozik; lejátszás gomb a videó előképén', felirat: 'Így zajlik egy oxigénterápiás kezelés', link: '{videó_link}' } },
