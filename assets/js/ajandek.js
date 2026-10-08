@@ -185,7 +185,11 @@
     utanAllapot: tar.utan_allapot || null,
     atvetel: tar.atvetel === 'szemelyesen' ? 'szemelyesen' : 'otthon', // hogyan veszi at a kartyat (a fizetes elott valasztja)
     tervezo: ujTervezo(tar.tervezo),                                  // a mini szemelyre szabo adatai
-    fotoLehet: false                                                  // a szerver /beallitas jelzi: van-e foto-tarolo (KV)
+    fotoLehet: false,                                                 // a szerver /beallitas jelzi: van-e foto-tarolo (KV)
+    kedvBe: false,                                                    // a szerver /beallitas jelzi: van-e kedvezmenykod (10%)
+    kedv: null,                                                       // az ervenyesitett kedvezmenykod: { kod, szazalek } (a szerver ellenorizte)
+    kedvKod: typeof tar.kedv === 'string' ? tar.kedv.slice(0, 24) : '', // a mentett kod: betoltes utan a szerver ujra ellenorzi
+    kedvFolyamatban: false
   };
   // a variant-link (?variant=) a Gift Finder elovalasztasat is beallitja (a vevo kesobbi valasztasa felulirja)
   if (Q.has('variant') || oldalAlap.variant) S.finder = variant.gift_finder_preselect || null;
@@ -196,7 +200,7 @@
       v: 1, variant_id: S.variant.variant_id, termek: S.termek, finder: S.finder, urlap: S.urlap,
       attr: S.attr, pi: S.pi, cs: S.cs, rt: S.rt, csak_olvas: S.csakOlvas, fizetes_inditva: S.fizetesInditva,
       utan_allapot: S.utanAllapot, fizetve_ido: S.fizetveIdo,
-      atvetel: S.atvetel,
+      atvetel: S.atvetel, kedv: S.kedv ? S.kedv.kod : '',
       tervezo: { tema: S.tervezo.tema, idezet: S.tervezo.idezet, nev: S.tervezo.nev, fotoId: S.tervezo.fotoId, fotoPoz: S.tervezo.fotoPoz, kihagyva: S.tervezo.kihagyva }
     });
   }
@@ -651,12 +655,13 @@
     t.tartalom.filter(function (s) { return !/felhasználható/.test(s); }).forEach(function (sor) { lista.appendChild(listaSor(sor)); });
     lista.appendChild(h('li', null, ikonSpan(S.atvetel === 'otthon' ? 'mail' : 'store'), h('span', { text: S.atvetel === 'otthon' ? 'Kártya e-mailben' : 'Papír kártya a szalonban' })));
     $('ah-osszesito-forma').textContent = S.atvetel === 'otthon' ? 'Digitális ajándékkártya' : 'Átvétel a szalonban';
-    var ar = A.arSzoveg(t.ar_ft);
+    var ar = A.arSzoveg(fizetendoFt());
     $('ah-osszesito-ar').textContent = ar;
     $('ah-osszesito-fej-ar').textContent = ar;
     var atv = atvetelOpcio().cim;
     if (S.atvetel === 'otthon' && !S.tervezo.kihagyva) atv += ' (személyre szabott: ' + temaNev(S.tervezo.tema) + ')';
     $('ah-osszesito-atvetel').textContent = 'Átvétel: ' + atv;
+    kedvRender();
   }
 
   // ---------------------------------------------------------------- vendeg-videok (valodi testimonial videok, modalis lejatszo)
@@ -1089,7 +1094,107 @@
     // a szandek (termekvalasztas) pillanataban elore betoltjuk, hogy a checkout azonnal kesz legyen
     if (S.mod === 'elo' || S.mod === 'teszt') stripeBetolt().catch(function () { /* a checkoutban jelezzuk */ });
   }
-  function osszegFt() { var t = termek(S.termek); return t ? t.ar_ft : 0; }
+  // A FIZETENDO osszeg: a kartya ara, kedvezmenykoddal a szazalekkal csokkentve (egesz forintra kerekitve, ugyanugy, mint a szerveren: ajandek-kedvezmeny.js).
+  // A vegleges osszeget a szerver szamolja (a kod ujra ellenorzodik a /fizetes es az /atutalas hivasakor), ez csak a kijelzes es a fizetesi elem osszege.
+  function fizetendoFt() {
+    var t = termek(S.termek);
+    if (!t) return 0;
+    return S.kedv && S.kedv.szazalek > 0 ? Math.round(t.ar_ft * (100 - S.kedv.szazalek) / 100) : t.ar_ft;
+  }
+  function osszegFt() { return fizetendoFt(); }
+
+  // ---------------------------------------------------------------- kedvezmenykod (kuponkod) a vasarlasnal
+  // A doboz a Fizetes kartya tetejen nyilik: "Van kedvezménykódod?" -> kod + "Beváltom". A szerver (/kedvezmeny) ellenorzi; ervenyes kodnal az
+  // osszesito a fizetendo osszeget mutatja, a fizetesi elem (Stripe) osszege es a fizet-gomb is ezt kapja. A kartya erteke valtozatlan.
+  // a doboz markupja a HTML-ben van (foglalas/ajandek.html, lezeres-ajandekkartya.html, oxigen-ajandekkartya.html); az esemenyeket az init koti
+  function kedvBekot() {
+    var nyito = $('ah-kedv-nyito'), urlap = $('ah-kedv-urlap'), kodMezo = $('ah-kedv-kod'), gomb = $('ah-kedv-gomb');
+    if (!nyito || !urlap || !kodMezo || !gomb) return;
+    nyito.addEventListener('click', function () {
+      var nyitva = urlap.hidden;
+      urlap.hidden = !nyitva;
+      nyito.setAttribute('aria-expanded', nyitva ? 'true' : 'false');
+      if (nyitva) fokusz(kodMezo);
+    });
+    gomb.addEventListener('click', function () { kedvBevalt(kodMezo.value, false); });
+    // az Enter a kodmezoben a kodot valtja be (az urlap beküldése helyett)
+    kodMezo.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); kedvBevalt(kodMezo.value, false); } });
+    kodMezo.addEventListener('input', function () { hibaMezo('ah-kedvezmeny-hiba', ''); });
+  }
+  function kedvRender() {
+    var d = $('ah-kedv');
+    if (!d) return;
+    if (!S.kedvBe) { d.hidden = true; return; }
+    var t = termek(S.termek);
+    d.hidden = !t;
+    var kesz = uresit($('ah-kedv-kesz'));
+    var van = !!(S.kedv && t);
+    kesz.hidden = !van;
+    $('ah-kedv-nyito').hidden = van;
+    if (van) $('ah-kedv-urlap').hidden = true;
+    if (van) {
+      var le = h('button', { type: 'button', class: 'ah-link-gomb ah-kedv-le', text: 'Eltávolítás' });
+      le.addEventListener('click', kedvLe);
+      kesz.appendChild(h('div', { class: 'ah-kedv-sor-kesz' },
+        h('span', { class: 'ah-kedv-cimke' }, ikonSpan('check'), h('span', null, h('b', { text: S.kedv.kod }), ' · −' + S.kedv.szazalek + '%')),
+        le));
+      kesz.appendChild(h('p', { class: 'ah-kedv-ertek', text: 'A kártya értéke változatlan: ' + A.arSzoveg(t.ar_ft) + '. Kedvezmény: −' + A.arSzoveg(t.ar_ft - fizetendoFt()) + '.' }));
+    }
+    var gomb = $('ah-kedv-gomb');
+    gomb.disabled = !!S.kedvFolyamatban;
+    gomb.textContent = S.kedvFolyamatban ? 'Ellenőrizzük…' : 'Beváltom';
+    // fizetes kozben a doboz nem szerkesztheto
+    if (S.folyamatban || S.allapot === 'feldolgozas') d.setAttribute('inert', ''); else d.removeAttribute('inert');
+  }
+  function kedvFrissit() {
+    kedvRender();
+    var t = termek(S.termek);
+    if (t) {
+      var ar = A.arSzoveg(fizetendoFt());
+      if ($('ah-osszesito-ar')) $('ah-osszesito-ar').textContent = ar;
+      if ($('ah-osszesito-fej-ar')) $('ah-osszesito-fej-ar').textContent = ar;
+    }
+    fizModRender();
+    if (S.allapot === 'fizetes' || S.allapot === 'hiba') fizetesiElemInit();
+  }
+  function kedvBevalt(nyers, csendes) {
+    var kod = String(nyers || '').trim();
+    if (!S.kedvBe || !S.termek) return Promise.resolve();
+    if (!kod) { if (!csendes) hibaMezo('ah-kedvezmeny-hiba', 'Add meg a kedvezménykódot.'); return Promise.resolve(); }
+    S.kedvFolyamatban = true; kedvRender();
+    return api('kedvezmeny', { json: { kod: kod, termek: S.termek } }).then(function (v) {
+      S.kedvFolyamatban = false;
+      if (v.status === 200 && v.adat && v.adat.ok) {
+        S.kedv = { kod: v.adat.kod, szazalek: Number(v.adat.szazalek) || 0 };
+        S.kedvKod = S.kedv.kod;
+        hibaMezo('ah-kedvezmeny-hiba', '');
+      } else {
+        if (csendes) { S.kedv = null; S.kedvKod = ''; }   // a mentett kod mar nem ervenyes
+        else if (v.status === 429) hibaMezo('ah-kedvezmeny-hiba', 'Túl sok próbálkozás történt. Várj pár percet, és próbáld újra.');
+        else if (v.status === 200) hibaMezo('ah-kedvezmeny-hiba', 'Ez a kedvezménykód nem érvényes. Ellenőrizd a kódot.');
+        else hibaMezo('ah-kedvezmeny-hiba', 'Most nem sikerült ellenőrizni a kódot. Próbáld újra.');
+      }
+      ment();
+      kedvFrissit();
+    }).catch(function () {
+      S.kedvFolyamatban = false;
+      if (!csendes) hibaMezo('ah-kedvezmeny-hiba', 'Most nem sikerült ellenőrizni a kódot. Próbáld újra.');
+      kedvFrissit();
+    });
+  }
+  function kedvLe() {
+    S.kedv = null; S.kedvKod = '';
+    var k = $('ah-kedv-kod'); if (k) k.value = '';
+    hibaMezo('ah-kedvezmeny-hiba', '');
+    ment();
+    kedvFrissit();
+  }
+  // a szerver elutasitotta a kodot a /fizetes vagy az /atutalas hivasakor (pl. kikapcsoltak): a kedvezmeny elvesz, a vevo latja a hibat
+  function kedvElutasitva() {
+    S.kedv = null; S.kedvKod = '';
+    ment();
+    kedvFrissit();
+  }
 
   function fizetesiElemInit() {
     var t = termek(S.termek);
@@ -1101,7 +1206,7 @@
       return Promise.resolve();
     }
     return stripeBetolt().then(function (Stripe) {
-      var osszeg = t.ar_ft * 100; // a Stripe HUF-ot is ezredekben szamolja: forint x 100
+      var osszeg = fizetendoFt() * 100; // a Stripe HUF-ot is ezredekben szamolja: forint x 100 (kedvezmenykoddal a fizetendo osszeg)
       if (stripeAdapter.elements) {
         if (stripeAdapter.osszeg !== osszeg) { stripeAdapter.elements.update({ amount: osszeg }); stripeAdapter.osszeg = osszeg; }
         return;
@@ -1201,7 +1306,8 @@
       attr: attr,
       mer: merAdat(),
       atvetel: S.atvetel,
-      szemelyre: szemelyreMezok()
+      szemelyre: szemelyreMezok(),
+      kedvezmeny: S.kedv ? S.kedv.kod : undefined
     };
   }
   // A szerveroldali vasarlasmeres adatai a rendeleshez (PaymentIntent metadata): gbraid / wbraid az URL-bol.
@@ -1303,6 +1409,7 @@
       if (e && e.szerver && e.szerver.adat && e.szerver.adat.mezok) {
         S.folyamatban = false; allapotba('fizetes');
         var mz = e.szerver.adat.mezok;
+        if (mz.kedvezmeny) kedvElutasitva();
         var szHiba = Object.keys(mz).filter(function (k) { return k === 'foto' || k === 'atvetel' || k.indexOf('szemelyre') === 0; });
         if (szHiba.length) {
           if (mz.foto || mz['szemelyre.foto']) { S.tervezo.fotoId = null; ment(); }
@@ -1401,7 +1508,7 @@
     $('ah-atu-uzenet-mezo').hidden = !(at && S.atvetel === 'szemelyesen'); // otthon nyomtatott kartyanal az uzenet a szemelyre szabobol jon
     $('ah-biztonsag').hidden = at;
     $('ah-jogi-elo').textContent = at ? 'A megrendelés elküldésével' : 'A fizetés gombra kattintva';
-    var ar = t ? A.arSzoveg(t.ar_ft) : '';
+    var ar = t ? A.arSzoveg(fizetendoFt()) : '';
     $('ah-fizet-gomb').textContent = S.folyamatban
       ? (at ? 'Elküldjük a rendelésed…' : 'Feldolgozzuk a fizetésed…')
       : (at ? 'Rendelés elküldése — ' : 'Biztonságos fizetés — ') + ar;
@@ -1427,6 +1534,7 @@
     api('atutalas', { json: kerelem }).then(function (v) {
       if (v.status === 400 && v.adat && v.adat.mezok) {
         var m = v.adat.mezok, latszik = false;
+        if (m.kedvezmeny) kedvElutasitva();
         Object.keys(m).forEach(function (k) {
           var az = k.indexOf('ceges') === 0 ? 'ah-ceges-hiba' : 'ah-' + k + '-hiba';
           if ($(az)) { hibaMezo(az, m[k]); latszik = true; }
@@ -1630,6 +1738,7 @@
     S.pi = null; S.cs = null; S.rt = null; S.csakOlvas = false; S.fizetesInditva = null;
     S.rendeles = null; S.utanAllapot = null; S.fizetveIdo = 0; S.termek = null; S.folyamatban = false;
     S.atvetel = 'otthon'; S.tervezo = ujTervezo(null); fotoBeallit(null, null); fotoTarolasIr(null);
+    S.kedv = null; S.kedvKod = ''; kedvRender();
     // a kifizetett fizetoelem helyett ujat epitunk (tiszta kartyamezok)
     try { if (stripeAdapter.elem && stripeAdapter.elem.destroy) stripeAdapter.elem.destroy(); } catch (e) { /* nem baj */ }
     stripeAdapter.elem = null; stripeAdapter.elements = null; stripeAdapter.osszeg = null; S.elemKesz = false;
@@ -1829,6 +1938,7 @@
     vendegVideok();
     kezAblakBekot();
     if (KT) tervezoBekot();
+    kedvBekot();
   }
 
   // ---------------------------------------------------------------- inditas / visszaallitas
@@ -1840,6 +1950,7 @@
       if (!S.publikusKulcs) S.mod = 'nincs';
       S.azonnali = !!b.azonnali_kartya;
       S.fotoLehet = !!b.foto;
+      S.kedvBe = v.status === 200 && b.kedvezmeny === true;
       // a "TESZT MÓD" szalag alapból nem látszik (a tulajdonos kérése); csak a ?teszt=1 paraméterrel jelenik meg, a variáns-kapcsolóval együtt
       if (S.mod === 'teszt' && /(^|[?&])teszt=1(&|$)/.test(location.search)) {
         // teszt-modban a szalagon variant-kapcsolo is van (csak itt: az eles oldalon nincs): a link a ?variant= parametert allitja
@@ -1994,6 +2105,8 @@
       if (S.allapot === 'kivalasztva') { lepesekRender(); stripeElokeszit(); }
       if (S.allapot === 'tervezo') tervezoRender();
       if (S.allapot === 'fizetes' || S.allapot === 'hiba') fizetesiElemInit();
+      // a korabban beirt kedvezmenykod (sessionStorage): a szerver ujra ellenorzi, es csak utana ervenyes
+      if (S.kedvBe && S.kedvKod && S.termek && !S.utanAllapot) kedvBevalt(S.kedvKod, true); else kedvRender();
     });
     visszaallit();
     // tesztelhetoseg: csak olvasasra

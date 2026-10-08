@@ -56,7 +56,7 @@ test('Netlify-adapter: config.path, Request -> Response, process.env, nodemailer
   let v = await netlify.default(new Request('https://www.mosaicheadspa.hu/api/ajandek/beallitas'));
   assert.equal(v.status, 200);
   assert.equal(v.headers.get('cache-control'), 'no-store');
-  assert.deepEqual(await v.json(), { mod: 'teszt', publikus_kulcs: 'pk_test_mock_adapter', azonnali_kartya: false, foto: false });
+  assert.deepEqual(await v.json(), { mod: 'teszt', publikus_kulcs: 'pk_test_mock_adapter', azonnali_kartya: false, foto: false, kedvezmeny: true });
 
   v = await netlify.default(new Request('https://www.mosaicheadspa.hu/api/ajandek/fizetes', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rendeles({ osszeg: 1 })),

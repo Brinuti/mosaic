@@ -476,6 +476,20 @@
           <div class="ah-kartya ah-urlap-fizetes" id="ah-urlap-fizetes">
             <h3 class="ah-urlap-cim"><span class="ah-lepes-szam">3</span>Fizetés <span class="ah-urlap-biztonsag"><span class="ah-ikon" data-ikon="lock" aria-hidden="true"></span>Titkosított kapcsolat · Stripe</span></h3>
 
+            <!-- kedvezmenykod (kuponkod): a motor /kedvezmeny vegpontja ellenorzi; csak akkor latszik, ha a /beallitas kedvezmeny: true -->
+            <div class="ah-kedv" id="ah-kedv" hidden>
+              <button type="button" class="ah-kedv-nyito" id="ah-kedv-nyito" aria-expanded="false" aria-controls="ah-kedv-urlap">Van kedvezménykódod?</button>
+              <div class="ah-kedv-urlap" id="ah-kedv-urlap" hidden>
+                <label for="ah-kedv-kod">Kedvezménykód</label>
+                <div class="ah-kedv-sor">
+                  <input id="ah-kedv-kod" name="kedvezmenykod" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" aria-describedby="ah-kedvezmeny-hiba">
+                  <button type="button" class="ah-gomb ah-gomb-kor ah-kedv-gomb" id="ah-kedv-gomb">Beváltom</button>
+                </div>
+              </div>
+              <p class="ah-mezohiba" id="ah-kedvezmeny-hiba" role="alert" hidden></p>
+              <div class="ah-kedv-kesz" id="ah-kedv-kesz" hidden aria-live="polite"></div>
+            </div>
+
             <!-- fizetesi mod: kartya / digitalis tarca (Stripe) VAGY banki atutalas - egy helyen -->
             <div class="ah-fizmod" id="ah-fizmod" role="radiogroup" aria-label="Fizetési mód" hidden>
               <label class="ah-fizmod-opcio"><input type="radio" name="fizmod" value="kartya" checked><span class="ah-fizmod-szoveg"><strong>Bankkártya, Revolut, Google Pay</strong><small>Az ajándékkártyát azonnal küldjük</small></span></label>
