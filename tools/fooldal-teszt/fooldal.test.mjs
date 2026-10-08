@@ -82,20 +82,22 @@ describe('/ (főoldal)', () => {
     const { p, ctx } = await nyit();
     const idk = await p.$$eval('main > section', (l) => l.map((s) => s.id));
     assert.deepEqual(idk.slice(0, 5), ['hero', '', 'szolgaltatasok', 'elmenyek', 'ajandek']);
-    for (const id of ['vendegek', 'velemenyek', 'mit-kapsz', 'elemek', 'alapito', 'paros', 'fejbor', 'oxygeni', 'kezek', 'szalon', 'zaro', 'gyik', 'helyszin']) assert.ok(idk.includes(id), 'hiányzik a szekció: ' + id);
+    for (const id of ['vendegek', 'velemenyek', 'mit-kapsz', 'elemek', 'paros', 'fejbor', 'oxygeni', 'kezek', 'szalon', 'gyik', 'helyszin']) assert.ok(idk.includes(id), 'hiányzik a szekció: ' + id);
     // egy H2 szekciónként; a látványterv címei szó szerint
     const h2 = await p.$$eval('main h2', (l) => l.map((x) => x.textContent.replace(/\s+/g, ' ').trim()));
-    for (const c of ['Mit tehetünk érted?', 'Melyik HeadSpa élmény illik hozzád?', 'Inkább élményt ajándékoznál?', 'Ők már kipróbálták.', 'Gyakori Head Spa kérdések', 'Itt találsz meg minket']) assert.ok(h2.includes(c), 'hiányzik a cím: ' + c);
+    for (const c of ['Mire van szükséged?', 'Melyik HeadSpa élmény illik hozzád?', 'Inkább élményt ajándékoznál?', 'Ők már kipróbálták.', 'Gyakori Head Spa kérdések', 'Itt találsz meg minket']) assert.ok(h2.includes(c), 'hiányzik a cím: ' + c);
     await ctx.close();
   });
 
-  test('hero: ár, kedvezmény, két CTA és a beváltás-link a megfelelő helyekre mutat', async () => {
+  test('hero: videó (hanggombbal), ár, kedvezmény, két CTA; nincs Kolosy-felirat és beváltás-link', async () => {
     const { p, ctx } = await nyit();
     const hero = (await p.evaluate(() => document.querySelector('#hero').innerText)).replace(/\s+/g, ' ');
-    for (const s of ['MOSAIC · Budapest, Kolosy tér', 'Most 20% kedvezménnyel', '32 900 Ft', '26 900 Ft-tól', '50 perc HeadSpa + 30 perc hajszárítás', 'Szabad időpontok', 'Ajándékkártyát veszek', 'Már van ajándékkártyám → Beváltom']) assert.ok(hero.includes(s), 'hiányzik: ' + s);
+    assert.ok(await p.$('#hero video#hero-video[autoplay][muted]'), 'a hero a videót mutatja');
+    assert.ok(await p.$('#hero .hero-hang'), 'hiányzik a Hangot rá! gomb');
+    for (const s of ['Most 20% kedvezménnyel', '32 900 Ft', '26 900 Ft-tól', '50 perc HeadSpa + 30 perc hajszárítás', 'Szabad időpontok', 'Ajándékkártyát veszek']) assert.ok(hero.includes(s), 'hiányzik: ' + s);
+    for (const s of ['Kolosy', 'Beváltom']) assert.ok(!hero.includes(s), 'nem kell: ' + s);
     assert.equal(await p.getAttribute('#hero a[data-cta="hero-idopontok"]', 'href'), '/foglalo-motor?business=headspa');
     assert.equal(await p.getAttribute('#hero a[data-cta="hero-ajandekkartya"]', 'href'), '/headspa-ajandekkartya');
-    assert.equal(await p.getAttribute('#hero a[data-cta="hero-bevalt"]', 'href'), '/foglalo-motor?business=headspa&voucher=1');
     await ctx.close();
   });
 
@@ -123,7 +125,7 @@ describe('/ (főoldal)', () => {
   test('linkek: minden belső link létező oldalra mutat, a foglalás a közös foglaló-motorra, nincs közvetlen Salonic-link', async () => {
     const { p, ctx } = await nyit();
     const linkek = await p.$$eval('main a[href], .sticky-cta a[href]', (l) => l.map((a) => a.getAttribute('href')));
-    assert.ok(linkek.length >= 30, "sok link: " + linkek.length);
+    assert.ok(linkek.length >= 25, "sok link: " + linkek.length);
     for (const h of linkek) {
       if (h.startsWith('/')) assert.ok(belsoOldalVan(h), 'nem létező belső oldal: ' + h);
       else assert.match(h, /^(https:\/\/|tel:|mailto:|#)/, 'ismeretlen link: ' + h);
@@ -143,14 +145,14 @@ describe('/ (főoldal)', () => {
       assert.ok(fajlVan(k.poszter.replace(/^\//, '')), 'hiányzó poszter: ' + k.poszter);
       assert.equal(k.poszter, k.kep, 'a kártya képe a poszter');
     }
-    assert.equal(await p.locator('video').count(), 0, 'a videók csak kattintásra töltődnek (nincs <video> az oldalon)');
+    assert.equal(await p.locator('video:not(#hero-video)').count(), 0, 'a videók csak kattintásra töltődnek (a hero hátterén kívül nincs <video> az oldalon)');
     await p.locator('.japan-video [data-video]').click();
     const modal = p.locator('dialog.video-modal[open]');
     assert.equal(await modal.count(), 1);
     assert.equal(await modal.locator('video').getAttribute('src'), '/assets/video/fooldal-japan.mp4');
     await modal.locator('.video-modal-bezar').click();
     assert.equal(await p.locator('dialog.video-modal[open]').count(), 0);
-    assert.equal(await p.locator('video').count(), 0, 'bezárás után a videó eltávolítva');
+    assert.equal(await p.locator('video:not(#hero-video)').count(), 0, 'bezárás után a videó eltávolítva');
     // fekvő kártya: szélesebb ablak
     await p.locator('#elemek [data-fekvo]').first().click();
     assert.equal(await p.locator('dialog.video-modal.fekvo[open]').count(), 1);
@@ -213,7 +215,7 @@ describe('/ (főoldal)', () => {
     test(`${nev} (${szeles}px): nincs vízszintes görgetés, a hero szövege és képe nem lóg át, a fő szekciók látszanak`, async () => {
       const { p, ctx } = await nyit({ szeles });
       // a közös Wix-fejléc keskeny kijelzőn szélesebb lehet (ismert, nem az oldal hibája): csak a main tartalmát mérjük; a körhinták belső görgetősávja szándékosan szélesebb
-      const tul = await p.evaluate(() => [...document.querySelectorAll('main *')].filter((e) => !e.closest('.korhinta-sav') && !e.closest('.zaro-hatter, .paros-hatter') && e.getBoundingClientRect().right > innerWidth + 1).map((e) => e.className || e.tagName).slice(0, 5));
+      const tul = await p.evaluate(() => [...document.querySelectorAll('main *')].filter((e) => !e.closest('.korhinta-sav') && !e.closest('.paros-hatter') && e.getBoundingClientRect().right > innerWidth + 1).map((e) => e.className || e.tagName).slice(0, 5));
       assert.deepEqual(tul, [], 'a main tartalma kilóg a képernyőből');
       const h1 = await p.evaluate(() => { const r = document.querySelector('#hero h1').getBoundingClientRect(); return { l: r.left, r: r.right, w: innerWidth }; });
       assert.ok(h1.l >= 0 && h1.r <= h1.w, 'a H1 belefér a képernyőre');
@@ -223,7 +225,7 @@ describe('/ (főoldal)', () => {
       }
       if (szeles < 700) {
         // telefonon a hero képe felül van (a szöveg alatta), a bizalmi sáv 2x2
-        const poz = await p.evaluate(() => ({ kep: document.querySelector('.hero-hatter').getBoundingClientRect().top, szoveg: document.querySelector('.hero-felcim').getBoundingClientRect().top }));
+        const poz = await p.evaluate(() => ({ kep: document.querySelector('.hero-hatter').getBoundingClientRect().top, szoveg: document.querySelector('#hero h1').getBoundingClientRect().top }));
         assert.ok(poz.kep < poz.szoveg, 'a kép a szöveg felett');
         assert.equal(await p.$$eval('.bizalom-lista li', (l) => new Set(l.map((x) => Math.round(x.getBoundingClientRect().top))).size), 2, 'a bizalmi sáv 2 sorban');
       }
@@ -245,11 +247,11 @@ describe('/ (főoldal)', () => {
   test('a mostani főoldal tartalma megvan: a szövegek, árak, címek, nyitvatartás', async () => {
     const { p, ctx } = await nyit();
     const szoveg = (await p.evaluate(() => document.querySelector('main').innerText)).replace(/\s+/g, ' ').replace(/ /g, ' ');
-    for (const s of ['A Head Spa annyira ellazított, mint semmi más!', 'alvásnak ismert fel 16 percet', 'Mit kapsz egy 50 perces MOSAIC Head Spa szeánszon?', 'Milyen részekből áll egy HeadSpa kezelés?', 'Fejmasszázs eszközökkel', 'Kézmasszázs',
+    for (const s of ['Mit kapsz egy 50 + 30 perces MOSAIC Head Spa szeánszon?', 'Milyen részekből áll egy HeadSpa kezelés?', 'Fejmasszázs eszközökkel', 'Kézmasszázs',
       'Arcmasszázs', 'Mélytisztító hajmosás', 'Fejbőr masszírozó fésű', '20 ujjas fejmasszírozó', 'Arcroller', 'Hajmasszírozó körkefe', 'Nézd, mekkora élmény!', 'Páros Head Spa a MOSAIC-ban!',
       'A fejbőröd azt kapja, amire szüksége van!', 'A rendszeres Head Spa hatásai', 'Tapasztalt gyógymasszőrök kényeztetnek.', 'Csak tökéletes szárítással engedünk el!', '100%-ban organikus, vegán OXYGENI termékeket használunk',
-      'Ilyen gyönyörűen felújított szalonban várunk', 'A legszebb önmagad adjuk neked ajándékba.', 'A MOSAIC oázis a testednek és a lelkednek.', '1023 Budapest, Bécsi út 2.', '06 20 247 4444', 'mosaicheadspa@gmail.com',
-      'Hétfő – Péntek: 8:00 – 20:00', 'Szombat: 8:00 – 20:00', 'Vasárnap: zárva', 'SZÉP Kártyát is elfogadunk', 'Deák Ferenc István']) assert.ok(szoveg.includes(s), 'hiányzik: ' + s);
+      'Ilyen gyönyörűen felújított szalonban várunk', '1023 Budapest, Bécsi út 2.', '06 20 247 4444', 'mosaicheadspa@gmail.com',
+      'Hétfő – Péntek: 8:00 – 20:00', 'Szombat: 8:00 – 20:00', 'Vasárnap: zárva', 'SZÉP Kártyát is elfogadunk']) assert.ok(szoveg.includes(s), 'hiányzik: ' + s);
     await ctx.close();
   });
 });

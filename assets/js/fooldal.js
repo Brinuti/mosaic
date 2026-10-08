@@ -23,6 +23,30 @@
   const csokkentett = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const szam = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
+  // --- 0. hero-videó: némítva, magától indul (a régi főoldalon is); "Hangot rá!" gombra az elejéről, hanggal ---
+  (() => {
+    const v = $('hero-video');
+    if (!v) return;
+    const hatter = v.parentNode;
+    const g = elem('button', { type: 'button', class: 'hero-hang' });
+    const allit = () => {
+      g.setAttribute('aria-label', v.muted ? 'Hang bekapcsolása' : 'Hang kikapcsolása');
+      g.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/>' +
+        (v.muted ? '<path d="M16 9l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" fill="none"/>'
+          : '<path d="M16.5 12a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/>') +
+        '</svg><span>' + (v.muted ? 'Hangot rá!' : '') + '</span>';
+    };
+    g.addEventListener('click', () => {
+      if (v.muted) { v.muted = false; v.currentTime = 0; } else v.muted = true;
+      v.play().catch(() => {});
+      allit();
+      meres({ event: 'fooldal_video', video: 'hero-hang-' + (v.muted ? 'ki' : 'be') });
+    });
+    allit();
+    hatter.append(g);
+    v.play().catch(() => {}); // egyes telefonok csak kézzel indítják: ilyenkor marad a poszterkép
+  })();
+
   // --- 5. CTA-mérés + görgetés -------------------------------------------------------------------------------------------------------
   document.addEventListener('click', (e) => {
     const c = e.target.closest && e.target.closest('[data-cta]');
