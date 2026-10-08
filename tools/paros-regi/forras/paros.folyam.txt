@@ -1,0 +1,148 @@
+  134 H2     x195 w429 45px <b>Páros</b> Head Spa.<br> Éljétek át együtt az igazi relaxációt!
+  290 SZ     x195 w409 17px <b>50 + 30 perc exkluzív spa élmény közösen, amitől a testetek és a lelketek is újjászületik.</b>
+  337 SZ     x195 w409 15px <i>1023 Bécsi út 2 (A Kolosy térnél)</i>
+  368 GOMB   x195 w223 10px IDŐPONTFOGLALÁS  -> /foglalo-motor?business=headspa
+  434 GOMB   x195 w223 10px AJÁNDÉKKÁRTYA  -> /headspa-ajandekkartya
+  521 SZ     x202 w409 15px <i>50 perces - <b> ̶6̶5̶.̶9̶0̶0̶ ̶F̶t̶ helyett</b>  <b>53.800 Ft</b></i>
+  542 SZ     x202 w409 15px <i><b>Októberben 20% kedvezménnyel!</b></i>
+  571 SZ     x318 w240 17px Google 4,9/5 - 971 vélemény
+  810 KEP    x80 w472 h870 /assets/img/c2eb0f_68d6961f322c43ae9894aba0c01380a0.jpg  [alt: deak-ferenc-istvan-mosaic-headspa-paros-kezeles.jpg]
+  850 H1     x666 w592 40px center Az öröm megduplázódik, ha együtt élitek át.
+  956 SZ     x664 w583 20px center <b>A tökéletes közös élmény pároknak, barátoknak vagy családtagoknak! Fejbőr- és hajápolás, relaxáló masszázs és teljes testi-lelki feltöltődés vár rátok.</b>
+ 1093 SZ     x664 w583 16px center A Head Spa a legújabb trend, <b>hajápolás és relaxáció</b> ötvözete, ami Japánból jött be hozzánk. Több hazai és külföldi szalont végigjártam mielőtt megnyitottam a MOSAIC-ot, ahol mindenből a legjobbat kapjátok.
+ 1208 SZ     x664 w583 16px center A legtöbb Head Spa szalonnal ellentétben nálunk <b>gyógymasszőrök kényeztetnek majd titeket</b>, akiknek az érintése <b>minden stresszt </b>kiűz majd a testetekből.
+ 1294 SZ     x664 w583 16px center Az 270 m2-es szalont úgy terveztük meg, hogy <b>már a belépés is egy élmény legyen</b>. A <b>halk zene, a privát és csendes páros kezelő, a fényjáték, az illatok</b>, minden az ellazulást szolgálja.
+ 1410 SZ     x664 w583 16px center A Páros Head Spa ellazulás <b>csendben egymás mellett történik</b>, amit támogatunk szabadkézzel és eszközökkel történő <b>arc-, nyak-,fej-, és dekoltázsmasszázzsal, így egy egész testet átölelő kényeztetés kaptok.</b>
+ 1525 SZ     x664 w583 16px center Személyesen szeretnélek meghívni titeket a 1023 Bécsi út 2-be, a MOSAIC Head Spa-ba egy igazán pihentető és egyedi páros spa élményre!
+ 1611 SZ     x664 w583 16px center <i><b>Deák Ferenc István</b> - A MOSAIC Head Spa alapítója</i>
+ 1810 H1     x230 w980 40px center Így néz ki egy 50 + 30 perces Páros Head Spa 👇
+ 1887 KEP    x230 w568 h306 /assets/img/c2eb0f_3655b2f7e196464195c3e5f10c9644ba.jpg
+ 1887 KEP    x798 w568 h306 /assets/img/c2eb0f_c6d1cba9f3934f93baea0f60dfb2e027.jpg
+ 1887 SZ     x806 w404 17px Egy <b>csendes, privát és nyugodt</b> szobában lefekszetek egymás mellé a kényelmes masszázságyakba.
+ 1887 KEP    x1366 w568 h306 /assets/img/c2eb0f_886697b56ef8418192636f0a94c2e4c3.jpg
+ 1887 KEP    x4774 w568 h306 /assets/img/c2eb0f_0ad78e2b2f4d47b8bee188d5bac5a67b.jpg
+ 1958 SZ     x806 w404 17px A <b>cicaszőr puhaságú takaró</b> melegében ellazulva, speciális <b>mélytisztító hajmosást </b>kaptok az eredeti Head Spa aranyglóriával. Már ez egy igazi élmény.
+ 2054 SZ     x806 w404 17px <b>Gyógymasszőreink </b>a bőrtípusotoknak megfelelő 100%-ban naturál és <b>kemikália mentes haj- és arcpakolást </b>visznek fel, gyengéd és gyógyító mozdulatokkal a bőrötökre, amitől egyre nagyobb béke száll majd meg benneteket.
+ 2196 SZ     x806 w404 17px Következnek a további masszázsok<b> kézzel és eszközökkel, a gőzölés, a hidratálás, azaz 60 percen át tartó teljes kényeztetés a fejbőrnek és a testnek, ami újra segít visszatalálni önmagatokhoz</b>. És mindezt együtt élitek át, az összetartozás csendes és nyugodt légkörében a világ zaját teljesen kizárva.
+ 2340 SZ     x238 w559 14px center A Páros Head Spa a legnagyobb feltöltődés, amit még sokáig érezni fogtok.
+ 2537 KEP    x719 w721 h668 /assets/img/c2eb0f_aab3792d7e0247748ef77f3b0fea566a.jpg  [alt: fejbor-kamera.jpg]
+ 2568 H2     x117 w485 40px center A fejbőrötök azt kapja, amire szüksége van! 🔎
+ 2719 SZ     x119 w485 17px center A fejbőrrel kapcsolatos leggyakoribb problémák a következők:
+ 2767 SZ     x149 w454 17px left <b>Zsírosodás,</b>
+ 2790 SZ     x149 w454 17px left <b>Szárazság / Korpásodás,</b>
+ 2814 SZ     x149 w454 17px left <b>Hajhullás,</b>
+ 2838 SZ     x149 w454 17px left <b>Gyulladásos állapotok </b>(például seborrhea, pikkelysömör, ekcéma).
+ 2909 SZ     x119 w485 17px center Egy Head Spa kezelés az első három esetben <b>már 1 alkalom után javulást hozhat</b>, míg erősebben gyulladt fejbőr esetén érdemes először hajgyógyász szakorvos véleményét kikérni.
+ 3005 SZ     x119 w485 17px center A MOSAIC Head Spa élmény mikrokamerás fejbőrvizsgálattal kezdődik, amely során meghatározzuk <b>fejbőrötök állapotát.</b>
+ 3076 SZ     x119 w485 17px center Ez alapján állítjuk össze az egyéni igényeitekre szabott <b>haj- és arcpakolást, a legmegfelelőbb 100%-ban természetes hatóanyagokkal.</b>
+ 3255 H2     x230 w980 40px center Head Spa Csomagok és Árak
+ 3299 SZ     x576 w287 14px center <b>Októberi  <i>20% kedvezménnyel!</i></b>
+ 3359 SZ     x40 w1360 10px <b>50 perces MOSAIC  "4 Kezes" Head Spa kezelés</b> Exkluzív, új szolgáltatás 2026 januártól. A Headspa Kezelések csúcsa <b>2 gyógymasszőr kényeztet 8 féle masszázs</b> Profi, szalonszintű beszárítás Csak ajándékkártya készült + 30 perc kímélő hajszárítás <b>Ár: ̶4̶9̶.̶9̶0̶0̶ ̶F̶t̶ helyett 39.900 Ft</b> Időtartam: 50+30 perc <a href="/foglalo-motor?business=headspa">FOGLALOK! </a><b><i>20% </i> októberi  <i>kedvezménnyel!</i> 50 perces MOSAIC "Relax" Head Spa kezelés Masszázs fókuszú kezelés, ami tartalmaz hajápolási elemeket is.</b> Mélytisztító hajmosás Körvízsugaras terápia OXYGENI hajpakolás Fejmasszázs kézzel és eszközökkel Arctisztítás Arc tonizálás Arcmasszázs kézzel és választott eszközzel Nyak-, és vállöv masszázs Dekoltázs masszázs Gőz terápia Fény terápia + 30 perc kímélő hajszárítás <b>Ár: ̶3̶2̶.̶9̶0̶0̶ ̶F̶t̶ helyett  26.900 Ft</b> Időtartam: 50+30 perc <a href="/foglalo-motor?business=headspa">FOGLALOK! </a><b><i>20% </i> októberi  <i>kedvezménnyel!</i> 50 perces MOSAIC "Hair" Head Spa kezelés Hajápolás fókuszú kezelés, ami tartalmaz masszázs elemeket is. Hajkamerás diagnosztika és konzultáció</b> Mélytisztító hajmosás Körvízsugaras terápia OXYGENI hajpakolás <b>Fejmasszázs</b> Arctisztítás Arc tonizálás <b>Arcmasszázs eszközök nélkül</b> Nyak-, és vállöv masszázs Dekoltázs masszázs Gőz terápia Fény terápia + 30 perc kímélő hajszárítás <b>Ár:   ̶3̶2̶.̶9̶0̶0̶ ̶F̶t̶ helyett  26.900 Ft</b> Időtartam: 50+30 perc <a href="/foglalo-motor?business=headspa">FOGLALOK! </a><b><i>20% </i> októberi  <i>kedvezménnyel!</i> 50 perces MOSAIC Páros Head Spa kezelés</b> Mélytisztító hajmosás Körvízsugaras terápia OXYGENI hajpakolás fejmasszázzsal Arctisztítás <b>Arc radírozás</b> Arc tonizálás Arcmasszázs kézzel és választott eszközzel <b>Méregtelenítő arcpakolás</b> Nyak-, és vállöv masszázs Dekoltázs masszázs Gőz terápia <b>Pezsgő alkoholos/alkohol mentes</b> + 30 perc kímélő hajszárítás <b>Ár: ̶6̶5̶.̶9̶0̶0̶ ̶F̶t̶ helyett 53.800 Ft</b> Időtartam: 50+30 perc <a href="/foglalo-motor?business=headspa">FOGLALOK! </a><b><i>20% </i> októberi  <i>kedvezménnyel!</i></b>
+ 4631 H2     x845 w485 40px center 100%-ban organikus, vegán OXYGENI termékeket használunk 🌿
+ 4807 SZ     x831 w485 16px center <b>A hajkamerás vizsgálat eredményei alapján állítjuk össze azt a speciális pakolást, amely a fejbőrötök igényeihez legjobban illeszkedik.</b>
+ 4912 SZ     x831 w485 16px center Az OXYGENI a hajápolás és hajgyógyászat területén úttörő márka, amelynek termékei:
+ 4988 SZ     x860 w456 17px Kiváló minőségűek,
+ 5011 SZ     x860 w456 17px Állatkísérletektől mentesek,
+ 5035 SZ     x860 w456 17px Vegyszerektől mentesek,
+ 5059 SZ     x860 w456 17px Illatanyag- és színezékmentesek,
+ 5083 SZ     x860 w456 17px 100%-ban természetes összetevőkből készülnek,
+ 5107 SZ     x860 w456 17px Hatóanyagaik vegán forrásból, Svájcból és Olaszországból származnak,
+ 5154 SZ     x860 w456 17px Multifunkcionálisak, vagyis egyszerre ápolják a hajat és a fejbőrt.
+ 5273 KEP    x719 w721 h954 /assets/img/c2eb0f_28b6a0e799ce4ec88381b6b40e406fd6.jpg  [alt: gyogymasszorok.jpg]
+ 5310 H2     x118 w485 40px center Tapasztalt gyógymasszőrök kényeztetnek.💆‍♀️
+ 5455 SZ     x119 w485 17px A MOSAIC Páros Head Spa kezelése tökéletes választás pároknak, akik együtt szeretnének feltöltődni és egy különleges, mély relaxációs élményt átélni. Ez nem csupán egy spa kezelés – ez egy közös utazás a teljes ellazulás és harmónia felé.
+ 5597 SZ     x119 w485 17px <b>💆‍♂️ Közös kikapcsolódás </b>– Egy időben, egy helyen élhetitek át a teljes testi-lelki megújulást. Nem kell külön kezelésekre mennetek, itt együtt élvezhetitek a luxus pihenést.
+ 5693 SZ     x119 w485 17px <b>🌿 Érintés és harmónia</b> – Hiszünk abban, hogy az érintés gyógyító erejű. A szinkronban végzett masszázs és fejkezelés segít, hogy még jobban összehangolódjatok és mélyebb kötődést éljetek át.
+ 5812 SZ     x119 w485 17px <b>🛏 Privát, nyugodt környezet </b>– Tágas, exkluzív kezelőszobáinkban csak ti ketten vagytok, így zavartalanul élvezhetitek a relaxációt, távol a hétköznapi stressztől.
+ 5907 SZ     x119 w485 17px <b>🌊 Tökéletes testi-lelki feltöltődés </b>– A fejbőr regenerálása mellett a kezelés csökkenti a stresszt, enyhíti a fejfájást, javítja az alvásminőséget, és feltölt energiával.
+ 6002 SZ     x119 w485 17px <b>🎁 Ajándéknak is tökéletes</b> – Ha különleges alkalmat ünnepeltek, évfordulóra, születésnapra vagy akár csak egy romantikus meglepetésként is kiváló választás.
+ 6097 SZ     x119 w485 17px Engedjétek meg magatoknak ezt a különleges élményt, és tapasztaljátok meg együtt a MOSAIC páros Head Spa kezelés varázsát!
+ 6227 KEP    x0 w1440 h339 /assets/img/c2eb0f_8e2372842a084a6fbd5474e13de20ec4.jpg  [alt: DSC05674.jpg]
+ 6597 H2     x230 w980 40px center Lapozzátok végig a videókat! Ilyen elemekből áll egy Páros Head Spa a MOSAIC-ban!👇
+ 6731 SZ     x98 w297 16px center Egy MOSAIC Headspa szeánsz elemei 👇
+ 6770 KEP    x59 w320 h180 /assets/img/c2eb0f_a772c9222aa949a0888a4aa2298ef0b5f002.jpg%203x  [alt: Fejmasszázs eszközökkel]
+ 6770 KEP    x379 w320 h180 /assets/img/c2eb0f_a12ccd3c1d8741698774232c8bee7efdf002.jpg%203x  [alt: Kézmasszázs]
+ 6770 KEP    x699 w320 h180 /assets/img/c2eb0f_08e23fa612e846eca8137312513c1fecf002.jpg  [alt: Arcmasszázs]
+ 6770 KEP    x1019 w320 h180 /assets/img/c2eb0f_29c8623e64464bdb96b1d61fa5ed6556f002.jpg%203x  [alt: Mélytisztító hajmosás]
+ 6770 KEP    x1339 w320 h180 /assets/img/c2eb0f_225ee4f9b6164d3c858705c394f7d04ef002.jpg  [alt: Fejbőr masszírozó fésű]
+ 6770 KEP    x1659 w320 h180 /assets/img/c2eb0f_430fb9fbd2e744b08703615db12f4018f002.jpg%203x  [alt: 20 ujjas fejmasszírozó]
+ 6770 KEP    x1979 w320 h180 /assets/img/c2eb0f_bbb818fad4674d2097775970ca10c3d0f002.jpg%203x  [alt: Arcroller]
+ 6770 KEP    x2299 w320 h180 /assets/img/c2eb0f_4dd11049dc03482e8b6a169484d1b976f002.jpg%203x  [alt: Fajmasszírozó körkefe]
+ 6770 KEP    x2619 w320 h180 /assets/img/c2eb0f_c02456fd01664cb59eb593266e0a8279f002.jpg%203x  [alt: Nyakmasszázs]
+ 6770 KEP    x2939 w320 h180 /assets/img/c2eb0f_7eec543c5b944e89966b93b4649ed71af002.jpg%203x  [alt: Személyre kikevert hajpakolás]
+ 6770 KEP    x3259 w320 h180 /assets/img/c2eb0f_cefa94f02ca34e3388845e308afc24f7f002.jpg%203x  [alt: Dekoltázs masszázs]
+ 6770 KEP    x3579 w320 h180 /assets/img/c2eb0f_95f0e62128e946b98eff0a6adda4c14cf002.jpg%203x  [alt: Rózsakvarc fejbőrfésű]
+ 6770 KEP    x3899 w320 h180 /assets/img/c2eb0f_c68f720ea07c4cc6b19dd56b1ab51f35f002.jpg%203x  [alt: Körvízsugaras vízterápia]
+ 6770 KEP    x4219 w320 h180 /assets/img/c2eb0f_85f266a4010d40aba40c28ee4af9230ef002.jpg%203x  [alt: Rózsakvarc arcmasszírozás]
+ 6770 KEP    x4539 w320 h180 /assets/img/c2eb0f_4b543396abd34dcc92dfe594049c8a78f002.jpg%203x  [alt: Személyre kikevert arcpakolás]
+ 6926 SZ     x339 w30 12px 00:36
+ 6926 SZ     x659 w30 12px 00:38
+ 6926 SZ     x979 w30 12px 00:36
+ 6926 SZ     x1299 w30 12px 00:21
+ 6926 SZ     x1619 w30 12px 00:34
+ 6926 SZ     x1940 w29 12px 00:11
+ 6926 SZ     x2259 w30 12px 00:17
+ 6926 SZ     x2579 w30 12px 00:12
+ 6926 SZ     x2899 w30 12px 00:13
+ 6926 SZ     x3219 w30 12px 00:23
+ 6926 SZ     x3539 w30 12px 00:13
+ 6926 SZ     x3859 w30 12px 00:26
+ 6926 SZ     x4179 w30 12px 00:38
+ 6926 SZ     x4499 w30 12px 00:26
+ 6926 SZ     x4819 w30 12px 00:19
+ 6974 H3     x79 w280 14px left Fejmasszázs eszközökkel
+ 6974 H3     x399 w280 14px left Kézmasszázs
+ 6974 H3     x719 w280 14px left Arcmasszázs
+ 6974 H3     x1039 w280 14px left Mélytisztító hajmosás
+ 6974 H3     x1359 w280 14px left Fejbőr masszírozó fésű
+ 6974 H3     x1679 w280 14px left 20 ujjas fejmasszírozó
+ 6974 H3     x1999 w280 14px left Arcroller
+ 6974 H3     x2319 w280 14px left Fajmasszírozó körkefe
+ 6974 H3     x2639 w280 14px left Nyakmasszázs
+ 6974 H3     x2959 w280 14px left Személyre kikevert hajpakolás
+ 6974 H3     x3279 w280 14px left Dekoltázs masszázs
+ 6974 H3     x3599 w280 14px left Rózsakvarc fejbőrfésű
+ 6974 H3     x3919 w280 14px left Körvízsugaras vízterápia
+ 6974 H3     x4239 w280 14px left Rózsakvarc arcmasszírozás
+ 6974 H3     x4559 w280 14px left Személyre kikevert arcpakolás
+ 7168 KEP    x0 w721 h671 /assets/img/c2eb0f_296cd274d87347bd80bfa6c55bfc52dd.jpg  [alt: szaritas-mosaic.jpg]
+ 7205 H2     x839 w485 40px center Csak tökéletes szárítással engedünk el!
+ 7350 SZ     x840 w485 17px center A páros Head Spa kezelés során nemcsak a fejbőrötök és a hajatok kapja meg a legjobb törődést, de <b>egy tökéletes frizurát is kaptok!</b>
+ 7469 SZ     x840 w485 17px center A gyógymasszőrök gyengéd, pihentető érintése és a személyre szabott haj- és arckezelés után <b>profi, szalon szintű beszárítást kaptok.</b>
+ 7565 SZ     x840 w485 17px center A 60 perces páros Head Spa után, a +30 perces, kíméletes és professzionális hajszárítás – amely az ár részét képezi – gondoskodik róla, hogy az <b>élmény ne csak belül, hanem kívül is tökéletes legyen.</b>
+ 7684 SZ     x840 w485 17px center <b>Milyen szárítást kértek?</b> A teljes testi-lelki felfrissülés így nemcsak az érzéseitekben, hanem a selymesen puha, ragyogó hajatokon is tükröződni fog – együtt élhetitek át a luxus és harmónia legmagasabb szintjét!
+ 7989 H2     x224 w980 40px center Ilyen gyönyörűen felújított szalonban várunk👇
+ 8091 KEP    x230 w980 h536 /assets/img/c2eb0f_ac85eea74409484091e12f8d72fbee98.jpg
+ 8091 KEP    x1210 w980 h536 /assets/img/c2eb0f_aa3b2f8ec7564c87bf16836d7d3b29d6.jpg
+ 8091 KEP    x2190 w980 h536 /assets/img/c2eb0f_00a2f4bd0e9b4325b2d02e77edb874e9.jpg
+ 8091 KEP    x17870 w980 h536 /assets/img/c2eb0f_e9339a3f8c784c08839518f96a6cf19d.jpg
+ 8913 KEP    x80 w808 h362 /assets/img/c2eb0f_3603018cb350411cbd011ea589e25639.jpg  [alt: szepek.jpg]
+ 9089 H1     x664 w583 40px center SZÉP Kártyát is elfogadunk
+ 9148 SZ     x729 w465 17px center Most 20% kedvezménnyel - <b>53.800 forintért!</b>
+ 9196 GOMB   x844 w223 10px IDŐPONT FOGLALÁS  -> /foglalo-motor?business=headspa
+ 9359 KEP    x719 w721 h580 /assets/img/c2eb0f_5fad37708d0d465aa83ff2fcfe0628cf.webp  [alt: headspa_mockup.webp]
+ 9432 H2     x118 w485 40px center Ajándékkártya 1 perc alatt!
+ 9509 SZ     x115 w485 16px center Ajándékozd <b>Neki</b> a szebb haj örömét, a gondoskodásodat, és az érintés csodáját egy felejthetetlen Head Spa élmény formájában!
+ 9596 SZ     x115 w485 16px center Ajándékkártyánkat a vásárlás után digitális (pdf) formátumban e-mailben is elküldjük, illetve lehetőséged van azt ízléses borítékban, papír alapon is átvenni szalonunkban.
+ 9682 SZ     x115 w485 16px center <br> A vásárláshoz először válaszd ki, a fizetés módját:
+ 9786 GOMB   x117 w223 10px ELŐRE UTALÁSSAL  -> /headspa-ajandekkartya
+ 9786 GOMB   x380 w223 10px BANKKÁRTYÁVAL  -> /headspa-ajandekkartya
+ 9939 KEP    x0 w1440 h1274 /assets/img/nsplsh_38734f5a4a384a46305338.jpg  [alt: Image by Sora Sagano]
+10040 H2     x283 w907 40px center Gyakori Head Spa Kérdések<br>
+11213 KEP    x0 w1440 h870 /assets/img/11062b_c676302884b34e2eacc489eede7cbc47.jpg  [alt: Spa Salts and Stones]
+11293 H2     x258 w932 40px center Itt találtok meg minket
+11408 H3     x258 w247 26px Címünk
+11408 H3     x572 w257 26px Ahol elértek minket
+11408 H3     x887 w280 26px Nyitvatartásunk
+11455 SZ     x572 w257 16px 06 20 247 4444
+11458 SZ     x258 w247 16px 1023 Budapest Bécsi út 2.<br> A Kolosy és a Zsigmond tér között.
+11459 SZ     x887 w103 16px Hétfő - Péntek
+11459 SZ     x990 w200 16px 8:00 – 20:00
+11484 SZ     x572 w257 16px mosaicheadspa@gmail.com
+11487 SZ     x887 w95 16px Szombat
+11487 SZ     x990 w200 16px 8:00 – 20:00
+11515 SZ     x887 w95 16px Vasárnap
+11515 SZ     x990 w200 16px ZÁRVA
+11544 GOMB   x572 w223 10px IDŐPONTFOGLALÁS  -> /foglalo-motor?business=headspa
+11620 GOMB   x572 w223 10px AJÁNDÉKKÁRTYA  -> /headspa-ajandekkartya
+11703 IFRAME x234 w980 h350 https://www.google.com/maps?q=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202.&output=embed
