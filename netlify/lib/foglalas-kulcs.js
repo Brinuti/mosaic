@@ -706,6 +706,16 @@ export async function kezelEgyeztetes(request, env, deps = {}) {
     const fuggosegek = { fetchImpl: deps.fetchImpl || fetch, now: deps.now, nevtablaFrissito: deps.nevtablaFrissito };
     if (o.tipus === 'lemondas' || (typeof o.email_html === 'string' && emailElemzes(o.email_html).tipus === 'lemondas')) { // lemondasi ertesito: nincs UUID, kulcsot a nevtablabol kepez
       const r = await lemondasKezel(env.KULCS_DB, mezok, fuggosegek);
+      // ELETUT (DECISION #102): a lemondasi ertesito a kulcs birtokosanak foglalasat ELO ellenorzessel torolve talalta -> a foglalas "lemondva" eletut-allapota (Google RETRACTION). Csak
+      // MERES_ELOSZTO=1 + MERES_ELETUT=1 mellett; a hiba soha nem akadalyozza a kulcs felszabadulasat.
+      if (deps.eletutKuldo && String(env.MERES_ELOSZTO) === '1' && String(env.MERES_ELETUT) === '1') {
+        const ido = Date.parse(mezok.leveldatum || '');
+        for (const e of r.eredmenyek || []) {
+          if (e.elo_allapot !== 'torolve' || !e.tulajdonos) continue;
+          try { e.eletut = await deps.eletutKuldo({ db: env.KULCS_DB, env, source_id: e.tulajdonos, allapot: 'lemondva', forras: 'lemondasi_ertesito', ido: Number.isFinite(ido) ? Math.floor(ido / 1000) : null, fetchImpl: fuggosegek.fetchImpl, now: deps.now }); }
+          catch (x) { e.eletut = { allapot: 'hiba', miert: String(x && x.message || x).slice(0, 200) }; }
+        }
+      }
       return valasz(200, { ok: true, tipus: 'lemondas', ...r });
     }
     const r = await egyeztet(env.KULCS_DB, mezok, fuggosegek);

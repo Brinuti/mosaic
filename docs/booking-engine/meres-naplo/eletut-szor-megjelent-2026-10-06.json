@@ -1,0 +1,738 @@
+{
+ "nev": "szor-megjelent",
+ "bazis": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev",
+ "megjegyzes": "TESZT - Claude foglalas; nyelo mod: a kerelmek elkeszulnek es naplozodnak, de semerre nem mennek ki",
+ "lepesek": [
+  {
+   "ido": "2026-10-06T18:50:35.570Z",
+   "lepes": "foglalas letrehozva (Salonic, TESZT - Claude) + level -> /api/foglalas-egyeztetes",
+   "eset": "szor",
+   "salonic_uuid": "177b9d88-d6a6-694c-1953-db48e00de5d1",
+   "salonic_host": "mosaic-elysion.salonic.hu",
+   "booking_id": "mb_0mux1a06rcogfgne50w2wv5",
+   "kezdes_unix": 1792499400,
+   "egyeztetes": {
+    "allapot": "parositott",
+    "kuldheto": true,
+    "esemeny_kuldes": {
+     "allapot": "kesz",
+     "elo_allapot": "aktiv",
+     "jelleg": "konzultacio"
+    }
+   },
+   "lemondo_url_van": true
+  },
+  {
+   "ido": "2026-10-06T18:50:48.301Z",
+   "lepes": "TESZT-ELOKESZITES: a kezdesi ido a SAJAT elonezeti adatbazisban (mosaic-foglalas-kulcs-eletut) 90 perccel a multba tolva (kulcs 14586|32417|1791306493), mert a foglalas valojaban jovobeli; a Salonic-oldali allapot valtozatlan (aktiv)"
+  },
+  {
+   "ido": "2026-10-06T18:50:51.281Z",
+   "lepes": "POST /api/foglalas-eletut megjelent (kezdes utan, elysion host (szor))",
+   "kerelem": {
+    "uuid": "177b9d88-d6a6-694c-1953-db48e00de5d1",
+    "allapot": "megjelent",
+    "forras": "eletut-e2e"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "allapot": "kesz",
+    "source_id": "mb_0mux1a06rcogfgne50w2wv5",
+    "uzletag": "szor",
+    "eletut_allapot": "megjelent",
+    "elozo": null,
+    "elo_allapot": "aktiv",
+    "cellak": [
+     {
+      "platform": "meta",
+      "esemeny_id": "Megjelent:mb_0mux1a06rcogfgne50w2wv5",
+      "platform_nev": "Szor_Megjelent",
+      "allapot": "elkuldve",
+      "http_status": 200,
+      "kuldo": "nyelo"
+     },
+     {
+      "platform": "tiktok",
+      "esemeny_id": "Megjelent:mb_0mux1a06rcogfgne50w2wv5",
+      "platform_nev": "Szor_Megjelent",
+      "allapot": "elkuldve",
+      "http_status": 200,
+      "kuldo": "nyelo"
+     }
+    ]
+   }
+  },
+  {
+   "ido": "2026-10-06T18:50:53.058Z",
+   "lepes": "POST /api/foglalas-eletut megjelent (ismetles)",
+   "kerelem": {
+    "uuid": "177b9d88-d6a6-694c-1953-db48e00de5d1",
+    "allapot": "megjelent",
+    "forras": "eletut-e2e"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "allapot": "mar_kuldve",
+    "source_id": "mb_0mux1a06rcogfgne50w2wv5",
+    "uzletag": "szor",
+    "eletut_allapot": "megjelent",
+    "elozo": "megjelent",
+    "elo_allapot": "aktiv",
+    "cellak": [
+     {
+      "platform": "meta",
+      "esemeny_id": "Megjelent:mb_0mux1a06rcogfgne50w2wv5",
+      "platform_nev": "Szor_Megjelent",
+      "allapot": "elkuldve",
+      "indok": null,
+      "http_status": 200,
+      "duplikalt": true
+     },
+     {
+      "platform": "tiktok",
+      "esemeny_id": "Megjelent:mb_0mux1a06rcogfgne50w2wv5",
+      "platform_nev": "Szor_Megjelent",
+      "allapot": "elkuldve",
+      "indok": null,
+      "http_status": 200,
+      "duplikalt": true
+     }
+    ]
+   }
+  },
+  {
+   "ido": "2026-10-06T18:50:54.045Z",
+   "lepes": "naplo (vegso)",
+   "booking_id": "mb_0mux1a06rcogfgne50w2wv5",
+   "eletut": {
+    "ok": true,
+    "source_id": "mb_0mux1a06rcogfgne50w2wv5",
+    "allapot": {
+     "source_id": "mb_0mux1a06rcogfgne50w2wv5",
+     "uzletag": "szor",
+     "allapot": "megjelent",
+     "elozo": null,
+     "ido": 1791312649,
+     "forras": "eletut-e2e",
+     "osszeg_filler": null,
+     "visszateritett_filler": 0,
+     "frissitve": 1791312649
+    },
+    "naplo": [
+     {
+      "id": 21,
+      "source_id": "mb_0mux1a06rcogfgne50w2wv5",
+      "bejovo": "{\"allapot\":\"megjelent\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "kesz: meta=elkuldve, tiktok=elkuldve",
+      "allapot_elotte": null,
+      "allapot_utana": "megjelent",
+      "ido": 1791312649
+     },
+     {
+      "id": 22,
+      "source_id": "mb_0mux1a06rcogfgne50w2wv5",
+      "bejovo": "{\"allapot\":\"megjelent\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "mar_kuldve: meta=elkuldve, tiktok=elkuldve",
+      "allapot_elotte": "megjelent",
+      "allapot_utana": "megjelent",
+      "ido": 1791312652
+     }
+    ],
+    "kuldesek": [
+     {
+      "id": 48,
+      "esemeny_id": "Megjelent:mb_0mux1a06rcogfgne50w2wv5",
+      "esemeny_nev": "Szor_Megjelent",
+      "esemeny_tipus": "eletut",
+      "platform": "meta",
+      "platform_nev": "Szor_Megjelent",
+      "uzletag": "szor",
+      "source_id": "mb_0mux1a06rcogfgne50w2wv5",
+      "allapot": "elkuldve",
+      "indok": null,
+      "ertek": null,
+      "penznem": null,
+      "hozzajarulas": null,
+      "kerelem": {
+       "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+       "method": "POST",
+       "fejlec_nevek": [
+        "content-type"
+       ],
+       "cel": {
+        "dataset": "28616665324611098",
+        "nev": "MOSAIC ARNYEK meres-teszt",
+        "test_event_code": "TEST83939"
+       },
+       "body": {
+        "data": [
+         {
+          "event_name": "Szor_Megjelent",
+          "event_time": 1791312649,
+          "event_id": "Megjelent:mb_0mux1a06rcogfgne50w2wv5",
+          "action_source": "physical_store",
+          "user_data": {
+           "em": [
+            "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+           ],
+           "ph": [
+            "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+           ],
+           "external_id": [
+            "72bac1ba5c6809e957dec9b11004672f5888aaf7d71a12c67065b03ddf6854e2"
+           ],
+           "fbc": "fb.1.1791312610000.IwAR_TESZT_SZOR_MUX19XCY_FBCLID",
+           "fbp": "fb.1.1791307606000.7626839753"
+          },
+          "custom_data": {
+           "esemeny_tipus": "diagnosztika",
+           "eletut_allapot": "megjelent",
+           "order_id": "mb_0mux1a06rcogfgne50w2wv5",
+           "content_category": "szor"
+          }
+         }
+        ],
+        "test_event_code": "TEST83939",
+        "partner_agent": "mosaic-qa2-arnyek"
+       }
+      },
+      "http_status": 200,
+      "platform_valasz": "{\"nyelo\":true,\"megjegyzes\":\"NYELO MOD: a kerelem nem ment ki sehova (MERES_KULDES_MOD=nyelo)\"}",
+      "kuldo": "nyelo",
+      "probalkozas": 1,
+      "letrehozva": 1791312649,
+      "frissitve": 1791312649
+     },
+     {
+      "id": 49,
+      "esemeny_id": "Megjelent:mb_0mux1a06rcogfgne50w2wv5",
+      "esemeny_nev": "Szor_Megjelent",
+      "esemeny_tipus": "eletut",
+      "platform": "tiktok",
+      "platform_nev": "Szor_Megjelent",
+      "uzletag": "szor",
+      "source_id": "mb_0mux1a06rcogfgne50w2wv5",
+      "allapot": "elkuldve",
+      "indok": null,
+      "ertek": null,
+      "penznem": null,
+      "hozzajarulas": null,
+      "kerelem": {
+       "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+       "method": "POST",
+       "fejlec_nevek": [
+        "content-type",
+        "access-token"
+       ],
+       "cel": {
+        "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+        "nev": "MOSAIC ARNYEK meres-teszt",
+        "test_event_code": "TEST83543"
+       },
+       "body": {
+        "event_source": "web",
+        "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+        "test_event_code": "TEST83543",
+        "data": [
+         {
+          "event": "Szor_Megjelent",
+          "event_time": 1791312649,
+          "event_id": "Megjelent:mb_0mux1a06rcogfgne50w2wv5",
+          "user": {
+           "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+           "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+           "external_id": "72bac1ba5c6809e957dec9b11004672f5888aaf7d71a12c67065b03ddf6854e2",
+           "ttclid": "E.C.P.TESZT_SZOR_MUX19XCY_TTCLID",
+           "ttp": "TESZT_SZOR_MUX19XCY_ttp_jq658y38l2"
+          },
+          "properties": {
+           "order_id": "mb_0mux1a06rcogfgne50w2wv5",
+           "content_type": "product"
+          }
+         }
+        ]
+       }
+      },
+      "http_status": 200,
+      "platform_valasz": "{\"nyelo\":true,\"megjegyzes\":\"NYELO MOD: a kerelem nem ment ki sehova (MERES_KULDES_MOD=nyelo)\"}",
+      "kuldo": "nyelo",
+      "probalkozas": 1,
+      "letrehozva": 1791312649,
+      "frissitve": 1791312649
+     }
+    ]
+   },
+   "kuldesi_sorok": [
+    {
+     "esemeny_id": "Konzultacio:mb_0mux1a06rcogfgne50w2wv5",
+     "esemeny_nev": "Konzultacio",
+     "esemeny_tipus": "alap",
+     "platform": "meta",
+     "platform_nev": "Szor_Konzultacio",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 27000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "Szor_Konzultacio",
+         "event_time": 1791312568,
+         "event_id": "Konzultacio:mb_0mux1a06rcogfgne50w2wv5",
+         "action_source": "website",
+         "event_source_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/elysion-ok",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "72bac1ba5c6809e957dec9b11004672f5888aaf7d71a12c67065b03ddf6854e2"
+          ],
+          "client_ip_address": "160.79.106.134",
+          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "fbc": "fb.1.1791312610000.IwAR_TESZT_SZOR_MUX19XCY_FBCLID",
+          "fbp": "fb.1.1791307606000.7626839753"
+         },
+         "custom_data": {
+          "value": 27000,
+          "currency": "HUF",
+          "order_id": "mb_0mux1a06rcogfgne50w2wv5",
+          "content_name": "Ingyenes konzultáció zsófihoz!",
+          "content_category": "szor",
+          "esemeny_tipus": "alap",
+          "ertek_forras": "konzultacio_tabla",
+          "salonic_ar": 0,
+          "utm_source": "facebook",
+          "utm_campaign": "qa2_szor_utolso"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Konzultacio:mb_0mux1a06rcogfgne50w2wv5",
+     "esemeny_nev": "Konzultacio",
+     "esemeny_tipus": "alap",
+     "platform": "tiktok",
+     "platform_nev": "Szor_Konzultacio",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 27000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "Szor_Konzultacio",
+         "event_time": 1791312568,
+         "event_id": "Konzultacio:mb_0mux1a06rcogfgne50w2wv5",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "72bac1ba5c6809e957dec9b11004672f5888aaf7d71a12c67065b03ddf6854e2",
+          "ttclid": "E.C.P.TESZT_SZOR_MUX19XCY_TTCLID",
+          "ttp": "TESZT_SZOR_MUX19XCY_ttp_jq658y38l2",
+          "ip": "160.79.106.134",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+         },
+         "properties": {
+          "currency": "HUF",
+          "value": 27000,
+          "content_type": "product",
+          "contents": [
+           {
+            "content_id": "szor_konzultacio",
+            "content_name": "Ingyenes konzultáció zsófihoz!",
+            "quantity": 1,
+            "price": 27000
+           }
+          ],
+          "order_id": "mb_0mux1a06rcogfgne50w2wv5"
+         },
+         "page": {
+          "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/elysion-ok"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Konzultacio:mb_0mux1a06rcogfgne50w2wv5",
+     "esemeny_nev": "Konzultacio",
+     "esemeny_tipus": "alap",
+     "platform": "google",
+     "platform_nev": "ARNYEK-7825200910",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 27000,
+     "indok": null,
+     "kerelem": {
+      "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "customer_id": "6088874770",
+       "conversion_action_id": "7825200910",
+       "athidalas": "zapier-webhook"
+      },
+      "body": {
+       "conversion_action_id": "7825200910",
+       "wbraid": "CoMKCQ_TESZT_SZOR_MUX19XCY_WBRAID",
+       "conversion_date_time": "2026-10-06 20:49:28+02:00",
+       "value": 27000,
+       "currency": "HUF",
+       "order_id": "Konzultacio:mb_0mux1a06rcogfgne50w2wv5",
+       "ad_user_data": "DENIED"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Konzultacio:mb_0mux1a06rcogfgne50w2wv5",
+     "esemeny_nev": "Konzultacio",
+     "esemeny_tipus": "alap",
+     "platform": "ga4",
+     "platform_nev": "konzultacio",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 27000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://www.google-analytics.com/mp/collect?measurement_id=G-M5MLRLNQBP",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "measurement_id": "G-M5MLRLNQBP"
+      },
+      "body": {
+       "client_id": "294276264.1791226206",
+       "timestamp_micros": "1791312568000000",
+       "events": [
+        {
+         "name": "konzultacio",
+         "params": {
+          "session_id": "1791311406",
+          "engagement_time_msec": 1,
+          "value": 27000,
+          "currency": "HUF",
+          "esemeny_id": "Konzultacio:mb_0mux1a06rcogfgne50w2wv5",
+          "uzletag": "szor",
+          "ertek_forras": "konzultacio_tabla",
+          "salonic_ar": 0,
+          "source": "facebook",
+          "medium": "paid",
+          "campaign": "qa2_szor_utolso"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux1a06rcogfgne50w2wv5",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "meta",
+     "platform_nev": "Schedule",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 27000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "Schedule",
+         "event_time": 1791312568,
+         "event_id": "Schedule:mb_0mux1a06rcogfgne50w2wv5",
+         "action_source": "website",
+         "event_source_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/elysion-ok",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "72bac1ba5c6809e957dec9b11004672f5888aaf7d71a12c67065b03ddf6854e2"
+          ],
+          "client_ip_address": "160.79.106.134",
+          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "fbc": "fb.1.1791312610000.IwAR_TESZT_SZOR_MUX19XCY_FBCLID",
+          "fbp": "fb.1.1791307606000.7626839753"
+         },
+         "custom_data": {
+          "value": 27000,
+          "currency": "HUF",
+          "order_id": "mb_0mux1a06rcogfgne50w2wv5",
+          "content_name": "Ingyenes konzultáció zsófihoz!",
+          "content_category": "szor",
+          "esemeny_tipus": "ernyo",
+          "ertek_forras": "konzultacio_tabla",
+          "salonic_ar": 0,
+          "utm_source": "facebook",
+          "utm_campaign": "qa2_szor_utolso"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux1a06rcogfgne50w2wv5",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "tiktok",
+     "platform_nev": "Schedule",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 27000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "Schedule",
+         "event_time": 1791312568,
+         "event_id": "Schedule:mb_0mux1a06rcogfgne50w2wv5",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "72bac1ba5c6809e957dec9b11004672f5888aaf7d71a12c67065b03ddf6854e2",
+          "ttclid": "E.C.P.TESZT_SZOR_MUX19XCY_TTCLID",
+          "ttp": "TESZT_SZOR_MUX19XCY_ttp_jq658y38l2",
+          "ip": "160.79.106.134",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+         },
+         "properties": {
+          "currency": "HUF",
+          "value": 27000,
+          "content_type": "product",
+          "contents": [
+           {
+            "content_id": "szor_schedule",
+            "content_name": "Ingyenes konzultáció zsófihoz!",
+            "quantity": 1,
+            "price": 27000
+           }
+          ],
+          "order_id": "mb_0mux1a06rcogfgne50w2wv5"
+         },
+         "page": {
+          "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/elysion-ok"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux1a06rcogfgne50w2wv5",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "google",
+     "platform_nev": null,
+     "allapot": "kihagyva",
+     "http_status": null,
+     "kuldo": null,
+     "ertek": 27000,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+     "kerelem": null
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux1a06rcogfgne50w2wv5",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "ga4",
+     "platform_nev": null,
+     "allapot": "kihagyva",
+     "http_status": null,
+     "kuldo": null,
+     "ertek": 27000,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
+     "kerelem": null
+    },
+    {
+     "esemeny_id": "Megjelent:mb_0mux1a06rcogfgne50w2wv5",
+     "esemeny_nev": "Szor_Megjelent",
+     "esemeny_tipus": "eletut",
+     "platform": "meta",
+     "platform_nev": "Szor_Megjelent",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": null,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "Szor_Megjelent",
+         "event_time": 1791312649,
+         "event_id": "Megjelent:mb_0mux1a06rcogfgne50w2wv5",
+         "action_source": "physical_store",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "72bac1ba5c6809e957dec9b11004672f5888aaf7d71a12c67065b03ddf6854e2"
+          ],
+          "fbc": "fb.1.1791312610000.IwAR_TESZT_SZOR_MUX19XCY_FBCLID",
+          "fbp": "fb.1.1791307606000.7626839753"
+         },
+         "custom_data": {
+          "esemeny_tipus": "diagnosztika",
+          "eletut_allapot": "megjelent",
+          "order_id": "mb_0mux1a06rcogfgne50w2wv5",
+          "content_category": "szor"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Megjelent:mb_0mux1a06rcogfgne50w2wv5",
+     "esemeny_nev": "Szor_Megjelent",
+     "esemeny_tipus": "eletut",
+     "platform": "tiktok",
+     "platform_nev": "Szor_Megjelent",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": null,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "Szor_Megjelent",
+         "event_time": 1791312649,
+         "event_id": "Megjelent:mb_0mux1a06rcogfgne50w2wv5",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "72bac1ba5c6809e957dec9b11004672f5888aaf7d71a12c67065b03ddf6854e2",
+          "ttclid": "E.C.P.TESZT_SZOR_MUX19XCY_TTCLID",
+          "ttp": "TESZT_SZOR_MUX19XCY_ttp_jq658y38l2"
+         },
+         "properties": {
+          "order_id": "mb_0mux1a06rcogfgne50w2wv5",
+          "content_type": "product"
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "ido": "2026-10-06T18:51:07.690Z",
+   "lepes": "lemondas (Salonic lemondo link)",
+   "lemondas_ideje": "2026-10-06T18:50:54.198Z",
+   "eredmeny": "SIKERES: lemondás visszaigazolva",
+   "salonic_allapot": "LEMONDVA"
+  }
+ ]
+}

@@ -72,7 +72,7 @@ curl -X POST 'https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/fogl
 ## 3. Egyéb hívások (ugyanazzal a kulccsal)
 - `GET /api/foglalas-egyeztetes?uuid=<uuid>` – a párosítás állapota.
 - `GET /api/foglalas-egyeztetes?riasztas=1[&formatum=html]` – a párosítatlan / ellentmondó foglalások listája (a piros szalagos HTML riasztásnak).
-- `POST {"nevtabla":"frissit"[,"uzletag":"headspa"]}` – a név-tábla kényszerített frissítése (naponta egyszer elég).
+- `POST {"nevtabla":"frissit"[,"uzletag":"headspa"]}` – a név-tábla kényszerített frissítése (naponta egyszer elég). Az `uzletag` a **Salonic-adapter kulcsa**: `headspa` · `hair` · `oxygen` · `laser` · `pmu` (NEM a mérés üzletág-neve: `fodrasz` / `oxigen` / `szor` ismeretlen érték, `{"sorok":0,…}`-t ad; üzletág nélkül az összes fiók frissül).
 - Árnyék-napló és vészkapcsoló: `/api/meres-admin` (`GET ?source_id=<booking_id>`, `?kapcsolok=1`; `POST {"muvelet":"kapcsolo","platform":"meta","be":false}`) – ugyanazzal a kulccsal.
 
 ## Mit csinál a Zap, lépésenként

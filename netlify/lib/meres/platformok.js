@@ -41,8 +41,8 @@ function googleIdo(unix) { // "yyyy-mm-dd hh:mm:ss+02:00" (Europe/Budapest)
 }
 export { googleIdo };
 
-const egesz = (v) => Math.max(0, Math.round(Number(v) || 0));
-const tisztit = (o) => { for (const k of Object.keys(o)) { const v = o[k]; if (v === null || v === undefined || v === '' || (Array.isArray(v) && !v.length) || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) delete o[k]; } return o; };
+export const egesz = (v) => Math.max(0, Math.round(Number(v) || 0));
+export const tisztit = (o) => { for (const k of Object.keys(o)) { const v = o[k]; if (v === null || v === undefined || v === '' || (Array.isArray(v) && !v.length) || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) delete o[k]; } return o; };
 
 /**
  * ctx: { fk, erk (tisztitott erkezes), hash: { em, ph_meta, ph_e164, ext }, hozz (platformSzabaly eredmenye platformonkent), ua, ip, oldal, teszt: { meta, tiktok } }
@@ -131,12 +131,17 @@ const ZAPIER_HOOK_RE = /^(https:\/\/hooks\.zapier\.com\/hooks\/catch\/\d+\/[A-Za
  * -> { allapot: 'elkuldve' | 'hiba' | 'nincs_hitelesites', http_status, valasz (szoveg, max 2000), kuldo }
  */
 export async function kuldes(kerelem, env = {}, fetchImpl = fetch, ms = 8000) {
-  const titkos = { meta: env.META_CAPI_TOKEN, tiktok: env.TIKTOK_EVENTS_TOKEN, google: env.GOOGLE_ARNYEK_WEBHOOK_URL, ga4: env.GA4_TESZT_API_SECRET };
+  // NYELO MOD (MERES_KULDES_MOD=nyelo): a kerelem elkeszul es NAPLOZODIK (teljes torzzsel), de SEMERRE nem megy ki - nincs halozati hivas, nincs szukseg titokra. A kulon (nem a QA-3-ban
+  // vizsgalt) elonezet hasznalja, hogy a tesztek ne szennyezzek a kozos arnyek-celpontok (Meta / TikTok / GA4 / Google) szamlaloit.
+  if (env && env.MERES_KULDES_MOD === 'nyelo') return { allapot: 'elkuldve', http_status: 200, valasz: JSON.stringify({ nyelo: true, megjegyzes: 'NYELO MOD: a kerelem nem ment ki sehova (MERES_KULDES_MOD=nyelo)' }), kuldo: 'nyelo' };
+  // a Google-webhook neve kerelmenkent valaszthato (alapesemeny: GOOGLE_ARNYEK_WEBHOOK_URL; korrekcio / visszavonas: GOOGLE_KORREKCIO_WEBHOOK_URL)
+  const hookNev = kerelem.webhook_env || 'GOOGLE_ARNYEK_WEBHOOK_URL';
+  const titkos = { meta: env.META_CAPI_TOKEN, tiktok: env.TIKTOK_EVENTS_TOKEN, google: env[hookNev], ga4: env.GA4_TESZT_API_SECRET };
   if (!titkos[kerelem.platform]) return { allapot: 'nincs_hitelesites', http_status: null, valasz: null, kuldo: 'kozvetlen' };
   let url = kerelem.url; const fejlec = { 'content-type': 'application/json' };
   if (kerelem.platform === 'meta') url += '?access_token=' + encodeURIComponent(env.META_CAPI_TOKEN);
   if (kerelem.platform === 'tiktok') fejlec['access-token'] = env.TIKTOK_EVENTS_TOKEN;
-  if (kerelem.platform === 'google') { url = String(env.GOOGLE_ARNYEK_WEBHOOK_URL).trim(); if (!ZAPIER_HOOK_RE.test(url)) return { allapot: 'hiba', http_status: null, valasz: 'ervenytelen GOOGLE_ARNYEK_WEBHOOK_URL formatum', kuldo: 'zapier' }; }
+  if (kerelem.platform === 'google') { url = String(env[hookNev]).trim(); if (!ZAPIER_HOOK_RE.test(url)) return { allapot: 'hiba', http_status: null, valasz: 'ervenytelen ' + hookNev + ' formatum', kuldo: 'zapier' }; }
   if (kerelem.platform === 'ga4') url += '&api_secret=' + encodeURIComponent(env.GA4_TESZT_API_SECRET);
   const kuldo = kerelem.platform === 'google' ? 'zapier-webhook' : 'kozvetlen';
   const ab = new AbortController(); const t = setTimeout(() => ab.abort(), ms);

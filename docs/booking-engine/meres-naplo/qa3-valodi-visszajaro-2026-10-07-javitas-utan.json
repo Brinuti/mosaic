@@ -1,0 +1,117 @@
+{
+ "eset": "valodi-visszajaro",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07-javitas-utan",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T18:31:56.796Z",
+   "lepes": "eset: valodi-visszajaro",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  },
+  {
+   "ido": "2026-10-07T18:32:18.294Z",
+   "lepes": "nincs szimulalt level: az elo Zap sajat (valodi Salonic) levelet varjuk (legfeljebb 12 perc)"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "a Zap levele megerkezett es feldolgozodott (van alapesemeny sor)",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  },
+  {
+   "leiras": "alapesemeny: csak Visszajaro (a valodi Salonic-jelzes szerint nem uj vendeg), ernyo nincs",
+   "elvart": [
+    [
+     "Visszajaro"
+    ],
+    0
+   ],
+   "tenyleges": [
+    [
+     "Visszajaro"
+    ],
+    0
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "Meta / TikTok / GA4: kiment; Google: nem",
+   "elvart": [
+    1,
+    1,
+    1,
+    0
+   ],
+   "tenyleges": [
+    1,
+    1,
+    1,
+    0
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "Meta-nev",
+   "elvart": [
+    "HeadSpa_Visszajaro"
+   ],
+   "tenyleges": [
+    "HeadSpa_Visszajaro"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "nincs dupla (esemeny_id, platform)",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  }
+ ],
+ "szimulalt": [],
+ "booking_id": "mb_0muyg2i568qbmcz2ddia3ap",
+ "salonic_uuid": "94ec0116-1f05-3979-39da-3f97c313f593",
+ "esemeny_idk": {
+  "sorok": 4,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "Visszajaro:mb_0muyg2i568qbmcz2ddia3ap",
+     "nev": "HeadSpa_Visszajaro",
+     "ertek": 53800
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "Visszajaro:mb_0muyg2i568qbmcz2ddia3ap",
+     "nev": "HeadSpa_Visszajaro",
+     "ertek": 53800
+    }
+   ],
+   "google": [],
+   "ga4": [
+    {
+     "esemeny_id": "Visszajaro:mb_0muyg2i568qbmcz2ddia3ap",
+     "nev": "visszajaro",
+     "ertek": 53800
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Visszajaro:mb_0muyg2i568qbmcz2ddia3ap",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   }
+  ]
+ },
+ "zap_level_varakozas_mp": 127,
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}

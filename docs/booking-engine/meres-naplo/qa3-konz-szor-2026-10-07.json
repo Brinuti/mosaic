@@ -1,0 +1,126 @@
+{
+ "eset": "konz-szor",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T08:08:19.545Z",
+   "lepes": "eset: konz-szor",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "1. hivas: parositas + esemenyek (vagy az elo Zap mar elintezte: mar_kuldve)",
+   "elvart": "parositott + kesz | mar_kuldve",
+   "tenyleges": "parositott + kesz",
+   "ok": true
+  },
+  {
+   "leiras": "kuldott ertek (a szor konzultacio-ertek, HUF)",
+   "elvart": 27000,
+   "tenyleges": 27000,
+   "ok": true
+  },
+  {
+   "leiras": "az ernyo ugyanazzal az ertekkel",
+   "elvart": 27000,
+   "tenyleges": 27000,
+   "ok": true
+  },
+  {
+   "leiras": "Meta + TikTok: alap + ernyo; Google + GA4: csak az alap",
+   "elvart": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "tenyleges": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-nevek (Meta)",
+   "elvart": [
+    "Schedule",
+    "Szor_Konzultacio"
+   ],
+   "tenyleges": [
+    "Schedule",
+    "Szor_Konzultacio"
+   ],
+   "ok": true
+  }
+ ],
+ "szimulalt": [],
+ "booking_id": "mb_0muxtsit3pb08talbn8h8ae",
+ "salonic_uuid": "e2b69ce9-7e7c-a0ae-d114-d2f973e80d35",
+ "esemeny_idk": {
+  "sorok": 8,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "Konzultacio:mb_0muxtsit3pb08talbn8h8ae",
+     "nev": "Szor_Konzultacio",
+     "ertek": 27000
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muxtsit3pb08talbn8h8ae",
+     "nev": "Schedule",
+     "ertek": 27000
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "Konzultacio:mb_0muxtsit3pb08talbn8h8ae",
+     "nev": "Szor_Konzultacio",
+     "ertek": 27000
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muxtsit3pb08talbn8h8ae",
+     "nev": "Schedule",
+     "ertek": 27000
+    }
+   ],
+   "google": [
+    {
+     "esemeny_id": "Konzultacio:mb_0muxtsit3pb08talbn8h8ae",
+     "nev": "ARNYEK-7825200910",
+     "ertek": 27000
+    }
+   ],
+   "ga4": [
+    {
+     "esemeny_id": "Konzultacio:mb_0muxtsit3pb08talbn8h8ae",
+     "nev": "konzultacio",
+     "ertek": 27000
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Schedule:mb_0muxtsit3pb08talbn8h8ae",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   },
+   {
+    "esemeny_id": "Schedule:mb_0muxtsit3pb08talbn8h8ae",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}

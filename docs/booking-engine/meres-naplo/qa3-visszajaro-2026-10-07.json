@@ -1,0 +1,102 @@
+{
+ "eset": "visszajaro",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T08:06:49.082Z",
+   "lepes": "eset: visszajaro",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "jelleg",
+   "elvart": "visszajaro",
+   "tenyleges": "visszajaro",
+   "ok": true
+  },
+  {
+   "leiras": "csak alapesemeny (Visszajaro), ernyo nincs",
+   "elvart": [
+    "Visszajaro"
+   ],
+   "tenyleges": [
+    "Visszajaro"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "Meta / TikTok / GA4: kiment; Google: nem",
+   "elvart": [
+    1,
+    1,
+    1,
+    0
+   ],
+   "tenyleges": [
+    1,
+    1,
+    1,
+    0
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "Meta-nev",
+   "elvart": [
+    "HeadSpa_Visszajaro"
+   ],
+   "tenyleges": [
+    "HeadSpa_Visszajaro"
+   ],
+   "ok": true
+  }
+ ],
+ "szimulalt": [
+  "\"uj vendeg: nem\" jelzes a levelben (a TESZT-vendeg a Salonicban valoban nem uj; a jelzest a hivo adja)"
+ ],
+ "booking_id": "mb_0muxtqkzr34g2ixhsuk1jyg",
+ "salonic_uuid": "743c50fa-721a-342d-c0d2-1286a87886d5",
+ "esemeny_idk": {
+  "sorok": 4,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "Visszajaro:mb_0muxtqkzr34g2ixhsuk1jyg",
+     "nev": "HeadSpa_Visszajaro",
+     "ertek": 53800
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "Visszajaro:mb_0muxtqkzr34g2ixhsuk1jyg",
+     "nev": "HeadSpa_Visszajaro",
+     "ertek": 53800
+    }
+   ],
+   "google": [],
+   "ga4": [
+    {
+     "esemeny_id": "Visszajaro:mb_0muxtqkzr34g2ixhsuk1jyg",
+     "nev": "visszajaro",
+     "ertek": 53800
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Visszajaro:mb_0muxtqkzr34g2ixhsuk1jyg",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}

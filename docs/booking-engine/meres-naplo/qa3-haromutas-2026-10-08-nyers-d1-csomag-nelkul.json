@@ -1,0 +1,1324 @@
+{
+ "nap": "2026-10-08-nyers-d1-csomag-nelkul",
+ "ablak": {
+  "tol": "2026-10-07T20:20:00Z",
+  "ig": "2026-10-08T20:20:00Z"
+ },
+ "bemenet": {
+  "d1_sor": 19,
+  "gmail_uuid": 0,
+  "salonic_uuid": 0,
+  "controlled_lista": 76,
+  "other_lista": 10,
+  "probasav": 0
+ },
+ "osszesito": {
+  "CONTROLLED_TEST": 0,
+  "OTHER_TEST": 0,
+  "REAL": 0,
+  "UNKNOWN": 19
+ },
+ "real_szam": 0,
+ "other_test_bontas": {},
+ "matrix": {
+  "CONTROLLED_TEST": {
+   "SGD": 0,
+   "SG": 0,
+   "SD": 0,
+   "GD": 0,
+   "S": 0,
+   "G": 0,
+   "D": 0
+  },
+  "OTHER_TEST": {
+   "SGD": 0,
+   "SG": 0,
+   "SD": 0,
+   "GD": 0,
+   "S": 0,
+   "G": 0,
+   "D": 0
+  },
+  "REAL": {
+   "SGD": 0,
+   "SG": 0,
+   "SD": 0,
+   "GD": 0,
+   "S": 0,
+   "G": 0,
+   "D": 0
+  },
+  "UNKNOWN": {
+   "SGD": 0,
+   "SG": 0,
+   "SD": 0,
+   "GD": 0,
+   "S": 0,
+   "G": 0,
+   "D": 19
+  }
+ },
+ "felszabadult_kulcsok": 0,
+ "sorok": [
+  {
+   "uuid": "011d67f0-369d-2066-5ed5-ba766009df13",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "017aca46-492c-cc60-6b1c-4bb189ad266a",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "031d60e0-9bf0-06cf-de25-94ee741a4605",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "05bbaed6-c370-e5a8-14d4-9254cef0463c",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "075d79dc-a3c3-4dde-9691-d54e04204297",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "07bd87a8-c92b-13b1-3c19-f5cb25052851",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "107cd5e7-6220-74d7-137f-7ce974e37fa9",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "177b9d88-d6a6-694c-1953-db48e00de5d1",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "1b4afba0-6a6d-9bba-df33-64daf03b6fb0",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "1df8f5f0-2e45-d696-bcbd-b5b62be48ddc",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "1f732a8c-caf3-ec23-0019-2f4f62c6afd2",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "200d6dd2-d98c-3c6e-5eb7-2c000844b4f8",
+   "osztaly": "OTHER_TEST",
+   "alosztaly": "uuid-lista",
+   "okok": [
+    "lista:other"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "229d83ee-847d-1837-35ca-0e6846e5cdc2",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "26a22a06-5dde-3110-6483-d5f0b8e53516",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "2aae042b-7acf-30e2-017f-66febe61e2e3",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "2d9ae986-f259-4353-9e72-1ec358b6b695",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "2fc40b31-5aba-faab-8b79-adc5d8e9156e",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "3cc833a6-3cd6-44ed-ac52-aa47fd4f5e0a",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "3f27111c-8228-480a-539e-ecb2966c1108",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "3fe2929f-b782-82ad-34ca-9d6b37892659",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "417dacf8-a03b-a8ae-7c45-e71b9ea41d43",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "4200a348-b0fc-b89f-4160-93457b137466",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "4314829e-3742-9dd1-02b0-5aab5d97cdca",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "4457bc97-3a1a-471d-b446-b568d8408f5f",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "4a0685f7-0ccb-a891-f951-3de4df1915ed",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "4ddfdc09-a826-ef9d-69cb-5562c32443fa",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "57e7df2a-6d71-286f-a2aa-abf3d79e1d17",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "591c230e-7061-8c30-01d3-3c9fc8fa85d7",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "5a784724-399a-2c64-a88d-d189c675c88a",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "5ba42ba7-a77e-5e85-78c8-eb049c91330a",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "5d263a44-53bb-f333-f3d6-c6914c1ba093",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "5e1b39f0-3ce5-f627-9848-3969f2ba3ff9",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "70f847c3-1bf1-c078-3128-e8395c5243fd",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "743c50fa-721a-342d-c0d2-1286a87886d5",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "74c76e6b-fc51-7684-e188-887a5d28a4b0",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "758a285e-1748-9a0f-006a-486d051244a7",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "7966da9b-fed8-1ba3-7fe5-d46a2dc740d5",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "798eb274-45bb-ac75-06a7-8cef7c3807ea",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "7ca4ac9d-cae9-70c7-c886-ab832f000679",
+   "osztaly": "OTHER_TEST",
+   "alosztaly": "uuid-lista",
+   "okok": [
+    "lista:other"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "7d997f42-3644-c9d9-513a-edc79d8f7224",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "7e6ee1ee-3f86-1f03-01a7-ec26545e6905",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "8659064f-521f-8742-e023-adf9b2855c91",
+   "osztaly": "OTHER_TEST",
+   "alosztaly": "uuid-lista",
+   "okok": [
+    "lista:other"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "8a43e95a-c9cb-54ff-43e8-2f05c6e78694",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "8d939bdb-9e8a-362f-1fe0-e7b299970ecd",
+   "osztaly": "OTHER_TEST",
+   "alosztaly": "uuid-lista",
+   "okok": [
+    "lista:other"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "8daa568f-d564-15b8-758a-7171603886b5",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "94ec0116-1f05-3979-39da-3f97c313f593",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "99edec7b-4230-b808-1382-cf42ba202b53",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "9a201674-83cf-8a1c-1e4b-e7d932b88e3b",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "9a464b7f-3651-d270-52fe-4d4e705e818c",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "a232a61f-0c0a-5aff-aba1-d6cf38ba0b80",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "a236611b-484b-4688-af9a-f842f2341f99",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "a4f63cdf-b163-5310-e68a-fd1241590604",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "a5ff5bdd-4201-d45b-1c9e-2e16f00e6dca",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "a61035c1-37b3-324b-6654-f589d5ccf7d4",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "a611d5a2-fa5f-8a50-309e-c762cf02d037",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "a6eb41d2-4bb6-bd99-ead6-dff8c518a87b",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "a6fd2f34-4b2e-c51d-038f-4177b8f98d56",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "a736b1a2-bc92-1cfb-bdf7-01b8098d1a4c",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "a7b6d991-1984-4f7c-b68f-838367b3a9c1",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "a80eb74b-8218-eccc-3bc5-ddf3ec9f80a0",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "a82cb39c-7f34-e940-2caf-4fe09582acf9",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "ab2e46ff-4039-4d0e-b570-bc97bd56348e",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "ae23b0d3-c351-7a17-6f23-1c155bbd2056",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "afad1ce5-ef86-625e-9a43-561be8286783",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "b10a9aa2-91f1-8e8d-1672-bad1a9b456ae",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "b2cd14a0-ddce-9895-970b-d7b38de81efe",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "b3b43d18-3be8-de23-a701-1005f708ecf9",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "b4fd7c36-c8e6-f219-d1fb-6fa1e6982de7",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "b5e746b0-08cd-8981-7890-ab87c14aa83e",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "b66a5e19-7d85-fcaf-06d0-f9a263cedf4d",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "bb041f31-9be2-fb93-5f67-e44e6c908bef",
+   "osztaly": "OTHER_TEST",
+   "alosztaly": "uuid-lista",
+   "okok": [
+    "lista:other"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "bc587fd2-5e25-d90f-5b69-0f3d45a44ba3",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "bd3f6ddf-f0f4-f338-6174-320062fc527b",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "c3c7ed02-ded7-a432-6a73-3ac261e0f5df",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "c51a3121-3490-4421-ac3e-89ea5a8a63c1",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "c6df078a-57b1-b087-dc9d-16c004d1e3d5",
+   "osztaly": "OTHER_TEST",
+   "alosztaly": "uuid-lista",
+   "okok": [
+    "lista:other"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "c72368ea-cdaf-375f-cbdf-aff391a294dc",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "c7957610-af8e-2e70-cf08-7eb664dd4e46",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "cb431d26-bd99-94e6-f611-f9e550f66180",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "cfc95e2c-f58c-f067-5cb0-8d14f5d88243",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "d2759497-31bd-9ef8-4f9a-5ae4c1ab0a14",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "d30de704-ec3e-1724-8ba5-8950ded745f5",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "d579f9a8-9e96-6f5d-4641-470fd3eec28b",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "d7d8cba7-a17d-8406-3643-9a95c93719ac",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "d91f1123-dd5d-b2c2-d096-f33bc5e22ad0",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "db025f4d-f84e-eef0-d8c4-5b41d74944cf",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "dcd01488-8fb3-a694-5ef1-a6f443631b32",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "ddc833b4-21a0-355b-6ae8-73dcfef531d7",
+   "osztaly": "OTHER_TEST",
+   "alosztaly": "uuid-lista",
+   "okok": [
+    "lista:other"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "de5f99a0-055a-15dc-24f7-94c16b3191af",
+   "osztaly": "OTHER_TEST",
+   "alosztaly": "uuid-lista",
+   "okok": [
+    "lista:other"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "df06e6dc-53f3-548b-1a98-873cdd61573c",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "df378437-eb11-eca6-d6ca-84b96173f833",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "e07b1265-490f-1aca-106b-ec6f20c04e99",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "e2b69ce9-7e7c-a0ae-d114-d2f973e80d35",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "e3073484-70f2-db67-825c-1d0c0afdc3dc",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "e82fd24f-d445-4ed0-8851-e46c5fd4c51d",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "eed25ef2-54c1-4b4b-87dd-dbbeda3689be",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "f06b1498-f36b-407f-1826-dcc06ff74250",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "f0eaa775-e80a-81a1-9ee5-01108bf73a57",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "f84cabb7-f862-bf3a-a0f7-063ebe0d512d",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "f8980edf-7b35-abec-7be0-925d6a5cd37b",
+   "osztaly": "OTHER_TEST",
+   "alosztaly": "uuid-lista",
+   "okok": [
+    "lista:other"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "fc70da25-448d-ddfb-c7f3-9ef917d73f59",
+   "osztaly": "CONTROLLED_TEST",
+   "alosztaly": "futtato-lista",
+   "okok": [
+    "lista:controlled"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  },
+  {
+   "uuid": "fdf76f46-f4b6-17b3-476f-8020ab9760c9",
+   "osztaly": "UNKNOWN",
+   "alosztaly": null,
+   "okok": [
+    "nincs-gmail-adat"
+   ],
+   "labak": "D",
+   "salonic": null,
+   "d1_allapot": "parositatlan",
+   "d1_kuldesi_sorok": 0
+  },
+  {
+   "uuid": "ffce57f3-4c86-e3c9-e393-b302a6c91012",
+   "osztaly": "OTHER_TEST",
+   "alosztaly": "uuid-lista",
+   "okok": [
+    "lista:other"
+   ],
+   "labak": "",
+   "salonic": null,
+   "d1_allapot": null,
+   "d1_kuldesi_sorok": null
+  }
+ ]
+}

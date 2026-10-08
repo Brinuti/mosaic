@@ -9,9 +9,12 @@
 import { kezelEgyeztetes, nevtablaSalonicbol } from '../../netlify/lib/foglalas-kulcs.js';
 import { createSalonicAdapter } from '../../assets/js/booking-engine/salonic-adapter.js';
 import { foglalasEsemenyKuldes } from '../../netlify/lib/meres/foglalas-esemeny.js';
+import { eletutFeldolgoz } from '../../netlify/lib/meres/eletut.js';
 
 export const onRequest = (context) => kezelEgyeztetes(context.request, context.env, {
   esemenyKuldo: foglalasEsemenyKuldes, // QA-2 ARNYEK: csak MERES_ELOSZTO=1 mellett fut (alapbol ki)
+  // ELETUT (DECISION #102): a lemondasi ertesito a kulcs birtokosanak foglalasat ELO ellenorzessel torolve talalta -> "lemondva" eletut-allapot (Google RETRACTION); csak MERES_ELETUT=1 mellett, a hiba nem akaszt meg semmit
+  eletutKuldo: ({ db, env, source_id, allapot, ido, forras, fetchImpl, now }) => eletutFeldolgoz(db, { source_id, allapot, ido, forras }, { env, fetchImpl, now, eloEllenorzes: async () => 'torolve' }),
   // uzletag nelkul az osszes fiok, uzletaggal csak az (celzott ujraepites ismeretlen nev miatt)
   nevtablaFrissito: (uzletag) => nevtablaSalonicbol({ fetchImpl: fetch, adapterGyar: createSalonicAdapter, uzletagok: uzletag ? [uzletag] : undefined }),
 });

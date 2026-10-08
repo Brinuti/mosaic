@@ -1,0 +1,157 @@
+{
+ "eset": "lemondas-utana",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T08:05:57.509Z",
+   "lepes": "eset: lemondas-utana",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  },
+  {
+   "ido": "2026-10-07T08:06:47.031Z",
+   "lepes": "lemondasi ertesito",
+   "allapot": "lemondas",
+   "eredmenyek": [
+    {
+     "eredmeny": "felszabadult",
+     "elo_allapot": "torolve"
+    }
+   ]
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "1. hivas: parositas + esemenyek (vagy az elo Zap mar elintezte: mar_kuldve)",
+   "elvart": "parositott + kesz | mar_kuldve",
+   "tenyleges": "parositott + kesz",
+   "ok": true
+  },
+  {
+   "leiras": "a lemondas ELOTT kimentek az esemenyek (PMU: Meta 2 + TikTok 2 + Google 1 + GA4 1)",
+   "elvart": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "tenyleges": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "Salonic-allapot a lemondas utan",
+   "elvart": "LEMONDVA",
+   "tenyleges": "LEMONDVA",
+   "ok": true
+  },
+  {
+   "leiras": "a lemondasi ertesito felismerte a lemondast",
+   "elvart": "lemondas",
+   "tenyleges": "lemondas",
+   "ok": true
+  },
+  {
+   "leiras": "a level ismetlese a lemondas utan: nincs uj kuldes",
+   "elvart": "mar_kuldve",
+   "tenyleges": "mar_kuldve",
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-sorok a lemondas es az ertesito utan valtozatlanok (nincs hamis / uj esemeny)",
+   "elvart": 8,
+   "tenyleges": 8,
+   "ok": true
+  },
+  {
+   "leiras": "#128-on nincs Google-visszavonas (az eletut-esemenyek az #138-ban): nincs \"Visszavonas\" / \"eletut\" sor",
+   "elvart": false,
+   "tenyleges": false,
+   "ok": true
+  }
+ ],
+ "szimulalt": [],
+ "booking_id": "mb_0muxtpjt2rxfh24ke4gbynb",
+ "salonic_uuid": "b2cd14a0-ddce-9895-970b-d7b38de81efe",
+ "lemondasi_ertesito_valasz": {
+  "allapot": "lemondas",
+  "eredmenyek": [
+   {
+    "kulcs": "14585|32428|1793466000",
+    "tulajdonos": "mb_0muxtpjt2rxfh24ke4gbynb",
+    "tulajdonos_uuid": "b2cd14a0-ddce-9895-970b-d7b38de81efe",
+    "elo_allapot": "torolve",
+    "eredmeny": "felszabadult",
+    "atadva": null,
+    "varakozo_jeloltek": 0
+   }
+  ]
+ },
+ "esemeny_idk": {
+  "sorok": 8,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtpjt2rxfh24ke4gbynb",
+     "nev": "PMU_FoglalasElso",
+     "ertek": 99000
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muxtpjt2rxfh24ke4gbynb",
+     "nev": "Schedule",
+     "ertek": 99000
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtpjt2rxfh24ke4gbynb",
+     "nev": "PMU_FoglalasElso",
+     "ertek": 99000
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muxtpjt2rxfh24ke4gbynb",
+     "nev": "Schedule",
+     "ertek": 99000
+    }
+   ],
+   "google": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtpjt2rxfh24ke4gbynb",
+     "nev": "ARNYEK-7825200913",
+     "ertek": 99000
+    }
+   ],
+   "ga4": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtpjt2rxfh24ke4gbynb",
+     "nev": "foglalas_elso",
+     "ertek": 99000
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Schedule:mb_0muxtpjt2rxfh24ke4gbynb",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   },
+   {
+    "esemeny_id": "Schedule:mb_0muxtpjt2rxfh24ke4gbynb",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}

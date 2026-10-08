@@ -633,3 +633,22 @@ test('/api/foglalas-egyeztetes: a torzs felso hatara 256 KB (egy teljes level-HT
   assert.notEqual((await post(JSON.stringify({ email_html: 'x'.repeat(120000) }))).status, 413, '120 KB level-HTML elfogadott');
   assert.equal((await post(JSON.stringify({ email_html: 'x'.repeat(300000) }))).status, 413);
 });
+test('ELETUT-horog (DECISION #102): a lemondasi ertesito, ha a kulcs birtokosanak foglalasa ELO ellenorzessel torolve -> az eletutKuldo a birtokos booking_id-jara "lemondva" allapottal hivodik (csak MERES_ELOSZTO + MERES_ELETUT mellett; a hiba nem akasztja a felszabadulast)', async () => {
+  const HID = 'mb_0muwquipszezqbdrx782d6m', HUUID = '5a784724-399a-2c64-a88d-d189c675c88a';
+  const felallit = async () => { // minden forgatokonyv friss allapotbol indul (az elso lemondasi ertesito felszabaditja a kulcsot)
+    const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch }; const t = ora(Date.UTC(2026, 9, 6, 13, 58, 27)); await nevtablaMent(adb, tablaHeadspa(), t());
+    await kulcsIras(adb, { bookingId: HID, bookingUrl: 'https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793457000&back=' + HID }, t());
+    const e = emailElemzes(fx('kulcs-email-headspa-en.html'));
+    await egyeztet(adb, { uuid: e.uuid, host: e.host, felado: e.felado, szolgaltatas: e.szolgaltatas, idopontSzoveg: e.idopontSzoveg, munkatarsak: e.munkatarsak, ld: e.ld, leveldatum: '2026-10-06T13:58:24Z' }, { fetchImpl: eloFetch({ [HUUID]: 'torolve' }), now: t });
+    return { adb, t, E: { KULCS_DB: adb, EGYEZTETES_KULCS_HASH: crypto.createHash('sha256').update(KULCS_SZOVEG).digest('hex'), MERES_ELOSZTO: '1', MERES_ELETUT: '1' } };
+  };
+  const post = ({ E, t }, env, deps) => kezelEgyeztetes(new Request('https://x.pages.dev/api/foglalas-egyeztetes', { method: 'POST', headers: { 'x-egyeztetes-kulcs': KULCS_SZOVEG }, body: JSON.stringify({ email_html: fx('kulcs-lemondas-headspa-en.html'), level_datuma: '2026-10-06T14:02:04Z' }) }), env || E, { fetchImpl: eloFetch({ [HUUID]: 'torolve' }), now: t, ...deps });
+  const hivasok = []; const kuldo = async (a) => { hivasok.push(a); return { allapot: 'kesz' }; };
+  const A = await felallit(); const j = await (await post(A, null, { eletutKuldo: kuldo })).json();
+  assert.equal(hivasok.length, 1); assert.deepEqual([hivasok[0].source_id, hivasok[0].allapot, hivasok[0].forras, hivasok[0].ido], [HID, 'lemondva', 'lemondasi_ertesito', Math.floor(Date.UTC(2026, 9, 6, 14, 2, 4) / 1000)]);
+  assert.deepEqual([j.eredmenyek[0].eredmeny, j.eredmenyek[0].eletut], ['felszabadult', { allapot: 'kesz' }]);
+  hivasok.length = 0; const B = await felallit();
+  await post(B, { ...B.E, MERES_ELETUT: '0' }, { eletutKuldo: kuldo }); assert.equal(hivasok.length, 0, 'MERES_ELETUT nelkul nincs horog');
+  const C = await felallit(); const hiba = await (await post(C, null, { eletutKuldo: async () => { throw new Error('boom'); } })).json();
+  assert.deepEqual([hiba.ok, hiba.eredmenyek[0].eredmeny, hiba.eredmenyek[0].eletut.allapot], [true, 'felszabadult', 'hiba'], 'a hiba nem akasztja meg a felszabadulast');
+});

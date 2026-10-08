@@ -1,0 +1,149 @@
+{
+ "eset": "dupla-level-eltero-jelzes",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07-javitas-utan",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T18:28:45.034Z",
+   "lepes": "eset: dupla-level-eltero-jelzes",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "1. hivas: parositas + esemenyek (vagy az elo Zap mar elintezte: mar_kuldve)",
+   "elvart": "parositott + kesz | mar_kuldve",
+   "tenyleges": "parositott + kesz",
+   "ok": true
+  },
+  {
+   "leiras": "1. level utan kiment (Meta, TikTok, Google, GA4): alap + ernyo",
+   "elvart": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "tenyleges": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "2. level (eltero jelzes): a valasz szerint nincs uj kuldes",
+   "elvart": "mar_kuldve",
+   "tenyleges": "mar_kuldve",
+   "ok": true
+  },
+  {
+   "leiras": "javitott kod: a 2. level eltero jelzese latszik (jelleg_rogzites.eltero), de a rogzitett jelleg az 1. levele marad",
+   "elvart": [
+    "elso",
+    true,
+    "visszajaro"
+   ],
+   "tenyleges": [
+    "elso",
+    true,
+    "visszajaro"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "egy foglalasbol EGY alapesemeny: a naploban csak FoglalasElso alap-esemeny van (nincs Visszajaro)",
+   "elvart": [
+    "FoglalasElso"
+   ],
+   "tenyleges": [
+    "FoglalasElso"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "a 2. level utan a kiment esemenyek szama valtozatlan",
+   "elvart": 6,
+   "tenyleges": 6,
+   "ok": true
+  }
+ ],
+ "szimulalt": [
+  "az 1. level \"uj vendeg: igen\", a 2. level \"uj vendeg: nem\" (a Zap sajat levele a TESZT-vendegre ezt adja); a 2. level az 1. utan masodpercekkel megy, a Zap levele ekkor meg nem erkezett meg"
+ ],
+ "booking_id": "mb_0muyfyhmpngcyfwhxh610o2",
+ "salonic_uuid": "4200a348-b0fc-b89f-4160-93457b137466",
+ "esemeny_idk": {
+  "sorok": 8,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyfyhmpngcyfwhxh610o2",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muyfyhmpngcyfwhxh610o2",
+     "nev": "Schedule",
+     "ertek": 53800
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyfyhmpngcyfwhxh610o2",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muyfyhmpngcyfwhxh610o2",
+     "nev": "CompletePayment",
+     "ertek": 53800
+    }
+   ],
+   "google": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyfyhmpngcyfwhxh610o2",
+     "nev": "ARNYEK-7825199989",
+     "ertek": 53800
+    }
+   ],
+   "ga4": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyfyhmpngcyfwhxh610o2",
+     "nev": "foglalas_elso",
+     "ertek": 53800
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Schedule:mb_0muyfyhmpngcyfwhxh610o2",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   },
+   {
+    "esemeny_id": "Schedule:mb_0muyfyhmpngcyfwhxh610o2",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "elso_level_utan": {
+  "sorok": 8,
+  "elkuldve": [
+   2,
+   2,
+   1,
+   1
+  ]
+ },
+ "eredmeny": "PASS"
+}

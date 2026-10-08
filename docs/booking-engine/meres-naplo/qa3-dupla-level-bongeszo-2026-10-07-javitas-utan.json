@@ -1,0 +1,445 @@
+{
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "eset": "headspa",
+ "uzletag": "headspa",
+ "hozzajarulas_profil": "teljes",
+ "hozzajarulas": {
+  "ana": true,
+  "adv": true,
+  "fun": true
+ },
+ "szintetikus_adatok": {
+  "megjegyzes": "a kattintasazonositok es a sutik SZINTETIKUSAK (TESZT-jelolesuek); az elonezeten nem fut pixel / GA, ezert a sutiket a teszt allitja be",
+  "elso_latogatas": {
+   "utm_source": "google",
+   "utm_medium": "cpc",
+   "utm_campaign": "qa2_headspa_elso",
+   "utm_content": "hirdetes_a",
+   "gclid": "Cj0KCQjw_TESZT_HEADSPA_MUYG76DD_GCLID"
+  },
+  "utolso_latogatas": {
+   "utm_source": "facebook",
+   "utm_medium": "paid",
+   "utm_campaign": "qa2_headspa_utolso",
+   "fbclid": "IwAR_TESZT_HEADSPA_MUYG76DD_FBCLID",
+   "ttclid": "E.C.P.TESZT_HEADSPA_MUYG76DD_TTCLID",
+   "wbraid": "CoMKCQ_TESZT_HEADSPA_MUYG76DD_WBRAID"
+  },
+  "sutik": {
+   "_fbp": "fb.1.1791393138000.1156887369",
+   "_ttp": "TESZT_HEADSPA_MUYG76DD_ttp_ddmwk5iwz1",
+   "_ga": "GA1.1.790746350.1791311738",
+   "_ga_H4206SQ0Q7": "GS2.1.s1791396938$o1$g1$t1791397538$j0$l0$h0"
+  }
+ },
+ "pillanatkep_a_foglalas_elott": {
+  "google": {
+   "gclid": {
+    "ertek": "Cj0KCQjw_TESZT_HEADSPA_MUYG76DD_GCLID",
+    "ts": 1791398139
+   },
+   "wbraid": {
+    "ertek": "CoMKCQ_TESZT_HEADSPA_MUYG76DD_WBRAID",
+    "ts": 1791398142
+   }
+  },
+  "meta": {
+   "fbc": "fb.1.1791398142000.IwAR_TESZT_HEADSPA_MUYG76DD_FBCLID",
+   "fbclid": "IwAR_TESZT_HEADSPA_MUYG76DD_FBCLID",
+   "ts": 1791398142
+  },
+  "tiktok": {
+   "ttclid": {
+    "ertek": "E.C.P.TESZT_HEADSPA_MUYG76DD_TTCLID",
+    "ts": 1791398142
+   }
+  },
+  "utm_elso": {
+   "source": "google",
+   "medium": "cpc",
+   "campaign": "qa2_headspa_elso",
+   "content": "hirdetes_a",
+   "ts": 1791398139
+  },
+  "utm_utolso": {
+   "source": "facebook",
+   "medium": "paid",
+   "campaign": "qa2_headspa_utolso",
+   "ts": 1791398142
+  },
+  "fbp": "fb.1.1791393138000.1156887369",
+  "ttp": "TESZT_HEADSPA_MUYG76DD_ttp_ddmwk5iwz1",
+  "ga4": {
+   "client_id": "790746350.1791311738",
+   "session_id": "1791396938",
+   "measurement_id": "G-H4206SQ0Q7"
+  }
+ },
+ "iframe_src": "https://mosaicheadspa.salonic.hu/guestData/?placeId=10427&serviceId=302999&employeeId=-1&startDate=1792596600&back=mb_0muyg79cp8kx61q2q1jo3lf",
+ "azonosito_a_keret_cimeben": "mb_0muyg79cp8kx61q2q1jo3lf",
+ "keret_url": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1792596600&back=mb_0muyg79cp8kx61q2q1jo3lf",
+ "kontextus": {
+  "id": "mb_0muyg79cp8kx61q2q1jo3lf",
+  "created": 1791398142745,
+  "seen": 1791398146046,
+  "business": "headspa",
+  "source_page": "/booking-test",
+  "service_id": "302999",
+  "slot_unix": 1792596600,
+  "staff_id": "-1",
+  "carrier": "back",
+  "sent_at": 1791398146046,
+  "returned": null,
+  "completed_at": null
+ },
+ "salonic_status": 200,
+ "redirect_url": "https://mosaicheadspa.hu/success-foglalas-paros?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+P%C3%81ROS+MOSAIC+Head+Spa+kezel%C3%A9s+%2850+perc+%2B+Sz%C3%A1r%C3%ADt%C3%A1s%29&category=Headspa+kezel%C3%A9sre+foglalok%21&price=53800&location=Mosaic+Headspa&employee=P%C3%A1ros+kezel%C3%A9s&g=g:3390977&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D24354%26placeId%3D10427%26serviceId%3D302999%26startDate%3D1792596600%26back%3Dmb_0muyg79cp8kx61q2q1jo3lf",
+ "salonic_uuid": "db025f4d-f84e-eef0-d8c4-5b41d74944cf",
+ "kereten_at_probalt_eles_navigaciok": [
+  "https://mosaicheadspa.hu/success-foglalas-paros?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+P%C3%81ROS+MOSAIC+Head+Spa+kezel%C3%A9s+%2850+perc+%2B+Sz%C3%A1r%C3%ADt%C3%A1s%29&category=Headspa+kezel%C3%A9sre+foglalok%21&price=53800&location=Mosaic+Headspa&employee=P%C3%A1ros+kezel%C3%A9s&g=g:3390977&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D24354%26placeId%3D10427%26serviceId%3D302999%26startDate%3D1792596600%26back%3Dmb_0muyg79cp8kx61q2q1jo3lf"
+ ],
+ "salonic_host": "mosaicheadspa.salonic.hu",
+ "lemondo_url": "https://mosaicheadspa.salonic.hu/booking/cancelBooking/db025f4d-f84e-eef0-d8c4-5b41d74944cf",
+ "koszono_query": {
+  "first_booking": "true",
+  "service": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+  "category": "Headspa kezelésre foglalok!",
+  "price": "53800",
+  "location": "Mosaic Headspa",
+  "employee": "Páros kezelés",
+  "g": "g:3390977",
+  "bookingUrl": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1792596600&back=mb_0muyg79cp8kx61q2q1jo3lf"
+ },
+ "bookingUrl": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1792596600&back=mb_0muyg79cp8kx61q2q1jo3lf",
+ "bookingUrl_elemzes": {
+  "ok": true,
+  "host": "mosaicheadspa.salonic.hu",
+  "uzletag": "headspa",
+  "placeId": 10427,
+  "employeeId": 24354,
+  "serviceId": "302999",
+  "startUnix": 1792596600,
+  "kulcs": "10427|24354|1792596600",
+  "bookingId": "mb_0muyg79cp8kx61q2q1jo3lf"
+ },
+ "booking_id": "mb_0muyg79cp8kx61q2q1jo3lf",
+ "koszono_elonezeti_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+P%C3%81ROS+MOSAIC+Head+Spa+kezel%C3%A9s+%2850+perc+%2B+Sz%C3%A1r%C3%ADt%C3%A1s%29&category=Headspa+kezel%C3%A9sre+foglalok%21&price=53800&location=Mosaic+Headspa&employee=P%C3%A1ros+kezel%C3%A9s&g=g:3390977&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D24354%26placeId%3D10427%26serviceId%3D302999%26startDate%3D1792596600%26back%3Dmb_0muyg79cp8kx61q2q1jo3lf",
+ "mhAttribucioEredmeny": {
+  "source_id": "mb_0muyg79cp8kx61q2q1jo3lf",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "frissitve": true,
+   "hibak": [],
+   "mezok": [
+    "google",
+    "meta",
+    "tiktok",
+    "utm_elso",
+    "utm_utolso",
+    "fbp",
+    "ttp",
+    "ga4"
+   ]
+  },
+  "kuldott": {
+   "source_id": "mb_0muyg79cp8kx61q2q1jo3lf",
+   "uzletag": "headspa",
+   "tipus": "foglalas",
+   "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+   "ar": 53800,
+   "first_booking": true,
+   "g": "g:3390977",
+   "bookingUrl": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1792596600&back=mb_0muyg79cp8kx61q2q1jo3lf",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_HEADSPA_MUYG76DD_GCLID",
+      "ts": 1791398139
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_HEADSPA_MUYG76DD_WBRAID",
+      "ts": 1791398142
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791398142000.IwAR_TESZT_HEADSPA_MUYG76DD_FBCLID",
+     "fbclid": "IwAR_TESZT_HEADSPA_MUYG76DD_FBCLID",
+     "ts": 1791398142
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_HEADSPA_MUYG76DD_TTCLID",
+      "ts": 1791398142
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_headspa_elso",
+     "content": "hirdetes_a",
+     "ts": 1791398139
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_headspa_utolso",
+     "ts": 1791398142
+    },
+    "fbp": "fb.1.1791393138000.1156887369",
+    "ttp": "TESZT_HEADSPA_MUYG76DD_ttp_ddmwk5iwz1",
+    "ga4": {
+     "client_id": "790746350.1791311738",
+     "session_id": "1791396938",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true
+   },
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros"
+  }
+ },
+ "mhKulcsEredmeny": {
+  "bookingId": "mb_0muyg79cp8kx61q2q1jo3lf",
+  "forras": "back",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "irva": true,
+   "idempotens": false,
+   "utkozes": false,
+   "kulcs": "10427|24354|1792596600",
+   "serviceId": "302999"
+  }
+ },
+ "tarolo": {
+  "mh_attr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_HEADSPA_MUYG76DD_GCLID\",\"ts\":1791398139},\"wbraid\":{\"ertek\":\"CoMKCQ_TESZT_HEADSPA_MUYG76DD_WBRAID\",\"ts\":1791398142}},\"utm_utolso\":{\"source\":\"facebook\",\"medium\":\"paid\",\"campaign\":\"qa2_headspa_utolso\",\"ts\":1791398142},\"utm_elso\":{\"source\":\"google\",\"medium\":\"cpc\",\"campaign\":\"qa2_headspa_elso\",\"content\":\"hirdetes_a\",\"ts\":1791398139},\"meta\":{\"fbclid\":\"IwAR_TESZT_HEADSPA_MUYG76DD_FBCLID\",\"ts\":1791398142},\"tiktok\":{\"ttclid\":{\"ertek\":\"E.C.P.TESZT_HEADSPA_MUYG76DD_TTCLID\",\"ts\":1791398142}}}",
+  "mh_cc": "{\"v\":1,\"t\":1791398139857,\"ana\":true,\"adv\":true,\"fun\":true}",
+  "sutik_nevei": [
+   "_fbp",
+   "_ttp",
+   "_ga",
+   "_ga_H4206SQ0Q7"
+  ]
+ },
+ "idovonal": [
+  {
+   "t": 1097,
+   "esemeny": "1. latogatas (Google-hirdetes)",
+   "url": "/booking-test?utm_source=google&utm_medium=cpc&utm_campaign=qa2_headspa_elso&utm_content=hirdetes_a&gclid=Cj0KCQjw_TESZT_HEADSPA_MUYG76DD_GCLID"
+  },
+  {
+   "t": 3552,
+   "esemeny": "2. latogatas (Meta / TikTok / Google wbraid)",
+   "pillanatkep": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_HEADSPA_MUYG76DD_GCLID",
+      "ts": 1791398139
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_HEADSPA_MUYG76DD_WBRAID",
+      "ts": 1791398142
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791398142000.IwAR_TESZT_HEADSPA_MUYG76DD_FBCLID",
+     "fbclid": "IwAR_TESZT_HEADSPA_MUYG76DD_FBCLID",
+     "ts": 1791398142
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_HEADSPA_MUYG76DD_TTCLID",
+      "ts": 1791398142
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_headspa_elso",
+     "content": "hirdetes_a",
+     "ts": 1791398139
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_headspa_utolso",
+     "ts": 1791398142
+    },
+    "fbp": "fb.1.1791393138000.1156887369",
+    "ttp": "TESZT_HEADSPA_MUYG76DD_ttp_ddmwk5iwz1",
+    "ga4": {
+     "client_id": "790746350.1791311738",
+     "session_id": "1791396938",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   }
+  },
+  {
+   "t": 5692,
+   "esemeny": "reteg megnyilt",
+   "azonosito": "mb_0muyg79cp8kx61q2q1jo3lf"
+  },
+  {
+   "t": 7183,
+   "esemeny": "idopont valasztva (az utolso szabad nap utolso idopontja)",
+   "ido": "17:30"
+  },
+  {
+   "t": 11691,
+   "esemeny": "Salonic-adatlap betoltve",
+   "back": "mb_0muyg79cp8kx61q2q1jo3lf"
+  },
+  {
+   "t": 13951,
+   "esemeny": "urlap kitoltve, kuldes",
+   "ido": "2026-10-07T18:35:52.832Z"
+  },
+  {
+   "t": 20086,
+   "esemeny": "foglalas-kuldes valasza",
+   "uuid": "db025f4d-f84e-eef0-d8c4-5b41d74944cf",
+   "redirect": "https://mosaicheadspa.hu/success-foglalas-paros?first_booking=true&service=%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F%F0%9F%92%86%E2%80%8D%E2%99%80%EF%B8%8F+P%C3%81ROS+MOSAIC+Head+Spa+kezel%C3%A9s+%2850+perc+%2B+Sz%C3%A1r%C3%ADt%C3%A1s%29&category=Headspa+kezel%C3%A9sre+foglalok%21&price=53800&location=Mosaic+Headspa&employee=P%C3%A1ros+kezel%C3%A9s&g=g:3390977&bookingUrl=https%3A%2F%2Fmosaicheadspa.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D24354%26placeId%3D10427%26serviceId%3D302999%26startDate%3D1792596600%26back%3Dmb_0muyg79cp8kx61q2q1jo3lf"
+  },
+  {
+   "t": 21116,
+   "esemeny": "koszonooldal (elonezet)",
+   "booking_id": "mb_0muyg79cp8kx61q2q1jo3lf",
+   "attribucio": "valasz",
+   "kulcs_iras": "valasz"
+  }
+ ],
+ "sajat_keresek_nyers": [
+  {
+   "t": 20354,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "source_id": "mb_0muyg79cp8kx61q2q1jo3lf",
+    "uzletag": "headspa",
+    "tipus": "foglalas",
+    "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+    "ar": 53800,
+    "first_booking": true,
+    "g": "g:3390977",
+    "bookingUrl": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1792596600&back=mb_0muyg79cp8kx61q2q1jo3lf",
+    "attr": {
+     "google": {
+      "gclid": {
+       "ertek": "Cj0KCQjw_TESZT_HEADSPA_MUYG76DD_GCLID",
+       "ts": 1791398139
+      },
+      "wbraid": {
+       "ertek": "CoMKCQ_TESZT_HEADSPA_MUYG76DD_WBRAID",
+       "ts": 1791398142
+      }
+     },
+     "meta": {
+      "fbc": "fb.1.1791398142000.IwAR_TESZT_HEADSPA_MUYG76DD_FBCLID",
+      "fbclid": "IwAR_TESZT_HEADSPA_MUYG76DD_FBCLID",
+      "ts": 1791398142
+     },
+     "tiktok": {
+      "ttclid": {
+       "ertek": "E.C.P.TESZT_HEADSPA_MUYG76DD_TTCLID",
+       "ts": 1791398142
+      }
+     },
+     "utm_elso": {
+      "source": "google",
+      "medium": "cpc",
+      "campaign": "qa2_headspa_elso",
+      "content": "hirdetes_a",
+      "ts": 1791398139
+     },
+     "utm_utolso": {
+      "source": "facebook",
+      "medium": "paid",
+      "campaign": "qa2_headspa_utolso",
+      "ts": 1791398142
+     },
+     "fbp": "fb.1.1791393138000.1156887369",
+     "ttp": "TESZT_HEADSPA_MUYG76DD_ttp_ddmwk5iwz1",
+     "ga4": {
+      "client_id": "790746350.1791311738",
+      "session_id": "1791396938",
+      "measurement_id": "G-H4206SQ0Q7"
+     }
+    },
+    "hozz": {
+     "ana": true,
+     "adv": true,
+     "fun": true
+    },
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/success-foglalas-paros"
+   }
+  },
+  {
+   "t": 20355,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-kulcs",
+   "torzs": {
+    "booking_id": "mb_0muyg79cp8kx61q2q1jo3lf",
+    "booking_url": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1792596600&back=mb_0muyg79cp8kx61q2q1jo3lf",
+    "forras": "back"
+   }
+  },
+  {
+   "t": 20862,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "ok": true,
+    "frissitve": true,
+    "hibak": [],
+    "mezok": [
+     "google",
+     "meta",
+     "tiktok",
+     "utm_elso",
+     "utm_utolso",
+     "fbp",
+     "ttp",
+     "ga4"
+    ]
+   }
+  },
+  {
+   "t": 21096,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-kulcs",
+   "torzs": {
+    "ok": true,
+    "irva": true,
+    "idempotens": false,
+    "utkozes": false,
+    "kulcs": "10427|24354|1792596600",
+    "serviceId": "302999"
+   }
+  }
+ ],
+ "tiltott_kimeno_keresek": {
+  "tiltott connect.facebook.net/en_US/sdk.js": 1,
+  "google-ads www.google.com/ccm/collect": 3,
+  "google-ads googleads.g.doubleclick.net/pagead/viewthroughconversion/16795940464/": 4,
+  "google-ads www.google.com/rmkt/collect/16795940464/": 4,
+  "stape stape.mosaicheadspa.hu/_/service_worker/6a60/sw_iframe.html": 1,
+  "tiktok analytics-ipv6.tiktokw.us/ipv6/enrich_ipv6": 2,
+  "tiktok analytics.tiktok.com/api/v2/pixel": 6,
+  "tiktok analytics.tiktok.com/api/v2/pixel/act": 5,
+  "tiktok analytics.tiktok.com/api/v2/monitor": 4,
+  "google-ads www.google.com/pagead/form-data/16795940464": 1,
+  "google-ads www.google.com/ccm/form-data/16795940464": 1
+ },
+ "js_hibak": [],
+ "konzol": []
+}

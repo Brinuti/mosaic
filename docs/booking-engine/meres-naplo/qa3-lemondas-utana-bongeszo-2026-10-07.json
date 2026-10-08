@@ -1,0 +1,434 @@
+{
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "eset": "pmu-kezeles",
+ "uzletag": "pmu",
+ "hozzajarulas_profil": "teljes",
+ "hozzajarulas": {
+  "ana": true,
+  "adv": true,
+  "fun": true
+ },
+ "szintetikus_adatok": {
+  "megjegyzes": "a kattintasazonositok es a sutik SZINTETIKUSAK (TESZT-jelolesuek); az elonezeten nem fut pixel / GA, ezert a sutiket a teszt allitja be",
+  "elso_latogatas": {
+   "utm_source": "google",
+   "utm_medium": "cpc",
+   "utm_campaign": "qa2_pmu-kezeles_elso",
+   "utm_content": "hirdetes_a",
+   "gclid": "Cj0KCQjw_TESZT_PMU-KEZELES_MUXTPEEH_GCLID"
+  },
+  "utolso_latogatas": {
+   "utm_source": "facebook",
+   "utm_medium": "paid",
+   "utm_campaign": "qa2_pmu-kezeles_utolso",
+   "fbclid": "IwAR_TESZT_PMU-KEZELES_MUXTPEEH_FBCLID",
+   "ttclid": "E.C.P.TESZT_PMU-KEZELES_MUXTPEEH_TTCLID",
+   "wbraid": "CoMKCQ_TESZT_PMU-KEZELES_MUXTPEEH_WBRAID"
+  },
+  "sutik": {
+   "_fbp": "fb.1.1791355357000.8822930070",
+   "_ttp": "TESZT_PMU-KEZELES_MUXTPEEH_ttp_o4br88dyh1",
+   "_ga": "GA1.1.722844098.1791273957",
+   "_ga_H4206SQ0Q7": "GS2.1.s1791359157$o1$g1$t1791359757$j0$l0$h0"
+  }
+ },
+ "pillanatkep_a_foglalas_elott": {
+  "google": {
+   "gclid": {
+    "ertek": "Cj0KCQjw_TESZT_PMU-KEZELES_MUXTPEEH_GCLID",
+    "ts": 1791360358
+   },
+   "wbraid": {
+    "ertek": "CoMKCQ_TESZT_PMU-KEZELES_MUXTPEEH_WBRAID",
+    "ts": 1791360361
+   }
+  },
+  "meta": {
+   "fbc": "fb.1.1791360361000.IwAR_TESZT_PMU-KEZELES_MUXTPEEH_FBCLID",
+   "fbclid": "IwAR_TESZT_PMU-KEZELES_MUXTPEEH_FBCLID",
+   "ts": 1791360361
+  },
+  "tiktok": {
+   "ttclid": {
+    "ertek": "E.C.P.TESZT_PMU-KEZELES_MUXTPEEH_TTCLID",
+    "ts": 1791360361
+   }
+  },
+  "utm_elso": {
+   "source": "google",
+   "medium": "cpc",
+   "campaign": "qa2_pmu-kezeles_elso",
+   "content": "hirdetes_a",
+   "ts": 1791360358
+  },
+  "utm_utolso": {
+   "source": "facebook",
+   "medium": "paid",
+   "campaign": "qa2_pmu-kezeles_utolso",
+   "ts": 1791360361
+  },
+  "fbp": "fb.1.1791355357000.8822930070",
+  "ttp": "TESZT_PMU-KEZELES_MUXTPEEH_ttp_o4br88dyh1",
+  "ga4": {
+   "client_id": "722844098.1791273957",
+   "session_id": "1791359157",
+   "measurement_id": "G-H4206SQ0Q7"
+  }
+ },
+ "azonosito_a_keret_cimeben": "mb_0muxtpjt2rxfh24ke4gbynb",
+ "keret_url": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471034&startDate=1793466000&back=mb_0muxtpjt2rxfh24ke4gbynb",
+ "kontextus": {
+  "id": "mb_0muxtpjt2rxfh24ke4gbynb",
+  "created": 1791360364934,
+  "seen": 1791360364934,
+  "business": "pmu",
+  "source_page": "foglalo-pmu",
+  "service_id": "471034",
+  "slot_unix": 1793466000,
+  "staff_id": "-1",
+  "carrier": "back",
+  "sent_at": 1791360364934,
+  "returned": null,
+  "completed_at": null
+ },
+ "salonic_status": 200,
+ "redirect_url": "https://www.mosaicheadspa.hu/pmu-ok?first_booking=true&service=Ajaktetov%C3%A1l%C3%A1s+-+Aquarell+-+124.900+Ft+helyett+most&category=Term%C3%A9szetes+sminktetov%C3%A1l%C3%A1s&price=99000&location=Mosaic+PMU&employee=Melitta&g=g:3354694&bookingUrl=https%3A%2F%2Fmosaic-pmu.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32428%26placeId%3D14585%26serviceId%3D471034%26startDate%3D1793466000%26back%3Dmb_0muxtpjt2rxfh24ke4gbynb",
+ "salonic_uuid": "b2cd14a0-ddce-9895-970b-d7b38de81efe",
+ "kereten_at_probalt_eles_navigaciok": [
+  "https://www.mosaicheadspa.hu/pmu-ok?first_booking=true&service=Ajaktetov%C3%A1l%C3%A1s+-+Aquarell+-+124.900+Ft+helyett+most&category=Term%C3%A9szetes+sminktetov%C3%A1l%C3%A1s&price=99000&location=Mosaic+PMU&employee=Melitta&g=g:3354694&bookingUrl=https%3A%2F%2Fmosaic-pmu.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32428%26placeId%3D14585%26serviceId%3D471034%26startDate%3D1793466000%26back%3Dmb_0muxtpjt2rxfh24ke4gbynb"
+ ],
+ "salonic_host": "mosaic-pmu.salonic.hu",
+ "lemondo_url": "https://mosaic-pmu.salonic.hu/booking/cancelBooking/b2cd14a0-ddce-9895-970b-d7b38de81efe",
+ "koszono_query": {
+  "first_booking": "true",
+  "service": "Ajaktetoválás - Aquarell - 124.900 Ft helyett most",
+  "category": "Természetes sminktetoválás",
+  "price": "99000",
+  "location": "Mosaic PMU",
+  "employee": "Melitta",
+  "g": "g:3354694",
+  "bookingUrl": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471034&startDate=1793466000&back=mb_0muxtpjt2rxfh24ke4gbynb"
+ },
+ "bookingUrl": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471034&startDate=1793466000&back=mb_0muxtpjt2rxfh24ke4gbynb",
+ "bookingUrl_elemzes": {
+  "ok": true,
+  "host": "mosaic-pmu.salonic.hu",
+  "uzletag": "pmu",
+  "placeId": 14585,
+  "employeeId": 32428,
+  "serviceId": "471034",
+  "startUnix": 1793466000,
+  "kulcs": "14585|32428|1793466000",
+  "bookingId": "mb_0muxtpjt2rxfh24ke4gbynb"
+ },
+ "booking_id": "mb_0muxtpjt2rxfh24ke4gbynb",
+ "koszono_elonezeti_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok?first_booking=true&service=Ajaktetov%C3%A1l%C3%A1s+-+Aquarell+-+124.900+Ft+helyett+most&category=Term%C3%A9szetes+sminktetov%C3%A1l%C3%A1s&price=99000&location=Mosaic+PMU&employee=Melitta&g=g:3354694&bookingUrl=https%3A%2F%2Fmosaic-pmu.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32428%26placeId%3D14585%26serviceId%3D471034%26startDate%3D1793466000%26back%3Dmb_0muxtpjt2rxfh24ke4gbynb",
+ "mhAttribucioEredmeny": {
+  "source_id": "mb_0muxtpjt2rxfh24ke4gbynb",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "frissitve": true,
+   "hibak": [],
+   "mezok": [
+    "google",
+    "meta",
+    "tiktok",
+    "utm_elso",
+    "utm_utolso",
+    "fbp",
+    "ttp",
+    "ga4"
+   ]
+  },
+  "kuldott": {
+   "source_id": "mb_0muxtpjt2rxfh24ke4gbynb",
+   "uzletag": "pmu",
+   "tipus": "foglalas",
+   "szolgaltatas": "Ajaktetoválás - Aquarell - 124.900 Ft helyett most",
+   "ar": 99000,
+   "first_booking": true,
+   "g": "g:3354694",
+   "bookingUrl": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471034&startDate=1793466000&back=mb_0muxtpjt2rxfh24ke4gbynb",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_PMU-KEZELES_MUXTPEEH_GCLID",
+      "ts": 1791360358
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_PMU-KEZELES_MUXTPEEH_WBRAID",
+      "ts": 1791360361
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791360361000.IwAR_TESZT_PMU-KEZELES_MUXTPEEH_FBCLID",
+     "fbclid": "IwAR_TESZT_PMU-KEZELES_MUXTPEEH_FBCLID",
+     "ts": 1791360361
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_PMU-KEZELES_MUXTPEEH_TTCLID",
+      "ts": 1791360361
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_pmu-kezeles_elso",
+     "content": "hirdetes_a",
+     "ts": 1791360358
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_pmu-kezeles_utolso",
+     "ts": 1791360361
+    },
+    "fbp": "fb.1.1791355357000.8822930070",
+    "ttp": "TESZT_PMU-KEZELES_MUXTPEEH_ttp_o4br88dyh1",
+    "ga4": {
+     "client_id": "722844098.1791273957",
+     "session_id": "1791359157",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true
+   },
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok"
+  }
+ },
+ "mhKulcsEredmeny": {
+  "bookingId": "mb_0muxtpjt2rxfh24ke4gbynb",
+  "forras": "back",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "irva": true,
+   "idempotens": false,
+   "utkozes": false,
+   "kulcs": "14585|32428|1793466000",
+   "serviceId": "471034"
+  }
+ },
+ "tarolo": {
+  "mh_attr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_PMU-KEZELES_MUXTPEEH_GCLID\",\"ts\":1791360358},\"wbraid\":{\"ertek\":\"CoMKCQ_TESZT_PMU-KEZELES_MUXTPEEH_WBRAID\",\"ts\":1791360361}},\"utm_utolso\":{\"source\":\"facebook\",\"medium\":\"paid\",\"campaign\":\"qa2_pmu-kezeles_utolso\",\"ts\":1791360361},\"utm_elso\":{\"source\":\"google\",\"medium\":\"cpc\",\"campaign\":\"qa2_pmu-kezeles_elso\",\"content\":\"hirdetes_a\",\"ts\":1791360358},\"meta\":{\"fbclid\":\"IwAR_TESZT_PMU-KEZELES_MUXTPEEH_FBCLID\",\"ts\":1791360361},\"tiktok\":{\"ttclid\":{\"ertek\":\"E.C.P.TESZT_PMU-KEZELES_MUXTPEEH_TTCLID\",\"ts\":1791360361}}}",
+  "mh_cc": "{\"v\":1,\"t\":1791360358759,\"ana\":true,\"adv\":true,\"fun\":true}",
+  "sutik_nevei": [
+   "_fbp",
+   "_ttp",
+   "_ga",
+   "_ga_H4206SQ0Q7"
+  ]
+ },
+ "idovonal": [
+  {
+   "t": 945,
+   "esemeny": "1. latogatas (Google-hirdetes)",
+   "url": "/booking-test?utm_source=google&utm_medium=cpc&utm_campaign=qa2_pmu-kezeles_elso&utm_content=hirdetes_a&gclid=Cj0KCQjw_TESZT_PMU-KEZELES_MUXTPEEH_GCLID"
+  },
+  {
+   "t": 3379,
+   "esemeny": "2. latogatas (Meta / TikTok / Google wbraid)",
+   "pillanatkep": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_PMU-KEZELES_MUXTPEEH_GCLID",
+      "ts": 1791360358
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_PMU-KEZELES_MUXTPEEH_WBRAID",
+      "ts": 1791360361
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791360361000.IwAR_TESZT_PMU-KEZELES_MUXTPEEH_FBCLID",
+     "fbclid": "IwAR_TESZT_PMU-KEZELES_MUXTPEEH_FBCLID",
+     "ts": 1791360361
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_PMU-KEZELES_MUXTPEEH_TTCLID",
+      "ts": 1791360361
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_pmu-kezeles_elso",
+     "content": "hirdetes_a",
+     "ts": 1791360358
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_pmu-kezeles_utolso",
+     "ts": 1791360361
+    },
+    "fbp": "fb.1.1791355357000.8822930070",
+    "ttp": "TESZT_PMU-KEZELES_MUXTPEEH_ttp_o4br88dyh1",
+    "ga4": {
+     "client_id": "722844098.1791273957",
+     "session_id": "1791359157",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   }
+  },
+  {
+   "t": 4834,
+   "esemeny": "PMU: kezeles = AjaktetoválásAquarell · 2–2,5 óra99 000 Ft"
+  },
+  {
+   "t": 6904,
+   "esemeny": "PMU: idopont valasztva",
+   "ido": "18:00"
+  },
+  {
+   "t": 15403,
+   "esemeny": "Salonic-adatlap betoltve",
+   "back": "mb_0muxtpjt2rxfh24ke4gbynb"
+  },
+  {
+   "t": 17808,
+   "esemeny": "urlap kitoltve, kuldes",
+   "ido": "2026-10-07T08:06:15.737Z"
+  },
+  {
+   "t": 22405,
+   "esemeny": "foglalas-kuldes valasza",
+   "uuid": "b2cd14a0-ddce-9895-970b-d7b38de81efe",
+   "redirect": "https://www.mosaicheadspa.hu/pmu-ok?first_booking=true&service=Ajaktetov%C3%A1l%C3%A1s+-+Aquarell+-+124.900+Ft+helyett+most&category=Term%C3%A9szetes+sminktetov%C3%A1l%C3%A1s&price=99000&location=Mosaic+PMU&employee=Melitta&g=g:3354694&bookingUrl=https%3A%2F%2Fmosaic-pmu.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32428%26placeId%3D14585%26serviceId%3D471034%26startDate%3D1793466000%26back%3Dmb_0muxtpjt2rxfh24ke4gbynb"
+  },
+  {
+   "t": 23550,
+   "esemeny": "koszonooldal (elonezet)",
+   "booking_id": "mb_0muxtpjt2rxfh24ke4gbynb",
+   "attribucio": "valasz",
+   "kulcs_iras": "valasz"
+  }
+ ],
+ "sajat_keresek_nyers": [
+  {
+   "t": 22789,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "source_id": "mb_0muxtpjt2rxfh24ke4gbynb",
+    "uzletag": "pmu",
+    "tipus": "foglalas",
+    "szolgaltatas": "Ajaktetoválás - Aquarell - 124.900 Ft helyett most",
+    "ar": 99000,
+    "first_booking": true,
+    "g": "g:3354694",
+    "bookingUrl": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471034&startDate=1793466000&back=mb_0muxtpjt2rxfh24ke4gbynb",
+    "attr": {
+     "google": {
+      "gclid": {
+       "ertek": "Cj0KCQjw_TESZT_PMU-KEZELES_MUXTPEEH_GCLID",
+       "ts": 1791360358
+      },
+      "wbraid": {
+       "ertek": "CoMKCQ_TESZT_PMU-KEZELES_MUXTPEEH_WBRAID",
+       "ts": 1791360361
+      }
+     },
+     "meta": {
+      "fbc": "fb.1.1791360361000.IwAR_TESZT_PMU-KEZELES_MUXTPEEH_FBCLID",
+      "fbclid": "IwAR_TESZT_PMU-KEZELES_MUXTPEEH_FBCLID",
+      "ts": 1791360361
+     },
+     "tiktok": {
+      "ttclid": {
+       "ertek": "E.C.P.TESZT_PMU-KEZELES_MUXTPEEH_TTCLID",
+       "ts": 1791360361
+      }
+     },
+     "utm_elso": {
+      "source": "google",
+      "medium": "cpc",
+      "campaign": "qa2_pmu-kezeles_elso",
+      "content": "hirdetes_a",
+      "ts": 1791360358
+     },
+     "utm_utolso": {
+      "source": "facebook",
+      "medium": "paid",
+      "campaign": "qa2_pmu-kezeles_utolso",
+      "ts": 1791360361
+     },
+     "fbp": "fb.1.1791355357000.8822930070",
+     "ttp": "TESZT_PMU-KEZELES_MUXTPEEH_ttp_o4br88dyh1",
+     "ga4": {
+      "client_id": "722844098.1791273957",
+      "session_id": "1791359157",
+      "measurement_id": "G-H4206SQ0Q7"
+     }
+    },
+    "hozz": {
+     "ana": true,
+     "adv": true,
+     "fun": true
+    },
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok"
+   }
+  },
+  {
+   "t": 22789,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-kulcs",
+   "torzs": {
+    "booking_id": "mb_0muxtpjt2rxfh24ke4gbynb",
+    "booking_url": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471034&startDate=1793466000&back=mb_0muxtpjt2rxfh24ke4gbynb",
+    "forras": "back"
+   }
+  },
+  {
+   "t": 23394,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "ok": true,
+    "frissitve": true,
+    "hibak": [],
+    "mezok": [
+     "google",
+     "meta",
+     "tiktok",
+     "utm_elso",
+     "utm_utolso",
+     "fbp",
+     "ttp",
+     "ga4"
+    ]
+   }
+  },
+  {
+   "t": 23536,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-kulcs",
+   "torzs": {
+    "ok": true,
+    "irva": true,
+    "idempotens": false,
+    "utkozes": false,
+    "kulcs": "14585|32428|1793466000",
+    "serviceId": "471034"
+   }
+  }
+ ],
+ "tiltott_kimeno_keresek": {
+  "tiltott connect.facebook.net/en_US/sdk.js": 1,
+  "tiltott www.google.com/maps": 1
+ },
+ "js_hibak": [],
+ "konzol": []
+}

@@ -2,6 +2,7 @@
 // -> a koszonooldal (elonezet) kuldi az erkezesi adatot -> nyers BONGESZOS naplo. A szerveres lepes (level -> parositas -> esemenyek -> platformvalasz) a qa2-szerver.mjs.
 //
 //   node tools/meres-proba/qa2-eset.mjs --bazis https://<ag>.mosaic-d77.pages.dev --eset headspa|fodrasz|oxigen|szor|pmu [--profil teljes|nincs|ana|dontes_nelkul] [--out naplo.json] [--start <unix>]
+//        [--elso google|meta|tiktok|nincs --utolso google|meta|tiktok|nincs]  (QA-3: egy-egy platform kattintasa)  [--koszono-ujratoltes 1 [--varj-level <jelzes-fajl>]]  (QA-3: F5 + vissza gomb a koszonooldalon)
 //   utana: node tools/meres-proba/lemond.mjs <a kiirt lemondo-URL>   (a szerveres lepes UTAN: az esemenyek kuldesekor a foglalasnak aktivnak kell lennie - elo allapot-ellenorzes)
 //
 // eset -> utvonal: headspa = PAROS HeadSpa; fodrasz = fodraszati konzultacio; oxigen = hajkamera-vizsgalat (akcios konzultacio, 4 990 Ft); oxigen-elso = FIZETOS elso oxigenterapias kezeles; szor = lezeres konzultacio;
@@ -15,6 +16,7 @@ import { bookingUrlElemzes } from '../../netlify/lib/foglalas-kulcs.js';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const BAZIS = arg('bazis', ''), ESET = arg('eset', ''), PROFIL = arg('profil', 'teljes'), OUT = arg('out', ''), START = arg('start', '');
+const NINCS_KULCSIRAS = arg('nincs-kulcsiras', '0') === '1'; // R7 (DONTES #108): a koszonooldali kulcs-iras (POST /api/foglalas-kulcs) blokkolva -> a foglalas SOHA nem parosithato (mint az eles oldalon, ahol nincs iras)
 if (!/^https:\/\/[a-z0-9-]+\.mosaic-d77\.pages\.dev$/.test(BAZIS)) throw new Error('csak PR-elonezeten fut (--bazis https://<ag>.mosaic-d77.pages.dev)');
 const ESETEK = {
   headspa: { opts: { business: 'headspa', service: 'paros' }, szakember: 'mindegy', uzletag: 'headspa' },
@@ -33,13 +35,17 @@ const HOZZ = PROFILOK[PROFIL];
 const TELEFON = process.env.MERES_TELEFON || '709420090';
 const CHROME = process.env.CHROME_UTVONAL || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const T0 = Date.now(); const mp = () => Date.now() - T0;
-const idovonal = [], tiltott = [], sajatKeresek = [], hibak = [], konzol = [];
+const idovonal = [], tiltott = [], sajatKeresek = [], hibak = [], konzol = [], kulcsirasBlokkolva = [];
 const lepes = (esemeny, extra = {}) => { idovonal.push({ t: mp(), esemeny, ...extra }); console.log(`[${String(mp()).padStart(6)}ms] ${esemeny}`, Object.keys(extra).length ? JSON.stringify(extra).slice(0, 300) : ''); };
 
 // SZINTETIKUS arkezesi adatok (formailag ervenyes, TESZT-jelolesu); esetenkent egyedi
 const S = `TESZT_${ESET}_${Date.now().toString(36)}`.toUpperCase();
-const ELSO = { utm_source: 'google', utm_medium: 'cpc', utm_campaign: `qa2_${ESET}_elso`, utm_content: 'hirdetes_a', gclid: `Cj0KCQjw_${S}_GCLID` };
-const UTOLSO = { utm_source: 'facebook', utm_medium: 'paid', utm_campaign: `qa2_${ESET}_utolso`, fbclid: `IwAR_${S}_FBCLID`, ttclid: `E.C.P.${S}_TTCLID`, wbraid: `CoMKCQ_${S}_WBRAID` };
+// alapbol: 1. latogatas = Google-hirdetes, 2. latogatas = Meta + TikTok + Google wbraid (a QA-2 8 esete). QA-3: --elso / --utolso google|meta|tiktok|nincs = KOZLEMENYENKENT csak EGY platform kattintasa (pl. --elso tiktok --utolso meta)
+const KATT = { google: (n) => ({ utm_source: 'google', utm_medium: 'cpc', utm_campaign: `qa2_${ESET}_${n}`, utm_content: 'hirdetes_a', gclid: `Cj0KCQjw_${S}_GCLID` }), meta: (n) => ({ utm_source: 'facebook', utm_medium: 'paid', utm_campaign: `qa2_${ESET}_${n}`, fbclid: `IwAR_${S}_FBCLID` }),
+  tiktok: (n) => ({ utm_source: 'tiktok', utm_medium: 'paid', utm_campaign: `qa2_${ESET}_${n}`, ttclid: `E.C.P.${S}_TTCLID` }), nincs: () => ({}) };
+if ([arg('elso'), arg('utolso')].some((x) => x !== undefined && !(x in KATT))) throw new Error('--elso / --utolso: google | meta | tiktok | nincs');
+const ELSO = arg('elso') ? KATT[arg('elso')]('elso') : { utm_source: 'google', utm_medium: 'cpc', utm_campaign: `qa2_${ESET}_elso`, utm_content: 'hirdetes_a', gclid: `Cj0KCQjw_${S}_GCLID` };
+const UTOLSO = arg('utolso') ? KATT[arg('utolso')]('utolso') : { utm_source: 'facebook', utm_medium: 'paid', utm_campaign: `qa2_${ESET}_utolso`, fbclid: `IwAR_${S}_FBCLID`, ttclid: `E.C.P.${S}_TTCLID`, wbraid: `CoMKCQ_${S}_WBRAID` };
 const ts = Math.floor(Date.now() / 1000);
 const SUTIK = { _fbp: `fb.1.${ts * 1000 - 5000000}.${Math.floor(Math.random() * 9e9 + 1e9)}`, _ttp: `${S}_ttp_${Math.random().toString(36).slice(2, 12)}`, _ga: `GA1.1.${Math.floor(Math.random() * 9e8 + 1e8)}.${ts - 86400}`, _ga_H4206SQ0Q7: `GS2.1.s${ts - 1200}$o1$g1$t${ts - 600}$j0$l0$h0` };
 
@@ -58,6 +64,7 @@ await ctx.route('**/*', async (route) => {
     kuldes = { status: resp.status(), url, json: j, szoveg: j ? null : (szoveg || '').slice(0, 300) };
     return route.fulfill({ response: resp, body: szoveg === null ? undefined : szoveg });
   }
+  if (NINCS_KULCSIRAS && /\/api\/foglalas-kulcs(\?|$)/.test(url) && req.method() !== 'GET') { kulcsirasBlokkolva.push({ t: mp(), metodus: req.method(), ut: u.pathname }); return route.fulfill({ status: 503, headers: { 'content-type': 'application/json' }, body: '{"ok":false,"miert":"R7: a kulcs-iras blokkolva (teszt)"}' }); }
   if (esemenyIras(url, req.method())) return route.fulfill(esemenyUres());
   const plat = platformOf(url) || (engedett(url, req.method()) ? null : 'tiltott');
   if (plat) { tiltott.push({ t: mp(), plat, metodus: req.method(), host: u.host, ut: u.pathname.slice(0, 60) }); return route.fulfill(ures(req)); }
@@ -143,9 +150,26 @@ try {
     o.mhKulcsEredmeny = await page.evaluate(() => window.mhKulcsEredmeny || null);
     o.tarolo = await page.evaluate(() => ({ mh_attr: localStorage.getItem('mh_attr'), mh_cc: localStorage.getItem('mh_cc'), sutik_nevei: document.cookie.split(';').map((c) => c.trim().split('=')[0]) }));
     lepes('koszonooldal (elonezet)', { booking_id: o.booking_id, attribucio: o.mhAttribucioEredmeny && o.mhAttribucioEredmeny.allapot, kulcs_iras: o.mhKulcsEredmeny && o.mhKulcsEredmeny.allapot });
+    // QA-3 / 1. eset: a koszonooldal ujratoltese (F5) es a VISSZA gomb; --varj-level <fajl>: a level feldolgozasa UTAN (a hivo letrehozza a <fajl>.level-kesz jelzest) meg egy ujratoltes
+    if (arg('koszono-ujratoltes', '0') === '1') {
+      const posztok = () => sajatKeresek.filter((x) => x.irany === 'keres' && x.metodus === 'POST').length;
+      const rogzit = async (cimke) => { await page.waitForTimeout(2500); const e = await page.evaluate(() => ({ a: window.mhAttribucioEredmeny || null, k: window.mhKulcsEredmeny || null })); const r = { lepes: cimke, url: page.url().replace(/\?.*$/, ''), post_keresek_osszesen: posztok(), attribucio: e.a && e.a.allapot, kulcs_iras: e.k && e.k.allapot }; o.koszono_ujratoltes.push(r); lepes('koszonooldal: ' + cimke, r); };
+      o.koszono_ujratoltes = []; await rogzit('elso betoltes');
+      await page.reload({ waitUntil: 'domcontentloaded' }); await rogzit('ujratoltes #1 (F5)');
+      await page.reload({ waitUntil: 'domcontentloaded' }); await rogzit('ujratoltes #2 (F5)');
+      await page.goBack({ waitUntil: 'domcontentloaded' }).catch(() => null); await rogzit('VISSZA gomb');
+      await page.goForward({ waitUntil: 'domcontentloaded' }).catch(() => null); await rogzit('ELORE gomb (vissza a koszonooldalra)');
+      const jelzes = arg('varj-level', '');
+      if (jelzes) {
+        if (OUT) fs.writeFileSync(OUT, JSON.stringify({ ...o, idovonal, sajat_keresek_nyers: sajatKeresek, reszleges: true }, null, 1)); // a hivo (qa3-futtat) ebbol olvassa a foglalas adatait a level-lepeshez
+        fs.writeFileSync(jelzes + '.kesz1', '1'); const t2 = Date.now(); while (Date.now() - t2 < 300000 && !fs.existsSync(jelzes + '.level-kesz')) await page.waitForTimeout(1000);
+        await page.reload({ waitUntil: 'domcontentloaded' }); await rogzit('ujratoltes a level feldolgozasa UTAN');
+        await page.goBack({ waitUntil: 'domcontentloaded' }).catch(() => null); await rogzit('VISSZA gomb a level feldolgozasa UTAN');
+      }
+    }
   }
 } catch (e) { lepes('HIBA', { uzenet: String(e.message || e).slice(0, 300) }); o.hiba = String(e.message || e).slice(0, 300); }
 const keresek = {}; for (const n of tiltott) { const k = `${n.plat} ${n.host}${n.ut}`; keresek[k] = (keresek[k] || 0) + 1; }
 console.log('Tiltott / naplozott kimeno keresek (semmi nem ment ki):', JSON.stringify(keresek)); console.log('JS-hibak:', hibak.length ? hibak.join(' | ') : 'nincs');
-if (OUT) fs.writeFileSync(OUT, JSON.stringify({ ...o, idovonal, sajat_keresek_nyers: sajatKeresek, tiltott_kimeno_keresek: keresek, js_hibak: hibak, konzol }, null, 1));
+if (OUT) fs.writeFileSync(OUT, JSON.stringify({ ...o, idovonal, sajat_keresek_nyers: sajatKeresek, tiltott_kimeno_keresek: keresek, ...(NINCS_KULCSIRAS ? { kulcsiras_blokkolva: kulcsirasBlokkolva } : {}), js_hibak: hibak, konzol }, null, 1));
 await browser.close();

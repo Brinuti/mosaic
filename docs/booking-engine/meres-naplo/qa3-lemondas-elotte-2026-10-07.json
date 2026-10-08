@@ -1,0 +1,119 @@
+{
+ "eset": "lemondas-elotte",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T08:05:08.329Z",
+   "lepes": "eset: lemondas-elotte",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  },
+  {
+   "ido": "2026-10-07T08:05:52.017Z",
+   "lepes": "a level valasza",
+   "allapot": "parositott",
+   "esemeny_kuldes": {
+    "allapot": "kesz",
+    "elo_allapot": "torolve"
+   }
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "Salonic-allapot a lemondas utan",
+   "elvart": "LEMONDVA",
+   "tenyleges": "LEMONDVA",
+   "ok": true
+  },
+  {
+   "leiras": "kiment esemenyek (Meta / TikTok / GA4 / Google)",
+   "elvart": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "tenyleges": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "minden cella \"kihagyva\" a lemondas miatt",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  }
+ ],
+ "szimulalt": [],
+ "booking_id": "mb_0muxtofbcegaa8wjnnyl927",
+ "salonic_uuid": "cfc95e2c-f58c-f067-5cb0-8d14f5d88243",
+ "esemeny_idk": {
+  "sorok": 8,
+  "elkuldve": {
+   "meta": [],
+   "tiktok": [],
+   "google": [],
+   "ga4": []
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Konzultacio:mb_0muxtofbcegaa8wjnnyl927",
+    "platform": "meta",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+   },
+   {
+    "esemeny_id": "Konzultacio:mb_0muxtofbcegaa8wjnnyl927",
+    "platform": "tiktok",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+   },
+   {
+    "esemeny_id": "Konzultacio:mb_0muxtofbcegaa8wjnnyl927",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+   },
+   {
+    "esemeny_id": "Konzultacio:mb_0muxtofbcegaa8wjnnyl927",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+   },
+   {
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxtofbcegaa8wjnnyl927",
+    "platform": "meta",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+   },
+   {
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxtofbcegaa8wjnnyl927",
+    "platform": "tiktok",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+   },
+   {
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxtofbcegaa8wjnnyl927",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+   },
+   {
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxtofbcegaa8wjnnyl927",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}

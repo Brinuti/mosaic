@@ -1,0 +1,569 @@
+{
+ "eset": "fodrasz",
+ "hivas_ideje": "2026-10-07T08:05:44.750Z",
+ "kerelem_maszkolt": {
+  "uuid": "cfc95e2c-f58c-f067-5cb0-8d14f5d88243",
+  "host": "mosaic-hair.salonic.hu",
+  "felado": "Mosaic Hair",
+  "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+  "munkatarsak": [
+   "Evelin"
+  ],
+  "ld": {
+   "startDate": "2026-10-21T12:30:00.000Z"
+  },
+  "level_datuma": "2026-10-07T08:04:44Z",
+  "ar": 0,
+  "vendeg": "<maszkolva: e-mail + telefon>",
+  "uj_vendeg": true
+ },
+ "szimulalt": {
+  "uj_vendeg": true,
+  "megjegyzes": "a Salonic \"uj vendeg\" jelzeset a teszt szimulalja; az ar a Salonic-level \"Price / Fizetendo varhatoan\" sorabol"
+ },
+ "egyeztetes_valasz_nyers": {
+  "ok": true,
+  "allapot": "parositott",
+  "kuldheto": true,
+  "duplikalt": false,
+  "booking_id": "mb_0muxtofbcegaa8wjnnyl927",
+  "esemeny_id": "mb_0muxtofbcegaa8wjnnyl927",
+  "kulcs": "10823|26064|1792585800",
+  "kulcs_forras": "nevtabla",
+  "service_egyezik": true,
+  "probalkozas": 1,
+  "riasztas": false,
+  "keses": false,
+  "kulcs_atadva": false,
+  "jelolt_elo_allapot": null,
+  "nyom": {
+   "uuid": "cfc95e2c-f58c-f067-5cb0-8d14f5d88243",
+   "host": "mosaic-hair.salonic.hu",
+   "ag1": {
+    "ok": false,
+    "miert": "a foglalas torolve",
+    "lepesek": [
+     {
+      "url": "/booking/bookingDetails/cfc95e2c-f58c-f067-5cb0-8d14f5d88243",
+      "status": 200,
+      "vegso": "/booking/deleteSuccess/cfc95e2c-f58c-f067-5cb0-8d14f5d88243"
+     }
+    ],
+    "kulcs": null,
+    "serviceId": null
+   },
+   "ag2": {
+    "ok": true,
+    "miert": null,
+    "felado": "Mosaic Hair",
+    "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+    "munkatarsak": [
+     "Evelin"
+    ],
+    "idopontSzoveg": null,
+    "idopontForras": "ld+json",
+    "startUnix": 1792585800,
+    "ldUnix": 1792585800,
+    "szovegUnix": null,
+    "jeloltEmployeeIds": [
+     26064
+    ],
+    "serviceIds": [
+     "232804"
+    ],
+    "kulcsok": [
+     "10823|26064|1792585800"
+    ],
+    "serviceId": "232804"
+   },
+   "jeloltKulcsok": [
+    "10823|26064|1792585800"
+   ],
+   "kulcsForras": "nevtabla",
+   "jeloltek": [
+    {
+     "kulcs": "10823|26064|1792585800",
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muxtofbcegaa8wjnnyl927",
+       "service_id": "232804",
+       "ido": 1791360328,
+       "kuldve_uuid": null
+      }
+     ]
+    }
+   ],
+   "talalatok": [
+    {
+     "kulcs": "10823|26064|1792585800",
+     "booking_id": "mb_0muxtofbcegaa8wjnnyl927",
+     "service_id": "232804",
+     "forras": "koszonooldal"
+    }
+   ],
+   "valasztas": [
+    {
+     "kulcs": "10823|26064|1792585800",
+     "allapot": "valasztott",
+     "miert": null
+    }
+   ]
+  },
+  "esemeny_kuldes": {
+   "allapot": "kesz",
+   "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+   "erkezesi_adat": true,
+   "esemenyek": [
+    {
+     "esemeny_id": "Konzultacio:mb_0muxtofbcegaa8wjnnyl927",
+     "nev": "Konzultacio",
+     "tipus": "alap",
+     "ertek": 13000,
+     "ertek_forras": "konzultacio_tabla",
+     "salonic_ar": 0,
+     "nyitott": false,
+     "platformok": {
+      "meta": {
+       "id": 281,
+       "allapot": "kihagyva",
+       "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+      },
+      "tiktok": {
+       "id": 282,
+       "allapot": "kihagyva",
+       "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+      },
+      "google": {
+       "id": 283,
+       "allapot": "kihagyva",
+       "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+      },
+      "ga4": {
+       "id": 284,
+       "allapot": "kihagyva",
+       "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxtofbcegaa8wjnnyl927",
+     "nev": "Fodrasz_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "ertek": 13000,
+     "ertek_forras": "konzultacio_tabla",
+     "salonic_ar": 0,
+     "nyitott": false,
+     "platformok": {
+      "meta": {
+       "id": 285,
+       "allapot": "kihagyva",
+       "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+      },
+      "tiktok": {
+       "id": 286,
+       "allapot": "kihagyva",
+       "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+      },
+      "google": {
+       "id": 287,
+       "allapot": "kihagyva",
+       "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+      },
+      "ga4": {
+       "id": 288,
+       "allapot": "kihagyva",
+       "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)"
+      }
+     }
+    }
+   ],
+   "elo_allapot": "torolve",
+   "jelleg": "konzultacio",
+   "kupon": false,
+   "uj_vendeg": true,
+   "salonic_ar": 0,
+   "ertek": 13000,
+   "ar_forras": "bejovo",
+   "uzletag": "fodrasz"
+  }
+ },
+ "szerveres_naplo_nyers": {
+  "ok": true,
+  "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+  "erkezes": {
+   "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+   "uzletag": "fodrasz",
+   "tipus": "foglalas",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_FODRASZ_MUXTOCGL_GCLID",
+      "ts": 1791360309
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_FODRASZ_MUXTOCGL_WBRAID",
+      "ts": 1791360312
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791360312000.IwAR_TESZT_FODRASZ_MUXTOCGL_FBCLID",
+     "fbclid": "IwAR_TESZT_FODRASZ_MUXTOCGL_FBCLID",
+     "ts": 1791360312
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_FODRASZ_MUXTOCGL_TTCLID",
+      "ts": 1791360312
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_fodrasz_elso",
+     "content": "hirdetes_a",
+     "ts": 1791360309
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_fodrasz_utolso",
+     "ts": 1791360312
+    },
+    "fbp": "fb.1.1791355308000.9854529281",
+    "ttp": "TESZT_FODRASZ_MUXTOCGL_ttp_my3ozl1470",
+    "ga4": {
+     "client_id": "532012155.1791273908",
+     "session_id": "1791359108",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true,
+    "dontes": true
+   },
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+   "ip": "160.79.106.xxx",
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok",
+   "bongeszo": {
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok",
+    "first_booking": true,
+    "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+    "kategoria": "",
+    "ar": 0,
+    "g": "g:3385039",
+    "munkatars": "",
+    "bookingUrl": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=26064&placeId=10823&serviceId=232804&startDate=1792585800&back=mb_0muxtofbcegaa8wjnnyl927"
+   },
+   "ido": 1791360328,
+   "frissitve": 1791360328
+  },
+  "kuldesek": [
+   {
+    "id": 281,
+    "esemeny_id": "Konzultacio:mb_0muxtofbcegaa8wjnnyl927",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "meta",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791360346,
+    "frissitve": 1791360346
+   },
+   {
+    "id": 282,
+    "esemeny_id": "Konzultacio:mb_0muxtofbcegaa8wjnnyl927",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791360346,
+    "frissitve": 1791360346
+   },
+   {
+    "id": 283,
+    "esemeny_id": "Konzultacio:mb_0muxtofbcegaa8wjnnyl927",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "google",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791360346,
+    "frissitve": 1791360346
+   },
+   {
+    "id": 284,
+    "esemeny_id": "Konzultacio:mb_0muxtofbcegaa8wjnnyl927",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791360346,
+    "frissitve": 1791360346
+   },
+   {
+    "id": 285,
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxtofbcegaa8wjnnyl927",
+    "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "meta",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791360346,
+    "frissitve": 1791360346
+   },
+   {
+    "id": 286,
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxtofbcegaa8wjnnyl927",
+    "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791360346,
+    "frissitve": 1791360346
+   },
+   {
+    "id": 287,
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxtofbcegaa8wjnnyl927",
+    "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "google",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791360346,
+    "frissitve": 1791360346
+   },
+   {
+    "id": 288,
+    "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muxtofbcegaa8wjnnyl927",
+    "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "fodrasz",
+    "source_id": "mb_0muxtofbcegaa8wjnnyl927",
+    "allapot": "kihagyva",
+    "indok": "a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)",
+    "ertek": 13000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791360346,
+    "frissitve": 1791360346
+   }
+  ]
+ }
+}

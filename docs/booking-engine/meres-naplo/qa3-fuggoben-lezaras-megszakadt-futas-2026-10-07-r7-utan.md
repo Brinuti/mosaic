@@ -1,0 +1,6 @@
+# R7 (fuggoben-lezaras) – az ELSO futas megszakadt (a konteiner ujraindult), de az elo Zap probait a #128 D1 megorizte
+
+- Futas: 2026-10-07 18:46:17 UTC indult (`--nap 2026-10-07-r7-utan`), a foglalas: `mb_0muygkyzjzw7ydwo38tckwb`, Salonic-UUID `011d67f0-369d-2066-5ed5-ba766009df13`; a koszonooldali kulcs-iras blokkolva (`--nincs-kulcsiras 1`).
+- A futtato folyamat a konteiner ujrainditasa miatt ~18:51 UTC utan leallt (allapot-elozmeny: `nincs sor` 18:46:41 → `fuggoben/1` 18:47:01 → `fuggoben/2` 18:48:24 → `fuggoben/3` 18:51:28); a vegso ellenorzesek es a keso level nem futottak le; az arvan maradt foglalast 19:5x UTC-kor lemondtam (`SIKERES: lemondas visszaigazolva`).
+- A #128 D1 (csak olvasas, 2026-10-07 ~19:50 UTC) az elo Zap probai utan: `allapot = parositatlan`, `probalkozas = 4`, `riasztas = 1`, `kovetkezo = NULL`, `booking_id` nincs (nem parositott), `kuldve` nincs, `kulcs_forras = salonic-oldal`, letrehozva **18:46:55**, frissitve **19:01:27** (a 4. = utolso proba ~14,5 perccel a beerkezes utan), **0 `meres_kuldes` sor** a foglalashoz.
+- Ez a megszakadt futas nyers bizonyiteka; az R7 szabalyos futtatoi futasa (kesobbi level + riasztas-lista ellenorzes) kulon, a `qa3-fuggoben-lezaras-2026-10-07-r7-utan.json` fajlban van.

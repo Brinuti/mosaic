@@ -1,0 +1,160 @@
+{
+ "eset": "elso-foglalas",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07-r7-utan",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T20:08:55.911Z",
+   "lepes": "eset: elso-foglalas",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "1. hivas: parositas + esemenyek (vagy az elo Zap mar elintezte: mar_kuldve)",
+   "elvart": "parositott + kesz | mar_kuldve",
+   "tenyleges": "parositott + kesz",
+   "ok": true
+  },
+  {
+   "leiras": "javitott kod fut: a valasz tartalmazza a jelleg_rogzites mezot, az 1. level nem elter",
+   "elvart": [
+    true,
+    false
+   ],
+   "tenyleges": [
+    true,
+    false
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "Meta + TikTok: alap + ernyo; Google + GA4: csak az alap",
+   "elvart": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "tenyleges": [
+    2,
+    2,
+    1,
+    1
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-nevek (Meta)",
+   "elvart": [
+    "Oxigen_AkviziciosFoglalas",
+    "Oxigen_FoglalasElso"
+   ],
+   "tenyleges": [
+    "Oxigen_AkviziciosFoglalas",
+    "Oxigen_FoglalasElso"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "esemeny-nevek (TikTok)",
+   "elvart": [
+    "Oxigen_FoglalasElso",
+    "Schedule"
+   ],
+   "tenyleges": [
+    "Oxigen_FoglalasElso",
+    "Schedule"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "egy alapesemeny-tipus (FoglalasElso), NEM konzultacio",
+   "elvart": [
+    "FoglalasElso"
+   ],
+   "tenyleges": [
+    "FoglalasElso"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "kuldott ertek = a tenyleges ar (> 0, nem a konzultacio-ertek)",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  },
+  {
+   "leiras": "nincs dupla (esemeny_id, platform)",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  }
+ ],
+ "szimulalt": [],
+ "booking_id": "mb_0muyjj838g82bj12rmyeq98",
+ "salonic_uuid": "8a43e95a-c9cb-54ff-43e8-2f05c6e78694",
+ "esemeny_idk": {
+  "sorok": 8,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyjj838g82bj12rmyeq98",
+     "nev": "Oxigen_FoglalasElso",
+     "ertek": 29900
+    },
+    {
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muyjj838g82bj12rmyeq98",
+     "nev": "Oxigen_AkviziciosFoglalas",
+     "ertek": 29900
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyjj838g82bj12rmyeq98",
+     "nev": "Oxigen_FoglalasElso",
+     "ertek": 29900
+    },
+    {
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muyjj838g82bj12rmyeq98",
+     "nev": "Schedule",
+     "ertek": 29900
+    }
+   ],
+   "google": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyjj838g82bj12rmyeq98",
+     "nev": "ARNYEK-7825200901",
+     "ertek": 29900
+    }
+   ],
+   "ga4": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muyjj838g82bj12rmyeq98",
+     "nev": "foglalas_elso",
+     "ertek": 29900
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muyjj838g82bj12rmyeq98",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   },
+   {
+    "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muyjj838g82bj12rmyeq98",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}

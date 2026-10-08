@@ -1,0 +1,141 @@
+{
+ "eset": "kattintas-meta-google",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T08:13:10.106Z",
+   "lepes": "eset: kattintas-meta-google",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "1. hivas: parositas + esemenyek (vagy az elo Zap mar elintezte: mar_kuldve)",
+   "elvart": "parositott + kesz | mar_kuldve",
+   "tenyleges": "parositott + kesz",
+   "ok": true
+  },
+  {
+   "leiras": "Meta fbc (fbclid): csak ha volt Meta-kattintas",
+   "elvart": true,
+   "tenyleges": true,
+   "ok": true
+  },
+  {
+   "leiras": "TikTok ttclid: csak ha volt TikTok-kattintas",
+   "elvart": false,
+   "tenyleges": false,
+   "ok": true
+  },
+  {
+   "leiras": "Google: elkuldve, ha volt Google-kattintas (gclid); egyebkent kihagyva (nincs kattintasazonosito)",
+   "elvart": "elkuldve",
+   "tenyleges": "elkuldve",
+   "ok": true
+  },
+  {
+   "leiras": "a Meta-kerelem nem tartalmaz masik platform kattintasazonositot (gclid / wbraid / ttclid)",
+   "elvart": false,
+   "tenyleges": false,
+   "ok": true
+  },
+  {
+   "leiras": "a TikTok-kerelem nem tartalmaz masik platform kattintasazonositot (gclid / wbraid / fbclid / fbc)",
+   "elvart": false,
+   "tenyleges": false,
+   "ok": true
+  },
+  {
+   "leiras": "GA4 elkuldve (client_id az _ga sutibol)",
+   "elvart": "elkuldve",
+   "tenyleges": "elkuldve",
+   "ok": true
+  }
+ ],
+ "szimulalt": [],
+ "booking_id": "mb_0muxtyqvuxakvxfevv5rh9t",
+ "salonic_uuid": "758a285e-1748-9a0f-006a-486d051244a7",
+ "kattintas": {
+  "elso": "meta",
+  "utolso": "google"
+ },
+ "esemeny_idk": {
+  "sorok": 8,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtyqvuxakvxfevv5rh9t",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muxtyqvuxakvxfevv5rh9t",
+     "nev": "Schedule",
+     "ertek": 53800
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtyqvuxakvxfevv5rh9t",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muxtyqvuxakvxfevv5rh9t",
+     "nev": "CompletePayment",
+     "ertek": 53800
+    }
+   ],
+   "google": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtyqvuxakvxfevv5rh9t",
+     "nev": "ARNYEK-7825199989",
+     "ertek": 53800
+    }
+   ],
+   "ga4": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtyqvuxakvxfevv5rh9t",
+     "nev": "foglalas_elso",
+     "ertek": 53800
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Schedule:mb_0muxtyqvuxakvxfevv5rh9t",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   },
+   {
+    "esemeny_id": "Schedule:mb_0muxtyqvuxakvxfevv5rh9t",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "erkezes": {
+  "utm_elso": {
+   "source": "facebook",
+   "medium": "paid",
+   "campaign": "qa2_headspa_elso",
+   "ts": 1791360791
+  },
+  "utm_utolso": {
+   "source": "google",
+   "medium": "cpc",
+   "campaign": "qa2_headspa_utolso",
+   "content": "hirdetes_a",
+   "ts": 1791360793
+  }
+ },
+ "eredmeny": "PASS"
+}

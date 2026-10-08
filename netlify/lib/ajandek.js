@@ -52,7 +52,7 @@
 import '../../assets/js/ajandek-adat.js';
 import '../../assets/js/ajandek-kartya.js';
 import * as L from './ajandek-levelek.js';
-import { ajandekEsemenyKuldes } from './meres/ajandek-esemeny.js';
+import { ajandekEsemenyKuldes, ajandekVisszateritesKorrekcio } from './meres/ajandek-esemeny.js';
 
 const ADAT = globalThis.AJANDEK_ADAT;
 const KARTYA = globalThis.AJANDEK_KARTYA;
@@ -1322,6 +1322,36 @@ async function arnyekMeres(k, piId, mod, pi = null) {
 /** A webhook-ut kovetve manualisan (kulcsos /api/meres-admin 'ajandek_ujra'): ugyanaz az arnyek-ut, a PaymentIntentet a Stripe-tol kerdezi. -> arnyekMeres allapota. */
 export const arnyekMeresUjra = (env, piId, mod, most = new Date()) => arnyekMeres({ env, most }, piId, mod);
 
+// ELETUT / VISSZATERITES (DECISION #102): charge.refunded -> a vasarlas ARNYEK-esemenyeinek korrekcioja (Google RETRACTION / RESTATEMENT, GA4 refund). Csak MERES_ELOSZTO=1 + MERES_ELETUT=1 + KULCS_DB mellett
+// (elesben nincs), csak ARNYEK-celpontokra (dryRun alapbol). A hiba SOHA nem allitja meg a webhookot (nem dob, nem ad 5xx-et). A pi: mar lekerdezett PaymentIntent vagy null (a Stripe-tol kerdezzuk).
+async function arnyekVisszateres(k, piId, forras = 'stripe_webhook') {
+  try {
+    const db = k.env.KULCS_DB;
+    if (String(k.env.MERES_ELOSZTO) !== '1' || String(k.env.MERES_ELETUT) !== '1' || !db) return 'ki';
+    const p = await piLeker(k.env, piId);
+    if (!p.metadata || p.metadata.forras !== FORRAS) return 'kihagyva';
+    const r = await ajandekVisszateritesKorrekcio({ db, env: k.env, pi: p, fetchImpl: fetch, now: () => k.most.getTime(), forras });
+    console.log('ajandek: arnyek-visszaterites', piId, r.allapot, r.miert || '');
+    return r.allapot;
+  } catch (e) {
+    console.error('ajandek: arnyek-visszaterites hiba', piId, e && e.message);
+    return 'hiba';
+  }
+}
+/** A charge.refunded webhook-agat manualisan ujrajatsza (kulcsos /api/meres-admin 'ajandek_visszaterites_ujra'). -> az allapot. */
+export const arnyekVisszateresUjra = (env, piId, most = new Date()) => arnyekVisszateres({ env, most }, piId, 'admin_ujrajatszas');
+/** CSAK TESZT-modu Stripe-kulccsal (sk_test / rk_test): TESZT-visszaterites a PaymentIntentre (osszegHuf: reszleges, null = teljes). A Stripe-webhook az elonezetet nem eri el, ezert utana az ujrajatszas kell. */
+export async function ajandekTesztVisszateritese(env, piId, osszegHuf = null) {
+  if (!/^(sk|rk)_test_/.test(titkosKulcs(env))) return { ok: false, miert: 'csak teszt-modu Stripe-kulccsal (sk_test / rk_test)' };
+  if (!PI_RE.test(String(piId))) return { ok: false, miert: 'ervenytelen pi' };
+  const params = { payment_intent: piId, 'metadata[teszt]': 'eletut-visszaterites' };
+  if (osszegHuf) params.amount = String(Math.round(osszegHuf * 100)); // a HUF-ot a Stripe fillerben (x100) adja
+  try {
+    const r = await stripe(env, 'POST', '/v1/refunds', params, `tesztrefund-${piId}-${osszegHuf || 'teljes'}`);
+    return { ok: true, refund_id: r.id, osszeg_filler: r.amount, allapot: r.status };
+  } catch (e) { return { ok: false, miert: 'stripe: ' + (e && e.message || e), status: e && e.status }; }
+}
+
 // payment_intent.succeeded: levelek (fizetesEsemenyFo), majd a szerveroldali vasarlasmeres (meresKuld): a mereshiba csak 5xx-et okoz
 // (a Stripe ujraprobalja; a levelek ilyenkor mar idempotensen kihagyodnak), a levelhiba elobb kiadja a sajat 5xx-et.
 async function fizetesEsemeny(k, obj, ok) {
@@ -1467,6 +1497,10 @@ async function webhook(k) {
   const obj = esemeny && esemeny.data && esemeny.data.object;
   if (!obj || typeof obj !== 'object') return ok;
   if (esemeny.type === 'payment_intent.succeeded') return fizetesEsemeny(k, obj, ok);
+  if (esemeny.type === 'charge.refunded') { // ELETUT: ELOSZOR az arnyek-korrekcio (sosem dob, idempotens), utana a meglevo szalon-ertesites (az 5xx-et adhat: a Stripe ujraprobalja)
+    const piKorr = typeof obj.payment_intent === 'string' ? obj.payment_intent : (obj.payment_intent && obj.payment_intent.id) || '';
+    if (PI_RE.test(piKorr)) await arnyekVisszateres(k, piKorr);
+  }
   if (esemeny.type === 'charge.refunded' || esemeny.type === 'charge.dispute.created') return visszavonasEsemeny(k, esemeny.type, obj, ok);
   return ok;
 }

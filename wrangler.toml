@@ -32,10 +32,12 @@ database_id = "08eb6f2f-180a-4352-a7f9-27333d5d6b5d"
 # A foglalas-kulcs tabla (Cloudflare D1, QA-1 folytatas, lasd docs/booking-engine/BOOKING_ID.md): a foglalo sajat booking_id-je <-> a Salonic-foglalas parositasa.
 # Szemelyes adat nincs benne. CSAK ELONEZETKENT kotve (a PR-elonezet kulon adatbazist hasznal); az eles kotes (database_name = "mosaic-foglalas-kulcs", [[d1_databases]] binding = "KULCS_DB")
 # az elesites donteseig hianyzik: az eles /api/foglalas-kulcs 503-at ad, a koszonooldali iro ezt elnyeli (a foglalas ettol nem akad el).
+# ELETUT-AG (claude/mosaic-meres-eletut, DECISION #102): KULON elonezeti adatbazis, hogy a QA-3-ban vizsgalt gyujtes (PR #128 elonezet: mosaic-foglalas-kulcs-elonezet, 628113fe-...) adatait ne erintse.
+# (Ez az ag a #128 elonezeti kotesre NEM ir: a wrangler.toml agankent ervenyes; a merge-kor a kozos adatbazis kotese visszaall.)
 [[env.preview.d1_databases]]
 binding = "KULCS_DB"
-database_name = "mosaic-foglalas-kulcs-elonezet"
-database_id = "628113fe-9793-450d-baad-fc77814995eb"
+database_name = "mosaic-foglalas-kulcs-eletut"
+database_id = "51996f5f-6f25-4577-97bc-4ded7760b977"
 
 [vars]
 ESEMENY_IRAS = "1"   # a foglalasi jegyzettomb eles irasa BEKAPCSOLVA (a tulajdonos jovahagyta, 2026-10-04); kikapcsolas: a sor torlese
@@ -73,6 +75,8 @@ MERES_ELOSZTO = "1"
 META_TESZT_KOD = "TEST83939"            # a Meta Esemenykezelo "Teszteszemenyek" kodja (dataset 28616665324611098, MOSAIC ARNYEK meres-teszt)
 TIKTOK_TESZT_KOD = "TEST83543"         # a TikTok Esemenykezelo "Teszteszemenyek" kodja (ARNYEK pixel DB2GTTJC77UE4D1NE4MG); a korabbi szintetikus TEST_MOSAIC_QA2 helyett (2026-10-06)
 GA4_TESZT_MEASUREMENT_ID = "G-M5MLRLNQBP"   # a GA4 TESZT-property (az elo G-H4206SQ0Q7 a kodban tiltott); a Measurement Protocol secret: GA4_TESZT_API_SECRET (titok)
+MERES_ELETUT = "1"                      # ELETUT-esemenyek (lemondva / nem_jelent_meg / megjelent, visszaterites-korrekcio): csak elonezeten (DECISION #102)
+MERES_KULDES_MOD = "nyelo"              # ELETUT-AG ELONEZETE: a kerelmek elkeszulnek es TELJESEN naplozodnak, de SEMERRE nem mennek ki (a kozos arnyek-celpontok szamlaloit a QA-3 vizsgalja); a #128 elonezeten ez nincs beallitva
 MERES_NAPLO_TELJES = "1"                # CSAK elonezet (sajat teszt-IP): a naploban a TELJES kikuldott payload; ott, ahol nincs beallitva, a nyers IP maszkolt
 
 # A szemelyre szabott ajandekkartyak fotoi (Cloudflare KV, lasd AJANDEK.md "Foto-tarolas"): eles es elonezeti nevter kulon.

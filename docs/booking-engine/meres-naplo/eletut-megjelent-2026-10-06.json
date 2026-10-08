@@ -1,0 +1,793 @@
+{
+ "nev": "megjelent",
+ "bazis": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev",
+ "megjegyzes": "TESZT - Claude foglalas; nyelo mod: a kerelmek elkeszulnek es naplozodnak, de semerre nem mennek ki",
+ "lepesek": [
+  {
+   "ido": "2026-10-06T18:38:05.908Z",
+   "lepes": "foglalas letrehozva (Salonic, TESZT - Claude) + level -> /api/foglalas-egyeztetes",
+   "eset": "pmu-kezeles",
+   "salonic_uuid": "a4f63cdf-b163-5310-e68a-fd1241590604",
+   "salonic_host": "mosaic-pmu.salonic.hu",
+   "booking_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+   "kezdes_unix": 1793466000,
+   "egyeztetes": {
+    "allapot": "parositott",
+    "kuldheto": true,
+    "esemeny_kuldes": {
+     "allapot": "kesz",
+     "elo_allapot": "aktiv",
+     "jelleg": "elso"
+    }
+   },
+   "lemondo_url_van": true
+  },
+  {
+   "ido": "2026-10-06T18:38:07.389Z",
+   "lepes": "POST /api/foglalas-eletut megjelent (az idopont meg nem kezdodott el)",
+   "kerelem": {
+    "uuid": "a4f63cdf-b163-5310-e68a-fd1241590604",
+    "allapot": "megjelent",
+    "forras": "eletut-e2e"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "allapot": "korai",
+    "miert": "korai: az idopont meg nem kezdodott el",
+    "eletut_allapot": null
+   }
+  },
+  {
+   "ido": "2026-10-06T18:38:44.686Z",
+   "lepes": "TESZT-ELOKESZITES: a kezdesi ido a SAJAT elonezeti adatbazisban (mosaic-foglalas-kulcs-eletut) 90 perccel a multba tolva (kulcs 14585|32428|1791306493), mert a foglalas valojaban jovobeli; a Salonic-oldali allapot valtozatlan (aktiv)"
+  },
+  {
+   "ido": "2026-10-06T18:38:47.748Z",
+   "lepes": "POST /api/foglalas-eletut megjelent (kezdes utan, a foglalas aktiv)",
+   "kerelem": {
+    "uuid": "a4f63cdf-b163-5310-e68a-fd1241590604",
+    "allapot": "megjelent",
+    "forras": "eletut-e2e"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "allapot": "kesz",
+    "source_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+    "uzletag": "pmu",
+    "eletut_allapot": "megjelent",
+    "elozo": null,
+    "elo_allapot": "aktiv",
+    "cellak": [
+     {
+      "platform": "meta",
+      "esemeny_id": "Megjelent:mb_0mux0ty7qkcs8h9fbu8ev8i",
+      "platform_nev": "PMU_Megjelent",
+      "allapot": "elkuldve",
+      "http_status": 200,
+      "kuldo": "nyelo"
+     },
+     {
+      "platform": "tiktok",
+      "esemeny_id": "Megjelent:mb_0mux0ty7qkcs8h9fbu8ev8i",
+      "platform_nev": "PMU_Megjelent",
+      "allapot": "elkuldve",
+      "http_status": 200,
+      "kuldo": "nyelo"
+     }
+    ]
+   }
+  },
+  {
+   "ido": "2026-10-06T18:38:49.547Z",
+   "lepes": "POST /api/foglalas-eletut megjelent (ismetles)",
+   "kerelem": {
+    "uuid": "a4f63cdf-b163-5310-e68a-fd1241590604",
+    "allapot": "megjelent",
+    "forras": "eletut-e2e"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "allapot": "mar_kuldve",
+    "source_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+    "uzletag": "pmu",
+    "eletut_allapot": "megjelent",
+    "elozo": "megjelent",
+    "elo_allapot": "aktiv",
+    "cellak": [
+     {
+      "platform": "meta",
+      "esemeny_id": "Megjelent:mb_0mux0ty7qkcs8h9fbu8ev8i",
+      "platform_nev": "PMU_Megjelent",
+      "allapot": "elkuldve",
+      "indok": null,
+      "http_status": 200,
+      "duplikalt": true
+     },
+     {
+      "platform": "tiktok",
+      "esemeny_id": "Megjelent:mb_0mux0ty7qkcs8h9fbu8ev8i",
+      "platform_nev": "PMU_Megjelent",
+      "allapot": "elkuldve",
+      "indok": null,
+      "http_status": 200,
+      "duplikalt": true
+     }
+    ]
+   }
+  },
+  {
+   "ido": "2026-10-06T18:38:50.558Z",
+   "lepes": "POST /api/foglalas-eletut nem_jelent_meg (ellentmondo allapot)",
+   "kerelem": {
+    "uuid": "a4f63cdf-b163-5310-e68a-fd1241590604",
+    "allapot": "nem_jelent_meg",
+    "forras": "eletut-e2e"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "allapot": "ellentmondas",
+    "riasztas": true,
+    "miert": "ellentmondas: a foglalas allapota mar \"megjelent\", az uj \"nem_jelent_meg\"",
+    "eletut_allapot": "megjelent"
+   }
+  },
+  {
+   "ido": "2026-10-06T18:38:51.503Z",
+   "lepes": "naplo (vegso)",
+   "booking_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+   "eletut": {
+    "ok": true,
+    "source_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+    "allapot": {
+     "source_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+     "uzletag": "pmu",
+     "allapot": "megjelent",
+     "elozo": null,
+     "ido": 1791311925,
+     "forras": "eletut-e2e",
+     "osszeg_filler": null,
+     "visszateritett_filler": 0,
+     "frissitve": 1791311925
+    },
+    "naplo": [
+     {
+      "id": 6,
+      "source_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+      "bejovo": "{\"allapot\":\"megjelent\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "korai: az idopont meg nem kezdodott el",
+      "allapot_elotte": null,
+      "allapot_utana": null,
+      "ido": 1791311886
+     },
+     {
+      "id": 7,
+      "source_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+      "bejovo": "{\"allapot\":\"megjelent\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "kesz: meta=elkuldve, tiktok=elkuldve",
+      "allapot_elotte": null,
+      "allapot_utana": "megjelent",
+      "ido": 1791311925
+     },
+     {
+      "id": 8,
+      "source_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+      "bejovo": "{\"allapot\":\"megjelent\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "mar_kuldve: meta=elkuldve, tiktok=elkuldve",
+      "allapot_elotte": "megjelent",
+      "allapot_utana": "megjelent",
+      "ido": 1791311928
+     },
+     {
+      "id": 9,
+      "source_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+      "bejovo": "{\"allapot\":\"nem_jelent_meg\",\"ido\":null,\"forras\":\"eletut-e2e\",\"vendeg\":null}",
+      "eredmeny": "ellentmondas: a foglalas allapota mar \"megjelent\", az uj \"nem_jelent_meg\"",
+      "allapot_elotte": "megjelent",
+      "allapot_utana": "megjelent",
+      "ido": 1791311930
+     }
+    ],
+    "kuldesek": [
+     {
+      "id": 18,
+      "esemeny_id": "Megjelent:mb_0mux0ty7qkcs8h9fbu8ev8i",
+      "esemeny_nev": "PMU_Megjelent",
+      "esemeny_tipus": "eletut",
+      "platform": "meta",
+      "platform_nev": "PMU_Megjelent",
+      "uzletag": "pmu",
+      "source_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+      "allapot": "elkuldve",
+      "indok": null,
+      "ertek": null,
+      "penznem": null,
+      "hozzajarulas": null,
+      "kerelem": {
+       "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+       "method": "POST",
+       "fejlec_nevek": [
+        "content-type"
+       ],
+       "cel": {
+        "dataset": "28616665324611098",
+        "nev": "MOSAIC ARNYEK meres-teszt",
+        "test_event_code": "TEST83939"
+       },
+       "body": {
+        "data": [
+         {
+          "event_name": "PMU_Megjelent",
+          "event_time": 1791311925,
+          "event_id": "Megjelent:mb_0mux0ty7qkcs8h9fbu8ev8i",
+          "action_source": "physical_store",
+          "user_data": {
+           "em": [
+            "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+           ],
+           "ph": [
+            "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+           ],
+           "external_id": [
+            "2692ece9a48e345a8b1119f7b02ad2da3e89aac6d1eb13c9da9e18af6c2983d7"
+           ],
+           "fbc": "fb.1.1791311857000.IwAR_TESZT_PMU-KEZELES_MUX0TSWU_FBCLID",
+           "fbp": "fb.1.1791306854000.1818007765"
+          },
+          "custom_data": {
+           "esemeny_tipus": "diagnosztika",
+           "eletut_allapot": "megjelent",
+           "order_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+           "content_category": "pmu"
+          }
+         }
+        ],
+        "test_event_code": "TEST83939",
+        "partner_agent": "mosaic-qa2-arnyek"
+       }
+      },
+      "http_status": 200,
+      "platform_valasz": "{\"nyelo\":true,\"megjegyzes\":\"NYELO MOD: a kerelem nem ment ki sehova (MERES_KULDES_MOD=nyelo)\"}",
+      "kuldo": "nyelo",
+      "probalkozas": 1,
+      "letrehozva": 1791311925,
+      "frissitve": 1791311925
+     },
+     {
+      "id": 19,
+      "esemeny_id": "Megjelent:mb_0mux0ty7qkcs8h9fbu8ev8i",
+      "esemeny_nev": "PMU_Megjelent",
+      "esemeny_tipus": "eletut",
+      "platform": "tiktok",
+      "platform_nev": "PMU_Megjelent",
+      "uzletag": "pmu",
+      "source_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+      "allapot": "elkuldve",
+      "indok": null,
+      "ertek": null,
+      "penznem": null,
+      "hozzajarulas": null,
+      "kerelem": {
+       "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+       "method": "POST",
+       "fejlec_nevek": [
+        "content-type",
+        "access-token"
+       ],
+       "cel": {
+        "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+        "nev": "MOSAIC ARNYEK meres-teszt",
+        "test_event_code": "TEST83543"
+       },
+       "body": {
+        "event_source": "web",
+        "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+        "test_event_code": "TEST83543",
+        "data": [
+         {
+          "event": "PMU_Megjelent",
+          "event_time": 1791311925,
+          "event_id": "Megjelent:mb_0mux0ty7qkcs8h9fbu8ev8i",
+          "user": {
+           "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+           "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+           "external_id": "2692ece9a48e345a8b1119f7b02ad2da3e89aac6d1eb13c9da9e18af6c2983d7",
+           "ttclid": "E.C.P.TESZT_PMU-KEZELES_MUX0TSWU_TTCLID",
+           "ttp": "TESZT_PMU-KEZELES_MUX0TSWU_ttp_jujonwvrv0"
+          },
+          "properties": {
+           "order_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+           "content_type": "product"
+          }
+         }
+        ]
+       }
+      },
+      "http_status": 200,
+      "platform_valasz": "{\"nyelo\":true,\"megjegyzes\":\"NYELO MOD: a kerelem nem ment ki sehova (MERES_KULDES_MOD=nyelo)\"}",
+      "kuldo": "nyelo",
+      "probalkozas": 1,
+      "letrehozva": 1791311925,
+      "frissitve": 1791311925
+     }
+    ]
+   },
+   "kuldesi_sorok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0ty7qkcs8h9fbu8ev8i",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "meta",
+     "platform_nev": "PMU_FoglalasElso",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 99000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "PMU_FoglalasElso",
+         "event_time": 1791311819,
+         "event_id": "FoglalasElso:mb_0mux0ty7qkcs8h9fbu8ev8i",
+         "action_source": "website",
+         "event_source_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/pmu-ok",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "2692ece9a48e345a8b1119f7b02ad2da3e89aac6d1eb13c9da9e18af6c2983d7"
+          ],
+          "client_ip_address": "160.79.106.140",
+          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "fbc": "fb.1.1791311857000.IwAR_TESZT_PMU-KEZELES_MUX0TSWU_FBCLID",
+          "fbp": "fb.1.1791306854000.1818007765"
+         },
+         "custom_data": {
+          "value": 99000,
+          "currency": "HUF",
+          "order_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+          "content_name": "Ajaktetoválás - Aquarell - 124.900 Ft helyett most",
+          "content_category": "pmu",
+          "esemeny_tipus": "alap",
+          "ertek_forras": "tenyleges_ar",
+          "salonic_ar": 99000,
+          "utm_source": "facebook",
+          "utm_campaign": "qa2_pmu-kezeles_utolso"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0ty7qkcs8h9fbu8ev8i",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "tiktok",
+     "platform_nev": "PMU_FoglalasElso",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 99000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "PMU_FoglalasElso",
+         "event_time": 1791311819,
+         "event_id": "FoglalasElso:mb_0mux0ty7qkcs8h9fbu8ev8i",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "2692ece9a48e345a8b1119f7b02ad2da3e89aac6d1eb13c9da9e18af6c2983d7",
+          "ttclid": "E.C.P.TESZT_PMU-KEZELES_MUX0TSWU_TTCLID",
+          "ttp": "TESZT_PMU-KEZELES_MUX0TSWU_ttp_jujonwvrv0",
+          "ip": "160.79.106.140",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+         },
+         "properties": {
+          "currency": "HUF",
+          "value": 99000,
+          "content_type": "product",
+          "contents": [
+           {
+            "content_id": "pmu_foglalaselso",
+            "content_name": "Ajaktetoválás - Aquarell - 124.900 Ft helyett most",
+            "quantity": 1,
+            "price": 99000
+           }
+          ],
+          "order_id": "mb_0mux0ty7qkcs8h9fbu8ev8i"
+         },
+         "page": {
+          "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/pmu-ok"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0ty7qkcs8h9fbu8ev8i",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "google",
+     "platform_nev": "ARNYEK-7825200913",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 99000,
+     "indok": null,
+     "kerelem": {
+      "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "customer_id": "6088874770",
+       "conversion_action_id": "7825200913",
+       "athidalas": "zapier-webhook"
+      },
+      "body": {
+       "conversion_action_id": "7825200913",
+       "wbraid": "CoMKCQ_TESZT_PMU-KEZELES_MUX0TSWU_WBRAID",
+       "conversion_date_time": "2026-10-06 20:36:59+02:00",
+       "value": 99000,
+       "currency": "HUF",
+       "order_id": "FoglalasElso:mb_0mux0ty7qkcs8h9fbu8ev8i",
+       "ad_user_data": "GRANTED"
+      }
+     }
+    },
+    {
+     "esemeny_id": "FoglalasElso:mb_0mux0ty7qkcs8h9fbu8ev8i",
+     "esemeny_nev": "FoglalasElso",
+     "esemeny_tipus": "alap",
+     "platform": "ga4",
+     "platform_nev": "foglalas_elso",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 99000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://www.google-analytics.com/mp/collect?measurement_id=G-M5MLRLNQBP",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "measurement_id": "G-M5MLRLNQBP"
+      },
+      "body": {
+       "client_id": "344797693.1791225454",
+       "timestamp_micros": "1791311819000000",
+       "consent": {
+        "ad_user_data": "GRANTED",
+        "ad_personalization": "GRANTED"
+       },
+       "events": [
+        {
+         "name": "foglalas_elso",
+         "params": {
+          "session_id": "1791310654",
+          "engagement_time_msec": 1,
+          "value": 99000,
+          "currency": "HUF",
+          "esemeny_id": "FoglalasElso:mb_0mux0ty7qkcs8h9fbu8ev8i",
+          "uzletag": "pmu",
+          "ertek_forras": "tenyleges_ar",
+          "salonic_ar": 99000,
+          "source": "facebook",
+          "medium": "paid",
+          "campaign": "qa2_pmu-kezeles_utolso"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux0ty7qkcs8h9fbu8ev8i",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "meta",
+     "platform_nev": "Schedule",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 99000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "Schedule",
+         "event_time": 1791311819,
+         "event_id": "Schedule:mb_0mux0ty7qkcs8h9fbu8ev8i",
+         "action_source": "website",
+         "event_source_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/pmu-ok",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "2692ece9a48e345a8b1119f7b02ad2da3e89aac6d1eb13c9da9e18af6c2983d7"
+          ],
+          "client_ip_address": "160.79.106.140",
+          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "fbc": "fb.1.1791311857000.IwAR_TESZT_PMU-KEZELES_MUX0TSWU_FBCLID",
+          "fbp": "fb.1.1791306854000.1818007765"
+         },
+         "custom_data": {
+          "value": 99000,
+          "currency": "HUF",
+          "order_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+          "content_name": "Ajaktetoválás - Aquarell - 124.900 Ft helyett most",
+          "content_category": "pmu",
+          "esemeny_tipus": "ernyo",
+          "ertek_forras": "tenyleges_ar",
+          "salonic_ar": 99000,
+          "utm_source": "facebook",
+          "utm_campaign": "qa2_pmu-kezeles_utolso"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux0ty7qkcs8h9fbu8ev8i",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "tiktok",
+     "platform_nev": "Schedule",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 99000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "Schedule",
+         "event_time": 1791311819,
+         "event_id": "Schedule:mb_0mux0ty7qkcs8h9fbu8ev8i",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "2692ece9a48e345a8b1119f7b02ad2da3e89aac6d1eb13c9da9e18af6c2983d7",
+          "ttclid": "E.C.P.TESZT_PMU-KEZELES_MUX0TSWU_TTCLID",
+          "ttp": "TESZT_PMU-KEZELES_MUX0TSWU_ttp_jujonwvrv0",
+          "ip": "160.79.106.140",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+         },
+         "properties": {
+          "currency": "HUF",
+          "value": 99000,
+          "content_type": "product",
+          "contents": [
+           {
+            "content_id": "pmu_schedule",
+            "content_name": "Ajaktetoválás - Aquarell - 124.900 Ft helyett most",
+            "quantity": 1,
+            "price": 99000
+           }
+          ],
+          "order_id": "mb_0mux0ty7qkcs8h9fbu8ev8i"
+         },
+         "page": {
+          "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/pmu-ok"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux0ty7qkcs8h9fbu8ev8i",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "google",
+     "platform_nev": null,
+     "allapot": "kihagyva",
+     "http_status": null,
+     "kuldo": null,
+     "ertek": 99000,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+     "kerelem": null
+    },
+    {
+     "esemeny_id": "Schedule:mb_0mux0ty7qkcs8h9fbu8ev8i",
+     "esemeny_nev": "Schedule",
+     "esemeny_tipus": "ernyo",
+     "platform": "ga4",
+     "platform_nev": null,
+     "allapot": "kihagyva",
+     "http_status": null,
+     "kuldo": null,
+     "ertek": 99000,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
+     "kerelem": null
+    },
+    {
+     "esemeny_id": "Megjelent:mb_0mux0ty7qkcs8h9fbu8ev8i",
+     "esemeny_nev": "PMU_Megjelent",
+     "esemeny_tipus": "eletut",
+     "platform": "meta",
+     "platform_nev": "PMU_Megjelent",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": null,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "PMU_Megjelent",
+         "event_time": 1791311925,
+         "event_id": "Megjelent:mb_0mux0ty7qkcs8h9fbu8ev8i",
+         "action_source": "physical_store",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "2692ece9a48e345a8b1119f7b02ad2da3e89aac6d1eb13c9da9e18af6c2983d7"
+          ],
+          "fbc": "fb.1.1791311857000.IwAR_TESZT_PMU-KEZELES_MUX0TSWU_FBCLID",
+          "fbp": "fb.1.1791306854000.1818007765"
+         },
+         "custom_data": {
+          "esemeny_tipus": "diagnosztika",
+          "eletut_allapot": "megjelent",
+          "order_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+          "content_category": "pmu"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Megjelent:mb_0mux0ty7qkcs8h9fbu8ev8i",
+     "esemeny_nev": "PMU_Megjelent",
+     "esemeny_tipus": "eletut",
+     "platform": "tiktok",
+     "platform_nev": "PMU_Megjelent",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": null,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "PMU_Megjelent",
+         "event_time": 1791311925,
+         "event_id": "Megjelent:mb_0mux0ty7qkcs8h9fbu8ev8i",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "2692ece9a48e345a8b1119f7b02ad2da3e89aac6d1eb13c9da9e18af6c2983d7",
+          "ttclid": "E.C.P.TESZT_PMU-KEZELES_MUX0TSWU_TTCLID",
+          "ttp": "TESZT_PMU-KEZELES_MUX0TSWU_ttp_jujonwvrv0"
+         },
+         "properties": {
+          "order_id": "mb_0mux0ty7qkcs8h9fbu8ev8i",
+          "content_type": "product"
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "ido": "2026-10-06T18:39:23.668Z",
+   "lepes": "lemondas (Salonic lemondo link)",
+   "lemondas_ideje": "2026-10-06T18:39:09.918Z",
+   "eredmeny": "SIKERES: lemondás visszaigazolva",
+   "salonic_allapot": "LEMONDVA"
+  }
+ ]
+}

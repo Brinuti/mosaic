@@ -1,0 +1,158 @@
+{
+ "eset": "suti-elutasitas",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "nap": "2026-10-07",
+ "megjegyzes": "TESZT - Claude foglalasok; csak arnyek-celok; a szimulalt elemeket (uj vendeg jelzes, levelbeli szolgaltatas-nev) a \"szimulalt\" mezo jelzi",
+ "lepesek": [
+  {
+   "ido": "2026-10-07T08:11:31.021Z",
+   "lepes": "eset: suti-elutasitas",
+   "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev"
+  }
+ ],
+ "ellenorzesek": [
+  {
+   "leiras": "1. hivas: parositas + esemenyek (vagy az elo Zap mar elintezte: mar_kuldve)",
+   "elvart": "parositott + kesz | mar_kuldve",
+   "tenyleges": "parositott + kesz",
+   "ok": true
+  },
+  {
+   "leiras": "hozzajarulas a naploban: statisztika nem, marketing nem",
+   "elvart": [
+    false,
+    false
+   ],
+   "tenyleges": [
+    false,
+    false
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "Meta kuldott (hash-elt e-mail + telefon)",
+   "elvart": [
+    true,
+    true,
+    "elkuldve"
+   ],
+   "tenyleges": [
+    true,
+    true,
+    "elkuldve"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "TikTok kuldott (hash-elt e-mail + telefon)",
+   "elvart": [
+    true,
+    true,
+    "elkuldve"
+   ],
+   "tenyleges": [
+    true,
+    true,
+    "elkuldve"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "Google: kuldes ELUTASITOTT jelzessel",
+   "elvart": [
+    "elkuldve",
+    "DENIED"
+   ],
+   "tenyleges": [
+    "elkuldve",
+    "DENIED"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "GA4: kuldes ELUTASITOTT jelzessel",
+   "elvart": [
+    "elkuldve",
+    "DENIED",
+    "DENIED"
+   ],
+   "tenyleges": [
+    "elkuldve",
+    "DENIED",
+    "DENIED"
+   ],
+   "ok": true
+  },
+  {
+   "leiras": "Google / GA4: hash-elt azonosito nem megy",
+   "elvart": false,
+   "tenyleges": false,
+   "ok": true
+  }
+ ],
+ "szimulalt": [],
+ "booking_id": "mb_0muxtwmijefj7p5375tte69",
+ "salonic_uuid": "3f27111c-8228-480a-539e-ecb2966c1108",
+ "esemeny_idk": {
+  "sorok": 8,
+  "elkuldve": {
+   "meta": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtwmijefj7p5375tte69",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muxtwmijefj7p5375tte69",
+     "nev": "Schedule",
+     "ertek": 53800
+    }
+   ],
+   "tiktok": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtwmijefj7p5375tte69",
+     "nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muxtwmijefj7p5375tte69",
+     "nev": "CompletePayment",
+     "ertek": 53800
+    }
+   ],
+   "google": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtwmijefj7p5375tte69",
+     "nev": "ARNYEK-7825199989",
+     "ertek": 53800
+    }
+   ],
+   "ga4": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muxtwmijefj7p5375tte69",
+     "nev": "foglalas_elso",
+     "ertek": 53800
+    }
+   ]
+  },
+  "nem_ment_ki": [
+   {
+    "esemeny_id": "Schedule:mb_0muxtwmijefj7p5375tte69",
+    "platform": "google",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+   },
+   {
+    "esemeny_id": "Schedule:mb_0muxtwmijefj7p5375tte69",
+    "platform": "ga4",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+   }
+  ]
+ },
+ "lemondas": {
+  "eredmeny": "SIKERES: lemondás visszaigazolva",
+  "salonic_allapot": "LEMONDVA"
+ },
+ "eredmeny": "PASS"
+}

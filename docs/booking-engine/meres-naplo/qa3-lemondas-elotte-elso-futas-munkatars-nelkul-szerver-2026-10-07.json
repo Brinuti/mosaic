@@ -1,0 +1,143 @@
+{
+ "eset": "fodrasz",
+ "hivas_ideje": "2026-10-07T08:04:17.322Z",
+ "kerelem_maszkolt": {
+  "uuid": "ae23b0d3-c351-7a17-6f23-1c155bbd2056",
+  "host": "mosaic-hair.salonic.hu",
+  "felado": "Mosaic Hair",
+  "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+  "munkatarsak": [],
+  "ld": {
+   "startDate": "2026-10-16T09:30:00.000Z"
+  },
+  "level_datuma": "2026-10-07T08:03:17Z",
+  "ar": 0,
+  "vendeg": "<maszkolva: e-mail + telefon>",
+  "uj_vendeg": true
+ },
+ "szimulalt": {
+  "uj_vendeg": true,
+  "megjegyzes": "a Salonic \"uj vendeg\" jelzeset a teszt szimulalja; az ar a Salonic-level \"Price / Fizetendo varhatoan\" sorabol"
+ },
+ "egyeztetes_valasz_nyers": {
+  "ok": true,
+  "allapot": "fuggoben",
+  "kuldheto": false,
+  "riasztas": false,
+  "probalkozas": 1,
+  "ujraprobal_mp": 60,
+  "kulcs": null,
+  "kulcs_forras": null,
+  "miert": null,
+  "nyom": {
+   "uuid": "ae23b0d3-c351-7a17-6f23-1c155bbd2056",
+   "host": "mosaic-hair.salonic.hu",
+   "ag1": {
+    "ok": false,
+    "miert": "a foglalas torolve",
+    "lepesek": [
+     {
+      "url": "/booking/bookingDetails/ae23b0d3-c351-7a17-6f23-1c155bbd2056",
+      "status": 200,
+      "vegso": "/booking/deleteSuccess/ae23b0d3-c351-7a17-6f23-1c155bbd2056"
+     }
+    ],
+    "kulcs": null,
+    "serviceId": null
+   },
+   "ag2": {
+    "ok": false,
+    "miert": "ismeretlen munkatars: ",
+    "felado": "Mosaic Hair",
+    "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+    "munkatarsak": [],
+    "idopontSzoveg": null,
+    "idopontForras": "ld+json",
+    "startUnix": 1792143000,
+    "ldUnix": 1792143000,
+    "szovegUnix": null,
+    "kulcsok": [],
+    "serviceId": null,
+    "nevtabla_celzott_ujraepites": "hair"
+   },
+   "jeloltKulcsok": [],
+   "kulcsForras": null,
+   "talalatok": [],
+   "valasztas": []
+  }
+ },
+ "szerveres_naplo_nyers": {
+  "ok": true,
+  "source_id": "mb_0muxtmj9dzxu6qljg4fgtt7",
+  "erkezes": {
+   "source_id": "mb_0muxtmj9dzxu6qljg4fgtt7",
+   "uzletag": "fodrasz",
+   "tipus": "foglalas",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_FODRASZ_MUXTMGCU_GCLID",
+      "ts": 1791360221
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_FODRASZ_MUXTMGCU_WBRAID",
+      "ts": 1791360223
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791360223000.IwAR_TESZT_FODRASZ_MUXTMGCU_FBCLID",
+     "fbclid": "IwAR_TESZT_FODRASZ_MUXTMGCU_FBCLID",
+     "ts": 1791360223
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_FODRASZ_MUXTMGCU_TTCLID",
+      "ts": 1791360223
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_fodrasz_elso",
+     "content": "hirdetes_a",
+     "ts": 1791360221
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_fodrasz_utolso",
+     "ts": 1791360223
+    },
+    "fbp": "fb.1.1791355220000.7110876053",
+    "ttp": "TESZT_FODRASZ_MUXTMGCU_ttp_69bmzevoi2",
+    "ga4": {
+     "client_id": "678649167.1791273820",
+     "session_id": "1791359020",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true,
+    "dontes": true
+   },
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+   "ip": "160.79.106.xxx",
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok",
+   "bongeszo": {
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/fodrasz-ok",
+    "first_booking": true,
+    "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+    "kategoria": "",
+    "ar": 0,
+    "g": "g:3385039",
+    "munkatars": "",
+    "bookingUrl": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792143000&back=mb_0muxtmj9dzxu6qljg4fgtt7"
+   },
+   "ido": 1791360241,
+   "frissitve": 1791360241
+  },
+  "kuldesek": []
+ }
+}

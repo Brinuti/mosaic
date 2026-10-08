@@ -1,0 +1,641 @@
+{
+ "nev": "lemondasi-ertesito",
+ "bazis": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev",
+ "megjegyzes": "TESZT - Claude foglalas; nyelo mod: a kerelmek elkeszulnek es naplozodnak, de semerre nem mennek ki",
+ "lepesek": [
+  {
+   "ido": "2026-10-06T18:48:40.113Z",
+   "lepes": "foglalas letrehozva (Salonic, TESZT - Claude) + level -> /api/foglalas-egyeztetes",
+   "eset": "fodrasz",
+   "salonic_uuid": "8daa568f-d564-15b8-758a-7171603886b5",
+   "salonic_host": "mosaic-hair.salonic.hu",
+   "booking_id": "mb_0mux17jkn1yvbzo7cyskiwp",
+   "kezdes_unix": 1792512000,
+   "egyeztetes": {
+    "allapot": "parositott",
+    "kuldheto": true,
+    "esemeny_kuldes": {
+     "allapot": "kesz",
+     "elo_allapot": "aktiv",
+     "jelleg": "konzultacio"
+    }
+   },
+   "lemondo_url_van": true
+  },
+  {
+   "ido": "2026-10-06T18:49:30.744Z",
+   "lepes": "lemondas (Salonic lemondo link)",
+   "lemondas_ideje": "2026-10-06T18:49:17.105Z",
+   "eredmeny": "SIKERES: lemondás visszaigazolva",
+   "salonic_allapot": "LEMONDVA"
+  },
+  {
+   "ido": "2026-10-06T18:49:34.252Z",
+   "lepes": "lemondasi ertesito (nincs uuid) -> /api/foglalas-egyeztetes",
+   "kerelem": {
+    "tipus": "lemondas",
+    "felado": "Mosaic Hair",
+    "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+    "munkatarsak": [
+     "Noel - 20% kedvezmény!"
+    ],
+    "idopont_szoveg": "Október 20. (kedd) 18:00 - 18:30",
+    "level_datuma": "2026-10-06T18:49:30.819Z"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "tipus": "lemondas",
+    "allapot": "lemondas",
+    "eredmenyek": [
+     {
+      "kulcs": "10823|25095|1792512000",
+      "tulajdonos": "mb_0mux17jkn1yvbzo7cyskiwp",
+      "tulajdonos_uuid": "8daa568f-d564-15b8-758a-7171603886b5",
+      "elo_allapot": "torolve",
+      "eredmeny": "felszabadult",
+      "atadva": null,
+      "varakozo_jeloltek": 0,
+      "eletut": {
+       "allapot": "kesz",
+       "source_id": "mb_0mux17jkn1yvbzo7cyskiwp",
+       "uzletag": "fodrasz",
+       "eletut_allapot": "lemondva",
+       "elozo": null,
+       "elo_allapot": "torolve",
+       "cellak": [
+        {
+         "platform": "google",
+         "esemeny_id": "Visszavonas:Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+         "platform_nev": "ARNYEK-RETRACTION-7825200898",
+         "allapot": "dryrun",
+         "http_status": 200,
+         "kuldo": "nyelo"
+        }
+       ]
+      }
+     }
+    ],
+    "nyom": {
+     "ag2": {
+      "ok": true,
+      "miert": null,
+      "felado": "Mosaic Hair",
+      "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+      "munkatarsak": [
+       "Noel - 20% kedvezmény!"
+      ],
+      "idopontSzoveg": "Október 20. (kedd) 18:00 - 18:30",
+      "idopontForras": "szoveg",
+      "startUnix": 1792512000,
+      "ldUnix": null,
+      "szovegUnix": 1792512000,
+      "jeloltEmployeeIds": [
+       25095
+      ],
+      "serviceIds": [
+       "232804"
+      ],
+      "kulcsok": [
+       "10823|25095|1792512000"
+      ],
+      "serviceId": "232804"
+     }
+    }
+   }
+  },
+  {
+   "ido": "2026-10-06T18:49:41.484Z",
+   "lepes": "lemondasi ertesito (nincs uuid) -> /api/foglalas-egyeztetes",
+   "kerelem": {
+    "tipus": "lemondas",
+    "felado": "Mosaic Hair",
+    "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+    "munkatarsak": [
+     "Noel - 20% kedvezmény!"
+    ],
+    "idopont_szoveg": "Október 20. (kedd) 18:00 - 18:30",
+    "level_datuma": "2026-10-06T18:49:40.932Z"
+   },
+   "http": 200,
+   "valasz": {
+    "ok": true,
+    "tipus": "lemondas",
+    "allapot": "lemondas",
+    "eredmenyek": [
+     {
+      "kulcs": "10823|25095|1792512000",
+      "eredmeny": "nincs bejegyzes ehhez a kulcshoz (mar szabad / a koszonooldal nem irt)"
+     }
+    ],
+    "nyom": {
+     "ag2": {
+      "ok": true,
+      "miert": null,
+      "felado": "Mosaic Hair",
+      "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+      "munkatarsak": [
+       "Noel - 20% kedvezmény!"
+      ],
+      "idopontSzoveg": "Október 20. (kedd) 18:00 - 18:30",
+      "idopontForras": "szoveg",
+      "startUnix": 1792512000,
+      "ldUnix": null,
+      "szovegUnix": 1792512000,
+      "jeloltEmployeeIds": [
+       25095
+      ],
+      "serviceIds": [
+       "232804"
+      ],
+      "kulcsok": [
+       "10823|25095|1792512000"
+      ],
+      "serviceId": "232804"
+     }
+    }
+   }
+  },
+  {
+   "ido": "2026-10-06T18:49:48.017Z",
+   "lepes": "naplo (vegso)",
+   "booking_id": "mb_0mux17jkn1yvbzo7cyskiwp",
+   "eletut": {
+    "ok": true,
+    "source_id": "mb_0mux17jkn1yvbzo7cyskiwp",
+    "allapot": {
+     "source_id": "mb_0mux17jkn1yvbzo7cyskiwp",
+     "uzletag": "fodrasz",
+     "allapot": "lemondva",
+     "elozo": null,
+     "ido": 1791312570,
+     "forras": "lemondasi_ertesito",
+     "osszeg_filler": null,
+     "visszateritett_filler": 0,
+     "frissitve": 1791312573
+    },
+    "naplo": [
+     {
+      "id": 20,
+      "source_id": "mb_0mux17jkn1yvbzo7cyskiwp",
+      "bejovo": "{\"allapot\":\"lemondva\",\"ido\":1791312570,\"forras\":\"lemondasi_ertesito\",\"vendeg\":null}",
+      "eredmeny": "kesz: google=dryrun",
+      "allapot_elotte": null,
+      "allapot_utana": "lemondva",
+      "ido": 1791312573
+     }
+    ],
+    "kuldesek": [
+     {
+      "id": 39,
+      "esemeny_id": "Visszavonas:Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+      "esemeny_nev": "Visszavonas",
+      "esemeny_tipus": "eletut",
+      "platform": "google",
+      "platform_nev": "ARNYEK-RETRACTION-7825200898",
+      "uzletag": "fodrasz",
+      "source_id": "mb_0mux17jkn1yvbzo7cyskiwp",
+      "allapot": "dryrun",
+      "indok": "dryRun: a Zap validalta, de nem irt (eles: GOOGLE_KORREKCIO_ELES=1)",
+      "ertek": null,
+      "penznem": null,
+      "hozzajarulas": null,
+      "kerelem": {
+       "url": "zapier-webhook: GOOGLE_KORREKCIO_WEBHOOK_URL (titok, nem naplozott)",
+       "method": "POST",
+       "fejlec_nevek": [
+        "content-type"
+       ],
+       "cel": {
+        "customer_id": "6088874770",
+        "conversion_action_id": "7825200898",
+        "athidalas": "zapier-webhook",
+        "muvelet": "RETRACTION",
+        "dry_run": true
+       },
+       "body": {
+        "adjustments": [
+         {
+          "type": "RETRACTION",
+          "orderId": "Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+          "conversionActionId": "7825200898",
+          "adjustmentDateTime": "2026-10-06 20:49:30+02:00",
+          "note": "lemondva: mb_0mux17jkn1yvbzo7cyskiwp"
+         }
+        ],
+        "dryRun": true
+       }
+      },
+      "http_status": 200,
+      "platform_valasz": "{\"nyelo\":true,\"megjegyzes\":\"NYELO MOD: a kerelem nem ment ki sehova (MERES_KULDES_MOD=nyelo)\"}",
+      "kuldo": "nyelo",
+      "probalkozas": 1,
+      "letrehozva": 1791312573,
+      "frissitve": 1791312573
+     }
+    ]
+   },
+   "kuldesi_sorok": [
+    {
+     "esemeny_id": "Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+     "esemeny_nev": "Konzultacio",
+     "esemeny_tipus": "alap",
+     "platform": "meta",
+     "platform_nev": "Fodrasz_Konzultacio",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 13000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "Fodrasz_Konzultacio",
+         "event_time": 1791312452,
+         "event_id": "Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+         "action_source": "website",
+         "event_source_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/fodrasz-ok",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "8fdd2bcc592b5b820a428065a5da514301da48af03b26ec795749efa0c2d7558"
+          ],
+          "client_ip_address": "160.79.106.128",
+          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "fbc": "fb.1.1791312495000.IwAR_TESZT_FODRASZ_MUX17GZH_FBCLID",
+          "fbp": "fb.1.1791307492000.5579837479"
+         },
+         "custom_data": {
+          "value": 13000,
+          "currency": "HUF",
+          "order_id": "mb_0mux17jkn1yvbzo7cyskiwp",
+          "content_name": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+          "content_category": "fodrasz",
+          "esemeny_tipus": "alap",
+          "ertek_forras": "konzultacio_tabla",
+          "salonic_ar": 0,
+          "utm_source": "facebook",
+          "utm_campaign": "qa2_fodrasz_utolso"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+     "esemeny_nev": "Konzultacio",
+     "esemeny_tipus": "alap",
+     "platform": "tiktok",
+     "platform_nev": "Fodrasz_Konzultacio",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 13000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "Fodrasz_Konzultacio",
+         "event_time": 1791312452,
+         "event_id": "Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "8fdd2bcc592b5b820a428065a5da514301da48af03b26ec795749efa0c2d7558",
+          "ttclid": "E.C.P.TESZT_FODRASZ_MUX17GZH_TTCLID",
+          "ttp": "TESZT_FODRASZ_MUX17GZH_ttp_g5bcjnif9r",
+          "ip": "160.79.106.128",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+         },
+         "properties": {
+          "currency": "HUF",
+          "value": 13000,
+          "content_type": "product",
+          "contents": [
+           {
+            "content_id": "fodrasz_konzultacio",
+            "content_name": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+            "quantity": 1,
+            "price": 13000
+           }
+          ],
+          "order_id": "mb_0mux17jkn1yvbzo7cyskiwp"
+         },
+         "page": {
+          "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/fodrasz-ok"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+     "esemeny_nev": "Konzultacio",
+     "esemeny_tipus": "alap",
+     "platform": "google",
+     "platform_nev": "ARNYEK-7825200898",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 13000,
+     "indok": null,
+     "kerelem": {
+      "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "customer_id": "6088874770",
+       "conversion_action_id": "7825200898",
+       "athidalas": "zapier-webhook"
+      },
+      "body": {
+       "conversion_action_id": "7825200898",
+       "wbraid": "CoMKCQ_TESZT_FODRASZ_MUX17GZH_WBRAID",
+       "conversion_date_time": "2026-10-06 20:47:32+02:00",
+       "value": 13000,
+       "currency": "HUF",
+       "order_id": "Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+       "ad_user_data": "DENIED"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+     "esemeny_nev": "Konzultacio",
+     "esemeny_tipus": "alap",
+     "platform": "ga4",
+     "platform_nev": "konzultacio",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 13000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://www.google-analytics.com/mp/collect?measurement_id=G-M5MLRLNQBP",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "measurement_id": "G-M5MLRLNQBP"
+      },
+      "body": {
+       "client_id": "874153668.1791226092",
+       "timestamp_micros": "1791312452000000",
+       "consent": {
+        "ad_user_data": "DENIED",
+        "ad_personalization": "DENIED"
+       },
+       "events": [
+        {
+         "name": "konzultacio",
+         "params": {
+          "session_id": "1791311292",
+          "engagement_time_msec": 1,
+          "value": 13000,
+          "currency": "HUF",
+          "esemeny_id": "Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+          "uzletag": "fodrasz",
+          "ertek_forras": "konzultacio_tabla",
+          "salonic_ar": 0,
+          "source": "facebook",
+          "medium": "paid",
+          "campaign": "qa2_fodrasz_utolso"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0mux17jkn1yvbzo7cyskiwp",
+     "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
+     "esemeny_tipus": "ernyo",
+     "platform": "meta",
+     "platform_nev": "Fodrasz_AkviziciosFoglalas",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 13000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "dataset": "28616665324611098",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83939"
+      },
+      "body": {
+       "data": [
+        {
+         "event_name": "Fodrasz_AkviziciosFoglalas",
+         "event_time": 1791312452,
+         "event_id": "Fodrasz_AkviziciosFoglalas:mb_0mux17jkn1yvbzo7cyskiwp",
+         "action_source": "website",
+         "event_source_url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/fodrasz-ok",
+         "user_data": {
+          "em": [
+           "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+          ],
+          "ph": [
+           "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+          ],
+          "external_id": [
+           "8fdd2bcc592b5b820a428065a5da514301da48af03b26ec795749efa0c2d7558"
+          ],
+          "client_ip_address": "160.79.106.128",
+          "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+          "fbc": "fb.1.1791312495000.IwAR_TESZT_FODRASZ_MUX17GZH_FBCLID",
+          "fbp": "fb.1.1791307492000.5579837479"
+         },
+         "custom_data": {
+          "value": 13000,
+          "currency": "HUF",
+          "order_id": "mb_0mux17jkn1yvbzo7cyskiwp",
+          "content_name": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+          "content_category": "fodrasz",
+          "esemeny_tipus": "ernyo",
+          "ertek_forras": "konzultacio_tabla",
+          "salonic_ar": 0,
+          "utm_source": "facebook",
+          "utm_campaign": "qa2_fodrasz_utolso"
+         }
+        }
+       ],
+       "test_event_code": "TEST83939",
+       "partner_agent": "mosaic-qa2-arnyek"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0mux17jkn1yvbzo7cyskiwp",
+     "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
+     "esemeny_tipus": "ernyo",
+     "platform": "tiktok",
+     "platform_nev": "Schedule",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": 13000,
+     "indok": null,
+     "kerelem": {
+      "url": "https://business-api.tiktok.com/open_api/v1.3/event/track/",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type",
+       "access-token"
+      ],
+      "cel": {
+       "pixel_code": "DB2GTTJC77UE4D1NE4MG",
+       "nev": "MOSAIC ARNYEK meres-teszt",
+       "test_event_code": "TEST83543"
+      },
+      "body": {
+       "event_source": "web",
+       "event_source_id": "DB2GTTJC77UE4D1NE4MG",
+       "test_event_code": "TEST83543",
+       "data": [
+        {
+         "event": "Schedule",
+         "event_time": 1791312452,
+         "event_id": "Fodrasz_AkviziciosFoglalas:mb_0mux17jkn1yvbzo7cyskiwp",
+         "user": {
+          "email": "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01",
+          "phone": "20267348d6d8ba4c34806e02b519e8f5535db2f480503928572a2ec9ade904f4",
+          "external_id": "8fdd2bcc592b5b820a428065a5da514301da48af03b26ec795749efa0c2d7558",
+          "ttclid": "E.C.P.TESZT_FODRASZ_MUX17GZH_TTCLID",
+          "ttp": "TESZT_FODRASZ_MUX17GZH_ttp_g5bcjnif9r",
+          "ip": "160.79.106.128",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+         },
+         "properties": {
+          "currency": "HUF",
+          "value": 13000,
+          "content_type": "product",
+          "contents": [
+           {
+            "content_id": "fodrasz_fodrasz_akviziciosfoglalas",
+            "content_name": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+            "quantity": 1,
+            "price": 13000
+           }
+          ],
+          "order_id": "mb_0mux17jkn1yvbzo7cyskiwp"
+         },
+         "page": {
+          "url": "https://claude-mosaic-meres-eletut.mosaic-d77.pages.dev/fodrasz-ok"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0mux17jkn1yvbzo7cyskiwp",
+     "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
+     "esemeny_tipus": "ernyo",
+     "platform": "google",
+     "platform_nev": null,
+     "allapot": "kihagyva",
+     "http_status": null,
+     "kuldo": null,
+     "ertek": 13000,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+     "kerelem": null
+    },
+    {
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0mux17jkn1yvbzo7cyskiwp",
+     "esemeny_nev": "Fodrasz_AkviziciosFoglalas",
+     "esemeny_tipus": "ernyo",
+     "platform": "ga4",
+     "platform_nev": null,
+     "allapot": "kihagyva",
+     "http_status": null,
+     "kuldo": null,
+     "ertek": 13000,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
+     "kerelem": null
+    },
+    {
+     "esemeny_id": "Visszavonas:Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+     "esemeny_nev": "Visszavonas",
+     "esemeny_tipus": "eletut",
+     "platform": "google",
+     "platform_nev": "ARNYEK-RETRACTION-7825200898",
+     "allapot": "dryrun",
+     "http_status": 200,
+     "kuldo": "nyelo",
+     "ertek": null,
+     "indok": "dryRun: a Zap validalta, de nem irt (eles: GOOGLE_KORREKCIO_ELES=1)",
+     "kerelem": {
+      "url": "zapier-webhook: GOOGLE_KORREKCIO_WEBHOOK_URL (titok, nem naplozott)",
+      "method": "POST",
+      "fejlec_nevek": [
+       "content-type"
+      ],
+      "cel": {
+       "customer_id": "6088874770",
+       "conversion_action_id": "7825200898",
+       "athidalas": "zapier-webhook",
+       "muvelet": "RETRACTION",
+       "dry_run": true
+      },
+      "body": {
+       "adjustments": [
+        {
+         "type": "RETRACTION",
+         "orderId": "Konzultacio:mb_0mux17jkn1yvbzo7cyskiwp",
+         "conversionActionId": "7825200898",
+         "adjustmentDateTime": "2026-10-06 20:49:30+02:00",
+         "note": "lemondva: mb_0mux17jkn1yvbzo7cyskiwp"
+        }
+       ],
+       "dryRun": true
+      }
+     }
+    }
+   ]
+  }
+ ]
+}
