@@ -5,12 +5,26 @@ const OLDAL = 'https://www.mosaicheadspa.hu';
 
 /** Az ot uzletag: a Salonic-fiok (a vendeg-linkek hostja), a szalon adatai, a kozos oldalak. */
 export const UZLETAGAK = Object.freeze({
-  headspa: { kulcs: 'headspa', fiok: 'mosaicheadspa', nev: 'MOSAIC Head Spa', foglalasUrl: `${OLDAL}/headspa-budapest`, eredmenyekUrl: `${OLDAL}/head-spa-velemenyek`, videoUrl: `${OLDAL}/headspa-budapest` },
-  hair: { kulcs: 'hair', fiok: 'mosaic-hair', nev: 'MOSAIC Hair', foglalasUrl: `${OLDAL}/noi-fodraszat-budapest`, eredmenyekUrl: `${OLDAL}/noi-fodraszat-budapest`, videoUrl: `${OLDAL}/noi-fodraszat-budapest` },
-  oxygen: { kulcs: 'oxygen', fiok: 'mosaic-oxigen', nev: 'MOSAIC Oxigénterápia', foglalasUrl: `${OLDAL}/oxigenterapia-budapest`, eredmenyekUrl: `${OLDAL}/oxigenterapia-budapest`, videoUrl: `${OLDAL}/oxigenterapia-budapest` },
-  laser: { kulcs: 'laser', fiok: 'mosaic-elysion', nev: 'MOSAIC Lézeres szőrtelenítés', foglalasUrl: `${OLDAL}/lezeres-szortelenites-budapest`, eredmenyekUrl: `${OLDAL}/lezeres-szortelenites-budapest`, videoUrl: `${OLDAL}/lezeres-szortelenites-budapest` },
-  pmu: { kulcs: 'pmu', fiok: 'mosaic-pmu', nev: 'MOSAIC PMU', foglalasUrl: `${OLDAL}/sminktetovalas-budapest`, eredmenyekUrl: `${OLDAL}/sminktetovalas-budapest`, videoUrl: `${OLDAL}/sminktetovalas-budapest` },
+  // eredmenyekUrl / videoUrl: kozvetlenul a szekciora visz (#horgony), hogy a vendeg ne keresgeljen az oldalon
+  headspa: { kulcs: 'headspa', fiok: 'mosaicheadspa', nev: 'MOSAIC Head Spa', foglalasUrl: `${OLDAL}/headspa-budapest`, eredmenyekUrl: `${OLDAL}/head-spa-velemenyek#vendegek`, videoUrl: `${OLDAL}/head-spa-velemenyek#videok` },
+  hair: { kulcs: 'hair', fiok: 'mosaic-hair', nev: 'MOSAIC Hair', foglalasUrl: `${OLDAL}/noi-fodraszat-budapest`, eredmenyekUrl: `${OLDAL}/noi-fodraszat-budapest`, videoUrl: `${OLDAL}/noi-fodraszat-budapest` }, // fodraszonkent lasd HAIR_FODRASZOK
+  oxygen: { kulcs: 'oxygen', fiok: 'mosaic-oxigen', nev: 'MOSAIC Oxigénterápia', foglalasUrl: `${OLDAL}/oxigenterapia-budapest`, eredmenyekUrl: `${OLDAL}/oxigenterapia-budapest#eredmenyek`, videoUrl: `${OLDAL}/oxigenterapia-budapest#video` },
+  laser: { kulcs: 'laser', fiok: 'mosaic-elysion', nev: 'MOSAIC Lézeres szőrtelenítés', foglalasUrl: `${OLDAL}/lezeres-szortelenites-budapest`, eredmenyekUrl: `${OLDAL}/lezeres-szortelenites-budapest#eredmenyek`, videoUrl: `${OLDAL}/lezeres-szortelenites-budapest#zsofi` },
+  pmu: { kulcs: 'pmu', fiok: 'mosaic-pmu', nev: 'MOSAIC PMU', foglalasUrl: `${OLDAL}/sminktetovalas-budapest`, eredmenyekUrl: `${OLDAL}/sminktetovalas-budapest#eredmenyek`, videoUrl: `${OLDAL}/sminktetovalas-budapest#melitta` },
 });
+
+/** A fodraszok sajat oldala (Wixes klon): a munkaik szekcioja (#munkak) es a konzultacios videojuk (#video) - a levelekben a lefoglalt fodraszhoz vezet. */
+export const HAIR_FODRASZOK = Object.freeze({
+  Betti: { oldal: `${OLDAL}/noi-fodrasz-budapest-balayage-hajfestes`, munkak: '#comp-m5l1xx2o5', video: '#comp-m5p8g24q' },
+  Noel: { oldal: `${OLDAL}/balayage-haj-festes-budapest`, munkak: '#comp-m95snrjw3', video: '#comp-mrypn3dp' },
+  Evelin: { oldal: `${OLDAL}/noi-hajfestes-budapest`, munkak: '#comp-mblskd603', video: '#comp-mc7ays5b' },
+});
+/** { eredmenyek, video } link az uzletaghoz; fodrasznal a foglalt fodrasz oldala (ismeretlen fodrasz: a kozos fodrasz-oldal). */
+export function linkek(uzletag, munkatars) {
+  const uz = UZLETAGAK[uzletag];
+  const f = uzletag === 'hair' ? HAIR_FODRASZOK[munkatars] : null;
+  return f ? { eredmenyek: f.oldal + f.munkak, video: f.oldal + f.video } : { eredmenyek: uz.eredmenyekUrl, video: uz.videoUrl };
+}
 
 /** A szalon kozos adatai (minden uzletag ugyanott van). */
 export const SZALON = Object.freeze({

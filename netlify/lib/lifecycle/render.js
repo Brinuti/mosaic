@@ -1,6 +1,6 @@
 // Uzenet-kirajzolas: helyorzok kitoltese (SMS / e-mail / belso feladat-level) es az e-mail HTML + szoveges valtozata.
 import { HELYORZOK } from './katalog/ertekek.js';
-import { UZLETAGAK, SZALON, rovidNev, tisztaNev, idotartamPerc, uzletaggal } from './uzletag.js';
+import { UZLETAGAK, SZALON, rovidNev, tisztaNev, idotartamPerc, uzletaggal, linkek } from './uzletag.js';
 import { datumSzoveg, datumRagos, idopontSzoveg, napNev, idotartamSzoveg, napKezdet } from './ido.js';
 import { smsSzegmens } from './telefon.js';
 import { VELEMENYEK } from './katalog/velemenyek.js';
@@ -29,6 +29,7 @@ export function ertekek(f, mod = 'email', opc = {}) {
   const munkatars = f.munkatars && !NEM_NEV.test(f.munkatars) ? f.munkatars : null;
   const perc = idotartamPerc(f.uzletag, f.szolgaltatas);
   const reszletek = `${base}/f/${f.token}`;
+  const hivatkozas = linkek(f.uzletag, munkatars); // az eredmenyek / video szekcio (fodraszonkent a sajat oldala)
   return {
     'keresztnév': f.keresztnev || null,
     'dátum': datumSzoveg(f.kezdet), 'dátum_ragos': datumRagos(f.kezdet), 'nap': napNev(f.kezdet), 'időpont': idopontSzoveg(f.kezdet),
@@ -37,7 +38,7 @@ export function ertekek(f, mod = 'email', opc = {}) {
     'várható_időtartam': idotartamSzoveg(perc),
     'aktuális_ár': null, 'aktuális_ajánlat': null,
     'foglalás_részletei_link': reszletek, 'módosítás_link': reszletek, 'megerősítés_link': `${base}/m/${f.token}`,
-    'foglalás_link': uz.foglalasUrl, 'navigáció_link': SZALON.navigacioUrl, 'eredmények_link': uz.eredmenyekUrl, 'videó_link': uz.videoUrl,
+    'foglalás_link': uz.foglalasUrl, 'navigáció_link': SZALON.navigacioUrl, 'eredmények_link': hivatkozas.eredmenyek, 'videó_link': hivatkozas.video,
     'új_dátum': opc.ujKezdet ? datumSzoveg(opc.ujKezdet) : datumSzoveg(f.kezdet), 'új_időpont': opc.ujKezdet ? idopontSzoveg(opc.ujKezdet) : idopontSzoveg(f.kezdet),
     'telefon': SZALON.telefon, 'cím': SZALON.cim,
     'nem_találkoztunk': nemTalalkoztunk(f.kezdet, opc.most),
@@ -99,21 +100,20 @@ export function blokkokKitolt(torzs, ert) {
     } else if (b.gomb) {
       const l = sorKitolt(b.gomb.link, ert); const f = sorKitolt(b.gomb.felirat, ert);
       if (!l.eldob && !f.eldob) ki.push({ t: 'btn', felirat: f.szoveg, link: l.szoveg });
-    } else if (b.alairas) ki.push({ t: 'sign', szoveg: sorKitolt(b.alairas, ert).szoveg });
-    else if (b.ha_munkatars && !b.ha_munkatars.includes(ert['munkatárs'])) continue; // csak az adott munkatarsnal (pl. { velemeny: 'hair-eva', ha_munkatars: ['Evelin'] })
+    } else if (b.ha_munkatars && !b.ha_munkatars.includes(ert['munkatárs'])) continue; // csak az adott munkatarsnal (pl. { velemeny: 'hair-eva', ha_munkatars: ['Evelin'] })
     else if (b.kep) {
       const l = b.kep.link ? sorKitolt(b.kep.link, ert) : null;
-      ki.push({ t: 'kep', src: b.kep.src, alt: sorKitolt(b.kep.alt, ert).szoveg, felirat: b.kep.felirat ? sorKitolt(b.kep.felirat, ert).szoveg : '', link: l && !l.eldob ? l.szoveg : null });
+      ki.push({ t: 'kep', src: b.kep.src, alt: sorKitolt(b.kep.alt, ert).szoveg, felirat: b.kep.felirat ? sorKitolt(b.kep.felirat, ert).szoveg : '', link: l && !l.eldob ? l.szoveg : ert['eredmények_link'], szelesseg: b.kep.szelesseg });
     } else if (b.kepek) {
-      ki.push({ t: 'kepek', elemek: b.kepek.map((k) => ({ src: k.src, alt: sorKitolt(k.alt, ert).szoveg, felirat: k.felirat ? sorKitolt(k.felirat, ert).szoveg : '', link: k.link ? sorKitolt(k.link, ert).szoveg : null })) });
+      ki.push({ t: 'kepek', elemek: b.kepek.map((k) => ({ src: k.src, alt: sorKitolt(k.alt, ert).szoveg, felirat: k.felirat ? sorKitolt(k.felirat, ert).szoveg : '', link: k.link ? sorKitolt(k.link, ert).szoveg : ert['eredmények_link'] })) });
     } else if (b.velemeny) {
       const v = VELEMENYEK[b.velemeny];
       if (!v) throw new Error(`ismeretlen velemeny: ${b.velemeny}`);
       ki.push({ t: 'velemeny', szoveg: v.szoveg, nev: v.nev, datum: v.datum });
     } else if (b.video) {
-      ki.push({ t: 'video', src: b.video.src, alt: sorKitolt(b.video.alt, ert).szoveg, felirat: sorKitolt(b.video.felirat, ert).szoveg, link: sorKitolt(b.video.link, ert).szoveg });
+      ki.push({ t: 'video', src: b.video.src, alt: sorKitolt(b.video.alt, ert).szoveg, felirat: sorKitolt(b.video.felirat, ert).szoveg, link: sorKitolt(b.video.link, ert).szoveg, szelesseg: b.video.szelesseg });
     } else if (b.szemely) {
-      ki.push({ t: 'szemely', src: b.szemely.src, nev: sorKitolt(b.szemely.nev, ert).szoveg, szerep: sorKitolt(b.szemely.szerep, ert).szoveg, szoveg: b.szemely.szoveg ? sorKitolt(b.szemely.szoveg, ert).szoveg : '' });
+      ki.push({ t: 'szemely', src: b.szemely.src, nev: sorKitolt(b.szemely.nev, ert).szoveg, szerep: sorKitolt(b.szemely.szerep, ert).szoveg, szoveg: b.szemely.szoveg ? sorKitolt(b.szemely.szoveg, ert).szoveg : '', link: ert['eredmények_link'] });
     } else if (b.ertekeles) ki.push({ t: 'ertekeles' });
   }
   return ki;
@@ -150,6 +150,8 @@ const SZIN = { sotet: '#0f3a3c', arany: '#a07f4b', aranyHatter: '#c6a346', krem:
 export const LOGO_UTVONAL = '/assets/img/logo-143x54@3x.png';
 export const EMAIL_KEP_UTVONAL = '/assets/email/';
 export const ERTEKELES_SZOVEG = '4,9 / 5 a Google-on · több mint 1 200 vendégvélemény';
+/** A MOSAIC Google-adatlapja (a vendegvelemenyekkel): az "ertekeles" blokk ide visz. */
+export const GOOGLE_VELEMENYEK_URL = 'https://maps.app.goo.gl/TnGenp8VyoUxa7Aw6';
 const kepUrl = (base, src) => `${base}${EMAIL_KEP_UTVONAL}${src}`;
 const P = `margin:0 0 16px;font:16px/1.65 Georgia,'Times New Roman',serif;color:${SZIN.szoveg}`;
 const KIS = `font:13px/1.5 Arial,Helvetica,sans-serif;color:${SZIN.halk}`;
@@ -159,12 +161,12 @@ function blokkHtml(b, base) {
     case 'p': return `<p style="${P}">${b.sorok.map(esc).join('<br>')}</p>`;
     case 'ul': return `<ul style="margin:0 0 16px;padding:0 0 0 22px;font:16px/1.65 Georgia,serif;color:${SZIN.szoveg}">${b.elemek.map((e) => `<li style="margin:0 0 6px">${esc(e)}</li>`).join('')}</ul>`;
     case 'ol': return `<ol style="margin:0 0 16px;padding:0 0 0 22px;font:16px/1.65 Georgia,serif;color:${SZIN.szoveg}">${b.elemek.map((e) => `<li style="margin:0 0 8px">${esc(e)}</li>`).join('')}</ol>`;
-    case 'box': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td bgcolor="${SZIN.lap}" style="background:${SZIN.lap};border-left:3px solid ${SZIN.aranyHatter};padding:14px 18px;font:16px/1.6 Georgia,serif;color:${SZIN.sotet}">${b.elemek.map((e, i) => (i === 0 ? `<strong>${esc(e)}</strong>` : esc(e))).join('<br>')}</td></tr></table>`;
-    case 'btn': return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0 20px"><tr><td bgcolor="${SZIN.aranyHatter}" style="border-radius:999px;background:${SZIN.aranyHatter}"><a href="${esc(b.link)}" style="display:inline-block;padding:13px 28px;font:600 15px Arial,Helvetica,sans-serif;color:#ffffff;text-decoration:none;border-radius:999px">${esc(b.felirat)}</a></td></tr></table>`;
-    case 'sign': return `<p style="margin:22px 0 0;font:600 16px Georgia,serif;color:${SZIN.sotet}">${esc(b.szoveg)}</p>`;
+    case 'box': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td bgcolor="${SZIN.lap}" style="background:${SZIN.lap};border-left:3px solid ${SZIN.aranyHatter};padding:14px 18px;font:16px/1.6 Georgia,serif;color:${SZIN.sotet}">${b.elemek.map((e, i) => (i === 0 ? `<strong>${esc(e)}</strong>` : /\d:\d\d/.test(e) ? `<strong style="font-size:18px;line-height:1.7">${esc(e)}</strong>` : esc(e))).join('<br>')}</td></tr></table>`;
+    case 'btn': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 24px"><tr><td align="center"><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto"><tr><td align="center" bgcolor="${SZIN.aranyHatter}" style="border-radius:999px;background:${SZIN.aranyHatter};background-image:linear-gradient(#c6a346,#d9c164);box-shadow:0 6px 18px rgba(150,120,40,.24)"><a href="${esc(b.link)}" style="display:inline-block;padding:14px 32px;font:400 16px/1.2 Arial,Helvetica,sans-serif;color:#ffffff;text-decoration:none;text-shadow:0 1px 2px rgba(80,60,10,.35);border-radius:999px">${esc(b.felirat)} &rarr;</a></td></tr></table></td></tr></table>`;
     case 'kep': {
-      const kep = `<img src="${esc(kepUrl(base, b.src))}" width="544" alt="${esc(b.alt)}" style="display:block;width:100%;max-width:544px;height:auto;border:0;border-radius:8px">`;
-      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 ${b.felirat ? 8 : 18}px"><tr><td>${b.link ? `<a href="${esc(b.link)}" style="text-decoration:none">${kep}</a>` : kep}</td></tr></table>`
+      const w = b.szelesseg || 544; // allo (portre) kepeknel keskenyebb, kozepre igazitva
+      const kep = `<img src="${esc(kepUrl(base, b.src))}" width="${w}" alt="${esc(b.alt)}" style="display:block;width:100%;max-width:${w}px;height:auto;margin:0 auto;border:0;border-radius:8px">`;
+      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 ${b.felirat ? 8 : 18}px"><tr><td align="center">${b.link ? `<a href="${esc(b.link)}" style="text-decoration:none">${kep}</a>` : kep}</td></tr></table>`
         + (b.felirat ? `<p style="margin:0 0 18px;${KIS};text-align:center">${esc(b.felirat)}</p>` : '');
     }
     case 'kepek': {
@@ -178,9 +180,9 @@ function blokkHtml(b, base) {
       return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr>${cellak}</tr></table>`;
     }
     case 'velemeny': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td bgcolor="${SZIN.lap}" style="background:${SZIN.lap};border-radius:8px;padding:18px 20px"><div style="font:20px/1 Arial,sans-serif;color:${SZIN.aranyHatter};letter-spacing:2px">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p style="margin:8px 0 10px;font:italic 16px/1.6 Georgia,serif;color:${SZIN.szoveg}">&bdquo;${esc(b.szoveg)}&rdquo;</p><div style="font:600 13px Arial,Helvetica,sans-serif;color:${SZIN.sotet}">${esc(b.nev)} <span style="font-weight:400;color:${SZIN.halk}">&middot; Google-vélemény${b.datum ? ` &middot; ${esc(b.datum)}` : ''}</span></div></td></tr></table>`;
-    case 'video': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 8px"><tr><td><a href="${esc(b.link)}" style="text-decoration:none"><img src="${esc(kepUrl(base, b.src))}" width="544" alt="${esc(b.alt)}" style="display:block;width:100%;max-width:544px;height:auto;border:0;border-radius:8px"></a></td></tr></table><p style="margin:0 0 18px;${KIS};text-align:center"><a href="${esc(b.link)}" style="color:${SZIN.arany};text-decoration:none;font-weight:600">&#9654; ${esc(b.felirat)}</a></p>`;
-    case 'szemely': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td width="132" valign="top" style="padding-right:16px"><img src="${esc(kepUrl(base, b.src))}" width="116" height="116" alt="${esc(b.nev)}" style="display:block;width:116px;height:116px;border:0;border-radius:58px"></td><td valign="middle"><div style="font:600 20px Georgia,serif;color:${SZIN.sotet}">${esc(b.nev)}</div><div style="margin:2px 0 ${b.szoveg ? 8 : 0}px;font:600 12px Arial,Helvetica,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:${SZIN.arany}">${esc(b.szerep)}</div>${b.szoveg ? `<p style="margin:0;font:15px/1.6 Georgia,serif;color:${SZIN.szoveg}">${esc(b.szoveg)}</p>` : ''}</td></tr></table>`;
-    case 'ertekeles': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td align="center" style="padding:2px 0"><div style="font:22px/1 Arial,sans-serif;color:${SZIN.aranyHatter};letter-spacing:3px">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div style="padding-top:6px;${KIS}">${esc(ERTEKELES_SZOVEG)}</div></td></tr></table>`;
+    case 'video': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 8px"><tr><td align="center"><a href="${esc(b.link)}" style="text-decoration:none"><img src="${esc(kepUrl(base, b.src))}" width="${b.szelesseg || 544}" alt="${esc(b.alt)}" style="display:block;width:100%;max-width:${b.szelesseg || 544}px;height:auto;margin:0 auto;border:0;border-radius:8px"></a></td></tr></table><p style="margin:0 0 18px;${KIS};text-align:center"><a href="${esc(b.link)}" style="color:${SZIN.arany};text-decoration:none;font-weight:600">&#9654; ${esc(b.felirat)}</a></p>`;
+    case 'szemely': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td width="132" valign="top" style="padding-right:16px"><a href="${esc(b.link)}" style="text-decoration:none"><img src="${esc(kepUrl(base, b.src))}" width="116" height="116" alt="${esc(b.nev)}" style="display:block;width:116px;height:116px;border:0;border-radius:58px"></a></td><td valign="middle"><div style="font:600 20px Georgia,serif;color:${SZIN.sotet}">${esc(b.nev)}</div><div style="margin:2px 0 ${b.szoveg ? 8 : 0}px;font:600 12px Arial,Helvetica,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:${SZIN.arany}">${esc(b.szerep)}</div>${b.szoveg ? `<p style="margin:0;font:15px/1.6 Georgia,serif;color:${SZIN.szoveg}">${esc(b.szoveg)}</p>` : ''}</td></tr></table>`;
+    case 'ertekeles': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td align="center" style="padding:2px 0"><a href="${GOOGLE_VELEMENYEK_URL}" style="text-decoration:none"><div style="font:22px/1 Arial,sans-serif;color:${SZIN.aranyHatter};letter-spacing:3px">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div style="padding-top:6px;${KIS}">${esc(ERTEKELES_SZOVEG)}<br><span style="color:${SZIN.arany};text-decoration:underline">A Google-vélemények megtekintése</span></div></a></td></tr></table>`;
     default: return '';
   }
 }
@@ -204,13 +206,12 @@ export function levelKirajzol({ elotag, blokkok, lablecMegjegyzes, base = ALAP_U
     else if (b.t === 'ol') sz.push(b.elemek.map((e, i) => `${i + 1}. ${e}`).join('\n'));
     else if (b.t === 'box') sz.push(b.elemek.join('\n'));
     else if (b.t === 'btn') sz.push(`${b.felirat}: ${b.link}`);
-    else if (b.t === 'sign') sz.push(b.szoveg);
     else if (b.t === 'kep' && b.felirat) sz.push(b.felirat);
     else if (b.t === 'kepek') { const f = b.elemek.map((e) => e.felirat).filter(Boolean); if (f.length) sz.push(f.join(' / ')); }
     else if (b.t === 'velemeny') sz.push(`„${b.szoveg}" - ${b.nev}, Google-vélemény${b.datum ? ` (${b.datum})` : ''}`);
     else if (b.t === 'video') sz.push(`${b.felirat}: ${b.link}`);
     else if (b.t === 'szemely') sz.push(`${b.nev} - ${b.szerep}${b.szoveg ? `\n${b.szoveg}` : ''}`);
-    else if (b.t === 'ertekeles') sz.push(ERTEKELES_SZOVEG);
+    else if (b.t === 'ertekeles') sz.push(`${ERTEKELES_SZOVEG}: ${GOOGLE_VELEMENYEK_URL}`);
   }
   sz.push(`MOSAIC Head Spa and Hair\n${SZALON.cim} · ${SZALON.telefon}\nwww.mosaicheadspa.hu`);
   return { html, szoveg: sz.join('\n\n') };

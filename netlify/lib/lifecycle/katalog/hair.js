@@ -14,6 +14,9 @@ export default {
       torzs: [
         'Szia {keresztnév}!',
         'Megvan az időpontod {fodrász}-hoz.',
+        { kep: { src: 'hair/betti-portre.jpg', alt: 'Betti, a MOSAIC Hair fodrásza mosolyogva áll a szalonban', felirat: 'Betti – festés, balayage, melír és személyre szabott női frizurák' }, ha_munkatars: ['Betti'] },
+        { kep: { src: 'hair/noel-munka.jpg', alt: 'Noel, a MOSAIC Hair fodrásza egy vendég hajával dolgozik', felirat: 'Noel – balayage és precíz festések, természetes hatású árnyalatok' }, ha_munkatars: ['Noel'] },
+        { kep: { src: 'hair/evelin-portre.jpg', alt: 'Evelin, a MOSAIC Hair fodrásza mosolyogva áll a szalonban', felirat: 'Evelin – hajfestés, hajvágás és hajhosszabbítás (póthaj)' }, ha_munkatars: ['Evelin'] },
         { doboz: ['{szolgáltatás}', '{dátum}, {időpont}', 'Várható idő: {várható_időtartam}', 'Várható ár a foglalás szerint: {aktuális_ár}', 'Helyszín: MOSAIC, 1023 Budapest, Bécsi út 2.'] },
         'Az első pár percben nem "nekiállunk" a hajadnak. Először átbeszélitek, mit szeretnél, megnézitek a hajad jelenlegi állapotát és előzményeit, és csak utána születik meg a közös terv.',
         'Ha festésre, balayage-ra, ombréra vagy melírra jössz, ments el a telefonodba 2-3 képet arról a hangulatról vagy színről, ami tetszik. Nem azért, hogy egy az egyben lemásoljuk, hanem hogy pontosan ugyanarról beszéljetek.',
@@ -21,7 +24,6 @@ export default {
         'Foglalásod részletei / módosítás:',
         { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -34,9 +36,10 @@ export default {
         { kep: { src: 'hair/csapat.jpg', alt: 'A MOSAIC Hair csapata: Betti, Noel és Evelin a szalonban', felirat: 'Betti, Noel és Evelin – a MOSAIC Hair csapata' } },
         'Egy fodrásznál az egyik legfontosabb kérdés: vajon tényleg ugyanazt érti-e a fejében, amit te elképzeltél?',
         'Ezért nálunk az első lépés mindig a megbeszélés. {fodrász} megnézi a hajad kiindulási állapotát, az arcodhoz és a hajadhoz illő lehetőségeket, és csak olyan eredményt terveztek meg, ami a te hajadból reálisan elérhető.',
-        { kep: { src: 'hair/betti-portre.jpg', alt: 'Betti, a MOSAIC Hair fodrásza mosolyogva áll a szalonban', felirat: 'Betti – festés, balayage, melír és személyre szabott női frizurák' }, ha_munkatars: ['Betti'] },
-        { kep: { src: 'hair/noel-munka.jpg', alt: 'Noel, a MOSAIC Hair fodrásza egy vendég hajával dolgozik', felirat: 'Noel – balayage és precíz festések, természetes hatású árnyalatok' }, ha_munkatars: ['Noel'] },
-        { kep: { src: 'hair/evelin-portre.jpg', alt: 'Evelin, a MOSAIC Hair fodrásza mosolyogva áll a szalonban', felirat: 'Evelin – hajfestés, hajvágás és hajhosszabbítás (póthaj)' }, ha_munkatars: ['Evelin'] },
+        'Nézd meg {fodrász} ingyenes konzultációs videóját, hogy már az első találkozás előtt megismerd:',
+        { video: { src: 'hair/betti-video.jpg', alt: 'Videó-előkép: Betti, a MOSAIC Hair fodrásza az ingyenes konzultációról mesél, lejátszás jellel', felirat: 'Betti ingyenes konzultációs videója', link: '{videó_link}', szelesseg: 240 }, ha_munkatars: ['Betti'] },
+        { video: { src: 'hair/noel-video.jpg', alt: 'Videó-előkép: Noel, a MOSAIC Hair fodrásza az ingyenes konzultációról mesél, lejátszás jellel', felirat: 'Noel ingyenes konzultációs videója', link: '{videó_link}', szelesseg: 240 }, ha_munkatars: ['Noel'] },
+        { video: { src: 'hair/evelin-video.jpg', alt: 'Videó-előkép: Evelin, a MOSAIC Hair fodrásza az ingyenes konzultációról mesél, lejátszás jellel', felirat: 'Evelin ingyenes konzultációs videója', link: '{videó_link}', szelesseg: 240 }, ha_munkatars: ['Evelin'] },
         { velemeny: 'hair-eva', ha_munkatars: ['Evelin'] },
         { ertekeles: true },
         {
@@ -73,7 +76,6 @@ export default {
           ],
         },
         'Találkozunk {dátum_ragos}.',
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -93,13 +95,13 @@ export default {
         'A nagyobb színváltozásnál a jó eredmény egyik kulcsa a reális kiindulópont.',
         'A festés előtt {fodrász} megnézi a hajad jelenlegi színét, állapotát és festési múltját. Ha egy elképzelés egy alkalomból biztonságosan nem hozható ki, azt előre elmondjuk, és inkább több lépésben tervezünk, mint hogy a hajad állapotát kockáztassuk.',
         { velemeny: 'hair-viki', ha_munkatars: ['Evelin'] },
-        'A te foglalásod: {szolgáltatás}, {dátum} {időpont}.',
+        'A te foglalásod:',
+        { doboz: ['{szolgáltatás}', '{dátum}, {időpont}'] },
         'Ha tudod, gondold át addig:',
         { lista: ['mikor festették utoljára a hajad;', 'otthoni vagy szalonfestés volt-e;', 'van-e olyan árnyalat, amit biztosan nem szeretnél;', 'melyik 2-3 referencia áll hozzád a legközelebb.'] },
         'Ennyi bőven elég. A többit együtt megtervezitek.',
         { kep: { src: 'hair/szalon-hely.jpg', alt: 'Tükrös fodrászhely zöld fotellel a MOSAIC Hair szalonban', felirat: 'A MOSAIC Hair szalon egyik fodrászhelye' } },
         { ertekeles: true },
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -115,17 +117,6 @@ export default {
       // T-24, festes / balayage / konzultacio (a "nagy_valtozas" foglalas mindig "festes" is)
       id: 'HAIR-SMS-03B', csatorna: 'sms', mikor: { tipus: 't24' }, szegmensek: ['festes', 'konzultacio'],
       szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor vár {fodrász}. Ha festésre jössz, legyen a telefonodban 2-3 referencia, és gondold át, mikor/mivel festették utoljára a hajad. 1023 Budapest, Bécsi út 2. Várunk!',
-    },
-    {
-      // HAIR-CALL-01: telefonos feladat a szalonnak (a motor nem hiv, hanem belso e-mailben jelzi, kit kell hivni)
-      id: 'HAIR-CALL-01', csatorna: 'feladat', mikor: { tipus: 'feladat', elott_ora: 48 }, szegmensek: ['konzultacio', 'nagy_valtozas'],
-      targy: 'Fodrász - hívandó vendég (konzultáció / hosszú első festés)',
-      torzs: [
-        'Szia {keresztnév}, a MOSAIC Hairtől hívlak. {nap} {időpont}-ra van időpontod {fodrász}-hoz {szolgáltatás}-ra. Minden rendben az időponttal?',
-        'Hogy {fodrász} már úgy készüljön, ahogy neked a leghasznosabb: inkább színváltozás, világosítás, vágás vagy teljes átalakulás a cél?',
-        'Ha van 2-3 képed, ami tetszik, elég ha magaddal hozod a telefonodon. Ha festésről van szó, jó ha tudod, mikor és mivel volt utoljára festve a hajad.',
-        'Ha közben változna valami, szólj minél előbb, és segítünk áttenni.',
-      ],
     },
   ],
   megjegyzesek: [

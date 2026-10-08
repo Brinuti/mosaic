@@ -243,6 +243,39 @@
         0.5,
         0.2
       ]
+    },
+    {
+      "ki": "hair/betti-video.jpg",
+      "forras": "assets/img/c2eb0f_d0737d55559445caa0687b3c2017518af002.jpg",
+      "mod": "szeles",
+      "arany": [
+        9,
+        16
+      ],
+      "szelesseg": 674,
+      "lejatszo": true
+    },
+    {
+      "ki": "hair/noel-video.jpg",
+      "forras": "assets/img/c2eb0f_1f095db5b74d4ceea9ddf64a78da9586f000.jpg",
+      "mod": "szeles",
+      "arany": [
+        9,
+        16
+      ],
+      "szelesseg": 726,
+      "lejatszo": true
+    },
+    {
+      "ki": "hair/evelin-video.jpg",
+      "forras": "assets/img/c2eb0f_d1d7131a5e48466599172992ad24c321f000.jpg",
+      "mod": "szeles",
+      "arany": [
+        9,
+        16
+      ],
+      "szelesseg": 576,
+      "lejatszo": true
     }
   ],
   "megjegyzes": [

@@ -14,8 +14,11 @@ export default {
       elotag: 'Személyre szabott beállítás, alkalmankénti fizetés, pontos felkészítés.',
       torzs: [
         'Szia {keresztnév}!',
-        'Megvan az időpontod: {dátum} {időpont}, {szolgáltatás}.',
+        'Megvan az időpontod:',
+        { doboz: ['{szolgáltatás}', '{dátum}, {időpont}', 'Helyszín: 1023 Budapest, Bécsi út 2.'] },
         'Az első alkalomnál nem sablonbeállítással kezdünk. Megnézzük a bőr- és szőrtípusodat, átbeszéljük a fontos körülményeket, és ehhez igazítjuk a kezelést.',
+        'Ismerd meg Zsófit, aki a kezelést végzi - nézd meg a konzultációs videóját:',
+        { video: { src: 'laser/zsofi-video.jpg', alt: 'Videó-előkép: Zsófi, a MOSAIC lézeres szőrtelenítés szakértője a konzultációról mesél, lejátszás jellel', felirat: 'Zsófi konzultációs videója', link: '{videó_link}', szelesseg: 240 } },
         'Ha közvetlenül kezelésre foglaltál, az aktuális MOSAIC program lényege:',
         {
           lista: [
@@ -30,7 +33,6 @@ export default {
         'Foglalás részletei / módosítás:',
         { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
       // a LASER-EMAIL-04 kritikus elokeszuleti listaja: a T0 e-mail vegere kerul, ha a foglalas < 30 orara van az idopontig
       surgos_kiegeszites: [
@@ -61,9 +63,9 @@ export default {
         'Nem mindenkinél ugyanaz a reakció és ugyanannyi alkalom reális. Világosabb szőr, friss barnulás, hormonális háttér, bizonyos egészségügyi állapotok vagy gyógyszerek esetén különösen fontos az előzetes egyeztetés.',
         'Ha bizonytalan vagy valamiben, inkább mondd el előre - nem az a cél, hogy mindenáron kezeljünk, hanem hogy biztonságosan és értelmesen induljon el a program.',
         { kep: { src: 'laser/zsofi-konzultacio.jpg', alt: 'Zsófi mosolyogva beszélget egy vendéggel a konzultáción', felirat: 'Zsófi konzultáció közben egy vendéggel' } },
-        'A te időpontod: {dátum} {időpont}.',
+        'A te időpontod:',
+        { doboz: ['{szolgáltatás}', '{dátum}, {időpont}'] },
         { ertekeles: true },
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -76,6 +78,7 @@ export default {
         'Egy gyors pontosítás a MOSAIC 8 alkalmas programjáról, mert elsőre könnyű félreérteni.',
         'Nem 8 alkalmat fizetsz ki előre. A 4. és a 8. alkalom ajándék, vagyis egy teljes 8 alkalmas programból 6 fizetős. Ráadásul alkalmanként fizetsz.',
         'A program legfeljebb 8 alkalommal számol. Ha nálad kevesebb is elég, a jelenlegi ajánlat logikája szerint kevesebbet fizetsz. Az első alkalommal a bőr- és szőrtípusod alapján becsüljük meg, milyen kezelési út reális.',
+        { kep: { src: 'laser/program-8-6.jpg', alt: 'A 8 alkalmas program: az 1-8. alkalom körökben, a 4. és a 8. alkalom ajándék, vagyis 8-ból 6 fizetős', felirat: 'A 8 alkalmas program: a 4. és a 8. alkalom ajándék' } },
         // valodi vendegek, ugyanazok a kepek, mint a lezeres oldal "Ilyen eredmenyeket erhetsz el" szakaszaban
         {
           kepek: [
@@ -86,7 +89,6 @@ export default {
         'Ha szeretnél valódi MOSAIC előtte-utána eredményeket látni ugyanarról a területről, itt találod őket:',
         { gomb: { felirat: 'Megnézem az eredményeket', link: '{eredmények_link}' } },
         'Nemsokára találkozunk.',
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -110,7 +112,6 @@ export default {
         'Ha csak az időpont nem jó, itt tudod áttenni:',
         { gomb: { felirat: 'Itt tudom áttenni', link: '{módosítás_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -125,18 +126,6 @@ export default {
     {
       id: 'LASER-SMS-03', csatorna: 'sms', mikor: { tipus: 't24' },
       szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor várunk. A terület legyen leborotválva; ne legyen friss barnulás/önbarnító, és aznap ne használj krémet, olajat vagy dezodort rajta. Kérdés: 06 20 247 4444. MOSAIC',
-    },
-    {
-      // LASER-CALL-01: telefonos feladat a szalonnak (a motor nem hiv, hanem belso e-mailben jelzi, kit kell hivni)
-      id: 'LASER-CALL-01', csatorna: 'feladat', mikor: { tipus: 'feladat', elott_ora: 48 }, szegmensek: ['konzultacio', 'elso'],
-      targy: 'Lézeres szőrtelenítés - hívandó vendég (pre-call)',
-      torzs: [
-        'Szia {keresztnév}, a MOSAIC lézeres szőrtelenítéstől hívlak. {nap} {időpont}-ra van időpontod {szolgáltatás}-ra. Minden rendben az időponttal?',
-        'Melyik területre jössz? Azért kérdezem, hogy biztosan a megfelelő előkészülettel érkezz.',
-        'Ha aznap kezelés is szóba jöhet, kérlek előző este borotváld le a területet, és ne legyen friss barnulás vagy önbarnító. Gyanta/epilátor ne legyen a kúra alatt.',
-        'Volt mostanában új gyógyszer, egészségügyi változás vagy bármi, ami miatt szerinted érdemes előre rákérdezni? Ha igen, inkább egyeztetünk a kezelővel.',
-        'Van még valami kérdésed az első alkalom előtt?',
-      ],
     },
   ],
   megjegyzesek: [

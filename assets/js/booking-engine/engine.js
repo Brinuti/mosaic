@@ -836,7 +836,10 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
         h('p', { class: 'be-megerosit' }, 'Erősítsd meg egy érintéssel, hogy jössz! ', h('span', { 'aria-hidden': 'true', text: '↓' })),
         h('div', { class: 'be-ott-sor' }, ott, naptarba),
         note('Időpont módosítása vagy lemondása: a visszaigazoló e-mailben lévő linkkel.', 'be-kicsi'),
-        h('h3', { class: 'be-h3', text: 'Mi történik most?' }), stepList(koszonoLepesek(flow.business, S.service.bookingType)));
+        h('h3', { class: 'be-h3', text: 'Mi történik most?' }), stepList(koszonoLepesek(flow.business, S.service.bookingType)),
+        // HeadSpa: ugyanaz a "legfontosabb tudnivalok" video, mint a regi koszonooldalon (/success-foglalas*); csak kattintasra toltodik
+        flow.business === 'headspa' ? h('div', { class: 'be-tudnivalok' }, h('h3', { class: 'be-h3', text: 'Nézd meg a legfontosabb tudnivalókat' }), h('p', { class: 'be-kicsi', text: 'Egy rövid videó (kb. 2 perc) arról, amit a kezelés előtt érdemes tudnod.' }),
+          h('video', { class: 'be-tudnivalok-video', controls: true, playsinline: true, preload: 'none', poster: '/assets/img/c2eb0f_7adace486fb24a859b80f61510e8e675f000.jpg', src: '/assets/video/c2eb0f_7adace486fb24a859b80f61510e8e675.mp4' })) : null);
     },
 
     A1: async () => callbackView({ heading: 'Nincs megfelelő időpont?', intro: 'Hagyd meg a telefonszámod, és visszahívunk.' }),

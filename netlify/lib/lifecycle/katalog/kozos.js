@@ -17,7 +17,6 @@ export default {
         'Ha csak az időpont nem volt jó, nem kell elölről kezdened - itt rögtön választhatsz másikat:',
         { gomb: { felirat: 'Új időpontot választok', link: '{foglalás_link}' } },
         'Ha pedig most nem szeretnél új időpontot, az is teljesen rendben van.',
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -40,7 +39,6 @@ export default {
         'Előfordul, hogy közbejön valami. Ha csak az időpont csúszott el, nem kell elölről kezdened, itt rögtön választhatsz másikat:',
         { gomb: { felirat: 'Új időpontot választok', link: '{foglalás_link}' } },
         'Ha kérdésed van, hívj nyugodtan: {telefon}.',
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
   ],

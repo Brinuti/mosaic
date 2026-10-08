@@ -12,8 +12,10 @@
 #        negyzet = kerek portre (szemely blokk), alap szelesseg 232 (a 116 px-es hely 2x-e), 1:1
 #   fokusz: a kivagas kozeppontja a forraskep aranyaban (0..1, alap [0.5, 0.5])
 #   lejatszo: true = a kep kozepere "lejatszas" jel kerul (video-elonezet; a levelben a kep a videora vezet)
+#   kocka: { "video": "assets/video/x.mp4", "ido": 1.0 } = a forras egy videokocka (ffmpeg kell: PATH-on vagy az FFMPEG kornyezeti valtozoban) a "forras" helyett
+#   arany [9, 16] + szelesseg: allo (portre) video-elonezet; a katalogusban a blokk "szelesseg" mezoje a megjelenitesi szelesseg (a kep >= 1,6-szerese legyen)
 # A kimenet: assets/email/<ki>; a levelek a katalogusban a "ki" nevvel hivatkoznak ra. Kepenkent legfeljebb 240 KB (a katalogus-teszt 260 KB-ot enged).
-import json, os, sys, glob
+import json, os, sys, glob, subprocess, tempfile
 from PIL import Image, ImageDraw
 
 GYOKER = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -42,7 +44,14 @@ def keszit(tetel):
     mod = tetel.get('mod', 'szeles')
     szeles, arany = MOD[mod]
     szeles = tetel.get('szelesseg', szeles); arany = tuple(tetel.get('arany', arany))
-    im = Image.open(os.path.join(GYOKER, tetel['forras']))
+    if tetel.get('kocka'):
+        k = tetel['kocka']; tmp = tempfile.NamedTemporaryFile(suffix='.png', delete=False); tmp.close()
+        subprocess.run([os.environ.get('FFMPEG', 'ffmpeg'), '-y', '-loglevel', 'error', '-ss', str(k.get('ido', 0)), '-i', os.path.join(GYOKER, k['video']), '-frames:v', '1', tmp.name], check=True)
+        im = Image.open(tmp.name); im.load(); os.unlink(tmp.name); tetel = {**tetel, 'forras': k['video'] + f" @{k.get('ido', 0)}s"}
+    else:
+        if not os.path.exists(os.path.join(GYOKER, tetel['forras'])):
+            print(f"{tetel['ki']:48s} kihagyva: a forras nincs a repoban ({tetel['forras']}; Drive-kep, lasd a README-t)"); return
+        im = Image.open(os.path.join(GYOKER, tetel['forras']))
     if im.mode in ('RGBA', 'LA', 'P'):
         bg = Image.new('RGB', im.size, (255, 255, 255)); im = im.convert('RGBA'); bg.paste(im, mask=im.split()[-1]); im = bg
     else:

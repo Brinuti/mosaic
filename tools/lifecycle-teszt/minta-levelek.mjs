@@ -2,7 +2,7 @@
 // a lifecycle D1 ELONEZETI adatbazisba lehet tenni, a kovetkezo (Zapier "lifecycle-tick") kuldes kiviszi a TESZT-cimre (alap: deakfi@grantis.hu).
 // A level a valodi uton megy (SMTP, uzletag-nev a felado): ugyanaz a HTML, mint a vendegeknek. NE a Gmail-eszkozzel kuldd: az a hatterszineket kiszedi.
 //
-//   node tools/lifecycle-teszt/minta-levelek.mjs [AZONOSITO,AZONOSITO,...] > minta.sql     (nincs lista = mind a 27)
+//   node tools/lifecycle-teszt/minta-levelek.mjs [AZONOSITO,AZONOSITO,...] > minta.sql     (nincs lista = mind a 22)
 //   1. a kimenet ket SQL-utasitas (a "-- ketto" sor valasztja el): futtasd az elonezeti D1-en (bd58da1d-a9f0-4b76-ad0b-13aedfc67192)
 //   2. inditsd el a Zapier "lifecycle-tick" folyamatot (01a1169c-7353-708d-8801-912e783e8424) - vagy varj az oras futasra
 //   3. takaritas: DELETE FROM kuldesek WHERE foglalas_id LIKE 'MINTA-%'; DELETE FROM foglalasok WHERE id LIKE 'MINTA-%';

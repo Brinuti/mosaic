@@ -14,7 +14,8 @@ export default {
       elotag: 'Előbb megtervezitek, csak utána kezdődik a tetoválás.',
       torzs: [
         'Szia {keresztnév}!',
-        'Megvan az időpontod Melittához: {dátum} {időpont}, {szolgáltatás}.',
+        'Megvan az időpontod Melittához.',
+        { kep: { src: 'pmu/melitta-dij.jpg', alt: 'Töreki Melitta mosolyogva tartja a milánói WULOP verseny díját', felirat: 'Töreki Melitta a milánói WULOP verseny díjával', szelesseg: 400 } },
         'Az első és legfontosabb dolog: nem úgy érkezel, hogy leülsz, és rögtön elkezdjük a tetoválást.',
         'Előtte átbeszélitek, mit szeretnél és mitől tartasz. A formát és a színirányt előre, személyre szabottan megtervezitek, és Melitta csak akkor kezdi el a tetoválást, amikor te is jóváhagytad.',
         'A jelenlegi szolgáltatáscsomagban a konzultáció és tervezés része a kezelésnek. Az új szemöldök-, ajak- és szemkörnyéki PMU kezeléseknél a weboldal szerint a 4-7 héten belüli korrekció is benne van az árban.',
@@ -24,7 +25,6 @@ export default {
         'Foglalás részletei / módosítás:',
         { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -49,8 +49,8 @@ export default {
         ] },
         'Ha szeretnél előre megnézni Melitta munkáit, itt találod őket:',
         { gomb: { felirat: 'Megnézem Melitta munkáit', link: '{eredmények_link}' } },
-        'A te időpontod: {dátum} {időpont}.',
-        { alairas: 'MOSAIC Head Spa and Hair' },
+        'A te időpontod:',
+        { doboz: ['{szolgáltatás}', '{dátum}, {időpont}'] },
       ],
     },
     {
@@ -61,8 +61,8 @@ export default {
         'Szia {keresztnév}!',
         'Egy dolgot nagyon szeretnénk, ha már a kezelés előtt tudnál: a friss sminktetoválás nem a végleges eredmény.',
         { kepek: [
-          { src: 'pmu/friss-szemoldok.jpg', alt: 'Frissen elkészült, természetes szemöldöktetoválás', felirat: 'Frissen elkészülve' },
-          { src: 'pmu/gyogyult-szemoldok.jpg', alt: 'Gyógyult, természetes hatású szemöldök', felirat: 'Gyógyult állapotban' },
+          { src: 'pmu/szoke-friss.jpg', alt: 'Frissen elkészült, természetes szemöldöktetoválás egy szőke hajú vendégen', felirat: 'Frissen elkészülve' },
+          { src: 'pmu/szoke-gyogyult.jpg', alt: 'Ugyanaz a szőke hajú vendég gyógyult, természetes hatású szemöldökkel', felirat: 'Gyógyult állapotban' },
         ] },
         'A friss szín intenzívebbnek tűnhet. Ajaktetoválás után átmeneti duzzanat is előfordulhat. A kezelt terület a gyógyulás során változik, hámlik és halványul; a lágyabb, gyógyult eredményt általában 4-6 hét után lehet igazán megítélni.',
         'Ezért Melitta nem a "friss fotóra" tervez, hanem arra, milyen legyen a gyógyult végeredmény.',
@@ -71,7 +71,6 @@ export default {
         'Ha ezt előre tudod, sokkal nyugodtabb lesz az első néhány nap is.',
         { kep: { src: 'pmu/gyogyult-termeszetes.jpg', alt: 'Gyógyult, természetes hatású szemöldök oldalnézetből', felirat: 'Gyógyult, természetes hatású szemöldök' } },
         'Találkozunk {dátum_ragos}.',
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -96,7 +95,6 @@ export default {
         'Itt érdemes nemcsak friss, hanem gyógyult eredményeket is nézni:',
         { gomb: { felirat: 'Megnézem a munkákat', link: '{eredmények_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -116,12 +114,12 @@ export default {
           ],
         },
         'A kezelés előtt a formát és a színirányt együtt tervezitek meg, és csak a jóváhagyásod után kezdődik a tetoválás.',
+        { kep: { src: 'pmu/melitta-var.jpg', alt: 'Töreki Melitta, a MOSAIC sminktetoválója mosolyogva néz a kamerába', felirat: 'Melitta már vár téged', szelesseg: 340 } },
         { velemeny: 'pmu-alexandra' },
         { kep: { src: 'pmu/szalon.jpg', alt: 'A MOSAIC sminktetováló szobája gyűrűs lámpával és kezelőággyal, a kezelő munka közben', felirat: 'Itt találkozunk: MOSAIC, 1023 Budapest, Bécsi út 2.' } },
         'Ha változott az időpontod lehetősége, itt tudod áttenni:',
         { gomb: { felirat: 'Itt tudom áttenni', link: '{módosítás_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -138,34 +136,22 @@ export default {
       szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor vár Melitta a MOSAIC-ban, 1023 Budapest, Bécsi út 2. Ha új gyógyszer, friss beavatkozás, napégés vagy ajaknál herpeszhajlam miatt kérdésed van, kérlek jelezd előre: 06 20 247 4444. Várunk!',
     },
     {
-      // PMU-CALL-01: Melitta 24 oran beluli hivasa (a motor nem hiv, hanem belso e-mailben jelzi, kit kell hivni). Korrekcional/eltavolitasnal nincs hivas.
-      id: 'PMU-CALL-01', csatorna: 'feladat', mikor: { tipus: 'feladat_t0' }, szegmensek: ['fizetos', 'konzultacio'],
-      targy: 'PMU - hívandó vendég (24 órán belül)',
-      torzs: [
-        'Szia {keresztnév}, Melitta vagyok a MOSAIC-ból. Láttam, hogy {dátum} {időpont}-ra foglaltál {szolgáltatás}-ra. Azért hívlak, hogy ne úgy gyere majd, hogy közben maradt benned kérdés.',
-        'Volt már korábban sminktetoválásod? Mi az, amit most leginkább szeretnél elérni - és van valami, amitől kifejezetten tartasz?',
-        'Ha van 1-2 kép, ami tetszik, elég ha elmented a telefonodra; az időpontodon együtt megnézzük. A formát és a színirányt előre megtervezzük, és csak akkor kezdünk, amikor te is jóváhagytad.',
-        'Van gyógyszer, friss esztétikai beavatkozás, bőrprobléma vagy ajaknál herpeszhajlam, amit jó lenne előre tudnom?',
-        'Van még valami, amire most szívesen válaszoljak?',
-        'Megjegyzés a hívónak: A hívás célja nem "rábeszélés". Egy valódi kétely felszínre hozása és tisztázása. A tulajdonosi memo szerint ne kérjünk feleslegesen fotóbeküldést csak azért, hogy interakció legyen.',
-      ],
-    },
-    {
       // 7.4: az ingyenes konzultacio rovidített sorozata (a dokumentum azonositoja: PMU-KONZ-EMAIL-01)
       id: 'PMU-KONZ-EMAIL-01', csatorna: 'email', mikor: { tipus: 't0' }, szegmensek: ['konzultacio'],
       targy: 'Megvan az ingyenes konzultációd Melittához',
       elotag: 'Kötelezettség nélkül átbeszélitek, mi illik hozzád és mire számíthatsz.',
       torzs: [
         'Szia {keresztnév}!',
-        'Megvan az ingyenes konzultációs időpontod Melittához: {dátum} {időpont}.',
+        'Megvan az ingyenes konzultációs időpontod Melittához:',
+        { doboz: ['{szolgáltatás}', '{dátum}, {időpont}', 'Helyszín: 1023 Budapest, Bécsi út 2.'] },
         'Ez nem egy "mini kezelés" és nem kötelez semmire. Arra való, hogy nyugodtan átbeszéljétek, mit szeretnél, mi illik az arcodhoz, milyen technika lehet jó, és minden kérdésedre választ kapj, mielőtt döntesz.',
         'Ha van 1-2 referencia, ami tetszik, mentsd el a telefonodra.',
         'Melitta 24 órán belül felhív, így már előtte is kérdezhetsz.',
-        'Helyszín: 1023 Budapest, Bécsi út 2.',
+        'Nézd meg Melitta videóját is, hogy már a találkozás előtt megismerd:',
+        { video: { src: 'pmu/melitta-video.jpg', alt: 'Videó-előkép: Töreki Melitta sminktetováló mesél a munkájáról, lejátszás jellel', felirat: 'Melitta videója', link: '{videó_link}', szelesseg: 240 } },
         'Részletek/módosítás:',
         { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
   ],

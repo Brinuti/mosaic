@@ -36,6 +36,8 @@ Minden oldal elérhető az előnézeten (`https://claude-booking-design-1.mosaic
 - visszahívás: `?minta=nincs-idopont` (visszahívás-kérő űrlap), `?minta=visszahivas-kesz` (Visszahívást kértél!)
 - PMU: `/foglalo-pmu?minta=kezeles#koszonjuk`, `/foglalo-pmu?minta=konz#koszonjuk-konzultacio`, `/foglalo-pmu?minta=visszahivas`, `/foglalo-pmu?minta=foto` (Megkaptam a fotódat!)
 
+**HeadSpa tudnivalók videó (2026-10-08, a tulajdonos kérésére):** a régi `/success-foglalas*` oldalakon lévő „A legfontosabb tudnivalók” videó (`c2eb0f_7adace486fb24a859b80f61510e8e675`, 2:02, a tulajdonos felvétele) a motor saját végképernyőjén is ott van HeadSpa foglalásnál (`engine.js`, `.be-tudnivalok-video`; csak kattintásra tölt). A HeadSpa T0 e-mail ugyanezt a videót mutatja (előkép + közvetlen link a videóra).
+
 ## Megfigyelések (1. kör)
 
 - A meglévő oldalak a sötétzöld Wix-stílusban vannak, a motor és a PMU-képernyők krémszínűek: a két világ kinézete eltér.
