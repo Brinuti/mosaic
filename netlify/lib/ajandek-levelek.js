@@ -102,6 +102,7 @@ ${gomb(d.kiallit_url, 'Kiállítom a kártyát')}
 <p><b>Új ajándékkártya-rendelés érkezett, a fizetés sikeres.</b></p>
 ${tabla([
   ['Rendelés', d.rendeles_id], ['Termék', d.termek_nev], ['Megajándékozott (kinek szól)', d.megajandekozott], ['Összeg', d.osszeg_szoveg],
+  ['Kedvezménykód', d.kedvezmeny_szoveg], ['A kártya értéke (a Salonic-kupon erre szól)', d.ertek_szoveg],
   ['Fizetés módja', fizetesiModSzoveg(d.fizetesi_mod)], ['Fizetve', idopontHu(d.fizetve_ekkor)],
 ])}
 ${cim('A VEVŐ (SZÁMLÁZÁSI ADATOK)')}
@@ -136,7 +137,7 @@ export function vevoFizetveLevel(d) {
     html: `<div style="${betu};max-width:600px">
 <p>Kedves ${esc(d.nev)}!</p>
 <p>Köszönjük a vásárlást! Megkaptuk a fizetésed a(z) „${esc(d.kartya_cim || d.termek_nev)}” ajándékkártyára.</p>
-${tabla([['Rendelésazonosító', d.rendeles_id], ['Termék', d.termek_nev], ['Összeg', d.osszeg_szoveg]])}
+${tabla([['Rendelésazonosító', d.rendeles_id], ['Termék', d.termek_nev], [d.kedvezmeny_szoveg ? 'Fizetett összeg' : 'Összeg', d.osszeg_szoveg], ['Kedvezménykód', d.kedvezmeny_szoveg], ['A kártya értéke', d.ertek_szoveg]])}
 ${kesz
     ? `${cim('ELKÉSZÜLT AZ AJÁNDÉKKÁRTYÁD')}
 ${kodDoboz(d.kod, d.ervenyes_ig)}
@@ -232,6 +233,7 @@ ${cim('BANKI UTALÁSI ADATOK')}
 ${tabla([
   ['Kedvezményezett', d.kedvezmenyezett], ['Számlaszám', d.szamlaszam],
   ['Összeg', d.osszeg_szoveg], ['Közlemény', d.kozlemeny],
+  ['Kedvezménykód', d.kedvezmeny_szoveg], ['A kártya értéke', d.ertek_szoveg],
 ])}
 ${cim('IDE KÜLDD A BIZONYLATOT')}
 <p>Kérlek, hogy amint teljesítetted az utalást, az alábbi e-mail-címre küldd meg számunkra az utalási bizonylatot (vagy egyszerűen válaszolj erre a levélre):</p>
@@ -257,6 +259,7 @@ export function szalonAtutalasLevel(d) {
 <p><b>Új ajándékkártya-igény érkezett átutalással. Ez még NEM vásárlás: a kártyát csak az utalás beérkezése után kell kiállítani.</b></p>
 ${tabla([
   ['Azonosító (közlemény)', d.rendeles_ref], ['Termék', d.termek_nev], ['Összeg', d.osszeg_szoveg],
+  ['Kedvezménykód', d.kedvezmeny_szoveg], ['A kártya értéke (a Salonic-kupon erre szól)', d.ertek_szoveg],
 ])}
 ${cim('A VEVŐ (SZÁMLÁZÁSI ADATOK)')}
 ${tabla([
@@ -296,7 +299,7 @@ ${kodDoboz(d.kod, null)}
 <p><b>Teendő:</b> töröld (vagy tiltsd le) a Salonicban a(z) <b>${esc(d.kod)}</b> kuponkódot, ha már létrehoztad.${d.kiallitva ? ' A kártyát a vevő már megkapta – ha foglalt vele időpontot, vedd fel vele a kapcsolatot.' : ''}${d.fizikai ? ' A vevő fizikai kártyát kért: ha már elkészült, ne add át.' : ''}</p>
 ${tabla([
   ['Ok', vita ? 'vita (chargeback)' : 'visszatérítés'], ['Rendelés', d.rendeles_id], ['Termék', d.termek_nev],
-  ['Összeg', d.osszeg_szoveg], ['Visszatérítve', d.visszaterites_szoveg],
+  ['Összeg', d.osszeg_szoveg], ['Kedvezménykód', d.kedvezmeny_szoveg], ['Visszatérítve', d.visszaterites_szoveg],
   ['Kártya kiállítva', d.kiallitva ? 'igen' : 'nem'], ['Vevő', d.nev], ['Vevő e-mail', d.email],
 ])}
 ${vita ? '<p style="font-size:13px;color:#555">A vita részleteit és a válaszadási határidőt a Stripe-fiókban találod.</p>' : ''}

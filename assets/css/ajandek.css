@@ -1456,3 +1456,23 @@ body .ah-halk, .ah-tenyek li, .ah-benefit-lista li span, .ah-forma-lista li span
   /* a suti-beallitasok gomb ne takarja a savot */
   body.ah-sticky-be #mh-cc-reopen { bottom: 84px; }
 }
+
+/* ---------- kedvezmenykod (kuponkod) a Fizetes kartyan ---------- */
+.ah-kedv { margin: 0 0 18px; padding: 14px 16px; background: var(--ah-krem); border: 1px dashed var(--ah-arany); border-radius: 12px; }
+.ah-kedv[hidden], .ah-kedv-urlap[hidden], .ah-kedv-kesz[hidden] { display: none; }
+.ah-kedv-nyito { background: none; border: 0; padding: 0; font: 500 15px/1.3 var(--ah-test); color: var(--ah-petrol); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.ah-kedv-nyito[hidden] { display: none; }
+.ah-kedv-urlap { margin-top: 12px; }
+.ah-kedv-urlap label { display: block; margin-bottom: 6px; font-size: 14px; color: var(--ah-halk); }
+.ah-kedv-sor { display: flex; gap: 10px; align-items: stretch; }
+.ah-kedv-sor input { flex: 1 1 auto; min-width: 0; height: 46px; padding: 0 14px; border: 1px solid var(--ah-vonal); border-radius: 10px; background: var(--ah-feher); font: 500 16px/1.2 var(--ah-test); letter-spacing: .06em; text-transform: uppercase; color: var(--ah-szoveg); }
+.ah-kedv-sor input:focus { outline: 2px solid var(--ah-petrol-v); outline-offset: 1px; }
+.ah-kedv-gomb { flex: none; min-height: 46px; padding: 0 20px; }
+.ah-kedv .ah-mezohiba { margin-top: 8px; }
+.ah-kedv-sor-kesz { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.ah-kedv-cimke { display: inline-flex; align-items: center; gap: 8px; font-size: 16px; color: var(--ah-petrol); }
+.ah-kedv-cimke .ah-ikon { width: 20px; height: 20px; color: #2e7a52; }
+.ah-kedv-cimke b { letter-spacing: .04em; }
+.ah-kedv-le { background: none; border: 0; padding: 0; font: 400 14px/1.3 var(--ah-test); color: var(--ah-halk); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.ah-kedv-ertek { margin: 8px 0 0; font-size: 14px; line-height: 1.45; color: var(--ah-halk); }
+@media (max-width: 480px) { .ah-kedv-gomb { padding: 0 14px; } .ah-kedv-sor-kesz { align-items: flex-start; } }

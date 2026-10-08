@@ -429,10 +429,10 @@ describe('/beallitas', () => {
   test('mod a kulcs elotagjabol; publikus kulcs csak ha van mod; azonnali_kartya', async () => {
     // (a titok kotelezo; a hianyaval kulon teszt foglalkozik)
     const eset = async (env) => (await hiv('GET', 'beallitas', { env: { AJANDEK_TITOK: TITOK, ...env } })).adat;
-    assert.deepEqual(await eset({}), { mod: 'nincs', publikus_kulcs: null, azonnali_kartya: false, foto: false });
+    assert.deepEqual(await eset({}), { mod: 'nincs', publikus_kulcs: null, azonnali_kartya: false, foto: false, kedvezmeny: true });
     assert.equal((await eset({ STRIPE_SECRET_KEY: 'sk_test_x' })).mod, 'nincs');
     assert.equal((await eset({ STRIPE_PUBLISHABLE_KEY: 'pk_test_x' })).mod, 'nincs');
-    assert.deepEqual(await eset({ STRIPE_SECRET_KEY: 'sk_test_x', STRIPE_PUBLISHABLE_KEY: 'pk_test_y' }), { mod: 'teszt', publikus_kulcs: 'pk_test_y', azonnali_kartya: false, foto: false });
+    assert.deepEqual(await eset({ STRIPE_SECRET_KEY: 'sk_test_x', STRIPE_PUBLISHABLE_KEY: 'pk_test_y' }), { mod: 'teszt', publikus_kulcs: 'pk_test_y', azonnali_kartya: false, foto: false, kedvezmeny: true });
     assert.equal((await eset({ STRIPE_SECRET_KEY: 'rk_test_x', STRIPE_PUBLISHABLE_KEY: 'pk_test_y' })).mod, 'teszt');
     assert.equal((await eset({ STRIPE_SECRET_KEY: 'sk_live_x', STRIPE_PUBLISHABLE_KEY: 'pk_live_y' })).mod, 'elo');
     assert.equal((await eset({ STRIPE_SECRET_KEY: 'rk_live_x', STRIPE_PUBLISHABLE_KEY: 'pk_live_y' })).mod, 'elo');
@@ -2203,7 +2203,7 @@ describe('AJANDEK_TITOK kotelezo (legalabb 32 karakter, fail closed)', () => {
     for (const titok of [undefined, '', 'rovid', 'x'.repeat(31), ' '.repeat(40)]) {
       const env = { ...ENV, AJANDEK_TITOK: titok };
       const cimke = JSON.stringify(titok);
-      assert.deepEqual((await hiv('GET', 'beallitas', { env })).adat, { mod: 'nincs', publikus_kulcs: null, azonnali_kartya: false, foto: false }, cimke);
+      assert.deepEqual((await hiv('GET', 'beallitas', { env })).adat, { mod: 'nincs', publikus_kulcs: null, azonnali_kartya: false, foto: false, kedvezmeny: true }, cimke);
       let r = await hiv('POST', 'fizetes', { body: rendelesTorzs(), env });
       assert.equal(r.status, 503, cimke);
       assert.deepEqual(r.adat, { hiba: 'nincs_beallitva' });
