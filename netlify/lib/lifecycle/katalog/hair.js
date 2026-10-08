@@ -85,9 +85,9 @@ export default {
         // valodi vendegmunkak a nagyobb szinvaltoztatasokbol (meleg barna-rez / szoke balayage / vilagos szoke); nincs igeret, csak keszult munkak
         {
           kepek: [
-            { src: 'hair/valtozas-1.jpg', alt: 'Barnából karamell és réz árnyalatba átmenő, hullámos haj – valódi MOSAIC Hair vendégmunka', felirat: 'Réz-barna' },
-            { src: 'hair/valtozas-2.jpg', alt: 'Hosszú, hullámos, szőke haj lágy balayage-átmenettel – valódi MOSAIC Hair vendégmunka', felirat: 'Szőke balayage' },
-            { src: 'hair/valtozas-3.jpg', alt: 'Hosszú, egyenes, nagyon világos szőke haj – valódi MOSAIC Hair vendégmunka', felirat: 'Világos szőke' },
+            { src: 'hair/valtozas-1.jpg', alt: 'Barnából karamell és réz árnyalatba átmenő, hullámos haj – valódi MOSAIC Hair vendégmunka' },
+            { src: 'hair/valtozas-2.jpg', alt: 'Hosszú, hullámos, szőke haj lágy balayage-átmenettel – valódi MOSAIC Hair vendégmunka' },
+            { src: 'hair/valtozas-3.jpg', alt: 'Hosszú, egyenes, nagyon világos szőke haj – valódi MOSAIC Hair vendégmunka' },
           ],
         },
         'A nagyobb színváltozásnál a jó eredmény egyik kulcsa a reális kiindulópont.',
