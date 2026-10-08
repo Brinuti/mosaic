@@ -105,7 +105,7 @@ describe('/ (főoldal)', () => {
     const { p, ctx } = await nyit();
     const kartyak = await p.$$eval('.szol-kartya', (l) => l.map((a) => ({ href: a.getAttribute('href'), h3: a.querySelector('h3').textContent.trim() })));
     assert.deepEqual(kartyak, [
-      { href: '/headspa-arak-budapest', h3: 'Head Spa' }, { href: '/noi-fodraszat-budapest', h3: 'Fodrászat' }, { href: '/oxigenterapia-budapest', h3: 'Haj- és fejbőr oxigénterápia' },
+      { href: '/headspa-arak-budapest', h3: 'Head Spa' }, { href: '/noi-fodraszat-budapest', h3: 'Fodrászat' }, { href: '/oxigenterapia-budapest', h3: 'Oxigénterápia' },
       { href: '/lezeres-szortelenites-budapest', h3: 'Lézeres szőrtelenítés' }, { href: '/sminktetovalas-budapest', h3: 'Sminktetoválás' }]);
     for (const k of kartyak) assert.ok(belsoOldalVan(k.href), 'nem létező oldal: ' + k.href);
     await ctx.close();
