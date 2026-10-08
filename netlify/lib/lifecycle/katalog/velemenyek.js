@@ -1,7 +1,8 @@
 // Valodi Google-velemenyek (SZO SZERINTI, valogatott), az e-mail-sablonok `{ velemeny: '<id>' }` blokkjaihoz. NE modositsd a szoveget: csak az oldalon / a Trustindex-widgetben
 // (Google) megjeleno velemeny kerulhet ide, valtoztatas nelkul. forras: ahol a szoveg megtalalhato (a katalogus-teszt a foglalas/*.html forrasokat egyezteti).
 // A "datum" a Google-velemeny kelte (a widgetbol); a PMU-velemenyeknek az oldalon nincs datuma.
-// A velemeny `uzletag` mezoje: melyik uzletag leveleiben szerepelhet.
+// A velemeny `uzletag` mezoje: melyik uzletag leveleiben szerepelhet. 'altalanos' = a szalonrol / a csapatrol / a helyrol szolo, kezelestol fuggetlen velemeny: barmelyik uzletag levelebe mehet
+// (a lezeres / oxigenes kezelesrol szolo velemeny a Trustindex-widgetben nincs; ugyanaz a Google-widget az egesz szalone).
 export const VELEMENYEK = Object.freeze({
   'pmu-gloria': { uzletag: 'pmu', nev: "Glória Dénes", datum: "", szoveg: "Szemöldöktetováláson voltam, egyszerűen hibátlan! A szalon gyönyörű, Melli kedves, a munkája páratlan!", forras: "foglalas/sminktetovalas-budapest.html" },
   'pmu-diana': { uzletag: 'pmu', nev: "Diana Ujszászi", datum: "", szoveg: "Melitta mindig tökéletesre varázsolja a szempilláimat. ❤️ Profi és megbízható szakember, akire bátran rábíztam a szemöldököm tetoválását is. A végeredmény gyönyörű lett, pontosan olyan, amilyet szerettem volna. Nagyon hálás vagyok neki, és szívből ajánlom mindenkinek!", forras: "foglalas/sminktetovalas-budapest.html" },
@@ -18,5 +19,9 @@ export const VELEMENYEK = Object.freeze({
   'hs-viktoria': { uzletag: 'headspa', nev: "Viktória Fodor", datum: "2026.09.16.", szoveg: "Isteni élmény volt, egy relaxálós páros japanese head spa kezelésen vettünk részt anyukámmal. Köszönjük szépen!", forras: "foglalas/paros-headspa-budapest-uj.html" },
   'hs-reka-czako': { uzletag: 'headspa', nev: "Réka Czakó", datum: "2026.08.21.", szoveg: "Párban mentünk anyukámmal, szülinapomra kaptam ajándékba. Nagyon jól éreztük magunkat teljesen ki tudtunk kapcsolódni, mindenki nagyon kedves és segítőkész volt. A hajam szép, fényes, illatos lett. Az én kezelőm Czakó Vivien volt így a névrokonság egyből meg is hozta a jó hangulatot, biztosan jövünk máskor is. Köszönjük szépen!", forras: "Trustindex / Google" },
   'hair-eva': { uzletag: 'hair', nev: "Éva Varju", datum: "2026.08.18.", szoveg: "Nagyon kedves és segítőkész csapat, külön szeretném kiemelni Evelint, aki rendkívül hozzáértően és precízen végzi a munkáját. Nagyon elégedett vagyok, szívből ajánlom mindenkinek!", forras: "Trustindex / Google" },
+  'altalanos-ildiko': { uzletag: 'altalanos', nev: "Ildikó Tóth", datum: "2026.08.24.", szoveg: "csodálatos volt a környezet, a kezelés fantasztikus, az ott dolgozók kedvesek és nagyon hozzáértők, köszönöm", forras: "Trustindex / Google" },
+  'altalanos-bea': { uzletag: 'altalanos', nev: "Bea Zöld", datum: "2026.09.05.", szoveg: "Nagyon szép, igényes a hely. A személyzet figyelmes. Szuper élményben volt részünk!", forras: "Trustindex / Google" },
+  'altalanos-zsofia': { uzletag: 'altalanos', nev: "Zsófia Tábor", datum: "2026.10.03.", szoveg: "Elképeztő jó kikapcsolódás. Mindenkinek ajánlom a helyet. Szuper professzionális. Csend és nyugalom van. Profi kezelők.", forras: "Trustindex / Google" },
+  'altalanos-renata': { uzletag: 'altalanos', nev: "Renáta Gyarmati", datum: "2026.09.05.", szoveg: "Szuper hely, kedves személyzettel", forras: "Trustindex / Google" },
   'hair-viki': { uzletag: 'hair', nev: "Viki Zolcer", datum: "2026.08.17.", szoveg: "Evelinnél voltam, nagyon profi, ügyes és kedves! Mindenkinek csak ajánlani tudom!🥰", forras: "Trustindex / Google" },
 });
