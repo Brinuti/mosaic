@@ -166,3 +166,26 @@
   .gyik .gy-valasz { padding: 0 16px 16px; font-size: 16px; }
   .cikk h3 { font-size: 21px; }
 }
+
+/* --- ferfi oldal (vegleges-szortelenites-ferfiaknak): az elteresek --- */
+.lv-promo { margin-top: 12px; font-size: 14.5px; line-height: 1.4; color: #8a6c3e; }
+.lv-promo b { font-weight: 500; }
+.cikk .lv-promo { margin: 12px 0 0; font-size: 14.5px; line-height: 1.4; color: #8a6c3e; }
+.lv-konz-kep img { max-width: 360px; margin: 0 auto; }
+.lv-valt-kep.magas img { max-width: 320px; margin: 0 auto; }
+.lv-berlet-ferfi { display: grid; gap: 28px; max-width: 880px; margin: 0 auto; }
+.lv-berlet-ferfi .lv-berlet-kep img { max-width: 640px; margin: 0 auto; }
+.lv-berlet-ferfi .lv-kartya { background: rgba(255, 255, 255, .96); border-radius: 22px; padding: 30px 34px; box-shadow: 0 18px 44px rgba(0, 0, 0, .22); text-align: center; }
+.lv-berlet-ferfi .lv-kartya p { text-align: center; }
+.lv-hatterkepes .lv-promo { color: #e0c887; text-align: center; }
+.lv-csomagok.ketto { grid-template-columns: repeat(2, minmax(0, 360px)); justify-content: center; gap: 22px; }
+.lv-csomag-info { margin-top: 16px; font-size: 16px; line-height: 1.55; color: #25373a; }
+.lv-csomag-info b { font-weight: 500; color: var(--sotet); }
+.lv-csomag .lv-promo, .lv-tr-csoport .lv-promo { text-align: center; }
+.lv-csomag > .gomb, .lv-tr-csoport > .gomb { margin-top: auto; }
+.lv-csomag-info + .gomb { margin-top: 18px; }
+.lv-hely-jobb .terkep { min-height: 320px; }
+@media (max-width: 700px) {
+  .lv-csomagok.ketto { grid-template-columns: 1fr; }
+  .lv-berlet-ferfi .lv-kartya { padding: 22px 18px; }
+}

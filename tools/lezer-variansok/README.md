@@ -18,3 +18,11 @@ A hét oldal ugyanazt a sablont követi (az élő `/lezeres-szortelenites-budape
 - Rejtett régi példány: `/<név>-regi` (noindex), `node tools/ujrastilus/regi-peldany.mjs <név> --lcp-torol`. Visszaállás: a `foglalas/<név>.html` törlése.
 - Teszt: `node --test tools/ujrastilus-teszt/lezer-variansok.test.mjs` (könnyű szerver, dist nélkül): betöltés, meta, H1, tartalom-hűség (a kinyert sorok ÉS a régi HTML minden szövegcsomópontja), képek, linkek,
   árkártyák, GYIK, videó, körhinta, telefon (390 / 360 px), `-regi` fájlok.
+
+## A férfi oldal: `vegleges-szortelenites-ferfiaknak`
+
+Külön generátor: `node tools/lezer-variansok/gen-ferfi.mjs` (forrás: `forras/ferfi.folyam.txt`; a segédfüggvényeket a `gen.mjs`-ből használja). **Indexelhető** marad (a régi oldal sem volt noindex).
+Eltérések a női oldalaktól: a konzultáció-szakaszban fotó van (nem videó), nincs Elysion-összehasonlítás, az árlista férfi csomagokat / testrészeket mutat (2 csomag, 4 testrész-csoport),
+a galéria 9 képes, a helyszín-szakaszban a klon.js hozzájárulás-kapus Google-térkép áll (szövegei a régi oldaléi).
+- A `brutalis-simasag` kép (`d25d1e56…`) a régi oldalon a konzultáció- és a „Felejtsd el a pengét” doboz **takart** háttere (a látszó kép a doboz bal oldali csempéje): az új oldalra nem került.
+- Teszt: `node --test tools/ujrastilus-teszt/lezer-ferfi.test.mjs`. Rejtett régi példány: `/vegleges-szortelenites-ferfiaknak-regi`.

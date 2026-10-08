@@ -12,23 +12,24 @@
 // A kezi szerkesztes megengedett, de az ujrafuttatas felulirja a kimeneti fajlokat.
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
-const GYOKER = path.resolve(import.meta.dirname, '..', '..');
+export const GYOKER = path.resolve(import.meta.dirname, '..', '..');
 const FORRAS = path.join(import.meta.dirname, 'forras');
-const BAZIS = 'https://www.mosaicheadspa.hu';
+export const BAZIS = 'https://www.mosaicheadspa.hu';
 const GYIK_KULCS = 'c2eb0f_7101a51e50aef2435d5ed679e90074d4';   // a regi lezeres oldalak Common Ninja GYIK-ja (assets/js/gyik.js)
-const TI_EMBED = '/assets/embed/c2eb0f_614b09d160b9382c4cffcde6d7828dcb.html';   // a regi oldalak Trustindex-widgetje (loader 8a7562c4...)
+export const TI_EMBED = '/assets/embed/c2eb0f_614b09d160b9382c4cffcde6d7828dcb.html';   // a regi oldalak Trustindex-widgetje (loader 8a7562c4...)
 // A kozos (mind a 7 oldalon azonos) kepek allando listabol jonnek: a folyam.mjs kinyero a Wix lusta / megjelenes-animacios kepeit nem mindig latja (oldalankent mas
 // keszlet jon ki), a regi oldalak HTML-jeben viszont mind a 7 oldalon ugyanaz a 43 kep van ugyanabban a sorrendben.
 const IMG_MAPPA = path.join(GYOKER, 'assets', 'img');
 const IMG_FAJLOK = fs.readdirSync(IMG_MAPPA);
-const kep = (elo) => {
+export const kep = (elo) => {
   const f = IMG_FAJLOK.filter((n) => n.startsWith(elo));
   if (f.length !== 1) throw new Error('kep: nem egyertelmu / hianyzik: ' + elo + ' (' + f.length + ')');
   return '/assets/img/' + f[0];
 };
 const HERO_KEP = kep('c2eb0f_095b37f37006');       // "zsifi-ingyen.jpg": a regi hero hatterkepe
-const CSILLAG_KEP = kep('c2eb0f_81f16bfc67fb');     // "5stars.png" a Google-ertekeles mellett
+export const CSILLAG_KEP = kep('c2eb0f_81f16bfc67fb');     // "5stars.png" a Google-ertekeles mellett
 
 // az ekezetes fajlnev NFC-ben (mint a klon/ mappaban)
 const OLDALAK = [
@@ -64,7 +65,7 @@ const SZAKASZOK = [
   ['hely', 'H2', /Itt találsz meg minket/],
 ];
 
-const IKON = {
+export const IKON = {
   hely: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 00-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>',
   tel: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A15 15 0 013 6a2 2 0 012-2z"/></svg>',
   ora: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
@@ -74,11 +75,11 @@ const IKON = {
 };
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-const attr = esc;
+export const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+export const attr = esc;
 
 // folyam.txt sor -> { t: tipus, x, w, h, px, html | src+alt | szoveg+href }
-function sorok(fajl) {
+export function sorok(fajl) {
   const ki = [];
   for (const l of fs.readFileSync(fajl, 'utf8').split('\n')) {
     if (!l.trim()) continue;
@@ -103,15 +104,15 @@ function sorok(fajl) {
   }
   return ki;
 }
-const szoveg = (html) => html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+export const szoveg = (html) => html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 // a fejlec-sorok kulso <b>...</b> burkolata folosleges (a fejlec stilusa eleve vastagabb); a vegi <br> is
-const fejSzoveg = (html) => {
+export const fejSzoveg = (html) => {
   let h = html.trim().replace(/(?:<br\s*\/?>\s*)+$/, '');
   const m = /^<b>([\s\S]*)<\/b>$/.exec(h);
   return m && !/<b>/.test(m[1]) ? m[1].trim() : h;
 };
-const cim = fejSzoveg;
-const kepId = (src) => /\/([^/]+?)\.(?:jpe?g|png|webp)$/.exec(src)[1];
+export const cim = fejSzoveg;
+export const kepId = (src) => /\/([^/]+?)\.(?:jpe?g|png|webp)$/.exec(src)[1];
 
 // a szakaszok szeletei
 function szeletek(rs, kulcs) {
@@ -135,9 +136,9 @@ function szeletek(rs, kulcs) {
 
 // a folyam.mjs kinyeroje a szomszedos Wix-szovegelemek koze szokozt tesz, ahol a regi oldalon NINCS: ezeket visszaallitjuk (ha kell)
 const FOLYAM_SZOKOZ = [];
-const szokozJavit = (h) => FOLYAM_SZOKOZ.reduce((x, [a, b]) => x.split(a).join(b), h);
+export const szokozJavit = (h) => FOLYAM_SZOKOZ.reduce((x, [a, b]) => x.split(a).join(b), h);
 
-const rendez = (rs, t) => rs.filter((r) => r.t === t);
+export const rendez = (rs, t) => rs.filter((r) => r.t === t);
 // Az arlista-szovegblokkokat (csomagarak / testreszarak: Wix-ismetlo, 1 hatalmas szovegsor) a kinyero 2 / 7 oldalon nem latta; mivel a regi oldalak HTML-jeben mind a 7-ben
 // ugyanaz a szoveg all, az ARRA az oldalra a tobbi oldalbol potoljuk - de CSAK ha minden oldal, ahol latszik, pontosan ugyanazt a szoveget adta (kulonben hiba).
 const TABLAK = {};
@@ -175,14 +176,14 @@ function kepMeret(src) {
   meretek.set(src, [w, h]);
   return [w, h];
 }
-function img(src, alt, extra = '') {
+export function img(src, alt, extra = '') {
   const [w, h] = kepMeret(src);
   return `<img src="${attr(src)}" alt="${attr(alt)}" width="${w}" height="${h}"${extra}>`;
 }
 // a regi oldalon a kepek alt-szovege sokszor a fajlnev ("zsofi.jpg"): ezt nem hasznaljuk, helyette leiro szoveg
 const jaltAlt = (k, tartalek) => (k.alt && !/^[\w. -]+\.(jpe?g|png|webp)$/i.test(k.alt) && !/^(Image by|Woman Near|Head Massage|Stylish|Spa Salts)/i.test(k.alt) ? k.alt : tartalek);
 
-function videoKartya(posterSrc, felirat) {
+export function videoKartya(posterSrc, felirat) {
   const f = videoFajl(posterSrc);
   const [pw, ph] = kepMeret(posterSrc);
   return `<button type="button" class="video-kartya" data-video="${f}" data-poster="${attr(posterSrc)}" aria-label="Videó lejátszása: ${attr(felirat)}" style="aspect-ratio: ${pw} / ${ph}">
@@ -190,17 +191,21 @@ function videoKartya(posterSrc, felirat) {
 </button>`;
 }
 // a regi oldal gombjai: a 10 px-es (nagybetus, kiritkitott) gomb "tomor" arany gomb, a nagyobb betus egy szoveges link-gomb
-function gomb(r, osztaly, extra = '') {
+export function gomb(r, osztaly, extra = '') {
   const kulso = /^https?:/.test(r.href);
   const arany = r.px && r.px <= 12;
   const o = osztaly || (arany ? 'gomb gomb-arany' : 'link-gomb lv-link');
   return `<a class="${o}" href="${attr(r.href)}"${extra}${kulso ? ' target="_blank" rel="noopener"' : ''}>${r.html}${arany || osztaly ? ' <span class="nyil" aria-hidden="true">→</span>' : ''}</a>`;
 }
 // a link-gombok ("vagy Ingyenes Konzultacio Idopontok >>") a regi oldalon egy sorban allnak
-const gombSor = (gombok, osztaly = 'cta-sor') => (gombok.length ? `<div class="${osztaly}">\n${gombok.map((g) => `          ${gomb(g)}`).join('\n')}\n        </div>` : '');
-const aranyok = (rs) => rs.filter((r) => r.t === 'GOMB' && r.px <= 12);
-const linkek = (rs) => rs.filter((r) => r.t === 'GOMB' && r.px > 12);
-const paragrafusok = (sz) => sz.map((r) => `        <p>${r.html}</p>`).join('\n');
+export const gombSor = (gombok, osztaly = 'cta-sor') => (gombok.length ? `<div class="${osztaly}">\n${gombok.map((g) => `          ${gomb(g)}`).join('\n')}\n        </div>` : '');
+export const aranyok = (rs) => rs.filter((r) => r.t === 'GOMB' && r.px <= 12);
+export const linkek = (rs) => rs.filter((r) => r.t === 'GOMB' && r.px > 12);
+export const PROMO = /májusi kedvezménnyel/;
+export const promoSorok = (sz) => sz.filter((r) => PROMO.test(szoveg(r.html)));
+export const nemPromo = (sz) => sz.filter((r) => !PROMO.test(szoveg(r.html)));
+export const promoHtml = (sz, beh = '        ') => promoSorok(sz).map((r) => `\n${beh}<p class="lv-promo">${r.html}</p>`).join('');
+export const paragrafusok = (sz) => sz.map((r) => `        <p>${r.html}</p>`).join('\n');
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------
 function heroHtml(rs, nev) {
@@ -317,7 +322,7 @@ ${tetelek[i].sort((a, b) => a.y - b.y).map((r) => `          <li>${r.html}</li>`
 </section>`;
 }
 
-function garanciaHtml(rs) {
+export function garanciaHtml(rs) {
   const h = rs.find((r) => r.t === 'H2');
   const k = { src: kep('c2eb0f_bfd0d43979b2') };
   const sz = rs.filter((r) => r.t === 'SZ');
@@ -328,10 +333,10 @@ function garanciaHtml(rs) {
       <figure class="kep-fig lv-kicsi">${img(k.src, 'Árgarancia és 12 hónap garancia', ' loading="lazy"')}</figure>
       <div class="cikk">
         <h2 id="garancia-cim">${cim(h.html)}</h2>
-${paragrafusok(sz)}
+${paragrafusok(nemPromo(sz))}
         <div class="cta-sor">
           ${gombok.map((g) => gomb(g)).join('\n          ')}
-        </div>
+        </div>${promoHtml(sz)}
       </div>
     </div>
   </div>
@@ -502,9 +507,9 @@ ${c.tetelek.map((t) => `          <div class="lv-tr-tetel">
 }
 
 // Zsofi bemutatkozik: kep + cim + bekezdesek + gombok
-function zsofiHtml(rs) {
+export function zsofiHtml(rs, kepEleje = 'c2eb0f_b93a709a951c') {
   const h = rs.find((r) => r.t === 'H1');
-  const k = { src: kep('c2eb0f_b93a709a951c') };
+  const k = { src: kep(kepEleje) };
   const sz = rs.filter((r) => r.t === 'SZ');
   const gombok = rs.filter((r) => r.t === 'GOMB');
   return `<section class="szekcio feher" id="zsofi" aria-labelledby="zsofi-cim">
@@ -513,11 +518,11 @@ function zsofiHtml(rs) {
       <figure class="kep-fig lv-kicsi">${img(k.src, 'Zsófi, a MOSAIC Elysion Pro szakértője', ' loading="lazy"')}</figure>
       <div class="cikk">
         <h2 id="zsofi-cim">${cim(h.html)}</h2>
-${paragrafusok(sz)}
+${paragrafusok(nemPromo(sz))}
         <div class="cta-sor">
           ${aranyok(gombok).map((g) => gomb(g)).join('\n          ')}
           ${linkek(gombok).map((g) => gomb(g)).join('\n          ')}
-        </div>
+        </div>${promoHtml(sz)}
       </div>
     </div>
   </div>
@@ -525,8 +530,8 @@ ${paragrafusok(sz)}
 }
 
 // mi tortenik az elso alkalommal: kep + cim + bevezeto + 2 felsorolas (H4)
-function elsoHtml(rs) {
-  const k = { src: kep('c2eb0f_1b8e14163369') };
+export function elsoHtml(rs, kepEleje = 'c2eb0f_1b8e14163369') {
+  const k = { src: kep(kepEleje) };
   const h = rs.find((r) => r.t === 'H1');
   const hi = rs.indexOf(h);
   const utan = rs.slice(hi + 1);
@@ -554,7 +559,7 @@ ${reszek.join('\n')}
 }
 
 // kep + cim (+ alcim) + bekezdesek (3 kerdes, ingyenes kontroll): ugyanaz a szerkezet
-function kepSzovegHtml(rs, { id, osztaly, kepAlt, fordit, kepEleje }) {
+export function kepSzovegHtml(rs, { id, osztaly, kepAlt, fordit, kepEleje }) {
   const k = { src: kep(kepEleje) };
   const h = rs.find((r) => r.t === 'H2');
   const sz = rs.filter((r) => r.t === 'SZ');
@@ -578,8 +583,8 @@ const haromHtml = (rs) => kepSzovegHtml(rs, { id: 'harom-kerdes', osztaly: 'fehe
 const kontrollHtml = (rs) => kepSzovegHtml(rs, { id: 'kontroll', osztaly: 'bezs', kepAlt: 'Ingyenes kontroll a MOSAIC-ban', fordit: false, kepEleje: 'c2eb0f_465534672531' });
 
 // kezeles elott / utan
-function elotteHtml(rs) {
-  const k = { src: kep('11062b_b1d8a570d7e7') };
+export function elotteHtml(rs, kepEleje = '11062b_b1d8a570d7e7') {
+  const k = { src: kep(kepEleje) };
   const fejek = rs.filter((r) => r.t === 'H2');
   const reszek = fejek.map((f, i) => {
     const kov = fejek[i + 1];
@@ -598,7 +603,7 @@ ${reszek.join('\n')}
 </section>`;
 }
 
-function velemenyHtml(rs) {
+export function velemenyHtml(rs) {
   const h = rs.find((r) => r.t === 'H1');
   return `<section class="szekcio feher" id="velemenyek" aria-labelledby="velemenyek-cim">
   <div class="tartalom">
@@ -617,7 +622,7 @@ function velemenyHtml(rs) {
 </section>`;
 }
 
-const SZALON_KEPEK = [
+export const SZALON_KEPEK = [
   ['c2eb0f_ac85eea74409', 'A MOSAIC váró- és recepciós tere'],
   ['c2eb0f_aa3b2f8ec756', 'A váró zöld bársonyfotelekkel'],
   ['c2eb0f_00a2f4bd0e9b', 'A bejárat a MOSAIC emblémával és a macska-szoborral'],
@@ -625,7 +630,7 @@ const SZALON_KEPEK = [
   ['c2eb0f_a63c0e640ebb', 'A kezelőhelyiség kezelőággyal'],
   ['c2eb0f_ad609656f774', 'Az Elysion Pro lézer és a kezelőágy'],
 ];
-function szalonHtml(rs) {
+export function szalonHtml(rs, kepek = SZALON_KEPEK) {
   const h = rs.find((r) => r.t === 'H2');
   return `<section class="szekcio zsalya" id="szalon" aria-labelledby="szalon-cim">
   <div class="tartalom">
@@ -636,7 +641,7 @@ function szalonHtml(rs) {
     <div class="korhinta nagy-elem">
       <button type="button" class="korhinta-gomb elozo" aria-label="Előző kép" disabled>${IKON.elozo}</button>
       <div class="korhinta-sav">
-${SZALON_KEPEK.map(([e, a]) => `        <figure>${img(kep(e), a, ' loading="lazy"')}</figure>`).join('\n')}
+${kepek.map(([e, a]) => `        <figure>${img(kep(e), a, ' loading="lazy"')}</figure>`).join('\n')}
       </div>
       <button type="button" class="korhinta-gomb kovetkezo" aria-label="Következő kép">${IKON.kovetkezo}</button>
     </div>
@@ -645,12 +650,12 @@ ${SZALON_KEPEK.map(([e, a]) => `        <figure>${img(kep(e), a, ' loading="lazy
 }
 
 // nyari ajanlat: 2 kep + cim + bekezdesek + gombok
-function nyarHtml(rs) {
-  const kepek = [{ src: kep('11062b_da7d7151d059') }, { src: kep('11062b_ef638a1bfa2f') }];
+export function nyarHtml(rs, kepElo = ['11062b_da7d7151d059', '11062b_ef638a1bfa2f']) {
+  const kepek = kepElo.map((e) => ({ src: kep(e) }));
   const h = rs.find((r) => r.t === 'H2');
   const sz = rs.filter((r) => r.t === 'SZ');
   const gombok = rs.filter((r) => r.t === 'GOMB');
-  const [alcim, ...tobbi] = sz;
+  const [alcim, ...tobbi] = nemPromo(sz);
   return `<section class="szekcio lv-hatterkepes lv-vilagos" id="ajanlat" aria-labelledby="ajanlat-cim">
   ${img(kepek[1].src, '', ' class="lv-hatterkep" loading="lazy" decoding="async"')}
   <div class="tartalom">
@@ -663,24 +668,25 @@ ${paragrafusok(tobbi)}
         <div class="cta-sor">
           ${aranyok(gombok).map((g) => gomb(g)).join('\n          ')}
           ${linkek(gombok).map((g) => gomb(g)).join('\n          ')}
-        </div>
+        </div>${promoHtml(sz)}
       </div>
     </div>
   </div>
 </section>`;
 }
 
-function szepHtml(rs) {
+export function szepHtml(rs) {
   const k = { src: kep('c2eb0f_3603018cb350') };
   const h = rs.find((r) => r.t === 'H1');
   const g = rs.filter((r) => r.t === 'GOMB');
+  const sz = rs.filter((r) => r.t === 'SZ');
   return `<section class="szekcio feher" id="szep-kartya" aria-labelledby="szep-cim">
   <div class="tartalom">
     <div class="fel-racs">
       <figure class="kep-fig">${img(k.src, 'SZÉP Kártya elfogadóhely', ' loading="lazy"')}</figure>
       <div class="cikk">
         <h2 id="szep-cim">${cim(h.html)}</h2>
-        ${g.map((x) => gomb(x)).join('\n        ')}
+        ${g.map((x) => gomb(x)).join('\n        ')}${promoHtml(sz)}
       </div>
     </div>
   </div>
@@ -696,7 +702,7 @@ function gyikValaszok() {
   if (!gyikAdat) throw new Error('nincs a GYIK a gyik.js-ben: ' + GYIK_KULCS);
   return gyikAdat;
 }
-function gyikHtml(rs) {
+export function gyikHtml(rs) {
   const bg = { src: kep('nsplsh_38734f5a4a384a46305338-1280') };
   const h = rs.find((r) => r.t === 'H2');
   const kerdesek = rs.filter((r) => r.t === 'GOMB');
@@ -758,7 +764,7 @@ ${paragrafusok(leiras)}
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------
-function meta(nev) {
+export function meta(nev) {
   const regi = fs.readFileSync(path.join(GYOKER, 'klon', nev + '.html'), 'utf8');
   const g = (re) => { const m = re.exec(regi); if (!m) throw new Error('nincs meta: ' + re); return m[1]; };
   return {
@@ -828,9 +834,11 @@ ${torzs}
 `;
 }
 
-tablakBetolt();
-for (const o of OLDALAK) {
-  const ki = path.join(GYOKER, 'foglalas', o.nev + '.html');
-  fs.writeFileSync(ki, szokozJavit(oldal(o)));
-  console.log('kesz:', path.relative(GYOKER, ki), fs.statSync(ki).size, 'bajt');
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  tablakBetolt();
+  for (const o of OLDALAK) {
+    const ki = path.join(GYOKER, 'foglalas', o.nev + '.html');
+    fs.writeFileSync(ki, szokozJavit(oldal(o)));
+    console.log('kesz:', path.relative(GYOKER, ki), fs.statSync(ki).size, 'bajt');
+  }
 }
