@@ -104,6 +104,9 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .g-db { color: #3d4b4b; }
 .google svg { width: 24px; height: 24px; stroke: none; }
 .csillagok { color: #e2a83a; letter-spacing: 2px; }
+/* hero: "Melitta munkai" gomb (a Google-ertekeles helyett): ugyanaz a pirula, vonalas ikonnal, a munkak szekciohoz gorget */
+.munkak-gomb { padding: 9px 18px 9px 12px; font-weight: 500; }
+.munkak-gomb svg { width: 22px; height: 22px; fill: none; stroke: var(--sotet); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .elvalaszto { width: 1px; height: 26px; background: var(--vonal); }
 .dij { display: inline-flex; align-items: center; gap: 10px; color: #3d4b4b; }
 .hero-kep { margin: 0; position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 40px rgba(60, 40, 20, .14); aspect-ratio: 1.12; background: #e0e4db; }
