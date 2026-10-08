@@ -157,7 +157,7 @@
   ].map(function (e) { return { src: '/assets/img/ajandek/' + e[0] + '.jpg', w: e[1], h: e[2], alt: e[3] }; });
   var BENEFITOK = [
     { ikon: 'leaf', cim: 'Teljes stresszoldás', szoveg: 'A kezelés teljes ideje a vendégről szól, nincs rohanás.' },
-    { ikon: 'sparkle', cim: 'Fej-, arc- és nyakmasszázs', szoveg: 'Kézzel és eszközökkel végzett masszázs, gőzölés.' },
+    { ikon: 'check', cim: 'Fej-, arc- és nyakmasszázs', szoveg: 'Kézzel és eszközökkel végzett masszázs, gőzölés.' },
     { ikon: 'waves', cim: 'Lazító fejzuhany', szoveg: 'A hajmosás az eredeti Head Spa arany zuhanyív alatt történik.' },
     { ikon: 'heart', cim: 'Privát, csendes szoba', szoveg: 'Nyugodt, privát környezet.' },
     { ikon: 'check', cim: 'Gyönyörű haj', szoveg: 'A végén profi hajszárítás is jár hozzá.' }

@@ -740,7 +740,7 @@ Ugyanaz a kereskedő-gyár, mint a lézeres kártyánál (`ajandekMotor(ADAT, { 
 
 | | Oxigén |
 |---|---|
-| Oldal | `/oxigen-ajandekkartya` (`foglalas/oxigen-ajandekkartya.html`, noindex) |
+| Oldal | `/oxigen-ajandekkartya` (`foglalas/oxigen-ajandekkartya.html`, indexelhető 2026-10-08 óta: nincs robots meta / X-Robots-Tag, szerepel a sitemapban) |
 | Adat | `assets/js/ajandek-adat-oxigen.js` (a HeadSpa adatra épül, mint a lézeres) |
 | API | `/api/ajandek-oxigen/*` (`functions/api/ajandek-oxigen/[[kind]].js`) |
 | Környezet | `netlify/lib/ajandek-oxigen-env.js`: az `OXIGEN_*` beállítások a motor neveire képezve; a HeadSpa és a lézeres kulcsok **soha** nem folynak át (teszt igazolja) |

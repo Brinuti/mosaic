@@ -359,8 +359,9 @@ describe('oxigenes kereskedo: fizetes utan (webhook): szamla a Szamlazz.hu-n, le
 
 describe('oxigenes oldal: a statikus fajlok', () => {
   const html = fs.readFileSync(new URL('../../foglalas/oxigen-ajandekkartya.html', import.meta.url), 'utf8');
-  test('noindex, sajat canonical, az oxigenes adat toltodik a HeadSpa adat UTAN, a HeadSpa- es lezeres tartalom nincs rajta', () => {
-    assert.match(html, /<meta name="robots" content="noindex, follow">/);
+  test('indexelheto (nincs robots meta, a sitemapban szerepel), sajat canonical, az oxigenes adat toltodik a HeadSpa adat UTAN, a HeadSpa- es lezeres tartalom nincs rajta', () => {
+    assert.doesNotMatch(html, /<meta name="robots"/);
+    assert.match(fs.readFileSync(new URL('../wix-sitemap/pages-sitemap.xml', import.meta.url), 'utf8'), /<loc>https:\/\/www\.mosaicheadspa\.hu\/oxigen-ajandekkartya<\/loc>/);
     assert.match(html, /<link rel="canonical" href="https:\/\/www\.mosaicheadspa\.hu\/oxigen-ajandekkartya">/);
     const szkript = (n) => html.indexOf(`<script src="/assets/js/${n}"`);
     assert.ok(szkript('ajandek-adat.js') > 0 && szkript('ajandek-adat.js') < szkript('ajandek-adat-oxigen.js'));
