@@ -24,7 +24,14 @@ Készült: **2026-10-07 ~14:50 UTC (16:50 Budapest)**, a heti keret lejárta el�
 8. **Nyers számok Ferinek** (osztályonként; az OTHER_TEST külön sor; a REAL szám nélküle; UNKNOWN lista; hiányzó lábak; felszabadult kulcsok külön sor), **értelmezés és PASS/FAIL ítélet nélkül.** A Drive-naplóba és az issue #167-be is bejegyzés kerül.
 9. A kiértékelés az ablak vége után 45–60 perccel (23:05–23:20 Budapest) jön a GPT-től; Feri addigra belép az 5 Salonic-fiókba.
 
-**Drive** (Feri Google Drive-ja, a `FOLYAMAT-NAPLO.md` mappájában; Zapier Google Drive-on át – `google_drive_make_api_get_request` / `…_mutating_request`): `FOLYAMAT-NAPLO.md` (futó napló, legújabb felül), `MERES-ATADAS-UJ-ABLAK.md` (kezdd itt + a Ferinek szóló kezdő szöveg), `ATADAS_FOLYTATAS.md`, `QA3_KONTROLLALT_TESZTEK.md` (másolatok), `QA3-UUID-LISTAK.txt`, `QA3-OSZTALYOZO-SZABALY.json` (a Zap-szabály pontos listái; **személyes adat, a repóba nem kerül**).
+**Drive** (Zapier Google Drive-on át, a `brinuti.hu@gmail.com` kapcsolattal – `google_drive_make_api_get_request` / `…_mutating_request`; **a listázás/keresés nem működik, csak fájl-azonosító szerint érhető el**):
+| fájl | azonosító | tartalom |
+|---|---|---|
+| `FOLYAMAT-NAPLO.md` | `1QWM76_kNzdqDM0cXjfDiVQD3BaBxV1Ys` | futó napló, legújabb felül (tulajdonos: `deakfi@grantis.hu`, a kapcsolat szerkesztheti; a másik munkamenet is írja: írás előtt `modifiedTime`) |
+| `FEJLESZTO-ATADAS-2026-10-08.md` | `157V1Czr7CeN9ySzcI6aXISyNiXqjt_9q` | **kezdd itt**: a kezdő szöveg az új ablakba, az aktuális állapot, a zárás lépései, a tesztszűrés szabálya, kemény szabályok, hozzáférések |
+| `QA3-OSZTALYOZO-SZABALY.json` | `1-1KzLes4WdSK4SaMvbR75gdtOC9Ds1_a` | a Zap `tesztFoglalas` pontos listái (`--szabaly` bemenet; **személyes adat, a repóba nem kerül**) |
+| `QA3-UUID-LISTAK.txt` | `1wye8VYuqBrAZbYqao3IB_2I19ExX1BRK` | CONTROLLED_TEST (76) + OTHER_TEST (10) UUID-lista, a repó két listájának (UUID-k azonosak, ellenőrizve) másolata, megjegyzés-fejléccel |
+A mérési munkamenet saját átadója (`ATADAS-FIOKVALTAS-2026-10-07.md`, a projektmappában) nem ez; ne keverd.
 
 ## 0. Az első 5 perc (új munkamenet)
 1. Olvasd el a repó `CLAUDE.md`-jét (**magyarul kommunikálj Ferivel; mindent te csinálsz; commit-üzenet magyarul, ékezet nélkül**, a trailerekkel: `Co-Authored-By: …` és `Claude-Session: <az új munkamenet URL-je>`; PR-leírás végén a `🤖 Generated with [Claude Code](https://claude.com/claude-code)` sor).
