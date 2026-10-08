@@ -104,8 +104,8 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .hero-jelveny { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; padding: 8px 18px; border-radius: 999px; background: #f6efdc; border: 1px solid #e6d3a2; color: #6f5420; font-size: 15.5px; box-shadow: 0 6px 18px rgba(150, 120, 40, .12); }
 .hero-jelveny svg { width: 18px; height: 18px; color: #b98f3a; }
 .hero-ar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; margin-top: 14px; }
-.hero-ar s { font-size: 15px; color: #8a9390; text-decoration-thickness: 1.5px; }
-.hero-ar b { font: 500 22px/1.1 var(--cim); color: var(--sotet); white-space: nowrap; }
+.hero-ar s { font-size: 13px; color: #8a9390; text-decoration-thickness: 1.5px; }
+.hero-ar b { font: 500 19px/1.1 var(--cim); color: var(--sotet); white-space: nowrap; }
 .hero-ar-al { margin-top: 2px; font-size: 16px; color: var(--halk); }
 .hero .cta-sor { margin-top: 24px; }
 /* hangot a videóra (a régi főoldal „Hangot rá!” gombja) */
@@ -373,7 +373,7 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
   .h1-fo { font-size: 36px; white-space: normal; }
   .h1-al { font-size: 25px; }
   .hero-al { font-size: 17px; }
-  .hero-ar b { font-size: 21px; }
+  .hero-ar b { font-size: 18px; }
 }
 
 /* ====== tablet ====== */
@@ -418,8 +418,8 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
   .hero-al { margin-top: 14px; font-size: 16.5px; }
   .hero-jelveny { margin-top: 16px; font-size: 14.5px; padding: 7px 15px; }
   .hero-ar { margin-top: 10px; gap: 2px 14px; }
-  .hero-ar s { font-size: 13px; }
-  .hero-ar b { font-size: 20px; }
+  .hero-ar s { font-size: 12px; }
+  .hero-ar b { font-size: 17px; }
   .hero-ar-al { font-size: 15px; }
   .hero .cta-sor { margin-top: 18px; gap: 10px; }
   .hero-hang { right: 12px; bottom: 10%; }
