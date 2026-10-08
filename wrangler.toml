@@ -42,7 +42,7 @@ database_name = "mosaic-lifecycle-elonezet"
 database_id = "bd58da1d-a9f0-4b76-ad0b-13aedfc67192"
 
 [vars]
-LIFECYCLE_MOD = "teszt"   # ki | teszt (CSAK a teszt-vendegeknek megy uzenet) | elo (az LIFECYCLE_UZLETAGOK uzletagainak vendegeinek is)
+LIFECYCLE_MOD = "elo"   # ELES (a tulajdonos kifejezett kerese, 2026-10-08). ki | teszt (CSAK a teszt-vendegeknek megy uzenet) | elo (az LIFECYCLE_UZLETAGOK uzletagainak vendegeinek is)
 LIFECYCLE_UZLETAGOK = "headspa,hair,oxygen,laser,pmu"
 LIFECYCLE_KULCS_HASH = "322afd9d7799312f4a74dc94ed69568f597687c458bf7e0ce521156e8e26af44"   # a bejovo / tick vegpontok kulcsanak SHA-256-ja (a kulcs a Zapier-lancokban van)
 SIMPLESMS_FELHASZNALO = "ferraj@gmail.com"

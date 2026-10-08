@@ -22,6 +22,8 @@ SMS: SimpleSMS REST (api.simplesms.hu)      E-mail: Gmail SMTP (SMTP_PASS, ugyan
 
 ## Üzemmódok (`LIFECYCLE_MOD`, wrangler.toml)
 
+**Állapot: ÉLES (`elo`) 2026-10-08 óta** – a tulajdonos kifejezett kérésére az éles (`[vars]`) környezet `elo` módban van, mindkét Zapier-lánc (`lifecycle-bejovo`, `lifecycle-tick`) az éles oldalra (`https://www.mosaicheadspa.hu`) mutat. Az előnézeti környezet (`[env.preview.vars]`) marad `teszt`.
+
 | mód | jelentés |
 |---|---|
 | `ki` | semmi nem megy ki (a foglalások rögzülnek) |
