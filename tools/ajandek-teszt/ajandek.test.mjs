@@ -189,7 +189,7 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.ok(!html.includes('id="ah-idezet-db"') && !html.includes('ah-mozgat-seg') && fs.readFileSync(new URL('../../assets/js/ajandek.js', import.meta.url), 'utf8').includes('Húzd a fotót az igazításhoz'), 'nincs karakterszamlalo; az athelyezes csak a kartyan levo felirat');
     // egyseges betumeretek: negy meret valtozo (b1-b4 + hero) es ket betutipus (Playfair + Jost), mobilon kisebb lepcsok
     const css = fs.readFileSync(new URL('../../assets/css/ajandek.css', import.meta.url), 'utf8');
-    assert.ok(/:root { --b1: 36px; --b2: 22px; --b3: 16px; --b4: 13px; --bh: 50px; }/.test(css) && /--b1: 28px; --b2: 19px; --b3: 15px; --b4: 12.5px; --bh: 28px/.test(css), 'a negy betumeret (asztali / mobil)');
+    assert.ok(/:root { --b1: 42px; --b2: 22px; --b3: 16px; --b4: 13px; --bh: 47px; }/.test(css) && /--b1: 30px; --b2: 19px; --b3: 15px; --b4: 12.5px; --bh: 30px/.test(css), 'a negy betumeret (asztali / mobil)');
     for (const jel of ['#ah-landing h2', 'var(--b1)', 'var(--b2)', 'var(--b3)', 'var(--b4)', 'var(--bh)']) assert.ok(css.includes(jel), jel);
     // a felugro: a kep (allo) balra, a szoveg (bevezeto, lista, idotartam) jobbra, a gomb alul; a bezaro X svg (pontosan kozepen), nem betu
     assert.ok(html.indexOf('ah-kez-kepkeret') < html.indexOf('ah-kez-szoveg') && html.indexOf('id="ah-kez-ido"') > html.indexOf('ah-kez-szoveg') && html.indexOf('id="ah-kez-valaszt"') > html.indexOf('id="ah-kez-ido"'), 'kep | szoveg + idotartam | gomb');

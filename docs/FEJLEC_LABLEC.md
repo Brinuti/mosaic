@@ -19,6 +19,12 @@ Az átalakítások **ismételhetetlen-biztosak** (az átalakított fejlécen nem
 - **Lábléc**: sötétzöld, arany hajszálvonal; 4 oszlop (márka + időpontfoglalás gomb, Head Spa, szolgáltatások, elérhetőség + nyitvatartás), alul a jogi sor (© Big in Japan Kft. · ÁSZF · Impresszum · Süti beállítások) és a nyelvváltó. Keskenyebben 2 oszlop, telefonon 1–2.
 - A lábléc **„Süti beállítások” linkje mindenhol működik** (a saját oldalak lábléc-darabjában korábban beégetett link halott volt; `assets/js/suti.js` `lableclink()` most a meglévő linkre is köti a kattintást).
 
+## 2026-10-08, kisebb finomítások
+- Minden **FOGLALÁS gomb szövege fehér** (menü, mobil menü, lábléc, felugró), finom szövegárnyékkal az arany hátteren.
+- Az **„i” kör** betűje SVG-rajz (nem betűtípus), ezért pontosan középen van magyar / angol, asztali / mobil oldalon is.
+- A lábléc **jogi sora** (© Big in Japan Kft. · ÁSZF · Impresszum · Süti beállítások) telefonon egy sorban marad (`font-size: min(12.5px, 2.75vw)`).
+- A fejléc **akciós sávja** a sminktetoválás zöldes tónusát kapta (`#e6ebe7`, szegély `#d6dacc`); a mobilos sáv lágy rózsaszín ragyogása változatlan.
+
 ## Az „i” (Infó) felugró ablak, a mobil fejléc és menü (2026-10-07, második kör)
 - **Infó ablak**: a Wixes ablak helyett saját, az oldal stílusában (krém háttér, Playfair cím, arany részletek, jobbról úszik be; X / Esc / háttérre kattintás zár). HTML: `popupHtml()` a `tools/fejlec-menu.mjs`-ben (magyar + angol), CSS: `.mhp-*` az `assets/css/fejlec-lablec.css`-ben. Tartalom: elérhetőség, nyitvatartás (**hétfő–szombat 8:00–20:00**, vasárnap zárva), „Head Spa árak és időpontok” link, Időpontfoglalás + Ajándékkártya gomb. Mobilon a nyitvatartás és az árlista-link egy-egy sorba fér (`nowrap`; a teszt a valódi, 320 px-es Wixes mobil nézetet is méri).
 - **Mobil fejléc**: nincs nyelvi gomb (a logó, az „i”, a Foglalás gomb és a hamburger fér el); az angol / magyar váltás a láblécben van.

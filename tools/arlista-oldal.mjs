@@ -82,7 +82,7 @@ function headspa() {
     oldal: '/', oldalSzoveg: 'Head Spa', foglalas: '/foglalo-motor?business=headspa',
     masodikFoglalas: { href: '/foglalo-motor?business=headspa&service=paros', szoveg: 'Páros időpont' },
     csoportok: [{ cim: '', al: '', tipus: 'sima', sorok }],
-    elol: { pill: lead.replace(/!$/, ''), szoveg: 'Az áthúzott ár az eredeti ár.' },
+    elol: { pill: lead.replace(/!$/, ''), szoveg: '' }, // az áthúzott eredeti árat a tulajdonos kérésére (2026-10-08) nem mutatjuk
     jegyzetek: ['A 30 perces hajszárítás az ár része, külön felár nincs', 'SZÉP kártyát is elfogadunk'],
     forras: f,
   };
@@ -297,11 +297,11 @@ export async function osszegyujt() {
 // HTML
 // ============================================================================================================================================
 const arHtml = (s, kiemelt = true) => {
-  const regi = s.regi ? `<s class="arl-regi"><span class="sr">Eredeti ár: </span>${ft(s.regi)}</s>` : '';
+  // az áthúzott eredeti ár nincs kiírva (a tulajdonos kérése, 2026-10-08): csak az aktuális ár látszik
   const uj = `<b class="arl-uj${s.arSzoveg && !/\d/.test(s.arSzoveg) ? ' arl-ingyen' : ''}">${s.arSzoveg || ft(s.ar)}</b>`;
   const egyseg = s.egyseg ? `<small class="arl-egyseg">${esc(s.egyseg)}</small>` : '';
   const prog = s.prog ? `<small class="arl-prog"><span class="arl-prog-cim">8 alkalom:</span> ${ft(s.prog)}</small>` : '';
-  return `<p class="arl-ar">${regi}${uj}${egyseg}${prog}</p>`;
+  return `<p class="arl-ar">${uj}${egyseg}${prog}</p>`;
 };
 
 function simaSor(r, tipus) {
@@ -318,12 +318,12 @@ function hosszSor(r, hossz) {
     const rovidNev = { rovid: 'Rövid', kozepes: 'Közepes', hosszu: 'Hosszú', extra: 'Extra' }[k];
     if (!c) return `<span class="arl-cella arl-na" data-hossz="${esc(n)}"><span class="hk">${rovidNev}</span><span class="arl-ures" aria-label="nem elérhető">–</span></span>`;
     const noel = c.noel !== null
-      ? `<span class="arl-noel-ar"><s class="arl-regi">${ft(c.ar)}</s><b class="arl-uj">${ft(c.noel)}</b></span>` : '<span class="arl-noel-ar"><span class="arl-ures" aria-label="nem elérhető">–</span></span>';
+      ? `<span class="arl-noel-ar"><b class="arl-uj">${ft(c.noel)}</b></span>` : '<span class="arl-noel-ar"><span class="arl-ures" aria-label="nem elérhető">–</span></span>';
     return `<span class="arl-cella" data-hossz="${esc(n)}"><span class="hk">${rovidNev}<span class="sr"> haj</span></span><b class="arl-uj arl-lista-ar">${ft(c.ar)}</b>${noel}</span>`;
   }).join('');
   const egy = r.cellak.egyseges;
   if (egy) {
-    const noel = egy.noel !== null ? `<span class="arl-noel-ar"><s class="arl-regi">${ft(egy.ar)}</s><b class="arl-uj">${ft(egy.noel)}</b></span>` : '<span class="arl-noel-ar"><span class="arl-ures" aria-label="nem elérhető">–</span></span>';
+    const noel = egy.noel !== null ? `<span class="arl-noel-ar"><b class="arl-uj">${ft(egy.noel)}</b></span>` : '<span class="arl-noel-ar"><span class="arl-ures" aria-label="nem elérhető">–</span></span>';
     return `      <li class="arl-sor arl-hossz-sor arl-egyseges"${r.noelNincs ? ' data-noel-nincs' : ''}>
         <div class="arl-szoveg"><span class="arl-nev">${esc(r.nev)}</span><span class="arl-al">${esc(r.al)} · hajhossztól független</span></div>
         <p class="arl-ar"><b class="arl-uj arl-lista-ar">${ft(egy.ar)}</b>${noel}</p>
@@ -357,7 +357,7 @@ function szekcioHtml(u) {
   const kimit = u.kiMit && u.kiMit.length
     ? `\n    <details class="arl-kimit"><summary>Ki mit vállal?</summary><ul>${u.kiMit.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></details>` : '';
   const elol = u.elol ? `
-    <div class="arl-elol"><p class="arl-pill">${esc(u.elol.pill)}</p><p class="arl-elol-szoveg">${esc(u.elol.szoveg)}</p></div>` : '';
+    <div class="arl-elol"><p class="arl-pill">${esc(u.elol.pill)}</p>${u.elol.szoveg ? `<p class="arl-elol-szoveg">${esc(u.elol.szoveg)}</p>` : ''}</div>` : '';
   const kalk = u.kalkulator ? `\n    <p class="arl-kalk"><a href="${esc(u.kalkulator.href)}">${esc(u.kalkulator.szoveg)} <span class="nyil" aria-hidden="true">→</span></a></p>` : '';
   const masodik = u.masodikFoglalas ? `<a class="gomb gomb-korvonal" href="${esc(u.masodikFoglalas.href)}">${esc(u.masodikFoglalas.szoveg)} <span class="nyil" aria-hidden="true">→</span></a>` : '';
   return `<section class="arl-szekcio" id="${u.id}" aria-labelledby="${u.id}-cim" data-arl-szekcio>
@@ -434,6 +434,7 @@ export function oldal(adat) {
     <a class="arl-chip aktiv" href="#arak" data-szuro="mind" aria-current="true">Mind</a>
         ${chips}
   </div>
+  <button type="button" class="arl-szuro-nyil" id="arl-szuro-nyil" aria-label="Tovább a többi kategóriához" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
 </nav>
 
 <div class="arl-lista-kozep" id="arak">

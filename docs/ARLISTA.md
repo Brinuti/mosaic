@@ -41,6 +41,7 @@ Plusz teszt: **minden ár, ami az oldalon szerepel, visszavezethető** a fenti f
 
 ## Szűrő, kereső, hash
 
+- **2026-10-08:** az árlistán **nincs áthúzott eredeti ár** (csak a mostani ár látszik; a Noel-kapcsoló is csak az új árat mutatja); a chip-sáv jobb szélén **nyíl** (`#arl-szuro-nyil`) jelzi, hogy oldalra húzható, kattintásra továbbgörget, a sáv végén eltűnik.
 - **Chipek** (Mind, Head Spa, Szőrtelenítés, Fodrászat, Oxigénterápia, Sminktetoválás, Ajándékkártya): oldalfrissítés nélkül szűrnek. A sáv a fejléc alatt **letapad** (a fejléc magasságát méri), telefonon vízszintesen görgethető, a kiválasztott chip a látható rész közepére gördül.
 - **Bejövő hash**: `/arlista#szortelenites`, `#fodraszat`, `#oxigenterapia`, `#sminktetovalas`, `#ajandekkartya`, `#headspa` az üzletágat választja ki; `#paros` a Head Spa-t és a páros sort; `#arak` mindent. Ismeretlen hash: minden látszik.
 - **Az oldal nem írja az URL-t** (nincs `pushState` / `replaceState` / hash-váltás chip-kattintásra), hogy a GTM „History Change” triggerei ne induljanak el. A chipek valódi linkek (`href="#id"`), ezért új lapon nyitva ugyanaz a nézet jön elő. JS nélkül minden üzletág látszik, a chipek a szekciókra ugranak.

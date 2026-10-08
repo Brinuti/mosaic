@@ -5,6 +5,7 @@
 ## Mit lát a vendég
 - **A fejlécben az üzletág neve kattintható** („Időpontfoglalás · Fodrászat ⌄ · Noel"): rákoppintva az **üzletág-választó** jön („Mit szeretnél foglalni?"), ugyanaz, mint a főoldali foglalásnál.
 - **A legelső képernyőn is van vissza nyíl** (ott, ahol eddig nem volt, mert nem volt hova visszalépni): az is az üzletág-választóra visz. A nyíl felirata ilyenkor „Másik üzletág választása" (képernyőolvasónak), később „Vissza".
+- **Konkrét szolgáltatás-linkkel nyitott foglalónál** (`?business=laser&service=konzult`, a landingekről): a „Módosítás” gomb és a vissza nyíl (asztalon is) a **szolgáltatás-választóra** visz (`changeService()`, 2026-10-08; a nyíl felirata „Másik szolgáltatás választása”), nem az oldalra vissza; onnan a nyíl már az üzletág-választóra visz. Teszt: `tools/lezer-teszt/lezer.test.mjs` („a foglalo-motor konkret szolgaltatas-linkkel…”).
 - A választón:
   - **másik üzletágat** választva az új üzletág folyamata indul **elölről** (az előző üzletág adatai – kezelés, munkatárs, időpont – nem maradnak meg), a fejléc az új üzletágat mutatja;
   - **ugyanazt az üzletágat** választva **oda lép vissza, ahol tartott** (a naptár, a kiválasztott munkatárs megmarad);

@@ -16,8 +16,7 @@
 <meta property="og:site_name" content="MOSAIC Headspa">
 <meta property="og:type" content="website">
 <link rel="icon" href="/assets/img/c2eb0f_b001e2c55098446da3e38ff055e20354.png" type="image/png">
-<link rel="preload" href="/assets/img/paros/hero-asztal.jpg" as="image" media="(min-width: 701px)" fetchpriority="high">
-<link rel="preload" href="/assets/img/paros/hero-mobil.jpg" as="image" media="(max-width: 700px)" fetchpriority="high">
+<link rel="preload" href="/assets/img/paros/hero-barat.jpg" as="image" fetchpriority="high">
 <link rel="preload" href="/assets/fonts/playfair-display-500-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preconnect" href="https://cdn.trustindex.io" crossorigin>
 <link rel="stylesheet" href="/assets/css/wix-google-fonts.css">
@@ -55,14 +54,11 @@
   </div>
 </nav>
 
-<!-- ============ 1. HERO (mozgó videó a páros kezelőből) ============ -->
+<!-- ============ 1. HERO (mozgó páros videó: a páros ajándékkártya oldal videójának vágott, telefonbarát változata; felül a videó, mint a főoldalon) ============ -->
 <section class="hero" id="hero" aria-labelledby="hero-cim">
-  <picture>
-    <source media="(max-width: 700px)" srcset="/assets/img/paros/hero-mobil.jpg">
-    <img class="hero-hatter" src="/assets/img/paros/hero-asztal.jpg" alt="" width="1760" height="734" fetchpriority="high">
-  </picture>
-  <!-- a videó a JS-ből töltődik (telefonon a függőleges változat), csökkentett mozgás / adatspórolás mellett csak a állókép látszik -->
-  <video class="hero-video" id="hero-video" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-asztal="/assets/video/paros-hero-asztal.mp4" data-mobil="/assets/video/paros-hero-mobil.mp4"></video>
+  <div class="hero-hatter" aria-hidden="true">
+    <video id="hero-video" src="/assets/video/paros-hero-barat.mp4" poster="/assets/img/paros/hero-barat.jpg" autoplay muted loop playsinline preload="auto" aria-label="Két vendég egymás mellett a páros Head Spa kezelésen"></video>
+  </div>
   <div class="tartalom hero-tart">
     <div class="hero-szoveg">
       <h1 id="hero-cim">Végre egy közös program, ahol tényleg mindketten kikapcsoltok.</h1>
@@ -79,12 +75,12 @@
         <span class="g-pont"><b>4,9</b> Google</span>
         <span class="g-db">· <b data-ertekeles-db>1&nbsp;257</b>+ vendégvélemény</span>
       </a>
+      <ul class="hero-bizalom" aria-label="A legfontosabbak röviden">
+        <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.5" cy="8" r="3"/><circle cx="16.5" cy="8.8" r="2.5"/><path d="M3 19c.5-3.3 2.6-5 5.5-5s5 1.7 5.5 5M15 14.1c2.7-.4 4.9 1.2 5.6 4.4"/></svg></span><span><b>Ketten, egyszerre</b></span></li>
+        <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="1.5"/><path d="M6 21h12M14.5 12h.01"/></svg></span><span><b>Privát páros kezelő</b></span></li>
+        <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5A3.5 3.5 0 016.5 6H14l6 2.5v4L14 15H6.5A3.5 3.5 0 013 11.5v-2z"/><path d="M8.5 15l-1 5h3l1-5"/></svg></span><span><b>Profi hajszárítás az árban</b></span></li>
+      </ul>
     </div>
-    <ul class="hero-bizalom" aria-label="A legfontosabbak röviden">
-      <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.5" cy="8" r="3"/><circle cx="16.5" cy="8.8" r="2.5"/><path d="M3 19c.5-3.3 2.6-5 5.5-5s5 1.7 5.5 5M15 14.1c2.7-.4 4.9 1.2 5.6 4.4"/></svg></span><span><b>Ketten, egyszerre</b></span></li>
-      <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="1.5"/><path d="M6 21h12M14.5 12h.01"/></svg></span><span><b>Privát páros kezelő</b></span></li>
-      <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5A3.5 3.5 0 016.5 6H14l6 2.5v4L14 15H6.5A3.5 3.5 0 013 11.5v-2z"/><path d="M8.5 15l-1 5h3l1-5"/></svg></span><span><b>Profi hajszárítás az árban</b></span></li>
-    </ul>
   </div>
 </section>
 

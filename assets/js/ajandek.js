@@ -409,10 +409,14 @@
       v.addEventListener('canplay', proba, { once: true });
       v.preload = 'auto';   // a HTML-ben "none" (a betoltesig nem tolt semmit); innen indul az adat
       v.setAttribute('src', m.video.src);
+      // iPhone / iPad: a "canplay" lejatszas-inditas nelkul nem erkezik meg (nincs elotoltes), ezert a videot azonnal inditjuk (nema + playsinline: megengedett);
+      // ezen mulott, hogy a 4 kezes (es a tobbi) ajandekkartya-oldal hero-videoja telefonon nem indult el
+      try { v.load(); } catch (e) { /* nem baj */ }
+      proba();
       if ('IntersectionObserver' in window) {
         new IntersectionObserver(function (lista) {
           lista.forEach(function (e) {
-            if (e.isIntersecting) { if (v.paused && v.readyState >= 2) proba(); } else if (!v.paused) v.pause();
+            if (e.isIntersecting) { if (v.paused) proba(); } else if (!v.paused) v.pause();
           });
         }, { threshold: 0.1 }).observe(v);
       }
