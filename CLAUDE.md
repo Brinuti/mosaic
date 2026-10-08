@@ -22,8 +22,9 @@
   (`[vars]` éles, `[env.preview.vars]` előnézet), a titkok (SMTP_PASS, STRIPE_*, AJANDEK_TITOK,
   MAIL_TO) a Cloudflare felületén, Secret típussal, környezetenként (Production / Preview). A
   `functions/` a Cloudflare kódja; a `netlify/` mappa a közös kód része (`netlify/lib/` levelek,
-  ajándék-motor, útválasztás), **ne töröld**. A Netlify már nem publikál; az előfizetés
-  lemondható (a felhasználó dönt, és ő mondja le).
+  ajándék-motor, útválasztás), **ne töröld**. A Netlify már nem publikál, és 2026-10-08 óta
+  nem is épít (`netlify.toml`: `ignore = "exit 0"`, így az előnézetek sem fogyasztanak kreditet); az előfizetés
+  lemondható (a felhasználó dönt, és ő mondja le; a `mosaic-pmu-sms` Netlify-projekt külön, azt előbb át kell nézni).
 - **Fizetős külső szolgáltatás helyett** saját kód (pl. a Common Ninja GYIK/árlista helyett).
 - **Mérőkódok:** csak a `mosaicheadspa.hu` domainen futhatnak (`assets/js/suti.js`,
   `ELES_DOMAINEK`). Külső fiókban (Meta, GTM, GA, Google Ads, TikTok) semmit ne hozz létre és
