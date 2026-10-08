@@ -87,7 +87,7 @@ A **meglévő szöveget nem írjuk át**: csak blokkokat szúrunk be (és rövid
 |---|---|---|
 | `{ kep: { src, alt, felirat?, link? } }` | egy levélszéles kép (544 px; a képfájl ≥ 960 px széles) | `src`: az `assets/email/` alatti fájl (pl. `pmu/gyogyult.jpg`); `alt` kötelező, leíró; `link`: pl. `'{eredmények_link}'` |
 | `{ kepek: [{ src, alt, felirat? }, …] }` | 2–3 kép egymás mellett (előtte–utána, munkák) | forrás ≥ 540 px széles |
-| `{ velemeny: '<id>' }` | Google-vélemény-kártya csillagokkal | **csak** a `velemenyek.js`-ben lévő, szó szerinti, valódi vélemény; az üzletágé, vagy `uzletag: 'altalanos'` (a szalonról / csapatról szóló, kezeléstől független vélemény: bármelyik üzletág levelébe mehet); opcionális `ha_munkatars: ['Evelin']` (csak az adott munkatársnál) |
+| `{ velemeny: '<id>' }` | Google-vélemény-kártya csillagokkal | **csak** a `velemenyek.js`-ben lévő, szó szerinti, valódi vélemény; az üzletágé; opcionális `ha_munkatars: ['Evelin']` (csak az adott munkatársnál) |
 | `{ video: { src, alt, felirat, link } }` | videó-előkép lejátszó-jellel + „▶ felirat” link | a levélben nem játszik le: `link` = az oldal, pl. `'{videó_link}'`; az előképen a lejátszó-jel a képbe van sütve (`lejatszo: true`) |
 | `{ szemely: { src, nev, szerep, szoveg? } }` | kerek portré + név + szerep (+ rövid szöveg) | portré ≥ 232 px, négyzet |
 | `{ ertekeles: true }` | „★★★★★ 4,9 / 5 a Google-on · több mint 1 200 vendégvélemény” sáv | nincs külön adat: a `render.js` `ERTEKELES_SZOVEG` |

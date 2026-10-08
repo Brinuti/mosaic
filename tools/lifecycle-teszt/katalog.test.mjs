@@ -60,7 +60,7 @@ function kepBlokkEllenor(hol, uzletag, kulcs, b) {
   } else if (kulcs === 'velemeny') {
     const v = VELEMENYEK[b.velemeny];
     assert.ok(v, `${hol}: ismeretlen velemeny: ${b.velemeny}`);
-    assert.ok(uzletag === 'kozos' || v.uzletag === 'altalanos' || v.uzletag === uzletag, `${hol}: a(z) ${b.velemeny} velemeny masik uzletage (${v.uzletag})`);
+    assert.ok(uzletag === 'kozos' || v.uzletag === uzletag, `${hol}: a(z) ${b.velemeny} velemeny masik uzletage (${v.uzletag})`);
   }
 }
 
@@ -161,7 +161,7 @@ for (const [kulcs, kat] of [...Object.entries(KATALOG), ['kozos', KOZOS]]) {
 test('velemenyek: a szoveg SZO SZERINT megtalalhato a forras-oldalon (ahol a forras fajl), nev + nem ures, csak valodi (5 csillagos) velemeny', () => {
   for (const [id, v] of Object.entries(VELEMENYEK)) {
     assert.ok(v.nev && v.szoveg && v.szoveg.length >= 20, `${id}: nev + szoveg`);
-    assert.ok(['headspa', 'hair', 'oxygen', 'laser', 'pmu', 'altalanos'].includes(v.uzletag), `${id}: uzletag`);
+    assert.ok(['headspa', 'hair', 'oxygen', 'laser', 'pmu'].includes(v.uzletag), `${id}: uzletag`);
     assert.ok(!/\d[\d\s.]*\s?(Ft|FT|forint)\b|\d+\s?%/.test(v.szoveg), `${id}: a velemenyben nincs ar / szazalek (elavulhat)`);
     if (v.forras.startsWith('foglalas/')) {
       const oldal = egy(fs.readFileSync(new URL('../../' + v.forras, import.meta.url), 'utf8'));
