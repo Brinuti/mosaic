@@ -1,0 +1,44 @@
+/* A regi (Wixes) Paros Head Spa oldal (paros-headspa-budapest) ujrastilusa: a headspa-oldal.css es a lezer-variansok.css komponenseire epul (hero, szekcio, fel-racs, cikk, korhinta,
+   arkartya, GYIK, helyszin); itt csak ami erre az oldalra jellemzo. Generalja: tools/paros-regi/gen.mjs. Onallo fajl: mas oldal stilusat nem erinti. */
+.lv-alairas { margin-top: 6px; font-style: italic; color: #5c6766; }
+.lv-alairas b { background: none; }
+.lv-felirat { margin: 14px 0 0; text-align: center; font-size: 14.5px; line-height: 1.5; color: #d9e3de; }
+.lv-folyamat { grid-template-columns: 1.15fr .85fr; }
+.lv-folyamat .korhinta-sav > * { flex-basis: 100%; }
+.lv-folyamat .korhinta-sav img { aspect-ratio: 3 / 2; object-fit: cover; }
+.lv-sotet .lv-folyamat p { color: #e4ebe6; }
+
+/* csomagok: 4 kartya */
+.lv-csomagok.lv-negy { grid-template-columns: repeat(4, 1fr); }
+.lv-paros-csomag { text-align: left; }
+.lv-paros-csomag h3 { text-align: center; text-transform: none; font-size: 18px; letter-spacing: 0; }
+.lv-paros-csomag .lv-csomag-leiras { text-align: center; }
+.lv-csomag-felsorolas { margin-top: 14px; font-size: 15px; gap: 7px; }
+.lv-csomag-felsorolas li { font-size: 15px; line-height: 1.4; }
+.lv-csomag-plusz { margin-top: 14px; text-align: center; font-size: 14.5px; color: #6f5420; }
+.lv-paros-csomag .lv-csomag-ar { margin-top: 12px; flex-direction: column; align-items: center; text-align: center; }
+.lv-paros-csomag .lv-csomag-ar b { font: 500 22px/1.2 var(--cim); color: #8a6c3e; }
+.lv-csomag-ido { margin-top: 8px; text-align: center; font-size: 14px; color: var(--halk); }
+.lv-paros-csomag > .gomb { margin-top: auto; }
+.lv-paros-csomag .lv-csomag-ido + .gomb { margin-top: 18px; }
+
+/* videok: lapozhato sor (poszter + idotartam + cim) */
+.lv-videok .korhinta-sav > * { flex: 0 0 min(78%, 320px); }
+.lv-videoelem h3 { margin-top: 10px; font: 400 15.5px/1.35 var(--test); color: #25373a; }
+.lv-videoelem .video-kartya { aspect-ratio: 16 / 9; }
+
+/* szalon-szalag a gyogymasszorok szekcio alatt */
+.lv-szalag { margin: 56px 0 -72px; max-height: 260px; }
+.lv-szalag img { height: 260px; }
+
+@media (max-width: 1100px) {
+  .lv-csomagok.lv-negy { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 1024px) {
+  .lv-folyamat { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .lv-csomagok.lv-negy { grid-template-columns: 1fr; }
+  .lv-szalag, .lv-szalag img { max-height: 170px; height: 170px; }
+  .lv-szalag { margin: 40px 0 -72px; }
+}

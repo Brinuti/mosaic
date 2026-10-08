@@ -8,6 +8,7 @@
 // A kezi szerkesztes megengedett, de az ujrafuttatas felulirja a kimeneti fajlokat.
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const GYOKER = path.resolve(import.meta.dirname, '..', '..');
 const BAZIS = 'https://www.mosaicheadspa.hu';
@@ -18,12 +19,12 @@ const regiFajl = (nev) => path.join(GYOKER, 'klon', nev + '.html');
 const ENT = { nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", ndash: '–', mdash: '—', hellip: '…', bull: '•', middot: '·', laquo: '«', raquo: '»', euro: '€',
   aacute: 'á', Aacute: 'Á', eacute: 'é', Eacute: 'É', iacute: 'í', Iacute: 'Í', oacute: 'ó', Oacute: 'Ó', ouml: 'ö', Ouml: 'Ö', odblac: 'ő', Odblac: 'Ő', uacute: 'ú', Uacute: 'Ú',
   uuml: 'ü', Uuml: 'Ü', udblac: 'ű', Udblac: 'Ű', rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“', bdquo: '„', copy: '©', shy: '' };
-const dekod = (s) => s.replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]*);/gi, (m, e) => {
+export const dekod = (s) => s.replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]*);/gi, (m, e) => {
   if (e[0] === '#') { try { return String.fromCodePoint(e[1].toLowerCase() === 'x' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10)); } catch { return m; } }
   return Object.prototype.hasOwnProperty.call(ENT, e) ? ENT[e] : m;
 });
 const VOID = new Set(['br', 'img', 'input', 'hr', 'meta', 'link', 'wbr', 'source', 'path', 'circle', 'rect', 'use', 'line', 'polyline', 'polygon', 'area', 'col', 'embed', 'param', 'track']);
-function elemez(html) {
+export function elemez(html) {
   html = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<noscript[\s\S]*?<\/noscript>|<!--[\s\S]*?-->/gi, '');
   const gyoker = { t: 'el', tag: '#', attrs: {}, kids: [] };
   const verem = [gyoker];
@@ -44,16 +45,16 @@ function elemez(html) {
   }
   return gyoker;
 }
-const keres = (n, f, ki = []) => { if (n.t === 'el') { if (f(n)) ki.push(n); for (const k of n.kids) keres(k, f, ki); } return ki; };
-const szoveg = (n) => (n.t === 'tx' ? n.s : n.kids.map(szoveg).join(''));
-const tisztSzoveg = (s) => s.replace(/[​﻿]/g, '').replace(/\s+/g, ' ').trim();
+export const keres = (n, f, ki = []) => { if (n.t === 'el') { if (f(n)) ki.push(n); for (const k of n.kids) keres(k, f, ki); } return ki; };
+export const szoveg = (n) => (n.t === 'tx' ? n.s : n.kids.map(szoveg).join(''));
+export const tisztSzoveg = (s) => s.replace(/[​﻿]/g, '').replace(/\s+/g, ' ').trim();
 
 // --- Wix rich-text -> egyszeru HTML ------------------------------------------------------------------------------------------------------------------------
-const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const attr = (s) => esc(s).replace(/"/g, '&quot;');
-function stilus(n) { const s = n.attrs.style || ''; return { felkover: /font-weight:\s*(bold|[6-9]00)/i.test(s), dolt: /font-style:\s*italic/i.test(s), alahuzott: /text-decoration:[^;]*underline/i.test(s), rejtett: /display:\s*none/i.test(s) }; }
-function belso(n) { return n.kids.map(inline).join(''); }
-function inline(n) {
+export const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+export const attr = (s) => esc(s).replace(/"/g, '&quot;');
+export function stilus(n) { const s = n.attrs.style || ''; return { felkover: /font-weight:\s*(bold|[6-9]00)/i.test(s), dolt: /font-style:\s*italic/i.test(s), alahuzott: /text-decoration:[^;]*underline/i.test(s), rejtett: /display:\s*none/i.test(s) }; }
+export function belso(n) { return n.kids.map(inline).join(''); }
+export function inline(n) {
   if (n.t === 'tx') return esc(n.s.replace(/[​﻿]/g, ''));
   const g = n.tag;
   if (g === 'br') return '<br>';
@@ -69,7 +70,7 @@ function inline(n) {
   return h;
 }
 // blokkok: [{ t: 'h2'|'h3'|'h4'|'p'|'ul'|'ol', html, szoveg }]
-function blokkok(n, ki = []) {
+export function blokkok(n, ki = []) {
   for (const k of n.kids) {
     if (k.t !== 'el') continue;
     const g = k.tag;
@@ -86,7 +87,7 @@ function blokkok(n, ki = []) {
 }
 
 // a jogi szovegek ("1. Szolgaltatas", "3.9. Ajandekutalvany hasznalat") szamozott cimsorai, a "- ..." felsorolasok
-function szerkeszt(bl) {
+export function szerkeszt(bl) {
   const ki = [];
   for (let i = 0; i < bl.length; i++) {
     const b = bl[i];
@@ -101,7 +102,7 @@ function szerkeszt(bl) {
   }
   return ki;
 }
-const blokkHtml = (bl, beh = '      ') => bl.map((b) => {
+export const blokkHtml = (bl, beh = '      ') => bl.map((b) => {
   if (b.t === 'ul' || b.t === 'ol') return `${beh}<${b.t} class="jo-lista">\n${b.li.map((l) => `${beh}  <li>${l.html}</li>`).join('\n')}\n${beh}</${b.t}>`;
   const t = b.t === 'h1' ? 'h2' : b.t;   // a regi oldal cime lesz az egyetlen H1
   return `${beh}<${t}>${b.html}</${t}>`;
@@ -237,8 +238,10 @@ const OLDALAK = {
   'suti-tajekoztato': () => postOldal('suti-tajekoztato'),
   blog: () => blogOldal('blog'),
 };
-for (const [nev, f] of Object.entries(OLDALAK)) {
-  const ki = path.join(GYOKER, 'foglalas', nev + '.html');
-  fs.writeFileSync(ki, f());
-  console.log('kesz:', path.relative(GYOKER, ki), fs.statSync(ki).size, 'bajt');
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  for (const [nev, f] of Object.entries(OLDALAK)) {
+    const ki = path.join(GYOKER, 'foglalas', nev + '.html');
+    fs.writeFileSync(ki, f());
+    console.log('kesz:', path.relative(GYOKER, ki), fs.statSync(ki).size, 'bajt');
+  }
 }
