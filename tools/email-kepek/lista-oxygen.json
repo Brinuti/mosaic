@@ -1,0 +1,11 @@
+{
+  "kepek": [
+    { "ki": "oxygen/hajkamera-vizsgalat.jpg", "forras": "assets/img/oxigen/oxigen-kezeles.jpg", "mod": "kepek", "arany": [1, 1], "fokusz": [0.45, 0.4] },
+    { "ki": "oxygen/hajkamera-nagyitott.jpg", "forras": "assets/img/oxigen/hajkamera-nezet.jpg", "mod": "kepek", "arany": [1, 1], "fokusz": [0.5, 0.5] },
+    { "ki": "oxygen/kezeles-kozben.jpg", "forras": "assets/img/c2eb0f_719d9e59218349e7baf727fc8f8d1fb0.jpg", "mod": "szeles", "arany": [3, 2] },
+    { "ki": "oxygen/video-kezeles.jpg", "forras": "assets/img/c2eb0f_d540831d3acb4a679ffc30073e58d2e2.jpg", "mod": "szeles", "arany": [3, 2], "lejatszo": true },
+    { "ki": "oxygen/eredmeny-hajhullas.jpg", "forras": "assets/img/oxigen/eredmeny-09.jpg", "mod": "kepek", "arany": [3, 2], "szelesseg": 760 },
+    { "ki": "oxygen/eredmeny-korpa.jpg", "forras": "assets/img/oxigen/eredmeny-14.jpg", "mod": "kepek", "arany": [3, 2], "szelesseg": 760 },
+    { "ki": "oxygen/varo.jpg", "forras": "assets/img/c2eb0f_aa3b2f8ec7564c87bf16836d7d3b29d6.jpg", "mod": "szeles", "arany": [3, 2] }
+  ]
+}

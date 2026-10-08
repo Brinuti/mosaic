@@ -1,0 +1,25 @@
+{
+  "megjegyzes": [
+    "pmu/_forras/melitta-arc.jpg: a keszit.py nem tud kozelebb vagni (a negyzet mod a teljes szelessegbol vag), ezert a kerek portrehoz a assets/img/pmu/melitta-hivas-2.jpg (900x1125) elore kivagott arc-reszlete a forras: PIL crop (206, 92, 706, 592), 500x500, JPEG q92."
+  ],
+  "kepek": [
+    { "ki": "pmu/elorajzolas-ceruza.jpg", "forras": "assets/img/pmu/tortenet-1-elorajzolas.jpg", "mod": "szeles", "fokusz": [0.5, 0.15] },
+    { "ki": "pmu/elorajzolt-konzultacio.jpg", "forras": "assets/img/pmu/konzultacio-elorajzolt-3.jpg", "mod": "kepek" },
+    { "ki": "pmu/elkeszult-szemoldok.jpg", "forras": "assets/img/pmu/konzultacio-kesz-2.jpg", "mod": "kepek" },
+    { "ki": "pmu/munka-szemoldok-1.jpg", "forras": "assets/img/c2eb0f_ceb2371e35aa4f98a8c83030af918811.jpg", "mod": "kepek" },
+    { "ki": "pmu/munka-szemoldok-2.jpg", "forras": "assets/img/c2eb0f_5bbec0e6bf3841f8b2b34facf142777a.jpg", "mod": "kepek" },
+    { "ki": "pmu/munka-szemoldok-3.jpg", "forras": "assets/img/c2eb0f_6192c7cbded04f37b2ee8983838b3850.jpg", "mod": "kepek" },
+
+    { "ki": "pmu/friss-szemoldok.jpg", "forras": "assets/img/pmu/tortenet-3-friss.jpg", "mod": "kepek" },
+    { "ki": "pmu/gyogyult-szemoldok.jpg", "forras": "assets/img/pmu/tortenet-4-gyogyult.jpg", "mod": "kepek" },
+    { "ki": "pmu/gyogyult-termeszetes.jpg", "forras": "assets/img/pmu/tortenet-5-termeszetes.jpg", "mod": "szeles", "fokusz": [0.5, 0.15] },
+
+    { "ki": "pmu/melitta-portre.jpg", "forras": "assets/email/pmu/_forras/melitta-arc.jpg", "mod": "negyzet" },
+    { "ki": "pmu/melitta-munka.jpg", "forras": "assets/img/c2eb0f_b72c6b0a862d4a0ba31e58a6ea868fe8.jpg", "mod": "szeles", "fokusz": [0.5, 0.65] },
+    { "ki": "pmu/munka-szemoldok-kozeli.jpg", "forras": "assets/img/c2eb0f_e6bcf204c9164857a3c5ae2ed41b71c7.jpg", "mod": "kepek" },
+    { "ki": "pmu/munka-ajak.jpg", "forras": "assets/img/c2eb0f_014b63526bc644c7a234475fb367a963.jpg", "mod": "kepek" },
+    { "ki": "pmu/gyogyult-portre.jpg", "forras": "assets/img/pmu/gyogyult-szoke.jpg", "mod": "kepek", "fokusz": [0.5, 0.3] },
+
+    { "ki": "pmu/szalon.jpg", "forras": "assets/img/c2eb0f_ac85eea74409484091e12f8d72fbee98.jpg", "mod": "szeles" }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "kepek": [
+    {"ki": "laser/zsofi-portre.jpg", "forras": "assets/img/c2eb0f_ba9a927739a64ab090ddb79bc84c6dc0f000.jpg", "mod": "negyzet", "fokusz": [0.5, 0.03]},
+    {"ki": "laser/zsofi-konzultacio.jpg", "forras": "assets/img/c2eb0f_b93a709a951c401b9e44d4083dc5172d.jpg", "mod": "szeles", "arany": [3, 2], "fokusz": [0.5, 0.15]},
+    {"ki": "laser/eredmeny-honalj.jpg", "forras": "assets/img/c2eb0f_d25d1e56510f4b9ea7b01672f0080456.jpg", "mod": "kepek"},
+    {"ki": "laser/eredmeny-labszar.jpg", "forras": "assets/img/lezer-eredmeny/labszar.jpg", "mod": "kepek"},
+    {"ki": "laser/kezelohelyiseg.jpg", "forras": "assets/img/c2eb0f_a63c0e640ebb42c8b31d7ea70b15d94d.jpg", "mod": "szeles", "arany": [3, 2], "fokusz": [0.5, 0.5]},
+    {"ki": "laser/varo-recepcio.jpg", "forras": "assets/img/c2eb0f_ac85eea74409484091e12f8d72fbee98.jpg", "mod": "szeles", "arany": [3, 2]}
+  ]
+}
