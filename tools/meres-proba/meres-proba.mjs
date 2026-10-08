@@ -69,7 +69,7 @@ function koszonoUrl(host, start, sid) {
 const SZABALYOK = [
   ['google-ads', /^https:\/\/(www\.googleadservices\.com\/(pagead|ccm)\/|googleads\.g\.doubleclick\.net\/pagead\/|www\.google\.(com|hu)\/(pagead\/|rmkt\/|ccm\/)|pagead2\.googlesyndication\.com\/|ad\.doubleclick\.net\/)/],
   ['ga4', /^https:\/\/(region\d\.analytics\.google\.com\/|www\.google-analytics\.com\/|analytics\.google\.com\/|stats\.g\.doubleclick\.net\/g\/|www\.google\.hu\/ads\/ga-audiences)/],
-  ['stape', /^https:\/\/(stape\.mosaicheadspa\.hu\/(g\/collect|data|_\/)|capig\.stape\.[a-z]+\/)/],
+  ['stape', /^https:\/\/(stape\.mosaicheadspa\.hu\/(g\/collect|data|_\/)|capig\.stape\.[a-z]+\/|capi-pmu\.mosaicheadspa\.hu\/)/],
   ['meta', /^https:\/\/www\.facebook\.com\/tr[/?]/],
   ['tiktok', /^https:\/\/(analytics\.tiktok\.com\/api\/|analytics-ipv6\.tiktokw\.us\/|mcs\.tiktok\.com\/)/],
   ['zapier', /^https:\/\/hooks\.zapier\.com\//],
@@ -103,7 +103,7 @@ const mp = () => Date.now() - t0;
 // Masodik vedvonal (a route-tiltason felul): a kizarolag meresre szolgalo hostok DNS-szinten sem feloldhatok, igy semmi nem juthat ki,
 // meg akkor sem, ha egy kerest a route nem lat (pl. worker). A megosztott hostok (www.google.com/hu, www.facebook.com, analytics.tiktok.com,
 // stape.mosaicheadspa.hu a szkriptje miatt) a route-tiltasra bizva maradnak.
-const DNS_TILTAS = ['capig.stape.do', 'capig.stape.de', 'capig.stape.io', 'analytics-ipv6.tiktokw.us', 'mcs.tiktok.com', 'hooks.zapier.com', 'region1.analytics.google.com',
+const DNS_TILTAS = ['capig.stape.do', 'capig.stape.de', 'capig.stape.io', 'capi-pmu.mosaicheadspa.hu', 'analytics-ipv6.tiktokw.us', 'mcs.tiktok.com', 'hooks.zapier.com', 'region1.analytics.google.com',
   'www.googleadservices.com', 'googleads.g.doubleclick.net', 'ad.doubleclick.net', 'stats.g.doubleclick.net', 'pagead2.googlesyndication.com', 'www.google-analytics.com', 'analytics.google.com'];
 const browser = await chromium.launch({ executablePath: CHROME, headless: !FEJES, args: ['--disable-blink-features=AutomationControlled', '--host-resolver-rules=' + DNS_TILTAS.map((h) => `MAP ${h} ~NOTFOUND`).join(', ')] });
 const context = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 900 }, locale: 'hu-HU', timezoneId: 'Europe/Budapest', serviceWorkers: 'block' });

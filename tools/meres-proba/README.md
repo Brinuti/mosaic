@@ -66,6 +66,19 @@ node tools/meres-proba/ajandek-konverzio.mjs [--mod motor|regi] [--landing /head
 - `--mod motor` (alap): hirdetési kattintás (`gclid`, `fbclid`, `ttclid`, `utm_*`), majd a motor Stripe-átirányításos visszatérési útja; a szerver „fizetve” válaszát (`/api/ajandek/rendeles`) a próba utánozza, minden más a valódi kód. **A kártyás fizetés nem történik meg** (kártyaadatot nem adunk meg, a Stripe.js tiltott).
 - `--mod regi`: a régi köszönő-oldal a fő ablakban – összehasonlítási alap (ugyanazokat a konverziókat kell adnia, csak a fő ablakból).
 
+## A ket UJ foglalasi ut elo merese: `uj-utak-proba.mjs`
+
+VALODI proba-foglalas (lemondas utana: `lemond.mjs`) a PMU beagyazott foglalojan (`/sminktetovalas-budapest`) es a lezer landing idopont-gombjan (`/lezeres-szortelenites-budapest`), alapbol tiltott kimeno kerelmekkel (`capi-pmu.mosaicheadspa.hu` is). Naplozza a koszono fazis konverzioit platformonkent (ablak / keret-melyseg, ertek, azonosito, gclid / fbc / ttclid), az elozmeny-valtasokat (pushState / replaceState / hashchange) es a bongeszo "vissza" utani meresi kereseket.
+
+```
+node tools/meres-proba/uj-utak-proba.mjs --ut pmu|lezer [--mod valodi|szim|nativ] [--vissza 1] [--megall 1] [--out naplo.json]
+```
+
+- `--mod valodi` (alap): valodi foglalas a Salonic-urlappal (a tulajdonos telefonszama: `MERES_TELEFON`), utana lemondas a Salonic e-mail "Lemondom" linkjevel.
+- `--mod szim`: a Salonic-adatlap helyett a Salonic atiranyitasa a koszonooldalra (nem jon letre foglalas): ugyanaz a keret-atadas.
+- `--mod nativ`: osszehasonlitasi alap, a koszonooldal kozvetlenul a fo ablakban.
+- **FIGYELEM:** a bongeszo-tiltas a Salonic-levelekbol indulo SZERVEROLDALI meres (Zapier: Meta CAPI, TikTok, Google Ads) ellen nem vedi; lasd `docs/booking-engine/meres-naplo/probafoglalasok-es-szerveroldali-meres-2026-10-04.txt`. Valodi probahoz a vendeg nevenek tartalmaznia kell a "teszt" szot, es a Salonic-karton neve is "teszt" legyen (a HeadSpa-probak egy valodi karton nevet kapjak).
+
 ## A helyben nyíló foglaló-réteg: `reteg-proba.mjs`
 
 ```

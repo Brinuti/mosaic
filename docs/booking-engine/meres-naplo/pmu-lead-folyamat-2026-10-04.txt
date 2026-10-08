@@ -1,0 +1,41 @@
+A PMU visszahivas- es fotokuldo urlapok (pmu-proba-visszahivas, pmu-proba-foto): hova erkeznek a beküldések? - 2026-10-04
+==============================================================================================================================
+
+KERDES (tulajdonos): a weboldali PMU-ajanlatkeres korabban a "Melitta - PMU - Ajanlatkeresek" tabla "Smink Weboldal" lapjara ment es onnan automatikus SMS indult; ha az uj
+(Cloudflare) urlap ezt kikeruli, Melitta lemarad a leadekrol es az SMS sem megy ki.
+
+HELYZET (a vizsgalat elejen)
+- Az urlapok (foglalo-pmu.js) POST-olnak a "/"-ra, a Cloudflare-fuggveny (functions/[[path]].js, netlify/lib/levelek.js) a szalon postafiokjaba (mosaicheadspa@gmail.com) kuld levelet:
+  "Sminktetovalas - visszahivast kertek (10 perces konzultacio)" / "Sminktetovalas - foto erkezett" (+ a fotok csatolmanykent). A Netlify mar nem vesz reszt.
+- A levelbol a tablazatba/SMS-be vezeto lanc MAR LETEZETT (Zapier, 2026-10-04 reggel keszult): "weboldal-pmu-visszahivas-to-sheet-oktober" (Gmail-trigger -> Google Sheets "Oktober" munkalap;
+  a fotokat a Drive-ra teszi vendegenkent almappaba, a link az I oszlopba) -> "melitta-pmu-oktober-sms" (uj sor az "Oktober" lapon -> SMS a B oszlop telefonszamara, SimpleSMS).
+- A lanc NEM MUKODOTT: a folyamatnak 0 eles futasa volt; a tabla "Oktober" lapja ures; a mai egyetlen valodi lead (fotokuldes, 10:15, egy valodi vendeg) NEM kerult a tablazatba, SMS sem ment.
+
+OK (megtalalva)
+- A folyamat Gmail-triggere a HIBAS postafiokot figyelte: a "salonicfoglalas@gmail.com" kapcsolatot (Zapier kapcsolat 02d6c5a3...), mikozben a lead-levelek a "mosaicheadspa@gmail.com"
+  postafiokba erkeznek (kapcsolat 02f7121f...). A Salonic-folyamatok azert mukodtek, mert a Salonic-ertesitok a salonicfoglalas@ cimre is mennek.
+- (Nem volt ok: a "sajat magunknak kuldott level" - a Gmail SENT cimkeje nem akadalyozza a triggert, ellenorizve lent.)
+
+JAVITAS (Zapier, a weboldal kodja nem valtozott)
+- A folyamat triggerje a mosaicheadspa@ kapcsolatra kotve (uj verzio 01a108e4-9d7d-71d4-91f0-0cd32a7f4a4f, 2026-10-04 21:49 UTC); a kod valtozatlan (csak a fejlec-komment bovult).
+
+VEGPONTTOL-VEGPONTIG PROBA (eles oldal, valodi urlap-POST; a telefonszam a tulajdonos sajat szama - az SMS a tulajdonos telefonjara ment)
+1. 21:30 UTC: visszahivas-urlap POST -> level a szalon postafiokjaban -> a folyamat NEM futott (a javitas elott) -> a folyamatot kezzel inditottam ugyanazzal a levellel (run_workflow):
+   sor az "Oktober" lapon (2. sor), 21:45 UTC: a "melitta-pmu-oktober-sms" automatikusan lefutott, SMS kiment (smsId + HTTP-allapot a futasban).
+2. 21:52:35 UTC (a javitas utan): visszahivas-urlap POST -> a Gmail-trigger 21:53:14-kor elinditotta a folyamatot (a level cimkei: SENT + INBOX, vagyis az onmagunknak kuldott level is megy)
+   -> sor az "Oktober" lapon (3. sor).
+3. 21:54:37 UTC: FOTO-urlap POST (1 csatolt kep) -> sor az "Oktober" lapon: "PMU - weboldal, fotot kuldott", E oszlop: "1 foto (link: I oszlop)", I oszlop: a Drive-almappa linkje
+   (Mosaic PMU - weboldali vendegfotok / <datum> - <nev>); fotohiba nincs.
+A tesztsorok neve "TESZT - Claude (... torolheto)": a tabla "Oktober" lapjarol es a Drive-almappabol torolhetok.
+
+POTLAS (2026-10-05, a tulajdonos jovahagyasaval: "Igen, most azonnal")
+- A 2026-10-04 10:15-kor erkezett valodi fotokuldes (egy vendeg, 2 foto) a szalon postafiokjabol a folyamat kezi inditasaval (run_workflow, ugyanazzal a levellel) bekerult a tablazat "Oktober" lapjara (5. sor,
+  Szolgaltatas: "PMU - weboldal, fotot kuldott"; E oszlop: beerkezes ideje, e-mail, "2 foto (link: I oszlop)"; I oszlop: a vendeg Drive-almappaja, benne a 2 foto), 2026-10-05 05:40 UTC korul.
+- 05:43:28 UTC: a "melitta-pmu-oktober-sms" folyamat automatikusan lefutott a 5. sorra, az SMS kiment (a futas "sent: true", SMS-azonosito megvan, hibamentes; a kuldes ideje reggel van).
+- Ellenorzes: a sor es a Drive-mappa megvan; az SMS-kuldo szolgaltatas elfogadta az uzenetet (a futas "sent: true", hibamentes). A keszulek-oldali kezbesitest nem tudtuk ellenorizni.
+
+AMIT NEM VIZSGALTUNK / NYITOTT
+- (A korabban kimaradt valodi lead potlasa megtortent, lasd fent.)
+- A harom tesztsor ("TESZT - Claude ...") es az egy teszt Drive-almappa a tablazatban meg megvan, torolhetok (a tulajdonos dontse el / torolje).
+- A Meta-/TikTok-meresi esemeny az uj urlapokra szandekosan nincs (a tulajdonos: a 10-12-i kapura van felirva).
+- A "Foglalo - visszahivast kertek" (motor-visszahivas) es a "megerositette" levelek szandekosan NEM mennek a PMU-tablazatba.
