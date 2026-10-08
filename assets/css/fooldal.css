@@ -91,8 +91,9 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 /* --- 1. hero: a kép jobb oldalon, a bal oldalon a szöveg (a látványterv szerint) --- */
 .hero { position: relative; isolation: isolate; overflow: hidden; background: #f4efe4; }
 .hero::before { content: ''; position: absolute; inset: 0; z-index: -2; background: radial-gradient(70% 90% at 20% 30%, #faf6ec 0%, transparent 70%); }
-.hero-hatter { position: absolute; top: 0; right: 0; bottom: 0; width: 60%; z-index: -1; background: #10282a; }
-.hero-hatter img, .hero-hatter video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 80%; }
+/* a négyzetes videó a ≥640 px magas dobozban csak ~768 px szélességig fér ki fejjel és felirattal együtt: ennél szélesebb nem lesz */
+.hero-hatter { position: absolute; top: 0; right: 0; bottom: 0; width: min(60%, 768px); z-index: -1; background: #10282a; }
+.hero-hatter img, .hero-hatter video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 43%; }
 .hero-hatter::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #f4efe4 0%, rgba(244, 239, 228, .82) 9%, rgba(244, 239, 228, 0) 42%); }
 .hero-tart { min-height: 640px; display: flex; align-items: center; padding: 64px 0 72px; }
 .hero-szoveg { max-width: 600px; }
@@ -104,7 +105,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .hero-jelveny svg { width: 18px; height: 18px; color: #b98f3a; }
 .hero-ar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; margin-top: 14px; }
 .hero-ar s { font-size: 15px; color: #8a9390; text-decoration-thickness: 1.5px; }
-.hero-ar b { font: 500 24px/1.1 var(--cim); color: var(--sotet); white-space: nowrap; }
+.hero-ar b { font: 500 22px/1.1 var(--cim); color: var(--sotet); white-space: nowrap; }
 .hero-ar-al { margin-top: 2px; font-size: 16px; color: var(--halk); }
 .hero .cta-sor { margin-top: 24px; }
 /* hangot a videóra (a régi főoldal „Hangot rá!” gombja) */
@@ -372,7 +373,7 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
   .h1-fo { font-size: 36px; white-space: normal; }
   .h1-al { font-size: 25px; }
   .hero-al { font-size: 17px; }
-  .hero-ar b { font-size: 23px; }
+  .hero-ar b { font-size: 21px; }
 }
 
 /* ====== tablet ====== */
@@ -407,10 +408,10 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
 /* ====== hero: kis tablet / telefon - felul a kep, alatta a szoveg ====== */
 @media (max-width: 860px) {
   /* hero: felül a kép (lágy átmenettel a krémbe), alatta a szöveg */
-  .hero-hatter { position: relative; width: 100%; height: 280px; }
-  .hero-hatter video { object-position: 50% 100%; }
-  .hero-hatter::after { background: linear-gradient(0deg, #f4efe4 0%, rgba(244, 239, 228, .7) 16%, rgba(244, 239, 228, 0) 46%); }
-  .hero-tart { display: block; padding: 0 0 36px; margin-top: -34px; }
+  .hero-hatter { position: relative; width: 100%; height: auto; aspect-ratio: 1 / .9; }
+  .hero-hatter img, .hero-hatter video { position: absolute; inset: 0; object-position: 50% 72%; }
+  .hero-hatter::after { background: linear-gradient(0deg, #f4efe4 0%, rgba(244, 239, 228, 0) 11%); }
+  .hero-tart { display: block; padding: 0 0 36px; }
   .hero-szoveg { max-width: none; }
   .h1-fo { font-size: 30px; white-space: normal; }
   .h1-al { font-size: 21px; margin-top: 6px; }
@@ -421,7 +422,7 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
   .hero-ar b { font-size: 20px; }
   .hero-ar-al { font-size: 15px; }
   .hero .cta-sor { margin-top: 18px; gap: 10px; }
-  .hero-hang { right: 12px; bottom: 44px; }
+  .hero-hang { right: 12px; bottom: 10%; }
 
   .hero .cta-sor .gomb { flex: 1 1 220px; }
 }
@@ -429,12 +430,13 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
 @media (min-width: 701px) and (max-width: 860px) {
   .h1-fo { font-size: 36px; }
   .h1-al { font-size: 24px; }
-  .hero-hatter { height: 340px; }
   .hero-al { font-size: 18px; }
 }
 
 /* ====== telefon ====== */
 @media (max-width: 700px) {
+  /* telefonon a hanggomb a videó jobb felső sarkába kerül, hogy ne takarja a videóba égetett feliratot */
+  .hero-hang { top: 12px; bottom: auto; }
   .sticky-cta { display: flex; align-items: center; gap: 12px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: rgba(250, 246, 238, .97); box-shadow: 0 -6px 22px rgba(60, 40, 15, .16); transform: translateY(115%); transition: transform .25s ease; }
   .sticky-cta.lathato { transform: none; }
   .sticky-cta .gomb { flex: 1; padding: 13px 16px; white-space: nowrap; }
