@@ -13,6 +13,7 @@ const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ?
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 const OVERLAY = arg('overlay', ''), MOBIL = arg('mobil', '0') === '1', KEPEK = arg('kepek', ''), OLDAL = arg('oldal', '/booking-test');
 const BAZIS = arg('bazis', 'https://www.mosaicheadspa.hu');
+const LANDINGEK_TESZT = arg('landingek', '1') === '1'; // 0: csak a /booking-test (pl. az eles oldalon, ahol a landing-gombok meg Salonic-linkek)
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 let fajlUtvonal = null;
 if (OVERLAY) ({ fajlUtvonal } = await import('../serve-dist.mjs'));
@@ -690,6 +691,7 @@ await page.waitForFunction(() => !document.getElementById('mosaic-booking-layer'
 const veg = url(page);
 ok('?booking=1 beerkezo link: a bezaras nem nyul az URL-hez (nincs extra oldalmegtekintes), a UTM / click ID megmarad', veg.searchParams.get('booking') === '1' && veg.searchParams.get('gclid') === 'TESZT123' && veg.searchParams.get('utm_source') === 'teszt' && !veg.hash, veg.search);
 
+if (LANDINGEK_TESZT) {
 // --- valodi landing-oldalak: a (linktermekbol kapott) foglalo-gombok a retegat nyitjak, nem navigalnak --------------------------------------------
 // 2026-10-04 (elesites): a fomenu "FOGLALAS" gombja es az oldalak gombjai MINDEN oldalon a foglalo retegat nyitjak (asztalon es mobilon is); uzletagankent egy-ket jellemzo oldal
 const LANDINGEK = ['/lezeres-szortelenites-budapest', '/headspa-budapest-hungary', '/noi-fodrasz-budapesten-30-szazalek-kedvezmennyel',
@@ -794,6 +796,7 @@ for (const lap of ['/sminktetovalas-budapest', '/fodrasz-ok']) {
   ok(lap + ' | nincs launcher', await page.evaluate(() => typeof window.openBooking === 'undefined'));
 }
 
+}
 ok('nincs JS-hiba a konzolon', hibak.length === 0, hibak.slice(0, 3).join(' | '));
 await ctx.close();
 await browser.close();
