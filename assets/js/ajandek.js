@@ -1571,9 +1571,24 @@
   // (GA4 ajandekkartya_utalas, Google Ads utalasos konverzio, TikTok). Az uj oldal ezt a regi esemenyt is elkuldi (a regi urlap form_id-javal,
   // pontosan az assets/js/klon.js wixLead sorrendjeben: lead -> ecommerce:null -> generate_lead), hogy az utalasos meres valtozatlan maradjon.
   // A bank_transfer_request az uj meresi szerzodes resze marad. Rendelesenkent egyszer fut (az atutalasKesz csak szerveroldali siker utan hivodik).
+  // A regi "Ajandekkartya " urlap mezo -> Wix-kulcs listaja es form_id-ja: PONTOSAN az assets/js/klon.js wixLead hivasa (az urlap bekuldese utan), ugyanaz a lista.
+  var REGI_URLAP_KULCSOK = [['keresztnev', 'fizeto_fel_keresztneve'], ['vezeteknev', 'fizeto_fel_vezetekneve'], ['email', 'e_mail_cim'], ['telefon', 'telefonszam'],
+    ['szamlazasi_cim', 'cim'], ['cegnev', 'cegnev_opcionalis'], ['adoszam', 'ceg_adoszam_opcionalis'], ['ajandekozott', 'ajandekozott_neve'], ['kartya', 'milyen_kartyat_kersz']];
   function regiUtalasLead(o) {
     if (A.MERES_REGI === false) return;
     try {
+      // Elsodlegesen a klon.js wixLead-je (window.mhWixLead): a regi urlap sajat fuggvenye, igy a sorrend, a user_data atalakitas es a cimke SOSEM sodorodik el a regitol.
+      // (A klon.js ugyanezen az oldalon betoltodik; ha valamiert nem, az alabbi tartalek ugyanazt a sorrendet adja.)
+      if (typeof window.mhWixLead === 'function') {
+        var nv = String(o.nev || '').trim().split(/\s+/);
+        var adat = new URLSearchParams({
+          vezeteknev: nv[0] || '', keresztnev: nv.slice(1).join(' '), email: o.email || '', telefon: o.telefon || '',
+          szamlazasi_cim: [o.iranyitoszam, o.varos, o.cim].filter(Boolean).join(' '), cegnev: o.ceges_nev || '', adoszam: o.ceges_adoszam || '',
+          ajandekozott: o.ajandekozott || '', kartya: termek(S.termek).kartya_cim || ''
+        });
+        window.mhWixLead(adat, REGI_URLAP_KULCSOK, 'Ajándékkártya ', '7715ab48-7c85-4c1c-8fbc-a38c1cb1a23c', { form_field_d3ec: true });
+        return;
+      }
       var cimke = 'Form name: Ajándékkártya ';
       var nevek = String(o.nev || '').trim().split(/\s+/);
       var tel = String(o.telefon || '').replace(/[^\d+]/g, '');
