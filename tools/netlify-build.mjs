@@ -214,8 +214,8 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   '/assets/embed/*',
   '  X-Robots-Tag: noindex',
   // az /ajandek (a kampany- es levelbeli linkek cime) ugyanazt az oldalt adja, mint az eles ajandekkartya-cimek: ne indexelodjon ketszer
-  // (a /ajandekkartya a fomenu valaszto oldala: szinten noindex, a keresoknek a ket valodi ajandekkartya-oldal szamit)
-  ...(ELES ? ['/ajandek', '  X-Robots-Tag: noindex', '/lezeres-ajandekkartya', '  X-Robots-Tag: noindex', '/oxigen-ajandekkartya', '  X-Robots-Tag: noindex', '/ajandekkartya', '  X-Robots-Tag: noindex'] : []),
+  // (a /ajandekkartya a fomenu valaszto oldala: szinten noindex). Az /oxigen-ajandekkartya 2026-10-08 ota indexelheto (a tulajdonos kerese; a sitemapben is szerepel).
+  ...(ELES ? ['/ajandek', '  X-Robots-Tag: noindex', '/lezeres-ajandekkartya', '  X-Robots-Tag: noindex', '/ajandekkartya', '  X-Robots-Tag: noindex'] : []),
   '',
 ].join('\n'));
 

@@ -77,7 +77,6 @@
     clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
     leaf: '<path d="M5 19c0-8 5-13.5 14-14 .3 8.7-4.7 14-12.5 14.2"/><path d="M5 19c3-4.2 6.2-6.8 10-8.5"/>',
     heart: '<path d="M12 20s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/>',
-    sparkle: '<path d="M11 4l1.9 5.1L18 11l-5.1 1.9L11 18l-1.9-5.1L4 11l5.1-1.9z"/><path d="M19 4v4M17 6h4"/>',
     waves: '<path d="M3 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>',
     lock: '<rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>',
     check: '<path d="M5 12.5l4.2 4.2L19 7"/>',
@@ -112,7 +111,6 @@
     if (/terapeuta/i.test(sor)) return 'users';
     if (/^1 fő/i.test(sor)) return 'user';
     if (/vendég|fő\b/i.test(sor)) return 'users';
-    if (/szárítás/i.test(sor)) return 'sparkle';
     if (/felhasználható|időpont/i.test(sor)) return 'calendar';
     if (/perc/i.test(sor)) return 'clock';
     return 'check';
