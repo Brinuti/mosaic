@@ -32,7 +32,7 @@ export const CSATORNAK = Object.freeze(['sms', 'email', 'feladat']);
 /** mikor.tipus: t0 | t72 | t24 | tartalom | feladat | feladat_t0 (+ a kozos: lemondva | athelyezve | nem_jelent_meg) */
 export const MIKOR_TIPUSOK = Object.freeze(['t0', 't72', 't24', 'tartalom', 'feladat', 'feladat_t0', 'lemondva', 'athelyezve', 'nem_jelent_meg']);
 export const SZEGMENSEK = Object.freeze(['ajandekkartya', 'fizetos', 'paros', 'negykezes', 'egyeni', 'hair', 'konzultacio', 'festes', 'nagy_valtozas', 'vagas_kezeles', 'elso', 'visszatero', 'korrekcio', 'eltavolitas']);
-export const BLOKK_KULCSOK = Object.freeze(['lista', 'szamozott', 'doboz', 'gomb', 'kep', 'kepek', 'velemeny', 'video', 'szemely', 'ertekeles']);
+export const BLOKK_KULCSOK = Object.freeze(['lista', 'szamozott', 'doboz', 'gomb', 'cim', 'kiemelt', 'kep', 'kepek', 'velemeny', 'video', 'szemely', 'ertekeles']);
 /** a blokk mellett megengedett feltetel-kulcs: a blokk csak az adott munkatarsnal jelenik meg */
 export const BLOKK_FELTETEL_KULCSOK = Object.freeze(['ha_munkatars']);
 export const SMS_MAX_KARAKTER = 480; // a legrosszabb eset (hosszu helyorzo-ertekekkel) is ennyin belul legyen

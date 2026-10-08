@@ -56,6 +56,8 @@ Ha a dokumentumban nincs szegmens-megkötés, ne adj meg `szegmensek`-et (minden
   → a bevezető mondat külön bekezdés, a link gomb; a felirat rövid ige ("Foglalás megtekintése", "Megnézem a videót", "Itt tudom áttenni")
 - **Nincs aláírás-blokk**: a level lábléce mutatja a „MOSAIC Head Spa and Hair” nevet (a tulajdonos kérése, 2026-10-08); a „Várunk,” stb. egy sima bekezdés.
 - `{ kep: { src, alt, felirat?, link?, szelesseg? } }`, `{ kepek: [...] }`, `{ video: { src, alt, felirat, link, szelesseg? } }`, `{ szemely: ... }`, `{ velemeny: 'id' }`, `{ ertekeles: true }` (Google-linkkel): minden kép linkelt (alap: `{eredmények_link}`), hogy a levelező ne kínáljon „Letöltés” gombot; `szelesseg` = megjelenítési szélesség px-ben (állóképes előképekhez ~240–340; a kép szélessége legalább 1,6-szerese legyen).
+- `{ cim: 'Alcím' }`: levélen belüli alcím (félkövér, nagyobb betű; az oxigén levelekben).
+- `{ kiemelt: { cim, vezeto?, szoveg: ['...', '... **félkövér** ...'], kep?: { src, alt, szelesseg } } }`: kiemelt doboz (a weboldal „Miért működik?” dobozának mása): címke, kiemelt mondat, bekezdések (`**...**` = félkövér), opcionális kép.
 - `{ doboz: [...] }`: az időpontot (az `óra:perc` sort) félkövéren, nagyobban mutatja – minden időpont-említést ebbe tegyél (`{ doboz: ['{szolgáltatás}', '{dátum}, {időpont}'] }`).
 - A gombok a levélben középen, a weboldal arany gombjának kinézetével jelennek meg (a katalógusban csak felirat + link kell).
 

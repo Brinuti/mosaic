@@ -114,6 +114,12 @@ export function blokkokKitolt(torzs, ert) {
       ki.push({ t: 'video', src: b.video.src, alt: sorKitolt(b.video.alt, ert).szoveg, felirat: sorKitolt(b.video.felirat, ert).szoveg, link: sorKitolt(b.video.link, ert).szoveg, szelesseg: b.video.szelesseg });
     } else if (b.szemely) {
       ki.push({ t: 'szemely', src: b.szemely.src, nev: sorKitolt(b.szemely.nev, ert).szoveg, szerep: sorKitolt(b.szemely.szerep, ert).szoveg, szoveg: b.szemely.szoveg ? sorKitolt(b.szemely.szoveg, ert).szoveg : '', link: ert['eredmények_link'] });
+    } else if (b.cim) ki.push({ t: 'cim', szoveg: sorKitolt(b.cim, ert).szoveg });
+    else if (b.kiemelt) {
+      const k = b.kiemelt;
+      const kl = k.kep ? (k.kep.link ? sorKitolt(k.kep.link, ert).szoveg : ert['eredmények_link']) : null;
+      ki.push({ t: 'kiemelt', cim: sorKitolt(k.cim, ert).szoveg, vezeto: k.vezeto ? sorKitolt(k.vezeto, ert).szoveg : '', sorok: (k.szoveg || []).map((x) => sorKitolt(x, ert).szoveg),
+        kep: k.kep ? { src: k.kep.src, alt: sorKitolt(k.kep.alt, ert).szoveg, szelesseg: k.kep.szelesseg, link: kl } : null });
     } else if (b.ertekeles) ki.push({ t: 'ertekeles' });
   }
   return ki;
@@ -182,6 +188,13 @@ function blokkHtml(b, base) {
     case 'velemeny': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td bgcolor="${SZIN.lap}" style="background:${SZIN.lap};border-radius:8px;padding:18px 20px"><div style="font:20px/1 Arial,sans-serif;color:${SZIN.aranyHatter};letter-spacing:2px">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p style="margin:8px 0 10px;font:italic 16px/1.6 Georgia,serif;color:${SZIN.szoveg}">&bdquo;${esc(b.szoveg)}&rdquo;</p><div style="font:600 13px Arial,Helvetica,sans-serif;color:${SZIN.sotet}">${esc(b.nev)} <span style="font-weight:400;color:${SZIN.halk}">&middot; Google-vélemény${b.datum ? ` &middot; ${esc(b.datum)}` : ''}</span></div></td></tr></table>`;
     case 'video': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 8px"><tr><td align="center"><a href="${esc(b.link)}" style="text-decoration:none"><img src="${esc(kepUrl(base, b.src))}" width="${b.szelesseg || 544}" alt="${esc(b.alt)}" style="display:block;width:100%;max-width:${b.szelesseg || 544}px;height:auto;margin:0 auto;border:0;border-radius:8px"></a></td></tr></table><p style="margin:0 0 18px;${KIS};text-align:center"><a href="${esc(b.link)}" style="color:${SZIN.arany};text-decoration:none;font-weight:600">&#9654; ${esc(b.felirat)}</a></p>`;
     case 'szemely': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td width="132" valign="top" style="padding-right:16px"><a href="${esc(b.link)}" style="text-decoration:none"><img src="${esc(kepUrl(base, b.src))}" width="116" height="116" alt="${esc(b.nev)}" style="display:block;width:116px;height:116px;border:0;border-radius:58px"></a></td><td valign="middle"><div style="font:600 20px Georgia,serif;color:${SZIN.sotet}">${esc(b.nev)}</div><div style="margin:2px 0 ${b.szoveg ? 8 : 0}px;font:600 12px Arial,Helvetica,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:${SZIN.arany}">${esc(b.szerep)}</div>${b.szoveg ? `<p style="margin:0;font:15px/1.6 Georgia,serif;color:${SZIN.szoveg}">${esc(b.szoveg)}</p>` : ''}</td></tr></table>`;
+    case 'cim': return `<h2 style="margin:26px 0 10px;font:600 20px/1.3 Georgia,'Times New Roman',serif;color:${SZIN.sotet}">${esc(b.szoveg)}</h2>`;
+    case 'kiemelt': { // pl. a "Miert mukodik?" doboz: cimke, kiemelt mondat, szoveg (a **...** felkover), opcionalis kep
+      const kw = b.kep ? (b.kep.szelesseg || 260) : 0;
+      const kepHtml = b.kep ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 0"><tr><td align="center"><a href="${esc(b.kep.link)}" style="text-decoration:none"><img src="${esc(kepUrl(base, b.kep.src))}" width="${kw}" alt="${esc(b.kep.alt)}" style="display:block;width:100%;max-width:${kw}px;height:auto;margin:0 auto;border:0;border-radius:8px"></a></td></tr></table>` : '';
+      const felkover = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 20px"><tr><td bgcolor="${SZIN.lap}" style="background:${SZIN.lap};border-left:3px solid ${SZIN.aranyHatter};border-radius:0 8px 8px 0;padding:18px 20px"><div style="font:600 12px Arial,Helvetica,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:${SZIN.arany}">${esc(b.cim)}</div>${b.vezeto ? `<p style="margin:8px 0 10px;font:600 18px/1.45 Georgia,serif;color:${SZIN.sotet}">${esc(b.vezeto)}</p>` : ''}${b.sorok.map((t) => `<p style="margin:0 0 12px;font:15.5px/1.65 Georgia,serif;color:${SZIN.szoveg}">${felkover(t)}</p>`).join('')}${kepHtml}</td></tr></table>`;
+    }
     case 'ertekeles': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td align="center" style="padding:2px 0"><a href="${GOOGLE_VELEMENYEK_URL}" style="text-decoration:none"><div style="font:22px/1 Arial,sans-serif;color:${SZIN.aranyHatter};letter-spacing:3px">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div style="padding-top:6px;${KIS}">${esc(ERTEKELES_SZOVEG)}<br><span style="color:${SZIN.arany};text-decoration:underline">A Google-vélemények megtekintése</span></div></a></td></tr></table>`;
     default: return '';
   }
@@ -211,6 +224,8 @@ export function levelKirajzol({ elotag, blokkok, lablecMegjegyzes, base = ALAP_U
     else if (b.t === 'velemeny') sz.push(`„${b.szoveg}" - ${b.nev}, Google-vélemény${b.datum ? ` (${b.datum})` : ''}`);
     else if (b.t === 'video') sz.push(`${b.felirat}: ${b.link}`);
     else if (b.t === 'szemely') sz.push(`${b.nev} - ${b.szerep}${b.szoveg ? `\n${b.szoveg}` : ''}`);
+    else if (b.t === 'cim') sz.push(b.szoveg);
+    else if (b.t === 'kiemelt') sz.push([b.cim, b.vezeto, ...b.sorok.map((t) => t.replace(/\*\*/g, ''))].filter(Boolean).join('\n'));
     else if (b.t === 'ertekeles') sz.push(`${ERTEKELES_SZOVEG}: ${GOOGLE_VELEMENYEK_URL}`);
   }
   sz.push(`MOSAIC Head Spa and Hair\n${SZALON.cim} · ${SZALON.telefon}\nwww.mosaicheadspa.hu`);

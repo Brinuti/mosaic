@@ -48,7 +48,8 @@ function kepEllenor(hol, src, alt, minSzeles) {
   assert.ok(typeof alt === 'string' && alt.trim().length >= 5, `${hol}: a kepnek alt-szoveg kell (${src})`);
 }
 function kepBlokkEllenor(hol, uzletag, kulcs, b) {
-  if (kulcs === 'kep') { kepEllenor(hol, b.kep.src, b.kep.alt, b.kep.szelesseg ? { szelesseg: b.kep.szelesseg } : 960); }
+  if (kulcs === 'kiemelt') { assert.ok(b.kiemelt.cim && Array.isArray(b.kiemelt.szoveg), `${hol}: kiemelt: cim + szoveg`); if (b.kiemelt.kep) kepEllenor(hol, b.kiemelt.kep.src, b.kiemelt.kep.alt, { szelesseg: b.kiemelt.kep.szelesseg || 260 }); }
+  else if (kulcs === 'kep') { kepEllenor(hol, b.kep.src, b.kep.alt, b.kep.szelesseg ? { szelesseg: b.kep.szelesseg } : 960); }
   else if (kulcs === 'kepek') {
     assert.ok(Array.isArray(b.kepek) && b.kepek.length >= 2 && b.kepek.length <= 3, `${hol}: a "kepek" 2-3 kep`);
     for (const e of b.kepek) kepEllenor(hol, e.src, e.alt, 540);
@@ -74,6 +75,8 @@ function szovegek(uzenet) {
       for (const [k, v] of Object.entries(b)) {
         if (k === 'lista' || k === 'szamozott' || k === 'doboz') ki.push(...v);
         else if (k === 'gomb') ki.push(v.felirat, v.link);
+        else if (k === 'cim') ki.push(v);
+        else if (k === 'kiemelt') ki.push(v.cim, v.vezeto || '', ...(v.szoveg || []), v.kep ? v.kep.alt : '');
         else if (k === 'kep') ki.push(v.alt, v.felirat || '', v.link || '');
         else if (k === 'kepek') for (const e of v) ki.push(e.alt, e.felirat || '');
         else if (k === 'video') ki.push(v.alt, v.felirat, v.link);
@@ -147,7 +150,8 @@ for (const [kulcs, kat] of [...Object.entries(KATALOG), ['kozos', KOZOS]]) {
       // helyorzok, fix ar / kedvezmeny nincs a szovegben
       for (const s of szovegek(m)) {
         for (const h of helyorzok(s)) assert.ok(HELYORZOK[h], `${hol}: ismeretlen helyorzo {${h}}`);
-        assert.ok(!/\d[\d\s.]*\s?(Ft|FT|forint)\b/.test(s.replace(/\{[^}]+\}/g, '')) && !/\d+\s?%/.test(s), `${hol}: fix ar / kedvezmeny a szovegben (tilos): "${s.slice(0, 80)}"`);
+        // fix ar es akcios / kedvezmeny-szazalek nem lehet a szovegben (elavul); a hivatalos statisztika (pl. "kétmillió kezelésből 95%-nál pozitív változás", ahogy az oxigén oldalon is áll) megengedett
+        assert.ok(!/\d[\d\s.]*\s?(Ft|FT|forint)\b/.test(s.replace(/\{[^}]+\}/g, '')) && !(/\d+\s?%/.test(s) && /kedvezm|akci[óo]|engedm|leárazás|olcsóbb/i.test(s)), `${hol}: fix ar / kedvezmeny a szovegben (tilos): "${s.slice(0, 80)}"`);
         assert.ok(!/\b(június|július|augusztus|szeptember)i?\s+(akció|kedvezmény)|júniusban/i.test(s), `${hol}: lejart honapnevu akcio`);
       }
       if (m.csatorna === 'sms') {
