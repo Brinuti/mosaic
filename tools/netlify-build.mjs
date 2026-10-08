@@ -158,7 +158,7 @@ const SITEMAP = path.join(ROOT, 'tools', 'wix-sitemap');
 for (const f of fs.readdirSync(SITEMAP).filter((x) => x.endsWith('.xml'))) fs.copyFileSync(path.join(SITEMAP, f), path.join(DIST, f));
 fs.writeFileSync(path.join(DIST, 'robots.txt'), ELES
   ? fs.readFileSync(path.join(SITEMAP, 'robots.txt'), 'utf8')
-  : 'User-agent: *\nAllow: /assets/hirdetes-ideiglenes/\nDisallow: /\n');
+  : 'User-agent: *\nDisallow: /\n');
 
 // A regi /post/ cimeket es a mobil/asztali valasztast a netlify/edge-functions
 // intezi (utvonal.js) - kulon atiranyitasi szabaly nem kell.
