@@ -23,7 +23,7 @@ fs.mkdirSync(kiMappa, { recursive: true });
 const SZURO = lista === 'mind' ? null : new Set(lista.split(','));
 
 const KEZDET = Math.floor(Date.UTC(2026, 9, 28, 15, 0) / 1000);
-const MUNKATARS = { laser: 'Zsófi', pmu: 'Melitta', hair: 'Betti', headspa: null, oxygen: null };
+const MUNKATARS = { laser: 'Zsófi', pmu: 'Melitta', hair: process.env.FODRASZ || 'Betti', headspa: null, oxygen: null }; // FODRASZ=Noel | Evelin: a fodrasz-levelek mas fodraszra
 function szolg(uzletag, uz) {
   const l = snapshot.szolgaltatasok.filter((s) => s.uzletag === uzletag).map((s) => s.nev);
   const jo = l.filter((n) => szegmensEgyezik(uz, szegmensek(uzletag, n)));

@@ -69,7 +69,6 @@ export default {
         { velemeny: 'pmu-diana' },
         'A kezelés után részletes ápolási tanácsot kapsz, és a jelenlegi ajánlat szerint ápolókrémet is adunk. A szükséges korrekciót 4-7 hét körül egyeztetitek.',
         'Ha ezt előre tudod, sokkal nyugodtabb lesz az első néhány nap is.',
-        { kep: { src: 'pmu/gyogyult-termeszetes.jpg', alt: 'Gyógyult, természetes hatású szemöldök oldalnézetből', felirat: 'Gyógyult, természetes hatású szemöldök' } },
         'Találkozunk {dátum_ragos}.',
       ],
     },

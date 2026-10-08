@@ -57,7 +57,7 @@ def keszit(tetel):
     else:
         im = im.convert('RGB')
     im = vag(im, arany, tetel.get('fokusz', [0.5, 0.5]))
-    if im.size[0] > szeles:
+    if im.size[0] > szeles or (mod == 'kepek' and im.size[0] < szeles and im.size[0] >= 0.85 * szeles):  # kicsinyites; a celszelesseg ~85%-aig finom nagyitas is (kicsit kisebb forras)
         im = im.resize((szeles, round(szeles * im.size[1] / im.size[0])), Image.LANCZOS)
     if tetel.get('lejatszo'): im = lejatszo(im)
     ki = os.path.join(GYOKER, 'assets', 'email', tetel['ki'])

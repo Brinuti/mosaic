@@ -1,19 +1,6 @@
 {
   "kepek": [
     {
-      "ki": "hair/csapat.jpg",
-      "forras": "assets/img/c2eb0f_8c59f6f7b3574d91a4cbb71bdc3cab28.jpg",
-      "mod": "szeles",
-      "arany": [
-        4,
-        3
-      ],
-      "fokusz": [
-        0.5,
-        0.15
-      ]
-    },
-    {
       "ki": "hair/betti-portre.jpg",
       "forras": "assets/img/c2eb0f_1aa66a21336a415e9cecebda04f6c840.jpg",
       "mod": "szeles",
@@ -167,58 +154,6 @@
       ]
     },
     {
-      "ki": "hair/konzultacio.jpg",
-      "forras": "assets/img/c2eb0f_a1d9da6453ad4b42af1f59a5cd8637f6.jpg",
-      "mod": "kepek",
-      "arany": [
-        4,
-        5
-      ],
-      "fokusz": [
-        0.5,
-        0.43
-      ]
-    },
-    {
-      "ki": "hair/valtozas-1.jpg",
-      "forras": "assets/img/c2eb0f_d2b3a73418c64c9e832df368a4afc62b.jpg",
-      "mod": "kepek",
-      "arany": [
-        4,
-        5
-      ],
-      "fokusz": [
-        0.5,
-        0.4
-      ]
-    },
-    {
-      "ki": "hair/valtozas-2.jpg",
-      "forras": "assets/img/c2eb0f_361aa0e0c7ee4d9fae523c95c0111f6e.jpg",
-      "mod": "kepek",
-      "arany": [
-        4,
-        5
-      ],
-      "fokusz": [
-        0.5,
-        0.3
-      ]
-    },
-    {
-      "ki": "hair/valtozas-3.jpg",
-      "forras": "assets/img/c2eb0f_b8590fd295ea468986deba0d7f35a482.jpg",
-      "mod": "kepek",
-      "arany": [
-        4,
-        5
-      ],
-      "fokusz": [
-        0.5,
-        0.4
-      ]
-    },
-    {
       "ki": "hair/szalon-hely.jpg",
       "forras": "assets/img/c2eb0f_1e4639668fab4f1c90e83ff4f824eb16.jpg",
       "mod": "szeles",
@@ -229,19 +164,6 @@
       "fokusz": [
         0.5,
         0.5
-      ]
-    },
-    {
-      "ki": "hair/eredmeny-szoke.jpg",
-      "forras": "assets/img/c2eb0f_3b9ccc8a0a274863ad1c9cd590c76b83.jpg",
-      "mod": "kepek",
-      "arany": [
-        4,
-        5
-      ],
-      "fokusz": [
-        0.5,
-        0.2
       ]
     },
     {
@@ -276,6 +198,123 @@
       ],
       "szelesseg": 576,
       "lejatszo": true
+    },
+    {
+      "ki": "hair/betti-valtozas-1.jpg",
+      "forras": "assets/img/c2eb0f_8e39f40cf0744a87a00cc00c04debb63.jpg",
+      "mod": "kepek",
+      "arany": [
+        4,
+        5
+      ],
+      "fokusz": [
+        0.5,
+        0.3
+      ]
+    },
+    {
+      "ki": "hair/betti-valtozas-2.jpg",
+      "forras": "assets/img/c2eb0f_f9e1a01043f94af4afd688fad1a1633e.jpg",
+      "mod": "kepek",
+      "arany": [
+        4,
+        5
+      ],
+      "fokusz": [
+        0.5,
+        0.3
+      ]
+    },
+    {
+      "ki": "hair/betti-valtozas-3.jpg",
+      "forras": "assets/img/c2eb0f_77b31841dc6840dbbcb1f5b2d028884e.jpg",
+      "mod": "kepek",
+      "arany": [
+        4,
+        5
+      ],
+      "fokusz": [
+        0.5,
+        0.3
+      ]
+    },
+    {
+      "ki": "hair/noel-valtozas-1.jpg",
+      "forras": "assets/img/c2eb0f_4e8b1800c8a0486f9d98f720a2a61e31.jpg",
+      "mod": "kepek",
+      "arany": [
+        4,
+        5
+      ],
+      "fokusz": [
+        0.5,
+        0.3
+      ]
+    },
+    {
+      "ki": "hair/noel-valtozas-2.jpg",
+      "forras": "assets/img/c2eb0f_4e0c5dfc3cd244bb8f4bdfbc6e9005f7.jpg",
+      "mod": "kepek",
+      "arany": [
+        4,
+        5
+      ],
+      "fokusz": [
+        0.5,
+        0.3
+      ]
+    },
+    {
+      "ki": "hair/noel-valtozas-3.jpg",
+      "forras": "assets/img/c2eb0f_4b0f54e274fc4aa6ab83b4fa4cb3eeca.jpg",
+      "mod": "kepek",
+      "arany": [
+        4,
+        5
+      ],
+      "fokusz": [
+        0.5,
+        0.3
+      ]
+    },
+    {
+      "ki": "hair/evelin-valtozas-1.jpg",
+      "forras": "assets/img/c2eb0f_d5771c1b288f452ebe82cd7012235422.jpg",
+      "mod": "kepek",
+      "arany": [
+        4,
+        5
+      ],
+      "fokusz": [
+        0.5,
+        0.3
+      ]
+    },
+    {
+      "ki": "hair/evelin-valtozas-2.jpg",
+      "forras": "assets/img/c2eb0f_edc229c432074210bcab2a232fc37a69.jpg",
+      "mod": "kepek",
+      "arany": [
+        4,
+        5
+      ],
+      "fokusz": [
+        0.5,
+        0.3
+      ]
+    },
+    {
+      "ki": "hair/evelin-valtozas-3.jpg",
+      "forras": "assets/img/c2eb0f_8dd884813b39460c867ec0dbe4e54d8e.jpg",
+      "mod": "kepek",
+      "arany": [
+        4,
+        5
+      ],
+      "fokusz": [
+        0.5,
+        0.3
+      ]
     }
   ],
   "megjegyzes": [

@@ -32,8 +32,6 @@ export default {
       elotag: '2-3 kép sok félreértést megelőz - de nem másolunk vakon.',
       torzs: [
         'Szia {keresztnév}!',
-        // hero: a csapat (mindenkinek jo, az ismeretlen fodraszt is lefedi); a fodrasz-specifikus blokkok a ha_munkatars feltetellel jonnek
-        { kep: { src: 'hair/csapat.jpg', alt: 'A MOSAIC Hair csapata: Betti, Noel és Evelin a szalonban', felirat: 'Betti, Noel és Evelin – a MOSAIC Hair csapata' } },
         'Egy fodrásznál az egyik legfontosabb kérdés: vajon tényleg ugyanazt érti-e a fejében, amit te elképzeltél?',
         'Ezért nálunk az első lépés mindig a megbeszélés. {fodrász} megnézi a hajad kiindulási állapotát, az arcodhoz és a hajadhoz illő lehetőségeket, és csak olyan eredményt terveztek meg, ami a te hajadból reálisan elérhető.',
         'Nézd meg {fodrász} ingyenes konzultációs videóját, hogy már az első találkozás előtt megismerd:',
@@ -69,12 +67,6 @@ export default {
         'Itt megnézheted {fodrász} releváns munkáit a te foglalt szolgáltatásodhoz:',
         { gomb: { felirat: 'Megnézem a munkákat', link: '{eredmények_link}' } },
         'Ha van 2-3 referenciaképed, tartsd meg őket a telefonodban. A "mit szeretsz rajta?" és a "mit biztosan nem szeretnél?" sokszor többet segít, mint maga a kép.',
-        {
-          kepek: [
-            { src: 'hair/konzultacio.jpg', alt: 'Konzultáció a MOSAIC Hairben: a vendég a telefonján mutat referenciaképet a fodrásznak', felirat: 'Referenciakép a telefonon' },
-            { src: 'hair/eredmeny-szoke.jpg', alt: 'Világos, szőke, hullámos haj és mosolygó vendég – valódi MOSAIC Hair vendégmunka', felirat: 'Valódi vendégmunka' },
-          ],
-        },
         'Találkozunk {dátum_ragos}.',
       ],
     },
@@ -84,13 +76,30 @@ export default {
       elotag: 'Nagyobb festésnél ezt a négy dolgot érdemes előre átgondolni.',
       torzs: [
         'Szia {keresztnév}!',
-        // valodi vendegmunkak a nagyobb szinvaltoztatasokbol (meleg barna-rez / szoke balayage / vilagos szoke); nincs igeret, csak keszult munkak
+        // a lefoglalt fodrasz sajat vendegmunkai (a tulajdonos kerese: mindig az adott fodrasz munkai); nincs igeret, csak keszult munkak
         {
           kepek: [
-            { src: 'hair/valtozas-1.jpg', alt: 'Barnából karamell és réz árnyalatba átmenő, hullámos haj – valódi MOSAIC Hair vendégmunka' },
-            { src: 'hair/valtozas-2.jpg', alt: 'Hosszú, hullámos, szőke haj lágy balayage-átmenettel – valódi MOSAIC Hair vendégmunka' },
-            { src: 'hair/valtozas-3.jpg', alt: 'Hosszú, egyenes, nagyon világos szőke haj – valódi MOSAIC Hair vendégmunka' },
+            { src: 'hair/betti-valtozas-1.jpg', alt: 'Világos, hamvas szőke, egyenes haj – Betti valódi vendégmunkája' },
+            { src: 'hair/betti-valtozas-2.jpg', alt: 'Élénk vörös, selymes haj – Betti valódi vendégmunkája' },
+            { src: 'hair/betti-valtozas-3.jpg', alt: 'Hamvas, világos szőke haj – Betti valódi vendégmunkája' },
           ],
+          ha_munkatars: ['Betti'],
+        },
+        {
+          kepek: [
+            { src: 'hair/noel-valtozas-1.jpg', alt: 'Világos szőke, hullámos haj – Noel valódi vendégmunkája' },
+            { src: 'hair/noel-valtozas-2.jpg', alt: 'Platinaszőke, egyenes haj – Noel valódi vendégmunkája' },
+            { src: 'hair/noel-valtozas-3.jpg', alt: 'Hosszú, szőke, egyenes haj – Noel valódi vendégmunkája' },
+          ],
+          ha_munkatars: ['Noel'],
+        },
+        {
+          kepek: [
+            { src: 'hair/evelin-valtozas-1.jpg', alt: 'Barackos-rózsaszín, egyenes haj – Evelin valódi vendégmunkája' },
+            { src: 'hair/evelin-valtozas-2.jpg', alt: 'Hamvas szőke, egyenes haj – Evelin valódi vendégmunkája' },
+            { src: 'hair/evelin-valtozas-3.jpg', alt: 'Szürkés-szőke, selymes haj – Evelin valódi vendégmunkája' },
+          ],
+          ha_munkatars: ['Evelin'],
         },
         'A nagyobb színváltozásnál a jó eredmény egyik kulcsa a reális kiindulópont.',
         'A festés előtt {fodrász} megnézi a hajad jelenlegi színét, állapotát és festési múltját. Ha egy elképzelés egy alkalomból biztonságosan nem hozható ki, azt előre elmondjuk, és inkább több lépésben tervezünk, mint hogy a hajad állapotát kockáztassuk.',
