@@ -22,7 +22,7 @@ export default {
         'Foglalás részletei / módosítás:',
         { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC Oxigénterápia' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -38,7 +38,7 @@ export default {
         'Ha szeretnéd előre megnézni, milyen egy kezelés:',
         { gomb: { felirat: 'Megnézem a videót', link: '{videó_link}' } },
         'Találkozunk {dátum_ragos}.',
-        { alairas: 'MOSAIC' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -52,7 +52,7 @@ export default {
         'Ezért az első alkalom legfontosabb eredménye nem egy marketingígéret, hanem az, hogy tisztábban lásd: mit érdemes csinálni, milyen ritmusban, és mikor van értelme kontrollálni a változást.',
         'A te időpontod: {dátum} {időpont}.',
         'Várunk,',
-        { alairas: 'MOSAIC' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -75,7 +75,7 @@ export default {
         'Ha közbejött valami, itt tudod áttenni:',
         { gomb: { felirat: 'Itt tudom áttenni', link: '{módosítás_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {

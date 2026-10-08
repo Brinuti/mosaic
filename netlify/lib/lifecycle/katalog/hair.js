@@ -21,7 +21,7 @@ export default {
         'Foglalásod részletei / módosítás:',
         { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC Hair' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -36,7 +36,7 @@ export default {
         { gomb: { felirat: 'Megnézem a munkákat', link: '{eredmények_link}' } },
         'Ha van 2-3 referenciaképed, tartsd meg őket a telefonodban. A "mit szeretsz rajta?" és a "mit biztosan nem szeretnél?" sokszor többet segít, mint maga a kép.',
         'Találkozunk {dátum_ragos}.',
-        { alairas: 'MOSAIC Hair' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -51,7 +51,7 @@ export default {
         'Ha tudod, gondold át addig:',
         { lista: ['mikor festették utoljára a hajad;', 'otthoni vagy szalonfestés volt-e;', 'van-e olyan árnyalat, amit biztosan nem szeretnél;', 'melyik 2-3 referencia áll hozzád a legközelebb.'] },
         'Ennyi bőven elég. A többit együtt megtervezitek.',
-        { alairas: 'MOSAIC Hair' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {

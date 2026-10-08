@@ -22,7 +22,7 @@ export default {
         'Ha közben változna valami, itt tudod megnézni vagy módosítani a foglalásodat:',
         { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
         'Szeretettel várunk,',
-        { alairas: 'MOSAIC' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -38,7 +38,7 @@ export default {
         'Ha szeretnéd már most látni, milyen a hangulat, itt van egy rövid videó:',
         { gomb: { felirat: 'Megnézem a videót', link: '{videó_link}' } },
         'Nemsokára találkozunk.',
-        { alairas: 'MOSAIC' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -53,7 +53,7 @@ export default {
         { gomb: { felirat: 'Megnézem a vendégvideókat', link: '{eredmények_link}' } },
         'A te időpontod továbbra is: {dátum} {időpont}.',
         'Várunk,',
-        { alairas: 'MOSAIC' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {

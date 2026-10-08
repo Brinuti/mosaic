@@ -77,3 +77,21 @@ Az export tartalmazhat `megjegyzesek: ['...']` tömböt: minden eltérés a doku
 ## Ellenőrzés
 
 `node --test tools/lifecycle-teszt/katalog.test.mjs` – szerkezet, helyőrzők, SMS-hossz, egyedi azonosítók, kötelező mezők.
+
+## Képes / véleményes / videós blokkok (2026-10-08, a tulajdonos kérése: a tartalmi levelek ne legyenek „nyers szöveg”)
+
+A fejléc a **logó** (nem szöveg), az aláírás minden levélben **„MOSAIC Head Spa and Hair”** (`{ alairas: 'MOSAIC Head Spa and Hair' }`, a teszt ellenőrzi). A tranzakciós (T0) levelek maradnak képek nélkül; a tartalmi (T-72 / T+nap / előkészítő) levelekbe a téma szerint kerülnek képek, valódi vélemény, videó-előkép, bemutatkozás.
+A **meglévő szöveget nem írjuk át**: csak blokkokat szúrunk be (és rövid, tényszerű képaláírást, ha kell).
+
+| blokk | szerkezet | megjegyzés |
+|---|---|---|
+| `{ kep: { src, alt, felirat?, link? } }` | egy levélszéles kép (544 px; a képfájl ≥ 960 px széles) | `src`: az `assets/email/` alatti fájl (pl. `pmu/gyogyult.jpg`); `alt` kötelező, leíró; `link`: pl. `'{eredmények_link}'` |
+| `{ kepek: [{ src, alt, felirat? }, …] }` | 2–3 kép egymás mellett (előtte–utána, munkák) | forrás ≥ 540 px széles |
+| `{ velemeny: '<id>' }` | Google-vélemény-kártya csillagokkal | **csak** a `velemenyek.js`-ben lévő, szó szerinti, valódi vélemény; az üzletágé; opcionális `ha_munkatars: ['Evelin']` (csak az adott munkatársnál) |
+| `{ video: { src, alt, felirat, link } }` | videó-előkép lejátszó-jellel + „▶ felirat” link | a levélben nem játszik le: `link` = az oldal, pl. `'{videó_link}'`; az előképen a lejátszó-jel a képbe van sütve (`lejatszo: true`) |
+| `{ szemely: { src, nev, szerep, szoveg? } }` | kerek portré + név + szerep (+ rövid szöveg) | portré ≥ 232 px, négyzet |
+| `{ ertekeles: true }` | „★★★★★ 4,9 / 5 a Google-on · több mint 1 200 vendégvélemény” sáv | nincs külön adat: a `render.js` `ERTEKELES_SZOVEG` |
+
+Képek: `tools/email-kepek/lista-<üzletág>.json` + `python3 -I tools/email-kepek/keszit.py` (az oldal meglévő `assets/img/` képeiből vág, méretez, optimalizál; képenként ≤ 240 KB). Az oldal képei szakaszonként: `python3 -I tools/email-kepek/oldal-kepek.py foglalas/<oldal>.html`.
+Képernyőképes előnézet: `node tools/lifecycle-teszt/elonezet.mjs <ki-mappa> <AZONOSÍTÓ,…> 600,390`.
+Szabályok: nincs fix ár / százalék / hónapnév (a képaláírásban és a vélemény-szövegben sem); csak valódi vendég-munkák / vélemények; egészségi állítás nélkül („az eredmény egyénenként eltérő” jellegű, óvatos aláírás); minden képnek `alt`.

@@ -30,7 +30,7 @@ export default {
         'Foglalás részletei / módosítás:',
         { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC Lézeres szőrtelenítés' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
       // a LASER-EMAIL-04 kritikus elokeszuleti listaja: a T0 e-mail vegere kerul, ha a foglalas < 30 orara van az idopontig
       surgos_kiegeszites: [
@@ -58,7 +58,7 @@ export default {
         'Nem mindenkinél ugyanaz a reakció és ugyanannyi alkalom reális. Világosabb szőr, friss barnulás, hormonális háttér, bizonyos egészségügyi állapotok vagy gyógyszerek esetén különösen fontos az előzetes egyeztetés.',
         'Ha bizonytalan vagy valamiben, inkább mondd el előre - nem az a cél, hogy mindenáron kezeljünk, hanem hogy biztonságosan és értelmesen induljon el a program.',
         'A te időpontod: {dátum} {időpont}.',
-        { alairas: 'MOSAIC' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -74,7 +74,7 @@ export default {
         'Ha szeretnél valódi MOSAIC előtte-utána eredményeket látni ugyanarról a területről, itt találod őket:',
         { gomb: { felirat: 'Megnézem az eredményeket', link: '{eredmények_link}' } },
         'Nemsokára találkozunk.',
-        { alairas: 'MOSAIC' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -97,7 +97,7 @@ export default {
         'Ha csak az időpont nem jó, itt tudod áttenni:',
         { gomb: { felirat: 'Itt tudom áttenni', link: '{módosítás_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {

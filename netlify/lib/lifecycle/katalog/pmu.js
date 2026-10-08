@@ -24,7 +24,7 @@ export default {
         'Foglalás részletei / módosítás:',
         { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC PMU' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -39,7 +39,7 @@ export default {
         'Ha szeretnél előre megnézni Melitta munkáit, itt találod őket:',
         { gomb: { felirat: 'Megnézem Melitta munkáit', link: '{eredmények_link}' } },
         'A te időpontod: {dátum} {időpont}.',
-        { alairas: 'MOSAIC PMU' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -54,7 +54,7 @@ export default {
         'A kezelés után részletes ápolási tanácsot kapsz, és a jelenlegi ajánlat szerint ápolókrémet is adunk. A szükséges korrekciót 4-7 hét körül egyeztetitek.',
         'Ha ezt előre tudod, sokkal nyugodtabb lesz az első néhány nap is.',
         'Találkozunk {dátum_ragos}.',
-        { alairas: 'MOSAIC PMU' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -69,7 +69,7 @@ export default {
         'Itt érdemes nemcsak friss, hanem gyógyult eredményeket is nézni:',
         { gomb: { felirat: 'Megnézem a munkákat', link: '{eredmények_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC PMU' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -92,7 +92,7 @@ export default {
         'Ha változott az időpontod lehetősége, itt tudod áttenni:',
         { gomb: { felirat: 'Itt tudom áttenni', link: '{módosítás_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC PMU' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -136,7 +136,7 @@ export default {
         'Részletek/módosítás:',
         { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC PMU' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
   ],
