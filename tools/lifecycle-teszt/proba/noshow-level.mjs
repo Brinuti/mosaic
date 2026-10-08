@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import { ertekek, emailKirajzol } from '../../../netlify/lib/lifecycle/render.js';
+import { keres } from '../../../netlify/lib/lifecycle/terv.js';
+import { helyiEpoch } from '../../../netlify/lib/lifecycle/ido.js';
+const f = { id: 'x', uzletag: 'laser', fiok: 'mosaic-elysion', nev: 'Minta Réka', keresztnev: 'Réka', telefon: '+36201234567', email: 'a@b.hu', szolgaltatas: 'Ingyenes konzultáció zsófihoz!', szegmens: ['konzultacio'], munkatars: 'Zsófi', kezdet: helyiEpoch(2026, 10, 6, 16, 0), letrehozva: 1, token: 'a1b2c3d4e5' };
+const uz = keres('laser', 'COMMON-NOSHOW-EMAIL');
+const ert = ertekek(f, 'email', { base: 'https://www.mosaicheadspa.hu', most: helyiEpoch(2026, 10, 7, 10, 0) });
+const ki = emailKirajzol(uz, ert, {});
+fs.writeFileSync('_tmp/noshow-level.html', ki.html);
+console.log(ki.targy); console.log(ki.szoveg);

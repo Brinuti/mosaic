@@ -1,0 +1,28 @@
+// Probafoglalas athelyezese a Salonicban (vendegkent): node athelyez.mjs <bookingDetails-URL> [idopont-szoveg, pl. 11:00]
+import { chromium } from 'playwright-core';
+const url = process.argv[2];
+const ido = process.argv[3] || '11:00';
+if (!/^https:\/\/[a-z-]+\.salonic\.hu\/booking\/bookingDetails\/[0-9a-f-]{36}$/.test(url || '')) throw new Error('ervenytelen URL');
+const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const b = await chromium.launch({ executablePath: CHROME, headless: true });
+const ctx = await b.newContext({ viewport: { width: 1000, height: 1400 }, locale: 'hu-HU', serviceWorkers: 'block' });
+const ENGEDETT = /^https:\/\/([a-z0-9.-]*salonic\.hu|cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com|www\.google\.com\/recaptcha|www\.gstatic\.com\/recaptcha)\//;
+await ctx.route('**/*', (route) => { const r = route.request(); if (ENGEDETT.test(r.url()) || (r.method() === 'GET' && /^https:\/\/www\.googletagmanager\.com\/(gtm|gtag)/.test(r.url()))) return route.continue(); return route.fulfill({ status: 200, headers: { 'content-type': 'application/json', 'access-control-allow-origin': r.headers().origin || '*' }, body: '{}' }); });
+const p = await ctx.newPage();
+const txt = async () => (await p.locator('body').innerText()).replace(/\s+/g, ' ');
+await p.goto(url, { waitUntil: 'domcontentloaded' });
+await p.waitForTimeout(2500);
+await p.getByRole('link', { name: /Foglalás módosítása/i }).first().click();
+await p.waitForTimeout(3500);
+console.log('1. url:', p.url());
+await p.getByText(ido, { exact: true }).first().click();
+await p.waitForTimeout(3500);
+console.log('2. url:', p.url());
+console.log((await txt()).slice(0, 900));
+await p.screenshot({ path: '_tmp/athelyez-2.png', fullPage: true });
+await p.getByRole('button', { name: /Igen, módosítom/i }).click();
+await p.waitForTimeout(4000);
+console.log('3. url:', p.url());
+console.log((await txt()).slice(0, 700));
+await p.screenshot({ path: '_tmp/athelyez-3.png', fullPage: true });
+await b.close();

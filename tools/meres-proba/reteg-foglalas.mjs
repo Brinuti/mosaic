@@ -2,7 +2,7 @@
 //
 //   node tools/meres-proba/reteg-foglalas.mjs --bazis https://www.mosaicheadspa.hu|https://<ag>.mosaic-d77.pages.dev --utvonal h0-headspa|hair-konzult|... [--overlay dist] [--mobil 1] [--out naplo.json]
 //
-// Utvonalak: h0-headspa (szolgaltatas-elso: Head Spa -> Egyeni HeadSpa -> havi naptar), hair-konzult, oxigen-2, lezer-konzult.
+// Utvonalak: h0-headspa (szolgaltatas-elso: Head Spa -> Egyeni HeadSpa -> havi naptar), hair-konzult, oxigen-1, oxigen-2, lezer-konzult.
 // A kimeno meres (capig.stape.do is) alapbol tiltva (tilt.mjs), a naplo a tiltott kereseket is tartalmazza. A telefonszam: MERES_TELEFON (alap: a tulajdonos sajat szama; a szalon szama egy valodi vendeg kartonjahoz tartozik a Salonicban).
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
@@ -49,7 +49,7 @@ const lathato = async (loc, ido = 25000) => { await loc.first().waitFor({ state:
 try {
   await page.goto(BAZIS + '/booking-test', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => typeof window.openBooking === 'function', null, { timeout: 15000 });
-  const opts = { 'h0-headspa': {}, 'hair-konzult': { business: 'hair', service: 'konzult' }, 'oxigen-2': { business: 'oxygen', service: '466158' }, 'lezer-konzult': { business: 'laser', service: 'konzult' } }[UTVONAL];
+  const opts = { 'h0-headspa': {}, 'hair-konzult': { business: 'hair', service: 'konzult' }, 'oxigen-1': { business: 'oxygen', service: '466110' }, 'oxigen-2': { business: 'oxygen', service: '466158' }, 'lezer-konzult': { business: 'laser', service: 'konzult' } }[UTVONAL];
   if (!opts) throw new Error('ismeretlen utvonal: ' + UTVONAL);
   await page.evaluate((o) => window.openBooking(o), opts);
   await lathato(reteg.locator('.be-title'));
