@@ -350,7 +350,7 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     const ajResz = ajandek.slice(ajandek.indexOf('  var REGI_URLAP_KULCSOK ='), ajandek.indexOf('// ---------------------------------------------------------------- PurchaseSuccess'));
     const futtat = (klonBe, kodReszlet) => {
       const w = { dataLayer: [], gtagHivasok: [] }; w.gtag = (...a) => w.gtagHivasok.push(a);
-      const ctx = vm.createContext({ window: w, S: { termek: 'egyeni' }, termek: () => ({ kartya_cim: 'Egyéni Head Spa' }), URLSearchParams });
+      const ctx = vm.createContext({ window: w, A: {}, S: { termek: 'egyeni' }, termek: () => ({ kartya_cim: 'Egyéni Head Spa' }), URLSearchParams });
       vm.runInContext('(function () {\n' + (klonBe ? klonResz : '') + '\n' + ajResz + '\n' + kodReszlet + '\n})()', ctx);
       return JSON.parse(JSON.stringify({ dl: w.dataLayer, gtag: w.gtagHivasok }));
     };
