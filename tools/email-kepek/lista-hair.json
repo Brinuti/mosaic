@@ -1,29 +1,23 @@
 {
   "kepek": [
-    { "ki": "hair/csapat.jpg", "forras": "assets/img/c2eb0f_8c59f6f7b3574d91a4cbb71bdc3cab28.jpg", "mod": "szeles", "arany": [4, 3], "fokusz": [0.5, 0.15] },
-
-    { "ki": "hair/betti-portre.jpg", "forras": "assets/img/c2eb0f_1aa66a21336a415e9cecebda04f6c840.jpg", "mod": "szeles", "arany": [3, 2], "fokusz": [0.5, 0.1] },
-    { "ki": "hair/noel-munka.jpg", "forras": "assets/img/c2eb0f_60733a8a6dd444498cab71548b929a6f.jpg", "mod": "szeles", "arany": [4, 3], "fokusz": [0.5, 0.3] },
-    { "ki": "hair/evelin-munka.jpg", "forras": "assets/img/c2eb0f_daa60c756ac240a8af2776b040919d37.jpg", "mod": "szeles", "arany": [3, 2], "fokusz": [0.3, 0.4] },
-
-    { "ki": "hair/betti-munkak-1.jpg", "forras": "assets/img/c2eb0f_1fb9913ef0e042e290fed65c58c886c6.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.3] },
-    { "ki": "hair/betti-munkak-2.jpg", "forras": "assets/img/c2eb0f_f2b6a8f88fc947749ff9be61d948399e.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.4] },
-    { "ki": "hair/betti-munkak-3.jpg", "forras": "assets/img/c2eb0f_d8b51b78bf274b9fbf55347d72f5cffa.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.4] },
-
-    { "ki": "hair/noel-munkak-1.jpg", "forras": "assets/img/c2eb0f_3b9ccc8a0a274863ad1c9cd590c76b83.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.2] },
-    { "ki": "hair/noel-munkak-2.jpg", "forras": "assets/img/c2eb0f_13a1245f637d4a06925abe4170ea68cd.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.45] },
-    { "ki": "hair/noel-munkak-3.jpg", "forras": "assets/img/c2eb0f_c8a9ad0c237046db9973e1ba629b8167.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.4] },
-
-    { "ki": "hair/evelin-munkak-1.jpg", "forras": "assets/img/c2eb0f_598950063e194020b30de9ab9af02f70.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.45] },
-    { "ki": "hair/evelin-munkak-2.jpg", "forras": "assets/img/c2eb0f_d37a16ed301442089271bf4f265193f7.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.5] },
-    { "ki": "hair/evelin-munkak-3.jpg", "forras": "assets/img/c2eb0f_eb50ab815f7f4eb2961ced72e57568e4.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.5] },
-
-    { "ki": "hair/konzultacio.jpg", "forras": "assets/img/c2eb0f_a1d9da6453ad4b42af1f59a5cd8637f6.jpg", "mod": "szeles", "arany": [1, 1], "szelesseg": 934, "fokusz": [0.5, 0.45] },
-
-    { "ki": "hair/valtozas-1.jpg", "forras": "assets/img/c2eb0f_d2b3a73418c64c9e832df368a4afc62b.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.4] },
-    { "ki": "hair/valtozas-2.jpg", "forras": "assets/img/c2eb0f_361aa0e0c7ee4d9fae523c95c0111f6e.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.3] },
-    { "ki": "hair/valtozas-3.jpg", "forras": "assets/img/c2eb0f_b8590fd295ea468986deba0d7f35a482.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.4] },
-
-    { "ki": "hair/szalon-hely.jpg", "forras": "assets/img/c2eb0f_1e4639668fab4f1c90e83ff4f824eb16.jpg", "mod": "szeles", "arany": [3, 2], "fokusz": [0.5, 0.5] }
+    {"ki": "hair/csapat.jpg", "forras": "assets/img/c2eb0f_8c59f6f7b3574d91a4cbb71bdc3cab28.jpg", "mod": "szeles", "arany": [4, 3], "fokusz": [0.5, 0.15]},
+    {"ki": "hair/betti-portre.jpg", "forras": "assets/img/c2eb0f_1aa66a21336a415e9cecebda04f6c840.jpg", "mod": "szeles", "arany": [4, 3], "fokusz": [0.5, 0.05]},
+    {"ki": "hair/noel-munka.jpg", "forras": "assets/img/c2eb0f_882f3bd34e7646a2a59b0b85c2ae9ca4.jpg", "mod": "szeles", "arany": [3, 2], "fokusz": [0.5, 0.1]},
+    {"ki": "hair/evelin-munka.jpg", "forras": "assets/img/c2eb0f_daa60c756ac240a8af2776b040919d37.jpg", "mod": "szeles", "arany": [3, 2], "fokusz": [0.3, 0.4]},
+    {"ki": "hair/betti-munkak-1.jpg", "forras": "assets/img/c2eb0f_1fb9913ef0e042e290fed65c58c886c6.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.3]},
+    {"ki": "hair/betti-munkak-2.jpg", "forras": "assets/img/c2eb0f_f2b6a8f88fc947749ff9be61d948399e.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.4]},
+    {"ki": "hair/betti-munkak-3.jpg", "forras": "assets/img/c2eb0f_d8b51b78bf274b9fbf55347d72f5cffa.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.4]},
+    {"ki": "hair/noel-munkak-1.jpg", "forras": "assets/img/c2eb0f_e54771f7195c41e8b289074d80c7176e.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.45]},
+    {"ki": "hair/noel-munkak-2.jpg", "forras": "assets/img/c2eb0f_13a1245f637d4a06925abe4170ea68cd.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.45]},
+    {"ki": "hair/noel-munkak-3.jpg", "forras": "assets/img/c2eb0f_3a6d426e52ee47298c87d4d9e1ecb19c.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.3]},
+    {"ki": "hair/evelin-munkak-1.jpg", "forras": "assets/img/c2eb0f_598950063e194020b30de9ab9af02f70.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.45]},
+    {"ki": "hair/evelin-munkak-2.jpg", "forras": "assets/img/c2eb0f_d37a16ed301442089271bf4f265193f7.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.5]},
+    {"ki": "hair/evelin-munkak-3.jpg", "forras": "assets/img/c2eb0f_eb50ab815f7f4eb2961ced72e57568e4.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.5]},
+    {"ki": "hair/konzultacio.jpg", "forras": "assets/img/c2eb0f_a1d9da6453ad4b42af1f59a5cd8637f6.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.43]},
+    {"ki": "hair/valtozas-1.jpg", "forras": "assets/img/c2eb0f_d2b3a73418c64c9e832df368a4afc62b.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.4]},
+    {"ki": "hair/valtozas-2.jpg", "forras": "assets/img/c2eb0f_361aa0e0c7ee4d9fae523c95c0111f6e.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.3]},
+    {"ki": "hair/valtozas-3.jpg", "forras": "assets/img/c2eb0f_b8590fd295ea468986deba0d7f35a482.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.4]},
+    {"ki": "hair/szalon-hely.jpg", "forras": "assets/img/c2eb0f_1e4639668fab4f1c90e83ff4f824eb16.jpg", "mod": "szeles", "arany": [3, 2], "fokusz": [0.5, 0.5]},
+    {"ki": "hair/eredmeny-szoke.jpg", "forras": "assets/img/c2eb0f_3b9ccc8a0a274863ad1c9cd590c76b83.jpg", "mod": "kepek", "arany": [4, 5], "fokusz": [0.5, 0.2]}
   ]
 }

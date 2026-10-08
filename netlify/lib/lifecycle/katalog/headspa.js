@@ -68,9 +68,9 @@ export default {
         'Ha kíváncsi vagy, milyen élménnyel mennek haza mások, itt megnézhetsz néhány valódi vendégvideót:',
         {
           kepek: [
-            { src: 'headspa/vendegvideo-01.jpg', alt: 'Vendégvideó előképe: egy vendég a MOSAIC-ban mesél a HeadSpa élményéről, lejátszás jellel' },
-            { src: 'headspa/vendegvideo-02.jpg', alt: 'Vendégvideó előképe: egy vendég a HeadSpa kezelés közben, lejátszás jellel' },
-            { src: 'headspa/vendegvideo-03.jpg', alt: 'Vendégvideó előképe: egy másik vendég mesél a MOSAIC-ban szerzett élményéről, lejátszás jellel' },
+            { src: 'headspa/vendegvideo-01.jpg', alt: 'Vendégvideó előképe: egy vendég a MOSAIC-ban mesél a HeadSpa élményéről, lejátszás jellel', link: '{eredmények_link}' },
+            { src: 'headspa/vendegvideo-02.jpg', alt: 'Vendégvideó előképe: egy vendég a HeadSpa kezelés közben, lejátszás jellel', link: '{eredmények_link}' },
+            { src: 'headspa/vendegvideo-03.jpg', alt: 'Vendégvideó előképe: egy másik vendég mesél a MOSAIC-ban szerzett élményéről, lejátszás jellel', link: '{eredmények_link}' },
           ],
         },
         { gomb: { felirat: 'Megnézem a vendégvideókat', link: '{eredmények_link}' } },

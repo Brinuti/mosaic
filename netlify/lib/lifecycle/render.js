@@ -105,7 +105,7 @@ export function blokkokKitolt(torzs, ert) {
       const l = b.kep.link ? sorKitolt(b.kep.link, ert) : null;
       ki.push({ t: 'kep', src: b.kep.src, alt: sorKitolt(b.kep.alt, ert).szoveg, felirat: b.kep.felirat ? sorKitolt(b.kep.felirat, ert).szoveg : '', link: l && !l.eldob ? l.szoveg : null });
     } else if (b.kepek) {
-      ki.push({ t: 'kepek', elemek: b.kepek.map((k) => ({ src: k.src, alt: sorKitolt(k.alt, ert).szoveg, felirat: k.felirat ? sorKitolt(k.felirat, ert).szoveg : '' })) });
+      ki.push({ t: 'kepek', elemek: b.kepek.map((k) => ({ src: k.src, alt: sorKitolt(k.alt, ert).szoveg, felirat: k.felirat ? sorKitolt(k.felirat, ert).szoveg : '', link: k.link ? sorKitolt(k.link, ert).szoveg : null })) });
     } else if (b.velemeny) {
       const v = VELEMENYEK[b.velemeny];
       if (!v) throw new Error(`ismeretlen velemeny: ${b.velemeny}`);
@@ -168,9 +168,13 @@ function blokkHtml(b, base) {
         + (b.felirat ? `<p style="margin:0 0 18px;${KIS};text-align:center">${esc(b.felirat)}</p>` : '');
     }
     case 'kepek': {
+      // egyenlo szelessegu kepek, kozottuk fix 8 px-es terkoz (a 3 kep is pontosan egyforma)
       const n = b.elemek.length;
       const w = Math.floor((544 - 8 * (n - 1)) / n);
-      const cellak = b.elemek.map((e, i) => `<td width="${Math.floor(100 / n)}%" valign="top" style="padding:0 ${i < n - 1 ? 4 : 0}px 0 ${i > 0 ? 4 : 0}px"><img src="${esc(kepUrl(base, e.src))}" width="${w}" alt="${esc(e.alt)}" style="display:block;width:100%;height:auto;border:0;border-radius:8px">${e.felirat ? `<div style="padding-top:6px;${KIS};font-size:12px;text-align:center">${esc(e.felirat)}</div>` : ''}</td>`).join('');
+      const cellak = b.elemek.map((e, i) => {
+        const kep = `<img src="${esc(kepUrl(base, e.src))}" width="${w}" alt="${esc(e.alt)}" style="display:block;width:${w}px;max-width:100%;height:auto;border:0;border-radius:8px">`;
+        return `${i > 0 ? '<td width="8" style="width:8px;font-size:0;line-height:0">&nbsp;</td>' : ''}<td width="${w}" valign="top">${e.link ? `<a href="${esc(e.link)}" style="text-decoration:none">${kep}</a>` : kep}${e.felirat ? `<div style="padding-top:6px;${KIS};font-size:12px;text-align:center">${esc(e.felirat)}</div>` : ''}</td>`;
+      }).join('');
       return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr>${cellak}</tr></table>`;
     }
     case 'velemeny': return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td bgcolor="${SZIN.lap}" style="background:${SZIN.lap};border-radius:8px;padding:18px 20px"><div style="font:20px/1 Arial,sans-serif;color:${SZIN.aranyHatter};letter-spacing:2px">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p style="margin:8px 0 10px;font:italic 16px/1.6 Georgia,serif;color:${SZIN.szoveg}">&bdquo;${esc(b.szoveg)}&rdquo;</p><div style="font:600 13px Arial,Helvetica,sans-serif;color:${SZIN.sotet}">${esc(b.nev)} <span style="font-weight:400;color:${SZIN.halk}">&middot; Google-vélemény${b.datum ? ` &middot; ${esc(b.datum)}` : ''}</span></div></td></tr></table>`;
