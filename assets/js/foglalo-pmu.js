@@ -480,7 +480,7 @@
     try { window.top.location.assign('/sminktetovalas-budapest'); } catch (e) { location.assign('/sminktetovalas-budapest'); }
   });
   const KOSZ = {
-    kezeles: { cim: 'Sikeres foglalás!', hash: '#koszonjuk', lepesek: ['Visszaigazolást küldök e-mailben.', 'A kezelés előtt emlékeztetőt kapsz.', 'Lemondani legkésőbb 48 órával előtte tudod – utána az időpont már a tiéd, másnak nem adhatom oda.'] },
+    kezeles: { cim: 'Sikeres foglalás!', hash: '#koszonjuk', lepesek: ['Visszaigazolást küldök e-mailben.', 'A kezelés előtt emlékeztetőt kapsz.', 'Az időpontot a visszaigazoló e-mailben lévő linkkel tudod módosítani vagy lemondani.'] },
     konz: { cim: 'Személyes konzultációd lefoglalva!', hash: '#koszonjuk-konzultacio', lepesek: ['Visszaigazolást küldök e-mailben.', 'Asszisztensem felhív, hogy egyeztessétek a részleteket.', 'A konzultáción minden kérdésedre választ kapsz.'] },
   };
   BELEPES.koszonjuk = () => {
