@@ -2,7 +2,7 @@
 // a lifecycle D1 ELONEZETI adatbazisba lehet tenni, a kovetkezo (Zapier "lifecycle-tick") kuldes kiviszi a TESZT-cimre (alap: deakfi@grantis.hu).
 // A level a valodi uton megy (SMTP, uzletag-nev a felado): ugyanaz a HTML, mint a vendegeknek. NE a Gmail-eszkozzel kuldd: az a hatterszineket kiszedi.
 //
-//   node tools/lifecycle-teszt/minta-levelek.mjs [AZONOSITO,AZONOSITO,...] > minta.sql     (nincs lista = mind a 22)
+//   node tools/lifecycle-teszt/minta-levelek.mjs [AZONOSITO,AZONOSITO,...] > minta.sql     (nincs lista = mind: 22 + a fodrasz-levelek mindharom fodraszra)
 //   1. a kimenet ket SQL-utasitas (a "-- ketto" sor valasztja el): futtasd az elonezeti D1-en (bd58da1d-a9f0-4b76-ad0b-13aedfc67192)
 //   2. inditsd el a Zapier "lifecycle-tick" folyamatot (01a1169c-7353-708d-8801-912e783e8424) - vagy varj az oras futasra
 //   3. takaritas: DELETE FROM kuldesek WHERE foglalas_id LIKE 'MINTA-%'; DELETE FROM foglalasok WHERE id LIKE 'MINTA-%';
@@ -18,6 +18,7 @@ const KEZDET = Math.floor(Date.UTC(2026, 9, 28, 15, 0) / 1000); // 2026-10-28 16
 const TEGNAP = MOST - 86400 + 3600; // a no-show levelhez: az idopont "tegnap" volt
 const MUNKATARS = { laser: 'Zsófi', pmu: 'Melitta', hair: 'Betti', headspa: null, oxygen: null };
 const SZURO = process.argv[2] ? new Set(process.argv[2].split(',')) : null;
+const FODRASZOK = (process.env.FODRASZ || 'Betti,Noel,Evelin').split(',');
 
 const q = (v) => (v === null || v === undefined ? 'NULL' : typeof v === 'number' ? String(v) : `'${String(v).replace(/'/g, "''")}'`);
 // az uzenet szegmens-szurojenek megfelelo, valodi (nem akcios) szolgaltatasnev a Salonic-pillanatkepbol
@@ -32,10 +33,15 @@ const kuldesek = [];
 function hozzaad(uzletag, uz, allapot, kezdet, csatorna) {
   if (SZURO && !SZURO.has(uz.id)) return;
   const nev = szolgaltatas(uzletag, uz);
-  const id = `MINTA-${uz.id}`;
-  foglalasok.push(`(${[q(id), q(uzletag), q(UZLETAGAK[uzletag].fiok), q('Deák Ferenc'), q('Ferenc'), q('+36709420090'), q(CIM), q(nev), q(szegmensek(uzletag, nev).join(',')),
-    q(MUNKATARS[uzletag]), kezdet, MOST - 3 * 86400, 'NULL', q(allapot), 'NULL', q('minta' + uz.id.toLowerCase().replace(/[^a-z0-9]/g, '')), 1, 0].join(',')})`);
-  kuldesek.push(`(${[q(id), q(uz.id), q(csatorna), MOST - 60, q('fuggoben')].join(',')})`);
+  // fodraszatnal a lefoglalt fodrasztol fugg a level (kep, munkak, videok): mindharom fodraszra kuldunk egyet (FODRASZ=Betti,Noel,Evelin kornyezeti valtozoval szukitheto)
+  const munkatarsak = uzletag === 'hair' ? FODRASZOK : [MUNKATARS[uzletag]];
+  for (const m of munkatarsak) {
+    const jel = uzletag === 'hair' ? `-${m.toUpperCase()}` : '';
+    const id = `MINTA-${uz.id}${jel}`;
+    foglalasok.push(`(${[q(id), q(uzletag), q(UZLETAGAK[uzletag].fiok), q('Deák Ferenc'), q('Ferenc'), q('+36709420090'), q(CIM), q(nev), q(szegmensek(uzletag, nev).join(',')),
+      q(m), kezdet, MOST - 3 * 86400, 'NULL', q(allapot), 'NULL', q('minta' + (uz.id + jel).toLowerCase().replace(/[^a-z0-9]/g, '')), 1, 0].join(',')})`);
+    kuldesek.push(`(${[q(id), q(uz.id), q(csatorna), MOST - 60, q('fuggoben')].join(',')})`);
+  }
 }
 for (const [uzletag, kat] of Object.entries(KATALOG)) for (const uz of kat.uzenetek) if (uz.csatorna !== 'sms') hozzaad(uzletag, uz, 'aktiv', KEZDET, uz.csatorna);
 for (const uz of KOZOS.uzenetek) {

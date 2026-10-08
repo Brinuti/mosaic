@@ -42,15 +42,6 @@
       "mod": "kepek"
     },
     {
-      "ki": "pmu/gyogyult-termeszetes.jpg",
-      "forras": "assets/img/pmu/tortenet-5-termeszetes.jpg",
-      "mod": "szeles",
-      "fokusz": [
-        0.5,
-        0.0
-      ]
-    },
-    {
       "ki": "pmu/melitta-portre.jpg",
       "forras": "tools/email-kepek/forras-pmu/melitta-arc.jpg",
       "mod": "negyzet"
@@ -109,7 +100,7 @@
     },
     {
       "ki": "pmu/szoke-friss.jpg",
-      "forras": "assets/img/pmu/tortenet-3-friss.jpg",
+      "forras": "assets/img/pmu/tortenet-4-gyogyult.jpg",
       "mod": "kepek",
       "arany": [
         1,
@@ -122,7 +113,7 @@
     },
     {
       "ki": "pmu/szoke-gyogyult.jpg",
-      "forras": "assets/img/pmu/tortenet-4-gyogyult.jpg",
+      "forras": "assets/img/pmu/tortenet-5-termeszetes.jpg",
       "mod": "kepek",
       "arany": [
         1,
