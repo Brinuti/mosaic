@@ -124,6 +124,7 @@ A Salonic nem minden helyen bontja az első és a következő alkalmat külön k
 - **Visszahívás-köszönő (motor):** „Visszahívást kértél!” + „Mi történik most?” (megkaptuk, kollégánk hamarosan felhív, ha szeretnéd, a hívás közben időpontot is választtok); időpont nincs benne (az űrlap nem kérdez időt), lépésjelző nincs, „Ha közben változik a terved, hívj” sor nincs (a PMU telefonos köszönőjén sem), a rétegben „Bezárás” gomb.
 - Mintanézetek üzletáganként: `/foglalo-motor?minta=siker&business=hair|oxygen|laser` (alapból HeadSpa). Élesben a motor a meglévő köszönő oldalakra ad át (mérés), a csere külön döntés (a címek maradnának, a tartalom az újra cserélődne, mint a `/pmu-ok`-nál).
 - **„Ott leszek”:** ma a szalon e-mailt kap (`motor-megerosites`, `pmu-megerosites`). A Salonic belső megjegyzésébe nem tudunk írni: a Salonic nyilvános oldalai és dokumentált integrációi (számlázás, Mailchimp, Facebook, Google Naptár) között nincs vendég-oldali megjegyzés-írás, és a foglalás utáni oldalon nincs a foglaláshoz tartozó kulcs (csak a vendég-azonosító). Megoldás csak Salonic-oldali API / webhook hozzáféréssel lenne (nyitott kérdés a Salonic felé).
+  - **2026-10-08, kipróbálva és elvetve:** a szerkesztő-űrlapon át írt belső megjegyzés (és a vendég Megjegyzés mezője) a Salonic naptárnézetében nem látszik a kártyán, ezért a tulajdonos döntése: nem kell (PR #185 jelölő kódja kivéve). Az „Ott leszek” csak a szalon e-mailjét küldi.
 
 ## Élő foglaltság sáv és a „Mindegy” a szakemberválasztóban (2026-10-04, 7. kör)
 

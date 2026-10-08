@@ -19,7 +19,6 @@ import { WorkerMailer } from 'worker-mailer';
 import { utvonal } from '../netlify/lib/utvonal.js';
 import { levelek } from '../netlify/lib/levelek.js';
 import { koszonoRogzit } from '../netlify/lib/ajandek.js';
-import { salonicJeloles } from '../netlify/lib/salonic-jeloles.js';
 
 // A regi ajandekkartya-koszonooldal: sikeres vasarlas utan az /ajandek oldal egy lathatatlan keretben tolti be (hirdetesi
 // konverzio). A betoltest a rendeles (PaymentIntent) metadataba naplozzuk (koszono_ekkor): belso adat, hozzajarulastol fuggetlen.
@@ -86,11 +85,6 @@ async function urlap(context) {
     meret += v.size;
     if (meret > MAX_MELLEKLET) continue; // ami nem fer bele, csak a neve megy at
     mellekletek.push({ filename: v.name || k, content: base64(await v.arrayBuffer()), mimeType: v.type || undefined });
-  }
-
-  // "Ott leszek" (sminktetovalas koszonooldal): a Salonic-naptarban belso megjegyzes a foglalason (hatterben; a levelet nem akadalyozza, hiba nem dobodik)
-  if (nev === 'pmu-megerosites' && typeof context.waitUntil === 'function') {
-    context.waitUntil(salonicJeloles({ env, kezdet: d.kezdet, vendegId: d.g }).then((e) => console.log('pmu-megerosites: salonic-jeloles', JSON.stringify(e)), () => {}));
   }
 
   const lista = levelek(nev, d);
