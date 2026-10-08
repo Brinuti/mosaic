@@ -518,7 +518,8 @@
     $('ott-leszek').onclick = (e) => {
       const g = e.currentTarget;
       g.textContent = 'Köszönöm, várlak! ✓'; g.disabled = true; g.classList.add('kesz');
-      const adat = new URLSearchParams({ 'form-name': 'pmu-megerosites', idopont: teljes(f.ts), kezeles: f.nev, ar: f.ar || '', oldal: location.pathname.slice(1) || 'foglalo-pmu' });
+      // kezdet (unix) + g (a Salonic vendegazonositoja a /pmu-ok cimben): ebbol jeloli meg a szerver a Salonic-naptarat (belso megjegyzes)
+      const adat = new URLSearchParams({ 'form-name': 'pmu-megerosites', idopont: teljes(f.ts), kezeles: f.nev, ar: f.ar || '', oldal: location.pathname.slice(1) || 'foglalo-pmu', kezdet: String(f.ts), g: new URLSearchParams(location.search).get('g') || '' });
       leker('/', { method: 'POST', credentials: 'same-origin', body: adat }).catch((err) => console.error(err));
     };
   };
