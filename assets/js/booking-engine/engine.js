@@ -165,7 +165,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   const icon = (inner, w = 2) => { const tpl = doc.createElement('template'); tpl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + w + '" aria-hidden="true">' + inner + '</svg>'; return tpl.content.firstChild; };
   // closable: false = bezarhatatlan reteg (a regi foglalo-cimek ures oldalai): nincs X, a callback utani "Bezaras" helyett "Vissza a fooldalra"
   const closeBtn = layer && closable ? h('button', { type: 'button', class: 'be-icon', id: 'be-close', 'aria-label': 'Bezárás', onclick: () => { if (onClose) onClose(); } }, icon('<path d="M6 6l12 12M18 6L6 18"/>')) : null;
-  const backBtn = h('button', { type: 'button', class: 'be-icon', id: 'be-back', 'aria-label': 'Vissza', style: 'visibility:hidden', onclick: () => (S.depth > 0 ? win.history.back() : switchBusiness()) }, icon('<path d="M15 5l-7 7 7 7"/>'));
+  const backBtn = h('button', { type: 'button', class: 'be-icon', id: 'be-back', 'aria-label': 'Vissza', style: 'visibility:hidden', onclick: () => (S.depth > 0 ? win.history.back() : S.exact && S.service ? changeService() : switchBusiness()) }, icon('<path d="M15 5l-7 7 7 7"/>'));
   const stepsEl = h('ol', { class: 'be-steps', id: 'be-steps', 'aria-label': 'Hol tartasz', hidden: true });
   // A fejlec cime egy sorban: "Időpontfoglalás · Fodrászat · Noel" (az uzletag es - ha a vendeg valasztott - a munkatars neve). Ami nem fer el (mobil: a telefon es az X is a sorban van),
   // azt lepesenkent elhagyja a fitHead: elobb az "Időpontfoglalás" szo (a kepernyoolvasonak megmarad), aztan kisebb betu, a legvegen "…".
@@ -256,6 +256,13 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   // Uzletag-valtas: a fejlec uzletag-neve es a legelso kepernyo vissza nyila az uzletag-valasztora (H0) visz. Nem valtunk ott, ahol adat vesznne el / mar nincs hova
   // (az adatlap a Salonic keretben: C4; rogzites: C5; kesz foglalas / visszahivas-keres; PMU: sajat folyamata van; maga a valaszto: H0).
   const valthato = (state) => !!flow && !!ctx.business && ctx.business !== 'pmu' && !['H0', 'PMU', 'C4', 'C5', 'C6'].includes(state) && !/_SENT$/.test(state);
+  // Konkret szolgaltatas-linkkel (landing: ?service=...) nyitott foglalonal a "Modositas" gomb es a vissza nyil az uzletag SZOLGALTATAS-VALASZTOJARA visz
+  // (asztalon sem kell az oldalra visszalepni; a tulajdonos kerese, 2026-10-08). Az uzletag valtasa a fejlec uzletag-nevere kattintva marad.
+  function changeService() {
+    if (destroyed || !flow) return undefined;
+    Object.assign(S, { service: null, exact: false, slots: [], slot: null, day: null, month: null, staff: null, staffLabel: null, slotStaff: null, variants: null, intentKey: null, group: null, intent: null, candidates: null, laserArea: null, slotLostNote: false, slotsFull: true });
+    return go(entry(), { replace: S.depth === 0 });
+  }
   function switchBusiness() {
     if (destroyed || !valthato(S.state)) return undefined;
     S.switchFrom = { business: ctx.business, depth: S.depth }; // ha ugyanazt valasztja ujra, visszalep oda, ahol tartott (nem kezdi elolrol)
@@ -292,7 +299,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       }));
     }
     backBtn.style.visibility = (S.depth > 0 && state !== 'C6' && !/_SENT$/.test(state)) || (S.depth === 0 && valthato(state)) ? 'visible' : 'hidden';
-    backBtn.setAttribute('aria-label', S.depth > 0 ? 'Vissza' : 'Másik üzletág választása'); // a legelso kepernyon a nyil az uzletag-valasztora visz
+    backBtn.setAttribute('aria-label', S.depth > 0 ? 'Vissza' : S.exact && S.service ? 'Másik szolgáltatás választása' : 'Másik üzletág választása'); // a legelso kepernyon a nyil az uzletag-valasztora (konkret szolgaltatas-linknel a szolgaltatas-valasztora) visz
     if (layer) scrollEl.scrollTop = 0; else win.scrollTo(0, 0);
     const t = mainEl.querySelector('.be-title');
     if (t) t.focus({ preventScroll: true });
@@ -731,7 +738,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       track('booking_slot_viewed', { ...track0, count: S.day ? F.dayTimes(S.staff ? F.filterSlots(S.slots, { staffId: S.staff }) : S.slots, S.day).length : 0 });
       // a cim a PMU-foglalon sincs kiirva (a lepesjelzo mutatja, hol tart); a kepernyoolvasonak es a fokusznak marad egy rejtett cim
       return h('section', {}, h('h2', { class: 'be-title be-sr', tabindex: '-1', text: 'Válassz időpontot' }),
-        S.slotLostNote ? alertBox('Ez az időpont közben elkelt. Válassz egy másikat!') : null, serviceBar(S.exact ? null : () => win.history.back()),
+        S.slotLostNote ? alertBox('Ez az időpont közben elkelt. Válassz egy másikat!') : null, serviceBar(S.exact ? changeService : () => win.history.back()),
         naptar, elo.el,
         link('Nem találok megfelelő időpontot', () => { S.callbackReason = 'nincs_idopont'; track('booking_no_slots', { ...track0, reason: 'user' }); go('A1'); }, 'be-link-tavol'));
     },

@@ -319,29 +319,23 @@ describe('/paros-headspa-budapest-uj', () => {
   });
 
 
-  test('hero: mozgo video (a paros kezelobol): az allokep azonnal latszik, a video a betoltes utan indul, telefonon a fuggoleges valtozat; csokkentett mozgasnal nem toltodik', async () => {
+  test('hero: felul / jobbra a mozgo paros video (a paros ajandekkartya oldalarol), mint a fooldalon; nema, ismetlodo, poszterkepes (a lejatszast a bongeszo vegzi)', async () => {
     const { p, ctx } = await nyit();
-    await p.waitForFunction(() => document.getElementById('hero-video').classList.contains('aktiv'), null, { timeout: 15000 });
-    const v = await p.$eval('#hero-video', (e) => ({ src: e.currentSrc, muted: e.muted, loop: e.loop, paused: e.paused, t: e.currentTime, w: e.videoWidth, h: e.videoHeight, ah: e.getAttribute('aria-hidden') }));
-    assert.match(v.src, /\/assets\/video\/paros-hero-asztal\.mp4$/);
-    assert.equal(v.muted, true); assert.equal(v.loop, true); assert.equal(v.ah, 'true');
-    assert.ok(v.w > v.h * 2, 'szeles (asztali) video: ' + v.w + 'x' + v.h);
-    assert.equal(await p.$eval('.hero-hatter', (e) => e.complete && e.naturalWidth > 0), true, 'az allokep is megvan');
+    const v = await p.$eval('#hero-video', (e) => ({ src: e.getAttribute('src'), poster: e.getAttribute('poster'), muted: e.muted, loop: e.loop, autoplay: e.autoplay, inline: e.hasAttribute('playsinline'), ah: e.closest('.hero-hatter').getAttribute('aria-hidden') }));
+    assert.equal(v.src, '/assets/video/paros-hero-barat.mp4');
+    assert.equal(v.poster, '/assets/img/paros/hero-barat.jpg');
+    assert.equal(v.muted, true); assert.equal(v.loop, true); assert.equal(v.autoplay, true); assert.equal(v.inline, true); assert.equal(v.ah, 'true');
+    // asztalon a video jobbra, a szoveg balra; a hero nem sotet hatteru
+    const d = await p.evaluate(() => { const h = document.querySelector('.hero-hatter').getBoundingClientRect(); const s = document.querySelector('.hero-szoveg').getBoundingClientRect(); return { videoBal: h.left, szovegJobb: s.right, hatter: getComputedStyle(document.querySelector('.hero')).backgroundColor }; });
+    assert.ok(d.videoBal > 500, 'a video jobb oldalon van: ' + d.videoBal);
+    assert.notEqual(d.hatter, 'rgb(16, 34, 31)', 'a hero vilagos hatteru');
     await ctx.close();
+    // telefonon a video FELUL van, a cim alatta, nincs vizszintes gorgetes
     const m = await nyit({ szeles: 390 });
-    await m.p.waitForFunction(() => document.getElementById('hero-video').classList.contains('aktiv'), null, { timeout: 15000 });
-    const mv = await m.p.$eval('#hero-video', (e) => ({ src: e.currentSrc, w: e.videoWidth, h: e.videoHeight }));
-    assert.match(mv.src, /paros-hero-mobil\.mp4$/);
-    assert.ok(mv.h > mv.w, 'allo (mobil) video: ' + mv.w + 'x' + mv.h);
+    const mv = await m.p.evaluate(() => { const h = document.querySelector('.hero-hatter').getBoundingClientRect(); const c = document.querySelector('.hero h1').getBoundingClientRect(); return { videoTetejeHelye: Math.round(h.top), videoAlja: Math.round(h.bottom), cimTeteje: Math.round(c.top), szeles: Math.round(h.width), gorgetes: document.documentElement.scrollWidth - innerWidth }; });
+    assert.ok(mv.cimTeteje >= mv.videoAlja - 4, 'a cim a video alatt van: ' + JSON.stringify(mv));
+    assert.equal(mv.szeles, 390); assert.ok(mv.gorgetes <= 0, 'nincs vizszintes gorgetes: ' + mv.gorgetes);
     await m.ctx.close();
-    // csokkentett mozgas: a video fajl nem toltodik (csak az allokep)
-    const c2 = await bongeszo.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
-    const p2 = await c2.newPage();
-    await p2.route(/^(?!http:\/\/localhost)/, (r) => r.abort());
-    await p2.goto(`http://localhost:${port}/${OLDAL}`, { waitUntil: 'load' });
-    await p2.waitForTimeout(1500);
-    assert.equal(await p2.$eval('#hero-video', (e) => e.getAttribute('src')), null, 'nincs video-forras');
-    await c2.close();
   });
 
   test('az oldal-menu (asztalon): 5 pont + Szabad idopontok gomb, a fejlec alatt ragados; telefonon rejtett; a pontok a szekciokhoz gorgetnek (nincs #hash)', async () => {

@@ -37,7 +37,7 @@
 #SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has([data-testid="positionBox"]) .itemDepth02233374943__label::before { content: ''; position: absolute; right: 2px; top: 50%; width: 5px; height: 5px; margin-top: -4px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); opacity: .75; transition: transform .2s, margin-top .2s; }
 #SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has([data-testid="positionBox"]):hover .itemDepth02233374943__label::before { transform: rotate(225deg); margin-top: -1px; }
 /* FOGLALAS: arany gomb a menusorban */
-#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) .itemDepth02233374943__label { padding: 9px 18px; border-radius: 999px; background: linear-gradient(#c6a346, #d9c164); color: #1d2a26 !important; font-weight: 500 !important; letter-spacing: .08em !important; box-shadow: 0 5px 14px rgba(150, 120, 40, .32); text-shadow: 0 1px 1px rgba(255, 255, 255, .25); transition: transform .2s, box-shadow .2s; }
+#SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) .itemDepth02233374943__label { padding: 9px 18px; border-radius: 999px; background: linear-gradient(#c6a346, #d9c164); color: #fff !important; font-weight: 500 !important; letter-spacing: .08em !important; box-shadow: 0 5px 14px rgba(150, 120, 40, .32); text-shadow: 0 1px 1px rgba(255, 255, 255, .25); transition: transform .2s, box-shadow .2s; }
 #SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) .itemDepth02233374943__label::after { display: none; }
 #SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]):hover .itemDepth02233374943__label { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(150, 120, 40, .4); }
 /* lenyilo: lekerekitett kartya, arany hajszalvonal, puha arnyek */
@@ -60,8 +60,9 @@
 #SITE_HEADER:has(#comp-m4lbfl1t) #comp-m7jcfhgp { margin-left: calc((100% - var(--mh-w)) / 2) !important; left: calc(var(--mh-w) - 60px) !important; margin-top: 19px !important; width: 60px !important; height: 34px !important; }
 #comp-m7q6eklh a { position: relative; display: block; width: 100%; height: 100%; }
 #comp-m7q6eklh img { opacity: 0 !important; }
-#comp-m7q6eklh a::before { content: 'i'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border: 1.5px solid rgba(230, 211, 161, .75); border-radius: 50%; color: #e6d3a1; font: italic 500 19px/1 'Playfair Display', Georgia, serif; transition: background .2s, border-color .2s, color .2s; }
-#comp-m7q6eklh a:hover::before { background: rgba(201, 169, 106, .18); border-color: #e6d3a1; }
+/* az "i" betu SVG-rajz (nem betutipus): minden oldalon (magyar / angol, asztali / mobil) pontosan a kor kozepen van */
+#comp-m7q6eklh a::before { content: ''; position: absolute; inset: 0; box-sizing: border-box; border: 1.5px solid rgba(230, 211, 161, .75); border-radius: 50%; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Cg fill='%23e6d3a1'%3E%3Ccircle cx='18.3' cy='10.2' r='1.75'/%3E%3Cpath d='M16.4 14.2h2.7l-1.9 8.5c-.15.65 0 .9.5.9.5 0 1.05-.4 1.7-1.25l.65.5c-.95 1.5-2.2 2.4-3.55 2.4-1.4 0-1.95-.85-1.6-2.3l1.45-6.5c.1-.45-.05-.65-.55-.65h-.95z'/%3E%3C/g%3E%3C/svg%3E") center / 100% 100% no-repeat; transition: background-color .2s, border-color .2s; }
+#comp-m7q6eklh a:hover::before { background-color: rgba(201, 169, 106, .18); border-color: #e6d3a1; }
 .mh-nyelv { display: inline-flex !important; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; height: 100%; width: 100%; padding: 0 11px; border: 1.5px solid rgba(230, 211, 161, .6); border-radius: 999px; color: #e6d3a1; text-decoration: none; font: 500 12.5px/1 'Jost', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .14em; white-space: nowrap; transition: background .2s, border-color .2s; }
 .mh-nyelv:hover { background: rgba(201, 169, 106, .18); border-color: #e6d3a1; }
 .mh-nyelv .mh-glob { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; opacity: .9; }
@@ -88,7 +89,7 @@
 .device-mobile-optimized #comp-m7q6eklh img { object-fit: contain !important; width: 100% !important; height: 100% !important; }
 .device-mobile-optimized #comp-m7q6eklh { left: 130px !important; }
 /* az "i": ugyanaz az arany korvonalas megjelenes, mint asztalon, kisebben (a mobil fejlecben csak a logo, az "i", a Foglalas gomb es a hamburger van) */
-.device-mobile-optimized #comp-m7q6eklh a::before { border-width: 1.2px; font-size: 15px; }
+.device-mobile-optimized #comp-m7q6eklh a::before { border-width: 1.2px; }
 .device-mobile-optimized #MENU_AS_CONTAINER_TOGGLE { margin-top: -1px !important; }
 
 /* "Foglalas" gomb: ugyanaz a stilus, mint az uj oldalak aranyszinu gombja (puha arnyek, kozepre irt, nem csupa nagybetus) */
@@ -123,8 +124,8 @@
 #SITE_FOOTER .mhl-logo { display: inline-block; margin: 0 0 16px; }
 #SITE_FOOTER .mhl-logo img { display: block; width: 143px; height: auto; max-width: 100%; }
 #SITE_FOOTER .mhl-marka p { max-width: 330px; margin-bottom: 22px; }
-#SITE_FOOTER .mhl-gomb { display: inline-flex; align-items: center; gap: 8px; padding: 12px 26px; border-radius: 999px; background: linear-gradient(#c6a346, #d9c164); color: #1d2a26; font: 500 14.5px/1 'Jost', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .06em; box-shadow: 0 6px 18px rgba(150, 120, 40, .32); }
-#SITE_FOOTER .mhl-gomb:hover { color: #1d2a26; transform: translateY(-1px); box-shadow: 0 9px 22px rgba(150, 120, 40, .42); }
+#SITE_FOOTER .mhl-gomb { display: inline-flex; align-items: center; gap: 8px; padding: 12px 26px; border-radius: 999px; background: linear-gradient(#c6a346, #d9c164); color: #fff; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); font: 500 14.5px/1 'Jost', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .06em; box-shadow: 0 6px 18px rgba(150, 120, 40, .32); }
+#SITE_FOOTER .mhl-gomb:hover { color: #fff; transform: translateY(-1px); box-shadow: 0 9px 22px rgba(150, 120, 40, .42); }
 #SITE_FOOTER nav.mhl-oszlop a { display: block; padding: 4px 0; font-size: 15px; }
 #SITE_FOOTER nav.mhl-oszlop a:hover { transform: translateX(3px); }
 #SITE_FOOTER .mhl-elerh a { border-bottom: 1px solid rgba(201, 169, 106, .45); padding-bottom: 1px; }
@@ -146,7 +147,8 @@
   #SITE_FOOTER nav.mhl-oszlop a { font-size: 14px; }
   #SITE_FOOTER h3 { font-size: 17px; margin-bottom: 10px; }
   #SITE_FOOTER .mhl-also { flex-direction: column; text-align: center; padding: 16px 0 22px; }
-  #SITE_FOOTER .mhl-also p { font-size: 12.5px; }
+  /* a jogi sor (c Big in Japan Kft. - ASZF - Impresszum - Suti beallitasok) egy sorban marad: a betumeret a kepernyo szelessegehez igazodik */
+  #SITE_FOOTER .mhl-also p { font-size: min(12.5px, 2.75vw); white-space: nowrap; letter-spacing: 0; }
 }
 
 /* ============ "i" (INFO) FELUGRO ABLAK (2026-10-07): az oldal stilusaban (krem hatter, Playfair cim, arany reszletek), jobbrol uszik be ============
@@ -179,7 +181,7 @@
 .mhp .mhp-sor-masodik .mhp-ikon { background: transparent; }
 .mhp .mhp-gombok { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 12px; }
 .mhp .mhp-gomb { display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1 1 140px; padding: 12px 16px; border-radius: 999px; text-decoration: none; font: 500 15px/1 'Jost', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .05em; white-space: nowrap; transition: transform .2s, box-shadow .2s, background .2s; }
-.mhp .mhp-arany { background: linear-gradient(#c6a346, #d9c164); color: #1d2a26; box-shadow: 0 6px 16px rgba(150, 120, 40, .3); }
+.mhp .mhp-arany { background: linear-gradient(#c6a346, #d9c164); color: #fff; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); box-shadow: 0 6px 16px rgba(150, 120, 40, .3); }
 .mhp .mhp-arany:hover { transform: translateY(-1px); box-shadow: 0 9px 20px rgba(150, 120, 40, .4); }
 .mhp .mhp-korvonal { border: 1.5px solid #0f3a3c; color: #0f3a3c; background: transparent; }
 .mhp .mhp-korvonal:hover { background: rgba(15, 58, 60, .07); }
@@ -222,13 +224,13 @@
 .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .jqR3kU > div, .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU .jqR3kU > .keDKhi { background-color: rgba(201, 169, 106, .12) !important; }
 .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU > ul > li:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) { border-bottom: 0; padding: 8px 22px 6px; }
 .device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU > ul > li:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) > div { height: 38px; border-radius: 999px; background: linear-gradient(#c6a346, #d9c164) !important; box-shadow: 0 5px 14px rgba(150, 120, 40, .3); }
-.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU > ul > li:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) .G7GdaI { color: #1d2a26 !important; line-height: 38px !important; text-align: center; padding: 0 !important; font-weight: 500 !important; letter-spacing: .1em !important; }
+.device-mobile-optimized #MENU_AS_CONTAINER_EXPANDABLE_MENU > ul > li:has(a[href="/idpontfoglalas"], a[href^="/foglalo-motor"]) .G7GdaI { color: #fff !important; line-height: 38px !important; text-align: center; padding: 0 !important; font-weight: 500 !important; letter-spacing: .1em !important; }
 /* ha a lenyilok (pl. a Head Spa 8 almenupontja) miatt a menu hosszabb, mint a kepernyo, a menu SAJAT gorgetosavja a kepernyon belul marad: az utolso sor (Kapcsolat) is elerheto */
 .device-mobile-optimized #inlineContentParent-MENU_AS_CONTAINER { max-height: var(--mh-menu-max, 100vh) !important; }
 
-/* A fejlec felso akcios savja (Wix: section#comp-mpv0ganp): rozsaszin helyett a MOSAIC szinvilaga (halvany arany hatter, sotetzold felirat) - minden oldalon egyseges
+/* A fejlec felso akcios savja (Wix: section#comp-mpv0ganp): rozsaszin helyett a MOSAIC szinvilaga (halvany zold hatter, sotetzold felirat) - minden oldalon egyseges
    (a lezeres / oxigen / sminktetovalas / ajandekkartya landingeken a sajat CSS rejti, ott nem latszik). */
-#comp-mpv0ganp [data-testid="colorUnderlay"] { background-color: #f6efdc !important; }
-#comp-mpv0ganp { box-shadow: inset 0 -1px 0 #ecdcb6; }
+#comp-mpv0ganp [data-testid="colorUnderlay"] { background-color: #e6ebe7 !important; }
+#comp-mpv0ganp { box-shadow: inset 0 -1px 0 #d6dacc; }
 #comp-mpv0ganp a, #comp-mpv0ganp a span { color: #0f3a3c !important; }
-#comp-mpv0gaod { box-shadow: 0 5px 16px rgba(150, 120, 40, .2) !important; }   /* a Wix rozsaszin arnyeka helyett halvany arany */
+#comp-mpv0gaod { box-shadow: 0 5px 16px rgba(60, 80, 70, .16) !important; }   /* a Wix rozsaszin arnyeka helyett halvany zoldes */

@@ -9,7 +9,7 @@ sötétzöld hangsúly, krém háttér). **Ideiglenes címen él**: `/paros-head
 | `foglalas/paros-headspa-budapest-uj.html` | az oldal (fejléc / lábléc a build-ből: `<!--mh-fejlec-->`, `<!--mh-lablec-->`, `<!--mh-menu-aktiv:/paros-headspa-budapest-->`) |
 | `assets/css/paros-landing.css` | önálló stíluslap (a többi landing stílusát nem érinti) |
 | `assets/js/paros-landing.js` | hero-videó, szabad időpontok (Salonic-API), páros Google-vélemények, vendégvideók, Trustindex, mobil sticky CTA, képsor-pontok |
-| `assets/img/paros/`, `assets/video/paros-hero-asztal.mp4`, `paros-hero-mobil.mp4` | a szalon valódi páros felvételeiből vágott képek és a hero mozgó videója (lásd lent) |
+| `assets/img/paros/`, `assets/video/paros-hero-barat.mp4` | a szalon valódi páros felvételeiből vágott képek és a hero mozgó videója (lásd lent) |
 | `tools/paros-teszt/paros.test.mjs` | böngészős tesztek (21 db, nincs `dist/`, nincs külső hálózat): `node --test tools/paros-teszt/paros.test.mjs` |
 
 ## Szekciók (asztalon, a terv sorrendjében)
@@ -28,9 +28,7 @@ Nincs felcím (arany cím a főcím felett) sehol (a tulajdonos korábbi kérés
 ## Hero-videó és képek (a szalon valódi felvételei, 2026-10-07)
 
 A tulajdonos kérésére (az első változat „puritán” volt) a Drive-ból és a közösségi oldalakról a legjobb valódi páros felvételek kerültek az oldalra (a Drive kapcsolat a deakfi@grantis.hu fiókot éri el):
-- **Hero (mozgó videó):** a Drive „Páros kezelés” nyers 4K felvételeiből (`paros_kezeles (44) / (45) / (94).MOV`: a páros kezelő, két gyógymasszőr, két vendég egymás mellett) vágott, ~14 mp-es, hang nélküli, ismétlődő
-  montázs (lassú kamera-eltolás, rövid sötétbe úsztatás a klipek között, kissé világosítva): asztalon széles 1760×734 (`paros-hero-asztal.mp4`, 2,7 MB), telefonon álló 720×1140 (`paros-hero-mobil.mp4`, 1,6 MB), H.264. A fénykép (poszter, `assets/img/paros/hero-asztal.jpg`, `hero-mobil.jpg`)
-  azonnal látszik, a videófájl csak az oldal betöltése után kezd letöltődni; **nem töltődik** csökkentett mozgás beállításnál, adatspóroló módban és lassú (2G) kapcsolaton; ha a hero kikerül a képernyőről, megáll.
+- **Hero (mozgó videó, 2026-10-08 óta mint a főoldalon):** a páros ajándékkártya mozgó videója (két vendeg pohárral koccint, `paros-hero-barat.mp4`, 720×540, **yuv420p**, ~370 KB, hang nélküli, ismétlődő), asztalon a hero jobb oldalán (a szöveg felé halványodó éllel), telefonon **felül**, a cím alatta teljes szélességben. Poszter: `assets/img/paros/hero-barat.jpg` (azonnal látszik; a videó a betöltés után indul). A régi széles / álló montázs (`paros-hero-asztal.mp4`, `paros-hero-mobil.mp4`) kikerült (az `og:image` a `hero-asztal.jpg` maradt). **Fontos:** a videó pixelformátuma yuv420p legyen; a yuv444p-t a telefonok nem játsszák le (ez volt az oka, hogy telefonon nem indult). Nem töltődik csökkentett mozgásnál, adatspóroló módban és 2G-n; ha a hero kikerül a képernyőről, megáll. Színek: a zöldes MOSAIC-tónus (`#f3f4ef`), H1 47 px / 1,06 (mint a sminktetoválás / főoldal).
 - **Kivel jönnél? / Valódi pillanatok:** barátnők (a „Páros csajos érzelmes / márciusi páros” videó képkockái), anya-lánya (az „Anya-lánya” videó), pár (a „Páros kezelés” videó vendégpárja a váróban). Az ajándékkártya-kártya az ajándékkártya-oldal fotója.
 - **Lépések, ajánlat, időpont-kártya:** a páros kezelő nyers felvételeiből kimetszett képek (`lepes-egyszerre`, `lepes-50perc`, `ajanlat-kep`, `ido-kep`); az 1. és 2. lépés (váró, fejbőrkamera) a meglévő szalonfotók.
 - - A Trustindex-vélemény szövegéből a JS kiveszi a csatolt képet és a "+0" képszámlálót (hiba volt: "+0Isteni élmény…"; teszt védi).

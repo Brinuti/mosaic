@@ -273,19 +273,14 @@
     } catch (hiba) { console.error(hiba); }
   })();
 
-  // --- hero: mozgo video a paros kezelobol (telefonon a fuggoleges valtozat). A fenykep (poszter) azonnal latszik, a videofajl csak az oldal betoltese utan,
-  //     lassu / adatspóroló kapcsolaton vagy csokkentett mozgas mellett egyaltalan nem toltodik. ----------------------------------------------------------
+  // --- hero: mozgo paros video (ugyanaz, mint a paros ajandekkartya oldalan; autoplay + nema, mint a fooldalon). Ha a telefon nem inditja, marad a poszterkep.
+  //     Ha a hero kikerul a kepernyorol, a video megall (energia, adat). ----------------------------------------------------------
   const hv = $('hero-video');
-  if (hv && !csokkentett && !(navigator.connection && (navigator.connection.saveData || /(^|-)2g$/.test(navigator.connection.effectiveType || '')))) {
-    const indit = () => {
-      hv.src = matchMedia('(max-width: 700px)').matches ? hv.dataset.mobil : hv.dataset.asztal;
-      hv.addEventListener('playing', () => hv.classList.add('aktiv'), { once: true });
-      hv.play().catch(() => { /* a poszter marad */ });
-      if ('IntersectionObserver' in window) { // ha a hero kikerul a kepernyorol, a video megall (energia, adat)
-        new IntersectionObserver((t) => { for (const x of t) { if (x.isIntersecting) hv.play().catch(() => {}); else hv.pause(); } }, { threshold: 0.05 }).observe(hv);
-      }
-    };
-    if (document.readyState === 'complete') indit(); else addEventListener('load', indit, { once: true });
+  if (hv) {
+    hv.play().catch(() => { /* a poszter marad */ });
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((t) => { for (const x of t) { if (x.isIntersecting) hv.play().catch(() => {}); else hv.pause(); } }, { threshold: 0.05 }).observe(hv);
+    }
   }
 
   // --- mobil sticky CTA: a hero gombjanak elgorgetese utan jon be, es amig az idopont-szekcio a kepernyon van, nem latszik (maga a szekcio a cel).

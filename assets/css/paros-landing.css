@@ -83,7 +83,7 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .google-nagy:hover .g-db { text-decoration: underline; text-underline-offset: 3px; }
 
 /* --- oldal-menu (asztalon, a terv felso savja): ragados a fejlec alatt --- */
-.oldal-menu { position: sticky; top: 70px; z-index: 40; background: rgba(251, 249, 244, .96); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid #e8e2d2; box-shadow: 0 6px 20px rgba(60, 40, 15, .05); }
+.oldal-menu { position: sticky; top: 70px; z-index: 40; background: rgba(247, 248, 243, .96); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid #e8e2d2; box-shadow: 0 6px 20px rgba(60, 40, 15, .05); }
 .oldal-menu-sor { display: flex; align-items: center; justify-content: space-between; gap: 28px; min-height: 56px; }
 .oldal-menu-cim { font: 500 23px/1 var(--cim); color: var(--sotet); letter-spacing: -.01em; white-space: nowrap; }
 .oldal-menu ul { display: flex; align-items: center; gap: 30px; list-style: none; margin: 0 auto; padding: 0; }
@@ -91,28 +91,27 @@ a:hover .nyil, button:hover .nyil { transform: translateX(3px); }
 .oldal-menu ul a:hover { color: var(--sotet); border-bottom-color: var(--arany); }
 .gomb-kicsi { padding: 10px 20px; }
 
-/* --- 1. hero: mozgo video (a paros kezelobol), bal oldalon a szoveg --- */
-.hero { position: relative; isolation: isolate; overflow: hidden; background: #10221f; color: #fff; }
-.hero-hatter { position: absolute; inset: 0; z-index: -3; width: 100%; height: 100%; object-fit: cover; object-position: 66% 45%; }
-.hero-video { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: 62% 50%; opacity: 0; transition: opacity 1.1s ease; background: transparent; pointer-events: none; }
-.hero-video.aktiv { opacity: 1; }
-.hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(10, 28, 29, .90) 0%, rgba(10, 28, 29, .72) 30%, rgba(10, 28, 29, .24) 60%, rgba(10, 28, 29, .04) 100%), linear-gradient(0deg, rgba(10, 28, 29, .55), transparent 34%); }
-.hero-tart { min-height: 640px; display: flex; align-items: center; padding: 56px 0 110px; }
+/* --- 1. hero: ugyanaz az elrendezes, mint a fooldalon: asztalon bal oldalon a szoveg, jobbra a mozgo paros video (a paros ajandekkartya oldalarol); telefonon felul a video --- */
+.hero { position: relative; isolation: isolate; overflow: hidden; background: #f3f4ef; color: var(--szoveg); }
+.hero::before { content: ''; position: absolute; inset: 0; z-index: -2; background: radial-gradient(70% 90% at 20% 30%, #f8f9f4 0%, transparent 70%); }
+.hero-hatter { position: absolute; top: 0; right: 0; bottom: 0; width: min(60%, 768px); z-index: -1; background: #10282a; }
+.hero-hatter video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; }
+.hero-hatter::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #f3f4ef 0%, rgba(243, 244, 239, .82) 9%, rgba(243, 244, 239, 0) 42%); }
+.hero-tart { min-height: 0; display: flex; align-items: center; padding: 44px 0 56px; }
 .hero-szoveg { max-width: 600px; }
-.hero h1 { color: #fff; font-size: 50px; line-height: 1.08; letter-spacing: -.02em; }
-.hero-al { margin: 18px 0 20px; max-width: 540px; font-size: 18.5px; line-height: 1.5; color: #eef0e6; }
+/* a smink-oldal alapjan: cim 47px / 1,06, alcim 21px / 1,4 */
+.hero h1 { color: #111f20; font-size: 47px; line-height: 1.06; letter-spacing: -.02em; text-wrap: pretty; }
+.hero-al { margin: 16px 0 22px; max-width: 480px; font-size: 21px; line-height: 1.4; color: #253636; }
 .hero-ar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 16px; margin: 0 0 22px; }
-.hero-ar b { font: 500 42px/1.1 var(--cim); color: #f1deae; white-space: nowrap; }
-.hero-ar small { font-size: 16px; color: #dfe4da; }
-.hero-megj { margin-top: 10px; font-size: 13.5px; color: #cdd5cc; }
-.hero-ajandek { margin-top: 12px; font-size: 14.5px; color: #eef0e6; }
-.hero-ajandek a { color: #fff; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
-.hero .google-nagy { margin-top: 20px; color: #fff; }
-.hero .g-db { color: #e4e8de; }
-.hero-bizalom { position: absolute; right: 0; bottom: 28px; display: flex; gap: 30px; list-style: none; padding: 0; margin: 0; }
+.hero-ar b { font: 500 36px/1.1 var(--cim); color: var(--sotet); white-space: nowrap; }
+.hero-ar small { font-size: 16px; color: var(--halk); }
+.hero-megj { margin-top: 10px; font-size: 13.5px; color: var(--halk); }
+.hero-ajandek { margin-top: 12px; font-size: 14.5px; color: #3d4b4b; }
+.hero-ajandek a { color: var(--sotet); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.hero .google-nagy { margin-top: 20px; }
+.hero-bizalom { display: flex; flex-wrap: wrap; gap: 14px 30px; list-style: none; padding: 0; margin: 24px 0 0; }
 .hero-bizalom li { display: flex; align-items: center; gap: 12px; line-height: 1.25; font-size: 15px; }
-.hero-bizalom b { font-weight: 400; color: #f3f4ef; }
-.hero .ikon-kor { background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .26); color: #f1deae; }
+.hero-bizalom b { font-weight: 400; color: #2a3a3a; }
 
 /* --- 2. kivel jonnel --- */
 .kivel-racs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 32px; }
@@ -273,7 +272,6 @@ a.ido:hover, a.ido:focus-visible { background: var(--sotet); border-color: var(-
   .oldal-menu ul { gap: 18px; }
   .oldal-menu-cim { display: none; }
   .miert-racs { grid-template-columns: repeat(3, 1fr); }
-  .hero-bizalom { gap: 20px; }
   .ajanlat-kartya { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); padding-right: 40px; }
   .ajanlat-kep { display: none; }
 }
@@ -288,7 +286,8 @@ a.ido:hover, a.ido:focus-visible { background: var(--sotet); border-color: var(-
   .tartalom { width: calc(100% - 48px); }
   :where(main) h2 { font-size: 34px; }
   .hero h1 { font-size: 42px; }
-  .hero-tart { min-height: 0; padding: 48px 0 100px; }
+  .hero-hatter { width: 48%; }
+  .hero-szoveg { max-width: 54%; }
   .kivel-racs { grid-template-columns: repeat(2, 1fr); }
   .videok { grid-template-columns: repeat(2, 1fr); }
   .lepes-sor { grid-template-columns: repeat(3, 1fr); }
@@ -309,8 +308,7 @@ a.ido:hover, a.ido:focus-visible { background: var(--sotet); border-color: var(-
   .kozos { padding: 44px 0 48px; }
   .kozos h2 { font-size: 26px; }
   .kozos-gomb .gomb { width: 100%; }
-  .hero-video { object-position: 50% 50%; }
-  .sticky-cta { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: rgba(250, 246, 238, .97); box-shadow: 0 -6px 22px rgba(60, 40, 15, .16); transform: translateY(115%); transition: transform .25s ease; }
+  .sticky-cta { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: rgba(246, 247, 242, .97); box-shadow: 0 -6px 22px rgba(60, 40, 15, .16); transform: translateY(115%); transition: transform .25s ease; }
   .sticky-cta.lathato { transform: none; }
   .sticky-cta .gomb { padding: 14px 16px; }
   body.sticky-be { padding-bottom: 76px; }
@@ -328,15 +326,15 @@ a.ido:hover, a.ido:focus-visible { background: var(--sotet); border-color: var(-
   main > .idopontok { order: 1; }
   main > .kivel { order: 2; }
 
-  .hero::before { background: linear-gradient(180deg, rgba(16, 34, 31, 0) 0, rgba(16, 34, 31, .08) 190px, rgba(16, 34, 31, .78) 360px, #10221f 440px); }
-  .hero-hatter, .hero-video { bottom: auto; height: 460px; object-position: 50% 52%; }
-  .hero-hatter { object-position: 62% 30%; }
-  .hero-tart { display: block; min-height: 0; padding: 300px 0 22px; }
+  .hero-hatter { position: relative; width: 100%; height: auto; aspect-ratio: 1 / .9; }
+  .hero-hatter video { position: absolute; inset: 0; object-position: 50% 45%; }
+  .hero-hatter::after { background: linear-gradient(0deg, #f3f4ef 0%, rgba(243, 244, 239, 0) 11%); }
+  .hero-tart { display: block; min-height: 0; padding: 0 0 24px; }
   .hero-szoveg { max-width: none; }
-  .hero h1 { font-size: clamp(27px, 7.8vw, 33px); line-height: 1.1; }
-  .hero-al { margin: 12px 0 14px; font-size: 15px; }
+  .hero h1 { font-size: 30px; line-height: 1.1; margin-top: 4px; }
+  .hero-al { max-width: none; margin: 12px 0 14px; font-size: 16.5px; }
   .hero-ar { margin-bottom: 16px; }
-  .hero-ar b { font-size: 32px; }
+  .hero-ar b { font-size: 30px; }
   .hero-ar small { font-size: 14.5px; }
   .hero .cta-sor .gomb { width: 100%; }
   .hero-megj { text-align: center; font-size: 12.5px; }
@@ -344,7 +342,7 @@ a.ido:hover, a.ido:focus-visible { background: var(--sotet); border-color: var(-
   .hero .google-nagy { margin-top: 16px; width: 100%; justify-content: center; font-size: 13px; }
   .g-pont, .g-db { font-size: 13px; }
   .csillagok { font-size: 13px; }
-  .hero-bizalom { position: static; justify-content: space-between; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .18); }
+  .hero-bizalom { flex-wrap: nowrap; justify-content: space-between; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1px solid #ddd5c1; }
   .hero-bizalom li { flex: 1; flex-direction: column; align-items: center; text-align: center; gap: 6px; font-size: 12.5px; }
   .hero .ikon-kor { width: 38px; height: 38px; }
   .hero .ikon-kor svg { width: 18px; height: 18px; }

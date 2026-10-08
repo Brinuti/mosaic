@@ -95,7 +95,7 @@ for (const o of OLDALAK) {
       if (o.noindexEredeti) assert.equal(await p.getAttribute('meta[name=robots]', 'content'), 'noindex'); else assert.equal(await p.locator('meta[name=robots]').count(), 0, 'indexelheto oldal');
       assert.equal(await p.getAttribute('link[rel=canonical]', 'href'), `https://www.mosaicheadspa.hu/${o.nev}`);
       assert.equal(await p.locator('header, #SITE_HEADER, [id^="comp-"]').count() > 0, true, 'a MOSAIC fejlec megvan');
-      // az akcios sav a fejlece (a kozos fejlec-lablec.css stilusozza): latszik, halvany arany hatter, sotetzold felirat, a kedvezmeny oldalra mutat; nincs sajat masodik sav
+      // az akcios sav a fejlece (a kozos fejlec-lablec.css stilusozza): latszik, halvany zold hatter, sotetzold felirat, a kedvezmeny oldalra mutat; nincs sajat masodik sav
       assert.equal(await p.locator('a.akcio-sav').count(), 0, 'nincs sajat akcio-sav (a fejlec savja veszi at a helyet)');
       const sav = await p.evaluate(() => {
         const s = document.getElementById('comp-mpv0ganp'); const a = s && s.querySelector('a');
@@ -104,7 +104,7 @@ for (const o of OLDALAK) {
       });
       assert.ok(sav, 'van akcios sav a fejlecben');
       assert.equal(sav.lat, true, 'az akcios sav latszik');
-      assert.equal(sav.bg, 'rgb(246, 239, 220)', 'halvany arany hatter (nem rozsaszin)');
+      assert.equal(sav.bg, 'rgb(230, 235, 231)', 'halvany zold hatter (nem rozsaszin)');
       assert.equal(sav.szin, 'rgb(15, 58, 60)', 'sotetzold felirat');
       assert.equal(sav.href, '/head-spa-kedvezmeny');
       assert.match(sav.szoveg, /Októberi akció! - 20% kedvezmény minden headspa foglalásra \+ ajándékkártyára!/);

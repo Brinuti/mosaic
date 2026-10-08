@@ -3,6 +3,7 @@
 A fejléc menüjének **„Kapcsolat”** és **„GYIK”** pontja önálló oldalra visz (korábban a nyitóoldal szekcióira ugrottak: `/#comp-m3znoarb`, `/#comp-m4l2o45p`). Az átirányítást a `tools/fejlec-menu.mjs` végzi (minden oldalon, asztalon és mobilon). Az angol oldalakon a GYIK pont elmarad, a Kapcsolat az oldal saját `#helyszin` szekciójára ugrik. A lábléc elérhetőség-oszlopában is van link mindkettőre.
 
 ## /kapcsolat (`foglalas/kapcsolat.html`)
+- **Szekció-sorrend (2026-10-08):** oldalfej + szöveg → elérhetőségi kártyák → üzenetküldő űrlap → helyszín (cím, térkép; a kép a szalon valódi váróterme: `assets/img/fooldal/szalon-elotter.jpg`) → foglalás.
 - Elérhetőségek kártyákban (cím + útvonaltervezés, telefon, e-mail, nyitvatartás: **hétfő–szombat 8:00–20:00**, vasárnap zárva).
 - Foglalás: egy kártya minden üzletágnak (Head Spa, Páros, Szőrtelenítés, Fodrászat, Oxigénterápia → `/foglalo-motor?business=…`, Sminktetoválás → `/sminktetovalas-budapest#foglalas`), + Ajándékkártya gomb.
 - Közösségi média: Instagram (`/mosaicheadspa/`), Facebook (`/mosaicheadspa/`). TikTok nincs (nem találtunk hivatalos fiókot).

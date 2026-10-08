@@ -57,7 +57,7 @@ describe('/ (főoldal)', () => {
     const { p, ctx, hibak, nincs } = await nyit();
     assert.equal(await p.title(), 'Japán Head Spa Budapesten – 50 perc kezelés + 30 perc hajszárítás | MOSAIC');
     assert.equal(await p.locator('h1').count(), 1, 'egyetlen H1');
-    assert.match((await p.textContent('h1')).replace(/\s+/g, ' ').trim(), /^Japán Head Spa Budapesten – 50 perc kezelés \+ 30 perc profi hajszárítás$/);
+    assert.match((await p.textContent('h1')).replace(/\s+/g, ' ').trim(), /^Budapest kedvenc Head Spa-ja 50 perc kezelés \+ 30 perc profi hajszárítás$/);
     assert.equal(await p.locator('meta[name=robots]').count(), 0, 'indexelhető (nincs robots meta)');
     assert.equal(await p.getAttribute('link[rel=canonical]', 'href'), 'https://www.mosaicheadspa.hu/');
     const torott = await p.$$eval('img', (l) => l.filter((i) => i.complete && i.naturalWidth === 0).map((i) => i.currentSrc || i.src));
@@ -94,8 +94,11 @@ describe('/ (főoldal)', () => {
     const hero = (await p.evaluate(() => document.querySelector('#hero').innerText)).replace(/\s+/g, ' ');
     assert.ok(await p.$('#hero video#hero-video[autoplay][muted]'), 'a hero a videót mutatja');
     assert.ok(await p.$('#hero .hero-hang'), 'hiányzik a Hangot rá! gomb');
-    for (const s of ['Most 20% kedvezménnyel', '32 900 Ft', '26 900 Ft-tól', '50 perc HeadSpa + 30 perc hajszárítás', 'Szabad időpontok', 'Ajándékkártyát veszek']) assert.ok(hero.includes(s), 'hiányzik: ' + s);
-    for (const s of ['Kolosy', 'Beváltom']) assert.ok(!hero.includes(s), 'nem kell: ' + s);
+    for (const s of ['Most 20% kedvezménnyel', '32 900 Ft', '26 900 Ft-tól', 'Szabad időpontok', 'Ajándékkártyát veszek']) assert.ok(hero.includes(s), 'hiányzik: ' + s);
+    for (const s of ['Kolosy', 'Beváltom', '50 perc HeadSpa + 30 perc hajszárítás']) assert.ok(!hero.includes(s), 'nem kell: ' + s);
+    assert.equal(await p.locator('#hero .hero-jelveny svg, #hero .hero-jelveny img').count(), 0, 'a 20%-os sorban nincs csillag / ikon');
+    const bizalom = (await p.evaluate(() => document.querySelector('.bizalom-lista').innerText)).replace(/\s+/g, ' ');
+    assert.ok(bizalom.includes('270 négyzetméteren várunk rád') && !bizalom.includes('perc teljes élmény'), 'a bizalmi sáv: 270 négyzetméteren várunk rád');
     assert.equal(await p.getAttribute('#hero a[data-cta="hero-idopontok"]', 'href'), '/foglalo-motor?business=headspa');
     assert.equal(await p.getAttribute('#hero a[data-cta="hero-ajandekkartya"]', 'href'), '/headspa-ajandekkartya');
     await ctx.close();

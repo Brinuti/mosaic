@@ -32,7 +32,13 @@
     if (!sav || !szuro) return;
     var tobb = sav.scrollWidth > sav.clientWidth + 2 && sav.scrollLeft + sav.clientWidth < sav.scrollWidth - 2;
     szuro.classList.toggle('tobb', tobb);
+    var ny = doc.getElementById('arl-szuro-nyil');
+    if (ny) ny.hidden = !tobb;
   }
+  (function () {
+    var ny = doc.getElementById('arl-szuro-nyil');
+    if (ny && sav) ny.addEventListener('click', function () { sav.scrollBy({ left: Math.max(120, sav.clientWidth * 0.7), behavior: 'smooth' }); });
+  })();
   meretek();
   window.addEventListener('resize', meretek);
   window.addEventListener('load', meretek);

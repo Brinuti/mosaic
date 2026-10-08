@@ -1144,3 +1144,34 @@ describe('az idopontra kattintva a motor a naptar nelkul, rogton az adatlapra (f
     await ctx.close();
   });
 });
+
+describe('a foglalo-motor konkret szolgaltatas-linkkel (?service=...): a Modositas es a vissza nyil a szolgaltatas-valasztora visz (asztalon is)', () => {
+  const SZOLGALTATASOK = '<input data-id="476488" data-duration="60" data-price="15200" data-name="Hónalj - Teljes hónalj" data-employees="32417">'
+    + '<input data-id="476477" data-duration="30" data-price="0" data-name="Ingyenes konzultáció" data-employees="32417">';
+  const szalon = (url) => (/showServices/.test(url) ? '<html><body>' + SZOLGALTATASOK + '</body></html>' : '<html><body></body></html>');
+
+  test('az uzletag neve latszik a fejlecben; a "Modositas" gomb es a vissza nyil is a szolgaltatas-valasztora (nem az oldalra, nem az uzletag-valasztora) visz', async () => {
+    for (const mobil of [false, true]) {
+      const { p, ctx } = await nyit({ mobil, api: () => idok(...SLOTOK), szalon });
+      await p.goto(bazis + '/foglalo-motor?business=laser&service=konzult', { waitUntil: 'load' });
+      await p.waitForSelector('.be-naptar', { timeout: 15000 });
+      const mod = (mobil ? 'mobil' : 'asztali') + ': ';
+      assert.match(await p.locator('.be-h1').innerText(), /Lézeres szőrtelenítés/, mod + 'a fejlecben az uzletag neve');
+      assert.equal(await p.getAttribute('#be-back', 'aria-label'), 'Másik szolgáltatás választása', mod + 'a vissza nyil felirata');
+      // a Modositas gomb
+      await p.locator('button, a').filter({ hasText: /^Módosítás$/ }).first().click();
+      await p.waitForFunction(() => /Melyik út illik rád/.test(document.querySelector('.be-main')?.innerText || ''), null, { timeout: 15000 });
+      assert.equal(await p.getAttribute('#be-back', 'aria-label'), 'Másik üzletág választása', mod + 'a szolgaltatas-valasztorol az uzletag-valasztora lehet visszalepni');
+      assert.ok(p.url().startsWith(bazis + '/foglalo-motor'), mod + 'nem navigalt el a motorbol');
+      await ctx.close();
+      // a vissza nyil (a legelso kepernyon)
+      const m2 = await nyit({ mobil, api: () => idok(...SLOTOK), szalon });
+      await m2.p.goto(bazis + '/foglalo-motor?business=laser&service=konzult', { waitUntil: 'load' });
+      await m2.p.waitForSelector('.be-naptar', { timeout: 15000 });
+      await m2.p.click('#be-back');
+      await m2.p.waitForFunction(() => /Melyik út illik rád/.test(document.querySelector('.be-main')?.innerText || ''), null, { timeout: 15000 });
+      assert.ok(m2.p.url().startsWith(bazis + '/foglalo-motor'), mod + 'a vissza nyil a motoron belul maradt');
+      await m2.ctx.close();
+    }
+  });
+});

@@ -228,18 +228,18 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
       await ctx.close();
     });
 
-    test('a kulcs-arak lathatok: Head Spa (regi ar athuzva), szortelenites (alkalom + 8 alkalmas program, kesz csomag "kulon-kulon" ara), fodraszat, oxigen, PMU, ajandekkartya', async () => {
+    test('a kulcs-arak lathatok: Head Spa (az athuzott regi ar nincs kiirva), szortelenites (alkalom + 8 alkalmas program, kesz csomag "kulon-kulon" ara), fodraszat, oxigen, PMU, ajandekkartya', async () => {
       const { p, ctx } = await nyit();
       const hs = await szov(p, '#headspa');
-      for (const r of ['Egyéni Head Spa kezelés', '26 900 Ft', '32 900 Ft', '„4 Kezes” Head Spa kezelés', '39 900 Ft', '49 900 Ft', 'Páros Head Spa kezelés', '53 800 Ft', '65 900 Ft', '2 fő', 'Októberben 20% kedvezménnyel']) assert.ok(hs.includes(r), 'Head Spa: ' + r);
-      assert.equal(await p.locator('#headspa s.arl-regi').count(), 3, 'a regi ar athuzva');
+      for (const r of ['Egyéni Head Spa kezelés', '26 900 Ft', '„4 Kezes” Head Spa kezelés', '39 900 Ft', 'Páros Head Spa kezelés', '53 800 Ft', '2 fő', 'Októberben 20% kedvezménnyel']) assert.ok(hs.includes(r), 'Head Spa: ' + r);
+      assert.equal(await p.locator('#headspa s.arl-regi').count(), 0, 'nincs athuzott regi ar');
       assert.equal(await p.locator('#headspa details.arl-reszlet').count(), 3);
       const sz = await szov(p, '#szortelenites');
-      for (const r of ['Hónalj', '19 000 Ft', '114 000 Ft', 'Teljes láb', '59 000 Ft', '354 000 Ft', 'Basic csomag', '45 500 Ft', '55 000 Ft', 'Man Total csomag', '68 000 Ft', '408 000 Ft', 'Az első kezelés 20% kedvezménnyel', 'ezért csak 6 alkalmat fizetsz']) assert.ok(sz.includes(r), 'Szortelenites: ' + r);
+      for (const r of ['Hónalj', '19 000 Ft', '114 000 Ft', 'Teljes láb', '59 000 Ft', '354 000 Ft', 'Basic csomag', '45 500 Ft', 'Man Total csomag', '68 000 Ft', '408 000 Ft', 'Az első kezelés 20% kedvezménnyel', 'ezért csak 6 alkalmat fizetsz']) assert.ok(sz.includes(r), 'Szortelenites: ' + r);
       assert.equal(await p.locator('#szortelenites .arl-sor').count(), 22);
-      assert.equal(await p.locator('#szortelenites s.arl-regi').count(), 5);
+      assert.equal(await p.locator('#szortelenites s.arl-regi').count(), 0);
       const fr = await szov(p, '#fodraszat');
-      for (const r of ['Balayage / ombre / babylight', '42 950 Ft', '54 950 Ft', 'Tőfestés', '23 950 Ft', 'Női hajvágás', '11 950 Ft', 'Férfi hajvágás', '7 450 Ft', 'Joico', '19 950 Ft', 'Ingyenes fodrász-konzultáció', '9 900 Ft', 'Póthaj felrakás', '350 Ft', 'Noelnél jelenleg 20% kedvezmény']) assert.ok(fr.includes(r), 'Fodraszat: ' + r);
+      for (const r of ['Balayage / ombre / babylight', '42 950 Ft', '54 950 Ft', 'Tőfestés', '23 950 Ft', 'Női hajvágás', '11 950 Ft', 'Férfi hajvágás', '7 450 Ft', 'Joico', '19 950 Ft', 'Ingyenes fodrász-konzultáció', 'Póthaj felrakás', '350 Ft', 'Noelnél jelenleg 20% kedvezmény']) assert.ok(fr.includes(r), 'Fodraszat: ' + r);
       const ox = await szov(p, '#oxigenterapia');
       for (const r of ['4 990 Ft', '29 900 Ft', '26 000 Ft', '130 000 Ft', '260 000 Ft', '47 800 Ft', 'Nincs kötelező bérlet']) assert.ok(ox.includes(r), 'Oxigen: ' + r);
       const pm = await szov(p, '#sminktetovalas');
@@ -348,8 +348,8 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
       assert.equal(await p.locator('#fodraszat [data-noel-nincs]').first().isVisible(), true, 'a ferfi hajvagas listaaron latszik');
       await p.locator('.arl-kapcs[data-noel="1"]').click();
       const t = await szov(p, '#fodraszat .arl-hossz-sor >> nth=0');
-      assert.ok(t.includes('34 360 Ft') && t.includes('42 950 Ft'), 'Noel-ar + athuzott eredeti: ' + t);
-      assert.equal(await p.locator('#fodraszat .arl-hossz-sor >> nth=0 >> s.arl-regi:visible').count(), 3, 'a harom cella eredeti ara athuzva');
+      assert.ok(t.includes('34 360 Ft'), 'Noel-ar: ' + t);
+      assert.equal(await p.locator('#fodraszat .arl-hossz-sor >> nth=0 >> s.arl-regi').count(), 0, 'nincs athuzott eredeti ar');
       assert.equal(await p.locator('.arl-kapcs[data-noel="1"]').getAttribute('aria-pressed'), 'true');
       assert.equal(await p.locator('#fodraszat [data-noel-nincs]').first().isVisible(), false, 'Noel nem vallal ferfi hajvagast');
       assert.ok(!(await szov(p, '#fodraszat')).includes('Férfi hajvágás'), 'Noelnel nincs ferfi hajvagas sor');

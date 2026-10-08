@@ -97,7 +97,7 @@ describe(`/${NEV}`, () => {
       return s ? { lat: getComputedStyle(s).display !== 'none' && s.getBoundingClientRect().height > 10, bg: getComputedStyle(s.querySelector('[data-testid="colorUnderlay"]')).backgroundColor, szin: a && getComputedStyle(a).color, href: a && a.getAttribute('href') } : null;
     });
     assert.ok(sav && sav.lat, 'az akcios sav latszik');
-    assert.equal(sav.bg, 'rgb(246, 239, 220)');
+    assert.equal(sav.bg, 'rgb(230, 235, 231)');
     assert.equal(sav.szin, 'rgb(15, 58, 60)');
     assert.equal(sav.href, '/head-spa-kedvezmeny');
     assert.equal(await p.locator('a.akcio-sav').count(), 0);
