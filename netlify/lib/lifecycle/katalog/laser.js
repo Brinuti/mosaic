@@ -30,7 +30,7 @@ export default {
         'Foglalás részletei / módosítás:',
         { gomb: { felirat: 'Foglalás megtekintése / módosítása', link: '{foglalás_részletei_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC Lézeres szőrtelenítés' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
       // a LASER-EMAIL-04 kritikus elokeszuleti listaja: a T0 e-mail vegere kerul, ha a foglalas < 30 orara van az idopontig
       surgos_kiegeszites: [
@@ -53,12 +53,17 @@ export default {
       elotag: 'Nem mindenkinek ugyanaz a beállítás és ugyanaz a kezelési út.',
       torzs: [
         'Szia {keresztnév}!',
+        { kep: { src: 'laser/kezelohelyiseg.jpg', alt: 'Lézeres szőrtelenítés közben a MOSAIC kezelőhelyiségében: a kezelő védőszemüvegben az Elysion Pro lézerrel dolgozik', felirat: 'A kezelőhelyiség az Elysion Pro lézerrel' } },
         'A lézeres szőrtelenítésnél az egyik legfontosabb kérdés nem az, hogy "mennyire erős a gép", hanem hogy a te bőr- és szőrtípusodhoz hogyan használjuk.',
         'Az első alkalom előtt ezért megnézzük a kezelendő területet, a bőröd és a szőröd jellemzőit, és ez alapján állítjuk be az Elysion Pro kezelést.',
+        // Zsófi az egyetlen lezeres kezelo (a lezeres oldal: "Zsófival fogsz találkozni"); a Salonic munkatars-neve itt "Elysion Pro Szőrtelenítés" (a motor kiszűri), ezert nincs ha_munkatars feltetel
+        { szemely: { src: 'laser/zsofi-portre.jpg', nev: 'Zsófi', szerep: 'Elysion Pro szakértő', szoveg: 'Vele találkozol nálunk: minden vendégnek személyre szabott kezelést állít össze.' } },
         'Nem mindenkinél ugyanaz a reakció és ugyanannyi alkalom reális. Világosabb szőr, friss barnulás, hormonális háttér, bizonyos egészségügyi állapotok vagy gyógyszerek esetén különösen fontos az előzetes egyeztetés.',
         'Ha bizonytalan vagy valamiben, inkább mondd el előre - nem az a cél, hogy mindenáron kezeljünk, hanem hogy biztonságosan és értelmesen induljon el a program.',
+        { kep: { src: 'laser/zsofi-konzultacio.jpg', alt: 'Zsófi mosolyogva beszélget egy vendéggel a konzultáción', felirat: 'Zsófi konzultáció közben egy vendéggel' } },
         'A te időpontod: {dátum} {időpont}.',
-        { alairas: 'MOSAIC' },
+        { ertekeles: true },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -71,10 +76,17 @@ export default {
         'Egy gyors pontosítás a MOSAIC 8 alkalmas programjáról, mert elsőre könnyű félreérteni.',
         'Nem 8 alkalmat fizetsz ki előre. A 4. és a 8. alkalom ajándék, vagyis egy teljes 8 alkalmas programból 6 fizetős. Ráadásul alkalmanként fizetsz.',
         'A program legfeljebb 8 alkalommal számol. Ha nálad kevesebb is elég, a jelenlegi ajánlat logikája szerint kevesebbet fizetsz. Az első alkalommal a bőr- és szőrtípusod alapján becsüljük meg, milyen kezelési út reális.',
+        // valodi vendegek, ugyanazok a kepek, mint a lezeres oldal "Ilyen eredmenyeket erhetsz el" szakaszaban
+        {
+          kepek: [
+            { src: 'laser/eredmeny-honalj.jpg', alt: 'Hónalj lézeres szőrtelenítés előtt (bal) és után (jobb) - valódi MOSAIC vendég', felirat: 'Hónalj – valódi vendég előtte és utána. Az eredmény egyénenként eltérő.' },
+            { src: 'laser/eredmeny-labszar.jpg', alt: 'Lábszár lézeres szőrtelenítés előtt (bal) és után (jobb) - valódi MOSAIC vendég', felirat: 'Lábszár – valódi vendég előtte és utána. Az eredmény egyénenként eltérő.' },
+          ],
+        },
         'Ha szeretnél valódi MOSAIC előtte-utána eredményeket látni ugyanarról a területről, itt találod őket:',
         { gomb: { felirat: 'Megnézem az eredményeket', link: '{eredmények_link}' } },
         'Nemsokára találkozunk.',
-        { alairas: 'MOSAIC' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {
@@ -84,6 +96,7 @@ export default {
       elotag: 'A borotválástól a napozásig - rövid, fontos lista.',
       torzs: [
         'Szia {keresztnév}!',
+        { kep: { src: 'laser/varo-recepcio.jpg', alt: 'A MOSAIC váró- és recepciós tere zöld bársonyfotelekkel és a MOSAIC emblémával', felirat: 'A MOSAIC váró- és recepciós tere' } },
         '3 nap múlva találkozunk. Ahhoz, hogy aznap biztonságosan és időben tudjunk kezelni, kérjük figyelj ezekre:',
         {
           szamozott: [
@@ -97,7 +110,7 @@ export default {
         'Ha csak az időpont nem jó, itt tudod áttenni:',
         { gomb: { felirat: 'Itt tudom áttenni', link: '{módosítás_link}' } },
         'Várunk,',
-        { alairas: 'MOSAIC' },
+        { alairas: 'MOSAIC Head Spa and Hair' },
       ],
     },
     {

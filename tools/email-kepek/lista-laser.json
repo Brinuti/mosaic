@@ -1,0 +1,59 @@
+{
+  "kepek": [
+    {
+      "ki": "laser/zsofi-portre.jpg",
+      "forras": "assets/img/c2eb0f_ba9a927739a64ab090ddb79bc84c6dc0f000.jpg",
+      "mod": "negyzet",
+      "fokusz": [
+        0.5,
+        0.03
+      ]
+    },
+    {
+      "ki": "laser/zsofi-konzultacio.jpg",
+      "forras": "assets/img/c2eb0f_b93a709a951c401b9e44d4083dc5172d.jpg",
+      "mod": "szeles",
+      "arany": [
+        3,
+        2
+      ],
+      "fokusz": [
+        0.5,
+        0.15
+      ]
+    },
+    {
+      "ki": "laser/eredmeny-honalj.jpg",
+      "forras": "assets/img/c2eb0f_d25d1e56510f4b9ea7b01672f0080456.jpg",
+      "mod": "kepek"
+    },
+    {
+      "ki": "laser/eredmeny-labszar.jpg",
+      "forras": "assets/img/lezer-eredmeny/labszar.jpg",
+      "mod": "kepek"
+    },
+    {
+      "ki": "laser/kezelohelyiseg.jpg",
+      "forras": "tools/email-kepek/drive-jelolt/forras/449.jpg",
+      "mod": "szeles",
+      "fokusz": [
+        0.5,
+        0.5
+      ],
+      "drive": "14BXQY_AwBNHoopWzHnGyWbeAqWOSIF0R"
+    },
+    {
+      "ki": "laser/varo-recepcio.jpg",
+      "forras": "tools/email-kepek/drive-jelolt/forras/023.jpg",
+      "mod": "szeles",
+      "fokusz": [
+        0.5,
+        0.5
+      ],
+      "drive": "1rtNiD4PtPxpSR_YprtS3_YZOEKLFJx4I"
+    }
+  ],
+  "megjegyzes": [
+    "A \"drive\" mezos tetelek forrasa a MOSAIC Drive-mappa egy kepe (a fajl azonosito a \"drive\" mezoben); a nagy felbontasu forras nincs a repoban, a kicsinyitett (<=1500 px) valtozatot a Zapier-es atviteli cso (tools/email-kepek/README.md) hozza le a drive-jelolt/forras/ mappaba."
+  ]
+}

@@ -3,7 +3,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { KATALOG, KOZOS } from '../../netlify/lib/lifecycle/katalog/index.js';
-import { HELYORZOK, CSATORNAK, MIKOR_TIPUSOK, SZEGMENSEK, BLOKK_KULCSOK, SMS_MAX_KARAKTER } from '../../netlify/lib/lifecycle/katalog/ertekek.js';
+import fs from 'node:fs';
+import { HELYORZOK, CSATORNAK, MIKOR_TIPUSOK, SZEGMENSEK, BLOKK_KULCSOK, BLOKK_FELTETEL_KULCSOK, ALAIRAS, SMS_MAX_KARAKTER } from '../../netlify/lib/lifecycle/katalog/ertekek.js';
+import { VELEMENYEK } from '../../netlify/lib/lifecycle/katalog/velemenyek.js';
 
 const UZLETAGAK = ['headspa', 'hair', 'oxygen', 'laser', 'pmu'];
 const ELOTAG = { headspa: 'HS', hair: 'HAIR', oxygen: 'OX', laser: 'LASER', pmu: 'PMU' };
@@ -18,6 +20,50 @@ const LEGHOSSZABB = {
   'videó_link': 'https://www.mosaicheadspa.hu/x', 'új_dátum': 'szeptember 30. (csütörtök)', 'új_időpont': '16:30', 'telefon': '06 20 247 4444', 'cím': '1023 Budapest, Bécsi út 2.',
 };
 
+// ---- kep / velemeny / video blokkok ellenorzese -------------------------------------------------------------------------------------------------
+const EMAIL_KEPEK = new URL('../../assets/email/', import.meta.url);
+const KEP_MAX_BAJT = 260 * 1024; // a level betoltese mobilon: kepenkent legfeljebb ennyi
+function kepMeret(buf) { // JPEG: SOF jelzo; PNG: IHDR -> { w, h }
+  if (buf[0] === 0x89 && buf[1] === 0x50) return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+  let i = 2;
+  while (i < buf.length) {
+    if (buf[i] !== 0xff) { i += 1; continue; }
+    const m = buf[i + 1];
+    if (m >= 0xc0 && m <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(m)) return { h: buf.readUInt16BE(i + 5), w: buf.readUInt16BE(i + 7) };
+    i += 2 + buf.readUInt16BE(i + 2);
+  }
+  throw new Error('ismeretlen kepformatum');
+}
+const dekod = (x) => x.replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+const egy = (x) => dekod(x).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+function kepEllenor(hol, src, alt, minSzeles) {
+  assert.ok(src && !/[^a-z0-9._\/-]/.test(src), `${hol}: a kep fajlneve csak kisbetu / szam / . _ - / lehet (${src})`);
+  const fajl = new URL(src, EMAIL_KEPEK);
+  assert.ok(fs.existsSync(fajl), `${hol}: nincs meg a kep: assets/email/${src}`);
+  const buf = fs.readFileSync(fajl);
+  assert.ok(buf.length <= KEP_MAX_BAJT, `${hol}: a kep tul nagy (${Math.round(buf.length / 1024)} KB > ${KEP_MAX_BAJT / 1024} KB): ${src}`);
+  const { w } = kepMeret(buf);
+  assert.ok(w >= minSzeles, `${hol}: a kep tul keskeny (${w}px < ${minSzeles}px): ${src}`);
+  assert.ok(typeof alt === 'string' && alt.trim().length >= 5, `${hol}: a kepnek alt-szoveg kell (${src})`);
+}
+function kepBlokkEllenor(hol, uzletag, kulcs, b) {
+  if (kulcs === 'kep') { kepEllenor(hol, b.kep.src, b.kep.alt, 960); }
+  else if (kulcs === 'kepek') {
+    assert.ok(Array.isArray(b.kepek) && b.kepek.length >= 2 && b.kepek.length <= 3, `${hol}: a "kepek" 2-3 kep`);
+    for (const e of b.kepek) kepEllenor(hol, e.src, e.alt, 540);
+  } else if (kulcs === 'video') {
+    kepEllenor(hol, b.video.src, b.video.alt, 960);
+    assert.ok(b.video.link && b.video.felirat, `${hol}: video link + felirat`);
+  } else if (kulcs === 'szemely') {
+    kepEllenor(hol, b.szemely.src, b.szemely.nev + ' portre', 232);
+    assert.ok(b.szemely.nev && b.szemely.szerep, `${hol}: szemely nev + szerep`);
+  } else if (kulcs === 'velemeny') {
+    const v = VELEMENYEK[b.velemeny];
+    assert.ok(v, `${hol}: ismeretlen velemeny: ${b.velemeny}`);
+    assert.ok(uzletag === 'kozos' || v.uzletag === uzletag, `${hol}: a(z) ${b.velemeny} velemeny masik uzletage (${v.uzletag})`);
+  }
+}
+
 const helyorzok = (s) => [...String(s).matchAll(/\{([^{}]+)\}/g)].map((m) => m[1]);
 function szovegek(uzenet) {
   const ki = [];
@@ -28,6 +74,11 @@ function szovegek(uzenet) {
         if (k === 'lista' || k === 'szamozott' || k === 'doboz') ki.push(...v);
         else if (k === 'gomb') ki.push(v.felirat, v.link);
         else if (k === 'alairas') ki.push(v);
+        else if (k === 'kep') ki.push(v.alt, v.felirat || '', v.link || '');
+        else if (k === 'kepek') for (const e of v) ki.push(e.alt, e.felirat || '');
+        else if (k === 'video') ki.push(v.alt, v.felirat, v.link);
+        else if (k === 'szemely') ki.push(v.nev, v.szerep, v.szoveg || '');
+        else if (k === 'velemeny') ki.push(VELEMENYEK[v]?.szoveg || '');
       }
     }
   };
@@ -76,6 +127,7 @@ for (const [kulcs, kat] of [...Object.entries(KATALOG), ['kozos', KOZOS]]) {
         if (m.csatorna === 'email') {
           assert.equal(typeof m.elotag, 'string', `${hol}: elotag (preheader) kell`);
           assert.ok(m.torzs.some((b) => b && b.alairas), `${hol}: alairas-blokk kell`);
+          assert.equal(m.torzs.find((b) => b && b.alairas).alairas, ALAIRAS, `${hol}: az alairas minden levelben "${ALAIRAS}"`);
         }
       }
       if (m.surgos_kiegeszites) assert.ok(m.mikor.tipus === 't0' && m.csatorna === 'email', `${hol}: surgos_kiegeszites csak t0 e-mailen`);
@@ -83,9 +135,10 @@ for (const [kulcs, kat] of [...Object.entries(KATALOG), ['kozos', KOZOS]]) {
       // blokk-szerkezet
       for (const b of [...(m.torzs || []), ...(m.surgos_kiegeszites || [])]) {
         if (typeof b === 'string') continue;
-        const k = Object.keys(b);
-        assert.equal(k.length, 1, `${hol}: a blokknak egy kulcsa lehet`);
+        const k = Object.keys(b).filter((x) => !BLOKK_FELTETEL_KULCSOK.includes(x));
+        assert.equal(k.length, 1, `${hol}: a blokknak egy kulcsa lehet (+ feltetel: ${BLOKK_FELTETEL_KULCSOK.join(', ')})`);
         assert.ok(BLOKK_KULCSOK.includes(k[0]), `${hol}: ismeretlen blokk (${k[0]})`);
+        kepBlokkEllenor(hol, kulcs, k[0], b);
         if (k[0] === 'gomb') assert.ok(b.gomb.felirat && b.gomb.link, `${hol}: gomb felirat+link`);
         if (['lista', 'szamozott', 'doboz'].includes(k[0])) assert.ok(Array.isArray(b[k[0]]) && b[k[0]].length > 0, `${hol}: ures ${k[0]}`);
       }
@@ -104,3 +157,16 @@ for (const [kulcs, kat] of [...Object.entries(KATALOG), ['kozos', KOZOS]]) {
     }
   });
 }
+
+test('velemenyek: a szoveg SZO SZERINT megtalalhato a forras-oldalon (ahol a forras fajl), nev + nem ures, csak valodi (5 csillagos) velemeny', () => {
+  for (const [id, v] of Object.entries(VELEMENYEK)) {
+    assert.ok(v.nev && v.szoveg && v.szoveg.length >= 20, `${id}: nev + szoveg`);
+    assert.ok(['headspa', 'hair', 'oxygen', 'laser', 'pmu'].includes(v.uzletag), `${id}: uzletag`);
+    assert.ok(!/\d[\d\s.]*\s?(Ft|FT|forint)\b|\d+\s?%/.test(v.szoveg), `${id}: a velemenyben nincs ar / szazalek (elavulhat)`);
+    if (v.forras.startsWith('foglalas/')) {
+      const oldal = egy(fs.readFileSync(new URL('../../' + v.forras, import.meta.url), 'utf8'));
+      assert.ok(oldal.includes(v.szoveg.replace(/\s+/g, ' ').trim()), `${id}: a velemeny szovege nincs meg a forras-oldalon (${v.forras})`);
+      assert.ok(oldal.includes(v.nev), `${id}: a velezo neve nincs meg a forras-oldalon`);
+    }
+  }
+});

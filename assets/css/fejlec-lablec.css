@@ -86,13 +86,13 @@
 .device-mobile-optimized #comp-m7q6eklh { margin-top: 10px !important; width: 26px !important; height: 26px !important; }
 .device-mobile-optimized #comp-m7q6eklh a { height: 100% !important; width: 100% !important; overflow: visible !important; }
 .device-mobile-optimized #comp-m7q6eklh img { object-fit: contain !important; width: 100% !important; height: 100% !important; }
-.device-mobile-optimized #comp-m7q6eklh { left: 108px !important; }
+.device-mobile-optimized #comp-m7q6eklh { left: 130px !important; }
 /* az "i": ugyanaz az arany korvonalas megjelenes, mint asztalon, kisebben (a mobil fejlecben csak a logo, az "i", a Foglalas gomb es a hamburger van) */
 .device-mobile-optimized #comp-m7q6eklh a::before { border-width: 1.2px; font-size: 15px; }
 .device-mobile-optimized #MENU_AS_CONTAINER_TOGGLE { margin-top: -1px !important; }
 
 /* "Foglalas" gomb: ugyanaz a stilus, mint az uj oldalak aranyszinu gombja (puha arnyek, kozepre irt, nem csupa nagybetus) */
-.device-mobile-optimized #comp-mo70bxf7 { margin-top: 10px !important; width: 78px !important; height: 26px !important; left: 190px !important; }
+.device-mobile-optimized #comp-mo70bxf7 { margin-top: 10px !important; width: 78px !important; height: 26px !important; left: 168px !important; }
 .device-mobile-optimized #comp-mo70bxf7 a { height: 100% !important; padding: 0 !important; box-shadow: 0 4px 12px rgba(150, 120, 40, .35) !important; }
 .device-mobile-optimized #comp-mo70bxf7 .StylableButton2545352419__container { width: 100% !important; height: 100% !important; justify-content: center !important; align-items: center !important; }
 .device-mobile-optimized #comp-mo70bxf7 .StylableButton2545352419__label { font: 500 11.5px/1 'Jost', 'Helvetica Neue', Arial, sans-serif !important; letter-spacing: .02em !important; margin: 0 !important; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); }

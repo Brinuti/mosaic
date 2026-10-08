@@ -80,3 +80,15 @@ node --test tools/lifecycle-teszt/motor.test.mjs tools/lifecycle-teszt/katalog.t
 ```
 Értelmező (3 értesítő-típus, összeragadt cimkék, HTML), időkezelés (nyári/téli idő, magyar dátum, ragozás), ütemező (lead-time), kirajzolás (minden üzenet minden szegmensre), motor (befogadás, küldés, ismétlődés / egyidejű levelek, áthelyezés, lemondás, T-72/T-24, hibák), HTTP.
 Valódi próba: `tools/meres-proba/reteg-foglalas.mjs` (valódi próbafoglalás, „TESZT – Claude”), lemondás: `lemond.mjs`.
+
+## Minta-levelek (az e-mailek formázásához)
+
+`tools/lifecycle-teszt/minta-levelek.mjs` az összes e-mail-sablonból (20 tartalmi / T0 / T-72 e-mail, 5 belső hívási feladat-levél, lemondás, no-show = 27 db) egy-egy mintafoglalást készít a `deakfi@grantis.hu` címre (`MINTA_EMAIL` környezeti változóval átírható).
+A levél a **valódi úton** megy ki (SMTP, az üzletág neve a feladó), ugyanazzal a HTML-lel, mint a vendégeknek – a Gmail-eszközzel (MCP) **nem** szabad küldeni: az a háttérszíneket kiszedi, a fejléc és a gomb láthatatlan lesz.
+
+1. `node tools/lifecycle-teszt/minta-levelek.mjs [AZONOSÍTÓ,AZONOSÍTÓ] > minta.sql` (lista nélkül mind a 27; pl. `PMU-EMAIL-01,COMMON-NOSHOW-EMAIL`)
+2. A kimenet két SQL-utasítás (a `-- ketto` sor választja el): futtasd az **előnézeti** D1-en (`mosaic-lifecycle-elonezet`).
+3. Indítsd el a Zapier `lifecycle-tick` folyamatot (vagy várd az órás futást): kiviszi a leveleket. Figyelem: a tick az előnézeti adatbázis **minden** esedékes teszt-vendég üzenetét kiküldi.
+4. Takarítás: `DELETE FROM kuldesek WHERE foglalas_id LIKE 'MINTA-%'; DELETE FROM foglalasok WHERE id LIKE 'MINTA-%';`
+
+A mintában a foglalás dátuma 2026-10-28 16:00, a vendég „Ferenc”; a „Foglalás megtekintése” gomb link-je minta-azonosítóra mutat (nem létező foglalás).

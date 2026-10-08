@@ -1,5 +1,12 @@
 # Költözés a Netlifyről a Cloudflare Pages-re
 
+**Állapot: élesben 2026-10-03 óta.** A `www.mosaicheadspa.hu` és a `mosaicheadspa.hu` a Cloudflare
+Pages `mosaic` projektjére mutat (DNS: Cloudflare, névszerverek `dimitris`/`sharon.ns.cloudflare.com`).
+Az űrlap → e-mail élesben kipróbálva. Visszaállás a Netlifyra: a `www` CNAME → `mosaicheadspa.netlify.app`,
+a `@` A → `75.2.60.5` (DNS only), és a két domain törlése a Pages-projektből.
+Hátra van: a Netlify-előfizetés lemondása pár nap hibátlan működés után, a beszélgetésben
+megosztott Cloudflare API-token és a régi Gmail-alkalmazásjelszó törlése.
+
 **Miért:** a Netlify kreditalapú. Minden deploy, minden letöltött GB és minden kérés kreditbe kerül,
 és ha a keret elfogy, az éles oldal leáll (2026-10-03-án megtörtént). A Cloudflare Pages ingyenes,
 és a forgalomért nem számol fel semmit. A lapcímekre futó függvényből napi 100 ezer hívás ingyenes;
@@ -50,8 +57,3 @@ Helyi próba: `npx wrangler pages dev dist` (az SMTP-beállítások a `.dev.vars
 5. **Ellenőrzés:** lapok mobilon és asztalin, egy űrlap-beküldés, GA4 és Meta valós idejű nézet.
 6. **Netlify:** a `mosaicheadspa` projektet le lehet állítani, az előfizetést vissza lehet
    mondani. A `mosaic-pmu-sms` projekt is a Netlifyn van – előbb azt is át kell nézni.
-
-## Titkok és kapcsolók a költözés után
-
-- Salonic-naptár jelölése („Ott leszek”): lásd [docs/SALONIC_JELOLES.md](docs/SALONIC_JELOLES.md) –
-  `SALONIC_PMU_JELSZO` (Secret). Jelszó nélkül a funkció nem csinál semmit.

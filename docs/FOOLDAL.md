@@ -17,9 +17,13 @@ A régi (Wixes) főoldal rejtett címen él: `/fooldal-regi` (noindex, saját ca
 
 ## Szerkezet
 
+**2026-10-08, a tulajdonos kérésére:** a hero a régi főoldal videóját mutatja („Hangot rá!” gombbal; `c2eb0f_909ce495…`, 720×720, hanggal), a „Budapest, Kolosy tér” felirat és a „Már van ajándékkártyám → Beváltom” sor kikerült;
+a hero és az élmény-kártyák árai kisebbek; a „Mit tehetünk érted?” címe „Mire van szükséged?”, mind az 5 kártya egyforma méretű, 1:1 képpel (sminktetoválás: `pmu/gyogyult-szoke.jpg`, nem vízjeles);
+mindenhol „50 + 30 perces” (a „80 perces” helyett is); kikerült: „A Head Spa annyira ellazított…” (alapító), „A legszebb önmagad adjuk neked ajándékba.” (záró idézet), az ajándékkártya alatti „Már kaptál ajándékkártyát?”, a „Mit kapsz” alatti 4 képes sor.
+
 A látványterv részei (a kép tetejétől): hero, bizalmi sáv, **Mit tehetünk érted?** (5 kártya), **Melyik HeadSpa élmény illik hozzád?**, **Inkább élményt ajándékoznál?**.
-Utána a mostani főoldal tartalma, szebb elrendezésben és a valódi fotókkal: vendégvideók, Google-vélemények (Trustindex), „Mit kapsz egy 50 perces szeánszon?”
-(a 9 pontos lista szó szerint), a kezelés elemei (8 fekvő videó) + „Nézd, mekkora élmény!” (10 álló klip), az alapító szövege (okosgyűrű-videó), páros sáv, fejbőr + hatások
+Utána a mostani főoldal tartalma, szebb elrendezésben és a valódi fotókkal: vendégvideók, Google-vélemények (Trustindex), „Mit kapsz egy 50 + 30 perces szeánszon?”
+(rövidített lista; a cím a videó tetejével, a gomb a videó aljával egy vonalban), a kezelés elemei (8 fekvő videó) + „Nézd, mekkora élmény!” (10 álló klip), páros sáv, fejbőr + hatások
 (zsíros / száraz / hajhullás fülek), OXYGENI termékek, gyógymasszőrök + szárítás, a szalon galériája, záró idézet, GYIK (mind a 18 kérdés), helyszín.
 
 **Eltérések a látványtervtől (szándékosak):**
