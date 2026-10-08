@@ -1,0 +1,36 @@
+/* A regi (Wixes) info-oldalak ujrastilusa: aszf, impresszum, suti-tajekoztato, blog. A headspa-oldal.css komponenseire epul (oldal-fej, szekcio); itt csak az olvashato
+   hosszu szoveg es a blog-kartya. Generalja: tools/jogi-oldalak/gen.mjs. Onallo fajl: mas oldal stilusat nem erinti. */
+.jo-fej { padding: 56px 0 30px; }
+.jo-fej h1 { font-size: 44px; line-height: 1.12; text-wrap: balance; }
+.jo-fej .tartalom { max-width: 860px; text-align: left; }
+.jo-morzsa { margin: 0 0 12px; font-size: 15px; }
+.jo-morzsa a { color: var(--halk); text-underline-offset: 3px; }
+.jo-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 16px 0 0; font-size: 14.5px; color: var(--halk); }
+.jo-meta img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.jo-meta a { color: var(--sotet); text-decoration: none; }
+.jo-meta a:hover { text-decoration: underline; }
+.jo-meta span::before { content: '·'; margin-right: 14px; }
+.jo-torzs { padding: 40px 0 80px; }
+.jo-szoveg { max-width: 820px; }
+.jo-szoveg p { margin: 0 0 14px; font-size: 17px; line-height: 1.72; color: #25373a; }
+.jo-szoveg h2 { margin: 40px 0 14px; font-size: 28px; line-height: 1.2; }
+.jo-szoveg h3 { margin: 28px 0 10px; font-size: 22px; line-height: 1.25; }
+.jo-szoveg a { color: var(--sotet); text-underline-offset: 3px; }
+.jo-szoveg b { font-weight: 500; color: var(--sotet); background: linear-gradient(transparent 64%, #f1e6c4 64%); }
+.jo-lista { margin: 0 0 18px; padding-left: 24px; display: grid; gap: 8px; }
+.jo-lista li { font-size: 17px; line-height: 1.65; color: #25373a; padding-left: 4px; }
+.jo-lista li::marker { color: #c6a346; }
+.jo-poszt { padding: 28px 30px 30px; background: #fff; border: 1px solid #e7eae3; border-radius: 20px; box-shadow: var(--arnyek); }
+.jo-poszt h2 { margin: 10px 0 12px; font-size: 30px; }
+.jo-poszt h2 a { color: var(--sotet); text-decoration: none; }
+.jo-poszt h2 a:hover { text-decoration: underline; }
+.jo-poszt > p:last-child { margin: 0; color: #4a5958; font-size: 16.5px; line-height: 1.65; }
+@media (max-width: 700px) {
+  .jo-fej { padding: 40px 0 20px; }
+  .jo-fej h1 { font-size: clamp(26px, 8vw, 32px); }
+  .jo-torzs { padding: 28px 0 56px; }
+  .jo-szoveg h2 { font-size: 23px; margin-top: 30px; }
+  .jo-szoveg p, .jo-lista li { font-size: 16.5px; }
+  .jo-poszt { padding: 22px 18px 24px; }
+  .jo-poszt h2 { font-size: 24px; }
+}
