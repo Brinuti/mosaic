@@ -148,8 +148,10 @@ for (const p of MOTOR_MODULOK) {
 // A helyben nyilo foglalo-reteg inditoja (assets/js/booking-launcher.js) a motor es a stilusok tartalom-hash-et kapja (a /assets/js/* es a
 // /assets/css/* egy evig tarolhato): a __MOTOR_VERZIO__ / __CSS_VERZIO__ jeleket itt irjuk be, a launcher sajat ?v= jele ezutan szamolodik.
 const CSS_VERZIO = crypto.createHash('sha1').update(['booking-engine.css', 'booking-fonts.css'].map((c) => fs.readFileSync(path.join(DIST, 'assets/css', c), 'utf8')).join('\n')).digest('hex').slice(0, 10);
-{
-  const p = path.join(DIST, 'assets/js/booking-launcher.js');
+// (az oxigen-uj.js, a beagyazott foglalo-blokk gazdaja, ugyanezt a ket jelet kapja: assets/js/booking-engine/beagyazott.js)
+for (const fajl of ['booking-launcher.js', 'oxigen-uj.js']) {
+  const p = path.join(DIST, 'assets/js', fajl);
+  if (!fs.existsSync(p)) continue;
   fs.writeFileSync(p, fs.readFileSync(p, 'utf8').split('__MOTOR_VERZIO__').join(MOTOR_VERZIO).split('__CSS_VERZIO__').join(CSS_VERZIO));
 }
 // Mobilkepek (assets/img/m/, tools/mobil-kepek.py): ami ott nincs (mar eleve kicsi),

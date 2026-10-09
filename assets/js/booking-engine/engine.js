@@ -83,8 +83,11 @@ const SNAP_VIEWS = new Set(['PMU', 'HS2', 'HS3', 'OX2', 'OXS', 'HA1', 'HA2', 'HA
  * defaultBusiness: ha az URL / a hivas nem nevezi meg az uzletagat: 'headspa' (a /foglalo-motor regi alapja) vagy null (-> H0, szolgaltatas-elso).
  */
 export function startEngine({ root, doc = document, win = window, adapter = sharedAdapter(), now = () => Date.now(),
-  mode = 'page', search = null, defaultBusiness = 'headspa', onClose = null, onExit = null, urlAllapot = null, closable = true }) {
+  mode = 'page', search = null, defaultBusiness = 'headspa', onClose = null, onExit = null, urlAllapot = null, closable = true, embedded = false }) {
   const layer = mode === 'layer';
+  // embedded: a 'page' mod BEAGYAZVA, egy landing-oldal foglalo-blokkjaban (assets/js/booking-engine/beagyazott.js): az ablakot nem gorgeti a tetejere,
+  // nem lop fokuszt a megjeleneskor, es a Salonic adatlap keretet nem a kepernyo magassagahoz meretezi (az oldal gorget). Alapbol hamis: a mas modok valtozatlanok.
+  const embed = !!embedded && !layer;
   // destroyed: a bezart (destroy-olt) motor aszinkron utotagja (pl. a naptar adata a bezaras utan erkezik meg) mar semmit nem irhat: se elozmenyt, se mentett allapotot, se idozitot
   let destroyed = false;
   elokapcsol(doc, 'https://api.salonic.hu');
@@ -175,7 +178,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   const h1El = h('h1', { class: 'be-h1', id: 'be-h1' }, h1A, h1B, h1C);
   const mainEl = h('main', { class: 'be-main', id: 'be-root' }, h('p', { class: 'be-loading', role: 'status', text: 'Betöltés…' }));
   const scrollEl = h('div', { class: 'be-scroll' }, mainEl);
-  shell = h('div', { class: 'be-shell' + (layer ? ' be-shell-layer' : '') },
+  shell = h('div', { class: 'be-shell' + (layer ? ' be-shell-layer' : '') + (embed ? ' be-shell-embed' : '') },
     h('header', { class: 'be-head' },
       h('div', { class: 'be-head-row' }, backBtn, h1El,
         h('div', { class: 'be-head-right' }, h('a', { class: 'be-icon', href: PHONE_HREF, 'aria-label': 'Hívás: ' + PHONE }, icon('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z"/>', 1.8)), closeBtn)),
@@ -300,9 +303,11 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
     }
     backBtn.style.visibility = (S.depth > 0 && state !== 'C6' && !/_SENT$/.test(state)) || (S.depth === 0 && valthato(state)) ? 'visible' : 'hidden';
     backBtn.setAttribute('aria-label', S.depth > 0 ? 'Vissza' : S.exact && S.service ? 'Másik szolgáltatás választása' : 'Másik üzletág választása'); // a legelso kepernyon a nyil az uzletag-valasztora (konkret szolgaltatas-linknel a szolgaltatas-valasztora) visz
-    if (layer) scrollEl.scrollTop = 0; else win.scrollTo(0, 0);
+    if (layer) scrollEl.scrollTop = 0;
+    else if (embed) { if (S.depth > 0 && shell.getBoundingClientRect().top < 0) shell.scrollIntoView({ block: 'start' }); } // beagyazva: csak ha a blokk teteje felul kilog, es csak lepeskor
+    else win.scrollTo(0, 0);
     const t = mainEl.querySelector('.be-title');
-    if (t) t.focus({ preventScroll: true });
+    if (t && (!embed || S.depth > 0)) t.focus({ preventScroll: true }); // beagyazva az elso megjelenes nem lop fokuszt (a hivo oldal kezeli)
   }
 
   // --- navigacio ------------------------------------------------------------------------------------------------------------------
@@ -797,7 +802,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       // (A Salonic suti-savja a keret aljan fekszik: a keret merete legfeljebb a stilusos adatlap teljes merete.)
       const fit = () => {
         if (!box.isConnected) return;
-        if (!win.matchMedia('(max-width: 699px)').matches) { box.style.setProperty('--visible', geo.visible + 'px'); return; }
+        if (embed || !win.matchMedia('(max-width: 699px)').matches) { box.style.setProperty('--visible', geo.visible + 'px'); return; } // beagyazva az oldal gorget: a teljes adatlap latszik
         const alja = layer ? scrollEl.getBoundingClientRect().bottom : win.innerHeight;
         box.style.setProperty('--visible', Math.round(Math.max(440, Math.min(geo.visible, alja - box.getBoundingClientRect().top - 2))) + 'px');
       };

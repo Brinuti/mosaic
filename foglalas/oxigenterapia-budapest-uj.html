@@ -2,15 +2,454 @@
 <html lang="hu">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Oxigénterápia hajhullás ellen Budapesten | MOSAIC</title>
-<meta name="robots" content="noindex, follow">
-<link rel="canonical" href="https://www.mosaicheadspa.hu/oxigenterapia-budapest">
-<meta http-equiv="refresh" content="0; url=/oxigenterapia-budapest">
-<script>location.replace('/oxigenterapia-budapest' + location.search);</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Oxigénterápia Budapest – hajhullás, zsírosodás, korpa | MOSAIC Headspa</title>
+<meta name="description" content="Hullik, ritkul vagy gyorsan zsírosodik a hajad? Hivatalos Oxygeni partnerszalon a Kolosy térnél: hajkamerás állapotfelmérés, személyre szabott Oxygeni fejbőrápolás és követhető kontrollok. Első kezelés: 80 perc, 29 900 Ft.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://www.mosaicheadspa.hu/oxigenterapia-budapest-uj">
+<meta property="og:title" content="Oxigénterápia Budapest | MOSAIC Headspa">
+<meta property="og:url" content="https://www.mosaicheadspa.hu/oxigenterapia-budapest-uj">
+<meta property="og:site_name" content="MOSAIC Headspa">
+<meta property="og:type" content="website">
+<link rel="icon" href="/assets/img/c2eb0f_b001e2c55098446da3e38ff055e20354.png" type="image/png">
+<link rel="preload" href="/assets/fonts/playfair-display-500-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/img/oxigen/elso-alkalom.jpg" as="image">
+<link rel="preconnect" href="https://cdn.trustindex.io" crossorigin>
+<link rel="stylesheet" href="/assets/css/wix-google-fonts.css">
+<link rel="stylesheet" href="/assets/css/wix-fonts.css">
+<link rel="stylesheet" href="/assets/css/oxigen-uj.css">
 </head>
 <body>
-<!-- A korabbi probacim (-uj): az oldal az eredeti /oxigenterapia-budapest cimre koltozott; ez csak atiranyit. -->
-<p><a href="/oxigenterapia-budapest">Tovább az oldalra: Oxigénterápia hajhullás ellen Budapesten</a></p>
+<!--
+  MOSAIC oxigenterapia UJ landing (proba cim: /oxigenterapia-budapest-uj, noindex). A szoveg a MASTERPROMPT.md 03 / KESZ LANDING COPY resze SZO SZERINT
+  (docs/oxigen-crm/MASTERPROMPT.md), a szekciok sorrendje a 2.3 lista szerint:
+  1 hero · 2 problemakartyak · 3 problemak es allapotfelmeres · 4 elso 80 perc · 5 szakemberek + MOSAIC hitelesseg · 6 11 alkalmas kura · 7 ar- es berletblokk ·
+  8 szemelyes kuraterv · 9 valodi vendegtapasztalatok · 10 GYIK · 11 helyszin · 12 zaro blokk + beagyazott foglalo.
+  Az arak / idotartamok / berletek EGY helyen vannak definialva: assets/js/oxigen-uj.js (AJANLAT, CSOMAG); a [data-ar] / [data-perc] elemek szoveget a JS tolti be,
+  a HTML-ben levo ertek ugyanaz (JS nelkuli tartalek; a tools/oxigen-uj-teszt ellenorzi, hogy megegyeznek).
+  TILOS (spec 0.2): kombinalt arc+haj kezeles, AI-generalt vendeg elotte/utana, kitalalt velemeny / szakember / velemenyszam, hamis szazalekos kedvezmeny,
+  online fizetes / checkout, vendegportal, a 2 millio kezeles / 95% allitas gyartoi forras nelkul. Az oldalon belul NINCS #horgony-link (GTM History Change): a gorgetest a JS vegzi.
+  Ezen az oldalon NINCS suti.js (nincs GTM / pixel / meres-kod): a noindex proba oldalon nem fut meres; az esemenyek csak a dataLayer-be kerulnek.
+-->
+
+<!--mh-fejlec-->
+<!--mh-menu-aktiv:/oxigenterapia-budapest-->
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="i-kamera" viewBox="0 0 24 24"><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="13" r="3.8"/></symbol>
+  <symbol id="i-ajto" viewBox="0 0 24 24"><path d="M6 21V4a1 1 0 011-1h10a1 1 0 011 1v17M3 21h18"/><path d="M14.5 12h.01"/></symbol>
+  <symbol id="i-ora" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4M7 11l2-2 2 2 3-3 3 3"/></symbol>
+  <symbol id="i-lista" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h5"/></symbol>
+  <symbol id="i-cseppek" viewBox="0 0 24 24"><path d="M8 3.5c2.2 3 4 5 4 7.7a4 4 0 01-8 0c0-2.7 1.8-4.700 4-7.700z"/><path d="M16 11.500c1.600 2.100 3 3.600 3 5.500a3 3 0 01-6 0c0-1.900 1.400-3.400 3-5.500z"/></symbol>
+  <symbol id="i-ag" viewBox="0 0 24 24"><path d="M3 15h18v4H3zM5 15V9a2 2 0 012-2h4v8M3 19v2M21 19v2"/></symbol>
+  <symbol id="i-hajszarito" viewBox="0 0 24 24"><path d="M3 9a4 4 0 014-4h6a6 6 0 016 6v1H3z"/><path d="M3 12h13l-2 8h-3l1-5"/><path d="M19 15l2 1M19.500 18.500l1.800 1.200"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.500"/><path d="M12 11v6M12 7.500v.1"/></symbol>
+  <symbol id="i-ajandek" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8C10.500 4.500 7 4 7 6.300 7 8 9 8 12 8zM12 8c1.500-3.500 5-4 5-1.700C17 8 15 8 12 8z"/></symbol>
+  <symbol id="i-naptar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4M9 15l2 2 4-4"/></symbol>
+  <symbol id="i-bal" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-jobb" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></symbol>
+  <symbol id="i-kartya" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10.500h18M7 15h4"/></symbol>
+  <symbol id="i-pajzs" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3.500 8.500-7 10-3.500-1.500-7-5-7-10V6z"/><path d="M8.500 12l2.500 2.500 4.500-5"/></symbol>
+  <symbol id="i-lakat" viewBox="0 0 24 24"><rect x="5" y="10.500" width="14" height="10" rx="2"/><path d="M8 10.500V8a4 4 0 018 0v2.500M12 14.500v2.500"/></symbol>
+  <symbol id="j-hullas" viewBox="0 0 64 64"><path d="M16 6c-4 14-4 28 2 42M32 5c-3 14-3 30 1 43M48 6c4 14 4 28-2 42"/><circle cx="19" cy="53" r="3.200"/><circle cx="33" cy="54" r="3.200"/><circle cx="45" cy="53" r="3.200"/><path d="M56 22c3 5 3 11 0 16" stroke-dasharray="1 4"/></symbol>
+  <symbol id="j-zsiros" viewBox="0 0 64 64"><path d="M32 6c8 12 15 20 15 31a15 15 0 01-30 0c0-11 7-19 15-31z"/><path d="M25 38a7 7 0 007 7"/><path d="M32 52v8" stroke-dasharray="1 4"/></symbol>
+  <symbol id="j-korpas" viewBox="0 0 64 64"><circle cx="32" cy="32" r="8"/><path d="M32 8v9M32 47v9M8 32h9M47 32h9M15 15l6.500 6.500M42.500 42.500L49 49M49 15l-6.500 6.500M21.500 42.500L15 49"/></symbol>
+  <symbol id="j-valasztek" viewBox="0 0 64 64"><circle cx="32" cy="32" r="23"/><path d="M32 9v46" stroke-dasharray="2 4"/><path d="M19 19c3 4 3 10 0 14M45 19c-3 4-3 10 0 14M21 40c3 3 3 7 0 11M43 40c-3 3-3 7 0 11"/></symbol>
+  <symbol id="j-hajvonal" viewBox="0 0 64 64"><path d="M16 54V34c0-14 7-24 20-24s20 9 20 22"/><path d="M16 34c5-9 12-13 20-13" stroke-dasharray="2 4"/><path d="M24 17l2-7M34 13l1-7M44 15l3-6"/></symbol>
+  <symbol id="e-dus" viewBox="0 0 64 64"><path d="M13 12c-3 14-3 28 1 38M23 8c-2 16-2 32 0 42M32 6v44M41 8c2 16 2 32 0 42M51 12c3 14 3 28-1 38"/><circle cx="14" cy="55" r="2.600"/><circle cx="23" cy="55" r="2.600"/><circle cx="32" cy="55" r="2.600"/><circle cx="41" cy="55" r="2.600"/><circle cx="50" cy="55" r="2.600"/></symbol>
+  <symbol id="e-sarj" viewBox="0 0 64 64"><path d="M32 56V30M32 30c0-11 8-17 19-17 0 11-8 17-19 17zM32 40c0-8-6-13-15-13 0 8 6 13 15 13z"/></symbol>
+  <symbol id="e-keringes" viewBox="0 0 64 64"><path d="M32 54C14 41 8 31 8 22a12 12 0 0124-4 12 12 0 0124 4c0 9-6 19-24 32z"/><path d="M13 31h10l4-8 6 14 4-6h13"/></symbol>
+  <symbol id="e-anyagcsere" viewBox="0 0 64 64"><path d="M50 26a19 19 0 00-34-6M14 10v11h11M14 38a19 19 0 0034 6M50 54V43H39"/></symbol>
+  <symbol id="i-kerdes" viewBox="0 0 24 24"><path d="M21 11.500a8.500 8.500 0 01-12.400 7.500L3 20.500l1.600-4.800A8.500 8.500 0 1121 11.500z"/><path d="M9.600 9.500a2.500 2.500 0 113.600 2.200c-.7.400-1.200.9-1.200 1.800M12 16.200h.01"/></symbol>
+  <symbol id="i-folikulus" viewBox="0 0 64 64"><path d="M33 6c-3 12 3 20 0 30"/><path d="M25 42a8 8 0 0016 0c0-4.500-3.500-7-8-7s-8 2.500-8 7z"/><path d="M8 48c9 0 12 9 25 9s16-9 25-9"/><path d="M44 14h.01M49 22h.01M16 20h.01" stroke-width="3"/></symbol>
+  <symbol id="j-vekony" viewBox="0 0 64 64"><path d="M14 6c0 15 5 27 1 46M26 5c0 17 5 29 1 47M38 5c0 17 5 29 1 47M50 8c0 15 4 26 0 42" stroke-width="1"/><path d="M12 56c3 2 6 2 9 0M24 56c3 2 6 2 9 0M36 56c3 2 6 2 9 0M48 54c3 2 6 2 9 0" stroke-width="1"/></symbol>
+</defs></svg>
+
+<main id="top">
+
+<!-- ============ 1. HERO ============ -->
+<section class="hero" aria-labelledby="hero-cim">
+  <div class="tartalom hero-racs">
+    <div class="hero-szoveg">
+      <p class="hero-eyebrow">MOSAIC HEADSPA · HIVATALOS OXYGENI PARTNERSZALON · BUDAPEST</p>
+      <h1 id="hero-cim">Hullik, ritkul vagy gyorsan zsírosodik a hajad?</h1>
+      <p class="hero-lead">Ismerd meg a fejbőröd látható állapotát, és kezdj el egy személyre szabott Oxygeni fejbőrápolási folyamatot nálunk, a Kolosy térnél. Képzett szakembereink hajkamerás megfigyeléssel, egyéni kezelési tervvel és követhető kontrollokkal segítenek eligazodni.</p>
+      <ul class="hero-arak" aria-label="Szolgáltatások és árak">
+        <li><b>Első kezelés állapotfelméréssel: <span data-perc="first_hair">80&nbsp;perc</span> · <span data-ar="first_hair">29&nbsp;900&nbsp;Ft</span>.</b></li>
+        <li><b>Csak hajkamerás felmérés: <span data-perc="camera_assessment">30&nbsp;perc</span> · <span data-ar="camera_assessment">4&nbsp;990&nbsp;Ft</span>.</b></li>
+      </ul>
+      <div class="hero-cta">
+        <button type="button" class="gomb gomb-arany" data-foglal="first_hair" data-cta="click_hero_first"><span class="gt">Első kezelést foglalok – <span data-ar="first_hair">29&nbsp;900&nbsp;Ft</span></span> <span class="nyil" aria-hidden="true">→</span></button>
+        <button type="button" class="gomb gomb-feher" data-foglal="camera_assessment" data-cta="click_hero_camera"><span class="gt">Hajkamerás állapotfelmérést foglalok – <span data-ar="camera_assessment">4&nbsp;990&nbsp;Ft</span></span> <span class="nyil" aria-hidden="true">→</span></button>
+      </div>
+      <p class="hero-kura">Az ajánlott teljes program 11 kezelésből állhat, alapértelmezetten kéthetente; az alkalmasságot és a folytatást a kezelő értékeli. Nincs garantált eredmény.</p>
+    </div>
+    <figure class="hero-kep">
+      <img src="/assets/img/oxigen/elso-alkalom.jpg" alt="Oxigénterápiás kezelés a MOSAIC kezelőszobájában: a kezelő a vendég fejbőrével foglalkozik a mosdónál" width="840" height="970" fetchpriority="high">
+      <!-- hero_real_treatment: valodi MOSAIC kezelesfoto (assets/img/oxigen/elso-alkalom.jpg). REQUIRES_VERIFICATION: felhasznalasi jog, vendeg beleegyezese a fotoba -->
+    </figure>
+  </div>
+</section>
+
+<!-- ============ 2. PROBLEMAKARTYAK ============ -->
+<section class="panaszok" id="panaszok" aria-labelledby="panasz-cim">
+  <div class="tartalom">
+    <h2 id="panasz-cim" class="kozepre">Válaszd ki, mi zavar</h2>
+    <p class="lead kozepre">Több válasz is lehetséges. A kártyák nem diagnózist jelentenek: a választásod a foglalás előkészítését segíti.</p>
+    <ul class="panasz-racs" id="panasz-racs">
+      <li><button type="button" class="panasz" data-panasz="hajhullas_ritkulas" aria-pressed="false"><span class="panasz-ikon"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#j-hullas"/></svg></span><span class="panasz-szoveg"><span class="panasz-cim">Hajhullás és ritkulás</span><span class="panasz-leiras">Több hajszálat találsz a fésűben, vagy ritkábbnak látod a hajad? Megbeszéljük a tüneteket és a látható fejbőrállapotot.</span></span><span class="panasz-pipa" aria-hidden="true"></span></button></li>
+      <li><button type="button" class="panasz" data-panasz="gyors_zsirosodas" aria-pressed="false"><span class="panasz-ikon"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#j-zsiros"/></svg></span><span class="panasz-szoveg"><span class="panasz-cim">Gyors zsírosodás</span><span class="panasz-leiras">Úgy érzed, túl hamar zsírosodik a fejbőröd? Áttekintjük az ápolási rutinodat és a látható eltéréseket.</span></span><span class="panasz-pipa" aria-hidden="true"></span></button></li>
+      <li><button type="button" class="panasz" data-panasz="korpas_erzekeny" aria-pressed="false"><span class="panasz-ikon"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#j-korpas"/></svg></span><span class="panasz-szoveg"><span class="panasz-cim">Korpás vagy érzékeny fejbőr</span><span class="panasz-leiras">Viszketés, hámlás, feszülés? A kezelő segít eldönteni, milyen fejbőrápolás jöhet szóba, és mikor indokolt orvoshoz fordulni.</span></span><span class="panasz-pipa" aria-hidden="true"></span></button></li>
+      <li><button type="button" class="panasz" data-panasz="vekony_eroltelen" aria-pressed="false"><span class="panasz-ikon"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#j-vekony"/></svg></span><span class="panasz-szoveg"><span class="panasz-cim">Vékony, erőtlen haj</span><span class="panasz-leiras">Ha a hajad állagán vagy megjelenésén szeretnél javítani, személyes célokat és követési pontokat határozunk meg.</span></span><span class="panasz-pipa" aria-hidden="true"></span></button></li>
+    </ul>
+    <p class="panasz-allapot kozepre" id="panasz-allapot" role="status" aria-live="polite">Még nem választottál panaszt.</p>
+    <p class="kozepre panasz-cta"><button type="button" class="gomb gomb-arany" data-foglal="first_hair" data-cta="panasz-elso-idopont"><span class="gt">Első időpontot foglalok</span> <span class="nyil" aria-hidden="true">→</span></button></p>
+  </div>
+</section>
+
+<!-- ============ 3. PROBLEMAK ES ALLAPOTFELMERES ============ -->
+<section class="allapot" id="allapotfelmeres" aria-labelledby="allapot-cim">
+  <div class="tartalom allapot-racs">
+    <figure class="monitor">
+      <img src="/assets/img/oxigen/hajkamera-nezet.jpg" alt="Szemléltető kép: a hajkamera erősen nagyított képe a fejbőrről, a hajhagymákról és a hajszálakról" width="960" height="640" loading="lazy">
+      <figcaption class="monitor-felirat">Szemléltető kép</figcaption>
+      <!-- camera_device_real: REQUIRES_VERIFICATION - valodi MOSAIC hajkamera-felvetel (a szemleltetes MI-vel keszult, nem vendegfoto); csere utan a "Szemleltető kep" felirat torlendo -->
+    </figure>
+    <div class="allapot-szoveg">
+      <h2 id="allapot-cim">Nem minden hajhullás egyforma</h2>
+      <p>Lehet, hogy hónapok óta keresed a megoldást. Van, aki egyre több hajat lát a fésűben, más inkább állandó zsírosodással, korpával vagy viszketéssel küzd. A panaszok mögött többféle tényező állhat, ezért először figyelmesen meghallgatunk, és megnézzük a fejbőröd látható állapotát.</p>
+      <p>Az első alkalmon átbeszéljük, mióta jelentkeznek a panaszaid, volt-e változás és milyen az otthoni hajápolási rutinod. Mikrokamerával nagyított képen dokumentálhatjuk a fejbőr és a hajszálak megfigyelhető állapotát. Ezeket későbbi kontrollokon összehasonlíthatjuk – a kamera azonban nem laborvizsgálat és nem helyettesít orvosi diagnózist.</p>
+      <ul class="pipa-lista">
+        <li><span><b>Mit tud a hajkamera?</b> Nagyított képen dokumentálja a fejbőr és a hajszálak megfigyelhető állapotát, és a későbbi kontrollokon összehasonlítható.</span></li>
+        <li><span><b>Mit nem tud?</b> Nem laborvizsgálat, és nem helyettesíti az orvosi vagy bőrgyógyászati diagnózist.</span></li>
+        <li><span><b>Mikor érdemes orvoshoz fordulni?</b> Erős, hirtelen vagy ismeretlen eredetű hajhullásnál először érdemes orvoshoz (például bőrgyógyászhoz) fordulni, mert hátterében egészségügyi ok is állhat.</span></li>
+      </ul>
+      <div class="allapot-cta"><button type="button" class="gomb gomb-feher" data-foglal="camera_assessment" data-cta="allapot-allapotfelmeres"><span class="gt">Állapotfelmérést foglalok – <span data-ar="camera_assessment">4&nbsp;990&nbsp;Ft</span></span> <span class="nyil" aria-hidden="true">→</span></button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. ELSO 80 PERC ============ -->
+<section class="nyolcvan" id="elso-80-perc" aria-labelledby="nyolcvan-cim">
+  <div class="tartalom">
+    <h2 id="nyolcvan-cim" class="kozepre">Így zajlik nálunk az első <span data-perc="first_hair">80&nbsp;perc</span></h2>
+    <ol class="lepes-racs">
+      <li class="lepes"><h3><span class="szam">01</span><span class="sl"> / </span>Beszélgetés és biztonság</h3><p>Átnézzük az előre kitöltött digitális állapotfelmérőt, a panaszokat, az érzékenységeket és a célokat.</p></li>
+      <li class="lepes"><h3><span class="szam">02</span><span class="sl"> / </span>Hajkamerás kiinduló felvétel</h3><p>Nagyított képet készítünk a fejbőr látható állapotáról; a későbbi összehasonlíthatóság miatt egységes fotózási pontokkal.</p></li>
+      <li class="lepes"><h3><span class="szam">03</span><span class="sl"> / </span>Oxygeni ápolás</h3><p>Az Oxygeni-képzett kezelő az állapothoz és a foglalt kezeléshez illő fejbőrápolási lépéseket végzi el.</p></li>
+      <li class="lepes"><h3><span class="szam">04</span><span class="sl"> / </span>Személyes terv és következő időpont</h3><p>A kezelő összefoglalja a tapasztalatokat, személyre szabott A5 kúratervet készít, és felajánlja a következő időpontot.</p></li>
+    </ol>
+    <p class="nyolcvan-megj kozepre">Csendes, prémium környezetben, a Kolosy térnél várunk. A kezelés tű nélküli; a fejbőr érzékenységét és az esetleges ellenjavallatokat minden esetben ellenőrizzük.</p>
+    <div class="nyolcvan-media">
+      <div class="video-doboz" id="video-doboz" data-video="/assets/video/c2eb0f_360d73a2bc224690bb9d79edb4f6ed91.mp4">
+        <button type="button" id="video-gomb" aria-label="Videó lejátszása: így zajlik egy oxigénterápiás kezelés a MOSAIC-ban">
+          <img src="/assets/img/c2eb0f_360d73a2bc224690bb9d79edb4f6ed91f001.jpg" alt="" width="720" height="1280" loading="lazy">
+          <span class="lejatszas" aria-hidden="true"><svg><use href="#i-play"/></svg></span>
+        </button>
+      </div>
+      <figure class="nyolcvan-kep">
+        <img src="/assets/img/oxigen/oxigen-kezeles.jpg" alt="Oxigénterápiás kezelés: a vendég fekszik, a kezelő a kezelés közben a tableten a hajkamera képét mutatja" width="760" height="760" loading="lazy">
+        <figcaption>Hajkamera a kezelés közben, a MOSAIC kezelőszobájában</figcaption>
+      </figure>
+    </div>
+    <!-- video_real_30s: REQUIRES_VERIFICATION - a spec sajat 30-45 mp-es kezelesvideot ker (felirat/WebVTT, allo es fekvo vagat); a jelenlegi videot a meglevo MOSAIC oxigen-oldal hasznalja, felirat nincs hozza -->
+  </div>
+</section>
+
+<!-- ============ 5. SZAKEMBEREK + MOSAIC HITELESSEG ============ -->
+<section class="kezelok" id="kezelok" aria-labelledby="kezelok-cim">
+  <div class="tartalom">
+    <h2 id="kezelok-cim" class="kozepre">Hivatalos Oxygeni partnerszalon, Oxygeni-képzett kezelők</h2>
+    <p class="lead kozepre">MOSAIC HeadSpa, Kolosy tér – 1023 Budapest, Bécsi út 2.</p>
+    <div class="kezelo-keret">
+      <!-- A fotok a Salonic oxigen-fiokjanak szakember-oldalarol vannak, a nevek ugyanonnan. Csak a nev es a kepzes ("Oxygeni-kepzett", dontes 008) szerepel: bemutatkozo szoveg nincs (REQUIRES_VERIFICATION: valodi szakmai hatter a tulajdonostol). -->
+      <div class="kezelo-sav" id="kezelo-sav">
+        <article class="kezelo"><img src="/assets/img/oxigen/kezelo-tundi.jpg" alt="Bozsoki-Harangozó Tündi, oxigénterápiás kezelő" width="360" height="360" loading="lazy"><div><h3>Bozsoki-Harangozó Tündi</h3><p class="szerep">Oxygeni-képzett kezelő</p></div></article>
+        <article class="kezelo"><img src="/assets/img/oxigen/kezelo-vivien.jpg" alt="Szűcs Vivien, oxigénterápiás kezelő" width="360" height="360" loading="lazy"><div><h3>Szűcs Vivien</h3><p class="szerep">Oxygeni-képzett kezelő</p></div></article>
+        <article class="kezelo"><img src="/assets/img/oxigen/kezelo-moni.jpg" alt="Menyhárt Móni, oxigénterápiás kezelő" width="360" height="360" loading="lazy"><div><h3>Menyhárt Móni</h3><p class="szerep">Oxygeni-képzett kezelő</p></div></article>
+      </div>
+      <button type="button" class="lapozo elozo" id="kezelo-elozo" aria-label="Előző kezelő" hidden><svg><use href="#i-bal"/></svg></button>
+      <button type="button" class="lapozo kovetkezo" id="kezelo-kovetkezo" aria-label="Következő kezelő" hidden><svg><use href="#i-jobb"/></svg></button>
+    </div>
+    <div class="miert">
+      <h3 class="kozepre">Miért a MOSAIC?</h3>
+      <ul class="miert-lista">
+        <li><svg aria-hidden="true"><use href="#i-pajzs"/></svg><span>Hivatalos Oxygeni partnerszalon Budapesten, minden oxigénterápiás kezelő Oxygeni-képzéssel.</span></li>
+        <li><svg aria-hidden="true"><use href="#i-kamera"/></svg><span>Valódi, személyes fejbőrállapot-követés: nem csak kezelés, hanem saját képek és kezelői összefoglaló.</span></li>
+        <li><svg aria-hidden="true"><use href="#i-lista"/></svg><span>Nyomtatott és digitális A5 személyes kúraterv, közvetlenül a vendég nevére és helyzetére szabva.</span></li>
+        <li><svg aria-hidden="true"><use href="#i-ajto"/></svg><span>Szabad kezelőválasztás, alapértelmezetten ugyanannál a szakembernél való folytatási lehetőséggel.</span></li>
+        <li><svg aria-hidden="true"><use href="#i-naptar"/></svg><span>Átlátható költségek, helyszíni fizetés az egyedi kezeléseknél és külön opcionális bérlet.</span></li>
+        <!-- REQUIRES_VERIFICATION: a spec 6. pontja ("A gyártó közlése szerint több mint 2 millió Oxygeni kezelés és 95%-os hatásosság; a pontos mérési jelentést a gyártói forráshoz kötve tüntetjük fel")
+             csak a tényleges gyártói definíció és forráslink birtokában tehető ki (spec 2.3/9., decision 038). Amíg nincs forrás, a sor KIMARAD. -->
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. 11 ALKALMAS KURA ============ -->
+<section class="kura" id="kura" aria-labelledby="kura-cim">
+  <div class="tartalom">
+    <h2 id="kura-cim" class="kozepre">Miért 11 alkalom egy teljes kúra?</h2>
+    <div class="kura-szoveg">
+      <p>A haj növekedése ciklusokban történik, ezért az állapotát nem lehet egyetlen alkalom alapján megítélni. A MOSAIC ajánlott teljes Oxygeni-kúrája <b>egy első kezelésből és tíz további kezelésből, összesen 11 alkalomból</b> áll. A jellemző ütemezés kéthetente egy alkalom, ettől a kezelőd szakmai indokkal eltérhet.</p>
+      <p>Egyes vendégek már az első 1–2 kezelés után érezhetnek változást, de az eredményeket érdemben általában az 5–6. alkalom környékén tekintjük át. A teljes kúra végén személyes záróértékelés készül. A megfigyelések és a várható változások személyenként eltérhetnek, ezért konkrét hajnövekedési eredményt nem garantálunk.</p>
+    </div>
+    <figure class="idovonal" aria-labelledby="idovonal-cim">
+      <figcaption id="idovonal-cim">Mintaütemezés kéthetente: 11 alkalom, hajkamerás kontrollok az 1., 3., 5. és 10. alkalmon, kúrazárás a 11.-en</figcaption>
+      <ol class="idovonal-sor" id="idovonal">
+        <li class="ido kamera"><span class="ido-pont">1</span><span class="ido-cimke">kamera</span></li>
+        <li class="ido"><span class="ido-pont">2</span></li>
+        <li class="ido kamera"><span class="ido-pont">3</span><span class="ido-cimke">kamera</span></li>
+        <li class="ido"><span class="ido-pont">4</span></li>
+        <li class="ido kamera"><span class="ido-pont">5</span><span class="ido-cimke">kamera</span></li>
+        <li class="ido"><span class="ido-pont">6</span></li>
+        <li class="ido"><span class="ido-pont">7</span></li>
+        <li class="ido"><span class="ido-pont">8</span></li>
+        <li class="ido"><span class="ido-pont">9</span></li>
+        <li class="ido kamera"><span class="ido-pont">10</span><span class="ido-cimke">kamera</span></li>
+        <li class="ido zaras"><span class="ido-pont">11</span><span class="ido-cimke">zárás</span></li>
+      </ol>
+    </figure>
+    <table class="kontroll">
+      <caption class="sr">Mit követünk az egyes alkalmakon?</caption>
+      <thead><tr><th scope="col">Alkalom</th><th scope="col">Mit követünk?</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">1. / kiindulás</th><td>Hajkamera, panaszok, célok, részletes személyes A5 kúraterv, kétheti követési ajánlás.</td></tr>
+        <tr><th scope="row">3. / első képes kontroll</th><td>Új hajkamerás felvétel + összehasonlító képek és 2–3 mondatos kezelői értékelés.</td></tr>
+        <tr><th scope="row">5. / köztes kontroll</th><td>Új felvétel, otthoni rutin felülvizsgálata, a tapasztalatok őszinte átbeszélése.</td></tr>
+        <tr><th scope="row">10. / végső kontrollpont</th><td>Összehasonlító felvétel és a kúra zárását előkészítő megfigyelések.</td></tr>
+        <tr><th scope="row">11. / kúrazárás</th><td>Részletes személyes összefoglaló, az 1/3/5/10 képek összevetése és egyéni fenntartási javaslat.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ 7. AR- ES BERLETBLOKK ============ -->
+<!-- Arak: assets/js/oxigen-uj.js AJANLAT / CSOMAG (egy forras). Nincs szazalekos kedvezmeny, nincs athuzott ar, nincs "ennyit sporolsz": a berlet kezelesi ara = az alkalmankenti 26 000 Ft, az elony a termekajandek. -->
+<section class="arak" id="arak" aria-labelledby="arak-cim">
+  <div class="tartalom">
+    <h2 id="arak-cim" class="kozepre">Mennyibe kerül? A teljes ráfordítás előre látható</h2>
+    <div class="ar-sor">
+      <article class="ar-kartya kiemelt">
+        <h3>Első 80 perces kezelés – <span data-ar="first_hair">29&nbsp;900&nbsp;Ft</span>.</h3>
+        <p>Ha először csak hajkamerás felmérésre jössz (<span data-ar="camera_assessment">4&nbsp;990&nbsp;Ft</span>), annak teljes díját levonjuk, ha 30 napon belül lefoglalod az első kezelést.</p>
+        <button type="button" class="gomb gomb-arany" data-foglal="first_hair" data-cta="arak-elso-kezeles"><span class="gt">Első időpontot foglalok</span> <span class="nyil" aria-hidden="true">→</span></button>
+      </article>
+      <article class="ar-kartya">
+        <h3>Második alkalomtól – <span data-ar="further_treatment">26&nbsp;000&nbsp;Ft</span> / kezelés.</h3>
+        <p>Alkalmanként is fizethetsz, a szalonban.</p>
+        <button type="button" class="gomb gomb-korvonal" data-foglal="further_treatment" data-cta="arak-tovabbi-kezeles"><span class="gt">Már jártam nálatok – időpontot foglalok</span> <span class="nyil" aria-hidden="true">→</span></button>
+      </article>
+    </div>
+    <article class="kura-ar">
+      <div class="kura-ar-fej">
+        <h3>Az ajánlott teljes, 11 kezeléses program ára – <span data-ar="kura">289&nbsp;900&nbsp;Ft</span>.</h3>
+        <p>Ez az első kezelés <span data-ar="first_hair">29&nbsp;900&nbsp;Ft</span>-os díja és a 10 további alkalomra szóló, <span data-ar="berlet10">260&nbsp;000&nbsp;Ft</span>-os bérlet összege. A bérlethez 1 liter sampon és 1 liter balzsam jár ajándékba.</p>
+      </div>
+      <p class="kura-egyenlet" aria-hidden="true"><span><b><span data-ar="first_hair">29&nbsp;900&nbsp;Ft</span></b> első kezelés</span><i>+</i><span><b><span data-ar="berlet10">260&nbsp;000&nbsp;Ft</span></b> 10 alkalmas bérlet</span><i>=</i><span class="osszes"><b><span data-ar="kura">289&nbsp;900&nbsp;Ft</span></b> 11 kezelés</span></p>
+    </article>
+    <div class="berlet-sor">
+      <article class="berlet-doboz">
+        <p class="b-cim">5 alkalmas bérlet · nem a teljes kúra</p>
+        <p class="b-ar"><span data-ar="berlet5">130&nbsp;000&nbsp;Ft</span></p>
+        <p class="b-szamitas">5 × <span data-ar="further_treatment">26&nbsp;000&nbsp;Ft</span> · 6 hónapig érvényes</p>
+        <p class="b-ajandek"><svg aria-hidden="true"><use href="#i-ajandek"/></svg><span>Ajándék: 1 liter Oxygeni sampon</span></p>
+        <p class="b-szoveg">Ha még bizonytalan vagy: választhatod az 5 további kezelésre szóló, <span data-ar="berlet5">130&nbsp;000&nbsp;Ft</span>-os bérletet is, 1 liter Oxygeni sampon ajándékkal. Ez egy kezdő szakasz, nem a teljes kúra.</p>
+      </article>
+      <article class="berlet-doboz kiemelt">
+        <p class="b-szalag">Az ajánlott kúra része</p>
+        <p class="b-cim">10 alkalmas bérlet</p>
+        <p class="b-ar"><span data-ar="berlet10">260&nbsp;000&nbsp;Ft</span></p>
+        <p class="b-szamitas">10 × <span data-ar="further_treatment">26&nbsp;000&nbsp;Ft</span> · 12 hónapig érvényes</p>
+        <p class="b-ajandek"><svg aria-hidden="true"><use href="#i-ajandek"/></svg><span>Ajándék: 1 liter Oxygeni sampon + 1 liter balzsam</span></p>
+        <p class="b-szoveg">A 10 alkalmas bérlet az első kezeléssel együtt adja a teljes, 11 kezeléses programot (<span data-ar="kura">289&nbsp;900&nbsp;Ft</span>).</p>
+      </article>
+    </div>
+    <div class="ar-lab">
+      <p><b>Első kezelés előtti vagy aznapi bérletvásárláskor</b> a bérlet alapajándékán felül egy kis kiszerelésű Oxygeni terméket is adunk. Bérletet csak személyesen, a szalonban lehet vásárolni.</p>
+      <p>A bérletek kezelési ára azonos az egyes alkalmak <span data-ar="further_treatment">26&nbsp;000&nbsp;Ft</span>-os árával; a bérlet előnye a termékajándék. Az 5-ös bérlet 6 hónapig, a 10-es 12 hónapig érvényes.</p>
+      <p class="ar-halk">A kis kiszerelésű termék készletfüggő. Online fizetés nincs: a kezelést és a felmérést a szalonban fizeted.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. SZEMELYES KURATERV ES OTTHONI RUTIN ============ -->
+<!-- A szoveg a MASTERPROMPT 2.3/8. pontjabol es a 023-025, 040-043. dontesekbol van osszeallitva (nem a 03-as "kesz szoveg" resz verbatim bekezdese): REQUIRES_VERIFICATION a tulajdonos szoveg-jovahagyasa. -->
+<section class="terv" id="kuraterv" aria-labelledby="terv-cim">
+  <div class="tartalom terv-racs">
+    <div>
+      <h2 id="terv-cim">Személyes kúraterv és otthoni rutin</h2>
+      <p>A kezelő minden vendégnél egyetlen digitális űrlapot tölt ki. Ebből készül a személyes A5 kúraterv: az első alkalmon nyomtatva megkapod, a véglegesítés után e-mailben is elküldjük. Nem általános prospektus, a nevedre és a helyzetedre szabjuk.</p>
+      <ul class="pipa-lista sotet-szoveg">
+        <li><span>panaszaid és a hajkamerás megfigyelések</span></li>
+        <li><span>a célod és az ajánlott ritmus (alapértelmezetten kéthetente)</span></li>
+        <li><span>a következő időpont és a kezelő személyes üzenete</span></li>
+        <li><span>az otthoni Oxygeni rutin</span></li>
+      </ul>
+    </div>
+    <div class="terv-otthon">
+      <h3>Otthoni Oxygeni ápolás</h3>
+      <p>A személyre szabott otthoni Oxygeni rutint erősen ajánljuk, de nem kötelező: a kúra nem függ a termékvásárlástól. Az otthoni Oxygeni termékek kizárólag személyesen, a szalonban vásárolhatók; a rutint a kezelő az 5. és a 10. alkalmon felülvizsgálja.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. VALODI VENDEGTAPASZTALATOK ============ -->
+<!-- Csak valodi anyag: a Glamour-cikk szo szerinti idezete, a Trustindex-csuszka (valodi Google-ertekelesek, nem szerkesztve; a velemenyszam csak a widgetben latszik, nem kezzel beirva),
+     es a szalon sajat vendegeinek elotte-utana kepei. Nincs kitalalt velemeny, nincs MI-kep. A "2 millio kezeles / 95%" KIMARAD (REQUIRES_VERIFICATION: gyartoi definicio + forraslink). -->
+<section class="tapasztalatok" id="tapasztalatok" aria-labelledby="tapasztalat-cim">
+  <div class="tartalom">
+    <h2 id="tapasztalat-cim" class="kozepre">Valódi vendégtapasztalatok</h2>
+    <p class="lead kozepre">Az eredmények személyenként eltérhetnek, ezek nem egyéni garanciák.</p>
+    <aside class="glamour-sav" id="glamour" aria-label="A Glamour cikke az oxigénterápiánkról">
+      <figure class="glamour-doboz">
+        <div class="glamour-jel">
+          <span class="glamour-logo" role="img" aria-label="Glamour"></span>
+          <span class="glamour-cimke">Glamour cikk</span>
+        </div>
+        <div class="glamour-szoveg">
+          <blockquote><p>A változás a hidratáló kezelésnek köszönhetően szinte azonnal érezhető, a látványos eredményhez azonban 3-4 hónapos, folyamatos terápiára van szükség.</p></blockquote>
+          <figcaption>
+            <span class="glamour-datum">A Glamour is írt rólunk · 2026. október 6.</span>
+            <a class="glamour-link" href="https://www.glamour.hu/szepseg/oxigenterapia-modszer-hajhullas/wjcmlmd" target="_blank" rel="noopener" data-cta="glamour-cikk">Elolvasom a cikket <span class="nyil" aria-hidden="true">→</span></a>
+          </figcaption>
+        </div>
+      </figure>
+    </aside>
+    <h3 class="al-cim kozepre">Vendégeink véleménye</h3>
+    <!-- Az eredeti Trustindex-csuszka (ugyanaz a widget, mint az eles oldalon); kulso szolgaltato, azonnal betolt (a tulajdonos 2026-10-07-i kerese az eles oldalon). -->
+    <div class="ti-doboz" id="ti-doboz" data-forras="/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html">
+      <div class="ti-helykitolto"><p>Vélemények betöltése…</p></div>
+    </div>
+    <p class="ti-link kozepre"><a href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener" data-cta="velemenyek-google">Összes vélemény a Google-on <span class="nyil" aria-hidden="true">→</span></a></p>
+
+    <h3 class="al-cim kozepre" id="sajat-cim">Vendégeink előtte–utána fotói</h3>
+    <!-- Vendeg-osszehasonlitasok: REQUIRES_VERIFICATION - a spec (asset-lista) a marketinghasznalatra KULON, kifejezett hozzajarulast ker minden vendegtol (decision 055); a tulajdonos
+         megerositese szukseges, hogy minden kepre megvan (OXIGEN-LANDING.md "Adatvedelem"). Ugyanaz a hat kartya, mint az eles oldalon (vendeg-01..08.jpg); MI-generalt kep nincs. -->
+    <div class="ba-csoport">
+      <div class="ba-keret">
+        <div class="ba-sav" id="vendeg-sav">
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/vendeg-01.jpg" alt="Vendégünk haja a kezelések előtt és után" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/vendeg-02.jpg" alt="Vendégünk haja a kezelések előtt és után" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/vendeg-04.jpg" alt="Vendégünk haja a kezelések előtt és után" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/vendeg-06.jpg" alt="Vendégünk haja a kezelések előtt és után" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/vendeg-07.jpg" alt="Vendégünk haja a kezelések előtt és után" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+          <figure class="ba"><div class="ba-kep"><img src="/assets/img/oxigen/vendeg-08.jpg" alt="Vendégünk haja a kezelések előtt és után" width="760" height="507" loading="lazy"><span class="cimke elotte">Előtte</span><span class="cimke utana">Utána</span></div></figure>
+        </div>
+        <button type="button" class="lapozo elozo" id="vendeg-elozo" aria-label="Előző eredmények" hidden><svg><use href="#i-bal"/></svg></button>
+        <button type="button" class="lapozo kovetkezo" id="vendeg-kovetkezo" aria-label="Következő eredmények" hidden><svg><use href="#i-jobb"/></svg></button>
+      </div>
+    </div>
+    <p class="tapasz-megj kozepre">Az előtte–utána fotók valós vendégeinktől származnak, a változás személyenként eltérő; nem garantálunk eredményt.</p>
+  </div>
+</section>
+
+<!-- ============ 10. GYIK (16 kerdes, a jovahagyott szoveg szo szerint) ============ -->
+<section class="gyik-szekcio" id="gyik" aria-labelledby="gyik-cim">
+  <div class="tartalom gyik-racs">
+    <div class="gyik">
+      <h2 id="gyik-cim">Gyakori kérdések</h2>
+      <div class="gyik-lista">
+        <details><summary>Hány kezelésből áll a teljes kúra?</summary><p>A MOSAIC ajánlott teljes kúrája az első alkalomból és tíz további hajkezelésből áll, tehát összesen 11 kezelés. Az alkalmasságot és a szükséges folytatást minden vendégnél a kezelő értékeli.</p></details>
+        <details><summary>Mennyi időnként érdemes jönni?</summary><p>Alapértelmezetten kéthetente egyszer javasoljuk a kezelést, de az egyéni állapot és tapasztalatok alapján ettől eltérhetünk.</p></details>
+        <details><summary>Mikor láthatok változást?</summary><p>Egyes vendégek 1–2 alkalom után tapasztalhatnak változást. Érdemi köztes értékelést általában 5–6 alkalom után végzünk. Garantált hajnövekedést vagy hajhulláscsökkenést nem ígérünk.</p></details>
+        <details><summary>Kell bérletet vásárolnom?</summary><p>Nem. Az első hajkezelés <span data-ar="first_hair">29&nbsp;900&nbsp;Ft</span>, a továbbiak <span data-ar="further_treatment">26&nbsp;000&nbsp;Ft</span>/alkalom. Az 5 és 10 további kezelésre szóló bérletek személyesen megvásárolhatók.</p></details>
+        <details><summary>Mi jár a bérlethez?</summary><p>Az 5-ös bérlethez 1 liter Oxygeni sampon, a 10-eshez 1 liter sampon és 1 liter balzsam. Az első kezelés előtt vagy napján bérletet vásárlóknak további kis kiszerelésű Oxygeni termék jár.</p></details>
+        <details><summary>Mikor fizetek?</summary><p>Az egyedi kezelést és az önálló felmérést a szalonban fizeted, a kezeléskor/után. A bérletet előre, egy összegben, személyesen fizetheted.</p></details>
+        <details><summary>Beszámítható a <span data-ar="camera_assessment">4&nbsp;990&nbsp;Ft</span>-os felmérés?</summary><p>Igen, a teljes <span data-ar="camera_assessment">4&nbsp;990&nbsp;Ft</span>, ha a felméréstől számított 30 napon belül lefoglalod az első kezelést. Maga a kezelés később is lehet. Áthelyezésnél a beszámítás megmarad, teljes lemondásnál megszűnik.</p></details>
+        <details><summary>Mennyi ideig tart a két szolgáltatás?</summary><p>Az első hajoxigénterápia állapotfelméréssel <span data-perc="first_hair">80&nbsp;perc</span>. Az önálló hajkamerás állapotfelmérés <span data-perc="camera_assessment">30&nbsp;perc</span>.</p></details>
+        <details><summary>Hogyan készüljek?</summary><p>A kezelés előtti 24 órában kérjük, ne moss hajat. Az állapotfelmérőt töltsd ki a biztonságos linken. Hajfestés vagy szőkítés után a kezelő egyéni útmutatása az irányadó.</p></details>
+        <details><summary>Moshatok hajat a kezelés után?</summary><p>Igen. Nincs általános, kezelés utáni hajmosási korlátozás. Egyéni szakmai utasítást az állapotod alapján kaphatsz.</p></details>
+        <details><summary>Mire jó a hajkamera?</summary><p>Segít dokumentálni a fejbőr és a hajszálak látható állapotát és összehasonlítani a későbbi ellenőrző alkalmakon. Nem helyettesít bőrgyógyászati vagy orvosi diagnózist.</p></details>
+        <details><summary>Biztonságos mindenkinek?</summary><p>Nem minden helyzetben megfelelő. A foglalás után digitális állapotfelmérőt küldünk; az esetleges érzékenységet vagy ellenjavallatot a kezelő ellenőrzi, szükség esetén előzetesen egyeztetünk vagy szakemberhez irányítunk.</p></details>
+        <details><summary>Visszakapom a képeimet?</summary><p>Igen. Az 1., 3., 5. és 10. kezelésen készítünk felvételeket. Az ellenőrző alkalmak képeit és személyes értékelését biztonságos, 30 napig érvényes linken küldjük. Új link kérhető.</p></details>
+        <details><summary>Meddig érvényes a bérletem?</summary><p>Az 5 alkalmas bérlet 6 hónapig, a 10 alkalmas 12 hónapig érvényes. Elég a lejárat előtt időpontot foglalni; a kezelés későbbre is eshet. Részletes feltételeket a szalonban ismertetünk.</p></details>
+        <details><summary>Lemondhatom az időpontomat?</summary><p>Legkésőbb 48 órával előtte módosíthatod vagy lemondhatod. Késedelmes lemondásért és meg nem jelenésért nem számítunk fel külön pénzügyi szankciót.</p></details>
+        <details><summary>Hol talállak titeket?</summary><p>MOSAIC HeadSpa, 1023 Budapest, Bécsi út 2., Kolosy tér. Telefon: 06 20 247 4444.</p></details>
+      </div>
+      <p class="kozepre gyik-cta"><button type="button" class="gomb gomb-arany" data-foglal="first_hair" data-cta="gyik-foglalas-inditasa"><span class="gt">Foglalás indítása</span> <span class="nyil" aria-hidden="true">→</span></button></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11. HELYSZIN ES PRAKTIKUS INFORMACIOK ============ -->
+<!-- A cim, a telefonszam, a nyitvatartas es a SZEP Kartya az eles MOSAIC oldalakrol (valos forras: foglalas/oxigenterapia-budapest.html, lezeres-szortelenites-budapest.html). Terkep-beagyazas nincs (kulso szolgaltato): csak link. -->
+<section class="szalon" id="helyszin" aria-labelledby="szalon-cim">
+  <div class="tartalom szalon-racs">
+    <div class="szalon-kepek">
+      <img src="/assets/img/oxigen/kezeloszoba.jpg" alt="A MOSAIC egyik kezelőszobája" width="760" height="507" loading="lazy">
+      <img src="/assets/img/oxigen/recepcio.jpg" alt="A MOSAIC recepciója és váró tere" width="760" height="507" loading="lazy">
+    </div>
+    <div class="szalon-szoveg">
+      <h2 id="szalon-cim">Helyszín és praktikus információk</h2>
+      <ul class="hely-lista">
+        <li><b>Cím:</b> MOSAIC HeadSpa, 1023 Budapest, Bécsi út 2. (Kolosy tér, a Kolosy tér és a Zsigmond tér között)</li>
+        <li><b>Nyitvatartás:</b> hétfőtől szombatig 8:00–20:00, vasárnap zárva</li>
+        <li><b>Kapcsolat:</b> <a href="tel:+36202474444">06 20 247 4444</a></li>
+        <li><b>Fizetés:</b> a szalonban; a SZÉP Kártyát is elfogadjuk</li>
+      </ul>
+      <p><a class="gomb gomb-korvonal" href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener" data-cta="helyszin-utvonal"><span class="gt">Útvonaltervezés</span> <span class="nyil" aria-hidden="true">→</span></a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12. ZARO BLOKK + BEAGYAZOTT FOGLALO ============ -->
+<!-- A foglalo: a MEGLEVO MOSAIC foglalo-motor (assets/js/booking-engine/engine.js, 'page' mod beagyazva: beagyazott.js), a lapon belul; nincs popup, nincs URL-valtozas.
+     A szolgaltatas elore kivalasztva (first_hair = Salonic 466110, camera_assessment = 466147, tovabbi kezeles 466158). A foglalas kozvetlenul a Salonic naptaraval tortenik
+     (a motor adatlap-lepese a Salonic sajat keretben), foglalasi azonosito a Salonic visszairanyitasabol (a motor sikerlogikaja); online fizetes nincs. -->
+<section class="zaro foglalas" id="foglalas" aria-labelledby="foglalas-cim" data-booking-blokk data-selected-service="first_hair" data-complaints="" data-consent-email="false" data-consent-sms="false">
+  <div class="tartalom">
+    <header class="fz-fej">
+      <h2 id="foglalas-cim">A saját fejbőröd állapotából indulunk ki.</h2>
+      <p class="fz-lead">Ha szeretnéd megismerni a lehetőségeidet, válassz időpontot az első, 80 perces hajkezelésre – vagy kezdj a 30 perces önálló hajkamerás állapotfelméréssel. A <span data-ar="camera_assessment">4&nbsp;990&nbsp;Ft</span>-os felmérést az első kezelés árába beszámítjuk a megadott feltételekkel.</p>
+      <div class="zaro-cta">
+        <button type="button" class="gomb gomb-arany" data-foglal="first_hair" data-cta="click_final_first" aria-pressed="true"><span class="gt">Első kezelést foglalok – <span data-ar="first_hair">29&nbsp;900&nbsp;Ft</span></span> <span class="nyil" aria-hidden="true">→</span></button>
+        <button type="button" class="gomb gomb-kontur" data-foglal="camera_assessment" data-cta="click_final_camera" aria-pressed="false"><span class="gt">Hajkamerás állapotfelmérést foglalok – <span data-ar="camera_assessment">4&nbsp;990&nbsp;Ft</span></span> <span class="nyil" aria-hidden="true">→</span></button>
+      </div>
+      <p class="fz-masik">Már jártál nálunk? <button type="button" class="link-gomb" data-foglal="further_treatment" data-cta="click_final_further" aria-pressed="false">További kezelést foglalok – <span data-ar="further_treatment">26&nbsp;000&nbsp;Ft</span></button></p>
+    </header>
+
+    <div class="foglalo-racs" id="foglalo" tabindex="-1" aria-label="Időpontfoglalás">
+      <aside class="foglalo-oldal" aria-label="A foglalás beállításai">
+        <p class="fo-valasztott" id="fo-valasztott" role="status" aria-live="polite">Kiválasztott szolgáltatás: <b id="fo-szolg">Első kezelés állapotfelméréssel · <span data-perc="first_hair">80&nbsp;perc</span> · <span data-ar="first_hair">29&nbsp;900&nbsp;Ft</span></b></p>
+        <p class="fo-panasz" id="fo-panasz" hidden></p>
+        <fieldset class="hozzajarulas" id="hozzajarulas" data-consent-verzio="tervezet-2026-10-09">
+          <legend>Marketing-hozzájárulás <span>(nem kötelező)</span></legend>
+          <!-- REQUIRES_VERIFICATION: a hozzajarulas szovegverzioja es az adatkezelesi tajekoztato jogi jovahagyasra var; csak UI + data- hook + dataLayer: a mentes a CRM-ben kesobb keszul
+               (consent_marketing_email / consent_marketing_sms, csatornankent kulon ertek, idobelyeg + szovegverzio). ELORE NEM KIPIPALT. A foglalashoz / felmereshez szukseges adatkezeles nem marketing-checkbox. -->
+          <label class="jelolo"><input type="checkbox" name="marketing_email" data-consent="marketing_email"><span>Szeretnék e-mailben visszafoglalási és bérletajánló üzeneteket kapni a MOSAIC-tól.</span></label>
+          <label class="jelolo"><input type="checkbox" name="marketing_sms" data-consent="marketing_sms"><span>Szeretnék SMS-ben visszafoglalási és bérletajánló üzeneteket kapni a MOSAIC-tól.</span></label>
+          <p class="hozzajarulas-megj">A két hozzájárulás külön és önkéntes, bármikor visszavonható. A foglaláshoz és az állapotfelméréshez szükséges adatkezelés nem függ tőlük.</p>
+        </fieldset>
+        <p class="fo-fizetes">A kezelést és a felmérést a szalonban fizeted, a kezelés után. Online fizetés nincs.</p>
+      </aside>
+      <div class="foglalo-doboz" id="foglalo-doboz">
+        <p class="fo-mod" id="fo-mod" hidden>Tartalék mód: a foglalás a Salonic foglalóján folytatódik</p>
+        <div class="foglalo-host" id="foglalo-host" aria-live="off"><p class="fo-betolt" id="fo-betolt">A foglaló betöltése…</p></div>
+        <div class="fo-tartalek" id="fo-tartalek" hidden>
+          <p id="fo-tartalek-szoveg">A beépített foglaló most nem érhető el. Folytasd a foglalást a Salonic foglalóján, ugyanerre a szolgáltatásra:</p>
+          <p><a class="gomb gomb-arany" id="fo-tartalek-link" href="tel:+36202474444" target="_blank" rel="noopener" data-cta="foglalo-tartalek-salonic"><span class="gt">Foglalás a Salonic oldalán</span> <span class="nyil" aria-hidden="true">→</span></a></p>
+          <p class="fo-tartalek-tel">Vagy hívj minket: <a href="tel:+36202474444">06 20 247 4444</a></p>
+        </div>
+        <noscript><p class="fo-noscript">A beépített foglalóhoz JavaScript szükséges. Foglalj telefonon: <a href="tel:+36202474444">06 20 247 4444</a>.</p></noscript>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- mobil sticky CTA (csak telefonon, a hero-gombok elgorgetese utan, a foglalo szekciojaig): a lapon belul gorget a foglalohoz -->
+<div class="sticky-cta" id="sticky-cta" aria-hidden="true">
+  <button type="button" class="gomb gomb-arany" data-foglal="first_hair" data-cta="sticky-elso-kezeles" tabindex="-1"><span class="gt">Első kezelés · <span data-ar="first_hair">29 900 Ft</span></span> <span class="nyil" aria-hidden="true">→</span></button>
+  <button type="button" class="sticky-masodlagos" data-foglal="camera_assessment" data-cta="sticky-allapotfelmeres" tabindex="-1">Csak felmérés<br><span data-ar="camera_assessment">4 990 Ft</span></button>
+</div>
+
+<!--mh-lablec-->
+
+<script src="/assets/js/klon.js" defer></script>
+<script src="/assets/js/oxigen-uj.js" defer></script>
 </body>
 </html>
