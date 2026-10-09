@@ -98,9 +98,15 @@ A **munkatársi** törlések és módosítások (a szalon a Salonic naptárában
 
 ## Konfiguráció
 
-`wrangler.toml` (nem titkos): `LIFECYCLE_MOD`, `LIFECYCLE_UZLETAGOK`, `LIFECYCLE_KULCS_HASH` (a belépő kulcs SHA-256-ja), `SIMPLESMS_FELHASZNALO` (`ferraj@gmail.com`: a SimpleSMS „Felhasználó” oszlopa, NEM a „Felhasználó neve”), `SIMPLESMS_DOMAIN` (`mosaicheadspa.hu`), D1: `LIFECYCLE_DB` (eles: `mosaic-lifecycle`, előnézet: `mosaic-lifecycle-elonezet`).
+`wrangler.toml` (nem titkos): `LIFECYCLE_MOD`, `LIFECYCLE_UZLETAGOK`, `LIFECYCLE_KULCS_HASH` (a belépő kulcs SHA-256-ja; **több hash is megadható** vesszővel/szóközzel elválasztva, ilyenkor mindegyik érvényes: lásd „Kulcscsere”), `SIMPLESMS_FELHASZNALO` (`ferraj@gmail.com`: a SimpleSMS „Felhasználó” oszlopa, NEM a „Felhasználó neve”), `SIMPLESMS_DOMAIN` (`mosaicheadspa.hu`), D1: `LIFECYCLE_DB` (eles: `mosaic-lifecycle`, előnézet: `mosaic-lifecycle-elonezet`).
 Titkok (Cloudflare, Secret, **Production és Preview külön**): `SIMPLESMS_JELSZO` (a SimpleSMS API-jelszó), `SMTP_PASS` (meglévő). A belépő kulcs a két Zapier-láncban van beágyazva (a repóban csak a hash-e).
 Munkatársi értesítők (DECISION #117): `LIFECYCLE_MUNKATARS_MOD` (`ki` | `figyel` alap | `be`), `LIFECYCLE_ELO_ELLENORZES` (`ki` kikapcsolja a kiküldés előtti Salonic-oldal ellenőrzést; alapból be), `LIFECYCLE_NOSHOW_AUTO` (`1` = a régi, törlésből induló automatikus no-show; alapból ki).
+
+**Kulcscsere leállás nélkül** (a kulcs értékét sehová nem írjuk le, csak a SHA-256-ját):
+1. Az új kulcsot a tulajdonos oldala a Zapier Storage-ba teszi (`lifecycle_kulcs`), a SHA-256-ját megadja.
+2. A `wrangler.toml`-ban (`[vars]` és `[env.preview.vars]`) a régi hash mellé kerül az új: `LIFECYCLE_KULCS_HASH = "<régi>,<új>"`; telepítés (merge).
+3. A `lifecycle-bejovo` és a `lifecycle-tick` Zap átáll az új kulcsra (olvasás a Storage-ból), és egy tick-futás igazolja.
+4. A régi hash kikerül a `wrangler.toml`-ból; telepítés. Ettől a régi kulcs érvénytelen.
 Opcionális: `LIFECYCLE_SZALON_EMAIL` (alap: mosaicheadspa@gmail.com), `LIFECYCLE_TESZT_EMAIL`, `LIFECYCLE_TESZT_TELEFON`, `LIFECYCLE_NAPI_PLAFON` (alap 300 befogadott levél / nap; egy foglalás 2 levél), `LIFECYCLE_SMS_KUSZOB` (alacsony egyenleg-riasztás, alap 3000), `LIFECYCLE_BASE_URL`.
 Zapier: `lifecycle-bejovo` (id `01a1168a-afbf-7ee9-94c3-6e5be524b6be`) és `lifecycle-tick` (id `01a1169c-7353-708d-8801-912e783e8424`); a **cél-cím** (`CEL`) a kódjukban van: előnézet → éles átállásnál új verzióban `https://www.mosaicheadspa.hu`-ra kell átírni. A sandbox csak engedélyezett hosztokat ér el, ezért a hívás a „Webhooks by Zapier” (custom request) akción megy.
 
