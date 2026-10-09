@@ -397,6 +397,26 @@ test('motor: napi plafon; ismeretlen level naplozva; napi karbantartas (anonimiz
 });
 
 // ---- HTTP -------------------------------------------------------------------------------------------------------------------------------------
+test('http: kulcscsere leallas nelkul - a LIFECYCLE_KULCS_HASH tobb hash-t is elfogad, a rosszat / ures / hibas alakut nem', async () => {
+  const sha = async (s) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map((b) => b.toString(16).padStart(2, '0')).join('');
+  const regi = 'regi-tesztkulcs'; const uj = 'uj-tesztkulcs'; const harmadik = 'harmadik-tesztkulcs';
+  const hivas = (env, k) => api(new Request('https://x.test/api/lifecycle/allapot', { method: 'GET', headers: k ? { 'x-lifecycle-kulcs': k } : {} }), env).then((r) => r.status);
+  const alap = { LIFECYCLE_DB: d1(), LIFECYCLE_MOD: 'teszt', SMTP_PASS: '' };
+  const ketto = `${await sha(regi)},${(await sha(uj)).toUpperCase()}`; // a nagybetus hash is jo
+  assert.equal(await hivas({ ...alap, LIFECYCLE_KULCS_HASH: ketto }, regi), 200);
+  assert.equal(await hivas({ ...alap, LIFECYCLE_KULCS_HASH: ketto }, uj), 200);
+  assert.equal(await hivas({ ...alap, LIFECYCLE_KULCS_HASH: ketto }, harmadik), 404);
+  assert.equal(await hivas({ ...alap, LIFECYCLE_KULCS_HASH: ketto }, ''), 404);
+  // a regi hash eltavolitasa utan a regi kulcs mar nem jo, az uj igen (szokozzel elvalasztva is mukodik)
+  assert.equal(await hivas({ ...alap, LIFECYCLE_KULCS_HASH: ` ${await sha(uj)} ` }, regi), 404);
+  assert.equal(await hivas({ ...alap, LIFECYCLE_KULCS_HASH: `${await sha(uj)} ${await sha(regi)}` }, regi), 200);
+  // hibas alaku / ures ertek soha nem enged be (a hibas hash-t kihagyja, a jot elfogadja)
+  assert.equal(await hivas({ ...alap, LIFECYCLE_KULCS_HASH: '' }, regi), 404);
+  assert.equal(await hivas({ ...alap, LIFECYCLE_KULCS_HASH: 'nem-hash,' }, 'nem-hash'), 404);
+  assert.equal(await hivas({ ...alap, LIFECYCLE_KULCS_HASH: `rovid,${await sha(uj)}` }, uj), 200);
+  assert.equal(await hivas({ ...alap }, regi), 404);
+});
+
 test('http: kulcsos vegpontok, megerosito oldal, rovid link', async () => {
   const db = d1();
   const kulcs = 'tesztkulcs123';

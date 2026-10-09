@@ -21,10 +21,12 @@ const json = (o, status = 200) => new Response(JSON.stringify(o), { status, head
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const ma = () => Math.floor(Date.now() / 1000);
 
+/** A LIFECYCLE_KULCS_HASH egy vagy tobb (vesszovel / szokozzel elvalasztott) SHA-256 hash: kulcscserekor atmenetileg mindketto ervenyes (leallas nelkuli csere). */
 async function kulcsos(request, env) {
   const k = request.headers.get('x-lifecycle-kulcs') || '';
-  if (!env.LIFECYCLE_KULCS_HASH || !k) return false;
-  return (await sha256(k)) === String(env.LIFECYCLE_KULCS_HASH).toLowerCase();
+  const hashek = String(env.LIFECYCLE_KULCS_HASH || '').toLowerCase().split(/[\s,;]+/).filter((h) => /^[0-9a-f]{64}$/.test(h));
+  if (!hashek.length || !k) return false;
+  return hashek.includes(await sha256(k));
 }
 
 /** A "most": elesben mindig a valodi ido; teszt / ki modban a kerelem felulirhatja (a T-72/T-24 sor tesztelesehez). */
