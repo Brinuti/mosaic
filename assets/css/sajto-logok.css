@@ -2,7 +2,7 @@
    A HTML-t a tools/sajto-kartyak/kartyak.py generalja (foldal: SAJTO-LOGOK jelolok az index.html-ben; vélemenyek oldal: a #sajto szekcio fejlece alatt).
    A logok maszkkent (mask-image) jelennek meg: egy fajl barmilyen szinre festheto (currentColor), az eredeti szinuk nem szamit. */
 .sajto-logok { --sl-szin: #0f3a3c; padding: 26px 0 22px; text-align: center; }
-.sajto-logok-cim { margin: 0 0 14px; font: 500 12.5px/1.2 'Jost', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .18em; text-transform: uppercase; color: #6d7e79; }
+.sajto-logok-cim { margin: 0 0 14px; font: 500 15px/1.35 'Jost', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .01em; color: #4f625d; }
 .sl-rad { display: flex; justify-content: center; align-items: center; gap: clamp(20px, 2.4vw, 36px); }
 .sl-rad ul { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; gap: clamp(20px, 2.4vw, 36px); }
 .sl-rad li { display: flex; flex: 0 0 auto; }
@@ -15,7 +15,7 @@
 /* telefon: ket sor (4 + 4), egy-egy sor magassaga <= ~26 px: a logok kevés helyet foglalnak */
 @media (max-width: 899px) {
   .sajto-logok { padding: 14px 0 10px; }
-  .sajto-logok-cim { margin-bottom: 8px; font-size: 11.5px; }
+  .sajto-logok-cim { margin-bottom: 8px; font-size: 13.5px; }
   .sl-rad { display: block; }
   .sl-rad ul { gap: 12px; margin-bottom: 4px; justify-content: space-between; }
   .sl-rad li { flex: var(--g, 1) 1 0; min-width: 0; }

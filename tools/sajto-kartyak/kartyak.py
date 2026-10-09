@@ -77,7 +77,9 @@ def logo_sav(mod):
                 % (l['g'], href, cta, html.escape(cimke, quote=True), l['ar'], l['h'], l['fajl']))
     sorok = [logok[:4], logok[4:]]
     ul = '\n'.join('        <ul>' + ''.join(elem(l) for l in sor) + '</ul>' for sor in sorok)
-    return ('<div class="sajto-logok">\n      <p class="sajto-logok-cim">Írtak rólunk</p>\n      <div class="sl-rad">\n'
+    # a fooldalon felirat van (a tulajdonos szava: "a noi divatvilag minden nagy szereploje jart mar nalunk"); a velemenyek oldalon a szekcio cime ("Noi lapok akik irtak rolunk") mar elmondja
+    cim = '<p class="sajto-logok-cim">A női divatvilág minden nagy szereplője járt már nálunk</p>\n      ' if mod == 'fooldal' else ''
+    return ('<div class="sajto-logok">\n      ' + cim + '<div class="sl-rad">\n'
             + ul + '\n      </div>\n    </div>')
 
 def fooldal_sav():

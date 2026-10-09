@@ -256,7 +256,7 @@
   const TI = 'https://cdn.trustindex.io/widgets/8a/8a7562c424f027774456be130a1/content.html';
   let tiKesz = false;
   async function ertekelesFrissit() {
-    if (tiKesz || !$('te-db')) return;
+    if (tiKesz || (!$('te-db') && !$('hero-g-db'))) return;
     tiKesz = true;
     try {
       const d = new DOMParser().parseFromString(await (await fetch(TI, { credentials: 'omit' })).text(), 'text/html');
@@ -265,13 +265,14 @@
       const n = (db.match(/\d[\d\s.]*/) || [''])[0].replace(/\D/g, '');
       const cs = fej ? [...fej.querySelectorAll('.ti-stars .ti-star')].map((x) => (x.classList.contains('f') ? 1 : x.classList.contains('h') ? 0.5 : 0)) : [];
       const min = ((fej && fej.querySelector('.ti-rating')) || {}).textContent;
-      if (n) $('te-db').textContent = new Intl.NumberFormat('hu-HU').format(+n).replace(/\s/g, '.') + ' Google-vélemény';
-      if (cs.length === 5) {
+      if (n && $('hero-g-db')) $('hero-g-db').textContent = new Intl.NumberFormat('hu-HU').format(+n).replace(/\s/g, '.') + ' vélemény';
+      if (n && $('te-db')) $('te-db').textContent = new Intl.NumberFormat('hu-HU').format(+n).replace(/\s/g, '.') + ' Google-vélemény';
+      if (cs.length === 5 && $('te-csillagok')) {
         const ossz = cs.reduce((a, b) => a + b, 0);
         $('te-csillagok').style.setProperty('--ert', (ossz / 5) * 100 + '%');
         $('te-csillagok').setAttribute('aria-label', '5 csillagból ' + String(ossz).replace('.', ','));
       }
-      if (min && min.trim()) $('te-minosites').textContent = min.trim().replace(/ értékelés$/i, '');
+      if (min && min.trim() && $('te-minosites')) $('te-minosites').textContent = min.trim().replace(/ értékelés$/i, '');
     } catch (e) { tiKesz = false; console.error(e); }
   }
   ertekelesFrissit();
