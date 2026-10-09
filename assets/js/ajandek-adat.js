@@ -272,8 +272,9 @@
           'Ajándékozd a barátnődnek, a testvérednek, vagy ajándékozzátok magatoknak: a páros kártya két főre szól, egy közös időpontra.'
         ],
         pontok: ['Két főre szóló páros kártya, egy közös időpont', 'Két kezelő dolgozik egyszerre, egymás mellett fekve', 'Digitális vagy nyomtatott kártya, 6 hónapig felhasználható'],
-        media: { src: '/assets/img/ajandek/magyarazo-csajos.jpg', alt: 'Két barátnő fürdőlepedőben, egymás mellett a MOSAIC páros kezelőszobájában, a Head Spa előtt', w: 720, h: 540, poz: '50% 30%',
-          forras: 'a Páros kezelés videó (paros-hero-barat.mp4) egy kockája' }
+        // 2026-10-09 (2. kor): a hero-videoban mar szerepel a pezsgozes + a paros agyak, ezert ide MAS jelenet kerult: ket no karoltve a MOSAIC folyosojan
+        media: { src: '/assets/img/ajandek/magyarazo-csajos-ketto.jpg', alt: 'Két barátnő fürdőlepedőben, karöltve sétál és nevet a MOSAIC folyosóján a Head Spa előtt', w: 1000, h: 906, poz: '50% 20%',
+          forras: 'Drive: "páros csajos érzelmes.mp4" (MOSAIC hirdetési videó), a 17,5. másodperc kockája, a felirat nélküli sávra vágva' }
       },
       relationship: 'friend', gift_context: 'together', occasion: null
     },
@@ -302,8 +303,9 @@
           'Választhatod egyedül neki, vagy páros kártyát, hogy együtt éljétek át: két kezelő, egy közös időpont, egymás mellett.'
         ],
         pontok: ['Nyugodt, privát szoba, nincs rohanás', 'Egyedül neki, vagy veled együtt (páros kártya)', 'Digitális vagy nyomtatott kártya, személyre szabható üzenettel'],
-        media: { src: '/assets/img/ajandek/magyarazo-anya.jpg', alt: 'Két vendég egymás mellett fekszik a MOSAIC páros kezelőszobájában, két kezelő foglalkozik velük egyszerre', w: 1000, h: 1000, poz: '50% 55%',
-          forras: 'a MOSAIC páros-kezelés fotója (c2eb0f_2c17645e…, a Páros kártya képe), 1000 px-re kicsinyítve' }
+        // 2026-10-09 (2. kor): anya es lanya egymas mellett, beszelgetnek (a hero videojanak forrasabol, de mas kocka, mint a hero-poszter)
+        media: { src: '/assets/img/ajandek/magyarazo-anya-lanya.jpg', alt: 'Anya és lánya egymás mellett ülnek a MOSAIC szalonban, beszélgetnek és mosolyognak', w: 1000, h: 998, poz: '50% 40%',
+          forras: 'Drive: "Anya-lánya.MP4" (eredeti, 1080 x 1920), a 75,5. másodperc kockája (a hero ugyanebből a felvételből készült, de a poszter másik kocka), a felirat feletti sávra vágva' }
       },
       relationship: 'mother', gift_context: 'together', occasion: null
     },
@@ -519,8 +521,9 @@
           'A kártya 6 hónapig felhasználható, ő pedig akkor foglal, amikor neki jó, így tényleg ki tud szakadni a mindennapokból.'
         ],
         pontok: ['Nincs teendő, csak pihenés', 'Privát, csendes szoba', 'Digitális vagy nyomtatott kártya, személyre szabható üzenettel'],
-        media: { src: '/assets/img/ajandek/magyarazo-selfcare.jpg', alt: 'Mosolyogva pihenő vendég fejbőrvizsgálat közben a MOSAIC-ban', w: 900, h: 900, poz: '50% 40%',
-          forras: 'a MOSAIC fotója (galeria-05: mikrokamerás fejbőrvizsgálat), kicsinyítve' }
+        // 2026-10-09 (2. kor): a teljes ellazulast mutato kep (csukott szemmel pihenő arc), nem a hajkamerás (haj-diagnosztikai) felvétel
+        media: { src: '/assets/img/ajandek/magyarazo-selfcare-pihenes.jpg', alt: 'Csukott szemmel, nyugodtan pihenő vendég a Head Spa arany zuhanyíve alatt a MOSAIC-ban', w: 1000, h: 1067, poz: '50% 38%',
+          forras: 'Drive: "Self care headspa+ajikártya.mp4" (MOSAIC hirdetési videó), az 5,2. másodperc kockája, a felirat feletti sávra vágva' }
       },
       relationship: null, gift_context: 'self_care', occasion: null
     },

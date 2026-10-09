@@ -5,7 +5,7 @@
 //
 // Mind a 8 persona-cimre (szulinapra, japan, anyukaknak, ezo (ekezetes cim), noknek, self-care, csajos, fiataloknak) ellenorzi:
 //   - a hero: persona-H1 / alcim / felcim / gomb, a poszterkep, a videos hero (video-elem a persona videojaval, a fajl letezik)
-//   - a magyarazo-szekcio: a hero UTAN, az ajandekvalaszto ELOTT; asztalon bal oldalt a szoveg, jobb oldalt a kep; mobilon egymas alatt
+//   - a magyarazo-szekcio: a hero UTAN, az ajandekvalaszto ELOTT; asztalon BAL oldalt a kep, jobb oldalt a szoveg (a hero videoja jobbra van); mobilon egymas alatt (szoveg, majd kep)
 //   - a Gift Finder elovalasztasa, a merese (variant_id / gift_context a dataLayerben, a ?fbclid / ?utm_* parameterek megmaradnak)
 //   - nincs vizszintes tulcsordulas 390 / 768 / 1440 px-en, nincs konzolhiba / 404
 // A H.264-es videot VALOBAN lejatszo teszt csak ott fut, ahol a bongeszo tud H.264-et (a Playwright-Chromium nem tud: ott "skip", nem hiba).
@@ -138,12 +138,17 @@ for (const { nev, variant } of PERSONAK) {
       const pontok = await p.$$eval('#ah-magyarazo-pontok li', (e) => e.map((x) => x.textContent.trim()));
       assert.deepEqual(pontok, m.pontok.slice(0, 3));
       assert.ok(pontok.length >= 1 && pontok.length <= 3);
-      // a szoveg a bal oldali oszlopban, a kep a jobb oldaliban latszik (a DOM-ban is: elobb a szoveg)
+      // a szoveg- es a kep-oszlop szerkezete (a DOM-ban elobb a szoveg: mobilon igy kerul a kep a szoveg ala; asztalon a CSS teszi balra a kepet)
       assert.equal(await p.evaluate(() => !!document.querySelector('.ah-magyarazo-szoveg #ah-magyarazo-cim') && !!document.querySelector('.ah-magyarazo-media #ah-magyarazo-kep')), true);
       const kep = await p.evaluate(() => { const k = document.getElementById('ah-magyarazo-kep'); return { src: k.getAttribute('src'), alt: k.getAttribute('alt'), ok: k.complete && k.naturalWidth > 0, w: k.naturalWidth }; });
       assert.equal(kep.src, m.media.src);
       assert.equal(kep.alt, m.media.alt);
       assert.equal(kep.ok, true, 'a magyarazo-kep betoltodott');
+      // 2026-10-09 (2. kor): a magyarazo-kep a hero-poszterbol NEM ugyanaz (se fajl, se tartalom): a vendeg ne lassa ketszer ugyanazt a kepet
+      assert.notEqual(m.media.src, v.hero_media.src, 'a magyarazo-kep fajlja nem a hero-poszter');
+      const mfajl = fs.readFileSync(path.join(GYOKER, m.media.src.replace(/^\//, '')));
+      const pfajl = fs.readFileSync(path.join(GYOKER, v.hero_media.src.replace(/^\//, '')));
+      assert.ok(!mfajl.equals(pfajl), 'a magyarazo-kep tartalma nem azonos a hero-poszterrel');
       // sorrend: hero < magyarazo < valaszto (a Gift Finder csak a magyarazo UTAN jon, nem rogton a hero utan)
       const d = await dobozok(p);
       assert.ok(d.hero.b <= d.szekcio.t + 1, 'a hero a magyarazo elott van');
@@ -153,11 +158,12 @@ for (const { nev, variant } of PERSONAK) {
       await ctx.close();
     });
 
-    test('elrendezes: asztalon (1440) ket oszlop - szoveg balra, kep jobbra, egymas mellett; mobilon (390) egymas alatt - szoveg, majd kep', async () => {
+    test('elrendezes: asztalon (1440) ket oszlop - a KEP BALRA, a szoveg jobbra, egymas mellett; mobilon (390) egymas alatt - szoveg, majd kep', async () => {
       const a = await nyit(nev, { szeles: 1440 });
       await atgorget(a.p);
       const d = await dobozok(a.p);
-      assert.ok(d.media.l >= d.szoveg.r - 2, `a kep a szoveg jobb oldalan van (kep.l ${d.media.l} >= szoveg.r ${d.szoveg.r})`);
+      assert.ok(d.media.r <= d.szoveg.l + 2, `a kep a szoveg BAL oldalan van (kep.r ${d.media.r} <= szoveg.l ${d.szoveg.l})`);
+      assert.ok(d.media.l < d.szoveg.l, `a kep bal széle a szoveg bal széle elott van (kep.l ${d.media.l} < szoveg.l ${d.szoveg.l})`);
       assert.ok(d.media.t < d.szoveg.b && d.media.b > d.szoveg.t, 'a ket oszlop vertikalisan atfed');
       assert.ok(d.media.w > 350 && d.media.h > 300, 'a kep elegendo meretu: ' + d.media.w + 'x' + d.media.h);
       assert.ok(d.szoveg.w > 350, 'a szovegoszlop elegendo szeles');
