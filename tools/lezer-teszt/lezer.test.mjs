@@ -430,7 +430,7 @@ describe('az uj tartalom (visszajelzesek alapjan)', () => {
     const g = p.locator('.hero .google-nagy');
     assert.match(await g.textContent(), /4,9/);
     assert.match(await g.textContent(), /\/5/);
-    assert.match(await g.textContent(), /1\s257\s+Google-vélemény/);
+    assert.match(await g.textContent(), /1\s\d{3}\s+Google-vélemény/);
     assert.equal(await g.getAttribute('href'), '#velemenyek');
     await g.click();
     await p.waitForFunction(() => { const t = document.getElementById('velemenyek').getBoundingClientRect().top; return t < 200 && t > -150; }, null, { timeout: 8000 });

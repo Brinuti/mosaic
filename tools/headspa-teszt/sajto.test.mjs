@@ -199,3 +199,34 @@ describe('/head-spa-velemenyek: "Milyen lesz a hajad a kezelés után?" galéria
     await ctx.close();
   });
 });
+
+describe('/head-spa-velemenyek#sajto: a foldali logok kattintasa MINDIG a "Noi lapok" reszre visz', () => {
+  for (const [szeles, nev] of [[1440, 'asztal'], [390, 'telefon']]) {
+    test(`2026-10-09 ${nev}: a #sajto szekcio a fejlec alatt van az erkezes utan, akkor is, ha a fentebbi tartalom kesve nottt (lassu kepek + utolag beszurt magas elem); a gorgetes nem animalt`, async () => {
+      const mobil = szeles < 700;
+      const ctx = await bongeszo.newContext({ viewport: { width: szeles, height: mobil ? 844 : 900 }, ...(mobil ? { userAgent: UA_MOBIL, isMobile: true, hasTouch: true } : {}) });
+      // kesleltetett kepek (a lassu halozat) + 700 ms-nal egy 650 px magas elem a "hajad" galeria elott (kesve novekvo tartalom)
+      await ctx.route(/\.(jpe?g|png|webp)(\?|$)/, async (r) => { if (r.request().url().startsWith(bazis)) await new Promise((x) => setTimeout(x, 100 + Math.random() * 700)); return r.continue(); });
+      await ctx.addInitScript(() => { addEventListener('DOMContentLoaded', () => setTimeout(() => { const d = document.createElement('div'); d.style.cssText = 'height:650px'; d.setAttribute('data-teszt-eltolas', ''); const h = document.getElementById('hajad'); h.parentNode.insertBefore(d, h); }, 700)); });
+      await ctx.route(/^(?!http:\/\/localhost)/, (r) => r.abort());
+      const p = await ctx.newPage();
+      await p.goto(`${bazis}/head-spa-velemenyek#sajto`, { waitUntil: 'load' });
+      await p.waitForTimeout(3000);
+      const m = await p.evaluate(() => {
+        const f = document.getElementById('SITE_HEADER');
+        const fejlec = f && /fixed|sticky/.test(getComputedStyle(f).position) ? f.getBoundingClientRect().height : parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+        return { top: document.getElementById('sajto').getBoundingClientRect().top, fejlec, eltolas: !!document.querySelector('[data-teszt-eltolas]'), scrollY };
+      });
+      assert.equal(m.eltolas, true, 'a kesve novekvo elem megjelent');
+      assert.ok(Math.abs(m.top - m.fejlec) <= 6, `a "Noi lapok" szekcio teteje a fejlec alatt (${Math.round(m.top)} px, fejlec ${Math.round(m.fejlec)} px)`);
+      assert.ok(m.scrollY > 1500, 'legorgetett: ' + m.scrollY);
+      // az igazitas utan a latogato szabadon gorgethet: a kovetkezo gorgetest nem rantja vissza
+      await p.mouse.wheel(0, -400);
+      await p.waitForTimeout(900);
+      const y1 = await p.evaluate(() => scrollY);
+      await p.waitForTimeout(1200);
+      assert.equal(await p.evaluate(() => scrollY), y1, 'a latogato gorgetese utan nincs visszaigazitas');
+      await ctx.close();
+    });
+  }
+});

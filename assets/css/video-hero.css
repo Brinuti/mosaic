@@ -119,6 +119,14 @@ a:hover > .vh-nyil, .vh-gomb:hover .vh-nyil { transform: translateX(3px); }
   .vh-ar-kicsi s { font-size: 15px; }
   .vh-sor { font-size: 14.5px; }
   .vh-akcio { margin: -6px 0 14px; font-size: 14.5px; }
+  /* az ar (a regi ar + az uj ar) es az akcios sor TELEFONON EGY SORBAN: a betumeret a doboz szelessegehez igazodik (cqw), az --r a sor szovegenek szelessege betumeretben
+     (oldalankent merve + ~4% ráhagyas; a tesztek 320-430 px kozott ellenorzik, hogy egy sor marad es nem lóg ki) */
+  .vh-arsor { container-type: inline-size; display: flex; flex-wrap: nowrap; align-items: baseline; margin: 0 0 14px; white-space: nowrap; }
+  .vh-arsor > p { flex: none; margin: 0; font-size: min(15px, calc(100cqw / var(--r, 16))); }
+  .vh-arsor > p + p { margin-left: .7em; }
+  .vh-arsor .vh-ar { flex-wrap: nowrap; gap: 0 .4em; }
+  .vh-arsor .vh-ar b { font-size: 1.55em; }
+  .vh-arsor .vh-ar s { font-size: 1em; }
   /* a harom jelveny egy sorban, egyenlo oszlopokban: felul az ikon, alatta a (rovid) felirat (360-390 px szelessegen is elfer) */
   .vh-jelvenyek { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 18px; }
   .vh-jelvenyek li { flex-direction: column; justify-content: flex-start; gap: 6px; text-align: center; font-size: 12.5px; line-height: 1.25; }

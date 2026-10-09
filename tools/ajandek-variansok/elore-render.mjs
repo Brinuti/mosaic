@@ -24,7 +24,7 @@ export function magyarazoMarkup(m) {
     '        <p class="ah-felcim" id="ah-magyarazo-felcim"' + (m.felcim ? '' : ' hidden') + '>' + esc(m.felcim) + '</p>\n' +
     '        <h2 id="ah-magyarazo-cim">' + esc(m.cim) + '</h2>\n' +
     '        <div class="ah-magyarazo-torzs" id="ah-magyarazo-torzs">' + (m.szovegek || []).map((t) => '<p>' + esc(t) + '</p>').join('') + '</div>\n' +
-    '        <ul class="ah-pipalista" id="ah-magyarazo-pontok">' + (m.pontok || []).slice(0, 3).map((t) => '<li>' + esc(t) + '</li>').join('') + '</ul>\n' +
+    '        <ul class="ah-pipalista" id="ah-magyarazo-pontok"' + ((m.pontok || []).length ? '' : ' hidden') + '>' + (m.pontok || []).slice(0, 3).map((t) => '<li>' + esc(t) + '</li>').join('') + '</ul>\n' +
     '      </div>\n' +
     (md.src
       ? '      <figure class="ah-magyarazo-media" id="ah-magyarazo-media" style="--ah-magyarazo-arany:' + arany.toFixed(3) + '"><img id="ah-magyarazo-kep" src="' + esc(md.src) + '" alt="' + esc(md.alt) + '"' +

@@ -3,6 +3,7 @@
 //  2. Korhinta (.korhinta): kep-sorozat gorgetheto savban, elozo / kovetkezo gombokkal.
 //  3. Vendegertekelesek (Trustindex): MINDIG azonnal megjelennek (nincs hozzajarulas-kapu); a Google terkep harmadik fel: a "funkcionalis" sutik elfogadasa utan (vagy a gombra kattintva) toltodik be.
 //  4. Mobil sticky CTA: a hero elgorgetese utan jelenik meg, a helyszin szekcional (es utana) eltunik.
+//  5. Horgony-rogzites: masik oldalrol erkezve (#sajto, #gyik ...) a szekcio az erkezes utan nehany masodpercig ugyanarra a pontra igazodik.
 // A szkript nem kuld meresi esemenyt (a foglalas-gombok a /foglalo-motor linkek: a launcher es a motor kezeli oket).
 (() => {
   'use strict';
@@ -136,6 +137,42 @@
     $('terkep-gomb').addEventListener('click', terkepBetolt);
     if (window.mhSuti) { if (window.mhSuti.engedely('fun')) terkepBetolt(); window.mhSuti.figyel((d) => { if (d.fun) terkepBetolt(); }); }
   }
+
+  // --- 5. horgony-rogzites: masik oldalrol erkezve (pl. a foldali logok -> /head-spa-velemenyek#sajto) a keresett szekcio MINDIG a fejlec alatt maradjon ---------------------
+  // A bongeszo sima (smooth) gorgetessel indul a horgonyra, kozben betolto kepek / keretek elcsusztathatjak (a gorgetes a fenti galeriaknal "megallt"). Az erkezes utan nehany
+  // masodpercig (amig a latogato nem gorget / nem nyul semmihez) az oldal ugyanarra a pontra igazodik, azonnali (nem animalt) gorgetessel.
+  (() => {
+    if (location.hash.length < 2) return;
+    let cel = null;
+    try { cel = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch (e) { return; }
+    if (!cel) return;
+    const html = document.documentElement;
+    const regiGorgetes = html.style.scrollBehavior;
+    html.style.scrollBehavior = 'auto';
+    const fejlecMag = () => {
+      const f = document.getElementById('SITE_HEADER');
+      if (f && /fixed|sticky/.test(getComputedStyle(f).position)) return f.getBoundingClientRect().height;
+      return parseFloat(getComputedStyle(html).scrollPaddingTop) || 0;
+    };
+    let vege = false;
+    const igazit = () => {
+      if (vege) return;
+      const y = Math.max(0, cel.getBoundingClientRect().top + window.scrollY - fejlecMag());
+      if (Math.abs(y - window.scrollY) > 4) window.scrollTo(0, y);
+    };
+    const befejez = () => {
+      if (vege) return;
+      vege = true;
+      html.style.scrollBehavior = regiGorgetes;
+      for (const e of ['wheel', 'touchstart', 'keydown', 'mousedown']) removeEventListener(e, befejez);
+    };
+    for (const e of ['wheel', 'touchstart', 'keydown', 'mousedown']) addEventListener(e, befejez, { passive: true });
+    for (const ms of [0, 120, 350, 800, 1500, 2500]) setTimeout(igazit, ms);
+    addEventListener('load', () => setTimeout(igazit, 60));
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(igazit, 60));
+    setTimeout(befejez, 3500);
+    igazit();
+  })();
 
   // --- 4. mobil sticky CTA: gorgetes-figyelo (nem IntersectionObserver: az gyors ugrasnal nem jelez) -------------------------------------
   const sticky = $('sticky-cta'), hero = document.querySelector('.hero, .oldal-fej'), vege = $('helyszin');

@@ -57,7 +57,7 @@ describe('/ (főoldal)', () => {
     const { p, ctx, hibak, nincs } = await nyit();
     assert.equal(await p.title(), 'Japán Head Spa Budapesten – 50 perc kezelés + 30 perc hajszárítás | MOSAIC');
     assert.equal(await p.locator('h1').count(), 1, 'egyetlen H1');
-    assert.match((await p.textContent('h1')).replace(/\s+/g, ' ').trim(), /^Budapest kedvenc Head Spa-ja 50 perc kezelés \+ 30 perc profi hajszárítás$/);
+    assert.match((await p.textContent('h1')).replace(/\s+/g, ' ').trim(), /^Budapest kedvenc Head Spa-ja 50 perc kezelés \+ 30 perc hajszárítás$/);
     assert.equal(await p.locator('meta[name=robots]').count(), 0, 'indexelhető (nincs robots meta)');
     assert.equal(await p.getAttribute('link[rel=canonical]', 'href'), 'https://www.mosaicheadspa.hu/');
     const torott = await p.$$eval('img', (l) => l.filter((i) => i.complete && i.naturalWidth === 0).map((i) => i.currentSrc || i.src));

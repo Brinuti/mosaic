@@ -14,6 +14,22 @@ import { utvonal } from '../../netlify/lib/utvonal.js';
 import { config as edgeConfig } from '../../netlify/edge-functions/oldal.js';
 
 const ADAT = globalThis.AJANDEK_ADAT;
+// A 8 persona-oldal regi (Wixes) peldanya: a hero es az elso szekcio szovege EGY AZ EGYBEN innen jon (2026-10-09, a tulajdonos kerese; csak az emojik nelkul)
+const REGI_OLDAL = { birthday: 'ajandekkartya-szulinapra', japan: 'japan-headspa-ajandekkartya', mother: 'headspa-ajandekkartya-anyukaknak', esoteric: 'headspa-ajándékkártya-ezo',
+  for_her: 'headspa-ajandekkartya-noknek', self_care: 'headspa-self-care', friend: 'headspa-paros-csajos-ajandekkartya', young: 'headspa-ajandakkartya-fiataloknak' };
+const HTML_ENTITAS = { nbsp: ' ', quot: '"', amp: '&', lt: '<', gt: '>', apos: "'", aacute: 'á', eacute: 'é', iacute: 'í', oacute: 'ó', ouml: 'ö', odblac: 'ő', uacute: 'ú', uuml: 'ü', udblac: 'ű',
+  Aacute: 'Á', Eacute: 'É', Iacute: 'Í', Oacute: 'Ó', Ouml: 'Ö', Odblac: 'Ő', Uacute: 'Ú', Uuml: 'Ü', Udblac: 'Ű', ndash: '–', mdash: '—', hellip: '…', zwj: '\u200d', zwnj: '\u200c', shy: '\u00ad', ensp: ' ', emsp: ' ', thinsp: ' ' };
+const dekodol = (t) => t.replace(/&#x([0-9a-f]+);/gi, (m, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&#(\d+);/g, (m, n) => String.fromCodePoint(+n)).replace(/&([a-zA-Z]+);/g, (m, n) => (n in HTML_ENTITAS ? HTML_ENTITAS[n] : m));
+// csak betuk es szamok, kisbetuvel, emoji / szokoz / irasjel nelkul: a tagolas kulonbsegei nem szamitanak
+const normSzoveg = (t) => t.toLowerCase().normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, '');
+function regiOldalSzoveg(nev) {
+  const mappa = new URL('../../klon/', import.meta.url);
+  const fajlok = fs.readdirSync(mappa).map((f) => f.normalize('NFC'));
+  const cel = [nev + '-regi.html', nev + '.html'].map((x) => x.normalize('NFC')).find((x) => fajlok.includes(x));
+  assert.ok(cel, 'a regi oldal megvan: ' + nev);
+  const html = fs.readFileSync(new URL(cel, mappa), 'utf8').replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>|<noscript[\s\S]*?<\/noscript>/g, '');
+  return normSzoveg([...html.matchAll(/>([^<>]+)</g)].map((m) => dekodol(m[1])).join(''));
+}
 const SZALON = ADAT.SZALON;
 const BAZIS = 'https://teszt.mosaicheadspa.hu';
 const WHSEC = 'whsec_teszt_titok';
@@ -255,16 +271,7 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     for (const k of VARIANSOK) assert.ok(V[k].gift_finder_preselect === null || ADAT.FINDER.some((f) => f.id === V[k].gift_finder_preselect), k);
     assert.equal(V.general.hero_title, 'Ajándékozz neki 80 percet, ami tényleg csak róla szól.');
     assert.equal(V.general.hero_cta, 'Kiválasztom az ajándékot');
-    assert.equal(V.friend.hero_title, 'A tökéletes csajos nap ezzel a programmal kezdődik.');
-    assert.equal(V.mother.hero_title, 'Adj anyukádnak egy kis időt, amit végre csak magára fordíthat.');
-    // a persona-oldalak H1-je: sajat, a persona szavaival (2026-10-09, a tulajdonos kerese)
-    assert.equal(V.birthday.hero_title, 'A legszebb szülinapi ajándék: 80 perc, ami csak az ünnepeltről szól.');
-    assert.equal(V.japan.hero_title, 'Ajándékozz egy szelet japán nyugalmat.');
-    assert.equal(V.esoteric.hero_title, 'Ajándékozz belső egyensúlyt: egy lassú, csendes Head Spa rituálét.');
-    assert.equal(V.self_care.hero_title, 'Ajándékozz egy kis self-care-t, mert megérdemli.');
-    assert.equal(V.young.hero_title, 'Ajándékozz egy szünetet a zajból, amitől a haj is tökéletes lesz.');
-    assert.equal(V.young.magyarazo.cim, 'Ajándékozd a tökéletes mentális reset és glow up élményét', 'a tulajdonos kert cime a fiatalok magyarazo-szekciojahoz');
-    assert.equal(V.for_her.hero_title, 'Adj neki 80 percet, amikor végre semmiről nem kell gondoskodnia.');
+    // a 8 persona-oldal (friend, mother, for_her, birthday, japan, esoteric, self_care, young) hero- es elso-szekcio szovege a REGI oldalakrol jon: lasd a "regi oldal szovege egy az egyben" tesztet
     assert.equal(V.partner.hero_title, 'Egy felejthetetlen randi, ahol mindketten ellazultok.');
     assert.ok(V.partner.hero_subtitle.endsWith('hanem együtt élitek át.'));
     assert.equal(V.last_minute.hero_title, 'Ajándékot keresel az utolsó pillanatban?');
@@ -278,6 +285,22 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.equal(V.general.reassurance, null, 'a general-ban nincs ismetlodo "6 honapig..." sor');
     // a hero Google-sora link a Google-velemenyek szekciojara
     assert.equal(V.general.hero_trust[0].href, '#ah-google');
+  });
+
+  test('a 8 persona-oldal hero- es elso-szekcio szovege a regi (Wixes) oldalrol jon EGY AZ EGYBEN (emoji nelkul): hero cim + alcim, az elso szekcio cime es MINDEN bekezdese megvan a regi oldal szovegeben, a bekezdesek szama a regi oldalnak felel meg', () => {
+    const V = ADAT.VARIANTOK;
+    const BEKEZDES = { birthday: 7, japan: 7, mother: 7, esoteric: 7, for_her: 7, self_care: 7, friend: 7, young: 4 };
+    assert.deepEqual(Object.keys(REGI_OLDAL).sort(), Object.keys(BEKEZDES).sort());
+    for (const [k, nev] of Object.entries(REGI_OLDAL)) {
+      const regi = regiOldalSzoveg(nev);
+      const m = V[k].magyarazo;
+      for (const [mit, szoveg] of [['hero cim', V[k].hero_title], ['hero alcim', V[k].hero_subtitle], ['elso szekcio cime', m.cim], ...m.szovegek.map((t, i) => ['bekezdes ' + (i + 1), t])]) {
+        assert.ok(regi.includes(normSzoveg(szoveg)), `${k}: a(z) ${mit} nincs meg a regi oldalon (${nev}): ${szoveg}`);
+      }
+      assert.equal(m.szovegek.length, BEKEZDES[k], k + ': a regi elso szekcio bekezdesei mind benne vannak');
+      assert.equal(m.felcim || '', '', k + ': nincs sarga felcim');
+      assert.deepEqual(m.pontok || [], [], k + ': nincs kitalalt pipas pont');
+    }
   });
 
   test('a regi ajandekkartya-cimeket az uj oldal veszi at: a cim adja az alapertelmezett variantot / elmenyt / alkalmat; a build, az LCP-terkep es a helyi szerver ugyanazt a 11 cimet ismeri', () => {
@@ -466,31 +489,43 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     }
   });
 
-  test('persona-oldalak magyarazo-szekcioja (a hero UTAN, az ajandekvalaszto ELOTT): adatvezerelt; a general variansnal nincs; 2-3 rovid bekezdes, max. 3 pipas pont, valodi kep; nincs kitalalt szam / idezet / nem igazolt igeret', () => {
+  test('persona-oldalak magyarazo-szekcioja (a hero UTAN, az ajandekvalaszto ELOTT): adatvezerelt; a general variansnal nincs; nincs sarga felcim; a 8 regi-oldalas persona szovege a regi oldalrol (5-8 bekezdes, nincs pipas pont), a ket tovabbi (partner, last_minute) 2-3 rovid bekezdes + max. 3 pipas pont; valodi kep', () => {
     const f = (u) => new URL('../../' + u.replace(/^\//, ''), import.meta.url);
     const V = ADAT.VARIANTOK;
     assert.equal(V.general.magyarazo, null, 'a fo (altalanos) oldalon nincs uj szekcio');
     const ENGEDETT_SZAMOK = new Set(['80', '50', '30', '6']);   // a termek valodi adatai: 50 + 30 perc = 80 perc, 6 honapig felhasznalhato
     for (const k of VARIANSOK.filter((x) => x !== 'general')) {
       const m = V[k].magyarazo;
+      const regiSzoveguE = k in REGI_OLDAL;
       assert.ok(m && typeof m.cim === 'string' && m.cim.length > 10 && m.cim.length < 90, k + ' cim');
-      assert.ok(Array.isArray(m.szovegek) && m.szovegek.length >= 2 && m.szovegek.length <= 3, k + ': 2-3 bekezdes');
+      assert.equal(m.felcim || '', '', k + ': nincs sarga felcim az elso szekcioban (2026-10-09, a tulajdonos kerese)');
+      if (regiSzoveguE) {
+        assert.ok(Array.isArray(m.szovegek) && m.szovegek.length >= 4 && m.szovegek.length <= 8, k + ': 4-8 bekezdes (a regi oldal szovege)');
+        assert.deepEqual(m.pontok || [], [], k + ': nincs pipas pont (a regi oldalon nem volt)');
+        assert.equal(V[k].reassurance, null, k + ': nincs kitalalt megnyugtato sor a heroban (a regi oldalon nem volt)');
+      } else {
+        assert.ok(Array.isArray(m.szovegek) && m.szovegek.length >= 2 && m.szovegek.length <= 3, k + ': 2-3 bekezdes');
+        assert.ok(Array.isArray(m.pontok) && m.pontok.length >= 1 && m.pontok.length <= 3, k + ': max. 3 pipas pont');
+        for (const p of m.pontok) assert.ok(p.length > 8 && p.length < 80, k + ' pont: ' + p);
+      }
       for (const sz of m.szovegek) assert.ok(sz.length > 40 && sz.length < 420, k + ' bekezdes hossza: ' + sz.length);
-      assert.ok(Array.isArray(m.pontok) && m.pontok.length >= 1 && m.pontok.length <= 3, k + ': max. 3 pipas pont');
-      for (const p of m.pontok) assert.ok(p.length > 8 && p.length < 80, k + ' pont: ' + p);
       assert.ok(m.media && fs.existsSync(f(m.media.src)) && m.media.alt.length > 15 && m.media.w > 0 && m.media.h > 0 && m.media.forras, k + ' kep (valodi MOSAIC-asset, forrassal)');
       assert.ok(fs.statSync(f(m.media.src)).size < 260e3, k + ' kep merete');
       // 2026-10-09 (2. kor): a magyarazo-kep nem lehet ugyanaz, mint a hero-poszter (se fajl, se tartalom)
       assert.notEqual(m.media.src, V[k].hero_media.src, k + ': a magyarazo-kep nem a hero-poszter');
       assert.ok(!fs.readFileSync(f(m.media.src)).equals(fs.readFileSync(f(V[k].hero_media.src))), k + ': a magyarazo-kep tartalma nem a hero-poszter');
-      const osszes = [m.felcim, m.cim, ...m.szovegek, ...m.pontok, V[k].hero_eyebrow, V[k].hero_title, V[k].hero_subtitle, V[k].hero_cta, V[k].reassurance || ''].join(' ');
-      for (const sz of osszes.match(/\d+/g) || []) assert.ok(ENGEDETT_SZAMOK.has(sz), k + ': nincs kitalalt szam: ' + sz);
-      assert.doesNotMatch(osszes, /azonnal|perceken belül|perc alatt|még ma|garant|gyógy|százalék|%|"|„|”/i, k + ': nincs idezet / nem igazolt igeret');
-      assert.doesNotMatch(osszes, /!{2,}|\p{Extended_Pictographic}/u, k + ': nincs emoji / tobbszoros felkialtojel');
+      const osszes = [m.felcim, m.cim, ...m.szovegek, ...(m.pontok || []), V[k].hero_eyebrow, V[k].hero_title, V[k].hero_subtitle, V[k].hero_cta, V[k].reassurance || ''].join(' ');
+      assert.doesNotMatch(osszes, /\p{Extended_Pictographic}/u, k + ': nincs emoji');
+      if (!regiSzoveguE) {
+        for (const sz of osszes.match(/\d+/g) || []) assert.ok(ENGEDETT_SZAMOK.has(sz), k + ': nincs kitalalt szam: ' + sz);
+        assert.doesNotMatch(osszes, /azonnal|perceken belül|perc alatt|még ma|garant|gyógy|százalék|%|"|„|”/i, k + ': nincs idezet / nem igazolt igeret');
+        assert.doesNotMatch(osszes, /!{2,}/, k + ': nincs tobbszoros felkialtojel');
+      }
     }
     // 2. kor (2026-10-09): a csajos / anyukas / self-care oldal sajat, uj kepet kapott (Drive-videok kockai); a self-care kep nem a hajkamerás (galeria-05)
     assert.equal(V.friend.magyarazo.media.src, '/assets/img/ajandek/magyarazo-csajos-ketto.jpg');
-    assert.equal(V.mother.magyarazo.media.src, '/assets/img/ajandek/magyarazo-anya-lanya.jpg');
+    assert.equal(V.mother.magyarazo.media.src, '/assets/img/ajandek/magyarazo-anya-lanya-kezeles.jpg', '3. kor (2026-10-09): anyukak: nem ulnek, hanem a kezeles kozben latszanak egymas mellett');
+    assert.ok(!fs.existsSync(f('/assets/img/ajandek/magyarazo-anya-lanya.jpg')), 'anyukak: a regi (ules) magyarazo-kep torolve');
     assert.equal(V.self_care.magyarazo.media.src, '/assets/img/ajandek/magyarazo-selfcare-pihenes.jpg');
     assert.ok(!fs.readFileSync(f(V.self_care.magyarazo.media.src)).equals(fs.readFileSync(f('/assets/img/ajandek/galeria-05.jpg'))), 'self_care: nem a hajkameras (haj-diagnosztikai) kep');
     assert.ok(!fs.readFileSync(f(V.friend.magyarazo.media.src)).equals(fs.readFileSync(f('/assets/img/ajandek/hero-baratnok-negyzet.jpg'))), 'friend: nem a hero-kep');

@@ -125,19 +125,20 @@ for (const { nev, variant } of PERSONAK) {
       await ctx.close();
     });
 
-    test('magyarazo-szekcio: a hero UTAN, az ajandekvalaszto ELOTT; 2-3 bekezdes + max. 3 pipas pont a szovegoszlopban; kep a media-oszlopban', async () => {
+    test('magyarazo-szekcio: a hero UTAN, az ajandekvalaszto ELOTT; a regi oldal bekezdesei (pipas pont es sarga felcim nelkul) a szovegoszlopban; kep a media-oszlopban', async () => {
       const { p, ctx } = await nyit(nev);
       await atgorget(p);
       assert.equal(await p.isVisible('#ah-magyarazo'), true, 'a szekcio lathato');
       const m = v.magyarazo;
       assert.equal((await p.textContent('#ah-magyarazo-cim')).trim(), m.cim);
-      assert.equal((await p.textContent('#ah-magyarazo-felcim')).trim(), m.felcim);
+      assert.equal(await p.isVisible('#ah-magyarazo-felcim'), false, 'a sarga felcim nincs kint az elso szekcioban');
       const bek = await p.$$eval('#ah-magyarazo-torzs p', (e) => e.map((x) => x.textContent.trim()));
       assert.deepEqual(bek, m.szovegek);
-      assert.ok(bek.length >= 2 && bek.length <= 3);
+      assert.ok(bek.length >= 4 && bek.length <= 8, 'a regi oldal bekezdesei: ' + bek.length);
       const pontok = await p.$$eval('#ah-magyarazo-pontok li', (e) => e.map((x) => x.textContent.trim()));
-      assert.deepEqual(pontok, m.pontok.slice(0, 3));
-      assert.ok(pontok.length >= 1 && pontok.length <= 3);
+      assert.deepEqual(pontok, (m.pontok || []).slice(0, 3));
+      assert.equal(pontok.length, 0, 'nincs pipas pont (a regi oldalon nem volt)');
+      assert.equal(await p.isVisible('#ah-magyarazo-pontok'), false, 'az ures pontlista rejtett');
       // a szoveg- es a kep-oszlop szerkezete (a DOM-ban elobb a szoveg: mobilon igy kerul a kep a szoveg ala; asztalon a CSS teszi balra a kepet)
       assert.equal(await p.evaluate(() => !!document.querySelector('.ah-magyarazo-szoveg #ah-magyarazo-cim') && !!document.querySelector('.ah-magyarazo-media #ah-magyarazo-kep')), true);
       const kep = await p.evaluate(() => { const k = document.getElementById('ah-magyarazo-kep'); return { src: k.getAttribute('src'), alt: k.getAttribute('alt'), ok: k.complete && k.naturalWidth > 0, w: k.naturalWidth }; });

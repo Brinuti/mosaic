@@ -306,6 +306,7 @@
     (m.szovegek || []).forEach(function (t) { torzs.appendChild(h('p', { text: t })); });
     var lista = uresit($('ah-magyarazo-pontok'));
     (m.pontok || []).slice(0, 3).forEach(function (t) { lista.appendChild(h('li', { text: t })); });
+    lista.hidden = !(m.pontok && m.pontok.length);   // ahol nincs pontlista (a regi oldalak szovegevel megegyezo persona-oldalak), az ures lista rejtett
     var fig = $('ah-magyarazo-media'), kep = $('ah-magyarazo-kep'), md = m.media;
     if (fig && kep && md && md.src) {
       var src = kepUt(md.src);

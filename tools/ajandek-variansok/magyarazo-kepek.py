@@ -27,8 +27,9 @@ MINOSEG = 82
 KEPEK = {
     # csajos nap (friend): Drive "paros csajos erzelmes.mp4" (1080 x 1920): ket no karoltve a folyoson, furdolepedoben
     'magyarazo-csajos-ketto.jpg': ('paros csajos erzelmes.mp4', 17.53, (0.0, 0.19, 1.0, 0.70)),
-    # anyukaknak (mother): Drive "Anya-lanya.MP4" (eredeti, 1080 x 1920): a lany beszel, az anya mosolyog (a hero ugyanebbol keszult, de mas kocka)
-    'magyarazo-anya-lanya.jpg': ('Anya-lanya.MP4', 75.47, (0.02, 0.095, 1.0, 0.645)),
+    # anyukaknak (mother): Drive "Anya-lanya.MP4" (eredeti, 1080 x 1920); a hero ugyanebbol keszult, de mas kocka
+    # 2026-10-09 (3. kor, a tulajdonos kerese): nem ulnek, hanem a kezeles kozben latszanak: a 49,5. masodperc felirat nelkuli kockaja (anya + lanya egymas mellett fekve)
+    'magyarazo-anya-lanya-kezeles.jpg': ('Anya-lanya.MP4', 49.5, (0.0, 0.36, 1.0, 0.92)),
     # self-care (self_care): Drive "Self care headspa+ajikartya.mp4" (1080 x 1920): csukott szemmel pihenő arc az arany zuhanyiv alatt
     'magyarazo-selfcare-pihenes.jpg': ('Self care headspa+ajikartya.mp4', 5.2, (0.0, 0.06, 1.0, 0.66)),
 }

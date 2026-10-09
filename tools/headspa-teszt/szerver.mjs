@@ -11,7 +11,7 @@ const TIPUS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '
   '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.txt': 'text/plain' };
 
 export async function szerverInditas() {
-  const { fejlecAtalakit, ANGOL_JELOLO } = await import(pathToFileURL(path.join(GYOKER, 'tools/fejlec-menu.mjs')).href);
+  const { fejlecAtalakit, ANGOL_JELOLO, headspaJelolo } = await import(pathToFileURL(path.join(GYOKER, 'tools/fejlec-menu.mjs')).href);
   const fejlecCss = fs.readFileSync(path.join(GYOKER, 'assets/css/fejlec-lablec.css'), 'utf8');
   const aktivMenu = (fejlec, utvonal, mobil) => {
     const ut = utvonal.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
@@ -33,7 +33,7 @@ export async function szerverInditas() {
     let lablec = fejlecAtalakit(resz('<!--mh-lablec-->', 'lablec-' + m), mobil, angol);
     const kozos = '<style data-forras="fejlec-lablec">' + fejlecCss + '</style>';
     if (fejlec) fejlec += kozos; else if (lablec) lablec += kozos;
-    return forras.replace('<!--mh-fejlec-->', () => fejlec).replace('<!--mh-lablec-->', () => lablec);
+    return headspaJelolo(forras.replace('<!--mh-fejlec-->', () => fejlec).replace('<!--mh-lablec-->', () => lablec), nev);
   };
   const szerver = http.createServer((req, res) => {
     const p = decodeURIComponent(new URL(req.url, 'http://x').pathname);

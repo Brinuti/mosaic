@@ -45,11 +45,17 @@ töltve; a forrás-videók **nincsenek** a repóban, csak a kivágott állókép
 | oldal (variáns) | kép (`assets/img/ajandek/`) | forrás | kocka |
 |---|---|---|---|
 | csajos nap (`friend`) | `magyarazo-csajos-ketto.jpg` | Drive: „páros csajos érzelmes.mp4” (1080 × 1920, hirdetési videó) | 17,5. mp: két nő fürdőlepedőben, karöltve, nevetve a MOSAIC folyosóján (a hero-videóban a pezsgőző jelenet és a páros ágyak vannak, ez más jelenet) |
-| anyukáknak (`mother`) | `magyarazo-anya-lanya.jpg` | Drive: „Anya-lánya.MP4” (eredeti, 1080 × 1920; a hero ugyanennek a felvételnek a 71,5–79,5. mp-éből készült) | 75,5. mp: a lány beszél, az anya mosolyog, egymás mellett ülnek; nyitott szemű, éles kocka, a hero-poszter másik kockája |
+| anyukáknak (`mother`) | `magyarazo-anya-lanya-kezeles.jpg` | Drive: „Anya-lánya.MP4” (eredeti, 1080 × 1920; a hero ugyanennek a felvételnek a 71,5–79,5. mp-éből készült) | 49,5. mp (3. kör, 2026-10-09): a lány és az anya egymás mellett FEKSZIK a kezelés közben (felirat nélküli kocka; a tulajdonos kérése: ne üljenek). A régi, ülős kép (`magyarazo-anya-lanya.jpg`) törölve |
 | self-care (`self_care`) | `magyarazo-selfcare-pihenes.jpg` | Drive: „Self care headspa+ajikártya.mp4” (1080 × 1920) | 5,2. mp: csukott szemmel, nyugodtan pihenő arc az arany zuhanyív alatt (a régi, hajkamerás / fejbőrvizsgálatos kép lecserélve) |
 
 A többi oldal (fiataloknak, nőknek, belső egyensúly, japán, szülinap) képe nem változott, csak a bal-jobb sorrend. Újragyártás: `tools/ajandek-variansok/magyarazo-kepek.py` (a forrás-videókat előbb le kell tölteni a Drive-ról egy mappába, a fájlnevek a szkriptben).
 A régi, lecserélt képek (`magyarazo-csajos.jpg`, `magyarazo-anya.jpg`, `magyarazo-selfcare.jpg`) törölve; az új fájlnevek miatt a böngésző nem a régi, gyorsítótárazott képet mutatja.
+
+### A hero és az első szekció szövege a régi oldalakról (3. kör, 2026-10-09)
+
+A tulajdonos kérésére a **8 persona-oldal** (szülinap, japán, anyukák, ezo, nők, self-care, páros csajos, fiataloknak) hero-szövege (H1 + alcím) és az első szekciója (cím + minden bekezdés) **egy az egyben a régi (Wixes) oldalról** jön, csak az emojik nélkül (a forrás: `klon/<cím>.html`, ahol van, a `-regi` másolat). A régi oldalon nem szereplő, később hozzátett elemek kikerültek: a **sárga felcím** (pl. „ANYUKÁKNAK”) az első szekciókból (minden variánsnál), a 3 pipás pont és a hero alatti megnyugtató sor (`reassurance`) ezen a 8 oldalon. A hero eyebrow (`hero_eyebrow`) eleve rejtett. Az `ajandek.js` / `elore-render.mjs` az üres pontlistát rejtetté teszi.
+A szöveg **szó szerinti**, ezért az eredeti elírásokat is tartalmazza („megérdelmi” a self-care oldalon, „lehetrészük” az anyukás oldalon, „mélyrelakációs” a csajos oldalon) – ha javítani kell, az `assets/js/ajandek-adat.js`-ben egy helyen szerkeszthető; a „a 8 persona-oldal … egy az egyben” teszt (`tools/ajandek-teszt/ajandek.test.mjs`) a régi oldalhoz hasonlít, ezért szándékos eltéréskor azt is módosítani kell.
+A `partner` és `last_minute` variáns (nincs régi oldaluk) változatlan, a sárga felcím náluk is kikerült.
 
 ## A hero-videók: honnan, hogyan
 

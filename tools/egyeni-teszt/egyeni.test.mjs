@@ -287,7 +287,7 @@ describe('/head-spa-kedvezmeny (egyeni + paros)', () => {
     await m.ctx.close();
   });
 
-  test('a kozos videos hero (assets/css/video-hero.css): asztalon a video a hero TELJES HATTERE; telefonon felul a video (300 px), alatta a szoveg; ar 42 / 32 px; play gomb 62 / 52 px; a harom jelveny telefonon egy sorban', async () => {
+  test('a kozos videos hero (assets/css/video-hero.css): asztalon a video a hero TELJES HATTERE; telefonon felul a video (300 px), alatta a szoveg; ar 42 px asztalon (telefonon az akcioval egy sorban, ahhoz igazodo meret); play gomb 62 / 52 px; a harom jelveny telefonon egy sorban', async () => {
     const { p, ctx } = await nyit({ gorgetve: false });
     const d = await p.evaluate(() => {
       const h = document.querySelector('#hero').getBoundingClientRect(), v = document.querySelector('.vh-hatter').getBoundingClientRect();
@@ -316,7 +316,7 @@ describe('/head-spa-kedvezmeny (egyeni + paros)', () => {
       assert.equal(new Set(t.li).size, 1, szeles + ' px: a harom jelveny egy sorban: ' + t.li);
       assert.ok(t.jelvBal >= 0 && t.jelvJobb <= t.ablak, 'a jelvenyek belefernek');
       assert.equal(t.szoveg, '50+30 perc Profi hajszárítás Személyre szabott', 'telefonon rovid cimkek');
-      assert.equal(t.ar, '32px');
+      assert.ok(parseFloat(t.ar) >= 18 && parseFloat(t.ar) <= 26, 'telefonon az ar es az akcio egy sorban van, az ar betumerete ehhez igazodik (2026-10-09): ' + t.ar);
       assert.equal(t.play, 52);
       assert.equal(t.playAlatt, true, 'a play gomb a szoveg alatt');
       assert.ok(t.google < 40, szeles + ' px: a Google-sor egy sorban: ' + t.google);

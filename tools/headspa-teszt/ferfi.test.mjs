@@ -90,15 +90,15 @@ describe(`/${NEV}`, () => {
     }
   });
 
-  test('a kozos szerkezet: fejlec (aktiv menu), a fejlec akcios savja a MOSAIC szinvilagaban, Playfair / Jost betuk, lablec, mobil sticky CTA elem; nincs Wix-maradvany', async () => {
+  test('a kozos szerkezet: fejlec (aktiv menu), a fejlec akcios savja az eredeti rozsaszin (feher felirat), Playfair / Jost betuk, lablec, mobil sticky CTA elem; nincs Wix-maradvany', async () => {
     const { p, ctx } = await nyit();
     const sav = await p.evaluate(() => {
       const s = document.getElementById('comp-mpv0ganp'); const a = s && s.querySelector('a');
       return s ? { lat: getComputedStyle(s).display !== 'none' && s.getBoundingClientRect().height > 10, bg: getComputedStyle(s.querySelector('[data-testid="colorUnderlay"]')).backgroundColor, szin: a && getComputedStyle(a).color, href: a && a.getAttribute('href') } : null;
     });
     assert.ok(sav && sav.lat, 'az akcios sav latszik');
-    assert.equal(sav.bg, 'rgb(230, 235, 231)');
-    assert.equal(sav.szin, 'rgb(15, 58, 60)');
+    assert.equal(sav.bg, 'rgb(238, 5, 163)');   // az eredeti rozsaszin (2026-10-09: a tulajdonos kerese)
+    assert.equal(sav.szin, 'rgb(255, 255, 255)');
     assert.equal(sav.href, '/head-spa-kedvezmeny');
     assert.equal(await p.locator('a.akcio-sav').count(), 0);
     assert.match(await p.evaluate(() => getComputedStyle(document.querySelector('main h1')).fontFamily), /Playfair Display/);

@@ -50,3 +50,7 @@ A build (`tools/netlify-build.mjs`) minden `assets/css/*.css` / `assets/js/*.js`
 ## Tesztek
 
 `node --test tools/egyeni-teszt/egyeni.test.mjs tools/fooldal-teszt/fooldal.test.mjs tools/ujrastilus-teszt/paros-regi.test.mjs` – mindhárom oldal tesztjében szerepel a közös hero ellenőrzése (háttér / felül a videó, ár, play gomb mérete, jelvények egy sorban, nagy ablak, csökkentett mozgás). A Playwright-Chromium nem tud H.264-et lejátszani, ezért a klip tényleges lejátszása (`.lejatszik` osztály) csak valódi Chrome-ban ellenőrizhető; a tesztek ilyenkor a klip betöltését (`src`) nézik.
+
+## Telefon: az ár és az akció egy sorban (2026-10-09)
+
+Az ár-sor (`p.vh-ar`: régi ár + új ár) és az akciós sor (`p.vh-akcio`) egy `div.vh-arsor` burkolóban van (főoldal, páros, kedvezmény oldal). Asztalon a két bekezdés alatta-fölötte áll, telefonon **egy sorban**: a burkoló `container-type: inline-size`, a betűméret `min(15px, 100cqw / var(--r))` (az `--r` a sor szövegének szélessége betűméretben, oldalanként mérve + ~4% ráhagyás; az ár 1,55×, a régi ár / akció 1×), így 320–430 px között is elfér és nem lóg ki (`tools/hero-teszt/hero-sorok.test.mjs`). Új szöveg esetén az `--r` újramérendő. A főoldal H1 alcíme („50 perc kezelés + 30 perc hajszárítás”) ugyanígy egy sorban marad telefonon (`--h1-al-arany`, `fooldal.css`).
