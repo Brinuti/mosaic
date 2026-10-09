@@ -41,7 +41,21 @@ binding = "LIFECYCLE_DB"
 database_name = "mosaic-lifecycle-elonezet"
 database_id = "bd58da1d-a9f0-4b76-ad0b-13aedfc67192"
 
+# Oxigen mini CRM (/crm, docs/oxigen-crm/): KULON adatbazis (egeszsegi jellegu adat: allapotfelmero, hajkamera-kepek, kuruterv). Eles es elonezet kulon.
+# A meglevo LIFECYCLE_DB-hez NEM nyul. Az uzenetkuldes alapbol DRY_RUN (CRM_KULDES), az elesitest a tulajdonos kulon "GO"-ja kapcsolja.
+[[d1_databases]]
+binding = "CRM_DB"
+database_name = "mosaic-crm"
+database_id = "c831eeb0-5582-4a3f-b022-2bb2ec64d577"
+
+[[env.preview.d1_databases]]
+binding = "CRM_DB"
+database_name = "mosaic-crm-elonezet"
+database_id = "3622700b-409e-4742-9b22-1c418d76da62"
+
 [vars]
+CRM_KULDES = "dry"   # Oxigen CRM: "dry" = nincs valodi level / SMS (naplo); "eles" = a tulajdonos kulon GO-ja utan
+CRM_ADMIN_EMAILS = "ferraj@gmail.com"   # Oxigen CRM: akik e-mailes egyszeri kodos belepessel szalonvezetokent / adminkent beleptethetok (tovabbi munkatarsakat a /crm felulet vesz fel)
 LIFECYCLE_MOD = "elo"   # ELES (a tulajdonos kifejezett kerese, 2026-10-08). ki | teszt (CSAK a teszt-vendegeknek megy uzenet) | elo (az LIFECYCLE_UZLETAGOK uzletagainak vendegeinek is)
 LIFECYCLE_UZLETAGOK = "headspa,hair,oxygen,laser,pmu"
 LIFECYCLE_MUNKATARS_MOD = "figyel"   # DECISION #117: munkatarsi torles / modositas: figyel = csak naplo + riasztas (nincs allapotvaltas); be = a docs/lifecycle/LIFECYCLE.md szerinti valtoztatas (a kontrollalt teszt utan)
@@ -72,6 +86,9 @@ AJANDEK_AZONNALI = "1"   # a tulajdonos donotese (2026-10-04): bankkartyas rende
 # A titkok (STRIPE_SECRET_KEY = sk_test_..., STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK, MAIL_TO, SMTP_PASS) a Cloudflare feluleten,
 # a Preview kornyezetben, Secret tipussal vannak.
 [env.preview.vars]
+CRM_KULDES = "dry"
+CRM_ADMIN_EMAILS = "ferraj@gmail.com"
+CRM_DEMO = "1"   # CSAK elonezet: demo-adatok es demo-belepes (az eles kornyezetben SOHA nincs, a kod a www.mosaicheadspa.hu hoston ettol fuggetlenul elutasitja)
 LIFECYCLE_MOD = "teszt"   # ki | teszt (CSAK a teszt-vendegeknek megy uzenet) | elo (az LIFECYCLE_UZLETAGOK uzletagainak vendegeinek is)
 LIFECYCLE_UZLETAGOK = "headspa,hair,oxygen,laser,pmu"
 LIFECYCLE_MUNKATARS_MOD = "be"   # CSAK elonezet (kulon D1, teszt mod): a munkatarsi ertesitok kontrollalt tesztje (elfogadasi kapu)
