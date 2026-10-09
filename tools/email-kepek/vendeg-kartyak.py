@@ -1,4 +1,4 @@
-"""Az oxigen-landing "A mi vendegeink eredmenyei" kartya-kepei (assets/img/oxigen/vendeg-NN.jpg).
+"""Az oxigen-landing "Legfrissebb eredmenyeink" kartya-kepei (assets/img/oxigen/vendeg-NN.jpg).
 
 A Zapier-atviteli cso (drive-atvitel.zapier.ts, 'masol' mod) a Drive-mappa kepeibol kicsinyitett masolatot hoz (assets/img/oxigen/vendeg/<sorszam>-elotte.jpg /
 -utana.jpg; a belyegkep PNG-forrasnal PNG, a kiterjesztes ettol fuggetlenul .jpg - a Pillow a tartalom alapjan nyitja meg). Ebbol keszul egy-egy osszetett kep,
@@ -44,7 +44,7 @@ TERULET = {
     '09-utana': (0, 184, 443, 776),
 }
 
-# kimeneti nev, elotte, utana
+# kimeneti nev, elotte, utana (2026-10-09, a tulajdonos kerese: mindenki egyszer - a 07-es sorszam vendege csak a 15 alkalom utani kepevel -, es a szemuveges, szakallas ferfi (09-es sorszam) kartyaja kimaradt)
 KARTYAK = [
     ('vendeg-01', '01-elotte', '01-utana'),
     ('vendeg-02', '02-elotte', '02-utana'),
@@ -52,10 +52,8 @@ KARTYAK = [
     ('vendeg-04', '04-elotte', '04-utana'),
     ('vendeg-05', '05-elotte', '05-utana'),
     ('vendeg-06', '06-elotte', '06-utana'),
-    ('vendeg-07', '08-elotte-b', '07-utana-10'),
-    ('vendeg-08', '08-elotte-b', '07-utana-15'),
-    ('vendeg-09', '08-elotte', '08-utana'),
-    ('vendeg-10', '09-elotte', '09-utana'),
+    ('vendeg-07', '08-elotte-b', '07-utana-15'),
+    ('vendeg-08', '08-elotte', '08-utana'),
 ]
 
 

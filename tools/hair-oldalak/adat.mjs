@@ -52,7 +52,7 @@ export const FODRASZOK = {
     kulcs: 'betti', nev: 'Betti', teljesNev: 'Pető Betti', lap: 'betti', rag: { hez: 'Bettihez', vel: 'Bettivel', t: 'Bettit', nal: 'Bettinél' },
     szakterulet: 'Festés, balayage, melír és személyre szabott női frizurák',
     // a mostani (Wixes) oldal cime (a tulajdonos kerese: az eredeti cimek legyenek a H1-ben); kartyaSzoveg: egy sor a kozponti oldal kartyajan; mobil hero: alcim + 2 blokk
-    h1: 'Tökéletes festés és vágás 18 év tapasztalattal.', kartyaSzoveg: 'Festés, balayage, melír', alcim: 'Festés, balayage', blokkok: ['Személyre szabott női frizurák', 'Részletes konzultáció'],
+    h1: 'Tökéletes festés és vágás 18 év tapasztalattal.', h1Mobil: 'Festés, balayage, tőfestés a te stílusodban', kartyaSzoveg: 'Festés, balayage, melír', alcim: 'Festés, balayage', blokkok: ['Személyre szabott frizurák', 'Részletes konzultáció'],
     rovid: 'Részletes konzultációval és a hozzád illő stílussal várlak.',
     idezet: 'Végre olyan hajad lesz, amilyet megálmodtál!',
     bemutatkozas: [
@@ -74,7 +74,7 @@ export const FODRASZOK = {
   noel: {
     kulcs: 'noel', nev: 'Noel', teljesNev: 'Jakab Noel', lap: 'noel', rag: { hez: 'Noelhez', vel: 'Noellel', t: 'Noelt', nal: 'Noelnél' },
     szakterulet: 'Balayage és precíz festések, természetes hatású árnyalatok',
-    h1: 'Természetes hatású festés és vágás 3 év tapasztalattal.', kartyaSzoveg: 'Balayage és precíz festések', alcim: 'Balayage, precíz festés', blokkok: ['Természetes hatású árnyalatok', 'Részletes konzultáció'],
+    h1: 'Természetes hatású festés és vágás 3 év tapasztalattal.', h1Mobil: 'Balayage, festés, tőfestés a te stílusodban', kartyaSzoveg: 'Balayage és precíz festések', alcim: 'Balayage, precíz festés', blokkok: ['Természetes hatású árnyalatok', 'Részletes konzultáció'],
     rovid: 'A balayage és a precíz festések specialistájaként minden vendégemből a legszebb énjét hozom ki.',
     idezet: 'Olyan frizurád lesz, amitől sugározni fogsz.',
     bemutatkozas: [
@@ -96,7 +96,7 @@ export const FODRASZOK = {
   evelin: {
     kulcs: 'evelin', nev: 'Evelin', teljesNev: 'Szaniszló-Cene Evelin', lap: 'evelin', rag: { hez: 'Evelinhez', vel: 'Evelinnel', t: 'Evelint', nal: 'Evelinnél' },
     szakterulet: 'Hajfestés és hajhosszabbítás (póthaj)',
-    h1: 'Végre olyan frizurád lesz, amilyet megálmodtál!', kartyaSzoveg: 'Hajfestés és hajhosszabbítás', alcim: 'Hajfestés, hajhosszabbítás', blokkok: ['Személyre szabott színek', 'Részletes konzultáció'],
+    h1: 'Végre olyan frizurád lesz, amilyet megálmodtál!', h1Mobil: 'Festés, balayage, tőfestés és hajhosszabbítás a te stílusodban', kartyaSzoveg: 'Hajfestés és hajhosszabbítás', alcim: 'Hajfestés, hajhosszabbítás', blokkok: ['Személyre szabott színek', 'Részletes konzultáció'],
     rovid: 'Ingyenes konzultációval és hajhosszabbítással is várlak.',
     idezet: 'Megtaláljuk a hozzád illő színt és vágást, amitől ragyogsz majd!',
     bemutatkozas: [
@@ -256,14 +256,14 @@ export const galeria = (kulcs) => GALERIA[kulcs][1].map(([blokk, szin]) => kep(G
 
 export const KEPEK = {
   // a kozponti oldal nyitokepe: valodi hajeredmeny (a kozponti oldal 1440 px-es kepei kozul: szoke, hullamos haj)
-  kozpontHero: () => kep('kozpont', 42, { alt: 'Hosszú, hullámos, szőke haj balayage-átmenettel – valódi MOSAIC Hair vendégmunka', poz: '50% 30%' }),
+  kozpontHero: () => kep('kozpont', 42, { alt: 'Hosszú, hullámos, szőke haj balayage-átmenettel – valódi MOSAIC Hair vendégmunka', poz: '50% 12%' }),
   // a kozponti oldal hero-kepgaleriaja (lapozhato): valodi vendegmunkak, az elso a nyitokep
   kozpontHeroGaleria: () => [
     KEPEK.kozpontHero(),
-    kep('kozpont', 46, { alt: 'Gazdag, meleg barna-réz hajszín hullámokkal – valódi MOSAIC Hair vendégmunka', poz: '50% 35%' }),
-    kep('kozpont', 40, { alt: 'Vörös-réz árnyalatú, hullámos haj – valódi MOSAIC Hair vendégmunka', poz: '50% 35%' }),
-    kep('kozpont', 51, { alt: 'Hosszú, egyenes, szőke haj lágy átmenettel – valódi MOSAIC Hair vendégmunka', poz: '50% 35%' }),
-    kep('kozpont', 48, { alt: 'Hamvas szőke, hullámos haj – valódi MOSAIC Hair vendégmunka', poz: '50% 35%' }),
+    kep('kozpont', 46, { alt: 'Gazdag, meleg barna-réz hajszín hullámokkal – valódi MOSAIC Hair vendégmunka', poz: '50% 12%' }),
+    kep('kozpont', 40, { alt: 'Vörös-réz árnyalatú, hullámos haj – valódi MOSAIC Hair vendégmunka', poz: '50% 12%' }),
+    kep('kozpont', 51, { alt: 'Hosszú, egyenes, szőke haj lágy átmenettel – valódi MOSAIC Hair vendégmunka', poz: '50% 12%' }),
+    kep('kozpont', 48, { alt: 'Hamvas szőke, hullámos haj – valódi MOSAIC Hair vendégmunka', poz: '50% 12%' }),
   ],
   // a fodraszok sajat kartyai: a sajat, valodi munkaik (nagyobb felbontasu kepek)
   fodraszSzolg: {
@@ -308,9 +308,10 @@ export const KEPEK = {
     betti: { src: '/assets/video/c2eb0f_d0737d55559445caa0687b3c2017518a.mp4', poster: '/assets/img/c2eb0f_d0737d55559445caa0687b3c2017518af002.jpg', w: 674, h: 1198, felirat: 'Pető Betti üzenete az ingyenes konzultációról' },
     noel: { src: '/assets/video/c2eb0f_1f095db5b74d4ceea9ddf64a78da9586.mp4', poster: '/assets/img/c2eb0f_1f095db5b74d4ceea9ddf64a78da9586f000.jpg', w: 726, h: 1291, felirat: 'Jakab Noel üzenete az ingyenes konzultációról' },
     evelin: { src: '/assets/video/c2eb0f_d1d7131a5e48466599172992ad24c321.mp4', poster: '/assets/img/c2eb0f_d1d7131a5e48466599172992ad24c321f000.jpg', w: 576, h: 1024, felirat: 'Szaniszló-Cene Evelin üzenete az ingyenes konzultációról' },
-    // a kozponti oldalon a regi oldalon is ketto volt: Betti es Evelin
+    // a kozponti oldalon a regi oldalon ketto volt (Betti, Evelin); a tulajdonos kerese (2026-10-09): Noel videoja is - mindharom fodrasz
     kozpont: [
       { nev: 'Betti', src: '/assets/video/c2eb0f_d0737d55559445caa0687b3c2017518a.mp4', poster: '/assets/img/c2eb0f_d0737d55559445caa0687b3c2017518af000.jpg', w: 560, h: 996, felirat: 'Betti üzenete az ingyenes konzultációról' },
+      { nev: 'Noel', src: '/assets/video/c2eb0f_1f095db5b74d4ceea9ddf64a78da9586.mp4', poster: '/assets/img/c2eb0f_1f095db5b74d4ceea9ddf64a78da9586f000.jpg', w: 726, h: 1291, felirat: 'Noel üzenete az ingyenes konzultációról' },
       { nev: 'Evelin', src: '/assets/video/c2eb0f_02d4a83e09c84997a1af28ff3d2f4516.mp4', poster: '/assets/img/c2eb0f_02d4a83e09c84997a1af28ff3d2f4516f002.jpg', w: 560, h: 996, felirat: 'Evelin üzenete az ingyenes konzultációról' },
     ],
   },
