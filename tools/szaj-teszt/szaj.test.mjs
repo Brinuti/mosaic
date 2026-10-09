@@ -314,6 +314,40 @@ describe('/szajtetovalas-budapest: kepek es video (valodi MOSAIC-anyag, csak a s
   });
 });
 
+describe('/szajtetovalas-budapest: hero (a tulajdonos 2026-10-09-i kerese)', () => {
+  test('nincs "Vendegvideo - Rita" felirat; a videobox asztalon pontosan a video aranyu (9:16), nincs elmosott oldalsav; mobilon nincs felirat', async () => {
+    for (const szeles of [1440, 390]) {
+      const { p, ctx } = await nyit({ szeles });
+      const r = await p.evaluate(() => {
+        const f = document.getElementById('hero-videokep').getBoundingClientRect();
+        const hatter = document.querySelector('#hero-videokep .hv-hatter');
+        return { w: f.width, h: f.height, szoveg: document.getElementById('hero-videokep').innerText, hatterLathato: !!hatter && getComputedStyle(hatter).display !== 'none', oldal: document.querySelector('.hero').innerText.includes('Vendégvideó') };
+      });
+      assert.ok(!/Vendégvideó|Rita/.test(r.szoveg), `@${szeles}: nincs felirat a videon`);
+      assert.equal(r.oldal, false, `@${szeles}: a hero-ban sehol sincs "Vendégvideó" felirat`);
+      if (szeles >= 1101) {
+        assert.ok(Math.abs(r.w / r.h - 9 / 16) < 0.01, `@${szeles}: a videobox allo (9:16): ${Math.round(r.w)}x${Math.round(r.h)}`);
+        assert.equal(r.hatterLathato, false, 'nincs elmosott hatter-sav');
+      }
+      await ctx.close();
+    }
+  });
+  test('a hero-ban csak EGY "Melitta munkai" gomb van (nincs mellette "Mutasd az eredmenyeket" link), mellette a Google-ertekeles badge (5 csillag, 4,9, vélemények száma)', async () => {
+    for (const szeles of [1440, 390]) {
+      const { p, ctx } = await nyit({ szeles });
+      const r = await p.evaluate(() => {
+        const b = document.querySelector('.hero .bizalom');
+        return { szoveg: b.innerText.replace(/\s+/g, ' ').trim(), munkak: b.querySelectorAll('.munkak-gomb').length, link: b.querySelectorAll('.eredmeny-link').length, mutasd: /Mutasd az eredm/.test(document.querySelector('.hero').innerText), badge: !!b.querySelector('.gv-badge'), db: (document.getElementById('hero-g-db') || {}).textContent };
+      });
+      assert.equal(r.munkak, 1, `@${szeles}: egy Melitta munkai gomb`);
+      assert.equal(r.link, 0, `@${szeles}: nincs masodik (Mutasd az eredmenyeket) link`);
+      assert.equal(r.mutasd, false);
+      assert.ok(r.badge && /4,9/.test(r.szoveg) && /\d{3,4}\s*vélemény/.test(r.szoveg), `@${szeles}: Google-badge: ${r.szoveg}`);
+      await ctx.close();
+    }
+  });
+});
+
 describe('/szajtetovalas-budapest: a hero-video mukodese (a lejatszast a teszt hamisitja: a Chromium nem tud H.264-et)', () => {
   test('nyugodt kapcsolaton nema, ismetlodo lejatszas indul; a gomb hanggal, elolrol inditja es a letezo pmu_landing_video esemenyt kuldi', async () => {
     const { p, ctx } = await nyit({ lejatszas: true });
@@ -367,7 +401,7 @@ describe('/szajtetovalas-budapest: foglalas (PMU-foglalo, szajra elo-szukitve) e
     assert.equal(await p.getAttribute('[data-foglalo*="visszahivas"]', 'data-cta'), 'mielott-telefon');
     // a data-cta nevek: a sminktetovalas-oldal nevei (meres: pmu_landing_cta), uj esemeny-nev nincs
     const cta = await p.$$eval('[data-cta]', (l) => [...new Set(l.map((e) => e.dataset.cta))]);
-    const eredetiCta = new Set([...olvas('foglalas', 'sminktetovalas-budapest.html').matchAll(/data-cta="([^"]+)"/g)].map((m) => m[1]).concat(['idopontok-nap']));
+    const eredetiCta = new Set([...olvas('foglalas', 'sminktetovalas-budapest.html').matchAll(/data-cta="([^"]+)"/g)].map((m) => m[1]).concat(['idopontok-nap', 'hero-google']));   // hero-google: a hero Google-ertekeles badge-e (2026-10-09)
     assert.deepEqual(cta.filter((c) => !eredetiCta.has(c)), [], 'ismeretlen data-cta');
     await ctx.close();
   });

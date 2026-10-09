@@ -315,15 +315,6 @@ export function kozpontOldal() {
   </div>
 </section>
 
-<section class="bizalom" aria-label="Röviden rólunk">
-  <ul class="tartalom bizalom-lista">
-    <li>${ik('csillag')}<span class="bz-szoveg"><b>Google-vélemények</b><span>valódi vendégektől</span></span></li>
-    <li>${ik('pin')}<span class="bz-szoveg"><b>Bécsi út 2.</b><span>Kolosy tér mellett</span></span></li>
-    <li>${ik('kep')}<span class="bz-szoveg"><b>Valódi munkák</b><span>nem stockfotók</span></span></li>
-    <li>${ik('chat')}<span class="bz-szoveg"><b>Ingyenes konzultáció</b><span>reális terv és ár előre</span></span></li>
-  </ul>
-</section>
-
 <!-- ============ SZOLGALTATASOK ============ -->
 <section class="szekcio" id="szolgaltatasok" aria-labelledby="szolg-cim">
   <div class="tartalom">

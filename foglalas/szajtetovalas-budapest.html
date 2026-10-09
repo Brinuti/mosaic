@@ -68,7 +68,8 @@
         </div>
         <div class="bizalom">
           <a class="google munkak-gomb" href="#eredmenyek" data-gorgetes="eredmenyek" data-cta="hero-munkak"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 9"/></svg>Melitta munkái <span class="nyil">↓</span></a>
-          <button type="button" class="link-gomb eredmeny-link" data-gorgetes="eredmenyek">Mutasd az eredményeket <span class="nyil">→</span></button>
+          <!-- MOSAIC Google-ertekelese: a szam a Trustindex-widget aktualis adatabol frissul (szajtetovalas-landing.js / pmu-landing.js), ez a tartalek -->
+          <a class="google gv-badge" href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener" data-cta="hero-google" aria-label="Google-értékelés: 4,9 az 5-ből"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3C34.9 4.2 29.9 2 24 2 15.4 2 8 6.9 4.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg><span class="csillagok" aria-hidden="true">★★★★★</span><b>4,9</b><span class="gv-db" id="hero-g-db">1266 vélemény</span></a>
         </div>
       </div>
       <!-- A hero videoja: Rita vendegvideoja (allo, 9:16, beegetett magyar felirattal, hanggal). Alapbol nem toltodik (preload=none, poszter latszik);
@@ -78,7 +79,6 @@
         <video class="hv-video" id="hero-video" poster="/assets/img/szaj/rita-poszter.jpg" preload="none" muted loop playsinline width="360" height="640" aria-label="Rita szájtetoválása a MOSAIC-ban, magyar felirattal: a konzultációtól a gyógyult eredményig">
           <source src="/assets/video/szajtetovalas-rita.mp4" type="video/mp4">
         </video>
-        <span class="cimke hv-cimke">Vendégvideó · Rita</span>
         <button type="button" class="hv-gomb" id="hero-video-gomb" aria-label="Videó lejátszása hanggal"><svg class="hv-ikon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg><svg class="hv-ikon-hang" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg><span class="hv-szoveg">Videó lejátszása</span></button>
       </figure>
     </div>
@@ -395,7 +395,7 @@
     <div class="szakember-video">
       <button type="button" class="video-kartya" id="szaj-video-gomb" aria-label="Videó lejátszása: Rita szájtetoválása">
         <span class="video-kep"><span class="lejatszas" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg></span></span>
-        <span class="video-felirat"><b>Nézd meg Rita történetét</b><small>Vendégvideó a szájtetoválásról</small></span>
+        <span class="video-felirat"><b>Nézd meg Rita történetét</b><small>A konzultációtól a gyógyult eredményig</small></span>
       </button>
     </div>
   </div>

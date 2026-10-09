@@ -241,6 +241,24 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
     await ctx.close();
   });
 
+  test('asztali: a lenyilo nem "villan": a megnyitott almenu minden latszo kepkockajan teljes erovel (opacity 1) latszik, nincs halvanyodo animacio', async () => {
+    const { p, ctx } = await nyit(1440, '/headspa-arak-budapest');
+    await p.evaluate(() => {
+      window.__mintak = [];
+      const li = document.querySelector('li[data-testid="menuItemDepth0"]');
+      const ab = li.querySelector('[class*="__animationBox"]'); const pb = li.querySelector('[class*="__positionBox"]');
+      const t0 = performance.now();
+      (function f() { window.__mintak.push([getComputedStyle(pb).visibility === 'visible', +getComputedStyle(ab).opacity]); if (performance.now() - t0 < 1200) requestAnimationFrame(f); })();
+    });
+    const k = await p.evaluate(() => { const l = document.querySelector('li[data-testid="menuItemDepth0"]'); const b = l.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; });
+    await p.mouse.move(k.x, 400); await p.mouse.move(k.x, k.y, { steps: 3 });
+    await p.waitForTimeout(1300);
+    const lathato = (await p.evaluate(() => window.__mintak)).filter((m) => m[0]);
+    assert.ok(lathato.length > 10, 'a lenyilo megnyilt');
+    assert.ok(lathato.every((m) => m[1] === 1), 'a lenyilo egyetlen latszo kepkockaja sem halvany (villanas): ' + JSON.stringify(lathato.filter((m) => m[1] !== 1).slice(0, 6)));
+    await ctx.close();
+  });
+
   test('asztali: a FOGLALAS arany gomb a menusorban, az "i" es az EN korvonalas jelveny (nincs zaszlo-kep)', async () => {
     const { p, ctx } = await nyit(1440);
     const r = await p.evaluate(() => {

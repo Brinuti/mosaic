@@ -119,14 +119,6 @@ main.hl .kovetkezo a { color: var(--bronz-ss); text-decoration: underline; text-
 main.hl .kovetkezo.kicsi { margin-top: 10px; padding: 7px 10px; font-size: 13px; }
 
 /* --- bizalmi sav --- */
-main.hl .bizalom { background: var(--paper); border-block: 1px solid var(--vonal); }
-main.hl .bizalom-lista { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
-main.hl .bizalom-lista li { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 16px 8px; text-align: center; font-size: 13px; color: var(--taupe); }
-main.hl .bizalom-lista li:nth-child(odd) { border-right: 1px solid var(--vonal); }
-main.hl .bizalom-lista li:nth-child(-n+2) { border-bottom: 1px solid var(--vonal); }
-main.hl .bizalom-lista .bz-szoveg { display: contents; }
-main.hl .bizalom-lista b { font: 400 15px/1.3 var(--test); color: var(--eszpresszo); }
-main.hl .bizalom-lista .ik { font-size: 24px; color: var(--bronz-s); margin-bottom: 4px; }
 
 /* --- kartya-racsok, szolgaltatas-kartya --- */
 main.hl .kartya-racs { display: grid; gap: 16px; }
@@ -308,25 +300,19 @@ main.hl .ikon-kor { display: inline-grid; place-items: center; width: 42px; heig
   main.hl .hero-szoveg .cta-sor .gomb { flex: 0 0 auto; }
   main.hl .kartya-racs.ketto { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   main.hl .galeria-racs { grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  main.hl .bizalom-lista { grid-template-columns: repeat(4, 1fr); }
-  main.hl .bizalom-lista li { border-bottom: 0 !important; border-right: 1px solid var(--vonal); flex-direction: row; justify-content: center; text-align: left; gap: 12px; padding: 20px 10px; }
-  main.hl .bizalom-lista li:last-child { border-right: 0; }
-  main.hl .bizalom-lista .bz-szoveg { display: flex; flex-direction: column; text-align: left; }
-  main.hl .bizalom-lista .ik { margin: 0; font-size: 30px; }
-  main.hl .bizalom-lista .bz-szoveg { display: flex; flex-direction: column; text-align: left; }
-  main.hl .mindegy-doboz { grid-template-columns: 1fr auto; padding: 22px 26px; }
+              main.hl .mindegy-doboz { grid-template-columns: 1fr auto; padding: 22px 26px; }
   main.hl .mindegy-doboz .gomb { width: auto; }
   main.hl .ti-doboz iframe { height: 352px; }
 }
 @media (min-width: 900px) {
-  main.hl .hero { padding-top: 38px; }
+  main.hl .hero { padding: 34px 0 14px; }
   main.hl .hero-racs { grid-template-columns: 1.02fr .98fr; gap: 56px; align-items: center; }
   main.hl .hero-kep { order: 0; aspect-ratio: 4 / 5; max-height: 660px; }
-  /* kozponti oldal: a galeria pontosan akkora, mint a szovegoszlop (a cim teteje -> az also harom jelveny alja), nem nagyobb; a lapozo kepek nem noveik a sort */
-  main.hl-kozpont .hero-racs { align-items: stretch; }
-  main.hl-kozpont .hero-szoveg { align-self: center; }
-  main.hl-kozpont .hero-kep { position: relative; aspect-ratio: auto; max-height: none; min-height: 400px; }
-  main.hl-kozpont .hero-kep .hg-sav { position: absolute; inset: 0; height: 100%; }
+  /* a hero kepe / galeriaja pontosan akkora, mint a szovegoszlop (a cim teteje -> az also jelvenyek / gombok alja), nem nagyobb: a kep nem noveli a sort */
+  main.hl .hero-racs { align-items: stretch; }
+  main.hl .hero-szoveg { align-self: center; }
+  main.hl .hero-kep { position: relative; aspect-ratio: auto; max-height: none; min-height: 400px; }
+  main.hl .hero-kep > img, main.hl .hero-kep .hg-sav { position: absolute; inset: 0; width: 100%; height: 100%; }
   main.hl .jelvenyek { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
   main.hl .jelvenyek li { display: inline-flex; flex-direction: row; gap: 7px; padding: 7px 14px; border-radius: 999px; font-size: 13px; }
   main.hl .hero-idezet { margin-top: 20px; font-size: clamp(21px, 2.1vw, 27px); }
@@ -336,7 +322,6 @@ main.hl .ikon-kor { display: inline-grid; place-items: center; width: 42px; heig
   main.hl .fk-szak { white-space: nowrap; }
   main.hl .bemutat-racs { grid-template-columns: minmax(0, 1fr) 330px; gap: 64px; align-items: center; }
   main.hl .konzult-videok { order: 0; }
-  main.hl .hero-fodrasz .hero-kep { aspect-ratio: 5 / 6; }
   main.hl .hero-fodrasz h1 { font-size: clamp(32px, 3.4vw, 48px); }
   main.hl .kartya-racs.negy { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   main.hl .kartya-racs.negy .szolg-kartya { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
@@ -383,8 +368,7 @@ main.hl .csak-mobil { display: none; }
   main.hl .csak-asztali { display: none; }
   main.hl .csak-mobil { display: block; }
   main.hl ul.csak-mobil { display: flex; }
-  main.hl .bizalom { display: none; }
-  main.hl .hero-szoveg { display: contents; }
+    main.hl .hero-szoveg { display: contents; }
   main.hl .hero .hero-szoveg > * { order: 9; margin: 0; }
   main.hl .hero .hero-szoveg > h1 { order: 1; font-size: clamp(26px, 7.2vw, 44px); line-height: 1.1; }
   main.hl .hero .hero-kep { order: 2; }

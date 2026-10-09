@@ -89,7 +89,7 @@
     // Szandek-alapu nyitas (hover intent): az almenu csak akkor nyilik, ha az eger egy rovid ideig (NYITAS_MS) a menupont folott marad; a
     // csak atszaladas (pl. a felso akciosav fele) nem nyitja meg. Zarni kis kesleltetessel zarunk, hogy az almenube lepes kozbeni kis kiterees ne zarja be.
     let nyitoIdo = 0, zaroIdo = 0, utolso = null;
-    const NYITAS_MS = 220, ZARAS_MS = 140;
+    const NYITAS_MS = 170, ZARAS_MS = 140;
     tetel.addEventListener('mouseenter', (e) => {
       clearTimeout(zaroIdo);
       if (tetel.getAttribute('data-shown') === 'true') return;
