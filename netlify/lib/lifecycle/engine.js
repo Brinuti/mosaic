@@ -281,7 +281,7 @@ async function munkatarsFeldolgoz(db, cfg, level, tipus, forras, most, alapIdo, 
     return { ok: false, miert: e.miert, tipus: 'riasztas:ertelmezhetetlen' };
   }
   // szemelyes adat nelkul: uzletag, idopont, szolgaltatas, munkatars (a vendegnev nem kerul a naplora / a riasztasra)
-  const resz = { esemeny: tipus, uzletag: e.uzletag, kezdet: e.kezdet, szolgaltatas: tisztaNev(e.szolgaltatas).slice(0, 80), munkatars: e.munkatars.slice(0, 60), mod: cfg.munkatarsMod };
+  const resz = { esemeny: tipus, uzletag: e.uzletag, kezdet: e.kezdet, szolgaltatas: tisztaNev(e.szolgaltatas).slice(0, 80), munkatars: e.munkatars.slice(0, 60), mod: cfg.munkatarsMod, ...(beesoNev(e.nev) ? { beeso: true } : {}) }; // a "Beeső" helykitöltő nem személy: a jelölő a holdout-jelentéshez külön sorba teszi
   const figyel = cfg.munkatarsMod !== 'be';
   const riaszt = async (kod, extra = {}) => { await veg(`ingest:riasztas:${kod}`, extra.foglalasId, { ...resz, ...extra }); return { ok: true, tipus: `riasztas:${kod}`, kod, valtozas: false }; };
   const eloVizsgal = async (f) => {
