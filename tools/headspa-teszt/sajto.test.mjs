@@ -191,7 +191,7 @@ describe('/head-spa-velemenyek: "Milyen lesz a hajad a kezelés után?" galéria
     // gorgetes vegigtekerve: mindegyik kep betoltodik
     await p.evaluate(async () => { const s = document.querySelector('#hajad .korhinta-sav'); for (let x = 0; x <= s.scrollWidth; x += 300) { s.scrollLeft = x; await new Promise((r) => setTimeout(r, 40)); } s.scrollLeft = 0; });
     await p.waitForFunction(() => [...document.querySelectorAll('#hajad .korhinta-sav img')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 15000 });
-    assert.equal(await p.locator('#hajad .korhinta-gomb.elozo').isDisabled(), true);
+    await p.waitForFunction(() => document.querySelector('#hajad .korhinta-gomb.elozo').disabled, null, { timeout: 5000 });   // a gorgetes-esemeny frissiti a gombot
     await p.locator('#hajad .korhinta-gomb.kovetkezo').click();
     await p.waitForFunction(() => document.querySelector('#hajad .korhinta-sav').scrollLeft > 100);
     assert.equal(await p.locator('#hajad .korhinta-gomb.elozo').isDisabled(), false);

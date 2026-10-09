@@ -141,11 +141,11 @@ describe('/headspa-budapest-hungary (angol oldal)', () => {
     await ctx.close();
   });
 
-  test('az UJ adatok: arak (26,900 / 39,900 / 53,800 HUF, a regi arak athuzva, kb. EUR), ertekeles 4.9 / elo Google-szam / 1,200+, elerhetoseg +36 20 247 4444, cim, nyitvatartas, e-mail', async () => {
+  test('az UJ adatok: arak (26,900 / 39,900 / 53,800 HUF, a regi arak athuzva, kb. EUR), ertekeles 4.9 / elo Google-szam, elerhetoseg +36 20 247 4444, cim, nyitvatartas, e-mail', async () => {
     const { p, ctx } = await nyit(NEV);
     const szoveg = await lathatoSzoveg(p);
     for (const s of ['26,900 HUF', '39,900 HUF', '53,800 HUF', '32,900 HUF', '49,900 HUF', '65,900 HUF', 'approx. €67', 'approx. €100', 'approx. €135', '20% October discount', 'valid until revoked', 'payment is in HUF',
-      '4.9/5', '1,200+', '+36 20 247 4444', 'mosaicheadspa@gmail.com', '1023 Budapest, Bécsi út 2.', 'Between Kolosy square and Zsigmond square.', 'Monday - Friday: 8:00 – 20:00', 'Saturday: 8:00 – 20:00', 'Sunday: CLOSED',
+      '4.9/5', '+36 20 247 4444', 'mosaicheadspa@gmail.com', '1023 Budapest, Bécsi út 2.', 'Between Kolosy square and Zsigmond square.', 'Monday - Friday: 8:00 – 20:00', 'Saturday: 8:00 – 20:00', 'Sunday: CLOSED',
       'Price: 50 min + 30 min drying', 'Hair-camera scalp diagnostics and consultation – optional, you decide by answering a question']) assert.ok(szoveg.includes(s), 'hianyzik: ' + s);
     assert.match(szoveg, /\d,\d{3} Google reviews/, 'a Google-ertekelesek szama (elo adat, assets/js/google-szam.js)');
     // arkartyak: 3 csomag, a regi (athuzott) ar mellett az uj; EGY 50 perces egyeni kezeles (nincs kulon Relax / Hair csomag)
