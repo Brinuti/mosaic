@@ -9,6 +9,7 @@ import { createZapierSdk } from '@zapier/zapier-sdk';
 //  mod 'bel':   { gyoker:[{id,ut}], cel, ag, uzenet, meret?, minSzel?, maxMappankent? } - mappak kepeinek kis elonezete CSOMAGOLVA (pack-*.bin: 48 karakter azonosito + 8 jegyu hossz + JPEG) + manifest-*.tsv
 //  mod 'masol': { ag, uzenet, fajlok:[{id,ut,meret?}] vagy lista_ut (repo-beli JSON) } - kicsinyitett kepek kulon fajlokban, EGY commitban
 //  mod 'lista': { gyoker:[{id,ut}] } - a Drive-fa bejarasa, mappankenti kep/video darabszam
+//  mod 'nevek': { mappa } - egy mappa fajljai (azonosito, nev, tipus, meret, belyegkep van-e, felbontas); hozzaferes-probanak jo
 const sdk = createZapierSdk();
 const API = 'https://api.github.com/repos/Brinuti/mosaic';
 const DRIVE = 'https://www.googleapis.com/drive/v3/files';
@@ -161,6 +162,15 @@ export default defineDurable('drive-kep-atmasolas', async (ctx, rawInput: unknow
       szint = kovetkezo;
     }
     return { szamok };
+  }
+
+  // ---------- egy mappa fajljai (nev, tipus, meret, van-e belyegkep) ----------
+  if (be.mod === 'nevek') {
+    const lista = await ctx.step('list-folder-files', async () => driveLista(be.mappa));
+    return {
+      db: lista.length,
+      fajlok: lista.map((f) => ({ id: f.id, nev: f.name, tipus: f.mimeType, meret: f.size, belyegkep: !!f.thumbnailLink, px: f.imageMediaMetadata ? `${f.imageMediaMetadata.width}x${f.imageMediaMetadata.height}` : undefined })),
+    };
   }
 
   // ---------- kepek kulon fajlokban ----------
