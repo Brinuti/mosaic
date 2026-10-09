@@ -28,7 +28,7 @@ test('B09 athelyezes NEM lemondas: uj idopont, rescheduled allapot, uj outbox; l
   assert.ok(ox.some((o) => o.event_type === 'booking.rescheduled'));
   assert.ok(!ox.some((o) => o.event_type === 'booking.cancelled'));
   // ismetelt athelyezes-ertesito nem duplikal
-  const m2 = await foglal(t, { externalId: 'res-1', start: BASE + 9 * NAP, status: 'rescheduled' });
+  const m2 = await foglal(t, { externalId: 'res-1', start: BASE + 9 * NAP, status: 'rescheduled', now: BASE + 10 });
   assert.equal(m2.valtozas, 'duplikalt');
   assert.equal(await szamol(t.db, 'outbox_event', "event_type = 'booking.rescheduled'"), 1);
   // lemondas

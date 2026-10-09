@@ -159,10 +159,11 @@ export async function kuldhetoE(db, planId, { cimzett = null } = {}) {
 
 /** elkuldve (sent): csak ha kuldhetoE; a tenyleges kuldest az uzenet-motor vegzi, ez rogziti az eredmenyt */
 export async function elkuldve(db, { planId, cimzett = null, now = most() }) {
+  const elozo = await terv(db, planId);
+  if (elozo?.status === 'sent') return { mar: true };
   const k = await kuldhetoE(db, planId, { cimzett });
   if (!k.ok) throw new CrmHiba('NEM_KULDHETO', `a dokumentum nem kuldheto: ${k.hianyok.join(', ')}`, 409, k.hianyok);
-  const p = await terv(db, planId);
-  if (p.status === 'sent') return { mar: true };
+  const p = elozo;
   const [r] = await tranzakcio(db, [
     keszit(db, 'UPDATE treatment_plan SET status = \'sent\', sent_at = ?2, recipient_email = ?3, updated_at = ?2 WHERE id = ?1 AND status IN (\'therapist_final\', \'generated_pdf\')', planId, now, k.cimzett),
     auditStmt(db, { action: 'plan.sent', resource: 'treatment_plan', resourceId: planId, guestId: p.guest_id, detail: { kind: p.kind }, now }),
