@@ -214,6 +214,8 @@ test('(4) belső blokk: ebédszünet, szünet, a munkatárs saját nevére szól
   // a Salonic "Beeső" helykitöltő vendége: nincs jelölt -> belső blokk (nincs riasztás), ismeretlen szolgáltatás-névvel is
   const beeso = await ingest(db, ENV, munkatarsLevel({ uzenetId: 'b5', nev: 'Beeső', szolg: 'Megbeszélés', datum: 'november 27. (péntek) 10:00' }), MOST + ORA, { eloEllenorzes: elo });
   assert.equal(beeso.tipus, 'ignored_internal'); assert.equal(beeso.szabaly, 'beeso_nev'); assert.equal(beeso.valtozas, false);
+  const naplo = szam(db, "SELECT reszlet FROM esemenyek WHERE forras_id = 'b5'").reszlet;
+  assert.equal(JSON.parse(naplo).beeso, true); assert.doesNotMatch(naplo, /Beeső/); // a holdout-jelentes kulon sorba teszi; vendegnev nincs a naploban
   assert.equal(szam(db, "SELECT COUNT(*) AS n FROM esemenyek WHERE tipus LIKE 'ingest:riasztas:%'").n, 0);
   // DECISION #119: PONTOSAN "Beeső" - az ekezet nelkuli vagy kiegeszitett nev nem az: ignored_uncertain + riasztas, nincs allapotvaltas
   for (const [i, nev] of ['Beeso', 'Beeső Anna', 'Beesőné'].entries()) {
