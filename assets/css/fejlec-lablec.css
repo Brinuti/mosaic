@@ -235,9 +235,10 @@
 /* ha a lenyilok (pl. a Head Spa 8 almenupontja) miatt a menu hosszabb, mint a kepernyo, a menu SAJAT gorgetosavja a kepernyon belul marad: az utolso sor (Kapcsolat) is elerheto */
 .device-mobile-optimized #inlineContentParent-MENU_AS_CONTAINER { max-height: var(--mh-menu-max, 100vh) !important; }
 
-/* A fejlec felso akcios savja (Wix: section#comp-mpv0ganp): rozsaszin helyett a MOSAIC szinvilaga (halvany zold hatter, sotetzold felirat) - minden oldalon egyseges
+/* A fejlec felso akcios savja (Wix: section#comp-mpv0ganp): az EREDETI rozsaszin (#ee05a3, feher felirat), hogy minel tobben lassak (a tulajdonos kerese, 2026-10-09;
+   korabban halvany zold volt). A Wix rozsaszin arnyeka (asztalon a #comp-mpv0gaod, telefonon a ragyogas lent) valtozatlanul marad.
    (a lezeres / oxigen / sminktetovalas / ajandekkartya landingeken a sajat CSS rejti, ott nem latszik). */
-#comp-mpv0ganp [data-testid="colorUnderlay"] { background-color: #e6ebe7 !important; }
-#comp-mpv0ganp { box-shadow: inset 0 -1px 0 #d6dacc; }
-#comp-mpv0ganp a, #comp-mpv0ganp a span { color: #0f3a3c !important; }
-#comp-mpv0gaod { box-shadow: 0 5px 16px rgba(60, 80, 70, .16) !important; }   /* a Wix rozsaszin arnyeka helyett halvany zoldes */
+/* CSAK a Head Spa oldalakon (a dokumentum gyoker-elemen levo data-mh-headspa jelolo jeloli: tools/fejlec-menu.mjs HEADSPA_OLDALAK); minden mas oldalon rejtve (2026-10-09, a tulajdonos kerese) */
+html:not([data-mh-headspa]) #comp-mpv0ganp { display: none !important; }
+#comp-mpv0ganp [data-testid="colorUnderlay"] { background-color: #ee05a3 !important; }
+#comp-mpv0ganp a, #comp-mpv0ganp a span { color: #fff !important; }

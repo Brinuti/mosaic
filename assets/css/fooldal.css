@@ -399,7 +399,7 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
      az --h1-arany a szoveg szelessege betumeretben (merve: 13,0-13,4) */
   .vh-hero h1 { container-type: inline-size; }
   .h1-fo { white-space: nowrap; font-size: 26px; font-size: calc(100cqw / var(--h1-arany, 13.4)); }
-  .h1-al { font-size: 19px; margin-top: 6px; }
+  .h1-al { white-space: nowrap; font-size: min(20px, calc(100cqw / var(--h1-al-arany, 16.5))); margin-top: 6px; }   /* az alcim telefonon egy sorban (az --h1-al-arany a szoveg szelessege betumeretben + ~3% rahagyas) */
   .sticky-cta { display: flex; align-items: center; gap: 12px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: rgba(246, 247, 242, .97); box-shadow: 0 -6px 22px rgba(60, 40, 15, .16); transform: translateY(115%); transition: transform .25s ease; }
   .sticky-cta.lathato { transform: none; }
   .sticky-cta .gomb { flex: 1; padding: 13px 16px; white-space: nowrap; }

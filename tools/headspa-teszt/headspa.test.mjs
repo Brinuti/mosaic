@@ -87,13 +87,13 @@ for (const o of OLDALAK) {
       await ctx.close();
     });
 
-    test('a kozos szerkezet: eredeti canonical, indexelhetoseg, fejlec, a fejlec akcios savja a MOSAIC szinvilagaban (nem rozsaszin), ujszeru oldalstilus, lablec', async () => {
+    test('a kozos szerkezet: eredeti canonical, indexelhetoseg, fejlec, a fejlec akcios savja az eredeti rozsaszin (feher felirat), ujszeru oldalstilus, lablec', async () => {
       const { p, ctx } = await nyit(o.nev);
       // indexelheto (nincs robots meta); a kedvezmeny oldal a regi oldalhoz hasonloan noindex marad
       if (o.noindexEredeti) assert.equal(await p.getAttribute('meta[name=robots]', 'content'), 'noindex'); else assert.equal(await p.locator('meta[name=robots]').count(), 0, 'indexelheto oldal');
       assert.equal(await p.getAttribute('link[rel=canonical]', 'href'), `https://www.mosaicheadspa.hu/${o.nev}`);
       assert.equal(await p.locator('header, #SITE_HEADER, [id^="comp-"]').count() > 0, true, 'a MOSAIC fejlec megvan');
-      // az akcios sav a fejlece (a kozos fejlec-lablec.css stilusozza): latszik, halvany zold hatter, sotetzold felirat, a kedvezmeny oldalra mutat; nincs sajat masodik sav
+      // az akcios sav a fejlece (a kozos fejlec-lablec.css stilusozza): latszik, rozsaszin hatter, feher felirat, a kedvezmeny oldalra mutat; nincs sajat masodik sav
       assert.equal(await p.locator('a.akcio-sav').count(), 0, 'nincs sajat akcio-sav (a fejlec savja veszi at a helyet)');
       const sav = await p.evaluate(() => {
         const s = document.getElementById('comp-mpv0ganp'); const a = s && s.querySelector('a');
@@ -102,8 +102,8 @@ for (const o of OLDALAK) {
       });
       assert.ok(sav, 'van akcios sav a fejlecben');
       assert.equal(sav.lat, true, 'az akcios sav latszik');
-      assert.equal(sav.bg, 'rgb(230, 235, 231)', 'halvany zold hatter (nem rozsaszin)');
-      assert.equal(sav.szin, 'rgb(15, 58, 60)', 'sotetzold felirat');
+      assert.equal(sav.bg, 'rgb(238, 5, 163)', 'az eredeti rozsaszin hatter (2026-10-09: a tulajdonos kerese)');
+      assert.equal(sav.szin, 'rgb(255, 255, 255)', 'feher felirat');
       assert.equal(sav.href, '/head-spa-kedvezmeny');
       assert.match(sav.szoveg, /Októberi akció! - 20% kedvezmény minden headspa foglalásra \+ ajándékkártyára!/);
       assert.match(await p.evaluate(() => getComputedStyle(document.querySelector('main h1')).fontFamily), /Playfair Display/);

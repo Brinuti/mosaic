@@ -3,6 +3,10 @@
    A logok maszkkent (mask-image) jelennek meg: egy fajl barmilyen szinre festheto (currentColor), az eredeti szinuk nem szamit. */
 .sajto-logok { --sl-szin: #0f3a3c; padding: 26px 0 22px; text-align: center; }
 .sajto-logok-cim { margin: 0 0 14px; font: 500 15px/1.35 'Jost', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .01em; color: #4f625d; }
+/* a foldalon a logosav KULON SZEKCIOKENT latszik (2026-10-09, a tulajdonos kerese): nagyobb cim, vilagos sav vékony vonalakkal; a vélemenyek oldalon (.szekcio-fej) marad a kicsi cim */
+.sajto-logok-sav { background: #fbfbf8; border-top: 1px solid #e3e8e0; border-bottom: 1px solid #e3e8e0; }
+.sajto-logok-sav .sajto-logok { padding: 34px 0 30px; }
+.sajto-logok-sav .sajto-logok-cim { margin-bottom: 22px; font: 500 24px/1.3 'Playfair Display', Georgia, 'Times New Roman', serif; letter-spacing: -.005em; color: #0f3a3c; }
 .sl-rad { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px clamp(20px, 2.4vw, 36px); }
 .sl-rad ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px clamp(20px, 2.4vw, 36px); }
 .sl-rad li { display: flex; flex: 0 0 auto; }
@@ -18,6 +22,8 @@
 @media (max-width: 899px) {
   .sajto-logok { padding: 14px 0 10px; }
   .sajto-logok-cim { margin-bottom: 8px; font-size: 13.5px; }
+  .sajto-logok-sav .sajto-logok { padding: 24px 0 20px; }
+  .sajto-logok-sav .sajto-logok-cim { max-width: 21em; margin: 0 auto 18px; font-size: 20px; line-height: 1.25; text-wrap: balance; }
   .sl-rad { display: block; }
   .sl-rad ul { gap: 12px; margin-bottom: 4px; justify-content: space-between; }
   .sl-rad li { flex: var(--g, 1) 1 0; min-width: 0; }

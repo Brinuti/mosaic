@@ -244,3 +244,19 @@ export function fejlecAtalakit(html, mobil, angol = html.includes(NYELV_EN)) {
   return lablec(popup(html, angol ? 'en' : 'hu'), angol ? 'en' : 'hu');
 }
 export const ANGOL_JELOLO = NYELV_EN;
+
+// Az "Októberi akció" (pink) felső sáv CSAK a Head Spa oldalakon látszik (a tulajdonos kérése, 2026-10-09): ezek az oldalak az <html> elemen
+// data-mh-headspa jelölőt kapnak (build + helyi tesztszerver), a közös fejlec-lablec.css pedig minden más oldalon elrejti a sávot
+// (html:not([data-mh-headspa]) #comp-mpv0ganp). A "-regi" (rejtett, Wixes) másolatok az eredetivel egyeznek.
+export const HEADSPA_OLDALAK = new Set(['index', 'headspa-budapest', 'headspa-arak-budapest', 'headspa-termekek-oxygeni', 'headspa-ferfiaknak', 'head-spa-velemenyek',
+  'paros-headspa-budapest', 'headspa-budapest-hungary', 'fooldal', 'headspa-10szazalek-kedvezmennyel', 'headspa-akcio-festessel-50szazalek', 'headspa-elofizetes', 'headspa-kupon']);
+export function headspaOldal(nev) {
+  const n = String(nev).replace(/\.html$/, '').normalize('NFC');
+  return HEADSPA_OLDALAK.has(n) || (n.endsWith('-regi') && (HEADSPA_OLDALAK.has(n.slice(0, -5)) || n === 'fooldal-regi'));
+}
+export function headspaJelolo(html, nev) {
+  const tag = (html.match(/<html\b[^>]*>/) || [''])[0];   // csak az elso (a dokumentum) <html> cimke szamit
+  if (!headspaOldal(nev) || !tag || /\sdata-mh-headspa\b/.test(tag)) return html;
+  return html.replace(/<html\b/, '<html data-mh-headspa');
+}
+
