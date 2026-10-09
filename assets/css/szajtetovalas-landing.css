@@ -17,7 +17,8 @@
 .hero-videokep[data-allapot="hangos"] .hv-gomb { display: none; }
 /* asztalon a videobox pontosan a video aranyu (9:16 allo): nincs elmosott oldalsav; a magassag az ablakhoz igazodik */
 @media (min-width: 1101px) {
-  .hero-kep.hero-videokep { aspect-ratio: 9 / 16; width: auto; height: min(78vh, 640px); min-height: 0; align-self: center; justify-self: end; }
+  /* a videobox magassaga = a hero szovegoszlopa (a cim teteje -> az also badge alja): a szajtetovalas-landing.js allitja (--vh-mag); a szelesseg a video aranya */
+  .hero-kep.hero-videokep { aspect-ratio: 9 / 16; width: auto; height: var(--vh-mag, 470px); min-height: 0; align-self: center; justify-self: end; }
   .hero-videokep .hv-hatter { display: none; }
   .hero-videokep .hv-video { left: 0; transform: none; width: 100%; height: 100%; max-width: none; }
 }
@@ -34,11 +35,7 @@
 .ajak-rajz { position: relative; aspect-ratio: 1.6; border-radius: 6px; overflow: hidden; background: radial-gradient(120% 90% at 50% 120%, #c99a83 0%, transparent 60%), linear-gradient(#e2bfa8, #d9b29a); display: grid; place-items: center; }
 .ajak-rajz svg { width: 74%; opacity: var(--intenz); filter: blur(var(--elmos)); stroke: none; }
 .ajak-rajz .cimke { left: 0; right: 0; bottom: 0; border-radius: 0; background: rgba(240, 225, 200, .92); text-align: center; padding: 6px; font-size: 9.5px; color: #5d4a32; }
-.rita-idezet { max-width: 760px; margin: 34px auto 0; padding: 22px 26px 18px; background: #fff; border: 1px solid #e7eae3; border-left: 4px solid #c6a346; border-radius: 12px; box-shadow: var(--arnyek); }
-.rita-idezet p { font: italic 400 19px/1.5 var(--cim); color: var(--szoveg); margin: 0; }
-.rita-idezet footer { margin-top: 10px; font-size: 13px; color: var(--halk); }
-@media (max-width: 700px) { .rita-idezet { margin-top: 22px; padding: 16px 16px 14px; } .rita-idezet p { font-size: var(--b3); } }
-
+@media (max-width: 700px) { 
 /* ============ arak: ket kartya (aquarell / ruzs hatasu), asztalon fekvo elrendezes ============ */
 @media (min-width: 701px) {
   .ar-racs.ketto { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
@@ -56,3 +53,13 @@
 /* ============ Melitta-szekcio: a videokartya nyitokepe Rita videojabol, a videoablak sajat <video>-val ============ */
 .szakember-video .video-kep { background-image: url(/assets/img/szaj/rita-poszter.jpg); background-position: 50% 40%; background-size: cover; }
 .video-keret video { display: block; width: 100%; height: 100%; background: #000; }
+
+/* telefon: a "Melitta munkai" es a Google-badge EGYMAS MELLETT, egy sorban (a csillagok helyett egy csillag, hogy elferjen) */
+@media (max-width: 700px) {
+  .hero .bizalom { flex-wrap: nowrap; gap: 8px; justify-content: center; }
+  .hero .bizalom .google { padding: 7px 11px 7px 8px; gap: 6px; font-size: 13px; white-space: nowrap; }
+  .hero .bizalom .munkak-gomb { padding: 7px 12px 7px 9px; }
+  .gv-badge .csillagok { display: none; }
+  .gv-badge b::before { content: '★ '; color: #e2a83a; font-weight: 400; }
+  .gv-badge .gv-db { font-size: 12.5px; }
+}

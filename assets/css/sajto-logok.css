@@ -3,8 +3,8 @@
    A logok maszkkent (mask-image) jelennek meg: egy fajl barmilyen szinre festheto (currentColor), az eredeti szinuk nem szamit. */
 .sajto-logok { --sl-szin: #0f3a3c; padding: 26px 0 22px; text-align: center; }
 .sajto-logok-cim { margin: 0 0 14px; font: 500 15px/1.35 'Jost', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .01em; color: #4f625d; }
-.sl-rad { display: flex; justify-content: center; align-items: center; gap: clamp(20px, 2.4vw, 36px); }
-.sl-rad ul { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; gap: clamp(20px, 2.4vw, 36px); }
+.sl-rad { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px clamp(20px, 2.4vw, 36px); }
+.sl-rad ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px clamp(20px, 2.4vw, 36px); }
 .sl-rad li { display: flex; flex: 0 0 auto; }
 .sl-rad a { display: flex; align-items: center; justify-content: center; padding: 6px 2px; color: var(--sl-szin); opacity: .7; transition: opacity .2s, transform .2s; text-decoration: none; }
 .sl-rad a:hover, .sl-rad a:focus-visible { opacity: 1; transform: translateY(-1px); }
@@ -12,6 +12,8 @@
 .sl { display: block; height: var(--h, 24px); aspect-ratio: var(--ar); background-color: currentColor; -webkit-mask: var(--u) center / contain no-repeat; mask: var(--u) center / contain no-repeat; }
 /* a vélemenyek oldalon a szekcio fejlece alatt */
 .szekcio-fej .sajto-logok { padding: 18px 0 4px; }
+/* kisebb laptop / tablet (900-1180 px): kisebb logok, hogy a nyolc elfer egy-ket sorban, nem lóg ki */
+@media (min-width: 900px) and (max-width: 1180px) { .sl { height: calc(var(--h, 24px) * .78); } .sl-rad, .sl-rad ul { column-gap: 22px; } }
 /* telefon: ket sor (4 + 4), egy-egy sor magassaga <= ~26 px: a logok kevés helyet foglalnak */
 @media (max-width: 899px) {
   .sajto-logok { padding: 14px 0 10px; }

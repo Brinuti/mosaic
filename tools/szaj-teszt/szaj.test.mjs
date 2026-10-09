@@ -195,7 +195,7 @@ describe('/szajtetovalas-budapest: minden a szajrol szol', () => {
     // a gyogyulas-szemleltetes: 4 szakasz szaj-rajzzal (nem szemoldok-rajzzal), a videobol idezet Rita szavaival
     assert.equal(await p.locator('.gyogy-sor li .ajak-rajz').count(), 4);
     assert.equal(await p.locator('.szemoldok-rajz').count(), 0);
-    assert.match(await p.$eval('.rita-idezet', (e) => e.innerText), /szépen kivilágosodott, végül pontosan azt a természetes árnyalatot kaptam, amit szerettem volna/);
+    assert.equal(await p.locator('.rita-idezet').count(), 0, 'a Rita-idezet (Kozvetlenul a tetovalas utan ...) a tulajdonos kerese szerint kikerult');
     // nincs kitalalt vendegvelemeny: a velemenyek a Google-velemenyek (szo szerint), Rita videojanak felirata
     const vel = await p.$$eval('.vel .vel-nev', (l) => l.map((x) => x.firstChild.textContent.trim()));
     assert.deepEqual(vel, ['Melitta Farkas', 'Rita', 'Mirtill Bassa', 'Alexandra Fejérpataky']);
@@ -329,6 +329,29 @@ describe('/szajtetovalas-budapest: hero (a tulajdonos 2026-10-09-i kerese)', () 
         assert.ok(Math.abs(r.w / r.h - 9 / 16) < 0.01, `@${szeles}: a videobox allo (9:16): ${Math.round(r.w)}x${Math.round(r.h)}`);
         assert.equal(r.hatterLathato, false, 'nincs elmosott hatter-sav');
       }
+      await ctx.close();
+    }
+  });
+  test('asztalon a videobox a szovegoszlop magassagu (a cim teteje -> az also badge alja, legfeljebb 24 px elteressel), allo 9:16; mobilon a ket badge (Melitta munkai + Google) egy sorban van', async () => {
+    for (const szeles of [1440, 1280]) {
+      const { p, ctx } = await nyit({ szeles });
+      await p.waitForTimeout(500);
+      const r = await p.evaluate(() => {
+        const f = document.getElementById('hero-videokep').getBoundingClientRect();
+        const gy = [...document.querySelector('.hero-szoveg').children].filter((e) => e.getBoundingClientRect().height > 0);
+        return { fm: f.height, fw: f.width, sz: Math.max(...gy.map((e) => e.getBoundingClientRect().bottom)) - Math.min(...gy.map((e) => e.getBoundingClientRect().top)) };
+      });
+      assert.ok(Math.abs(r.fm - r.sz) <= 24, `@${szeles}: a videobox (${Math.round(r.fm)}) a szovegoszlop magassagu (${Math.round(r.sz)})`);
+      assert.ok(Math.abs(r.fw / r.fm - 9 / 16) < 0.01, `@${szeles}: allo 9:16`);
+      assert.ok(r.fm <= 560, `@${szeles}: nem tul magas: ${Math.round(r.fm)}`);
+      await ctx.close();
+    }
+    for (const szeles of [390, 360]) {
+      const { p, ctx } = await nyit({ szeles });
+      const r = await p.evaluate(() => [...document.querySelectorAll('.hero .bizalom > a')].map((e) => { const b = e.getBoundingClientRect(); return [Math.round(b.top), Math.round(b.left), Math.round(b.right)]; }));
+      assert.equal(r.length, 2, `@${szeles}: ket badge`);
+      assert.ok(Math.abs(r[0][0] - r[1][0]) <= 4, `@${szeles}: egy sorban (${JSON.stringify(r)})`);
+      assert.ok(r[1][2] <= szeles - 8, `@${szeles}: elfer a kepernyon`);
       await ctx.close();
     }
   });

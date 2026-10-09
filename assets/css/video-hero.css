@@ -1,0 +1,146 @@
+/* MOSAIC KOZOS videos hero (2026-10-09): egy helyen az igazsag a fooldal (/), a Head Spa akcio oldal (/head-spa-kedvezmeny) es a paros Head Spa oldal (/paros-headspa-budapest) heroja szamara.
+   A referencia a /head-spa-kedvezmeny hero (a tulajdonos kedvence): ASZTALON a video a hero teljes hattere (sotetzold atmosas balrol), MOBILON felul a video (300 px), ami
+   sotetzoldbe (#10221f) olvadva atmegy a szovegbe; a play gomb NAGY ablakban (felugro <dialog>) nyitja a hangos videot (assets/js/video-hero.js).
+   Mukodes + hasznalat: docs/VIDEOS_HERO.md. Minden osztaly "vh-" elotagu, igy semmilyen oldal sajat stilusaval nem utkozik; az oldalak sajat CSS-ebe hero-szabaly NEM kerul.
+   Betutipus: az oldal sajat --cim / --test valtozoi (Playfair Display / Jost), tartalekkal. A gombok (.vh-gomb*) is itt vannak: minden oldalon pont ugyanugy neznek ki. */
+
+.vh-hero {
+  --vh-zold: #10221f;               /* a sotetzold, amibe a kep mobilon beleolvad */
+  --vh-arany: #f1deae;
+  --vh-cim: var(--cim, 'Playfair Display', Georgia, 'Times New Roman', serif);
+  --vh-test: var(--test, 'Jost', 'Helvetica Neue', Arial, sans-serif);
+  --vh-poz: 60% 45%;                /* a hatter fokuszpontja asztalon (oldalankent feluliirhato) */
+  --vh-poz-mobil: 66% 38%;          /* ... es mobilon */
+  position: relative; isolation: isolate; overflow: hidden; background: var(--vh-zold); color: #fff;
+  font-family: var(--vh-test); font-size: 16px; line-height: 1.5; box-sizing: border-box;
+}
+.vh-hero *, .vh-hero *::before, .vh-hero *::after { box-sizing: border-box; }
+:where(.vh-hero) :is(p, ul, h1) { margin: 0; }
+.vh-hero svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+:where(.vh-hero) a { color: inherit; }
+.vh-hero :focus-visible { outline: 2px solid var(--vh-arany); outline-offset: 3px; }
+.vh-hero, .vh-hero * { font-variant-numeric: lining-nums; }   /* a Playfair alapbol old-style szamjegyeket ad (az arakhoz egyenes kell) */
+
+/* --- hatter: a nyitokep (poster / LCP) + a hang nelkuli klip, amely beuszik fole; a sotet atmosas balrol --- */
+.vh-hatter, .vh-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: var(--vh-poz); }
+.vh-hatter { z-index: -3; }
+.vh-video { z-index: -2; opacity: 0; transition: opacity 1.6s ease; }
+.vh-video.lejatszik { opacity: 1; }
+.vh-hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(10, 28, 29, .94) 0%, rgba(10, 28, 29, .82) 34%, rgba(10, 28, 29, .32) 64%, rgba(10, 28, 29, .1) 100%), linear-gradient(0deg, rgba(10, 28, 29, .6), transparent 34%); }
+/* .vh-eltolt (asztalon): kis felbontasu / szuk keparanyu forrasnal (pl. 720 px-es negyzet, 4:3) a kep a hero jobb ~72%-an van, bal szele puhan sotetzoldbe olvad (a szoveg alatt tiszta zold):
+   igy a forras kevesbe van felnagyitva, es a szereplok arca nem a szoveg alatt van. Csak a legalabb 1181 px szeles asztali nezetben hat (tableten / telefonon a kep teljes szeles, ill. felul van). */
+@media (min-width: 1181px) {
+  .vh-eltolt .vh-hatter, .vh-eltolt .vh-video { left: 28%; width: 72%; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 32%); mask-image: linear-gradient(90deg, transparent 0, #000 32%); }
+}
+.vh-tart { position: relative; width: min(var(--vh-szeles, 1200px), calc(100% - 64px)); margin: 0 auto; min-height: 640px; display: flex; align-items: center; padding: 64px 0; }
+.vh-szoveg { max-width: 600px; }
+
+/* --- szovegelemek --- */
+.vh-hero h1 { font: 500 54px/1.06 var(--vh-cim); letter-spacing: -.02em; color: #fff; text-wrap: balance; }
+.vh-al { margin: 18px 0 16px; max-width: 520px; font-size: 18.5px; line-height: 1.5; color: #eef0e6; }
+.vh-al b { font-weight: 500; }
+.vh-ar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; margin: 0 0 18px; }
+.vh-ar b { font: 500 42px/1.1 var(--vh-cim); color: var(--vh-arany); white-space: nowrap; }
+.vh-ar s { font-size: 22px; color: #cfd6cc; text-decoration-thickness: 1px; }
+.vh-ar-kicsi b { font-size: 28px; }
+.vh-ar-kicsi s { font-size: 17px; }
+.vh-sor { margin: 0 0 10px; font-size: 15.5px; color: #eef0e6; }
+.vh-sor s { color: #cfd6cc; }
+.vh-sor b { font-weight: 500; }
+.vh-akcio { margin: -8px 0 18px; font-size: 16px; letter-spacing: .02em; color: var(--vh-arany); }
+.vh-akcio b { font-weight: 500; }
+.vh-jelvenyek { display: flex; flex-wrap: wrap; gap: 12px 24px; list-style: none; padding: 0; margin: 0 0 26px; }
+.vh-jelvenyek li { display: flex; align-items: center; gap: 10px; font-size: 14.5px; color: #f3f4ef; }
+.vh-ikon { flex: none; width: 34px; height: 34px; border-radius: 50%; display: inline-grid; place-items: center; background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .26); color: var(--vh-arany); }
+.vh-ikon svg { width: 17px; height: 17px; }
+.vh-cta { display: flex; flex-wrap: wrap; gap: 12px 14px; align-items: center; }
+.vh-ajandek { margin-top: 14px; font-size: 14.5px; color: #eef0e6; }
+.vh-ajandek a { color: #fff; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.vh-google { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 22px; text-decoration: none; color: #fff; }
+.vh-google svg.vh-g-ikon { width: 22px; height: 22px; flex: none; stroke: none; }
+.vh-csillagok { color: #e2a83a; letter-spacing: 1px; font-size: 15px; }
+.vh-csillag-kep { display: block; width: auto; height: 17px; }
+.vh-g-pont, .vh-g-db { font-size: 14.5px; }
+.vh-g-db { color: #e4e8de; }
+.vh-google:hover :is(.vh-g-db, .vh-g-pont) { text-decoration: underline; text-underline-offset: 3px; }
+.vh-hely { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; color: #d6dcd2; }
+.vh-hely svg { width: 18px; height: 18px; color: var(--vh-arany); flex: none; }
+
+/* --- gombok (minden oldalon ugyanaz) --- */
+.vh-gomb { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid transparent; border-radius: 999px; padding: 12px 26px; font: 400 15px/1.2 var(--vh-test); letter-spacing: 0; text-transform: none; text-decoration: none; cursor: pointer; transition: background .2s, transform .1s, box-shadow .2s, color .2s, border-color .2s; }
+.vh-gomb:active { transform: translateY(1px); }
+.vh-gomb-nagy { padding: 17px 34px; }
+.vh-gomb-arany { background: linear-gradient(#c6a346, #d9c164); color: #fff; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); box-shadow: 0 6px 18px rgba(150, 120, 40, .22); }
+.vh-gomb-arany:hover { background: var(--zold, #3f7652); text-shadow: none; }
+.vh-gomb-vonal { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .55); color: #fff; }
+.vh-gomb-vonal:hover { background: rgba(255, 255, 255, .16); }
+.vh-gomb svg { width: 20px; height: 20px; flex: none; }
+.vh-nyil { display: inline-block; transition: transform .2s; }
+a:hover > .vh-nyil, .vh-gomb:hover .vh-nyil { transform: translateX(3px); }
+
+/* --- a play gomb: a hangos videot NAGY ablakban (felugro <dialog>) nyitja --- */
+.vh-lejatszas { position: absolute; right: 0; bottom: 44px; display: flex; align-items: center; gap: 16px; padding: 0; border: 0; background: none; color: #fff; font-family: var(--vh-test); cursor: pointer; text-align: left; }
+.vh-play { flex: none; display: grid; place-items: center; width: 62px; height: 62px; border-radius: 50%; background: rgba(255, 255, 255, .16); color: #fff; border: 1.5px solid rgba(255, 255, 255, .8); backdrop-filter: blur(6px); box-shadow: 0 10px 34px rgba(0, 0, 0, .35); transition: transform .2s, background .2s; }
+.vh-play svg { width: 26px; height: 26px; fill: currentColor; stroke: none; margin-left: 4px; }
+.vh-lejatszas:hover .vh-play { background: rgba(255, 255, 255, .3); transform: scale(1.06); }
+.vh-lejatszas-szoveg b { display: block; font: 500 17px/1.25 var(--vh-cim); }
+.vh-lejatszas-szoveg small { font-size: 13.5px; color: #d6dcd2; }
+
+/* --- a felugro ablak (a JS hozza letre; a hero-n kivul is hasznalhato: button[data-nagyvideo]) --- */
+.vh-lb { width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; overflow: hidden; }
+.vh-lb::backdrop { background: rgba(6, 18, 18, .92); }
+.vh-lb-tartalom { display: grid; place-items: center; width: 100%; height: 100%; padding: 56px 16px 24px; }
+.vh-lb video { display: block; max-width: min(94vw, 1100px); max-height: calc(100vh - 96px); max-height: calc(100dvh - 96px); border-radius: 12px; background: #000; box-shadow: 0 30px 80px rgba(0, 0, 0, .6); }
+.vh-lb-be { position: fixed; top: 14px; right: 14px; z-index: 2; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .5); background: rgba(255, 255, 255, .12); color: #fff; cursor: pointer; }
+.vh-lb-be svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.vh-lb-be:hover { background: rgba(255, 255, 255, .28); }
+
+.vh-csak-nagy { display: inline; }
+
+/* ====== tablet ====== */
+@media (max-width: 1024px) {
+  .vh-tart { width: calc(100% - 48px); min-height: 0; padding: 52px 0 130px; }
+  .vh-hero h1 { font-size: 44px; }
+  .vh-lejatszas { bottom: 34px; }
+}
+
+/* ====== telefon: felul a video (300 px), ami sotetzoldbe olvadva atmegy a szovegbe; a jelvenyek egy sorban; a play gomb a szoveg alatt ====== */
+@media (max-width: 700px) {
+  .vh-hero::before { background: linear-gradient(180deg, rgba(16, 34, 31, .08) 0, rgba(16, 34, 31, .1) 110px, var(--vh-zold) 300px, var(--vh-zold) 100%); }
+  .vh-hatter, .vh-video { bottom: auto; height: 300px; object-position: var(--vh-poz-mobil); }
+  .vh-tart { width: calc(100% - 32px); display: block; padding: 232px 0 26px; }
+  .vh-szoveg { max-width: none; }
+  .vh-hero h1 { font-size: clamp(28px, 8vw, 34px); line-height: 1.1; }
+  .vh-al { margin: 12px 0 12px; font-size: 15px; }
+  .vh-ar { margin-bottom: 12px; }
+  .vh-ar b { font-size: 32px; }
+  .vh-ar s { font-size: 18px; }
+  .vh-ar-kicsi b { font-size: 24px; }
+  .vh-ar-kicsi s { font-size: 15px; }
+  .vh-sor { font-size: 14.5px; }
+  .vh-akcio { margin: -6px 0 14px; font-size: 14.5px; }
+  /* a harom jelveny egy sorban, egyenlo oszlopokban: felul az ikon, alatta a (rovid) felirat (360-390 px szelessegen is elfer) */
+  .vh-jelvenyek { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 18px; }
+  .vh-jelvenyek li { flex-direction: column; justify-content: flex-start; gap: 6px; text-align: center; font-size: 12.5px; line-height: 1.25; }
+  .vh-csak-nagy { display: none; }
+  .vh-ikon { width: 30px; height: 30px; }
+  .vh-ikon svg { width: 15px; height: 15px; }
+  .vh-cta .vh-gomb { flex: 1 1 100%; white-space: normal; text-align: center; }
+  .vh-gomb-nagy { padding: 15px 24px; }
+  .vh-ajandek { text-align: center; font-size: 13.5px; }
+  .vh-google { margin-top: 16px; width: 100%; justify-content: center; flex-wrap: nowrap; gap: 4px 6px; white-space: nowrap; }
+  .vh-google svg.vh-g-ikon { width: 20px; height: 20px; }
+  .vh-g-pont, .vh-g-db { font-size: 12.5px; }
+  .vh-csillagok { font-size: 12px; letter-spacing: 0; }
+  .vh-csillag-kep { height: 14px; }
+  .vh-hely { justify-content: center; font-size: 13px; }
+  .vh-lejatszas { position: static; margin: 18px auto 0; justify-content: center; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .18); width: 100%; }
+  .vh-play { width: 52px; height: 52px; }
+  .vh-play svg { width: 21px; height: 21px; }
+  .vh-lb-tartalom { padding: 60px 0 20px; }
+  .vh-lb video { max-width: 100vw; border-radius: 0; }
+}
+@media (max-width: 380px) {
+  .vh-g-pont, .vh-g-db { font-size: 12px; }
+  .vh-google { gap: 4px 4px; }
+}

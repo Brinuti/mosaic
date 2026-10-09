@@ -292,6 +292,10 @@ function fejlecSzoveg(h, mobil) {
   }
   return h;
 }
+// google-szam.js: mely oldalakra kerul fel (lasd lent): a foglalas/ alatti sajat oldalak, ahol a Google-ertekeles darabszama szovegben szerepel
+const SAJAT_OLDALAK = new Set(fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.endsWith('.html')));
+const GV_MINTA = /(?:\d{1,2}[.,\u00a0 \u202f]\d{3}|\d{3,5})\+?\s*(?:db\s+)?(?:Google[- ](?:v[eé]lem[eé]ny|[eé]rt[eé]kel[eé]s)|Google reviews|vend[eé]gv[eé]lem[eé]ny|val[oó]di [eé]rt[eé]kel[eé]s|v[eé]lem[eé]ny|[eé]rt[eé]kel[eé]s)/i;
+const GV_KIHAGY = /^(foglalo-pmu|pmu-ok|pmu-vh)\.html$/;   // Melitta / PMU-specifikus szam (nem a MOSAIC osszes ertekelese)
 for (const mappa of [LAP_A, LAP_M]) {
   for (const f of fs.readdirSync(mappa).filter((x) => x.endsWith('.html'))) {
     const p = path.join(mappa, f);
@@ -300,6 +304,9 @@ for (const mappa of [LAP_A, LAP_M]) {
     // nem visz at a /foglalo-motor oldalra. Kikapcsolt atkotesnel (eles, ma) semmi nem valtozik.
     const launcherOldal = ATKOTES.size > 0 && !kihagyottOldal(f) && !FOGLALO_OLDALAK.has(f); // ahol a launcher rajta van, a foglalo-linkek a retegben nyilnak
     if (launcherOldal) h = h.replace('</body>', '<script type="module" src="/assets/js/booking-launcher.js"></script></body>');
+    // A MOSAIC Google-ertekeleseinek szama minden oldalon az AKTUALIS (assets/js/google-szam.js, a Trustindex-widget adata): a sajat oldalakra, ahol "<szam> ... Google-velemeny / ertekeles" szoveg van
+    // (a Melitta / PMU-specifikus foglalo oldalak kivetelevel), felkerul a szkript; a HTML-ben levo szam a tartalek.
+    if (SAJAT_OLDALAK.has(f) && GV_MINTA.test(h) && !GV_KIHAGY.test(f)) h = h.replace('</body>', '<script src="/assets/js/google-szam.js" defer></script></body>');
     for (const [fajl, css] of BEAGYAZOTT) {
       let elso = true;
       h = h.replace(new RegExp('<link rel="stylesheet" href="/assets/css/' + fajl.replace('.', '\\.') + '">', 'g'),
