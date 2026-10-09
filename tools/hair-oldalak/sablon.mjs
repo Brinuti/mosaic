@@ -175,16 +175,6 @@ ${LEPESEK.map(([c, sz], i) => `      <li><span class="lepes-szam">${String(i + 1
     </ol>
   </div>
 </section>`;
-const realitasSzekcio = () => `<section class="szekcio" aria-labelledby="realitas-cim">
-  <div class="tartalom realitas">
-    <div class="realitas-jel" aria-hidden="true"><span>Haj<br>biztonság</span></div>
-    <div>
-      ${felcim('Realitás')}
-      <h2 id="realitas-cim">Nem ígérünk olyat, amit a hajad nem bír el</h2>
-      <p class="lead">Sötétből nagyon világos hajra váltásnál, korábbi sokszori festésnél vagy színkorrekciónál előfordulhat, hogy a kívánt eredmény több alkalmat igényel. Ezt még a kezelés megkezdése előtt egyeztetjük.</p>
-    </div>
-  </div>
-</section>`;
 function konzultSzekcio(fodrasz) {
   const k = konzultacio(), f = fodrasz ? FODRASZOK[fodrasz] : null;
   return `<section class="szekcio" id="konzultacio" aria-labelledby="konzult-cim">
@@ -192,8 +182,8 @@ function konzultSzekcio(fodrasz) {
     <div class="konzult-videok">${KEPEK.videok.kozpont.map((v) => videoDoboz(v, { nev: v.nev })).join('')}</div>
     <div class="konzult-szoveg">
       ${felcim(`${ido(k.perc)} · 0 Ft`)}
-      <h2 id="konzult-cim">${f ? `Nem kell tudnod a szolgáltatás nevét – ${f.nev} segít` : 'Nem kell tudnod a fodrászati szolgáltatás nevét'}</h2>
-      <p class="lead">Lehet, hogy tudod, milyen hajat szeretnél, de azt nem, hogy ehhez balayage, melír, teljes festés vagy színkorrekció kell. Ez teljesen rendben van.</p>
+      <h2 id="konzult-cim">Fodrászt választani nehéz, és bizalmi kérdés</h2>
+      <p class="lead">Pontosan ezért találtuk ki az ingyenes konzultációt: hogy megismerjük egymást, felmérjük az igényeidet, és pontosan olyan frizura készüljön, ami minden elvárásodnak megfelel.</p>
       <p class="konzult-cim2">Az ingyenes konzultáción:</p>
       <ul class="pipak">
         <li>${ik('pipa')}<span>megnézzük a hajad állapotát</span></li>
@@ -210,14 +200,10 @@ function konzultSzekcio(fodrasz) {
 
 // ---- velemenyek, gyik, hely -------------------------------------------------------------------------------------------------------------------
 const velemenyekSzekcio = (fodrasz) => {
-  const kepek = fodrasz && KEPEK.velemenyek[fodrasz];
   const nev = fodrasz ? FODRASZOK[fodrasz].nev : null;
   return `<section class="szekcio halvany" id="velemenyek" aria-labelledby="velemenyek-cim">
   <div class="tartalom">
     ${szekcioFej(nev ? 'Vendégeim mondták' : 'Mit mondanak rólunk?', nev ? 'Valódi vendégek, valódi vélemények' : 'Valódi vendégeink véleménye', 'A MOSAIC Google-értékelései és vendégvéleményei – szerkesztés és válogatás nélkül.', 'velemenyek-cim')}
-    ${kepek ? `<ul class="velemeny-racs" aria-label="Vendégvélemények ${nev}ről">
-${kepek.map(([blokk, alt]) => { const k = tartalomKep(fodrasz, blokk); return `      <li><img src="${k.src}" alt="${esc(alt)}" width="${k.w}" height="${k.h}" loading="lazy" decoding="async"></li>`; }).join('\n')}
-    </ul>` : ''}
     <div class="ti-doboz" id="ti-doboz" data-forras="/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html"></div>
     <p class="cta-sor kozepre">${gomb('További vélemények a Google-on', GOOGLE_VELEMENYEK_LINK, { fajta: 'korvonal', cta: 'velemenyek-google', extra: ' target="_blank" rel="noopener"' })}</p>
   </div>
@@ -249,17 +235,17 @@ ${gyikLista(extra, fodrasz).map(([k, v]) => `      <details><summary>${esc(k)}</
 
 const helySzekcio = (fodrasz) => `<section class="szekcio halvany" id="hely" aria-labelledby="hely-cim">
   <div class="tartalom hely-racs">
-    <div class="hely-szoveg">
-      ${felcim('Itt találsz meg')}
-      <h2 id="hely-cim">${SZALON.nev}</h2>
-      <ul class="hely-lista">
-        <li>${ik('pin')}<span>${SZALON.cim}<br><span class="halk">${SZALON.hely[0].toUpperCase() + SZALON.hely.slice(1)}</span></span></li>
-        <li>${ik('ora')}<span>${SZALON.nyitva}<br><span class="halk">${SZALON.zarva}</span></span></li>
-        <li>${ik('telefon')}<span><a href="${SZALON.telefonLink}" data-cta="telefon">${SZALON.telefon}</a></span></li>
-      </ul>
-      <p class="cta-sor">${gomb('Útvonaltervezés', TERKEP_LINK, { fajta: 'korvonal', cta: 'utvonal', extra: ' target="_blank" rel="noopener"' })}${gomb(fodrasz ? `Foglalok ${FODRASZOK[fodrasz].rag.hez}` : 'Szabad időpontok', foglalo({ staff: fodrasz || undefined }), { cta: 'hely-foglalas' })}</p>
-    </div>
-    <div class="hely-kepek">
+    <div class="hely-bal">
+      <div class="hely-szoveg">
+        ${felcim('Itt találsz meg')}
+        <h2 id="hely-cim">${SZALON.nev}</h2>
+        <ul class="hely-lista">
+          <li>${ik('pin')}<span>${SZALON.cim}<br><span class="halk">${SZALON.hely[0].toUpperCase() + SZALON.hely.slice(1)}</span></span></li>
+          <li>${ik('ora')}<span>${SZALON.nyitva}<br><span class="halk">${SZALON.zarva}</span></span></li>
+          <li>${ik('telefon')}<span><a href="${SZALON.telefonLink}" data-cta="telefon">${SZALON.telefon}</a></span></li>
+        </ul>
+        <p class="cta-sor">${gomb('Útvonaltervezés', TERKEP_LINK, { fajta: 'korvonal', cta: 'utvonal', extra: ' target="_blank" rel="noopener"' })}${gomb(fodrasz ? `Foglalok ${FODRASZOK[fodrasz].rag.hez}` : 'Szabad időpontok', foglalo({ staff: fodrasz || undefined }), { cta: 'hely-foglalas' })}</p>
+      </div>
       <div class="terkep" id="terkep">
         <div class="terkep-hely" id="terkep-hely">
           <span class="ikon-kor">${ik('pin')}</span>
@@ -267,10 +253,8 @@ const helySzekcio = (fodrasz) => `<section class="szekcio halvany" id="hely" ari
           <button type="button" class="gomb gomb-korvonal gomb-kicsi" id="terkep-gomb">Google térkép megjelenítése</button>
         </div>
       </div>
-      <ul class="szalon-kepek">
-${KEPEK.szalon.map((f) => { const k = f(); return `        <li>${kepTag(k, { sizes: '(min-width:900px) 18vw, 45vw' })}</li>`; }).join('\n')}
-      </ul>
     </div>
+    ${lapozGaleria(KEPEK.szalon.map((f) => f()), { cls: 'hely-galeria', nev: 'hely', felirat: 'A MOSAIC Hair fodrászatának képei: lapozható galéria', sizes: '(min-width:900px) 50vw, 100vw' })}
   </div>
 </section>`;
 
@@ -295,19 +279,18 @@ function fodraszKartyaKozpont(kulcs) {
     </div>
   </article>`;
 }
-/** A kozponti oldal hero-kepgaleriaja: lapozhato (ujjal huzva / nyilakkal / pontokkal), valodi vendegmunkak. */
-function heroGaleria() {
-  const kepek = KEPEK.kozpontHeroGaleria();
-  return `<figure class="hero-kep hero-galeria" data-hero-galeria>
-      <ul class="hg-sav" tabindex="0" aria-label="Valódi MOSAIC-vendégmunkák: lapozható képgaléria">
-${kepek.map((k, i) => `        <li>${kepTag(k, { lazy: i > 0, sizes: '(min-width:900px) 45vw, 100vw' })}</li>`).join('\n')}
+/** Lapozhato kepgaleria (scroll-snap: ujjal huzva, asztalon nyilakkal es pontokkal): a kozponti hero-ban es a "Itt talalsz meg" szekcioban is ez. A hair-landing.js a [data-hero-galeria] elemeket kezeli. */
+function lapozGaleria(kepek, { cls, nev, felirat, sizes, cimke = '' }) {
+  return `<figure class="${cls} hero-galeria" data-hero-galeria="${nev}">
+      <ul class="hg-sav" tabindex="0" aria-label="${esc(felirat)}">
+${kepek.map((k, i) => `        <li>${kepTag(k, { lazy: nev === 'hely' || i > 0, sizes })}</li>`).join('\n')}
       </ul>
       <button type="button" class="hg-nyil hg-elozo" aria-label="Előző kép">${ik('bal')}</button>
       <button type="button" class="hg-nyil hg-kovetkezo" aria-label="Következő kép">${ik('jobb')}</button>
-      <div class="hg-pontok" aria-hidden="true">${kepek.map((k, i) => `<span${i === 0 ? ' class="aktiv"' : ''}></span>`).join('')}</div>
-      <figcaption class="kep-cimke">Valódi MOSAIC-vendégmunka</figcaption>
+      <div class="hg-pontok" aria-hidden="true">${kepek.map((k, i) => `<span${i === 0 ? ' class="aktiv"' : ''}></span>`).join('')}</div>${cimke ? `\n      <figcaption class="kep-cimke">${cimke}</figcaption>` : ''}
     </figure>`;
 }
+const heroGaleria = () => lapozGaleria(KEPEK.kozpontHeroGaleria(), { cls: 'hero-kep', nev: 'hero', felirat: 'Valódi MOSAIC-vendégmunkák: lapozható képgaléria', sizes: '(min-width:900px) 45vw, 100vw', cimke: 'Valódi MOSAIC-vendégmunka' });
 export function kozpontOldal() {
   const esetek = ['balayage', 'color', 'tofestes'];
   return `<main class="hl hl-kozpont" id="top" data-landing="hair-general" data-intent="general">
@@ -315,7 +298,6 @@ export function kozpontOldal() {
 <section class="hero">
   <div class="tartalom hero-racs">
     <div class="hero-szoveg">
-      <p class="felcim csak-asztali">Női fodrászat Budán · Bécsi út 2.</p>
       <h1>Találd meg azt a hajszínt és fazont, ami tényleg jól áll neked</h1>
       <p class="lead">Balayage, hajfestés és tőfestés személyre szabva. Megbeszéljük, mit szeretnél, megmutatjuk, mi reális a hajadból, és előre látod, mire számíthatsz.</p>
       <div class="cta-sor">
@@ -375,7 +357,6 @@ ${arSzekcio(null, { felc: 'Átlátható árak', cim: 'Tudd előre, mire számít
 
 ${konzultSzekcio(null)}
 ${folyamatSzekcio()}
-${realitasSzekcio()}
 
 <!-- ============ MITOL MAS ============ -->
 <section class="szekcio halvany" aria-labelledby="mitol-cim">
@@ -435,11 +416,11 @@ export function fodraszOldal(fodrasz) {
   <div class="tartalom hero-racs">
     <div class="hero-szoveg">
       <p class="felcim csak-asztali">MOSAIC Hair · fodrász</p>
-      <h1>${f.h1}</h1>
+      <h1><span class="csak-asztali">${f.h1}</span><span class="csak-mobil">${f.h1Mobil}</span></h1>
       <p class="hero-alcim csak-asztali">${f.szakterulet}</p>
       <p class="hero-alcim csak-mobil">${f.alcim}</p>
       <blockquote class="hero-idezet">„${f.idezet}”<cite>${f.teljesNev}, fodrász</cite></blockquote>
-      <ul class="hero-blokkok csak-mobil">${f.blokkok.map((b) => `<li>${b}</li>`).join('')}</ul>
+      <ul class="hero-blokkok csak-mobil">${f.blokkok.map((b) => `<li>${ik('pipa')}<span>${b}</span></li>`).join('')}</ul>
       <p class="lead csak-asztali">${f.rovid}</p>
       <div class="cta-sor">
         ${gomb(`${f.nev} időpontjai`, foglalo({ staff: fodrasz }), { cta: 'hero-idopontok', poz: 'hero', extra: ` data-staff-cta="${fodrasz}"` })}
@@ -451,7 +432,7 @@ export function fodraszOldal(fodrasz) {
 ${f.kiemelesek.map((t, i) => `        <li>${ik(['gyemant', 'szív', 'level'][i])}<span>${t}</span></li>`).join('\n')}
       </ul>
     </div>
-    <figure class="hero-kep">${kepTag(p, { lazy: false, sizes: '(min-width:900px) 45vw, 100vw' })}<figcaption class="kep-cimke">MOSAIC Hair · ${f.nev}</figcaption></figure>
+    <figure class="hero-kep">${kepTag(p, { lazy: false, sizes: '(min-width:900px) 45vw, 100vw' })}</figure>
   </div>
 </section>
 

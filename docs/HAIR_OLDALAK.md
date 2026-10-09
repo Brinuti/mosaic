@@ -24,7 +24,7 @@ Az oldalak **generáltak** – kézzel ne szerkeszd őket (a teszt ellenőrzi, h
 | `tools/hair-oldalak/salonic-pillanatkep.mjs` | a pillanatkép frissítése (csak olvas): `node tools/hair-oldalak/salonic-pillanatkep.mjs`; `--ellenoriz`: összeveti a Salonic mostani adataival |
 | `assets/css/hair-landing.css` | a közös stíluslap (2026-10-09 óta a MOSAIC zöldes színvilága és a többi landing gombjai: krém `#f3f4ef`, sötétzöld `#0f3a3c`, arany átmenetes pill-gomb; Playfair Display + Jost, saját tárhelyről) |
 | `assets/js/hair-landing.js` | galéria + nagyító, lapozható hero-képgaléria (központi oldal), árlista-fülek, mobil sticky sáv, Google-értékelés, vélemények, térkép, legközelebbi szabad konzultáció, mérés (dataLayer; a videók indításáról `video_play`) |
-| `tools/hair-teszt/hair.test.mjs` | 48 teszt (statikus + böngészős, build nélkül): `PLAYWRIGHT_UTVONAL=<node_modules mappa> CHROME_UTVONAL=<chrome> node --test tools/hair-teszt/hair.test.mjs` |
+| `tools/hair-teszt/hair.test.mjs` | 52 teszt (statikus + böngészős, build nélkül): `PLAYWRIGHT_UTVONAL=<node_modules mappa> CHROME_UTVONAL=<chrome> node --test tools/hair-teszt/hair.test.mjs` |
 
 **Árváltozásnál:** `node tools/hair-oldalak/salonic-pillanatkep.mjs`, majd `node tools/hair-oldalak.mjs`, commit. A teszt figyelmeztet, ha a pillanatkép 30 napnál régebbi.
 
@@ -47,6 +47,14 @@ Az oldalak **generáltak** – kézzel ne szerkeszd őket (a teszt ellenőrzi, h
 - **Fodrász-oldalak:** H1 = a régi (Wixes) oldal eredeti címe (`h1` az `adat.mjs`-ben; Betti: „Tökéletes festés és vágás 18 év tapasztalattal.”, Noel: „Természetes hatású festés és vágás 3 év tapasztalattal.”, Evelin: „Végre olyan frizurád lesz, amilyet megálmodtál!”) – a tulajdonos kérésére, ezek az egyetlen helyek, ahol tapasztalati év szerepel; nincs „női fodrász Budapesten” alcím; nincs „Ismerd meg a többieket” doboz; nincs Noel „Munka közben” képsora.
 - **Konzultációs videók** (a régi oldalakon is ott voltak, a „Fodrászt váltani nagy döntés. Ingyenes konzultációval várlak!” rész mellett): fodrász-oldalon a bemutatkozás mellett (Betti, Noel, Evelin saját videója), a központi oldalon a „Nem kell tudnod…” szakaszban (Betti + Evelin). Natív vezérlők, poszterkép, `preload="none"` (kattintásra indul, hanggal).
 - **Térkép alatti képek:** a fodrászat saját helyisége (tükrös fodrászhelyek, Betti régi oldalának 80–82. blokkja); a Head Spa-s váró / recepció képei nem kerülnek ide. Több fotó: a Drive „Fodrászat” mappáiban vannak telefonos HEIC-képek, de szalon-belső nincs külön jelölve; ha a tulajdonos küld / jelöl ki, a `KEPEK.szalon` listába kerülnek.
+
+## 2. kör (2026-10-09 délután, a tulajdonos újabb észrevételei)
+
+- **Mobil hero:** a kép **négyzetes** (a fejek ne lógjanak ki; a galéria fejtető-közeli kivágással), a hero-ban a fold csak az első gombig (Mutasd a szabad időpontokat / <név> időpontjai) tart – ami alatta van, az lejjebb is lehet. A központi oldalon a 4 elemű bizalmi rács (Google-vélemények, Bécsi út 2., Valódi munkák, Ingyenes konzultáció) mobilon **nincs**.
+- **Fodrász-oldalak, mobil:** főcím = „Festés, balayage, tőfestés a te stílusodban” (Noel: „Balayage, festés, tőfestés a te stílusodban”, Evelin: „Festés, balayage, tőfestés és hajhosszabbítás a te stílusodban”) – az **asztali főcím az eredeti oldal címe marad** (egyetlen `<h1>`, két `<span>`: `csak-asztali` / `csak-mobil`); a hero képén nincs felirat (a név az idézet alatt áll); a blokkok „Személyre szabott frizurák” (nem „női”) és „Részletes konzultáció”, mindkettő elején kis pipa-ikon, **nem csempe / gomb** (nincs háttér, keret).
+- **Központi oldal, asztal:** a hero-ból kikerült a „Női fodrászat Budán · Bécsi út 2.” felirat; a konzultáció-szakaszban **mindhárom fodrász videója** (Betti, Noel, Evelin; mobilon vízszintesen lapozható sor); a szakasz címe „Fodrászt választani nehéz, és bizalmi kérdés”, alcíme „Pontosan ezért találtuk ki az ingyenes konzultációt: hogy megismerjük egymást, felmérjük az igényeidet, és pontosan olyan frizura készüljön, ami minden elvárásodnak megfelel.”; a „Nem ígérünk olyat, amit a hajad nem bír el” (realitás) blokk és a „Haj biztonság” kör **törölve**.
+- **„Itt találsz meg” (mind a 4 oldal):** a bal hasáb (szöveg + gombok + térkép) és a jobb hasáb (a fodrászat képei, **lapozható galéria**, ugyanaz a komponens, mint a központi hero-é: `lapozGaleria()` a `sablon.mjs`-ben, `[data-hero-galeria]` a `hair-landing.js`-ben) asztalon pontosan egyforma magas (a galéria kitölti a sort); mobilon szöveg, térkép, galéria egymás alatt.
+- **Betti oldal:** a 4 Google-vélemény képernyőmentés sora kikerült (nem kell két értékelés-rész), a Trustindex-sáv marad (minden fodrász-oldalon).
 
 ## Eltérések a csomagtól (szándékosak)
 

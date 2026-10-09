@@ -146,12 +146,15 @@ describe('tartalom: nincs kitalalt / igazolatlan allitas', () => {
 // ======================= a tulajdonos észrevételei (2026-10): fodrász-oldalak =======================
 describe('a tulajdonos észrevételei szerinti változtatások (statikus)', () => {
   const EREDETI_H1 = { betti: 'Tökéletes festés és vágás 18 év tapasztalattal.', noel: 'Természetes hatású festés és vágás 3 év tapasztalattal.', evelin: 'Végre olyan frizurád lesz, amilyet megálmodtál!' };
-  const h1 = (k) => szoveg((forras(k).match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '').trim();
+  const MOBIL_H1 = { betti: 'Festés, balayage, tőfestés a te stílusodban', noel: 'Balayage, festés, tőfestés a te stílusodban', evelin: 'Festés, balayage, tőfestés és hajhosszabbítás a te stílusodban' };
+  const h1v = (k, osztaly) => szoveg(((((forras(k).match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '').match(new RegExp(`<span class="${osztaly}">([\\s\\S]*?)</span>`)) || [])[1]) || '').trim();
   const arlistaNelkul = (k) => forras(k).replace(/<section[^>]*id="arak-szekcio"[\s\S]*?<\/section>/, '').replace(/<script[\s\S]*?<\/script>/g, '');
 
   test('a fodrász-oldalak H1-e az eredeti (Wixes) oldalak címe, nem a fodrász neve; nincs "női fodrász Budapesten" alcím és "MOSAIC Hair · fodrász" felirat mobilon', () => {
     for (const k of ['betti', 'noel', 'evelin']) {
-      assert.equal(h1(k), EREDETI_H1[k], k);
+      assert.equal(h1v(k, 'csak-asztali'), EREDETI_H1[k], k + ' (asztal: az eredeti oldal címe)');
+      assert.equal(h1v(k, 'csak-mobil'), MOBIL_H1[k], k + ' (mobil: a te stílusodban)');
+      assert.equal((forras(k).match(/<h1[\s>]/g) || []).length, 1, k + ': egyetlen H1');
       assert.ok(!/h1-ala|női fodrász Budapesten · Bécsi út 2/.test(forras(k)), `${k}: a H1 alatti alcím maradt`);
       assert.match(forras(k), /<p class="felcim csak-asztali">MOSAIC Hair · fodrász<\/p>/, `${k}: a felirat csak asztalon látszhat`);
     }
@@ -179,18 +182,18 @@ describe('a tulajdonos észrevételei szerinti változtatások (statikus)', () =
     assert.ok(!/Valódi vendégmunkák<\/li>|Festés előtt konzultáció|Ugyanaz az ár, mint a foglalóban/.test(jel));
     assert.ok(!/Nem tudom, mit foglaljak/.test(h));
     assert.match(h, /class="gomb gomb-korvonal"[^>]*data-cta="hero-konzultacio"[^>]*>Ingyenes konzultáció<\/a>/);
-    assert.match(h, /<p class="felcim csak-asztali">Női fodrászat Budán · Bécsi út 2\.<\/p>/);
+    assert.ok(!/Női fodrászat Budán · Bécsi út 2/.test(h.slice(h.indexOf('<main'))), 'a hero-ban nincs "Női fodrászat Budán · Bécsi út 2." felirat');
   });
   test('a fodrász-oldalakon nincs "Ismerd meg a többieket" doboz és "Munka közben" képsor; a térkép alatti képek a fodrászat saját helyiségei (nem a Head Spa váró / recepció)', () => {
     for (const k of KULCSOK) {
       assert.ok(!/Ismerd meg a többieket|A MOSAIC Hair fodrászai<|Munka közben|class="masok"|folyamat-kepek/.test(forras(k)), `${k}: kikerülő szakasz maradt`);
-      const kepek = [...(forras(k).match(/<ul class="szalon-kepek">([\s\S]*?)<\/ul>/) || [])[1].matchAll(/src="([^"]+)"/g)].map((m) => m[1]);
+      const kepek = [...(forras(k).match(/<figure class="hely-galeria[^"]*"[\s\S]*?<\/figure>/) || [''])[0].matchAll(/<img[^>]+src="([^"]+)"/g)].map((m) => m[1]);
       assert.equal(kepek.length, 3, k);
       for (const nev of ['c2eb0f_03657009453347e0995c299e7c60340c', 'c2eb0f_936227646e3f456e801ebd03d3f73e71', 'c2eb0f_47f7e08fe5414673b335b056ed00c34f']) assert.ok(!kepek.some((x) => x.includes(nev)), `${k}: Head Spa-s váró / recepció kép: ${nev}`);
     }
   });
-  test('konzultációs videók: a régi oldalak videói (központ: 2, fodrászonként 1), poszterrel, kattintásra indulnak (preload="none")', () => {
-    const darab = { kozpont: 2, betti: 1, noel: 1, evelin: 1 };
+  test('konzultációs videók: a régi oldalak videói (központ: mindhárom fodrász, fodrászonként 1), poszterrel, kattintásra indulnak (preload="none")', () => {
+    const darab = { kozpont: 3, betti: 1, noel: 1, evelin: 1 };
     for (const k of KULCSOK) {
       const h = forras(k);
       const videok = [...h.matchAll(/<video\b[^>]*>[\s\S]*?<\/video>/g)].map((m) => m[0]);
@@ -200,6 +203,26 @@ describe('a tulajdonos észrevételei szerinti változtatások (statikus)', () =
         for (const u of [(v.match(/poster="([^"]+)"/) || [])[1], (v.match(/<source src="([^"]+)"/) || [])[1]]) assert.ok(u && fs.existsSync(path.join(GYOKER, u)), `${k}: hiányzó videó / poszter: ${u}`);
       }
     }
+  });
+  test('a központi oldalon nincs "Nem ígérünk olyat…" (realitás) blokk és "Haj biztonság" kör; a konzultáció-szakasz új címe és alcíme a tulajdonosé, a videók Betti, Noel, Evelin', () => {
+    const h = forras('kozpont');
+    assert.ok(!/Nem ígérünk olyat|realitas|Haj<br>biztonság/.test(h));
+    assert.match(h, /<h2 id="konzult-cim">Fodrászt választani nehéz, és bizalmi kérdés<\/h2>/);
+    assert.match(szoveg(h), /Pontosan ezért találtuk ki az ingyenes konzultációt: hogy megismerjük egymást, felmérjük az igényeidet, és pontosan olyan frizura készüljön, ami minden elvárásodnak megfelel\./);
+    assert.ok(!/Nem kell tudnod a fodrászati szolgáltatás nevét/.test(h));
+    assert.deepEqual([...h.matchAll(/<figcaption>(Betti|Noel|Evelin)<\/figcaption>/g)].map((m) => m[1]), ['Betti', 'Noel', 'Evelin']);
+  });
+  test('a fodrász-oldalakon nincs külön vélemény-képernyőmentés sor (Bettin sem), a Trustindex-sáv marad; a hero képén nincs felirat; a blokkok ikonosak; Betti: "Személyre szabott frizurák"', () => {
+    for (const k of KULCSOK) {
+      const h = forras(k);
+      assert.ok(!/velemeny-racs/.test(h) && h.includes('id="ti-doboz"'), k);
+      if (k !== 'kozpont') {
+        assert.ok(!/<figcaption class="kep-cimke">MOSAIC Hair/.test(h), `${k}: a hero képére nincs ráírva a név`);
+        const blokk = (h.match(/<ul class="hero-blokkok csak-mobil">([\s\S]*?)<\/ul>/) || [])[1] || '';
+        assert.equal((blokk.match(/<li><svg class="ik"/g) || []).length, 2, `${k}: mindkét blokk előtt ikon`);
+      }
+    }
+    assert.ok(/<li><svg class="ik" aria-hidden="true"><use href="#i-pipa"\/><\/svg><span>Személyre szabott frizurák<\/span><\/li>/.test(forras('betti')) && !/Személyre szabott női frizurák/.test(forras('betti')));
   });
   test('a szinvilag zoldes: a regi meleg krem / barna / eszpresszo ertekek nincsenek a stilusban, a gombok az egysegesek (arany atmenet, pill)', () => {
     const css = fs.readFileSync(path.join(GYOKER, 'assets/css/hair-landing.css'), 'utf8');
@@ -459,20 +482,27 @@ describe('bongeszoben', { concurrency: false }, () => {
         const m = await p.evaluate(() => {
           const r = (sel) => { const e = document.querySelector(sel); if (!e) return null; const b = e.getBoundingClientRect(); return { top: Math.round(b.top), bottom: Math.round(b.bottom), left: Math.round(b.left), lathato: b.height > 0 && getComputedStyle(e).display !== 'none' }; };
           return {
-            h1: r('.hero h1'), kep: r('.hero .hero-kep'), felcim: r('.hero .felcim'), cta: r('.hero .cta-sor'), alcim: r('.hero .hero-alcim.csak-mobil'), lead: r('.hero-szoveg > .lead'),
-            idezet: r('.hero .hero-idezet'), kovetkezo: r('.hero .kovetkezo'), asztaliAlcim: r('.hero .hero-alcim.csak-asztali'),
+            h1: r('.hero h1'), kep: r('.hero .hero-kep'), felcim: r('.hero .felcim'), cta: r('.hero .cta-sor'), elsoGomb: r('.hero .cta-sor a:first-child'), bizalom: r('.bizalom'), cimke: r('.hero .hero-kep .kep-cimke'), h1szoveg: document.querySelector('.hero h1').innerText.trim(), alcim: r('.hero .hero-alcim.csak-mobil'), lead: r('.hero-szoveg > .lead'),
+            kepArany: (() => { const b = document.querySelector('.hero .hero-kep').getBoundingClientRect(); return Math.round((b.width / b.height) * 100) / 100; })(), idezet: r('.hero .hero-idezet'), kovetkezo: r('.hero .kovetkezo'), asztaliAlcim: r('.hero .hero-alcim.csak-asztali'),
             jelvenyek: [...document.querySelectorAll('.hero .jelvenyek li, .hero .hero-blokkok li')].map((e) => { const b = e.getBoundingClientRect(); return [Math.round(b.top), Math.round(b.left)]; }),
+            blokkStilus: [...document.querySelectorAll('.hero .hero-blokkok li')].map((e) => { const c = getComputedStyle(e); return [c.backgroundColor, c.borderTopWidth, !!e.querySelector('svg')]; }),
             gChip: (document.querySelector('.hero #g-chip') || {}).hidden,
           };
         });
         const nev = `${k} @${szel}`;
         assert.ok(m.h1.top < m.kep.top && m.kep.bottom <= (m.alcim || m.lead).top, `${nev}: sorrend: főcím, képek, alcím`);
         assert.ok(!m.felcim || !m.felcim.lathato, `${nev}: az eyebrow-felirat mobilon nem látszhat`);
-        assert.ok(m.cta.bottom <= mag, `${nev}: a hero gombjai nem férnek a ${mag}px magas képernyőre (${m.cta.bottom})`);
-        assert.ok(new Set(m.jelvenyek.map((x) => x[0])).size === 1 && new Set(m.jelvenyek.map((x) => x[1])).size === m.jelvenyek.length, `${nev}: a badge-ek / blokkok nem egymás mellett vannak: ${JSON.stringify(m.jelvenyek)}`);
-        if (k === 'kozpont') assert.equal(m.jelvenyek.length, 3, nev);
-        else {
+        assert.ok(Math.abs(m.kepArany - 1) < 0.03, `${nev}: a hero képe négyzetes (${m.kepArany})`);
+        assert.ok(m.elsoGomb.bottom <= mag + (mag === 740 ? 60 : 0), `${nev}: az első gomb (Mutasd a szabad időpontokat / <név> időpontjai) nem fér a ${mag}px magas képernyőre (${m.elsoGomb.bottom})`);
+        if (k === 'kozpont') {
+          assert.ok(!m.bizalom.lathato, `${nev}: a 4 elemű bizalmi rács (Google-vélemények, Bécsi út 2., …) mobilon nem látszhat`);
+          assert.equal(m.jelvenyek.length, 3, nev);
+          assert.ok(new Set(m.jelvenyek.map((x) => x[0])).size === 1 && new Set(m.jelvenyek.map((x) => x[1])).size === 3, `${nev}: a badge-ek nem egymás mellett vannak: ${JSON.stringify(m.jelvenyek)}`);
+        } else {
           assert.equal(m.jelvenyek.length, 2, nev);
+          assert.equal(m.cimke, null, `${nev}: a hero képén nincs felirat`);
+          assert.ok(m.blokkStilus.every(([hatter, keret, ikon]) => hatter === 'rgba(0, 0, 0, 0)' && keret === '0px' && ikon), `${nev}: a blokkok ikonosak, nem csempe / gomb: ${JSON.stringify(m.blokkStilus)}`);
+          assert.equal(m.h1szoveg, { betti: 'Festés, balayage, tőfestés a te stílusodban', noel: 'Balayage, festés, tőfestés a te stílusodban', evelin: 'Festés, balayage, tőfestés és hajhosszabbítás a te stílusodban' }[k], `${nev}: mobil főcím`);
           assert.ok(m.alcim.lathato && !m.asztaliAlcim.lathato && m.idezet.top > m.alcim.top, `${nev}: alcím + idézet`);
           if (m.kovetkezo && m.kovetkezo.lathato) assert.ok(m.cta.top >= m.kovetkezo.bottom, `${nev}: a "legközelebbi szabad" sor a gombok előtt van`);
         }
@@ -481,7 +511,7 @@ describe('bongeszoben', { concurrency: false }, () => {
     }
   });
 
-  test('asztal: a fodrász-kártyákon a szöveg egy soros (1280 / 1440 px), Noel kártyáján nincs kedvezmény-felirat; a "Haj biztonság" felirat a kör közepén áll', async () => {
+  test('asztal: a fodrász-kártyákon a szöveg egy soros (1280 / 1440 px), Noel kártyáján nincs kedvezmény-felirat; nincs "Nem ígérünk olyat…" blokk', async () => {
     for (const szel of [1280, 1440]) {
       const { p, ctx } = await ujOldal('kozpont', { szel });
       await p.waitForTimeout(500);
@@ -490,10 +520,7 @@ describe('bongeszoben', { concurrency: false }, () => {
       for (const x of sorok) assert.ok(x.h < 26 && !x.tul, `@${szel}: nem egy soros: ${JSON.stringify(x)}`);
       assert.equal(await p.locator('.fodrasz-kartya .fk-jelzo').count(), 0);
       assert.ok(!/kedvezménnyel/.test(await p.locator('#fodraszaink').innerText()));
-      const kor = await p.locator('.realitas-jel').evaluate((e) => { const a = e.getBoundingClientRect(), b = e.querySelector('span').getBoundingClientRect(); return { dx: Math.abs(a.left + a.width / 2 - (b.left + b.width / 2)), dy: Math.abs(a.top + a.height / 2 - (b.top + b.height / 2)), szoveg: e.textContent.replace(/\s+/g, ' ').trim() }; });
-      assert.match(kor.szoveg, /^Haj\s?biztonság$/i);
-      assert.ok(kor.dx < 4 && kor.dy < 4, `@${szel}: a felirat nincs a kör közepén: ${JSON.stringify(kor)}`);
-      assert.equal(await p.locator('.realitas-jel svg').count(), 0, 'a felirat mellett nincs (üres) ikon');
+      assert.equal(await p.locator('.realitas, .realitas-jel').count(), 0, 'nincs realitás-blokk');
       await ctx.close();
     }
   });
@@ -509,18 +536,18 @@ describe('bongeszoben', { concurrency: false }, () => {
 
   test('a hero-kepgaleria lapozható: 5 kép, a nyilak és az ujjal húzás (scroll-snap) léptet, a pontok követik', async () => {
     const { p, ctx } = await ujOldal('kozpont');
-    assert.equal(await p.locator('.hg-sav li').count(), 5);
-    await p.locator('.hg-kovetkezo').click();
-    await p.waitForFunction(() => document.querySelector('.hg-sav').scrollLeft > 100);
+    assert.equal(await p.locator('[data-hero-galeria="hero"] .hg-sav li').count(), 5);
+    await p.locator('[data-hero-galeria="hero"] .hg-kovetkezo').click();
+    await p.waitForFunction(() => document.querySelector('[data-hero-galeria="hero"] .hg-sav').scrollLeft > 100);
     await p.waitForTimeout(700);
-    assert.equal(await p.locator('.hg-pontok span.aktiv').evaluate((e) => [...e.parentElement.children].indexOf(e)), 1);
-    await p.locator('.hg-elozo').click();
-    await p.waitForFunction(() => document.querySelector('.hg-sav').scrollLeft < 5);
+    assert.equal(await p.locator('[data-hero-galeria="hero"] .hg-pontok span.aktiv').evaluate((e) => [...e.parentElement.children].indexOf(e)), 1);
+    await p.locator('[data-hero-galeria="hero"] .hg-elozo').click();
+    await p.waitForFunction(() => document.querySelector('[data-hero-galeria="hero"] .hg-sav').scrollLeft < 5);
     assert.ok((await p.evaluate(() => window.dataLayer.map((x) => x.event + ':' + (x.action || '')))).includes('gallery_interaction:hero_swipe'));
     await ctx.close();
     const m = await ujOldal('kozpont', { szel: 390, mobil: true }); // telefonon nincs nyil, ujjal huzhato
-    assert.equal(await m.p.locator('.hg-nyil').first().isVisible(), false);
-    assert.equal(await m.p.locator('.hg-sav').evaluate((e) => getComputedStyle(e).overflowX), 'auto');
+    assert.equal(await m.p.locator('[data-hero-galeria="hero"] .hg-nyil').first().isVisible(), false);
+    assert.equal(await m.p.locator('[data-hero-galeria="hero"] .hg-sav').evaluate((e) => getComputedStyle(e).overflowX), 'auto');
     await m.ctx.close();
   });
 
@@ -553,6 +580,37 @@ describe('bongeszoben', { concurrency: false }, () => {
       assert.ok(dm.videoTeteje >= dm.szovegAlja - 2 || k === 'betti' && dm.videoTeteje >= dm.szovegAlja - 2, `${k}: mobilon a videó a szöveg után van`);
       await m.ctx.close();
     }
+  });
+
+  test('"Itt találsz meg": a bal hasáb (szöveg + térkép) és a jobb hasáb (lapozható galéria) pontosan egyforma magas asztalon; mobilon szöveg, térkép, galéria egymás alatt; a galéria lapozható', async () => {
+    for (const k of KULCSOK) {
+      for (const szel of [1280, 1440]) {
+        const { p, ctx } = await ujOldal(k, { szel });
+        await p.locator('#hely').scrollIntoViewIfNeeded(); await p.waitForTimeout(300);
+        const m = await p.evaluate(() => { const a = document.querySelector('#hely .hely-bal').getBoundingClientRect(), b = document.querySelector('#hely .hely-galeria').getBoundingClientRect(); return { balMagas: a.height, jobbMagas: b.height, balAlja: a.bottom, jobbAlja: b.bottom, balTetej: a.top, jobbTetej: b.top, balJobb: a.right, jobbBal: b.left }; });
+        assert.ok(Math.abs(m.balMagas - m.jobbMagas) <= 2 && Math.abs(m.balAlja - m.jobbAlja) <= 2 && Math.abs(m.balTetej - m.jobbTetej) <= 2, `${k} @${szel}: a két hasáb nem egyforma magas: ${JSON.stringify(m)}`);
+        assert.ok(m.jobbBal > m.balJobb, `${k} @${szel}: a galéria a térkép / szöveg mellett (jobbra) áll`);
+        assert.equal(await p.locator('#hely .hely-galeria .hg-sav li').count(), 3);
+        await p.locator('#hely .hg-kovetkezo').click();
+        await p.waitForFunction(() => document.querySelector('#hely .hg-sav').scrollLeft > 50);
+        await ctx.close();
+      }
+      const mob = await ujOldal(k, { szel: 390, mobil: true });
+      const mm = await mob.p.evaluate(() => { const t = document.querySelector('#hely .hely-szoveg').getBoundingClientRect(), m = document.querySelector('#hely .terkep').getBoundingClientRect(), g = document.querySelector('#hely .hely-galeria').getBoundingClientRect(); return { t: t.top, m: m.top, g: g.top, tAlja: t.bottom, mAlja: m.bottom }; });
+      assert.ok(mm.t < mm.m && mm.m < mm.g && mm.tAlja <= mm.m + 1 && mm.mAlja <= mm.g + 1, `${k}: mobilon szöveg, térkép, galéria sorrend: ${JSON.stringify(mm)}`);
+      await mob.ctx.close();
+    }
+  });
+
+  test('a központi oldalon a bizalmi rács (Google-vélemények, Bécsi út 2., …) asztalon látszik, mobilon nem; a konzultáció-szakaszban 3 videó van, mobilon vízszintesen lapozhatók', async () => {
+    const a = await ujOldal('kozpont', { szel: 1280 });
+    assert.equal(await a.p.locator('.bizalom').isVisible(), true);
+    assert.equal(await a.p.locator('.konzult-videok .vid').count(), 3);
+    await a.ctx.close();
+    const m = await ujOldal('kozpont', { szel: 390, mobil: true });
+    assert.equal(await m.p.locator('.bizalom').isVisible(), false);
+    assert.equal(await m.p.locator('.konzult-videok').evaluate((e) => getComputedStyle(e).overflowX), 'auto');
+    await m.ctx.close();
   });
 
 });
