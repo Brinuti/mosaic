@@ -1,15 +1,22 @@
 # Fodrászat-oldalak (központi + Betti + Noel + Evelin)
 
-A **MOSAIC_Hair_implementation_v2** csomag (prototípus + hat látványterv-kép) alapján újratervezett fodrász-oldalak. **Ideiglenes (`-uj`) címeken,
-`noindex`-szel állnak**, rájuk nem mutat link, nincsenek a sitemapben; a csere az eredeti címre (a mostani Wixes oldalak helyére) **csak külön kérésre** történik
-(lásd `docs` / memória: új oldal élesítése külön címen).
+A **MOSAIC_Hair_implementation_v2** csomag (prototípus + hat látványterv-kép) alapján újratervezett fodrász-oldalak.
+**2026-10-09 óta ÉLESEK az eredeti címeken** (a tulajdonos kifejezett kérése: „a fodrász oldalakat élesítheted”), indexelhetők, a sitemapben (a régi Wixes oldalak helyén) és a
+`suti.js` pixel-listáján (`PIXEL_FODRASZ`) az eredeti címek szerepelnek. A régi (Wixes) oldalak rejtett `-regi` címen megvannak (`noindex`, saját canonical, nincs rájuk link, nincsenek a sitemapben),
+az ideiglenes `-uj` címek 301-gyel az eredeti címre irányítanak (`netlify/lib/utvonal.js`). **Visszaállítás:** a `foglalas/<cím>.html` törlése (akkor a `klon/` alatti régi Wixes oldal áll vissza ugyanazon a címen;
+a generátor `LAPOK`-ját és a tesztet is igazítani kell).
 
-| Oldal | Ideiglenes cím | Eredeti (mostani, Wixes) cím | Fájl |
-|---|---|---|---|
-| Központi női fodrászat | `/noi-fodraszat-budapest-uj` | `/noi-fodraszat-budapest` | `foglalas/noi-fodraszat-budapest-uj.html` |
-| Betti | `/noi-fodrasz-budapest-balayage-hajfestes-uj` | `/noi-fodrasz-budapest-balayage-hajfestes` | `foglalas/noi-fodrasz-budapest-balayage-hajfestes-uj.html` |
-| Noel | `/balayage-haj-festes-budapest-uj` | `/balayage-haj-festes-budapest` | `foglalas/balayage-haj-festes-budapest-uj.html` |
-| Evelin | `/noi-hajfestes-budapest-uj` | `/noi-hajfestes-budapest` | `foglalas/noi-hajfestes-budapest-uj.html` |
+| Oldal | Eredeti (éles) cím | Régi Wixes oldal (rejtett) | Régi ideiglenes cím (301) | Fájl |
+|---|---|---|---|---|
+| Központi női fodrászat | `/noi-fodraszat-budapest` | `/noi-fodraszat-budapest-regi` | `/noi-fodraszat-budapest-uj` | `foglalas/noi-fodraszat-budapest.html` |
+| Betti | `/noi-fodrasz-budapest-balayage-hajfestes` | `/noi-fodrasz-budapest-balayage-hajfestes-regi` | `/noi-fodrasz-budapest-balayage-hajfestes-uj` | `foglalas/noi-fodrasz-budapest-balayage-hajfestes.html` |
+| Noel | `/balayage-haj-festes-budapest` | `/balayage-haj-festes-budapest-regi` | `/balayage-haj-festes-budapest-uj` | `foglalas/balayage-haj-festes-budapest.html` |
+| Evelin | `/noi-hajfestes-budapest` | `/noi-hajfestes-budapest-regi` | `/noi-hajfestes-budapest-uj` | `foglalas/noi-hajfestes-budapest.html` |
+
+**Csere-lépések (2026-10-09):** `foglalas/*-uj.html` → generátor az eredeti címre ír (noindex nélkül, canonical / og:url az eredeti cím); `klon/<cím>-regi.html` és `klon/m/<cím>-regi.html` a régi oldalakból
+(noindex + saját canonical / og:url); `-uj` → 301 (`utvonal.js`); `tools/lcp-elofeltoltes.json`: a 4 cím régi LCP-előtöltése kikerült (az új oldalak maguk előtöltik a hero-képet); `tools/gyik-oldal.mjs` és
+`tools/arlista-teszt` az új fájlnevekre mutat. **Mérés:** a régi Wixes oldalak GTM-triggerei (gombkattintások Wix-azonosítóval) az új oldalakon nem léteznek; az új oldalak `dataLayer`-eseményeket küldenek
+(lásd „Mérés”) – a GTM-trigger bekötése az elemző dolga.
 
 ## Felépítés (egy adatforrás, egy komponens-rendszer)
 
@@ -35,7 +42,7 @@ Az oldalak **generáltak** – kézzel ne szerkeszd őket (a teszt ellenőrzi, h
 - **Vélemények:** a Google-értékelés (csillagok + darabszám) és a vélemény-csúszka a **Trustindex-widget aktuális adata** (az egész MOSAIC értékelése, nem csak a fodrászaté; kitalált szám nincs, hiba esetén a sáv rejtve marad). Betti oldalán a mostani oldalán lévő 4 valódi Google-vélemény képernyőmentés is szerepel.
 - **Foglalás:** minden gomb a kész foglaló-motor linkje (`/foglalo-motor?business=hair[&staff=betti][&category=balayage][&service=konzultacio]`); a launcher a rétegben nyitja, JS nélkül a motor-oldalra visz. A fodrászt / kezelést a motor nem kérdezi újra (munkatárs-link, kategória-link).
 - **Legközelebbi szabad konzultáció:** a Salonic naptár-API-jából (csak az éles tartományon kap választ: a Salonic CORS-a `www.mosaicheadspa.hu`-ra szól); a link `&start=<unix>`-szel a foglaló adatlapjára visz. Nincs adat → a sor rejtve marad.
-- **Mérés:** a doc „Analytics contract”-ja szerinti `dataLayer`-események (`landing_view`, `service_selected`, `staff_selected`, `consultation_cta_click`, `gallery_interaction`, `price_view`; közös paraméterek: `landing_id`, `entry_intent`, `service`, `staff`, `source`, `medium`, `campaign`, `creative`, `cta_position`). A foglalási lépés-eseményeket (`booking_*`) a motor küldi, itt nem duplázzuk. Az `-uj` címek **nincsenek** a `suti.js` Meta-pixel listáján (nincs pixel); GTM-trigger nincs bekötve – ez az elemző dolga a csere előtt.
+- **Mérés:** a doc „Analytics contract”-ja szerinti `dataLayer`-események (`landing_view`, `service_selected`, `staff_selected`, `consultation_cta_click`, `gallery_interaction`, `price_view`; közös paraméterek: `landing_id`, `entry_intent`, `service`, `staff`, `source`, `medium`, `campaign`, `creative`, `cta_position`). A foglalási lépés-eseményeket (`booking_*`) a motor küldi, itt nem duplázzuk. A `suti.js` Meta-pixel listáján (`PIXEL_FODRASZ`) az eredeti címek szerepelnek, így az élesített oldalakon fut a pixel; GTM-trigger nincs bekötve az új eseményekhez – ez az elemző dolga.
 
 ## A tulajdonos észrevételei szerinti változtatások (2026-10-09, a 4 `-uj` oldal élesítése előtt)
 
@@ -79,4 +86,4 @@ A mostani Wixes oldalakon szerepel, **ide nem vettem át** (a fodrász-oldalak H
 4. **Mit mutassunk a Google-sávon?** Most a MOSAIC egészének értékelése (Head Spa-vendégek is benne vannak). Ha lesz hajas-specifikus Trustindex-widget, a `hair-landing.js` `TI` állandóját és a `data-forras` címet kell cserélni.
 5. **Nincs 5. oldal a „balayage” belépéshez** (a csomag `#/balayage` állapota): a mostani `/balayage-haj-festes-budapest` Noel oldala; külön balayage-landing külön kérésre.
 6. **A fejléc/lábléc** a MOSAIC közös (Wixes) fejléce/lábléce; a minták egyszerűbb, fehér fejléce nincs átvéve (a menü egységes az egész oldalon).
-7. A csere (átnevezés az eredeti címre, régi oldalak `-regi`-ként, `-uj` 301, `tools/lcp-elofeltoltes.json`, a `suti.js` pixel-lista és a GTM-triggerek egyeztetése az elemzővel) külön lépés.
+7. A csere megtörtént (2026-10-09, lásd az elejét); nyitott: a GTM-triggerek egyeztetése az elemzővel.

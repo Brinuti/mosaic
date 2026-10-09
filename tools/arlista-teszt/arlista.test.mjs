@@ -44,7 +44,7 @@ describe('forras / szinkron (bongeszo nelkul)', () => {
 
   test('MINDEN ar, ami az oldalon szerepel, visszavezetheto egy forrasra (nincs kitalalt / elavult ar)', () => {
     const forrasok = ['foglalas/headspa-arak-budapest.html', 'foglalas/lezeres-szortelenites-budapest.html', 'foglalas/oxigenterapia-budapest.html', 'foglalas/sminktetovalas-budapest.html',
-      'foglalas/paros-headspa-budapest-uj.html', 'foglalas/noi-fodraszat-budapest-uj.html', 'assets/js/ajandek-adat.js', 'assets/js/ajandek-adat-lezer.js', 'assets/js/ajandek-adat-oxigen.js',
+      'foglalas/paros-headspa-budapest-uj.html', 'foglalas/noi-fodraszat-budapest.html', 'assets/js/ajandek-adat.js', 'assets/js/ajandek-adat-lezer.js', 'assets/js/ajandek-adat-oxigen.js',
       'assets/js/klon.js', 'docs/booking-engine/SALONIC_SERVICE_STAFF_MAPPING_CURRENT.json'];
     const ismert = new Set();
     for (const f of forrasok) for (const n of arSzamok(olvas(...f.split('/')))) ismert.add(n);

@@ -28,6 +28,11 @@ const ATIRANYITASOK = {
   '/headspa-arak-budapest-uj': '/headspa-arak-budapest',
   '/head-spa-kedvezmeny-uj': '/head-spa-kedvezmeny',
   '/egyeni-headspa-budapest-uj': '/head-spa-kedvezmeny',   // az egyeni Head Spa landing 2026-10-09 ota az akcio oldal (a tulajdonos dontese)
+  // a 4 fodrasz-oldal 2026-10-09 ota az eredeti cimen el (a tulajdonos kifejezett kerese); az ideiglenes -uj cimek ide iranyitanak
+  '/noi-fodraszat-budapest-uj': '/noi-fodraszat-budapest',
+  '/noi-fodrasz-budapest-balayage-hajfestes-uj': '/noi-fodrasz-budapest-balayage-hajfestes',
+  '/balayage-haj-festes-budapest-uj': '/balayage-haj-festes-budapest',
+  '/noi-hajfestes-budapest-uj': '/noi-hajfestes-budapest',
   '/headspa-termekek-oxygeni-uj': '/headspa-termekek-oxygeni',
   '/head-spa-velemenyek-uj': '/head-spa-velemenyek',
   '/headspa-ferfiaknak-uj': '/headspa-ferfiaknak',
