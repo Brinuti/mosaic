@@ -8,6 +8,7 @@ import test, { before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
 import { szerverInditas, GYOKER } from './szerver.mjs';
 
@@ -171,4 +172,30 @@ describe('/head-spa-velemenyek: sajto-resz', () => {
       await ctx.close();
     });
   }
+});
+
+describe('/head-spa-velemenyek: "Milyen lesz a hajad a kezelés után?" galéria', () => {
+  test('2026-10-09: az eredeti Wixes galéria MINDEN (egyedi) képe benne van (21 db a 22-ből: az egyik azonos fájl kétszer volt), mind betöltődik, a lapozó gombok görgetik a sávot', async () => {
+    const { p, ctx, hibak } = await nyit();
+    const eredeti = JSON.parse(/window\.MH_GALERIAK\s*=\s*(\{[\s\S]*\})\s*;?\s*$/.exec(fs.readFileSync(path.join(GYOKER, 'assets/js/galeriak.js'), 'utf8'))[1])['comp-m7qaedn3'].map((x) => x[0]);
+    assert.equal(eredeti.length, 22);
+    const hash = (f) => crypto.createHash('md5').update(fs.readFileSync(path.join(GYOKER, 'assets/img', f))).digest('hex');
+    const latott = new Set();
+    const egyedi = eredeti.filter((f) => { const h = hash(f); if (latott.has(h)) return false; latott.add(h); return true; });   // az azonos fajl elso elofordulasa marad
+    assert.equal(egyedi.length, 21);
+    const kepek = await p.$$eval('#hajad .korhinta-sav figure img', (l) => l.map((i) => i.getAttribute('src').split('/').pop()));
+    assert.equal(kepek.length, 21, 'a galeria 21 kepe');
+    assert.deepEqual([...kepek].sort(), [...egyedi].sort(), 'pontosan az eredeti galeria kepei');
+    const sav = p.locator('#hajad .korhinta-sav');
+    await sav.scrollIntoViewIfNeeded();
+    // gorgetes vegigtekerve: mindegyik kep betoltodik
+    await p.evaluate(async () => { const s = document.querySelector('#hajad .korhinta-sav'); for (let x = 0; x <= s.scrollWidth; x += 300) { s.scrollLeft = x; await new Promise((r) => setTimeout(r, 40)); } s.scrollLeft = 0; });
+    await p.waitForFunction(() => [...document.querySelectorAll('#hajad .korhinta-sav img')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 15000 });
+    assert.equal(await p.locator('#hajad .korhinta-gomb.elozo').isDisabled(), true);
+    await p.locator('#hajad .korhinta-gomb.kovetkezo').click();
+    await p.waitForFunction(() => document.querySelector('#hajad .korhinta-sav').scrollLeft > 100);
+    assert.equal(await p.locator('#hajad .korhinta-gomb.elozo').isDisabled(), false);
+    assert.deepEqual(hibak, []);
+    await ctx.close();
+  });
 });

@@ -238,6 +238,15 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
 .zsalya { background: var(--zsalya); border-top: 1px solid #dbe3dc; border-bottom: 1px solid #dbe3dc; }
 .al-fejlec { margin-top: 64px; font-size: 30px; }
 .elemek .korhinta-gomb { border-color: #d6ddd7; }
+/* "Milyen lesz a hajad a kezeles utan?": kompakt, kicsi (3:4) kepek egy sorban, 6 latszik egyszerre; a teljes galeria a velemenyek oldalon van */
+.elemek .al-fejlec { margin-top: 44px; font-size: 26px; }
+.haj-sor { margin-top: 18px; }
+.haj-sor .korhinta-sav { gap: 12px; padding: 4px 2px 14px; margin-bottom: -6px; }
+.haj-sor .korhinta-sav > li { flex-basis: calc((100% - 5 * 12px) / 6); }
+.haj-kepek img { display: block; width: 100%; aspect-ratio: 3 / 4; height: auto; object-fit: cover; border-radius: 12px; box-shadow: 0 1px 3px rgba(40, 30, 20, .12); }
+.elemek.szekcio { padding-bottom: 40px; }   /* a haj-sor utan ne maradjon nagy ures hely */
+.haj-tobb { margin-top: 2px; }
+.haj-tobb .link-gomb { font-size: 14.5px; }
 
 /* --- 10. alapító --- */
 
@@ -317,7 +326,12 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
 .gyik-racs summary::after { content: '+'; font: 300 28px/1 var(--test); color: var(--arany); transition: transform .2s; flex: none; }
 .gyik-racs details[open] summary::after { transform: rotate(45deg); }
 .gyik-racs details > p { padding: 0 22px 18px; font-size: 15.5px; line-height: 1.65; color: #3d4b4b; }
-.gyik-tobb { display: none; }   /* a "tovabbi kerdesek" gomb csak telefonon latszik (a JS hozza letre) */
+.gyik-tobb { display: flex; margin: 18px auto 0; }   /* a "tovabbi kerdesek" gomb mindenhol latszik (a JS hozza letre) */
+/* asztalon oszloponkent az elso 4 kerdes (osszesen 8), a tobbi a gombra (a JS jeloli: .asztal-rejtett); a tartalom a HTML-ben mind megvan */
+@media (min-width: 1025px) {
+  .gyik-racs details.asztal-rejtett { display: none; }
+  .gyik-racs.kinyitva details.asztal-rejtett { display: block; }
+}
 
 /* --- 18. helyszín --- */
 .helyszin { padding: 76px 0; background: #f6f7f2; border-top: 1px solid var(--vonal); }
@@ -360,6 +374,7 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
   .ajandek-szoveg { padding: 56px 24px 8px; max-width: none; }
   .korhinta-sav > li { flex-basis: calc((100% - 3 * 16px) / 4); }
   .korhinta-sav.videok-fekvo > li { flex-basis: calc((100% - 18px) / 2); }
+  .haj-sor .korhinta-sav > li { flex-basis: calc((100% - 3 * 12px) / 4); }
   .kapsz-racs { grid-template-columns: 300px minmax(0, 1fr); gap: 40px; }
   .fejbor-racs, .oxygeni-racs, .sor-racs, .sor-racs.fordit, .helyszin-racs { grid-template-columns: 1fr; gap: 36px; }
   .sor-racs.fordit > .sor-kep { order: 0; }
@@ -370,6 +385,8 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
   .hatasok { padding: 36px 24px; }
   .szalon-galeria { grid-template-columns: repeat(3, 1fr); grid-auto-rows: 170px; }
   .gyik-racs { grid-template-columns: 1fr; }
+  .gyik-racs details.mobil-rejtett { display: none; }
+  .gyik-racs.kinyitva details.mobil-rejtett { display: block; }
 }
 
 /* ====== telefon ======
@@ -458,6 +475,11 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
   .korhinta-sav { gap: 10px; margin: 0 -16px; padding: 4px 16px 8px; scroll-padding-left: 16px; }
   .korhinta-sav > li { flex-basis: 35%; }
   .korhinta-sav.videok-fekvo > li { flex-basis: 72%; }
+  .haj-sor .korhinta-sav { gap: 10px; padding: 4px 16px 8px; margin-bottom: 0; }
+  .haj-sor .korhinta-sav > li { flex-basis: 31%; }
+  .haj-kepek img { border-radius: 10px; }
+  .elemek .al-fejlec { margin-top: 26px; font-size: 21px; }
+  .elemek.szekcio { padding-bottom: 32px; }
   .video-play { width: 44px; height: 44px; margin: -22px 0 0 -22px; }
   .video-cim { font-size: 15px; left: 12px; right: 12px; bottom: 10px; }
   .video-kartya.allo .video-cim { font-size: 13.5px; left: 10px; right: 50px; }
@@ -526,9 +548,7 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
   .gyik-racs > div { gap: 8px; }
   .gyik-racs summary { padding: 12px 14px; font-size: 15px; line-height: 1.35; }
   .gyik-racs details > p { padding: 0 14px 13px; font-size: 14.5px; line-height: 1.55; }
-  .gyik-racs details.mobil-rejtett { display: none; }
-  .gyik-racs.kinyitva details.mobil-rejtett { display: block; }
-  .gyik-tobb { display: flex; margin: 12px auto 0; }
+  .gyik-tobb { margin-top: 12px; }
 
   /* helyszin: kompakt, a logo-kep nelkul */
   .helyszin { padding: 28px 0; }

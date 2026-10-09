@@ -170,7 +170,7 @@ describe('/ (főoldal)', () => {
   test('videók: minden videó-kártya fájlja és posztere létezik; kattintásra felugró lejátszó nyílik, bezárás után a videó leáll', async () => {
     const { p, ctx } = await nyit();
     const kartyak = await p.$$eval('[data-video]', (l) => l.map((b) => ({ v: b.dataset.video, poszter: b.dataset.poster, kep: b.querySelector('img').getAttribute('src') })));
-    assert.ok(kartyak.length >= 30, 'sok videó: ' + kartyak.length);
+    assert.ok(kartyak.length >= 20, 'sok videó: ' + kartyak.length);
     assert.equal(new Set(kartyak.map((k) => k.v)).size, kartyak.length, 'nincs ismétlődő videó');
     for (const k of kartyak) {
       assert.ok(fajlVan(k.v.replace(/^\//, '')), 'hiányzó videó: ' + k.v);
@@ -199,6 +199,25 @@ describe('/ (főoldal)', () => {
     await k.locator('.korhinta-gomb.kovetkezo').click();
     await p.waitForFunction(() => document.querySelector('#vendegek .korhinta-sav').scrollLeft > 100);
     assert.equal(await k.locator('.korhinta-gomb.elozo').isDisabled(), false);
+    await ctx.close();
+  });
+
+  test('"Milyen lesz a hajad a kezelés után?" (a "Nézd, mekkora élmény!" helyén): 21 kis kép egy sorban, asztalon 6 látszik egyszerre; a következő gomb elgörget, a képek betöltődnek; a link a vélemények oldal galériájára mutat', async () => {
+    const { p, ctx } = await nyit();
+    const k = p.locator('.haj-sor');
+    await k.scrollIntoViewIfNeeded();
+    assert.equal(await k.locator('.haj-kepek img').count(), 21);
+    const latszik = await p.$$eval('.haj-kepek img', (l) => l.filter((i) => { const r = i.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth + 1; }).length);
+    assert.equal(latszik, 6, 'asztalon 6 kép látszik egyszerre');
+    assert.equal(await k.locator('.korhinta-gomb.elozo').isDisabled(), true);
+    await k.locator('.korhinta-gomb.kovetkezo').click();
+    await p.waitForFunction(() => document.querySelector('.haj-kepek').scrollLeft > 100);
+    assert.equal(await k.locator('.korhinta-gomb.elozo').isDisabled(), false);
+    await p.waitForFunction(() => [...document.querySelectorAll('.haj-kepek img')].slice(0, 8).every((i) => i.complete && i.naturalWidth > 0));
+    // a kepek fajlja megvan
+    for (const src of await p.$$eval('.haj-kepek img', (l) => l.map((i) => i.getAttribute('src')))) assert.ok(fajlVan(src.replace(/^\//, '')), 'hiányzó kép: ' + src);
+    assert.equal(await p.getAttribute('.haj-tobb a', 'href'), '/head-spa-velemenyek#hajad');
+    assert.equal(await p.locator('#elemek h3.al-fejlec', { hasText: 'Milyen lesz a hajad a kezelés után?' }).count(), 1);
     await ctx.close();
   });
 
@@ -281,11 +300,12 @@ describe('/ (főoldal)', () => {
     const { p, ctx } = await nyit();
     const szoveg = (await p.evaluate(() => document.querySelector('main').innerText)).replace(/\s+/g, ' ').replace(/ /g, ' ');
     for (const s of ['Mit kapsz egy 50 + 30 perces MOSAIC Head Spa szeánszon?', 'Milyen részekből áll egy HeadSpa kezelés?', 'Fejmasszázs eszközökkel', 'Kézmasszázs',
-      'Arcmasszázs', 'Mélytisztító hajmosás', 'Fejbőr masszírozó fésű', '20 ujjas fejmasszírozó', 'Arcroller', 'Hajmasszírozó körkefe', 'Nézd, mekkora élmény!',
+      'Arcmasszázs', 'Mélytisztító hajmosás', 'Fejbőr masszírozó fésű', '20 ujjas fejmasszírozó', 'Arcroller', 'Hajmasszírozó körkefe', 'Milyen lesz a hajad a kezelés után?',
       'A fejbőröd azt kapja, amire szüksége van!', 'A rendszeres Head Spa hatásai', 'Tapasztalt gyógymasszőrök kényeztetnek.', 'Csak tökéletes szárítással engedünk el!', '100%-ban organikus, vegán OXYGENI termékeket használunk',
       'Ilyen gyönyörűen felújított szalonban várunk', '1023 Budapest, Bécsi út 2.', '06 20 247 4444', 'mosaicheadspa@gmail.com',
       'Hétfő – Péntek: 8:00 – 20:00', 'Szombat: 8:00 – 20:00', 'Vasárnap: zárva', 'SZÉP Kártyát is elfogadunk']) assert.ok(szoveg.includes(s), 'hiányzik: ' + s);
     assert.ok(!szoveg.includes('Páros Head Spa a MOSAIC-ban!'), 'a főoldali páros blokk kikerült');
+    assert.ok(!szoveg.includes('Nézd, mekkora élmény!') && !szoveg.includes('Rövid betekintés a MOSAIC kezelőibe.'), '2026-10-09: a "Nézd, mekkora élmény!" blokk kikerült (asztalon is)');
     await ctx.close();
   });
 
@@ -341,6 +361,9 @@ describe('/ (főoldal)', () => {
     // csukott blokkok telefonon
     assert.deepEqual(await m.p.$$eval('details.mobil-csukott', (l) => l.map((d) => d.open)), [false, false, false, false]);
     assert.equal(await m.p.$$eval('.csak-nagy', (l) => l.filter((e) => getComputedStyle(e).display !== 'none').length), 0, 'a telefonon rejtett blokkok nem látszanak');
+    // a kompakt "Milyen lesz a hajad" sor telefonon is látszik, kicsi (nem foglal sok helyet)
+    const hajM = await m.p.locator('.haj-sor').boundingBox();
+    assert.ok(hajM && hajM.height < 200, 'telefonon a haj-sor kompakt: ' + hajM?.height + ' px');
     // GYIK: az első 6 kérdés látszik, a gomb nyitja a többit; mind a 18 megvan a DOM-ban
     assert.equal(await m.p.locator('#gyik details').count(), 18);
     assert.equal(await m.p.$$eval('#gyik details', (l) => l.filter((d) => getComputedStyle(d).display !== 'none').length), 6);
@@ -350,17 +373,34 @@ describe('/ (főoldal)', () => {
     await m.p.locator('#hatasok > summary').click();
     assert.equal(await m.p.$eval('#hatasok', (d) => d.open), true);
     // oldalra görgethető sorok (szolgáltatások, élmények, szalon)
-    for (const sel of ['.szol-racs', '.elm-racs', '.szalon-galeria']) assert.equal(await m.p.$eval(sel, (e) => e.scrollWidth > e.clientWidth + 50), true, sel + ' oldalra görgethető');
+    for (const sel of ['.szol-racs', '.elm-racs', '.szalon-galeria', '.haj-kepek']) assert.equal(await m.p.$eval(sel, (e) => e.scrollWidth > e.clientWidth + 50), true, sel + ' oldalra görgethető');
     assert.equal(await m.p.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true, 'nincs vízszintes görgetés');
-    // a rejtett tartalom megvan a DOM-ban (asztalon látszik)
-    assert.ok((await m.p.textContent('main')).includes('Nézd, mekkora élmény!'), 'a telefonon rejtett blokk a HTML-ben megvan');
+    // a telefonon rejtett (.csak-nagy) tartalom megvan a DOM-ban (asztalon látszik)
+    assert.ok((await m.p.$$eval('.csak-nagy', (l) => l.length)) > 0, 'a telefonon rejtett blokkok a HTML-ben megvannak');
     await m.ctx.close();
     const a = await nyit({ szeles: 1440 });
     assert.deepEqual(await a.p.$$eval('details.mobil-csukott', (l) => l.map((d) => d.open)), [true, true, true, true], 'asztalon a csukható blokkok nyitva');
     assert.equal(await a.p.$$eval('details.mobil-csukott > summary', (l) => l.filter((e) => getComputedStyle(e).display !== 'none').length), 0, 'asztalon a feliratok rejtettek');
-    assert.equal(await a.p.$$eval('#gyik details', (l) => l.filter((d) => getComputedStyle(d).display !== 'none').length), 18, 'asztalon mind a 18 kérdés látszik');
-    assert.equal(await a.p.locator('.gyik-tobb').isVisible(), false);
-    assert.equal(await a.p.locator('.al-fejlec.csak-nagy').isVisible(), true, 'asztalon a "Nézd, mekkora élmény!" blokk látszik');
+    // 2026-10-09: a GYIK asztalon is rövid: oszloponként az első 4 kérdés (8), a többi a gombra; mind a 18 megvan a DOM-ban
+    assert.equal(await a.p.locator('#gyik details').count(), 18);
+    const lathato = () => a.p.$$eval('#gyik details', (l) => l.filter((d) => getComputedStyle(d).display !== 'none').length);
+    assert.equal(await lathato(), 8, 'asztalon 8 kérdés látszik (oszloponként 4)');
+    assert.deepEqual(await a.p.$$eval('#gyik .gyik-racs > div', (l) => l.map((o) => [...o.querySelectorAll('details')].filter((d) => getComputedStyle(d).display !== 'none').length)), [4, 4]);
+    assert.equal(await a.p.locator('.gyik-tobb').isVisible(), true);
+    assert.equal((await a.p.locator('.gyik-tobb').textContent()).trim(), 'További kérdések (10)');
+    const gyikMag = (await a.p.locator('#gyik').boundingBox()).height;
+    assert.ok(gyikMag < 700, 'a GYIK szekció asztalon tömör: ' + Math.round(gyikMag) + ' px');
+    await a.p.click('.gyik-tobb');
+    assert.equal(await lathato(), 18, 'a gombra mind a 18 kérdés látszik');
+    assert.equal((await a.p.locator('.gyik-tobb').textContent()).trim(), 'Kevesebb kérdés');
+    await a.p.click('.gyik-tobb');
+    assert.equal(await lathato(), 8);
+    // a "Milyen lesz a hajad a kezelés után?" kompakt sor: 21 kép, 6 látszik egyszerre, alacsony; a régi "Nézd, mekkora élmény!" videósor nincs
+    assert.equal(await a.p.locator('#elemek .haj-kepek img').count(), 21);
+    assert.equal(await a.p.locator('#elemek .videok-allo, #elemek .video-kartya.allo').count(), 0, 'a régi álló videósor kikerült');
+    const hajA = await a.p.locator('.haj-sor').boundingBox();
+    assert.ok(hajA.height < 320, 'asztalon a haj-sor kompakt: ' + Math.round(hajA.height) + ' px');
+    assert.equal(await a.p.getAttribute('.haj-tobb a', 'href'), '/head-spa-velemenyek#hajad');
     await a.ctx.close();
   });
 });

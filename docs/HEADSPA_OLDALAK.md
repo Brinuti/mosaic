@@ -37,6 +37,7 @@ linkek: a launcher a helyben nyíló foglalóban (rétegben) nyitja őket, mint 
 - A régi `✔️` emojik és a mutató emojik (👇 💓 🌿 👆) elmaradtak (ikon-lista, illetve nincs rájuk szükség); a hangulatjelek (🙂 :)) maradtak.
 - Egyetlen H1 oldalanként (a régi oldalakon több volt, az árak oldalon a H1 „SZÉP Kártyát is elfogadunk” volt): az árak oldalon „Head Spa Csomagok és Árak” a H1; a kedvezmény oldalon az „AZ AKCIÓ RÉSZLETEI” H2.
 - A vélemények oldal egyik címéből hiányzott az első betű („lyen lesz a hajad…”): javítva („Milyen lesz a hajad a kezelés után?”); a „Kinek ajánlott” idézetnek nem volt záró idézőjele: pótolva.
+- **2026-10-09, a tulajdonos kérésére:** a vélemények oldal „Milyen lesz a hajad a kezelés után?” galériája az eredeti Wixes galéria **mind a 21 egyedi képét** mutatja (`assets/js/galeriak.js`, `comp-m7qaedn3`: 22 elem, ebből egy azonos fájl kétszer szerepelt, az egyszer kerül be); teszt: `tools/headspa-teszt/sajto.test.mjs`. A főoldalon ugyanennek a kompakt változata van (`docs/FOOLDAL.md`).
 - Gombfeliratok kisbetűsek (`IDŐPONTFOGLALÁS` → „Időpontfoglalás”, `FOGLALOK!` → „Foglalok!”, `BŐVEBBEN >>` → „Bővebben”).
 - A „4 Kezes” csomag („Csak ajándékkártya készült”) „Foglalok!” gombja a régi oldal szerint a foglalóra mutat – ezt változatlanul hagytam.
 - A Trustindex a vélemények oldalon a többi oldallal azonos 3 kártyás csúszka (a régi oldalon egyetlen lebegő kártya volt). Hozzájárulás előtt gombos helykitöltő áll.

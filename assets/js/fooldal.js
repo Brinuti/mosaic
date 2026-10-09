@@ -117,18 +117,24 @@
   mobilMq.addEventListener('change', mobilAllit);
   mobilAllit();
 
-  // --- 3c. GYIK telefonon: az első 6 kérdés látszik, a többi a "További kérdések" gombra (asztalon mind látszik; a tartalom a HTML-ben mind megvan) ---
+  // --- 3c. GYIK röviden: telefonon / tableten az első 6 kérdés látszik, asztalon (2 oszlop) oszloponként az első 4 (összesen 8); a többi a "További kérdések" gombra (a tartalom a HTML-ben mind megvan) ---
   const gyikRacs = document.querySelector('.gyik-racs');
   if (gyikRacs) {
     const kerdesek = [...gyikRacs.querySelectorAll('details')];
-    const ELSO = 6;
+    const ELSO = 6, OSZLOPONKENT = 4;
     kerdesek.slice(ELSO).forEach((d) => d.classList.add('mobil-rejtett'));
-    const gomb = elem('button', { type: 'button', class: 'gomb gomb-korvonal gomb-kicsi gyik-tobb', 'aria-expanded': 'false', szoveg: `További kérdések (${kerdesek.length - ELSO})` });
+    let asztalon = 0;
+    for (const oszlop of gyikRacs.children) [...oszlop.querySelectorAll('details')].forEach((d, i) => { if (i >= OSZLOPONKENT) d.classList.add('asztal-rejtett'); else asztalon++; });
+    const nagyMq = matchMedia('(min-width: 1025px)');
+    const tobb = () => kerdesek.length - (nagyMq.matches ? asztalon : ELSO);
+    const gomb = elem('button', { type: 'button', class: 'gomb gomb-korvonal gomb-kicsi gyik-tobb', 'aria-expanded': 'false', szoveg: `További kérdések (${tobb()})` });
+    const felirat = () => { gomb.textContent = gyikRacs.classList.contains('kinyitva') ? 'Kevesebb kérdés' : `További kérdések (${tobb()})`; };
     gomb.addEventListener('click', () => {
       const nyit = gyikRacs.classList.toggle('kinyitva');
       gomb.setAttribute('aria-expanded', String(nyit));
-      gomb.textContent = nyit ? 'Kevesebb kérdés' : `További kérdések (${kerdesek.length - ELSO})`;
+      felirat();
     });
+    nagyMq.addEventListener('change', felirat);
     gyikRacs.after(gomb);
   }
 

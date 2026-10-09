@@ -48,7 +48,9 @@ const kivettSzoveg = () => norm(folyam({ kivettekkel: true }).filter((x) => x.ki
 const KIVETT_KEPEK = ['68d6961f322c', 'aab3792d7e02', 'b4524614b454', '457a5f5c69ce', '9ea9d95c658e', '40d2a033721a', '5fad37708d0d', 'c676302884b3'];
 const szovegbol = (html) => html.replace(/^[\d.]+px\s+(?:(?:center|left|right)\s+)?/, '').replace(/\s+->\s+\S+\s*$/, '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 // betuk es szamok kisbetuvel: a tagolas / irasjelek / emojik / athuzas-jelek kulonbsegei nem szamitanak
-const norm = (s) => s.toLowerCase().normalize('NFC').replace(/[\u0336\p{Extended_Pictographic}\p{Emoji_Presentation}\uFE0F\u200d\u200b\u00a0]/gu, '').replace(/[^\p{L}\p{N}]+/gu, '');
+const norm = (s) => s.toLowerCase().normalize('NFC').replace(/[\u0336\p{Extended_Pictographic}\p{Emoji_Presentation}\uFE0F\u200d\u200b\u00a0]/gu, '').replace(/[^\p{L}\p{N}]+/gu, '')
+  // a Google-ertekelesek szama elo adat (assets/js/google-szam.js): a regi oldal beegetett szama (831 / 971 ...) nem kell hogy egyezzen
+  .replace(/google49(?:5)?\d{3,4}(?=ertekeles|értékelés|velemeny|vélemény)/g, 'google49N');
 
 async function nyit(nev, { szeles = 1440 } = {}) {
   const mobil = szeles < 700;
@@ -91,8 +93,9 @@ describe(`/${NEV}`, () => {
     assert.equal(await p.getAttribute('#hero button.vh-lejatszas', 'data-nagyvideo'), '/assets/video/ajandek-kezeles-paros.mp4');
     for (const f of ['assets/video/paros-hero-barat.mp4', 'assets/img/paros/hero-barat.jpg', 'assets/video/ajandek-kezeles-paros.mp4']) assert.ok(fs.existsSync(path.join(GYOKER, f)), f);
     const hero = (await p.evaluate(() => document.querySelector('#hero').innerText)).replace(/\s+/g, ' ');
+    assert.match(hero, /Google 4,9\/5 - [\d .,]+ vélemény/, 'hero: Google-ertekeles sor');
     for (const k of ['Páros Head Spa.', 'Éljétek át együtt az igazi relaxációt!', '50 + 30 perc exkluzív spa élmény közösen', '65.900 Ft', '53.800 Ft', 'Októberben 20% kedvezménnyel!', '50+30 perc', 'Profi hajszárítás', 'Privát páros',
-      'Időpontfoglalás', 'Ajándékkártya', 'Google 4,9/5 - 971 vélemény', '1023 Bécsi út 2 (A Kolosy térnél)', 'Nézd meg a páros kezelést']) assert.ok(hero.includes(k), 'hero: ' + k);
+      'Időpontfoglalás', 'Ajándékkártya', '1023 Bécsi út 2 (A Kolosy térnél)', 'Nézd meg a páros kezelést']) assert.ok(hero.includes(k), 'hero: ' + k);
     assert.equal(await p.getAttribute('#hero a[data-cta="hero-idopontfoglalas"]', 'href'), '/foglalo-motor?business=headspa');
     assert.equal(await p.getAttribute('#hero a[data-cta="hero-ajandekkartya"]', 'href'), '/headspa-ajandekkartya');
     assert.equal(await p.getAttribute('#hero a.vh-google', 'href'), '#velemenyek');
