@@ -260,7 +260,7 @@ test('PUBLIKUS B10 landing-hozzajarulas: sosem elofeltetel (B10); a foglalas bee
   assert.equal(ok.status, 200); assert.deepEqual(ok.json, { ok: true });
   const sorok = await mind(x.db, "SELECT * FROM beallitasok WHERE kulcs LIKE 'pending_consent:%'");
   assert.equal(sorok.length, 2);
-  assert.ok(!JSON.stringify(sorok).includes('anna') && !JSON.stringify(sorok).includes('+36') && !JSON.stringify(sorok).includes('3011'), 'a fuggo bejegyzes nem tartalmaz PII-t');
+  assert.ok(!JSON.stringify(sorok).includes('anna') && !JSON.stringify(sorok).includes('+36') && !JSON.stringify(sorok).includes('111 2222'), 'a fuggo bejegyzes nem tartalmaz PII-t');
   assert.equal(await szamol(x.db, 'consent_event'), 0, 'a foglalas elott nincs consent_event');
   // a /beallitasok API nem mutatja a belso kulcsokat
   assert.ok(!(await x.get('/beallitasok', x.session.admin)).text.includes('pending_consent'));
