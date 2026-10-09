@@ -357,9 +357,27 @@ describe('/ (főoldal)', () => {
   test('telefon: a főoldal tömör - a görgetés kb. a fele a régi mobilos nézetnek (régi: ~18 300 px, cél: 9-10 ezer px); a csukott blokkok, a GYIK első 6 kérdése, a rejtett részek asztalon megmaradnak', async () => {
     const m = await nyit({ szeles: 390 });
     const mag = await m.p.evaluate(() => document.documentElement.scrollHeight);
-    assert.ok(mag < 10300, 'a mobil oldal magassága: ' + mag + ' px');
+    assert.ok(mag < 10800, 'a mobil oldal magassága: ' + mag + ' px');   // 2026-10-09: a "Tovább olvasom" / "Részletek" gombok kikerültek (a szöveg nyitva), ez ~+400 px
     // csukott blokkok telefonon
-    assert.deepEqual(await m.p.$$eval('details.mobil-csukott', (l) => l.map((d) => d.open)), [false, false, false, false]);
+    // 2026-10-09 (tulajdonos): "Tovább olvasom" / "Részletek" gombok nincsenek, a szöveg mindig látszik; csak a "rendszeres Head Spa hatásai" csukott
+    assert.deepEqual(await m.p.$$eval('details.mobil-csukott', (l) => l.map((d) => d.id + ':' + d.open)), ['hatasok:false']);
+    assert.equal(await m.p.locator('main summary, section summary').filter({ hasText: /Tovább olvasom|Részletek/ }).count(), 0, 'nincs "Tovább olvasom" / "Részletek" gomb');
+    for (const sz of ['Hiszünk abban, hogy az érintés gyógyító erejű', 'Számunkra elsődleges, hogy a nálunk töltött időd', 'A +30 perc professzionális és hajkímélő szárítás', 'Ebből az első 3, amivel a Head Spa kezelés', 'Kérésedre a kezelés mikrokamerás fejbőrvizsgálattal']) {
+      assert.equal(await m.p.getByText(sz, { exact: false }).first().isVisible(), true, 'telefonon is látszik: ' + sz);
+    }
+    // a gyógymasszőr képe kicsit magasabb (16:9), az arc (a kép felső-középső része) látszik
+    const kep = await m.p.locator('img.kezelo-kep').boundingBox();
+    assert.ok(kep.height / kep.width > 0.5 && kep.height / kep.width < 0.62, 'a gyógymasszőr kép aránya telefonon kb. 16:9: ' + (kep.height / kep.width).toFixed(2));
+    assert.equal(await m.p.$eval('img.kezelo-kep', (e) => getComputedStyle(e).objectPosition), '50% 28%');
+    // a haj-sor képei betöltődnek (a kép nem törött), és a lapozó-nyilak telefonon is látszanak
+    await m.p.$$eval('.haj-kepek img', (l) => l.forEach((i) => { i.loading = 'eager'; }));   // a sávon kívüli képeket a lusta betöltés nem kérné le
+    await m.p.waitForFunction(() => [...document.querySelectorAll('.haj-kepek img')].every((i) => i.complete), null, { timeout: 15000 });
+    assert.equal(await m.p.$$eval('.haj-kepek img', (l) => l.filter((i) => !(i.complete && i.naturalWidth > 0)).length), 0, 'a haj-sor minden képe betöltődött');
+    for (const sel of ['.haj-sor .korhinta-gomb.kovetkezo', '.szalon-korhinta .korhinta-gomb.kovetkezo']) {
+      await m.p.locator(sel).scrollIntoViewIfNeeded();
+      const d = await m.p.locator(sel).boundingBox();
+      assert.ok(d && d.width >= 34 && d.x >= 0 && d.x + d.width <= 390, 'telefonon látszik a lapozó nyíl és nem lóg ki: ' + sel + ' ' + JSON.stringify(d));
+    }
     assert.equal(await m.p.$$eval('.csak-nagy', (l) => l.filter((e) => getComputedStyle(e).display !== 'none').length), 0, 'a telefonon rejtett blokkok nem látszanak');
     // a kompakt "Milyen lesz a hajad" sor telefonon is látszik, kicsi (nem foglal sok helyet)
     const hajM = await m.p.locator('.haj-sor').boundingBox();
@@ -379,8 +397,9 @@ describe('/ (főoldal)', () => {
     assert.ok((await m.p.$$eval('.csak-nagy', (l) => l.length)) > 0, 'a telefonon rejtett blokkok a HTML-ben megvannak');
     await m.ctx.close();
     const a = await nyit({ szeles: 1440 });
-    assert.deepEqual(await a.p.$$eval('details.mobil-csukott', (l) => l.map((d) => d.open)), [true, true, true, true], 'asztalon a csukható blokkok nyitva');
+    assert.deepEqual(await a.p.$$eval('details.mobil-csukott', (l) => l.map((d) => d.open)), [true], 'asztalon a csukható blokk nyitva');
     assert.equal(await a.p.$$eval('details.mobil-csukott > summary', (l) => l.filter((e) => getComputedStyle(e).display !== 'none').length), 0, 'asztalon a feliratok rejtettek');
+    assert.equal(await a.p.locator('.szalon-korhinta .korhinta-gomb').evaluateAll((l) => l.filter((e) => getComputedStyle(e).display !== 'none').length), 0, 'asztalon a szalon-galéria nyilai rejtettek (a rács egyben látszik)');
     // 2026-10-09: a GYIK asztalon is rövid: oszloponként az első 4 kérdés (8), a többi a gombra; mind a 18 megvan a DOM-ban
     assert.equal(await a.p.locator('#gyik details').count(), 18);
     const lathato = () => a.p.$$eval('#gyik details', (l) => l.filter((d) => getComputedStyle(d).display !== 'none').length);

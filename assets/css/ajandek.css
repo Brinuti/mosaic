@@ -1445,7 +1445,7 @@ body .ah-halk, .ah-tenyek li, .ah-benefit-lista li span, .ah-forma-lista li span
   .ah-sticky { display: flex; align-items: center; gap: 12px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: rgba(250, 246, 238, .97); box-shadow: 0 -6px 22px rgba(60, 40, 15, .16); transform: translateY(115%); transition: transform .25s ease; }
   .ah-sticky[hidden] { display: none; }
   .ah-sticky.ah-lathato { transform: none; }
-  .ah-sticky .ah-gomb { flex: 1; min-height: 46px; padding: 0 16px; font-size: var(--b3); white-space: nowrap; }
+  .ah-sticky .ah-gomb { flex: 1; min-width: 0; min-height: 46px; padding: 4px 16px; font-size: var(--b3); white-space: normal; line-height: 1.15; text-align: center; }   /* hosszabb gomb-felirat (persona) 2 sorba tordel, nem tolja ki az arat a kepernyorol (2026-10-09) */
   .ah-sticky-ar { flex: none; font-family: var(--ah-test); font-size: var(--b4); line-height: 1.25; color: var(--ah-petrol); text-align: center; }
   .ah-sticky-ar b { display: block; font-weight: 600; font-size: var(--b4); }
   body.ah-sticky-be { padding-bottom: 76px; }
@@ -1524,6 +1524,17 @@ body .ah-halk, .ah-tenyek li, .ah-benefit-lista li span, .ah-forma-lista li span
   /* asztalon a kep a szoveg-oszlop magassagat koveti (nem torzul, a kivagas a "poz" szerint) */
   .ah-magyarazo-media { aspect-ratio: auto; max-height: none; min-height: 400px; position: relative; }
   .ah-magyarazo-media img { position: absolute; inset: 0; }
+}
+/* 2026-10-09 (a tulajdonos kerese): MOBILON (900 px alatt, egy oszlop) a sorrend: CIM, KEP, szoveg (a kep ne legyen annyira alul); asztalon marad: kep balra, szoveg jobbra.
+   A szoveg-oszlop elemei (felcim, cim, torzs, pontok) a racs kozvetlen elemei lesznek (display: contents), igy sorrendezhetok; a DOM-sorrend (szoveg elol) nem valtozik. */
+@media (max-width: 899px) {
+  .ah-magyarazo-racs { gap: 14px; }
+  .ah-magyarazo-szoveg { display: contents; }
+  .ah-magyarazo-szoveg .ah-felcim { order: 0; }
+  .ah-magyarazo-szoveg h2 { order: 1; }
+  .ah-magyarazo-media { order: 2; margin: 4px 0 8px; }
+  .ah-magyarazo-torzs { order: 3; }
+  .ah-pipalista { order: 4; }
 }
 /* a szekcio cime kisebb, mint a tobbi szekcio-cim (a ket oszlopban keskenyebb a hely, a cimek hosszabbak) */
 #ah-landing .ah-magyarazo h2 { font-size: clamp(26px, 2.7vw, 36px) !important; line-height: 1.14; }

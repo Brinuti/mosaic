@@ -77,7 +77,7 @@ async function atgorget(p) {
 }
 const dobozok = (p) => p.evaluate(() => {
   const r = (sel) => { const e = document.querySelector(sel); if (!e) return null; const b = e.getBoundingClientRect(); return { l: b.left, r: b.right, t: b.top + scrollY, b: b.bottom + scrollY, w: b.width, h: b.height }; };
-  return { hero: r('#ah-hero'), szekcio: r('#ah-magyarazo'), szoveg: r('.ah-magyarazo-szoveg'), cim: r('#ah-magyarazo-cim'), media: r('#ah-magyarazo-media'), valaszto: r('#ah-finder') };
+  return { hero: r('#ah-hero'), szekcio: r('#ah-magyarazo'), szoveg: r('.ah-magyarazo-szoveg'), cim: r('#ah-magyarazo-cim'), torzs: r('#ah-magyarazo-torzs'), media: r('#ah-magyarazo-media'), valaszto: r('#ah-finder') };
 });
 const elvartTermek = (v, nev) => {
   const f = v.gift_finder_preselect ? A.FINDER.find((x) => x.id === v.gift_finder_preselect) : null;
@@ -159,7 +159,7 @@ for (const { nev, variant } of PERSONAK) {
       await ctx.close();
     });
 
-    test('elrendezes: asztalon (1440) ket oszlop - a KEP BALRA, a szoveg jobbra, egymas mellett; mobilon (390) egymas alatt - szoveg, majd kep', async () => {
+    test('elrendezes: asztalon (1440) ket oszlop - a KEP BALRA, a szoveg jobbra, egymas mellett; mobilon (390) egymas alatt - cim, kep, majd a szoveg', async () => {
       const a = await nyit(nev, { szeles: 1440 });
       await atgorget(a.p);
       const d = await dobozok(a.p);
@@ -173,8 +173,11 @@ for (const { nev, variant } of PERSONAK) {
       const b = await nyit(nev, { szeles: 390, mobil: true });
       await atgorget(b.p);
       const m = await dobozok(b.p);
-      assert.ok(m.media.t >= m.szoveg.b - 2, `mobilon a kep a szoveg ALATT van (kep.t ${m.media.t} >= szoveg.b ${m.szoveg.b})`);
-      assert.ok(m.media.w <= 390 && m.media.w > 300 && m.szoveg.w <= 390, 'mobilon teljes szelesseg, nincs kilogas');
+      // 2026-10-09 (a tulajdonos kerese): mobilon a sorrend CIM -> KEP -> szoveg (a kep ne legyen alul)
+      assert.ok(m.media.t >= m.cim.b - 2, `mobilon a kep a CIM alatt van (kep.t ${m.media.t} >= cim.b ${m.cim.b})`);
+      assert.ok(m.torzs.t >= m.media.b - 2, `mobilon a szoveg a KEP alatt van (torzs.t ${m.torzs.t} >= kep.b ${m.media.b})`);
+      assert.ok(m.cim.t < m.media.t && m.media.t < m.torzs.t, 'cim < kep < szoveg');
+      assert.ok(m.media.w <= 390 && m.media.w > 300 && m.cim.w <= 390 && m.torzs.w <= 390, 'mobilon teljes szelesseg, nincs kilogas');
       assert.ok(m.media.h > 150, 'a kep latszik');
       await b.ctx.close();
     });
@@ -219,6 +222,26 @@ for (const { nev, variant } of PERSONAK) {
         await ctx.close();
       });
     }
+
+    test('a mobil sticky sav (ah-sticky) 320 / 360 / 390 / 430 px-en sehol nem log ki: a sav es minden gyereke a kepernyon belul van, a gomb szovege nem vagodik le (2026-10-09)', async () => {
+      for (const szeles of [320, 360, 390, 430]) {
+        const { p, ctx } = await nyit(nev, { szeles, mobil: true });
+        await p.evaluate(async () => { for (let y = 0; y < 3000; y += 300) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); } });
+        await p.waitForSelector('#ah-sticky.ah-lathato', { timeout: 5000 }).catch(() => {});
+        await p.waitForTimeout(450);
+        const m = await p.evaluate(() => {
+          const e = document.getElementById('ah-sticky'); if (!e || getComputedStyle(e).display === 'none') return null;
+          const ki = [e, ...e.querySelectorAll('*')].filter((c) => { const q = c.getBoundingClientRect(); return q.width > 0 && (q.right > innerWidth + 0.5 || q.left < -0.5); }).map((c) => c.id || c.className || c.tagName);
+          const g = document.getElementById('ah-sticky-gomb');
+          return { ki, doc: document.documentElement.scrollWidth <= document.documentElement.clientWidth, gombVagva: g ? g.scrollWidth > g.clientWidth + 1 : false, ar: (document.getElementById('ah-sticky-ar') || {}).textContent };
+        });
+        assert.ok(m, szeles + ' px: van sticky sav');
+        assert.deepEqual(m.ki, [], szeles + ' px: kilogo elemek');
+        assert.equal(m.doc, true, szeles + ' px: nincs vizszintes gorgetes');
+        assert.equal(m.gombVagva, false, szeles + ' px: a gomb szovege nem vagodik le');
+        await ctx.close();
+      }
+    });
 
     test('a hero-video VALOBAN lejatszodik (csak H.264-tudo bongeszoben; a Playwright-Chromium nem tud: ott kihagyjuk, nem hiba)', async (t) => {
       const { p, ctx } = await nyit(nev);

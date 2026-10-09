@@ -3,7 +3,7 @@
 **2026-10-09, a tulajdonos kérésére** a három oldal hero-ja egyetlen közös elemből áll; a mintája a `/head-spa-kedvezmeny` hero (a tulajdonos kedvence):
 
 - **Asztalon** a videó a hero **teljes háttere**, balról sötétzöld átmosással (a szöveg alatt tiszta sötétzöld).
-- **Telefonon** felül a videó (300 px), ami sötétzöldbe (`#10221f`) olvadva átmegy a szövegbe; a három jelvény egy sorban (ikon felül, rövid felirat alatta), a Google-sor egy sorban.
+- **Telefonon** felül a videó (284 px; 2026-10-09: összébb húzva – sortávolság, térközök –, hogy kis telefonon (360×640) mindkét hero-gomb látsszon), ami sötétzöldbe (`#10221f`) olvadva átmegy a szövegbe; a három jelvény egy sorban (ikon felül, rövid felirat alatta), a Google-sor egy sorban.
 - **Play gomb** (asztalon 62 px, telefonon 52 px): **NAGY ablakban** (felugró `<dialog>`, vezérlőkkel, Esc / X / háttérkattintás zár) nyitja a **hangos** videót.
 - **Csökkentett mozgás** (`prefers-reduced-motion`) vagy **adattakarékos / lassú kapcsolat** (saveData, 2g / 3g): egyetlen háttér-klip sem töltődik be, csak a nyitókép látszik (a play gomb ilyenkor is működik).
 
