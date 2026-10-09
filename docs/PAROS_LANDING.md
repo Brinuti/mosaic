@@ -27,9 +27,17 @@ Nincs felcím (arany cím a főcím felett) sehol (a tulajdonos korábbi kérés
 
 ## Az ÉLES páros oldal (`/paros-headspa-budapest`) kapott részei az -uj oldalról (2026-10-09)
 
-A tulajdonos döntése: az éles (újrastílusú, régi tartalmú) oldal marad, az `-uj` oldalról **csak** ezek kerültek át: a **hero mozgó videója** (`paros-hero-barat.mp4`, a régi hero-kép helyén), a **„Legközelebbi szabad Páros HeadSpa időpontok”** (Salonic `302999`, a hero alatt) és a **„Kivel jönnél?”** (4 kártya). Minden más a régi tartalom.
+A tulajdonos döntése: az éles (újrastílusú, régi tartalmú) oldal marad, az `-uj` oldalról **csak** ezek kerültek át: a **hero mozgó videója** (`paros-hero-barat.mp4`, a régi hero-kép helyén; 2026-10-09 óta a közös videós hero hátterében), a **„Legközelebbi szabad Páros HeadSpa időpontok”** (Salonic `302999`, a hero alatt) és a **„Kivel jönnél?”** (4 kártya). Minden más a régi tartalom.
 Fájlok: `foglalas/paros-headspa-budapest.html` (kézzel szerkesztett; a `tools/paros-regi/gen.mjs` kimenete ezt nem tartalmazza, ne futtasd újra felülírásra), `assets/css/paros-regi.css` (`.lv-ido`, `.lv-kivel`), `assets/js/paros-regi.js` (időpont-választó + hero-videó). Teszt: `tools/ujrastilus-teszt/paros-regi.test.mjs` (az első teszt).
 Az `-uj` oldal változatlanul megmaradt (rejtett, noindex), de nem lesz használva.
+
+### Az éles páros oldal 2026-10-09-i átalakítása (a tulajdonos kérésére)
+
+- **Hero = a közös videós hero** (`assets/css/video-hero.css` + `assets/js/video-hero.js`, `docs/VIDEOS_HERO.md`): asztalon teljes (jobbra tolt, balról sötétzöldbe olvadó) háttér-videó, telefonon felül a videó (300 px) sötétzöldbe olvadva; ikonos jelvények („50+30 perc”, „Profi hajszárítás”, „Privát páros kezelő”), a régi Google-sor (a szöveg szó szerint: „Google 4,9/5 - 971 vélemény”, a vélemény-szám központi javítása a tulajdonosé) és cím-sor; a **play gomb** a hangos páros videót (`ajandek-kezeles-paros.mp4`, 0:29, a hero-klip teljes forrása) nagy ablakban nyitja.
+- **Kikerült** (a régi Wixes tartalomból): „Az öröm megduplázódik, ha együtt élitek át.” (a tulajdonosi történet a fotóval), „A fejbőrötök azt kapja, amire szüksége van!”, „Head Spa Csomagok és Árak” (az árlista; az árak a hero-ban, a SZÉP-kártya blokkban és a foglalóban megvannak), az **alsó** „Ajándékkártya 1 perc alatt!” doboz (a hero gombja és a „Kivel jönnél?” „Ajándékba adnám” kártyája marad). A kivett szekciók horgonyaira (`#bemutatkozas`, `#fejbor`, `#csomagok`, `#ajandekkartya`) sehonnan nem mutat link.
+- **Alul a „kanalas” sablonkép** (`11062b_c676…jpg`, Unsplash-szerű spa-csendélet) helyett a szalon valódi kezelőszoba-fotója (`assets/img/fooldal/szalon-szoba-2.jpg`, Head Spa ágy, növények, meleg fények).
+- **GYIK kompakt:** 8 kérdés látszik összecsukva (mi az / mennyi ideig tart / kinek ajánlott / milyen gyakran / festett haj / ellenjavallat / rövid haj / férfiak), a másik 10 a „További kérdések (10)” lenyílóban – **mind a 18 megvan**, a szöveg változatlan; szorosabb sorok, kisebb térközök (az oldal asztalon ~13 800 → ~9 400 px, telefonon ~18 600 → ~11 300 px).
+- **Szabad időpontok:** a „Az időpontok valós időben a MOSAIC naptárából jönnek…” sor kikerült; kompakt (telefonon 3 időpont naponta + „+N”, kisebb gombok); **előre / vissza nyíl** asztalon és telefonon is (az elején a visszanyíl letiltva / halvány, a végén az előrenyíl).
 
 ## Hero-videó és képek (a szalon valódi felvételei, 2026-10-07)
 

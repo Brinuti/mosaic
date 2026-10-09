@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="/assets/css/wix-fonts.css">
 <link rel="stylesheet" href="/assets/css/headspa-oldal.css">
 <link rel="stylesheet" href="/assets/css/lezer-variansok.css">
+<link rel="stylesheet" href="/assets/css/video-hero.css">
 <link rel="stylesheet" href="/assets/css/paros-regi.css">
 <script src="/assets/js/suti.js"></script>
 </head>
@@ -29,27 +30,45 @@
   kepek, videok, linkek es a GYIK valtozatlanok; a regi oldal hibait / elavult adatait NEM javitottuk (lasd a PR "Eszrevetelek"). A tulajdonos dontese szerint ez az oldal megy az eredeti
   cimen, amig az ujratervezett (paros-headspa-budapest-uj) nincs kesz. A regi, Wixes valtozat rejtett cimen: /paros-headspa-budapest-regi (noindex). A fajl a tools/paros-regi/gen.mjs kimenete
   (forras: forras/paros.folyam.txt + klon/paros-headspa-budapest.html); kezi szerkesztes megengedett, de az ujrafuttatas felulirja. Egyetlen H1: a regi H2 hero-cim lett H1, a regi H1-ek H2-k.
+  2026-10-09 (a tulajdonos kerese): a hero a KOZOS videos hero (assets/css/video-hero.css + assets/js/video-hero.js, docs/VIDEOS_HERO.md); kikerult: az "Az orom megduplazodik" (tulajdonosi tortenet),
+  a "A fejborotok azt kapja..." (fejbor), a "Head Spa Csomagok es Arak" (arlista) es az also ajandekkartya-doboz; a helyszin fole az also "kanalas" sablonkep helyett szalon-fotó kerult;
+  a GYIK kompakt (8 kerdes latszik, a tobbi a "Tovabbi kerdesek" lenyiloban); a gen.mjs ezeket nem tudja: a fajlt kezzel szerkesszuk.
 -->
 
 <!--mh-fejlec-->
 <!--mh-menu-aktiv:/paros-headspa-budapest-->
 
 <main id="top">
-<section class="hero lv-hero">
-  <div class="tartalom hero-racs">
-    <div class="hero-szoveg">
-      <h1><b>Páros</b> Head Spa.<br> Éljétek át együtt az igazi relaxációt!</h1>
-      <p class="hero-al"><b>50 + 30 perc exkluzív spa élmény közösen, amitől a testetek és a lelketek is újjászületik.</b></p>
-      <p class="lv-sor"><i>1023 Bécsi út 2 (A Kolosy térnél)</i></p>
-      <div class="cta-sor">
-        <a class="gomb gomb-arany" href="/foglalo-motor?business=headspa">IDŐPONTFOGLALÁS <span class="nyil" aria-hidden="true">→</span></a>
-        <a class="gomb gomb-korvonal" href="/headspa-ajandekkartya">AJÁNDÉKKÁRTYA <span class="nyil" aria-hidden="true">→</span></a>
+<!-- ============ HERO (a közös videós hero: assets/css/video-hero.css + assets/js/video-hero.js, docs/VIDEOS_HERO.md) ============ -->
+<section class="vh-hero vh-eltolt" id="hero" aria-labelledby="hero-cim">
+  <img class="vh-hatter" src="/assets/img/paros/hero-barat.jpg" alt="" width="720" height="540" fetchpriority="high">
+  <video class="vh-video" data-klip="/assets/video/paros-hero-barat.mp4" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+  <div class="vh-tart">
+    <div class="vh-szoveg">
+      <h1 id="hero-cim"><b>Páros</b> Head Spa.<br> Éljétek át együtt az igazi relaxációt!</h1>
+      <p class="vh-al"><b>50 + 30 perc exkluzív spa élmény közösen, amitől a testetek és a lelketek is újjászületik.</b></p>
+      <p class="vh-ar vh-ar-kicsi">50 perces - <s>65.900 Ft</s> helyett <b>53.800 Ft</b></p>
+      <p class="vh-akcio"><b>Októberben 20% kedvezménnyel!</b></p>
+      <ul class="vh-jelvenyek" aria-label="A legfontosabbak röviden">
+        <li><span class="vh-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span>50+30 perc</span></li>
+        <li><span class="vh-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5A3.5 3.5 0 016.5 6H14l6 2.5v4L14 15H6.5A3.5 3.5 0 013 11.5v-2z"/><path d="M8.5 15l-1 5h3l1-5"/></svg></span><span>Profi hajszárítás</span></li>
+        <li><span class="vh-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/></svg></span><span>Privát páros<span class="vh-csak-nagy"> kezelő</span></span></li>
+      </ul>
+      <div class="vh-cta">
+        <a class="vh-gomb vh-gomb-arany vh-gomb-nagy" href="/foglalo-motor?business=headspa" data-cta="hero-idopontfoglalas">Időpontfoglalás <span class="vh-nyil" aria-hidden="true">→</span></a>
+        <a class="vh-gomb vh-gomb-vonal vh-gomb-nagy" href="/headspa-ajandekkartya" data-cta="hero-ajandekkartya">Ajándékkártya <span class="vh-nyil" aria-hidden="true">→</span></a>
       </div>
-      <p class="lv-sor"><i>50 perces - <b><s>65.900 Ft</s> helyett</b>  <b>53.800 Ft</b></i></p>
-      <p class="lv-sor"><i><b>Októberben 20% kedvezménnyel!</b></i></p>
-      <p class="lv-ertekeles"><a class="lv-ertekeles-link" href="#velemenyek" data-gorgetes="velemenyek" aria-label="Google 4,9 az 5-ből: ugrás a vendégek véleményeihez"><img src="/assets/img/c2eb0f_81f16bfc67fb4ad6a78e8eda371a0139.png" alt="5 csillag" width="447" height="86" loading="eager"><span>Google 4,9/5 - 971 vélemény</span></a></p>
+      <a class="vh-google" href="#velemenyek" data-gorgetes="velemenyek" data-cta="hero-google" aria-label="Google 4,9 az 5-ből: ugrás a vendégek véleményeihez">
+        <svg viewBox="0 0 48 48" class="vh-g-ikon" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg>
+        <img class="vh-csillag-kep" src="/assets/img/c2eb0f_81f16bfc67fb4ad6a78e8eda371a0139.png" alt="5 csillag" width="447" height="86" loading="eager">
+        <span class="vh-g-pont">Google 4,9/5 - 971 vélemény</span>
+      </a>
+      <p class="vh-hely"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 00-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>1023 Bécsi út 2 (A Kolosy térnél)</p>
     </div>
-    <figure class="hero-kep lv-hero-kep lv-hero-video"><video id="hero-video" src="/assets/video/paros-hero-barat.mp4" poster="/assets/img/paros/hero-barat.jpg" width="720" height="540" autoplay muted loop playsinline preload="auto" aria-label="Két vendég egymás mellett a páros Head Spa kezelésen"></video></figure>
+    <button type="button" class="vh-lejatszas" data-nagyvideo="/assets/video/ajandek-kezeles-paros.mp4" data-cim="Páros Head Spa a MOSAIC-ban" data-cta="hero-video" aria-label="Nézd meg a páros kezelést (0:29): videó lejátszása">
+      <span class="vh-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+      <span class="vh-lejatszas-szoveg"><b>Nézd meg a páros kezelést</b><small>(0:29)</small></span>
+    </button>
   </div>
 </section>
 
@@ -63,11 +82,11 @@
     <div class="ido-kartya">
       <div class="ido-bal">
         <div class="napok-keret">
+          <button type="button" class="napok-nyil elozo" id="napok-elozo" aria-label="Előző napok" hidden disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
           <div class="napok" id="napok" aria-live="polite"><div class="napok-csontvaz csontvaz"></div></div>
           <button type="button" class="napok-nyil" id="napok-kov" aria-label="Következő napok" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
         </div>
         <p class="slot-uzenet halk" id="slot-uzenet" hidden></p>
-        <p class="ido-lab halk kicsi">Az időpontok valós időben a MOSAIC naptárából jönnek. Egy időpontra kattintva a foglalás helyben nyílik meg.</p>
       </div>
       <aside class="ido-oldal">
         <img src="/assets/img/paros/ido-kep.jpg" alt="A páros kezelő két vendéggel és két gyógymasszőrrel" width="900" height="458" loading="lazy">
@@ -110,24 +129,6 @@
   </div>
 </section>
 
-<section class="szekcio feher" id="bemutatkozas" aria-labelledby="bemutatkozas-cim">
-  <div class="tartalom">
-    <div class="fel-racs felul">
-      <figure class="kep-fig lv-kicsi"><img src="/assets/img/c2eb0f_68d6961f322c43ae9894aba0c01380a0.jpg" alt="Deák Ferenc István, a MOSAIC Head Spa alapítója" width="667" height="1000" loading="lazy"></figure>
-      <div class="cikk">
-        <h2 id="bemutatkozas-cim">Az öröm megduplázódik, ha együtt élitek át.</h2>
-        <p class="lv-alcim"><b>A tökéletes közös élmény pároknak, barátoknak vagy családtagoknak! Fejbőr- és hajápolás, relaxáló masszázs és teljes testi-lelki feltöltődés vár rátok.</b></p>
-        <p>A Head Spa a legújabb trend, <b>hajápolás és relaxáció</b> ötvözete, ami Japánból jött be hozzánk. Több hazai és külföldi szalont végigjártam mielőtt megnyitottam a MOSAIC-ot, ahol mindenből a legjobbat kapjátok.</p>
-        <p>A legtöbb Head Spa szalonnal ellentétben nálunk <b>gyógymasszőrök kényeztetnek majd titeket</b>, akiknek az érintése <b>minden stresszt </b>kiűz majd a testetekből.</p>
-        <p>Az 270 m2-es szalont úgy terveztük meg, hogy <b>már a belépés is egy élmény legyen</b>. A <b>halk zene, a privát és csendes páros kezelő, a fényjáték, az illatok</b>, minden az ellazulást szolgálja.</p>
-        <p>A Páros Head Spa ellazulás <b>csendben egymás mellett történik</b>, amit támogatunk szabadkézzel és eszközökkel történő <b>arc-, nyak-,fej-, és dekoltázsmasszázzsal, így egy egész testet átölelő kényeztetés kaptok.</b></p>
-        <p>Személyesen szeretnélek meghívni titeket a 1023 Bécsi út 2-be, a MOSAIC Head Spa-ba egy igazán pihentető és egyedi páros spa élményre!</p>
-        <p class="lv-alairas"><i><b>Deák Ferenc István</b> - A MOSAIC Head Spa alapítója</i></p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="szekcio lv-sotet" id="folyamat" aria-labelledby="folyamat-cim">
   <div class="tartalom">
     <div class="szekcio-fej">
@@ -159,105 +160,6 @@
         <p><b>Gyógymasszőreink </b>a bőrtípusotoknak megfelelő 100%-ban naturál és <b>kemikália mentes haj- és arcpakolást </b>visznek fel, gyengéd és gyógyító mozdulatokkal a bőrötökre, amitől egyre nagyobb béke száll majd meg benneteket.</p>
         <p>Következnek a további masszázsok<b> kézzel és eszközökkel, a gőzölés, a hidratálás, azaz 60 percen át tartó teljes kényeztetés a fejbőrnek és a testnek, ami újra segít visszatalálni önmagatokhoz</b>. És mindezt együtt élitek át, az összetartozás csendes és nyugodt légkörében a világ zaját teljesen kizárva.</p>
       </div>
-    </div>
-  </div>
-</section>
-
-<section class="szekcio zsalya" id="fejbor" aria-labelledby="fejbor-cim">
-  <div class="tartalom">
-    <div class="fel-racs fordit felul">
-      <div class="cikk">
-        <h2 id="fejbor-cim">A fejbőrötök azt kapja, amire szüksége van! 🔎</h2>
-        <p>A fejbőrrel kapcsolatos leggyakoribb problémák a következők:</p>
-        <ul class="lv-lista">
-          <li><b>Zsírosodás,</b></li>
-          <li><b>Szárazság / Korpásodás,</b></li>
-          <li><b>Hajhullás,</b></li>
-          <li><b>Gyulladásos állapotok </b>(például seborrhea, pikkelysömör, ekcéma).</li>
-        </ul>
-        <p>Egy Head Spa kezelés az első három esetben <b>már 1 alkalom után javulást hozhat</b>, míg erősebben gyulladt fejbőr esetén érdemes először hajgyógyász szakorvos véleményét kikérni.</p>
-        <p>A MOSAIC Head Spa élmény mikrokamerás fejbőrvizsgálattal kezdődik, amely során meghatározzuk <b>fejbőrötök állapotát.</b></p>
-        <p>Ez alapján állítjuk össze az egyéni igényeitekre szabott <b>haj- és arcpakolást, a legmegfelelőbb 100%-ban természetes hatóanyagokkal.</b></p>
-      </div>
-      <figure class="kep-fig lv-valt-kep"><img src="/assets/img/c2eb0f_aab3792d7e0247748ef77f3b0fea566a.jpg" alt="Mikrokamerás fejbőrvizsgálat a MOSAIC-ban" width="1000" height="1000" loading="lazy"></figure>
-    </div>
-  </div>
-</section>
-
-<section class="szekcio feher" id="csomagok" aria-labelledby="csomagok-cim">
-  <div class="tartalom">
-    <div class="szekcio-fej">
-      <h2 id="csomagok-cim">Head Spa Csomagok és Árak</h2>
-      <span class="rombusz" aria-hidden="true"></span>
-      <p class="lead lv-dolt"><b>Októberi  <i>20% kedvezménnyel!</i></b></p>
-    </div>
-    <div class="lv-csomagok lv-harom">
-      <article class="lv-csomag lv-paros-csomag">
-        <figure class="lv-kartya-kep"><img src="/assets/img/c2eb0f_b4524614b4544288b9d988712e1699ba.jpg" alt="50 perces MOSAIC &quot;4 Kezes&quot; Head Spa kezelés – csomag" width="572" height="572" loading="lazy"></figure>
-        <h3>50 perces MOSAIC<br>"4 Kezes" Head Spa kezelés</h3>
-
-        <ul class="pipak lv-csomag-felsorolas">
-          <li>Exkluzív, új szolgáltatás 2026 januártól.</li>
-          <li>A Headspa Kezelések csúcsa</li>
-          <li><b>2 gyógymasszőr kényeztet</b></li>
-          <li><b>8 féle masszázs</b></li>
-          <li>Profi, szalonszintű beszárítás</li>
-          <li>Csak ajándékkártya készült</li>
-        </ul>
-        <p class="lv-csomag-plusz">+ 30 perc kímélő hajszárítás</p>
-        <p class="lv-csomag-ar"><span><b>Ár: <s>49.900 Ft</s></b></span> <b><b>helyett 39.900 Ft</b></b></p>
-        <p class="lv-csomag-ido">Időtartam: 50+30 perc</p>
-        <a class="gomb gomb-arany" href="/idpontfoglalas">FOGLALOK! <span class="nyil" aria-hidden="true">→</span></a>
-        <p class="lv-promo"><b><i>20% </i></b><b>októberi </b><b><i>kedvezménnyel!</i></b></p>
-      </article>
-      <article class="lv-csomag lv-paros-csomag">
-        <figure class="lv-kartya-kep"><img src="/assets/img/c2eb0f_457a5f5c69ce4c3984f5d0010fbc44b2.jpg" alt="50 perces MOSAIC Head Spa kezelés – csomag" width="1080" height="1080" loading="lazy"></figure>
-        <h3>50 perces MOSAIC Head Spa kezelés</h3>
-        <p class="lv-csomag-leiras"><b>Masszázs és hajápolás egy kezelésben.</b></p>
-        <ul class="pipak lv-csomag-felsorolas">
-          <li>Mélytisztító hajmosás</li>
-          <li>Körvízsugaras terápia</li>
-          <li>OXYGENI hajpakolás</li>
-          <li>Fejmasszázs kézzel és eszközökkel</li>
-          <li>Arctisztítás</li>
-          <li>Arc tonizálás</li>
-          <li>Arcmasszázs kézzel és választott eszközzel</li>
-          <li>Nyak-, és vállöv masszázs</li>
-          <li>Dekoltázs masszázs</li>
-          <li>Gőz terápia</li>
-          <li>Fény terápia</li>
-          <li><b>Hajkamerás diagnosztika és konzultáció</b> – igény szerint</li>
-        </ul>
-        <p class="lv-csomag-plusz">+  30 perc kímélő hajszárítás</p>
-        <p class="lv-csomag-ar"><span><b>Ár:  <s>32.900 Ft</s></b></span> <b><b>helyett </b><b>26.900 Ft</b></b></p>
-        <p class="lv-csomag-ido">Időtartam: 50+30 perc</p>
-        <a class="gomb gomb-arany" href="/idpontfoglalas">FOGLALOK! <span class="nyil" aria-hidden="true">→</span></a>
-        <p class="lv-promo"><b><i>20% </i></b><b>októberi </b><b><i>kedvezménnyel!</i></b></p>
-      </article>
-      <article class="lv-csomag lv-paros-csomag">
-        <figure class="lv-kartya-kep"><img src="/assets/img/c2eb0f_9ea9d95c658e41189247d8a0d76cfafa.jpg" alt="50 perces MOSAIC Páros Head Spa kezelés – csomag" width="1080" height="1080" loading="lazy"></figure>
-        <h3>50 perces MOSAIC Páros Head Spa kezelés</h3>
-
-        <ul class="pipak lv-csomag-felsorolas">
-          <li>Mélytisztító hajmosás</li>
-          <li>Körvízsugaras terápia</li>
-          <li>OXYGENI hajpakolás fejmasszázzsal</li>
-          <li>Arctisztítás</li>
-          <li><b>Arc radírozás</b></li>
-          <li>Arc tonizálás</li>
-          <li>Arcmasszázs kézzel és választott eszközzel</li>
-          <li><b>Méregtelenítő arcpakolás</b></li>
-          <li>Nyak-, és vállöv masszázs</li>
-          <li>Dekoltázs masszázs</li>
-          <li>Gőz terápia</li>
-          <li><b>Pezsgő alkoholos/alkohol mentes</b></li>
-        </ul>
-        <p class="lv-csomag-plusz">+ 30 perc kímélő hajszárítás</p>
-        <p class="lv-csomag-ar"><span><b>Ár:  <s>65.900 Ft</s></b></span> <b><b>helyett 53.800 Ft</b></b></p>
-        <p class="lv-csomag-ido">Időtartam: 50+30 perc</p>
-        <a class="gomb gomb-arany" href="/idpontfoglalas">FOGLALOK! <span class="nyil" aria-hidden="true">→</span></a>
-        <p class="lv-promo"><b><i>20% </i></b><b>októberi </b><b><i>kedvezménnyel!</i></b></p>
-      </article>
     </div>
   </div>
 </section>
@@ -490,24 +392,6 @@
   </div>
 </section>
 
-<section class="szekcio zsalya" id="ajandekkartya" aria-labelledby="ajandek-cim">
-  <div class="tartalom">
-    <div class="fel-racs fordit">
-      <div class="cikk">
-        <h2 id="ajandek-cim">Ajándékkártya 1 perc alatt!</h2>
-        <p>Ajándékozd <b>Neki</b> a szebb haj örömét, a gondoskodásodat, és az érintés csodáját egy felejthetetlen Head Spa élmény formájában!</p>
-        <p>Ajándékkártyánkat a vásárlás után digitális (pdf) formátumban e-mailben is elküldjük, illetve lehetőséged van azt ízléses borítékban, papír alapon is átvenni szalonunkban.</p>
-        <p><br> A vásárláshoz először válaszd ki, a fizetés módját:</p>
-        <div class="cta-sor">
-          <a class="gomb gomb-arany" href="/headspa-ajandekkartya">ELŐRE UTALÁSSAL <span class="nyil" aria-hidden="true">→</span></a>
-          <a class="gomb gomb-arany" href="/headspa-ajandekkartya">BANKKÁRTYÁVAL <span class="nyil" aria-hidden="true">→</span></a>
-        </div>
-      </div>
-      <figure class="kep-fig lv-kicsi"><img src="/assets/img/c2eb0f_5fad37708d0d465aa83ff2fcfe0628cf.webp" alt="MOSAIC Head Spa ajándékkártya" width="2000" height="2000" loading="lazy"></figure>
-    </div>
-  </div>
-</section>
-
 <section class="szekcio lv-hatterkepes" id="gyik" aria-labelledby="gyik-cim">
   <img src="/assets/img/nsplsh_38734f5a4a384a46305338-1280.jpg" alt="" width="1280" height="853" class="lv-hatterkep" loading="lazy" decoding="async">
   <div class="tartalom lv-szuk">
@@ -515,31 +399,35 @@
       <h2 id="gyik-cim">Gyakori Head Spa Kérdések</h2>
       <span class="rombusz" aria-hidden="true"></span>
     </div>
-    <div class="gyik">
+    <div class="gyik gyik-kompakt">
       <details><summary>Mi az a head spa kezelés és miben különbözik a hagyományos hajmosástól?</summary><div class="gy-valasz"><p>A head spa egy luxus fejbőr- és hajkezelés, amely mélytisztítást, hidratálást és masszázst ötvöz. Nemcsak a hajad lesz tiszta, hanem a fejbőr egészségére is fókuszálunk, elősegítve a hajnövekedést és csökkentve a stresszt.</p></div></details>
-      <details><summary>Milyen előnyei vannak a head spa kezelésnek a fejbőrre és a hajra nézve?</summary><div class="gy-valasz"><p>A headspa javítja a fejbőr vérkeringését, méregteleníti és oxigénnel látja el, ami elősegíti az egészségesebb hajnövekedést. A haj fényesebb, puhább és dúsabb lesz, miközben a fejbőr problémái (például szárazság vagy zsírosodás) is javulhatnak.</p></div></details>
       <details><summary>Mennyi ideig tart egy head spa kezelés?</summary><div class="gy-valasz"><p>A head spa kezelés hossza 50 perc, 10 perc az átöltözés / visszaöltözés és 30 perc a beszárítás profi fodrász által, így összesen kb 90 perc a teljes kezelés.</p></div></details>
       <details><summary>Kinek ajánlott a head spa kezelés?</summary><div class="gy-valasz"><p>Bárkinek, aki szeretné javítani a fejbőre és haja állapotát. Különösen ajánlott azoknak, akik stresszesek, hajhullással küzdenek, vagy problémás a fejbőrük (pl. száraz, zsíros vagy korpás). Az Oxigeni márkának, amelyet a kezeléshez használunk kifejezetten problémás hajra kifejlesztett terméke is van.</p></div></details>
-      <details><summary>Segít a head spa a hajhullás csökkentésében?</summary><div class="gy-valasz"><p>A kezelés serkenti a fejbőr vérkeringését, erősíti a hajhagymákat, ami hozzájárulhat a hajhullás csökkentéséhez és az új hajszálak növekedéséhez. </p></div></details>
-      <details><summary>Fejbőrproblémák (pl. korpásodás, zsírosodás) esetén is igénybe vehető a kezelés?</summary><div class="gy-valasz"><p>A headspa kifejezetten segíthet az ilyen problémák enyhítésében. A kezelés során alkalmazott természetes Oxygeni termékek és masszázstechnika egyensúlyba hozzák a fejbőr állapotát.</p></div></details>
-      <details><summary>Milyen termékeket használtok a head spa kezelés során?</summary><div class="gy-valasz"><p>Az Oxygeni Hair természetes, vegyszermentes termékeit alkalmazunk, amelyek kíméletesek a fejbőrhöz, de hatékonyan tisztítanak és táplálnak.</p></div></details>
       <details><summary>Milyen gyakran érdemes head spa kezelésre járni?</summary><div class="gy-valasz"><p>Amaximális hajápoló és stresszoldó hatás fenntartása érdekében havonta egyszer ajánlott, de ha komolyabb fejbőrproblémád van, akkor akár 2 hetente is érdemes lehet megismételni a kezelést.</p></div></details>
       <details><summary>Lehet festett vagy kezelt hajjal is head spa kezelésre jönni?</summary><div class="gy-valasz"><p>Igen, a head spa biztonságos festett vagy kezelt haj esetén is, sőt, segíthet a haj egészségének megőrzésében és a festett haj fényének megtartásában.</p></div></details>
-      <details><summary>Mennyi idő után láthatóak az eredmények?</summary><div class="gy-valasz"><p>Már egy head spa kezelés után is érezhető a változás – a haj puhább, fényesebb lesz, a fejbőr pedig frissebb. A tartós eredményekhez rendszeres kezelés ajánlott.</p></div></details>
       <details><summary>Van-e bármilyen ellenjavallat, ami miatt nem ajánlott a kezelés?</summary><div class="gy-valasz"><p>Head Spa kezelésen akkor vehetsz részt, ha az alábbiakat elfogadod:</p><p><br /></p><p>- A kezelést megelőző 4 héten belül fejsérülésed, vagy súlyosabb (hányással és lázzal járó) agyrázkódásod nem volt.</p><p>- Nincsen akut arcüleggyuladásod, nyirokcsomó-vagy mandulagyulladásod, illetve foggyulladásod.</p><p>- Nem vagy lázas beteg.</p><p>- Az elmúlt 4 hétben nem estél át nagyobb műtéti beavatkozáson.</p><p>- Nem vagy vérzékeny.</p><p>- Nem vagy fertőző beteg (Hepatitis A,B,C, Aids, tuberkulózis, vagy egyéb fertőző betegség)</p><p>- A felsőtested bőrfelületén nincsen nyílt seb, friss taruma, intenzív hámhiány, fekély, vagy mély gombásodás.</p><p>- Nem vagy epilepsziás.</p><p>- Nincs kezeletlen szív- és érrendszeri betegséged.</p><p>- Nincsen kiugróan magas vérnyomásod.</p><p>- És nem vagy veszélyeztetett terhes.</p></div></details>
       <details><summary>Csak hosszú hajra ajánlott, vagy rövidebb haj esetén is hatékony?</summary><div class="gy-valasz"><p>A Head Spa bármilyen hajhossznál hatékony, rövid és hosszú haj esetén egyaránt. A kezelés a fejbőrre fókuszál, így a haj hossza nem befolyásolja az eredményt.</p></div></details>
-      <details><summary>Fejfájás vagy migrén esetén segíthet a Head Spa kezelés?</summary><div class="gy-valasz"><p>A fejbőr masszírozása javítja a vérkeringést és oldja a feszültséget, ami sok esetben segíthet enyhíteni a fejfájást vagy migrént.</p></div></details>
       <details><summary>Férfiak is jöhetnek?</summary><div class="gy-valasz"><p>A Head Spa nemtől függetlenül bárkinek ajánlott, férfiak és nők egyaránt élvezhetik a kezelést és annak előnyeit.</p></div></details>
-      <details><summary>Kopasz férfiak is jöhetnek? :)</summary><div class="gy-valasz"><p>Természetesen, a nem hajas fejbőr talán ugyanúgy érzékeny és jól reagál a masszázsra és a fejbőr kezelésre.</p></div></details>
-      <details><summary>Milyen hatással van a Head Spa a stressz csökkentésére?</summary><div class="gy-valasz"><p>A Head Spa relaxáló masszázsa és nyugtató környezete segít csökkenteni a stresszt és feltölt mentálisan is, így a rendszeres headspa nyugtató hatású, jobb közérzetet biztosít és segíti az alvást.</p></div></details>
-      <details><summary>Lehet-e kombinálni a Head Spa kezelést más hajkezelésekkel, például hajfestéssel vagy hajvágással?</summary><div class="gy-valasz"><p>Igen, a Head Spa remekül kiegészíti a hajfestést és hajvágást, sőt előkészíti a fejbőrt és a hajat, hogy még szebb legyen a végeredmény. A MOSAIC szalonban 18 év tapasztalatú fodrásszal is várunk.</p></div></details>
-      <details><summary>Lehet Head Spa-ra jönni póthajjal?</summary><div class="gy-valasz"><p>Igen, lehet headspa kezelésre jönni póthajjal is, de fontos figyelembe venni néhány dolgot. A kezelés elsősorban a fejbőrre fókuszál, így a póthaj nem akadály, de előzetesen érdemes jelezni, hogy póthajad van. Így személyre szabottan, kíméletes technikával végezzük a kezelést, hogy elkerüljük a póthaj károsodását vagy kilazulását. A headspa segíthet a saját hajad és a fejbőröd egészségének megőrzésében, ami a póthaj tartósságára is pozitív hatással lehet.</p></div></details>
+      <details class="gy-tobb"><summary>További kérdések (10)</summary>
+        <div class="gy-tobb-lista">
+        <details><summary>Milyen előnyei vannak a head spa kezelésnek a fejbőrre és a hajra nézve?</summary><div class="gy-valasz"><p>A headspa javítja a fejbőr vérkeringését, méregteleníti és oxigénnel látja el, ami elősegíti az egészségesebb hajnövekedést. A haj fényesebb, puhább és dúsabb lesz, miközben a fejbőr problémái (például szárazság vagy zsírosodás) is javulhatnak.</p></div></details>
+        <details><summary>Segít a head spa a hajhullás csökkentésében?</summary><div class="gy-valasz"><p>A kezelés serkenti a fejbőr vérkeringését, erősíti a hajhagymákat, ami hozzájárulhat a hajhullás csökkentéséhez és az új hajszálak növekedéséhez. </p></div></details>
+        <details><summary>Fejbőrproblémák (pl. korpásodás, zsírosodás) esetén is igénybe vehető a kezelés?</summary><div class="gy-valasz"><p>A headspa kifejezetten segíthet az ilyen problémák enyhítésében. A kezelés során alkalmazott természetes Oxygeni termékek és masszázstechnika egyensúlyba hozzák a fejbőr állapotát.</p></div></details>
+        <details><summary>Milyen termékeket használtok a head spa kezelés során?</summary><div class="gy-valasz"><p>Az Oxygeni Hair természetes, vegyszermentes termékeit alkalmazunk, amelyek kíméletesek a fejbőrhöz, de hatékonyan tisztítanak és táplálnak.</p></div></details>
+        <details><summary>Mennyi idő után láthatóak az eredmények?</summary><div class="gy-valasz"><p>Már egy head spa kezelés után is érezhető a változás – a haj puhább, fényesebb lesz, a fejbőr pedig frissebb. A tartós eredményekhez rendszeres kezelés ajánlott.</p></div></details>
+        <details><summary>Fejfájás vagy migrén esetén segíthet a Head Spa kezelés?</summary><div class="gy-valasz"><p>A fejbőr masszírozása javítja a vérkeringést és oldja a feszültséget, ami sok esetben segíthet enyhíteni a fejfájást vagy migrént.</p></div></details>
+        <details><summary>Kopasz férfiak is jöhetnek? :)</summary><div class="gy-valasz"><p>Természetesen, a nem hajas fejbőr talán ugyanúgy érzékeny és jól reagál a masszázsra és a fejbőr kezelésre.</p></div></details>
+        <details><summary>Milyen hatással van a Head Spa a stressz csökkentésére?</summary><div class="gy-valasz"><p>A Head Spa relaxáló masszázsa és nyugtató környezete segít csökkenteni a stresszt és feltölt mentálisan is, így a rendszeres headspa nyugtató hatású, jobb közérzetet biztosít és segíti az alvást.</p></div></details>
+        <details><summary>Lehet-e kombinálni a Head Spa kezelést más hajkezelésekkel, például hajfestéssel vagy hajvágással?</summary><div class="gy-valasz"><p>Igen, a Head Spa remekül kiegészíti a hajfestést és hajvágást, sőt előkészíti a fejbőrt és a hajat, hogy még szebb legyen a végeredmény. A MOSAIC szalonban 18 év tapasztalatú fodrásszal is várunk.</p></div></details>
+        <details><summary>Lehet Head Spa-ra jönni póthajjal?</summary><div class="gy-valasz"><p>Igen, lehet headspa kezelésre jönni póthajjal is, de fontos figyelembe venni néhány dolgot. A kezelés elsősorban a fejbőrre fókuszál, így a póthaj nem akadály, de előzetesen érdemes jelezni, hogy póthajad van. Így személyre szabottan, kíméletes technikával végezzük a kezelést, hogy elkerüljük a póthaj károsodását vagy kilazulását. A headspa segíthet a saját hajad és a fejbőröd egészségének megőrzésében, ami a póthaj tartósságára is pozitív hatással lehet.</p></div></details>
+        </div>
+      </details>
     </div>
   </div>
 </section>
 
 <section class="helyszin" id="helyszin" aria-labelledby="hely-cim">
-  <div class="lv-hely-kep"><img src="/assets/img/11062b_c676302884b34e2eacc489eede7cbc47.jpg" alt="MOSAIC Head Spa – a szalon" width="2000" height="1427" loading="lazy"></div>
+  <div class="lv-hely-kep lv-hely-szalon"><img src="/assets/img/fooldal/szalon-szoba-2.jpg" alt="MOSAIC Head Spa – kezelőszoba Head Spa ággyal, növényekkel és meleg fényekkel" width="1300" height="867" loading="lazy"></div>
   <div class="tartalom helyszin-racs">
     <div class="hely-szoveg">
       <h2 id="hely-cim">Itt találtok meg minket</h2>
@@ -569,6 +457,7 @@
 
 <script src="/assets/js/klon.js" defer></script>
 <script src="/assets/js/headspa-oldal.js" defer></script>
+<script src="/assets/js/video-hero.js" defer></script>
 <script src="/assets/js/paros-regi.js" defer></script>
 </body>
 </html>

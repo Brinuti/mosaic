@@ -4,6 +4,9 @@
 a tulajdonos képterve alapján, a páros / lézeres / oxigén landingek szerkezetében, betűivel és színeivel (Playfair Display + Jost, arany gombok, sötétzöld hangsúly),
 **minden képhelyen mozgóképpel** a szalon valódi felvételeiből. A régi (Wixes) akció oldal rejtett címen: `/head-spa-kedvezmeny-regi` (noindex); az előző, újrastílusú akció oldal a git előzményeiben van.
 
+**Közös videós hero (2026-10-09):** a hero szabályai és a hero-JS (háttér-klip lusta indulása, play gomb + nagy lejátszó-ablak, csökkentett mozgás / lassú kapcsolat) a **közös** `assets/css/video-hero.css` / `assets/js/video-hero.js` fájlokba költöztek (a főoldal és a páros oldal is ezt használja): `docs/VIDEOS_HERO.md`. Az oldal saját CSS-ében / JS-ében hero-szabály már nincs; a hangos videók gombjai `data-nagyvideo` attribútumot kapnak (a felugró ablakot a közös JS hozza létre, a HTML-ben nincs `<dialog>`).
+Finomítások: a hero ára kisebb (48 → 42 px asztalon, 36 → 32 px telefonon); telefonon a három jelvény egy sorban („50+30 perc”, „Profi hajszárítás”, „Személyre szabott”; ikon felül); a play gomb kisebb (78 → 62 px asztalon, 54 → 52 px telefonon); az időpont-szekcióból a „valós időben a MOSAIC naptárából jönnek…” sor kikerült, telefonon kompaktabb (3 időpont naponta + „+N”, kisebb választó-kártyák); **előre / vissza nyíl** (`#napok-elozo` / `#napok-kov`) asztalon és telefonon is: az elején a visszanyíl letiltva (halvány), a végén az előrenyíl.
+
 **Az akcióhoz tett változtatások (2026-10-09):**
 - **Akciós blokk** (`#akcio`, a hero alatt; telefonon az időpont-szekció után): „Októberi akció – 20% kedvezmény minden Head Spa szeánszra!”, a régi akció oldal szövege („Az akció részletei”, „visszavonásig tart”), áthúzott listaárak (egyéni 32 900 → 26 900 Ft, páros 65 900 → 53 800 Ft). A hero is mutatja az áthúzott árat és „Októberben 20% kedvezménnyel”.
 - **Egyéni / Páros választó** (`#valtozat`, a „Mire helyezzük inkább a hangsúlyt?” csempék helyén; a Relax / Hair csomag megszűnt): két kártya mozgó videóval (`ajandek-kezeles-egyeni.mp4`, `paros-hero-barat.mp4`), alatta rádiógomb. A választás átváltja az ajánlat-panelt (egyéni / páros ár és „Mit tartalmaz”), a szabad időpontokat (**páros: Salonic `302999`**, egyéni: `302342` + `302499` uniója) és a foglaló-linkeket (`service=egyeni` / `service=paros`). A lekért időpontok változatonként gyorsítótárban vannak. `?tipus=paros` a páros változatot választja alapból (hirdetéshez). Mérés: `egyeni_landing_cta` esemény `cta: valtozat-egyeni|paros`.
@@ -14,8 +17,9 @@ a tulajdonos képterve alapján, a páros / lézeres / oxigén landingek szerkez
 | Fájl | Szerepe |
 |---|---|
 | `foglalas/head-spa-kedvezmeny.html` | az oldal (fejléc / lábléc a build-ből: `<!--mh-fejlec-->`, `<!--mh-lablec-->`, `<!--mh-menu-aktiv:/head-spa-kedvezmeny-->`) |
-| `assets/css/egyeni-landing.css` | önálló stíluslap (a többi landing stílusát nem érinti) |
-| `assets/js/egyeni-landing.js` | szabad időpontok (Salonic-API), mozgóképek (lusta betöltés), hangos videók felugró ablaka, Trustindex, mobil sticky CTA, pontok |
+| `assets/css/egyeni-landing.css` | önálló stíluslap (a többi landing stílusát nem érinti); a hero szabályai a közös `video-hero.css`-ben |
+| `assets/css/video-hero.css`, `assets/js/video-hero.js` | a KÖZÖS videós hero (a főoldallal és a páros oldallal közös): `docs/VIDEOS_HERO.md` |
+| `assets/js/egyeni-landing.js` | szabad időpontok (Salonic-API, előre / vissza nyíl), Trustindex, mobil sticky CTA, pontok, mérés (a mozgóképek és a hangos videók ablaka a közös `video-hero.js`-ben) |
 | `assets/video/egyeni-*.mp4`, `assets/img/egyeni/*.jpg` | a kivágott, hang nélküli ismétlő-klipek (7 db, ~1 MB) és a klipek nyitóképei |
 | `tools/egyeni-videok.mjs` | a klipek / nyitóképek újragyártása a meglévő felvételekből (`FFMPEG=<ffmpeg> node tools/egyeni-videok.mjs`; a build nem használja) |
 | `tools/egyeni-teszt/egyeni.test.mjs` | böngészős tesztek (22 db, nincs `dist/`, nincs külső hálózat): `node --test tools/egyeni-teszt/egyeni.test.mjs` |
