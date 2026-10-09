@@ -211,6 +211,8 @@ export async function api(request, env = {}, ctx = {}) {
     return valasz;
   } catch (e) {
     if (!(e instanceof CrmHiba)) console.error('crm api hiba:', e?.name, String(e?.message || '').slice(0, 300));
+    // csak az elonezeten (CRM_DEMO=1) adunk reszletet a belso hibarol, eleshez soha
+    if (!(e instanceof CrmHiba) && env && env.CRM_DEMO === '1') return fejlecRa(json({ hiba: { kod: 'BELSO_HIBA', uzenet: 'Belső hiba történt.', reszlet: String(e?.stack || e?.message || e).slice(0, 800) } }, 500));
     return hibaValasz(e);
   }
 }
