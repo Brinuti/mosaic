@@ -22,10 +22,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { pathToFileURL } from 'node:url';
 import { ritkit } from './css-ritkitas.mjs';
 import { atkot, atkotBelso, atkotSzoveg, kapcsolokBuildhez, kihagyottOldal, osszead, uresOldal, KAPCSOLOK } from './foglalo-atkotes.mjs';
 import { popupAtkot } from './halott-popup.mjs';
 import { fejlecAtalakit, ANGOL_JELOLO } from './fejlec-menu.mjs';
+import { personaOldal } from './ajandek-variansok/elore-render.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -87,22 +89,30 @@ for (const f of fs.readdirSync(path.join(ROOT, 'foglalas')).filter((x) => x.ends
 // A regi (Wixes) oldal valtozatlanul megvan a klon/ mappaban; itt kulon, REJTETT cimen is elerheto (-regi: noindex, nincs link ra, nincs a
 // sitemapben) - visszaallashoz es osszehasonlitashoz. Az /ajandek cim marad (noindex): a levelekben / kampanyokban levo linkek tovabb mukodnek.
 const REGI_AJANDEK_CIMEK = ['headspa-ajandekkartya', '4-kezes-headspa-ajandekkartya', 'ajandekkartya-szulinapra', 'ajandekkartya-ugc',
-  'headspa-ajandekkartya-anyukaknak', 'headspa-ajandekkartya-noknek', 'headspa-paros-csajos-ajandekkartya', 'japan-headspa-ajandekkartya'];
+  'headspa-ajandekkartya-anyukaknak', 'headspa-ajandekkartya-noknek', 'headspa-paros-csajos-ajandekkartya', 'japan-headspa-ajandekkartya',
+  // 2026-10-09 (a tulajdonos kerese): a harom korabbi hirdetesi oldal (ezo, self-care, fiataloknak) is az uj formatumot kapja; a regi peldany a "-regi" cimen megmarad
+  'headspa-ajándékkártya-ezo', 'headspa-self-care', 'headspa-ajandakkartya-fiataloknak'].map((n) => n.normalize('NFC'));
+// Ezek a hirdetesi oldalak a regi (Wixes) alakjukban is noindex-ek voltak (es nincsenek a sitemapben): az uj formatumban is azok maradnak
+// (a tobbi cim a korabbi dontes szerint indexelheto). A canonical mindegyiknek onmaga.
+const NOINDEX_AJANDEK_CIMEK = new Set(['headspa-ajándékkártya-ezo', 'headspa-self-care', 'headspa-ajandakkartya-fiataloknak'].map((n) => n.normalize('NFC')));
+// A persona-oldalak hero-szoveget / -kepet / magyarazo-szekciojat a build elore beirja a HTML-be (nem az altalanos oldal villan fel a JS lefutasaig)
+await import(pathToFileURL(path.join(ROOT, 'assets/js/ajandek-adat.js')).href);
+const AJANDEK_ADAT = globalThis.AJANDEK_ADAT;
 for (const m of [LAP_A, LAP_M]) {
   const uj = fs.readFileSync(path.join(m, 'ajandek.html'), 'utf8');
   for (const nev of REGI_AJANDEK_CIMEK) {
     const regiFajl = path.join(m, nev + '.html');
     if (fs.existsSync(regiFajl)) {
-      const regiCim = 'https://www.mosaicheadspa.hu/' + nev + '-regi';
+      const regiCim = 'https://www.mosaicheadspa.hu/' + encodeURI(nev) + '-regi';
       let r = fs.readFileSync(regiFajl, 'utf8');
       r = r.replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, '<link rel="canonical" href="' + regiCim + '">')
         .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, '<meta property="og:url" content="' + regiCim + '">')
         .replace(/<head>/i, '<head><meta name="robots" content="noindex, nofollow">');
       fs.writeFileSync(path.join(m, nev + '-regi.html'), r);
     }
-    const cim = 'https://www.mosaicheadspa.hu/' + nev;
-    fs.writeFileSync(regiFajl, uj
-      .replace(/<meta name="robots" content="[^"]*">\s*/i, '')
+    const cim = 'https://www.mosaicheadspa.hu/' + encodeURI(nev);
+    fs.writeFileSync(regiFajl, personaOldal(uj, nev, AJANDEK_ADAT)
+      .replace(/<meta name="robots" content="[^"]*">\s*/i, NOINDEX_AJANDEK_CIMEK.has(nev) ? '<meta name="robots" content="noindex, nofollow">\n' : '')
       .replace('<link rel="canonical" href="https://www.mosaicheadspa.hu/ajandek">', '<link rel="canonical" href="' + cim + '">')
       .replace('<meta property="og:url" content="https://www.mosaicheadspa.hu/ajandek">', '<meta property="og:url" content="' + cim + '">'));
   }
