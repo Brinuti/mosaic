@@ -101,7 +101,7 @@ A **munkatársi** törlések és módosítások (a szalon a Salonic naptárában
 ## Konfiguráció
 
 `wrangler.toml` (nem titkos): `LIFECYCLE_MOD`, `LIFECYCLE_UZLETAGOK`, `LIFECYCLE_KULCS_HASH` (a belépő kulcs SHA-256-ja; **több hash is megadható** vesszővel/szóközzel elválasztva, ilyenkor mindegyik érvényes: lásd „Kulcscsere”), `SIMPLESMS_FELHASZNALO` (`ferraj@gmail.com`: a SimpleSMS „Felhasználó” oszlopa, NEM a „Felhasználó neve”), `SIMPLESMS_DOMAIN` (`mosaicheadspa.hu`), D1: `LIFECYCLE_DB` (eles: `mosaic-lifecycle`, előnézet: `mosaic-lifecycle-elonezet`).
-Titkok (Cloudflare, Secret, **Production és Preview külön**): `SIMPLESMS_JELSZO` (a SimpleSMS API-jelszó), `SMTP_PASS` (meglévő). A belépő kulcs a két Zapier-láncban van beágyazva (a repóban csak a hash-e).
+Titkok (Cloudflare, Secret, **Production és Preview külön**): `SIMPLESMS_JELSZO` (a SimpleSMS API-jelszó), `SMTP_PASS` (meglévő). A belépő kulcs a **Zapier Storage-ban** van (`lifecycle_kulcs`), a Zapier-láncok (`lifecycle-bejovo`, `lifecycle-tick`, a munkatársi levelek Zapja) onnan olvassák; a forrásukban és a repóban nincs kulcs, a repóban csak a SHA-256-ja (a kulcscsere 2026-10-09-én megtörtént, a régi hash törölve).
 Munkatársi értesítők (DECISION #117): `LIFECYCLE_MUNKATARS_MOD` (`ki` | `figyel` alap | `be`), `LIFECYCLE_ELO_ELLENORZES` (`ki` kikapcsolja a kiküldés előtti Salonic-oldal ellenőrzést; alapból be), `LIFECYCLE_NOSHOW_AUTO` (`1` = a régi, törlésből induló automatikus no-show; alapból ki).
 
 **Kulcscsere leállás nélkül** (a kulcs értékét sehová nem írjuk le, csak a SHA-256-ját):
