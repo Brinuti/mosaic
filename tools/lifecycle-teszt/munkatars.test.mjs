@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ingest, tick, napi, allapot, beallitas } from '../../netlify/lib/lifecycle/engine.js';
-import { munkatarsTipus, ertelmezMunkatars, belsoBlokk, nevNorm, munkatarsKulcs } from '../../netlify/lib/lifecycle/munkatars.js';
+import { munkatarsTipus, ertelmezMunkatars, belsoBlokk, nevNorm, munkatarsKulcs, beesoNev } from '../../netlify/lib/lifecycle/munkatars.js';
 import { eloElemzes, eloAllapot, eloEllenorzoKeszit } from '../../netlify/lib/lifecycle/elo.js';
 import { helyiEpoch } from '../../netlify/lib/lifecycle/ido.js';
 import { api } from '../../netlify/lib/lifecycle/http.js';
@@ -215,6 +215,14 @@ test('(4) belső blokk: ebédszünet, szünet, a munkatárs saját nevére szól
   const beeso = await ingest(db, ENV, munkatarsLevel({ uzenetId: 'b5', nev: 'Beeső', szolg: 'Megbeszélés', datum: 'november 27. (péntek) 10:00' }), MOST + ORA, { eloEllenorzes: elo });
   assert.equal(beeso.tipus, 'ignored_internal'); assert.equal(beeso.szabaly, 'beeso_nev'); assert.equal(beeso.valtozas, false);
   assert.equal(szam(db, "SELECT COUNT(*) AS n FROM esemenyek WHERE tipus LIKE 'ingest:riasztas:%'").n, 0);
+  // DECISION #119: PONTOSAN "Beeső" - az ekezet nelkuli vagy kiegeszitett nev nem az: ignored_uncertain + riasztas, nincs allapotvaltas
+  for (const [i, nev] of ['Beeso', 'Beeső Anna', 'Beesőné'].entries()) {
+    const nem = await ingest(db, ENV, munkatarsLevel({ uzenetId: `bn${i}`, nev, szolg: 'Megbeszélés', datum: 'november 27. (péntek) 11:00' }), MOST + ORA, { eloEllenorzes: elo });
+    assert.equal(nem.tipus, 'riasztas:ignored_uncertain', nev); assert.equal(nem.valtozas, false);
+  }
+  assert.equal(szam(db, "SELECT COUNT(*) AS n FROM esemenyek WHERE tipus = 'ingest:riasztas:ignored_uncertain'").n, 3);
+  await db.sqlite.prepare("DELETE FROM esemenyek WHERE tipus = 'ingest:riasztas:ignored_uncertain'").run();
+  assert.equal(beesoNev(' BEESŐ  '), true); assert.equal(beesoNev('Beeso'), false); assert.equal(beesoNev(''), false); assert.equal(beesoNev(null), false);
   // bizonytalan: nem egyertelmuen belso (nem Beeső, nem ebedszunet / szunet / munkatars-blokk), es nem ismert vendeg-szolgaltatas
   const bizonytalan = await ingest(db, ENV, munkatarsLevel({ uzenetId: 'b4', nev: 'Valódi Vendég', szolg: 'Valami ismeretlen blokk', datum: 'november 26. (csütörtök) 10:00' }), MOST + ORA, { eloEllenorzes: elo });
   assert.equal(bizonytalan.tipus, 'riasztas:ignored_uncertain'); assert.equal(bizonytalan.valtozas, false);
