@@ -20,7 +20,7 @@ export const FORRASOK = [
   { id: 'szortelenites', cim: 'Szőrtelenítés', oldal: '/lezeres-szortelenites-budapest', foglalas: '/foglalo-motor?business=laser', forrasok: [
     ['foglalas/lezeres-szortelenites-budapest.html', '<section class="gyik" id="gyik"', 12]] },
   { id: 'fodraszat', cim: 'Fodrászat', oldal: '/noi-fodraszat-budapest', foglalas: '/foglalo-motor?business=hair', forrasok: [
-    ['foglalas/noi-fodraszat-budapest-uj.html', '<section class="szekcio" id="gyik"', 8]] },
+    ['foglalas/noi-fodraszat-budapest.html', '<section class="szekcio" id="gyik"', 8]] },
   { id: 'oxigenterapia', cim: 'Oxigénterápia', oldal: '/oxigenterapia-budapest', foglalas: '/foglalo-motor?business=oxygen', forrasok: [
     ['foglalas/oxigenterapia-budapest.html', '<section class="gyik-szekcio"', 13]] },
   { id: 'sminktetovalas', cim: 'Sminktetoválás', oldal: '/sminktetovalas-budapest', foglalas: '/sminktetovalas-budapest#foglalas', forrasok: [

@@ -78,13 +78,13 @@ describe('az oldal forrasa (fajl)', () => {
     assert.ok(!oxygeni.includes('<figcaption>'), 'a regi kartyakon nincs felirat');
   });
 
-  test('az uj blokk: kulon szekcio, cim "Legfrissebb eredmenyeink", alcim "Valos eredmenyek vendegeinktol harom-ot alkalom utan", 8 kartya FELIRAT NELKUL, a hero-galeria valtozatlan', () => {
+  test('az uj blokk: kulon szekcio, cim "Legfrissebb eredmenyeink", alcim "Valos eredmenyek vendegeinktol harom-ot alkalom utan", 6 kartya FELIRAT NELKUL, a hero-galeria valtozatlan', () => {
     assert.match(html, /<section class="eredmenyek eredmenyek-sajat" id="sajat-eredmenyek" aria-labelledby="sajat-eredmenyek-cim">/);
     assert.match(html, /<h2 id="sajat-eredmenyek-cim" class="kozepre">Legfrissebb eredményeink<\/h2>/);
     assert.ok(!html.includes('A mi vendégeink eredményei'), 'a regi cim eltunt');
     const resz = html.slice(html.indexOf('id="sajat-eredmenyek"'), html.indexOf('<!-- ============ 4. KEZELOK'));
     assert.match(resz, /<p class="lead kozepre">Valós eredmények vendégeinktől három-öt alkalom után\.<\/p>/);
-    assert.equal((resz.match(/<figure class="ba">/g) || []).length, 8, '8 kartya (mindenki egyszer)');
+    assert.equal((resz.match(/<figure class="ba">/g) || []).length, 6, '6 kartya (mindenki egyszer, egy kep mindenkirol)');
     assert.ok(!resz.includes('<figcaption>'), 'a kartyakon nincs felirat');
     assert.ok(!/\d+ alkalom után|Hajhullás esetén|Forrás:|Valós előtte\/utána fotók|ba-megj|ba-fej|garant|gyógyul|garanci/i.test(resz), 'nincs alkalom-felirat, forras-felirat, labjegyzet, eredmeny-igeret');
     assert.ok(!/data-cta/.test(resz), 'az uj blokkban nincs uj merendo CTA');
@@ -95,9 +95,9 @@ describe('az oldal forrasa (fajl)', () => {
   });
 
   test('a kartya-kepek letezo, 760x507-es, kicsi JPEG-ek a sajat tarhelyen; mindenki csak egyszer szerepel (nincs ketszer ugyanaz az "elotte" kep, nincs ketszer ugyanaz a fajl)', () => {
-    const forrasok = [...html.slice(html.indexOf('id="sajat-eredmenyek"')).matchAll(/<img src="([^"]+)"/g)].map((m) => m[1]).slice(0, 8);
-    assert.equal(forrasok.length, 8);
-    assert.equal(new Set(forrasok).size, 8, 'mind kulonbozo');
+    const forrasok = [...html.slice(html.indexOf('id="sajat-eredmenyek"')).matchAll(/<img src="([^"]+)"/g)].map((m) => m[1]).slice(0, 6);
+    assert.equal(forrasok.length, 6);
+    assert.equal(new Set(forrasok).size, 6, 'mind kulonbozo');
     const dir = path.join(GYOKER, 'assets', 'img', 'oxigen');
     assert.deepEqual(fs.readdirSync(dir).filter((f) => /^vendeg-\d\d\.jpg$/.test(f)).sort(), forrasok.map((x) => path.basename(x)).sort(), 'nincs felesleges vendeg-kep a repoban');
     for (const s of forrasok) {
@@ -161,7 +161,7 @@ for (const [nev, mobil] of [['asztali (1440 px)', false], ['mobil (390 px)', tru
           felirat: !!b.querySelector('figcaption'),
           cimkek: [...b.querySelectorAll('.cimke')].map((c) => c.textContent),
         })));
-        assert.equal(k.length, 8);
+        assert.equal(k.length, 6);
         for (const x of k) { assert.deepEqual(x.cimkek, ['Előtte', 'Utána']); assert.equal(x.felirat, false); }
         assert.ok(!/Forrás|alkalom után|Valós előtte\/utána fotók a MOSAIC/.test(await p.locator('#sajat-eredmenyek .ba-csoport').innerText()), 'nincs felirat / forras / labjegyzet a kartyak kozott');
       } finally { await ctx.close(); }

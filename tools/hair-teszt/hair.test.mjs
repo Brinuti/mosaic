@@ -1,4 +1,4 @@
-// A fodraszat-oldalak (kozponti + Betti + Noel + Evelin, foglalas/*-uj.html) tesztjei: statikus ellenorzesek + bongeszos (Playwright) vizsgalat.
+// A fodraszat-oldalak (kozponti + Betti + Noel + Evelin, foglalas/<eredeti cim>.html - 2026-10-09 ota eles, az eredeti cimeken) tesztjei: statikus ellenorzesek + bongeszos (Playwright) vizsgalat.
 // NINCS dist/ build es NINCS kulso halozat: a konnyu helyi szerver (tools/headspa-teszt/szerver.mjs) a build fejlec/lablec-logikajaval allitja ossze az oldalt;
 // minden nem helyi keres le van tiltva (alapbol tiltas), a Trustindex- es a Salonic-valaszt a teszt hamisitja.
 //
@@ -34,25 +34,48 @@ function playwright() {
 
 // ======================= statikus ellenorzesek (bongeszo nelkul) =======================
 describe('generalt fajlok', () => {
-  test('a foglalas/*-uj.html fajlok megegyeznek a generator kimenetevel (node tools/hair-oldalak.mjs)', () => {
+  test('a foglalas/<eredeti cim>.html fajlok megegyeznek a generator kimenetevel (node tools/hair-oldalak.mjs)', () => {
     for (const k of KULCSOK) assert.equal(forras(k), gen.oldal(k), `${LAPOK[k].fajl}.html elavult: futtasd a node tools/hair-oldalak.mjs parancsot`);
   });
-  test('az uj oldalak noindex-esek, a canonical a sajat (-uj) cimukre mutat, a menu a mostani oldalt jelzi aktivnak', () => {
+  test('az oldalak ELESEK az eredeti cimen: indexelhetok (nincs noindex), a canonical a sajat cimukre mutat, a menu a megfelelo pontot jelzi aktivnak', () => {
     for (const k of KULCSOK) {
       const h = forras(k);
-      assert.match(h, /<meta name="robots" content="noindex, nofollow">/);
+      assert.equal(LAPOK[k].fajl, LAPOK[k].eredeti, 'a fajl az eredeti cim');
+      assert.ok(!/<meta name="robots"/.test(h), 'nincs robots meta (indexelheto)');
       assert.ok(h.includes(`<link rel="canonical" href="https://www.mosaicheadspa.hu/${LAPOK[k].fajl}">`));
+      assert.ok(h.includes(`<meta property="og:url" content="https://www.mosaicheadspa.hu/${LAPOK[k].fajl}">`));
       assert.ok(h.includes(`<!--mh-menu-aktiv:${LAPOK[k].menu}-->`));
       assert.ok(h.includes('<!--mh-fejlec-->') && h.includes('<!--mh-lablec-->'));
     }
   });
-  test('az -uj oldalak nincsenek a sitemapben es a robots.txt-ben sem tiltva kulon (nincs rajuk link)', () => {
+  test('a sitemapben az eredeti cimek szerepelnek (a regi Wixes oldalak helyen), az -uj es -regi cimek nem', () => {
     const sm = fs.readFileSync(path.join(GYOKER, 'sitemap.xml'), 'utf8');
-    for (const k of KULCSOK) assert.ok(!sm.includes(LAPOK[k].fajl), `${LAPOK[k].fajl} a sitemapben van`);
+    for (const k of KULCSOK) {
+      assert.ok(sm.includes(`/${LAPOK[k].fajl}<`), `${LAPOK[k].fajl} hianyzik a sitemapbol`);
+      assert.ok(!sm.includes(`${LAPOK[k].fajl}-uj`) && !sm.includes(`${LAPOK[k].fajl}-regi`));
+    }
   });
-  test('a meresi kodokat nem erintjuk: a suti.js pixel-listaja az -uj cimeket nem tartalmazza', () => {
+  test('a meresi kodok: a suti.js pixel-listaja az ELES (eredeti) cimeket tartalmazza, az -uj / -regi cimeket nem', () => {
     const s = fs.readFileSync(path.join(GYOKER, 'assets/js/suti.js'), 'utf8');
-    for (const k of KULCSOK) assert.ok(!new RegExp(`\\b${LAPOK[k].fajl}\\b`).test(s));
+    const sor = s.split('\n').find((x) => x.includes('PIXEL_FODRASZ,') && x.includes('fodraszat-foglalas'));
+    assert.ok(sor, 'megvan a PIXEL_FODRASZ sor');
+    for (const k of KULCSOK) {
+      assert.ok(new RegExp(`(?:^|[ '])${LAPOK[k].fajl}(?:[ ']|$)`).test(sor), `${LAPOK[k].fajl} a pixel-listan van`);
+      assert.ok(!sor.includes(`${LAPOK[k].fajl}-uj`) && !sor.includes(`${LAPOK[k].fajl}-regi`));
+    }
+  });
+  test('az -uj cimek 301-gyel az eredeti cimre iranyitanak; a regi Wixes oldal rejtett -regi cimen megvan (noindex, sajat canonical), mobil valtozattal is', async () => {
+    const { utvonal } = await import(pathToFileURL(path.join(GYOKER, 'netlify/lib/utvonal.js')).href);
+    for (const k of KULCSOK) {
+      assert.deepEqual(utvonal('/' + LAPOK[k].ujCim, 'Mozilla/5.0'), { atiranyit: '/' + LAPOK[k].fajl }, `${LAPOK[k].ujCim} 301`);
+      for (const mappa of ['klon', 'klon/m']) {
+        const regi = fs.readFileSync(path.join(GYOKER, mappa, LAPOK[k].fajl + '-regi.html'), 'utf8');
+        assert.match(regi, /<meta name="robots" content="noindex, nofollow"\/>/, mappa);
+        assert.ok(regi.includes(`<link rel="canonical" href="https://www.mosaicheadspa.hu/${LAPOK[k].fajl}-regi"/>`), mappa);
+        assert.ok(regi.includes(`<meta property="og:url" content="https://www.mosaicheadspa.hu/${LAPOK[k].fajl}-regi"/>`), mappa);
+        assert.ok(!regi.includes(`href="https://www.mosaicheadspa.hu/${LAPOK[k].fajl}"`), mappa + ': nem mutat az eles cimre');
+      }
+    }
   });
 });
 

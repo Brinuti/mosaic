@@ -44,13 +44,11 @@ TERULET = {
     '09-utana': (0, 184, 443, 776),
 }
 
-# kimeneti nev, elotte, utana (2026-10-09, a tulajdonos kerese: mindenki egyszer - a 07-es sorszam vendege csak a 15 alkalom utani kepevel -, es a szemuveges, szakallas ferfi (09-es sorszam) kartyaja kimaradt)
+# kimeneti nev, elotte, utana (2026-10-09, a tulajdonos kerese: mindenki egyszer, egy kepen - a 03 (osszefogott hajjal) es az 05 (felulrol) kartya kimaradt, mert ugyanaz a vendeg mar szerepel jobban latszo kepen - a 07-es sorszam vendege csak a 15 alkalom utani kepevel -, es a szemuveges, szakallas ferfi (09-es sorszam) kartyaja kimaradt)
 KARTYAK = [
     ('vendeg-01', '01-elotte', '01-utana'),
     ('vendeg-02', '02-elotte', '02-utana'),
-    ('vendeg-03', '03-elotte', '03-utana'),
     ('vendeg-04', '04-elotte', '04-utana'),
-    ('vendeg-05', '05-elotte', '05-utana'),
     ('vendeg-06', '06-elotte', '06-utana'),
     ('vendeg-07', '08-elotte-b', '07-utana-15'),
     ('vendeg-08', '08-elotte', '08-utana'),

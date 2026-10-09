@@ -1,10 +1,11 @@
-// A fodraszat-oldalak generatora: a kozponti oldal + Betti + Noel + Evelin oldala (foglalas/*-uj.html), egyetlen adatbol (tools/hair-oldalak/adat.mjs).
+// A fodraszat-oldalak generatora: a kozponti oldal + Betti + Noel + Evelin oldala (foglalas/<eredeti cim>.html), egyetlen adatbol (tools/hair-oldalak/adat.mjs).
 //
-//   node tools/hair-oldalak.mjs             legyartja / frissiti az oldalakat (foglalas/noi-fodraszat-budapest-uj.html ...)
+//   node tools/hair-oldalak.mjs             legyartja / frissiti az oldalakat (foglalas/noi-fodraszat-budapest.html ...)
 //   node tools/hair-oldalak.mjs --ellenoriz   csak osszeveti a fajlokat a generator kimenetevel (eltereskor: kilepesi kod 1) - a teszt ezt hasznalja
 //
 // Arvaltozasnal: node tools/hair-oldalak/salonic-pillanatkep.mjs (frissiti a Salonic-pillanatkepet), majd ez a szkript.
-// Az oldalak ideiglenes (-uj) cimen, noindex-szel allnak; az eredeti cimre (a mostani Wixes oldal helyere) csak kulon kerese koltoznek.
+// Az oldalak 2026-10-09 ota ELESEK az eredeti cimeken (a tulajdonos kifejezett kerese), indexelhetok; a regi Wixes oldal rejtett -regi cimen megvan (klon/*-regi.html),
+// az ideiglenes -uj cimek 301-gyel az eredetire iranyitanak (netlify/lib/utvonal.js).
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -60,7 +61,6 @@ export function oldal(kulcs) {
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${m.title}</title>
 <meta name="description" content="${m.leiras}">
-<meta name="robots" content="noindex, nofollow">
 <link rel="canonical" href="${url}">
 <meta property="og:title" content="${m.title}">
 <meta property="og:description" content="${m.leiras}">
@@ -82,7 +82,7 @@ export function oldal(kulcs) {
 <!--
   MOSAIC Hair - ${kulcs === 'kozpont' ? 'KOZPONTI fodraszat-oldal' : 'fodrasz-oldal: ' + FODRASZOK[kulcs].nev} - uj terv (MOSAIC_Hair_implementation_v2). GENERALT FAJL: ne szerkeszd kezzel.
   Forras: tools/hair-oldalak/adat.mjs (tartalom, arak a Salonic-pillanatkepbol), tools/hair-oldalak/sablon.mjs (szekciok); generalas: node tools/hair-oldalak.mjs
-  Ideiglenes cim: /${lap.fajl} (noindex, nincs ravezeto link); a csere az eredeti /${lap.eredeti} cimre kulon kerese tortenik. A mostani (Wixes) oldal a klon/ mappaban megvan.
+  ELES cim: /${lap.fajl} (indexelheto; 2026-10-09 ota ez az eredeti cim). A regi (Wixes) oldal: /${lap.fajl}-regi (noindex, klon/${lap.fajl}-regi.html); az ideiglenes /${lap.ujCim} cim 301-gyel ide iranyit. Visszaallitas: a foglalas/${lap.fajl}.html torlese.
   Az oldalon belul NINCS #horgony-link (a GTM History Change minden hash-valtozasra merest inditana): a gorgetest a hair-landing.js vegzi.
   Foglalas: a gombok a /foglalo-motor?business=hair... linkek (a launcher a retegben nyitja meg; a fodrasz / szolgaltatas ismeretet a motor nem kerdezi ujra).
 -->

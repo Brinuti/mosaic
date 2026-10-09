@@ -13,12 +13,13 @@ const olvas = (...p) => JSON.parse(fs.readFileSync(path.join(GYOKER, ...p), 'utf
 export const PILLANATKEP = olvas('tools', 'hair-oldalak', 'salonic-hair.json');
 
 // ---- az oldalak -------------------------------------------------------------------------------------------------------------------------
-// utvonal: az ideiglenes (-uj) cim; eredeti: a mostani, eles Wixes oldal (a csere ennek az atnevezese; kulon kerese)
+// fajl: az oldal ELES cime (2026-10-09 ota az eredeti cim: a tulajdonos kifejezett kerese); ujCim: az ideiglenes cim, ami 301-gyel ide iranyit (netlify/lib/utvonal.js);
+// a regi (Wixes) oldal rejtett cime: /<fajl>-regi (klon/<fajl>-regi.html, noindex)
 export const LAPOK = {
-  kozpont: { kulcs: 'kozpont', fajl: 'noi-fodraszat-budapest-uj', eredeti: 'noi-fodraszat-budapest', regiTartalom: 'noi-fodraszat-budapest', menu: '/noi-fodraszat-budapest' },
-  betti: { kulcs: 'betti', fajl: 'noi-fodrasz-budapest-balayage-hajfestes-uj', eredeti: 'noi-fodrasz-budapest-balayage-hajfestes', regiTartalom: 'noi-fodrasz-budapest-balayage-hajfestes', menu: '/noi-fodrasz-budapest-balayage-hajfestes' },
-  noel: { kulcs: 'noel', fajl: 'balayage-haj-festes-budapest-uj', eredeti: 'balayage-haj-festes-budapest', regiTartalom: 'balayage-haj-festes-budapest', menu: '/balayage-haj-festes-budapest' },
-  evelin: { kulcs: 'evelin', fajl: 'noi-hajfestes-budapest-uj', eredeti: 'noi-hajfestes-budapest', regiTartalom: 'noi-hajfestes-budapest', menu: '/noi-hajfestes-budapest' },
+  kozpont: { kulcs: 'kozpont', fajl: 'noi-fodraszat-budapest', ujCim: 'noi-fodraszat-budapest-uj', eredeti: 'noi-fodraszat-budapest', regiTartalom: 'noi-fodraszat-budapest', menu: '/noi-fodraszat-budapest' },
+  betti: { kulcs: 'betti', fajl: 'noi-fodrasz-budapest-balayage-hajfestes', ujCim: 'noi-fodrasz-budapest-balayage-hajfestes-uj', eredeti: 'noi-fodrasz-budapest-balayage-hajfestes', regiTartalom: 'noi-fodrasz-budapest-balayage-hajfestes', menu: '/noi-fodrasz-budapest-balayage-hajfestes' },
+  noel: { kulcs: 'noel', fajl: 'balayage-haj-festes-budapest', ujCim: 'balayage-haj-festes-budapest-uj', eredeti: 'balayage-haj-festes-budapest', regiTartalom: 'balayage-haj-festes-budapest', menu: '/balayage-haj-festes-budapest' },
+  evelin: { kulcs: 'evelin', fajl: 'noi-hajfestes-budapest', ujCim: 'noi-hajfestes-budapest-uj', eredeti: 'noi-hajfestes-budapest', regiTartalom: 'noi-hajfestes-budapest', menu: '/noi-hajfestes-budapest' },
 };
 export const oldalUt = (kulcs) => '/' + LAPOK[kulcs].fajl;
 
