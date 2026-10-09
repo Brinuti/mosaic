@@ -39,8 +39,10 @@ function memoriaKv() {
     async put(kulcs, ertek) { t.set(kulcs, new Uint8Array(ertek instanceof ArrayBuffer ? ertek : ertek.slice().buffer)); },
   };
 }
-// a regi ajandekkartya-cimek (a build ezeken is az uj oldalt adja, lasd tools/netlify-build.mjs)
-const REGI_CIMEK = new Set(['/headspa-ajandekkartya', '/4-kezes-headspa-ajandekkartya', '/ajandekkartya-szulinapra', '/ajandekkartya-ugc', '/headspa-ajandekkartya-anyukaknak', '/headspa-ajandekkartya-noknek', '/headspa-paros-csajos-ajandekkartya', '/japan-headspa-ajandekkartya']);
+// a regi ajandekkartya-cimek (a build ezeken is az uj oldalt adja, lasd tools/netlify-build.mjs); a '/headspa-ajándékkártya-ezo' NFC-ben, dekodolva
+const REGI_CIMEK = new Set(['/headspa-ajandekkartya', '/4-kezes-headspa-ajandekkartya', '/ajandekkartya-szulinapra', '/ajandekkartya-ugc', '/headspa-ajandekkartya-anyukaknak', '/headspa-ajandekkartya-noknek', '/headspa-paros-csajos-ajandekkartya', '/japan-headspa-ajandekkartya',
+  // 2026-10-09: a harom korabbi hirdetesi oldal is az uj formatumot adja (a regi peldany a build "-regi" cimen)
+  '/headspa-ajándékkártya-ezo', '/headspa-self-care', '/headspa-ajandakkartya-fiataloknak']);
 let ajandekKezel = null, korlatAlaphelyzet = null, mock = null, env = {};
 let lezerKezel = null, lezerEnv = {};
 let oxigenKezel = null, oxigenEnv = {};

@@ -83,7 +83,7 @@ export const FODRASZOK = {
       'Számomra a legfontosabb a figyelem és az őszinte kommunikáció. Az első találkozáskor alaposan átbeszéljük, milyen elképzeléseid vannak, mit szeretnél elkerülni, és hasznos tanácsokkal is ellátlak, hogy a végeredmény pontosan olyan legyen, amilyennek megálmodtad.',
     ],
     festek: null,
-    kiemelesek: ['Természetes hatású színek', 'Balayage specialista', 'Figyelem és őszinte kommunikáció'],
+    kiemelesek: ['Személyre szabott árnyalatok', 'Balayage specialista', 'Figyelem és őszinte kommunikáció'],
     miert: [
       ['A női haj a hivatásom', 'Szenvedélyem a szép hajszínek és természetes hatású árnyalatok megalkotása. Az alkotás számomra nem munka, hanem hivatás, ahol minden egyes tincs számít.'],
       ['Te vagy a középpontban', 'Minden festésnél alaposan átbeszéljük az elképzeléseidet, és mindent megteszek, hogy a végeredmény olyan legyen, amilyennek megálmodtad.'],
@@ -98,7 +98,7 @@ export const FODRASZOK = {
     kulcs: 'evelin', nev: 'Evelin', teljesNev: 'Szaniszló-Cene Evelin', lap: 'evelin', rag: { hez: 'Evelinhez', vel: 'Evelinnel', t: 'Evelint', nal: 'Evelinnél' },
     szakterulet: 'Hajfestés és hajhosszabbítás (póthaj)',
     h1: 'Végre olyan frizurád lesz, amilyet megálmodtál!', h1Mobil: 'Festés, balayage, tőfestés és hajhosszabbítás a te stílusodban', kartyaSzoveg: 'Hajfestés és hajhosszabbítás', alcim: 'Hajfestés, hajhosszabbítás', blokkok: ['Személyre szabott színek', 'Részletes konzultáció'],
-    rovid: 'Ingyenes konzultációval és hajhosszabbítással is várlak.',
+    rovid: 'Ingyenes konzultációval várlak.',
     idezet: 'Megtaláljuk a hozzád illő színt és vágást, amitől ragyogsz majd!',
     bemutatkozas: [
       'A frizurád az egyik legmeghatározóbb eleme annak, ahogyan mások látnak, és ha a szín vagy a vágás nem sikerül jól, az hosszú távon befolyásolhatja az önbizalmadat. Pontosan átérzem, milyen csalódást tud okozni egy rossz tapasztalat. A jó hír: nálam nyugodt lehetsz.',

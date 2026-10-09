@@ -86,8 +86,30 @@
       }
     };
 
-    tetel.addEventListener('mouseenter', () => mutat(true));
-    tetel.addEventListener('mouseleave', () => mutat(false));
+    // Szandek-alapu nyitas (hover intent): az almenu csak akkor nyilik, ha az eger egy rovid ideig (NYITAS_MS) a menupont folott marad; a
+    // csak atszaladas (pl. a felso akciosav fele) nem nyitja meg. Zarni kis kesleltetessel zarunk, hogy az almenube lepes kozbeni kis kiterees ne zarja be.
+    let nyitoIdo = 0, zaroIdo = 0, utolso = null;
+    const NYITAS_MS = 220, ZARAS_MS = 140;
+    tetel.addEventListener('mouseenter', (e) => {
+      clearTimeout(zaroIdo);
+      if (tetel.getAttribute('data-shown') === 'true') return;
+      utolso = { x: e.clientX, y: e.clientY };
+      clearTimeout(nyitoIdo);
+      nyitoIdo = setTimeout(() => mutat(true), NYITAS_MS);
+    });
+    tetel.addEventListener('mousemove', (e) => {
+      // amig az eger meg "utazik" a menupont folott (nagyobb mozgas), az idozito ujraindul: csak a megallo / lassan mozgo eger nyit
+      if (!nyitoIdo || tetel.getAttribute('data-shown') === 'true' || !utolso) return;
+      if (Math.hypot(e.clientX - utolso.x, e.clientY - utolso.y) > 10) {
+        utolso = { x: e.clientX, y: e.clientY };
+        clearTimeout(nyitoIdo);
+        nyitoIdo = setTimeout(() => mutat(true), NYITAS_MS);
+      }
+    });
+    tetel.addEventListener('mouseleave', () => {
+      clearTimeout(nyitoIdo); nyitoIdo = 0;
+      zaroIdo = setTimeout(() => mutat(false), ZARAS_MS);
+    });
     // billentyuzettel is elerheto legyen
     tetel.addEventListener('focusin', () => mutat(true));
     tetel.addEventListener('focusout', (e) => {

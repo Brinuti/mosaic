@@ -115,18 +115,22 @@
     return [...m.values()];
   }
 
-  // --- 1b. legkozelebbi szabad idopontok (szemoldok, a leggyakoribb kezeles) -------------
+  // --- 1b. legkozelebbi szabad idopontok (alapbol szemoldok, a leggyakoribb kezeles) -------------
+  // A /szajtetovalas-budapest landing a #hero-napok elemen data-terulet="ajak" (a Salonic ajak-kezelese) es data-foglalo-plusz="terulet=ajak"
+  // (a foglalo az ajak-kezelesekre szukul) jelzessel ugyanezt a kodot hasznalja; jelzes nelkul minden a regi.
   (async () => {
     const hova = $('hero-napok');
+    const terulet = TERULETEK[hova.dataset.terulet] ? hova.dataset.terulet : 'szemoldok';
+    const plusz = hova.dataset.foglaloPlusz ? '&' + hova.dataset.foglaloPlusz : '';
     try {
-      const k = await teruletKezeles('szemoldok');
-      if (!k) throw new Error('nincs szemoldok-kezeles');
+      const k = await teruletKezeles(terulet);
+      if (!k) throw new Error('nincs ' + terulet + '-kezeles');
       const n = napok(await szabadKezdesek(k.id), 3);
       if (!n.length) {
         hova.replaceChildren(elem('p', { class: 'nap-uzenet', szoveg: 'A következő hetekre most nincs szabad időpont. Kérj visszahívást, és közösen találunk egyet!' }));
         return;
       }
-      hova.replaceChildren(...n.map((idok) => elem('a', { class: 'nap-kartya', href: '#foglalas', 'data-foglalo': 'lepes=szolg&nap=' + iso(idok[0]), 'data-cta': 'idopontok-nap' },
+      hova.replaceChildren(...n.map((idok) => elem('a', { class: 'nap-kartya', href: '#foglalas', 'data-foglalo': 'lepes=szolg&nap=' + iso(idok[0]) + plusz, 'data-cta': 'idopontok-nap' },
         elem('span', { class: 'ikon-kor', html: SVG.naptar }),
         elem('span', { class: 'kis-nyil', html: SVG.jobbra }),
         elem('span', { class: 'datum', szoveg: datum(idok[0]) }),
@@ -134,7 +138,7 @@
         elem('span', { class: 'orak', html: SVG.ora }, idok.slice(0, 3).map(ora).join(' / ')))));
     } catch (e) {
       console.error(e);
-      hova.replaceChildren(elem('p', { class: 'nap-uzenet' }, 'Most nem sikerült lekérni a szabad időpontokat. ', elem('a', { href: '/foglalo-pmu', szoveg: 'Nézd meg itt az összeset →' })));
+      hova.replaceChildren(elem('p', { class: 'nap-uzenet' }, 'Most nem sikerült lekérni a szabad időpontokat. ', elem('a', { href: '/foglalo-pmu' + (plusz ? '?' + plusz.slice(1) : ''), szoveg: 'Nézd meg itt az összeset →' })));
     }
   })();
 
@@ -165,7 +169,7 @@
   // megfelelo lepeset nyitjak meg: lepes=szolg (kezelesvalasztas), lepes=foto (regi PMU: foto),
   // lepes=visszahivas (10 perces konzultacio), kezeles=<kulcsszo> (kezeles elore kivalasztva).
   const keret = $('foglalo');
-  const ALAP = '/foglalo-pmu?beagyazva=1';
+  const ALAP = keret.dataset.alap || '/foglalo-pmu?beagyazva=1'; // a szajtetovalas landing az iframe data-alap jelzesevel a terulet / forras parametert is viszi
   let nezetek = 0;
   addEventListener('message', (e) => {
     if (e.origin !== location.origin || e.source !== keret.contentWindow || !e.data || !e.data.mhFoglalo) return;
@@ -328,14 +332,17 @@
   })();
 
   // --- video (Google Drive, allo formatum): csak kattintasra toltodik be ------------------------------
+  // (a szajtetovalas landingen nincs ilyen gomb: ott a szajtetovalas-landing.js nyitja a sajat videoablakot)
   const VIDEO = 'https://drive.google.com/file/d/1HaOg3JRFZmDfUAJ0rgHAtzW2UndqO09i/preview';
-  $('video-gomb').addEventListener('click', () => {
-    $('video-keret').replaceChildren(elem('iframe', { src: VIDEO, title: 'Videó: hogyan dolgozom', allow: 'autoplay; fullscreen', allowfullscreen: true }));
-    $('video-ablak').showModal();
-    meres({ event: 'pmu_landing_video' });
-  });
-  $('video-ablak').addEventListener('close', () => $('video-keret').replaceChildren());
-  $('video-ablak').addEventListener('click', (e) => { if (e.target === $('video-ablak')) $('video-ablak').close(); });
+  if ($('video-gomb') && $('video-ablak')) {
+    $('video-gomb').addEventListener('click', () => {
+      $('video-keret').replaceChildren(elem('iframe', { src: VIDEO, title: 'Videó: hogyan dolgozom', allow: 'autoplay; fullscreen', allowfullscreen: true }));
+      $('video-ablak').showModal();
+      meres({ event: 'pmu_landing_video' });
+    });
+    $('video-ablak').addEventListener('close', () => $('video-keret').replaceChildren());
+    $('video-ablak').addEventListener('click', (e) => { if (e.target === $('video-ablak')) $('video-ablak').close(); });
+  }
 
 
   // --- terkep: Google-terkep a funkcionalis sutik engedelyezese utan (mint a klon tobbi oldalan) ---

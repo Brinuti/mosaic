@@ -154,11 +154,20 @@ objection_title, objection_body, relationship, gift_context, occasion`.
 | variant | `?variant=` | előválasztás | terméksorrend | `gift_context` / `relationship` | hero média |
 |---|---|---|---|---|---|
 | általános | `general` | – | egyéni, 4 kezes, páros | general | „szöveg nélkül.mp4” kivágás ✓ |
-| barátnők | `friend` | ketten | páros, egyéni, 4 kezes | together / friend | ✗ NEEDS_MANUAL_VALIDATION → `general` média |
+| barátnők | `friend` | ketten | páros, egyéni, 4 kezes | together / friend | „Páros Headspa szept ajánlati WARM” barátnős szakasza ✓ |
 | anya–lánya | `mother` | ketten | páros, egyéni, 4 kezes | together / mother | „Anya-lánya.MP4” kivágás ✓ |
-| neki (női címzett) | `for_her` | egyedül | egyéni, 4 kezes, páros | for_her / recipient_female | ✗ NEEDS_MANUAL_VALIDATION → `general` média |
-| pár | `partner` | ketten | páros, egyéni, 4 kezes | together / partner | ✗ NEEDS_MANUAL_VALIDATION → `general` média |
+| neki (női címzett) | `for_her` | egyedül | egyéni, 4 kezes, páros | for_her / recipient_female | saját videó (2026-10-09): `ajandek-hero-noknek.mp4` ✓ |
+| pár | `partner` | ketten | páros, egyéni, 4 kezes | together / partner | „Páros kezelés.MP4” (Drive: Headspa férfiaknak) ✓ |
 | utolsó pillanat | `last_minute` | – | egyéni, 4 kezes, páros | last_minute / – (`occasion` az `?occasion=` URL-ből) | „Hook1.MP4” kezelés-képek kivágása ✓ (indítás előtt gyors vizuális QA) |
+| születésnap | `birthday` | egyedül | egyéni, 4 kezes, páros | birthday / – (`occasion`: szuletesnap) | `ajandek-hero-szulinap.mp4` (2026-10-09) ✓ |
+| japán | `japan` | – | egyéni, 4 kezes, páros | japan / – | `ajandek-hero-japan.mp4` ✓ |
+| ezo | `esoteric` | egyedül | egyéni, 4 kezes, páros | esoteric / – | `ajandek-hero-ezo.mp4` ✓ |
+| self-care | `self_care` | egyedül | egyéni, 4 kezes, páros | self_care / – | `ajandek-hero-selfcare.mp4` ✓ |
+| fiatalok | `young` | egyedül | egyéni, 4 kezes, páros | young / recipient_young | `ajandek-hero-fiatalok.mp4` ✓ |
+
+**2026-10-09 (a tulajdonos kérése): minden persona-oldal az új formátumot kapja** (videós hero + **magyarázó szekció a hero után, az ajándékválasztó előtt**; a `VARIANTOK[..].magyarazo` mező, a `general`-nál `null`).
+A cím → variáns → videó → H1 táblázat, a videók eredete / újragyártása, az új persona felvétele, a három régi hirdetési oldal (ezo, self-care, fiataloknak) átállása és a mérés: **`docs/AJANDEK_PERSONA_OLDALAK.md`**.
+A `hero_media.status` új értéke: `APPROVED_BY_VISUAL_REVIEW` (a MOSAIC saját, publikált felvételéből készült, a képkockákat átnéztük).
 
 **Hogyan kapcsol át a variant?** Nem magától: a variantot a **link** hordozza. Minden hirdetés / poszt / e-mail célcíme `…/ajandek?variant=<id>`
 (+ az `utm_*`, `gclid`, `fbclid`, `ttclid` paraméterek). A hiányzó, érvénytelen vagy ismeretlen érték (pl. `__proto__`) → **GENERAL**. A variant a
@@ -166,7 +175,7 @@ sessionben megmarad (a vevő a Gift Finderben később mást is választhat), be
 (`variant_id`, `gift_context`, `relationship`, `occasion`, `utm_*`, click-id-k), így a `purchase` ugyanahhoz a forrás/variant attribúcióhoz kötődik.
 
 **Tesztelés:** a teszt-módú oldalon (előnézet, `pk_test_` kulccsal) az oldal alján a „TESZT MÓD” szalagon **variant-kapcsoló** van
-(`general · friend · mother · for_her · partner · last_minute`); az éles oldalon ez nincs. Előnézeti linkek:
+(az összes variáns: `general · friend · mother · for_her · partner · last_minute · birthday · japan · esoteric · self_care · young`); az éles oldalon ez nincs. Előnézeti linkek:
 `https://claude-ajandek-motor.mosaic-d77.pages.dev/ajandek?variant=<id>`. Helyben: `node tools/ajandek-teszt/szerver.mjs` →
 `http://localhost:4195/ajandek?variant=<id>`.
 

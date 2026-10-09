@@ -1,0 +1,77 @@
+{
+ "_megjegyzes": "Az \"irtak rolunk\" logosav logoi (sorrend = a tulajdonos kerese): a fajlok az assets/img/sajto/logok/ alatt (SVG / alfa-csatornas PNG: a CSS maszkkent festi egyszinure). ar = szelesseg/magassag, h = asztali magassag (px, optikai meret), g = a mobil sor suly-aranya. Generalja: tools/sajto-kartyak/kartyak.py",
+ "logok": [
+  {
+   "kulcs": "eva",
+   "nev": "Éva Magazin",
+   "portal": "Éva Magazin",
+   "fajl": "eva.svg",
+   "ar": 1.811,
+   "h": 34,
+   "g": 1.0
+  },
+  {
+   "kulcs": "marieclaire",
+   "nev": "Marie Claire",
+   "portal": "Marie Claire",
+   "fajl": "marieclaire.svg",
+   "ar": 5.9,
+   "h": 24,
+   "g": 2.4
+  },
+  {
+   "kulcs": "kiskegyed",
+   "nev": "Kiskegyed",
+   "portal": "Kiskegyed",
+   "fajl": "kiskegyed.svg",
+   "ar": 4.096,
+   "h": 28,
+   "g": 1.9
+  },
+  {
+   "kulcs": "life",
+   "nev": "Life.hu",
+   "portal": "Life.hu (TikTok)",
+   "fajl": "life.svg",
+   "ar": 1.4545,
+   "h": 34,
+   "g": 0.8
+  },
+  {
+   "kulcs": "igenyesno",
+   "nev": "Igényes Nő",
+   "portal": "Igényesnő",
+   "fajl": "igenyesno.png",
+   "ar": 6.933,
+   "h": 20,
+   "g": 2.2
+  },
+  {
+   "kulcs": "welovebudapest",
+   "nev": "We Love Budapest",
+   "portal": "We Love Budapest",
+   "fajl": "welovebudapest.svg",
+   "ar": 7.5,
+   "h": 18,
+   "g": 2.2
+  },
+  {
+   "kulcs": "femina",
+   "nev": "Femina",
+   "portal": "Femina",
+   "fajl": "femina.svg",
+   "ar": 5.398,
+   "h": 22,
+   "g": 1.8
+  },
+  {
+   "kulcs": "longevity",
+   "nev": "Longevity Magazin",
+   "portal": "Longevity Magazin",
+   "fajl": "longevity.png",
+   "ar": 4.86,
+   "h": 32,
+   "g": 2.6
+  }
+ ]
+}

@@ -157,7 +157,8 @@
       if (k === 'fbclid') attr.fbclid_ido = Date.now();
     }
   });
-  if (!attr.oldal) attr.oldal = location.pathname;
+  // a rendeles "oldal" mezoje: az olvashato cim (az ekezetes cimet - headspa-ajándékkártya-ezo - a bongeszo %-kodoltan adja)
+  if (!attr.oldal) { var oldalNev = location.pathname; try { oldalNev = decodeURIComponent(oldalNev); } catch (e) { /* marad a nyers */ } attr.oldal = oldalNev; }
   var alkalomURL = (Q.get('occasion') || oldalAlap.alkalom || '').trim().slice(0, 40);
 
   var S = {
@@ -286,6 +287,37 @@
       $('ah-ellenvetes-szoveg').textContent = c.objection_body || '';
       blokk.hidden = false;
     } else blokk.hidden = true;
+  }
+
+  // ---------------------------------------------------------------- Persona-magyarazo (a hero UTAN, az ajandekvalaszto ELOTT)
+  // A tartalom variansonkent az ajandek-adat.js-ben van (VARIANTOK[..].magyarazo: felcim, cim, szovegek[], pontok[] (max. 3), media {src, alt, w, h, poz}).
+  // A general variansnal nincs (null): a szekcio rejtett marad. A lezeres / oxigen oldalon a szekcio nincs a HTML-ben (nincs teendo).
+  // A persona-oldalakon a build ugyanezt a markupot elore be is irja a HTML-be (tools/ajandek-variansok/elore-render.mjs), ezert itt ugyanazt a
+  // szerkezetet epitjuk (az id-k, osztalyok, a figure --ah-magyarazo-arany valtozoja): a ketto kozott nincs elmozdulas.
+  function magyarazoRender() {
+    var sz = $('ah-magyarazo');
+    if (!sz) return;
+    var m = S.variant.magyarazo;
+    if (!m || !m.cim) { sz.hidden = true; return; }
+    var fc = $('ah-magyarazo-felcim');
+    if (fc) { fc.textContent = m.felcim || ''; fc.hidden = !m.felcim; }
+    $('ah-magyarazo-cim').textContent = m.cim;
+    var torzs = uresit($('ah-magyarazo-torzs'));
+    (m.szovegek || []).forEach(function (t) { torzs.appendChild(h('p', { text: t })); });
+    var lista = uresit($('ah-magyarazo-pontok'));
+    (m.pontok || []).slice(0, 3).forEach(function (t) { lista.appendChild(h('li', { text: t })); });
+    var fig = $('ah-magyarazo-media'), kep = $('ah-magyarazo-kep'), md = m.media;
+    if (fig && kep && md && md.src) {
+      var src = kepUt(md.src);
+      if (kep.getAttribute('src') !== src) kep.setAttribute('src', src);
+      kep.setAttribute('alt', md.alt || '');
+      if (md.w && md.h) { kep.setAttribute('width', md.w); kep.setAttribute('height', md.h); }
+      kep.style.objectPosition = md.poz || '';
+      // a kep aranya (mobilon / keskenyen ez adja a keret alakjat), szelsoseges aranynal korlatozva: 4:5 .. 8:5
+      fig.style.setProperty('--ah-magyarazo-arany', (md.w && md.h ? Math.min(1.6, Math.max(0.8, md.w / md.h)) : 1.333).toFixed(3));
+      fig.hidden = false;
+    } else if (fig) fig.hidden = true;
+    sz.hidden = false;
   }
 
   // ---------------------------------------------------------------- Ilyen a Head Spa (video + elmeny) / Pontosan ezt kapja / vendegvideok sorrendje
@@ -2105,6 +2137,7 @@
     fotoVisszaallit().then(function () { if (S.allapot === 'tervezo') tervezoRender(); });
     menuAktiv();
     heroRender();
+    magyarazoRender();
     heroVideo();
     proofRender();
     termekekRender();
