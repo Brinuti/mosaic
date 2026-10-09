@@ -1,0 +1,50 @@
+<svg
+   version="1.1"
+   id="svg1"
+   width="603.52386"
+   height="333.19736"
+   viewBox="0 0 603.52386 333.19736"
+  
+   xmlns="http://www.w3.org/2000/svg"
+  >
+  <g
+     id="g1"
+     transform="translate(-80.146668,-14.74)">
+    <path
+       id="path1"
+       d="M 80.146665,95.14401 H 133.088 V 347.93734 H 80.146665 Z"
+       style="fill:#50555a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.33333" />
+    <path
+       id="path2"
+       d="M 113.23466,342.63867 H 235.99199 V 347.936 H 113.23466 Z"
+       style="fill:#50555a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.33333" />
+    <path
+       id="path3"
+       d="m 113.23466,191.76134 h 102.904 v 5.29733 h -102.904 z"
+       style="fill:#50555a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.33333" />
+    <path
+       id="path4"
+       d="m 113.23466,95.14401 h 119.448 v 5.29733 h -119.448 z"
+       style="fill:#50555a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.33333" />
+    <path
+       id="path5"
+       d="m 145.6612,14.74 h 56.24933 L 137.3892,78.26933 h -2.316 z"
+       style="fill:#50555a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.33333" />
+    <path
+       id="path6"
+       d="m 246.90613,95.144 h 57.57333 l 85.69733,203.49199 h -5.49866 L 469.71412,95.144 h 6.492 L 370.32479,347.93733 h -16.87466 z"
+       style="fill:#50555a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.33333" />
+    <path
+       id="path7"
+       d="m 518.5612,95.144 h 58.89733 l 106.212,252.79333 h -59.228 z"
+       style="fill:#50555a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.33333" />
+    <path
+       id="path8"
+       d="m 532.78907,120.62187 4.61867,3.64 -94.96267,223.67466 h -6.27333 z"
+       style="fill:#50555a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.33333" />
+    <path
+       id="path9"
+       d="m 492.75199,217.90134 h 101.91066 v 5.29733 H 492.75199 Z"
+       style="fill:#50555a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.33333" />
+  </g>
+</svg>
