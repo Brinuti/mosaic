@@ -57,6 +57,18 @@ function arlistaFomenu(h, mobil) {
   return h.replace(mobil ? MOBIL_FOGLALAS : ASZTALI_FOGLALAS, (m) => (mobil ? mobilArlista() : asztaliArlista()) + m);
 }
 
+// A Fodraszat lenyilobol a "Fodraszat Arak" pont kikerul (a tulajdonos kerese, 2026-10-09: nem mukodik; a regi Wixes oldal #comp-m5p3vmyh horgonya az ujratervezett
+// fodrasz-oldalakon nincs meg). Az arlistak az oldalakon (#arak-szekcio) es a /arlista oldalon vannak. Mobilon es asztalon is; az angol menube is ez kerul at.
+const FODRASZ_ARAK_ALMENU = /<li(?:(?!<li|<\/li>)[\s\S])*?href="\/noi-fodrasz-budapest-balayage-hajfestes#comp-m5p3vmyh"(?:(?!<\/li>)[\s\S])*?<\/li>/;
+function fodraszArakKi(h) {
+  return h.replace(FODRASZ_ARAK_ALMENU, '');
+}
+
+// Az akciosav (Októberi akcio ...) linkje ugyanabban az ablakban nyiljon (a tulajdonos kerese, 2026-10-09), ne uj lapon: a Wixes fejlecben target="_blank" volt.
+function akciosavSajatAblak(h) {
+  return h.replace(/(<a href="\/head-spa-kedvezmeny" )target="_blank"/g, '$1target="_self"');
+}
+
 function parosFomenu(h, mobil) {
   if (mobil) {
     const m = h.match(MOBIL_PAROS_ALMENU);
@@ -221,6 +233,8 @@ export function fejlecAtalakit(html, mobil, angol = html.includes(NYELV_EN)) {
   html = ajandekMenu(html, mobil);
   html = html.replace(HEADER, (h) => {
     h = menuLinkek(h);
+    h = fodraszArakKi(h);
+    h = akciosavSajatAblak(h);
     h = parosFomenu(h, mobil);
     h = arlistaFomenu(h, mobil);
     h = nyelvJelveny(h, angol, mobil);

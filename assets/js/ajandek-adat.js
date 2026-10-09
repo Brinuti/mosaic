@@ -194,7 +194,7 @@
   // Valodi vendegvelemeny CSAK akkor mehet ide, ha letezik es a vendeg/Google-megjelenites
   // engedi. Soha ne generalj idezetet. A Google-osszegzes (GOOGLE) a tulajdonos 2026-10-03-i adata:
   // ha az ertekeles szama jelentosen valtozik, itt kell frissiteni.
-  var GOOGLE = { pont: '4,9', darab: '1.257' };   // a Trustindex-widget szama (2026-10-04); idonkent frissitendo
+  var GOOGLE = { pont: '4,9', darab: '1.266' };   // a Trustindex-widget szama (2026-10-09; tartalek: az aktualis szamot a google-szam.js irja be); idonkent frissitendo
   var GOOGLE_SZOVEG = GOOGLE.pont + ' · ' + GOOGLE.darab + ' Google-vélemény';
   var PROOFOK = {
     general: {

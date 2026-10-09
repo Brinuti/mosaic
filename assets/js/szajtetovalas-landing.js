@@ -29,6 +29,24 @@
     if (c && gomb) { gomb.querySelector('.hv-szoveg').textContent = c[0]; gomb.setAttribute('aria-label', c[1]); }
   };
 
+  // Asztalon (>= 1101 px) a videobox magassaga a hero szovegoszlopanak magassaga (a cim teteje -> az also badge alja), a szelesseg a video aranya (9:16):
+  // a doboz ne legyen magasabb, mint a szoveg. A szoveg termeszetes magassagat a gyerekelemek kiterjedesebol szamoljuk (a racs nyujtasatol fuggetlenul).
+  const szovegOszlop = document.querySelector('.hero-szoveg');
+  const videoMeret = () => {
+    if (!kartya || !szovegOszlop) return;
+    if (!matchMedia('(min-width: 1101px)').matches) { kartya.style.removeProperty('--vh-mag'); return; }
+    const gyerekek = [...szovegOszlop.children].filter((e) => e.getBoundingClientRect().height > 0);
+    if (!gyerekek.length) return;
+    const felso = Math.min(...gyerekek.map((e) => e.getBoundingClientRect().top)), also = Math.max(...gyerekek.map((e) => e.getBoundingClientRect().bottom));
+    const mag = Math.max(360, Math.round(also - felso));
+    kartya.style.setProperty('--vh-mag', mag + 'px');
+  };
+  videoMeret();
+  addEventListener('resize', videoMeret);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(videoMeret);
+  addEventListener('load', videoMeret);
+  if (window.ResizeObserver && szovegOszlop) new ResizeObserver(videoMeret).observe(szovegOszlop);
+
   if (kartya && video && gomb) {
     let betoltve = document.readyState === 'complete', lathato = false, inditva = false;
     const nemaInditas = () => {

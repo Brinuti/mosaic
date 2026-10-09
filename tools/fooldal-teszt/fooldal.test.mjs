@@ -78,10 +78,10 @@ describe('/ (főoldal)', () => {
     await ctx.close();
   });
 
-  test('a szekciók sorrendje a látványterv szerint: hero, bizalmi sáv, szolgáltatások, élmények, ajándékkártya – utána a mostani főoldal tartalma', async () => {
+  test('a szekciók sorrendje a látványterv szerint: hero, bizalmi sáv, magazin-logó sáv, szolgáltatások, élmények, ajándékkártya – utána a mostani főoldal tartalma', async () => {
     const { p, ctx } = await nyit();
     const idk = await p.$$eval('main > section', (l) => l.map((s) => s.id));
-    assert.deepEqual(idk.slice(0, 5), ['hero', '', 'szolgaltatasok', 'elmenyek', 'ajandek']);
+    assert.deepEqual(idk.slice(0, 6), ['hero', '', '', 'szolgaltatasok', 'elmenyek', 'ajandek']);   // hero, bizalmi sáv, magazin-logó sáv, szolgáltatások, ...
     for (const id of ['vendegek', 'velemenyek', 'mit-kapsz', 'elemek', 'fejbor', 'oxygeni', 'kezek', 'szalon', 'gyik', 'helyszin']) assert.ok(idk.includes(id), 'hiányzik a szekció: ' + id);
     assert.ok(!idk.includes('paros'), 'a főoldali páros blokk kikerült (2026-10-09, a tulajdonos kérésére)');
     // egy H2 szekciónként; a látványterv címei szó szerint
@@ -112,7 +112,9 @@ describe('/ (főoldal)', () => {
     assert.equal(await p.getAttribute('#hero a.vh-google', 'href'), '#velemenyek');
     assert.equal(await p.locator('#velemenyek').count(), 1, 'a Google-sor célja létezik');
     // az "Írtak rólunk" sáv helye: a hero és a bizalmi sáv között semmi nincs (a tulajdonos illeszti be)
-    assert.equal(await p.$$eval('main > *', (l) => l[1].className), 'bizalom', 'a hero után közvetlenül a bizalmi sáv jön (a logó-sáv helye)');
+    assert.equal(await p.$$eval('main > *', (l) => l[1].className), 'bizalom', 'a hero után közvetlenül a bizalmi sáv jön');
+    assert.equal(await p.$$eval('main > *', (l) => l[2].className), 'sajto-logok-sav', 'utána a magazin-logó sáv jön, közvetlenül a "Mire van szükséged?" fölött');
+    assert.equal(await p.$$eval('main > *', (l) => l[3].id), 'szolgaltatasok');
     await ctx.close();
   });
 
@@ -257,7 +259,8 @@ describe('/ (főoldal)', () => {
         // telefonon a hero képe felül van (a szöveg alatta), a bizalmi sáv 2x2
         const poz = await p.evaluate(() => ({ kep: document.querySelector('.vh-hatter').getBoundingClientRect().top, szoveg: document.querySelector('#hero h1').getBoundingClientRect().top }));
         assert.ok(poz.kep < poz.szoveg, 'a kép a szöveg felett');
-        assert.equal(await p.$$eval('.bizalom-lista li', (l) => new Set(l.map((x) => Math.round(x.getBoundingClientRect().top))).size), 2, 'a bizalmi sáv 2 sorban');
+        assert.equal(await p.$$eval('.bizalom-lista li', (l) => new Set(l.map((x) => Math.round(x.getBoundingClientRect().top))).size), 1, 'a bizalmi sáv egy sorban (3 elem: a Google a hero-ban van, nem ismétlődik)');
+        assert.equal(await p.locator('.bizalom-lista li').count(), 3);
       }
       await ctx.close();
     });
