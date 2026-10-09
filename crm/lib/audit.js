@@ -10,11 +10,9 @@ export function auditStmt(db, { staffId = null, action, resource, resourceId = n
 /** security_audit sor kiirasa kulon (ha nincs mas irando) */
 export async function naplo(db, adat) { return auditStmt(db, adat).run(); }
 
-/** booking_event sor (utasitas). idempotencyKey UNIQUE: ismetelt esemeny nem duplikal (INSERT OR IGNORE). */
-export function bookingEventStmt(db, { bookingId, idempotencyKey, type, fromStatus = null, toStatus = null, oldStart = null, newStart = null, actor = 'system', eventAt, detail = null, now = most() }) {
-  return keszit(db,
-    'INSERT OR IGNORE INTO booking_event (id, booking_id, idempotency_key, type, from_status, to_status, old_start_at, new_start_at, actor, event_at, detail, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)',
-    uuid(), bookingId, idempotencyKey, type, fromStatus, toStatus, oldStart, newStart, actor, eventAt ?? now, jsonIr(detail), now);
+/** booking_event sor (utasitas). idempotencyKey UNIQUE: ismetelt esemeny nem duplikal (INSERT OR IGNORE). ha: felteteles iras (db.beszurHa) */
+export function bookingEventStmt(db, { bookingId, idempotencyKey, type, fromStatus = null, toStatus = null, oldStart = null, newStart = null, actor = 'system', eventAt, detail = null, now = most(), ha = null }) {
+  return beszurHa(db, { tabla: 'booking_event', ignore: true, ha, adat: { id: uuid(), booking_id: bookingId, idempotency_key: idempotencyKey, type, from_status: fromStatus, to_status: toStatus, old_start_at: oldStart, new_start_at: newStart, actor, event_at: eventAt ?? now, detail: jsonIr(detail), created_at: now } });
 }
 
 /** merge_audit sor (utasitas) */

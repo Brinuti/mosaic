@@ -11,7 +11,7 @@ import { SZEREPKOROK } from './constants.js';
 const TERAPEUTA = {
   guest_basic: ['read', 'write'], booking: ['read', 'confirm'], course: ['read', 'write'], package: ['read'], credit: ['read', 'mark'],
   assessment: ['read', 'review'], contraindication_alert: ['read', 'resolve'], camera_image: ['read', 'write'], image_comparison: ['read', 'write'],
-  share_grant: ['read', 'write'], plan: ['read', 'write'], treatment_note: ['read', 'write'], consent: ['read'],
+  share_grant: ['read', 'write', 'revoke'], plan: ['read', 'write'], treatment_note: ['read', 'write'], consent: ['read'],
   complaint: ['read', 'write'], compensation: ['read', 'request'], merge: ['read', 'approve'], message: ['read'],
 };
 
@@ -32,7 +32,7 @@ export const MATRIX = Object.freeze({
   },
   salon_manager: {
     guest_basic: ['read'], booking: ['read'], course: ['read'], package: ['read', 'approve'], gift: ['read'], credit: ['read'],
-    complaint: ['read'], compensation: ['read', 'approve', 'reassign'], stats_aggregate: ['read'], audit: ['read'], settings: ['read', 'write'], merge: ['read'],
+    complaint: ['read', 'reassign'], compensation: ['read', 'approve'], stats_aggregate: ['read'], audit: ['read'], settings: ['read', 'write'], merge: ['read'],
   },
   marketing: { stats_aggregate: ['read'], message_template: ['read', 'write'] },
   admin: {
