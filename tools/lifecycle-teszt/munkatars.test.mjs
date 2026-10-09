@@ -429,6 +429,32 @@ test('http: a munkatársi level a /bejovo végponton át, az elo-ellenorzes a Sa
   } finally { globalThis.fetch = eredeti; }
 });
 
+test('http (DECISION #119 holdout): figyel módban a munkatársi level SOHA nem indít küldést - a /bejovo nem hívja a tick-et, a függő üzenetek érintetlenek', async () => {
+  const db = d1(); const eredeti = globalThis.fetch;
+  const kulcs = 'proba-kulcs-2';
+  const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(kulcs)))].map((b) => b.toString(16).padStart(2, '0')).join('');
+  const env = { ...ENV, LIFECYCLE_MOD: 'teszt', LIFECYCLE_MUNKATARS_MOD: 'figyel', LIFECYCLE_DB: db, LIFECYCLE_KULCS_HASH: hash }; // teszt mod: a "most" felulirhato
+  const hiv = (torzs) => api(new Request('https://x.test/api/lifecycle/bejovo', { method: 'POST', headers: { 'x-lifecycle-kulcs': kulcs }, body: JSON.stringify({ ...torzs, most: MOST + ORA }) }), env, {});
+  try {
+    const f = await ingest(db, env, foglaltLevel(), MOST); // NINCS tick: a T0 uzenetek fuggoben allnak, esedekesek
+    assert.equal(f.ok, true);
+    const elotte = sorok(db, 'SELECT uzenet_id, allapot, probalkozas FROM kuldesek ORDER BY id');
+    assert.ok(elotte.length > 0 && elotte.every((x) => x.allapot === 'fuggoben'));
+    globalThis.fetch = async (url) => { const r = new Response('', { status: 200 }); Object.defineProperty(r, 'url', { value: String(url).replace('bookingDetails', 'deleteSuccess') }); return r; };
+    const lev = munkatarsLevel({ uzenetId: 'holdout-1' });
+    const valasz = await (await hiv({ uzenetId: lev.uzenetId, targy: lev.targy, kuldo: lev.kuldo, html: lev.html, kuldve: MOST })).json();
+    assert.equal(valasz.tipus, 'figyel'); assert.equal(valasz.volna, 'szalon_torolte'); assert.equal(valasz.valtozas, false);
+    assert.equal(valasz.kuldes, null); // a tick nem futott
+    assert.deepEqual(sorok(db, 'SELECT uzenet_id, allapot, probalkozas FROM kuldesek ORDER BY id'), elotte); // egyetlen kuldes sem probalkozott
+    assert.equal(alapAllapot(db).allapot, 'aktiv');
+    // riasztas (nev-eltérés) és belső blokk sem indít küldést
+    const nevElter = munkatarsLevel({ uzenetId: 'holdout-2', nev: 'Masvalaki' });
+    const r2 = await (await hiv({ uzenetId: nevElter.uzenetId, targy: nevElter.targy, kuldo: nevElter.kuldo, html: nevElter.html, kuldve: MOST })).json();
+    assert.equal(r2.tipus, 'riasztas:nev_elteres'); assert.equal(r2.kuldes, null);
+    assert.deepEqual(sorok(db, 'SELECT uzenet_id, allapot, probalkozas FROM kuldesek ORDER BY id'), elotte);
+  } finally { globalThis.fetch = eredeti; }
+});
+
 // ---- VALODI (kitakart) munkatarsi levelek: a 2026-10-09-i visszajatszasi csomagbol (fixtures/munkatarsi-levelek.json) -----------------------------------
 const ENV_MIND = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'headspa,hair,oxygen,laser,pmu', LIFECYCLE_MUNKATARS_MOD: 'be' };
 const VALODI = JSON.parse(fs.readFileSync(new URL('./fixtures/munkatarsi-levelek.json', import.meta.url), 'utf8')).esetek;
