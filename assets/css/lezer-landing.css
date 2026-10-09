@@ -116,7 +116,7 @@ p.kedv-sor { display: flex; align-items: center; gap: 10px; width: fit-content; 
 .gyors-arak { padding: 64px 0 56px; background: #f7f8f6; border-top: 1px solid var(--vonal); }
 .gyors-arak .halk { margin-top: 10px; }
 .gyors-racs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 32px; }
-.gyors-kartya { display: flex; flex-direction: column; background: linear-gradient(#fffefb, #fbf8f0); border: 1px solid #ece7d8; border-radius: 22px; overflow: hidden; box-shadow: var(--arnyek); text-decoration: none; color: inherit; transition: transform .15s, box-shadow .15s; }
+.gyors-kartya { display: flex; flex-direction: column; background: linear-gradient(#fffefb, #f6f8f3); border: 1px solid #dfe3d8; border-radius: 22px; overflow: hidden; box-shadow: var(--arnyek); text-decoration: none; color: inherit; transition: transform .15s, box-shadow .15s; }
 .gyors-kartya:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(40, 30, 20, .12); }
 .abra-kep { display: block; padding: 12px 14px 0; }
 .abra-kep img { display: block; width: 100%; height: auto; aspect-ratio: 344 / 311; border-radius: 14px 14px 0 0; object-fit: cover; }

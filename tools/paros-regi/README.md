@@ -2,6 +2,7 @@
 
 Az oldal **tartalma szó szerint a régi (élő) oldalról** van, csak a megjelenés új. A régi oldal hibáit / ellentmondásait nem javítottuk (lásd a PR „Észrevételek” részét).
 Az újratervezett `paros-headspa-budapest-uj` oldalhoz nem nyúltunk, az `-uj` címen változatlanul megvan.
+**2026-10-09:** az éles oldal kézzel kiegészült az -uj oldal hero-videójával, a szabad időpontokkal és a „Kivel jönnél?” résszel (lásd `docs/PAROS_LANDING.md`): a generátor (`gen.mjs`) ezt nem tudja, az újrafuttatás felülírná – a fájlt kézzel szerkesszük.
 
 - `gen.mjs`: a `forras/paros.folyam.txt` (a régi oldal kinyert tartalma, `tools/ujrastilus/folyam.mjs`) + a régi oldal HTML-je (`klon/paros-headspa-budapest.html`: a négy csomagkártya
   felsorolása, az árak) alapján építi a `foglalas/paros-headspa-budapest.html` fájlt (`node tools/paros-regi/gen.mjs`). Az újrafuttatás felülírja a kimenetet.

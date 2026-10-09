@@ -25,6 +25,12 @@ fotóhátteres sötét sáv („Nem két külön kezelés… Egy közös élmén
 A fejlécet / láblécet a közös build adja (nem a terv saját, egyszerűsített fejléce): minden oldal fejléce egy helyről jön. A fejléc rózsaszín akciós sávja ezen az oldalon rejtett (mint a lézeres / oxigén landingen).
 Nincs felcím (arany cím a főcím felett) sehol (a tulajdonos korábbi kérése).
 
+## Az ÉLES páros oldal (`/paros-headspa-budapest`) kapott részei az -uj oldalról (2026-10-09)
+
+A tulajdonos döntése: az éles (újrastílusú, régi tartalmú) oldal marad, az `-uj` oldalról **csak** ezek kerültek át: a **hero mozgó videója** (`paros-hero-barat.mp4`, a régi hero-kép helyén), a **„Legközelebbi szabad Páros HeadSpa időpontok”** (Salonic `302999`, a hero alatt) és a **„Kivel jönnél?”** (4 kártya). Minden más a régi tartalom.
+Fájlok: `foglalas/paros-headspa-budapest.html` (kézzel szerkesztett; a `tools/paros-regi/gen.mjs` kimenete ezt nem tartalmazza, ne futtasd újra felülírásra), `assets/css/paros-regi.css` (`.lv-ido`, `.lv-kivel`), `assets/js/paros-regi.js` (időpont-választó + hero-videó). Teszt: `tools/ujrastilus-teszt/paros-regi.test.mjs` (az első teszt).
+Az `-uj` oldal változatlanul megmaradt (rejtett, noindex), de nem lesz használva.
+
 ## Hero-videó és képek (a szalon valódi felvételei, 2026-10-07)
 
 A tulajdonos kérésére (az első változat „puritán” volt) a Drive-ból és a közösségi oldalakról a legjobb valódi páros felvételek kerültek az oldalra (a Drive kapcsolat a deakfi@grantis.hu fiókot éri el):
