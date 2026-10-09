@@ -9,6 +9,7 @@
 // Kornyezeti valtozok: CHROME_UTVONAL, PLAYWRIGHT_UTVONAL (a playwright-core node_modules mappaja).
 import test, { before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { szerverInditas, GYOKER } from '../headspa-teszt/szerver.mjs';
@@ -133,4 +134,51 @@ describe('foldali logosav: kulon szekcio, kattintas a "Noi lapok" reszre', () =>
       await ctx.close();
     });
   }
+});
+
+describe('2026-10-09 (3. kor): kis telefonon a hero ket gombja latszik; a logosav uj cime; a mobil sticky sav sehol nem log ki', () => {
+  for (const [ut, nev] of [['/index', 'fooldal'], ['/paros-headspa-budapest', 'paros']]) {
+    for (const [w, h] of [[360, 640], [375, 667], [390, 844]]) {
+      test(`${nev} ${w}x${h}: mindket hero-gomb (idopont + ajandekkartya) belefer az elso kepernyobe`, async () => {
+        const { p, ctx } = await nyit(ut, w, h);
+        const m = await p.evaluate(() => ({ g: [...document.querySelectorAll('#hero .vh-cta .vh-gomb')].map((e) => Math.round(e.getBoundingClientRect().bottom)), ablak: innerHeight }));
+        assert.equal(m.g.length, 2, 'ket gomb');
+        assert.ok(m.g.every((b) => b <= m.ablak), `a gombok alja ${m.g.join(' / ')} <= ${m.ablak} (az ablak magassaga)`);
+        await ctx.close();
+      });
+    }
+  }
+
+  test('a foldali logosav cime: "A legnagyobb noi divatlapok mar mind jartak nalunk" (asztalon es telefonon is), nem a regi', async () => {
+    for (const w of [1440, 390]) {
+      const { p, ctx } = await nyit('/index', w);
+      const t = (await p.textContent('.sajto-logok-cim')).trim();
+      assert.equal(t, 'A legnagyobb női divatlapok már mind jártak nálunk');
+      assert.ok(!(await p.content()).includes('divatvilág'), 'a regi cim nincs sehol');
+      await ctx.close();
+    }
+  });
+
+  // minden sajat oldal, ahol van mobil sticky CTA (.sticky-cta): 320-430 px kozott a sav es minden gyereke a kepernyon belul van, nincs vizszintes gorgetes
+  const STICKY_OLDALAK = fs.readdirSync(path.join(GYOKER, 'foglalas')).filter((f) => f.endsWith('.html') && fs.readFileSync(path.join(GYOKER, 'foglalas', f), 'utf8').includes('class="sticky-cta"')).map((f) => f.replace(/\.html$/, ''));
+  test(`a mobil sticky sav (${STICKY_OLDALAK.length} oldalon) 320-430 px kozott sehol nem log ki (kedvezmeny oldal: korabban a gomb 34 px-szel kilogott)`, async () => {
+    assert.ok(STICKY_OLDALAK.includes('head-spa-kedvezmeny') && STICKY_OLDALAK.includes('index'));
+    const hibak = [];
+    for (const nev of STICKY_OLDALAK) {
+      for (const w of [320, 360, 390, 430]) {
+        const { p, ctx } = await nyit('/' + nev, w, 700);
+        await p.evaluate(async () => { for (let y = 0; y < 2500; y += 400) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); } });
+        await p.waitForTimeout(350);
+        const m = await p.evaluate(() => {
+          const e = document.querySelector('.sticky-cta');
+          const r = e.getBoundingClientRect();
+          const ki = [e, ...e.querySelectorAll('*')].filter((c) => { const q = c.getBoundingClientRect(); return q.width > 0 && (q.right > innerWidth + 0.5 || q.left < -0.5); }).map((c) => c.className || c.tagName);
+          return { lathato: getComputedStyle(e).display !== 'none', ki, doc: document.documentElement.scrollWidth <= document.documentElement.clientWidth, r: r.right };
+        });
+        if (m.lathato && (m.ki.length || !m.doc)) hibak.push(`${nev} ${w}px: kilog ${m.ki.join(',')} (doc ok: ${m.doc})`);
+        await ctx.close();
+      }
+    }
+    assert.deepEqual(hibak, []);
+  });
 });

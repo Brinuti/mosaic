@@ -117,11 +117,11 @@ describe(`/${NEV}`, () => {
     assert.equal(await p.getAttribute('#kivel a.kivel-kartya', 'href'), '/headspa-ajandekkartya?variant=friend');
     assert.deepEqual(hibak, []);
     await ctx.close();
-    // telefonon: nincs vizszintes gorgetes, felul a video (300 px), alatta a cim
+    // telefonon: nincs vizszintes gorgetes, felul a video (284 px), alatta a cim
     const m = await nyit(nev, { szeles: 390 });
     const adat = await m.p.evaluate(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(); return { szeles: document.documentElement.scrollWidth, ablak: innerWidth, kepMag: Math.round(r('.vh-hatter').height), kepTop: Math.round(r('.vh-hatter').top - r('#hero').top), cimTeteje: Math.round(r('main h1').top - r('#hero').top) }; });
     assert.ok(adat.szeles <= adat.ablak, 'nincs vizszintes gorgetes: ' + JSON.stringify(adat));
-    assert.deepEqual([adat.kepMag, adat.kepTop], [300, 0], 'felul a video: ' + JSON.stringify(adat));
+    assert.deepEqual([adat.kepMag, adat.kepTop], [284, 0], 'felul a video: ' + JSON.stringify(adat));
     assert.ok(adat.cimTeteje >= 200 && adat.cimTeteje < 300, 'a cim a video aljan kezdodik: ' + JSON.stringify(adat));
     await m.ctx.close();
   });

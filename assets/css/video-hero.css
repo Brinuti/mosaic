@@ -106,43 +106,44 @@ a:hover > .vh-nyil, .vh-gomb:hover .vh-nyil { transform: translateX(3px); }
 
 /* ====== telefon: felul a video (300 px), ami sotetzoldbe olvadva atmegy a szovegbe; a jelvenyek egy sorban; a play gomb a szoveg alatt ====== */
 @media (max-width: 700px) {
-  .vh-hero::before { background: linear-gradient(180deg, rgba(16, 34, 31, .08) 0, rgba(16, 34, 31, .1) 110px, var(--vh-zold) 300px, var(--vh-zold) 100%); }
-  .vh-hatter, .vh-video { bottom: auto; height: 300px; object-position: var(--vh-poz-mobil); }
-  .vh-tart { width: calc(100% - 32px); display: block; padding: 232px 0 26px; }
+  .vh-hero::before { background: linear-gradient(180deg, rgba(16, 34, 31, .08) 0, rgba(16, 34, 31, .1) 100px, var(--vh-zold) 284px, var(--vh-zold) 100%); }
+  .vh-hatter, .vh-video { bottom: auto; height: 284px; object-position: var(--vh-poz-mobil); }
+  .vh-tart { width: calc(100% - 32px); display: block; padding: 214px 0 22px; }
   .vh-szoveg { max-width: none; }
-  .vh-hero h1 { font-size: clamp(28px, 8vw, 34px); line-height: 1.1; }
-  .vh-al { margin: 12px 0 12px; font-size: 15px; }
-  .vh-ar { margin-bottom: 12px; }
+  .vh-hero h1 { font-size: clamp(28px, 8vw, 34px); line-height: 1.06; }
+  .vh-al { margin: 8px 0 9px; font-size: 14.5px; line-height: 1.36; }
+  .vh-ar { margin-bottom: 8px; }
   .vh-ar b { font-size: 32px; }
   .vh-ar s { font-size: 18px; }
   .vh-ar-kicsi b { font-size: 24px; }
   .vh-ar-kicsi s { font-size: 15px; }
   .vh-sor { font-size: 14.5px; }
-  .vh-akcio { margin: -6px 0 14px; font-size: 14.5px; }
+  .vh-akcio { margin: -6px 0 10px; font-size: 14.5px; }
   /* az ar (a regi ar + az uj ar) es az akcios sor TELEFONON EGY SORBAN: a betumeret a doboz szelessegehez igazodik (cqw), az --r a sor szovegenek szelessege betumeretben
      (oldalankent merve + ~4% ráhagyas; a tesztek 320-430 px kozott ellenorzik, hogy egy sor marad es nem lóg ki) */
-  .vh-arsor { container-type: inline-size; display: flex; flex-wrap: nowrap; align-items: baseline; margin: 0 0 14px; white-space: nowrap; }
+  .vh-arsor { container-type: inline-size; display: flex; flex-wrap: nowrap; align-items: baseline; margin: 0 0 10px; white-space: nowrap; }
   .vh-arsor > p { flex: none; margin: 0; font-size: min(15px, calc(100cqw / var(--r, 16))); }
   .vh-arsor > p + p { margin-left: .7em; }
   .vh-arsor .vh-ar { flex-wrap: nowrap; gap: 0 .4em; }
   .vh-arsor .vh-ar b { font-size: 1.55em; }
   .vh-arsor .vh-ar s { font-size: 1em; }
   /* a harom jelveny egy sorban, egyenlo oszlopokban: felul az ikon, alatta a (rovid) felirat (360-390 px szelessegen is elfer) */
-  .vh-jelvenyek { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 18px; }
-  .vh-jelvenyek li { flex-direction: column; justify-content: flex-start; gap: 6px; text-align: center; font-size: 12.5px; line-height: 1.25; }
+  .vh-jelvenyek { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; }
+  .vh-jelvenyek li { flex-direction: column; justify-content: flex-start; gap: 4px; text-align: center; font-size: 12.5px; line-height: 1.2; }
   .vh-csak-nagy { display: none; }
-  .vh-ikon { width: 30px; height: 30px; }
-  .vh-ikon svg { width: 15px; height: 15px; }
+  .vh-ikon { width: 28px; height: 28px; }
+  .vh-ikon svg { width: 14px; height: 14px; }
   .vh-cta .vh-gomb { flex: 1 1 100%; white-space: normal; text-align: center; }
-  .vh-gomb-nagy { padding: 15px 24px; }
+  .vh-gomb-nagy { padding: 12px 24px; }
+  .vh-cta { gap: 9px 14px; }
   .vh-ajandek { text-align: center; font-size: 13.5px; }
-  .vh-google { margin-top: 16px; width: 100%; justify-content: center; flex-wrap: nowrap; gap: 4px 6px; white-space: nowrap; }
+  .vh-google { margin-top: 12px; width: 100%; justify-content: center; flex-wrap: nowrap; gap: 4px 6px; white-space: nowrap; }
   .vh-google svg.vh-g-ikon { width: 20px; height: 20px; }
   .vh-g-pont, .vh-g-db { font-size: 12.5px; }
   .vh-csillagok { font-size: 12px; letter-spacing: 0; }
   .vh-csillag-kep { height: 14px; }
   .vh-hely { justify-content: center; font-size: 13px; }
-  .vh-lejatszas { position: static; margin: 18px auto 0; justify-content: center; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .18); width: 100%; }
+  .vh-lejatszas { position: static; margin: 14px auto 0; justify-content: center; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .18); width: 100%; }
   .vh-play { width: 52px; height: 52px; }
   .vh-play svg { width: 21px; height: 21px; }
   .vh-lb-tartalom { padding: 60px 0 20px; }

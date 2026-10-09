@@ -157,10 +157,12 @@ const CSS_VERZIO = crypto.createHash('sha1').update(['booking-engine.css', 'book
 const IMG = path.join(DIST, 'assets', 'img'), IMG_M = path.join(IMG, 'm');
 fs.mkdirSync(IMG_M, { recursive: true });
 for (const f of fs.readdirSync(IMG)) {
-  if (f === 'm' || fs.existsSync(path.join(IMG_M, f))) continue;
-  // az almappak (pl. pmu/) is: a mobil oldalakon minden kephivatkozas az m/ ala mutat
-  if (fs.statSync(path.join(IMG, f)).isDirectory()) fs.cpSync(path.join(IMG, f), path.join(IMG_M, f), { recursive: true });
-  else fs.copyFileSync(path.join(IMG, f), path.join(IMG_M, f));
+  if (f === 'm') continue;
+  // az almappak (pl. pmu/, fooldal/haj/) is: a mobil oldalakon minden kephivatkozas az m/ ala mutat.
+  // Mappa eseten egyesitunk (force:false): ha az m/ alatt mar van a mappabol nehany kicsinyitett
+  // kep, a tobbi (pl. fooldal/haj/) akkor is atkerul, a mar meglevo kicsinyitettet nem irjuk felul.
+  if (fs.statSync(path.join(IMG, f)).isDirectory()) fs.cpSync(path.join(IMG, f), path.join(IMG_M, f), { recursive: true, force: false, errorOnExist: false });
+  else if (!fs.existsSync(path.join(IMG_M, f))) fs.copyFileSync(path.join(IMG, f), path.join(IMG_M, f));
 }
 // sitemap es robots.txt: elesben a Wix mostani fajljai szo szerint (tools/wix-sitemap/),
 // hogy a keresok ugyanazt a cimlistat lassak; a probaoldalon mindent tiltunk.

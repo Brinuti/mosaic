@@ -147,7 +147,7 @@ button.klip-kartya { display: block; width: 100%; padding: 0; border: 0; cursor:
 .ajanlat-fej { font: 600 12px/1 var(--test); letter-spacing: .2em; text-transform: uppercase; color: var(--arany); }
 .ajanlat-nev { margin-top: 12px; font: 500 21px/1.3 var(--cim); color: var(--sotet); }
 .ajanlat-ar { margin: 14px 0 18px; }
-.ajanlat-ar b { font: 500 48px/1.05 var(--cim); color: var(--sotet); white-space: nowrap; }
+.ajanlat-ar b { font: 500 42px/1.05 var(--cim); color: var(--sotet); white-space: nowrap; }
 .pipa-lista { list-style: none; padding: 0; margin: 0; display: grid; gap: 9px; }
 .pipa-lista li { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; line-height: 1.4; color: #2c3d3d; }
 .pipa-lista svg { flex: none; width: 21px; height: 21px; margin-top: 1px; color: var(--zold); }
@@ -251,6 +251,7 @@ a.ido:hover, a.ido:focus-visible { background: var(--sotet); border-color: var(-
 
 /* --- mobil sticky CTA --- */
 .sticky-cta { display: none; }
+.sticky-cta, .sticky-cta * { box-sizing: border-box; }   /* a sticky a <main> kivul van: a width:100% + padding + keret ne logjon ki a kepernyorol (2026-10-09) */
 
 /* ====== tablet ====== */
 @media (max-width: 1180px) {
@@ -305,7 +306,7 @@ a.ido:hover, a.ido:focus-visible { background: var(--sotet); border-color: var(-
   .ido-racs { grid-template-columns: 1fr; gap: 10px; margin-top: 12px; }
   .ido-kartya { order: -1; }
   .ajanlat-kartya, .hangsuly-kartya, .ido-kartya { padding: 16px 14px 16px; border-radius: 18px; }
-  .ajanlat-ar b { font-size: 34px; }
+  .ajanlat-ar b { font-size: 27px; }   /* 2026-10-09: a tulajdonos szerint az ar a kartyan tul nagy volt (34 px) */
   /* a szabad idopontok kompaktan: elore / vissza nyil az oszlopok ket oldalan, kisebb gombok, kevesebb fuggoleges hely */
   .ido-kartya h3 { font-size: 18px; margin-bottom: 6px; }
   .napok-keret { gap: 4px; }
@@ -450,7 +451,7 @@ a.ido:hover, a.ido:focus-visible { background: var(--sotet); border-color: var(-
   .valtozat-media .kartya-szoveg small { font-size: 12.5px; }
   .valtozat-jelolo { font-size: 14px; }
   .valtozat-jelolo i { width: 20px; height: 20px; }
-  .ajanlat-ar s { font-size: 17px; }
+  .ajanlat-ar s { font-size: 15px; }
 }
 /* telefonon: hero -> szabad idopontok (valaszto + idopontok) -> akcios blokk -> milyen erzes -> nehez elmagyarazni -> ... */
 @media (max-width: 700px) {

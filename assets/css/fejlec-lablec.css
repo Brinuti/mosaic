@@ -155,7 +155,7 @@
   #SITE_FOOTER h3 { font-size: 17px; margin-bottom: 10px; }
   #SITE_FOOTER .mhl-also { flex-direction: column; text-align: center; padding: 16px 0 22px; }
   /* a jogi sor (c Big in Japan Kft. - ASZF - Impresszum - Suti beallitasok) egy sorban marad: a betumeret a kepernyo szelessegehez igazodik */
-  #SITE_FOOTER .mhl-also p { font-size: min(12.5px, 2.75vw); white-space: nowrap; letter-spacing: 0; }
+  #SITE_FOOTER .mhl-also p { max-width: 100%; font-size: min(12.5px, 2.6vw); white-space: normal; text-wrap: balance; letter-spacing: 0; }   /* a magyar sor egy sorban marad; a hosszabb angol (65 karakter) 412+ px-en ket sorba tor, nem log ki az oldalbol */
 }
 
 /* ============ "i" (INFO) FELUGRO ABLAK (2026-10-07): az oldal stilusaban (krem hatter, Playfair cim, arany reszletek), jobbrol uszik be ============

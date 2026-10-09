@@ -72,7 +72,7 @@
 
   // --- 2. körhinta -------------------------------------------------------------------------------------------------------------------
   for (const k of document.querySelectorAll('[data-korhinta]')) {
-    const sav = k.querySelector('.korhinta-sav');
+    const sav = k.querySelector('.korhinta-sav, .szalon-galeria');
     const elozo = k.querySelector('.korhinta-gomb.elozo'), kov = k.querySelector('.korhinta-gomb.kovetkezo');
     if (!sav) continue;
     const lep = (irany) => sav.scrollBy({ left: irany * Math.max(240, sav.clientWidth * 0.8), behavior: csokkentett ? 'auto' : 'smooth' });

@@ -72,10 +72,23 @@ describe('az oldal forrasa (fajl)', () => {
     assert.match(html, /<h2 id="eredmenyek-cim" class="kozepre">Az oxigénterápia ilyen hatást ér el<\/h2>/);
     assert.ok(!html.includes('Az Oxygeni vendégeinek valós javulásai'), 'a regi cim eltunt');
     assert.match(html, /Oxygeni Hair vendégeinek valós előtte–utána fotói/, 'a lead megtartja a tenyt: ezek az Oxygeni vendegei');
-    const oxygeni = html.slice(html.indexOf('id="eredmenyek"'), html.indexOf('id="sajat-eredmenyek"'));
+    const oxygeni = html.slice(html.indexOf('id="eredmenyek"'), html.indexOf('id="glamour"'));
     assert.equal((oxygeni.match(/Forrás: Oxygeni Hair/g) || []).length, 4, 'a negy panasz-csoport tovabbra is jeloli a forrast');
     assert.equal((oxygeni.match(/<figure class="ba">/g) || []).length, 21, 'a regi 21 kartya valtozatlan');
     assert.ok(!oxygeni.includes('<figcaption>'), 'a regi kartyakon nincs felirat');
+  });
+
+  test('Glamour-ajanlo (2026-10-09): a ket eredmeny-szekcio kozott; a cikkbol SZO SZERINT a teljes mondat; "Glamour cikk" felirat + logo; link a cikkre (uj lapon, noopener); a logo-fajl megvan', () => {
+    const e = html.indexOf('id="eredmenyek"'), g = html.indexOf('id="glamour"'), s2 = html.indexOf('id="sajat-eredmenyek"');
+    assert.ok(e > -1 && g > e && s2 > g, 'sorrend: eredmenyek -> glamour -> sajat-eredmenyek');
+    const doboz = html.slice(g, s2);
+    assert.match(doboz, /<blockquote><p>A változás a hidratáló kezelésnek köszönhetően szinte azonnal érezhető, a látványos eredményhez azonban 3-4 hónapos, folyamatos terápiára van szükség\.<\/p><\/blockquote>/);
+    assert.match(doboz, /<span class="glamour-cimke">Glamour cikk<\/span>/);
+    assert.match(doboz, /<span class="glamour-logo" role="img" aria-label="Glamour"><\/span>/);
+    assert.match(doboz, /<a class="glamour-link" href="https:\/\/www\.glamour\.hu\/szepseg\/oxigenterapia-modszer-hajhullas\/wjcmlmd" target="_blank" rel="noopener" data-cta="glamour-cikk">/);
+    assert.ok(fs.existsSync(path.join(GYOKER, 'assets', 'img', 'sajto', 'logok', 'glamour.png')), 'a Glamour-logo fajl megvan');
+    const css = fs.readFileSync(path.join(GYOKER, 'assets', 'css', 'oxigen-landing.css'), 'utf8');
+    assert.match(css, /\.glamour-logo\s*\{[^}]*\/assets\/img\/sajto\/logok\/glamour\.png/);
   });
 
   test('az uj blokk: kulon szekcio, cim "Legfrissebb eredmenyeink", alcim "Valos eredmenyek vendegeinktol harom-ot alkalom utan", 6 kartya FELIRAT NELKUL, a hero-galeria valtozatlan', () => {
@@ -128,6 +141,28 @@ for (const [nev, mobil] of [['asztali (1440 px)', false], ['mobil (390 px)', tru
         assert.deepEqual(adat.torott, [], 'nincs torott kep');
         assert.ok(adat.szeles <= adat.ablak, `vizszintes gorges: scrollWidth ${adat.szeles} > ${adat.ablak}`);
         assert.deepEqual(hibak, []);
+      } finally { await ctx.close(); }
+    });
+
+    test('Glamour-ajanlo: az eredmenyek koze ekelve, kicsi (nem foglal sok helyet), a logo betoltodik, nincs kilogas, a link a cikkre mutat', async () => {
+      const { ctx, p } = await nyit({ mobil });
+      try {
+        const adat = await p.evaluate(() => {
+          const r = (sel) => { const e = document.querySelector(sel); const b = e.getBoundingClientRect(); return { t: b.top + scrollY, b: b.bottom + scrollY, l: b.left, r: b.right, w: b.width, h: b.height }; };
+          const logo = document.querySelector('.glamour-logo');
+          return { e: r('#eredmenyek'), g: r('#glamour'), d: r('.glamour-doboz'), s: r('#sajat-eredmenyek'), logo: r('.glamour-logo'), mask: getComputedStyle(logo).maskImage || getComputedStyle(logo).webkitMaskImage, ablak: innerWidth,
+            szoveg: document.querySelector('.glamour-doboz blockquote').innerText.trim(), cimke: document.querySelector('.glamour-cimke').textContent.trim(), cimkeLathato: getComputedStyle(document.querySelector('.glamour-cimke')).display !== 'none' };
+        });
+        assert.ok(adat.g.t >= adat.e.b - 1 && adat.s.t >= adat.g.b - 1, 'az eredmeny-szekciok kozott van');
+        assert.ok(adat.d.l >= 0 && adat.d.r <= adat.ablak, 'nem log ki: ' + adat.d.l + '..' + adat.d.r);
+        assert.ok(adat.d.h < (mobil ? 340 : 230), 'kicsi doboz: ' + Math.round(adat.d.h) + ' px');
+        assert.ok(adat.logo.w >= 90 && adat.logo.h >= 20, 'a logo latszik: ' + Math.round(adat.logo.w) + 'x' + Math.round(adat.logo.h));
+        assert.match(adat.mask, /glamour\.png/);
+        assert.equal(adat.szoveg.replace(/[„”"]/g, '').trim(), 'A változás a hidratáló kezelésnek köszönhetően szinte azonnal érezhető, a látványos eredményhez azonban 3-4 hónapos, folyamatos terápiára van szükség.');
+        assert.equal(adat.cimke, 'Glamour cikk');
+        const kep = await p.request.get(bazis + '/assets/img/sajto/logok/glamour.png');
+        assert.equal(kep.status(), 200, 'a logo-fajl kiszolgalhato');
+        assert.equal(await p.getAttribute('.glamour-link', 'href'), 'https://www.glamour.hu/szepseg/oxigenterapia-modszer-hajhullas/wjcmlmd');
       } finally { await ctx.close(); }
     });
 

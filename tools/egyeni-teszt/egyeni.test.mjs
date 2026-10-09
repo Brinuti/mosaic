@@ -97,6 +97,45 @@ describe('/head-spa-kedvezmeny (egyeni + paros)', () => {
     await ctx.close();
   });
 
+  test('"Meg sosem voltal Head Spa-n?": a gomb NEM a foglalashoz, hanem a videos szekciora (#mutat) visz; kattintasra odagorget, az URL nem valtozik, a foglalo nem nyilik meg', async () => {
+    for (const szeles of [1440, 390]) {
+      const { p, ctx } = await nyit({ szeles });
+      const gomb = p.locator('#meg-sosem a[data-cta="meg-sosem-video"]');
+      assert.equal(await gomb.count(), 1, szeles + ': egy darab video-gomb');
+      assert.equal(await gomb.getAttribute('href'), '#mutat');
+      assert.equal(await gomb.getAttribute('data-gorgetes'), 'mutat');
+      assert.equal(await p.locator('#meg-sosem a[href*="foglalo"], #meg-sosem [data-foglalas], #meg-sosem a[data-cta="meg-sosem"]').count(), 0, 'a szekcioban nincs foglalasra mutato gomb');
+      assert.match((await gomb.textContent()).trim(), /^Nézd meg, hogyan zajlik/);
+      const url0 = p.url();
+      await p.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, 0); });
+      await p.evaluate(() => document.getElementById('meg-sosem').scrollIntoView());
+      await gomb.click();
+      await p.waitForFunction(() => { const t = document.getElementById('mutat').getBoundingClientRect().top; return t > -40 && t < 220; }, null, { timeout: 5000 });
+      assert.equal(p.url(), url0, 'az URL nem valtozik');
+      assert.equal(await p.locator('.mh-foglalo-overlay, #mh-booking, [id*="foglalo-motor"][open]').count(), 0, 'nem nyilt meg a foglalo');
+      await ctx.close();
+    }
+  });
+
+  test('az ajanlat-kartyak ara nem tul nagy: asztalon legfeljebb 44 px, telefonon legfeljebb 30 px (2026-10-09: a tulajdonos szerint tul nagy volt), az athuzott ar kisebb', async () => {
+    for (const [szeles, max] of [[1440, 44], [390, 30], [360, 30]]) {
+      const { p, ctx } = await nyit({ szeles });
+      for (const panel of ['egyeni', 'paros']) {
+        if (panel === 'paros') await p.locator('.ajanlat-fulek [data-panel="paros"], [role="tab"][data-panel="paros"]').first().click().catch(() => {});
+        const m = await p.evaluate((pn) => {
+          const box = document.querySelector('.ajanlat-panel[data-panel="' + pn + '"] .ajanlat-ar'); if (!box) return null;
+          const b = box.querySelector('b'), r = box.querySelector('s');
+          return { ar: parseFloat(getComputedStyle(b).fontSize), athuzott: r ? parseFloat(getComputedStyle(r).fontSize) : 0, doboz: box.getBoundingClientRect().right, ablak: innerWidth };
+        }, panel);
+        assert.ok(m, szeles + ' ' + panel + ': van ar-doboz');
+        assert.ok(m.ar <= max && m.ar >= 18, `${szeles}px ${panel}: az ar betumerete ${m.ar}px (<= ${max})`);
+        if (m.athuzott) assert.ok(m.athuzott < m.ar, 'az athuzott ar kisebb az aktualisnal');
+        assert.ok(m.doboz <= m.ablak, 'az ar-doboz nem log ki');
+      }
+      await ctx.close();
+    }
+  });
+
   test('a terv szekcioi sorban (asztalon): hero, akcio, erzes, mutat, lepesek, velemenyek, idopontok, ajandek, miert, meg-sosem, ketten, gyik, zaro; nincs felcim', async () => {
     const { p, ctx } = await nyit();
     const sorrend = await p.$$eval('main > section', (l) => l.map((s) => s.id));
@@ -287,7 +326,7 @@ describe('/head-spa-kedvezmeny (egyeni + paros)', () => {
     await m.ctx.close();
   });
 
-  test('a kozos videos hero (assets/css/video-hero.css): asztalon a video a hero TELJES HATTERE; telefonon felul a video (300 px), alatta a szoveg; ar 42 px asztalon (telefonon az akcioval egy sorban, ahhoz igazodo meret); play gomb 62 / 52 px; a harom jelveny telefonon egy sorban', async () => {
+  test('a kozos videos hero (assets/css/video-hero.css): asztalon a video a hero TELJES HATTERE; telefonon felul a video (284 px, 2026-10-09: osszebb), alatta a szoveg; ar 42 px asztalon (telefonon az akcioval egy sorban, ahhoz igazodo meret); play gomb 62 / 52 px; a harom jelveny telefonon egy sorban', async () => {
     const { p, ctx } = await nyit({ gorgetve: false });
     const d = await p.evaluate(() => {
       const h = document.querySelector('#hero').getBoundingClientRect(), v = document.querySelector('.vh-hatter').getBoundingClientRect();
@@ -310,7 +349,7 @@ describe('/head-spa-kedvezmeny (egyeni + paros)', () => {
           ar: getComputedStyle(document.querySelector('.vh-ar b')).fontSize, play: Math.round(r('.vh-play').width), playAlatt: r('.vh-lejatszas').top >= r('.vh-hely').bottom - 2, szoveg: document.querySelector('.vh-jelvenyek').innerText.replace(/\s+/g, ' ').trim(),
           google: Math.round(r('.vh-google').height), vizsz: document.documentElement.scrollWidth <= document.documentElement.clientWidth };
       });
-      assert.equal(t.kepMag, 300, szeles + ' px: a video 300 px magas');
+      assert.equal(t.kepMag, 284, szeles + ' px: a video 284 px magas (a ket hero-gomb kis telefonon is latszik)');
       assert.equal(t.kepTop, 0);
       assert.ok(t.h1Top >= 200 && t.h1Top < 300, 'a cim a video aljan kezdodik: ' + t.h1Top);
       assert.equal(new Set(t.li).size, 1, szeles + ' px: a harom jelveny egy sorban: ' + t.li);

@@ -266,6 +266,7 @@ a.ido:hover, a.ido:focus-visible { background: var(--sotet); border-color: var(-
 
 /* --- mobil sticky CTA --- */
 .sticky-cta { display: none; }
+.sticky-cta, .sticky-cta * { box-sizing: border-box; }   /* a sticky a <main> kivul van: a width:100% + padding + keret ne logjon ki (2026-10-09) */
 
 /* ====== tablet ====== */
 @media (max-width: 1100px) {
