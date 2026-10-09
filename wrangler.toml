@@ -45,7 +45,7 @@ database_id = "bd58da1d-a9f0-4b76-ad0b-13aedfc67192"
 LIFECYCLE_MOD = "elo"   # ELES (a tulajdonos kifejezett kerese, 2026-10-08). ki | teszt (CSAK a teszt-vendegeknek megy uzenet) | elo (az LIFECYCLE_UZLETAGOK uzletagainak vendegeinek is)
 LIFECYCLE_UZLETAGOK = "headspa,hair,oxygen,laser,pmu"
 LIFECYCLE_MUNKATARS_MOD = "figyel"   # DECISION #117: munkatarsi torles / modositas: figyel = csak naplo + riasztas (nincs allapotvaltas); be = a docs/lifecycle/LIFECYCLE.md szerinti valtoztatas (a kontrollalt teszt utan)
-LIFECYCLE_KULCS_HASH = "f750951108213168b1cf70520e779c0c4b07b6c3cc05af8258942c4b04443a7e,d34736dbb1682fc946a3fe80ac0a82f1f7f727493d47152197653e3313855f08"   # a bejovo / tick vegpontok kulcsanak SHA-256-ja; 2. KULCSCSERE (2026-10-09): a jelenlegi + az uj hash egyutt ervenyes, amig a Zapier Storage lifecycle_kulcs erteke at nem all; utana az elso (f7509511...3a7e) kiveheto. A kulcs a Zapier Storage-ban van.
+LIFECYCLE_KULCS_HASH = "d34736dbb1682fc946a3fe80ac0a82f1f7f727493d47152197653e3313855f08"   # a bejovo / tick vegpontok kulcsanak SHA-256-ja; a kulcs a Zapier Storage-ban van (lifecycle_kulcs); a 2. kulcscsere kesz: 2026-10-09
 SIMPLESMS_FELHASZNALO = "ferraj@gmail.com"
 SIMPLESMS_DOMAIN = "mosaicheadspa.hu"   # a jelszo: SIMPLESMS_JELSZO (Secret, Production + Preview)
 ESEMENY_IRAS = "1"   # a foglalasi jegyzettomb eles irasa BEKAPCSOLVA (a tulajdonos jovahagyta, 2026-10-04); kikapcsolas: a sor torlese
@@ -75,7 +75,7 @@ AJANDEK_AZONNALI = "1"   # a tulajdonos donotese (2026-10-04): bankkartyas rende
 LIFECYCLE_MOD = "teszt"   # ki | teszt (CSAK a teszt-vendegeknek megy uzenet) | elo (az LIFECYCLE_UZLETAGOK uzletagainak vendegeinek is)
 LIFECYCLE_UZLETAGOK = "headspa,hair,oxygen,laser,pmu"
 LIFECYCLE_MUNKATARS_MOD = "be"   # CSAK elonezet (kulon D1, teszt mod): a munkatarsi ertesitok kontrollalt tesztje (elfogadasi kapu)
-LIFECYCLE_KULCS_HASH = "f750951108213168b1cf70520e779c0c4b07b6c3cc05af8258942c4b04443a7e,d34736dbb1682fc946a3fe80ac0a82f1f7f727493d47152197653e3313855f08"   # a bejovo / tick vegpontok kulcsanak SHA-256-ja; 2. KULCSCSERE (2026-10-09): a jelenlegi + az uj hash egyutt ervenyes, amig a Zapier Storage lifecycle_kulcs erteke at nem all; utana az elso (f7509511...3a7e) kiveheto. A kulcs a Zapier Storage-ban van.
+LIFECYCLE_KULCS_HASH = "d34736dbb1682fc946a3fe80ac0a82f1f7f727493d47152197653e3313855f08"   # a bejovo / tick vegpontok kulcsanak SHA-256-ja; a kulcs a Zapier Storage-ban van (lifecycle_kulcs); a 2. kulcscsere kesz: 2026-10-09
 SIMPLESMS_FELHASZNALO = "ferraj@gmail.com"
 SIMPLESMS_DOMAIN = "mosaicheadspa.hu"   # a jelszo: SIMPLESMS_JELSZO (Secret, Production + Preview)
 SMTP_HOST = "smtp.gmail.com"
