@@ -33,7 +33,7 @@ export function azonosKulcs(externalGuestId, email, telefon) {
   return `anon:${uuid()}`;
 }
 
-/** hiányzó elérhetőségek kitöltése (a meglévő érték nem íródik felül) */
+/** hianyzo elerhetosegek kitoltese (a meglevo ertek nem irodik felul) */
 function kitoltStmt(db, g, { nev, email, telefon }, now) {
   const sets = [], p = [g.id];
   const add = (oszlop, ertek) => { p.push(ertek); sets.push(`${oszlop} = ?${p.length}`); };
@@ -65,14 +65,27 @@ export async function vendegAzonosit(db, { account = FIOK_ALAP, externalGuestId 
     return { guestId: gid, identityId: ident.id, eredmeny: 'meglevo_identity', mergeRequestIds: [] };
   }
 
-  // 2. jeloltek (CSAK e-mail / telefon alapjan; nev szerint soha)
-  const emailJeloltek = em ? await mind(db, 'SELECT * FROM guest WHERE status = \'active\' AND email = ?1', em) : [];
-  const telJeloltek = tel ? await mind(db, 'SELECT * FROM guest WHERE status = \'active\' AND phone = ?1', tel) : [];
-  const mindketto = emailJeloltek.filter((a) => telJeloltek.some((b) => b.id === a.id));
+  // 2. jeloltek (CSAK e-mail / telefon alapjan; nev szerint soha). Az osszevont vendegek elerhetosegei a veglegesre mutatnak.
+  const veglegesre = async (sorok) => {
+    const m = new Map();
+    for (const r of sorok) {
+      const fid = await vegleges(db, r.id);
+      const cel = fid ? (fid === r.id ? r : await vendeg(db, fid)) : null;
+      if (cel?.status === 'active') m.set(fid, cel);
+    }
+    return m;
+  };
+  const emailSorok = em ? await mind(db, 'SELECT * FROM guest WHERE status IN (\'active\', \'merged\') AND email = ?1', em) : [];
+  const telSorok = tel ? await mind(db, 'SELECT * FROM guest WHERE status IN (\'active\', \'merged\') AND phone = ?1', tel) : [];
+  const emailT = await veglegesre(emailSorok), telT = await veglegesre(telSorok);
+  const emailJeloltek = [...emailT.values()], telJeloltek = [...telT.values()];
+  const mindketto = emailJeloltek.filter((a) => telT.has(a.id));
+  // a talalat-rekord (az, amelyik az e-mailt / telefont tenylegesen hordozza) legyen ellenorzott
+  const ellenorzott = (g) => emailSorok.some((r) => r.email_verified === 1 && (r.id === g.id || r.merged_into)) && telSorok.some((r) => r.phone_verified === 1 && (r.id === g.id || r.merged_into));
   const identId = uuid();
 
   // 2a. egyertelmu automatikus osszefuzes: pontosan egy vendeg, e-mail ES telefon is ellenorzottan egyezik
-  if (mindketto.length === 1 && mindketto[0].email_verified === 1 && mindketto[0].phone_verified === 1) {
+  if (mindketto.length === 1 && ellenorzott(mindketto[0])) {
     const g = mindketto[0];
     const ut = [
       keszit(db, 'INSERT INTO salonic_guest_identity (id, account, external_id, guest_id, name, email, phone, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)', identId, account, kulcs, g.id, nev, em, tel, now),

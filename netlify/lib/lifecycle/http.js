@@ -14,6 +14,8 @@ import { kuldokKeszit, smsKesz, emailKesz, smsEgyenleg, smsConnectProba } from '
 import { eloEllenorzoKeszit } from './elo.js';
 import { UZLETAGAK, SZALON, tisztaNev } from './uzletag.js';
 import { datumSzoveg, idopontSzoveg } from './ido.js';
+import { ertelmez as ertelmezCrm } from './parser.js';
+import { kapocs as crmKapocs } from '../../../crm/lib/lifecycle-kapocs.js';
 
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 const sha256 = async (s) => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
@@ -64,6 +66,11 @@ export async function api(request, env, ctx) {
     try {
       const elo = eloEllenorzoKeszit(env); // a foglalas nyilvanos Salonic-oldalanak elo ellenorzese (munkatarsi ertesitok bizonyitasa; LIFECYCLE_ELO_ELLENORZES=ki kikapcsolja)
       const e = await ingest(db, env, { uzenetId: torzs.uzenetId, targy: torzs.targy, kuldo: torzs.kuldo, szoveg: torzs.szoveg, html: torzs.html, kuldve: torzs.kuldve }, most, { eloEllenorzes: elo });
+      // Oxigen CRM (docs/oxigen-crm): a parser elemzett esemenyenek MASOLATA a CRM-be. Nem dobhat kivetelt, nem lassithatja a lifecycle-t (idokorlat), CRM_DB nelkul nem csinal semmit.
+      try {
+        const p = ertelmezCrm({ uzenetId: torzs.uzenetId, targy: torzs.targy, kuldo: torzs.kuldo, szoveg: torzs.szoveg, html: torzs.html, kuldve: torzs.kuldve }, most);
+        if (p && p.ok) await crmKapocs(env, { ...p, kuldve: Number(torzs.kuldve) || undefined }, { most });
+      } catch { /* a CRM hibaja nem erintheti a lifecycle-t */ }
       let kuldes = null;
       // A munkatarsi ertesito (figyel mod, riasztas, bizonytalan eset: valtozas === false) SOHA nem inditja el a kuldest; az esedekes uzenetek a koveto oraponkenti tickkel mennek, mint eddig.
       if (e.ok && e.foglalasId && !e.duplikalt && e.valtozas !== false) kuldes = await tick(db, env, k, most, { foglalasId: e.foglalasId, base, eloEllenorzes: elo });

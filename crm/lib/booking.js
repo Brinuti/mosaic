@@ -88,6 +88,12 @@ async function ujFoglalas(db, { p, now, account, externalId, status, kod, eventA
   if (valtozas(r) !== 1) {   // verseny / dupla kuldes: a masik hivas mar letrehozta
     if (kor >= 2) throw new CrmHiba('VERSENY', 'a foglalas feldolgozasa utkozott', 409);
     const mar = await foglalasKulsoId(db, account, externalId);
+    if (!mar) {   // nem azonos kulso azonosito, de ugyanaz a vendeg ugyanarra a szolgaltatasra es idopontra mar aktiv (pl. a masik Salonic-fiokbol): nem duplikalunk
+      const par = await elso(db, 'SELECT * FROM booking WHERE guest_id = ?1 AND service_code = ?2 AND start_at = ?3 AND status IN (\'booked\', \'rescheduled\', \'completed\') AND duplicate_of IS NULL', g.guestId, kod, p.start);
+      if (!par) throw new CrmHiba('VERSENY', 'a foglalas beszurasa nem sikerult', 409);
+      await bookingEventStmt(db, { bookingId: par.id, idempotencyKey: `dup:${account}:${externalId}:${p.start}`, type: 'duplicate_ignored', fromStatus: par.status, newStart: p.start, eventAt, detail: { account, external_id: externalId }, now }).run();
+      return { valtozas: 'duplikalt', ok: 'KERESZT_FIOK_DUPLA', bookingId: par.id, guestId: par.guest_id };
+    }
     return meglevoFoglalas(db, { p, now, b: mar, status, eventAt }, 0);
   }
   const b = await foglalas(db, id);
