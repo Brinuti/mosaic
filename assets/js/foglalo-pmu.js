@@ -45,6 +45,17 @@
   const KEP = '/assets/img/m/';
   const TAROLO = 'mh_pmu_foglalas';
   const TAROLO_C = 'mh_pmu_visszahivas';
+  // ?terulet=ajak (a /szajtetovalas-budapest landingrol): a kezeleslista csak az ajak-kezeleseket + a konzultaciot mutatja, a feliratok a szajra szolnak.
+  // Jelzes nelkul minden a regi (minden kezeles, sminktetovalas-feliratok).
+  const TERULETEK = {
+    ajak: {
+      re: /ajak/i, cim: 'Szájtetoválás', van: 'Van szájtetoválásod, és javíttatnád?', kerdes: 'Volt már szájtetoválásod?',
+      igen: 'Igen, már van szájtetoválásom – ezt szeretném javíttatni', szo: 'szájtetoválás', fotoKezeles: 'Ajaktetoválás – régi tetoválás (fotó alapján)',
+    },
+  };
+  const TERULET = TERULETEK[new URLSearchParams(location.search).get('terulet')] || null;
+  // az ertesitesben szereplo "Beküldve innen": a beagyazo landing (csak ismert ertek, mas nem fogadhato el)
+  const FORRAS_OLDAL = !BEAGYAZVA ? 'foglalo-pmu' : new URLSearchParams(location.search).get('forras') === 'szajtetovalas-budapest' ? 'szajtetovalas-budapest' : 'sminktetovalas-budapest';
 
   // kezelesfotok a sminktetovalas oldal sajat kepeibol (kulcsszo -> kep)
   const FOTOK = [
@@ -119,6 +130,12 @@
     slot: null, elozmeny: null, ag: 'B', fotok: [], fotoKezeles: null,
     cKert: false, cSav: null, honap: null, naptarNap: null,
   };
+  if (TERULET) {
+    $('logo').textContent = TERULET.cim + ' időpontfoglalás';
+    document.querySelector('.belepo b').textContent = TERULET.van;
+    document.querySelector('input[name=elozmeny][value=van] + span').textContent = TERULET.igen;
+    allapot.fotoKezeles = TERULET.fotoKezeles;
+  }
 
   // --- nezetek es vissza-gomb (a bongeszo vissza-gombja is mukodik, az adatok megmaradnak) ---
   const NEZETEK = [...document.querySelectorAll('[data-nezet]')].map((s) => s.dataset.nezet);
@@ -303,7 +320,8 @@
     try {
       await kezelesekBetolt();
       // az ingyenes konzultacio a lista aljan
-      const sorrend = [...allapot.kezelesek.filter((k) => !k.egyeb), ...allapot.kezelesek.filter((k) => k.egyeb)];
+      const lista = TERULET ? allapot.kezelesek.filter((k) => k.egyeb || TERULET.re.test(k.nev)) : allapot.kezelesek;
+      const sorrend = [...lista.filter((k) => !k.egyeb), ...lista.filter((k) => k.egyeb)];
       $('kezelesek').replaceChildren(...sorrend.map((k) => kezelesKartya(k, () => kezelesValaszt(k))));
     } catch (e) {
       console.error(e);
@@ -417,7 +435,7 @@
     const telefon = allapot.kerdesCel === 'c-ido';
     if (!telefon && !allapot.slot) { ugrik('ido'); return; }
     $('kerdes-osszegzes').replaceChildren(telefon ? '' : miniOsszegzes());
-    $('kerdes-cim').textContent = telefon || (allapot.kezeles && allapot.kezeles.egyeb) ? 'Volt már sminktetoválásod?' : 'Volt már sminktetoválásod ezen a területen?';
+    $('kerdes-cim').textContent = TERULET ? TERULET.kerdes : telefon || (allapot.kezeles && allapot.kezeles.egyeb) ? 'Volt már sminktetoválásod?' : 'Volt már sminktetoválásod ezen a területen?';
   };
   for (const r of document.querySelectorAll('input[name=elozmeny]')) r.addEventListener('change', () => { allapot.elozmeny = r.value; $('kerdes-tovabb').disabled = false; });
   $('kerdes-tovabb').addEventListener('click', () => {
@@ -528,7 +546,8 @@
   const MAX_FOTO = 5;
   BELEPES.foto = () => {
     const d = allapot.ag === 'D';
-    $('foto-cim').textContent = d ? 'Nem vagy biztos benne? Küldj fotót, és segítek.' : (matchMedia('(hover: none) and (pointer: coarse)').matches ? 'Fotózd le a jelenlegi sminktetoválásodat' : 'Tölts fel fotót a jelenlegi sminktetoválásodról');
+    const sz = (t) => (TERULET ? t.replace(/sminktetoválás/g, TERULET.szo) : t); // ?terulet=ajak: "szajtetovalas"
+    $('foto-cim').textContent = d ? 'Nem vagy biztos benne? Küldj fotót, és segítek.' : sz(matchMedia('(hover: none) and (pointer: coarse)').matches ? 'Fotózd le a jelenlegi sminktetoválásodat' : 'Tölts fel fotót a jelenlegi sminktetoválásodról');
     $('foto-szoveg').replaceChildren(d ? 'Ránézek, és megírom, hogy első kezelés vagy korrekció szükséges-e.'
       : elem('b', { szoveg: 'Fotó nélkül nem tudok segíteni: a fotó kötelező. Csak a fotó alapján tudom megmondani, mit lehet és érdemes tenni.' }));
     $('foto-osszegzes').replaceChildren(allapot.slot && allapot.kezeles
@@ -629,7 +648,7 @@
     adat.set('email', ertek('foto-adatok', 'email'));
     adat.set('kezeles', allapot.slot && k ? k.nev : allapot.fotoKezeles || '');
     adat.set('idopont', allapot.slot ? fmt(allapot.slot, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) + ' ' + ora(allapot.slot) + ' (preferált, nem végleges)' : '');
-    adat.set('oldal', BEAGYAZVA ? 'sminktetovalas-budapest' : 'foglalo-pmu');
+    adat.set('oldal', FORRAS_OLDAL);
     allapot.fotok.forEach((f, i) => adat.set('foto' + (i + 1), f.blob, 'foto' + (i + 1) + '.jpg'));
     if (!(await bekuld(adat, gomb, $('foto-kuld-hiba')))) return;
     $('foto-kesz-osszegzes').replaceChildren(allapot.slot && k
@@ -665,7 +684,7 @@
     if (!urlapEllenoriz('c-adatok')) return;
     const adat = new URLSearchParams({
       'form-name': 'pmu-proba-visszahivas', nev: ertek('c-adatok', 'nev'), telefon: ertek('c-adatok', 'telefon'),
-      mikor_nap: '', mikor_napszak: cMikor(), oldal: BEAGYAZVA ? 'sminktetovalas-budapest' : 'foglalo-pmu',
+      mikor_nap: '', mikor_napszak: cMikor(), oldal: FORRAS_OLDAL,
     });
     if (!(await bekuld(adat, gomb, $('c-kuld-hiba')))) return;
     // a telefonos konzultacio ugyanaz a konverzio, mint a weboldal regi visszahivas-urlapja es a
