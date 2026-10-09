@@ -217,6 +217,30 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
     await ctx.close();
   });
 
+  test('asztali: a felso akcios sav fele vive az egeret az almenu NEM nyilik ki (a zart lenyilo doboza nem fogja el az egeret), a sav kattinthato; az almenu csak szandekos raalllasra nyilik, atszaladasra nem', async () => {
+    const { p, ctx } = await nyit(1440, '/headspa-arak-budapest');
+    const nyitva = () => p.evaluate(() => [...document.querySelectorAll('li[data-testid="menuItemDepth0"][data-shown="true"]')].length);
+    const sav = await p.evaluate(() => { const e = document.querySelector('#comp-mpv0ivyk'); const b = e.getBoundingClientRect(); return { x: b.left + 80, y: b.top + b.height / 2 }; });
+    // a Head Spa lenyilo (zart) lathatatlan doboza az akcios sav folott allna: ott az egernek az akcios savot kell talalnia
+    await p.mouse.move(sav.x, 500);
+    await p.mouse.move(sav.x, sav.y, { steps: 10 });
+    await p.waitForTimeout(500);
+    assert.equal(await nyitva(), 0, 'az akcios savra vitt egerre nem nyilhat ki a fomenu almenuje');
+    assert.equal(await p.evaluate(({ x, y }) => !!document.elementFromPoint(x, y).closest('#comp-mpv0ivyk'), sav), true, 'a savon az akcios sav van (nem a lenyilo)');
+    // atszaladas a menupont folott: nem nyit
+    const hs = await p.evaluate(() => { const l = [...document.querySelectorAll('li[data-testid="menuItemDepth0"]')].find((e) => e.textContent.trim().startsWith('Head Spa')); const b = l.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; });
+    await p.mouse.move(hs.x, 400);
+    await p.mouse.move(hs.x, hs.y, { steps: 3 });
+    await p.mouse.move(hs.x, 400, { steps: 3 });
+    await p.waitForTimeout(500);
+    assert.equal(await nyitva(), 0, 'a menupont folotti gyors atszaladas nem nyit');
+    // szandekos raallas: nyit
+    await p.mouse.move(hs.x, hs.y, { steps: 3 });
+    await p.waitForTimeout(600);
+    assert.equal(await nyitva(), 1, 'raallasra az almenu kinyilik');
+    await ctx.close();
+  });
+
   test('asztali: a FOGLALAS arany gomb a menusorban, az "i" es az EN korvonalas jelveny (nincs zaszlo-kep)', async () => {
     const { p, ctx } = await nyit(1440);
     const r = await p.evaluate(() => {
