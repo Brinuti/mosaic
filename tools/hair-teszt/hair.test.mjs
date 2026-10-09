@@ -538,7 +538,7 @@ describe('bongeszoben', { concurrency: false }, () => {
         assert.ok(Math.abs(m.kepArany - 1) < 0.03, `${nev}: a hero képe négyzetes (${m.kepArany})`);
         assert.ok(m.elsoGomb.bottom <= mag + (mag === 740 ? 60 : 0), `${nev}: az első gomb (Mutasd a szabad időpontokat / <név> időpontjai) nem fér a ${mag}px magas képernyőre (${m.elsoGomb.bottom})`);
         if (k === 'kozpont') {
-          assert.ok(!m.bizalom.lathato, `${nev}: a 4 elemű bizalmi rács (Google-vélemények, Bécsi út 2., …) mobilon nem látszhat`);
+          assert.equal(m.bizalom, null, `${nev}: a 4 elemű bizalmi rács nincs az oldalon`);
           assert.equal(m.jelvenyek.length, 3, nev);
           assert.ok(new Set(m.jelvenyek.map((x) => x[0])).size === 1 && new Set(m.jelvenyek.map((x) => x[1])).size === 3, `${nev}: a badge-ek nem egymás mellett vannak: ${JSON.stringify(m.jelvenyek)}`);
         } else {
@@ -646,13 +646,31 @@ describe('bongeszoben', { concurrency: false }, () => {
     }
   });
 
-  test('a központi oldalon a bizalmi rács (Google-vélemények, Bécsi út 2., …) asztalon látszik, mobilon nem; a konzultáció-szakaszban 3 videó van, mobilon vízszintesen lapozhatók', async () => {
+  test('asztali hero (1440 es 1280 px): a kep / galeria magassaga a szovegoszlop magassaga (a cim teteje -> az also jelveny / gomb alja, legfeljebb 16 px elteressel), a hero nem magasabb 620 px-nel', async () => {
+    for (const szel of [1440, 1280]) {
+      for (const k of KULCSOK) {
+        const { p, ctx } = await ujOldal(k, { szel });
+        await p.waitForTimeout(400);
+        const m = await p.evaluate(() => {
+          const kep = document.querySelector('.hero .hero-kep').getBoundingClientRect();
+          const sz = document.querySelector('.hero .hero-szoveg').getBoundingClientRect();
+          const els = [...document.querySelectorAll('.hero .hero-szoveg > *')].filter((e) => e.getBoundingClientRect().height > 0 && !e.hidden);
+          const felso = Math.min(...els.map((e) => e.getBoundingClientRect().top)), also = Math.max(...els.map((e) => e.getBoundingClientRect().bottom));
+          return { kepMag: Math.round(kep.height), szovegMag: Math.round(also - felso), kepTop: Math.round(kep.top), felso: Math.round(felso), hero: Math.round(document.querySelector('.hero').getBoundingClientRect().height) };
+        });
+        assert.ok(Math.abs(m.kepMag - m.szovegMag) <= 16 || (m.kepMag === 400 && m.szovegMag < 400), `${k} @${szel}: a kep (${m.kepMag}) a szovegoszlop magassaga (${m.szovegMag})`);
+        assert.ok(m.hero <= 620, `${k} @${szel}: a hero tul magas: ${m.hero}`);
+        await ctx.close();
+      }
+    }
+  });
+  test('a központi oldalon NINCS a négyes bizalmi rács (Google-vélemények, Bécsi út 2., Valódi munkák, Ingyenes konzultáció: mindent kétszer mondott, a tulajdonos kérésére kikerült sem asztalról, sem mobilról); a konzultáció-szakaszban 3 videó van, mobilon vízszintesen lapozhatók', async () => {
     const a = await ujOldal('kozpont', { szel: 1280 });
-    assert.equal(await a.p.locator('.bizalom').isVisible(), true);
+    assert.equal(await a.p.locator('.bizalom').count(), 0);
     assert.equal(await a.p.locator('.konzult-videok .vid').count(), 3);
     await a.ctx.close();
     const m = await ujOldal('kozpont', { szel: 390, mobil: true });
-    assert.equal(await m.p.locator('.bizalom').isVisible(), false);
+    assert.equal(await m.p.locator('.bizalom').count(), 0);
     assert.equal(await m.p.locator('.konzult-videok').evaluate((e) => getComputedStyle(e).overflowX), 'auto');
     await m.ctx.close();
   });

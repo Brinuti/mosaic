@@ -45,6 +45,10 @@
 #SITE_HEADER:has(#comp-m4lbfl1t) [class*="itemDepth02233374943__positionBox"] { position: absolute !important; top: 100% !important; bottom: auto !important; left: 50% !important; right: auto !important; width: max-content !important; min-width: 250px; margin: 0 !important; padding-top: 14px; transform: translateX(-50%); }
 /* A BEZART lenyilo (atlatszo, de a helyen maradt doboz) ne fogja el az egeret: korabban a Head Spa / Fodraszat lenyilo lathatatlan doboza a felso akciosav
    folott allt, ezert az egeret a sav fele vive a menu azonnal kinyilt, a savra nem lehetett kattintani. Csak a megnyitott (data-shown) lenyilo kapja az egeret. */
+/* A lenyilo ne "villanjon": a Wix beepitett fadeIn animacioja (50 ms keses) alatt a doboz teljes erovel latszott, aztan 0-rol indult a halvanyodas = egy villanas.
+   Most nincs animacio: a megnyitott lenyilo azonnal, egyszerre, teljes erovel jelenik meg. */
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="itemDepth02233374943__positionBox"] > [class*="itemDepth02233374943__animationBox"],
+#SITE_HEADER:has(#comp-m4lbfl1t) [class*="itemDepth02233374943__positionBox"] [class*="itemDepth12472627565__"] { animation: none !important; opacity: 1 !important; }
 #SITE_HEADER:has(#comp-m4lbfl1t) li[data-testid="menuItemDepth0"]:not([data-shown="true"]) [class*="itemDepth02233374943__positionBox"] { visibility: hidden !important; pointer-events: none !important; }
 #SITE_HEADER:has(#comp-m4lbfl1t) [class*="submenu815198092__listWrapper"] { column-count: 1 !important; width: auto !important; }
 #SITE_HEADER:has(#comp-m4lbfl1t) [class*="submenu815198092__pageWrapper"] { margin: 0 !important; width: 100% !important; justify-content: flex-start; }
