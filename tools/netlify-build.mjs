@@ -317,7 +317,7 @@ for (const mappa of [LAP_A, LAP_M]) {
     h = headspaJelolo(h, f);   // az "Októberi akció" sáv csak a Head Spa oldalakon látszik (assets/css/fejlec-lablec.css)
     // Ahol a foglalo-linkek a motorra mutatnak (bekapcsolt atkotes: elonezet / helyi build), ott a CTA a foglalot HELYBEN nyitja (reteg),
     // nem visz at a /foglalo-motor oldalra. Kikapcsolt atkotesnel (eles, ma) semmi nem valtozik.
-    const launcherOldal = ATKOTES.size > 0 && !kihagyottOldal(f) && !FOGLALO_OLDALAK.has(f); // ahol a launcher rajta van, a foglalo-linkek a retegben nyilnak
+    const launcherOldal = ATKOTES.size > 0 && !kihagyottOldal(f) && !FOGLALO_OLDALAK.has(f) && !/^crm\.html$/.test(path.basename(f)); // ahol a launcher rajta van, a foglalo-linkek a retegben nyilnak
     if (launcherOldal) h = h.replace('</body>', '<script type="module" src="/assets/js/booking-launcher.js"></script></body>');
     // A MOSAIC Google-ertekeleseinek szama minden oldalon az AKTUALIS (assets/js/google-szam.js, a Trustindex-widget adata): a sajat oldalakra, ahol "<szam> ... Google-velemeny / ertekeles" szoveg van
     // (a Melitta / PMU-specifikus foglalo oldalak kivetelevel), felkerul a szkript; a HTML-ben levo szam a tartalek.
