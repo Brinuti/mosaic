@@ -65,7 +65,8 @@ export async function api(request, env, ctx) {
       const elo = eloEllenorzoKeszit(env); // a foglalas nyilvanos Salonic-oldalanak elo ellenorzese (munkatarsi ertesitok bizonyitasa; LIFECYCLE_ELO_ELLENORZES=ki kikapcsolja)
       const e = await ingest(db, env, { uzenetId: torzs.uzenetId, targy: torzs.targy, kuldo: torzs.kuldo, szoveg: torzs.szoveg, html: torzs.html, kuldve: torzs.kuldve }, most, { eloEllenorzes: elo });
       let kuldes = null;
-      if (e.ok && e.foglalasId && !e.duplikalt) kuldes = await tick(db, env, k, most, { foglalasId: e.foglalasId, base, eloEllenorzes: elo });
+      // A munkatarsi ertesito (figyel mod, riasztas, bizonytalan eset: valtozas === false) SOHA nem inditja el a kuldest; az esedekes uzenetek a koveto oraponkenti tickkel mennek, mint eddig.
+      if (e.ok && e.foglalasId && !e.duplikalt && e.valtozas !== false) kuldes = await tick(db, env, k, most, { foglalasId: e.foglalasId, base, eloEllenorzes: elo });
       return json({ ...e, kuldes });
     } finally { await k.lezar(); }
   }
