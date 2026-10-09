@@ -415,10 +415,7 @@ export function fodraszOldal(fodrasz) {
 <section class="hero hero-fodrasz">
   <div class="tartalom hero-racs">
     <div class="hero-szoveg">
-      <p class="felcim csak-asztali">MOSAIC Hair · fodrász</p>
       <h1><span class="csak-asztali">${f.h1}</span><span class="csak-mobil">${f.h1Mobil}</span></h1>
-      <p class="hero-alcim csak-asztali">${f.szakterulet}</p>
-      <p class="hero-alcim csak-mobil">${f.alcim}</p>
       <blockquote class="hero-idezet">„${f.idezet}”<cite>${f.teljesNev}, fodrász</cite></blockquote>
       <ul class="hero-blokkok csak-mobil">${f.blokkok.map((b) => `<li>${ik('pipa')}<span>${b}</span></li>`).join('')}</ul>
       <p class="lead csak-asztali">${f.rovid}</p>

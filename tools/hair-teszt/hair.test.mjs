@@ -179,7 +179,27 @@ describe('a tulajdonos észrevételei szerinti változtatások (statikus)', () =
       assert.equal(h1v(k, 'csak-mobil'), MOBIL_H1[k], k + ' (mobil: a te stílusodban)');
       assert.equal((forras(k).match(/<h1[\s>]/g) || []).length, 1, k + ': egyetlen H1');
       assert.ok(!/h1-ala|női fodrász Budapesten · Bécsi út 2/.test(forras(k)), `${k}: a H1 alatti alcím maradt`);
-      assert.match(forras(k), /<p class="felcim csak-asztali">MOSAIC Hair · fodrász<\/p>/, `${k}: a felirat csak asztalon látszhat`);
+      assert.ok(!/MOSAIC Hair · fodrász/.test(forras(k)), `${k}: a sárga "MOSAIC Hair · fodrász" felirat (eyebrow) nem kell sehol (a tulajdonos kérése, 2026-10-09)`);
+      assert.ok(!/class="hero-alcim/.test(forras(k)), `${k}: a H1 alatti alcím duplikálta a leírást / a jelvényeket`);
+    }
+  });
+  test('a fodrász-oldalak hero-jában nincs duplikált szöveg: a főcím, az idézet, a leírás és a jelvények nem ismétlik egymás 3 szavas részleteit (asztali változat)', () => {
+    const tok = (t) => t.toLowerCase().replace(/[^a-záéíóöőúüű0-9 ]+/g, ' ').split(/\s+/).filter(Boolean);
+    const haromszavas = (t) => { const w = tok(t); const o = new Set(); for (let i = 0; i + 2 < w.length; i++) o.add(w.slice(i, i + 3).join(' ')); return o; };
+    for (const k of ['betti', 'noel', 'evelin']) {
+      const hero = forras(k).match(/<section class="hero hero-fodrasz">[\s\S]*?<\/section>/)[0];
+      const asztali = hero.replace(/<span class="csak-mobil">[\s\S]*?<\/span>/g, '').replace(/<ul class="hero-blokkok csak-mobil">[\s\S]*?<\/ul>/, '');
+      const reszek = [
+        ['főcím', (asztali.match(/<h1>([\s\S]*?)<\/h1>/) || [])[1]],
+        ['idézet', (asztali.match(/<blockquote[^>]*>([\s\S]*?)<cite>/) || [])[1]],
+        ['leírás', (asztali.match(/<p class="lead csak-asztali">([\s\S]*?)<\/p>/) || [])[1]],
+        ['jelvények', (asztali.match(/<ul class="kiemelesek csak-asztali">([\s\S]*?)<\/ul>/) || [])[1]],
+      ].map(([n, t]) => { assert.ok(t, `${k}: hiányzik a hero ${n}`); return [n, szoveg(t)]; });
+      for (let i = 0; i < reszek.length; i++) for (let j = i + 1; j < reszek.length; j++) {
+        const a = haromszavas(reszek[i][1]), b = haromszavas(reszek[j][1]);
+        const kozos = [...a].filter((x) => b.has(x));
+        assert.equal(kozos.length, 0, `${k}: ismétlődő szöveg a hero ${reszek[i][0]} és ${reszek[j][0]} között: ${kozos.join(' | ')}`);
+      }
     }
   });
   test('nincs hajvágás a kártyákon, a hero-ban és a GYIK-ben (az árlista, a H1 és az idézet kivételével)', () => {
@@ -513,7 +533,7 @@ describe('bongeszoben', { concurrency: false }, () => {
           };
         });
         const nev = `${k} @${szel}`;
-        assert.ok(m.h1.top < m.kep.top && m.kep.bottom <= (m.alcim || m.lead).top, `${nev}: sorrend: főcím, képek, alcím`);
+        assert.ok(m.h1.top < m.kep.top && m.kep.bottom <= (m.idezet || m.lead || m.cta).top, `${nev}: sorrend: főcím, képek, szöveg`);
         assert.ok(!m.felcim || !m.felcim.lathato, `${nev}: az eyebrow-felirat mobilon nem látszhat`);
         assert.ok(Math.abs(m.kepArany - 1) < 0.03, `${nev}: a hero képe négyzetes (${m.kepArany})`);
         assert.ok(m.elsoGomb.bottom <= mag + (mag === 740 ? 60 : 0), `${nev}: az első gomb (Mutasd a szabad időpontokat / <név> időpontjai) nem fér a ${mag}px magas képernyőre (${m.elsoGomb.bottom})`);
@@ -526,7 +546,8 @@ describe('bongeszoben', { concurrency: false }, () => {
           assert.equal(m.cimke, null, `${nev}: a hero képén nincs felirat`);
           assert.ok(m.blokkStilus.every(([hatter, keret, ikon]) => hatter === 'rgba(0, 0, 0, 0)' && keret === '0px' && ikon), `${nev}: a blokkok ikonosak, nem csempe / gomb: ${JSON.stringify(m.blokkStilus)}`);
           assert.equal(m.h1szoveg, { betti: 'Festés, balayage, tőfestés a te stílusodban', noel: 'Balayage, festés, tőfestés a te stílusodban', evelin: 'Festés, balayage, tőfestés és hajhosszabbítás a te stílusodban' }[k], `${nev}: mobil főcím`);
-          assert.ok(m.alcim.lathato && !m.asztaliAlcim.lathato && m.idezet.top > m.alcim.top, `${nev}: alcím + idézet`);
+          assert.ok(m.alcim === null && m.asztaliAlcim === null, `${nev}: nincs a H1 alatti alcím (duplikálta a főcímet)`);
+          assert.ok(m.idezet.lathato && m.idezet.top > m.kep.bottom, `${nev}: az idézet a képek után`);
           if (m.kovetkezo && m.kovetkezo.lathato) assert.ok(m.cta.top >= m.kovetkezo.bottom, `${nev}: a "legközelebbi szabad" sor a gombok előtt van`);
         }
         await ctx.close();
