@@ -263,7 +263,7 @@ if (ATKOTES.size) {
 const verzio = Object.fromEntries(SAJAT.map((f) => [f,
   crypto.createHash('sha1').update(fs.readFileSync(path.join(DIST, f))).digest('hex').slice(0, 10)]));
 // A sajat foglalo-oldalak (a motor / a PMU foglalo / a probaoldalak) maguk toltik a foglalot: ezekre a launcher nem kerul.
-const FOGLALO_OLDALAK = new Set(['foglalo-motor.html', 'foglalas.html', 'booking-test.html', 'foglalo-pmu.html', 'foglalo-proba.html', 'sminktetovalas-budapest.html']);
+const FOGLALO_OLDALAK = new Set(['foglalo-motor.html', 'foglalas.html', 'booking-test.html', 'foglalo-pmu.html', 'foglalo-proba.html', 'sminktetovalas-budapest.html', 'szajtetovalas-budapest.html']);
 // Szovegfinomitasok a kozos fejlecben/lableben. A Wixes oldalakban a szoveg HTML-entitasokkal van kodolva, a sajat darabokban sima betukkel: a mintak mindkettot elfogadjak.
 const ENTITAS = { 'á': '&aacute;', 'é': '&eacute;', 'ó': '&oacute;', 'ö': '&ouml;', 'ő': '&odblac;', 'ü': '&uuml;', 'ű': '&udblac;', 'í': '&iacute;', 'ú': '&uacute;', 'Á': '&Aacute;' };
 const TOLERANS = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[áéóöőüűíúÁ]/g, (c) => '(?:' + c + '|' + ENTITAS[c] + ')');
