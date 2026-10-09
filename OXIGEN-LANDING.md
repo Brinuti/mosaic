@@ -36,7 +36,7 @@ A hero másodlagos linkje: „Csak hajkamerás állapotfelmérés – 4 990 Ft �
 
 ## Sorrend, mobil sticky sáv, „Mutasd az eredményeket” (2026-10-06)
 
-- **Szekciósorrend:** hero → Ismerősek ezek a jelek? → zöld (Akkor az oxigénterápia valószínűleg hatásos lesz nálad.) → **Eredmények** → Ők fognak veled foglalkozni (kezelők) → első kezelés → lépések → típusok → mire számíthatsz → videó → vélemények → árak → miért más → GYIK → szalon → záró.
+- **Szekciósorrend:** hero → Ismerősek ezek a jelek? → zöld (Akkor az oxigénterápia valószínűleg hatásos lesz nálad.) → **Eredmények** (Oxygeni) → **A mi vendégeink eredményei** (saját fotók) → Ők fognak veled foglalkozni (kezelők) → első kezelés → lépések → típusok → mire számíthatsz → videó → vélemények → árak → miért más → GYIK → szalon → záró.
 - **Mobil sticky sáv:** nem rögtön jelenik meg; csak a „jelek” szekció (4 illusztráció) elgörgetése után, a záró sávnál eltűnik (`oxigen-landing.js`, görgetés-figyelő a `.jelek` alsó élén; IntersectionObserver helyett, mert az gyors ugrásnál / görgető-linknél nem jelez, és a sáv sosem jönne be).
 - **Mobil hero:** az „*Az Oxygeni statisztikája alapján” sor mellett látszó link: „Mutasd az eredményeket →” (`data-gorgetes="eredmenyek"`, JS-gördítés, nincs #hash).
 - **Google-badge (mobil):** egyszínű G, alatta 5 sárga csillag és „1255 vélemény” (a szám és a csillagok a Trustindex-widgetből frissülnek).
@@ -49,8 +49,33 @@ A MOSAIC fejléc piros akció-sávja (`#comp-mpv0ganp`, „Októberi akció…�
 
 - A H1 („Működő oxigénterápia hajhullás és gyulladás ellen”; mobilon 2 sorban, a betűméret a szélességhez igazodik) a bal blokkban áll, két sorban (a méret a viewporthoz igazodik); a galéria teteje a cím nagybetűinek tetejéhez igazodik; alatta: „Kétmillió elvégzett kezelésből 95%-os hatékonyság*”, lábjegyzet: „*Az Oxygeni statisztikája alapján”.
 - A hero jobb oldala **valós előtte/utána fotók galériája** (nem statikus kép): egy dia = egy `<figure class="hg-dia">`; a pontokat, nyilakat és a 6 mp-es automatikus lapozást (amíg a látogató bele nem nyúl; csökkentett mozgásnál nincs) az `oxigen-landing.js` adja. Felirat: „Gyengébb panaszok esetén 3–5 alkalom, súlyosabb panaszok esetén 5–10 alkalom.” A 5 jelenlegi kép **helyőrző** (hajhullás-referencia az Oxygeni-sorozatból), a tulajdonos válogatja a valódiakat (akár 10-et).
-- „Az Oxygeni vendégeinek valós javulásai”: a **régi oldal galériái, panaszonként, ugyanabban a sorrendben, mind a 21 kép** (`assets/img/oxigen/eredmeny-01..21.jpg`): hajhullás 12, korpás haj 3, pikkelysömör 3, seborrea 3, „Forrás: Oxygeni Hair” jelöléssel. A hero 5 képe ezek közül való (ismétlődik, amíg a tulajdonos ki nem választja a sajátokat).
+- „Az oxigénterápia ilyen hatást ér el” (`#eredmenyek`; 2026-10-09 előtt: „Az Oxygeni vendégeinek valós javulásai”; a tulajdonos kérésére átírva, alatta rövid lead: „A kezelést gyártó Oxygeni Hair vendégeinek valós előtte–utána fotói, panaszonként.”): a **régi oldal galériái, panaszonként, ugyanabban a sorrendben, mind a 21 kép** (`assets/img/oxigen/eredmeny-01..21.jpg`): hajhullás 12, korpás haj 3, pikkelysömör 3, seborrea 3, „Forrás: Oxygeni Hair” jelöléssel. A hero 5 képe ezek közül való (ismétlődik, amíg a tulajdonos ki nem választja a sajátokat).
 - **Vendégeink véleménye**: az **eredeti Trustindex-csúszka** (ugyanaz a widget, mint a főoldalon az „olvasd el vendégeinktől” résznél: `assets/embed/c2eb0f_95e68e62…`, Google-értékelés + 3 kártya) keretben. Külső szolgáltató, ezért a süti-tájékoztató szerint „funkcionális”: csak hozzájárulás után tölt be, addig gombos helykitöltő áll. A vélemények valós Google-értékelések, nem szerkesztettük őket; általános MOSAIC-vélemények (HeadSpa, fodrászat), oxigén-specifikus egyelőre nincs köztük.
+
+## A mi vendégeink eredményei (a szalon saját előtte–utána fotói, 2026-10-09)
+
+Külön blokk (`#sajat-eredmenyek`, `.eredmenyek.eredmenyek-sajat`) közvetlenül az Oxygeni-blokk után (`#eredmenyek`). Cím: „A mi vendégeink eredményei”, alatta lead (a felirat az alkalmak számát mutatja; „Az eredmény mindenkinél egyéni.”), egy „Hajhullás esetén” csoport („Forrás: MOSAIC, saját fotók”), 10 kártya, lábjegyzet („A változás mértéke és üteme egyénenként eltérő.”). **Ugyanaz a komponens**, mint az Oxygeni-blokkban: `.ba-csoport` / `.ba-keret` / `.ba-sav` / `figure.ba`, a lapozó nyilakat (csak ha a kártyák nem férnek el) az `oxigen-landing.js` minden `.ba-keret`-re felépíti, külön JS nem kellett. Újdonság csak a kártya alatti **felirat** (`figcaption`: félkövér az alkalmak száma, alatta halványan a panasz; stílus: `.ba figcaption` az `oxigen-landing.css`-ben; a régi Oxygeni-kártyákon nincs felirat). Nincs nagyítás-kattintás és nincsenek pontok: a meglévő `.ba` komponensben sincs (pontok csak a hero-galériában vannak). Az új blokkban nincs `data-cta` (nincs új mérendő gomb); a nyilak és kártyák a meglévő mintához híven nem küldenek dataLayer-eseményt.
+
+**Képek:** `assets/img/oxigen/vendeg-01..10.jpg` — egy kártya = egy összetett kép (760×507, két félkép 378×507 + 4 px fehér sáv, mint az `eredmeny-NN.jpg`; JPEG, 58–79 KB). Az ELŐTTE/UTÁNA címke és a felirat HTML (a képen nincs szöveg). A forrás a tulajdonos Google Drive-mappája (`18H04DnDu7sIeoggMrvzBx6JpKTG0fWkV`, tulajdonos: t.harang21@gmail.com; telefonos képernyőmentések és HEIC-fotók, 19 fájl). A nagy forrásfájlok **nincsenek a repóban**: a `tools/email-kepek/drive-atvitel.zapier.ts` (Zapier, `masol` mód) hozott belőlük kicsinyített másolatot, abból készült a kártya (`tools/email-kepek/vendeg-kartyak.py`): a telefon-felület / fekete sávok levágva, 3:4-es kivágás, 378×507-re méretezve. A nyers másolatok a kártyák elkészülte után törlendők a repóból (`assets/img/oxigen/vendeg/`; a `tools/oxigen-teszt/oxigen.test.mjs` ellenőrzi, hogy nincsenek ott).
+
+| Kártya | Drive-fájlok (előtte → utána) | Felirat |
+|---|---|---|
+| `vendeg-01` | 01 Előtte.PNG → 01 Utána 5 alkalom Hajhullás.HEIC | 5 alkalom után · Hajhullás |
+| `vendeg-02` | 02 Előtte.PNG → 02 Utána 10 alk zsíros fejbőr hajhullás.PNG | 10 alkalom után · Zsíros fejbőr, hajhullás |
+| `vendeg-03` | 03 Előtte.PNG → 03 Utána 5 alkalom Hajhullás HEIC | 5 alkalom után · Hajhullás |
+| `vendeg-04` | 04 Előtte.PNG → 04 Utána 5 alk Hajhullás PNG | 5 alkalom után · Hajhullás |
+| `vendeg-05` | 05 Előtte.PNG → 05 Utána.PNG | Kezelések után (a fájlnév nem mondja az alkalmak számát) |
+| `vendeg-06` | 06 Előtte.PNG → 06 Utána Hajhullás 10 alk.PNG | 10 alkalom után · Hajhullás |
+| `vendeg-07` | **08 Előtte .PNG** (szóközzel) → 07 Utána 10 alkalom Hajhullás2.Png | 10 alkalom után · Hajhullás |
+| `vendeg-08` | **08 Előtte .PNG** (ugyanaz) → 07 Utána 15 alkalom.PNG | 15 alkalom után · Hajhullás (a fájlnév nem mondja ki a panaszt, de ugyanaz a vendég, mint a `vendeg-07`) |
+| `vendeg-09` | 08 Előtte.PNG → 08 Utána 5 alkalom Hajhullás.HEIC | 5 alkalom után · Hajhullás |
+| `vendeg-10` | 09 Előtte.PNG → 09 Utána. 5 alkalom Hajhullàs száraz.PNG | 5 alkalom után · Hajhullás, száraz fejbőr |
+
+A párosítás a képek alapján történt: a „07” sorszámhoz nincs „Előtte” fájl; a „08 Előtte .PNG” (szóközzel a pont előtt) ugyanazt a szemüveges, fülbevalós vendéget mutatja, mint a két „07 Utána” kép, ezért az ő előtte-fotója (a „08 Előtte.PNG” egy másik vendég, a „08 Utána” párja).
+
+**Adatvédelem:** a fotókon a vendégek arca / profilja felismerhető (kivéve a `vendeg-06`, ahol az arc alig látszik). Közzététel előtt a tulajdonosnak meg kell erősítenie, hogy minden vendégtől megvan a fotó-közzétételi hozzájárulás.
+
+**Csere / bővítés:** új kártya = új `vendeg-NN.jpg` (760×507, ≤ 120 KB, két 378×507-es félkép + 4 px fehér sáv) + egy `<figure class="ba">` a `#vendeg-sav`-ba (a mintát lásd a HTML-ben; felirat: `<figcaption><b>N alkalom után</b><span>panasz</span></figcaption>`). A sorrend a HTML-ben dől el. Új Drive-képek átvitele: `tools/email-kepek/README.md` („Drive-átviteli cső”, `nevek` mód a mappa-hozzáférés próbájára, `masol` mód a kicsinyített másolatra). Teszt: `node --test tools/oxigen-teszt/oxigen.test.mjs` (Playwright; `PLAYWRIGHT_UTVONAL`, `CHROME_UTVONAL`).
 
 ## Ismerősek ezek a jelek? (12-14. kör)
 
@@ -58,7 +83,7 @@ A négy kártya illusztrációja a tulajdonos képtervéből (`vekony.jpg`) kiv�
 
 ## Mire számíthatsz az oxigénterápiától? / Miért működik?
 
-A „Milyen hajhullásokra működik” és az „Az Oxygeni vendégeinek valós javulásai” között (`#varhato-eredmeny`): bal oldalon 6 várható hatás saját grafikával (lassuló hajhullás, dúsuló haj, új hajszálak, jobb vérkeringés, élénkebb anyagcsere, egészségesebb fejbőr; az ikonok a lap saját SVG-szimbólumai, **nem** az Oxygeni képei), jobb oldalon a „Miért működik?” szöveg a tulajdonos magyarázata szerint (pontosan ott hat, ahol a probléma van: a hajhagymák mélyén; nem felszíni, nem kozmetikai kezelés; a magas tisztaságú oxigén vitaminokat visz a fejbőrbe; a hajhagymák normális működését állítja helyre). Mobilon a hatások 2 oszlopban állnak. A hajhullás-típus kártyák szövege egyforma hosszú (két sor).
+A „Milyen hajhullásokra működik” és az „Az oxigénterápia ilyen hatást ér el” (eredmények) között (`#varhato-eredmeny`): bal oldalon 6 várható hatás saját grafikával (lassuló hajhullás, dúsuló haj, új hajszálak, jobb vérkeringés, élénkebb anyagcsere, egészségesebb fejbőr; az ikonok a lap saját SVG-szimbólumai, **nem** az Oxygeni képei), jobb oldalon a „Miért működik?” szöveg a tulajdonos magyarázata szerint (pontosan ott hat, ahol a probléma van: a hajhagymák mélyén; nem felszíni, nem kozmetikai kezelés; a magas tisztaságú oxigén vitaminokat visz a fejbőrbe; a hajhagymák normális működését állítja helyre). Mobilon a hatások 2 oszlopban állnak. A hajhullás-típus kártyák szövege egyforma hosszú (két sor).
 
 A „Mi történik az első kezeléseden?” kép magasságát a bal oszlop adja: a kép teteje a címmel, az alja a „Megnézem a kezelés részletes lépéseit” gomb aljával egyezik (a kép `position:absolute`, nem nyújtja a sort); a gomb a többi nagy gombbal egyforma méretű. Az „A kezelés lépésről lépésre” lenyitó jele nyíl (zárva lefelé, nyitva felfelé), nem plusz. A hero-galéria felirata mobilon rövid, egy soros: „Gyengébb panaszok 3–5 alkalom, súlyosabb 5–10 alkalom.” (`.sz-m`; asztalin a hosszú változat, `.sz-d`).
 

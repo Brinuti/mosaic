@@ -126,6 +126,29 @@
     lb.addEventListener('touchend', (e) => { const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50 && sor.length > 1) lep(dx > 0 ? -1 : 1); }, { passive: true });
   }
 
+  // --- hero-kepgaleria (kozponti oldal): scroll-snap sav + nyilak + pontok; a lapozas a bongeszo sajat gorgetese (ujjal huzva is) ----------------------------------
+  const hg = document.querySelector('[data-hero-galeria]');
+  if (hg) {
+    const sav = hg.querySelector('.hg-sav'), pontok = [...hg.querySelectorAll('.hg-pontok span')], db = pontok.length;
+    let jelezve = false;
+    const aktualis = () => Math.max(0, Math.min(db - 1, Math.round(sav.scrollLeft / (sav.clientWidth || 1))));
+    const frissit = () => { const i = aktualis(); pontok.forEach((p, k) => p.classList.toggle('aktiv', k === i)); };
+    const ugrik = (i) => sav.scrollTo({ left: ((i + db) % db) * sav.clientWidth, behavior: csokkentett ? 'auto' : 'smooth' });
+    sav.addEventListener('scroll', () => { frissit(); if (!jelezve && aktualis() > 0) { jelezve = true; meres('gallery_interaction', { action: 'hero_swipe' }); } }, { passive: true });
+    hg.querySelector('.hg-elozo').addEventListener('click', () => ugrik(aktualis() - 1));
+    hg.querySelector('.hg-kovetkezo').addEventListener('click', () => ugrik(aktualis() + 1));
+    sav.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') { e.preventDefault(); ugrik(aktualis() - 1); } else if (e.key === 'ArrowRight') { e.preventDefault(); ugrik(aktualis() + 1); } });
+    addEventListener('resize', () => sav.scrollTo({ left: aktualis() * sav.clientWidth, behavior: 'auto' }));
+  }
+
+  // --- konzultacios videok: az inditasrol dataLayer-esemeny (a lejatszas a bongeszo sajat vezerloivel, hanggal tortenik) ------------------------------------
+  main.addEventListener('play', (e) => {
+    const v = e.target;
+    if (!(v instanceof HTMLVideoElement) || !v.closest('.vid') || v.dataset.jelezve) return;
+    v.dataset.jelezve = '1';
+    meres('video_play', { video: v.dataset.video || 'konzultacio', cta_position: v.closest('.konzult-videok') ? 'konzultacio-szekcio' : 'bemutat' });
+  }, true);
+
   // --- arlista-fulek -----------------------------------------------------------------------------------------------------------------------
   const arSzekcio = document.querySelector('[data-ar]');
   if (arSzekcio) {

@@ -23,6 +23,7 @@ Módok (a futtatás bemenete):
 - `lista`: a Drive-fa bejárása, mappánkénti kép- és videószámmal;
 - `bel`: a mappák képeinek kis előnézete, csomagolva (`pack-*.bin`) + `manifest-*.tsv`, egyetlen commitban az adott ágra (ebből készültek a képválasztó lapok);
 - `masol`: a kijelölt képek kicsinyített másolata külön fájlokban; a lista a bemenetben (`fajlok`) vagy a repóban lévő JSON-ban (`lista_ut`) van.
+- `nevek`: egy Drive-mappa fájljai (`{ mappa }`): azonosító, név, típus, méret, van-e bélyegkép, felbontás. Hozzáférés-próbának jó (404 / üres lista = a kapcsolat nem látja a mappát), és a `masol` bemenetének (`fajlok`) azonosítóit adja. (Az oxigén „A mi vendégeink eredményei” blokk képei így készültek, 2026-10-09: a Drive-mappa a Zapier Google Drive-kapcsolatával elérhető volt; a bélyegkép PNG-forrásnál PNG-t ad `.jpg` kiterjesztéssel, ~960 px a hosszú oldal; a kártya-képeket a `vendeg-kartyak.py` készíti belőlük: `python3 -I tools/email-kepek/vendeg-kartyak.py <nyers-mappa> assets/img/oxigen`.)
 
 Korlátok, amiket mértünk: a Zapier-sandbox csak a kapcsolat által engedett hosztokat éri el (a Drive-bélyegkép `lh3.googleusercontent.com`-ról a Drive-kapcsolattal igen); a GitHub-blob kb. 600 KB-ig fogad el; a commit az ágra történik, ezért utána `git pull` kell, és a Cloudflare egy előnézeti buildet indít.
 

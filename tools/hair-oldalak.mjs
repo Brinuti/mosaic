@@ -7,6 +7,7 @@
 // Az oldalak ideiglenes (-uj) cimen, noindex-szel allnak; az eredeti cimre (a mostani Wixes oldal helyere) csak kulon kerese koltoznek.
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { LAPOK, FODRASZOK, SZALON, PILLANATKEP, GYOKER, KEPEK, konzultacio } from './hair-oldalak/adat.mjs';
 import { kozpontOldal, fodraszOldal, SPRITE, LIGHTBOX, sablonSegedek } from './hair-oldalak/sablon.mjs';
 
@@ -15,23 +16,23 @@ const SALONIC = { place: 10823, naptar: 'f2bf7672-fa03-f092-e14b-fc23577e5ab2', 
 
 const META = {
   kozpont: {
-    title: 'Női fodrászat Budapesten: balayage, hajfestés, hajvágás | MOSAIC Hair',
-    leiras: 'Női fodrászat Budán, a Bécsi út 2-ben: balayage, hajfestés, őszfedés és hajvágás ingyenes konzultációval. Nézd meg a valódi munkáinkat, az árakat és a szabad időpontokat.',
+    title: 'Női fodrászat Budapesten: balayage, hajfestés, tőfestés | MOSAIC Hair',
+    leiras: 'Női fodrászat Budán, a Bécsi út 2-ben: balayage, hajfestés, tőfestés és őszfedés ingyenes konzultációval. Nézd meg a valódi munkáinkat, az árakat és a szabad időpontokat.',
     kep: () => KEPEK.kozpontHero(),
   },
   betti: {
-    title: 'Betti – női fodrász Budapesten: festés, balayage, hajvágás | MOSAIC Hair',
-    leiras: 'Ismerd meg Bettit, a MOSAIC Hair fodrászát a Bécsi úton: balayage, melír, hajfestés és hajvágás ingyenes konzultációval. Nézd meg a munkáit és az árait, és foglalj időpontot.',
+    title: 'Betti – női fodrász Budapesten: festés, balayage | MOSAIC Hair',
+    leiras: 'Ismerd meg Bettit, a MOSAIC Hair fodrászát a Bécsi úton: balayage, melír és hajfestés ingyenes konzultációval. Nézd meg a munkáit és az árait, és foglalj időpontot.',
     kep: () => KEPEK.portre.betti(),
   },
   noel: {
     title: 'Noel – balayage és hajfestés Budapesten | MOSAIC Hair',
-    leiras: 'Ismerd meg Noelt, a MOSAIC Hair fodrászát a Bécsi úton: balayage, precíz hajfestés és hajvágás ingyenes konzultációval. Nézd meg a munkáit és az árait, és foglalj időpontot.',
+    leiras: 'Ismerd meg Noelt, a MOSAIC Hair fodrászát a Bécsi úton: balayage, precíz hajfestés és tőfestés ingyenes konzultációval. Nézd meg a munkáit és az árait, és foglalj időpontot.',
     kep: () => KEPEK.portre.noel(),
   },
   evelin: {
-    title: 'Evelin – női hajfestés, hajvágás és hajhosszabbítás Budapesten | MOSAIC Hair',
-    leiras: 'Ismerd meg Evelint, a MOSAIC Hair fodrászát a Bécsi úton: hajfestés, hajvágás és hajhosszabbítás ingyenes konzultációval. Nézd meg a munkáit és az árait, és foglalj időpontot.',
+    title: 'Evelin – női hajfestés és hajhosszabbítás Budapesten | MOSAIC Hair',
+    leiras: 'Ismerd meg Evelint, a MOSAIC Hair fodrászát a Bécsi úton: hajfestés és hajhosszabbítás ingyenes konzultációval. Nézd meg a munkáit és az árait, és foglalj időpontot.',
     kep: () => KEPEK.portre.evelin(),
   },
 };
@@ -107,7 +108,7 @@ ${LIGHTBOX}
 }
 
 const fajl = (kulcs) => path.join(GYOKER, 'foglalas', LAPOK[kulcs].fajl + '.html');
-if (import.meta.url === new URL('file:///' + process.argv[1].replace(/\\/g, '/')).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) { // Windowson es Linuxon is
   const ellenoriz = process.argv.includes('--ellenoriz');
   let elteres = 0;
   for (const kulcs of Object.keys(LAPOK)) {

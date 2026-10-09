@@ -22,9 +22,9 @@ Az oldalak **generáltak** – kézzel ne szerkeszd őket (a teszt ellenőrzi, h
 | `tools/hair-oldalak/sablon.mjs` | a szekciók HTML-sablonjai (központi oldal, fodrász-oldal) |
 | `tools/hair-oldalak/salonic-hair.json` | **a Salonic pillanatképe**: szolgáltatások, hajhosszak, időtartamok, árak, ki mit vállal, a fodrászok és kedvezményeik |
 | `tools/hair-oldalak/salonic-pillanatkep.mjs` | a pillanatkép frissítése (csak olvas): `node tools/hair-oldalak/salonic-pillanatkep.mjs`; `--ellenoriz`: összeveti a Salonic mostani adataival |
-| `assets/css/hair-landing.css` | a közös stíluslap (a csomag színvilága: elefántcsont / homok / bronz / eszpresszó; Playfair Display + Jost, saját tárhelyről) |
-| `assets/js/hair-landing.js` | galéria + nagyító, árlista-fülek, mobil sticky sáv, Google-értékelés, vélemények, térkép, legközelebbi szabad konzultáció, mérés (dataLayer) |
-| `tools/hair-teszt/hair.test.mjs` | 32 teszt (statikus + böngészős, build nélkül): `PLAYWRIGHT_UTVONAL=<node_modules mappa> node --test tools/hair-teszt/hair.test.mjs` |
+| `assets/css/hair-landing.css` | a közös stíluslap (2026-10-09 óta a MOSAIC zöldes színvilága és a többi landing gombjai: krém `#f3f4ef`, sötétzöld `#0f3a3c`, arany átmenetes pill-gomb; Playfair Display + Jost, saját tárhelyről) |
+| `assets/js/hair-landing.js` | galéria + nagyító, lapozható hero-képgaléria (központi oldal), árlista-fülek, mobil sticky sáv, Google-értékelés, vélemények, térkép, legközelebbi szabad konzultáció, mérés (dataLayer; a videók indításáról `video_play`) |
+| `tools/hair-teszt/hair.test.mjs` | 48 teszt (statikus + böngészős, build nélkül): `PLAYWRIGHT_UTVONAL=<node_modules mappa> CHROME_UTVONAL=<chrome> node --test tools/hair-teszt/hair.test.mjs` |
 
 **Árváltozásnál:** `node tools/hair-oldalak/salonic-pillanatkep.mjs`, majd `node tools/hair-oldalak.mjs`, commit. A teszt figyelmeztet, ha a pillanatkép 30 napnál régebbi.
 
@@ -36,6 +36,17 @@ Az oldalak **generáltak** – kézzel ne szerkeszd őket (a teszt ellenőrzi, h
 - **Foglalás:** minden gomb a kész foglaló-motor linkje (`/foglalo-motor?business=hair[&staff=betti][&category=balayage][&service=konzultacio]`); a launcher a rétegben nyitja, JS nélkül a motor-oldalra visz. A fodrászt / kezelést a motor nem kérdezi újra (munkatárs-link, kategória-link).
 - **Legközelebbi szabad konzultáció:** a Salonic naptár-API-jából (csak az éles tartományon kap választ: a Salonic CORS-a `www.mosaicheadspa.hu`-ra szól); a link `&start=<unix>`-szel a foglaló adatlapjára visz. Nincs adat → a sor rejtve marad.
 - **Mérés:** a doc „Analytics contract”-ja szerinti `dataLayer`-események (`landing_view`, `service_selected`, `staff_selected`, `consultation_cta_click`, `gallery_interaction`, `price_view`; közös paraméterek: `landing_id`, `entry_intent`, `service`, `staff`, `source`, `medium`, `campaign`, `creative`, `cta_position`). A foglalási lépés-eseményeket (`booking_*`) a motor küldi, itt nem duplázzuk. Az `-uj` címek **nincsenek** a `suti.js` Meta-pixel listáján (nincs pixel); GTM-trigger nincs bekötve – ez az elemző dolga a csere előtt.
+
+## A tulajdonos észrevételei szerinti változtatások (2026-10-09, a 4 `-uj` oldal élesítése előtt)
+
+- **Központi oldal, asztal:** a fodrász-kártyákon a név alatti szöveg egy soros (`kartyaSzoveg` az `adat.mjs`-ben), Noel kártyáján nincs „Jelenleg 20% kedvezménnyel” felirat (az árlista és az árlista fölötti Noel-megjegyzés változatlan); a „Haj / biztonság” felirat a kör közepén áll (ikon nélkül).
+- **Szolgáltatások:** nincs hajvágás sehol a kártyákon / hero-ban / GYIK-ben / meta-szövegekben (az **árlista változatlan**, benne a hajvágás-fül is). A négy központi kártya: Balayage, Hajfestés (teljes festés ára), **Tőfestés** (új, a foglalóban a Hajfestés kategóriát nyitja), Ingyenes konzultáció. A fodrász-oldalakon: Balayage, Hajfestés, Tőfestés, Joico (Evelinnél póthaj marad).
+- **Hero (központ):** három badge (Bécsi út 2. · Kolosy tér / Organikus hajfesték / Ingyenes konzultáció), másodlagos gomb „Ingyenes konzultáció”; lapozható képgaléria (5 valódi vendégmunka; asztalon nyilak + pontok, telefonon ujjal húzható).
+- **Gombok és színek:** pontosan a többi landing gombjai (arany átmenetes elsődleges fehér szöveggel, hover zöld; körvonalas másodlagos sötétzölddel, pill alak); a krémes / barnás színek helyett a zöldes MOSAIC-árnyalatok mindenhol.
+- **Mobil (900 px alatt) hero:** főcím → képek → alcím sorrend (a `.hero-szoveg` `display: contents`, a sorrendet CSS `order` adja), nincs eyebrow-felirat, a hero (az első gombbal együtt) elfér egy 390×844 (és 360×740) képernyőn. A fodrász-oldalakon: eredeti főcím, „Festés, balayage” (fodrászonként `alcim`), idézet, két blokk (`blokkok`), „Legközelebbi szabad konzultáció” sor, gombok.
+- **Fodrász-oldalak:** H1 = a régi (Wixes) oldal eredeti címe (`h1` az `adat.mjs`-ben; Betti: „Tökéletes festés és vágás 18 év tapasztalattal.”, Noel: „Természetes hatású festés és vágás 3 év tapasztalattal.”, Evelin: „Végre olyan frizurád lesz, amilyet megálmodtál!”) – a tulajdonos kérésére, ezek az egyetlen helyek, ahol tapasztalati év szerepel; nincs „női fodrász Budapesten” alcím; nincs „Ismerd meg a többieket” doboz; nincs Noel „Munka közben” képsora.
+- **Konzultációs videók** (a régi oldalakon is ott voltak, a „Fodrászt váltani nagy döntés. Ingyenes konzultációval várlak!” rész mellett): fodrász-oldalon a bemutatkozás mellett (Betti, Noel, Evelin saját videója), a központi oldalon a „Nem kell tudnod…” szakaszban (Betti + Evelin). Natív vezérlők, poszterkép, `preload="none"` (kattintásra indul, hanggal).
+- **Térkép alatti képek:** a fodrászat saját helyisége (tükrös fodrászhelyek, Betti régi oldalának 80–82. blokkja); a Head Spa-s váró / recepció képei nem kerülnek ide. Több fotó: a Drive „Fodrászat” mappáiban vannak telefonos HEIC-képek, de szalon-belső nincs külön jelölve; ha a tulajdonos küld / jelöl ki, a `KEPEK.szalon` listába kerülnek.
 
 ## Eltérések a csomagtól (szándékosak)
 
@@ -50,7 +61,7 @@ Az oldalak **generáltak** – kézzel ne szerkeszd őket (a teszt ellenőrzi, h
 
 ## Kihagyott állítások (a doc QA-szabálya: nincs 90/95/98%-os claim, nincs tapasztalati év, nincs kitalált értékelés)
 
-A mostani Wixes oldalakon szerepel, **ide nem vettem át** (a tulajdonos döntheti el, hogy visszakerüljenek-e): Betti „18 év tapasztalat”, „több ezer festés”, „vendégeim 98%-a visszajár”; Noel „3 év”, „95%”; Evelin „4 év”, „90%”; a központi oldal „31 tapasztalati év”, „5,0 – Kiváló”, Noel „5,0 – 1.145 vélemény”; a lejárt „Szeptemberi akció”.
+A mostani Wixes oldalakon szerepel, **ide nem vettem át** (a fodrász-oldalak H1-e kivételével, lásd fent; a tulajdonos döntheti el, hogy visszakerüljenek-e): Betti „18 év tapasztalat”, „több ezer festés”, „vendégeim 98%-a visszajár”; Noel „3 év”, „95%”; Evelin „4 év”, „90%”; a központi oldal „31 tapasztalati év”, „5,0 – Kiváló”, Noel „5,0 – 1.145 vélemény”; a lejárt „Szeptemberi akció”.
 
 ## Nyitott / ellenőrizendő
 
