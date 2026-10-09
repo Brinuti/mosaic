@@ -27,7 +27,7 @@ A mother / friend / for_her / partner / last_minute variáns H1-ét, alcímét �
 
 ## Magyarázó szekció (a hero után, az ajándékválasztó előtt)
 
-Asztalon két oszlop: **balra** a persona szövege (felirat, cím, 2–3 rövid bekezdés, legfeljebb 3 pipás pont), **jobbra** kép (a keret magassága a szövegoszlopot követi); mobilon egymás alatt: szöveg, majd kép.
+Asztalon két oszlop: **balra a kép** (a keret magassága a szövegoszlopot követi), **jobbra** a persona szövege (felirat, cím, 2–3 rövid bekezdés, legfeljebb 3 pipás pont); a hero videója jobbra van, így a kettő felváltva áll (2026-10-09, 2. kör, a tulajdonos kérése). A csere csak CSS (`ajandek.css`: `.ah-magyarazo-media { order: -1 }` 900 px-től, az oszlopok aránya `1fr / 1.05fr`); a DOM-ban a szöveg áll elöl, ezért mobilon marad az egymás alatti sorrend: szöveg, majd kép (ez volt eddig is).
 A tartalom **adatvezérelt**: `ajandek-adat.js` → `VARIANTOK[<variáns>].magyarazo` = `{ felcim, cim, szovegek: [..], pontok: [..], media: { src, alt, w, h, poz, forras } }`; a sablon (`foglalas/ajandek.html`
 `#ah-magyarazo`), a render (`ajandek.js` `magyarazoRender`) és a stílus (`ajandek.css`, „PERSONA-MAGYARAZO”) közös. A `magyarazo: null` (general) esetén a szekció rejtett.
 
@@ -36,6 +36,20 @@ kereső is a persona szövegét látja. A JS ugyanazt írja be ugyanabból az ad
 
 Szabályok (a tesztek ellenőrzik): csak valódi MOSAIC-asset (kép / videó), **kitalált vendégvélemény, idézet, szám, ígéret nincs** (számként csak a termék tényei szerepelnek: 80 = 50 + 30 perc, 6 hónapig felhasználható), nincs „azonnal”,
 „perceken belül”, „még ma”; a `last_minute` a kézbesítési időre nem tesz állítást. Az egészségügyi / gyógyító állítások (a régi oldalak „gyógyító energiák”, „energetikai megtisztulás” szövege) **nem** kerültek át.
+
+### A magyarázó képek eredete (2. kör, 2026-10-09)
+
+A magyarázó szekció képe soha nem lehet ugyanaz, mint a hero-poszter (a teszt ellenőrzi: más fájl, más tartalom). Három oldal új képet kapott, mind a MOSAIC saját, már meglévő felvételeinek egy-egy kockájából (a Drive-ról, megosztási linken át
+töltve; a forrás-videók **nincsenek** a repóban, csak a kivágott állóképek), a beégetett felirat / ár / logó nélküli sávra vágva, JPEG ~1000 px széles, 76–144 KB:
+
+| oldal (variáns) | kép (`assets/img/ajandek/`) | forrás | kocka |
+|---|---|---|---|
+| csajos nap (`friend`) | `magyarazo-csajos-ketto.jpg` | Drive: „páros csajos érzelmes.mp4” (1080 × 1920, hirdetési videó) | 17,5. mp: két nő fürdőlepedőben, karöltve, nevetve a MOSAIC folyosóján (a hero-videóban a pezsgőző jelenet és a páros ágyak vannak, ez más jelenet) |
+| anyukáknak (`mother`) | `magyarazo-anya-lanya.jpg` | Drive: „Anya-lánya.MP4” (eredeti, 1080 × 1920; a hero ugyanennek a felvételnek a 71,5–79,5. mp-éből készült) | 75,5. mp: a lány beszél, az anya mosolyog, egymás mellett ülnek; nyitott szemű, éles kocka, a hero-poszter másik kockája |
+| self-care (`self_care`) | `magyarazo-selfcare-pihenes.jpg` | Drive: „Self care headspa+ajikártya.mp4” (1080 × 1920) | 5,2. mp: csukott szemmel, nyugodtan pihenő arc az arany zuhanyív alatt (a régi, hajkamerás / fejbőrvizsgálatos kép lecserélve) |
+
+A többi oldal (fiataloknak, nőknek, belső egyensúly, japán, szülinap) képe nem változott, csak a bal-jobb sorrend. Újragyártás: `tools/ajandek-variansok/magyarazo-kepek.py` (a forrás-videókat előbb le kell tölteni a Drive-ról egy mappába, a fájlnevek a szkriptben).
+A régi, lecserélt képek (`magyarazo-csajos.jpg`, `magyarazo-anya.jpg`, `magyarazo-selfcare.jpg`) törölve; az új fájlnevek miatt a böngésző nem a régi, gyorsítótárazott képet mutatja.
 
 ## A hero-videók: honnan, hogyan
 
@@ -91,6 +105,6 @@ A `variant_id`, `gift_context`, `relationship`, `occasion` (+ `utm_*`, `gclid`, 
 ## Tesztek
 
 - `tools/ajandek-teszt/ajandek.test.mjs`: variánsok (mezők, szövegszabályok, számok, videók H.264 / hang nélkül / méret, magyarázó adat, build előre-render, cím → variáns, build / LCP / szerver egyezése).
-- `tools/ajandek-teszt/persona-oldalak.test.mjs` (Playwright, mind a 8 cím): H1 / alcím / gomb, poszter, videós hero (elem + forrás + fájl), magyarázó szekció (bal szöveg, jobb kép, sorrend, mobilon egymás alatt), előválasztás, mérés (`view_item`, `fbclid`),
+- `tools/ajandek-teszt/persona-oldalak.test.mjs` (Playwright, mind a 8 cím): H1 / alcím / gomb, poszter, videós hero (elem + forrás + fájl), magyarázó szekció (bal kép, jobb szöveg, sorrend, mobilon egymás alatt: szöveg, majd kép; a kép nem azonos a hero-poszterrel), előválasztás, mérés (`view_item`, `fbclid`),
   nincs vízszintes túlcsordulás 390 / 768 / 1440 px-en, nincs konzolhiba / 404. A H.264-et **valóban lejátszó** teszt (persona-onként) csak H.264-tudó böngészőben fut; a Playwright-Chromium nem tud H.264-et, ott „skip” (régóta ismert, nem hiba).
 - `tools/ujrastilus-teszt/ajandek-variansok.test.mjs`: a három korábbi oldal átállása (nincs az élő útvonalon, rejtett `-regi`, noindex, sitemap, mérés, LCP).
