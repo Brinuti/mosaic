@@ -33,7 +33,7 @@ export function azonosKulcs(externalGuestId, email, telefon) {
   return `anon:${uuid()}`;
 }
 
-/** hiányzó elérhetőségek kitöltése (a meglévő érték nem íródik felül) */
+/** hianyzo elerhetosegek kitoltese (a meglevo ertek nem irodik felul) */
 function kitoltStmt(db, g, { nev, email, telefon }, now) {
   const sets = [], p = [g.id];
   const add = (oszlop, ertek) => { p.push(ertek); sets.push(`${oszlop} = ?${p.length}`); };
