@@ -116,13 +116,16 @@ describe('/ (főoldal)', () => {
     await ctx.close();
   });
 
-  test('a hero stílusa a közös video-hero.css-ből jön: asztalon a nyitókép / videó a hero TELJES háttere; a fooldal.css-ben nincs hero-szabály; a play gomb 62 px (asztal) / 52 px (telefon)', async () => {
+  test('a hero stílusa a közös video-hero.css-ből jön: asztalon a nyitókép / videó a hero háttere (teljes magasság, jobbra tolva, balról sötétzöldbe olvadva); a fooldal.css-ben nincs hero-szabály; a play gomb 62 px (asztal) / 52 px (telefon)', async () => {
     const css = fs.readFileSync(path.join(GYOKER, 'assets/css/fooldal.css'), 'utf8');
     assert.ok(!/(^|[\s,}])\.hero(?![\w-])|\.hero-(hatter|tart|szoveg|hang|ar|jelveny)\b/.test(css.replace(/\/\*[\s\S]*?\*\//g, '')), 'a fooldal.css-ben nincs hero-szabály (a közös video-hero.css-é)');
     const { p, ctx } = await nyit();
-    const d = await p.evaluate(() => { const h = document.querySelector('#hero').getBoundingClientRect(), k = document.querySelector('.vh-hatter').getBoundingClientRect(); return { hh: Math.round(h.height), kh: Math.round(k.height), hw: Math.round(h.width), kw: Math.round(k.width), play: Math.round(document.querySelector('.vh-play').getBoundingClientRect().width), h1: getComputedStyle(document.querySelector('#hero h1')).fontFamily }; });
-    assert.equal(d.kh, d.hh);
-    assert.equal(d.kw, d.hw);
+    const d = await p.evaluate(() => { const h = document.querySelector('#hero').getBoundingClientRect(), k = document.querySelector('.vh-hatter').getBoundingClientRect(); return { hh: Math.round(h.height), kh: Math.round(k.height), hw: Math.round(h.width), kw: Math.round(k.width), jobb: Math.round(k.right - h.right), play: Math.round(document.querySelector('.vh-play').getBoundingClientRect().width), h1: getComputedStyle(document.querySelector('#hero h1')).fontFamily }; });
+    assert.equal(d.kh, d.hh, 'a hatter a teljes hero magassaga');
+    // a kis felbontasu negyzetes forras miatt .vh-eltolt: a kep a hero jobb ~72%-an, a bal szele puhan sotetzoldbe olvad (a szoveg alatt tiszta zold)
+    assert.equal(await p.locator('#hero.vh-eltolt').count(), 1);
+    assert.ok(Math.abs(d.jobb) <= 1, 'jobbra illesztve: ' + d.jobb);
+    assert.ok(d.kw >= d.hw * 0.7 && d.kw <= d.hw * 0.75, 'a hatter a hero ~72%-a: ' + d.kw + ' / ' + d.hw);
     assert.equal(d.play, 62);
     assert.match(d.h1, /Playfair Display/);
     await ctx.close();
