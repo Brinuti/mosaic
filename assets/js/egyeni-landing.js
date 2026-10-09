@@ -6,8 +6,8 @@
 //     Egyeni szolgaltatassal es az idopont idobelyegevel (&start=<unix>): rogton az adatlap (docs/booking-engine/BOOKING_LAYER.md).
 //     Csak az elonezeten (*.pages.dev, localhost) - ahol a Salonic CORS-a miatt a valodi idopontok nem toltodnek be - jelennek meg MINTA idopontok, jelolve.
 //     Egyeni / Paros valaszto (#valtozat, radio): a valasztas atvaltja az ajanlat-panelt, a szabad idopontokat (a Paros: Salonic 302999) es a foglalo-motor linkjeit.
-//  2. Mozgokepek (video[data-klip]): hang nelkuli, ismetlodo klipek, amelyek csak akkor toltodnek be es jatszanak, amikor a kepernyon vannak (a nyitokep addig latszik);
-//     lassu / adattakarekos kapcsolaton, vagy ha a latogato csokkentett mozgast kert, csak a nyitokep marad. A hangos vendegvideok (button[data-video]) felugro ablakban nyilnak.
+//  2. Mozgokepek (video[data-klip]) es a hangos videok NAGY felugro ablaka (a play gombok: button[data-nagyvideo]): a KOZOS videos hero kodja (assets/js/video-hero.js, docs/VIDEOS_HERO.md);
+//     itt csak a meres (a document 'vh:video' esemenyere a sajat dataLayer-esemeny).
 //  3. Trustindex-velemenyek (MINDIG azonnal), az ertekelesek szama (a widget aktualis adata), mobil sticky CTA, a lepesek / vendegvideok pontjai,
 //     gorgetes (URL-valtozas nelkul: a GTM "History Change" ne induljon).
 (() => {
@@ -25,7 +25,7 @@
   const ZONA = 'Europe/Budapest';
   const ELORE_NAP = 45;
   const MAX_NAP = 28;       // ennyi napot rajzolunk ki (a nyilak gorgetik)
-  const NAPI_IDO = 4;       // oszloponkent ennyi idopont latszik elsore (a tobbi a "+N" gombra)
+  const NAPI_IDO = () => (matchMedia('(max-width: 700px)').matches ? 3 : 4);   // oszloponkent ennyi idopont latszik elsore (a tobbi a "+N" gombra); telefonon kevesebb: kompaktabb
   // A ket valtozat Salonic-szolgaltatasai (docs/booking-engine/SALONIC_SERVICE_STAFF_MAPPING_CURRENT.json):
   //  egyeni: "EGYENI 50 perces MOSAIC Relax / Hair Head Spa kezeles + 30 perc hajszaritas" - 26 900 Ft, 80 perc (ket valtozat, a motor az uniojukat mutatja)
   //  paros: "PAROS MOSAIC Head Spa kezeles (50 perc + Szaritas)" - 53 800 Ft, 80 perc
@@ -137,7 +137,7 @@
     const hova = $('napok');
     const oszlopok = [...napok].slice(0, MAX_NAP).map(([iso, lista]) => {
       const ts0 = lista[0];
-      const mutat = valogat(lista, NAPI_IDO);
+      const mutat = valogat(lista, NAPI_IDO());
       const idok = elem('div', { class: 'nap-idok' }, ...mutat.map((ts) => chip(ts, minta)));
       if (lista.length > mutat.length) {
         const tobb = elem('button', { type: 'button', class: 'link-gomb', 'aria-label': `${lista.length - mutat.length} további időpont megjelenítése`, szoveg: `+${lista.length - mutat.length} időpont` });
@@ -151,19 +151,17 @@
     hova.replaceChildren(...oszlopok);
     nyilFrissit();
   }
+  // elore / vissza nyil (asztalon es telefonon is): a kijelolt idoszak a legkorabbi -> a visszanyil letiltva (halvany); a vegen az elorenyil
   function nyilFrissit() {
-    const hova = $('napok'), gomb = $('napok-kov');
+    const hova = $('napok'), kov = $('napok-kov'), elozo = $('napok-elozo');
     const tul = hova.scrollWidth > hova.clientWidth + 4;
-    gomb.hidden = !tul;
-    const vegen = hova.scrollLeft + hova.clientWidth >= hova.scrollWidth - 4;
-    gomb.classList.toggle('vissza', vegen);
-    gomb.setAttribute('aria-label', vegen ? 'Vissza az első napokhoz' : 'Következő napok');
+    kov.hidden = elozo.hidden = !tul;
+    elozo.disabled = hova.scrollLeft <= 4;
+    kov.disabled = hova.scrollLeft + hova.clientWidth >= hova.scrollWidth - 4;
   }
-  $('napok-kov').addEventListener('click', () => {
-    const hova = $('napok');
-    const vegen = hova.scrollLeft + hova.clientWidth >= hova.scrollWidth - 4;
-    hova.scrollTo({ left: vegen ? 0 : hova.scrollLeft + hova.clientWidth, behavior: csokkentett ? 'auto' : 'smooth' });
-  });
+  const lapoz = (irany) => { const hova = $('napok'); hova.scrollBy({ left: irany * hova.clientWidth, behavior: csokkentett ? 'auto' : 'smooth' }); };
+  $('napok-kov').addEventListener('click', () => lapoz(1));
+  $('napok-elozo').addEventListener('click', () => lapoz(-1));
   $('napok').addEventListener('scroll', nyilFrissit, { passive: true });
   addEventListener('resize', nyilFrissit);
 
@@ -195,11 +193,11 @@
     const adat = await adatBetolt(v);
     if (v !== valtozat) return; // kozben masik valtozatot valasztott
     if (adat.ures) {
-      $('napok').replaceChildren();
+      $('napok').replaceChildren(); nyilFrissit();
       uzenet.replaceChildren(VALTOZATOK[v].nincs, elem('a', { href: motorUrl(null, v), szoveg: 'Nézd meg a foglalóban →' }));
       uzenet.hidden = false;
     } else if (adat.hiba) {
-      $('napok').replaceChildren();
+      $('napok').replaceChildren(); nyilFrissit();
       uzenet.replaceChildren('Most nem sikerült lekérni a szabad időpontokat. ', elem('a', { href: motorUrl(null, v), szoveg: 'Nézd meg itt az összeset →' }));
       uzenet.hidden = false;
     } else {
@@ -234,59 +232,8 @@
     fig.observe(idoSzekcio);
   } else idopontokBetolt();
 
-  // --- 2. mozgokepek: csak akkor toltodnek be es jatszanak, amikor a kepernyon vannak -----------------------------------------------------
-  const kapcsolat = navigator.connection || {};
-  const lassu = !!(kapcsolat.saveData || /(^|-)2g$|^3g$/.test(kapcsolat.effectiveType || ''));
-  const mozgas = !csokkentett && !lassu;
-  function klipInditas() {
-    const klipek = [...document.querySelectorAll('video[data-klip]')];
-    if (!mozgas || !('IntersectionObserver' in window)) return;
-    const indit = (v) => {
-      if (!v.getAttribute('src')) { v.preload = 'auto'; v.src = v.dataset.klip; }
-      const p = v.play();
-      if (p && p.catch) p.catch(() => { /* a bongeszo nem engedte: a nyitokep marad */ });
-    };
-    const fig = new IntersectionObserver((tetelek) => {
-      for (const t of tetelek) { if (t.isIntersecting) indit(t.target); else t.target.pause(); }
-    }, { rootMargin: '120px 0px', threshold: 0.2 });
-    for (const v of klipek) {
-      if ('hero' in v.dataset) v.addEventListener('playing', () => v.classList.add('lejatszik'), { once: true });
-      fig.observe(v);
-    }
-  }
-  // a hero kepe (LCP) elobb: a klipek akkor indulnak, amikor a hero kepe betoltott (legfeljebb 3 mp mulva akkor is): nem kell megvarni a lassu kulso elemeket (Trustindex)
-  let klipKezdve = false;
-  const klipKezd = () => { if (klipKezdve) return; klipKezdve = true; klipInditas(); };
-  const heroKep = document.querySelector('.hero-hatter');
-  if (heroKep && !heroKep.complete) {
-    heroKep.addEventListener('load', klipKezd, { once: true });
-    heroKep.addEventListener('error', klipKezd, { once: true });
-    setTimeout(klipKezd, 3000);
-  } else klipKezd();
-
-  // --- hangos vendegvideok: felugro ablak (a gomb nyitja, a video csak ekkor toltodik be) -----------------------------------------------
-  const dlg = $('lb'), lbTart = $('lb-tartalom');
-  let lbGomb = null;
-  function lbNyit(gomb) {
-    if (!dlg || typeof dlg.showModal !== 'function') { location.href = gomb.dataset.video; return; }
-    for (const v of document.querySelectorAll('video[data-klip]')) v.pause();
-    const v = elem('video', { controls: true, autoplay: true, playsinline: true, preload: 'auto', 'aria-label': gomb.dataset.cim || 'Videó' });
-    v.append(elem('source', { src: gomb.dataset.video, type: 'video/mp4' }));
-    lbTart.replaceChildren(v);
-    lbGomb = gomb;
-    dlg.showModal();
-    v.play().catch(() => { /* a vezerlokkel inditja */ });
-    meres({ event: 'egyeni_landing_video', video: gomb.dataset.video });
-  }
-  document.addEventListener('click', (e) => {
-    const g = e.target.closest('[data-video]');
-    if (g) lbNyit(g);
-  });
-  if (dlg) {
-    dlg.addEventListener('click', (e) => { if (e.target === dlg || e.target === lbTart) dlg.close(); });
-    dlg.addEventListener('close', () => { lbTart.replaceChildren(); if (lbGomb) lbGomb.focus({ preventScroll: true }); lbGomb = null; });
-    $('lb-be').addEventListener('click', () => dlg.close());
-  }
+  // --- 2. mozgokepek + hangos videok nagy ablaka: assets/js/video-hero.js; itt csak a meres -----------------------------------------------------------
+  document.addEventListener('vh:video', (e) => meres({ event: 'egyeni_landing_video', video: e.detail.video }));
 
   // --- Trustindex-velemenyek: az eredeti embed iframe-ben, MINDIG azonnal (a tulajdonos kerese, 2026-10-07: nincs hozzajarulas-kapu) -------------
   const tiDoboz = $('trustindex');
@@ -328,13 +275,13 @@
       const n = ((a && a.textContent.match(/\d[\d\s.]*/)) || [''])[0].replace(/\D/g, '');
       if (!n) return;
       for (const e of document.querySelectorAll('[data-ertekeles-db]')) e.textContent = szam(+n);
-      for (const l of document.querySelectorAll('.google-nagy[aria-label]')) l.setAttribute('aria-label', l.getAttribute('aria-label').replace(/\d+ Google-vélemény/, `${n} Google-vélemény`));
+      for (const l of document.querySelectorAll('.vh-google[aria-label]')) l.setAttribute('aria-label', l.getAttribute('aria-label').replace(/\d+ Google-vélemény/, `${n} Google-vélemény`));
     } catch (hiba) { console.error(hiba); }
   })();
 
   // --- mobil sticky CTA: a hero gombjanak elgorgetese utan jon be, es amig az idopont-szekcio a kepernyon van, nem latszik (maga a szekcio a cel).
   //     Gorgetes-figyelo (nem IntersectionObserver): az gyors ugrasnal / gorgeto-linknel nem jelezne. ----------------------------------------
-  const sticky = $('sticky-cta'), heroGomb = document.querySelector('.hero .cta-sor');
+  const sticky = $('sticky-cta'), heroGomb = document.querySelector('.vh-hero .vh-cta');
   if (sticky && heroGomb && idoSzekcio) {
     let kesz = 0;
     const frissit = () => {
