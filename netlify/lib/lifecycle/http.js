@@ -7,10 +7,11 @@
 //   GET  /f/<kod>   a vendeg foglalasi oldalara (Salonic) iranyit      GET /m/<kod>   az idopont megerositese (egykattintasos)
 //
 // Beallitas (wrangler.toml / Cloudflare): LIFECYCLE_DB (D1), LIFECYCLE_KULCS_HASH (a kulcs SHA-256-ja; a kulcs maga az utemezoben / Zapier-ben van),
-// LIFECYCLE_MOD, LIFECYCLE_UZLETAGOK, SIMPLESMS_FELHASZNALO / SIMPLESMS_DOMAIN (nem titkos), SIMPLESMS_JELSZO (Secret), SMTP_* (mint az urlap-leveleknel).
+// LIFECYCLE_MOD, LIFECYCLE_UZLETAGOK, LIFECYCLE_MUNKATARS_MOD (ki | figyel | be), LIFECYCLE_ELO_ELLENORZES (ki), LIFECYCLE_NOSHOW_AUTO (1), SIMPLESMS_FELHASZNALO / SIMPLESMS_DOMAIN (nem titkos), SIMPLESMS_JELSZO (Secret), SMTP_* (mint az urlap-leveleknel).
 import { ingest, tick, napi, megerosit, reszletekUrl, foglalasNezet, allapot, beallitas } from './engine.js';
 import { foglalasOldal, nemTalalhato } from './oldal.js';
 import { kuldokKeszit, smsKesz, emailKesz, smsEgyenleg, smsConnectProba } from './kuldok.js';
+import { eloEllenorzoKeszit } from './elo.js';
 import { UZLETAGAK, SZALON, tisztaNev } from './uzletag.js';
 import { datumSzoveg, idopontSzoveg } from './ido.js';
 
@@ -59,9 +60,10 @@ export async function api(request, env, ctx) {
   if (resz === 'bejovo') {
     const k = kuldokKeszit(env);
     try {
-      const e = await ingest(db, env, { uzenetId: torzs.uzenetId, targy: torzs.targy, kuldo: torzs.kuldo, szoveg: torzs.szoveg, html: torzs.html, kuldve: torzs.kuldve }, most);
+      const elo = eloEllenorzoKeszit(env); // a foglalas nyilvanos Salonic-oldalanak elo ellenorzese (munkatarsi ertesitok bizonyitasa; LIFECYCLE_ELO_ELLENORZES=ki kikapcsolja)
+      const e = await ingest(db, env, { uzenetId: torzs.uzenetId, targy: torzs.targy, kuldo: torzs.kuldo, szoveg: torzs.szoveg, html: torzs.html, kuldve: torzs.kuldve }, most, { eloEllenorzes: elo });
       let kuldes = null;
-      if (e.ok && e.foglalasId && !e.duplikalt) kuldes = await tick(db, env, k, most, { foglalasId: e.foglalasId, base });
+      if (e.ok && e.foglalasId && !e.duplikalt) kuldes = await tick(db, env, k, most, { foglalasId: e.foglalasId, base, eloEllenorzes: elo });
       return json({ ...e, kuldes });
     } finally { await k.lezar(); }
   }
@@ -69,7 +71,7 @@ export async function api(request, env, ctx) {
     const k = kuldokKeszit(env);
     const kk = { ...k, egyenleg: () => smsEgyenleg(env) };
     try {
-      const t = await tick(db, env, kk, most, { limit: 40, base });
+      const t = await tick(db, env, kk, most, { limit: 40, base, eloEllenorzes: eloEllenorzoKeszit(env) });
       const n = await napi(db, env, kk, most);
       return json({ tick: t, napi: n });
     } finally { await k.lezar(); }

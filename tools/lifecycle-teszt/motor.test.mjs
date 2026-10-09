@@ -464,8 +464,8 @@ test('motor: a Salonic minden foglalasrol KET levelet kuld - egyidejuleg is csak
   assert.equal((await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-CANCEL-%'").get()).n, 2);
 });
 
-test('motor: NO-SHOW - a szalon az idopont utan torli: nem lemondas-visszaigazolas, hanem "nem talalkoztunk" SMS + e-mail masnap 10:00-kor', async () => {
-  const db = d1(); const k = hamisKuldok(); const env = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair' };
+test('motor: NO-SHOW (LIFECYCLE_NOSHOW_AUTO=1) - a szalon az idopont utan torli: nem lemondas-visszaigazolas, hanem "nem talalkoztunk" SMS + e-mail masnap 10:00-kor', async () => {
+  const db = d1(); const k = hamisKuldok(); const env = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair', LIFECYCLE_NOSHOW_AUTO: '1' };
   const REKA = { nev: 'Kiss Réka', tel: '06201112222', email: 'kiss.reka@example.com' };
   const r = await ingest(db, env, foglaltLevel({ ...REKA }), MOST); // november 25. 16:00
   await tick(db, env, k, MOST, { foglalasId: r.foglalasId });
@@ -492,8 +492,8 @@ test('motor: NO-SHOW - a szalon az idopont utan torli: nem lemondas-visszaigazol
   assert.equal((await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-NOSHOW-%'").get()).n, 2);
 });
 
-test('motor: NO-SHOW jelzes az okban ("Nem jelent meg") az idopont ELOTT is; a sima lemondas valtozatlan; a regi (3 napnal regebbi) torles csendes', async () => {
-  const env = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair' };
+test('motor: NO-SHOW jelzes az okban ("Nem jelent meg") az idopont ELOTT is (LIFECYCLE_NOSHOW_AUTO=1); a sima lemondas valtozatlan; a regi (3 napnal regebbi) torles csendes', async () => {
+  const env = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair', LIFECYCLE_NOSHOW_AUTO: '1' };
   const REKA = { nev: 'Kiss Réka', tel: '06201112222', email: 'kiss.reka@example.com' };
   // 1) az ok megjeloli: a szalon a nap folyaman, az idopont elott torolt egy "nem jelent meg" jelolest
   const db = d1();

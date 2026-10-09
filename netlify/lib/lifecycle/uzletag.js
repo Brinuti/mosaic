@@ -53,6 +53,11 @@ export const szolgNorm = (s) => String(s || '').normalize('NFC').toLowerCase().r
 
 const PILLANATKEP = new Map(snapshot.szolgaltatasok.map((s) => [`${s.uzletag}|${szolgNorm(s.nev)}`, s]));
 
+/** Igaz, ha a szolgaltatas az uzletag Salonic-pillanatkepeben szerepel (vendeg-szolgaltatas, nem belso blokk). */
+export function ismertSzolgaltatas(uzletag, szolgaltatas) {
+  return PILLANATKEP.has(`${uzletag}|${szolgNorm(szolgaltatas)}`);
+}
+
 /** A szolgaltatas idotartama percben (a Salonic-pillanatkepbol), vagy null. */
 export function idotartamPerc(uzletag, szolgaltatas) {
   const s = PILLANATKEP.get(`${uzletag}|${szolgNorm(szolgaltatas)}`);
