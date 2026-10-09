@@ -116,8 +116,8 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
   const VARIANSOK = Object.keys(ADAT.VARIANTOK);
   const G = ADAT.VARIANTOK.general;
 
-  test('hat variant, mindegyik teljes: azonos mezok, a termeksorrend az osszes termek, a bizonyito es a kepek leteznek, nincs nem igazolt igeret', () => {
-    assert.deepEqual([...VARIANSOK].sort(), ['for_her', 'friend', 'general', 'last_minute', 'mother', 'partner']);
+  test('tizenegy variant, mindegyik teljes: azonos mezok, a termeksorrend az osszes termek, a bizonyito es a kepek leteznek, nincs nem igazolt igeret', () => {
+    assert.deepEqual([...VARIANSOK].sort(), ['birthday', 'esoteric', 'for_her', 'friend', 'general', 'japan', 'last_minute', 'mother', 'partner', 'self_care', 'young']);
     const termekek = Object.keys(ADAT.TERMEKEK).sort();
     for (const k of VARIANSOK) {
       const v = ADAT.VARIANTOK[k];
@@ -246,15 +246,24 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     const V = ADAT.VARIANTOK;
     for (const k of ['general', 'for_her', 'last_minute']) assert.deepEqual(V[k].product_order, ['egyeni', '4kezes', 'paros'], k);
     for (const k of ['friend', 'mother', 'partner']) assert.deepEqual(V[k].product_order, ['paros', 'egyeni', '4kezes'], k);
+    for (const k of ['birthday', 'japan', 'esoteric', 'self_care', 'young']) assert.deepEqual(V[k].product_order, ['egyeni', '4kezes', 'paros'], k);
     // a dokumentum "together" / "for_one" erteke a FINDER azonositoira kepezve
     assert.deepEqual(Object.fromEntries(VARIANSOK.map((k) => [k, V[k].gift_finder_preselect])), {
       general: null, friend: 'ketten', mother: 'ketten', for_her: 'egyedul', partner: 'ketten', last_minute: null,
+      birthday: 'egyedul', japan: null, esoteric: 'egyedul', self_care: 'egyedul', young: 'egyedul',
     });
     for (const k of VARIANSOK) assert.ok(V[k].gift_finder_preselect === null || ADAT.FINDER.some((f) => f.id === V[k].gift_finder_preselect), k);
     assert.equal(V.general.hero_title, 'Ajándékozz neki 80 percet, ami tényleg csak róla szól.');
     assert.equal(V.general.hero_cta, 'Kiválasztom az ajándékot');
     assert.equal(V.friend.hero_title, 'A tökéletes csajos nap ezzel a programmal kezdődik.');
-    assert.equal(V.mother.hero_title, 'Adj neki közös időt — ne még egy dolgot.');
+    assert.equal(V.mother.hero_title, 'Adj anyukádnak egy kis időt, amit végre csak magára fordíthat.');
+    // a persona-oldalak H1-je: sajat, a persona szavaival (2026-10-09, a tulajdonos kerese)
+    assert.equal(V.birthday.hero_title, 'A legszebb szülinapi ajándék: 80 perc, ami csak az ünnepeltről szól.');
+    assert.equal(V.japan.hero_title, 'Ajándékozz egy szelet japán nyugalmat.');
+    assert.equal(V.esoteric.hero_title, 'Ajándékozz belső egyensúlyt: egy lassú, csendes Head Spa rituálét.');
+    assert.equal(V.self_care.hero_title, 'Ajándékozz egy kis self-care-t, mert megérdemli.');
+    assert.equal(V.young.hero_title, 'Ajándékozz egy szünetet a zajból, amitől a haj is tökéletes lesz.');
+    assert.equal(V.young.magyarazo.cim, 'Ajándékozd a tökéletes mentális reset és glow up élményét', 'a tulajdonos kert cime a fiatalok magyarazo-szekciojahoz');
     assert.equal(V.for_her.hero_title, 'Adj neki 80 percet, amikor végre semmiről nem kell gondoskodnia.');
     assert.equal(V.partner.hero_title, 'Egy felejthetetlen randi, ahol mindketten ellazultok.');
     assert.ok(V.partner.hero_subtitle.endsWith('hanem együtt élitek át.'));
@@ -262,6 +271,7 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.deepEqual(Object.fromEntries(VARIANSOK.map((k) => [k, [V[k].gift_context, V[k].relationship, V[k].occasion]])), {
       general: ['general', null, null], friend: ['together', 'friend', null], mother: ['together', 'mother', null],
       for_her: ['for_her', 'recipient_female', null], partner: ['together', 'partner', null], last_minute: ['last_minute', null, 'dynamic'],
+      birthday: ['birthday', null, 'szuletesnap'], japan: ['japan', null, null], esoteric: ['esoteric', null, null], self_care: ['self_care', null, null], young: ['young', 'recipient_young', null],
     });
     // a last_minute-ban nincs kulon megnyugtato sor (az ikonos sor mondja: "Online megvasarolhato"); a kezbesitesi idore nincs allitas
     assert.equal(V.last_minute.reassurance, null);
@@ -270,33 +280,49 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.equal(V.general.hero_trust[0].href, '#ah-google');
   });
 
-  test('a regi ajandekkartya-cimeket az uj oldal veszi at: a cim adja az alapertelmezett variantot / elmenyt / alkalmat; a build, az LCP-terkep es a helyi szerver ugyanazt a 8 cimet ismeri', () => {
+  test('a regi ajandekkartya-cimeket az uj oldal veszi at: a cim adja az alapertelmezett variantot / elmenyt / alkalmat; a build, az LCP-terkep es a helyi szerver ugyanazt a 11 cimet ismeri', () => {
     const f = (u) => new URL('../../' + u, import.meta.url);
     const A = ADAT;
     assert.equal(A.oldalAlapertek('/headspa-ajandekkartya-anyukaknak').variant, 'mother');
     assert.equal(A.oldalAlapertek('/headspa-ajandekkartya-noknek').variant, 'for_her');
     assert.equal(A.oldalAlapertek('/headspa-paros-csajos-ajandekkartya').variant, 'friend');
     assert.deepEqual(A.oldalAlapertek('/4-kezes-headspa-ajandekkartya/'), { variant: 'general', termek: '4kezes' }, 'zaro perjel nem szamit');
-    assert.equal(A.oldalAlapertek('/ajandekkartya-szulinapra').alkalom, 'szuletesnap');
-    for (const ismeretlen of ['/ajandek', '/', '', null, undefined, '/constructor', '/__proto__', '/headspa-ajandekkartya-regi']) assert.deepEqual(A.oldalAlapertek(ismeretlen), {}, String(ismeretlen));
-    const cimek = Object.keys(A.OLDAL_ALAPERTEK).map((k) => k.slice(1)).sort();
-    assert.equal(cimek.length, 8);
+    assert.deepEqual(A.oldalAlapertek('/ajandekkartya-szulinapra'), { variant: 'birthday', alkalom: 'szuletesnap' });
+    assert.equal(A.oldalAlapertek('/japan-headspa-ajandekkartya').variant, 'japan');
+    assert.equal(A.oldalAlapertek('/headspa-self-care').variant, 'self_care');
+    assert.equal(A.oldalAlapertek('/headspa-ajandakkartya-fiataloknak').variant, 'young');
+    // az ekezetes cim: a bongeszo location.pathname-je %-kodoltan adja; NFC / NFD alakban, nagybetuvel, zaro perjellel is ugyanaz
+    for (const ut of ['/headspa-aj%C3%A1nd%C3%A9kk%C3%A1rtya-ezo', '/headspa-ajándékkártya-ezo', '/headspa-aj\u0061\u0301nd\u0065\u0301kk\u0061\u0301rtya-ezo', '/Headspa-Ajándékkártya-Ezo/', '/headspa-aj%c3%a1nd%c3%a9kk%c3%a1rtya-ezo/']) {
+      assert.equal(A.oldalAlapertek(ut).variant, 'esoteric', ut);
+    }
+    for (const ismeretlen of ['/ajandek', '/', '', null, undefined, '/constructor', '/__proto__', '/headspa-ajandekkartya-regi', '/headspa-self-care-regi', '/%E0%A4%A', '/headspa-aj%C3%A1nd%C3%A9kk%C3%A1rtya-ezo-regi']) assert.deepEqual(A.oldalAlapertek(ismeretlen), {}, String(ismeretlen));
+    const cimek = Object.keys(A.OLDAL_ALAPERTEK).map((k) => k.slice(1).normalize('NFC')).sort();
+    assert.equal(cimek.length, 11);
     for (const [ut, a] of Object.entries(A.OLDAL_ALAPERTEK)) {
       assert.ok(A.VARIANTOK[a.variant], ut + ' variantja letezik');
       if (a.termek) assert.ok(A.TERMEKEK[a.termek], ut + ' elmenye letezik');
       assert.ok(fs.existsSync(f('klon' + ut + '.html')) && fs.existsSync(f('klon/m' + ut + '.html')), ut + ': a regi klon-oldal (asztali + mobil) megvan, ezt takarja az uj oldal');
     }
-    // a build ugyanazt a 8 cimet irja at, az LCP-terkep mindegyiknek az uj hero-kepet adja
+    // a build ugyanazt a 11 cimet irja at; az LCP-terkep mindegyiknek a SAJAT hero-kepet adja (nem az altalanosat)
     const build = fs.readFileSync(f('tools/netlify-build.mjs'), 'utf8');
-    const buildCimek = [...build.slice(build.indexOf('const REGI_AJANDEK_CIMEK'), build.indexOf(']', build.indexOf('const REGI_AJANDEK_CIMEK'))).matchAll(/'([a-z0-9-]+)'/g)].map((m) => m[1]).sort();
+    // a build egy "const NEV = [ '..', ..].map(NFC);" listajanak elemei
+    const lista = (nev) => { const i = build.indexOf('const ' + nev); return [...build.slice(i, build.indexOf("normalize('NFC')", i)).matchAll(/'([\p{L}0-9-]+)'/gu)].map((m) => m[1]).filter((x) => x !== 'NFC').map((x) => x.normalize('NFC')); };
+    const buildCimek = lista('REGI_AJANDEK_CIMEK').sort();
     assert.deepEqual(buildCimek, cimek);
     const lcp = JSON.parse(fs.readFileSync(f('tools/lcp-elofeltoltes.json'), 'utf8'));
-    for (const nev of cimek) for (const sz of ['mobil', 'asztali']) assert.equal(lcp[sz][nev], '/assets/img/ajandek/hero-30-altalanos.jpg', sz + ' ' + nev);
+    for (const nev of cimek) {
+      const vart = A.VARIANTOK[A.oldalAlapertek('/' + nev).variant].hero_media.src;
+      for (const sz of ['mobil', 'asztali']) assert.equal(lcp[sz][nev], vart, sz + ' ' + nev + ': az LCP-kep a varians hero-kepe');
+    }
     const szerver = fs.readFileSync(f('tools/ajandek-teszt/szerver.mjs'), 'utf8');
-    for (const nev of cimek) assert.ok(szerver.includes("'/" + nev + "'"), 'helyi szerver: ' + nev);
+    for (const nev of cimek) assert.ok(szerver.normalize('NFC').includes("'/" + nev + "'"), 'helyi szerver: ' + nev);
     // az eles oldalon a regi cim a kanonikus: a build kiveszi a noindexet es atirja a canonical-t / og:url-t, a rejtett masolat noindex
     assert.ok(build.includes("'-regi'") || build.includes("nev + '-regi.html'"));
     assert.match(build, /noindex, nofollow/);
+    // a harom korabbi hirdetesi oldal (ezo, self-care, fiataloknak) az uj formatumban is noindex marad (mint a regi), a tobbi a korabbi dontes szerint indexelheto
+    assert.ok(build.includes('NOINDEX_AJANDEK_CIMEK'), 'a noindex lista a buildben');
+    const noindex = lista('NOINDEX_AJANDEK_CIMEK').sort();
+    assert.deepEqual(noindex, ['headspa-ajandakkartya-fiataloknak', 'headspa-ajándékkártya-ezo', 'headspa-self-care'].map((n) => n.normalize('NFC')).sort());
   });
 
   test('a MOSTANI konverzio es az uj purchase is megy: sikeres vasarlas utan a regi koszono-oldal (/success-ajandekkartya-stripe?ertek=<Ft>&session_id=<pi>) lathatatlan keretben toltodik be, egyszer, csak az eles domainen', () => {
@@ -400,31 +426,113 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.equal(Math.min(...Object.values(ADAT.TERMEKEK).map((t) => t.ar_ft)), 26900);
   });
 
-  test('asset-validalas: a NEEDS_MANUAL_VALIDATION asset nem jelenik meg - a variant a GENERAL assetet kapja, az eredeti javaslat megmarad; a jovahagyott asset marad', () => {
+  test('asset-validalas: a NEEDS_MANUAL_VALIDATION asset nem jelenik meg (a variant a GENERAL assetet kapja); a jovahagyott asset marad; minden persona sajat hero-videot kapott', () => {
     const V = ADAT.VARIANTOK;
-    // a for_her nincs validalt sajat assetje: a GENERAL-t kapja; a friend es a partner a tulajdonos kerese szerint sajat (jovahagyott) hero-videot kapott
-    for (const k of ['friend', 'partner']) {
+    // a persona-variansok mindegyike sajat (jovahagyott) hero-assetet kap: video + poszter letezik, a weben konnyu (< 5 MB)
+    for (const k of ['friend', 'partner', 'mother', 'for_her', 'birthday', 'japan', 'esoteric', 'self_care', 'young']) {
       assert.notEqual(V[k].hero_media, G.hero_media, k + ' sajat hero-asset');
-      assert.ok(['APPROVED_BY_METADATA', 'APPROVED_BY_FOLDER_CONTEXT', 'APPROVED_BY_EXPLICIT_FILENAME'].includes(V[k].hero_media.status), k + ' jovahagyott');
+      assert.ok(['APPROVED_BY_METADATA', 'APPROVED_BY_FOLDER_CONTEXT', 'APPROVED_BY_EXPLICIT_FILENAME', 'APPROVED_BY_VISUAL_REVIEW'].includes(V[k].hero_media.status), k + ' jovahagyott');
+      assert.equal(V[k].hero_media_javaslat, undefined, k + ': nincs nem validalt hero-javaslat, a sajat asset jelenik meg');
       for (const ut of [V[k].hero_media.src, V[k].hero_media.video.src]) assert.ok(fs.existsSync(new URL('../../' + ut.slice(1), import.meta.url)) && fs.statSync(new URL('../../' + ut.slice(1), import.meta.url)).size < 5 * 1024 * 1024, k + ' fajl letezik, < 5 MB: ' + ut);
     }
+    // a hero-videok kulonbozoek (nincs ket persona ugyanazzal a videoval)
+    const videok = Object.values(V).map((v) => v.hero_media.video.src);
+    assert.equal(new Set(videok).size, videok.length, 'minden variansnak sajat hero-videoja van');
     assert.equal(V.friend.hero_media.video.src, '/assets/video/ajandek-hero-baratnok-negyzet.mp4');
     assert.equal(V.partner.hero_media.video.src, '/assets/video/ajandek-hero-30-partner.mp4');
-    for (const k of ['for_her']) {
-      assert.equal(V[k].hero_media, G.hero_media, k + ' fallback a GENERAL hero-assetre');
-      assert.equal(V[k].hero_media_javaslat.status, 'NEEDS_MANUAL_VALIDATION', k);
-      assert.ok(V[k].hero_media_javaslat.validalas, k + ' validalasi feladat');
-    }
+    assert.equal(V.mother.hero_media.video.src, '/assets/video/ajandek-hero-30-anya.mp4', 'az anyukak oldalan a korabbi (jo) Anya-lanya video marad');
     assert.equal(G.hero_media.status, 'APPROVED_BY_METADATA');
     assert.equal(V.mother.hero_media.status, 'APPROVED_BY_EXPLICIT_FILENAME');
     assert.equal(V.last_minute.hero_media.status, 'APPROVED_BY_FOLDER_CONTEXT');
-    assert.equal(V.mother.hero_media_javaslat, undefined);
     // a nem validalt elso proof sem jelenik meg (a vendeg-sorrend a koros)
-    for (const k of ['general', 'friend', 'mother', 'for_her', 'partner']) assert.equal(V[k].first_proof_javaslat.status, 'NEEDS_MANUAL_VALIDATION', k);
+    for (const k of VARIANSOK.filter((x) => x !== 'last_minute')) assert.equal(V[k].first_proof_javaslat.status, 'NEEDS_MANUAL_VALIDATION', k);
+  });
+
+  test('a persona hero-videoi: H.264 (profil: baseline / main / high = 4:2:0, nem 10 bites / 4:4:4), hang nelkuliek, konnyuek; a posztereik letezo, negyzetes JPEG-ek', () => {
+    const f = (u) => new URL('../../' + u.replace(/^\//, ''), import.meta.url);
+    for (const k of VARIANSOK) {
+      const v = ADAT.VARIANTOK[k].hero_media;
+      const ut = v.video.src.replace(/\?.*$/, '');
+      const buf = fs.readFileSync(f(ut));
+      assert.equal(buf.subarray(4, 8).toString('latin1'), 'ftyp', k + ': MP4 doboz');
+      const i = buf.indexOf('avcC');
+      assert.ok(i > 0, k + ': H.264 (avcC) video');
+      assert.ok([66, 77, 88, 100].includes(buf[i + 5]), k + ': H.264 profil (4:2:0): ' + buf[i + 5]);
+      assert.ok(buf.indexOf('soun') < 0, k + ': a hero-video hang nelkuli');
+      assert.ok(buf.length < 3.2e6, k + ': a hero-video konnyu (' + buf.length + ')');
+      const jpg = fs.readFileSync(f(v.src));
+      assert.equal(jpg[0], 0xff, k + ': poszter JPEG');
+      assert.ok(jpg.length < 120e3, k + ': a poszter (LCP-kep) konnyu');
+    }
+  });
+
+  test('persona-oldalak magyarazo-szekcioja (a hero UTAN, az ajandekvalaszto ELOTT): adatvezerelt; a general variansnal nincs; 2-3 rovid bekezdes, max. 3 pipas pont, valodi kep; nincs kitalalt szam / idezet / nem igazolt igeret', () => {
+    const f = (u) => new URL('../../' + u.replace(/^\//, ''), import.meta.url);
+    const V = ADAT.VARIANTOK;
+    assert.equal(V.general.magyarazo, null, 'a fo (altalanos) oldalon nincs uj szekcio');
+    const ENGEDETT_SZAMOK = new Set(['80', '50', '30', '6']);   // a termek valodi adatai: 50 + 30 perc = 80 perc, 6 honapig felhasznalhato
+    for (const k of VARIANSOK.filter((x) => x !== 'general')) {
+      const m = V[k].magyarazo;
+      assert.ok(m && typeof m.cim === 'string' && m.cim.length > 10 && m.cim.length < 90, k + ' cim');
+      assert.ok(Array.isArray(m.szovegek) && m.szovegek.length >= 2 && m.szovegek.length <= 3, k + ': 2-3 bekezdes');
+      for (const sz of m.szovegek) assert.ok(sz.length > 40 && sz.length < 420, k + ' bekezdes hossza: ' + sz.length);
+      assert.ok(Array.isArray(m.pontok) && m.pontok.length >= 1 && m.pontok.length <= 3, k + ': max. 3 pipas pont');
+      for (const p of m.pontok) assert.ok(p.length > 8 && p.length < 80, k + ' pont: ' + p);
+      assert.ok(m.media && fs.existsSync(f(m.media.src)) && m.media.alt.length > 15 && m.media.w > 0 && m.media.h > 0 && m.media.forras, k + ' kep (valodi MOSAIC-asset, forrassal)');
+      assert.ok(fs.statSync(f(m.media.src)).size < 260e3, k + ' kep merete');
+      const osszes = [m.felcim, m.cim, ...m.szovegek, ...m.pontok, V[k].hero_eyebrow, V[k].hero_title, V[k].hero_subtitle, V[k].hero_cta, V[k].reassurance || ''].join(' ');
+      for (const sz of osszes.match(/\d+/g) || []) assert.ok(ENGEDETT_SZAMOK.has(sz), k + ': nincs kitalalt szam: ' + sz);
+      assert.doesNotMatch(osszes, /azonnal|perceken belül|perc alatt|még ma|garant|gyógy|százalék|%|"|„|”/i, k + ': nincs idezet / nem igazolt igeret');
+      assert.doesNotMatch(osszes, /!{2,}|\p{Extended_Pictographic}/u, k + ': nincs emoji / tobbszoros felkialtojel');
+    }
+    // a szekcio helye a sablonban: a hero UTAN, a valaszto ELOTT; a JS ugyanazokat az id-kat tolti
+    const html = fs.readFileSync(f('foglalas/ajandek.html'), 'utf8');
+    const js = fs.readFileSync(f('assets/js/ajandek.js'), 'utf8');
+    assert.ok(html.indexOf('id="ah-hero"') < html.indexOf('id="ah-magyarazo"') && html.indexOf('id="ah-magyarazo"') < html.indexOf('id="ah-finder"'), 'hero < magyarazo < valaszto');
+    for (const az of ['ah-magyarazo-felcim', 'ah-magyarazo-cim', 'ah-magyarazo-torzs', 'ah-magyarazo-pontok', 'ah-magyarazo-media', 'ah-magyarazo-kep']) {
+      assert.ok(html.includes('id="' + az + '"'), 'sablon: ' + az);
+      assert.ok(js.includes("'" + az + "'"), 'JS: ' + az);
+    }
+    assert.match(html, /<section class="ah-szekcio ah-magyarazo" id="ah-magyarazo"[^>]*\bhidden>/, 'alapbol rejtett (general)');
+    assert.ok(js.includes('magyarazoRender();') && js.includes('S.variant.magyarazo'), 'a JS a varians adatabol tolti');
+    // mobilon egymas alatt (szoveg, majd media), asztalon ket oszlop (szoveg balra, kep jobbra): a DOM-sorrend szoveg, majd media
+    assert.ok(html.indexOf('ah-magyarazo-szoveg') < html.indexOf('ah-magyarazo-media'), 'DOM: szoveg, majd media');
+    const css = fs.readFileSync(f('assets/css/ajandek.css'), 'utf8');
+    assert.match(css, /\.ah-magyarazo-racs \{ grid-template-columns: minmax\(0, 1\.05fr\) minmax\(0, 1fr\)/, 'asztalon 2 oszlop');
+  });
+
+  test('a build elore kitolti a persona-oldalak hero-szoveget / -kepet es a magyarazo-szekciot (elore-render.mjs); a general oldalon semmi nem valtozik', async () => {
+    const f = (u) => new URL('../../' + u.replace(/^\//, ''), import.meta.url);
+    const { personaOldal } = await import('../ajandek-variansok/elore-render.mjs');
+    const esc = (x) => String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const sablon = fs.readFileSync(f('foglalas/ajandek.html'), 'utf8');
+    for (const nev of ['ajandek', 'headspa-ajandekkartya', '4-kezes-headspa-ajandekkartya', 'ajandekkartya-ugc', 'nincs-ilyen-oldal']) assert.equal(personaOldal(sablon, nev, ADAT), sablon, nev + ': valtozatlan');
+    let db = 0;
+    for (const [ut, a] of Object.entries(ADAT.OLDAL_ALAPERTEK)) {
+      if (a.variant === 'general') continue;
+      db++;
+      const v = ADAT.VARIANTOK[a.variant], m = v.magyarazo;
+      const h = personaOldal(sablon, ut.slice(1).normalize('NFC'), ADAT);
+      assert.ok(h.includes('<h1 id="ah-hero-cim">' + esc(v.hero_title) + '</h1>'), ut + ' H1');
+      assert.ok(h.includes('<p class="ah-lead" id="ah-hero-alcim">' + esc(v.hero_subtitle) + '</p>'), ut + ' alcim');
+      assert.ok(h.includes('<p class="ah-felcim" id="ah-hero-eyebrow" hidden>' + esc(v.hero_eyebrow) + '</p>'), ut + ' felcim (a dizajnban rejtett, mint a JS-ben)');
+      assert.ok(h.includes('<span id="ah-hero-cta-szoveg">' + esc(v.hero_cta) + '</span>'), ut + ' gomb');
+      assert.ok(h.includes('id="ah-hero-kep" src="' + v.hero_media.src + '"'), ut + ' hero-kep (poszter)');
+      assert.ok(!h.includes('hero-30-altalanos.jpg" width="720"'), ut + ': nem az altalanos hero-kep');
+      assert.doesNotMatch(h, /<section class="ah-szekcio ah-magyarazo"[^>]*\bhidden>/, ut + ': a magyarazo lathato');
+      assert.ok(h.includes('<h2 id="ah-magyarazo-cim">' + esc(m.cim) + '</h2>'), ut + ' magyarazo-cim');
+      for (const sz of m.szovegek) assert.ok(h.includes('<p>' + esc(sz) + '</p>'), ut + ' bekezdes');
+      assert.equal((h.match(/<li>/g) || []).length >= m.pontok.length, true, ut + ' pontok');
+      assert.ok(h.includes('src="' + m.media.src + '"'), ut + ' magyarazo-kep');
+      assert.ok(h.indexOf('id="ah-hero"') < h.indexOf('id="ah-magyarazo"') && h.indexOf('id="ah-magyarazo"') < h.indexOf('id="ah-finder"'), ut + ': sorrend');
+      // minden mas valtozatlan: a sablonbol csak a persona-szovegek / kepek / a szekcio cserelodtek (a kimenet hossza a sablonhoz kozeli)
+      assert.ok(h.includes('id="ah-finder"') && h.includes('id="ah-landing"') && h.includes('<script src="/assets/js/ajandek.js" defer></script>'), ut + ': a tobbi resz erintetlen');
+    }
+    assert.equal(db, 8, 'a 8 persona-cim (szulinapra, japan, anyukaknak, ezo, noknek, self-care, csajos, fiataloknak)');
   });
 
   test('a variant_id es a gift_context a rendeles metadata-jaba kerul (merhetoseg), az ismeretlen variant a GENERAL; a "dynamic" alkalom az URL-bol jon, nem tarolodik betuszerint', async () => {
-    for (const [kuldott, vart] of [['friend', 'friend'], ['for_her', 'for_her'], ['last_minute', 'last_minute'], ['together_friend', 'general'], ['nincs-ilyen', 'general'], ['', 'general'], ['__proto__', 'general']]) {
+    for (const [kuldott, vart] of [['friend', 'friend'], ['for_her', 'for_her'], ['last_minute', 'last_minute'], ['birthday', 'birthday'], ['japan', 'japan'], ['esoteric', 'esoteric'], ['self_care', 'self_care'], ['young', 'young'], ['together_friend', 'general'], ['nincs-ilyen', 'general'], ['', 'general'], ['__proto__', 'general']]) {
       const r = await hiv('POST', 'fizetes', { body: rendelesTorzs({ attr: { variant_id: kuldott, oldal: '/ajandek' } }) });
       assert.equal(r.status, 200, kuldott);
       assert.equal(mock.allapot.pi(r.adat.pi).metadata.variant_id, vart, kuldott);
@@ -437,6 +545,15 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     assert.equal(mock.allapot.pi(lm2.adat.pi).metadata.occasion, 'karacsony');
     const fr = await hiv('POST', 'fizetes', { body: rendelesTorzs({ attr: { variant_id: 'for_her', oldal: '/ajandek' } }) });
     assert.equal(mock.allapot.pi(fr.adat.pi).metadata.relationship, 'recipient_female');
+    // az uj persona-variansok merese (2026-10-09): a gift_context / relationship / occasion a varians adataibol jon; az ekezetes cimrol (dekodolva) erkezik az "oldal"
+    const ifj = await hiv('POST', 'fizetes', { body: rendelesTorzs({ attr: { variant_id: 'young', oldal: '/headspa-ajandakkartya-fiataloknak' } }) });
+    const mdIfj = mock.allapot.pi(ifj.adat.pi).metadata;
+    assert.deepEqual([mdIfj.variant_id, mdIfj.gift_context, mdIfj.relationship, mdIfj.oldal], ['young', 'young', 'recipient_young', '/headspa-ajandakkartya-fiataloknak']);
+    const szul = await hiv('POST', 'fizetes', { body: rendelesTorzs({ attr: { variant_id: 'birthday', oldal: '/ajandekkartya-szulinapra' } }) });
+    const mdSzul = mock.allapot.pi(szul.adat.pi).metadata;
+    assert.deepEqual([mdSzul.variant_id, mdSzul.gift_context, mdSzul.occasion], ['birthday', 'birthday', 'szuletesnap']);
+    const ezo = await hiv('POST', 'fizetes', { body: rendelesTorzs({ attr: { variant_id: 'esoteric', oldal: '/headspa-ajándékkártya-ezo' } }) });
+    assert.equal(mock.allapot.pi(ezo.adat.pi).metadata.oldal, '/headspa-ajándékkártya-ezo', 'az ekezetes cim olvashato alakban kerul a rendelesbe');
   });
 });
 

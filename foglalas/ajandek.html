@@ -76,6 +76,21 @@
     </div>
   </section>
 
+  <!-- PERSONA-MAGYARAZO (a hero UTAN, a valaszto ELOTT): bal oldalt a persona szovege (mit szeretne, hogyan "adjuk el" neki az ajandekkartyat),
+       jobb oldalt kep (mobilon: a szoveg alatt). A tartalom variansonkent az ajandek-adat.js-ben van (VARIANTOK[...].magyarazo); az altalanos
+       (general) variansnal nincs, ott a szekcio rejtett. A build a persona-oldalaknal elore ki is tolti (tools/ajandek-variansok/elore-render.mjs). -->
+  <section class="ah-szekcio ah-magyarazo" id="ah-magyarazo" aria-labelledby="ah-magyarazo-cim" hidden>
+    <div class="ah-tartalom ah-magyarazo-racs">
+      <div class="ah-magyarazo-szoveg">
+        <p class="ah-felcim" id="ah-magyarazo-felcim" hidden></p>
+        <h2 id="ah-magyarazo-cim"></h2>
+        <div class="ah-magyarazo-torzs" id="ah-magyarazo-torzs"></div>
+        <ul class="ah-pipalista" id="ah-magyarazo-pontok"></ul>
+      </div>
+      <figure class="ah-magyarazo-media" id="ah-magyarazo-media"><img id="ah-magyarazo-kep" alt="" width="4" height="3" loading="lazy" decoding="async"></figure>
+    </div>
+  </section>
+
   <!-- 5-6. GIFT FINDER + TERMEKEK + az ajandekkartya elonezete (a termek-sorral egy magassagban) + 9. PRODUCT SELECTED STATE (inline panel) -->
   <section class="ah-szekcio ah-valaszto" id="ah-finder" aria-labelledby="ah-finder-cim">
     <div class="ah-tartalom ah-valaszto-fej">

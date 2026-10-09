@@ -215,7 +215,9 @@
   //   NEEDS_MANUAL_VALIDATION -> NEM hasznalhato: a variant a GENERAL assetet kapja, amig a tulajdonos kezzel nem validalta
   // (az eredeti javaslat a hero_media_javaslat / first_proof_javaslat mezoben marad). Az ervenytelen / hianyzo variant: GENERAL.
   // A "gift_finder_preselect" ertekei a FINDER azonositoi: 'egyedul' (a dokumentumban for_one) | 'ketten' (together) | 'kulonleges'.
-  var ASSET_JO = { APPROVED_BY_METADATA: true, APPROVED_BY_EXPLICIT_FILENAME: true, APPROVED_BY_FOLDER_CONTEXT: true };
+  // APPROVED_BY_VISUAL_REVIEW (2026-10-09, persona-oldalak): a MOSAIC SAJAT, az eles oldalon mar publikalt felvetelebol / fotojabol keszult asset (a forras a "forras" mezoben),
+  // amelynek tartalmat a kepkockak atnezesevel ellenoriztuk (nincs felirat, ar, idegen vendeg-nev; nem hirdetes-szoveg). A tulajdonos kesobb barmikor lecserelheti.
+  var ASSET_JO = { APPROVED_BY_METADATA: true, APPROVED_BY_EXPLICIT_FILENAME: true, APPROVED_BY_FOLDER_CONTEXT: true, APPROVED_BY_VISUAL_REVIEW: true };
   var HERO_FOTO = { src: '/assets/img/ajandek/hero-30-altalanos.jpg', alt: 'Vendég Head Spa kezelésen a MOSAIC-ban, az arany zuhanyív alatt' };
   var VARIANTOK = {
     general: {
@@ -240,6 +242,8 @@
       // a hero ikonos sora már mondja a 6 hónapot / online / kártyát: itt nincs külön (ismétlődő) megnyugtató sor
       reassurance: null,
       objection_title: null, objection_body: null,
+      // a fo (altalanos) oldalon nincs magyarazo-szekcio: ott rogton a valaszto jon
+      magyarazo: null,
       relationship: null, gift_context: 'general', occasion: null
     },
     friend: {
@@ -259,14 +263,26 @@
       featured_proof: 'general',
       reassurance: 'A program már készen van — csak az ajándékot kell kiválasztanod.',
       objection_title: null, objection_body: null,
+      magyarazo: {
+        felcim: 'EGY NAP KETTŐTÖKNEK',
+        cim: 'Egy csajos nap, ahol csak egymásra kell figyelnetek',
+        szovegek: [
+          'A közös program sokszor azon bukik el, hogy valakinek kell szerveznie: időpontot egyeztetni, helyet keresni, mindent megbeszélni. Ez az ajándékkártya ezt leveszi a válladról: a program kész, csak el kell menni.',
+          'Ketten fekszetek egymás mellett egy privát szobában, két kezelő foglalkozik veletek egyszerre: hajmosás, fej-, arc- és nyakmasszázs, a végén profi hajszárítás.',
+          'Ajándékozd a barátnődnek, a testvérednek, vagy ajándékozzátok magatoknak: a páros kártya két főre szól, egy közös időpontra.'
+        ],
+        pontok: ['Két főre szóló páros kártya, egy közös időpont', 'Két kezelő dolgozik egyszerre, egymás mellett fekve', 'Digitális vagy nyomtatott kártya, 6 hónapig felhasználható'],
+        media: { src: '/assets/img/ajandek/magyarazo-csajos.jpg', alt: 'Két barátnő fürdőlepedőben, egymás mellett a MOSAIC páros kezelőszobájában, a Head Spa előtt', w: 720, h: 540, poz: '50% 30%',
+          forras: 'a Páros kezelés videó (paros-hero-barat.mp4) egy kockája' }
+      },
       relationship: 'friend', gift_context: 'together', occasion: null
     },
     mother: {
       variant_id: 'mother',
-      hero_eyebrow: 'KÖZÖS IDŐ ANYÁNAK ÉS LÁNYÁNAK',
-      hero_title: 'Adj neki közös időt — ne még egy dolgot.',
-      hero_subtitle: 'Páros Head Spa élmény anyának és lányának, ahol most egyikőtöknek sem kell másról gondoskodnia.',
-      hero_cta: 'Közös élményt választok',
+      hero_eyebrow: 'AJÁNDÉK ANYUKÁNAK',
+      hero_title: 'Adj anyukádnak egy kis időt, amit végre csak magára fordíthat.',
+      hero_subtitle: 'Head Spa ajándékkártya anyukáknak: 80 perc nyugalom, egyedül vagy veled együtt, hogy most ne kelljen senkiről gondoskodnia.',
+      hero_cta: 'Anyukámnak választok',
       // "Anya-lánya.MP4": a fajlnev egyertelmuen azonositja (APPROVED_BY_EXPLICIT_FILENAME). A forras fekvo-ellenes (9:16, feliratos);
       // a hero a 71,5-79,5. masodperc (a szekben ulo paros) 3:2-es savja a felirat folott, hang nelkul (0,6 MB)
       hero_media: { src: '/assets/img/ajandek/hero-30-anya.jpg', alt: 'Anya és lánya egymás mellett a MOSAIC szalonban', video: { src: '/assets/video/ajandek-hero-30-anya.mp4' }, forras: 'Anya-lánya.MP4', status: 'APPROVED_BY_EXPLICIT_FILENAME' },
@@ -277,6 +293,18 @@
       featured_proof: 'general',
       reassurance: 'Az együtt töltött idő maga az ajándék.',
       objection_title: null, objection_body: null,
+      magyarazo: {
+        felcim: 'ANYUKÁKNAK',
+        cim: 'Az anyukád megérdemli, hogy most vele foglalkozzanak',
+        szovegek: [
+          'Az anyukák gyakran maguk kerülnek utoljára: előbb a család, a munka, a ház, és csak aztán ők. Ezzel az ajándékkal te adhatod meg neki azt a nyugodt órát, amit magának talán sosem foglalna le.',
+          'A Head Spa kényelmes fekvésben, privát és csendes szobában zajlik: hajmosás, fej-, arc- és nyakmasszázs, a végén profi hajszárítás. Neki csak le kell feküdnie.',
+          'Választhatod egyedül neki, vagy páros kártyát, hogy együtt éljétek át: két kezelő, egy közös időpont, egymás mellett.'
+        ],
+        pontok: ['Nyugodt, privát szoba, nincs rohanás', 'Egyedül neki, vagy veled együtt (páros kártya)', 'Digitális vagy nyomtatott kártya, személyre szabható üzenettel'],
+        media: { src: '/assets/img/ajandek/magyarazo-anya.jpg', alt: 'Két vendég egymás mellett fekszik a MOSAIC páros kezelőszobájában, két kezelő foglalkozik velük egyszerre', w: 1000, h: 1000, poz: '50% 55%',
+          forras: 'a MOSAIC páros-kezelés fotója (c2eb0f_2c17645e…, a Páros kártya képe), 1000 px-re kicsinyítve' }
+      },
       relationship: 'mother', gift_context: 'together', occasion: null
     },
     for_her: {
@@ -285,7 +313,10 @@
       hero_title: 'Adj neki 80 percet, amikor végre semmiről nem kell gondoskodnia.',
       hero_subtitle: 'MOSAIC Head Spa ajándékkártya — egy élmény, amit nem kell méretre, színre vagy ízlésre választanod.',
       hero_cta: 'Ajándékot választok',
-      hero_media: { forras: 'Férfi új Hook videók / 1.mov', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'A mappa férfi hookként azonosított, de az 1.mov tartalmát ellenőrizni kell; ha nem ajándékozó férfi-intentre jó, GENERAL treatment hero.' },
+      // 2026-10-09: sajat hero (a "Férfi új Hook videók / 1.mov" tartalma nem volt ellenorizve, ezert nem hasznaltuk): a MOSAIC publikalt felvetelebol
+      // (profi foto: a nyugodtan pihenő nő az arany ív alatt; majd arc- / nyakmasszázs a "szöveg nélkül.mp4"-ből), hang es felirat nelkul (0,7 MB; tools/ajandek-variansok/hero-videok.py)
+      hero_media: { src: '/assets/img/ajandek/hero-noknek.jpg', alt: 'Nyugodtan pihenő nő a Head Spa arany zuhanyíve alatt a MOSAIC-ban', video: { src: '/assets/video/ajandek-hero-noknek.mp4' },
+        forras: 'assets/img/ajandek/hero.jpg + ajandek-headspa.mp4 (szöveg nélkül.mp4) arc- és nyakmasszázs szakaszai', status: 'APPROVED_BY_VISUAL_REVIEW' },
       gift_finder_preselect: 'egyedul',
       product_order: ['egyeni', '4kezes', 'paros'],
       vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
@@ -293,6 +324,18 @@
       featured_proof: 'general',
       reassurance: 'Nem kell tudnod, milyen kezelést választana magának.',
       objection_title: null, objection_body: null,
+      magyarazo: {
+        felcim: 'NEKI, AKI MINDIG MÁSOKRA FIGYEL',
+        cim: 'Mert ő mindig mindenkire figyel. Most rá fognak figyelni.',
+        szovegek: [
+          'Sok nőnek a mindennapi rohanásban jut a legkevesebb idő saját magára. Ez az ajándék erről szól: 80 perc, amikor semmit nem kell intéznie, és mindenki más várhat.',
+          'A Head Spa hajmosás, fej-, arc- és nyakmasszázs, gőzölés és profi hajszárítás egy privát, csendes szobában. A végén kipihent fejjel és szép hajjal áll fel.',
+          'Ha nem tudod, mit szeretne, ez a kártya biztos választás: nem kell méretet, színt vagy ízlést eltalálnod, ő pedig akkor megy, amikor neki jó.'
+        ],
+        pontok: ['Nem kell méretet, színt vagy ízlést eltalálnod', 'Nyugodt, privát szoba, nincs rohanás', 'Digitális vagy nyomtatott kártya, személyre szabható'],
+        media: { src: '/assets/img/ajandek/magyarazo-noknek.jpg', alt: 'Arcmasszázs egy pihenő vendégnek a MOSAIC kezelőszobájában, meleg fényben', w: 1000, h: 750, poz: '50% 40%',
+          forras: 'a MOSAIC szalon fotója (a régi Wix-oldalról: c2eb0f_968e13…), 1000 px-re kicsinyítve' }
+      },
       relationship: 'recipient_female', gift_context: 'for_her', occasion: null
     },
     partner: {
@@ -311,6 +354,18 @@
       featured_proof: 'general',
       reassurance: 'Nem csak ő kap ajándékot — közös emlék lesz belőle.',
       objection_title: null, objection_body: null,
+      magyarazo: {
+        felcim: 'KETTEN, EGYÜTT',
+        cim: 'Ajándék, amit nem csak átadsz, hanem együtt éltek át',
+        szovegek: [
+          'Egy közös program többet mond, mint egy újabb tárgy: időt szánsz kettőtökre, és semmit nem kell megszerveznetek.',
+          'Egymás mellett fekve, két kezelővel, privát szobában: hajmosás, fej-, arc- és nyakmasszázs, a végén profi hajszárítás. Egy randi, ahol mindketten tényleg lelassultok.',
+          'A kártya páros: két főre szól, egy közös időpontra, és 6 hónapig felhasználható.'
+        ],
+        pontok: ['Két főre szóló páros kártya', 'Egymás mellett, privát szobában', 'Digitális vagy nyomtatott kártya, személyre szabható'],
+        media: { src: '/assets/img/ajandek/magyarazo-paros.jpg', alt: 'Egy pár fürdőlepedőben, pezsgővel a kezében a MOSAIC váróterében, a közös Head Spa előtt', w: 720, h: 720, poz: '50% 50%',
+          forras: 'Drive: Headspa férfiaknak / Páros kezelés.MP4 (ajandek-hero-30-partner.mp4) egy kockája' }
+      },
       relationship: 'partner', gift_context: 'together', occasion: null
     },
     last_minute: {
@@ -333,7 +388,171 @@
       reassurance: null,   // a hero ikonos sora már mondja: „Online megvásárolható"; kézbesítési időre nincs állítás
       sla_megjegyzes: 'Kézbesítési időre csak igazolt fulfillment SLA alapján szabad állítást tenni.',
       objection_title: null, objection_body: null,
+      // a magyarazo sem tesz allitast a kezbesites idejere (csak az online vasarlast, a szemelyre szabast es a 6 honapos ervenyesseget)
+      magyarazo: {
+        felcim: 'EGY AJÁNDÉK, AMIN NEM KELL SOKAT GONDOLKODNI',
+        cim: 'Az utolsó pillanatban is lehet igazán jó ajándékot adni',
+        szovegek: [
+          'Ha kevés az időd, a legjobb ajándék az, amiről nem kell hosszan gondolkodni. A Head Spa ajándékkártyát online választod ki, néhány lépésben fizeted, és személyre is szabhatod.',
+          'Az ajándékozott 80 percet kap: hajmosást, fej-, arc- és nyakmasszázst, profi hajszárítást, egy privát, csendes szobában. Az időpontot ő választja, mert a kártya 6 hónapig felhasználható.'
+        ],
+        pontok: ['Online kiválasztható és megvásárolható', 'Digitális vagy nyomtatott formában is', '6 hónapig felhasználható, ő választ időpontot'],
+        media: { src: '/assets/img/ajandek/magyarazo-utolso.jpg', alt: 'MOSAIC Head Spa kezelés közben: a kezelő a vendég kezét masszírozza', w: 1000, h: 667, poz: '50% 40%',
+          forras: 'a MOSAIC fotója (DSC01457, az "Ezt adod át neki" blokk képe: atadas-kartya.jpg), kicsinyítve' }
+      },
       relationship: null, gift_context: 'last_minute', occasion: 'dynamic'
+    },
+    // ---- 2026-10-09: a maradek persona-oldalak (a regi Wixes cimek) sajat varianssal; a hero-videok a MOSAIC meglevo felvetelebol keszultek
+    // (tools/ajandek-variansok/hero-videok.py), a magyarazo-szekciok kepei a MOSAIC sajat fotoi ----
+    birthday: {
+      variant_id: 'birthday',
+      hero_eyebrow: 'SZÜLETÉSNAPI AJÁNDÉK',
+      hero_title: 'A legszebb szülinapi ajándék: 80 perc, ami csak az ünnepeltről szól.',
+      hero_subtitle: 'Head Spa ajándékkártya születésnapra: nem kell méretet vagy ízlést eltalálnod, a kártyát pedig személyre is szabhatod.',
+      hero_cta: 'Születésnapi ajándékot választok',
+      // a MOSAIC ajandekkartya-boritekja (foto) -> gyertyafenyes kezeles (a galeria "Fejmasszázs eszközökkel" és "Rózsakvarc fejbőrfésű" klipjei)
+      hero_media: { src: '/assets/img/ajandek/hero-szulinap.jpg', alt: 'A MOSAIC Head Spa ajándékkártya fekete borítékban, mögötte arany oroszlánfej-szobor', video: { src: '/assets/video/ajandek-hero-szulinap.mp4' },
+        forras: 'c2eb0f_159a37… (ajándékkártya-boríték fotó) + a galéria két klipje (c2eb0f_a772c9…, c2eb0f_95f0e6…)', status: 'APPROVED_BY_VISUAL_REVIEW' },
+      gift_finder_preselect: 'egyedul',
+      product_order: ['egyeni', '4kezes', 'paros'],
+      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      first_proof_javaslat: { forras: 'Headspa testimonial pool — ünnepelt / ajándék-reakció', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Csak olyan vendég-videó jelenhet meg elsőként, amelyben ténylegesen ajándékba kapta az élményt.' },
+      featured_proof: 'general',
+      reassurance: 'Személyre szabható kártya: az ünnepelt nevével és üzenettel.',
+      objection_title: null, objection_body: null,
+      magyarazo: {
+        felcim: 'SZÜLINAPRA',
+        cim: 'Egy szülinap, ahol most az ünnepelt a főszereplő',
+        szovegek: [
+          'Születésnapon az ünnepelt gyakran mindenki másról gondoskodik: vendégeket fogad, mosolyog, szervez. Ez az ajándék arról szól, hogy ő is megkapja azt az időt, amikor végre csak magára figyelhet.',
+          'A Head Spa japán eredetű fejfürdő: hajmosás, fej-, arc- és nyakmasszázs egy privát, csendes szobában, a végén profi hajszárítással. 50 perc kezelés és 30 perc szárítás, vagyis 80 perc kényeztetés.',
+          'Te választod ki és szabod személyre a kártyát: neki már csak időpontot kell foglalnia.'
+        ],
+        pontok: ['Nem kell méretet, színt vagy ízlést eltalálnod', 'Személyre szabható digitális vagy nyomtatott kártya', '6 hónapig felhasználható, ő választ időpontot'],
+        media: { src: '/assets/img/ajandek/magyarazo-szulinap.jpg', alt: 'Személyre szabott MOSAIC ajándékkártya fotóval és üzenettel, kinyomtatva az asztalon', w: 900, h: 823, poz: '50% 50%',
+          forras: 'a személyre szabott kártya mintaképe (atadas-szemelyre.jpg), kicsinyítve' }
+      },
+      relationship: null, gift_context: 'birthday', occasion: 'szuletesnap'
+    },
+    japan: {
+      variant_id: 'japan',
+      hero_eyebrow: 'JAPÁN HEAD SPA ÉLMÉNY',
+      hero_title: 'Ajándékozz egy szelet japán nyugalmat.',
+      hero_subtitle: 'Japán Head Spa élmény Budán: körvízsugaras hajmosás az arany zuhanyív alatt, masszázs és csend, 80 percen át.',
+      hero_cta: 'Japán élményt ajándékozok',
+      // a hajmoso-iv fotoja (galeria-06) -> az arany iv hatulrol (a "Körvízsugaras vízterápia" galeria-klip) -> szines iv ("szöveg nélkül.mp4")
+      hero_media: { src: '/assets/img/ajandek/hero-japan.jpg', alt: 'Hajmosás a Head Spa zuhanyíve alatt, hátulról nézve a MOSAIC-ban', video: { src: '/assets/video/ajandek-hero-japan.mp4' },
+        forras: 'assets/img/ajandek/galeria-06.jpg + c2eb0f_c68f72… (Körvízsugaras vízterápia) + ajandek-headspa.mp4 (szöveg nélkül.mp4) ív-jelenetei', status: 'APPROVED_BY_VISUAL_REVIEW' },
+      gift_finder_preselect: null,
+      product_order: ['egyeni', '4kezes', 'paros'],
+      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      first_proof_javaslat: { forras: 'Headspa testimonial pool', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Általános pozitív Head Spa testimonial; ne állítsuk róla, hogy ajándékba kapta, ha nem mondja.' },
+      featured_proof: 'general',
+      reassurance: null,
+      objection_title: null, objection_body: null,
+      magyarazo: {
+        felcim: 'JAPÁN ÉLMÉNY, BUDÁN',
+        cim: 'Egy japán fejfürdő-rituálé, ami lelassítja a napot',
+        szovegek: [
+          'A Head Spa Japánból származik: a hajápolás és a masszázs találkozása, ahol a vendég végig fekszik, és minden figyelem rá irányul.',
+          'Nálunk ez körvízsugaras hajmosást jelent az arany zuhanyív alatt, fej-, arc- és nyakmasszázst, gőzölést és profi hajszárítást: 50 perc kezelés és 30 perc szárítás.',
+          'Ha olyannak keresel ajándékot, aki szereti a csendet, a rendet és a részletekre figyelő törődést, ez a kártya jó választás.'
+        ],
+        pontok: ['Körvízsugaras hajmosás az arany zuhanyív alatt', 'Fej-, arc- és nyakmasszázs privát szobában', 'Digitális vagy nyomtatott kártya, 6 hónapig felhasználható'],
+        media: { src: '/assets/img/ajandek/magyarazo-japan.jpg', alt: 'Nyugodtan pihenő nő a Head Spa arany zuhanyíve alatt a MOSAIC-ban', w: 1000, h: 666, poz: '62% 45%',
+          forras: 'a MOSAIC profi fotója (assets/img/ajandek/hero.jpg), 1000 px-re kicsinyítve' }
+      },
+      relationship: null, gift_context: 'japan', occasion: null
+    },
+    esoteric: {
+      variant_id: 'esoteric',
+      hero_eyebrow: 'HOLISZTIKUS HEAD SPA ÉLMÉNY',
+      hero_title: 'Ajándékozz belső egyensúlyt: egy lassú, csendes Head Spa rituálét.',
+      hero_subtitle: 'Privát, halk fényű szoba, meleg víz, masszázs és teljes csend — 80 perc annak, aki szereti a testi-lelki feltöltődést.',
+      hero_cta: 'A rituálét ajándékozom',
+      // a "szöveg nélkül.mp4" nyugodt jelenetei (a halk fényű kezelőszoba, a kezelő ráhangolódása) + a "Körvízsugaras vízterápia" fénygyűrűje
+      hero_media: { src: '/assets/img/ajandek/hero-ezo.jpg', alt: 'Halk fényű Head Spa kezelőszoba a MOSAIC-ban, apró fényekkel a falon', video: { src: '/assets/video/ajandek-hero-ezo.mp4' },
+        forras: 'ajandek-headspa.mp4 (szöveg nélkül.mp4) szoba- és kezelő-jelenetei + c2eb0f_c68f72… (Körvízsugaras vízterápia) fénygyűrűje', status: 'APPROVED_BY_VISUAL_REVIEW' },
+      gift_finder_preselect: 'egyedul',
+      product_order: ['egyeni', '4kezes', 'paros'],
+      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      first_proof_javaslat: { forras: 'Headspa testimonial pool', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Általános pozitív Head Spa testimonial; a "meditatív / lelki" állítás csak a vendég saját szavaival szerepelhet.' },
+      featured_proof: 'general',
+      reassurance: 'A kezelés alatt semmi dolga: csak feküdnie kell.',
+      objection_title: null, objection_body: null,
+      magyarazo: {
+        felcim: 'CSEND ÉS LASSÚSÁG',
+        cim: 'Egy csendes rituálé a sablonos ajándékok helyett',
+        szovegek: [
+          'Van, akinek nem újabb tárgy kell, hanem csend, lassúság és az, hogy végre befelé figyelhet. Ennek az ajándéknak éppen ez a lényege.',
+          'A Head Spa-n lehunyt szemmel fekszik egy privát, tompa fényű szobában: meleg víz a hajon, lassú fej-, arc- és nyakmasszázs, gőz, nyugalom. Ezért olyanoknak is jó ajándék, akik a meditációt, a jógát vagy a lelki feltöltődést szeretik.',
+          'A kezelés 50 perc masszázs és hajápolás, utána 30 perc profi hajszárítás, hogy a végén ne csak kipihenten, hanem rendezetten is álljon fel.'
+        ],
+        pontok: ['Privát, csendes, tompa fényű szoba', 'Lassú fej-, arc- és nyakmasszázs, gőzölés', 'Digitális vagy nyomtatott kártya, 6 hónapig felhasználható'],
+        media: { src: '/assets/img/ajandek/magyarazo-ezo.jpg', alt: 'A MOSAIC halk fényű kezelőszobája: apró fények a falon, növény, kezelőágy', w: 1000, h: 750, poz: '50% 50%',
+          forras: 'a MOSAIC szalon fotója (a régi Wix-oldalról: mosaic-headspa-kezeloszoba.jpg), 1000 px-re kicsinyítve' }
+      },
+      relationship: null, gift_context: 'esoteric', occasion: null
+    },
+    self_care: {
+      variant_id: 'self_care',
+      hero_eyebrow: 'SELF-CARE AJÁNDÉK',
+      hero_title: 'Ajándékozz egy kis self-care-t, mert megérdemli.',
+      hero_subtitle: '80 perc csendes, csak róla szóló kényeztetés — ajándék annak, aki ritkán szán időt saját magára.',
+      hero_cta: 'Self-care ajándékot választok',
+      // galeria-klipek: arcpakolas, dekoltazs- es nyakmasszazs (lassu, lagy jelenetek, felirat nelkul)
+      hero_media: { src: '/assets/img/ajandek/hero-selfcare.jpg', alt: 'Arcpakolás a MOSAIC Head Spa-ban: nyugodtan fekvő vendég, rózsaszín fényben', video: { src: '/assets/video/ajandek-hero-selfcare.mp4' },
+        forras: 'a galéria klipjei: c2eb0f_4b5433… (arcpakolás), c2eb0f_cefa94… (dekoltázs masszázs), c2eb0f_c02456… (nyakmasszázs)', status: 'APPROVED_BY_VISUAL_REVIEW' },
+      gift_finder_preselect: 'egyedul',
+      product_order: ['egyeni', '4kezes', 'paros'],
+      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      first_proof_javaslat: { forras: 'Headspa testimonial pool', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Általános pozitív Head Spa testimonial; ne állítsuk róla, hogy ajándékba kapta, ha nem mondja.' },
+      featured_proof: 'general',
+      reassurance: 'Ő választ időpontot, amikor neki a legjobb.',
+      objection_title: null, objection_body: null,
+      magyarazo: {
+        felcim: 'MERT MEGÉRDEMLI',
+        cim: 'A self-care nem luxus, hanem szünet',
+        szovegek: [
+          'Sokan tudják, hogy kellene egy kis idő magukra, mégis mindig van fontosabb. Egy ajándékkártya azt üzeni: most ez a fontos.',
+          'A Head Spa-n nincs teendő: fekszik, a többit a kezelők végzik. Hajmosás, fej-, arc- és nyakmasszázs, gőzölés, a végén profi hajszárítás.',
+          'A kártya 6 hónapig felhasználható, ő pedig akkor foglal, amikor neki jó, így tényleg ki tud szakadni a mindennapokból.'
+        ],
+        pontok: ['Nincs teendő, csak pihenés', 'Privát, csendes szoba', 'Digitális vagy nyomtatott kártya, személyre szabható üzenettel'],
+        media: { src: '/assets/img/ajandek/magyarazo-selfcare.jpg', alt: 'Mosolyogva pihenő vendég fejbőrvizsgálat közben a MOSAIC-ban', w: 900, h: 900, poz: '50% 40%',
+          forras: 'a MOSAIC fotója (galeria-05: mikrokamerás fejbőrvizsgálat), kicsinyítve' }
+      },
+      relationship: null, gift_context: 'self_care', occasion: null
+    },
+    young: {
+      variant_id: 'young',
+      hero_eyebrow: 'MENTÁLIS RESET ÉS GLOW UP',
+      hero_title: 'Ajándékozz egy szünetet a zajból, amitől a haj is tökéletes lesz.',
+      hero_subtitle: 'Head Spa ajándékkártya barátnőnek, tesónak vagy magadnak: 80 perc offline nyugalom, a végén profi hajszárítással.',
+      hero_cta: 'Glow up ajándékot választok',
+      // hajmosas es fejmasszazs (reset) -> a profi hajszaritas utani fodrok (glow up): a "szöveg nélkül.mp4" szakaszai
+      hero_media: { src: '/assets/img/ajandek/hero-fiatalok.jpg', alt: 'Hajmosás a MOSAIC Head Spa-ban, majd a kész, hullámos haj', video: { src: '/assets/video/ajandek-hero-fiatalok.mp4' },
+        forras: 'ajandek-headspa.mp4 (szöveg nélkül.mp4): hajmosás, fejmasszázs, hajformázás és a kész frizura', status: 'APPROVED_BY_VISUAL_REVIEW' },
+      gift_finder_preselect: 'egyedul',
+      product_order: ['egyeni', '4kezes', 'paros'],
+      vendeg_sorrend: ['zsoka', 'zita', 'kinga', 'dori'],
+      first_proof_javaslat: { forras: 'Headspa testimonial pool — fiatal vendég', status: 'NEEDS_MANUAL_VALIDATION', validalas: 'Csak valós, fiatal vendég saját szavai szerepelhetnek; életkort nem állítunk.' },
+      featured_proof: 'general',
+      reassurance: 'Egyéni kártya egy főnek, páros kártya, ha együtt mennétek.',
+      objection_title: null, objection_body: null,
+      magyarazo: {
+        felcim: 'FIATALOKNAK',
+        cim: 'Ajándékozd a tökéletes mentális reset és glow up élményét',
+        szovegek: [
+          'Munka, tanulás, értesítések, közösségi média: a fejünk szinte sosem pihen. A Head Spa-n végre minden kikapcsol: fekszel csukott szemmel, és csak a meleg víz meg a masszázs számít.',
+          'Ez a mentális reset. A glow up pedig a végén jön: a profi hajszárítás után puha, fényes, rendezett a haj, és jó vele kilépni a világba.',
+          'Ajándékozd a legjobb barátnődnek, a tesódnak vagy akár magadnak: egyéni kártya, vagy páros, ha együtt mennétek.'
+        ],
+        pontok: ['Offline nyugalom: fej-, arc- és nyakmasszázs, gőzölés', 'Profi hajszárítás: puha, fényes, rendezett haj', 'Egyéni vagy páros kártya, digitálisan is, 6 hónapig felhasználható'],
+        media: { src: '/assets/img/ajandek/magyarazo-fiatalok.jpg', alt: 'Selymes, fényes, hullámos haj a Head Spa és a hajszárítás után', w: 760, h: 1014, poz: '50% 40%',
+          forras: 'a MOSAIC fotója (galeria-10: selymes, fényes haj a Head Spa után), kicsinyítve' }
+      },
+      relationship: 'recipient_young', gift_context: 'young', occasion: null
     }
   };
 
@@ -375,18 +594,27 @@
 
   // A regi (Wixes) ajandekkartya-oldalak cimeit az uj oldal veszi at (a tulajdonos kerese, 2026-10-04): a cim dönti el az alapertelmezett
   // variantot (message-match), az elore kijelolt elmenyt es az alkalmat. Az URL-parameterek (?variant=, ?occasion=) felulirjak.
+  // 2026-10-09 (a tulajdonos kerese): MINDEN persona-oldal az uj formatumot kapja, sajat varianssal (hero-video + magyarazo-szekcio); a harom korabbi,
+  // hirdetesi (Wixes, majd ujrastilusozott) oldal - ezo, self-care, fiataloknak - is ide kerult (a regi peldany a rejtett "-regi" cimen megmarad).
   var OLDAL_ALAPERTEK = {
     '/headspa-ajandekkartya': { variant: 'general' },
     '/4-kezes-headspa-ajandekkartya': { variant: 'general', termek: '4kezes' },
-    '/ajandekkartya-szulinapra': { variant: 'general', alkalom: 'szuletesnap' },
+    '/ajandekkartya-szulinapra': { variant: 'birthday', alkalom: 'szuletesnap' },
     '/ajandekkartya-ugc': { variant: 'general' },
     '/headspa-ajandekkartya-anyukaknak': { variant: 'mother' },
     '/headspa-ajandekkartya-noknek': { variant: 'for_her' },
     '/headspa-paros-csajos-ajandekkartya': { variant: 'friend' },
-    '/japan-headspa-ajandekkartya': { variant: 'general' }
+    '/japan-headspa-ajandekkartya': { variant: 'japan' },
+    '/headspa-ajándékkártya-ezo': { variant: 'esoteric' },       // ekezetes cim: a bongeszo %-kodoltan adja (oldalAlapertek dekodolja)
+    '/headspa-self-care': { variant: 'self_care' },
+    '/headspa-ajandakkartya-fiataloknak': { variant: 'young' }
   };
   function oldalAlapertek(ut) {
-    var kulcs = String(ut == null ? '' : ut).replace(/\/+$/, '').toLowerCase();
+    var nyers = String(ut == null ? '' : ut);
+    // az ekezetes cimeket (headspa-ajándékkártya-ezo) a bongeszo location.pathname-je %-kodoltan adja: dekodoljuk, es NFC-re hozzuk
+    try { nyers = decodeURIComponent(nyers); } catch (e) { /* hibas %-kodolas: a nyers szoveggel dolgozunk */ }
+    if (nyers.normalize) nyers = nyers.normalize('NFC');
+    var kulcs = nyers.replace(/\/+$/, '').toLowerCase();
     return Object.prototype.hasOwnProperty.call(OLDAL_ALAPERTEK, kulcs) ? OLDAL_ALAPERTEK[kulcs] : {};
   }
 

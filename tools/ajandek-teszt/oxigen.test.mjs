@@ -382,7 +382,9 @@ describe('oxigenes oldal: a statikus fajlok', () => {
     const kell = [...js.matchAll(/\$\('(ah-[a-z0-9-]+)'\)/g)].map((m) => m[1]);
     const nincs = [...new Set(kell)].filter((id) => !new RegExp(`id="${id}"`).test(html));
     // a HeadSpa-oldal azonositoi, amelyeket a kod null-biztosan kezel (az oxigenes oldalon szandekosan nincs ilyen szekcio)
-    const OK = new Set(['ah-headspa-video', 'ah-headspa-kep', 'ah-headspa-ido', 'ah-benefitek', 'ah-elemek']);
+    const OK = new Set(['ah-headspa-video', 'ah-headspa-kep', 'ah-headspa-ido', 'ah-benefitek', 'ah-elemek',
+      // a persona-magyarazo (HeadSpa persona-oldalak): a magyarazoRender az 'ah-magyarazo' hianyaban rogton visszater (nincs ilyen szekcio ezen az oldalon)
+      'ah-magyarazo', 'ah-magyarazo-felcim', 'ah-magyarazo-cim', 'ah-magyarazo-torzs', 'ah-magyarazo-pontok', 'ah-magyarazo-media', 'ah-magyarazo-kep']);
     assert.deepEqual(nincs.filter((x) => !OK.has(x)), []);
   });
 });

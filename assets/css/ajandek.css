@@ -1503,3 +1503,30 @@ body .ah-halk, .ah-tenyek li, .ah-benefit-lista li span, .ah-forma-lista li span
 @media (max-width: 700px) { .ah-hero .ah-lead { font-size: 16.5px !important; } }
 /* a szemelyre szabo (tervezo) cime marad a korabbi meretu, hogy a tervezo egy kepernyore elferjen */
 @media (min-width: 701px) { .ah-tervezo-fej h2 { font-size: 36px !important; } }
+
+/* ===== PERSONA-MAGYARAZO (2026-10-09): a hero utan, a valaszto elott; bal oldalt a persona szovege, jobb oldalt kep (mobilon: szoveg, majd kep) ===== */
+.ah-magyarazo { background: var(--ah-ivory); }
+.ah-magyarazo-racs { display: grid; gap: 24px; align-items: center; }
+.ah-magyarazo-szoveg { display: grid; gap: 14px; align-content: center; min-width: 0; }
+.ah-magyarazo-szoveg .ah-felcim { margin: 0; }
+.ah-magyarazo-szoveg h2 { text-wrap: balance; }
+.ah-magyarazo-torzs { display: grid; gap: 12px; max-width: 580px; }
+.ah-magyarazo-torzs p { color: #2f4041; line-height: 1.55; }
+.ah-pipalista { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 11px; max-width: 580px; }
+.ah-pipalista li { position: relative; min-height: 26px; padding-left: 38px; line-height: 1.4; color: var(--ah-petrol); }
+.ah-pipalista li::before { content: ''; position: absolute; left: 0; top: -1px; width: 26px; height: 26px; border-radius: 50%; background: #efe7d6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2317403f' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 12.5l4 4L18.5 7.5'/%3E%3C/svg%3E") center / 15px 15px no-repeat; }
+.ah-magyarazo-media { margin: 0; border-radius: 16px; overflow: hidden; background: #e9e1d1; box-shadow: var(--ah-arnyek); aspect-ratio: var(--ah-magyarazo-arany, 1.333); max-height: 560px; width: 100%; }
+.ah-magyarazo-media img { width: 100%; height: 100%; object-fit: cover; }
+@media (min-width: 900px) {
+  .ah-magyarazo-racs { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 56px; align-items: stretch; }
+  /* asztalon a kep a szoveg-oszlop magassagat koveti (nem torzul, a kivagas a "poz" szerint) */
+  .ah-magyarazo-media { aspect-ratio: auto; max-height: none; min-height: 400px; position: relative; }
+  .ah-magyarazo-media img { position: absolute; inset: 0; }
+}
+/* a szekcio cime kisebb, mint a tobbi szekcio-cim (a ket oszlopban keskenyebb a hely, a cimek hosszabbak) */
+#ah-landing .ah-magyarazo h2 { font-size: clamp(26px, 2.7vw, 36px) !important; line-height: 1.14; }
+@media (max-width: 700px) { #ah-landing .ah-magyarazo h2 { font-size: 27px !important; } }
+#ah-landing .ah-magyarazo-torzs p, #ah-landing .ah-pipalista li { font-size: var(--b3) !important; }
+@media (max-width: 700px) { .ah-magyarazo { padding: 30px 0 34px; } }
+/* asztalon a valaszto kartya-kepe 98 px-szel "atlog" a fole eso szekcioba: a magyarazo aljan hagyunk helyet neki, igy nem takarja a kepet / a pipakat */
+@media (min-width: 900px) { .ah-magyarazo { padding-bottom: 152px; } }

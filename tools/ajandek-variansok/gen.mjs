@@ -3,7 +3,10 @@
 // A harom oldal ugyanazt a sablont koveti (hero, bemutatkozas, akcio, vendegvideok, bemutato video, hogyan mukodik, bankkartyas megrendeles, atutalasos
 // megrendeles + urlap, GYIK, galeria, vasarlas, helyszin), kicsit eltero szoveggel / kepekkel / sorrenddel.
 //
-//   node tools/ajandek-variansok/gen.mjs        ->  foglalas/<nev>.html (x3)
+//   node tools/ajandek-variansok/gen.mjs        ->  tools/ajandek-variansok/archiv/<nev>.html (x3)
+//
+// 2026-10-09: a harom oldal ELO cime mar az uj formatumot adja (foglalas/ajandek.html + a persona-variansok, lasd docs/AJANDEK_PERSONA_OLDALAK.md); ez a regi, ujrastilusozott
+// valtozat ARCHIVUM (nincs az elo utvonalon, a build nem hasznalja). A rejtett "-regi" cimen a Wixes eredeti (klon/) oldal marad meg.
 //
 // Forras: tools/ajandek-variansok/forras/<kulcs>.folyam.txt = a regi oldal kinyert tartalma dokumentum-sorrendben (tools/ujrastilus/folyam.mjs kimenete,
 // az eles oldalrol, a csere ELOTT). A szovegek ebbol kerulnek az oldalra valtozatlanul; a GYIK valaszai az assets/js/gyik.js-bol (a regi oldal harmonikaja).
@@ -563,7 +566,7 @@ ${torzs}
 }
 
 for (const o of OLDALAK) {
-  const ki = path.join(GYOKER, 'foglalas', o.nev + '.html');
+  const ki = path.join(import.meta.dirname, 'archiv', o.nev + '.html');
   fs.writeFileSync(ki, szokozJavit(oldal(o)));
   console.log('kesz:', path.relative(GYOKER, ki), fs.statSync(ki).size, 'bajt');
 }
