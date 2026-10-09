@@ -51,6 +51,8 @@ export const FODRASZOK = {
   betti: {
     kulcs: 'betti', nev: 'Betti', teljesNev: 'Pető Betti', lap: 'betti', rag: { hez: 'Bettihez', vel: 'Bettivel', t: 'Bettit', nal: 'Bettinél' },
     szakterulet: 'Festés, balayage, melír és személyre szabott női frizurák',
+    // a mostani (Wixes) oldal cime (a tulajdonos kerese: az eredeti cimek legyenek a H1-ben); kartyaSzoveg: egy sor a kozponti oldal kartyajan; mobil hero: alcim + 2 blokk
+    h1: 'Tökéletes festés és vágás 18 év tapasztalattal.', kartyaSzoveg: 'Festés, balayage, melír', alcim: 'Festés, balayage', blokkok: ['Személyre szabott női frizurák', 'Részletes konzultáció'],
     rovid: 'Részletes konzultációval és a hozzád illő stílussal várlak.',
     idezet: 'Végre olyan hajad lesz, amilyet megálmodtál!',
     bemutatkozas: [
@@ -60,11 +62,11 @@ export const FODRASZOK = {
     festek: { nev: 'Schwarzkopf Professional Igora Royal', szoveg: 'Azért szeretem, mert tökéletes az őszhaj fedésére, gyönyörű hamvas árnyalatokat lehet vele készíteni, a színe tartós, és mindezt egy prémium márkától kapom. A balayage és a melír technikákhoz használom: természetes, lágy átmeneteket ad, és a haj fényes, egészséges marad a festés után is.' },
     kiemelesek: ['Személyre szabott tanácsadás', 'Prémium hajfestékek', 'Természetes, lágy átmenetek'],
     miert: [
-      ['Te vagy a középpontban', 'Minden festésnél és vágásnál alaposan átbeszéljük az elképzeléseidet, és minden tudásommal igyekszem kihozni a legtöbbet a vágyaidból.'],
+      ['Te vagy a középpontban', 'Minden festésnél alaposan átbeszéljük az elképzeléseidet, és minden tudásommal igyekszem kihozni a legtöbbet a vágyaidból.'],
       ['Minőségi hajfesték', 'Schwarzkopf Professional Igora Royal: tartós szín, gyönyörű, hamvas árnyalatok, őszhaj-fedés.'],
       ['Előbb beszélünk, aztán festünk', 'Az ingyenes konzultáción megnézzük a hajad állapotát, és megbeszéljük, mi a reális.'],
     ],
-    szakteruletek: ['balayage', 'festes', 'vagas', 'ujraepites'],
+    szakteruletek: ['balayage', 'festes', 'tofestes', 'ujraepites'],
     gyik: [
       ['Mit hozzak magammal az első alkalomra?', 'Hozz 2–3 inspirációs képet arról, milyen hajszínt vagy fazont szeretnél, és mondd el, mit kerülnél el. Ezt átbeszéljük, és megmondom, mi a reális a hajadból.'],
     ],
@@ -72,6 +74,7 @@ export const FODRASZOK = {
   noel: {
     kulcs: 'noel', nev: 'Noel', teljesNev: 'Jakab Noel', lap: 'noel', rag: { hez: 'Noelhez', vel: 'Noellel', t: 'Noelt', nal: 'Noelnél' },
     szakterulet: 'Balayage és precíz festések, természetes hatású árnyalatok',
+    h1: 'Természetes hatású festés és vágás 3 év tapasztalattal.', kartyaSzoveg: 'Balayage és precíz festések', alcim: 'Balayage, precíz festés', blokkok: ['Természetes hatású árnyalatok', 'Részletes konzultáció'],
     rovid: 'A balayage és a precíz festések specialistájaként minden vendégemből a legszebb énjét hozom ki.',
     idezet: 'Olyan frizurád lesz, amitől sugározni fogsz.',
     bemutatkozas: [
@@ -82,17 +85,18 @@ export const FODRASZOK = {
     kiemelesek: ['Természetes hatású színek', 'Balayage specialista', 'Figyelem és őszinte kommunikáció'],
     miert: [
       ['A női haj a hivatásom', 'Szenvedélyem a szép hajszínek és természetes hatású árnyalatok megalkotása. Az alkotás számomra nem munka, hanem hivatás, ahol minden egyes tincs számít.'],
-      ['Te vagy a középpontban', 'Minden festésnél és vágásnál alaposan átbeszéljük az elképzeléseidet, és mindent megteszek, hogy a végeredmény olyan legyen, amilyennek megálmodtad.'],
+      ['Te vagy a középpontban', 'Minden festésnél alaposan átbeszéljük az elképzeléseidet, és mindent megteszek, hogy a végeredmény olyan legyen, amilyennek megálmodtad.'],
       ['Előbb beszélünk, aztán festünk', 'Az ingyenes konzultáción megnézzük a hajad állapotát, és megbeszéljük, mi a reális.'],
     ],
-    szakteruletek: ['balayage', 'festes', 'vagas', 'ujraepites'],
+    szakteruletek: ['balayage', 'festes', 'tofestes', 'ujraepites'],
     gyik: [
       ['Miért olcsóbbak Noelnél az árak?', 'Noel jelenleg minden szolgáltatására 20% kedvezményt ad. Ez a foglalóban is látszik: az ár a kedvezménnyel jelenik meg.'],
     ],
   },
   evelin: {
     kulcs: 'evelin', nev: 'Evelin', teljesNev: 'Szaniszló-Cene Evelin', lap: 'evelin', rag: { hez: 'Evelinhez', vel: 'Evelinnel', t: 'Evelint', nal: 'Evelinnél' },
-    szakterulet: 'Hajfestés, hajvágás és hajhosszabbítás (póthaj)',
+    szakterulet: 'Hajfestés és hajhosszabbítás (póthaj)',
+    h1: 'Végre olyan frizurád lesz, amilyet megálmodtál!', kartyaSzoveg: 'Hajfestés és hajhosszabbítás', alcim: 'Hajfestés, hajhosszabbítás', blokkok: ['Személyre szabott színek', 'Részletes konzultáció'],
     rovid: 'Ingyenes konzultációval és hajhosszabbítással is várlak.',
     idezet: 'Megtaláljuk a hozzád illő színt és vágást, amitől ragyogsz majd!',
     bemutatkozas: [
@@ -102,11 +106,11 @@ export const FODRASZOK = {
     festek: { nev: 'Schwarzkopf, Luxoya és Fanola', szoveg: 'Mindhárom márka könnyen kezelhető, jól keverhető és kíméletes a hajhoz. Élénk, természetes színeket érünk el velük, az őszhajszálakat gyönyörűen fedik, és a haj puha, selymes marad a tápláló összetevőknek köszönhetően.' },
     kiemelesek: ['Személyre szabott színek', 'Hajhosszabbítás (póthaj)', 'Otthoni beállítási tanácsok'],
     miert: [
-      ['Te vagy a középpontban', 'Minden festésnél és vágásnál alaposan átbeszéljük az elképzeléseidet, és minden tudásommal igyekszem kihozni a legtöbbet a vágyaidból.'],
+      ['Te vagy a középpontban', 'Minden festésnél alaposan átbeszéljük az elképzeléseidet, és minden tudásommal igyekszem kihozni a legtöbbet a vágyaidból.'],
       ['Megmutatom, hogyan tartsd otthon', 'Az első alkalommal azt is megmutatom, hogyan tudod otthon beállítani a frizurádat.'],
       ['Hajhosszabbítás is', 'Póthaj felrakása és leszedése is foglalható nálam.'],
     ],
-    szakteruletek: ['festes', 'balayage', 'vagas', 'pothaj'],
+    szakteruletek: ['festes', 'balayage', 'tofestes', 'pothaj'],
     gyik: [
       ['Hajhosszabbítást is vállalsz?', 'Igen, póthaj felrakását és leszedését is vállalom. A felrakás ára tincsenként 350 Ft; a pontos mennyiséget a konzultáción beszéljük meg.'],
     ],
@@ -177,7 +181,9 @@ export function arlista(fodrasz = null) {
 /** Legolcsobb ar + idotartam-tartomany egy szandekra (a foglalo "X Ft-tol" kartyaja): a Salonic-kategoriak szerint. */
 const SZANDEK_KAT = {
   balayage: ['Balayage', 'Teljes szőkítés', 'Teljes melír / airtouch + vágás'],
-  color: ['Tőfestés + szárítás', 'Tőfestés + vágás + szárítás', 'Elrontott festés korrekció / Teljes festés'],
+  // a Hajfestés kártya a teljes festést mutatja, a Tőfestés külön kártya (a foglaló "Hajfestés" kategóriája mindháromat tartalmazza)
+  color: ['Elrontott festés korrekció / Teljes festés'],
+  tofestes: ['Tőfestés + szárítás'],
   cut: ['Női hajvágás + szárítás', 'Férfi hajvágás'],
   szaritas: ['Női szárítás'],
   ujraepites: ['Hajszerkezet újraépítés'],
@@ -251,11 +257,19 @@ export const galeria = (kulcs) => GALERIA[kulcs][1].map(([blokk, szin]) => kep(G
 export const KEPEK = {
   // a kozponti oldal nyitokepe: valodi hajeredmeny (a kozponti oldal 1440 px-es kepei kozul: szoke, hullamos haj)
   kozpontHero: () => kep('kozpont', 42, { alt: 'Hosszú, hullámos, szőke haj balayage-átmenettel – valódi MOSAIC Hair vendégmunka', poz: '50% 30%' }),
+  // a kozponti oldal hero-kepgaleriaja (lapozhato): valodi vendegmunkak, az elso a nyitokep
+  kozpontHeroGaleria: () => [
+    KEPEK.kozpontHero(),
+    kep('kozpont', 46, { alt: 'Gazdag, meleg barna-réz hajszín hullámokkal – valódi MOSAIC Hair vendégmunka', poz: '50% 35%' }),
+    kep('kozpont', 40, { alt: 'Vörös-réz árnyalatú, hullámos haj – valódi MOSAIC Hair vendégmunka', poz: '50% 35%' }),
+    kep('kozpont', 51, { alt: 'Hosszú, egyenes, szőke haj lágy átmenettel – valódi MOSAIC Hair vendégmunka', poz: '50% 35%' }),
+    kep('kozpont', 48, { alt: 'Hamvas szőke, hullámos haj – valódi MOSAIC Hair vendégmunka', poz: '50% 35%' }),
+  ],
   // a fodraszok sajat kartyai: a sajat, valodi munkaik (nagyobb felbontasu kepek)
   fodraszSzolg: {
-    betti: { balayage: [40, 's'], color: [45, 'b'], cut: [50, 'v'], ujraepites: [52, 's'] },
-    noel: { balayage: [38, 's'], color: [39, 'b'], cut: [44, 's'], ujraepites: [45, 's'] },
-    evelin: { balayage: [38, 's'], color: [45, 'b'], cut: [43, 'b'], pothaj: [48, 's'], ujraepites: [51, 's'] },
+    betti: { balayage: [40, 's'], color: [45, 'b'], tofestes: [54, 'c'], ujraepites: [52, 's'] },
+    noel: { balayage: [38, 's'], color: [39, 'b'], tofestes: [41, 'b'], ujraepites: [45, 's'] },
+    evelin: { balayage: [38, 's'], color: [45, 'b'], tofestes: [41, 'b'], pothaj: [48, 's'], ujraepites: [51, 's'] },
   },
   csapat: () => kep('kozpont', 33, { alt: 'A MOSAIC Hair csapata: Betti, Noel és Evelin' }),
   portre: {
@@ -263,17 +277,17 @@ export const KEPEK = {
     noel: () => kep('noel', 32, { alt: 'Noel, a MOSAIC Hair fodrásza egy vendég hajával dolgozik', poz: '50% 14%' }),
     evelin: () => kep('evelin', 32, { alt: 'Evelin, a MOSAIC Hair fodrásza hajfestés közben', poz: '30% 40%' }),
   },
+  // a fodraszat sajat helyisege (tukros fodraszhelyek); a Head Spa-s varo / recepcio kepei nem kerulnek ide
   szalon: [
-    () => kep('betti', 72, { alt: 'A MOSAIC Hair szalon váróterme zöld fotelekkel' }),
-    () => kep('betti', 73, { alt: 'A MOSAIC szalon recepciós pultja' }),
-    () => kep('betti', 80, { alt: 'Hajvágó- és festőhely a MOSAIC Hair szalonban' }),
-    () => kep('betti', 81, { alt: 'Tükrös fodrászhely a MOSAIC Hair szalonban' }),
+    () => kep('betti', 80, { alt: 'A MOSAIC Hair fodrászhelyei: tükrös munkaasztal és zöld fotel' }),
+    () => kep('betti', 81, { alt: 'Tükrös fodrászhely zöld fotellel a MOSAIC Hair szalonban' }),
+    () => kep('betti', 82, { alt: 'A MOSAIC Hair szalon fodrászterme tükrös munkahelyekkel' }),
   ],
   // a kozponti oldal szolgaltatas-kartyai
   szolgaltatas: {
     balayage: () => kep('kozpont', 50, { alt: 'Szőke, hullámos haj lágy balayage-átmenettel' }),
     color: () => kep('kozpont', 46, { alt: 'Gazdag, meleg barna-réz hajszín hullámokkal' }),
-    cut: () => kep('betti', 50, { alt: 'Frissen vágott, réz árnyalatú bob fazon' }),
+    tofestes: () => kep('kozpont', 52, { alt: 'Egységes, ezüstös hajszín tőtől a hajvégig' }),
     konzultacio: () => kep('noel', 54, { alt: 'Noel konzultáció közben mutat egy referenciaképet a vendégnek' }),
   },
   szolgFodrasz: (fodrasz, szandek) => {
@@ -289,8 +303,16 @@ export const KEPEK = {
       [60, 'Vendégüzenet Bettiről: szakmaisága kifogástalan, gyors, precíz, megbízható'],
     ],
   },
-  folyamat: {
-    noel: [() => kep('noel', 55, { alt: 'Noel kesztyűben készíti elő a festéket' }), () => kep('noel', 56, { alt: 'Noel hajfestés közben egy vendéggel' })],
+  // a regi oldalakon a "Fodraszt valtani nagy dontes. Ingyenes konzultacioval varlak!" resz mellett allo videok (kattintasra indul, hanggal)
+  videok: {
+    betti: { src: '/assets/video/c2eb0f_d0737d55559445caa0687b3c2017518a.mp4', poster: '/assets/img/c2eb0f_d0737d55559445caa0687b3c2017518af002.jpg', w: 674, h: 1198, felirat: 'Pető Betti üzenete az ingyenes konzultációról' },
+    noel: { src: '/assets/video/c2eb0f_1f095db5b74d4ceea9ddf64a78da9586.mp4', poster: '/assets/img/c2eb0f_1f095db5b74d4ceea9ddf64a78da9586f000.jpg', w: 726, h: 1291, felirat: 'Jakab Noel üzenete az ingyenes konzultációról' },
+    evelin: { src: '/assets/video/c2eb0f_d1d7131a5e48466599172992ad24c321.mp4', poster: '/assets/img/c2eb0f_d1d7131a5e48466599172992ad24c321f000.jpg', w: 576, h: 1024, felirat: 'Szaniszló-Cene Evelin üzenete az ingyenes konzultációról' },
+    // a kozponti oldalon a regi oldalon is ketto volt: Betti es Evelin
+    kozpont: [
+      { nev: 'Betti', src: '/assets/video/c2eb0f_d0737d55559445caa0687b3c2017518a.mp4', poster: '/assets/img/c2eb0f_d0737d55559445caa0687b3c2017518af000.jpg', w: 560, h: 996, felirat: 'Betti üzenete az ingyenes konzultációról' },
+      { nev: 'Evelin', src: '/assets/video/c2eb0f_02d4a83e09c84997a1af28ff3d2f4516.mp4', poster: '/assets/img/c2eb0f_02d4a83e09c84997a1af28ff3d2f4516f002.jpg', w: 560, h: 996, felirat: 'Evelin üzenete az ingyenes konzultációról' },
+    ],
   },
   festek: {
     betti: () => kep('betti', 152, { alt: 'Schwarzkopf Igora Royal hajfestékek' }),
