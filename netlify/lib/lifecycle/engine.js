@@ -10,7 +10,7 @@ import { ertelmez, szintetikusId } from './parser.js';
 import { normalizal } from './telefon.js';
 import { keresztnev } from './nevek.js';
 import { szegmensek as szegmensCimkek, UZLETAGAK, tisztaNev, ismertSzolgaltatas } from './uzletag.js';
-import { munkatarsTipus, ertelmezMunkatars, belsoBlokk, nevNorm, munkatarsKulcs, szolgKulcs } from './munkatars.js';
+import { munkatarsTipus, ertelmezMunkatars, belsoBlokk, nevNorm, munkatarsKulcs, szolgKulcs, beesoNev } from './munkatars.js';
 import { UUID_RE } from './elo.js';
 import { tervez, keres, KESES_PLAFON, surgos } from './terv.js';
 import { ertekek, smsKirajzol, emailKirajzol, feladatKirajzol, ALAP_URL } from './render.js';
@@ -311,6 +311,12 @@ async function munkatarsFeldolgoz(db, cfg, level, tipus, forras, most, alapIdo, 
     if (jeloltek.some((r) => r.kezdet === e.kezdet)) { await veg('ingest:mar_alkalmazva', jeloltek[0].id, resz); return { ok: true, tipus: 'mar_alkalmazva', duplikalt: true, valtozas: false }; }
   }
   if (jeloltek.length === 0) {
+    // A Salonic "Beeső" helykitöltő vendég (DECISION #119: PONTOSAN ez a név) a belső blokkok (megbeszélés, szolgáltatási szünet, workshop...) és a bejáró vendégek neve: online foglalásunk
+    // sosem lehet rá. Csak ha NINCS jelölt (egy "Beeső" nevű valódi online foglalás a rendes úton menne); állapotot nem változtat, SMS-t nem küld.
+    if (beesoNev(e.nev)) {
+      await veg('ingest:ignored_internal', null, { ...resz, szabaly: 'beeso_nev' });
+      return { ok: true, tipus: 'ignored_internal', szabaly: 'beeso_nev', valtozas: false };
+    }
     if (ismertSzolgaltatas(e.uzletag, e.szolgaltatas)) { // telefonon / kezzel felvett vendegidopont: nincs online foglalasunk, nem hiba
       await veg('ingest:nincs_online_foglalas', null, resz);
       return { ok: true, tipus: 'nincs_online_foglalas', valtozas: false };

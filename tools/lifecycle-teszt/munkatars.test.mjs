@@ -2,10 +2,11 @@
 // Elfogadasi kapu - egy-egy eset mindegyikbol, mindegyiknel 0 teves SMS, 0 teves allapotvaltas, 0 dupla feldolgozas:
 //   (1) munkatarsi torles idopont elott   (2) torles idopont utan   (3) bizonyitott modositas   (4) belso blokk   (5) tobbertelmu parositas   (6) nev-elteres
 // Futtatas: node --test tools/lifecycle-teszt/munkatars.test.mjs
+import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ingest, tick, napi, allapot, beallitas } from '../../netlify/lib/lifecycle/engine.js';
-import { munkatarsTipus, ertelmezMunkatars, belsoBlokk, nevNorm, munkatarsKulcs } from '../../netlify/lib/lifecycle/munkatars.js';
+import { munkatarsTipus, ertelmezMunkatars, belsoBlokk, nevNorm, munkatarsKulcs, beesoNev } from '../../netlify/lib/lifecycle/munkatars.js';
 import { eloElemzes, eloAllapot, eloEllenorzoKeszit } from '../../netlify/lib/lifecycle/elo.js';
 import { helyiEpoch } from '../../netlify/lib/lifecycle/ido.js';
 import { api } from '../../netlify/lib/lifecycle/http.js';
@@ -210,8 +211,20 @@ test('(4) belső blokk: ebédszünet, szünet, a munkatárs saját nevére szól
   const mk = await ingest(db, ENV, munkatarsLevel({ uzenetId: 'b3', nev: 'Beeső', szolg: 'Noel', munka: 'Noel - 20% kedvezmény!', datum: 'november 25. (szerda) 16:00' }), MOST + ORA, { eloEllenorzes: elo });
   assert.equal(mk.tipus, 'ignored_internal'); assert.equal(mk.szabaly, 'munkatars_blokk');
   assert.equal(szam(db, "SELECT COUNT(*) AS n FROM esemenyek WHERE tipus LIKE 'ingest:riasztas:%'").n, 0);
-  // bizonytalan: nem egyertelmuen belso, es nem ismert vendeg-szolgaltatas
-  const bizonytalan = await ingest(db, ENV, munkatarsLevel({ uzenetId: 'b4', nev: 'Beeső', szolg: 'Valami ismeretlen blokk', datum: 'november 26. (csütörtök) 10:00' }), MOST + ORA, { eloEllenorzes: elo });
+  // a Salonic "Beeső" helykitöltő vendége: nincs jelölt -> belső blokk (nincs riasztás), ismeretlen szolgáltatás-névvel is
+  const beeso = await ingest(db, ENV, munkatarsLevel({ uzenetId: 'b5', nev: 'Beeső', szolg: 'Megbeszélés', datum: 'november 27. (péntek) 10:00' }), MOST + ORA, { eloEllenorzes: elo });
+  assert.equal(beeso.tipus, 'ignored_internal'); assert.equal(beeso.szabaly, 'beeso_nev'); assert.equal(beeso.valtozas, false);
+  assert.equal(szam(db, "SELECT COUNT(*) AS n FROM esemenyek WHERE tipus LIKE 'ingest:riasztas:%'").n, 0);
+  // DECISION #119: PONTOSAN "Beeső" - az ekezet nelkuli vagy kiegeszitett nev nem az: ignored_uncertain + riasztas, nincs allapotvaltas
+  for (const [i, nev] of ['Beeso', 'Beeső Anna', 'Beesőné'].entries()) {
+    const nem = await ingest(db, ENV, munkatarsLevel({ uzenetId: `bn${i}`, nev, szolg: 'Megbeszélés', datum: 'november 27. (péntek) 11:00' }), MOST + ORA, { eloEllenorzes: elo });
+    assert.equal(nem.tipus, 'riasztas:ignored_uncertain', nev); assert.equal(nem.valtozas, false);
+  }
+  assert.equal(szam(db, "SELECT COUNT(*) AS n FROM esemenyek WHERE tipus = 'ingest:riasztas:ignored_uncertain'").n, 3);
+  await db.sqlite.prepare("DELETE FROM esemenyek WHERE tipus = 'ingest:riasztas:ignored_uncertain'").run();
+  assert.equal(beesoNev(' BEESŐ  '), true); assert.equal(beesoNev('Beeso'), false); assert.equal(beesoNev(''), false); assert.equal(beesoNev(null), false);
+  // bizonytalan: nem egyertelmuen belso (nem Beeső, nem ebedszunet / szunet / munkatars-blokk), es nem ismert vendeg-szolgaltatas
+  const bizonytalan = await ingest(db, ENV, munkatarsLevel({ uzenetId: 'b4', nev: 'Valódi Vendég', szolg: 'Valami ismeretlen blokk', datum: 'november 26. (csütörtök) 10:00' }), MOST + ORA, { eloEllenorzes: elo });
   assert.equal(bizonytalan.tipus, 'riasztas:ignored_uncertain'); assert.equal(bizonytalan.valtozas, false);
   assert.equal(elo.hivasok.length, 0); // belso blokknal / bizonytalannal nem kerdezunk ra a Salonicra
   assert.equal(alapAllapot(db).allapot, 'aktiv'); assert.equal(k.ki.sms.length, smsT0);
@@ -312,12 +325,12 @@ test('ertelmezhetetlen munkatarsi level (megvaltozott sablon): riasztas, semmi n
 test('napi összesítő: a riasztások egyetlen e-mailben, személyes adat (vendégnév) nélkül; a következő napon nincs új levél', async () => {
   const { db, k } = await felvesz({ nev: 'Titkos Vendég' });
   await ingest(db, ENV, munkatarsLevel({ uzenetId: 'r1', nev: 'Titkos Masvalaki' }), MOST + ORA, { eloEllenorzes: hamisElo(TOROLT) }); // nev_elteres
-  await ingest(db, ENV, munkatarsLevel({ uzenetId: 'r2', nev: 'Beeső', szolg: 'Valami ismeretlen blokk', datum: 'november 26. (csütörtök) 10:00' }), MOST + ORA);
+  await ingest(db, ENV, munkatarsLevel({ uzenetId: 'r2', nev: 'Valódi Vendég', szolg: 'Valami ismeretlen blokk', datum: 'november 26. (csütörtök) 10:00' }), MOST + ORA);
   const emailElotte = k.ki.email.length;
   const n = await napi(db, ENV, k, MOST + NAP);
   assert.equal(n.riasztasOsszesito, 2); assert.equal(k.ki.email.length, emailElotte + 1);
   const level = k.ki.email[k.ki.email.length - 1];
-  assert.match(level.targy, /2 kézi ellenőrzést/); assert.doesNotMatch(level.szoveg, /Titkos|Beeső|Masvalaki/);
+  assert.match(level.targy, /2 kézi ellenőrzést/); assert.doesNotMatch(level.szoveg, /Titkos|Valódi Vendég|Masvalaki/);
   assert.match(level.szoveg, /nev_elteres/); assert.match(level.szoveg, /ignored_uncertain/);
   const n2 = await napi(db, ENV, k, MOST + 2 * NAP);
   assert.equal(n2.riasztasOsszesito, undefined); assert.equal(k.ki.email.length, emailElotte + 1);
@@ -414,4 +427,81 @@ test('http: a munkatársi level a /bejovo végponton át, az elo-ellenorzes a Sa
     const ism = await (await hiv({ uzenetId: lev.uzenetId, targy: lev.targy, kuldo: lev.kuldo, html: lev.html })).json();
     assert.equal(ism.duplikalt, true);
   } finally { globalThis.fetch = eredeti; }
+});
+
+// ---- VALODI (kitakart) munkatarsi levelek: a 2026-10-09-i visszajatszasi csomagbol (fixtures/munkatarsi-levelek.json) -----------------------------------
+const ENV_MIND = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'headspa,hair,oxygen,laser,pmu', LIFECYCLE_MUNKATARS_MOD: 'be' };
+const VALODI = JSON.parse(fs.readFileSync(new URL('./fixtures/munkatarsi-levelek.json', import.meta.url), 'utf8')).esetek;
+/** egy valodi minta; a (semleges) vendeg-hash helyere `nev` kerul, hogy a tesztben felvett foglalas neve ezzel egyezzen */
+function valodi(cimke, nev) {
+  const e = VALODI.find((x) => x.cimke === cimke);
+  assert.ok(e, `hianyzo minta: ${cimke}`);
+  const epoch = Math.floor(Date.parse(e.kuldve_utc) / 1000);
+  const BEESO_HASH = 'e48ff85456a2c076'; // sha256("beeső")[:16] - a Salonic helykitoltő vendege (nem szemely): a hash helyere visszakerul a nev
+  const nevCsere = nev ?? (e.nev_hash === BEESO_HASH ? 'Beeső' : null);
+  const html = nevCsere ? e.html.replaceAll(`[NEV-HASH:${e.nev_hash}]`, nevCsere) : e.html;
+  const level = (kuldve = epoch) => ({ uzenetId: `${e.gmail_id}-${kuldve}`, targy: e.targy, kuldo: e.felado, html, kuldve });
+  return { ...e, epoch, level, p: ertelmezMunkatars({ targy: e.targy, kuldo: e.felado, html }, epoch) };
+}
+
+test('VALÓDI levelek: a parser a Salonic tényleges HTML-jét értelmezi (törlés, módosítás, belső blokk), a hetnap és az időpont egyezik', () => {
+  const t = valodi('torles_vendeg').p;
+  assert.equal(t.ok, true); assert.equal(t.tipus, 'szalon_torolte'); assert.equal(t.uzletag, 'headspa'); assert.equal(t.munkatars, 'Négykezes Head spa');
+  assert.equal(t.kezdet, helyiEpoch(2026, 10, 9, 10, 30)); assert.equal(t.helyszin, 'Mosaic Headspa'); assert.match(t.szolgaltatas, /EGYÉNI 50 perces MOSAIC "Relax" Head Spa/);
+  const m = valodi('modositas_vendeg').p;
+  assert.equal(m.ok, true); assert.equal(m.tipus, 'szalon_athelyezte'); assert.equal(m.kezdet, helyiEpoch(2026, 10, 10, 15, 30)); assert.match(m.szolgaltatas, /^KUPONKÓDDAL - /);
+  assert.equal(belsoBlokk(valodi('beeso_belso_szabaly').p), 'ebedszunet');
+  assert.equal(belsoBlokk(valodi('beeso_blokk').p), null); // a munkatars-szabaly nem fogja meg ("Tundi" blokk az "Elysion Pro" eroforrason) - a Beeső-szabaly igen (lasd lent)
+});
+
+test('VALÓDI levelek: "Beeső" helykitöltő / belső blokk - ignored_internal, nincs riasztás, nincs foglalás-változás; ismeretlen vendég-szolgáltatás - riasztás', async () => {
+  const db = d1();
+  const futtat = async (cimke) => { const e = valodi(cimke); return ingest(db, ENV_MIND, e.level(), e.epoch + 5); };
+  const ebed = await futtat('beeso_belso_szabaly');
+  assert.equal(ebed.tipus, 'ignored_internal'); assert.equal(ebed.szabaly, 'ebedszunet');
+  const beeso = await futtat('beeso_blokk');
+  assert.equal(beeso.tipus, 'ignored_internal'); assert.equal(beeso.szabaly, 'beeso_nev'); assert.equal(beeso.valtozas, false);
+  const ismeretlen = await futtat('ismeretlen_szolgaltatas_vendeg'); // valodi vendeg, de az "Arc+Haj Oxigenterapia" nincs a Salonic-pillanatkepben: ember dont
+  assert.equal(ismeretlen.tipus, 'riasztas:ignored_uncertain');
+  assert.equal(szam(db, 'SELECT COUNT(*) AS n FROM foglalasok').n, 0); assert.equal(szam(db, 'SELECT COUNT(*) AS n FROM kuldesek').n, 0);
+  assert.equal(szam(db, "SELECT COUNT(*) AS n FROM esemenyek WHERE tipus LIKE 'ingest:riasztas:%'").n, 1); // csak az ismeretlen vendeg-szolgaltatas riaszt
+});
+
+test('"Beeső" nevű valódi online foglalás a rendes úton megy (a helykitöltő-szabály csak jelölt hiányában él)', async () => {
+  const e = valodi('torles_vendeg', 'Beeső');
+  const kezdet = e.p.kezdet;
+  const { db, id } = await felvesz({ nev: 'Beeső', szolg: e.p.szolgaltatas, munka: e.p.munkatars, datum: 'október 9. (péntek) 10:30', fiok: 'mosaicheadspa', kuldo: 'Mosaic Headspa <app@salonic.hu>' }, ENV_MIND, kezdet - 4 * NAP);
+  const r = await ingest(db, ENV_MIND, e.level(kezdet - 5 * ORA), kezdet - 5 * ORA, { eloEllenorzes: hamisElo(TOROLT) });
+  assert.equal(r.tipus, 'szalon_torolte'); assert.equal(alapAllapot(db, id).allapot, 'lemondva');
+});
+
+test('VALÓDI törlés (a 2026-10-09 10:30-as eset): időpont UTÁN - csak riasztás, 0 állapotváltás, 0 SMS; időpont ELŐTT - lemondva, függő üzenetek törölve, 0 vendégüzenet', async () => {
+  const e = valodi('torles_vendeg', 'Teszt Elek');
+  const kezdet = e.p.kezdet;
+  const foglalas = { nev: 'Teszt Elek', szolg: e.p.szolgaltatas, munka: e.p.munkatars, datum: 'október 9. (péntek) 10:30', fiok: 'mosaicheadspa', kuldo: 'Mosaic Headspa <app@salonic.hu>' };
+  // (a) a valodi level 10 perccel az idopont UTAN erkezett
+  const a = await felvesz(foglalas, ENV_MIND, kezdet - 4 * NAP);
+  const ra = await ingest(a.db, ENV_MIND, e.level(e.epoch), e.epoch + 5, { eloEllenorzes: hamisElo(TOROLT) });
+  assert.equal(ra.tipus, 'riasztas:utolagos_torles'); assert.equal(ra.valtozas, false); assert.equal(alapAllapot(a.db, a.id).allapot, 'aktiv');
+  assert.equal((await tick(a.db, ENV_MIND, a.k, kezdet + ORA)).elkuldve, 0); assert.equal(a.k.ki.sms.length, a.smsT0);
+  // (b) ugyanez a level az idopont ELOTT
+  const b = await felvesz(foglalas, ENV_MIND, kezdet - 4 * NAP);
+  const elott = kezdet - 5 * ORA;
+  const rb = await ingest(b.db, ENV_MIND, e.level(elott), elott, { eloEllenorzes: hamisElo(TOROLT) });
+  assert.equal(rb.tipus, 'szalon_torolte'); assert.equal(rb.valtozas, true); assert.equal(alapAllapot(b.db, b.id).allapot, 'lemondva');
+  assert.equal(szam(b.db, "SELECT COUNT(*) AS n FROM kuldesek WHERE allapot IN ('fuggoben', 'kuldes')").n, 0);
+  assert.equal((await tick(b.db, ENV_MIND, b.k, kezdet - 3 * ORA)).elkuldve, 0); assert.equal(b.k.ki.sms.length, b.smsT0); assert.equal(b.k.ki.email.length, b.emailT0);
+  assert.equal((await ingest(b.db, ENV_MIND, e.level(elott), elott + 60, { eloEllenorzes: hamisElo(TOROLT) })).duplikalt, true); // ugyanaz a level: 0 dupla feldolgozas
+});
+
+test('VALÓDI módosítás: bizonyított (az élő oldal az új kezdést mutatja), 72 órán belül - "új időpontod" SMS pontosan egyszer; ugyanaz a level újra: nincs dupla', async () => {
+  const e = valodi('modositas_vendeg', 'Teszt Elek');
+  const uj = e.p.kezdet; // 2026-10-10 15:30
+  const { db, id } = await felvesz({ nev: 'Teszt Elek', szolg: e.p.szolgaltatas, munka: e.p.munkatars, datum: 'október 11. (vasárnap) 15:30', fiok: 'mosaicheadspa', kuldo: 'Mosaic Headspa <app@salonic.hu>' }, ENV_MIND, uj - 5 * NAP);
+  const most = uj - 20 * ORA;
+  const r = await ingest(db, ENV_MIND, e.level(most), most, { eloEllenorzes: hamisElo(aktiv(uj)) });
+  assert.equal(r.tipus, 'szalon_athelyezte'); assert.equal(r.sms, true); assert.equal(alapAllapot(db, id).kezdet, uj);
+  assert.equal(szam(db, "SELECT COUNT(*) AS n FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id LIKE 'COMMON-RESCHEDULE-%'", id).n, 1);
+  const ujra = await ingest(db, ENV_MIND, { ...e.level(most), uzenetId: 'masik-gmail-id' }, most + 60, { eloEllenorzes: hamisElo(aktiv(uj)) });
+  assert.equal(ujra.tipus, 'mar_alkalmazva'); assert.equal(szam(db, "SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-RESCHEDULE-%'").n, 1);
 });

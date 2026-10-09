@@ -25,6 +25,8 @@ const ekezetlen = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, ''
 export const nevNorm = (s) => ekezetlen(s).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 /** Munkatars-kulcs: a Salonic-nev a promocios toldalek ("Noel - 20% kedvezmény!") nelkul, normalizalva. */
 export const munkatarsKulcs = (s) => nevNorm(String(s || '').split(/\s+[-–—]\s+/)[0]);
+/** A Salonic "Beeső" helykitolto vendege (belso blokkok, bejaro vendegek): PONTOS egyezes (NFC, szokozok osszevonva, kis/nagybetu mindegy) - az ekezet nelkuli "Beeso" vagy a "Beeső Anna" NEM az (DECISION #119). */
+export const beesoNev = (s) => String(s || '').normalize('NFC').replace(/\s+/g, ' ').trim().toLowerCase() === 'beeső';
 /** Szolgaltatas-kulcs: kisbetu, emoji/jelek nelkul (mint az uzletag.js szolgNorm), ekezettel. */
 export const szolgKulcs = (s) => szolgNorm(s);
 
