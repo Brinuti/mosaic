@@ -14,7 +14,7 @@ lásd alább felsorolt szándékos eltérések).
 |---|---|---|
 | `/headspa-budapest` (a hosszú cikk) | `foglalas/headspa-budapest.html` | `/headspa-budapest-regi` |
 | `/headspa-arak-budapest` | `foglalas/headspa-arak-budapest.html` | `/headspa-arak-budapest-regi` |
-| `/head-spa-kedvezmeny` | `foglalas/head-spa-kedvezmeny.html` | `/head-spa-kedvezmeny-regi` |
+| `/head-spa-kedvezmeny` | `foglalas/head-spa-kedvezmeny.html` (**2026-10-09 óta az Egyéni / Páros Head Spa landing**, lásd `docs/EGYENI_LANDING.md`) | `/head-spa-kedvezmeny-regi` |
 | `/headspa-termekek-oxygeni` | `foglalas/headspa-termekek-oxygeni.html` | `/headspa-termekek-oxygeni-regi` |
 | `/head-spa-velemenyek` | `foglalas/head-spa-velemenyek.html` | `/head-spa-velemenyek-regi` |
 

@@ -1,4 +1,4 @@
-// Az Egyeni Head Spa landing (/egyeni-headspa-budapest-uj) bongeszos tesztjei (Playwright). Nincs dist/ es nincs kulso halozat: a konnyu helyi szerver
+// A Head Spa akcio oldal = az Egyeni Head Spa landing (/head-spa-kedvezmeny) bongeszos tesztjei (Playwright). Nincs dist/ es nincs kulso halozat: a konnyu helyi szerver
 // (tools/headspa-teszt/szerver.mjs) allitja ossze az oldalt (fejlec / lablec), minden kulso keres tiltott, a Salonic-API es a Trustindex valasza hamisitott.
 //
 //   node --test tools/egyeni-teszt/egyeni.test.mjs
@@ -21,7 +21,7 @@ function playwright() {
 }
 const { chromium } = playwright();
 
-const OLDAL = 'egyeni-headspa-budapest-uj';
+const OLDAL = 'head-spa-kedvezmeny';
 const MOTOR = '/foglalo-motor?business=headspa&service=egyeni';
 let szerver, bazis, port, bongeszo;
 before(async () => {
@@ -80,14 +80,14 @@ async function nyit({ szeles = 1440, api = ALAP_API, host = 'localhost', gorgetv
 }
 const szoveg = async (p) => (await p.evaluate(() => document.querySelector('main').innerText)).replace(/\s+/g, ' ');
 
-describe('/egyeni-headspa-budapest-uj', () => {
+describe('/head-spa-kedvezmeny (egyeni + paros)', () => {
   test('betoltodik hibak nelkul: cim, egyetlen H1, noindex + sajat canonical, nincs torott kep / 404 / konzol-hiba', async () => {
     const { p, ctx, hibak, nincs } = await nyit();
-    assert.match(await p.title(), /^Egyéni Head Spa Budapesten, Kolosy tér – 26 900 Ft \| MOSAIC$/);
+    assert.match(await p.title(), /^Head Spa akció Budapesten: 20% kedvezmény egyéni és páros kezelésre \| MOSAIC$/);
     assert.equal(await p.locator('h1').count(), 1, 'egyetlen H1');
     assert.equal((await p.textContent('h1')).trim(), '80 perc, amikor végre semmi dolgod nincs.');
-    assert.equal(await p.getAttribute('meta[name=robots]', 'content'), 'noindex, nofollow');
-    assert.equal(await p.getAttribute('link[rel=canonical]', 'href'), 'https://www.mosaicheadspa.hu/egyeni-headspa-budapest-uj');
+    assert.equal(await p.getAttribute('meta[name=robots]', 'content'), 'noindex'); // mint a regi akcio oldal
+    assert.equal(await p.getAttribute('link[rel=canonical]', 'href'), 'https://www.mosaicheadspa.hu/head-spa-kedvezmeny');
     const torott = await p.$$eval('img', (l) => l.filter((i) => i.complete && i.naturalWidth === 0).map((i) => i.currentSrc || i.src));
     assert.deepEqual(torott, [], 'torott kepek');
     assert.equal(await p.$$eval('img:not([alt])', (l) => l.length), 0, 'minden kepnek van alt attributuma');
@@ -97,12 +97,12 @@ describe('/egyeni-headspa-budapest-uj', () => {
     await ctx.close();
   });
 
-  test('a terv szekcioi sorban (asztalon): hero, erzes, mutat, lepesek, velemenyek, idopontok, ajandek, miert, meg-sosem, ketten, gyik, zaro; nincs felcim', async () => {
+  test('a terv szekcioi sorban (asztalon): hero, akcio, erzes, mutat, lepesek, velemenyek, idopontok, ajandek, miert, meg-sosem, ketten, gyik, zaro; nincs felcim', async () => {
     const { p, ctx } = await nyit();
     const sorrend = await p.$$eval('main > section', (l) => l.map((s) => s.id));
-    assert.deepEqual(sorrend, ['hero', 'erzes', 'mutat', 'lepesek', 'velemenyek', 'idopontok', 'ajandek', 'miert', 'meg-sosem', 'ketten', 'gyik', 'zaro']);
+    assert.deepEqual(sorrend, ['hero', 'akcio', 'erzes', 'mutat', 'lepesek', 'velemenyek', 'idopontok', 'ajandek', 'miert', 'meg-sosem', 'ketten', 'gyik', 'zaro']);
     const h2 = await p.$$eval('main h2', (l) => l.map((x) => x.innerText.replace(/\s+/g, ' ').trim()));
-    for (const k of ['Milyen érzés?', 'Nehéz elmagyarázni. Könnyebb megmutatni.', 'Mi történik a 80 percben?', 'Nem nekünk kell elmondanunk, milyen.', 'Válaszd ki az időpontodat', 'Nem magadnak keresed?',
+    for (const k of ['20% kedvezmény minden Head Spa szeánszra!', 'Milyen érzés?', 'Nehéz elmagyarázni. Könnyebb megmutatni.', 'Mi történik a 80 percben?', 'Nem nekünk kell elmondanunk, milyen.', 'Válaszd ki az időpontodat', 'Nem magadnak keresed?',
       'Mitől más nálunk a Head Spa?', 'Még sosem voltál Head Spán? Tökéletes.', 'Inkább ketten élnétek át?', 'Gyakran ismételt kérdések', 'Adj magadnak 80 percet.']) assert.ok(h2.includes(k), 'hianyzo cim: ' + k);
     assert.equal(await p.$$eval('.hero-szoveg > *:first-child', (l) => l[0].tagName), 'H1', 'a fo cim elott nincs felcim');
     await ctx.close();
@@ -114,9 +114,9 @@ describe('/egyeni-headspa-budapest-uj', () => {
     const t = await szoveg(p);
     for (const k of ['26 900 Ft', '50+30 perc', 'profi hajszárítás', 'személyre szabott kezelés', 'Prémium Head Spa élmény Budapesten: 50 perc teljes kikapcsolódás, majd 30 perc profi hajszárítás.', '1023 Budapest, Bécsi út 2. (Kolosy tér)',
       'Lelassulsz.', 'Kienged a feszültség.', 'Úgy állsz fel, hogy jól is nézel ki.', 'Megérkezel', 'Elkezdődik a Head Spa', 'Jön a rész, amiért mindenki beleszeret', 'Arc, nyak, váll', 'Nem vizes hajjal mész haza',
-      'Mire helyezzük inkább a hangsúlyt?', 'Inkább relaxálni szeretnék', 'Inkább a hajam / fejbőröm a fókusz', 'Mit tartalmaz pontosan?', 'Mélytisztító hajmosás', 'Körvízsugaras terápia', 'OXYGENI hajpakolás',
+      'Egyéni Head Spa', 'Páros Head Spa', 'Mit tartalmaz pontosan?', 'Mélytisztító hajmosás', 'Körvízsugaras terápia', 'OXYGENI hajpakolás',
       'Hajkamerás diagnosztika és konzultáció, igény szerint', '+ 30 perc kímélő hajszárítás', 'Digitálisan is megkapod', 'Fizikai kártyaként is kérheted', 'Az időpontot az ajándékozott választja ki',
-      'Gyógymasszőrök kezelnek', 'Privát, csendes kezelők', 'Prémium, vegán OXYGENI termékek', 'Két barátnővel', 'Anya-lánya', 'Páróddal', 'H–Szo 8:00–20:00 (vasárnap zárva)', 'Adj magadnak 80 percet.',
+      'Gyógymasszőrök kezelnek', 'Privát, csendes kezelők', 'Prémium, vegán OXYGENI termékek', 'Két barátnővel', 'Anya-lánya', 'Pároddal', 'H–Szo 8:00–20:00 (vasárnap zárva)', 'Adj magadnak 80 percet.',
       'Foglalok · 26 900 Ft']) assert.ok(t.includes(k), 'hianyzik: ' + k);
     assert.equal(await p.locator('.harmonika-racs details').count(), 8, '8 GYIK-kerdes');
     assert.equal(await p.$$eval('.harmonika-racs details > p', (l) => l.filter((x) => x.textContent.trim().length < 30).length), 0, 'nincs ures valasz');
@@ -125,6 +125,64 @@ describe('/egyeni-headspa-budapest-uj', () => {
     // a Bécsi út 11 parkoló (a cikk valódi tanácsa) a GYIK-ban
     assert.match(await p.$eval('.harmonika-racs', (e) => e.textContent), /Bécsi út 11/);
     await ctx.close();
+  });
+
+  test('akcio: a hero az athuzott listaarat + "Októberben 20% kedvezménnyel" sort mutatja; az #akcio blokk a regi akcio oldal szovege (20%, az akcio reszletei, arak), gombjai az idopontokhoz / ajandekkartyahoz visznek', async () => {
+    const { p, ctx } = await nyit();
+    const hero = (await p.evaluate(() => document.querySelector('#hero').innerText)).replace(/\s+/g, ' ');
+    for (const k of ['26 900 Ft', '32 900 Ft', 'Októberben 20% kedvezménnyel']) assert.ok(hero.includes(k), 'hero: ' + k);
+    assert.equal(await p.locator('#hero .hero-ar s').count(), 1);
+    const t = (await p.evaluate(() => document.querySelector('#akcio').textContent)).replace(/\s+/g, ' ');
+    for (const k of ['Októberi akció', '20% kedvezmény minden Head Spa szeánszra!', 'Jelentkezz be Head Spa kezelésre, vagy vásárolj ajándékkártyát 20% kedvezménnyel!', 'Egyéni Head Spa', '32 900 Ft', '26 900 Ft', 'Páros Head Spa', '65 900 Ft', '53 800 Ft',
+      'Az akció részletei', 'Minden 2026 októberben leadott, de akár novemberi Head Spa foglalásra (és 2026 októberben vásárolt ajándékkártyára) 20% kedvezmény érvényes! Az akció visszavonásig tart.']) assert.ok(t.includes(k), 'akcio: ' + k);
+    assert.equal(await p.getAttribute('#akcio a[data-cta="akcio-idopontok"]', 'href'), '#idopontok');
+    assert.equal(await p.getAttribute('#akcio a[data-cta="akcio-ajandekkartya"]', 'href'), '/headspa-ajandekkartya');
+    await ctx.close();
+  });
+
+  test('egyeni / paros valaszto: ket kartya mozgo videoval, alapbol az egyeni; a valasztas atvaltja az ajanlat-panelt, a szabad idopontokat (paros: 302999) es a foglalo-linkeket; a hibajavitas: "Pároddal"', async () => {
+    const parosNaptar = hamisNaptar([2, 4, 7], [9, 11, 13]);
+    const { p, ctx, apiKeresek } = await nyit({ api: { ...ALAP_API, 302999: parosNaptar } });
+    assert.equal(await p.locator('#valtozat input[type=radio]').count(), 2);
+    assert.equal(await p.locator('#valtozat input:checked').getAttribute('value'), 'egyeni');
+    assert.deepEqual(await p.$$eval('#valtozat video[data-klip]', (l) => l.map((v) => v.dataset.klip)), ['/assets/video/ajandek-kezeles-egyeni.mp4', '/assets/video/paros-hero-barat.mp4']);
+    for (const f of ['assets/video/ajandek-kezeles-egyeni.mp4', 'assets/video/paros-hero-barat.mp4', 'assets/img/paros/hero-barat.jpg', 'assets/img/ajandek/kezeles-egyeni.jpg']) assert.ok(letezik(f), f);
+    assert.ok(!(await szoveg(p)).includes('Páróddal') && (await szoveg(p)).includes('Pároddal'), 'az elírás javítva');
+    // alapbol az egyeni: ajanlat-panel, cim, link, idopontok
+    assert.equal(await p.locator('.ajanlat-panel[data-panel="egyeni"]').isVisible(), true);
+    assert.equal(await p.locator('.ajanlat-panel[data-panel="paros"]').isVisible(), false);
+    await p.waitForSelector('#napok a.ido');
+    assert.equal(await p.textContent('#ido-cim-valtozo'), 'A következő szabad egyéni időpontok');
+    assert.equal(await p.getAttribute('#tovabbi-idopontok', 'href'), '/foglalo-motor?business=headspa&service=egyeni');
+    const egyeniHref = await p.$$eval('#napok a.ido', (l) => l.map((a) => a.getAttribute('href')));
+    for (const h of egyeniHref) assert.match(h, /^\/foglalo-motor\?business=headspa&service=egyeni&start=\d+$/);
+    // paros valasztasa
+    await p.locator('#valtozat label:has(input[value="paros"])').click();
+    await p.waitForFunction(() => document.querySelector('#napok a.ido')?.getAttribute('href')?.includes('service=paros'), null, { timeout: 8000 });
+    assert.equal(await p.locator('#valtozat input:checked').getAttribute('value'), 'paros');
+    assert.equal(await p.locator('.ajanlat-panel[data-panel="paros"]').isVisible(), true);
+    assert.equal(await p.locator('.ajanlat-panel[data-panel="egyeni"]').isVisible(), false);
+    assert.match(await p.textContent('.ajanlat-panel[data-panel="paros"] .ajanlat-ar'), /53\s*800\s*Ft/);
+    assert.equal(await p.textContent('#ido-cim-valtozo'), 'A következő szabad páros időpontok');
+    assert.equal(await p.getAttribute('#tovabbi-idopontok', 'href'), '/foglalo-motor?business=headspa&service=paros');
+    const parosHref = await p.$$eval('#napok a.ido', (l) => l.map((a) => a.getAttribute('href')));
+    assert.ok(parosHref.length >= 3);
+    for (const h of parosHref) assert.match(h, /^\/foglalo-motor\?business=headspa&service=paros&start=\d+$/);
+    assert.ok(apiKeresek.some((q) => q.get('serviceId') === '302999'), 'a paros szolgaltatas (302999) idopontjait kerjuk le');
+    assert.equal(await p.locator('#slot-uzenet').isVisible(), false);
+    // vissza az egyenire: a korabban betoltott idopontok jelennek meg (nincs ujabb lekeres)
+    const elotte = apiKeresek.length;
+    await p.locator('#valtozat label:has(input[value="egyeni"])').click();
+    await p.waitForFunction(() => document.querySelector('#napok a.ido')?.getAttribute('href')?.includes('service=egyeni'));
+    assert.equal(apiKeresek.length, elotte, 'a valtozat idopontjai gyorsitotarbol');
+    // ?tipus=paros: a paros valtozat az elejen
+    await ctx.close();
+    const t2 = await nyit({ api: { ...ALAP_API, 302999: parosNaptar }, gorgetve: false });
+    await t2.p.goto(`http://localhost:${port}/${OLDAL}?tipus=paros`, { waitUntil: 'domcontentloaded' });
+    await t2.p.evaluate(() => document.getElementById('idopontok').scrollIntoView());
+    await t2.p.waitForSelector('#napok a.ido');
+    assert.equal(await t2.p.locator('#valtozat input:checked').getAttribute('value'), 'paros');
+    await t2.ctx.close();
   });
 
   test('foglalas-linkek: a hero-gomb gorgeti az idopontokhoz (nincs #hash az URL-ben), a tovabbi idopontok az Egyeni szolgaltatas foglalojara mutat, az ajandekkartya / paros / ajandekkartyas foglalo linkek letezo oldalra', async () => {
@@ -187,13 +245,13 @@ describe('/egyeni-headspa-budapest-uj', () => {
     await ctx.close();
   });
 
-  test('a nyil (kovetkezo napok) gorget, a vegen visszaugrik az elejere; asztalon es telefonon 3 oszlop latszik egyszerre', async () => {
+  test('a nyil (kovetkezo napok) gorget, a vegen visszaugrik az elejere; asztalon 4, telefonon 3 oszlop latszik egyszerre', async () => {
     const tizenket = hamisNaptar([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], [9, 12, 15]);
     const { p, ctx } = await nyit({ api: { 302342: tizenket, 302499: tizenket } });
     await p.waitForSelector('.nap-oszlop');
     const lathato = () => p.$$eval('.nap-oszlop', (l) => { const k = document.getElementById('napok').getBoundingClientRect(); return l.filter((o) => { const r = o.getBoundingClientRect(); return r.left >= k.left - 2 && r.right <= k.right + 2; }).length; });
     await p.evaluate(() => document.getElementById('idopontok').scrollIntoView());
-    assert.equal(await lathato(), 3);
+    assert.equal(await lathato(), 4);
     assert.equal(await p.locator('#napok-kov').isVisible(), true);
     await p.click('#napok-kov');
     await p.waitForTimeout(900);
@@ -226,7 +284,7 @@ describe('/egyeni-headspa-budapest-uj', () => {
     const uresBlokk = { status: 'success', data: { blocks: {} } };
     const ures = await nyit({ api: { 302342: uresBlokk, 302499: uresBlokk }, host: 'www.mosaicheadspa.hu' });
     await ures.p.waitForSelector('#slot-uzenet:not([hidden])');
-    assert.match(await ures.p.textContent('#slot-uzenet'), /nincs szabad időpont/);
+    assert.match(await ures.p.textContent('#slot-uzenet'), /nincs szabad (egyéni )?időpont/);
     await ures.ctx.close();
   });
 
@@ -313,7 +371,7 @@ describe('/egyeni-headspa-budapest-uj', () => {
     assert.equal(await p.$eval('.tartalmazza', (d) => d.open), false);
     await p.click('.tartalmazza summary');
     assert.equal(await p.$eval('.tartalmazza', (d) => d.open), true);
-    assert.equal(await p.locator('.tartalmazza li').count(), 10);
+    assert.equal(await p.locator('.ajanlat-panel[data-panel="egyeni"] .tartalmazza li').count(), 10);
     await ctx.close();
   });
 
@@ -333,10 +391,10 @@ describe('/egyeni-headspa-budapest-uj', () => {
     });
   }
 
-  test('telefonon: a sorrend hero -> szabad idopontok -> milyen erzes -> nehez elmagyarazni -> ...; a sticky sav telefonon van, asztalon nincs', async () => {
+  test('telefonon: a sorrend hero -> szabad idopontok -> akcio -> milyen erzes -> nehez elmagyarazni -> ...; a sticky sav telefonon van, asztalon nincs', async () => {
     const { p, ctx } = await nyit({ szeles: 390 });
     const sorrend = await p.$$eval('main > section', (l) => l.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top).map((s) => s.id));
-    assert.deepEqual(sorrend.slice(0, 5), ['hero', 'idopontok', 'erzes', 'mutat', 'lepesek']);
+    assert.deepEqual(sorrend.slice(0, 6), ['hero', 'idopontok', 'akcio', 'erzes', 'mutat', 'lepesek']);
     assert.equal(await p.$eval('#sticky-cta', (e) => getComputedStyle(e).display), 'block');
     // a szabad idopontok kartya az ajanlat elott van (telefonon a foglalas elol)
     const ido = await p.$eval('#szabad-idopontok', (e) => Math.round(e.getBoundingClientRect().top));

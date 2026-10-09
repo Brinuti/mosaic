@@ -27,6 +27,7 @@ const ATIRANYITASOK = {
   '/headspa-budapest-uj': '/headspa-budapest',
   '/headspa-arak-budapest-uj': '/headspa-arak-budapest',
   '/head-spa-kedvezmeny-uj': '/head-spa-kedvezmeny',
+  '/egyeni-headspa-budapest-uj': '/head-spa-kedvezmeny',   // az egyeni Head Spa landing 2026-10-09 ota az akcio oldal (a tulajdonos dontese)
   '/headspa-termekek-oxygeni-uj': '/headspa-termekek-oxygeni',
   '/head-spa-velemenyek-uj': '/head-spa-velemenyek',
   '/headspa-ferfiaknak-uj': '/headspa-ferfiaknak',

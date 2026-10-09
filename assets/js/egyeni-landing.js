@@ -1,10 +1,11 @@
-// MOSAIC Egyeni Head Spa landing (/egyeni-headspa-budapest, jelenleg -uj cimen) - mukodes.
+// MOSAIC Head Spa AKCIO oldal = az Egyeni Head Spa landing (/head-spa-kedvezmeny; 2026-10-09 ota ez az akcio oldal) - mukodes.
 //
 //  1. Idopont-valaszto (#napok): a legkozelebbi szabad napok oszlopokban, napi nehany idoponttal, a Salonic nyilvanos naptar-API-bol (ugyanaz a forras, mint a
 //     paros / lezeres / PMU landingen). Az Egyeni HeadSpa ket Salonic-valtozata ("Relax" es "Hair", azonos kezelok, azonos ar) idopontjainak unioja, mint a foglalo-motorban.
 //     Idopontot nem talalunk ki: ha az API nem valaszol, a foglalo-motorra vezetunk. Egy idopontra kattintva a helyben nyilo foglalo-motor (reteg) nyilik meg az
 //     Egyeni szolgaltatassal es az idopont idobelyegevel (&start=<unix>): rogton az adatlap (docs/booking-engine/BOOKING_LAYER.md).
 //     Csak az elonezeten (*.pages.dev, localhost) - ahol a Salonic CORS-a miatt a valodi idopontok nem toltodnek be - jelennek meg MINTA idopontok, jelolve.
+//     Egyeni / Paros valaszto (#valtozat, radio): a valasztas atvaltja az ajanlat-panelt, a szabad idopontokat (a Paros: Salonic 302999) es a foglalo-motor linkjeit.
 //  2. Mozgokepek (video[data-klip]): hang nelkuli, ismetlodo klipek, amelyek csak akkor toltodnek be es jatszanak, amikor a kepernyon vannak (a nyitokep addig latszik);
 //     lassu / adattakarekos kapcsolaton, vagy ha a latogato csokkentett mozgast kert, csak a nyitokep marad. A hangos vendegvideok (button[data-video]) felugro ablakban nyilnak.
 //  3. Trustindex-velemenyek (MINDIG azonnal), az ertekelesek szama (a widget aktualis adata), mobil sticky CTA, a lepesek / vendegvideok pontjai,
@@ -18,8 +19,6 @@
   const SZALON = {
     cim: 'https://mosaicheadspa.salonic.hu',
     placeId: 10427,
-    // "EGYENI 50 perces MOSAIC "Relax" / "Hair" Head Spa kezeles + 30 perc hajszaritas" - 26 900 Ft, 80 perc (docs/booking-engine/SALONIC_SERVICE_STAFF_MAPPING_CURRENT.json)
-    szolgaltatasok: ['302342', '302499'],
     naptar: 'ebf1c485-e15e-d57f-de78-284a6591ece4', // a Salonic naptar-azonositoja; ha valtozik, a kod a Salonic oldalarol ujra kiolvassa
   };
   const API = 'https://api.salonic.hu/calendar/getAvailableTimes';
@@ -27,7 +26,14 @@
   const ELORE_NAP = 45;
   const MAX_NAP = 28;       // ennyi napot rajzolunk ki (a nyilak gorgetik)
   const NAPI_IDO = 4;       // oszloponkent ennyi idopont latszik elsore (a tobbi a "+N" gombra)
-  const MOTOR = '/foglalo-motor?business=headspa&service=egyeni';
+  // A ket valtozat Salonic-szolgaltatasai (docs/booking-engine/SALONIC_SERVICE_STAFF_MAPPING_CURRENT.json):
+  //  egyeni: "EGYENI 50 perces MOSAIC Relax / Hair Head Spa kezeles + 30 perc hajszaritas" - 26 900 Ft, 80 perc (ket valtozat, a motor az uniojukat mutatja)
+  //  paros: "PAROS MOSAIC Head Spa kezeles (50 perc + Szaritas)" - 53 800 Ft, 80 perc
+  const VALTOZATOK = {
+    egyeni: { szolgaltatasok: ['302342', '302499'], motor: '/foglalo-motor?business=headspa&service=egyeni', cim: 'A következő szabad egyéni időpontok', nincs: 'A következő hetekre most nincs szabad egyéni időpont. ' },
+    paros: { szolgaltatasok: ['302999'], motor: '/foglalo-motor?business=headspa&service=paros', cim: 'A következő szabad páros időpontok', nincs: 'A következő hetekre most nincs szabad páros időpont. ' },
+  };
+  let valtozat = 'egyeni';
 
   const $ = (id) => document.getElementById(id);
   const meres = (adat) => { (window.dataLayer = window.dataLayer || []).push(adat); };
@@ -47,7 +53,7 @@
   const ora = (ts) => fmt(ts, { hour: '2-digit', minute: '2-digit', hour12: false });
   const isoNap = (ts) => new Intl.DateTimeFormat('sv-SE', { timeZone: ZONA }).format(new Date(ts * 1000)); // 2026-10-07
   const nagy = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-  const motorUrl = (ts) => MOTOR + (ts ? '&start=' + ts : '');
+  const motorUrl = (ts, v = valtozat) => VALTOZATOK[v].motor + (ts ? '&start=' + ts : '');
 
   // --- CTA-meres: ugyanaz a minta, mint a paros / oxigen / PMU landingen (data-cta) -----------------------------------------------
   document.addEventListener('click', (e) => {
@@ -85,20 +91,20 @@
     }
     return [...ki];
   }
-  /** a ket valtozat idopontjainak unioja (mint a motorban); ha csak az egyik valaszol, annak az idopontjai */
-  async function apiKezdesek(naptar) {
-    const mind = await Promise.allSettled(SZALON.szolgaltatasok.map((id) => egySzolgaltatas(naptar, id)));
+  /** a valtozat Salonic-szolgaltatasainak idopont-unioja (az Egyeni ket Salonic-valtozata, mint a motorban); ha csak az egyik valaszol, annak az idopontjai */
+  async function apiKezdesek(naptar, v) {
+    const mind = await Promise.allSettled(VALTOZATOK[v].szolgaltatasok.map((id) => egySzolgaltatas(naptar, id)));
     const jok = mind.filter((r) => r.status === 'fulfilled');
     if (!jok.length) throw mind[0].reason;
     return [...new Set(jok.flatMap((r) => r.value))].sort((a, b) => a - b);
   }
-  async function szabadKezdesek() {
-    try { return await apiKezdesek(SZALON.naptar); } catch (hiba) {
+  async function szabadKezdesek(v) {
+    try { return await apiKezdesek(SZALON.naptar, v); } catch (hiba) {
       // a naptar-azonosito megvaltozhatott: kiolvassuk a Salonic oldalarol, es egyszer ujraprobaljuk
-      const m = (await (await leker(`${SZALON.cim}/selectDate/?employeeId=-1&placeId=${SZALON.placeId}&serviceId=${SZALON.szolgaltatasok[0]}`)).text()).match(/calendarId:\s*'([^']+)'/);
+      const m = (await (await leker(`${SZALON.cim}/selectDate/?employeeId=-1&placeId=${SZALON.placeId}&serviceId=${VALTOZATOK[v].szolgaltatasok[0]}`)).text()).match(/calendarId:\s*'([^']+)'/);
       if (!m || m[1] === SZALON.naptar) throw hiba;
       SZALON.naptar = m[1];
-      return apiKezdesek(m[1]);
+      return apiKezdesek(m[1], v);
     }
   }
 
@@ -166,34 +172,61 @@
     for (const ts of k) { const d = isoNap(ts); if (!napok.has(d)) napok.set(d, []); napok.get(d).push(ts); }
     return napok;
   };
-  let betoltve = false;
-  async function idopontokBetolt() {
-    if (betoltve) return;
-    betoltve = true;
-    const uzenet = $('slot-uzenet');
-    uzenet.hidden = true;
-    try {
-      const napok = csoportosit(await szabadKezdesek());
-      if (!napok.size) {
-        $('napok').replaceChildren();
-        uzenet.replaceChildren('A következő hetekre most nincs szabad időpont. ', elem('a', { href: motorUrl(), szoveg: 'Nézd meg a foglalóban →' }));
-        uzenet.hidden = false;
-        return;
+  // az idopontok valtozatonkent egyszer toltodnek le (a valtozat-valto a gyorsitotarbol rajzol)
+  const cache = {}, folyamatban = {};
+  function adatBetolt(v) {
+    if (cache[v]) return Promise.resolve(cache[v]);
+    if (folyamatban[v]) return folyamatban[v];
+    folyamatban[v] = (async () => {
+      try {
+        const napok = csoportosit(await szabadKezdesek(v));
+        return (cache[v] = napok.size ? { napok, minta: false } : { ures: true });
+      } catch (hiba) {
+        console.error(hiba);
+        return (cache[v] = ELONEZET ? { napok: csoportosit(mintaKezdesek()), minta: true } : { hiba: true });
       }
-      napRajzol(napok, false);
-    } catch (hiba) {
-      console.error(hiba);
-      if (ELONEZET) {
-        napRajzol(csoportosit(mintaKezdesek()), true);
+    })();
+    return folyamatban[v];
+  }
+  async function idopontokMutat() {
+    const v = valtozat, uzenet = $('slot-uzenet');
+    uzenet.hidden = true;
+    if (!cache[v]) $('napok').replaceChildren(elem('div', { class: 'napok-csontvaz csontvaz' }));
+    const adat = await adatBetolt(v);
+    if (v !== valtozat) return; // kozben masik valtozatot valasztott
+    if (adat.ures) {
+      $('napok').replaceChildren();
+      uzenet.replaceChildren(VALTOZATOK[v].nincs, elem('a', { href: motorUrl(null, v), szoveg: 'Nézd meg a foglalóban →' }));
+      uzenet.hidden = false;
+    } else if (adat.hiba) {
+      $('napok').replaceChildren();
+      uzenet.replaceChildren('Most nem sikerült lekérni a szabad időpontokat. ', elem('a', { href: motorUrl(null, v), szoveg: 'Nézd meg itt az összeset →' }));
+      uzenet.hidden = false;
+    } else {
+      napRajzol(adat.napok, adat.minta);
+      if (adat.minta) {
         uzenet.textContent = 'MINTA időpontok: az előnézeten a valódi időpontok nem töltődnek be, az éles oldalon a MOSAIC naptárából jönnek.';
         uzenet.hidden = false;
-        return;
       }
-      $('napok').replaceChildren();
-      uzenet.replaceChildren('Most nem sikerült lekérni a szabad időpontokat. ', elem('a', { href: motorUrl(), szoveg: 'Nézd meg itt az összeset →' }));
-      uzenet.hidden = false;
     }
   }
+
+  // --- Egyeni / Paros valaszto: az ajanlat-panel, a szabad idopontok es a foglalo-linkek valtanak ------------------------------------
+  function valtozatBeallit(v, jelez) {
+    if (!VALTOZATOK[v]) return;
+    valtozat = v;
+    for (const r of document.querySelectorAll('input[name="valtozat"]')) r.checked = r.value === v;
+    for (const panel of document.querySelectorAll('.ajanlat-panel')) panel.hidden = panel.dataset.panel !== v;
+    const cim = $('ido-cim-valtozo'); if (cim) cim.textContent = VALTOZATOK[v].cim;
+    const tovabbi = $('tovabbi-idopontok'); if (tovabbi) tovabbi.setAttribute('href', VALTOZATOK[v].motor);
+    if (jelez) meres({ event: 'egyeni_landing_cta', cta: 'valtozat-' + v });
+    if (kezdve) idopontokMutat();
+  }
+  let kezdve = false;
+  for (const r of document.querySelectorAll('input[name="valtozat"]')) r.addEventListener('change', () => { if (r.checked) valtozatBeallit(r.value, true); });
+  // hirdetesbol / linkbol: ?tipus=paros az elejen a paros valtozatot valasztja
+  try { const t = new URLSearchParams(location.search).get('tipus'); if (t && VALTOZATOK[t]) valtozatBeallit(t, false); } catch (e) { /* nincs kereses */ }
+  function idopontokBetolt() { if (kezdve) return; kezdve = true; idopontokMutat(); }
   // az idopontokat csak akkor kerjuk le, amikor a szekcio kozel kerul a kepernyohoz (felesleges API-hivas nelkul); telefonon a hero alatt van, ott rogton
   const idoSzekcio = $('idopontok');
   if ('IntersectionObserver' in window) {

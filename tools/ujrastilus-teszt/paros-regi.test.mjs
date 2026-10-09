@@ -51,6 +51,13 @@ async function nyit(nev, { szeles = 1440 } = {}) {
   p.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) hibak.push('console: ' + m.text()); });
   p.on('response', (r) => { if (r.status() >= 400 && r.url().startsWith(bazis)) nincs.push(r.status() + ' ' + r.url().replace(bazis, '')); });
   await p.route(/^(?!http:\/\/localhost)/, (r) => { kulso.push(r.request().url()); r.abort(); });
+  // a Salonic nyilvanos naptar-API-ja hamisitva: ket nap, napi harom idopont (budapesti ido szerint 10 / 12 / 15 ora koruli)
+  await p.route('https://api.salonic.hu/**', (r) => {
+    const mai = Math.floor(Date.now() / 1000), nap0 = mai - (mai % 86400) + 2 * 86400;
+    const slots = {}; let i = 0;
+    for (const d of [0, 1]) for (const h of [8, 10, 13]) slots['s' + i++] = { timestamp: nap0 + d * 86400 + h * 3600 };
+    r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ status: 'success', data: { blocks: { 1: { k1: { slots } } } } }) });
+  });
   await p.goto(`${bazis}/${encodeURI(nev)}`, { waitUntil: 'domcontentloaded' });
   await p.evaluate(async () => {
     document.documentElement.style.scrollBehavior = 'auto';
@@ -64,6 +71,41 @@ async function nyit(nev, { szeles = 1440 } = {}) {
 
 describe(`/${NEV}`, () => {
   const nev = NEV;
+  test('2026-10-09: hero = mozgo paros video (a regi hero-kep helyen); legkozelebbi szabad idopontok (Salonic-API, a foglalo-motorra mutatnak); "Kivel jonnel?" 4 kartya; a hero utan vannak, a regi tartalom valtozatlan', async () => {
+    const { p, ctx, hibak } = await nyit(nev);
+    const v = p.locator('#hero-video');
+    assert.equal(await v.count(), 1);
+    assert.equal(await v.getAttribute('src'), '/assets/video/paros-hero-barat.mp4');
+    assert.equal(await v.getAttribute('poster'), '/assets/img/paros/hero-barat.jpg');
+    for (const a of ['autoplay', 'muted', 'loop', 'playsinline']) assert.notEqual(await v.getAttribute(a), null, a);
+    assert.equal(await p.locator('.hero .hero-kep img').count(), 0, 'a hero kep helyen video van');
+    for (const f of ['assets/video/paros-hero-barat.mp4', 'assets/img/paros/hero-barat.jpg']) assert.ok(fs.existsSync(path.join(GYOKER, f)), f);
+    // sorrend: hero -> szabad idopontok -> Kivel jonnel? -> a regi oldal bemutatkozasa
+    const sorrend = await p.$$eval('main > section', (l) => l.map((e) => e.id || e.className.split(' ')[0]));
+    assert.ok(sorrend.indexOf('idopontok') === 1 && sorrend.indexOf('kivel') === 2 && sorrend.indexOf('bemutatkozas') === 3, 'sorrend: ' + sorrend.join(','));
+    // szabad idopontok: naposzlopok, az idopont a helyben nyilo foglalo-motorra (Paros szolgaltatas + idobelyeg) mutat
+    await p.locator('#idopontok').scrollIntoViewIfNeeded();
+    await p.waitForSelector('#napok .nap-oszlop', { timeout: 10000 });
+    assert.ok((await p.locator('#napok .nap-oszlop').count()) >= 2, 'legalabb ket nap');
+    const hrefek = await p.$$eval('#napok a.ido', (l) => l.map((a) => a.getAttribute('href')));
+    assert.ok(hrefek.length >= 3);
+    for (const h of hrefek) assert.match(h, /^\/foglalo-motor\?business=headspa&service=paros&start=\d+$/);
+    assert.equal(await p.getAttribute('#tovabbi-idopontok', 'href'), '/foglalo-motor?business=headspa&service=paros');
+    assert.equal(await p.locator('#slot-uzenet').isVisible(), false, 'nincs MINTA / hiba uzenet, ha az API valaszol');
+    // Kivel jonnel?
+    assert.equal(await p.locator('#kivel .kivel-kartya').count(), 4);
+    assert.deepEqual(await p.$$eval('#kivel h3', (l) => l.map((e) => e.textContent.trim())), ['Barátnőmmel', 'Anyukámmal / lányommal', 'A párommal', 'Ajándékba adnám']);
+    assert.equal(await p.getAttribute('#kivel a.kivel-kartya', 'href'), '/headspa-ajandekkartya?variant=friend');
+    assert.deepEqual(hibak, []);
+    await ctx.close();
+    // telefonon: nincs vizszintes gorgetes, a video a cim folott van
+    const m = await nyit(nev, { szeles: 390 });
+    const adat = await m.p.evaluate(() => ({ szeles: document.documentElement.scrollWidth, ablak: innerWidth, videoAlja: document.querySelector('#hero-video').getBoundingClientRect().bottom, cimTeteje: document.querySelector('main h1').getBoundingClientRect().top }));
+    assert.ok(adat.szeles <= adat.ablak, 'nincs vizszintes gorgetes: ' + JSON.stringify(adat));
+    assert.ok(adat.cimTeteje >= adat.videoAlja - 4, 'a cim a video alatt van: ' + JSON.stringify(adat));
+    await m.ctx.close();
+  });
+
   test('betoltodik hibak nelkul: egyetlen H1, nincs torott kep / 404 / konzol-hiba; a regi oldal cime, leirasa, canonical-ja valtozatlan; INDEXELHETO (a regi sem volt noindex); az -uj cim valtozatlan', async () => {
     const regi = olvas(`klon/${nev}.html`);
     const g = (re) => { const m = re.exec(regi); assert.ok(m, 'meta a regi oldalon: ' + re); return m[1]; };
@@ -104,7 +146,8 @@ describe(`/${NEV}`, () => {
     const folyamKepek = sorok.filter((s) => s.t === 'KEP').map((s) => /\/(?:(?:c2eb0f|11062b|nsplsh)_)?([0-9a-f]{12})/.exec(s.raw)?.[1]).filter(Boolean);
     const html = await p.content();
     assert.ok(azonosito.length >= 30, 'a regi oldal kepeinek listaja: ' + azonosito.length);
-    assert.deepEqual([...new Set([...azonosito, ...folyamKepek])].filter((k) => !html.includes(k)), [], 'hianyzo kepek (a regi oldal HTML-je / kinyert tartalma szerint)');
+    // a regi hero-kep (2c17645e97d9) helyett 2026-10-09 ota a mozgo paros video all (a tulajdonos kerese)
+    assert.deepEqual([...new Set([...azonosito, ...folyamKepek])].filter((k) => k !== '2c17645e97d9' && !html.includes(k)), [], 'hianyzo kepek (a regi oldal HTML-je / kinyert tartalma szerint)');
     // linkek
     const hrefek = await p.$$eval('main a[href]', (l) => l.map((a) => a.getAttribute('href')));
     const regiLinkek = sorok.filter((s) => s.t === 'GOMB').map((s) => /\s->\s+(\S+)\s*$/.exec(s.raw)?.[1]).filter(Boolean);

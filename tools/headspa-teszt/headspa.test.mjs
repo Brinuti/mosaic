@@ -31,9 +31,7 @@ const OLDALAK = [
   { nev: 'headspa-arak-budapest', cim: 'Head Spa Kezelések árai a MOSAIC-ban', h1: 'Head Spa Csomagok és Árak', videok: 0,
     szoveg: ['Októberben 20% kedvezménnyel!', '39.900 Ft', '26.900 Ft', '53.800 Ft', '49.900 Ft', '65.900 Ft', 'Időtartam: 50+30 perc', 'Hajkamerás diagnosztika és konzultáció', 'Méregtelenítő arcpakolás',
       'Pezsgő alkoholos/alkohol mentes', 'SZÉP Kártyát is elfogadunk', 'Itt találsz meg minket', '1023 Budapest Bécsi út 2.', '06 20 247 4444', 'mosaicheadspa@gmail.com', 'Hétfő - Péntek'] },
-  { nev: 'head-spa-kedvezmeny', cim: 'Head Spa Kezelések árai a MOSAIC-ban', h1: '20% OKTÓBERI AKCIÓ minden headspa szeánszra!', videok: 0, noindexEredeti: true,
-    szoveg: ['Jelentkezz be headspa kezelésre vagy vásárolj ajándékkártyát 20% kedvezménnyel!', 'AZ AKCIÓ RÉSZLETEI', 'Az Akció visszavonásig tart.', 'ÚJ, limitált szolgáltatás - 4 Kezes Head Spa Ajándékkártya!',
-      'Head Spa Csomagok és Árak', 'Októberben MOST 20% kedvezménnyel!', '39.900 Ft', '53.800 Ft', 'SZÉP Kártyát is elfogadunk', 'Google 4,9/5 - Kiváló'] },
+  // a head-spa-kedvezmeny (akcio) oldal 2026-10-09 ota az Egyeni / Paros Head Spa landing: tesztjei a tools/egyeni-teszt/egyeni.test.mjs-ben vannak
   { nev: 'headspa-termekek-oxygeni', cim: 'Head Spa kezelések OXYGENI Termékekkel', h1: 'Organikus, vegán és kemikáliamentes.', videok: 0,
     szoveg: ['A MOSAIC Head Spa az Oxygeni legnagyobb hazai partnerszalonja.', 'Amire a hajadnak a természetből szüksége van.', 'Az OXYGENI Head Spa hatásai', 'Prémium minőségűek', 'Színezék mentesek',
       'Zsíros fejbőr esetén', 'Száraz fejbőr esetén', 'Hajhullás esetén', 'Mélyen tisztítja a fejbőrt, eltávolítja a felesleges faggyút és lerakódásokat.',
@@ -230,8 +228,8 @@ describe('a komponensek mukodese', () => {
     await t.ctx.close();
   });
 
-  test('az arak es a kedvezmeny oldalon 3 csomag van (4 Kezes, EGY 50 perces Head Spa kezeles, Paros): ar, athuzott regi ar, kep, Foglalok gomb; nincs kulon Relax / Hair', async () => {
-    for (const nev of ['headspa-arak-budapest', 'head-spa-kedvezmeny']) {
+  test('az arlista oldalon 3 csomag van (4 Kezes, EGY 50 perces Head Spa kezeles, Paros): ar, athuzott regi ar, kep, Foglalok gomb; nincs kulon Relax / Hair', async () => {
+    for (const nev of ['headspa-arak-budapest']) {
       const { p, ctx } = await nyit(nev);
       assert.equal(await p.locator('.csomag').count(), 3, nev);
       assert.deepEqual(await p.$$eval('.csomag h3', (l) => l.map((e) => e.textContent.replace(/\s+/g, ' ').trim())), ['50 perces MOSAIC„4 Kezes” Head Spa kezelés', '50 perces MOSAICHead Spa kezelés', '50 perces MOSAICPáros Head Spa kezelés']);
@@ -294,7 +292,7 @@ describe('a csere: az -uj cimek atiranyitanak, a regi (Wixes) valtozat rejtett -
     for (const mod of ['asztali', 'mobil']) {
       assert.equal(lcp[mod]['headspa-arak-budapest'], undefined);
       assert.equal(lcp[mod]['head-spa-velemenyek'], undefined);
-      for (const nev of ['headspa-budapest', 'head-spa-kedvezmeny', 'headspa-termekek-oxygeni']) {
+      for (const nev of ['headspa-budapest', 'headspa-termekek-oxygeni']) {
         const kep = lcp[mod][nev];
         assert.ok(kep && fs.existsSync(path.join(GYOKER, kep)), `${mod}/${nev}: ${kep}`);
         const html = fs.readFileSync(path.join(GYOKER, 'foglalas', `${nev}.html`), 'utf8');

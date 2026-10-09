@@ -1,12 +1,19 @@
-# Egyéni Head Spa landing (`/egyeni-headspa-budapest-uj`)
+# Egyéni Head Spa landing = a Head Spa AKCIÓ oldal (`/head-spa-kedvezmeny`)
 
-A tulajdonos képterve alapján újraépített egyéni Head Spa oldal, a páros / lézeres / oxigén landingek szerkezetében, betűivel és színeivel (Playfair Display + Jost, arany gombok, sötétzöld hangsúly, krém háttér),
-**minden képhelyen mozgóképpel** a szalon valódi felvételeiből. **Ideiglenes címen él**: `/egyeni-headspa-budapest-uj` (`noindex, nofollow`, saját canonical, sehonnan nincs rá link, nincs a sitemapben).
-A meglévő oldalak (Wixes `/headspa-10szazalek-kedvezmennyel`, `/headspa-budapest-hungary`, az újraépített `/headspa-budapest` cikk) változatlanul élnek; a csere csak kifejezett kérésre történik (lásd lent).
+**2026-10-09 óta ez az oldal az akció oldal** (a tulajdonos döntése: a régi, gyenge akció oldal helyére került; `noindex`, mint a régi akció oldal). Eredetileg `/egyeni-headspa-budapest-uj` néven készült (301 átirányít ide),
+a tulajdonos képterve alapján, a páros / lézeres / oxigén landingek szerkezetében, betűivel és színeivel (Playfair Display + Jost, arany gombok, sötétzöld hangsúly),
+**minden képhelyen mozgóképpel** a szalon valódi felvételeiből. A régi (Wixes) akció oldal rejtett címen: `/head-spa-kedvezmeny-regi` (noindex); az előző, újrastílusú akció oldal a git előzményeiben van.
+
+**Az akcióhoz tett változtatások (2026-10-09):**
+- **Akciós blokk** (`#akcio`, a hero alatt; telefonon az időpont-szekció után): „Októberi akció – 20% kedvezmény minden Head Spa szeánszra!”, a régi akció oldal szövege („Az akció részletei”, „visszavonásig tart”), áthúzott listaárak (egyéni 32 900 → 26 900 Ft, páros 65 900 → 53 800 Ft). A hero is mutatja az áthúzott árat és „Októberben 20% kedvezménnyel”.
+- **Egyéni / Páros választó** (`#valtozat`, a „Mire helyezzük inkább a hangsúlyt?” csempék helyén; a Relax / Hair csomag megszűnt): két kártya mozgó videóval (`ajandek-kezeles-egyeni.mp4`, `paros-hero-barat.mp4`), alatta rádiógomb. A választás átváltja az ajánlat-panelt (egyéni / páros ár és „Mit tartalmaz”), a szabad időpontokat (**páros: Salonic `302999`**, egyéni: `302342` + `302499` uniója) és a foglaló-linkeket (`service=egyeni` / `service=paros`). A lekért időpontok változatonként gyorsítótárban vannak. `?tipus=paros` a páros változatot választja alapból (hirdetéshez). Mérés: `egyeni_landing_cta` esemény `cta: valtozat-egyeni|paros`.
+- Elírás javítva: „Páróddal” → „Pároddal”.
+- **Az akció lejártakor** igazítandó: az `#akcio` blokk, a hero „20% októberi kedvezménnyel” sora és áthúzott ára, a választó kártyáinak áthúzott árai, az ajánlat-panelek „Októberben 20% kedvezménnyel” sora, a `<title>` / meta leírás.
+- Mérés / csere: az útvonal ugyanaz, mint a régi akció oldalé (`/head-spa-kedvezmeny`), ezért a `suti.js` pixel-listája (`PIXEL_HEADSPA`) érvényes rá; a régi oldal Wix-azonosítós GTM-triggerei (gombkattintások) az új oldalon nem léteznek – az elemzővel egyeztetendő. LCP-előtöltés: `/assets/img/ajandek/hero.jpg` (`tools/lcp-elofeltoltes.json`).
 
 | Fájl | Szerepe |
 |---|---|
-| `foglalas/egyeni-headspa-budapest-uj.html` | az oldal (fejléc / lábléc a build-ből: `<!--mh-fejlec-->`, `<!--mh-lablec-->`, `<!--mh-menu-aktiv:/egyeni-headspa-budapest-->`) |
+| `foglalas/head-spa-kedvezmeny.html` | az oldal (fejléc / lábléc a build-ből: `<!--mh-fejlec-->`, `<!--mh-lablec-->`, `<!--mh-menu-aktiv:/head-spa-kedvezmeny-->`) |
 | `assets/css/egyeni-landing.css` | önálló stíluslap (a többi landing stílusát nem érinti) |
 | `assets/js/egyeni-landing.js` | szabad időpontok (Salonic-API), mozgóképek (lusta betöltés), hangos videók felugró ablaka, Trustindex, mobil sticky CTA, pontok |
 | `assets/video/egyeni-*.mp4`, `assets/img/egyeni/*.jpg` | a kivágott, hang nélküli ismétlő-klipek (7 db, ~1 MB) és a klipek nyitóképei |

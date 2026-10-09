@@ -14,7 +14,7 @@ const norm = (s) => szoveg(s).toLowerCase();
 // uzletag: id (horgony), cim, oldal (a reszletes oldal), foglalas (a foglalo linkje), forrasok: [[fajl, a GYIK-szekcio kezdo-mintaja, a varhato kerdesszam]]
 export const FORRASOK = [
   { id: 'headspa', cim: 'Head Spa', oldal: '/', foglalas: '/foglalo-motor?business=headspa', forrasok: [
-    ['foglalas/index.html', '<section class="szekcio gyik" id="gyik"', 18], ['foglalas/egyeni-headspa-budapest-uj.html', '<section class="szekcio gyik bezs" id="gyik"', 8]] },
+    ['foglalas/index.html', '<section class="szekcio gyik" id="gyik"', 18], ['foglalas/head-spa-kedvezmeny.html', '<section class="szekcio gyik bezs" id="gyik"', 8]] },
   { id: 'paros', cim: 'Páros Head Spa', oldal: '/paros-headspa-budapest', foglalas: '/foglalo-motor?business=headspa&service=paros', forrasok: [
     ['foglalas/paros-headspa-budapest-uj.html', '<section class="szekcio gyik" id="gyik"', 12]] },
   { id: 'szortelenites', cim: 'Szőrtelenítés', oldal: '/lezeres-szortelenites-budapest', foglalas: '/foglalo-motor?business=laser', forrasok: [
