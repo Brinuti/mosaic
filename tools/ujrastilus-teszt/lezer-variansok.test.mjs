@@ -50,7 +50,9 @@ function folyam(kulcs) {
 }
 const szovegbol = (html) => html.replace(/^[\d.]+px\s+(?:(?:center|left|right)\s+)?/, '').replace(/\s+->\s+\S+\s*$/, '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 // betuk es szamok kisbetuvel: a tagolas / irasjelek / emojik / athuzas-jelek kulonbsegei nem szamitanak
-const norm = (s) => s.toLowerCase().normalize('NFC').replace(/[\u0336\p{Extended_Pictographic}\p{Emoji_Presentation}\uFE0F\u200d\u200b\u00a0]/gu, '').replace(/[^\p{L}\p{N}]+/gu, '');
+const norm = (s) => s.toLowerCase().normalize('NFC').replace(/[\u0336\p{Extended_Pictographic}\p{Emoji_Presentation}\uFE0F\u200d\u200b\u00a0]/gu, '').replace(/[^\p{L}\p{N}]+/gu, '')
+  // a Google-ertekelesek szama elo adat (assets/js/google-szam.js): a regi oldal beegetett szama (831 / 971 ...) nem kell hogy egyezzen
+  .replace(/google49(?:5)?\d{3,4}(?=ertekeles|értékelés|velemeny|vélemény)/g, 'google49N');
 
 async function nyit(nev, { szeles = 1440 } = {}) {
   const mobil = szeles < 700;

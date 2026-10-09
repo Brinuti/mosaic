@@ -1,5 +1,5 @@
 // A (regi, Wixes tartalmu) Paros Head Spa oldal (/paros-headspa-budapest) kiegeszito mukodese - 2026-10-09, a tulajdonos kerese:
-//  1. Hero: mozgo paros video (autoplay, nnelkul; ha a hero kikerul a kepernyorol, megall).
+//  1. Hero: a KOZOS videos hero (assets/js/video-hero.js, docs/VIDEOS_HERO.md): hang nelkuli hatter-klip, a play gomb a hangos paros videot NAGY ablakban nyitja; itt csak a meres.
 //  2. Legkozelebbi szabad idopontok (#idopontok): a Salonic nyilvanos naptar-API-bol, ugyanaz a kod, mint az ujratervezett (-uj) oldalon (assets/js/paros-landing.js).
 //     Idopontot nem talalunk ki: ha az API nem valaszol, a foglalo-motorra vezetunk. Csak az elonezeten (*.pages.dev, localhost) jelennek meg MINTA idopontok, jelolve.
 (() => {
@@ -18,7 +18,7 @@
   const ZONA = 'Europe/Budapest';
   const ELORE_NAP = 45;
   const MAX_NAP = 28;       // ennyi napot rajzolunk ki (a nyilak gorgetik)
-  const NAPI_IDO = 4;       // oszloponkent ennyi idopont latszik elsore (a tobbi a "+N" gombra)
+  const NAPI_IDO = () => (matchMedia('(max-width: 700px)').matches ? 3 : 4);   // oszloponkent ennyi idopont latszik elsore (a tobbi a "+N" gombra); telefonon kevesebb: kompaktabb
   const MOTOR = '/foglalo-motor?business=headspa&service=paros';
 
   const $ = (id) => document.getElementById(id);
@@ -116,7 +116,7 @@
     const hova = $('napok');
     const oszlopok = [...napok].slice(0, MAX_NAP).map(([iso, lista]) => {
       const ts0 = lista[0];
-      const mutat = valogat(lista, NAPI_IDO);
+      const mutat = valogat(lista, NAPI_IDO());
       const idok = elem('div', { class: 'nap-idok' }, ...mutat.map((ts) => chip(ts, minta)));
       if (lista.length > mutat.length) {
         const tobb = elem('button', { type: 'button', class: 'link-gomb', 'aria-label': `${lista.length - mutat.length} további időpont megjelenítése`, szoveg: `+${lista.length - mutat.length} időpont` });
@@ -130,19 +130,17 @@
     hova.replaceChildren(...oszlopok);
     nyilFrissit();
   }
+  // elore / vissza nyil (asztalon es telefonon is): a kijelolt idoszak a legkorabbi -> a visszanyil letiltva (halvany); a vegen az elorenyil
   function nyilFrissit() {
-    const hova = $('napok'), gomb = $('napok-kov');
+    const hova = $('napok'), kov = $('napok-kov'), elozo = $('napok-elozo');
     const tul = hova.scrollWidth > hova.clientWidth + 4;
-    gomb.hidden = !tul;
-    const vegen = hova.scrollLeft + hova.clientWidth >= hova.scrollWidth - 4;
-    gomb.classList.toggle('vissza', vegen);
-    gomb.setAttribute('aria-label', vegen ? 'Vissza az első napokhoz' : 'Következő napok');
+    kov.hidden = elozo.hidden = !tul;
+    elozo.disabled = hova.scrollLeft <= 4;
+    kov.disabled = hova.scrollLeft + hova.clientWidth >= hova.scrollWidth - 4;
   }
-  $('napok-kov').addEventListener('click', () => {
-    const hova = $('napok');
-    const vegen = hova.scrollLeft + hova.clientWidth >= hova.scrollWidth - 4;
-    hova.scrollTo({ left: vegen ? 0 : hova.scrollLeft + hova.clientWidth, behavior: csokkentett ? 'auto' : 'smooth' });
-  });
+  const lapoz = (irany) => { const hova = $('napok'); hova.scrollBy({ left: irany * hova.clientWidth, behavior: csokkentett ? 'auto' : 'smooth' }); };
+  $('napok-kov').addEventListener('click', () => lapoz(1));
+  $('napok-elozo').addEventListener('click', () => lapoz(-1));
   $('napok').addEventListener('scroll', nyilFrissit, { passive: true });
   addEventListener('resize', nyilFrissit);
 
@@ -160,7 +158,7 @@
     try {
       const napok = csoportosit(await szabadKezdesek());
       if (!napok.size) {
-        $('napok').replaceChildren();
+        $('napok').replaceChildren(); nyilFrissit();
         uzenet.replaceChildren('A következő hetekre most nincs szabad páros időpont. ', elem('a', { href: motorUrl(), szoveg: 'Nézd meg a foglalóban →' }));
         uzenet.hidden = false;
         return;
@@ -174,7 +172,7 @@
         uzenet.hidden = false;
         return;
       }
-      $('napok').replaceChildren();
+      $('napok').replaceChildren(); nyilFrissit();
       uzenet.replaceChildren('Most nem sikerült lekérni a szabad időpontokat. ', elem('a', { href: motorUrl(), szoveg: 'Nézd meg itt az összeset →' }));
       uzenet.hidden = false;
     }
@@ -186,12 +184,6 @@
     fig.observe(idoSzekcio);
   } else idopontokBetolt();
 
-  // --- 1. hero: mozgo paros video ----------------------------------------------------------------------------------------------------
-  const hv = $('hero-video');
-  if (hv) {
-    hv.play().catch(() => { /* a poszter marad */ });
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver((t) => { for (const x of t) { if (x.isIntersecting) hv.play().catch(() => {}); else hv.pause(); } }, { threshold: 0.05 }).observe(hv);
-    }
-  }
+  // --- 1. hero: a play gomb nagy ablakban nyitja a hangos videot (video-hero.js); a meres: paros_landing_video ----------------------------------------------
+  document.addEventListener('vh:video', (e) => meres({ event: 'paros_landing_video', video: e.detail.video }));
 })();

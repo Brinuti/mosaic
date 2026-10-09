@@ -11,7 +11,7 @@ A fejléc menüjének **„Kapcsolat”** és **„GYIK”** pontja önálló ol
 - Helyszín: parkolás / tömegközlekedés (a lézeres oldal tényei), a Google-térkép hozzájárulás / gomb mögött (headspa-oldal.js).
 
 ## /gyik (`foglalas/gyik.html`, GENERÁLT)
-Az összes üzletág kérdés-válaszai egy helyen (94 kérdés), üzletágankénti szekciókkal, kereső-mezővel (ékezet- és kisbetű-független, kevés találatnál kinyit) és gyorsválasztó chipekkel. A kérdések a meglévő oldalak GYIK-szekcióiból jönnek (forrás-lista: `FORRASOK` a `tools/gyik-oldal.mjs`-ben: főoldal + egyéni Head Spa, páros, lézeres, fodrász, oxigénterápia, sminktetoválás, ajándékkártya). Ha valamelyik forrásoldal GYIK-ja változik, futtasd újra: `node tools/gyik-oldal.mjs` (a teszt jelzi, ha eltér).
+Az összes üzletág kérdés-válaszai egy helyen (93 kérdés), üzletágankénti szekciókkal, kereső-mezővel (ékezet- és kisbetű-független, kevés találatnál kinyit) és gyorsválasztó chipekkel. A kérdések a meglévő oldalak GYIK-szekcióiból jönnek (forrás-lista: `FORRASOK` a `tools/gyik-oldal.mjs`-ben: főoldal + egyéni Head Spa, páros, lézeres, fodrász, oxigénterápia, sminktetoválás, ajándékkártya). Ha valamelyik forrásoldal GYIK-ja változik, futtasd újra: `node tools/gyik-oldal.mjs` (a teszt jelzi, ha eltér).
 
 ## Tesztek
 `node --test tools/kapcsolat-teszt/kapcsolat.test.mjs` (15): betöltés, kérdésszámok, kereső, menü-linkek és kijelölés, űrlap (hibák, sikeres küldés, szerverhiba), térkép, túlcsordulás 1440 / 390 px, a levélsablon (escape, válasz-cím).

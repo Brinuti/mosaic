@@ -10,12 +10,19 @@ A régi (Wixes) főoldal rejtett címen él: `/fooldal-regi` (noindex, saját ca
 |---|---|
 | `foglalas/index.html` | az oldal (egy fájl, a `<!--mh-fejlec-->` / `<!--mh-lablec-->` jelölőket a build tölti ki a közös fejléccel / lábléccel) |
 | `assets/css/fooldal.css` | önálló stíluslap (más oldalt nem érint) |
-| `assets/js/fooldal.js` | működés: videó-felugró, körhinta, hatás-fülek, Trustindex, térkép, CTA-mérés, mobil sticky CTA |
+| `assets/js/fooldal.js` | működés: videó-felugró (kártyák), körhinta, hatás-fülek, csukott blokkok + GYIK mobilon, Trustindex, térkép, CTA-mérés, mobil sticky CTA (a hero: közös `video-hero.css` / `video-hero.js`) |
 | `assets/img/fooldal/*.jpg` + `assets/img/m/fooldal/*.jpg` | a Drive „Renátó” fotózásaiból (kezelés + szalon), asztali és mobil méretben |
 | `assets/video/fooldal-japan.mp4` + `assets/img/fooldal/japan-poszter.jpg` | „A MOSAIC Head Spa 1 percben” (Drive: *Mosaic japán alapján / Japán narráció+self-care*), 60 mp, 720×1280 |
 | `tools/fooldal-teszt/fooldal.test.mjs` | böngészős tesztek (dist nélkül): `node --test tools/fooldal-teszt/fooldal.test.mjs` |
 
 ## Szerkezet
+
+**2026-10-09, a tulajdonos kérésére:**
+- **Hero = a közös videós hero** (`assets/css/video-hero.css` + `assets/js/video-hero.js`, `docs/VIDEOS_HERO.md`; mintája a `/head-spa-kedvezmeny` hero): asztalon a videó a hero háttere (jobbra tolt, balról sötétzöldbe olvadó; a forrás a régi főoldal 720×720-as klipje), telefonon felül a videó (300 px), sötétzöldbe olvadva, utána a szöveg. A „Hangot rá!” kapcsoló helyett **play gomb** nyitja a hangos videót nagy ablakban (`c2eb0f_909ce495…`, 0:09). Ikonos jelvények („50+30 perc”, „Profi hajszárítás”, „Személyre szabott”) és a Google-sor (4,9 / 5 Google · 1 257+ vendégvélemény, a #velemenyek-re görget) mint a kedvezmény oldalon; a tartalom (cím, 20% kedvezmény, ár-sor, két CTA, `data-cta`-k) változatlan. A hero és a bizalmi sáv között **hely marad a „Írtak rólunk” logó-sávnak** (HTML-komment jelzi; a tulajdonos illeszti be).
+- **A főoldali „Páros Head Spa a MOSAIC-ban!” blokk kikerült** (`#paros`, a fotóhátteres sáv); a főmenü „Páros Head Spa” pontja, az élmény-kártya „Mindent a páros HeadSpa-ról” linkje és a `/paros-headspa-budapest` oldal maradt.
+- **„Nézd, mekkora élmény!” (10 álló klip) kikerült – asztalon is** (a tulajdonos kérése). A helyén a **„Milyen lesz a hajad a kezelés után?”** kompakt kép-sor áll (`.haj-sor`, `foglalas/index.html` `#elemek`): 21 kis (360 px széles, 3:4) bélyegkép egy sorban (`assets/img/fooldal/haj/haj-NN.jpg`, a vélemények oldal galériájának képeiből), asztalon 6, tableten 4, telefonon ~3 látszik; lapozó nyilak (`data-korhinta`), alatta „Még több kép a vélemények oldalon →” (`/head-spa-velemenyek#hajad`). Telefonon is látszik (~160 px magas).
+- **A GYIK asztalon is rövid:** oszloponként az első 4 kérdés (összesen 8) látszik, a „További kérdések (10)” gomb nyitja a többit (`fooldal.js` 3c; `.asztal-rejtett` ≥1025 px, `.mobil-rejtett` ≤1024 px: az első 6). Mind a 18 kérdés a HTML-ben marad (a `/gyik` oldal generátora ebből olvas).
+- **Rövidebb mobil nézet** (a cél kb. a felére): 18 345 → ~9 800 px (390 px széles képernyőn). Eszközök (csak telefonon, a tartalom asztalon megmarad): kisebb térközök; oldalra görgethető (scroll-snap) sorok a szolgáltatás- és élmény-kártyáknak, a szalon-képeknek; kisebb / kevesebb kép (ajándékkártya: egy kártya; fejbőr: egy kép; OXYGENI és logó-falas kép rejtve); csukott blokkok (`details.mobil-csukott`: a fejbőr-részletek, a „A rendszeres Head Spa hatásai”, a gyógymasszőr- és szárítás-szekció folytatása – asztalon nyitva, a feliratot a CSS rejti); GYIK: az első 6 kérdés látszik + „További kérdések (12)” gomb (a 18 kérdés mind a HTML-ben van: a `/gyik` generátor ugyanúgy olvassa); rejtett telefonon (`.csak-nagy`): a „Nézd, mekkora élmény!” (10 álló klip), az ismétlődő „Szabad időpontok” gombok a véleményeknél és a „Mit kapsz” alatt (a sticky sáv megvan). Asztalon a szekciók kicsit sűrűbbek (80 → 64 px térköz), a teljes oldal ~13 400 → ~12 500 px.
 
 **2026-10-08, a tulajdonos kérésére:** a hero a régi főoldal videóját mutatja („Hangot rá!” gombbal; `c2eb0f_909ce495…`, 720×720, hanggal), a „Budapest, Kolosy tér” felirat és a „Már van ajándékkártyám → Beváltom” sor kikerült;
 a hero és az élmény-kártyák árai kisebbek; a „Mit tehetünk érted?” címe „Mire van szükséged?”, mind az 5 kártya egyforma méretű, 1:1 képpel (sminktetoválás: `pmu/gyogyult-szoke.jpg`, nem vízjeles);
@@ -25,8 +32,8 @@ mindenhol „50 + 30 perces” (a „80 perces” helyett is); kikerült: „A H
 
 A látványterv részei (a kép tetejétől): hero, bizalmi sáv, **Mit tehetünk érted?** (5 kártya), **Melyik HeadSpa élmény illik hozzád?**, **Inkább élményt ajándékoznál?**.
 Utána a mostani főoldal tartalma, szebb elrendezésben és a valódi fotókkal: vendégvideók, Google-vélemények (Trustindex), „Mit kapsz egy 50 + 30 perces szeánszon?”
-(rövidített lista; a cím a videó tetejével, a gomb a videó aljával egy vonalban), a kezelés elemei (8 fekvő videó) + „Nézd, mekkora élmény!” (10 álló klip), páros sáv, fejbőr + hatások
-(zsíros / száraz / hajhullás fülek), OXYGENI termékek, gyógymasszőrök + szárítás, a szalon galériája, záró idézet, GYIK (mind a 18 kérdés), helyszín.
+(rövidített lista; a cím a videó tetejével, a gomb a videó aljával egy vonalban), a kezelés elemei (8 fekvő videó) + „Milyen lesz a hajad a kezelés után?” (21 kép, kompakt sor), páros sáv, fejbőr + hatások
+(zsíros / száraz / hajhullás fülek), OXYGENI termékek, gyógymasszőrök + szárítás, a szalon galériája, záró idézet, GYIK (mind a 18 kérdés a HTML-ben, asztalon 8 látszik), helyszín.
 
 **Eltérések a látványtervtől (szándékosak):**
 

@@ -480,11 +480,21 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
       for (const p of m.pontok) assert.ok(p.length > 8 && p.length < 80, k + ' pont: ' + p);
       assert.ok(m.media && fs.existsSync(f(m.media.src)) && m.media.alt.length > 15 && m.media.w > 0 && m.media.h > 0 && m.media.forras, k + ' kep (valodi MOSAIC-asset, forrassal)');
       assert.ok(fs.statSync(f(m.media.src)).size < 260e3, k + ' kep merete');
+      // 2026-10-09 (2. kor): a magyarazo-kep nem lehet ugyanaz, mint a hero-poszter (se fajl, se tartalom)
+      assert.notEqual(m.media.src, V[k].hero_media.src, k + ': a magyarazo-kep nem a hero-poszter');
+      assert.ok(!fs.readFileSync(f(m.media.src)).equals(fs.readFileSync(f(V[k].hero_media.src))), k + ': a magyarazo-kep tartalma nem a hero-poszter');
       const osszes = [m.felcim, m.cim, ...m.szovegek, ...m.pontok, V[k].hero_eyebrow, V[k].hero_title, V[k].hero_subtitle, V[k].hero_cta, V[k].reassurance || ''].join(' ');
       for (const sz of osszes.match(/\d+/g) || []) assert.ok(ENGEDETT_SZAMOK.has(sz), k + ': nincs kitalalt szam: ' + sz);
       assert.doesNotMatch(osszes, /azonnal|perceken belül|perc alatt|még ma|garant|gyógy|százalék|%|"|„|”/i, k + ': nincs idezet / nem igazolt igeret');
       assert.doesNotMatch(osszes, /!{2,}|\p{Extended_Pictographic}/u, k + ': nincs emoji / tobbszoros felkialtojel');
     }
+    // 2. kor (2026-10-09): a csajos / anyukas / self-care oldal sajat, uj kepet kapott (Drive-videok kockai); a self-care kep nem a hajkamerás (galeria-05)
+    assert.equal(V.friend.magyarazo.media.src, '/assets/img/ajandek/magyarazo-csajos-ketto.jpg');
+    assert.equal(V.mother.magyarazo.media.src, '/assets/img/ajandek/magyarazo-anya-lanya.jpg');
+    assert.equal(V.self_care.magyarazo.media.src, '/assets/img/ajandek/magyarazo-selfcare-pihenes.jpg');
+    assert.ok(!fs.readFileSync(f(V.self_care.magyarazo.media.src)).equals(fs.readFileSync(f('/assets/img/ajandek/galeria-05.jpg'))), 'self_care: nem a hajkameras (haj-diagnosztikai) kep');
+    assert.ok(!fs.readFileSync(f(V.friend.magyarazo.media.src)).equals(fs.readFileSync(f('/assets/img/ajandek/hero-baratnok-negyzet.jpg'))), 'friend: nem a hero-kep');
+    for (const regi of ['magyarazo-csajos.jpg', 'magyarazo-anya.jpg', 'magyarazo-selfcare.jpg']) assert.ok(!fs.existsSync(f('/assets/img/ajandek/' + regi)), regi + ': a regi, lecserelt kep torolve');
     // a szekcio helye a sablonban: a hero UTAN, a valaszto ELOTT; a JS ugyanazokat az id-kat tolti
     const html = fs.readFileSync(f('foglalas/ajandek.html'), 'utf8');
     const js = fs.readFileSync(f('assets/js/ajandek.js'), 'utf8');
@@ -495,10 +505,11 @@ describe('variansok (persona): a tulajdonos variant-dokumentuma szerint', () => 
     }
     assert.match(html, /<section class="ah-szekcio ah-magyarazo" id="ah-magyarazo"[^>]*\bhidden>/, 'alapbol rejtett (general)');
     assert.ok(js.includes('magyarazoRender();') && js.includes('S.variant.magyarazo'), 'a JS a varians adatabol tolti');
-    // mobilon egymas alatt (szoveg, majd media), asztalon ket oszlop (szoveg balra, kep jobbra): a DOM-sorrend szoveg, majd media
+    // mobilon egymas alatt (szoveg, majd media), asztalon ket oszlop (a kep BALRA, a szoveg jobbra: CSS order): a DOM-sorrend szoveg, majd media
     assert.ok(html.indexOf('ah-magyarazo-szoveg') < html.indexOf('ah-magyarazo-media'), 'DOM: szoveg, majd media');
     const css = fs.readFileSync(f('assets/css/ajandek.css'), 'utf8');
-    assert.match(css, /\.ah-magyarazo-racs \{ grid-template-columns: minmax\(0, 1\.05fr\) minmax\(0, 1fr\)/, 'asztalon 2 oszlop');
+    assert.match(css, /\.ah-magyarazo-racs \{ grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1\.05fr\)/, 'asztalon 2 oszlop (a kep az elso, keskenyebb oszlopban)');
+    assert.match(css, /\.ah-magyarazo-media \{ order: -1; \}/, 'asztalon a kep a bal oldali oszlopban');
   });
 
   test('a build elore kitolti a persona-oldalak hero-szoveget / -kepet es a magyarazo-szekciot (elore-render.mjs); a general oldalon semmi nem valtozik', async () => {

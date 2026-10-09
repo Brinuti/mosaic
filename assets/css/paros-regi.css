@@ -1,26 +1,16 @@
-/* A regi (Wixes) Paros Head Spa oldal (paros-headspa-budapest) ujrastilusa: a headspa-oldal.css es a lezer-variansok.css komponenseire epul (hero, szekcio, fel-racs, cikk, korhinta,
-   arkartya, GYIK, helyszin); itt csak ami erre az oldalra jellemzo. Generalja: tools/paros-regi/gen.mjs. Onallo fajl: mas oldal stilusat nem erinti. */
-.lv-alairas { margin-top: 6px; font-style: italic; color: #5c6766; }
-.lv-alairas b { background: none; }
+/* A regi (Wixes) Paros Head Spa oldal (paros-headspa-budapest) ujrastilusa: a headspa-oldal.css es a lezer-variansok.css komponenseire epul (szekcio, fel-racs, cikk, korhinta,
+   GYIK, helyszin); itt csak ami erre az oldalra jellemzo. A HERO a KOZOS videos hero (assets/css/video-hero.css, docs/VIDEOS_HERO.md): ide hero-szabaly nem kerul.
+   Eredetileg a tools/paros-regi/gen.mjs generalta; 2026-10-09 ota kezzel szerkesztett (lasd a HTML elejen a komment). Onallo fajl: mas oldal stilusat nem erinti. */
 .lv-felirat { margin: 14px 0 0; text-align: center; font-size: 14.5px; line-height: 1.5; color: #d9e3de; }
 .lv-folyamat { grid-template-columns: 1.15fr .85fr; }
 .lv-folyamat .korhinta-sav > * { flex-basis: 100%; }
 .lv-folyamat .korhinta-sav img { aspect-ratio: 3 / 2; object-fit: cover; }
 .lv-sotet .lv-folyamat p { color: #e4ebe6; }
 
-/* csomagok: 3 kartya (4 kezes, Head Spa, paros) */
-.lv-csomagok.lv-harom { grid-template-columns: repeat(3, 1fr); }
-.lv-paros-csomag { text-align: left; }
-.lv-paros-csomag h3 { text-align: center; text-transform: none; font-size: 18px; letter-spacing: 0; }
-.lv-paros-csomag .lv-csomag-leiras { text-align: center; }
-.lv-csomag-felsorolas { margin-top: 14px; font-size: 15px; gap: 7px; }
-.lv-csomag-felsorolas li { font-size: 15px; line-height: 1.4; }
-.lv-csomag-plusz { margin-top: auto; padding-top: 14px; text-align: center; font-size: 14.5px; color: #6f5420; }
-.lv-paros-csomag .lv-csomag-ar { margin-top: 12px; flex-direction: column; align-items: center; text-align: center; }
-.lv-paros-csomag .lv-csomag-ar b { font: 500 22px/1.2 var(--cim); color: #8a6c3e; }
-.lv-csomag-ido { margin-top: 8px; text-align: center; font-size: 14px; color: var(--halk); }
-.lv-paros-csomag > .gomb { margin-top: auto; }
-.lv-paros-csomag .lv-csomag-ido + .gomb { margin-top: 18px; }
+/* a hero cimenek "Paros" szava: a kozos hero arany-vilagos szine */
+.vh-hero h1 b { font-weight: 500; color: #f1deae; }
+/* a hero hatterkepe (negyzetes-szeru 4:3 klip): a ket vendeg arca a kivagasban marad */
+.vh-hero { --vh-poz: 50% 6%; --vh-poz-mobil: 50% 22%; }
 
 /* videok: lapozhato sor (poszter + idotartam + cim) */
 .lv-videok .korhinta-sav > * { flex: 0 0 min(78%, 320px); }
@@ -31,22 +21,14 @@
 .lv-szalag { margin: 56px 0 -72px; max-height: 260px; }
 .lv-szalag img { height: 260px; }
 
-@media (max-width: 1100px) {
-  .lv-csomagok.lv-harom { grid-template-columns: repeat(2, 1fr); }
-}
 @media (max-width: 1024px) {
   .lv-folyamat { grid-template-columns: 1fr; }
 }
 @media (max-width: 700px) {
-  .lv-csomagok.lv-harom { grid-template-columns: 1fr; }
   .lv-szalag, .lv-szalag img { max-height: 170px; height: 170px; }
   .lv-szalag { margin: 40px 0 -72px; }
 }
 
-/* a Google-ertekeles a heroban kattinthato: a velemenyek szekciohoz gorget */
-.lv-ertekeles-link { display: flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; }
-.lv-ertekeles-link span { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(44, 61, 61, .35); }
-.lv-ertekeles-link:hover span { text-decoration-color: currentColor; }
 #velemenyek { scroll-margin-top: 20px; }
 
 /* gyogymasszorok: a szoveg magassaga a mellette levo kepe (felul a cim, alul az utolso sor a kep aljaval egy vonalban) */
@@ -56,16 +38,13 @@
   .lv-masszor .cikk h2, .lv-masszor .cikk p { margin: 0; }
 }
 
-/* ---- 2026-10-09: az ujratervezett (-uj) oldalrol atvett reszek: mozgo hero-video, legkozelebbi szabad idopontok, "Kivel jonnel?" ---- */
-.hero-kep.lv-hero-video { aspect-ratio: 4 / 3; max-height: none; }
-.lv-hero-video video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; background: #e0e4db; }
-
+/* ---- legkozelebbi szabad idopontok, "Kivel jonnel?" (2026-10-09, az -uj oldalrol atvett reszek) ---- */
 .lv-ido .csontvaz, .lv-ido .napok-csontvaz { background: linear-gradient(90deg, #fff 0%, #f1f2ed 50%, #fff 100%) 0 0 / 200% 100%; animation: lv-csillog 1.4s infinite linear; }
 @keyframes lv-csillog { to { background-position: -200% 0; } }
 .lv-ido .link-nyil { display: inline-block; color: var(--sotet); font-weight: 500; font-size: 15px; text-decoration: none; }
 .lv-ido .link-nyil:hover { text-decoration: underline; text-underline-offset: 4px; }
 .lv-ido .ido-kartya { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 0; margin-top: 4px; background: #fff; border: 1px solid #e7eae3; border-radius: 22px; overflow: hidden; box-shadow: var(--arnyek); text-align: left; }
-.lv-ido .ido-bal { padding: 28px 30px 24px; display: flex; flex-direction: column; justify-content: center; }
+.lv-ido .ido-bal { padding: 26px 30px 22px; display: flex; flex-direction: column; justify-content: center; }
 .lv-ido .napok-keret { display: flex; align-items: flex-start; gap: 12px; }
 .lv-ido .napok { flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 40px) / 5); gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; padding-bottom: 2px; }
 .lv-ido .napok::-webkit-scrollbar { display: none; }
@@ -77,15 +56,15 @@
 .lv-ido .nap-idok { display: flex; flex-direction: column; gap: 8px; }
 .lv-ido a.ido { display: grid; place-items: center; padding: 11px 2px; border: 1px solid var(--vonal); border-radius: 10px; background: #fff; text-decoration: none; font: 500 16px/1 var(--cim); color: var(--sotet); transition: border-color .15s, box-shadow .15s, background .15s, color .15s; }
 .lv-ido a.ido:hover, .lv-ido a.ido:focus-visible { background: var(--sotet); border-color: var(--sotet); color: #fff; box-shadow: 0 6px 14px rgba(15, 58, 60, .2); }
+/* elore / vissza nyil: mindkettő asztalon es telefonon is; az elejen a visszanyil, a vegen az elorenyil letiltva (halvany) */
 .lv-ido .napok-nyil { flex: none; align-self: center; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--vonal); background: #fff; display: grid; place-items: center; cursor: pointer; color: var(--sotet); box-shadow: var(--arnyek); }
 .lv-ido .napok-nyil:hover:not(:disabled) { border-color: var(--sotet); }
+.lv-ido .napok-nyil:disabled { opacity: .35; cursor: default; box-shadow: none; }
 .lv-ido .napok-nyil[hidden] { display: none; }
 .lv-ido .napok-nyil svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.lv-ido .napok-nyil.vissza svg { transform: rotate(180deg); }
 .lv-ido .slot-uzenet { margin-top: 10px; font-size: 14.5px; }
 .lv-ido .slot-uzenet[hidden] { display: none; }
 .lv-ido .slot-uzenet a { color: var(--sotet); text-underline-offset: 3px; }
-.lv-ido .ido-lab { margin-top: 16px; }
 .lv-ido .ido-oldal { background: #f6f8f3; border-left: 1px solid #dfe3d8; display: flex; flex-direction: column; }
 .lv-ido .ido-oldal > img { width: 100%; height: 170px; object-fit: cover; object-position: 50% 55%; }
 .lv-ido .ido-oldal-szoveg { padding: 20px 24px 24px; display: grid; gap: 8px; }
@@ -107,6 +86,25 @@
 .lv-kivel .kivel-szoveg h3 { font-size: 18px; }
 .lv-kivel .kivel-szoveg p { margin: 4px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--halk); }
 
+/* az alul levo szalon-kep (a regi "kanalas" sablonkep helyett): a kezelo, vagott savban */
+.lv-hely-szalon { max-height: 340px; }
+.lv-hely-szalon img { height: 340px; object-position: 50% 62%; }
+
+/* GYIK: kompakt - szorosabb sorok, 8 kerdes latszik, a tobbi a "Tovabbi kerdesek" lenyiloban */
+#gyik.lv-hatterkepes { padding: 52px 0 56px; }
+#gyik .szekcio-fej { margin-bottom: 18px; }
+.gyik.gyik-kompakt { gap: 6px; }
+.gyik-kompakt details { border-radius: 10px; }
+.gyik-kompakt summary { min-height: 44px; padding: 10px 44px 10px 16px; font: 500 16.5px/1.3 var(--cim); }
+.gyik-kompakt summary::after { right: 18px; }
+.gyik-kompakt .gy-valasz { padding: 0 16px 14px; font-size: 15px; line-height: 1.55; }
+.gyik-kompakt .gy-valasz p { margin: 0 0 6px; }
+.gyik-kompakt .gy-tobb { background: transparent; border: 0; box-shadow: none; }
+.gyik-kompakt .gy-tobb > summary { justify-content: center; min-height: 44px; padding: 10px 40px 10px 20px; width: fit-content; margin: 6px auto 0; border: 1px solid rgba(255, 255, 255, .6); border-radius: 999px; background: rgba(255, 255, 255, .08); color: #fff; font: 400 15px/1.3 var(--test); }
+.gyik-kompakt .gy-tobb > summary::after { right: 16px; border-color: #f1deae; }
+.gyik-kompakt .gy-tobb[open] > summary { margin-bottom: 8px; }
+.gyik-kompakt .gy-tobb-lista { display: grid; gap: 6px; }
+
 @media (max-width: 1024px) {
   .lv-kivel .kivel-racs { grid-template-columns: repeat(2, 1fr); }
   .lv-ido .ido-kartya { grid-template-columns: 1fr; }
@@ -114,15 +112,29 @@
   .lv-ido .ido-oldal > img { width: 240px; height: auto; flex: none; }
 }
 @media (max-width: 700px) {
-  .lv-ido .ido-kartya { border-radius: 18px; }
-  .lv-ido .ido-bal { padding: 16px 14px 14px; }
-  .lv-ido .napok-keret { gap: 6px; }
+  /* az idopont-szekcio kompakt: kevesebb fuggoleges hely, kisebb gombok */
+  .lv-ido { padding: 26px 0 28px; }
+  .lv-ido .szekcio-fej h2 { font-size: 24px; }
+  .lv-ido .szekcio-fej .lead { margin-top: 6px; font-size: 14.5px; line-height: 1.4; }
+  .lv-ido .ido-kartya { border-radius: 18px; margin-top: 0; }
+  .lv-ido .ido-bal { padding: 12px 12px 10px; }
+  .lv-ido .napok-keret { gap: 4px; }
   .lv-ido .napok { grid-auto-columns: calc((100% - 16px) / 3); gap: 8px; }
-  .lv-ido a.ido { padding: 10px 2px; font-size: 15px; }
-  .lv-ido .napok-nyil { width: 34px; height: 34px; }
+  .lv-ido .nap-fej { padding: 4px 2px 6px; }
+  .lv-ido .nap-fej b { font-size: 15.5px; }
+  .lv-ido .nap-fej span { font-size: 12.5px; }
+  .lv-ido .nap-oszlop, .lv-ido .nap-idok { gap: 6px; }
+  .lv-ido a.ido { padding: 8px 2px; font-size: 14.5px; }
+  .lv-ido .nap-idok .link-gomb { font-size: 13px; }
+  .lv-ido .napok-nyil { width: 30px; height: 30px; }
+  .lv-ido .napok-nyil svg { width: 15px; height: 15px; }
+  .lv-ido .slot-uzenet { margin-top: 6px; font-size: 13px; }
   .lv-ido .ido-oldal { flex-direction: column; }
   .lv-ido .ido-oldal > img { display: none; }
-  .lv-ido .ido-oldal-szoveg { padding: 14px 16px 18px; }
+  .lv-ido .ido-oldal-szoveg { padding: 10px 14px 12px; gap: 4px; }
+  .lv-ido .ido-oldal h3 { font-size: 17px; }
+  .lv-ido .ido-ar b { font-size: 24px; }
+  .lv-ido .ido-info { margin: 0 0 2px; font-size: 13.5px; gap: 3px; }
   .lv-kivel .kivel-racs { grid-template-columns: 1fr; gap: 10px; }
   .lv-kivel .kivel-kartya { flex-direction: row; align-items: stretch; border-radius: 14px; }
   .lv-kivel .kivel-kartya > img { width: 96px; flex: none; aspect-ratio: auto; height: auto; }
@@ -130,4 +142,8 @@
   .lv-kivel .kivel-szoveg .ikon-kor { display: none; }
   .lv-kivel .kivel-szoveg h3 { font-size: 16.5px; }
   .lv-kivel .kivel-szoveg p { font-size: 13.5px; }
+  .lv-hely-szalon, .lv-hely-szalon img { max-height: 200px; height: 200px; }
+  #gyik.lv-hatterkepes { padding: 34px 0 38px; }
+  .gyik-kompakt summary { min-height: 42px; padding: 9px 40px 9px 14px; font-size: 15.5px; }
+  .gyik-kompakt .gy-valasz { padding: 0 14px 12px; font-size: 14.5px; }
 }

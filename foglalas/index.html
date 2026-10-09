@@ -20,7 +20,9 @@
 <link rel="preconnect" href="https://cdn.trustindex.io" crossorigin>
 <link rel="stylesheet" href="/assets/css/wix-google-fonts.css">
 <link rel="stylesheet" href="/assets/css/wix-fonts.css">
+<link rel="stylesheet" href="/assets/css/video-hero.css">
 <link rel="stylesheet" href="/assets/css/fooldal.css">
+<link rel="stylesheet" href="/assets/css/sajto-logok.css">
 <script src="/assets/js/suti.js"></script>
 </head>
 <body>
@@ -59,34 +61,62 @@
 
 <main id="top">
 
-<!-- ============ 1. HERO ============ -->
-<section class="hero" id="hero" aria-labelledby="hero-cim">
-  <div class="hero-hatter" aria-hidden="true">
-    <video id="hero-video" src="/assets/video/c2eb0f_909ce4959fe24f4f984d8953fd315d67.mp4" poster="/assets/img/c2eb0f_909ce4959fe24f4f984d8953fd315d67f001.jpg" autoplay muted loop playsinline preload="auto" aria-label="Pillanatkép a MOSAIC Head Spa kezelésről"></video>
-  </div>
-  <div class="tartalom hero-tart">
-    <div class="hero-szoveg">
+<!-- ============ 1. HERO (a közös videós hero: assets/css/video-hero.css + assets/js/video-hero.js, docs/VIDEOS_HERO.md) ============ -->
+<section class="vh-hero vh-eltolt" id="hero" aria-labelledby="hero-cim">
+  <img class="vh-hatter" src="/assets/img/c2eb0f_909ce4959fe24f4f984d8953fd315d67f001.jpg" alt="" width="720" height="720" fetchpriority="high">
+  <video class="vh-video" data-klip="/assets/video/c2eb0f_909ce4959fe24f4f984d8953fd315d67.mp4" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+  <div class="vh-tart">
+    <div class="vh-szoveg">
       <h1 id="hero-cim"><span class="h1-fo">Budapest kedvenc Head&nbsp;Spa-ja</span> <span class="h1-al">50&nbsp;perc kezelés + 30&nbsp;perc profi hajszárítás</span></h1>
-      <p class="hero-al">Gyógymasszőrök, személyre szabott haj- és fejbőrápolás, privát kezelők és teljes kikapcsolódás – egyedül vagy párosan.</p>
-      <p class="hero-jelveny">Most 20% kedvezménnyel</p>
-      <p class="hero-ar"><s>32&nbsp;900&nbsp;Ft</s> <b>26&nbsp;900&nbsp;Ft-tól</b></p>
-      <div class="cta-sor">
-        <a class="gomb gomb-arany gomb-nagy" href="/foglalo-motor?business=headspa" data-cta="hero-idopontok">Szabad időpontok <span class="nyil">→</span></a>
-        <a class="gomb gomb-feher gomb-nagy" href="/headspa-ajandekkartya" data-cta="hero-ajandekkartya"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ajandek"/></svg>Ajándékkártyát veszek</a>
+      <p class="vh-al">Gyógymasszőrök, személyre szabott haj- és fejbőrápolás, privát kezelők és teljes kikapcsolódás – egyedül vagy párosan.</p>
+      <p class="vh-ar vh-ar-kicsi"><s>32&nbsp;900&nbsp;Ft</s> <b>26&nbsp;900&nbsp;Ft-tól</b></p>
+      <p class="vh-akcio"><b>Most 20% kedvezménnyel</b></p>
+      <ul class="vh-jelvenyek" aria-label="A legfontosabbak röviden">
+        <li><span class="vh-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span>50+30 perc</span></li>
+        <li><span class="vh-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5A3.5 3.5 0 016.5 6H14l6 2.5v4L14 15H6.5A3.5 3.5 0 013 11.5v-2z"/><path d="M8.5 15l-1 5h3l1-5"/></svg></span><span>Profi hajszárítás</span></li>
+        <li><span class="vh-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/></svg></span><span>Személyre szabott<span class="vh-csak-nagy"> kezelés</span></span></li>
+      </ul>
+      <div class="vh-cta">
+        <a class="vh-gomb vh-gomb-arany vh-gomb-nagy" href="/foglalo-motor?business=headspa" data-cta="hero-idopontok">Szabad időpontok <span class="vh-nyil">→</span></a>
+        <a class="vh-gomb vh-gomb-vonal vh-gomb-nagy" href="/headspa-ajandekkartya" data-cta="hero-ajandekkartya"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ajandek"/></svg>Ajándékkártyát veszek</a>
       </div>
+      <a class="vh-google" href="#velemenyek" data-gorgetes="velemenyek" data-cta="hero-google" aria-label="4,9 az 5-ből, 1266 Google-vélemény: ugrás a véleményekhez">
+        <svg viewBox="0 0 48 48" class="vh-g-ikon" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg>
+        <span class="vh-csillagok" aria-hidden="true">★★★★★</span>
+        <span class="vh-g-pont"><b>4,9</b> / 5 Google</span>
+        <span class="vh-g-db">· <b data-ertekeles-db>1&nbsp;266</b>+ vendégvélemény</span>
+      </a>
     </div>
+    <button type="button" class="vh-lejatszas" data-nagyvideo="/assets/video/c2eb0f_909ce4959fe24f4f984d8953fd315d67.mp4" data-cim="Pillanatkép a MOSAIC Head Spa kezelésről" data-cta="hero-video" aria-label="Nézd meg hanggal (0:09): videó lejátszása">
+      <span class="vh-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+      <span class="vh-lejatszas-szoveg"><b>Nézd meg hanggal</b><small>(0:09)</small></span>
+    </button>
   </div>
 </section>
 
 <!-- ============ 2. BIZALMI SÁV ============ -->
 <section class="bizalom" aria-label="A MOSAIC röviden">
   <ul class="tartalom bizalom-lista">
-    <li><a class="bizalom-elem" href="#velemenyek" data-gorgetes="velemenyek" data-cta="bizalom-google" aria-label="4,9 az 5-ből, 1257 Google-vélemény: ugrás a véleményekhez"><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-star"/></svg></span><span><b>4,9 Google</b><small><span data-ertekeles-db>1&nbsp;257</span>+ valódi értékelés</small></span></a></li>
     <li><div class="bizalom-elem"><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-hely"/></svg></span><span><b>270 négyzetméteren</b><small>várunk rád</small></span></div></li>
     <li><div class="bizalom-elem"><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-kez"/></svg></span><span><b>Tapasztalt</b><small>gyógymasszőrök</small></span></div></li>
     <li><div class="bizalom-elem"><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-kartya"/></svg></span><span><b>SZÉP Kártya</b><small>elfogadóhely</small></span></div></li>
   </ul>
 </section>
+
+<!-- ============ 2b. "A NŐI DIVATVILÁG MINDEN NAGY SZEREPLŐJE JÁRT MÁR NÁLUNK" (a magazinok logói; generálja: tools/sajto-kartyak/kartyak.py) ============ -->
+<!-- SAJTO-LOGOK:KEZDET (generalja: tools/sajto-kartyak/kartyak.py, adat: tools/sajto-kartyak/logok.json - kezzel ne szerkeszd) -->
+<section class="sajto-logok-sav" aria-label="Írtak rólunk">
+  <div class="tartalom">
+    <div class="sajto-logok">
+      <p class="sajto-logok-cim">A női divatvilág minden nagy szereplője járt már nálunk</p>
+      <div class="sl-rad">
+        <ul><li style="--g:1.0"><a href="/head-spa-velemenyek#sajto" data-cta="sajto-logo-eva" aria-label="Éva Magazin: a rólunk szóló cikkek"><span class="sl" style="--ar:1.811;--h:34px;--u:url(/assets/img/sajto/logok/eva.svg)" aria-hidden="true"></span></a></li><li style="--g:2.4"><a href="/head-spa-velemenyek#sajto" data-cta="sajto-logo-marieclaire" aria-label="Marie Claire: a rólunk szóló cikkek"><span class="sl" style="--ar:5.9;--h:24px;--u:url(/assets/img/sajto/logok/marieclaire.svg)" aria-hidden="true"></span></a></li><li style="--g:1.9"><a href="/head-spa-velemenyek#sajto" data-cta="sajto-logo-kiskegyed" aria-label="Kiskegyed: a rólunk szóló cikkek"><span class="sl" style="--ar:4.096;--h:28px;--u:url(/assets/img/sajto/logok/kiskegyed.svg)" aria-hidden="true"></span></a></li><li style="--g:0.8"><a href="/head-spa-velemenyek#sajto" data-cta="sajto-logo-life" aria-label="Life.hu: a rólunk szóló cikkek"><span class="sl" style="--ar:1.4545;--h:34px;--u:url(/assets/img/sajto/logok/life.svg)" aria-hidden="true"></span></a></li></ul>
+        <ul><li style="--g:2.2"><a href="/head-spa-velemenyek#sajto" data-cta="sajto-logo-igenyesno" aria-label="Igényes Nő: a rólunk szóló cikkek"><span class="sl" style="--ar:6.933;--h:20px;--u:url(/assets/img/sajto/logok/igenyesno.png)" aria-hidden="true"></span></a></li><li style="--g:2.2"><a href="/head-spa-velemenyek#sajto" data-cta="sajto-logo-welovebudapest" aria-label="We Love Budapest: a rólunk szóló cikkek"><span class="sl" style="--ar:7.5;--h:18px;--u:url(/assets/img/sajto/logok/welovebudapest.svg)" aria-hidden="true"></span></a></li><li style="--g:1.8"><a href="/head-spa-velemenyek#sajto" data-cta="sajto-logo-femina" aria-label="Femina: a rólunk szóló cikkek"><span class="sl" style="--ar:5.398;--h:22px;--u:url(/assets/img/sajto/logok/femina.svg)" aria-hidden="true"></span></a></li><li style="--g:2.6"><a href="/head-spa-velemenyek#sajto" data-cta="sajto-logo-longevity" aria-label="Longevity Magazin: a rólunk szóló cikkek"><span class="sl" style="--ar:4.86;--h:32px;--u:url(/assets/img/sajto/logok/longevity.png)" aria-hidden="true"></span></a></li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- SAJTO-LOGOK:VEGE -->
 
 <!-- ============ 3. MIT TEHETÜNK ÉRTED? ============ -->
 <section class="szekcio szolgaltatasok" id="szolgaltatasok" aria-labelledby="szolg-cim">
@@ -251,14 +281,14 @@
   <div class="tartalom">
     <h2 id="vel-cim" class="kozepre">Budapest kedvenc Head Spa-ja</h2>
     <span class="rombusz" aria-hidden="true"></span>
-    <p class="halk kozepre al-cim"><b><span data-ertekeles-db>1&nbsp;257</span>+</b> valódi Google-értékelés, 4,9-es átlaggal – olvasd el, mit mondanak a vendégeink.</p>
+    <p class="halk kozepre al-cim"><b><span data-ertekeles-db>1&nbsp;266</span>+</b> valódi Google-értékelés, 4,9-es átlaggal – olvasd el, mit mondanak a vendégeink.</p>
     <div class="ti-doboz" id="trustindex" data-embed="/assets/embed/c2eb0f_95e68e628e4b9b61aaf664bfad20b4f6.html">
       <div class="ti-hely">
         <p>Vélemények betöltése…</p>
         <a class="link-gomb" href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener">Megnyitás a Google Térképen</a>
       </div>
     </div>
-    <div class="kozepre cta-doboz"><a class="gomb gomb-arany" href="/foglalo-motor?business=headspa" data-cta="velemenyek-idopontok">Szabad időpontok <span class="nyil">→</span></a></div>
+    <div class="kozepre cta-doboz csak-nagy"><a class="gomb gomb-arany" href="/foglalo-motor?business=headspa" data-cta="velemenyek-idopontok">Szabad időpontok <span class="nyil">→</span></a></div>
   </div>
 </section>
 
@@ -285,7 +315,7 @@
         <li><b>Az Oxygeni</b> 100%-ban természetes, vegán pakolásai selymessé teszik a hajat.</li>
         <li><b>A kezelést profi hajszárítás zárja,</b> így a frizurád is tökéletes.</li>
       </ul>
-      <div class="cta-sor"><a class="gomb gomb-arany gomb-nagy" href="/foglalo-motor?business=headspa" data-cta="kapsz-idopontok">Szabad időpontok <span class="nyil">→</span></a></div>
+      <div class="cta-sor csak-nagy"><a class="gomb gomb-arany gomb-nagy" href="/foglalo-motor?business=headspa" data-cta="kapsz-idopontok">Szabad időpontok <span class="nyil">→</span></a></div>
     </div>
   </div>
 </section>
@@ -311,42 +341,35 @@
       <button type="button" class="korhinta-gomb kovetkezo" aria-label="Következő videók"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jobbra"/></svg></button>
     </div>
 
-    <h3 class="al-fejlec kozepre">Nézd, mekkora élmény!</h3>
-    <p class="halk kozepre al-cim kisebb">Rövid betekintés a MOSAIC kezelőibe.</p>
-    <div class="korhinta" data-korhinta>
-      <button type="button" class="korhinta-gomb elozo" aria-label="Előző videók"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-balra"/></svg></button>
-      <ul class="korhinta-sav videok-allo" aria-label="Betekintés a kezelőkbe">
-        <li><button type="button" class="video-kartya allo" data-video="/assets/video/c2eb0f_7c74e304d3394deeb1101d7612e658ce.mp4" data-poster="/assets/img/c2eb0f_7c74e304d3394deeb1101d7612e658cef001.jpg" aria-label="Élénkítő fejbőrmasszázs – lejátszás"><img src="/assets/img/c2eb0f_7c74e304d3394deeb1101d7612e658cef001.jpg" alt="" width="540" height="960" loading="lazy"><span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-lejatszas"/></svg></span></button></li>
-        <li><button type="button" class="video-kartya allo" data-video="/assets/video/c2eb0f_ecca71a0b1ec412cbb80698cfd5cc50f.mp4" data-poster="/assets/img/c2eb0f_ecca71a0b1ec412cbb80698cfd5cc50ff001.jpg" aria-label="Fejbőrdiagnózis – lejátszás"><img src="/assets/img/c2eb0f_ecca71a0b1ec412cbb80698cfd5cc50ff001.jpg" alt="" width="540" height="960" loading="lazy"><span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-lejatszas"/></svg></span></button></li>
-        <li><button type="button" class="video-kartya allo" data-video="/assets/video/c2eb0f_3b9f1c40760f4809b8e590f7ca2b0329.mp4" data-poster="/assets/img/c2eb0f_3b9f1c40760f4809b8e590f7ca2b0329f002.jpg" aria-label="Körvízsugaras hajmosás – lejátszás"><img src="/assets/img/c2eb0f_3b9f1c40760f4809b8e590f7ca2b0329f002.jpg" alt="" width="540" height="960" loading="lazy"><span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-lejatszas"/></svg></span></button></li>
-        <li><button type="button" class="video-kartya allo" data-video="/assets/video/c2eb0f_9ede44a0586f41c0b76b4dc0f7b91fec.mp4" data-poster="/assets/img/c2eb0f_9ede44a0586f41c0b76b4dc0f7b91fecf002.jpg" aria-label="Hajmosás a MOSAIC-ban – lejátszás"><img src="/assets/img/c2eb0f_9ede44a0586f41c0b76b4dc0f7b91fecf002.jpg" alt="" width="540" height="960" loading="lazy"><span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-lejatszas"/></svg></span></button></li>
-        <li><button type="button" class="video-kartya allo" data-video="/assets/video/c2eb0f_4a41bc381a7844d6ac0d05e774bcb8ed.mp4" data-poster="/assets/img/c2eb0f_4a41bc381a7844d6ac0d05e774bcb8edf002.jpg" aria-label="Betekintés a kezelőbe – lejátszás"><img src="/assets/img/c2eb0f_4a41bc381a7844d6ac0d05e774bcb8edf002.jpg" alt="" width="540" height="960" loading="lazy"><span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-lejatszas"/></svg></span></button></li>
-        <li><button type="button" class="video-kartya allo" data-video="/assets/video/c2eb0f_a257ba46eb394befa925dce60d484434.mp4" data-poster="/assets/img/c2eb0f_a257ba46eb394befa925dce60d484434f002.jpg" aria-label="Arcmasszázs – lejátszás"><img src="/assets/img/c2eb0f_a257ba46eb394befa925dce60d484434f002.jpg" alt="" width="540" height="960" loading="lazy"><span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-lejatszas"/></svg></span></button></li>
-        <li><button type="button" class="video-kartya allo" data-video="/assets/video/c2eb0f_b14d6ca682e14e55a6a425915039caab.mp4" data-poster="/assets/img/c2eb0f_b14d6ca682e14e55a6a425915039caabf001.jpg" aria-label="Kézzel és eszközzel – lejátszás"><img src="/assets/img/c2eb0f_b14d6ca682e14e55a6a425915039caabf001.jpg" alt="" width="540" height="960" loading="lazy"><span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-lejatszas"/></svg></span></button></li>
-        <li><button type="button" class="video-kartya allo" data-video="/assets/video/c2eb0f_906e91e58e2a43b9bd71c91245be8096.mp4" data-poster="/assets/img/c2eb0f_906e91e58e2a43b9bd71c91245be8096f001.jpg" aria-label="Fejbőrmasszázs – lejátszás"><img src="/assets/img/c2eb0f_906e91e58e2a43b9bd71c91245be8096f001.jpg" alt="" width="540" height="960" loading="lazy"><span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-lejatszas"/></svg></span></button></li>
-        <li><button type="button" class="video-kartya allo" data-video="/assets/video/c2eb0f_a04d5f3451404517985437fe74ecc985.mp4" data-poster="/assets/img/c2eb0f_a04d5f3451404517985437fe74ecc985f001.jpg" aria-label="Fejmosás – lejátszás"><img src="/assets/img/c2eb0f_a04d5f3451404517985437fe74ecc985f001.jpg" alt="" width="540" height="960" loading="lazy"><span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-lejatszas"/></svg></span></button></li>
-        <li><button type="button" class="video-kartya allo" data-video="/assets/video/c2eb0f_59775b73467e41ef9e7b83538eb81001.mp4" data-poster="/assets/img/c2eb0f_59775b73467e41ef9e7b83538eb81001f001.jpg" aria-label="Hangulatos kezelőszoba – lejátszás"><img src="/assets/img/c2eb0f_59775b73467e41ef9e7b83538eb81001f001.jpg" alt="" width="540" height="960" loading="lazy"><span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-lejatszas"/></svg></span></button></li>
+    <h3 class="al-fejlec kozepre" id="haj-cim">Milyen lesz a hajad a kezelés után?</h3>
+    <div class="korhinta haj-sor" data-korhinta>
+      <button type="button" class="korhinta-gomb elozo" aria-label="Előző képek"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-balra"/></svg></button>
+      <ul class="korhinta-sav haj-kepek" aria-labelledby="haj-cim">
+        <li><img src="/assets/img/fooldal/haj/haj-01.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-02.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-03.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-04.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-05.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-06.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-07.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-08.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-09.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-10.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-11.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-12.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-13.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-14.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-15.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-16.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-17.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-18.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-19.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-20.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="480" loading="lazy"></li>
+        <li><img src="/assets/img/fooldal/haj/haj-21.jpg" alt="Haj a MOSAIC Head Spa kezelés után" width="360" height="450" loading="lazy"></li>
       </ul>
-      <button type="button" class="korhinta-gomb kovetkezo" aria-label="Következő videók"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jobbra"/></svg></button>
+      <button type="button" class="korhinta-gomb kovetkezo" aria-label="Következő képek"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jobbra"/></svg></button>
     </div>
-  </div>
-</section>
-
-<!-- ============ 11. PÁROS ============ -->
-<section class="paros-sav" id="paros" aria-labelledby="paros-cim">
-  <img class="paros-hatter" src="/assets/img/c2eb0f_3655b2f7e196464195c3e5f10c9644ba.jpg" alt="" width="1500" height="1000" loading="lazy">
-  <div class="tartalom paros-tart">
-    <div class="paros-szoveg">
-      <p class="paros-uj">Új</p>
-      <h2 id="paros-cim">Páros Head Spa a MOSAIC-ban!</h2>
-      <p>Éljétek át együtt ezt a semmihez nem hasonlítható, átalakító élményt, amit a MOSAIC Head Spa nyújt.</p>
-      <p>Gyere pároddal, tesóddal, barátnőddel, anyukáddal – és garantáljuk, hogy még utána is erről fogtok beszélni.</p>
-      <p>Páros kezeléseink is 50 + 30 percesek (50 perc kezelés, 30 perc hajszárítás), és különlegesen kényelmes, tradicionális headspa ágyban történnek.</p>
-      <div class="cta-sor">
-        <a class="gomb gomb-arany gomb-nagy" href="/foglalo-motor?business=headspa&amp;service=paros" data-cta="paros-idopontok">Páros Head Spa időpontok <span class="nyil">→</span></a>
-        <a class="gomb gomb-korvonal-vilagos" href="/paros-headspa-budapest" data-cta="paros-tobb">Minden a páros kezelésről <span class="nyil">→</span></a>
-      </div>
-    </div>
+    <p class="kozepre haj-tobb"><a class="link-gomb" href="/head-spa-velemenyek#hajad" data-cta="haj-tobb">Még több kép a vélemények oldalon <span class="nyil">→</span></a></p>
   </div>
 </section>
 
@@ -364,13 +387,16 @@
         <ul class="cimke-sor" aria-label="A leggyakoribb fejbőrproblémák">
           <li>Zsíros</li><li>Száraz / korpás</li><li>Hajhullás</li><li>Gyulladt <small>(seborrhea, pikkelysömör, ekcéma)</small></li>
         </ul>
-        <p>Ebből az első 3, amivel a Head Spa kezelés csodákat tud művelni. A gyulladtabb panaszok esetén érdemes először hajgyógyász orvost megkeresni.</p>
-        <p>Kérésedre a kezelés mikrokamerás fejbőrvizsgálattal kezdődik, ahol meghatározzuk a fejbőröd típusát, és ennek megfelelően keverjük ki az összetevőkből a személyre szabott haj- és arcpakolásodat.</p>
+        <details class="mobil-csukott"><summary>Részletek</summary>
+          <p>Ebből az első 3, amivel a Head Spa kezelés csodákat tud művelni. A gyulladtabb panaszok esetén érdemes először hajgyógyász orvost megkeresni.</p>
+          <p>Kérésedre a kezelés mikrokamerás fejbőrvizsgálattal kezdődik, ahol meghatározzuk a fejbőröd típusát, és ennek megfelelően keverjük ki az összetevőkből a személyre szabott haj- és arcpakolásodat.</p>
+        </details>
         <p class="fejbor-eredmeny">Az eredmény pedig sugárzóan gyönyörű haj.</p>
       </div>
     </div>
 
-    <div class="hatasok" id="hatasok">
+    <details class="hatasok mobil-csukott" id="hatasok">
+      <summary class="hatasok-sum">A rendszeres Head Spa hatásai</summary>
       <h3 class="kozepre hatas-cim">A rendszeres Head Spa hatásai</h3>
       <p class="halk kozepre al-cim kisebb">Enyhébb panaszok esetén havi 1 alkalom elég lehet, zavaróak esetén érdemes egy 3-5 alkalmas kúrát csinálni, amit aztán elég havi 1 alkalommal fenntartani.</p>
       <div class="hatas-fulek" role="tablist" aria-label="Fejbőr-típus">
@@ -405,7 +431,7 @@
           <li>Stresszoldó hatása révén csökkenti a hajhullás egyik leggyakoribb kiváltó okát.</li>
         </ul>
       </div>
-    </div>
+    </details>
   </div>
 </section>
 
@@ -441,8 +467,10 @@
       <div class="sor-szoveg">
         <h2 id="kezek-cim">Tapasztalt gyógymasszőrök kényeztetnek.</h2>
         <p>A MOSAIC egyik legfontosabb egyedisége, hogy nálunk nem kozmetikusok vagy fodrászok, hanem tapasztalt gyógymasszőrök végzik a kezelést, akik rendelkeznek kiegészítő hajgyógyászati képesítéssel és tapasztalattal.</p>
-        <p>Hiszünk abban, hogy az érintés gyógyító erejű, és vendégeink ezért járnak vissza hozzánk: olyan szintű ellazulást élnek meg, amilyet sehol máshol nem tapasztaltak.</p>
-        <p>Számunkra elsődleges, hogy a nálunk töltött időd valóban pihentető legyen, ezért privát, tágas és csendes kezelőszobáink vannak, ahol nyugodtan el tudsz lazulni.</p>
+        <details class="mobil-csukott"><summary>Tovább olvasom</summary>
+          <p>Hiszünk abban, hogy az érintés gyógyító erejű, és vendégeink ezért járnak vissza hozzánk: olyan szintű ellazulást élnek meg, amilyet sehol máshol nem tapasztaltak.</p>
+          <p>Számunkra elsődleges, hogy a nálunk töltött időd valóban pihentető legyen, ezért privát, tágas és csendes kezelőszobáink vannak, ahol nyugodtan el tudsz lazulni.</p>
+        </details>
       </div>
     </div>
     <div class="sor-racs fordit">
@@ -453,8 +481,10 @@
       <div class="sor-szoveg">
         <h2>Csak tökéletes szárítással engedünk el!</h2>
         <p>A gyógymasszőrök lágyan simogató kezei és a tápláló, egészséges arc- és hajkezelésed után profi hajszárítás vár.</p>
-        <p>A +30 perc professzionális és hajkímélő szárítás a Head Spa szolgáltatás záró része, az ár már tartalmazza.</p>
-        <p>A teljes ellazulást így egy tökéletes frizurával koronázzuk meg, ami lehet egyenes vagy hullámos, ahogyan szeretnéd.</p>
+        <details class="mobil-csukott"><summary>Tovább olvasom</summary>
+          <p>A +30 perc professzionális és hajkímélő szárítás a Head Spa szolgáltatás záró része, az ár már tartalmazza.</p>
+          <p>A teljes ellazulást így egy tökéletes frizurával koronázzuk meg, ami lehet egyenes vagy hullámos, ahogyan szeretnéd.</p>
+        </details>
         <p class="sor-kiemel">A testi-lelki újjászületésed így a ragyogóan szép, puha és selymes hajadról is sugározni fog!</p>
       </div>
     </div>
@@ -548,6 +578,7 @@
 <!--mh-lablec-->
 
 <script src="/assets/js/klon.js" defer></script>
+<script src="/assets/js/video-hero.js" defer></script>
 <script src="/assets/js/fooldal.js" defer></script>
 </body>
 </html>

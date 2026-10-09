@@ -80,8 +80,8 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
   }
 
   describe('/gyik', () => {
-    const VART = { headspa: 26, paros: 12, szortelenites: 12, fodraszat: 8, oxigenterapia: 13, sminktetovalas: 13, ajandekkartya: 10 };
-    test('betoltodik hiba nelkul; 1 H1; 7 uzletag, a varhato kerdesszammal (94); a chipek horgonyai; foglalas es reszlet-link szekciónkent', async () => {
+    const VART = { headspa: 26, paros: 12, szortelenites: 12, fodraszat: 7, oxigenterapia: 13, sminktetovalas: 13, ajandekkartya: 10 };
+    test('betoltodik hiba nelkul; 1 H1; 7 uzletag, a varhato kerdesszammal (93); a chipek horgonyai; foglalas es reszlet-link szekciónkent', async () => {
       const { p, ctx, hibak, kulso } = await nyit('/gyik');
       assert.deepEqual(hibak, []);
       assert.deepEqual(kulso, []);
@@ -95,7 +95,7 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
         assert.ok((await p.locator(`#${id} .gy-fej a.gomb`).getAttribute('href')).startsWith('/'), 'foglalas-link: ' + id);
         assert.equal(await p.locator(`#${id} .gy-tovabb a`).count(), 1, 'reszlet-link: ' + id);
       }
-      assert.equal(await p.locator('details').count(), 94);
+      assert.equal(await p.locator('details').count(), 93);
       assert.equal(await p.locator('#gyik-nincs, #gy-nincs.latszik').count(), 0);
       await ctx.close();
     });
@@ -120,7 +120,7 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
       assert.equal(await p.locator('details:not([hidden])').count(), 0);
       await p.locator('#gy-q').fill('');
       await p.waitForTimeout(300);
-      assert.equal(await p.locator('details:not([hidden])').count(), 94);
+      assert.equal(await p.locator('details:not([hidden])').count(), 93);
       assert.equal(await p.locator('[data-gy-szekcio][hidden]').count(), 0);
       await ctx.close();
     });

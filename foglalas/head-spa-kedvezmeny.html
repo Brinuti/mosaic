@@ -21,6 +21,7 @@
 <link rel="preconnect" href="https://cdn.trustindex.io" crossorigin>
 <link rel="stylesheet" href="/assets/css/wix-google-fonts.css">
 <link rel="stylesheet" href="/assets/css/wix-fonts.css">
+<link rel="stylesheet" href="/assets/css/video-hero.css">
 <link rel="stylesheet" href="/assets/css/egyeni-landing.css">
 <script src="/assets/js/suti.js"></script>
 </head>
@@ -32,7 +33,7 @@
   Stílus: a páros / lézeres / oxigén landingek (Playfair Display + Jost, arany gombok, sötétzöld). Nincs felcím (arany cím a főcím felett).
   Nincs kitalált adat: a videók és képek a szalon valódi felvételei, a vendégvideók valódi vendégek (keresztnévvel), az értékelések a Trustindexből jönnek.
   Az ár / időtartam a Salonic "EGYÉNI" (26 900 Ft, 80 perc) és "PÁROS" (53 800 Ft, 80 perc) szolgáltatásából való; az időpontok a Salonic nyilvános naptár-API-jából.
-  A mozgóképek (data-klip) csak akkor töltődnek be és játszanak, amikor a képernyőn vannak (hang nélkül, ismétlődve); a hangos vendégvideók felugró ablakban nyílnak (data-video).
+  A mozgóképek (data-klip) csak akkor töltődnek be és játszanak, amikor a képernyőn vannak (hang nélkül, ismétlődve); a hangos vendégvideók felugró ablakban nyílnak (data-nagyvideo, assets/js/video-hero.js).
   Az akció lejártakor: az #akcio blokk, a hero "20% októberi kedvezménnyel" sora, az áthúzott listaárak és az <title> / meta leírás szövege igazítandó (docs/EGYENI_LANDING.md).
 -->
 
@@ -41,36 +42,36 @@
 
 <main id="top">
 
-<!-- ============ 1. HERO ============ -->
-<section class="hero" id="hero" aria-labelledby="hero-cim">
-  <img class="hero-hatter" src="/assets/img/ajandek/hero.jpg" alt="" width="2000" height="1333" fetchpriority="high">
-  <video class="hero-video" data-klip="/assets/video/egyeni-hero.mp4" data-hero muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
-  <div class="tartalom hero-tart">
-    <div class="hero-szoveg">
+<!-- ============ 1. HERO (a közös videós hero: assets/css/video-hero.css + assets/js/video-hero.js, docs/VIDEOS_HERO.md) ============ -->
+<section class="vh-hero" id="hero" aria-labelledby="hero-cim">
+  <img class="vh-hatter" src="/assets/img/ajandek/hero.jpg" alt="" width="2000" height="1333" fetchpriority="high">
+  <video class="vh-video" data-klip="/assets/video/egyeni-hero.mp4" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+  <div class="vh-tart">
+    <div class="vh-szoveg">
       <h1 id="hero-cim">80 perc, amikor végre semmi dolgod nincs.</h1>
-      <p class="hero-al">Prémium Head Spa élmény Budapesten: 50 perc teljes kikapcsolódás, majd 30 perc profi hajszárítás.</p>
-      <p class="hero-ar"><b>26&nbsp;900&nbsp;Ft</b> <s>32&nbsp;900&nbsp;Ft</s></p>
-      <p class="hero-akcio"><b>Októberben 20% kedvezménnyel</b></p>
-      <ul class="hero-jelvenyek" aria-label="A legfontosabbak röviden">
-        <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>50+30 perc</li>
-        <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5A3.5 3.5 0 016.5 6H14l6 2.5v4L14 15H6.5A3.5 3.5 0 013 11.5v-2z"/><path d="M8.5 15l-1 5h3l1-5"/></svg></span>profi hajszárítás</li>
-        <li><span class="ikon-kor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/></svg></span>személyre szabott kezelés</li>
+      <p class="vh-al">Prémium Head Spa élmény Budapesten: 50 perc teljes kikapcsolódás, majd 30 perc profi hajszárítás.</p>
+      <p class="vh-ar"><b>26&nbsp;900&nbsp;Ft</b> <s>32&nbsp;900&nbsp;Ft</s></p>
+      <p class="vh-akcio"><b>Októberben 20% kedvezménnyel</b></p>
+      <ul class="vh-jelvenyek" aria-label="A legfontosabbak röviden">
+        <li><span class="vh-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span>50+30 perc</span></li>
+        <li><span class="vh-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5A3.5 3.5 0 016.5 6H14l6 2.5v4L14 15H6.5A3.5 3.5 0 013 11.5v-2z"/><path d="M8.5 15l-1 5h3l1-5"/></svg></span><span>Profi hajszárítás</span></li>
+        <li><span class="vh-ikon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/></svg></span><span>Személyre szabott<span class="vh-csak-nagy"> kezelés</span></span></li>
       </ul>
-      <div class="cta-sor">
-        <a class="gomb gomb-arany gomb-nagy" href="#idopontok" data-gorgetes="idopontok" data-cta="hero-idopontok">Foglalok magamnak <span class="nyil">→</span></a>
+      <div class="vh-cta">
+        <a class="vh-gomb vh-gomb-arany vh-gomb-nagy" href="#idopontok" data-gorgetes="idopontok" data-cta="hero-idopontok">Foglalok magamnak <span class="vh-nyil">→</span></a>
       </div>
-      <p class="hero-ajandek">Inkább ajándékba adnád? <a href="/headspa-ajandekkartya" data-cta="hero-ajandekkartya">Ajándékkártya <span class="nyil">→</span></a></p>
-      <a class="google-nagy" href="#velemenyek" data-gorgetes="velemenyek" data-cta="hero-google" aria-label="4,9 az 5-ből, 1257 Google-vélemény: ugrás a véleményekhez">
-        <svg viewBox="0 0 48 48" class="g-ikon" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg>
-        <span class="csillagok" aria-hidden="true">★★★★★</span>
-        <span class="g-pont"><b>4,9</b> / 5 Google</span>
-        <span class="g-db">· <b data-ertekeles-db>1&nbsp;257</b>+ vendégvélemény</span>
+      <p class="vh-ajandek">Inkább ajándékba adnád? <a href="/headspa-ajandekkartya" data-cta="hero-ajandekkartya">Ajándékkártya <span class="vh-nyil">→</span></a></p>
+      <a class="vh-google" href="#velemenyek" data-gorgetes="velemenyek" data-cta="hero-google" aria-label="4,9 az 5-ből, 1266 Google-vélemény: ugrás a véleményekhez">
+        <svg viewBox="0 0 48 48" class="vh-g-ikon" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8a10 10 0 01-4.4 6.6v5.5h7.1c4.1-3.8 6.5-9.4 6.5-16.1z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7A22 22 0 0024 46z"/><path fill="#FBBC05" d="M11.8 28.2a13 13 0 010-8.4v-5.7H4.5a22 22 0 000 19.8z"/><path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3A22 22 0 004.5 14.1l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg>
+        <span class="vh-csillagok" aria-hidden="true">★★★★★</span>
+        <span class="vh-g-pont"><b>4,9</b> / 5 Google</span>
+        <span class="vh-g-db">· <b data-ertekeles-db>1&nbsp;266</b>+ vendégvélemény</span>
       </a>
-      <p class="hero-cim"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 00-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>1023 Budapest, Bécsi út 2. (Kolosy tér)</p>
+      <p class="vh-hely"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 00-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>1023 Budapest, Bécsi út 2. (Kolosy tér)</p>
     </div>
-    <button type="button" class="hero-lejatszas" data-video="/assets/video/c2eb0f_c68f720ea07c4cc6b19dd56b1ab51f35.mp4" data-cim="Nézd meg, milyen érzés" data-cta="hero-video" aria-label="Nézd meg, milyen érzés (0:38): videó lejátszása">
-      <span class="lejatszas" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
-      <span class="hero-lejatszas-szoveg"><b>Nézd meg, milyen érzés</b><small>(0:38)</small></span>
+    <button type="button" class="vh-lejatszas" data-nagyvideo="/assets/video/c2eb0f_c68f720ea07c4cc6b19dd56b1ab51f35.mp4" data-cim="Nézd meg, milyen érzés" data-cta="hero-video" aria-label="Nézd meg, milyen érzés (0:38): videó lejátszása">
+      <span class="vh-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+      <span class="vh-lejatszas-szoveg"><b>Nézd meg, milyen érzés</b><small>(0:38)</small></span>
     </button>
   </div>
 </section>
@@ -123,7 +124,7 @@
 <!-- ============ 3. NEHÉZ ELMAGYARÁZNI (sötét sáv, vendégvideó) ============ -->
 <section class="sav mutat" id="mutat" aria-labelledby="mutat-cim">
   <div class="tartalom mutat-racs">
-    <button type="button" class="klip-kartya mutat-video" data-video="/assets/video/ajandek-vendeg-zsoka.mp4" data-cim="Zsóka videója" data-cta="mutat-video" aria-label="Zsóka vendégvideója (1:12), eredeti hanggal: lejátszás">
+    <button type="button" class="klip-kartya mutat-video" data-nagyvideo="/assets/video/ajandek-vendeg-zsoka.mp4" data-cim="Zsóka videója" data-cta="mutat-video" aria-label="Zsóka vendégvideója (1:12), eredeti hanggal: lejátszás">
       <video data-klip="/assets/video/egyeni-arc.mp4" poster="/assets/img/egyeni/arc.jpg" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
       <span class="lejatszas" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
       <span class="video-cimke">Zsóka vendégvideója · 1:12</span>
@@ -162,7 +163,7 @@
     <div class="vel-racs">
       <div class="vel-bal">
         <h2 id="vel-cim">Nem nekünk kell elmondanunk, milyen.</h2>
-        <p class="vel-szam"><b data-ertekeles-db>1&nbsp;257</b><span>+</span></p>
+        <p class="vel-szam"><b data-ertekeles-db>1&nbsp;266</b><span>+</span></p>
         <p class="vel-csillag"><span class="csillagok" aria-hidden="true">★★★★★</span><b>4,9</b> / 5 Google</p>
         <p class="vel-al">valódi vendégvélemény</p>
         <a class="gomb gomb-arany" href="https://www.google.com/maps/search/?api=1&amp;query=MOSAIC%20Head%20Spa%2C%201023%20Budapest%2C%20B%C3%A9csi%20%C3%BAt%202." target="_blank" rel="noopener" data-cta="velemenyek-google">Megnézem a Google-véleményeket <span class="nyil">→</span></a>
@@ -177,19 +178,19 @@
     </div>
     <h3 class="videok-cim kozepre">Ők már kipróbálták, és elmesélik</h3>
     <ul class="videok" aria-label="Vendégvideók">
-      <li><button type="button" class="video-kartya" data-video="/assets/video/ajandek-vendeg-zita.mp4" data-cim="Zita videója" aria-label="Zita videója (1:48), eredeti hanggal: lejátszás">
+      <li><button type="button" class="video-kartya" data-nagyvideo="/assets/video/ajandek-vendeg-zita.mp4" data-cim="Zita videója" aria-label="Zita videója (1:48), eredeti hanggal: lejátszás">
         <img src="/assets/img/ajandek/vendeg-zita.jpg" alt="" width="540" height="960" loading="lazy">
         <span class="lejatszas" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
         <span class="video-felirat"><b>Zita</b><small>Vendégvideó · 1:48</small></span></button></li>
-      <li><button type="button" class="video-kartya" data-video="/assets/video/ajandek-vendeg-kinga.mp4" data-cim="Kinga videója" aria-label="Kinga videója (1:50), eredeti hanggal: lejátszás">
+      <li><button type="button" class="video-kartya" data-nagyvideo="/assets/video/ajandek-vendeg-kinga.mp4" data-cim="Kinga videója" aria-label="Kinga videója (1:50), eredeti hanggal: lejátszás">
         <img src="/assets/img/ajandek/vendeg-kinga.jpg" alt="" width="540" height="960" loading="lazy">
         <span class="lejatszas" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
         <span class="video-felirat"><b>Kinga</b><small>Vendégvideó · 1:50</small></span></button></li>
-      <li><button type="button" class="video-kartya" data-video="/assets/video/ajandek-vendeg-dori.mp4" data-cim="Dóri videója" aria-label="Dóri videója (1:47), eredeti hanggal: lejátszás">
+      <li><button type="button" class="video-kartya" data-nagyvideo="/assets/video/ajandek-vendeg-dori.mp4" data-cim="Dóri videója" aria-label="Dóri videója (1:47), eredeti hanggal: lejátszás">
         <img src="/assets/img/ajandek/vendeg-dori.jpg" alt="" width="540" height="960" loading="lazy">
         <span class="lejatszas" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
         <span class="video-felirat"><b>Dóri</b><small>Vendégvideó · 1:47</small></span></button></li>
-      <li><button type="button" class="video-kartya" data-video="/assets/video/ajandek-vendeg-szandi.mp4" data-cim="Szandi videója" aria-label="Szandi videója (2:06), eredeti hanggal: lejátszás">
+      <li><button type="button" class="video-kartya" data-nagyvideo="/assets/video/ajandek-vendeg-szandi.mp4" data-cim="Szandi videója" aria-label="Szandi videója (2:06), eredeti hanggal: lejátszás">
         <img src="/assets/img/ajandek/vendeg-szandi.jpg" alt="" width="540" height="960" loading="lazy">
         <span class="lejatszas" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
         <span class="video-felirat"><b>Szandi</b><small>Vendégvideó · 2:06</small></span></button></li>
@@ -275,11 +276,11 @@
       <div class="ido-kartya" id="szabad-idopontok">
         <h3 id="ido-cim-valtozo">A következő szabad egyéni időpontok</h3>
         <div class="napok-keret">
+          <button type="button" class="napok-nyil elozo" id="napok-elozo" aria-label="Előző napok" hidden disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
           <div class="napok" id="napok" aria-live="polite"><div class="napok-csontvaz csontvaz"></div></div>
           <button type="button" class="napok-nyil" id="napok-kov" aria-label="Következő napok" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
         </div>
         <p class="slot-uzenet halk" id="slot-uzenet" hidden></p>
-        <p class="ido-lab halk kicsi">Az időpontok valós időben a MOSAIC naptárából jönnek. Egy időpontra kattintva a foglalás helyben nyílik meg.</p>
         <a class="link-nyil" id="tovabbi-idopontok" href="/foglalo-motor?business=headspa&amp;service=egyeni" data-cta="idopontok-mind">Még több időpont <span class="nyil">→</span></a>
       </div>
     </div>
@@ -392,8 +393,8 @@
     <div class="cta-sor">
       <a class="gomb gomb-arany gomb-nagy" href="#idopontok" data-gorgetes="idopontok" data-cta="zaro-idopontok">Foglalok · 26&nbsp;900&nbsp;Ft <span class="nyil">→</span></a>
     </div>
-    <p class="hero-ajandek">Inkább ajándékba adnád? <a href="/headspa-ajandekkartya" data-cta="zaro-ajandekkartya">Ajándékkártya <span class="nyil">→</span></a></p>
-    <p class="zaro-google"><span class="csillagok" aria-hidden="true">★★★★★</span> <b>4,9</b> / 5 Google · <span data-ertekeles-db>1&nbsp;257</span>+ vendégvélemény</p>
+    <p class="zaro-ajandek">Inkább ajándékba adnád? <a href="/headspa-ajandekkartya" data-cta="zaro-ajandekkartya">Ajándékkártya <span class="nyil">→</span></a></p>
+    <p class="zaro-google"><span class="csillagok" aria-hidden="true">★★★★★</span> <b>4,9</b> / 5 Google · <span data-ertekeles-db>1&nbsp;266</span>+ vendégvélemény</p>
   </div>
 </section>
 
@@ -404,15 +405,10 @@
   <a class="gomb gomb-arany gomb-szeles" href="#idopontok" data-gorgetes="idopontok" data-cta="sticky-idopontok" tabindex="-1">Szabad időpontok <span class="nyil">→</span></a>
 </div>
 
-<!-- hangos vendégvideók felugró ablaka -->
-<dialog class="lb" id="lb" aria-label="Videó">
-  <button type="button" class="lb-be" id="lb-be" aria-label="Bezárás"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-  <div class="lb-tartalom" id="lb-tartalom"></div>
-</dialog>
-
 <!--mh-lablec-->
 
 <script src="/assets/js/klon.js" defer></script>
+<script src="/assets/js/video-hero.js" defer></script>
 <script src="/assets/js/egyeni-landing.js" defer></script>
 </body>
 </html>

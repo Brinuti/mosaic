@@ -1,4 +1,5 @@
 // MOSAIC főoldal (/) - működés.
+//  0. Hero: közös videós hero (video-hero.js); a play gomb a hangos videót nagy ablakban nyitja.
 //  1. Videók: a [data-video] kártyák a saját tárhelyről (assets/video) egy felugró lejátszóban (<dialog>) indítják a videót; csak kattintásra töltődik.
 //  2. Körhinta ([data-korhinta]): oldalra görgethető sor előző / következő gombokkal.
 //  3. Hatások-fülek (zsíros / száraz / hajhullás).
@@ -23,29 +24,8 @@
   const csokkentett = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const szam = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
-  // --- 0. hero-videó: némítva, magától indul (a régi főoldalon is); "Hangot rá!" gombra az elejéről, hanggal ---
-  (() => {
-    const v = $('hero-video');
-    if (!v) return;
-    const hatter = v.parentNode;
-    const g = elem('button', { type: 'button', class: 'hero-hang' });
-    const allit = () => {
-      g.setAttribute('aria-label', v.muted ? 'Hang bekapcsolása' : 'Hang kikapcsolása');
-      g.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/>' +
-        (v.muted ? '<path d="M16 9l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" fill="none"/>'
-          : '<path d="M16.5 12a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/>') +
-        '</svg><span>' + (v.muted ? 'Hangot rá!' : '') + '</span>';
-    };
-    g.addEventListener('click', () => {
-      if (v.muted) { v.muted = false; v.currentTime = 0; } else v.muted = true;
-      v.play().catch(() => {});
-      allit();
-      meres({ event: 'fooldal_video', video: 'hero-hang-' + (v.muted ? 'ki' : 'be') });
-    });
-    allit();
-    hatter.append(g);
-    v.play().catch(() => {}); // egyes telefonok csak kézzel indítják: ilyenkor marad a poszterkép
-  })();
+  // --- 0. hero: a KOZOS videos hero (assets/js/video-hero.js): a hatter-klip lusta indulasa, a play gomb + a NAGY lejatszo-ablak; itt csak a meres ----------------
+  document.addEventListener('vh:video', (e) => meres({ event: 'fooldal_video', video: e.detail.video }));
 
   // --- 5. CTA-mérés + görgetés -------------------------------------------------------------------------------------------------------
   document.addEventListener('click', (e) => {
@@ -130,6 +110,34 @@
     });
   }
 
+  // --- 3b. telefonon csukott blokkok (details.mobil-csukott): telefonon csukva (kattintásra nyílik), asztalon mindig nyitva (a feliratot a CSS rejti: nyitott-allando) ---
+  const mobilMq = matchMedia('(max-width: 700px)');
+  const csukottak = [...document.querySelectorAll('details.mobil-csukott')];
+  const mobilAllit = () => { for (const d of csukottak) { d.open = !mobilMq.matches; d.classList.toggle('nyitott-allando', !mobilMq.matches); } };
+  mobilMq.addEventListener('change', mobilAllit);
+  mobilAllit();
+
+  // --- 3c. GYIK röviden: telefonon / tableten az első 6 kérdés látszik, asztalon (2 oszlop) oszloponként az első 4 (összesen 8); a többi a "További kérdések" gombra (a tartalom a HTML-ben mind megvan) ---
+  const gyikRacs = document.querySelector('.gyik-racs');
+  if (gyikRacs) {
+    const kerdesek = [...gyikRacs.querySelectorAll('details')];
+    const ELSO = 6, OSZLOPONKENT = 4;
+    kerdesek.slice(ELSO).forEach((d) => d.classList.add('mobil-rejtett'));
+    let asztalon = 0;
+    for (const oszlop of gyikRacs.children) [...oszlop.querySelectorAll('details')].forEach((d, i) => { if (i >= OSZLOPONKENT) d.classList.add('asztal-rejtett'); else asztalon++; });
+    const nagyMq = matchMedia('(min-width: 1025px)');
+    const tobb = () => kerdesek.length - (nagyMq.matches ? asztalon : ELSO);
+    const gomb = elem('button', { type: 'button', class: 'gomb gomb-korvonal gomb-kicsi gyik-tobb', 'aria-expanded': 'false', szoveg: `További kérdések (${tobb()})` });
+    const felirat = () => { gomb.textContent = gyikRacs.classList.contains('kinyitva') ? 'Kevesebb kérdés' : `További kérdések (${tobb()})`; };
+    gomb.addEventListener('click', () => {
+      const nyit = gyikRacs.classList.toggle('kinyitva');
+      gomb.setAttribute('aria-expanded', String(nyit));
+      felirat();
+    });
+    nagyMq.addEventListener('change', felirat);
+    gyikRacs.after(gomb);
+  }
+
   // --- 4. vendégértékelések (Trustindex) ----------------------------------------------------------------------------------------------
   const tiDoboz = $('trustindex');
   function trustindexBetolt() {
@@ -191,12 +199,12 @@
   }
 
   // --- mobil sticky CTA: a hero elgörgetése után jön be, a helyszín szekciónál eltűnik. Görgetés-figyelő (nem IntersectionObserver: az gyors ugrásnál nem jelez) ---------
-  const sticky = $('sticky-cta'), hero = document.querySelector('.hero'), vege = $('helyszin');
+  const sticky = $('sticky-cta'), hero = document.querySelector('.vh-hero'), vege = $('helyszin');
   if (sticky && hero) {
     let ido = 0;
     const frissit = () => {
       ido = 0;
-      const gombok = hero.querySelector('.cta-sor');
+      const gombok = hero.querySelector('.vh-cta');
       const tulVan = (gombok || hero).getBoundingClientRect().bottom <= 0;
       const veg = vege ? vege.getBoundingClientRect().top < innerHeight : false;
       const lat = tulVan && !veg;

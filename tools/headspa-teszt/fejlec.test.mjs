@@ -53,6 +53,24 @@ describe('a fejlec-darabok (sajat oldalak)', () => {
     });
   }
 
+  test('az akciosav (Októberi akció ...) linkje ugyanabban az ablakban nyilik (target=_self), nem uj lapon: asztali + mobil fejlec, es a Wixes (klon) oldalakon is', () => {
+    for (const [nev, mobil] of [['asztali', false], ['mobil', true]]) {
+      const h = fejlecResz(fejlecAtalakit(FEJLEC[nev], mobil));
+      assert.ok(h.includes('<a href="/head-spa-kedvezmeny" target="_self"'), `${nev}: az akciosav linkje _self`);
+      assert.ok(!/href="\/head-spa-kedvezmeny" target="_blank"/.test(h), `${nev}: maradt target=_blank az akciosavon`);
+    }
+  });
+  test('a Fodraszat lenyiloben NINCS "Fodraszat Arak" pont (a tulajdonos kerese: nem mukodott): asztalon, mobilon, angolul sem; a Betti / Noel / Evelin megvan; ismetelt atalakitas nem valtoztat', () => {
+    for (const [nev, mobil] of [['asztali', false], ['mobil', true]]) {
+      for (const angol of [false, true]) {
+        const uj = fejlecAtalakit(angol ? FEJLEC[nev].replace('</header>', ANGOL_JELOLO + '</header>') : FEJLEC[nev], mobil, angol);
+        const h = fejlecResz(uj);
+        assert.ok(!/Fodrászat Árak|Hairdressing prices|m5p3vmyh/.test(h), `${nev}${angol ? ' (EN)' : ''}: maradt "Fodrászat Árak" / árlista-horgony a menüben`);
+        for (const href of ['/noi-fodrasz-budapest-balayage-hajfestes"', '/balayage-haj-festes-budapest"', '/noi-hajfestes-budapest"']) assert.ok(h.includes('href="' + href), `${nev}: hiányzik a ${href} menüpont`);
+        assert.equal(fejlecAtalakit(uj, mobil, angol), uj, 'ismetelhetetlen-biztos');
+      }
+    }
+  });
   test('a kijelolt (aktiv) lenyilo-elem jelolese atkerul az uj fomenupontra', () => {
     const aktiv = FEJLEC.asztali.replace(/(<li class="itemDepth12472627565__itemWrapper"[^>]*data-is-current=)"false"( aria-current=)"false"((?:(?!<\/li>)[\s\S])*?href="\/paros-headspa-budapest")/, '$1"true"$2"true"$3');
     assert.notEqual(aktiv, FEJLEC.asztali, 'az elokeszites megtalalta a lenyilo-elemet');
@@ -210,7 +228,7 @@ describe('bongeszoben (konnyu helyi szerver)', () => {
     assert.equal(hs.cimek.length, 7, hs.cimek.join(' | '));
     assert.ok(!hs.cimek.includes('Páros Head Spa') && hs.cimek.includes('Head Spa Férfiaknak') && hs.cimek.includes('Head Spa Csomagok és Árak'));
     const fod = await lenyilo('Fodrászat');
-    assert.deepEqual(fod.cimek, ['Betti', 'Noel', 'Evelin', 'Fodrászat Árak']);
+    assert.deepEqual(fod.cimek, ['Betti', 'Noel', 'Evelin']);   // a "Fodrászat Árak" menüpont kikerült (nem működött)
     const aj = await lenyilo('Ajándékkártya');
     assert.equal(aj.cimek.length, 3);
     assert.ok(aj.egymasAlatt && aj.ablakban);

@@ -1504,7 +1504,7 @@ body .ah-halk, .ah-tenyek li, .ah-benefit-lista li span, .ah-forma-lista li span
 /* a szemelyre szabo (tervezo) cime marad a korabbi meretu, hogy a tervezo egy kepernyore elferjen */
 @media (min-width: 701px) { .ah-tervezo-fej h2 { font-size: 36px !important; } }
 
-/* ===== PERSONA-MAGYARAZO (2026-10-09): a hero utan, a valaszto elott; bal oldalt a persona szovege, jobb oldalt kep (mobilon: szoveg, majd kep) ===== */
+/* ===== PERSONA-MAGYARAZO (2026-10-09): a hero utan, a valaszto elott; asztalon BAL oldalt a kep, jobb oldalt a persona szovege (a hero videoja jobbra van, igy a kettő felvaltva); mobilon: szoveg, majd kep (a DOM-sorrend) ===== */
 .ah-magyarazo { background: var(--ah-ivory); }
 .ah-magyarazo-racs { display: grid; gap: 24px; align-items: center; }
 .ah-magyarazo-szoveg { display: grid; gap: 14px; align-content: center; min-width: 0; }
@@ -1518,7 +1518,9 @@ body .ah-halk, .ah-tenyek li, .ah-benefit-lista li span, .ah-forma-lista li span
 .ah-magyarazo-media { margin: 0; border-radius: 16px; overflow: hidden; background: #e9e1d1; box-shadow: var(--ah-arnyek); aspect-ratio: var(--ah-magyarazo-arany, 1.333); max-height: 560px; width: 100%; }
 .ah-magyarazo-media img { width: 100%; height: 100%; object-fit: cover; }
 @media (min-width: 900px) {
-  .ah-magyarazo-racs { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 56px; align-items: stretch; }
+  .ah-magyarazo-racs { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 56px; align-items: stretch; }
+  /* 2026-10-09 (a tulajdonos kerese): asztalon a kep BALRA kerul, a szoveg jobbra; a DOM-ban a szoveg all elol (mobilon es a kereso szamara marad a sorrend) */
+  .ah-magyarazo-media { order: -1; }
   /* asztalon a kep a szoveg-oszlop magassagat koveti (nem torzul, a kivagas a "poz" szerint) */
   .ah-magyarazo-media { aspect-ratio: auto; max-height: none; min-height: 400px; position: relative; }
   .ah-magyarazo-media img { position: absolute; inset: 0; }
