@@ -1,30 +1,24 @@
-/* Head Spa velemenyek oldal: a "Tovabbi cikkek es megjelenesek" sav (szoveges sajto-kartyak: portal neve, cikk cime, datum, link).
-   A headspa-oldal.css utan toltodik; a kozos CSS-t nem modositja. A kep nelkuli kartya a meglevo .sajto-kartya / .sajto-test stilusat hasznalja. */
-.sajto-tobb-fej { margin: 64px auto 28px; }
-.sajto-tobb-fej h3 { font-size: 30px; line-height: 1.15; }
-.sajto-tobb-fej .lead { margin-top: 10px; }
-.sajto-megjegyzes { margin-top: 8px; font-size: 13.5px; color: var(--halk); }
+/* Head Spa velemenyek oldal: a "Noi lapok akik irtak rolunk" szekcio egyseges, nagykepes cikk-kartyai (a HTML-t a tools/sajto-kartyak/kartyak.py generalja).
+   A headspa-oldal.css utan toltodik; a kozos CSS-t nem modositja (az alap .sajto-kartya / .sajto-test / .link-gomb stilust hasznalja). */
+.sajto-egyseges { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.sajto-kartya .sajto-kep { position: relative; display: block; overflow: hidden; background: #e2e5db; }
+.sajto-kartya .sajto-kep img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; transition: transform .35s; }
+.sajto-kartya .sajto-kep:hover img { transform: scale(1.03); }
+.sajto-kartya .sajto-kep .video-play { width: 52px; height: 52px; margin: -26px 0 0 -26px; }
+.sajto-kartya .sajto-kep::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(10, 25, 24, .28) 0%, rgba(10, 25, 24, 0) 40%); pointer-events: none; }
+.sajto-egyseges .sajto-test { gap: 12px; padding: 20px 22px 22px; }
+.sajto-portal { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; font: 500 12.5px/1.3 var(--test); letter-spacing: .12em; text-transform: uppercase; color: var(--arany); }
+.sajto-portal time { font: 400 13px/1.3 var(--test); letter-spacing: 0; text-transform: none; color: var(--halk); white-space: nowrap; }
+.sajto-cim { margin: 0; font: 500 20px/1.28 var(--cim); color: var(--sotet); overflow-wrap: anywhere; }
+.sajto-egyseges .sajto-test q { font-size: 16.5px; line-height: 1.5; overflow-wrap: anywhere; }
+.sajto-egyseges .link-gomb { margin-top: auto; padding-top: 4px; }
 
-/* 4 oszlop asztalon (8 kartya = 2 teljes sor); a sorok egyforma magassagu kartyakbol allnak */
-.sajto-racs.tobb { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
-.sajto-szoveges .sajto-test { gap: 12px; padding: 22px 22px 22px; }
-.sajto-portal { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font: 500 13px/1.3 var(--test); letter-spacing: .12em; text-transform: uppercase; color: var(--arany); }
-.sajto-jelzes { display: inline-block; background: #f6efdc; border: 1px solid #ecdcb6; border-radius: 999px; padding: 2px 10px; font: 400 11.5px/1.4 var(--test); letter-spacing: .02em; text-transform: none; color: #8a6c3e; }
-.sajto-szoveges q { font-size: 18.5px; line-height: 1.38; overflow-wrap: anywhere; }
-.sajto-datum { font-size: 13.5px; color: var(--halk); }
-.sajto-szoveges .link-gomb { margin-top: auto; }
+/* tablet: 2 oszlop */
+@media (max-width: 1100px) { .sajto-egyseges { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
-/* tablet: 2 oszlop (8 kartya = 4 sor) */
-@media (max-width: 1024px) {
-  .sajto-tobb-fej { margin-top: 52px; }
-  .sajto-racs.tobb { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-/* telefon: 1 oszlop, tomorebb kartyak */
+/* telefon: 1 oszlop */
 @media (max-width: 700px) {
-  .sajto-tobb-fej { margin: 40px auto 22px; }
-  .sajto-tobb-fej h3 { font-size: 24px; }
-  .sajto-racs.tobb { grid-template-columns: 1fr; gap: 14px; }
-  .sajto-szoveges .sajto-test { padding: 18px 18px 20px; }
-  .sajto-szoveges q { font-size: 18px; }
+  .sajto-egyseges { grid-template-columns: 1fr; gap: 16px; }
+  .sajto-egyseges .sajto-test { padding: 18px 18px 20px; }
+  .sajto-cim { font-size: 19px; }
 }

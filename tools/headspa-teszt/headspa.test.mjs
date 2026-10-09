@@ -37,8 +37,8 @@ const OLDALAK = [
       'Zsíros fejbőr esetén', 'Száraz fejbőr esetén', 'Hajhullás esetén', 'Mélyen tisztítja a fejbőrt, eltávolítja a felesleges faggyút és lerakódásokat.',
       'Termékeket nálunk nem lehet vásárolni', 'kizárólag ezekkel a termékekkel végezzük', 'sampon-mintát', '1 literes termékeket'] },
   { nev: 'head-spa-velemenyek', cim: 'Head Spa vélemények - Milyen ez kezelés?', h1: 'Head Spa vélemények', videok: 15,
-    szoveg: ['Ezt mondják visszajáró vendégeink', 'Női lapok akik írtak rólunk', 'NEM fizetett cikkekről van szó.', '5 db videó a teljes 60 perces Head Spa élményről', 'Kipróbáltuk a Mosaic Head Spa kezelését.',
-      'Végre egy hely, ahol jólesik, ha birizgálják a hajunkat', 'A Head Spa lehet az önszeretet új szokása', 'Mosaic Head Spa and Hair - élménybeszámoló és interjú!'] },
+    szoveg: ['Ezt mondják visszajáró vendégeink', 'Női lapok akik írtak rólunk', 'Olvasd el, hogyan látják a MOSAIC Head Spa kezelését', '5 db videó a teljes 60 perces Head Spa élményről',
+      'Végre egy hely, ahol jólesik, ha birizgálják a hajunkat', 'A headspa lehet az önszeretet új szokása', 'Mosaic Headspa and Hair - élménybeszámoló és interjú!'] },
 ];
 const NEZETEK = [['telefon', 390], ['tablet', 768], ['asztal', 1440]];
 
