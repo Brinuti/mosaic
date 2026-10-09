@@ -15,6 +15,7 @@
 // Beallitas (Cloudflare: Workers & Pages -> a projekt -> Settings -> Variables
 // and Secrets): SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS (titkos),
 // MAIL_FROM, MAIL_TO (nem kotelezo) - ugyanazok, mint a Netlifyn.
+import { CSP_CRM } from '../crm/lib/http.js';
 import { WorkerMailer } from 'worker-mailer';
 import { utvonal } from '../netlify/lib/utvonal.js';
 import { levelek } from '../netlify/lib/levelek.js';
@@ -64,6 +65,13 @@ export async function onRequest(context) {
   // ugyanaz a cim mobilon es asztalin mast ad - a gyorsitotar ezt tudja
   h.set('vary', 'User-Agent');
   if (!eles) h.set('x-robots-tag', 'noindex, nofollow');
+  // a belso CRM-oldal: soha nem gyorsitotarazott, nem indexelheto, szigoru CSP
+  if (url.pathname === '/crm' || url.pathname.startsWith('/crm/')) {
+    h.set('cache-control', 'no-store');
+    h.set('x-robots-tag', 'noindex, nofollow');
+    h.set('referrer-policy', 'no-referrer');
+    h.set('content-security-policy', CSP_CRM);
+  }
   return new Response(valasz.body, { status: valasz.status, headers: h });
 }
 
