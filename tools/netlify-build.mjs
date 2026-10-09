@@ -28,6 +28,7 @@ import { atkot, atkotBelso, atkotSzoveg, kapcsolokBuildhez, kihagyottOldal, ossz
 import { popupAtkot } from './halott-popup.mjs';
 import { fejlecAtalakit, ANGOL_JELOLO, headspaJelolo } from './fejlec-menu.mjs';
 import { personaOldal } from './ajandek-variansok/elore-render.mjs';
+import { CSP_CRM } from '../crm/lib/http.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -229,6 +230,15 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   '  X-Robots-Tag: noindex',
   // az /ajandek (a kampany- es levelbeli linkek cime) ugyanazt az oldalt adja, mint az eles ajandekkartya-cimek: ne indexelodjon ketszer
   // (a /ajandekkartya a fomenu valaszto oldala: szinten noindex). Az /oxigen-ajandekkartya 2026-10-08 ota indexelheto (a tulajdonos kerese; a sitemapben is szerepel).
+  // a belso CRM: nincs gyorsitotar, nincs indexeles, szigoru CSP (kulso script / tracking nincs)
+  '/crm',
+  '  Cache-Control: no-store',
+  '  X-Robots-Tag: noindex, nofollow',
+  '  Referrer-Policy: no-referrer',
+  `  Content-Security-Policy: ${CSP_CRM}`,
+  '/crm/*',
+  '  Cache-Control: no-store',
+  '  X-Robots-Tag: noindex, nofollow',
   ...(ELES ? ['/ajandek', '  X-Robots-Tag: noindex', '/lezeres-ajandekkartya', '  X-Robots-Tag: noindex', '/ajandekkartya', '  X-Robots-Tag: noindex'] : []),
   '',
 ].join('\n'));
