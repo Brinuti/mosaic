@@ -89,22 +89,71 @@ async function folyamat(ctx, fid) {
     })());
 
   // ---- 2. lepes: kamerakep ----
+  // harom forras: (1) mentett kep kivalasztasa (a hajkamera-app / galeria kepe; a tablet fajlvalasztoja a legutobbi kepeket mutatja), (2) fotó a telefon kamerajaval,
+  // (3) USB hajkamera elo kepe a bongeszoben (ha a tablet Chrome-ja latja az USB kamerat; a kamerat az app kozben nem foghatja)
   const l2 = h('section', { class: 'kk-lepes' });
+  const fej2 = () => h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép');
+  const kepFelvesz = async (blob, csere) => {
+    await api.feltolt(`/kezelesek/${encodeURIComponent(all.sid)}/kepek`, { pont: all.sorszam, ...(csere ? { csere: '1' } : {}) }, blob);
+    await sessionBetolt().catch(() => { all.kepVan = true; });
+    ertesit(csere ? 'A kép lecserélve.' : 'A kép feltöltve.'); rajzL2();
+  };
+  const fajlGomb = (id, felirat, csere, capture) => {
+    const fajl = h('input', { type: 'file', accept: 'image/*', ...(capture ? { capture: 'environment' } : {}), class: 'csak-olvaso', id });
+    const cimke = h('label', { class: `gomb kk-nagy${capture ? '' : ' gomb-fo'}`, for: id }, felirat);
+    fajl.addEventListener('change', async () => {
+      const fj = fajl.files && fajl.files[0]; if (!fj) return;
+      try { cimke.textContent = 'Feltöltés…'; const { blob } = await kepAtmeretez(fj); await kepFelvesz(blob, csere); } catch (e) {
+        if (e.status === 409 && !csere) { await sessionBetolt().catch(() => {}); ertesit('Ehhez az alkalomhoz már van feltöltött kép.'); rajzL2(); return; }
+        ertesit(e.message || 'A feltöltés nem sikerült.', 'hiba'); cimke.textContent = felirat;
+      }
+    });
+    return [cimke, fajl];
+  };
+  const usbPanel = (csere) => {
+    const hely = h('div', { class: 'kk-kamera' });
+    const nyit = h('button', { type: 'button', class: 'gomb kk-nagy' }, 'USB hajkamera – élő kép');
+    let stream = null;
+    const leallit = () => { if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; } };
+    nyit.addEventListener('click', async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { tolt(hely, figyelmeztetes('figyelem', 'Ez a böngésző nem engedi a kamera használatát.')); return; }
+      try {
+        const video = h('video', { class: 'kk-video', autoplay: true, playsinline: true, muted: true });
+        const valaszto = h('select', { class: 'kk-mezo', 'aria-label': 'Kamera kiválasztása' });
+        const info = h('p', { class: 'halvany kicsi' });
+        const indit = async (deviceId) => {
+          leallit();
+          stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: deviceId ? { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } } : { width: { ideal: 1920 }, height: { ideal: 1080 } } });
+          video.srcObject = stream; try { await video.play(); } catch { /* automatikus lejatszas tiltva */ }
+          const aktiv = stream.getVideoTracks()[0].getSettings();
+          const eszk = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'videoinput');
+          tolt(valaszto, eszk.map((d, i) => h('option', { value: d.deviceId, selected: d.deviceId === aktiv.deviceId }, d.label || `Kamera ${i + 1}`)));
+          tolt(info, `${eszk.length} kamera található. Aktív felbontás: ${aktiv.width || '?'}×${aktiv.height || '?'}.${eszk.length < 2 ? ' Ha az USB hajkamera nincs a listában, ez a tablet böngészője nem látja; használd a „mentett kép kiválasztása” gombot.' : ''}`);
+        };
+        valaszto.addEventListener('change', () => indit(valaszto.value).catch((e) => ertesit(e.message, 'hiba')));
+        const kesz = h('button', { type: 'button', class: 'gomb gomb-fo kk-nagy' }, 'Kép készítése');
+        kesz.addEventListener('click', futtat(kesz, async () => {
+          if (!video.videoWidth) { ertesit('A kamera még nem ad képet.', 'hiba'); return; }
+          const c = document.createElement('canvas'); const arany = Math.min(1, 1600 / Math.max(video.videoWidth, video.videoHeight));
+          c.width = Math.round(video.videoWidth * arany); c.height = Math.round(video.videoHeight * arany);
+          c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+          const blob = await new Promise((ok, nem) => c.toBlob((x) => (x ? ok(x) : nem(new Error('A kép elkészítése nem sikerült.'))), 'image/jpeg', 0.85));
+          leallit(); await kepFelvesz(blob, csere);
+        }));
+        const bezar = h('button', { type: 'button', class: 'gomb' }, 'Bezárás');
+        bezar.addEventListener('click', () => { leallit(); tolt(hely, nyit); });
+        tolt(hely, valaszto, video, info, kesz, bezar);
+        await indit(localStorage.getItem('crm_kamera') || undefined).catch(async () => indit(undefined));
+        valaszto.addEventListener('change', () => { try { localStorage.setItem('crm_kamera', valaszto.value); } catch { /* nincs tarhely */ } });
+      } catch (e) { leallit(); tolt(hely, figyelmeztetes('figyelem', `A kamera nem indítható (${e && e.name ? e.name : 'hiba'}). Zárd be a hajkamera-appot, engedélyezd a kamera használatát az oldalnak, vagy válaszd a „mentett kép kiválasztása” gombot.`), nyit); }
+    });
+    tolt(hely, nyit);
+    return hely;
+  };
   const rajzL2 = () => {
-    if (!all.sid) { tolt(l2, h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép'), h('p', { class: 'halvany' }, 'Az igazolás után tölthető fel.')); return; }
-    if (!all.kamera) { tolt(l2, h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép'), h('p', { class: 'halvany' }, `A(z) ${all.sorszam}. alkalmon nem kötelező a hajkamera-felvétel.`)); return; }
+    if (!all.sid) { tolt(l2, fej2(), h('p', { class: 'halvany' }, 'Az igazolás után tölthető fel.')); return; }
+    if (!all.kamera) { tolt(l2, fej2(), h('p', { class: 'halvany' }, `A(z) ${all.sorszam}. alkalmon nem kötelező a hajkamera-felvétel.`)); return; }
     if (all.kepVan) {
-      const csereFajl = h('input', { type: 'file', accept: 'image/*', capture: 'environment', class: 'csak-olvaso', id: 'kk-kep-csere' });
-      const csereCimke = h('label', { class: 'gomb kk-nagy', for: 'kk-kep-csere' }, 'Kép cseréje (új felvétel)');
-      csereFajl.addEventListener('change', async () => {
-        const fj = csereFajl.files && csereFajl.files[0]; if (!fj) return;
-        try {
-          csereCimke.textContent = 'Feltöltés…';
-          const { blob } = await kepAtmeretez(fj);
-          await api.feltolt(`/kezelesek/${encodeURIComponent(all.sid)}/kepek`, { pont: all.sorszam, csere: '1' }, blob);
-          await sessionBetolt(); ertesit('A kép lecserélve.'); rajzL2();
-        } catch (e) { ertesit(e.message || 'A csere nem sikerült.', 'hiba'); csereCimke.textContent = 'Kép cseréje (új felvétel)'; }
-      });
       const torol = h('button', { type: 'button', class: 'gomb gomb-veszely kk-nagy' }, 'Kép törlése');
       torol.addEventListener('click', futtat(torol, async () => {
         if (!all.kepId) return;
@@ -112,25 +161,12 @@ async function folyamat(ctx, fid) {
         await api.del(`/kepek/${encodeURIComponent(all.kepId)}`);
         all.kepVan = false; all.kepId = null; ertesit('A kép törölve.'); rajzL2();
       }));
-      tolt(l2, h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép'), h('p', null, `A(z) ${all.sorszam}. alkalomhoz van feltöltött kép `, jelveny('Feltöltve', 'ok')), csereCimke, csereFajl, torol);
+      tolt(l2, fej2(), h('p', null, `A(z) ${all.sorszam}. alkalomhoz van feltöltött kép `, jelveny('Feltöltve', 'ok')),
+        ...fajlGomb('kk-kep-csere', 'Kép cseréje: mentett kép kiválasztása', true, false), usbPanel(true), torol);
       return;
     }
-    const fajl = h('input', { type: 'file', accept: 'image/*', capture: 'environment', class: 'csak-olvaso', id: 'kk-kep' });
-    const cimke = h('label', { class: 'gomb gomb-fo kk-nagy', for: 'kk-kep' }, 'Kép készítése / feltöltése');
-    fajl.addEventListener('change', async () => {
-      const fj = fajl.files && fajl.files[0]; if (!fj) return;
-      try {
-        cimke.textContent = 'Feltöltés…';
-        const { blob } = await kepAtmeretez(fj);
-        await api.feltolt(`/kezelesek/${encodeURIComponent(all.sid)}/kepek`, { pont: all.sorszam }, blob);
-        await sessionBetolt().catch(() => { all.kepVan = true; }); ertesit('A kép feltöltve.'); rajzL2();
-      } catch (e) {
-        if (e.status === 409) { await sessionBetolt().catch(() => {}); ertesit('Ehhez az alkalomhoz már van feltöltött kép.'); rajzL2(); return; }
-        ertesit(e.message || 'A feltöltés nem sikerült.', 'hiba'); cimke.textContent = 'Újra próbálom';
-      }
-    });
-    tolt(l2, h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép'),
-      h('p', null, `A(z) ${all.sorszam}. alkalmon kötelező, mindig ugyanabból a rögzítési pontból. `, jelveny('Hiányzik', 'figyelem')), cimke, fajl);
+    tolt(l2, fej2(), h('p', null, `A(z) ${all.sorszam}. alkalmon kötelező, mindig ugyanabból a rögzítési pontból. `, jelveny('Hiányzik', 'figyelem')),
+      ...fajlGomb('kk-kep', 'Mentett kép kiválasztása (hajkamera-app)', false, false), usbPanel(false), ...fajlGomb('kk-kep-telefon', 'Fotó a készülék kamerájával', false, true));
   };
 
   // ---- 3-6. lepes: tartalom (a kezeles fajtaja szerint) ----
