@@ -15,6 +15,7 @@
 import { meresSema } from './elosztas.js';
 import { sema as parositasSema } from '../foglalas-kulcs.js';
 import { PLATFORMOK } from './platformok.js';
+import { replayLista } from './validation-replay.js';
 
 const sec = (now) => Math.floor(now / 1000);
 const UJ_VISSZATERO = Object.freeze({ FoglalasElso: 'uj', Konzultacio: 'uj_konzultacio', Visszajaro: 'visszatero', Ajandekkartya: 'ajandekkartya' });
@@ -86,6 +87,7 @@ export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = n
   };
 }
 
+export const GA4_MIN_JOGOSULT = 20; // DECISION #123
 const arany = (a, b) => (b > 0 ? Math.round((a / b) * 10000) / 10000 : null);
 /**
  * DECISION #122: lefedettseg platformonkent (es uzletagonkent). Egy foglalas = egy ALAPESEMENY-cella platformonkent; a nevezo = a szabaly szerint jogosult foglalasok (ok + hiany), a jogos_0 nincs benne.
@@ -113,7 +115,9 @@ export function lefedettseg(sorok) {
       jogos_0_nincs_analytics_hozzajarulas: bazis.filter((s) => (alapCella(s, 'ga4') || {}).kod === 'ga4_nincs_ana_hozzajarulas').length,
     };
   };
-  const mind = { foglalas_sor: sorok.length, alapesemeny_nelkuli_foglalas: sorok.filter((s) => !s.esemenyek.some((e) => e.tipus === 'alap')).length, platformonkent: {}, ga4_client_id: ga4Stat(sorok), uzletagonkent: {} };
+  // DECISION #123: a GA4 PASS legalabb GA4_MIN_JOGOSULT jogosult foglalast kivan; alatta NOT_EVALUABLE (ez nem blokkolja a Meta / TikTok / Google atallast). Oldalankent szamol: tobb oldalnal az oldalak jogosult-szamait ossze kell adni.
+  const ga4Jogosult = platformStat(sorok, 'ga4').jogosult;
+  const mind = { ga4_ertekelhetoseg: { jogosult_foglalas: ga4Jogosult, kuszob: GA4_MIN_JOGOSULT, allapot: ga4Jogosult >= GA4_MIN_JOGOSULT ? 'EVALUABLE' : 'NOT_EVALUABLE' }, foglalas_sor: sorok.length, alapesemeny_nelkuli_foglalas: sorok.filter((s) => !s.esemenyek.some((e) => e.tipus === 'alap')).length, platformonkent: {}, ga4_client_id: ga4Stat(sorok), uzletagonkent: {} };
   for (const p of PLATFORMOK) mind.platformonkent[p] = platformStat(sorok, p);
   for (const u of [...new Set(sorok.map((s) => s.uzletag).filter(Boolean))].sort()) {
     const r = sorok.filter((s) => s.uzletag === u);
@@ -185,6 +189,7 @@ export async function egyeztetoSorok(db, { tol, ig, uzletag = null, limit = 500,
     if (c.osztaly === 'jogos_0') osszegzes.jogos_0_okok[p][c.ok] = (osszegzes.jogos_0_okok[p][c.ok] || 0) + 1;
   }
   osszegzes.lefedettseg = lefedettseg(sorok);
+  osszegzes.validation_replay = await replayLista(db); // DECISION #123: a GA4 validation_replay tetelek KIZARVA a mintabol, itt csak tajekoztatasul
   const cs = csereIdo(ga4_csere);
   if (ga4_csere !== null && ga4_csere !== undefined && ga4_csere !== '' && cs === null) return { ok: false, miert: 'ga4_csere: unix masodperc vagy ISO-datum' };
   if (cs !== null) { // a GA4 titokcsere jelolese: osszegzes + a jelolt esemeny cellaja az oldalon (ha ott van)
