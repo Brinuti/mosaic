@@ -174,8 +174,11 @@ input.kod { text-align: center; letter-spacing: .5em; font-size: 1.6rem; font-fa
 @media print { .felso, .oldalsav, .demo-sav, .toastok { display: none; } .alkalmazas { display: block; } }
 
 /* ---- Kezeles kozben (telefonra szabott vezetett folyamat) ---- */
-.kk-kartya { display: grid; gap: 4px; padding: 16px; margin-bottom: 12px; background: var(--feher); border: 1px solid var(--vonal); border-radius: var(--sugar); box-shadow: var(--arnyek); text-decoration: none; color: inherit; font-size: 1.05rem; min-height: 64px; }
-.kk-kartya:active { background: var(--krem2); }
+.kk-kartya { padding: 4px 16px 12px; margin-bottom: 12px; background: var(--feher); border: 1px solid var(--vonal); border-radius: var(--sugar); font-size: 1.05rem; }
+.kk-kartya-fej { display: grid; gap: 4px; padding: 12px 0 8px; text-decoration: none; color: inherit; min-height: 64px; }
+a.kk-kartya-fej:active { background: var(--krem2); }
+.kk-jelek { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.kk-akciok { margin: 0; padding-top: 4px; border-top: 1px solid var(--vonal); }
 .kk-lepes { background: var(--feher); border: 1px solid var(--vonal); border-radius: var(--sugar); padding: 16px; margin-bottom: 14px; box-shadow: var(--arnyek); }
 .kk-lepes h3 { display: flex; align-items: center; gap: 10px; }
 .kk-alcim { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--vonal); }
@@ -199,3 +202,12 @@ input.kod { text-align: center; letter-spacing: .5em; font-size: 1.6rem; font-fa
 .oldalsav details.egyeb summary { cursor: pointer; color: #8fa8a3; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; padding: 10px 12px; min-height: 44px; display: flex; align-items: center; }
 .oldalsav details.egyeb a { font-size: .9rem; opacity: .9; }
 .gombsor.gyors { align-items: center; margin: 4px 0 12px; }
+
+/* ---- egyszerusitett kinezet: nagyobb betu, kevesebb szin ---- */
+body { font-size: 17px; }
+.kartya, .kk-lepes { box-shadow: none; }
+.jelveny { background: transparent; color: var(--szoveg); border: 1px solid var(--vonal); font-size: .82rem; }
+.jelveny-ok { background: transparent; color: var(--zold); border-color: var(--zold); }
+.jelveny-figyelem, .jelveny-info { background: transparent; color: var(--szoveg); border-color: var(--vonal); }
+.jelveny-veszely { background: var(--piros); color: #fff; border-color: var(--piros); }
+.figyelem-figyelem, .figyelem-info { background: var(--feher); color: var(--szoveg); border-color: var(--vonal); }

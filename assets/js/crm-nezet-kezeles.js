@@ -21,20 +21,57 @@ export default async function nezet(ctx) {
   return folyamat(ctx, fid);
 }
 
-// ---- 1. mai foglalasok: nagy kartyak ------------------------------------------------------------------------------------------------------------
+// ---- 1. a mai vendegek: egy kepernyo (a regi munkalista helyett) -----------------------------------------------------------------------------
+// Kezelo: a kartya a vezetett folyamatot nyitja; "Nem jelent meg" es "Kerdoiv-link" is itt van. Recepcio / szalonvezeto: ugyanaz a lista, csak olvashato (a vendeglapra visz).
 async function lista(ctx) {
   const nap = ctx.params.get('nap') || isoNap();
+  const kezelo = ctx.van(['therapist', 'clinical_lead']);
   const t = h('div');
   const ugras = (d, felirat) => gomb(felirat, () => ctx.navigal(`#/kezeles?nap=${napEltolas(nap, d)}`), { tipus: 'kicsi' });
-  tolt(ctx.root, oldalCim('Kezelés közben', ugras(-1, '← Előző nap'), ugras(1, 'Következő nap →')), h('p', { class: 'halvany' }, `Válaszd ki a vendéget (${nap}), és a lépések végigvezetnek.`), t);
+  tolt(ctx.root, oldalCim(nap === isoNap() ? 'Ma' : `Vendégek: ${nap}`, ugras(-1, '← Előző nap'), nap !== isoNap() ? gomb('Ma', () => ctx.navigal('#/kezeles'), { tipus: 'kicsi' }) : null, ugras(1, 'Következő nap →')), t);
   const v = await toltes(t, () => ctx.api.get('/munkalista', { nap }));
   if (v === undefined) return;
-  const sorok = (v.foglalasok || []).filter((s) => !['cancelled', 'no_show'].includes(s.allapot));
+  const sorok = (v.foglalasok || []).filter((s) => s.allapot !== 'cancelled');
   if (!sorok.length) { tolt(t, uresAllapot('Erre a napra nincs foglalás.', 'A nap váltásához használd a fenti gombokat.')); return; }
-  tolt(t, sorok.map((s) => h('a', { class: 'kk-kartya', href: `#/kezeles/${encodeURIComponent(s.foglalas_id)}?nap=${nap}` },
-    h('strong', null, s.vendeg.nev), h('span', { class: 'halvany' }, datumIdo(s.kezdes)),
-    s.megjelent_igazolt ? jelveny('Igazolva', 'ok') : jelveny('Igazolásra vár', 'figyelem'),
-    s.kontraindikacio_jelzes ? jelveny('Jelzés: ellenőrzés kell', 'veszely') : null)));
+  tolt(t, sorok.map((s) => kartya_(ctx, s, nap, kezelo)));
+}
+
+function kartya_(ctx, s, nap, kezelo) {
+  const { api } = ctx;
+  const igazolt = !!s.megjelent_igazolt;
+  const nincsMeg = s.allapot === 'no_show';
+  const href = kezelo ? `#/kezeles/${encodeURIComponent(s.foglalas_id)}?nap=${nap}` : (ctx.van(['reception', 'salon_manager']) ? `#/vendegek/${encodeURIComponent(s.vendeg.id)}` : null);
+  const jelek = [
+    igazolt ? jelveny('Igazolva', 'ok') : nincsMeg ? jelveny('Nem jelent meg', '') : jelveny('Még nem igazolt', ''),
+    s.kontraindikacio_jelzes ? jelveny('Jelzés: ellenőrzés kell', 'veszely') : null,
+    s.felmero && !s.felmero.kitoltve && !igazolt && !nincsMeg ? jelveny('Kérdőív hiányzik', '') : null,
+  ];
+  const fej = h(href ? 'a' : 'div', { class: 'kk-kartya-fej', ...(href ? { href } : {}) }, h('strong', null, s.vendeg.nev), h('span', { class: 'halvany' }, datumIdo(s.kezdes)), h('div', { class: 'kk-jelek' }, jelek));
+  const akciok = [];
+  if (kezelo && !igazolt && !nincsMeg) {
+    if (s.felmero && !s.felmero.kitoltve) {
+      const k = gomb('Kérdőív-link', futtatLink(ctx, s), { tipus: 'kicsi' }); akciok.push(k);
+    }
+    const ns = gomb('Nem jelent meg', null, { tipus: 'kicsi' });
+    ns.addEventListener('click', futtat(ns, async () => {
+      if (!(await megerosites('Nem jelent meg', 'Hiteles no-show jelölés. Ez nem számít elvégzett kezelésnek, és nem vonja le a bérletet.', { megerosit: 'Jelölés', veszely: true }))) return;
+      await api.post(`/foglalasok/${encodeURIComponent(s.foglalas_id)}/no-show`, {}); ertesit('Megjelölve: nem jelent meg.'); ctx.frissit();
+    }));
+    akciok.push(ns);
+  }
+  return h('div', { class: 'kk-kartya' }, fej, akciok.length ? h('div', { class: 'gombsor kk-akciok' }, akciok) : null);
+}
+
+function futtatLink(ctx, s) {
+  return async (ev) => {
+    const g = ev && ev.currentTarget; if (g) g.disabled = true;
+    try {
+      const r = await ctx.api.post(`/foglalasok/${encodeURIComponent(s.foglalas_id)}/felmero-kiad`, {});
+      if (r && r.mar) { ertesit('A kérdőív már kiadva (a link csak kiadáskor látható).'); return; }
+      const tok = r && (r.link || r.token); const url = tok ? (String(tok).startsWith('http') ? tok : `${location.origin}/api/crm/public/felmero/${tok}`) : '';
+      await megerosites('Kérdőív-link a vendégnek', h('div', null, h('p', null, 'Ezt a linket add át a vendégnek (személyes, csak most látható):'), h('input', { type: 'text', readonly: true, value: url, 'aria-label': 'Kérdőív-link', onfocus: (e) => e.target.select() })), { megerosit: 'Kész', megse: 'Bezár' });
+    } catch (e) { if (e.status === 401) throw e; ertesit(e.message || 'Hiba történt.', 'hiba'); } finally { if (g) g.disabled = false; }
+  };
 }
 
 // ---- 2. a vezetett folyamat ---------------------------------------------------------------------------------------------------------------------
