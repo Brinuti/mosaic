@@ -1,6 +1,7 @@
 // A Wix-oldalak kepeinek es videoinak letoltese helyi fajlba.
 //
 //   node tools/media.mjs
+//   node tools/media.mjs --hianyzo     csak a meg nem kiszolgalt (assets/img, assets/video) fajlok
 //
 // Kepek: a Wix az eredeti feltoltott kepet (media/<id>) futas kozben meretezi; mi az
 // eredetit mentjuk le assets/img/<id>.<ext> neven (a ~mv2 jelzo nelkul) - a
@@ -44,7 +45,10 @@ for (const f of MAPPAK.flatMap(oldalFajlok)) {
 const feladatok = [
   ...[...kepek].map(([nev, url]) => ({ url, cel: path.join(IMG, nev) })),
   ...[...videok].map(([id, q]) => ({ url: `https://video.wixstatic.com/video/${id}/${q}p/mp4/file.mp4`, cel: path.join(VID, id + '.mp4') })),
-].filter((f) => !fs.existsSync(f.cel));
+].filter((f) => !fs.existsSync(f.cel))
+  // --hianyzo: csak ami a kiszolgalt keszletbol (assets/img, assets/video) is hianyzik (pl. uj oldal
+  // felvetelekor), igy a kepek-kicsinyites.py a meglevo kepekhez nem nyul
+  .filter((f) => !process.argv.includes('--hianyzo') || !fs.existsSync(path.join(ROOT, f.cel.startsWith(VID) ? 'assets/video' : 'assets/img', path.basename(f.cel))));
 
 let kesz = 0; const hibak = [];
 await Promise.all(Array.from({ length: 8 }, async () => {

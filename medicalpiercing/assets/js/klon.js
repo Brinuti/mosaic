@@ -254,7 +254,9 @@
   // --- 6. urlapok (wixui-form, allasjelentkezes) -----------------------------
   // A Wix-urlap mezoi valtozatlanok; a bekuldest a functions/[[path]].js kapja
   // (POST /api/urlap, multipart), es e-mailben tovabbitja. A feltoltes-gomb a
-  // kivalasztott fajl nevet mutatja.
+  // kivalasztott fajl nevet mutatja. Sikeres bekuldes utan, mint a Wixen, a /allas-ok
+  // koszonooldalra visz (az oldal minden ilyen urlapja allasjelentkezes; a Wix-beallitas:
+  // successActionType LINK, successLinkValue: az allas-ok oldal).
   //
   // Hibajelzes, ugyanugy, mint az eles oldalon (merve, 2026-10-10): a szovegmezo gyokere a
   // mezo elhagyasakor "bcsnlz" osztalyt kap (a Wix-CSS ilyenkor a :invalid mezot szinezi:
@@ -474,6 +476,7 @@
         if (felirat) felirat.textContent = 'Köszönjük, megkaptuk!';
         f.reset();
         for (const c of f.querySelectorAll('label[data-eredeti]')) c.textContent = c.dataset.eredeti;
+        location.assign('/allas-ok');
       } catch (x) {
         if (felirat) felirat.textContent = 'Hiba történt, próbáld újra!';
         setTimeout(() => { if (felirat) felirat.textContent = eredeti; }, 4000);
@@ -1167,6 +1170,8 @@
   // egyebkent "Írd be a választ.". Javitaskor a hiba eltunik. A datum a Wix-naptarhoz hasonlo
   // felugroban valaszthato ("2026. 10. 15."), a "Mire kérsz időpontot?" sajat legordulo, a
   // "Feltöltés!" kepeket csatol (a nevuk a gomb alatt). A bekuldes e-mailben megy (/api/urlap).
+  // Sikeres bekuldes utan, mint a Wixen (submitSettings: REDIRECT), a /kontroll-ok cimre visz,
+  // amit a Wix atiranyitas-kezeloje (es a lib/utvonal.js) 301-gyel a /kontroll-xyz oldalra kuld.
   const UJ_HIBA_IKON = '<svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20" class="srfS_dD" aria-hidden="true"><path fill-rule="evenodd" d="M9.5,3 C13.084,3 16,5.916 16,9.5 C16,13.084 13.084,16 9.5,16 C5.916,16 3,13.084 3,9.5 C3,5.916 5.916,3 9.5,3 Z M9.5,4 C6.467,4 4,6.467 4,9.5 C4,12.533 6.467,15 9.5,15 C12.533,15 15,12.533 15,9.5 C15,6.467 12.533,4 9.5,4 Z M10,11 L10,12 L9,12 L9,11 L10,11 Z M10,7 L10,10 L9,10 L9,7 L10,7 Z"></path></svg>';
   const HONAPOK = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
   const ketJegy = (n) => String(n).padStart(2, '0');
@@ -1544,6 +1549,7 @@
         for (const sel of f.querySelectorAll('select[data-hook="native-select"]')) sel.classList.add('opHmsAa--placeholder');
         const fl = f.querySelector('.mp-fajlok');
         if (fl) fl.textContent = '';
+        location.assign('/kontroll-ok');
       } catch (x) {
         felirat.textContent = 'Hiba történt, próbáld újra!';
         setTimeout(() => { felirat.textContent = eredetiFelirat; }, 4000);
