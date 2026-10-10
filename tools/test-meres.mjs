@@ -470,20 +470,23 @@ test('HTTP /api/meres-erkezes: azonos eredet kell (403), tul nagy 413, nem JSON 
 // --- bongeszo: assets/js/attribucio.js (vm-ben, hamis window / document / tarolo) -------------------------------------------------------------
 import vm from 'node:vm';
 const ATTR_FORRAS = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'assets', 'js', 'attribucio.js'), 'utf8');
-const tarolo = (kezdo = {}) => { const m = new Map(Object.entries(kezdo)); return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k), _m: m }; };
-function bongeszo({ host = 'x.pages.dev', search = '', cookie = '', ls = tarolo(), ss = tarolo(), fetchImpl } = {}) {
+const tarolo = (kezdo = {}) => { const m = new Map(Object.entries(kezdo)); const irasok = []; return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => { irasok.push(k); m.set(k, String(v)); }, removeItem: (k) => m.delete(k), _m: m, _irasok: irasok }; };
+const CC = (o) => JSON.stringify({ v: 1, t: Date.now(), fun: true, ana: true, adv: true, ...o });   // a suti.js dontese (mh_cc): alapbol minden kategoria engedelyezve
+// hamis suti.js (window.mhSuti): engedely(kat) + figyel(fn); az ertesit(uj) a hozzajarulas valtozasat jatssza
+function hamisSuti(kezdo) { const dontes = { ...kezdo }; const figyelok = []; return { engedely: (k) => !!dontes[k], figyel: (fn) => figyelok.push(fn), ertesit: (uj) => { Object.assign(dontes, uj); figyelok.forEach((f) => f({ ...dontes })); } }; }
+function bongeszo({ host = 'x.pages.dev', search = '', cookie = '', ls = tarolo(), ss = tarolo(), fetchImpl, suti } = {}) {
   const hivasok = [];
   const win = { top: null };
   const ctx = {
     window: win, document: { get cookie() { return cookie; } }, localStorage: ls, sessionStorage: ss, location: { hostname: host, search, origin: 'https://' + host, pathname: '/foglalas-ok' }, URLSearchParams, Date, JSON, Math, Promise, String, Object, encodeURIComponent, decodeURIComponent, RegExp,
     fetch: fetchImpl || (async (u, o) => { hivasok.push({ u, body: JSON.parse(o.body) }); return { ok: true, status: 200, json: async () => ({ ok: true }) }; }),
   };
-  win.top = win; win.self = win; ctx.window = win; Object.assign(win, ctx); ctx.self = win;
+  win.top = win; win.self = win; ctx.window = win; Object.assign(win, ctx); ctx.self = win; if (suti) win.mhSuti = suti;
   vm.createContext(win); vm.runInContext(ATTR_FORRAS, win);
   return { win, hivasok, ls, ss };
 }
 test('attribucio.js: kattintasazonositok platformonkent kulon + idobelyeg, elso / utolso UTM, _fbp / _ttp, GA4 client_id + session_id; a szerver hibak nelkul fogadja', async () => {
-  const { win, ls } = bongeszo({ search: `?gclid=${GCLID}&fbclid=IwAR_fbclid_TESZT_01&ttclid=E.C.P.ttclid_TESZT_01&utm_source=google&utm_medium=cpc&utm_campaign=elso`, cookie: `_fbp=fb.1.1759759200000.1234567890; _ttp=ttp_TESZT_0123456789abcdef; _ga=GA1.1.1234567890.1759759200; _ga_H4206SQ0Q7=GS2.1.s1759759200$o1$g0$t1759759200$j60$l0$h0` });
+  const { win, ls } = bongeszo({ ls: tarolo({ mh_cc: CC() }), search: `?gclid=${GCLID}&fbclid=IwAR_fbclid_TESZT_01&ttclid=E.C.P.ttclid_TESZT_01&utm_source=google&utm_medium=cpc&utm_campaign=elso`, cookie: `_fbp=fb.1.1759759200000.1234567890; _ttp=ttp_TESZT_0123456789abcdef; _ga=GA1.1.1234567890.1759759200; _ga_H4206SQ0Q7=GS2.1.s1759759200$o1$g0$t1759759200$j60$l0$h0` });
   const p = JSON.parse(JSON.stringify(win.mhAttribucio.pillanatkep())); // a vm-bol jovo objektum prototipusa mas
   assert.equal(p.google.gclid.ertek, GCLID); assert.ok(p.google.gclid.ts > 1.7e9);
   assert.equal(p.meta.fbclid, 'IwAR_fbclid_TESZT_01'); assert.match(p.meta.fbc, /^fb\.1\.\d{13}\.IwAR_fbclid_TESZT_01$/);
@@ -508,6 +511,40 @@ test('attribucio.js: hibas / injektalt URL-parameter nem kerul be; hozzajarulas 
   // QA-4 (DECISION-LOG #120): az eles domainen fut (ELES_ENGEDELYEZVE = true); a kapcsolo a kodban megmarad (veszleallitas egy sorral: false)
   for (const host of ['www.mosaicheadspa.hu', 'mosaicheadspa.hu']) assert.ok(bongeszo({ host, search: `?gclid=${GCLID}` }).win.mhAttribucio, host);
   assert.ok(/var ELES_ENGEDELYEZVE = true;/.test(ATTR_FORRAS) && /ELES_DOMAINEK = \['mosaicheadspa\.hu', 'www\.mosaicheadspa\.hu'\]/.test(ATTR_FORRAS), 'a kapcsolo es a domain-lista a kodban van');
+});
+test('attribucio.js (GPT-dontes, 2026-10-10): hozzajarulas nelkul / elutasitva 0 attribucios localStorage-iras; a memoriabeli adat megy a szervernek (SZ-38 valtozatlan); engedellyel az iras megtortenik', async () => {
+  const URL_ADAT = `?gclid=${GCLID}&fbclid=IwAR_fbclid_TESZT_01&ttclid=E.C.P.ttclid_TESZT_01&utm_source=google&utm_medium=cpc&utm_campaign=elso`;
+  const attrIras = (ls) => ls._irasok.filter((k) => k === 'mh_attr').length;
+  for (const [nev, ls] of [['dontes nelkul', tarolo()], ['elutasitva (adv:false)', tarolo({ mh_cc: CC({ adv: false }) })], ['csak statisztika (ana)', tarolo({ mh_cc: CC({ adv: false, fun: false }) })]]) {
+    const b = bongeszo({ ls, search: URL_ADAT });
+    assert.equal(attrIras(ls), 0, nev + ': 0 attribucios localStorage-iras'); assert.equal(ls._m.has('mh_attr'), false, nev + ': nincs mh_attr');
+    const p = JSON.parse(JSON.stringify(b.win.mhAttribucio.pillanatkep()));
+    assert.equal(p.google.gclid.ertek, GCLID, nev + ': a memoriabeli adat megvan'); assert.ok(p.meta.fbclid && p.tiktok.ttclid && p.utm_elso.campaign === 'elso');
+    await b.win.mhAttribucio.kuld({ source_id: BID, uzletag: 'headspa', tipus: 'foglalas' });
+    assert.equal(b.hivasok.length, 1); assert.equal(b.hivasok[0].body.attr.google.gclid.ertek, GCLID, nev + ': a szerver megkapja (SZ-38)');
+    assert.equal(attrIras(ls), 0, nev + ': a kuldes sem ir a tarolora');
+  }
+  // engedellyel: az iras megtortenik
+  const lsOk = tarolo({ mh_cc: CC() }); bongeszo({ ls: lsOk, search: URL_ADAT });
+  assert.ok(attrIras(lsOk) >= 1 && lsOk._m.has('mh_attr')); assert.equal(JSON.parse(lsOk._m.get('mh_attr')).google.gclid.ertek, GCLID);
+  // az engedely elott (regebbi verzioval) tarolt adat hozzajarulas nelkul torlodik, es nem hasznalodik fel
+  const regi = tarolo({ mh_attr: JSON.stringify({ v: 1, google: { gclid: { ertek: 'Cj0KCQjw_REGI_gclid_0123456789', ts: Math.floor(Date.now() / 1000) - 100 } } }) });
+  const bRegi = bongeszo({ ls: regi }); assert.equal(regi._m.has('mh_attr'), false, 'a hozzajarulas nelkuli regi adat torolve'); assert.equal(bRegi.win.mhAttribucio.pillanatkep().google, undefined);
+});
+test('attribucio.js: a hozzajarulas pillanataban a memoriabeli pillanatkep kiirodik; visszavonaskor a tarolt adat torlodik; csak a marketing (adv) engedely szamit', () => {
+  const ls = tarolo({ mh_cc: CC({ adv: false }) });
+  const suti = hamisSuti({ adv: false, ana: true, fun: true });
+  const b = bongeszo({ ls, suti, search: `?gclid=${GCLID}&utm_source=google&utm_campaign=elso` });
+  assert.equal(ls._irasok.filter((k) => k === 'mh_attr').length, 0, 'hozzajarulas elott nincs iras');
+  suti.ertesit({ ana: true });                                         // csak statisztika: nem marketing -> tovabbra sincs iras
+  assert.equal(ls._m.has('mh_attr'), false);
+  suti.ertesit({ adv: true });                                         // marketing-hozzajarulas -> kiirodik a memoriabeli pillanatkep
+  assert.equal(ls._m.has('mh_attr'), true); const t = JSON.parse(ls._m.get('mh_attr')); assert.equal(t.google.gclid.ertek, GCLID); assert.equal(t.utm_elso.campaign, 'elso');
+  assert.equal(JSON.parse(JSON.stringify(b.win.mhAttribucio.pillanatkep())).google.gclid.ertek, GCLID);
+  suti.ertesit({ adv: false });                                        // visszavonas -> torles
+  assert.equal(ls._m.has('mh_attr'), false, 'visszavonaskor a tarolt adat torlodik');
+  // ha a suti.js csak kesobb tolt be (nincs window.mhSuti), a mh_cc-bol dont, es a hibas / hianyzo document nem dobja el az oldalt
+  assert.doesNotThrow(() => bongeszo({ ls: tarolo({ mh_cc: CC() }) }));
 });
 test('attribucio.js kuld(): a foglalas azonositojaval POST /api/meres-erkezes (szemelyes adat nelkul), egyszer; a szerver hibaja nem akadalyoz', async () => {
   const b = bongeszo({ search: `?gclid=${GCLID}`, ls: tarolo({ mh_cc: JSON.stringify({ v: 1, t: Date.now(), fun: true, ana: true, adv: true }) }) });

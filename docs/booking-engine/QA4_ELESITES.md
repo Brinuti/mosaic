@@ -30,6 +30,8 @@ Naplók: `docs/booking-engine/meres-naplo/qa4-smoke-*.json`. Futtatás: `node --
 
 Kód (ez a PR): éles `KULCS_DB` kötés a `wrangler.toml`-ban (`mosaic-foglalas-kulcs`, `ea7b0edd-c89b-4515-a4b1-50ea25bb50cc`), éles változók (`EGYEZTETES_KULCS_HASH`, `MERES_ELOSZTO`, `META_TESZT_KOD`, `TIKTOK_TESZT_KOD`, `GA4_TESZT_MEASUREMENT_ID`), és `assets/js/attribucio.js` `ELES_ENGEDELYEZVE = true`.
 
+**Tényleges időpontok (UTC):** T0 = 2026-10-10 ~07:14 (PR #222 élesedése; éles kanári-írás 07:15:41, utána törölve); **T1 = 2026-10-10 08:36:45** (`meres_kapcsolo` `mind`: ki → be; a Production titkok beállítva, a Zap `01a1125b` az éles végpontra mutat). **A QA-5 ablak T1-től számít.** A T1 előtt keletkezett két valódi tétel (HeadSpa ajándékkártya `pi_3UOv36…`, fodrász foglalás `mb_0mv24h6pc956l82du9ejweq`) `kihagyva: veszkapcsolo` állapotban maradt, nincs a mintában.
+
 Két időpont, külön jelölve:
 
 - **T0 – párosító írás él:** a PR merge-deploy-ja után a valódi köszönőoldalak írják a kulcsot (`/api/foglalas-kulcs`) és az érkezési adatot (`/api/meres-erkezes`). A küldés ekkor még **kikapcsolva** van: az éles D1-ben `meres_kapcsolo` `mind` = ki (`ok`: „QA-4 indítás…”), így semmi nem megy ki platformra, és a kimaradt események újrapróbálhatók (`veszkapcsolo` miatti kihagyás).
@@ -41,7 +43,7 @@ Gyors leállítás: írás: `iras` kapcsoló (fent); küldés: `mind` kapcsoló;
 
 ## 4. QA-5 foglalásonkénti egyeztető sor
 
-`GET /api/meres-admin?kulcs=…&egyeztetes=1&tol=<unix>&ig=<unix>[&uzletag=..][&formatum=csv][&limit=..][&utan=<booking_id>]` (csak olvas, kulcsos). Kód: `netlify/lib/meres/egyeztetes-sor.js`, teszt: `node --test tools/test-egyeztetes-sor.mjs`.
+`GET /api/meres-admin?kulcs=…&egyeztetes=1&tol=<unix>&ig=<unix>[&uzletag=..][&formatum=csv][&limit=..][&utan=<booking_id>][&ga4_csere=<unix|ISO>]` (csak olvas, kulcsos). Kód: `netlify/lib/meres/egyeztetes-sor.js`, teszt: `node --test tools/test-egyeztetes-sor.mjs`.
 
 Egy sor = egy foglalás (CSV-ben foglalás × esemény): `booking_id`, `kulcs` (`placeId|employeeId|startUnix`: ezzel kapcsolódik a Salonic-oldal), `uzletag`, `esemenytipus`, `uj_visszatero` (`uj`, `uj_konzultacio`, `visszatero`), `ertek`, `penznem`, a párosítás állapota és forrása, `esemeny_id`, platformonként (`meta`, `tiktok`, `google`, `ga4`) a kézbesítések száma és osztálya:
 
@@ -51,12 +53,14 @@ Egy sor = egy foglalás (CSV-ben foglalás × esemény): `booking_id`, `kulcs` (
 
 Foglalás-szintű jelzések: `tobb_alap_esemeny:…` (rossz típus / duplikáció gyanú), `platform_hiany:<platform>:<esemény>:<ok>`, `parositatlan`, `egyeztetes_<állapot>` (pl. `fuggoben`: friss soroknál az újrapróbálás miatt még nem hiba), `nincs_esemeny`.
 
+**GA4 titokcsere jelölése (`ga4_csere`):** az összegzés `ga4_csere` blokkja megadja a csere előtti **utolsó** és az utáni **első** sikeres (`elkuldve`) GA4 árnyék-eseményt (`esemeny_id`, `source_id`, `kuldve_utc`, `http_status`), külön a foglalásokra (`foglalas_utolso_sikeres_elotte`, `foglalas_elso_sikeres_utana`) és bármely eseményre (ajándékkártyát is beleértve), valamint a csere utáni, az első sikeresig keletkezett sikertelen GA4 cellák számát. A jelölt esemény GA4 cellája a sorokban `csere_jelolo` mezőt kap (CSV: `ga4_csere_jelolo` oszlop). A küldés ideje a `meres_kuldes.frissitve`; a csere idejét a QA-oldal rögzíti és paraméterként adja.
+
 Határ: a láncból **ez a sor az „új mérés” és a „platform árnyék-kézbesítés” oldalt adja**. A **Salonic**-oldalt (tény: foglalás, ár, új/visszatérő, törlés) és a **régi mérés** oldalt a mérési oldal adja; a két táblát a `kulcs` / `booking_id` köti össze. A platformok saját felületén látható attribúciót nem hasonlítjuk.
 
 QA-5 küszöbök (DECISION #120): lefedettség ≥ 98% összesen és egyetlen megfelelő mintájú üzletág sem < 95%; a régi mérés < 97% esetén +3 pp, ≥ 97% esetén új ≥ 98% és legfeljebb −1 pp; 0% értékhiba (HUF pontos, ±1 Ft kerekítés); 0 duplikáció, 0 rossz eseménytípus, 0 rossz foglaláshoz rendelt esemény, 0 ismert hibás új/visszatérő besorolás. Ablak: legalább 7 teljes naptári nap **és** legalább 200 valódi, értékelhető foglalás; legfeljebb 14 nap.
 
 ## 5. Ismert, nyitott
 
-- Hozzájárulás: az `attribucio.js` az érkezési adatokat (kattintásazonosítók, UTM) a böngésző saját `localStorage`-ában tartja, a hozzájárulási döntést a foglaláskor küldi el; a szerver az SZ-38 szerint szűr. Ez nem új döntés (#99 3. pont), de a tulajdonos dönti el, hogy a `localStorage`-írás hozzájárulás előtt elfogadható-e.
+- **Hozzájárulás-függő tárolás (GPT-döntés, 2026-10-10, QA-5 előtti higiénia):** az `attribucio.js` a kattintásazonosítókat (gclid / gbraid / wbraid, fbclid, ttclid) és az UTM-et csak a **marketing-hozzájárulás** (`mh_cc.adv`, a `suti.js` döntése) után írja a `localStorage` `mh_attr` kulcsába. Hozzájárulás előtt / nélkül az adat csak memóriában van (az aktuális oldal URL-jéből), és ez megy a foglaláskor a szervernek (az SZ-38 szerinti feldolgozás változatlan); a hozzájárulás pillanatában a memóriabeli pillanatkép kiíródik, visszavonáskor / elutasításkor a tárolt `mh_attr` törlődik, az engedély előtt (korábbi verzióval) tárolt adat is. Ellenőrzés: `node --test tools/test-meres.mjs` (consent=false → 0 attribúciós írás; consent=true → írás; későbbi megadás; visszavonás) és `node tools/meres-proba/attribucio-hozzajarulas-bongeszo.mjs` (valódi Chromium + valódi süti-sáv; napló: `meres-naplo/attribucio-hozzajarulas-2026-10-10.json`). Következmény: hozzájárulás nélküli látogatónál a kattintásazonosító csak akkor jut el a szerverhez, ha a foglalás azonosítóját küldő oldalon (köszönőoldal) is az URL-ben van; ez a platformok egyezési minőségét (match quality) érinti, a QA-5 lefedettséget nem (az esemény az azonosító nélkül is kimegy).
 - A munkatárs által Salonicban rögzített lemondásról nem jön Salonic-levél (DECISION #120 carry-forward): az e-mail-alapú párosítás ezt nem látja; megoldás vagy bizonyított tartalék kell a platformátállás előtt.
 - A kimaradt (`veszkapcsolo`) események a `mind` bekapcsolása után újrapróbálhatók (nem automatikusan: a levél ismétlése vagy az `ajandek_ujra` admin-művelet indítja újra); az ajándékkártya árnyék-hook (`MERES_ELOSZTO=1`) az éles vásárlásokra is ugyanezt a kapcsolót és ugyanezeket az árnyék-célokat használja.

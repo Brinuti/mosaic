@@ -20,7 +20,7 @@ export async function kezelErkezes(request, env, deps = {}) {
   return valasz(r.ok ? 200 : 422, r);
 }
 
-/** /api/meres-admin (kulcsos, mint a /api/foglalas-egyeztetes): GET ?source_id=.. (naplo) | ?fuggo=1 (kuldesre varo kerelmek) | ?kapcsolok=1 | ?egyeztetes=1&tol=<unix>&ig=<unix>[&uzletag=..][&formatum=csv][&utan=<booking_id>] (QA-5 foglalasonkenti egyeztetosor, csak olvas);  POST {muvelet:'kapcsolo'|'megerosit', ...} */
+/** /api/meres-admin (kulcsos, mint a /api/foglalas-egyeztetes): GET ?source_id=.. (naplo) | ?fuggo=1 (kuldesre varo kerelmek) | ?kapcsolok=1 | ?egyeztetes=1&tol=<unix>&ig=<unix>[&uzletag=..][&formatum=csv][&utan=<booking_id>][&ga4_csere=<unix|ISO>] (QA-5 foglalasonkenti egyeztetosor, csak olvas; ga4_csere: a GA4 titokcsere elotti utolso / utani elso sikeres esemeny jelolese);  POST {muvelet:'kapcsolo'|'megerosit', ...} */
 export async function kezelAdmin(request, env, deps = {}) {
   if (!env || !env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
   if (!(await kulcsEllenorzes(request, env))) return valasz(404, { ok: false });
@@ -30,7 +30,7 @@ export async function kezelAdmin(request, env, deps = {}) {
     if (url.searchParams.get('fuggo') === '1') return valasz(200, { ok: true, fuggo: await fuggoKuldesek(env.KULCS_DB) });
     if (url.searchParams.get('egyeztetes') === '1') {
       const q = url.searchParams;
-      const r = await egyeztetoSorok(env.KULCS_DB, { tol: q.get('tol'), ig: q.get('ig'), uzletag: q.get('uzletag') || null, limit: q.get('limit'), utan: q.get('utan') || '' });
+      const r = await egyeztetoSorok(env.KULCS_DB, { tol: q.get('tol'), ig: q.get('ig'), uzletag: q.get('uzletag') || null, limit: q.get('limit'), utan: q.get('utan') || '', ga4_csere: q.get('ga4_csere') });
       if (!r.ok) return valasz(400, r);
       if (q.get('formatum') === 'csv') return new Response(egyeztetoCsv(r.sorok), { status: 200, headers: { 'content-type': 'text/csv; charset=utf-8', 'cache-control': 'no-store', 'x-kovetkezo': r.kovetkezo || '' } });
       return valasz(200, r);
