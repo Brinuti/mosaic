@@ -48,7 +48,7 @@ async function folyamat(ctx, fid) {
   const b = (lv.foglalasok || []).find((s) => s.foglalas_id === fid);
   if (!b) { tolt(hely, figyelmeztetes('figyelem', 'Ez a foglalás nem található ezen a napon.'), h('a', { class: 'gomb', href: `#/kezeles?nap=${nap}` }, 'Vissza a listához')); return; }
 
-  const all = { igazolt: !!b.megjelent_igazolt, sid: null, sorszam: null, kamera: false, kepVan: false, fajta: 'plan' };
+  const all = { igazolt: !!b.megjelent_igazolt, sid: null, sorszam: null, kamera: false, kepVan: false, kepId: null, fajta: 'plan' };
   const ertek = { meg: new Set(), cel: '', ritmus: 14, termek: '', hasznalat: '', kovetkezo: '', uzenet: '', uzenetKezi: false, ertekeles: '', rutinKontroll: '', egyeb: '' };
   const lepesek = h('div', { class: 'kk' });
   const kiegeszito = h('div');
@@ -61,7 +61,7 @@ async function folyamat(ctx, fid) {
     const s = k.slice().sort((x, y) => (x.sorszam || 0) - (y.sorszam || 0)).pop();
     if (s) { all.sid = s.id; all.sorszam = s.sorszam; all.kamera = !!s.kamera_kotelezo; }
     const kepek = (p.kepek || []).filter((x) => String(x.alkalom) === String(all.sorszam));
-    all.kepVan = kepek.length > 0;
+    all.kepVan = kepek.length > 0; all.kepId = kepek.length ? kepek[0].id : null;
   };
   if (all.igazolt) { try { await sessionBetolt(); } catch { /* a vendegprofil nelkul a folyamat az igazolasi lepesnel indul */ } }
   const terv = async () => { const v = await api.get(`/kezelesek/${encodeURIComponent(all.sid)}/terv`); all.fajta = pick(v.terv || v, 'fajta', 'kind') || 'plan'; return v; };
@@ -93,7 +93,28 @@ async function folyamat(ctx, fid) {
   const rajzL2 = () => {
     if (!all.sid) { tolt(l2, h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép'), h('p', { class: 'halvany' }, 'Az igazolás után tölthető fel.')); return; }
     if (!all.kamera) { tolt(l2, h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép'), h('p', { class: 'halvany' }, `A(z) ${all.sorszam}. alkalmon nem kötelező a hajkamera-felvétel.`)); return; }
-    if (all.kepVan) { tolt(l2, h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép'), h('p', null, `A(z) ${all.sorszam}. alkalomhoz már van feltöltött kép `, jelveny('Feltöltve', 'ok')), h('p', { class: 'halvany kicsi' }, 'Egy alkalomhoz egy kép tartozik. A képet a Kameraképek menüben nézheted meg.')); return; }
+    if (all.kepVan) {
+      const csereFajl = h('input', { type: 'file', accept: 'image/*', capture: 'environment', class: 'csak-olvaso', id: 'kk-kep-csere' });
+      const csereCimke = h('label', { class: 'gomb kk-nagy', for: 'kk-kep-csere' }, 'Kép cseréje (új felvétel)');
+      csereFajl.addEventListener('change', async () => {
+        const fj = csereFajl.files && csereFajl.files[0]; if (!fj) return;
+        try {
+          csereCimke.textContent = 'Feltöltés…';
+          const { blob } = await kepAtmeretez(fj);
+          await api.feltolt(`/kezelesek/${encodeURIComponent(all.sid)}/kepek`, { pont: all.sorszam, csere: '1' }, blob);
+          await sessionBetolt(); ertesit('A kép lecserélve.'); rajzL2();
+        } catch (e) { ertesit(e.message || 'A csere nem sikerült.', 'hiba'); csereCimke.textContent = 'Kép cseréje (új felvétel)'; }
+      });
+      const torol = h('button', { type: 'button', class: 'gomb gomb-veszely kk-nagy' }, 'Kép törlése');
+      torol.addEventListener('click', futtat(torol, async () => {
+        if (!all.kepId) return;
+        if (!(await megerosites('Kép törlése', 'A kép véglegesen törlődik, és a belőle kiadott vendég-linkek is érvénytelenek lesznek. A kamera-felvétel ehhez az alkalomhoz kötelező marad, utána újat kell feltölteni.', { megerosit: 'Törlés', veszely: true }))) return;
+        await api.del(`/kepek/${encodeURIComponent(all.kepId)}`);
+        all.kepVan = false; all.kepId = null; ertesit('A kép törölve.'); rajzL2();
+      }));
+      tolt(l2, h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép'), h('p', null, `A(z) ${all.sorszam}. alkalomhoz van feltöltött kép `, jelveny('Feltöltve', 'ok')), csereCimke, csereFajl, torol);
+      return;
+    }
     const fajl = h('input', { type: 'file', accept: 'image/*', capture: 'environment', class: 'csak-olvaso', id: 'kk-kep' });
     const cimke = h('label', { class: 'gomb gomb-fo kk-nagy', for: 'kk-kep' }, 'Kép készítése / feltöltése');
     fajl.addEventListener('change', async () => {
@@ -102,9 +123,9 @@ async function folyamat(ctx, fid) {
         cimke.textContent = 'Feltöltés…';
         const { blob } = await kepAtmeretez(fj);
         await api.feltolt(`/kezelesek/${encodeURIComponent(all.sid)}/kepek`, { pont: all.sorszam }, blob);
-        all.kepVan = true; ertesit('A kép feltöltve.'); rajzL2();
+        await sessionBetolt().catch(() => { all.kepVan = true; }); ertesit('A kép feltöltve.'); rajzL2();
       } catch (e) {
-        if (e.status === 409) { all.kepVan = true; ertesit('Ehhez az alkalomhoz már van feltöltött kép.'); rajzL2(); return; }
+        if (e.status === 409) { await sessionBetolt().catch(() => {}); ertesit('Ehhez az alkalomhoz már van feltöltött kép.'); rajzL2(); return; }
         ertesit(e.message || 'A feltöltés nem sikerült.', 'hiba'); cimke.textContent = 'Újra próbálom';
       }
     });

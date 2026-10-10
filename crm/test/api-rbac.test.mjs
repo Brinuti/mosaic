@@ -52,6 +52,7 @@ const TILTOTT = {
   'GET /dokumentumok/hianyzo': 'recepcio',
   'POST /kezelesek/:sessionId/kepek': 'recepcio',
   'GET /kepek/:id': 'recepcio',
+  'DELETE /kepek/:id': 'recepcio',
   'POST /osszehasonlitas': 'recepcio',
   'POST /osszehasonlitas/:id/veglegesit': 'recepcio',
   'POST /osszehasonlitas/:id/link': 'recepcio',

@@ -32,7 +32,7 @@ async function bajtHash(bajtok) {
 
 // ---- kepek ------------------------------------------------------------------------------------------------------------------------------------
 /** kep felvetele egy IGAZOLT kezeleshez. Csak az 1/3/5/10. alkalom; MIME + tartalom + meret ellenorzes; a storage_key szerver-oldali (path traversal ellen). */
-export async function kepFeltolt(db, { sessionId, staffId, bajtok, mime, capturePoint = 'fo', tarolo, now = most() }) {
+export async function kepFeltolt(db, { sessionId, staffId, bajtok, mime, capturePoint = 'fo', tarolo, csere = false, now = most() }) {
   const s = await elso(db, 'SELECT * FROM treatment_session WHERE id = ?1', sessionId);
   if (!s) throw new CrmHiba('NINCS_KEZELES', 'nincs ilyen (igazolt) kezeles', 404);
   await megkoveteli(db, staffId, 'write', 'camera_image', { guestId: s.guest_id, resourceId: sessionId, now });
@@ -43,9 +43,12 @@ export async function kepFeltolt(db, { sessionId, staffId, bajtok, mime, capture
   if (!/^[a-z0-9_-]{1,40}$/.test(capturePoint)) throw new CrmHiba('ERVENYTELEN_PONT', 'a rogzitesi pont: a-z0-9_-', 400);
   const id = uuid();
   const kulcs = `kepek/${s.guest_id}/${sessionId}/${id}.${KITERJESZTES[mime]}`;
+  // csere: a regi kep (ugyanaz az alkalom + rogzitesi pont) ugyanabban a tranzakcioban torlodik, igy nincs "kep nelkuli" pillanat
+  const regi = csere ? await elso(db, 'SELECT id, storage_key FROM camera_image WHERE session_id = ?1 AND capture_point = ?2 AND deleted_at IS NULL', sessionId, capturePoint) : null;
   await tarolo.put(kulcs, bajtok, { mime, meret: bajtok.length });
   try {
     await tranzakcio(db, [
+      ...(regi ? kepTorolStmtek(db, { imageId: regi.id, guestId: s.guest_id, staffId, ok: 'csere', now }) : []),
       keszit(db, 'INSERT INTO camera_image (id, guest_id, session_id, treatment_index, capture_point, storage_key, mime, size_bytes, sha256, taken_by, taken_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)',
         id, s.guest_id, sessionId, s.treatment_index, capturePoint, kulcs, mime, bajtok.length, await bajtHash(bajtok), staffId, now),
       auditStmt(db, { staffId, action: 'image.upload', resource: 'camera_image', resourceId: id, guestId: s.guest_id, detail: { alkalom: s.treatment_index, meret: bajtok.length }, now }),
@@ -55,7 +58,27 @@ export async function kepFeltolt(db, { sessionId, staffId, bajtok, mime, capture
     if (korlatHiba(e)) throw new CrmHiba('MAR_VAN_KEP', 'ehhez az alkalomhoz es rogzitesi ponthoz mar van kep', 409);
     throw e;
   }
-  return { imageId: id, storageKey: kulcs, treatmentIndex: s.treatment_index };
+  if (regi) { try { await tarolo.del(regi.storage_key); } catch { /* a regi bajtok torlese ujraprobalhato; az adatbazis mar nem hivatkozik rajuk */ } }
+  return { imageId: id, storageKey: kulcs, treatmentIndex: s.treatment_index, felulirt: regi ? regi.id : null };
+}
+
+/** a kep torlesenek utasitasai: soft delete (a rogzitesi pont felszabadul az ujrafeltolteshez), az erintett vendeg-linkek visszavonasa, audit */
+function kepTorolStmtek(db, { imageId, guestId, staffId, ok, now }) {
+  return [
+    keszit(db, "UPDATE camera_image SET deleted_at = ?2, capture_point = capture_point || '#torolt-' || id WHERE id = ?1 AND deleted_at IS NULL", imageId, now),
+    keszit(db, "UPDATE share_grant SET revoked_at = ?2, revoke_reason = 'image_deleted' WHERE revoked_at IS NULL AND comparison_id IN (SELECT id FROM image_comparison WHERE image_a_id = ?1 OR image_b_id = ?1)", imageId, now),
+    auditStmt(db, { staffId, action: 'image.delete', resource: 'camera_image', resourceId: imageId, guestId, detail: { ok }, now }),
+  ];
+}
+
+/** kep torlese (rossz / hibas felvetel): csak kezelo / szakmai vezeto (camera_image.write); a bajtok is torlodnek a taroloból, a vendeg-linkek a kepre visszavonodnak */
+export async function kepTorol(db, { imageId, staffId, tarolo, ok = 'torles', now = most() }) {
+  const k = await elso(db, 'SELECT id, guest_id, storage_key FROM camera_image WHERE id = ?1 AND deleted_at IS NULL', imageId);
+  if (!k) throw new CrmHiba('NINCS_KEP', 'nincs ilyen kep', 404);
+  await megkoveteli(db, staffId, 'write', 'camera_image', { guestId: k.guest_id, resourceId: imageId, now });
+  await tranzakcio(db, kepTorolStmtek(db, { imageId, guestId: k.guest_id, staffId, ok, now }));
+  try { await tarolo.del(k.storage_key); } catch { /* az adatbazis mar nem hivatkozik ra */ }
+  return { torolve: true };
 }
 
 /** kep olvasasa MUNKATARSNAK: csak kezelo / szakmai vezeto; a recepcio megtagadva + audit (S01). Minden hozzaferes naplozott. */
