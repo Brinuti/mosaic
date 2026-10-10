@@ -48,7 +48,7 @@ Gyors leállítás: írás: `iras` kapcsoló (fent); küldés: `mind` kapcsoló;
 Egy sor = egy foglalás (CSV-ben foglalás × esemény): `booking_id`, `kulcs` (`placeId|employeeId|startUnix`: ezzel kapcsolódik a Salonic-oldal), `uzletag`, `esemenytipus`, `uj_visszatero` (`uj`, `uj_konzultacio`, `visszatero`), `ertek`, `penznem`, a párosítás állapota és forrása, `esemeny_id`, platformonként (`meta`, `tiktok`, `google`, `ga4`) a kézbesítések száma és osztálya:
 
 - `ok`: pontosan 1 kézbesítés (`elkuldve`);
-- `jogos_0`: 0, de jogosan (modell / hozzájárulás / lemondás miatt kihagyva);
+- `jogos_0`: 0, de jogosan (modell / hozzájárulás / lemondás miatt kihagyva; vagy a GA4-hez nincs `client_id`, mert nincs `_ga` süti, azaz a látogató adata hiányzik). Az okokat az összegzés `jogos_0_okok` blokkja adja platformonként, így a QA-oldal el tudja dönteni, mi számít bele a lefedettségbe;
 - `hiany`: minden más (nincs_hitelesites, hiba, tiltva, halasztva, nyitott, vészkapcsoló miatt kihagyva, vagy nincs sor).
 
 Foglalás-szintű jelzések: `tobb_alap_esemeny:…` (rossz típus / duplikáció gyanú), `platform_hiany:<platform>:<esemény>:<ok>`, `parositatlan`, `egyeztetes_<állapot>` (pl. `fuggoben`: friss soroknál az újrapróbálás miatt még nem hiba), `nincs_esemeny`.
