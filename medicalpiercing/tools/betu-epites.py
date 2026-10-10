@@ -30,6 +30,7 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.recordingPen import DecomposingRecordingPen
 from fontTools.fontBuilder import FontBuilder
 from fontTools.feaLib.builder import addOpenTypeFeaturesFromString
+from fontTools.varLib import instancer
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WIX = os.path.join(ROOT, 'tools/wix-betuk')
@@ -71,6 +72,10 @@ def helyettesito_betuk(csalad, suly):
         if j['family'] != csalad or j['weight'] != suly:
             continue
         f = TTFont(os.path.join(ROOT, 'tools/helyettesito-betuk', j['file']))
+        if 'fvar' in f:
+            # a Google Fonts valtoztathato vastagsagu betut ad (alapallasa 400): a kert vastagsag
+            # peldanya kell (enelkul pl. az Arimo 700 is 400-as rajzolattal epult)
+            f = instancer.instantiateVariableFont(f, {'wght': suly})
         gs = f.getGlyphSet()
         upem = f['head'].unitsPerEm
         for cp, g in f.getBestCmap().items():

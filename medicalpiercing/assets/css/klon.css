@@ -3,11 +3,12 @@
 
 /* felugro menu (klon.js 1.): a Wix jobbrol csusztatja be az ablakot, a fatyol
    attunik; zaraskor visszafele */
-html.mp-felugro-nyitva { overflow: hidden; }
+/* a lap a helyen marad (a <html> overflow:hidden-je a <body> sajat gorgetese miatt a lap tetejere
+   ugratna, a Wixen nem mozdul): a gorgetest az ablak a sajatjaban tartja */
 /* az ablak elhelyezese: a Wix ezt a felugro komponens kulon CSS-ebol adja, ami
    nincs a mentett sablonban (az eles oldalon merve, asztalin es mobilon azonos):
    a gyoker a kepernyohoz rogzitett reteg, a fatyol is rogzitett, a tartalom racsban */
-#POPUPS_ROOT.mp-felugro { position: fixed; inset: 0; z-index: 100000; overflow: auto scroll; }
+#POPUPS_ROOT.mp-felugro { position: fixed; inset: 0; z-index: 100000; overflow: auto scroll; overscroll-behavior: contain; }
 .mp-felugro #popups-wrapper { position: relative; }
 .mp-felugro #d3iz6 { position: relative; display: grid; grid-template-rows: 0 auto; grid-template-columns: 100%; min-height: 100vh; }
 .mp-felugro #d3iz6 > :nth-child(2) { position: relative; z-index: 50; display: grid; grid-template-columns: 100%; }
@@ -26,9 +27,6 @@ html.mp-felugro-nyitva { overflow: hidden; }
   padding: 10px 18px; border-radius: 4px; background: #333; color: #fff; font: 14px/1.4 Arial, sans-serif;
 }
 .mp-kedvelt svg, .mp-kedvelt path { fill: currentColor; }
-
-/* urlap: a hibas mezo jelzese (a Wix ugyanigy aria-invalid alapjan szinez) */
-form.wixui-form [aria-invalid="true"] { outline: 1px solid #e21c21; outline-offset: -1px; }
 
 /* Pro Gallery teljes kepernyos nezete (klon.js 12.). Az eles oldalon merve (2026-10-10):
    feher hatter, a kep a 74 px-es felso es also, 90 px-es oldalso savon belul kitoltve, a

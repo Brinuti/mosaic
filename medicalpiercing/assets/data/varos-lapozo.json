@@ -1,0 +1,62 @@
+{
+ "/varosok/3530-msikolc,-széchenyi-istván-utca-19.-4.-emelet,-2.-ajtó.-széchenyi-egészség-központ": {
+  "elozo": null,
+  "kovetkezo": "/varosok/4031-debrecen,-derék-utca-100/b"
+ },
+ "/varosok/4031-debrecen,-derék-utca-100/b": {
+  "elozo": null,
+  "kovetkezo": null
+ },
+ "/varosok/4400-nyíregyháza,-mező-u-6.-": {
+  "elozo": "/varosok/4031-debrecen,-derék-utca-100/b",
+  "kovetkezo": "/varosok/6721-szeged,-felső-tisza-part-17.-(-tisza-part-felől-)-"
+ },
+ "/varosok/6721-szeged,-felső-tisza-part-17.-(-tisza-part-felől-)-": {
+  "elozo": "/varosok/4400-nyíregyháza,-mező-u-6.-",
+  "kovetkezo": "/varosok/7400-kaposvár,-arany-jános-tér-5."
+ },
+ "/varosok/7400-kaposvár,-arany-jános-tér-5.": {
+  "elozo": "/varosok/6721-szeged,-felső-tisza-part-17.-(-tisza-part-felől-)-",
+  "kovetkezo": "/varosok/7624-pécs,-boszorkány-út-2/1.-hello-artist-studió"
+ },
+ "/varosok/7624-pécs,-boszorkány-út-2/1.-hello-artist-studió": {
+  "elozo": null,
+  "kovetkezo": null
+ },
+ "/varosok/8360-keszthely,-fenyves-u-13.-": {
+  "elozo": "/varosok/7624-pécs,-boszorkány-út-2/1.-hello-artist-studió",
+  "kovetkezo": "/varosok/8800-nagykanizsa,-ady-endre-utca-12/a"
+ },
+ "/varosok/8800-nagykanizsa,-ady-endre-utca-12/a": {
+  "elozo": null,
+  "kovetkezo": null
+ },
+ "/varosok/8800-nagykanizsa,-fő-út-23.-": {
+  "elozo": "/varosok/8800-nagykanizsa,-ady-endre-utca-12/a",
+  "kovetkezo": "/varosok/9700-szombathely,-thököly-imre-u-16.-isis---dental"
+ },
+ "/varosok/9700-szombathely,-thököly-imre-u-16.-isis---dental": {
+  "elozo": "/varosok/8800-nagykanizsa,-fő-út-23.-",
+  "kovetkezo": "/varosok/bíró-márton-út-43-49."
+ },
+ "/varosok/bekescsaba": {
+  "elozo": "/varosok/bíró-márton-út-43-49.",
+  "kovetkezo": "/varosok/this-is-a-title-01"
+ },
+ "/varosok/bíró-márton-út-43-49.": {
+  "elozo": "/varosok/9700-szombathely,-thököly-imre-u-16.-isis---dental",
+  "kovetkezo": "/varosok/bekescsaba"
+ },
+ "/varosok/this-is-a-title-01": {
+  "elozo": "/varosok/bekescsaba",
+  "kovetkezo": "/varosok/this-is-a-title-02"
+ },
+ "/varosok/this-is-a-title-02": {
+  "elozo": "/varosok/this-is-a-title-01",
+  "kovetkezo": "/varosok/this-is-a-title-03"
+ },
+ "/varosok/this-is-a-title-03": {
+  "elozo": "/varosok/this-is-a-title-02",
+  "kovetkezo": null
+ }
+}

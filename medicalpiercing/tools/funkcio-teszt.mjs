@@ -82,17 +82,27 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
     ok(`${nezet}: blog kedveles`, (parseInt(utana, 10) || 0) === (parseInt(elotte, 10) || 0) + 1, `${elotte} -> ${utana}`);
   }
 
-  // 6. allasjelentkezes urlap
+  // 6. allasjelentkezes urlap: ures bekuldesre a Wix hibaallapota (bcsnlz + :invalid, a datumnal
+  // M1o_ix), a Wix-naptarbol valasztott nap a mezoben, kitoltve elmegy
   await p.goto(HELYI + '/allasajanlat', { waitUntil: 'load' });
   const urlap = await p.$('form.wixui-form');
   if (urlap) {
     await p.$eval('form.wixui-form button.wixui-button', (b) => b.click());
     await p.waitForTimeout(200);
-    const ures = await p.$$eval('form.wixui-form [aria-invalid="true"]', (l) => l.length);
-    ok(`${nezet}: urlap ures mezokre hibat jelez`, ures > 0, ures + ' mezo');
-    await p.$$eval('form.wixui-form input', (l) => l.forEach((i) => {
-      if (i.type === 'file' || i.type === 'date' || i.getAttribute('aria-hidden')) return;
-      i.value = i.type === 'email' ? 'teszt@example.com' : i.type === 'number' ? '5' : i.type === 'tel' ? '+36301234567' : (i.classList.contains('wixui-date-picker__input') ? '1990. 01. 01.' : 'Teszt');
+    const ures = await p.$$eval('form.wixui-form .bcsnlz input:invalid', (l) => l.length);
+    const datumHiba = await p.$$eval('form.wixui-form .wixui-date-picker.M1o_ix', (l) => l.length);
+    ok(`${nezet}: urlap ures mezokre hibat jelez`, ures > 0 && datumHiba === 1, ures + ' mezo, datum: ' + datumHiba);
+    await p.locator('form.wixui-form .wixui-date-picker button').click();
+    await p.waitForTimeout(300);
+    const nap = p.locator('[id$="-calendar-portal-wrapper-id"] td[aria-label]').nth(14);
+    const napSzam = (await nap.textContent()).trim();
+    await nap.click();
+    await p.waitForTimeout(300);
+    const datum = await p.$eval('form.wixui-form .wixui-date-picker__input', (i) => i.value);
+    const zarva = !(await p.$('[id$="-calendar-portal-wrapper-id"]'));
+    ok(`${nezet}: urlap Wix-naptar (nap valasztasa)`, zarva && new RegExp(`^\\d{4}/\\d{2}/${napSzam.padStart(2, '0')}$`).test(datum), datum);
+    await p.$$eval('form.wixui-form .wixui-text-input input', (l) => l.forEach((i) => {
+      i.value = i.type === 'email' ? 'teszt@example.com' : i.type === 'number' ? '5' : i.type === 'tel' ? '+36301234567' : 'Teszt';
     }));
     await p.$eval('form.wixui-form button.wixui-button', (b) => b.click());
     await p.waitForTimeout(800);
@@ -180,6 +190,33 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   await p.waitForTimeout(800);
   const kf = await ku.locator('[data-hook="submit-button"]').textContent();
   ok(`${nezet}: kontroll-urlap bekuldes`, /Köszönjük/.test(kf), kf);
+
+  // 12. /kontroll orszagkod-valaszto: 238 orszag, a magyar kijelolve; Ausztria valasztasa utan
+  // a gomb zaszloja osztrak, a lista bezar
+  await p.goto(HELYI + '/kontroll', { waitUntil: 'load' });
+  await p.locator('form [data-hook="country-selector-trigger"]').click();
+  await p.waitForSelector('[role="listbox"].sAfN4Lu [role="option"]');
+  const orsz = await p.$$eval('[role="listbox"].sAfN4Lu [role="option"]', (l) => [l.length, (l.find((o) => o.getAttribute('aria-selected') === 'true') || {}).id]);
+  await p.locator('[role="listbox"].sAfN4Lu [role="option"]').filter({ hasText: 'Ausztria' }).first().click();
+  await p.waitForTimeout(300);
+  const zaszlo = await p.$eval('form [data-hook="country-selector-trigger"] img', (i) => i.getAttribute('src'));
+  ok(`${nezet}: orszagkod-valaszto`, orsz[0] === 238 && /_option-HU$/.test(orsz[1]) && /flag-AUT\.png$/.test(zaszlo) && !(await p.$('[role="listbox"].sAfN4Lu')), `${orsz.join(' ')} ${zaszlo}`);
+
+  // 13. varosoldal-lapozo: a Wix gyujtemenye szerint (Nyiregyhaza -> Szeged), a perjeles cimuen tiltott
+  await p.goto(HELYI + '/varosok/' + encodeURIComponent('4400-nyíregyháza,-mező-u-6.-'), { waitUntil: 'load' });
+  await p.waitForFunction(() => document.querySelector('button[aria-label="Next"]') && !document.querySelector('button[aria-label="Next"]').disabled, null, { timeout: 5000 }).catch(() => {});
+  await p.locator('button[aria-label="Next"]').click({ timeout: 3000 }).catch(() => {});
+  await p.waitForLoadState('load');
+  const lapCel = decodeURIComponent(new URL(p.url()).pathname);
+  await p.goto(HELYI + '/varosok/' + encodeURIComponent('4031-debrecen,-derék-utca-100/b'), { waitUntil: 'load' });
+  await p.waitForTimeout(500);
+  const debr = await p.$$eval('button[aria-label="Previous"], button[aria-label="Next"]', (l) => l.map((g) => g.disabled));
+  ok(`${nezet}: varosoldal-lapozo`, lapCel === '/varosok/6721-szeged,-felső-tisza-part-17.-(-tisza-part-felől-)-' && debr.length === 2 && debr.every(Boolean), `${lapCel} ${debr}`);
+
+  // 14. a Wix altal csak gorgeteskor kitoltott videok (YouTube) a klonban megvannak
+  await p.goto(HELYI + '/piercer-kovacs-gabriella', { waitUntil: 'load' });
+  const lejatszok = await p.$$eval('.wixui-video-player', (l) => [l.length, l.filter((v) => !v.querySelector('iframe[src], video, [data-testid="playable"]')).length]);
+  ok(`${nezet}: videolejatszok kitoltve`, lejatszok[0] >= 5 && lejatszok[1] === 0, `${lejatszok[0]} lejatszo, ${lejatszok[1]} ures`);
 
   ok(`${nezet}: nincs JS-hiba`, !konzol.length, konzol.join(' | '));
   await ctx.close();

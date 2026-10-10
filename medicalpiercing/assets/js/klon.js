@@ -8,6 +8,20 @@
 (function () {
   'use strict';
 
+  // Gorgetes tiltasa nyitott telefonos panel (naptar, orszagvalaszto) alatt. A lap a helyen marad,
+  // mint a Wixen: a <html> overflow:hidden-je a <body> sajat gorgetese miatt a lap tetejere ugratna.
+  // A megadott (gorgetheto) teruleteken belul lehet gorgetni, a lapra nem fut at.
+  let gorgetoTeruletek = null;
+  const gorgetesGatlo = (e) => {
+    if (gorgetoTeruletek && !gorgetoTeruletek.some((t) => t.contains(e.target))) e.preventDefault();
+  };
+  addEventListener('wheel', gorgetesGatlo, { passive: false });
+  addEventListener('touchmove', gorgetesGatlo, { passive: false });
+  const gorgetesZar = (teruletek) => {
+    gorgetoTeruletek = teruletek;
+    if (teruletek) for (const t of teruletek) t.style.overscrollBehavior = 'contain';
+  };
+
   // --- 1. felugro menu (Wix lightbox "d3iz6") -------------------------------
   // A jobb felso gomb ([data-popupid]) a Wix felugro ablakat nyitja. A lementett
   // ablak (tools/popup-mentes.mjs) <template>-kent van az oldal vegen. A Wix az
@@ -218,9 +232,15 @@
       gomb.setAttribute('aria-pressed', String(!v.paused));
     });
     // ramutataskor a Wix data-roll-in / data-show-audio jelzest tesz a dobozra: ettol latszik a
-    // hangszoro-gomb (eles oldalon merve); az eger tavozasakor leveszi
-    vb.addEventListener('mouseenter', () => { vb.setAttribute('data-roll-in', ''); vb.setAttribute('data-show-audio', ''); });
-    vb.addEventListener('mouseleave', () => { vb.removeAttribute('data-roll-in'); vb.removeAttribute('data-show-audio'); });
+    // hangszoro-gomb (eles oldalon merve); az eger tavozasakor leveszi. Telefonon nincs ramutatas:
+    // az elso erintestol a hangszoro-gomb latszik (data-show-audio marad).
+    if (document.getElementById('wixMobileViewport')) {
+      vb.addEventListener('touchstart', () => vb.setAttribute('data-show-audio', ''), { passive: true });
+      vb.addEventListener('click', () => vb.setAttribute('data-show-audio', ''));
+    } else {
+      vb.addEventListener('mouseenter', () => { vb.setAttribute('data-roll-in', ''); vb.setAttribute('data-show-audio', ''); });
+      vb.addEventListener('mouseleave', () => { vb.removeAttribute('data-roll-in'); vb.removeAttribute('data-show-audio'); });
+    }
     const hang = vb.querySelector('[data-testid="vb-audio"]');
     if (hang) hang.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -233,58 +253,217 @@
 
   // --- 6. urlapok (wixui-form, allasjelentkezes) -----------------------------
   // A Wix-urlap mezoi valtozatlanok; a bekuldest a functions/[[path]].js kapja
-  // (POST /api/urlap, multipart), es e-mailben tovabbitja. A datumvalaszto a
-  // bongeszo sajat naptarat nyitja, a feltoltes-gomb a kivalasztott fajl nevet mutatja.
+  // (POST /api/urlap, multipart), es e-mailben tovabbitja. A feltoltes-gomb a
+  // kivalasztott fajl nevet mutatja.
+  //
+  // Hibajelzes, ugyanugy, mint az eles oldalon (merve, 2026-10-10): a szovegmezo gyokere a
+  // mezo elhagyasakor "bcsnlz" osztalyt kap (a Wix-CSS ilyenkor a :invalid mezot szinezi:
+  // 2 px-es piros also vonal), fokuszban leveszi; az aria-invalid a mezo ervenyesseget
+  // koveti. Bekuldeskor minden mezo megkapja, a kitoltetlen datumvalaszto "M1o_ix"-et, es az
+  // oldal az elso hibas mezo tetejere ugrik (a gyoker kapja a fokuszt).
+  //
+  // Datumvalaszto (Wix DatePicker): a Wix sajat naptara, ugyanazzal a szerkezettel es
+  // osztalyokkal (a stilusa a lap Wix-CSS-eben megvan), a SITE_CONTAINER vegere tett
+  // "portal"-ban. Asztalin a mezo ala kozepre, 22 px-re (ha ott nem fer el, a mezo fole),
+  // telefonon teljes kepernyon, sotet hatter elott, X-szel. Nyitaskor a kivalasztott / mai
+  // napra kerul a fokusz; ho- es evlapozas, az evre kattintva evlista (1900-2100); a nap
+  // kivalasztasa "EEEE/HH/NN" alakban irja a mezobe es bezar; Esc / mashova kattintas bezar.
+  // A gyoker fokuszban es nyitott naptarnal "U5BeaB" (a Wix fokusz-allapota).
+  const NAV_NYIL = '<svg class="nav-symbol" viewBox="0 0 7 12.6"><path d="M7 .9 6.3.1 0 6.6l6.3 6.2.7-.7-5.6-5.5z"></path></svg>';
+  const HET_NAPJAI = [['Hét', 'hétfő'], ['Ked', 'kedd'], ['Sze', 'szerda'], ['Csü', 'csütörtök'], ['Pé', 'péntek'], ['Szo', 'szombat'], ['Vas', 'vasárnap']];
+  const honapNev = (h, hossz) => new Intl.DateTimeFormat('hu', { month: hossz }).format(new Date(2000, h, 1));
+  const ket = (n) => String(n).padStart(2, '0');
+  const egyNap = (a, b) => !!a && !!b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  function datumValaszto(dp) {
+    const gyoker = dp.closest('.wixui-date-picker');
+    if (!gyoker) return;
+    const id = gyoker.id;
+    const gomb = dp.parentElement.querySelector('button');
+    const mobil = document.body.classList.contains('device-mobile-optimized');
+    let valasztott = null, ev = 0, ho = 0, evek = false, burok = null, kal = null;
+    const ma = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
+    const racs = () => {
+      if (evek) {
+        let t = '<div data-testid="years" class="a46ZJS"><ul role="listbox">';
+        for (let e = 1900; e <= 2100; e++) t += `<li role="option" aria-selected="${e === ev}" class="${e === ev ? 'j72jrB' : ''}" tabindex="0"><span>${e}</span></li>`;
+        return t + '</ul></div>';
+      }
+      const eltol = (new Date(ev, ho, 1).getDay() + 6) % 7, hossz = new Date(ev, ho + 1, 0).getDate();
+      let t = '<table data-testid="month" role="table" class="i7l17m"><thead><tr>'
+        + HET_NAPJAI.map(([r, h]) => `<th role="columnheader"><span aria-hidden="true">${r}</span><span data-testid="sr-only" class="CiSzcq">${h}</span></th>`).join('')
+        + '</tr></thead><tbody><tr>' + '<td></td>'.repeat(eltol);
+      for (let n = 1; n <= hossz; n++) {
+        if (n > 1 && (eltol + n - 1) % 7 === 0) t += '</tr><tr>';
+        const d = new Date(ev, ho, n), sel = egyNap(d, valasztott), mai = egyNap(d, ma());
+        t += `<td class="${[mai && 'GdaRdx', sel && 'N9GGkK'].filter(Boolean).join(' ')}"${sel ? ' aria-selected="true"' : ''} tabindex="${sel || mai ? 0 : -1}" aria-label="${honapNev(ho, 'long')} ${n}."${mai ? ' data-testid="today"' : ''}><div class="Od3SG9"><span class="oer3MW">${n}</span></div></td>`;
+      }
+      return t + '<td></td>'.repeat((7 - (eltol + hossz) % 7) % 7) + '</tr></tbody></table>';
+    };
+    const helyez = () => {
+      const op = kal.offsetParent || document.body, o = op.getBoundingClientRect(), r = gyoker.getBoundingClientRect();
+      const x = Math.round(r.left + r.width / 2 - kal.offsetWidth / 2 - o.left);
+      const lent = innerHeight - r.bottom, fent = r.top;
+      const le = lent >= kal.offsetHeight + 22 || lent >= fent;
+      kal.style.cssText = '--calendarHeight: auto; position: absolute; ' + (le
+        ? `inset: 0px auto auto 0px; transform: translate(${x}px, ${Math.round(r.bottom + 22 - o.top)}px);`
+        : `inset: auto auto 0px 0px; transform: translate(${x}px, ${Math.round(r.top - o.bottom)}px);`);
+      kal.setAttribute('data-popper-placement', le ? 'bottom' : 'top');
+    };
+    const rajz = (fokusz) => {
+      kal.innerHTML = '<div class="GYcQJu"></div><div class="rgyEV2 wixui-date-picker__calendar">'
+        + '<div data-testid="navbar" class="SA1vI5 wixui-date-picker__header" style="--calendarNavRotate: 0;">'
+        + `<div class="FRQP0u"><button data-testid="prevMonth" aria-label="Előző hónap" class="fWScA8 XQx_F0 Ce7PvT">${NAV_NYIL}</button>`
+        + `<div data-testid="currentMonth" class="MX7h1t" aria-live="polite">${honapNev(ho, mobil ? 'short' : 'long')}</div>`
+        + `<button data-testid="nextMonth" aria-label="Következő hónap" class="fWScA8 XQx_F0 BTFbAM">${NAV_NYIL}</button></div>`
+        + `<div class="GZEhm3"><button data-testid="prevYear" aria-label="Előző év" class="fWScA8 yyoJeY Ce7PvT">${NAV_NYIL}</button>`
+        + `<button aria-live="polite" aria-label="Years, ${ev} selected" data-testid="currentYear" aria-haspopup="true" class="CXAFRt">${ev}</button>`
+        + `<button data-testid="nextYear" aria-label="Következő év" class="fWScA8 yyoJeY BTFbAM">${NAV_NYIL}</button></div></div>`
+        + `<div class="FjO28A">${racs()}</div></div>`;
+      if (!mobil) helyez();
+      if (evek) {
+        // a kivalasztott ev a lista kozepen
+        const li = kal.querySelector('li.j72jrB');
+        let g = li && li.parentElement;
+        while (g && g !== kal && g.scrollHeight <= g.clientHeight) g = g.parentElement;
+        if (li && g && g !== kal) g.scrollTop += li.getBoundingClientRect().top - g.getBoundingClientRect().top - (g.clientHeight - li.offsetHeight) / 2;
+        if (li) li.focus({ preventScroll: true });
+        // telefonon csak az evlista gorgetheto
+        if (mobil) gorgetesZar(g && g !== kal ? [g] : []);
+        return;
+      }
+      if (mobil) gorgetesZar([]);
+      const c = fokusz ? kal.querySelector(`[data-testid="${fokusz}"]`)
+        : kal.querySelector('td.N9GGkK') || kal.querySelector('td[data-testid="today"]') || kal.querySelector('td[aria-label]');
+      if (c) c.focus({ preventScroll: true });
+    };
+    const zar = (vissza) => {
+      if (!burok) return;
+      burok.remove(); burok = kal = null;
+      if (mobil) gorgetesZar(null);
+      if (vissza) dp.focus({ preventScroll: true });
+      else if (!gyoker.contains(document.activeElement)) gyoker.classList.remove('U5BeaB');
+    };
+    const valaszt = (n) => {
+      valasztott = new Date(ev, ho, n);
+      dp.value = `${ev}/${ket(ho + 1)}/${ket(n)}`;
+      gyoker.classList.remove('M1o_ix');
+      zar(true);
+      dp.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    const nyit = () => {
+      if (burok) return;
+      const alap = valasztott || ma();
+      ev = alap.getFullYear(); ho = alap.getMonth(); evek = false;
+      burok = document.createElement('div');
+      burok.id = id + '-calendar-portal-wrapper-id';
+      burok.setAttribute('data-testid', id + '-calendar-portal-wrapper-test-id');
+      burok.innerHTML = `<div><div tabindex="0"></div><div id="portal-${id}" data-testid="calendar" class="fN060_ portal-${id}"></div><div tabindex="0"></div></div>`;
+      kal = burok.querySelector('.fN060_');
+      kal.style.cssText = mobil ? '--calendarHeight: 100%;' : '--calendarHeight: auto; position: absolute; inset: 0px auto auto 0px;';
+      (document.getElementById('SITE_CONTAINER') || document.body).appendChild(burok);
+      gyoker.classList.add('U5BeaB');
+      // a fokusz a naptarban marad (a ket szelso, fokuszalhato ures div)
+      const [elejen, vegen] = burok.firstElementChild.querySelectorAll(':scope > div[tabindex="0"]');
+      elejen.addEventListener('focus', () => { const f = kal.querySelectorAll('button, [tabindex="0"]'); if (f.length) f[f.length - 1].focus(); });
+      vegen.addEventListener('focus', () => { const f = kal.querySelector('button'); if (f) f.focus(); });
+      burok.addEventListener('click', (e) => {
+        const t = e.target;
+        if (t === kal || t.closest('.GYcQJu')) { zar(true); return; } // telefonon: a sotet hatter es az X
+        const g = t.closest('button, td[aria-label], li[role="option"]');
+        if (!g) return;
+        const tid = g.getAttribute('data-testid');
+        if (tid === 'prevMonth' || tid === 'nextMonth') {
+          ho += tid === 'prevMonth' ? -1 : 1;
+          if (ho < 0) { ho = 11; ev--; } else if (ho > 11) { ho = 0; ev++; }
+          evek = false; rajz(tid);
+        } else if (tid === 'prevYear' || tid === 'nextYear') { ev += tid === 'prevYear' ? -1 : 1; evek = false; rajz(tid); }
+        else if (tid === 'currentYear') { evek = !evek; rajz('currentYear'); }
+        else if (g.tagName === 'LI') { ev = +g.textContent; evek = false; rajz('currentYear'); }
+        else if (g.tagName === 'TD') valaszt(+g.textContent);
+      });
+      burok.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); zar(true); return; }
+        const td = e.target.closest && e.target.closest('td[aria-label]');
+        const li = e.target.closest && e.target.closest('li[role="option"]');
+        if ((td || li) && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); (td || li).click(); return; }
+        const lep = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
+        if (td && lep) {
+          e.preventDefault();
+          const d = new Date(ev, ho, +td.textContent + lep);
+          if (d.getMonth() !== ho || d.getFullYear() !== ev) { ev = d.getFullYear(); ho = d.getMonth(); rajz(); }
+          const c = [...kal.querySelectorAll('td[aria-label]')].find((x) => +x.textContent === d.getDate());
+          if (c) c.focus();
+        }
+      });
+      rajz();
+    };
+    dp.addEventListener('click', nyit);
+    dp.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); nyit(); } });
+    if (gomb) gomb.addEventListener('click', (e) => { e.preventDefault(); if (burok) zar(true); else nyit(); });
+    if (dp.form) dp.form.addEventListener('reset', () => { valasztott = null; zar(false); });
+    gyoker.addEventListener('focusin', () => gyoker.classList.add('U5BeaB'));
+    gyoker.addEventListener('focusout', () => setTimeout(() => { if (!burok && !gyoker.contains(document.activeElement)) gyoker.classList.remove('U5BeaB'); }));
+    document.addEventListener('mousedown', (e) => { if (burok && !burok.contains(e.target) && !gyoker.contains(e.target)) zar(false); }, true);
+  }
   for (const f of document.querySelectorAll('form.wixui-form')) {
     f.setAttribute('novalidate', '');
-    for (const dp of f.querySelectorAll('.wixui-date-picker__input')) {
-      const rejtett = document.createElement('input');
-      rejtett.type = 'date';
-      rejtett.tabIndex = -1;
-      rejtett.setAttribute('aria-hidden', 'true');
-      rejtett.style.cssText = 'position:absolute;left:0;bottom:0;opacity:0;pointer-events:none;width:1px;height:1px';
-      dp.after(rejtett);
-      const nyit = (e) => { if (e) e.preventDefault(); try { rejtett.showPicker(); } catch (x) { rejtett.focus(); } };
-      dp.addEventListener('click', nyit);
-      dp.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') nyit(e); });
-      const gomb = dp.parentElement && dp.parentElement.querySelector('button');
-      if (gomb) gomb.addEventListener('click', nyit);
-      rejtett.addEventListener('change', () => {
-        dp.value = rejtett.value ? rejtett.value.replace(/-/g, '. ') + '.' : '';
-        dp.dataset.ertek = rejtett.value;
-      });
-    }
+    for (const dp of f.querySelectorAll('.wixui-date-picker__input')) datumValaszto(dp);
     for (const fi of f.querySelectorAll('input[type="file"]')) {
       fi.addEventListener('change', () => {
         const cimke = f.querySelector(`label[for="${fi.id}"]`);
         if (cimke && fi.files[0]) { if (!cimke.dataset.eredeti) cimke.dataset.eredeti = cimke.textContent; cimke.textContent = fi.files[0].name; }
       });
     }
+    const szovegMezo = (el) => el.closest('.wixui-text-input');
+    for (const el of f.querySelectorAll('.wixui-text-input input')) {
+      el.addEventListener('focus', () => szovegMezo(el).classList.remove('bcsnlz'));
+      el.addEventListener('input', () => el.setAttribute('aria-invalid', String(!el.checkValidity())));
+      el.addEventListener('blur', () => { szovegMezo(el).classList.add('bcsnlz'); el.setAttribute('aria-invalid', String(!el.checkValidity())); });
+    }
     const kuld = f.querySelector('button.wixui-button, button[type="submit"]');
     const cimkeje = (el) => {
       const l = f.querySelector(`label[for="${el.id}"]`);
-      return ((l && (l.dataset.eredeti || l.textContent)) || el.name || el.id).trim().replace(/:$/, '');
+      return ((l && (l.dataset.eredeti || l.firstChild && l.firstChild.textContent || l.textContent)) || el.name || el.id).trim().replace(/:$/, '');
     };
     const bekuld = async (e) => {
       if (e) e.preventDefault();
       let hibas = null;
-      for (const el of f.querySelectorAll('input, textarea, select')) {
-        if (el.type === 'date' || el.type === 'file' || el.type === 'hidden') continue;
-        const ures = el.hasAttribute('required') && !el.value.trim();
-        const jo = !ures && (!el.value || !el.pattern || new RegExp(el.pattern).test(el.value)) && (el.readOnly || el.checkValidity());
-        el.setAttribute('aria-invalid', String(!jo));
-        if (!jo && !hibas) hibas = el;
+      for (const gy of f.querySelectorAll('.wixui-text-input, .wixui-date-picker')) {
+        const el = gy.querySelector('input');
+        if (!el) continue;
+        let jo;
+        if (gy.classList.contains('wixui-date-picker')) { jo = !el.required || !!el.value; gy.classList.toggle('M1o_ix', !jo); }
+        else { jo = el.checkValidity(); gy.classList.add('bcsnlz'); el.setAttribute('aria-invalid', String(!jo)); }
+        if (!jo && !hibas) hibas = gy;
       }
-      if (hibas) { hibas.focus(); return; }
+      if (hibas) {
+        // a Wix elobb azonnal a mezo beviteli savjahoz ugrik, majd ~70 ms mulva 530 ms alatt
+        // (szinuszos ki-be lassitassal) a mezo tetejere gorget; telefonon a rogzitett fejlec ala
+        const sav = hibas.querySelector('input').parentElement;
+        scrollTo(0, sav.getBoundingClientRect().top + scrollY);
+        const fejlec = document.getElementById('SITE_HEADER');
+        const cel = Math.max(0, hibas.getBoundingClientRect().top + scrollY - (document.getElementById('wixMobileViewport') && fejlec ? fejlec.offsetHeight : 0));
+        hibas.tabIndex = -1;
+        hibas.focus({ preventScroll: true });
+        setTimeout(() => {
+          const y0 = scrollY, t0 = performance.now();
+          const lep = (t) => {
+            const a = Math.min(1, (t - t0) / 530);
+            scrollTo(0, y0 + (cel - y0) * (1 - Math.cos(Math.PI * a)) / 2);
+            if (a < 1) requestAnimationFrame(lep);
+          };
+          requestAnimationFrame(lep);
+        }, 30);
+        return;
+      }
       const adat = new FormData();
       // a levél tárgya oldalanként: az állásajánlat-oldalakon jelentkezés, máshol általános üzenet
       adat.append('form-name', /^\/allasajanlat/.test(decodeURIComponent(location.pathname)) ? 'allasjelentkezes' : 'urlap');
       adat.append('oldal', decodeURIComponent(location.pathname));
       adat.append('bot-field', '');
       for (const el of f.querySelectorAll('input, textarea, select')) {
-        if (el.type === 'date') continue;
         if (el.type === 'file') { if (el.files[0]) adat.append(cimkeje(el), el.files[0]); continue; }
-        adat.append(cimkeje(el), el.dataset.ertek || el.value);
+        adat.append(cimkeje(el), el.value);
       }
       const felirat = kuld && kuld.querySelector('.wixui-button__label, span');
       const eredeti = felirat ? felirat.textContent : '';
@@ -396,17 +575,30 @@
   }
 
   // --- 9. varosoldalak: a CMS-lapozo ("Previous" / "Next") ---------------------------
-  // A Wixen a helyszin-gyujtemeny lapozogombjai; az eles oldalon (2026-10-10, minden
-  // varosoldalon kiprobalva) szinte mindenhol tiltva vannak, ahol nem, ott tesztelemekre
-  // ("this-is-a-title-01") visznek. A klonban mindenhol tiltva: ne legyen hatastalan kattintas.
+  // A Wixen a helyszin-gyujtemeny sorrendje szerint lapoz (Miskolc -> Debrecen -> Nyiregyhaza ->
+  // ...); a celokat az eles oldalrol mentjuk (assets/data/varos-lapozo.json,
+  // tools/varos-lapozo-mentes.mjs). Ahol nincs elozo / kovetkezo, a gomb tiltott: a burok es a
+  // gomb aria-disabled="true", a gomb disabled, a burok tabindex=-1 (ettol szurke); egyebkent
+  // aria-disabled="false". Az adat megerkezeseig tiltott (a Wixen is, amig a gyujtemeny betolt).
   if (/^\/varosok\//.test(itt)) {
-    for (const g of document.querySelectorAll('button[aria-label="Previous"], button[aria-label="Next"]')) {
-      g.disabled = true;
-      g.setAttribute('aria-disabled', 'true');
-      // a tiltott (szurke) kinezetet a Wix a burok aria-disabled jelzesebol rajzolja
-      const burok = g.parentElement;
-      if (burok && burok.hasAttribute('aria-disabled')) { burok.setAttribute('aria-disabled', 'true'); burok.tabIndex = -1; }
-    }
+    const allit = (g, cel) => {
+      if (!g) return;
+      const burok = g.parentElement && g.parentElement.hasAttribute('aria-disabled') ? g.parentElement : null;
+      g.disabled = !cel;
+      g.setAttribute('aria-disabled', String(!cel));
+      if (burok) { burok.setAttribute('aria-disabled', String(!cel)); if (cel) burok.removeAttribute('tabindex'); else burok.tabIndex = -1; }
+      // a cimben a slug perjele is kodolt (%2F), mint a Wixen
+      g.onclick = cel ? () => { location.href = '/varosok/' + encodeURIComponent(cel.slice('/varosok/'.length)); } : null;
+    };
+    const elozo = document.querySelector('button[aria-label="Previous"]');
+    const kovetkezo = document.querySelector('button[aria-label="Next"]');
+    allit(elozo, null);
+    allit(kovetkezo, null);
+    fetch('/assets/data/varos-lapozo.json').then((v) => v.json()).then((d) => {
+      const c = d[itt] || {};
+      allit(elozo, c.elozo);
+      allit(kovetkezo, c.kovetkezo);
+    }).catch(() => {});
   }
 
   // --- 10. fejlec: gorgeteskor eltunik (Wix "eltunik" gorgetesi effekt, csak asztalin) ------
@@ -431,8 +623,9 @@
       if (uj !== irany) { irany = uj; fordulo = utolso; }
       utolso = y;
       if (y <= 0) allit(false);
+      // merve: lefele pontosan 400 px mar elrejti, felfele pontosan 400 px meg nem hozza vissza
       else if (irany > 0 && y - fordulo >= HATAR) allit(true);
-      else if (irany < 0 && fordulo - y >= HATAR) allit(false);
+      else if (irany < 0 && fordulo - y > HATAR) allit(false);
     }, { passive: true });
   }
 
@@ -1039,11 +1232,138 @@
         if (mag) mag.dataset.emptyState = String(u);
       };
       m.el.addEventListener('input', () => { ures(); if (m.el.getAttribute('aria-invalid') === 'true' && jo(m)) hibaAllit(m, false); });
+      // a mezo elhagyasakor a Wix is ellenoriz (a datumot nem: azt csak bekuldeskor)
+      if (m.tipus !== 'datum') m.el.addEventListener('blur', () => hibaAllit(m, !jo(m)));
       m.el.addEventListener('change', () => { ures(); if (m.el.getAttribute('aria-invalid') === 'true' && jo(m)) hibaAllit(m, false); });
     }
-    // orszagkod-valaszto: a klonban csak magyar (+36) szam; a gomb a telefonmezore visz
+    // fokusz: a beviteli mezo kerete "ojL_C1u--focus", a szovegdoboze "sggCSHM" (a datumnal nincs)
+    for (const m of mezok) {
+      const keret = m.tipus === 'szoveg' ? (m.el.closest('[data-field-type]') || {}).firstElementChild : m.tipus === 'datum' ? null : m.el.closest('.svEXDbE');
+      if (!keret) continue;
+      const cls = m.tipus === 'szoveg' ? 'sggCSHM' : 'ojL_C1u--focus';
+      m.el.addEventListener('focus', () => keret.classList.add(cls));
+      m.el.addEventListener('blur', () => keret.classList.remove(cls));
+    }
+    // orszagkod-valaszto (merve, 2026-10-10): a Wix lenyiloja (asztalon a mezo ala, keresovel)
+    // illetve also panelje (telefonon), 238 orszag zaszloval es hivoszammal, a Wix sablonjaibol
+    // (assets/data/orszagok.json, tools/orszagok-mentes.mjs). Nyitaskor a telefonmezo
+    // ellenorzodik, a gomb nyila felfele all, a lista a kivalasztott orszagon all (kozepre
+    // gorgetve); asztalon a keresomezo kap fokuszt (gepelesre szur, nyilakkal / Enterrel is
+    // valaszthato). Esc / mashova kattintas bezar. Valasztaskor a gomb zaszloja csereldik, a fokusz
+    // a telefonmezore kerul; bekuldeskor a valasztott hivoszam kerul a szam ele.
+    let orszagAdat = null;
+    const orszagBetolt = () => (orszagAdat ? Promise.resolve(orszagAdat) : fetch('/assets/data/orszagok.json').then((v) => v.json()).then((d) => (orszagAdat = d)));
+    const zaszloCsere = (html, iso3) => html.replace(/(?:https:\/\/static\.parastorage\.com\/services\/linguist-flags\/[^"\s]*\/|\/assets\/img\/flag-)([A-Z0-9]+)(_2x)?\.png/g, (u, x, k) => `/assets/img/flag-${iso3}${k || ''}.png`);
     for (const g of f.querySelectorAll('[data-hook="country-selector-trigger"]')) {
-      g.addEventListener('click', () => { const t = g.closest('.svEXDbE'); const i = t && t.querySelector('input'); if (i) i.focus(); });
+      const mag = g.closest('.svEXDbE');
+      const tel = mezok.find((m) => mag && mag.contains(m.el));
+      if (!tel) continue;
+      tel.orszag = ['HU', 'HUN', 'Magyarország', '+36'];
+      const nyilDoboz = g.querySelector('.s__6zIpSX');
+      const nyilLe = nyilDoboz ? nyilDoboz.innerHTML : '';
+      let port = null, lista = null, kereso = null, talalat = [], aktiv = -1;
+      const sor = (o) => {
+        const kiv = o[0] === tel.orszag[0];
+        let t = zaszloCsere(orszagAdat[MOBIL_LAP ? 'mintaMobil' : 'minta'], o[1]);
+        // asztalon a 25 betunel hosszabb nevet a Wix levagja ("Saint Vincent és a Grenad...")
+        if (!MOBIL_LAP && o[2].length > 25) t = t.replace('aria-label="Afganisztán">Afganisztán</span>', `aria-label="Afganisztán"><div data-content-hook="popover-content--undefined" class="sF_7EKY sA96AK6 sH4w3IJ"><div class="sxRaEdI" data-hook="popover-element"><div>${o[2].slice(0, 25)}...</div></div></div></span>`);
+        return t.replace(/_option-AF"/, `_option-${o[0]}"`).split('Afganisztán').join(o[2]).split('+93').join(o[3])
+          .replace('aria-selected="false"', `aria-selected="${kiv}"`)
+          .replace('ovwE_Lf--selectable', 'ovwE_Lf--selectable' + (kiv ? ' ovwE_Lf--selected' : ''));
+      };
+      const kiemel = (i, gorget) => {
+        const sorok = lista.children;
+        if (sorok[aktiv]) sorok[aktiv].classList.remove('ovwE_Lf--hovered');
+        aktiv = i;
+        const s2 = sorok[aktiv];
+        if (!s2) { if (kereso) kereso.removeAttribute('aria-activedescendant'); return; }
+        s2.classList.add('ovwE_Lf--hovered');
+        if (s2.classList.contains('ovwE_Lf--selected')) { s2.classList.remove('ovwE_Lf--selected'); s2.classList.add('ovwE_Lf--selected'); }
+        if (kereso) kereso.setAttribute('aria-activedescendant', s2.id);
+        if (gorget === 'kozep') lista.scrollTop = s2.offsetTop - (lista.clientHeight - s2.offsetHeight) / 2;
+        else if (gorget) {
+          if (s2.offsetTop < lista.scrollTop) lista.scrollTop = s2.offsetTop;
+          else if (s2.offsetTop + s2.offsetHeight > lista.scrollTop + lista.clientHeight) lista.scrollTop = s2.offsetTop + s2.offsetHeight - lista.clientHeight;
+        }
+      };
+      const rajzLista = (szuro) => {
+        const q = (szuro || '').trim().toLowerCase();
+        talalat = orszagAdat.orszagok.filter((o) => !q || o[2].toLowerCase().includes(q) || o[3].includes(q));
+        lista.innerHTML = talalat.map(sor).join('');
+        aktiv = -1;
+        if (q) kiemel(0, true);
+        else kiemel(talalat.findIndex((o) => o[0] === tel.orszag[0]), 'kozep');
+      };
+      const zar = (fokusz) => {
+        if (!port) return;
+        port.remove(); port = lista = kereso = null;
+        document.removeEventListener('mousedown', kivul, true);
+        if (g.hasAttribute('aria-expanded')) g.setAttribute('aria-expanded', 'false');
+        if (nyilDoboz) nyilDoboz.innerHTML = nyilLe;
+        if (MOBIL_LAP) gorgetesZar(null);
+        if (fokusz) fokusz.focus({ preventScroll: true });
+      };
+      const valaszt = (o) => {
+        tel.orszag = o;
+        const kep = g.querySelector('.sqM3kaY');
+        if (kep) kep.innerHTML = zaszloCsere(kep.innerHTML, o[1]);
+        zar(tel.el);
+        hibaAllit(tel, !jo(tel));
+      };
+      const kivul = (e) => { if (port && !MOBIL_LAP && !port.contains(e.target) && !g.contains(e.target)) zar(); };
+      const nyit = async () => {
+        if (port) { zar(g); return; }
+        await orszagBetolt();
+        if (port) return;
+        // asztalon a fokusz a keresore megy, a telefonmezo ilyenkor ellenorzodik (telefonon nem)
+        if (!MOBIL_LAP) hibaAllit(tel, !jo(tel));
+        if (g.hasAttribute('aria-expanded')) g.setAttribute('aria-expanded', 'true');
+        if (nyilDoboz && orszagAdat.nyilFel) nyilDoboz.innerHTML = orszagAdat.nyilFel;
+        const tmp = document.createElement('div');
+        tmp.innerHTML = MOBIL_LAP ? orszagAdat.mobil : orszagAdat.asztali;
+        port = tmp.firstElementChild;
+        document.body.appendChild(port);
+        lista = port.querySelector('[role="listbox"]');
+        kereso = port.querySelector('input[data-hook="country-search"]');
+        rajzLista('');
+        if (MOBIL_LAP) {
+          gorgetesZar([lista]);
+          const fedo = port.querySelector('[data-hook="tpa-modal-overlay"]');
+          if (fedo) fedo.addEventListener('click', () => zar(g));
+        } else {
+          // a lenyilo a mezo bal also sarkahoz igazodik (ha lent nem fer el, a mezo fole); a
+          // szelesseget a sablon (a Wix altal mert leghosszabb sor) adja
+          const doboz = port.querySelector('[data-floating-ui-focusable]');
+          const r = mag.getBoundingClientRect();
+          const lent = innerHeight - r.bottom, fent = r.top, h = doboz.offsetHeight;
+          const celX = r.left, celY = lent >= h || lent >= fent ? r.bottom : r.top - h;
+          doboz.style.transform = 'translate(0px, 0px)';
+          const d0 = doboz.getBoundingClientRect();
+          const tx = Math.round(celX - d0.left);
+          doboz.style.transform = `translate(${tx}px, ${Math.round(celY - d0.top)}px)`;
+          doboz.style.maxWidth = (innerWidth - tx) + 'px';
+          document.addEventListener('mousedown', kivul, true);
+          if (kereso) kereso.focus({ preventScroll: true });
+        }
+        if (kereso) {
+          const keretK = kereso.closest('.svEXDbE');
+          kereso.addEventListener('focus', () => keretK && keretK.classList.add('ojL_C1u--focus'));
+          kereso.addEventListener('blur', () => keretK && keretK.classList.remove('ojL_C1u--focus'));
+          kereso.addEventListener('input', () => {
+            if (keretK) { keretK.dataset.emptyState = String(!kereso.value); kereso.dataset.emptyState = String(!kereso.value); }
+            rajzLista(kereso.value);
+          });
+        }
+        lista.addEventListener('mousemove', (e) => { const o = e.target.closest('[role="option"]'); if (o) kiemel([...lista.children].indexOf(o)); });
+        lista.addEventListener('click', (e) => { const o = e.target.closest('[role="option"]'); if (o) valaszt(talalat[[...lista.children].indexOf(o)]); });
+        port.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') { e.preventDefault(); zar(g); }
+          else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (talalat.length) kiemel(Math.max(0, Math.min(talalat.length - 1, aktiv + (e.key === 'ArrowDown' ? 1 : -1))), true); }
+          else if (e.key === 'Enter') { e.preventDefault(); if (talalat[aktiv]) valaszt(talalat[aktiv]); }
+          else if (e.key === 'Tab') zar();
+        });
+      };
+      g.addEventListener('click', (e) => { e.preventDefault(); nyit(); });
     }
     // naptar
     for (const m of mezok.filter((x) => x.tipus === 'datum')) {
@@ -1176,14 +1496,36 @@
       e.preventDefault();
       let elso = null;
       for (const m of mezok) { const ok = jo(m); hibaAllit(m, !ok); if (!ok && !elso) elso = m; }
-      if (elso) { (elso.tipus === 'datum' ? elso.el.closest('.svEXDbE') : elso.el).scrollIntoView({ block: 'center' }); if (elso.tipus !== 'datum') elso.el.focus({ preventScroll: true }); return; }
+      if (elso) {
+        // a Wix ~220 ms mulva (szinuszos ki-be lassitassal, a tavolsaggal aranyos ideig) ugy
+        // gorget, hogy az elso hibas mezo cimkeje 20 px-re legyen a fejlec alatt; a mezo fokuszt kap
+        if (elso.tipus !== 'datum') elso.el.focus({ preventScroll: true });
+        const cimkeEl = f.querySelector(`[id="${elso.el.id.replace('form-field-input-', 'form-field-label-')}"]`) || elso.el;
+        const fejlec = document.getElementById('SITE_HEADER');
+        setTimeout(() => {
+          const y0 = scrollY;
+          const cel = Math.max(0, cimkeEl.getBoundingClientRect().top + scrollY - (fejlec ? fejlec.offsetHeight : 0) - 20);
+          const ido = Math.min(900, Math.max(150, 145 + 0.417 * Math.abs(cel - y0)));
+          const t0 = performance.now();
+          const lep = (t) => {
+            const a = Math.min(1, (t - t0) / ido);
+            scrollTo(0, y0 + (cel - y0) * (1 - Math.cos(Math.PI * a)) / 2);
+            if (a < 1) requestAnimationFrame(lep);
+          };
+          requestAnimationFrame(lep);
+        }, 220);
+        return;
+      }
       const adat = new FormData();
       adat.append('form-name', 'kontroll-visszahivas');
       adat.append('oldal', decodeURIComponent(location.pathname));
       adat.append('bot-field', '');
       for (const m of mezok) {
         let v = m.el.value.trim();
-        if (m.tipus === 'telefon' && v && !v.startsWith('+')) v = '+36 ' + v.replace(/^0*(36)?/, '');
+        if (m.tipus === 'telefon' && v && !v.startsWith('+')) {
+          const hivo = m.orszag ? m.orszag[3] : '+36';
+          v = hivo + ' ' + v.replace(hivo === '+36' ? /^0*(36)?/ : /^0+/, '');
+        }
         adat.append(m.nev, v);
       }
       for (const lg of legordulok) adat.append(lg.nev.trim(), lg.ertek || '-');
@@ -1207,6 +1549,32 @@
         setTimeout(() => { felirat.textContent = eredetiFelirat; }, 4000);
       }
       kuldGomb.setAttribute('aria-disabled', 'false');
+    });
+  }
+
+  // --- 17. mobil: "vissza a tetejere" gomb (BACK_TO_TOP_BUTTON) ---------------------------
+  // Az eles oldalon merve (2026-10-10, mobil): kb. 550 px gorgetes utan jelenik meg (z7UpAt),
+  // kb. 300 px fole visszagorgetve eltunik; kattintasra 0,75 mp alatt (lassan indulo es lassulo
+  // mozgassal) a lap tetejere gorget, es a gomb a kovetkezo gorgetesig lathato marad.
+  const tetejeGomb = document.getElementById('BACK_TO_TOP_BUTTON');
+  if (tetejeGomb) {
+    let lathato = false, mozog = false;
+    const allit = (l) => { if (l !== lathato) { lathato = l; tetejeGomb.classList.toggle('z7UpAt', l); } };
+    addEventListener('scroll', () => {
+      if (mozog) return;
+      if (scrollY > 550) allit(true);
+      else if (scrollY < 300) allit(false);
+    }, { passive: true });
+    tetejeGomb.addEventListener('click', () => {
+      const y0 = scrollY, t0 = performance.now(), IDO = 750;
+      mozog = true;
+      const lep = (t) => {
+        const a = Math.min(1, (t - t0) / IDO);
+        const e = a < 0.5 ? 2 * a * a : 1 - Math.pow(-2 * a + 2, 2) / 2;
+        scrollTo(0, Math.round(y0 * (1 - e)));
+        if (a < 1) requestAnimationFrame(lep); else setTimeout(() => { mozog = false; }, 150);
+      };
+      requestAnimationFrame(lep);
     });
   }
 })();
