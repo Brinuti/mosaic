@@ -66,8 +66,8 @@ test('demo-belepes minden szerepkorrel: menu szerepkor szerint, uzemmod-jelzo, d
   const vart = {
     therapist: ['kezeles', 'vendegek', 'kuldes', 'kepkuldo', 'munkalista', 'dashboard', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'hozzajarulas', 'osszevonas'],
     clinical_lead: ['kezeles', 'vendegek', 'kuldes', 'kepkuldo', 'munkalista', 'dashboard', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'hozzajarulas', 'osszevonas'],
-    reception: ['munkalista', 'vendegek', 'kuldes', 'berletek', 'credit', 'hozzajarulas'],
-    salon_manager: ['munkalista', 'vendegek', 'dashboard', 'mutatok', 'beallitasok', 'berletek', 'credit', 'panasz', 'osszevonas'],
+    reception: ['kezeles', 'vendegek', 'kuldes', 'munkalista', 'berletek', 'credit', 'hozzajarulas'],
+    salon_manager: ['kezeles', 'vendegek', 'dashboard', 'mutatok', 'beallitasok', 'munkalista', 'berletek', 'credit', 'panasz', 'osszevonas'],
     marketing: ['dashboard', 'kuldes', 'mutatok'],
     admin: ['vendegek', 'dashboard', 'kuldes', 'mutatok', 'beallitasok'],
   };
@@ -223,7 +223,7 @@ test('kezeles kozben (mobil): igazolas, kamerakep, valasztok, veglegesites es ku
   await megy(p, '#/kezeles');
   await p.waitForSelector('.kk-kartya');
   await kep(p, '20-kezeles-lista');
-  await p.locator('.kk-kartya', { hasText: 'Teszt Anna' }).click();
+  await p.locator('.kk-kartya-fej', { hasText: 'Teszt Anna' }).click();
   await p.waitForSelector('.kk-lepes');
   // 1. igazolas
   // (a munkalista-teszt mar igazolhatta Annat: ilyenkor a lepes csak az allapotot mutatja)
@@ -272,7 +272,7 @@ test('kezeles kozben: USB / elo kamera panel (hamis kamera-eszkozzel) kepet kesz
     await p.goto(`${BASE}/crm`); await p.click('[data-demo="therapist"]'); await p.waitForSelector('.oldalsav a', { state: 'attached' });
     await megy(p, '#/kezeles');
     await p.waitForSelector('.kk-kartya');
-    await p.locator('.kk-kartya', { hasText: 'Teszt Anna' }).first().click();
+    await p.locator('.kk-kartya-fej', { hasText: 'Teszt Anna' }).first().click();
     await p.waitForSelector('.kk-lepes');
     if (await p.locator('.kk-lepes button:has-text("igazolom")').count()) { await p.click('.kk-lepes button:has-text("igazolom")'); await dialog(p); }
     await p.waitForSelector('.kk-lepes:has-text("alkalom")');
@@ -300,7 +300,7 @@ test('kepkuldes (tablet) -> beerkezo -> hozzarendeles a Kezeles kozben nezetben'
   await p.waitForFunction(() => document.querySelectorAll('.kk-mini').length === 2);
   await kep(p, '22-kepkuldo');
   await megy(p, '#/kezeles');
-  await p.locator('.kk-kartya', { hasText: 'Teszt Anna' }).first().click();
+  await p.locator('.kk-kartya-fej', { hasText: 'Teszt Anna' }).first().click();
   await p.waitForSelector('.kk-lepes');
   if (await p.locator('.kk-lepes button:has-text("igazolom")').count()) { await p.click('.kk-lepes button:has-text("igazolom")'); await dialog(p); }
   await p.waitForSelector('.kk-lepes:has-text("alkalom")');
@@ -355,6 +355,24 @@ test('egyszerusitett menu: a kezelonek 4 fo menu, a tobbi az Egyebek alatt; a ve
   await p.click('.gombsor.gyors a:has-text("Képek")');
   await p.waitForSelector('.kep-doboz');
   await ctx.close();
+});
+
+test('Ma kepernyo: kezelonek akciok (Nem jelent meg), recepcionak csak olvashato lista a vendeglapra mutato kartyakkal', async () => {
+  const { ctx, p } = await ujOldal({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  await belep(p, 'therapist');
+  await megy(p, '#/kezeles');
+  await p.waitForSelector('.kk-kartya');
+  assert.ok((await p.locator('.kk-kartya button:has-text("Nem jelent meg")').count()) >= 1);
+  await kep(p, '23-ma-kezelo');
+  await ctx.close();
+  const r = await ujOldal({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  await belep(r.p, 'reception');
+  await megy(r.p, '#/kezeles');
+  await r.p.waitForSelector('.kk-kartya');
+  assert.equal(await r.p.locator('.kk-kartya button').count(), 0, 'a recepcio nem igazol / jelol');
+  assert.match(await r.p.locator('a.kk-kartya-fej').first().getAttribute('href'), /^#\/vendegek\//);
+  assert.equal(await r.p.locator('.kk-kartya', { hasText: 'JELZÉS' }).count(), 0, 'a recepcio nem lat klinikai jelzest');
+  await r.ctx.close();
 });
 
 test('kameraképek: feltoltes (kliens-oldali atmeretezes), ket kep osszehasonlitasa, komment, link', async () => {

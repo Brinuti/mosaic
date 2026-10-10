@@ -12,15 +12,14 @@ const MIND = Object.keys(SZEREPEK);
 // A menu a szerepkor-matrix (crm/lib/rbac.js) szerint; a backend ugyis ellenoriz minden vegponton.
 export const NAV = [
   // fo: a fo menuben latszik (true / fuggveny); a tobbi az osszecsukhato "Egyebek" alatt marad (minden kepernyo elerheto, a vendeglapon pedig gyorsgombok vannak)
-  { kulcs: 'kezeles', szam: 16, cim: 'Ma', modul: 'kezeles', szerepek: KEZELOI, fo: true },   // telefonra szabott, vezetett folyamat
-  { kulcs: 'munkalista', szam: 3, cim: 'Ma', modul: 'munkalista', szerepek: ['reception', 'salon_manager'], fo: true },
+  { kulcs: 'kezeles', szam: 16, cim: 'Ma', modul: 'kezeles', szerepek: [...KEZELOI, 'reception', 'salon_manager'], fo: true },   // telefonra szabott, vezetett folyamat
   { kulcs: 'vendegek', szam: 2, cim: 'Vendégek', modul: 'vendeg', szerepek: ['therapist', 'clinical_lead', 'reception', 'salon_manager', 'admin'], fo: true },
   { kulcs: 'dashboard', szam: 1, cim: 'Áttekintés', modul: 'dashboard', szerepek: ['salon_manager', 'marketing', 'admin'], fo: true },
   { kulcs: 'kuldes', szam: 9, cim: 'Üzenetek', modul: 'kuldes', szerepek: [...KEZELOI, 'reception', 'marketing', 'admin'], fo: true },
   { kulcs: 'mutatok', szam: 14, cim: 'Mutatók', modul: 'mutatok', szerepek: ['salon_manager', 'marketing', 'admin'], fo: true },
   { kulcs: 'kepkuldo', szam: 17, cim: 'Képküldés (tablet)', modul: 'kepkuldo', szerepek: KEZELOI, fo: true },
   { kulcs: 'beallitasok', szam: 15, cim: 'Beállítások', modul: 'beallitasok', szerepek: ['salon_manager', 'admin'], fo: true },
-  { kulcs: 'munkalista', szam: 3, cim: 'Napi munkalista (táblázat)', modul: 'munkalista', szerepek: KEZELOI, fo: false },
+  { kulcs: 'munkalista', szam: 3, cim: 'Napi munkalista (táblázat)', modul: 'munkalista', szerepek: [...KEZELOI, 'reception', 'salon_manager'], fo: false },
   { kulcs: 'dashboard', szam: 1, cim: 'Áttekintés', modul: 'dashboard', szerepek: KEZELOI, fo: false },
   { kulcs: 'felmero', szam: 4, cim: 'Állapotfelmérő', modul: 'felmero', szerepek: KEZELOI, fo: false },
   { kulcs: 'kuraterv', szam: 5, cim: 'Kúraterv (A5)', modul: 'kuraterv', szerepek: KEZELOI, fo: false },
