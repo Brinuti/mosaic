@@ -15,7 +15,12 @@ export async function kapocs(env, esemeny, opc = {}) {
     if (!env || !env.CRM_DB || env.CRM_KAPOCS === 'ki') return { ok: true, kihagyva: 'nincs_CRM_DB' };
     if (!esemeny || typeof esemeny !== 'object') return { ok: true, kihagyva: 'nincs_esemeny' };
     const idokorlat = Number.isFinite(opc.idokorlatMs) ? opc.idokorlatMs : KAPOCS_IDOKORLAT_MS;
-    const munka = Promise.resolve().then(() => ingestLifecycleEsemeny(env.CRM_DB, esemeny, { most: opc.most })).then(
+    const munka = Promise.resolve().then(async () => {
+      const r = await ingestLifecycleEsemeny(env.CRM_DB, esemeny, { most: opc.most });
+      // a landingen (e-mail / telefon alapjan) elore rogzitett marketing-hozzajarulas hozzakapcsolasa a frissen beerkezett foglalas vendegehez (hiba nem ront a foglalas atvetelen)
+      try { const { fuggoHozzajarulasSweep } = await import('./api-public.js'); await fuggoHozzajarulasSweep(env.CRM_DB, { now: opc.most ?? Math.floor(Date.now() / 1000) }); } catch { /* a hozzajarulas-kapcsolas ujraprobalhato (/tick) */ }
+      return r;
+    }).then(
       (r) => ({ ok: r?.ok !== false, eredmeny: r?.valtozas ?? (r?.figyelmen_kivul ? 'figyelmen_kivul' : null), ok_kod: r?.ok_kod ?? null }),
       (e) => ({ ok: false, hiba: String(e?.message || e).slice(0, 200) }),
     );

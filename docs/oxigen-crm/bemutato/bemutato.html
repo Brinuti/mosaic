@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="hu"><head><meta charset="utf-8"><title>MOSAIC Oxygeni CRM – bemutató</title>
+<style>
+@font-face { font-family: 'Jost'; font-weight: 400; src: url('../../../assets/fonts/pdf/Jost_400Regular.ttf'); }
+@font-face { font-family: 'Jost'; font-weight: 600; src: url('../../../assets/fonts/pdf/Jost_600SemiBold.ttf'); }
+@font-face { font-family: 'Playfair'; font-weight: 500; src: url('../../../assets/fonts/pdf/PlayfairDisplay_500Medium.ttf'); }
+@page { size: A4; margin: 0; }
+:root { --sotet: #0f3a3c; --arany: #b8975a; --krem: #f6f3ea; --szoveg: #1f2d2d; --halk: #5d6a68; --vonal: #ded8c8; --zold: #2f6b46; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 400 11.2pt/1.5 'Jost', sans-serif; color: var(--szoveg); }
+.oldal { width: 210mm; height: 297mm; padding: 16mm 16mm 14mm; position: relative; page-break-after: always; overflow: hidden; }
+.oldal:last-child { page-break-after: auto; }
+h1, h2, h3 { font-family: 'Playfair', Georgia, serif; font-weight: 500; color: var(--sotet); margin: 0; }
+h2 { font-size: 19pt; margin-bottom: 6mm; padding-bottom: 2mm; border-bottom: 1.5px solid var(--arany); }
+h3 { font-size: 13pt; margin-bottom: 2mm; }
+.fej { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8mm; font-size: 8.5pt; letter-spacing: .16em; text-transform: uppercase; color: var(--arany); }
+.fej b { font-family: 'Playfair', serif; font-weight: 500; font-size: 15pt; letter-spacing: .14em; color: var(--sotet); }
+.lab { position: absolute; left: 16mm; right: 16mm; bottom: 8mm; font-size: 8pt; color: var(--halk); display: flex; justify-content: space-between; border-top: 1px solid var(--vonal); padding-top: 2mm; }
+.boritó { background: var(--sotet); color: #fff; padding: 22mm 18mm; }
+.boritó .fej { color: var(--arany); } .boritó .fej b { color: var(--arany); }
+.boritó h1 { color: #fff; font-size: 34pt; line-height: 1.1; margin: 30mm 0 6mm; }
+.boritó .alcim { font-size: 14pt; color: #d9e4e1; max-width: 140mm; line-height: 1.5; }
+.boritó .vonal { width: 30mm; height: 2px; background: var(--arany); margin: 10mm 0; }
+.boritó .doboz { margin-top: 28mm; border: 1px solid #ffffff44; border-radius: 6px; padding: 7mm; color: #d9e4e1; font-size: 11pt; }
+.boritó .doboz b { color: var(--arany); }
+.lepesek { display: grid; gap: 4mm; }
+.lepes { display: grid; grid-template-columns: 11mm 1fr; gap: 4mm; align-items: start; }
+.szam { width: 11mm; height: 11mm; border-radius: 50%; background: var(--sotet); color: var(--arany); display: grid; place-items: center; font: 600 12pt 'Jost'; }
+.lepes h3 { margin-bottom: .5mm; }
+.lepes p { margin: 0; color: var(--halk); font-size: 10.5pt; }
+.lepes .ki { color: var(--zold); font-weight: 600; font-size: 9.5pt; margin-top: 1mm; }
+.racs2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+.kartya { background: var(--krem); border-radius: 6px; padding: 4.5mm 5mm; }
+.kartya h3 { font-size: 12pt; }
+.kartya ul { margin: 1mm 0 0; padding-left: 4.5mm; } .kartya li { margin: .6mm 0; font-size: 10.3pt; }
+table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 6mm; }
+th { text-align: left; background: var(--sotet); color: #fff; padding: 2mm 3mm; font-weight: 600; font-size: 9.5pt; }
+td { padding: 2.2mm 3mm; border-bottom: 1px solid var(--vonal); vertical-align: top; }
+td:first-child { font-weight: 600; color: var(--sotet); white-space: nowrap; }
+.menuk { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3.5mm; margin-bottom: 6mm; }
+.menu { border: 1.5px solid var(--sotet); border-radius: 6px; padding: 3.5mm 4mm; }
+.menu b { display: block; font-family: 'Playfair'; font-weight: 500; font-size: 13pt; color: var(--sotet); }
+.menu span { font-size: 9.6pt; color: var(--halk); }
+.jegyzet { background: #fbf4e3; border-left: 3px solid var(--arany); padding: 3.5mm 5mm; border-radius: 3px; font-size: 10.3pt; }
+.zold { color: var(--zold); font-weight: 600; }
+</style></head><body>
+
+<section class="oldal boritó">
+  <div class="fej"><b>MOSAIC</b><span>Head Spa and Hair · Oxygeni</span></div>
+  <h1>Oxygeni CRM<br>röviden</h1>
+  <div class="vonal"></div>
+  <p class="alcim">Mire jó, ki mit csinál benne, és mi történik a vendéggel a foglalástól a 11 alkalmas kúra végéig.</p>
+  <div class="doboz">
+    <p style="margin:0 0 3mm"><b>Egy mondatban:</b> egy helyen látjuk a vendég útját, a rendszer emlékeztet, dokumentál és vigyáz a szabályokra, a kezelő pedig a telefonján pár koppintással dolgozik.</p>
+    <p style="margin:0"><b>Belső eszköz:</b> a vendégek nem lépnek be sehova, csak egy-egy privát linket kapnak (kérdőív, képek).</p>
+  </div>
+  <div class="lab" style="border-color:#ffffff33;color:#9fb5b1"><span>Belső használatra</span><span>Állapot: tesztelés alatt</span></div>
+</section>
+
+<section class="oldal">
+  <div class="fej"><b>MOSAIC</b><span>A vendég útja</span></div>
+  <h2>A vendég útja – hat lépésben</h2>
+  <div class="lepesek">
+    <div class="lepes"><div class="szam">1</div><div><h3>Foglalás</h3><p>A vendég a weboldalon (Salonic) foglal Oxygeni-kezelésre. A rendszer magától átveszi a foglalást és létrehozza a vendéget.</p><div class="ki">Kezelő teendője: semmi</div></div></div>
+    <div class="lepes"><div class="szam">2</div><div><h3>Előkészítés</h3><p>A vendég emlékeztetőt kap, és a telefonján kitölti a digitális állapotfelmérőt (egy link, nincs fiók). A kezelő átnézi a válaszokat. Ha a rendszer kontraindikációt jelez, a kezelés addig nem igazolható, amíg át nem nézik.</p><div class="ki">Kezelő teendője: a kérdőív átnézése</div></div></div>
+    <div class="lepes"><div class="szam">3</div><div><h3>A kezelés napja</h3><p>A „Ma” képernyőn ott vannak a mai vendégek. A kezelő a vendégre koppint, és egy vezetett folyamat végigviszi: igazolás, hajkamera-kép, megfigyelés, cél, otthoni rutin, személyes üzenet.</p><div class="ki">Kezelő teendője: a vezetett folyamat</div></div></div>
+    <div class="lepes"><div class="szam">4</div><div><h3>A kezelés után</h3><p>Elkészül a vendég személyes A5 kúraterve (PDF), és e-mailben megy a vendégnek. A kezelés csak a kezelő igazolásától számít megtörténtnek.</p><div class="ki">Kezelő teendője: egy gomb – „Véglegesít és küld”</div></div></div>
+    <div class="lepes"><div class="szam">5</div><div><h3>A 11 alkalmas kúra</h3><p>A rendszer számolja az alkalmakat. Az 1., 3., 5. és 10. alkalmon kötelező a hajkamera-kép, és a képeket össze lehet hasonlítani. A bérlet (5 vagy 10 alkalom) és a 4 990 Ft-os hajkamera-beszámítás a vendég lapján követhető.</p><div class="ki">Recepció / szalonvezető: bérlet és beszámítás rögzítése</div></div></div>
+    <div class="lepes"><div class="szam">6</div><div><h3>Lezárás és visszatérés</h3><p>A 11. alkalom után kúrazáró dokumentum készül. A rendszer véleményt kér, és csak a vendég hozzájárulása esetén küld visszahívó üzenetet. Panasz esetén a marketing üzenetek leállnak, és a panasznak felelőse és határideje van.</p><div class="ki">Kezelő / szalonvezető: panasz esetén a lezárás</div></div></div>
+  </div>
+  <div class="lab"><span>MOSAIC Oxygeni CRM</span><span>2 / 4</span></div>
+</section>
+
+<section class="oldal">
+  <div class="fej"><b>MOSAIC</b><span>Ki mit csinál</span></div>
+  <h2>Ki mit csinál, és hol</h2>
+  <div class="menuk">
+    <div class="menu"><b>Ma</b><span>A mai vendégek kártyákon. Kezelőnek: innen indul a vezetett folyamat.</span></div>
+    <div class="menu"><b>Vendégek</b><span>Keresés, és egy lapon minden: foglalások, kúra, képek, bérlet, üzenetek, dokumentumok, panasz.</span></div>
+    <div class="menu"><b>Üzenetek</b><span>A vendégeknek kimenő üzenetek: előnézet és napló.</span></div>
+    <div class="menu"><b>Képküldés (tablet)</b><span>A hajkamerás tableten ide megy a kép. Galéria → Megosztás → MOSAIC CRM.</span></div>
+    <div class="menu"><b>Mutatók</b><span>Vezetőknek: megjelenés, következő foglalások, bérletek, panaszok.</span></div>
+    <div class="menu"><b>Beállítások</b><span>Munkatársak, jogosultságok, napló, ritkább funkciók.</span></div>
+  </div>
+  <table>
+    <tr><th>Szerepkör</th><th>Mit lát, mit tehet</th></tr>
+    <tr><td>Oxygeni-kezelő</td><td>Mai vendégek, kérdőív átnézése, kezelés igazolása, hajkamera-kép, A5 kúraterv és küldése, képek összehasonlítása, panasz jelzése.</td></tr>
+    <tr><td>Szakmai vezető</td><td>Mint a kezelő, és a szakmai jóváhagyások (kérdőív-változatok, értesítések a hiányzó dokumentációról).</td></tr>
+    <tr><td>Recepció</td><td>Mai lista (csak olvasható), vendég alapadatai, bérlet és beszámítás rögzítése. Egészségügyi adatot és képet nem lát.</td></tr>
+    <tr><td>Szalonvezető</td><td>Pénzügyi jóváhagyások (bérlet hosszabbítás, visszatérítés), mutatók, munkatársak, napló.</td></tr>
+    <tr><td>Marketing</td><td>Csak összesített számok, egyéni vendégadat nélkül.</td></tr>
+  </table>
+  <h3>A kezelő telefonon: öt lépés</h3>
+  <div class="racs2" style="margin-top:2mm">
+    <div class="kartya"><ul><li><b>1.</b> Igazolás: „A kezelés megtörtént”</li><li><b>2.</b> Hajkamera-kép (a tabletről, vagy a készülékről)</li><li><b>3.</b> Megfigyelés, cél, ritmus: választógombok</li></ul></div>
+    <div class="kartya"><ul><li><b>4.</b> Otthoni rutin és személyes üzenet (magától megíródik, átírható)</li><li><b>5.</b> A5 PDF megtekintése, majd „Véglegesít és küld”</li></ul></div>
+  </div>
+  <div class="lab"><span>MOSAIC Oxygeni CRM</span><span>3 / 4</span></div>
+</section>
+
+<section class="oldal">
+  <div class="fej"><b>MOSAIC</b><span>Automatikus működés és szabályok</span></div>
+  <h2>Amit a rendszer magától csinál</h2>
+  <div class="racs2" style="margin-bottom:6mm">
+    <div class="kartya"><h3>Üzenetek a vendégnek</h3><ul><li>Foglalás-visszaigazolás és emlékeztető az időpont előtt</li><li>A kérdőív linkje</li><li>A személyes A5 terv a kezelés után</li><li>Véleménykérés</li><li>Bérletlejárat előtti emlékeztető</li><li>Visszahívó üzenet, ha nincs következő foglalás (csak hozzájárulással)</li></ul></div>
+    <div class="kartya"><h3>Belső jelzések</h3><ul><li>Hiányzó dokumentáció a kezelőnek (24 óra), a szakmai vezetőnek (48 óra)</li><li>Rossz elégedettségi pont: a szakmai vezető értesül</li><li>Panasz: belső feladat határidővel</li><li>Kontraindikáció: a kezelés nem igazolható</li></ul></div>
+  </div>
+  <h2>Szabályok, amiket a rendszer betartat</h2>
+  <div class="racs2" style="margin-bottom:6mm">
+    <div class="kartya"><ul><li>„Elvégzett kezelés” csak a kezelő igazolásától lesz.</li><li>Elmaradt vagy lemondott időpont soha nem számít kezelésnek.</li><li>Marketing üzenet csak hozzájárulással, és nyitott panasz alatt nem.</li></ul></div>
+    <div class="kartya"><ul><li>A hajkamera-képek privát tárhelyen vannak, a vendég 30 napig érvényes privát linket kap.</li><li>Minden megtekintés és módosítás naplózva van.</li><li>A vendég egy kattintással leiratkozhat.</li></ul></div>
+  </div>
+  <h2>Hol tart most?</h2>
+  <div class="jegyzet">
+    <p style="margin:0 0 2mm"><span class="zold">Működik és tesztelhető:</span> a „Ma” képernyő, a vezetett folyamat, az A5 PDF, a kérdőív, a képek, a bérlet, a panasz, a menü és a jogosultságok.</p>
+    <p style="margin:0 0 2mm"><span class="zold">Még nem éles:</span> a valódi levél- és SMS-küldés (most csak előnézet és napló), a tablet „Megosztás” gombja (a szalon tabletjén kell egyszer kipróbálni), és a szakmai szövegek jóváhagyása (megfigyelések, célok).</p>
+    <p style="margin:0"><span class="zold">Következő lépés:</span> valódi foglalás átjutásának ellenőrzése, a munkatársak felvétele, majd a próbaüzem.</p>
+  </div>
+  <div class="lab"><span>MOSAIC Oxygeni CRM</span><span>4 / 4</span></div>
+</section>
+</body></html>

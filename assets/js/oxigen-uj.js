@@ -224,8 +224,31 @@
       allapot.kapcsolo[csatorna] = c.checked;
       frissitAdatok();
       meres('consent_marketing_changed', { channel: csatorna, granted: c.checked, consent_text_version: HOZZAJARULAS_VERZIO });
+      kapcsolatFrissit(); hozzajarulasKuld();
     });
   });
+  // A hozzajarulas rogzitese: a foglalo (Salonic) kerete miatt az oldal nem latja a foglalas adatait, ezert a hozzajarulashoz kulon megadott e-mail / telefon kell.
+  // A /api/crm/public/hozzajarulas hashelve tarolja, es a foglalas beerkezese utan kapcsolja a vendeghez. A mérésbe (dataLayer) SOHA nem kerul szemelyes adat.
+  const kapcsolatEl = document.getElementById('hozzajarulas-kapcsolat');
+  const hjEmail = document.getElementById('hj-email'); const hjTel = document.getElementById('hj-tel'); const hjAllapot = document.getElementById('hj-allapot');
+  let hjMentett = false;
+  const kapcsolatFrissit = () => { if (kapcsolatEl) kapcsolatEl.hidden = !(allapot.kapcsolo.email || allapot.kapcsolo.sms); };
+  const hozzajarulasKuld = async () => {
+    if (!kapcsolatEl) return;
+    const e = allapot.kapcsolo.email; const sm = allapot.kapcsolo.sms;
+    const email = hjEmail.value.trim(); const telefon = hjTel.value.trim();
+    if (!e && !sm && !hjMentett) return;
+    if ((e && !/^\S+@\S+\.\S+$/.test(email)) || (sm && telefon.replace(/\D/g, '').length < 9)) { hjAllapot.textContent = 'A hozzájárulás rögzítéséhez add meg az adatot (e-mail / telefonszám).'; return; }
+    try {
+      const r = await fetch('/api/crm/public/hozzajarulas', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'omit',
+        body: JSON.stringify({ selected_service: allapot.szolg, email_marketing: e, sms_marketing: sm, szoveg_verzio: HOZZAJARULAS_VERZIO, kapcsolat: { ...(email ? { email } : {}), ...(telefon ? { telefon } : {}) } }) });
+      if (!r.ok) throw new Error('hiba');
+      hjMentett = e || sm;
+      hjAllapot.textContent = (e || sm) ? 'Rögzítettük. A foglalásod beérkezése után lép életbe, bármikor visszavonható.' : 'A hozzájárulást visszavontad.';
+    } catch { hjAllapot.textContent = 'Most nem sikerült rögzíteni. A foglalást ez nem érinti.'; }
+  };
+  if (hjEmail) hjEmail.addEventListener('change', hozzajarulasKuld);
+  if (hjTel) hjTel.addEventListener('change', hozzajarulasKuld);
   szolgKijelol(allapot.szolg);
   panaszFrissit();
 
