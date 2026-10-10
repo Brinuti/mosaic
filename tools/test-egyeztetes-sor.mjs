@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { cellaOsztaly, sorEpit, egyeztetoSorok, egyeztetoCsv } from '../netlify/lib/meres/egyeztetes-sor.js';
+import { cellaOsztaly, sorEpit, egyeztetoSorok, egyeztetoCsv, ga4Csere, csereIdo } from '../netlify/lib/meres/egyeztetes-sor.js';
 import { kezelAdmin } from '../netlify/lib/meres/vegpontok.js';
 import { sha256hex } from '../netlify/lib/meres/hash.js';
 
@@ -104,4 +104,33 @@ test('POST nelkuli GET /api/meres-admin?egyeztetes=1: kulcsos; JSON es CSV; hiba
   const c = await kerj(`egyeztetes=1&tol=${T0}&ig=${T1}&formatum=csv`); assert.equal(c.status, 200); assert.match(c.headers.get('content-type'), /text\/csv/);
   assert.equal((await kerj('egyeztetes=1&tol=9&ig=3')).status, 400);
   assert.deepEqual(D1.db.prepare('SELECT (SELECT COUNT(*) FROM meres_kuldes) k, (SELECT COUNT(*) FROM foglalas_egyeztetes) e, (SELECT COUNT(*) FROM meres_kapcsolo) c').get(), elotte, 'csak olvas');
+});
+
+test('GA4 titokcsere (GPT-dontes): a csere elotti utolso es az utani elso SIKERES GA4 arnyek-esemeny + a kozbeni sikertelenek szama; foglalas-szuro; a cella jelolve; CSV-oszlop; ISO-datum', async () => {
+  const D1 = await feltolt(); const { db } = D1;
+  const G = 'mb_gggggggggggggggggg', H = 'mb_hhhhhhhhhhhhhhhhhh', I = 'mb_iiiiiiiiiiiiiiiiii', PI1 = 'pi_3Uelotte000000001', PI2 = 'pi_3Uutana0000000002';
+  const ga4 = (src, nev, allapot, frissitve) => db.prepare("INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, ertek, penznem, http_status, letrehozva, frissitve) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)").run(`${nev}:${src}`, nev, 'alap', 'ga4', 'headspa', src, allapot, 1000, 'HUF', allapot === 'elkuldve' ? 204 : null, frissitve, frissitve);
+  const CSERE = T0 + 100;
+  ga4(G, 'Visszajaro', 'elkuldve', T0 + 90);   // foglalas, a csere elott (az utolso a foglalasok kozt)
+  ga4(PI1, 'Ajandekkartya', 'elkuldve', T0 + 95); // ajandekkartya, a csere elott (az utolso barmelyik kozt)
+  ga4(H, 'Visszajaro', 'hiba', T0 + 110);      // sikertelen a csere utan, az elso sikeres elott
+  ga4(PI2, 'Ajandekkartya', 'elkuldve', T0 + 120); // az elso sikeres a csere utan (barmelyik)
+  ga4(I, 'Visszajaro', 'elkuldve', T0 + 130);  // az elso sikeres FOGLALAS a csere utan
+  const c = await ga4Csere(D1, CSERE);
+  assert.deepEqual([c.utolso_sikeres_elotte.source_id, c.utolso_sikeres_elotte.tipus, c.utolso_sikeres_elotte.http_status], [PI1, 'ajandekkartya', 204]);
+  assert.equal(c.foglalas_utolso_sikeres_elotte.source_id, G); assert.equal(c.elso_sikeres_utana.source_id, PI2); assert.equal(c.foglalas_elso_sikeres_utana.source_id, I);
+  assert.equal(c.sikertelen_ga4_cella_a_csere_utan_az_elso_sikeresig, 1); assert.equal(c.ido, CSERE); assert.equal(c.foglalas_elso_sikeres_utana.kuldve_utc, new Date((T0 + 130) * 1000).toISOString());
+  // a vegponton at: a jelolt foglalasok soraiban a GA4 cella jelolt, az osszegzesben ott a teljes jelentes
+  const r = await egyeztetoSorok(D1, { tol: T0, ig: T1, ga4_csere: CSERE });
+  const by = Object.fromEntries(r.sorok.map((x) => [x.booking_id, x]));
+  assert.deepEqual(by[G].esemenyek[0].platformok.ga4.csere_jelolo, ['foglalas_csere_elotti_utolso']); assert.deepEqual(by[I].esemenyek[0].platformok.ga4.csere_jelolo, ['foglalas_csere_utani_elso']);
+  assert.equal(by[A].ga4_csere_jelolo, undefined); assert.equal(r.osszegzes.ga4_csere.foglalas_elso_sikeres_utana.source_id, I);
+  const csv = egyeztetoCsv(r.sorok).trim().split('\n'); assert.match(csv[0], /;ga4_csere_jelolo;jelzesek$/); assert.ok(csv.some((l) => l.startsWith(G) && l.includes('foglalas_csere_elotti_utolso')));
+  // csere nelkul nincs jeloles; ervenytelen ido 400-as hiba; ISO-datum es unix is jo
+  assert.equal((await egyeztetoSorok(D1, { tol: T0, ig: T1 })).osszegzes.ga4_csere, undefined);
+  assert.equal((await egyeztetoSorok(D1, { tol: T0, ig: T1, ga4_csere: 'holnap' })).ok, false);
+  assert.equal(csereIdo(String(CSERE)), CSERE); assert.equal(csereIdo(new Date(CSERE * 1000).toISOString()), CSERE); assert.equal(csereIdo(''), null); assert.equal(csereIdo('x'), null);
+  // csere elott meg nincs sikeres GA4 / utana nincs: null, a szamlalo a vegeig szamol
+  const korai = await ga4Csere(D1, T0 + 5); assert.equal(korai.utolso_sikeres_elotte, null);
+  const kesoi = await ga4Csere(D1, T0 + 500); assert.equal(kesoi.elso_sikeres_utana, null); assert.equal(kesoi.sikertelen_ga4_cella_a_csere_utan_az_elso_sikeresig, 0);
 });
