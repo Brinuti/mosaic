@@ -12,6 +12,8 @@ const ok = (nev, felt, info = '') => { console.log(`${felt ? 'OK  ' : 'HIBA'} ${
 
 for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 } }], ['mobil', devices['Pixel 5']]]) {
   const ctx = await b.newContext(opt);
+  // elonezeten / eles cimen az urlapok ne kuldjenek valodi levelet: a bekuldest itt valaszoljuk meg
+  if (!/\/\/(localhost|127\.0\.0\.1)[:/]/.test(HELYI)) await ctx.route('**/api/urlap', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }));
   const p = await ctx.newPage();
   const konzol = [];
   // csak a sajat kodunk hibai (a beagyazott kulso tartalmak - pl. az RTL-lejatszo - sajat hibait nem nezzuk)
