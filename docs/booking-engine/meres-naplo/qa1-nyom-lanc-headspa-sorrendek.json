@@ -1,0 +1,1833 @@
+{
+ "cim": "QA-1 ujrateszt: HeadSpa (ANGOL level) foglalasi lanc ugyanarra a kulcsra, mindket levelsorrend + tartalek ag + negativ eset",
+ "ido": "2026-10-06 14:41-14:58 UTC",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "kulcsok": {
+  "H1": "10427|24354|1792497600",
+  "H2,H3,H4": "10427|24354|1793457000"
+ },
+ "lepesek": [
+  {
+   "lepes": "H1: a valodi foglalas (booking_id, teljes bookingUrl, kulcs, koszonooldali iras, kulcstabla-rekord)",
+   "nyers": {
+    "azonosito": "mb_0muwsdxoovp3rbsnmni2v54",
+    "bookingUrl": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1792497600&back=mb_0muwsdxoovp3rbsnmni2v54",
+    "salonic_uuid": "5e1b39f0-3ce5-f627-9848-3969f2ba3ff9",
+    "kulcs_a_bookingUrlbol": {
+     "ok": true,
+     "host": "mosaicheadspa.salonic.hu",
+     "uzletag": "headspa",
+     "placeId": 10427,
+     "employeeId": 24354,
+     "serviceId": "302999",
+     "startUnix": 1792497600,
+     "kulcs": "10427|24354|1792497600",
+     "bookingId": "mb_0muwsdxoovp3rbsnmni2v54"
+    },
+    "kulcs_iras": {
+     "bookingId": "mb_0muwsdxoovp3rbsnmni2v54",
+     "forras": "back",
+     "allapot": "valasz",
+     "status": 200,
+     "valasz": {
+      "ok": true,
+      "irva": true,
+      "idempotens": false,
+      "utkozes": false,
+      "kulcs": "10427|24354|1792497600",
+      "serviceId": "302999"
+     }
+    },
+    "kulcstabla_rekord": {
+     "ok": true,
+     "kulcs": "10427|24354|1792497600",
+     "rekord": {
+      "kulcs": "10427|24354|1792497600",
+      "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+      "service_id": "302999",
+      "forras": "back",
+      "letrehozva": 1791297694,
+      "lejar": 1806849694
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+       "service_id": "302999",
+       "ido": 1791297694,
+       "kuldve_uuid": null
+      }
+     ]
+    }
+   },
+   "megjegyzes": "H1 azonnal lemondva (14:42:27Z), a LEVELE csak ezutan lett feldolgozva"
+  },
+  {
+   "lepes": "H1: a letrehozasi level (ANGOL) feldolgozasa a foglalas torlese UTAN: 1. ag nem megy (a foglalas torolve) -> TARTALEK AG: nevtabla dont",
+   "nyers": {
+    "eset": "H1) paros HeadSpa, ANGOL level, a foglalas a level feldolgozasa elott torolve: TARTALEK AG",
+    "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+    "ido": "2026-10-06T14:42:49.525Z",
+    "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+    "bookingUrl_teljes": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1792497600&back=mb_0muwsdxoovp3rbsnmni2v54",
+    "kulcs_a_bookingUrlbol": {
+     "ok": true,
+     "host": "mosaicheadspa.salonic.hu",
+     "uzletag": "headspa",
+     "placeId": 10427,
+     "employeeId": 24354,
+     "serviceId": "302999",
+     "startUnix": 1792497600,
+     "kulcs": "10427|24354|1792497600",
+     "bookingId": "mb_0muwsdxoovp3rbsnmni2v54"
+    },
+    "koszonooldal_kulcs_iras": {
+     "bookingId": "mb_0muwsdxoovp3rbsnmni2v54",
+     "forras": "back",
+     "allapot": "valasz",
+     "status": 200,
+     "valasz": {
+      "ok": true,
+      "irva": true,
+      "idempotens": false,
+      "utkozes": false,
+      "kulcs": "10427|24354|1792497600",
+      "serviceId": "302999"
+     }
+    },
+    "kulcstabla_rekord_a_koszonooldal_utan": {
+     "ok": true,
+     "kulcs": "10427|24354|1792497600",
+     "rekord": {
+      "kulcs": "10427|24354|1792497600",
+      "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+      "service_id": "302999",
+      "forras": "back",
+      "letrehozva": 1791297694,
+      "lejar": 1806849694
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+       "service_id": "302999",
+       "ido": 1791297694,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "kulcstabla_a_parositas_elott": {
+     "ok": true,
+     "kulcs": "10427|24354|1792497600",
+     "rekord": {
+      "kulcs": "10427|24354|1792497600",
+      "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+      "service_id": "302999",
+      "forras": "back",
+      "letrehozva": 1791297694,
+      "lejar": 1806849694
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+       "service_id": "302999",
+       "ido": 1791297694,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "email_relevans_mezok": {
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopont_szoveg": "October 20. (Tuesday) 14:00 - 15:20",
+     "level_datuma": "2026-10-06T14:41:31Z",
+     "ld_startDate": "2026-10-20T14:00:00+02:00",
+     "salonic_uuid": "5e1b39f0-3ce5-f627-9848-3969f2ba3ff9",
+     "host": "mosaicheadspa.salonic.hu"
+    },
+    "email_kulcs_1_ag_salonic_oldalak": {
+     "kulcs": null,
+     "serviceId": null,
+     "ok": false,
+     "miert": "a foglalas torolve",
+     "lepesek": [
+      {
+       "url": "/booking/bookingDetails/5e1b39f0-3ce5-f627-9848-3969f2ba3ff9",
+       "status": 200,
+       "vegso": "/booking/deleteSuccess/5e1b39f0-3ce5-f627-9848-3969f2ba3ff9"
+      }
+     ]
+    },
+    "email_kulcs_2_ag_nevtabla": {
+     "ok": true,
+     "miert": null,
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopontSzoveg": "October 20. (Tuesday) 14:00 - 15:20",
+     "idopontForras": "ld+json",
+     "startUnix": 1792497600,
+     "ldUnix": 1792497600,
+     "szovegUnix": 1792497600,
+     "jeloltEmployeeIds": [
+      24354
+     ],
+     "serviceIds": [
+      "302999"
+     ],
+     "kulcsok": [
+      "10427|24354|1792497600"
+     ],
+     "serviceId": "302999"
+    },
+    "kulcs_jeloltek_a_keresnel": [
+     {
+      "kulcs": "10427|24354|1792497600",
+      "jeloltek": [
+       {
+        "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+        "service_id": "302999",
+        "ido": 1791297694,
+        "kuldve_uuid": null
+       }
+      ]
+     }
+    ],
+    "birtokos_elo_ellenorzes": null,
+    "valasztas": [
+     {
+      "kulcs": "10427|24354|1792497600",
+      "allapot": "valasztott",
+      "miert": null
+     }
+    ],
+    "kulcs_atadas": null,
+    "kulcstabla_a_parositas_utan": {
+     "kulcs": "10427|24354|1792497600",
+     "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+     "service_id": "302999",
+     "forras": "back",
+     "letrehozva": 1791297694,
+     "lejar": 1806849694
+    },
+    "kulcs_jeloltek_a_parositas_utan": [
+     {
+      "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+      "service_id": "302999",
+      "ido": 1791297694,
+      "kuldve_uuid": "5e1b39f0-3ce5-f627-9848-3969f2ba3ff9"
+     }
+    ],
+    "kereses_eredmenye": {
+     "allapot": "parositott",
+     "kuldheto": true,
+     "duplikalt": false,
+     "kulcs": "10427|24354|1792497600",
+     "kulcs_forras": "nevtabla",
+     "service_egyezik": true,
+     "probalkozas": 1,
+     "riasztas": false,
+     "miert": null,
+     "kulcs_atadva": false,
+     "talalatok": [
+      {
+       "kulcs": "10427|24354|1792497600",
+       "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+       "service_id": "302999",
+       "forras": "koszonooldal"
+      }
+     ]
+    },
+    "kapott_esemenyazonosito": "mb_0muwsdxoovp3rbsnmni2v54",
+    "azonosito_egyezik_a_bongeszovel": true,
+    "masodik_kereses_ugyanarra": {
+     "allapot": "parositott",
+     "kuldheto": false,
+     "duplikalt": true,
+     "esemeny_id": "mb_0muwsdxoovp3rbsnmni2v54"
+    },
+    "http": {
+     "elso": 200,
+     "masodik": 200
+    }
+   }
+  },
+  {
+   "lepes": "H1: az ANGOL lemondasi ertesito (nincs UUID/link/JSON-LD): a kulcs a nevtablabol, a birtokos elo ellenorzese -> felszabadul",
+   "nyers": {
+    "eset": "H1) angol LEMONDASI ertesito: a kulcs felszabadulasa (elo ellenorzessel)",
+    "mod": "lemondas",
+    "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+    "ido": "2026-10-06T14:43:03.234Z",
+    "lemondott_foglalas": {
+     "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+     "salonic_uuid": "5e1b39f0-3ce5-f627-9848-3969f2ba3ff9"
+    },
+    "email_relevans_mezok": {
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopont_szoveg": "October 20. (Tuesday) 14:00 - 15:20",
+     "level_datuma": "2026-10-06T14:42:24Z",
+     "tipus": "lemondas (nincs UUID / link / JSON-LD)"
+    },
+    "kulcs_a_nevtablabol": "10427|24354|1792497600",
+    "nevtabla_nyom": {
+     "ok": true,
+     "miert": null,
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopontSzoveg": "October 20. (Tuesday) 14:00 - 15:20",
+     "idopontForras": "szoveg",
+     "startUnix": 1792497600,
+     "ldUnix": null,
+     "szovegUnix": 1792497600,
+     "jeloltEmployeeIds": [
+      24354
+     ],
+     "serviceIds": [
+      "302999"
+     ],
+     "kulcsok": [
+      "10427|24354|1792497600"
+     ],
+     "serviceId": "302999"
+    },
+    "eredmeny": {
+     "allapot": "lemondas",
+     "eredmenyek": [
+      {
+       "kulcs": "10427|24354|1792497600",
+       "tulajdonos": "mb_0muwsdxoovp3rbsnmni2v54",
+       "tulajdonos_uuid": "5e1b39f0-3ce5-f627-9848-3969f2ba3ff9",
+       "elo_allapot": "torolve",
+       "eredmeny": "felszabadult",
+       "atadva": null
+      }
+     ]
+    },
+    "kulcstabla_a_feldolgozas_utan": {
+     "ok": true,
+     "kulcs": "10427|24354|1792497600",
+     "rekord": null,
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsdxoovp3rbsnmni2v54",
+       "service_id": "302999",
+       "ido": 1791297694,
+       "kuldve_uuid": "5e1b39f0-3ce5-f627-9848-3969f2ba3ff9"
+      }
+     ]
+    },
+    "http": 200
+   }
+  },
+  {
+   "lepes": "H2 (az (c) foglalas kulcsara, ami a lemondott (c) birtokaban volt): a valodi foglalas",
+   "nyers": {
+    "azonosito": "mb_0muwsjdj4li1goksjq4s898",
+    "bookingUrl": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793457000&back=mb_0muwsjdj4li1goksjq4s898",
+    "salonic_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839",
+    "kulcs_a_bookingUrlbol": {
+     "ok": true,
+     "host": "mosaicheadspa.salonic.hu",
+     "uzletag": "headspa",
+     "placeId": 10427,
+     "employeeId": 24354,
+     "serviceId": "302999",
+     "startUnix": 1793457000,
+     "kulcs": "10427|24354|1793457000",
+     "bookingId": "mb_0muwsjdj4li1goksjq4s898"
+    },
+    "kulcs_iras": {
+     "bookingId": "mb_0muwsjdj4li1goksjq4s898",
+     "forras": "back",
+     "allapot": "valasz",
+     "status": 200,
+     "valasz": {
+      "ok": true,
+      "irva": false,
+      "idempotens": false,
+      "utkozes": true,
+      "kulcs": "10427|24354|1793457000",
+      "serviceId": "302999",
+      "meglevoBookingId": "mb_0muwquipszezqbdrx782d6m"
+     }
+    },
+    "kulcstabla_rekord": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwquipszezqbdrx782d6m",
+      "service_id": "302999",
+      "forras": "back",
+      "letrehozva": 1791295107,
+      "lejar": 1806847107
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwquipszezqbdrx782d6m",
+       "service_id": "302999",
+       "ido": 1791295107,
+       "kuldve_uuid": "5a784724-399a-2c64-a88d-d189c675c88a"
+      },
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": null
+      }
+     ]
+    }
+   },
+   "megjegyzes": "a koszonooldali iras utkozes:true, meglevoBookingId = a (c) foglalas"
+  },
+  {
+   "lepes": "SORREND A (B levele ELOBB): H2 levele az A = (c) lemondasi ertesitoje ELOTT: a birtokos (c) elo ellenorzese -> torolve -> a kulcs H2-hoz kerul",
+   "nyers": {
+    "eset": "H2) SORREND: B (H2) levele FELDOLGOZVA az A (c) lemondasi ertesitoje ELOTT; A = a (c) foglalas, torolve",
+    "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+    "ido": "2026-10-06T14:46:15.761Z",
+    "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+    "bookingUrl_teljes": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793457000&back=mb_0muwsjdj4li1goksjq4s898",
+    "kulcs_a_bookingUrlbol": {
+     "ok": true,
+     "host": "mosaicheadspa.salonic.hu",
+     "uzletag": "headspa",
+     "placeId": 10427,
+     "employeeId": 24354,
+     "serviceId": "302999",
+     "startUnix": 1793457000,
+     "kulcs": "10427|24354|1793457000",
+     "bookingId": "mb_0muwsjdj4li1goksjq4s898"
+    },
+    "koszonooldal_kulcs_iras": {
+     "bookingId": "mb_0muwsjdj4li1goksjq4s898",
+     "forras": "back",
+     "allapot": "valasz",
+     "status": 200,
+     "valasz": {
+      "ok": true,
+      "irva": false,
+      "idempotens": false,
+      "utkozes": true,
+      "kulcs": "10427|24354|1793457000",
+      "serviceId": "302999",
+      "meglevoBookingId": "mb_0muwquipszezqbdrx782d6m"
+     }
+    },
+    "kulcstabla_rekord_a_koszonooldal_utan": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwquipszezqbdrx782d6m",
+      "service_id": "302999",
+      "forras": "back",
+      "letrehozva": 1791295107,
+      "lejar": 1806847107
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwquipszezqbdrx782d6m",
+       "service_id": "302999",
+       "ido": 1791295107,
+       "kuldve_uuid": "5a784724-399a-2c64-a88d-d189c675c88a"
+      },
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "kulcstabla_a_parositas_elott": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwquipszezqbdrx782d6m",
+      "service_id": "302999",
+      "forras": "back",
+      "letrehozva": 1791295107,
+      "lejar": 1806847107
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwquipszezqbdrx782d6m",
+       "service_id": "302999",
+       "ido": 1791295107,
+       "kuldve_uuid": "5a784724-399a-2c64-a88d-d189c675c88a"
+      },
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "email_relevans_mezok": {
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopont_szoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "level_datuma": "2026-10-06T14:45:43Z",
+     "ld_startDate": "2026-10-31T15:30:00+01:00",
+     "salonic_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839",
+     "host": "mosaicheadspa.salonic.hu"
+    },
+    "email_kulcs_1_ag_salonic_oldalak": {
+     "kulcs": "10427|24354|1793457000",
+     "serviceId": "302999",
+     "ok": true,
+     "miert": null,
+     "lepesek": [
+      {
+       "url": "/booking/bookingDetails/e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839",
+       "status": 200,
+       "vegso": "/booking/bookingDetails/e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      },
+      {
+       "url": "/selectDate/?startDate=1793457000&bookingId=e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839",
+       "status": 200,
+       "vegso": "/selectDate/?startDate=1793457000&bookingId=e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      }
+     ]
+    },
+    "email_kulcs_2_ag_nevtabla": {
+     "ok": true,
+     "miert": null,
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopontSzoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "idopontForras": "ld+json",
+     "startUnix": 1793457000,
+     "ldUnix": 1793457000,
+     "szovegUnix": 1793457000,
+     "jeloltEmployeeIds": [
+      24354
+     ],
+     "serviceIds": [
+      "302999"
+     ],
+     "kulcsok": [
+      "10427|24354|1793457000"
+     ],
+     "serviceId": "302999",
+     "egyezik_az_ag1_el": true
+    },
+    "kulcs_jeloltek_a_keresnel": [
+     {
+      "kulcs": "10427|24354|1793457000",
+      "jeloltek": [
+       {
+        "booking_id": "mb_0muwquipszezqbdrx782d6m",
+        "service_id": "302999",
+        "ido": 1791295107,
+        "kuldve_uuid": "5a784724-399a-2c64-a88d-d189c675c88a"
+       },
+       {
+        "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+        "service_id": "302999",
+        "ido": 1791297946,
+        "kuldve_uuid": null
+       }
+      ]
+     }
+    ],
+    "birtokos_elo_ellenorzes": {
+     "kulcs": "10427|24354|1793457000",
+     "birtokos_booking_id": "mb_0muwquipszezqbdrx782d6m",
+     "birtokos_uuid": "5a784724-399a-2c64-a88d-d189c675c88a",
+     "elo_allapot": "torolve",
+     "miert": null
+    },
+    "valasztas": [
+     {
+      "kulcs": "10427|24354|1793457000",
+      "allapot": "valasztott",
+      "miert": null
+     }
+    ],
+    "kulcs_atadas": {
+     "kulcs": "10427|24354|1793457000",
+     "regi": "mb_0muwquipszezqbdrx782d6m",
+     "uj": "mb_0muwsjdj4li1goksjq4s898",
+     "ok": "a birtokos Salonic-foglalas (5a784724) torolve - elo ellenorzes"
+    },
+    "kulcstabla_a_parositas_utan": {
+     "kulcs": "10427|24354|1793457000",
+     "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+     "service_id": "302999",
+     "forras": "atadas",
+     "letrehozva": 1791297946,
+     "lejar": 1806849971
+    },
+    "kulcs_jeloltek_a_parositas_utan": [
+     {
+      "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+      "service_id": "302999",
+      "ido": 1791297946,
+      "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+     }
+    ],
+    "kereses_eredmenye": {
+     "allapot": "parositott",
+     "kuldheto": true,
+     "duplikalt": false,
+     "kulcs": "10427|24354|1793457000",
+     "kulcs_forras": "salonic-oldal",
+     "service_egyezik": true,
+     "probalkozas": 1,
+     "riasztas": false,
+     "miert": null,
+     "kulcs_atadva": true,
+     "talalatok": [
+      {
+       "kulcs": "10427|24354|1793457000",
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "forras": "atadas"
+      }
+     ]
+    },
+    "kapott_esemenyazonosito": "mb_0muwsjdj4li1goksjq4s898",
+    "azonosito_egyezik_a_bongeszovel": true,
+    "masodik_kereses_ugyanarra": {
+     "allapot": "parositott",
+     "kuldheto": false,
+     "duplikalt": true,
+     "esemeny_id": "mb_0muwsjdj4li1goksjq4s898"
+    },
+    "http": {
+     "elso": 200,
+     "masodik": 200
+    }
+   }
+  },
+  {
+   "lepes": "SORREND A (folytatas): az A = (c) lemondasi ertesitoje B levele UTAN ert ide: a birtokos mar H2 (el) -> nem szabadul fel",
+   "nyers": {
+    "eset": "H2) SORREND: az A = (c) LEMONDASI ertesitoje B (H2) levele UTAN ert ide; a B (el) kulcsat nem szabadithatja fel",
+    "mod": "lemondas",
+    "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+    "ido": "2026-10-06T14:46:25.938Z",
+    "lemondott_foglalas": {
+     "booking_id": "mb_0muwquipszezqbdrx782d6m",
+     "salonic_uuid": "5a784724-399a-2c64-a88d-d189c675c88a"
+    },
+    "email_relevans_mezok": {
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopont_szoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "level_datuma": "2026-10-06T14:02:04Z",
+     "tipus": "lemondas (nincs UUID / link / JSON-LD)"
+    },
+    "kulcs_a_nevtablabol": "10427|24354|1793457000",
+    "nevtabla_nyom": {
+     "ok": true,
+     "miert": null,
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopontSzoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "idopontForras": "szoveg",
+     "startUnix": 1793457000,
+     "ldUnix": null,
+     "szovegUnix": 1793457000,
+     "jeloltEmployeeIds": [
+      24354
+     ],
+     "serviceIds": [
+      "302999"
+     ],
+     "kulcsok": [
+      "10427|24354|1793457000"
+     ],
+     "serviceId": "302999"
+    },
+    "eredmeny": {
+     "allapot": "lemondas",
+     "eredmenyek": [
+      {
+       "kulcs": "10427|24354|1793457000",
+       "tulajdonos": "mb_0muwsjdj4li1goksjq4s898",
+       "tulajdonos_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839",
+       "elo_allapot": "aktiv",
+       "eredmeny": "a birtokos foglalas EL: a kulcs nem szabadul fel (az ertesito mas, korabbi foglalasra vonatkozik)"
+      }
+     ]
+    },
+    "kulcstabla_a_feldolgozas_utan": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+      "service_id": "302999",
+      "forras": "atadas",
+      "letrehozva": 1791297946,
+      "lejar": 1806849971
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      }
+     ]
+    },
+    "http": 200
+   }
+  },
+  {
+   "lepes": "H3 (H2 kulcsara): a valodi foglalas",
+   "nyers": {
+    "azonosito": "mb_0muwsq9w44g65t4prwo21m2",
+    "bookingUrl": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793457000&back=mb_0muwsq9w44g65t4prwo21m2",
+    "salonic_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d",
+    "kulcs_a_bookingUrlbol": {
+     "ok": true,
+     "host": "mosaicheadspa.salonic.hu",
+     "uzletag": "headspa",
+     "placeId": 10427,
+     "employeeId": 24354,
+     "serviceId": "302999",
+     "startUnix": 1793457000,
+     "kulcs": "10427|24354|1793457000",
+     "bookingId": "mb_0muwsq9w44g65t4prwo21m2"
+    },
+    "kulcs_iras": {
+     "bookingId": "mb_0muwsq9w44g65t4prwo21m2",
+     "forras": "back",
+     "allapot": "valasz",
+     "status": 200,
+     "valasz": {
+      "ok": true,
+      "irva": false,
+      "idempotens": false,
+      "utkozes": true,
+      "kulcs": "10427|24354|1793457000",
+      "serviceId": "302999",
+      "meglevoBookingId": "mb_0muwsjdj4li1goksjq4s898"
+     }
+    },
+    "kulcstabla_rekord": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+      "service_id": "302999",
+      "forras": "atadas",
+      "letrehozva": 1791297946,
+      "lejar": 1806849971
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      },
+      {
+       "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+       "service_id": "302999",
+       "ido": 1791298269,
+       "kuldve_uuid": null
+      }
+     ]
+    }
+   },
+   "megjegyzes": "a koszonooldali iras utkozes:true, meglevoBookingId = H2"
+  },
+  {
+   "lepes": "SORREND B (A lemondasi ertesitoje ELOBB): az A = H2 lemondasi ertesitoje H3 levele ELOTT ert ide: elo ellenorzes -> torolve -> a kulcs az egyetlen szabad jelolthoz (H3) kerul",
+   "nyers": {
+    "eset": "H3) SORREND: az A = H2 LEMONDASI ertesitoje B (H3) levele ELOTT ert ide (a B koszonooldala mar irt: utkozes)",
+    "mod": "lemondas",
+    "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+    "ido": "2026-10-06T14:51:27.050Z",
+    "lemondott_foglalas": {
+     "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+     "salonic_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+    },
+    "email_relevans_mezok": {
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopont_szoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "level_datuma": "2026-10-06T14:46:34Z",
+     "tipus": "lemondas (nincs UUID / link / JSON-LD)"
+    },
+    "kulcs_a_nevtablabol": "10427|24354|1793457000",
+    "nevtabla_nyom": {
+     "ok": true,
+     "miert": null,
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopontSzoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "idopontForras": "szoveg",
+     "startUnix": 1793457000,
+     "ldUnix": null,
+     "szovegUnix": 1793457000,
+     "jeloltEmployeeIds": [
+      24354
+     ],
+     "serviceIds": [
+      "302999"
+     ],
+     "kulcsok": [
+      "10427|24354|1793457000"
+     ],
+     "serviceId": "302999"
+    },
+    "eredmeny": {
+     "allapot": "lemondas",
+     "eredmenyek": [
+      {
+       "kulcs": "10427|24354|1793457000",
+       "tulajdonos": "mb_0muwsjdj4li1goksjq4s898",
+       "tulajdonos_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839",
+       "elo_allapot": "torolve",
+       "eredmeny": "felszabadult es atkerult: mb_0muwsq9w44g65t4prwo21m2",
+       "atadva": "mb_0muwsq9w44g65t4prwo21m2"
+      }
+     ]
+    },
+    "kulcstabla_a_feldolgozas_utan": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+      "service_id": "302999",
+      "forras": "atadas",
+      "letrehozva": 1791298269,
+      "lejar": 1806850287
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      },
+      {
+       "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+       "service_id": "302999",
+       "ido": 1791298269,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "http": 200
+   }
+  },
+  {
+   "lepes": "SORREND B (folytatas): H3 levele: a kulcs mar H3-e, nincs atadas, a parositas egyenes",
+   "nyers": {
+    "eset": "H3) SORREND: B (H3) levele az A = H2 lemondasi ertesitoje UTAN",
+    "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+    "ido": "2026-10-06T14:51:35.195Z",
+    "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+    "bookingUrl_teljes": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793457000&back=mb_0muwsq9w44g65t4prwo21m2",
+    "kulcs_a_bookingUrlbol": {
+     "ok": true,
+     "host": "mosaicheadspa.salonic.hu",
+     "uzletag": "headspa",
+     "placeId": 10427,
+     "employeeId": 24354,
+     "serviceId": "302999",
+     "startUnix": 1793457000,
+     "kulcs": "10427|24354|1793457000",
+     "bookingId": "mb_0muwsq9w44g65t4prwo21m2"
+    },
+    "koszonooldal_kulcs_iras": {
+     "bookingId": "mb_0muwsq9w44g65t4prwo21m2",
+     "forras": "back",
+     "allapot": "valasz",
+     "status": 200,
+     "valasz": {
+      "ok": true,
+      "irva": false,
+      "idempotens": false,
+      "utkozes": true,
+      "kulcs": "10427|24354|1793457000",
+      "serviceId": "302999",
+      "meglevoBookingId": "mb_0muwsjdj4li1goksjq4s898"
+     }
+    },
+    "kulcstabla_rekord_a_koszonooldal_utan": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+      "service_id": "302999",
+      "forras": "atadas",
+      "letrehozva": 1791297946,
+      "lejar": 1806849971
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      },
+      {
+       "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+       "service_id": "302999",
+       "ido": 1791298269,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "kulcstabla_a_parositas_elott": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+      "service_id": "302999",
+      "forras": "atadas",
+      "letrehozva": 1791298269,
+      "lejar": 1806850287
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      },
+      {
+       "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+       "service_id": "302999",
+       "ido": 1791298269,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "email_relevans_mezok": {
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopont_szoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "level_datuma": "2026-10-06T14:51:06Z",
+     "ld_startDate": "2026-10-31T15:30:00+01:00",
+     "salonic_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d",
+     "host": "mosaicheadspa.salonic.hu"
+    },
+    "email_kulcs_1_ag_salonic_oldalak": {
+     "kulcs": "10427|24354|1793457000",
+     "serviceId": "302999",
+     "ok": true,
+     "miert": null,
+     "lepesek": [
+      {
+       "url": "/booking/bookingDetails/065c142a-18f3-ddf8-5a94-03c9ca3c192d",
+       "status": 200,
+       "vegso": "/booking/bookingDetails/065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+      },
+      {
+       "url": "/selectDate/?startDate=1793457000&bookingId=065c142a-18f3-ddf8-5a94-03c9ca3c192d",
+       "status": 200,
+       "vegso": "/selectDate/?startDate=1793457000&bookingId=065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+      }
+     ]
+    },
+    "email_kulcs_2_ag_nevtabla": {
+     "ok": true,
+     "miert": null,
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopontSzoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "idopontForras": "ld+json",
+     "startUnix": 1793457000,
+     "ldUnix": 1793457000,
+     "szovegUnix": 1793457000,
+     "jeloltEmployeeIds": [
+      24354
+     ],
+     "serviceIds": [
+      "302999"
+     ],
+     "kulcsok": [
+      "10427|24354|1793457000"
+     ],
+     "serviceId": "302999",
+     "egyezik_az_ag1_el": true
+    },
+    "kulcs_jeloltek_a_keresnel": [
+     {
+      "kulcs": "10427|24354|1793457000",
+      "jeloltek": [
+       {
+        "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+        "service_id": "302999",
+        "ido": 1791297946,
+        "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+       },
+       {
+        "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+        "service_id": "302999",
+        "ido": 1791298269,
+        "kuldve_uuid": null
+       }
+      ]
+     }
+    ],
+    "birtokos_elo_ellenorzes": null,
+    "valasztas": [
+     {
+      "kulcs": "10427|24354|1793457000",
+      "allapot": "valasztott",
+      "miert": null
+     }
+    ],
+    "kulcs_atadas": null,
+    "kulcstabla_a_parositas_utan": {
+     "kulcs": "10427|24354|1793457000",
+     "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+     "service_id": "302999",
+     "forras": "atadas",
+     "letrehozva": 1791298269,
+     "lejar": 1806850287
+    },
+    "kulcs_jeloltek_a_parositas_utan": [
+     {
+      "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+      "service_id": "302999",
+      "ido": 1791297946,
+      "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+     },
+     {
+      "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+      "service_id": "302999",
+      "ido": 1791298269,
+      "kuldve_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+     }
+    ],
+    "kereses_eredmenye": {
+     "allapot": "parositott",
+     "kuldheto": true,
+     "duplikalt": false,
+     "kulcs": "10427|24354|1793457000",
+     "kulcs_forras": "salonic-oldal",
+     "service_egyezik": true,
+     "probalkozas": 1,
+     "riasztas": false,
+     "miert": null,
+     "kulcs_atadva": false,
+     "talalatok": [
+      {
+       "kulcs": "10427|24354|1793457000",
+       "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+       "service_id": "302999",
+       "forras": "koszonooldal"
+      }
+     ]
+    },
+    "kapott_esemenyazonosito": "mb_0muwsq9w44g65t4prwo21m2",
+    "azonosito_egyezik_a_bongeszovel": true,
+    "masodik_kereses_ugyanarra": {
+     "allapot": "parositott",
+     "kuldheto": false,
+     "duplikalt": true,
+     "esemeny_id": "mb_0muwsq9w44g65t4prwo21m2"
+    },
+    "http": {
+     "elso": 200,
+     "masodik": 200
+    }
+   }
+  },
+  {
+   "lepes": "T1: az A = H3 lemondasi ertesitoje a KOVETKEZO foglalas (H4) ELOTT: a kulcs szabad lesz",
+   "nyers": {
+    "eset": "H4/T1) az A = H3 LEMONDASI ertesitoje a KOVETKEZO foglalas (H4) ELOTT: a kulcs szabad lesz",
+    "mod": "lemondas",
+    "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+    "ido": "2026-10-06T14:52:46.210Z",
+    "lemondott_foglalas": {
+     "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+     "salonic_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+    },
+    "email_relevans_mezok": {
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopont_szoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "level_datuma": "2026-10-06T14:51:46Z",
+     "tipus": "lemondas (nincs UUID / link / JSON-LD)"
+    },
+    "kulcs_a_nevtablabol": "10427|24354|1793457000",
+    "nevtabla_nyom": {
+     "ok": true,
+     "miert": null,
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopontSzoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "idopontForras": "szoveg",
+     "startUnix": 1793457000,
+     "ldUnix": null,
+     "szovegUnix": 1793457000,
+     "jeloltEmployeeIds": [
+      24354
+     ],
+     "serviceIds": [
+      "302999"
+     ],
+     "kulcsok": [
+      "10427|24354|1793457000"
+     ],
+     "serviceId": "302999"
+    },
+    "eredmeny": {
+     "allapot": "lemondas",
+     "eredmenyek": [
+      {
+       "kulcs": "10427|24354|1793457000",
+       "tulajdonos": "mb_0muwsq9w44g65t4prwo21m2",
+       "tulajdonos_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d",
+       "elo_allapot": "torolve",
+       "eredmeny": "felszabadult",
+       "atadva": null
+      }
+     ]
+    },
+    "kulcstabla_a_feldolgozas_utan": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": null,
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      },
+      {
+       "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+       "service_id": "302999",
+       "ido": 1791298269,
+       "kuldve_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+      }
+     ]
+    },
+    "http": 200
+   }
+  },
+  {
+   "lepes": "H4: a valodi foglalas a szabad kulcsra (koszonooldali iras irva:true, utkozes:false)",
+   "nyers": {
+    "azonosito": "mb_0muwsxcwo4g8rv24oo137ih",
+    "bookingUrl": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793457000&back=mb_0muwsxcwo4g8rv24oo137ih",
+    "salonic_uuid": "1f732a8c-caf3-ec23-0019-2f4f62c6afd2",
+    "kulcs_a_bookingUrlbol": {
+     "ok": true,
+     "host": "mosaicheadspa.salonic.hu",
+     "uzletag": "headspa",
+     "placeId": 10427,
+     "employeeId": 24354,
+     "serviceId": "302999",
+     "startUnix": 1793457000,
+     "kulcs": "10427|24354|1793457000",
+     "bookingId": "mb_0muwsxcwo4g8rv24oo137ih"
+    },
+    "kulcs_iras": {
+     "bookingId": "mb_0muwsxcwo4g8rv24oo137ih",
+     "forras": "back",
+     "allapot": "valasz",
+     "status": 200,
+     "valasz": {
+      "ok": true,
+      "irva": true,
+      "idempotens": false,
+      "utkozes": false,
+      "kulcs": "10427|24354|1793457000",
+      "serviceId": "302999"
+     }
+    },
+    "kulcstabla_rekord": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+      "service_id": "302999",
+      "forras": "back",
+      "letrehozva": 1791298600,
+      "lejar": 1806850600
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      },
+      {
+       "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+       "service_id": "302999",
+       "ido": 1791298269,
+       "kuldve_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+      },
+      {
+       "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+       "service_id": "302999",
+       "ido": 1791298600,
+       "kuldve_uuid": null
+      }
+     ]
+    }
+   }
+  },
+  {
+   "lepes": "T1 (folytatas): H4 levele: nincs utkozes, nincs atadas",
+   "nyers": {
+    "eset": "H4/T1) B (H4) levele: a kulcs szabad volt (az A = H3 lemondasi ertesitoje elobb ert ide), nincs atadas",
+    "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+    "ido": "2026-10-06T14:57:17.577Z",
+    "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+    "bookingUrl_teljes": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793457000&back=mb_0muwsxcwo4g8rv24oo137ih",
+    "kulcs_a_bookingUrlbol": {
+     "ok": true,
+     "host": "mosaicheadspa.salonic.hu",
+     "uzletag": "headspa",
+     "placeId": 10427,
+     "employeeId": 24354,
+     "serviceId": "302999",
+     "startUnix": 1793457000,
+     "kulcs": "10427|24354|1793457000",
+     "bookingId": "mb_0muwsxcwo4g8rv24oo137ih"
+    },
+    "koszonooldal_kulcs_iras": {
+     "bookingId": "mb_0muwsxcwo4g8rv24oo137ih",
+     "forras": "back",
+     "allapot": "valasz",
+     "status": 200,
+     "valasz": {
+      "ok": true,
+      "irva": true,
+      "idempotens": false,
+      "utkozes": false,
+      "kulcs": "10427|24354|1793457000",
+      "serviceId": "302999"
+     }
+    },
+    "kulcstabla_rekord_a_koszonooldal_utan": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+      "service_id": "302999",
+      "forras": "back",
+      "letrehozva": 1791298600,
+      "lejar": 1806850600
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      },
+      {
+       "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+       "service_id": "302999",
+       "ido": 1791298269,
+       "kuldve_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+      },
+      {
+       "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+       "service_id": "302999",
+       "ido": 1791298600,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "kulcstabla_a_parositas_elott": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+      "service_id": "302999",
+      "forras": "back",
+      "letrehozva": 1791298600,
+      "lejar": 1806850600
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      },
+      {
+       "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+       "service_id": "302999",
+       "ido": 1791298269,
+       "kuldve_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+      },
+      {
+       "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+       "service_id": "302999",
+       "ido": 1791298600,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "email_relevans_mezok": {
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopont_szoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "level_datuma": "2026-10-06T14:56:37Z",
+     "ld_startDate": "2026-10-31T15:30:00+01:00",
+     "salonic_uuid": "1f732a8c-caf3-ec23-0019-2f4f62c6afd2",
+     "host": "mosaicheadspa.salonic.hu"
+    },
+    "email_kulcs_1_ag_salonic_oldalak": {
+     "kulcs": "10427|24354|1793457000",
+     "serviceId": "302999",
+     "ok": true,
+     "miert": null,
+     "lepesek": [
+      {
+       "url": "/booking/bookingDetails/1f732a8c-caf3-ec23-0019-2f4f62c6afd2",
+       "status": 200,
+       "vegso": "/booking/bookingDetails/1f732a8c-caf3-ec23-0019-2f4f62c6afd2"
+      },
+      {
+       "url": "/selectDate/?startDate=1793457000&bookingId=1f732a8c-caf3-ec23-0019-2f4f62c6afd2",
+       "status": 200,
+       "vegso": "/selectDate/?startDate=1793457000&bookingId=1f732a8c-caf3-ec23-0019-2f4f62c6afd2"
+      }
+     ]
+    },
+    "email_kulcs_2_ag_nevtabla": {
+     "ok": true,
+     "miert": null,
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopontSzoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "idopontForras": "ld+json",
+     "startUnix": 1793457000,
+     "ldUnix": 1793457000,
+     "szovegUnix": 1793457000,
+     "jeloltEmployeeIds": [
+      24354
+     ],
+     "serviceIds": [
+      "302999"
+     ],
+     "kulcsok": [
+      "10427|24354|1793457000"
+     ],
+     "serviceId": "302999",
+     "egyezik_az_ag1_el": true
+    },
+    "kulcs_jeloltek_a_keresnel": [
+     {
+      "kulcs": "10427|24354|1793457000",
+      "jeloltek": [
+       {
+        "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+        "service_id": "302999",
+        "ido": 1791297946,
+        "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+       },
+       {
+        "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+        "service_id": "302999",
+        "ido": 1791298269,
+        "kuldve_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+       },
+       {
+        "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+        "service_id": "302999",
+        "ido": 1791298600,
+        "kuldve_uuid": null
+       }
+      ]
+     }
+    ],
+    "birtokos_elo_ellenorzes": null,
+    "valasztas": [
+     {
+      "kulcs": "10427|24354|1793457000",
+      "allapot": "valasztott",
+      "miert": null
+     }
+    ],
+    "kulcs_atadas": null,
+    "kulcstabla_a_parositas_utan": {
+     "kulcs": "10427|24354|1793457000",
+     "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+     "service_id": "302999",
+     "forras": "back",
+     "letrehozva": 1791298600,
+     "lejar": 1806850600
+    },
+    "kulcs_jeloltek_a_parositas_utan": [
+     {
+      "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+      "service_id": "302999",
+      "ido": 1791297946,
+      "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+     },
+     {
+      "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+      "service_id": "302999",
+      "ido": 1791298269,
+      "kuldve_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+     },
+     {
+      "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+      "service_id": "302999",
+      "ido": 1791298600,
+      "kuldve_uuid": "1f732a8c-caf3-ec23-0019-2f4f62c6afd2"
+     }
+    ],
+    "kereses_eredmenye": {
+     "allapot": "parositott",
+     "kuldheto": true,
+     "duplikalt": false,
+     "kulcs": "10427|24354|1793457000",
+     "kulcs_forras": "salonic-oldal",
+     "service_egyezik": true,
+     "probalkozas": 1,
+     "riasztas": false,
+     "miert": null,
+     "kulcs_atadva": false,
+     "talalatok": [
+      {
+       "kulcs": "10427|24354|1793457000",
+       "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+       "service_id": "302999",
+       "forras": "koszonooldal"
+      }
+     ]
+    },
+    "kapott_esemenyazonosito": "mb_0muwsxcwo4g8rv24oo137ih",
+    "azonosito_egyezik_a_bongeszovel": true,
+    "masodik_kereses_ugyanarra": {
+     "allapot": "parositott",
+     "kuldheto": false,
+     "duplikalt": true,
+     "esemeny_id": "mb_0muwsxcwo4g8rv24oo137ih"
+    },
+    "http": {
+     "elso": 200,
+     "masodik": 200
+    }
+   }
+  },
+  {
+   "lepes": "NEGATIV: ket ELO foglalas azonos kulccsal (A = a valodi, el H4; B'' szintetikus booking_id + szintetikus UUID): ellentmondas + riasztas",
+   "nyers": {
+    "eset": "NEGATIV) ket ELO foglalas azonos kulccsal: az A = H4 (valodi, el), B'' (szintetikus) levele",
+    "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+    "ido": "2026-10-06T14:57:40.269Z",
+    "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+    "bookingUrl_teljes": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793457000&back=mb_0muwsxcwo4g8rv24oo137ih",
+    "kulcs_a_bookingUrlbol": {
+     "ok": true,
+     "host": "mosaicheadspa.salonic.hu",
+     "uzletag": "headspa",
+     "placeId": 10427,
+     "employeeId": 24354,
+     "serviceId": "302999",
+     "startUnix": 1793457000,
+     "kulcs": "10427|24354|1793457000",
+     "bookingId": "mb_0muwsxcwo4g8rv24oo137ih"
+    },
+    "koszonooldal_kulcs_iras": {
+     "bookingId": "mb_0muwsxcwo4g8rv24oo137ih",
+     "forras": "back",
+     "allapot": "valasz",
+     "status": 200,
+     "valasz": {
+      "ok": true,
+      "irva": true,
+      "idempotens": false,
+      "utkozes": false,
+      "kulcs": "10427|24354|1793457000",
+      "serviceId": "302999"
+     }
+    },
+    "kulcstabla_rekord_a_koszonooldal_utan": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+      "service_id": "302999",
+      "forras": "back",
+      "letrehozva": 1791298600,
+      "lejar": 1806850600
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      },
+      {
+       "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+       "service_id": "302999",
+       "ido": 1791298269,
+       "kuldve_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+      },
+      {
+       "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+       "service_id": "302999",
+       "ido": 1791298600,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "kulcstabla_a_parositas_elott": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+      "service_id": "302999",
+      "forras": "back",
+      "letrehozva": 1791298600,
+      "lejar": 1806850600
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      },
+      {
+       "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+       "service_id": "302999",
+       "ido": 1791298269,
+       "kuldve_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+      },
+      {
+       "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+       "service_id": "302999",
+       "ido": 1791298600,
+       "kuldve_uuid": "1f732a8c-caf3-ec23-0019-2f4f62c6afd2"
+      },
+      {
+       "booking_id": "mb_szintetikusnegativ0001",
+       "service_id": "302999",
+       "ido": 1791298652,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "email_relevans_mezok": {
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopont_szoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "level_datuma": "2026-10-06T14:57:32Z",
+     "ld_startDate": "2026-10-31T15:30:00+01:00",
+     "salonic_uuid": "a236611b-484b-4688-af9a-f842f2341f99",
+     "host": "mosaicheadspa.salonic.hu"
+    },
+    "email_kulcs_1_ag_salonic_oldalak": {
+     "kulcs": null,
+     "serviceId": null,
+     "ok": false,
+     "miert": "a megtekintes oldalon nincs startDate",
+     "lepesek": [
+      {
+       "url": "/booking/bookingDetails/a236611b-484b-4688-af9a-f842f2341f99",
+       "status": 200,
+       "vegso": "/"
+      }
+     ]
+    },
+    "email_kulcs_2_ag_nevtabla": {
+     "ok": true,
+     "miert": null,
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopontSzoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "idopontForras": "ld+json",
+     "startUnix": 1793457000,
+     "ldUnix": 1793457000,
+     "szovegUnix": 1793457000,
+     "jeloltEmployeeIds": [
+      24354
+     ],
+     "serviceIds": [
+      "302999"
+     ],
+     "kulcsok": [
+      "10427|24354|1793457000"
+     ],
+     "serviceId": "302999"
+    },
+    "kulcs_jeloltek_a_keresnel": [
+     {
+      "kulcs": "10427|24354|1793457000",
+      "jeloltek": [
+       {
+        "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+        "service_id": "302999",
+        "ido": 1791297946,
+        "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+       },
+       {
+        "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+        "service_id": "302999",
+        "ido": 1791298269,
+        "kuldve_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+       },
+       {
+        "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+        "service_id": "302999",
+        "ido": 1791298600,
+        "kuldve_uuid": "1f732a8c-caf3-ec23-0019-2f4f62c6afd2"
+       },
+       {
+        "booking_id": "mb_szintetikusnegativ0001",
+        "service_id": "302999",
+        "ido": 1791298652,
+        "kuldve_uuid": null
+       }
+      ]
+     }
+    ],
+    "birtokos_elo_ellenorzes": {
+     "kulcs": "10427|24354|1793457000",
+     "birtokos_booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+     "birtokos_uuid": "1f732a8c-caf3-ec23-0019-2f4f62c6afd2",
+     "elo_allapot": "aktiv",
+     "miert": null
+    },
+    "valasztas": [
+     {
+      "kulcs": "10427|24354|1793457000",
+      "allapot": "ellentmondas",
+      "miert": "a kulcsot mar mas, ELO Salonic-foglalas birtokolja (1f732a8c): ket elo foglalas azonos kulccsal"
+     }
+    ],
+    "kulcs_atadas": null,
+    "kulcstabla_a_parositas_utan": {
+     "kulcs": "10427|24354|1793457000",
+     "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+     "service_id": "302999",
+     "forras": "back",
+     "letrehozva": 1791298600,
+     "lejar": 1806850600
+    },
+    "kulcs_jeloltek_a_parositas_utan": [
+     {
+      "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+      "service_id": "302999",
+      "ido": 1791297946,
+      "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+     },
+     {
+      "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+      "service_id": "302999",
+      "ido": 1791298269,
+      "kuldve_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+     },
+     {
+      "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+      "service_id": "302999",
+      "ido": 1791298600,
+      "kuldve_uuid": "1f732a8c-caf3-ec23-0019-2f4f62c6afd2"
+     },
+     {
+      "booking_id": "mb_szintetikusnegativ0001",
+      "service_id": "302999",
+      "ido": 1791298652,
+      "kuldve_uuid": null
+     }
+    ],
+    "kereses_eredmenye": {
+     "allapot": "ellentmondas",
+     "kuldheto": false,
+     "duplikalt": false,
+     "kulcs": "10427|24354|1793457000",
+     "kulcs_forras": "nevtabla",
+     "probalkozas": 1,
+     "riasztas": true,
+     "miert": "a kulcsot mar mas, ELO Salonic-foglalas birtokolja (1f732a8c): ket elo foglalas azonos kulccsal",
+     "kulcs_atadva": false,
+     "talalatok": []
+    },
+    "kapott_esemenyazonosito": null,
+    "azonosito_egyezik_a_bongeszovel": false,
+    "masodik_kereses_ugyanarra": {
+     "allapot": "ellentmondas",
+     "kuldheto": false,
+     "duplikalt": false
+    },
+    "http": {
+     "elso": 200,
+     "masodik": 200
+    }
+   },
+   "megjegyzes": "B'' szintetikus; az A valodi, a Salonicon elo (Confirmed)"
+  },
+  {
+   "lepes": "H4 lemondasi ertesitoje (A lemondva): a kulcs felszabadul es az egyetlen szabad jeloltre (szintetikus B'') kerul",
+   "nyers": {
+    "eset": "H4) az A = H4 LEMONDASI ertesitoje: a kulcs felszabadul; a szintetikus B'' az egyetlen szabad jelolt -> atkerul",
+    "mod": "lemondas",
+    "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+    "ido": "2026-10-06T14:58:02.545Z",
+    "lemondott_foglalas": {
+     "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+     "salonic_uuid": "1f732a8c-caf3-ec23-0019-2f4f62c6afd2"
+    },
+    "email_relevans_mezok": {
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopont_szoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "level_datuma": "2026-10-06T14:57:51Z",
+     "tipus": "lemondas (nincs UUID / link / JSON-LD)"
+    },
+    "kulcs_a_nevtablabol": "10427|24354|1793457000",
+    "nevtabla_nyom": {
+     "ok": true,
+     "miert": null,
+     "felado": "Mosaic Headspa",
+     "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+     "munkatarsak": [
+      "Páros kezelés"
+     ],
+     "idopontSzoveg": "October 31. (Saturday) 15:30 - 16:50",
+     "idopontForras": "szoveg",
+     "startUnix": 1793457000,
+     "ldUnix": null,
+     "szovegUnix": 1793457000,
+     "jeloltEmployeeIds": [
+      24354
+     ],
+     "serviceIds": [
+      "302999"
+     ],
+     "kulcsok": [
+      "10427|24354|1793457000"
+     ],
+     "serviceId": "302999"
+    },
+    "eredmeny": {
+     "allapot": "lemondas",
+     "eredmenyek": [
+      {
+       "kulcs": "10427|24354|1793457000",
+       "tulajdonos": "mb_0muwsxcwo4g8rv24oo137ih",
+       "tulajdonos_uuid": "1f732a8c-caf3-ec23-0019-2f4f62c6afd2",
+       "elo_allapot": "torolve",
+       "eredmeny": "felszabadult es atkerult: mb_szintetikusnegativ0001",
+       "atadva": "mb_szintetikusnegativ0001"
+      }
+     ]
+    },
+    "kulcstabla_a_feldolgozas_utan": {
+     "ok": true,
+     "kulcs": "10427|24354|1793457000",
+     "rekord": {
+      "kulcs": "10427|24354|1793457000",
+      "booking_id": "mb_szintetikusnegativ0001",
+      "service_id": "302999",
+      "forras": "atadas",
+      "letrehozva": 1791298652,
+      "lejar": 1806850682
+     },
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwsjdj4li1goksjq4s898",
+       "service_id": "302999",
+       "ido": 1791297946,
+       "kuldve_uuid": "e8bd8ca9-7a8a-3a5c-8ff7-92237ecdc839"
+      },
+      {
+       "booking_id": "mb_0muwsq9w44g65t4prwo21m2",
+       "service_id": "302999",
+       "ido": 1791298269,
+       "kuldve_uuid": "065c142a-18f3-ddf8-5a94-03c9ca3c192d"
+      },
+      {
+       "booking_id": "mb_0muwsxcwo4g8rv24oo137ih",
+       "service_id": "302999",
+       "ido": 1791298600,
+       "kuldve_uuid": "1f732a8c-caf3-ec23-0019-2f4f62c6afd2"
+      },
+      {
+       "booking_id": "mb_szintetikusnegativ0001",
+       "service_id": "302999",
+       "ido": 1791298652,
+       "kuldve_uuid": null
+      }
+     ]
+    },
+    "http": 200
+   },
+   "megjegyzes": "a szintetikus B'' kulcs-sorait ezutan toroltem"
+  }
+ ]
+}

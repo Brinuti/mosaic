@@ -1,0 +1,436 @@
+{
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "eset": "pmu",
+ "uzletag": "pmu",
+ "hozzajarulas_profil": "teljes",
+ "hozzajarulas": {
+  "ana": true,
+  "adv": true,
+  "fun": true
+ },
+ "szintetikus_adatok": {
+  "megjegyzes": "a kattintasazonositok es a sutik SZINTETIKUSAK (TESZT-jelolesuek); az elonezeten nem fut pixel / GA, ezert a sutiket a teszt allitja be",
+  "elso_latogatas": {
+   "utm_source": "google",
+   "utm_medium": "cpc",
+   "utm_campaign": "qa2_pmu_elso",
+   "utm_content": "hirdetes_a",
+   "gclid": "Cj0KCQjw_TESZT_PMU_MUWYYL08_GCLID"
+  },
+  "utolso_latogatas": {
+   "utm_source": "facebook",
+   "utm_medium": "paid",
+   "utm_campaign": "qa2_pmu_utolso",
+   "fbclid": "IwAR_TESZT_PMU_MUWYYL08_FBCLID",
+   "ttclid": "E.C.P.TESZT_PMU_MUWYYL08_TTCLID",
+   "wbraid": "CoMKCQ_TESZT_PMU_MUWYYL08_WBRAID"
+  },
+  "sutik": {
+   "_fbp": "fb.1.1791303718000.6668600296",
+   "_ttp": "TESZT_PMU_MUWYYL08_ttp_8ecr5xxkoq",
+   "_ga": "GA1.1.157052467.1791222318",
+   "_ga_H4206SQ0Q7": "GS2.1.s1791307518$o1$g1$t1791308118$j0$l0$h0"
+  }
+ },
+ "pillanatkep_a_foglalas_elott": {
+  "google": {
+   "gclid": {
+    "ertek": "Cj0KCQjw_TESZT_PMU_MUWYYL08_GCLID",
+    "ts": 1791308719
+   },
+   "wbraid": {
+    "ertek": "CoMKCQ_TESZT_PMU_MUWYYL08_WBRAID",
+    "ts": 1791308721
+   }
+  },
+  "meta": {
+   "fbc": "fb.1.1791308721000.IwAR_TESZT_PMU_MUWYYL08_FBCLID",
+   "fbclid": "IwAR_TESZT_PMU_MUWYYL08_FBCLID",
+   "ts": 1791308721
+  },
+  "tiktok": {
+   "ttclid": {
+    "ertek": "E.C.P.TESZT_PMU_MUWYYL08_TTCLID",
+    "ts": 1791308721
+   }
+  },
+  "utm_elso": {
+   "source": "google",
+   "medium": "cpc",
+   "campaign": "qa2_pmu_elso",
+   "content": "hirdetes_a",
+   "ts": 1791308719
+  },
+  "utm_utolso": {
+   "source": "facebook",
+   "medium": "paid",
+   "campaign": "qa2_pmu_utolso",
+   "ts": 1791308721
+  },
+  "fbp": "fb.1.1791303718000.6668600296",
+  "ttp": "TESZT_PMU_MUWYYL08_ttp_8ecr5xxkoq",
+  "ga4": {
+   "client_id": "157052467.1791222318",
+   "session_id": "1791307518",
+   "measurement_id": "G-H4206SQ0Q7"
+  }
+ },
+ "azonosito_a_keret_cimeben": "mb_0muwyyq3k2ilfkdahj2hd2q",
+ "keret_url": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471160&startDate=1793464200&back=mb_0muwyyq3k2ilfkdahj2hd2q",
+ "kontextus": {
+  "id": "mb_0muwyyq3k2ilfkdahj2hd2q",
+  "created": 1791308724899,
+  "seen": 1791308724899,
+  "business": "pmu",
+  "source_page": "foglalo-pmu",
+  "service_id": "471160",
+  "slot_unix": 1793464200,
+  "staff_id": "-1",
+  "carrier": "back",
+  "sent_at": 1791308724899,
+  "returned": null,
+  "completed_at": null
+ },
+ "salonic_status": 200,
+ "redirect_url": "https://www.mosaicheadspa.hu/pmu-ok?first_booking=true&service=Ingyenes+konzult%C3%A1ci%C3%B3&category=Term%C3%A9szetes+sminktetov%C3%A1l%C3%A1s&price=0&location=Mosaic+PMU&employee=Melitta&g=g:3354694&bookingUrl=https%3A%2F%2Fmosaic-pmu.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32428%26placeId%3D14585%26serviceId%3D471160%26startDate%3D1793464200%26back%3Dmb_0muwyyq3k2ilfkdahj2hd2q",
+ "salonic_uuid": "b66a5e19-7d85-fcaf-06d0-f9a263cedf4d",
+ "kereten_at_probalt_eles_navigaciok": [
+  "https://www.mosaicheadspa.hu/pmu-ok?first_booking=true&service=Ingyenes+konzult%C3%A1ci%C3%B3&category=Term%C3%A9szetes+sminktetov%C3%A1l%C3%A1s&price=0&location=Mosaic+PMU&employee=Melitta&g=g:3354694&bookingUrl=https%3A%2F%2Fmosaic-pmu.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32428%26placeId%3D14585%26serviceId%3D471160%26startDate%3D1793464200%26back%3Dmb_0muwyyq3k2ilfkdahj2hd2q"
+ ],
+ "salonic_host": "mosaic-pmu.salonic.hu",
+ "lemondo_url": "https://mosaic-pmu.salonic.hu/booking/cancelBooking/b66a5e19-7d85-fcaf-06d0-f9a263cedf4d",
+ "koszono_query": {
+  "first_booking": "true",
+  "service": "Ingyenes konzultáció",
+  "category": "Természetes sminktetoválás",
+  "price": "0",
+  "location": "Mosaic PMU",
+  "employee": "Melitta",
+  "g": "g:3354694",
+  "bookingUrl": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471160&startDate=1793464200&back=mb_0muwyyq3k2ilfkdahj2hd2q"
+ },
+ "bookingUrl": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471160&startDate=1793464200&back=mb_0muwyyq3k2ilfkdahj2hd2q",
+ "bookingUrl_elemzes": {
+  "ok": true,
+  "host": "mosaic-pmu.salonic.hu",
+  "uzletag": "pmu",
+  "placeId": 14585,
+  "employeeId": 32428,
+  "serviceId": "471160",
+  "startUnix": 1793464200,
+  "kulcs": "14585|32428|1793464200",
+  "bookingId": "mb_0muwyyq3k2ilfkdahj2hd2q"
+ },
+ "booking_id": "mb_0muwyyq3k2ilfkdahj2hd2q",
+ "koszono_elonezeti_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok?first_booking=true&service=Ingyenes+konzult%C3%A1ci%C3%B3&category=Term%C3%A9szetes+sminktetov%C3%A1l%C3%A1s&price=0&location=Mosaic+PMU&employee=Melitta&g=g:3354694&bookingUrl=https%3A%2F%2Fmosaic-pmu.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32428%26placeId%3D14585%26serviceId%3D471160%26startDate%3D1793464200%26back%3Dmb_0muwyyq3k2ilfkdahj2hd2q",
+ "mhAttribucioEredmeny": {
+  "source_id": "mb_0muwyyq3k2ilfkdahj2hd2q",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "frissitve": true,
+   "hibak": [],
+   "mezok": [
+    "google",
+    "meta",
+    "tiktok",
+    "utm_elso",
+    "utm_utolso",
+    "fbp",
+    "ttp",
+    "ga4"
+   ]
+  },
+  "kuldott": {
+   "source_id": "mb_0muwyyq3k2ilfkdahj2hd2q",
+   "uzletag": "pmu",
+   "tipus": "foglalas",
+   "szolgaltatas": "Ingyenes konzultáció",
+   "ar": 0,
+   "first_booking": true,
+   "g": "g:3354694",
+   "bookingUrl": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471160&startDate=1793464200&back=mb_0muwyyq3k2ilfkdahj2hd2q",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_PMU_MUWYYL08_GCLID",
+      "ts": 1791308719
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_PMU_MUWYYL08_WBRAID",
+      "ts": 1791308721
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791308721000.IwAR_TESZT_PMU_MUWYYL08_FBCLID",
+     "fbclid": "IwAR_TESZT_PMU_MUWYYL08_FBCLID",
+     "ts": 1791308721
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_PMU_MUWYYL08_TTCLID",
+      "ts": 1791308721
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_pmu_elso",
+     "content": "hirdetes_a",
+     "ts": 1791308719
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_pmu_utolso",
+     "ts": 1791308721
+    },
+    "fbp": "fb.1.1791303718000.6668600296",
+    "ttp": "TESZT_PMU_MUWYYL08_ttp_8ecr5xxkoq",
+    "ga4": {
+     "client_id": "157052467.1791222318",
+     "session_id": "1791307518",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true
+   },
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok"
+  }
+ },
+ "mhKulcsEredmeny": {
+  "bookingId": "mb_0muwyyq3k2ilfkdahj2hd2q",
+  "forras": "back",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "irva": false,
+   "idempotens": false,
+   "utkozes": true,
+   "kulcs": "14585|32428|1793464200",
+   "serviceId": "471160",
+   "meglevoBookingId": "mb_0muwwiy1li4lte4etv1anqg"
+  }
+ },
+ "tarolo": {
+  "mh_attr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_PMU_MUWYYL08_GCLID\",\"ts\":1791308719},\"wbraid\":{\"ertek\":\"CoMKCQ_TESZT_PMU_MUWYYL08_WBRAID\",\"ts\":1791308721}},\"utm_utolso\":{\"source\":\"facebook\",\"medium\":\"paid\",\"campaign\":\"qa2_pmu_utolso\",\"ts\":1791308721},\"utm_elso\":{\"source\":\"google\",\"medium\":\"cpc\",\"campaign\":\"qa2_pmu_elso\",\"content\":\"hirdetes_a\",\"ts\":1791308719},\"meta\":{\"fbclid\":\"IwAR_TESZT_PMU_MUWYYL08_FBCLID\",\"ts\":1791308721},\"tiktok\":{\"ttclid\":{\"ertek\":\"E.C.P.TESZT_PMU_MUWYYL08_TTCLID\",\"ts\":1791308721}}}",
+  "mh_cc": "{\"v\":1,\"t\":1791308719156,\"ana\":true,\"adv\":true,\"fun\":true}",
+  "sutik_nevei": [
+   "_fbp",
+   "_ttp",
+   "_ga",
+   "_ga_H4206SQ0Q7"
+  ]
+ },
+ "idovonal": [
+  {
+   "t": 984,
+   "esemeny": "1. latogatas (Google-hirdetes)",
+   "url": "/booking-test?utm_source=google&utm_medium=cpc&utm_campaign=qa2_pmu_elso&utm_content=hirdetes_a&gclid=Cj0KCQjw_TESZT_PMU_MUWYYL08_GCLID"
+  },
+  {
+   "t": 3443,
+   "esemeny": "2. latogatas (Meta / TikTok / Google wbraid)",
+   "pillanatkep": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_PMU_MUWYYL08_GCLID",
+      "ts": 1791308719
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_PMU_MUWYYL08_WBRAID",
+      "ts": 1791308721
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791308721000.IwAR_TESZT_PMU_MUWYYL08_FBCLID",
+     "fbclid": "IwAR_TESZT_PMU_MUWYYL08_FBCLID",
+     "ts": 1791308721
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_PMU_MUWYYL08_TTCLID",
+      "ts": 1791308721
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_pmu_elso",
+     "content": "hirdetes_a",
+     "ts": 1791308719
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_pmu_utolso",
+     "ts": 1791308721
+    },
+    "fbp": "fb.1.1791303718000.6668600296",
+    "ttp": "TESZT_PMU_MUWYYL08_ttp_8ecr5xxkoq",
+    "ga4": {
+     "client_id": "157052467.1791222318",
+     "session_id": "1791307518",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   }
+  },
+  {
+   "t": 4445,
+   "esemeny": "PMU: kezeles = Személyes konzultációA szalonban · 30 percIngyenes"
+  },
+  {
+   "t": 6499,
+   "esemeny": "PMU: idopont valasztva",
+   "ido": "17:30"
+  },
+  {
+   "t": 14479,
+   "esemeny": "Salonic-adatlap betoltve",
+   "back": "mb_0muwyyq3k2ilfkdahj2hd2q"
+  },
+  {
+   "t": 16916,
+   "esemeny": "urlap kitoltve, kuldes",
+   "ido": "2026-10-06T17:45:35.212Z"
+  },
+  {
+   "t": 23020,
+   "esemeny": "foglalas-kuldes valasza",
+   "uuid": "b66a5e19-7d85-fcaf-06d0-f9a263cedf4d",
+   "redirect": "https://www.mosaicheadspa.hu/pmu-ok?first_booking=true&service=Ingyenes+konzult%C3%A1ci%C3%B3&category=Term%C3%A9szetes+sminktetov%C3%A1l%C3%A1s&price=0&location=Mosaic+PMU&employee=Melitta&g=g:3354694&bookingUrl=https%3A%2F%2Fmosaic-pmu.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32428%26placeId%3D14585%26serviceId%3D471160%26startDate%3D1793464200%26back%3Dmb_0muwyyq3k2ilfkdahj2hd2q"
+  },
+  {
+   "t": 24343,
+   "esemeny": "koszonooldal (elonezet)",
+   "booking_id": "mb_0muwyyq3k2ilfkdahj2hd2q",
+   "attribucio": "valasz",
+   "kulcs_iras": "valasz"
+  }
+ ],
+ "sajat_keresek_nyers": [
+  {
+   "t": 23440,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "source_id": "mb_0muwyyq3k2ilfkdahj2hd2q",
+    "uzletag": "pmu",
+    "tipus": "foglalas",
+    "szolgaltatas": "Ingyenes konzultáció",
+    "ar": 0,
+    "first_booking": true,
+    "g": "g:3354694",
+    "bookingUrl": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471160&startDate=1793464200&back=mb_0muwyyq3k2ilfkdahj2hd2q",
+    "attr": {
+     "google": {
+      "gclid": {
+       "ertek": "Cj0KCQjw_TESZT_PMU_MUWYYL08_GCLID",
+       "ts": 1791308719
+      },
+      "wbraid": {
+       "ertek": "CoMKCQ_TESZT_PMU_MUWYYL08_WBRAID",
+       "ts": 1791308721
+      }
+     },
+     "meta": {
+      "fbc": "fb.1.1791308721000.IwAR_TESZT_PMU_MUWYYL08_FBCLID",
+      "fbclid": "IwAR_TESZT_PMU_MUWYYL08_FBCLID",
+      "ts": 1791308721
+     },
+     "tiktok": {
+      "ttclid": {
+       "ertek": "E.C.P.TESZT_PMU_MUWYYL08_TTCLID",
+       "ts": 1791308721
+      }
+     },
+     "utm_elso": {
+      "source": "google",
+      "medium": "cpc",
+      "campaign": "qa2_pmu_elso",
+      "content": "hirdetes_a",
+      "ts": 1791308719
+     },
+     "utm_utolso": {
+      "source": "facebook",
+      "medium": "paid",
+      "campaign": "qa2_pmu_utolso",
+      "ts": 1791308721
+     },
+     "fbp": "fb.1.1791303718000.6668600296",
+     "ttp": "TESZT_PMU_MUWYYL08_ttp_8ecr5xxkoq",
+     "ga4": {
+      "client_id": "157052467.1791222318",
+      "session_id": "1791307518",
+      "measurement_id": "G-H4206SQ0Q7"
+     }
+    },
+    "hozz": {
+     "ana": true,
+     "adv": true,
+     "fun": true
+    },
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok"
+   }
+  },
+  {
+   "t": 23442,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-kulcs",
+   "torzs": {
+    "booking_id": "mb_0muwyyq3k2ilfkdahj2hd2q",
+    "booking_url": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471160&startDate=1793464200&back=mb_0muwyyq3k2ilfkdahj2hd2q",
+    "forras": "back"
+   }
+  },
+  {
+   "t": 23860,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "ok": true,
+    "frissitve": true,
+    "hibak": [],
+    "mezok": [
+     "google",
+     "meta",
+     "tiktok",
+     "utm_elso",
+     "utm_utolso",
+     "fbp",
+     "ttp",
+     "ga4"
+    ]
+   }
+  },
+  {
+   "t": 24318,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-kulcs",
+   "torzs": {
+    "ok": true,
+    "irva": false,
+    "idempotens": false,
+    "utkozes": true,
+    "kulcs": "14585|32428|1793464200",
+    "serviceId": "471160",
+    "meglevoBookingId": "mb_0muwwiy1li4lte4etv1anqg"
+   }
+  }
+ ],
+ "tiltott_kimeno_keresek": {
+  "tiltott connect.facebook.net/en_US/sdk.js": 1,
+  "tiltott www.google.com/maps": 1
+ },
+ "js_hibak": [],
+ "konzol": []
+}

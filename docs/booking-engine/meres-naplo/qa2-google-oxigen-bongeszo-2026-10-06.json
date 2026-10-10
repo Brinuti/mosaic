@@ -1,0 +1,455 @@
+{
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "eset": "oxigen-elso",
+ "uzletag": "oxigen",
+ "hozzajarulas_profil": "ana",
+ "hozzajarulas": {
+  "ana": true,
+  "adv": false,
+  "fun": true
+ },
+ "szintetikus_adatok": {
+  "megjegyzes": "a kattintasazonositok es a sutik SZINTETIKUSAK (TESZT-jelolesuek); az elonezeten nem fut pixel / GA, ezert a sutiket a teszt allitja be",
+  "elso_latogatas": {
+   "utm_source": "google",
+   "utm_medium": "cpc",
+   "utm_campaign": "qa2_oxigen-elso_elso",
+   "utm_content": "hirdetes_a",
+   "gclid": "Cj0KCQjw_TESZT_OXIGEN-ELSO_MUWXUBW7_GCLID"
+  },
+  "utolso_latogatas": {
+   "utm_source": "facebook",
+   "utm_medium": "paid",
+   "utm_campaign": "qa2_oxigen-elso_utolso",
+   "fbclid": "IwAR_TESZT_OXIGEN-ELSO_MUWXUBW7_FBCLID",
+   "ttclid": "E.C.P.TESZT_OXIGEN-ELSO_MUWXUBW7_TTCLID",
+   "wbraid": "CoMKCQ_TESZT_OXIGEN-ELSO_MUWXUBW7_WBRAID"
+  },
+  "sutik": {
+   "_fbp": "fb.1.1791301840000.9284767680",
+   "_ttp": "TESZT_OXIGEN-ELSO_MUWXUBW7_ttp_ozytstzbeb",
+   "_ga": "GA1.1.530312599.1791220440",
+   "_ga_H4206SQ0Q7": "GS2.1.s1791305640$o1$g1$t1791306240$j0$l0$h0"
+  }
+ },
+ "pillanatkep_a_foglalas_elott": {
+  "google": {
+   "gclid": {
+    "ertek": "Cj0KCQjw_TESZT_OXIGEN-ELSO_MUWXUBW7_GCLID",
+    "ts": 1791306841
+   },
+   "wbraid": {
+    "ertek": "CoMKCQ_TESZT_OXIGEN-ELSO_MUWXUBW7_WBRAID",
+    "ts": 1791306843
+   }
+  },
+  "meta": {
+   "fbc": "fb.1.1791306843000.IwAR_TESZT_OXIGEN-ELSO_MUWXUBW7_FBCLID",
+   "fbclid": "IwAR_TESZT_OXIGEN-ELSO_MUWXUBW7_FBCLID",
+   "ts": 1791306843
+  },
+  "tiktok": {
+   "ttclid": {
+    "ertek": "E.C.P.TESZT_OXIGEN-ELSO_MUWXUBW7_TTCLID",
+    "ts": 1791306843
+   }
+  },
+  "utm_elso": {
+   "source": "google",
+   "medium": "cpc",
+   "campaign": "qa2_oxigen-elso_elso",
+   "content": "hirdetes_a",
+   "ts": 1791306841
+  },
+  "utm_utolso": {
+   "source": "facebook",
+   "medium": "paid",
+   "campaign": "qa2_oxigen-elso_utolso",
+   "ts": 1791306843
+  },
+  "fbp": "fb.1.1791301840000.9284767680",
+  "ttp": "TESZT_OXIGEN-ELSO_MUWXUBW7_ttp_ozytstzbeb",
+  "ga4": {
+   "client_id": "530312599.1791220440",
+   "session_id": "1791305640",
+   "measurement_id": "G-H4206SQ0Q7"
+  }
+ },
+ "iframe_src": "https://mosaic-oxigen.salonic.hu/guestData/?placeId=14409&serviceId=466110&employeeId=-1&startDate=1792510200&back=mb_0muwxueqp8bxx0lz7gw3ghk",
+ "azonosito_a_keret_cimeben": "mb_0muwxueqp8bxx0lz7gw3ghk",
+ "keret_url": "https://mosaic-oxigen.salonic.hu/guestData/?anyone=true&employeeId=32009&placeId=14409&serviceId=466110&startDate=1792510200&back=mb_0muwxueqp8bxx0lz7gw3ghk",
+ "kontextus": {
+  "id": "mb_0muwxueqp8bxx0lz7gw3ghk",
+  "created": 1791306843937,
+  "seen": 1791306847586,
+  "business": "oxygen",
+  "source_page": "/booking-test",
+  "service_id": "466110",
+  "slot_unix": 1792510200,
+  "staff_id": "-1",
+  "carrier": "back",
+  "sent_at": 1791306847586,
+  "returned": null,
+  "completed_at": null
+ },
+ "salonic_status": 200,
+ "redirect_url": "https://www.mosaicheadspa.hu/oxigenterapia-ok?first_booking=true&service=Haj+Oxig%C3%A9nter%C3%A1pia+-+1.+alkalom&category=Oxig%C3%A9nter%C3%A1pia+-+1.alkalom&price=29900&location=Mosaic+Oxig%C3%A9n&employee=Sz%C5%B1cs+Vivien&g=g:3385031&bookingUrl=https%3A%2F%2Fmosaic-oxigen.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32009%26placeId%3D14409%26serviceId%3D466110%26startDate%3D1792510200%26back%3Dmb_0muwxueqp8bxx0lz7gw3ghk",
+ "salonic_uuid": "bd3f6ddf-f0f4-f338-6174-320062fc527b",
+ "kereten_at_probalt_eles_navigaciok": [
+  "https://www.mosaicheadspa.hu/oxigenterapia-ok?first_booking=true&service=Haj+Oxig%C3%A9nter%C3%A1pia+-+1.+alkalom&category=Oxig%C3%A9nter%C3%A1pia+-+1.alkalom&price=29900&location=Mosaic+Oxig%C3%A9n&employee=Sz%C5%B1cs+Vivien&g=g:3385031&bookingUrl=https%3A%2F%2Fmosaic-oxigen.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32009%26placeId%3D14409%26serviceId%3D466110%26startDate%3D1792510200%26back%3Dmb_0muwxueqp8bxx0lz7gw3ghk"
+ ],
+ "salonic_host": "mosaic-oxigen.salonic.hu",
+ "lemondo_url": "https://mosaic-oxigen.salonic.hu/booking/cancelBooking/bd3f6ddf-f0f4-f338-6174-320062fc527b",
+ "koszono_query": {
+  "first_booking": "true",
+  "service": "Haj Oxigénterápia - 1. alkalom",
+  "category": "Oxigénterápia - 1.alkalom",
+  "price": "29900",
+  "location": "Mosaic Oxigén",
+  "employee": "Szűcs Vivien",
+  "g": "g:3385031",
+  "bookingUrl": "https://mosaic-oxigen.salonic.hu/guestData/?anyone=true&employeeId=32009&placeId=14409&serviceId=466110&startDate=1792510200&back=mb_0muwxueqp8bxx0lz7gw3ghk"
+ },
+ "bookingUrl": "https://mosaic-oxigen.salonic.hu/guestData/?anyone=true&employeeId=32009&placeId=14409&serviceId=466110&startDate=1792510200&back=mb_0muwxueqp8bxx0lz7gw3ghk",
+ "bookingUrl_elemzes": {
+  "ok": true,
+  "host": "mosaic-oxigen.salonic.hu",
+  "uzletag": "oxygen",
+  "placeId": 14409,
+  "employeeId": 32009,
+  "serviceId": "466110",
+  "startUnix": 1792510200,
+  "kulcs": "14409|32009|1792510200",
+  "bookingId": "mb_0muwxueqp8bxx0lz7gw3ghk"
+ },
+ "booking_id": "mb_0muwxueqp8bxx0lz7gw3ghk",
+ "koszono_elonezeti_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok?first_booking=true&service=Haj+Oxig%C3%A9nter%C3%A1pia+-+1.+alkalom&category=Oxig%C3%A9nter%C3%A1pia+-+1.alkalom&price=29900&location=Mosaic+Oxig%C3%A9n&employee=Sz%C5%B1cs+Vivien&g=g:3385031&bookingUrl=https%3A%2F%2Fmosaic-oxigen.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32009%26placeId%3D14409%26serviceId%3D466110%26startDate%3D1792510200%26back%3Dmb_0muwxueqp8bxx0lz7gw3ghk",
+ "mhAttribucioEredmeny": {
+  "source_id": "mb_0muwxueqp8bxx0lz7gw3ghk",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "frissitve": true,
+   "hibak": [],
+   "mezok": [
+    "google",
+    "meta",
+    "tiktok",
+    "utm_elso",
+    "utm_utolso",
+    "fbp",
+    "ttp",
+    "ga4"
+   ]
+  },
+  "kuldott": {
+   "source_id": "mb_0muwxueqp8bxx0lz7gw3ghk",
+   "uzletag": "oxigen",
+   "tipus": "foglalas",
+   "szolgaltatas": "Haj Oxigénterápia - 1. alkalom",
+   "ar": 29900,
+   "first_booking": true,
+   "g": "g:3385031",
+   "bookingUrl": "https://mosaic-oxigen.salonic.hu/guestData/?anyone=true&employeeId=32009&placeId=14409&serviceId=466110&startDate=1792510200&back=mb_0muwxueqp8bxx0lz7gw3ghk",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_OXIGEN-ELSO_MUWXUBW7_GCLID",
+      "ts": 1791306841
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_OXIGEN-ELSO_MUWXUBW7_WBRAID",
+      "ts": 1791306843
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791306843000.IwAR_TESZT_OXIGEN-ELSO_MUWXUBW7_FBCLID",
+     "fbclid": "IwAR_TESZT_OXIGEN-ELSO_MUWXUBW7_FBCLID",
+     "ts": 1791306843
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_OXIGEN-ELSO_MUWXUBW7_TTCLID",
+      "ts": 1791306843
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_oxigen-elso_elso",
+     "content": "hirdetes_a",
+     "ts": 1791306841
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_oxigen-elso_utolso",
+     "ts": 1791306843
+    },
+    "fbp": "fb.1.1791301840000.9284767680",
+    "ttp": "TESZT_OXIGEN-ELSO_MUWXUBW7_ttp_ozytstzbeb",
+    "ga4": {
+     "client_id": "530312599.1791220440",
+     "session_id": "1791305640",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": false,
+    "fun": true
+   },
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok"
+  }
+ },
+ "mhKulcsEredmeny": {
+  "bookingId": "mb_0muwxueqp8bxx0lz7gw3ghk",
+  "forras": "back",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "irva": false,
+   "idempotens": false,
+   "utkozes": true,
+   "kulcs": "14409|32009|1792510200",
+   "serviceId": "466110",
+   "meglevoBookingId": "mb_0muwwfe8qpioj7cf5nz1dyl"
+  }
+ },
+ "tarolo": {
+  "mh_attr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_OXIGEN-ELSO_MUWXUBW7_GCLID\",\"ts\":1791306841},\"wbraid\":{\"ertek\":\"CoMKCQ_TESZT_OXIGEN-ELSO_MUWXUBW7_WBRAID\",\"ts\":1791306843}},\"utm_utolso\":{\"source\":\"facebook\",\"medium\":\"paid\",\"campaign\":\"qa2_oxigen-elso_utolso\",\"ts\":1791306843},\"utm_elso\":{\"source\":\"google\",\"medium\":\"cpc\",\"campaign\":\"qa2_oxigen-elso_elso\",\"content\":\"hirdetes_a\",\"ts\":1791306841},\"meta\":{\"fbclid\":\"IwAR_TESZT_OXIGEN-ELSO_MUWXUBW7_FBCLID\",\"ts\":1791306843},\"tiktok\":{\"ttclid\":{\"ertek\":\"E.C.P.TESZT_OXIGEN-ELSO_MUWXUBW7_TTCLID\",\"ts\":1791306843}}}",
+  "mh_cc": "{\"v\":1,\"t\":1791306841115,\"ana\":true,\"adv\":false,\"fun\":true}",
+  "sutik_nevei": [
+   "_fbp",
+   "_ttp",
+   "_ga",
+   "_ga_H4206SQ0Q7"
+  ]
+ },
+ "idovonal": [
+  {
+   "t": 997,
+   "esemeny": "1. latogatas (Google-hirdetes)",
+   "url": "/booking-test?utm_source=google&utm_medium=cpc&utm_campaign=qa2_oxigen-elso_elso&utm_content=hirdetes_a&gclid=Cj0KCQjw_TESZT_OXIGEN-ELSO_MUWXUBW7_GCLID"
+  },
+  {
+   "t": 3405,
+   "esemeny": "2. latogatas (Meta / TikTok / Google wbraid)",
+   "pillanatkep": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_OXIGEN-ELSO_MUWXUBW7_GCLID",
+      "ts": 1791306841
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_OXIGEN-ELSO_MUWXUBW7_WBRAID",
+      "ts": 1791306843
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791306843000.IwAR_TESZT_OXIGEN-ELSO_MUWXUBW7_FBCLID",
+     "fbclid": "IwAR_TESZT_OXIGEN-ELSO_MUWXUBW7_FBCLID",
+     "ts": 1791306843
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_OXIGEN-ELSO_MUWXUBW7_TTCLID",
+      "ts": 1791306843
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_oxigen-elso_elso",
+     "content": "hirdetes_a",
+     "ts": 1791306841
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_oxigen-elso_utolso",
+     "ts": 1791306843
+    },
+    "fbp": "fb.1.1791301840000.9284767680",
+    "ttp": "TESZT_OXIGEN-ELSO_MUWXUBW7_ttp_ozytstzbeb",
+    "ga4": {
+     "client_id": "530312599.1791220440",
+     "session_id": "1791305640",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   }
+  },
+  {
+   "t": 5063,
+   "esemeny": "reteg megnyilt",
+   "azonosito": "mb_0muwxueqp8bxx0lz7gw3ghk"
+  },
+  {
+   "t": 5120,
+   "esemeny": "valasztas: Első oxigénterápiás kezelés"
+  },
+  {
+   "t": 6707,
+   "esemeny": "szakember: Mindegy (a Salonic oszt be)"
+  },
+  {
+   "t": 7372,
+   "esemeny": "idopont valasztva (az utolso szabad nap utolso idopontja)",
+   "ido": "17:30"
+  },
+  {
+   "t": 11891,
+   "esemeny": "Salonic-adatlap betoltve",
+   "back": "mb_0muwxueqp8bxx0lz7gw3ghk"
+  },
+  {
+   "t": 14358,
+   "esemeny": "urlap kitoltve, kuldes",
+   "ido": "2026-10-06T17:14:14.604Z"
+  },
+  {
+   "t": 20049,
+   "esemeny": "foglalas-kuldes valasza",
+   "uuid": "bd3f6ddf-f0f4-f338-6174-320062fc527b",
+   "redirect": "https://www.mosaicheadspa.hu/oxigenterapia-ok?first_booking=true&service=Haj+Oxig%C3%A9nter%C3%A1pia+-+1.+alkalom&category=Oxig%C3%A9nter%C3%A1pia+-+1.alkalom&price=29900&location=Mosaic+Oxig%C3%A9n&employee=Sz%C5%B1cs+Vivien&g=g:3385031&bookingUrl=https%3A%2F%2Fmosaic-oxigen.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32009%26placeId%3D14409%26serviceId%3D466110%26startDate%3D1792510200%26back%3Dmb_0muwxueqp8bxx0lz7gw3ghk"
+  },
+  {
+   "t": 21697,
+   "esemeny": "koszonooldal (elonezet)",
+   "booking_id": "mb_0muwxueqp8bxx0lz7gw3ghk",
+   "attribucio": "valasz",
+   "kulcs_iras": "valasz"
+  }
+ ],
+ "sajat_keresek_nyers": [
+  {
+   "t": 20433,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "source_id": "mb_0muwxueqp8bxx0lz7gw3ghk",
+    "uzletag": "oxigen",
+    "tipus": "foglalas",
+    "szolgaltatas": "Haj Oxigénterápia - 1. alkalom",
+    "ar": 29900,
+    "first_booking": true,
+    "g": "g:3385031",
+    "bookingUrl": "https://mosaic-oxigen.salonic.hu/guestData/?anyone=true&employeeId=32009&placeId=14409&serviceId=466110&startDate=1792510200&back=mb_0muwxueqp8bxx0lz7gw3ghk",
+    "attr": {
+     "google": {
+      "gclid": {
+       "ertek": "Cj0KCQjw_TESZT_OXIGEN-ELSO_MUWXUBW7_GCLID",
+       "ts": 1791306841
+      },
+      "wbraid": {
+       "ertek": "CoMKCQ_TESZT_OXIGEN-ELSO_MUWXUBW7_WBRAID",
+       "ts": 1791306843
+      }
+     },
+     "meta": {
+      "fbc": "fb.1.1791306843000.IwAR_TESZT_OXIGEN-ELSO_MUWXUBW7_FBCLID",
+      "fbclid": "IwAR_TESZT_OXIGEN-ELSO_MUWXUBW7_FBCLID",
+      "ts": 1791306843
+     },
+     "tiktok": {
+      "ttclid": {
+       "ertek": "E.C.P.TESZT_OXIGEN-ELSO_MUWXUBW7_TTCLID",
+       "ts": 1791306843
+      }
+     },
+     "utm_elso": {
+      "source": "google",
+      "medium": "cpc",
+      "campaign": "qa2_oxigen-elso_elso",
+      "content": "hirdetes_a",
+      "ts": 1791306841
+     },
+     "utm_utolso": {
+      "source": "facebook",
+      "medium": "paid",
+      "campaign": "qa2_oxigen-elso_utolso",
+      "ts": 1791306843
+     },
+     "fbp": "fb.1.1791301840000.9284767680",
+     "ttp": "TESZT_OXIGEN-ELSO_MUWXUBW7_ttp_ozytstzbeb",
+     "ga4": {
+      "client_id": "530312599.1791220440",
+      "session_id": "1791305640",
+      "measurement_id": "G-H4206SQ0Q7"
+     }
+    },
+    "hozz": {
+     "ana": true,
+     "adv": false,
+     "fun": true
+    },
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok"
+   }
+  },
+  {
+   "t": 20435,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-kulcs",
+   "torzs": {
+    "booking_id": "mb_0muwxueqp8bxx0lz7gw3ghk",
+    "booking_url": "https://mosaic-oxigen.salonic.hu/guestData/?anyone=true&employeeId=32009&placeId=14409&serviceId=466110&startDate=1792510200&back=mb_0muwxueqp8bxx0lz7gw3ghk",
+    "forras": "back"
+   }
+  },
+  {
+   "t": 20991,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "ok": true,
+    "frissitve": true,
+    "hibak": [],
+    "mezok": [
+     "google",
+     "meta",
+     "tiktok",
+     "utm_elso",
+     "utm_utolso",
+     "fbp",
+     "ttp",
+     "ga4"
+    ]
+   }
+  },
+  {
+   "t": 21689,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-kulcs",
+   "torzs": {
+    "ok": true,
+    "irva": false,
+    "idempotens": false,
+    "utkozes": true,
+    "kulcs": "14409|32009|1792510200",
+    "serviceId": "466110",
+    "meglevoBookingId": "mb_0muwwfe8qpioj7cf5nz1dyl"
+   }
+  }
+ ],
+ "tiltott_kimeno_keresek": {
+  "tiltott connect.facebook.net/en_US/sdk.js": 1,
+  "google-ads www.google.com/ccm/collect": 3,
+  "google-ads googleads.g.doubleclick.net/pagead/viewthroughconversion/16795940464/": 4,
+  "google-ads www.google.com/rmkt/collect/16795940464/": 4,
+  "stape stape.mosaicheadspa.hu/_/service_worker/69f0/sw_iframe.html": 1,
+  "tiktok analytics-ipv6.tiktokw.us/ipv6/enrich_ipv6": 2,
+  "tiktok analytics.tiktok.com/api/v2/pixel": 6,
+  "tiktok analytics.tiktok.com/api/v2/pixel/act": 5,
+  "tiktok analytics.tiktok.com/api/v2/monitor": 5,
+  "google-ads www.google.com/pagead/form-data/16795940464": 1,
+  "google-ads www.google.com/ccm/form-data/16795940464": 1
+ },
+ "js_hibak": [],
+ "konzol": []
+}

@@ -1333,6 +1333,12 @@
     if (elso) { gorgess(elso, 'center'); fokusz(elso); return null; }
     return o;
   }
+  // QA-2 ARNYEK-meres: az erkezesi adatok (kattintasazonositok, UTM, sutik, hozzajarulas) a szerver-oldali mereshez, a rendeles azonositojaval (Stripe pi_ | ATU-...). Nem akadalyozhat semmit.
+  function attribucioKuld(id) {
+    try {
+      if (window.mhAttribucio && id) window.mhAttribucio.kuld({ source_id: id, uzletag: 'headspa', tipus: 'ajandekkartya', szolgaltatas: termek(S.termek).kartya_cim, ar: osszegFt() });
+    } catch (e) { /* a meres hibaja nem allithatja meg a vasarlast */ }
+  }
   function szamlazasiAdat(o) {
     var attr = Object.assign({}, kozosParam(), { oldal: S.attr.oldal }, rendelesAttr());
     // marketing-hozzajarulas nelkul a hirdetesi kattintas-azonositok el sem indulnak a szerverre (a szerver is eldobja oket)
@@ -1420,6 +1426,7 @@
         }
         // ebben a munkamenetben inditjuk ennek a PaymentIntentnek a fizeteset: csak ekkor mehet ki rola purchase
         S.pi = v.adat.pi; S.cs = v.adat.client_secret; S.rt = null; S.csakOlvas = false; S.fizetesInditva = S.pi; ment();
+        attribucioKuld(S.pi); // QA-2: az erkezesi adatok a fizetes ELOTT a pi_ azonositoval (a webhook-kuldes ne lehessen elobb, mint az adat)
         return stripeAdapter.stripe.confirmPayment({
           elements: stripeAdapter.elements,
           clientSecret: S.cs,
@@ -1579,6 +1586,7 @@
         throw Object.assign(new Error('ervenytelen'), { uzenet: latszik ? 'Ellenőrizd a megjelölt adatokat.' : (m.uzenet || m.foto || m['szemelyre.foto'] || 'Ellenőrizd a megadott adatokat.') });
       }
       if (v.status !== 200 || !v.adat.ok) throw new Error('atutalas');
+      attribucioKuld(v.adat.utalas && v.adat.utalas.kozlemeny); // QA-2: az ATU- azonositoval; a konverzio csak a tenyleges befizetesnel all elo (szalon-igazolas)
       S.folyamatban = false;
       atutalasKesz($('ah-atutalas'), o, v.adat.utalas || {});
     }).catch(function (e) {

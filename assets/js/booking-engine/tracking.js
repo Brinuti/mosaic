@@ -14,16 +14,18 @@ export const EVENTS = Object.freeze([
   'booking_callback_requested', 'booking_error',
 ]);
 
-const PARAMS = ['business', 'service', 'service_id', 'booking_type', 'staff_id', 'source_page', 'booking_id', 'list_price', 'final_price',
+// booking_id: a foglalo SAJAT azonositoja (booking-id.js; a folyamat elejen szuletik, minden esemenyen rajta van, lasd setBookingId);
+// booking_ref: a Salonic atiranyitasabol kepzett szintetikus hivatkozas (g-serviceId-startDate); booking_id_echo: hol jott vissza a sajat azonosito a Salonic atiranyitasaban (vagy "none")
+const PARAMS = ['business', 'service', 'service_id', 'booking_type', 'staff_id', 'source_page', 'booking_id', 'booking_ref', 'booking_id_echo', 'list_price', 'final_price',
   'pricing_rule', 'voucher', 'new_or_returning', 'acquisition', 'step', 'reason', 'count', 'filter'];
 
 const cookie = (doc, name) => {
   try { const m = String(doc && doc.cookie).match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)')); return m ? decodeURIComponent(m[1]) : undefined; } catch (e) { return undefined; }
 };
 
-/** ctx: parseContext() eredmenye. dataLayer: tomb (alap: window.dataLayer). */
-export function createTracker({ ctx, dataLayer, doc = typeof document !== 'undefined' ? document : null, storage = null, now = () => Date.now() }) {
-  const base = { business: ctx.business, source_page: ctx.sourcePage || undefined, ...ctx.attribution, fbc: cookie(doc, '_fbc'), fbp: cookie(doc, '_fbp') };
+/** ctx: parseContext() eredmenye. dataLayer: tomb (alap: window.dataLayer). bookingId: a foglalo sajat azonositoja (minden esemenyre rakerul). */
+export function createTracker({ ctx, dataLayer, doc = typeof document !== 'undefined' ? document : null, storage = null, now = () => Date.now(), bookingId = null }) {
+  const base = { business: ctx.business, source_page: ctx.sourcePage || undefined, ...ctx.attribution, fbc: cookie(doc, '_fbc'), fbp: cookie(doc, '_fbp'), booking_id: bookingId || undefined };
   const dl = dataLayer || (typeof window !== 'undefined' ? (window.dataLayer = window.dataLayer || []) : []);
   let seq = 0;
 
@@ -47,5 +49,7 @@ export function createTracker({ ctx, dataLayer, doc = typeof document !== 'undef
   }
   /** A kezdo allapotban (H0) meg nincs uzletag: a valasztas utan allitjuk be, a tovabbi esemenyek mar azzal mennek. */
   function setBusiness(business) { base.business = business; }
-  return { track, base, setBusiness };
+  /** A sajat foglalas-azonosito (uj folyamat / uj foglalas): a tovabbi esemenyek mar ezzel mennek. */
+  function setBookingId(id) { base.booking_id = id || undefined; }
+  return { track, base, setBusiness, setBookingId };
 }

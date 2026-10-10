@@ -1,0 +1,102 @@
+QA-1: a foglalo sajat booking_id-ja - mit fogad el a Salonic adatlap-cime (2026-10-06: 1-6. pont csak olvasas + szaraz futas; a 7. pontban EGY valodi, azonnal lemondott probafoglalas)
+=====================================================================================================================================
+
+Modszer: curl (bongeszo-szeru fejlecekkel, suti-tarolóval) a Salonic /guestData/ cimere; mindegyik valtozat KULON, kb. 2-4 het mulva levo idopontra
+(a Salonic az adatlap megnyitasakor ~5 percre "tartja" az idopontot, ugyanarra masodjara mar a fooldalra dob - igy a valtozatok nem hasznalhattak ugyanazt az idopontot).
+Az 1-6. pontban foglalas nem jott letre, adat nem keluldott be; minden keres a szalon naptaraban egy-egy tavoli idopontot ~5 percre foglalt.
+
+1) EMPLOYEEID=-1 (barmelyik szakember), ismeretlen parameter -> a Salonic a kanonikus cimre iranyit, az ismeretlent ELDOBJA
+   fodraszat, ingyenes konzultacio (232804), uj idopontonkent:
+   +mosaic_booking_id=MB-TEST123  -> .../guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=...&back=      (parameter nincs)
+   +comment=MB-TEST123            -> ugyanaz, parameter nincs;  +utm_source=x  -> ugyanaz;  a textarea (GuestDataForm_guestComment) ures marad
+
+2) EMPLOYEEID=-1 + back=<ertek> -> a back MEGMARAD
+   .../guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1793712600&back=MBX9-4
+   a MBX9-4 3 helyen: a bejelentkezes-link back-parametereben, az urlap action-jeben, a $.ajax('/guestData/?...&back=MBX9-4') foglalas-kuldo cimben
+
+3) KANONIKUS CIM (anyone=true&employeeId=<konkret>&...&back=) + ismeretlen parameter -> nem iranyit at, a parameter megmarad
+   &mosaic_booking_id=MBX9-1 / &comment=MBX9-2 / &GuestDataForm[guestComment]=MBX9-3: mind a cimben, az urlap action-jeben, az AJAX-cimben; a textarea ures marad
+   (az urlap mezoi URL-bol nem tolthetok elo)
+
+4) A "back" hordozo mind a 4 vizsgalt Salonic-fiokon, "barmelyik" (-1) es konkret szakembernel is (modszer: 1 idopont / eset)
+   headspa (302342) -1  -> ...?anyone=true&employeeId=29415&...&back=MBX9-headspa-0 | action: igen | AJAX: igen
+   headspa            24989 -> ...?placeId=10427&serviceId=302342&employeeId=24989&startDate=...&back=MBX9-headspa-1 | action: igen | AJAX: igen
+   oxygen  (466147) -1  -> igen / igen / igen;     konkret (31988): igen / igen / igen
+   laser   (476477) -1  -> igen / igen / igen;     konkret (32417): igen / igen / igen
+   hair    (232804) -1  -> igen / igen / igen;     konkret (26064): igen / igen / igen
+   (konkret szakembernel a Salonic nem irányít át, a cimet bajra megtartja, a parameterek sorrendjevel egyutt)
+
+5) A Salonic adatlap sajat JS-e (handleSuccess): a siker utan window.location.assign(response.redirect.url); a dataLayer-be
+   transaction_id = response.booking.id (a Salonic foglalas-UUID-ja), value = response.booking.priceTotal. A fiok sajat GTM-je (GTM-PST2HB22) az adatlapon fut.
+   Hogy a redirect.url / bookingUrl tartalmazza-e a back-et: NEM merheto foglalas nelkul.
+
+6) SZARAZ FUTAS az ELONEZETEN (https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev, node tools/meres-proba/booking-id-valodi.mjs --szaraz 1), kimeno meres tiltva
+   [  1194ms] a motor megnyitasa elott a kontextus  {"kontextus":null}
+   [  2964ms] reteg megnyilt (a folyamat eleje)     {"azonosito":"mb_0muwowb7c2grmyxin1a864a"}
+   [  5458ms] idopont valasztva (az utolso szabad nap utolso idopontja)
+   [  9981ms] Salonic-adatlap betoltve
+              src:      https://mosaic-hair.salonic.hu/guestData/?placeId=10823&serviceId=232804&employeeId=-1&startDate=1792512000&back=mb_0muwowb7c2grmyxin1a864a
+              betoltott: https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwowb7c2grmyxin1a864a
+   [ 10021ms] az adatlap urlapjanak action-je:  /guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwowb7c2grmyxin1a864a  -> tartalmazza az azonositot: igen
+   Tiltott kimeno meresi kerelmek (a Salonic-adatlap sajat GTM-je es a lap sajat mereskodese; mind elfogva, semmi nem jutott ki): google-ads 7, stape 1, tiktok 8, meta-sdk 1. JS-hiba: nincs.
+
+7) VALODI PROBAFOGLALAS az ELONEZETEN (2026-10-06 13:15 UTC; a tulajdonos jovahagyasaval, az engedelyszabaly felvetele utan; node tools/meres-proba/booking-id-valodi.mjs --bazis https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev)
+   Ingyenes fodrasz-konzultacio, 2026-10-20 (kedd) 18:00-18:30 (a Salonic Noelhez osztotta), "TESZT - Claude", a tulajdonos telefonszama, hirlevel nem; kimeno meres tiltva; az eles koszonooldalt a szkript NEM toltotte be.
+   azonosito: mb_0muwpbdf5il7bwt0ll9wjmd
+   iframe src:  https://mosaic-hair.salonic.hu/guestData/?placeId=10823&serviceId=232804&employeeId=-1&startDate=1792512000&back=mb_0muwpbdf5il7bwt0ll9wjmd
+   betoltott:   https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwpbdf5il7bwt0ll9wjmd
+   urlap action: /guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwpbdf5il7bwt0ll9wjmd
+   [12578ms] urlap kitoltve, kuldes 13:15:29 UTC -> a keret a (blokkolt) eles koszonooldalra navigalt:
+   /fodrasz-ok?first_booking=true&service=Fodrasz konzultacio (9.900 Ft helyett most 0 Ft!)&category=Ingyenes Fodrasz konzultacio&price=0&location=Mosaic Hair&employee=Noel - 20% kedvezmeny!&g=g:3385039
+      &bookingUrl=https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwpbdf5il7bwt0ll9wjmd
+   EREDMENY: visszajott = igen, hol = bookingUrl:back (a koszonooldalnak nincs sajat "back" parametere; az utvonal es a tobbi parameter valtozatlan; a foglalas sikeres: a back nem atiranyitasi cel)
+   A Salonic AJAX-valasza (booking.id, redirect.url) nem volt kiolvashato (a keret azonnal navigal), a Salonic-UUID-t a visszaigazolo e-mailbol vettem.
+   Visszajatszas: verifyConfirmation(...) -> ok=true, bookingId={sent: mb_0muwpbdf5il7bwt0ll9wjmd, returned: true, where: "bookingUrl:back"}, bookingRef g:3385039-232804-1792512000, checks: params/place/service/slot/price pass, staff skipped.
+   GTM v52 (a valtozok kodja valtozatlanul): 175 -> hs-3385039-232804-1792512000; 182 -> fodraszok-3385039-232804-1792512000; ugyanez a back-es azonosito nelkul is.
+   E-MAIL (Gmail, app@salonic.hu -> a teszt cim, 13:15:32 UTC, "Uj idopont letrehozva: Fodrasz konzultacio..."): a szovegben, a linkekben es a mellekletek nevei kozott NINCS mb_...;
+      csak a Salonic sajat UUID-ja van: .../booking/bookingDetails/86fd2256-6878-81b2-eec5-0bc855482a1d, .../booking/cancelBooking/86fd2256-..., ld+json reservationNumber = ugyanez.
+   ZAPIER (a Salonic-levelbol indulo folyamatok, 13:16:47 - 13:17:13 UTC): PII-dusitas, Google Ads - Fodraszat, Meta CAPI: mindharom lefutott ("finished"), a bemenet (a levél) nem tartalmaz mb_...-t;
+      a Meta CAPI folyamat kimenete: reason "teszt-foglalas", skipped true (ertek olvasva); a masik ketto kimenete ugyanilyen alaku (reason 14 karakter, skipped) - semmi nem ment ki a platformok fele.
+   LEMONDAS: lemond.mjs -> "Az idopont lemondasa sikeres volt!"; a foglalas-reszletek oldal: "Idopont torolve!". A vendegkarton (g:3385039, a korabbi tesztekbol) megmaradt.
+   Tiltott kimeno meresi kerelmek a futas alatt (mind elfogva, semmi nem jutott ki): google-ads 13, stape 1, tiktok 18, meta-sdk 1. JS-hiba: nincs.
+
+Regresszio: node --test tools/test-*.mjs -> 171 teszt, 170 ok, 0 hiba, 1 kihagyott (a LIVE=1-es elo proba).
+reteg-proba.mjs --overlay dist: 311 ellenorzes; a valtoztatassal ket futasban 1, illetve 2 "sebesseg" hiba (naptar-vaz < 1,5 mp: 1878 / 1888 ms; az elso szabad nap < 4 mp)
+- a valtoztatas NELKULI alapallapoton (a HEAD, kulon worktree-ben epitett dist) UGYANEZ a ket hiba van (1863 / 1874 ms, 311 ellenorzesbol 2 hiba): a sandbox halozati sebessege, nem a valtoztatas.
+
+GTM (olvasas, eles v52 "2026-10-05 foglalo lepes-meres GA4 (#88)", mind a 64 valtozo): a bookingUrl-t feldolgozo valtozok (175, 182, 193, 208) kizarolag
+new URL(bookingUrl).searchParams.get('serviceId' / 'startDate')-tel olvasnak; reguláris kifejezes a bookingUrl-re nincs -> a "&back=mb_..." veg nem erinti oket.
+Nem ellenorzott: a 61 cimke / 72 trigger feltetelei, a Stape szerver-kontener, a koszonooldalrol a Zapier fele menno hivasok. (A Tag Manager API ketszer 429-et adott, a masodik probalkozas sikerult.)
+
+8) QA-1 FOLYTATAS (2026-10-06 13:40 - 14:20 UTC): kulcs-tabla + e-mail-oldali parositas; reszletek: ../BOOKING_ID.md "Parositas a Salonic e-mailhez"
+   1. lepes (Foglalas megtekintese oldal): csak startDate (a "Foglalas modositasa" link), azonositok NINCSENEK; a modositas oldal (/selectDate/?startDate=..&bookingId=<UUID>) JS-beallitasa adja a placeId / employeeId / serviceId-t.
+      -> e-mail oldali kulcs: UUID -> 2 GET (csak olvasas) -> placeId|employeeId|startUnix; tartalek: nevfordito tabla + az e-mail JSON-LD / szoveges datuma (ev a level datuma alapjan, elorefele).
+   Valodi probafoglalasok az ELONEZETEN ("TESZT - Claude", azonnal lemondva, kimeno meres tiltva, az eles koszonooldal nem toltodott be); nyers nyomok: qa1-nyom-*.json
+      a) barmelyik szakember     mb_0muwqohjz6g47mfu3pibpj0  10823|25095|1792512000  1. ag = 2. ag; parositott, esemeny_id = booking_id
+      b0) oxigen (kiegeszito)    mb_0muwqq2tg3m5t6esi1uyzo4  14409|32009|1793374200  1. ag = 2. ag (szovegbol); parositott
+      b) konkret szakember, mas szolgaltatas (hair, 231538)
+                                 mb_0muwqsub5wg61rqiuebgskn  10823|23694|1792512000  1. ag = 2. ag (szovegbol); parositott; AZONOS idopont mint (a), de mas employeeId -> mas kulcs, nincs utkozes
+      c) paros HeadSpa (302999)  mb_0muwquipszezqbdrx782d6m  10427|24354|1793457000  1. ag = 2. ag (JSON-LD); parositott; EGY virtualis munkatars ("Paros kezeles", 24354) -> EGY kulcs, NINCS utkozes
+         az (c) level ANGOL (Appointment created / Employees / "October 31. (Saturday) 15:30 - 16:50", logo a fejlecben) -> az elemzo javitva (JSON-LD helynev, angol honap/hetnap), fixture + teszt
+         lemondas (c): lemond.mjs -> "Your booking has been cancelled!"; a reszletek oldal: "Appointment deleted!" (302 -> torolve oldal)
+   Mind a negy foglalas lemondva. Az (a)-(c) mindegyiknel: a koszonooldali iras irva:true, utkozes:false; a 2. keresesre duplikalt (egy foglalasbol egy esemeny).
+   Szintetikus (valodi foglalas nelkul) utkozes-bemutato az elonezeti API-n: qa1-nyom-szintetikus-utkozes.json (idempotens iras, utkozes naplozva, ugyanarra a kulcsra MAS UUID -> ellentmondas + riasztas, korai ujrakeres, piros szalag).
+   Az elonezeti adatbazisban 10 szintetikus foglalas_egyeztetes sor (3 riasztas) maradt: torlesukat az automata jogosultsag-ellenorzes megtagadta, nem erolkodtem; az eles adatbazist nem erinti.
+   Regresszio: node --test tools/test-*.mjs -> 192 teszt, 191 ok, 1 kihagyott (LIVE=1-es elo proba); tools/test-foglalas-kulcs.mjs: 21 teszt, mind ok.
+
+9) QA-1 UJRATESZT KIEGESZITES (2026-10-06 14:00 - 15:05 UTC): elo ellenorzes a foglalt kulcsra, lemondasi ertesito, teljes nevtabla, tartalek ag valodi leveleken
+   reszletek: ../BOOKING_ID.md "Kulcs-utkozes kezelese"; nyers nyomok: qa1-nyom-lanc-headspa-sorrendek.json, qa1-nyom-lanc-hair-tartalek.json, qa1-nyom-elysion-nevtabla.json, qa1-nevtabla-2026-10-06.json
+   Szabaly: ha B a kulcsot foglaltnak talalja (a birtokos mar kiment masik UUID-ra), a birtokos Salonic-oldala ELOBEN ellenorizve: torolve -> B kapja a kulcsot; el -> ellentmondas + riasztas;
+            nem ellenorizheto -> ujraprobalas. A lemondasi ertesitoben NINCS UUID / link / JSON-LD (csak szalon-nev a zaro sorban, szolgaltatas, munkatars, idopont-szoveg) -> kulcs a nevtablabol.
+   Nevtabla: HeadSpa 5, Elysion 1, Hair 3, Oxigen 3, PMU 1 munkatars (13), 107 szolgaltatas, nev nelkuli azonosito nincs; a HeadSpa 27076 ("Mirage Egyeni kezelo - Majus") a nyilvanos /employees/<id> oldalbol.
+   Valodi foglalasok (azonnal lemondva; mindegyikbol pontosan egy esemeny, a sajat booking_id-vel):
+      H1  mb_0muwsdxoovp3rbsnmni2v54  10427|24354|1792497600  HeadSpa ANGOL level a torles UTAN feldolgozva -> ag1 "a foglalas torolve", NEVTABLA dont; angol lemondasi ertesito -> felszabadult
+      H2  mb_0muwsjdj4li1goksjq4s898  10427|24354|1793457000  (a (c) kulcsa; koszonooldal utkozes:true) SORREND A: B levele az A=(c) ertesitoje ELOTT -> elo ellenorzes torolve -> atadas; (c) ertesitoje B UTAN -> H2 el, nem szabadul fel
+      H3  mb_0muwsq9w44g65t4prwo21m2  10427|24354|1793457000  (utkozes:true) SORREND B: az A=H2 ertesitoje B levele ELOTT -> torolve -> a kulcs H3-e; H3 levele egyenes parositas
+      H4  mb_0muwsxcwo4g8rv24oo137ih  10427|24354|1793457000  az A=H3 ertesitoje a foglalas ELOTT -> kulcs szabad; koszonooldal irva:true, utkozes:false; levele parosit
+      H5  mb_0muwsrowg490clturxk7vtw  10823|25095|1792512000  Hair MAGYAR level a torles UTAN -> NEVTABLA dont; a kulcs birtokosa az (a) foglalas (torolve, elo ellenorzes) -> atadas; magyar lemondasi ertesito -> felszabadult
+   NEGATIV: ket ELO foglalas azonos kulccsal (A = valodi H4, B'' = szintetikus mb_szintetikusnegativ0001 + szintetikus UUID): elo ellenorzes aktiv -> ellentmondas + riasztas, nincs esemeny.
+   Elysion: a valodi 2026-10-05 level mezoibol a nevtabla kulcsot kepez: 14586|32417|1793467800, serviceId 476477 (kulcs-tabla rekord nincs -> nincs parositas).
+   Megfigyeles: a lemondott idopont a Salonic naptar-API szabad-listajaban ~4 perc mulva jelenik meg ujra (14:46:37 lemondas -> 14:50:45 szabad).
+   Az elonezeti adatbazisban a szintetikus bemutatok foglalas_egyeztetes sorai (kb. 12, ebbol 4 riasztas) benne maradtak: a szelesebb torlest az automata jogosultsag-ellenorzes megtagadta; a szintetikus kulcs- es jelolt-sorokat toroltem.
+   Regresszio: node --test tools/test-*.mjs -> 204 teszt, 203 ok, 1 kihagyott (LIVE=1); tools/test-foglalas-kulcs.mjs: 33 teszt, mind ok.

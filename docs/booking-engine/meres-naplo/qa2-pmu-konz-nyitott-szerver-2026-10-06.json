@@ -1,0 +1,548 @@
+{
+ "eset": "pmu",
+ "hivas_ideje": "2026-10-06T16:37:26.708Z",
+ "kerelem_maszkolt": {
+  "uuid": "7e6ee1ee-3f86-1f03-01a7-ec26545e6905",
+  "host": "mosaic-pmu.salonic.hu",
+  "felado": "Mosaic PMU",
+  "szolgaltatas": "Ingyenes konzultáció",
+  "munkatarsak": [],
+  "ld": {
+   "startDate": "2026-10-31T16:30:00.000Z"
+  },
+  "level_datuma": "2026-10-06T16:36:26Z",
+  "ar": 0,
+  "vendeg": "<maszkolva: e-mail + telefon>",
+  "uj_vendeg": true
+ },
+ "szimulalt": {
+  "uj_vendeg": true,
+  "megjegyzes": "a Salonic \"uj vendeg\" jelzeset a teszt szimulalja; az ar a Salonic-level \"Price / Fizetendo varhatoan\" sorabol"
+ },
+ "egyeztetes_valasz_nyers": {
+  "ok": true,
+  "allapot": "parositott",
+  "kuldheto": true,
+  "duplikalt": false,
+  "booking_id": "mb_0muwwiy1li4lte4etv1anqg",
+  "esemeny_id": "mb_0muwwiy1li4lte4etv1anqg",
+  "kulcs": "14585|32428|1793464200",
+  "kulcs_forras": "salonic-oldal",
+  "service_egyezik": true,
+  "probalkozas": 1,
+  "riasztas": false,
+  "keses": false,
+  "kulcs_atadva": false,
+  "jelolt_elo_allapot": null,
+  "nyom": {
+   "uuid": "7e6ee1ee-3f86-1f03-01a7-ec26545e6905",
+   "host": "mosaic-pmu.salonic.hu",
+   "ag1": {
+    "ok": true,
+    "miert": null,
+    "lepesek": [
+     {
+      "url": "/booking/bookingDetails/7e6ee1ee-3f86-1f03-01a7-ec26545e6905",
+      "status": 200,
+      "vegso": "/booking/bookingDetails/7e6ee1ee-3f86-1f03-01a7-ec26545e6905"
+     },
+     {
+      "url": "/selectDate/?startDate=1793464200&bookingId=7e6ee1ee-3f86-1f03-01a7-ec26545e6905",
+      "status": 200,
+      "vegso": "/selectDate/?startDate=1793464200&bookingId=7e6ee1ee-3f86-1f03-01a7-ec26545e6905"
+     }
+    ],
+    "kulcs": "14585|32428|1793464200",
+    "serviceId": "471160"
+   },
+   "jeloltKulcsok": [
+    "14585|32428|1793464200"
+   ],
+   "kulcsForras": "salonic-oldal",
+   "jeloltek": [
+    {
+     "kulcs": "14585|32428|1793464200",
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwwiy1li4lte4etv1anqg",
+       "service_id": "471160",
+       "ido": 1791304646,
+       "kuldve_uuid": null
+      }
+     ]
+    }
+   ],
+   "talalatok": [
+    {
+     "kulcs": "14585|32428|1793464200",
+     "booking_id": "mb_0muwwiy1li4lte4etv1anqg",
+     "service_id": "471160",
+     "forras": "koszonooldal"
+    }
+   ],
+   "valasztas": [
+    {
+     "kulcs": "14585|32428|1793464200",
+     "allapot": "valasztott",
+     "miert": null
+    }
+   ]
+  },
+  "esemeny_kuldes": {
+   "allapot": "kesz",
+   "source_id": "mb_0muwwiy1li4lte4etv1anqg",
+   "erkezesi_adat": true,
+   "esemenyek": [
+    {
+     "esemeny_id": "Konzultacio:mb_0muwwiy1li4lte4etv1anqg",
+     "nev": "Konzultacio",
+     "tipus": "alap",
+     "ertek": null,
+     "ertek_forras": "konzultacio_tabla",
+     "salonic_ar": 0,
+     "nyitott": true,
+     "platformok": {
+      "meta": {
+       "id": 103,
+       "allapot": "nyitott",
+       "indok": "a konzultacio erteke nincs rogzitve (pmu): nem kuldjuk sem 0-val, sem a Salonic araval"
+      },
+      "tiktok": {
+       "id": 105,
+       "allapot": "kihagyva",
+       "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont"
+      },
+      "google": {
+       "id": 106,
+       "allapot": "nyitott",
+       "indok": "a konzultacio erteke nincs rogzitve (pmu): nem kuldjuk sem 0-val, sem a Salonic araval"
+      },
+      "ga4": {
+       "id": 108,
+       "allapot": "nyitott",
+       "indok": "a konzultacio erteke nincs rogzitve (pmu): nem kuldjuk sem 0-val, sem a Salonic araval"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muwwiy1li4lte4etv1anqg",
+     "nev": "Schedule",
+     "tipus": "ernyo",
+     "ertek": null,
+     "ertek_forras": "konzultacio_tabla",
+     "salonic_ar": 0,
+     "nyitott": true,
+     "platformok": {
+      "meta": {
+       "id": 109,
+       "allapot": "nyitott",
+       "indok": "a konzultacio erteke nincs rogzitve (pmu): nem kuldjuk sem 0-val, sem a Salonic araval"
+      },
+      "tiktok": {
+       "id": 110,
+       "allapot": "kihagyva",
+       "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont"
+      },
+      "google": {
+       "id": 111,
+       "allapot": "kihagyva",
+       "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+      },
+      "ga4": {
+       "id": 112,
+       "allapot": "kihagyva",
+       "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+      }
+     }
+    }
+   ],
+   "elo_allapot": "aktiv",
+   "jelleg": "konzultacio",
+   "kupon": false,
+   "uj_vendeg": true,
+   "salonic_ar": 0,
+   "ertek": null,
+   "ar_forras": "bejovo",
+   "uzletag": "pmu"
+  }
+ },
+ "szerveres_naplo_nyers": {
+  "ok": true,
+  "source_id": "mb_0muwwiy1li4lte4etv1anqg",
+  "erkezes": {
+   "source_id": "mb_0muwwiy1li4lte4etv1anqg",
+   "uzletag": "pmu",
+   "tipus": "foglalas",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_PMU_MUWWIS8Y_GCLID",
+      "ts": 1791304623
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_PMU_MUWWIS8Y_WBRAID",
+      "ts": 1791304625
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791304625000.IwAR_TESZT_PMU_MUWWIS8Y_FBCLID",
+     "fbclid": "IwAR_TESZT_PMU_MUWWIS8Y_FBCLID",
+     "ts": 1791304625
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_PMU_MUWWIS8Y_TTCLID",
+      "ts": 1791304625
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_pmu_elso",
+     "content": "hirdetes_a",
+     "ts": 1791304623
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_pmu_utolso",
+     "ts": 1791304625
+    },
+    "fbp": "fb.1.1791299621000.8726335997",
+    "ttp": "TESZT_PMU_MUWWIS8Y_ttp_7og3ofg2rw",
+    "ga4": {
+     "client_id": "267227767.1791218221",
+     "session_id": "1791303421",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true,
+    "dontes": true
+   },
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+   "ip": "160.79.106.xxx",
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok",
+   "bongeszo": {
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok",
+    "first_booking": true,
+    "szolgaltatas": "Ingyenes konzultáció",
+    "kategoria": "",
+    "ar": 0,
+    "g": "g:3354694",
+    "munkatars": "",
+    "bookingUrl": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471160&startDate=1793464200&back=mb_0muwwiy1li4lte4etv1anqg"
+   },
+   "ido": 1791304646,
+   "frissitve": 1791304646
+  },
+  "kuldesek": [
+   {
+    "id": 103,
+    "esemeny_id": "Konzultacio:mb_0muwwiy1li4lte4etv1anqg",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "meta",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwwiy1li4lte4etv1anqg",
+    "allapot": "nyitott",
+    "indok": "a konzultacio erteke nincs rogzitve (pmu): nem kuldjuk sem 0-val, sem a Salonic araval",
+    "ertek": null,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791304649,
+    "frissitve": 1791304649
+   },
+   {
+    "id": 105,
+    "esemeny_id": "Konzultacio:mb_0muwwiy1li4lte4etv1anqg",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwwiy1li4lte4etv1anqg",
+    "allapot": "kihagyva",
+    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
+    "ertek": null,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791304649,
+    "frissitve": 1791304649
+   },
+   {
+    "id": 106,
+    "esemeny_id": "Konzultacio:mb_0muwwiy1li4lte4etv1anqg",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "google",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwwiy1li4lte4etv1anqg",
+    "allapot": "nyitott",
+    "indok": "a konzultacio erteke nincs rogzitve (pmu): nem kuldjuk sem 0-val, sem a Salonic araval",
+    "ertek": null,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791304649,
+    "frissitve": 1791304649
+   },
+   {
+    "id": 108,
+    "esemeny_id": "Konzultacio:mb_0muwwiy1li4lte4etv1anqg",
+    "esemeny_nev": "Konzultacio",
+    "esemeny_tipus": "alap",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwwiy1li4lte4etv1anqg",
+    "allapot": "nyitott",
+    "indok": "a konzultacio erteke nincs rogzitve (pmu): nem kuldjuk sem 0-val, sem a Salonic araval",
+    "ertek": null,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791304649,
+    "frissitve": 1791304649
+   },
+   {
+    "id": 109,
+    "esemeny_id": "Schedule:mb_0muwwiy1li4lte4etv1anqg",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "meta",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwwiy1li4lte4etv1anqg",
+    "allapot": "nyitott",
+    "indok": "a konzultacio erteke nincs rogzitve (pmu): nem kuldjuk sem 0-val, sem a Salonic araval",
+    "ertek": null,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791304649,
+    "frissitve": 1791304649
+   },
+   {
+    "id": 110,
+    "esemeny_id": "Schedule:mb_0muwwiy1li4lte4etv1anqg",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwwiy1li4lte4etv1anqg",
+    "allapot": "kihagyva",
+    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
+    "ertek": null,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791304649,
+    "frissitve": 1791304649
+   },
+   {
+    "id": 111,
+    "esemeny_id": "Schedule:mb_0muwwiy1li4lte4etv1anqg",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "google",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwwiy1li4lte4etv1anqg",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+    "ertek": null,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791304649,
+    "frissitve": 1791304649
+   },
+   {
+    "id": 112,
+    "esemeny_id": "Schedule:mb_0muwwiy1li4lte4etv1anqg",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwwiy1li4lte4etv1anqg",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
+    "ertek": null,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791304649,
+    "frissitve": 1791304649
+   }
+  ]
+ }
+}

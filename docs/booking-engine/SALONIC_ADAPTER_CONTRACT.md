@@ -10,11 +10,11 @@ Alapja: [PMU_LIVE_ADAPTER_FINDINGS.md](PMU_LIVE_ADAPTER_FINDINGS.md) és [SALONI
 | `getServices(business)` | működik | a Salonic nyilvános kezelés-oldalai (`/employees/<id>/`, `/showServices/`, `/selectSpecialization/`) |
 | `getStaff(business, serviceId)` | működik | az azonosító a szolgáltatáslistából (`data-employees`), a név a naptár-API-ból; ha a munkatársnak nincs szabad ideje a keretben, a név `null` |
 | `getAvailability(business, serviceId, {staffId, from, days, minLeadMinutes})` | működik | `api.salonic.hu/calendar/getAvailableTimes`; a slot a MASTER SPEC 6. pontja szerinti objektum |
-| `beginBooking({business, serviceId, startUnix, staffId})` | működik | a Salonic `/guestData/` adatlap címét adja vissza (iframe vagy tartalék-link) és a várt értékeket az ellenőrzéshez; ismeretlen szolgáltatásra hibát dob, nem talál ki ID-t |
+| `beginBooking({business, serviceId, startUnix, staffId, bookingId?})` | működik | a Salonic `/guestData/` adatlap címét adja vissza (iframe vagy tartalék-link) és a várt értékeket az ellenőrzéshez; ismeretlen szolgáltatásra hibát dob, nem talál ki ID-t. A `bookingId` (a foglaló saját azonosítója, [BOOKING_ID.md](BOOKING_ID.md)) `back=<azonosító>` paraméterként kerül a címre; érvénytelen (nem `[A-Za-z0-9_-]{8,64}`) azonosítót nem adunk át, azonosító nélkül a cím változatlan |
 | `verifyConfirmation(redirectUrl, expected)` | működik, **kliensoldali** | a Salonic sikeres foglalás utáni átirányításának paramétereit veti össze a várttal |
 | `createBooking`, `getBooking`, `updateBooking` | **nem támogatott** (`SalonicError NOT_SUPPORTED`) | a Salonicnak nincs nyilvános foglalás-API-ja (lásd a leleteket, 6. pont) |
 
-`adapter.capabilities` ezt géppel olvashatóan mondja: `bookingId: 'synthetic'`, `priceReadback: 'redirect-attested'`.
+`adapter.capabilities` ezt géppel olvashatóan mondja: `bookingId: 'synthetic'` (a Salonic saját azonosítót nem ad az átirányításban), `ownBookingIdCarrier: 'back'` (a saját azonosító hordozó paramétere az adatlap címén), `priceReadback: 'redirect-attested'`.
 
 ## `verifyConfirmation` – mit bizonyít
 
@@ -22,7 +22,7 @@ Bemenet: a köszönőoldal címe (vagy csak a query string) és `expected = { bu
 A Salonic ezeket adja át: `first_booking`, `price`, `employee`, `location`, `service`, `g` (vendég-ID), `bookingUrl` (serviceId-vel és startDate-tel).
 
 Ellenőrzések (`pass` / `fail` / `skipped`): `params` (kötelező paraméterek megvannak), `place` (a `bookingUrl` a várt Salonic-fiókra és `placeId`-ra mutat), `service`, `slot` (`startDate`), `staff` (csak ha konkrét munkatársat választottunk és ismerjük a nevét), `price`.
-`ok` akkor igaz, ha nincs `fail`. Visszaad még: `bookingRef` (**szintetikus**: `g-serviceId-startDate`, mert a Salonic nem ad `booking_id`-t), `firstBooking` (a Salonic új/visszatérő jelzése, az acquisition guardrail alapja), `reported` (amit a Salonic jelentett), `attestation`.
+`ok` akkor igaz, ha nincs `fail`. Ha az `expected.bookingId` meg van adva, a `bookingId: { sent, returned, where }` mező azt mondja meg, visszajött-e a saját azonosító a köszönőoldal paraméterei / a `bookingUrl` paraméterei között (pontos egyezés; `where`: `bookingUrl:back` | `param:<név>`); ez **nem szab ki hibát** (nincs `checks`-bejegyzés, nem befolyásolja az `ok`-ot). Visszaad még: `bookingRef` (**szintetikus**: `g-serviceId-startDate`, mert a Salonic nem ad `booking_id`-t), `firstBooking` (a Salonic új/visszatérő jelzése, az acquisition guardrail alapja), `reported` (amit a Salonic jelentett), `attestation`.
 
 **Korlát:** ez az URL-ből dolgozik, tehát hamisítható és nem szerver-oldali. A „booking_completed” a jelenlegi Salonic-felületen legfeljebb ennyire bizonyított. Szerver-oldali ellenőrzéshez a Salonicnak kellene `booking_id`-t vagy API-t adnia (kérdéslista: a leletek 6. pontja).
 

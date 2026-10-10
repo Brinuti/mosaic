@@ -56,6 +56,7 @@ import '../../assets/js/ajandek-kartya.js';
 import * as L0 from './ajandek-levelek.js';
 import { szamlaKiallit, budapestiNap } from './szamlazz-agent.js';
 import { kedvezmenyKeres, kedvezmenyesAr, kedvezmenyesTetelek } from './ajandek-kedvezmeny.js';
+import { ajandekEsemenyKuldes } from './meres/ajandek-esemeny.js';
 
 const KARTYA = globalThis.AJANDEK_KARTYA;
 
@@ -74,7 +75,9 @@ export const MAX_FOTO_TORZS = 1024 * 1024;
 // sajat API-elotag, sajat kereskorlat-szamlalok. A HeadSpa peldany a fajl vegen van (alap export). A kereskedo Stripe-kulcsait,
 // webhook-titkat stb. a hivo adja a kereshez tartozo env-ben (lasd functions/api/ajandek-lezer/[[kind]].js: LEZER_* -> STRIPE_*).
 // ===================================================================================================================
-export function ajandekMotor(ADAT, { elotag: ELOTAG = '/api/ajandek/' } = {}) {
+// arnyek: a QA-2/QA-4 ARNYEK-meres (netlify/lib/meres/ajandek-esemeny.js) CSAK az alap (HeadSpa) peldanyban fut: az esemenymodell HeadSpa-ajandekkartyara van irva, a lezeres / oxigenes
+// kereskedo vasarlasa nem kaphat HeadSpa-esemenyt (rossz uzletag / tipus). A tobbi peldany alapbol 'ki'.
+export function ajandekMotor(ADAT, { elotag: ELOTAG = '/api/ajandek/', arnyek: ARNYEK_MERES = false } = {}) {
   // a levelek / oldalak sablonjai a kereskedo marka-adatait (nev, foglalas-link) a d.marka-bol kapjak: minden hivasnak automatikusan atadjuk
   const L = Object.fromEntries(Object.entries(L0).map(([nev, f]) => [nev, typeof f === 'function' ? (d, ...tobbi) => f({ marka: ADAT.SZALON, ...d }, ...tobbi) : f]));
 const FOTO_MAX_BAJT = 700 * 1024;
@@ -1288,6 +1291,7 @@ async function kiallit(k) {
     elo.atutalas_ekkor = k.most.toISOString();
   } else if (atu) elo.atutalas_beerkezett = '1';
   const frissitett = await piFrissit(k.env, pi.id, { metadata: elo });
+  if (atu) await arnyekMeres(k, pi.id, 'atutalas', frissitett); // QA-2: utalasos kartya - a konverzio a tenyleges befizetes igazolasakor (ATU- azonosito); ismetlesre a dedup nem kuld ujra
   const i = await rendelesInfo(k, frissitett);
   // 2) a vevo levele
   if (i.email) {
@@ -1408,13 +1412,37 @@ async function meresKuld(k, piId) {
   }
 }
 
+// QA-2 ARNYEK-elosztas (netlify/lib/meres/ajandek-esemeny.js): UGYANAZON a helyen, ugyanabbol a webhookbol, mint a #89-es elo meresKuld (nincs masodik ut / masodik webhook),
+// a pi_ azonositoval; utalasos kartyanal a kiallitaskor (a tenyleges befizetes igazolasakor) az ATU- azonositoval. Csak MERES_ELOSZTO=1 + KULCS_DB mellett fut (elesben nincs),
+// csak ARNYEK-celpontokra, tesztkoddal. A hiba SOHA nem allitja meg a webhookot / a kiallitast (nem dob, nem ad 5xx-et).
+// pi: mar lekerdezett PaymentIntent (kiallit) vagy null (akkor a Stripe-tol kerdezzuk). -> 'ki' | 'kihagyva' | 'kesz' | 'halasztva' | 'hiba' ...
+async function arnyekMeres(k, piId, mod, pi = null) {
+  try {
+    const db = k.env.KULCS_DB;
+    if (!ARNYEK_MERES || String(k.env.MERES_ELOSZTO) !== '1' || !db) return 'ki';
+    const p = pi || await piLeker(k.env, piId);
+    if (!p.metadata || p.metadata.forras !== FORRAS) return 'kihagyva';
+    const r = await ajandekEsemenyKuldes({ db, env: k.env, pi: p, mod, piLeker: (id) => piLeker(k.env, id), fetchImpl: fetch, now: () => k.most.getTime() });
+    console.log('ajandek: arnyek-meres', piId, mod, r.allapot, r.miert || '');
+    return r.allapot;
+  } catch (e) {
+    console.error('ajandek: arnyek-meres hiba', piId, e && e.message);
+    return 'hiba';
+  }
+}
+
+/** A webhook-ut kovetve manualisan (kulcsos /api/meres-admin 'ajandek_ujra'): ugyanaz az arnyek-ut, a PaymentIntentet a Stripe-tol kerdezi. -> arnyekMeres allapota. */
+const arnyekMeresUjra = (env, piId, mod, most = new Date()) => arnyekMeres({ env, most }, piId, mod);
+
 // payment_intent.succeeded: levelek (fizetesEsemenyFo), majd a szerveroldali vasarlasmeres (meresKuld): a mereshiba csak 5xx-et okoz
 // (a Stripe ujraprobalja; a levelek ilyenkor mar idempotensen kihagyodnak), a levelhiba elobb kiadja a sajat 5xx-et.
 async function fizetesEsemeny(k, obj, ok) {
   const v = await fizetesEsemenyFo(k, obj, ok);
   if (v !== ok) return v;
   if (!PI_RE.test(String(obj.id || ''))) return ok;
-  return (await meresKuld(k, obj.id)) === 'hiba' ? json(500, { hiba: 'meres' }) : ok;
+  const mer = await meresKuld(k, obj.id);
+  await arnyekMeres(k, obj.id, 'kartya'); // QA-2: arnyek-kuldes az elo ut mellett; sosem okoz 5xx-et
+  return mer === 'hiba' ? json(500, { hiba: 'meres' }) : ok;
 }
 
 // payment_intent.succeeded: szalon- es vevo-level. Minden level UTAN azonnal rogzitjuk a
@@ -1965,9 +1993,9 @@ async function ajandekKezel({ method, url, headers, text, env, kuld, most, ip } 
   }
 }
 
-  return { keresTorzs, kuponKod, kodEgysegesit, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet, _korlatMeret, fotoToken, koszonoRogzit, ajandekKezel, emlekeztetoFuttat };
+  return { keresTorzs, kuponKod, kodEgysegesit, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet, _korlatMeret, fotoToken, koszonoRogzit, ajandekKezel, emlekeztetoFuttat, arnyekMeresUjra };
 }
 
 // Az alap (HeadSpa) peldany: ugyanazok az exportok, mint a gyar bevezetese elott.
-const alap = ajandekMotor(globalThis.AJANDEK_ADAT);
-export const { keresTorzs, kuponKod, kodEgysegesit, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet, _korlatMeret, fotoToken, koszonoRogzit, ajandekKezel, emlekeztetoFuttat } = alap;
+const alap = ajandekMotor(globalThis.AJANDEK_ADAT, { arnyek: true });
+export const { keresTorzs, kuponKod, kodEgysegesit, kiallitToken, kartyaToken, rendelesToken, _korlatAlaphelyzet, _korlatMeret, fotoToken, koszonoRogzit, ajandekKezel, emlekeztetoFuttat, arnyekMeresUjra } = alap;

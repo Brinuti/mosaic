@@ -1,0 +1,137 @@
+{
+ "eset": "a) barmelyik szakember (hair, ingyenes konzultacio)",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "ido": "2026-10-06T13:54:18.382Z",
+ "booking_id": "mb_0muwqohjz6g47mfu3pibpj0",
+ "bookingUrl_teljes": "https://mosaic-hair.salonic.hu/guestData/?anyone=true&employeeId=25095&placeId=10823&serviceId=232804&startDate=1792512000&back=mb_0muwqohjz6g47mfu3pibpj0",
+ "kulcs_a_bookingUrlbol": {
+  "ok": true,
+  "host": "mosaic-hair.salonic.hu",
+  "uzletag": "hair",
+  "placeId": 10823,
+  "employeeId": 25095,
+  "serviceId": "232804",
+  "startUnix": 1792512000,
+  "kulcs": "10823|25095|1792512000",
+  "bookingId": "mb_0muwqohjz6g47mfu3pibpj0"
+ },
+ "koszonooldal_kulcs_iras": {
+  "bookingId": "mb_0muwqohjz6g47mfu3pibpj0",
+  "forras": "back",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "irva": true,
+   "idempotens": false,
+   "utkozes": false,
+   "kulcs": "10823|25095|1792512000",
+   "serviceId": "232804"
+  }
+ },
+ "kulcstabla_rekord_a_koszonooldal_utan": {
+  "ok": true,
+  "kulcs": "10823|25095|1792512000",
+  "rekord": {
+   "kulcs": "10823|25095|1792512000",
+   "booking_id": "mb_0muwqohjz6g47mfu3pibpj0",
+   "service_id": "232804",
+   "forras": "back",
+   "letrehozva": 1791294828,
+   "lejar": 1806846828
+  }
+ },
+ "email_relevans_mezok": {
+  "felado": "Mosaic Hair",
+  "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+  "munkatarsak": [
+   "Noel - 20% kedvezmény!"
+  ],
+  "idopont_szoveg": "Október 20. (kedd) 18:00 - 18:30",
+  "ld_startDate": "2026-10-20T18:00:00+02:00",
+  "level_datuma": "2026-10-06T13:53:45Z",
+  "salonic_uuid": "a736b1a2-bc92-1cfb-bdf7-01b8098d1a4c",
+  "host": "mosaic-hair.salonic.hu"
+ },
+ "email_kulcs_1_ag_salonic_oldalak": {
+  "kulcs": "10823|25095|1792512000",
+  "serviceId": "232804",
+  "ok": true,
+  "miert": null,
+  "lepesek": [
+   {
+    "url": "/booking/bookingDetails/a736b1a2-bc92-1cfb-bdf7-01b8098d1a4c",
+    "status": 200,
+    "vegso": "/booking/bookingDetails/a736b1a2-bc92-1cfb-bdf7-01b8098d1a4c"
+   },
+   {
+    "url": "/selectDate/?startDate=1792512000&bookingId=a736b1a2-bc92-1cfb-bdf7-01b8098d1a4c",
+    "status": 200,
+    "vegso": "/selectDate/?startDate=1792512000&bookingId=a736b1a2-bc92-1cfb-bdf7-01b8098d1a4c"
+   }
+  ]
+ },
+ "email_kulcs_2_ag_nevtabla": {
+  "ok": true,
+  "miert": null,
+  "felado": "Mosaic Hair",
+  "szolgaltatas": "Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)",
+  "munkatarsak": [
+   "Noel - 20% kedvezmény!"
+  ],
+  "idopontSzoveg": "Október 20. (kedd) 18:00 - 18:30",
+  "idopontForras": "ld+json",
+  "startUnix": 1792512000,
+  "ldUnix": 1792512000,
+  "szovegUnix": 1792512000,
+  "jeloltEmployeeIds": [
+   25095
+  ],
+  "serviceIds": [
+   "232804"
+  ],
+  "kulcsok": [
+   "10823|25095|1792512000"
+  ],
+  "serviceId": "232804",
+  "egyezik_az_ag1_el": true
+ },
+ "kulcstabla_rekord_az_email_kulcsara": {
+  "kulcs": "10823|25095|1792512000",
+  "booking_id": "mb_0muwqohjz6g47mfu3pibpj0",
+  "service_id": "232804",
+  "forras": "back",
+  "letrehozva": 1791294828,
+  "lejar": 1806846828
+ },
+ "kereses_eredmenye": {
+  "allapot": "parositott",
+  "kuldheto": true,
+  "duplikalt": false,
+  "kulcs": "10823|25095|1792512000",
+  "kulcs_forras": "salonic-oldal",
+  "service_egyezik": true,
+  "probalkozas": 1,
+  "riasztas": false,
+  "talalatok": [
+   {
+    "kulcs": "10823|25095|1792512000",
+    "booking_id": "mb_0muwqohjz6g47mfu3pibpj0",
+    "service_id": "232804",
+    "forras": "back"
+   }
+  ]
+ },
+ "kapott_esemenyazonosito": "mb_0muwqohjz6g47mfu3pibpj0",
+ "azonosito_egyezik_a_bongeszovel": true,
+ "masodik_kereses_ugyanarra": {
+  "allapot": "parositott",
+  "kuldheto": false,
+  "duplikalt": true,
+  "esemeny_id": "mb_0muwqohjz6g47mfu3pibpj0"
+ },
+ "http": {
+  "elso": 200,
+  "masodik": 200
+ }
+}

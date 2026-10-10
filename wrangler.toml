@@ -53,6 +53,14 @@ binding = "CRM_DB"
 database_name = "mosaic-crm-elonezet"
 database_id = "3622700b-409e-4742-9b22-1c418d76da62"
 
+# A foglalas-kulcs tabla (Cloudflare D1, QA-1 folytatas, lasd docs/booking-engine/BOOKING_ID.md): a foglalo sajat booking_id-je <-> a Salonic-foglalas parositasa.
+# Szemelyes adat nincs benne. CSAK ELONEZETKENT kotve (a PR-elonezet kulon adatbazist hasznal); az eles kotes (database_name = "mosaic-foglalas-kulcs", [[d1_databases]] binding = "KULCS_DB")
+# az elesites donteseig hianyzik: az eles /api/foglalas-kulcs 503-at ad, a koszonooldali iro ezt elnyeli (a foglalas ettol nem akad el).
+[[env.preview.d1_databases]]
+binding = "KULCS_DB"
+database_name = "mosaic-foglalas-kulcs-elonezet"
+database_id = "628113fe-9793-450d-baad-fc77814995eb"
+
 [vars]
 CRM_KULDES = "dry"   # Oxigen CRM: "dry" = nincs valodi level / SMS (naplo); "eles" = a tulajdonos kulon GO-ja utan
 CRM_ADMIN_EMAILS = "ferraj@gmail.com"   # Oxigen CRM: akik e-mailes egyszeri kodos belepessel szalonvezetokent / adminkent beleptethetok (tovabbi munkatarsakat a /crm felulet vesz fel)
@@ -99,6 +107,7 @@ SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
 SMTP_USER = "mosaicheadspa@gmail.com"
 SZAMLALO_OLVASO_HASH = "d7122e43eeeca61db826d113cb06aa5028568fb63e57a00835978833b0a9b6a0"
+EGYEZTETES_KULCS_HASH = "68d73ff4a920377c383026c3f6dc5ef053b95af99b30b2f7886a87672c358fbd"   # a foglalas-kulcs / parositas vegpontok kulcsanak SHA-256-ja (CSAK elonezet; a kulcs maga nincs a kodban)
 STRIPE_PUBLISHABLE_KEY = "pk_test_51QhTxoFv8vc2ArnLyqmRz5giwCnlNAtTTygecEAnBRWbFmYrPWTYQtsCG3tSVI6hU3BJCBBKBNaMe6621Twfq40r00wzanIqTE"
 AJANDEK_AZONNALI = "1"
 AJANDEK_STRIPE_SZAMLA = "1"
@@ -108,6 +117,15 @@ LEZER_STRIPE_PUBLISHABLE_KEY = "pk_test_51TyudCKks72Z28LBIs0ejfk1gxD7q5eVctHYTfs
 OXIGEN_STRIPE_PUBLISHABLE_KEY = "pk_test_51UNS5dHZOCZhis2vCq59kelGDQCCiDd2Iz17PNJNgNwzqGWx2r8A2LkhJJlBGZUsfXxWVqhVlMNpz8uRGuF8SF7200wPsFLXeK"
 SZAMLA_ELONEZET = "1"
 AJANDEK_SZAMLA_ADO_ELLENORZES = "0"   # CSAK elonezet: a Stripe teszt-modnak nincs adoregisztracioja (0 ado), igy az ado-ellenorzes kikapcsolva; az eles mindig ellenoriz
+# QA-2 ARNYEK-MERES (DECISION-LOG #99; lasd docs/booking-engine/QA2_ARNYEK.md): CSAK ELONEZET. Az eles ([vars]) NEM kapja meg: ott az elosztas ki van kapcsolva (MERES_ELOSZTO hianyzik).
+# A kuldes kizarolag az ARNYEK-celpontokra mehet (kodban rogzitve: netlify/lib/meres/platformok.js), tesztkoddal. A nem titkos ertekek ITT vannak; a titkok a Cloudflare feluleten / API-n,
+# Preview / Secret tipussal: META_CAPI_TOKEN, TIKTOK_EVENTS_TOKEN, GA4_TESZT_API_SECRET (beallitva 2026-10-06), GOOGLE_ARNYEK_WEBHOOK_URL (a Zapier-webhook; a Zap-et a meresi munkamenet epiti).
+# Titok nelkul a kerelem elkeszul es naplozodik ("nincs_hitelesites"), kuldes nem tortenik.
+MERES_ELOSZTO = "1"
+META_TESZT_KOD = "TEST83939"            # a Meta Esemenykezelo "Teszteszemenyek" kodja (dataset 28616665324611098, MOSAIC ARNYEK meres-teszt)
+TIKTOK_TESZT_KOD = "TEST83543"         # a TikTok Esemenykezelo "Teszteszemenyek" kodja (ARNYEK pixel DB2GTTJC77UE4D1NE4MG); a korabbi szintetikus TEST_MOSAIC_QA2 helyett (2026-10-06)
+GA4_TESZT_MEASUREMENT_ID = "G-M5MLRLNQBP"   # a GA4 TESZT-property (az elo G-H4206SQ0Q7 a kodban tiltott); a Measurement Protocol secret: GA4_TESZT_API_SECRET (titok)
+MERES_NAPLO_TELJES = "1"                # CSAK elonezet (sajat teszt-IP): a naploban a TELJES kikuldott payload; ott, ahol nincs beallitva, a nyers IP maszkolt
 
 # A szemelyre szabott ajandekkartyak fotoi (Cloudflare KV, lasd AJANDEK.md "Foto-tarolas"): eles es elonezeti nevter kulon.
 # A kezelo az AJANDEK_FOTOK kotesen at olvassa / irja; nelkule a fotofeltoltes ki van kapcsolva.

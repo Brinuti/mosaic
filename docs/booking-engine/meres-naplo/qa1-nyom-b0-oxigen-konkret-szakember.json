@@ -1,0 +1,137 @@
+{
+ "eset": "b0) kiegeszito: oxigen, fizetos szolgaltatas, barmelyik szakember (az e-mail csak szoveges resze: nincs JSON-LD)",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "ido": "2026-10-06T13:56:07.455Z",
+ "booking_id": "mb_0muwqq2tg3m5t6esi1uyzo4",
+ "bookingUrl_teljes": "https://mosaic-oxigen.salonic.hu/guestData/?anyone=true&employeeId=32009&placeId=14409&serviceId=466147&startDate=1793374200&back=mb_0muwqq2tg3m5t6esi1uyzo4",
+ "kulcs_a_bookingUrlbol": {
+  "ok": true,
+  "host": "mosaic-oxigen.salonic.hu",
+  "uzletag": "oxygen",
+  "placeId": 14409,
+  "employeeId": 32009,
+  "serviceId": "466147",
+  "startUnix": 1793374200,
+  "kulcs": "14409|32009|1793374200",
+  "bookingId": "mb_0muwqq2tg3m5t6esi1uyzo4"
+ },
+ "koszonooldal_kulcs_iras": {
+  "bookingId": "mb_0muwqq2tg3m5t6esi1uyzo4",
+  "forras": "back",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "irva": true,
+   "idempotens": false,
+   "utkozes": false,
+   "kulcs": "14409|32009|1793374200",
+   "serviceId": "466147"
+  }
+ },
+ "kulcstabla_rekord_a_koszonooldal_utan": {
+  "ok": true,
+  "kulcs": "14409|32009|1793374200",
+  "rekord": {
+   "kulcs": "14409|32009|1793374200",
+   "booking_id": "mb_0muwqq2tg3m5t6esi1uyzo4",
+   "service_id": "466147",
+   "forras": "back",
+   "letrehozva": 1791294901,
+   "lejar": 1806846901
+  }
+ },
+ "email_relevans_mezok": {
+  "felado": "Mosaic Oxigén",
+  "szolgaltatas": "AKCIÓS Hajkamerás vizsgálat és konzultáció",
+  "munkatarsak": [
+   "Szűcs Vivien"
+  ],
+  "idopont_szoveg": "Október 30. (péntek) 16:30 - 17:00",
+  "ld_startDate": null,
+  "level_datuma": "2026-10-06T13:54:58Z",
+  "salonic_uuid": "afad1ce5-ef86-625e-9a43-561be8286783",
+  "host": "mosaic-oxigen.salonic.hu"
+ },
+ "email_kulcs_1_ag_salonic_oldalak": {
+  "kulcs": "14409|32009|1793374200",
+  "serviceId": "466147",
+  "ok": true,
+  "miert": null,
+  "lepesek": [
+   {
+    "url": "/booking/bookingDetails/afad1ce5-ef86-625e-9a43-561be8286783",
+    "status": 200,
+    "vegso": "/booking/bookingDetails/afad1ce5-ef86-625e-9a43-561be8286783"
+   },
+   {
+    "url": "/selectDate/?startDate=1793374200&bookingId=afad1ce5-ef86-625e-9a43-561be8286783",
+    "status": 200,
+    "vegso": "/selectDate/?startDate=1793374200&bookingId=afad1ce5-ef86-625e-9a43-561be8286783"
+   }
+  ]
+ },
+ "email_kulcs_2_ag_nevtabla": {
+  "ok": true,
+  "miert": null,
+  "felado": "Mosaic Oxigén",
+  "szolgaltatas": "AKCIÓS Hajkamerás vizsgálat és konzultáció",
+  "munkatarsak": [
+   "Szűcs Vivien"
+  ],
+  "idopontSzoveg": "Október 30. (péntek) 16:30 - 17:00",
+  "idopontForras": "szoveg",
+  "startUnix": 1793374200,
+  "ldUnix": null,
+  "szovegUnix": 1793374200,
+  "jeloltEmployeeIds": [
+   32009
+  ],
+  "serviceIds": [
+   "466147"
+  ],
+  "kulcsok": [
+   "14409|32009|1793374200"
+  ],
+  "serviceId": "466147",
+  "egyezik_az_ag1_el": true
+ },
+ "kulcstabla_rekord_az_email_kulcsara": {
+  "kulcs": "14409|32009|1793374200",
+  "booking_id": "mb_0muwqq2tg3m5t6esi1uyzo4",
+  "service_id": "466147",
+  "forras": "back",
+  "letrehozva": 1791294901,
+  "lejar": 1806846901
+ },
+ "kereses_eredmenye": {
+  "allapot": "parositott",
+  "kuldheto": true,
+  "duplikalt": false,
+  "kulcs": "14409|32009|1793374200",
+  "kulcs_forras": "salonic-oldal",
+  "service_egyezik": true,
+  "probalkozas": 1,
+  "riasztas": false,
+  "talalatok": [
+   {
+    "kulcs": "14409|32009|1793374200",
+    "booking_id": "mb_0muwqq2tg3m5t6esi1uyzo4",
+    "service_id": "466147",
+    "forras": "back"
+   }
+  ]
+ },
+ "kapott_esemenyazonosito": "mb_0muwqq2tg3m5t6esi1uyzo4",
+ "azonosito_egyezik_a_bongeszovel": true,
+ "masodik_kereses_ugyanarra": {
+  "allapot": "parositott",
+  "kuldheto": false,
+  "duplikalt": true,
+  "esemeny_id": "mb_0muwqq2tg3m5t6esi1uyzo4"
+ },
+ "http": {
+  "elso": 200,
+  "masodik": 200
+ }
+}
