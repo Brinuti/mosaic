@@ -33,6 +33,9 @@ const hiba = (hol, mi) => hibak.push(`${hol}: ${mi}`);
 const linkek = new Map(); // href -> Set(hol)
 const foglalasi = new Map();
 const latottGomb = new Set();
+// a Wixen is igy van (2026-10-10, az eles oldalon ellenorizve):
+const MENU_NELKUL = new Set(['/igy-szabadultam-meg-a-migrentol']); // menu nelkuli kampanyoldal
+const WIX_LINK_RENDBEN = new Set(['/adatkezeles']); // az adatkezelesi tajekoztato a Wixet adatfeldolgozokent nevezi meg
 
 async function bejar(o, nezet, opt) {
   const ctx = await b.newContext(opt);
@@ -57,13 +60,13 @@ async function bejar(o, nezet, opt) {
     for (const a of ak) {
       const h = a.href.trim();
       if (/^(mailto:|tel:|#|javascript:void)/i.test(h) || !h) continue;
-      if (/wixsite\.com|wix\.com|editorx|filesusr\.com|wixstatic\.com/i.test(h) && !/salonic/.test(h)) hiba(hol, `Wix-cimre mutato link: ${h} (${a.szoveg})`);
+      if (/wixsite\.com|wix\.com|editorx|filesusr\.com|wixstatic\.com/i.test(h) && !/salonic/.test(h) && !WIX_LINK_RENDBEN.has(o.ut)) hiba(hol, `Wix-cimre mutato link: ${h} (${a.szoveg})`);
       if (/salonic\.hu/i.test(h)) { if (!/^https:\/\/medicalpiercing\.salonic\.hu\//i.test(h) && !/^https?:\/\/www\.salonic\.hu\/?$/.test(h)) hiba(hol, `foglalasi link mas cimre: ${h}`); (foglalasi.get(h) || foglalasi.set(h, new Set()).get(h)).add(hol); continue; }
       (linkek.get(h) || linkek.set(h, new Set()).get(h)).add(hol);
     }
     // menu
     const gomb = await p.$$eval('[data-popupid]', (l) => l.map((x) => { const r = x.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, w: r.width }; }).find((r) => r.w > 0 && r.y > 0 && r.y < innerHeight));
-    if (o.kulcs !== '404') {
+    if (o.kulcs !== '404' && !MENU_NELKUL.has(o.ut)) {
       if (!gomb) hiba(hol, 'nincs lathato menugomb');
       else {
         await p.mouse.click(gomb.x, gomb.y);
