@@ -121,6 +121,8 @@ for (const m of [LAP_A, LAP_M]) {
 // a nyitooldal a /_a/fooldal, /_m/fooldal fajlbol jon (lasd netlify/lib/utvonal.js)
 for (const m of [LAP_A, LAP_M]) fs.renameSync(path.join(m, 'index.html'), path.join(m, 'fooldal.html'));
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
+// a CRM telepitheto alkalmazas fajljai (manifest + service worker: a Galeria "Megosztas" -> MOSAIC CRM) a gyokerbe kerulnek (a scope miatt)
+for (const f of fs.readdirSync(path.join(ROOT, 'pwa-crm'))) fs.copyFileSync(path.join(ROOT, 'pwa-crm', f), path.join(DIST, f));
 // Apple Pay: a Stripe nyilvanos domain-ellenorzo fajlja (https://stripe.com/files/apple-pay/apple-developer-merchantid-domain-association,
 // ugyanaz minden Stripe-kereskedonek) a /.well-known/ alatt, statikusan (nincs fuggvenyhivas). A domain regisztralasa a Stripe-ban (Payment method domains).
 fs.cpSync(path.join(ROOT, 'well-known'), path.join(DIST, '.well-known'), { recursive: true });
@@ -230,6 +232,11 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   '  X-Robots-Tag: noindex',
   // az /ajandek (a kampany- es levelbeli linkek cime) ugyanazt az oldalt adja, mint az eles ajandekkartya-cimek: ne indexelodjon ketszer
   // (a /ajandekkartya a fomenu valaszto oldala: szinten noindex). Az /oxigen-ajandekkartya 2026-10-08 ota indexelheto (a tulajdonos kerese; a sitemapben is szerepel).
+  '/crm-sw.js',
+  '  Cache-Control: no-cache',
+  '/crm.webmanifest',
+  '  Content-Type: application/manifest+json',
+  '  Cache-Control: no-cache',
   // a belso CRM: nincs gyorsitotar, nincs indexeles, szigoru CSP (kulso script / tracking nincs)
   '/crm',
   '  Cache-Control: no-store',

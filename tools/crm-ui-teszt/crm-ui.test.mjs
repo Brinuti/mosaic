@@ -320,6 +320,29 @@ test('kepkuldes (tablet) -> beerkezo -> hozzarendeles a Kezeles kozben nezetben'
   await ctx.close();
 });
 
+test('megosztas-celpont (service worker): a Megosztas utjan erkezett kep a belepett munkatars nevében a beerkezobe kerul', async () => {
+  const { ctx, p } = await ujOldal({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  await belep(p, 'therapist');
+  assert.equal(await p.locator('link[rel=manifest]').getAttribute('href'), '/crm.webmanifest');
+  const man = await (await p.request.get(`${BASE}/crm.webmanifest`)).json();
+  assert.equal(man.share_target.action, '/crm-megosztas');
+  assert.equal(man.share_target.params.files[0].accept[0], 'image/*');
+  await p.evaluate(async () => { const r = await navigator.serviceWorker.ready; if (!navigator.serviceWorker.controller) await new Promise((ok) => { navigator.serviceWorker.addEventListener('controllerchange', ok, { once: true }); setTimeout(ok, 3000); }); return !!r.active; });
+  const png = await p.evaluate(async () => { const c = document.createElement('canvas'); c.width = 320; c.height = 240; const x = c.getContext('2d'); x.fillStyle = '#468'; x.fillRect(0, 0, 320, 240); const b = await new Promise((ok) => c.toBlob(ok, 'image/png')); return Array.from(new Uint8Array(await b.arrayBuffer())); });
+  // a Galeria "Megosztas" ugyanezt a multipart POST-ot kuldi a manifest szerinti cimre
+  const db = await p.evaluate(async (bajtok) => {
+    const fd = new FormData(); fd.append('kep', new File([new Uint8Array(bajtok)], 'megosztott.png', { type: 'image/png' }));
+    await fetch('/crm-megosztas', { method: 'POST', body: fd });
+    return (await (await caches.open('crm-megosztas')).keys()).length;
+  }, png);
+  assert.equal(db, 1, 'a service worker a kepet atvette');
+  await megy(p, '#/kepkuldo');
+  await p.waitForSelector('.kk-naplo li:has-text("elküldve")');
+  await p.waitForFunction(() => document.querySelectorAll('.kk-mini').length >= 1);
+  assert.equal(await p.evaluate(async () => (await (await caches.open('crm-megosztas')).keys()).length), 0, 'a feltoltes utan a cache kiurul');
+  await ctx.close();
+});
+
 test('kameraképek: feltoltes (kliens-oldali atmeretezes), ket kep osszehasonlitasa, komment, link', async () => {
   const { ctx, p } = await ujOldal();
   await belep(p, 'therapist');

@@ -1,6 +1,7 @@
 // MOSAIC belso CRM: egy oldalas alkalmazas (hash-router, lazy ES-modul nezetek). Nincs build, nincs kulso konyvtar, nincs merokod.
 import { api, csrfBeallit, lejaratFigyelo } from './crm-api.js';
 import { SZEREPEK } from './crm-cimkek.js';
+import { swRegisztral, varakozoMegosztasok } from './crm-megosztas.js';
 import { h, tolt, urit, hibaAllapot, betoltAllapot, mezo, ertesit, futtat } from './crm-ui.js';
 
 const GYOKER = document.getElementById('gyoker');
@@ -39,6 +40,7 @@ const tarol = {
 lejaratFigyelo(() => { if (all.felhasznalo) { all.felhasznalo = null; csrfBeallit(null); belepesNezet('A munkamenet lejárt, jelentkezz be újra.'); } });
 window.addEventListener('hashchange', () => { if (all.felhasznalo) utvalaszt(); });
 
+swRegisztral();
 (async function indul() {
   tolt(GYOKER, h('div', { class: 'belepes-hatter' }, betoltAllapot('Betöltés…')));
   try {
@@ -53,7 +55,7 @@ async function belepve(v) {
   all.demo = tarol.olvas('crm_demo') === '1' || !!v.felhasznalo.demo || /(^|[._-])demo([._@-]|$)/i.test(v.felhasznalo.email || '');
   keretEpit();
   await uzemmodBetolt();
-  if (!location.hash || location.hash === '#' || location.hash === '#/') location.hash = `#/${NAV.find((n) => van(n.szerepek))?.kulcs || 'dashboard'}`;
+  if (!location.hash || location.hash === '#' || location.hash === '#/') location.hash = (van(KEZELOI) && (await varakozoMegosztasok()).length) ? '#/kepkuldo' : `#/${NAV.find((n) => van(n.szerepek))?.kulcs || 'dashboard'}`;
   else utvalaszt();
 }
 const szerepei = () => (all.felhasznalo && all.felhasznalo.szerepek) || [];
