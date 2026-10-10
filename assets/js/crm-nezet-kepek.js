@@ -55,7 +55,12 @@ async function sorozat(ctx, gid) {
     tolt(allapot, 'Kép előkészítése…');
     const { blob, szelesseg, magassag } = await kepAtmeretez(fj);
     tolt(allapot, `Feltöltés (${szelesseg}×${magassag}, ${(blob.size / 1024).toFixed(0)} kB)…`);
-    await api.feltolt(`/kezelesek/${encodeURIComponent(sidSel.value)}/kepek`, { pont }, blob);
+    const ut = `/kezelesek/${encodeURIComponent(sidSel.value)}/kepek`;
+    try { await api.feltolt(ut, { pont }, blob); } catch (e) {
+      if (e.status !== 409) throw e;
+      if (!(await megerosites('Kép cseréje', `A(z) ${pont}. alkalomhoz már van kép. Lecseréled az újra? A régi kép véglegesen törlődik.`, { megerosit: 'Csere', veszely: true }))) { tolt(allapot, ''); return; }
+      await api.feltolt(ut, { pont, csere: '1' }, blob);
+    }
     ertesit('A kép feltöltve.'); ctx.frissit();
   }));
 
@@ -73,7 +78,12 @@ async function sorozat(ctx, gid) {
       } catch (e) { if (e.status === 401) throw e; ertesit(e.message, 'hiba'); }
       osszehasonlitRajz();
     });
-    return doboz;
+    const torolG = h('button', { type: 'button', class: 'gomb gomb-kicsi gomb-veszely', 'data-torol': kid, 'aria-label': `${k.alkalom}. alkalom képének törlése`, style: 'width:100%;margin-top:6px' }, 'Kép törlése');
+    torolG.addEventListener('click', futtat(torolG, async () => {
+      if (!(await megerosites('Kép törlése', `A(z) ${k.alkalom}. alkalom képe véglegesen törlődik, és a belőle kiadott vendég-linkek is érvénytelenek lesznek. Új képet utána a fenti feltöltéssel tudsz felvenni.`, { megerosit: 'Törlés', veszely: true }))) return;
+      await api.del(`/kepek/${encodeURIComponent(kid)}`); ertesit('A kép törölve.'); ctx.frissit();
+    }));
+    return h('div', { class: 'kep-cella' }, doboz, torolG);
   })) : uresAllapot('Még nincs feltöltött kép.', 'Az 1., 3., 5. és 10. alkalmon kötelező a hajkamera-felvétel.');
 
   // ---- osszehasonlitas ----

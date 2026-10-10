@@ -217,3 +217,36 @@ test('C12 nincs vendegportal: nincs vendeg-fiok / jelszo / regisztracio; a belep
   // a link tokenes: nincs "vendeg belepett" allapot, minden hozzaferes tokenre es resourcera szol
   assert.equal(typeof modul.hozzaferes, 'function');
 });
+
+test('K-TORLES kep torlese: bajtok es pont felszabadul, vendeg-link visszavonva, audit; recepcio nem torolhet', async () => {
+  const t = await ujTeszt();
+  const v = await kepesVendeg(t);
+  const link = await im.linkKiad(t.db, { comparisonId: (await elso(t.db, 'SELECT id FROM image_comparison')).id });
+  assert.ok(link);
+  const kep3 = await elso(t.db, "SELECT id, storage_key FROM camera_image WHERE treatment_index = 3");
+  assert.equal(await hibaKod(() => im.kepTorol(t.db, { imageId: kep3.id, staffId: t.staff.recepcio, tarolo: t.tarolo })), 'TILTOTT');
+  assert.equal((await im.kepTorol(t.db, { imageId: kep3.id, staffId: t.staff.terapeuta, tarolo: t.tarolo })).torolve, true);
+  assert.equal(await t.tarolo.get(kep3.storage_key), null, 'a bajtok torolve');
+  assert.equal((await mind(t.db, 'SELECT id FROM camera_image WHERE deleted_at IS NULL')).length, 1);
+  assert.equal((await elso(t.db, 'SELECT revoke_reason FROM share_grant')).revoke_reason, 'image_deleted');
+  assert.equal(await szamol(t.db, 'security_audit', "action = 'image.delete'"), 1);
+  assert.equal(await hibaKod(() => im.kepTorol(t.db, { imageId: kep3.id, staffId: t.staff.terapeuta, tarolo: t.tarolo })), 'NINCS_KEP');
+  // a felszabadult pontra uj kep tolthet
+  const s3 = await elso(t.db, 'SELECT id FROM treatment_session WHERE treatment_index = 3');
+  const uj = await im.kepFeltolt(t.db, { sessionId: s3.id, staffId: t.staff.terapeuta, bajtok: jpegBajtok(), mime: 'image/jpeg', tarolo: t.tarolo });
+  assert.ok(uj.imageId);
+  void v;
+});
+
+test('K-CSERE kep cserelese: egy lepesben, a regi torlodik, ketszer nem lehet felulirás csere nelkul', async () => {
+  const t = await ujTeszt();
+  await kepesVendeg(t, VENDEG_A, { kesz: false });
+  const s1 = await elso(t.db, 'SELECT id FROM treatment_session WHERE treatment_index = 1');
+  const regi = await elso(t.db, 'SELECT id, storage_key FROM camera_image WHERE treatment_index = 1');
+  assert.equal(await hibaKod(() => im.kepFeltolt(t.db, { sessionId: s1.id, staffId: t.staff.terapeuta, bajtok: jpegBajtok(), mime: 'image/jpeg', tarolo: t.tarolo })), 'MAR_VAN_KEP');
+  const r = await im.kepFeltolt(t.db, { sessionId: s1.id, staffId: t.staff.terapeuta, bajtok: jpegBajtok(80), mime: 'image/jpeg', tarolo: t.tarolo, csere: true });
+  assert.equal(r.felulirt, regi.id);
+  assert.equal(await t.tarolo.get(regi.storage_key), null);
+  assert.equal((await mind(t.db, 'SELECT id FROM camera_image WHERE treatment_index = 1 AND deleted_at IS NULL')).length, 1);
+  assert.equal((await elso(t.db, 'SELECT id FROM camera_image WHERE treatment_index = 1 AND deleted_at IS NULL')).id, r.imageId);
+});

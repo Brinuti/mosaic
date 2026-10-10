@@ -234,6 +234,16 @@ test('kezeles kozben (mobil): igazolas, kamerakep, valasztok, veglegesites es ku
   const png = await p.evaluate(async () => { const c = document.createElement('canvas'); c.width = 800; c.height = 600; const x = c.getContext('2d'); x.fillStyle = '#486'; x.fillRect(0, 0, 800, 600); const b = await new Promise((ok) => c.toBlob(ok, 'image/png')); return Array.from(new Uint8Array(await b.arrayBuffer())); });
   await p.setInputFiles('#kk-kep', { name: 'haj.png', mimeType: 'image/png', buffer: Buffer.from(png) });
   await p.waitForSelector('.kk-lepes:has-text("Feltöltve")');
+  // csere, torles, ujrafeltoltes
+  await p.waitForSelector('#kk-kep-csere', { state: 'attached' });
+  await p.setInputFiles('#kk-kep-csere', { name: 'haj2.png', mimeType: 'image/png', buffer: Buffer.from(png) });
+  await p.waitForSelector('.toast:has-text("lecserélve")');
+  await p.click('.kk-lepes button:has-text("Kép törlése")');
+  await dialog(p);
+  await p.waitForSelector('.toast:has-text("törölve")');
+  await p.waitForSelector('#kk-kep', { state: 'attached' });
+  await p.setInputFiles('#kk-kep', { name: 'haj3.png', mimeType: 'image/png', buffer: Buffer.from(png) });
+  await p.waitForSelector('#kk-kep-csere', { state: 'attached' });
   // 3-8. valasztok
   await p.waitForSelector('.kk-chip');
   await p.click('.kk-chip:has-text("Száraz, feszes fejbőr")');

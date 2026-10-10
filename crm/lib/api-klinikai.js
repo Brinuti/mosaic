@@ -223,8 +223,16 @@ export const utak = [
     if (!/^[a-z0-9_-]{1,40}$/.test(rogzites)) throw new ApiHiba('ERVENYTELEN_PONT', 'A rögzítési pont: a-z, 0-9, _ és -.', 422);
     const bajtok = await bajtokOlvas(c.request, KEP_API_MAX);   // tul nagy: 413
     if (!bajtok.length) throw new ApiHiba('URES_FAJL', 'Üres fájl.', 422);
-    const r = await kepek.kepFeltolt(c.db, { sessionId: sid, staffId: c.staffId, bajtok, mime, capturePoint: rogzites, tarolo: c.tarolo, now: c.now });
-    return { id: r.imageId, alkalom: r.treatmentIndex };
+    const r = await kepek.kepFeltolt(c.db, { sessionId: sid, staffId: c.staffId, bajtok, mime, capturePoint: rogzites, tarolo: c.tarolo, csere: c.q.get('csere') === '1', now: c.now });
+    return { id: r.imageId, alkalom: r.treatmentIndex, felulirt: r.felulirt };
+  }],
+  ['DELETE', '/kepek/:id', async (c) => {
+    const id = c.uuid('id');
+    const k = await elso(c.db, 'SELECT guest_id FROM camera_image WHERE id = ?1 AND deleted_at IS NULL', id);
+    await c.kot('write', 'camera_image', { guestId: k?.guest_id ?? null, resourceId: id });
+    if (!k) throw new ApiHiba('NINCS_TALALAT', 'Nincs ilyen kép.', 404);
+    await kepek.kepTorol(c.db, { imageId: id, staffId: c.staffId, tarolo: c.tarolo, now: c.now });
+    return { torolve: true };
   }],
   ['GET', '/kepek/:id', async (c) => {
     const id = c.uuid('id');
