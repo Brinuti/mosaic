@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { ga4ValidationReplay, replayLista, REPLAY_JEL } from '../netlify/lib/meres/validation-replay.js';
+import { ga4ValidationReplay, replayLista, replayKapu, REPLAY_JEL, REPLAY_KAPU } from '../netlify/lib/meres/validation-replay.js';
 import { egyeztetoSorok, GA4_MIN_JOGOSULT } from '../netlify/lib/meres/egyeztetes-sor.js';
 import { kezelAdmin } from '../netlify/lib/meres/vegpontok.js';
 import { sha256hex } from '../netlify/lib/meres/hash.js';
@@ -20,10 +20,13 @@ const T0 = 1_791_620_000;
 const BID = 'mb_0mv24h6pc956l82du9ejweq';
 const ENV = { MERES_ELOSZTO: '1', GA4_TESZT_MEASUREMENT_ID: 'G-M5MLRLNQBP', GA4_TESZT_API_SECRET: 'TITOK-SECRET-0123', META_CAPI_TOKEN: 'META-TITOK', TIKTOK_EVENTS_TOKEN: 'TIKTOK-TITOK', GOOGLE_ARNYEK_WEBHOOK_URL: 'https://hooks.zapier.com/hooks/catch/1/abc/' };
 
-async function feltolt({ ana = true, clientId = true, allapot = 'kihagyva', nev = 'Visszajaro' } = {}) {
+// a kapu a tarolon at nyilik (a vegpont nem tudja kinyitni): meres_kapcsolo 'validation_replay' be=1, ok = a source_id
+function kapuNyit(D1, id = BID) { D1.db.prepare("INSERT INTO meres_kapcsolo (kulcs, be, ok, ido) VALUES (?, 1, ?, ?) ON CONFLICT(kulcs) DO UPDATE SET be = 1, ok = excluded.ok, ido = excluded.ido").run(REPLAY_KAPU, id, T0); }
+async function feltolt({ ana = true, clientId = true, allapot = 'kihagyva', nev = 'Visszajaro', kapu = true } = {}) {
   const D1 = d1();
   await egyeztetoSorok(D1, { tol: T0, ig: T0 + 1000 }); // sema (meres_* + foglalas_*)
   const { db } = D1;
+  if (kapu) kapuNyit(D1);
   db.prepare('INSERT INTO meres_erkezes (source_id, uzletag, tipus, attr, hozz, bongeszo, ido, frissitve) VALUES (?,?,?,?,?,?,?,?)')
     .run(BID, 'fodrasz', 'foglalas', JSON.stringify({ ga4: clientId ? { client_id: '608293403.1791620313', session_id: '1791620312', measurement_id: 'G-H4206SQ0Q7' } : {}, utm_utolso: { source: 'google', medium: 'cpc', campaign: 'x' } }), JSON.stringify({ ana, adv: true, fun: true, dontes: true }), JSON.stringify({ szolgaltatas: 'Vagas' }), T0, T0);
   for (const p of ['meta', 'tiktok', 'google', 'ga4']) {
@@ -72,13 +75,14 @@ test('validation_replay: elutasitasok (nincs analytics-hozzajarulas / client_id,
   assert.match((await ga4ValidationReplay(await feltolt({ nev: 'Konzultacio' }), ENV, { source_id: BID }, T0 * 1000, f)).miert, /konzultacio/);
   assert.match((await ga4ValidationReplay(await feltolt(), ENV, { source_id: 'pi_3Uvalami12345678' }, T0 * 1000, f)).miert, /mb_/);
   assert.match((await ga4ValidationReplay(await feltolt(), { ...ENV, MERES_ELOSZTO: '0' }, { source_id: BID }, T0 * 1000, f)).miert, /MERES_ELOSZTO/);
-  assert.match((await ga4ValidationReplay(await feltolt(), ENV, { source_id: 'mb_nincsilyenfoglalas1234' }, T0 * 1000, f)).miert, /pontosan egy GA4/);
+  const X = await feltolt(); kapuNyit(X, 'mb_nincsilyenfoglalas1234');
+  assert.match((await ga4ValidationReplay(X, ENV, { source_id: 'mb_nincsilyenfoglalas1234' }, T0 * 1000, f)).miert, /pontosan egy GA4/);
   assert.equal(hivasok.length, 0, 'elutasitasnal nincs kimeno hivas');
   // egy foglalasra egy sikeres replay; ujra:true-val ismetelheto
   const D1 = await feltolt(); const h2 = hamisFetch();
   assert.equal((await ga4ValidationReplay(D1, ENV, { source_id: BID }, T0 * 1000, h2.f)).ok, true);
-  assert.match((await ga4ValidationReplay(D1, ENV, { source_id: BID }, T0 * 1000, h2.f)).miert, /mar volt sikeres/);
-  assert.equal((await ga4ValidationReplay(D1, ENV, { source_id: BID, ujra: true }, T0 * 1000, h2.f)).ok, true);
+  kapuNyit(D1); assert.match((await ga4ValidationReplay(D1, ENV, { source_id: BID }, T0 * 1000, h2.f)).miert, /mar volt sikeres/);
+  kapuNyit(D1); assert.equal((await ga4ValidationReplay(D1, ENV, { source_id: BID, ujra: true }, T0 * 1000, h2.f)).ok, true);
   // GA4 titok nelkul a kuldes nincs_hitelesites (nem megy ki semmi), de a naplo rogziti
   const D2 = await feltolt(); const h3 = hamisFetch();
   const r = await ga4ValidationReplay(D2, { ...ENV, GA4_TESZT_API_SECRET: '' }, { source_id: BID }, T0 * 1000, h3.f);
@@ -107,6 +111,60 @@ test('/api/meres-admin ga4_validation_replay: kulcsos, kifejezett jovahagyas-jel
   const ok = await kerj({ muvelet: 'ga4_validation_replay', source_id: BID, jovahagyas: 'GPT-123' }); assert.equal(ok.status, 200);
   const j = await ok.json(); assert.deepEqual([j.ok, j.allapot, j.jel], [true, 'elkuldve', REPLAY_JEL]);
   assert.ok(hivasok.every((h) => h.url.startsWith('https://www.google-analytics.com/')), 'csak GA4');
-  assert.equal((await kerj({ muvelet: 'ga4_validation_replay', source_id: BID, jovahagyas: 'GPT-123' })).status, 409, 'masodszor ujra:true nelkul elutasitva');
+  assert.equal((await kerj({ muvelet: 'ga4_validation_replay', source_id: BID, jovahagyas: 'GPT-123' })).status, 409, 'masodszor a kapu mar zarva (egyszeri)');
   assert.equal((await replayLista(D1)).length, 1);
+});
+
+test('PARITAS: a validation_replay GA4 kerese BAJTRA UGYANAZ, mint amit az ELES dispatcher (elosztas -> KEREM_EPITO.ga4 -> kuldes) epit ugyanarra az adatra; az egyetlen kulonbseg a validation_replay parameter', async () => {
+  const { elosztas, erkezesMent } = await import('../netlify/lib/meres/elosztas.js');
+  const IDO = T0 + 31;
+  const ATTR = { ga4: { client_id: '608293403.1791620313', session_id: '1791620312', measurement_id: 'G-H4206SQ0Q7' }, utm_utolso: { source: 'google', medium: 'cpc', campaign: 'x' }, fbp: 'fb.1.1791620312548.116554026827206801' };
+  const HOZZ = { ana: true, adv: true, fun: true };
+  const FK = { tipus: 'foglalas', uzletag: 'fodrasz', source_entity_id: BID, jelleg: 'visszajaro', kupon: false, ertek: 24950, ido: IDO, szolgaltatas: 'Vagas', vendeg: { email: 'teszt@example.com', telefon: '+36301234567', g: 'g:3385039' } };
+  // 1) az ELES dispatcher: ugyanaz az erkezesi pillanatkep, ugyanaz a foglalas; a kuldo elfogja a kerelmet
+  const A = d1(); await egyeztetoSorok(A, { tol: T0, ig: T0 + 1000 });
+  await erkezesMent(A, { source_id: BID, uzletag: 'fodrasz', tipus: 'foglalas', attr: ATTR, hozz: HOZZ, oldal: 'https://www.mosaicheadspa.hu/fodrasz-ok', szolgaltatas: 'Vagas' }, IDO * 1000);
+  const elfogott = [];
+  const kuldo = async (kerelem) => { elfogott.push(kerelem); return { allapot: 'elkuldve', http_status: 204, valasz: '', kuldo: 'teszt' }; };
+  await elosztas(A, FK, { env: ENV, now: () => IDO * 1000, kuldo });
+  const eles = elfogott.find((k) => k.platform === 'ga4'); assert.ok(eles && eles.body, 'az eles dispatcher felepitette a GA4 kerest');
+  // 2) a validation_replay: azonos adat, a GA4 cella meg nem 'elkuldve' (mint a 08:22-es foglalasnal)
+  const B = d1(); await egyeztetoSorok(B, { tol: T0, ig: T0 + 1000 });
+  await erkezesMent(B, { source_id: BID, uzletag: 'fodrasz', tipus: 'foglalas', attr: ATTR, hozz: HOZZ, oldal: 'https://www.mosaicheadspa.hu/fodrasz-ok', szolgaltatas: 'Vagas' }, IDO * 1000);
+  for (const p of ['meta', 'tiktok', 'google', 'ga4']) B.db.prepare('INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, indok, ertek, penznem, letrehozva, frissitve) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').run(`Visszajaro:${BID}`, 'Visszajaro', 'alap', p, 'fodrasz', BID, 'kihagyva', 'veszkapcsolo: mind', 24950, 'HUF', IDO, IDO);
+  kapuNyit(B); const { f, hivasok } = hamisFetch();
+  const r = await ga4ValidationReplay(B, ENV, { source_id: BID }, (IDO + 90000) * 1000, f);
+  assert.equal(r.ok, true);
+  const replay = hivasok[1];
+  // ugyanaz az URL (teszt-property), ugyanaz a metodus; a torzs azonos, a validation_replay parameter kivetelevel
+  assert.equal(replay.url.split('&api_secret=')[0], eles.url);
+  const replayTorzs = JSON.parse(JSON.stringify(replay.body)); assert.equal(replayTorzs.events[0].params.validation_replay, 'true'); delete replayTorzs.events[0].params.validation_replay;
+  assert.deepEqual(replayTorzs, JSON.parse(JSON.stringify(eles.body)), 'a torzs bajtra azonos a validation_replay parameter nelkul');
+  assert.equal(JSON.stringify(replayTorzs), JSON.stringify(eles.body));
+});
+
+test('KAPU (GPT-dontes #231): alapbol ZARVA, csak a tarolon at, az adott source_id-re nyithato, EGYSZERI (minden tenyleges kerelem utan automatikusan zarul), a vegpont nem nyithatja ki', async () => {
+  const kapuSor = (D1) => D1.db.prepare("SELECT be, ok FROM meres_kapcsolo WHERE kulcs = 'validation_replay'").get();
+  // 1) alapbol zarva: nincs kimeno hivas, nincs naplo; az allapot-lekerdezes is "zarva"
+  const Z = await feltolt({ kapu: false }); const h1 = hamisFetch();
+  const zr = await ga4ValidationReplay(Z, ENV, { source_id: BID }, T0 * 1000, h1.f);
+  assert.deepEqual([zr.ok, zr.kapu], [false, 'zarva']); assert.equal(h1.hivasok.length, 0); assert.equal(Z.db.prepare('SELECT COUNT(*) n FROM meres_validation_replay').get().n, 0);
+  assert.deepEqual(await replayKapu(Z), { nyitva: false, source_id: null });
+  // 2) mas foglalasra nyitott kapu nem enged
+  const M = await feltolt({ kapu: false }); kapuNyit(M, 'mb_masikfoglalas0000001'); const h2 = hamisFetch();
+  assert.equal((await ga4ValidationReplay(M, ENV, { source_id: BID }, T0 * 1000, h2.f)).ok, false); assert.equal(h2.hivasok.length, 0); assert.equal(kapuSor(M).be, 1, 'a mas foglalasra nyitott kapu erintetlen marad');
+  // 3) siker utan a kapu zarva, a masodik hivas (ujra:true-val is) elutasitva
+  const S = await feltolt(); const h3 = hamisFetch();
+  assert.equal((await replayKapu(S)).nyitva, true);
+  assert.equal((await ga4ValidationReplay(S, ENV, { source_id: BID }, (T0 + 77) * 1000, h3.f)).ok, true);
+  const zaras = kapuSor(S); assert.equal(zaras.be, 0); assert.match(zaras.ok, /lezarva/); assert.equal((await replayKapu(S)).nyitva, false);
+  const n = h3.hivasok.length; assert.equal((await ga4ValidationReplay(S, ENV, { source_id: BID, ujra: true }, T0 * 1000, h3.f)).kapu, 'zarva'); assert.equal(h3.hivasok.length, n, 'zart kapunal nincs ujabb kimeno hivas');
+  // 4) elutasitott / hibas probalkozas is lezarja (egyszeri): nincs analytics-hozzajarulas -> a kapu utana zarva
+  const E = await feltolt({ ana: false }); const h4 = hamisFetch();
+  assert.match((await ga4ValidationReplay(E, ENV, { source_id: BID }, T0 * 1000, h4.f)).miert, /analytics-hozzajarulas/); assert.equal(kapuSor(E).be, 0, 'az elutasitas utan is zarva');
+  // 5) a vegpont a kaput nem nyithatja ki: zart kapunal 409, a kapu-sor valtozatlan
+  const A = await feltolt({ kapu: false }); const KULCS = 'kapu-proba-kulcs-0123456789'; const h5 = hamisFetch();
+  const env = { ...ENV, KULCS_DB: A, EGYEZTETES_KULCS_HASH: await sha256hex(KULCS) };
+  const res = await kezelAdmin(new Request(`https://x.pages.dev/api/meres-admin?kulcs=${KULCS}`, { method: 'POST', body: JSON.stringify({ muvelet: 'ga4_validation_replay', source_id: BID, jovahagyas: 'GPT-123' }) }), env, { fetchImpl: h5.f, now: () => T0 * 1000 });
+  assert.equal(res.status, 409); assert.equal((await res.json()).kapu, 'zarva'); assert.equal(h5.hivasok.length, 0); assert.equal(kapuSor(A), undefined, 'a vegpont nem hozott letre / nyitott kaput');
 });

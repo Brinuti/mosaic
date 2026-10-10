@@ -1,0 +1,14 @@
+{
+  "name": "medicalpiercing-klon",
+  "private": true,
+  "type": "module",
+  "description": "A medicalpiercing.hu Wix nelkuli, pixelpontos klonja (Cloudflare Pages). A fuggoseg csak az urlapok e-mail kuldesehez kell.",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "serve": "node tools/serve.mjs",
+    "teszt": "node tools/funkcio-teszt.mjs"
+  },
+  "dependencies": {
+    "worker-mailer": "^1.2.1"
+  }
+}

@@ -1,0 +1,12 @@
+# a nyers Wix-mentesek (tools/mentes.mjs), barmikor ujra lementhetok
+tools/raw/
+tools/raw-mobil/
+# a build kimenete (tools/build.mjs)
+dist/
+node_modules/
+.wrangler/
+tools/osszevetes/
+tools/eredeti-kepek/
+tools/elo-dom/
+tools/wix-betuk/
+tools/eredeti-videok/
