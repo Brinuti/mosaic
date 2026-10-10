@@ -1,0 +1,595 @@
+{
+ "eset": "pmu-kezeles",
+ "hivas_ideje": "2026-10-06T17:15:03.665Z",
+ "kerelem_maszkolt": {
+  "uuid": "dcd01488-8fb3-a694-5ef1-a6f443631b32",
+  "host": "mosaic-pmu.salonic.hu",
+  "felado": "Mosaic PMU",
+  "szolgaltatas": "Ajaktetoválás - Aquarell - 124.900 Ft helyett most",
+  "munkatarsak": [],
+  "ld": {
+   "startDate": "2026-10-31T17:00:00.000Z"
+  },
+  "level_datuma": "2026-10-06T17:14:03Z",
+  "ar": 99000,
+  "vendeg": "<maszkolva: e-mail + telefon>",
+  "uj_vendeg": true
+ },
+ "szimulalt": {
+  "uj_vendeg": true,
+  "megjegyzes": "a Salonic \"uj vendeg\" jelzeset a teszt szimulalja; az ar a Salonic-level \"Price / Fizetendo varhatoan\" sorabol"
+ },
+ "egyeztetes_valasz_nyers": {
+  "ok": true,
+  "allapot": "parositott",
+  "kuldheto": true,
+  "duplikalt": false,
+  "booking_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+  "esemeny_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+  "kulcs": "14585|32428|1793466000",
+  "kulcs_forras": "salonic-oldal",
+  "service_egyezik": true,
+  "probalkozas": 1,
+  "riasztas": false,
+  "keses": false,
+  "kulcs_atadva": true,
+  "jelolt_elo_allapot": "aktiv",
+  "nyom": {
+   "uuid": "dcd01488-8fb3-a694-5ef1-a6f443631b32",
+   "host": "mosaic-pmu.salonic.hu",
+   "ag1": {
+    "ok": true,
+    "miert": null,
+    "lepesek": [
+     {
+      "url": "/booking/bookingDetails/dcd01488-8fb3-a694-5ef1-a6f443631b32",
+      "status": 200,
+      "vegso": "/booking/bookingDetails/dcd01488-8fb3-a694-5ef1-a6f443631b32"
+     },
+     {
+      "url": "/selectDate/?startDate=1793466000&bookingId=dcd01488-8fb3-a694-5ef1-a6f443631b32",
+      "status": 200,
+      "vegso": "/selectDate/?startDate=1793466000&bookingId=dcd01488-8fb3-a694-5ef1-a6f443631b32"
+     }
+    ],
+    "kulcs": "14585|32428|1793466000",
+    "serviceId": "471034"
+   },
+   "jeloltKulcsok": [
+    "14585|32428|1793466000"
+   ],
+   "kulcsForras": "salonic-oldal",
+   "jeloltek": [
+    {
+     "kulcs": "14585|32428|1793466000",
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwwfhg4dvbshd76re7zq6",
+       "service_id": "471034",
+       "ido": 1791304486,
+       "kuldve_uuid": "a6eb41d2-4bb6-bd99-ead6-dff8c518a87b"
+      },
+      {
+       "booking_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+       "service_id": "471034",
+       "ido": 1791306902,
+       "kuldve_uuid": null
+      }
+     ]
+    }
+   ],
+   "birtokos_ellenorzes": {
+    "kulcs": "14585|32428|1793466000",
+    "birtokos_booking_id": "mb_0muwwfhg4dvbshd76re7zq6",
+    "birtokos_uuid": "a6eb41d2-4bb6-bd99-ead6-dff8c518a87b",
+    "elo_allapot": "torolve",
+    "miert": null
+   },
+   "talalatok": [
+    {
+     "kulcs": "14585|32428|1793466000",
+     "booking_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+     "service_id": "471034",
+     "forras": "atadas"
+    }
+   ],
+   "valasztas": [
+    {
+     "kulcs": "14585|32428|1793466000",
+     "allapot": "valasztott",
+     "miert": null
+    }
+   ],
+   "jelolt_ellenorzes": {
+    "kulcs": "14585|32428|1793466000",
+    "jelolt_booking_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+    "jelolt_uuid": "dcd01488-8fb3-a694-5ef1-a6f443631b32",
+    "elo_allapot": "aktiv",
+    "miert": null,
+    "atvetel": "felszabadult kulcs"
+   },
+   "kulcs_atadas": {
+    "kulcs": "14585|32428|1793466000",
+    "regi": "mb_0muwwfhg4dvbshd76re7zq6",
+    "uj": "mb_0muwxvbonkqeqrc1dejjgdr",
+    "ok": "a birtokos Salonic-foglalas (a6eb41d2) torolve - elo ellenorzes; a jelolt elo ellenorzese: aktiv"
+   }
+  },
+  "esemeny_kuldes": {
+   "allapot": "kesz",
+   "source_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+   "erkezesi_adat": true,
+   "esemenyek": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muwxvbonkqeqrc1dejjgdr",
+     "nev": "FoglalasElso",
+     "tipus": "alap",
+     "ertek": 99000,
+     "ertek_forras": "tenyleges_ar",
+     "salonic_ar": 99000,
+     "nyitott": false,
+     "platformok": {
+      "meta": {
+       "id": 169,
+       "allapot": "kihagyva",
+       "indok": "veszkapcsolo: platform:meta"
+      },
+      "tiktok": {
+       "id": 170,
+       "allapot": "kihagyva",
+       "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont"
+      },
+      "google": {
+       "id": 171,
+       "allapot": "elkuldve",
+       "http_status": 200
+      },
+      "ga4": {
+       "id": 172,
+       "allapot": "kihagyva",
+       "indok": "veszkapcsolo: platform:ga4"
+      }
+     }
+    },
+    {
+     "esemeny_id": "Schedule:mb_0muwxvbonkqeqrc1dejjgdr",
+     "nev": "Schedule",
+     "tipus": "ernyo",
+     "ertek": 99000,
+     "ertek_forras": "tenyleges_ar",
+     "salonic_ar": 99000,
+     "nyitott": false,
+     "platformok": {
+      "meta": {
+       "id": 173,
+       "allapot": "kihagyva",
+       "indok": "veszkapcsolo: platform:meta"
+      },
+      "tiktok": {
+       "id": 174,
+       "allapot": "kihagyva",
+       "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont"
+      },
+      "google": {
+       "id": 175,
+       "allapot": "kihagyva",
+       "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+      },
+      "ga4": {
+       "id": 176,
+       "allapot": "kihagyva",
+       "indok": "veszkapcsolo: platform:ga4"
+      }
+     }
+    }
+   ],
+   "elo_allapot": "aktiv",
+   "jelleg": "elso",
+   "kupon": false,
+   "uj_vendeg": true,
+   "salonic_ar": 99000,
+   "ertek": 99000,
+   "ar_forras": "bejovo",
+   "uzletag": "pmu"
+  }
+ },
+ "szerveres_naplo_nyers": {
+  "ok": true,
+  "source_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+  "erkezes": {
+   "source_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+   "uzletag": "pmu",
+   "tipus": "foglalas",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_PMU-KEZELES_MUWXV6KW_GCLID",
+      "ts": 1791306880
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_PMU-KEZELES_MUWXV6KW_WBRAID",
+      "ts": 1791306883
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791306883000.IwAR_TESZT_PMU-KEZELES_MUWXV6KW_FBCLID",
+     "fbclid": "IwAR_TESZT_PMU-KEZELES_MUWXV6KW_FBCLID",
+     "ts": 1791306883
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_PMU-KEZELES_MUWXV6KW_TTCLID",
+      "ts": 1791306883
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_pmu-kezeles_elso",
+     "content": "hirdetes_a",
+     "ts": 1791306880
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_pmu-kezeles_utolso",
+     "ts": 1791306883
+    },
+    "fbp": "fb.1.1791301880000.9643583399",
+    "ttp": "TESZT_PMU-KEZELES_MUWXV6KW_ttp_13cu5c0var",
+    "ga4": {
+     "client_id": "965522565.1791220480",
+     "session_id": "1791305680",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true,
+    "dontes": true
+   },
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+   "ip": "160.79.106.xxx",
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok",
+   "bongeszo": {
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/pmu-ok",
+    "first_booking": true,
+    "szolgaltatas": "Ajaktetoválás - Aquarell - 124.900 Ft helyett most",
+    "kategoria": "",
+    "ar": 99000,
+    "g": "g:3354694",
+    "munkatars": "",
+    "bookingUrl": "https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471034&startDate=1793466000&back=mb_0muwxvbonkqeqrc1dejjgdr"
+   },
+   "ido": 1791306902,
+   "frissitve": 1791306902
+  },
+  "kuldesek": [
+   {
+    "id": 169,
+    "esemeny_id": "FoglalasElso:mb_0muwxvbonkqeqrc1dejjgdr",
+    "esemeny_nev": "FoglalasElso",
+    "esemeny_tipus": "alap",
+    "platform": "meta",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:meta",
+    "ertek": 99000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306907,
+    "frissitve": 1791306907
+   },
+   {
+    "id": 170,
+    "esemeny_id": "FoglalasElso:mb_0muwxvbonkqeqrc1dejjgdr",
+    "esemeny_nev": "FoglalasElso",
+    "esemeny_tipus": "alap",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+    "allapot": "kihagyva",
+    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
+    "ertek": 99000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306907,
+    "frissitve": 1791306907
+   },
+   {
+    "id": 171,
+    "esemeny_id": "FoglalasElso:mb_0muwxvbonkqeqrc1dejjgdr",
+    "esemeny_nev": "FoglalasElso",
+    "esemeny_tipus": "alap",
+    "platform": "google",
+    "platform_nev": "ARNYEK-7825200913",
+    "uzletag": "pmu",
+    "source_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 99000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "customer_id": "6088874770",
+      "conversion_action_id": "7825200913",
+      "athidalas": "zapier-webhook"
+     },
+     "body": {
+      "conversion_action_id": "7825200913",
+      "wbraid": "CoMKCQ_TESZT_PMU-KEZELES_MUWXV6KW_WBRAID",
+      "conversion_date_time": "2026-10-06 19:14:03+02:00",
+      "value": 99000,
+      "currency": "HUF",
+      "order_id": "FoglalasElso:mb_0muwxvbonkqeqrc1dejjgdr",
+      "ad_user_data": "GRANTED"
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"attempt\":\"01a11236-48ee-b9d2-133d-1feb292e2753\",\"id\":\"01a11236-48ee-b9d2-133d-1feb292e2753\",\"request_id\":\"01a11236-48ee-b9d2-133d-1feb292e2753\",\"status\":\"success\"}\n",
+    "kuldo": "zapier-webhook",
+    "probalkozas": 1,
+    "letrehozva": 1791306907,
+    "frissitve": 1791306907
+   },
+   {
+    "id": 172,
+    "esemeny_id": "FoglalasElso:mb_0muwxvbonkqeqrc1dejjgdr",
+    "esemeny_nev": "FoglalasElso",
+    "esemeny_tipus": "alap",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:ga4",
+    "ertek": 99000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306907,
+    "frissitve": 1791306907
+   },
+   {
+    "id": 173,
+    "esemeny_id": "Schedule:mb_0muwxvbonkqeqrc1dejjgdr",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "meta",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:meta",
+    "ertek": 99000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306907,
+    "frissitve": 1791306907
+   },
+   {
+    "id": 174,
+    "esemeny_id": "Schedule:mb_0muwxvbonkqeqrc1dejjgdr",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+    "allapot": "kihagyva",
+    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
+    "ertek": 99000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306907,
+    "frissitve": 1791306907
+   },
+   {
+    "id": 175,
+    "esemeny_id": "Schedule:mb_0muwxvbonkqeqrc1dejjgdr",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "google",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+    "ertek": 99000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306907,
+    "frissitve": 1791306907
+   },
+   {
+    "id": 176,
+    "esemeny_id": "Schedule:mb_0muwxvbonkqeqrc1dejjgdr",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "pmu",
+    "source_id": "mb_0muwxvbonkqeqrc1dejjgdr",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:ga4",
+    "ertek": 99000,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791306907,
+    "frissitve": 1791306907
+   }
+  ]
+ }
+}

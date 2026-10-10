@@ -1,0 +1,13 @@
+{
+  "leiras": "QA-4 smoke (a) kiegeszito meres: az elonezeti peldanyon (claude-youthful-shannon-kpmq.mosaic-d77.pages.dev, 1eb803c) a koszonooldal erőforras-idovonala Chromiumban (sandbox kimeno proxyn at) + ugyanazon fajlok curl-lekerese. A Chromium-proxy utvonal egy fajlra 9-15 s-t is mer, a curl ugyanarra 0.13-0.32 s-t: a nagy abszolut ertek a tesztkornyezet muterméke, nem az oldalé.",
+  "chromium_4_minta_ms": [
+    { "dcl": 17302, "attribucio_js": [3752, 12681], "foglalas_kulcs_js": [3752, 17296], "post_meres_erkezes_indul": 17301, "post_foglalas_kulcs_indul": 17301 },
+    { "dcl": 19772, "attribucio_js": [3893, 13491], "foglalas_kulcs_js": [3954, 19767], "post_meres_erkezes_indul": 19771, "post_foglalas_kulcs_indul": 19771 },
+    { "dcl": 15397, "attribucio_js": [4971, 15388], "foglalas_kulcs_js": [4981, 15269], "post_meres_erkezes_indul": 15396, "post_foglalas_kulcs_indul": 15396 },
+    { "dcl": 16296, "attribucio_js": [5008, 16293], "foglalas_kulcs_js": [5011, 16231], "post_foglalas_kulcs_indul": 16296 }
+  ],
+  "curl_attribucio_js": { "meret_gzip_bajt": 3074, "idok_s": [0.320, 0.238, 0.128], "cache_control": "public, max-age=31536000, immutable" },
+  "fajlmeret_bajt": { "attribucio.js": { "nyers": 7064, "gzip": 3088 }, "foglalas-kulcs.js": { "nyers": 3754, "gzip": 1693 } },
+  "kovetkeztetes": "A DOMContentLoaded egybeesik a ket defer-szkript letoltesevel; a ket iras (POST) MINDIG a DCL UTAN indul (fire-and-forget fetch, keepalive), tehat az iras nincs a kritikus uton. A szkriptek kb. 3 + 1,7 KB gzip, egy evre cache-elhetok (immutable, ?v=hash).",
+  "megj": "A 422 a diagnosztikai oldalbetoltes hianyos teszt-URL-jeibol adodott (nincs ervenyes szolgaltatas-azonosito), nem hiba."
+}

@@ -1,0 +1,98 @@
+{
+ "cim": "A nevtabla (munkatars-azonositok es nevek fiokonkent) a kiegeszites UTAN, az elonezeti adatbazisbol, 2026-10-06",
+ "megjegyzes": "mind az 5 fiok osszes munkatars-azonositoja megvan, nev nelkuli azonosito nincs (helyi futtatas a valodi Salonic-fiokokon: hianyzoNevek = [])",
+ "nevtabla": {
+  "ok": true,
+  "frissitve": 1791297634,
+  "helyFrissitve": {
+   "10427": 1791297618,
+   "10823": 1791297628,
+   "14409": 1791297631,
+   "14585": 1791297634,
+   "14586": 1791297622
+  },
+  "helyek": [
+   {
+    "placeId": 10427,
+    "nev": "Mosaic Headspa"
+   },
+   {
+    "placeId": 10427,
+    "nev": "Mosaic Headspa appointment online booking"
+   },
+   {
+    "placeId": 10823,
+    "nev": "Mosaic Hair"
+   },
+   {
+    "placeId": 14409,
+    "nev": "Mosaic Oxigén"
+   },
+   {
+    "placeId": 14585,
+    "nev": "Mosaic PMU"
+   },
+   {
+    "placeId": 14586,
+    "nev": "Mosaic Elysion"
+   },
+   {
+    "placeId": 14586,
+    "nev": "Mosaic Elysion online időpontfoglalás"
+   }
+  ],
+  "munkatarsak": 13,
+  "szolgaltatasok": 107,
+  "munkatarsak_helyenkent": {
+   "10427": {
+    "24065": [
+     "Mirage Egyéni kezelő"
+    ],
+    "24354": [
+     "Páros kezelés"
+    ],
+    "24989": [
+     "Sole Egyéni kezelő"
+    ],
+    "27076": [
+     "Mirage Egyéni kezelő - Május"
+    ],
+    "29415": [
+     "Négykezes Head spa"
+    ]
+   },
+   "10823": {
+    "23694": [
+     "Betti"
+    ],
+    "25095": [
+     "Noel - 20% kedvezmény!"
+    ],
+    "26064": [
+     "Evelin"
+    ]
+   },
+   "14409": {
+    "31988": [
+     "Bozsoki - Harangozó Tündi"
+    ],
+    "32009": [
+     "Szűcs Vivien"
+    ],
+    "32969": [
+     "Menyhárt Móni"
+    ]
+   },
+   "14585": {
+    "32428": [
+     "Melitta"
+    ]
+   },
+   "14586": {
+    "32417": [
+     "Elysion Pro Szőrtelenítés"
+    ]
+   }
+  }
+ }
+}

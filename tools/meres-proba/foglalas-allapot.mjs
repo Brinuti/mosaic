@@ -14,7 +14,7 @@ for (const u of urlek) {
   await p.goto(u, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(2500);
   const szoveg = (await p.locator('body').innerText()).replace(/\s+/g, ' ');
-  const allapot = /Id[őo]pont t[öo]r[öo]lve|Lemondva|lemondott/i.test(szoveg) ? 'LEMONDVA' : /Visszaigazolt|Foglal[áa]s r[ée]szletei/i.test(szoveg) ? 'VISSZAIGAZOLT (nincs lemondva!)' : '?';
+  const allapot = /Id[őo]pont t[öo]r[öo]lve|Appointment deleted|Lemondva|lemondott/i.test(szoveg) ? 'LEMONDVA' : /Visszaigazolt|Foglal[áa]s r[ée]szletei/i.test(szoveg) ? 'VISSZAIGAZOLT (nincs lemondva!)' : '?';
   if (allapot !== 'LEMONDVA') hiba++;
   console.log(u.replace('https://', '').slice(0, 60) + ' -> ' + allapot + (allapot === '?' ? ' | ' + szoveg.slice(0, 200) : ''));
   await p.close();

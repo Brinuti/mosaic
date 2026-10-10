@@ -80,6 +80,10 @@ A **munkatársi** törlések és módosítások (a szalon a Salonic naptárában
 
 **Offline visszajátszás** (kitakart, valódi levelek csomagja, pl. `SALONIC-MUNKATARSI-LEVELEK-VISSZAJATSZAS-2026-10-09.json`): `node tools/lifecycle-teszt/visszajatszas.mjs <csomag.json> [--reszletek]`. Üres in-memory D1-en, `figyel` és `be` módban lefuttatja az értelmezőt és a teljes feldolgozót; kimenet: levéltípus / üzletág / belső-blokk szabály statisztika, a feldolgozó kimenetei, és hogy a foglalások és küldések száma 0 maradt-e. Vendégadatot nem ír ki, hálózathoz és az éles D1-hez nem nyúl.
 
+## Függetlenség a mérési rétegtől (DECISION #120)
+
+A lifecycle és a mérési réteg (QA-4: párosító kulcs, érkezési adat, árnyék-mérés) nem oszt írható állapotot és logikát: külön D1 (`LIFECYCLE_DB` vs. `KULCS_DB`), diszjunkt táblák, külön kulcs (`LIFECYCLE_KULCS_HASH` vs. `EGYEZTETES_KULCS_HASH`), külön végpontok, nincs kölcsönös import. Gépi ellenőrzés: `node --test tools/test-fuggetlenseg.mjs`. A mérési oldal vészkapcsolója (`meres_kapcsolo` `iras`) a lifecycle-t nem érinti, és fordítva. Részletek: [QA4_ELESITES.md](../booking-engine/QA4_ELESITES.md).
+
 ## Üzenet-katalógus
 
 `netlify/lib/lifecycle/katalog/` (`SEMA.md` a formátum; üzletáganként egy fájl + `kozos.js`). A szöveg a dokumentum szerint; **fix ár / százalék / hónapnév nincs a szövegben** (a dokumentum szabálya; a katalógus-teszt ellenőrzi); az `{aktuális_ár}` / `{aktuális_ajánlat}` soraiból jelenleg semmi nem jelenik meg (nincs garantáltan aktuális ár-forrás). A „48 órás lemondási szabály” **nincs** sehol (tulajdonosi döntés).

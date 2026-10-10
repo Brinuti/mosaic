@@ -1,0 +1,950 @@
+{
+ "futtatva": "2026-10-10T06:47:37.993Z",
+ "bazis": "https://claude-youthful-shannon-kpmq.mosaic-d77.pages.dev",
+ "leiras": "QA-4 smoke test, bongeszo-oldal, VALODI elonezeti vegpontok (Chromium, mobil viewport; kulso keresek tiltva)",
+ "futasok": [
+  {
+   "nev": "elo_kontroll_1",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 12752,
+   "dclMs": 12741,
+   "loadMs": 12749,
+   "readyState": "complete",
+   "hosszuFeladatMs": 58,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 66
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": null,
+   "kulcsEredmeny": null,
+   "attrEredmeny": null,
+   "apiIdok": [],
+   "navigaciosUjraproba": 0
+  },
+  {
+   "nev": "elo_kontroll_2",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 15321,
+   "dclMs": 15313,
+   "loadMs": 15319,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 59
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": null,
+   "kulcsEredmeny": null,
+   "attrEredmeny": null,
+   "apiIdok": [],
+   "navigaciosUjraproba": 0
+  },
+  {
+   "nev": "elo_kontroll_3",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 10783,
+   "dclMs": 10775,
+   "loadMs": 10781,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 58
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": null,
+   "kulcsEredmeny": null,
+   "attrEredmeny": null,
+   "apiIdok": [],
+   "navigaciosUjraproba": 0
+  },
+  {
+   "nev": "elo_kontroll_4",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 12591,
+   "dclMs": 12581,
+   "loadMs": 12588,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 64
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": null,
+   "kulcsEredmeny": null,
+   "attrEredmeny": null,
+   "apiIdok": [],
+   "navigaciosUjraproba": 0
+  },
+  {
+   "nev": "elo_kontroll_5",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 13571,
+   "dclMs": 13562,
+   "loadMs": 13569,
+   "readyState": "complete",
+   "hosszuFeladatMs": 55,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 62
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": null,
+   "kulcsEredmeny": null,
+   "attrEredmeny": null,
+   "apiIdok": [],
+   "navigaciosUjraproba": 0
+  },
+  {
+   "nev": "elo_kontroll_6",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 10251,
+   "dclMs": 10241,
+   "loadMs": 10247,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 60
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": null,
+   "kulcsEredmeny": null,
+   "attrEredmeny": null,
+   "apiIdok": [],
+   "navigaciosUjraproba": 0
+  },
+  {
+   "nev": "elo_kontroll_7",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 12153,
+   "dclMs": 12140,
+   "loadMs": 12146,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 54
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": null,
+   "kulcsEredmeny": null,
+   "attrEredmeny": null,
+   "apiIdok": [],
+   "navigaciosUjraproba": 1
+  },
+  {
+   "nev": "elo_kontroll_8",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 9629,
+   "dclMs": 9623,
+   "loadMs": 9627,
+   "readyState": "complete",
+   "hosszuFeladatMs": 58,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 61
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": null,
+   "kulcsEredmeny": null,
+   "attrEredmeny": null,
+   "apiIdok": [],
+   "navigaciosUjraproba": 0
+  },
+  {
+   "nev": "elo_iro_1",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 22779,
+   "dclMs": 22773,
+   "loadMs": 22774,
+   "readyState": "complete",
+   "hosszuFeladatMs": 52,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 68
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": {
+    "varakozasMs": 4195,
+    "kulcsStatus": 200,
+    "erkezesStatus": 200,
+    "kulcsValasz": {
+     "ok": true,
+     "irva": true,
+     "idempotens": false,
+     "utkozes": false,
+     "kulcs": "10823|25095|1901429714",
+     "serviceId": "232804"
+    }
+   },
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "apiIdok": [
+    {
+     "ut": "/api/meres-erkezes",
+     "ms": 3608,
+     "status": 200
+    },
+    {
+     "ut": "/api/foglalas-kulcs",
+     "ms": 4483,
+     "status": 200
+    }
+   ],
+   "navigaciosUjraproba": 0,
+   "iroProbak": [
+    {
+     "kulcsStatus": 200,
+     "erkezesStatus": 200,
+     "atvitelHiba": true
+    }
+   ]
+  },
+  {
+   "nev": "elo_iro_2",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 10437,
+   "dclMs": 10426,
+   "loadMs": 10433,
+   "readyState": "complete",
+   "hosszuFeladatMs": 66,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 69
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": {
+    "varakozasMs": 3904,
+    "kulcsStatus": 200,
+    "erkezesStatus": 200,
+    "kulcsValasz": {
+     "ok": true,
+     "irva": true,
+     "idempotens": false,
+     "utkozes": false,
+     "kulcs": "10823|25095|1901433314",
+     "serviceId": "232804"
+    }
+   },
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "apiIdok": [
+    {
+     "ut": "/api/meres-erkezes",
+     "ms": 4203,
+     "status": 200
+    },
+    {
+     "ut": "/api/foglalas-kulcs",
+     "ms": 3734,
+     "status": 200
+    }
+   ],
+   "navigaciosUjraproba": 0,
+   "iroProbak": [
+    {
+     "kulcsStatus": 200,
+     "erkezesStatus": 200,
+     "atvitelHiba": true
+    }
+   ]
+  },
+  {
+   "nev": "elo_iro_3",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 11719,
+   "dclMs": 11713,
+   "loadMs": 11713,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 70
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": {
+    "varakozasMs": 4589,
+    "kulcsStatus": 200,
+    "erkezesStatus": 200,
+    "kulcsValasz": {
+     "ok": true,
+     "irva": true,
+     "idempotens": false,
+     "utkozes": false,
+     "kulcs": "10823|25095|1901436914",
+     "serviceId": "232804"
+    }
+   },
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "apiIdok": [
+    {
+     "ut": "/api/meres-erkezes",
+     "ms": 4873,
+     "status": 200
+    },
+    {
+     "ut": "/api/foglalas-kulcs",
+     "ms": 3329,
+     "status": 200
+    }
+   ],
+   "navigaciosUjraproba": 0,
+   "iroProbak": [
+    {
+     "kulcsStatus": 200,
+     "erkezesStatus": 200,
+     "atvitelHiba": true
+    }
+   ]
+  },
+  {
+   "nev": "elo_iro_4",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 14506,
+   "dclMs": 14501,
+   "loadMs": 14504,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 62
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": {
+    "varakozasMs": 3329,
+    "kulcsStatus": 200,
+    "erkezesStatus": 200,
+    "kulcsValasz": {
+     "ok": true,
+     "irva": true,
+     "idempotens": false,
+     "utkozes": false,
+     "kulcs": "10823|25095|1901440514",
+     "serviceId": "232804"
+    }
+   },
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "apiIdok": [
+    {
+     "ut": "/api/meres-erkezes",
+     "ms": 3615,
+     "status": 200
+    },
+    {
+     "ut": "/api/foglalas-kulcs",
+     "ms": 3328,
+     "status": 200
+    }
+   ],
+   "navigaciosUjraproba": 0,
+   "iroProbak": [
+    {
+     "kulcsStatus": 200,
+     "erkezesStatus": 200,
+     "atvitelHiba": false
+    }
+   ]
+  },
+  {
+   "nev": "elo_iro_5",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 14177,
+   "dclMs": 14173,
+   "loadMs": 14174,
+   "readyState": "complete",
+   "hosszuFeladatMs": 57,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 74
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": {
+    "varakozasMs": 3284,
+    "kulcsStatus": 200,
+    "erkezesStatus": 200,
+    "kulcsValasz": {
+     "ok": true,
+     "irva": true,
+     "idempotens": false,
+     "utkozes": false,
+     "kulcs": "10823|25095|1902444114",
+     "serviceId": "232804"
+    }
+   },
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "apiIdok": [
+    {
+     "ut": "/api/meres-erkezes",
+     "ms": 3581,
+     "status": 200
+    },
+    {
+     "ut": "/api/foglalas-kulcs",
+     "ms": 2425,
+     "status": 200
+    }
+   ],
+   "navigaciosUjraproba": 1,
+   "iroProbak": [
+    {
+     "kulcsStatus": 200,
+     "erkezesStatus": null,
+     "atvitelHiba": true
+    },
+    {
+     "kulcsStatus": 200,
+     "erkezesStatus": 200,
+     "atvitelHiba": true
+    }
+   ]
+  },
+  {
+   "nev": "elo_iro_6",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 15071,
+   "dclMs": 15061,
+   "loadMs": 15065,
+   "readyState": "complete",
+   "hosszuFeladatMs": 55,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 74
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": {
+    "varakozasMs": 4762,
+    "kulcsStatus": 200,
+    "erkezesStatus": 200,
+    "kulcsValasz": {
+     "ok": true,
+     "irva": true,
+     "idempotens": false,
+     "utkozes": false,
+     "kulcs": "10823|25095|1903447714",
+     "serviceId": "232804"
+    }
+   },
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "apiIdok": [
+    {
+     "ut": "/api/meres-erkezes",
+     "ms": 5062,
+     "status": 200
+    },
+    {
+     "ut": "/api/foglalas-kulcs",
+     "ms": 4827,
+     "status": 200
+    }
+   ],
+   "navigaciosUjraproba": 0,
+   "iroProbak": [
+    {
+     "kulcsStatus": 200,
+     "erkezesStatus": null,
+     "atvitelHiba": true
+    },
+    {
+     "kulcsStatus": 200,
+     "erkezesStatus": null,
+     "atvitelHiba": true
+    },
+    {
+     "kulcsStatus": 200,
+     "erkezesStatus": 200,
+     "atvitelHiba": true
+    }
+   ]
+  },
+  {
+   "nev": "elo_iro_7",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 12936,
+   "dclMs": 12926,
+   "loadMs": 12932,
+   "readyState": "complete",
+   "hosszuFeladatMs": 53,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 69
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": {
+    "varakozasMs": 5037,
+    "kulcsStatus": 200,
+    "erkezesStatus": 200,
+    "kulcsValasz": {
+     "ok": true,
+     "irva": true,
+     "idempotens": false,
+     "utkozes": false,
+     "kulcs": "10823|25095|1902451314",
+     "serviceId": "232804"
+    }
+   },
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "apiIdok": [
+    {
+     "ut": "/api/meres-erkezes",
+     "ms": 5333,
+     "status": 200
+    },
+    {
+     "ut": "/api/foglalas-kulcs",
+     "ms": 4740,
+     "status": 200
+    }
+   ],
+   "navigaciosUjraproba": 3,
+   "iroProbak": [
+    {
+     "kulcsStatus": null,
+     "erkezesStatus": null,
+     "atvitelHiba": true
+    },
+    {
+     "kulcsStatus": 200,
+     "erkezesStatus": 200,
+     "atvitelHiba": true
+    }
+   ]
+  },
+  {
+   "nev": "elo_iro_8",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 14752,
+   "dclMs": 14742,
+   "loadMs": 14748,
+   "readyState": "complete",
+   "hosszuFeladatMs": 69,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 71
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_TOO_MANY_RETRIES",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "iras": {
+    "varakozasMs": 2717,
+    "kulcsStatus": 200,
+    "erkezesStatus": 200,
+    "kulcsValasz": {
+     "ok": true,
+     "irva": true,
+     "idempotens": false,
+     "utkozes": false,
+     "kulcs": "10823|25095|1901454914",
+     "serviceId": "232804"
+    }
+   },
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "apiIdok": [
+    {
+     "ut": "/api/meres-erkezes",
+     "ms": 3021,
+     "status": 200
+    },
+    {
+     "ut": "/api/foglalas-kulcs",
+     "ms": 2438,
+     "status": 200
+    }
+   ],
+   "navigaciosUjraproba": 1,
+   "iroProbak": [
+    {
+     "kulcsStatus": 200,
+     "erkezesStatus": 200,
+     "atvitelHiba": true
+    }
+   ]
+  }
+ ],
+ "osszegzes": {
+  "kontroll": {
+   "n": 8,
+   "median_load_ms": 12588,
+   "median_dcl_ms": 12581,
+   "median_hosszu_feladat_ms": 0,
+   "median_kattintas_ms": 61
+  },
+  "iro": {
+   "n": 8,
+   "median_load_ms": 14504,
+   "median_dcl_ms": 14501,
+   "median_hosszu_feladat_ms": 55,
+   "median_kattintas_ms": 70,
+   "api_ms_median": 3734,
+   "api_ms_max": 5333
+  }
+ },
+ "megjegyzes": "ELO modban a betoltesi idok a sandbox-proxy zaja miatt tajekoztatok (nem kapuk); a szigoru load/DCL kapu a helyi futasban van. Kapuk: 0 JS-hiba, valodi irasok 200, fo szal, vendeg-kattintas.",
+ "ellenorzesek": [
+  {
+   "nev": "0 kezeletlen JS-hiba minden futasban",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "az iro minden futasban 2 valodi iras: kulcs-iras 200 + erkezesi adat 200",
+   "ok": true,
+   "adat": [
+    [
+     "elo_iro_1",
+     200,
+     200,
+     4195
+    ],
+    [
+     "elo_iro_2",
+     200,
+     200,
+     3904
+    ],
+    [
+     "elo_iro_3",
+     200,
+     200,
+     4589
+    ],
+    [
+     "elo_iro_4",
+     200,
+     200,
+     3329
+    ],
+    [
+     "elo_iro_5",
+     200,
+     200,
+     3284
+    ],
+    [
+     "elo_iro_6",
+     200,
+     200,
+     4762
+    ],
+    [
+     "elo_iro_7",
+     200,
+     200,
+     5037
+    ],
+    [
+     "elo_iro_8",
+     200,
+     200,
+     2717
+    ]
+   ]
+  },
+  {
+   "nev": "nincs szerver-oldali hibavalasz (4xx/5xx) egyetlen probalkozasban sem",
+   "ok": true,
+   "adat": [
+    [
+     "elo_iro_1",
+     1
+    ],
+    [
+     "elo_iro_2",
+     1
+    ],
+    [
+     "elo_iro_3",
+     1
+    ],
+    [
+     "elo_iro_4",
+     1
+    ],
+    [
+     "elo_iro_5",
+     2
+    ],
+    [
+     "elo_iro_6",
+     3
+    ],
+    [
+     "elo_iro_7",
+     2
+    ],
+    [
+     "elo_iro_8",
+     1
+    ]
+   ]
+  },
+  {
+   "nev": "a kontrollban nincs iras",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "fo szal: a hosszu feladatok osszege az irokkal legfeljebb 100 ms-sal tobb",
+   "ok": true,
+   "adat": {
+    "kontroll": 0,
+    "iro": 55
+   }
+  },
+  {
+   "nev": "a vendeg elso kattintasa nem lassabb 300 ms-nal a kontrollnal",
+   "ok": true,
+   "adat": {
+    "kontroll": 61,
+    "iro": 70
+   }
+  }
+ ],
+ "eredmeny": "PASS"
+}

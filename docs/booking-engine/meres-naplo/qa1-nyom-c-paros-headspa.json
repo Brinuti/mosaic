@@ -1,0 +1,137 @@
+{
+ "eset": "c) paros HeadSpa (angol nyelvu level, egyetlen 'Paros kezeles' eroforras)",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "ido": "2026-10-06T13:59:07.617Z",
+ "booking_id": "mb_0muwquipszezqbdrx782d6m",
+ "bookingUrl_teljes": "https://mosaicheadspa.salonic.hu/guestData/?anyone=true&employeeId=24354&placeId=10427&serviceId=302999&startDate=1793457000&back=mb_0muwquipszezqbdrx782d6m",
+ "kulcs_a_bookingUrlbol": {
+  "ok": true,
+  "host": "mosaicheadspa.salonic.hu",
+  "uzletag": "headspa",
+  "placeId": 10427,
+  "employeeId": 24354,
+  "serviceId": "302999",
+  "startUnix": 1793457000,
+  "kulcs": "10427|24354|1793457000",
+  "bookingId": "mb_0muwquipszezqbdrx782d6m"
+ },
+ "koszonooldal_kulcs_iras": {
+  "bookingId": "mb_0muwquipszezqbdrx782d6m",
+  "forras": "back",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "irva": true,
+   "idempotens": false,
+   "utkozes": false,
+   "kulcs": "10427|24354|1793457000",
+   "serviceId": "302999"
+  }
+ },
+ "kulcstabla_rekord_a_koszonooldal_utan": {
+  "ok": true,
+  "kulcs": "10427|24354|1793457000",
+  "rekord": {
+   "kulcs": "10427|24354|1793457000",
+   "booking_id": "mb_0muwquipszezqbdrx782d6m",
+   "service_id": "302999",
+   "forras": "back",
+   "letrehozva": 1791295107,
+   "lejar": 1806847107
+  }
+ },
+ "email_relevans_mezok": {
+  "felado": "Mosaic Headspa",
+  "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+  "munkatarsak": [
+   "Páros kezelés"
+  ],
+  "idopont_szoveg": "October 31. (Saturday) 15:30 - 16:50",
+  "ld_startDate": "2026-10-31T15:30:00+01:00",
+  "level_datuma": "2026-10-06T13:58:24Z",
+  "salonic_uuid": "5a784724-399a-2c64-a88d-d189c675c88a",
+  "host": "mosaicheadspa.salonic.hu"
+ },
+ "email_kulcs_1_ag_salonic_oldalak": {
+  "kulcs": "10427|24354|1793457000",
+  "serviceId": "302999",
+  "ok": true,
+  "miert": null,
+  "lepesek": [
+   {
+    "url": "/booking/bookingDetails/5a784724-399a-2c64-a88d-d189c675c88a",
+    "status": 200,
+    "vegso": "/booking/bookingDetails/5a784724-399a-2c64-a88d-d189c675c88a"
+   },
+   {
+    "url": "/selectDate/?startDate=1793457000&bookingId=5a784724-399a-2c64-a88d-d189c675c88a",
+    "status": 200,
+    "vegso": "/selectDate/?startDate=1793457000&bookingId=5a784724-399a-2c64-a88d-d189c675c88a"
+   }
+  ]
+ },
+ "email_kulcs_2_ag_nevtabla": {
+  "ok": true,
+  "miert": null,
+  "felado": "Mosaic Headspa",
+  "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+  "munkatarsak": [
+   "Páros kezelés"
+  ],
+  "idopontSzoveg": "October 31. (Saturday) 15:30 - 16:50",
+  "idopontForras": "ld+json",
+  "startUnix": 1793457000,
+  "ldUnix": 1793457000,
+  "szovegUnix": null,
+  "jeloltEmployeeIds": [
+   24354
+  ],
+  "serviceIds": [
+   "302999"
+  ],
+  "kulcsok": [
+   "10427|24354|1793457000"
+  ],
+  "serviceId": "302999",
+  "egyezik_az_ag1_el": true
+ },
+ "kulcstabla_rekord_az_email_kulcsara": {
+  "kulcs": "10427|24354|1793457000",
+  "booking_id": "mb_0muwquipszezqbdrx782d6m",
+  "service_id": "302999",
+  "forras": "back",
+  "letrehozva": 1791295107,
+  "lejar": 1806847107
+ },
+ "kereses_eredmenye": {
+  "allapot": "parositott",
+  "kuldheto": true,
+  "duplikalt": false,
+  "kulcs": "10427|24354|1793457000",
+  "kulcs_forras": "salonic-oldal",
+  "service_egyezik": true,
+  "probalkozas": 1,
+  "riasztas": false,
+  "talalatok": [
+   {
+    "kulcs": "10427|24354|1793457000",
+    "booking_id": "mb_0muwquipszezqbdrx782d6m",
+    "service_id": "302999",
+    "forras": "back"
+   }
+  ]
+ },
+ "kapott_esemenyazonosito": "mb_0muwquipszezqbdrx782d6m",
+ "azonosito_egyezik_a_bongeszovel": true,
+ "masodik_kereses_ugyanarra": {
+  "allapot": "parositott",
+  "kuldheto": false,
+  "duplikalt": true,
+  "esemeny_id": "mb_0muwquipszezqbdrx782d6m"
+ },
+ "http": {
+  "elso": 200,
+  "masodik": 200
+ }
+}

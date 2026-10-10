@@ -1,0 +1,553 @@
+{
+ "platform": "google",
+ "osszes_sor": 12,
+ "elkuldve": 6,
+ "sorok": [
+  {
+   "sor_id": 139,
+   "naplo": "qa2-google-headspa-szerver-2026-10-06.json",
+   "esemeny_id": "FoglalasElso:mb_0muwxrv832qrxzbicgxjhra",
+   "esemeny": "FoglalasElso",
+   "tipus": "alap",
+   "kuldott_nev": "ARNYEK-7825199989",
+   "allapot": "elkuldve",
+   "indok": null,
+   "kerelem": {
+    "method": "POST",
+    "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+    "fejlec_nevek": [
+     "content-type"
+    ],
+    "cel": {
+     "customer_id": "6088874770",
+     "conversion_action_id": "7825199989",
+     "athidalas": "zapier-webhook"
+    },
+    "body": {
+     "conversion_action_id": "7825199989",
+     "wbraid": "CoMKCQ_TESZT_HEADSPA_MUWXRR6Y_WBRAID",
+     "conversion_date_time": "2026-10-06 19:11:24+02:00",
+     "value": 53800,
+     "currency": "HUF",
+     "order_id": "FoglalasElso:mb_0muwxrv832qrxzbicgxjhra",
+     "ad_user_data": "GRANTED"
+    }
+   },
+   "http_status": 200,
+   "platform_valasz_nyers": "{\"attempt\":\"01a11233-dde8-07c7-fabd-b843f48281cc\",\"id\":\"01a11233-dde8-07c7-fabd-b843f48281cc\",\"request_id\":\"01a11233-dde8-07c7-fabd-b843f48281cc\",\"status\":\"success\"}\n",
+   "kuldo": "zapier-webhook",
+   "probalkozas": 1,
+   "kuldve_utc": "2026-10-06T17:12:29.000Z",
+   "zapier_futas": {
+    "run_id": "01a11233-e63a-7c49-941d-8e8d1858e087",
+    "zapier_workflow": "Mosaic ARNYEK - szerver → Google Ads árnyékkonverzió (QA-2) [01a1122c-b894-771a-a5e1-c06e6bf9fe54]",
+    "workflow_run_id": "01a11233-e504-7f97-ac90-66a93bdb8e17",
+    "status": "finished",
+    "letrehozva_utc": "2026-10-06T17:12:33Z",
+    "input": {
+     "value": 53800,
+     "wbraid": "CoMKCQ_TESZT_HEADSPA_MUWXRR6Y_WBRAID",
+     "currency": "HUF",
+     "order_id": "FoglalasElso:mb_0muwxrv832qrxzbicgxjhra",
+     "ad_user_data": "GRANTED",
+     "conversion_action_id": "7825199989",
+     "conversion_date_time": "2026-10-06 19:11:24+02:00",
+     "querystring": {}
+    },
+    "output": {
+     "sent": true,
+     "valasz": {
+      "wbraid": "CoMKCQ_TESZT_HEADSPA_MUWXRR6Y_WBRAID",
+      "requestId": "832129d7-57dc-4541-985e-706ba95f1b95",
+      "conversionName": "ARNYEK - HeadSpa - Elso foglalas",
+      "conversionTime": "2026-10-06 17:11:24+00:00",
+      "conversionValue": 53800,
+      "conversionAction": "customers/6088874770/conversionActions/7825199989",
+      "conversionCurrencyCode": "HUF"
+     },
+     "consent": "GRANTED",
+     "orderId": "FoglalasElso:mb_0muwxrv832qrxzbicgxjhra",
+     "actionId": "7825199989",
+     "clickKey": "wbraid"
+    },
+    "lepesek": [
+     "capture-conversion-time: completed",
+     "send-google-ads-arnyek-conversion: completed"
+    ],
+    "hiba": null
+   }
+  },
+  {
+   "sor_id": 143,
+   "naplo": "qa2-google-headspa-szerver-2026-10-06.json",
+   "esemeny_id": "Schedule:mb_0muwxrv832qrxzbicgxjhra",
+   "esemeny": "Schedule",
+   "tipus": "ernyo",
+   "kuldott_nev": null,
+   "allapot": "kihagyva",
+   "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+   "kerelem": null,
+   "http_status": null,
+   "platform_valasz_nyers": null,
+   "kuldo": null,
+   "probalkozas": 1,
+   "kuldve_utc": "2026-10-06T17:12:29.000Z",
+   "zapier_futas": null
+  },
+  {
+   "sor_id": 147,
+   "naplo": "qa2-google-fodrasz-szerver-2026-10-06.json",
+   "esemeny_id": "Konzultacio:mb_0muwxsqvgpdgxsok1p5zo8n",
+   "esemeny": "Konzultacio",
+   "tipus": "alap",
+   "kuldott_nev": "ARNYEK-7825200898",
+   "allapot": "elkuldve",
+   "indok": null,
+   "kerelem": {
+    "method": "POST",
+    "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+    "fejlec_nevek": [
+     "content-type"
+    ],
+    "cel": {
+     "customer_id": "6088874770",
+     "conversion_action_id": "7825200898",
+     "athidalas": "zapier-webhook"
+    },
+    "body": {
+     "conversion_action_id": "7825200898",
+     "wbraid": "CoMKCQ_TESZT_FODRASZ_MUWXSO0J_WBRAID",
+     "conversion_date_time": "2026-10-06 19:12:04+02:00",
+     "value": 13000,
+     "currency": "HUF",
+     "order_id": "Konzultacio:mb_0muwxsqvgpdgxsok1p5zo8n",
+     "ad_user_data": "DENIED"
+    }
+   },
+   "http_status": 200,
+   "platform_valasz_nyers": "{\"attempt\":\"01a11234-77fb-b7b0-19d0-3db819c9ec7d\",\"id\":\"01a11234-77fb-b7b0-19d0-3db819c9ec7d\",\"request_id\":\"01a11234-77fb-b7b0-19d0-3db819c9ec7d\",\"status\":\"success\"}\n",
+   "kuldo": "zapier-webhook",
+   "probalkozas": 1,
+   "kuldve_utc": "2026-10-06T17:13:09.000Z",
+   "zapier_futas": {
+    "run_id": "01a11234-7ca8-7df8-9e99-75c24c9f9772",
+    "zapier_workflow": "Mosaic ARNYEK - szerver → Google Ads árnyékkonverzió (QA-2) [01a1122c-b894-771a-a5e1-c06e6bf9fe54]",
+    "workflow_run_id": "01a11234-7b96-797a-92e2-e5410797385a",
+    "status": "finished",
+    "letrehozva_utc": "2026-10-06T17:13:11Z",
+    "input": {
+     "value": 13000,
+     "wbraid": "CoMKCQ_TESZT_FODRASZ_MUWXSO0J_WBRAID",
+     "currency": "HUF",
+     "order_id": "Konzultacio:mb_0muwxsqvgpdgxsok1p5zo8n",
+     "ad_user_data": "DENIED",
+     "conversion_action_id": "7825200898",
+     "conversion_date_time": "2026-10-06 19:12:04+02:00",
+     "querystring": {}
+    },
+    "output": {
+     "sent": true,
+     "valasz": {
+      "wbraid": "CoMKCQ_TESZT_FODRASZ_MUWXSO0J_WBRAID",
+      "requestId": "1479e21a-30c4-4e20-a124-a5851478f68f",
+      "conversionName": "ARNYEK - Fodrasz - Konzultacio",
+      "conversionTime": "2026-10-06 17:12:04+00:00",
+      "conversionValue": 13000,
+      "conversionAction": "customers/6088874770/conversionActions/7825200898",
+      "conversionCurrencyCode": "HUF"
+     },
+     "consent": "DENIED",
+     "orderId": "Konzultacio:mb_0muwxsqvgpdgxsok1p5zo8n",
+     "actionId": "7825200898",
+     "clickKey": "wbraid"
+    },
+    "lepesek": [
+     "capture-conversion-time: completed",
+     "send-google-ads-arnyek-conversion: completed"
+    ],
+    "hiba": null
+   }
+  },
+  {
+   "sor_id": 151,
+   "naplo": "qa2-google-fodrasz-szerver-2026-10-06.json",
+   "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwxsqvgpdgxsok1p5zo8n",
+   "esemeny": "Fodrasz_AkviziciosFoglalas",
+   "tipus": "ernyo",
+   "kuldott_nev": null,
+   "allapot": "kihagyva",
+   "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+   "kerelem": null,
+   "http_status": null,
+   "platform_valasz_nyers": null,
+   "kuldo": null,
+   "probalkozas": 1,
+   "kuldve_utc": "2026-10-06T17:13:09.000Z",
+   "zapier_futas": null
+  },
+  {
+   "sor_id": 155,
+   "naplo": "qa2-google-szor-szerver-2026-10-06.json",
+   "esemeny_id": "Konzultacio:mb_0muwxtl8sadwx1nq0uid9fx",
+   "esemeny": "Konzultacio",
+   "tipus": "alap",
+   "kuldott_nev": "ARNYEK-7825200910",
+   "allapot": "elkuldve",
+   "indok": null,
+   "kerelem": {
+    "method": "POST",
+    "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+    "fejlec_nevek": [
+     "content-type"
+    ],
+    "cel": {
+     "customer_id": "6088874770",
+     "conversion_action_id": "7825200910",
+     "athidalas": "zapier-webhook"
+    },
+    "body": {
+     "conversion_action_id": "7825200910",
+     "wbraid": "CoMKCQ_TESZT_SZOR_MUWXTIIF_WBRAID",
+     "conversion_date_time": "2026-10-06 19:12:43+02:00",
+     "value": 27000,
+     "currency": "HUF",
+     "order_id": "Konzultacio:mb_0muwxtl8sadwx1nq0uid9fx",
+     "ad_user_data": "DENIED"
+    }
+   },
+   "http_status": 200,
+   "platform_valasz_nyers": "{\"attempt\":\"01a11235-0df2-2a05-8244-4c13e5c926f7\",\"id\":\"01a11235-0df2-2a05-8244-4c13e5c926f7\",\"request_id\":\"01a11235-0df2-2a05-8244-4c13e5c926f7\",\"status\":\"success\"}\n",
+   "kuldo": "zapier-webhook",
+   "probalkozas": 1,
+   "kuldve_utc": "2026-10-06T17:13:47.000Z",
+   "zapier_futas": {
+    "run_id": "01a11235-126d-71c3-bd36-8f28f1f2a630",
+    "zapier_workflow": "Mosaic ARNYEK - szerver → Google Ads árnyékkonverzió (QA-2) [01a1122c-b894-771a-a5e1-c06e6bf9fe54]",
+    "workflow_run_id": "01a11235-1128-75dd-b03d-0045a3928f76",
+    "status": "finished",
+    "letrehozva_utc": "2026-10-06T17:13:50Z",
+    "input": {
+     "value": 27000,
+     "wbraid": "CoMKCQ_TESZT_SZOR_MUWXTIIF_WBRAID",
+     "currency": "HUF",
+     "order_id": "Konzultacio:mb_0muwxtl8sadwx1nq0uid9fx",
+     "ad_user_data": "DENIED",
+     "conversion_action_id": "7825200910",
+     "conversion_date_time": "2026-10-06 19:12:43+02:00",
+     "querystring": {}
+    },
+    "output": {
+     "sent": true,
+     "valasz": {
+      "wbraid": "CoMKCQ_TESZT_SZOR_MUWXTIIF_WBRAID",
+      "requestId": "95bdf0f3-b924-4712-a540-043310fe9fed",
+      "conversionName": "ARNYEK - Szor - Konzultacio",
+      "conversionTime": "2026-10-06 17:12:43+00:00",
+      "conversionValue": 27000,
+      "conversionAction": "customers/6088874770/conversionActions/7825200910",
+      "conversionCurrencyCode": "HUF"
+     },
+     "consent": "DENIED",
+     "orderId": "Konzultacio:mb_0muwxtl8sadwx1nq0uid9fx",
+     "actionId": "7825200910",
+     "clickKey": "wbraid"
+    },
+    "lepesek": [
+     "capture-conversion-time: completed",
+     "send-google-ads-arnyek-conversion: completed"
+    ],
+    "hiba": null
+   }
+  },
+  {
+   "sor_id": 159,
+   "naplo": "qa2-google-szor-szerver-2026-10-06.json",
+   "esemeny_id": "Schedule:mb_0muwxtl8sadwx1nq0uid9fx",
+   "esemeny": "Schedule",
+   "tipus": "ernyo",
+   "kuldott_nev": null,
+   "allapot": "kihagyva",
+   "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+   "kerelem": null,
+   "http_status": null,
+   "platform_valasz_nyers": null,
+   "kuldo": null,
+   "probalkozas": 1,
+   "kuldve_utc": "2026-10-06T17:13:47.000Z",
+   "zapier_futas": null
+  },
+  {
+   "sor_id": 163,
+   "naplo": "qa2-google-oxigen-szerver-2026-10-06.json",
+   "esemeny_id": "FoglalasElso:mb_0muwxueqp8bxx0lz7gw3ghk",
+   "esemeny": "FoglalasElso",
+   "tipus": "alap",
+   "kuldott_nev": "ARNYEK-7825200901",
+   "allapot": "elkuldve",
+   "indok": null,
+   "kerelem": {
+    "method": "POST",
+    "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+    "fejlec_nevek": [
+     "content-type"
+    ],
+    "cel": {
+     "customer_id": "6088874770",
+     "conversion_action_id": "7825200901",
+     "athidalas": "zapier-webhook"
+    },
+    "body": {
+     "conversion_action_id": "7825200901",
+     "wbraid": "CoMKCQ_TESZT_OXIGEN-ELSO_MUWXUBW7_WBRAID",
+     "conversion_date_time": "2026-10-06 19:13:22+02:00",
+     "value": 29900,
+     "currency": "HUF",
+     "order_id": "FoglalasElso:mb_0muwxueqp8bxx0lz7gw3ghk",
+     "ad_user_data": "DENIED"
+    }
+   },
+   "http_status": 200,
+   "platform_valasz_nyers": "{\"attempt\":\"01a11235-a87f-a1d3-f010-9223bde870e0\",\"id\":\"01a11235-a87f-a1d3-f010-9223bde870e0\",\"request_id\":\"01a11235-a87f-a1d3-f010-9223bde870e0\",\"status\":\"success\"}\n",
+   "kuldo": "zapier-webhook",
+   "probalkozas": 1,
+   "kuldve_utc": "2026-10-06T17:14:26.000Z",
+   "zapier_futas": {
+    "run_id": "01a11235-ad72-7e88-a9ac-bdea06e4d335",
+    "zapier_workflow": "Mosaic ARNYEK - szerver → Google Ads árnyékkonverzió (QA-2) [01a1122c-b894-771a-a5e1-c06e6bf9fe54]",
+    "workflow_run_id": "01a11235-ac8b-7b2b-bb2a-0528b9ff3ba1",
+    "status": "finished",
+    "letrehozva_utc": "2026-10-06T17:14:29Z",
+    "input": {
+     "value": 29900,
+     "wbraid": "CoMKCQ_TESZT_OXIGEN-ELSO_MUWXUBW7_WBRAID",
+     "currency": "HUF",
+     "order_id": "FoglalasElso:mb_0muwxueqp8bxx0lz7gw3ghk",
+     "ad_user_data": "DENIED",
+     "conversion_action_id": "7825200901",
+     "conversion_date_time": "2026-10-06 19:13:22+02:00",
+     "querystring": {}
+    },
+    "output": {
+     "sent": true,
+     "valasz": {
+      "wbraid": "CoMKCQ_TESZT_OXIGEN-ELSO_MUWXUBW7_WBRAID",
+      "requestId": "2c8c6ac9-dbdc-4532-a3d5-cf1f7508183f",
+      "conversionName": "ARNYEK - Oxigen - Elso foglalas",
+      "conversionTime": "2026-10-06 17:13:22+00:00",
+      "conversionValue": 29900,
+      "conversionAction": "customers/6088874770/conversionActions/7825200901",
+      "conversionCurrencyCode": "HUF"
+     },
+     "consent": "DENIED",
+     "orderId": "FoglalasElso:mb_0muwxueqp8bxx0lz7gw3ghk",
+     "actionId": "7825200901",
+     "clickKey": "wbraid"
+    },
+    "lepesek": [
+     "capture-conversion-time: completed",
+     "send-google-ads-arnyek-conversion: completed"
+    ],
+    "hiba": null
+   }
+  },
+  {
+   "sor_id": 167,
+   "naplo": "qa2-google-oxigen-szerver-2026-10-06.json",
+   "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwxueqp8bxx0lz7gw3ghk",
+   "esemeny": "Oxigen_AkviziciosFoglalas",
+   "tipus": "ernyo",
+   "kuldott_nev": null,
+   "allapot": "kihagyva",
+   "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+   "kerelem": null,
+   "http_status": null,
+   "platform_valasz_nyers": null,
+   "kuldo": null,
+   "probalkozas": 1,
+   "kuldve_utc": "2026-10-06T17:14:26.000Z",
+   "zapier_futas": null
+  },
+  {
+   "sor_id": 171,
+   "naplo": "qa2-google-pmu-szerver-2026-10-06.json",
+   "esemeny_id": "FoglalasElso:mb_0muwxvbonkqeqrc1dejjgdr",
+   "esemeny": "FoglalasElso",
+   "tipus": "alap",
+   "kuldott_nev": "ARNYEK-7825200913",
+   "allapot": "elkuldve",
+   "indok": null,
+   "kerelem": {
+    "method": "POST",
+    "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+    "fejlec_nevek": [
+     "content-type"
+    ],
+    "cel": {
+     "customer_id": "6088874770",
+     "conversion_action_id": "7825200913",
+     "athidalas": "zapier-webhook"
+    },
+    "body": {
+     "conversion_action_id": "7825200913",
+     "wbraid": "CoMKCQ_TESZT_PMU-KEZELES_MUWXV6KW_WBRAID",
+     "conversion_date_time": "2026-10-06 19:14:03+02:00",
+     "value": 99000,
+     "currency": "HUF",
+     "order_id": "FoglalasElso:mb_0muwxvbonkqeqrc1dejjgdr",
+     "ad_user_data": "GRANTED"
+    }
+   },
+   "http_status": 200,
+   "platform_valasz_nyers": "{\"attempt\":\"01a11236-48ee-b9d2-133d-1feb292e2753\",\"id\":\"01a11236-48ee-b9d2-133d-1feb292e2753\",\"request_id\":\"01a11236-48ee-b9d2-133d-1feb292e2753\",\"status\":\"success\"}\n",
+   "kuldo": "zapier-webhook",
+   "probalkozas": 1,
+   "kuldve_utc": "2026-10-06T17:15:07.000Z",
+   "zapier_futas": {
+    "run_id": "01a11236-dc40-7fde-941f-55c95a07f2ee",
+    "zapier_workflow": "Mosaic ARNYEK - szerver → Google Ads árnyékkonverzió (QA-2) [01a1122c-b894-771a-a5e1-c06e6bf9fe54]",
+    "workflow_run_id": "01a11236-da8a-7e2f-af6f-07f2fc331996",
+    "status": "finished",
+    "letrehozva_utc": "2026-10-06T17:15:47Z",
+    "input": {
+     "value": 99000,
+     "wbraid": "CoMKCQ_TESZT_PMU-KEZELES_MUWXV6KW_WBRAID",
+     "currency": "HUF",
+     "order_id": "FoglalasElso:mb_0muwxvbonkqeqrc1dejjgdr",
+     "ad_user_data": "GRANTED",
+     "conversion_action_id": "7825200913",
+     "conversion_date_time": "2026-10-06 19:14:03+02:00",
+     "querystring": {}
+    },
+    "output": {
+     "sent": true,
+     "valasz": {
+      "wbraid": "CoMKCQ_TESZT_PMU-KEZELES_MUWXV6KW_WBRAID",
+      "requestId": "a26ced1a-b050-47c9-8922-ee4495b5c296",
+      "conversionName": "ARNYEK - PMU - Foglalas",
+      "conversionTime": "2026-10-06 17:14:03+00:00",
+      "conversionValue": 99000,
+      "conversionAction": "customers/6088874770/conversionActions/7825200913",
+      "conversionCurrencyCode": "HUF"
+     },
+     "consent": "GRANTED",
+     "orderId": "FoglalasElso:mb_0muwxvbonkqeqrc1dejjgdr",
+     "actionId": "7825200913",
+     "clickKey": "wbraid"
+    },
+    "lepesek": [
+     "capture-conversion-time: completed",
+     "send-google-ads-arnyek-conversion: completed"
+    ],
+    "hiba": null
+   }
+  },
+  {
+   "sor_id": 175,
+   "naplo": "qa2-google-pmu-szerver-2026-10-06.json",
+   "esemeny_id": "Schedule:mb_0muwxvbonkqeqrc1dejjgdr",
+   "esemeny": "Schedule",
+   "tipus": "ernyo",
+   "kuldott_nev": null,
+   "allapot": "kihagyva",
+   "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+   "kerelem": null,
+   "http_status": null,
+   "platform_valasz_nyers": null,
+   "kuldo": null,
+   "probalkozas": 1,
+   "kuldve_utc": "2026-10-06T17:15:07.000Z",
+   "zapier_futas": null
+  },
+  {
+   "sor_id": 179,
+   "naplo": "qa2-google-kartya-szerver-2026-10-06.json",
+   "esemeny_id": "Ajandekkartya:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+   "esemeny": "Ajandekkartya",
+   "tipus": "alap",
+   "kuldott_nev": "ARNYEK-7825199992",
+   "allapot": "elkuldve",
+   "indok": null,
+   "kerelem": {
+    "method": "POST",
+    "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+    "fejlec_nevek": [
+     "content-type"
+    ],
+    "cel": {
+     "customer_id": "6088874770",
+     "conversion_action_id": "7825199992",
+     "athidalas": "zapier-webhook"
+    },
+    "body": {
+     "conversion_action_id": "7825199992",
+     "wbraid": "CoMKCQ_TESZT_AJANDEK_MUWXW2N0_WBRAID",
+     "conversion_date_time": "2026-10-06 19:15:42+02:00",
+     "value": 26900,
+     "currency": "HUF",
+     "order_id": "Ajandekkartya:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+     "ad_user_data": "GRANTED"
+    }
+   },
+   "http_status": 200,
+   "platform_valasz_nyers": "{\"attempt\":\"01a11237-b145-6f88-b839-9a12b6772cba\",\"id\":\"01a11237-b145-6f88-b839-9a12b6772cba\",\"request_id\":\"01a11237-b145-6f88-b839-9a12b6772cba\",\"status\":\"success\"}\n",
+   "kuldo": "zapier-webhook",
+   "probalkozas": 1,
+   "kuldve_utc": "2026-10-06T17:16:40.000Z",
+   "zapier_futas": {
+    "run_id": "01a11237-b811-7e1e-b14b-d87d1adb6350",
+    "zapier_workflow": "Mosaic ARNYEK - szerver → Google Ads árnyékkonverzió (QA-2) [01a1122c-b894-771a-a5e1-c06e6bf9fe54]",
+    "workflow_run_id": "01a11237-b662-7300-95ea-e5bdc43238c0",
+    "status": "finished",
+    "letrehozva_utc": "2026-10-06T17:16:43Z",
+    "input": {
+     "value": 26900,
+     "wbraid": "CoMKCQ_TESZT_AJANDEK_MUWXW2N0_WBRAID",
+     "currency": "HUF",
+     "order_id": "Ajandekkartya:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+     "ad_user_data": "GRANTED",
+     "conversion_action_id": "7825199992",
+     "conversion_date_time": "2026-10-06 19:15:42+02:00",
+     "querystring": {}
+    },
+    "output": {
+     "sent": true,
+     "valasz": {
+      "wbraid": "CoMKCQ_TESZT_AJANDEK_MUWXW2N0_WBRAID",
+      "requestId": "cbc572fb-4352-44a3-bad6-c9fe34ff0369",
+      "conversionName": "ARNYEK - HeadSpa - Ajandekkartya",
+      "conversionTime": "2026-10-06 17:15:42+00:00",
+      "conversionValue": 26900,
+      "conversionAction": "customers/6088874770/conversionActions/7825199992",
+      "conversionCurrencyCode": "HUF"
+     },
+     "consent": "GRANTED",
+     "orderId": "Ajandekkartya:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+     "actionId": "7825199992",
+     "clickKey": "wbraid"
+    },
+    "lepesek": [
+     "capture-conversion-time: completed",
+     "send-google-ads-arnyek-conversion: completed"
+    ],
+    "hiba": null
+   }
+  },
+  {
+   "sor_id": 183,
+   "naplo": "qa2-google-kartya-szerver-2026-10-06.json",
+   "esemeny_id": "Schedule:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+   "esemeny": "Schedule",
+   "tipus": "ernyo",
+   "kuldott_nev": null,
+   "allapot": "kihagyva",
+   "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+   "kerelem": null,
+   "http_status": null,
+   "platform_valasz_nyers": null,
+   "kuldo": null,
+   "probalkozas": 1,
+   "kuldve_utc": "2026-10-06T17:16:40.000Z",
+   "zapier_futas": null
+  }
+ ]
+}
