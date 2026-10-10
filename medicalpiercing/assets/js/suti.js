@@ -65,4 +65,55 @@
     window.fbq('init', '2177829632420786');
     window.fbq('track', 'PageView');
   }
+
+  // TikTok "Foglalas inditasa" (Feri dontese, 2026-10-10, MP-WEBOLDAL-ELLENORZES H-7): minden
+  // medicalpiercing.salonic.hu foglalasi linkre kattintaskor egy szabvanyos InitiateCheckout
+  // esemeny, CSAK a www.medicalpiercing.hu-n, a koszonooldalakon (/foglalas-ok*) nem.
+  // content_name: "foglalas_inditasa"; content_category: a piercing-tipus rovid kodja az oldal
+  // cime alapjan (nem egeszsegugyi szoveg): mi (migren, daith, fejfajas), sh (shenmen),
+  // kl (klimax), sl (slim, fogyas, etvagy), al (allergia), mj (maj), lp (lep), vb (vastagbel),
+  // pm (pajzsmirigy), soft (kozerzetjavito soft akcio), 3pc (3 piercing 2 araert), egyebkent alt.
+  // Ha a cimben tobb tipus is szerepel, a legelso szamit. Az altalanos oldalakon (pl.
+  // /idopontfoglalas, ahova a tipusoldalak foglalas-gombjai uj lapon visznek) az utolso 30 percben
+  // legutobb megnezett tipusoldal kodja szamit (localStorage: az uj lap a sessionStorage-ot nem
+  // kapja meg), ha volt ilyen. A TikTok-pixelt a GTM tolti (a
+  // hozzajarulas szerint): ha nincs betoltve, nem kuldunk semmit. Kattintasonkent pontosan egy
+  // esemeny: bal (es Ctrl/Cmd) kattintas -> click, kozepso gomb -> auxclick.
+  if (location.hostname === 'www.medicalpiercing.hu' && !/^\/foglalas-ok/i.test(location.pathname)) {
+    var tipusKod = function () {
+      var ut;
+      try { ut = decodeURIComponent(location.pathname); } catch (e) { ut = location.pathname; }
+      ut = ut.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+      if (/3-piercing-2-araert/.test(ut)) return '3pc';
+      if (/kozerzetjavito-piercing-soft/.test(ut)) return 'soft';
+      var TIPUSOK = [
+        [/migren|daith|fejfajas/, 'mi'], [/shenmen/, 'sh'], [/klimax/, 'kl'], [/slim|fogyas|etvagy/, 'sl'],
+        [/allergia/, 'al'], [/(^|[-/])maj([-/]|$)/, 'mj'], [/(^|[-/])lep([-/]|$)/, 'lp'],
+        [/vastagbel/, 'vb'], [/pajzsmirigy/, 'pm'],
+      ];
+      var kod = 'alt', hol = Infinity;
+      for (var i = 0; i < TIPUSOK.length; i++) {
+        var m = TIPUSOK[i][0].exec(ut);
+        if (m && m.index < hol) { hol = m.index; kod = TIPUSOK[i][1]; }
+      }
+      return kod;
+    };
+    var tipus = tipusKod();
+    try {
+      if (tipus !== 'alt') localStorage.setItem('mp_tipus', tipus + '|' + Date.now());
+      else {
+        var t = (localStorage.getItem('mp_tipus') || '').split('|');
+        if (t[0] && Date.now() - Number(t[1]) < 30 * 60 * 1000) tipus = t[0];
+      }
+    } catch (e) { /* tiltott tarolo: az oldal sajat kodja marad */ }
+    var foglalasInditasa = function (e) {
+      if (e.type === 'auxclick' && e.button !== 1) return;
+      var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+      if (!a || !/^https:\/\/medicalpiercing\.salonic\.hu([/?#]|$)/i.test(a.href)) return;
+      if (!window.ttq || typeof window.ttq.track !== 'function') return;
+      window.ttq.track('InitiateCheckout', { content_name: 'foglalas_inditasa', content_category: tipus });
+    };
+    document.addEventListener('click', foglalasInditasa, true);
+    document.addEventListener('auxclick', foglalasInditasa, true);
+  }
 })();

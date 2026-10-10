@@ -34,7 +34,10 @@ const linkek = new Map(); // href -> Set(hol)
 const foglalasi = new Map();
 const latottGomb = new Set();
 // a Wixen is igy van (2026-10-10, az eles oldalon ellenorizve):
-const MENU_NELKUL = new Set(['/igy-szabadultam-meg-a-migrentol']); // menu nelkuli kampanyoldal
+// menu nelkuli kampanyoldal; a Wix "Fullscreen Page" sablonoldala asztalon fejlec nelkuli
+const MENU_NELKUL = new Set(['/igy-szabadultam-meg-a-migrentol', 'asztali /fullscreen-page']);
+// a rejtett /search oldal (Wix-keresotalalatok sablonja) mintaszolgaltatasainak linkjei a Wixen is 404-esek
+const WIX_HALOTT_LINK = /^\/service-page\//;
 const WIX_LINK_RENDBEN = new Set(['/adatkezeles']); // az adatkezelesi tajekoztato a Wixet adatfeldolgozokent nevezi meg
 
 async function bejar(o, nezet, opt) {
@@ -69,7 +72,7 @@ async function bejar(o, nezet, opt) {
     }
     // menu
     const gomb = await p.$$eval('[data-popupid]', (l) => l.map((x) => { const r = x.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, w: r.width }; }).find((r) => r.w > 0 && r.y > 0 && r.y < innerHeight));
-    if (o.kulcs !== '404' && !MENU_NELKUL.has(o.ut)) {
+    if (o.kulcs !== '404' && !MENU_NELKUL.has(o.ut) && !MENU_NELKUL.has(`${nezet} ${o.ut}`)) {
       if (!gomb) hiba(hol, 'nincs lathato menugomb');
       else {
         await p.mouse.click(gomb.x, gomb.y);
@@ -115,7 +118,15 @@ async function bejar(o, nezet, opt) {
   await ctx.close();
 }
 
-const feladatok = oldalak.flatMap((o) => NEZETEK.map(([n, opt]) => () => bejar(o, n, opt)));
+// egy lap legfeljebb 4 percig tarthat: ha elakad, hibakent jelezzuk, es megyunk tovabb
+const IDOKORLAT = 240000;
+const feladatok = oldalak.flatMap((o) => NEZETEK.map(([n, opt]) => () => {
+  let ora;
+  return Promise.race([
+    bejar(o, n, opt),
+    new Promise((ok) => { ora = setTimeout(() => { hiba(`${n} ${o.ut}`, `a bejaras elakadt (${IDOKORLAT / 1000} mp)`); ok(); }, IDOKORLAT); }),
+  ]).finally(() => clearTimeout(ora));
+}));
 let kesz = 0;
 await Promise.all(Array.from({ length: PARHUZAMOS }, async () => {
   while (feladatok.length) { await feladatok.shift()(); if (++kesz % 20 === 0) console.log(`  ${kesz}/${oldalak.length * 2} lap`); }
@@ -131,6 +142,7 @@ for (const [h, hol] of linkek) {
   const belso = u.origin === CIM || /^(www\.)?medicalpiercing\.hu$/i.test(u.hostname);
   if (!belso) { kulso.add(u.hostname); continue; }
   if (u.origin !== CIM && !/^\/\//.test(h)) hiba([...hol][0], `abszolut belso link (a domainre visz, nem a klonon marad): ${h}`);
+  if (WIX_HALOTT_LINK.test(u.pathname)) continue;
   for (const [n, ua] of Object.entries(UA)) {
     const r = await req.get(CIM + u.pathname + u.search, { headers: { 'user-agent': ua }, maxRedirects: 5 }).catch((e) => ({ status: () => 'hiba ' + e.message }));
     if (r.status() !== 200) hiba(`${[...hol].slice(0, 3).join(', ')}${hol.size > 3 ? ` (+${hol.size - 3})` : ''}`, `${n} bongeszovel a link celja ${r.status()}: ${decodeURI(u.pathname)}`);

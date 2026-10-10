@@ -41,11 +41,12 @@ cd medicalpiercing
 node tools/oldalak.mjs --frissit     # oldallista a Wix sitemapjeiből (a korábbi rejtett oldalak maradnak)
 node tools/mentes.mjs --friss        # szerveroldali HTML, asztali + mobil  -> tools/raw*/
 node tools/oldalak.mjs --bejaras     # linkelt, de sitemapben nem szereplő (rejtett) oldalak; utána újra mentes.mjs
+node tools/oldalak.mjs --utvonalak   # a Wix útvonaltáblájának többi élő oldala (linkeletlen akciós és köszönőoldalak); utána újra mentes.mjs
 node tools/elo-mentes.mjs --ujra             # a kirajzolt oldal, asztali  -> tools/elo-dom/asztali/
 node tools/elo-mentes.mjs --mobil --ujra     # ugyanez mobilon (kb. 50-50 perc)
 node tools/popup-mentes.mjs          # a felugró menü (Wix lightbox)       -> assets/popup/
 node tools/beagyazasok.mjs           # a Wix HTML-beágyazásai              -> assets/embed/
-node tools/media.mjs                 # képek és videók eredetiben          -> tools/eredeti-*/
+node tools/media.mjs                 # képek és videók eredetiben          -> tools/eredeti-*/ (--hianyzo: csak ami az assets/-ból hiányzik)
 python3 tools/kepek-kicsinyites.py   # képek a megjelenített méretre       -> assets/img/
 node tools/videok.mjs                # videók 720p-re (max. 24 MB)         -> assets/video/
 python3 tools/betu-epites.py         # saját betűk + assets/css/wix-fonts.css (csak ha a Wix betűi változtak)
@@ -134,8 +135,10 @@ A Wixen futó második GTM-tároló (GTM-PZ6CL4JP, csak a köszönőoldalakon) �
 | Google-vélemények (Trustindex), GYIK (Common Ninja), RTL-videó | a Wix HTML-beágyazásai helyben (`assets/embed/`), változatlan külső szolgáltatással |
 | YouTube- és Facebook-videók, Salonic-foglaló | változatlan beágyazás / link; a Wix csak görgetéskor tölti ki a lejátszót, ezért a kész állapotát külön mentjük (`tools/videok-mentes.mjs` → `tools/wix-videok.json`, a `wix2static.mjs` és a `tools/videok-potlas.mjs` tölti be) |
 | Google-térkép | a Google beágyazott térképe ugyanarra a helyszínre (a Wix-féle egyedi térképstílus nélkül) |
-| süti-sáv és mérés | `suti.js`: CookieYes, GTM-T9GR4JCK (benne a GA4 G-SJT2RN62H8 és a TikTok-pixel), Google Ads AW-11097894040, Convertize, Meta-pixel 2177829632420786 (a köszönőoldalakon nem) – **csak a www.medicalpiercing.hu-n** |
+| süti-sáv és mérés | `suti.js`: CookieYes, GTM-T9GR4JCK (benne a GA4 G-SJT2RN62H8 és a TikTok-pixel), Google Ads AW-11097894040, Convertize, Meta-pixel 2177829632420786 (a `/foglalas-ok*` oldalakon nem), TikTok „Foglalás indítása” (`InitiateCheckout`, `content_name: foglalas_inditasa`, `content_category`: a piercing-típus rövid kódja) minden medicalpiercing.salonic.hu linkre kattintáskor (a `/foglalas-ok*` oldalakon nem) – **csak a www.medicalpiercing.hu-n**; próba: `tools/meres-teszt.mjs` |
 | köszönőoldalak (`/foglalas-ok`, `-mi`, `-shenmen`, `-klimax`, `-slim`, `-allergia`, `-maj`, `-lep`, `-vastagbel`, `-2piercing`, `-3piercing`, `-4piercing`, `-6piercing`) | ugyanazon a címen, átirányítás nélkül, a paraméterekkel (a Salonic szolgáltatásonként ide irányít); nincsenek a sitemapben |
+| rejtett Wix-oldalak (a sitemapben nem szereplő akciós, régi és köszönőoldalak: `/kozerzetjavito-piercing-soft-akcio`, `/home2`, `/fulbevalo-ok*`, `/garancia-xyz`, `/kontroll-xyz`, `/kerdoiv-ok`, `/allas-ok` stb.) | a Wix útvonaltáblájából (`tools/oldalak.mjs --utvonalak`), ugyanazon a címen, a Wix `robots` beállításával; nincsenek a sitemapben. Az állásűrlapok beküldés után a `/allas-ok`, a `/kontroll` űrlapja a `/kontroll-ok` címre visz (mint a Wixen) |
+| a Wix átirányításai (URL Redirect Manager) | `lib/utvonal.js` `WIX_ATIRANYITASOK`: `/kontroll-ok` → `/kontroll-xyz`, `/garancia-ok` → `/garancia-xyz` (301, a paraméterekkel) |
 | URL-paraméterek megőrzése (a Wix `masterPage.js` kódja) | `klon.js` 8.: a beérkező paraméterek a munkamenetben maradnak; a foglalási linkek (medicalpiercing.salonic.hu) viszik az `fbclid`, `gclid`, `gbraid`, `wbraid`, `ttclid`, `utm_*` paramétereket |
 | városoldalak lapozója („Previous” / „Next”) | `klon.js` 9.: a Wix helyszín-gyűjteményének sorrendjében (`assets/data/varos-lapozo.json`, `tools/varos-lapozo-mentes.mjs`; a gyűjtemény bővülése után újra kell futtatni), ahol nincs előző / következő, ott tiltva |
 | kitelepülések (vidéki helyszínek időpontjai) | a „MP - KITELEPÜLÉSEK” Google-táblázatból: a build beírja, a lap betöltéskor frissíti (`lib/kitelepulesek.js`, `/api/kitelepulesek`, `klon.js` 11.), lásd lent |

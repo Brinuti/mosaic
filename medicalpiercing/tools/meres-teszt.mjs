@@ -15,6 +15,8 @@
 //     megmaradnak, a Meta-pixel semmit nem tolt es nem kuld; a GTM fut;
 //   - a foglalasi linkek viszik a gclid / fbclid / ttclid / utm_* parametereket, a parameterek a
 //     munkamenetben megmaradnak (mint a Wixen);
+//   - TikTok "Foglalas inditasa": foglalasi linkre kattintaskor pontosan egy InitiateCheckout
+//     (content_name, content_category), a koszonooldalon es nem eles cimen egy sem;
 //   - a medicalpiercing/ kodban nincs Mosaic-azonosito.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -84,6 +86,16 @@ for (const [i, s] of KOSZONO.entries()) {
   await ctx.close();
 }
 
+// 2b. a tobbi (rejtett) Wix-koszonooldal: 200; a Wix atiranyitas-kezelojenek 301-ei a parameterekkel
+for (const ut of ['/fulbevalo-ok', '/fulbevalo-ok2', '/fulbevalo-ok3', '/garancia-xyz', '/kontroll-xyz', '/kerdoiv-ok', '/allas-ok']) {
+  const v = await fetch(`http://127.0.0.1:${PORT}${ut}?a=1`, { redirect: 'manual' });
+  ok(`${ut}: 200`, v.status === 200, String(v.status));
+}
+for (const [honnan, hova] of [['/kontroll-ok', '/kontroll-xyz'], ['/garancia-ok', '/garancia-xyz']]) {
+  const v = await fetch(`http://127.0.0.1:${PORT}${honnan}?a=1&b=2`, { redirect: 'manual' });
+  ok(`${honnan}: 301 -> ${hova}, parameterekkel (mint a Wixen)`, v.status === 301 && v.headers.get('location') === `${hova}?a=1&b=2`, `${v.status} ${v.headers.get('location')}`);
+}
+
 // 3. parameterek: megorzes es foglalasi linkek
 {
   const ctx = await b.newContext(ASZTALI);
@@ -104,6 +116,81 @@ for (const [i, s] of KOSZONO.entries()) {
   const l3 = await p.$$eval('a[href*="medicalpiercing.salonic.hu/showServices"]', (l) => l.map((a) => a.href));
   ok('foglalasi linkek: a link sajat parameterei megmaradnak', l3.length > 0 && l3.every((h) => /placeId=6029/.test(h) && /employeeId=13509/.test(h) && /gclid=G1/.test(h)), l3[0]);
   await ctx.close();
+}
+
+// 5. TikTok "Foglalas inditasa" (InitiateCheckout): kattintasonkent pontosan egy, a koszonooldalon
+// es nem eles cimen (pl. *.pages.dev) egy sem. A TikTok-keresek itt is mind el vannak kapva es eldobva
+// (a felugro ablakoke is: a kontextus szintjen), a Salonic-oldal sem nyilik meg.
+{
+  const ttEsemenyek = (ki) => ki.filter((x) => /analytics\.tiktok\.com\/api\/v2\/pixel/.test(x.u))
+    .map((x) => { try { return JSON.parse(x.d); } catch (e) { return {}; } });
+  const foglalasEsemenyek = (ki) => ttEsemenyek(ki).filter((j) => j.event === 'InitiateCheckout');
+  const nyit = async (cim, ut) => {
+    const ctx = await b.newContext(ASZTALI);
+    const ki = [];
+    const elkap = (r) => {
+      const u = r.request().url();
+      if (SZABAD.test(u) && r.request().method() === 'GET') return r.continue();
+      ki.push({ u, d: r.request().postData() || '' }); return r.abort();
+    };
+    await ctx.route((u) => !u.toString().startsWith(cim), elkap);
+    const p = await ctx.newPage();
+    await p.goto(cim + ut, { waitUntil: 'load' });
+    for (let i = 0; i < 40 && !(await p.evaluate(() => !!(window.ttq && window.ttq.track && window.ttq._i))); i++) await p.waitForTimeout(250);
+    await p.waitForTimeout(1500);
+    return { ctx, p, ki };
+  };
+  const kattint = async (p, l, opt) => { await l.click(opt); await p.waitForTimeout(1500); };
+  // tipusoldal: bal kattintas, kozepso gomb (+1), jobb gomb (nem foglalas)
+  {
+    const { ctx, p, ki } = await nyit(CIM, '/migren-piercing-uj');
+    ok('TikTok-pixel betolt (ttq)', await p.evaluate(() => typeof window.ttq === 'object'));
+    const linkek = p.locator('a[href^="https://medicalpiercing.salonic.hu"]:visible');
+    await kattint(p, linkek.first());
+    const e1 = foglalasEsemenyek(ki);
+    ok('TikTok InitiateCheckout: 1 kattintas -> pontosan 1 esemeny', e1.length === 1, JSON.stringify(e1.map((j) => j.properties)));
+    ok('TikTok InitiateCheckout: content_name + content_category (tipuskod)', e1.length === 1 && e1[0].properties && e1[0].properties.content_name === 'foglalas_inditasa' && e1[0].properties.content_category === 'mi');
+    await kattint(p, linkek.nth(1), { button: 'middle' });
+    await kattint(p, linkek.nth(2), { button: 'right' });
+    ok('TikTok InitiateCheckout: kozepso gomb +1, jobb gomb 0', foglalasEsemenyek(ki).length === 2, foglalasEsemenyek(ki).length + ' esemeny');
+    ok('TikTok: egyeb esemenye nem foglalas (pl. ClickButton) nem keletkezik a kattintasbol', !ttEsemenyek(ki).some((j) => /ClickButton/.test(j.event)));
+    await ctx.close();
+  }
+  // altalanos oldal (/idopontfoglalas) a soft-akcios celoldal utan: a munkamenet tipuskodja
+  {
+    const { ctx, p: p0, ki } = await nyit(CIM, '/kozerzetjavito-piercing-soft-akcio');
+    // a gomb (mint a Wixen) uj lapon nyitja a /idopontfoglalas oldalt
+    const [p] = await Promise.all([ctx.waitForEvent('page'), p0.locator('a[href="/idopontfoglalas"]:visible').first().click()]);
+    await p.waitForLoadState('load');
+    for (let i = 0; i < 40 && !(await p.evaluate(() => !!(window.ttq && window.ttq._i))); i++) await p.waitForTimeout(250);
+    await p.waitForTimeout(1500);
+    await kattint(p, p.locator('a[href^="https://medicalpiercing.salonic.hu"]:visible').first());
+    const e = foglalasEsemenyek(ki);
+    ok('TikTok InitiateCheckout: /idopontfoglalas a soft akcio utan -> soft', e.length === 1 && e[0].properties.content_category === 'soft', JSON.stringify(e.map((j) => j.properties)));
+    await ctx.close();
+  }
+  // koszonooldal: semmi
+  {
+    const { ctx, p, ki } = await nyit(CIM, '/foglalas-ok-mi' + PARAM);
+    // a koszonooldalon nincs foglalasi link: beteszunk egyet, es arra kattintunk
+    const tt = await p.evaluate(() => {
+      const a = document.createElement('a');
+      a.href = 'https://medicalpiercing.salonic.hu/selectLocation'; a.target = '_blank'; a.textContent = 'teszt';
+      document.body.prepend(a); a.click();
+      return !!window.ttq;
+    });
+    await p.waitForTimeout(1500);
+    ok('TikTok InitiateCheckout: koszonooldalon (/foglalas-ok-mi) 0', tt && foglalasEsemenyek(ki).length === 0, `ttq: ${tt}, ${foglalasEsemenyek(ki).length} esemeny`);
+    await ctx.close();
+  }
+  // nem eles cim (mint a *.pages.dev): a merokod nem fut, semmi nem megy
+  {
+    const helyi = `http://127.0.0.1:${PORT}`;
+    const { ctx, p, ki } = await nyit(helyi, '/migren-piercing-uj');
+    await kattint(p, p.locator('a[href^="https://medicalpiercing.salonic.hu"]:visible').first());
+    ok('TikTok: nem eles cimen nincs pixel es nincs esemeny', !(await p.evaluate(() => !!window.ttq)) && !ki.some((x) => /tiktok/.test(x.u)), ki.filter((x) => /tiktok/.test(x.u)).length + ' TikTok-keres');
+    await ctx.close();
+  }
 }
 
 // 4. nincs Mosaic-azonosito a medicalpiercing kodjaban

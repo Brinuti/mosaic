@@ -1,6 +1,7 @@
 // Az eles oldal (www.medicalpiercing.hu) osszes oldala, a Wix sitemap.xml-jeibol.
 //
 //   node tools/oldalak.mjs --frissit   a sitemapokbol ujra osszeszedi a listat (tools/oldalak.txt)
+//   node tools/oldalak.mjs --utvonalak a Wix utvonaltablajabol a rejtett oldalakat is hozzaadja
 //
 // Minden oldalnak harom neve van:
 //   url   - a teljes, kodolt Wix-cim (ahonnan lementjuk)
@@ -61,6 +62,31 @@ if (process.argv[1] === fileURLToPath(import.meta.url) && process.argv.includes(
     const v = await fetch(url, { redirect: 'manual', headers: { 'user-agent': 'Mozilla/5.0 Chrome/131' } });
     console.log(v.status, k);
     if (v.status === 200) uj.push(url);
+  }
+  if (uj.length) fs.appendFileSync(LISTA, uj.join('\n') + '\n');
+  console.log(`${uj.length} uj oldal a listahoz adva`);
+}
+// --utvonalak: a Wix minden oldal HTML-jebe beleteszi a webhely utvonaltablajat ("routes": minden
+// statikus oldal, a rejtett, linkeletlen, noindex oldalak is, pl. akcios celoldalak,
+// koszonooldalak). Ami ezek kozul a Wixen 200-zal el (es nem a Wix 404-es lapja), a listara kerul.
+if (process.argv[1] === fileURLToPath(import.meta.url) && process.argv.includes('--utvonalak')) {
+  const html = await (await fetch(SITE + '/', { headers: { 'user-agent': 'Mozilla/5.0 Chrome/131' } })).text();
+  const i = html.indexOf('"routes":') + '"routes":'.length;
+  let mely = 0, j = i;
+  for (; j < html.length; j++) { if (html[j] === '{') mely++; else if (html[j] === '}' && --mely === 0) break; }
+  const routes = JSON.parse(html.slice(i, j + 1));
+  const ismert = new Set(oldalak().map((o) => o.kulcs));
+  const uj = [];
+  for (const [r, v] of Object.entries(routes)) {
+    if (v.type !== 'Static') continue;
+    const d = '/' + r.replace(/^\.\//, '');
+    if (ismert.has(kulcsbol(d))) continue;
+    const url = SITE + encodeURI(d);
+    const valasz = await fetch(url, { redirect: 'manual', headers: { 'user-agent': 'Mozilla/5.0 Chrome/131' } });
+    const cim = valasz.status === 200 ? ((await valasz.text()).match(/<title>([^<]*)/) || [])[1] || '' : '';
+    const jo = valasz.status === 200 && !/^404\b/.test(cim);
+    console.log(valasz.status, jo ? 'UJ ' : '-  ', d, cim.slice(0, 60));
+    if (jo) uj.push(url);
   }
   if (uj.length) fs.appendFileSync(LISTA, uj.join('\n') + '\n');
   console.log(`${uj.length} uj oldal a listahoz adva`);

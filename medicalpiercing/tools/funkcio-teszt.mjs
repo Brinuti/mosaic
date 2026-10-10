@@ -12,6 +12,8 @@ const ok = (nev, felt, info = '') => { console.log(`${felt ? 'OK  ' : 'HIBA'} ${
 
 for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 } }], ['mobil', devices['Pixel 5']]]) {
   const ctx = await b.newContext(opt);
+  // elonezeten / eles cimen az urlapok ne kuldjenek valodi levelet: a bekuldest itt valaszoljuk meg
+  if (!/\/\/(localhost|127\.0\.0\.1)[:/]/.test(HELYI)) await ctx.route('**/api/urlap', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }));
   const p = await ctx.newPage();
   const konzol = [];
   // csak a sajat kodunk hibai (a beagyazott kulso tartalmak - pl. az RTL-lejatszo - sajat hibait nem nezzuk)
@@ -104,10 +106,12 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
     await p.$$eval('form.wixui-form .wixui-text-input input', (l) => l.forEach((i) => {
       i.value = i.type === 'email' ? 'teszt@example.com' : i.type === 'number' ? '5' : i.type === 'tel' ? '+36301234567' : 'Teszt';
     }));
-    await p.$eval('form.wixui-form button.wixui-button', (b) => b.click());
-    await p.waitForTimeout(800);
-    const felirat = await p.$eval('form.wixui-form button.wixui-button', (b) => b.textContent);
-    ok(`${nezet}: urlap bekuldes`, /Köszönjük/.test(felirat), felirat);
+    // sikeres bekuldes utan a Wixhez hasonloan a /allas-ok koszonooldalra visz
+    await Promise.all([
+      p.waitForURL(/\/allas-ok$/, { timeout: 15000 }).catch(() => {}),
+      p.$eval('form.wixui-form button.wixui-button', (b) => b.click()),
+    ]);
+    ok(`${nezet}: urlap bekuldes -> /allas-ok`, /\/allas-ok$/.test(p.url()), p.url());
   } else ok(`${nezet}: urlap megvan`, false);
 
   // 7. Pro Gallery (fooldal, belyegkepes): nyil, belyegkep, teljes kepernyo (a Wixen merve)
@@ -186,10 +190,12 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   await p.locator('.mp-nap:not(.mp-nap-mas)').first().click();
   await ku.locator('input[aria-label="Melyik városban voltál?"]').fill('Budapest');
   await ku.locator('textarea').fill('Teszt');
-  await ku.locator('[data-hook="submit-button"]').click();
-  await p.waitForTimeout(800);
-  const kf = await ku.locator('[data-hook="submit-button"]').textContent();
-  ok(`${nezet}: kontroll-urlap bekuldes`, /Köszönjük/.test(kf), kf);
+  // sikeres bekuldes utan a Wixhez hasonloan a /kontroll-ok cimre visz, onnan 301 -> /kontroll-xyz
+  await Promise.all([
+    p.waitForURL(/\/kontroll-xyz$/, { timeout: 15000 }).catch(() => {}),
+    ku.locator('[data-hook="submit-button"]').click(),
+  ]);
+  ok(`${nezet}: kontroll-urlap bekuldes -> /kontroll-xyz`, /\/kontroll-xyz$/.test(p.url()), p.url());
 
   // 12. /kontroll orszagkod-valaszto: 238 orszag, a magyar kijelolve; Ausztria valasztasa utan
   // a gomb zaszloja osztrak, a lista bezar
