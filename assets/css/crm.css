@@ -195,3 +195,7 @@ input.kod { text-align: center; letter-spacing: .5em; font-size: 1.6rem; font-fa
 .kk-mini img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 6px; background: var(--krem2); }
 .kk-beerkezo { margin: 12px 0; padding: 10px; background: var(--krem2); border-radius: 8px; }
 .kk-naplo { list-style: none; padding: 0; margin: 8px 0 0; font-size: .9rem; }
+.oldalsav details.egyeb { margin-top: 14px; border-top: 1px solid #ffffff22; padding-top: 6px; }
+.oldalsav details.egyeb summary { cursor: pointer; color: #8fa8a3; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; padding: 10px 12px; min-height: 44px; display: flex; align-items: center; }
+.oldalsav details.egyeb a { font-size: .9rem; opacity: .9; }
+.gombsor.gyors { align-items: center; margin: 4px 0 12px; }
