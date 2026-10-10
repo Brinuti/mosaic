@@ -13,6 +13,7 @@
 //   booking_start    a foglalas idopontja (epoch mp); rescheduled: eredeti_start + uj_start
 //   service_type     first_hair | followup_hair | camera_assessment | legacy_combo
 //   treatment_index  1..11 (documentation_final / booking_completed)
+import { MARKETING } from '../constants.js';
 //   lejarat, eredeti_lejarat (package_*), kontroll_datum (control_due_passed), template_key (message_sent), pont / negativ (survey_submitted)
 //   allapot          pillanatkep: { consent_email, consent_sms, email_unsubscribe, sms_optout, next_active_booking, complaint_open }
 //                    A MARKETING jobok csak akkor kerulnek letrehozasra, ha az adott csatornara consent van (es nincs masik foglalas);
@@ -63,6 +64,7 @@ function contextId(u, e, kezdet) {
 
 /** Marketing job csak consenttel, es ha az enqueue-kori pillanatkep szerint nincs masik foglalas / nyitott panasz. */
 function marketingMehet(u, snap) {
+  if (!MARKETING.be) return false;   // az indulaskor nincs marketing (tulajdonosi dontes)
   if (!snap) return false;
   const consent = u.csatorna === 'sms' ? snap.consent_sms === true && snap.sms_optout !== true : snap.consent_email === true && snap.email_unsubscribe !== true;
   if (!consent) return false;

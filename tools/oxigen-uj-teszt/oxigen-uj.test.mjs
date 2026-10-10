@@ -293,6 +293,8 @@ describe('problemakartyak, hozzajarulas, meres', () => {
 
   test('marketing-hozzajarulas: e-mail es SMS kulon, ELORE NEM KIPIPALT, a valtozas dataLayer-be + data- hookba megy', async () => {
     const { p, ctx } = await nyit();
+    assert.equal(await p.locator('#hozzajarulas').isHidden(), true, 'a marketing-hozzajarulas egyelore elrejtve (nincs marketing)');
+    await p.evaluate(() => { document.getElementById('hozzajarulas').hidden = false; });
     const allapot = await p.$$eval('input[data-consent]', (l) => l.map((i) => [i.dataset.consent, i.checked]));
     assert.deepEqual(allapot, [['marketing_email', false], ['marketing_sms', false]]);
     await p.check('input[data-consent="marketing_sms"]');
@@ -308,6 +310,7 @@ describe('problemakartyak, hozzajarulas, meres', () => {
 
   test('hozzajarulas rogzitese: a pipa utan e-mail / telefon mezo, a /api/crm/public/hozzajarulas-ra megy; a meresbe nem kerul szemelyes adat; visszavonas is elmegy', async () => {
     const { p, ctx } = await nyit();
+    await p.evaluate(() => { document.getElementById('hozzajarulas').hidden = false; });
     const kuldott = [];
     await p.route('**/api/crm/public/hozzajarulas', async (route) => { kuldott.push(JSON.parse(route.request().postData())); await route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }); });
     assert.equal(await p.locator('#hozzajarulas-kapcsolat').isHidden(), true, 'pipa nelkul nincs mezo');

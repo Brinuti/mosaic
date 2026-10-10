@@ -1,5 +1,7 @@
 // Fixture-ok az uzenetmotor tesztjeihez (nincs valodi vendeg-adat).
 import KATALOG from '../lib/messages/katalog.js';
+import { MARKETING } from '../lib/constants.js';
+MARKETING.be = true;   // a tesztek a marketing-uzenetek logikajat is probaljak (eles alapertek: ki)
 import { valtozokEpit } from '../lib/messages/valtozok.js';
 import { helyiEpoch } from '../../netlify/lib/lifecycle/ido.js';
 

@@ -2,7 +2,8 @@
 // Egy Salonic-fiok: 'mosaic-oxigen' (alap). A ketfiokos tesztekhez a masodik fiok neve 'teszt-masodik-fiok'.
 import { ujAdatbazis } from '../lib/testdb.js';
 import { helyiEpoch } from '../lib/db.js';
-import { FIOK_ALAP, MASODPERC } from '../lib/constants.js';
+import { FIOK_ALAP, MASODPERC, MARKETING } from '../lib/constants.js';
+MARKETING.be = true;   // a tesztek a marketing-uzenetek logikajat is probaljak (eles alapertek: ki; lasd marketing-kapcsolo.test.mjs)
 import { ingestBookingEvent, igazolCompleted } from '../lib/booking.js';
 
 export const FIOK_2 = 'teszt-masodik-fiok';
