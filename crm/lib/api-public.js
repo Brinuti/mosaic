@@ -61,6 +61,13 @@ export async function fuggoHozzajarulasMent(db, { email, telefon, emailMarketing
   await tranzakcio(db, ut);
 }
 
+/** a landingen rogzitett, meg foglalashoz nem kapcsolt hozzajarulas visszavonasa (a vendeg kivette a pipat): a fuggo bejegyzes torlese */
+export async function fuggoHozzajarulasTorol(db, { email, telefon }) {
+  const ut = [];
+  for (const [fajta, ertek] of [['e', email], ['t', telefon]]) if (ertek) ut.push(keszit(db, 'DELETE FROM beallitasok WHERE kulcs = ?1', await pendingKulcs(fajta, ertek)));
+  if (ut.length) await tranzakcio(db, ut);
+}
+
 /**
  * A foglalas beerkezese utan hivando (az /ingest vegpont es az ingest.js): a landingen tett marketing-hozzajarulas a vendeghez kapcsol az e-mail /
  * telefon alapjan. A hozzajarulas SOHA nem elofeltetel: ha nincs fuggo bejegyzes, nem tortenik semmi. Visszaad: a rogzitett csatornak.
@@ -264,6 +271,11 @@ export const utak = [
     const smsMk = logikai(t, 'sms_marketing', { kotelezo: true });
     const k = t.kapcsolat && typeof t.kapcsolat === 'object' && !Array.isArray(t.kapcsolat) ? t.kapcsolat : {};
     const szolgaltatas = szoveges(t, 'selected_service', { max: 60 });
+    // visszavont csatorna: a mar rogzitett (de foglalashoz meg nem kapcsolt) fuggo bejegyzes torlese; ha nincs, nem tortenik semmi
+    {
+      const e0 = normEmail(k.email); const t0 = normTelefon(k.telefon);
+      await fuggoHozzajarulasTorol(c.db, { email: emailMk ? null : e0, telefon: smsMk ? null : t0 });
+    }
     if (emailMk || smsMk) {
       const verzio = szoveges(t, 'szoveg_verzio', { kotelezo: true, max: 60, min: 1 });
       const email = normEmail(k.email);

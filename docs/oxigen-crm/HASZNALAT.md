@@ -1,7 +1,7 @@
 # MOSAIC CRM - hasznalat roviden (kezelo, recepcio, szalonvezeto)
 
 ## Menuk (egyszerusitett)
-- **Ma** - a mai vendegek. Egy vendegre koppintva a vezetett folyamat indul: igazolas -> hajkamera-kep -> megfigyeles/cel/ritmus/rutin -> szemelyes uzenet -> A5 PDF es kuldes. (Recepcio / szalonvezeto: a mai foglalasok listaja.)
+- **Ma** - a mai vendegek (egy kepernyo, a regi munkalista helyett; kartyakon: igazolas, kerdoiv, jelzes). A kartyan: Kerdoiv-link, Nem jelent meg. Egy vendegre koppintva a vezetett folyamat indul: igazolas -> hajkamera-kep -> megfigyeles/cel/ritmus/rutin -> szemelyes uzenet -> A5 PDF es kuldes. (Recepcio / szalonvezeto: a mai foglalasok listaja.)
 - **Vendegek** - kereses, vendeglap fulekkel (attekintes, foglalasok, kura, berlet, uzenetek, dokumentumok, panasz, hozzajarulas) es gyorsgombokkal (Kuraterv, Kepek, Berlet, Beszamitas, Hozzajarulas, Zaro dokumentum).
 - **Uzenetek** - a vendegeknek kimeno uzenetek sablonjai, elonezet, naplo. Jelenleg DRY-RUN: valodi level / SMS nem megy.
 - **Kepkuldes (tablet)** - a hajkameras tableten a kepek feltoltese vendeg nelkul (Galeria -> Megosztas -> MOSAIC CRM). A kezelo a telefonon a Ma folyamatban rendeli a vendeghez.

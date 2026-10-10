@@ -38,3 +38,21 @@ test('K02 CRM_DB nelkul / hibas CRM-mel a lifecycle valtozatlanul mukodik', asyn
   const hibas = await (await api(kerees({ ...level(uuid.replace('1111', '2222'), 'b@example.invalid') }, kulcs), { ...kozos, LIFECYCLE_DB: d1(), CRM_DB: rossz })).json();
   assert.equal(hibas.ok, true);
 });
+
+test('K03 a landingen elore rogzitett marketing-hozzajarulas a beerkezo foglalas vendegehez kapcsolodik; visszavont nem', async () => {
+  const { fuggoHozzajarulasMent, fuggoHozzajarulasTorol } = await import('../../crm/lib/api-public.js');
+  const kulcs = 'tesztkulcs';
+  const crm = await ujAdatbazis();
+  const env = { LIFECYCLE_DB: d1(), CRM_DB: crm, LIFECYCLE_KULCS_HASH: await hash(kulcs), LIFECYCLE_MOD: 'ki', SMTP_PASS: '' };
+  const most = Math.floor(Date.now() / 1000);
+  await fuggoHozzajarulasMent(crm, { email: 'demo.oxi@example.invalid', telefon: null, emailMarketing: true, smsMarketing: false, szovegVerzio: 'tervezet-teszt', szolgaltatas: 'first_hair', now: most });
+  await fuggoHozzajarulasMent(crm, { email: 'visszavont@example.invalid', telefon: null, emailMarketing: true, smsMarketing: false, szovegVerzio: 'tervezet-teszt', szolgaltatas: 'first_hair', now: most });
+  await fuggoHozzajarulasTorol(crm, { email: 'visszavont@example.invalid', telefon: null });
+  const v = await (await api(kerees({ ...level('3a1b2c3d-4e5f-4a61-8b72-93a4b5c6d7e8', 'demo.oxi@example.invalid'), most }, kulcs), env)).json();
+  assert.equal(v.ok, true);
+  const sor = await crm.prepare("SELECT COUNT(*) AS n FROM consent_event WHERE channel = 'email_marketing'").first();
+  assert.equal(sor.n, 1, 'az elore rogzitett hozzajarulas a vendeghez kerult');
+  const v2 = await (await api(kerees({ ...level('4b2c3d4e-5f60-4b72-9c83-a4b5c6d7e8f9', 'visszavont@example.invalid'), most }, kulcs), env)).json();
+  assert.equal(v2.ok, true);
+  assert.equal((await crm.prepare("SELECT COUNT(*) AS n FROM consent_event WHERE channel = 'email_marketing'").first()).n, 1, 'a visszavont hozzajarulas nem rogzult');
+});

@@ -422,6 +422,12 @@
           <label class="jelolo"><input type="checkbox" name="marketing_email" data-consent="marketing_email"><span>Szeretnék e-mailben visszafoglalási és bérletajánló üzeneteket kapni a MOSAIC-tól.</span></label>
           <label class="jelolo"><input type="checkbox" name="marketing_sms" data-consent="marketing_sms"><span>Szeretnék SMS-ben visszafoglalási és bérletajánló üzeneteket kapni a MOSAIC-tól.</span></label>
           <p class="hozzajarulas-megj">A két hozzájárulás külön és önkéntes, bármikor visszavonható. A foglaláshoz és az állapotfelméréshez szükséges adatkezelés nem függ tőlük.</p>
+          <div class="hozzajarulas-kapcsolat" id="hozzajarulas-kapcsolat" hidden>
+            <label class="hj-mezo"><span>E-mail-cím</span><input type="email" id="hj-email" name="hj_email" autocomplete="email" inputmode="email" placeholder="ugyanaz, mint a foglalásnál"></label>
+            <label class="hj-mezo"><span>Telefonszám</span><input type="tel" id="hj-tel" name="hj_tel" autocomplete="tel" inputmode="tel" placeholder="ugyanaz, mint a foglalásnál"></label>
+            <p class="hozzajarulas-megj">Ezt az adatot csak a hozzájárulás összekapcsolására használjuk a foglalásoddal. A foglalás ettől független.</p>
+            <p class="hj-allapot" id="hj-allapot" role="status" aria-live="polite"></p>
+          </div>
         </fieldset>
         <p class="fo-fizetes">A kezelést és a felmérést a szalonban fizeted, a kezelés után. Online fizetés nincs.</p>
       </aside>
