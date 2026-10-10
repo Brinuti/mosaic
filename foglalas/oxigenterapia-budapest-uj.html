@@ -415,7 +415,8 @@
       <aside class="foglalo-oldal" aria-label="A foglalás beállításai">
         <p class="fo-valasztott" id="fo-valasztott" role="status" aria-live="polite">Kiválasztott szolgáltatás: <b id="fo-szolg">Első kezelés állapotfelméréssel · <span data-perc="first_hair">80&nbsp;perc</span> · <span data-ar="first_hair">29&nbsp;900&nbsp;Ft</span></b></p>
         <p class="fo-panasz" id="fo-panasz" hidden></p>
-        <fieldset class="hozzajarulas" id="hozzajarulas" data-consent-verzio="tervezet-2026-10-09">
+        <!-- A marketing-hozzajarulas egyelore ELREJTVE (tulajdonosi dontes, 2026-10-10: az indulaskor nincs marketing uzenet, csak a kezeles koruli). Visszakapcsolas: a "hidden" attributum eltavolitasa + a CRM marketing-kapcsolo (crm/lib/constants.js MARKETING). -->
+        <fieldset class="hozzajarulas" id="hozzajarulas" data-consent-verzio="tervezet-2026-10-09" hidden>
           <legend>Marketing-hozzájárulás <span>(nem kötelező)</span></legend>
           <!-- REQUIRES_VERIFICATION: a hozzajarulas szovegverzioja es az adatkezelesi tajekoztato jogi jovahagyasra var; csak UI + data- hook + dataLayer: a mentes a CRM-ben kesobb keszul
                (consent_marketing_email / consent_marketing_sms, csatornankent kulon ertek, idobelyeg + szovegverzio). ELORE NEM KIPIPALT. A foglalashoz / felmereshez szukseges adatkezeles nem marketing-checkbox. -->

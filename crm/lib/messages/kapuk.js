@@ -13,6 +13,7 @@
 //
 // kontextus: { most (epoch mp), esedekes (epoch mp, a job tervezett ideje), booking_start (a job-hoz tartozo, utemezeskori idopont) }
 import { helyi, helyiEpoch } from '../../../netlify/lib/lifecycle/ido.js';
+import { MARKETING } from '../constants.js';
 
 export const EREDMENY = Object.freeze({
   KULDHETO: 'SENT-ready',
@@ -167,6 +168,7 @@ export function kapuErtekel(uzenet, vendegAllapot, kontextus = {}) {
 
   // 2. hard szabalyok, a katalogus gate-listajatol fuggetlenul (vedelem a rosszul szerkesztett katalogus ellen)
   if (uzenet.csoport === 'marketing') {
+    if (!MARKETING.be) kod.kihagy.push('marketing_kikapcsolva');   // az indulaskor nincs marketing (tulajdonosi dontes): mar sorban allo jobnal is
     const ujcsatorna = uzenet.csatorna === 'sms' ? KAPUK.marketing_consent_sms : KAPUK.marketing_consent_email;
     const r = ujcsatorna(a);
     if (r) kod.kihagy.push(r.kod);

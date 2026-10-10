@@ -101,3 +101,9 @@ export const REQUIRES_VERIFICATION = Object.freeze([
   'gyartoi 2 millio kezeles / 95% definicio',
   'marketing-hozzajarulas jogi szovegverzioi',
 ]);
+
+/**
+ * Marketing-kapcsolo (a tulajdonos dontese, 2026-10-10): az indulaskor MARKETING uzenet (visszahivas, berletajanlo, ujrafoglalas) NEM megy ki, csak a kezeles koruli
+ * (tranzakcios, gondozasi, belso) uzenetek. Bekapcsolni csak a tulajdonos kulon, kifejezett kerese utan (be: true); a teszteknel a fixture allitja.
+ */
+export const MARKETING = { be: false };

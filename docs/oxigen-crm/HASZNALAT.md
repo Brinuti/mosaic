@@ -18,3 +18,6 @@
 
 ## Mi nem megy ki mostantol sem
 A valodi kuldes (level / SMS) csak a tulajdonos kulon "GO"-jara kapcsolhato be. A meglevo eles oxigen levelsorozathoz a CRM nem nyul.
+
+## Marketing uzenetek
+Indulaskor marketing (visszahivo, berletajanlo, ujrafoglalasi) uzenet NEM megy ki: csak a kezeles koruli uzenetek (tranzakcios, gondozasi, belso). A kapcsolo a crm/lib/constants.js MARKETING objektuma (alapbol ki); bekapcsolni csak a tulajdonos kulon kereseere. Az uj landing hozzajarulas-blokkja is el van rejtve.
