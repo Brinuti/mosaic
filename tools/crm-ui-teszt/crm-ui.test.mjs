@@ -64,12 +64,12 @@ test('belepes-kepernyo: e-mail + kod, demo gombok csak elerheto /auth/demo melle
 
 test('demo-belepes minden szerepkorrel: menu szerepkor szerint, uzemmod-jelzo, demo-figyelmeztetes', async () => {
   const vart = {
-    therapist: ['kezeles', 'dashboard', 'kepkuldo', 'munkalista', 'vendegek', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'kuldes', 'hozzajarulas', 'osszevonas'],
-    clinical_lead: ['kezeles', 'dashboard', 'kepkuldo', 'munkalista', 'vendegek', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'kuldes', 'hozzajarulas', 'osszevonas'],
-    reception: ['munkalista', 'vendegek', 'berletek', 'credit', 'kuldes', 'hozzajarulas'],
-    salon_manager: ['dashboard', 'munkalista', 'vendegek', 'berletek', 'credit', 'panasz', 'osszevonas', 'mutatok', 'beallitasok'],
+    therapist: ['kezeles', 'vendegek', 'kuldes', 'kepkuldo', 'munkalista', 'dashboard', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'hozzajarulas', 'osszevonas'],
+    clinical_lead: ['kezeles', 'vendegek', 'kuldes', 'kepkuldo', 'munkalista', 'dashboard', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'hozzajarulas', 'osszevonas'],
+    reception: ['munkalista', 'vendegek', 'kuldes', 'berletek', 'credit', 'hozzajarulas'],
+    salon_manager: ['munkalista', 'vendegek', 'dashboard', 'mutatok', 'beallitasok', 'berletek', 'credit', 'panasz', 'osszevonas'],
     marketing: ['dashboard', 'kuldes', 'mutatok'],
-    admin: ['dashboard', 'vendegek', 'kuldes', 'mutatok', 'beallitasok'],
+    admin: ['vendegek', 'dashboard', 'kuldes', 'mutatok', 'beallitasok'],
   };
   for (const [sz, menu] of Object.entries(vart)) {
     const { ctx, p } = await ujOldal();
@@ -340,6 +340,20 @@ test('megosztas-celpont (service worker): a Megosztas utjan erkezett kep a belep
   await p.waitForSelector('.kk-naplo li:has-text("elküldve")');
   await p.waitForFunction(() => document.querySelectorAll('.kk-mini').length >= 1);
   assert.equal(await p.evaluate(async () => (await (await caches.open('crm-megosztas')).keys()).length), 0, 'a feltoltes utan a cache kiurul');
+  await ctx.close();
+});
+
+test('egyszerusitett menu: a kezelonek 4 fo menu, a tobbi az Egyebek alatt; a vendeglapon gyorsgombok', async () => {
+  const { ctx, p } = await ujOldal({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  await belep(p, 'therapist');
+  assert.deepEqual(await p.$$eval('.oldalsav > a', (as) => as.map((a) => a.textContent)), ['Ma', 'Vendégek', 'Üzenetek', 'Képküldés (tablet)']);
+  assert.equal(await p.locator('.oldalsav details.egyeb').count(), 1);
+  await megy(p, `#/vendegek/${S.ids.dora}`);
+  await p.waitForSelector('.gombsor.gyors');
+  const gyors = await p.$$eval('.gombsor.gyors a', (as) => as.map((a) => a.textContent));
+  assert.ok(gyors.includes('Képek') && gyors.includes('Bérlet') && gyors.includes('Hozzájárulás'));
+  await p.click('.gombsor.gyors a:has-text("Képek")');
+  await p.waitForSelector('.kep-doboz');
   await ctx.close();
 });
 

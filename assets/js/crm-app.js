@@ -11,23 +11,26 @@ const MIND = Object.keys(SZEREPEK);
 
 // A menu a szerepkor-matrix (crm/lib/rbac.js) szerint; a backend ugyis ellenoriz minden vegponton.
 export const NAV = [
-  { kulcs: 'kezeles', szam: 16, cim: 'Kezelés közben', modul: 'kezeles', szerepek: KEZELOI, csoport: 'Napi munka' },   // telefonra szabott, vezetett folyamat
-  { kulcs: 'dashboard', szam: 1, cim: 'Áttekintés', modul: 'dashboard', szerepek: [...KEZELOI, 'salon_manager', 'marketing', 'admin'], csoport: 'Napi munka' },   // recepcio: nincs dashboard-jog (assessment.read / stats_aggregate.read)
-  { kulcs: 'kepkuldo', szam: 17, cim: 'Képküldés (tablet)', modul: 'kepkuldo', szerepek: KEZELOI },
-  { kulcs: 'munkalista', szam: 3, cim: 'Napi munkalista', modul: 'munkalista', szerepek: [...KEZELOI, 'reception', 'salon_manager'], csoport: 'Napi munka' },
-  { kulcs: 'vendegek', szam: 2, cim: 'Vendégkereső', modul: 'vendeg', szerepek: ['therapist', 'clinical_lead', 'reception', 'salon_manager', 'admin'] },
-  { kulcs: 'felmero', szam: 4, cim: 'Állapotfelmérő', modul: 'felmero', szerepek: KEZELOI, csoport: 'Kezelés' },
-  { kulcs: 'kuraterv', szam: 5, cim: 'Kúraterv (A5)', modul: 'kuraterv', szerepek: KEZELOI },
-  { kulcs: 'kepek', szam: 6, cim: 'Kameraképek', modul: 'kepek', szerepek: KEZELOI },
-  { kulcs: 'kurazaro', szam: 12, cim: 'Kúrazáró dokumentum', modul: 'kurazaro', szerepek: KEZELOI },
-  { kulcs: 'berletek', szam: 7, cim: 'Bérletek és ajándékok', modul: 'berletek', szerepek: [...KEZELOI, 'reception', 'salon_manager'], csoport: 'Kereskedelem' },
-  { kulcs: 'credit', szam: 8, cim: 'Hajkamera-beszámítás', modul: 'credit', szerepek: [...KEZELOI, 'reception', 'salon_manager'] },
-  { kulcs: 'panasz', szam: 11, cim: 'Elégedettség és panasz', modul: 'panasz', szerepek: [...KEZELOI, 'salon_manager'], csoport: 'Vendégkapcsolat' },
-  { kulcs: 'kuldes', szam: 9, cim: 'Küldési vezérlő', modul: 'kuldes', szerepek: [...KEZELOI, 'reception', 'marketing', 'admin'] },
-  { kulcs: 'hozzajarulas', szam: 10, cim: 'Hozzájárulások', modul: 'hozzajarulas', szerepek: [...KEZELOI, 'reception'] },
-  { kulcs: 'osszevonas', szam: 13, cim: 'Összevonási sor', modul: 'osszevonas', szerepek: [...KEZELOI, 'salon_manager'] },
-  { kulcs: 'mutatok', szam: 14, cim: 'Mutatók', modul: 'mutatok', szerepek: ['salon_manager', 'marketing', 'admin'], csoport: 'Vezetés' },
-  { kulcs: 'beallitasok', szam: 15, cim: 'Hozzáférés és beállítások', modul: 'beallitasok', szerepek: ['salon_manager', 'admin'] },
+  // fo: a fo menuben latszik (true / fuggveny); a tobbi az osszecsukhato "Egyebek" alatt marad (minden kepernyo elerheto, a vendeglapon pedig gyorsgombok vannak)
+  { kulcs: 'kezeles', szam: 16, cim: 'Ma', modul: 'kezeles', szerepek: KEZELOI, fo: true },   // telefonra szabott, vezetett folyamat
+  { kulcs: 'munkalista', szam: 3, cim: 'Ma', modul: 'munkalista', szerepek: ['reception', 'salon_manager'], fo: true },
+  { kulcs: 'vendegek', szam: 2, cim: 'Vendégek', modul: 'vendeg', szerepek: ['therapist', 'clinical_lead', 'reception', 'salon_manager', 'admin'], fo: true },
+  { kulcs: 'dashboard', szam: 1, cim: 'Áttekintés', modul: 'dashboard', szerepek: ['salon_manager', 'marketing', 'admin'], fo: true },
+  { kulcs: 'kuldes', szam: 9, cim: 'Üzenetek', modul: 'kuldes', szerepek: [...KEZELOI, 'reception', 'marketing', 'admin'], fo: true },
+  { kulcs: 'mutatok', szam: 14, cim: 'Mutatók', modul: 'mutatok', szerepek: ['salon_manager', 'marketing', 'admin'], fo: true },
+  { kulcs: 'kepkuldo', szam: 17, cim: 'Képküldés (tablet)', modul: 'kepkuldo', szerepek: KEZELOI, fo: true },
+  { kulcs: 'beallitasok', szam: 15, cim: 'Beállítások', modul: 'beallitasok', szerepek: ['salon_manager', 'admin'], fo: true },
+  { kulcs: 'munkalista', szam: 3, cim: 'Napi munkalista (táblázat)', modul: 'munkalista', szerepek: KEZELOI, fo: false },
+  { kulcs: 'dashboard', szam: 1, cim: 'Áttekintés', modul: 'dashboard', szerepek: KEZELOI, fo: false },
+  { kulcs: 'felmero', szam: 4, cim: 'Állapotfelmérő', modul: 'felmero', szerepek: KEZELOI, fo: false },
+  { kulcs: 'kuraterv', szam: 5, cim: 'Kúraterv (A5)', modul: 'kuraterv', szerepek: KEZELOI, fo: false },
+  { kulcs: 'kepek', szam: 6, cim: 'Kameraképek', modul: 'kepek', szerepek: KEZELOI, fo: false },
+  { kulcs: 'kurazaro', szam: 12, cim: 'Kúrazáró dokumentum', modul: 'kurazaro', szerepek: KEZELOI, fo: false },
+  { kulcs: 'berletek', szam: 7, cim: 'Bérletek és ajándékok', modul: 'berletek', szerepek: [...KEZELOI, 'reception', 'salon_manager'], fo: false },
+  { kulcs: 'credit', szam: 8, cim: 'Hajkamera-beszámítás', modul: 'credit', szerepek: [...KEZELOI, 'reception', 'salon_manager'], fo: false },
+  { kulcs: 'panasz', szam: 11, cim: 'Elégedettség és panasz', modul: 'panasz', szerepek: [...KEZELOI, 'salon_manager'], fo: false },
+  { kulcs: 'hozzajarulas', szam: 10, cim: 'Hozzájárulások', modul: 'hozzajarulas', szerepek: [...KEZELOI, 'reception'], fo: false },
+  { kulcs: 'osszevonas', szam: 13, cim: 'Összevonási sor', modul: 'osszevonas', szerepek: [...KEZELOI, 'salon_manager'], fo: false },
 ];
 
 const all = { felhasznalo: null, uzemmod: null, demo: false };
@@ -119,12 +122,12 @@ function keretEpit() {
     all.felhasznalo = null; csrfBeallit(null); tarol.ir('crm_demo', null); location.hash = ''; belepesNezet();
   }));
   const szerepNev = (f.szerepek || []).map((r) => SZEREPEK[r] || r).join(', ') || 'nincs szerepkör';
-  let csoport = null;
-  const linkek = [];
-  for (const n of NAV.filter((x) => van(x.szerepek))) {
-    if (n.csoport && n.csoport !== csoport) { csoport = n.csoport; linkek.push(h('div', { class: 'csoport' }, n.csoport)); }
-    linkek.push(h('a', { href: `#/${n.kulcs}`, 'data-nav': n.kulcs, onclick: () => menuValt(false) }, h('span', { class: 'sz', 'aria-hidden': 'true' }, n.szam), n.cim));
-  }
+  const lathato = NAV.filter((x) => van(x.szerepek));
+  const fo_ = (x) => (typeof x.fo === 'function' ? x.fo(van) : !!x.fo);
+  const link = (n) => h('a', { href: `#/${n.kulcs}`, 'data-nav': n.kulcs, onclick: () => menuValt(false) }, n.cim);
+  const linkek = lathato.filter(fo_).map(link);
+  const egyebek = lathato.filter((x) => !fo_(x));
+  if (egyebek.length) linkek.push(h('details', { class: 'egyeb' }, h('summary', null, 'Egyebek'), egyebek.map(link)));
   oldalsavEl = h('nav', { class: 'oldalsav', id: 'oldalsav', 'aria-label': 'Fő navigáció' }, linkek);
   fo = h('main', { class: 'fo', id: 'fo', tabindex: '-1', onclick: () => { if (oldalsavEl && oldalsavEl.classList.contains('nyitva')) menuValt(false); } });
   const demoSav = all.demo ? h('div', { class: 'demo-sav', role: 'note' }, 'DEMO adatok és demo fiók: a vendégek és az üzenetek nem valósak.') : null;
@@ -160,7 +163,7 @@ let navSzam = 0;
 async function utvalaszt() {
   const nyers = location.hash.replace(/^#\/?/, '');
   const [kulcs, qsz = ''] = nyers.split('?');
-  const nav = NAV.find((n) => n.kulcs === (kulcs.split('/')[0] || ''));
+  const nav = NAV.find((n) => n.kulcs === (kulcs.split('/')[0] || '') && van(n.szerepek)) || NAV.find((n) => n.kulcs === (kulcs.split('/')[0] || ''));
   const alfa = kulcs.split('/').slice(1);
   const sz = ++navSzam;
   for (const a of oldalsavEl.querySelectorAll('a')) { if (nav && a.dataset.nav === nav.kulcs) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); }

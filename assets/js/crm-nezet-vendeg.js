@@ -94,6 +94,11 @@ async function profil(ctx, id) {
   if (kezeloi) f.push(['Képek', (c) => tolt(c, lista(p.kepek).length
     ? h('div', null, h('p', null, `${lista(p.kepek).length} kamerakép tartozik a vendéghez (megtekintésük naplózott).`), h('div', { class: 'gombsor' }, ...lista(p.kepek).map((k) => h('span', { class: 'jelveny jelveny-info' }, `${k.alkalom}. alkalom`)), h('a', { class: 'gomb', href: `#/kepek/${encodeURIComponent(vid)}` }, 'Megnyitás a Kameraképek nézetben')))
     : h('div', null, uresAllapot('Még nincs feltöltött kamerakép.'), h('p', { class: 'kozep' }, h('a', { class: 'gomb', href: `#/kepek/${encodeURIComponent(vid)}` }, 'Kameraképek megnyitása'))))]);
+  const gyors = [
+    ['Kúraterv', 'kuraterv', ['therapist', 'clinical_lead'], null], ['Képek', 'kepek', ['therapist', 'clinical_lead'], vid], ['Bérlet', 'berletek', ['therapist', 'clinical_lead', 'reception', 'salon_manager'], vid],
+    ['Beszámítás', 'credit', ['therapist', 'clinical_lead', 'reception', 'salon_manager'], vid], ['Hozzájárulás', 'hozzajarulas', ['therapist', 'clinical_lead', 'reception'], vid], ['Záró dokumentum', 'kurazaro', ['therapist', 'clinical_lead'], vid],
+  ].filter(([, , jog]) => ctx.van(jog)).map(([cim, ut, , az]) => h('a', { class: 'gomb gomb-kicsi', href: `#/${ut}${az ? `/${encodeURIComponent(az)}` : ''}` }, cim));
+  fej.push(gyors.length ? h('div', { class: 'gombsor gyors' }, h('span', { class: 'halvany kicsi' }, 'Gyorsgombok:'), gyors) : null);
   tolt(cel, ...fej, fulek(f.map(([cim, tolto]) => ({ cim, tolt: tolto }))));
 }
 
