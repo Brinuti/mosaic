@@ -150,8 +150,13 @@ export async function ga4Csere(db, ido) {
     foglalas_utolso_sikeres_elotte: await elso(FOGL + ' AND frissitve < ?1', 'DESC'), foglalas_elso_sikeres_utana: await elso(FOGL + ' AND frissitve >= ?1', 'ASC'),
   };
   const veg = out.elso_sikeres_utana ? out.elso_sikeres_utana.kuldve : null;
-  const h = await db.prepare("SELECT COUNT(*) n FROM meres_kuldes WHERE platform = 'ga4' AND allapot IN ('hiba','nincs_hitelesites','tiltva') AND frissitve >= ?1 AND (?2 IS NULL OR frissitve <= ?2)").bind(ido, veg).first();
-  out.sikertelen_ga4_cella_a_csere_utan_az_elso_sikeresig = h ? h.n : 0;
+  // a csere utani, az elso sikeresig kelt NEM sikeres GA4 cellak: BUKAS csak az, ami a #122 szerint 'hiany' (hiba, nincs_hitelesites, vedelmi tiltva, veszkapcsolo, analytics-hozzajarulas mellett hianyzo client_id ...);
+  // a JOGOS 0 (pl. ernyo-esemeny, analytics-hozzajarulas nelkuli client_id-hiany) nem bukas, kulon szamolva
+  const { results: nemSikeres } = await db.prepare("SELECT k.allapot, k.indok, e.hozz FROM meres_kuldes k LEFT JOIN meres_erkezes e ON e.source_id = k.source_id WHERE k.platform = 'ga4' AND k.allapot <> 'elkuldve' AND k.frissitve >= ?1 AND (?2 IS NULL OR k.frissitve <= ?2)").bind(ido, veg).all();
+  let bukas = 0, jogos0 = 0;
+  for (const r of nemSikeres || []) { const c = cellaOsztaly({ allapot: r.allapot, indok: r.indok }, { hozz: r.hozz ? jsonVagyNull(r.hozz) : null }); if (c.osztaly === 'hiany') bukas++; else if (c.osztaly === 'jogos_0') jogos0++; }
+  out.sikertelen_ga4_cella_a_csere_utan_az_elso_sikeresig = bukas;
+  out.jogos_0_ga4_cella_a_csere_utan_az_elso_sikeresig = jogos0;
   return out;
 }
 

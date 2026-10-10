@@ -180,3 +180,34 @@ test('DECISION #122: GA4 client_id nelkul a FOGLALASKORI analytics-hozzajarulas 
   // CSV: az uj oszlopok
   const csv = egyeztetoCsv(r.sorok).split('\n'); assert.match(csv[0], /;hozz_ana;ga4_client_id;ga4_csere_jelolo;jelzesek$/);
 });
+
+test('GA4 csere utani BUKASOK szama a #122 szerint: a jogos 0 (analytics-hozzajarulas nelkuli client_id-hiany, ernyo) NEM bukas; hiba / vedelmi tiltva / analytics-hozzajarulas melletti client_id-hiany / pillanatkep nelkuli client_id-hiany BUKAS', async () => {
+  const D1 = d1(); await egyeztetoSorok(D1, { tol: T0, ig: T1 }); const { db } = D1;
+  const GA = 'nincs GA4 client_id (nincs _ga suti): a Measurement Protocol client_id nelkul nem kuldheto';
+  const erk = (id, hozz) => db.prepare('INSERT INTO meres_erkezes (source_id, uzletag, tipus, attr, hozz, ido, frissitve) VALUES (?,?,?,?,?,?,?)').run(id, 'headspa', 'foglalas', '{}', JSON.stringify(hozz), T0, T0);
+  const sor = (id, nev, tipus, allapot, indok, frissitve) => db.prepare("INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, indok, ertek, penznem, letrehozva, frissitve) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)").run(`${nev}:${id}`, nev, tipus, 'ga4', 'headspa', id, allapot, indok, 1000, 'HUF', frissitve, frissitve);
+  const CSERE = T0 + 100;
+  // a prodban latott eset: ajandekkartya, nincs analytics-dontes, nincs client_id -> JOGOS 0 (nem bukas)
+  erk('pi_3Unincsdontes0001', { ana: null, adv: null, fun: null, dontes: false }); sor('pi_3Unincsdontes0001', 'Ajandekkartya', 'alap', 'tiltva', GA, CSERE + 10);
+  sor('pi_3Unincsdontes0001', 'Schedule', 'ernyo', 'kihagyva', 'a GA4-be csak alapesemeny megy (az ernyo nem)', CSERE + 10);
+  // BUKASOK: hiba; analytics-hozzajarulas mellett client_id nelkul; vedelmi tiltva; pillanatkep nelkuli client_id-hiany
+  sor('mb_bukas1bukas1bukas1', 'Visszajaro', 'alap', 'hiba', null, CSERE + 20);
+  erk('mb_bukas2bukas2bukas2', { ana: true, adv: true, fun: true, dontes: true }); sor('mb_bukas2bukas2bukas2', 'FoglalasElso', 'alap', 'tiltva', GA, CSERE + 30);
+  sor('mb_bukas3bukas3bukas3', 'FoglalasElso', 'alap', 'tiltva', 'az elo GA4 property tiltott', CSERE + 35);
+  sor('mb_bukas4bukas4bukas4', 'FoglalasElso', 'alap', 'tiltva', GA, CSERE + 38);
+  // az elso sikeres, ezutan keletkezettek nem szamitanak
+  erk('mb_sikeres1sikeres1ok', { ana: true, adv: true, fun: true, dontes: true }); sor('mb_sikeres1sikeres1ok', 'Konzultacio', 'alap', 'elkuldve', null, CSERE + 50);
+  sor('mb_kesobbi1kesobbi1kes', 'Visszajaro', 'alap', 'hiba', null, CSERE + 60);
+  const c = await ga4Csere(D1, CSERE);
+  assert.equal(c.elso_sikeres_utana.source_id, 'mb_sikeres1sikeres1ok');
+  assert.equal(c.sikertelen_ga4_cella_a_csere_utan_az_elso_sikeresig, 4, '4 valodi bukas (hiba, ana+client_id-hiany, vedelmi tiltva, pillanatkep nelkuli client_id-hiany)');
+  assert.equal(c.jogos_0_ga4_cella_a_csere_utan_az_elso_sikeresig, 2, 'jogos 0: a dontes nelkuli client_id-hiany es az ernyo');
+  // a prod-eset: csak jogos 0 az elso sikeresig -> 0 bukas
+  const D2 = d1(); await egyeztetoSorok(D2, { tol: T0, ig: T1 });
+  D2.db.prepare('INSERT INTO meres_erkezes (source_id, uzletag, tipus, attr, hozz, ido, frissitve) VALUES (?,?,?,?,?,?,?)').run('pi_3Uprod00000000001', 'headspa', 'ajandekkartya', '{}', JSON.stringify({ ana: null, adv: null, fun: null, dontes: false }), T0, T0);
+  const ins = (id, nev, tipus, allapot, indok, fr) => D2.db.prepare("INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, indok, ertek, penznem, letrehozva, frissitve) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)").run(`${nev}:${id}`, nev, tipus, 'ga4', 'headspa', id, allapot, indok, 1000, 'HUF', fr, fr);
+  ins('pi_3Uprod00000000001', 'Ajandekkartya', 'alap', 'tiltva', GA, CSERE + 10);
+  ins('mb_prodsikeres1prodsik', 'Konzultacio', 'alap', 'elkuldve', null, CSERE + 40);
+  const p = await ga4Csere(D2, CSERE);
+  assert.deepEqual([p.sikertelen_ga4_cella_a_csere_utan_az_elso_sikeresig, p.jogos_0_ga4_cella_a_csere_utan_az_elso_sikeresig], [0, 1]);
+});
