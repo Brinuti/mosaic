@@ -26,7 +26,8 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
     const akt = r && r.querySelector('a[aria-current="page"]');
     const lb = r && r.querySelector('.wixui-lightbox');
     const rr = lb && lb.getBoundingClientRect();
-    return { van: !!r, aktualis: akt ? akt.textContent : null, latszik: !!rr && rr.width > 100 && rr.left < innerWidth, linkek: r ? r.querySelectorAll('a[href]').length : 0 };
+    // a kepernyon kell latszania, fuggolegesen is (rogzitett elhelyezes nelkul a lap aljara kerult)
+    return { van: !!r, aktualis: akt ? akt.textContent : null, latszik: !!rr && rr.width > 100 && rr.left < innerWidth && rr.top >= 0 && rr.top < innerHeight / 2, linkek: r ? r.querySelectorAll('a[href]').length : 0 };
   });
   ok(`${nezet}: menu nyilik`, menu.van && menu.latszik, JSON.stringify(menu));
   // asztalin a Wix kiemeli az aktualis oldalt; mobilon a menu sima szoveges link, ott a Wix sem jeloli

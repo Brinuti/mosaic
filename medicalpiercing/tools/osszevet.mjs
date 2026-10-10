@@ -7,6 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium, devices } from './pw.mjs';
+import { meresTiltas } from './meres-tiltas.mjs';
 import { oldalak } from './oldalak.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -21,6 +22,7 @@ const b = await chromium.launch();
 const ctxOpt = MOBIL ? { ...devices['Pixel 5'] } : { viewport: { width: 1440, height: 900 } };
 async function kep(url, fajl) {
   const ctx = await b.newContext(ctxOpt);
+  await meresTiltas(ctx);
   const p = await ctx.newPage();
   await p.goto(url, { waitUntil: 'load', timeout: 90000 }).catch((e) => console.log('  ! ' + e.message));
   await p.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 120)); } window.scrollTo(0, 0); });

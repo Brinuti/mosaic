@@ -319,4 +319,68 @@
       rajzol();
     });
   }
+
+  // --- 8. URL-parameterek megorzese es a foglalasi linkek -----------------------
+  // A Wix-oldal sajat kodja (Velo, masterPage.js, minden oldalon) pontosan ezt tette: ha az
+  // oldal parameterekkel nyilik, elmenti oket a munkamenetbe ("savedQueryParams"); ha
+  // parameter nelkul, a mentetteket visszateszi a cimbe (ujratoltes nelkul).
+  const MENTETT = 'savedQueryParams';
+  try {
+    const most = new URLSearchParams(location.search);
+    if ([...most.keys()].length) {
+      sessionStorage.setItem(MENTETT, JSON.stringify(Object.fromEntries(most)));
+    } else {
+      const m = JSON.parse(sessionStorage.getItem(MENTETT) || 'null');
+      if (m && Object.keys(m).length) history.replaceState(history.state, '', location.pathname + '?' + new URLSearchParams(m) + location.hash);
+    }
+  } catch (x) { /* privat mod / hibas mentes: marad a cim */ }
+  // A foglalasi linkek (medicalpiercing.salonic.hu) viszik tovabb a kattintas-azonositokat es
+  // a kampanyparametereket, ha az oldal is ezekkel nyilt meg (a Salonic igy a hirdeteshez
+  // kotheti a foglalast). A link sajat parametereit nem irjuk felul.
+  const TOVABB = /^(fbclid|gclid|gbraid|wbraid|ttclid|utm_[a-z_]+)$/i;
+  const SALONIC = /^https?:\/\/medicalpiercing\.salonic\.hu(\/|$)/i;
+  const kiegeszit = (a) => {
+    const href = a.getAttribute('href');
+    if (!href || !SALONIC.test(href)) return;
+    let u;
+    try { u = new URL(href); } catch (x) { return; }
+    let valtozott = false;
+    for (const [k, v] of new URLSearchParams(location.search)) {
+      if (TOVABB.test(k) && v && !u.searchParams.has(k)) { u.searchParams.set(k, v); valtozott = true; }
+    }
+    if (valtozott) a.setAttribute('href', u.href);
+  };
+  for (const a of document.querySelectorAll('a[href]')) kiegeszit(a);
+  // a felugro menu linkjei kesobb kerulnek az oldalba: kattintaskor is kiegeszitjuk
+  for (const esemeny of ['click', 'auxclick', 'contextmenu']) {
+    document.addEventListener(esemeny, (e) => { const a = e.target.closest && e.target.closest('a[href]'); if (a) kiegeszit(a); }, true);
+  }
+
+  // --- 9. varosoldalak: a CMS-lapozo ("Previous" / "Next") ---------------------------
+  // A Wixen a helyszin-gyujtemeny lapozogombjai; az eles oldalon (2026-10-10, minden
+  // varosoldalon kiprobalva) szinte mindenhol tiltva vannak, ahol nem, ott tesztelemekre
+  // ("this-is-a-title-01") visznek. A klonban mindenhol tiltva: ne legyen hatastalan kattintas.
+  if (/^\/varosok\//.test(itt)) {
+    for (const g of document.querySelectorAll('button[aria-label="Previous"], button[aria-label="Next"]')) {
+      g.disabled = true;
+      g.setAttribute('aria-disabled', 'true');
+    }
+  }
+
+  // --- 10. kitelepulesek: a videki helyszinek friss idopontjai ------------------------
+  // A datumblokkokat a build jeloli meg (data-mp-kitelepules="<helyszin>", lib/kitelepulesek.js)
+  // es mar a tablazat akkori allapotat irja beljuk; itt a lap betoltesekor a mostanit kerjuk le
+  // (/api/kitelepulesek, a tablazat legfeljebb 5 perces masolata), igy a tablazat modositasa
+  // es a mar elmult napok uj build nelkul is latszanak.
+  const blokkok = document.querySelectorAll('[data-mp-kitelepules]');
+  if (blokkok.length && window.fetch) {
+    fetch('/api/kitelepulesek').then((v) => (v.ok ? v.json() : null)).then((adat) => {
+      if (!adat || !adat.sorok) return;
+      for (const b of blokkok) {
+        const sorok = adat.sorok[b.dataset.mpKitelepules];
+        if (!sorok || !sorok.length) continue;
+        b.replaceChildren(...sorok.flatMap((s, i) => (i ? [document.createElement('br'), s] : [s])));
+      }
+    }).catch(() => { /* marad a build idejen beirt allapot */ });
+  }
 })();

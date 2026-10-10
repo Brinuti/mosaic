@@ -4,6 +4,14 @@
 /* felugro menu (klon.js 1.): a Wix jobbrol csusztatja be az ablakot, a fatyol
    attunik; zaraskor visszafele */
 html.mp-felugro-nyitva { overflow: hidden; }
+/* az ablak elhelyezese: a Wix ezt a felugro komponens kulon CSS-ebol adja, ami
+   nincs a mentett sablonban (az eles oldalon merve, asztalin es mobilon azonos):
+   a gyoker a kepernyohoz rogzitett reteg, a fatyol is rogzitett, a tartalom racsban */
+#POPUPS_ROOT.mp-felugro { position: fixed; inset: 0; z-index: 100000; overflow: auto scroll; }
+.mp-felugro #popups-wrapper { position: relative; }
+.mp-felugro #d3iz6 { position: relative; display: grid; grid-template-rows: 0 auto; grid-template-columns: 100%; min-height: 100vh; }
+.mp-felugro #d3iz6 > :nth-child(2) { position: relative; z-index: 50; display: grid; grid-template-columns: 100%; }
+.mp-felugro #bgLayers_d3iz6 { position: fixed; inset: 0; }
 .mp-felugro .wixui-lightbox { animation: mp-be-jobbrol .6s cubic-bezier(.25, .46, .45, .94) both; }
 .mp-felugro [id="bgLayers_d3iz6"] { animation: mp-attunes .6s ease both; }
 .mp-felugro.mp-felugro-zar .wixui-lightbox { animation: mp-ki-jobbra .4s ease-in both; }

@@ -88,7 +88,13 @@ node tools/elteres.mjs rolunk index blog       # elemenkénti összevetés az é
 node tools/elteres.mjs --mobil rolunk          # ugyanez mobilon
 node tools/osszevet.mjs rolunk                 # képernyőképek egymás mellett -> tools/osszevetes/
 node tools/funkcio-teszt.mjs                   # menü, fülek, galéria, diavetítés, JS-hibák (asztali + mobil)
+node tools/bejaras-teszt.mjs                   # MINDEN oldal asztalin és mobilon: betöltés, JS-hiba, hiányzó fájl,
+                                               # menü a képernyőn, minden gomb, minden belső link célja, foglalási linkek
+node tools/kitelepulesek-teszt.mjs             # a kitelepülés-táblázat olvasója (hálózat nélkül)
 ```
+
+Az élő Wix-oldalt megnyitó eszközök (`elo-mentes`, `elteres`, `osszevet`) alatt egyetlen mérőkérés sem
+mehet ki (`tools/meres-tiltas.mjs`): a köszönőoldalak megnyitása különben hamis foglalást küldene.
 
 ## 3. Ami működik (a Wix helyett)
 
@@ -103,15 +109,31 @@ node tools/funkcio-teszt.mjs                   # menü, fülek, galéria, diavet
 | Google-vélemények (Trustindex), GYIK (Common Ninja), RTL-videó | a Wix HTML-beágyazásai helyben (`assets/embed/`), változatlan külső szolgáltatással |
 | YouTube- és Facebook-videók, Salonic-foglaló | változatlan beágyazás / link |
 | Google-térkép | a Google beágyazott térképe ugyanarra a helyszínre (a Wix-féle egyedi térképstílus nélkül) |
-| süti-sáv és mérés | `suti.js`: CookieYes, GTM-T9GR4JCK, Google Ads AW-11097894040, Convertize – **csak a www.medicalpiercing.hu-n** |
+| süti-sáv és mérés | `suti.js`: CookieYes, GTM-T9GR4JCK (benne a GA4 G-SJT2RN62H8 és a TikTok-pixel), Google Ads AW-11097894040, Convertize, Meta-pixel 2177829632420786 (a köszönőoldalakon nem) – **csak a www.medicalpiercing.hu-n** |
+| köszönőoldalak (`/foglalas-ok`, `-mi`, `-shenmen`, `-klimax`, `-slim`, `-allergia`, `-maj`, `-lep`, `-vastagbel`, `-2piercing`, `-3piercing`, `-4piercing`, `-6piercing`) | ugyanazon a címen, átirányítás nélkül, a paraméterekkel (a Salonic szolgáltatásonként ide irányít); nincsenek a sitemapben |
+| URL-paraméterek megőrzése (a Wix `masterPage.js` kódja) | `klon.js` 8.: a beérkező paraméterek a munkamenetben maradnak; a foglalási linkek (medicalpiercing.salonic.hu) viszik az `fbclid`, `gclid`, `gbraid`, `wbraid`, `ttclid`, `utm_*` paramétereket |
+| kitelepülések (vidéki helyszínek időpontjai) | a „MP - KITELEPÜLÉSEK” Google-táblázatból: a build beírja, a lap betöltéskor frissíti (`lib/kitelepulesek.js`, `/api/kitelepulesek`, `klon.js` 10.), lásd lent |
 | blog | a bejegyzések, a listák és a „legutóbbi bejegyzések” statikusan (a kedvelés/megtekintés-számláló a mentéskori állapot) |
+
+### Kitelepülések
+
+A vidéki helyszínek időpontjai a [„MP - KITELEPÜLÉSEK”](https://docs.google.com/spreadsheets/d/1BgIiGJkvQga-VNlPuFQ7xneevogubfya/edit)
+táblázat első lapjáról („Időpontok”) jönnek: soronként egy helyszín, oszloponként egy hónap („2026. december”), a
+cellában a napok („4,11,18”). A táblázatban a dátumcellák szöveg formátumúak és beviteli ellenőrzésük van (csak
+számjegy, vessző, vagy „-”), az „Útmutató” lap leírja a kitöltést. Az oldalon helyszínenként az aktuális és a
+következő két hónap hátralévő napjai látszanak, minden lapon, ahol a Wixen a helyszínlista volt (30 oldal), és a
+saját városoldalon. A build beírja a lapokba (a dátumblokk `data-mp-kitelepules="<helyszín>"` jelölést kap), a lap
+betöltéskor az `/api/kitelepulesek`-ből frissíti (a táblázat legfeljebb 5 perces másolata). A helyszínt a blokk
+melletti cím, a városoldalakon a lap címe adja (a Wix-címek nem megbízhatók: a `/varosok/8800-nagykanizsa-fo-ut-23`
+ma a székesfehérvári helyszín). A nem értelmezhető cellákat az `/api/kitelepulesek` `hibak` listája mutatja.
 
 ## 4. Publikálás: Cloudflare Pages (egyszeri beállítás)
 
 A klón a `Brinuti/mosaic` repóban van, de **külön Cloudflare Pages-projekt** publikálja (a MOSAIC
 oldal buildje ezt a mappát nem használja):
 
-1. *Workers & Pages → Create → Pages → Connect to Git* → `Brinuti/mosaic`, projektnév: `medicalpiercing`
+1. **Kész (2026-10-10, API-n):** *Workers & Pages → Create → Pages → Connect to Git* → `Brinuti/mosaic`, projektnév: `medicalpiercing`
+   (`https://medicalpiercing.pages.dev`)
    - Production branch: `main` · **Root directory: `medicalpiercing`**
    - Build command: `node tools/build.mjs` · Build output: `dist`
    - *Build watch paths*: include `medicalpiercing/*` (így a MOSAIC-változások nem indítanak itt buildet)
@@ -132,6 +154,11 @@ oldal buildje ezt a mappát nem használja):
 ## 5. Nyitott pontok
 
 - **Űrlap-e-mail:** a `SMTP_PASS` beállítása (lásd fent). A címzett alapból `medicalpiercing.hu@gmail.com` (`wrangler.toml`).
+- **CookieYes:** a sütisáv szkriptje (`a46a3451…/script.js`) 2026-10-10-én 403-at ad, az élő Wix-oldalon is: a sáv nem
+  jelenik meg, a mérőkódok hozzájárulás nélkül futnak (a Wixen is így). A CookieYes-fiókban kell rendbe tenni.
+- **Négy kódolt perjeles cím** (`/varosok/4031-debrecen%2C-der%C3%A9k-utca-100%2Fb`, a pécsi, a nagykanizsai Ady Endre utcai
+  és a `/1-header/…` oldal): a Wix böngészőben a 404-es lapot rajzolja ki rájuk; a klón a szerver által küldött valódi
+  tartalmat mutatja (`tools/elo-mentes.mjs` ezeknél a `tools/raw` mentést használja).
 - **A Wix-szerkesztő** ezután nem frissíti a klónt. Szöveg- vagy képváltozáshoz vagy a Wixben kell
   módosítani és újra lefuttatni a 1. pont láncát, vagy közvetlenül a `klon/<kulcs>.html`-t kell szerkeszteni
   (asztali és mobil változatot is).

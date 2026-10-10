@@ -58,7 +58,9 @@ function parastorageKepek(html) {
 // kulcsbol() fuggvennyel talalja meg a fajlt. A /post/ elotagot a Wix is elfogadja.
 let atirtLink = 0, ismeretlenLink = new Set();
 function linkekAtirasa(html) {
-  return html.replace(/(<a\b[^>]*?\bhref=")https?:\/\/(?:www\.)?medicalpiercing\.hu(\/[^"]*)?"/gi, (egesz, eleje, ut = '/') => {
+  // a domain utan rogton johet ?, # is (pl. https://www.medicalpiercing.hu#ekszerek)
+  return html.replace(/(<a\b[^>]*?\bhref=")https?:\/\/(?:www\.)?medicalpiercing\.hu([/?#][^"]*)?"/gi, (egesz, eleje, ut = '/') => {
+    if (!ut.startsWith('/')) ut = '/' + ut;
     const [tiszta] = ut.split(/[?#]/);
     let k;
     try { k = kulcsbol(decodeURIComponent(tiszta).replace(/^\/post\//, '/')); } catch { k = null; }

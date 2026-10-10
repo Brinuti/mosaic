@@ -11,6 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { chromium, devices } from './pw.mjs';
 import { mindenOldal as oldalak } from './oldalak.mjs';
+import { meresTiltas } from './meres-tiltas.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const MOBIL = process.argv.includes('--mobil');
@@ -25,6 +26,8 @@ const ctxOpt = MOBIL ? { ...devices['Pixel 5'] } : { viewport: { width: 1440, he
 let kesz = 0;
 await Promise.all(Array.from({ length: 4 }, async () => {
   const ctx = await b.newContext({ ...ctxOpt, locale: 'hu-HU' });
+  // merokeres nem mehet ki (tools/meres-tiltas.mjs), es igy a sutisav sem kerul a mentett DOM-ba
+  await meresTiltas(ctx);
   // a Google-terkep keretenek a Wix uzenetben kuldi el a helyszineket - ezt elkapjuk
   await ctx.addInitScript(() => {
     if (!location.href.includes('googleMap')) return;
@@ -101,6 +104,15 @@ await Promise.all(Array.from({ length: 4 }, async () => {
         o.proba = (o.proba || 0) + 1;
         console.log(`UJRA ${o.kulcs}: hianyzik a Wix fo stilusa (${o.proba}. probalkozas)`);
         if (o.proba < 4) lista.push(o); else console.log(`HIBA ${o.kulcs}: a mentes nem sikerult, a tools/raw marad a forras`);
+        await p.close();
+        continue;
+      }
+      // a cimben kodolt perjelet (%2F, pl. /varosok/4031-debrecen%2C-der%C3%A9k-utca-100%2Fb) a Wix
+      // bongeszooldali utvalasztoja nem talalja, es a szerver altal kuldott (jo) oldal helyett
+      // a 404-es lapot rajzolja ki: ilyenkor a szerveroldali mentes (tools/raw) a forras
+      if (/<title>[^<]*\b404\b/.test(html)) {
+        console.log(`HIBA ${o.kulcs}: a bongeszo a 404-es lapot rajzolta ki, a tools/raw marad a forras`);
+        fs.rmSync(path.join(OUT, o.kulcs + '.html'), { force: true });
         await p.close();
         continue;
       }

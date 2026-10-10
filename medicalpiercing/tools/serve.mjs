@@ -9,6 +9,7 @@ import { createServer } from 'node:http';
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { utvonal } from '../lib/utvonal.js';
+import { TABLAZAT_CSV, osszesSor } from '../lib/kitelepulesek.js';
 
 const DIST = path.resolve(import.meta.dirname, '../dist');
 const PORT = +process.env.PORT || 4290;
@@ -28,6 +29,13 @@ createServer((req, res) => {
     let n = 0;
     req.on('data', (d) => { n += d.length; });
     req.on('end', () => { console.log(`urlap bekuldve (${n} bajt)`); res.writeHead(200, { 'content-type': 'text/plain' }); res.end('ok'); });
+    return;
+  }
+  // a kitelepulesek idopontjai a tablazatbol (elesben: functions/[[path]].js)
+  if (req.method === 'GET' && url.pathname === '/api/kitelepulesek') {
+    fetch(TABLAZAT_CSV).then((v) => (v.ok ? v.text() : Promise.reject(new Error('HTTP ' + v.status))))
+      .then((csv) => { res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(osszesSor(csv))); })
+      .catch((e) => { res.writeHead(502, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ hiba: e.message })); });
     return;
   }
   let ut; try { ut = decodeURIComponent(url.pathname); } catch { ut = url.pathname; }
