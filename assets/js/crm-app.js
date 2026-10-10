@@ -12,6 +12,7 @@ const MIND = Object.keys(SZEREPEK);
 export const NAV = [
   { kulcs: 'kezeles', szam: 16, cim: 'Kezelés közben', modul: 'kezeles', szerepek: KEZELOI, csoport: 'Napi munka' },   // telefonra szabott, vezetett folyamat
   { kulcs: 'dashboard', szam: 1, cim: 'Áttekintés', modul: 'dashboard', szerepek: [...KEZELOI, 'salon_manager', 'marketing', 'admin'], csoport: 'Napi munka' },   // recepcio: nincs dashboard-jog (assessment.read / stats_aggregate.read)
+  { kulcs: 'kepkuldo', szam: 17, cim: 'Képküldés (tablet)', modul: 'kepkuldo', szerepek: KEZELOI },
   { kulcs: 'munkalista', szam: 3, cim: 'Napi munkalista', modul: 'munkalista', szerepek: [...KEZELOI, 'reception', 'salon_manager'], csoport: 'Napi munka' },
   { kulcs: 'vendegek', szam: 2, cim: 'Vendégkereső', modul: 'vendeg', szerepek: ['therapist', 'clinical_lead', 'reception', 'salon_manager', 'admin'] },
   { kulcs: 'felmero', szam: 4, cim: 'Állapotfelmérő', modul: 'felmero', szerepek: KEZELOI, csoport: 'Kezelés' },

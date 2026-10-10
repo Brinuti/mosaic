@@ -7,5 +7,9 @@ export default [
  {
   "nev": "0002_fajl_tarolo",
   "sql": "-- Privat fajltarolo D1-ben (amig az R2 nincs engedelyezve): a kep / PDF bajtok base64 darabokban, a hozzaferes-ellenorzes a crm/lib/api.js-ben.\n-- A camera_image / treatment_plan csak a storage_key-t tarolja; R2-re valtaskor csak a crm/lib/tarolo.js cserelodik.\nCREATE TABLE IF NOT EXISTS crm_fajl (\n  storage_key TEXT NOT NULL,\n  seq INTEGER NOT NULL,            -- darab sorszama (0-tol)\n  mime TEXT,\n  meret INTEGER,                   -- az egesz fajl merete bajtban (minden darabnal azonos)\n  adat TEXT NOT NULL,              -- base64\n  letrehozva INTEGER NOT NULL,\n  PRIMARY KEY (storage_key, seq)\n);\n"
+ },
+ {
+  "nev": "0003_kep_beerkezo",
+  "sql": "-- Kep-beerkezo: a tablet (amelyikhez a hajkamera csatlakozik) ide tolti fel a kepeket vendeg megadasa NELKUL;\n-- a kezelo (akar masik eszkozon) a kepet nezi meg es rendeli a vendeg / alkalom ala. Nem hozzarendelt kep rovid ido utan torlodik.\nCREATE TABLE IF NOT EXISTS image_inbox (\n  id TEXT PRIMARY KEY,\n  storage_key TEXT NOT NULL UNIQUE,\n  mime TEXT NOT NULL,\n  size_bytes INTEGER NOT NULL,\n  sha256 TEXT,\n  uploaded_by TEXT NOT NULL REFERENCES staff_user (id),\n  created_at INTEGER NOT NULL,\n  expires_at INTEGER NOT NULL\n);\nCREATE INDEX IF NOT EXISTS idx_inbox_lejarat ON image_inbox (expires_at);\n"
  }
 ];
