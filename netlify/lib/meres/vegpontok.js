@@ -1,6 +1,7 @@
 // QA-2 vegpontok: /api/meres-erkezes (a bongeszo irja: kattintasazonositok, UTM, sutik, hozzajarulas) es /api/meres-admin (kulcsos: naplo, vészkapcsolo, kulso szallito visszaigazolasa)
 import { azonosEredet, kulcsEllenorzes, valasz } from '../foglalas-kulcs.js';
 import { egyeztetoSorok, egyeztetoCsv } from './egyeztetes-sor.js';
+import { ga4ValidationReplay } from './validation-replay.js';
 import { erkezesMent, fuggoKuldesek, kapcsoloBeallit, kapcsolokOlvas, kuldesMegerosit, naploLeker } from './elosztas.js';
 import { irasKi, irasKapcsolo, IRAS_KI_VALASZ } from './iras-kapcsolo.js';
 
@@ -44,6 +45,12 @@ export async function kezelAdmin(request, env, deps = {}) {
     let o; try { o = JSON.parse(szoveg); } catch (e) { return valasz(400, { ok: false, miert: 'nem JSON' }); }
     const most = deps.now ? deps.now() : Date.now();
     if (o.muvelet === 'iras') return valasz(200, await irasKapcsolo(env.KULCS_DB, { be: o.be === true, ok: typeof o.ok === 'string' ? o.ok.slice(0, 200) : null }, most)); // QA-4: az UJ IRASOK veszkapcsoloja (be:false = leall)
+    // GPT-dontes #123: EGY korabban ki nem kuldott GA4-alapesemeny ujrajatszasa, KIZAROLAG a GA4 agon, 'validation_replay' jelolessel, a QA-5 mintabol kizarva (lasd validation-replay.js); kifejezett jovahagyas-jelolo kell
+    if (o.muvelet === 'ga4_validation_replay') {
+      if (o.jovahagyas !== 'GPT-123') return valasz(400, { ok: false, miert: 'jovahagyas: "GPT-123" kell (DECISION #123)' });
+      const r = await ga4ValidationReplay(env.KULCS_DB, env, { source_id: o.source_id, ujra: o.ujra === true }, most, deps.fetchImpl || fetch);
+      return valasz(r.ok ? 200 : 409, r);
+    }
     if (o.muvelet === 'kapcsolo') return valasz(200, await kapcsoloBeallit(env.KULCS_DB, { uzletag: o.uzletag || null, platform: o.platform || null, be: o.be === true, ok: typeof o.ok === 'string' ? o.ok.slice(0, 200) : null }, most));
     // ajandekkartya: a webhook-ut MANUALIS ujrajatszasa (pl. elonezeten, ahol a Stripe nem erte el a webhookot): ugyanaz a kod fut (arnyekMeres), a PaymentIntentet a Stripe-tol kerdezi; kulcsos, csak MERES_ELOSZTO=1 mellett kuld
     if (o.muvelet === 'ajandek_ujra') {
