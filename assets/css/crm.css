@@ -188,3 +188,5 @@ input.kod { text-align: center; letter-spacing: .5em; font-size: 1.6rem; font-fa
 .kk-gombok { display: grid; gap: 10px; }
 .kk-vegso { border-color: var(--arany); }
 @media (min-width: 900px) { .kk { max-width: 640px; } }
+.kk-video { width: 100%; max-height: 60vh; background: #000; border-radius: 8px; margin: 8px 0; object-fit: contain; }
+.kk-kamera { margin-top: 8px; }

@@ -264,6 +264,32 @@ test('kezeles kozben (mobil): igazolas, kamerakep, valasztok, veglegesites es ku
   await ctx.close();
 });
 
+test('kezeles kozben: USB / elo kamera panel (hamis kamera-eszkozzel) kepet keszit es feltolt', async () => {
+  const B2 = await chromium.launch({ args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
+  try {
+    const ctx = await B2.newContext({ viewport: { width: 800, height: 1200 }, permissions: ['camera'] });
+    const p = await ctx.newPage(); p.setDefaultTimeout(10000);
+    await p.goto(`${BASE}/crm`); await p.click('[data-demo="therapist"]'); await p.waitForSelector('.oldalsav a', { state: 'attached' });
+    await megy(p, '#/kezeles');
+    await p.waitForSelector('.kk-kartya');
+    await p.locator('.kk-kartya', { hasText: 'Teszt Anna' }).first().click();
+    await p.waitForSelector('.kk-lepes');
+    if (await p.locator('.kk-lepes button:has-text("igazolom")').count()) { await p.click('.kk-lepes button:has-text("igazolom")'); await dialog(p); }
+    await p.waitForSelector('.kk-lepes:has-text("alkalom")');
+    // ha ehhez az alkalomhoz mar van kep, torles utan jon az uj felvetel
+    if (await p.locator('.kk-lepes button:has-text("Kép törlése")').count()) { await p.click('.kk-lepes button:has-text("Kép törlése")'); await dialog(p); await p.waitForSelector('.toast:has-text("törölve")'); }
+    if (await p.locator('button:has-text("USB hajkamera")').count()) {
+      await p.click('button:has-text("USB hajkamera")');
+      await p.waitForSelector('video.kk-video');
+      await p.waitForFunction(() => document.querySelector('video.kk-video')?.videoWidth > 0);
+      await p.waitForFunction(() => /kamera található/.test(document.querySelector('.kk-kamera')?.innerText || ''));
+      await p.click('button:has-text("Kép készítése")');
+      await p.waitForSelector('.toast:has-text("feltöltve"), .toast:has-text("lecserélve")');
+    } else console.log('(az Anna ehhez az alkalomhoz nem kamera-alkalom, a panel nem jelenik meg)');
+    await ctx.close();
+  } finally { await B2.close(); }
+});
+
 test('kameraképek: feltoltes (kliens-oldali atmeretezes), ket kep osszehasonlitasa, komment, link', async () => {
   const { ctx, p } = await ujOldal();
   await belep(p, 'therapist');
