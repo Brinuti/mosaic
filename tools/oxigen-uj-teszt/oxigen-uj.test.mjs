@@ -306,6 +306,27 @@ describe('problemakartyak, hozzajarulas, meres', () => {
     await ctx.close();
   });
 
+  test('hozzajarulas rogzitese: a pipa utan e-mail / telefon mezo, a /api/crm/public/hozzajarulas-ra megy; a meresbe nem kerul szemelyes adat; visszavonas is elmegy', async () => {
+    const { p, ctx } = await nyit();
+    const kuldott = [];
+    await p.route('**/api/crm/public/hozzajarulas', async (route) => { kuldott.push(JSON.parse(route.request().postData())); await route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }); });
+    assert.equal(await p.locator('#hozzajarulas-kapcsolat').isHidden(), true, 'pipa nelkul nincs mezo');
+    await p.check('input[data-consent="marketing_email"]');
+    assert.equal(await p.locator('#hozzajarulas-kapcsolat').isVisible(), true);
+    assert.equal(kuldott.length, 0, 'adat nelkul nem megy el');
+    await p.fill('#hj-email', 'Vendeg.Teszt@example.com');
+    await p.locator('#hj-email').blur();
+    await p.waitForFunction(() => /Rögzítettük/.test(document.getElementById('hj-allapot').textContent));
+    assert.equal(kuldott.length, 1);
+    assert.deepEqual([kuldott[0].email_marketing, kuldott[0].sms_marketing, kuldott[0].kapcsolat.email, kuldott[0].selected_service], [true, false, 'Vendeg.Teszt@example.com', 'first_hair']);
+    assert.match(kuldott[0].szoveg_verzio, /^tervezet-/);
+    assert.ok(!/@|\+36/.test(JSON.stringify(await dl(p))), 'a dataLayerben nincs szemelyes adat');
+    await p.uncheck('input[data-consent="marketing_email"]');
+    await p.waitForFunction(() => /visszavontad/.test(document.getElementById('hj-allapot').textContent));
+    assert.equal(kuldott.at(-1).email_marketing, false);
+    await ctx.close();
+  });
+
   test('a spec esemenyei: click_hero_first / click_hero_camera / booking_start, service_type, stabil event_id', async () => {
     const { p, ctx } = await nyit();
     await p.click('.hero-cta [data-foglal="first_hair"]');

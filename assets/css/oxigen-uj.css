@@ -520,3 +520,8 @@ button.gomb { font-family: var(--test); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+.hozzajarulas-kapcsolat { margin-top: 10px; display: grid; gap: 8px; }
+.hj-mezo { display: grid; gap: 4px; font-size: 14px; color: #dbe7e4; }
+.hj-mezo input { font: inherit; font-size: 16px; min-height: 44px; padding: 8px 12px; border-radius: 8px; border: 1px solid #ffffff55; background: #ffffff14; color: #fff; }
+.hj-mezo input::placeholder { color: #bccac7; }
+.hj-allapot { min-height: 1.4em; margin: 0; font-size: 13px; color: #e8d9b0; }
