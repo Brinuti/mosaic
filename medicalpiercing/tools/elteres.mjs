@@ -4,6 +4,7 @@
 //
 //   node tools/elteres.mjs [--mobil] <kulcs> [kulcs...]
 import { chromium, devices } from './pw.mjs';
+import { meresTiltas } from './meres-tiltas.mjs';
 import { oldalak } from './oldalak.mjs';
 
 const MOBIL = process.argv.includes('--mobil');
@@ -14,6 +15,7 @@ const ctxOpt = MOBIL ? { ...devices['Pixel 5'] } : { viewport: { width: 1440, he
 
 async function geometria(url) {
   const ctx = await b.newContext(ctxOpt);
+  await meresTiltas(ctx);
   const p = await ctx.newPage();
   await p.goto(url, { waitUntil: 'load', timeout: 90000 });
   await p.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 100)); } scrollTo(0, 0); });

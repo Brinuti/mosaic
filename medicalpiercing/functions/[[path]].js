@@ -3,7 +3,9 @@
 // - GET/HEAD: a Wix-szel azonos cimek; telefonon a mobil (dist/_m/), mas eszkozon
 //   az asztali (dist/_a/) lap (lib/utvonal.js) - ugyanugy, ahogy a Wix dontott;
 // - POST /api/urlap: az oldalak urlapjai (assets/js/klon.js 6.) - e-mail a
-//   szalonnak, a feltoltott fajlok mellekletkent (lib/levelek.js).
+//   szalonnak, a feltoltott fajlok mellekletkent (lib/levelek.js);
+// - GET /api/kitelepulesek: a videki helyszinek idopontjai a tablazatbol (lib/kitelepulesek.js),
+//   a lapok ebbol frissitik a datumokat (assets/js/klon.js 10.).
 //
 // Csak a lapokra fut (dist/_routes.json): a kepek, betuk, stilusok, szkriptek es
 // videok kozvetlenul a Cloudflare tarhelyerol jonnek, fuggvenyhivas nelkul.
@@ -14,6 +16,7 @@
 import { WorkerMailer } from 'worker-mailer';
 import { utvonal } from '../lib/utvonal.js';
 import { level } from '../lib/levelek.js';
+import { TABLAZAT_CSV, osszesSor } from '../lib/kitelepulesek.js';
 
 // Minden mas host (*.pages.dev elonezetek) probacim: noindex + tilto robots.txt.
 const ELES_HOST = /^(www\.)?medicalpiercing\.hu$/;
@@ -24,6 +27,7 @@ export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
   if (request.method === 'POST' && url.pathname === '/api/urlap') return urlap(context);
+  if (request.method === 'GET' && url.pathname === '/api/kitelepulesek') return kitelepulesek();
   if (request.method !== 'GET' && request.method !== 'HEAD') return context.next();
 
   const eles = ELES_HOST.test(url.hostname);
@@ -54,6 +58,22 @@ export async function onRequest(context) {
   h.set('vary', 'User-Agent');
   if (!eles) h.set('x-robots-tag', 'noindex, nofollow');
   return new Response(valasz.body, { status, headers: h });
+}
+
+// A tablazatot a Cloudflare 5 percig tarolja: egy modositas legkesobb ennyi ido mulva latszik.
+async function kitelepulesek() {
+  try {
+    const v = await fetch(TABLAZAT_CSV, { cf: { cacheTtl: 300, cacheEverything: true } });
+    if (!v.ok) throw new Error('HTTP ' + v.status);
+    return new Response(JSON.stringify(osszesSor(await v.text())), {
+      headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=300' },
+    });
+  } catch (e) {
+    console.error('kitelepulesek: a tablazat nem olvashato', e && e.message);
+    return new Response(JSON.stringify({ hiba: 'a tablazat most nem olvashato' }), {
+      status: 502, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+    });
+  }
 }
 
 async function urlap(context) {
