@@ -64,8 +64,8 @@ test('belepes-kepernyo: e-mail + kod, demo gombok csak elerheto /auth/demo melle
 
 test('demo-belepes minden szerepkorrel: menu szerepkor szerint, uzemmod-jelzo, demo-figyelmeztetes', async () => {
   const vart = {
-    therapist: ['dashboard', 'munkalista', 'vendegek', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'kuldes', 'hozzajarulas', 'osszevonas'],
-    clinical_lead: ['dashboard', 'munkalista', 'vendegek', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'kuldes', 'hozzajarulas', 'osszevonas'],
+    therapist: ['kezeles', 'dashboard', 'munkalista', 'vendegek', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'kuldes', 'hozzajarulas', 'osszevonas'],
+    clinical_lead: ['kezeles', 'dashboard', 'munkalista', 'vendegek', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'kuldes', 'hozzajarulas', 'osszevonas'],
     reception: ['munkalista', 'vendegek', 'berletek', 'credit', 'kuldes', 'hozzajarulas'],
     salon_manager: ['dashboard', 'munkalista', 'vendegek', 'berletek', 'credit', 'panasz', 'osszevonas', 'mutatok', 'beallitasok'],
     marketing: ['dashboard', 'kuldes', 'mutatok'],
@@ -214,6 +214,43 @@ test('kuraterv: szerkesztes, mentes, veglegesites, A5 PDF, e-mail kuldes allapot
   await dialog(p);
   await p.waitForFunction(() => /Sorba állítva|Elküldve/.test(document.getElementById('kt-allapot')?.innerText || ''), null, { timeout: 15000 });
   await kep(p, '08-kuraterv-elkuldve');
+  await ctx.close();
+});
+
+test('kezeles kozben (mobil): igazolas, kamerakep, valasztok, veglegesites es kuldes egy folyamatban', async () => {
+  const { ctx, p } = await ujOldal({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  await belep(p, 'therapist');
+  await megy(p, '#/kezeles');
+  await p.waitForSelector('.kk-kartya');
+  await kep(p, '20-kezeles-lista');
+  await p.locator('.kk-kartya', { hasText: 'Teszt Anna' }).click();
+  await p.waitForSelector('.kk-lepes');
+  // 1. igazolas
+  // (a munkalista-teszt mar igazolhatta Annat: ilyenkor a lepes csak az allapotot mutatja)
+  if (await p.locator('.kk-lepes button:has-text("igazolom")').count()) { await p.click('.kk-lepes button:has-text("igazolom")'); await dialog(p); }
+  await p.waitForSelector('.kk-lepes:has-text("1. alkalom")');
+  // 2. kamerakep (1. alkalmon kotelezo)
+  await p.waitForSelector('#kk-kep', { state: 'attached' });
+  const png = await p.evaluate(async () => { const c = document.createElement('canvas'); c.width = 800; c.height = 600; const x = c.getContext('2d'); x.fillStyle = '#486'; x.fillRect(0, 0, 800, 600); const b = await new Promise((ok) => c.toBlob(ok, 'image/png')); return Array.from(new Uint8Array(await b.arrayBuffer())); });
+  await p.setInputFiles('#kk-kep', { name: 'haj.png', mimeType: 'image/png', buffer: Buffer.from(png) });
+  await p.waitForSelector('.kk-lepes:has-text("Feltöltve")');
+  // 3-8. valasztok
+  await p.waitForSelector('.kk-chip');
+  await p.click('.kk-chip:has-text("Száraz, feszes fejbőr")');
+  await p.click('.kk-chip:has-text("Nyugodtabb")');
+  await p.click('.kk-chip:has-text("21")');
+  await p.fill('[aria-label="Oxygeni termék neve"]', 'Teszt fejbőr-sampon');
+  await p.click('.kk-chip:has-text("Heti 2 alkalommal")');
+  await p.click('.kk-chip:has-text("2 hét múlva")');
+  const uzenet = await p.inputValue('[aria-label^="Személyes üzenet"]');
+  assert.match(uzenet, /száraz, feszes fejbőr/);
+  assert.match(uzenet, /21 napos/);
+  await kep(p, '21-kezeles-folyamat');
+  // PDF + kuldes
+  await p.click('button:has-text("Véglegesít és küld")');
+  await dialog(p);
+  await p.waitForSelector('.kk-vegso:has-text("Kész")');
+  assert.ok(!(await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)), 'nincs vizszintes gorgetes');
   await ctx.close();
 });
 
