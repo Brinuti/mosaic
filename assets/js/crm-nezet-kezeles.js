@@ -93,8 +93,9 @@ async function folyamat(ctx, fid) {
   const rajzL2 = () => {
     if (!all.sid) { tolt(l2, h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép'), h('p', { class: 'halvany' }, 'Az igazolás után tölthető fel.')); return; }
     if (!all.kamera) { tolt(l2, h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép'), h('p', { class: 'halvany' }, `A(z) ${all.sorszam}. alkalmon nem kötelező a hajkamera-felvétel.`)); return; }
+    if (all.kepVan) { tolt(l2, h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép'), h('p', null, `A(z) ${all.sorszam}. alkalomhoz már van feltöltött kép `, jelveny('Feltöltve', 'ok')), h('p', { class: 'halvany kicsi' }, 'Egy alkalomhoz egy kép tartozik. A képet a Kameraképek menüben nézheted meg.')); return; }
     const fajl = h('input', { type: 'file', accept: 'image/*', capture: 'environment', class: 'csak-olvaso', id: 'kk-kep' });
-    const cimke = h('label', { class: 'gomb gomb-fo kk-nagy', for: 'kk-kep' }, all.kepVan ? 'Új kép feltöltése' : 'Kép készítése / feltöltése');
+    const cimke = h('label', { class: 'gomb gomb-fo kk-nagy', for: 'kk-kep' }, 'Kép készítése / feltöltése');
     fajl.addEventListener('change', async () => {
       const fj = fajl.files && fajl.files[0]; if (!fj) return;
       try {
@@ -102,10 +103,13 @@ async function folyamat(ctx, fid) {
         const { blob } = await kepAtmeretez(fj);
         await api.feltolt(`/kezelesek/${encodeURIComponent(all.sid)}/kepek`, { pont: all.sorszam }, blob);
         all.kepVan = true; ertesit('A kép feltöltve.'); rajzL2();
-      } catch (e) { ertesit(e.message || 'A feltöltés nem sikerült.', 'hiba'); cimke.textContent = 'Újra próbálom'; }
+      } catch (e) {
+        if (e.status === 409) { all.kepVan = true; ertesit('Ehhez az alkalomhoz már van feltöltött kép.'); rajzL2(); return; }
+        ertesit(e.message || 'A feltöltés nem sikerült.', 'hiba'); cimke.textContent = 'Újra próbálom';
+      }
     });
     tolt(l2, h('h3', null, h('span', { class: 'kk-szam' }, '2'), 'Hajkamera-kép'),
-      h('p', null, `A(z) ${all.sorszam}. alkalmon kötelező, mindig ugyanabból a rögzítési pontból. `, all.kepVan ? jelveny('Feltöltve', 'ok') : jelveny('Hiányzik', 'figyelem')), cimke, fajl);
+      h('p', null, `A(z) ${all.sorszam}. alkalmon kötelező, mindig ugyanabból a rögzítési pontból. `, jelveny('Hiányzik', 'figyelem')), cimke, fajl);
   };
 
   // ---- 3-6. lepes: tartalom (a kezeles fajtaja szerint) ----
