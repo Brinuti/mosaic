@@ -150,6 +150,30 @@ async function folyamat(ctx, fid) {
     tolt(hely, nyit);
     return hely;
   };
+  // a tableten (kamera mellett) elkuldott, vendeg nelkuli kepek: a kezelo itt nezi meg es rendeli ehhez a vendeghez / alkalomhoz
+  const beerkezoPanel = (csere) => {
+    const hely = h('div', { class: 'kk-beerkezo' });
+    let idozito = null;
+    const rajz = async () => {
+      if (!hely.isConnected) { clearInterval(idozito); return; }
+      try {
+        const v = await api.get('/kep-beerkezo'); const k = v.kepek || [];
+        tolt(hely, h('h4', null, 'Beérkezett képek (tablet)'), k.length ? h('div', { class: 'kk-mini-racs' }, k.map((x) => {
+          const g = h('button', { type: 'button', class: 'kk-mini', 'aria-label': `Beérkezett kép ${datumIdo(x.created_at)}` },
+            h('img', { src: api.url(`/kep-beerkezo/${encodeURIComponent(x.id)}/kep`), alt: 'Beérkezett kép', loading: 'lazy' }), h('span', { class: 'kicsi halvany' }, datumIdo(x.created_at)));
+          g.addEventListener('click', async () => {
+            const igen = await megerosites('Kép hozzárendelése', h('div', null, h('img', { src: api.url(`/kep-beerkezo/${encodeURIComponent(x.id)}/kep`), alt: 'Kiválasztott kép', style: 'max-width:100%;border-radius:8px' }),
+              h('p', null, `Ezt a képet rendeled ide: ${b.vendeg.nev}, ${all.sorszam}. alkalom?${csere ? ' A meglévő kép törlődik.' : ''}`)), { megerosit: 'Igen, ehhez a vendéghez' });
+            if (!igen) return;
+            try { await api.post(`/kep-beerkezo/${encodeURIComponent(x.id)}/hozzarendel`, { kezeles_id: all.sid, ...(csere ? { csere: true } : {}) }); await sessionBetolt().catch(() => { all.kepVan = true; }); ertesit('A kép hozzárendelve.'); clearInterval(idozito); rajzL2(); } catch (e) { ertesit(e.message || 'A hozzárendelés nem sikerült.', 'hiba'); }
+          });
+          return g;
+        })) : h('p', { class: 'halvany kicsi' }, 'Nincs beérkezett kép. A tableten a „Képküldés (tablet)” menüben küldhetők.'));
+      } catch (e) { if (e.status === 401) throw e; tolt(hely, h('p', { class: 'halvany kicsi' }, 'A beérkezett képek most nem tölthetők be.')); }
+    };
+    rajz(); idozito = setInterval(rajz, 6000);
+    return hely;
+  };
   const rajzL2 = () => {
     if (!all.sid) { tolt(l2, fej2(), h('p', { class: 'halvany' }, 'Az igazolás után tölthető fel.')); return; }
     if (!all.kamera) { tolt(l2, fej2(), h('p', { class: 'halvany' }, `A(z) ${all.sorszam}. alkalmon nem kötelező a hajkamera-felvétel.`)); return; }
@@ -162,11 +186,11 @@ async function folyamat(ctx, fid) {
         all.kepVan = false; all.kepId = null; ertesit('A kép törölve.'); rajzL2();
       }));
       tolt(l2, fej2(), h('p', null, `A(z) ${all.sorszam}. alkalomhoz van feltöltött kép `, jelveny('Feltöltve', 'ok')),
-        ...fajlGomb('kk-kep-csere', 'Kép cseréje: mentett kép kiválasztása', true, false), usbPanel(true), torol);
+        ...fajlGomb('kk-kep-csere', 'Kép cseréje: mentett kép kiválasztása', true, false), usbPanel(true), beerkezoPanel(true), torol);
       return;
     }
     tolt(l2, fej2(), h('p', null, `A(z) ${all.sorszam}. alkalmon kötelező, mindig ugyanabból a rögzítési pontból. `, jelveny('Hiányzik', 'figyelem')),
-      ...fajlGomb('kk-kep', 'Mentett kép kiválasztása (hajkamera-app)', false, false), usbPanel(false), ...fajlGomb('kk-kep-telefon', 'Fotó a készülék kamerájával', false, true));
+      beerkezoPanel(false), ...fajlGomb('kk-kep', 'Mentett kép kiválasztása (hajkamera-app)', false, false), usbPanel(false), ...fajlGomb('kk-kep-telefon', 'Fotó a készülék kamerájával', false, true));
   };
 
   // ---- 3-6. lepes: tartalom (a kezeles fajtaja szerint) ----

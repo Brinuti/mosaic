@@ -7,6 +7,7 @@ import { a5Pdf } from './pdf.js';
 import * as felmero from './assessment.js';
 import * as plan from './plan.js';
 import * as kepek from './images.js';
+import * as beerkezo from './beerkezo.js';
 import { konfigEnvbol } from './messages/kuldo.js';
 import { foglalas } from './booking.js';
 import { pdfDokumentum, fontokBetolt } from './api-dokumentum.js';
@@ -233,6 +234,42 @@ export const utak = [
     if (!k) throw new ApiHiba('NINCS_TALALAT', 'Nincs ilyen kép.', 404);
     await kepek.kepTorol(c.db, { imageId: id, staffId: c.staffId, tarolo: c.tarolo, now: c.now });
     return { torolve: true };
+  }],
+  // ---- kep-beerkezo (tablet -> masik eszkoz): vendeg nelkuli, rovid eletu kepek; a kezelo rendeli a vendeghez ------------------------------------------------
+  ['POST', '/kep-beerkezo', async (c) => {
+    await c.kot('write', 'camera_image');
+    const mime = mediaTipus(c.request);
+    if (!KEP_MIME.includes(mime)) throw new ApiHiba('ERVENYTELEN_MIME', 'Csak jpeg, png vagy webp kép tölthető fel.', 422);
+    const bajtok = await bajtokOlvas(c.request, KEP_API_MAX);
+    if (!bajtok.length) throw new ApiHiba('URES_FAJL', 'Üres fájl.', 422);
+    return beerkezo.beerkezoFeltolt(c.db, { staffId: c.staffId, bajtok, mime, tarolo: c.tarolo, now: c.now });
+  }],
+  ['GET', '/kep-beerkezo', async (c) => {
+    await c.kot('read', 'camera_image');
+    return { kepek: await beerkezo.beerkezoLista(c.db, { staffId: c.staffId, tarolo: c.tarolo, now: c.now }), orak: beerkezo.BEERKEZO_ORAK };
+  }],
+  ['GET', '/kep-beerkezo/:id/kep', async (c) => {
+    const id = c.uuid('id');
+    await c.kot('read', 'camera_image', { resourceId: id });
+    const f = await beerkezo.beerkezoOlvas(c.db, { id, staffId: c.staffId, tarolo: c.tarolo, ipHash: c.ipHash, now: c.now });
+    const mime = KEP_MIME.includes(f.mime) ? f.mime : 'application/octet-stream';
+    return fajl(f.bajtok, mime, `beerkezo-${id}.${KITERJESZTES[mime] || 'bin'}`, { inline: true });
+  }],
+  ['DELETE', '/kep-beerkezo/:id', async (c) => {
+    const id = c.uuid('id');
+    await c.kot('write', 'camera_image', { resourceId: id });
+    return beerkezo.beerkezoElvet(c.db, { id, staffId: c.staffId, tarolo: c.tarolo, now: c.now });
+  }],
+  ['POST', '/kep-beerkezo/:id/hozzarendel', async (c) => {
+    const id = c.uuid('id');
+    await c.kot('write', 'camera_image', { resourceId: id });   // jog elobb: a torzs hibaja ne arulja el a letezest
+    const t = await c.torzs();
+    const sid = azonosito(t, 'kezeles_id');
+    const s = await elso(c.db, 'SELECT guest_id FROM treatment_session WHERE id = ?1', sid);
+    await c.kot('write', 'camera_image', { guestId: s?.guest_id ?? null, resourceId: sid });
+    if (!s) throw new ApiHiba('NINCS_TALALAT', 'Nincs ilyen kezelés.', 404);
+    const r = await beerkezo.beerkezoHozzarendel(c.db, { id, sessionId: sid, staffId: c.staffId, tarolo: c.tarolo, csere: t.csere === true, now: c.now });
+    return { id: r.imageId, alkalom: r.treatmentIndex, felulirt: r.felulirt };
   }],
   ['GET', '/kepek/:id', async (c) => {
     const id = c.uuid('id');

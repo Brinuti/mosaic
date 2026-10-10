@@ -190,3 +190,8 @@ input.kod { text-align: center; letter-spacing: .5em; font-size: 1.6rem; font-fa
 @media (min-width: 900px) { .kk { max-width: 640px; } }
 .kk-video { width: 100%; max-height: 60vh; background: #000; border-radius: 8px; margin: 8px 0; object-fit: contain; }
 .kk-kamera { margin-top: 8px; }
+.kk-mini-racs { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin: 8px 0; }
+.kk-mini { display: grid; gap: 4px; padding: 6px; background: var(--feher); border: 1.5px solid var(--vonal); border-radius: 8px; cursor: pointer; font: inherit; text-align: center; }
+.kk-mini img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 6px; background: var(--krem2); }
+.kk-beerkezo { margin: 12px 0; padding: 10px; background: var(--krem2); border-radius: 8px; }
+.kk-naplo { list-style: none; padding: 0; margin: 8px 0 0; font-size: .9rem; }

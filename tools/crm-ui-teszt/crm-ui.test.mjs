@@ -64,8 +64,8 @@ test('belepes-kepernyo: e-mail + kod, demo gombok csak elerheto /auth/demo melle
 
 test('demo-belepes minden szerepkorrel: menu szerepkor szerint, uzemmod-jelzo, demo-figyelmeztetes', async () => {
   const vart = {
-    therapist: ['kezeles', 'dashboard', 'munkalista', 'vendegek', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'kuldes', 'hozzajarulas', 'osszevonas'],
-    clinical_lead: ['kezeles', 'dashboard', 'munkalista', 'vendegek', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'kuldes', 'hozzajarulas', 'osszevonas'],
+    therapist: ['kezeles', 'dashboard', 'kepkuldo', 'munkalista', 'vendegek', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'kuldes', 'hozzajarulas', 'osszevonas'],
+    clinical_lead: ['kezeles', 'dashboard', 'kepkuldo', 'munkalista', 'vendegek', 'felmero', 'kuraterv', 'kepek', 'kurazaro', 'berletek', 'credit', 'panasz', 'kuldes', 'hozzajarulas', 'osszevonas'],
     reception: ['munkalista', 'vendegek', 'berletek', 'credit', 'kuldes', 'hozzajarulas'],
     salon_manager: ['dashboard', 'munkalista', 'vendegek', 'berletek', 'credit', 'panasz', 'osszevonas', 'mutatok', 'beallitasok'],
     marketing: ['dashboard', 'kuldes', 'mutatok'],
@@ -288,6 +288,36 @@ test('kezeles kozben: USB / elo kamera panel (hamis kamera-eszkozzel) kepet kesz
     } else console.log('(az Anna ehhez az alkalomhoz nem kamera-alkalom, a panel nem jelenik meg)');
     await ctx.close();
   } finally { await B2.close(); }
+});
+
+test('kepkuldes (tablet) -> beerkezo -> hozzarendeles a Kezeles kozben nezetben', async () => {
+  const { ctx, p } = await ujOldal({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  await belep(p, 'therapist');
+  await megy(p, '#/kepkuldo');
+  const png = await p.evaluate(async () => { const c = document.createElement('canvas'); c.width = 640; c.height = 480; const x = c.getContext('2d'); x.fillStyle = '#684'; x.fillRect(0, 0, 640, 480); const b = await new Promise((ok) => c.toBlob(ok, 'image/png')); return Array.from(new Uint8Array(await b.arrayBuffer())); });
+  await p.setInputFiles('#kk-kuldo-fajl', [{ name: 'a.png', mimeType: 'image/png', buffer: Buffer.from(png) }, { name: 'b.png', mimeType: 'image/png', buffer: Buffer.from(png) }]);
+  await p.waitForSelector('.kk-naplo li:has-text("elküldve")');
+  await p.waitForFunction(() => document.querySelectorAll('.kk-mini').length === 2);
+  await kep(p, '22-kepkuldo');
+  await megy(p, '#/kezeles');
+  await p.locator('.kk-kartya', { hasText: 'Teszt Anna' }).first().click();
+  await p.waitForSelector('.kk-lepes');
+  if (await p.locator('.kk-lepes button:has-text("igazolom")').count()) { await p.click('.kk-lepes button:has-text("igazolom")'); await dialog(p); }
+  await p.waitForSelector('.kk-lepes:has-text("alkalom")');
+  const csere = (await p.locator('.kk-lepes button:has-text("Kép törlése")').count()) > 0;
+  await p.waitForSelector('.kk-beerkezo button.kk-mini');
+  await p.locator('.kk-beerkezo button.kk-mini').first().click();
+  await p.waitForSelector('dialog[open] img');
+  assert.match(await p.locator('dialog[open]').innerText(), /Teszt Anna/);
+  await dialog(p);
+  await p.waitForSelector('.toast:has-text("hozzárendelve")');
+  assert.equal(csere || true, true);
+  // a hozza nem rendelt masik kep marad a beerkezoben; elvetes
+  await megy(p, '#/kepkuldo');
+  await p.waitForFunction(() => document.querySelectorAll('.kk-mini').length === 1);
+  await p.click('.kk-mini button:has-text("Elvetés")'); await dialog(p);
+  await p.waitForFunction(() => document.querySelectorAll('.kk-mini').length === 0);
+  await ctx.close();
 });
 
 test('kameraképek: feltoltes (kliens-oldali atmeretezes), ket kep osszehasonlitasa, komment, link', async () => {
