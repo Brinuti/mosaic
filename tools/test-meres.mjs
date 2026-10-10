@@ -499,13 +499,15 @@ test('attribucio.js: kattintasazonositok platformonkent kulon + idobelyeg, elso 
   // GS1 formatumu session-sutit is ert
   assert.equal(bongeszo({ cookie: '_ga=GA1.1.1234567890.1759759200; _ga_H4206SQ0Q7=GS1.1.1759759201.3.1.1759759300.0.0.0' }).win.mhAttribucio.pillanatkep().ga4.session_id, '1759759201');
 });
-test('attribucio.js: hibas / injektalt URL-parameter nem kerul be; hozzajarulas az mh_cc-bol (dontes nelkul ures); az eles domainen alapbol NEM fut', () => {
+test('attribucio.js: hibas / injektalt URL-parameter nem kerul be; hozzajarulas az mh_cc-bol (dontes nelkul ures); az eles domainen QA-4 (DECISION #120) ota FUT', () => {
   const { win } = bongeszo({ search: '?gclid=<script>&fbclid=x&ttclid=%00&utm_source=' + 'a'.repeat(300) });
   const p = JSON.parse(JSON.stringify(win.mhAttribucio.pillanatkep())); assert.ok(!p.google && !p.tiktok && !(p.meta && p.meta.fbclid)); assert.equal(p.utm_utolso.source.length, 120);
   assert.deepEqual(JSON.parse(JSON.stringify(win.mhAttribucio.hozzajarulas())), {});
   const dontessel = bongeszo({ ls: tarolo({ mh_cc: JSON.stringify({ v: 1, t: Date.now(), fun: true, ana: false, adv: false }) }) });
   assert.deepEqual(JSON.parse(JSON.stringify(dontessel.win.mhAttribucio.hozzajarulas())), { ana: false, adv: false, fun: true });
-  for (const host of ['www.mosaicheadspa.hu', 'mosaicheadspa.hu']) assert.equal(bongeszo({ host, search: `?gclid=${GCLID}` }).win.mhAttribucio, undefined, host);
+  // QA-4 (DECISION-LOG #120): az eles domainen fut (ELES_ENGEDELYEZVE = true); a kapcsolo a kodban megmarad (veszleallitas egy sorral: false)
+  for (const host of ['www.mosaicheadspa.hu', 'mosaicheadspa.hu']) assert.ok(bongeszo({ host, search: `?gclid=${GCLID}` }).win.mhAttribucio, host);
+  assert.ok(/var ELES_ENGEDELYEZVE = true;/.test(ATTR_FORRAS) && /ELES_DOMAINEK = \['mosaicheadspa\.hu', 'www\.mosaicheadspa\.hu'\]/.test(ATTR_FORRAS), 'a kapcsolo es a domain-lista a kodban van');
 });
 test('attribucio.js kuld(): a foglalas azonositojaval POST /api/meres-erkezes (szemelyes adat nelkul), egyszer; a szerver hibaja nem akadalyoz', async () => {
   const b = bongeszo({ search: `?gclid=${GCLID}`, ls: tarolo({ mh_cc: JSON.stringify({ v: 1, t: Date.now(), fun: true, ana: true, adv: true }) }) });

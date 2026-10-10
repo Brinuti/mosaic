@@ -53,9 +53,14 @@ binding = "CRM_DB"
 database_name = "mosaic-crm-elonezet"
 database_id = "3622700b-409e-4742-9b22-1c418d76da62"
 
-# A foglalas-kulcs tabla (Cloudflare D1, QA-1 folytatas, lasd docs/booking-engine/BOOKING_ID.md): a foglalo sajat booking_id-je <-> a Salonic-foglalas parositasa.
-# Szemelyes adat nincs benne. CSAK ELONEZETKENT kotve (a PR-elonezet kulon adatbazist hasznal); az eles kotes (database_name = "mosaic-foglalas-kulcs", [[d1_databases]] binding = "KULCS_DB")
-# az elesites donteseig hianyzik: az eles /api/foglalas-kulcs 503-at ad, a koszonooldali iro ezt elnyeli (a foglalas ettol nem akad el).
+# A foglalas-kulcs tabla (Cloudflare D1, QA-1 folytatas / QA-4, lasd docs/booking-engine/BOOKING_ID.md es QA4_ELESITES.md): a foglalo sajat booking_id-je <-> a Salonic-foglalas parositasa
+# + az erkezesi adatok es az ARNYEK-meres naploja. Szemelyes adat nincs benne. Eles es elonezeti adatbazis kulon. A tablakat a kod hozza letre (CREATE TABLE IF NOT EXISTS).
+# QA-4 (DECISION-LOG #120, a smoke test utan): az eles kotes bekapcsolva, minden platform KIZAROLAG az ARNYEK-celpontokra kap esemenyt (kodban rogzitve: netlify/lib/meres/platformok.js).
+[[d1_databases]]
+binding = "KULCS_DB"
+database_name = "mosaic-foglalas-kulcs"
+database_id = "ea7b0edd-c89b-4515-a4b1-50ea25bb50cc"
+
 [[env.preview.d1_databases]]
 binding = "KULCS_DB"
 database_name = "mosaic-foglalas-kulcs-elonezet"
@@ -76,6 +81,14 @@ SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
 SMTP_USER = "mosaicheadspa@gmail.com"
 SZAMLALO_OLVASO_HASH = "d7122e43eeeca61db826d113cb06aa5028568fb63e57a00835978833b0a9b6a0"   # a foglalo-szamlalo olvaso kulcsanak SHA-256-ja (a kulcsot a tulajdonos kapta meg)
+# QA-4 (DECISION-LOG #120): ARNYEK-meres az ELES oldalon. A kuldes kizarolag ARNYEK-celpontokra mehet (Meta arnyek-dataset TEST83939, TikTok arnyek-pixel TEST83543, GA4 teszt-property, Google ARNYEK masodlagos konverziok);
+# elo pixel, elsodleges konverzio, licitalas nem erintett. A titkok (Secret tipussal, Production): META_CAPI_TOKEN, TIKTOK_EVENTS_TOKEN, GA4_TESZT_API_SECRET, GOOGLE_ARNYEK_WEBHOOK_URL; titok nelkul "nincs_hitelesites" (nem megy ki semmi).
+# Vészkapcsolo az uj irasokra: meres_kapcsolo 'iras' (POST /api/meres-admin {muvelet:"iras",be:false}) vagy MERES_IRAS_KI = "1" ide; a kuldesre: meres_kapcsolo 'mind' / platform:* / uzletag:*.
+EGYEZTETES_KULCS_HASH = "68d73ff4a920377c383026c3f6dc5ef053b95af99b30b2f7886a87672c358fbd"   # a foglalas-kulcs / parositas / meres-admin vegpontok kulcsanak SHA-256-ja; a kulcs a Zapier Storage-ban van (egyeztetes_kulcs)
+MERES_ELOSZTO = "1"
+META_TESZT_KOD = "TEST83939"
+TIKTOK_TESZT_KOD = "TEST83543"
+GA4_TESZT_MEASUREMENT_ID = "G-M5MLRLNQBP"
 # Gift Commerce Engine (/ajandek, lasd AJANDEK.md): a nem titkos valtozok IDE kellenek (a feluleten megadottakat a
 # wrangler.toml torli). Titkosak (Secret tipussal a feluleten): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, AJANDEK_TITOK.
 STRIPE_PUBLISHABLE_KEY = "pk_live_51QhTxoFv8vc2ArnLJDN8P0UApI3h2BtAA5U4Yj2SlJYZQihjqw6Sz65iWAaRB8xtQSfCnDLn067Zij1CPz3NJKyT007JIHo3hu"   # NYILVANOS kulcs (a tulajdonos adta, 2026-10-04); a titkos kulcs (STRIPE_SECRET_KEY, korlatozott rk_live) es a STRIPE_WEBHOOK_SECRET a Cloudflare Production Secret-jei

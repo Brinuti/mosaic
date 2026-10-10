@@ -4,11 +4,11 @@
 //   - ELSO es UTOLSO erintes UTM-je (utm_elso: soha nem irodik felul; utm_utolso: minden uj UTM-es erkezesnel)
 //   - _fbp, _ttp (a Meta- / TikTok-pixel sutije; csak OLVASSUK, mi nem hozunk letre sutit), GA4 client_id (_ga) + session_id (_ga_<mero-azonosito>)
 //   - hozzajarulas: a suti.js dontese (mh_cc) - a szerver SZ-38 szerint hasznalja (Meta / TikTok hozzajarulas nelkul is, Google / GA4 a valos jel szerint)
-// ARNYEKMOD: az eles domainen (mosaicheadspa.hu) alapbol NEM fut (ELES_ENGEDELYEZVE = false): az elesites kulon dontes (lasd docs/booking-engine/QA2_ARNYEK.md); elonezeten / helyben fut.
+// ARNYEKMOD: az eles domainen (mosaicheadspa.hu) QA-4 (DECISION-LOG #120) ota fut (ELES_ENGEDELYEZVE = true): csak a sajat /api/meres-erkezes vegpontra ir, a kuldes kizarolag ARNYEK-celpontokra megy (docs/booking-engine/QA4_ELESITES.md). Vészkapcsolo: meres_kapcsolo 'iras' / MERES_IRAS_KI.
 (function () {
   'use strict';
   var ELES_DOMAINEK = ['mosaicheadspa.hu', 'www.mosaicheadspa.hu'];
-  var ELES_ENGEDELYEZVE = false;
+  var ELES_ENGEDELYEZVE = true;
   var w = window, d = document;
   try {
     if (w.mhAttribucio) return;
