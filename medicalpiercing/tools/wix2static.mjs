@@ -175,7 +175,9 @@ function felugrok(html) {
 const kertek = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 let db = 0;
 for (const o of LISTA.filter((x) => !kertek.length || kertek.includes(x.kulcs))) {
-  const be = [path.join(ELO, o.kulcs + '.html'), path.join(RAW, o.kulcs + '.html')].find((f) => fs.existsSync(f)) || path.join(RAW, o.kulcs + '.html');
+  // a kirajzolt mentes csak akkor jo, ha benne van a Wix fo stilusa (lasd elo-mentes.mjs)
+  const elo = path.join(ELO, o.kulcs + '.html');
+  const be = fs.existsSync(elo) && fs.readFileSync(elo, 'utf8').includes('<style id="css_masterPage"') ? elo : path.join(RAW, o.kulcs + '.html');
   if (!fs.existsSync(be)) { console.log('nincs lementve: ' + o.kulcs); continue; }
   let html = fs.readFileSync(be, 'utf8').replace(/\u0000/g, '');
   const elotte = html.length;

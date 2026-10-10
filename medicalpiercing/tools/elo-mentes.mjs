@@ -95,6 +95,15 @@ await Promise.all(Array.from({ length: 4 }, async () => {
         }
         return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
       }, diak);
+      // a Wix neha a betoltes utan ujrarajzolja az oldalt, es kozben a sajat fo stilusat
+      // (css_masterPage) is lecsereli - ilyen mentes formazatlan lenne: ujraprobaljuk
+      if (!html.includes('<style id="css_masterPage"')) {
+        o.proba = (o.proba || 0) + 1;
+        console.log(`UJRA ${o.kulcs}: hianyzik a Wix fo stilusa (${o.proba}. probalkozas)`);
+        if (o.proba < 4) lista.push(o); else console.log(`HIBA ${o.kulcs}: a mentes nem sikerult, a tools/raw marad a forras`);
+        await p.close();
+        continue;
+      }
       fs.mkdirSync(path.dirname(path.join(OUT, o.kulcs)), { recursive: true });
       fs.writeFileSync(path.join(OUT, o.kulcs + '.html'), html);
       console.log(`${++kesz} ${o.kulcs} ${(html.length / 1024) | 0} kB`);
