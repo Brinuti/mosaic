@@ -11,7 +11,8 @@ import path from 'node:path';
 import { utvonal } from '../lib/utvonal.js';
 import { TABLAZAT_CSV, osszesSor } from '../lib/kitelepulesek.js';
 
-const DIST = path.resolve(import.meta.dirname, '../dist');
+// DIST=<mappa> mas build kiszolgalasara (pl. elotte / utana osszeveteshez, tools/klon-regresszio.mjs)
+const DIST = process.env.DIST ? path.resolve(process.env.DIST) : path.resolve(import.meta.dirname, '../dist');
 const PORT = +process.env.PORT || 4290;
 const TIPUS = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json', '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8',

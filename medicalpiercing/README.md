@@ -50,6 +50,9 @@ python3 tools/kepek-kicsinyites.py   # képek a megjelenített méretre       ->
 node tools/videok.mjs                # videók 720p-re (max. 24 MB)         -> assets/video/
 python3 tools/betu-epites.py         # saját betűk + assets/css/wix-fonts.css (csak ha a Wix betűi változtak)
 node tools/wix2static.mjs && node tools/wix2static.mjs --mobil   # -> klon/, klon/m/
+node tools/videok-mentes.mjs && node tools/videok-potlas.mjs     # a Wix csak görgetéskor kitöltött YouTube-/Facebook-videói -> tools/wix-videok.json, klon/
+node tools/orszagok-mentes.mjs       # a /kontroll országkód-választója     -> assets/data/orszagok.json, assets/img/flag-*
+node tools/varos-lapozo-mentes.mjs   # a városoldalak lapozójának céljai     -> assets/data/varos-lapozo.json
 node tools/build.mjs                 # -> dist/
 ```
 
@@ -91,28 +94,51 @@ node tools/funkcio-teszt.mjs                   # menü, fülek, galéria, diavet
 node tools/bejaras-teszt.mjs                   # MINDEN oldal asztalin és mobilon: betöltés, JS-hiba, hiányzó fájl,
                                                # menü a képernyőn, minden gomb, minden belső link célja, foglalási linkek
 node tools/kitelepulesek-teszt.mjs             # a kitelepülés-táblázat olvasója (hálózat nélkül)
+node tools/klon-regresszio.mjs                 # két klón-build összevetése képkockánként (pl. átalakítás előtt / után)
+node tools/wix-osszevetes.mjs [--mobil] [kulcs...]  # MINDEN oldal a Wix mellett: minden link/gomb célja, stílusa
+                                               # nyugalomban és rámutatáskor, képernyőképek, kattintások
+                                               # -> tools/osszevetes/<nézet>/eredmeny.json + képek
 ```
 
-Az élő Wix-oldalt megnyitó eszközök (`elo-mentes`, `elteres`, `osszevet`) alatt egyetlen mérőkérés sem
+Az élő Wix-oldalt megnyitó eszközök (`elo-mentes`, `elteres`, `osszevet`, `wix-osszevetes`) alatt egyetlen mérőkérés sem
 mehet ki (`tools/meres-tiltas.mjs`): a köszönőoldalak megnyitása különben hamis foglalást küldene.
+
+### Takarítás (`tools/takaritas.mjs`)
+
+A build a lapokból kiveszi a Wixtől örökölt, semmire nem használt kódot: a Wix-szerkesztő meta-címkéit
+(generator, X-Wix-*, etag, skype_toolbar), a Wix belső keresőjére mutató strukturált adatot (a klónban
+nincs `/search`), azokat a Wix-adatattribútumokat, amelyekre se a lapok CSS-e, se a `klon.js` / `suti.js`
+nem hivatkozik, és az oldalon belül kétszer szereplő stílusblokkok korábbi példányát (~10 MB a 320 lapon).
+A `klon/` forrás változatlan; a kinézet képkockánként azonos (`tools/klon-regresszio.mjs`).
+Ami szándékosan marad: minden mérőkód, a **Convertize** (élő A/B-teszt: mobilon a `/migren-piercing`
+látogatóinak 71%-a a `/migren-piercing-b`-re megy, cél a foglalás), a JSON-LD, a kereső-igazoló címke.
+A Wixen futó második GTM-tároló (GTM-PZ6CL4JP, csak a köszönőoldalakon) üres, ezért a klón nem tölti be.
 
 ## 3. Ami működik (a Wix helyett)
 
 | Wix-funkció | klónban |
 |---|---|
-| felugró menü (jobb felső gomb) | `klon.js` 1.: jobbról becsúszik, az aktuális oldal kiemelve (asztalin), X / fátyol / Esc zár |
-| diavetítés (blogbejegyzések alján) | `klon.js` 2.: minden dia lementve, 1 mp áttűnés, 4 mp-enként lapoz, nyilak |
+| felugró menü (jobb felső gomb) | `klon.js` 1.: jobbról becsúszik, az aktuális oldal kiemelve (asztalin), rámutatáskor sötét háttér (`T_TcVK`), X / fátyol / Esc zár; a Wix menüstílusai: `assets/css/wix/felugro.css` (`tools/popup-mentes.mjs`) |
+| diavetítés (főoldal, blogbejegyzések alján) | `klon.js` 2.: minden dia lementve, 1 mp áttűnés, 4 mp-enként lapoz, csak amíg látszik (mint a Wix), nyilak |
 | képgaléria (piercer-oldalak) | `klon.js` 3.: nyilak, húzás |
+| Pro Gallery (bélyegképes és csúszkás galériák, 34 oldal) | `klon.js` 12.: nyilak a Wix animációjával, bélyegképsáv középre igazítva, ujjal lapozás; képre kattintva teljes képernyős nézet (`?pgid=`), mobilon vissza-nyíllal |
+| fejléc görgetéskor (asztali) | `klon.js` 10.: kb. 400 px lefelé görgetés után felcsúszik, felfelé görgetve visszajön |
 | fülek (Migrén, Fejfájás) | `klon.js` 4. |
-| videódoboz | `klon.js` 5.: némítva indul, kattintásra áll/indul, hanggomb |
-| állásjelentkezési űrlapok (5 oldal) | `klon.js` 6. → `POST /api/urlap` → e-mail mellékletekkel (`functions/[[path]].js`, `lib/levelek.js`) |
+| videódoboz | `klon.js` 5.: némítva indul, kattintásra áll/indul, hanggomb (asztalon rámutatáskor, telefonon érintés után látszik) |
+| állásjelentkezési űrlapok (5 oldal) | `klon.js` 6.: a Wix-naptár (hónap- és évlapozás, évlista; asztalon a mező alatt, telefonon teljes képernyőn), a Wix hibajelzése (mező elhagyásakor és beküldéskor piros alsó vonal, görgetés az első hibás mezőhöz) → `POST /api/urlap` → e-mail mellékletekkel (`functions/[[path]].js`, `lib/levelek.js`) |
+| kontroll / garancia visszahívás-kérő (`/kontroll`, új Wix-űrlap) | `klon.js` 16.: a Wix hibaüzenetei mezőnként (mező elhagyásakor és beküldéskor, görgetés az első hibás mezőhöz), országkód-választó 238 országgal, kereséssel (telefonon alsó panel; `assets/data/orszagok.json`, `tools/orszagok-mentes.mjs`), Wix-szerű naptár (mobilon középen, „Bezárás”), legördülő lista (mobilon a böngészőé), képcsatolás → `POST /api/urlap` (`kontroll-visszahivas`) → e-mail |
+| videólejátszó („Vendégeink videó beszámolói”, 12 oldal) | `klon.js` 13.: a borítóra kattintva helyben indul a Wix-vezérlőkkel (szünet, hang, idősáv, teljes kép, kép a képben), a vezérlők 2 mp után / az egér távozásakor eltűnnek; mobilon vezérlők nélkül (mint a Wixen) |
+| blogbejegyzés képei | `klon.js` 14.: kattintásra fehér, teljes képernyős nézegető a bejegyzés összes képével (nyilak, Esc) |
+| blog-hozzászólás | `klon.js` 15.: a „Hozzászólás írása…” mező kinyílik (név, e-mail, csillagos értékelés, szöveg) → `POST /api/urlap` (`blog-hozzaszolas`) → e-mail a szalonnak; a Wix hozzászólás-szervere nincs, a jóváhagyott hozzászólást a mentés teszi ki |
+| blog RSS-csatorna (`/blog-feed.xml`) | a Wix csatornája egyszer lementve, saját képcímekkel (`tools/rss-mentes.mjs`, `assets/blog-feed.xml`) |
 | Google-vélemények (Trustindex), GYIK (Common Ninja), RTL-videó | a Wix HTML-beágyazásai helyben (`assets/embed/`), változatlan külső szolgáltatással |
-| YouTube- és Facebook-videók, Salonic-foglaló | változatlan beágyazás / link |
+| YouTube- és Facebook-videók, Salonic-foglaló | változatlan beágyazás / link; a Wix csak görgetéskor tölti ki a lejátszót, ezért a kész állapotát külön mentjük (`tools/videok-mentes.mjs` → `tools/wix-videok.json`, a `wix2static.mjs` és a `tools/videok-potlas.mjs` tölti be) |
 | Google-térkép | a Google beágyazott térképe ugyanarra a helyszínre (a Wix-féle egyedi térképstílus nélkül) |
 | süti-sáv és mérés | `suti.js`: CookieYes, GTM-T9GR4JCK (benne a GA4 G-SJT2RN62H8 és a TikTok-pixel), Google Ads AW-11097894040, Convertize, Meta-pixel 2177829632420786 (a köszönőoldalakon nem) – **csak a www.medicalpiercing.hu-n** |
 | köszönőoldalak (`/foglalas-ok`, `-mi`, `-shenmen`, `-klimax`, `-slim`, `-allergia`, `-maj`, `-lep`, `-vastagbel`, `-2piercing`, `-3piercing`, `-4piercing`, `-6piercing`) | ugyanazon a címen, átirányítás nélkül, a paraméterekkel (a Salonic szolgáltatásonként ide irányít); nincsenek a sitemapben |
 | URL-paraméterek megőrzése (a Wix `masterPage.js` kódja) | `klon.js` 8.: a beérkező paraméterek a munkamenetben maradnak; a foglalási linkek (medicalpiercing.salonic.hu) viszik az `fbclid`, `gclid`, `gbraid`, `wbraid`, `ttclid`, `utm_*` paramétereket |
-| kitelepülések (vidéki helyszínek időpontjai) | a „MP - KITELEPÜLÉSEK” Google-táblázatból: a build beírja, a lap betöltéskor frissíti (`lib/kitelepulesek.js`, `/api/kitelepulesek`, `klon.js` 10.), lásd lent |
+| városoldalak lapozója („Previous” / „Next”) | `klon.js` 9.: a Wix helyszín-gyűjteményének sorrendjében (`assets/data/varos-lapozo.json`, `tools/varos-lapozo-mentes.mjs`; a gyűjtemény bővülése után újra kell futtatni), ahol nincs előző / következő, ott tiltva |
+| kitelepülések (vidéki helyszínek időpontjai) | a „MP - KITELEPÜLÉSEK” Google-táblázatból: a build beírja, a lap betöltéskor frissíti (`lib/kitelepulesek.js`, `/api/kitelepulesek`, `klon.js` 11.), lásd lent |
 | blog | a bejegyzések, a listák és a „legutóbbi bejegyzések” statikusan (a kedvelés/megtekintés-számláló a mentéskori állapot) |
 
 ### Kitelepülések

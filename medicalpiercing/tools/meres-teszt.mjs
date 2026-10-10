@@ -44,6 +44,9 @@ async function megnyit(ut, ctx) {
   p.on('framenavigated', (f) => { if (f === p.mainFrame()) navigaciok.push(f.url()); });
   await p.goto(CIM + ut, { waitUntil: 'load' });
   await p.waitForTimeout(6000);
+  // terhelt gepen a GTM / gtag.js letoltese kesobb indulhat: legfeljebb meg 9 mp-et varunk rajuk
+  const megvan = () => betolt.some((u) => /gtm\.js\?id=GTM-T9GR4JCK/.test(u)) && betolt.some((u) => /gtag\/js\?id=AW-11097894040/.test(u));
+  for (let i = 0; i < 30 && !megvan(); i++) await p.waitForTimeout(300);
   return { p, ki, betolt, navigaciok };
 }
 const db = (lista, re) => lista.filter((u) => re.test(u)).length;
@@ -53,7 +56,9 @@ const db = (lista, re) => lista.filter((u) => re.test(u)).length;
   const ctx = await b.newContext(ASZTALI);
   const { p, ki, betolt } = await megnyit('/rolunk', ctx);
   ok('CookieYes betoltes', db(ki, /cdn-cookieyes\.com\/client_data\/a46a34517503eaa18c4543f0d0696746/) === 1);
-  ok('Google Ads AW-11097894040 (gtag.js)', db(betolt, /gtag\/js\?id=AW-11097894040/) === 1);
+  // a suti.js tolti (mint a Wix "Egyeni kod"-ja); a GTM-tarolo sajat Google-cimkeje (googtag
+  // AW-11097894040) idonkent masodszor is letolti - ez a GTM beallitasa, nem a klone
+  ok('Google Ads AW-11097894040 (gtag.js)', db(betolt, /gtag\/js\?id=AW-11097894040/) >= 1, db(betolt, /gtag\/js\?id=AW-11097894040/) + ' letoltes');
   ok('GTM-T9GR4JCK', db(betolt, /gtm\.js\?id=GTM-T9GR4JCK/) === 1);
   ok('Meta-pixel alapkod (fbevents.js)', db(betolt, /fbevents\.js/) === 1);
   ok('Meta PageView pontosan egyszer', db(ki, /facebook\.com\/tr\/?\?id=2177829632420786&ev=PageView/) === 1, String(db(ki, /facebook\.com\/tr/)) + ' Meta-keres');
@@ -75,7 +80,7 @@ for (const [i, s] of KOSZONO.entries()) {
   ok(`${ut}: 200, atiranyitas nelkul`, v.status === 200, String(v.status));
   ok(`${ut}: a cim es a parameterek valtozatlanok, nincs ujratoltes`, p.url() === CIM + ut + PARAM && navigaciok.length === 1, `${navigaciok.length} navigacio`);
   ok(`${ut}: Meta-pixel semmit nem tolt / kuld`, !db(betolt, /facebook/) && !db(ki, /facebook/) && !(await p.$('noscript img[src*="facebook"]')));
-  ok(`${ut}: GTM fut`, db(betolt, /gtm\.js\?id=GTM-T9GR4JCK/) === 1);
+  ok(`${ut}: GTM fut`, db(betolt, /gtm\.js\?id=GTM-T9GR4JCK/) === 1, db(betolt, /gtm\.js\?id=GTM-T9GR4JCK/) + ` GTM-letoltes`);
   await ctx.close();
 }
 

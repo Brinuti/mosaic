@@ -46,6 +46,9 @@ async function bejar(o, nezet, opt) {
   p.on('pageerror', (e) => { if (!KULSO_HIBA.test(e.message + (e.stack || ''))) konzol.push(e.message); });
   p.on('response', (r) => { if (sajat(r.url()) && r.status() >= 400 && !(r.request().isNavigationRequest() && r.frame() === p.mainFrame())) hiba(hol, `hianyzo fajl ${r.status()} ${r.url().slice(CIM.length)}`); });
   p.on('dialog', (d) => d.dismiss());
+  // a gombnyomasra indulo navigacio (pl. a varosoldal-lapozo location.href-je) jelzese
+  let navigal = false;
+  p.on('request', (r) => { if (r.isNavigationRequest() && r.frame() === p.mainFrame()) navigal = true; });
   try {
     const v = await p.goto(CIM + encodeURI(o.ut), { waitUntil: 'load', timeout: 60000 });
     const vart = o.kulcs === '404' ? 404 : 200;
@@ -91,8 +94,12 @@ async function bejar(o, nezet, opt) {
       latottGomb.add(fajta);
       const elotte = konzol.length;
       await g.evaluate((e) => e.scrollIntoView({ block: 'center' }));
+      navigal = false;
       await g.click({ timeout: 3000, noWaitAfter: true }).catch((e) => { if (!/intercept|not visible|outside of the viewport|detached/.test(e.message)) hiba(hol, `gomb nem kattinthato: "${nev}" ${e.message.split('\n')[0]}`); });
       await p.waitForTimeout(150);
+      // ha a gomb navigaciot inditott, megvarjuk az uj lapot (kulonben a kovetkezo lekerdezes a
+      // lebontott lapon futna)
+      if (navigal) await p.waitForEvent('load', { timeout: 10000 }).catch(() => {});
       if (konzol.length > elotte) hiba(hol, `JS-hiba a "${nev}" gombra: ${konzol.slice(elotte).join(' | ')}`);
       if (!p.url().startsWith(CIM + encodeURI(o.ut)) && !p.url().startsWith(CIM + o.ut)) {
         const u = p.url();

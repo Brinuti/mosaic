@@ -10,6 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { mindenOldal as oldalak, kulcsbol } from './oldalak.mjs';
+import { videokPotlasa } from './videok-potlas.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const MOBIL = process.argv.includes('--mobil');
@@ -223,6 +224,8 @@ for (const o of LISTA.filter((x) => !kertek.length || kertek.includes(x.kulcs)))
   html = kepekAtirasa(html);
   html = parastorageKepek(html);
   html = linkekAtirasa(html);
+  // a Wix altal csak a kepernyore gorgeteskor kitoltott videolejatszok (tools/videok-mentes.mjs)
+  html = videokPotlasa(html, MOBIL ? 'mobil' : 'asztali', o.kulcs, hianyzo);
   html = keretek(html);
   html = felugrok(html);
   html = sajatBeszuras(html);

@@ -9,13 +9,15 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 const CIMEK = {
   allasjelentkezes: 'Új állásjelentkezés',
+  'blog-hozzaszolas': 'Új blog-hozzászólás',
+  'kontroll-visszahivas': 'Új visszahívás-kérés (kontroll / garancia)',
 };
 
 export function level(nev, mezok) {
   const oldal = (mezok.find(([k]) => k === 'oldal') || [])[1] || '';
   const sorok = mezok.filter(([k]) => k !== 'oldal');
   const email = (sorok.find(([k, v]) => /e-?mail/i.test(k) && /@/.test(v)) || [])[1];
-  const nevMezo = ['Vezetéknév', 'Keresztnév'].map((k) => (sorok.find(([m]) => m === k) || [])[1]).filter(Boolean).join(' ');
+  const nevMezo = ['Vezetéknév', 'Keresztnév', 'Felhasználónév', 'Név'].map((k) => (sorok.find(([m]) => m === k) || [])[1]).filter(Boolean).join(' ');
   const cim = CIMEK[nev] || 'Új üzenet a weboldalról';
   const html = `<div style="font:15px/1.5 Arial,sans-serif;color:#222">
 <h2 style="margin:0 0 12px">${esc(cim)}</h2>
