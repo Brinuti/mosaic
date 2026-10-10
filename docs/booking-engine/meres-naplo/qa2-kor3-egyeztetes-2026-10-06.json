@@ -1,0 +1,997 @@
+{
+ "megjegyzes": "A 3. kor (8 eset, mind a negy arnyekcel, vészkapcsolo nelkul) egyeztetese a meres_kuldes tabla (elonezeti D1) alapjan, a futas utan lekerdezve. A sor-azonositok a tablabol valok.",
+ "sorok_a_koron": {
+  "tartomany": "sor_id >= 185",
+  "ga4": {
+   "elkuldve": 8,
+   "kihagyva_ernyo": 8
+  },
+  "google": {
+   "elkuldve": 8,
+   "kihagyva_ernyo": 8
+  },
+  "meta": {
+   "elkuldve": 16
+  },
+  "tiktok": {
+   "elkuldve": 16
+  },
+  "osszes_elkuldve": 48
+ },
+ "dedup": {
+  "sql": "SELECT COUNT(*) FROM (SELECT esemeny_id, platform FROM meres_kuldes GROUP BY esemeny_id, platform HAVING COUNT(*) > 1)",
+  "eredmeny": 0,
+  "megjegyzes": "a TELJES tablara (a korabbi korok sorait is beleertve): egy esemeny + platform parra egy sor van"
+ },
+ "elo_kuldes": {
+  "sql_lenyeg": "kuldo IN ('kozvetlen','zapier-webhook') AND allapot='elkuldve'; a kerelem celja: Meta dataset 28616665324611098 + test_event_code TEST83939 | TikTok pixel DB2GTTJC77UE4D1NE4MG + test_event_code (TEST83543, a korabbi korben a szintetikus TEST_MOSAIC_QA2) | GA4 G-M5MLRLNQBP | Google ARNYEK akcio 7825199989-7825200916 (customer 6088874770)",
+  "osszes_sajat_szallitoval_elkuldott_sor": {
+   "meta": 30,
+   "tiktok": 26,
+   "ga4": 15,
+   "google": 14
+  },
+  "arnyek_celpont": {
+   "meta": 30,
+   "tiktok": 26,
+   "ga4": 15,
+   "google": 14
+  },
+  "elo_celpont": 0,
+  "megjegyzes": "A Composio-s Meta-sorok (12, kuldo=composio:*) ervenytelenitettek, itt nincsenek. A Google-sorok a Zapier-webhookon at mennek (kuldo=zapier-webhook); a Zap csak a 10 ARNYEK akciora ir."
+ },
+ "esetek": {
+  "headspa": {
+   "source_entity_id": "mb_0muwyti5cenx3weivwfz0ej",
+   "esemeny_idk": [
+    "FoglalasElso:mb_0muwyti5cenx3weivwfz0ej",
+    "Schedule:mb_0muwyti5cenx3weivwfz0ej"
+   ],
+   "elkuldve": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "sorok": [
+    {
+     "sor_id": 185,
+     "esemeny_id": "FoglalasElso:mb_0muwyti5cenx3weivwfz0ej",
+     "esemeny": "FoglalasElso",
+     "tipus": "alap",
+     "platform": "meta",
+     "kuldott_nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 186,
+     "esemeny_id": "FoglalasElso:mb_0muwyti5cenx3weivwfz0ej",
+     "esemeny": "FoglalasElso",
+     "tipus": "alap",
+     "platform": "tiktok",
+     "kuldott_nev": "HeadSpa_FoglalasElso",
+     "ertek": 53800,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 187,
+     "esemeny_id": "FoglalasElso:mb_0muwyti5cenx3weivwfz0ej",
+     "esemeny": "FoglalasElso",
+     "tipus": "alap",
+     "platform": "google",
+     "kuldott_nev": "ARNYEK-7825199989",
+     "ertek": 53800,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 188,
+     "esemeny_id": "FoglalasElso:mb_0muwyti5cenx3weivwfz0ej",
+     "esemeny": "FoglalasElso",
+     "tipus": "alap",
+     "platform": "ga4",
+     "kuldott_nev": "foglalas_elso",
+     "ertek": 53800,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 204,
+     "indok": null
+    },
+    {
+     "sor_id": 189,
+     "esemeny_id": "Schedule:mb_0muwyti5cenx3weivwfz0ej",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "meta",
+     "kuldott_nev": "Schedule",
+     "ertek": 53800,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 190,
+     "esemeny_id": "Schedule:mb_0muwyti5cenx3weivwfz0ej",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "tiktok",
+     "kuldott_nev": "CompletePayment",
+     "ertek": 53800,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 191,
+     "esemeny_id": "Schedule:mb_0muwyti5cenx3weivwfz0ej",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "google",
+     "kuldott_nev": null,
+     "ertek": 53800,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+    },
+    {
+     "sor_id": 192,
+     "esemeny_id": "Schedule:mb_0muwyti5cenx3weivwfz0ej",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "ga4",
+     "kuldott_nev": null,
+     "ertek": 53800,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+    }
+   ]
+  },
+  "kartya": {
+   "source_entity_id": "pi_3UNcSHFv8vc2ArnL1yMYj1YC",
+   "esemeny_idk": [
+    "Ajandekkartya:pi_3UNcSHFv8vc2ArnL1yMYj1YC",
+    "Schedule:pi_3UNcSHFv8vc2ArnL1yMYj1YC"
+   ],
+   "elkuldve": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "sorok": [
+    {
+     "sor_id": 241,
+     "esemeny_id": "Ajandekkartya:pi_3UNcSHFv8vc2ArnL1yMYj1YC",
+     "esemeny": "Ajandekkartya",
+     "tipus": "alap",
+     "platform": "meta",
+     "kuldott_nev": "HeadSpa_Ajandekkartya",
+     "ertek": 26900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 242,
+     "esemeny_id": "Ajandekkartya:pi_3UNcSHFv8vc2ArnL1yMYj1YC",
+     "esemeny": "Ajandekkartya",
+     "tipus": "alap",
+     "platform": "tiktok",
+     "kuldott_nev": "HeadSpa_Ajandekkartya",
+     "ertek": 26900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 243,
+     "esemeny_id": "Ajandekkartya:pi_3UNcSHFv8vc2ArnL1yMYj1YC",
+     "esemeny": "Ajandekkartya",
+     "tipus": "alap",
+     "platform": "google",
+     "kuldott_nev": "ARNYEK-7825199992",
+     "ertek": 26900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 244,
+     "esemeny_id": "Ajandekkartya:pi_3UNcSHFv8vc2ArnL1yMYj1YC",
+     "esemeny": "Ajandekkartya",
+     "tipus": "alap",
+     "platform": "ga4",
+     "kuldott_nev": "purchase",
+     "ertek": 26900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 204,
+     "indok": null
+    },
+    {
+     "sor_id": 245,
+     "esemeny_id": "Schedule:pi_3UNcSHFv8vc2ArnL1yMYj1YC",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "meta",
+     "kuldott_nev": "Schedule",
+     "ertek": 26900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 246,
+     "esemeny_id": "Schedule:pi_3UNcSHFv8vc2ArnL1yMYj1YC",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "tiktok",
+     "kuldott_nev": "CompletePayment",
+     "ertek": 26900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 247,
+     "esemeny_id": "Schedule:pi_3UNcSHFv8vc2ArnL1yMYj1YC",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "google",
+     "kuldott_nev": null,
+     "ertek": 26900,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+    },
+    {
+     "sor_id": 248,
+     "esemeny_id": "Schedule:pi_3UNcSHFv8vc2ArnL1yMYj1YC",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "ga4",
+     "kuldott_nev": null,
+     "ertek": 26900,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+    }
+   ]
+  },
+  "fodrasz": {
+   "source_entity_id": "mb_0muwyuk3dcam8klnlivxivr",
+   "esemeny_idk": [
+    "Konzultacio:mb_0muwyuk3dcam8klnlivxivr",
+    "Fodrasz_AkviziciosFoglalas:mb_0muwyuk3dcam8klnlivxivr"
+   ],
+   "elkuldve": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "sorok": [
+    {
+     "sor_id": 193,
+     "esemeny_id": "Konzultacio:mb_0muwyuk3dcam8klnlivxivr",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "meta",
+     "kuldott_nev": "Fodrasz_Konzultacio",
+     "ertek": 13000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 194,
+     "esemeny_id": "Konzultacio:mb_0muwyuk3dcam8klnlivxivr",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "tiktok",
+     "kuldott_nev": "Fodrasz_Konzultacio",
+     "ertek": 13000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 195,
+     "esemeny_id": "Konzultacio:mb_0muwyuk3dcam8klnlivxivr",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "google",
+     "kuldott_nev": "ARNYEK-7825200898",
+     "ertek": 13000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 196,
+     "esemeny_id": "Konzultacio:mb_0muwyuk3dcam8klnlivxivr",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "ga4",
+     "kuldott_nev": "konzultacio",
+     "ertek": 13000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 204,
+     "indok": null
+    },
+    {
+     "sor_id": 197,
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwyuk3dcam8klnlivxivr",
+     "esemeny": "Fodrasz_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "platform": "meta",
+     "kuldott_nev": "Fodrasz_AkviziciosFoglalas",
+     "ertek": 13000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 198,
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwyuk3dcam8klnlivxivr",
+     "esemeny": "Fodrasz_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "platform": "tiktok",
+     "kuldott_nev": "Schedule",
+     "ertek": 13000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 199,
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwyuk3dcam8klnlivxivr",
+     "esemeny": "Fodrasz_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "platform": "google",
+     "kuldott_nev": null,
+     "ertek": 13000,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+    },
+    {
+     "sor_id": 200,
+     "esemeny_id": "Fodrasz_AkviziciosFoglalas:mb_0muwyuk3dcam8klnlivxivr",
+     "esemeny": "Fodrasz_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "platform": "ga4",
+     "kuldott_nev": null,
+     "ertek": 13000,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+    }
+   ]
+  },
+  "szor": {
+   "source_entity_id": "mb_0muwyvjt3fsxa31ll7ujicb",
+   "esemeny_idk": [
+    "Konzultacio:mb_0muwyvjt3fsxa31ll7ujicb",
+    "Schedule:mb_0muwyvjt3fsxa31ll7ujicb"
+   ],
+   "elkuldve": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "sorok": [
+    {
+     "sor_id": 201,
+     "esemeny_id": "Konzultacio:mb_0muwyvjt3fsxa31ll7ujicb",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "meta",
+     "kuldott_nev": "Szor_Konzultacio",
+     "ertek": 27000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 202,
+     "esemeny_id": "Konzultacio:mb_0muwyvjt3fsxa31ll7ujicb",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "tiktok",
+     "kuldott_nev": "Szor_Konzultacio",
+     "ertek": 27000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 203,
+     "esemeny_id": "Konzultacio:mb_0muwyvjt3fsxa31ll7ujicb",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "google",
+     "kuldott_nev": "ARNYEK-7825200910",
+     "ertek": 27000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 204,
+     "esemeny_id": "Konzultacio:mb_0muwyvjt3fsxa31ll7ujicb",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "ga4",
+     "kuldott_nev": "konzultacio",
+     "ertek": 27000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 204,
+     "indok": null
+    },
+    {
+     "sor_id": 205,
+     "esemeny_id": "Schedule:mb_0muwyvjt3fsxa31ll7ujicb",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "meta",
+     "kuldott_nev": "Schedule",
+     "ertek": 27000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 206,
+     "esemeny_id": "Schedule:mb_0muwyvjt3fsxa31ll7ujicb",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "tiktok",
+     "kuldott_nev": "Schedule",
+     "ertek": 27000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 207,
+     "esemeny_id": "Schedule:mb_0muwyvjt3fsxa31ll7ujicb",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "google",
+     "kuldott_nev": null,
+     "ertek": 27000,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+    },
+    {
+     "sor_id": 208,
+     "esemeny_id": "Schedule:mb_0muwyvjt3fsxa31ll7ujicb",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "ga4",
+     "kuldott_nev": null,
+     "ertek": 27000,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+    }
+   ]
+  },
+  "oxigen": {
+   "source_entity_id": "mb_0muwywjgsvskn3ddz58k11j",
+   "esemeny_idk": [
+    "FoglalasElso:mb_0muwywjgsvskn3ddz58k11j",
+    "Oxigen_AkviziciosFoglalas:mb_0muwywjgsvskn3ddz58k11j"
+   ],
+   "elkuldve": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "sorok": [
+    {
+     "sor_id": 209,
+     "esemeny_id": "FoglalasElso:mb_0muwywjgsvskn3ddz58k11j",
+     "esemeny": "FoglalasElso",
+     "tipus": "alap",
+     "platform": "meta",
+     "kuldott_nev": "Oxigen_FoglalasElso",
+     "ertek": 29900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 210,
+     "esemeny_id": "FoglalasElso:mb_0muwywjgsvskn3ddz58k11j",
+     "esemeny": "FoglalasElso",
+     "tipus": "alap",
+     "platform": "tiktok",
+     "kuldott_nev": "Oxigen_FoglalasElso",
+     "ertek": 29900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 211,
+     "esemeny_id": "FoglalasElso:mb_0muwywjgsvskn3ddz58k11j",
+     "esemeny": "FoglalasElso",
+     "tipus": "alap",
+     "platform": "google",
+     "kuldott_nev": "ARNYEK-7825200901",
+     "ertek": 29900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 212,
+     "esemeny_id": "FoglalasElso:mb_0muwywjgsvskn3ddz58k11j",
+     "esemeny": "FoglalasElso",
+     "tipus": "alap",
+     "platform": "ga4",
+     "kuldott_nev": "foglalas_elso",
+     "ertek": 29900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 204,
+     "indok": null
+    },
+    {
+     "sor_id": 213,
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwywjgsvskn3ddz58k11j",
+     "esemeny": "Oxigen_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "platform": "meta",
+     "kuldott_nev": "Oxigen_AkviziciosFoglalas",
+     "ertek": 29900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 214,
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwywjgsvskn3ddz58k11j",
+     "esemeny": "Oxigen_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "platform": "tiktok",
+     "kuldott_nev": "Schedule",
+     "ertek": 29900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 215,
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwywjgsvskn3ddz58k11j",
+     "esemeny": "Oxigen_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "platform": "google",
+     "kuldott_nev": null,
+     "ertek": 29900,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+    },
+    {
+     "sor_id": 216,
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwywjgsvskn3ddz58k11j",
+     "esemeny": "Oxigen_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "platform": "ga4",
+     "kuldott_nev": null,
+     "ertek": 29900,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+    }
+   ]
+  },
+  "pmu": {
+   "source_entity_id": "mb_0muwyxn4qj2bslab24fxgw5",
+   "esemeny_idk": [
+    "FoglalasElso:mb_0muwyxn4qj2bslab24fxgw5",
+    "Schedule:mb_0muwyxn4qj2bslab24fxgw5"
+   ],
+   "elkuldve": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "sorok": [
+    {
+     "sor_id": 217,
+     "esemeny_id": "FoglalasElso:mb_0muwyxn4qj2bslab24fxgw5",
+     "esemeny": "FoglalasElso",
+     "tipus": "alap",
+     "platform": "meta",
+     "kuldott_nev": "PMU_FoglalasElso",
+     "ertek": 99000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 218,
+     "esemeny_id": "FoglalasElso:mb_0muwyxn4qj2bslab24fxgw5",
+     "esemeny": "FoglalasElso",
+     "tipus": "alap",
+     "platform": "tiktok",
+     "kuldott_nev": "PMU_FoglalasElso",
+     "ertek": 99000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 219,
+     "esemeny_id": "FoglalasElso:mb_0muwyxn4qj2bslab24fxgw5",
+     "esemeny": "FoglalasElso",
+     "tipus": "alap",
+     "platform": "google",
+     "kuldott_nev": "ARNYEK-7825200913",
+     "ertek": 99000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 220,
+     "esemeny_id": "FoglalasElso:mb_0muwyxn4qj2bslab24fxgw5",
+     "esemeny": "FoglalasElso",
+     "tipus": "alap",
+     "platform": "ga4",
+     "kuldott_nev": "foglalas_elso",
+     "ertek": 99000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 204,
+     "indok": null
+    },
+    {
+     "sor_id": 221,
+     "esemeny_id": "Schedule:mb_0muwyxn4qj2bslab24fxgw5",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "meta",
+     "kuldott_nev": "Schedule",
+     "ertek": 99000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 222,
+     "esemeny_id": "Schedule:mb_0muwyxn4qj2bslab24fxgw5",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "tiktok",
+     "kuldott_nev": "Schedule",
+     "ertek": 99000,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 223,
+     "esemeny_id": "Schedule:mb_0muwyxn4qj2bslab24fxgw5",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "google",
+     "kuldott_nev": null,
+     "ertek": 99000,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+    },
+    {
+     "sor_id": 224,
+     "esemeny_id": "Schedule:mb_0muwyxn4qj2bslab24fxgw5",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "ga4",
+     "kuldott_nev": null,
+     "ertek": 99000,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+    }
+   ]
+  },
+  "pmu-konz": {
+   "source_entity_id": "mb_0muwyyq3k2ilfkdahj2hd2q",
+   "esemeny_idk": [
+    "Konzultacio:mb_0muwyyq3k2ilfkdahj2hd2q",
+    "Schedule:mb_0muwyyq3k2ilfkdahj2hd2q"
+   ],
+   "elkuldve": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "sorok": [
+    {
+     "sor_id": 225,
+     "esemeny_id": "Konzultacio:mb_0muwyyq3k2ilfkdahj2hd2q",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "meta",
+     "kuldott_nev": "PMU_Konzultacio",
+     "ertek": 13800,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 226,
+     "esemeny_id": "Konzultacio:mb_0muwyyq3k2ilfkdahj2hd2q",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "tiktok",
+     "kuldott_nev": "PMU_Konzultacio",
+     "ertek": 13800,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 227,
+     "esemeny_id": "Konzultacio:mb_0muwyyq3k2ilfkdahj2hd2q",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "google",
+     "kuldott_nev": "ARNYEK-7825200916",
+     "ertek": 13800,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 228,
+     "esemeny_id": "Konzultacio:mb_0muwyyq3k2ilfkdahj2hd2q",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "ga4",
+     "kuldott_nev": "konzultacio",
+     "ertek": 13800,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 204,
+     "indok": null
+    },
+    {
+     "sor_id": 229,
+     "esemeny_id": "Schedule:mb_0muwyyq3k2ilfkdahj2hd2q",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "meta",
+     "kuldott_nev": "Schedule",
+     "ertek": 13800,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 230,
+     "esemeny_id": "Schedule:mb_0muwyyq3k2ilfkdahj2hd2q",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "tiktok",
+     "kuldott_nev": "Schedule",
+     "ertek": 13800,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 231,
+     "esemeny_id": "Schedule:mb_0muwyyq3k2ilfkdahj2hd2q",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "google",
+     "kuldott_nev": null,
+     "ertek": 13800,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+    },
+    {
+     "sor_id": 232,
+     "esemeny_id": "Schedule:mb_0muwyyq3k2ilfkdahj2hd2q",
+     "esemeny": "Schedule",
+     "tipus": "ernyo",
+     "platform": "ga4",
+     "kuldott_nev": null,
+     "ertek": 13800,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+    }
+   ]
+  },
+  "oxigen-konz": {
+   "source_entity_id": "mb_0muwyzpyo43v6l6gmynvha3",
+   "esemeny_idk": [
+    "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+    "Oxigen_AkviziciosFoglalas:mb_0muwyzpyo43v6l6gmynvha3"
+   ],
+   "elkuldve": {
+    "meta": 2,
+    "tiktok": 2,
+    "ga4": 1,
+    "google": 1
+   },
+   "sorok": [
+    {
+     "sor_id": 233,
+     "esemeny_id": "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "meta",
+     "kuldott_nev": "Oxigen_Konzultacio",
+     "ertek": 8900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 234,
+     "esemeny_id": "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "tiktok",
+     "kuldott_nev": "Oxigen_Konzultacio",
+     "ertek": 8900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 235,
+     "esemeny_id": "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "google",
+     "kuldott_nev": "ARNYEK-7825200904",
+     "ertek": 8900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 236,
+     "esemeny_id": "Konzultacio:mb_0muwyzpyo43v6l6gmynvha3",
+     "esemeny": "Konzultacio",
+     "tipus": "alap",
+     "platform": "ga4",
+     "kuldott_nev": "konzultacio",
+     "ertek": 8900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 204,
+     "indok": null
+    },
+    {
+     "sor_id": 237,
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwyzpyo43v6l6gmynvha3",
+     "esemeny": "Oxigen_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "platform": "meta",
+     "kuldott_nev": "Oxigen_AkviziciosFoglalas",
+     "ertek": 8900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 238,
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwyzpyo43v6l6gmynvha3",
+     "esemeny": "Oxigen_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "platform": "tiktok",
+     "kuldott_nev": "Schedule",
+     "ertek": 8900,
+     "penznem": "HUF",
+     "allapot": "elkuldve",
+     "http_status": 200,
+     "indok": null
+    },
+    {
+     "sor_id": 239,
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwyzpyo43v6l6gmynvha3",
+     "esemeny": "Oxigen_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "platform": "google",
+     "kuldott_nev": null,
+     "ertek": 8900,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+    },
+    {
+     "sor_id": 240,
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwyzpyo43v6l6gmynvha3",
+     "esemeny": "Oxigen_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "platform": "ga4",
+     "kuldott_nev": null,
+     "ertek": 8900,
+     "penznem": "HUF",
+     "allapot": "kihagyva",
+     "http_status": null,
+     "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+    }
+   ]
+  }
+ }
+}

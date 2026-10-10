@@ -1,0 +1,707 @@
+{
+ "eset": "oxigen-elso",
+ "hivas_ideje": "2026-10-06T16:34:45.763Z",
+ "kerelem_maszkolt": {
+  "uuid": "df06e6dc-53f3-548b-1a98-873cdd61573c",
+  "host": "mosaic-oxigen.salonic.hu",
+  "felado": "Mosaic Oxigén",
+  "szolgaltatas": "Haj Oxigénterápia - 1. alkalom",
+  "munkatarsak": [],
+  "ld": {
+   "startDate": "2026-10-20T15:30:00.000Z"
+  },
+  "level_datuma": "2026-10-06T16:33:45Z",
+  "ar": 29900,
+  "vendeg": "<maszkolva: e-mail + telefon>",
+  "uj_vendeg": true
+ },
+ "szimulalt": {
+  "uj_vendeg": true,
+  "megjegyzes": "a Salonic \"uj vendeg\" jelzeset a teszt szimulalja; az ar a Salonic-level \"Price / Fizetendo varhatoan\" sorabol"
+ },
+ "egyeztetes_valasz_nyers": {
+  "ok": true,
+  "allapot": "parositott",
+  "kuldheto": true,
+  "duplikalt": false,
+  "booking_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+  "esemeny_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+  "kulcs": "14409|32009|1792510200",
+  "kulcs_forras": "salonic-oldal",
+  "service_egyezik": true,
+  "probalkozas": 1,
+  "riasztas": false,
+  "keses": false,
+  "kulcs_atadva": false,
+  "jelolt_elo_allapot": null,
+  "nyom": {
+   "uuid": "df06e6dc-53f3-548b-1a98-873cdd61573c",
+   "host": "mosaic-oxigen.salonic.hu",
+   "ag1": {
+    "ok": true,
+    "miert": null,
+    "lepesek": [
+     {
+      "url": "/booking/bookingDetails/df06e6dc-53f3-548b-1a98-873cdd61573c",
+      "status": 200,
+      "vegso": "/booking/bookingDetails/df06e6dc-53f3-548b-1a98-873cdd61573c"
+     },
+     {
+      "url": "/selectDate/?startDate=1792510200&bookingId=df06e6dc-53f3-548b-1a98-873cdd61573c",
+      "status": 200,
+      "vegso": "/selectDate/?startDate=1792510200&bookingId=df06e6dc-53f3-548b-1a98-873cdd61573c"
+     }
+    ],
+    "kulcs": "14409|32009|1792510200",
+    "serviceId": "466110"
+   },
+   "jeloltKulcsok": [
+    "14409|32009|1792510200"
+   ],
+   "kulcsForras": "salonic-oldal",
+   "jeloltek": [
+    {
+     "kulcs": "14409|32009|1792510200",
+     "jeloltek": [
+      {
+       "booking_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+       "service_id": "466110",
+       "ido": 1791304485,
+       "kuldve_uuid": null
+      }
+     ]
+    }
+   ],
+   "talalatok": [
+    {
+     "kulcs": "14409|32009|1792510200",
+     "booking_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+     "service_id": "466110",
+     "forras": "koszonooldal"
+    }
+   ],
+   "valasztas": [
+    {
+     "kulcs": "14409|32009|1792510200",
+     "allapot": "valasztott",
+     "miert": null
+    }
+   ]
+  },
+  "esemeny_kuldes": {
+   "allapot": "kesz",
+   "source_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+   "erkezesi_adat": true,
+   "esemenyek": [
+    {
+     "esemeny_id": "FoglalasElso:mb_0muwwfe8qpioj7cf5nz1dyl",
+     "nev": "FoglalasElso",
+     "tipus": "alap",
+     "ertek": 29900,
+     "ertek_forras": "tenyleges_ar",
+     "salonic_ar": 29900,
+     "nyitott": false,
+     "platformok": {
+      "meta": {
+       "id": 57,
+       "allapot": "elkuldve",
+       "http_status": 200
+      },
+      "tiktok": {
+       "id": 62,
+       "allapot": "kihagyva",
+       "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont"
+      },
+      "google": {
+       "id": 66,
+       "allapot": "nincs_hitelesites",
+       "http_status": null
+      },
+      "ga4": {
+       "id": 71,
+       "allapot": "elkuldve",
+       "http_status": 204
+      }
+     }
+    },
+    {
+     "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwwfe8qpioj7cf5nz1dyl",
+     "nev": "Oxigen_AkviziciosFoglalas",
+     "tipus": "ernyo",
+     "ertek": 29900,
+     "ertek_forras": "tenyleges_ar",
+     "salonic_ar": 29900,
+     "nyitott": false,
+     "platformok": {
+      "meta": {
+       "id": 81,
+       "allapot": "elkuldve",
+       "http_status": 200
+      },
+      "tiktok": {
+       "id": 87,
+       "allapot": "kihagyva",
+       "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont"
+      },
+      "google": {
+       "id": 91,
+       "allapot": "kihagyva",
+       "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)"
+      },
+      "ga4": {
+       "id": 94,
+       "allapot": "kihagyva",
+       "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)"
+      }
+     }
+    }
+   ],
+   "elo_allapot": "aktiv",
+   "jelleg": "elso",
+   "kupon": false,
+   "uj_vendeg": true,
+   "salonic_ar": 29900,
+   "ertek": 29900,
+   "ar_forras": "bejovo",
+   "uzletag": "oxigen"
+  }
+ },
+ "szerveres_naplo_nyers": {
+  "ok": true,
+  "source_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+  "erkezes": {
+   "source_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+   "uzletag": "oxigen",
+   "tipus": "foglalas",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_OXIGEN-ELSO_MUWWFA02_GCLID",
+      "ts": 1791304460
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_OXIGEN-ELSO_MUWWFA02_WBRAID",
+      "ts": 1791304463
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791304463000.IwAR_TESZT_OXIGEN-ELSO_MUWWFA02_FBCLID",
+     "fbclid": "IwAR_TESZT_OXIGEN-ELSO_MUWWFA02_FBCLID",
+     "ts": 1791304463
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_OXIGEN-ELSO_MUWWFA02_TTCLID",
+      "ts": 1791304463
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_oxigen-elso_elso",
+     "content": "hirdetes_a",
+     "ts": 1791304460
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_oxigen-elso_utolso",
+     "ts": 1791304463
+    },
+    "fbp": "fb.1.1791299458000.4374439124",
+    "ttp": "TESZT_OXIGEN-ELSO_MUWWFA02_ttp_gz4tfleywd",
+    "ga4": {
+     "client_id": "219415595.1791218058",
+     "session_id": "1791303258",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": false,
+    "fun": true,
+    "dontes": true
+   },
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+   "ip": "160.79.106.xxx",
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok",
+   "bongeszo": {
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok",
+    "first_booking": true,
+    "szolgaltatas": "Haj Oxigénterápia - 1. alkalom",
+    "kategoria": "",
+    "ar": 29900,
+    "g": "g:3385031",
+    "munkatars": "",
+    "bookingUrl": "https://mosaic-oxigen.salonic.hu/guestData/?anyone=true&employeeId=32009&placeId=14409&serviceId=466110&startDate=1792510200&back=mb_0muwwfe8qpioj7cf5nz1dyl"
+   },
+   "ido": 1791304485,
+   "frissitve": 1791304485
+  },
+  "kuldesek": [
+   {
+    "id": 57,
+    "esemeny_id": "FoglalasElso:mb_0muwwfe8qpioj7cf5nz1dyl",
+    "esemeny_nev": "FoglalasElso",
+    "esemeny_tipus": "alap",
+    "platform": "meta",
+    "platform_nev": "Oxigen_FoglalasElso",
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 29900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": false,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "hozzajarulas nelkul is kuldjuk (SZ-38)"
+     }
+    },
+    "kerelem": {
+     "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "dataset": "28616665324611098",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST83939"
+     },
+     "body": {
+      "data": [
+       {
+        "event_name": "Oxigen_FoglalasElso",
+        "event_time": 1791304425,
+        "event_id": "FoglalasElso:mb_0muwwfe8qpioj7cf5nz1dyl",
+        "action_source": "website",
+        "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok",
+        "user_data": {
+         "em": [
+          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         ],
+         "ph": [
+          "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+         ],
+         "external_id": [
+          "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346"
+         ],
+         "client_ip_address": "160.79.106.135",
+         "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+         "fbc": "fb.1.1791304463000.IwAR_TESZT_OXIGEN-ELSO_MUWWFA02_FBCLID",
+         "fbp": "fb.1.1791299458000.4374439124"
+        },
+        "custom_data": {
+         "value": 29900,
+         "currency": "HUF",
+         "order_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+         "content_name": "Haj Oxigénterápia - 1. alkalom",
+         "content_category": "oxigen",
+         "esemeny_tipus": "alap",
+         "ertek_forras": "tenyleges_ar",
+         "salonic_ar": 29900,
+         "utm_source": "facebook",
+         "utm_campaign": "qa2_oxigen-elso_utolso"
+        }
+       }
+      ],
+      "test_event_code": "TEST83939",
+      "partner_agent": "mosaic-qa2-arnyek"
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"events_received\":1,\"messages\":[],\"fbtrace_id\":\"ALP5cYddl9VcxeeEREoXmv_\"}",
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791304489,
+    "frissitve": 1791304489
+   },
+   {
+    "id": 62,
+    "esemeny_id": "FoglalasElso:mb_0muwwfe8qpioj7cf5nz1dyl",
+    "esemeny_nev": "FoglalasElso",
+    "esemeny_tipus": "alap",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+    "allapot": "kihagyva",
+    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
+    "ertek": 29900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": false,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "hozzajarulas nelkul is kuldjuk (SZ-38)"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791304489,
+    "frissitve": 1791304489
+   },
+   {
+    "id": 66,
+    "esemeny_id": "FoglalasElso:mb_0muwwfe8qpioj7cf5nz1dyl",
+    "esemeny_nev": "FoglalasElso",
+    "esemeny_tipus": "alap",
+    "platform": "google",
+    "platform_nev": "ARNYEK-7825200901",
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+    "allapot": "nincs_hitelesites",
+    "indok": "a kerelem kesz, a kuldeshez hitelesites kell (kulso szallito)",
+    "ertek": 29900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": false,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "valos jel (DENIED), hash-elt azonosito nelkul"
+     }
+    },
+    "kerelem": {
+     "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "customer_id": "6088874770",
+      "conversion_action_id": "7825200901",
+      "athidalas": "zapier-webhook"
+     },
+     "body": {
+      "conversion_action_id": "7825200901",
+      "wbraid": "CoMKCQ_TESZT_OXIGEN-ELSO_MUWWFA02_WBRAID",
+      "conversion_date_time": "2026-10-06 18:33:45+02:00",
+      "value": 29900,
+      "currency": "HUF",
+      "order_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+      "event_id": "FoglalasElso:mb_0muwwfe8qpioj7cf5nz1dyl",
+      "ad_user_data": "DENIED",
+      "ad_personalization": "DENIED"
+     }
+    },
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791304489,
+    "frissitve": 1791304489
+   },
+   {
+    "id": 71,
+    "esemeny_id": "FoglalasElso:mb_0muwwfe8qpioj7cf5nz1dyl",
+    "esemeny_nev": "FoglalasElso",
+    "esemeny_tipus": "alap",
+    "platform": "ga4",
+    "platform_nev": "foglalas_elso",
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 29900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": false,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "valos jel (DENIED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": {
+     "url": "https://www.google-analytics.com/mp/collect?measurement_id=G-M5MLRLNQBP",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "measurement_id": "G-M5MLRLNQBP"
+     },
+     "body": {
+      "client_id": "219415595.1791218058",
+      "timestamp_micros": "1791304425000000",
+      "consent": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "events": [
+       {
+        "name": "foglalas_elso",
+        "params": {
+         "session_id": "1791303258",
+         "engagement_time_msec": 1,
+         "value": 29900,
+         "currency": "HUF",
+         "esemeny_id": "FoglalasElso:mb_0muwwfe8qpioj7cf5nz1dyl",
+         "uzletag": "oxigen",
+         "ertek_forras": "tenyleges_ar",
+         "salonic_ar": 29900,
+         "source": "facebook",
+         "medium": "paid",
+         "campaign": "qa2_oxigen-elso_utolso"
+        }
+       }
+      ]
+     }
+    },
+    "http_status": 204,
+    "platform_valasz": "{\"ga4_validacio\":{\"vegpont\":\"/debug/mp/collect\",\"validationMessages\":[]},\"collect_status\":204,\"collect_valasz\":\"\"}",
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791304489,
+    "frissitve": 1791304489
+   },
+   {
+    "id": 81,
+    "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwwfe8qpioj7cf5nz1dyl",
+    "esemeny_nev": "Oxigen_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "meta",
+    "platform_nev": "Oxigen_AkviziciosFoglalas",
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 29900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": false,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "hozzajarulas nelkul is kuldjuk (SZ-38)"
+     }
+    },
+    "kerelem": {
+     "url": "https://graph.facebook.com/v23.0/28616665324611098/events",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "dataset": "28616665324611098",
+      "nev": "MOSAIC ARNYEK meres-teszt",
+      "test_event_code": "TEST83939"
+     },
+     "body": {
+      "data": [
+       {
+        "event_name": "Oxigen_AkviziciosFoglalas",
+        "event_time": 1791304425,
+        "event_id": "Oxigen_AkviziciosFoglalas:mb_0muwwfe8qpioj7cf5nz1dyl",
+        "action_source": "website",
+        "event_source_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/oxigenterapia-ok",
+        "user_data": {
+         "em": [
+          "aa1748e22447c8298ba1f7bf6119375d0b122a7c1156e22a6f19ad33d1ad1a01"
+         ],
+         "ph": [
+          "b212433f238d35982a56ba99747d96a6c155da9bf3913a294d1fe2613f12f3f4"
+         ],
+         "external_id": [
+          "0776fb2bc21bbedbff88f0483ddcb907bf6eebfbdcf0e0f45d18f7c1a343d346"
+         ],
+         "client_ip_address": "160.79.106.135",
+         "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+         "fbc": "fb.1.1791304463000.IwAR_TESZT_OXIGEN-ELSO_MUWWFA02_FBCLID",
+         "fbp": "fb.1.1791299458000.4374439124"
+        },
+        "custom_data": {
+         "value": 29900,
+         "currency": "HUF",
+         "order_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+         "content_name": "Haj Oxigénterápia - 1. alkalom",
+         "content_category": "oxigen",
+         "esemeny_tipus": "ernyo",
+         "ertek_forras": "tenyleges_ar",
+         "salonic_ar": 29900,
+         "utm_source": "facebook",
+         "utm_campaign": "qa2_oxigen-elso_utolso"
+        }
+       }
+      ],
+      "test_event_code": "TEST83939",
+      "partner_agent": "mosaic-qa2-arnyek"
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"events_received\":1,\"messages\":[],\"fbtrace_id\":\"A64rYlBCNGOJNfC-x1PdAO3\"}",
+    "kuldo": "kozvetlen",
+    "probalkozas": 1,
+    "letrehozva": 1791304489,
+    "frissitve": 1791304489
+   },
+   {
+    "id": 87,
+    "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwwfe8qpioj7cf5nz1dyl",
+    "esemeny_nev": "Oxigen_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+    "allapot": "kihagyva",
+    "indok": "a platform erre az uzletagra nem hirdet / nincs arnyek-celpont",
+    "ertek": 29900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": false,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "hozzajarulas nelkul is kuldjuk (SZ-38)"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791304489,
+    "frissitve": 1791304489
+   },
+   {
+    "id": 91,
+    "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwwfe8qpioj7cf5nz1dyl",
+    "esemeny_nev": "Oxigen_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "google",
+    "platform_nev": null,
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+    "ertek": 29900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": false,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "valos jel (DENIED), hash-elt azonosito nelkul"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791304489,
+    "frissitve": 1791304489
+   },
+   {
+    "id": 94,
+    "esemeny_id": "Oxigen_AkviziciosFoglalas:mb_0muwwfe8qpioj7cf5nz1dyl",
+    "esemeny_nev": "Oxigen_AkviziciosFoglalas",
+    "esemeny_tipus": "ernyo",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "oxigen",
+    "source_id": "mb_0muwwfe8qpioj7cf5nz1dyl",
+    "allapot": "kihagyva",
+    "indok": "a GA4-be csak alapesemeny megy (az ernyo nem)",
+    "ertek": 29900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": false,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "DENIED",
+       "ad_personalization": "DENIED"
+      },
+      "megjegyzes": "valos jel (DENIED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791304489,
+    "frissitve": 1791304489
+   }
+  ]
+ }
+}

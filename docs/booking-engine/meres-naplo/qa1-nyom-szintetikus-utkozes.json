@@ -1,0 +1,297 @@
+{
+ "kulcs": "10427|24354|1805275800",
+ "start_iso_utc": "2027-03-17T09:30:00.000Z",
+ "A_koszono_ir": {
+  "status": 200,
+  "ok": true,
+  "irva": true,
+  "idempotens": false,
+  "utkozes": false,
+  "kulcs": "10427|24354|1805275800",
+  "serviceId": "302999"
+ },
+ "B_koszono_ismet": {
+  "status": 200,
+  "ok": true,
+  "irva": false,
+  "idempotens": true,
+  "utkozes": false,
+  "kulcs": "10427|24354|1805275800",
+  "serviceId": "302999"
+ },
+ "C_koszono_mas": {
+  "status": 200,
+  "ok": true,
+  "irva": false,
+  "idempotens": false,
+  "utkozes": true,
+  "kulcs": "10427|24354|1805275800",
+  "serviceId": "302999",
+  "meglevoBookingId": "mb_szintetikusf1138801"
+ },
+ "D_email_1": {
+  "status": 200,
+  "ok": true,
+  "allapot": "parositott",
+  "kuldheto": true,
+  "duplikalt": false,
+  "booking_id": "mb_szintetikusf1138801",
+  "esemeny_id": "mb_szintetikusf1138801",
+  "kulcs": "10427|24354|1805275800",
+  "kulcs_forras": "nevtabla",
+  "service_egyezik": true,
+  "probalkozas": 1,
+  "riasztas": false,
+  "keses": false,
+  "nyom": {
+   "uuid": "3cc833a6-3cd6-44ed-ac52-aa47fd4f5e0a",
+   "host": "mosaicheadspa.salonic.hu",
+   "ag1": {
+    "ok": false,
+    "miert": "a megtekintes oldalon nincs startDate",
+    "lepesek": [
+     {
+      "url": "/booking/bookingDetails/3cc833a6-3cd6-44ed-ac52-aa47fd4f5e0a",
+      "status": 200,
+      "vegso": "/"
+     }
+    ],
+    "kulcs": null,
+    "serviceId": null
+   },
+   "ag2": {
+    "ok": true,
+    "miert": null,
+    "felado": "Mosaic Headspa",
+    "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+    "munkatarsak": [
+     "Páros kezelés"
+    ],
+    "idopontSzoveg": "March 17. (Wednesday) 10:30 - 11:50",
+    "idopontForras": "ld+json",
+    "startUnix": 1805275800,
+    "ldUnix": 1805275800,
+    "szovegUnix": 1805275800,
+    "jeloltEmployeeIds": [
+     24354
+    ],
+    "serviceIds": [
+     "302999"
+    ],
+    "kulcsok": [
+     "10427|24354|1805275800"
+    ],
+    "serviceId": "302999"
+   },
+   "jeloltKulcsok": [
+    "10427|24354|1805275800"
+   ],
+   "kulcsForras": "nevtabla",
+   "talalatok": [
+    {
+     "kulcs": "10427|24354|1805275800",
+     "booking_id": "mb_szintetikusf1138801",
+     "service_id": "302999",
+     "forras": "back"
+    }
+   ]
+  }
+ },
+ "D2_email_1_ismet": {
+  "status": 200,
+  "ok": true,
+  "allapot": "parositott",
+  "kuldheto": false,
+  "duplikalt": true,
+  "booking_id": "mb_szintetikusf1138801",
+  "esemeny_id": "mb_szintetikusf1138801",
+  "kulcs": "10427|24354|1805275800",
+  "kulcs_forras": "nevtabla",
+  "probalkozas": 1,
+  "riasztas": false,
+  "nyom": {
+   "uuid": "3cc833a6-3cd6-44ed-ac52-aa47fd4f5e0a",
+   "host": "mosaicheadspa.salonic.hu"
+  }
+ },
+ "E_email_2": {
+  "status": 200,
+  "ok": true,
+  "allapot": "ellentmondas",
+  "kuldheto": false,
+  "duplikalt": false,
+  "riasztas": true,
+  "probalkozas": 1,
+  "miert": "a kulcshoz tartozo booking_id mar mas Salonic-foglalasra kiment (kulcs-utkozes: ujrafoglalt idopont?)",
+  "kulcs": "10427|24354|1805275800",
+  "kulcs_forras": "nevtabla",
+  "nyom": {
+   "uuid": "a7b6d991-1984-4f7c-b68f-838367b3a9c1",
+   "host": "mosaicheadspa.salonic.hu",
+   "ag1": {
+    "ok": false,
+    "miert": "a megtekintes oldalon nincs startDate",
+    "lepesek": [
+     {
+      "url": "/booking/bookingDetails/a7b6d991-1984-4f7c-b68f-838367b3a9c1",
+      "status": 200,
+      "vegso": "/"
+     }
+    ],
+    "kulcs": null,
+    "serviceId": null
+   },
+   "ag2": {
+    "ok": true,
+    "miert": null,
+    "felado": "Mosaic Headspa",
+    "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+    "munkatarsak": [
+     "Páros kezelés"
+    ],
+    "idopontSzoveg": "March 17. (Wednesday) 10:30 - 11:50",
+    "idopontForras": "ld+json",
+    "startUnix": 1805275800,
+    "ldUnix": 1805275800,
+    "szovegUnix": 1805275800,
+    "jeloltEmployeeIds": [
+     24354
+    ],
+    "serviceIds": [
+     "302999"
+    ],
+    "kulcsok": [
+     "10427|24354|1805275800"
+    ],
+    "serviceId": "302999"
+   },
+   "jeloltKulcsok": [
+    "10427|24354|1805275800"
+   ],
+   "kulcsForras": "nevtabla",
+   "talalatok": [
+    {
+     "kulcs": "10427|24354|1805275800",
+     "booking_id": "mb_szintetikusf1138801",
+     "service_id": "302999",
+     "forras": "back"
+    }
+   ],
+   "egyediIndex": "a booking_id-ra mar ment esemeny (mas UUID-rol)"
+  }
+ },
+ "F_riasztas": {
+  "ok": true,
+  "db": 3,
+  "riasztas": true,
+  "lista": [
+   {
+    "uuid": "a7b6d991-1984-4f7c-b68f-838367b3a9c1",
+    "allapot": "ellentmondas",
+    "probalkozas": 1,
+    "kulcs": "10427|24354|1805275800",
+    "kulcs_forras": "nevtabla",
+    "letrehozva": 1791295608,
+    "frissitve": 1791295608
+   },
+   {
+    "uuid": "eed25ef2-54c1-4b4b-87dd-dbbeda3689be",
+    "allapot": "ellentmondas",
+    "probalkozas": 1,
+    "kulcs": "10427|24354|1804671000",
+    "kulcs_forras": "nevtabla",
+    "letrehozva": 1791295587,
+    "frissitve": 1791295587
+   },
+   {
+    "uuid": "075d79dc-a3c3-4dde-9691-d54e04204297",
+    "allapot": "ellentmondas",
+    "probalkozas": 1,
+    "kulcs": "10427|24354|1793457000",
+    "kulcs_forras": "nevtabla",
+    "letrehozva": 1791295576,
+    "frissitve": 1791295576
+   }
+  ]
+ },
+ "G_email_3_nincs_kulcs": {
+  "status": 200,
+  "ok": true,
+  "allapot": "fuggoben",
+  "kuldheto": false,
+  "riasztas": false,
+  "probalkozas": 1,
+  "ujraprobal_mp": 60,
+  "kulcs": "10427|24354|1805362200",
+  "kulcs_forras": "nevtabla",
+  "nyom": {
+   "uuid": "e82fd24f-d445-4ed0-8851-e46c5fd4c51d",
+   "host": "mosaicheadspa.salonic.hu",
+   "ag1": {
+    "ok": false,
+    "miert": "a megtekintes oldalon nincs startDate",
+    "lepesek": [
+     {
+      "url": "/booking/bookingDetails/e82fd24f-d445-4ed0-8851-e46c5fd4c51d",
+      "status": 200,
+      "vegso": "/"
+     }
+    ],
+    "kulcs": null,
+    "serviceId": null
+   },
+   "ag2": {
+    "ok": true,
+    "miert": null,
+    "felado": "Mosaic Headspa",
+    "szolgaltatas": "💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)",
+    "munkatarsak": [
+     "Páros kezelés"
+    ],
+    "idopontSzoveg": "March 18. (Thursday) 10:30 - 11:50",
+    "idopontForras": "ld+json",
+    "startUnix": 1805362200,
+    "ldUnix": 1805362200,
+    "szovegUnix": 1805362200,
+    "jeloltEmployeeIds": [
+     24354
+    ],
+    "serviceIds": [
+     "302999"
+    ],
+    "kulcsok": [
+     "10427|24354|1805362200"
+    ],
+    "serviceId": "302999"
+   },
+   "jeloltKulcsok": [
+    "10427|24354|1805362200"
+   ],
+   "kulcsForras": "nevtabla",
+   "talalatok": []
+  }
+ },
+ "G2_azonnal_ismet": {
+  "status": 200,
+  "ok": true,
+  "allapot": "fuggoben",
+  "kuldheto": false,
+  "probalkozas": 1,
+  "ujraprobal_mp": 59,
+  "riasztas": false,
+  "korai": true,
+  "nyom": {
+   "uuid": "e82fd24f-d445-4ed0-8851-e46c5fd4c51d",
+   "host": "mosaicheadspa.salonic.hu"
+  }
+ },
+ "uuidok": {
+  "U1": "3cc833a6-3cd6-44ed-ac52-aa47fd4f5e0a",
+  "U2": "a7b6d991-1984-4f7c-b68f-838367b3a9c1",
+  "U3": "e82fd24f-d445-4ed0-8851-e46c5fd4c51d"
+ },
+ "booking_idk": {
+  "B1": "mb_szintetikusf1138801",
+  "B2": "mb_szintetikus749f65e4"
+ }
+}

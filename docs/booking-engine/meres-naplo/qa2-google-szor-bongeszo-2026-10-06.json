@@ -1,0 +1,435 @@
+{
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "eset": "szor",
+ "uzletag": "szor",
+ "hozzajarulas_profil": "dontes_nelkul",
+ "hozzajarulas": null,
+ "szintetikus_adatok": {
+  "megjegyzes": "a kattintasazonositok es a sutik SZINTETIKUSAK (TESZT-jelolesuek); az elonezeten nem fut pixel / GA, ezert a sutiket a teszt allitja be",
+  "elso_latogatas": {
+   "utm_source": "google",
+   "utm_medium": "cpc",
+   "utm_campaign": "qa2_szor_elso",
+   "utm_content": "hirdetes_a",
+   "gclid": "Cj0KCQjw_TESZT_SZOR_MUWXTIIF_GCLID"
+  },
+  "utolso_latogatas": {
+   "utm_source": "facebook",
+   "utm_medium": "paid",
+   "utm_campaign": "qa2_szor_utolso",
+   "fbclid": "IwAR_TESZT_SZOR_MUWXTIIF_FBCLID",
+   "ttclid": "E.C.P.TESZT_SZOR_MUWXTIIF_TTCLID",
+   "wbraid": "CoMKCQ_TESZT_SZOR_MUWXTIIF_WBRAID"
+  },
+  "sutik": {
+   "_fbp": "fb.1.1791301802000.6568686729",
+   "_ttp": "TESZT_SZOR_MUWXTIIF_ttp_reszv420pk",
+   "_ga": "GA1.1.613457504.1791220402",
+   "_ga_H4206SQ0Q7": "GS2.1.s1791305602$o1$g1$t1791306202$j0$l0$h0"
+  }
+ },
+ "pillanatkep_a_foglalas_elott": {
+  "google": {
+   "gclid": {
+    "ertek": "Cj0KCQjw_TESZT_SZOR_MUWXTIIF_GCLID",
+    "ts": 1791306802
+   },
+   "wbraid": {
+    "ertek": "CoMKCQ_TESZT_SZOR_MUWXTIIF_WBRAID",
+    "ts": 1791306805
+   }
+  },
+  "meta": {
+   "fbc": "fb.1.1791306805000.IwAR_TESZT_SZOR_MUWXTIIF_FBCLID",
+   "fbclid": "IwAR_TESZT_SZOR_MUWXTIIF_FBCLID",
+   "ts": 1791306805
+  },
+  "tiktok": {
+   "ttclid": {
+    "ertek": "E.C.P.TESZT_SZOR_MUWXTIIF_TTCLID",
+    "ts": 1791306805
+   }
+  },
+  "utm_elso": {
+   "source": "google",
+   "medium": "cpc",
+   "campaign": "qa2_szor_elso",
+   "content": "hirdetes_a",
+   "ts": 1791306802
+  },
+  "utm_utolso": {
+   "source": "facebook",
+   "medium": "paid",
+   "campaign": "qa2_szor_utolso",
+   "ts": 1791306805
+  },
+  "fbp": "fb.1.1791301802000.6568686729",
+  "ttp": "TESZT_SZOR_MUWXTIIF_ttp_reszv420pk",
+  "ga4": {
+   "client_id": "613457504.1791220402",
+   "session_id": "1791305602",
+   "measurement_id": "G-H4206SQ0Q7"
+  }
+ },
+ "iframe_src": "https://mosaic-elysion.salonic.hu/guestData/?placeId=14586&serviceId=476477&employeeId=-1&startDate=1792499400&back=mb_0muwxtl8sadwx1nq0uid9fx",
+ "azonosito_a_keret_cimeben": "mb_0muwxtl8sadwx1nq0uid9fx",
+ "keret_url": "https://mosaic-elysion.salonic.hu/guestData/?anyone=true&employeeId=32417&placeId=14586&serviceId=476477&startDate=1792499400&back=mb_0muwxtl8sadwx1nq0uid9fx",
+ "kontextus": {
+  "id": "mb_0muwxtl8sadwx1nq0uid9fx",
+  "created": 1791306805708,
+  "seen": 1791306808775,
+  "business": "laser",
+  "source_page": "/booking-test",
+  "service_id": "476477",
+  "slot_unix": 1792499400,
+  "staff_id": "-1",
+  "carrier": "back",
+  "sent_at": 1791306808775,
+  "returned": null,
+  "completed_at": null
+ },
+ "salonic_status": 200,
+ "redirect_url": "https://www.mosaicheadspa.hu/elysion-ok?first_booking=true&service=Ingyenes+konzult%C3%A1ci%C3%B3+zs%C3%B3fihoz%21&category=V%C3%A9gleges+Sz%C5%91rtelen%C3%ADt%C3%A9s+-+1.+Alkalom&price=0&location=Mosaic+Elysion&employee=Elysion+Pro+Sz%C5%91rtelen%C3%ADt%C3%A9s&g=g:3353226&bookingUrl=https%3A%2F%2Fmosaic-elysion.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32417%26placeId%3D14586%26serviceId%3D476477%26startDate%3D1792499400%26back%3Dmb_0muwxtl8sadwx1nq0uid9fx",
+ "salonic_uuid": "a611d5a2-fa5f-8a50-309e-c762cf02d037",
+ "kereten_at_probalt_eles_navigaciok": [
+  "https://www.mosaicheadspa.hu/elysion-ok?first_booking=true&service=Ingyenes+konzult%C3%A1ci%C3%B3+zs%C3%B3fihoz%21&category=V%C3%A9gleges+Sz%C5%91rtelen%C3%ADt%C3%A9s+-+1.+Alkalom&price=0&location=Mosaic+Elysion&employee=Elysion+Pro+Sz%C5%91rtelen%C3%ADt%C3%A9s&g=g:3353226&bookingUrl=https%3A%2F%2Fmosaic-elysion.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32417%26placeId%3D14586%26serviceId%3D476477%26startDate%3D1792499400%26back%3Dmb_0muwxtl8sadwx1nq0uid9fx"
+ ],
+ "salonic_host": "mosaic-elysion.salonic.hu",
+ "lemondo_url": "https://mosaic-elysion.salonic.hu/booking/cancelBooking/a611d5a2-fa5f-8a50-309e-c762cf02d037",
+ "koszono_query": {
+  "first_booking": "true",
+  "service": "Ingyenes konzultáció zsófihoz!",
+  "category": "Végleges Szőrtelenítés - 1. Alkalom",
+  "price": "0",
+  "location": "Mosaic Elysion",
+  "employee": "Elysion Pro Szőrtelenítés",
+  "g": "g:3353226",
+  "bookingUrl": "https://mosaic-elysion.salonic.hu/guestData/?anyone=true&employeeId=32417&placeId=14586&serviceId=476477&startDate=1792499400&back=mb_0muwxtl8sadwx1nq0uid9fx"
+ },
+ "bookingUrl": "https://mosaic-elysion.salonic.hu/guestData/?anyone=true&employeeId=32417&placeId=14586&serviceId=476477&startDate=1792499400&back=mb_0muwxtl8sadwx1nq0uid9fx",
+ "bookingUrl_elemzes": {
+  "ok": true,
+  "host": "mosaic-elysion.salonic.hu",
+  "uzletag": "laser",
+  "placeId": 14586,
+  "employeeId": 32417,
+  "serviceId": "476477",
+  "startUnix": 1792499400,
+  "kulcs": "14586|32417|1792499400",
+  "bookingId": "mb_0muwxtl8sadwx1nq0uid9fx"
+ },
+ "booking_id": "mb_0muwxtl8sadwx1nq0uid9fx",
+ "koszono_elonezeti_url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/elysion-ok?first_booking=true&service=Ingyenes+konzult%C3%A1ci%C3%B3+zs%C3%B3fihoz%21&category=V%C3%A9gleges+Sz%C5%91rtelen%C3%ADt%C3%A9s+-+1.+Alkalom&price=0&location=Mosaic+Elysion&employee=Elysion+Pro+Sz%C5%91rtelen%C3%ADt%C3%A9s&g=g:3353226&bookingUrl=https%3A%2F%2Fmosaic-elysion.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32417%26placeId%3D14586%26serviceId%3D476477%26startDate%3D1792499400%26back%3Dmb_0muwxtl8sadwx1nq0uid9fx",
+ "mhAttribucioEredmeny": {
+  "source_id": "mb_0muwxtl8sadwx1nq0uid9fx",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "frissitve": true,
+   "hibak": [],
+   "mezok": [
+    "google",
+    "meta",
+    "tiktok",
+    "utm_elso",
+    "utm_utolso",
+    "fbp",
+    "ttp",
+    "ga4"
+   ]
+  },
+  "kuldott": {
+   "source_id": "mb_0muwxtl8sadwx1nq0uid9fx",
+   "uzletag": "szor",
+   "tipus": "foglalas",
+   "szolgaltatas": "Ingyenes konzultáció zsófihoz!",
+   "ar": 0,
+   "first_booking": true,
+   "g": "g:3353226",
+   "bookingUrl": "https://mosaic-elysion.salonic.hu/guestData/?anyone=true&employeeId=32417&placeId=14586&serviceId=476477&startDate=1792499400&back=mb_0muwxtl8sadwx1nq0uid9fx",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_SZOR_MUWXTIIF_GCLID",
+      "ts": 1791306802
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_SZOR_MUWXTIIF_WBRAID",
+      "ts": 1791306805
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791306805000.IwAR_TESZT_SZOR_MUWXTIIF_FBCLID",
+     "fbclid": "IwAR_TESZT_SZOR_MUWXTIIF_FBCLID",
+     "ts": 1791306805
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_SZOR_MUWXTIIF_TTCLID",
+      "ts": 1791306805
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_szor_elso",
+     "content": "hirdetes_a",
+     "ts": 1791306802
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_szor_utolso",
+     "ts": 1791306805
+    },
+    "fbp": "fb.1.1791301802000.6568686729",
+    "ttp": "TESZT_SZOR_MUWXTIIF_ttp_reszv420pk",
+    "ga4": {
+     "client_id": "613457504.1791220402",
+     "session_id": "1791305602",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {},
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/elysion-ok"
+  }
+ },
+ "mhKulcsEredmeny": {
+  "bookingId": "mb_0muwxtl8sadwx1nq0uid9fx",
+  "forras": "back",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "irva": false,
+   "idempotens": false,
+   "utkozes": true,
+   "kulcs": "14586|32417|1792499400",
+   "serviceId": "476477",
+   "meglevoBookingId": "mb_0muwwfdxtq0ijjk42xift2i"
+  }
+ },
+ "tarolo": {
+  "mh_attr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_SZOR_MUWXTIIF_GCLID\",\"ts\":1791306802},\"wbraid\":{\"ertek\":\"CoMKCQ_TESZT_SZOR_MUWXTIIF_WBRAID\",\"ts\":1791306805}},\"utm_utolso\":{\"source\":\"facebook\",\"medium\":\"paid\",\"campaign\":\"qa2_szor_utolso\",\"ts\":1791306805},\"utm_elso\":{\"source\":\"google\",\"medium\":\"cpc\",\"campaign\":\"qa2_szor_elso\",\"content\":\"hirdetes_a\",\"ts\":1791306802},\"meta\":{\"fbclid\":\"IwAR_TESZT_SZOR_MUWXTIIF_FBCLID\",\"ts\":1791306805},\"tiktok\":{\"ttclid\":{\"ertek\":\"E.C.P.TESZT_SZOR_MUWXTIIF_TTCLID\",\"ts\":1791306805}}}",
+  "mh_cc": null,
+  "sutik_nevei": [
+   "_fbp",
+   "_ttp",
+   "_ga",
+   "_ga_H4206SQ0Q7"
+  ]
+ },
+ "idovonal": [
+  {
+   "t": 841,
+   "esemeny": "1. latogatas (Google-hirdetes)",
+   "url": "/booking-test?utm_source=google&utm_medium=cpc&utm_campaign=qa2_szor_elso&utm_content=hirdetes_a&gclid=Cj0KCQjw_TESZT_SZOR_MUWXTIIF_GCLID"
+  },
+  {
+   "t": 3260,
+   "esemeny": "2. latogatas (Meta / TikTok / Google wbraid)",
+   "pillanatkep": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_SZOR_MUWXTIIF_GCLID",
+      "ts": 1791306802
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_SZOR_MUWXTIIF_WBRAID",
+      "ts": 1791306805
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791306805000.IwAR_TESZT_SZOR_MUWXTIIF_FBCLID",
+     "fbclid": "IwAR_TESZT_SZOR_MUWXTIIF_FBCLID",
+     "ts": 1791306805
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_SZOR_MUWXTIIF_TTCLID",
+      "ts": 1791306805
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_szor_elso",
+     "content": "hirdetes_a",
+     "ts": 1791306802
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_szor_utolso",
+     "ts": 1791306805
+    },
+    "fbp": "fb.1.1791301802000.6568686729",
+    "ttp": "TESZT_SZOR_MUWXTIIF_ttp_reszv420pk",
+    "ga4": {
+     "client_id": "613457504.1791220402",
+     "session_id": "1791305602",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   }
+  },
+  {
+   "t": 4940,
+   "esemeny": "reteg megnyilt",
+   "azonosito": "mb_0muwxtl8sadwx1nq0uid9fx"
+  },
+  {
+   "t": 6641,
+   "esemeny": "idopont valasztva (az utolso szabad nap utolso idopontja)",
+   "ido": "14:30"
+  },
+  {
+   "t": 11155,
+   "esemeny": "Salonic-adatlap betoltve",
+   "back": "mb_0muwxtl8sadwx1nq0uid9fx"
+  },
+  {
+   "t": 13625,
+   "esemeny": "urlap kitoltve, kuldes",
+   "ido": "2026-10-06T17:13:35.792Z"
+  },
+  {
+   "t": 19824,
+   "esemeny": "foglalas-kuldes valasza",
+   "uuid": "a611d5a2-fa5f-8a50-309e-c762cf02d037",
+   "redirect": "https://www.mosaicheadspa.hu/elysion-ok?first_booking=true&service=Ingyenes+konzult%C3%A1ci%C3%B3+zs%C3%B3fihoz%21&category=V%C3%A9gleges+Sz%C5%91rtelen%C3%ADt%C3%A9s+-+1.+Alkalom&price=0&location=Mosaic+Elysion&employee=Elysion+Pro+Sz%C5%91rtelen%C3%ADt%C3%A9s&g=g:3353226&bookingUrl=https%3A%2F%2Fmosaic-elysion.salonic.hu%2FguestData%2F%3Fanyone%3Dtrue%26employeeId%3D32417%26placeId%3D14586%26serviceId%3D476477%26startDate%3D1792499400%26back%3Dmb_0muwxtl8sadwx1nq0uid9fx"
+  },
+  {
+   "t": 21031,
+   "esemeny": "koszonooldal (elonezet)",
+   "booking_id": "mb_0muwxtl8sadwx1nq0uid9fx",
+   "attribucio": "valasz",
+   "kulcs_iras": "valasz"
+  }
+ ],
+ "sajat_keresek_nyers": [
+  {
+   "t": 20213,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "source_id": "mb_0muwxtl8sadwx1nq0uid9fx",
+    "uzletag": "szor",
+    "tipus": "foglalas",
+    "szolgaltatas": "Ingyenes konzultáció zsófihoz!",
+    "ar": 0,
+    "first_booking": true,
+    "g": "g:3353226",
+    "bookingUrl": "https://mosaic-elysion.salonic.hu/guestData/?anyone=true&employeeId=32417&placeId=14586&serviceId=476477&startDate=1792499400&back=mb_0muwxtl8sadwx1nq0uid9fx",
+    "attr": {
+     "google": {
+      "gclid": {
+       "ertek": "Cj0KCQjw_TESZT_SZOR_MUWXTIIF_GCLID",
+       "ts": 1791306802
+      },
+      "wbraid": {
+       "ertek": "CoMKCQ_TESZT_SZOR_MUWXTIIF_WBRAID",
+       "ts": 1791306805
+      }
+     },
+     "meta": {
+      "fbc": "fb.1.1791306805000.IwAR_TESZT_SZOR_MUWXTIIF_FBCLID",
+      "fbclid": "IwAR_TESZT_SZOR_MUWXTIIF_FBCLID",
+      "ts": 1791306805
+     },
+     "tiktok": {
+      "ttclid": {
+       "ertek": "E.C.P.TESZT_SZOR_MUWXTIIF_TTCLID",
+       "ts": 1791306805
+      }
+     },
+     "utm_elso": {
+      "source": "google",
+      "medium": "cpc",
+      "campaign": "qa2_szor_elso",
+      "content": "hirdetes_a",
+      "ts": 1791306802
+     },
+     "utm_utolso": {
+      "source": "facebook",
+      "medium": "paid",
+      "campaign": "qa2_szor_utolso",
+      "ts": 1791306805
+     },
+     "fbp": "fb.1.1791301802000.6568686729",
+     "ttp": "TESZT_SZOR_MUWXTIIF_ttp_reszv420pk",
+     "ga4": {
+      "client_id": "613457504.1791220402",
+      "session_id": "1791305602",
+      "measurement_id": "G-H4206SQ0Q7"
+     }
+    },
+    "hozz": {},
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/elysion-ok"
+   }
+  },
+  {
+   "t": 20214,
+   "irany": "keres",
+   "metodus": "POST",
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-kulcs",
+   "torzs": {
+    "booking_id": "mb_0muwxtl8sadwx1nq0uid9fx",
+    "booking_url": "https://mosaic-elysion.salonic.hu/guestData/?anyone=true&employeeId=32417&placeId=14586&serviceId=476477&startDate=1792499400&back=mb_0muwxtl8sadwx1nq0uid9fx",
+    "forras": "back"
+   }
+  },
+  {
+   "t": 20600,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/meres-erkezes",
+   "torzs": {
+    "ok": true,
+    "frissitve": true,
+    "hibak": [],
+    "mezok": [
+     "google",
+     "meta",
+     "tiktok",
+     "utm_elso",
+     "utm_utolso",
+     "fbp",
+     "ttp",
+     "ga4"
+    ]
+   }
+  },
+  {
+   "t": 21012,
+   "irany": "valasz",
+   "status": 200,
+   "url": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/api/foglalas-kulcs",
+   "torzs": {
+    "ok": true,
+    "irva": false,
+    "idempotens": false,
+    "utkozes": true,
+    "kulcs": "14586|32417|1792499400",
+    "serviceId": "476477",
+    "meglevoBookingId": "mb_0muwwfdxtq0ijjk42xift2i"
+   }
+  }
+ ],
+ "tiltott_kimeno_keresek": {
+  "tiltott connect.facebook.net/en_US/sdk.js": 1,
+  "google-ads www.google.com/ccm/collect": 3,
+  "google-ads googleads.g.doubleclick.net/pagead/viewthroughconversion/16795940464/": 4,
+  "google-ads www.google.com/rmkt/collect/16795940464/": 4,
+  "stape stape.mosaicheadspa.hu/_/service_worker/69f0/sw_iframe.html": 1,
+  "tiktok analytics-ipv6.tiktokw.us/ipv6/enrich_ipv6": 2,
+  "tiktok analytics.tiktok.com/api/v2/pixel": 6,
+  "tiktok analytics.tiktok.com/api/v2/pixel/act": 5,
+  "tiktok analytics.tiktok.com/api/v2/monitor": 4,
+  "google-ads www.google.com/pagead/form-data/16795940464": 1,
+  "google-ads www.google.com/ccm/form-data/16795940464": 1
+ },
+ "js_hibak": [],
+ "konzol": []
+}

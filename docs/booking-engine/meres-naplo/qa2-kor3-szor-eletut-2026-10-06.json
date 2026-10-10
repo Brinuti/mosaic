@@ -1,0 +1,41 @@
+{
+ "eset": "kor3-szor",
+ "booking_id": "mb_0muwyvjt3fsxa31ll7ujicb",
+ "salonic_uuid": "f0eaa775-e80a-81a1-9ee5-01108bf73a57",
+ "salonic_host": "mosaic-elysion.salonic.hu",
+ "lepesek": [
+  {
+   "lepes": "foglalas letrehozva (Salonic, TESZT - Claude)",
+   "salonic_uuid": "f0eaa775-e80a-81a1-9ee5-01108bf73a57"
+  },
+  {
+   "lepes": "level -> /api/foglalas-egyeztetes: parositas + elo allapot ellenorzes + esemenyek",
+   "hivas_ideje": "2026-10-06T17:43:14.965Z",
+   "allapot": "parositott",
+   "elo_allapot": "aktiv",
+   "kikuldott_cellak": 6
+  },
+  {
+   "lepes": "lemondas (lemondo link)",
+   "ido": "2026-10-06T17:43:24.172Z",
+   "eredmeny": "SIKERES: lemondás visszaigazolva"
+  },
+  {
+   "lepes": "a Salonic reszletek-oldal a lemondas utan",
+   "allapot": "LEMONDVA"
+  },
+  {
+   "lepes": "a level ISMETLESE a lemondas utan",
+   "hivas_ideje": "2026-10-06T17:43:37.455Z",
+   "allapot": "parositott",
+   "duplikalt": true,
+   "kuldheto": false,
+   "esemeny_kuldes": "mar_kuldve",
+   "uj_esemeny": 0,
+   "sorok_szama_elotte_utana": [
+    8,
+    8
+   ]
+  }
+ ]
+}

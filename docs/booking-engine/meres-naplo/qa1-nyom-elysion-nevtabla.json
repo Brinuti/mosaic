@@ -1,0 +1,95 @@
+{
+ "eset": "ELYSION) valodi (2026-10-05) magyar level mezoi: a nevtabla (kiegeszitett) az Elysion fiokra is kepezi a kulcsot; kulcs-tabla rekord nincs, ezert nincs parositas (csak a kulcs-kepzes bizonyitasa)",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "ido": "2026-10-06T14:59:16.831Z",
+ "booking_id": null,
+ "bookingUrl_teljes": null,
+ "kulcs_a_bookingUrlbol": null,
+ "koszonooldal_kulcs_iras": null,
+ "kulcstabla_rekord_a_koszonooldal_utan": null,
+ "kulcstabla_a_parositas_elott": null,
+ "email_relevans_mezok": {
+  "felado": "Mosaic Elysion",
+  "szolgaltatas": "Ingyenes konzultáció zsófihoz!",
+  "munkatarsak": [
+   "Elysion Pro Szőrtelenítés"
+  ],
+  "idopont_szoveg": "Október 31. (szombat) 18:30 - 19:00",
+  "level_datuma": "2026-10-05T10:42:37Z",
+  "ld_startDate": null,
+  "salonic_uuid": "4457bc97-3a1a-471d-b446-b568d8408f5f",
+  "host": "mosaic-elysion.salonic.hu"
+ },
+ "email_kulcs_1_ag_salonic_oldalak": {
+  "kulcs": null,
+  "serviceId": null,
+  "ok": false,
+  "miert": "a megtekintes oldalon nincs startDate",
+  "lepesek": [
+   {
+    "url": "/booking/bookingDetails/4457bc97-3a1a-471d-b446-b568d8408f5f",
+    "status": 200,
+    "vegso": "/"
+   }
+  ]
+ },
+ "email_kulcs_2_ag_nevtabla": {
+  "ok": true,
+  "miert": null,
+  "felado": "Mosaic Elysion",
+  "szolgaltatas": "Ingyenes konzultáció zsófihoz!",
+  "munkatarsak": [
+   "Elysion Pro Szőrtelenítés"
+  ],
+  "idopontSzoveg": "Október 31. (szombat) 18:30 - 19:00",
+  "idopontForras": "szoveg",
+  "startUnix": 1793467800,
+  "ldUnix": null,
+  "szovegUnix": 1793467800,
+  "jeloltEmployeeIds": [
+   32417
+  ],
+  "serviceIds": [
+   "476477"
+  ],
+  "kulcsok": [
+   "14586|32417|1793467800"
+  ],
+  "serviceId": "476477"
+ },
+ "kulcs_jeloltek_a_keresnel": [
+  {
+   "kulcs": "14586|32417|1793467800",
+   "jeloltek": []
+  }
+ ],
+ "birtokos_elo_ellenorzes": null,
+ "valasztas": [
+  {
+   "kulcs": "14586|32417|1793467800",
+   "allapot": "nincs",
+   "miert": null
+  }
+ ],
+ "kulcs_atadas": null,
+ "kulcstabla_a_parositas_utan": null,
+ "kulcs_jeloltek_a_parositas_utan": [],
+ "kereses_eredmenye": {
+  "allapot": "fuggoben",
+  "kuldheto": false,
+  "kulcs": "14586|32417|1793467800",
+  "kulcs_forras": "nevtabla",
+  "probalkozas": 1,
+  "riasztas": false,
+  "miert": null,
+  "kulcs_atadva": false,
+  "talalatok": []
+ },
+ "kapott_esemenyazonosito": null,
+ "azonosito_egyezik_a_bongeszovel": false,
+ "masodik_kereses_ugyanarra": null,
+ "http": {
+  "elso": 200,
+  "masodik": null
+ }
+}

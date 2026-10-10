@@ -1,0 +1,137 @@
+{
+ "eset": "b) konkret szakember (Betti), eltero szolgaltatas (fizetos noi hajvagas), hair",
+ "bazis": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev",
+ "ido": "2026-10-06T13:57:36.229Z",
+ "booking_id": "mb_0muwqsub5wg61rqiuebgskn",
+ "bookingUrl_teljes": "https://mosaic-hair.salonic.hu/guestData/?placeId=10823&serviceId=231538&employeeId=23694&startDate=1792512000&back=mb_0muwqsub5wg61rqiuebgskn",
+ "kulcs_a_bookingUrlbol": {
+  "ok": true,
+  "host": "mosaic-hair.salonic.hu",
+  "uzletag": "hair",
+  "placeId": 10823,
+  "employeeId": 23694,
+  "serviceId": "231538",
+  "startUnix": 1792512000,
+  "kulcs": "10823|23694|1792512000",
+  "bookingId": "mb_0muwqsub5wg61rqiuebgskn"
+ },
+ "koszonooldal_kulcs_iras": {
+  "bookingId": "mb_0muwqsub5wg61rqiuebgskn",
+  "forras": "back",
+  "allapot": "valasz",
+  "status": 200,
+  "valasz": {
+   "ok": true,
+   "irva": true,
+   "idempotens": false,
+   "utkozes": false,
+   "kulcs": "10823|23694|1792512000",
+   "serviceId": "231538"
+  }
+ },
+ "kulcstabla_rekord_a_koszonooldal_utan": {
+  "ok": true,
+  "kulcs": "10823|23694|1792512000",
+  "rekord": {
+   "kulcs": "10823|23694|1792512000",
+   "booking_id": "mb_0muwqsub5wg61rqiuebgskn",
+   "service_id": "231538",
+   "forras": "back",
+   "letrehozva": 1791295032,
+   "lejar": 1806847032
+  }
+ },
+ "email_relevans_mezok": {
+  "felado": "Mosaic Hair",
+  "szolgaltatas": "✂ Női hajvágás + Szárítás - Közepes haj",
+  "munkatarsak": [
+   "Betti"
+  ],
+  "idopont_szoveg": "Október 20. (kedd) 18:00 - 19:00",
+  "ld_startDate": null,
+  "level_datuma": "2026-10-06T13:57:09Z",
+  "salonic_uuid": "d30de704-ec3e-1724-8ba5-8950ded745f5",
+  "host": "mosaic-hair.salonic.hu"
+ },
+ "email_kulcs_1_ag_salonic_oldalak": {
+  "kulcs": "10823|23694|1792512000",
+  "serviceId": "231538",
+  "ok": true,
+  "miert": null,
+  "lepesek": [
+   {
+    "url": "/booking/bookingDetails/d30de704-ec3e-1724-8ba5-8950ded745f5",
+    "status": 200,
+    "vegso": "/booking/bookingDetails/d30de704-ec3e-1724-8ba5-8950ded745f5"
+   },
+   {
+    "url": "/selectDate/?startDate=1792512000&bookingId=d30de704-ec3e-1724-8ba5-8950ded745f5",
+    "status": 200,
+    "vegso": "/selectDate/?startDate=1792512000&bookingId=d30de704-ec3e-1724-8ba5-8950ded745f5"
+   }
+  ]
+ },
+ "email_kulcs_2_ag_nevtabla": {
+  "ok": true,
+  "miert": null,
+  "felado": "Mosaic Hair",
+  "szolgaltatas": "✂ Női hajvágás + Szárítás - Közepes haj",
+  "munkatarsak": [
+   "Betti"
+  ],
+  "idopontSzoveg": "Október 20. (kedd) 18:00 - 19:00",
+  "idopontForras": "szoveg",
+  "startUnix": 1792512000,
+  "ldUnix": null,
+  "szovegUnix": 1792512000,
+  "jeloltEmployeeIds": [
+   23694
+  ],
+  "serviceIds": [
+   "231538"
+  ],
+  "kulcsok": [
+   "10823|23694|1792512000"
+  ],
+  "serviceId": "231538",
+  "egyezik_az_ag1_el": true
+ },
+ "kulcstabla_rekord_az_email_kulcsara": {
+  "kulcs": "10823|23694|1792512000",
+  "booking_id": "mb_0muwqsub5wg61rqiuebgskn",
+  "service_id": "231538",
+  "forras": "back",
+  "letrehozva": 1791295032,
+  "lejar": 1806847032
+ },
+ "kereses_eredmenye": {
+  "allapot": "parositott",
+  "kuldheto": true,
+  "duplikalt": false,
+  "kulcs": "10823|23694|1792512000",
+  "kulcs_forras": "salonic-oldal",
+  "service_egyezik": true,
+  "probalkozas": 1,
+  "riasztas": false,
+  "talalatok": [
+   {
+    "kulcs": "10823|23694|1792512000",
+    "booking_id": "mb_0muwqsub5wg61rqiuebgskn",
+    "service_id": "231538",
+    "forras": "back"
+   }
+  ]
+ },
+ "kapott_esemenyazonosito": "mb_0muwqsub5wg61rqiuebgskn",
+ "azonosito_egyezik_a_bongeszovel": true,
+ "masodik_kereses_ugyanarra": {
+  "allapot": "parositott",
+  "kuldheto": false,
+  "duplikalt": true,
+  "esemeny_id": "mb_0muwqsub5wg61rqiuebgskn"
+ },
+ "http": {
+  "elso": 200,
+  "masodik": 200
+ }
+}

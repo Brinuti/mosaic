@@ -1,0 +1,406 @@
+{
+ "pi": "pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+ "megjegyzes": "A Stripe az elonezetet nem eri el: a payment_intent.succeeded webhook-agat a kulcsos ajandek_ujra segeddel jatszottam ujra (ugyanaz a kod: arnyekMeres). A Meta / TikTok / GA4 ezen a futason a veszkapcsolon at KI volt kapcsolva (kihagyva: veszkapcsolo); a Google kuldott.",
+ "ajandek_ujra_valasz": {
+  "ok": true,
+  "allapot": "kesz"
+ },
+ "szerveres_naplo_vegso": {
+  "ok": true,
+  "source_id": "pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+  "erkezes": {
+   "source_id": "pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+   "uzletag": "headspa",
+   "tipus": "ajandekkartya",
+   "attr": {
+    "google": {
+     "gclid": {
+      "ertek": "Cj0KCQjw_TESZT_AJANDEK_MUWXW2N0_GCLID",
+      "ts": 1791306922
+     },
+     "wbraid": {
+      "ertek": "CoMKCQ_TESZT_AJANDEK_MUWXW2N0_WBRAID",
+      "ts": 1791306925
+     }
+    },
+    "meta": {
+     "fbc": "fb.1.1791306925000.IwAR_TESZT_AJANDEK_MUWXW2N0_FBCLID",
+     "fbclid": "IwAR_TESZT_AJANDEK_MUWXW2N0_FBCLID",
+     "ts": 1791306925
+    },
+    "tiktok": {
+     "ttclid": {
+      "ertek": "E.C.P.TESZT_AJANDEK_MUWXW2N0_TTCLID",
+      "ts": 1791306925
+     }
+    },
+    "utm_elso": {
+     "source": "google",
+     "medium": "cpc",
+     "campaign": "qa2_ajandek_elso",
+     "ts": 1791306922
+    },
+    "utm_utolso": {
+     "source": "facebook",
+     "medium": "paid",
+     "campaign": "qa2_ajandek_utolso",
+     "ts": 1791306925
+    },
+    "fbp": "fb.1.1791301921000.2248081108",
+    "ttp": "TESZT_AJANDEK_MUWXW2N0_ttp_sxcncz4vtv",
+    "ga4": {
+     "client_id": "721570007.1791220521",
+     "session_id": "1791305721",
+     "measurement_id": "G-H4206SQ0Q7"
+    }
+   },
+   "hozz": {
+    "ana": true,
+    "adv": true,
+    "fun": true,
+    "dontes": true
+   },
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+   "ip": "160.79.106.xxx",
+   "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/ajandek",
+   "bongeszo": {
+    "oldal": "https://claude-mosaic-meres-qa-1-rrb.mosaic-d77.pages.dev/ajandek",
+    "first_booking": null,
+    "szolgaltatas": "Egyéni MOSAIC Head Spa ajándékkártya",
+    "kategoria": "",
+    "ar": 26900,
+    "g": "",
+    "munkatars": "",
+    "bookingUrl": ""
+   },
+   "ido": 1791306936,
+   "frissitve": 1791306936
+  },
+  "kuldesek": [
+   {
+    "id": 177,
+    "esemeny_id": "Ajandekkartya:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "esemeny_nev": "Ajandekkartya",
+    "esemeny_tipus": "alap",
+    "platform": "meta",
+    "platform_nev": null,
+    "uzletag": "headspa",
+    "source_id": "pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:meta",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791307000,
+    "frissitve": 1791307000
+   },
+   {
+    "id": 178,
+    "esemeny_id": "Ajandekkartya:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "esemeny_nev": "Ajandekkartya",
+    "esemeny_tipus": "alap",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "headspa",
+    "source_id": "pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:tiktok",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791307000,
+    "frissitve": 1791307000
+   },
+   {
+    "id": 179,
+    "esemeny_id": "Ajandekkartya:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "esemeny_nev": "Ajandekkartya",
+    "esemeny_tipus": "alap",
+    "platform": "google",
+    "platform_nev": "ARNYEK-7825199992",
+    "uzletag": "headspa",
+    "source_id": "pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "allapot": "elkuldve",
+    "indok": null,
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": {
+     "url": "zapier-webhook: GOOGLE_ARNYEK_WEBHOOK_URL (titok, nem naplozott)",
+     "method": "POST",
+     "fejlec_nevek": [
+      "content-type"
+     ],
+     "cel": {
+      "customer_id": "6088874770",
+      "conversion_action_id": "7825199992",
+      "athidalas": "zapier-webhook"
+     },
+     "body": {
+      "conversion_action_id": "7825199992",
+      "wbraid": "CoMKCQ_TESZT_AJANDEK_MUWXW2N0_WBRAID",
+      "conversion_date_time": "2026-10-06 19:15:42+02:00",
+      "value": 26900,
+      "currency": "HUF",
+      "order_id": "Ajandekkartya:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+      "ad_user_data": "GRANTED"
+     }
+    },
+    "http_status": 200,
+    "platform_valasz": "{\"attempt\":\"01a11237-b145-6f88-b839-9a12b6772cba\",\"id\":\"01a11237-b145-6f88-b839-9a12b6772cba\",\"request_id\":\"01a11237-b145-6f88-b839-9a12b6772cba\",\"status\":\"success\"}\n",
+    "kuldo": "zapier-webhook",
+    "probalkozas": 1,
+    "letrehozva": 1791307000,
+    "frissitve": 1791307000
+   },
+   {
+    "id": 180,
+    "esemeny_id": "Ajandekkartya:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "esemeny_nev": "Ajandekkartya",
+    "esemeny_tipus": "alap",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "headspa",
+    "source_id": "pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:ga4",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791307000,
+    "frissitve": 1791307000
+   },
+   {
+    "id": 181,
+    "esemeny_id": "Schedule:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "meta",
+    "platform_nev": null,
+    "uzletag": "headspa",
+    "source_id": "pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:meta",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791307000,
+    "frissitve": 1791307000
+   },
+   {
+    "id": 182,
+    "esemeny_id": "Schedule:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "tiktok",
+    "platform_nev": null,
+    "uzletag": "headspa",
+    "source_id": "pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:tiktok",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791307000,
+    "frissitve": 1791307000
+   },
+   {
+    "id": 183,
+    "esemeny_id": "Schedule:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "google",
+    "platform_nev": null,
+    "uzletag": "headspa",
+    "source_id": "pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "allapot": "kihagyva",
+    "indok": "a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": true,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "hozzajarulas: igen"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791307000,
+    "frissitve": 1791307000
+   },
+   {
+    "id": 184,
+    "esemeny_id": "Schedule:pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "esemeny_nev": "Schedule",
+    "esemeny_tipus": "ernyo",
+    "platform": "ga4",
+    "platform_nev": null,
+    "uzletag": "headspa",
+    "source_id": "pi_3UNbxjFv8vc2ArnL0z1wtc1M",
+    "allapot": "kihagyva",
+    "indok": "veszkapcsolo: platform:ga4",
+    "ertek": 26900,
+    "penznem": "HUF",
+    "hozzajarulas": {
+     "allapot": {
+      "ana": true,
+      "adv": true,
+      "fun": true,
+      "dontes": true
+     },
+     "szabaly": {
+      "kuldheto": true,
+      "felhasznaloi_adat": false,
+      "jel": {
+       "ad_user_data": "GRANTED",
+       "ad_personalization": "GRANTED"
+      },
+      "megjegyzes": "valos jel (GRANTED); a GA4 felé nincs hash-elt azonosito"
+     }
+    },
+    "kerelem": null,
+    "http_status": null,
+    "platform_valasz": null,
+    "kuldo": null,
+    "probalkozas": 1,
+    "letrehozva": 1791307000,
+    "frissitve": 1791307000
+   }
+  ]
+ }
+}
