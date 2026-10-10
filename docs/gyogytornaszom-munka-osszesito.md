@@ -117,3 +117,12 @@ Központi telefon: 06-20-323-6373 (H–P 8–19:30, Szo 8–14). Kommunikáció 
 ## 9. Biztonsági mentések / amit a sandbox elvesztett
 
 A munkához készült mentések (`/tmp/*_backup.json`, `member_meta_backup.json`, `cta_backup.json`, `block29232_backup.txt`) a Composio sandboxban voltak; a sandbox cseréjekor elvesznek. A WordPress **változatai (revíziók)** viszont megvannak, onnan visszaállítható minden oldal/cikk/blokk. A reusable blokkok (22578, 24857, 27224, 28077, 28873, 28877, 28880, 29037, 29227, 29234, 29232, …) és a kereső (22537) szintén revízióban.
+
+## 17. 60 perc -> 50 perc atirras (2026-10-10, az UJ elo oldalon)
+
+- Hatokor: bejegyzesek, oldalak, ujrahasznosithato blokkok tartalma (~260 elem). Kiveve: "napi 60 perc testmozgas", "45-60 perces / 30-60 perces masszazs", "hetente 1 ora", "napi 1 oranal hosszabb".
+- Atirt alakok: "60 perces/60 perc" -> "50 perces/50 perc"; "1 oras / 1 teljes oras" -> "50 perces"; "1 orat vesz igenybe" -> "50 percet vesz igenybe"; "1 oran at/keresztul tart" -> "50 percig tart"; "1 oraig" -> "50 percig"; nevelo: "a 50" -> "az 50".
+- Eredeti szovegek mentve a WP-s sandboxban (bak2/), a forras ellenorzese 0 talalatot ad.
+- A Salonic idotartamokat NEM modositottuk (kulon kerest igenyel).
+- Gyorsitotar: a mentett posztok azonnal frissultek; a tobbi ujramentessel (resave) frissul, kulonben a W3TC lejarataig regi szoveg latszhat.
+- Fontos: a regi oldal temaja es sajat bovitmenyei (gyogytornasz-member-filter) NEM tartoznak ide, kulon kell kimenteni.
