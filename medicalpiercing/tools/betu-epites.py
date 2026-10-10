@@ -1,6 +1,8 @@
 """Sajat betufajlok a fizetos Wix-betuk helyett, pixelpontos szovegtoreshez.
 
     python3 tools/betu-epites.py      (elotte: python3 -m pip install fonttools brotli)
+    python3 tools/betu-epites.py helvetica-w01-light   csak ezt a Wix-csaladot epiti ujra
+                                      (a wix-fonts.css-t ilyenkor nem irja at)
 
 A Wix fizetos betuit (Helvetica, DIN Next, Avenir, Proxima Nova, Futura) nem
 masolhatjuk at. Egy hasonlo ingyenes betu (Arimo, Hanken Grotesk, Sarabun, Jost)
@@ -20,7 +22,7 @@ nincs a tarhazban); belőluk tablazatot, rajzolatot nem viszunk at.
 Eredmeny: assets/fonts/mp-<wix-fajlnev>.woff2 es assets/css/wix-fonts.css
 (a Wix csaladnevevel es unicode-tartomanyaival, igy a Wix CSS-e valtozatlanul hat).
 """
-import os, re, glob, json, urllib.request
+import os, re, sys, glob, json, urllib.request
 from fontTools.ttLib import TTFont, newTable
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.pens.cu2quPen import Cu2QuPen
@@ -36,7 +38,9 @@ os.makedirs(WIX, exist_ok=True)
 
 # Wix csalad -> (helyettesito csalad, vastagsag)
 HELYETTESITO = {
-    'helvetica-w01-light': ('Arimo', 400),
+    # a Wix Helvetica Light vekony betu: a Roboto Light rajzolata all hozza a legkozelebb (2026-10-10,
+    # mintaszovegen merve a Wix eredetijehez: festekfedes 0.96, az Arimo 400-ae 1.35 - tul vastag volt)
+    'helvetica-w01-light': ('Roboto', 300),
     'helvetica-w01-roman': ('Arimo', 400),
     'helvetica-w01-bold': ('Arimo', 700),
     'din-next-w01-light': ('Hanken Grotesk', 400),
@@ -203,6 +207,15 @@ def epit(csal, url, rng):
     ki = os.path.join(FONTS, 'mp-' + nev)
     fb.save(ki)
     return ki, len(rend) - 1, len(parok), os.path.getsize(ki)
+
+csak = set(sys.argv[1:])
+if csak:
+    # csak a megadott csaladok fajljai epulnek ujra (azonos fajlnevvel); a CSS valtozatlan
+    for (csal, url), rng in sorted(szabalyok.items()):
+        if csal in csak:
+            ki, db, kern, meret = epit(csal, url, rng)
+            print(f'{csal:32} {url.split("/")[-1]:36} -> {os.path.basename(ki)}  {db} betu, {kern} betupar, {meret // 1024} kB')
+    sys.exit(0)
 
 css = '/* Automatikusan generalt - ne szerkeszd kezzel. Forras: tools/betu-epites.py\n   Sajat betufajlok a Wix fizetos betui helyett: szabad licencu rajzolat, az eredetivel azonos betuszelessegek es sormeretek. */\n'
 for (csal, url), rng in sorted(szabalyok.items()):

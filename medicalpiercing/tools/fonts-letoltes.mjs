@@ -16,6 +16,7 @@ const KELL = {
   'Hanken Grotesk': [300, 400, 600],
   'Jost': [300, 400],
   'Sarabun': [700],
+  'Roboto': [300],
 };
 
 async function css(family, weights) {

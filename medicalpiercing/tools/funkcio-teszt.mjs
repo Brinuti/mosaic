@@ -100,6 +100,87 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
     ok(`${nezet}: urlap bekuldes`, /Köszönjük/.test(felirat), felirat);
   } else ok(`${nezet}: urlap megvan`, false);
 
+  // 7. Pro Gallery (fooldal, belyegkepes): nyil, belyegkep, teljes kepernyo (a Wixen merve)
+  await p.goto(HELYI + '/', { waitUntil: 'load' });
+  const par = p.locator('[id="pro-gallery-container-comp-ld4dmnwl"]').locator('xpath=ancestor::*[contains(@class,"pro-gallery-parent-container")][1]');
+  await par.scrollIntoViewIfNeeded();
+  const pg = () => par.evaluate((x) => {
+    const h = x.querySelector('.gallery-horizontal-scroll');
+    const t = [...x.querySelectorAll('.thumbnailItem')];
+    const elo = x.querySelector('[data-hook="nav-arrow-back"]');
+    const k = t.find((y) => y.classList.contains('pro-gallery-highlight'));
+    // a belyegkepsav ablakkent gorget (asztalin 9, mobilon 3 belyeg): a kiemelt elem sorszama a data-mp-idx
+    return { sl: Math.round(h.scrollLeft), w: h.clientWidth, kiem: k ? +k.dataset.mpIdx : -1, elo: !!elo && elo.style.display !== 'none' };
+  });
+  const pg0 = await pg();
+  ok(`${nezet}: galeria kezdet (Previous rejtve)`, pg0.sl === 0 && pg0.kiem === 0 && !pg0.elo, JSON.stringify(pg0));
+  await par.locator('[data-hook="nav-arrow-next"]').click();
+  await p.waitForTimeout(700);
+  const pg1 = await pg();
+  ok(`${nezet}: galeria Next egy kepet lapoz`, pg1.sl === pg1.w && pg1.kiem === 1 && pg1.elo, JSON.stringify(pg1));
+  await par.locator('.thumbnailItem[data-mp-idx="2"]').click();
+  await p.waitForTimeout(700);
+  const pg2 = await pg();
+  ok(`${nezet}: galeria belyegkepre ugrik`, pg2.sl === 2 * pg2.w && pg2.kiem === 2, JSON.stringify(pg2));
+  await par.locator('[data-hook="item-container"]').nth(2).click({ force: true });
+  await p.waitForTimeout(600);
+  ok(`${nezet}: galeria teljes kepernyo + pgid`, !!(await p.$('.mp-pg-teljes')) && /[?&]pgid=ld4dmnwl-/.test(p.url()), p.url());
+  await p.keyboard.press('Escape');
+  await p.waitForTimeout(500);
+  ok(`${nezet}: galeria teljes kepernyo Esc-re zar`, !(await p.$('.mp-pg-teljes')) && !/pgid=/.test(p.url()));
+
+  // 8. videolejatszo (Wix Playable): a boritora kattintva eltunik, asztalin a vezerlok latszanak
+  await p.goto(HELYI + '/3-piercing-2-araert', { waitUntil: 'load' });
+  const vl = p.locator('[data-testid="playable-cover"]').first();
+  if (await vl.count()) {
+    const id = await vl.evaluate((x) => x.parentElement.id);
+    await vl.scrollIntoViewIfNeeded();
+    await vl.click();
+    await p.waitForTimeout(400);
+    const va = await p.evaluate((id) => { const g = document.getElementById(id); return { borito: !!g.querySelector('[data-testid="playable-cover"]'), vezerlo: !g.querySelector('[data-playable-hook="bottom-block"]').classList.contains('SyVT0n') }; }, id);
+    ok(`${nezet}: video borito eltunik, ${nezet === 'mobil' ? 'vezerlok nelkul (mint a Wixen)' : 'vezerlok latszanak'}`, !va.borito && va.vezerlo === (nezet !== 'mobil'), JSON.stringify(va));
+  } else ok(`${nezet}: videolejatszo megvan`, false);
+
+  // 9. blogkep teljes kepernyon, tobb keppel
+  await p.goto(HELYI + '/daith-piercing-kutatas-a-vagus-ideg-stimulacioja-es-a-migrenkezelese', { waitUntil: 'load' });
+  const bk = p.locator('figure[data-hook="figure-IMAGE"] [data-hook="image-viewer"]').first();
+  await bk.scrollIntoViewIfNeeded();
+  await bk.click();
+  await p.waitForTimeout(500);
+  ok(`${nezet}: blogkep nezegeto`, (await p.$$eval('.mp-pg-blog .mp-pg-dia', (l) => l.length)) === 7);
+  await p.keyboard.press('Escape');
+  await p.waitForTimeout(400);
+  ok(`${nezet}: blogkep nezegeto Esc-re zar`, !(await p.$('.mp-pg-teljes')));
+
+  // 10. fejlec gorgeteskor (csak asztalin): 400 px lefele utan eltunik, felfele visszajon
+  await p.goto(HELYI + '/kontroll', { waitUntil: 'load' });
+  await p.evaluate(() => scrollTo(0, 900));
+  await p.waitForTimeout(300);
+  const fejLe = await p.$eval('#SITE_HEADER', (f) => f.classList.contains('ptcyHf'));
+  await p.evaluate(() => scrollTo(0, 300));
+  await p.waitForTimeout(300);
+  const fejFel = await p.$eval('#SITE_HEADER', (f) => f.classList.contains('ptcyHf'));
+  ok(`${nezet}: fejlec gorgeteskor`, nezet === 'mobil' ? !fejLe && !fejFel : fejLe && !fejFel, `${fejLe} ${fejFel}`);
+
+  // 11. /kontroll visszahivas-kero (uj Wix-urlap): ures bekuldesre a Wix hibauzenetei, kitoltve elmegy
+  await p.goto(HELYI + '/kontroll', { waitUntil: 'load' });
+  const ku = p.locator('form').first();
+  await ku.locator('[data-hook="submit-button"]').click();
+  await p.waitForTimeout(300);
+  const kh = await ku.locator('[data-hook="errormessagewrapper-message"]').count();
+  ok(`${nezet}: kontroll-urlap ures bekuldesre 6 hibauzenet`, kh === 6, kh + ' uzenet');
+  await ku.locator('input[type=text]').first().fill('Teszt Elek');
+  await ku.locator('input[inputmode=tel]').fill('301234567');
+  await ku.locator('input[type=email]').fill('teszt@example.com');
+  await ku.locator('[data-hook="date-picker-calendar-icon"]').click();
+  await p.locator('.mp-nap:not(.mp-nap-mas)').first().click();
+  await ku.locator('input[aria-label="Melyik városban voltál?"]').fill('Budapest');
+  await ku.locator('textarea').fill('Teszt');
+  await ku.locator('[data-hook="submit-button"]').click();
+  await p.waitForTimeout(800);
+  const kf = await ku.locator('[data-hook="submit-button"]').textContent();
+  ok(`${nezet}: kontroll-urlap bekuldes`, /Köszönjük/.test(kf), kf);
+
   ok(`${nezet}: nincs JS-hiba`, !konzol.length, konzol.join(' | '));
   await ctx.close();
 }
