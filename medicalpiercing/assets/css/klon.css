@@ -1,0 +1,23 @@
+/* Klon-specifikus kiegeszitesek: csak az kerul ide, amit a Wix JS-e futas kozben
+   adott (animaciok), es a klon.js altal rajzolt elemek. */
+
+/* felugro menu (klon.js 1.): a Wix jobbrol csusztatja be az ablakot, a fatyol
+   attunik; zaraskor visszafele */
+html.mp-felugro-nyitva { overflow: hidden; }
+.mp-felugro .wixui-lightbox { animation: mp-be-jobbrol .6s cubic-bezier(.25, .46, .45, .94) both; }
+.mp-felugro [id="bgLayers_d3iz6"] { animation: mp-attunes .6s ease both; }
+.mp-felugro.mp-felugro-zar .wixui-lightbox { animation: mp-ki-jobbra .4s ease-in both; }
+.mp-felugro.mp-felugro-zar [id="bgLayers_d3iz6"] { animation: mp-attunes .4s ease reverse both; }
+@keyframes mp-be-jobbrol { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes mp-ki-jobbra { from { transform: none; } to { transform: translateX(100%); } }
+@keyframes mp-attunes { from { opacity: 0; } to { opacity: 1; } }
+
+/* blog: "A link masolva" jelzes es a sajat kedveles (klon.js 7.) */
+.mp-masolva {
+  position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); z-index: 2147483000;
+  padding: 10px 18px; border-radius: 4px; background: #333; color: #fff; font: 14px/1.4 Arial, sans-serif;
+}
+.mp-kedvelt svg, .mp-kedvelt path { fill: currentColor; }
+
+/* urlap: a hibas mezo jelzese (a Wix ugyanigy aria-invalid alapjan szinez) */
+form.wixui-form [aria-invalid="true"] { outline: 1px solid #e21c21; outline-offset: -1px; }

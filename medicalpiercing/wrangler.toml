@@ -1,0 +1,15 @@
+# Cloudflare Pages: a medicalpiercing.hu klonja. A projekt gyokere a tarhazban:
+# medicalpiercing/ (Root directory), build-parancs: node tools/build.mjs, kimenet: dist.
+# A lapcimeket es az urlapokat a functions/[[path]].js kezeli.
+name = "medicalpiercing"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Nem titkos beallitasok (mindket kornyezet). A titkos SMTP_PASS (Gmail-
+# alkalmazasjelszo) a Cloudflare feluleten, Secret tipussal kerul be.
+[vars]
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = "465"
+SMTP_USER = "medicalpiercing.hu@gmail.com"
+MAIL_TO = "medicalpiercing.hu@gmail.com"
