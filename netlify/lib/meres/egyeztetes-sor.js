@@ -4,7 +4,7 @@
 //
 // Platform-cella osztalyozasa (esemeny x platform):
 //   'ok'      - pontosan 1 kezbesites (allapot = elkuldve)
-//   'jogos_0' - nincs kezbesites, de jogosan: a modell / hozzajarulas / lemondas miatt kihagyva (NEM a veszkapcsolo miatt)
+//   'jogos_0' - nincs kezbesites, de jogosan: a modell / hozzajarulas / lemondas miatt kihagyva (NEM a veszkapcsolo miatt), vagy a GA4-hez nincs client_id (nincs _ga suti: a latogato adata hianyzik)
 //   'hiany'   - minden mas: nincs_hitelesites, hiba, tiltva, halasztva, nyitott, folyamatban, vagy a vészkapcsolo miatt kihagyva, vagy NINCS sor
 // Jelzesek (foglalas-szint): tobb_alap_esemeny (rossz tipus / duplikacio gyanu), nincs_esemeny, parositatlan, hianyzo_platform_sor, platform_hiany:<platform>:<esemeny>.
 import { meresSema } from './elosztas.js';
@@ -19,6 +19,8 @@ export function cellaOsztaly(sor) {
   if (!sor) return { osztaly: 'hiany', ok: 'nincs_sor', kezbesites: 0 };
   if (sor.allapot === 'elkuldve') return { osztaly: 'ok', kezbesites: 1 };
   if (sor.allapot === 'kihagyva' && !/^veszkapcsolo/.test(sor.indok || '')) return { osztaly: 'jogos_0', ok: sor.indok || 'kihagyva', kezbesites: 0 };
+  // a GA4 Measurement Protocol client_id (_ga suti) nelkul nem kuldheto: a latogato adata hianyzik (nem rendszerhiba) -> jogos 0, az ok kulon latszik; a tobbi 'tiltva' (vedelem: elo cel, hianyzo teszt-kod) HIANY marad
+  if (sor.allapot === 'tiltva' && /^nincs GA4 client_id/.test(sor.indok || '')) return { osztaly: 'jogos_0', ok: String(sor.indok).slice(0, 80), kezbesites: 0 };
   return { osztaly: 'hiany', ok: sor.allapot + (sor.indok ? ': ' + String(sor.indok).slice(0, 80) : ''), kezbesites: 0 };
 }
 
@@ -121,7 +123,11 @@ export async function egyeztetoSorok(db, { tol, ig, uzletag = null, limit = 500,
   }
   const osszegzes = { foglalas: sorok.length, rendben: sorok.filter((s) => s.rendben).length, jelzett: sorok.filter((s) => !s.rendben).length, platformonkent: {} };
   for (const p of PLATFORMOK) osszegzes.platformonkent[p] = { ok: 0, jogos_0: 0, hiany: 0 };
-  for (const s of sorok) for (const e of s.esemenyek) for (const p of PLATFORMOK) osszegzes.platformonkent[p][e.platformok[p].osztaly]++;
+  osszegzes.jogos_0_okok = Object.fromEntries(PLATFORMOK.map((p) => [p, {}])); // a jogos 0-k okai platformonkent (a QA-oldal ebbol latja, mi van mogotte)
+  for (const s of sorok) for (const e of s.esemenyek) for (const p of PLATFORMOK) {
+    const c = e.platformok[p]; osszegzes.platformonkent[p][c.osztaly]++;
+    if (c.osztaly === 'jogos_0') osszegzes.jogos_0_okok[p][c.ok] = (osszegzes.jogos_0_okok[p][c.ok] || 0) + 1;
+  }
   const cs = csereIdo(ga4_csere);
   if (ga4_csere !== null && ga4_csere !== undefined && ga4_csere !== '' && cs === null) return { ok: false, miert: 'ga4_csere: unix masodperc vagy ISO-datum' };
   if (cs !== null) { // a GA4 titokcsere jelolese: osszegzes + a jelolt esemeny cellaja az oldalon (ha ott van)

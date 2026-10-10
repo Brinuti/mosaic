@@ -47,6 +47,10 @@ test('cellaOsztaly: elkuldve = ok; modell / hozzajarulas szerinti kihagyas = jog
   assert.equal(cellaOsztaly({ allapot: 'kihagyva', indok: 'hozzajarulas nelkul' }).osztaly, 'jogos_0');
   for (const s of [{ allapot: 'kihagyva', indok: 'veszkapcsolo: mind' }, { allapot: 'hiba' }, { allapot: 'nincs_hitelesites' }, { allapot: 'tiltva' }, { allapot: 'halasztva' }, { allapot: 'nyitott' }, { allapot: 'folyamatban' }, null]) assert.equal(cellaOsztaly(s).osztaly, 'hiany', JSON.stringify(s));
   assert.equal(cellaOsztaly({ allapot: 'elkuldve' }).kezbesites, 1); assert.equal(cellaOsztaly(null).kezbesites, 0);
+  // GA4: client_id (_ga suti) nelkul = jogos 0 (a latogato adata hianyzik); a vedelmi 'tiltva' agak (elo cel, hianyzo teszt-kod) HIANY marad
+  const kl = cellaOsztaly({ allapot: 'tiltva', indok: 'nincs GA4 client_id (nincs _ga suti): a Measurement Protocol client_id nelkul nem kuldheto' });
+  assert.deepEqual([kl.osztaly, kl.kezbesites], ['jogos_0', 0]); assert.match(kl.ok, /^nincs GA4 client_id/);
+  for (const indok of ['az elo GA4 property tiltott', 'nincs GA4_TESZT_MEASUREMENT_ID (teszt-property)', 'a celpont nem az ARNYEK dataset (elo pixelre nem kuldunk)']) assert.equal(cellaOsztaly({ allapot: 'tiltva', indok }).osztaly, 'hiany', indok);
 });
 
 test('egyeztetoSorok: foglalasonkent egy sor; esemenytipus, ertek, uj / visszatero, platformonkent 1 vagy jogos 0; jelzesek a hibas esetekre', async () => {
@@ -71,6 +75,7 @@ test('egyeztetoSorok: foglalasonkent egy sor; esemenytipus, ertek, uj / visszate
   assert.deepEqual(r.osszegzes.platformonkent.tiktok, { ok: 4, jogos_0: 0, hiany: 1 });
   assert.deepEqual(r.osszegzes.platformonkent.meta, { ok: 4, jogos_0: 1, hiany: 0 });
   assert.equal(r.osszegzes.rendben, 2); assert.equal(r.osszegzes.jelzett, 3);
+  assert.deepEqual(r.osszegzes.jogos_0_okok.meta, { 'hozzajarulas nelkul a modell szerint nem megy': 1 }); assert.deepEqual(r.osszegzes.jogos_0_okok.tiktok, {});
 });
 
 test('egyeztetoSorok: oldalazas (limit + utan), idoszak-szures, ervenytelen tol / ig', async () => {
