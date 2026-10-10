@@ -15,6 +15,7 @@
 // A tarolt adat: kulcs (szamok), booking_id (veletlen), serviceId, a Salonic UUID. Szemelyes adat (nev, e-mail, telefon) NINCS.
 
 import { BUSINESSES } from '../../assets/js/booking-engine/salonic-adapter.js';
+import { irasKi, IRAS_KI_VALASZ } from './meres/iras-kapcsolo.js';
 
 export const MEGORZES_NAP = 180;
 export const EGYEZTETES_MAX_BAJT = 262144; // a POST /api/foglalas-egyeztetes torzsenek felso hatara (korabban 20 000: a teljes level-HTML ennel nagyobb)
@@ -668,6 +669,7 @@ export async function kezelKulcs(request, env) {
   if (!env || !env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
   if (request.method === 'POST') {
     if (!azonosEredet(request)) return valasz(403, { ok: false, miert: 'csak azonos eredetrol' });
+    if (await irasKi(env.KULCS_DB, env)) return valasz(503, IRAS_KI_VALASZ); // QA-4 veszkapcsolo: az uj kulcs-iras leall (a koszonooldal ezt elnyeli)
     const szoveg = await request.text();
     if (szoveg.length > 2048) return valasz(413, { ok: false, miert: 'tul nagy' });
     let o; try { o = JSON.parse(szoveg); } catch (e) { return valasz(400, { ok: false, miert: 'nem JSON' }); }
@@ -686,10 +688,11 @@ export async function kezelKulcs(request, env) {
 }
 
 /** /api/foglalas-egyeztetes: POST (az e-mail-oldal kerdez; kulcsos) | GET ?kulcs=..&uuid=.. (allapot) | GET ?kulcs=..&riasztas=1[&formatum=html] (parositatlan lista) */
-export async function kezelEgyeztetes(request, env, deps = {}) {
+async function kezelEgyeztetesBelso(request, env, deps = {}) {
   if (!env || !env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
   if (!(await kulcsEllenorzes(request, env))) return valasz(404, { ok: false });
   const url = new URL(request.url);
+  if (request.method === 'POST' && await irasKi(env.KULCS_DB, env)) return valasz(503, { ...IRAS_KI_VALASZ, allapot: 'ki' }); // QA-4 veszkapcsolo: sem parositas, sem lemondas-kezeles, sem esemeny-kuldes
   try { await veglegesLejart(env.KULCS_DB, deps.now ? deps.now() : Date.now()); } catch (e) { /* a lezaras sosem akaszthatja meg a kerest */ }
   if (request.method === 'POST') {
     const szoveg = await request.text();
@@ -733,4 +736,10 @@ export async function kezelEgyeztetes(request, env, deps = {}) {
     return valasz(200, { ok: true, allapot: await egyeztetesAllapot(env.KULCS_DB, uuid) });
   }
   return valasz(405, { ok: false });
+}
+
+/** FAIL-OPEN burkolo: a vegpont sosem dob kivetelt (D1-hiba, varatlan adat) - JSON 500 valasz; a hivo Zap ujraprobal, a vendeg folyamatat ez nem erinti. */
+export async function kezelEgyeztetes(request, env, deps = {}) {
+  try { return await kezelEgyeztetesBelso(request, env, deps); }
+  catch (e) { return valasz(500, { ok: false, miert: 'belso hiba' }); }
 }
