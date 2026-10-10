@@ -64,8 +64,37 @@ export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = n
   };
 }
 
+/** A csere idopontja: unix masodperc (szam / szamjegyes szoveg) vagy ISO-datum; ervenytelen -> null. */
+export function csereIdo(v) {
+  if (v === null || v === undefined || v === '') return null;
+  if (/^\d{9,11}$/.test(String(v))) return Number(v);
+  const t = Date.parse(String(v)); return Number.isFinite(t) ? Math.floor(t / 1000) : null;
+}
+
+/**
+ * GA4 Measurement Protocol titokcsere jelolese (GPT-dontes, 2026-10-10): a csere ELOTTI utolso es az UTANI elso SIKERES (allapot = elkuldve) GA4 arnyek-esemeny,
+ * valamint a csere utani, az elso sikeresig kelt sikertelen GA4 cellak szama. A kuldes ideje: meres_kuldes.frissitve (a sikeres kuldeskor frissul). Csak olvas.
+ * Ketto valtozat: barmely GA4 arnyek-esemeny, es csak a foglalasok (source_id = mb_...).
+ */
+export async function ga4Csere(db, ido) {
+  await meresSema(db);
+  const MEZOK = "SELECT id, esemeny_id, esemeny_nev, source_id, uzletag, http_status, frissitve FROM meres_kuldes WHERE platform = 'ga4' AND allapot = 'elkuldve'";
+  const jel = (r) => (r ? { esemeny_id: r.esemeny_id, esemeny: r.esemeny_nev, source_id: r.source_id, tipus: String(r.source_id).startsWith('mb_') ? 'foglalas' : 'ajandekkartya', uzletag: r.uzletag, http_status: r.http_status, kuldve: r.frissitve, kuldve_utc: new Date(r.frissitve * 1000).toISOString() } : null);
+  const elso = async (felt, sorrend) => jel(await db.prepare(`${MEZOK} ${felt} ORDER BY frissitve ${sorrend}, id ${sorrend} LIMIT 1`).bind(ido).first());
+  const FOGL = " AND source_id LIKE 'mb\\_%' ESCAPE '\\'";
+  const out = {
+    ido, ido_utc: new Date(ido * 1000).toISOString(),
+    utolso_sikeres_elotte: await elso('AND frissitve < ?1', 'DESC'), elso_sikeres_utana: await elso('AND frissitve >= ?1', 'ASC'),
+    foglalas_utolso_sikeres_elotte: await elso(FOGL + ' AND frissitve < ?1', 'DESC'), foglalas_elso_sikeres_utana: await elso(FOGL + ' AND frissitve >= ?1', 'ASC'),
+  };
+  const veg = out.elso_sikeres_utana ? out.elso_sikeres_utana.kuldve : null;
+  const h = await db.prepare("SELECT COUNT(*) n FROM meres_kuldes WHERE platform = 'ga4' AND allapot IN ('hiba','nincs_hitelesites','tiltva') AND frissitve >= ?1 AND (?2 IS NULL OR frissitve <= ?2)").bind(ido, veg).first();
+  out.sikertelen_ga4_cella_a_csere_utan_az_elso_sikeresig = h ? h.n : 0;
+  return out;
+}
+
 /** Az idoszak (unix mp, [tol, ig)) foglalasai: a koszonooldali iras, a levelparositas vagy a kuldes alapjan. Csak OLVAS. */
-export async function egyeztetoSorok(db, { tol, ig, uzletag = null, limit = 500, utan = '' } = {}) {
+export async function egyeztetoSorok(db, { tol, ig, uzletag = null, limit = 500, utan = '', ga4_csere = null } = {}) {
   await meresSema(db); await parositasSema(db);
   const t0 = Math.floor(Number(tol)), t1 = Math.floor(Number(ig));
   if (!Number.isFinite(t0) || !Number.isFinite(t1) || t1 <= t0) return { ok: false, miert: 'tol / ig: unix masodperc, ig > tol' };
@@ -93,11 +122,22 @@ export async function egyeztetoSorok(db, { tol, ig, uzletag = null, limit = 500,
   const osszegzes = { foglalas: sorok.length, rendben: sorok.filter((s) => s.rendben).length, jelzett: sorok.filter((s) => !s.rendben).length, platformonkent: {} };
   for (const p of PLATFORMOK) osszegzes.platformonkent[p] = { ok: 0, jogos_0: 0, hiany: 0 };
   for (const s of sorok) for (const e of s.esemenyek) for (const p of PLATFORMOK) osszegzes.platformonkent[p][e.platformok[p].osztaly]++;
+  const cs = csereIdo(ga4_csere);
+  if (ga4_csere !== null && ga4_csere !== undefined && ga4_csere !== '' && cs === null) return { ok: false, miert: 'ga4_csere: unix masodperc vagy ISO-datum' };
+  if (cs !== null) { // a GA4 titokcsere jelolese: osszegzes + a jelolt esemeny cellaja az oldalon (ha ott van)
+    osszegzes.ga4_csere = await ga4Csere(db, cs);
+    const jelolok = { [(osszegzes.ga4_csere.utolso_sikeres_elotte || {}).esemeny_id]: 'csere_elotti_utolso', [(osszegzes.ga4_csere.elso_sikeres_utana || {}).esemeny_id]: 'csere_utani_elso' };
+    const fogl = { [(osszegzes.ga4_csere.foglalas_utolso_sikeres_elotte || {}).esemeny_id]: 'foglalas_csere_elotti_utolso', [(osszegzes.ga4_csere.foglalas_elso_sikeres_utana || {}).esemeny_id]: 'foglalas_csere_utani_elso' };
+    for (const sor of sorok) for (const e of sor.esemenyek) {
+      const m = [jelolok[e.esemeny_id], fogl[e.esemeny_id]].filter(Boolean);
+      if (m.length) { e.platformok.ga4.csere_jelolo = m; (sor.ga4_csere_jelolo = sor.ga4_csere_jelolo || []).push(...m); }
+    }
+  }
   return { ok: true, tol: t0, ig: t1, sorok, osszegzes, kovetkezo: mind.length > lim ? oldal[oldal.length - 1] : null };
 }
 
-const CSV_OSZLOPOK = ['booking_id', 'kulcs', 'uzletag', 'esemenytipus', 'uj_visszatero', 'ertek', 'penznem', 'parositas_allapot', 'parositas_forras', 'kulcs_irva', 'esemeny_id', ...PLATFORMOK.map((p) => `${p}_kezbesites`), ...PLATFORMOK.map((p) => `${p}_osztaly`), 'jelzesek'];
-const cs = (v) => { const s = v === null || v === undefined ? '' : String(v); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+const CSV_OSZLOPOK = ['booking_id', 'kulcs', 'uzletag', 'esemenytipus', 'uj_visszatero', 'ertek', 'penznem', 'parositas_allapot', 'parositas_forras', 'kulcs_irva', 'esemeny_id', ...PLATFORMOK.map((p) => `${p}_kezbesites`), ...PLATFORMOK.map((p) => `${p}_osztaly`), 'ga4_csere_jelolo', 'jelzesek'];
+const csvMezo = (v) => { const s = v === null || v === undefined ? '' : String(v); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
 /** CSV (foglalas x esemeny egy sor): a tabla a QA-5 tablazatba masolhato. */
 export function egyeztetoCsv(sorok) {
   const sorokCsv = [CSV_OSZLOPOK.join(';')];
@@ -106,10 +146,10 @@ export function egyeztetoCsv(sorok) {
     for (const e of lista) {
       const o = {
         booking_id: s.booking_id, kulcs: s.kulcs, uzletag: s.uzletag, esemenytipus: e ? e.nev : s.esemenytipus, uj_visszatero: s.uj_visszatero, ertek: e ? e.ertek : s.ertek, penznem: e ? e.penznem : s.penznem,
-        parositas_allapot: s.parositas ? s.parositas.allapot : '', parositas_forras: s.parositas ? s.parositas.forras : '', kulcs_irva: s.kulcs_irva, esemeny_id: e ? e.esemeny_id : '', jelzesek: s.jelzesek.join(' | '),
+        parositas_allapot: s.parositas ? s.parositas.allapot : '', parositas_forras: s.parositas ? s.parositas.forras : '', kulcs_irva: s.kulcs_irva, esemeny_id: e ? e.esemeny_id : '', ga4_csere_jelolo: e && e.platformok.ga4.csere_jelolo ? e.platformok.ga4.csere_jelolo.join(' | ') : '', jelzesek: s.jelzesek.join(' | '),
       };
       for (const p of PLATFORMOK) { o[`${p}_kezbesites`] = e ? e.platformok[p].kezbesites : ''; o[`${p}_osztaly`] = e ? e.platformok[p].osztaly : ''; }
-      sorokCsv.push(CSV_OSZLOPOK.map((k) => cs(o[k])).join(';'));
+      sorokCsv.push(CSV_OSZLOPOK.map((k) => csvMezo(o[k])).join(';'));
     }
   }
   return sorokCsv.join('\n') + '\n';

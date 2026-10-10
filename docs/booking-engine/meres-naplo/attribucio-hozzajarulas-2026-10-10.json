@@ -1,0 +1,117 @@
+{
+ "futtatva": "2026-10-10T09:04:25.858Z",
+ "leiras": "attribucio.js hozzajarulas-fuggo tarolas, valodi Chromium + valodi suti.js, helyi dist, hamisitott /api/*",
+ "eredmeny": "PASS",
+ "ellenorzesek": [
+  {
+   "nev": "A) dontes nelkul: 0 attribucios localStorage-iras, nincs mh_attr",
+   "ok": true,
+   "adat": {
+    "mhAttr": null,
+    "mhCc": null,
+    "attrIras": 0
+   }
+  },
+  {
+   "nev": "A) dontes nelkul: a sav latszik, a dontes (mh_cc) nincs",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "A) dontes nelkul: a szerver megkapja a memoriabeli adatot (SZ-38 valtozatlan)",
+   "ok": true,
+   "adat": {
+    "hozz": {},
+    "kulcsok": [
+     "google",
+     "meta",
+     "tiktok",
+     "utm_elso",
+     "utm_utolso"
+    ]
+   }
+  },
+  {
+   "nev": "A) nincs kezeletlen JS-hiba",
+   "ok": true,
+   "adat": []
+  },
+  {
+   "nev": "A2) Elfogadom utan: a pillanatkep kiirodik (gclid, fbclid, ttclid, UTM)",
+   "ok": true,
+   "adat": {
+    "attrIras": 1,
+    "kulcsok": [
+     "v",
+     "google",
+     "meta",
+     "tiktok",
+     "utm_utolso",
+     "utm_elso"
+    ]
+   }
+  },
+  {
+   "nev": "A3) engedellyel a tarolt adat megmarad a kovetkezo oldalon",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "A4) visszavonas (marketing ki) utan a tarolt adat torlodik",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "B) Mindet elutasitom: 0 attribucios localStorage-iras",
+   "ok": true,
+   "adat": {
+    "mhAttr": null,
+    "mhCc": "{\"v\":1,\"t\":1791623062615,\"fun\":false,\"ana\":false,\"adv\":false}",
+    "attrIras": 0
+   }
+  },
+  {
+   "nev": "B) elutasitas mellett is megy a szervernek az (URL-bol szarmazo) adat",
+   "ok": true,
+   "adat": {}
+  },
+  {
+   "nev": "B) nincs kezeletlen JS-hiba",
+   "ok": true,
+   "adat": []
+  },
+  {
+   "nev": "C) engedellyel (mh_cc.adv=true) az iras megtortenik",
+   "ok": true,
+   "adat": {
+    "attrIras": 1
+   }
+  },
+  {
+   "nev": "C) nincs kezeletlen JS-hiba",
+   "ok": true,
+   "adat": []
+  },
+  {
+   "nev": "D) engedely nelkul a regebben tarolt adat torlodik",
+   "ok": true,
+   "adat": {
+    "mhAttr": null
+   }
+  },
+  {
+   "nev": "D) ...es nem kerul a szerverhez",
+   "ok": true,
+   "adat": []
+  },
+  {
+   "nev": "E) /headspa-ajandekkartya: betolt, 0 JS-hiba, dontes nelkul 0 attribucios iras",
+   "ok": true,
+   "adat": {
+    "status": 200,
+    "hibak": [],
+    "attrIras": 0
+   }
+  }
+ ]
+}

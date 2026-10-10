@@ -4,6 +4,9 @@
 //   - ELSO es UTOLSO erintes UTM-je (utm_elso: soha nem irodik felul; utm_utolso: minden uj UTM-es erkezesnel)
 //   - _fbp, _ttp (a Meta- / TikTok-pixel sutije; csak OLVASSUK, mi nem hozunk letre sutit), GA4 client_id (_ga) + session_id (_ga_<mero-azonosito>)
 //   - hozzajarulas: a suti.js dontese (mh_cc) - a szerver SZ-38 szerint hasznalja (Meta / TikTok hozzajarulas nelkul is, Google / GA4 a valos jel szerint)
+// TAROLAS (GPT-dontes, 2026-10-10, QA-5 elotti higienia): a kattintasazonositok es az UTM CSAK a marketing-hozzajarulas (mh_cc.adv, suti.js) utan kerulnek a localStorage-ba ('mh_attr').
+//   Hozzajarulas elott / nelkul az adat csak MEMORIABAN (az aktualis oldal URL-jebol) van, ez megy a foglalas kuldesekor a szervernek (SZ-38 valtozatlan); localStorage-iras nincs.
+//   A hozzajarulas pillanataban a memoriabeli pillanatkep kiirodik; visszavonaskor / elutasitasnal a tarolt 'mh_attr' torlodik.
 // ARNYEKMOD: az eles domainen (mosaicheadspa.hu) QA-4 (DECISION-LOG #120) ota fut (ELES_ENGEDELYEZVE = true): csak a sajat /api/meres-erkezes vegpontra ir, a kuldes kizarolag ARNYEK-celpontokra megy (docs/booking-engine/QA4_ELESITES.md). Vészkapcsolo: meres_kapcsolo 'iras' / MERES_IRAS_KI.
 (function () {
   'use strict';
@@ -21,11 +24,20 @@
   var UTM = ['source', 'medium', 'campaign', 'term', 'content'];
   var ma = function () { return Math.floor(Date.now() / 1000); };
 
+  // marketing-hozzajarulas (a suti.js dontese): dontes nelkul / elutasitva = false
+  function engedely() {
+    try { if (w.mhSuti && typeof w.mhSuti.engedely === 'function') return !!w.mhSuti.engedely('adv'); } catch (e) { /* a suti.js hibaja: nincs engedely */ }
+    return hozzajarulas().adv === true;
+  }
+  function torol() { try { localStorage.removeItem(KULCS); } catch (e) { /* nem baj */ } }
+  // csak engedellyel olvas a tarolobol (hozzajarulas nelkul a regebben, engedely elott tarolt adat sem hasznalhato: torolve)
   function olvas() {
+    if (!engedely()) { torol(); return { v: 1 }; }
     try { var o = JSON.parse(localStorage.getItem(KULCS)); if (o && o.v === 1) return o; } catch (e) { /* privat ablak / tiltott tarolo */ }
     return { v: 1 };
   }
-  function ment(o) { try { localStorage.setItem(KULCS, JSON.stringify(o)); } catch (e) { /* nem baj: a memoriabeli pillanatkep akkor is megvan */ } }
+  // csak engedellyel ir; engedely nelkul NINCS localStorage-iras (a memoriabeli pillanatkep marad)
+  function ment(o) { if (!engedely()) return false; try { localStorage.setItem(KULCS, JSON.stringify(o)); return true; } catch (e) { return false; /* nem baj: a memoriabeli pillanatkep akkor is megvan */ } }
   function suti(nev) {
     try { var m = d.cookie.match(new RegExp('(?:^|;\\s*)' + nev.replace(/[^\w-]/g, '') + '=([^;]*)')); return m ? decodeURIComponent(m[1]) : null; } catch (e) { return null; }
   }
@@ -42,7 +54,16 @@
     UTM.forEach(function (k) { var v = q.get('utm_' + k); if (v) { utm[k] = String(v).slice(0, 120); van = true; } });
     if (van) { utm.ts = t; allapot.utm_utolso = utm; if (!allapot.utm_elso) allapot.utm_elso = JSON.parse(JSON.stringify(utm)); }
   } catch (e) { /* hibas URL: nincs uj adat */ }
-  ment(allapot);
+  ment(allapot); // engedely nelkul nem ir (csak memoria)
+  // a hozzajarulas valtozasa (suti.js): megadva -> a memoriabeli pillanatkep kiirodik; visszavonva / elutasitva -> a tarolt adat torlodik
+  var figyeloKotve = false;
+  function valtozott() { try { if (engedely()) ment(allapot); else torol(); } catch (e) { /* nem baj */ } }
+  function figyeloKot() {
+    if (figyeloKotve) return true;
+    try { if (w.mhSuti && typeof w.mhSuti.figyel === 'function') { w.mhSuti.figyel(valtozott); figyeloKotve = true; } } catch (e) { /* nem baj */ }
+    return figyeloKotve;
+  }
+  if (!figyeloKot()) { try { d.addEventListener('DOMContentLoaded', figyeloKot); w.addEventListener('load', figyeloKot); } catch (e) { /* nincs esemeny-API */ } }
 
   function ga4() {
     var o = {};
@@ -58,7 +79,7 @@
   }
   /** A szerver (erkezes.js erkezesTisztit) altal vart alak: { google, meta, tiktok, utm_elso, utm_utolso, fbp, ttp, ga4 }. A Meta fbc: a sajat _fbc suti, tartalekban az fbclid-bol. */
   function pillanatkep() {
-    var a = olvas(), o = {};
+    var a = allapot, o = {}; // a memoriabeli allapot (engedellyel a tarolt + az uj URL-adat, engedely nelkul csak az URL-adat)
     if (a.google) o.google = a.google;
     var fbc = suti('_fbc');
     if (fbc || a.meta) o.meta = { fbc: fbc || (a.meta && a.meta.fbclid ? 'fb.1.' + a.meta.ts * 1000 + '.' + a.meta.fbclid : undefined), fbclid: a.meta && a.meta.fbclid, ts: a.meta && a.meta.ts };
