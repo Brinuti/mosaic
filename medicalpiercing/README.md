@@ -12,9 +12,13 @@ Futás közben egyetlen kérést sem küld a Wix szervereire. A MOSAIC-klón (`.
   Jost), de minden betű szélessége, a betűpárok alágása és a sormagasság az eredetiével azonos.
   Ezért a sorok pontosan ugyanott törnek.
 
-**Mérés (2026-10-10, 1440 px):** a kezdőlap, a Rólunk és a Blog oldalon az élő Wix-oldal minden
-`comp-` eleme helyben és méretben egyezik a klónnal (`tools/elteres.mjs`: 0 eltérő elem), és az
-oldalak teljes magassága is pixelre azonos.
+**Mérés (2026-10-10, `tools/elteres.mjs`):** az élő Wix-oldal minden `comp-` eleme helyben és méretben
+egyezik a klónnal (0 eltérő elem) a nem blogos oldalakon asztalin (1440 px) és a vizsgált mobil oldalakon
+is; az oldalak teljes magassága pixelre azonos. A blogbejegyzéseknél a klón a *betöltött* állapotot
+mutatja (számlálók, hozzászólások, „Friss bejegyzések” képei); az élő oldal ezeket görgetés után tölti
+be, ezért a mérés pillanatától függően ott még rövidebb lehet. A blog listájában mind a 77 bejegyzés
+szerepel (élőben görgetésre töltődnek be). Nyitóoldali diavetítésnél a mérés pillanatában más dia
+látszhat (időfüggő).
 
 ```
 medicalpiercing/
@@ -52,6 +56,11 @@ node tools/build.mjs                 # -> dist/
 Egyetlen oldal: `node tools/elo-mentes.mjs rolunk && node tools/wix2static.mjs rolunk` (mobilon `--mobil`).
 
 ### Az átalakító (`tools/wix2static.mjs`)
+
+Forrás: a kirajzolt oldal (`tools/elo-dom/`). Néhány oldalt (17, főleg a városoldalak) a Wix a böngészőben
+újrarajzol, és a stílust ilyenkor külső CSS-fájlokból adja: ezeknél a kirajzolt tartalom mellé a szerveroldali
+mentés beágyazott stílusai és a külső Wix-CSS helyi másolata (`assets/css/wix/`) kerül. Ha a kirajzolt mentés
+hiányzik, a szerveroldali mentés (`tools/raw/`) a forrás. A 404-es lap mindig a szerveroldali mentésből készül.
 
 1. kiveszi a Wix összes scriptjét és a Wix „Egyéni kód” blokkjait (ezeket a `suti.js` adja vissza),
    valamint a futás közben beszúrt mérő-kereteket;

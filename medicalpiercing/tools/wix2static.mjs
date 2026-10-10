@@ -171,15 +171,50 @@ function felugrok(html) {
   return blokkok.length ? html.replace(/<\/body>/i, blokkok.join('\n') + '\n</body>') : html;
 }
 
+// --- 8. kulso Wix-stilusfajlok helyi masolata --------------------------------
+const WIXCSS = path.join(ROOT, 'assets/css/wix');
+async function wixCss(url) {
+  const nev = decodeURIComponent(url.split('/').pop()).replace(/[^A-Za-z0-9._-]+/g, '_');
+  const cel = path.join(WIXCSS, nev);
+  if (!fs.existsSync(cel)) {
+    fs.mkdirSync(WIXCSS, { recursive: true });
+    const v = await fetch(url);
+    if (!v.ok) { hianyzo.add('wix-css ' + url); return nev; }
+    fs.writeFileSync(cel, wixBetukTorlese(await v.text()));
+  }
+  return nev;
+}
+
 // --- futtatas ------------------------------------------------------------
 const kertek = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 let db = 0;
+const vegyes = [];
 for (const o of LISTA.filter((x) => !kertek.length || kertek.includes(x.kulcs))) {
   // a kirajzolt mentes csak akkor jo, ha benne van a Wix fo stilusa (lasd elo-mentes.mjs)
+  // Nehany oldalt a Wix a bongeszoben ujrarajzol, es a stilust ilyenkor kulso
+  // (parastorage) CSS-fajlokbol adja, a beagyazott <style>-ok helyett. Ezeknel a
+  // kirajzolt tartalomhoz a szerveroldali mentes (tools/raw) beagyazott stilusait
+  // tesszuk: az osztalynevek ugyanazok, igy a megjelenes azonos.
   const elo = path.join(ELO, o.kulcs + '.html');
-  const be = fs.existsSync(elo) && fs.readFileSync(elo, 'utf8').includes('<style id="css_masterPage"') ? elo : path.join(RAW, o.kulcs + '.html');
+  const nyers = path.join(RAW, o.kulcs + '.html');
+  let forras = null;
+  if (fs.existsSync(elo)) {
+    const e = fs.readFileSync(elo, 'utf8');
+    if (e.includes('<style id="css_masterPage"') || !fs.existsSync(nyers)) forras = e;
+    else {
+      const stilusok = [...fs.readFileSync(nyers, 'utf8').matchAll(/<style\b[^>]*>[\s\S]*?<\/style>/gi)].map((m) => m[0]).join('\n');
+      // a kulso Wix-stilusfajlok (pl. a blog-module) helyi masolata: assets/css/wix/
+      let k = e;
+      for (const [link, url] of [...e.matchAll(/<link\b[^>]*href="(https:\/\/static\.parastorage\.com\/[^"]+\.css)"[^>]*>/gi)].map((m) => [m[0], m[1]])) {
+        k = k.replace(link, link.includes('stylesheet') ? `<link rel="stylesheet" href="/assets/css/wix/${await wixCss(url)}">` : '');
+      }
+      forras = k.replace(/<\/head>/i, stilusok + '\n</head>');
+      vegyes.push(o.kulcs);
+    }
+  }
+  const be = nyers;
   if (!fs.existsSync(be)) { console.log('nincs lementve: ' + o.kulcs); continue; }
-  let html = fs.readFileSync(be, 'utf8').replace(/\u0000/g, '');
+  let html = (forras ?? fs.readFileSync(be, 'utf8')).replace(/\u0000/g, '');
   const elotte = html.length;
   html = scriptekTorlese(html);
   html = wixBetukTorlese(html);
@@ -200,5 +235,6 @@ for (const o of LISTA.filter((x) => !kertek.length || kertek.includes(x.kulcs)))
 }
 console.log(`${db} oldal (${MOBIL ? 'mobil' : 'asztali'}), ${torolt} Wix @font-face torolve, ${atirtLink} belso link atirva`);
 if (ismeretlenLink.size) console.log(`Ismeretlen belso cel (${ismeretlenLink.size}): ${[...ismeretlenLink].slice(0, 30).join('  ')}`);
+if (vegyes.length) console.log(`Kirajzolt tartalom + szerveroldali stilus (${vegyes.length}): ${vegyes.join(' ')}`);
 if (hianyzo.size) console.log(`Hianyzik: ${[...hianyzo].join(', ')}`);
 if (hianyzoKepek.size) { console.log(`\nHIANYZO HELYI KEP (${hianyzoKepek.size}):`); for (const k of hianyzoKepek) console.log('  ' + k); }
