@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { cellaOsztaly, sorEpit, egyeztetoSorok, egyeztetoCsv, ga4Csere, csereIdo } from '../netlify/lib/meres/egyeztetes-sor.js';
+import { cellaOsztaly, sorEpit, egyeztetoSorok, egyeztetoCsv, ga4Csere, csereIdo, lefedettseg } from '../netlify/lib/meres/egyeztetes-sor.js';
 import { kezelAdmin } from '../netlify/lib/meres/vegpontok.js';
 import { sha256hex } from '../netlify/lib/meres/hash.js';
 
@@ -47,6 +47,15 @@ test('cellaOsztaly: elkuldve = ok; modell / hozzajarulas szerinti kihagyas = jog
   assert.equal(cellaOsztaly({ allapot: 'kihagyva', indok: 'hozzajarulas nelkul' }).osztaly, 'jogos_0');
   for (const s of [{ allapot: 'kihagyva', indok: 'veszkapcsolo: mind' }, { allapot: 'hiba' }, { allapot: 'nincs_hitelesites' }, { allapot: 'tiltva' }, { allapot: 'halasztva' }, { allapot: 'nyitott' }, { allapot: 'folyamatban' }, null]) assert.equal(cellaOsztaly(s).osztaly, 'hiany', JSON.stringify(s));
   assert.equal(cellaOsztaly({ allapot: 'elkuldve' }).kezbesites, 1); assert.equal(cellaOsztaly(null).kezbesites, 0);
+  // GA4 client_id nelkul (DECISION #122): a FOGLALASKORI analytics-hozzajarulas dont; a tobbi 'tiltva' (vedelem) HIANY
+  const KL = { allapot: 'tiltva', indok: 'nincs GA4 client_id (nincs _ga suti): a Measurement Protocol client_id nelkul nem kuldheto' };
+  const elutasitva = cellaOsztaly(KL, { hozz: { ana: false, adv: true, fun: true, dontes: true } });
+  assert.deepEqual([elutasitva.osztaly, elutasitva.kezbesites, elutasitva.kod], ['jogos_0', 0, 'ga4_nincs_ana_hozzajarulas']);
+  assert.equal(cellaOsztaly(KL, { hozz: { ana: null, adv: null, fun: null, dontes: false } }).osztaly, 'jogos_0', 'nincs dontes -> jogos 0');
+  const hiba = cellaOsztaly(KL, { hozz: { ana: true, adv: true, fun: true, dontes: true } });
+  assert.deepEqual([hiba.osztaly, hiba.kod], ['hiany', 'ga4_ana_van_client_id_nincs']);
+  assert.equal(cellaOsztaly(KL, { hozz: null }).kod, 'ga4_nincs_pillanatkep'); assert.equal(cellaOsztaly(KL).osztaly, 'hiany', 'pillanatkep nelkul hiany');
+  for (const indok of ['az elo GA4 property tiltott', 'nincs GA4_TESZT_MEASUREMENT_ID (teszt-property)', 'a celpont nem az ARNYEK dataset (elo pixelre nem kuldunk)']) assert.equal(cellaOsztaly({ allapot: 'tiltva', indok }, { hozz: { ana: false } }).osztaly, 'hiany', indok);
 });
 
 test('egyeztetoSorok: foglalasonkent egy sor; esemenytipus, ertek, uj / visszatero, platformonkent 1 vagy jogos 0; jelzesek a hibas esetekre', async () => {
@@ -71,6 +80,7 @@ test('egyeztetoSorok: foglalasonkent egy sor; esemenytipus, ertek, uj / visszate
   assert.deepEqual(r.osszegzes.platformonkent.tiktok, { ok: 4, jogos_0: 0, hiany: 1 });
   assert.deepEqual(r.osszegzes.platformonkent.meta, { ok: 4, jogos_0: 1, hiany: 0 });
   assert.equal(r.osszegzes.rendben, 2); assert.equal(r.osszegzes.jelzett, 3);
+  assert.deepEqual(r.osszegzes.jogos_0_okok.meta, { 'hozzajarulas nelkul a modell szerint nem megy': 1 }); assert.deepEqual(r.osszegzes.jogos_0_okok.tiktok, {});
 });
 
 test('egyeztetoSorok: oldalazas (limit + utan), idoszak-szures, ervenytelen tol / ig', async () => {
@@ -133,4 +143,40 @@ test('GA4 titokcsere (GPT-dontes): a csere elotti utolso es az utani elso SIKERE
   // csere elott meg nincs sikeres GA4 / utana nincs: null, a szamlalo a vegeig szamol
   const korai = await ga4Csere(D1, T0 + 5); assert.equal(korai.utolso_sikeres_elotte, null);
   const kesoi = await ga4Csere(D1, T0 + 500); assert.equal(kesoi.elso_sikeres_utana, null); assert.equal(kesoi.sikertelen_ga4_cella_a_csere_utan_az_elso_sikeresig, 0);
+});
+
+test('DECISION #122: GA4 client_id nelkul a FOGLALASKORI analytics-hozzajarulas dont; lefedettseg: platformonkent jogosult (nevezo), jogosult_arany, kezbesites_arany, GA4 client_id elerheto arany; uzletagonkent', async () => {
+  const D1 = await feltolt(); const { db } = D1;
+  const [H1, H2, H3, H4, H5, H6] = ['mb_h1h1h1h1h1h1h1h1h1', 'mb_h2h2h2h2h2h2h2h2h2', 'mb_h3h3h3h3h3h3h3h3h3', 'mb_h4h4h4h4h4h4h4h4h4', 'mb_h5h5h5h5h5h5h5h5h5', 'mb_h6h6h6h6h6h6h6h6h6'];
+  const erk = (id, uzletag, hozz, clientId) => db.prepare('INSERT INTO meres_erkezes (source_id, uzletag, tipus, attr, hozz, ido, frissitve) VALUES (?,?,?,?,?,?,?)').run(id, uzletag, 'foglalas', JSON.stringify(clientId ? { ga4: { client_id: '123.456' } } : {}), JSON.stringify(hozz), T0 + 30, T0 + 30);
+  const GA = 'nincs GA4 client_id (nincs _ga suti): a Measurement Protocol client_id nelkul nem kuldheto';
+  const sor = (id, nev, platform, allapot, indok, uzl) => db.prepare('INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, indok, ertek, penznem, http_status, letrehozva, frissitve) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)').run(`${nev}:${id}`, nev, 'alap', platform, uzl, id, allapot, indok, 20000, 'HUF', allapot === 'elkuldve' ? 200 : null, T0 + 40, T0 + 40);
+  const cell = (id, nev, uzl, ga4, google = 'elkuldve', gIndok = null) => { for (const p of ['meta', 'tiktok']) sor(id, nev, p, 'elkuldve', null, uzl); sor(id, nev, 'google', google, gIndok, uzl); sor(id, nev, 'ga4', ga4, ga4 === 'tiltva' ? GA : null, uzl); };
+  const NEM = { ana: false, adv: false, fun: false, dontes: true }, IGEN = { ana: true, adv: true, fun: true, dontes: true }, NINCS_DONTES = { ana: null, adv: null, fun: null, dontes: false };
+  erk(H1, 'headspa', NEM, false); cell(H1, 'FoglalasElso', 'headspa', 'tiltva');           // elutasitott analytics + nincs client_id -> GA4 jogos 0
+  erk(H2, 'headspa', IGEN, false); cell(H2, 'FoglalasElso', 'headspa', 'tiltva');          // analytics-hozzajarulas VAN, nincs client_id -> GA4 HIANY (hiba)
+  erk(H3, 'fodrasz', NINCS_DONTES, false); cell(H3, 'FoglalasElso', 'fodrasz', 'tiltva');  // nincs dontes -> GA4 jogos 0
+  erk(H4, 'fodrasz', IGEN, true); cell(H4, 'FoglalasElso', 'fodrasz', 'elkuldve');          // minden rendben
+  erk(H5, 'fodrasz', IGEN, true); cell(H5, 'Visszajaro', 'fodrasz', 'elkuldve', 'kihagyva', 'a Google-be csak alapesemeny megy (a visszajaro es az ernyo nem)'); // Google: visszajaro = jogos 0
+  cell(H6, 'FoglalasElso', 'headspa', 'tiltva');                                             // NINCS erkezesi pillanatkep: a hozzajarulas ismeretlen -> GA4 hiany (a meresi adat hianya)
+  const r = await egyeztetoSorok(D1, { tol: T0, ig: T1 });
+  const by = Object.fromEntries(r.sorok.map((x) => [x.booking_id, x]));
+  const ga = (id) => by[id].esemenyek[0].platformok.ga4;
+  assert.deepEqual([ga(H1).osztaly, ga(H1).kod], ['jogos_0', 'ga4_nincs_ana_hozzajarulas']); assert.deepEqual([ga(H2).osztaly, ga(H2).kod], ['hiany', 'ga4_ana_van_client_id_nincs']);
+  assert.equal(ga(H3).osztaly, 'jogos_0'); assert.equal(ga(H4).osztaly, 'ok'); assert.equal(ga(H5).osztaly, 'ok'); assert.deepEqual([ga(H6).osztaly, ga(H6).kod], ['hiany', 'ga4_nincs_pillanatkep']);
+  assert.deepEqual([by[H2].hozzajarulas.ana, by[H2].ga4_client_id, by[H1].hozzajarulas.ana, by[H6].hozzajarulas, by[H6].ga4_client_id], [true, false, false, null, null]);
+  assert.ok(by[H2].jelzesek.some((j) => j.startsWith('platform_hiany:ga4:FoglalasElso:analytics-hozzajarulas VAN'))); assert.equal(by[H1].jelzesek.some((j) => j.includes(':ga4:')), false, 'a jogos 0 nem jelzes');
+  // lefedettseg: a bazis a 6 uj foglalas + az A / B / C (feltolt) - csak az uj hatot nezzuk szuro nelkul a tiszta szamokhoz
+  const L = lefedettseg([H1, H2, H3, H4, H5, H6].map((id) => by[id]));
+  assert.deepEqual(L.platformonkent.ga4, { foglalas_osszes: 6, jogosult: 4, jogosult_arany: 0.6667, kezbesitve: 2, hiany: 2, jogos_0: 2, kezbesites_arany: 0.5 });
+  assert.deepEqual(L.platformonkent.google, { foglalas_osszes: 6, jogosult: 5, jogosult_arany: 0.8333, kezbesitve: 5, hiany: 0, jogos_0: 1, kezbesites_arany: 1 });
+  assert.deepEqual(L.platformonkent.meta, { foglalas_osszes: 6, jogosult: 6, jogosult_arany: 1, kezbesitve: 6, hiany: 0, jogos_0: 0, kezbesites_arany: 1 });
+  // GA4 client_id: pillanatkep 5 (H6 nincs); client_id van 2 (H4, H5) -> 0.4; analytics-hozzajarulassal 3 (H2, H4, H5), ebbol client_id 2 -> 0.6667
+  assert.deepEqual(L.ga4_client_id, { pillanatkep_van: 5, pillanatkep_nincs: 1, client_id_elerheto: 2, client_id_elerheto_arany: 0.4, analytics_hozzajarulassal: 3, analytics_hozzajarulassal_client_id_elerheto: 2, client_id_elerheto_arany_analytics_hozzajarulassal: 0.6667, hiba_analytics_hozzajarulassal_client_id_nelkul: 1, jogos_0_nincs_analytics_hozzajarulas: 2 });
+  assert.equal(L.uzletagonkent.fodrasz.platformonkent.ga4.jogosult, 2); assert.equal(L.uzletagonkent.headspa.platformonkent.ga4.hiany, 2);
+  // az osszegzesben (a teljes oldal): a lefedettseg blokk ott van; a paratlan (esemeny nelkuli) foglalasok kulon szamolva
+  assert.ok(r.osszegzes.lefedettseg.platformonkent.ga4.foglalas_osszes >= 6); assert.equal(r.osszegzes.lefedettseg.alapesemeny_nelkuli_foglalas, 2, 'D es E: nincs esemeny');
+  assert.deepEqual(r.osszegzes.jogos_0_okok.ga4['nincs analytics-hozzajarulas (elutasitva), nincs GA4 client_id'], 1);
+  // CSV: az uj oszlopok
+  const csv = egyeztetoCsv(r.sorok).split('\n'); assert.match(csv[0], /;hozz_ana;ga4_client_id;ga4_csere_jelolo;jelzesek$/);
 });

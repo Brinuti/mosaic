@@ -48,8 +48,15 @@ Gyors leállítás: írás: `iras` kapcsoló (fent); küldés: `mind` kapcsoló;
 Egy sor = egy foglalás (CSV-ben foglalás × esemény): `booking_id`, `kulcs` (`placeId|employeeId|startUnix`: ezzel kapcsolódik a Salonic-oldal), `uzletag`, `esemenytipus`, `uj_visszatero` (`uj`, `uj_konzultacio`, `visszatero`), `ertek`, `penznem`, a párosítás állapota és forrása, `esemeny_id`, platformonként (`meta`, `tiktok`, `google`, `ga4`) a kézbesítések száma és osztálya:
 
 - `ok`: pontosan 1 kézbesítés (`elkuldve`);
-- `jogos_0`: 0, de jogosan (modell / hozzájárulás / lemondás miatt kihagyva);
+- `jogos_0`: 0, de jogosan, **nincs a lefedettség nevezőjében** (modell / hozzájárulás / lemondás miatt kihagyva; a Google-nél a visszajáró foglalás és az ernyő-esemény; a GA4-nél a `client_id` nélküli eset **analytics-hozzájárulás nélkül**, lásd lent). Az okokat az összegzés `jogos_0_okok` blokkja adja platformonként;
 - `hiany`: minden más (nincs_hitelesites, hiba, tiltva, halasztva, nyitott, vészkapcsoló miatt kihagyva, vagy nincs sor).
+
+**Lefedettség nevezője (DECISION #122, GPT-döntés):** platformonként az adott platformra **szabály szerint jogosult** foglalások köre = `ok` + `hiany` (a `jogos_0` nincs benne). Egy foglalás egy alapesemény-cellával számít platformonként. Az összegzés `lefedettseg` blokkja platformonként és üzletáganként adja: `foglalas_osszes`, `jogosult`, `jogosult_arany` (jogosult / összes foglalás), `kezbesitve`, `hiany`, `jogos_0`, `kezbesites_arany` (kézbesítve / jogosult); a GA4-nél külön a `ga4_client_id` blokk (`client_id_elerheto_arany` az összes pillanatképre és `…_analytics_hozzajarulassal` az analytics-hozzájárulással rendelkezőkre, valamint a hiba- és jogos-0-darabszámok). A `foglalas_osszes` az alapeseménnyel rendelkező foglalások száma; az esemény nélküli (nem párosult) foglalások az `alapesemeny_nelkuli_foglalas` mezőben vannak (a végső nevezőt a Salonic-oldal adja).
+
+**GA4 `client_id` nélkül – a döntés a foglaláskori hozzájárulás-pillanatképből jön** (`meres_erkezes.hozz`: amit az `attribucio.js` a szervernek küldött; a sorban `hozzajarulas` és `ga4_client_id` mező, nem utólagos állapot; az eltárolt pillanatkép a küldés előtti utolsó beérkezett, az esemény kimenetele után már nem íródik felül):
+- `ana` nem igaz (elutasítva) vagy nincs döntés → `jogos_0`, nincs a nevezőben (`kod`: `ga4_nincs_ana_hozzajarulas`);
+- analytics-hozzájárulás **van**, de nincs `_ga` / `client_id` → **`hiany`, a nevezőben van, hibának számít** (`kod`: `ga4_ana_van_client_id_nincs`; `platform_hiany:ga4:…` jelzés);
+- nincs érkezési pillanatkép (a hozzájárulás ismeretlen) és nincs `client_id` → `hiany` (a mérési adat hiánya; `kod`: `ga4_nincs_pillanatkep`). Ez a QA-oldal értelmezésére bízott szélső eset: a konzervatív besorolás látszik, nem tűnik el.
 
 Foglalás-szintű jelzések: `tobb_alap_esemeny:…` (rossz típus / duplikáció gyanú), `platform_hiany:<platform>:<esemény>:<ok>`, `parositatlan`, `egyeztetes_<állapot>` (pl. `fuggoben`: friss soroknál az újrapróbálás miatt még nem hiba), `nincs_esemeny`.
 
@@ -58,6 +65,8 @@ Foglalás-szintű jelzések: `tobb_alap_esemeny:…` (rossz típus / duplikáci�
 Határ: a láncból **ez a sor az „új mérés” és a „platform árnyék-kézbesítés” oldalt adja**. A **Salonic**-oldalt (tény: foglalás, ár, új/visszatérő, törlés) és a **régi mérés** oldalt a mérési oldal adja; a két táblát a `kulcs` / `booking_id` köti össze. A platformok saját felületén látható attribúciót nem hasonlítjuk.
 
 QA-5 küszöbök (DECISION #120): lefedettség ≥ 98% összesen és egyetlen megfelelő mintájú üzletág sem < 95%; a régi mérés < 97% esetén +3 pp, ≥ 97% esetén új ≥ 98% és legfeljebb −1 pp; 0% értékhiba (HUF pontos, ±1 Ft kerekítés); 0 duplikáció, 0 rossz eseménytípus, 0 rossz foglaláshoz rendelt esemény, 0 ismert hibás új/visszatérő besorolás. Ablak: legalább 7 teljes naptári nap **és** legalább 200 valódi, értékelhető foglalás; legfeljebb 14 nap.
+
+**Dokumentált QA-5 kivételek (DECISION #122, ablak-újraindítás nincs):** (1) az `attribucio.js` hozzájárulás-függő tárolásának élesítése, **2026-10-10 09:07:52 UTC**; (2) a GA4 Measurement Protocol titokcsere (a csere időpontját a QA-oldal rögzíti, a jelölés a `ga4_csere` paraméterrel kérhető). A QA-5 jelentésben mindkettő kivételként szerepel; a mérési logika egyiknél sem változott.
 
 ## 5. Ismert, nyitott
 
