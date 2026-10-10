@@ -10,6 +10,7 @@ const MIND = Object.keys(SZEREPEK);
 
 // A menu a szerepkor-matrix (crm/lib/rbac.js) szerint; a backend ugyis ellenoriz minden vegponton.
 export const NAV = [
+  { kulcs: 'kezeles', szam: 16, cim: 'Kezelés közben', modul: 'kezeles', szerepek: KEZELOI, csoport: 'Napi munka' },   // telefonra szabott, vezetett folyamat
   { kulcs: 'dashboard', szam: 1, cim: 'Áttekintés', modul: 'dashboard', szerepek: [...KEZELOI, 'salon_manager', 'marketing', 'admin'], csoport: 'Napi munka' },   // recepcio: nincs dashboard-jog (assessment.read / stats_aggregate.read)
   { kulcs: 'munkalista', szam: 3, cim: 'Napi munkalista', modul: 'munkalista', szerepek: [...KEZELOI, 'reception', 'salon_manager'], csoport: 'Napi munka' },
   { kulcs: 'vendegek', szam: 2, cim: 'Vendégkereső', modul: 'vendeg', szerepek: ['therapist', 'clinical_lead', 'reception', 'salon_manager', 'admin'] },

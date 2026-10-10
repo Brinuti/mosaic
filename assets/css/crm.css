@@ -172,3 +172,19 @@ input.kod { text-align: center; letter-spacing: .5em; font-size: 1.6rem; font-fa
   .adatsor { grid-template-columns: 1fr; gap: 0; } .adatsor dd { margin-bottom: 8px; }
 }
 @media print { .felso, .oldalsav, .demo-sav, .toastok { display: none; } .alkalmazas { display: block; } }
+
+/* ---- Kezeles kozben (telefonra szabott vezetett folyamat) ---- */
+.kk-kartya { display: grid; gap: 4px; padding: 16px; margin-bottom: 12px; background: var(--feher); border: 1px solid var(--vonal); border-radius: var(--sugar); box-shadow: var(--arnyek); text-decoration: none; color: inherit; font-size: 1.05rem; min-height: 64px; }
+.kk-kartya:active { background: var(--krem2); }
+.kk-lepes { background: var(--feher); border: 1px solid var(--vonal); border-radius: var(--sugar); padding: 16px; margin-bottom: 14px; box-shadow: var(--arnyek); }
+.kk-lepes h3 { display: flex; align-items: center; gap: 10px; }
+.kk-alcim { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--vonal); }
+.kk-szam { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--sotet); color: #fff; font: 600 .85rem var(--test); flex: none; }
+.kk-chipek { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.kk-chip { font: inherit; font-size: 1rem; min-height: 48px; padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--vonal); background: var(--feher); color: var(--szoveg); cursor: pointer; text-align: left; }
+.kk-chip[aria-pressed="true"] { background: var(--sotet); border-color: var(--sotet); color: #fff; }
+.kk-nagy { width: 100%; min-height: 56px; font-size: 1.05rem; margin-top: 8px; }
+.kk-mezo, .kk-szoveg { width: 100%; font: inherit; font-size: 1rem; min-height: 48px; padding: 10px 12px; border: 1.5px solid var(--vonal); border-radius: 8px; margin: 6px 0; background: var(--feher); }
+.kk-gombok { display: grid; gap: 10px; }
+.kk-vegso { border-color: var(--arany); }
+@media (min-width: 900px) { .kk { max-width: 640px; } }
