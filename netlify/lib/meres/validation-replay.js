@@ -5,12 +5,15 @@
 //     (az egyezteto osszegzese kulon, kizart tetelkent listazza: osszegzes.validation_replay);
 //   - feltetelek: mb_ foglalas, MERES_ELOSZTO=1, a GA4 alapesemeny meg nem 'elkuldve', a foglaláskori pillanatkepben analytics-hozzajarulas (ana = true) ES GA4 client_id van, nem konzultacio-ertek;
 //   - egy foglalasra legfeljebb egy sikeres ujrajatszas (ujra: true nelkul);
-//   - az api_secret csak a kimeno kereshez kerul az URL-be (platformok.js kuldes), a naploba nem.
+//   - az api_secret csak a kimeno kereshez kerul az URL-be (platformok.js kuldes), a naploba nem;
+//   - KAPU (GPT-dontes #231, 2026-10-10): alapbol ZARVA. A muvelet csak akkor fut, ha a meres_kapcsolo 'validation_replay' kulcsa be=1 ES az ok mezoje pontosan ez a source_id; a kaput NEM a vegpont nyitja (azt kulon, a
+//     tarolon at kell nyitni), es EGYSZERI: az elso tenyleges kerelem utan (siker, hiba, elutasitas egyarant) automatikusan zarodik (be=0), igy a kuldesi felulet a replay utan nem marad nyitva.
 import { meresSema, erkezesOlvas } from './elosztas.js';
 import { platformSzabaly } from './hozzajarulas.js';
 import { ga4Kerelem, kuldes } from './platformok.js';
 
 export const REPLAY_JEL = 'validation_replay';
+export const REPLAY_KAPU = 'validation_replay'; // meres_kapcsolo kulcs
 const sec = (now) => Math.floor(now / 1000);
 const FOGLALAS_ID = /^mb_[a-z0-9]{12,40}$/;
 const SEMA = [
@@ -19,6 +22,17 @@ const SEMA = [
 ];
 const kesz = new WeakSet();
 async function sema(db) { if (kesz.has(db)) return; await db.batch(SEMA.map((s) => db.prepare(s))); kesz.add(db); }
+
+/** A kapu allapota: { nyitva, source_id } - alapbol (sor nincs / be=0) ZARVA. Csak olvas. */
+export async function replayKapu(db) {
+  try {
+    const r = await db.prepare('SELECT be, ok FROM meres_kapcsolo WHERE kulcs = ?1').bind(REPLAY_KAPU).first();
+    return r && Number(r.be) === 1 ? { nyitva: true, source_id: r.ok || null } : { nyitva: false, source_id: null };
+  } catch (e) { return { nyitva: false, source_id: null }; }
+}
+async function kapuZar(db, sourceId, now) {
+  try { await db.prepare('UPDATE meres_kapcsolo SET be = 0, ok = ?2, ido = ?3 WHERE kulcs = ?1').bind(REPLAY_KAPU, `${sourceId} (egyszeri hasznalat utan lezarva)`, sec(now)).run(); } catch (e) { /* a zaras hibaja ne rejtse el az eredmenyt */ }
+}
 
 /** Az ujrajatszasok listaja (az egyezteto osszegzesehez): a tabla hianya = ures lista. Csak olvas. */
 export async function replayLista(db) {
@@ -36,6 +50,13 @@ export async function ga4ValidationReplay(db, env, { source_id, ujra = false } =
   if (!env || String(env.MERES_ELOSZTO) !== '1') return { ok: false, miert: 'MERES_ELOSZTO nincs bekapcsolva' };
   if (!FOGLALAS_ID.test(String(source_id || ''))) return { ok: false, miert: 'source_id: mb_ foglalas-azonosito kell' };
   await meresSema(db); await sema(db);
+  // KAPU: alapbol zarva; csak az adott source_id-re nyitott kapu enged (a kaput nem ez a muvelet nyitja)
+  const kapu = await replayKapu(db);
+  if (!kapu.nyitva || kapu.source_id !== source_id) return { ok: false, miert: 'a validation_replay kapu zarva (vagy mas foglalasra van nyitva)', kapu: 'zarva' };
+  try { return await replayVegrehajt(db, env, { source_id, ujra }, now, fetchImpl); } finally { await kapuZar(db, source_id, now); } // EGYSZERI: minden tenyleges kerelem utan zarul
+}
+
+async function replayVegrehajt(db, env, { source_id, ujra }, now, fetchImpl) {
   const { results: ga4 } = await db.prepare("SELECT esemeny_id, esemeny_nev, esemeny_tipus, uzletag, ertek, penznem, allapot, letrehozva FROM meres_kuldes WHERE source_id = ?1 AND platform = 'ga4' AND esemeny_tipus = 'alap'").bind(source_id).all();
   if (!ga4 || ga4.length !== 1) return { ok: false, miert: 'a foglalashoz pontosan egy GA4 alapesemeny-sor kell (van: ' + (ga4 ? ga4.length : 0) + ')' };
   const sor = ga4[0];
