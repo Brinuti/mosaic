@@ -1,0 +1,833 @@
+{
+ "futtatva": "2026-10-10T06:09:57.865Z",
+ "dist": "dist",
+ "leiras": "QA-4 smoke test, bongeszo-oldal (Chromium, mobil viewport, helyi dist, hamisitott /api/*)",
+ "forgatokonyvek": [
+  {
+   "nev": "kontroll_szkript_nelkul_1",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 132,
+   "dclMs": 108,
+   "loadMs": 128,
+   "readyState": "complete",
+   "hosszuFeladatMs": 58,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 74
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": null,
+   "attrEredmeny": null
+  },
+  {
+   "nev": "kontroll_szkript_nelkul_2",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 125,
+   "dclMs": 108,
+   "loadMs": 121,
+   "readyState": "complete",
+   "hosszuFeladatMs": 50,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 52
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": null,
+   "attrEredmeny": null
+  },
+  {
+   "nev": "kontroll_szkript_nelkul_3",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 126,
+   "dclMs": 103,
+   "loadMs": 124,
+   "readyState": "complete",
+   "hosszuFeladatMs": 52,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 63
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": null,
+   "attrEredmeny": null
+  },
+  {
+   "nev": "kontroll_szkript_nelkul_4",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 117,
+   "dclMs": 102,
+   "loadMs": 115,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 70
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": null,
+   "attrEredmeny": null
+  },
+  {
+   "nev": "kontroll_szkript_nelkul_5",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": true,
+   "tarolasTiltva": false,
+   "betoltesMs": 108,
+   "dclMs": 87,
+   "loadMs": 103,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 52
+   },
+   "apiHivasok": [],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": null,
+   "attrEredmeny": null
+  },
+  {
+   "nev": "iro_gyors_1",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 150,
+   "dclMs": 123,
+   "loadMs": 146,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 62
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   }
+  },
+  {
+   "nev": "iro_gyors_2",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 126,
+   "dclMs": 101,
+   "loadMs": 123,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 68
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   }
+  },
+  {
+   "nev": "iro_gyors_3",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 128,
+   "dclMs": 108,
+   "loadMs": 123,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 61
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   }
+  },
+  {
+   "nev": "iro_gyors_4",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 133,
+   "dclMs": 115,
+   "loadMs": 131,
+   "readyState": "complete",
+   "hosszuFeladatMs": 57,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 51
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   }
+  },
+  {
+   "nev": "iro_gyors_5",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 121,
+   "dclMs": 100,
+   "loadMs": 117,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 54
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   }
+  },
+  {
+   "nev": "lassu_8mp",
+   "forgatokonyv": "lassu_8mp",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 118,
+   "dclMs": 99,
+   "loadMs": 116,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 59
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "kuldve"
+   },
+   "attrEredmeny": {
+    "allapot": "kuldve"
+   }
+  },
+  {
+   "nev": "logo_vegtelen",
+   "forgatokonyv": "logo_vegtelen",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 132,
+   "dclMs": 107,
+   "loadMs": 130,
+   "readyState": "complete",
+   "hosszuFeladatMs": 55,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 67
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "kuldve"
+   },
+   "attrEredmeny": {
+    "allapot": "kuldve"
+   }
+  },
+  {
+   "nev": "veszkapcsolo_503",
+   "forgatokonyv": "veszkapcsolo_503",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 148,
+   "dclMs": 123,
+   "loadMs": 146,
+   "readyState": "complete",
+   "hosszuFeladatMs": 57,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 81
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 503
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 503
+   }
+  },
+  {
+   "nev": "hiba_500_html",
+   "forgatokonyv": "hiba_500_html",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 123,
+   "dclMs": 103,
+   "loadMs": 121,
+   "readyState": "complete",
+   "hosszuFeladatMs": 51,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 81
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 500
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 500
+   }
+  },
+  {
+   "nev": "halozati_hiba",
+   "forgatokonyv": "halozati_hiba",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 164,
+   "dclMs": 132,
+   "loadMs": 161,
+   "readyState": "complete",
+   "hosszuFeladatMs": 60,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 63
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "hiba"
+   },
+   "attrEredmeny": {
+    "allapot": "hiba"
+   }
+  },
+  {
+   "nev": "ervenytelen_json_200",
+   "forgatokonyv": "ervenytelen_json_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 134,
+   "dclMs": 116,
+   "loadMs": 132,
+   "readyState": "complete",
+   "hosszuFeladatMs": 63,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 58
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   }
+  },
+  {
+   "nev": "ures_200",
+   "forgatokonyv": "ures_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": false,
+   "betoltesMs": 118,
+   "dclMs": 99,
+   "loadMs": 113,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 58
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   }
+  },
+  {
+   "nev": "gyors_200_tarolas_tiltva",
+   "forgatokonyv": "gyors_200",
+   "szkriptTiltas": false,
+   "tarolasTiltva": true,
+   "betoltesMs": 115,
+   "dclMs": 97,
+   "loadMs": 109,
+   "readyState": "complete",
+   "hosszuFeladatMs": 51,
+   "hosszuFeladatDb": 1,
+   "kattintas": {
+    "link": "/",
+    "ms": 54
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   },
+   "attrEredmeny": {
+    "allapot": "valasz",
+    "status": 200
+   }
+  },
+  {
+   "nev": "logo_vegtelen_tarolas_tiltva",
+   "forgatokonyv": "logo_vegtelen",
+   "szkriptTiltas": false,
+   "tarolasTiltva": true,
+   "betoltesMs": 116,
+   "dclMs": 98,
+   "loadMs": 114,
+   "readyState": "complete",
+   "hosszuFeladatMs": 0,
+   "hosszuFeladatDb": 0,
+   "kattintas": {
+    "link": "/",
+    "ms": 56
+   },
+   "apiHivasok": [
+    "POST /api/meres-erkezes",
+    "POST /api/foglalas-kulcs"
+   ],
+   "kezeletlenHibak": [],
+   "konzolHibak": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+   ],
+   "kulcsEredmeny": {
+    "allapot": "kuldve"
+   },
+   "attrEredmeny": {
+    "allapot": "kuldve"
+   }
+  }
+ ],
+ "osszegzes": {
+  "kontroll": {
+   "n": 5,
+   "median_dcl_ms": 103,
+   "median_load_ms": 121,
+   "median_hosszu_feladat_ms": 50,
+   "median_kattintas_ms": 63
+  },
+  "iro_gyors": {
+   "n": 5,
+   "median_dcl_ms": 108,
+   "median_load_ms": 123,
+   "median_hosszu_feladat_ms": 0,
+   "median_kattintas_ms": 61
+  }
+ },
+ "ellenorzesek": [
+  {
+   "nev": "minden forgatokonyvben 0 kezeletlen JS-hiba (pageerror)",
+   "ok": true,
+   "adat": []
+  },
+  {
+   "nev": "minden forgatokonyvben a lap teljesen betoltott (readyState = complete)",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "az iro valoban probalkozott irni (kulcs-iras + erkezesi adat), a gyors es a hibas forgatokonyvekben is",
+   "ok": true,
+   "adat": [
+    [
+     "iro_gyors_1",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "iro_gyors_2",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "iro_gyors_3",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "iro_gyors_4",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "iro_gyors_5",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "lassu_8mp",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "logo_vegtelen",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "veszkapcsolo_503",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "hiba_500_html",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "halozati_hiba",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "ervenytelen_json_200",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "ures_200",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "gyors_200_tarolas_tiltva",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ],
+    [
+     "logo_vegtelen_tarolas_tiltva",
+     [
+      "POST /api/meres-erkezes",
+      "POST /api/foglalas-kulcs"
+     ]
+    ]
+   ]
+  },
+  {
+   "nev": "a kontrollban (szkript tiltva) nincs iras",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "a betoltes (load) nem lassul: az irokkal a median a kontroll medianja + 150 ms alatt",
+   "ok": true,
+   "adat": {
+    "kontroll": 121,
+    "iro": 123
+   }
+  },
+  {
+   "nev": "a fo szal nem blokkolodik: a hosszu feladatok osszege az irokkal legfeljebb 100 ms-sal tobb",
+   "ok": true,
+   "adat": {
+    "kontroll": 50,
+    "iro": 0
+   }
+  },
+  {
+   "nev": "a vendeg elso kattintasa lassu / logo vegpontnal sem lassabb 500 ms-nal a kontrollnal (lassu 8 mp, logo vegtelen)",
+   "ok": true,
+   "adat": [
+    [
+     "lassu_8mp",
+     {
+      "link": "/",
+      "ms": 59
+     }
+    ],
+    [
+     "logo_vegtelen",
+     {
+      "link": "/",
+      "ms": 67
+     }
+    ],
+    [
+     "logo_vegtelen_tarolas_tiltva",
+     {
+      "link": "/",
+      "ms": 56
+     }
+    ]
+   ]
+  },
+  {
+   "nev": "minden hibaforgatokonyvben a kattintas sikeres (a navigacio elindul)",
+   "ok": true,
+   "adat": [
+    [
+     "lassu_8mp",
+     {
+      "link": "/",
+      "ms": 59
+     }
+    ],
+    [
+     "logo_vegtelen",
+     {
+      "link": "/",
+      "ms": 67
+     }
+    ],
+    [
+     "veszkapcsolo_503",
+     {
+      "link": "/",
+      "ms": 81
+     }
+    ],
+    [
+     "hiba_500_html",
+     {
+      "link": "/",
+      "ms": 81
+     }
+    ],
+    [
+     "halozati_hiba",
+     {
+      "link": "/",
+      "ms": 63
+     }
+    ],
+    [
+     "ervenytelen_json_200",
+     {
+      "link": "/",
+      "ms": 58
+     }
+    ],
+    [
+     "ures_200",
+     {
+      "link": "/",
+      "ms": 58
+     }
+    ],
+    [
+     "gyors_200_tarolas_tiltva",
+     {
+      "link": "/",
+      "ms": 54
+     }
+    ],
+    [
+     "logo_vegtelen_tarolas_tiltva",
+     {
+      "link": "/",
+      "ms": 56
+     }
+    ]
+   ]
+  },
+  {
+   "nev": "a hibas valaszok nem hagynak \"sikeres iras\" jelet (a kliens csak 2xx-re jegyzi meg)",
+   "ok": true,
+   "adat": null
+  }
+ ],
+ "eredmeny": "PASS"
+}
