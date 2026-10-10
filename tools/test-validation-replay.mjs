@@ -110,3 +110,31 @@ test('/api/meres-admin ga4_validation_replay: kulcsos, kifejezett jovahagyas-jel
   assert.equal((await kerj({ muvelet: 'ga4_validation_replay', source_id: BID, jovahagyas: 'GPT-123' })).status, 409, 'masodszor ujra:true nelkul elutasitva');
   assert.equal((await replayLista(D1)).length, 1);
 });
+
+test('PARITAS: a validation_replay GA4 kerese BAJTRA UGYANAZ, mint amit az ELES dispatcher (elosztas -> KEREM_EPITO.ga4 -> kuldes) epit ugyanarra az adatra; az egyetlen kulonbseg a validation_replay parameter', async () => {
+  const { elosztas, erkezesMent } = await import('../netlify/lib/meres/elosztas.js');
+  const IDO = T0 + 31;
+  const ATTR = { ga4: { client_id: '608293403.1791620313', session_id: '1791620312', measurement_id: 'G-H4206SQ0Q7' }, utm_utolso: { source: 'google', medium: 'cpc', campaign: 'x' }, fbp: 'fb.1.1791620312548.116554026827206801' };
+  const HOZZ = { ana: true, adv: true, fun: true };
+  const FK = { tipus: 'foglalas', uzletag: 'fodrasz', source_entity_id: BID, jelleg: 'visszajaro', kupon: false, ertek: 24950, ido: IDO, szolgaltatas: 'Vagas', vendeg: { email: 'teszt@example.com', telefon: '+36301234567', g: 'g:3385039' } };
+  // 1) az ELES dispatcher: ugyanaz az erkezesi pillanatkep, ugyanaz a foglalas; a kuldo elfogja a kerelmet
+  const A = d1(); await egyeztetoSorok(A, { tol: T0, ig: T0 + 1000 });
+  await erkezesMent(A, { source_id: BID, uzletag: 'fodrasz', tipus: 'foglalas', attr: ATTR, hozz: HOZZ, oldal: 'https://www.mosaicheadspa.hu/fodrasz-ok', szolgaltatas: 'Vagas' }, IDO * 1000);
+  const elfogott = [];
+  const kuldo = async (kerelem) => { elfogott.push(kerelem); return { allapot: 'elkuldve', http_status: 204, valasz: '', kuldo: 'teszt' }; };
+  await elosztas(A, FK, { env: ENV, now: () => IDO * 1000, kuldo });
+  const eles = elfogott.find((k) => k.platform === 'ga4'); assert.ok(eles && eles.body, 'az eles dispatcher felepitette a GA4 kerest');
+  // 2) a validation_replay: azonos adat, a GA4 cella meg nem 'elkuldve' (mint a 08:22-es foglalasnal)
+  const B = d1(); await egyeztetoSorok(B, { tol: T0, ig: T0 + 1000 });
+  await erkezesMent(B, { source_id: BID, uzletag: 'fodrasz', tipus: 'foglalas', attr: ATTR, hozz: HOZZ, oldal: 'https://www.mosaicheadspa.hu/fodrasz-ok', szolgaltatas: 'Vagas' }, IDO * 1000);
+  for (const p of ['meta', 'tiktok', 'google', 'ga4']) B.db.prepare('INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, source_id, allapot, indok, ertek, penznem, letrehozva, frissitve) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').run(`Visszajaro:${BID}`, 'Visszajaro', 'alap', p, 'fodrasz', BID, 'kihagyva', 'veszkapcsolo: mind', 24950, 'HUF', IDO, IDO);
+  const { f, hivasok } = hamisFetch();
+  const r = await ga4ValidationReplay(B, ENV, { source_id: BID }, (IDO + 90000) * 1000, f);
+  assert.equal(r.ok, true);
+  const replay = hivasok[1];
+  // ugyanaz az URL (teszt-property), ugyanaz a metodus; a torzs azonos, a validation_replay parameter kivetelevel
+  assert.equal(replay.url.split('&api_secret=')[0], eles.url);
+  const replayTorzs = JSON.parse(JSON.stringify(replay.body)); assert.equal(replayTorzs.events[0].params.validation_replay, 'true'); delete replayTorzs.events[0].params.validation_replay;
+  assert.deepEqual(replayTorzs, JSON.parse(JSON.stringify(eles.body)), 'a torzs bajtra azonos a validation_replay parameter nelkul');
+  assert.equal(JSON.stringify(replayTorzs), JSON.stringify(eles.body));
+});
