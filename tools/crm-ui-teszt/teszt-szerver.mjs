@@ -95,6 +95,11 @@ export async function inditSzerver({ port = 0, adat = true } = {}) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Content-Security-Policy': CSP_CRM, 'Referrer-Policy': 'no-referrer' });
         return res.end(fs.readFileSync(path.join(GYOKER, 'foglalas/crm.html')));
       }
+      if (url.pathname === '/crm-sw.js' || url.pathname === '/crm.webmanifest') {
+        const f = path.join(GYOKER, 'pwa-crm', url.pathname.slice(1));
+        res.writeHead(200, { 'Content-Type': url.pathname.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'application/manifest+json', 'Cache-Control': 'no-cache' });
+        return res.end(fs.readFileSync(f));
+      }
       if (url.pathname.startsWith('/assets/')) {
         const f = fajlUt(url.pathname, 'assets');
         if (!f) { res.writeHead(404); return res.end('nincs'); }
