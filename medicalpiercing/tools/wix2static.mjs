@@ -33,7 +33,10 @@ function helyiKepNev(url) {
   return m ? m[1] + '.' + m[2].toLowerCase() : null;
 }
 function kepekAtirasa(html) {
-  return html.replace(/https:\/\/static\.wixstatic\.com\/media\/[^"'\s)\\&]+(?:&amp;[^"'\s)\\&]+)*/g, (url) => {
+  // a cim vegi fajlnevben lehet zarojelpar (pl. ".../BLACK%20(2).jpg"); a magaban allo ")" viszont
+  // mar a CSS url(...) vege
+  const RESZ = String.raw`(?:[^"'\s()\\&]+|\([^"'\s()\\&]*\))+`;
+  return html.replace(new RegExp(String.raw`https:\/\/static\.wixstatic\.com\/media\/${RESZ}(?:&amp;${RESZ})*`, 'g'), (url) => {
     const nev = helyiKepNev(url);
     if (!nev) return url;
     if (!helyiKepek.has(nev)) { hianyzoKepek.add(nev + '  <- ' + url.slice(0, 120)); return url; }
