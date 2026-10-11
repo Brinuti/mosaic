@@ -136,7 +136,7 @@ A MOSAIC-foglalómotor MP-adaptációja (Drive: MP-FOGLALOMOTOR-FELADAT.md, MP-F
 „Mire szeretnél időpontot foglalni?” (Új piercing / Kontroll / Ékszercsere / Garancia). Az **új piercing** lépései:
 1. szolgáltatás (a fő oldal, akárhonnan kattint; csak a konkrét kontroll / ékszercsere / garancia link visz egyből az űrlapra);
 2. helyszín (15);
-3. piercing (két kérdéssel szűrve: Kinek? Magamnak / Két személynek, és Milyen szolgáltatás? 1 piercing / Több piercing / Fülbevaló; a „legjobban megéri” a Több piercing);
+3. piercing (két kérdéssel szűrve: Kinek? Magamnak / Két személynek, és Milyen piercing? 1 piercing / Több piercing / Fülbevaló (alapérték: Magamnak + Több piercing); a „legjobban megéri” a Több piercing);
 4. időpont (havi naptár, szakemberválasztó);
 5. a Salonic beágyazott adatlapja;
 6. köszönőoldal.
