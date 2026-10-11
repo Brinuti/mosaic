@@ -158,6 +158,17 @@ export function verifyConfirmation(urlOrQuery, expected) {
   };
 }
 
+/** A Salonic-fiok egyedi stiluslapja (Beallitasok > Online bejelentkezes megjelenes > "Egyedi CSS URL"), ha az MP sajat
+ *  assets/salonic/*.css fajlja: a cime, egyebkent null. Ettol fugg, hogy az adatlap mobilon egy kepernyore fer-e. */
+export function parseCustomCss(html) {
+  for (const m of String(html).matchAll(/<link\b[^>]*>/gi)) {
+    const rel = /\brel\s*=\s*["']([^"']*)["']/i.exec(m[0]), href = /\bhref\s*=\s*["']([^"']+)["']/i.exec(m[0]);
+    if (!rel || !href || !/stylesheet/i.test(rel[1])) continue;
+    try { const u = new URL(href[1].replace(/&amp;/g, '&'), HOST); if (/^(www\.)?medicalpiercing\.hu$/.test(u.hostname) && /^\/assets\/salonic\/[^/]+\.css$/i.test(u.pathname)) return u.href; } catch (e) { /* hibas href */ }
+  }
+  return null;
+}
+
 // --- az adapter ---------------------------------------------------------------------------------------------------------
 export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () => Date.now(), timeoutMs = 15000, retries = 1, cacheMs = 5 * 60 * 1000, storage = null, persistMs = 10 * 60 * 1000, headers = null } = {}) {
   const cache = new Map();
@@ -196,7 +207,19 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     }
     throw last;
   }
-  const page = (path, params) => get(`${HOST}${path}?${new URLSearchParams({ ...params, lang: 'hu' })}`);
+  // a letoltott Salonic-oldalakbol azt is kiolvassuk, betolti-e a fiok az MP stiluslapjat (getPresentation)
+  let stilus;
+  const page = async (path, params) => {
+    const r = await get(`${HOST}${path}?${new URLSearchParams({ ...params, lang: 'hu' })}`);
+    stilus = parseCustomCss(r.text); writePersist('stilus', stilus);
+    return r;
+  };
+  /** Az adatlap megjelenese: { customCss } - az MP stiluslapjanak cime, ha a Salonic-fiok betolti; egyebkent null (alap kinezet). */
+  async function getPresentation() {
+    if (stilus === undefined) { const p = readPersist('stilus'); if (p !== undefined) stilus = p; }
+    if (stilus === undefined) { try { await page('/selectLocation/', {}); } catch (e) { stilus = null; } }
+    return { customCss: stilus || null };
+  }
 
   /** A helyszin szolgaltatasai (kategoriankent; a sorrend a Salonice). */
   const getServices = (placeId) => cached('services:' + placeId, async () => {
@@ -296,5 +319,5 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     };
   }
 
-  return { getServices, getAvailability, getPlace, beginBooking, verifyConfirmation, clearCache: () => cache.clear() };
+  return { getServices, getAvailability, getPlace, getPresentation, beginBooking, verifyConfirmation, clearCache: () => cache.clear() };
 }

@@ -13,7 +13,9 @@
 //     koszonooldal nyilik UGYANAZOKKAL a parameterekkel + booking_id; a keretben nincs meres, a fo ablakban egyszer;
 //   - ?motor=0 a kapcsolot felulirja (regi ut); a foglalasinditas merese (TikTok InitiateCheckout, GA4 foglalas_inditasa)
 //     kattintasonkent egyszer, a motor dontese elott;
-//   - ?motor=1 mellett a /foglalas-ok* oldalon nincs indito.
+//   - ?motor=1 mellett a /foglalas-ok* oldalon nincs indito;
+//   - a divat fulpiercing koszonooldala (/fulbevalo-ok) is atveszi; az adatlap kitolti a helyet (mobilon lepesjelzo nelkul, a
+//     kepernyo aljaig); a mobil lap 320 px-es nezetszelessege nyitott motornal eszkozszelesseg, bezaraskor visszaall.
 import { chromium, devices } from './pw.mjs';
 
 const PORT = +process.env.PORT || 4290;
@@ -153,6 +155,42 @@ const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) =
   await p.evaluate((k) => { const f = document.createElement('iframe'); f.src = k; f.style.cssText = 'width:400px;height:300px'; document.body.appendChild(f); }, CIM + '/foglalas-ok-mi?first_booking=true&price=24900');
   await p.waitForTimeout(5000);
   ok('regi beagyazott naptar: a keretben a koszonooldal mer (GTM betolt), ha a motor nem veszi at', keretKeres.length >= 1, String(keretKeres.length));
+  await ctx.close();
+}
+
+// 6. divat fulpiercing (Sopron): a Salonic a /fulbevalo-ok oldalra iranyit - azt is atveszi; az adatlap elrendezese; a nezetszelesseg
+{
+  const { ctx } = await kornyezet();
+  const p = await ctx.newPage();
+  await p.goto(CIM + '/idopontfoglalas?motor=1', { waitUntil: 'load' });
+  const nezet = () => p.evaluate(() => (document.querySelector('meta[name="viewport"]') || {}).content || '');
+  const eredetiNezet = await nezet();
+  await kattintLink(p);
+  await varMotor(p, '[data-hely]');
+  ok('nezetszelesseg: nyitott motornal eszkozszelesseg' + (MOBIL ? ' (a lap 320 px-es)' : ''), MOBIL ? /width=320/.test(eredetiNezet) && /device-width/.test(await nezet()) : (await nezet()) === eredetiNezet, `${eredetiNezet} -> ${await nezet()}`);
+  await motorKattint(p, '[data-hely="9067"]');
+  await varMotor(p, '[data-szolg="395895"]');
+  await motorKattint(p, '[data-szolg="395895"]');
+  ok('Sopron, divat fulpiercing: van szabad idopont', await varMotor(p, '[data-slot]'));
+  await motorKattint(p, '[data-slot]');
+  await varMotor(p, 'iframe.adatlap');
+  await p.waitForTimeout(800);
+  const geo = await p.evaluate(() => { const r = document.querySelector('[data-mp-motor]').shadowRoot; const i = r.querySelector('iframe.adatlap').getBoundingClientRect(); const l = r.querySelector('.lepesek').getBoundingClientRect(); return { iAlja: Math.round(i.bottom), iMag: Math.round(i.height), ablak: innerHeight, lepesek: Math.round(l.height), cim: r.querySelector('.fej h2').textContent }; });
+  ok('adatlap: a keret a rendelkezesre allo helyet tolti ki' + (MOBIL ? ', a lepesjelzo rejtve, a keret a kepernyo aljaig er' : ''), geo.cim === 'Sopron · Adatok' && geo.iMag > 300 && (!MOBIL || (geo.lepesek === 0 && Math.abs(geo.iAlja - geo.ablak) <= 1)), JSON.stringify(geo));
+  const u = new URL(await p.evaluate(() => document.querySelector('[data-mp-motor]').shadowRoot.querySelector('iframe.adatlap').src));
+  const bookingUrl = `https://medicalpiercing.salonic.hu/guestData/?anyone=true&employeeId=1&placeId=9067&serviceId=395895&startDate=${u.searchParams.get('startDate')}&back=${u.searchParams.get('back')}`;
+  const nav = p.waitForURL(/\/fulbevalo-ok\?.*booking_id=mb_/, { timeout: 15000 }).then(() => true, () => false);
+  await p.evaluate((k) => { document.querySelector('[data-mp-motor]').shadowRoot.querySelector('iframe.adatlap').src = k; }, `${CIM}/fulbevalo-ok?first_booking=true&price=12000&bookingUrl=${encodeURIComponent(bookingUrl)}`);
+  const atadva = await nav;
+  ok('/fulbevalo-ok: a motor atveszi, a fo ablakban nyilik booking_id-vel (= back)', atadva && new URL(p.url()).searchParams.get('booking_id') === u.searchParams.get('back'), p.url().slice(0, 120));
+  ok('a koszonooldalon a lap sajat nezetszelessege el', (await nezet()) === eredetiNezet, await nezet());
+  // bezaras: a nezetszelesseg visszaall
+  await p.goto(CIM + '/idopontfoglalas?motor=1', { waitUntil: 'load' });
+  await kattintLink(p);
+  await varMotor(p, '[data-hely]');
+  await motorKattint(p, '[data-bezar]');
+  await p.waitForTimeout(300);
+  ok('bezaras utan a nezetszelesseg visszaall, a motor eltunik', (await nezet()) === eredetiNezet && !(await p.evaluate(() => !!document.querySelector('[data-mp-motor]'))), await nezet());
   await ctx.close();
 }
 
