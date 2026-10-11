@@ -15,6 +15,7 @@ import { oldalak, mindenOldal } from './oldalak.mjs';
 import { fajlnev } from '../lib/utvonal.js';
 import { TABLAZAT_CSV, osszesSor, htmlFrissites } from '../lib/kitelepulesek.js';
 import { takarit } from './takaritas.mjs';
+import { gyorsit } from './gyorsitas.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -23,6 +24,8 @@ const DOMAIN = 'https://www.medicalpiercing.hu';
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
 
+// az elso kepernyo kepei es betui oldalankent (tools/hajtas-meres.mjs; tools/gyorsitas.mjs)
+const HAJTAS = fs.existsSync(path.join(ROOT, 'tools/hajtas.json')) ? JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/hajtas.json'), 'utf8')) : {};
 let db = 0;
 for (const o of mindenOldal()) {
   for (const [be, ki] of [['klon', '_a'], ['klon/m', '_m']]) {
@@ -30,18 +33,19 @@ for (const o of mindenOldal()) {
     if (!fs.existsSync(forras)) { console.warn('  ! hianyzik: ' + path.relative(ROOT, forras)); continue; }
     const cel = path.join(DIST, ki, fajlnev(o.kulcs) + '.html');
     fs.mkdirSync(path.dirname(cel), { recursive: true });
-    // a Wixtol orokolt, semmire nem hasznalt kod nelkul (tools/takaritas.mjs)
-    fs.writeFileSync(cel, takarit(fs.readFileSync(forras, 'utf8')));
+    // a Wixtol orokolt, semmire nem hasznalt kod nelkul (tools/takaritas.mjs), gyorsabb
+    // betoltesi sorrenddel (tools/gyorsitas.mjs)
+    fs.writeFileSync(cel, gyorsit(takarit(fs.readFileSync(forras, 'utf8')), (HAJTAS[o.kulcs] || {})[ki === '_a' ? 'a' : 'm']));
     db++;
   }
 }
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
 // a Wix 404-es oldala (tools/oldalak.mjs NEMTALALT)
-if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(DIST, '404.html'), takarit(fs.readFileSync(path.join(ROOT, 'klon/404.html'), 'utf8')));
+if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(DIST, '404.html'), gyorsit(takarit(fs.readFileSync(path.join(ROOT, 'klon/404.html'), 'utf8')), (HAJTAS['404'] || {}).a));
 
-// a sajat stilusok es szkriptek verziojelet kapnak (?v=<tartalom-hash>): a bongeszo 1 oraig
-// tarolja oket (_headers), igy egy uj kiadas utan is azonnal az uj fajlt keri. A klon.js a
-// sajat ?v= jelet adja tovabb a felugro ablak stilusanak (assets/css/wix/felugro.css).
+// a sajat stilusok es szkriptek verziojelet kapnak (?v=<tartalom-hash>): a bongeszo egy evig
+// tarolja oket (_headers), es egy uj kiadas utan az uj jel miatt azonnal az uj fajlt keri. A
+// klon.js a sajat ?v= jelet adja tovabb a felugro ablak stilusanak (assets/css/wix/felugro.css).
 {
   const SAJAT = ['assets/css/klon.css', 'assets/css/wix-fonts.css', 'assets/css/wix-google-fonts.css', 'assets/js/klon.js', 'assets/js/suti.js', 'assets/css/wix/felugro.css'];
   const h = crypto.createHash('sha256');
@@ -81,6 +85,26 @@ if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(
   console.log(`kitelepulesek: ${lapDb} lapon ${olvasva ? 'a tablazatbol frissitve' : 'csak jelolve'}` + (hibak.length ? `; nem ertelmezheto cellak:\n  ${hibak.join('\n  ')}` : ''));
 }
 
+// a tobbi stilus es szkript (a Wix mentett CSS-fajljai) fajlonkent a sajat tartalmanak jelet kapja
+// (?v=<hash>), igy ezek is egy evig tarolhatok (_headers)
+{
+  const jelek = new Map();
+  const jel = (f) => {
+    if (!jelek.has(f)) jelek.set(f, fs.existsSync(path.join(DIST, f)) ? crypto.createHash('sha256').update(fs.readFileSync(path.join(DIST, f))).digest('hex').slice(0, 10) : null);
+    return jelek.get(f);
+  };
+  const tobbi = /((?:href|src)="\/(assets\/(?:css|js)\/[^"?#]+\.(?:css|js)))"/g;
+  const lapok = ['404.html', ...['_a', '_m'].flatMap((ki) => fs.readdirSync(path.join(DIST, ki), { recursive: true }).filter((x) => x.endsWith('.html')).map((x) => path.join(ki, x)))];
+  for (const l of lapok) {
+    const fajl = path.join(DIST, l);
+    if (!fs.existsSync(fajl)) continue;
+    const r = fs.readFileSync(fajl, 'utf8');
+    const u = r.replace(tobbi, (m, eleje, f) => (jel(f) ? `${eleje}?v=${jel(f)}"` : m));
+    if (u !== r) fs.writeFileSync(fajl, u);
+  }
+  console.log(`verziojel: +${[...jelek.values()].filter(Boolean).length} Wix-stilus sajat jellel`);
+}
+
 // sitemap: a Wix sitemapjeiben szereplo oldalak (a rejtett, bejarassal talalt oldalak nem)
 const sitemapben = new Set(fs.readFileSync(path.join(ROOT, 'tools/sitemap-oldalak.txt'), 'utf8').split('\n').filter(Boolean));
 const ma = new Date().toISOString().slice(0, 10);
@@ -96,8 +120,9 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   '/assets/img/*', '  Cache-Control: public, max-age=2592000',
   '/assets/fonts/*', '  Cache-Control: public, max-age=31536000, immutable',
   '/assets/video/*', '  Cache-Control: public, max-age=2592000',
-  '/assets/css/*', '  Cache-Control: public, max-age=3600',
-  '/assets/js/*', '  Cache-Control: public, max-age=3600',
+  // minden hivatkozasuk ?v=<tartalom-jel>-lel megy (fent), igy egy evig tarolhatok
+  '/assets/css/*', '  Cache-Control: public, max-age=31536000, immutable',
+  '/assets/js/*', '  Cache-Control: public, max-age=31536000, immutable',
   '',
 ].join('\n'));
 console.log(`dist/ kesz: ${db} lap (${oldalak().length} oldal x asztali/mobil)`);

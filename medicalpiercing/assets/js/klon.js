@@ -25,7 +25,7 @@
   // --- 1. felugro menu (Wix lightbox "d3iz6") -------------------------------
   // A jobb felso gomb ([data-popupid]) a Wix felugro ablakat nyitja. A lementett
   // ablak (tools/popup-mentes.mjs) <template>-kent van az oldal vegen. A Wix az
-  // ablakot jobbrol csusztatja be, az aktualis oldal menupontjat kiemeli
+  // ablakot jobbrol csusztatta be; itt azonnal jelenik meg (a tulajdonos kerese). Az aktualis oldal menupontjat kiemeli
   // (MHn4_S + aria-current="page"), es a bezaro X, a fatyol es az Esc zarja.
   // Az ablak kulso Wix-stilusai (menupontok, bezaro gomb) a felugro.css-ben vannak: mar a lap
   // betoltesekor kerjuk le, hogy nyitaskor ne villanjon fel formazatlanul.
@@ -47,9 +47,8 @@
     if (!nyitottAblak) return;
     const a = nyitottAblak;
     nyitottAblak = null;
-    a.classList.add('mp-felugro-zar');
     document.documentElement.classList.remove('mp-felugro-nyitva');
-    setTimeout(() => a.remove(), 400);
+    a.remove();
   };
   const ablakNyit = (id) => {
     const t = document.getElementById('mp-popup-' + id);
@@ -218,13 +217,18 @@
 
   // --- 5. videodoboz (wixui-video-box) --------------------------------------
   // Nemitva, ismetelve magatol indul (mint a Wixen); kattintasra megall/indul,
-  // a hangszoro-gomb a hangot kapcsolja (data-audio-mute / aria-pressed).
+  // a hangszoro-gomb a hangot kapcsolja (data-audio-mute / aria-pressed). A videot csak akkor
+  // kezdi letolteni es inditja, amikor a kepernyo kozelebe er (a build preload="none"-ra allitja,
+  // tools/gyorsitas.mjs): egy-egy ilyen video 5-8 MB, a lap megnyitasakor nem kell.
   for (const vb of document.querySelectorAll('.wixui-video-box')) {
     const v = vb.querySelector('video');
     if (!v) continue;
     v.muted = true;
-    const p = v.play();
-    if (p && p.catch) p.catch(() => {});
+    const indit = () => { const p = v.play(); if (p && p.catch) p.catch(() => {}); };
+    if ('IntersectionObserver' in window) {
+      const figyelo = new IntersectionObserver((e) => { if (e.some((x) => x.isIntersecting)) { figyelo.disconnect(); indit(); } }, { rootMargin: '300px' });
+      figyelo.observe(vb);
+    } else indit();
     const gomb = vb.querySelector('[role="button"][aria-pressed]');
     if (gomb) gomb.addEventListener('click', (e) => {
       if (e.target.closest('[data-testid="vb-audio"]')) return;
