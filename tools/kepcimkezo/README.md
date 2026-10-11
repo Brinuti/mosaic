@@ -17,7 +17,7 @@ A három gyökérmappa tartalmát **több különböző Google-fiók** birtokolj
 2. **Összevetés a táblázattal:** csak az új (és a tartalmában módosult, azaz más `md5Checksum`-ú) fájlokat címkézi. Azonos tartalmú (azonos md5) fájlból **egy** sor van; a további példányok számát a `másolatok` oszlop mutatja.
 3. **Előnézet:** a Drive `thumbnailLink` képét (`=s384`) tölti le, a teljes fájlt soha. Videónál ugyanez az előnézeti kocka.
 4. **OpenAI Responses API:** `gpt-5.4-mini`, `detail: low`, `store: false`, 8 kép / hívás, 4 hívás párhuzamosan, `json_schema` strict kimenet. A kérés formája megegyezik az elemző kipróbált `tag_batch` függvényével (prompt + képenként `#k mappa: …`).
-5. **Hibakezelés:** átmeneti hiba (429/5xx) esetén újrapróbál; ha egy köteg elbukik, felezi, így egy rossz kép nem viszi magával a többit. Előnézet nélküli fájl `nincs_előnézet`, elbukó fájl `hiba` állapotot kap (legfeljebb 3 próbálkozás, 20 óránként).
+5. **Hibakezelés:** átmeneti hiba (429/5xx) esetén újrapróbál; ha egy köteg elbukik, felezi, így egy rossz kép nem viszi magával a többit. Előnézet nélküli fájl `nincs_előnézet`, elbukó fájl `hiba` állapotot kap (legfeljebb 3 próbálkozás, 20 óránként). A hiba oka ilyenkor a `leírás` oszlopban áll `HIBA: …` előtaggal (pl. `HIBA: elonezet HTTP 404`, `HIBA: http_400 …`), sikeres soroknál ott a modell leírása van. (Az első teljes futás – 2026-10-11 – 9 661 sorából 9 369 `kész`, 206 `hiba`, 86 `nincs_előnézet`; ez utóbbi 85 PSD + 1 JPEG. A hibaokok a következő napi újrapróbálásnál kerülnek a táblázatba.)
 6. **Költség:** a válasz `usage` mezőjéből számolja (0,75 / 4,5 USD per millió token), havi összeget vezet, és a havi keret 90%-ánál (alapból 27 USD) megáll.
 
 ## Az eredmény-lap oszlopai

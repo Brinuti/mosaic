@@ -241,7 +241,7 @@ KC.callOpenAI = function (env, batches, ctx) {
           pending.push(missing);
         }
       } else {
-        missing[0].fail = p.ok ? 'hianyzo_elem' : p.error;
+        missing[0].fail = (p.ok ? 'hianyzo_elem' : p.error) + (p.text ? ' ' + String(p.text).replace(/\s+/g, ' ').slice(0, 200) : '');
       }
     });
   }
@@ -268,6 +268,7 @@ KC.processGroup = function (env, group, ctx) {
     withLink.forEach(function (e, i) {
       var r = resps[i];
       if (r && r.code === 200 && r.b64) e.thumbData = { mime: r.mime || 'image/jpeg', b64: r.b64 };
+      else e.thumbWhy = 'elonezet HTTP ' + (r ? r.code : 'ures');
     });
   }
 
@@ -279,7 +280,9 @@ KC.processGroup = function (env, group, ctx) {
   var nowText = env.nowText();
   var rows = group.map(function (e) {
     var status = !e.thumbData ? S.NO_THUMB : (e.item ? S.OK : S.ERROR);
-    return { entry: e, status: status, row: KC.buildRow(e.file, status === S.OK ? e.item : null, status, nowText, e.row) };
+    // a hiba oka a "leiras" oszlopba kerul (sikeres soroknal ott a modell leirasa van)
+    var reason = status === S.OK ? '' : (!e.thumbData ? (e.thumbWhy || 'nincs thumbnailLink') : (e.fail || 'ismeretlen'));
+    return { entry: e, status: status, row: KC.buildRow(e.file, status === S.OK ? e.item : null, status, nowText, e.row, reason) };
   });
   return { rows: rows };
 };

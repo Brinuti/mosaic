@@ -272,6 +272,8 @@ test('egy rossz kep: a kotegek felezodnek, csak az a kep lesz "hiba", a tobbi ke
   const s = KC.run(env, 'napi');
   const by = Object.fromEntries(rowsOf(env).map((r) => [r.file_id, r]));
   assert.equal(by.p1['állapot'], 'hiba');
+  assert.ok(by.p1['leírás'].startsWith('HIBA: http_400'), by.p1['leírás']);          // a hiba oka a leirasban
+  assert.ok(by.p1['leírás'].includes('invalid image'), by.p1['leírás']);
   assert.equal(by.p1['próbálkozás'], 1);
   assert.equal(by.m1['állapot'], 'kész');
   assert.equal(s.errors, 1);
@@ -287,6 +289,7 @@ test('elonezet nelkuli fajl: nincs_elonezet, nem megy OpenAI-ra; 20 ora mulva uj
   assert.equal(env.calls.openaiImages, 6);
   let r = rowsOf(env).find((x) => x.file_id === 'm2');
   assert.equal(r['állapot'], 'nincs_előnézet');
+  assert.equal(r['leírás'], 'HIBA: elonezet HTTP 404');
   assert.equal(r['próbálkozás'], 1);
   // rogton utana: meg nem probalja ujra
   assert.equal(KC.run(env, 'napi').noThumb, 0);

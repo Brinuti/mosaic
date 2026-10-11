@@ -149,8 +149,9 @@ KC.emptyRow = function () {
   return r;
 };
 
-// f: a bejarasbol jovo fajl; item: a modell sora (vagy null); status: KC.STATUS.*; prev: elozo sor-objektum (ujracimkezeshez)
-KC.buildRow = function (f, item, status, nowText, prev) {
+// f: a bejarasbol jovo fajl; item: a modell sora (vagy null); status: KC.STATUS.*; prev: elozo sor-objektum (ujracimkezeshez);
+// reason: a hiba oka (csak nem sikeres sornal) - a "leiras" oszlopba kerul "HIBA: ..." elotaggal
+KC.buildRow = function (f, item, status, nowText, prev, reason) {
   var r = KC.emptyRow(), C = KC.COL;
   r[C['file_id']] = f.id;
   r[C['név']] = f.name;
@@ -179,6 +180,7 @@ KC.buildRow = function (f, item, status, nowText, prev) {
     // A "nyersitheto" mezot NEM irjuk felul. (A video-elonezeti kockak - pl. feliratos testimonial - valtozatlanok.)
     if (/^image\//.test(f.mime || '') && String(r[C['felirat']]) === 'sok') r[C['téma']] = 'kesz_kreativ_grafika';
   }
+  if (failed && reason) r[C['leírás']] = 'HIBA: ' + String(reason).slice(0, 240);
   return r;
 };
 
