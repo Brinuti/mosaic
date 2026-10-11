@@ -247,6 +247,37 @@ betöltéskor az `/api/kitelepulesek`-ből frissíti (a táblázat legfeljebb 5 
 melletti cím, a városoldalakon a lap címe adja (a Wix-címek nem megbízhatók: a `/varosok/8800-nagykanizsa-fo-ut-23`
 ma a székesfehérvári helyszín). A nem értelmezhető cellákat az `/api/kitelepulesek` `hibak` listája mutatja.
 
+## 3/b. Rejtett új főoldal: `/uj-fooldal` (kézzel írt, nem Wix-klón)
+
+Az új főoldal látványterve alapján készült lap, **élesben, de rejtve**: a mostani főoldalt (`/`) nem váltja le, nincs a sitemapben,
+semmi nem linkeli, a keresők nem indexelhetik (`noindex,nofollow` a lapban és `X-Robots-Tag` a függvényben, `functions/[[path]].js`
+`REJTETT_LAPOK`). Éles címe: https://www.medicalpiercing.hu/uj-fooldal (a PR-előnézeten is: `https://<ág>.medicalpiercing.pages.dev/uj-fooldal`).
+
+| Mi | Hol |
+|---|---|
+| a lap (HTML, reszponzív: asztali és mobil ugyanaz a fájl) | `uj-fooldal/index.html` |
+| stílus / viselkedés | `assets/css/uj-fooldal.css`, `assets/js/uj-fooldal.js` (a `klon.js` ezen a lapon nem fut) |
+| build | `tools/uj-fooldal.mjs` (a `tools/build.mjs` hívja; leáll, ha a lapból hiányzik a `noindex`, van `canonical`, vagy hiányzó kép / betű van benne) |
+| képek | `assets/img/uj-*.webp`, gyártja: `python3 tools/uj-fooldal-kepek.py` (a meglévő `assets/img/` forrásokból; a videók indexképei és a logók is) |
+| betű | `assets/fonts/plus-jakarta-sans-*.woff2` (OFL, saját tárhelyről) |
+| teszt | `node tools/uj-fooldal-teszt.mjs` (build + `serve.mjs` után; `BASE=<cím>`-mel előnézeten / élesben is) |
+
+Működés: a foglalási gombok (`/idopontfoglalas`, `/kontroll`) a foglalómotort nyitják, a mérés (süti-sáv, GTM, foglalásindítás) a `suti.js`-ben és a
+`mp-meres.js`-ben ugyanúgy fut, mint a többi lapon; az URL-paraméterek (fbclid, utm_*, gclid) megőrzése a `klon.js` 8. szakaszának mása
+(ugyanaz a munkamenet-kulcs). A Google-vélemények (pontszám, darabszám, két vélemény) mentett adatokkal indulnak, és élőben frissülnek a
+Trustindex-widgetből (ugyanaz, amit a mostani főoldal beágyaz); ha az nem érhető el, a mentett adat marad. A három videó a kártyára kattintva
+ablakban nyílik (youtube-nocookie / RTL beágyazás), nem a lap betöltésekor.
+
+**Tartalom:** a látványterv szerkezete és a valódi oldal szövegei / adatai. A látványterv (generált kép) néhány adata nem egyezett az élő oldallal, ezeket
+a valós oldal alapján cseréltük: Google 4,8 / 4 962 vélemény (élő Trustindex-adat), valódi vendégvélemények, telefon / e-mail / cím (Kecskemét: Vágó utca 19.),
+az orvosi ajánlás eredeti szövege (Dr. Schmolcz Gergely, „szakmai mentor”), árak és akció az élő árlista szerint, a piercing-típusok panaszlistái az
+élő oldalról. A „szakorvostól”, az „ingyenes konzultáció”, a „7 szalon” és a Nők Lapja logó nincs az élő oldalon, ezért nem kerültek a lapra.
+A jogi láb (EÜ szakember, 93%-os statisztika, „nem gyógymód”) az élő oldalról átvéve.
+
+**Élesítés főoldalként** (csak a tulajdonos kérésére): a `klon/index.html` helyett ennek a lapnak a tartalmát kell a `/` címen adni (a `dist/_a|_m/fooldal.html`
+helyére), a `<meta name="robots">` és a REJTETT_LAPOK bejegyzés eltávolításával, `canonical` hozzáadásával, és a `fooldal-b` / Convertize-kísérlet
+ellenőrzésével. **Visszavonás:** a lap törlése a `tools/build.mjs`-ből (egy sor) és a `REJTETT_LAPOK`-ból.
+
 ## 4. Publikálás: Cloudflare Pages (egyszeri beállítás)
 
 A klón a `Brinuti/mosaic` repóban van, de **külön Cloudflare Pages-projekt** publikálja (a MOSAIC
