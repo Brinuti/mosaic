@@ -62,6 +62,21 @@ if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(
   console.log(`verziojel: ?v=${v}`);
 }
 
+// sajat foglalas-meres (assets/js/mp-meres.js, docs/MERES_GOOGLE_ARNYEK.md): minden lap <head>-jebe, verziojellel
+{
+  const v = crypto.createHash('sha256').update(fs.readFileSync(path.join(DIST, 'assets/js/mp-meres.js'))).digest('hex').slice(0, 10);
+  const cimke = `<script src="/assets/js/mp-meres.js?v=${v}" defer></script>`;
+  let n = 0;
+  const lapok = ['_a', '_m'].flatMap((ki) => fs.readdirSync(path.join(DIST, ki), { recursive: true }).filter((x) => x.endsWith('.html')).map((f) => path.join(DIST, ki, f)));
+  for (const fajl of lapok) {
+    const html = fs.readFileSync(fajl, 'utf8');
+    if (!html.includes('</head>') || html.includes('/assets/js/mp-meres.js')) continue;
+    fs.writeFileSync(fajl, html.replace('</head>', cimke + '</head>'));
+    n++;
+  }
+  console.log(`mp-meres: ${n} lapon`);
+}
+
 // kitelepulesek: a videki helyszinek idopontjai a tablazatbol. Ha a tablazat nem erheto el, a
 // mentett idopontok maradnak (futas kozben a lapok az /api/kitelepulesek-bol ugyis frissulnek).
 {
