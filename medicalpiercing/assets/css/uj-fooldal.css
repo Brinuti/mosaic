@@ -62,7 +62,7 @@ main>section{margin-block:26px}
 .pipak .ik{width:1.1em;height:1.1em;margin-top:.22em;color:var(--rose-i);stroke-width:2.4}
 
 /* fejlec */
-.fejlec{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.96);-webkit-backdrop-filter:saturate(1.4) blur(10px);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid transparent;transition:box-shadow .2s,border-color .2s}
+.fejlec{position:sticky;top:0;z-index:60;background:#fff;border-bottom:1px solid transparent;transition:box-shadow .2s,border-color .2s}
 .fejlec.gorgetve{box-shadow:0 4px 22px rgba(60,40,36,.07);border-color:var(--line)}
 .fejlec-sor{display:flex;align-items:center;gap:22px;height:var(--fej)}
 .logo{display:block;flex:none}
@@ -78,7 +78,7 @@ main>section{margin-block:26px}
 @media (hover:hover) and (min-width:1001px){.lenyilo:hover>.almenu{display:block}.lenyilo:hover>.menu-gomb{background:var(--beige)}}
 .almenu a{display:block;padding:9px 12px;border-radius:10px;font-size:.92rem;font-weight:500;text-decoration:none;color:var(--ink)}
 .almenu a:hover{background:var(--beige);color:var(--navy)}
-.menu-cta{display:none}
+.menu-lab{display:none}
 .fejlec-cta{margin-left:auto;white-space:nowrap}
 .menu-nyito{display:none;width:46px;height:46px;border-radius:12px;border:0;background:var(--slate);color:#fff;cursor:pointer;place-items:center}
 .menu-nyito .ik{width:24px;height:24px}
@@ -106,8 +106,12 @@ h1 em{font-style:normal;color:var(--rose)}
 .hos-pecset{position:absolute;right:-10px;bottom:-30px;width:128px;height:128px;border-radius:50%;background:#fff;border:2px solid var(--rose);box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;color:var(--slate);font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;line-height:1.3}
 .hos-pecset .ik{width:26px;height:26px;color:var(--rose-i)}
 
-/* google-velemenyek */
-.velemeny-doboz{background:#fff;border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh);padding:22px 26px}
+/* google-velemenyek: a Trustindex-widget (lapozhato), tartalek: a mentett kartyak */
+.ti-hely{min-height:260px}
+.ti-hely .ti-widget{margin:0}
+/* a Trustindex-kartyak ne az igen hosszu velemenyekhez igazodjanak: a szoveg legfeljebb 11 soros, kisebb betuvel (a teljes szoveg a widget felugrojaban) */
+.velemeny-doboz .ti-widget .ti-review-content{max-height:16em!important;overflow:hidden!important;font-size:.88rem!important;line-height:1.45!important}
+.velemeny-doboz{background:#fff;border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh);padding:18px 22px}
 .velemeny-fej{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px}
 .google{font-weight:700;font-size:1.6rem;letter-spacing:-.02em;line-height:1}
 .google i{font-style:normal}.google i:nth-child(1),.google i:nth-child(4){color:#4285f4}.google i:nth-child(2),.google i:nth-child(6){color:#d93025}.google i:nth-child(3){color:#e8a600}.google i:nth-child(5){color:#1e8e3e}
@@ -125,21 +129,19 @@ h1 em{font-style:normal;color:var(--rose)}
 .velemeny-tovabb span:not(.szoveg-link){font-size:.9rem}
 .velemeny-tovabb .szoveg-link{text-decoration:none}
 
-/* oszi akcio: sotet sav (#454659), kiemelt arak rozsaszin cimkeken */
-.akcio{position:relative;display:grid;grid-template-columns:minmax(170px,21%) 1fr auto;grid-template-areas:"kep cim gomb" "kep arak arak";gap:14px 30px;padding:0 34px 0 0;border-radius:var(--r-l);overflow:hidden;color:#fff;background:linear-gradient(100deg,#3b3c4d 0%,#454659 55%,#52536b 100%);box-shadow:var(--sh)}
-.akcio-kep{grid-area:kep;width:100%;height:100%;min-height:220px;object-fit:cover;object-position:50% 30%;-webkit-mask-image:linear-gradient(90deg,#000 55%,transparent);mask-image:linear-gradient(90deg,#000 55%,transparent)}
-.akcio-cim{grid-area:cim;position:relative;align-self:end;padding-top:24px}
+/* oszi akcio: sotet sav (#454659), kiemelt arak szinatmenetes rozsaszin dobozokon, a gomb a dobozok alatt kozepen */
+.akcio{position:relative;display:grid;grid-template-columns:minmax(170px,21%) 1fr;grid-template-areas:"kep cim" "kep arak" "kep gomb";gap:14px 30px;padding:0 34px 0 0;border-radius:var(--r-l);overflow:hidden;color:#fff;background:linear-gradient(100deg,#3b3c4d 0%,#454659 55%,#52536b 100%);box-shadow:var(--sh)}
+.akcio-kep{grid-area:kep;width:100%;height:100%;min-height:240px;object-fit:cover;object-position:50% 30%;-webkit-mask-image:linear-gradient(90deg,#000 55%,transparent);mask-image:linear-gradient(90deg,#000 55%,transparent)}
+.akcio-cim{grid-area:cim;align-self:end;padding-top:24px}
 .akcio-fo{margin:0;color:var(--rose);font-size:clamp(1.5rem,2.7vw,2.3rem);font-weight:800;text-transform:uppercase;line-height:1.1;letter-spacing:.01em}
 .akcio-al{margin:6px 0 0;font-size:clamp(1.05rem,1.9vw,1.55rem);font-weight:800;text-transform:uppercase;line-height:1.2}
-.akcio-level{position:absolute;right:0;top:12px;width:42px;height:42px;fill:var(--rose);stroke:none;opacity:.95}
-.akcio-jobb{grid-area:gomb;align-self:end;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
-.akcio-jobb small{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;opacity:.9}
-.akcio-arak{grid-area:arak;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding-bottom:24px}
-.akcio-arak li{position:relative;padding:12px 14px 12px;border-radius:18px;background:var(--rose);color:var(--navy);text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.18)}
+.akcio-jobb{grid-area:gomb;display:flex;justify-content:center;padding-bottom:24px}
+.akcio-arak{grid-area:arak;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
+.akcio-arak li{position:relative;padding:14px 14px 12px;border-radius:18px;background:linear-gradient(155deg,#f0d6d3 0%,#d7aba8 52%,#c6918d 100%);color:var(--navy);text-align:center;box-shadow:0 8px 18px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.55)}
 .akcio-arak span{display:block;font-size:.88rem;font-weight:700}
 .akcio-arak b{display:block;font-size:clamp(1.5rem,2.8vw,2.2rem);font-weight:800;line-height:1.15;letter-spacing:-.02em}
-.akcio-arak em{position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:2px 12px;border-radius:99px;background:#fff;color:var(--slate);font-style:normal;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
-.akcio-arak .legnepszerubb{background:#fff}
+.akcio-arak em{position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:2px 12px;border-radius:99px;background:#fff;color:var(--slate);font-style:normal;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.akcio-arak .legnepszerubb{background:linear-gradient(155deg,#ffffff 0%,#f6ebe4 60%,#ecd7cd 100%)}
 .akcio-arak .legnepszerubb em{background:var(--rose);color:var(--navy)}
 
 /* szakertok */
@@ -162,13 +164,15 @@ h1 em{font-style:normal;color:var(--rose)}
 .kartya li::before{content:"";position:absolute;left:1px;top:.58em;width:5px;height:5px;border-radius:50%;background:var(--rose)}
 .kartya .gomb{margin-top:auto;width:100%}
 
-/* valasztas */
-.valasztas{display:grid;grid-template-columns:1.15fr 1fr;border-radius:var(--r-l);overflow:hidden;border:1px solid var(--line);background:linear-gradient(100deg,var(--beige) 0,#fff 72%);box-shadow:var(--sh-s)}
-.valasztas-szoveg{padding:40px 36px 40px 44px}
-.valasztas-szoveg>p:not(.felirat){max-width:34em}
-.valasztas .pipak{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:22px}
-.valasztas .pipak li{margin:0;font-size:.84rem;color:var(--mut)}
-.valasztas-kep{display:block;width:100%;height:100%;min-height:280px;object-fit:cover;object-position:50% 25%;-webkit-mask-image:linear-gradient(90deg,transparent,#000 24%);mask-image:linear-gradient(90deg,transparent,#000 24%)}
+/* valasztas: kompakt */
+.valasztas{display:grid;grid-template-columns:1.9fr 1fr;align-items:center;border-radius:var(--r-l);overflow:hidden;border:1px solid var(--line);background:linear-gradient(100deg,var(--beige) 0,#fff 72%);box-shadow:var(--sh-s)}
+.valasztas-szoveg{padding:22px 28px 22px 34px}
+.valasztas-szoveg h2{font-size:clamp(1.25rem,1.9vw,1.55rem);margin-bottom:8px}
+.valasztas-szoveg>p:not(.felirat){max-width:46em;margin-bottom:0;font-size:.9rem;line-height:1.5}
+.valasztas-szoveg .gombsor{margin-top:14px}
+.valasztas .pipak{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:12px}
+.valasztas .pipak li{margin:0;font-size:.82rem;color:var(--mut)}
+.valasztas-kep{display:block;width:100%;height:100%;min-height:150px;max-height:230px;object-fit:cover;object-position:50% 22%;-webkit-mask-image:linear-gradient(90deg,transparent,#000 24%);mask-image:linear-gradient(90deg,transparent,#000 24%)}
 
 /* premium + galeria */
 .premium{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,640px);gap:36px;align-items:center;padding:34px;border-radius:var(--r-l);border:1px solid var(--line);background:linear-gradient(100deg,var(--beige) 0,#fff 85%);box-shadow:var(--sh-s)}
@@ -183,6 +187,7 @@ h1 em{font-style:normal;color:var(--rose)}
 .galeria-sav::-webkit-scrollbar{display:none}
 .galeria-sav:focus-visible{outline-offset:-3px}
 .dia{flex:0 0 100%;margin:0;scroll-snap-align:center;scroll-snap-stop:always}
+.dia-nagyit{display:block;width:100%;height:100%;padding:0;border:0;background:none;cursor:zoom-in}
 .dia img{display:block;width:100%;height:100%;object-fit:cover}
 .galeria-gomb{position:absolute;top:50%;display:grid;place-items:center;width:48px;height:48px;margin-top:-24px;border:0;border-radius:50%;background:rgba(255,255,255,.94);color:var(--slate);box-shadow:0 3px 12px rgba(0,0,0,.2);cursor:pointer;transition:background .15s,opacity .15s}
 .galeria-gomb:hover:not(:disabled){background:var(--rose);color:#fff}
@@ -203,9 +208,12 @@ h1 em{font-style:normal;color:var(--rose)}
 .kontroll>img{object-position:62% 20%}
 .panel p:not(.felirat){font-size:.95rem}
 blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);font-size:.95rem;font-style:italic;color:var(--ink)}
-.orvos-kep{position:relative;align-self:end;margin:0;min-height:300px;display:flex;justify-content:flex-end;align-items:flex-end}
+.orvos .panel-szoveg{align-self:stretch;display:flex;flex-direction:column;justify-content:center}
+.orvos .panel-szoveg .gomb{align-self:flex-start;margin-top:auto}
+.orvos .panel-szoveg blockquote{margin-bottom:20px}
+.orvos-kep{position:relative;align-self:stretch;margin:0;min-height:300px;display:flex;justify-content:flex-end;align-items:flex-end}
 .orvos-kep img{display:block;width:auto;height:100%;max-height:360px;max-width:100%;object-fit:contain;object-position:right bottom;-webkit-mask-image:linear-gradient(90deg,transparent,#000 30%),linear-gradient(180deg,transparent,#000 16%);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 30%),linear-gradient(180deg,transparent,#000 16%);mask-composite:intersect}
-.orvos-kep figcaption{position:absolute;left:6px;bottom:14px;padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.92);font-size:.8rem;line-height:1.3;color:var(--mut);box-shadow:var(--sh-s)}
+.orvos-kep figcaption{position:absolute;left:6px;bottom:34px;padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.92);font-size:.8rem;line-height:1.3;color:var(--mut);box-shadow:var(--sh-s)}
 .orvos-kep figcaption b{display:block;color:var(--navy);font-size:.9rem}
 .pecset{position:relative;align-self:center;justify-self:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:176px;height:176px;margin:22px;border-radius:50%;color:#fff;text-align:center;background:radial-gradient(circle at 30% 24%,#e6c6c3,#d7aba8 62%,#c99b97);box-shadow:0 0 0 7px rgba(255,255,255,.75),var(--sh);text-shadow:0 1px 3px rgba(80,50,46,.35)}
 .pecset::before{content:"";position:absolute;inset:-12px;border-radius:50%;background:repeating-conic-gradient(#e7cdca 0 5deg,transparent 5deg 10deg);-webkit-mask:radial-gradient(circle,transparent 66%,#000 67%);mask:radial-gradient(circle,transparent 66%,#000 67%);z-index:-1}
@@ -238,7 +246,8 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 .helyek a:hover{border-color:var(--rose);background:var(--beige-l)}
 .helyek .ik{position:absolute;left:12px;top:14px;width:18px;height:18px;color:var(--rose-i)}
 .helyek b{color:var(--navy);font-size:.95rem;line-height:1.3}
-.helyek span{font-size:.78rem;line-height:1.35;color:var(--mut)}
+.helyek .cim{font-size:.78rem;line-height:1.35;color:var(--mut)}
+.helyek .datum{margin-top:5px;padding-top:5px;border-top:1px dashed var(--line);font-size:.76rem;line-height:1.45;font-weight:600;color:var(--slate)}
 .helyek li:first-child a{background:var(--beige);border-color:var(--rose)}
 
 /* media + csapat */
@@ -271,6 +280,7 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 .elerhetoseg a{text-decoration:none}.elerhetoseg a:hover{text-decoration:underline}
 .kozosseg{display:flex;gap:10px;margin:0 0 20px}
 .kozosseg a{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;border:1px solid var(--rose);color:var(--rose-i);background:#fff;transition:background .15s}
+.lablec .kozosseg a{border-color:#d7b5ad}
 .kozosseg a:hover{background:var(--beige)}
 .kozosseg .ik{width:18px;height:18px}
 .terkep{min-height:270px;border-radius:16px;overflow:hidden;background:var(--beige)}
@@ -284,17 +294,18 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 .jegyzet a{color:var(--slate);font-weight:600}
 
 /* lablec */
-.lablec{margin-top:48px;padding:38px 0 26px;background:#fff;border-top:1px solid var(--line)}
+.lablec{margin-top:48px;padding:34px 0 22px;background:#efe1d8;border-top:1px solid #e4d2c7}
 .lablec-racs{display:grid;grid-template-columns:1.3fr 1fr 1.2fr 1fr auto;gap:30px;align-items:start}
-.lablec-marka img{display:block;height:58px;width:auto}
+.lablec-marka a{display:inline-block;padding:8px 14px;border-radius:14px;background:#fff}
+.lablec-marka img{display:block;height:50px;width:auto}
 .lablec h3{font-size:.9rem;margin-bottom:12px}
 .lablec li{margin-bottom:7px;font-size:.88rem}
 .lablec a{text-decoration:none;color:var(--ink)}.lablec a:hover{text-decoration:underline}
 .lablec .kozosseg{margin:0}
 .lablec .kozosseg a{text-decoration:none}
 .lablec .gomb{color:#fff}
-.jogi{margin-top:26px;padding-top:20px;border-top:1px solid var(--line);font-size:.74rem;line-height:1.55;color:var(--mut)}
-.jogi p{margin:0 0 8px;max-width:1000px}
+.jogi{margin-top:22px;padding-top:16px;border-top:1px solid #e0cdc1;font-size:.7rem;line-height:1.5;color:#5d5e70}
+.jogi p{margin:0 0 6px}
 .szerzoi{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 20px;margin-top:14px;font-size:.78rem;color:var(--mut)}
 
 /* videoablak */
@@ -320,11 +331,23 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 @media (max-width:1000px){
   .menu-nyito{display:grid;margin-left:0}
   .fejlec-cta{margin-left:auto}
-  .menu{position:fixed;left:0;right:0;top:var(--fej);bottom:0;margin:0;display:none;flex-direction:column;align-items:stretch;gap:2px;padding:16px 20px 28px;background:#fff;overflow-y:auto;border-top:1px solid var(--line)}
-  .fejlec.menu-nyitva .menu{display:flex}
-  .menu-link,.menu-gomb{width:100%;justify-content:space-between;padding:14px 12px;font-size:1.02rem}
-  .almenu{position:static;margin:0 0 6px;box-shadow:none;border:0;background:var(--beige-l);min-width:0}
-  .menu-cta{display:inline-flex;margin-top:14px}
+  /* mobilmenu: a fejlec alatt teljes magassagu lap (a fixed menu a fejlechez viszonyitva nulla magas volt a backdrop-filter miatt: javitva) */
+  .menu{position:fixed;left:0;right:0;top:var(--fej);bottom:0;margin:0;display:flex;flex-direction:column;align-items:stretch;gap:0;padding:6px 20px 24px;background:linear-gradient(180deg,#fff 0%,var(--beige-l) 100%);overflow-y:auto;border-top:1px solid var(--line);visibility:hidden;opacity:0;transform:translateY(-8px);transition:opacity .2s,transform .2s,visibility 0s linear .2s}
+  .fejlec.menu-nyitva .menu{visibility:visible;opacity:1;transform:none;transition-delay:0s}
+  .menu-elem{border-bottom:1px solid var(--line)}
+  .menu-link,.menu-gomb{width:100%;justify-content:space-between;padding:16px 4px;font-size:1.12rem;font-weight:700;border-radius:0;background:none}
+  .menu-link:hover,.menu-gomb:hover,.lenyilo.nyitva>.menu-gomb{background:none;color:var(--slate)}
+  .menu-gomb .ik{width:1.2em;height:1.2em}
+  .almenu{position:static;display:none;grid-template-columns:1fr 1fr;gap:2px 8px;margin:0 0 12px;padding:8px;min-width:0;border:0;box-shadow:none;background:#fff;border-radius:14px}
+  .lenyilo.nyitva>.almenu{display:grid}
+  .almenu a{padding:10px;font-size:.92rem}
+  #alm-rolunk{grid-template-columns:1fr}
+  .menu-lab{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:auto;padding-top:22px}
+  .menu-lab .menu-cta{display:inline-flex;width:100%;max-width:360px;padding:1em}
+  .menu-kapcsolat{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:.9rem}
+  .menu-kapcsolat a{display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+  .menu-kapcsolat .ik{color:var(--rose-i)}
+  .menu-lab .kozosseg{margin:0}
   .hos-racs{grid-template-columns:1fr;grid-template-areas:"cim" "kep" "szoveg";row-gap:22px}
   .hos-cim{margin:0}
   .hos-kep{max-width:640px;width:100%;margin-inline:auto}
@@ -336,7 +359,7 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   .kapcsolat-adat{grid-column:1/-1}
   .terkep{min-height:300px}
   .valasztas{grid-template-columns:1fr}
-  .valasztas-kep{min-height:260px;-webkit-mask-image:linear-gradient(180deg,transparent,#000 24%);mask-image:linear-gradient(180deg,transparent,#000 24%)}
+  .valasztas-kep{min-height:0;height:180px;max-height:none;object-position:75% 56%;-webkit-mask-image:linear-gradient(180deg,transparent,#000 22%);mask-image:linear-gradient(180deg,transparent,#000 22%)}
   .uzletek-fej{grid-template-columns:1fr}
 }
 
@@ -347,10 +370,18 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   main>section{margin-block:20px}
   .logo img{height:42px}
   .fejlec-cta{padding:.6em 1em;font-size:.82rem}
-  .hos{padding:10px 0 30px}
-  .hos-racs{row-gap:16px}
+  .hos{padding:4px 0 26px}
+  .hos-racs{row-gap:12px}
+  h1{font-size:clamp(1.6rem,7vw,1.95rem);line-height:1.1}
+  .hos-kep>img{aspect-ratio:16/9;object-position:50% 30%}
+  .hos-kep{margin-bottom:30px}
+  .hos-idezet{left:10px;bottom:-16px;max-width:62%;padding:9px 12px;font-size:.78rem}
+  .hos-idezet small{font-size:.68rem;margin-top:2px}
+  .hos-pecset{right:8px;bottom:-18px;width:88px;height:88px;font-size:.46rem}
+  .hos-pecset .ik{width:20px;height:20px}
   .hos-szoveg{text-align:center}
-  .hos-bevezeto{margin-inline:auto}
+  .hos-bevezeto{margin-inline:auto;font-size:.88rem;line-height:1.5}
+  .hos-szoveg .gombsor{margin-top:14px}
   .hos-szoveg .gombsor{justify-content:center}
   .hos-linkek{justify-content:center;gap:6px 18px;font-size:.84rem}
   .bizalom{grid-template-columns:1fr 1fr;text-align:left}
@@ -359,15 +390,14 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   .velemeny-lista{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin-inline:-4px;padding:0 4px 8px}
   .velemeny{flex:0 0 82%;scroll-snap-align:start}
   .akcio{grid-template-columns:1fr;grid-template-areas:"kep" "cim" "arak" "gomb";gap:0;padding:0;text-align:center}
-  .akcio-kep{height:150px;min-height:0;-webkit-mask-image:linear-gradient(180deg,#000 50%,transparent);mask-image:linear-gradient(180deg,#000 50%,transparent)}
+  .akcio-kep{height:215px;min-height:0;object-position:50% 36%;-webkit-mask-image:linear-gradient(180deg,#000 74%,transparent);mask-image:linear-gradient(180deg,#000 74%,transparent)}
   .akcio-cim{padding:0 22px 14px}
-  .akcio-level{display:none}
   .akcio-arak{padding:0 16px 18px;gap:8px}
   .akcio-arak li{padding:12px 6px 10px;border-radius:14px}
   .akcio-arak span{font-size:.74rem}
   .akcio-arak b{font-size:clamp(1.05rem,5.4vw,1.4rem)}
   .akcio-arak em{font-size:.54rem;padding:2px 9px}
-  .akcio-jobb{padding:0 22px 24px}
+  .akcio-jobb{padding:6px 22px 24px}
   .szakerto-racs{grid-template-columns:1fr 1fr;padding:22px 4px;row-gap:22px}
   .szakerto-racs li{padding:0 10px}
   .szakerto-racs li:nth-child(odd){border-left:0}
@@ -389,6 +419,8 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   .panel>img{order:-1;min-height:0;height:auto;aspect-ratio:4/3;-webkit-mask-image:linear-gradient(180deg,#000 62%,transparent);mask-image:linear-gradient(180deg,#000 62%,transparent)}
   blockquote{padding:0;border-left:0;text-align:center}
   /* az orvosi fotó teljes szélességben, nem vágva */
+  .orvos .panel-szoveg{align-self:auto;justify-content:flex-start}
+  .orvos .panel-szoveg .gomb{align-self:center;margin-top:0}
   .orvos-kep{order:2;min-height:0;display:block;width:100%;margin:0}
   .orvos-kep img{width:100%;height:auto;max-height:none;max-width:none;object-fit:contain;-webkit-mask-image:linear-gradient(180deg,transparent,#000 12%);mask-image:linear-gradient(180deg,transparent,#000 12%);-webkit-mask-composite:source-over;mask-composite:add}
   .orvos-kep figcaption{left:50%;transform:translateX(-50%);bottom:12px;text-align:center;white-space:nowrap}
@@ -420,7 +452,7 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   .lablec{margin-top:28px;padding:22px 0 16px}
   .lablec-racs{grid-template-columns:1fr 1fr;gap:14px 18px}
   .lablec-marka{grid-column:1/-1;text-align:center}
-  .lablec-marka img{height:44px;margin-inline:auto}
+  .lablec-marka img{height:40px;margin-inline:auto}
   .lablec h3{font-size:.8rem;margin-bottom:6px}
   .lablec li{margin-bottom:3px;font-size:.8rem}
   .lablec-racs>div:not(.lablec-marka):not(.lablec-cta){grid-column:1/-1;text-align:center}
@@ -452,8 +484,18 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   .fejlec-cta .ik-nyil{display:none}
   .gombsor .gomb{flex:1 1 100%}
   .videok{grid-template-columns:1fr;gap:16px}
-  .hos-pecset{width:104px;height:104px;font-size:.5rem;bottom:-22px}
-  .hos-idezet{max-width:76%;font-size:.8rem;padding:10px 13px;left:12px;bottom:12px}
   .galeria-gomb{width:42px;height:42px;margin-top:-21px}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important}}
+
+/* nagyito (lightbox) */
+.nagyito{width:min(96vw,1100px);max-height:96vh;padding:0;border:0;border-radius:18px;background:#e9e6e4;overflow:visible}
+.nagyito[open]{display:grid;place-items:center}
+.nagyito::backdrop{background:rgba(30,30,40,.85)}
+.nagyito-kep{display:block;width:auto;height:auto;max-width:100%;max-height:92vh;border-radius:18px;object-fit:contain}
+.nagyito-zar{position:absolute;right:6px;top:-48px;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--navy);cursor:pointer}
+.nagyito-zar .ik{width:20px;height:20px}
+.nagyito .galeria-gomb{z-index:2}
+.nagyito-elozo{left:10px}.nagyito-elozo .ik{transform:scaleX(-1)}
+.nagyito-kov{right:10px}
+.nagyito-szam{z-index:2}

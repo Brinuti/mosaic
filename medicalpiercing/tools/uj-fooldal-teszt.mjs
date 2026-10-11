@@ -8,7 +8,7 @@
 //
 // Ellenorzi: rejtett (noindex, nincs canonical, nincs a sitemapben), minden belso link es horgony celja, nincs JS-hiba, nincs
 // Wix-keres, minden kep betolt, nincs vizszintes gorgetes 360-1920 px kozott, fejlec-menu, "osszes piercing", videoablak, a
-// Google-velemenyek elo frissitese (mockolt Trustindex) es a hiba eseti tartalek, a foglalomotor megnyilik a foglalasi gombra
+// Google-velemenyek: a valodi Trustindex-widget (lapozhato, sok velemeny) es a hiba eseti tartalek, a foglalomotor megnyilik a foglalasi gombra
 // (a Salonic-kereseket eldobjuk: valodi foglalas nem indul), a Google-kattintasazonosito tovabbadasa a belso linkekre.
 // Minden lepes OK/HIBA sort ir; hiba eseten 1-es kilepesi koddal all le.
 import fs from 'node:fs';
@@ -54,10 +54,13 @@ const idk = new Set([...forras.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
 const horgonyok = hrefek.filter((h) => /^#./.test(h)).map((h) => h.slice(1));
 ok(`forras: ${horgonyok.length} horgony mind letezo azonositora mutat`, horgonyok.every((h) => idk.has(h)), horgonyok.filter((h) => !idk.has(h)).join(' '));
 const kulso = hrefek.filter((h) => /^https?:/.test(h));
-ok('forras: kulso linkek (target=_blank + noopener)', [...forras.matchAll(/<a\b[^>]*href="https?:[^"]*"[^>]*>/g)].every((m) => /target="_blank"/.test(m[0]) && /rel="noopener"/.test(m[0])), kulso.length + ' db');
+ok('forras: kulso linkek (target=_blank + noopener; a Salonic-foglalo linkek helyben, a motorral nyilnak)', [...forras.matchAll(/<a\b[^>]*href="https?:[^"]*"[^>]*>/g)].filter((m) => !/medicalpiercing\.salonic\.hu/.test(m[0])).every((m) => /target="_blank"/.test(m[0]) && /rel="noopener"/.test(m[0])), kulso.length + ' db');
+ok('forras: nincs "Szeptember 1-től", nincs levelike az akcion', !/Szeptember 1/i.test(szoveg) && !/akcio-level/.test(forras));
+const tileLinkek = [...forras.matchAll(/<ul class="helyek">([\s\S]*?)<\/ul>/g)].flatMap((m) => [...m[1].matchAll(/<a href="([^"]+)"/g)].map((x) => x[1]));
+ok('forras: mind a 15 helyszin-csempe a foglalot nyitja az adott helyszinnel (placeId)', tileLinkek.length === 15 && tileLinkek.every((h) => /^https:\/\/medicalpiercing\.salonic\.hu\/selectEmployee\/\?placeId=\d+$/.test(h)), tileLinkek.length + ' db');
 
 const b = await chromium.launch();
-const ENGEDELYEZETT = /^(https?:\/\/(localhost|127\.0\.0\.1)|data:|blob:|https:\/\/(cdn\.trustindex\.io|maps\.google\.com|www\.google\.com|maps\.gstatic\.com|maps\.googleapis\.com|www\.youtube-nocookie\.com|embed\.rtl\.hu)\b)/;
+const ENGEDELYEZETT = /^(https?:\/\/(localhost|127\.0\.0\.1)|data:|blob:|https:\/\/([a-z0-9.-]*trustindex\.io|lh3\.googleusercontent\.com|maps\.google\.com|www\.google\.com|maps\.gstatic\.com|maps\.googleapis\.com|www\.youtube-nocookie\.com|embed\.rtl\.hu)\b)/;
 const SAJAT_HOST = new URL(BASE).host;
 // nem helyi cimen a merokodok (suti.js: csak az eles domainen futnak) kerest inditanak: ezeket blokkoljuk, es nem szamit "kulso kerésnek"
 const MERO = (u) => !HELYI && (MERES.test(u) || /cloudflareinsights\.com|googlesyndication\.com/.test(u));
@@ -76,7 +79,7 @@ async function ujLap(ctx, mod = {}) {
   p.on('request', (r) => { const u = r.url(); if (/wixstatic|wix\.com|parastorage|wixapps/.test(u)) p.wix.push(u); if (!ENGEDELYEZETT.test(u) && !u.startsWith(BASE) && !MERO(u)) p.kulso.push(u); });
   // a Salonic-hivasok es a meres soha ne menjenek el (valodi foglalas / szennyezett statisztika)
   await p.route(/medicalpiercing\.salonic\.hu|api\.salonic\.hu/, (r) => r.abort());
-  if (mod.trustindex) await p.route(/cdn\.trustindex\.io\/widgets\//, mod.trustindex);
+  if (mod.trustindex) await p.route(/trustindex\.io/, mod.trustindex);
   return p;
 }
 
@@ -85,12 +88,7 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   const mobil = nezet === 'mobil';
 
   // ---------- 2. betoltes, hibak, keresek ----------
-  const mockolt = (r) => r.fulfill({ status: 200, contentType: 'text/html', headers: { 'access-control-allow-origin': '*' }, body:
-    '<div class="ti-widget"><span class="ti-header-rating">4.7</span><span class="ti-header-rating-reviews">5001 vélemény</span>' +
-    '<div class="ti-review-item" data-rating="5.0"><div class="ti-name"> Próba Elek </div><div class="ti-review-content">Ez egy próba vélemény, amely elég hosszú a szűrőhöz.</div></div>' +
-    '<div class="ti-review-item" data-rating="4.0"><div class="ti-name">Teszt Anna</div><div class="ti-review-content">Második próba vélemény, szintén elég hosszú szöveggel.</div></div>' +
-    '<div class="ti-review-item" data-rating="2.0"><div class="ti-name">Rossz Béla</div><div class="ti-review-content">Ez a rossz értékelés nem kerülhet ki a kártyák közé.</div></div></div>' });
-  const p = await ujLap(ctx, { trustindex: mockolt });
+  const p = await ujLap(ctx);
   const v = await p.goto(LAP, { waitUntil: 'load' });
   ok(`${nezet}: 200-as valasz`, v.status() === 200, String(v.status()));
   ok(`${nezet}: noindex (meta)`, await p.$eval('meta[name="robots"]', (m) => /noindex/.test(m.content)));
@@ -101,7 +99,7 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   ok(`${nezet}: nincs 4xx/5xx es sikertelen sajat keres`, p.rossz.length === 0, p.rossz.slice(0, 4).join(' | '));
   ok(`${nezet}: nincs Wix-keres`, p.wix.length === 0, p.wix.slice(0, 3).join(' '));
   ok(`${nezet}: nincs nem engedelyezett kulso keres`, p.kulso.length === 0, [...new Set(p.kulso.map((u) => new URL(u).host))].slice(0, 6).join(' '));
-  const kepek = await p.$$eval('img', (is) => is.filter((i) => !i.complete || i.naturalWidth === 0).map((i) => i.currentSrc || i.src));
+  const kepek = await p.$$eval('img', (is) => is.filter((i) => !i.closest('.ti-widget') && !i.closest('dialog') && (!i.complete || i.naturalWidth === 0)).map((i) => i.currentSrc || i.src));
   ok(`${nezet}: minden kep betoltott`, kepek.length === 0, kepek.slice(0, 3).join(' '));
   const betu = await p.evaluate(async () => { await document.fonts.ready; return [...document.fonts].filter((f) => f.family.includes('Plus Jakarta')).map((f) => f.status).join(','); });
   ok(`${nezet}: betu betoltott (latin + latin-ext: o/u dupla ekezet)`, /loaded.*loaded|loaded,loaded/.test(betu) || (betu.split(',').filter((x) => x === 'loaded').length >= 2), betu);
@@ -116,23 +114,45 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   }
   await p.setViewportSize(opt.viewport);
 
-  // ---------- 4. velemenyek: elo frissites (mockolt Trustindex) ----------
-  const vel = await p.evaluate(() => ({ pont: document.querySelector('[data-ertekeles]').textContent, darab: document.querySelector('[data-darab]').textContent, nevek: [...document.querySelectorAll('article.velemeny header b')].map((x) => x.textContent), jo: !document.body.textContent.includes('Rossz Béla') }));
-  ok(`${nezet}: velemenyek elo frissitese`, vel.pont === '4.7' && /5.001/.test(vel.darab) && vel.nevek.join() === 'Próba Elek,Teszt Anna' && vel.jo, JSON.stringify(vel));
-  const p2 = await ujLap(ctx, { trustindex: (r) => r.abort() });
-  await p2.goto(LAP, { waitUntil: 'load' }); await p2.waitForTimeout(2200);
-  const tart = await p2.evaluate(() => ({ pont: document.querySelector('[data-ertekeles]').textContent, nevek: [...document.querySelectorAll('article.velemeny header b')].map((x) => x.textContent) }));
-  ok(`${nezet}: Trustindex hiba eseten marad a mentett adat`, tart.pont === '4.8' && tart.nevek.join() === 'Angéla Szemző,Zseszti' && p2.hibak.length === 0, JSON.stringify(tart) + p2.hibak.join());
-  await p2.close();
+  // ---------- 4. velemenyek: a valodi Trustindex-widget, lapozhato, sok velemennyel ----------
+  await p.locator('.velemeny-doboz').scrollIntoViewIfNeeded();
+  await p.mouse.move(200, 300); await p.mouse.wheel(0, 30);   // a Trustindex a felhasznaloi gorgetesre / erintesre tolt (programozott gorgetesre nem)
+  const widget = await p.waitForSelector('.ti-widget .ti-review-item', { timeout: 15000 }).then(() => true).catch(() => false);
+  const tiAdat = widget ? await p.evaluate(() => ({ db: document.querySelectorAll('.ti-review-item').length, lathato: [...document.querySelectorAll('.ti-review-item')].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 50 && r.right > 0 && r.left < innerWidth; }).length, kov: !!document.querySelector('.ti-next') && getComputedStyle(document.querySelector('.ti-next')).display !== 'none', tartalekRejtett: document.querySelector('[data-tartalek]').hidden })) : null;
+  ok(`${nezet}: Trustindex-widget: sok velemeny (>= 10), lapozo nyil, a tartalek rejtve`, !!tiAdat && tiAdat.db >= 10 && tiAdat.kov && tiAdat.tartalekRejtett, JSON.stringify(tiAdat));
+  if (widget) {
+    const elso = await p.evaluate(() => document.querySelector('.ti-review-item .ti-name').textContent.trim());
+    await p.click('.ti-next'); await p.waitForTimeout(900);
+    const kov = await p.evaluate(() => { const sav = document.querySelector('.ti-reviews-container-wrapper'); return { x: sav ? sav.scrollLeft : 0, tr: sav ? getComputedStyle(sav).transform : '', prev: document.querySelector('.ti-prev') ? getComputedStyle(document.querySelector('.ti-prev')).display : '' }; });
+    ok(`${nezet}: Trustindex-widget: a nyil lapoz (az elozo nyil megjelenik)`, kov.prev !== 'none' && kov.prev !== '', JSON.stringify(kov) + ' ' + elso);
+  }
+  if (!mobil) {
+    // a hiba eseti tartalek: ha a widget nem toltodik be, 9 mp mulva a mentett velemenyek latszanak
+    const p2 = await ujLap(ctx, { trustindex: (r) => r.abort() });
+    await p2.goto(LAP, { waitUntil: 'load' }); await p2.waitForTimeout(10000);
+    const tart = await p2.evaluate(() => ({ lathato: !document.querySelector('[data-tartalek]').hidden, nevek: [...document.querySelectorAll('[data-tartalek] article.velemeny header b')].map((x) => x.textContent) }));
+    ok('asztali: Trustindex hiba eseten a mentett velemenyek latszanak', tart.lathato && tart.nevek.join() === 'Angéla Szemző,Zseszti' && p2.hibak.length === 0, JSON.stringify(tart) + p2.hibak.join());
+    await p2.close();
+  }
 
   // ---------- 5. fejlec / menu ----------
   if (mobil) {
+    await p.evaluate(() => scrollTo(0, 0));
     await p.click('#menu-nyito');
-    ok(`${nezet}: hamburger megnyitja a menut`, await p.$eval('#menu', (m) => getComputedStyle(m).display !== 'none') && (await p.getAttribute('#menu-nyito', 'aria-expanded')) === 'true');
+    await p.waitForTimeout(400);
+    const mm = await p.evaluate(() => {
+      const m = document.querySelector('#menu'), r = m.getBoundingClientRect(), cs = getComputedStyle(m);
+      const link = (t) => { const a = [...m.querySelectorAll('a,button')].find((x) => x.textContent.trim().startsWith(t)); const q = a.getBoundingClientRect(); return q.top >= 0 && q.bottom <= innerHeight && q.height > 20; };
+      return { h: Math.round(r.height), vis: cs.visibility, ar: link('Árak'), garancia: link('Garancia'), blog: link('Blog'), expanded: document.querySelector('#menu-nyito').getAttribute('aria-expanded') };
+    });
+    ok(`${nezet}: a mobilmenu teljes magassagu es lathato (nem nulla magas), a linkek a kepernyon`, mm.h > 300 && mm.vis === 'visible' && mm.ar && mm.garancia && mm.blog && mm.expanded === 'true', JSON.stringify(mm));
     await p.click('#menu .menu-gomb[aria-controls="alm-piercingek"]');
     ok(`${nezet}: almenu nyilik`, await p.isVisible('#alm-piercingek a[href="/migren-piercing"]'));
+    await p.click('#menu .menu-gomb[aria-controls="alm-piercingek"]');
+    ok(`${nezet}: a menu alja: foglalas gomb, telefon, e-mail`, (await p.locator('#menu .menu-lab .menu-cta').count()) === 1 && (await p.locator('#menu .menu-kapcsolat a[href^="tel:"]').count()) === 1);
     await p.keyboard.press('Escape');
-    ok(`${nezet}: Esc zarja a menut`, await p.$eval('#menu', (m) => getComputedStyle(m).display === 'none'));
+    await p.waitForTimeout(350);
+    ok(`${nezet}: Esc zarja a menut`, await p.$eval('#menu', (m) => getComputedStyle(m).visibility === 'hidden'));
   } else {
     ok(`${nezet}: almenu zarva alapbol`, !(await p.isVisible('#alm-piercingek')));
     await p.click('.menu-gomb[aria-controls="alm-piercingek"]');
@@ -164,7 +184,46 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   await p.waitForFunction(() => document.querySelector('[data-aktualis]').textContent === '20', null, { timeout: 4000 }).catch(() => {});
   const gal2 = await p.evaluate(() => ({ szam: document.querySelector('[data-aktualis]').textContent, kovTiltva: document.querySelector('.galeria-kov').disabled }));
   ok(`${nezet}: galeria: a vegen 20 / 20, a kovetkezo tiltva`, gal2.szam === '20' && gal2.kovTiltva, JSON.stringify(gal2));
-  await p.evaluate(() => { document.querySelector('#galeria-sav').scrollLeft = 0; });
+  await p.evaluate(() => { const g = document.querySelector('#galeria-sav'); g.style.scrollBehavior = 'auto'; g.scrollLeft = 0; });
+  await p.waitForFunction(() => document.querySelector('[data-aktualis]').textContent === '1', null, { timeout: 4000 }).catch(() => {});
+
+  // ---------- 5c. nagyito: kattintasra nagyban nyilik ----------
+  await p.locator('.dia-nagyit').first().click();
+  await p.waitForFunction(() => { const k = document.querySelector('.nagyito-kep'); return document.querySelector('#nagyito').open && k.naturalWidth === 1400; }, null, { timeout: 8000 }).catch(() => {});
+  const n1 = await p.evaluate(() => ({ nyitva: document.querySelector('#nagyito').open, src: document.querySelector('.nagyito-kep').getAttribute('src') || '', nat: document.querySelector('.nagyito-kep').naturalWidth, szam: document.querySelector('[data-n]').textContent, w: Math.round(document.querySelector('.nagyito-kep').getBoundingClientRect().width), galW: Math.round(document.querySelector('.galeria').getBoundingClientRect().width) }));
+  ok(`${nezet}: a galeria kepe kattintasra nagyban nyilik (1400 px-es kep, nagyobb a galeriaknal)`, n1.nyitva && /uj-ekszer-01-nagy\.webp/.test(n1.src) && n1.nat === 1400 && n1.szam === '1' && n1.w >= n1.galW, JSON.stringify(n1));
+  await p.click('.nagyito-kov'); await p.waitForTimeout(250);
+  const n2 = await p.textContent('[data-n]');
+  await p.keyboard.press('ArrowLeft'); await p.waitForTimeout(250);
+  const n3 = await p.textContent('[data-n]');
+  ok(`${nezet}: nagyito: a nyil es a billentyu lapoz (2 majd vissza 1)`, n2 === '2' && n3 === '1', n2 + ' ' + n3);
+  await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+  ok(`${nezet}: nagyito: Esc zarja`, await p.$eval('#nagyito', (d) => !d.open));
+
+  // ---------- 5d. akcio, doktor-badge, helyszin-csempek, lablec, mobil hos ----------
+  const bn = await p.evaluate(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(); const gomb = r('.akcio-jobb .gomb'), ar = r('.akcio-arak'); return { gomb: gomb.left + gomb.width / 2, arak: ar.left + ar.width / 2, gombTop: gomb.top, arakAlja: ar.bottom }; });
+  ok(`${nezet}: az akcio gombja a harom arbox alatt, kozepen`, Math.abs(bn.gomb - bn.arak) < 3 && bn.gombTop >= bn.arakAlja - 1, JSON.stringify(bn));
+  if (!mobil) {
+    const al = await p.evaluate(() => ({ gomb: document.querySelector('.orvos .panel-szoveg .gomb').getBoundingClientRect().bottom, badge: document.querySelector('.orvos-kep figcaption').getBoundingClientRect().bottom }));
+    ok('asztali: a doktor badge alja pontosan a mellette levo gomb aljan van', Math.abs(al.gomb - al.badge) <= 2, JSON.stringify(al));
+  }
+  await p.locator('.helyek').scrollIntoViewIfNeeded(); await p.waitForTimeout(1200);
+  const datumDb = await p.$$eval('.helyek .datum', (els) => els.filter((e) => /\d/.test(e.textContent)).length);
+  ok(`${nezet}: a kitelepulesi idopontok kint vannak a csempeken (>= 10 helyszin)`, datumDb >= 10, datumDb + ' db');
+  await p.locator('.helyek a').nth(4).click();   // Kecskemet
+  await p.waitForSelector('[data-mp-motor]', { timeout: 15000 }).catch(() => {});
+  const hm = await p.evaluate(() => { const h = document.querySelector('[data-mp-motor]'); return { van: !!h, urlMarad: location.pathname }; });
+  ok(`${nezet}: egy helyszin-csempe a foglalomotort nyitja (nem erre az oldalra visz)`, hm.van && hm.urlMarad === '/uj-fooldal', JSON.stringify(hm));
+  await p.evaluate(() => document.querySelector('[data-mp-motor]')?.remove());
+  const lab = await p.evaluate(() => { const bg = getComputedStyle(document.querySelector('.lablec')).backgroundColor; const j = document.querySelector('.jogi p').getBoundingClientRect(), t = document.querySelector('.lablec .tarto').getBoundingClientRect(); return { bg, jogi: Math.round(j.width), tarto: Math.round(t.width), magassag: Math.round(document.querySelector('.lablec').getBoundingClientRect().height) }; });
+  ok(`${nezet}: a lablec sotetebb a tobbi resznel, a jogi szoveg teljes szelessegu`, lab.bg !== 'rgb(255, 255, 255)' && lab.jogi >= lab.tarto - 2, JSON.stringify(lab));
+  if (mobil) {
+    await p.setViewportSize({ width: 390, height: 700 }); await p.evaluate(() => scrollTo(0, 0)); await p.waitForTimeout(250);
+    const hb = await p.$eval('.hos .gomb-tomor', (e) => Math.round(e.getBoundingClientRect().bottom));
+    ok('mobil: a hos elso gombja teljesen latszik 390x700-on (cim, kep, kisebb alcim, gomb)', hb <= 700, hb + ' px');
+    await p.setViewportSize(opt.viewport);
+  }
+
 
   if (mobil) {
     const m = await p.evaluate(() => {
@@ -177,7 +236,7 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
     ok('mobil: a garancia doboz gombja es cime kozepen', Math.abs(m.gombKozep - m.panelKozep) < 4 && Math.abs(m.cimKozep - m.panelKozep) < 4, JSON.stringify(m));
     ok('mobil: az arak gombja kozepen', Math.abs(m.arGomb - m.arPanel) < 4);
     ok('mobil: az orvosi foto teljes szelessegu', m.kepSzeles >= m.orvosSzeles - 1, `${m.kepSzeles}/${m.orvosSzeles}`);
-    ok('mobil: mind a 15 helyszin kompakt (< 700 px)', m.helyekMagassag < 700, Math.round(m.helyekMagassag) + ' px');
+    ok('mobil: mind a 15 helyszin idopontokkal egyutt is kompakt (< 1350 px)', m.helyekMagassag < 1350, Math.round(m.helyekMagassag) + ' px');
     ok('mobil: a lablec kompakt (< 650 px)', m.lablecMagassag < 650, Math.round(m.lablecMagassag) + ' px');
   }
 

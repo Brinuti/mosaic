@@ -18,77 +18,9 @@
 <body>
 <a class="ugras" href="#fo">Ugrás a tartalomra</a>
 
-<!-- ikonok (vonalas, 24 px-es rács) -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-  <defs>
-    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
-    <symbol id="i-gem" viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></symbol>
-    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/><path d="M20 3v4M22 5h-4M4 17v2M5 18H3"/></symbol>
-    <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/></symbol>
-    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
-    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 5-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></symbol>
-    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.5l2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52l-5.88 3.09 1.12-6.55L2.48 9.42l6.58-.96z"/></symbol>
-    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
-    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
-    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
-    <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
-    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
-    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M13.83 16.57a1 1 0 0 0 1.21-.3l.36-.47A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.47.35a1 1 0 0 0-.29 1.23 14 14 0 0 0 6.39 6.39"/></symbol>
-    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
-    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.53.85l12-7.5a1 1 0 0 0 0-1.7l-12-7.5A1 1 0 0 0 7 4.5z"/></symbol>
-    <symbol id="i-steth" viewBox="0 0 24 24"><path d="M11 2v2M5 2v2M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1M8 15a6 6 0 0 0 12 0v-3"/><circle cx="20" cy="10" r="2"/></symbol>
-    <symbol id="i-cross" viewBox="0 0 24 24"><path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2z"/></symbol>
-    <symbol id="i-userc" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></symbol>
-    <symbol id="i-map" viewBox="0 0 24 24"><path d="M14.11 5.55a2 2 0 0 0 1.78 0l3.66-1.83A1 1 0 0 1 21 4.62v12.76a1 1 0 0 1-.55.9l-4.55 2.28a2 2 0 0 1-1.79 0l-4.21-2.1a2 2 0 0 0-1.79 0l-3.66 1.83A1 1 0 0 1 3 19.38V6.62a1 1 0 0 1 .55-.9l4.55-2.28a2 2 0 0 1 1.79 0z"/><path d="M15 5.76v15M9 3.24v15"/></symbol>
-    <symbol id="i-ear" viewBox="0 0 24 24"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0"/><path d="M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4"/></symbol>
-    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
-    <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
-    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M12 1.5l1.7 4.1 2.6-1.6-.5 4.6 3.7-1.4-1.3 3.7 3.3.7-3.6 3 .9 1.9-4.6-.5.3 4.2h-1.2v3.3h-2.6v-3.3h-1.2l.3-4.2-4.6.5.9-1.9-3.6-3 3.3-.7-1.3-3.7 3.7 1.4-.5-4.6 2.6 1.6z"/></symbol>
-    <symbol id="i-fb" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
-    <symbol id="i-ig" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></symbol>
-    <symbol id="i-yt" viewBox="0 0 24 24"><path d="M2.5 17a24.1 24.1 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.6 49.6 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.1 24.1 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.6 49.6 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></symbol>
-    <symbol id="i-tt" viewBox="0 0 24 24"><path d="M15 3v10.5a4.5 4.5 0 1 1-4.5-4.5M15 3c.4 2.6 2.1 4.3 5 4.5"/></symbol>
-  </defs>
-</svg>
+<!--#ikonok-->
 
-<header class="fejlec" id="fejlec">
-  <div class="tarto fejlec-sor">
-    <a class="logo" href="/" aria-label="Medical Piercing – kezdőlap"><img src="/assets/img/uj-logo.webp" width="327" height="97" alt="Medical Piercing – Piercinget csak EÜ szakembertől!"></a>
-    <nav class="menu" id="menu" aria-label="Főmenü">
-      <div class="menu-elem lenyilo">
-        <button type="button" class="menu-gomb" aria-expanded="false" aria-controls="alm-piercingek">Piercingek <svg class="ik" aria-hidden="true"><use href="#i-down"/></svg></button>
-        <ul class="almenu" id="alm-piercingek">
-          <li><a href="/migren-piercing">Migrén piercing</a></li>
-          <li><a href="/shenmen-piercing">Shenmen piercing</a></li>
-          <li><a href="/klimax-piercing">Klímax piercing</a></li>
-          <li><a href="/slim-etvagycsokkento-piercing">Slim (fogyókúrás) piercing</a></li>
-          <li><a href="/allergia-piercing">Allergia piercing</a></li>
-          <li><a href="/maj-piercing">Máj piercing</a></li>
-          <li><a href="/pajzsmirigy-piercing">Pajzsmirigy piercing</a></li>
-          <li><a href="/lep-piercing">Lép piercing</a></li>
-          <li><a href="/vastagbel-piercing">Vastagbél piercing</a></li>
-          <li><a href="/ful-piercing-beloves-budapest">Divat fülpiercing</a></li>
-        </ul>
-      </div>
-      <a class="menu-elem menu-link" href="#arak">Árak</a>
-      <div class="menu-elem lenyilo">
-        <button type="button" class="menu-gomb" aria-expanded="false" aria-controls="alm-rolunk">Rólunk <svg class="ik" aria-hidden="true"><use href="#i-down"/></svg></button>
-        <ul class="almenu" id="alm-rolunk">
-          <li><a href="/rolunk">Rólunk</a></li>
-          <li><a href="#csapat">Csapatunk</a></li>
-          <li><a href="/elerhetosegek">Helyszíneink</a></li>
-          <li><a href="/migren-shenmen-piercing-velemenyek">Vélemények</a></li>
-        </ul>
-      </div>
-      <a class="menu-elem menu-link" href="/migren-es-shenmen-piercing-garancia">Garancia</a>
-      <a class="menu-elem menu-link" href="/blog">Blog</a>
-      <a class="menu-elem menu-link" href="#kapcsolat">Kapcsolat</a>
-      <a class="gomb gomb-tomor menu-cta" href="/idopontfoglalas"><svg class="ik" aria-hidden="true"><use href="#i-calendar"/></svg>Időpontfoglalás</a>
-    </nav>
-    <a class="gomb gomb-kicsi fejlec-cta" href="/idopontfoglalas"><svg class="ik" aria-hidden="true"><use href="#i-calendar"/></svg>Időpontfoglalás<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
-    <button type="button" class="menu-nyito" id="menu-nyito" aria-expanded="false" aria-controls="menu" aria-label="Menü megnyitása"><svg class="ik" aria-hidden="true"><use href="#i-menu"/></svg></button>
-  </div>
-</header>
+<!--#fejlec-->
 
 <main id="fo">
 
@@ -122,26 +54,23 @@
     </div>
   </section>
 
-  <!-- 2. GOOGLE-VÉLEMÉNYEK (az adatok a Trustindex-widgetből, élő frissítéssel: uj-fooldal.js) -->
+  <!-- 2. GOOGLE-VÉLEMÉNYEK: a Trustindex-widget (lapozható, sok vélemény), ugyanaz, amit a mostani főoldal beágyaz. Ha nem töltődik be, a mentett tartalék látszik (uj-fooldal.js). -->
   <section class="velemenyek tarto" aria-label="Google-vélemények">
     <div class="velemeny-doboz">
-      <div class="velemeny-fej">
-        <span class="google" aria-label="Google"><i>G</i><i>o</i><i>o</i><i>g</i><i>l</i><i>e</i></span>
-        <span class="pontszam" data-ertekeles>4.8</span>
-        <span class="csillagok" role="img" aria-label="5 csillagból 4,8"><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg></span>
-        <span class="darab"><b data-darab>4 962</b> valódi Google-vélemény</span>
-        <a class="osszes" href="/migren-shenmen-piercing-velemenyek">Összes vélemény megtekintése <svg class="ik" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-      </div>
-      <div class="velemeny-lista" data-velemenyek>
-        <article class="velemeny">
-          <header><span class="monogram" aria-hidden="true">A</span><div><b>Angéla Szemző</b><span class="csillagok kicsi" role="img" aria-label="5 csillag"><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg></span></div></header>
-          <p>A fejfajas piercing 4 hét utan hatott, honapok ota gyötört a fejfajas, most egyik naprol a masikra eltunk, remélem, nem jon vissza!</p>
-        </article>
-        <article class="velemeny">
-          <header><span class="monogram" aria-hidden="true">Z</span><div><b>Zseszti</b><span class="csillagok kicsi" role="img" aria-label="5 csillag"><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg></span></div></header>
-          <p>Migrén és shenmen piercinget szúrattam a kecskeméti helyszínen. Nagyon kedves és segítőkész volt a szakember, teljesen meg vagyok elégedve. Másnap fájt a fejem, de ez normális, azóta nincs panaszom, és az utókezeléssel is minden rendben, nem fáj egyáltalán.</p>
-        </article>
-        <a class="velemeny velemeny-tovabb" href="/migren-shenmen-piercing-velemenyek"><b>Még több vendégvélemény</b><span>Olvasd el, mit írnak a vendégeink a Google-on.</span><span class="szoveg-link">Vélemények <svg class="ik" aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
+      <div class="ti-hely" data-trustindex><script defer async src="https://cdn.trustindex.io/loader.js?daf9c4e6731895546126ce4c8b5"></script></div>
+      <div class="velemeny-tartalek" data-tartalek hidden>
+        <div class="velemeny-fej">
+          <span class="google" aria-label="Google"><i>G</i><i>o</i><i>o</i><i>g</i><i>l</i><i>e</i></span>
+          <span class="pontszam">4.8</span>
+          <span class="csillagok" role="img" aria-label="5 csillagból 4,8"><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg></span>
+          <span class="darab"><b>4 962</b> Google-vélemény</span>
+          <a class="osszes" href="/migren-shenmen-piercing-velemenyek">Összes vélemény megtekintése <svg class="ik" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        </div>
+        <div class="velemeny-lista">
+          <article class="velemeny"><header><span class="monogram" aria-hidden="true">A</span><div><b>Angéla Szemző</b></div></header><p>A fejfajas piercing 4 hét utan hatott, honapok ota gyötört a fejfajas, most egyik naprol a masikra eltunk, remélem, nem jon vissza!</p></article>
+          <article class="velemeny"><header><span class="monogram" aria-hidden="true">Z</span><div><b>Zseszti</b></div></header><p>Migrén és shenmen piercinget szúrattam a kecskeméti helyszínen. Nagyon kedves és segítőkész volt a szakember, teljesen meg vagyok elégedve. Másnap fájt a fejem, de ez normális, azóta nincs panaszom, és az utókezeléssel is minden rendben, nem fáj egyáltalán.</p></article>
+          <a class="velemeny velemeny-tovabb" href="/migren-shenmen-piercing-velemenyek"><b>Még több vendégvélemény</b><span>Olvasd el, mit írnak a vendégeink a Google-on.</span><span class="szoveg-link">Vélemények <svg class="ik" aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
+        </div>
       </div>
     </div>
   </section>
@@ -151,19 +80,17 @@
     <div class="akcio">
       <img class="akcio-kep" src="/assets/img/uj-ful-akcio.webp" width="460" height="553" alt="Fül több piercinggel" loading="lazy">
       <div class="akcio-cim">
-        <svg class="ik akcio-level" aria-hidden="true"><use href="#i-leaf"/></svg>
         <p class="akcio-fo">Őszi piercing akció!</p>
         <p class="akcio-al">A második féláron, a harmadik 5000 Ft!</p>
-      </div>
-      <div class="akcio-jobb">
-        <a class="gomb gomb-tomor" href="#arak">Érdekel az akció<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
-        <small>Szeptember 1-től visszavonásig</small>
       </div>
       <ul class="akcio-arak" aria-label="Akciós árak">
         <li><span>1 piercing</span><b>24 900 Ft</b></li>
         <li><span>2 piercing</span><b>39 900 Ft</b></li>
         <li class="legnepszerubb"><em>Legnépszerűbb</em><span>3 piercing</span><b>44 900 Ft</b></li>
       </ul>
+      <div class="akcio-jobb">
+        <a class="gomb gomb-tomor" href="#arak">Érdekel az akció<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
+      </div>
     </div>
   </section>
 
@@ -286,26 +213,26 @@
       </div>
       <div class="galeria" role="region" aria-roledescription="carousel" aria-label="Ékszereink">
         <div class="galeria-sav" id="galeria-sav" tabindex="0">
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="1 / 20"><img src="/assets/img/uj-ekszer-01.webp" width="900" height="900" alt="Ékszer 1 a 20-ból" fetchpriority="high"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="2 / 20"><img src="/assets/img/uj-ekszer-02.webp" width="900" height="900" alt="Ékszer 2 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="3 / 20"><img src="/assets/img/uj-ekszer-03.webp" width="900" height="900" alt="Ékszer 3 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="4 / 20"><img src="/assets/img/uj-ekszer-04.webp" width="900" height="900" alt="Ékszer 4 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="5 / 20"><img src="/assets/img/uj-ekszer-05.webp" width="900" height="900" alt="Ékszer 5 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="6 / 20"><img src="/assets/img/uj-ekszer-06.webp" width="900" height="900" alt="Ékszer 6 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="7 / 20"><img src="/assets/img/uj-ekszer-07.webp" width="900" height="900" alt="Ékszer 7 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="8 / 20"><img src="/assets/img/uj-ekszer-08.webp" width="900" height="900" alt="Ékszer 8 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="9 / 20"><img src="/assets/img/uj-ekszer-09.webp" width="900" height="900" alt="Ékszer 9 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="10 / 20"><img src="/assets/img/uj-ekszer-10.webp" width="900" height="900" alt="Ékszer 10 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="11 / 20"><img src="/assets/img/uj-ekszer-11.webp" width="900" height="900" alt="Ékszer 11 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="12 / 20"><img src="/assets/img/uj-ekszer-12.webp" width="900" height="900" alt="Ékszer 12 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="13 / 20"><img src="/assets/img/uj-ekszer-13.webp" width="900" height="900" alt="Ékszer 13 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="14 / 20"><img src="/assets/img/uj-ekszer-14.webp" width="900" height="900" alt="Ékszer 14 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="15 / 20"><img src="/assets/img/uj-ekszer-15.webp" width="900" height="900" alt="Ékszer 15 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="16 / 20"><img src="/assets/img/uj-ekszer-16.webp" width="900" height="900" alt="Ékszer 16 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="17 / 20"><img src="/assets/img/uj-ekszer-17.webp" width="900" height="900" alt="Ékszer 17 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="18 / 20"><img src="/assets/img/uj-ekszer-18.webp" width="900" height="900" alt="Ékszer 18 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="19 / 20"><img src="/assets/img/uj-ekszer-19.webp" width="900" height="900" alt="Ékszer 19 a 20-ból" loading="lazy"></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="20 / 20"><img src="/assets/img/uj-ekszer-20.webp" width="900" height="900" alt="Ékszer 20 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="1 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-01-nagy.webp"><img src="/assets/img/uj-ekszer-01.webp" width="900" height="900" alt="Ékszer 1 a 20-ból" fetchpriority="high"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="2 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-02-nagy.webp"><img src="/assets/img/uj-ekszer-02.webp" width="900" height="900" alt="Ékszer 2 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="3 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-03-nagy.webp"><img src="/assets/img/uj-ekszer-03.webp" width="900" height="900" alt="Ékszer 3 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="4 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-04-nagy.webp"><img src="/assets/img/uj-ekszer-04.webp" width="900" height="900" alt="Ékszer 4 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="5 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-05-nagy.webp"><img src="/assets/img/uj-ekszer-05.webp" width="900" height="900" alt="Ékszer 5 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="6 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-06-nagy.webp"><img src="/assets/img/uj-ekszer-06.webp" width="900" height="900" alt="Ékszer 6 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="7 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-07-nagy.webp"><img src="/assets/img/uj-ekszer-07.webp" width="900" height="900" alt="Ékszer 7 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="8 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-08-nagy.webp"><img src="/assets/img/uj-ekszer-08.webp" width="900" height="900" alt="Ékszer 8 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="9 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-09-nagy.webp"><img src="/assets/img/uj-ekszer-09.webp" width="900" height="900" alt="Ékszer 9 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="10 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-10-nagy.webp"><img src="/assets/img/uj-ekszer-10.webp" width="900" height="900" alt="Ékszer 10 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="11 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-11-nagy.webp"><img src="/assets/img/uj-ekszer-11.webp" width="900" height="900" alt="Ékszer 11 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="12 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-12-nagy.webp"><img src="/assets/img/uj-ekszer-12.webp" width="900" height="900" alt="Ékszer 12 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="13 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-13-nagy.webp"><img src="/assets/img/uj-ekszer-13.webp" width="900" height="900" alt="Ékszer 13 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="14 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-14-nagy.webp"><img src="/assets/img/uj-ekszer-14.webp" width="900" height="900" alt="Ékszer 14 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="15 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-15-nagy.webp"><img src="/assets/img/uj-ekszer-15.webp" width="900" height="900" alt="Ékszer 15 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="16 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-16-nagy.webp"><img src="/assets/img/uj-ekszer-16.webp" width="900" height="900" alt="Ékszer 16 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="17 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-17-nagy.webp"><img src="/assets/img/uj-ekszer-17.webp" width="900" height="900" alt="Ékszer 17 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="18 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-18-nagy.webp"><img src="/assets/img/uj-ekszer-18.webp" width="900" height="900" alt="Ékszer 18 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="19 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-19-nagy.webp"><img src="/assets/img/uj-ekszer-19.webp" width="900" height="900" alt="Ékszer 19 a 20-ból" loading="lazy"></button></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="20 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-20-nagy.webp"><img src="/assets/img/uj-ekszer-20.webp" width="900" height="900" alt="Ékszer 20 a 20-ból" loading="lazy"></button></figure>
         </div>
         <button type="button" class="galeria-gomb galeria-elozo" aria-label="Előző ékszer" disabled><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></button>
         <button type="button" class="galeria-gomb galeria-kov" aria-label="Következő ékszer"><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></button>
@@ -408,31 +335,31 @@
     </div>
   </section>
 
-  <!-- 11. HELYSZÍNEK: mind a 15 helyszín egy blokkban -->
+  <!-- 11. HELYSZÍNEK: mind a 15 helyszín egy blokkban; a csempe a foglalót nyitja az adott helyszínnel, a kitelepülések időpontjaival -->
   <section class="tarto uzletek" id="helyszinek">
     <div class="uzletek-fej">
       <div>
         <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-users"/></svg>Helyszíneink</p>
         <h2>Országszerte várunk</h2>
       </div>
-      <p>Budapesten állandó szalonunkban, vidéken 14 városban, kitelepüléseink alkalmával fogadunk, előzetes időpontfoglalással. Kattints a városra az időpontokért.</p>
+      <p>Budapesten állandó szalonunkban, vidéken 14 városban, kitelepüléseink alkalmával fogadunk, előzetes időpontfoglalással. Kattints a városra, és a foglalóban rögtön az adott helyszínt választhatod.</p>
     </div>
     <ul class="helyek">
-        <li><a href="/varosok/this-is-a-title-01"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Budapest</b><span>1137 Budapest, Újpesti rakpart 7.</span></a></li>
-        <li><a href="/varosok/4031-debrecen%2C-der%C3%A9k-utca-100%2Fb"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Debrecen</b><span>4031 Debrecen, Derék utca 100/B</span></a></li>
-        <li><a href="/varosok/bekescsaba"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Békéscsaba</b><span>5600 Békéscsaba, Wlassics sétány 5/6</span></a></li>
-        <li><a href="/varosok/7400-kaposv%C3%A1r%2C-arany-j%C3%A1nos-t%C3%A9r-5."><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Kaposvár</b><span>7400 Kaposvár, Arany János tér 5.</span></a></li>
-        <li><a href="/varosok/this-is-a-title-03"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Kecskemét</b><span>6000 Kecskemét, Vágó utca 19.</span></a></li>
-        <li><a href="/varosok/8360-keszthely%2C-fenyves-u-13.-"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Keszthely</b><span>8360 Keszthely, Fenyves u. 13.</span></a></li>
-        <li><a href="/varosok/3530-msikolc%2C-sz%C3%A9chenyi-istv%C3%A1n-utca-19.-4.-emelet%2C-2.-ajt%C3%B3.-sz%C3%A9chenyi-eg%C3%A9szs%C3%A9g-k%C3%B6zpont"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Miskolc</b><span>3530 Miskolc, Széchenyi I. u. 19. 4/2.</span></a></li>
-        <li><a href="/varosok/8800-nagykanizsa%2C-ady-endre-utca-12%2Fa"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Nagykanizsa</b><span>8800 Nagykanizsa, Ady Endre utca 12/A</span></a></li>
-        <li><a href="/varosok/4400-ny%C3%ADregyh%C3%A1za%2C-mez%C5%91-u-6.-"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Nyíregyháza</b><span>4400 Nyíregyháza, Mező u. 6.</span></a></li>
-        <li><a href="/varosok/7624-p%C3%A9cs%2C-boszork%C3%A1ny-%C3%BAt-2%2F1.-hello-artist-studi%C3%B3"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Pécs</b><span>7624 Pécs, Boszorkány út 2/1.</span></a></li>
-        <li><a href="/varosok/this-is-a-title-02"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Sopron</b><span>Sopron, Kertvárosi utca 38.</span></a></li>
-        <li><a href="/varosok/6721-szeged%2C-fels%C5%91-tisza-part-17.-(-tisza-part-fel%C5%91l-)-"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Szeged</b><span>6721 Szeged, Felső Tisza part 17.</span></a></li>
-        <li><a href="/varosok/8800-nagykanizsa%2C-f%C5%91-%C3%BAt-23.-"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Székesfehérvár</b><span>8000 Székesfehérvár, Tobak u. 10.</span></a></li>
-        <li><a href="/varosok/9700-szombathely%2C-th%C3%B6k%C3%B6ly-imre-u-16.-isis---dental"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Szombathely</b><span>9700 Szombathely, Thököly Imre u. 16.</span></a></li>
-        <li><a href="/varosok/b%C3%ADr%C3%B3-m%C3%A1rton-%C3%BAt-43-49."><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Zalaegerszeg</b><span>8900 Zalaegerszeg, Bíró Márton utca 8.</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=6029"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Budapest</b><span class="cim">1137 Budapest, Újpesti rakpart 7.</span><span class="datum">Állandó szalon · H–Szo</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=11424"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Debrecen</b><span class="cim">4031 Debrecen, Derék utca 100/B</span><span class="datum" data-mp-kitelepules="debrecen">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=13422"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Békéscsaba</b><span class="cim">5600 Békéscsaba, Wlassics sétány 5/6</span><span class="datum" data-mp-kitelepules="bekescsaba">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=14144"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Kaposvár</b><span class="cim">7400 Kaposvár, Arany János tér 5.</span><span class="datum" data-mp-kitelepules="kaposvar">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=10330"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Kecskemét</b><span class="cim">6000 Kecskemét, Vágó utca 19.</span><span class="datum" data-mp-kitelepules="kecskemet">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=10329"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Keszthely</b><span class="cim">8360 Keszthely, Fenyves u. 13.</span><span class="datum" data-mp-kitelepules="keszthely">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=10357"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Miskolc</b><span class="cim">3530 Miskolc, Széchenyi I. u. 19. 4/2.</span><span class="datum" data-mp-kitelepules="miskolc">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=12348"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Nagykanizsa</b><span class="cim">8800 Nagykanizsa, Ady Endre utca 12/A</span><span class="datum" data-mp-kitelepules="nagykanizsa">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=12353"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Nyíregyháza</b><span class="cim">4400 Nyíregyháza, Mező u. 6.</span><span class="datum" data-mp-kitelepules="nyiregyhaza">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=12236"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Pécs</b><span class="cim">7624 Pécs, Boszorkány út 2/1.</span><span class="datum" data-mp-kitelepules="pecs">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=9067"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Sopron</b><span class="cim">Sopron, Kertvárosi utca 38.</span><span class="datum" data-mp-kitelepules="sopron">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=12169"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Szeged</b><span class="cim">6721 Szeged, Felső Tisza part 17.</span><span class="datum" data-mp-kitelepules="szeged">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=14145"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Székesfehérvár</b><span class="cim">8000 Székesfehérvár, Tobak u. 10.</span><span class="datum" data-mp-kitelepules="szekesfehervar">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=14229"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Szombathely</b><span class="cim">9700 Szombathely, Thököly Imre u. 16.</span><span class="datum" data-mp-kitelepules="szombathely">Időpontok a foglalóban</span></a></li>
+        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=12237"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Zalaegerszeg</b><span class="cim">8900 Zalaegerszeg, Bíró Márton utca 8.</span><span class="datum" data-mp-kitelepules="zalaegerszeg">Időpontok a foglalóban</span></a></li>
     </ul>
   </section>
 
@@ -503,43 +430,19 @@
 
 </main>
 
-<footer class="lablec">
-  <div class="tarto">
-    <div class="lablec-racs">
-      <div class="lablec-marka">
-        <a href="/" aria-label="Medical Piercing – kezdőlap"><img src="/assets/img/uj-logo.webp" width="327" height="97" alt="Medical Piercing – Piercinget csak EÜ szakembertől!" loading="lazy"></a>
-      </div>
-      <nav aria-label="Gyorslinkek">
-        <h3>Gyorslinkek</h3>
-        <ul><li><a href="/">Főoldal</a></li><li><a href="#piercingek">Piercingek</a></li><li><a href="#arak">Árak</a></li><li><a href="/rolunk">Rólunk</a></li></ul>
-      </nav>
-      <nav aria-label="További információk">
-        <h3>További információk</h3>
-        <ul><li><a href="/migren-es-shenmen-piercing-garancia">Garancia</a></li><li><a href="/blog">Blog</a></li><li><a href="#kapcsolat">Kapcsolat</a></li><li><a href="/adatkezeles">Adatkezelési tájékoztató</a></li><li><a href="/aszf">ÁSZF</a></li><li><a href="/nyeremenyjatek">Nyereményjáték szabályzat</a></li></ul>
-      </nav>
-      <div>
-        <h3>Kövess minket</h3>
-        <ul class="kozosseg">
-          <li><a href="https://www.instagram.com/medicalpiercing.hu/" target="_blank" rel="noopener" aria-label="Instagram"><svg class="ik" aria-hidden="true"><use href="#i-ig"/></svg></a></li>
-          <li><a href="https://www.facebook.com/medicalpiercing.hu" target="_blank" rel="noopener" aria-label="Facebook"><svg class="ik" aria-hidden="true"><use href="#i-fb"/></svg></a></li>
-          <li><a href="https://www.tiktok.com/@medicalpiercing.hu" target="_blank" rel="noopener" aria-label="TikTok"><svg class="ik" aria-hidden="true"><use href="#i-tt"/></svg></a></li>
-          <li><a href="https://www.youtube.com/channel/UC7O2pR7ki13p_heEWT1nCQQ" target="_blank" rel="noopener" aria-label="YouTube"><svg class="ik" aria-hidden="true"><use href="#i-yt"/></svg></a></li>
-        </ul>
-      </div>
-      <div class="lablec-cta"><a class="gomb gomb-tomor" href="/idopontfoglalas">Időpontfoglalás<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a></div>
-    </div>
-    <div class="jogi">
-      <p>* A 93% a megkérdezett vendégeink (2 238 fő) visszajelzésein alapul; az összes szúrás száma ennél magasabb volt. A statisztika nem minősül hivatalosnak. A piercing nem minősül hivatalos gyógyhatású eszköznek, hanem közérzetjavító ékszer, amelynek hatékonysága a tapasztalatokon és visszajelzéseken alapszik.</p>
-      <p>EÜ szakember – az az egészségügyi szakképesítéssel rendelkező személy, aki a gyógyszerek ajánlásában, rendelésében, beszerzésében, értékesítésében, forgalmazásában vagy alkalmazásában, és az egészségügyi szolgáltatás nyújtásában szerepet játszik.</p>
-      <p>Piercingeink nem minősülnek gyógymódnak, akupunktúrának vagy hivatalos gyógykezelésnek, és nem helyettesítenek konzultációt vagy kezelést. Közérzetjavító ékszerekként kínáljuk őket, amelyek használatával kapcsolatos tapasztalatokat ügyfeleink szubjektív visszajelzései alapján osztjuk meg. Az oldalon közölt információk nem tekinthetők tudományosan igazolt állításoknak.</p>
-    </div>
-    <div class="szerzoi"><span>© 2026 – GFRP Kft – Medical Piercing</span><span>Piercinget csak EÜ szakembertől!</span></div>
-  </div>
-</footer>
+<!--#lablec-->
 
 <dialog class="videoablak" id="videoablak" aria-label="Videólejátszó">
   <button type="button" class="videoablak-zar" aria-label="Bezárás"><svg class="ik" aria-hidden="true"><use href="#i-close"/></svg></button>
   <div class="videoablak-keret"></div>
+</dialog>
+
+<dialog class="nagyito" id="nagyito" aria-label="Ékszer nagyban">
+  <button type="button" class="nagyito-zar" aria-label="Bezárás"><svg class="ik" aria-hidden="true"><use href="#i-close"/></svg></button>
+  <button type="button" class="galeria-gomb nagyito-elozo" aria-label="Előző ékszer"><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></button>
+  <img class="nagyito-kep" alt="" width="1400" height="1400">
+  <button type="button" class="galeria-gomb nagyito-kov" aria-label="Következő ékszer"><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></button>
+  <p class="galeria-szamlalo nagyito-szam"><span data-n>1</span> / 20</p>
 </dialog>
 
 <script src="/assets/js/uj-fooldal.js" defer></script>

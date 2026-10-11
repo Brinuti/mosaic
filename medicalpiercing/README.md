@@ -264,9 +264,13 @@ semmi nem linkeli, a keresők nem indexelhetik (`noindex,nofollow` a lapban és 
 
 Működés: a foglalási gombok (`/idopontfoglalas`, `/kontroll`) a foglalómotort nyitják, a mérés (süti-sáv, GTM, foglalásindítás) a `suti.js`-ben és a
 `mp-meres.js`-ben ugyanúgy fut, mint a többi lapon; az URL-paraméterek (fbclid, utm_*, gclid) megőrzése a `klon.js` 8. szakaszának mása
-(ugyanaz a munkamenet-kulcs). A Google-vélemények (pontszám, darabszám, két vélemény) mentett adatokkal indulnak, és élőben frissülnek a
-Trustindex-widgetből (ugyanaz, amit a mostani főoldal beágyaz); ha az nem érhető el, a mentett adat marad. A három videó a kártyára kattintva
-ablakban nyílik (youtube-nocookie / RTL beágyazás), nem a lap betöltésekor.
+(ugyanaz a munkamenet-kulcs). A Google-vélemények a Trustindex lapozható widgetje (35 vélemény, `daf9c4e6…` kulcs; a widget felhasználói
+görgetésre / érintésre tölt, programozott görgetésre nem); ha 9 mp alatt nem jelenik meg, a mentett kártyák látszanak. A három videó a
+kártyára kattintva ablakban nyílik (youtube-nocookie / RTL beágyazás), nem a lap betöltésekor. Az ékszerképre kattintva a nagyító 1400 px-es
+képet mutat (nyilak, billentyű, ujjal húzás). A helyszín-csempék a foglalómotort nyitják az adott helyszínnel
+(`https://medicalpiercing.salonic.hu/selectEmployee/?placeId=<id>`), és kiírják a kitelepülések időpontjait (a build a „MP - KITELEPÜLÉSEK”
+táblázatból írja be, a lap betöltéskor az `/api/kitelepulesek`-ből frissíti, mint a klón). A mobilmenü a fejléc alatt teljes magasságú lap.
+Az `uj-*` képek hivatkozása `?v=<tartalom-hash>` jelet kap (a `/assets/img/` 30 napig tárolódik, így az újragyártott kép azonnal látszik).
 
 **Tartalom:** a látványterv szerkezete és a valódi oldal szövegei / adatai. A látványterv (generált kép) néhány adata nem egyezett az élő oldallal, ezeket
 a valós oldal alapján cseréltük: Google 4,8 / 4 962 vélemény (élő Trustindex-adat), valódi vendégvélemények, telefon / e-mail / cím (Kecskemét: Vágó utca 19.),
