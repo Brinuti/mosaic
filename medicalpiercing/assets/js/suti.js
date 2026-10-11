@@ -32,24 +32,36 @@
 
   // ---------- koszonooldali adattisztitas (#257) ----------
   // A Salonic a koszonooldalra (/foglalas-ok*, /fulbevalo-ok*) a foglalas adataival iranyit (service, category, location,
-  // employee, bookingUrl ...), ami egeszsegugyi jellegu szolgaltatasra utalhat. Ez a szkript a <head>-ben SZINKRON fut,
-  // a gtag.js / GTM / pixelek betoltese ELOTT: az eredeti cimet csak MEMORIABA tesszuk (window.mpKoszonoEredeti - a sajat
-  // meres: lent a marMert, a motor-atadas, assets/js/mp-meres.js), majd a cimbol MINDEN parametert eltavolitunk, kiveve
-  // a GTM-triggerekhez kello `price` es `first_booking` erteket. Igy a kulso cimkek page_location-je / oldal-URL-je mar a
-  // tiszta cim. Tarolas (suti, localStorage, sessionStorage) nincs.
+  // employee, bookingUrl ...), es mar az UTVONAL (pl. /foglalas-ok-klimax) is utalhat egeszsegugyi jellegu szolgaltatasra.
+  // Ez a szkript a <head>-ben SZINKRON fut, a gtag.js / GTM / pixelek betoltese ELOTT:
+  //  1) a sajat merehez szukseges MINIMALIS adat (foglalasi kulcs, ar, uj vendeg, booking_id, Google-kattintasazonosito)
+  //     egy fagyasztott, nem felsorolhato objektumba kerul (window.mpKoszonoAdat); szolgaltatasnev, kategoria, helyszin,
+  //     munkatars, vendegazonosito NEM;
+  //  2) a cim semleges lesz: /foglalas-ok (vagy /fulbevalo-ok), parameterekbol csak a GTM-triggerekhez kello `price` es
+  //     `first_booking` marad (a 3 Ads-konverzio triggere: Page Path tartalmazza "/foglalas-ok" + first_booking + price);
+  //  3) a lap cime semleges (a build is atirja: tools/build.mjs).
+  // Tarolas (suti, localStorage, sessionStorage) nincs.
   var KOSZONO_UT = /^\/(foglalas-ok|fulbevalo-ok)/i.test(location.pathname);
   var EREDETI = location.href;
+  var eredetiQ = function () { try { return new URL(EREDETI).searchParams; } catch (e) { return new URLSearchParams(location.search); } };
+  var MERES_P = ['bookingUrl', 'price', 'first_booking', 'booking_id', 'placeId', 'employeeId', 'startDate', 'serviceId'];
+  var KATT = ['gclid', 'gbraid', 'wbraid'];
+  var koszonoMinimalis = null; // a motor-atadas cime: eredeti utvonal + csak a meres parameterei
   if (KOSZONO_UT) {
-    try { Object.defineProperty(window, 'mpKoszonoEredeti', { value: EREDETI, writable: false, enumerable: false }); } catch (e) { window.mpKoszonoEredeti = EREDETI; }
     try {
-      var KOSZONO_MARAD = ['price', 'first_booking'];
-      var eq = new URLSearchParams(location.search), tq = new URLSearchParams();
-      KOSZONO_MARAD.forEach(function (k) { if (eq.has(k)) tq.set(k, eq.get(k)); });
-      var tiszta = location.pathname + (tq.toString() ? '?' + tq.toString() : '') + location.hash;
-      if (tiszta !== location.pathname + location.search + location.hash) history.replaceState(history.state, '', tiszta);
+      var eq = eredetiQ(), p0 = {}, k0 = {}, mq = new URLSearchParams();
+      MERES_P.forEach(function (k) { if (eq.get(k)) { p0[k] = eq.get(k); mq.set(k, eq.get(k)); } });
+      KATT.forEach(function (k) { if (eq.get(k)) { k0[k] = eq.get(k); mq.set(k, eq.get(k)); } });
+      koszonoMinimalis = location.origin + location.pathname + (mq.toString() ? '?' + mq.toString() : '');
+      var semlegesUt = /^\/fulbevalo-ok/i.test(location.pathname) ? '/fulbevalo-ok' : '/foglalas-ok';
+      var adat = Object.freeze({ ut: semlegesUt, p: Object.freeze(p0), katt: Object.freeze(k0) }); // az eredeti (tipusra utalo) utvonal nem kerul bele
+      try { Object.defineProperty(window, 'mpKoszonoAdat', { value: adat, writable: false, enumerable: false, configurable: false }); } catch (e) { /* mar letezik */ }
+      var tq = new URLSearchParams();
+      ['price', 'first_booking'].forEach(function (k) { if (eq.has(k)) tq.set(k, eq.get(k)); });
+      history.replaceState(history.state, '', semlegesUt + (tq.toString() ? '?' + tq.toString() : '') + location.hash);
+      document.title = 'Sikeres foglalás | Medical Piercing';
     } catch (e) { /* regi bongeszo: marad a cim */ }
   }
-  var eredetiQ = function () { try { return new URL(EREDETI).searchParams; } catch (e) { return new URLSearchParams(location.search); } };
 
   // ---------- hozzajarulas ----------
   var SUTI = 'mp_suti', NAP = 365;
@@ -257,7 +269,9 @@
         document.documentElement.setAttribute('data-mp-motor-atvette', '1');
       }
     });
-    try { window.parent.postMessage({ tipus: 'mp-foglalas-ok', url: EREDETI }, '*'); } catch (e) { /* nincs szulo */ } // a motor az eredeti parameterekkel nyitja a fo ablakban
+    // a motornak (SAJAT tartomany, celzott origin - nem '*'): az eredeti utvonal es CSAK a meres parameterei (szolgaltatasnev,
+    // helyszin, munkatars nelkul); a motor ezzel nyitja meg a koszonooldalt a fo ablakban
+    try { window.parent.postMessage({ tipus: 'mp-foglalas-ok', url: koszonoMinimalis || location.href }, location.origin); } catch (e) { /* nincs szulo */ }
     setTimeout(function () { if (!atvette && !marMert()) meres(); }, 1500);
     return;
   }

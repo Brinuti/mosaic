@@ -23,7 +23,14 @@
   var torol = function () { try { localStorage.removeItem(KULCS); } catch (e) { /* tiltott tarolo */ } };
 
   // a koszonooldalon a suti.js mar kitisztitotta a cimet (#257): az eredeti parametereket a memoriabol olvassuk
-  var q = (function () { try { if (window.mpKoszonoEredeti) return new URL(window.mpKoszonoEredeti).searchParams; } catch (e) { /* */ } return new URLSearchParams(location.search); })();
+  var KA = window.mpKoszonoAdat || null; // a koszonooldalon a suti.js altal kimentett minimalis adat (#257)
+  var q = (function () {
+    if (!KA) return new URLSearchParams(location.search);
+    var m = new URLSearchParams();
+    for (var k in KA.p) m.set(k, KA.p[k]);
+    for (var t in KA.katt) m.set(t, KA.katt[t]);
+    return m;
+  })();
   var friss = {};
   ['gclid', 'gbraid', 'wbraid'].forEach(function (t) {
     var v = q.get(t);
@@ -44,7 +51,7 @@
     if (hirdetesiHozzajarulas()) mentes(); else torol();
   });
 
-  if (!/^\/foglalas-ok[a-z0-9-]*\/?$/i.test(location.pathname)) return;
+  if (!/^\/foglalas-ok[a-z0-9-]*\/?$/i.test(KA ? KA.ut : location.pathname)) return;
   var p = {};
   ['bookingUrl', 'price', 'first_booking', 'booking_id', 'placeId', 'employeeId', 'startDate', 'serviceId'].forEach(function (k) {
     var v = q.get(k);
@@ -56,7 +63,7 @@
   var kuld = function (potlas) {
     var kat = hirdetesiHozzajarulas() ? olvas() : null;
     if (!potlas && !vanKatt(kat)) katNelkulKuldve = true;
-    var torzs = { ut: location.pathname, p: p, kattintas: kat };
+    var torzs = { ut: KA ? KA.ut : location.pathname, p: p, kattintas: kat };
     if (potlas) torzs.potlas = true;
     try {
       fetch('/api/mp-foglalas', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify(torzs) })

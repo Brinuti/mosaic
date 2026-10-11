@@ -97,7 +97,7 @@ for (const [i, s] of KOSZONO.entries()) {
   // dokumentumon beluli navigacio, NEM ujratoltes); a teljes ujratoltest tovabbra is tiltjuk
   const tisztaQ = new URL(p.url()).searchParams;
   const eredetiQ = new URLSearchParams(PARAM);
-  ok(`${ut}: a cim kitisztitva (csak price + first_booking), nincs ujratoltes`, new URL(p.url()).pathname === ut && [...tisztaQ.keys()].sort().join(',') === ['first_booking', 'price'].filter((k) => eredetiQ.has(k)).sort().join(',') && tisztaQ.get('price') === eredetiQ.get('price') && navigaciok.length <= 2, `${navigaciok.length} navigacio, ${p.url().replace(CIM, '')}`);
+  ok(`${ut}: a cim semleges (/foglalas-ok, csak price + first_booking), nincs ujratoltes`, new URL(p.url()).pathname === '/foglalas-ok' && [...tisztaQ.keys()].sort().join(',') === ['first_booking', 'price'].filter((k) => eredetiQ.has(k)).sort().join(',') && tisztaQ.get('price') === eredetiQ.get('price') && navigaciok.length <= 2, `${navigaciok.length} navigacio, ${p.url().replace(CIM, '')}`);
   ok(`${ut}: Meta-pixel semmit nem tolt / kuld`, !db(betolt, /facebook/) && !db(ki, /facebook/) && !(await p.$('noscript img[src*="facebook"]')));
   ok(`${ut}: GTM fut`, db(betolt, /gtm\.js\?id=GTM-T9GR4JCK/) === 1, db(betolt, /gtm\.js\?id=GTM-T9GR4JCK/) + ` GTM-letoltes`);
   await ctx.close();
