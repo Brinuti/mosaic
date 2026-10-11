@@ -1,5 +1,5 @@
 // Az uj, rejtett fooldal (/uj-fooldal) viselkedese. Onallo: a Wix-klon klon.js-e nem fut ezen a lapon.
-// 1. fejlec (gorgetes-arnyek, mobilmenu, lenyilo almenuk)   2. "Osszes piercing tipus"   3. videoablak
+// 1. fejlec (gorgetes-arnyek, mobilmenu, lenyilo almenuk)   2. "Osszes piercing tipus", ekszer-galeria   3. videoablak
 // 4. Google-velemenyek: a mentett adatok elesben frissulnek a Trustindex-widgetbol (hiba eseten marad a mentett)
 // 5. URL-parameterek megorzese es a foglalasi linkek (a klon.js 8. szakaszanak mase: ugyanaz a munkamenet-kulcs)
 // A foglalasi gombok (/idopontfoglalas, /kontroll) a motor-indito.js-t hasznaljak (a build teszi a lapra), meres a suti.js-ben.
@@ -64,6 +64,31 @@
       tobb.setAttribute('aria-expanded', String(nyit));
       cimke.textContent = nyit ? 'Kevesebb típus megjelenítése ' : eredeti;
     });
+  }
+
+  // --- 2b. ekszer-galeria: helyben lapozhato (nyilak, ujjal huzas, billentyuzet), a kovetkezo kepek elore toltodnek ----------------
+  const galeria = $('#galeria-sav');
+  if (galeria) {
+    const diak = $$('.dia', galeria);
+    const elozo = $('.galeria-elozo'), kovetkezo = $('.galeria-kov'), szamlalo = $('[data-aktualis]');
+    const index = () => Math.max(0, Math.min(diak.length - 1, Math.round(galeria.scrollLeft / Math.max(1, galeria.clientWidth))));
+    const frissit = () => {
+      const i = index();
+      szamlalo.textContent = String(i + 1);
+      elozo.disabled = i === 0;
+      kovetkezo.disabled = i === diak.length - 1;
+      // a kovetkezo ket kep (es az elozo) azonnal toltodik, hogy lapozaskor mar kesz legyen
+      [i - 1, i + 1, i + 2].forEach((j) => { const im = diak[j] && $('img', diak[j]); if (im && im.loading === 'lazy') im.loading = 'eager'; });
+    };
+    const lapoz = (d) => galeria.scrollTo({ left: (index() + d) * galeria.clientWidth, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    elozo.addEventListener('click', () => lapoz(-1));
+    kovetkezo.addEventListener('click', () => lapoz(1));
+    galeria.addEventListener('scroll', () => window.requestAnimationFrame(frissit), { passive: true });
+    galeria.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); lapoz(1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); lapoz(-1); }
+    });
+    window.addEventListener('resize', frissit);
+    frissit();
   }
 
   // --- 3. videoablak ---------------------------------------------------------------------------------------

@@ -92,20 +92,20 @@
 
 <main id="fo">
 
-  <!-- 1. HŐS -->
+  <!-- 1. HŐS (mobilon: cím, kép, szöveg sorrend: a grid-areas a CSS-ben) -->
   <section class="hos">
     <div class="tarto hos-racs">
+      <h1 class="hos-cim">Migrén, Shenmen, Klímax, Fogyókúrás <em>piercing garanciával,</em> EÜ szakemberektől.</h1>
       <div class="hos-szoveg">
-        <h1>Migrén, Shenmen, Klímax, Fogyókúrás <em>piercing garanciával,</em> EÜ szakemberektől.</h1>
         <p class="hos-bevezeto">93%-ban működő közérzetjavító piercingekkel* és 20 év alapítói egészségügyi tapasztalattal várunk Budapesten az Újpesti rakpart 7. szám alatt, és vidéken is több mint 11 városban. Foglalj időpontot, a garancia miatt nincs kockázat!</p>
         <div class="gombsor">
           <a class="gomb gomb-tomor" href="/idopontfoglalas"><svg class="ik" aria-hidden="true"><use href="#i-calendar"/></svg>Időpontot foglalok<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
           <a class="gomb gomb-ures" href="#piercingek">Ismerd meg a piercingeket<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
         </div>
         <ul class="hos-linkek">
-          <li><a href="/migren-es-shenmen-piercing-garancia">Garancia és ingyenes kontroll »</a></li>
-          <li><a href="#arak">Árak és őszi akció »</a></li>
-          <li><a href="/elerhetosegek">Országos helyszíneink »</a></li>
+          <li><a href="/migren-es-shenmen-piercing-garancia">Garancia »</a></li>
+          <li><a href="#arak">Árak »</a></li>
+          <li><a href="#helyszinek">Helyszíneink »</a></li>
         </ul>
         <ul class="bizalom">
           <li><svg class="ik" aria-hidden="true"><use href="#i-shield"/></svg><span><b>EÜ</b> szakemberek</span></li>
@@ -153,17 +153,17 @@
       <div class="akcio-cim">
         <svg class="ik akcio-level" aria-hidden="true"><use href="#i-leaf"/></svg>
         <p class="akcio-fo">Őszi piercing akció!</p>
-        <p class="akcio-al">A második féláron,<br>a harmadik 5000 Ft!</p>
+        <p class="akcio-al">A második féláron, a harmadik 5000 Ft!</p>
       </div>
-      <ul class="akcio-arak">
-        <li><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg><span>1 piercing</span><b>24 900 Ft</b></li>
-        <li><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg><span>2 piercing</span><b>39 900 Ft</b></li>
-        <li><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg><span>3 piercing</span><b>44 900 Ft</b></li>
-      </ul>
       <div class="akcio-jobb">
-        <a class="gomb gomb-feher" href="#arak">Érdekel az akció<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
+        <a class="gomb gomb-tomor" href="#arak">Érdekel az akció<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
         <small>Szeptember 1-től visszavonásig</small>
       </div>
+      <ul class="akcio-arak" aria-label="Akciós árak">
+        <li><span>1 piercing</span><b>24 900 Ft</b></li>
+        <li><span>2 piercing</span><b>39 900 Ft</b></li>
+        <li class="legnepszerubb"><em>Legnépszerűbb</em><span>3 piercing</span><b>44 900 Ft</b></li>
+      </ul>
     </div>
   </section>
 
@@ -271,26 +271,47 @@
     </div>
   </section>
 
-  <!-- 7. PRÉMIUM ÉKSZEREK -->
-  <section class="tarto premium-sor">
+  <!-- 7. PRÉMIUM ÉKSZEREK + helyben lapozható galéria (az élő főoldal összes ékszere) -->
+  <section class="tarto" id="ekszerek">
     <div class="premium">
       <div class="premium-szoveg">
         <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-shield"/></svg>Prémium ékszerek</p>
         <h2>A legmagasabb minőségű ékszerek, biztonságos viselethez</h2>
-        <p>Kizárólag tanúsítvánnyal rendelkező, orvosi minőségű G23 titánium, antiallergén ékszerekkel dolgozunk, ezüst színben vagy 14 karátos arany bevonattal, amelyeket autoklávban fertőtlenítünk.</p>
-        <div class="gombsor"><a class="gomb gomb-tomor" href="/#ekszerek">Ékszereink megtekintése<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a></div>
+        <p>Kizárólag tanúsítvánnyal rendelkező G23 titánium, antiallergén ékszerekkel dolgozunk, ezüst színben vagy 14 karátos arany bevonattal, amelyeket autoklávban fertőtlenítünk. Lapozd végig őket!</p>
+        <ul class="elonyok">
+          <li><span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-shield"/></svg></span><div><b>Tanúsítvánnyal rendelkező anyag</b><span>G23 titánium, 14 karátos arany bevonat</span></div></li>
+          <li><span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-gem"/></svg></span><div><b>Bőrbarát és biztonságos</b><span>Antiallergén, autoklávban fertőtlenített</span></div></li>
+          <li><span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-sparkles"/></svg></span><div><b>Széles választék</b><span>Stílusos, modern ékszerek, nőknek és férfiaknak</span></div></li>
+        </ul>
       </div>
-      <div class="ekszer-sor" aria-hidden="true">
-        <img src="/assets/img/uj-ekszer-1.webp" width="620" height="620" alt="" loading="lazy">
-        <img src="/assets/img/uj-ekszer-2.webp" width="620" height="620" alt="" loading="lazy">
-        <img src="/assets/img/uj-ekszer-3.webp" width="620" height="620" alt="" loading="lazy">
+      <div class="galeria" role="region" aria-roledescription="carousel" aria-label="Ékszereink">
+        <div class="galeria-sav" id="galeria-sav" tabindex="0">
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="1 / 20"><img src="/assets/img/uj-ekszer-01.webp" width="900" height="900" alt="Ékszer 1 a 20-ból" fetchpriority="high"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="2 / 20"><img src="/assets/img/uj-ekszer-02.webp" width="900" height="900" alt="Ékszer 2 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="3 / 20"><img src="/assets/img/uj-ekszer-03.webp" width="900" height="900" alt="Ékszer 3 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="4 / 20"><img src="/assets/img/uj-ekszer-04.webp" width="900" height="900" alt="Ékszer 4 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="5 / 20"><img src="/assets/img/uj-ekszer-05.webp" width="900" height="900" alt="Ékszer 5 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="6 / 20"><img src="/assets/img/uj-ekszer-06.webp" width="900" height="900" alt="Ékszer 6 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="7 / 20"><img src="/assets/img/uj-ekszer-07.webp" width="900" height="900" alt="Ékszer 7 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="8 / 20"><img src="/assets/img/uj-ekszer-08.webp" width="900" height="900" alt="Ékszer 8 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="9 / 20"><img src="/assets/img/uj-ekszer-09.webp" width="900" height="900" alt="Ékszer 9 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="10 / 20"><img src="/assets/img/uj-ekszer-10.webp" width="900" height="900" alt="Ékszer 10 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="11 / 20"><img src="/assets/img/uj-ekszer-11.webp" width="900" height="900" alt="Ékszer 11 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="12 / 20"><img src="/assets/img/uj-ekszer-12.webp" width="900" height="900" alt="Ékszer 12 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="13 / 20"><img src="/assets/img/uj-ekszer-13.webp" width="900" height="900" alt="Ékszer 13 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="14 / 20"><img src="/assets/img/uj-ekszer-14.webp" width="900" height="900" alt="Ékszer 14 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="15 / 20"><img src="/assets/img/uj-ekszer-15.webp" width="900" height="900" alt="Ékszer 15 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="16 / 20"><img src="/assets/img/uj-ekszer-16.webp" width="900" height="900" alt="Ékszer 16 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="17 / 20"><img src="/assets/img/uj-ekszer-17.webp" width="900" height="900" alt="Ékszer 17 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="18 / 20"><img src="/assets/img/uj-ekszer-18.webp" width="900" height="900" alt="Ékszer 18 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="19 / 20"><img src="/assets/img/uj-ekszer-19.webp" width="900" height="900" alt="Ékszer 19 a 20-ból" loading="lazy"></figure>
+          <figure class="dia" role="group" aria-roledescription="dia" aria-label="20 / 20"><img src="/assets/img/uj-ekszer-20.webp" width="900" height="900" alt="Ékszer 20 a 20-ból" loading="lazy"></figure>
+        </div>
+        <button type="button" class="galeria-gomb galeria-elozo" aria-label="Előző ékszer" disabled><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <button type="button" class="galeria-gomb galeria-kov" aria-label="Következő ékszer"><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <p class="galeria-szamlalo" aria-live="polite"><span data-aktualis>1</span> / 20</p>
       </div>
     </div>
-    <ul class="elonyok">
-      <li><span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-shield"/></svg></span><div><b>Orvosi minőségű anyagok</b><span>G23 titánium, 14 karátos arany bevonat</span></div></li>
-      <li><span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-gem"/></svg></span><div><b>Bőrbarát és biztonságos</b><span>Antiallergén, autoklávban fertőtlenített</span></div></li>
-      <li><span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-sparkles"/></svg></span><div><b>Széles választék</b><span>Stílusos, modern ékszerek, nőknek és férfiaknak</span></div></li>
-    </ul>
   </section>
 
   <!-- 8. BIZTONSÁG + KONTROLL -->
@@ -317,7 +338,7 @@
         <p>Minden új piercing után ingyenes kontrollt biztosítunk, hogy a gyógyulás zökkenőmentes legyen. Szakértőink ellenőrzik a gyógyulást, és tanácsot adnak az ápoláshoz.</p>
         <a class="gomb gomb-kicsi" href="/kontroll">Kontroll időpontot foglalok<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
       </div>
-      <img src="/assets/img/f18724_c2238daf7ba248f6bb04398c3df1104d.webp" width="616" height="616" alt="Szakértőnk a Medical Piercing szalonban" loading="lazy">
+      <img src="/assets/img/f18724_edff433a1f464bc4b1b4c75371c773be.webp" width="1000" height="1000" alt="Szakértőnk kontroll közben a Medical Piercing szalonban" loading="lazy">
     </article>
   </section>
 
@@ -338,11 +359,11 @@
     <article class="panel garancia" id="garancia">
       <div class="panel-szoveg">
         <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-sparkles"/></svg>Garancia</p>
-        <h2>6 hónap garancia a közérzetjavító piercingekre</h2>
-        <p>Ha 6 hét után sem tapasztalsz javulást, mindössze az új ékszer áráért behelyezünk egy megerősítő piercinget. A garancia a szúrástól számított 6 hónapon belül érvényesíthető.</p>
+        <h2>Garanciát vállalunk a közérzetjavító piercingekre</h2>
+        <p>Ha 6 hét után sem tapasztalsz javulást, mindössze az új ékszer áráért behelyezünk egy megerősítő piercinget.</p>
         <a class="gomb gomb-kicsi" href="/migren-es-shenmen-piercing-garancia">Garancia részletei<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
       </div>
-      <div class="pecset" aria-hidden="true"><svg class="ik" aria-hidden="true"><use href="#i-shield"/></svg><b>6 hónap<br>garancia</b></div>
+      <div class="pecset" aria-hidden="true"><svg class="ik" aria-hidden="true"><use href="#i-shield"/></svg><b>Garancia</b></div>
     </article>
   </section>
 
@@ -350,8 +371,8 @@
   <section class="tarto arak" id="arak">
     <div class="arak-szoveg">
       <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-gem"/></svg>Árak és akciók</p>
-      <h2>Átlátható árak, valódi érték</h2>
-      <p>Nálunk nincsenek rejtett költségek. Minden piercinghez orvosi minőségű ékszert és szakszerű ellátást biztosítunk.</p>
+      <h2>Minél többet választasz, annál olcsóbb</h2>
+      <p>A piercingek erősítik egymás hatását, ezért vendégeink több mint 70%-a többet választ.</p>
       <a class="gomb gomb-kicsi" href="/arlista-garancia">Áraink megtekintése<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
     </div>
     <div class="ar-racs">
@@ -359,59 +380,60 @@
         <span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-ear"/></svg></span>
         <h3>1 piercing</h3>
         <p class="ar"><s>27 900 Ft</s>24 900 Ft</p>
-        <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Orvosi ékszer</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Állapotfelmérés, szakszerű szúrás</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>6 hónap garancia</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
+        <p class="darabar">azaz <b>24 900 Ft</b> / piercing</p>
+        <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>G23 titánium ékszer</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Állapotfelmérés, szakszerű szúrás</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Garancia</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
       </article>
       <article class="ar-kartya">
         <span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-ear"/></svg></span>
         <h3>2 piercing</h3>
         <p class="ar"><s>55 800 Ft</s>39 900 Ft</p>
-        <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Orvosi ékszerek</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Állapotfelmérés, szakszerű szúrás</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>6 hónap garancia</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
+        <p class="darabar">azaz <b>19 900 Ft</b> / piercing</p>
+        <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>G23 titánium ékszerek</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Állapotfelmérés, szakszerű szúrás</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Garancia</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
       </article>
       <article class="ar-kartya">
         <span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-ear"/></svg></span>
         <h3>3 piercing</h3>
         <p class="ar"><s>83 700 Ft</s>44 900 Ft</p>
-        <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Orvosi ékszerek</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Állapotfelmérés, szakszerű szúrás</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>6 hónap garancia</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
+        <p class="darabar">azaz <b>14 900 Ft</b> / piercing</p>
+        <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>G23 titánium ékszerek</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Állapotfelmérés, szakszerű szúrás</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Garancia</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
       </article>
       <article class="ar-kartya ar-akcio">
         <span class="akcio-cimke">Akció</span>
         <span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-ear"/></svg></span>
         <h3>4 piercing, ketten</h3>
-        <p class="ar"><s>111 600 Ft</s>79 800 Ft</p>
-        <p class="kedvezmeny">32 000 Ft kedvezmény</p>
-        <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Egy időpontra jöttök</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Orvosi ékszerek</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>6 hónap garancia</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
+        <p class="ar"><s>111 600 Ft</s>79 800 Ft</p><p class="kedvezmeny">32 000 Ft kedvezmény</p>
+        <p class="darabar">azaz <b>19 900 Ft</b> / piercing</p>
+        <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Egy időpontra jöttök</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>G23 titánium ékszerek</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Garancia</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
       </article>
     </div>
   </section>
 
-  <!-- 11. HELYSZÍNEK -->
+  <!-- 11. HELYSZÍNEK: mind a 15 helyszín egy blokkban -->
   <section class="tarto uzletek" id="helyszinek">
-    <div class="uzletek-szoveg">
-      <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-users"/></svg>Helyszíneink</p>
-      <h2>Országszerte várunk</h2>
-      <p>Budapesten állandó szalonunkban, vidéken több mint 11 városban, kitelepüléseink alkalmával fogadunk, előzetes időpontfoglalással.</p>
-      <a class="gomb gomb-kicsi" href="/elerhetosegek">Összes helyszín megtekintése<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
+    <div class="uzletek-fej">
+      <div>
+        <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-users"/></svg>Helyszíneink</p>
+        <h2>Országszerte várunk</h2>
+      </div>
+      <p>Budapesten állandó szalonunkban, vidéken 14 városban, kitelepüléseink alkalmával fogadunk, előzetes időpontfoglalással. Kattints a városra az időpontokért.</p>
     </div>
-    <div class="uzlet-racs">
-      <article class="uzlet">
-        <img src="/assets/img/f18724_957d577405cb441aa13d765873ec5d8d.webp" width="1000" height="667" alt="Budapest, állandó szalon" loading="lazy">
-        <h3>Budapest</h3>
-        <p><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg>1137 Budapest<br>Újpesti rakpart 7.</p>
-        <a class="gomb gomb-kicsi" href="/varosok/this-is-a-title-01">Részletek<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
-      </article>
-      <article class="uzlet">
-        <img src="/assets/img/f18724_241c204a44004f70a0b3216777eaa406.webp" width="640" height="368" alt="Kecskemét" loading="lazy">
-        <h3>Kecskemét</h3>
-        <p><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg>6000 Kecskemét<br>Vágó utca 19.</p>
-        <a class="gomb gomb-kicsi" href="/varosok/this-is-a-title-03">Részletek<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
-      </article>
-      <article class="uzlet">
-        <img src="/assets/img/f18724_09e2d70c151e4d648d3b91ca43f78931.webp" width="640" height="368" alt="Miskolc" loading="lazy">
-        <h3>Miskolc</h3>
-        <p><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg>3530 Miskolc<br>Széchenyi I. u. 19. 4/2.</p>
-        <a class="gomb gomb-kicsi" href="/varosok/3530-msikolc%2C-sz%C3%A9chenyi-istv%C3%A1n-utca-19.-4.-emelet%2C-2.-ajt%C3%B3.-sz%C3%A9chenyi-eg%C3%A9szs%C3%A9g-k%C3%B6zpont">Részletek<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
-      </article>
-    </div>
+    <ul class="helyek">
+        <li><a href="/varosok/this-is-a-title-01"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Budapest</b><span>1137 Budapest, Újpesti rakpart 7.</span></a></li>
+        <li><a href="/varosok/4031-debrecen%2C-der%C3%A9k-utca-100%2Fb"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Debrecen</b><span>4031 Debrecen, Derék utca 100/B</span></a></li>
+        <li><a href="/varosok/bekescsaba"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Békéscsaba</b><span>5600 Békéscsaba, Wlassics sétány 5/6</span></a></li>
+        <li><a href="/varosok/7400-kaposv%C3%A1r%2C-arany-j%C3%A1nos-t%C3%A9r-5."><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Kaposvár</b><span>7400 Kaposvár, Arany János tér 5.</span></a></li>
+        <li><a href="/varosok/this-is-a-title-03"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Kecskemét</b><span>6000 Kecskemét, Vágó utca 19.</span></a></li>
+        <li><a href="/varosok/8360-keszthely%2C-fenyves-u-13.-"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Keszthely</b><span>8360 Keszthely, Fenyves u. 13.</span></a></li>
+        <li><a href="/varosok/3530-msikolc%2C-sz%C3%A9chenyi-istv%C3%A1n-utca-19.-4.-emelet%2C-2.-ajt%C3%B3.-sz%C3%A9chenyi-eg%C3%A9szs%C3%A9g-k%C3%B6zpont"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Miskolc</b><span>3530 Miskolc, Széchenyi I. u. 19. 4/2.</span></a></li>
+        <li><a href="/varosok/8800-nagykanizsa%2C-ady-endre-utca-12%2Fa"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Nagykanizsa</b><span>8800 Nagykanizsa, Ady Endre utca 12/A</span></a></li>
+        <li><a href="/varosok/4400-ny%C3%ADregyh%C3%A1za%2C-mez%C5%91-u-6.-"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Nyíregyháza</b><span>4400 Nyíregyháza, Mező u. 6.</span></a></li>
+        <li><a href="/varosok/7624-p%C3%A9cs%2C-boszork%C3%A1ny-%C3%BAt-2%2F1.-hello-artist-studi%C3%B3"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Pécs</b><span>7624 Pécs, Boszorkány út 2/1.</span></a></li>
+        <li><a href="/varosok/this-is-a-title-02"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Sopron</b><span>Sopron, Kertvárosi utca 38.</span></a></li>
+        <li><a href="/varosok/6721-szeged%2C-fels%C5%91-tisza-part-17.-(-tisza-part-fel%C5%91l-)-"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Szeged</b><span>6721 Szeged, Felső Tisza part 17.</span></a></li>
+        <li><a href="/varosok/8800-nagykanizsa%2C-f%C5%91-%C3%BAt-23.-"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Székesfehérvár</b><span>8000 Székesfehérvár, Tobak u. 10.</span></a></li>
+        <li><a href="/varosok/9700-szombathely%2C-th%C3%B6k%C3%B6ly-imre-u-16.-isis---dental"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Szombathely</b><span>9700 Szombathely, Thököly Imre u. 16.</span></a></li>
+        <li><a href="/varosok/b%C3%ADr%C3%B3-m%C3%A1rton-%C3%BAt-43-49."><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Zalaegerszeg</b><span>8900 Zalaegerszeg, Bíró Márton utca 8.</span></a></li>
+    </ul>
   </section>
 
   <!-- 12. MÉDIA + CSAPAT -->

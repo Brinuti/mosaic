@@ -4,10 +4,10 @@
     python3 tools/uj-fooldal-kepek.py
 
 Kimenet (mind WebP, assets/img/uj-*.webp):
-  uj-logo               a logo atlatszo hatterrel, melyebb rozsaszinnel (a latvanyterv szerint); uj-logo-rtl/-hirtv/-divany: a media-logok
+  uj-logo               a logo atlatszo hatterrel, az EREDETI rozsaszin megtartva; uj-logo-rtl/-hirtv/-divany: a media-logok
                         a hatterszin eltavolitva, az eredeti szinek megtartva
   uj-orvos              Dr. Schmolcz Gergely az "Orvosi ajanlas" kepbol (a kep az eles fooldalon is szerepel)
-  uj-ekszer-1..3        harom arany ekszer (2000 px-es ekszer-galeriabol)
+  uj-ekszer-01..20      az eles fooldal osszes ekszerkepe (galeria), 900 px
   uj-ful-akcio          a banner fulfotoja (migren-piercing-budapest-2.jpg belso kepe)
   uj-pont-<tipus>       a fulabrak (migren, shenmen, slim): az eredeti 100 px-es abra helyett 332 px-es, a pont
                         helyzete az eredeti abrarol leolvasva (a tobbi tipus eredeti 332 px-es abrat hasznal)
@@ -40,10 +40,15 @@ hatter = im.getpixel((470, 100))                      # a kartya egyszinu hatter
 ImageDraw.Draw(im).rectangle((440, 60, 633, 452), fill=hatter)  # az idezet szovegenek vege (a fej es a vall nem erinti)
 save(im.crop((455, 70, 940, 788)), 'uj-orvos', 88)
 
-# --- ekszerek: szivecske, viragos, koronas gyuru (arany); a hatter vilagos, kozepre vagva ---
-for i, stem in enumerate(['f18724_7df14018a68f40f59e94c3ac9b589fec', 'f18724_1527fe82090042d1bfcd459ae3033a92', 'f18724_4d23d5d2062b416389c5b373870d9b53'], 1):
-    e = Image.open(src(stem)).convert('RGB')
-    save(e.resize((620, 620), Image.LANCZOS), f'uj-ekszer-{i}', 84)
+# --- ekszer-galeria: az eles fooldal osszes ekszerkepe (a #ekszerek diavetites), ugyanabban a sorrendben, 900 px-re ---
+EKSZEREK = ['8e809c43b371416687a1171a078ec8e6', '47eea349736f4816bc3ac9b550b0eecb', '7df14018a68f40f59e94c3ac9b589fec', '2956dc964b364977b8485e0f60a021a3',
+            '1e39028aa6d84dc8b29b0e3a81827a02', 'aa92551be8d147be90e447d7b85b5443', 'cb07a215b44a4b93b552fa720905fb38', '6890cac783e64d1d8a0dd0b136241e17',
+            '4d23d5d2062b416389c5b373870d9b53', '6e1c82b47c874a3aa19dccc5a267fd31', '12fdd754d3ed418680f8a55d353b3709', '2a1d7dc506ac4584b17a7f49526c6013',
+            '4c8dffa8e6e2414187419059fba58310', '1527fe82090042d1bfcd459ae3033a92', 'e7d1b0c28b4b43ce901638db1305b4d1', '742bfdb16ea84dacbe694bf4afca3fc1',
+            '11878ef0052f403d8899b5dd82e54544', 'ed2c22223c7746eba9177adc9a03f3b8', '23d78ad8933146a4824bec6424b7d572', '2944b589cece4fe88ca9a1edd8f30b8a']
+for i, h in enumerate(EKSZEREK, 1):
+    e = Image.open(src('f18724_' + h)).convert('RGB')
+    save(e.resize((900, 900), Image.LANCZOS), f'uj-ekszer-{i:02d}', 80)
 
 # --- banner: a keretezett fulfoto belso resze (a feher keretet levagjuk), fuggoleges kivagas a fulre ---
 f = Image.open(src('f18724_845225eefb1e498daa49764947208c70')).convert('RGB')
@@ -140,7 +145,7 @@ def hatter_nelkul(forras, nev, szin=None, ker=4):
     kep = Image.fromarray(rgba, 'RGBA').crop((max(0, xs.min() - ker), max(0, ys.min() - ker), min(im.width, xs.max() + 1 + ker), min(im.height, ys.max() + 1 + ker)))
     save(kep, nev, 92)
 
-hatter_nelkul(src('f18724_5d639907d27148e1a1e80625fce81d7a'), 'uj-logo', szin=(176, 82, 95))
+hatter_nelkul(src('f18724_5d639907d27148e1a1e80625fce81d7a'), 'uj-logo')
 hatter_nelkul(src('f18724_9a3801c9a2a4432691acf8bb77cd7ae7'), 'uj-logo-rtl')
 hatter_nelkul(src('f18724_02c665dc12644013b715f4c02873cbae'), 'uj-logo-hirtv')
 hatter_nelkul(src('f18724_812ebad008414108bbae5e673867508e'), 'uj-logo-divany')

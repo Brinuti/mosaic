@@ -31,6 +31,15 @@ ok('forras: nincs canonical', !/rel="canonical"/.test(forras));
 ok('forras: pontosan egy h1', (forras.match(/<h1[\s>]/g) || []).length === 1);
 ok('forras: minden kepnek van alt attributuma', ![...forras.matchAll(/<img\b[^>]*>/g)].some((m) => !/\salt="/.test(m[0])));
 ok('forras: a sitemapben nincs', !fs.readFileSync(path.join(ROOT, 'tools/sitemap-oldalak.txt'), 'utf8').includes('uj-fooldal') && !fs.readFileSync(path.join(ROOT, 'tools/oldalak.txt'), 'utf8').includes('uj-fooldal'));
+const szoveg = forras.replace(/<[^>]+>/g, ' ');
+ok('forras: sehol nincs "6 honap" (a tulajdonos kerese: csak "garancia")', !/6\s*hónap/i.test(szoveg));
+ok('forras: nincs "orvosi ekszer" (G23 titanium ekszer)', !/orvosi\s+ékszer/i.test(szoveg));
+const helyek = [...forras.matchAll(/<ul class="helyek">([\s\S]*?)<\/ul>/g)].flatMap((m) => [...m[1].matchAll(/<b>([^<]+)<\/b>/g)].map((x) => x[1]));
+const motorVarosok = [...fs.readFileSync(path.join(ROOT, 'assets/js/motor/salonic-adapter.js'), 'utf8').matchAll(/varos: '([^']+)'/g)].map((m) => m[1]);
+ok(`forras: mind a ${motorVarosok.length} foglalasi helyszin kint van a helyszin-blokkban`, helyek.length === motorVarosok.length && motorVarosok.every((v) => helyek.includes(v)), helyek.length + ' db');
+ok('forras: az ekszer-galeria 20 diaja', (forras.match(/class="dia"/g) || []).length === 20);
+const css = fs.readFileSync(path.join(ROOT, 'assets/css/uj-fooldal.css'), 'utf8');
+ok('stilus: az eredeti paletta (#d7aba8 gomb, #454659 szoveg), nincs burgundi', /--rose:#d7aba8/.test(css) && /--slate:#454659/.test(css) && !/#b0525f|#a94f5c|#b95a68|#9a4553|#7c3d49|#93505d|#a85b68|#9f4a57/i.test(css));
 const hrefek = [...new Set([...forras.matchAll(/<a\b[^>]*\shref="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&')))];
 const belso = hrefek.filter((h) => h.startsWith('/') && !h.startsWith('/assets/'));
 const rossz = [];
@@ -135,6 +144,42 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
     await p.evaluate(() => scrollTo(0, 0));
   }
   await p.keyboard.press('Escape');
+
+  // ---------- 5b. hos sorrend, gomb-szin, galeria ----------
+  const hos = await p.evaluate(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(); const h = r('.hos-cim'), k = r('.hos-kep'), t = r('.hos-bevezeto'); return { h: [h.left, h.top], k: [k.left, k.top], t: [t.left, t.top] }; });
+  ok(`${nezet}: hos sorrend (${mobil ? 'cim, kep, szoveg egymas alatt' : 'cim+szoveg balra, kep jobbra'})`, mobil ? hos.h[1] < hos.k[1] && hos.k[1] < hos.t[1] : hos.k[0] > hos.h[0] + 300 && hos.t[1] > hos.h[1], JSON.stringify(hos));
+  const gomb = await p.$eval('.hos .gomb-tomor', (g) => ({ bg: getComputedStyle(g).backgroundColor, szin: getComputedStyle(g).color, kerek: getComputedStyle(g).borderTopLeftRadius }));
+  ok(`${nezet}: gomb = az eredeti oldal gombja (#d7aba8, feher, pill)`, gomb.bg === 'rgb(215, 171, 168)' && gomb.szin === 'rgb(255, 255, 255)' && parseFloat(gomb.kerek) >= 20, JSON.stringify(gomb));
+  await p.locator('#galeria-sav').scrollIntoViewIfNeeded();
+  const gal0 = await p.evaluate(() => ({ db: document.querySelectorAll('.dia').length, szam: document.querySelector('[data-aktualis]').textContent, elozoTiltva: document.querySelector('.galeria-elozo').disabled, w: document.querySelector('#galeria-sav').clientWidth, magassag: document.querySelector('.galeria').getBoundingClientRect().height }));
+  ok(`${nezet}: galeria: 20 dia, 1. dian all, az elozo tiltva, nagy (${Math.round(gal0.w)} px)`, gal0.db === 20 && gal0.szam === '1' && gal0.elozoTiltva && gal0.w >= (mobil ? 300 : 500), JSON.stringify(gal0));
+  await p.click('.galeria-kov');
+  await p.waitForFunction(() => document.querySelector('[data-aktualis]').textContent === '2', null, { timeout: 4000 }).catch(() => {});
+  const gal1 = await p.evaluate(() => ({ szam: document.querySelector('[data-aktualis]').textContent, elozoTiltva: document.querySelector('.galeria-elozo').disabled }));
+  ok(`${nezet}: galeria: a nyil helyben lapoz (2 / 20), az elozo feloldva`, gal1.szam === '2' && !gal1.elozoTiltva, JSON.stringify(gal1));
+  await p.focus('#galeria-sav'); await p.keyboard.press('ArrowRight');
+  await p.waitForFunction(() => document.querySelector('[data-aktualis]').textContent === '3', null, { timeout: 4000 }).catch(() => {});
+  ok(`${nezet}: galeria: a jobbra nyil billentyu lapoz (3 / 20)`, (await p.textContent('[data-aktualis]')) === '3');
+  await p.evaluate(() => { const g = document.querySelector('#galeria-sav'); g.style.scrollBehavior = 'auto'; g.scrollLeft = g.scrollWidth; });
+  await p.waitForFunction(() => document.querySelector('[data-aktualis]').textContent === '20', null, { timeout: 4000 }).catch(() => {});
+  const gal2 = await p.evaluate(() => ({ szam: document.querySelector('[data-aktualis]').textContent, kovTiltva: document.querySelector('.galeria-kov').disabled }));
+  ok(`${nezet}: galeria: a vegen 20 / 20, a kovetkezo tiltva`, gal2.szam === '20' && gal2.kovTiltva, JSON.stringify(gal2));
+  await p.evaluate(() => { document.querySelector('#galeria-sav').scrollLeft = 0; });
+
+  if (mobil) {
+    const m = await p.evaluate(() => {
+      const kozep = (e) => { const r = e.getBoundingClientRect(); return r.left + r.width / 2; };
+      const panel = document.querySelector('.garancia'), gombEl = panel.querySelector('.gomb'), cimEl = panel.querySelector('h2');
+      const orvos = document.querySelector('.orvos-kep'), kep = orvos.querySelector('img');
+      const lablec = document.querySelector('.lablec').getBoundingClientRect();
+      return { panelKozep: kozep(panel), gombKozep: kozep(gombEl), cimKozep: kozep(cimEl), orvosSzeles: orvos.getBoundingClientRect().width, kepSzeles: kep.getBoundingClientRect().width, helyekMagassag: document.querySelector('.helyek').getBoundingClientRect().height, lablecMagassag: lablec.height, arGomb: kozep(document.querySelector('.arak-szoveg .gomb')), arPanel: kozep(document.querySelector('.arak')) };
+    });
+    ok('mobil: a garancia doboz gombja es cime kozepen', Math.abs(m.gombKozep - m.panelKozep) < 4 && Math.abs(m.cimKozep - m.panelKozep) < 4, JSON.stringify(m));
+    ok('mobil: az arak gombja kozepen', Math.abs(m.arGomb - m.arPanel) < 4);
+    ok('mobil: az orvosi foto teljes szelessegu', m.kepSzeles >= m.orvosSzeles - 1, `${m.kepSzeles}/${m.orvosSzeles}`);
+    ok('mobil: mind a 15 helyszin kompakt (< 700 px)', m.helyekMagassag < 700, Math.round(m.helyekMagassag) + ' px');
+    ok('mobil: a lablec kompakt (< 650 px)', m.lablecMagassag < 650, Math.round(m.lablecMagassag) + ' px');
+  }
 
   // ---------- 6. osszes piercing ----------
   const elotte = await p.$$eval('.kartya', (k) => k.filter((x) => x.offsetParent !== null).length);

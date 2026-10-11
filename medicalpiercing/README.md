@@ -274,6 +274,16 @@ az orvosi ajánlás eredeti szövege (Dr. Schmolcz Gergely, „szakmai mentor”
 élő oldalról. A „szakorvostól”, az „ingyenes konzultáció”, a „7 szalon” és a Nők Lapja logó nincs az élő oldalon, ezért nem kerültek a lapra.
 A jogi láb (EÜ szakember, 93%-os statisztika, „nem gyógymód”) az élő oldalról átvéve.
 
+**Szabályok az oldalhoz (a tulajdonos kérései, 2026-10-11):**
+- **Színek:** az eredeti oldal palettája, nem a látványterv bordója: gomb `#d7aba8` (fehér felirat, pill, lágy árnyék), szöveg `#454659`, háttér `#f6ebe4`,
+  sötét sáv `#454659`; a logó az eredeti rózsaszín (`tools/uj-fooldal-kepek.py`, csak a fehér háttér van átlátszóra cserélve).
+- **Szövegek:** „garancia” (nem „6 hónap garancia”, a 6 hónap sehol nem szerepel), „G23 titánium ékszer” (nem „orvosi ékszer”); az árak szekció üzenete:
+  „Minél többet választasz, annál olcsóbb” (darabár: 24 900 / 19 900 / 14 900 Ft), „vendégeink több mint 70%-a többet választ”.
+- **Ékszerek:** a fő oldal összes ékszerképe (20) helyben lapozható galériában (nyilak, ujjal húzás, billentyűzet), a lehető legnagyobb méretben.
+- **Helyszínek:** mind a 15 helyszín egy blokkban, kompakt csempékben (a városra kattintva a városoldal); a teszt egyezteti a foglalómotor helyszínlistájával.
+- **Mobil:** a hősben cím, kép, szöveg sorrend; a dobozokon belül minden (szöveg, lista, gomb) középre igazítva; az orvosi fotó teljes szélességben; kisebb lábléc.
+- **Ingyenes kontroll fotó:** Nagy-Markó Fanni (a főoldal csapatrészéből, `fanni4.jpg`).
+
 **Élesítés főoldalként** (csak a tulajdonos kérésére): a `klon/index.html` helyett ennek a lapnak a tartalmát kell a `/` címen adni (a `dist/_a|_m/fooldal.html`
 helyére), a `<meta name="robots">` és a REJTETT_LAPOK bejegyzés eltávolításával, `canonical` hozzáadásával, és a `fooldal-b` / Convertize-kísérlet
 ellenőrzésével. **Visszavonás:** a lap törlése a `tools/build.mjs`-ből (egy sor) és a `REJTETT_LAPOK`-ból.
