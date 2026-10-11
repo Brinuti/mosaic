@@ -153,3 +153,11 @@ A munkához készült mentések (`/tmp/*_backup.json`, `member_meta_backup.json`
 - MINDEN frissites utan a WP (W3 Total Cache) es a Cloudflare gyorsitotarat is uriteni kell, kulonben a latogato regi oldalt lat. Ok: a snippet-/menu-valtozas nem uriti a W3TC oldalcache-t, a Cloudflare edge TTL 4 ora.
 - Automatizalva: snippet "gyt-cache-auto-urites" (id 50) - snippet, menu, ujrahasznosithato blokk, Customizer valtozaskor teljes W3TC oldalcache-urites. A Cloudflare-t kulon: cloudflare_mcp CLOUDFLARE_MCP_EXECUTE, POST /zones/df72ed1c7e918fd07ae8dd7a1dec6764/purge_cache {purge_everything:true}.
 - Ellenorzes frissites utan: a TISZTA URL-en (query nelkul!) kell nezni a valtozast, mert a ?r=... cache-megkerulo keres nem mutatja a vendegek altal latott oldalt.
+
+## 21. Core Web Vitals - tovabbi lepesek (2026-10-11)
+- Meres (cloud bongeszo): a fooldal LCP-eleme a hero kep (img.wp-image-31401, header-2026.jpg); a HTML brotli ~85 KB, ebbol ~283 KB (tomoritetlen) beagyazott CSS (Autoptimize inline).
+- Hero WebP: snippet "gyt-hero-webp (LCP kep)" (id 51): hero-480/768/1000.webp (22/40/67 KB, a JPG 42/105/150 KB volt); a preload es az img src/srcset/sizes kimeneti pufferben csere; telefon (66vw*DPR3) a 768w-t valasztja: ~40 KB a regi 105 KB helyett.
+- Cloudflare: Browser Cache TTL 4 ora -> 1 ev (statikus fajlok), Early Hints be. (PSI "Hatekony gyorsitotar-elettartam 385 KiB" ezzel megszunik.)
+- Nem megoldott/alacsony prioritas: "nem hasznalt CSS 39 KiB" (a beagyazott CSS resze), YouTube indexkep (img.youtube.com maxresdefault, lazy, hajtas alatt), a 283 KB beagyazott CSS szetszedese kritikus/nem kritikus reszre (Autoptimize critical CSS kellene).
+- A mezo-adat (CrUX) tovabbra is 28 napos: az eredmeny 2-4 het alatt latszik. Opcio: sajat valos-latogato mérés (web-vitals) - meg nincs bekotve.
+- Almenuk: a Szolgaltatasok almenu ugyanolyan tomor (13 px / 18 px), mint a Panaszok; mobilon a kereso a menu tetejen.
