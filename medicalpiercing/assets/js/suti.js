@@ -136,17 +136,19 @@
         '<button type="button" class="mp-link" data-mp="mentes">Kiválasztottak mentése</button>' +
       '</div>' +
     '</div>';
-  // mobilon a Wix gyorsmenu-savja (QUICK_ACTION_BAR) folott marad; a felso fejlec "Idopontok" gombjat nem takarja
+  // A sav MINDIG az also szelen all (korabban a Wix gyorsmenu-gombja fole emelve, mobilon a tartalom kozepen lebegett, mikozben a
+  // gomb gorgetesig nem is latszik). A kerek gyorsmenu-gomb (QUICK_ACTION_BAR, jobbra lent) csuszik a sav FOLE, amig a vekony sav
+  // latszik; a sav elrejtesekor / a beallitas-nezetben visszaall. A felso fejlec "Idopontok" gombjat a sav nem takarja.
   var helyez = function () {
-    // (a gyorsmenu-sav gorgeteskor csuszik be: akkor is helyet hagyunk neki, ha eppen nem latszik)
     var vekony = sav.getAttribute('data-nezet') !== 'beall';
-    var q = document.getElementById('QUICK_ACTION_BAR'), also = vekony ? 0 : 8;
-    if (q && q.offsetHeight) {
-      var r = q.getBoundingClientRect();
-      var res = r.top < innerHeight && r.bottom <= innerHeight + 1 ? Math.max(0, innerHeight - r.bottom) : 16;
-      also = q.offsetHeight + res + (vekony ? 0 : 8);
-    }
-    sav.style.bottom = also + 'px';
+    sav.style.bottom = vekony ? '0px' : '8px';
+    var q = document.getElementById('QUICK_ACTION_BAR');
+    if (!q) return;
+    if (vekony && sav.style.display !== 'none') {
+      // az eredeti (Wix) also tavolsag, a mi felulirasunk elott olvasva
+      if (q.getAttribute('data-mp-bottom') === null) q.setAttribute('data-mp-bottom', String(parseFloat(getComputedStyle(q).bottom) || 0));
+      q.style.setProperty('bottom', (parseFloat(q.getAttribute('data-mp-bottom')) + sav.offsetHeight) + 'px', 'important');
+    } else q.style.removeProperty('bottom');
   };
   var mutat = function (nezet) {
     if (!sav) return;
@@ -162,7 +164,11 @@
     helyez();
     setTimeout(function () { if (sav.style.display !== 'none') helyez(); }, 1200);
   };
-  var elrejt = function () { if (sav) sav.style.display = 'none'; };
+  var elrejt = function () {
+    if (sav) sav.style.display = 'none';
+    var q = document.getElementById('QUICK_ACTION_BAR');
+    if (q) q.style.removeProperty('bottom'); // a gyorsmenu-gomb visszaall az eredeti helyere
+  };
   var lableclink = function () {
     // "Suti beallitasok" a lablec "Adatkezelesi tajekoztato" linkje utan: itt lehet a dontest modositani / visszavonni
     if (document.getElementById('mp-cc-lablec')) return;

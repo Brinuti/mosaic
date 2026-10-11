@@ -147,7 +147,9 @@ for (const [honnan, hova] of [['/kontroll-ok', '/kontroll-xyz'], ['/garancia-ok'
     };
     await ctx.route((u) => !u.toString().startsWith(cim), elkap);
     const p = await ctx.newPage();
-    await p.goto(cim + ut, { waitUntil: 'load' });
+    // ?motor=0: a regi (kozvetlen Salonic-) ut, hogy a foglalasi link kattintasanak merese onmagaban vizsgalhato legyen (a 100%-os
+    // kapcsolo mellett a link a motort nyitna, ami eltakarna a tovabbi kattintasokat); a motor sajat merese: motor-teszt.mjs
+    await p.goto(cim + ut + (ut.includes('?') ? '&' : '?') + 'motor=0', { waitUntil: 'load' });
     for (let i = 0; i < 40 && !(await p.evaluate(() => !!(window.ttq && window.ttq.track && window.ttq._i))); i++) await p.waitForTimeout(250);
     await p.waitForTimeout(1500);
     return { ctx, p, ki };

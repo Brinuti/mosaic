@@ -113,6 +113,17 @@ Párja a Drive MP-mappájában van („MP-ATADAS-2026-10-11.md”), ugyanezzel a
   - Az A76-fiókról (téves beállítás, azonnal visszaállítva) a mérési Claude jelezte, hogy ellenőrizte, nem tölti be; ezt mi nem mértük újra.
 - **Éles ellenőrzés a 100%-ra (2026-10-11, ~14:20–14:30 UTC):** `BASE=https://www.medicalpiercing.hu node tools/motor-helyszin-teszt.mjs`: 15 helyszín × asztali és mobil, 270 OK, 0 HIBA; és a 10. próbafoglalás (lásd lent).
 
+**A felület (2026-10-11 este, Feri kérésére; a mobil az első):**
+- 1. lépés: mind a 15 helyszín egy képernyőn (mobilon 2 oszlop, asztalon 3), „Kitelepülés” / „Állandó rendelő” felirat nélkül.
+- „Kezelés” helyett mindenhol „Szolgáltatás” (lépésjelző, listák, üzenetek).
+- 2. lépés: tömör kártyák (név balra, ár és időtartam jobbra); asztalon 2 oszlop, így mind a 18 szolgáltatás elfér egy képernyőn (1440×900 és 1920×1080 igazolva); mobilon egy oszlop, görgetéssel.
+- 3. lépés: az összegző dobozban a helyszín és az ár egy sorban, alatta a szolgáltatás neve egy sorban (a betűméret a képernyő szélességéhez igazodik; mind a 18 név ellenőrizve 320 px-es szélességtől).
+- Fejléc: az „Időpontfoglalás” cím középen; a „Vissza” és a bezárás gomb 44 px-es; a lépésjelző sávjai is legalább 44 px magasak, a teljes területükkel kattinthatók.
+- **Hibajavítás:** a „Vissza” gomb a szolgáltatás-lépésről a helyszínekhez nem jutott el (a megmaradt helyszín miatt a motor azonnal visszaugrott a szolgáltatásokhoz); most ugyanúgy működik, mint a lépésjelző (a további választásokat eldobja).
+- Az adatlap-lépés (a beágyazott Salonic-űrlap) változatlan.
+- **Süti-sáv mobilon (`assets/js/suti.js`, `helyez()`):** a sáv mindig az alsó szélen áll. Korábban a Wix kerek gyorsmenü-gombja (`#QUICK_ACTION_BAR`, jobbra lent, görgetésig nem látszik) fölé emelték 66 px-szel, ezért a tartalom közepén lebegett (valódi telefonon is, nem csak emulációban). Most a gyorsmenü-gomb csúszik a sáv fölé, amíg a vékony sáv látszik; elrejtéskor / a beállítások nézetben visszaáll.
+- **Következő kör (Feri terve):** kis ikonok a helyszínekhez (mini térkép, a város kijelölve) és a szolgáltatásokhoz (az adott piercingről). A kész, egy képernyőre férő listákról készült képernyőképből, AI-val, egyben generálva, nem 40 külön prompttal.
+
 **Folyamat és fájlok:**
 - `assets/js/motor-indito.js`: minden lapon, kicsi. A `medicalpiercing.salonic.hu` foglalási linkekre kattintva dönt (kapcsoló / `?motor=`), és ekkor tölti be a motort.
 - `assets/js/motor/motor.js`: a felület (Shadow DOM, mobilon teljes képernyő). Lépések: helyszín → kezelés (a típusoldalról érkezőnek az ajánlott elöl) → nap, idő, szakember → a Salonic adatlapja keretben (`/guestData/?…&back=mb_…`, a gclid/fbclid/ttclid/utm_* továbbvitelével).
@@ -156,7 +167,9 @@ Párja a Drive MP-mappájában van („MP-ATADAS-2026-10-11.md”), ugyanezzel a
   - `?motor=0`, a régi beágyazás;
   - mobil elrendezés, nézetszélesség.
 - `node tools/motor-helyszin-teszt.mjs`: 15 helyszín × asztali és mobil. Ellenőrzi a kezeléseket és árakat a leképezéshez képest, az időpontot, a szakembert, az adatlapcímet és az elrendezést. `BASE=`-szel élesben vagy előnézeten is fut.
-- `tools/motor-proba/`: `motor-fust.mjs` (előnézet/éles füstpróba), `adatlap-meres.mjs`, `proba-futtat.sh` (valódi próbafoglalás + azonnali lemondás; `PROBA_EMAIL=<olvasható cím>`).
+- `node tools/motor-formazas-teszt.mjs [--kep <mappa>]`: a motor formázása 6 eszközön (4 telefon, 2 asztali): egy képernyőn a helyszínek, nincs felirat, a cím középen, „Szolgáltatás”, a szolgáltatásnevek egy sorban, a „Vissza” gomb és a lépésjelző működik, a gombok legalább 44 px-esek. `BASE=`-szel előnézeten és élesben is fut.
+- A `motor-teszt` és a `motor-fust` a kapcsoló (`motor-kapcsolo.json`) szerint ellenőriz (0 = régi út, 100 = a motor nyílik; `motor-fust`: `ARANY=` felülírja). A `motor-teszt` elfogadott süti-sávval fut (nélküle a GA4 `foglalas_inditasa` a Consent Mode miatt nem indul). A `sav-teszt` a foglalási kattintás után bezárja a megnyílt motort, a `meres-teszt` `?motor=0`-val a régi úton méri a kattintást (100%-os kapcsolónál a link a motort nyitná, és eltakarná a további kattintásokat). A `sav-teszt --mobil` azt is ellenőrzi, hogy a sáv az alsó szélen áll.
+- `tools/motor-proba/`: `motor-fust.mjs` (előnézet/éles füstpróba), `adatlap-meres.mjs`, `proba-futtat.sh` (valódi próbafoglalás + azonnali lemondás; `PROBA_EMAIL=<olvasható cím> PROBA_TELEFON=<Feri tesztszáma>`).
 - A weboldal tesztjei: `funkcio-teszt`, `meres-teszt`, `elteres` (Wix-összevetés), `mp-meres-pw`, `test-mp-meres`, `test-mp-feltoltes`.
 
 **Valódi próbafoglalások (QA-2), mind lemondva:**
@@ -194,6 +207,8 @@ Párja a Drive MP-mappájában van („MP-ATADAS-2026-10-11.md”), ugyanezzel a
 5. **Döntésre vár (mérés):** a #242 `mp-meres.js` a divat fülpiercing (`/fulbevalo-ok*`) foglalásait nem küldi. Ha kell, a mérési munkamenet bővítse.
 6. **A tulajdonos teendői (nem a Claude-éi):**
    - a Wix-előfizetés lemondása néhány nap hibátlan működés után.
+
+7. **Ikonok (Feri terve, következő kör):** helyszínekhez mini térkép-ikon (a város kijelölve), szolgáltatásokhoz az adott piercingről szóló ikon. A listák már egy képernyőre férnek; a képernyőképekből egyben, AI-val generáljuk (nem 40 külön prompt), a képfájlok a repóba kerülnek (WebP, `assets/`), a motor kártyái pedig kis kép-hellyel bővülnek. Az OpenAI-kulcsot Feri adta a chatben: a repóba, a Drive-ra és a Cloudflare-be NEM kerül (a képeket egyszer generáljuk, az oldalnak nem kell kulcs); a generálás végén Feri forgassa ki a kulcsot.
 
 ## 7. PR-történet (Brinuti/mosaic)
 

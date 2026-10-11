@@ -40,23 +40,44 @@ const CSS = `
 .fatyol { position: fixed; inset: 0; z-index: 2147483000; background: rgba(39, 40, 52, .55); display: flex; align-items: center; justify-content: center; font-family: 'helvetica-w01-light', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #454659; }
 .ablak { background: #fff; width: min(620px, 100vw); height: min(860px, 100dvh); display: flex; flex-direction: column; border-radius: 14px; overflow: hidden; box-shadow: 0 18px 60px rgba(0,0,0,.25); }
 @media (max-width: 700px) { .ablak { width: 100vw; height: 100dvh; border-radius: 0; } }
-.fej { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid #ece7e6; background: #fff; }
-.fej h2 { flex: 1; margin: 0; font: 600 18px/1.25 'poppins-semibold', Poppins, Arial, sans-serif; }
-.gomb-ikon { border: 0; background: #f6efee; color: #454659; width: 38px; height: 38px; border-radius: 50%; font-size: 20px; line-height: 38px; cursor: pointer; flex: none; }
+@media (min-width: 701px) { .hely-racs { grid-template-columns: repeat(3, 1fr); } .szolg-racs { grid-template-columns: 1fr 1fr; } .os-szolg { font-size: 14px; } }
+@media (max-width: 339px) { .lepesek .sz { display: none; } }
+button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+/* fejlec: a cim KOZEPEN, a vissza (balra) es a bezaras (jobbra) 44 px-es, ujjal kenyelmesen talalhato; a vissza gomb helye az elso lepesnel is megmarad (a cim kozepen marad) */
+.fej { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid #ece7e6; background: #fff; }
+.fej h2 { margin: 0; text-align: center; font: 600 18px/1.25 'poppins-semibold', Poppins, Arial, sans-serif; }
+.gomb-ikon { border: 0; background: #f6efee; color: #454659; width: 44px; height: 44px; border-radius: 50%; font-size: 22px; line-height: 44px; padding: 0; cursor: pointer; flex: none; }
+.gomb-ikon[hidden] { display: block; visibility: hidden; }
 .gomb-ikon:hover { background: #f5d3ca; }
-.lepesek { display: flex; gap: 6px; padding: 10px 16px 0; font-size: 12px; }
-.lepesek button { flex: 1; border: 0; background: none; padding: 0 0 8px; border-bottom: 3px solid #ece7e6; color: #9a9aa8; font: inherit; cursor: default; text-align: left; }
+/* lepesjelzo: a teljes sav (min. 44 px magas) kattinthato, nem csak a felirat */
+.lepesek { display: flex; gap: 6px; padding: 0 16px; font-size: 12px; }
+.lepesek button { flex: 1 1 auto; min-height: 44px; border: 0; background: none; padding: 15px 0 9px; border-bottom: 3px solid #ece7e6; color: #9a9aa8; font: inherit; cursor: default; text-align: left; white-space: nowrap; }
 .lepesek button.kesz { border-color: #d7aba8; color: #454659; cursor: pointer; }
 .lepesek button.most { border-color: #ab6354; color: #454659; font-weight: 700; }
-.tartalom { flex: 1; overflow: auto; padding: 16px; -webkit-overflow-scrolling: touch; outline: none; }
-.osszegzes { background: #faf4f3; border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; font-size: 14px; line-height: 1.45; }
+.tartalom { flex: 1; overflow: auto; padding: 14px 16px; -webkit-overflow-scrolling: touch; outline: none; }
+.osszegzes { background: #faf4f3; border-radius: 10px; padding: 8px 12px; margin-bottom: 12px; font-size: 14px; line-height: 1.4; }
 .osszegzes b { font-family: 'poppins-semibold', Poppins, Arial, sans-serif; font-weight: 600; }
+.os-sor { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.os-ar { font-weight: 700; color: #ab6354; white-space: nowrap; }
+/* a szolgaltatas neve MINDIG egy sorban (a betumeret a kepernyo szelessegehez igazodik; vegso esetben kipontozva) */
+.os-szolg { font-size: clamp(11px, 3.5vw, 14px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lista { display: grid; gap: 10px; }
 .kartya { display: block; width: 100%; text-align: left; border: 1px solid #e8e6e6; border-radius: 12px; background: #fff; padding: 13px 14px; font: inherit; color: inherit; cursor: pointer; }
 .kartya:hover, .kartya:focus-visible { border-color: #d7aba8; box-shadow: 0 0 0 3px #f5d3ca; outline: none; }
 .kartya .nev { font: 600 16px/1.3 'poppins-semibold', Poppins, Arial, sans-serif; }
 .kartya .reszlet { margin-top: 3px; font-size: 13px; color: #6b6c80; }
 .kartya .ar { float: right; font-weight: 700; color: #ab6354; margin-left: 10px; }
+/* 1. lepes: az osszes helyszin egy kepernyon (mobilon 2 oszlop, asztalon 3), felirat nelkul */
+.kicsi.bevezeto { margin: 0 0 10px; }
+.hely-racs { grid-template-columns: 1fr 1fr; gap: 8px; }
+.kartya.hely { display: flex; align-items: center; height: clamp(44px, 7dvh, 56px); padding: 0 12px; border-radius: 10px; }
+.kartya.hely .nev { font-size: 15px; }
+/* 2. lepes: tomor szolgaltatas-kartyak (nev balra, ar es idotartam jobbra); asztalon 2 oszlop, igy mind elfer egy kepernyon */
+.szolg-racs { gap: 6px; }
+.kartya.szolg { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "nev ar" "nev reszlet"; column-gap: 10px; align-items: center; padding: 8px 12px; border-radius: 10px; }
+.kartya.szolg .nev { grid-area: nev; font-size: 14px; line-height: 1.25; }
+.kartya.szolg .ar { grid-area: ar; float: none; margin: 0; text-align: right; font-size: 14px; white-space: nowrap; }
+.kartya.szolg .reszlet { grid-area: reszlet; margin: 0; text-align: right; font-size: 12px; white-space: nowrap; }
 .cimke { display: inline-block; margin-top: 6px; font-size: 12px; background: #f5d3ca; color: #78463e; border-radius: 99px; padding: 2px 9px; }
 .alcim { margin: 18px 0 8px; font: 600 14px/1.3 'poppins-semibold', Poppins, Arial, sans-serif; color: #6b6c80; text-transform: uppercase; letter-spacing: .04em; }
 .chipek { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
@@ -139,42 +160,50 @@ export function nyit(ctx) {
   };
 
   // --- lepesjelzo ---
-  const LEPESEK = [['hely', 'Helyszín'], ['szolg', 'Kezelés'], ['ido', 'Időpont'], ['adatlap', 'Adatok']];
+  const LEPESEK = [['hely', 'Helyszín'], ['szolg', 'Szolgáltatás'], ['ido', 'Időpont'], ['adatlap', 'Adatok']];
   const lepesjelzo = () => {
     const i = LEPESEK.findIndex(([k]) => k === all.lepes);
-    $('.lepesek').innerHTML = LEPESEK.map(([k, n], j) => `<button data-lepes="${k}" class="${j < i ? 'kesz' : j === i ? 'most' : ''}" ${j < i ? '' : 'tabindex="-1"'}>${j + 1}. ${n}</button>`).join('');
+    $('.lepesek').innerHTML = LEPESEK.map(([k, n], j) => `<button data-lepes="${k}" class="${j < i ? 'kesz' : j === i ? 'most' : ''}" ${j < i ? '' : 'tabindex="-1"'}><span class="sz">${j + 1}. </span>${n}</button>`).join('');
     $('[data-vissza]').hidden = i <= 0;
     $('.ablak').dataset.lepes = all.lepes;
     const h = all.lepes === 'adatlap' && all.placeId && HELYSZINEK[all.placeId];
     $('.fej h2').textContent = h ? `${h.varos} · Adatok` : 'Időpontfoglalás';
   };
   const ugrik = (lepes) => { all.lepes = lepes; rajzol(); };
+  // visszalepes (lepesjelzo, "Vissza" gomb, "Masik ..." gombok): a cel lepes utani valasztasokat eldobja. A "Vissza" gomb korabban a
+  // helyszin-valasztasig nem jutott el (a megmaradt helyszin miatt a rajzol() azonnal visszaugrott a szolgaltatasokhoz).
+  const visszaLep = (lepes) => {
+    if (lepes === 'hely') { all.placeId = null; all.szolg = null; all.slot = null; all.nap = null; all.honap = null; }
+    if (lepes === 'szolg') { all.szolg = null; all.slot = null; all.nap = null; all.honap = null; }
+    if (lepes === 'ido') { all.slot = null; }
+    ugrik(lepes);
+  };
   const vissza = () => {
     const i = LEPESEK.findIndex(([k]) => k === all.lepes);
-    if (i > 0) ugrik(LEPESEK[i - 1][0]);
+    if (i > 0) visszaLep(LEPESEK[i - 1][0]);
   };
 
   const osszegzes = () => {
     const h = all.placeId && HELYSZINEK[all.placeId];
     const s = all.szolg;
     const sor = [];
-    if (h) sor.push(`<b>${esc(h.varos)}</b>`);
-    if (s) sor.push(`${esc(s.name)} · ${ft(s.activePrice)}`);
-    if (all.slot) sor.push(`${napCim(bp(all.slot.start_unix).nap)}, <b>${bp(all.slot.start_unix).ido}</b>`);
-    return sor.length ? `<div class="osszegzes">${sor.join('<br>')}</div>` : '';
+    if (h) sor.push(`<div class="os-sor"><b>${esc(h.varos)}</b>${s ? `<span class="os-ar">${ft(s.activePrice)}</span>` : ''}</div>`);
+    if (s) sor.push(`<div class="os-szolg" title="${esc(s.name)}">${esc(s.name)}</div>`);
+    if (all.slot) sor.push(`<div>${napCim(bp(all.slot.start_unix).nap)}, <b>${bp(all.slot.start_unix).ido}</b></div>`);
+    return sor.length ? `<div class="osszegzes">${sor.join('')}</div>` : '';
   };
 
   // --- 1. helyszin ---
   function helyszinLepes() {
-    tartalom.innerHTML = `<p class="kicsi" style="margin-top:0">Válaszd ki, hol szeretnéd a piercinget.</p><div class="lista">${HELYSZIN_SORREND.map((id) => {
+    tartalom.innerHTML = `<p class="kicsi bevezeto">Válaszd ki, hol szeretnéd a piercinget.</p><div class="lista hely-racs">${HELYSZIN_SORREND.map((id) => {
       const h = HELYSZINEK[id];
-      return `<button class="kartya" data-hely="${id}"><span class="nev">${esc(h.varos)}</span><div class="reszlet">${h.kitelepules ? 'Kitelepülés: a következő szabad napok a naptárban' : 'Állandó rendelő'}</div></button>`;
+      return `<button class="kartya hely" data-hely="${id}"><span class="nev">${esc(h.varos)}</span></button>`;
     }).join('')}</div>`;
   }
 
   // --- 2. szolgaltatas ---
   async function szolgaltatasLepes() {
-    tartalom.innerHTML = osszegzes() + '<div class="toltes">A kezelések betöltése…</div>';
+    tartalom.innerHTML = osszegzes() + '<div class="toltes">A szolgáltatások betöltése…</div>';
     let lista;
     try { lista = await adapter.getServices(all.placeId); } catch (e) { return hiba('szolgaltatasok', e); }
     if (all.lepes !== 'szolg' || lezart) return;
@@ -185,10 +214,10 @@ export function nyit(ctx) {
       if (s) { all.szolg = s; return ugrik('ido'); }
     }
     const t = ctx.oldalTipus && ctx.oldalTipus !== 'alt' ? ctx.oldalTipus : null;
-    const kartya = (s) => `<button class="kartya" data-szolg="${esc(s.serviceId)}"><span class="ar">${ft(s.activePrice)}</span><span class="nev">${esc(s.name)}</span><div class="reszlet">${s.durationMin ? s.durationMin + ' perc' : ''}${s.listPrice ? ` · <s>${ft(s.listPrice)}</s>` : ''}</div></button>`;
+    const kartya = (s) => `<button class="kartya szolg" data-szolg="${esc(s.serviceId)}"><span class="ar">${ft(s.activePrice)}</span><span class="nev">${esc(s.name)}</span><div class="reszlet">${s.durationMin ? s.durationMin + ' perc' : ''}${s.listPrice ? ` · <s>${ft(s.listPrice)}</s>` : ''}</div></button>`;
     const ajanlott = t ? lista.filter((s) => tipusKod(s.name) === t) : [];
     const tobbi = lista.filter((s) => !ajanlott.includes(s));
-    tartalom.innerHTML = osszegzes() + (ajanlott.length ? `<div class="alcim">Ajánlott</div><div class="lista">${ajanlott.map(kartya).join('')}</div><div class="alcim">További kezelések</div>` : '') + `<div class="lista">${tobbi.map(kartya).join('')}</div>`;
+    tartalom.innerHTML = osszegzes() + (ajanlott.length ? `<div class="alcim">Ajánlott</div><div class="lista szolg-racs">${ajanlott.map(kartya).join('')}</div><div class="alcim">További szolgáltatások</div>` : '') + `<div class="lista szolg-racs">${tobbi.map(kartya).join('')}</div>`;
     tartalom._lista = lista;
   }
 
@@ -215,7 +244,7 @@ export function nyit(ctx) {
     const napok = new Map();
     for (const x of sajat) { const b = bp(x.start_unix); if (!napok.has(b.nap)) napok.set(b.nap, []); napok.get(b.nap).push(x); }
     if (!sajat.length) {
-      tartalom.innerHTML = osszegzes() + `<p class="uzenet">A következő ${NAPOK} napban ezen a helyszínen erre a kezelésre nincs szabad időpont.${munkatarsak.length > 1 && all.staffId ? '' : ''}</p><p><button class="gomb masodlagos" data-lepes="szolg">Másik kezelés</button> <button class="gomb masodlagos" data-lepes="hely">Másik helyszín</button></p>`;
+      tartalom.innerHTML = osszegzes() + `<p class="uzenet">A következő ${NAPOK} napban ezen a helyszínen erre a szolgáltatásra nincs szabad időpont.${munkatarsak.length > 1 && all.staffId ? '' : ''}</p><p><button class="gomb masodlagos" data-lepes="szolg">Másik szolgáltatás</button> <button class="gomb masodlagos" data-lepes="hely">Másik helyszín</button></p>`;
       return;
     }
     const kulcsok = [...napok.keys()].sort();
@@ -275,12 +304,7 @@ export function nyit(ctx) {
     if (t.hasAttribute('data-bezar')) return bezar();
     if (t.hasAttribute('data-vissza')) return vissza();
     const d = t.dataset;
-    if (d.lepes && (t.classList.contains('kesz') || !t.closest('.lepesek'))) {
-      if (d.lepes === 'hely') { all.placeId = null; all.szolg = null; all.slot = null; all.nap = null; all.honap = null; }
-      if (d.lepes === 'szolg') { all.szolg = null; all.slot = null; all.nap = null; all.honap = null; }
-      if (d.lepes === 'ido') { all.slot = null; }
-      return ugrik(d.lepes);
-    }
+    if (d.lepes && (t.classList.contains('kesz') || !t.closest('.lepesek'))) return visszaLep(d.lepes);
     if (d.hely) { all.placeId = +d.hely; all.szolg = null; all.nap = null; all.honap = null; all.staffId = null; return ugrik('szolg'); }
     if (d.szolg) { all.szolg = (tartalom._lista || []).find((x) => x.serviceId === d.szolg) || null; all.nap = null; all.honap = null; if (all.szolg) ugrik('ido'); return; }
     if (d.staff !== undefined) { all.staffId = d.staff || null; all.nap = null; all.honap = null; return naptar(); }
