@@ -240,6 +240,8 @@ function level(n, c) {
 const szovegesLevelek = (n) => (n.k ? n.k.flatMap(szovegesLevelek) : [n]);
 const kozepes = (n) => { const ls = (n.k || [n]).filter((x) => x.t === 'h' || x.t === 'p'); return ls.length > 0 && ls.filter((x) => x.kozep).length * 2 >= ls.length; };
 
+const szovegHossz = (n) => (n.k ? n.k.reduce((a, x) => a + szovegHossz(x), 0) : n.html ? szovegTiszta(n.html).length : n.elemek && Array.isArray(n.elemek) && typeof n.elemek[0] === 'string' ? n.elemek.reduce((a, x) => a + szovegTiszta(x).length, 0) : n.szoveg ? n.szoveg.length : 0);
+
 function media(kepN, masik, kepElol, c, opciok = {}) {
   // a masik oszlop cime kiemelhetos: mobilon cim, kep, szoveg sorrend
   let cim = '', szovegN = masik;
@@ -249,7 +251,9 @@ function media(kepN, masik, kepElol, c, opciok = {}) {
     szovegN = marad.length === 1 ? marad[0] : { t: 'verem', k: marad };
   } else if (!opciok.nincsCim && masik.t === 'h') { cim = level(masik, c); szovegN = null; }
   const kozep = kozepes(masik);
-  return `<div class="ksz${kepElol ? '' : ' ksz-jobb'}${cim ? ' van-cim' : ''}${kozep ? ' ksz-kozep' : ''}${kepN.t !== 'kep' ? ' ksz-nagy' : ''}">${cim ? `<div class="ksz-cim">${cim}</div>` : ''}<div class="ksz-kep">${csomopont(kepN, c)}</div>${szovegN ? `<div class="ksz-szoveg">${csomopont(szovegN, c)}</div>` : ''}</div>`;
+  // rovid szoveg + kep (pl. a 93%-os statisztika): mobilon is egymas mellett marad (kevesebb hely)
+  const rovid = !cim && kepN.t === 'kep' && szovegHossz(masik) < 520;
+  return `<div class="ksz${kepElol ? '' : ' ksz-jobb'}${cim ? ' van-cim' : ''}${kozep ? ' ksz-kozep' : ''}${kepN.t !== 'kep' ? ' ksz-nagy' : ''}${rovid ? ' ksz-rovid' : ''}">${cim ? `<div class="ksz-cim">${cim}</div>` : ''}<div class="ksz-kep">${csomopont(kepN, c)}</div>${szovegN ? `<div class="ksz-szoveg">${csomopont(szovegN, c)}</div>` : ''}</div>`;
 }
 
 function sor(n, c, kartya) {
