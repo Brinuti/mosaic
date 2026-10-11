@@ -1,6 +1,6 @@
 // Valodi probafoglalas a foglalomotorral (QA-2). A mero-kereseket eldobja es naplozza; a sajat /api/mp-foglalas jelzest
 // elkapja es naplozza (nem kerul a D1-be). A Salonic felé csak a beagyazott adatlap megy (betoltes + bekuldes).
-//   PROBA_EMAIL=<olvashato cim> BASE=https://www.medicalpiercing.hu node tools/motor-proba/probafoglalas.mjs --nev=1 --hely=6029 --szolg=115575 --honnan=/migren-piercing [--mobil] [--kuld]
+//   PROBA_EMAIL=<olvashato cim> PROBA_TELEFON=<Feri tesztszama> BASE=https://www.medicalpiercing.hu node tools/motor-proba/probafoglalas.mjs --nev=1 --hely=6029 --szolg=115575 --honnan=/migren-piercing [--mobil] [--kuld]
 // --parameter-nelkul: ?motor=1 nelkul nyitja az oldalt (100%-os kapcsolo mellett ez a valodi latogato utja).
 // --kuld nelkul csak kitolti (nem kuldi be). Utana AZONNAL: node tools/motor-proba/lemond.mjs <lemondoUrl> (a kimenetben). Egyben: proba-futtat.sh.
 // Vendegnev: "TESZT –" "Claude"; az idopont a legtavolabbi nap legkesobbi idopontja.
@@ -15,8 +15,11 @@ const PARAMETER_NELKUL = process.argv.includes('--parameter-nelkul');
 const NEV = arg('nev', 'x'), HELY = arg('hely', '6029'), SZOLG = arg('szolg', '115575'), HONNAN = arg('honnan', '/idopontfoglalas');
 const GCLID = 'TESZTCLAUDE' + Date.now();
 // a visszaigazolo level ide jon (a lemondo link miatt olvasni kell tudni); telefon: alapbol az MP szalon szama
-const EMAIL = process.env.PROBA_EMAIL, TELEFON = process.env.PROBA_TELEFON || '706336662';
-if (KULD && !EMAIL) throw new Error('PROBA_EMAIL kell (a visszaigazolo level cime)');
+// NINCS alapertelmezett telefonszam: a szalon szama egy meglevo Salonic-vendegprofilra (nem teszt) illeszkedett, ezert a probak
+// KIZAROLAG Feri sajat tesztszamaval mennek (a szam a Drive MP-FOGLALOMOTOR-FELADAT.md-ben van, a repoba nem kerul).
+// PROBA_TELEFON = nemzeti szam a 06/orszagkod nelkul (pl. "701234567"), a mezo magyar orszagkodos.
+const EMAIL = process.env.PROBA_EMAIL, TELEFON = process.env.PROBA_TELEFON;
+if (KULD && (!EMAIL || !TELEFON)) throw new Error('PROBA_EMAIL (olvashato cim) es PROBA_TELEFON (Feri tesztszama) kell');
 const SZABAD = /^https:\/\/([a-z0-9]+\.salonic\.hu|cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com|www\.google\.com\/recaptcha|www\.gstatic\.com\/recaptcha)\//;
 const naplo = { nev: NEV, nezet: MOBIL ? 'mobil' : 'asztali', hely: HELY, szolg: SZOLG, honnan: HONNAN, gclid: GCLID, kezdes: new Date().toISOString(), eldobott: [], api: [], hibak: [] };
 const b = await chromium.launch();

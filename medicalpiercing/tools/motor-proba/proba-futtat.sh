@@ -1,6 +1,6 @@
 #!/bin/bash
 # Egy valodi probafoglalas (probafoglalas.mjs --kuld) + azonnali lemondas (lemond.mjs); a kivonat: kimenet/probafoglalasok-kivonat.jsonl
-#   PROBA_EMAIL=<olvashato cim> tools/motor-proba/proba-futtat.sh --nev=3 --hely=12169 --szolg=133236 [--mobil] [--honnan=/migren-piercing]
+#   PROBA_EMAIL=<olvashato cim> PROBA_TELEFON=<Feri tesztszama> tools/motor-proba/proba-futtat.sh --nev=3 --hely=12169 --szolg=133236 [--mobil] [--honnan=/migren-piercing]
 D=$(cd "$(dirname "$0")" && pwd); KI=${KI:-$D/kimenet}; mkdir -p "$KI"
 BASE=${BASE:-https://www.medicalpiercing.hu} KI="$KI" timeout 280 node "$D/probafoglalas.mjs" "$@" --kuld > "$KI/proba-$$.json" 2>&1
 node -e '
