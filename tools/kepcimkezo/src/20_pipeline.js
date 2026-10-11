@@ -241,7 +241,7 @@ KC.callOpenAI = function (env, batches, ctx) {
           pending.push(missing);
         }
       } else {
-        missing[0].fail = p.ok ? 'hianyzo_elem' : p.error;
+        missing[0].fail = (p.ok ? 'hianyzo_elem' : p.error) + (p.text ? ' ' + String(p.text).replace(/\s+/g, ' ').slice(0, 200) : '');
       }
     });
   }
@@ -268,6 +268,7 @@ KC.processGroup = function (env, group, ctx) {
     withLink.forEach(function (e, i) {
       var r = resps[i];
       if (r && r.code === 200 && r.b64) e.thumbData = { mime: r.mime || 'image/jpeg', b64: r.b64 };
+      else e.thumbWhy = 'elonezet HTTP ' + (r ? r.code : 'ures');
     });
   }
 
@@ -279,7 +280,9 @@ KC.processGroup = function (env, group, ctx) {
   var nowText = env.nowText();
   var rows = group.map(function (e) {
     var status = !e.thumbData ? S.NO_THUMB : (e.item ? S.OK : S.ERROR);
-    return { entry: e, status: status, row: KC.buildRow(e.file, status === S.OK ? e.item : null, status, nowText, e.row) };
+    // a hiba oka a "leiras" oszlopba kerul (sikeres soroknal ott a modell leirasa van)
+    var reason = status === S.OK ? '' : (!e.thumbData ? (e.thumbWhy || 'nincs thumbnailLink') : (e.fail || 'ismeretlen'));
+    return { entry: e, status: status, row: KC.buildRow(e.file, status === S.OK ? e.item : null, status, nowText, e.row, reason) };
   });
   return { rows: rows };
 };
@@ -344,9 +347,14 @@ KC.run = function (env, mode) {
   summary.fresh = pl.stats.fresh;
   if (mode === 'proba') {
     if (st.probaIds.length) {
-      var wanted = {};
+      // a megadott fajlokat AKKOR IS ujracimkezi, ha mar van soruk (helyben frissiti): prompt-valtoztatas utani ujra-proba
+      var wanted = {}, rowById = {};
       st.probaIds.forEach(function (id) { wanted[id] = true; });
-      todo = todo.filter(function (e) { return wanted[e.file.id]; });
+      rows.forEach(function (r) { rowById[r.id] = r; });
+      todo = sc.files.filter(function (f) { return wanted[f.id]; }).map(function (f) {
+        var prev = rowById[f.id] || null;
+        return { file: f, row: prev, kind: prev ? 'ujracimkezes' : 'uj' };
+      });
       notes.push('proba: ' + todo.length + ' / ' + st.probaIds.length + ' megadott fajl');
     } else {
       todo = KC.pickSample(todo.filter(function (e) { return e.kind === 'uj'; }), cfg.PROBA_DB);

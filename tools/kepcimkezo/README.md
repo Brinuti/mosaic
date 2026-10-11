@@ -17,21 +17,22 @@ A három gyökérmappa tartalmát **több különböző Google-fiók** birtokolj
 2. **Összevetés a táblázattal:** csak az új (és a tartalmában módosult, azaz más `md5Checksum`-ú) fájlokat címkézi. Azonos tartalmú (azonos md5) fájlból **egy** sor van; a további példányok számát a `másolatok` oszlop mutatja.
 3. **Előnézet:** a Drive `thumbnailLink` képét (`=s384`) tölti le, a teljes fájlt soha. Videónál ugyanez az előnézeti kocka.
 4. **OpenAI Responses API:** `gpt-5.4-mini`, `detail: low`, `store: false`, 8 kép / hívás, 4 hívás párhuzamosan, `json_schema` strict kimenet. A kérés formája megegyezik az elemző kipróbált `tag_batch` függvényével (prompt + képenként `#k mappa: …`).
-5. **Hibakezelés:** átmeneti hiba (429/5xx) esetén újrapróbál; ha egy köteg elbukik, felezi, így egy rossz kép nem viszi magával a többit. Előnézet nélküli fájl `nincs_előnézet`, elbukó fájl `hiba` állapotot kap (legfeljebb 3 próbálkozás, 20 óránként).
+5. **Hibakezelés:** átmeneti hiba (429/5xx) esetén újrapróbál; ha egy köteg elbukik, felezi, így egy rossz kép nem viszi magával a többit. Előnézet nélküli fájl `nincs_előnézet`, elbukó fájl `hiba` állapotot kap (legfeljebb 3 próbálkozás, 20 óránként). A hiba oka ilyenkor a `leírás` oszlopban áll `HIBA: …` előtaggal (pl. `HIBA: elonezet HTTP 404`, `HIBA: http_400 …`), sikeres soroknál ott a modell leírása van. (Az első teljes futás – 2026-10-11 – 9 661 sorából 9 369 `kész`, 206 `hiba`, 86 `nincs_előnézet`; ez utóbbi 85 PSD + 1 JPEG. A hibaokok a következő napi újrapróbálásnál kerülnek a táblázatba.)
 6. **Költség:** a válasz `usage` mezőjéből számolja (0,75 / 4,5 USD per millió token), havi összeget vezet, és a havi keret 90%-ánál (alapból 27 USD) megáll.
 
 ## Az eredmény-lap oszlopai
 
-Az első 15 oszlop a megrendelt: `file_id, név, mappa_útvonal, fiók (Mosaic/MP), mime, szélesség, magasság, üzletág, téma, felirat, nyersíthető, arc, minőség, leírás, címkézés_dátuma`.
+A megrendelt oszlopok: `file_id, név, mappa_útvonal, fiók (Mosaic/MP), mime, szélesség, magasság, üzletág, téma, felirat, szoveg, nyersíthető, arc, minőség, leírás, címkézés_dátuma` (a `szoveg` az elemző kérésére került a `felirat` után).
 Utána technikai oszlopok: `md5`, `drive_módosítva`, `állapot` (kész / nincs_előnézet / hiba), `másolatok`, `próbálkozás`, `videó_hossz_mp`.
 A `fiók`: a „MOSAIC Head spa” mappa → `Mosaic`, minden más → `MP`.
+**Szabály (az elemző kérése, 2026-10-11):** `fiók = MP` esetén az `üzletág` mindig `piercing`, a modell válaszától függetlenül (a kódban, a válasz feldolgozásakor). A szabad szöveges oszlopok (`név`, `mappa_útvonal`, `szoveg`, `leírás`) szöveg-formátumúak, hogy a képről leolvasott szöveg (pl. „=…”, „+36…”) ne értelmeződjön képletként vagy számként.
 
 ## Működtetés
 
 | Mit | Hogyan |
 |---|---|
 | Első beállítás | Szkript-szerkesztő → `OPENAI_API_KEY` felvétele (Projektbeállítások → Szkripttulajdonságok) → a `setup` függvény futtatása → engedélyek megadása. A `setup` lapokat és napi időzítőt (03:00) hoz létre, ellenőrzi a kulcsot, majd lefuttat egy **16 fájlos próbát**. |
-| Próba újra | `proba` függvény |
+| Próba újra | `proba` függvény. A `beállítások` lap `PROBA_ID_LISTA` értékével (file_id-k vesszővel) pontosan ezeket a fájlokat címkézi – **akkor is, ha már van soruk** (helyben frissíti): prompt-változtatás utáni újra-próbához. Üresen egyenletesen szórt mintát vesz. |
 | Teljes futás élesítése | a `beállítások` lapon `ELESITVE` = `igen`. Addig a napi időzítő nem csinál semmit. |
 | Vészfék | `beállítások` → `LEALLITAS` = `igen`, vagy a `leallitas` függvény (minden időzítő törlődik) |
 | Egy futás hossza | `IDOKERET_PERC` (Workspace-fiók: legfeljebb 30, privát gmail: 6). Ha nem fér bele minden, 1 perc múlva magától folytatja. |
