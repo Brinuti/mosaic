@@ -138,3 +138,12 @@ A munkához készült mentések (`/tmp/*_backup.json`, `member_meta_backup.json`
 - Cloudflare edge cache: a regi oldal akar 1 oraig is latszhat; W3TC teljes uritese lefutott.
 - Menu kereso (2026-10-11): a "Panaszok" menupont alatt legordulo kereso (snippet "gyt-menu-kereso", index: /wp-json/gyt/v1/panasz-index, 12 oras cache). A "Tovabbi talalat" link a Panaszok oldalra visz ?q= szuressel (snippet "gyt-panaszok-gyujtooldal"). Asztali nezeten kepernyokeppel ellenorizve; hamburger menu (tablet/telefon) vizualisan nem.
 - Javitas (2026-10-11, Feri kerese): a Panaszok almenu mind a 32 pontja VISSZA lett allitva (nem torlunk belole), tomoritve 2 oszlopban (13px, 18px sorkoz). A "Panaszok" es "Szakemberek" menupontokrol az emoji kikerult. A kereso onallo, mindig nyitott mezo a fomenuben (Blog utan, a gombok elott); 1024-1279 px kozott csak nagyito ikon, kattintasra kinyilik; hamburger menuben legfelul. Ellenorzott szelessegek: 1024-1920 px, a menu mindenhol egy sorban, nem log ki.
+
+## 19. Core Web Vitals (2026-10-11) es munkaszabaly
+
+- SZABALY (Feri, 2026-10-11): minden valtoztatast a kesz allapot utan AUTOMATIKUSAN elesiteni kell (nincs kulon jovahagyasi kor, az elo oldalon azonnal).
+- Gond: a mezo-adat (CrUX, 28 nap) szerint az LCP (mobil 2,9 mp, asztali 2,5 mp) a hatar felett; INP es CLS rendben. Ok: a hirdetesi kattintasok URL-jeben (gclid, fbclid, utm_*) kovető parameter van, ezek a Cloudflare gyorsitotarban kulon kulcsot kaptak -> mindig MISS, TTFB ~0,9-1,3 mp (talalat: ~0,07 mp).
+- Megoldas (Cloudflare zone df72ed1c7e918fd07ae8dd7a1dec6764, Free csomag): http_request_transform szabaly (ruleset 03d21a3c...) - ha a query hirdetesi kovető parameterrel kezdodik, az eredeti keresbol a query eltavolitasra kerul (a bongeszoben az URL valtozatlan, a GA/Pixel tovabbra is latja). Kizarva: /wp-admin, /wp-json, "&s=" kereses, "preview". Mert: ellenorzott TTFB gclid/fbclid/utm URL-re 0,88 mp -> 0,06-0,09 mp (HIT).
+- Cache szabaly (ruleset 34f6101d...): edge TTL 1 ora -> 4 ora; teljes cache-urites lefutott. FIGYELEM: szerkesztes utan az oldal legfeljebb 4 oraig regi lehet; sietos valtozasnal Cloudflare cache purge kell (URL-re vagy mindenre, a cloudflare_mcp osszekotovel).
+- A mezo-adat (PageSpeed "Ez az URL") 28 napos gorgeto atlag, ezert a zold ertek varhatoan 2-4 het mulva jelenik meg. Labor: mobil 99, asztali 100.
+- Nem sikerult (Free csomag): egyedi cache-kulcs / remove_query_args fuggveny - ezert a statikus query-torles szabaly.
