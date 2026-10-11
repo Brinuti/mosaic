@@ -176,6 +176,9 @@ for (const [honnan, hova] of [['/kontroll-ok', '/kontroll-xyz'], ['/garancia-ok'
     // a gomb (mint a Wixen) uj lapon nyitja a /idopontfoglalas oldalt
     const [p] = await Promise.all([ctx.waitForEvent('page'), p0.locator('a[href="/idopontfoglalas"]:visible').first().click()]);
     await p.waitForLoadState('load');
+    // az uj lap munkamenete ures: a regi utat kenyszeritjuk (kulonben a 100%-os kapcsolo mellett a motor magatol megnyilik es eltakarja a linket)
+    await p.evaluate(() => sessionStorage.setItem('mp_motor', '0'));
+    await p.reload({ waitUntil: 'load' });
     for (let i = 0; i < 40 && !(await p.evaluate(() => !!(window.ttq && window.ttq._i))); i++) await p.waitForTimeout(250);
     await p.waitForTimeout(1500);
     await kattint(p, p.locator('a[href^="https://medicalpiercing.salonic.hu"]:visible').first());

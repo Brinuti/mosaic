@@ -342,15 +342,21 @@
     // GA4 "foglalas_inditasa" (MP-FOGLALOMOTOR-FELADAT 6.): ugyanitt, ugyanazzal a rovid tipuskoddal (piercing_tipus),
     // a foglalomotor dontese elott (a motor indito-ja a buborekolo szakaszban fut), igy a motoros es a regi uton azonosan.
     // A gtag a GTM Google-cimkejen at a G-SJT2RN62H8-ba kuld (send_to), a hozzajarulas szerint.
-    var foglalasInditasa = function (e) {
-      if (e.type === 'auxclick' && e.button !== 1) return;
-      var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
-      if (!a || !/^https:\/\/medicalpiercing\.salonic\.hu([/?#]|$)/i.test(a.href)) return;
+    var inditasEsemeny = function () {
       if (typeof window.gtag === 'function') window.gtag('event', 'foglalas_inditasa', { send_to: 'G-SJT2RN62H8', piercing_tipus: tipus });
       // TikTok: csak marketing-hozzajarulassal (a GA4-jel fent hozzajarulas nelkul is megy, a Consent Mode szerint suti nelkul)
       if (!(dontes && dontes.mark) || !window.ttq || typeof window.ttq.track !== 'function') return;
       window.ttq.track('InitiateCheckout', { content_name: 'foglalas_inditasa', content_category: tipus });
     };
+    var foglalasInditasa = function (e) {
+      if (e.type === 'auxclick' && e.button !== 1) return;
+      var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+      if (!a || !/^https:\/\/medicalpiercing\.salonic\.hu([/?#]|$)/i.test(a.href)) return;
+      inditasEsemeny();
+    };
+    // a foglalomotor hivja, ha NEM Salonic-linkre kattintassal nyilt (a koztes /idopontfoglalas oldal helyett a motor foldala: az "Uj piercing"
+    // valasztasakor ugyanez az esemeny fut, mint korabban az "Uj piercing idopontok" Salonic-linkre kattintaskor)
+    window.mpSuti.foglalasInditas = inditasEsemeny;
     document.addEventListener('click', foglalasInditasa, true);
     document.addEventListener('auxclick', foglalasInditasa, true);
   }

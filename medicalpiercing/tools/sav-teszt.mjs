@@ -91,7 +91,9 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
   // foglalasi link dontes nelkul: GA4 foglalas_inditasa (suti nelkul) igen, TikTok nem
   const elotte = ki.length;
   await p.evaluate(() => { const a = [...document.querySelectorAll('a[href^="https://medicalpiercing.salonic.hu"]')].find((x) => x.offsetParent !== null); a.click(); });
-  await p.waitForTimeout(2000);
+  // a motor (nincs lapelhagyas) mellett a GA4 kotege kesobb megy el: legfeljebb 10 mp-ig varjuk a foglalas_inditasa keresre
+  for (let i = 0; i < 40 && !ki.slice(elotte).some((x) => /[?&]en=foglalas_inditasa/.test(x.u)); i++) await p.waitForTimeout(250);
+  await p.waitForTimeout(500);
   const uj = ki.slice(elotte);
   ok('dontes elott: foglalasi kattintas -> GA4 foglalas_inditasa (gcs=G100)', uj.some((x) => /[?&]en=foglalas_inditasa/.test(x.u) && /[?&]gcs=G100/.test(x.u)), uj.filter((x) => /en=/.test(x.u)).map((x) => (x.u.match(/[?&]en=([^&]+)/) || [])[1]).join(','));
   ok('dontes elott: foglalasi kattintas -> nincs TikTok', !uj.some((x) => /tiktok/.test(x.u)));
@@ -170,7 +172,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
     a.scrollIntoView({ block: 'center' }); a.click();
   });
   let megvan = false;
-  for (let i = 0; i < 100 && !megvan; i++) { megvan = await p.evaluate(() => !!document.querySelector('[data-mp-motor]')?.shadowRoot.querySelector('[data-hely]')); if (!megvan) await p.waitForTimeout(250); }
+  for (let i = 0; i < 100 && !megvan; i++) { megvan = await p.evaluate(() => { const r = document.querySelector('[data-mp-motor]')?.shadowRoot; if (!r) return false; const t = r.querySelector('[data-tipus="uj"]'); if (t) t.click(); return !!r.querySelector('[data-hely]'); }); if (!megvan) await p.waitForTimeout(250); }
   ok('motor: ?motor=1-gyel megnyilik (15 helyszin)', megvan && (await p.evaluate(() => document.querySelector('[data-mp-motor]').shadowRoot.querySelectorAll('[data-hely]').length)) === 15);
   await ctx.close();
 }
