@@ -171,3 +171,9 @@ A munkához készült mentések (`/tmp/*_backup.json`, `member_meta_backup.json`
 - Cloudflare cache rule (statikus fajlok: jpg, jpeg, png, webp, gif, svg, ico, avif, css, js, woff, woff2, ttf): edge 30 nap, bongeszo 1 ev (ruleset 34f6101d6dd34678abcf5fb05fe6d076).
 - Snippet 53 (gyt-yt-indexkep-helyi): a YouTube maxresdefault.jpg (73 KiB, 2 ora cache) helyett helyi 640x360 WebP (~17 KB, 1 ev cache) a uploads/yt-thumbs/ mappabol; elso kerelesre generalodik, hiba eseten az eredeti marad.
 - Nyitott: kozponti inline CSS (~283 KB, kritikus CSS fizetos), hasznalatlan CSS 39 KiB (.wp-block-button), DOM 913, akadálymentesség (kontraszt, nev nelkuli linkek, erintesi felulet) - kovetkezo kor.
+
+## 24. Akadalymentesseg + TTFB (2026-10-11)
+- Snippet 54 (gyt-a11y): axe-core merese szerint (mobil, fooldal) a kontraszt (narancs gomb #e99300 -> #995a00, cikk-linkek, datumok #6b6b6b), a nev nelkuli linkek (aria-label automatikusan: Panaszok kartyak, cikk-kepek, YouTube, ugras felulre) es az erintesi felulet (lablec linkek) hibai megszuntek: 0 serules.
+- Mereshez: sandboxban /home/user/ax (playwright-core + axe-core), `node ax.js`.
+- TTFB: origin ~0.65 s (TLS 0.33 s), Cloudflare MISS ~1.1-1.5 s, HIT ~0.05 s. A mezo-TTFB a MISS-ek miatt rossz. Intezkedes: HTML edge TTL 12 ora -> 7 nap (minden valtoztatas utan purge), + snippet 55 (gyt-cache-bemelegito): 20 percenkent 30 oldalt megkeres a szerverrol, hogy az edge cache meleg legyen.
+- Tanulsag: minden Cloudflare purge utan az elso latogatok lassu (MISS) valaszt kapnak; tul gyakori purge rontja a Core Web Vitals mezoadatot.
