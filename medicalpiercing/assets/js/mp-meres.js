@@ -60,6 +60,14 @@
   // a CookieYes-dontesre roviden varunk (ha a vendeg epp most fogad el), de legkesobb 4 mp utan kuldunk
   var elkuldve = false;
   var egyszer = function () { if (!elkuldve) { elkuldve = true; kuld(); } };
+  // A foglalomotor keretebe toltott koszonooldal (assets/js/motor/motor.js): a motor UGYANEZT a koszonooldalt booking_id-vel
+  // a fo ablakban nyitja meg, onnan megy a jelzes. A suti.js a motor visszaigazolasakor (1,5 mp-en belul) jeloli a
+  // <html data-mp-motor-atvette="1">-et: ilyenkor a keretbol nem kuldunk. A regi, kozvetlenul beagyazott Salonic-naptarak
+  // keretei (pl. /migren-piercing-uj) nem kapnak visszaigazolast: onnan kuldunk, mint eddig.
+  if (window.top !== window) {
+    setTimeout(function () { if (document.documentElement.getAttribute('data-mp-motor-atvette') !== '1') egyszer(); }, 1700);
+    return;
+  }
   if (/(?:^|;\s*)cookieyes-consent=[^;]*action(%3A|:)yes/.test(document.cookie) || !/medicalpiercing\.hu$/.test(h)) egyszer();
   else {
     document.addEventListener('cookieyes_consent_update', function () { setTimeout(egyszer, 50); });

@@ -129,6 +129,29 @@ A felugró menü a tulajdonos kérésére animáció nélkül, azonnal nyílik �
 `node tools/sebesseg.mjs [út...]` (TTFB, FCP, LCP, CLS, TBT, letöltött bájtok; mobilon 4× CPU-lassítás és lassú 4G).
 Az éles címen (`CIM=https://www.medicalpiercing.hu`) minden adatküldő kérést eldob.
 
+### Foglalómotor (`assets/js/motor/`, `assets/js/motor-indito.js`)
+
+A MOSAIC-foglalómotor MP-adaptációja (Drive: MP-FOGLALOMOTOR-FELADAT.md). A foglalási linkek (`medicalpiercing.salonic.hu`)
+helyben nyíló foglalót nyitnak. Lépései: helyszín (15) → kezelés (a típusoldalról érkezőnek az ajánlott elöl) → időpont
+(havi naptár, szakemberválasztó) → a Salonic beágyazott adatlapja → köszönőoldal.
+
+- **Kapcsoló:** `motor-kapcsolo.json` (`"arany": 0` = mindenki a régi Salonic-foglalót kapja, `100` = a motor nyílik). A build
+  beírja az indítóba, és minden kattintásnál érvényes. Visszaállítás: `0`, merge, deploy (1–2 perc); azonnal a Cloudflare
+  Pages előző kiadására. Próba: `?motor=1` / `?motor=0` a lap címében, az adott munkamenetre.
+- **Salonic:** csak olvasó GET a böngészőből (`salonic-adapter.js`; a Salonic és a naptár-API is engedi a CORS-t). A
+  szolgáltatás-ID, az ár és a szakember a Salonicból jön, `lang=hu`-val. A foglalást a Salonic adatlapja rögzíti.
+- **Köszönőoldal:** a Salonic a keretben a `/foglalas-ok*` oldalra irányít. Az ott futó `suti.js` jelez a motornak, és ha a motor
+  visszaigazolja (1,5 mp), a keretben nem mér. A motor ugyanazt a köszönőoldalt ugyanazokkal a paraméterekkel, plusz
+  `booking_id`-vel (`mb_…`, a `back` paraméterként is a Salonicnál) a fő ablakban nyitja meg. A régi, közvetlenül beágyazott
+  Salonic-naptáraknál (pl. `/migren-piercing-uj`) a keretben mér, mint eddig.
+- **Mérés:** a foglalásindítás (TikTok `InitiateCheckout` + GA4 `foglalas_inditasa`, `piercing_tipus`: rövid kód) a `suti.js`-ben,
+  a motor döntése előtt fut. A motor betöltési hibája GA4 `motor_hiba` eseményként megy, a vendég pedig a régi utat kapja.
+- **15 helyszín leképezése:** `node tools/mp-salonic-lekepezes.mjs` → `tools/mp-salonic-lekepezes.json` (szolgáltatások,
+  munkatársak, szabad időpontok, eltérések).
+- **Próba:** `node tools/motor-teszt.mjs [--mobil]`: kapcsoló, 15 helyszín, magyar kezelések, naptár, adatlap-cím, a köszönőoldal
+  átadása `booking_id`-vel, nincs mérés a keretben, a GA4-esemény egyszer, a `?motor=0` felülírás és a régi beágyazás.
+  Valódi foglalás nélkül.
+
 ### Takarítás (`tools/takaritas.mjs`)
 
 A build a lapokból kiveszi a Wixtől örökölt, semmire nem használt kódot: a Wix-szerkesztő meta-címkéit

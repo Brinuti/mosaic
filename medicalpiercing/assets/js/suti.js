@@ -26,6 +26,26 @@
   var ELES_DOMAINEK = ['www.medicalpiercing.hu', 'medicalpiercing.hu'];
   if (ELES_DOMAINEK.indexOf(location.hostname) < 0) return;
 
+  // A foglalomotor (assets/js/motor/motor.js) a Salonic adatlapjat keretben mutatja; sikeres foglalas utan a Salonic a
+  // keretben iranyit a koszonooldalra (/foglalas-ok*). Ilyenkor a koszonooldal jelez a motornak (postMessage), es ha a
+  // motor 1,5 mp-en belul visszaigazolja, hogy UGYANEZT a koszonooldalt a fo ablakban nyitja meg (booking_id-vel), itt
+  // NEM merunk (kulonben ketszer szamolna; a jelzes: <html data-mp-motor-atvette="1">). A regi, kozvetlenul beagyazott
+  // Salonic-naptarak keretei (pl. /migren-piercing-uj) nem kapnak valaszt: ott minden a regi, a keretben merunk.
+  if (window.top !== window && /^\/foglalas-ok/i.test(location.pathname)) {
+    var atvette = false;
+    window.addEventListener('message', function (e) {
+      if (e.source === window.parent && e.data && e.data.tipus === 'mp-motor-atvette') {
+        atvette = true;
+        document.documentElement.setAttribute('data-mp-motor-atvette', '1');
+      }
+    });
+    try { window.parent.postMessage({ tipus: 'mp-foglalas-ok', url: location.href }, '*'); } catch (e) { /* nincs szulo */ }
+    setTimeout(function () { if (!atvette) meres(); }, 1500);
+    return;
+  }
+  meres();
+
+  function meres() {
   var fej = document.head || document.documentElement;
   var szkript = function (src, attr) {
     var s = document.createElement('script');
@@ -106,14 +126,19 @@
         if (t[0] && Date.now() - Number(t[1]) < 30 * 60 * 1000) tipus = t[0];
       }
     } catch (e) { /* tiltott tarolo: az oldal sajat kodja marad */ }
+    // GA4 "foglalas_inditasa" (MP-FOGLALOMOTOR-FELADAT 6.): ugyanitt, ugyanazzal a rovid tipuskoddal (piercing_tipus),
+    // a foglalomotor dontese elott (a motor indito-ja a buborekolo szakaszban fut), igy a motoros es a regi uton azonosan.
+    // A gtag a GTM Google-cimkejen at a G-SJT2RN62H8-ba kuld (send_to), a hozzajarulas szerint.
     var foglalasInditasa = function (e) {
       if (e.type === 'auxclick' && e.button !== 1) return;
       var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
       if (!a || !/^https:\/\/medicalpiercing\.salonic\.hu([/?#]|$)/i.test(a.href)) return;
+      if (typeof window.gtag === 'function') window.gtag('event', 'foglalas_inditasa', { send_to: 'G-SJT2RN62H8', piercing_tipus: tipus });
       if (!window.ttq || typeof window.ttq.track !== 'function') return;
       window.ttq.track('InitiateCheckout', { content_name: 'foglalas_inditasa', content_category: tipus });
     };
     document.addEventListener('click', foglalasInditasa, true);
     document.addEventListener('auxclick', foglalasInditasa, true);
+  }
   }
 })();
