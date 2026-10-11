@@ -217,3 +217,17 @@ test('osszeallit / csvbe / htmlbe: ures idoszak is ertelmes', () => {
   assert.deepEqual(k.napok, {}); assert.match(csvbe(k), /^nap;uzletag;lepes;tipus;darab\n$/); assert.match(htmlbe(k), /még nincs adat/);
   assert.ok(LEPESEK.length === 10 && UZLETAGAK.includes('gift') && UZLETAGAK.includes('none'));
 });
+
+test('probajeles bongeszo (?proba=1 -> localStorage mhProba): sem GA4, sem szamlalo; ?proba=0 torli a jelet', () => {
+  const tar = new Map();
+  const ls = { getItem: (k) => (tar.has(k) ? tar.get(k) : null), setItem: (k, v) => tar.set(k, String(v)), removeItem: (k) => tar.delete(k) };
+  const w = ablak({ ana: true, proba: true });
+  Object.assign(w, { URLSearchParams, localStorage: ls, location: { pathname: '/noi-fodraszat-budapest', search: '?proba=1' } });
+  const m = createStepMeter({ win: w, ctx: ctx() }); m.open(); m.business('hair'); m.success('x');
+  assert.equal(w.dataLayer.length, 0); assert.equal(w.kuldve.length, 0); assert.equal(tar.get('mhProba'), '1');
+  // kesobbi oldalbetoltes parameter nelkul: a jel megmarad
+  w.location.search = ''; createStepMeter({ win: w, ctx: ctx() }).open(); assert.equal(w.kuldve.length, 0);
+  // ?proba=0: torli, onnantol szamol
+  w.location.search = '?proba=0'; createStepMeter({ win: w, ctx: ctx() }).open();
+  assert.equal(tar.has('mhProba'), false); assert.equal(w.kuldve.length, 1);
+});

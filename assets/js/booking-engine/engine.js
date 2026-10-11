@@ -1037,14 +1037,15 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   }
   function resolveRedirect(href) {
     const kind = F.classifyRedirect(href, { enginePath: flow.enginePath });
-    if (kind === 'slot_lost') { meter.error('slot_lost', 'C5'); return go('A2', { replace: true }); }
+    // a slot_lost hibat az A2 nezet szamolja (egyszer); itt nem, kulonben egy elkelt idopont ketszer szamolodna (C5 + C4)
+    if (kind === 'slot_lost') return go('A2', { replace: true });
     if (kind === 'confirmation') {
       // A Salonic csak sikeres foglalas utan iranyit a koszonooldalra, ezert a vendeget ellenorzestol fuggetlenul atadjuk a MEGLEVO
       // koszonooldalnak (eles tartomanyon): a mostani meres (konverziok, pixelek) azon fut valtozatlanul, egyszer, a fo ablakban.
       // Az ellenorzes eredmenye csak a sajat esemenyeinket (booking_completed / booking_error) szabja.
       const v = S.expected ? adapter.verifyConfirmation(href, S.expected) : null;
       if (v && v.ok) confirmed(v);
-      else meter.error('verify_failed', 'C5');
+      else meter.error('verify_failed', 'C5'); // nem igazolt visszateres: kulon szamolodik (a napi ellenorzes a success mellett kulon mutatja), sikernek nem
       if (!(v && v.ok)) track('booking_error', { ...(S.service ? serviceParams(S.service) : {}), step: 'C5', reason: v ? 'verify_failed' : 'no_expectation',
         filter: v ? Object.entries(v.checks).filter(([, c]) => c.status === 'fail').map(([k]) => k).join(',') : undefined });
       // (a Salonic URL-je valtozatlan marad; csak a motor sajat URL-jen erkezett hirdetesi azonositok kerulnek a vegere, ha a Salonic nem hozta oket)

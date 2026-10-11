@@ -25,6 +25,19 @@ export const VEGPONT = '/api/foglalo-szamlalo';
 export const RESERVED_BY_STEPS = Object.freeze(['booking_open', 'booking_error']);
 
 const NINCS = 'none';
+/**
+ * Probajeloles (Feri, 2026-10-11): a ?proba=1 ezt a bongeszot tartosan probanak jeloli (localStorage mhProba=1), a ?proba=0 torli.
+ * Probabol sem a GA4, sem a belso szamlalo nem kap lepest (a probafoglalasok ne torzitsak a napi szamokat). Hiba / tiltott tarolo: nem proba.
+ */
+export const PROBA_KULCS = 'mhProba';
+export function probaJel(win) {
+  try {
+    const q = new win.URLSearchParams(win.location.search).get('proba');
+    const ls = win.localStorage;
+    if (q === '1') ls.setItem(PROBA_KULCS, '1'); else if (q === '0') ls.removeItem(PROBA_KULCS);
+    return ls.getItem(PROBA_KULCS) === '1';
+  } catch (e) { return false; }
+}
 /** Az oldal utvonala a GA4-nek / a szamlalonak: csak /betu-szam-kotojel-pont-alahuzas, lekerdezes / horgony / @ nelkul; ami nem az, '(direct)'. */
 export function tisztaOldal(p) {
   if (typeof p !== 'string') return '(direct)';
@@ -42,6 +55,7 @@ export function createStepMeter({ win = typeof window !== 'undefined' ? window :
   const allapot = { business: tisztaUzletag(ctx.business), serviceId: NINCS };
   const forras = tisztaOldal(ctx.sourcePage || (win && win.location ? win.location.pathname : ''));
   const kulcsok = new Set();
+  const proba = win ? probaJel(win) : false;
   let lezarva = false;
   const egyszer = (k) => { if (kulcsok.has(k)) return false; kulcsok.add(k); return true; };
 
@@ -62,6 +76,7 @@ export function createStepMeter({ win = typeof window !== 'undefined' ? window :
 
   function jelez(lepes, { uzletag = allapot.business, extra = {}, szamlalo = {} } = {}) {
     try {
+      if (proba) return; // probafoglalas: semmi nem megy (sem GA4, sem szamlalo)
       const nev = ESEMENYEK[lepes];
       // A GTM adatreteg-modellje az ertekeket megorzi: ami egy korabbi esemenyen rajta volt (load_ms, step, error_type), a kovetkezo esemenyre is atorokolodne
       // (pl. a booking_slot megkapna egy regi step-et, a booking_close egy regi error_type-ot). Ezert MINDEN esemeny mindhárom kulcsot felulirja: ami az adott
