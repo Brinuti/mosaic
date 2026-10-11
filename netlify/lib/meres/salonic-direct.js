@@ -65,7 +65,7 @@ export function szolgKanon(s) {
 
 // --- megjegyzes (CSAK a Salonic "Megjegyzes" mezoje; a vendeg szabad szovege) -----------------------------------------------------------
 /** Csere- / athelyezes-gyanu a megjegyzesben (ekezet-fuggetlen). A gyanu nem dont: csak a csere-agat nyitja meg (igazolas vagy HOLD). */
-export const CSERE_GYANU = /\b(\w*cser\w*|athelyez\w*|atfoglal\w*|atutemez\w*|atrak\w*|atir\w*|atvinn\w*|atte(?:sz|tt|nn|hete|het|ni)\w*|modosit\w*|(?:meg)?valtoztat\w*|elhalaszt\w*|eltol\w*|elorebb\w*|hatrebb\w*|(?:korabbi|regi|elozo|eredeti)\s+(?:foglalas|idopont|ido)\w*|(?:uj|masik)\s+idopont\w*|helyett|lemond\w*|reschedul\w*|instead|moved?|swap\w*|chang\w*|(?:earlier|previous|original|old)\s+(?:booking|appointment|time))/;
+export const CSERE_GYANU = /\b(\w*cser\w*|athelyez\w*|atfoglal\w*|atutemez\w*|atrak\w*|atir\w*|atvinn\w*|atte(?:sz|tt|nn|hete|het|ni)\w*|modosit\w*|(?:meg)?valtoztat\w*|elhalaszt\w*|eltol\w*|elorebb\w*|hatrebb\w*|(?:korabbi|regi|elozo|eredeti)\s+(?:foglalas|idopont|ido)\w*|(?:uj|masik)\s+idopont\w*|korabban|volt\s+\d|helyett|lemond\w*|reschedul\w*|instead|moved?|swap\w*|chang\w*|(?:earlier|previous|original|old)\s+(?:booking|appointment|time))/;
 export const csereGyanu = (megjegyzes) => CSERE_GYANU.test(fold(megjegyzes));
 const HONAP = { jan: 1, feb: 2, mar: 3, apr: 4, maj: 5, jun: 6, jul: 7, aug: 8, sze: 9, okt: 10, nov: 11, dec: 12 };
 const DATUM_MINTAK = [
@@ -192,10 +192,11 @@ export async function arFeloldas(db, { jelleg, mezok, bejovo = {} }) {
 }
 
 // --- csere-dontes (#131) ----------------------------------------------------------------------------------------------------------------------
+const MEGJEGYZES_MAX = 4000;
 async function csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes, t0, host, fetchImpl }) {
   // DECISION #132: a Megjegyzes LETEZO, de ures mezoje normalis (nincs csere-gyanu); a HIANYZO payload-kulcs (elfelejtett Zap-lekepezes) hianyzo_mezo: HOLD + riasztas, mert a csere-felismeres vak lenne
   if (typeof megjegyzes !== 'string') return { allapot: 'suspected', hianyzo: true, ok: 'hianyzo_mezo: a megjegyzes payload-kulcs hianyzik (a Zap 5. lepese kuldje; ures szoveg is lehet)' };
-  megjegyzes = megjegyzes.slice(0, 500);
+  if (megjegyzes.length > MEGJEGYZES_MAX) return { allapot: 'suspected', gyanu: true, ok: `a megjegyzes tul hosszu (> ${MEGJEGYZES_MAX} karakter): a csere-felismeres nem ellenorizheto automatikusan` }; // csonkolas helyett HOLD: a "helyett" a vegen sem veszhet el
   if (!csereGyanu(megjegyzes)) return { allapot: 'nincs_gyanu' };
   const em = megjegyzesIdopontok(megjegyzes);
   const alap = { gyanu: true, emlitett_idopont: { idok: em.idok.length, datumok: em.datumok.length } };
@@ -290,6 +291,7 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
   if (String(env.MERES_ELOSZTO) !== '1') return { allapot: 'ki', miert: 'MERES_ELOSZTO nincs bekapcsolva' }; // az atvetel a motoros parositast LEZARJA: kuldes nelkul nem vesszuk at
   const sdId = await sdIdentitas(env, uuid);
   if (!sdId) return { allapot: 'ki', miert: 'hianyzik az SD_HMAC_KEY_V1' };
+  if (!titokOk(env && env.GUEST_HMAC_KEY_V1)) return { allapot: 'ki', miert: 'hianyzik a GUEST_HMAC_KEY_V1 (vendeg-hash nelkul a csere-felismeres vak: az sd inert)' }; // a ket titok EGYUTT kell (terv 1. szabaly)
   const level = Date.parse(mezok.leveldatum || '');
   if (!Number.isFinite(level)) return { allapot: 'nincs_level_datuma', miert: 'a level datuma (T0) kell' };
   const megjegyzesVan = typeof bejovo.megjegyzes === 'string'; // letezo, de ures = normalis; hianyzo kulcs = hianyzo_mezo HOLD (csereDontes)
@@ -329,6 +331,17 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
     if (szaraz) return { ...alap, allapot: 'szaraz_terv', sd_allapot: allapot, terv: { ujrafuttatas: 'az elosztas idempotens ujrahivasa' } };
     // 'atveve': egy masik hivas epp dolgozik rajta (SD_ATVETEL_ELAKADAS_MP-ig); utana (Worker-halal) ujra atveheto - a cellak idempotensek
     if (allapot === 'atveve' && t - (sor.sd_ido || 0) < SD_ATVETEL_ELAKADAS_MP) return { ...alap, allapot: 'atveve', idempotens: true, miert: 'egy masik hivas feldolgozza (elakadas utan ujra atveheto)', kuldes: 0 };
+    // 48 ORAS KAPU az UJRAFUTTATASI agakon is (2. kodattekintes): a tartva / elakadt atveve / hianyzo_mezo-potlas ujrajatszasa 48 ora utan sem kuld automatikusan (naplo + riasztas); a 'kesz' sor sem kuld ujra (a hibas cella ujraprobalasa sem)
+    if (kor > SD_MAX_KOR_MP) {
+      if (allapot === 'kesz') return { ...alap, allapot: 'kesz', sd_allapot: 'kesz', idempotens: true, miert: '48 oranal regebbi: a kesz sor nem kuld ujra', kuldes: 0 };
+      await allapotIr(db, uuid, 'lejart', t, true);
+      return { ...alap, allapot: 'lejart', sd_allapot: 'lejart', miert: '48 oranal regebbi ujrafuttatas: nincs automatikus kuldes (naplo + riasztas)', riasztas: true, kuldes: 0 };
+    }
+    // az elakadt 'atveve' ujravetele ATOMI (CAS az sd_ido-n): ket egyideju ujrapróbalas kozul pontosan egy dolgozik; a cellak kuldese ezen felul a naploz CAS-ával is vedett
+    if (allapot === 'atveve') {
+      const cas = await db.prepare("UPDATE foglalas_egyeztetes SET sd_ido = ?3, frissitve = ?3 WHERE uuid = ?1 AND sd_id = ?2 AND sd_allapot = 'atveve' AND COALESCE(sd_ido, 0) = ?4").bind(uuid, sdId, t, sor.sd_ido || 0).run();
+      if (!(cas.meta && cas.meta.changes > 0)) return { ...alap, allapot: 'atveve', idempotens: true, miert: 'egy masik hivas mar ujra atvette (elakadas utan)', kuldes: 0 };
+    }
     // 'atveve' (megszakadt), 'kesz', 'tartva': a kuldesi lepes idempotens ujrafuttatasa (mar vegleges cellara nem kuld ujra; a halasztott cella potlodik)
     let mod = 'normal', csere = null;
     if (!hianyzoPotlas && csereRow && (csereRow.allapot === 'confirmed' || csereRow.allapot === 'suspected' || csereRow.allapot === 'hianyzo_mezo')) { mod = csereRow.allapot === 'confirmed' ? 'confirmed' : 'suspected'; csere = csereRow.allapot === 'hianyzo_mezo' ? { ...csereRow, hianyzo: true } : csereRow; }
@@ -433,7 +446,9 @@ export async function sdRiasztasok(db, env, { fetchImpl, now } = {}) {
 export async function sdKezel(be) {
   if (be.muvelet === 'index_backfill') return indexBackfillMuvelet(be);
   if (be.muvelet === 'sd_atvetel' || be.muvelet === 'sd_feloldas') {
-    const bejovo = be.muvelet === 'sd_feloldas' ? { ...be.bejovo, feloldas: { dontes: be.bejovo.dontes, ok: be.bejovo.ok } } : be.bejovo;
+    // a `feloldas` objektum KIZAROLAG az sd_feloldas muveletbol (dontes + ok) epul; egy sd_atvetel torzsebe csempeszett `feloldas` mezot eldobjuk (az emberi dontes kulon muvelet)
+    const { feloldas: _eldob, ...torzs } = be.bejovo || {};
+    const bejovo = be.muvelet === 'sd_feloldas' ? { ...torzs, feloldas: { dontes: torzs.dontes, ok: torzs.ok } } : torzs;
     return sdAtvetel({ ...be, bejovo });
   }
   return { allapot: 'ismeretlen_muvelet' };

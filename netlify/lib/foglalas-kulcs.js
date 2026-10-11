@@ -295,13 +295,15 @@ export async function kulcsIras(db, { bookingId, bookingUrl, forras = 'back' }, 
   await db.prepare('DELETE FROM foglalas_kulcs WHERE lejar < ?1').bind(t).run(); // lejart (180 napnal regebbi) bejegyzesek
   await db.prepare('DELETE FROM foglalas_kulcs_irasok WHERE lejar < ?1').bind(t).run();
   await db.prepare('INSERT INTO foglalas_kulcs_irasok (booking_id, kulcs, service_id, ido, lejar) VALUES (?1, ?2, ?3, ?4, ?5) ON CONFLICT(booking_id) DO NOTHING').bind(bookingId, e.kulcs, e.serviceId, t, t + MEGORZES_NAP * 86400).run(); // minden jelentkezo foglalas (a parositas jeloltjei)
-  // D7 (DECISION #127): ha erre a kulcsra a Salonic-direct (sd) mar atvette a foglalast, a KESEI mb_ kulcs csak ALIAS (late_motor_key=1): nincs uj esemeny, nincs identity-csere / ujrakuldes; audit / lifecycle-join celra
-  try { await db.prepare('INSERT INTO foglalas_alias (sd_id, booking_id, uuid, late_motor_key, ido) SELECT sd_id, ?2, uuid, 1, ?3 FROM foglalas_egyeztetes WHERE kulcs = ?1 AND sd_id IS NOT NULL AND booking_id IS NULL ON CONFLICT DO NOTHING').bind(e.kulcs, bookingId, t).run(); } catch (x) { /* az alias sosem akaszthatja meg a kulcs-irast */ }
+  // D7 (DECISION #127): ha erre a kulcsra a Salonic-direct (sd) mar atvette a foglalast, a KESEI mb_ kulcs csak ALIAS (late_motor_key=1): nincs uj esemeny, nincs identity-csere / ujrakuldes; audit / lifecycle-join celra - CSAK a kulcs SIKERES (uj vagy idempotens) irasa utan, utkozeskor nem (2. kodattekintes)
+  const aliasIr = async () => {
+    try { await db.prepare('INSERT INTO foglalas_alias (sd_id, booking_id, uuid, late_motor_key, ido) SELECT sd_id, ?2, uuid, 1, ?3 FROM foglalas_egyeztetes WHERE kulcs = ?1 AND sd_id IS NOT NULL AND booking_id IS NULL ON CONFLICT DO NOTHING').bind(e.kulcs, bookingId, t).run(); } catch (x) { /* az alias sosem akaszthatja meg a kulcs-irast */ }
+  };
   const r = await db.prepare('INSERT INTO foglalas_kulcs (kulcs, booking_id, service_id, forras, letrehozva, lejar) VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT(kulcs) DO NOTHING')
     .bind(e.kulcs, bookingId, e.serviceId, forras, t, t + MEGORZES_NAP * 86400).run();
-  if (r.meta && r.meta.changes > 0) return { ok: true, irva: true, idempotens: false, utkozes: false, kulcs: e.kulcs, serviceId: e.serviceId };
+  if (r.meta && r.meta.changes > 0) { await aliasIr(); return { ok: true, irva: true, idempotens: false, utkozes: false, kulcs: e.kulcs, serviceId: e.serviceId }; }
   const sor = await db.prepare('SELECT booking_id FROM foglalas_kulcs WHERE kulcs = ?1').bind(e.kulcs).first();
-  if (sor && sor.booking_id === bookingId) return { ok: true, irva: false, idempotens: true, utkozes: false, kulcs: e.kulcs, serviceId: e.serviceId };
+  if (sor && sor.booking_id === bookingId) { await aliasIr(); return { ok: true, irva: false, idempotens: true, utkozes: false, kulcs: e.kulcs, serviceId: e.serviceId }; }
   await db.prepare('INSERT INTO foglalas_kulcs_utkozes (kulcs, booking_id_elso, booking_id_uj, ido) VALUES (?1, ?2, ?3, ?4)').bind(e.kulcs, sor ? sor.booking_id : '?', bookingId, t).run();
   return { ok: true, irva: false, idempotens: false, utkozes: true, kulcs: e.kulcs, serviceId: e.serviceId, meglevoBookingId: sor ? sor.booking_id : null };
 }
