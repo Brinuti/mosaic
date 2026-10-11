@@ -158,7 +158,7 @@
       if (!adat || !adat.sorok) return;
       for (const d of datumok) {
         const sorok = adat.sorok[d.dataset.mpKitelepules];
-        if (sorok && sorok.length) d.replaceChildren(...sorok.map(rovid).flatMap((x, i) => (i ? [document.createElement('br'), x] : [x])));
+        if (sorok && sorok.length) d.replaceChildren(...sorok.map(d.hasAttribute('data-teljes') ? (x) => x : rovid).flatMap((x, i) => (i ? [document.createElement('br'), x] : [x])));
       }
     }).catch(() => { /* marad a build idejen beirt allapot */ });
   }

@@ -16,7 +16,7 @@ import { fajlnev } from '../lib/utvonal.js';
 import { TABLAZAT_CSV, osszesSor, htmlFrissites } from '../lib/kitelepulesek.js';
 import { takarit } from './takaritas.mjs';
 import { gyorsit } from './gyorsitas.mjs';
-import { ujFooldal, ujKitelepules } from './uj-fooldal.mjs';
+import { ujFooldal, ujOldalak, ujKitelepules } from './uj-fooldal.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -58,6 +58,7 @@ fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: tru
 // az uj, rejtett fooldal (/uj-fooldal): kezzel irt lap, nem a Wix-klon resze (tools/uj-fooldal.mjs); a foglalomotor-indito, a verziojelek
 // es a foglalas-meres alabb ugyanugy kerulnek ra, mint a tobbi lapra
 ujFooldal(ROOT, DIST);
+ujOldalak(ROOT, DIST);
 // foglalomotor (assets/js/motor/, assets/js/motor-indito.js; MP-FOGLALOMOTOR-FELADAT): az indito minden lapra kerul, a
 // kapcsolo (motor-kapcsolo.json: 0 = mindenki a regi Salonic-foglalot kapja, 100 = a motor nyilik) az inditoba irodik.
 // A motor moduljai egymast verziojellel importaljak (?v=<a modulok tartalmanak jele>): egy evig tarolhatok (_headers),
