@@ -41,7 +41,7 @@ for (const ut of ['/foglalas-ok-mi', '/foglalas-ok', '/foglalas-ok-slim', '/fulb
   const allapot = await p.evaluate(() => ({ dl: JSON.stringify(window.dataLayer || []), ss: JSON.stringify(sessionStorage), ls: JSON.stringify(localStorage), cim: document.title,
     adat: JSON.stringify(window.mpKoszonoAdat || null), felsorolhato: Object.keys(window).includes('mpKoszonoAdat'), regi: 'mpKoszonoEredeti' in window, fagyott: Object.isFrozen(window.mpKoszonoAdat) }));
   const semleges = ut.startsWith('/fulbevalo-ok') ? '/fulbevalo-ok' : '/foglalas-ok';
-  ok(`${ut}: semleges utvonal (${semleges}), a cimben csak price + first_booking marad`, new URL(p.url()).pathname === semleges && [...q.keys()].sort().join(',') === 'first_booking,price' && q.get('price') === '24900', p.url().replace(CIM, ''));
+  ok(`${ut}: semleges utvonal (${semleges}), a cimben csak price + first_booking + mert=1 marad`, new URL(p.url()).pathname === semleges && [...q.keys()].sort().join(',') === 'first_booking,mert,price' && q.get('price') === '24900' && q.get('mert') === '1', p.url().replace(CIM, ''));
   ok(`${ut}: semleges lapcim`, allapot.cim === 'Sikeres foglalás | Medical Piercing', allapot.cim);
   ok(`${ut}: a memoriaban csak minimalis, fagyasztott, nem felsorolhato adat (szolgaltatasnev, helyszin, munkatars nelkul); teljes eredeti URL nincs`,
     allapot.fagyott && !allapot.felsorolhato && !allapot.regi && !['Migr', '"service"', '"category"', 'Szeged', 'TesztKezelo', '"location"', '"employee"', '"g"', 'ok-mi', 'ok-slim', 'ok3', 'klimax'].some((x) => allapot.adat.includes(x)), allapot.adat.slice(0, 160));
@@ -60,7 +60,7 @@ for (const ut of ['/foglalas-ok-mi', '/foglalas-ok', '/foglalas-ok-slim', '/fulb
   const p = await ctx.newPage();
   await p.goto(koszono('/foglalas-ok-mi'), { waitUntil: 'load' }); await varj(1200);
   ok('3 elutasitas: tiszta cim, meres foglalasi adattal de gclid nelkul, kulso keres erzekeny adat nelkul',
-    [...new URL(p.url()).searchParams.keys()].sort().join(',') === 'first_booking,price' && kuldott.length === 1 && !kuldott[0].kattintas && kuldott[0].p.bookingUrl === BURL && kulso.every((k) => !szivarog(k.u).length));
+    [...new URL(p.url()).searchParams.keys()].sort().join(',') === 'first_booking,mert,price' && kuldott.length === 1 && !kuldott[0].kattintas && kuldott[0].p.bookingUrl === BURL && kulso.every((k) => !szivarog(k.u).length));
   await ctx.close();
 }
 // 4. Ujratoltes: a tiszta cimrol sem mer ketszer (a marMert az eredeti booking_id-t jegyzi meg), es a cim tiszta marad
@@ -100,6 +100,38 @@ for (const ut of ['/foglalas-ok-mi', '/foglalas-ok', '/foglalas-ok-slim', '/fulb
     setTimeout(() => res(null), 5000);
   }), koszono('/foglalas-ok-mi'));
   ok('6 idegen tartomanyu szulo nem kapja meg az uzenetet', url === null, url ? 'MEGKAPTA' : 'nem kapta meg');
+  await ctx.close();
+}
+// 7. VALODI ujratoltes / uj lap / vissza-elore a TISZTITOTT cimrol: se cimkebetoltes (Ads, GA4, GTM, pixelek), se uj D1-kuldes
+{
+  const CIMKE = /googletagmanager|google-analytics|googleadservices|doubleclick|googlesyndication|facebook|tiktok|stape\./;
+  const { ctx, kuldott, kulso } = await kornyezet(true);
+  const p = await ctx.newPage();
+  await p.goto(koszono('/foglalas-ok-mi'), { waitUntil: 'load' }); await varj(1500);
+  const tiszta = p.url();
+  const c0 = kulso.filter((k) => CIMKE.test(k.u)).length, d0 = kuldott.length;
+  ok('7a elso megnyitas: a cimkek betoltenek es a sajat meres egyszer kuld', c0 > 0 && d0 === 1, `${c0} cimkekeres, ${d0} D1-kuldes, cim: ${tiszta.replace(CIM, '')}`);
+  const uj = () => ({ c: kulso.filter((k) => CIMKE.test(k.u)).length - c0, d: kuldott.length - d0 });
+  await p.reload({ waitUntil: 'load' }); await varj(1500);
+  let u = uj(); const jel = await p.evaluate(() => document.documentElement.getAttribute('data-mp-mar-mert'));
+  ok('7b page.reload() (F5) ugyanabban a fulben: 0 uj cimkekeres, 0 uj D1-kuldes', u.c === 0 && u.d === 0 && jel === '1' && p.url() === tiszta, `${u.c} cimke, ${u.d} D1, jel=${jel}`);
+  const p2 = await ctx.newPage();
+  await p2.goto(tiszta, { waitUntil: 'load' }); await varj(1500);
+  u = uj();
+  ok('7c a tisztitott cim uj fulben: 0 uj cimkekeres, 0 uj D1-kuldes', u.c === 0 && u.d === 0, `${u.c} cimke, ${u.d} D1`);
+  await p2.close();
+  await p.goto(`${CIM}/elerhetosegek`, { waitUntil: 'load' }); await varj(800);
+  const c1 = kulso.filter((k) => CIMKE.test(k.u)).length; // a masik lap sajat cimkei
+  await p.goBack({ waitUntil: 'load' }); await varj(1500);
+  const vissza = { c: kulso.filter((k) => CIMKE.test(k.u)).length - c1, d: kuldott.length - d0, url: p.url() };
+  ok('7d vissza a koszonooldalra: 0 uj cimkekeres, 0 uj D1-kuldes', vissza.c === 0 && vissza.d === 0 && vissza.url === tiszta, `${vissza.c} cimke, ${vissza.d} D1, ${vissza.url.replace(CIM, '')}`);
+  await p.goForward({ waitUntil: 'load' }); await varj(800);
+  await p.goBack({ waitUntil: 'load' }); await varj(1500);
+  const c2 = kulso.filter((k) => CIMKE.test(k.u)).length;
+  await p.evaluate(() => 0);
+  ok('7e elore, majd ujra vissza: 0 uj D1-kuldes, a koszonooldal nem mer ujra', kuldott.length - d0 === 0 && (await p.evaluate(() => document.documentElement.getAttribute('data-mp-mar-mert') === '1' || performance.getEntriesByType('navigation')[0]?.type === 'back_forward')), `${kuldott.length - d0} D1`);
+  // bfcache nelkul is: kozvetlen navigacio az elozmenybol (uj dokumentum) - a 7c lefedi; a nem cimke-oldal betoltese adja c2-c1-et
+  void c2;
   await ctx.close();
 }
 await b.close();
