@@ -103,15 +103,21 @@
     '#mp-cc .mp-kat small{display:block;color:#5b5b66}' +
     '#mp-cc input[type=checkbox]{width:20px;height:20px;margin-top:2px;flex:none;accent-color:#474759}' +
     '#mp-cc-beall .mp-gombok{margin-top:10px}' +
-    '@media (max-width:600px){#mp-cc{font-size:12px;padding:10px 12px}#mp-cc p{margin-bottom:8px}#mp-cc .mp-gomb{padding:8px 10px;font-size:13px;min-width:0}}';
+    // vekony, egysoros sav (Feri, 2026-10-11 16:14): a beallitasok nezet marad doboz
+    '#mp-cc[data-nezet=fo]{left:0;right:0;bottom:0;max-width:none;border-radius:0;padding:5px 10px;font-size:12px;line-height:1.3;box-shadow:0 -1px 6px rgba(0,0,0,.15)}' +
+    '#mp-cc-fo{display:flex;align-items:center;gap:8px}' +
+    '#mp-cc-fo p{flex:1 1 auto;margin:0}' +
+    '#mp-cc-fo .mp-gombok{flex:0 0 auto;flex-wrap:nowrap;gap:6px}' +
+    '#mp-cc-fo .mp-gomb{flex:0 0 auto;min-width:0;padding:4px 10px;font-size:12px;border-width:1px}' +
+    '#mp-cc-fo .mp-link{padding:4px 2px;font-size:11px}' +
+    '@media (max-width:600px){#mp-cc[data-nezet=fo]{padding:4px 8px;font-size:11px}#mp-cc-fo{gap:6px}#mp-cc-fo .mp-gomb{padding:3px 8px;font-size:11px}#mp-cc-fo .mp-gombok{gap:4px}#mp-cc-fo .mp-link{font-size:10px;padding:2px 0}#mp-cc-fo p{font-size:10.5px}#mp-cc-fo .mp-gomb{padding:3px 7px}#mp-cc-beall p{margin-bottom:8px}}';
   var kategoria = function (id, cim, leiras) {
     return '<div class="mp-kat"><div><b>' + cim + '</b><small>' + leiras + '</small></div>' +
       '<input type="checkbox"' + (id ? ' id="' + id + '"' : ' checked disabled') + ' aria-label="' + cim + '"></div>';
   };
   var JELOLES =
     '<div id="mp-cc-fo">' +
-      '<p>Sütiket használunk az oldal működéséhez, és – ha hozzájárulsz – látogatottsági statisztikához és hirdetéseink méréséhez (Google, Meta, TikTok). ' +
-      'Döntésedet bármikor módosíthatod az oldal alján, a „Süti beállítások” linkkel. <a href="/adatkezeles" target="_blank" rel="noopener">Adatkezelési tájékoztató</a></p>' +
+      '<p>Sütiket használunk a méréshez (<a href="/adatkezeles" target="_blank" rel="noopener">részletek</a>).</p>' +
       '<div class="mp-gombok">' +
         '<button type="button" class="mp-gomb" data-mp="elutasit">Elutasítom</button>' +
         '<button type="button" class="mp-gomb" data-mp="elfogad">Elfogadom</button>' +
@@ -133,11 +139,12 @@
   // mobilon a Wix gyorsmenu-savja (QUICK_ACTION_BAR) folott marad; a felso fejlec "Idopontok" gombjat nem takarja
   var helyez = function () {
     // (a gyorsmenu-sav gorgeteskor csuszik be: akkor is helyet hagyunk neki, ha eppen nem latszik)
-    var q = document.getElementById('QUICK_ACTION_BAR'), also = 8;
+    var vekony = sav.getAttribute('data-nezet') !== 'beall';
+    var q = document.getElementById('QUICK_ACTION_BAR'), also = vekony ? 0 : 8;
     if (q && q.offsetHeight) {
       var r = q.getBoundingClientRect();
       var res = r.top < innerHeight && r.bottom <= innerHeight + 1 ? Math.max(0, innerHeight - r.bottom) : 16;
-      also = q.offsetHeight + res + 8;
+      also = q.offsetHeight + res + (vekony ? 0 : 8);
     }
     sav.style.bottom = also + 'px';
   };
@@ -150,10 +157,10 @@
       document.getElementById('mp-cc-stat').checked = !!(dontes && dontes.stat);
       document.getElementById('mp-cc-mark').checked = !!(dontes && dontes.mark);
     }
+    sav.setAttribute('data-nezet', nezet || 'fo');
     sav.style.display = 'block';
     helyez();
     setTimeout(function () { if (sav.style.display !== 'none') helyez(); }, 1200);
-    sav.setAttribute('data-nezet', nezet || 'fo');
   };
   var elrejt = function () { if (sav) sav.style.display = 'none'; };
   var lableclink = function () {
