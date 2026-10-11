@@ -1,6 +1,7 @@
 // Valodi probafoglalas a foglalomotorral (QA-2). A mero-kereseket eldobja es naplozza; a sajat /api/mp-foglalas jelzest
 // elkapja es naplozza (nem kerul a D1-be). A Salonic felé csak a beagyazott adatlap megy (betoltes + bekuldes).
 //   PROBA_EMAIL=<olvashato cim> BASE=https://www.medicalpiercing.hu node tools/motor-proba/probafoglalas.mjs --nev=1 --hely=6029 --szolg=115575 --honnan=/migren-piercing [--mobil] [--kuld]
+// --parameter-nelkul: ?motor=1 nelkul nyitja az oldalt (100%-os kapcsolo mellett ez a valodi latogato utja).
 // --kuld nelkul csak kitolti (nem kuldi be). Utana AZONNAL: node tools/motor-proba/lemond.mjs <lemondoUrl> (a kimenetben). Egyben: proba-futtat.sh.
 // Vendegnev: "TESZT –" "Claude"; az idopont a legtavolabbi nap legkesobbi idopontja.
 import { chromium, devices } from '../pw.mjs';
@@ -9,6 +10,8 @@ const S = process.env.KI || new URL('./kimenet', import.meta.url).pathname; fs.m
 const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : d; };
 const BASE = (process.env.BASE || 'https://www.medicalpiercing.hu').replace(/\/$/, '');
 const MOBIL = process.argv.includes('--mobil'), KULD = process.argv.includes('--kuld');
+// --parameter-nelkul: a ?motor=1 NEM kerul az URL-be (a kapcsolo 100%-on van: igy kapja egy valodi latogato)
+const PARAMETER_NELKUL = process.argv.includes('--parameter-nelkul');
 const NEV = arg('nev', 'x'), HELY = arg('hely', '6029'), SZOLG = arg('szolg', '115575'), HONNAN = arg('honnan', '/idopontfoglalas');
 const GCLID = 'TESZTCLAUDE' + Date.now();
 // a visszaigazolo level ide jon (a lemondo link miatt olvasni kell tudni); telefon: alapbol az MP szalon szama
@@ -21,14 +24,14 @@ const ctx = await b.newContext(MOBIL ? { ...devices['Pixel 5'], locale: 'hu-HU' 
 await ctx.route(/\/api\/mp-foglalas$/, (r) => { let k = false; try { const f = r.request().frame(); k = f !== f.page().mainFrame(); } catch (e) { k = true; } naplo.api.push({ keret: k, torzs: r.request().postData() }); r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }); });
 await ctx.route((u) => !u.toString().startsWith(BASE), (r) => {
   const q = r.request(), u = q.url();
-  if (SZABAD.test(u) || /^https:\/\/medicalpiercing\.hu\/foglalas-ok/.test(u)) return r.continue();
+  if (SZABAD.test(u) || /^https:\/\/medicalpiercing\.hu\/(foglalas-ok|fulbevalo-ok)/.test(u)) return r.continue();
   naplo.eldobott.push(u.slice(0, 160)); return r.abort();
 });
 const p = await ctx.newPage();
 p.on('pageerror', (e) => naplo.hibak.push(e.message.slice(0, 160)));
 const sr = (fn, a) => p.evaluate(([fn, a]) => { const h = document.querySelector('[data-mp-motor]'); return h ? new Function('r', 'a', fn)(h.shadowRoot, a) : null; }, [fn, a]);
 const varj = async (sel, ms = 30000) => { for (let i = 0; i < ms / 250; i++) { if (await sr('return !!r.querySelector(a)', sel)) return true; await p.waitForTimeout(250); } throw new Error('nincs: ' + sel); };
-await p.goto(`${BASE}${HONNAN}?motor=1&gclid=${GCLID}`, { waitUntil: 'load' });
+await p.goto(`${BASE}${HONNAN}?${PARAMETER_NELKUL ? '' : 'motor=1&'}gclid=${GCLID}`, { waitUntil: 'load' });
 if (HONNAN !== '/idopontfoglalas') await p.goto(`${BASE}/idopontfoglalas`, { waitUntil: 'load' });
 await p.waitForTimeout(1500);
 await p.evaluate(() => { const l = [...document.querySelectorAll('a[href*="medicalpiercing.salonic.hu/selectLocation"]')]; const a = l.find((x) => x.offsetParent) || l[0]; a.scrollIntoView({ block: 'center' }); a.click(); });
@@ -56,14 +59,16 @@ await tolt('#GuestDataForm_guestPhoneTemp', TELEFON);
 await tolt('#GuestDataForm_guestLastName', 'TESZT –');
 await tolt('#GuestDataForm_guestFirstName', 'Claude');
 await tolt('#GuestDataForm_guestEmail', EMAIL);
-await tolt('#GuestDataForm_guestComment', `Próbafoglalás (TESZT) – foglalómotor-ellenőrzés #${NEV}, azonnal lemondjuk.`);
+// az mp.css (Salonic "Egyedi CSS URL") mobilon elrejti a nem kotelezo megjegyzes-mezot: csak akkor toltjuk, ha latszik
+naplo.megjegyzesLatszik = await f.locator('#GuestDataForm_guestComment').first().isVisible();
+if (naplo.megjegyzesLatszik) await tolt('#GuestDataForm_guestComment', `Próbafoglalás (TESZT) – foglalómotor-ellenőrzés #${NEV}, azonnal lemondjuk.`);
 await f.locator('#GuestDataForm_acceptTerms').check();
 naplo.rejtettTelefon = await f.evaluate(() => [document.querySelector('#GuestDataForm_guestPhone')?.value, document.querySelector('#GuestDataForm_guestPhoneFull')?.value]);
 if (await p.locator('iframe[src*="recaptcha"][src*="bframe"]').count()) naplo.recaptchaKeret = true;
 p.on('response', async (r) => { if (r.request().method() === 'POST' && /salonic\.hu\/guestData/.test(r.url())) { let t = ''; try { t = await r.text(); } catch (e) {} naplo.kuldesValasz = { status: r.status(), torzs: t.slice(0, 1500) }; const m = t.match(/bookingId=([0-9a-f-]{36})/); if (m) { naplo.salonicUuid = m[1]; naplo.lemondoUrl = 'https://medicalpiercing.salonic.hu/booking/cancelBooking/' + m[1]; } } });
 await p.screenshot({ path: `${S}/proba-${NEV}-urlap.png` });
 if (!KULD) { naplo.megjegyzes = 'KULD nelkul: nem kuldtuk be'; console.log(JSON.stringify(naplo, null, 1)); await b.close(); process.exit(0); }
-const nav = p.waitForURL(/\/foglalas-ok[a-z0-9-]*\/?\?.*booking_id=mb_/i, { timeout: 90000 }).then(() => true, () => false);
+const nav = p.waitForURL(/\/(foglalas-ok[a-z0-9-]*|fulbevalo-ok\d*)\/?\?.*booking_id=mb_/i, { timeout: 90000 }).then(() => true, () => false);
 await f.click('#button-submit-booking');
 naplo.atadva = await nav;
 naplo.koszonoUrl = p.url();
