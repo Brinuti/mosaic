@@ -2,7 +2,7 @@
  {
   "ut": "/",
   "kulcs": "index",
-  "tipus": "blog",
+  "tipus": "oldal",
   "szekcio": 21,
   "magassag": 20708,
   "cim": "Migrén piercing és Shenmen Piercing Budapest"
@@ -570,7 +570,7 @@
  {
   "ut": "/home",
   "kulcs": "home",
-  "tipus": "blog",
+  "tipus": "oldal",
   "szekcio": 21,
   "magassag": 20708,
   "cim": "Migrén piercing és Shenmen Piercing Budapest"
@@ -578,7 +578,7 @@
  {
   "ut": "/home2",
   "kulcs": "home2",
-  "tipus": "blog",
+  "tipus": "oldal",
   "szekcio": 21,
   "magassag": 18600,
   "cim": "Migrén piercing és Shenmen Piercing Budapest + Sopron"
@@ -1002,7 +1002,7 @@
  {
   "ut": "/piercing-garanciaval",
   "kulcs": "piercing-garanciaval",
-  "tipus": "blog",
+  "tipus": "oldal",
   "szekcio": 19,
   "magassag": 14455,
   "cim": "Migrén piercing és Shenmen Piercing Budapest + Sopron"

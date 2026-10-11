@@ -472,5 +472,5 @@
       fa: utofeldolgoz(fabol(hasznalt, s || ROOT)),
     });
   }
-  return { cim: document.title, leiras: (document.querySelector('meta[name="description"]') || {}).content || '', tipus: cikk ? 'cikk' : listaElemek.length ? 'blog' : 'oldal', szekciok: out, urlapok, magassag: Math.round(document.documentElement.scrollHeight) };
+  return { cim: document.title, leiras: (document.querySelector('meta[name="description"]') || {}).content || '', tipus: cikk ? 'cikk' : listaElemek.length > 6 ? 'blog' : 'oldal', szekciok: out, urlapok, magassag: Math.round(document.documentElement.scrollHeight) };
 })()

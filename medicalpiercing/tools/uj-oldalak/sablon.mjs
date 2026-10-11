@@ -379,11 +379,12 @@ export function csoport(o) {
   if (/^\/varosok\//.test(ut)) return '4. Helyszínek (városoldalak)';
   if (/^\/piercer-/.test(ut)) return '5. Piercerek';
   if (/^\/allasajanlat/.test(ut)) return '7. Állásajánlatok';
+  if (/^\/(foglalas-ok|fulbevalo-ok|kerdoiv-ok)|-ok\d*$|-xyz$|^\/(koszon|koszi|thank)/.test(ut)) return '11. Köszönőoldalak (foglalás / űrlap után)';
   if (o.tipus === 'cikk') return '9. Blogcikkek';
   if (o.tipus === 'blog') return '8. Blog';
-  if (/(^\/)(adatkezeles|aszf|nyeremenyjatek|impresszum|cookie|suti)/.test(ut)) return '10. Jogi oldalak';
-  if (/-(ok|xyz)$|^\/(koszon|koszi|thank)/.test(ut)) return '11. Köszönőoldalak (űrlap után)';
-  if (/piercing|ekszer|szuras|migren|shenmen|klimax|slim|allergia|maj|lep|vastagbel|pajzsmirigy|ful-|akupunktura|kontroll-es|garancia|arlista|araert/.test(ut)) return '3. Piercingek, árak, garancia';
+  if (/^\/(adatkezeles|aszf|nyeremenyjatek|impresszum)/.test(ut)) return '10. Jogi oldalak és nyereményjáték';
+  if (/^\/(event-details-registration|fullscreen-page|schedule-1|search)$/.test(ut)) return '12. Egyéb (Wix-sablon maradványok)';
+  if (/piercing|ekszer|szuras|migren|shenmen|klimax|slim|allergia|maj|lep|vastagbel|pajzsmirigy|ful-|akupunktura|kontroll-es|garancia|arlista|araert|fejfajas/.test(ut)) return '3. Piercingek, árak, garancia';
   return '2. Fő oldalak';
 }
 
