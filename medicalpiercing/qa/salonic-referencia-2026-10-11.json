@@ -1,0 +1,4475 @@
+{
+ "meta": {
+  "forras": "https://medicalpiercing.salonic.hu (nyilvanos foglalooldalak) + api.salonic.hu/calendar/getAvailableTimes (a selectDate oldal sajat GET-hivasa)",
+  "gyujtve": "2026-10-11T09:35:14+02:00",
+  "idoszak": [
+   "2026-10-11",
+   "2026-10-24"
+  ],
+  "nyelv": "hu",
+  "keresek": 177,
+  "http_statuszok": {
+   "200": 177
+  },
+  "ütem": "<=1 keres/mp (1.1 s szunet)",
+  "modszer": "showServices -> szolgaltatasok (data-id/name/price/duration/employees); selectEmployee (a legtobb munkatarssal biro szolgaltatasra) -> munkatarsnevek; selectDate employeeId=-1 -> naptar tiltott napjai; getAvailableTimes naponta (employeeId=-1, a fenti szolgaltatassal) -> foglalhato nap = van szabad idopont. Foglalas, urlap, belepes nem tortent.",
+  "megjegyzes": "A foglalhatosag a jelzett \"elerhetoseg_szolgaltatas\" idotartamaval ervenyes; hosszabb szolgaltatasnal kevesebb szabad idopont lehet."
+ },
+ "helyszinek": [
+  {
+   "placeId": 6029,
+   "varoskod": "bp",
+   "helyszin_nev": "Medical Piercing - Budapest",
+   "cim": "1137 Budapest, Újpesti rakpart 7. 5.emelet 25 csengő",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      17769,
+      19566,
+      25773
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      17769,
+      19566,
+      25773
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 13509,
+     "nev": "Kovács Gabriella"
+    },
+    {
+     "employeeId": 17769,
+     "nev": "Kovács Richárd"
+    },
+    {
+     "employeeId": 19566,
+     "nev": "Kamilli Viktória"
+    },
+    {
+     "employeeId": 25773,
+     "nev": "Nagy -Markó Fanni"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 115575,
+    "nev": "1 db Fejfájás / Migrén Piercing",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 58,
+     "munkatarsIdk": [
+      19566
+     ],
+     "api_datum": "2026-10-12"
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 104,
+     "munkatarsIdk": [
+      13509
+     ],
+     "api_datum": "2026-10-13"
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 116,
+     "munkatarsIdk": [
+      13509,
+      25773
+     ],
+     "api_datum": "2026-10-14"
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 84,
+     "munkatarsIdk": [
+      13509,
+      25773
+     ],
+     "api_datum": "2026-10-15"
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 97,
+     "munkatarsIdk": [
+      13509
+     ],
+     "api_datum": "2026-10-16"
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 87,
+     "munkatarsIdk": [
+      13509,
+      19566
+     ],
+     "api_datum": "2026-10-17"
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 116,
+     "munkatarsIdk": [
+      19566
+     ],
+     "api_datum": "2026-10-19"
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 105,
+     "munkatarsIdk": [
+      13509,
+      17769
+     ],
+     "api_datum": "2026-10-20"
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 180,
+     "munkatarsIdk": [
+      13509,
+      17769,
+      25773
+     ],
+     "api_datum": "2026-10-21"
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 96,
+     "munkatarsIdk": [
+      17769,
+      25773
+     ],
+     "api_datum": "2026-10-22"
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 209,
+     "munkatarsIdk": [
+      17769,
+      19566
+     ],
+     "api_datum": "2026-10-24"
+    }
+   ],
+   "foglalhato_napok": [
+    "2026-10-12",
+    "2026-10-13",
+    "2026-10-14",
+    "2026-10-15",
+    "2026-10-16",
+    "2026-10-17",
+    "2026-10-19",
+    "2026-10-20",
+    "2026-10-21",
+    "2026-10-22",
+    "2026-10-24"
+   ]
+  },
+  {
+   "placeId": 13422,
+   "varoskod": "bekescsaba",
+   "helyszin_nev": "Medical Piercing - Békéscsaba",
+   "cim": "5600 Békéscsaba, Wlassics sétány.    Image szalon 5/6",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      27569
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 27569,
+     "nev": "Szulimán Nikoletta"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-11"
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-12"
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-13"
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-14"
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-15"
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 56,
+     "munkatarsIdk": [
+      27569
+     ],
+     "api_datum": "2026-10-16"
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-17"
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-19"
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-20"
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-21"
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 83,
+     "munkatarsIdk": [
+      27569
+     ],
+     "api_datum": "2026-10-22"
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-23"
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-24"
+    }
+   ],
+   "foglalhato_napok": [
+    "2026-10-16",
+    "2026-10-22"
+   ]
+  },
+  {
+   "placeId": 10330,
+   "varoskod": "kecskemet",
+   "helyszin_nev": "Medical Piercing - Kecskeméti kitelepülés",
+   "cim": "6000 Kecskemét Vágó utca 19.",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      27569
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 27569,
+     "nev": "Szulimán Nikoletta"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-11"
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-12"
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 57,
+     "munkatarsIdk": [
+      27569
+     ],
+     "api_datum": "2026-10-13"
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-14"
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-15"
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-16"
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-17"
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-19"
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 80,
+     "munkatarsIdk": [
+      27569
+     ],
+     "api_datum": "2026-10-20"
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-21"
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-22"
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-23"
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-24"
+    }
+   ],
+   "foglalhato_napok": [
+    "2026-10-13",
+    "2026-10-20"
+   ]
+  },
+  {
+   "placeId": 10329,
+   "varoskod": "keszthely",
+   "helyszin_nev": "Medical Piercing - Keszthelyi kitelepülés",
+   "cim": "8360 Keszthely Fenyves u 13",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      32224
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 32224,
+     "nev": "Szalai Nóra"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 65,
+     "munkatarsIdk": [
+      32224
+     ],
+     "api_datum": "2026-10-13"
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 88,
+     "munkatarsIdk": [
+      32224
+     ],
+     "api_datum": "2026-10-21"
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    }
+   ],
+   "foglalhato_napok": [
+    "2026-10-13",
+    "2026-10-21"
+   ]
+  },
+  {
+   "placeId": 10357,
+   "varoskod": "miskolc",
+   "helyszin_nev": "Medical Piercing - Miskolci kitelepülés",
+   "cim": "3530 Miskolc Széchenyi István utca 19 4/2 Széchenyi Egészségpont 4. emelet",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      19566
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 19566,
+     "nev": "Kamilli Viktória"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-11"
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-12"
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": null
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-14"
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-15"
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-16"
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": null
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-19"
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": null
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-21"
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-22"
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-23"
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-24"
+    }
+   ],
+   "foglalhato_napok": []
+  },
+  {
+   "placeId": 9067,
+   "varoskod": "sopron",
+   "helyszin_nev": "Medical Piercing - Sopron",
+   "cim": "9400 Sopron, Club Vital - Kertvárosi utca 38. Bejárat a fogászatnál",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      20562
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 20562,
+     "nev": "Mester Brigitta"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 71,
+     "munkatarsIdk": [
+      20562
+     ],
+     "api_datum": "2026-10-12"
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 78,
+     "munkatarsIdk": [
+      20562
+     ],
+     "api_datum": "2026-10-14"
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 82,
+     "munkatarsIdk": [
+      20562
+     ],
+     "api_datum": "2026-10-19"
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 101,
+     "munkatarsIdk": [
+      20562
+     ],
+     "api_datum": "2026-10-21"
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    }
+   ],
+   "foglalhato_napok": [
+    "2026-10-12",
+    "2026-10-14",
+    "2026-10-19",
+    "2026-10-21"
+   ]
+  },
+  {
+   "placeId": 12169,
+   "varoskod": "szeged",
+   "helyszin_nev": "Medical Piercing - Szegedi kitelepülés",
+   "cim": "6721 Szeged, Felső Tisza-part 17.",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      27569
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      27569
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 27569,
+     "nev": "Szulimán Nikoletta"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 37,
+     "munkatarsIdk": [
+      27569
+     ],
+     "api_datum": "2026-10-12"
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 74,
+     "munkatarsIdk": [
+      27569
+     ],
+     "api_datum": "2026-10-19"
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    }
+   ],
+   "foglalhato_napok": [
+    "2026-10-12",
+    "2026-10-19"
+   ]
+  },
+  {
+   "placeId": 14229,
+   "varoskod": "szombathely",
+   "helyszin_nev": "Medical Piercing - Szombathely",
+   "cim": "9700 Szombathely, Thököly Imre u 16.     Isis - Dental",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      20562
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      20562
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 20562,
+     "nev": "Mester Brigitta"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-11"
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-12"
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-13"
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-14"
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-15"
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-16"
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-17"
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-18"
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-19"
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-20"
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-21"
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-22"
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-23"
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-24"
+    }
+   ],
+   "foglalhato_napok": []
+  },
+  {
+   "placeId": 11424,
+   "varoskod": "debrecen",
+   "helyszin_nev": "Medical Piercing- Debreceni kitelepülés",
+   "cim": "4031 Debrecen Derék utca 100/B",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      27575
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      27575
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 27575,
+     "nev": "Fekete Henrietta"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 3,
+     "munkatarsIdk": [
+      27575
+     ],
+     "api_datum": "2026-10-19"
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    }
+   ],
+   "foglalhato_napok": [
+    "2026-10-19"
+   ]
+  },
+  {
+   "placeId": 14144,
+   "varoskod": "kaposvar",
+   "helyszin_nev": "Medical Piercing- Kaposvár",
+   "cim": "7400 Kaposvár, Arany János tér 5. ",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      30145
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 30145,
+     "nev": "Tompek Kornélia"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-11"
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-12"
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-13"
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-14"
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-15"
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-16"
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-17"
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-18"
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-19"
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 33,
+     "munkatarsIdk": [
+      30145
+     ],
+     "api_datum": "2026-10-20"
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-21"
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-22"
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-23"
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-24"
+    }
+   ],
+   "foglalhato_napok": [
+    "2026-10-20"
+   ]
+  },
+  {
+   "placeId": 12348,
+   "varoskod": "nagykanizsa",
+   "helyszin_nev": "Medical Piercing- Nagykanizsai kitelepülés",
+   "cim": "8800 Nagykanizsa, Ady Endre utca 12/A",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      32224
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 32224,
+     "nev": "Szalai Nóra"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-11"
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-12"
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-13"
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-14"
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-15"
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-16"
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-17"
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-19"
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-20"
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-21"
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 82,
+     "munkatarsIdk": [
+      32224
+     ],
+     "api_datum": "2026-10-22"
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-23"
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-24"
+    }
+   ],
+   "foglalhato_napok": [
+    "2026-10-22"
+   ]
+  },
+  {
+   "placeId": 12353,
+   "varoskod": "nyiregyhaza",
+   "helyszin_nev": "Medical Piercing- Nyíregyházi kitelepülés",
+   "cim": "4400 Nyíregyháza, Mező u 6. ",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      27571
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      27571
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 27571,
+     "nev": "Fekete Henrietta"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 15,
+     "munkatarsIdk": [
+      27571
+     ],
+     "api_datum": "2026-10-16"
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    }
+   ],
+   "foglalhato_napok": [
+    "2026-10-16"
+   ]
+  },
+  {
+   "placeId": 14145,
+   "varoskod": "szekesfehervar",
+   "helyszin_nev": "Medical Piercing- Székesfehérvár",
+   "cim": "8000 Székesfehérvár, Tobak utca 10. Endocam",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      13509,
+      19566
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      13509,
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      19566,
+      20562
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      19566,
+      20562
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 13509,
+     "nev": "Kovács Gabriella"
+    },
+    {
+     "employeeId": 19566,
+     "nev": "Kamilli Viktória"
+    },
+    {
+     "employeeId": 20562,
+     "nev": null
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 115575,
+    "nev": "1 db Fejfájás / Migrén Piercing",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-11"
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-12"
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-13"
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-14"
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-15"
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-16"
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-17"
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-18"
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-19"
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-20"
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-21"
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-22"
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-23"
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-24"
+    }
+   ],
+   "foglalhato_napok": []
+  },
+  {
+   "placeId": 12237,
+   "varoskod": "zalaegerszeg",
+   "helyszin_nev": "Medical Piercing- Zalaegerszegi Kitelepülés",
+   "cim": "8900 Zalaegerszeg Bíró Márton utca 8.",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      32224
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      32224
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 32224,
+     "nev": "Szalai Nóra"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-11"
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-12"
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-13"
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-14"
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-15"
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 79,
+     "munkatarsIdk": [
+      32224
+     ],
+     "api_datum": "2026-10-16"
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-17"
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-19"
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-20"
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-21"
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-22"
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-23"
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": false,
+     "foglalhato": false,
+     "szabad_idopontok": 0,
+     "munkatarsIdk": [],
+     "api_datum": "2026-10-24"
+    }
+   ],
+   "foglalhato_napok": [
+    "2026-10-16"
+   ]
+  },
+  {
+   "placeId": 12236,
+   "varoskod": "pecs",
+   "helyszin_nev": "Medical Piercing-Pécsi kitelepülés",
+   "cim": "7624 Pécs Boszorkány út 2/1. A épület Golden Corner Épülete, Kód: 128-kulcs-2000, 4. emelet-HelloArtist Studio",
+   "szolgaltatasok": [
+    {
+     "serviceId": 220503,
+     "nev": "🔥 3 PIERCING - A HARMADIK 5.000 Ft!🔥",
+     "ar_ft": 44900,
+     "perc": 15,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 189184,
+     "nev": "🔥 2 PIERCING A 2.FÉLÁRON! 🔥",
+     "ar_ft": 39900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 189187,
+     "nev": "👭 2 személynek - 2 db piercing",
+     "ar_ft": 49800,
+     "perc": 15,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 225972,
+     "nev": "👭 2 személynek - 4 db piercing",
+     "ar_ft": 79800,
+     "perc": 25,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 417831,
+     "nev": "👭 2 személynek - 6 db piercing",
+     "ar_ft": 89800,
+     "perc": 30,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 115575,
+     "nev": "1 db Fejfájás / Migrén Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 133236,
+     "nev": "1 db Shenmen / Stressz Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 152191,
+     "nev": "1 db Klimax- / Változókor piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 133232,
+     "nev": "1 db Slim- / Étvágycsökkentő piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 190019,
+     "nev": "1+1 db Allergia piercing",
+     "ar_ft": 34900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 214466,
+     "nev": "1 db Máj Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 214467,
+     "nev": "1 db Vastagbél Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 214468,
+     "nev": "1 db Lép Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 421557,
+     "nev": "1 db Allergia Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 451328,
+     "nev": "1 db Pajzsmirigy Piercing",
+     "ar_ft": 24900,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 395895,
+     "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 12000,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 402057,
+     "nev": "2 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 20000,
+     "perc": 10,
+     "munkatarsIdk": [
+      30145
+     ]
+    },
+    {
+     "serviceId": 402059,
+     "nev": "3 db Fülbevaló-  / Divat fülpiercing szúrás",
+     "ar_ft": 30000,
+     "perc": 15,
+     "munkatarsIdk": [
+      30145
+     ]
+    }
+   ],
+   "munkatarsak": [
+    {
+     "employeeId": 30145,
+     "nev": "Tompek Kornélia"
+    }
+   ],
+   "elerhetoseg_szolgaltatas": {
+    "serviceId": 395895,
+    "nev": "1 db Fülbevaló-  / Divat fülpiercing szúrás",
+    "perc": 10
+   },
+   "naptar": {
+    "min": "2026, 9, 11",
+    "max": "2027, 3, 09"
+   },
+   "napok": [
+    {
+     "datum": "2026-10-11",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-12",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-13",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-14",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-15",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-16",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-17",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 99,
+     "munkatarsIdk": [
+      30145
+     ],
+     "api_datum": "2026-10-17"
+    },
+    {
+     "datum": "2026-10-18",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-19",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-20",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-21",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-22",
+     "naptar_tiltott": false,
+     "foglalhato": true,
+     "szabad_idopontok": 89,
+     "munkatarsIdk": [
+      30145
+     ],
+     "api_datum": "2026-10-22"
+    },
+    {
+     "datum": "2026-10-23",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    },
+    {
+     "datum": "2026-10-24",
+     "naptar_tiltott": true,
+     "foglalhato": false
+    }
+   ],
+   "foglalhato_napok": [
+    "2026-10-17",
+    "2026-10-22"
+   ]
+  }
+ ]
+}
