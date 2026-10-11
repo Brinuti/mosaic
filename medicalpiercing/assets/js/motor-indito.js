@@ -11,7 +11,7 @@
   var KAPCSOLO = __MOTOR_KAPCSOLO__; // 0 | 100
   var MOTOR = '/assets/js/motor/motor.js?v=__MOTOR_VERZIO__';
   if (window.top !== window) return; // keretben (pl. a koszonooldal a Salonic-adatlap utan) nem
-  if (/^\/foglalas-ok/i.test(location.pathname)) return;
+  if (/^\/(foglalas-ok|fulbevalo-ok)/i.test(location.pathname)) return;
 
   var kenyszer = null;
   try {

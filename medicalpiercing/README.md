@@ -131,30 +131,64 @@ Az éles címen (`CIM=https://www.medicalpiercing.hu`) minden adatküldő kéré
 
 ### Foglalómotor (`assets/js/motor/`, `assets/js/motor-indito.js`)
 
-A MOSAIC-foglalómotor MP-adaptációja (Drive: MP-FOGLALOMOTOR-FELADAT.md). A foglalási linkek (`medicalpiercing.salonic.hu`)
-helyben nyíló foglalót nyitnak. Lépései: helyszín (15) → kezelés (a típusoldalról érkezőnek az ajánlott elöl) → időpont
-(havi naptár, szakemberválasztó) → a Salonic beágyazott adatlapja → köszönőoldal.
+A MOSAIC-foglalómotor MP-adaptációja (Drive: MP-FOGLALOMOTOR-FELADAT.md, MP-FOGLALOMOTOR-PROBAFOGLALASOK.md). A foglalási linkek
+(`medicalpiercing.salonic.hu`) helyben nyíló foglalót nyitnak, az oldal címe nem változik. A lépések:
+1. helyszín (15);
+2. kezelés (a típusoldalról érkezőnek az ajánlott elöl);
+3. időpont (havi naptár, szakemberválasztó);
+4. a Salonic beágyazott adatlapja;
+5. köszönőoldal.
 
 - **Kapcsoló:** `motor-kapcsolo.json` (`"arany": 0` = mindenki a régi Salonic-foglalót kapja, `100` = a motor nyílik). A build
-  beírja az indítóba, és minden kattintásnál érvényes. Visszaállítás: `0`, merge, deploy (1–2 perc); azonnal a Cloudflare
-  Pages előző kiadására. Próba: `?motor=1` / `?motor=0` a lap címében, az adott munkamenetre.
+  beírja az indítóba, és minden kattintásnál érvényes. Visszaállítás:
+  - `0`, merge, deploy (1–2 perc);
+  - azonnal: a Cloudflare Pages előző kiadására.
+
+  A HTML nem gyorsítótárazott, így minden új oldalbetöltés az új állást kapja. Próba: `?motor=1` / `?motor=0` a lap címében, az adott munkamenetre (sessionStorage `mp_motor`).
 - **Salonic:** csak olvasó GET a böngészőből (`salonic-adapter.js`; a Salonic és a naptár-API is engedi a CORS-t). A
-  szolgáltatás-ID, az ár és a szakember a Salonicból jön, `lang=hu`-val. A foglalást a Salonic adatlapja rögzíti.
-- **Köszönőoldal:** a Salonic a keretben a `/foglalas-ok*` oldalra irányít. Az ott futó `suti.js` jelez a motornak, és ha a motor
-  visszaigazolja (1,5 mp), a keretben nem mér. A motor ugyanazt a köszönőoldalt ugyanazokkal a paraméterekkel, plusz
-  `booking_id`-vel (`mb_…`, a `back` paraméterként is a Salonicnál) a fő ablakban nyitja meg. A régi, közvetlenül beágyazott
-  Salonic-naptáraknál (pl. `/migren-piercing-uj`) a keretben mér, mint eddig. Ugyanannak a foglalásnak a köszönőoldala egy
-  böngészőben csak egyszer mér (frissítéskor, visszalépéskor, újranyitáskor nem; kulcs: `booking_id`, ennek híján `bookingUrl`,
-  localStorage `mp_koszono`, 30 nap).
-- **Az adatlap 5 percre lefoglalja az időpontot** a Salonicban (a beágyazott Salonic-űrlap így működik). A helyi próba ezért az
-  adatlap kérését eldobja; távoli próbánál a legtávolabbi nap legkésőbbi időpontját válaszd.
+  szolgáltatás-ID, az ár és a szakember a Salonicból jön, `lang=hu`-val. A foglalást a Salonic adatlapja rögzíti. **Az adatlap
+  megnyitása a Salonicban 5 percre lefoglalja az időpontot**: a próbák a legtávolabbi nap legkésőbbi időpontját válasszák, és a
+  helyi tesztek az adatlap kérését eldobják.
+- **Köszönőoldal:** a Salonic szolgáltatásonként irányít:
+  - a gyógypiercingeknél a `/foglalas-ok*` oldalra;
+  - a divat fülpiercingnél (1/2/3 db) a `/fulbevalo-ok`, `/fulbevalo-ok2`, `/fulbevalo-ok3` oldalra;
+  - mindig a csupasz `medicalpiercing.hu`-ra, ami 301-gyel paraméterestül a www-re visz.
+
+  Átadás:
+  - A keretben futó `suti.js` jelez a motornak. Ha a motor visszaigazolja (1,5 mp), a keretben nem mér.
+  - A motor ugyanazt a köszönőoldalt ugyanazokkal a paraméterekkel, plusz `booking_id`-vel (`mb_…`, a Salonicnál `back` paraméterként is) a fő ablakban nyitja meg.
+  - Ugyanannak a foglalásnak a köszönőoldala egy böngészőben csak egyszer tölti a mérőkódokat (frissítés, visszalépés, újranyitás: nem; localStorage `mp_koszono`, 30 nap).
+  - A régi, közvetlenül beágyazott Salonic-naptáraknál (pl. `/migren-piercing-uj`) a keretben mér, mint eddig.
 - **Mérés:** a foglalásindítás (TikTok `InitiateCheckout` + GA4 `foglalas_inditasa`, `piercing_tipus`: rövid kód) a `suti.js`-ben,
   a motor döntése előtt fut. A motor betöltési hibája GA4 `motor_hiba` eseményként megy, a vendég pedig a régi utat kapja.
+- **Mobil: az adatlap egy képernyőn, görgetés nélkül** (a Mozaik mintájára). Három rész:
+  1. A mobil lapok (Wix-minta) 320 px-es nézetszélességgel épülnek. Amíg a motor nyitva van, a motor `width=device-width`-re vált, bezáráskor visszaállítja; így valódi telefonméreten jelenik meg.
+  2. Az adatlap lépésnél mobilon a lépésjelző, az összegző és a súgó rejtve; a fejléc „<helyszín> · Adatok”; a keret a képernyő aljáig ér.
+  3. A Salonic-oldal tömör megjelenése: `assets/salonic/mp.css` (a Mozaik `salonic/mosaic.css`-ének MP-változata, csak az adatlapra).
+
+  Bekapcsolás (a tulajdonos egy lépése): app.salonic.hu > Beállítások > Online bejelentkezés megjelenés > „Egyedi CSS URL” = `https://www.medicalpiercing.hu/assets/salonic/mp.css`.
+  - A motor a Salonic-oldalból felismeri (`adapter.getPresentation`), és asztalon is elrejti a dupla összegzőt.
+  - Mérve: Pixel 5, iPhone 12, iPhone SE 3, Galaxy S9+ és asztali gép is: a „Foglalás elküldése” gomb görgetés nélkül látszik.
+  - Nélküle az adatlap a Salonic alapkinézete, és a kereten belül görget.
 - **15 helyszín leképezése:** `node tools/mp-salonic-lekepezes.mjs` → `tools/mp-salonic-lekepezes.json` (szolgáltatások,
   munkatársak, szabad időpontok, eltérések).
-- **Próba:** `node tools/motor-teszt.mjs [--mobil]`: kapcsoló, 15 helyszín, magyar kezelések, naptár, adatlap-cím, a köszönőoldal
-  átadása `booking_id`-vel, nincs mérés a keretben, a GA4-esemény egyszer, a `?motor=0` felülírás és a régi beágyazás.
-  Valódi foglalás nélkül.
+- **Próbák:**
+  - `node tools/motor-teszt.mjs [--mobil]`: helyben, valódi foglalás nélkül. Ellenőrzi:
+    - kapcsoló, 15 helyszín, magyar kezelések, naptár, adatlapcím;
+    - a köszönőoldal átadása `booking_id`-vel (`/foglalas-ok*` és `/fulbevalo-ok`);
+    - mérés: a keretben nincs; a GA4-esemény egyszer; frissítéskor nincs újabb;
+    - a `?motor=0` felülírás és a régi beágyazás;
+    - mobil elrendezés, nézetszélesség.
+  - `node tools/motor-helyszin-teszt.mjs [--csak 6029,12169] [--mobil|--asztali]`: mind a 15 helyszín, asztalon és mobilon. Ellenőrzi:
+    - a kezelések és árak egyezését a leképezéssel;
+    - a szabad időpontot, vagy a „nincs szabad időpont” üzenetet;
+    - a szakembert, az adatlapcímet, az elrendezést.
+
+    Az adatlap kérését eldobja. `BASE=`-szel előnézeten vagy élesben is fut.
+  - `tools/motor-proba/` (távoli próbák, kimenet: `tools/motor-proba/kimenet/`, nincs a gitben):
+    - `motor-fust.mjs`: füstpróba előnézeten vagy élesben; a Salonic-adatlapot betölti.
+    - `adatlap-meres.mjs [--stilus] [--eszkoz "iPhone 12"|asztali]`: elfér-e az adatlap; `--stilus` = mintha a Salonic-fiókban be lenne állítva az MP-stíluslap.
+    - `proba-futtat.sh` (`probafoglalas.mjs` + `lemond.mjs`): VALÓDI próbafoglalás élesben, `?motor=1`-gyel, „TESZT – Claude” néven, a legtávolabbi időpontra. A mérőkérések eldobva, a `/api/mp-foglalas` csak naplózva. Utána azonnali lemondás a Salonic lemondó oldalán. `PROBA_EMAIL` kell (a visszaigazoló levél címe).
 
 ### Takarítás (`tools/takaritas.mjs`)
 

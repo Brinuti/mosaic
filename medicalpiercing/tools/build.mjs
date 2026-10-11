@@ -166,6 +166,8 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   // minden hivatkozasuk ?v=<tartalom-jel>-lel megy (fent), igy egy evig tarolhatok
   '/assets/css/*', '  Cache-Control: public, max-age=31536000, immutable',
   '/assets/js/*', '  Cache-Control: public, max-age=31536000, immutable',
+  // a Salonic adatlapjanak stiluslapja (a Salonic-fiok "Egyedi CSS URL"-je, verziojel nelkul): rovid ideig tarolhato
+  '/assets/salonic/*', '  Cache-Control: public, max-age=600', '  Access-Control-Allow-Origin: *',
   '',
 ].join('\n'));
 console.log(`dist/ kesz: ${db} lap (${oldalak().length} oldal x asztali/mobil)`);

@@ -2,7 +2,7 @@
 //
 // Lepesek: helyszin -> szolgaltatas -> idopont (havi naptar, szakember) -> a Salonic beagyazott adatlapja -> koszonooldal.
 // A foglalast a Salonic adatlapja rogziti (reCAPTCHA mogott); a motor csak olvas a Salonicbol (salonic-adapter.js).
-// Sikeres foglalas utan a Salonic a keretben a koszonooldalra (www.medicalpiercing.hu/foglalas-ok*) iranyit; az ott futo
+// Sikeres foglalas utan a Salonic a keretben a koszonooldalra (www.medicalpiercing.hu/foglalas-ok*, a divat fulpiercingnel /fulbevalo-ok*) iranyit; az ott futo
 // suti.js jelez a motornak, a motor pedig UGYANAZT a koszonooldalt UGYANAZOKKAL a parameterekkel, plusz booking_id-vel,
 // a fo ablakban nyitja meg: a meres (Google, Meta, TikTok, GA4, a sajat szerveres meres) pontosan ugy fut, mint a regi uton.
 //
@@ -78,8 +78,21 @@ const CSS = `
 .toltes { padding: 30px 0; text-align: center; color: #6b6c80; }
 .toltes::before { content: ''; display: block; width: 28px; height: 28px; margin: 0 auto 10px; border: 3px solid #f5d3ca; border-top-color: #ab6354; border-radius: 50%; animation: forog .8s linear infinite; }
 @keyframes forog { to { transform: rotate(360deg); } }
-iframe.adatlap { width: 100%; height: 1150px; border: 0; display: block; }
-.adatlap-burok { margin: 0 -16px; }
+iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
+.adatlap-burok { margin: 0 -16px -16px; }
+/* adatlap: a Salonic-keret kitolti a maradek helyet (a hosszabb tartalom a keretben gorget). Mobilon a lepesjelzo, az osszegzes es a
+   sugo rejtve (a fejlec a helyszint mutatja, a vissza gomb az idopontokhoz visz): ha a Salonic-fiok betolti az MP stiluslapjat
+   (assets/salonic/mp.css), az adatlap a "Foglalas elkuldese" gombbal egyutt egy kepernyore fer, gorgetes nelkul. */
+.ablak[data-lepes="adatlap"] .tartalom { display: flex; flex-direction: column; overflow: hidden; }
+.ablak[data-lepes="adatlap"] .adatlap-burok { flex: 1; min-height: 0; }
+/* ha a Salonic-fiok betolti az MP stiluslapjat, a Salonic tomor osszegzoje (kezeles, nap, ido, ar) es a fejlec (helyszin) eleg: asztalon is */
+.ablak[data-lepes="adatlap"][data-stilus="1"] .osszegzes, .ablak[data-lepes="adatlap"][data-stilus="1"] .adatlap-sugo { display: none; }
+@media (max-width: 700px) {
+  .ablak[data-lepes="adatlap"] .lepesek, .ablak[data-lepes="adatlap"] .osszegzes, .ablak[data-lepes="adatlap"] .adatlap-sugo { display: none; }
+  .ablak[data-lepes="adatlap"] .tartalom { padding: 0; }
+  .ablak[data-lepes="adatlap"] .adatlap-burok { margin: 0; }
+  .ablak[data-lepes="adatlap"] .fej { padding: 10px 12px; }
+}
 .kicsi { font-size: 13px; color: #6b6c80; }
 `;
 
@@ -97,6 +110,12 @@ export function nyit(ctx) {
   document.body.appendChild(host);
   const elozoOverflow = document.documentElement.style.overflow;
   document.documentElement.style.overflow = 'hidden';
+  // A mobil lapok (Wix-minta) rogzitett 320 px-es nezetszelesseggel epulnek, amit a telefon felnagyit: a motor (es benne a Salonic-
+  // adatlap) igy csak 320 x ~590 CSS-pixelt kapna. Amig a motor nyitva van, a valodi eszkozszelesseget adjuk (a teljes kepernyos
+  // motor alatt a lap nem latszik); bezaraskor visszaallitjuk.
+  const nezet = document.querySelector('meta[name="viewport"]');
+  const nezetEredeti = nezet ? nezet.getAttribute('content') : null;
+  if (nezet && /width=320\b/.test(nezetEredeti || '')) nezet.setAttribute('content', 'width=device-width, initial-scale=1');
   const $ = (s) => shadow.querySelector(s);
   const tartalom = $('.tartalom');
   const link = (() => { try { return new URL(ctx.link || HOST + '/selectLocation'); } catch (e) { return new URL(HOST + '/selectLocation'); } })();
@@ -125,6 +144,9 @@ export function nyit(ctx) {
     const i = LEPESEK.findIndex(([k]) => k === all.lepes);
     $('.lepesek').innerHTML = LEPESEK.map(([k, n], j) => `<button data-lepes="${k}" class="${j < i ? 'kesz' : j === i ? 'most' : ''}" ${j < i ? '' : 'tabindex="-1"'}>${j + 1}. ${n}</button>`).join('');
     $('[data-vissza]').hidden = i <= 0;
+    $('.ablak').dataset.lepes = all.lepes;
+    const h = all.lepes === 'adatlap' && all.placeId && HELYSZINEK[all.placeId];
+    $('.fej h2').textContent = h ? `${h.varos} · Adatok` : 'Időpontfoglalás';
   };
   const ugrik = (lepes) => { all.lepes = lepes; rajzol(); };
   const vissza = () => {
@@ -230,7 +252,11 @@ export function nyit(ctx) {
     const u = new URL(b.guestDataUrl);
     for (const [k, v] of tovabbi) if (!u.searchParams.has(k)) u.searchParams.set(k, v);
     foglalas.update({ business: 'mp', service_id: all.szolg.serviceId, slot_unix: all.slot.start_unix, staff_id: all.staffId || '-1', carrier: 'back', sent_at: Date.now() });
-    tartalom.innerHTML = osszegzes() + `<p class="kicsi" style="margin:0 0 8px">Add meg az adataidat, és véglegesítsd a foglalást. Ha az időpont közben elkelt, <button class="chip" data-lepes="ido">válassz másikat</button>.</p><div class="adatlap-burok"><iframe class="adatlap" title="Foglalási adatlap" src="${esc(u.href)}" allow="payment"></iframe></div>`;
+    let stilus = null;
+    try { stilus = (await adapter.getPresentation()).customCss; } catch (e) { /* alap kinezet */ }
+    if (all.lepes !== 'adatlap' || lezart) return;
+    $('.ablak').dataset.stilus = stilus ? '1' : '0';
+    tartalom.innerHTML = osszegzes() + `<p class="kicsi adatlap-sugo" style="margin:0 0 8px">Add meg az adataidat, és véglegesítsd a foglalást. Ha az időpont közben elkelt, <button class="chip" data-lepes="ido">válassz másikat</button>.</p><div class="adatlap-burok"><iframe class="adatlap" title="Foglalási adatlap" src="${esc(u.href)}" allow="payment"></iframe></div>`;
   }
 
   async function rajzol() {
@@ -277,7 +303,8 @@ export function nyit(ctx) {
     if (!iframe || e.source !== iframe.contentWindow) return;
     let u;
     try { u = new URL(e.data.url); } catch (x) { return; }
-    if (!/^\/foglalas-ok[a-z0-9-]*\/?$/i.test(u.pathname)) return;
+    // a Salonic szolgaltatasonkent iranyit: /foglalas-ok* (gyogypiercingek), /fulbevalo-ok, -ok2, -ok3 (divat fulpiercing 1/2/3 db)
+    if (!/^\/(foglalas-ok[a-z0-9-]*|fulbevalo-ok\d*)\/?$/i.test(u.pathname)) return;
     try { e.source.postMessage({ tipus: 'mp-motor-atvette' }, e.origin); } catch (x) { /* */ }
     let ell = null;
     try { ell = all.expected ? adapter.verifyConfirmation(u.href, all.expected) : null; } catch (x) { /* */ }
@@ -295,6 +322,7 @@ export function nyit(ctx) {
     window.removeEventListener('message', uzenet);
     document.removeEventListener('keydown', billentyu);
     document.documentElement.style.overflow = elozoOverflow;
+    if (nezet && nezetEredeti !== null && nezet.getAttribute('content') !== nezetEredeti) nezet.setAttribute('content', nezetEredeti);
     host.remove();
     if (nyitott && nyitott.host === host) nyitott = null;
   }
