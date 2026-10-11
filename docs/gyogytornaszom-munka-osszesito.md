@@ -161,3 +161,8 @@ A munkához készült mentések (`/tmp/*_backup.json`, `member_meta_backup.json`
 - Nem megoldott/alacsony prioritas: "nem hasznalt CSS 39 KiB" (a beagyazott CSS resze), YouTube indexkep (img.youtube.com maxresdefault, lazy, hajtas alatt), a 283 KB beagyazott CSS szetszedese kritikus/nem kritikus reszre (Autoptimize critical CSS kellene).
 - A mezo-adat (CrUX) tovabbra is 28 napos: az eredmeny 2-4 het alatt latszik. Opcio: sajat valos-latogato mérés (web-vitals) - meg nincs bekotve.
 - Almenuk: a Szolgaltatasok almenu ugyanolyan tomor (13 px / 18 px), mint a Panaszok; mobilon a kereso a menu tetejen.
+
+## 22. Sajat valos-latogato meres (RUM) es TTFB (2026-10-11)
+- Snippet "gyt-rum (valos latogato CWV meres)" (id 52): inline szkript LCP/FCP/TTFB/CLS/INP/LCP-elem/keszulekszelesseg/kapcsolat -> POST /wp-json/gyt/v1/rum (nincs IP, cookie, azonosito; botok/Lighthouse kiszurve; 30/ora/eszkoz limit; 60 nap utan torles; tabla: {prefix}gyt_rum). Osszegzes (admin, alkalmazasjelszo): GET /wp-json/gyt/v1/rum-summary?days=14 - napi/keszulekenkenti p75, "hirdetesi-kattintas" vs "tiszta-url", leggyakoribb LCP-elemek. (1 teszt sor: /rum-teszt/.)
+- TTFB meres: az origin kozvetlen elerese (A rekord 62.112.194.158, --resolve) ~0,65 s (ebbol TLS 0,33 s) a sandboxbol; a Cloudflare HIT ~0,07 s. A mezo-TTFB (1,0-1,3 s) fo oka az edge MISS. Intezkedes: Cloudflare Tiered Cache BE, edge TTL 12 ora (volt 1 ora -> 4 ora -> 12 ora), hirdetesi parameterek levagasa; minden frissites utan teljes purge (cloudflare_mcp).
+- 1 eves bongeszo-cache CSAK statikus fajlokra (kep/CSS/JS/font); a HTML nem erintett. Ha egy statikus fajlt azonos nev alatt csereltek, a bongeszokben akar 1 evig a regi marad -> uj fajlnev vagy ?v= kell (pl. hero-768.webp helyett hero-768-v2.webp).
