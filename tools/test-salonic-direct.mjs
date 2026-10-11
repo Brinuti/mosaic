@@ -943,7 +943,7 @@ test('S0-43 hosszu megjegyzes: a csere-gyanu a TELJES szovegen fut (a 500. karak
   { const tul = 'x'.repeat(4001); const { v, b } = await jelolt({}, { megjegyzes: tul, uj_vendeg: true }); const r = await v.sd(b); assert.equal(r.sd_allapot, 'halasztva'); assert.match(r.csere.ok, /tul hosszu/); assert.equal(v.net.hivasok.length, 0); }
   { const { v, b } = await jelolt({}, { megjegyzes: 'Kerem a csendes sarkot, koszonom ' + 'a'.repeat(900), uj_vendeg: true }); assert.equal((await v.sd(b)).allapot, 'kesz', 'hosszu, de csere-gyanu nelkuli megjegyzes: normal sd ut'); }
   for (const m of ['korabban volt 15:00, de 17:00 jobb', 'Korábban foglaltam, de változott', 'Áthelyeztem az időpontomat', 'Az előző foglalásom helyett', 'Rescheduled from earlier', 'Tegnapi foglalásomat töröljék', 'Mégsem a szerdai, hanem a keddi']) assert.ok(csereGyanu(m), m);
-  for (const m of ['Kerem a csendes sarkot', 'Szeretnék egy későbbi időpontot', 'Már foglaltam 16 órára']) assert.ok(!csereGyanu(m), m);
+  for (const m of ['Kerem a csendes sarkot', 'Szeretnék egy későbbi időpontot', 'Már foglaltam 16 órára', 'Kérek törölközőt', 'Saját törölközőt hozok', 'Megsemmisült a kuponom?']) assert.ok(!csereGyanu(m), m);
 });
 
 test('S0-44 a csere-feloldas KIZAROLAG az sd_feloldas muveletbol johet: egy sd_atvetel torzsebe csempeszett `feloldas` objektum eldobodik', async () => {
@@ -989,4 +989,59 @@ test('S0-46 ha egy parhuzamos hivas mar dolgozik a cellakon (cella-CAS vesztes),
   // ha a nyertes meghal (a cellak 120 s utan elakadtnak szamitanak), az ujrafuttatas rendben lezarja
   v.t.tick(200);
   const r2 = await v.sd(b); assert.equal(r2.allapot, 'kesz'); assert.equal(v.net.hivasok.length, 4);
+});
+
+// 4. kodattekintes (PASS, nem blokkolo megallapitasok): a vegallapot a DB cellaallapotaibol, atomi feltetellel
+test('S0-47 egyideju ujrafuttatas vegyes elo-ellenorzessel (egyik hiba, masik aktiv): a sor SOHA nem "kesz", amig van halasztva / folyamatban cella; vegul pontosan 4 kuldes', async () => {
+  for (let i = 0; i < 10; i++) {
+    const { v, u, b } = await jelolt({}, { uj_vendeg: true });
+    v.net.allapot.set(u, 'hiba'); assert.equal((await v.sd(b)).allapot, 'tartva');
+    v.net.allapot.set(u, ['hiba', 'aktiv']); // az 1. elo-ellenorzes hiba (a cellak halasztva), a tobbi aktiv
+    kesleltet(v);
+    await Promise.all([v.sd(b), v.sd(b)]);
+    const allapot = () => v.sql('SELECT sd_allapot FROM foglalas_egyeztetes WHERE uuid = ?1', u)[0].sd_allapot;
+    const fuggo = () => v.sql("SELECT COUNT(*) AS n FROM meres_kuldes WHERE allapot IN ('halasztva', 'folyamatban')")[0].n;
+    if (allapot() === 'kesz') assert.equal(fuggo(), 0, 'kesz sor mellett nincs fuggo cella (' + i + '. proba)');
+    assert.ok(v.net.hivasok.length <= 4, 'nincs dupla kuldes');
+    v.net.allapot.delete(u); v.t.tick(200); // a nyertes meghalt / befejezte: az ujrafuttatas lezar
+    await v.sd(b);
+    assert.equal(allapot(), 'kesz'); assert.equal(fuggo(), 0); assert.equal(v.net.hivasok.length, 4, 'vegul pontosan 4 platformhivas (' + i + '. proba)');
+  }
+});
+
+test('S0-48 hianyzo_mezo potlas + egy masik hivas friss "folyamatban" cellai: a sor nem ragad be (halasztva + potolva = ujrafuttathato), 200 s mulva lezar', async () => {
+  const { v, u, b } = await jelolt({}, { uj_vendeg: true });
+  const hianyos = { ...b }; delete hianyos.megjegyzes;
+  assert.equal((await v.sd(hianyos)).sd_allapot, 'halasztva');
+  v.D.db.prepare("UPDATE meres_kuldes SET allapot = 'folyamatban', frissitve = ?1").run(Math.floor(v.t() / 1000)); // egy masik hivas lefoglalta a cellakat (majd meghal)
+  const r1 = await v.sd(b); // a Zap mostantol kuldi a megjegyzes kulcsot
+  assert.equal(r1.sd_allapot, 'halasztva'); assert.equal(v.net.hivasok.length, 0);
+  assert.equal(v.sql('SELECT allapot FROM foglalas_reschedule WHERE uuid = ?1', u)[0].allapot, 'hianyzo_mezo_potolva');
+  v.t.tick(200); // a cellak elakadtnak szamitanak
+  const r2 = await v.sd(b);
+  assert.equal(r2.allapot, 'kesz'); assert.equal(v.net.hivasok.length, 4);
+  assert.ok(!(await riasztasok(v, u)).some((x) => x.tipus === 'hianyzo_mezo'));
+});
+
+test('S0-49 a szaraz terv az ujrafuttatasi agon a valodi sorrendet koveti: kesz > 48 ora = idempotens, friss atveve = idempotens, egyebkent lejart / ujrafuttatas', async () => {
+  { const { v, b } = await jelolt({}, { uj_vendeg: true }); assert.equal((await v.sd(b)).allapot, 'kesz'); const n = v.net.hivasok.length; v.t.set(T60);
+    const terv = await v.sd({ ...b, szaraz: true }); assert.ok(terv.terv.kesz, 'kesz sor 48 ora utan: idempotens terv'); assert.ok(!terv.terv.lenne);
+    assert.equal((await v.sd(b)).allapot, 'kesz'); assert.equal(v.net.hivasok.length, n); }
+  { const { v, u, b } = await jelolt({}, { uj_vendeg: true }); await v.sd(b);
+    v.D.db.prepare("UPDATE foglalas_egyeztetes SET sd_allapot = 'atveve', sd_ido = ?2 WHERE uuid = ?1").run(u, Math.floor(v.t() / 1000) - 10);
+    const terv = await v.sd({ ...b, szaraz: true }); assert.ok(terv.terv.atveve, 'friss atveve: idempotens terv');
+    const val = await v.sd(b); assert.equal(val.allapot, 'atveve'); assert.equal(val.idempotens, true); }
+});
+
+test('S0-50 sd_feloldas, de egy masik hivas friss "folyamatban" cellai: a sor halasztva marad (nincs hamis feloldva_uj), 200 s mulva a feloldas lefut', async () => {
+  const { v, u, b } = await jelolt({}, { megjegyzes: 'A korabbi 16 oras foglalas helyett', uj_vendeg: false });
+  assert.equal((await v.sd(b)).sd_allapot, 'halasztva');
+  v.D.db.prepare("UPDATE meres_kuldes SET allapot = 'folyamatban', frissitve = ?1").run(Math.floor(v.t() / 1000));
+  const f = { ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'ember' };
+  const r = await v.post(f);
+  assert.equal(r.sd_allapot, 'halasztva'); assert.equal(v.net.hivasok.length, 0);
+  assert.equal(v.sql('SELECT sd_allapot FROM foglalas_egyeztetes WHERE uuid = ?1', u)[0].sd_allapot, 'halasztva');
+  v.t.tick(200);
+  const r2 = await v.post(f);
+  assert.equal(r2.sd_allapot, 'feloldva_uj'); assert.equal(v.net.hivasok.length, 2);
 });
