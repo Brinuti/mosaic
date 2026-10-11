@@ -148,3 +148,8 @@ A munkához készült mentések (`/tmp/*_backup.json`, `member_meta_backup.json`
 - A mezo-adat (PageSpeed "Ez az URL") 28 napos gorgeto atlag, ezert a zold ertek varhatoan 2-4 het mulva jelenik meg. Labor: mobil 99, asztali 100.
 - Nem sikerult (Free csomag): egyedi cache-kulcs / remove_query_args fuggveny - ezert a statikus query-torles szabaly.
 - Javitas (2026-10-11, visszajelzes utan): a menu-kereso fuggoleges igazitasa (kozepre), a Panaszok almenu 2 oszlopa atfedes nelkul (540 px, !important, a "gyt-menu" snippet 1024-1439 px-es szabalyait felulirva), a kereso fokuszra kinyilik (290 px) a szomszed linkek folott; 1024-1279 px kozott csak ikon. Tanulsag: a menut MINDIG kepernyokeppel, tobb szelessegen (1192, 1341, 1536, 1920 px) kell ellenorizni, nem csak meretekkel (iframe-es modszer: BROWSER_TOOL + evaluate). Alias-keresés: elotag-egyezes (isi -> ulőideg).
+
+## 20. Gyorsitotar-szabaly (Feri, 2026-10-11)
+- MINDEN frissites utan a WP (W3 Total Cache) es a Cloudflare gyorsitotarat is uriteni kell, kulonben a latogato regi oldalt lat. Ok: a snippet-/menu-valtozas nem uriti a W3TC oldalcache-t, a Cloudflare edge TTL 4 ora.
+- Automatizalva: snippet "gyt-cache-auto-urites" (id 50) - snippet, menu, ujrahasznosithato blokk, Customizer valtozaskor teljes W3TC oldalcache-urites. A Cloudflare-t kulon: cloudflare_mcp CLOUDFLARE_MCP_EXECUTE, POST /zones/df72ed1c7e918fd07ae8dd7a1dec6764/purge_cache {purge_everything:true}.
+- Ellenorzes frissites utan: a TISZTA URL-en (query nelkul!) kell nezni a valtozast, mert a ?r=... cache-megkerulo keres nem mutatja a vendegek altal latott oldalt.
