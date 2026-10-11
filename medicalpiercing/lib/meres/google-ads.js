@@ -9,7 +9,7 @@
 //      igy a Mosaicnal leirt "1 ora utan lejar" gond nem all fenn;
 //   2) Zapier-webhook (a Mosaic #89-es mintaja), ha a kozvetlen API titkai nincsenek meg.
 // Alapbol MINDKETTO probauzemben megy: API -> validateOnly: true, Zapier -> dryrun: true. Eles feltoltes csak
-// MP_GADS_MOD="eles" ES az eles hoston (www.medicalpiercing.hu) tortenik.
+// MP_GADS_MOD="eles" ES az eles hoston (www.medicalpiercing.hu) tortenik. MP_GADS_MOD="off": semmilyen kimeno hivas.
 
 export const MP_GADS = Object.freeze({
   customerId: '2626380837',
@@ -155,6 +155,9 @@ export const ELES_HOST = 'www.medicalpiercing.hu';
 /** Eles feltoltes CSAK: MP_GADS_MOD="eles" es az eles host. Minden mas eset probauzem. */
 export const elesKuldesE = (env = {}, host = '') => String(env.MP_GADS_MOD || '') === 'eles' && host === ELES_HOST;
 
+/** MP_GADS_MOD="off" (vagy "ki"): veszkapcsolo, Google / Zapier fele SEMMILYEN kimeno hivas; a D1-rekord megmarad, kesobb ujraprobalhato. */
+export const kikapcsolvaE = (env = {}) => ['off', 'ki'].includes(String(env.MP_GADS_MOD || '').trim().toLowerCase());
+
 export function szallitoValaszt(env = {}) {
   if (env.GOOGLE_ADS_DEVELOPER_TOKEN && env.GOOGLE_ADS_CLIENT_ID && env.GOOGLE_ADS_CLIENT_SECRET && env.GOOGLE_ADS_REFRESH_TOKEN) return 'api';
   if (env.MP_GOOGLE_ARNYEK_WEBHOOK_URL) return 'zapier';
@@ -186,6 +189,7 @@ export async function kuldes(konverziok, env = {}, { elesKuldes = false, fetchIm
   const sz = szallitoValaszt(env);
   const nyersek = konverziok.map((k) => k.gclid || k.gbraid || k.wbraid);
   const ered = (k, x) => ({ akcioId: /(\d+)$/.exec(k.conversionAction)[1], ...x, valasz: x.valasz == null ? null : kitakar(x.valasz, nyersek).slice(0, 1500) });
+  if (kikapcsolvaE(env)) return konverziok.map((k) => ered(k, { allapot: 'kikapcsolva', mod: elesKuldes ? 'eles' : (sz === 'zapier' ? 'dryrun' : 'validate'), kuldo: null, http_status: null, valasz: 'MP_GADS_MOD=off' }));
   if (!sz) return konverziok.map((k) => ered(k, { allapot: 'nincs_hitelesites', mod: elesKuldes ? 'eles' : 'validate', kuldo: null, http_status: null, valasz: null }));
   const ab = new AbortController(); const t = setTimeout(() => ab.abort(), ms);
   try {

@@ -129,7 +129,7 @@ export async function feltoltes(db, sor, env, host, { fetchImpl = fetch, most = 
 /**
  * Admin (kulcsos: x-mp-kulcs = MP_MERES_ADMIN_KULCS). GET ?riport=1[&nap=7][&kornyezet=eles]: napi osszesites, nyers azonosito nelkul;
  * GET ?kulcs=<foglalasi kulcs>: egy foglalas allapota (a kattintasazonosito maszkolva).
- * POST {"muvelet":"ujra"}: a nem sikerult (hiba / nincs_hitelesites) feltoltesek ujraprobalasa (max 50).
+ * POST {"muvelet":"ujra"}: a nem sikerult (hiba / nincs_hitelesites / kikapcsolva) feltoltesek ujraprobalasa (max 50).
  */
 export async function admin({ request, env = {} }, { fetchImpl = fetch, most = Math.floor(Date.now() / 1000) } = {}) {
   if (!env.MP_MERES_ADMIN_KULCS) return json({ ok: false }, 404);
@@ -162,7 +162,7 @@ export async function admin({ request, env = {} }, { fetchImpl = fetch, most = M
     if (b.muvelet !== 'ujra') return json({ ok: false, hiba: 'ismeretlen_muvelet' }, 400);
     const host = new URL(request.url).hostname;
     const sorok = await db.prepare(`SELECT DISTINCT f.* FROM mp_foglalas f JOIN mp_feltoltes t ON t.kulcs = f.kulcs
-      WHERE t.allapot IN ('hiba', 'nincs_hitelesites') AND f.letrehozva >= ? ORDER BY f.letrehozva LIMIT 50`).bind(most - 90 * 86400).all();
+      WHERE t.allapot IN ('hiba', 'nincs_hitelesites', 'kikapcsolva') AND f.letrehozva >= ? ORDER BY f.letrehozva LIMIT 50`).bind(most - 90 * 86400).all();
     const ki = [];
     for (const s of sorok.results || []) ki.push({ kulcs: s.kulcs, eredmeny: (await feltoltes(db, s, env, host, { fetchImpl, most })).map((n) => ({ akcio: n.akcioId, allapot: n.allapot, mod: n.mod })) });
     return json({ ok: true, ujraprobalva: ki.length, ki });

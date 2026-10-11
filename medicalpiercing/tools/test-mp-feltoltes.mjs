@@ -230,3 +230,52 @@ test('elkulonites: az MP meres-kodja nem importal a Mosaic kodjabol, es Mosaic-a
     for (const tilt of ['7825199989', '28616665324611098', 'KULCS_DB', 'LIFECYCLE_DB', 'G-H4206SQ0Q7']) assert.ok(!s.includes(tilt), f + ' tartalmazza: ' + tilt);
   }
 });
+
+// --- Zapier-webhook szallito (MP_GOOGLE_ARNYEK_WEBHOOK_URL) es MP_GADS_MOD=off ---
+const ZAP_ENV = { MP_GOOGLE_ARNYEK_WEBHOOK_URL: 'https://hooks.zapier.com/hooks/catch/123/mpTESZT/' };
+const ZAP_KULCSOK = ['customer_id', 'conversion_action_id', 'conversion_date_time', 'order_id', 'ad_user_data', 'gclid', 'gbraid', 'wbraid', 'value', 'currency', 'dryrun'];
+
+test('zapier (mock): dryrun alapbol, csak engedett mezok, nyers gclid es webhook-cim nincs a naploban', async () => {
+  _semaTorles(); _tokenTorles();
+  const db = d1(); const f = mockFetch({ torzs: { status: 'success' } });
+  await foglalasErkezes({ request: keres(alapTorzs()), env: { MP_MERES_DB: db, ...ZAP_ENV } }, { fetchImpl: f, most: MOST });
+  const hivasok = f.hivasok.filter((h) => h.url.startsWith('https://hooks.zapier.com/'));
+  assert.equal(hivasok.length, 2); // Foglalas + uj vendeg
+  for (const h of hivasok) {
+    const t = JSON.parse(h.o.body);
+    assert.equal(t.dryrun, true);
+    assert.equal(t.customer_id, MP_GADS.customerId);
+    assert.ok(Object.values(MP_GADS.akciok).includes(t.conversion_action_id));
+    assert.equal(t.ad_user_data, 'GRANTED');
+    assert.equal(t.currency, 'HUF');
+    for (const k of Object.keys(t)) assert.ok(ZAP_KULCSOK.includes(k), 'tiltott mezo: ' + k);
+  }
+  const sorok = db._s.prepare('SELECT * FROM mp_feltoltes').all();
+  assert.deepEqual(sorok.map((x) => [x.kuldo, x.mod, x.allapot]), [['zapier', 'dryrun', 'elfogadva'], ['zapier', 'dryrun', 'elfogadva']]);
+  const naplo = JSON.stringify(sorok);
+  assert.ok(!naplo.includes(GCLID) && !naplo.includes('mpTESZT'));
+  assert.match(sorok[0].kattintas_maszk, /^h:[0-9a-f]{8}$/);
+});
+
+test('zapier (mock): eles modban nincs dryrun mezo; hozzajarulas nelkul nincs webhook-hivas', async () => {
+  _semaTorles(); _tokenTorles();
+  const db = d1(); const f = mockFetch({ torzs: { status: 'success' } });
+  await foglalasErkezes({ request: keres(alapTorzs()), env: { MP_MERES_DB: db, MP_GADS_MOD: 'eles', ...ZAP_ENV } }, { fetchImpl: f, most: MOST });
+  const t = JSON.parse(f.hivasok.find((h) => h.url.startsWith('https://hooks.zapier.com/')).o.body);
+  assert.equal('dryrun' in t, false);
+  const db2 = d1(); const f2 = mockFetch();
+  await foglalasErkezes({ request: keres(alapTorzs({ booking_id: 'b-2' }), { cookie: SUTI_NEM }), env: { MP_MERES_DB: db2, MP_GADS_MOD: 'eles', ...ZAP_ENV } }, { fetchImpl: f2, most: MOST });
+  assert.equal(f2.hivasok.length, 0);
+});
+
+test('MP_GADS_MOD=off: semmilyen kimeno hivas, allapot kikapcsolva; visszakapcsolas utan ujraprobalhato', async () => {
+  _semaTorles(); _tokenTorles();
+  const db = d1(); const f = mockFetch({ torzs: { status: 'success' } });
+  const env = { MP_MERES_DB: db, MP_GADS_MOD: 'off', MP_MERES_ADMIN_KULCS: 'k', ...ZAP_ENV };
+  await foglalasErkezes({ request: keres(alapTorzs()), env }, { fetchImpl: f, most: MOST });
+  assert.equal(f.hivasok.length, 0);
+  assert.deepEqual(db._s.prepare('SELECT allapot FROM mp_feltoltes').all().map((x) => x.allapot), ['kikapcsolva', 'kikapcsolva']);
+  const u = await (await admin({ request: new Request('https://www.medicalpiercing.hu/api/mp-foglalas', { method: 'POST', headers: { 'x-mp-kulcs': 'k' }, body: '{"muvelet":"ujra"}' }), env: { ...env, MP_GADS_MOD: 'dryrun' } }, { fetchImpl: f, most: MOST + 60 })).json();
+  assert.equal(u.ujraprobalva, 1);
+  assert.equal(f.hivasok.filter((h) => h.url.startsWith('https://hooks.zapier.com/')).length, 2);
+});
