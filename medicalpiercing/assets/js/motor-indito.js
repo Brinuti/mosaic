@@ -30,6 +30,15 @@
     if (u.hostname !== 'medicalpiercing.salonic.hu' || KIZART.test(u.pathname) || !FOGLALO.test(u.pathname)) return null;
     return u;
   };
+  // a koztes oldalak (/idopontfoglalas = a 4 kartya, /kontroll = a visszahivas-kero urlap) helyett a motor foldala nyilik: ezekre a linkekre
+  // kattintva a motor nyilik meg (nincs lapbetoltes), es ezeken az oldalakon betolteskor magatol is megnyilik (az oldal marad tartaleknak
+  // es a regi linkeknek / keresoknek; a ?motor=0 / a 0%-os kapcsolo a regi utat adja)
+  var BELSO = /^\/(idopontfoglalas|kontroll)\/?$/i;
+  var belsoLink = function (a) {
+    var u;
+    try { u = new URL(a.href); } catch (e) { return null; }
+    return u.origin === location.origin && BELSO.test(u.pathname) ? u : null;
+  };
   var szam = function (v) { return v && /^-?\d+$/.test(v) ? +v : null; };
   var oldalTipus = function () {
     var u;
@@ -57,6 +66,16 @@
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
     if (!a) return;
+    var b = belsoLink(a);
+    if (b && bekapcsolva()) {
+      e.preventDefault();
+      var ot = oldalTipus();
+      // piercing-tipus oldalrol az "Idopontot foglalok" egybol az uj piercing utat nyitja (a vendeg tudja, mire foglal); az altalanos
+      // oldalakon, es a /kontroll linkekre a tipus-valaszto nyilik
+      var bctx = { oldalTipus: ot, tipusLepes: ot === 'alt' || /kontroll/i.test(b.pathname), merjen: true, link: 'https://medicalpiercing.salonic.hu/selectLocation', forras: location.pathname };
+      motor().then(function (m) { m.nyit(bctx); }, function () { gtagHiba('betoltes'); location.href = a.href; });
+      return;
+    }
     var u = foglalasiLink(a);
     if (!u || !bekapcsolva()) return;
     e.preventDefault();
@@ -76,10 +95,18 @@
   var meleg = function (e) {
     if (!bekapcsolva()) return;
     var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
-    var u = a && foglalasiLink(a);
+    var u = a && (foglalasiLink(a) || belsoLink(a));
     if (!u) return;
     motor().then(function (m) { var pid = szam(u.searchParams.get('placeId')); if (pid) m.melegit(pid); }, function () {});
   };
+  // a koztes oldalakon betolteskor magatol megnyilik a foglalo fo oldala (a tipus-valaszto)
+  if (BELSO.test(location.pathname)) {
+    var auto = function () {
+      if (!bekapcsolva()) return;
+      motor().then(function (m) { m.nyit({ oldalTipus: 'alt', tipusLepes: true, merjen: true, link: 'https://medicalpiercing.salonic.hu/selectLocation', forras: location.pathname }); }, function () { gtagHiba('betoltes'); });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', auto); else auto();
+  }
   document.addEventListener('pointerover', meleg, { passive: true });
   document.addEventListener('touchstart', meleg, { passive: true });
 })();

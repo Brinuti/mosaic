@@ -132,12 +132,17 @@ Az éles címen (`CIM=https://www.medicalpiercing.hu`) minden adatküldő kéré
 ### Foglalómotor (`assets/js/motor/`, `assets/js/motor-indito.js`)
 
 A MOSAIC-foglalómotor MP-adaptációja (Drive: MP-FOGLALOMOTOR-FELADAT.md, MP-FOGLALOMOTOR-PROBAFOGLALASOK.md). A foglalási linkek
-(`medicalpiercing.salonic.hu`) helyben nyíló foglalót nyitnak, az oldal címe nem változik. A lépések:
-1. helyszín (15);
-2. kezelés (a típusoldalról érkezőnek az ajánlott elöl);
-3. időpont (havi naptár, szakemberválasztó);
-4. a Salonic beágyazott adatlapja;
-5. köszönőoldal.
+(`medicalpiercing.salonic.hu`, `/idopontfoglalas`, `/kontroll`) helyben nyíló foglalót nyitnak, az oldal címe nem változik. A fő oldala a
+„Mire szeretnél időpontot foglalni?” (Új piercing / Kontroll / Ékszercsere / Garancia). Az **új piercing** lépései:
+1. szolgáltatás (a fő oldal; piercing-típus oldalról érkezőnek kihagyva);
+2. helyszín (15);
+3. piercing (a 18 Salonic-szolgáltatás; a típusoldalról érkezőnek az ajánlott elöl);
+4. időpont (havi naptár, szakemberválasztó);
+5. a Salonic beágyazott adatlapja;
+6. köszönőoldal.
+
+A **kontroll / ékszercsere / garancia** nem naptáras: a beépített visszahívás-kérő űrlap (a régi `/kontroll` űrlapja, `POST /api/urlap`,
+`form-name` = `kontroll-visszahivas`), majd a `/kontroll-ok` → `/kontroll-xyz` köszönőoldal.
 
 - **Kapcsoló:** `motor-kapcsolo.json` (`"arany": 0` = mindenki a régi Salonic-foglalót kapja, `100` = a motor nyílik). A build
   beírja az indítóba, és minden kattintásnál érvényes. Visszaállítás:

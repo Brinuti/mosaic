@@ -49,6 +49,17 @@ async function kornyezet() {
 const motorAllapot = (p) => p.evaluate(() => { const h = document.querySelector('[data-mp-motor]'); return h ? h.shadowRoot.querySelector('.tartalom').innerText.slice(0, 400) : null; });
 const motorKattint = (p, sel) => p.evaluate((sel) => { const el = document.querySelector('[data-mp-motor]').shadowRoot.querySelector(sel); if (!el) return false; el.click(); return true; }, sel);
 const varMotor = async (p, sel, ms = 25000) => { for (let i = 0; i < ms / 250; i++) { if (await p.evaluate((sel) => !!document.querySelector('[data-mp-motor]')?.shadowRoot.querySelector(sel), sel)) return true; await p.waitForTimeout(250); } return false; };
+// a foglalo fo oldala a tipus-valaszto: az "Uj piercing" kartya a naptaras utat inditja (a regi /idopontfoglalas "Uj piercing idopontok" kartyaja);
+// piercing-tipus oldalrol (vagy 30 percen belul megnezett tipusoldal utan) a motor egybol a helyszinnel nyilik
+const ujPiercing = async (p) => {
+  for (let i = 0; i < 100; i++) {
+    const m = await p.evaluate(() => { const r = document.querySelector('[data-mp-motor]')?.shadowRoot; return r ? (r.querySelector('[data-hely]') ? 'hely' : r.querySelector('[data-tipus="uj"]') ? 'tipus' : null) : null; });
+    if (m === 'hely') return true;
+    if (m === 'tipus') { await motorKattint(p, '[data-tipus="uj"]'); await p.waitForTimeout(300); continue; }
+    await p.waitForTimeout(250);
+  }
+  return false;
+};
 // az elso lathato foglalasi link (selectLocation, showServices, employees, ...; az ajandekkartya nem)
 const kattintLink = (p) => p.evaluate(() => {
   const jo = (a) => /^https:\/\/medicalpiercing\.salonic\.hu\/(selectLocation|selectSpecialization|showServices|employees|selectEmployee|selectDate)/i.test(a.href);
@@ -67,7 +78,7 @@ const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) =
   await kattintLink(p);
   const cel = await nav;
   await p.waitForTimeout(800);
-  if (ARANY >= 100) ok('kapcsolo 100: a link a motort nyitja, nincs Salonic-navigacio', !cel && (await varMotor(p, '[data-hely]', 8000)), cel ? cel.slice(0, 80) : '');
+  if (ARANY >= 100) ok('kapcsolo 100: a link a motort nyitja (a fo oldala a tipus-valaszto), nincs Salonic-navigacio', !cel && (await varMotor(p, '[data-tipus], [data-hely]', 8000)), cel ? cel.slice(0, 80) : '');
   else ok('kapcsolo 0: a link a Salonicot nyitja, motor nincs', !!cel && !(await motorAllapot(p)), cel ? cel.slice(0, 80) : 'nincs Salonic-navigacio');
   await ctx.close();
 }
@@ -83,7 +94,7 @@ const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) =
   const elotte = ki.length;
   const cim = p.url();
   await kattintLink(p);
-  ok('?motor=1: a motor megnyilik', await varMotor(p, '[data-hely]'), '');
+  ok('?motor=1: a motor megnyilik', await ujPiercing(p), '');
   ok('az oldal cime nem valtozik', p.url() === cim, p.url());
   const helyek = await p.evaluate(() => document.querySelector('[data-mp-motor]').shadowRoot.querySelectorAll('[data-hely]').length);
   ok('15 helyszin', helyek === 15, String(helyek));
@@ -169,11 +180,12 @@ const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) =
 {
   const { ctx } = await kornyezet();
   const p = await ctx.newPage();
-  await p.goto(CIM + '/idopontfoglalas?motor=1', { waitUntil: 'load' });
+  // a fooldalrol (a /idopontfoglalas oldalon a motor betolteskor magatol megnyilik, igy az eredeti nezetszelesseg nem olvashato)
+  await p.goto(CIM + '/?motor=1', { waitUntil: 'load' });
   const nezet = () => p.evaluate(() => (document.querySelector('meta[name="viewport"]') || {}).content || '');
   const eredetiNezet = await nezet();
   await kattintLink(p);
-  await varMotor(p, '[data-hely]');
+  await ujPiercing(p);
   ok('nezetszelesseg: nyitott motornal eszkozszelesseg' + (MOBIL ? ' (a lap 320 px-es)' : ''), MOBIL ? /width=320/.test(eredetiNezet) && /device-width/.test(await nezet()) : (await nezet()) === eredetiNezet, `${eredetiNezet} -> ${await nezet()}`);
   await motorKattint(p, '[data-hely="9067"]');
   await varMotor(p, '[data-szolg="395895"]');
@@ -194,7 +206,7 @@ const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) =
   // bezaras: a nezetszelesseg visszaall
   await p.goto(CIM + '/idopontfoglalas?motor=1', { waitUntil: 'load' });
   await kattintLink(p);
-  await varMotor(p, '[data-hely]');
+  await ujPiercing(p);
   await motorKattint(p, '[data-bezar]');
   await p.waitForTimeout(300);
   ok('bezaras utan a nezetszelesseg visszaall, a motor eltunik', (await nezet()) === eredetiNezet && !(await p.evaluate(() => !!document.querySelector('[data-mp-motor]'))), await nezet());

@@ -50,6 +50,7 @@ const kattintLink = (p) => p.evaluate(() => {
   await p.goto(BASE + '/idopontfoglalas?motor=1&gclid=FUSTTESZT123', { waitUntil: 'load' });
   const cim = p.url();
   await kattintLink(p);
+  for (let i = 0; i < 100; i++) { if (await sr(p, 'return !!r.querySelector("[data-hely]")')) break; if (await sr(p, 'const t=r.querySelector(\'[data-tipus="uj"]\'); if (t) { t.click(); return true; } return false')) break; await p.waitForTimeout(250); }
   ok('?motor=1: megnyilik', await varMotor(p, '[data-hely]'));
   ok('cim valtozatlan', p.url() === cim);
   ok('15 helyszin', (await sr(p, 'return r.querySelectorAll("[data-hely]").length')) === 15);

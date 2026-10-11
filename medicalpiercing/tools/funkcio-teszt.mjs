@@ -167,7 +167,7 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   ok(`${nezet}: blogkep nezegeto Esc-re zar`, !(await p.$('.mp-pg-teljes')));
 
   // 10. fejlec gorgeteskor (csak asztalin): 400 px lefele utan eltunik, felfele visszajon
-  await p.goto(HELYI + '/kontroll', { waitUntil: 'load' });
+  await p.goto(HELYI + '/kontroll?motor=0', { waitUntil: 'load' });
   await p.evaluate(() => scrollTo(0, 900));
   await p.waitForTimeout(300);
   const fejLe = await p.$eval('#SITE_HEADER', (f) => f.classList.contains('ptcyHf'));
@@ -177,7 +177,7 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   ok(`${nezet}: fejlec gorgeteskor`, nezet === 'mobil' ? !fejLe && !fejFel : fejLe && !fejFel, `${fejLe} ${fejFel}`);
 
   // 11. /kontroll visszahivas-kero (uj Wix-urlap): ures bekuldesre a Wix hibauzenetei, kitoltve elmegy
-  await p.goto(HELYI + '/kontroll', { waitUntil: 'load' });
+  await p.goto(HELYI + '/kontroll?motor=0', { waitUntil: 'load' });
   const ku = p.locator('form').first();
   await ku.locator('[data-hook="submit-button"]').click();
   await p.waitForTimeout(300);
@@ -192,14 +192,14 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   await ku.locator('textarea').fill('Teszt');
   // sikeres bekuldes utan a Wixhez hasonloan a /kontroll-ok cimre visz, onnan 301 -> /kontroll-xyz
   await Promise.all([
-    p.waitForURL(/\/kontroll-xyz$/, { timeout: 15000 }).catch(() => {}),
+    p.waitForURL(/\/kontroll-xyz(\?motor=0)?$/, { timeout: 15000 }).catch(() => {}),
     ku.locator('[data-hook="submit-button"]').click(),
   ]);
-  ok(`${nezet}: kontroll-urlap bekuldes -> /kontroll-xyz`, /\/kontroll-xyz$/.test(p.url()), p.url());
+  ok(`${nezet}: kontroll-urlap bekuldes -> /kontroll-xyz`, /\/kontroll-xyz(\?motor=0)?$/.test(p.url()), p.url());
 
   // 12. /kontroll orszagkod-valaszto: 238 orszag, a magyar kijelolve; Ausztria valasztasa utan
   // a gomb zaszloja osztrak, a lista bezar
-  await p.goto(HELYI + '/kontroll', { waitUntil: 'load' });
+  await p.goto(HELYI + '/kontroll?motor=0', { waitUntil: 'load' });
   await p.locator('form [data-hook="country-selector-trigger"]').click();
   await p.waitForSelector('[role="listbox"].sAfN4Lu [role="option"]');
   const orsz = await p.$$eval('[role="listbox"].sAfN4Lu [role="option"]', (l) => [l.length, (l.find((o) => o.getAttribute('aria-selected') === 'true') || {}).id]);
