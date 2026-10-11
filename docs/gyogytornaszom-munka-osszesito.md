@@ -136,3 +136,4 @@ A munkához készült mentések (`/tmp/*_backup.json`, `member_meta_backup.json`
 - LCP kep decoding=async eltavolitva (snippet "gyt-lcp-decoding").
 - PageSpeed: Feri szerint mobil 90 felett. Valodi fotok az AI kepek helyett: kihagyva (Feri dontese).
 - Cloudflare edge cache: a regi oldal akar 1 oraig is latszhat; W3TC teljes uritese lefutott.
+- Menu kereso (2026-10-11): a "Panaszok" menupont alatt legordulo kereso (snippet "gyt-menu-kereso", index: /wp-json/gyt/v1/panasz-index, 12 oras cache). A "Tovabbi talalat" link a Panaszok oldalra visz ?q= szuressel (snippet "gyt-panaszok-gyujtooldal"). Asztali nezeten kepernyokeppel ellenorizve; hamburger menu (tablet/telefon) vizualisan nem.
