@@ -98,7 +98,9 @@ export function ujOldalak(ROOT, DIST) {
     jegyzek.push({ ut: adat.ut, cim: adat.cim, tipus: adat.tipus, uj: TUKOR_ELO + (eredeti.get(adat.ut) || encodeURI(adat.ut)) });
     db++;
   }
-  oldalKiir(ROOT, DIST, '/uj-oldalak', indexHtml(ROOT, jegyzek, { datum: new Date().toISOString().slice(0, 10) }));
+  const index = indexHtml(ROOT, jegyzek, { datum: new Date().toISOString().slice(0, 10) });
+  oldalKiir(ROOT, DIST, '/uj-oldalak', index);
+  oldalKiir(ROOT, DIST, '/uj', index);   // a rovid cim (/uj) ugyanazt az attekintest adja
   console.log(`uj-oldalak: ${db} tukor-oldal (/uj/...) + link-index (/uj-oldalak), rejtett, noindex`);
   return jegyzek;
 }
