@@ -16,7 +16,8 @@
 //     a Meta PageView es a GA4 page_view pontosan egyszer menne ki;
 //   - a 13 koszonooldalon (/foglalas-ok*): 200, nincs atiranyitas / ujratoltes, a parameterek
 //     megmaradnak, a Meta-pixel semmit nem tolt es nem kuld; a GTM fut;
-//   - a foglalasi linkek viszik a gclid / fbclid / ttclid / utm_* parametereket, a parameterek a
+//   - a foglalasi linkek viszik az fbclid / ttclid / utm_* parametereket, a gclid / gbraid / wbraid-et NEM (azt a belso linkek viszik,
+//     munkamenetben sem taroljuk; tools/gclid-atvitel-pw.mjs), a parameterek a
 //     munkamenetben megmaradnak (mint a Wixen);
 //   - TikTok "Foglalas inditasa": foglalasi linkre kattintaskor pontosan egy InitiateCheckout
 //     (content_name, content_category), a koszonooldalon es nem eles cimen egy sem;
@@ -114,19 +115,19 @@ for (const [honnan, hova] of [['/kontroll-ok', '/kontroll-xyz'], ['/garancia-ok'
   const { p } = await megnyit('/rolunk?gclid=G1&fbclid=F1&ttclid=T1&utm_source=teszt&utm_campaign=k1&egyeb=x', ctx);
   const linkek = await p.$$eval('a[href*="salonic.hu"]', (l) => l.map((a) => a.href));
   const mind = linkek.filter((h) => /medicalpiercing\.salonic\.hu/i.test(h));
-  ok('foglalasi linkek: gclid, fbclid, ttclid, utm_* tovabb', mind.length > 0 && mind.every((h) => /[?&]gclid=G1/.test(h) && /[?&]fbclid=F1/.test(h) && /[?&]ttclid=T1/.test(h) && /[?&]utm_source=teszt/.test(h) && /[?&]utm_campaign=k1/.test(h)), `${mind.length} link, pl. ${mind[0]}`);
+  ok('foglalasi linkek: fbclid, ttclid, utm_* tovabb, gclid nem', mind.length > 0 && mind.every((h) => !/[?&]gclid=/.test(h) && /[?&]fbclid=F1/.test(h) && /[?&]ttclid=T1/.test(h) && /[?&]utm_source=teszt/.test(h) && /[?&]utm_campaign=k1/.test(h)), `${mind.length} link, pl. ${mind[0]}`);
   ok('foglalasi linkek: mas parameter nem megy at', mind.every((h) => !/[?&]egyeb=/.test(h)));
   // parameter nelkuli kovetkezo oldal: a Wixhez hasonloan visszakerulnek a cimbe
   await p.goto(CIM + '/elerhetosegek', { waitUntil: 'load' });
   await p.waitForTimeout(500);
-  ok('munkamenet: a parameterek visszakerulnek a cimbe', /gclid=G1/.test(p.url()) && /utm_source=teszt/.test(p.url()), p.url());
+  ok('munkamenet: a parameterek visszakerulnek a cimbe (a gclid nem: hozzajarulas nelkul nem taroljuk)', !/gclid=/.test(p.url()) && /utm_source=teszt/.test(p.url()), p.url());
   const l2 = await p.$$eval('a[href*="medicalpiercing.salonic.hu"]', (l) => l.map((a) => a.href));
-  ok('munkamenet: a kovetkezo oldal foglalasi linkjei is viszik', l2.length > 0 && l2.every((h) => /gclid=G1/.test(h)));
+  ok('munkamenet: a kovetkezo oldal foglalasi linkjei is viszik (fbclid)', l2.length > 0 && l2.every((h) => /fbclid=F1/.test(h) && !/gclid=/.test(h)));
   // parameteres foglalasi link (blogbejegyzes): a sajat parameterei megmaradnak, a kattintas-azonositok hozzajonnek
   await p.goto(CIM + '/a-daith-piercing-hatasa-igy-mukodik', { waitUntil: 'load' });
   await p.waitForTimeout(500);
   const l3 = await p.$$eval('a[href*="medicalpiercing.salonic.hu/showServices"]', (l) => l.map((a) => a.href));
-  ok('foglalasi linkek: a link sajat parameterei megmaradnak', l3.length > 0 && l3.every((h) => /placeId=6029/.test(h) && /employeeId=13509/.test(h) && /gclid=G1/.test(h)), l3[0]);
+  ok('foglalasi linkek: a link sajat parameterei megmaradnak', l3.length > 0 && l3.every((h) => /placeId=6029/.test(h) && /employeeId=13509/.test(h) && /fbclid=F1/.test(h) && !/gclid=/.test(h)), l3[0]);
   await ctx.close();
 }
 

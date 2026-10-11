@@ -28,10 +28,12 @@
     var v = q.get(t);
     if (v && /^[A-Za-z0-9_-]{8,512}$/.test(v)) friss[t] = { ertek: v, ido: most() };
   });
+  // a koszonooldal cimeben a motor altal atvitt azonosito csak potlas: hozzajarulassal mar tarolt, ervenyes erteket nem ir felul
+  var koszono = /^\/foglalas-ok[a-z0-9-]*\/?$/i.test(location.pathname);
   var mentes = function () {
     if (!hirdetesiHozzajarulas()) return;
     var o = olvas();
-    for (var t in friss) o[t] = friss[t];
+    for (var t in friss) if (!(koszono && o[t] && most() - o[t].ido <= NAP90)) o[t] = friss[t];
     for (var k in o) if (!o[k] || most() - o[k].ido > NAP90) delete o[k];
     ir(o);
   };
