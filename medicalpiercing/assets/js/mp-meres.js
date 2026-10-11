@@ -1,8 +1,8 @@
 // Medical Piercing - sajat (elso feles) foglalas-meres: NEM kulso merokod, kulso szkriptet nem tolt, csak a sajat
 // /api/mp-foglalas vegpontra ir. Leiras: docs/MERES_GOOGLE_ARNYEK.md.
 //
-// 1) Minden oldalon: ha az URL-ben Google-kattintasazonosito van (gclid / gbraid / wbraid) ES a CookieYes-ben van
-//    hirdetesi hozzajarulas, eltarolja (localStorage "mp_gk", 90 nap). Hozzajarulas nelkul nem tarol semmit; ha a vendeg
+// 1) Minden oldalon: ha az URL-ben Google-kattintasazonosito van (gclid / gbraid / wbraid) ES a sajat suti-savban
+//    (assets/js/suti.js, "mp_suti" suti) van marketing-hozzajarulas, eltarolja (localStorage "mp_gk", 90 nap). Hozzajarulas nelkul nem tarol semmit; ha a vendeg
 //    kesobb, ugyanazon az oldalon fogadja el, akkor tarolja. Visszavonaskor torli.
 // 2) A koszonooldalon (/foglalas-ok*): a foglalas parametereibol CSAK a kulcshoz / ertekhez szukseges mezoket kuldi
 //    (bookingUrl, price, first_booking, booking_id ...); a szolgaltatas nevet, kategoriat, vendegazonositot NEM.
@@ -15,10 +15,8 @@
   var most = function () { return Math.floor(Date.now() / 1000); };
 
   var hirdetesiHozzajarulas = function () {
-    var m = /(?:^|;\s*)cookieyes-consent=([^;]*)/.exec(document.cookie);
-    if (!m) return false;
-    var s; try { s = decodeURIComponent(m[1]); } catch (e) { s = m[1]; }
-    return /(^|,)action:yes(,|$)/.test(s) && /(^|,)advertisement:yes(,|$)/.test(s);
+    // a sajat suti-sav dontese: "mp_suti=v1-s<0|1>-m<0|1>-t<unix>" (assets/js/suti.js)
+    return /(?:^|;\s*)mp_suti=v1-s[01]-m1-t\d+(?:;|$)/.test(document.cookie);
   };
   var olvas = function () { try { return JSON.parse(localStorage.getItem(KULCS) || '{}') || {}; } catch (e) { return {}; } };
   var ir = function (o) { try { localStorage.setItem(KULCS, JSON.stringify(o)); } catch (e) { /* tiltott tarolo */ } };
@@ -38,8 +36,8 @@
     ir(o);
   };
   if (Object.keys(friss).length) mentes();
-  // a CookieYes sajat esemenye a dontes / modositas utan
-  document.addEventListener('cookieyes_consent_update', function () {
+  // a suti-sav esemenye a dontes / modositas utan
+  document.addEventListener('mp_suti_valtozas', function () {
     if (hirdetesiHozzajarulas()) mentes(); else torol();
   });
 
@@ -57,7 +55,7 @@
         .catch(function () { /* a vendeg folyamatat nem zavarja */ });
     } catch (e) { /* regi bongeszo */ }
   };
-  // a CookieYes-dontesre roviden varunk (ha a vendeg epp most fogad el), de legkesobb 4 mp utan kuldunk
+  // a suti-sav dontesere roviden varunk (ha a vendeg epp most fogad el), de legkesobb 4 mp utan kuldunk
   var elkuldve = false;
   var egyszer = function () { if (!elkuldve) { elkuldve = true; kuld(); } };
   // A foglalomotor keretebe toltott koszonooldal (assets/js/motor/motor.js): a motor UGYANEZT a koszonooldalt booking_id-vel
@@ -68,9 +66,9 @@
     setTimeout(function () { if (document.documentElement.getAttribute('data-mp-motor-atvette') !== '1') egyszer(); }, 1700);
     return;
   }
-  if (/(?:^|;\s*)cookieyes-consent=[^;]*action(%3A|:)yes/.test(document.cookie) || !/medicalpiercing\.hu$/.test(h)) egyszer();
+  if (/(?:^|;\s*)mp_suti=v1-/.test(document.cookie) || !/medicalpiercing\.hu$/.test(h)) egyszer();
   else {
-    document.addEventListener('cookieyes_consent_update', function () { setTimeout(egyszer, 50); });
+    document.addEventListener('mp_suti_valtozas', function () { setTimeout(egyszer, 50); });
     setTimeout(egyszer, 4000);
     addEventListener('pagehide', egyszer); // ha a vendeg hamarabb tovabblep, akkor is kimegy (keepalive)
   }

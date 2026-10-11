@@ -9,13 +9,13 @@ külön adatbázis, külön titkok**: a Mosaic kódjából semmit nem importál 
 
 ```
 vendég hirdetésből érkezik (?gclid / gbraid / wbraid)
-  └─ assets/js/mp-meres.js: CookieYes hirdetési hozzájárulással localStorage "mp_gk" (90 nap); nélküle semmi
+  └─ assets/js/mp-meres.js: marketing-hozzájárulással (saját süti-sáv, "mp_suti") localStorage "mp_gk" (90 nap); nélküle semmi
 Salonic (medicalpiercing.salonic.hu)  vagy  később a beágyazott motor
   └─ átirányítás: /foglalas-ok[-tipus]?bookingUrl=…&price=…&first_booking=…[&booking_id=…]
        └─ mp-meres.js: POST /api/mp-foglalas  { ut, p: {bookingUrl, price, first_booking, booking_id, placeId, employeeId, startDate, serviceId}, kattintas }
             └─ functions/api/mp-foglalas.js → lib/meres/lanc.js
                  ├─ koszonoOldal() (lib/meres/meres.js) → kulcs = placeId|employeeId|startUnix
-                 ├─ hozzájárulás a "cookieyes-consent" sütiből (a szerver maga olvassa, nem a böngésző állítása)
+                 ├─ hozzájárulás az "mp_suti" sütiből (saját süti-sáv) (a szerver maga olvassa, nem a böngésző állítása)
                  ├─ D1 "mp-meres" (MP_MERES_DB): INSERT OR IGNORE mp_foglalas → deduplikáció a kulcson
                  └─ csak új foglalásnál: lib/meres/google-ads.js → Google Ads, eredmény: mp_feltoltes
 ```
@@ -96,9 +96,9 @@ sor helyes nem lesz; (4) minden lépés dokumentálva; (5) vészvisszaállítás
 
 ### 6.1 Hozzájárulás-kezelés (gclid / gbraid / wbraid)
 
-1. Böngésző (`assets/js/mp-meres.js`): az URL-ből érkező kattintásazonosítót **csak** CookieYes hirdetési hozzájárulás
-   (`advertisement:yes`) után teszi a `localStorage`-ba (`mp_gk`, 90 nap); döntés nélkül max. 4 mp-et vár, utána semmit nem tárol.
-2. Szerver (`lib/meres/google-ads.js` `hozzajarulas()`): a hozzájárulást **maga olvassa** a `cookieyes-consent` sütiből
+1. Böngésző (`assets/js/mp-meres.js`): az URL-ből érkező kattintásazonosítót **csak** marketing-hozzájárulás
+   (saját süti-sáv, `mp_suti=v1-s?-m1-t…`, lásd `docs/SUTISAV.md`) után teszi a `localStorage`-ba (`mp_gk`, 90 nap); döntés nélkül max. 4 mp-et vár, utána semmit nem tárol.
+2. Szerver (`lib/meres/google-ads.js` `hozzajarulas()`): a hozzájárulást **maga olvassa** az `mp_suti` sütiből
    (a böngésző állítását nem fogadja el). Hozzájárulás nélkül a kattintásazonosító **nem kerül** a D1-rekordba, és
    nincs Google / Zapier hívás (`kihagyva: nincs hirdetesi hozzajarulas`).
 3. Hozzájárulással: a Google felé `consent.adUserData = GRANTED` (Zapier: `ad_user_data: "GRANTED"`); a Zap minden mást elutasít.

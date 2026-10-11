@@ -5,11 +5,14 @@
 //
 // A bongeszo a helyi kiszolgalot www.medicalpiercing.hu neven nyitja meg (igy a suti.js betolti a
 // merokodokat), de kifele csak a szkriptfajlok letoltese mehet (GTM, Meta, TikTok): minden
-// adatkuldo kerest (GA4 / stape, Google Ads, Meta, TikTok, Convertize, CookieYes) elkapunk,
+// adatkuldo kerest (GA4 / stape, Google Ads, Meta, TikTok, Convertize) elkapunk,
 // feljegyzunk es eldobunk - egyik platformhoz sem jut el semmi.
 //
 // Ellenorzi:
-//   - normal oldalon: CookieYes, AW-11097894040, GTM-T9GR4JCK, Meta-pixel 2177829632420786 betolt,
+// A bongeszo itt mar DONTOTT a sajat suti-savban (mp_suti: statisztika + marketing elfogadva); a dontes elotti /
+// elutasitott allapotot a tools/sav-teszt.mjs probalja.
+//
+//   - normal oldalon: AW-11097894040, GTM-T9GR4JCK, Meta-pixel 2177829632420786 betolt, CookieYes nem,
 //     a Meta PageView es a GA4 page_view pontosan egyszer menne ki;
 //   - a 13 koszonooldalon (/foglalas-ok*): 200, nincs atiranyitas / ujratoltes, a parameterek
 //     megmaradnak, a Meta-pixel semmit nem tolt es nem kuld; a GTM fut;
@@ -31,6 +34,13 @@ const ok = (nev, felt, info = '') => { console.log(`${felt ? 'OK  ' : 'HIBA'} ${
 // csak ezek a szkriptek tolthetok le kivulrol; minden mas kulso keres eldobva
 const SZABAD = /^https:\/\/(www\.googletagmanager\.com\/(gtm|gtag\/js)|connect\.facebook\.net\/(en_US\/fbevents\.js|signals\/config\/)|analytics\.tiktok\.com\/i18n\/pixel\/)/;
 const b = await chromium.launch({ args: ['--host-resolver-rules=MAP www.medicalpiercing.hu 127.0.0.1'] });
+// minden kontextus elfogadott sajat suti-savval indul (mp_suti, assets/js/suti.js)
+const ujKontextus = b.newContext.bind(b);
+b.newContext = async (o) => {
+  const c = await ujKontextus(o);
+  await c.addCookies([{ name: 'mp_suti', value: `v1-s1-m1-t${Math.floor(Date.now() / 1000)}`, domain: 'www.medicalpiercing.hu', path: '/' }]);
+  return c;
+};
 // a Meta-pixel a "HeadlessChrome" bongeszonek nem kuld: rendes Chrome-azonosito
 const ASZTALI = { viewport: { width: 1440, height: 900 }, userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36' };
 const MOBIL = { viewport: { width: 390, height: 844 }, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' };
@@ -57,7 +67,9 @@ const db = (lista, re) => lista.filter((u) => re.test(u)).length;
 {
   const ctx = await b.newContext(ASZTALI);
   const { p, ki, betolt } = await megnyit('/rolunk', ctx);
-  ok('CookieYes betoltes', db(ki, /cdn-cookieyes\.com\/client_data\/a46a34517503eaa18c4543f0d0696746/) === 1);
+  ok('CookieYes nem toltodik be (sajat suti-sav)', !db(ki, /cookieyes/) && !db(betolt, /cookieyes/));
+  ok('sajat suti-sav: dontes utan nem jelenik meg', await p.evaluate(() => { const s = document.getElementById('mp-cc'); return !!s && getComputedStyle(s).display === 'none'; }));
+  ok('Convertize 11722 (marketing-hozzajarulassal)', db(ki, /pixel\.convertize\.io\/11722\.js/) === 1);
   // a suti.js tolti (mint a Wix "Egyeni kod"-ja); a GTM-tarolo sajat Google-cimkeje (googtag
   // AW-11097894040) idonkent masodszor is letolti - ez a GTM beallitasa, nem a klone
   ok('Google Ads AW-11097894040 (gtag.js)', db(betolt, /gtag\/js\?id=AW-11097894040/) >= 1, db(betolt, /gtag\/js\?id=AW-11097894040/) + ' letoltes');
