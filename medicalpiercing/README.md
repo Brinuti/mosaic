@@ -25,7 +25,7 @@ medicalpiercing/
   klon/<kulcs>.html, klon/m/<kulcs>.html   az átalakított asztali és mobil lapok (146 oldal + 404)
   assets/img, video, fonts, embed, popup   képek, videók, betűk, HTML-beágyazások, felugró menü
   assets/js/klon.js                        a Wix JS helyett: menü, diavetítés, galéria, fülek, videó, űrlap
-  assets/js/suti.js                        a Wix „Egyéni kód”-ja: CookieYes, GTM, Google Ads, Convertize
+  assets/js/suti.js                        saját süti-sáv (Consent Mode v2) + a Wix „Egyéni kód”-ja: GTM, Google Ads, Convertize
   lib/utvonal.js                           a Wix-szel azonos címek, asztali/mobil a böngésző szerint
   functions/[[path]].js                    Cloudflare: címek kiszolgálása + űrlap → e-mail
   tools/                                   mentés, átalakítás, build, tesztek (a nyers mentések nincsenek a repóban)
@@ -187,7 +187,7 @@ A Wixen futó második GTM-tároló (GTM-PZ6CL4JP, csak a köszönőoldalakon) �
 | Google-vélemények (Trustindex), GYIK (Common Ninja), RTL-videó | a Wix HTML-beágyazásai helyben (`assets/embed/`), változatlan külső szolgáltatással |
 | YouTube- és Facebook-videók, Salonic-foglaló | változatlan beágyazás / link; a Wix csak görgetéskor tölti ki a lejátszót, ezért a kész állapotát külön mentjük (`tools/videok-mentes.mjs` → `tools/wix-videok.json`, a `wix2static.mjs` és a `tools/videok-potlas.mjs` tölti be) |
 | Google-térkép | a Google beágyazott térképe ugyanarra a helyszínre (a Wix-féle egyedi térképstílus nélkül) |
-| süti-sáv és mérés | `suti.js`: CookieYes, GTM-T9GR4JCK (benne a GA4 G-SJT2RN62H8 és a TikTok-pixel), Google Ads AW-11097894040, Convertize, Meta-pixel 2177829632420786 (a `/foglalas-ok*` oldalakon nem), TikTok „Foglalás indítása” (`InitiateCheckout`, `content_name: foglalas_inditasa`, `content_category`: a piercing-típus rövid kódja) minden medicalpiercing.salonic.hu linkre kattintáskor (a `/foglalas-ok*` oldalakon nem) – **csak a www.medicalpiercing.hu-n**; próba: `tools/meres-teszt.mjs` |
+| süti-sáv és mérés | `suti.js`: saját süti-sáv (`docs/SUTISAV.md`; Meta, TikTok, Convertize csak marketing-hozzájárulással), GTM-T9GR4JCK (benne a GA4 G-SJT2RN62H8 és a TikTok-pixel), Google Ads AW-11097894040, Convertize, Meta-pixel 2177829632420786 (a `/foglalas-ok*` oldalakon nem), TikTok „Foglalás indítása” (`InitiateCheckout`, `content_name: foglalas_inditasa`, `content_category`: a piercing-típus rövid kódja) minden medicalpiercing.salonic.hu linkre kattintáskor (a `/foglalas-ok*` oldalakon nem) – **csak a www.medicalpiercing.hu-n**; próba: `tools/meres-teszt.mjs` |
 | köszönőoldalak (`/foglalas-ok`, `-mi`, `-shenmen`, `-klimax`, `-slim`, `-allergia`, `-maj`, `-lep`, `-vastagbel`, `-2piercing`, `-3piercing`, `-4piercing`, `-6piercing`) | ugyanazon a címen, átirányítás nélkül, a paraméterekkel (a Salonic szolgáltatásonként ide irányít); nincsenek a sitemapben |
 | rejtett Wix-oldalak (a sitemapben nem szereplő akciós, régi és köszönőoldalak: `/kozerzetjavito-piercing-soft-akcio`, `/home2`, `/fulbevalo-ok*`, `/garancia-xyz`, `/kontroll-xyz`, `/kerdoiv-ok`, `/allas-ok` stb.) | a Wix útvonaltáblájából (`tools/oldalak.mjs --utvonalak`), ugyanazon a címen, a Wix `robots` beállításával; nincsenek a sitemapben. Az állásűrlapok beküldés után a `/allas-ok`, a `/kontroll` űrlapja a `/kontroll-ok` címre visz (mint a Wixen) |
 | a Wix átirányításai (URL Redirect Manager) | `lib/utvonal.js` `WIX_ATIRANYITASOK`: `/kontroll-ok` → `/kontroll-xyz`, `/garancia-ok` → `/garancia-xyz` (301, a paraméterekkel) |
@@ -243,8 +243,7 @@ oldal buildje ezt a mappát nem használja):
 
 - **A Wix:** az oldal és az előfizetés még megvan (visszaállási lehetőség). Néhány nap hibátlan
   működés után lemondható; a régi Wix-DNS-ben a www rekord még a Wixre mutat.
-- **CookieYes:** a sütisáv szkriptje (`a46a3451…/script.js`) 2026-10-10-én 403-at ad, az élő Wix-oldalon is: a sáv nem
-  jelenik meg, a mérőkódok hozzájárulás nélkül futnak (a Wixen is így). A CookieYes-fiókban kell rendbe tenni.
+- **CookieYes:** a sütisáv szkriptje 2026-10-10-én 403-at adott; 2026-10-11 óta saját süti-sáv van helyette (`docs/SUTISAV.md`).
 - **Négy kódolt perjeles cím** (`/varosok/4031-debrecen%2C-der%C3%A9k-utca-100%2Fb`, a pécsi, a nagykanizsai Ady Endre utcai
   és a `/1-header/…` oldal): a Wix böngészőben a 404-es lapot rajzolja ki rájuk; a klón a szerver által küldött valódi
   tartalmat mutatja (`tools/elo-mentes.mjs` ezeknél a `tools/raw` mentést használja).

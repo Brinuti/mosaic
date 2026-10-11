@@ -25,8 +25,9 @@ function d1() {
 const GCLID = 'Cj0KCQjwTESZTgclid_0123456789abcdef';
 const MOST = 1791700000;
 const BURL = (place = 12169, emp = 555, start = 1791800000, svc = 9001) => `https://medicalpiercing.salonic.hu/booking/selectDate/?placeId=${place}&serviceId=${svc}&employeeId=${emp}&startDate=${start}`;
-const SUTI_IGEN = 'cookieyes-consent=' + encodeURIComponent('consentid:abc,consent:yes,action:yes,necessary:yes,functional:yes,analytics:yes,performance:yes,advertisement:yes,other:yes');
-const SUTI_NEM = 'cookieyes-consent=' + encodeURIComponent('consentid:abc,consent:no,action:yes,necessary:yes,functional:no,analytics:no,performance:no,advertisement:no,other:no');
+// a sajat suti-sav (assets/js/suti.js) sutije
+const SUTI_IGEN = 'mp_suti=v1-s1-m1-t1791700000';
+const SUTI_NEM = 'mp_suti=v1-s0-m0-t1791700000';
 const API_ENV = { GOOGLE_ADS_DEVELOPER_TOKEN: 'dev-TITOK', GOOGLE_ADS_CLIENT_ID: 'cid', GOOGLE_ADS_CLIENT_SECRET: 'csec-TITOK', GOOGLE_ADS_REFRESH_TOKEN: 'rt-TITOK' };
 
 function mockFetch(valasz = {}) {
@@ -52,11 +53,16 @@ test('akciok: mindig Foglalas + uj VAGY visszatero; csak az MP ARNYEK akciok', (
   assert.throws(() => apiTorzs([{ conversionAction: 'customers/2626380837/conversionActions/111' }]), /tiltott/);
 });
 
-test('hozzajarulas: CookieYes suti; dontes nelkul / elutasitva nincs', () => {
+test('hozzajarulas: sajat suti-sav (mp_suti); dontes nelkul / elutasitva / ismeretlen formaban nincs', () => {
   assert.deepEqual(hozzajarulas(SUTI_IGEN), { dontott: true, hirdetes: true, analitika: true });
   assert.deepEqual(hozzajarulas(SUTI_NEM), { dontott: true, hirdetes: false, analitika: false });
+  assert.deepEqual(hozzajarulas('a=1; mp_suti=v1-s1-m0-t1791700000; b=2'), { dontott: true, hirdetes: false, analitika: true });
+  assert.deepEqual(hozzajarulas('mp_suti=v1-s0-m1-t1791700000'), { dontott: true, hirdetes: true, analitika: false });
   assert.deepEqual(hozzajarulas(''), { dontott: false, hirdetes: false, analitika: false });
-  assert.equal(hozzajarulas('cookieyes-consent=' + encodeURIComponent('consent:yes,action:no,advertisement:yes')).hirdetes, false);
+  assert.deepEqual(hozzajarulas('mp_suti=v2-s1-m1-t1'), { dontott: false, hirdetes: false, analitika: false });
+  assert.deepEqual(hozzajarulas('mp_suti=v1-s1-m1-t1x'), { dontott: false, hirdetes: false, analitika: false });
+  // a regi CookieYes-suti mar nem szamit hozzajarulasnak
+  assert.deepEqual(hozzajarulas('cookieyes-consent=' + encodeURIComponent('consentid:abc,consent:yes,action:yes,advertisement:yes,analytics:yes')), { dontott: false, hirdetes: false, analitika: false });
 });
 
 test('kattintasazonosito: legfrissebb, 90 napon belul, tartalek a _gcl_aw suti; rossz formatum eldobva', () => {

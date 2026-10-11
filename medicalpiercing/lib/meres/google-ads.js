@@ -39,7 +39,7 @@ export function googleIdo(unix) {
   return `${r.year}-${r.month}-${r.day} ${r.hour}:${r.minute}:${r.second}${perc < 0 ? '-' : '+'}${String(Math.floor(e / 60)).padStart(2, '0')}:${String(e % 60).padStart(2, '0')}`;
 }
 
-// ---------- hozzajarulas (CookieYes) es kattintasazonosito ----------
+// ---------- hozzajarulas (sajat suti-sav) es kattintasazonosito ----------
 
 /** Cookie-fejlec -> { nev: ertek } */
 export function sutik(fejlec = '') {
@@ -57,16 +57,15 @@ export function sutik(fejlec = '') {
 }
 
 /**
- * A CookieYes "cookieyes-consent" sutije: "consentid:..,consent:yes,action:yes,necessary:yes,...,analytics:yes,advertisement:yes,other:no".
- * -> { dontott: bool, hirdetes: bool, analitika: bool }. Dontes nelkul / ismeretlen formaban: nincs hozzajarulas.
+ * A sajat suti-sav (assets/js/suti.js) "mp_suti" sutije: "v1-s<0|1>-m<0|1>-t<unix mp>" (s = statisztika, m = marketing).
+ * -> { dontott: bool, hirdetes: bool, analitika: bool }. Dontes nelkul / ismeretlen formaban: nincs hozzajarulas
+ * (a CookieYes "cookieyes-consent" sutijet mar nem olvassuk: a CookieYes-sav 2026-10-11-en kikerult).
  */
 export function hozzajarulas(cookieFejlec) {
-  const s = sutik(cookieFejlec)['cookieyes-consent'];
-  if (!s) return { dontott: false, hirdetes: false, analitika: false };
-  const m = {};
-  for (const d of s.split(',')) { const [k, v] = d.split(':'); if (k) m[k.trim()] = String(v || '').trim(); }
-  const dontott = m.action === 'yes';
-  return { dontott, hirdetes: dontott && m.advertisement === 'yes', analitika: dontott && m.analytics === 'yes' };
+  const s = sutik(cookieFejlec).mp_suti;
+  const m = /^v1-s([01])-m([01])-t\d+$/.exec(String(s || '').trim());
+  if (!m) return { dontott: false, hirdetes: false, analitika: false };
+  return { dontott: true, hirdetes: m[2] === '1', analitika: m[1] === '1' };
 }
 
 const ID_MINTA = /^[A-Za-z0-9_-]{8,512}$/;

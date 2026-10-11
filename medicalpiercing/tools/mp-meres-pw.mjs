@@ -12,7 +12,8 @@ const GCLID = 'Cj0KCQjwPWTESZT_' + Date.now();
 const START = 1900000000 + Math.floor(Math.random() * 1e6); // egyedi kulcs futasonkent
 const BURL = encodeURIComponent(`https://medicalpiercing.salonic.hu/booking/selectDate/?placeId=12169&serviceId=9001&employeeId=555&startDate=${START}`);
 const KOSZONO = `${BASE}/foglalas-ok-mi?first_booking=true&location=Szeged&employee=X&bookingUrl=${BURL}&price=24900&service=Migr%C3%A9n%20piercing&g=2038420&category=Gy%C3%B3gy`;
-const SUTI = (igen) => ({ name: 'cookieyes-consent', value: encodeURIComponent(`consentid:pw,consent:${igen ? 'yes' : 'no'},action:yes,necessary:yes,functional:no,analytics:${igen ? 'yes' : 'no'},performance:no,advertisement:${igen ? 'yes' : 'no'},other:no`), url: BASE });
+// a sajat suti-sav (assets/js/suti.js) dontese
+const SUTI = (igen) => ({ name: 'mp_suti', value: `v1-s${igen ? 1 : 0}-m${igen ? 1 : 0}-t${Math.floor(Date.now() / 1000)}`, url: BASE });
 
 async function eset(bongeszo, hozzajarul) {
   const ctx = await bongeszo.newContext();
