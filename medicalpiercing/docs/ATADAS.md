@@ -32,7 +32,7 @@ Párja a Drive MP-mappájában van („MP-ATADAS-2026-10-11.md”), ugyanezzel a
   - független QA a foglalómotorra (ág `claude/mp-motor-qa`, `medicalpiercing/qa/`);
   - a Google Ads szerveres „ÁRNYÉK” feltöltése (PR #242, `docs/MERES_GOOGLE_ARNYEK.md`, `MP_GADS_MOD=dryrun`);
   - figyelés élesítés után.
-- **Süti-sáv munkamenet:** PR #246 (`claude/mp-sutisav`): saját süti-sáv a CookieYes helyett, Consent Mode v2. Nyitott (09:41). A `suti.js`-hez nyúl. Ha a #247 előbb megy be, a #246-nál kell feloldani a kis ütközést (csak a `/fulbevalo-ok` minta két sora), és fordítva.
+- **Süti-sáv munkamenet:** PR #246 (`claude/mp-sutisav`): saját süti-sáv a CookieYes helyett, Consent Mode v2. **Élesben** (merge 2026-10-11 13:01 UTC; leírás: `docs/SUTISAV.md`). Az ütközést a #247-tel az a munkamenet oldotta fel.
 
 ## 2. Munkaszabályok (a repó `CLAUDE.md` és `medicalpiercing/CLAUDE.md` fájljai, röviden)
 
@@ -73,7 +73,7 @@ Párja a Drive MP-mappájában van („MP-ATADAS-2026-10-11.md”), ugyanezzel a
   - Convertize 11722;
   - Meta-pixel 2177829632420786, a `/foglalas-ok*` oldalakon nem;
   - TikTok InitiateCheckout és GA4 `foglalas_inditasa` minden Salonic-foglalási kattintáskor;
-  - CookieYes: a szkriptje 403-at ad (a Wixen is), a PR #246 cseréli saját sávra.
+  - Süti-sáv: saját (PR #246, élesben), Consent Mode v2, `docs/SUTISAV.md`. A CookieYes szkript (403-at adott) eltávolítva.
 
   Próba: `tools/meres-teszt.mjs`.
 - **Saját szerveres foglalásmérés (PR #242):** a `assets/js/mp-meres.js` a `/foglalas-ok*` oldalakról küld a `/api/mp-foglalas` felé. Útja: D1 → Google Ads ÁRNYÉK-feltöltés (dryrun). Leírás: `docs/MERES_GOOGLE_ARNYEK.md`.
@@ -97,16 +97,21 @@ Párja a Drive MP-mappájában van („MP-ATADAS-2026-10-11.md”), ugyanezzel a
 
 ## 4. A foglalómotor – állapot és működés
 
-**Állapot (2026-10-11 délben):**
-- **Élesben, a kapcsoló 0%-on** (PR #245, 8ad2848). A látogatók a régi Salonic-utat kapják; a tesztelő `?motor=1`-gyel kapja meg, `?motor=0` visszaveszi.
-- **PR #247:** a mobil adatlap egy képernyőn, a `/fulbevalo-ok` átvétele, a 15 helyszín tesztje. A merge és az éles ellenőrzés után a Drive-fájlban és alább jelölve.
-- **Feri döntése (10:06, „EZ ÉRVÉNYES”):** 100% MA, ha a QA-1…QA-6 mind PASS. A 0%-os kapcsoló vészvisszaállításként kötelező, A/B teszt nincs.
-- **A 100% feltételei:**
-  1. a mérési Claude QA PASS-a a `MP-FOGLALOMOTOR-FELADAT.md`-ben;
-  2. a PR #247 élesben;
-  3. ideálisan a Salonic „Egyedi CSS URL” beállítva (lásd lent). Nélküle is működik, de mobilon görgetni kell.
-
-  A 100%: `medicalpiercing/motor-kapcsolo.json` → `{ "arany": 100 }`, PR, merge, éles ellenőrzés. Vissza: `0`, vagy azonnal a Cloudflare Pages előző kiadása.
+**Állapot (2026-10-11 este):**
+- **Élesben, a kapcsoló 100%-on** (PR #248, merge 0207734, 2026-10-11 13:22 UTC). Minden látogató a motort kapja; `?motor=0` a régi Salonic-utat adja (próbához), `?motor=1` kikényszeríti a motort.
+  - A mérési Claude QA PASS-t adott (QA-2…6: a fejlesztő 9 próbafoglalása és tesztjei; QA-1: a `?motor=0` élesben ellenőrizve).
+  - ChatGPT-felülvizsgálat: FELTÉTELLEL (24 órás figyelés, 0%-os vészvisszaállítás).
+  - 24 órás figyelés (mérési Claude): Salonic-foglalások napi száma az előző hetek azonos napjához képest; Meta Schedule vs Salonic-levél (normál: napi |eltérés| ≤ 1); D1 `/api/mp-foglalas` sorok és duplikáció; JS-hiba és GA4 `motor_hiba`.
+  - **Vészvisszaállítás:** `medicalpiercing/motor-kapcsolo.json` → `{ "arany": 0 }`, PR, merge; vagy azonnal a Cloudflare Pages előző kiadása.
+- (Előzmény) A motor a PR #245-tel (8ad2848) ment élesbe 0%-on.
+- **PR #247 élesben (10:06, fe543e7):** a mobil adatlap egy képernyőn, a `/fulbevalo-ok` átvétele, a 15 helyszín tesztje.
+  - Az éles ellenőrzés kész: füstpróba asztalon és mobilon; `motor-helyszin-teszt` 15×2 zöld.
+  - Valódi próbafoglalás a divat fülpiercingre (Sopron, mobil): `/fulbevalo-ok` a fő ablakban, `booking_id` = `back`. Lemondva.
+- **Feri döntése (10:06, „EZ ÉRVÉNYES”):** 100% MA, ha a QA-1…QA-6 mind PASS. A 0%-os kapcsoló vészvisszaállításként kötelező, A/B teszt nincs. (Teljesült, lásd fent.)
+- **Salonic „Egyedi CSS URL”: BEÁLLÍTVA.** A mérési Claude 13:29 UTC-s bejegyzése még „NINCS beállítva”-t írt; legkésőbb ~14:20 UTC-re beállították a medicalpiercing fiókban (ki tette, nem tudjuk; a fejlesztő nem). Igazolva: a `medicalpiercing.salonic.hu` oldalak HTML-je hivatkozik az `https://www.medicalpiercing.hu/assets/salonic/mp.css`-re, és a stíluslap-kapcsoló nélküli éles mérés (`adatlap-meres.mjs --eszkoz "iPhone 12"`) szerint a „Foglalás elküldése” gomb alja 563 px a 664 px-es képernyőn, görgetés nélkül.
+  - Következmény: az `mp.css` mobilon elrejti a nem kötelező megjegyzés mezőt. A `probafoglalas.mjs` ezt kezeli (csak akkor tölti, ha látszik).
+  - Az A76-fiókról (téves beállítás, azonnal visszaállítva) a mérési Claude jelezte, hogy ellenőrizte, nem tölti be; ezt mi nem mértük újra.
+- **Éles ellenőrzés a 100%-ra (2026-10-11, ~14:20–14:30 UTC):** `BASE=https://www.medicalpiercing.hu node tools/motor-helyszin-teszt.mjs`: 15 helyszín × asztali és mobil, 270 OK, 0 HIBA; és a 10. próbafoglalás (lásd lent).
 
 **Folyamat és fájlok:**
 - `assets/js/motor-indito.js`: minden lapon, kicsi. A `medicalpiercing.salonic.hu` foglalási linkekre kattintva dönt (kapcsoló / `?motor=`), és ekkor tölti be a motort.
@@ -155,9 +160,13 @@ Párja a Drive MP-mappájában van („MP-ATADAS-2026-10-11.md”), ugyanezzel a
 - A weboldal tesztjei: `funkcio-teszt`, `meres-teszt`, `elteres` (Wix-összevetés), `mp-meres-pw`, `test-mp-meres`, `test-mp-feltoltes`.
 
 **Valódi próbafoglalások (QA-2), mind lemondva:**
-- 7 darab: Budapest ×3, Szeged, Debrecen, Pécs, Sopron; asztali és mobil.
-- A vendég neve „TESZT – Claude”; e-mail: a tulajdonos Gmail-fiókja (a Gmail-összekötő ezt éri el); telefon: az MP szalon száma.
-- Mind létrejött és párosítható. Az 5 végigfutott átadásból 4-nél a köszönőoldal a fő ablakban nyílt, a `booking_id` = `back`, és 1 `/api/mp-foglalas` ment. Az 5. a divat fülpiercing volt: ott derült ki a `/fulbevalo-ok` lelet, amit a PR #247 javít.
+- 10 darab: Budapest ×4, Szeged, Debrecen, Pécs, Sopron ×3; asztali és mobil.
+- A **10.** (2026-10-11 14:26–14:29 UTC) a 100%-os kapcsoló éles ellenőrzése, **`?motor=1` nélkül** (`--parameter-nelkul`): Budapest, mobil (Pixel 5), a `/migren-piercing` oldalról.
+  - A motor magától nyílt; 2026-12-12 18:30, Salonic foglalás-ID 47222481, 24 900 Ft, `booking_id` = `back` (`mb_0mv3x4cx8k3pbbbfk3zp70h`); a `/foglalas-ok-mi` köszönőoldal a fő ablakban nyílt; 1 `/api/mp-foglalas` (a szkript elfogta, nincs D1-sor); GA4 `foglalas_inditasa` 1×; JS-hiba 0. Azonnal lemondva.
+  - Ezt a foglalást is le kell vonni a figyelésnél (Meta Schedule).
+- A vendég neve „TESZT – Claude”. **Mostantól a próbák telefonszáma Feri saját tesztszáma, az e-mail `deakfi@grantis.hu`** (a Gmail-összekötő ezt éri el; a Salonic-levél megjön). A számot a repó nem tartalmazza: a Drive `MP-FOGLALOMOTOR-FELADAT.md`-ben van, és a `probafoglalas.mjs` `PROBA_TELEFON`-ként kéri (nincs alapérték).
+- **Lelet (a 10. próbából) és teendő:** a Salonic-levél köszöntése „Kedves **Szentes Johanna**!” volt (a mellékletek neve is `szentes-johanna`). Az 1–10. próbák a szalon számát használták, és a Salonic erre egy meglévő vendégprofilt illesztett, tehát a próbafoglalások (a lemondásokkal együtt) ahhoz kapcsolódnak. **Feri kérése: ezeket törölni kell a Salonicból.** A Salonic-fiókhoz a Claude nem nyúl; a törléshez Salonic-admin belépés kell (Feri vagy a közös belépéssel a mérési Claude). A 10 próbafoglalás Salonic-azonosítója: 47216592, 47216705, 47216757, 47216779, 47216792, 47216800, 47216926, 47218535, 47218562, 47222481. A vendégprofilt magát ne töröld, az valódi személyé lehet; érdemes megnézni, hogy az e-mail-címe nem íródott-e át `deakfi@grantis.hu`-ra.
+- Mind létrejött és párosítható. Az 5 végigfutott átadásból 4-nél a köszönőoldal a fő ablakban nyílt, a `booking_id` = `back`, és 1 `/api/mp-foglalas` ment. Az 5. a divat fülpiercing volt: ott derült ki a `/fulbevalo-ok` lelet. A PR #247 után élesben újra próbáltuk (9.), és rendben van.
 - A böngészős mérés tiltva volt; a Salonic szerveres Meta Schedule-ja elmehetett (a figyelésnél levonandó).
 - Táblázat: `MP-FOGLALOMOTOR-PROBAFOGLALASOK.md`.
 
@@ -176,13 +185,14 @@ Párja a Drive MP-mappájában van („MP-ATADAS-2026-10-11.md”), ugyanezzel a
 
 ## 6. Nyitott teendők, sorrendben
 
-1. **PR #247:** a zöld előnézet, a merge és az éles ellenőrzés kész-e? Ha nincs kész: előnézet → merge → éles füstpróba (`motor-fust.mjs`, `adatlap-meres.mjs`).
-2. **A tulajdonos egy lépése:** a Salonic „Egyedi CSS URL” beállítása (4. pont). Utána mérd élesben: `BASE=https://www.medicalpiercing.hu node tools/motor-proba/adatlap-meres.mjs --eszkoz "iPhone 12"`. A `--stilus` itt már nem kell: a fiók maga tölti be a stíluslapot.
-3. **A mérési Claude QA-eredménye** a `MP-FOGLALOMOTOR-FELADAT.md`-ben. Ha PASS: kapcsoló 100% (`motor-kapcsolo.json`), PR, merge, éles ellenőrzés (`motor-helyszin-teszt.mjs` `BASE=https://www.medicalpiercing.hu`-val, és egy valódi próbafoglalás `?motor=1` NÉLKÜL, azonnali lemondással).
-4. **PR #246 (süti-sáv):** ha bemegy, a `suti.js`-ütközést (a `/fulbevalo-ok` minta két sora) fel kell oldani, és a `motor-teszt`, `meres-teszt` újrafuttatandó.
+1. ~~PR #247, #246, #248~~ kész, élesben (a motor 100%-on, saját süti-sáv).
+2. ~~A Salonic „Egyedi CSS URL” beállítása~~ kész (lásd a 4. pontot), igazolva. Visszavonás: a mező kiürítése (app.salonic.hu, medicalpiercing fiók, Beállítások > Online bejelentkezés megjelenés). Ugyanitt vigyázz a fiókra: a közös Salonic-belépés más fiókon állhat (2026-10-11-én az A76-on ez egyszer tévesen beállt).
+   - **Függőben (Salonic-admin kell):** az 1–10. próbafoglalás törlése a Salonicból (a „Szentes Johanna” vendégprofilról, azonosítók a 4. pontban). Feri kérte; a Claude-nak nincs Salonic-belépése, és a Salonic-fiókhoz nem nyúl.
+   - Új próbafoglalás NEM kell: a 100%-os motor élesben igazolt (270/270 teszt, valódi próba). A jövőbeli próbák telefonszáma Feri tesztszáma.
+3. **Salonic-kínálat (Feri kérte):** Sopronban (9067) és Szombathelyen (14229) hiányzik a „👭 2 személynek – 2 db piercing” (189187). Ugyanaz a fiókváltási kérdés, mint a 2. pontnál.
+4. **A 24 órás figyelés** a mérési Claude-é (lásd a 4. pont). Bármelyik eltérésnél azonnal 0%-ra.
 5. **Döntésre vár (mérés):** a #242 `mp-meres.js` a divat fülpiercing (`/fulbevalo-ok*`) foglalásait nem küldi. Ha kell, a mérési munkamenet bővítse.
 6. **A tulajdonos teendői (nem a Claude-éi):**
-   - a CookieYes-fiók (ha a #246 nem megy be);
    - a Wix-előfizetés lemondása néhány nap hibátlan működés után.
 
 ## 7. PR-történet (Brinuti/mosaic)
@@ -195,5 +205,6 @@ Párja a Drive MP-mappájában van („MP-ATADAS-2026-10-11.md”), ugyanezzel a
 - **#242** szerveres Google Ads ÁRNYÉK (mérési munkamenet);
 - **#243** gyorsítás;
 - **#245** foglalómotor, 0%;
-- **#246** saját süti-sáv (más munkamenet, nyitott);
-- **#247** mobil adatlap egy képernyőn, `/fulbevalo-ok`, 15 helyszín tesztje.
+- **#246** saját süti-sáv (más munkamenet, élesben 13:01 UTC);
+- **#247** mobil adatlap egy képernyőn, `/fulbevalo-ok`, 15 helyszín tesztje;
+- **#248** a foglalómotor kapcsolója 100% (mérési Claude, 13:22 UTC).
