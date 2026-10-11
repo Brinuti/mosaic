@@ -169,8 +169,15 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
   .kartya.hely .nev { font-size: 15px; }
   .kartya.hely .terkep { height: 28px; margin-right: 9px; }
   .kartya.szolg .ar s { display: block; margin: 0; font-size: 12px; }
-  .szeg button { min-height: 40px; font-size: 13px; }
-  .szuro-cimke, .lista-fej { font-size: 11.5px; } }
+  .ablak[data-lepes="szolg"] .osszegzes { margin-bottom: 18px; }
+  .szuro-sor { margin-bottom: 22px; }
+  .szuro-cimke { margin-bottom: 10px; }
+  .szuro-sor + .szuro-sor .szuro-cimke { margin-bottom: 14px; }
+  .lista-fej { margin: 20px 0 10px; }
+  .szeg { gap: 12px; }
+  .szeg button { min-height: 46px; font-size: 14px; }
+  .szuro-cimke, .lista-fej { font-size: 12px; }
+  .szam { width: 20px; height: 20px; margin-right: 8px; font-size: 12px; } }
 /* visszahivas-kero urlap (kontroll / ekszercsere / garancia): ugyanaz az urlap es vegpont (/api/urlap), mint a regi /kontroll oldalon.
    TOMOR: asztalon sehol nem logki (2 oszlop), mobilon egy kepernyore torekszik (mint a Salonic-adatlap: nincs lepesjelzo, kisebb fejlec,
    a ket rovid mezo - datum, varos - egymas mellett, rovid kepfeltoltes-felirat) */
