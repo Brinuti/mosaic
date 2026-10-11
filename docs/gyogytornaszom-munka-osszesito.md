@@ -181,3 +181,8 @@ A munkához készült mentések (`/tmp/*_backup.json`, `member_meta_backup.json`
 ## 25. Gombszin visszaallitva, lablec osszenyomva (2026-10-11)
 - A narancs gombok szine visszaallt (#e99300) a user kerese szerint (kontraszt-figyelmeztetes igy visszajon).
 - Lablec (snippet 54): a nyitvatartas dupla <br><br> sortoresei egyre cserelve, sorkoz 18px, menu 16px, padding 22px, igy a lablec kb. fele magassagu (desktop + mobil kepernyokeppel ellenorizve). Emiatt a lablec linkek erintesi merete 24px alatt marad.
+
+## 26. Kritikus CSS es betutipus-kiszervezes: kiprobalva, elvetve (2026-10-11)
+- Kritikus CSS: Playwright-tal (8 oldal x 3 szelesseg) kigyujtve = 96 KB (ebbol 33 KB base64 betutipus) a 185 KB helyett; brotli utan ~10 KB nyereseg, FOUC/CLS kockazat mellett -> nem eri meg, nem eles.
+- Betutipusok (2x base64 woff2 a CSS-ben) kulso fajlba: HTML brotli 85 -> 61 KB, de a laborban az LCP nem javult (zajos), az inline betu elso latogatasnal gyorsabb -> kikapcsolva es torolve (snippet 57). Autoptimize "data URI" opcio valtozatlan (on).
+- Lemaradt vizsgalat: hirdetesi kattintasok mobil TTFB 0,96 s / LCP 1,87 s (RUM) - kampanyonkenti bontas kovetkezik.
