@@ -1,6 +1,6 @@
 // Az uj, rejtett fooldal (/uj-fooldal) viselkedese. Onallo: a Wix-klon klon.js-e nem fut ezen a lapon.
 // 1. fejlec (gorgetes-arnyek, mobilmenu, lenyilo almenuk)   2. "Osszes piercing tipus", ekszer-galeria   3. videoablak
-// 4. Google-velemenyek: a mentett adatok elesben frissulnek a Trustindex-widgetbol (hiba eseten marad a mentett)
+// 4. Google-velemenyek: Trustindex-widget (tartalek, ha nem toltodik be), kitelepulesi idopontok
 // 5. URL-parameterek megorzese es a foglalasi linkek (a klon.js 8. szakaszanak mase: ugyanaz a munkamenet-kulcs)
 // A foglalasi gombok (/idopontfoglalas, /kontroll) a motor-indito.js-t hasznaljak (a build teszi a lapra), meres a suti.js-ben.
 (function () {
@@ -19,6 +19,7 @@
     fejlec.classList.remove('menu-nyitva');
     nyito.setAttribute('aria-expanded', 'false');
     nyito.setAttribute('aria-label', 'Menü megnyitása');
+    $('use', nyito).setAttribute('href', '#i-menu');
     document.documentElement.style.overflow = '';
   };
   nyito.addEventListener('click', () => {
@@ -26,6 +27,7 @@
     fejlec.classList.toggle('menu-nyitva', nyit);
     nyito.setAttribute('aria-expanded', String(nyit));
     nyito.setAttribute('aria-label', nyit ? 'Menü bezárása' : 'Menü megnyitása');
+    $('use', nyito).setAttribute('href', nyit ? '#i-close' : '#i-menu');
     document.documentElement.style.overflow = nyit ? 'hidden' : '';
   });
   // a menü linkjére kattintva a mobilmenü bezárul (a lapon belüli horgonyoknál is)
@@ -91,6 +93,33 @@
     frissit();
   }
 
+  // --- 2c. nagyito: az ekszerkepre kattintva nagyban nyilik (nyilak, billentyuzet, ujjal huzas; Esc / hatter zar) -------------------
+  const nagyito = $('#nagyito');
+  if (galeria && nagyito && typeof nagyito.showModal === 'function') {
+    const diakGomb = $$('.dia-nagyit', galeria);
+    const kep = $('.nagyito-kep', nagyito), szam = $('[data-n]', nagyito);
+    let idx = 0;
+    const mutat = (i) => {
+      idx = (i + diakGomb.length) % diakGomb.length;
+      kep.src = diakGomb[idx].dataset.nagy;
+      kep.alt = $('img', diakGomb[idx]).alt;
+      szam.textContent = String(idx + 1);
+      const kov = diakGomb[(idx + 1) % diakGomb.length]; if (kov) new Image().src = kov.dataset.nagy;   // a kovetkezo elore toltodik
+    };
+    diakGomb.forEach((g, i) => g.addEventListener('click', () => { mutat(i); nagyito.showModal(); }));
+    $('.nagyito-elozo', nagyito).addEventListener('click', () => mutat(idx - 1));
+    $('.nagyito-kov', nagyito).addEventListener('click', () => mutat(idx + 1));
+    $('.nagyito-zar', nagyito).addEventListener('click', () => nagyito.close());
+    nagyito.addEventListener('click', (e) => { if (e.target === nagyito) nagyito.close(); });
+    nagyito.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); mutat(idx + 1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); mutat(idx - 1); }
+    });
+    let x0 = null;
+    nagyito.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+    nagyito.addEventListener('touchend', (e) => { if (x0 === null) return; const d = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(d) > 50) mutat(idx + (d < 0 ? 1 : -1)); }, { passive: true });
+    nagyito.addEventListener('close', () => { kep.removeAttribute('src'); });
+  }
+
   // --- 3. videoablak ---------------------------------------------------------------------------------------
   const ablak = $('#videoablak');
   if (ablak && typeof ablak.showModal === 'function') {
@@ -114,41 +143,25 @@
     }));
   }
 
-  // --- 4. Google-velemenyek: elo frissites a Trustindex-widgetbol -------------------------------------------
-  // Ugyanaz a widget, amit az eles oldal (assets/embed/f18724_bff0f1a0...html) is betolt; a tartalmat a Trustindex a sajat
-  // CDN-jen adja. Csak szamot es szoveget olvasunk ki (textContent), semmi nem kerul innerHTML-be.
-  const TRUSTINDEX = 'https://cdn.trustindex.io/widgets/78/783989431b063202f926c7609f9/content.html';
-  const velemenyFrissit = async () => {
-    const lista = $('[data-velemenyek]');
-    if (!lista) return;
-    const v = await fetch(TRUSTINDEX, { credentials: 'omit', referrerPolicy: 'no-referrer' });
-    if (!v.ok) return;
-    const doc = new DOMParser().parseFromString(await v.text(), 'text/html');
-    const pont = parseFloat(($('.ti-header-rating', doc) || {}).textContent);
-    const darab = parseInt((($('.ti-header-rating-reviews', doc) || {}).textContent || '').replace(/\D/g, ''), 10);
-    if (!(pont >= 3.5 && pont <= 5) || !(darab >= 100 && darab < 1e6)) return;
-    const pontSzoveg = pont.toFixed(1);
-    $$('[data-ertekeles]').forEach((e) => { e.textContent = pontSzoveg; });
-    $$('[data-darab]').forEach((e) => { e.textContent = String(darab).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); });
-    const csillag = $('.csillagok[role="img"]'); if (csillag) csillag.setAttribute('aria-label', '5 csillagból ' + pontSzoveg.replace('.', ','));
-    // a legfrissebb jó (4-5 csillagos), szöveges vélemények a mentett kártyák helyére
-    const friss = $$('.ti-review-item', doc).map((it) => ({
-      nev: (($('.ti-name', it) || {}).textContent || '').trim(),
-      szoveg: (($('.ti-review-content', it) || {}).textContent || '').trim(),
-      csillag: Math.round(parseFloat(it.getAttribute('data-rating')) || 0),
-    })).filter((r) => r.nev && r.szoveg.length > 20 && r.csillag >= 4).slice(0, 2);
-    const kartyak = $$('article.velemeny', lista);
-    if (friss.length < 2 || kartyak.length < 2) return;
-    friss.forEach((r, i) => {
-      const k = kartyak[i];
-      $('.monogram', k).textContent = r.nev.charAt(0).toUpperCase();
-      $('header b', k).textContent = r.nev;
-      $('p', k).textContent = r.szoveg;
-      $('.csillagok', k).setAttribute('aria-label', r.csillag + ' csillag');
-    });
-  };
-  const kesleltet = window.requestIdleCallback || ((f) => setTimeout(f, 1200));
-  window.addEventListener('load', () => kesleltet(() => { velemenyFrissit().catch(() => { /* marad a mentett adat */ }); }));
+  // --- 4. Google-velemenyek: a Trustindex-widget (az oldalban a loader.js tolti, lapozhato); ha 9 mp alatt nem jelenik meg, a mentett tartalek latszik ---
+  const tiHely = $('[data-trustindex]'), tartalek = $('[data-tartalek]');
+  if (tiHely && tartalek) {
+    window.setTimeout(() => { if (!$('.ti-widget', tiHely)) tartalek.hidden = false; }, 9000);
+  }
+
+  // --- 4b. kitelepulesek: a helyszin-csempek friss idopontjai (a build mar beirta; itt a tablazat mostani allapota, /api/kitelepulesek) ---
+  const ROVID = { 'Január': 'Jan.', 'Február': 'Febr.', 'Március': 'Márc.', 'Április': 'Ápr.', 'Május': 'Máj.', 'Június': 'Jún.', 'Július': 'Júl.', 'Augusztus': 'Aug.', 'Szeptember': 'Szept.', 'Október': 'Okt.', 'November': 'Nov.', 'December': 'Dec.' };
+  const rovid = (sor) => sor.replace(/^[^\s\d]+/, (h) => ROVID[h] || h).replace(/,\s*/g, ', ');
+  const datumok = $$('[data-mp-kitelepules]');
+  if (datumok.length && window.fetch) {
+    fetch('/api/kitelepulesek').then((v) => (v.ok ? v.json() : null)).then((adat) => {
+      if (!adat || !adat.sorok) return;
+      for (const d of datumok) {
+        const sorok = adat.sorok[d.dataset.mpKitelepules];
+        if (sorok && sorok.length) d.replaceChildren(...sorok.map(rovid).flatMap((x, i) => (i ? [document.createElement('br'), x] : [x])));
+      }
+    }).catch(() => { /* marad a build idejen beirt allapot */ });
+  }
 
   // --- 5. URL-parameterek megorzese es a foglalasi linkek (klon.js 8.) --------------------------------------
   const MENTETT = 'savedQueryParams';

@@ -7,7 +7,7 @@ Kimenet (mind WebP, assets/img/uj-*.webp):
   uj-logo               a logo atlatszo hatterrel, az EREDETI rozsaszin megtartva; uj-logo-rtl/-hirtv/-divany: a media-logok
                         a hatterszin eltavolitva, az eredeti szinek megtartva
   uj-orvos              Dr. Schmolcz Gergely az "Orvosi ajanlas" kepbol (a kep az eles fooldalon is szerepel)
-  uj-ekszer-01..20      az eles fooldal osszes ekszerkepe (galeria), 900 px
+  uj-ekszer-01..20      az eles fooldal osszes ekszerkepe (galeria), 900 px; -nagy: 1400 px (a nagyito)
   uj-ful-akcio          a banner fulfotoja (migren-piercing-budapest-2.jpg belso kepe)
   uj-pont-<tipus>       a fulabrak (migren, shenmen, slim): az eredeti 100 px-es abra helyett 332 px-es, a pont
                         helyzete az eredeti abrarol leolvasva (a tobbi tipus eredeti 332 px-es abrat hasznal)
@@ -49,6 +49,7 @@ EKSZEREK = ['8e809c43b371416687a1171a078ec8e6', '47eea349736f4816bc3ac9b550b0eec
 for i, h in enumerate(EKSZEREK, 1):
     e = Image.open(src('f18724_' + h)).convert('RGB')
     save(e.resize((900, 900), Image.LANCZOS), f'uj-ekszer-{i:02d}', 80)
+    save(e.resize((1400, 1400), Image.LANCZOS), f'uj-ekszer-{i:02d}-nagy', 80)   # a nagyito (kattintasra)
 
 # --- banner: a keretezett fulfoto belso resze (a feher keretet levagjuk), fuggoleges kivagas a fulre ---
 f = Image.open(src('f18724_845225eefb1e498daa49764947208c70')).convert('RGB')

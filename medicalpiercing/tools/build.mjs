@@ -16,7 +16,7 @@ import { fajlnev } from '../lib/utvonal.js';
 import { TABLAZAT_CSV, osszesSor, htmlFrissites } from '../lib/kitelepulesek.js';
 import { takarit } from './takaritas.mjs';
 import { gyorsit } from './gyorsitas.mjs';
-import { ujFooldal } from './uj-fooldal.mjs';
+import { ujFooldal, ujKitelepules } from './uj-fooldal.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -160,6 +160,7 @@ if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(
     const r = htmlFrissites(fs.readFileSync(f, 'utf8'), sorok, o.ut);
     if (r.db) { fs.writeFileSync(f, r.html); lapDb++; }
   }
+  ujKitelepules(DIST, sorok); // az uj, rejtett oldalak helyszin-csempei (tools/uj-fooldal.mjs)
   console.log(`kitelepulesek: ${lapDb} lapon ${olvasva ? 'a tablazatbol frissitve' : 'csak jelolve'}` + (hibak.length ? `; nem ertelmezheto cellak:\n  ${hibak.join('\n  ')}` : ''));
 }
 
