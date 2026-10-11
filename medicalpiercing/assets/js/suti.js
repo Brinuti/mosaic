@@ -27,11 +27,11 @@
   if (ELES_DOMAINEK.indexOf(location.hostname) < 0) return;
 
   // A foglalomotor (assets/js/motor/motor.js) a Salonic adatlapjat keretben mutatja; sikeres foglalas utan a Salonic a
-  // keretben iranyit a koszonooldalra (/foglalas-ok*). Ilyenkor a koszonooldal jelez a motornak (postMessage), es ha a
+  // keretben iranyit a koszonooldalra (/foglalas-ok*; a divat fulpiercingnel /fulbevalo-ok*). Ilyenkor a koszonooldal jelez a motornak (postMessage), es ha a
   // motor 1,5 mp-en belul visszaigazolja, hogy UGYANEZT a koszonooldalt a fo ablakban nyitja meg (booking_id-vel), itt
   // NEM merunk (kulonben ketszer szamolna; a jelzes: <html data-mp-motor-atvette="1">). A regi, kozvetlenul beagyazott
   // Salonic-naptarak keretei (pl. /migren-piercing-uj) nem kapnak valaszt: ott minden a regi, a keretben merunk.
-  if (window.top !== window && /^\/foglalas-ok/i.test(location.pathname)) {
+  if (window.top !== window && /^\/(foglalas-ok|fulbevalo-ok)/i.test(location.pathname)) {
     var atvette = false;
     window.addEventListener('message', function (e) {
       if (e.source === window.parent && e.data && e.data.tipus === 'mp-motor-atvette') {
@@ -43,7 +43,7 @@
     setTimeout(function () { if (!atvette && !marMert()) meres(); }, 1500);
     return;
   }
-  if (/^\/foglalas-ok/i.test(location.pathname) && marMert()) return;
+  if (/^\/(foglalas-ok|fulbevalo-ok)/i.test(location.pathname) && marMert()) return;
   meres();
 
   // Ugyanannak a foglalasnak a koszonooldala egy bongeszoben csak EGYSZER mer: frissiteskor, visszalepeskor, ujranyitaskor

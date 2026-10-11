@@ -1,0 +1,230 @@
+/* MEDICAL PIERCING - a Salonic foglalasi adatlapjanak (guestData) egyedi megjelenese: mobilon az adatlap a "Foglalas elkuldese"
+ * gombbal egyutt egy kepernyore fer (a foglalomotor kereteben is), gorgetes nelkul. A Mozaik salonic/mosaic.css-enek MP-valtozata
+ * (ugyanaz a Salonic-sablon), CSAK az adatlapra (body.page-booking-guestData-body): a Salonic tobbi oldala valtozatlan marad.
+ *
+ * Bekapcsolas (a tulajdonos teendoje, egyszer): app.salonic.hu > Beallitasok > Online bejelentkezes megjelenes > "Egyedi CSS URL":
+ *     https://www.medicalpiercing.hu/assets/salonic/mp.css
+ * Kikapcsolas: a mezo kiuritese (az adatlap visszakapja a Salonic alapkinezetet). A foglalomotor a Salonic oldalabol felismeri,
+ * hogy a fiok betolti-e ezt a fajlt, es ehhez meretezi a keretet (assets/js/motor/salonic-adapter.js: customCss).
+ * Proba (a beallitas nelkul, a fajlt a valodi Salonic-oldalba injektalva): tools/motor-proba/adatlap-meres.mjs --css assets/salonic/mp.css
+ */
+body.customer-medicalpiercing.page-booking-guestData-body {
+  --mh-sotet: #454659; --mh-kozep: #626377; --mh-halvany: #9a9bab;
+  --mh-krem: #ffffff; --mh-hatter: #fdf8f7; --mh-vonal: #ead3cf; --mh-hiba: #a33a2b; --mh-gomb: #ab6354; --mh-gomb-sotet: #8f4f42;
+  background: var(--mh-hatter) !important;
+  color: var(--mh-sotet);
+  font-family: Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+}
+body.customer-medicalpiercing.page-booking-guestData-body h1, body.customer-medicalpiercing.page-booking-guestData-body h2, body.customer-medicalpiercing.page-booking-guestData-body h3,
+body.customer-medicalpiercing.page-booking-guestData-body h4, body.customer-medicalpiercing.page-booking-guestData-body .title, body.customer-medicalpiercing.page-booking-guestData-body .card-title {
+  font-family: Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 400 !important;
+  color: var(--mh-sotet) !important;
+  letter-spacing: .01em;
+}
+
+/* fejlec es boritokep: az adatlapon nincs (a foglalomotornak sajat fejlece van; a keret igy nem vag le semmit) */
+body.customer-medicalpiercing.page-booking-guestData-body .navbar { display: none !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .page-header { display: none !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .page-header::before, body.customer-medicalpiercing.page-booking-guestData-body .page-header::after { display: none !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .main-raised, body.customer-medicalpiercing.page-booking-guestData-body .section { margin-top: 0 !important; padding-top: 12px !important; padding-bottom: 12px !important; box-shadow: none !important; background: transparent !important; }
+
+/* kartyak */
+body.customer-medicalpiercing.page-booking-guestData-body .card {
+  background: #fff !important; border: 1px solid var(--mh-vonal) !important; border-radius: 14px !important;
+  box-shadow: none !important; margin-top: 8px !important; margin-bottom: 12px !important;
+}
+body.customer-medicalpiercing.page-booking-guestData-body .card-body { padding: 12px 14px !important; }
+
+/* visszaszamlalo */
+body.customer-medicalpiercing.page-booking-guestData-body .booking-time-remain-container { font-size: 14px; color: var(--mh-kozep) !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .booking-time-remain-container .countdown { font-weight: 700; color: var(--mh-sotet); }
+
+/* urlapmezok */
+body.customer-medicalpiercing.page-booking-guestData-body .form-group { margin: 0 0 8px !important; padding-top: 0 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .control-label, body.customer-medicalpiercing.page-booking-guestData-body .form-group label:not(.form-check-label) {
+  position: static !important; transform: none !important; display: block;
+  font-size: 13px !important; font-weight: 700 !important; color: var(--mh-sotet) !important; margin: 0 0 3px !important; line-height: 1.25 !important;
+}
+body.customer-medicalpiercing.page-booking-guestData-body .control-label .required, body.customer-medicalpiercing.page-booking-guestData-body span.required { color: var(--mh-hiba) !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .form-control {
+  height: 40px !important; padding: 6px 12px !important; font-size: 16px !important; color: var(--mh-sotet) !important;
+  background: #fff !important; background-image: none !important;
+  border: 1.5px solid var(--mh-vonal) !important; border-radius: 10px !important; box-shadow: none !important;
+}
+body.customer-medicalpiercing.page-booking-guestData-body textarea.form-control { height: 56px !important; min-height: 0 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .form-control:focus { border-color: var(--mh-sotet) !important; outline: none !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .has-error .form-control { border-color: var(--mh-hiba) !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .iti { width: 100%; }
+body.customer-medicalpiercing.page-booking-guestData-body .iti input.form-control { padding-left: 92px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .alert-danger { background: #f8e3df !important; color: var(--mh-hiba) !important; border: 0 !important; border-radius: 10px !important; box-shadow: none !important; }
+
+/* jelolonegyzetek */
+body.customer-medicalpiercing.page-booking-guestData-body .form-check { margin: 2px 0 6px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .form-check .form-check-label { font-size: 12px !important; color: var(--mh-kozep) !important; line-height: 1.35 !important; padding-left: 28px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .form-check .form-check-sign .check { border-color: var(--mh-halvany) !important; border-radius: 4px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .form-check .form-check-input:checked + .form-check-sign .check { background: var(--mh-sotet) !important; border-color: var(--mh-sotet) !important; }
+
+/* gombok */
+body.customer-medicalpiercing.page-booking-guestData-body .btn-success, body.customer-medicalpiercing.page-booking-guestData-body .btn-primary, body.customer-medicalpiercing.page-booking-guestData-body .salonic-gradient-button {
+  background: var(--mh-sotet) !important; background-image: none !important; border: 0 !important; color: var(--mh-krem) !important;
+  border-radius: 12px !important; box-shadow: none !important;
+  font-weight: 700 !important; letter-spacing: .1em !important; text-transform: uppercase !important;
+}
+body.customer-medicalpiercing.page-booking-guestData-body .btn-submit-booking { min-height: 46px; padding: 10px 16px !important; font-size: 14px !important; margin-top: 4px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .btn-success:hover, body.customer-medicalpiercing.page-booking-guestData-body .btn-primary:hover { background: #24453f !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .btn-success[disabled], body.customer-medicalpiercing.page-booking-guestData-body .btn-success.disabled { opacity: .45 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body a:not(.btn):not(.nav-link) { color: var(--mh-sotet); text-decoration: underline; text-underline-offset: 2px; }
+
+/* osszegzo kartya (kezelo, nap, kezeles) */
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card h4 { font-size: 18px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .text-muted { color: var(--mh-kozep) !important; }
+
+/* Facebook-belepes es elvalaszto: nem kell a foglalashoz */
+body.customer-medicalpiercing.page-booking-guestData-body .fb-login-button, body.customer-medicalpiercing.page-booking-guestData-body .divider-line { display: none !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .panel-body .text-center.py-4 { display: none !important; }
+
+/* lablec: nem kell (a szabalyzat es az adatkezeles linkje a hozzajarulasnal is ott van) */
+body.customer-medicalpiercing.page-booking-guestData-body footer, body.customer-medicalpiercing.page-booking-guestData-body .footer { display: none !important; }
+
+/* tomorebb elrendezes: kisebb cimsorok es kozok */
+body.customer-medicalpiercing.page-booking-guestData-body .panel-heading h3, body.customer-medicalpiercing.page-booking-guestData-body .card-body h3 { font-size: 18px !important; margin: 0 0 8px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .my-3 { margin-top: 6px !important; margin-bottom: 6px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .mt-3 { margin-top: 6px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .booking-time-remain-container { margin: 0 0 4px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .form-group .alert { padding: 6px 10px !important; margin: 4px 0 0 !important; font-size: 13px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body hr { margin: 8px 0 !important; }
+
+/* ===== egy mobilkepernyore: a teljes adatlap a gombbal egyutt ===== */
+/* a Salonic osszegzo kartyaja (kezelo, nap, kezeles): tomor sav, foto nelkul */
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card { margin: 0 0 6px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body { padding: 8px 12px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 img { display: none !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 h4 { font-size: 14px !important; margin: 0 !important; line-height: 1.3 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 hr, body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .divider-line { display: none !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body > * { margin-top: 0 !important; margin-bottom: 2px !important; padding-top: 0 !important; padding-bottom: 0 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body, body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body span { font-size: 13px !important; line-height: 1.3 !important; }
+/* vezeteknev + keresztnev egy sorban: a mezoket tartalmazo doboz rugalmas sor */
+body.customer-medicalpiercing.page-booking-guestData-body .panel-body > div { display: flex !important; flex-wrap: wrap !important; column-gap: 8px; }
+body.customer-medicalpiercing.page-booking-guestData-body .panel-body > div > * { flex: 0 0 100%; max-width: 100%; }
+body.customer-medicalpiercing.page-booking-guestData-body .panel-body > div > .form-group:has(#GuestDataForm_guestLastName),
+body.customer-medicalpiercing.page-booking-guestData-body .panel-body > div > .form-group:has(#GuestDataForm_guestFirstName) { flex: 1 1 0; min-width: 0; }
+/* megjegyzes: egysoros */
+body.customer-medicalpiercing.page-booking-guestData-body textarea.form-control { height: 40px !important; resize: vertical; }
+/* jelolonegyzetek: kisebb betu */
+body.customer-medicalpiercing.page-booking-guestData-body .form-check .form-check-label { font-size: 11px !important; line-height: 1.3 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .form-check { margin: 0 0 4px !important; }
+/* a kotelezo-mezo megjegyzes ("A *-gal jelolt mezok...") es a lemondasi sor kisebb */
+body.customer-medicalpiercing.page-booking-guestData-body .guest-data-container p, body.customer-medicalpiercing.page-booking-guestData-body .guest-data-container small { font-size: 11px !important; margin: 2px 0 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .section, body.customer-medicalpiercing.page-booking-guestData-body .container.mt-3 { padding-top: 6px !important; }
+
+/* Salonic-osszegzo: a kezelo neve el (a mi oldalunkon es a datumnal ugyis latszik), a datum es a kezeles egy tomor sorban */
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body > .d-flex { display: none !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body { display: flex !important; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .service-data li { padding: 0 !important; display: flex; gap: 8px; align-items: baseline; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .service-data li strong { font-size: 13px !important; }
+/* kartya-margok */
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-1 .card { margin-top: 0 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-1 .card-body { padding: 10px 12px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .form-check { margin-top: 4px !important; }
+
+/* a reCAPTCHA jelvenye ne usszon ra az urlapra: az oldal aljara kerul, a helyen marad lathatonak */
+body.customer-medicalpiercing.page-booking-guestData-body .grecaptcha-badge { position: relative !important; bottom: auto !important; right: auto !important; margin: 8px auto 4px !important; box-shadow: none !important; }
+
+/* Salonic-osszegzo: 1. sor a kezeles neve (egy sorban, ...-tal), 2. sor datum + idopont, idotartam, ar */
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body { display: flex !important; flex-wrap: wrap !important; align-items: baseline !important; column-gap: 8px !important; row-gap: 2px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body > ul, body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body > ul > li { display: contents !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body strong { order: 1; flex: 0 0 100%; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px !important; font-weight: 700 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body h4.my-0, body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body > h4 { order: 2; font-size: 12px !important; font-family: inherit !important; font-weight: 700 !important; margin: 0 !important; white-space: nowrap; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body li > div { order: 3; display: flex !important; gap: 8px; font-size: 12px !important; white-space: nowrap; }
+body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body li > div * { font-size: 12px !important; white-space: nowrap; }
+/* jelolonegyzetek, "*-gal jelolt mezok" es lemondasi sor: kisebb betu (a szoveg a mezoket tartalmazo dobozban van) */
+body.customer-medicalpiercing.page-booking-guestData-body .panel-body > div { font-size: 11px !important; line-height: 1.35 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .form-check label, body.customer-medicalpiercing.page-booking-guestData-body .form-check label a { font-size: 10.5px !important; line-height: 1.35 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .form-check label { padding-left: 24px !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .panel-body > div > hr { margin: 4px 0 !important; }
+
+/* mobilon (a foglalo keretben is) egy kepernyo: a nem kotelezo megjegyzes-mezo es a reCAPTCHA-jelveny
+   helyett a Google altal elfogadott egysoros szoveges jelzes */
+@media (max-width: 599px) {
+  body.customer-medicalpiercing.page-booking-guestData-body .booking-time-remain-container, body.customer-medicalpiercing.page-booking-guestData-body .booking-time-remain-container * { font-size: 12px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .form-group:has(#GuestDataForm_guestComment) { display: none !important; }
+  /* kisebb cellak es surubb sorkoz (a 16 px-es betu marad, kulonben az iPhone ranagyit) */
+  body.customer-medicalpiercing.page-booking-guestData-body .form-control { height: 36px !important; padding: 4px 10px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .iti input.form-control { padding-left: 88px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .form-group { margin-bottom: 5px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .control-label, body.customer-medicalpiercing.page-booking-guestData-body .form-group label:not(.form-check-label) { font-size: 12px !important; margin-bottom: 2px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .order-lg-1 .card-body { padding: 8px 10px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .form-check { margin: 0 0 3px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .form-check label, body.customer-medicalpiercing.page-booking-guestData-body .form-check label a { font-size: 10px !important; line-height: 1.25 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .my-3 { margin-top: 2px !important; margin-bottom: 4px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .btn-submit-booking { margin-top: 4px !important; height: 42px !important; min-height: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; }
+  /* meg egy kicsit tomorebben */
+  body.customer-medicalpiercing.page-booking-guestData-body .form-control, body.customer-medicalpiercing.page-booking-guestData-body input.form-control { height: 32px !important; min-height: 0 !important; max-height: 32px !important; padding: 2px 10px !important; line-height: 26px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .panel-body > div { font-size: 10.5px !important; line-height: 1.3 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .panel-body > div > hr { margin: 2px 0 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .form-check label, body.customer-medicalpiercing.page-booking-guestData-body .form-check label a { line-height: 1.2 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body { padding: 5px 10px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body strong { font-size: 13px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body h4.my-0, body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body > h4,
+  body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body li > div, body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body li > div * { font-size: 11.5px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card { margin-bottom: 4px !important; }
+  /* a felszabadult helyen kicsit szellosebb: tobb hely a mezok kozott es a cimke alatt */
+  body.customer-medicalpiercing.page-booking-guestData-body .form-group { margin-bottom: 10px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .control-label, body.customer-medicalpiercing.page-booking-guestData-body .form-group label:not(.form-check-label) { font-size: 12.5px !important; margin-bottom: 4px !important; }
+  /* nincs oldaliranyu gorgetes (a Salonic mobilmenuje es a negativ margoju sor kilog), es alul nincs ures hely */
+  html, body.customer-medicalpiercing.page-booking-guestData-body { overflow-x: hidden !important; }
+  /* gorgetosav nem latszik (telefonon amugy is rejtett; asztali keskeny ablakban zavaro), gorgetni tovabbra is lehet */
+  html { scrollbar-width: none !important; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .navbar-collapse { display: none !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .guest-data-container .row { margin-left: 0 !important; margin-right: 0 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .guest-data-container .row > [class*="col-"] { padding-left: 0 !important; padding-right: 0 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .order-lg-1 .card { margin-bottom: 0 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body form.form { margin-bottom: 0 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .section { padding-bottom: 6px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .grecaptcha-badge { visibility: hidden !important; position: absolute !important; bottom: 0 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .panel-body > div::after { content: 'Az oldalt a reCAPTCHA védi; a Google adatvédelmi irányelvei és ÁSZF-je érvényes.'; flex: 0 0 100%; display: block; margin-top: 6px; font-size: 9.5px; line-height: 1.3; color: #8a9799; text-align: center; }
+}
+
+/* asztalon is tomor (a foglalomotor kerete asztalon is a rendelkezesre allo magassagot tolti ki) */
+
+
+/* egy betucsalad (a Salonic Roboto-ja), a foglalas-gomb az MP kiemelo szine */
+body.customer-medicalpiercing.page-booking-guestData-body, body.customer-medicalpiercing.page-booking-guestData-body input, body.customer-medicalpiercing.page-booking-guestData-body button, body.customer-medicalpiercing.page-booking-guestData-body label, body.customer-medicalpiercing.page-booking-guestData-body .form-control { font-family: Roboto, 'Helvetica Neue', Arial, sans-serif !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .btn-success, body.customer-medicalpiercing.page-booking-guestData-body .btn-primary, body.customer-medicalpiercing.page-booking-guestData-body .salonic-gradient-button, body.customer-medicalpiercing.page-booking-guestData-body .btn-submit-booking, body.customer-medicalpiercing.page-booking-guestData-body .btn-submit-booking:focus { background: var(--mh-gomb) !important; border: 0 !important; color: #fff !important; border-radius: 999px !important; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); }
+body.customer-medicalpiercing.page-booking-guestData-body .btn-success:hover, body.customer-medicalpiercing.page-booking-guestData-body .btn-primary:hover, body.customer-medicalpiercing.page-booking-guestData-body .btn-submit-booking:hover { background: var(--mh-gomb-sotet) !important; text-shadow: none; }
+
+/* 2026-10-04: mobilon a teljes adatlap (gombbal) gorgetes nelkul elferjen - a landingen ~290 px szeles keretben is */
+@media (max-width: 599px) {
+  body.customer-medicalpiercing.page-booking-guestData-body .my-3:has(.booking-time-remain-container) { margin: 0 0 4px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .booking-time-remain-container, body.customer-medicalpiercing.page-booking-guestData-body .booking-time-remain-container * { font-size: 11px !important; line-height: 1.2 !important; white-space: nowrap; }
+  body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card { margin: 0 0 4px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body { padding: 4px 8px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body, body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body * { font-size: 11px !important; line-height: 1.25 !important; margin-top: 0 !important; margin-bottom: 0 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body strong, body.customer-medicalpiercing.page-booking-guestData-body .order-lg-2 .card-body h4 { font-size: 12px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .order-lg-1 .card-body { padding: 6px 8px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .form-group { margin-bottom: 6px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .control-label, body.customer-medicalpiercing.page-booking-guestData-body .form-group label:not(.form-check-label) { font-size: 12px !important; margin-bottom: 2px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .form-check { margin: 0 0 2px !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .form-check label, body.customer-medicalpiercing.page-booking-guestData-body .form-check label a { font-size: 9.5px !important; line-height: 1.2 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body span.d-block.mb-3 { margin: 0 !important; font-size: 10.5px !important; line-height: 1.25 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .btn-submit-booking { height: 40px !important; margin-top: 4px !important; }
+}
+
+/* --- Sutisav (cookieconsent) kompakt ----------------------------------------------------------------------------------------------
+ * A Salonic sajat, kotelezo sutisavja ("Az oldal hasznalataval hozzajarulsz a cookie-k ..." + "Elfogadom"). A foglalo keskeny keretebe (telefon) agyazva
+ * az alapmerete (lebego, edgeless tema) 16 px-es szoveggel, a szoveg ALATT teljes szelessegu gombbal ~200 px: az urlap harmadat takarta. Itt: kisebb betu, a gomb a szoveg MELLETT
+ * (oszlop helyett sor), igy ~70 px. Tartalma (szoveg, link, "Elfogadom") valtozatlan; a Salonic hatterszine / gombszine marad.
+ */
+body.customer-medicalpiercing.page-booking-guestData-body .cc-window { flex-direction: row !important; align-items: stretch !important; font-size: 11.5px !important; line-height: 1.3 !important; max-width: none !important; left: 0 !important; right: 0 !important; bottom: 0 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .cc-window .cc-message { margin: 8px 10px !important; flex: 1 1 auto !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .cc-window .cc-message .cc-link { padding: 0 0 0 2px !important; opacity: 1 !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .cc-window .cc-compliance { flex: 0 0 auto !important; width: 96px; display: flex !important; align-items: stretch !important; }
+body.customer-medicalpiercing.page-booking-guestData-body .cc-window .cc-compliance .cc-btn { width: 100% !important; min-width: 0 !important; padding: 0 6px !important; margin: 0 !important; height: auto !important; flex: 1 1 auto !important; font-size: 12px !important; line-height: 1.2 !important; display: flex !important; align-items: center; justify-content: center; }
+
+/* MP: a motor fejlece alatt mobilon nincs szukseg a Salonic felso tereire (a keskeny, 320 px-es telefonokon is a gomb felett marad a suti-sav) */
+@media (max-width: 599px) {
+  body.customer-medicalpiercing.page-booking-guestData-body .container.mt-3 { margin-top: 0 !important; }
+  body.customer-medicalpiercing.page-booking-guestData-body .section { padding-top: 6px !important; padding-bottom: 4px !important; }
+}

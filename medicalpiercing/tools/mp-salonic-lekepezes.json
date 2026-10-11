@@ -1,5 +1,5 @@
 {
- "keszult": "2026-10-11T08:09:03.187Z",
+ "keszult": "2026-10-11T09:49:17.555Z",
  "modszer": "csak olvaso GET: medicalpiercing.salonic.hu + api.salonic.hu/calendar",
  "helyszinek": [
   {
@@ -23,7 +23,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 7933,
+     "szabad_60_nap": 7926,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -41,7 +41,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 8101,
+     "szabad_60_nap": 8095,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -59,7 +59,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 7933,
+     "szabad_60_nap": 7926,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -77,7 +77,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 7547,
+     "szabad_60_nap": 7540,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -95,7 +95,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 7364,
+     "szabad_60_nap": 7357,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -113,7 +113,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 8137,
+     "szabad_60_nap": 8131,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -131,7 +131,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 8137,
+     "szabad_60_nap": 8131,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -149,7 +149,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 8137,
+     "szabad_60_nap": 8131,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -167,7 +167,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 8137,
+     "szabad_60_nap": 8131,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -185,7 +185,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 8063,
+     "szabad_60_nap": 8057,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -203,7 +203,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 8137,
+     "szabad_60_nap": 8131,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -221,7 +221,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 8137,
+     "szabad_60_nap": 8131,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -239,7 +239,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 8137,
+     "szabad_60_nap": 8131,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -257,7 +257,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 8137,
+     "szabad_60_nap": 8131,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -275,7 +275,7 @@
       "19566",
       "25773"
      ],
-     "szabad_60_nap": 8137,
+     "szabad_60_nap": 8131,
      "elso_szabad": "2026-10-12T06:20:00.000Z"
     },
     {
@@ -1788,10 +1788,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1368,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "189184",
@@ -1803,10 +1804,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1421,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "189187",
@@ -1818,10 +1820,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1421,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "225972",
@@ -1833,10 +1836,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1343,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "417831",
@@ -1848,10 +1852,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1319,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "115575",
@@ -1863,10 +1868,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1448,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "133236",
@@ -1878,10 +1884,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1448,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "152191",
@@ -1893,10 +1900,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1448,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "133232",
@@ -1908,10 +1916,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1448,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "190019",
@@ -1923,10 +1932,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1421,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "214466",
@@ -1938,10 +1948,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1448,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "214467",
@@ -1953,10 +1964,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1448,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "214468",
@@ -1968,10 +1980,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1448,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "421557",
@@ -1983,10 +1996,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1448,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "451328",
@@ -1998,10 +2012,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1475,
+     "elso_szabad": "2026-10-13T06:00:00.000Z"
     },
     {
      "service_id": "395895",
@@ -2013,10 +2028,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1101,
+     "elso_szabad": "2026-10-13T07:35:00.000Z"
     },
     {
      "service_id": "402057",
@@ -2028,10 +2044,11 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1101,
+     "elso_szabad": "2026-10-13T07:35:00.000Z"
     },
     {
      "service_id": "402059",
@@ -2043,13 +2060,16 @@
      "kategoria": null,
      "spec_id": "20060",
      "munkatars_idk": [
-      "19566"
+      "19566",
+      "27572"
      ],
-     "szabad_60_nap": 0,
-     "elso_szabad": null
+     "szabad_60_nap": 1077,
+     "elso_szabad": "2026-10-13T07:35:00.000Z"
     }
    ],
-   "munkatarsak": {},
+   "munkatarsak": {
+    "27572": "Fekete Henrietta"
+   },
    "hely": {
     "name": "Medical Piercing - Miskolci kitelepülés",
     "address": "3530 Miskolc Széchenyi István utca 19 4/2 Széchenyi Egészségpont 4. emelet",
@@ -2360,7 +2380,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 505,
+     "szabad_60_nap": 497,
      "elso_szabad": "2026-10-16T10:15:00.000Z"
     },
     {
@@ -2375,8 +2395,8 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 523,
-     "elso_szabad": "2026-10-16T10:15:00.000Z"
+     "szabad_60_nap": 518,
+     "elso_szabad": "2026-10-16T08:30:00.000Z"
     },
     {
      "service_id": "189187",
@@ -2390,7 +2410,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 505,
+     "szabad_60_nap": 497,
      "elso_szabad": "2026-10-16T10:15:00.000Z"
     },
     {
@@ -2405,7 +2425,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 487,
+     "szabad_60_nap": 477,
      "elso_szabad": "2026-10-16T10:15:00.000Z"
     },
     {
@@ -2420,7 +2440,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 478,
+     "szabad_60_nap": 467,
      "elso_szabad": "2026-10-16T10:15:00.000Z"
     },
     {
@@ -2435,7 +2455,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 533,
+     "szabad_60_nap": 530,
      "elso_szabad": "2026-10-16T08:00:00.000Z"
     },
     {
@@ -2450,7 +2470,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 533,
+     "szabad_60_nap": 530,
      "elso_szabad": "2026-10-16T08:00:00.000Z"
     },
     {
@@ -2465,7 +2485,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 533,
+     "szabad_60_nap": 530,
      "elso_szabad": "2026-10-16T08:00:00.000Z"
     },
     {
@@ -2480,7 +2500,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 533,
+     "szabad_60_nap": 530,
      "elso_szabad": "2026-10-16T08:00:00.000Z"
     },
     {
@@ -2495,7 +2515,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 514,
+     "szabad_60_nap": 507,
      "elso_szabad": "2026-10-16T10:15:00.000Z"
     },
     {
@@ -2510,7 +2530,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 533,
+     "szabad_60_nap": 530,
      "elso_szabad": "2026-10-16T08:00:00.000Z"
     },
     {
@@ -2525,7 +2545,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 533,
+     "szabad_60_nap": 530,
      "elso_szabad": "2026-10-16T08:00:00.000Z"
     },
     {
@@ -2540,7 +2560,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 533,
+     "szabad_60_nap": 530,
      "elso_szabad": "2026-10-16T08:00:00.000Z"
     },
     {
@@ -2555,7 +2575,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 533,
+     "szabad_60_nap": 530,
      "elso_szabad": "2026-10-16T08:00:00.000Z"
     },
     {
@@ -2570,7 +2590,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 546,
+     "szabad_60_nap": 545,
      "elso_szabad": "2026-10-16T08:00:00.000Z"
     },
     {
@@ -2585,7 +2605,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 515,
+     "szabad_60_nap": 514,
      "elso_szabad": "2026-10-16T08:00:00.000Z"
     },
     {
@@ -2600,8 +2620,8 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 493,
-     "elso_szabad": "2026-10-16T10:15:00.000Z"
+     "szabad_60_nap": 488,
+     "elso_szabad": "2026-10-16T08:30:00.000Z"
     },
     {
      "service_id": "402059",
@@ -2615,7 +2635,7 @@
      "munkatars_idk": [
       "27571"
      ],
-     "szabad_60_nap": 484,
+     "szabad_60_nap": 477,
      "elso_szabad": "2026-10-16T10:15:00.000Z"
     }
    ],
@@ -4348,7 +4368,5 @@
    }
   }
  ],
- "problemak": [
-  "Miskolc: a kovetkezo 60 napban egyik szolgaltatasra sincs szabad idopont"
- ]
+ "problemak": []
 }
