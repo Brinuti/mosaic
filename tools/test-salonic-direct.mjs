@@ -942,7 +942,7 @@ test('S0-43 hosszu megjegyzes: a csere-gyanu a TELJES szovegen fut (a 500. karak
   { const { v, b } = await jelolt({}, { megjegyzes: hosszu, uj_vendeg: true }); const r = await v.sd(b); assert.equal(r.sd_allapot, 'halasztva'); assert.equal(v.net.hivasok.length, 0, 'a 500. karakter utani "helyett" is HOLD'); }
   { const tul = 'x'.repeat(4001); const { v, b } = await jelolt({}, { megjegyzes: tul, uj_vendeg: true }); const r = await v.sd(b); assert.equal(r.sd_allapot, 'halasztva'); assert.match(r.csere.ok, /tul hosszu/); assert.equal(v.net.hivasok.length, 0); }
   { const { v, b } = await jelolt({}, { megjegyzes: 'Kerem a csendes sarkot, koszonom ' + 'a'.repeat(900), uj_vendeg: true }); assert.equal((await v.sd(b)).allapot, 'kesz', 'hosszu, de csere-gyanu nelkuli megjegyzes: normal sd ut'); }
-  for (const m of ['korabban volt 15:00, de 17:00 jobb', 'Korábban foglaltam, de változott', 'Áthelyeztem az időpontomat', 'Az előző foglalásom helyett', 'Rescheduled from earlier']) assert.ok(csereGyanu(m), m);
+  for (const m of ['korabban volt 15:00, de 17:00 jobb', 'Korábban foglaltam, de változott', 'Áthelyeztem az időpontomat', 'Az előző foglalásom helyett', 'Rescheduled from earlier', 'Tegnapi foglalásomat töröljék', 'Mégsem a szerdai, hanem a keddi']) assert.ok(csereGyanu(m), m);
   for (const m of ['Kerem a csendes sarkot', 'Szeretnék egy későbbi időpontot', 'Már foglaltam 16 órára']) assert.ok(!csereGyanu(m), m);
 });
 
@@ -953,4 +953,40 @@ test('S0-44 a csere-feloldas KIZAROLAG az sd_feloldas muveletbol johet: egy sd_a
   assert.equal(r.sd_allapot, 'halasztva'); assert.equal(v.net.hivasok.length, 0, 'a torzsbe csempeszett feloldas nem hajtodik vegre');
   const f = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'ember dontott' });
   assert.equal(f.sd_allapot, 'feloldva_uj'); assert.equal(v.net.hivasok.length, 2, 'az igazi sd_feloldas (ember) tovabbra is mukodik');
+});
+
+// 3. kodattekintes (PASS, nem blokkolo megallapitasok keményitese)
+test('S0-45 a motor mar kuldott, de 48 ora utan a halasztott cellara az sd SEM kuld utolag; a szaraz terv az ujrafuttatasi agon is a 48 oras kapu szerint mond lejartat', async () => {
+  { // motor_kuldte + halasztva cella; az sd_atvetel 60 oras korban: 0 kuldes (48 oran belul potolna - S0-39)
+    const v = vilag(); await v.kesz;
+    await kulcsIras(v.db, { bookingId: BID, bookingUrl: HAIR_URL }, v.t());
+    const b = level(FIX_UUID, { host: 'mosaic-hair.salonic.hu', felado: 'Mosaic Hair', szolgaltatas: 'Fodrász konzultáció', uj_vendeg: true, munkatarsak: ['Teszt'] });
+    v.net.allapot.set(FIX_UUID, ['aktiv', 'hiba']);
+    const p = await v.post(b); assert.deepEqual([p.allapot, p.esemeny_kuldes.allapot], ['parositott', 'halasztva']); assert.equal(v.net.hivasok.length, 0);
+    v.t.set(T60); v.net.allapot.delete(FIX_UUID);
+    const r = await v.sd(b);
+    assert.equal(r.allapot, 'motor_kuldte'); assert.match(r.miert, /48 oranal regebbi/); assert.equal(v.net.hivasok.length, 0, '48 ora utan nincs utolagos kuldes a motoros identitassal sem');
+  }
+  { // szaraz terv: tartva sor 60 oras korban -> a terv lejart (ugyanaz, mint a valodi hivas), es nem ir
+    const { v, u, b } = await jelolt({}, { uj_vendeg: true });
+    v.net.allapot.set(u, 'hiba'); assert.equal((await v.sd(b)).allapot, 'tartva'); v.net.allapot.delete(u);
+    v.t.set(T60);
+    const elotte = dump(v, ['foglalas_egyeztetes', 'meres_kuldes']);
+    const terv = await v.sd({ ...b, szaraz: true });
+    assert.equal(terv.allapot, 'szaraz_terv'); assert.equal(terv.terv.lenne, 'lejart'); assert.equal(dump(v, ['foglalas_egyeztetes', 'meres_kuldes']), elotte, 'a szaraz terv nem ir');
+    assert.equal((await v.sd(b)).allapot, 'lejart');
+  }
+});
+
+test('S0-46 ha egy parhuzamos hivas mar dolgozik a cellakon (cella-CAS vesztes), a vesztes NEM ir hamis "kesz" sor-allapotot', async () => {
+  const { v, u, b } = await jelolt({}, { uj_vendeg: true });
+  v.net.allapot.set(u, 'hiba'); assert.equal((await v.sd(b)).allapot, 'tartva'); v.net.allapot.delete(u);
+  // a nyertes hivas lefoglalta a cellakat (friss "folyamatban"), de meg nem fejezte be
+  v.D.db.prepare("UPDATE meres_kuldes SET allapot = 'folyamatban', frissitve = ?1").run(Math.floor(v.t() / 1000));
+  const r = await v.sd(b);
+  assert.deepEqual([r.allapot, r.idempotens], ['tartva', true]); assert.equal(v.net.hivasok.length, 0);
+  assert.equal(v.sql('SELECT sd_allapot FROM foglalas_egyeztetes WHERE uuid = ?1', u)[0].sd_allapot, 'tartva', 'a sor allapota valtozatlan (a nyertes dolga)');
+  // ha a nyertes meghal (a cellak 120 s utan elakadtnak szamitanak), az ujrafuttatas rendben lezarja
+  v.t.tick(200);
+  const r2 = await v.sd(b); assert.equal(r2.allapot, 'kesz'); assert.equal(v.net.hivasok.length, 4);
 });
