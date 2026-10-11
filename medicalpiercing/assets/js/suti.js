@@ -40,10 +40,28 @@
       }
     });
     try { window.parent.postMessage({ tipus: 'mp-foglalas-ok', url: location.href }, '*'); } catch (e) { /* nincs szulo */ }
-    setTimeout(function () { if (!atvette) meres(); }, 1500);
+    setTimeout(function () { if (!atvette && !marMert()) meres(); }, 1500);
     return;
   }
+  if (/^\/foglalas-ok/i.test(location.pathname) && marMert()) return;
   meres();
+
+  // Ugyanannak a foglalasnak a koszonooldala egy bongeszoben csak EGYSZER mer: frissiteskor, visszalepeskor, ujranyitaskor
+  // nem (QA-4). Kulcs: a motor booking_id-je, ennek hianyaban a Salonic bookingUrl-je; 30 napig emlekszik (localStorage,
+  // szemelyes adat nincs benne). Az ismetlest a <html data-mp-mar-mert="1"> jeloli (a teszteknek).
+  function marMert() {
+    var q = new URLSearchParams(location.search);
+    var kulcs = q.get('booking_id') || q.get('bookingUrl');
+    if (!kulcs) return false;
+    var T = 'mp_koszono', most = Date.now(), lista;
+    try { lista = JSON.parse(localStorage.getItem(T) || '{}') || {}; } catch (e) { return false; }
+    for (var k in lista) if (!(most - lista[k] < 30 * 864e5)) delete lista[k];
+    var volt = Object.prototype.hasOwnProperty.call(lista, kulcs);
+    if (volt) document.documentElement.setAttribute('data-mp-mar-mert', '1');
+    else lista[kulcs] = most;
+    try { localStorage.setItem(T, JSON.stringify(lista)); } catch (e) { /* tiltott tarolo: mint eddig, mer */ }
+    return volt;
+  }
 
   function meres() {
   var fej = document.head || document.documentElement;

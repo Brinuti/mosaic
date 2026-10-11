@@ -114,6 +114,15 @@ const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) =
   ok('sajat foglalas-meres (/api/mp-foglalas): pontosan 1 jelzes, a fo ablakbol, booking_id-vel', jelzesek.length === 1 && !jelzesek[0].keret && /"booking_id":"mb_/.test(jelzesek[0].torzs), JSON.stringify(jelzesek.map((j) => ({ keret: j.keret, booking_id: /booking_id/.test(j.torzs) }))));
   const meta = kesobb.filter((x) => /facebook\.com\/tr/.test(x.u));
   ok('a koszonooldalon nincs Meta-esemeny', meta.length === 0, String(meta.length));
+  // QA-4: frissiteskor / ujranyitaskor ugyanannak a foglalasnak a koszonooldala nem mer ujra
+  const gtmUtana = [];
+  ctx.on('request', (r) => { if (/googletagmanager\.com\/(gtm|gtag\/js)/.test(r.url())) gtmUtana.push(r.url()); });
+  await p.reload({ waitUntil: 'load' });
+  const p2 = await ctx.newPage();
+  await p2.goto(p.url(), { waitUntil: 'load' });
+  await p.waitForTimeout(2500);
+  const jelolve = await p.evaluate(() => document.documentElement.getAttribute('data-mp-mar-mert')) === '1' && await p2.evaluate(() => document.documentElement.getAttribute('data-mp-mar-mert')) === '1';
+  ok('frissites es ujranyitas: a koszonooldal nem mer ujra (nincs GTM / gtag)', jelolve && gtmUtana.length === 0, `${gtmUtana.length} GTM-keres`);
   await ctx.close();
 }
 

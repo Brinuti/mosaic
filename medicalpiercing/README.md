@@ -143,7 +143,11 @@ helyben nyíló foglalót nyitnak. Lépései: helyszín (15) → kezelés (a tí
 - **Köszönőoldal:** a Salonic a keretben a `/foglalas-ok*` oldalra irányít. Az ott futó `suti.js` jelez a motornak, és ha a motor
   visszaigazolja (1,5 mp), a keretben nem mér. A motor ugyanazt a köszönőoldalt ugyanazokkal a paraméterekkel, plusz
   `booking_id`-vel (`mb_…`, a `back` paraméterként is a Salonicnál) a fő ablakban nyitja meg. A régi, közvetlenül beágyazott
-  Salonic-naptáraknál (pl. `/migren-piercing-uj`) a keretben mér, mint eddig.
+  Salonic-naptáraknál (pl. `/migren-piercing-uj`) a keretben mér, mint eddig. Ugyanannak a foglalásnak a köszönőoldala egy
+  böngészőben csak egyszer mér (frissítéskor, visszalépéskor, újranyitáskor nem; kulcs: `booking_id`, ennek híján `bookingUrl`,
+  localStorage `mp_koszono`, 30 nap).
+- **Az adatlap 5 percre lefoglalja az időpontot** a Salonicban (a beágyazott Salonic-űrlap így működik). A helyi próba ezért az
+  adatlap kérését eldobja; távoli próbánál a legtávolabbi nap legkésőbbi időpontját válaszd.
 - **Mérés:** a foglalásindítás (TikTok `InitiateCheckout` + GA4 `foglalas_inditasa`, `piercing_tipus`: rövid kód) a `suti.js`-ben,
   a motor döntése előtt fut. A motor betöltési hibája GA4 `motor_hiba` eseményként megy, a vendég pedig a régi utat kapja.
 - **15 helyszín leképezése:** `node tools/mp-salonic-lekepezes.mjs` → `tools/mp-salonic-lekepezes.json` (szolgáltatások,
