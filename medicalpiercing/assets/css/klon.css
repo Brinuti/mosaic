@@ -1,8 +1,8 @@
 /* Klon-specifikus kiegeszitesek: csak az kerul ide, amit a Wix JS-e futas kozben
    adott (animaciok), es a klon.js altal rajzolt elemek. */
 
-/* felugro menu (klon.js 1.): a Wix jobbrol csusztatja be az ablakot, a fatyol
-   attunik; zaraskor visszafele */
+/* felugro menu (klon.js 1.): a Wix jobbrol csusztatta be az ablakot; a tulajdonos kerese
+   (2026-10-11): azonnal jelenjen meg es tunjon el, animacio nelkul */
 /* a lap a helyen marad (a <html> overflow:hidden-je a <body> sajat gorgetese miatt a lap tetejere
    ugratna, a Wixen nem mozdul): a gorgetest az ablak a sajatjaban tartja */
 /* az ablak elhelyezese: a Wix ezt a felugro komponens kulon CSS-ebol adja, ami
@@ -13,13 +13,6 @@
 .mp-felugro #d3iz6 { position: relative; display: grid; grid-template-rows: 0 auto; grid-template-columns: 100%; min-height: 100vh; }
 .mp-felugro #d3iz6 > :nth-child(2) { position: relative; z-index: 50; display: grid; grid-template-columns: 100%; }
 .mp-felugro #bgLayers_d3iz6 { position: fixed; inset: 0; }
-.mp-felugro .wixui-lightbox { animation: mp-be-jobbrol .6s cubic-bezier(.25, .46, .45, .94) both; }
-.mp-felugro [id="bgLayers_d3iz6"] { animation: mp-attunes .6s ease both; }
-.mp-felugro.mp-felugro-zar .wixui-lightbox { animation: mp-ki-jobbra .4s ease-in both; }
-.mp-felugro.mp-felugro-zar [id="bgLayers_d3iz6"] { animation: mp-attunes .4s ease reverse both; }
-@keyframes mp-be-jobbrol { from { transform: translateX(100%); } to { transform: none; } }
-@keyframes mp-ki-jobbra { from { transform: none; } to { transform: translateX(100%); } }
-@keyframes mp-attunes { from { opacity: 0; } to { opacity: 1; } }
 
 /* blog: "A link masolva" jelzes es a sajat kedveles (klon.js 7.) */
 .mp-masolva {

@@ -48,6 +48,7 @@ node tools/popup-mentes.mjs          # a felugró menü (Wix lightbox)       -> 
 node tools/beagyazasok.mjs           # a Wix HTML-beágyazásai              -> assets/embed/
 node tools/media.mjs                 # képek és videók eredetiben          -> tools/eredeti-*/ (--hianyzo: csak ami az assets/-ból hiányzik)
 python3 tools/kepek-kicsinyites.py   # képek a megjelenített méretre       -> assets/img/
+python3 tools/webp.py                # a képek WebP-változata (fele akkora) -> assets/img/*.webp
 node tools/videok.mjs                # videók 720p-re (max. 24 MB)         -> assets/video/
 python3 tools/betu-epites.py         # saját betűk + assets/css/wix-fonts.css (csak ha a Wix betűi változtak)
 node tools/wix2static.mjs && node tools/wix2static.mjs --mobil   # -> klon/, klon/m/
@@ -55,6 +56,8 @@ node tools/videok-mentes.mjs && node tools/videok-potlas.mjs     # a Wix csak g�
 node tools/orszagok-mentes.mjs       # a /kontroll országkód-választója     -> assets/data/orszagok.json, assets/img/flag-*
 node tools/varos-lapozo-mentes.mjs   # a városoldalak lapozójának céljai     -> assets/data/varos-lapozo.json
 node tools/build.mjs                 # -> dist/
+node tools/serve.mjs & node tools/hajtas-meres.mjs   # az első képernyő képei és betűi oldalanként -> tools/hajtas.json;
+node tools/build.mjs                 # utána újra build (tools/gyorsitas.mjs ebből dolgozik)
 ```
 
 Egyetlen oldal: `node tools/elo-mentes.mjs rolunk && node tools/wix2static.mjs rolunk` (mobilon `--mobil`).
@@ -103,6 +106,28 @@ node tools/wix-osszevetes.mjs [--mobil] [kulcs...]  # MINDEN oldal a Wix mellett
 
 Az élő Wix-oldalt megnyitó eszközök (`elo-mentes`, `elteres`, `osszevet`, `wix-osszevetes`) alatt egyetlen mérőkérés sem
 mehet ki (`tools/meres-tiltas.mjs`): a köszönőoldalak megnyitása különben hamis foglalást küldene.
+
+### Sebesség (`tools/gyorsitas.mjs`, `tools/sebesseg.mjs`)
+
+A Wix a képek egyharmadát azonnal és elsőbbséggel kérte, és minden beágyazást (YouTube, térkép, Facebook,
+Trustindex) a lap megnyitásakor töltött be. A build ezért:
+
+- minden `<iframe>`-et `loading="lazy"`-re állít (csak a képernyő közelébe görgetve töltődik);
+- a képeknél a `tools/hajtas.json` szerint dönt: az első képernyő képei azonnal, a 2–3 legnagyobb
+  elsőbbséggel, a többi lustán (`loading="lazy"`, `decoding="async"`);
+- az első képernyő szövegének betűit a `<head>` elején előre kéri (`<link rel="preload">`). Így a fejléc
+  nem rándul 8 px-et, amikor a tartalékbetűről átvált; a CLS asztalin 0,117 helyett 0;
+- a képeket WebP-ben adja (`tools/webp.py`, 85-ös minőség, mint a Wixen), ahol az legalább 10%-kal kisebb.
+  A megosztási kép és az ikonok eredetiek maradnak;
+- a magától induló háttérvideókat (Wix-videódoboz, 5–8 MB) nem tölti le a lap megnyitásakor
+  (`preload="none"`): a `klon.js` akkor indítja őket, amikor a képernyő közelébe érnek;
+- a három kis saját stíluslapot (`wix-google-fonts.css`, `wix-fonts.css`, `klon.css`, együtt ~5 kB tömörítve)
+  a lapba ágyazza, ugyanazon a helyen: nem kell rájuk várni a megjelenítés előtt;
+- minden CSS- és JS-hivatkozást tartalomjellel lát el (`?v=`), így ezek egy évig gyorsítótárazhatók (`_headers`).
+
+A felugró menü a tulajdonos kérésére animáció nélkül, azonnal nyílik és zárul. Mérés:
+`node tools/sebesseg.mjs [út...]` (TTFB, FCP, LCP, CLS, TBT, letöltött bájtok; mobilon 4× CPU-lassítás és lassú 4G).
+Az éles címen (`CIM=https://www.medicalpiercing.hu`) minden adatküldő kérést eldob.
 
 ### Takarítás (`tools/takaritas.mjs`)
 
