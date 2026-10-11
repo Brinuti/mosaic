@@ -6,6 +6,7 @@
 //   node tools/motor-naptar-teszt.mjs [--csak 11424,6029] [--mobil] [--szolg 115575]
 //   BASE=https://<elonezet> node tools/motor-naptar-teszt.mjs
 import { chromium, devices } from './pw.mjs';
+import { SZOLG_KATTINT } from './motor-teszt-segedek.mjs';
 const BASE = (process.env.BASE || 'http://www.medicalpiercing.hu:4290').replace(/\/$/, '');
 const ELES = !!process.env.BASE;
 const arg = (k) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : null; };
@@ -49,8 +50,8 @@ async function egy(placeId) {
     await sr('r.querySelector("[data-tipus=uj]").click()');
     await varj('return !!r.querySelector(`[data-hely="${a}"]`)', placeId);
     await sr('r.querySelector(`[data-hely="${a}"]`).click()', placeId);
-    if (!ok(`${nev}: a piercing-lista betoltodik`, await varj('return !!r.querySelector(`[data-szolg="${a}"]`)', SZOLG))) return;
-    await sr('r.querySelector(`[data-szolg="${a}"]`).click()', SZOLG);
+    if (!ok(`${nev}: a piercing-lista betoltodik`, await varj('return !!r.querySelector("[data-szolg]")'))) return;
+    if (!ok(`${nev}: a vizsgalt piercing megvan a szurok (Kinek? / Milyen szolgaltatas?) kozott`, await sr(SZOLG_KATTINT, SZOLG))) return;
     // az idopontok (az elso 21 nap, majd a tobbi) betoltese: addig var, amig a "tovabbi napok" jelzo el nem tunik
     const van = await varj('const ab=r.querySelector(".ablak"); return ab && ab.dataset.tovabbi==="0" && (r.querySelector("[data-slot]") || r.querySelector(".uzenet"))', null, 45000);
     if (!ok(`${nev}: az idopontok teljesen betoltodtek`, van)) return;

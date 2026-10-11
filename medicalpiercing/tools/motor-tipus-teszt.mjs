@@ -309,12 +309,12 @@ for (const [honnan, ut] of [['migren-oldalrol', '/migren-piercing'], ['fooldalro
   ok(`N: ${honnan}: a lista betoltodik`, van);
   if (!van) { await ctx.close(); continue; }
   let m = await olvas();
-  ok(`N: ${honnan}: ket kerdes (Kinek? / Milyen szolgaltatas?), alapertek: Magamnak + 1 piercing`, JSON.stringify(m.cimkek) === JSON.stringify(['Kinek szeretnél időpontot?', 'Milyen szolgáltatás érdekel?']) && JSON.stringify(m.on) === JSON.stringify(['Magamnak', '1 piercing']), JSON.stringify([m.cimkek, m.on]));
+  ok(`N: ${honnan}: ket kerdes (Kinek? / Milyen szolgaltatas?), alapertek: Magamnak + Tobb piercing (a "legjobban megeri" latszik elsore)`, JSON.stringify(m.cimkek) === JSON.stringify(['Kinek szeretnél időpontot?', 'Milyen szolgáltatás érdekel?']) && JSON.stringify(m.on) === JSON.stringify(['Magamnak', 'Több piercing']), JSON.stringify([m.cimkek, m.on]));
+  ok(`N: ${honnan}: alapertek (Tobb piercing): 3 piercing, 2 piercing, 1+1 allergia`, m.db === 3 && /^3 piercing/.test(m.nevek[0]) && /^2 piercing/.test(m.nevek[1]) && /^1\+1/.test(m.nevek[2]), JSON.stringify(m.nevek));
+  ok(`N: ${honnan}: a "Tobb piercing" gombon "legjobban megeri" jelzes van`, m.jelzo);
+  await kattint(p, '[data-mit="egy"]'); m = await olvas();
   ok(`N: ${honnan}: 1 piercing: 9 lehetoseg (maj, lep, vastagbel, allergia is), "9 lehetőség" felirat, nincs "Ajanlott"`, m.db === 9 && /9 lehetőség/i.test(m.fej) && ['Máj', 'Lép', 'Vastagbél', 'Allergia'].every((x) => m.nevek.includes(x)) && !m.ajanlott, JSON.stringify(m.nevek));
   ok(`N: ${honnan}: a piercing neve kiemelt szinu (terrakotta), az ar sotet`, m.nevSzin === 'rgb(163, 90, 75)' && m.arSzin === 'rgb(69, 70, 89)', `${m.nevSzin} / ${m.arSzin}`);
-  ok(`N: ${honnan}: a "Tobb piercing" gombon "legjobban megeri" jelzes van`, m.jelzo);
-  await kattint(p, '[data-mit="tobb"]'); m = await olvas();
-  ok(`N: ${honnan}: Tobb piercing: 3 piercing, 2 piercing, 1+1 allergia`, m.db === 3 && /^3 piercing/.test(m.nevek[0]) && /^2 piercing/.test(m.nevek[1]) && /^1\+1/.test(m.nevek[2]), JSON.stringify(m.nevek));
   await kattint(p, '[data-mit="fulbevalo"]'); m = await olvas();
   ok(`N: ${honnan}: Fulbevalo: 1, 2, 3 db`, m.db === 3 && m.nevek.every((x) => /^Fülbevaló/.test(x)), JSON.stringify(m.nevek));
   await kattint(p, '[data-kinek="ketto"]'); m = await olvas();
@@ -401,6 +401,7 @@ if (!MOBIL) {
     await varj(p, '[data-hely]');
     await kattint(p, '[data-hely="6029"]');
     const van = await varj(p, '[data-szolg]', 30000);
+    await kattint(p, '[data-mit="egy"]'); // a leghosszabb lista (9 sor): ez a legrosszabb eset
     await p.waitForTimeout(500);
     const m = van ? await sr(p, 'const t=r.querySelector(".tartalom"); const ks=[...r.querySelectorAll("[data-szolg]")]; return { sor: ks.length, sh:t.scrollHeight, ch:t.clientHeight, magas: Math.round(ks[0].getBoundingClientRect().height), egysoros: ks.every(k=>k.querySelector(".nev > span").getBoundingClientRect().height < 19) };') : null;
     if (!m) { ok(`K2: ${nev}: a piercing-lista betoltodik`, false); await ctx.close(); continue; }
