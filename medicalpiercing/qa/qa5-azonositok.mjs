@@ -6,7 +6,7 @@
 // Motorfuggo (elore nem tesztelheto): hogy a MOTOR a valodi foglalas utan booking_id-vel iranyit a koszonooldalra.
 // Itt a motor atadasat a koszonooldal-cim szimulalja (booking_id parameterrel).
 //   node medicalpiercing/qa/qa5-azonositok.mjs --url https://<ag>.medicalpiercing.pages.dev
-import { argumentumok, beallitas, kontextus, playwright, koszonoUt, egyediStart, varj, sor } from './kozos.mjs';
+import { bongeszo, argumentumok, beallitas, kontextus, playwright, koszonoUt, egyediStart, varj, sor } from './kozos.mjs';
 
 export async function qa5(b, cfg) {
   const ki = [];
@@ -74,7 +74,7 @@ export async function qa5(b, cfg) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const cfg = beallitas(argumentumok());
-  const b = await playwright().chromium.launch();
+  const b = await bongeszo();
   const r = await qa5(b, cfg);
   await b.close();
   console.table(r);

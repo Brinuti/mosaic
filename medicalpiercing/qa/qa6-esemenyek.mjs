@@ -8,7 +8,7 @@
 // ha a motor feluletet talalunk, a mezoibe tesztszemelyt irunk (BEKULDES NELKUL); --pii-url 1: a tesztszemely a
 // koszonooldal cimeben is (szelsoseges eset).
 //   node medicalpiercing/qa/qa6-esemenyek.mjs --url https://<ag>.medicalpiercing.pages.dev
-import { argumentumok, beallitas, kontextus, playwright, koszonoUt, egyediStart, salonicLinkek, motorLathato, merokodraVar,
+import { bongeszo, argumentumok, beallitas, kontextus, playwright, koszonoUt, egyediStart, salonicLinkek, motorLathato, merokodraVar,
   tiktokEsemenyek, ga4Esemenyek, tiltottLista, tiltottKeres, TESZT_SZEMELY, varj, sor } from './kozos.mjs';
 
 export async function qa6(b, cfg) {
@@ -100,7 +100,7 @@ export async function qa6(b, cfg) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const cfg = beallitas(argumentumok());
-  const b = await playwright().chromium.launch();
+  const b = await bongeszo();
   const r = await qa6(b, cfg);
   await b.close();
   console.table(r);

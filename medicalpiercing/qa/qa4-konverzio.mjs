@@ -12,7 +12,7 @@
 // Hozzajarulas nelkul az elso betoltesnel 0 vagy 1 kisules elfogadott (1 = cookieless ping, gcs=G100), de
 // gcs=G1x1 (hirdetesi hozzajarulas megadva) FAIL.
 //   node medicalpiercing/qa/qa4-konverzio.mjs --url https://<ag>.medicalpiercing.pages.dev
-import { argumentumok, beallitas, kontextus, playwright, koszonoUt, egyediStart, googleAdsKonverziok, varj, sor, SALONIC } from './kozos.mjs';
+import { bongeszo, argumentumok, beallitas, kontextus, playwright, koszonoUt, egyediStart, googleAdsKonverziok, varj, sor, SALONIC } from './kozos.mjs';
 
 export async function qa4(b, cfg) {
   const ki = [];
@@ -81,7 +81,7 @@ export async function qa4(b, cfg) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const cfg = beallitas(argumentumok());
-  const b = await playwright().chromium.launch();
+  const b = await bongeszo();
   const r = await qa4(b, cfg);
   await b.close();
   console.table(r);

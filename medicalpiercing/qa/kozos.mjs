@@ -18,6 +18,9 @@ export function playwright() {
   throw new Error('A playwright nem talalhato: npm i playwright && npx playwright install chromium');
 }
 
+/** Bongeszo inditasa (kis /dev/shm-u kontenerben is stabil). */
+export const bongeszo = () => playwright().chromium.launch({ args: ['--disable-dev-shm-usage'] });
+
 export function argumentumok(argv = process.argv.slice(2)) {
   const a = {};
   for (let i = 0; i < argv.length; i++) {
@@ -48,7 +51,7 @@ export function beallitas(a) {
     kapcsolo: { mod: a['kapcsolo-mod'] || 'query', nev: a['kapcsolo-nev'] || 'mp_motor', ertek: a['kapcsolo-ertek'] ?? '0' },
     kiosztas: {
       kulcs: a['kiosztas-kulcs'] || 'mp_motor_csoport',
-      motor: String(a['kiosztas-motor'] || 'motor,uj,B,1').split(','),
+      motor: String(a['kiosztas-motor'] || 'motor,1').split(','),
       regi: a['kiosztas-regi'] || 'regi',
       tarolo: a['kiosztas-tarolo'] || 'mindketto', // localstorage | cookie | mindketto
     },
@@ -78,7 +81,7 @@ const SZABAD = /^https:\/\/(www\.googletagmanager\.com\/(gtm|gtag\/js)|connect\.
 export const PLATFORM = (u) =>
   /\/g\/collect|google-analytics\.com|analytics\.google\.com/.test(u) ? 'ga4'
     : /googleadservices\.com|googleads\.g\.doubleclick\.net|google\.[a-z.]+\/(pagead|ccm|rmkt)|doubleclick\.net/.test(u) ? 'google-ads'
-      : /facebook\.com|facebook\.net/.test(u) ? 'meta'
+      : /facebook\.com|facebook\.net|capig\.stape/.test(u) ? 'meta'
         : /tiktok/.test(u) ? 'tiktok'
           : /cookieyes/.test(u) ? 'cookieyes'
             : /convertize/.test(u) ? 'convertize' : 'egyeb';
@@ -135,7 +138,7 @@ export async function kontextus(b, cfg, nezet, opt = {}) {
     kulcs: kiosztas.kulcs, kioszt: opt.kiosztas ?? null, kiosztLs: kiosztas.tarolo !== 'cookie',
   });
 
-  await ctx.route('**/*', async (route) => {
+  const kezelo = async (route) => {
     const r = route.request();
     const u = r.url();
     const t = Date.now();
@@ -170,7 +173,9 @@ export async function kontextus(b, cfg, nezet, opt = {}) {
     if (SZABAD.test(u) && r.method() === 'GET') return route.continue();
     naplo.push({ t, tipus: 'kifele', plat: PLATFORM(u), url: u, method: r.method(), post: r.postData() || '' });
     return route.abort();
-  });
+  };
+  // a bezaras utan befuto kerest csendben elengedjuk
+  await ctx.route('**/*', (route) => kezelo(route).catch(() => {}));
 
   const kapcsoloQ = opt.kapcsolo !== false && kapcsolo.mod === 'query' ? `${kapcsolo.nev}=${encodeURIComponent(kapcsolo.ertek)}` : '';
   const cim = (ut) => {
@@ -270,7 +275,7 @@ export function tiltottLista(cfg) {
 export function tiltottKeres(sorok, tiltott) {
   const talalat = [];
   for (const s of sorok) {
-    if (s.tipus !== 'kifele' || !['ga4', 'google-ads', 'meta', 'tiktok'].includes(s.plat)) continue;
+    if (s.tipus !== 'kifele') continue; // minden kimeno keres (Meta, TikTok, Google, GA4, stape, egyeb)
     const szena = (dek(s.url) + ' ' + dek(s.post)).toLowerCase().replace(/\s+/g, ' ');
     for (const [fajta, ertek] of tiltott) {
       const e = ertek.toLowerCase();

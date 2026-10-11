@@ -4,7 +4,7 @@
 // Eredmenyek: PASS | FAIL | NINCS (a funkcio meg nincs az oldalon) | MOTORFUGGO (csak a motorral / >0%-nal merheto) | N/A.
 // Kilepesi kod: 1, ha barmelyik sor FAIL.
 import fs from 'node:fs';
-import { argumentumok, beallitas, playwright } from './kozos.mjs';
+import { bongeszo, argumentumok, beallitas, playwright } from './kozos.mjs';
 import { qa1 } from './qa1-kapcsolo.mjs';
 import { qa4 } from './qa4-konverzio.mjs';
 import { qa5 } from './qa5-azonositok.mjs';
@@ -14,7 +14,7 @@ const a = argumentumok();
 const cfg = beallitas(a);
 const tesztek = String(a.tesztek || 'qa1,qa4,qa5,qa6').split(',');
 const FUTOK = { qa1, qa4, qa5, qa6 };
-const b = await playwright().chromium.launch();
+const b = await bongeszo();
 const sorok = [];
 const kezd = Date.now();
 try {

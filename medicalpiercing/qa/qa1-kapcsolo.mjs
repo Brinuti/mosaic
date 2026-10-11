@@ -9,7 +9,7 @@
 // a motor felulete (--motor-jel) nem jelenik meg, motor-API (--motor-api) nem hivodik, es 0%-nal senki nem kap
 // motoros kiosztast (a kulcsba nem irodik motor-ertek).
 //   node medicalpiercing/qa/qa1-kapcsolo.mjs --url https://<ag>.medicalpiercing.pages.dev [--nezet mobil]
-import { argumentumok, beallitas, kontextus, playwright, salonicLinkek, motorLathato, varj, sor } from './kozos.mjs';
+import { bongeszo, argumentumok, beallitas, kontextus, playwright, salonicLinkek, motorLathato, varj, sor } from './kozos.mjs';
 
 export async function qa1(b, cfg) {
   const ki = [];
@@ -23,17 +23,17 @@ export async function qa1(b, cfg) {
         for (const oldal of cfg.oldalak) {
           const p = await ctx.newPage();
           await p.goto(cim(oldal), { waitUntil: 'load' });
-          await varj(2500);
+          await varj(1500);
           const linkek = salonicLinkek(p);
           const db = await linkek.count();
           const motorElotte = await motorLathato(p, cfg);
           if (!db) { hibak.push(`${oldal}: nincs lathato Salonic-gomb`); await p.close(); continue; }
           const i = naplo.length;
           const kezdoUrl = p.url();
-          const felugro = ctx.waitForEvent('page', { timeout: 4000 }).catch(() => null);
+          const felugro = ctx.waitForEvent('page', { timeout: 2500 }).catch(() => null);
           await linkek.first().click();
           const uj = await felugro;
-          await varj(2500);
+          await varj(1200);
           const utana = naplo.slice(i);
           const salonicNav = utana.filter((s) => s.tipus === 'salonic' && s.navig).length;
           const motorApi = naplo.filter((s) => s.tipus === 'sajat-api' && cfg.motorApi.test(s.url));
@@ -59,7 +59,7 @@ export async function qa1(b, cfg) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const cfg = beallitas(argumentumok());
-  const b = await playwright().chromium.launch();
+  const b = await bongeszo();
   const r = await qa1(b, cfg);
   await b.close();
   console.table(r);
