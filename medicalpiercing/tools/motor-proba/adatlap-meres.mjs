@@ -20,7 +20,7 @@ if (STILUS) {
 const p = await ctx.newPage();
 const sr = (fn, a) => p.evaluate(([fn, a]) => { const h = document.querySelector('[data-mp-motor]'); return h ? new Function('r', 'a', fn)(h.shadowRoot, a) : null; }, [fn, a]);
 const varj = async (sel) => { for (let i = 0; i < 160; i++) { if (await sr('return !!r.querySelector(a)', sel)) return; await p.waitForTimeout(250); } throw new Error('nincs ' + sel); };
-await p.goto(BASE + '/idopontfoglalas?motor=1', { waitUntil: 'load' });
+await p.goto(BASE + '/a-migren-piercing-gyogyulasi-ideje?motor=1', { waitUntil: 'load' });
 await p.evaluate(() => { const l = [...document.querySelectorAll('a[href*="medicalpiercing.salonic.hu/selectLocation"]')]; (l.find((x) => x.offsetParent) || l[0]).click(); });
 for (let i = 0; i < 100; i++) { if (await sr('return !!r.querySelector("[data-hely]")')) break; if (await sr('const t=r.querySelector(\'[data-tipus="uj"]\'); if (t) { t.click(); return true; } return false')) break; await p.waitForTimeout(250); }
 await varj('[data-hely]'); await sr('r.querySelector(`[data-hely="${a}"]`).click()', HELY);

@@ -132,11 +132,11 @@ Az éles címen (`CIM=https://www.medicalpiercing.hu`) minden adatküldő kéré
 ### Foglalómotor (`assets/js/motor/`, `assets/js/motor-indito.js`)
 
 A MOSAIC-foglalómotor MP-adaptációja (Drive: MP-FOGLALOMOTOR-FELADAT.md, MP-FOGLALOMOTOR-PROBAFOGLALASOK.md). A foglalási linkek
-(`medicalpiercing.salonic.hu`, `/idopontfoglalas`, `/kontroll`) helyben nyíló foglalót nyitnak, az oldal címe nem változik. A fő oldala a
+(`medicalpiercing.salonic.hu`, `/idopontfoglalas`, `/kontroll`) helyben nyíló foglalót nyitnak, az oldal címe nem változik. A `/idopontfoglalas` és a `/kontroll` cím a főoldal tartalmát adja, a motor ráugrik, bezárva a főoldal marad (a régi köztes oldalak tartaléka: `/regi-idopontfoglalas`, `/regi-kontroll`). A fő oldala a
 „Mire szeretnél időpontot foglalni?” (Új piercing / Kontroll / Ékszercsere / Garancia). Az **új piercing** lépései:
-1. szolgáltatás (a fő oldal; piercing-típus oldalról érkezőnek kihagyva);
+1. szolgáltatás (a fő oldal, akárhonnan kattint; csak a konkrét kontroll / ékszercsere / garancia link visz egyből az űrlapra);
 2. helyszín (15);
-3. piercing (a 18 Salonic-szolgáltatás; a típusoldalról érkezőnek az ajánlott elöl);
+3. piercing (két kérdéssel szűrve: Kinek? Magamnak / Két személynek, és Milyen szolgáltatás? 1 piercing / Több piercing / Fülbevaló; a „legjobban megéri” a Több piercing);
 4. időpont (havi naptár, szakemberválasztó);
 5. a Salonic beágyazott adatlapja;
 6. köszönőoldal.
