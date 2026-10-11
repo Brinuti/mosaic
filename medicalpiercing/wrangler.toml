@@ -13,3 +13,12 @@ SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
 SMTP_USER = "medicalpiercing.hu@gmail.com"
 MAIL_TO = "medicalpiercing.hu@gmail.com"
+
+# Foglalas-meres (docs/MERES_GOOGLE_ARNYEK.md): sajat D1, a Mosaic adatbazisaitol kulon. A fiok D1-kerete (10)
+# betelt, ezert az elonezet ugyanezt az adatbazist hasznalja: a sorok "kornyezet" oszlopa (eles / elonezet)
+# valasztja szet (ugyanaz a kotes mindket kornyezetben, [env.preview] blokk nelkul), es elonezetrol a kod soha nem tolt fel elesben (csak validate_only / dryrun).
+[[d1_databases]]
+binding = "MP_MERES_DB"
+database_name = "mp-meres"
+database_id = "68a1b80e-ab8e-48ac-9ef7-5fc02c07326e"
+

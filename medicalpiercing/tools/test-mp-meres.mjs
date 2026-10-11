@@ -1,7 +1,7 @@
-// MP meresi reteg (netlify/lib/mp/meres.js) - adatminimalizalas, kulcs, ertek, tipus, 5 mutato.
+// MP meresi reteg (medicalpiercing/lib/meres/meres.js) - adatminimalizalas, kulcs, ertek, tipus, 5 mutato.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { koszonoOldal, tipusNormal, foglalasKulcs, esemenyId, ertekFeloldas, kifeleEsemeny, vanErzekeny, otMutato, HELYSZINEK, SEMLEGES_URL } from '../netlify/lib/mp/meres.js';
+import { koszonoOldal, tipusNormal, foglalasKulcs, esemenyId, ertekFeloldas, kifeleEsemeny, vanErzekeny, otMutato, HELYSZINEK, SEMLEGES_URL } from '../lib/meres/meres.js';
 
 const burl = (place = 12169, emp = 555, start = 1791700000, svc = 9001) =>
   encodeURIComponent(`https://medicalpiercing.salonic.hu/booking/selectDate/?placeId=${place}&serviceId=${svc}&employeeId=${emp}&startDate=${start}`);
