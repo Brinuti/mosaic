@@ -3,6 +3,9 @@
 //   node tools/build.mjs && node tools/serve.mjs &     majd:     node tools/uj-fooldal-teszt.mjs
 //   BASE=https://<ag>.medicalpiercing.pages.dev node tools/uj-fooldal-teszt.mjs     (elonezeten / eles cimen is fut)
 //
+// Nem helyi cimen (elonezet, eles) minden merokeres blokkolva van (tools/meres-tiltas.mjs: GTM, GA4, Ads, Meta, TikTok, stape), es a
+// Salonic-hivasok is: a teszt nem szennyezi a statisztikat, es nem indit foglalast.
+//
 // Ellenorzi: rejtett (noindex, nincs canonical, nincs a sitemapben), minden belso link es horgony celja, nincs JS-hiba, nincs
 // Wix-keres, minden kep betolt, nincs vizszintes gorgetes 360-1920 px kozott, fejlec-menu, "osszes piercing", videoablak, a
 // Google-velemenyek elo frissitese (mockolt Trustindex) es a hiba eseti tartalek, a foglalomotor megnyilik a foglalasi gombra
@@ -12,6 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { chromium, devices } from './pw.mjs';
 import { kulcsbol } from '../lib/utvonal.js';
+import { meresTiltas, MERES } from './meres-tiltas.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const BASE = (process.env.BASE || 'http://localhost:4290').replace(/\/$/, '');
@@ -46,6 +50,13 @@ ok('forras: kulso linkek (target=_blank + noopener)', [...forras.matchAll(/<a\b[
 const b = await chromium.launch();
 const ENGEDELYEZETT = /^(https?:\/\/(localhost|127\.0\.0\.1)|data:|blob:|https:\/\/(cdn\.trustindex\.io|maps\.google\.com|www\.google\.com|maps\.gstatic\.com|maps\.googleapis\.com|www\.youtube-nocookie\.com|embed\.rtl\.hu)\b)/;
 const SAJAT_HOST = new URL(BASE).host;
+// nem helyi cimen a merokodok (suti.js: csak az eles domainen futnak) kerest inditanak: ezeket blokkoljuk, es nem szamit "kulso kerésnek"
+const MERO = (u) => !HELYI && (MERES.test(u) || /cloudflareinsights\.com|googlesyndication\.com/.test(u));
+const ujKornyezet = async (opt) => {
+  const c = await b.newContext(opt);
+  if (!HELYI) { await meresTiltas(c); await c.route(/cloudflareinsights\.com|googlesyndication\.com/, (r) => r.abort()); }
+  return c;
+};
 
 async function ujLap(ctx, mod = {}) {
   const p = await ctx.newPage();
@@ -53,7 +64,7 @@ async function ujLap(ctx, mod = {}) {
   p.on('pageerror', (e) => p.hibak.push(e.message));
   p.on('requestfailed', (r) => { if (!/ERR_ABORTED|ERR_BLOCKED/.test((r.failure() || {}).errorText || '') || r.url().startsWith(BASE)) { if (r.url().startsWith(BASE)) p.rossz.push('FAIL ' + r.url()); } });
   p.on('response', (r) => { const u = r.url(); if (u.startsWith(BASE) && r.status() >= 400) p.rossz.push(r.status() + ' ' + u); });
-  p.on('request', (r) => { const u = r.url(); if (/wixstatic|wix\.com|parastorage|wixapps/.test(u)) p.wix.push(u); if (!ENGEDELYEZETT.test(u) && !u.startsWith(BASE)) p.kulso.push(u); });
+  p.on('request', (r) => { const u = r.url(); if (/wixstatic|wix\.com|parastorage|wixapps/.test(u)) p.wix.push(u); if (!ENGEDELYEZETT.test(u) && !u.startsWith(BASE) && !MERO(u)) p.kulso.push(u); });
   // a Salonic-hivasok es a meres soha ne menjenek el (valodi foglalas / szennyezett statisztika)
   await p.route(/medicalpiercing\.salonic\.hu|api\.salonic\.hu/, (r) => r.abort());
   if (mod.trustindex) await p.route(/cdn\.trustindex\.io\/widgets\//, mod.trustindex);
@@ -61,7 +72,7 @@ async function ujLap(ctx, mod = {}) {
 }
 
 for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 } }], ['mobil', { ...devices['Pixel 5'] }]]) {
-  const ctx = await b.newContext(opt);
+  const ctx = await ujKornyezet(opt);
   const mobil = nezet === 'mobil';
 
   // ---------- 2. betoltes, hibak, keresek ----------
@@ -158,7 +169,7 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
 
 // ---------- 9. Google-kattintasazonosito a belso linkeken ----------
 {
-  const ctx = await b.newContext({ viewport: { width: 1280, height: 800 } });
+  const ctx = await ujKornyezet({ viewport: { width: 1280, height: 800 } });
   const p = await ujLap(ctx, { trustindex: (r) => r.abort() });
   await p.goto(LAP + '?gclid=Cj0KCQtest12345&utm_source=proba&fbclid=IwARtest', { waitUntil: 'load' });
   const l = await p.$eval('a[href*="/arlista-garancia"]', (a) => a.getAttribute('href'));
