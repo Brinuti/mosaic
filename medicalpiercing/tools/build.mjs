@@ -40,6 +40,34 @@ for (const o of mindenOldal()) {
   }
 }
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
+// foglalomotor (assets/js/motor/, assets/js/motor-indito.js; MP-FOGLALOMOTOR-FELADAT): az indito minden lapra kerul, a
+// kapcsolo (motor-kapcsolo.json: 0 = mindenki a regi Salonic-foglalot kapja, 100 = a motor nyilik) az inditoba irodik.
+// A motor moduljai egymast verziojellel importaljak (?v=<a modulok tartalmanak jele>): egy evig tarolhatok (_headers),
+// es egy javitas utan a bongeszo az uj modult keri.
+{
+  const MAPPA = path.join(DIST, 'assets/js/motor');
+  const modulok = fs.readdirSync(MAPPA).filter((f) => f.endsWith('.js')).sort();
+  const h = crypto.createHash('sha256');
+  for (const f of modulok) h.update(fs.readFileSync(path.join(MAPPA, f)));
+  const mv = h.digest('hex').slice(0, 10);
+  for (const f of modulok) {
+    const fajl = path.join(MAPPA, f);
+    fs.writeFileSync(fajl, fs.readFileSync(fajl, 'utf8').replace(/(from\s+'\.\/[\w-]+\.js)'/g, `$1?v=${mv}'`));
+  }
+  const kapcsolo = JSON.parse(fs.readFileSync(path.join(ROOT, 'motor-kapcsolo.json'), 'utf8')).arany === 100 ? 100 : 0;
+  const indito = path.join(DIST, 'assets/js/motor-indito.js');
+  fs.writeFileSync(indito, fs.readFileSync(indito, 'utf8').replace('__MOTOR_KAPCSOLO__', String(kapcsolo)).replace('__MOTOR_VERZIO__', mv));
+  let n = 0;
+  for (const ki of ['_a', '_m']) for (const f of fs.readdirSync(path.join(DIST, ki), { recursive: true }).filter((x) => x.endsWith('.html'))) {
+    const fajl = path.join(DIST, ki, f);
+    const html = fs.readFileSync(fajl, 'utf8');
+    if (html.includes('/assets/js/motor-indito.js') || !/<\/body>/i.test(html)) continue;
+    fs.writeFileSync(fajl, html.replace(/<\/body>/i, '<script src="/assets/js/motor-indito.js" defer></script>\n</body>'));
+    n++;
+  }
+  console.log(`foglalomotor: kapcsolo ${kapcsolo}%, ${modulok.length} modul (?v=${mv}), indito ${n} lapon`);
+}
+
 // a Wix 404-es oldala (tools/oldalak.mjs NEMTALALT)
 if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(DIST, '404.html'), gyorsit(takarit(fs.readFileSync(path.join(ROOT, 'klon/404.html'), 'utf8')), (HAJTAS['404'] || {}).a));
 
