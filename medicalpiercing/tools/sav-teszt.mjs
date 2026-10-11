@@ -52,7 +52,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
 {
   const { ctx, ki, betolt } = await kornyezet();
   const p = await ctx.newPage();
-  await p.goto(CIM + '/idopontfoglalas', { waitUntil: 'load' });
+  await p.goto(CIM + '/a-migren-piercing-gyogyulasi-ideje', { waitUntil: 'load' });
   await varGtm(p, betolt);
   ok('dontes elott: a sav latszik', await savLathato(p));
   const szoveg = await p.evaluate(() => document.getElementById('mp-cc').innerText);
@@ -163,7 +163,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
 {
   const { ctx } = await kornyezet();
   const p = await ctx.newPage();
-  await p.goto(CIM + '/idopontfoglalas?motor=1', { waitUntil: 'load' });
+  await p.goto(CIM + '/a-migren-piercing-gyogyulasi-ideje?motor=1', { waitUntil: 'load' });
   await p.waitForTimeout(1500);
   ok('motor: a sav latszik', await savLathato(p));
   await p.evaluate(() => {

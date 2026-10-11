@@ -9,8 +9,9 @@
 //   - a fejlec cime kozepen van; a "Kezeles" szo sehol nem szerepel (helyette "Szolgaltatas");
 //   - 2. lepes: asztalon a teljes lista egy kepernyon (gorgetes nelkul);
 //   - 3. lepes: a szolgaltatas neve egy sorban fer el (MINDEN szolgaltatasnevre, a keszulek szelessegen);
-//   - a "Vissza" gomb es a lepesjelzo mukodik (a helyszin-valasztasig is); a gombok es a sav legalabb 44 px magasak.
+//   - a "Vissza" gomb es a lepesjelzo mukodik (a helyszin-valasztasig is); a lepesjelzo es a bezaras legalabb 44 px, a helyszin-gombok legalabb 38 px magasak.
 import { chromium, devices } from './pw.mjs';
+import { MINDEN_SZOLG, SZOLG_KATTINT } from './motor-teszt-segedek.mjs';
 import fs from 'node:fs';
 const PORT = +process.env.PORT || 4290;
 const ELES = !!process.env.BASE;
@@ -44,7 +45,7 @@ async function egy(nev, opt, mobil) {
   // a motor allapota: elfer-e a tartalom gorgetes nelkul, a cim kozepen van-e, szoveg
   const meres = () => sr('const t=r.querySelector(".tartalom"), ab=r.querySelector(".ablak").getBoundingClientRect(), h=r.querySelector(".fej h2").getBoundingClientRect(); return {elfer: t.scrollHeight<=t.clientHeight+1, sh:t.scrollHeight, ch:t.clientHeight, cimKozep: Math.abs((h.left+h.width/2)-(ab.left+ab.width/2)), szoveg: r.querySelector(".ablak").innerText};');
 
-  await p.goto(`${CIM}/idopontfoglalas${ELES ? '' : '?motor=1'}`, { waitUntil: 'load' });
+  await p.goto(`${CIM}/a-migren-piercing-gyogyulasi-ideje${ELES ? '' : '?motor=1'}`, { waitUntil: 'load' });
   await p.waitForTimeout(1500);
   await p.evaluate(() => { const l = [...document.querySelectorAll('a[href*="medicalpiercing.salonic.hu/selectLocation"]')]; const a = l.find((x) => x.offsetParent) || l[0]; a.scrollIntoView({ block: 'center' }); a.click(); });
   for (let i = 0; i < 100; i++) { if (await sr('return !!r.querySelector("[data-hely]")')) break; if (await sr('const t=r.querySelector(\'[data-tipus="uj"]\'); if (t) { t.click(); return true; } return false')) break; await p.waitForTimeout(250); }
@@ -58,7 +59,8 @@ async function egy(nev, opt, mobil) {
   ok(`${nev}: 1. lepes: nincs "Kitelepules" / "Allando rendelo" felirat`, !/Kitelepülés|Állandó/.test(m1.szoveg));
   ok(`${nev}: a fejlec cime kozepen van`, m1.cimKozep <= 2, `elteres ${m1.cimKozep.toFixed(1)} px`);
   const meretek = await sr('const mn=(s)=>Math.min(...[...r.querySelectorAll(s)].map(e=>e.getBoundingClientRect().height)); return {sav: mn(".lepesek button"), bez: mn("[data-bezar]"), hely: mn("[data-hely]")};');
-  ok(`${nev}: a lepesjelzo, a bezaras es a helyszin-gombok legalabb 44 px magasak`, meretek.sav >= 43.5 && meretek.bez >= 43.5 && meretek.hely >= 43.5, JSON.stringify(meretek));
+  // a helyszin-cellak Feri kerese szerint kisebbek (>= 38 px: 15 helyszin egy mobilkepernyon); a lepesjelzo es a bezaras tovabbra is >= 44 px
+  ok(`${nev}: a lepesjelzo es a bezaras legalabb 44 px, a helyszin-gombok legalabb 38 px magasak`, meretek.sav >= 43.5 && meretek.bez >= 43.5 && meretek.hely >= 37.5, JSON.stringify(meretek));
   await kep('1-helyszin');
 
   // 2. szolgaltatas
@@ -70,10 +72,11 @@ async function egy(nev, opt, mobil) {
   if (!mobil) ok(`${nev}: 2. lepes: a teljes szolgaltatas-lista egy kepernyon (gorgetes nelkul)`, m2.elfer, `scrollH ${m2.sh} / lathato ${m2.ch}`);
   else console.log(`INFO ${nev}: 2. lepes: a lista ${m2.sh} px magas, ${m2.ch} px latszik (mobilon gorgetes elfogadott)`);
   ok(`${nev}: a fejlec cime kozepen van (2. lepes, vissza gombbal)`, m2.cimKozep <= 2, `elteres ${m2.cimKozep.toFixed(1)} px`);
-  const nevek = await sr('return [...r.querySelectorAll("[data-szolg] .nev")].map(x=>x.textContent)');
+  const osszes = await sr(MINDEN_SZOLG); // az osszes szolgaltatas (a ket szuro minden kombinaciojabol)
+  const nevek = osszes.map((x) => x.nev);
   // MINDEN szolgaltatasnev egy sorban fer-e az osszegzo dobozban (itt, ezen a szeleessegen)
   const nemFer = await sr(`const t=r.querySelector(".tartalom"); const o=document.createElement("div"); o.className="osszegzes"; o.innerHTML='<div class="os-szolg"></div>'; t.prepend(o); const e=o.firstChild; const rossz=[]; for(const n of a){ e.textContent=n; if(e.scrollWidth>e.clientWidth+0.5) rossz.push(n); } o.remove(); return rossz;`, nevek);
-  ok(`${nev}: mind a ${nevek.length} szolgaltatasnev egy sorban elfer az osszegzo dobozban`, nevek.length > 10 && !nemFer.length, nemFer.join(' | '));
+  ok(`${nev}: mind a ${nevek.length} szolgaltatasnev egy sorban elfer az osszegzo dobozban`, nevek.length >= 15 && !nemFer.length, nemFer.join(' | '));
   await kep('2-szolgaltatas');
   // "Vissza" gomb: a helyszin-valasztasig is eljut
   await sr('r.querySelector("[data-vissza]").click()');
@@ -82,7 +85,8 @@ async function egy(nev, opt, mobil) {
   // 3. idopont (a leghosszabb nevu szolgaltatas)
   await sr('r.querySelector(`[data-hely="6029"]`).click()');
   await varj('[data-szolg]');
-  await sr('const x=[...r.querySelectorAll("[data-szolg]")].sort((a,b)=>b.querySelector(".nev").textContent.length-a.querySelector(".nev").textContent.length)[0]; x.click();');
+  const leghosszabb = [...osszes].sort((a, b) => b.nev.length - a.nev.length)[0];
+  await sr(SZOLG_KATTINT, leghosszabb.id);
   if (!ok(`${nev}: az idopont-lepes betoltodik`, await varj('[data-slot]', 40000))) { await ctx.close(); return; }
   await p.waitForTimeout(500);
   const m3 = await meres();

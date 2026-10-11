@@ -12,7 +12,7 @@ const BASE = (process.env.BASE || 'https://www.medicalpiercing.hu').replace(/\/$
 const MOBIL = process.argv.includes('--mobil'), KULD = process.argv.includes('--kuld');
 // --parameter-nelkul: a ?motor=1 NEM kerul az URL-be (a kapcsolo 100%-on van: igy kapja egy valodi latogato)
 const PARAMETER_NELKUL = process.argv.includes('--parameter-nelkul');
-const NEV = arg('nev', 'x'), HELY = arg('hely', '6029'), SZOLG = arg('szolg', '115575'), HONNAN = arg('honnan', '/idopontfoglalas');
+const NEV = arg('nev', 'x'), HELY = arg('hely', '6029'), SZOLG = arg('szolg', '115575'), HONNAN = arg('honnan', '/a-migren-piercing-gyogyulasi-ideje');
 const GCLID = 'TESZTCLAUDE' + Date.now();
 // a visszaigazolo level ide jon (a lemondo link miatt olvasni kell tudni); telefon: alapbol az MP szalon szama
 // NINCS alapertelmezett telefonszam: a szalon szama egy meglevo Salonic-vendegprofilra (nem teszt) illeszkedett, ezert a probak
@@ -35,7 +35,7 @@ p.on('pageerror', (e) => naplo.hibak.push(e.message.slice(0, 160)));
 const sr = (fn, a) => p.evaluate(([fn, a]) => { const h = document.querySelector('[data-mp-motor]'); return h ? new Function('r', 'a', fn)(h.shadowRoot, a) : null; }, [fn, a]);
 const varj = async (sel, ms = 30000) => { for (let i = 0; i < ms / 250; i++) { if (await sr('return !!r.querySelector(a)', sel)) return true; await p.waitForTimeout(250); } throw new Error('nincs: ' + sel); };
 await p.goto(`${BASE}${HONNAN}?${PARAMETER_NELKUL ? '' : 'motor=1&'}gclid=${GCLID}`, { waitUntil: 'load' });
-if (HONNAN !== '/idopontfoglalas') await p.goto(`${BASE}/idopontfoglalas`, { waitUntil: 'load' });
+if (HONNAN !== '/a-migren-piercing-gyogyulasi-ideje') await p.goto(`${BASE}/a-migren-piercing-gyogyulasi-ideje`, { waitUntil: 'load' });
 await p.waitForTimeout(1500);
 await p.evaluate(() => { const l = [...document.querySelectorAll('a[href*="medicalpiercing.salonic.hu/selectLocation"]')]; const a = l.find((x) => x.offsetParent) || l[0]; a.scrollIntoView({ block: 'center' }); a.click(); });
 for (let i = 0; i < 100; i++) { if (await sr('return !!r.querySelector("[data-hely]")')) break; if (await sr('const t=r.querySelector(\'[data-tipus="uj"]\'); if (t) { t.click(); return true; } return false')) break; await p.waitForTimeout(250); }
@@ -43,7 +43,7 @@ await varj('[data-hely]');
 naplo.foglalasInditasGA4 = await p.evaluate(() => (window.dataLayer || []).filter((x) => x && x[0] === 'event' && x[1] === 'foglalas_inditasa').length);
 await sr('r.querySelector(`[data-hely="${a}"]`).click()', HELY);
 await varj('[data-szolg]');
-const szolgNev = await sr('const x=r.querySelector(`[data-szolg="${a}"]`); if(!x) return null; const n=x.querySelector(".nev").textContent; x.click(); return n', SZOLG);
+const szolgNev = await sr(`for (const k of ['magamnak','ketto']) { const kb=r.querySelector('[data-kinek="'+k+'"]'); if(!kb||kb.disabled) continue; kb.click(); for (const m of ['egy','tobb','fulbevalo']) { const mb=r.querySelector('[data-mit="'+m+'"]'); if(!mb||mb.disabled) continue; mb.click(); const x=r.querySelector('[data-szolg="'+a+'"]'); if(x){ const n=x.title; x.click(); return n; } } } return null;`, SZOLG);
 if (!szolgNev) throw new Error('nincs ilyen szolgaltatas ezen a helyszinen: ' + SZOLG);
 naplo.szolgNev = szolgNev;
 await varj('[data-slot]');

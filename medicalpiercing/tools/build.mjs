@@ -39,6 +39,20 @@ for (const o of mindenOldal()) {
     db++;
   }
 }
+// A regi koztes oldalak (/idopontfoglalas = a 4 kartya, /kontroll = a visszahivas-kero urlap) megszuntek: a cimuk a FOOLDAL tartalmat adja (a foglalo-
+// motor betolteskor ra nyilik, bezarva a fooldal marad; assets/js/motor-indito.js). Az eredeti oldalak /regi-idopontfoglalas es /regi-kontroll cimen
+// maradnak, noindex-szel: csak a vesz-visszaallitas (0%-os kapcsolo, ?motor=0, a motor nem toltheto be) tartaleka. A kanonikus cim a fooldale,
+// a sitemapbol kikerulnek.
+export const KOZTES_OLDALAK = ['idopontfoglalas', 'kontroll'];
+for (const ki of ['_a', '_m']) {
+  const fooldal = path.join(DIST, ki, 'fooldal.html');
+  for (const k of KOZTES_OLDALAK) {
+    const fajl = path.join(DIST, ki, k + '.html');
+    if (!fs.existsSync(fajl) || !fs.existsSync(fooldal)) continue;
+    fs.writeFileSync(path.join(DIST, ki, 'regi-' + k + '.html'), fs.readFileSync(fajl, 'utf8').replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>'));
+    fs.copyFileSync(fooldal, fajl);
+  }
+}
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
 // foglalomotor (assets/js/motor/, assets/js/motor-indito.js; MP-FOGLALOMOTOR-FELADAT): az indito minden lapra kerul, a
 // kapcsolo (motor-kapcsolo.json: 0 = mindenki a regi Salonic-foglalot kapja, 100 = a motor nyilik) az inditoba irodik.
@@ -152,7 +166,7 @@ if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(
 const sitemapben = new Set(fs.readFileSync(path.join(ROOT, 'tools/sitemap-oldalak.txt'), 'utf8').split('\n').filter(Boolean));
 const ma = new Date().toISOString().slice(0, 10);
 fs.writeFileSync(path.join(DIST, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-  + oldalak().filter((o) => sitemapben.has(o.url)).map((o) => `<url><loc>${o.url}</loc><lastmod>${ma}</lastmod></url>`).join('\n')
+  + oldalak().filter((o) => sitemapben.has(o.url) && !KOZTES_OLDALAK.includes(o.kulcs)).map((o) => `<url><loc>${o.url}</loc><lastmod>${ma}</lastmod></url>`).join('\n')
   + '\n</urlset>\n');
 fs.writeFileSync(path.join(DIST, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${DOMAIN}/sitemap.xml\n`);
 // a blog RSS-csatornaja ugyanazon a cimen, mint a Wixen (tools/rss-mentes.mjs)
