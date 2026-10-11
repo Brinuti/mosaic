@@ -132,8 +132,13 @@
     '</div>';
   // mobilon a Wix gyorsmenu-savja (QUICK_ACTION_BAR) folott marad; a felso fejlec "Idopontok" gombjat nem takarja
   var helyez = function () {
+    // (a gyorsmenu-sav gorgeteskor csuszik be: akkor is helyet hagyunk neki, ha eppen nem latszik)
     var q = document.getElementById('QUICK_ACTION_BAR'), also = 8;
-    if (q && q.offsetHeight) { var r = q.getBoundingClientRect(); if (r.bottom >= innerHeight - 2) also = innerHeight - r.top + 8; }
+    if (q && q.offsetHeight) {
+      var r = q.getBoundingClientRect();
+      var res = r.top < innerHeight && r.bottom <= innerHeight + 1 ? Math.max(0, innerHeight - r.bottom) : 16;
+      also = q.offsetHeight + res + 8;
+    }
     sav.style.bottom = also + 'px';
   };
   var mutat = function (nezet) {
@@ -147,6 +152,7 @@
     }
     sav.style.display = 'block';
     helyez();
+    setTimeout(function () { if (sav.style.display !== 'none') helyez(); }, 1200);
     sav.setAttribute('data-nezet', nezet || 'fo');
   };
   var elrejt = function () { if (sav) sav.style.display = 'none'; };
@@ -183,7 +189,10 @@
       else if (mit === 'beall') mutat('beall');
       else if (mit === 'mentes') { rogzit(document.getElementById('mp-cc-stat').checked, document.getElementById('mp-cc-mark').checked); elrejt(); }
     });
-    addEventListener('resize', function () { if (sav.style.display !== 'none') helyez(); });
+    var ujrahelyez = function () { if (sav.style.display !== 'none') helyez(); };
+    addEventListener('resize', ujrahelyez);
+    addEventListener('scroll', ujrahelyez, { passive: true });
+    addEventListener('load', ujrahelyez);
     lableclink();
     if (location.hash === '#suti-beallitasok') mutat('beall');
     else if (!dontes) mutat('fo');

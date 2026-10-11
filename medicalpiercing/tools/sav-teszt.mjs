@@ -52,7 +52,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
 {
   const { ctx, ki, betolt } = await kornyezet();
   const p = await ctx.newPage();
-  await p.goto(CIM + '/migren-piercing', { waitUntil: 'load' });
+  await p.goto(CIM + '/idopontfoglalas', { waitUntil: 'load' });
   await varGtm(p, betolt);
   ok('dontes elott: a sav latszik', await savLathato(p));
   const szoveg = await p.evaluate(() => document.getElementById('mp-cc').innerText);
@@ -89,7 +89,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
   }
   // foglalasi link dontes nelkul: GA4 foglalas_inditasa (suti nelkul) igen, TikTok nem
   const elotte = ki.length;
-  await p.evaluate(() => { const a = [...document.querySelectorAll('a[href^="https://medicalpiercing.salonic.hu"]')][0]; a.click(); });
+  await p.evaluate(() => { const a = [...document.querySelectorAll('a[href^="https://medicalpiercing.salonic.hu"]')].find((x) => x.offsetParent !== null); a.click(); });
   await p.waitForTimeout(2000);
   const uj = ki.slice(elotte);
   ok('dontes elott: foglalasi kattintas -> GA4 foglalas_inditasa (gcs=G100)', uj.some((x) => /[?&]en=foglalas_inditasa/.test(x.u) && /[?&]gcs=G100/.test(x.u)), uj.filter((x) => /en=/.test(x.u)).map((x) => (x.u.match(/[?&]en=([^&]+)/) || [])[1]).join(','));
