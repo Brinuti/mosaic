@@ -86,6 +86,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
     });
     ok('mobil: a sav nem takarja a fejlec "Idopontok" gombjat es a gyorsmenu-savot', !fedes.fej && !fedes.idopont && !fedes.q, JSON.stringify(fedes));
     ok('mobil: a sav legfeljebb a kepernyo harmada', fedes.magas < 844 / 3, fedes.magas + ' px');
+    ok('mobil: a sav az also szelen all (nem lebeg a tartalom kozepen)', fedes.also <= 1, fedes.also + ' px az alsotol');
   }
   // foglalasi link dontes nelkul: GA4 foglalas_inditasa (suti nelkul) igen, TikTok nem
   const elotte = ki.length;
@@ -94,6 +95,8 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
   const uj = ki.slice(elotte);
   ok('dontes elott: foglalasi kattintas -> GA4 foglalas_inditasa (gcs=G100)', uj.some((x) => /[?&]en=foglalas_inditasa/.test(x.u) && /[?&]gcs=G100/.test(x.u)), uj.filter((x) => /en=/.test(x.u)).map((x) => (x.u.match(/[?&]en=([^&]+)/) || [])[1]).join(','));
   ok('dontes elott: foglalasi kattintas -> nincs TikTok', !uj.some((x) => /tiktok/.test(x.u)));
+  // a foglalomotor (100%-os kapcsolo) a foglalasi kattintasra megnyilik es eltakarja a savot: bezarjuk, hogy a gombjai elerhetok legyenek
+  await p.evaluate(() => { const h = document.querySelector('[data-mp-motor]'); const x = h && h.shadowRoot.querySelector('[data-bezar]'); if (x) x.click(); });
 
   // 2. Elfogadom (ugyanazon az oldalon)
   await savGomb(p, 'elfogad').click();

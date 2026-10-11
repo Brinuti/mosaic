@@ -6,6 +6,8 @@ import fs from 'node:fs';
 const KI = process.env.KI || new URL('./kimenet', import.meta.url).pathname; fs.mkdirSync(KI, { recursive: true });
 const BASE = process.env.BASE.replace(/\/$/, '');
 const MOBIL = process.argv.includes('--mobil');
+// a kapcsolo erteke: ARANY=<0..100> kornyezeti valtozoval felulirhato, kulonben a repó motor-kapcsolo.json-ja (az elonezet/eles azonos commitja)
+const ARANY = process.env.ARANY !== undefined ? +process.env.ARANY : JSON.parse(fs.readFileSync(new URL('../../motor-kapcsolo.json', import.meta.url), 'utf8')).arany;
 let hiba = 0;
 const ok = (n, f, i = '') => { console.log(`${f ? 'OK  ' : 'HIBA'} ${MOBIL ? 'mobil' : 'asztali'}: ${n}${i ? '  ' + i : ''}`); if (!f) hiba++; };
 const SZABAD = /^https:\/\/(medicalpiercing\.salonic\.hu\/|api\.salonic\.hu\/calendar\/getAvailableTimes|[a-z0-9]+\.salonic\.hu\/|cdn\.jsdelivr\.net\/|cdnjs\.cloudflare\.com\/|fonts\.(googleapis|gstatic)\.com\/)/;
@@ -35,9 +37,11 @@ const kattintLink = (p) => p.evaluate(() => {
   await p.goto(BASE + '/idopontfoglalas', { waitUntil: 'load' });
   const nav = ctx.waitForEvent('request', { predicate: (r) => r.isNavigationRequest() && /medicalpiercing\.salonic\.hu/.test(r.url()), timeout: 8000 }).then((r) => r.url(), () => null);
   await kattintLink(p); const cel = await nav; await p.waitForTimeout(800);
+  if (ARANY >= 100) await p.waitForFunction(() => !!document.querySelector('[data-mp-motor]'), null, { timeout: 8000 }).catch(() => {});
   const motor = await p.evaluate(() => !!document.querySelector('[data-mp-motor]'));
   console.log(`alap: ${cel ? 'Salonic-navigacio ' + cel.slice(0, 70) : 'nincs Salonic-navigacio'}; motor: ${motor}`);
-  ok('alap (0%): regi Salonic-ut, motor nincs', !!cel && !motor);
+  if (ARANY >= 100) ok('alap (100%): a motor nyilik, nincs Salonic-navigacio', !cel && motor);
+  else ok('alap (0%): regi Salonic-ut, motor nincs', !!cel && !motor);
   await ctx.close();
 }
 { // ?motor=1 az adatlapig

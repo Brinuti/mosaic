@@ -5,7 +5,8 @@
 //
 // A bongeszo a helyi kiszolgalot www.medicalpiercing.hu neven nyitja meg (mint a meres-teszt), minden adatkuldo kerest
 // elkap es eldob. Ellenorzi:
-//   - kapcsolo 0 (alap): a foglalasi link a regi Salonic-utat nyitja, a motor nem toltodik be;
+//   - az alap a kapcsolo (motor-kapcsolo.json) szerint: 0 = a foglalasi link a regi Salonic-utat nyitja, a motor nem toltodik be;
+//     100 = a link a motort nyitja, a Salonic-oldalra nem navigal;
 //   - ?motor=1: a link a helyben nyilo motort nyitja, az oldal cime nem valtozik; 15 helyszin; Budapest -> a szolgaltatasok
 //     magyarul, a tipusoldalon az ajanlott kezeles elol; naptar, szabad idopont; az adatlap a Salonic /guestData/ cime
 //     (placeId, serviceId, startDate, lang=hu, back=mb_...);
@@ -17,6 +18,9 @@
 //   - a divat fulpiercing koszonooldala (/fulbevalo-ok) is atveszi; az adatlap kitolti a helyet (mobilon lepesjelzo nelkul, a
 //     kepernyo aljaig); a mobil lap 320 px-es nezetszelessege nyitott motornal eszkozszelesseg, bezaraskor visszaall.
 import { chromium, devices } from './pw.mjs';
+import fs from 'node:fs';
+// a kapcsolo erteke (a build ezt irja be a lapokba)
+const ARANY = JSON.parse(fs.readFileSync(new URL('../motor-kapcsolo.json', import.meta.url), 'utf8')).arany;
 
 const PORT = +process.env.PORT || 4290;
 const CIM = `http://www.medicalpiercing.hu:${PORT}`;
@@ -29,6 +33,8 @@ const OPT = MOBIL ? { ...devices['Pixel 5'], userAgent: 'Mozilla/5.0 (Linux; And
 
 async function kornyezet() {
   const ctx = await b.newContext(OPT);
+  // a sajat suti-sav (mp_suti): statisztika + marketing elfogadva, kulonben a meres (GA4 foglalas_inditasa) nem indul (mint a meres-teszt)
+  await ctx.addCookies([{ name: 'mp_suti', value: `v1-s1-m1-t${Math.floor(Date.now() / 1000)}`, domain: 'www.medicalpiercing.hu', path: '/' }]);
   const ki = [];
   await ctx.route((u) => !u.toString().startsWith(CIM), (r) => {
     const u = r.request().url();
@@ -52,7 +58,7 @@ const kattintLink = (p) => p.evaluate(() => {
 });
 const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) => r.isNavigationRequest() && /medicalpiercing\.salonic\.hu/.test(r.url()), timeout: 8000 }).then((r) => r.url(), () => null);
 
-// 1. kapcsolo 0: regi ut
+// 1. alap: a kapcsolo erteke szerint (0 = regi ut, 100 = a motor)
 {
   const { ctx } = await kornyezet();
   const p = await ctx.newPage();
@@ -61,7 +67,8 @@ const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) =
   await kattintLink(p);
   const cel = await nav;
   await p.waitForTimeout(800);
-  ok('kapcsolo 0: a link a Salonicot nyitja, motor nincs', !!cel && !(await motorAllapot(p)), cel ? cel.slice(0, 80) : 'nincs Salonic-navigacio');
+  if (ARANY >= 100) ok('kapcsolo 100: a link a motort nyitja, nincs Salonic-navigacio', !cel && (await varMotor(p, '[data-hely]', 8000)), cel ? cel.slice(0, 80) : '');
+  else ok('kapcsolo 0: a link a Salonicot nyitja, motor nincs', !!cel && !(await motorAllapot(p)), cel ? cel.slice(0, 80) : 'nincs Salonic-navigacio');
   await ctx.close();
 }
 
