@@ -175,6 +175,9 @@ KC.buildRow = function (f, item, status, nowText, prev) {
     });
     // Szabaly (az elemzo kerese, 2026-10-11): a Medical Piercing fiok minden fajlja piercing, a modell valaszatol fuggetlenul.
     if (f.fiok === 'MP') r[C['üzletág']] = 'piercing';
+    // Szabaly (elemzo, 2026-10-11): kep (nem video) + felirat = sok -> hirdetes-szeru grafika: tema = kesz_kreativ_grafika.
+    // A "nyersitheto" mezot NEM irjuk felul. (A video-elonezeti kockak - pl. feliratos testimonial - valtozatlanok.)
+    if (/^image\//.test(f.mime || '') && String(r[C['felirat']]) === 'sok') r[C['téma']] = 'kesz_kreativ_grafika';
   }
   return r;
 };

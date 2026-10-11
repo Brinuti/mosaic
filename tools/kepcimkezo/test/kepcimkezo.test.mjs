@@ -419,3 +419,36 @@ test('PROBA_ID_LISTA: a mar kitoltott sorokat is helyben ujracimkezi (prompt-val
   assert.equal(by.p1['üzletág'], 'piercing');                         // MP: a szabaly felulirja a modell "fodraszat" valaszat
   assert.equal(by.m2['leírás'].startsWith('teszt'), true);            // a tobbi sor erintetlen
 });
+
+test('szabaly: kep + felirat = sok -> tema = kesz_kreativ_grafika (nyersitheto erintetlen); a video valtozatlan', () => {
+  Object.assign(KC.CFG, structuredClone(CFG0));
+  const env = makeEnv(sampleTree(), {
+    openai: (_n, body, n) => {
+      const texts = body.input[0].content.filter((c) => c.type === 'input_text').slice(1).map((c) => c.text);
+      const items = texts.map((t, k) => ({
+        i: k, uzletag: 'headspa', tema: 'kezeles_kozben', felirat: 'sok', szoveg: 'SZOVEG', nyersitheto: 'nem', arc: 'nincs', minoseg: 3, leiras: 'x'
+      }));
+      return { code: 200, text: JSON.stringify({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify({ items }) }] }], usage: { input_tokens: 100 * n, output_tokens: 50 * n } }) };
+    }
+  });
+  KC.run(env, 'napi');
+  const by = Object.fromEntries(rowsOf(env).map((r) => [r.file_id, r]));
+  assert.equal(by.m1['mime'], 'image/jpeg');
+  assert.equal(by.m1['téma'], 'kesz_kreativ_grafika');       // kep + sok -> atirva
+  assert.equal(by.m2['téma'], 'kesz_kreativ_grafika');       // png is kep
+  assert.equal(by.m1['nyersíthető'], 'nem');                  // nem irjuk felul
+  assert.equal(by.v1['mime'], 'video/quicktime');
+  assert.equal(by.v1['téma'], 'kezeles_kozben');             // video: valtozatlan
+  assert.equal(by.v1['felirat'], 'sok');
+});
+
+test('szabaly: kep + felirat = kevés/nincs -> a tema marad; a szabalyt a buildRow alkalmazza', () => {
+  const f = { id: 'x', name: 'x.png', path: 'A/MOSAIC Head spa', fiok: 'Mosaic', mime: 'image/png', md5: 'm', copies: 0 };
+  const mk = (felirat, tema, mime = 'image/png') => KC.buildRow(Object.assign({}, f, { mime }), { uzletag: 'headspa', tema, felirat, szoveg: '', nyersitheto: 'mar_nyers', arc: 'nincs', minoseg: 3, leiras: 'x' }, KC.STATUS.OK, 't', null);
+  assert.equal(mk('kevés', 'kezeles_kozben')[KC.COL['téma']], 'kezeles_kozben');
+  assert.equal(mk('nincs', 'kezeles_kozben')[KC.COL['téma']], 'kezeles_kozben');
+  assert.equal(mk('sok', 'kezeles_kozben')[KC.COL['téma']], 'kesz_kreativ_grafika');
+  assert.equal(mk('sok', 'vendeg_portre', 'image/jpeg')[KC.COL['téma']], 'kesz_kreativ_grafika');
+  assert.equal(mk('sok', 'vendeg_portre', 'video/mp4')[KC.COL['téma']], 'vendeg_portre');
+  assert.equal(mk('sok', 'kezeles_kozben')[KC.COL['nyersíthető']], 'mar_nyers');
+});
