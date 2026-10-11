@@ -15,7 +15,7 @@ Ha egy Salonic-foglalásra a motoros (saját `booking_id`-s) párosítás **nem 
 | `MERES_ELOSZTO = "1"` | az átvétel a motoros párosítást **lezárja**, ezért küldés nélkül nem veszünk át | éles + előnézet: be |
 | titkok: `SD_HMAC_KEY_V1`, `GUEST_HMAC_KEY_V1` (Secret, nem a repóban) | Cloudflare felület | **nincsenek beállítva** → az sd inert |
 | `MERES_SD_NS` | az sd azonosító névtere (`prod` alap, előnézet: `smoke`) | `prod` |
-| `MERES_SD_INDEX = "1"` | csak a vendég-hash index írása/backfill (küldés nélkül), a teljes kapu nélkül is | nincs |
+| `MERES_SD_INDEX = "1"` | csak a vendég-hash index írása / `index_backfill` (küldés nélkül), a teljes kapu nélkül is | nincs |
 
 A meglévő vészkapcsolók (`mind`, `uzletag:*`, `platform:*`, `iras`, `MERES_IRAS_KI`) az sd-re is érvényesek (a cellák `kihagyva: veszkapcsolo …`).
 
@@ -25,7 +25,7 @@ A meglévő vészkapcsolók (`mind`, `uzletag:*`, `platform:*`, `iras`, `MERES_I
 
 1. kapuk → 2. kor (T0 = a létrehozó levél érkezése): `< 20 perc`: `koran`; `> 48 óra`: `lejart` (napló + riasztás, **0 automatikus küldés**) → 3. a motor megelőzte (`kuldve`): `motor_kuldte`; `ellentmondas`: `motor_ellentmondas` (ember dönt) → 4. **végső párosítás** (a #108 szűk, jóváhagyott kivétele: a motoros identity az sd atomi átvételéig még nyerhet; ha sikerül: `motor_nyert`, `late_pairing`) → 5. **atomi átvétel** (egyetlen UPSERT a `foglalas_egyeztetes` soron; versenyben a motoros párosítás és az sd közül pontosan egy nyer) → 6. csere-döntés → 7. küldés.
 
-A `megjegyzes` mező **kötelező** (üres szöveg rendben van): ha hiányzik (elfelejtett Zap-leképezés), a válasz `hianyzo_mezo`, nincs átvétel és nincs küldés — így egy csere nem számolódik csendben kétszer.
+**`megjegyzes` (DECISION #132 2. pont):** a *létező, de üres* mező (`""`) **normális**: nincs csere-gyanú, a normál sd út fut (nem HOLD). A *hiányzó payload-kulcs* (elfelejtett Zap-leképezés) `hianyzo_mezo`: a csere-felismerés vak lenne, ezért **HOLD** (az események `halasztva` cellái, **0 automatikus küldés**) **+ riasztás** (`hianyzo_mezo`); ha a Zap később már küldi a kulcsot (akár üresen), az újrapróbált `sd_atvetel` a döntést **automatikusan újraértékeli** (ember nem kell). Így egy csere nem számolódik csendben kétszer, és a hiányzó leképezés sem marad észrevétlen.
 
 `szaraz: true`: **írásmentes terv** (a D1 nem változik, nem küld, a végső próbát sem futtatja).
 
@@ -50,7 +50,7 @@ A `megjegyzes` mező **kötelező** (üres szöveg rendben van): ha hiányzik (e
 * **`reschedule_confirmed`**, ha: azonos vendég-hash (e-mail-hash **ÉS** (telefon-hash **VAGY** név-hash)) + azonos üzletág + azonos **kanonikus** szolgáltatás + a megjegyzésben szereplő korábbi időpont (pl. „16 órás”, „okt. 16. 16:00”) **pontosan EGY** létező, az indexben szereplő foglalásra mutat. → **0 új esemény** minden platformon; `reschedule_from/to` tárolva; ha a régi foglalás **még él** (élő Salonic-ellenőrzés): `old_booking_still_active = true` + riasztás (az élő újraellenőrzés a riasztás-olvasáskor megszünteti, ha a régi törölve lett).
 * **`reschedule_suspected`** (csere-gyanú a megjegyzésben, de nem igazolható: eltérő hash, 0 vagy ≥ 2 jelölt, nincs azonosítható időpont, nincs kulcs): **HOLD** — a cellák `halasztva`, **0 automatikus küldés** + riasztás.
 * **`sd_feloldas`** (ember): `{muvelet:"sd_feloldas", …a hívás mezői…, dontes:"confirmed"|"uj_konverzio", ok:"<kötelező indok>"}` — csak `halasztva` sorra; `uj_konverzio`: az események egyszer kimennek; `confirmed`: a cellák `kihagyva (reschedule_confirmed, feloldva)`.
-* Csere-gyanú (regex, ékezet-független, **csak a Megjegyzés mezőn**): `cser…`, `áthelyez…`, `átfoglal…`, `átütemez…`, `módosít…`, `elhalaszt…`, `korábbi/régi/előző foglalás|időpont`, `helyett`, `lemond…` stb. Megjegyzés csere-gyanú **nélkül**: normál sd út.
+* Csere-gyanú (regex, ékezet-független, **KIZÁRÓLAG a Megjegyzés mezőn**; a szolgáltatás / munkatárs-címke nevén sosem fut — ott a „helyett” is szerepelhet, pl. csomagnevekben, és ez nem csere): `cser…`, `áthelyez…`, `átfoglal…`, `átütemez…`, `módosít…`, `elhalaszt…`, `korábbi/régi/előző foglalás|időpont`, `helyett`, `lemond…` stb. Megjegyzés csere-gyanú **nélkül** (vagy létező, üres megjegyzés): normál sd út. Hiányzó megjegyzés-kulcs: lásd a 3. pontot (`hianyzo_mezo` HOLD).
 
 ## 8. Érték és platformszabályok
 
@@ -63,11 +63,18 @@ A `megjegyzes` mező **kötelező** (üres szöveg rendben van): ha hiányzik (e
 
 ## 9. Vendég-hash index (reschedule-felismeréshez)
 
-`foglalas_vendeg`: **csak HMAC-hash** (`GUEST_HMAC_KEY_V1`; e-mail / telefon / név, 32 hex), `uzletag`, kanonikus szolgáltatás-kulcs, kezdés, állapot, `lejar = ido + 180 nap`. Minden létrehozó levélnél a meglévő párosító kérésből íródik (fail-open, `ON CONFLICT DO NOTHING`; a nyers adat sosem kerül a D1-be). **Backfill:** `{muvelet:"vendeg_index", elemek:[{uuid, host, szolgaltatas, idopont_szoveg, ld?, level_datuma, vendeg{email,telefon}, nev?, allapot?}] (max. 50), szaraz?}` — **küldés nélkül**, idempotens; a jövőbeli aktív foglalások ne essenek ki csak azért, mert régebben jöttek létre (történeti lookup 180 nap).
+`foglalas_vendeg`: **csak HMAC-hash** (`GUEST_HMAC_KEY_V1`; e-mail / telefon / név, 32 hex), `uzletag`, kanonikus szolgáltatás-kulcs, kezdés, állapot, `lejar = ido + 180 nap`. Minden létrehozó levélnél a meglévő párosító kérésből íródik (fail-open, `ON CONFLICT DO NOTHING`; a nyers adat sosem kerül a D1-be). **`index_backfill`** (küldésmentes HMAC-index; **nem** `event_backfill`): `{muvelet:"index_backfill", elemek:[{uuid, host, szolgaltatas, idopont_szoveg, ld?, level_datuma, vendeg{email,telefon}, nev?, allapot?}] (max. 50), szaraz?}` — **küldés nélkül**, idempotens; a jövőbeli aktív foglalások ne essenek ki csak azért, mert régebben jöttek létre (történeti lookup 180 nap).
+
+**Két külön művelet, két külön név (DECISION #132 4. pont):**
+
+| név | mit csinál | állapot |
+|---|---|---|
+| `index_backfill` | csak a HMAC-index (`foglalas_vendeg`) feltöltése a reschedule-felismeréshez; **0 platformhívás, 0 esemény**, idempotens | engedett (jóváhagyás után fut, a `MERES_SD_INDEX` vagy a teljes kapu mögött) |
+| `event_backfill` | régi (> 48 óra) foglalások eseményeinek **utólagos küldése** | **TILOS**: a végpont `403 {allapot:"tilos"}`-et ad, nem ír, nem küld (a kapuktól függetlenül); az sd a 48 órán túli foglalásra sem küld (`lejart`) |
 
 ## 10. QA-5 riport (D6, rétegezett)
 
-`GET /api/meres-admin?egyeztetes=1&tol=..&ig=..[&forras=motor|salonic_direct]`: soronként `forras`, `attr_minoseg` (`A_teljes` / `B_motor_reszleges` — a motornál az érkezési pillanatképből **származtatott**: A = van pillanatkép + IP + UA + GA4 client_id + legalább egy kattintás- / fbp- / ttp-jel — / `C_salonic_direct`), `ertek_minoseg`, `qa_kategoria` (`motor` / `post_t2_booking_object` / `reschedule_confirmed` / `reschedule_suspected_hold` / `sd_tartva` / `sd_lejart`), `no_new_conversion_expected`, `csere` blokk (`pre_t2_original_conversion`: `measured_new` | `not_observed`). Összegzés: `retegek.{motor, salonic_direct, osszes}`, `attr_minoseg_szerint`, `salonic_direct.{arany, allapotok, qa_kategoriak, reschedule}`. **Az sd benne marad az összesített lefedettségi nevezőben**; a `reschedule_confirmed` saját soron látszik, de cellái `jogos_0` (az „eligible” nevezőn kívül); a HOLD cella `hiany` marad. CSV: az új oszlopok a sor végén.
+`GET /api/meres-admin?egyeztetes=1&tol=..&ig=..[&forras=motor|salonic_direct]`: soronként `forras`, `attr_minoseg` (`A_teljes` / `B_motor_reszleges` / `C_salonic_direct`; **külön mező a `forras`-tól** — a `forras` azt mondja meg, melyik út küldött, az `attr_minoseg` az attribúciós adatok minőségét; a riport mindkettő szerint külön szűrhető / bontható: `forras` szűrő, `attr_minoseg_szerint`. Jelenlegi leképezés: a motoros sor **származtatott** az érkezési pillanatképből — A = van pillanatkép + IP + UA + GA4 client_id + legalább egy kattintás- / fbp- / ttp-jel, minden más (köztük a pillanatkép hiánya) B; a safety net sora mindig C, mert nincs böngészős pillanatképe), `ertek_minoseg`, `qa_kategoria` (`motor` / `post_t2_booking_object` / `reschedule_confirmed` / `reschedule_suspected_hold` / `sd_tartva` / `sd_lejart`), `no_new_conversion_expected`, `csere` blokk (`pre_t2_original_conversion`: `measured_new` | `not_observed`). Összegzés: `retegek.{motor, salonic_direct, osszes}`, `attr_minoseg_szerint`, `salonic_direct.{arany, allapotok, qa_kategoriak, reschedule}`. **Az sd benne marad az összesített lefedettségi nevezőben**; a `reschedule_confirmed` saját soron látszik, de cellái `jogos_0` (az „eligible” nevezőn kívül); a HOLD cella `hiany` marad. CSV: az új oszlopok a sor végén.
 
 ## 11. Riasztások
 
@@ -79,8 +86,8 @@ A `megjegyzes` mező **kötelező** (üres szöveg rendben van): ha hiányzik (e
 
 ## 13. Tesztek
 
-`node --test tools/test-salonic-direct.mjs` — **33 offline teszt** (valódi SQLite, mentett Salonic-oldalak, hamis platformhálózat, hamis óra, nincs titok): S0-01..S0-23 = a jóváhagyott 23 eset (1 PMU visszatérő · 2 új PMU · 3 konzultáció · 4 kedvezmény/unknown_discount · 5 törölt · 6 ismeretlen→halasztva→újrapróbálható · 7 5 párhuzamos átvétel · 8 elakadt átvétel · 9 korai motoros kulcs → motor nyer · 10 párosított UUID elutasítva · 11 kapcsoló ki · 12 két levél eltérő „új vendég” jelzéssel · 13 **GOLDEN** · 14 0 élő azonosító · 15 nincs nyers adat · 16 HMAC stabil · 17 99ffaec4-negatív · 18 hash eltér · 19 két jelölt · 20 jelölt nincs az indexben · 21 régi lemondott · 22 csere-gyanú nélkül · 23 `sd_feloldas`); S0-24.. = parser, index/backfill, száraz terv, alias, kor/lejárat, dedup 2. réteg, vészkapcsolók, riasztások, QA riport, konfig-őr.
-**Golden paritás:** `tools/meres-proba/golden-motor.mjs` a módosítás **előtti** kódból generált fixture-t (`tools/fixtures/golden-motor-kerelem.json`: 468 platformkérés-törzs + 3 teljes elosztás a napló régi oszlopaival) **bájtra** egyezőnek követeli; a motoros kérés-törzsek nem változtak. Újragenerálás (`--ir`) csak szándékos, jóváhagyott változásnál.
+`node --test tools/test-salonic-direct.mjs` — **39 offline teszt** (valódi SQLite, mentett Salonic-oldalak, hamis platformhálózat, hamis óra, nincs titok): S0-01..S0-23 = a jóváhagyott 23 eset (1 PMU visszatérő · 2 új PMU · 3 konzultáció · 4 kedvezmény/unknown_discount · 5 törölt · 6 ismeretlen→halasztva→újrapróbálható · 7 5 párhuzamos átvétel · 8 elakadt átvétel · 9 korai motoros kulcs → motor nyer · 10 párosított UUID elutasítva · 11 kapcsoló ki · 12 két levél eltérő „új vendég” jelzéssel · 13 **GOLDEN** · 14 0 élő azonosító · 15 nincs nyers adat · 16 HMAC stabil · 17 99ffaec4-negatív · 18 hash eltér · 19 két jelölt · 20 jelölt nincs az indexben · 21 régi lemondott · 22 csere-gyanú nélkül · 23 `sd_feloldas`); S0-24.. = parser, index/`index_backfill`, száraz terv, alias, kor/lejárat, dedup 2. réteg, vészkapcsolók, riasztások, QA riport, konfig-őr; S0-34 Megjegyzés-szabályok (#132: létező üres = normális, hiányzó kulcs = `hianyzo_mezo` HOLD + riasztás + automatikus pótlás, csere-gyanú csak a Megjegyzésen); S0-35 `index_backfill` (küldésmentes) vs `event_backfill` (403 tilos); S0-36 hair / oxygen / laser üzletág (a HOST `placeId`-jából: ár-keresés, élő újraellenőrzés); S0-37 `sd_feloldas` + nem ellenőrizhető élő állapot (`tartva` + riasztás); S0-38 a végső párosítás átmeneti hibája (a motor nyer, az sd vár); S0-39 a motor már küldött, de egy cella `halasztva` maradt (idempotens pótlás a motoros identitással).
+**Golden paritás:** `tools/meres-proba/golden-motor.mjs` a módosítás **előtti** kódból generált fixture-t (`tools/fixtures/golden-motor-kerelem.json`: 468 platformkérés-törzs + 6 teljes elosztás a napló régi oszlopaival: 3 `fk.uuid` nélkül + 3 a **valódi motoros úttal** (`foglalas-esemeny.js` átadja a Salonic-UUID-t, a napló `salonic_uuid` oszlopa ettől sem érinti a régi oszlopokat) — a fixture mindkét fele a **módosítatlan** (`main` `eec5645`) kódból készült) **bájtra** egyezőnek követeli; a motoros kérés-törzsek nem változtak. Újragenerálás (`--ir`) csak szándékos, jóváhagyott változásnál.
 
 ## 14. Élesítési sorrend (EGYIK SEM kezdhető jóváhagyás nélkül)
 
@@ -91,8 +98,8 @@ S1 előnézeti smoke → go-live döntés → S2 éles száraz próba → T2.
 
 ## 15. Megfigyelések (nem ennek a változtatásnak a tárgya)
 
-* A meglévő, közös `elosztas.js` `naploz()` a már naplózott sor újrapróbálhatóságát az `indok` nélkül olvassa, ezért a **vészkapcsoló miatt `kihagyva` cella a kapcsoló visszakapcsolása után sem küldődik újra** (a komment szerint újrapróbálhatónak szánt). Motoros és sd úton egyformán; a golden paritás miatt nem módosítottam — külön jóváhagyással javítható.
+* **Vészkapcsoló-cella (DECISION #121, szándékos működés — NEM javítjuk):** a vészkapcsoló miatt `kihagyva` cella a kapcsoló visszakapcsolása után **nem küldődik újra** (a motoros és az sd úton egyformán). Ez a #121 szerinti, jóváhagyott viselkedés; a kód nem módosul, az `elosztas.js` meglévő `naploz()` szemantikáját (a golden paritás is ezt rögzíti) érintetlenül hagytam.
 * Egy `sd_atvetel` ≈ 46 D1-lekérdezés (a motoros „párosítás + küldés” kérés is 46); az isolate első kérésén + ~6 séma-bootstrap lekérdezés.
 * A csere-felismerés **csak az sd úton** fut (DECISION #131 tárgya); ha az **új** foglalás a motoros úton párosul (van `mb_` kulcs), a motor a megjegyzést nem vizsgálja (a vendég-hash index viszont a régi foglalásokat mindkét útról tartalmazza, így a későbbi sd-csere felismeri).
 * A TikTok `event_source: web` + pixel marad (árnyék), böngésző nélkül is; ha a TikTok ezt elutasítja, a smoke jelzi.
-* `tools/test-foglalo-atkotes.mjs` 19. tesztje a főágon is bukik (nem ehhez a változtatáshoz tartozik).
+* **Pre-existing hiba (nem ennek a változtatásnak a hibája):** `tools/test-foglalo-atkotes.mjs` **19. tesztje** a `main`-en (`eec5645`) is bukik, és a diff a tesztelt fájlokat nem érinti (ellenőrzés: a módosítások `git stash`-elése után, tiszta `main`-en ugyanúgy bukik). Külön, a safety nettől független feladat.

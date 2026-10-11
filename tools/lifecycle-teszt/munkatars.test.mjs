@@ -535,7 +535,7 @@ test('VALÓDI módosítás: bizonyított (az élő oldal az új kezdést mutatja
 });
 
 // ---- lifecycle B (lifecycle B, GPT-jovahagyas 2026-10-11 (issue #167)): ketszintu szolgaltatas-egyezes - a 2 hamis negativ (f4182d81, 0f60fa59) VALODI szolgaltatas-nevei --------------------------------------
-import { szolgKanon } from '../../netlify/lib/lifecycle/munkatars.js';
+import { szolgKanon, szolgKulcs } from '../../netlify/lib/lifecycle/munkatars.js';
 import { ismertSzolgaltatas } from '../../netlify/lib/lifecycle/uzletag.js';
 const HS = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'headspa,laser', LIFECYCLE_MUNKATARS_MOD: 'be' };
 const HS_FOGL = '💆‍♀️ EGYÉNI 50 perces MOSAIC "Relax" Head Spa kezelés + 30 perc hajszárítás'; // a foglalas (vendegoldali level) neve
@@ -563,8 +563,8 @@ test('lifecycle B / f4182d81: a munkatarsi MODOSITAS "KUPONKÓDDAL - " nevu, a f
   assert.equal(JSON.parse(esemeny(db, 'hs-1').reszlet).szolg_egyezes, 'kanonikus');
   assert.equal(alapAllapot(db).allapot, 'aktiv'); assert.equal(elo.hivasok.length, 0, 'nem kellett elo ellenorzes');
   assert.equal(k.ki.sms.length, 0);
-  // a MEGELOZO (regi) viselkedes: a pontos kulcs nem egyezett -> nincs jelolt -> nincs_online_foglalas (hamis negativ); most kanonikus egyezes van
-  assert.notEqual(szolgKanon(HS_MT) === szolgKanon(HS_FOGL), false);
+  // a regi viselkedes oka: a PONTOS kulcs nem egyezett (-> nincs jelolt -> nincs_online_foglalas = hamis negativ); a kanonikus egyezik
+  assert.notEqual(szolgKulcs(HS_MT), szolgKulcs(HS_FOGL)); assert.equal(szolgKanon(HS_MT), szolgKanon(HS_FOGL));
 });
 
 test('lifecycle B / 0f60fa59: a munkatarsi TORLES (idopont elott) a foglalas "+ állapofelmérés" toldalekos nevehez kanonikusan egyezik -> szalon_torolte (elo oldal: torolve)', async () => {
@@ -617,4 +617,18 @@ test('lifecycle B: munkatarsi torlesbol SOHA nincs automatikus no-show (nincs "o
     assert.equal(r.tipus, 'riasztas:utolagos_torles'); assert.equal(alapAllapot(db).allapot, 'aktiv');
     assert.equal(szam(db, "SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-NOSHOW-%'").n, 0); assert.equal(k.ki.sms.length, 0);
   }
+});
+
+test('lifecycle B: a szint az ELO sorokon dol - egy korabbi, LEMONDOTT, pontosan egyezo sor nem takarja el a kanonikusan egyezo ELO foglalast (munkatarsi torles)', async () => {
+  const datum = 'október 21. (szerda) 11:00';
+  const db = d1(); const k = hamisKuldok();
+  // 1. foglalas (pontos nevvel) lemondva; 2. foglalas ugyanarra az idopontra, a kanonikus (dekoralt) nevvel, el
+  await ingest(db, HS, foglaltLevel({ ...HSK, uzenetId: 'g1', uuid: UUID1, szolg: HS_MT, munka: 'Noel', datum }), MOST);
+  await db.sqlite.prepare("UPDATE foglalasok SET allapot = 'lemondva' WHERE id = ?1").run(UUID1);
+  const r2 = await ingest(db, HS, foglaltLevel({ ...HSK, uzenetId: 'g2', uuid: UUID2, szolg: HS_FOGL, munka: 'Noel', datum }), MOST + 1);
+  await tick(db, HS, k, MOST + 1, { foglalasId: r2.foglalasId }); const smsT0 = k.ki.sms.length;
+  const m = await ingest(db, HS, munkatarsLevel({ ...HSM, uzenetId: 'x-1', szolg: HS_MT, munka: 'Noel', datum }), MOST + 600, { eloEllenorzes: hamisElo(TOROLT) });
+  assert.deepEqual([m.tipus, m.valtozas, m.foglalasId], ['szalon_torolte', true, UUID2]); // nem mar_feldolgozva: az ELO foglalas torlodik
+  assert.equal(JSON.parse(esemeny(db, 'x-1').reszlet).szolg_egyezes, 'kanonikus');
+  assert.equal(alapAllapot(db, UUID2).allapot, 'lemondva'); assert.equal((await tick(db, HS, k, MOST + 100 * ORA)).elkuldve, 0); assert.equal(k.ki.sms.length, smsT0);
 });

@@ -542,7 +542,7 @@ export async function egyeztet(db, mezok, deps) {
   const ellentm = eredmenyek.find((e) => e.allapot === 'ellentmondas');
   if (ellentm || (talalatok.length > 1 && new Set(talalatok.map((e) => e.jelolt.booking_id)).size > 1)) {
     const miert = ellentm ? ellentm.miert : 'tobb kulcs-jelolt, kulonbozo booking_id';
-    await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, kovetkezo = NULL, riasztas = 1, frissitve = ?6 WHERE uuid = ?1').bind(mezok.uuid, 'ellentmondas', probalkozas, (ellentm && ellentm.kulcs) || jeloltek[0] || null, kulcsForras, t).run();
+    await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, kovetkezo = NULL, riasztas = 1, frissitve = ?6 WHERE uuid = ?1 AND sd_id IS NULL').bind(mezok.uuid, 'ellentmondas', probalkozas, (ellentm && ellentm.kulcs) || jeloltek[0] || null, kulcsForras, t).run();
     return { allapot: 'ellentmondas', kuldheto: false, duplikalt: false, riasztas: true, probalkozas, miert, kulcs: (ellentm && ellentm.kulcs) || jeloltek[0] || null, kulcs_forras: kulcsForras, nyom };
   }
   if (talalatok.length) {
@@ -559,7 +559,7 @@ export async function egyeztet(db, mezok, deps) {
     }
     const serviceEgyezik = serviceId ? r.service_id === serviceId : (ellenorzoServiceIds && ellenorzoServiceIds.length ? ellenorzoServiceIds.includes(r.service_id) : null);
     if (serviceEgyezik === false) { // a kulcs egyezik, a szolgaltatas nem: ellentmondas (kulcs-utkozes gyanu), nem kuldunk
-      await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, service_id = ?6, riasztas = 1, frissitve = ?7 WHERE uuid = ?1').bind(mezok.uuid, 'ellentmondas', probalkozas, r.kulcs, kulcsForras, serviceId, t).run();
+      await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, service_id = ?6, riasztas = 1, frissitve = ?7 WHERE uuid = ?1 AND sd_id IS NULL').bind(mezok.uuid, 'ellentmondas', probalkozas, r.kulcs, kulcsForras, serviceId, t).run();
       return { allapot: 'ellentmondas', kuldheto: false, riasztas: true, probalkozas, miert: 'a serviceId nem egyezik', service_egyezik: false, kulcs: r.kulcs, nyom };
     }
     // egy foglalasbol egy esemeny: a kuldve-t csak az elso keres allitja be (a booking_id-ra egyedi index: mas UUID sem kuldhet ugyanarra)
@@ -574,7 +574,7 @@ export async function egyeztet(db, mezok, deps) {
       }
     } catch (e) { // a booking_id-ra mar ment esemeny MAS Salonic-foglalasrol: nem kuldunk, LATHATO riasztassal (nem nyelheti el csendben)
       nyom.egyediIndex = 'a booking_id-ra mar ment esemeny (mas UUID-rol)';
-      await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, service_id = ?6, riasztas = 1, kovetkezo = NULL, frissitve = ?7 WHERE uuid = ?1').bind(mezok.uuid, 'ellentmondas', probalkozas, r.kulcs, kulcsForras, r.service_id, t).run();
+      await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, service_id = ?6, riasztas = 1, kovetkezo = NULL, frissitve = ?7 WHERE uuid = ?1 AND sd_id IS NULL').bind(mezok.uuid, 'ellentmondas', probalkozas, r.kulcs, kulcsForras, r.service_id, t).run();
       return { allapot: 'ellentmondas', kuldheto: false, duplikalt: false, riasztas: true, probalkozas, miert: 'a kulcshoz tartozo booking_id mar mas Salonic-foglalasra kiment', kulcs: r.kulcs, kulcs_forras: kulcsForras, nyom };
     }
     let kulcsAtvett = false;
@@ -597,10 +597,10 @@ export async function egyeztet(db, mezok, deps) {
   async function ujraprobal(miertNincs) {
     const ujra = UJRAPROBA_MP[probalkozas - 1];
     if (ujra === undefined) {
-      await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, kovetkezo = NULL, riasztas = 1, frissitve = ?6 WHERE uuid = ?1').bind(mezok.uuid, 'parositatlan', probalkozas, jeloltek[0] || null, kulcsForras, t).run();
+      await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, kovetkezo = NULL, riasztas = 1, frissitve = ?6 WHERE uuid = ?1 AND sd_id IS NULL').bind(mezok.uuid, 'parositatlan', probalkozas, jeloltek[0] || null, kulcsForras, t).run();
       return { allapot: 'parositatlan', kuldheto: false, riasztas: true, probalkozas, kulcs: jeloltek[0] || null, kulcs_forras: kulcsForras, miert: miertNincs, nyom };
     }
-    await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, kovetkezo = ?6, frissitve = ?7 WHERE uuid = ?1').bind(mezok.uuid, 'fuggoben', probalkozas, jeloltek[0] || null, kulcsForras, t + ujra, t).run();
+    await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, kovetkezo = ?6, frissitve = ?7 WHERE uuid = ?1 AND sd_id IS NULL').bind(mezok.uuid, 'fuggoben', probalkozas, jeloltek[0] || null, kulcsForras, t + ujra, t).run();
     return { allapot: 'fuggoben', kuldheto: false, riasztas: false, probalkozas, ujraprobal_mp: ujra, kulcs: jeloltek[0] || null, kulcs_forras: kulcsForras, miert: miertNincs, nyom };
   }
 }
@@ -732,8 +732,10 @@ async function kezelEgyeztetesBelso(request, env, deps = {}) {
     let mezok = { uuid: o.uuid, host: o.host, felado: o.felado, szolgaltatas: o.szolgaltatas, idopontSzoveg: o.idopont_szoveg, munkatarsak: Array.isArray(o.munkatarsak) ? o.munkatarsak.map(String).slice(0, 10) : [], ld: o.ld || null, leveldatum: o.level_datuma, diagnosztika: o.diagnosztika === true };
     if (typeof o.email_html === 'string') { const e = emailElemzes(o.email_html); mezok = { ...mezok, uuid: mezok.uuid || e.uuid, host: mezok.host || e.host, felado: mezok.felado || e.felado, szolgaltatas: mezok.szolgaltatas || e.szolgaltatas, idopontSzoveg: mezok.idopontSzoveg || e.idopontSzoveg, munkatarsak: mezok.munkatarsak.length ? mezok.munkatarsak : e.munkatarsak, ld: mezok.ld || e.ld }; }
     const fuggosegek = { fetchImpl: deps.fetchImpl || fetch, now: deps.now, nevtablaFrissito: deps.nevtablaFrissito };
-    // Salonic-direct safety net (DECISION #127 (b)): sd_atvetel (a Zap 5. lepese; szaraz:true = irasmentes terv), sd_feloldas (ember dont a csere-gyanu felett) es vendeg_index (hash-index, egyszeri backfill). A kezelo injektalt (nincs importkor kor)
-    if (o.muvelet === 'sd_atvetel' || o.muvelet === 'sd_feloldas' || o.muvelet === 'vendeg_index') {
+    // Salonic-direct safety net (DECISION #127 (b)): sd_atvetel (a Zap 5. lepese; szaraz:true = irasmentes terv), sd_feloldas (ember dont a csere-gyanu felett) es index_backfill (kuldesmentes hash-index feltoltes). A kezelo injektalt (nincs importkor kor)
+    // event_backfill (regi foglalasok esemenyeinek utolagos kuldese) TILOS (DECISION #132): csak a kuldesmentes HMAC-index feltoltese (index_backfill) engedett; a 48 oras ablakon tuli foglalasra az sd sem kuld
+    if (o.muvelet === 'event_backfill') return valasz(403, { ok: false, allapot: 'tilos', miert: 'event_backfill tilos: regi foglalas esemenye nem kuldheto utolag (csak index_backfill: kuldesmentes HMAC-index)' });
+    if (o.muvelet === 'sd_atvetel' || o.muvelet === 'sd_feloldas' || o.muvelet === 'index_backfill') {
       if (!deps.sdKezelo) return valasz(501, { ok: false, miert: 'nincs sd-kezelo' });
       return valasz(200, { ok: true, ...(await deps.sdKezelo({ db: env.KULCS_DB, env, muvelet: o.muvelet, bejovo: o, mezok: { ...mezok, megjegyzes: typeof o.megjegyzes === 'string' ? o.megjegyzes.slice(0, 500) : '' }, fuggosegek, egyeztet, esemenyKuldo: deps.esemenyKuldo })) });
     }

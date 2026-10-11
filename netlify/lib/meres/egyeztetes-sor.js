@@ -86,7 +86,7 @@ export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = n
   const sdAllapot = sd && egyeztetes ? egyeztetes.sd_allapot || null : null;
   if (sd) { // az sd sor sajat jelzesei: a "parositatlan" a motoros parositas allapota (az sd eppen ezt palyazza be) - nem hiba
     const i = jelzesek.findIndex((x) => /^(parositatlan|egyeztetes_)/.test(x)); if (i >= 0) jelzesek.splice(i, 1);
-    if (sdAllapot === 'halasztva') jelzesek.push('reschedule_suspected_hold');
+    if (sdAllapot === 'halasztva') jelzesek.push(reschedule && reschedule.allapot === 'hianyzo_mezo' ? 'hianyzo_mezo_hold' : 'reschedule_suspected_hold');
     if (sdAllapot === 'tartva') jelzesek.push('sd_tartva');
     if (sdAllapot === 'lejart') jelzesek.push('sd_lejart');
     if (sdAllapot === 'atveve') jelzesek.push('sd_atveve_folyamatban');
@@ -117,7 +117,7 @@ export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = n
     salonic_uuid: sd && egyeztetes ? egyeztetes.uuid || null : null,
     sd_allapot: sdAllapot,
     csere,
-    qa_kategoria: sd ? (SD_QA[sdAllapot] || 'post_t2_booking_object') : 'motor',
+    qa_kategoria: sd ? (sdAllapot === 'halasztva' && reschedule && reschedule.allapot === 'hianyzo_mezo' ? 'hianyzo_mezo_hold' : (SD_QA[sdAllapot] || 'post_t2_booking_object')) : 'motor',
     no_new_conversion_expected: sdAllapot === 'reschedule_confirmed' || sdAllapot === 'feloldva_confirmed',
   };
 }

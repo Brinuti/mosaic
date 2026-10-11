@@ -86,7 +86,8 @@ const NEM_JELENT_MEG_JELZES = /nem\s*jelent\s*meg|nem\s*j[öo]tt\s*el|nem\s*[ée
  * naplo + riasztas (allapotvaltas es uzenet nelkul): az auto no-show-hoz tovabba kell a kezdes UTANI torles es EGYETLEN egyezo foglalas (lasd feldolgoz, lifecycle B, GPT-jovahagyas 2026-10-11).
  */
 export const nemJottElOk = (ok) => String(ok || '').normalize('NFC').replace(/\s+/g, ' ').trim().toLowerCase() === 'nem jött el';
-const szigoruNoShow = (e, alapIdo) => nemJottElOk(e.lemondasOka) && e.kezdet <= alapIdo && alapIdo - e.kezdet <= 3 * NAP;
+// az "idopont UTAN torolt" allitast csak a level BIZONYITOTT kuldesi idejevel tesszuk (egy keso feldolgozas - Zapier-kesleltetes - egy kezdes ELOTTI torlest nem tehet automatikus no-show-va)
+const szigoruNoShow = (e, alapIdo, alapBizonyitott) => alapBizonyitott && nemJottElOk(e.lemondasOka) && e.kezdet <= alapIdo && alapIdo - e.kezdet <= 3 * NAP;
 
 async function azonnaliUzenetek(db, foglalasId, uzenetIdk, most) {
   const stmts = uzenetIdk.map((id) => keszit(db, "INSERT OR IGNORE INTO kuldesek (foglalas_id, uzenet_id, csatorna, esedekes, allapot) VALUES (?1, ?2, ?3, ?4, 'fuggoben')", foglalasId, id, /-EMAIL(-|$)/.test(id) ? 'email' : 'sms', most));
@@ -123,7 +124,8 @@ export async function ingest(db, env, level, most, opc = {}) {
   const e = ertelmez(level, most);
   // a level kuldesenek ideje (Zapier: a Gmail "date" mezoje): a regi, kesve erkezo levelnel az azonnali uzenetek esedekessege a level ideje -> a kesesi szabaly kihagyja oket
   const kuldve = Number(level.kuldve);
-  const alapIdo = Number.isFinite(kuldve) && kuldve > 1.6e9 && kuldve <= most ? Math.floor(kuldve) : most;
+  const alapBizonyitott = Number.isFinite(kuldve) && kuldve > 1.6e9 && kuldve <= most; // a level kuldesi ideje ervenyes (masodperc, nem jovobeli); nelkule az alapIdo = a feldolgozas ideje
+  const alapIdo = alapBizonyitott ? Math.floor(kuldve) : most;
   if (!e.ok) {
     await naplo(db, most, 'ingest:kihagyva', null, forras, { miert: e.miert, targy: String(level.targy || '').replace(/-\s.*$/, '').slice(0, 60) });
     return { ok: false, miert: e.miert };
@@ -139,7 +141,7 @@ export async function ingest(db, env, level, most, opc = {}) {
     }
   }
   try {
-    return await feldolgoz(db, cfg, e, forras, most, alapIdo);
+    return await feldolgoz(db, cfg, e, forras, most, alapIdo, alapBizonyitott);
   } catch (hiba) {
     // hiba eseten a "feldolgozas" sor torlodik, hogy a Zapier ujraprobalkozasa tenylegesen feldolgozza a levelet
     if (forras) await futtat(db, "DELETE FROM esemenyek WHERE forras_id = ?1 AND tipus = 'ingest:feldolgozas'", forras);
@@ -147,7 +149,7 @@ export async function ingest(db, env, level, most, opc = {}) {
   }
 }
 
-async function feldolgoz(db, cfg, e, forras, most, alapIdo = most) {
+async function feldolgoz(db, cfg, e, forras, most, alapIdo = most, alapBizonyitott = false) {
   const mai = await elso(db, "SELECT COUNT(*) AS n FROM esemenyek WHERE tipus LIKE 'ingest:%' AND ido > ?1", most - NAP);
   if (mai && mai.n > cfg.napiPlafon) {
     if (forras) await futtat(db, "UPDATE esemenyek SET tipus = 'ingest:plafon' WHERE forras_id = ?1", forras);
@@ -196,17 +198,18 @@ async function feldolgoz(db, cfg, e, forras, most, alapIdo = most) {
       await azonnaliUzenetek(db, fid, [`COMMON-RESCHEDULE-SMS#${n + 1}`], alapIdo);
       eredmeny = { ok: true, tipus: 'athelyezve', foglalasId: fid, ismeretlenVolt: !volt };
     }
-  } else if (e.tipus === 'lemondva' && ((NEM_JELENT_MEG_JELZES.test(e.lemondasOka || '') || e.kezdet <= alapIdo) && alapIdo - e.kezdet <= 3 * NAP) && !(cfg.noShowAuto && szigoruNoShow(e, alapIdo))) {
+  } else if (e.tipus === 'lemondva' && ((NEM_JELENT_MEG_JELZES.test(e.lemondasOka || '') || e.kezdet <= alapIdo) && alapIdo - e.kezdet <= 3 * NAP) && !(cfg.noShowAuto && szigoruNoShow(e, alapIdo, alapBizonyitott))) {
     // DECISION #117 (D3/D5) + lifecycle B: torlesbol NEM lesz automatikus no-show (sem uzenet, sem allapotvaltas): csak naplo + riasztas (a napi osszesitoben).
     // Automatikus no-show CSAK: LIFECYCLE_NOSHOW_AUTO=1 ES a Salonic oka pontosan "Nem jött el" ES a kezdes UTAN torolt ES egyetlen egyezo foglalas van (lasd lent); minden mas laza jelzes (korabbi
     // "nem jelent meg" szoveg, kezdes elotti torles, ok nelkuli kesei torles) is csak riasztas.
     eredmeny = { ok: true, tipus: NEM_JELENT_MEG_JELZES.test(e.lemondasOka || '') && e.kezdet > alapIdo ? 'riasztas:nem_jelent_meg_jelzes' : 'riasztas:utolagos_torles', valtozas: false };
-  } else if (e.tipus === 'lemondva' && cfg.noShowAuto && szigoruNoShow(e, alapIdo)) {
+  } else if (e.tipus === 'lemondva' && cfg.noShowAuto && szigoruNoShow(e, alapIdo, alapBizonyitott)) {
     // NO-SHOW: a szalon az idopont UTAN torolte a foglalast, az ok pontosan "Nem jött el", es PONTOSAN EGY foglalas egyezik (nincs talalat / tobb talalat: 0 allapotvaltas, 0 uzenet, riasztas).
     // A lemondas-visszaigazolas helyett "nem talalkoztunk" SMS + e-mail megy, uj foglalasi linkkel.
     const egyezok = new Map();
+    const eloVagyNoShow = (r) => r && (r.allapot === 'aktiv' || r.allapot === 'nem_jelent_meg'); // egy mar lemondott / megjelent sor nem "egyezo foglalas"
     for (const r of [await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', id), await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', szintetikusId(e.uzletag, e.email, telefon, e.kezdet)),
-      ...await vendegFoglalasai(db, e.uzletag, e.email, telefon, e.kezdet, 'aktiv'), ...await vendegFoglalasai(db, e.uzletag, e.email, telefon, e.kezdet, 'nem_jelent_meg', most - 900)]) if (r) egyezok.set(r.id, r);
+      ...await vendegFoglalasai(db, e.uzletag, e.email, telefon, e.kezdet, 'aktiv'), ...await vendegFoglalasai(db, e.uzletag, e.email, telefon, e.kezdet, 'nem_jelent_meg', most - 900)]) if (eloVagyNoShow(r)) egyezok.set(r.id, r);
     if (egyezok.size !== 1) eredmeny = { ok: true, tipus: egyezok.size === 0 ? 'riasztas:nem_jelent_meg_nincs_foglalas' : 'riasztas:nem_jelent_meg_tobbertelmu', valtozas: false, egyezo: egyezok.size }; // fail-closed
     else {
       const volt = [...egyezok.values()][0];
@@ -319,7 +322,8 @@ async function munkatarsFeldolgoz(db, cfg, level, tipus, forras, most, alapIdo, 
     const sorok = await mind(db, 'SELECT * FROM foglalasok WHERE uzletag = ?1 AND kezdet = ?2', e.uzletag, e.kezdet);
     let negy = sorok.filter((r) => szolgKulcs(r.szolgaltatas) === szK && munkatarsKulcs(r.munkatars) === mK);
     resz.szolg_egyezes = 'pontos';
-    if (!negy.length) { const kan = sorok.filter((r) => szolgKanon(r.szolgaltatas) === szKan && munkatarsKulcs(r.munkatars) === mK); if (kan.length) { negy = kan; resz.szolg_egyezes = 'kanonikus'; } }
+    // a szintet az ELO (aktiv) sorok donti el: egy korabbi, lemondott, pontosan egyezo sor ne takarja el a kanonikusan egyezo ELO foglalast
+    if (!negy.some((r) => r.allapot === 'aktiv')) { const kan = sorok.filter((r) => szolgKanon(r.szolgaltatas) === szKan && munkatarsKulcs(r.munkatars) === mK); if (kan.some((r) => r.allapot === 'aktiv') || (!negy.length && kan.length)) { negy = kan; resz.szolg_egyezes = 'kanonikus'; } }
     // csak az ELO (aktiv) foglalasok szamitanak jelöltnek: egy korabban lemondott foglalas (a slotot azota masnak adtak ki) nem teszi tobbertelmuve
     jeloltek = negy.filter((r) => r.allapot === 'aktiv');
     if (jeloltek.length === 0 && negy.some((r) => nK && nevNorm(r.nev) === nK)) { // a nevre mar nem aktiv foglalas: korabban feldolgozott torles / lemondas

@@ -29,7 +29,7 @@ export function d1() {
 export const ENV_ALAP = Object.freeze({ META_TESZT_KOD: 'TEST12345', TIKTOK_TESZT_KOD: 'TEST67890', GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001', MERES_ELOSZTO: '1', META_CAPI_TOKEN: 't', TIKTOK_EVENTS_TOKEN: 't', GOOGLE_ARNYEK_WEBHOOK_URL: 'https://hooks.zapier.com/hooks/catch/1/teszt/', GA4_TESZT_API_SECRET: 't' });
 export const SD_ENV = Object.freeze({ MERES_SALONIC_DIRECT: '1', MERES_SD_NS: 'smoke', SD_HMAC_KEY_V1: 'sd-teszt-kulcs-0123456789abcdef', GUEST_HMAC_KEY_V1: 'guest-teszt-kulcs-0123456789ab' });
 
-/** A Salonic (mentett valodi oldalak, az UUID-t cserelve) es a platformok egy hamis halozaton. allapot: uuid -> 'aktiv' (alap) | 'torolve' | 'hiba'. */
+/** A Salonic (mentett valodi oldalak, az UUID-t cserelve) es a platformok egy hamis halozaton. allapot: uuid -> 'aktiv' (alap) | 'torolve' | 'hiba' | [az egymas utani lekeresek allapota]. */
 export function halozat() {
   const allapot = new Map(); const hivasok = []; const salonic = [];
   const f = async (url, o = {}) => {
@@ -37,7 +37,7 @@ export function halozat() {
     if (u.includes('/debug/mp/collect')) return { status: 200, text: async () => JSON.stringify({ validationMessages: [] }) };
     if ((m = u.match(/\/booking\/bookingDetails\/([0-9a-f-]{36})/))) {
       salonic.push(m[1]);
-      const a = allapot.get(m[1]) || 'aktiv';
+      const a0 = allapot.get(m[1]); const a = Array.isArray(a0) ? (a0.length > 1 ? a0.shift() : a0[0]) : (a0 || 'aktiv'); // tomb: az n-edik lekeres allapota (az utolso ismetlodik)
       if (a === 'hiba') return { ok: false, status: 500, url: u, text: async () => '' };
       const szoveg = a === 'torolve' ? fx('kulcs-torolve-hu.html') : fx('kulcs-bookingDetails-hair.html').replaceAll(FIX_UUID, m[1]);
       return { ok: true, status: 200, url: u, text: async () => szoveg };
@@ -62,7 +62,7 @@ export function vilag({ env = {}, sd = true, kapcsolo = 'mind' } = {}) {
   const ker = (body) => new Request('https://x.pages.dev/api/foglalas-egyeztetes', { method: 'POST', headers: { 'x-egyeztetes-kulcs': KULCS_SZOVEG }, body: JSON.stringify(body) });
   const post = async (body, x) => (await kezelEgyeztetes(ker(body), e, deps(x))).json();
   const get = async (q, x) => (await kezelEgyeztetes(new Request('https://x.pages.dev/api/foglalas-egyeztetes?kulcs=' + KULCS_SZOVEG + '&' + q), e, deps(x))).json();
-  const v = { D, e, net, t, post, get, deps,
+  const v = { D, e, net, t, post, get, deps, ker,
     kapcsol: (uzletag = null, be = true) => sdKapcsoloBeallit(e.KULCS_DB, { uzletag, be, ok: 'teszt' }, t()),
     sd: (body) => post({ ...body, muvelet: 'sd_atvetel' }),
     sql: (q, ...a) => D.db.prepare(q).all(...a).map((r) => ({ ...r })),

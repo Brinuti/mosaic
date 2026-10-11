@@ -75,7 +75,10 @@ export async function motorKepek() {
     }
   }
   const elosztasok = {};
-  for (const [nev, fkMod, erkMod] of [['headspa_elso', {}, {}], ['pmu_konzultacio', { uzletag: 'pmu', jelleg: 'konzultacio', ertek: 0 }, { uzletag: 'pmu' }], ['fodrasz_visszajaro', { uzletag: 'fodrasz', jelleg: 'visszajaro' }, { uzletag: 'fodrasz' }]]) {
+  // az *_uuid esetek a VALODI motoros utat adjak (foglalas-esemeny.js: fk.uuid = a Salonic-UUID): a regi naplo-oszlopok es a kerelmek ettol sem valtozhatnak
+  const UUID_A = '7d3f1c52-3b0a-4f59-9a1e-5c2d8b6e4a10'; const UUID_B = '2e9b4a67-81c3-4d05-b7f2-0a6c9d1e3f48'; const UUID_C = 'c4a85e13-6f2d-4b90-8e37-1d5a7f0b9c26';
+  for (const [nev, fkMod, erkMod] of [['headspa_elso', {}, {}], ['pmu_konzultacio', { uzletag: 'pmu', jelleg: 'konzultacio', ertek: 0 }, { uzletag: 'pmu' }], ['fodrasz_visszajaro', { uzletag: 'fodrasz', jelleg: 'visszajaro' }, { uzletag: 'fodrasz' }],
+    ['headspa_elso_uuid', { uuid: UUID_A }, {}], ['pmu_konzultacio_uuid', { uzletag: 'pmu', jelleg: 'konzultacio', ertek: 0, uuid: UUID_B }, { uzletag: 'pmu' }], ['fodrasz_visszajaro_uuid', { uzletag: 'fodrasz', jelleg: 'visszajaro', uuid: UUID_C.toUpperCase() }, { uzletag: 'fodrasz' }]]) {
     const db = d1(); const { f, hivasok } = hamisFetch();
     await erkezesMent(db, { source_id: BID, uzletag: 'headspa', attr: BE(), hozz: { ana: true, adv: true, fun: true }, ua: 'UA TESZT', ip: '203.0.113.7', oldal: 'https://www.mosaicheadspa.hu/koszonjuk', ...erkMod }, NOW);
     const r = await elosztas(db, FK(fkMod), { env: TELJES_ENV, fetchImpl: f, now: () => NOW });

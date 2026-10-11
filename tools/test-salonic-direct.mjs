@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { BUSINESSES } from '../assets/js/booking-engine/salonic-adapter.js';
-import { kulcsIras, nevtablaMent } from '../netlify/lib/foglalas-kulcs.js';
+import { HOSTOK, kulcsIras, nevtablaMent } from '../netlify/lib/foglalas-kulcs.js';
 import { ELO_CELOK } from '../netlify/lib/meres/platformok.js';
 import { cellaOsztaly } from '../netlify/lib/meres/egyeztetes-sor.js';
 import { irasKapcsolo } from '../netlify/lib/meres/iras-kapcsolo.js';
@@ -424,9 +424,12 @@ test('S0-23 sd_feloldas: suspected -> confirmed (0 kuldes) | uj_konverzio (egysz
 
 // --- kiegeszito vedelmek -----------------------------------------------------------------------------------------------------------------------
 test('S0-24 megjegyzes- es idopont-ertelmezes: csere-gyanu (ekezet-fuggetlen), emlitett idopontok, egyezes; szolgaltatas-kanon; vendeg-azonossag', async () => {
-  for (const igen of [MEGJ_99, 'Szeretném áthelyezni a foglalásomat', 'Időpontcsere miatt', 'a korábbi időpont helyett', 'Módosítottam az időpontot', 'lemondtam a másikat', 'Elhalasztom egy héttel']) assert.ok(csereGyanu(igen), igen);
-  for (const nem of ['', null, undefined, 'Allergiás vagyok a latexre', 'Kérem a csendes sarkot', 'Először jövök, kicsit izgulok', 'Szeretnék kávét kérni']) assert.ok(!csereGyanu(nem), String(nem));
-  assert.ok(CSERE_GYANU.source.includes('cser'));
+  for (const igen of [MEGJ_99, 'Szeretném áthelyezni a foglalásomat', 'Időpontcsere miatt', 'a korábbi időpont helyett', 'Módosítottam az időpontot', 'lemondtam a másikat', 'Elhalasztom egy héttel',
+    // a kodattekintes (2026-10-11) altal jelzett megfogalmazasok: ezek is csere-gyanuk (HOLD vagy igazolt csere), nem csendes uj konverzio
+    'Áttettem a 16:00-s időpontomat', 'Áttenném a 16 órásat erre', 'Eltolnám egy nappal', 'Megváltoztatnám a korábbi időpontot', 'Átírnám a foglalásomat', 'Új időpontot kérek', 'Másik időpontra szeretném',
+    'rescheduled from 16:00', 'instead of the 16:00 slot', 'moved from yesterday', 'my original booking was at 16:00', 'previous appointment 16:00', 'Please change my time', 'swap with the earlier one']) assert.ok(csereGyanu(igen), igen);
+  for (const nem of ['', null, undefined, 'Allergiás vagyok a latexre', 'Kérem a csendes sarkot', 'Először jövök, kicsit izgulok', 'Szeretnék kávét kérni', 'Áttekintettem az árlistát', 'Allergiás vagyok, kérem a hipoallergén festéket', 'First time here, thank you']) assert.ok(!csereGyanu(nem), String(nem));
+  assert.ok(CSERE_GYANU instanceof RegExp && CSERE_GYANU.test('cserelnem') && !CSERE_GYANU.test('kave'));
   assert.deepEqual(megjegyzesIdopontok(MEGJ_99), { idok: [{ ora: 16, perc: null }], datumok: [] });
   assert.deepEqual(megjegyzesIdopontok('október 16-án 16:30-ról cserélem'), { idok: [{ ora: 16, perc: 30 }], datumok: [{ ev: null, ho: 10, nap: 16 }] });
   assert.deepEqual(megjegyzesIdopontok('a 2026.10.14. 11 órás').datumok, [{ ev: 2026, ho: 10, nap: 14 }]);
@@ -474,19 +477,19 @@ test('S0-25 vendeg-hash index: CSAK hash (nincs nyers adat), idempotens, 180 nap
     const elem = (i, o = {}) => ({ uuid: ujUuid(), host: 'mosaic-pmu.salonic.hu', szolgaltatas: 'Soft powder', idopont_szoveg: 'Október 16. (péntek) 16:00 - 17:00', level_datuma: iso(T0 - i * 86400_000), vendeg: { ...VENDEG }, nev: NEV, ...o });
     const elemek = [elem(1), elem(2), elem(3, { allapot: 'torolve' }), elem(4, { vendeg: { email: 'nem-email' } }), elem(5, { host: 'evil.example.com' })];
     const n0 = szamol(v, 'foglalas_vendeg');
-    const szaraz = await v.post({ muvelet: 'vendeg_index', elemek, szaraz: true });
+    const szaraz = await v.post({ muvelet: 'index_backfill', elemek, szaraz: true });
     assert.deepEqual([szaraz.allapot, szaraz.szaraz, szaraz.uj, szaraz.hibas.length, szaraz.kuldes], ['kesz', true, 3, 2, 0]);
     assert.equal(szamol(v, 'foglalas_vendeg'), n0, 'szaraz: nem ir');
-    const be = await v.post({ muvelet: 'vendeg_index', elemek });
+    const be = await v.post({ muvelet: 'index_backfill', elemek });
     assert.deepEqual([be.uj, be.meglevo, be.hibas.map((h) => h.i)], [3, 0, [3, 4]]);
     assert.equal(szamol(v, 'foglalas_vendeg'), n0 + 3);
     assert.equal(v.sql("SELECT allapot FROM foglalas_vendeg WHERE uuid = ?1", elemek[2].uuid)[0].allapot, 'torolve');
-    const ujra = await v.post({ muvelet: 'vendeg_index', elemek });
+    const ujra = await v.post({ muvelet: 'index_backfill', elemek });
     assert.deepEqual([ujra.uj, ujra.meglevo], [0, 3], 'idempotens');
     assert.equal(szamol(v, 'foglalas_vendeg'), n0 + 3);
     assert.equal(v.net.hivasok.length, 0); assert.equal(szamol(v, 'meres_kuldes'), 0, 'a backfill SEND-FREE');
-    assert.equal((await v.post({ muvelet: 'vendeg_index', elemek: [] })).allapot, 'ures');
-    assert.equal((await vilag({ sd: false }).post({ muvelet: 'vendeg_index', elemek })).allapot, 'ki');
+    assert.equal((await v.post({ muvelet: 'index_backfill', elemek: [] })).allapot, 'ures');
+    assert.equal((await vilag({ sd: false }).post({ muvelet: 'index_backfill', elemek })).allapot, 'ki');
   }
 });
 
@@ -573,13 +576,6 @@ test('S0-28 korai (< 20 perc), lejart (> 48 ora), fuggoben (varakozas) es motor-
     assert.equal((await v.sd({ ...b, level_datuma: undefined })).allapot, 'nincs_level_datuma');
     assert.equal((await v.sd({ ...b, host: 'evil.example.com' })).allapot, 'nincs_uzletag');
     assert.equal((await v.sd({ ...b, uuid: 'nem-uuid' })).allapot, 'ervenytelen');
-    { // hianyzo megjegyzes-mezo (elfelejtett Zap-lekepezes): nincs atvetel, nincs kuldes; az ures szoveg rendben van
-      const { megjegyzes, ...nelkule } = b;
-      const r = await v.sd(nelkule);
-      assert.deepEqual([r.allapot, r.kuldes], ['hianyzo_mezo', 0]); assert.equal(v.net.hivasok.length, 0);
-      assert.equal(v.sql('SELECT sd_id FROM foglalas_egyeztetes WHERE uuid = ?1', b.uuid)[0].sd_id, null);
-      assert.equal((await v.sd({ ...b, megjegyzes: '' })).allapot, 'kesz');
-    }
   }
 });
 
@@ -695,4 +691,145 @@ test('S0-33 wrangler.toml: a MERES_SALONIC_DIRECT kapu CSAK az elonezeti valtozo
   assert.match(elonezet, /^MERES_SALONIC_DIRECT = "1"/m); assert.match(elonezet, /^MERES_SD_NS = "smoke"/m);
   assert.ok(!/^(SD_HMAC_KEY_V1|GUEST_HMAC_KEY_V1)\s*=/m.test(toml), 'a titkok nem kerulhetnek a wrangler.toml-ba');
   assert.ok(!/(SD_HMAC_KEY_V1|GUEST_HMAC_KEY_V1)\s*[:=]\s*['"][^'"]{8,}['"]/.test(fs.readFileSync(new URL('../netlify/lib/meres/salonic-direct.js', import.meta.url), 'utf8')), 'a modulban nincs titok'); // a tesztek csak hamis, ket tesztkulcsot hasznalnak
+});
+
+test('S0-34 Megjegyzes (DECISION #132): letezo, de ures = normalis; HIANYZO payload-kulcs = hianyzo_mezo HOLD + riasztas; a kulcs megerkezese automatikusan potol; a csere-gyanu CSAK a Megjegyzes mezon fut', async () => {
+  { // letezo, de ures megjegyzes: normal ut
+    const { v, b } = await jelolt({}, { uj_vendeg: true, megjegyzes: '' });
+    const r = await v.sd(b); assert.deepEqual([r.allapot, r.csere], ['kesz', null]); assert.equal(v.net.hivasok.length, 4);
+  }
+  { // hianyzo kulcs: HOLD (cellak halasztva) + riasztas, 0 kuldes; ismetlesre is; a kulcs megerkezese (akar uresen) potol
+    const { v, u, b } = await jelolt({}, { uj_vendeg: true });
+    const { megjegyzes, ...nelkule } = b;
+    const szaraz = await v.sd({ ...nelkule, szaraz: true });
+    assert.deepEqual([szaraz.allapot, szaraz.terv.mod, szaraz.terv.csere.allapot], ['szaraz_terv', 'suspected', 'hianyzo_mezo']); assert.equal(v.sql('SELECT sd_id FROM foglalas_egyeztetes WHERE uuid = ?1', u)[0].sd_id, null);
+    const r = await v.sd(nelkule);
+    assert.deepEqual([r.allapot, r.csere.allapot, r.riasztas], ['halasztva', 'hianyzo_mezo', true]);
+    assert.equal(v.net.hivasok.length, 0); assert.ok(cellak(v).length === 8 && cellak(v).every((c) => c.allapot === 'halasztva' && /^hianyzo_mezo: HOLD/.test(c.indok)));
+    assert.deepEqual((await riasztasok(v, u)).map((x) => x.tipus), ['hianyzo_mezo']);
+    assert.equal((await v.sd(nelkule)).idempotens, true); assert.equal(v.net.hivasok.length, 0, 'tovabbra is hianyzo: marad a HOLD');
+    const potol = await v.sd({ ...b, megjegyzes: '' }); // a Zap javitva: a kulcs megjott (uresen)
+    assert.deepEqual([potol.allapot, potol.ujrafuttatva], ['kesz', true]); assert.equal(v.net.hivasok.length, 4);
+    assert.equal(v.sql('SELECT allapot FROM foglalas_reschedule WHERE uuid = ?1', u)[0].allapot, 'hianyzo_mezo_potolva'); assert.deepEqual(await riasztasok(v, u), []);
+  }
+  { // potlas csere-gyanus megjegyzessel: az utolagos ertekeles confirmed -> 0 kuldes
+    const { v, b } = await csereVilag();
+    const { megjegyzes, ...nelkule } = b;
+    assert.equal((await v.sd(nelkule)).allapot, 'halasztva'); assert.equal(v.net.hivasok.length, 0);
+    const r = await v.sd(b);
+    assert.deepEqual([r.allapot, r.csere.allapot], ['reschedule_confirmed', 'confirmed']); assert.equal(v.net.hivasok.length, 0);
+  }
+  { // ember is feloldhatja
+    const { v, b } = await jelolt({}, { uj_vendeg: false });
+    const { megjegyzes, ...nelkule } = b;
+    await v.sd(nelkule);
+    assert.equal((await v.post({ ...nelkule, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'emberi: nincs megjegyzes' })).allapot, 'feloldva_uj'); assert.equal(v.net.hivasok.length, 2);
+  }
+  { // a csere-gyanu regex CSAK a Megjegyzes mezon fut: a szolgaltatasnev "helyett"-je (ar-akcio) nem csere-gyanu
+    const szolg = 'Soft powder (12 000 Ft helyett most 9 900 Ft)';
+    assert.ok(csereGyanu(szolg), 'a regex onmagaban illeszkedne a "helyett"-re - ezert nem a szolgaltatasneven fut');
+    const { v, b } = await jelolt({}, { uj_vendeg: false, szolgaltatas: szolg, megjegyzes: '' });
+    const r = await v.sd(b); assert.deepEqual([r.allapot, r.csere], ['kesz', null]); assert.deepEqual(hivasNev(v), ['meta:PMU_Visszajaro', 'tiktok:PMU_Visszajaro']);
+  }
+});
+
+test('S0-35 index_backfill (kuldesmentes HMAC-index) es event_backfill (TILOS) kulon: az event_backfill 403, kapuk nelkul is, nem ir, nem kuld; az sd regi (> 48 ora) foglalasra sem kuld', async () => {
+  const { kezelEgyeztetes } = await import('../netlify/lib/foglalas-kulcs.js');
+  for (const sd of [true, false]) {
+    const v = vilag({ sd }); await v.kesz;
+    const res = await kezelEgyeztetes(v.ker({ muvelet: 'event_backfill', elemek: [level(ujUuid(), {})] }), v.e, v.deps());
+    const j = await res.json();
+    assert.deepEqual([res.status, j.ok, j.allapot], [403, false, 'tilos']); assert.match(j.miert, /event_backfill tilos/);
+    assert.ok(!tablaVan(v, 'meres_kuldes') || szamol(v, 'meres_kuldes') === 0); assert.equal(v.net.hivasok.length, 0);
+  }
+  { // az index_backfill nem kuld, es a regi neve (vendeg_index) mar nem muvelet
+    const v = vilag(); await v.kesz;
+    const r = await v.post({ muvelet: 'index_backfill', elemek: [{ uuid: ujUuid(), host: 'mosaic-pmu.salonic.hu', szolgaltatas: 'Soft powder', idopont_szoveg: 'Október 16. (péntek) 16:00 - 17:00', level_datuma: iso(T0 - 86400_000), vendeg: { ...VENDEG }, nev: NEV }] });
+    assert.deepEqual([r.allapot, r.uj, r.kuldes], ['kesz', 1, 0]); assert.equal(v.net.hivasok.length, 0);
+    const regi = await v.post({ muvelet: 'vendeg_index', elemek: [] }); assert.notEqual(regi.allapot, 'kesz');
+  }
+  { // 48 oranal regebbi foglalasra az sd nem kuld (nincs esemeny-utolag-kuldes)
+    const { v, b } = await jelolt({}, { uj_vendeg: true });
+    v.t.set(T0 + 72 * 3600_000);
+    assert.equal((await v.sd(b)).allapot, 'lejart'); assert.equal(v.net.hivasok.length, 0);
+  }
+});
+
+test('S0-36 hair / oxygen / laser (fodrasz / oxigen / szor) uzletag: a lista-ar a HOST placeId-jabol talalhato (nem a mas nevsemaju BUSINESSES-kulcsbol), es a regi foglalas elo ujraellenorzese is mukodik', async () => {
+  const esetek = [['mosaic-hair.salonic.hu', 'fodrasz', 'Mosaic Hair', 'Tőfestés + Szárítás - Hosszú haj', 'Teszt Mester'], ['mosaic-oxigen.salonic.hu', 'oxigen', 'Mosaic Oxigén', 'Haj Oxigénterápia - 1. alkalom', 'Teszt Mester'], ['mosaic-elysion.salonic.hu', 'szor', 'Mosaic Elysion', 'Lézeres szőrtelenítés - Hónalj', 'Teszt Mester']];
+  for (const [host, uzletag, felado, szolg, munka] of esetek) {
+    const hely = HOSTOK[host];
+    { // lista-ar -> exact; Meta ertek
+      const { v, b } = await jelolt({}, { host, felado, szolgaltatas: szolg, munkatarsak: [munka], uj_vendeg: false });
+      await nevtablaMent(v.db, { helyek: [{ placeId: hely.placeId, nev: felado }], munkatarsak: [], szolgaltatasok: [{ placeId: hely.placeId, serviceId: '77', nev: szolg }], arak: [{ placeId: hely.placeId, serviceId: '77', ar: 18900 }] }, T0);
+      const r = await v.sd(b);
+      assert.deepEqual([r.uzletag, r.ertek_minoseg, r.ertek_forras], [uzletag, 'exact', 'szolgaltatas_lista'], host);
+      assert.ok(v.net.hivasok.filter((h) => h.kulcs === 'meta').every((h) => h.body.data[0].custom_data.value === 18900), host);
+    }
+    { // csere: a regi foglalas elo allapota (host-alapu ujraellenorzes) - az old_booking_still_active megszunik, ha a regi torolve lett
+      const v = vilag(); await v.kesz;
+      const regi = await regiFoglalas(v, { mod: { host, felado, szolgaltatas: szolg } });
+      const u = ujUuid(); const b = level(u, { host, felado, szolgaltatas: szolg, megjegyzes: MEGJ_99 }); await lezar(v, b); v.t.set(SD_ELOTT);
+      const r = await v.sd(b);
+      assert.deepEqual([r.allapot, r.csere.old_booking_still_active], ['reschedule_confirmed', true], host);
+      assert.deepEqual((await riasztasok(v, u)).map((x) => x.tipus), ['old_booking_still_active'], host);
+      v.net.allapot.set(regi, 'torolve');
+      assert.deepEqual(await riasztasok(v, u), [], host + ': a regi torlese utan az elo ujraellenorzes megszunteti a riasztast');
+      assert.equal(v.sql('SELECT regi_aktiv FROM foglalas_reschedule WHERE uuid = ?1', u)[0].regi_aktiv, 0);
+    }
+  }
+});
+
+test('S0-37 sd_feloldas uj_konverzio, de az elo allapot nem ellenorizheto: "tartva" + riasztas (nem veglegesitett, nem marad csendben), kesobb ujrafuttathato', async () => {
+  const { v, u, b } = await csereVilag({ nincsRegi: true });
+  assert.equal((await v.sd(b)).allapot, 'halasztva');
+  v.net.allapot.set(u, 'hiba');
+  const r = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'emberi: uj vendeg' });
+  assert.deepEqual([r.allapot, r.sd_allapot, r.riasztas, r.esemeny_kuldes.allapot], ['tartva', 'tartva', true, 'halasztva']); assert.equal(v.net.hivasok.length, 0);
+  assert.deepEqual((await riasztasok(v, u)).map((x) => x.tipus), ['elo_allapot_nem_ellenorizheto']);
+  v.net.allapot.delete(u);
+  const r2 = await v.sd(b);
+  assert.deepEqual([r2.allapot, r2.ujrafuttatva], ['kesz', true]); assert.deepEqual(hivasNev(v), ['meta:PMU_Visszajaro', 'tiktok:PMU_Visszajaro']); assert.deepEqual(await riasztasok(v, u), []);
+});
+
+test('S0-38 a vegso parositas atmeneti hibaja (a motor TALALT jeloltet, de a kulcs birtokosanak elo allapota nem ellenorizheto): a motoros identity nyer, az sd NEM vesz at (varakozas); kesobb a motor kuld', async () => {
+  const v = vilag(); await v.kesz;
+  const UJ = '3f10fabc-4f7d-9257-2088-cfe7b5b24a2f', BID2 = 'mb_0aaaaaaaaaaaaaaaaaaaaaab';
+  const level2 = (uuid, o = {}) => level(uuid, { host: 'mosaic-hair.salonic.hu', felado: 'Mosaic Hair', szolgaltatas: 'Fodrász konzultáció', uj_vendeg: true, munkatarsak: ['Teszt'], ...o });
+  // A foglalas (FIX_UUID, BID) parosul es kimegy; majd lemondjak, a slotot ujra kiadjak: B foglalas (UJ, BID2) UGYANAZZAL a kulccsal
+  await kulcsIras(v.db, { bookingId: BID, bookingUrl: HAIR_URL }, v.t());
+  const a = await v.post(level2(FIX_UUID)); assert.deepEqual([a.allapot, a.kuldheto], ['parositott', true]);
+  await kulcsIras(v.db, { bookingId: BID2, bookingUrl: HAIR_URL.replace(BID, BID2) }, v.t()); // utkozes: a birtokos tovabbra is A
+  const b = level2(UJ);
+  v.net.allapot.set(FIX_UUID, 'hiba'); // A elo allapota nem ellenorizheto -> a B parositasa "varakozas", 4 proba utan parositatlan
+  const probak = await lezar(v, b);
+  assert.equal(probak[3].allapot, 'parositatlan'); v.t.set(SD_ELOTT);
+  const n = v.net.hivasok.length;
+  const r = await v.sd(b);
+  assert.deepEqual([r.allapot, r.kuldes], ['varakozas', 0]); assert.match(r.miert, /motoros identity nyer/);
+  assert.equal(v.sql('SELECT sd_id FROM foglalas_egyeztetes WHERE uuid = ?1', UJ)[0].sd_id, null, 'az sd nem vette at'); assert.equal(v.net.hivasok.length, n);
+  assert.deepEqual((await riasztasok(v, UJ)).map((x) => x.tipus), ['sd_hianyzik'], 'a parositatlan sor lathato riasztas marad');
+  v.net.allapot.set(FIX_UUID, 'torolve'); v.t.tick(700); // A lemondva: a kulcs felszabadul, B megkapja
+  const r2 = await v.sd(b);
+  assert.deepEqual([r2.allapot, r2.booking_id], ['motor_nyert', BID2]); assert.ok(v.net.hivasok.length > n);
+  assert.ok(v.sql("SELECT esemeny_id FROM meres_kuldes WHERE source_id = ?1", BID2).every((x) => x.esemeny_id.endsWith(':' + BID2)));
+  assert.equal(v.sql("SELECT COUNT(*) AS n FROM meres_kuldes WHERE source_id LIKE 'sd\\_%' ESCAPE '\\'")[0].n, 0, 'nem keletkezett sd identitas');
+});
+
+test('S0-39 a motor mar kuldott, de egy cella halasztva maradt (elo allapot nem ellenorizheto): az sd_atvetel idempotensen potolja a MOTOROS identitassal, es riasztja, ha meg mindig nem megy', async () => {
+  const v = vilag(); await v.kesz;
+  await kulcsIras(v.db, { bookingId: BID, bookingUrl: HAIR_URL }, v.t());
+  const b = level(FIX_UUID, { host: 'mosaic-hair.salonic.hu', felado: 'Mosaic Hair', szolgaltatas: 'Fodrász konzultáció', uj_vendeg: true, munkatarsak: ['Teszt'] });
+  v.net.allapot.set(FIX_UUID, ['aktiv', 'hiba']); // a parositas 1. lekeresere aktiv, a kuldes elotti elo ellenorzesre hiba -> a cellak halasztva
+  const p = await v.post(b);
+  assert.deepEqual([p.allapot, p.esemeny_kuldes.allapot], ['parositott', 'halasztva']); assert.equal(v.net.hivasok.length, 0);
+  v.t.set(SD_ELOTT);
+  v.net.allapot.set(FIX_UUID, 'hiba');
+  const r1 = await v.sd(b);
+  assert.deepEqual([r1.allapot, r1.riasztas, r1.esemeny_kuldes.allapot], ['motor_kuldte', true, 'halasztva']); assert.equal(v.net.hivasok.length, 0);
+  v.net.allapot.delete(FIX_UUID);
+  const r2 = await v.sd(b);
+  assert.deepEqual([r2.allapot, r2.esemeny_kuldes.allapot], ['motor_kuldte', 'kesz']); assert.ok(v.net.hivasok.length >= 4);
+  assert.ok(v.sql('SELECT esemeny_id FROM meres_kuldes').every((x) => x.esemeny_id.endsWith(':' + BID)));
+  const n = v.net.hivasok.length; assert.equal((await v.sd(b)).allapot, 'motor_kuldte'); assert.equal(v.net.hivasok.length, n, 'ujabb hivas: 0 extra kuldes');
 });

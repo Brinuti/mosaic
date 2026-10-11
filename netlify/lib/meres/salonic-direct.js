@@ -17,7 +17,6 @@ import { SALONIC_UZLETAG, foglalasJelleg, esemenyek, konzultacioTabla } from './
 import { emailNormal, telefonSzamjegy } from './hash.js';
 import { elosztas, meresSema, kapcsolokOlvas } from './elosztas.js';
 import { jellegRogzit } from './jelleg-rogzites.js';
-import { BUSINESSES } from '../../../assets/js/booking-engine/salonic-adapter.js';
 import { UUID_MINTA, HOSTOK, MEGORZES_NAP, foglalasAllapot, idopontSzovegElemzes, evKovetkeztet, isoUnix, nevtablaBetolt, norm, sema as parositasSema } from '../foglalas-kulcs.js';
 
 export const SD_MIN_KOR_MP = 20 * 60;          // legalabb ennyi ido a letrehozo level erkezese utan (a motoros 4 proba ~14-15 perc alatt lezarul)
@@ -66,7 +65,7 @@ export function szolgKanon(s) {
 
 // --- megjegyzes (CSAK a Salonic "Megjegyzes" mezoje; a vendeg szabad szovege) -----------------------------------------------------------
 /** Csere- / athelyezes-gyanu a megjegyzesben (ekezet-fuggetlen). A gyanu nem dont: csak a csere-agat nyitja meg (igazolas vagy HOLD). */
-export const CSERE_GYANU = /\b(\w*cser\w*|athelyez\w*|atfoglal\w*|atutemez\w*|atrak\w*|atteszem|atvinn\w*|modosit\w*|elhalaszt\w*|elorebb\w*|hatrebb\w*|korabbi\s+(?:foglalas|idopont)\w*|regi\s+(?:foglalas|idopont)\w*|elozo\s+(?:foglalas|idopont)\w*|helyett|lemond\w*)/;
+export const CSERE_GYANU = /\b(\w*cser\w*|athelyez\w*|atfoglal\w*|atutemez\w*|atrak\w*|atir\w*|atvinn\w*|atte(?:sz|tt|nn|hete|het|ni)\w*|modosit\w*|(?:meg)?valtoztat\w*|elhalaszt\w*|eltol\w*|elorebb\w*|hatrebb\w*|(?:korabbi|regi|elozo|eredeti)\s+(?:foglalas|idopont|ido)\w*|(?:uj|masik)\s+idopont\w*|helyett|lemond\w*|reschedul\w*|instead|moved?|swap\w*|chang\w*|(?:earlier|previous|original|old)\s+(?:booking|appointment|time))/;
 export const csereGyanu = (megjegyzes) => CSERE_GYANU.test(fold(megjegyzes));
 const HONAP = { jan: 1, feb: 2, mar: 3, apr: 4, maj: 5, jun: 6, jul: 7, aug: 8, sze: 9, okt: 10, nov: 11, dec: 12 };
 const DATUM_MINTAK = [
@@ -151,8 +150,8 @@ export async function vendegIndexIr({ db, env, mezok, bejovo = {}, now }) {
   if (r.uj) await db.prepare('DELETE FROM foglalas_vendeg WHERE lejar < ?1').bind(sec(t)).run(); // a 180 napnal regebbi sorok torlese: csak uj sor beszurasakor (egy levelre 4 proba van)
   return r;
 }
-/** Egyszeri backfill: {muvelet:'vendeg_index', elemek:[{uuid, host, szolgaltatas, idopont_szoveg, ld?, level_datuma, vendeg{email,telefon}, nev?, allapot?}] (max 50), szaraz?}. KULDES NINCS. */
-async function vendegIndexMuvelet({ db, env, bejovo, fuggosegek }) {
+/** INDEX-BACKFILL (kuldesmentes HMAC-index; az EVENT-BACKFILL - regi foglalasok esemenyeinek utolagos kuldese - TILOS, lasd foglalas-kulcs.js): {muvelet:'index_backfill', elemek:[{uuid, host, szolgaltatas, idopont_szoveg, ld?, level_datuma, vendeg{email,telefon}, nev?, allapot?}] (max 50), szaraz?}. KULDES NINCS. */
+async function indexBackfillMuvelet({ db, env, bejovo, fuggosegek }) {
   if (!sdIndexBe(env)) return { allapot: 'ki', miert: 'MERES_SALONIC_DIRECT / MERES_SD_INDEX nincs bekapcsolva' };
   const elemek = Array.isArray(bejovo.elemek) ? bejovo.elemek.slice(0, 50) : [];
   if (!elemek.length) return { allapot: 'ures', miert: 'elemek[] kell (max. 50)' };
@@ -174,17 +173,17 @@ async function vendegIndexMuvelet({ db, env, bejovo, fuggosegek }) {
  * KEDVEZMENY-gyanu (kupon a szolgaltatas nevben / "kedvezmeny" a munkatars cimkejeben) -> unknown_discount (a lista-ar nem tenyleges ar), (3) nincs ar -> unknown_price.
  * -> { ertek, minoseg: 'exact' | 'unknown_discount' | 'unknown_price', forras }. A konzultacio a rogzitett tabla-erteket kapja (exact).
  */
-export async function arFeloldas(db, { jelleg, uzletag, mezok, bejovo = {} }) {
+export async function arFeloldas(db, { jelleg, mezok, bejovo = {} }) {
   if (jelleg === 'konzultacio') return { ertek: 0, minoseg: 'exact', forras: 'konzultacio_tabla' };
   const zap = bejovo.ar === null || bejovo.ar === undefined || bejovo.ar === '' ? NaN : Number(bejovo.ar);
   if (Number.isFinite(zap) && zap >= 0) return { ertek: Math.round(zap), minoseg: 'exact', forras: 'zap_ar' };
   const kedvezmeny = (mezok.munkatarsak || []).some((m) => /kedvezm/i.test(String(m))) || /kupon/i.test(fold(mezok.szolgaltatas));
-  const business = BUSINESSES[uzletag];
+  const hely = HOSTOK[mezok.host]; // a placeId a HOST-bol (a SALONIC_UZLETAG meres-nevei - fodrasz / oxigen / szor - mas nevsemat hasznalnak, mint a BUSINESSES - hair / oxygen / laser)
   let lista = null;
-  if (business) {
+  if (hely) {
     const tabla = await nevtablaBetolt(db);
-    const sid = [...new Set(tabla.szolgaltatasok.filter((x) => x.placeId === business.placeId && norm(x.nev) === norm(mezok.szolgaltatas)).map((x) => x.serviceId))];
-    const arak = sid.length === 1 ? tabla.arak.filter((a) => a.placeId === business.placeId && a.serviceId === sid[0] && Number.isFinite(a.ar) && a.ar >= 0) : [];
+    const sid = [...new Set(tabla.szolgaltatasok.filter((x) => x.placeId === hely.placeId && norm(x.nev) === norm(mezok.szolgaltatas)).map((x) => x.serviceId))];
+    const arak = sid.length === 1 ? tabla.arak.filter((a) => a.placeId === hely.placeId && a.serviceId === sid[0] && Number.isFinite(a.ar) && a.ar >= 0) : [];
     if (arak.length === 1) lista = Math.round(arak[0].ar);
   }
   if (kedvezmeny) return { ertek: 0, minoseg: 'unknown_discount', forras: 'kedvezmeny_gyanu' + (lista !== null ? ' (lista-ar ismert, nem tenyleges)' : '') };
@@ -194,6 +193,9 @@ export async function arFeloldas(db, { jelleg, uzletag, mezok, bejovo = {} }) {
 
 // --- csere-dontes (#131) ----------------------------------------------------------------------------------------------------------------------
 async function csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes, t0, host, fetchImpl }) {
+  // DECISION #132: a Megjegyzes LETEZO, de ures mezoje normalis (nincs csere-gyanu); a HIANYZO payload-kulcs (elfelejtett Zap-lekepezes) hianyzo_mezo: HOLD + riasztas, mert a csere-felismeres vak lenne
+  if (typeof megjegyzes !== 'string') return { allapot: 'suspected', hianyzo: true, ok: 'hianyzo_mezo: a megjegyzes payload-kulcs hianyzik (a Zap 5. lepese kuldje; ures szoveg is lehet)' };
+  megjegyzes = megjegyzes.slice(0, 500);
   if (!csereGyanu(megjegyzes)) return { allapot: 'nincs_gyanu' };
   const em = megjegyzesIdopontok(megjegyzes);
   const alap = { gyanu: true, emlitett_idopont: { idok: em.idok.length, datumok: em.datumok.length } };
@@ -214,6 +216,7 @@ async function csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megj
   const regiAktiv = elo.allapot === 'aktiv' ? true : elo.allapot === 'torolve' ? false : null; // null = nem ellenorizheto (riasztas jar)
   return { ...alap, allapot: 'confirmed', jeloltek, regi_uuid: regi.uuid, reschedule_from: isoUtc(regi.kezdet), reschedule_to: isoUtc(kezdet), regi_aktiv: regiAktiv, regi_elo_allapot: elo.allapot };
 }
+const csereAllapotNev = (csere) => (csere && csere.hianyzo ? 'hianyzo_mezo' : csere.allapot);
 async function rescheduleIr(db, { uuid, sdId, allapot, d, t }) {
   await db.prepare('INSERT INTO foglalas_reschedule (uuid, sd_id, allapot, reschedule_from, reschedule_to, regi_uuid, regi_aktiv, ok, ido, frissitve) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?9) ON CONFLICT(uuid) DO UPDATE SET allapot = excluded.allapot, reschedule_from = excluded.reschedule_from, reschedule_to = excluded.reschedule_to, regi_uuid = excluded.regi_uuid, regi_aktiv = excluded.regi_aktiv, ok = excluded.ok, frissitve = excluded.frissitve')
     .bind(uuid, sdId, allapot, d.reschedule_from || null, d.reschedule_to || null, d.regi_uuid || null, d.regi_aktiv === true ? 1 : d.regi_aktiv === false ? 0 : null, String(d.ok || '').slice(0, 300) || null, t).run();
@@ -237,11 +240,11 @@ async function kuldesFuttat({ db, env, uuid, sdId, uzletag, mezok, bejovo, fuggo
   const ujVendeg = typeof bejovo.uj_vendeg === 'boolean' ? bejovo.uj_vendeg : null;
   const kapott = foglalasJelleg({ szolgaltatasNev: mezok.szolgaltatas || '', ujVendeg, kategoria: '' });
   const zar = szaraz ? { ...kapott, forras: 'szaraz' } : await jellegRogzit(db, sdId, kapott, most); // az elso kiertekeles jellege rogzul (mint a motornal, X1)
-  const ar = await arFeloldas(db, { jelleg: zar.jelleg, uzletag, mezok, bejovo });
+  const ar = await arFeloldas(db, { jelleg: zar.jelleg, mezok, bejovo });
   const fk = { tipus: 'foglalas', uzletag, source_entity_id: sdId, jelleg: zar.jelleg, kupon: zar.kupon, ertek: ar.ertek, ido: t0, szolgaltatas: mezok.szolgaltatas || null, vendeg: { email: v.email, telefon: v.telefon, g: null }, oldal: null, uuid,
     forras: 'salonic_direct', attr_minoseg: 'C_salonic_direct', attr_jelek: attrJelek(v), ertek_minoseg: ar.minoseg, ertek_forras_jel: ar.forras };
   if (mod === 'confirmed' || mod === 'feloldva_confirmed') fk.fixAllapot = { allapot: 'kihagyva', indok: `reschedule_confirmed${mod === 'feloldva_confirmed' ? ' (feloldva)' : ''}: nincs uj konverzio (korabbi foglalas: ${String((csere && csere.regi_uuid) || '?').slice(0, 8)})` };
-  else if (mod === 'suspected') fk.fixAllapot = { allapot: 'halasztva', indok: 'reschedule_suspected: HOLD, nincs automatikus kuldes (' + String((csere && csere.ok) || 'csere-gyanu').slice(0, 120) + ')' };
+  else if (mod === 'suspected') fk.fixAllapot = { allapot: 'halasztva', indok: (csere && csere.hianyzo ? 'hianyzo_mezo' : 'reschedule_suspected') + ': HOLD, nincs automatikus kuldes (' + String((csere && csere.ok) || 'csere-gyanu').slice(0, 120) + ')' };
   const eredmeny = { jelleg: zar.jelleg, kupon: zar.kupon, uj_vendeg: ujVendeg, ertek_minoseg: ar.minoseg, ertek_forras: ar.forras };
   if (szaraz) {
     const lista = esemenyek({ ...fk, ertek: ar.ertek }, konzultacioTabla(env));
@@ -256,10 +259,18 @@ const vegAllapot = (mod, csere, kuldes) => {
   if (mod === 'confirmed') return { sd_allapot: 'reschedule_confirmed', riasztas: !!(csere && csere.regi_aktiv !== false) };
   if (mod === 'suspected') return { sd_allapot: 'halasztva', riasztas: true };
   if (mod === 'feloldva_confirmed') return { sd_allapot: 'feloldva_confirmed', riasztas: false };
-  if (mod === 'feloldva_uj') return { sd_allapot: 'feloldva_uj', riasztas: false };
+  if (mod === 'feloldva_uj') return kuldes && kuldes.esemeny_kuldes && kuldes.esemeny_kuldes.allapot === 'halasztva' ? { sd_allapot: 'tartva', riasztas: true } : { sd_allapot: 'feloldva_uj', riasztas: false }; // az ember jovahagyta, de az elo allapot nem ellenorizheto: tartva + riasztas (ujrafuttathato), nem veglegesitett
   return kuldes && kuldes.esemeny_kuldes && kuldes.esemeny_kuldes.allapot === 'halasztva' ? { sd_allapot: 'tartva', riasztas: true } : { sd_allapot: 'kesz', riasztas: false };
 };
-const csereKimenet = (csere) => (csere && csere.allapot !== 'nincs_gyanu' ? { allapot: csere.allapot, ok: csere.ok || null, reschedule_from: csere.reschedule_from || null, reschedule_to: csere.reschedule_to || null, regi_uuid_elo8: csere.regi_uuid ? String(csere.regi_uuid).slice(0, 8) : null, old_booking_still_active: csere.allapot === 'confirmed' ? csere.regi_aktiv !== false : null, jeloltek: csere.jeloltek || null } : null);
+const csereKimenet = (csere) => (csere && csere.allapot !== 'nincs_gyanu' ? { allapot: csere.hianyzo ? 'hianyzo_mezo' : csere.allapot, ok: csere.ok || null, reschedule_from: csere.reschedule_from || null, reschedule_to: csere.reschedule_to || null, regi_uuid_elo8: csere.regi_uuid ? String(csere.regi_uuid).slice(0, 8) : null, old_booking_still_active: csere.allapot === 'confirmed' ? csere.regi_aktiv !== false : null, jeloltek: csere.jeloltek || null } : null);
+
+/** A motor mar kuldott (kuldve): az esemenykuldes idempotens ujrafuttatasa (a halasztott cellak potlasa; mar vegleges cellara nem kuld ujra) - igy a "halasztva" cella sem marad csendben, ha a motoros ujraproba mar nem jon. */
+async function motorPotlas({ db, env, mezok, bejovo, bookingId, fuggosegek, esemenyKuldo }) {
+  if (!esemenyKuldo || !bookingId) return null;
+  try { return await esemenyKuldo({ db, env, mezok, bejovo, eredmeny: { allapot: 'parositott', booking_id: bookingId }, fetchImpl: fuggosegek.fetchImpl, now: fuggosegek.now }); }
+  catch (e) { return { allapot: 'hiba', miert: String((e && e.message) || e).slice(0, 200) }; }
+}
+const motorKimenet = (ek) => (ek ? { esemeny_kuldes: ek, ...(ek.allapot === 'halasztva' || ek.allapot === 'hiba' ? { riasztas: true } : {}) } : {});
 
 /**
  * sd_atvetel / sd_feloldas. bejovo.szaraz === true: IRASMENTES terv (semmi nem valtozik a D1-ben, nem kuld, a motoros vegso probat sem futtatja).
@@ -281,8 +292,7 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
   if (!sdId) return { allapot: 'ki', miert: 'hianyzik az SD_HMAC_KEY_V1' };
   const level = Date.parse(mezok.leveldatum || '');
   if (!Number.isFinite(level)) return { allapot: 'nincs_level_datuma', miert: 'a level datuma (T0) kell' };
-  // a Megjegyzes mezo NELKUL a csere-felismeres vak (egy elfelejtett Zap-mezo csendben ketszer szamolna a cserelt foglalast): hianyzo mezo = nincs atvetel, nincs kuldes (az ures szoveg rendben van)
-  if (typeof bejovo.megjegyzes !== 'string') return { allapot: 'hianyzo_mezo', miert: 'megjegyzes (a Salonic Megjegyzes mezoje; ures szoveg is lehet) kell a csere-felismeresehez', kuldes: 0 };
+  const megjegyzesVan = typeof bejovo.megjegyzes === 'string'; // letezo, de ures = normalis; hianyzo kulcs = hianyzo_mezo HOLD (csereDontes)
   const t0 = Math.round(level / 1000), kor = t - t0;
   await parositasSema(db); await meresSema(db);
   const alap = { sd_id: sdId, uzletag, kor_mp: kor };
@@ -313,14 +323,21 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
       await allapotIr(db, uuid, veg.sd_allapot, t, veg.riasztas);
       return { ...alap, allapot: veg.sd_allapot, sd_allapot: veg.sd_allapot, feloldas: dontes, ...k, riasztas: veg.riasztas };
     }
-    if (['halasztva', 'reschedule_confirmed', 'lejart', 'feloldva_uj', 'feloldva_confirmed'].includes(allapot)) return { ...alap, allapot, sd_allapot: allapot, idempotens: true, csere: csereKimenet(csereRow), riasztas: sor.riasztas === 1, kuldes: 0 };
+    // hianyzo_mezo HOLD: ha a Zap mostantol kuldi a megjegyzes kulcsot (akar uresen is), a dontes automatikusan ujraertekelodik (ember nem kell)
+    const hianyzoPotlas = allapot === 'halasztva' && !!csereRow && csereRow.allapot === 'hianyzo_mezo' && megjegyzesVan && !feloldas;
+    if (!hianyzoPotlas && ['halasztva', 'reschedule_confirmed', 'lejart', 'feloldva_uj', 'feloldva_confirmed'].includes(allapot)) return { ...alap, allapot, sd_allapot: allapot, idempotens: true, csere: csereKimenet(csereRow), riasztas: sor.riasztas === 1, kuldes: 0 };
     if (szaraz) return { ...alap, allapot: 'szaraz_terv', sd_allapot: allapot, terv: { ujrafuttatas: 'az elosztas idempotens ujrahivasa' } };
     // 'atveve': egy masik hivas epp dolgozik rajta (SD_ATVETEL_ELAKADAS_MP-ig); utana (Worker-halal) ujra atveheto - a cellak idempotensek
     if (allapot === 'atveve' && t - (sor.sd_ido || 0) < SD_ATVETEL_ELAKADAS_MP) return { ...alap, allapot: 'atveve', idempotens: true, miert: 'egy masik hivas feldolgozza (elakadas utan ujra atveheto)', kuldes: 0 };
     // 'atveve' (megszakadt), 'kesz', 'tartva': a kuldesi lepes idempotens ujrafuttatasa (mar vegleges cellara nem kuld ujra; a halasztott cella potlodik)
     let mod = 'normal', csere = null;
-    if (csereRow && (csereRow.allapot === 'confirmed' || csereRow.allapot === 'suspected')) { mod = csereRow.allapot; csere = csereRow; }
-    else if (allapot === 'atveve') { csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: mezok.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl }); mod = csere.allapot === 'confirmed' ? 'confirmed' : csere.allapot === 'suspected' ? 'suspected' : 'normal'; if (mod !== 'normal') await rescheduleIr(db, { uuid, sdId, allapot: csere.allapot, d: csere, t }); }
+    if (!hianyzoPotlas && csereRow && (csereRow.allapot === 'confirmed' || csereRow.allapot === 'suspected' || csereRow.allapot === 'hianyzo_mezo')) { mod = csereRow.allapot === 'confirmed' ? 'confirmed' : 'suspected'; csere = csereRow.allapot === 'hianyzo_mezo' ? { ...csereRow, hianyzo: true } : csereRow; }
+    else if (allapot === 'atveve' || hianyzoPotlas) {
+      csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: bejovo.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl });
+      mod = csere.allapot === 'confirmed' ? 'confirmed' : csere.allapot === 'suspected' ? 'suspected' : 'normal';
+      if (mod !== 'normal') await rescheduleIr(db, { uuid, sdId, allapot: csereAllapotNev(csere), d: csere, t });
+      else if (hianyzoPotlas) await rescheduleIr(db, { uuid, sdId, allapot: 'hianyzo_mezo_potolva', d: { ok: 'a megjegyzes kulcs megerkezett: nincs csere-gyanu' }, t });
+    }
     const k = await kuldesFuttat({ ...futas, mod, csere });
     const veg = vegAllapot(mod, csere, k);
     await allapotIr(db, uuid, veg.sd_allapot, t, veg.riasztas);
@@ -329,7 +346,7 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
   if (feloldas) return { ...alap, allapot: 'feloldas_nem_lehetseges', miert: 'ehhez az UUID-hoz nincs sd-atvetel' };
 
   // --- a motor megelozte / nem dontheto el ---
-  if (sor && sor.kuldve) return { ...alap, allapot: 'motor_kuldte', booking_id: sor.booking_id, kuldes: 0 };
+  if (sor && sor.kuldve) return { ...alap, allapot: 'motor_kuldte', booking_id: sor.booking_id, kuldes: 0, ...motorKimenet(szaraz ? null : await motorPotlas({ db, env, mezok, bejovo, bookingId: sor.booking_id, fuggosegek, esemenyKuldo })) };
   if (sor && sor.allapot === 'ellentmondas') return { ...alap, allapot: 'motor_ellentmondas', miert: 'a motoros parositas ellentmondast jelzett: ember dont', riasztas: true, kuldes: 0 };
   if (kor < SD_MIN_KOR_MP) return { ...alap, allapot: 'koran', miert: `a letrehozo levelnek legalabb ${SD_MIN_KOR_MP / 60} perces kell`, ujra_mp: SD_MIN_KOR_MP - kor, kuldes: 0 };
   if (kor > SD_MAX_KOR_MP) {
@@ -340,7 +357,7 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
   if (sor && sor.allapot === 'fuggoben' && sor.kovetkezo && t < sor.kovetkezo + 300) return { ...alap, allapot: 'varakozas', miert: 'a motoros parositas meg nincs lezarva (fuggoben)', kuldes: 0 };
 
   if (szaraz) { // IRASMENTES terv: a vegso probat nem futtatjuk (az irna), a tobbi lepest kiszamoljuk
-    const csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: mezok.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl });
+    const csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: bejovo.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl });
     const mod = csere.allapot === 'confirmed' ? 'confirmed' : csere.allapot === 'suspected' ? 'suspected' : 'normal';
     const k = await kuldesFuttat({ ...futas, mod, csere });
     return { ...alap, allapot: 'szaraz_terv', terv: { motor_allapot: sor ? sor.allapot : 'nincs sor', vegso_proba: 'lenne (szarazon nem fut: irna)', atvetel: 'atomi UPSERT lenne', mod, csere: csereKimenet(csere), ...k }, kuldes: 0 };
@@ -352,11 +369,13 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
     if (v.allapot === 'parositott' && v.kuldheto) {
       let ek = null;
       if (esemenyKuldo && v.booking_id) { try { ek = await esemenyKuldo({ db, env, mezok, bejovo, eredmeny: v, fetchImpl: fuggosegek.fetchImpl, now: fuggosegek.now }); } catch (e) { ek = { allapot: 'hiba', miert: String((e && e.message) || e).slice(0, 200) }; } }
-      return { ...alap, allapot: 'motor_nyert', late_pairing: true, miert: 'a vegso parositas sikerult: a motoros identity kuldi az esemenyt', booking_id: v.booking_id, esemeny_kuldes: ek };
+      return { ...alap, allapot: 'motor_nyert', late_pairing: true, miert: 'a vegso parositas sikerult: a motoros identity kuldi az esemenyt', booking_id: v.booking_id, ...motorKimenet(ek) };
     }
-    if (v.allapot === 'parositott') return { ...alap, allapot: 'motor_kuldte', booking_id: v.booking_id, kuldes: 0 };
+    if (v.allapot === 'parositott') return { ...alap, allapot: 'motor_kuldte', booking_id: v.booking_id, kuldes: 0, ...motorKimenet(await motorPotlas({ db, env, mezok, bejovo, bookingId: v.booking_id, fuggosegek, esemenyKuldo })) };
     if (v.allapot === 'ellentmondas') return { ...alap, allapot: 'motor_ellentmondas', miert: v.miert || 'ellentmondas', riasztas: true, kuldes: 0 };
     if (v.allapot === 'ervenytelen') return { ...alap, allapot: 'ervenytelen', miert: v.miert };
+    // a motor TALALT jeloltet, de atmenetileg nem tudott dolgozni (a jelolt / a kulcs birtokosanak elo allapota nem ellenorizheto): a motoros identity nyer, NEM veszunk at (a parositatlan sor a lezaras utan sd_hianyzik riasztas, es ujra probalhato)
+    if ((v.allapot === 'fuggoben' || v.allapot === 'parositatlan') && v.nyom && ((v.nyom.talalatok || []).length || (v.nyom.valasztas || []).some((x) => x.allapot === 'varakozas'))) return { ...alap, allapot: 'varakozas', miert: 'a motoros parositas jeloltet talalt, de atmenetileg nem ellenorizheto: a motoros identity nyer, az atvetel kesobb ujraprobalhato', kuldes: 0 };
   }
 
   // --- ATOMI ATVETEL ---
@@ -364,15 +383,15 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
   if (!atvett) {
     sor = await olvas();
     if (sor && sor.sd_id === sdId) return { ...alap, allapot: sor.sd_allapot || 'atveve', idempotens: true, miert: 'egy masik hivas mar atvette', kuldes: 0 };
-    if (sor && sor.kuldve) return { ...alap, allapot: 'motor_kuldte', booking_id: sor.booking_id, kuldes: 0 };
+    if (sor && sor.kuldve) return { ...alap, allapot: 'motor_kuldte', booking_id: sor.booking_id, kuldes: 0, ...motorKimenet(await motorPotlas({ db, env, mezok, bejovo, bookingId: sor.booking_id, fuggosegek, esemenyKuldo })) };
     return { ...alap, allapot: 'nem_atveheto', miert: 'a sor allapota nem engedi az atvetelt: ' + (sor ? sor.allapot : '?'), kuldes: 0 };
   }
   try { await vendegIndexSor(db, env, { mezok, vendeg: bejovo.vendeg, nev: bejovo.nev, now: most, forras: 'sd_atvetel' }); } catch (e) { /* az index sosem akadalyozhatja a kuldest */ }
 
   // --- CSERE-DONTES ---
-  const csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: mezok.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl });
+  const csere = await csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megjegyzes: bejovo.megjegyzes, t0, host: mezok.host, fetchImpl: fuggosegek.fetchImpl });
   const mod = csere.allapot === 'confirmed' ? 'confirmed' : csere.allapot === 'suspected' ? 'suspected' : 'normal';
-  if (mod !== 'normal') await rescheduleIr(db, { uuid, sdId, allapot: csere.allapot, d: csere, t });
+  if (mod !== 'normal') await rescheduleIr(db, { uuid, sdId, allapot: csereAllapotNev(csere), d: csere, t });
   const k = await kuldesFuttat({ ...futas, mod, csere });
   const veg = vegAllapot(mod, csere, k);
   await allapotIr(db, uuid, veg.sd_allapot, t, veg.riasztas);
@@ -390,10 +409,10 @@ export async function sdRiasztasok(db, env, { fetchImpl, now } = {}) {
   const { results: sorok } = await db.prepare("SELECT e.uuid, e.sd_id, e.sd_allapot, e.sd_ido, e.frissitve, r.allapot AS csere_allapot, r.regi_uuid, r.regi_aktiv, r.reschedule_from, r.reschedule_to, r.ok AS csere_ok FROM foglalas_egyeztetes e LEFT JOIN foglalas_reschedule r ON r.uuid = e.uuid WHERE e.sd_id IS NOT NULL AND (e.sd_allapot IN ('halasztva', 'tartva', 'lejart', 'atveve') OR (e.sd_allapot = 'reschedule_confirmed' AND r.regi_aktiv IS NOT 0)) ORDER BY e.sd_ido DESC LIMIT 200").all();
   let ellenorzes = 0;
   for (const s of sorok || []) {
-    let tipus = s.sd_allapot === 'reschedule_confirmed' ? 'old_booking_still_active' : s.sd_allapot === 'halasztva' ? 'reschedule_suspected' : s.sd_allapot === 'tartva' ? 'elo_allapot_nem_ellenorizheto' : s.sd_allapot === 'lejart' ? 'lejart_48_ora' : 'atvetel_megszakadt';
+    let tipus = s.sd_allapot === 'reschedule_confirmed' ? 'old_booking_still_active' : s.sd_allapot === 'halasztva' ? (s.csere_allapot === 'hianyzo_mezo' ? 'hianyzo_mezo' : 'reschedule_suspected') : s.sd_allapot === 'tartva' ? 'elo_allapot_nem_ellenorizheto' : s.sd_allapot === 'lejart' ? 'lejart_48_ora' : 'atvetel_megszakadt';
     if (tipus === 'old_booking_still_active' && s.regi_uuid && fetchImpl && ellenorzes < 20) { // elo ujraellenorzes: a regi foglalas kozben torolve lett?
       const uz = await db.prepare('SELECT uzletag FROM foglalas_vendeg WHERE uuid = ?1').bind(s.regi_uuid).first();
-      const hostnev = uz ? Object.keys(HOSTOK).find((x) => HOSTOK[x].uzletag === uz.uzletag) : null;
+      const hostnev = uz ? Object.keys(SALONIC_UZLETAG).find((x) => SALONIC_UZLETAG[x] === uz.uzletag) : null; // a foglalas_vendeg.uzletag meres-nev (fodrasz / oxigen / szor), nem BUSINESSES-kulcs
       if (hostnev) {
         ellenorzes++;
         const elo = await foglalasAllapot({ host: hostnev, uuid: s.regi_uuid, fetchImpl });
@@ -412,7 +431,7 @@ export async function sdRiasztasok(db, env, { fetchImpl, now } = {}) {
 
 /** A foglalas-kulcs.js dispatchere (deps.sdKezelo). */
 export async function sdKezel(be) {
-  if (be.muvelet === 'vendeg_index') return vendegIndexMuvelet(be);
+  if (be.muvelet === 'index_backfill') return indexBackfillMuvelet(be);
   if (be.muvelet === 'sd_atvetel' || be.muvelet === 'sd_feloldas') {
     const bejovo = be.muvelet === 'sd_feloldas' ? { ...be.bejovo, feloldas: { dontes: be.bejovo.dontes, ok: be.bejovo.ok } } : be.bejovo;
     return sdAtvetel({ ...be, bejovo });
