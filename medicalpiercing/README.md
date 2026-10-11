@@ -260,7 +260,7 @@ semmi nem linkeli, a keresők nem indexelhetik (`noindex,nofollow` a lapban és 
 | build | `tools/uj-fooldal.mjs` (a `tools/build.mjs` hívja; leáll, ha a lapból hiányzik a `noindex`, van `canonical`, vagy hiányzó kép / betű van benne) |
 | képek | `assets/img/uj-*.webp`, gyártja: `python3 tools/uj-fooldal-kepek.py` (a meglévő `assets/img/` forrásokból; a videók indexképei és a logók is) |
 | betű | `assets/fonts/plus-jakarta-sans-*.woff2` (OFL, saját tárhelyről) |
-| teszt | `node tools/uj-fooldal-teszt.mjs` (build + `serve.mjs` után; `BASE=<cím>`-mel előnézeten / élesben is) |
+| teszt | `node tools/uj-fooldal-teszt.mjs` (build + `serve.mjs` után; `BASE=<cím>`-mel előnézeten / élesben is: ilyenkor a mérőkérések és a Salonic-hívások blokkolva vannak, `tools/meres-tiltas.mjs`) |
 
 Működés: a foglalási gombok (`/idopontfoglalas`, `/kontroll`) a foglalómotort nyitják, a mérés (süti-sáv, GTM, foglalásindítás) a `suti.js`-ben és a
 `mp-meres.js`-ben ugyanúgy fut, mint a többi lapon; az URL-paraméterek (fbclid, utm_*, gclid) megőrzése a `klon.js` 8. szakaszának mása
