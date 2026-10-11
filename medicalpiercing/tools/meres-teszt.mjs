@@ -93,7 +93,11 @@ for (const [i, s] of KOSZONO.entries()) {
   // a valasz kozvetlenul a helyi kiszolgalotol (nem a bongeszon at: annak a domain-atiranyitasa itt nem el)
   const v = await fetch(`http://127.0.0.1:${PORT}${ut}${PARAM}`, { redirect: 'manual' });
   ok(`${ut}: 200, atiranyitas nelkul`, v.status === 200, String(v.status));
-  ok(`${ut}: a cim es a parameterek valtozatlanok, nincs ujratoltes`, p.url() === CIM + ut + PARAM && navigaciok.length === 1, `${navigaciok.length} navigacio`);
+  // #257: a suti.js a cimkek betoltese elott kitisztitja a cimet (csak price + first_booking marad, history.replaceState = azonos
+  // dokumentumon beluli navigacio, NEM ujratoltes); a teljes ujratoltest tovabbra is tiltjuk
+  const tisztaQ = new URL(p.url()).searchParams;
+  const eredetiQ = new URLSearchParams(PARAM);
+  ok(`${ut}: a cim semleges (/foglalas-ok, csak price + first_booking + mert=1), nincs ujratoltes`, new URL(p.url()).pathname === '/foglalas-ok' && [...tisztaQ.keys()].sort().join(',') === [...['first_booking', 'price'].filter((k) => eredetiQ.has(k)), 'mert'].sort().join(',') && tisztaQ.get('mert') === '1' && tisztaQ.get('price') === eredetiQ.get('price') && navigaciok.length <= 2, `${navigaciok.length} navigacio, ${p.url().replace(CIM, '')}`);
   ok(`${ut}: Meta-pixel semmit nem tolt / kuld`, !db(betolt, /facebook/) && !db(ki, /facebook/) && !(await p.$('noscript img[src*="facebook"]')));
   ok(`${ut}: GTM fut`, db(betolt, /gtm\.js\?id=GTM-T9GR4JCK/) === 1, db(betolt, /gtm\.js\?id=GTM-T9GR4JCK/) + ` GTM-letoltes`);
   await ctx.close();

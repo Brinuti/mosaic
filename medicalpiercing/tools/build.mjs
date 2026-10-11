@@ -119,6 +119,23 @@ if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(
   console.log(`mp-meres: ${n} lapon`);
 }
 
+// #257: a koszonooldalak (foglalas-ok*, fulbevalo-ok*) lapcime semleges: a "foglalas-ok-klimax | Medical Piercing" tipusu cim
+// a GA4 / Google Ads / TikTok fele (oldalcim) egeszsegugyi jellegu szolgaltatasra utalna. A suti.js futas kozben is atirja.
+{
+  const SEMLEGES = 'Sikeres foglalás | Medical Piercing';
+  let n = 0;
+  for (const ki of ['_a', '_m']) for (const f of fs.readdirSync(path.join(DIST, ki)).filter((x) => /^(foglalas-ok|fulbevalo-ok)[a-z0-9-]*\.html$/.test(x))) {
+    const fajl = path.join(DIST, ki, f);
+    const html = fs.readFileSync(fajl, 'utf8');
+    const uj = html.replace(/<title>[^<]*<\/title>/, `<title>${SEMLEGES}</title>`)
+      .replace(/(<meta property="og:title" content=")[^"]*(")/g, `$1${SEMLEGES}$2`)
+      .replace(/(<meta name="twitter:title" content=")[^"]*(")/g, `$1${SEMLEGES}$2`)
+      .replace(/https:\/\/www\.medicalpiercing\.hu\/(foglalas-ok|fulbevalo-ok)[a-z0-9-]*/g, 'https://www.medicalpiercing.hu/$1');
+    if (uj !== html) { fs.writeFileSync(fajl, uj); n++; }
+  }
+  console.log(`koszonooldal-cim semleges: ${n} lapon`);
+}
+
 // kitelepulesek: a videki helyszinek idopontjai a tablazatbol. Ha a tablazat nem erheto el, a
 // mentett idopontok maradnak (futas kozben a lapok az /api/kitelepulesek-bol ugyis frissulnek).
 {
