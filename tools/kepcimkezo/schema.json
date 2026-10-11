@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["i", "uzletag", "tema", "felirat", "szoveg", "nyersitheto", "arc", "minoseg", "leiras"],
+        "properties": {
+          "i": { "type": "integer" },
+          "uzletag": {
+            "type": "string",
+            "enum": ["headspa", "szortelenites", "oxigenterapia", "fodraszat", "sminktetovalas_pmu", "piercing", "altalanos_szalon", "nem_eldontheto"]
+          },
+          "tema": {
+            "type": "string",
+            "enum": ["terem_enterior", "kezeles_kozben", "eredmeny_kozeli", "elotte_utana", "kollega_portre", "vendeg_portre", "csoportkep", "termek_eszkoz", "ekszer_kozeli", "ajandekkartya_nyomtatvany", "kesz_kreativ_grafika", "kitelepules_helyszin", "kepernyokep_dokumentum", "egyeb"]
+          },
+          "felirat": { "type": "string", "enum": ["nincs", "kevés", "sok"] },
+          "szoveg": { "type": "string" },
+          "nyersitheto": { "type": "string", "enum": ["mar_nyers", "kivaghato_vagy_takarhato", "nem"] },
+          "arc": { "type": "string", "enum": ["nincs", "felismerheto", "reszleges"] },
+          "minoseg": { "type": "integer", "enum": [1, 2, 3] },
+          "leiras": { "type": "string" }
+        }
+      }
+    }
+  }
+}
