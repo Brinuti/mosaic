@@ -270,11 +270,14 @@ function sor(n, c, kartya) {
   return `<div class="oszlopok o-${Math.min(k.length, 6)}${kartyas ? ' kartyas' : ''}">${k.map((x) => `<div class="oszlop${kozepes(x) ? ' kozepes' : ''}">${csomopont(x, c)}</div>`).join('')}</div>`;
 }
 
+// a racs oszlopszama: a kartyak szama szerint egyenletes sorok (5 -> 5, 6 -> 3 x 2, 8 -> 4 x 2, 10 -> 5 x 2 ...)
+const oszlopSzam = (k) => `racs-c${k <= 5 ? Math.max(k, 1) : k % 5 === 0 ? 5 : k % 4 === 0 ? 4 : k % 3 === 0 ? 3 : 4}`;
+
 function csomopont(n, c, kartya = false) {
   switch (n.t) {
     case 'verem': return `<div class="verem${kozepes(n) ? ' kozepes' : ''}">${n.k.map((x) => csomopont(x, c)).join('')}</div>`;
     case 'sor': return sor(n, c, kartya);
-    case 'racs': return `<div class="racs racs-${Math.min(n.k.length, 5)}${n.k[0] && n.k[0].t === 'sor' ? ' racs-sor' : ''}">${n.k.map((x) => `<div class="kt${x.t === 'sor' ? ' kt-sor' : ''}${kozepes(x) ? ' kozepes' : ''}">${csomopont(x, c, true)}</div>`).join('')}</div>`;
+    case 'racs': return `<div class="racs ${oszlopSzam(n.k.length)}${n.k[0] && n.k[0].t === 'sor' ? ' racs-sor' : ''}">${n.k.map((x) => `<div class="kt${x.t === 'sor' ? ' kt-sor' : ''}${kozepes(x) ? ' kozepes' : ''}">${csomopont(x, c, true)}</div>`).join('')}</div>`;
     default: return level(n, c);
   }
 }

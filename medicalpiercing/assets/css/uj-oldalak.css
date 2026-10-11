@@ -66,9 +66,19 @@ ol.lista li{padding-left:24px}
 .oszlopok.kartyas>.oszlop{display:flex;flex-direction:column}
 .oszlopok.kartyas>.oszlop>.verem{flex:1}
 .racs{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));align-items:stretch}
-.racs-sor{grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr))}
-.racs-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.racs-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.racs-c1{grid-template-columns:minmax(0,1fr)}
+.racs-c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.racs-c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.racs-c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.racs-c5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.racs-c5 .kt,.racs-c4 .kt{padding:11px}
+.racs-sor{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.racs-sor .kt-sor{padding:8px}
+.racs-sor .kt-sor .ksz{gap:8px;grid-template-columns:minmax(0,32%) minmax(0,1fr)!important}
+.racs-sor .kt-sor .cim{font-size:.8rem;line-height:1.25;margin-bottom:3px}
+.racs-sor .kt-sor p{font-size:.72rem;line-height:1.35;margin-bottom:3px}
+.racs-sor .kt-sor .gomb{padding:.45em .9em;font-size:.74rem}
+.racs-sor .kt-sor .gb{margin:3px 0 0}
 .kt{display:flex;flex-direction:column;min-width:0;padding:14px}
 .kt>.verem{flex:1}
 .kt .kep:not(.kep-ikon){width:100%;aspect-ratio:4/3;object-fit:cover;margin-bottom:8px}
@@ -224,7 +234,7 @@ ol.lista li{padding-left:24px}
 /* ----- tablet / telefon ----- */
 @media (max-width:1000px){
   .oszlopok.o-4,.oszlopok.o-5,.oszlopok.o-6{--n:2}
-  .racs-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .racs-c3,.racs-c4,.racs-c5,.racs-sor{grid-template-columns:repeat(2,minmax(0,1fr))}
   .poszt-racs,.poszt-racs-3{grid-template-columns:repeat(2,minmax(0,1fr))}
   .kar-dia{flex-basis:calc((100% - 24px) / 3)}
 }
@@ -250,7 +260,16 @@ ol.lista li{padding-left:24px}
   .kar-dia{flex-basis:calc((100% - 12px) / 2)}
   .kar-gomb{width:34px;height:34px}
   .urlap-racs{grid-template-columns:1fr}
-  .racs-2,.racs-3{grid-template-columns:1fr}
+  .racs-c2,.racs-c3,.racs-c4,.racs-c5{grid-template-columns:1fr}
+  /* helyszin-csempek mobilon: ket oszlop, a kep keskeny sav a cim folott (a varos neve a kepen is olvashato) */
+  .racs-sor{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .racs-sor .kt-sor{padding:7px}
+  .racs-sor .kt-sor .ksz{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"kep" "szoveg"!important;gap:5px}
+  .racs-sor .kt-sor .ksz-kep .kep{height:38px;aspect-ratio:auto;width:100%;object-fit:cover;border-radius:8px}
+  .racs-sor .kt-sor .ksz-szoveg{text-align:center}
+  .racs-sor .kt-sor .cim{font-size:.76rem}
+  .racs-sor .kt-sor p{font-size:.68rem;margin-bottom:2px}
+  .racs-sor .kt-sor .gomb{width:100%;padding:.4em .5em;font-size:.7rem}
   .idx-lista{grid-template-columns:1fr}
   .idx-ut{display:none}
   .poszt-kereso{flex-direction:column;align-items:stretch;gap:6px}
