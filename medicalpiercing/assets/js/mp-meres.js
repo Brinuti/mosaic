@@ -28,10 +28,12 @@
     var v = q.get(t);
     if (v && /^[A-Za-z0-9_-]{8,512}$/.test(v)) friss[t] = { ertek: v, ido: most() };
   });
+  // a koszonooldal cimeben a motor altal atvitt azonosito csak potlas: hozzajarulassal mar tarolt, ervenyes erteket nem ir felul
+  var koszono = /^\/foglalas-ok[a-z0-9-]*\/?$/i.test(location.pathname);
   var mentes = function () {
     if (!hirdetesiHozzajarulas()) return;
     var o = olvas();
-    for (var t in friss) o[t] = friss[t];
+    for (var t in friss) if (!(koszono && o[t] && most() - o[t].ido <= NAP90)) o[t] = friss[t];
     for (var k in o) if (!o[k] || most() - o[k].ido > NAP90) delete o[k];
     ir(o);
   };
@@ -48,8 +50,13 @@
     if (v != null && v !== '') p[k] = v;
   });
   if (!p.bookingUrl && !(p.placeId && p.employeeId && p.startDate)) return; // nem foglalasbol erkezett
-  var kuld = function () {
-    var torzs = { ut: location.pathname, p: p, kattintas: hirdetesiHozzajarulas() ? olvas() : null };
+  var katNelkulKuldve = false, potolva = false;
+  var vanKatt = function (o) { return !!(o && (o.gclid || o.gbraid || o.wbraid)); };
+  var kuld = function (potlas) {
+    var kat = hirdetesiHozzajarulas() ? olvas() : null;
+    if (!potlas && !vanKatt(kat)) katNelkulKuldve = true;
+    var torzs = { ut: location.pathname, p: p, kattintas: kat };
+    if (potlas) torzs.potlas = true;
     try {
       fetch('/api/mp-foglalas', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify(torzs) })
         .catch(function () { /* a vendeg folyamatat nem zavarja */ });
@@ -66,6 +73,15 @@
     setTimeout(function () { if (document.documentElement.getAttribute('data-mp-motor-atvette') !== '1') egyszer(); }, 1700);
     return;
   }
+  // Kesoi (4 mp utani) hozzajarulas: a foglalas mar kattintasazonosito nelkul ment el. Ha most van hirdetesi hozzajarulas ES
+  // tarolt azonosito, EGYSZER potlo kerest kuldunk; a szerver csak a meg azonosito nelkuli, friss, ugyanezen foglalasi
+  // kulcsu (es motorosnal ugyanazon booking_id-ju) sort egesziti ki, felulirni nem tud (lib/meres/lanc.js).
+  document.addEventListener('mp_suti_valtozas', function () {
+    setTimeout(function () {
+      if (!elkuldve || !katNelkulKuldve || potolva || !hirdetesiHozzajarulas() || !vanKatt(olvas())) return;
+      potolva = true; kuld(true);
+    }, 120);
+  });
   if (/(?:^|;\s*)mp_suti=v1-/.test(document.cookie) || !/medicalpiercing\.hu$/.test(h)) egyszer();
   else {
     document.addEventListener('mp_suti_valtozas', function () { setTimeout(egyszer, 50); });

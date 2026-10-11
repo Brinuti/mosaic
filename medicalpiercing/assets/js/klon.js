@@ -551,27 +551,48 @@
   // parameter nelkul, a mentetteket visszateszi a cimbe (ujratoltes nelkul).
   const MENTETT = 'savedQueryParams';
   try {
+    // korabbi (a javitas elotti) munkamenetbol maradt Google-kattintasazonosito: torles, vissza nem irjuk
+    const GK = /^(gclid|gbraid|wbraid)$/i;
+    try {
+      const regi = JSON.parse(sessionStorage.getItem(MENTETT) || 'null');
+      if (regi && typeof regi === 'object' && Object.keys(regi).some((k) => GK.test(k))) {
+        const tiszta = Object.fromEntries(Object.entries(regi).filter(([k]) => !GK.test(k)));
+        if (Object.keys(tiszta).length) sessionStorage.setItem(MENTETT, JSON.stringify(tiszta)); else sessionStorage.removeItem(MENTETT);
+      }
+    } catch (x) { try { sessionStorage.removeItem(MENTETT); } catch (y) { /* tiltott tarolo */ } }
     const most = new URLSearchParams(location.search);
     if ([...most.keys()].length) {
-      sessionStorage.setItem(MENTETT, JSON.stringify(Object.fromEntries(most)));
+      // a Google-kattintasazonositot (gclid / gbraid / wbraid) hozzajarulas nelkul NEM taroljuk: azt a belso linkek viszik (lent)
+      const ment = Object.fromEntries([...most].filter(([k]) => !/^(gclid|gbraid|wbraid)$/i.test(k)));
+      if (Object.keys(ment).length) sessionStorage.setItem(MENTETT, JSON.stringify(ment));
     } else {
-      const m = JSON.parse(sessionStorage.getItem(MENTETT) || 'null');
+      const m0 = JSON.parse(sessionStorage.getItem(MENTETT) || 'null');
+      const m = m0 && typeof m0 === 'object' ? Object.fromEntries(Object.entries(m0).filter(([k]) => !GK.test(k))) : null;
       if (m && Object.keys(m).length) history.replaceState(history.state, '', location.pathname + '?' + new URLSearchParams(m) + location.hash);
     }
   } catch (x) { /* privat mod / hibas mentes: marad a cim */ }
   // A foglalasi linkek (medicalpiercing.salonic.hu) viszik tovabb a kattintas-azonositokat es
   // a kampanyparametereket, ha az oldal is ezekkel nyilt meg (a Salonic igy a hirdeteshez
   // kotheti a foglalast). A link sajat parametereit nem irjuk felul.
+  // A Google-kattintasazonositokat (gclid / gbraid / wbraid) a kulso Salonic NEM kapja meg (hozzajarulas elott sem, utana sem:
+  // a Salonic nem hasznalja, a sajat meres a sajat tartomanyon olvassa). Helyette a SAJAT tartomany belso linkjei viszik tovabb
+  // (a Google "URL passthrough" elve: csak URL-parameter, hozzajarulas elott semmit nem tarolunk), igy ha a vendeg
+  // egy masik belso oldalon fogadja el a sutiket, az ottani assets/js/mp-meres.js meg megtalalja. Lasd docs/MERES_GOOGLE_ARNYEK.md.
   const TOVABB = /^(fbclid|gclid|gbraid|wbraid|ttclid|utm_[a-z_]+)$/i;
+  const GOOGLE_KATT = /^(gclid|gbraid|wbraid)$/i;
   const SALONIC = /^https?:\/\/medicalpiercing\.salonic\.hu(\/|$)/i;
   const kiegeszit = (a) => {
     const href = a.getAttribute('href');
-    if (!href || !SALONIC.test(href)) return;
+    if (!href || href.charAt(0) === '#') return;
     let u;
-    try { u = new URL(href); } catch (x) { return; }
+    try { u = new URL(href, location.href); } catch (x) { return; }
+    const salonic = SALONIC.test(u.href);
+    const belso = u.origin === location.origin && /^https?:$/.test(u.protocol);
+    if (!salonic && !belso) return;
     let valtozott = false;
     for (const [k, v] of new URLSearchParams(location.search)) {
-      if (TOVABB.test(k) && v && !u.searchParams.has(k)) { u.searchParams.set(k, v); valtozott = true; }
+      if (!v || u.searchParams.has(k)) continue;
+      if (salonic ? (TOVABB.test(k) && !GOOGLE_KATT.test(k)) : GOOGLE_KATT.test(k)) { u.searchParams.set(k, v); valtozott = true; }
     }
     if (valtozott) a.setAttribute('href', u.href);
   };

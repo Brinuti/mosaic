@@ -246,7 +246,10 @@ export function nyit(ctx) {
   const $ = (s) => shadow.querySelector(s);
   const tartalom = $('.tartalom');
   const link = (() => { try { return new URL(ctx.link || HOST + '/selectLocation'); } catch (e) { return new URL(HOST + '/selectLocation'); } })();
-  const tovabbi = [...link.searchParams].filter(([k]) => TOVABB.test(k));
+  // a Salonic-adatlap a Google-kattintasazonositot nem kapja meg (klon.js: GOOGLE_KATT); a koszonooldal (sajat tartomany) igen, lent
+  const GOOGLE_KATT = /^(gclid|gbraid|wbraid)$/i;
+  const tovabbi = [...link.searchParams].filter(([k]) => TOVABB.test(k) && !GOOGLE_KATT.test(k));
+  const googleKatt = [...new URLSearchParams(location.search)].filter(([k, v]) => GOOGLE_KATT.test(k) && /^[A-Za-z0-9_-]{8,512}$/.test(v));
   const all = {
     lepes: 'hely', placeId: HELYSZINEK[ctx.placeId] ? +ctx.placeId : null, serviceId: ctx.serviceId || null,
     staffId: ctx.employeeId ? String(ctx.employeeId) : null, nap: null, honap: null, slotok: null, szolg: null, bookingId: null, expected: null,
@@ -566,6 +569,8 @@ export function nyit(ctx) {
     try { ell = all.expected ? adapter.verifyConfirmation(u.href, all.expected) : null; } catch (x) { /* */ }
     foglalas.complete(ell ? ell.bookingId : null);
     u.searchParams.set('booking_id', all.bookingId);
+    // a lap sajat cimeben levo Google-kattintasazonosito a koszonooldalra (sajat tartomany; ott csak hozzajarulassal hasznalt)
+    for (const [k, v] of googleKatt) if (!u.searchParams.has(k)) u.searchParams.set(k, v);
     lezart = true;
     tartalom.innerHTML = '<div class="toltes">Sikeres foglalás, egy pillanat…</div>';
     // ugyanaz a koszonooldal, ugyanazokkal a parameterekkel, a fo ablakban (a sajat tartomanyon: elonezeten az elonezet)
