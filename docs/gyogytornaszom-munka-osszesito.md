@@ -126,3 +126,13 @@ A munkához készült mentések (`/tmp/*_backup.json`, `member_meta_backup.json`
 - A Salonic idotartamokat NEM modositottuk (kulon kerest igenyel).
 - Gyorsitotar: a mentett posztok azonnal frissultek; a tobbi ujramentessel (resave) frissul, kulonben a W3TC lejarataig regi szoveg latszhat.
 - Fontos: a regi oldal temaja es sajat bovitmenyei (gyogytornasz-member-filter) NEM tartoznak ide, kulon kell kimenteni.
+
+## 18. SEO audit (2026-05-03) alapjan elvegzett lepesek (2026-10-11)
+
+- /elerhetosegeink/ -> /rendelo/ 301 (Redirection plugin, szabaly id 107). A "Kapcsolat" menupont marad (Feri dontese: nincs SEO jelentosege).
+- Fooldal meta description: "Mozgasszervi fajdalom? 30 tapasztalt gyogytornasz segit ... Reszletes allapotfelmeres garanciaval." (142 karakter), Yoast post meta, page 11.
+- "Panaszok" fomenu 32 almenupontja: menu-item status=draft (visszaallitas: ugyanazok az id-k status=publish; lista: panaszok_menu_backup.json a WP-s sandboxban, id-k 27780 gyerekei).
+- Panaszok gyujtooldal (page 22541): snippet "gyt-panaszok-gyujtooldal" - temankent csak 1 kartya (Search Console 90 nap kattintas alapjan), 60 kartya rejtve (a cikkek megmaradnak), felul azonnali kereso (szinonimakkal: isiasz->uloideg stb.). Visszaallitas: snippet kikapcsolasa.
+- LCP kep decoding=async eltavolitva (snippet "gyt-lcp-decoding").
+- PageSpeed: Feri szerint mobil 90 felett. Valodi fotok az AI kepek helyett: kihagyva (Feri dontese).
+- Cloudflare edge cache: a regi oldal akar 1 oraig is latszhat; W3TC teljes uritese lefutott.
