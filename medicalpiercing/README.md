@@ -168,21 +168,29 @@ oldal buildje ezt a mappát nem használja):
    - *Build watch paths*: include `medicalpiercing/*` (így a MOSAIC-változások nem indítanak itt buildet)
 2. A meglévő `mosaic` projektben: *Settings → Builds → Build watch paths* → exclude `medicalpiercing/*`
    (így a medicalpiercing-változások nem fogyasztanak a MOSAIC 500-as havi buildkeretéből).
-3. *Settings → Variables and Secrets*: `SMTP_PASS` (Secret) = Gmail-alkalmazásjelszó a
-   `medicalpiercing.hu@gmail.com` fiókhoz (Google-fiók → Biztonság → Kétlépcsős azonosítás →
-   Alkalmazásjelszavak). Enélkül az űrlap beküldése sikeres, de levél nem megy ki (a Cloudflare
-   naplójában látszik).
+3. **Kész (2026-10-11):** *Settings → Variables and Secrets*: `SMTP_PASS` (Secret, Production és Preview) =
+   Gmail-alkalmazásjelszó a `medicalpiercing.hu@gmail.com` fiókhoz (Google-fiók → Biztonság →
+   Alkalmazásjelszavak, „CLAUDE”). Próbalevél kiment. Enélkül az űrlap beküldése sikeres, de levél
+   nem megy ki (a Cloudflare naplójában látszik).
 4. Próba a `https://<ág>.medicalpiercing.pages.dev` címen (a próbacímek `noindex`-esek, mérőkód nem fut rajtuk).
-5. **Élesítés:** a domain most a Wix névszerverein van (`ns14/ns15.wixdns.net`), a levelezés Google
-   Workspace. A Cloudflare-ben *Add a domain* → `medicalpiercing.hu`. Átvétel előtt ellenőrizni kell, hogy
-   az **MX rekordok** (`aspmx.l.google.com` és társai) és a többi TXT-rekord (SPF, DKIM, Google-igazolás)
-   átjöttek-e. Utána a domainregisztrátornál a névszervereket a Cloudflare-ére kell cserélni, végül
-   a Pages-projektben *Custom domains* → `www.medicalpiercing.hu` és `medicalpiercing.hu`
-   (a gyökér domain 301-gyel a www-re visz, mint a Wixen).
+5. **Élesítve: 2026-10-11 08:03.** A `medicalpiercing.hu` DNS-e a Cloudflare-en van (zóna a fiókban,
+   névszerverek `dimitris`/`sharon.ns.cloudflare.com`; a regisztrátor a **Websupport**, ott cseréltük a
+   Wix `ns14/ns15.wixdns.net` névszervereit). A zóna rekordjai (a Wix-DNS-ből átvéve):
+   - `MX` 5 db Google Workspace (`aspmx.l.google.com` 10, `alt1`–`alt4` 20–50), `TXT` google-site-verification és SPF;
+   - `mail` A `37.9.169.111` és `stape` CNAME `euj.stape.io` (szerveroldali mérés) – **DNS only**;
+   - `www` és a gyökér CNAME `medicalpiercing.pages.dev`, **proxyzott**; a Pages-projektben mindkettő
+     *Custom domain* (Active). A gyökeret a függvény 301-gyel a www-re küldi, a paraméterekkel együtt.
+   - **Visszaállás a Wixre:** a `www` CNAME → `cdn3.wixdns.net` (DNS only); a névszervereket nem kell
+     visszacserélni (a gyökér a függvényen át a www-re, onnan a Wixre visz).
+   - **Tanulság:** a névszervercsere után a régi Wix-névszervert (TTL 86400) még kérdező DNS-feloldók a
+     Wix Cloudflare-es szerverére küldték a látogatót, ahol a hostnév már a mi zónánkhoz tartozott:
+     `403 – error code: 1034`. Egy órán belül 5%-ról közel 0-ra csökkent. Legközelebb a cserét a
+     régi DNS-szolgáltatónál is érdemes előkészíteni (ott is a Pages-re mutató www-rekorddal).
 
 ## 5. Nyitott pontok
 
-- **Űrlap-e-mail:** a `SMTP_PASS` beállítása (lásd fent). A címzett alapból `medicalpiercing.hu@gmail.com` (`wrangler.toml`).
+- **A Wix:** az oldal és az előfizetés még megvan (visszaállási lehetőség). Néhány nap hibátlan
+  működés után lemondható; a régi Wix-DNS-ben a www rekord még a Wixre mutat.
 - **CookieYes:** a sütisáv szkriptje (`a46a3451…/script.js`) 2026-10-10-én 403-at ad, az élő Wix-oldalon is: a sáv nem
   jelenik meg, a mérőkódok hozzájárulás nélkül futnak (a Wixen is így). A CookieYes-fiókban kell rendbe tenni.
 - **Négy kódolt perjeles cím** (`/varosok/4031-debrecen%2C-der%C3%A9k-utca-100%2Fb`, a pécsi, a nagykanizsai Ady Endre utcai
