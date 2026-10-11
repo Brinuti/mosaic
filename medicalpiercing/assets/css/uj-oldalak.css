@@ -31,6 +31,7 @@
 .sz a:not(.gomb):not(.video):not(.poszt):not(.kep-link):not(.megoszt):not(.promo-sav){color:var(--slate);text-decoration-color:var(--rose);text-decoration-thickness:1.5px;text-underline-offset:3px}
 .sz a:not(.gomb):hover{color:var(--rose-i)}
 .sz p,.sz li,.sz .cim,.cikk-torzs p,.cikk-torzs li{overflow-wrap:break-word}
+.sz s,.cikk-torzs s{text-decoration-thickness:1.5px;text-decoration-color:currentColor;color:var(--mut)}
 .sz a,.cikk-torzs a{overflow-wrap:anywhere}
 .kozep{text-align:center}
 .cimke{display:inline-block;margin:0 8px 8px 0;padding:.4em .95em;border-radius:999px;border:1.5px solid var(--rose);font-size:.85rem;font-weight:600;color:var(--slate);background:#fff}

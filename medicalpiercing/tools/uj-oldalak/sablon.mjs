@@ -17,7 +17,9 @@ export const belso = (h) => {
   return x.replace(/^\/post\//, '/');
 };
 // a szovegbe agyazott linkek (a kinyero <a href="...">-ot ad)
-const szovegLink = (html) => html.replace(/href="([^"]*)"/g, (m, h) => `href="${belso(h.replace(/&amp;/g, '&')).replace(/&/g, '&amp;')}"`);
+// a Wix-szoveg Unicode-athuzasa (betu + U+0336) valodi athuzas (<s>) lesz: a betutipus nem tudja rajzolni, es igy tisztan latszik
+const athuzas = (html) => html.replace(/(?:[^\u0336<>]\u0336)+/g, (m) => `<s>${m.replace(/\u0336/g, '')}</s>`);
+const szovegLink = (html) => athuzas(html.replace(/href="([^"]*)"/g, (m, h) => `href="${belso(h.replace(/&amp;/g, '&')).replace(/&/g, '&amp;')}"`));
 const szovegTiszta = (html) => html.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim();
 
 const IK = (nev, osztaly = '') => `<svg class="ik${osztaly ? ' ' + osztaly : ''}" aria-hidden="true"><use href="#i-${nev}"/></svg>`;
