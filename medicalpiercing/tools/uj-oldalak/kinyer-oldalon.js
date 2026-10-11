@@ -112,8 +112,10 @@
       const src = im.getAttribute('src') || im.getAttribute('data-src') || '';
       if (!src || /^data:/.test(src) || lattak.has(src)) continue; lattak.add(src);
       const a = im.closest('a');
-      const cim = (im.closest('[data-hook="gallery-item-container"]') || im).getAttribute('aria-label') || '';
-      kepek.push({ src: urlAbs(src), alt: im.getAttribute('alt') || cim || '', link: a && a.getAttribute('href') && !/^#/.test(a.getAttribute('href')) ? urlAbs(a.getAttribute('href')) : '' });
+      const elem = im.closest('[data-hook="gallery-item-container"]') || im.closest('.gallery-item-container') || im;
+      const cim = elem.getAttribute('aria-label') || '';
+      const felirat = elem.querySelector('[data-testid="gallery-item-title"]'), leiras = elem.querySelector('[data-testid="gallery-item-description"]');
+      kepek.push({ src: urlAbs(src), alt: im.getAttribute('alt') || cim || '', link: a && a.getAttribute('href') && !/^#/.test(a.getAttribute('href')) ? urlAbs(a.getAttribute('href')) : '', ...(felirat && szoveg(felirat) ? { felirat: szoveg(felirat) } : {}), ...(leiras && szoveg(leiras) ? { leiras: szoveg(leiras) } : {}) });
     }
     if (kepek.length) felvesz(g, { t: 'galeria', kepek });
   }
@@ -127,6 +129,34 @@
     const t = szoveg(a);
     if (!t) continue;
     felvesz(a, { t: 'gomb', szoveg: t, href: urlAbs(a.getAttribute('href')), kulso: /^https?:/.test(urlAbs(a.getAttribute('href'))) });
+  }
+
+  // --- tartalek: a nem p/h/ul elemben allo szoveg (div / span, pl. a Wix-modulok uzenetei: "Nincs megjelenitheto utemezes") ---
+  {
+    const jeloltek = [];
+    const tw = document.createTreeWalker(ROOT, NodeFilter.SHOW_ELEMENT);
+    for (let e = tw.nextNode(); e; e = tw.nextNode()) {
+      if (['SCRIPT', 'STYLE', 'SVG', 'NOSCRIPT', 'OPTION', 'SELECT', 'TEXTAREA', 'BUTTON', 'IFRAME'].includes(e.tagName)) continue;
+      if (![...e.childNodes].some((n) => n.nodeType === 3 && tiszta(n.textContent).trim().length >= 2)) continue;
+      jeloltek.push(e);
+    }
+    const kivalasztott = [];
+    for (const e of jeloltek) {
+      if (kivalasztott.some((k) => k.contains(e))) continue;
+      if (kizart(e) || kulon(e) || e.closest(galeriaTartomany) || e.closest('form,a,button,label,figcaption,[aria-hidden="true"],[data-testid="sr-only"],.sr-only,[role="presentation"],[role="menu"],[role="listbox"]')) continue;
+      let bent = false; for (let a = e; a && a !== ROOT; a = a.parentElement) { if (kesz.has(a)) { bent = true; break; } }
+      if (bent || e.querySelector('p,h1,h2,h3,h4,h5,h6,ul,ol')) continue;
+      if (!lathatoLanc(e) || !lathato(e)) continue;
+      const r = e.getBoundingClientRect(); if (r.width < 20 || r.height < 10) continue;
+      const html = inline(e); const t = szovegesHtml(html);
+      if (t.length < 3 || /^(Még nincsenek értékelések|Értékelés hozzáadása|\d+\/\d+|[\d.]+ \| \d+ értékelés)$/.test(t)) continue;
+      kivalasztott.push(e);
+      const cs = getComputedStyle(e);
+      if (e.closest('[role="tab"]')) { kesz.add(e); felvesz(e, { t: 'cimke', szoveg: t }); continue; }   // fulcimkek (pl. a keresooldal szuroi)
+      // a Wix-gomb, aminek nincs linkje (pl. egy helyszin-csempe gombja): a felirata szerint a foglalasra visz
+      if (/wixui-button/.test(String(e.className)) || e.closest('[class*="wixui-button"]')) { kesz.add(e); felvesz(e, { t: 'gomb', szoveg: t, href: '/idopontfoglalas', kulso: false, linknelkul: true }); continue; }
+      kesz.add(e); felvesz(e, { t: 'p', n: 0, html, fs: Math.round(parseFloat(cs.fontSize)), fw: parseInt(cs.fontWeight, 10) || 400, kozep: cs.textAlign === 'center', tartalek: true, panel: '' });
+    }
   }
 
   // --- feliratos gombok (pl. a keresooldal szuro-fulei): nem linkek, nem urlap-gombok ---
@@ -186,7 +216,7 @@
     const torzsEl = cikkEl.querySelector('[data-hook="post-description"]') || cikkEl;
     const torzs = [];
     const cikkKesz = new WeakSet();
-    for (const e of torzsEl.querySelectorAll('h1,h2,h3,h4,h5,h6,p,ul,ol,img,a[href],iframe,video,blockquote')) {
+    for (const e of torzsEl.querySelectorAll('h1,h2,h3,h4,h5,h6,p,ul,ol,img,a[href],a[data-hook^="button-viewer"],iframe,video,blockquote')) {
       if (cikkKesz.has(e)) continue;
       const tag = e.tagName.toLowerCase();
       if (tag === 'img') {
@@ -199,7 +229,9 @@
       if (tag === 'a') {
         if (e.closest('p,h1,h2,h3,h4,h5,h6,li,blockquote') || e.querySelector('img')) continue;
         const t = szoveg(e); if (!t) continue;
-        torzs.push({ t: 'gomb', szoveg: t, href: urlAbs(e.getAttribute('href')), kulso: /^https?:/.test(urlAbs(e.getAttribute('href'))) });
+        // a Wix-szerkesztobol link nelkul maradt gomb ("Idopontot foglalok ..."): a felirata szerint a foglalasra visz
+        const h = e.getAttribute('href') || '/idopontfoglalas';
+        torzs.push({ t: 'gomb', szoveg: t, href: urlAbs(h), kulso: /^https?:/.test(urlAbs(h)) });
         continue;
       }
       if (tag === 'iframe') { const src = e.getAttribute('src') || ''; torzs.push({ t: 'iframe', src, cim: e.getAttribute('title') || '', fajta: /youtube|youtu\.be/.test(src) ? 'yt' : 'egyeb' }); continue; }

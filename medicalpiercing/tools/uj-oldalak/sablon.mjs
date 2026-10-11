@@ -105,7 +105,7 @@ function video(n) {
 function galeria(n, c) {
   const id = ++c.galeriaSzam;
   const db = n.kepek.length;
-  return `<div class="kar" data-kar="${id}"><div class="kar-sav" tabindex="0" aria-label="Képgaléria">${n.kepek.map((k, i) => `<figure class="kar-dia">${k.link ? `<a href="${esc(belso(k.link))}"><img src="${esc(k.src)}" alt="${esc(k.alt)}" loading="${c.kepSzam === 0 && i < 2 ? 'eager' : 'lazy'}" decoding="async"></a>` : `<img src="${esc(k.src)}" alt="${esc(k.alt)}" loading="${c.kepSzam === 0 && i < 2 ? 'eager' : 'lazy'}" decoding="async" data-nagyit data-grp="g${id}">`}</figure>`).join('')}</div>`
+  return `<div class="kar" data-kar="${id}"><div class="kar-sav" tabindex="0" aria-label="Képgaléria">${n.kepek.map((k, i) => `<figure class="kar-dia">${k.link ? `<a href="${esc(belso(k.link))}"><img src="${esc(k.src)}" alt="${esc(k.alt)}" loading="${c.kepSzam === 0 && i < 2 ? 'eager' : 'lazy'}" decoding="async"></a>` : `<img src="${esc(k.src)}" alt="${esc(k.alt)}" loading="${c.kepSzam === 0 && i < 2 ? 'eager' : 'lazy'}" decoding="async" data-nagyit data-grp="g${id}">`}${k.felirat || k.leiras ? `<figcaption>${k.felirat ? `<strong>${esc(k.felirat)}</strong>` : ''}${k.leiras ? `<span>${esc(k.leiras)}</span>` : ''}</figcaption>` : ''}</figure>`).join('')}</div>`
     + (db > 1 ? `<button type="button" class="kar-gomb kar-elozo" aria-label="Előző képek" disabled>${IK('chev')}</button><button type="button" class="kar-gomb kar-kov" aria-label="Következő képek">${IK('chev')}</button><p class="kar-szam"><span data-kar-akt>1</span> / ${db}</p>` : '') + '</div>';
 }
 
@@ -313,7 +313,7 @@ const partial = (ROOT, nev, horgony) => {
 // ---------------------------------------------------------------------------------------------------------------------------------------
 export function oldalHtml(ROOT, adat, opciok = {}) {
   const c = ujKontextus(adat, opciok);
-  let szekciok = adat.szekciok.map((s, i) => szekcio(s, i, c)).join('\n');
+  let szekciok = opciok.fo !== undefined ? opciok.fo : adat.szekciok.map((s, i) => szekcio(s, i, c)).join('\n');
   if (!/<h1[\s>]/.test(szekciok)) szekciok = `<h1 class="sr">${esc(adat.cim)}</h1>\n` + szekciok;   // az oldalnak mindig van h1-e (a lathato cim hianyaban rejtett)
   const cimke = adat.tipus === 'cikk' ? 'oldal-cikk' : adat.tipus === 'blog' ? 'oldal-blog' : 'oldal-altalanos';
   return `<!doctype html>
@@ -391,7 +391,6 @@ export function indexHtml(ROOT, lista, meta = {}) {
   const sorok = rendez.map(([g, ls]) => `<section class="idx-csoport"><h2>${esc(g.replace(/^\d+\.\s*/, ''))} <span class="idx-db">${ls.length}</span></h2>
     <ul class="idx-lista">${ls.sort((a, b) => a.ut.localeCompare(b.ut, 'hu')).map((o) => `<li data-szoveg="${esc((o.cim + ' ' + o.ut).toLowerCase())}"><a class="idx-uj" href="${esc(o.uj)}">${esc(o.cim || o.ut)}</a><span class="idx-ut">${esc(o.ut)}</span><a class="idx-regi" href="${esc(o.ut)}" aria-label="Az eredeti oldal: ${esc(o.cim || o.ut)}">eredeti</a></li>`).join('')}</ul></section>`).join('\n');
   const adat = { cim: 'Új oldalak – áttekintés', leiras: 'Az összes oldal új stílusú, rejtett változata.', tipus: 'oldal', ut: '/uj-oldalak', kulcs: 'uj-oldalak', szekciok: [] };
-  const alap = oldalHtml(ROOT, adat, {});
   const tartalom = `<section class="sz sz-elso"><div class="tarto idx">
     <h1 class="cim">Új oldalak – áttekintés</h1>
     <p>Az eredeti oldalak új stílusú, rejtett változatai (${lista.length} oldal). A tartalmuk megegyezik az eredetivel; csak a megjelenés új. Egy sorban: az új oldal, az eredeti címe, és az „eredeti" link az élő oldalra. Az új oldalak nem indexelhetők, és nincsenek a sitemapben.${meta.datum ? ` Utolsó összerakás: ${esc(meta.datum)}.` : ''}</p>
@@ -399,5 +398,5 @@ export function indexHtml(ROOT, lista, meta = {}) {
     <div class="poszt-kereso"><label class="mezo"><span class="sr">Keresés az oldalak között</span><input type="search" placeholder="Keresés az oldalak között…" data-idx-szuro></label><p class="kereso-db" data-idx-db>${lista.length} oldal</p></div>
     ${sorok}
   </div></section>`;
-  return alap.replace('<main id="fo">\n\n\n</main>', `<main id="fo">\n${tartalom}\n</main>`);
+  return oldalHtml(ROOT, adat, { fo: tartalom });
 }

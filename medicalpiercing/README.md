@@ -284,13 +284,39 @@ A jogi láb (EÜ szakember, 93%-os statisztika, „nem gyógymód”) az élő o
 - **Szövegek:** „garancia” (nem „6 hónap garancia”, a 6 hónap sehol nem szerepel), „G23 titánium ékszer” (nem „orvosi ékszer”); az árak szekció üzenete:
   „Minél többet választasz, annál olcsóbb” (darabár: 24 900 / 19 900 / 14 900 Ft), „vendégeink több mint 70%-a többet választ”.
 - **Ékszerek:** a fő oldal összes ékszerképe (20) helyben lapozható galériában (nyilak, ujjal húzás, billentyűzet), a lehető legnagyobb méretben.
-- **Helyszínek:** mind a 15 helyszín egy blokkban, kompakt csempékben (a városra kattintva a városoldal); a teszt egyezteti a foglalómotor helyszínlistájával.
+- **Helyszínek:** mind a 15 helyszín egy blokkban, kompakt csempékben (a csempére kattintva a foglalómotor nyílik az adott helyszínnel, a kitelepülések időpontjaival együtt); a teszt egyezteti a foglalómotor helyszínlistájával.
 - **Mobil:** a hősben cím, kép, szöveg sorrend; a dobozokon belül minden (szöveg, lista, gomb) középre igazítva; az orvosi fotó teljes szélességben; kisebb lábléc.
 - **Ingyenes kontroll fotó:** Nagy-Markó Fanni (a főoldal csapatrészéből, `fanni4.jpg`).
 
 **Élesítés főoldalként** (csak a tulajdonos kérésére): a `klon/index.html` helyett ennek a lapnak a tartalmát kell a `/` címen adni (a `dist/_a|_m/fooldal.html`
 helyére), a `<meta name="robots">` és a REJTETT_LAPOK bejegyzés eltávolításával, `canonical` hozzáadásával, és a `fooldal-b` / Convertize-kísérlet
 ellenőrzésével. **Visszavonás:** a lap törlése a `tools/build.mjs`-ből (egy sor) és a `REJTETT_LAPOK`-ból.
+
+## 3/c. Az összes többi oldal új stílusú, rejtett tükre: `/uj/<eredeti útvonal>` + link-index `/uj-oldalak`
+
+Az új főoldal stílusában (ugyanaz a fejléc / menü / lábléc, az eredeti színek, a lehető legkisebb helyen elmondott tartalom) elkészült **az összes többi oldal is**
+(175 oldal: piercing- és árakoldalak, blog + 78 cikk, helyszínek, piercerek, állásajánlatok, jogi és köszönőoldalak). **A mostani oldalak változatlanok**, a tükör
+rejtett: nincs a sitemapben, nem indexelhető (`noindex` a lapban, `X-Robots-Tag` a függvényben: `/uj/*`, `/uj-oldalak`, `/uj-fooldal`), az eredeti oldalról nem linkelt.
+A tükör oldalai egymásra mutatnak (a belső linkek `/uj/...`-ra íródnak át, a főoldal link `/uj-fooldal`), a foglalási gombok (`/idopontfoglalas`, `/kontroll`,
+Salonic-linkek) a foglalómotort nyitják. **Áttekintő (minden oldal új és eredeti linkje, kereshető):** `/uj-oldalak`.
+
+| Mi | Hol |
+|---|---|
+| tartalom (oldalanként JSON: szövegek, képek, linkek, beágyazások, űrlapmezők, hozzászólások, olvasási sorrendben, a Wix-elrendezés szerint csoportosítva) | `uj-oldalak/tartalom/*.json` (a repóban; a Cloudflare-build nem használ böngészőt) |
+| kinyerés a Wix-klónból (Playwright) | `node tools/build.mjs && node tools/serve.mjs &` majd `node tools/uj-oldalak/kinyer.mjs [útvonalak]` (a böngészőben futó rész: `tools/uj-oldalak/kinyer-oldalon.js`) |
+| megjelenítés (sablon: `sor` / `verem` / `racs` fa → HTML) | `tools/uj-oldalak/sablon.mjs`; stílus `assets/css/uj-oldalak.css`, viselkedés `assets/js/uj-oldalak.js` (a fejléc / menü / videóablak az `uj-fooldal.js`-ben) |
+| tükrözött oldalak jegyzéke (a linkátíráshoz) | `uj-oldalak/jegyzek.json` (a `kinyer.mjs` írja) |
+| build | `tools/uj-fooldal.mjs` → `ujOldalak()` (a `tools/build.mjs` hívja): `dist/_a|_m/uj/<kulcs>.html`, `dist/_a|_m/uj-oldalak.html` |
+| teszt | `node tools/uj-oldalak-teszt.mjs [--gyors] [--oldal=/rolunk] [--forras]` (`BASE=<cím>`-mel előnézeten / élesben is; a mérés, a Salonic és az űrlapküldés blokkolva / elkapva) |
+
+**Tartalom-szabály:** a szöveg, a kép, a link és a beágyazás nem változik (a teszt az eredeti oldal minden szövegsorát megkeresi az új oldalon); kihagyott: a Wix
+szerkesztő-maradék (az `/rolunk` árkártyája mögötti „Id” szövegtöredék), a blogcikkek üres „Hozzászólások” fejléce (a cikk saját hozzászólás-blokkja van), a Wix
+a11y-szövegei („0 csillagot kapott az 5-ből”). Nem tükrözött: `/` (az az új főoldal), `/idopontfoglalas`, `/kontroll` (a foglalómotort nyitják).
+**Új funkciók a tükörben:** blogcikk: kedvelés, megosztás (Facebook / X / LinkedIn / link / nyomtatás), hozzászólás-űrlap (`/api/urlap`, `blog-hozzaszolas`), a meglévő hozzászólások;
+blog-lista: kereső; képgalériák: lapozható sáv + kattintásra nagyító; videók: kattintásra ablakban; állásjelentkezés: `/api/urlap` (`allasjelentkezes`), siker után a tükör
+köszönőoldalára visz; helyszínoldalak: előző / következő helyszín.
+**Újra-kinyerés:** ha az eredeti oldal tartalma változik (vagy új oldal kerül a Wixre), `tools/oldalak.txt` frissítése + `kinyer.mjs`; a tükör ettől függetlenül épül.
+**Élesítés:** csak a tulajdonos kérésére; a `/uj/` előtag elhagyása a `ujOldalak()` kiírásában és a `linkAtiras()`-ban (`tools/uj-fooldal.mjs`), a noindex eltávolításával.
 
 ## 4. Publikálás: Cloudflare Pages (egyszeri beállítás)
 

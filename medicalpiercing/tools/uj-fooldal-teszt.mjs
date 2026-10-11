@@ -147,7 +147,7 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
     });
     ok(`${nezet}: a mobilmenu teljes magassagu es lathato (nem nulla magas), a linkek a kepernyon`, mm.h > 300 && mm.vis === 'visible' && mm.ar && mm.garancia && mm.blog && mm.expanded === 'true', JSON.stringify(mm));
     await p.click('#menu .menu-gomb[aria-controls="alm-piercingek"]');
-    ok(`${nezet}: almenu nyilik`, await p.isVisible('#alm-piercingek a[href="/migren-piercing"]'));
+    ok(`${nezet}: almenu nyilik`, await p.isVisible('#alm-piercingek a[href$="/migren-piercing"]'));
     await p.click('#menu .menu-gomb[aria-controls="alm-piercingek"]');
     ok(`${nezet}: a menu alja: foglalas gomb, telefon, e-mail`, (await p.locator('#menu .menu-lab .menu-cta').count()) === 1 && (await p.locator('#menu .menu-kapcsolat a[href^="tel:"]').count()) === 1);
     await p.keyboard.press('Escape');
@@ -156,7 +156,7 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   } else {
     ok(`${nezet}: almenu zarva alapbol`, !(await p.isVisible('#alm-piercingek')));
     await p.click('.menu-gomb[aria-controls="alm-piercingek"]');
-    ok(`${nezet}: almenu nyilik kattintasra`, (await p.isVisible('#alm-piercingek a[href="/migren-piercing"]')) && (await p.getAttribute('.menu-gomb[aria-controls="alm-piercingek"]', 'aria-expanded')) === 'true');
+    ok(`${nezet}: almenu nyilik kattintasra`, (await p.isVisible('#alm-piercingek a[href$="/migren-piercing"]')) && (await p.getAttribute('.menu-gomb[aria-controls="alm-piercingek"]', 'aria-expanded')) === 'true');
     await p.mouse.click(700, 500);
     ok(`${nezet}: kivul kattintva zarul`, !(await p.isVisible('#alm-piercingek')));
     await p.evaluate(() => scrollTo(0, 600)); await p.waitForTimeout(250);
