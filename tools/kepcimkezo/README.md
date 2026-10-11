@@ -22,16 +22,17 @@ A három gyökérmappa tartalmát **több különböző Google-fiók** birtokolj
 
 ## Az eredmény-lap oszlopai
 
-Az első 15 oszlop a megrendelt: `file_id, név, mappa_útvonal, fiók (Mosaic/MP), mime, szélesség, magasság, üzletág, téma, felirat, nyersíthető, arc, minőség, leírás, címkézés_dátuma`.
+A megrendelt oszlopok: `file_id, név, mappa_útvonal, fiók (Mosaic/MP), mime, szélesség, magasság, üzletág, téma, felirat, szoveg, nyersíthető, arc, minőség, leírás, címkézés_dátuma` (a `szoveg` az elemző kérésére került a `felirat` után).
 Utána technikai oszlopok: `md5`, `drive_módosítva`, `állapot` (kész / nincs_előnézet / hiba), `másolatok`, `próbálkozás`, `videó_hossz_mp`.
 A `fiók`: a „MOSAIC Head spa” mappa → `Mosaic`, minden más → `MP`.
+**Szabály (az elemző kérése, 2026-10-11):** `fiók = MP` esetén az `üzletág` mindig `piercing`, a modell válaszától függetlenül (a kódban, a válasz feldolgozásakor). A szabad szöveges oszlopok (`név`, `mappa_útvonal`, `szoveg`, `leírás`) szöveg-formátumúak, hogy a képről leolvasott szöveg (pl. „=…”, „+36…”) ne értelmeződjön képletként vagy számként.
 
 ## Működtetés
 
 | Mit | Hogyan |
 |---|---|
 | Első beállítás | Szkript-szerkesztő → `OPENAI_API_KEY` felvétele (Projektbeállítások → Szkripttulajdonságok) → a `setup` függvény futtatása → engedélyek megadása. A `setup` lapokat és napi időzítőt (03:00) hoz létre, ellenőrzi a kulcsot, majd lefuttat egy **16 fájlos próbát**. |
-| Próba újra | `proba` függvény |
+| Próba újra | `proba` függvény. A `beállítások` lap `PROBA_ID_LISTA` értékével (file_id-k vesszővel) pontosan ezeket a fájlokat címkézi – **akkor is, ha már van soruk** (helyben frissíti): prompt-változtatás utáni újra-próbához. Üresen egyenletesen szórt mintát vesz. |
 | Teljes futás élesítése | a `beállítások` lapon `ELESITVE` = `igen`. Addig a napi időzítő nem csinál semmit. |
 | Vészfék | `beállítások` → `LEALLITAS` = `igen`, vagy a `leallitas` függvény (minden időzítő törlődik) |
 | Egy futás hossza | `IDOKERET_PERC` (Workspace-fiók: legfeljebb 30, privát gmail: 6). Ha nem fér bele minden, 1 perc múlva magától folytatja. |

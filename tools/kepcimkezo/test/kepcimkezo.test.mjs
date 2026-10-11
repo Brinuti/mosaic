@@ -105,10 +105,12 @@ test('matchItems: sorszam szerint, hianyzo = null, sorszam nelkul sorrend szerin
 });
 
 test('a prompt es a sema a VEGLEGES (2026-10-11), a keres formaja', () => {
-  assert.equal(KC.PROMPT.length, 870);
+  assert.equal(KC.PROMPT.length, 1084);
   assert.ok(KC.PROMPT.startsWith('Szalon (Mosaic: headspa'));
   assert.ok(KC.PROMPT.includes('szoveg: a ráírt szöveg röviden (max 10 szó), üres string, ha nincs.'));
-  assert.ok(KC.PROMPT.endsWith('A mappanév csak segítség, a képet nézd.'));
+  assert.ok(KC.PROMPT.includes('A mappanév csak segítség, a képet nézd. Ha felirat = sok és hirdetésszerű grafikai elrendezés látszik, a téma mindig kesz_kreativ_grafika.'));
+  assert.ok(KC.PROMPT.includes('Ha a képen ember látszik, a téma nem lehet ajandekkartya_nyomtatvany.'));
+  assert.ok(KC.PROMPT.endsWith('Logó vagy ráírt márkanév felirat-nak számít.'));
   assert.deepEqual(KC.SCHEMA.required, ['items']);
   const item = KC.SCHEMA.properties.items.items;
   assert.deepEqual(item.required, ['i', 'uzletag', 'tema', 'felirat', 'szoveg', 'nyersitheto', 'arc', 'minoseg', 'leiras']);
@@ -167,6 +169,10 @@ test('elso futas: hatokor, kizarasok, fiok, duplikatum, sorok', () => {
   assert.equal(by.m1['állapot'], 'kész');
   assert.equal(by.m1['üzletág'], 'headspa');
   assert.equal(by.p1['üzletág'], 'piercing');
+  // az MP fiok minden fajlja piercing, akkor is, ha a (hamis) modell mast mond (a B es C mappa utvonala nem "Medical"-t tartalmaz)
+  assert.equal(by.b2['üzletág'], 'piercing');
+  assert.equal(by.c1['üzletág'], 'piercing');
+  assert.equal(by.m2['üzletág'], 'headspa');                   // Mosaic: a modell valasza marad
   assert.equal(by.m1['minőség'], 3);
   assert.equal(by.m1['szoveg'], '=SUM(1,1)');                 // a tablazatban szoveg-formatumu oszlop: nem kepletkent ertelmezodik
   assert.equal(KC.COLS[KC.COL['szoveg'] - 1], 'felirat');     // a "szoveg" a "felirat" utan van
@@ -382,4 +388,34 @@ test('PROBA_ID_LISTA: a proba() pontosan a megadott fajlokat cimkezi', () => {
   assert.equal(s.labeled, 3);
   assert.deepEqual(rowsOf(env).map((r) => r.file_id).sort(), ['b2', 'm2', 'p1']);
   assert.ok(s.note.includes('proba: 3 / 4 megadott fajl'), s.note);
+});
+
+test('PROBA_ID_LISTA: a mar kitoltott sorokat is helyben ujracimkezi (prompt-valtoztatas utani ujra-proba)', () => {
+  Object.assign(KC.CFG, structuredClone(CFG0));
+  let ujPrompt = false;
+  const env = makeEnv(sampleTree(), {
+    settings: { ELESITVE: 'igen', PROBA_ID_LISTA: '' },
+    openai: (_n, body, n) => {
+      if (!ujPrompt) return null;
+      const texts = body.input[0].content.filter((c) => c.type === 'input_text').slice(1).map((c) => c.text);
+      const items = texts.map((t, k) => ({ i: k, uzletag: 'fodraszat', tema: 'kesz_kreativ_grafika', felirat: 'sok', szoveg: 'UJ', nyersitheto: 'nem', arc: 'nincs', minoseg: 2, leiras: 'ujra' }));
+      return { code: 200, text: JSON.stringify({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify({ items }) }] }], usage: { input_tokens: 100 * n, output_tokens: 50 * n } }) };
+    }
+  });
+  KC.run(env, 'napi');
+  const before = env.sheetRows.length;
+  const rowIndexOfM1 = env.sheetRows.findIndex((r) => r[0] === 'm1');
+  ujPrompt = true;
+  env.sheet.settings().PROBA_ID_LISTA = 'm1 p1';
+  const s = KC.run(env, 'proba');
+  assert.equal(s.labeled, 2);
+  assert.equal(env.sheetRows.length, before);                         // nincs uj sor: helyben frissult
+  assert.equal(env.sheetRows.findIndex((r) => r[0] === 'm1'), rowIndexOfM1);
+  const by = Object.fromEntries(rowsOf(env).map((r) => [r.file_id, r]));
+  assert.equal(by.m1['leírás'], 'ujra');
+  assert.equal(by.m1['téma'], 'kesz_kreativ_grafika');
+  assert.equal(by.m1['szoveg'], 'UJ');
+  assert.equal(by.m1['üzletág'], 'fodraszat');                         // Mosaic: a modell valasza
+  assert.equal(by.p1['üzletág'], 'piercing');                         // MP: a szabaly felulirja a modell "fodraszat" valaszat
+  assert.equal(by.m2['leírás'].startsWith('teszt'), true);            // a tobbi sor erintetlen
 });

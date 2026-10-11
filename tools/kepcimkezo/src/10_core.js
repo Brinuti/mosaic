@@ -173,6 +173,8 @@ KC.buildRow = function (f, item, status, nowText, prev) {
       var v = item[k];
       r[C[KC.TAG_KEYS[k]]] = v == null ? '' : v;
     });
+    // Szabaly (az elemzo kerese, 2026-10-11): a Medical Piercing fiok minden fajlja piercing, a modell valaszatol fuggetlenul.
+    if (f.fiok === 'MP') r[C['üzletág']] = 'piercing';
   }
   return r;
 };

@@ -344,9 +344,14 @@ KC.run = function (env, mode) {
   summary.fresh = pl.stats.fresh;
   if (mode === 'proba') {
     if (st.probaIds.length) {
-      var wanted = {};
+      // a megadott fajlokat AKKOR IS ujracimkezi, ha mar van soruk (helyben frissiti): prompt-valtoztatas utani ujra-proba
+      var wanted = {}, rowById = {};
       st.probaIds.forEach(function (id) { wanted[id] = true; });
-      todo = todo.filter(function (e) { return wanted[e.file.id]; });
+      rows.forEach(function (r) { rowById[r.id] = r; });
+      todo = sc.files.filter(function (f) { return wanted[f.id]; }).map(function (f) {
+        var prev = rowById[f.id] || null;
+        return { file: f, row: prev, kind: prev ? 'ujracimkezes' : 'uj' };
+      });
       notes.push('proba: ' + todo.length + ' / ' + st.probaIds.length + ' megadott fajl');
     } else {
       todo = KC.pickSample(todo.filter(function (e) { return e.kind === 'uj'; }), cfg.PROBA_DB);
