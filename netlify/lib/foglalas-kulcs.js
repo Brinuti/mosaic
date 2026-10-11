@@ -16,6 +16,7 @@
 
 import { BUSINESSES } from '../../assets/js/booking-engine/salonic-adapter.js';
 import { irasKi, IRAS_KI_VALASZ } from './meres/iras-kapcsolo.js';
+import { oszlopokBiztosit } from './meres/sema-seged.js';
 
 export const MEGORZES_NAP = 180;
 export const EGYEZTETES_MAX_BAJT = 262144; // a POST /api/foglalas-egyeztetes torzsenek felso hatara (korabban 20 000: a teljes level-HTML ennel nagyobb)
@@ -255,12 +256,25 @@ const SEMA = [
   'CREATE TABLE IF NOT EXISTS foglalas_egyeztetes (uuid TEXT PRIMARY KEY, allapot TEXT NOT NULL, probalkozas INTEGER NOT NULL DEFAULT 0, kovetkezo INTEGER, kulcs TEXT, kulcs_forras TEXT, service_id TEXT, booking_id TEXT, kuldve INTEGER, riasztas INTEGER NOT NULL DEFAULT 0, letrehozva INTEGER NOT NULL, frissitve INTEGER NOT NULL) WITHOUT ROWID',
   'CREATE UNIQUE INDEX IF NOT EXISTS foglalas_egyeztetes_booking ON foglalas_egyeztetes (booking_id) WHERE kuldve IS NOT NULL',
   'CREATE TABLE IF NOT EXISTS salonic_nevtabla (tipus TEXT NOT NULL, place_id INTEGER NOT NULL, id TEXT NOT NULL, nev TEXT NOT NULL, frissitve INTEGER NOT NULL, PRIMARY KEY (tipus, place_id, id)) WITHOUT ROWID',
+  // --- Salonic-direct safety net (DECISION #127 (b), v2 terv) - ADDITIV tablak; szemelyes adat NINCS bennuk, csak HMAC-hash ---
+  // vendeg-hash index: "ugyanaz a vendeg" + "a megjegyzesben szereplo korabbi idopont pontosan egy letezo foglalasra mutat" (reschedule) ellenorzeshez; megorzes 180 nap
+  "CREATE TABLE IF NOT EXISTS foglalas_vendeg (uuid TEXT PRIMARY KEY, uzletag TEXT NOT NULL, szolg_kulcs TEXT, kezdet INTEGER, nev_h TEXT, tel_h TEXT, email_h TEXT, allapot TEXT NOT NULL DEFAULT 'aktiv', forras TEXT, ido INTEGER NOT NULL, lejar INTEGER NOT NULL) WITHOUT ROWID",
+  'CREATE INDEX IF NOT EXISTS foglalas_vendeg_email ON foglalas_vendeg (email_h, uzletag, kezdet)',
+  // keso motoros kulcs alias (D7): az sd mar kuldott, a kulcs kesobb jott -> nincs uj esemeny, csak az alias (late_motor_key=1) az audit / lifecycle-join szamara
+  'CREATE TABLE IF NOT EXISTS foglalas_alias (id INTEGER PRIMARY KEY AUTOINCREMENT, sd_id TEXT NOT NULL, booking_id TEXT NOT NULL, uuid TEXT, late_motor_key INTEGER NOT NULL DEFAULT 1, ido INTEGER NOT NULL)',
+  'CREATE UNIQUE INDEX IF NOT EXISTS foglalas_alias_egyedi ON foglalas_alias (sd_id, booking_id)',
+  // csere / reschedule (DECISION #131): confirmed | suspected | feloldva_confirmed | feloldva_uj
+  'CREATE TABLE IF NOT EXISTS foglalas_reschedule (uuid TEXT PRIMARY KEY, sd_id TEXT NOT NULL, allapot TEXT NOT NULL, reschedule_from TEXT, reschedule_to TEXT, regi_uuid TEXT, regi_aktiv INTEGER, ok TEXT, ido INTEGER NOT NULL, frissitve INTEGER NOT NULL) WITHOUT ROWID',
 ];
+// a foglalas_egyeztetes additiv oszlopai: sd_id (a determinisztikus sd identity; egy UUID-hoz legfeljebb egy identity: booking_id VAGY sd_id), sd_allapot, sd_ido
+const EGYEZTETES_BOVITES = [['sd_id', 'TEXT'], ['sd_allapot', 'TEXT'], ['sd_ido', 'INTEGER']];
 const kesz = new WeakSet();
 /** A tablak letrehozasa (IF NOT EXISTS), adatbazisonkent egyszer. */
 export async function sema(db) {
   if (kesz.has(db)) return;
   await db.batch(SEMA.map((s) => db.prepare(s)));
+  await oszlopokBiztosit(db, 'foglalas_egyeztetes', EGYEZTETES_BOVITES);
+  await db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS foglalas_egyeztetes_sd ON foglalas_egyeztetes (sd_id) WHERE sd_id IS NOT NULL').run();
   kesz.add(db);
 }
 const sec = (now) => Math.floor(now / 1000);
@@ -281,6 +295,8 @@ export async function kulcsIras(db, { bookingId, bookingUrl, forras = 'back' }, 
   await db.prepare('DELETE FROM foglalas_kulcs WHERE lejar < ?1').bind(t).run(); // lejart (180 napnal regebbi) bejegyzesek
   await db.prepare('DELETE FROM foglalas_kulcs_irasok WHERE lejar < ?1').bind(t).run();
   await db.prepare('INSERT INTO foglalas_kulcs_irasok (booking_id, kulcs, service_id, ido, lejar) VALUES (?1, ?2, ?3, ?4, ?5) ON CONFLICT(booking_id) DO NOTHING').bind(bookingId, e.kulcs, e.serviceId, t, t + MEGORZES_NAP * 86400).run(); // minden jelentkezo foglalas (a parositas jeloltjei)
+  // D7 (DECISION #127): ha erre a kulcsra a Salonic-direct (sd) mar atvette a foglalast, a KESEI mb_ kulcs csak ALIAS (late_motor_key=1): nincs uj esemeny, nincs identity-csere / ujrakuldes; audit / lifecycle-join celra
+  try { await db.prepare('INSERT INTO foglalas_alias (sd_id, booking_id, uuid, late_motor_key, ido) SELECT sd_id, ?2, uuid, 1, ?3 FROM foglalas_egyeztetes WHERE kulcs = ?1 AND sd_id IS NOT NULL AND booking_id IS NULL ON CONFLICT DO NOTHING').bind(e.kulcs, bookingId, t).run(); } catch (x) { /* az alias sosem akaszthatja meg a kulcs-irast */ }
   const r = await db.prepare('INSERT INTO foglalas_kulcs (kulcs, booking_id, service_id, forras, letrehozva, lejar) VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT(kulcs) DO NOTHING')
     .bind(e.kulcs, bookingId, e.serviceId, forras, t, t + MEGORZES_NAP * 86400).run();
   if (r.meta && r.meta.changes > 0) return { ok: true, irva: true, idempotens: false, utkozes: false, kulcs: e.kulcs, serviceId: e.serviceId };
@@ -326,13 +342,14 @@ export async function kulcsAtadas(db, { kulcs, regi, uj, ok }, now = Date.now())
 export async function nevtablaBetolt(db) {
   await sema(db);
   const { results } = await db.prepare('SELECT tipus, place_id, id, nev, frissitve FROM salonic_nevtabla').all();
-  const t = { frissitve: 0, helyFrissitve: {}, helyek: [], munkatarsak: [], szolgaltatasok: [] };
+  const t = { frissitve: 0, helyFrissitve: {}, helyek: [], munkatarsak: [], szolgaltatasok: [], arak: [] };
   for (const r of results || []) {
     t.frissitve = Math.max(t.frissitve, r.frissitve);
     t.helyFrissitve[r.place_id] = Math.max(t.helyFrissitve[r.place_id] || 0, r.frissitve);
     if (r.tipus === 'hely') t.helyek.push({ placeId: r.place_id, nev: r.nev });
     else if (r.tipus === 'munkatars') t.munkatarsak.push({ placeId: r.place_id, employeeId: parseInt(r.id, 10), nev: r.nev }); // az id "24065" vagy "24065~alias" (ugyanannak a munkatarsnak tobb neve)
     else if (r.tipus === 'szolgaltatas') t.szolgaltatasok.push({ placeId: r.place_id, serviceId: r.id, nev: r.nev });
+    else if (r.tipus === 'ar') t.arak.push({ placeId: r.place_id, serviceId: r.id, ar: Number(r.nev) }); // a Salonic szolgaltatas-lista aktualis ara (data-price); a munkatarsi kedvezmeny / kupon NINCS benne
   }
   return t;
 }
@@ -348,6 +365,7 @@ export async function nevtablaMent(db, tabla, now = Date.now()) {
     sorok.push(['munkatars', x.placeId, elso ? String(x.employeeId) : `${x.employeeId}~${norm(x.nev).slice(0, 40)}`, x.nev]);
   }
   for (const x of tabla.szolgaltatasok) sorok.push(['szolgaltatas', x.placeId, String(x.serviceId), x.nev]);
+  for (const x of tabla.arak || []) if (Number.isFinite(Number(x.ar)) && Number(x.ar) >= 0) sorok.push(['ar', x.placeId, String(x.serviceId), String(Math.round(Number(x.ar)))]);
   const stmts = sorok.map(([tipus, p, id, nev]) => db.prepare('INSERT INTO salonic_nevtabla (tipus, place_id, id, nev, frissitve) VALUES (?1, ?2, ?3, ?4, ?5) ON CONFLICT(tipus, place_id, id) DO UPDATE SET nev = excluded.nev, frissitve = excluded.frissitve').bind(tipus, p, id, nev, t));
   for (let i = 0; i < stmts.length; i += 50) await db.batch(stmts.slice(i, i + 50));
   return sorok.length;
@@ -371,7 +389,7 @@ export function munkatarsNevOldalbol(html, helyNev) {
  * szolgaltatas (a Salonic-lista). uzletagok: csak ezek (celzott ujraepites).
  */
 export async function nevtablaSalonicbol({ fetchImpl, adapterGyar, uzletagok = Object.keys(BUSINESSES) }) {
-  const tabla = { helyek: [], munkatarsak: [], szolgaltatasok: [] };
+  const tabla = { helyek: [], munkatarsak: [], szolgaltatasok: [], arak: [] };
   const adapter = adapterGyar({ fetchImpl });
   for (const uzletag of uzletagok) {
     const c = BUSINESSES[uzletag];
@@ -406,7 +424,7 @@ export async function nevtablaSalonicbol({ fetchImpl, adapterGyar, uzletagok = O
         }
       } catch (e) { /* a naptar-API nevei nem kellenek a teljessegehez */ }
       for (const [employeeId, ns] of nevek) for (const nev of ns) tabla.munkatarsak.push({ placeId: c.placeId, employeeId, nev });
-      for (const sz of szolgak) tabla.szolgaltatasok.push({ placeId: c.placeId, serviceId: String(sz.serviceId), nev: sz.name });
+      for (const sz of szolgak) { tabla.szolgaltatasok.push({ placeId: c.placeId, serviceId: String(sz.serviceId), nev: sz.name }); if (Number.isFinite(sz.activePrice)) tabla.arak.push({ placeId: c.placeId, serviceId: String(sz.serviceId), ar: sz.activePrice }); }
       tabla.hianyzoNevek = (tabla.hianyzoNevek || []).concat([...idk].filter((id) => !nevek.has(id)).map((id) => ({ placeId: c.placeId, employeeId: id }))); // diagnosztika: azonosito nev nelkul
     } catch (e) { /* egy fiok hibaja nem allitja meg a tobbit */ }
   }
@@ -459,8 +477,11 @@ export async function egyeztet(db, mezok, deps) {
   let sor = await db.prepare('SELECT * FROM foglalas_egyeztetes WHERE uuid = ?1').bind(mezok.uuid).first();
   const nyom = { uuid: mezok.uuid, host: mezok.host || null };
   if (sor && sor.kuldve) return { allapot: 'parositott', kuldheto: false, duplikalt: true, booking_id: sor.booking_id, esemeny_id: sor.booking_id, kulcs: sor.kulcs, kulcs_forras: sor.kulcs_forras, probalkozas: sor.probalkozas, riasztas: false, nyom };
+  // Salonic-direct (DECISION #127 / D7): az sd mar atvette ezt az UUID-t -> a motoros parositas soha nem fut (nincs identity-csere); a kesobbi kulcs csak alias
+  if (sor && sor.sd_id) return { allapot: 'parositatlan', kuldheto: false, duplikalt: true, lezart: true, sd_atveve: true, booking_id: null, kulcs: sor.kulcs, kulcs_forras: sor.kulcs_forras, probalkozas: sor.probalkozas, riasztas: false, nyom };
   // DONTES #108: a "parositatlan" LEZART allapot - a kesobbi proba (akar van mar kulcs, akar nincs) sem parosit, sem kuld; a riasztas egyszeri (mar be van allitva)
-  if (sor && sor.allapot === 'parositatlan') return { allapot: 'parositatlan', kuldheto: false, duplikalt: true, lezart: true, booking_id: null, kulcs: sor.kulcs, kulcs_forras: sor.kulcs_forras, probalkozas: sor.probalkozas, riasztas: false, nyom };
+  // KIVETEL (DECISION #127 / D7, GPT jovahagyta): az sd atomi atvetelenek pillanataig a parositatlan UUID meg parosithato (deps.vegsoProba) - a motoros identity nyer, ha az sd meg nem kuldott
+  if (sor && sor.allapot === 'parositatlan' && !deps.vegsoProba) return { allapot: 'parositatlan', kuldheto: false, duplikalt: true, lezart: true, booking_id: null, kulcs: sor.kulcs, kulcs_forras: sor.kulcs_forras, probalkozas: sor.probalkozas, riasztas: false, nyom };
   if (sor && sor.allapot === 'fuggoben' && sor.kovetkezo && t < sor.kovetkezo) return { allapot: 'fuggoben', kuldheto: false, probalkozas: sor.probalkozas, ujraprobal_mp: sor.kovetkezo - t, riasztas: false, korai: true, nyom };
   if (!sor) {
     await db.prepare('INSERT INTO foglalas_egyeztetes (uuid, allapot, probalkozas, letrehozva, frissitve) VALUES (?1, ?2, 0, ?3, ?3) ON CONFLICT(uuid) DO NOTHING').bind(mezok.uuid, 'fuggoben', t).run();
@@ -544,9 +565,13 @@ export async function egyeztet(db, mezok, deps) {
     // egy foglalasbol egy esemeny: a kuldve-t csak az elso keres allitja be (a booking_id-ra egyedi index: mas UUID sem kuldhet ugyanarra)
     let kuldheto = false;
     try {
-      const u = await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, service_id = ?6, booking_id = ?7, kuldve = ?8, riasztas = 0, kovetkezo = NULL, frissitve = ?8 WHERE uuid = ?1 AND kuldve IS NULL')
+      const u = await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, service_id = ?6, booking_id = ?7, kuldve = ?8, riasztas = 0, kovetkezo = NULL, frissitve = ?8 WHERE uuid = ?1 AND kuldve IS NULL AND sd_id IS NULL')
         .bind(mezok.uuid, 'parositott', probalkozas, r.kulcs, kulcsForras, r.service_id, r.booking_id, t).run();
       kuldheto = !!(u.meta && u.meta.changes > 0);
+      if (!kuldheto) { // versenyhelyzet: az sd kozben atvette az UUID-t -> nincs motoros esemeny
+        const ujSor = await db.prepare('SELECT sd_id FROM foglalas_egyeztetes WHERE uuid = ?1').bind(mezok.uuid).first();
+        if (ujSor && ujSor.sd_id) return { allapot: 'parositatlan', kuldheto: false, duplikalt: true, lezart: true, sd_atveve: true, booking_id: null, kulcs: r.kulcs, kulcs_forras: kulcsForras, probalkozas, riasztas: false, nyom };
+      }
     } catch (e) { // a booking_id-ra mar ment esemeny MAS Salonic-foglalasrol: nem kuldunk, LATHATO riasztassal (nem nyelheti el csendben)
       nyom.egyediIndex = 'a booking_id-ra mar ment esemeny (mas UUID-rol)';
       await db.prepare('UPDATE foglalas_egyeztetes SET allapot = ?2, probalkozas = ?3, kulcs = ?4, kulcs_forras = ?5, service_id = ?6, riasztas = 1, kovetkezo = NULL, frissitve = ?7 WHERE uuid = ?1').bind(mezok.uuid, 'ellentmondas', probalkozas, r.kulcs, kulcsForras, r.service_id, t).run();
@@ -589,14 +614,14 @@ export async function egyeztet(db, mezok, deps) {
 export async function veglegesLejart(db, now = Date.now()) {
   await sema(db);
   const t = sec(now);
-  const r = await db.prepare("UPDATE foglalas_egyeztetes SET allapot = 'parositatlan', riasztas = 1, kovetkezo = NULL, frissitve = ?1 WHERE allapot = 'fuggoben' AND kuldve IS NULL AND ((kovetkezo IS NOT NULL AND kovetkezo + ?2 < ?1) OR (kovetkezo IS NULL AND frissitve + ?3 < ?1))").bind(t, LEJART_TURES_MP, LEJART_KOVETKEZO_NELKUL_MP).run();
+  const r = await db.prepare("UPDATE foglalas_egyeztetes SET allapot = 'parositatlan', riasztas = 1, kovetkezo = NULL, frissitve = ?1 WHERE allapot = 'fuggoben' AND kuldve IS NULL AND sd_id IS NULL AND ((kovetkezo IS NOT NULL AND kovetkezo + ?2 < ?1) OR (kovetkezo IS NULL AND frissitve + ?3 < ?1))").bind(t, LEJART_TURES_MP, LEJART_KOVETKEZO_NELKUL_MP).run();
   return (r && r.meta && r.meta.changes) || 0;
 }
 
 /** A parositatlan / ellentmondo foglalasok (a riasztas listaja). */
 export async function riasztasok(db) {
   await sema(db);
-  const { results } = await db.prepare("SELECT uuid, allapot, probalkozas, kulcs, kulcs_forras, letrehozva, frissitve FROM foglalas_egyeztetes WHERE riasztas = 1 ORDER BY frissitve DESC LIMIT 200").all();
+  const { results } = await db.prepare("SELECT uuid, allapot, probalkozas, kulcs, kulcs_forras, letrehozva, frissitve, sd_id, sd_allapot FROM foglalas_egyeztetes WHERE riasztas = 1 ORDER BY frissitve DESC LIMIT 200").all();
   return results || [];
 }
 export async function egyeztetesAllapot(db, uuid) {
@@ -707,11 +732,18 @@ async function kezelEgyeztetesBelso(request, env, deps = {}) {
     let mezok = { uuid: o.uuid, host: o.host, felado: o.felado, szolgaltatas: o.szolgaltatas, idopontSzoveg: o.idopont_szoveg, munkatarsak: Array.isArray(o.munkatarsak) ? o.munkatarsak.map(String).slice(0, 10) : [], ld: o.ld || null, leveldatum: o.level_datuma, diagnosztika: o.diagnosztika === true };
     if (typeof o.email_html === 'string') { const e = emailElemzes(o.email_html); mezok = { ...mezok, uuid: mezok.uuid || e.uuid, host: mezok.host || e.host, felado: mezok.felado || e.felado, szolgaltatas: mezok.szolgaltatas || e.szolgaltatas, idopontSzoveg: mezok.idopontSzoveg || e.idopontSzoveg, munkatarsak: mezok.munkatarsak.length ? mezok.munkatarsak : e.munkatarsak, ld: mezok.ld || e.ld }; }
     const fuggosegek = { fetchImpl: deps.fetchImpl || fetch, now: deps.now, nevtablaFrissito: deps.nevtablaFrissito };
+    // Salonic-direct safety net (DECISION #127 (b)): sd_atvetel (a Zap 5. lepese; szaraz:true = irasmentes terv), sd_feloldas (ember dont a csere-gyanu felett) es vendeg_index (hash-index, egyszeri backfill). A kezelo injektalt (nincs importkor kor)
+    if (o.muvelet === 'sd_atvetel' || o.muvelet === 'sd_feloldas' || o.muvelet === 'vendeg_index') {
+      if (!deps.sdKezelo) return valasz(501, { ok: false, miert: 'nincs sd-kezelo' });
+      return valasz(200, { ok: true, ...(await deps.sdKezelo({ db: env.KULCS_DB, env, muvelet: o.muvelet, bejovo: o, mezok: { ...mezok, megjegyzes: typeof o.megjegyzes === 'string' ? o.megjegyzes.slice(0, 500) : '' }, fuggosegek, egyeztet, esemenyKuldo: deps.esemenyKuldo })) });
+    }
     if (o.tipus === 'lemondas' || (typeof o.email_html === 'string' && emailElemzes(o.email_html).tipus === 'lemondas')) { // lemondasi ertesito: nincs UUID, kulcsot a nevtablabol kepez
       const r = await lemondasKezel(env.KULCS_DB, mezok, fuggosegek);
       return valasz(200, { ok: true, tipus: 'lemondas', ...r });
     }
     const r = await egyeztet(env.KULCS_DB, mezok, fuggosegek);
+    // vendeg-hash index (reschedule-felismeres): minden letrehozo level hash-elt vendegadata (nyers adat nincs), csak MERES_SALONIC_DIRECT=1 mellett; fail-open
+    if (deps.vendegIndexIr && o.vendeg && (String(env.MERES_SALONIC_DIRECT) === '1' || String(env.MERES_SD_INDEX) === '1')) { try { await deps.vendegIndexIr({ db: env.KULCS_DB, env, mezok, bejovo: o, kulcs: r.kulcs, now: deps.now }); } catch (e) { /* az index sosem akaszthatja meg a parositast */ } }
     // QA-2 ARNYEK: a parositott foglalasra az esemenyek kuldese (alap + ernyo); a kuldes az elo allapot ellenorzese UTAN fut, es sosem akaszthatja meg a parositast.
     // Minden "parositott" valasznal lefut (az elosztas idempotens: a mar vegleges cellara nem kuld ujra), igy a halasztott kuldes a level ismetlesekor potolhato.
     if (deps.esemenyKuldo && r.allapot === 'parositott' && r.booking_id && String(env.MERES_ELOSZTO) === '1') {
@@ -729,6 +761,10 @@ async function kezelEgyeztetesBelso(request, env, deps = {}) {
         return new Response(`<!doctype html><meta charset="utf-8"><title>Parositatlan foglalasok</title>${fej}<table border="1" cellpadding="6" style="font:14px sans-serif;margin-top:12px"><tr><th>Salonic UUID</th><th>allapot</th><th>probalkozas</th><th>kulcs</th><th>frissitve (UTC)</th></tr>${sorok}</table>`, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
       }
       return valasz(200, { ok: true, db: lista.length, riasztas: lista.length > 0, lista });
+    }
+    if (url.searchParams.get('sd_riasztas') === '1') { // Salonic-direct riasztasok (halasztva / tartva / lejart / old_booking_still_active / sd_hianyzik)
+      if (!deps.sdRiasztasok) return valasz(501, { ok: false, miert: 'nincs sd-riasztas' });
+      return valasz(200, { ok: true, ...(await deps.sdRiasztasok(env.KULCS_DB, env, { fetchImpl: deps.fetchImpl || fetch, now: deps.now })) });
     }
     if (url.searchParams.get('nevtabla') === '1') { const t = await nevtablaBetolt(env.KULCS_DB); const munk = {}; for (const m of t.munkatarsak) (munk[m.placeId] = munk[m.placeId] || {})[m.employeeId] = ((munk[m.placeId] || {})[m.employeeId] || []).concat([m.nev]); return valasz(200, { ok: true, frissitve: t.frissitve, helyFrissitve: t.helyFrissitve, helyek: t.helyek, munkatarsak: t.munkatarsak.length, szolgaltatasok: t.szolgaltatasok.length, munkatarsak_helyenkent: url.searchParams.get('reszletes') === '1' ? munk : undefined }); }
     const uuid = url.searchParams.get('uuid') || '';
