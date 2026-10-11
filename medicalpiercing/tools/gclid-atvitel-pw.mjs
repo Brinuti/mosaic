@@ -124,6 +124,50 @@ const varKuldes = async (k) => { for (let i = 0; i < 40 && !k.length; i++) await
   ok('6 Salonic-linkek: fbclid + utm marad, gclid nem', s.length > 0 && s.every((h) => h.includes('fbclid=TESZTFB123456') && h.includes('utm_source=teszt') && !h.includes('gclid=')), `${s.length} link`);
   await ctx.close();
 }
+// 7. Kesoi (4 mp utani) elfogadas a koszonooldalon: elso kuldes azonosito nelkul, utana EGY potlo keres gclid-del
+{
+  const { ctx, kuldott } = await kornyezet();
+  const p = await ctx.newPage();
+  await p.goto(koszono(G), { waitUntil: 'load' });
+  await p.waitForTimeout(4600);
+  const elso = kuldott.length;
+  await dontes(p, true); await p.waitForTimeout(800);
+  await dontes(p, true); await p.waitForTimeout(500); // dupla esemeny: nem mehet ki masodik potlas
+  ok('7a 4 mp utan: egy kuldes, azonosito nelkul', elso === 1 && !kuldott[0].kattintas && !kuldott[0].potlas);
+  ok('7b kesoi elfogadas: pontosan EGY potlo keres, gclid-del', kuldott.length === 2 && kuldott[1].potlas === true && kuldott[1].kattintas?.gclid?.ertek === G, `${kuldott.length} keres`);
+  await ctx.close();
+}
+// 8. Elfogadas 4 mp-en belul: egy kuldes gclid-del, potlas nincs
+{
+  const { ctx, kuldott } = await kornyezet();
+  const p = await ctx.newPage();
+  await p.goto(koszono(G), { waitUntil: 'load' });
+  await p.waitForTimeout(800); await dontes(p, true); await p.waitForTimeout(4500);
+  ok('8 elfogadas 4 mp-en belul: egy kuldes gclid-del, potlas nelkul', kuldott.length === 1 && kuldott[0].kattintas?.gclid?.ertek === G && !kuldott[0].potlas, `${kuldott.length} keres`);
+  await ctx.close();
+}
+// 9. Kesoi ELUTASITAS: nincs potlo keres, nincs tarolas
+{
+  const { ctx, kuldott } = await kornyezet();
+  const p = await ctx.newPage();
+  await p.goto(koszono(G), { waitUntil: 'load' });
+  await p.waitForTimeout(4600); await dontes(p, false); await p.waitForTimeout(800);
+  ok('9 kesoi elutasitas: egy kuldes azonosito nelkul, potlas es tarolas nincs', kuldott.length === 1 && !kuldott[0].kattintas && (await tarolt(p)) === null);
+  await ctx.close();
+}
+// 10. Korabbi munkamenetbol maradt gclid (a javitas elotti savedQueryParams): nem kerul vissza a cimbe, a tarolo kitisztul
+{
+  const { ctx } = await kornyezet();
+  await ctx.addInitScript((g) => { try { if (!sessionStorage.getItem('teszt_elokeszitve')) { sessionStorage.setItem('savedQueryParams', JSON.stringify({ gclid: g, utm_source: 'regi' })); sessionStorage.setItem('teszt_elokeszitve', '1'); } } catch (e) {} }, G_REGI);
+  const p = await ctx.newPage();
+  await p.goto(`${CIM}/elerhetosegek`, { waitUntil: 'load' }); await p.waitForTimeout(400);
+  const ss = await p.evaluate(() => sessionStorage.getItem('savedQueryParams'));
+  ok('10a regi munkamenet: a gclid nem kerul vissza a cimbe, az utm igen', !p.url().includes('gclid') && p.url().includes('utm_source=regi'), p.url().replace(CIM, ''));
+  ok('10b regi munkamenet: a taroloban nincs tobbe gclid', !!ss && !ss.includes(G_REGI) && ss.includes('regi'), ss);
+  const linkek = await p.evaluate(() => [...document.querySelectorAll('a[href]')].map((a) => { a.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); return a.href; }));
+  ok('10c regi munkamenet: egyetlen link sem viszi a regi gclid-et', !linkek.some((h) => h.includes(G_REGI)));
+  await ctx.close();
+}
 await b.close();
 console.log(hiba ? `\n${hiba} HIBA` : '\nMIND PASS');
 process.exit(hiba ? 1 : 0);

@@ -285,3 +285,74 @@ test('MP_GADS_MOD=off: semmilyen kimeno hivas, allapot kikapcsolva; visszakapcso
   assert.equal(u.ujraprobalva, 1);
   assert.equal(f.hivasok.filter((h) => h.url.startsWith('https://hooks.zapier.com/')).length, 2);
 });
+
+// --- kesoi (4 mp utani) hozzajarulas potlasa (assets/js/mp-meres.js potlo kerese) ---
+const torzsKattNelkul = (extra = {}) => ({ ut: '/foglalas-ok-mi', p: { bookingUrl: BURL(), price: '24900', first_booking: 'true', ...extra }, kattintas: null });
+const potlo = (extra = {}, kat = { gclid: { ertek: GCLID, ido: MOST - 60 } }) => ({ ...torzsKattNelkul(extra), kattintas: kat, potlas: true });
+const uplSzam = (f) => f.hivasok.filter((h) => h.url.includes('uploadClickConversions')).length;
+
+test('potlas: kesoi hozzajarulas -> a meg azonosito nelkuli sor kiegeszul, EGY feltoltes; ismetles nem kuld ujra', async () => {
+  _semaTorles(); _tokenTorles();
+  const db = d1(); const f = mockFetch(); const env = { MP_MERES_DB: db, ...API_ENV };
+  const r1 = await (await foglalasErkezes({ request: keres(torzsKattNelkul(), { cookie: '' }), env }, { fetchImpl: f, most: MOST })).json();
+  assert.deepEqual(r1, { ok: true, uj: true });
+  assert.equal(uplSzam(f), 0, 'hozzajarulas nelkul nincs feltoltes');
+  const r2 = await (await foglalasErkezes({ request: keres(potlo()), env }, { fetchImpl: f, most: MOST + 10 })).json();
+  assert.deepEqual(r2, { ok: true, uj: false, potolva: true });
+  const sor = db._s.prepare('SELECT * FROM mp_foglalas').get();
+  assert.equal(sor.kattintas_ertek, GCLID); assert.equal(sor.hozzajarulas_hirdetes, 1);
+  assert.equal(uplSzam(f), 1, 'pontosan egy feltoltes');
+  const ft = db._s.prepare("SELECT akcio_id, mod, allapot FROM mp_feltoltes WHERE allapot = 'elfogadva' ORDER BY akcio_id").all();
+  assert.deepEqual(ft.map((x) => x.akcio_id), ['7834926162', '7834926165']);
+  // ismetelt potlas (ujratoltes / dupla esemeny): nincs modositas, nincs uj feltoltes
+  const r3 = await (await foglalasErkezes({ request: keres(potlo()), env }, { fetchImpl: f, most: MOST + 20 })).json();
+  assert.deepEqual(r3, { ok: true, uj: false, potolva: false });
+  assert.equal(uplSzam(f), 1);
+  assert.equal(db._s.prepare('SELECT COUNT(*) n FROM mp_foglalas').get().n, 1);
+});
+
+test('potlas: nem ir felul meglevo azonositot; potlas-jelzes, hozzajarulas vagy azonosito nelkul nincs hatasa', async () => {
+  _semaTorles(); _tokenTorles();
+  const db = d1(); const f = mockFetch(); const env = { MP_MERES_DB: db, ...API_ENV };
+  await foglalasErkezes({ request: keres(alapTorzs()), env }, { fetchImpl: f, most: MOST }); // mar van gclid
+  const masik = { gclid: { ertek: 'Cj0KCQjwMASIKgclid_999999999', ido: MOST } };
+  assert.equal((await (await foglalasErkezes({ request: keres(potlo({}, masik)), env }, { fetchImpl: f, most: MOST + 5 })).json()).potolva, false);
+  assert.equal(db._s.prepare('SELECT kattintas_ertek k FROM mp_foglalas').get().k, GCLID);
+  assert.equal(uplSzam(f), 1);
+  // uj foglalas azonosito nelkul, majd: potlas-jelzes nelkul / hozzajarulas nelkul / azonosito nelkul -> semmi
+  const db2 = d1(); const f2 = mockFetch(); const env2 = { MP_MERES_DB: db2, ...API_ENV }; _semaTorles();
+  await foglalasErkezes({ request: keres(torzsKattNelkul(), { cookie: '' }), env: env2 }, { fetchImpl: f2, most: MOST });
+  const { potlas, ...jelzesNelkul } = potlo();
+  assert.deepEqual(await (await foglalasErkezes({ request: keres(jelzesNelkul), env: env2 }, { fetchImpl: f2, most: MOST + 5 })).json(), { ok: true, uj: false });
+  assert.deepEqual(await (await foglalasErkezes({ request: keres(potlo(), { cookie: SUTI_NEM }), env: env2 }, { fetchImpl: f2, most: MOST + 5 })).json(), { ok: true, uj: false });
+  assert.deepEqual(await (await foglalasErkezes({ request: keres(potlo({}, null)), env: env2 }, { fetchImpl: f2, most: MOST + 5 })).json(), { ok: true, uj: false });
+  assert.equal(db2._s.prepare('SELECT kattintas_ertek k FROM mp_foglalas').get().k, null);
+  assert.equal(uplSzam(f2), 0);
+});
+
+test('potlas: mas foglalashoz nem kotheto (masik booking_id), es csak az ablakon belul', async () => {
+  _semaTorles(); _tokenTorles();
+  const db = d1(); const f = mockFetch(); const env = { MP_MERES_DB: db, ...API_ENV };
+  await foglalasErkezes({ request: keres(torzsKattNelkul({ booking_id: 'mb_eredeti0000000000' }), { cookie: '' }), env }, { fetchImpl: f, most: MOST });
+  assert.equal((await (await foglalasErkezes({ request: keres(potlo({ booking_id: 'mb_masik00000000000' })), env }, { fetchImpl: f, most: MOST + 5 })).json()).potolva, false);
+  assert.equal((await (await foglalasErkezes({ request: keres(potlo()), env }, { fetchImpl: f, most: MOST + 5 })).json()).potolva, false, 'booking_id nelkul sem');
+  const { POTLAS_ABLAK } = await import('../lib/meres/lanc.js');
+  assert.equal((await (await foglalasErkezes({ request: keres(potlo({ booking_id: 'mb_eredeti0000000000' })), env }, { fetchImpl: f, most: MOST + POTLAS_ABLAK + 1 })).json()).potolva, false, 'ablakon kivul');
+  assert.equal((await (await foglalasErkezes({ request: keres(potlo({ booking_id: 'mb_eredeti0000000000' })), env }, { fetchImpl: f, most: MOST + 60 })).json()).potolva, true, 'ugyanaz a booking_id, ablakon belul');
+  assert.equal(uplSzam(f), 1);
+});
+
+test('potlas elesben: a mar elkuldott akcio nem megy ki ujra (D1-ellenorzes + order_id)', async () => {
+  _semaTorles(); _tokenTorles();
+  const db = d1(); const f = mockFetch({ torzs: { results: [{}] } });
+  const env = { MP_MERES_DB: db, ...API_ENV, MP_GADS_MOD: 'eles' };
+  await foglalasErkezes({ request: keres(torzsKattNelkul(), { cookie: '' }), env }, { fetchImpl: f, most: MOST });
+  await foglalasErkezes({ request: keres(potlo()), env }, { fetchImpl: f, most: MOST + 5 });
+  await foglalasErkezes({ request: keres(potlo()), env }, { fetchImpl: f, most: MOST + 9 });
+  const upl = f.hivasok.filter((h) => h.url.includes('uploadClickConversions'));
+  assert.equal(upl.length, 1);
+  const t = JSON.parse(upl[0].o.body);
+  assert.equal(t.validateOnly, false);
+  assert.ok(t.conversions.every((c) => c.orderId === '12169|555|1791800000'));
+  assert.equal(db._s.prepare("SELECT COUNT(*) n FROM mp_feltoltes WHERE mod = 'eles' AND allapot = 'elkuldve'").get().n, 2);
+});

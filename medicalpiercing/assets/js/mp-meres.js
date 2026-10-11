@@ -50,8 +50,13 @@
     if (v != null && v !== '') p[k] = v;
   });
   if (!p.bookingUrl && !(p.placeId && p.employeeId && p.startDate)) return; // nem foglalasbol erkezett
-  var kuld = function () {
-    var torzs = { ut: location.pathname, p: p, kattintas: hirdetesiHozzajarulas() ? olvas() : null };
+  var katNelkulKuldve = false, potolva = false;
+  var vanKatt = function (o) { return !!(o && (o.gclid || o.gbraid || o.wbraid)); };
+  var kuld = function (potlas) {
+    var kat = hirdetesiHozzajarulas() ? olvas() : null;
+    if (!potlas && !vanKatt(kat)) katNelkulKuldve = true;
+    var torzs = { ut: location.pathname, p: p, kattintas: kat };
+    if (potlas) torzs.potlas = true;
     try {
       fetch('/api/mp-foglalas', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify(torzs) })
         .catch(function () { /* a vendeg folyamatat nem zavarja */ });
@@ -68,6 +73,15 @@
     setTimeout(function () { if (document.documentElement.getAttribute('data-mp-motor-atvette') !== '1') egyszer(); }, 1700);
     return;
   }
+  // Kesoi (4 mp utani) hozzajarulas: a foglalas mar kattintasazonosito nelkul ment el. Ha most van hirdetesi hozzajarulas ES
+  // tarolt azonosito, EGYSZER potlo kerest kuldunk; a szerver csak a meg azonosito nelkuli, friss, ugyanezen foglalasi
+  // kulcsu (es motorosnal ugyanazon booking_id-ju) sort egesziti ki, felulirni nem tud (lib/meres/lanc.js).
+  document.addEventListener('mp_suti_valtozas', function () {
+    setTimeout(function () {
+      if (!elkuldve || !katNelkulKuldve || potolva || !hirdetesiHozzajarulas() || !vanKatt(olvas())) return;
+      potolva = true; kuld(true);
+    }, 120);
+  });
   if (/(?:^|;\s*)mp_suti=v1-/.test(document.cookie) || !/medicalpiercing\.hu$/.test(h)) egyszer();
   else {
     document.addEventListener('mp_suti_valtozas', function () { setTimeout(egyszer, 50); });

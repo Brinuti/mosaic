@@ -39,6 +39,8 @@ const json = (o, status = 200) => new Response(JSON.stringify(o), { status, head
  * A bongeszo csak ezeket kuldi (assets/js/mp-meres.js): { ut, p: { bookingUrl, price, first_booking, booking_id, placeId,
  * employeeId, startDate, serviceId }, kattintas: { gclid|gbraid|wbraid: { ertek, ido } } }. Minden mas mezot eldobunk.
  */
+/** A kesoi hozzajarulas potlasanak ablaka: ennyi masodpercen belul letrejott sor egeszitheto ki. */
+export const POTLAS_ABLAK = 2 * 3600;
 const ENGEDETT_P = ['bookingUrl', 'price', 'first_booking', 'booking_id', 'placeId', 'employeeId', 'startDate', 'serviceId'];
 export function bemenet(b) {
   if (!b || typeof b !== 'object') return null;
@@ -49,7 +51,7 @@ export function bemenet(b) {
   if (q.has('bookingUrl')) {
     try { if (new URL(q.get('bookingUrl'), `https://${MP_SALONIC_HOST}/`).hostname !== MP_SALONIC_HOST) q.delete('bookingUrl'); } catch (e) { q.delete('bookingUrl'); }
   }
-  return { url: `https://${ELES_HOST}${ut}?${q}`, bookingId: q.get('booking_id'), kattintas: b.kattintas && typeof b.kattintas === 'object' ? b.kattintas : null };
+  return { url: `https://${ELES_HOST}${ut}?${q}`, bookingId: q.get('booking_id'), kattintas: b.kattintas && typeof b.kattintas === 'object' ? b.kattintas : null, potlas: b.potlas === true };
 }
 
 /**
@@ -83,7 +85,20 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
     const oszl = Object.keys(sor);
     const r = await db.prepare(`INSERT OR IGNORE INTO mp_foglalas (${oszl.join(',')}) VALUES (${oszl.map(() => '?').join(',')})`).bind(...oszl.map((o) => sor[o])).run();
     const uj = !!(r && r.meta && r.meta.changes);
-    if (!uj) return json({ ok: true, uj: false });
+    if (!uj) {
+      // Kesoi hozzajarulas potlasa (assets/js/mp-meres.js): CSAK ha a bongeszo potlasnak jelolte, a suti szerint MOST van hirdetesi
+      // hozzajarulas es ervenyes azonosito, a sor meg azonosito nelkuli, POTLAS_ABLAK-on belul jott letre, es ugyanaz a booking_id
+      // (salonic-uton mindketto ures). Igy mas foglalashoz nem kotheto, meglevo erteket nem ir felul, ismetelt hivas 0 sort modosit.
+      if (!be.potlas || !katt) return json({ ok: true, uj: false });
+      const u = await db.prepare(`UPDATE mp_foglalas SET kattintas_tipus = ?, kattintas_ertek = ?, kattintas_ido = ?, hozzajarulas_dontott = 1, hozzajarulas_hirdetes = 1, hozzajarulas_analitika = ?
+        WHERE kulcs = ? AND kattintas_ertek IS NULL AND letrehozva >= ? AND salonic_id IS ? AND kornyezet = ?`)
+        .bind(katt.tipus, katt.ertek, katt.ido, hozz.analitika ? 1 : 0, kulcs, most - POTLAS_ABLAK, be.bookingId || null, sor.kornyezet).run();
+      if (!(u && u.meta && u.meta.changes)) return json({ ok: true, uj: false, potolva: false });
+      const frissSor = await db.prepare('SELECT * FROM mp_foglalas WHERE kulcs = ?').bind(kulcs).first();
+      const pf = feltoltes(db, frissSor, env, host, { fetchImpl, most }).catch((e) => console.error('mp-meres: potlo feltoltes hiba', String(e && e.message || e).slice(0, 200)));
+      if (typeof waitUntil === 'function') waitUntil(pf); else await pf;
+      return json({ ok: true, uj: false, potolva: true });
+    }
     const feltolt = feltoltes(db, sor, env, host, { fetchImpl, most }).catch((e) => console.error('mp-meres: feltoltes hiba', String(e && e.message || e).slice(0, 200)));
     if (typeof waitUntil === 'function') waitUntil(feltolt); else await feltolt;
     // karbantartas: regi rekordok es a 90 napnal regebbi kattintasazonositok torlese

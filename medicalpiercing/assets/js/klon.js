@@ -551,13 +551,23 @@
   // parameter nelkul, a mentetteket visszateszi a cimbe (ujratoltes nelkul).
   const MENTETT = 'savedQueryParams';
   try {
+    // korabbi (a javitas elotti) munkamenetbol maradt Google-kattintasazonosito: torles, vissza nem irjuk
+    const GK = /^(gclid|gbraid|wbraid)$/i;
+    try {
+      const regi = JSON.parse(sessionStorage.getItem(MENTETT) || 'null');
+      if (regi && typeof regi === 'object' && Object.keys(regi).some((k) => GK.test(k))) {
+        const tiszta = Object.fromEntries(Object.entries(regi).filter(([k]) => !GK.test(k)));
+        if (Object.keys(tiszta).length) sessionStorage.setItem(MENTETT, JSON.stringify(tiszta)); else sessionStorage.removeItem(MENTETT);
+      }
+    } catch (x) { try { sessionStorage.removeItem(MENTETT); } catch (y) { /* tiltott tarolo */ } }
     const most = new URLSearchParams(location.search);
     if ([...most.keys()].length) {
       // a Google-kattintasazonositot (gclid / gbraid / wbraid) hozzajarulas nelkul NEM taroljuk: azt a belso linkek viszik (lent)
       const ment = Object.fromEntries([...most].filter(([k]) => !/^(gclid|gbraid|wbraid)$/i.test(k)));
       if (Object.keys(ment).length) sessionStorage.setItem(MENTETT, JSON.stringify(ment));
     } else {
-      const m = JSON.parse(sessionStorage.getItem(MENTETT) || 'null');
+      const m0 = JSON.parse(sessionStorage.getItem(MENTETT) || 'null');
+      const m = m0 && typeof m0 === 'object' ? Object.fromEntries(Object.entries(m0).filter(([k]) => !GK.test(k))) : null;
       if (m && Object.keys(m).length) history.replaceState(history.state, '', location.pathname + '?' + new URLSearchParams(m) + location.hash);
     }
   } catch (x) { /* privat mod / hibas mentes: marad a cim */ }
