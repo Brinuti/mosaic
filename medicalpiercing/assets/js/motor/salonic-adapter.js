@@ -38,6 +38,7 @@ export const HELYSZIN_SORREND = Object.freeze([6029, 11424, 13422, 14144, 10330,
 
 const API_URL = 'https://api.salonic.hu/calendar/getAvailableTimes';
 export const ANY_STAFF = -1;
+const ALAP_SPEC = '20060'; // a Salonic "Piercing" kategoriaja (mind a 15 helyszinen az egyetlen)
 
 // A sajat foglalas-azonosito (booking_id) hordozoja az adatlap cimen (a MOSAIC-meres szerint a Salonic a "back" parametert megorzi).
 export const BOOKING_ID_PARAM = 'back';
@@ -174,14 +175,22 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
   const cache = new Map();
   const readPersist = (key) => { if (!storage) return undefined; try { const j = JSON.parse(storage.getItem('mpSalonic:' + key)); if (j && now() - j.t < persistMs) return j.v; } catch (e) { /* hibas bejegyzes */ } return undefined; };
   const writePersist = (key, v) => { if (!storage) return; try { storage.setItem('mpSalonic:' + key, JSON.stringify({ t: now(), v })); } catch (e) { /* tele / tiltott tarolo */ } };
+  const folyamatban = new Map(); // ugyanarra a kulcsra egyszerre csak egy lekeres fut (pl. gyors egymasutani kattintasok)
   const cached = async (key, fn, { persist = false } = {}) => {
     const c = cache.get(key);
     if (c && now() - c.t < cacheMs) return c.v;
     if (persist) { const p = readPersist(key); if (p !== undefined) { cache.set(key, { t: now(), v: p }); return p; } }
-    const v = await fn();
-    cache.set(key, { t: now(), v });
-    if (persist) writePersist(key, v);
-    return v;
+    if (folyamatban.has(key)) return folyamatban.get(key);
+    const pr = (async () => {
+      const v = await fn();
+      cache.set(key, { t: now(), v });
+      if (persist) writePersist(key, v);
+      return v;
+    })();
+    folyamatban.set(key, pr);
+    const torol = () => folyamatban.delete(key);
+    pr.then(torol, torol);
+    return pr;
   };
   const helyszin = (placeId) => {
     const h = HELYSZINEK[+placeId];
@@ -226,12 +235,17 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     helyszin(placeId);
     const found = [];
     const add = (list, spec) => { for (const s of list) if (!found.some((x) => x.serviceId === s.serviceId)) found.push({ ...s, specId: spec ? spec.specId : null, category: spec ? spec.name : null }); };
+    // Mind a 15 helyszinnek egyetlen kategoriaja van (ALAP_SPEC, 2026-10-11): a felderitest (selectSpecialization) es a listat (showServices) egyszerre kerjuk,
+    // igy a lista egy kor alatt megvan (korabban ket egymas utani lekeres: ~2x lassabb). Ha a Salonic mast mutat (uj kategoria), a regi, biztos ut kovetkezik.
+    const tippelt = page('/showServices/', { placeId, specId: ALAP_SPEC });
+    tippelt.catch(() => {});
     const elso = await page('/selectSpecialization/', { placeId });
     const vegso = new URL(elso.url);
     if (/\/showServices\//.test(vegso.pathname)) {
-      // egy kategoria: a Salonic egyenesen a szolgaltatas-listara iranyitott, de a lang=hu-t elhagyta: ujra, magyarul
+      // egy kategoria: a Salonic egyenesen a szolgaltatas-listara iranyitott, de a lang=hu-t elhagyta: magyarul kell
       const specId = vegso.searchParams.get('specId');
-      add(parseServices((await page('/showServices/', { placeId, specId })).text), { specId, name: null });
+      const lista = specId === ALAP_SPEC ? await tippelt.catch(() => page('/showServices/', { placeId, specId })) : await page('/showServices/', { placeId, specId });
+      add(parseServices(lista.text), { specId, name: null });
     } else {
       const specs = parseSpecs(elso.text);
       const oldalak = await Promise.all(specs.map((spec) => page('/showServices/', { placeId, specId: spec.specId })));
@@ -269,7 +283,7 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     return slotsFromApi(json, { placeId, service });
   }
 
-  const CHUNK_DAYS = 31;
+  const CHUNK_DAYS = 90; // az elso 21 nap utan a maradek egyben jon (kevesebb kerés; a Salonic-valasz ideje alig no a napok szamaval)
   const AVAIL_MS = 90 * 1000;
   const chunkCache = new Map();
   function chunk(placeId, service, staffId, startDate, n, fresh = false) {

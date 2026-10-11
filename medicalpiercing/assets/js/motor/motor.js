@@ -15,7 +15,7 @@ import { tipusKod } from './tipus.js';
 
 const TOVABB = /^(fbclid|gclid|gbraid|wbraid|ttclid|utm_[a-z_]+)$/i;
 const KOSZONO_ORIGIN = /^https:\/\/(www\.)?medicalpiercing\.hu$/;
-const NAPOK = 62;
+const NAPOK = 100; // a Salonic ~65-80 napra elore ad idopontot (2026-10-11: legtavolabbi 80 nap); 100 nap bortonosen mindet lefedi
 const HONAP = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
 const NAP_ROVID = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
 const NAP_NEV = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
@@ -27,10 +27,19 @@ const foglalas = createBookingContext({ storage: (() => { try { return window.se
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ft = (n) => (n === null || n === undefined ? '' : n.toLocaleString('hu-HU').replace(/\s/g, '.') + ' Ft');
 // a budapesti ido (a Salonic idopontjai unix mp-ben; a vendeg Magyarorszagon van, de a gep ideje mas lehet)
+// EU-szabaly: a nyari ido (CEST, UTC+2) marcius utolso vasarnapjan 01:00 UTC-tol oktober utolso vasarnapjan 01:00 UTC-ig tart, egyebkent CET (UTC+1).
+// (Szamolt, nem Intl: a naptar tobb ezer idopontra hivja minden kattintaskor; az Intl-es valtozat ~50 us / hivas volt. Egyezes az Intl-lel: tools/motor-bp-teszt.mjs.)
+const DST = {};
+const utolsoVasarnap = (ev, ho) => { const u = new Date(Date.UTC(ev, ho + 1, 0)); return Date.UTC(ev, ho, u.getUTCDate() - u.getUTCDay(), 1) / 1000; };
+const nyariIdo = (unix) => { const ev = new Date(unix * 1000).getUTCFullYear(); const h = DST[ev] || (DST[ev] = [utolsoVasarnap(ev, 2), utolsoVasarnap(ev, 9)]); return unix >= h[0] && unix < h[1]; };
+const k2 = (n) => (n < 10 ? '0' + n : '' + n);
 const bp = (unix) => {
-  const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Budapest', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' }).formatToParts(new Date(unix * 1000)).map((x) => [x.type, x.value]));
-  return { nap: `${p.year}-${p.month}-${p.day}`, ido: `${p.hour}:${p.minute}`, ev: +p.year, ho: +p.month, d: +p.day };
+  const t = new Date((unix + (nyariIdo(unix) ? 7200 : 3600)) * 1000);
+  const ev = t.getUTCFullYear(), ho = t.getUTCMonth() + 1, d = t.getUTCDate();
+  return { nap: `${ev}-${k2(ho)}-${k2(d)}`, ido: `${k2(t.getUTCHours())}:${k2(t.getUTCMinutes())}`, ev, ho, d };
 };
+// az idopont budapesti napja / ideje egyszer szamolva (a cache-elt idopont-objektumon marad, igy a naptar-ujrarajzolasok olcsok)
+const sb = (x) => x._b || (x._b = bp(x.start_unix));
 const napCim = (nap) => { const [e, h, d] = nap.split('-').map(Number); const w = new Date(Date.UTC(e, h - 1, d)).getUTCDay(); return `${HONAP[h - 1]} ${d}., ${NAP_NEV[w]}`; };
 const gtagEsemeny = (nev, param) => { try { if (typeof window.gtag === 'function') window.gtag('event', nev, { send_to: 'G-SJT2RN62H8', ...param }); } catch (e) { /* a meres nem allithatja meg a foglalast */ } };
 
@@ -73,12 +82,15 @@ button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent
 .hely-racs { grid-template-columns: 1fr 1fr; gap: 8px; }
 .kartya.hely { display: flex; align-items: center; height: clamp(44px, 7dvh, 56px); padding: 0 12px; border-radius: 10px; }
 .kartya.hely .nev { font-size: 15px; }
+.kartya.hely .terkep { flex: none; width: auto; height: 26px; margin-right: 9px; }
+.ikon { flex: none; width: 20px; height: 20px; object-fit: contain; }
+.kartya.szolg .nev { display: flex; align-items: center; gap: 6px; }
 /* 2. lepes: TOMOR szolgaltatas-sorok. Mobilon egysoros (nev + ar), hogy a lista a lehetosegek szerint egy kepernyore keruljon; asztalon 2 oszlop,
    ar + idotartam jobbra. Az akcios szolgaltatasok (3 piercing, 2 piercing, ket szemelynek) athuzott arral */
-.szolg-racs { gap: 3px; }
-.kartya.szolg { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "nev ar"; column-gap: 8px; align-items: center; min-height: 28px; padding: 2px 10px; border-radius: 8px; }
-.kartya.szolg .nev { grid-area: nev; font-size: clamp(11.5px, 3.4vw, 13px); line-height: 1.2; }
-.kartya.szolg .ar { grid-area: ar; float: none; margin: 0; text-align: right; font-size: clamp(11.5px, 3.4vw, 13px); white-space: nowrap; }
+.szolg-racs { gap: 2px; }
+.kartya.szolg { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "nev ar"; column-gap: 8px; align-items: center; min-height: 28px; padding: 1px 9px; border-radius: 8px; }
+.kartya.szolg .nev { grid-area: nev; font-size: clamp(11px, 3.1vw, 12.5px); line-height: 1.12; }
+.kartya.szolg .ar { grid-area: ar; float: none; margin: 0; text-align: right; font-size: clamp(11.5px, 3.3vw, 13px); white-space: nowrap; }
 .kartya.szolg .ar s { margin-right: 6px; font-weight: 400; color: #9a9aa8; }
 .kartya.szolg .reszlet { display: none; }
 .kartya.szolg.akcios { border-color: #d7aba8; background: #fff8f6; }
@@ -94,7 +106,7 @@ button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent
   .chipek { gap: 5px; }
   .chip { gap: 4px; padding: 2px 8px 2px 2px; font-size: 13px; }
   .chip .fejkep { width: 24px; height: 24px; font-size: 10px; }
-  .kartya.szolg .ar s { font-size: .86em; margin-right: 4px; }
+  .kartya.szolg .ar s { font-size: .8em; margin-right: 3px; }
 }
 .chip.valasztott { background: #454659; color: #fff; border-color: #454659; }
 .honap-fej { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 8px; font: 600 16px/1 'poppins-semibold', Poppins, Arial, sans-serif; }
@@ -136,10 +148,11 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .kartya.tipus .reszlet { margin-top: 3px; font-size: 13px; }
 @media (min-width: 701px) { .tipus-racs { grid-template-columns: 1fr 1fr; } .ablak[data-lepes="tipus"] { height: auto; }
   .szolg-racs { gap: 6px; }
-  .kartya.szolg { grid-template-areas: "nev ar" "nev reszlet"; padding: 8px 12px; border-radius: 10px; }
+  .kartya.szolg { padding: 7px 12px; border-radius: 10px; }
   .kartya.szolg .nev, .kartya.szolg .ar { font-size: 14px; }
-  .kartya.szolg .ar s { display: block; margin: 0; font-size: 12px; }
-  .kartya.szolg .reszlet { display: block; grid-area: reszlet; margin: 0; text-align: right; font-size: 12px; white-space: nowrap; } }
+  .ikon { width: 28px; height: 28px; }
+  .kartya.hely .terkep { height: 30px; }
+  .kartya.szolg .ar s { display: block; margin: 0; font-size: 12px; } }
 /* visszahivas-kero urlap (kontroll / ekszercsere / garancia): ugyanaz az urlap es vegpont (/api/urlap), mint a regi /kontroll oldalon.
    TOMOR: asztalon sehol nem logki (2 oszlop), mobilon egy kepernyore torekszik (mint a Salonic-adatlap: nincs lepesjelzo, kisebb fejlec,
    a ket rovid mezo - datum, varos - egymas mellett, rovid kepfeltoltes-felirat) */
@@ -184,6 +197,7 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
   .mezo input, .mezo select, .mezo textarea { padding: 8px 12px; }
 }
 .kicsi { font-size: 13px; color: #6b6c80; }
+.kicsi.tovabbi { margin: -4px 0 6px; text-align: center; font-size: 12px; }
 `;
 
 // A foglalo fo oldala: mire foglalsz? (a regi koztes oldal, /idopontfoglalas, 4 kartyaja). Az uj piercing a naptaras utat inditja
@@ -206,9 +220,11 @@ const URLAP_KOTELEZO = {
   email: ['email', 'Add meg az e-mail-címet (például pelda@webhelyem.com).'], mikor: ['datum', 'Válassz dátumot.'],
   varos: ['sor', 'Írd be a választ.'], miben: ['szoveg', 'Írd be a választ.'],
 };
-// Az "eredeti" (athuzott) ar: a Salonic NEM adja (csak az aktualis ar van), ezt a szalon adja meg. [nev-minta, eredeti ar Ft]; ures = nincs athuzas.
-// Csak igazolt eredeti ar kerulhet ide (a "korabbi ar" jelzesre fogyasztovedelmi szabalyok vonatkoznak).
-const EREDETI_AR = [];
+// Az "eredeti" (athuzott) ar: a Salonic NEM adja (csak az aktualis ar van: data-price), ezert a weboldal arlistaja szerinti listaarakat tartjuk itt
+// (a fooldal / arlista oldalak "X Ft helyett Y Ft" jelzesei: 1 db 27.900, 2 db 55.800, 3 db 83.700, 4 db 111.600, 6 db 167.400 Ft; 27.900 Ft / piercing).
+// [nev-minta, eredeti ar Ft]; a nem szereplo szolgaltatasnak (1+1 allergia, fulbevalo) nincs athuzott ara. A "korabbi ar" jelzesre fogyasztovedelmi szabalyok vonatkoznak:
+// csak olyan listaar kerulhet ide, amit a weboldal is hirdet. Ha a Salonic-szolgaltatas neveben "X Ft helyett" van, azt a motor magatol felveszi (listPrice).
+const EREDETI_AR = [[/3 PIERCING/i, 83700], [/2 PIERCING/i, 55800], [/2 szem\S*ynek\s*[-–]\s*2 db/i, 55800], [/2 szem\S*ynek\s*[-–]\s*4 db/i, 111600], [/2 szem\S*ynek\s*[-–]\s*6 db/i, 167400], [/^1 db (?!f\S*lbeval)/i, 27900]];
 const eredetiAr = (s) => { const t = EREDETI_AR.find(([re]) => re.test(s.name)); return t ? t[1] : s.listPrice || null; };
 // a csapat tagjai (a fooldal csapat-szekcioja szerinti beceneven, fejkeppel): a Salonic-nev -> becenev, kep (assets/img/csapat/)
 const ekezetNelkul = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -220,6 +236,12 @@ const csapattag = (nev) => {
 };
 // a szakember-csempe tartalma: kis kerek fejkep (vagy monogram) + becenev
 const szakemberJel = (nev) => { const t = csapattag(nev); return `<span class="fejkep" aria-hidden="true">${t.kep ? `<img src="${t.kep}" alt="" width="28" height="28" loading="lazy">` : esc(t.kezdo)}</span><span>${esc(t.rovid)}</span>`; };
+// szolgaltatas-ikonok (assets/img/ikon/<kod>.webp, AI-val generalt csomag): a piercing tipus-kodja szerint; a csomagok sajat ikont kapnak, a tobbinek nincs
+const IKONOS = new Set(['mi', 'sh', 'kl', 'sl', 'al', 'mj', 'vb', 'lp', 'pm', 'divat']);
+const ikonKod = (s) => (/szem\S*ynek/i.test(s.name) ? 'ketto' : /3 PIERCING|2 PIERCING|harmadik|f\S*laron/i.test(s.name) ? 'akcio' : IKONOS.has(tipusKod(s.name)) ? tipusKod(s.name) : null);
+const szolgIkon = (s) => { const k = ikonKod(s); return k ? `<img class="ikon" src="/assets/img/ikon/${k}.webp" alt="" width="22" height="22" decoding="async">` : ''; };
+// a Salonic-nevben levo emoji (lang, ket szemely) helyett az ikon latszik
+const szepNev = (n) => String(n || '').replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu, '').replace(/\s+/g, ' ').trim();
 let orszagLista = [['HU', 'HUN', 'Magyarország', '+36']];
 const orszagokBetolt = () => fetch('/assets/data/orszagok.json').then((v) => v.json()).then((d) => { if (d && Array.isArray(d.orszagok) && d.orszagok.length) orszagLista = d.orszagok; return orszagLista; }).catch(() => orszagLista);
 
@@ -302,7 +324,7 @@ export function nyit(ctx) {
     const s = all.szolg;
     const sor = [];
     if (h) sor.push(`<div class="os-sor"><span><b>${esc(h.varos)}</b>${s && s.durationMin ? `<span class="kicsi"> · ${s.durationMin} perc</span>` : ''}</span>${s ? `<span class="os-ar">${eredetiAr(s) ? `<s class="athuzott">${ft(eredetiAr(s))}</s> ` : ''}${ft(s.activePrice)}</span>` : ''}</div>`);
-    if (s) sor.push(`<div class="os-szolg" title="${esc(s.name)}">${esc(s.name)}</div>`);
+    if (s) sor.push(`<div class="os-szolg" title="${esc(szepNev(s.name))}">${esc(szepNev(s.name))}</div>`);
     if (all.slot) sor.push(`<div>${napCim(bp(all.slot.start_unix).nap)}, <b>${bp(all.slot.start_unix).ido}</b></div>`);
     return sor.length ? `<div class="osszegzes">${sor.join('')}</div>` : '';
   };
@@ -423,7 +445,7 @@ export function nyit(ctx) {
   function helyszinLepes() {
     tartalom.innerHTML = `<p class="kicsi bevezeto">Válaszd ki, hol szeretnéd a piercinget.</p><div class="lista hely-racs">${HELYSZIN_SORREND.map((id) => {
       const h = HELYSZINEK[id];
-      return `<button class="kartya hely" data-hely="${id}"><span class="nev">${esc(h.varos)}</span></button>`;
+      return `<button class="kartya hely" data-hely="${id}"><img class="terkep" src="/assets/img/helyszin/${id}.svg" alt="" width="36" height="26" decoding="async"><span class="nev">${esc(h.varos)}</span></button>`;
     }).join('')}</div>`;
   }
 
@@ -440,7 +462,8 @@ export function nyit(ctx) {
       if (s) { all.szolg = s; return ugrik('ido'); }
     }
     const t = ctx.oldalTipus && ctx.oldalTipus !== 'alt' ? ctx.oldalTipus : null;
-    const kartya = (s) => { const e = eredetiAr(s); return `<button class="kartya szolg${e ? ' akcios' : ''}" data-szolg="${esc(s.serviceId)}"><span class="ar">${e ? `<s>${ft(e)}</s>` : ''}${ft(s.activePrice)}</span><span class="nev">${esc(s.name)}</span><div class="reszlet">${s.durationMin ? s.durationMin + ' perc' : ''}</div></button>`; };
+    const kiemelt = (s) => /3 PIERCING|2 PIERCING|szem\S*ynek/i.test(s.name); // az akcios csomagok enyhe kiemelessel (a tobbi sor csak athuzott arat kap)
+const kartya = (s) => { const e = eredetiAr(s); return `<button class="kartya szolg${e && kiemelt(s) ? ' akcios' : ''}" data-szolg="${esc(s.serviceId)}"><span class="ar">${e ? `<s>${ft(e)}</s>` : ''}${ft(s.activePrice)}</span><span class="nev">${szolgIkon(s)}<span>${esc(szepNev(s.name))}</span></span><div class="reszlet">${s.durationMin ? s.durationMin + ' perc' : ''}</div></button>`; };
     const ajanlott = t ? lista.filter((s) => tipusKod(s.name) === t) : [];
     const tobbi = lista.filter((s) => !ajanlott.includes(s));
     tartalom.innerHTML = osszegzes() + (ajanlott.length ? `<div class="alcim">Ajánlott</div><div class="lista szolg-racs">${ajanlott.map(kartya).join('')}</div><div class="alcim">További piercingek</div>` : '') + `<div class="lista szolg-racs">${tobbi.map(kartya).join('')}</div>`;
@@ -449,17 +472,22 @@ export function nyit(ctx) {
 
   // --- 3. idopont ---
   async function idopontLepes() {
-    tartalom.innerHTML = osszegzes() + '<div class="toltes">A szabad időpontok betöltése…</div>';
     const s = all.szolg;
+    const kulcs = `${all.placeId}:${s.serviceId}`;
+    // visszalepes az adatlaprol / masik napra: az ugyanahhoz a helyszinhez + piercinghez nemrég betoltott idopontokat nem toltjuk ujra (90 mp, mint az adapter cache-e)
+    if (all.slotok && all.slotokKulcs === kulcs && Date.now() - all.slotokT < 90000) return naptar();
+    tartalom.innerHTML = osszegzes() + '<div class="toltes">A szabad időpontok betöltése…</div>';
+    all.tovabbi = true; $('.ablak').dataset.tovabbi = '1';
+    const kesz = () => { all.tovabbi = false; const a = $('.ablak'); if (a) a.dataset.tovabbi = '0'; };
     let elso;
     try {
       elso = await adapter.getAvailability(all.placeId, s.serviceId, {
         days: NAPOK, firstDays: 21, minLeadMinutes: 30,
-        onMore: (l) => { if (l && all.lepes === 'ido' && all.szolg === s && !lezart) { all.slotok = l; naptar(); } },
+        onMore: (l) => { kesz(); if (l && all.szolg === s && !lezart) { all.slotok = l; all.slotokKulcs = kulcs; all.slotokT = Date.now(); } if (all.lepes === 'ido' && all.szolg === s && !lezart && all.slotok) naptar(); },
       });
-    } catch (e) { return hiba('idopontok', e); }
+    } catch (e) { kesz(); return hiba('idopontok', e); }
     if (all.lepes !== 'ido' || all.szolg !== s || lezart) return;
-    all.slotok = elso;
+    all.slotok = elso; all.slotokKulcs = kulcs; all.slotokT = Date.now();
     naptar();
   }
   function naptar() {
@@ -468,7 +496,7 @@ export function nyit(ctx) {
     if (all.staffId && !munkatarsak.some(([id]) => id === all.staffId)) all.staffId = null; // a linkbeli szakembernek nincs ideje: barki
     const sajat = all.staffId ? all.slotok.filter((x) => x.staff_id === all.staffId) : all.slotok;
     const napok = new Map();
-    for (const x of sajat) { const b = bp(x.start_unix); if (!napok.has(b.nap)) napok.set(b.nap, []); napok.get(b.nap).push(x); }
+    for (const x of sajat) { const b = sb(x); if (!napok.has(b.nap)) napok.set(b.nap, []); napok.get(b.nap).push(x); }
     if (!sajat.length) {
       tartalom.innerHTML = osszegzes() + `<p class="uzenet">A következő ${NAPOK} napban ezen a helyszínen erre a piercingre nincs szabad időpont.${munkatarsak.length > 1 && all.staffId ? '' : ''}</p><p><button class="gomb masodlagos" data-lepes="szolg">Másik piercing</button> <button class="gomb masodlagos" data-lepes="hely">Másik helyszín</button></p>`;
       return;
@@ -488,13 +516,13 @@ export function nyit(ctx) {
       const van = napok.has(k);
       racs += `<button class="nap${van ? ' van' : ''}${k === all.nap ? ' valasztott' : ''}" ${van ? `data-nap="${k}" aria-label="${esc(napCim(k))}"` : 'disabled'}>${d}</button>`;
     }
-    const idok = [...new Map(napok.get(all.nap).map((x) => [bp(x.start_unix).ido, x])).values()].sort((a, b) => a.start_unix - b.start_unix);
+    const idok = [...new Map(napok.get(all.nap).map((x) => [sb(x).ido, x])).values()].sort((a, b) => a.start_unix - b.start_unix);
     tartalom.innerHTML = osszegzes()
       + (munkatarsak.length > 1 ? `<div class="alcim">Szakember</div><div class="chipek"><button class="chip${all.staffId ? '' : ' valasztott'}" data-staff=""><span class="fejkep" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6.5-1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM9 13c-2.7 0-5 1.4-5 3.5V18h10v-1.5C14 14.4 11.7 13 9 13Zm6.5.5c-.5 0-1 .1-1.4.2 1 .8 1.6 1.8 1.6 2.8V18H20v-1.2c0-1.8-2-3.3-4.5-3.3Z"/></svg></span><span>Bárki</span></button>${munkatarsak.map(([id, n]) => `<button class="chip${all.staffId === id ? ' valasztott' : ''}" data-staff="${esc(id)}" title="${esc(n)}" aria-label="${esc(n)}">${szakemberJel(n)}</button>`).join('')}</div>`
         // ha egy helyszinen csak egy szakember van, nem valasztatunk, de kijelolve mutatjuk (fejkep + nev), hogy a vendeg lassa, kihez megy
         : munkatarsak.length === 1 ? `<div class="alcim">Szakember</div><div class="chipek"><span class="chip valasztott egy" title="${esc(munkatarsak[0][1])}" aria-label="Szakember: ${esc(munkatarsak[0][1])}">${szakemberJel(munkatarsak[0][1])}</span></div>` : '')
       + `<div class="honap-fej"><button class="gomb-ikon" data-honap="${hi > 0 ? honapok[hi - 1] : ''}" ${hi > 0 ? '' : 'disabled style="visibility:hidden"'} aria-label="Előző hónap">‹</button><span>${ev}. ${HONAP[ho - 1]}</span><button class="gomb-ikon" data-honap="${hi < honapok.length - 1 ? honapok[hi + 1] : ''}" ${hi < honapok.length - 1 ? '' : 'disabled style="visibility:hidden"'} aria-label="Következő hónap">›</button></div>`
-      + `<div class="racs">${racs}</div><div class="alcim">${esc(napCim(all.nap))}</div><div class="idok">${idok.map((x) => `<button class="ido" data-slot="${x.start_unix}">${bp(x.start_unix).ido}</button>`).join('')}</div>`;
+      + `<div class="racs">${racs}</div>${all.tovabbi ? '<div class="kicsi tovabbi">További napok betöltése…</div>' : ''}<div class="alcim">${esc(napCim(all.nap))}</div><div class="idok">${idok.map((x) => `<button class="ido" data-slot="${x.start_unix}">${sb(x).ido}</button>`).join('')}</div>`;
   }
 
   // --- 4. adatlap (a Salonic beagyazott urlapja) ---
@@ -540,7 +568,7 @@ export function nyit(ctx) {
     if (d.hely) { all.placeId = +d.hely; all.szolg = null; all.nap = null; all.honap = null; all.staffId = null; return ugrik('szolg'); }
     if (d.szolg) { all.szolg = (tartalom._lista || []).find((x) => x.serviceId === d.szolg) || null; all.nap = null; all.honap = null; if (all.szolg) ugrik('ido'); return; }
     if (d.staff !== undefined) { all.staffId = d.staff || null; all.nap = null; all.honap = null; return naptar(); }
-    if (d.honap) { all.honap = d.honap; const elso = [...new Set(all.slotok.map((x) => bp(x.start_unix).nap))].sort().find((k) => k.startsWith(d.honap)); if (elso) all.nap = elso; return naptar(); }
+    if (d.honap) { all.honap = d.honap; const elso = [...new Set(all.slotok.map((x) => sb(x).nap))].sort().find((k) => k.startsWith(d.honap)); if (elso) all.nap = elso; return naptar(); }
     if (d.nap) { all.nap = d.nap; return naptar(); }
     if (d.slot) {
       const unix = +d.slot;

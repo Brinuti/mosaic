@@ -37,7 +37,7 @@ async function egy(h, mobil) {
     if (!ok(`${nev}: a motor megnyilik, a helyszin kozte van`, await varj(`[data-hely="${h.place_id}"]`))) return sor;
     await sr('r.querySelector(`[data-hely="${a}"]`).click()', h.place_id);
     if (!ok(`${nev}: a kezelesek betoltodnek`, await varj('[data-szolg]'))) return sor;
-    const kezelesek = await sr('return [...r.querySelectorAll("[data-szolg]")].map(x=>({id:x.dataset.szolg, nev:x.querySelector(".nev").textContent, ar:x.querySelector(".ar").textContent.replace(/\\D/g,"")}))');
+    const kezelesek = await sr('return [...r.querySelectorAll("[data-szolg]")].map(x=>({id:x.dataset.szolg, nev:x.querySelector(".nev").textContent, ar:[...x.querySelector(".ar").childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join("").replace(/\\D/g,"")}))');
     const vart = h.szolgaltatasok.map((s) => s.service_id);
     const kapott = kezelesek.map((k) => k.id);
     const hianyzik = vart.filter((x) => !kapott.includes(x)), tobblet = kapott.filter((x) => !vart.includes(x));
