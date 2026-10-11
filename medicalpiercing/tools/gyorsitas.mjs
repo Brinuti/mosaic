@@ -12,7 +12,9 @@
 // - a kepek WebP-valtozata, ahol van (tools/webp.py): az <img> cimkekben es a hatterkepekben;
 //   a megosztasi kep (og:image) es az ikonok az eredetiek maradnak;
 // - a sajat, magatol indulo videok (Wix videodoboz) nem toltodnek le a lap megnyitasakor
-//   (preload="none", autoplay nelkul): a klon.js inditja, amikor a kepernyo kozelebe ernek.
+//   (preload="none", autoplay nelkul): a klon.js inditja, amikor a kepernyo kozelebe ernek;
+// - a harom kis sajat stiluslap (betuk, klon.css; egyutt ~5 kB tomoritve) a lapba agyazva, ugyanazon
+//   a helyen: igy nem kell rajuk varni a megjelenites elott (PageSpeed: "renderelest letilto kerelmek").
 // A meg fel nem mert lapokon a kepek betoltesi jeleihez es a betukhoz nem nyulunk.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,6 +22,12 @@ import path from 'node:path';
 const LEGFELJEBB_BETU = 6;
 const KEPEK = path.resolve(import.meta.dirname, '../assets/img');
 const WEBP = new Set(fs.existsSync(KEPEK) ? fs.readdirSync(KEPEK).filter((f) => f.endsWith('.webp')).map((f) => f.slice(0, -5)) : []);
+const BEAGYAZOTT = ['wix-google-fonts', 'wix-fonts', 'klon'];
+const stilus = new Map(BEAGYAZOTT.map((n) => {
+  const f = path.resolve(import.meta.dirname, `../assets/css/${n}.css`);
+  // a betuk cime a stiluslaphoz kepest relativ (../fonts/): a lapban gyokerhez kepest kell
+  return [n, fs.existsSync(f) ? fs.readFileSync(f, 'utf8').replace(/url\((['"]?)\.\.\/fonts\//g, 'url($1/assets/fonts/') : null];
+}));
 const webpre = (s) => s.replace(/\/assets\/img\/([\w.-]+)\.(?:jpe?g|png)(?=[\s"'),?#]|$)/gi, (m, nev) => (WEBP.has(nev) ? `/assets/img/${nev}.webp` : m));
 
 const attr = (cimke, nev) => {
@@ -36,6 +44,7 @@ const utvonal = (src) => {
 /** @param {string} html  @param {{img: string[], kiemelt: string[], betu: string[]} | undefined} adat */
 export function gyorsit(html, adat) {
   let h = html.replace(/<iframe\b[^>]*>/gi, (c) => (attr(c, 'loading') ? c : hozza(c, 'loading="lazy"')));
+  h = h.replace(/<link rel="stylesheet" href="\/assets\/css\/([\w-]+)\.css">/g, (c, n) => (stilus.get(n) ? `<style data-mp-css="${n}">${stilus.get(n)}</style>` : c));
   h = h.replace(/background-image:\s*url\([^)]*\)/gi, webpre);
   h = h.replace(/<video\b[^>]*>/gi, (c) => (/\sautoplay\b/.test(c) && /\ssrc="\/assets\/video\//.test(c)
     ? hozza(nelkul(nelkul(c, 'autoplay'), 'preload'), 'preload="none"') : c));

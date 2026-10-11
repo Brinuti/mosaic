@@ -121,6 +121,8 @@ Trustindex) a lap megnyitásakor töltött be. A build ezért:
   A megosztási kép és az ikonok eredetiek maradnak;
 - a magától induló háttérvideókat (Wix-videódoboz, 5–8 MB) nem tölti le a lap megnyitásakor
   (`preload="none"`): a `klon.js` akkor indítja őket, amikor a képernyő közelébe érnek;
+- a három kis saját stíluslapot (`wix-google-fonts.css`, `wix-fonts.css`, `klon.css`, együtt ~5 kB tömörítve)
+  a lapba ágyazza, ugyanazon a helyen: nem kell rájuk várni a megjelenítés előtt;
 - minden CSS- és JS-hivatkozást tartalomjellel lát el (`?v=`), így ezek egy évig gyorsítótárazhatók (`_headers`).
 
 A felugró menü a tulajdonos kérésére animáció nélkül, azonnal nyílik és zárul. Mérés:
