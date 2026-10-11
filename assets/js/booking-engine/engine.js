@@ -1045,12 +1045,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       // Az ellenorzes eredmenye csak a sajat esemenyeinket (booking_completed / booking_error) szabja.
       const v = S.expected ? adapter.verifyConfirmation(href, S.expected) : null;
       if (v && v.ok) confirmed(v);
-      else {
-        // A Salonic csak sikeres foglalas utan iranyit a koszonooldalra: a foglalas letrejott, csak a sajat ellenorzesunk nem sikerult.
-        // A szamlaloban ezert sikerkent is szamit (egyszer, a visszairanyitas cimere kulcsolva), a verify_failed kulon jelzi az ellenorzes hibajat.
-        meter.success('nv:' + String(href).slice(0, 300));
-        meter.error('verify_failed', 'C5');
-      }
+      else meter.error('verify_failed', 'C5'); // nem igazolt visszateres: kulon szamolodik (a napi ellenorzes a success mellett kulon mutatja), sikernek nem
       if (!(v && v.ok)) track('booking_error', { ...(S.service ? serviceParams(S.service) : {}), step: 'C5', reason: v ? 'verify_failed' : 'no_expectation',
         filter: v ? Object.entries(v.checks).filter(([, c]) => c.status === 'fail').map(([k]) => k).join(',') : undefined });
       // (a Salonic URL-je valtozatlan marad; csak a motor sajat URL-jen erkezett hirdetesi azonositok kerulnek a vegere, ha a Salonic nem hozta oket)

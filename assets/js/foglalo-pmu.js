@@ -124,7 +124,7 @@
   // a motor retege szamolja; itt a szolgaltatastol a sikerig. Robot (webdriver) es probajeles bongeszo (?proba=1 -> localStorage mhProba) nem szamolodik.
   const pmuLepes = (() => {
     const VEGPONT = '/api/foglalo-szamlalo';
-    const NEV = { service: 'booking_service', slots_loaded: 'booking_slots_loaded', slot: 'booking_slot', form_start: 'booking_form_start', submit: 'booking_submit', success: 'booking_success' };
+    const NEV = { service: 'booking_service', slots_loaded: 'booking_slots_loaded', slot: 'booking_slot', form_start: 'booking_form_start', submit: 'booking_submit', success: 'booking_success', error: 'booking_error' };
     let proba = false;
     try {
       const q = new URLSearchParams(location.search).get('proba');
@@ -140,11 +140,12 @@
         const sid = o.serviceId !== undefined && /^[A-Za-z0-9_-]{1,40}$/.test(String(o.serviceId)) ? String(o.serviceId) : 'none';
         try {
           const s = window.mhSuti;
-          if (s && typeof s.engedely === 'function' && s.engedely('ana')) (window.dataLayer = window.dataLayer || []).push({ event: NEV[lepes], business: 'pmu', service_id: sid, source_page: '/foglalo-pmu', load_ms: o.loadMs, step: undefined, error_type: undefined });
+          if (s && typeof s.engedely === 'function' && s.engedely('ana')) (window.dataLayer = window.dataLayer || []).push({ event: NEV[lepes], business: 'pmu', service_id: sid, source_page: '/foglalo-pmu', load_ms: lepes === 'slots_loaded' ? o.loadMs : undefined, step: undefined, error_type: lepes === 'error' ? (o.tipus || 'client_error') : undefined });
         } catch (e) { /* nem kritikus */ }
         if (robot()) return;
         const adat = { lepes, uzletag: 'pmu' };
         if (lepes === 'slots_loaded') adat.load_ms = Math.max(0, Math.min(60000, Math.round(Number(o.loadMs) || 0)));
+        if (lepes === 'error') adat.tipus = o.tipus === 'verify_failed' ? 'verify_failed' : 'client_error';
         const torzs = JSON.stringify(adat);
         if (navigator.sendBeacon && navigator.sendBeacon(VEGPONT, new Blob([torzs], { type: 'text/plain' }))) return;
         fetch(VEGPONT, { method: 'POST', body: torzs, keepalive: true, credentials: 'omit', headers: { 'content-type': 'text/plain' } }).catch(() => {});
@@ -775,14 +776,18 @@
     const kert = new URLSearchParams(location.search).get('kezeles');
     // a koszonooldalak sajat cimukon: /pmu-ok (Salonic-foglalas utan), /pmu-vh (telefonos konzultacio utan)
     if (KOSZ_OLDAL === 'ok') {
-      // sikeres Salonic-foglalas: a Salonic a /pmu-ok oldalra iranyitott. Csak a sajat foglalonkbol inditott foglalas szamit (a bookingUrl "back"
-      // parametere a mi mb_ azonositonk), foglalasonkent egyszer (ujratoltes ellen sessionStorage-jel).
+      // A Salonic a /pmu-ok oldalra iranyitott. Csak a sajat foglalonkbol inditott foglalas szamit (a bookingUrl "back" parametere a mi mb_ azonositonk),
+      // foglalasonkent egyszer (ujratoltes ellen sessionStorage-jel, a foglalas-azonositora kulcsolva). submit = a vendeg beadta az adatlapot;
+      // success CSAK igazolt egyezesnel: a visszaadott szolgaltatas es kezdes megegyezik azzal, amit a foglalonk inditott (mhBookingCtx) - kulonben verify_failed.
       try {
-        const bu = new URLSearchParams(location.search).get('bookingUrl');
-        const bid = bu ? new URL(bu).searchParams.get('back') : null;
-        if (bid && /^mb_[a-z0-9]{12,40}$/.test(bid) && !sessionStorage.getItem('mhPmuSiker:' + bid)) {
+        const u = new URL(new URLSearchParams(location.search).get('bookingUrl') || '');
+        const bid = u.searchParams.get('back');
+        if (/^mb_[a-z0-9]{12,40}$/.test(bid || '') && !sessionStorage.getItem('mhPmuSiker:' + bid)) {
           sessionStorage.setItem('mhPmuSiker:' + bid, '1');
-          pmuLepes('submit', bid); pmuLepes('success', bid);
+          pmuLepes('submit', bid);
+          let c = null; try { c = JSON.parse(sessionStorage.getItem('mhBookingCtx')); } catch (e) { c = null; }
+          const egyezik = c && c.id === bid && String(c.service_id) === u.searchParams.get('serviceId') && String(c.slot_unix) === u.searchParams.get('startDate');
+          pmuLepes(egyezik ? 'success' : 'error', bid, egyezik ? {} : { tipus: 'verify_failed' });
         }
       } catch (e) { /* a koszonooldal ettol nem akadhat el */ }
       mutat('koszonjuk'); BELEPES.koszonjuk(); return;
