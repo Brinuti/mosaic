@@ -119,6 +119,40 @@
   const tarol = (k, v) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* privat mod */ } };
   const olvas = (k) => { try { return JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { return null; } };
 
+  // --- lepes-meres (Feri, 2026-10-11): a PMU-foglalo is kuldi a lepeseit ugyanabba a nevtelen szamlaloba es (hozzajarulassal) GA4-be, mint a
+  // foglalo-motor (assets/js/booking-engine/lepes-meres.js; uzletag: pmu). Suti / azonosito / szemelyes adat nelkul. A megnyitast (open, business)
+  // a motor retege szamolja; itt a szolgaltatastol a sikerig. Robot (webdriver) es probajeles bongeszo (?proba=1 -> localStorage mhProba) nem szamolodik.
+  const pmuLepes = (() => {
+    const VEGPONT = '/api/foglalo-szamlalo';
+    const NEV = { service: 'booking_service', slots_loaded: 'booking_slots_loaded', slot: 'booking_slot', form_start: 'booking_form_start', submit: 'booking_submit', success: 'booking_success', error: 'booking_error' };
+    let proba = false;
+    try {
+      const q = new URLSearchParams(location.search).get('proba');
+      if (q === '1') localStorage.setItem('mhProba', '1'); else if (q === '0') localStorage.removeItem('mhProba');
+      proba = localStorage.getItem('mhProba') === '1';
+    } catch (e) { /* tiltott tarolo: nem proba */ }
+    const robot = () => { try { return !!navigator.webdriver && !window.__MH_SZAMLALO_PROBA; } catch (e) { return false; } };
+    const volt = new Set();
+    return (lepes, egyszerKulcs, o = {}) => {
+      try {
+        if (proba || !NEV[lepes]) return;
+        if (egyszerKulcs !== undefined) { const k = lepes + ':' + egyszerKulcs; if (volt.has(k)) return; volt.add(k); }
+        const sid = o.serviceId !== undefined && /^[A-Za-z0-9_-]{1,40}$/.test(String(o.serviceId)) ? String(o.serviceId) : 'none';
+        try {
+          const s = window.mhSuti;
+          if (s && typeof s.engedely === 'function' && s.engedely('ana')) (window.dataLayer = window.dataLayer || []).push({ event: NEV[lepes], business: 'pmu', service_id: sid, source_page: '/foglalo-pmu', load_ms: lepes === 'slots_loaded' ? o.loadMs : undefined, step: undefined, error_type: lepes === 'error' ? (o.tipus || 'client_error') : undefined });
+        } catch (e) { /* nem kritikus */ }
+        if (robot()) return;
+        const adat = { lepes, uzletag: 'pmu' };
+        if (lepes === 'slots_loaded') adat.load_ms = Math.max(0, Math.min(60000, Math.round(Number(o.loadMs) || 0)));
+        if (lepes === 'error') adat.tipus = o.tipus === 'verify_failed' ? 'verify_failed' : 'client_error';
+        const torzs = JSON.stringify(adat);
+        if (navigator.sendBeacon && navigator.sendBeacon(VEGPONT, new Blob([torzs], { type: 'text/plain' }))) return;
+        fetch(VEGPONT, { method: 'POST', body: torzs, keepalive: true, credentials: 'omit', headers: { 'content-type': 'text/plain' } }).catch(() => {});
+      } catch (e) { /* a meres hibaja nem akadalyozhatja a foglalast */ }
+    };
+  })();
+
   function leker(url, o = {}) {
     const ab = new AbortController();
     const ido = setTimeout(() => ab.abort(), 15000);
@@ -279,8 +313,10 @@
   async function kezdesekBetolt(friss) {
     const k = allapot.kezeles;
     if (!friss && allapot.kezdesekKezeles === k.id) return;
+    const t0 = Date.now();
     allapot.kezdesek = await szabadKezdesek(k.id, Math.floor(Date.now() / 1000) - 3 * 3600, ELORE_NAP);
     allapot.kezdesekKezeles = k.id;
+    pmuLepes('slots_loaded', k.id, { serviceId: k.id, loadMs: Date.now() - t0 });
   }
 
   // --- 1. kezelesvalasztas -------------------------------------------------------
@@ -332,6 +368,7 @@
     if (!allapot.kezeles || allapot.kezeles.id !== k.id) Object.assign(allapot, { honap: null, naptarNap: null });
     allapot.kezeles = k;
     allapot.slot = null;
+    pmuLepes('service', undefined, { serviceId: k.id });
     ugrik('ido');
   }
 
@@ -373,6 +410,7 @@
   };
   function slotValaszt(ts) {
     allapot.slot = ts;
+    pmuLepes('slot', undefined, { serviceId: allapot.kezeles && allapot.kezeles.id });
     // a kerdest senki nem ugorhatja at (a szemelyes konzultacio sem): regi PMU-val elobb foto kell
     allapot.kerdesCel = 'adatok';
     ugrik('kerdes');
@@ -458,6 +496,7 @@
     // a koszonooldalnak (a /pmu-ok meres utan ide jovunk vissza)
     tarol(TAROLO, { ts: allapot.slot, perc: k.perc, nev: k.egyeb ? k.nev : k.cim + (k.valtozat ? ' – ' + k.valtozat : ''), ar: arSzoveg(k), foto: k.foto, tipus: /konzult/i.test(k.nev) ? 'konz' : 'kezeles' });
     $('salonic-link').href = url;
+    pmuLepes('form_start', k.id + ':' + allapot.slot, { serviceId: k.id });
     // mindig uj keret: igy a betoltes nem kerul a bongeszo elozmenyei koze, es a vissza gomb
     // nem a Salonic belso oldalaira lep vissza
     const regi = $('salonic');
@@ -736,7 +775,23 @@
   (async () => {
     const kert = new URLSearchParams(location.search).get('kezeles');
     // a koszonooldalak sajat cimukon: /pmu-ok (Salonic-foglalas utan), /pmu-vh (telefonos konzultacio utan)
-    if (KOSZ_OLDAL === 'ok') { mutat('koszonjuk'); BELEPES.koszonjuk(); return; }
+    if (KOSZ_OLDAL === 'ok') {
+      // A Salonic a /pmu-ok oldalra iranyitott. Csak a sajat foglalonkbol inditott foglalas szamit (a bookingUrl "back" parametere a mi mb_ azonositonk),
+      // foglalasonkent egyszer (ujratoltes ellen sessionStorage-jel, a foglalas-azonositora kulcsolva). submit = a vendeg beadta az adatlapot;
+      // success CSAK igazolt egyezesnel: a visszaadott szolgaltatas es kezdes megegyezik azzal, amit a foglalonk inditott (mhBookingCtx) - kulonben verify_failed.
+      try {
+        const u = new URL(new URLSearchParams(location.search).get('bookingUrl') || '');
+        const bid = u.searchParams.get('back');
+        if (/^mb_[a-z0-9]{12,40}$/.test(bid || '') && !sessionStorage.getItem('mhPmuSiker:' + bid)) {
+          sessionStorage.setItem('mhPmuSiker:' + bid, '1');
+          pmuLepes('submit', bid);
+          let c = null; try { c = JSON.parse(sessionStorage.getItem('mhBookingCtx')); } catch (e) { c = null; }
+          const egyezik = c && c.id === bid && String(c.service_id) === u.searchParams.get('serviceId') && String(c.slot_unix) === u.searchParams.get('startDate');
+          pmuLepes(egyezik ? 'success' : 'error', bid, egyezik ? {} : { tipus: 'verify_failed' });
+        }
+      } catch (e) { /* a koszonooldal ettol nem akadhat el */ }
+      mutat('koszonjuk'); BELEPES.koszonjuk(); return;
+    }
     if (KOSZ_OLDAL === 'vh') { mutat('c-kesz'); BELEPES['c-kesz'](); return; }
     if (location.hash.startsWith('#koszonjuk') && (olvas(TAROLO) || MINTA)) {
       history.replaceState({ nezet: 'koszonjuk' }, '', location.hash);
