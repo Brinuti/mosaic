@@ -177,3 +177,7 @@ A munkához készült mentések (`/tmp/*_backup.json`, `member_meta_backup.json`
 - Mereshez: sandboxban /home/user/ax (playwright-core + axe-core), `node ax.js`.
 - TTFB: origin ~0.65 s (TLS 0.33 s), Cloudflare MISS ~1.1-1.5 s, HIT ~0.05 s. A mezo-TTFB a MISS-ek miatt rossz. Intezkedes: HTML edge TTL 12 ora -> 7 nap (minden valtoztatas utan purge), + snippet 55 (gyt-cache-bemelegito): 20 percenkent 30 oldalt megkeres a szerverrol, hogy az edge cache meleg legyen.
 - Tanulsag: minden Cloudflare purge utan az elso latogatok lassu (MISS) valaszt kapnak; tul gyakori purge rontja a Core Web Vitals mezoadatot.
+
+## 25. Gombszin visszaallitva, lablec osszenyomva (2026-10-11)
+- A narancs gombok szine visszaallt (#e99300) a user kerese szerint (kontraszt-figyelmeztetes igy visszajon).
+- Lablec (snippet 54): a nyitvatartas dupla <br><br> sortoresei egyre cserelve, sorkoz 18px, menu 16px, padding 22px, igy a lablec kb. fele magassagu (desktop + mobil kepernyokeppel ellenorizve). Emiatt a lablec linkek erintesi merete 24px alatt marad.
