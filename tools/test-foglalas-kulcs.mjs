@@ -633,3 +633,52 @@ test('/api/foglalas-egyeztetes: a torzs felso hatara 256 KB (egy teljes level-HT
   assert.notEqual((await post(JSON.stringify({ email_html: 'x'.repeat(120000) }))).status, 413, '120 KB level-HTML elfogadott');
   assert.equal((await post(JSON.stringify({ email_html: 'x'.repeat(300000) }))).status, 413);
 });
+
+// --- PMU (Mosaic PMU, placeId 14585): a sajat PMU-foglalo (assets/js/foglalo-pmu.js) "barki" (employeeId=-1) szakemberrel nyitja a Salonic-adatlapot,
+// a Salonic a kanonikus cimre iranyit a KIOSZTOTT szakemberrel (anyone=true&employeeId=32428), a back-et megtartja; a /pmu-ok koszonooldalon ugyanaz a
+// kulcs-iro fut (assets/js/foglalas-kulcs.js), mint a fo motor koszonooldalain. Lasd docs/booking-engine/PMU_LIVE_ADAPTER_FINDINGS.md ("Parositas").
+const PMU_BID = 'mb_0muwyxn4qj2bslab24fxgw5';
+const PMU_URL = `https://mosaic-pmu.salonic.hu/guestData/?anyone=true&employeeId=32428&placeId=14585&serviceId=471034&startDate=1793466000&back=${PMU_BID}`; // valodi PMU-atiranyitas (2026-10-06, qa2-kor3-pmu)
+const PMU_KULCS = '14585|32428|1793466000';
+
+test('PMU: a Salonic altal kiosztott szakemberes bookingUrl -> kulcs 14585|32428|start, uzletag pmu; a "barki" (-1) cim nem kulcs (a szerver nem talalgat)', () => {
+  const e = bookingUrlElemzes(PMU_URL);
+  assert.deepEqual({ ok: e.ok, uzletag: e.uzletag, kulcs: e.kulcs, serviceId: e.serviceId, bookingId: e.bookingId }, { ok: true, uzletag: 'pmu', kulcs: PMU_KULCS, serviceId: '471034', bookingId: PMU_BID });
+  const barki = bookingUrlElemzes(PMU_URL.replace('anyone=true&employeeId=32428', 'employeeId=-1'));
+  assert.equal(barki.ok, false);
+});
+
+test('PMU: kulcsIras a PMU bookingUrl-bol ir, kulcsKeres megtalalja (ugyanaz a tabla es szabaly, mint a fo motornal)', async () => {
+  const { prepare, batch } = d1(); const adb = { prepare, batch };
+  const t = ora();
+  const a = await kulcsIras(adb, { bookingId: PMU_BID, bookingUrl: PMU_URL }, t());
+  assert.deepEqual({ ok: a.ok, irva: a.irva, kulcs: a.kulcs }, { ok: true, irva: true, kulcs: PMU_KULCS });
+  assert.equal((await kulcsKeres(adb, PMU_KULCS, t())).booking_id, PMU_BID);
+});
+
+test('PMU: a /pmu-ok koszonooldalon (a foglalo a teljes ablakban nyitja: mh_proba=pmu) a kulcs-iro a back-bol ir, es az erkezesi adatot pmu uzletaggal adja at', () => {
+  const kuldott = [];
+  const search = '?first_booking=true&service=Ajaktetov%C3%A1l%C3%A1s&price=99000&employee=T%C3%B6reki%20Melitta&g=g:1&mh_proba=pmu&bookingUrl=' + encodeURIComponent(PMU_URL);
+  const hivasok = []; const tarolo = new Map();
+  const sandbox = {
+    URLSearchParams, URL, JSON, String, RegExp, Promise, console, location: { search },
+    sessionStorage: { getItem: (k) => (tarolo.has(k) ? tarolo.get(k) : null), setItem: (k, v) => tarolo.set(k, String(v)) },
+    fetch: async (url, opt) => { hivasok.push({ url, opt }); return { ok: true, status: 200, json: async () => ({ ok: true }) }; },
+    mhAttribucio: { kuld: (x) => kuldott.push(x) },
+  };
+  sandbox.window = sandbox;
+  vm.runInNewContext(fs.readFileSync(path.join(here, '..', 'assets', 'js', 'foglalas-kulcs.js'), 'utf8'), sandbox);
+  assert.equal(hivasok.length, 1);
+  assert.deepEqual(JSON.parse(hivasok[0].opt.body), { booking_id: PMU_BID, booking_url: PMU_URL, forras: 'back' });
+  assert.equal(kuldott.length, 1); assert.equal(kuldott[0].uzletag, 'pmu'); assert.equal(kuldott[0].source_id, PMU_BID); assert.equal(kuldott[0].ar, 99000);
+});
+
+test('PMU: a build a /pmu-ok oldalra (a foglalo-pmu.html szimbolikus linkje) is felteszi a kulcs-irot', () => {
+  const build = fs.readFileSync(path.join(here, 'netlify-build.mjs'), 'utf8');
+  const halmaz = build.match(/const FOGLALAS_KOSZONO = new Set\(\[([\s\S]*?)\]/);
+  assert.ok(halmaz && /'pmu-ok'/.test(halmaz[1]), 'pmu-ok a FOGLALAS_KOSZONO halmazban');
+  assert.equal(fs.readlinkSync(path.join(here, '..', 'foglalas', 'pmu-ok.html')), 'foglalo-pmu.html');
+  // a foglalo a back parameterben adja at a sajat azonositojat
+  const pmu = fs.readFileSync(path.join(here, '..', 'assets', 'js', 'foglalo-pmu.js'), 'utf8');
+  assert.match(pmu, /'\/guestData\/\?' \+ new URLSearchParams\(\{[^}]*employeeId: -1[^}]*back: bid/);
+});
