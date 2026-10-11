@@ -30,6 +30,27 @@
   var KOSZONO = /^\/foglalas-ok/i.test(location.pathname);
   if (window.mpSuti) return;
 
+  // ---------- koszonooldali adattisztitas (#257) ----------
+  // A Salonic a koszonooldalra (/foglalas-ok*, /fulbevalo-ok*) a foglalas adataival iranyit (service, category, location,
+  // employee, bookingUrl ...), ami egeszsegugyi jellegu szolgaltatasra utalhat. Ez a szkript a <head>-ben SZINKRON fut,
+  // a gtag.js / GTM / pixelek betoltese ELOTT: az eredeti cimet csak MEMORIABA tesszuk (window.mpKoszonoEredeti - a sajat
+  // meres: lent a marMert, a motor-atadas, assets/js/mp-meres.js), majd a cimbol MINDEN parametert eltavolitunk, kiveve
+  // a GTM-triggerekhez kello `price` es `first_booking` erteket. Igy a kulso cimkek page_location-je / oldal-URL-je mar a
+  // tiszta cim. Tarolas (suti, localStorage, sessionStorage) nincs.
+  var KOSZONO_UT = /^\/(foglalas-ok|fulbevalo-ok)/i.test(location.pathname);
+  var EREDETI = location.href;
+  if (KOSZONO_UT) {
+    try { Object.defineProperty(window, 'mpKoszonoEredeti', { value: EREDETI, writable: false, enumerable: false }); } catch (e) { window.mpKoszonoEredeti = EREDETI; }
+    try {
+      var KOSZONO_MARAD = ['price', 'first_booking'];
+      var eq = new URLSearchParams(location.search), tq = new URLSearchParams();
+      KOSZONO_MARAD.forEach(function (k) { if (eq.has(k)) tq.set(k, eq.get(k)); });
+      var tiszta = location.pathname + (tq.toString() ? '?' + tq.toString() : '') + location.hash;
+      if (tiszta !== location.pathname + location.search + location.hash) history.replaceState(history.state, '', tiszta);
+    } catch (e) { /* regi bongeszo: marad a cim */ }
+  }
+  var eredetiQ = function () { try { return new URL(EREDETI).searchParams; } catch (e) { return new URLSearchParams(location.search); } };
+
   // ---------- hozzajarulas ----------
   var SUTI = 'mp_suti', NAP = 365;
   var olvasDontes = function () {
@@ -236,7 +257,7 @@
         document.documentElement.setAttribute('data-mp-motor-atvette', '1');
       }
     });
-    try { window.parent.postMessage({ tipus: 'mp-foglalas-ok', url: location.href }, '*'); } catch (e) { /* nincs szulo */ }
+    try { window.parent.postMessage({ tipus: 'mp-foglalas-ok', url: EREDETI }, '*'); } catch (e) { /* nincs szulo */ } // a motor az eredeti parameterekkel nyitja a fo ablakban
     setTimeout(function () { if (!atvette && !marMert()) meres(); }, 1500);
     return;
   }
@@ -247,7 +268,7 @@
   // nem (QA-4). Kulcs: a motor booking_id-je, ennek hianyaban a Salonic bookingUrl-je; 30 napig emlekszik (localStorage,
   // szemelyes adat nincs benne). Az ismetlest a <html data-mp-mar-mert="1"> jeloli (a teszteknek).
   function marMert() {
-    var q = new URLSearchParams(location.search);
+    var q = eredetiQ();
     var kulcs = q.get('booking_id') || q.get('bookingUrl');
     if (!kulcs) return false;
     var T = 'mp_koszono', most = Date.now(), lista;

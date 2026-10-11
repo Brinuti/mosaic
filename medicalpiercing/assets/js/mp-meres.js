@@ -22,7 +22,8 @@
   var ir = function (o) { try { localStorage.setItem(KULCS, JSON.stringify(o)); } catch (e) { /* tiltott tarolo */ } };
   var torol = function () { try { localStorage.removeItem(KULCS); } catch (e) { /* tiltott tarolo */ } };
 
-  var q = new URLSearchParams(location.search);
+  // a koszonooldalon a suti.js mar kitisztitotta a cimet (#257): az eredeti parametereket a memoriabol olvassuk
+  var q = (function () { try { if (window.mpKoszonoEredeti) return new URL(window.mpKoszonoEredeti).searchParams; } catch (e) { /* */ } return new URLSearchParams(location.search); })();
   var friss = {};
   ['gclid', 'gbraid', 'wbraid'].forEach(function (t) {
     var v = q.get(t);
