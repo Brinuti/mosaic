@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { kulcsbol, fajlnev } from '../lib/utvonal.js';
+import { oldalHtml, indexHtml } from './uj-oldalak/sablon.mjs';
 
 export const UJ_FOOLDAL_UT = '/uj-fooldal';
 export const TUKOR_ELO = '/uj';   // a tobbi oldal tukre: /uj/<eredeti utvonal>
@@ -77,6 +78,31 @@ export function oldalKiir(ROOT, DIST, ut, html) {
 export function ujFooldal(ROOT, DIST) {
   oldalKiir(ROOT, DIST, UJ_FOOLDAL_UT, fs.readFileSync(path.join(ROOT, 'uj-fooldal/index.html'), 'utf8'));
   console.log('uj-fooldal: ' + UJ_FOOLDAL_UT + ' (rejtett, noindex) asztali es mobil');
+}
+
+// --- az osszes tobbi oldal tukre: /uj/<eredeti utvonal> (uj-oldalak/tartalom/*.json -> tools/uj-oldalak/sablon.mjs) + a link-index (/uj-oldalak) ---
+// A tartalmat a tools/uj-oldalak/kinyer.mjs szedi ki a Wix-klonbol (egyszer, a repoba mentve); a build csak a sablont futtatja (nincs bongeszo).
+// Kihagyva: a foglalasi cimek (/idopontfoglalas, /kontroll: a foglalomotor nyitja), a kezdolap (az az uj fooldal kezzel irt valtozata).
+const KIHAGY = new Set(['/', '/idopontfoglalas', '/kontroll']);
+export function ujOldalak(ROOT, DIST) {
+  const dir = path.join(ROOT, 'uj-oldalak/tartalom');
+  if (!fs.existsSync(dir)) return;
+  const lapozo = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets/data/varos-lapozo.json'), 'utf8'));
+  const jegyzek = [{ ut: '/', cim: 'Főoldal (új főoldal)', tipus: 'oldal', uj: UJ_FOOLDAL_UT }];
+  const eredeti = new Map(fs.readFileSync(path.join(ROOT, 'tools/oldalak.txt'), 'utf8').split('\n').filter(Boolean).map((u) => [decodeURIComponent(new URL(u).pathname).replace(/\/+$/, '') || '/', new URL(u).pathname]));
+  let db = 0;
+  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.json') && !x.startsWith('_')).sort()) {
+    const adat = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+    if (KIHAGY.has(adat.ut)) continue;
+    oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, adat, { lapozo }));
+    jegyzek.push({ ut: adat.ut, cim: adat.cim, tipus: adat.tipus, uj: TUKOR_ELO + (eredeti.get(adat.ut) || encodeURI(adat.ut)) });
+    db++;
+  }
+  const index = indexHtml(ROOT, jegyzek, { datum: new Date().toISOString().slice(0, 10) });
+  oldalKiir(ROOT, DIST, '/uj-oldalak', index);
+  oldalKiir(ROOT, DIST, '/uj', index);   // a rovid cim (/uj) ugyanazt az attekintest adja
+  console.log(`uj-oldalak: ${db} tukor-oldal (/uj/...) + link-index (/uj-oldalak), rejtett, noindex`);
+  return jegyzek;
 }
 
 // --- kitelepulesek: a helyszin-csempek datumai a tablazatbol (a build irja be; a lap betolteskor frissiti: uj-fooldal.js) ----------
