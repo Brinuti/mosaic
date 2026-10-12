@@ -29,6 +29,10 @@ export const SEMA = [
     rogzitve INTEGER NOT NULL, kulcs TEXT)`,
   'CREATE INDEX IF NOT EXISTS mp_salonic_igazolas_start ON mp_salonic_igazolas (start_unix)',
   'CREATE TABLE IF NOT EXISTS mp_beallitas (kulcs TEXT PRIMARY KEY, ertek TEXT)',
+  // Google Ads konverzio-kiigazitas (kiigazitas.js): kulcs + tipus + mod egyszer; ok = a dontes oka, valasz = rovidített Google-valasz
+  `CREATE TABLE IF NOT EXISTS mp_kiigazitas (
+    kulcs TEXT NOT NULL, tipus TEXT NOT NULL, mod TEXT NOT NULL, allapot TEXT NOT NULL, ok TEXT, valasz TEXT,
+    probalkozas INTEGER NOT NULL DEFAULT 0, ido INTEGER NOT NULL, PRIMARY KEY (kulcs, tipus, mod))`,
 ];
 // a mar letezo mp_foglalas tablat bovito oszlopok (a hiba = mar megvan, elnyeljuk)
 const BOVITES = [
@@ -43,6 +47,7 @@ const MEGORZES_NAP = 120; // a rekord ennyi nap utan torlodik; a kattintasazonos
 
 let semaKesz = false;
 export function _semaTorles() { semaKesz = false; }
+export async function semaBiztos(db) { return sema(db); }
 async function sema(db) {
   if (semaKesz) return;
   await db.batch(SEMA.map((s) => db.prepare(s)));
