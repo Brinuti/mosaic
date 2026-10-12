@@ -344,13 +344,16 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
       if (szaraz) return { ...alap, allapot: 'szaraz_terv', sd_allapot: allapot, terv: { feloldas: dontes } };
       const mod = dontes === 'confirmed' ? 'feloldva_confirmed' : 'feloldva_uj';
       const csere = { ...(csereRow || {}), ok: 'feloldva: ' + ok };
-      const k = await kuldesFuttat({ ...futas, mod: mod === 'feloldva_uj' ? 'normal' : mod, csere });
-      // FAIL-CLOSED (mini-2, DECISION #145/3): az `uj_konverzio` nem allithatja a sort 0 kuldessel `feloldva_uj`-ra: ha az elosztas `mar_kuldve`-t jelez (minden cella vegleges) ES egyetlen cella sem `elkuldve`
-      // (pl. a felbemaradt `confirmed` sor cellai `kihagyva (reschedule_confirmed)`), a konverzio CSENDBEN elmaradna -> elutasitjuk, a sor es az audit valtozatlan. Ha mar kiment cella (`elkuldve`), a felbemaradt feloldas lezarasa helyes.
-      if (mod === 'feloldva_uj' && k.esemeny_kuldes && k.esemeny_kuldes.allapot === 'mar_kuldve') {
-        const kiment = await db.prepare("SELECT COUNT(*) AS n FROM meres_kuldes WHERE source_id = ?1 AND allapot = 'elkuldve'").bind(sdId).first();
-        if (!kiment || !(kiment.n > 0)) return { ...alap, allapot: 'feloldas_nem_lehetseges', sd_allapot: allapot, miert: 'az uj_konverzio nem kuldene semmit (minden cella mar vegleges, egy sem kiment): a felbemaradt `confirmed` sor helyes feloldasa a `confirmed`', riasztas: sor.riasztas === 1, kuldes: 0 };
+      // FAIL-CLOSED (mini-3, DECISION #147/2): az `uj_konverzio` nem allithatja a sort 0 kuldessel `feloldva_uj`-ra. A guard a DONTESI BIZONYITEKHOZ kotott es a kuldes ELOTT fut (nincs mellekhatas, a sor es az audit valtozatlan):
+      // bizonyitek, hogy a sor `confirmed` dontesbol maradt felbe = a `confirmed` / `feloldva_confirmed` audit-sor VAGY egy `kihagyva (reschedule_confirmed...)` cella (a `confirmed` cella-ciklus kozben megszakadt Worker mar a masodik cellaig eljuthat: az elosztas ilyenkor nem `mar_kuldve`).
+      // Ilyenkor az `uj_konverzio` csak akkor lezarhato, ha mar kiment valami (`elkuldve`) vagy kimenne (`nincs_hitelesites`: a kerelem kesz, kulso szallitora var) - egyebkent a konverzio CSENDBEN elmaradna, a helyes feloldas a `confirmed`.
+      // Nem utasit el helyes feloldast: valodi HOLD (`suspected` / `hianyzo_mezo` audit) sort a cellak allapota (nincs token, lemondva, nyitott ertek, vesz-kapcsolo) mellett sem.
+      if (mod === 'feloldva_uj') {
+        const biz = await db.prepare("SELECT COALESCE(SUM(allapot IN ('elkuldve', 'nincs_hitelesites')), 0) AS kiment, COALESCE(SUM(allapot = 'kihagyva' AND indok LIKE 'reschedule_confirmed%'), 0) AS rc FROM meres_kuldes WHERE source_id = ?1").bind(sdId).first();
+        const confirmedBiz = !!(csereRow && (csereRow.allapot === 'confirmed' || csereRow.allapot === 'feloldva_confirmed')) || !!(biz && biz.rc > 0);
+        if (confirmedBiz && !(biz && biz.kiment > 0)) return { ...alap, allapot: 'feloldas_nem_lehetseges', sd_allapot: allapot, miert: 'az uj_konverzio nem kuldene semmit: a sor `confirmed` dontesbol maradt felbe (confirmed / feloldva_confirmed audit-sor vagy reschedule_confirmed cella), egy cella sem kiment: a helyes feloldas a `confirmed`', riasztas: sor.riasztas === 1, kuldes: 0 };
       }
+      const k = await kuldesFuttat({ ...futas, mod: mod === 'feloldva_uj' ? 'normal' : mod, csere });
       await rescheduleIr(db, { uuid, sdId, allapot: mod === 'feloldva_uj' ? 'feloldva_uj' : 'feloldva_confirmed', d: { ...(csereRow || {}), ok: csere.ok }, t });
       const veg = await lezarAllapot(db, { uuid, sdId, mod, csere, t });
       if (veg.kihagyva) return { ...alap, allapot, sd_allapot: allapot, idempotens: true, miert: 'egy parhuzamos hivas mar dolgozik a cellakon: a sor allapotat a nyertes hivas irja', riasztas: sor.riasztas === 1, ...k };

@@ -1207,8 +1207,8 @@ test('S0-57 `uj_konverzio` fail-closed: a felbemaradt `confirmed` sor (cellak `k
   const rossz = { ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz emberi dontes' };
   for (let i = 0; i < 2; i++) { // ismetelve is: ugyanaz, semmi nem valtozik
     const r = await v.post(rossz);
-    assert.deepEqual([r.allapot, r.sd_allapot, r.kuldes], ['feloldas_nem_lehetseges', 'halasztva', 0]); assert.match(r.miert, /confirmed/);
-    assert.deepEqual([sdSor(v, u).sd_allapot, csereSor(v, u).allapot, v.net.hivasok.length], ['halasztva', 'confirmed', 0], 'a sor es az audit valtozatlan, 0 platformhivas');
+    assert.deepEqual([r.allapot, r.sd_allapot, r.kuldes, r.riasztas], ['feloldas_nem_lehetseges', 'halasztva', 0, true]); assert.match(r.miert, /confirmed/);
+    assert.deepEqual([sdSor(v, u).sd_allapot, sdSor(v, u).riasztas, csereSor(v, u).allapot, v.net.hivasok.length], ['halasztva', 1, 'confirmed', 0], 'a sor (riasztas-jelzovel) es az audit valtozatlan, 0 platformhivas');
   }
   assert.deepEqual((await riasztasok(v, u)).map((x) => x.tipus), ['atvetel_megszakadt'], 'a riasztas megmarad');
   const jo = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'confirmed', ok: 'helyes dontes' });
@@ -1253,4 +1253,75 @@ test('S0-59 QA-5 riport: a Google jogos_0 figyelmeztetes es az attribucios rezsi
   assert.deepEqual([r.osszegzes.attribucios_rezsimvaltas.utc, r.osszegzes.attribucios_rezsimvaltas.unix], ['2026-10-10T09:07:52Z', Math.floor(Date.UTC(2026, 9, 10, 9, 7, 52) / 1000)]);
   assert.ok(r.osszegzes.figyelmeztetesek.some((x) => /^google_jogos_0_tartalmazhat_hozzajarulas_vagy_click_id_hiany/.test(x)));
   assert.ok(r.osszegzes.figyelmeztetesek.includes('attribucios_rezsimvaltas_2026-10-10T09:07:52Z'));
+  assert.match(r.osszegzes.attribucios_rezsimvaltas.ok, /977e1232.*PR #226.*hozzajarulas nelkul/);
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+// DECISION #147/2 mini-3 kor: az `uj_konverzio` guard a DONTESI BIZONYITEKHOZ kotott (confirmed / feloldva_confirmed audit VAGY reschedule_confirmed cella), a kuldes ELOTT fut, es nem utasit el helyes feloldast
+/** Worker-halal szimulacio: a minta szerinti SQL `run()`-janak CSAK az n-edik (1-tol) hivasa dob kivetelt, utana minden normalisan fut. */
+function halalNedik(v, minta, n) {
+  const orig = v.e.KULCS_DB; const allapot = { talalt: 0, meghalt: false };
+  v.e.KULCS_DB = { prepare: (sql) => { const p = orig.prepare(sql); if (!minta.test(sql)) return p; return { ...p, bind: (...a) => { const b = p.bind(...a); return { ...b, run: async () => { if (++allapot.talalt === n) { allapot.meghalt = true; throw new Error('Worker halal (szimulalt)'); } return b.run(); } }; } }; }, batch: orig.batch };
+  return allapot;
+}
+const cellakSor = (v) => v.sql('SELECT platform, allapot, indok FROM meres_kuldes ORDER BY platform, esemeny_nev');
+const CELLA_IRAS = /^UPDATE meres_kuldes SET allapot = \?2, indok = \?3, platform_nev/;
+
+test('S0-60 a `confirmed` cella-ciklus KOZBEN megszakadt Worker (Meta + TikTok `kihagyva (reschedule_confirmed)`, a tobbi cella nem vegleges) + rossz `uj_konverzio`: elutasitva a kuldes ELOTT (0 platformhivas, sor / audit / cellak valtozatlanok, a riasztas marad), a `confirmed` feloldas lezar', async () => {
+  const { v, u, b } = await csereVilag(); // a regi foglalas indexelve, MEGJ_99 -> confirmed
+  const { megjegyzes, ...nelkule } = b;
+  assert.equal((await v.sd(nelkule)).allapot, 'halasztva'); assert.equal(csereSor(v, u).allapot, 'hianyzo_mezo');
+  const halal = halalNedik(v, CELLA_IRAS, 3); // a potlo (confirmed) futas a 3. cellairasnal meghal
+  await v.sd(b).catch(() => null); assert.ok(halal.meghalt, 'a szimulalt halal lefutott');
+  assert.deepEqual([sdSor(v, u).sd_allapot, csereSor(v, u).allapot, v.net.hivasok.length], ['halasztva', 'confirmed', 0]);
+  const elotte = cellakSor(v);
+  assert.ok(elotte.some((c) => c.allapot === 'kihagyva' && /^reschedule_confirmed/.test(c.indok)), 'van reschedule_confirmed cella');
+  assert.ok(elotte.some((c) => c.allapot !== 'kihagyva'), 'a ciklus kozben megszakadt: nem minden cella vegleges (ezert az elosztas NEM `mar_kuldve`)');
+  const rossz = { ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz emberi dontes' };
+  for (let i = 0; i < 2; i++) {
+    const r = await v.post(rossz);
+    assert.deepEqual([r.allapot, r.sd_allapot, r.kuldes, r.riasztas], ['feloldas_nem_lehetseges', 'halasztva', 0, true]); assert.match(r.miert, /confirmed/);
+    assert.deepEqual([sdSor(v, u).sd_allapot, sdSor(v, u).riasztas, csereSor(v, u).allapot, v.net.hivasok.length], ['halasztva', 1, 'confirmed', 0]);
+    assert.deepEqual(cellakSor(v), elotte, 'a cellak valtozatlanok (a guard a kuldes ELOTT fut: nincs mellekhatas)');
+  }
+  assert.deepEqual((await riasztasok(v, u)).map((x) => x.tipus), ['atvetel_megszakadt']);
+  const jo = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'confirmed', ok: 'helyes dontes' });
+  assert.equal(jo.sd_allapot, 'feloldva_confirmed'); assert.equal(v.net.hivasok.length, 0); assert.deepEqual(await riasztasok(v, u), []);
+  { // a bizonyitek KET agat kulon-kulon: (i) csak az audit-sor (a cellak nem `reschedule_confirmed`), (ii) csak a reschedule_confirmed cella (az audit `suspected`), (iii) `feloldva_confirmed` audit-sor (felbemaradt confirmed FELOLDAS)
+    const probal = async (nev, elokesz, vart) => {
+      const w = await csereVilag(); const { megjegyzes: _m, ...nl } = w.b; await w.v.sd(nl);
+      const h = halalNedik(w.v, CELLA_IRAS, 3); await w.v.sd(w.b).catch(() => null); assert.ok(h.meghalt, nev);
+      await elokesz(w);
+      const r = await w.v.post({ ...w.b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz emberi dontes' });
+      assert.deepEqual([r.allapot, sdSor(w.v, w.u).sd_allapot, w.v.net.hivasok.length], [vart, vart === 'feloldas_nem_lehetseges' ? 'halasztva' : 'feloldva_uj', vart === 'feloldas_nem_lehetseges' ? 0 : w.v.net.hivasok.length], nev);
+    };
+    await probal('(i) csak az audit-sor', async (w) => { w.v.sql("UPDATE meres_kuldes SET allapot = 'halasztva', indok = 'x'"); }, 'feloldas_nem_lehetseges');
+    await probal('(ii) csak a cella', async (w) => { w.v.sql("UPDATE foglalas_reschedule SET allapot = 'suspected' WHERE uuid = ?1", w.u); }, 'feloldas_nem_lehetseges');
+    await probal('(iii) feloldva_confirmed audit', async (w) => { w.v.sql("UPDATE meres_kuldes SET allapot = 'halasztva', indok = 'x'"); w.v.sql("UPDATE foglalas_reschedule SET allapot = 'feloldva_confirmed' WHERE uuid = ?1", w.u); }, 'feloldas_nem_lehetseges');
+    await probal('kontroll: sem audit-bizonyitek, sem reschedule_confirmed cella -> nem utasit el (valodi HOLD-nak latszik)', async (w) => { w.v.sql("UPDATE meres_kuldes SET allapot = 'halasztva', indok = 'x'"); w.v.sql("UPDATE foglalas_reschedule SET allapot = 'suspected' WHERE uuid = ?1", w.u); }, 'feloldva_uj');
+  }
+});
+
+test('S0-60b az `uj_konverzio` guard NEM utasit el helyes feloldast: valodi HOLD sor (suspected audit) cellaallapottol fuggetlenul (nincs token, lemondva, nyitott ertek, vesz-kapcsolo) lezarhato; `confirmed` sor mar kiment / kimeno cellaval szinten', async () => {
+  for (const [nev, cellaAllapot, indok] of [['nincs_hitelesites', 'nincs_hitelesites', 'nincs token'], ['lemondva', 'kihagyva', 'lemondva: a foglalas kozben lemondtak'], ['nyitott', 'nyitott', 'konzultacio ertek nyitott'], ['vesz-kapcsolo', 'kihagyva', 'vesz-kapcsolo']]) {
+    const { v, u, b } = await csereVilag({ nincsRegi: true }); assert.equal((await v.sd(b)).allapot, 'halasztva'); assert.equal(csereSor(v, u).allapot, 'suspected');
+    v.sql("UPDATE meres_kuldes SET allapot = ?1, indok = ?2", cellaAllapot, indok); // minden cella veglegesnek latszik, egy sem `elkuldve` (a HOLD-ot megszakitott feloldas utani helyzet)
+    const r = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'emberi: uj vendeg' });
+    assert.notEqual(r.allapot, 'feloldas_nem_lehetseges', nev); assert.equal(r.sd_allapot, 'feloldva_uj', nev); assert.equal(csereSor(v, u).allapot, 'feloldva_uj', nev);
+  }
+  { // `confirmed` audit + EGYETLEN kiment cella (Meta elkuldve): a felbemaradt uj_konverzio lezarhato (nincs csendes vesztes: van kiment konverzio)
+    const { v, u, b } = await csereVilag(); const { megjegyzes, ...nelkule } = b; await v.sd(nelkule);
+    const halal = halalNedik(v, CELLA_IRAS, 3); await v.sd(b).catch(() => null); assert.ok(halal.meghalt);
+    v.sql("UPDATE meres_kuldes SET allapot = 'elkuldve' WHERE platform = 'meta'");
+    assert.equal(v.sql("SELECT COUNT(*) AS n FROM meres_kuldes WHERE allapot = 'elkuldve'")[0].n, 1, 'pontosan 1 kiment cella');
+    const r = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'emberi dontes' });
+    assert.notEqual(r.allapot, 'feloldas_nem_lehetseges'); assert.equal(r.sd_allapot, 'feloldva_uj');
+  }
+  { // `confirmed` audit + `nincs_hitelesites` cella (a kerelem kesz, kulso szallitora var): szinten lezarhato
+    const { v, u, b } = await csereVilag(); const { megjegyzes, ...nelkule } = b; await v.sd(nelkule);
+    const halal = halalNedik(v, CELLA_IRAS, 3); await v.sd(b).catch(() => null); assert.ok(halal.meghalt);
+    v.sql("UPDATE meres_kuldes SET allapot = 'nincs_hitelesites' WHERE platform = 'meta'");
+    const r = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'emberi dontes' });
+    assert.notEqual(r.allapot, 'feloldas_nem_lehetseges'); assert.equal(r.sd_allapot, 'feloldva_uj');
+  }
 });
