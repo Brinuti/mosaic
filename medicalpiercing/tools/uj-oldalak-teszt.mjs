@@ -222,23 +222,6 @@ async function lapTeszt(o, nezet, ctx) {
     ok(`${cim}: a videó kattintasra ablakban nyilik`, v2);
     await p.keyboard.press('Escape');
   }
-  // urlap (allasjelentkezes)
-  const allas = await p.$('form[data-urlap="allasjelentkezes"]');
-  if (allas) {
-    await allas.scrollIntoViewIfNeeded();
-    ctx.__urlap = [];
-    await p.click('form[data-urlap="allasjelentkezes"] button[type="submit"]');
-    ok(`${cim}: az ures urlap nem megy el (kotelezo mezok)`, (ctx.__urlap || []).length === 0);
-    const mezok = await p.$$eval('form[data-urlap="allasjelentkezes"] input:not([type=file]):not([name="bot-field"])', (l) => l.map((i) => ({ id: i.id, t: i.type, n: i.name })));
-    for (const m of mezok) {
-      const v2 = m.t === 'email' ? 'proba@example.com' : m.t === 'tel' ? '+36301234567' : m.t === 'number' ? '5' : m.t === 'date' ? '1990-01-02' : 'Próba';
-      await p.fill('#' + m.id, v2);
-    }
-    await Promise.all([p.waitForRequest('**/api/urlap', { timeout: 8000 }).catch(() => null), p.click('form[data-urlap="allasjelentkezes"] button[type="submit"]')]);
-    await p.waitForTimeout(400);
-    const adat = (ctx.__urlap || [])[0] || '';
-    ok(`${cim}: a kitoltott allasjelentkezes elmegy az /api/urlap-ra (form-name, mezok)`, /form-name/.test(adat) && /allasjelentkezes/.test(adat) && /Vezet/.test(adat), adat.slice(0, 120));
-  }
   // blog: hozzaszolas, kedveles, megosztas
   const cikk = await p.$('article[data-cikk]');
   if (cikk) {
@@ -269,6 +252,26 @@ async function lapTeszt(o, nezet, ctx) {
     const l = await p.$$eval('.lapozo a', (a) => a.map((x) => x.getAttribute('href')));
     ok(`${cim}: helyszin-lapozo vagy nincs szomszed`, true, l.join(' '));
     for (const href of l) { const r = await p.request.get(BASE + href); ok(`${cim}: a lapozo ${href.slice(0, 50)} letezik`, r.status() === 200, String(r.status())); }
+  }
+  // urlap (allasjelentkezes)
+  const allas = await p.$('form[data-urlap="allasjelentkezes"]');
+  if (allas) {
+    await allas.scrollIntoViewIfNeeded();
+    ctx.__urlap = [];
+    await p.click('form[data-urlap="allasjelentkezes"] button[type="submit"]');
+    ok(`${cim}: az ures urlap nem megy el (kotelezo mezok)`, (ctx.__urlap || []).length === 0);
+    const mezok = await p.$$eval('form[data-urlap="allasjelentkezes"] input:not([type=file]):not([name="bot-field"])', (l) => l.map((i) => ({ id: i.id, t: i.type, n: i.name })));
+    for (const m of mezok) {
+      const v2 = m.t === 'email' ? 'proba@example.com' : m.t === 'tel' ? '+36301234567' : m.t === 'number' ? '5' : m.t === 'date' ? '1990-01-02' : 'Próba';
+      await p.fill('#' + m.id, v2);
+    }
+    await Promise.all([p.waitForRequest('**/api/urlap', { timeout: 8000 }).catch(() => null), p.click('form[data-urlap="allasjelentkezes"] button[type="submit"]')]);
+    await p.waitForTimeout(400);
+    const adat = (ctx.__urlap || [])[0] || '';
+    ok(`${cim}: a kitoltott allasjelentkezes elmegy az /api/urlap-ra (form-name, mezok)`, /form-name/.test(adat) && /allasjelentkezes/.test(adat) && /Vezet/.test(adat), adat.slice(0, 120));
+    // siker utan, mint az eredeti oldalon, a koszonooldalra visz (itt: a tukor koszonooldalara)
+    const atment = await p.waitForURL(/\/uj\/allas-ok$/, { timeout: 10000 }).then(() => true).catch(() => false);
+    ok(`${cim}: a sikeres jelentkezes utan a koszonooldalra (/uj/allas-ok) visz`, atment, p.url());
   }
   ok(`${cim}: nincs JS-hiba`, jsHibak.length === 0, jsHibak.slice(0, 2).join(' | '));
   await p.close();
