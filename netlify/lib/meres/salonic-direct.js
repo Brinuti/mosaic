@@ -288,10 +288,11 @@ const vegAllapot = (mod, csere) => {
  */
 async function veglegesIr(db, uuid, sdId, cel, t) {
   for (let proba = 0; proba < 3; proba++) {
-    // `feloldva_uj` (mini-4, #14a 1. megallapitas): a vegallapot-iras ATOMI feltetele a DONTESI BIZONYITEKOT is tartalmazza - ha egy parhuzamos `confirmed` kozben `reschedule_confirmed`-re zarta a cellakat es semmi nem ment ki / nem keszult ki
-    // (`elkuldve` / `nincs_hitelesites`), a sor NEM allitodik 0 kuldessel `feloldva_uj`-ra (a nyertes `confirmed` irja a sort). Ez zarja a 2. bizonyitek-ellenorzes utani egy-utasitasnyi ablakot is, amikor a kuldesi lepes utan a cellak meg nem voltak vegleges allapotuak.
+    // `feloldva_uj` (mini-4, #14a 1. megallapitas; #14e K1): a vegallapot-iras ATOMI feltetele a TELJES DONTESI BIZONYITEKOT tartalmazza (mint a `rescheduleIr` es az `ujKonverzioBizonyitek`): `reschedule_confirmed` cella VAGY `confirmed` / `feloldva_confirmed` audit-sor,
+    // ES nincs kiment (`elkuldve` / `nincs_hitelesites`) cella -> a sor NEM allitodik 0 kuldessel `feloldva_uj`-ra (a nyertes `confirmed` irja a sort). Ez zarja a 2. bizonyitek-ellenorzes utani egy-utasitasnyi ablakot is, amikor a kuldesi lepes utan a cellak meg nem voltak vegleges allapotuak,
+    // es azt is, amikor a nyertes Zap-potlas az audit-sort mar megirta (`confirmed`), de a cellakat meg nem zarta. A `feloldva_uj` audit-sor NEM bizonyitek (az `uj_konverzio` sajat, felbemaradt ujrafuttatasa lezarhato marad).
     const bizonyitekNelkul = cel === 'feloldva_uj'
-      ? " AND NOT (EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?4 AND allapot = 'kihagyva' AND indok LIKE 'reschedule_confirmed%') AND NOT EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?4 AND allapot IN ('elkuldve', 'nincs_hitelesites')))"
+      ? " AND NOT ((EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?4 AND allapot = 'kihagyva' AND indok LIKE 'reschedule_confirmed%') OR EXISTS (SELECT 1 FROM foglalas_reschedule WHERE uuid = ?1 AND allapot IN ('confirmed', 'feloldva_confirmed'))) AND NOT EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?4 AND allapot IN ('elkuldve', 'nincs_hitelesites')))"
       : '';
     const r = await db.prepare("UPDATE foglalas_egyeztetes SET sd_allapot = ?2, riasztas = 0, frissitve = ?3 WHERE uuid = ?1 AND sd_id = ?4 AND NOT EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?4 AND allapot IN ('halasztva', 'folyamatban'))" + bizonyitekNelkul).bind(uuid, cel, t, sdId).run();
     if (r.meta && r.meta.changes > 0) return { sd_allapot: cel, riasztas: false };
@@ -384,7 +385,7 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
         const b2 = await ujKonverzioBizonyitek(db, uuid, sdId);
         if (b2.elutasit) return masodikElutasitas();
       }
-      // (#14c K1) az audit-iras `feloldva_uj`-ra ATOMI feltetelhez kotott (lasd rescheduleIr): ha a b2 es az iras kozott zarta a cellakat egy parhuzamos `confirmed`, az audit-sor erintetlen marad, a valasz ugyanaz az elutasitas
+      // (#14c K1, #14d K1) az audit-iras `feloldva_uj`-ra ATOMI feltetelhez kotott (lasd rescheduleIr): ha a b2 es az iras kozott egy parhuzamos `confirmed` dontes dolgozni kezdett (cellakat zart VAGY az audit-sort mar megirta), az audit-sor erintetlen marad, a valasz ugyanaz az elutasitas
       const irva = await rescheduleIr(db, { uuid, sdId, allapot: mod === 'feloldva_uj' ? 'feloldva_uj' : 'feloldva_confirmed', d: { ...(csereRow || {}), ok: csere.ok }, t });
       if (mod === 'feloldva_uj' && !irva) return masodikElutasitas();
       const veg = await lezarAllapot(db, { uuid, sdId, mod, csere, t });

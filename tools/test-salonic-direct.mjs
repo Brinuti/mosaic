@@ -1482,3 +1482,81 @@ test('S0-61e a bizonyitek audit-aga SZIMMETRIKUS: `feloldva_confirmed` audit-sor
   elenged(); const r = await pL;
   assert.deepEqual([r.allapot, r.kuldes], ['feloldas_nem_lehetseges', 0]); assert.deepEqual(auditTeljes(v, u), elotte, 'az audit-sor bajtra erintetlen');
 });
+
+// --- (#14e) a bizonyitek harom helye (ujKonverzioBizonyitek / rescheduleIr / veglegesIr) EGYSEGES: determinisztikus kapus tesztek -----------------------------------------------
+const kapuPar = () => { let f; const p = new Promise((r) => { f = r; }); return { p, nyit: () => f() }; };
+const varjFelt = async (felt, cim) => { for (let i = 0; i < 4000 && !felt(); i++) await new Promise((r) => setTimeout(r, 1)); assert.ok(felt(), 'idozites: ' + cim); };
+/** AsyncLocalStorage-cimkezett hivasok kapuzasa: a `ki` cimku hivas az elso, `minta`-ra illeszkedo D1-muvelet ELOTT megall, amig a `kapu` meg nem nyilik. */
+function kapusDb(v, als, szabalyok) {
+  const orig = v.e.KULCS_DB;
+  const kapus = async (sql) => { const ki = als.getStore(); for (const sz of szabalyok) if (ki === sz.ki && !sz.allt && sz.minta.test(sql)) { sz.allt = true; await sz.kapu.p; } };
+  const burk = (sql, p) => ({ run: async () => { await kapus(sql); return p.run(); }, first: async () => { await kapus(sql); return p.first(); }, all: async () => { await kapus(sql); return p.all(); } });
+  v.e.KULCS_DB = { prepare: (sql) => { const p = orig.prepare(sql); return { ...p, ...burk(sql, p), bind: (...a) => burk(sql, p.bind(...a)) }; }, batch: orig.batch };
+}
+const TILTVA = { env: { META_TESZT_KOD: '', TIKTOK_TESZT_KOD: '' } };
+
+test('S0-61f (#14e K1) a `veglegesIr` atomi feltetele az AUDIT-AGAT is tartalmazza: ha a nyertes Zap-potlas az audit-sort mar megirta (`confirmed`), de a cellakat meg nem zarta, a vesztes uj_konverzio vegallapot-irasa nem allithatja a sort 0 kuldessel `feloldva_uj`-ra (Meta/TikTok `tiltva`)', async () => {
+  const { v, u, b } = await csereVilag({ vilag: TILTVA }); const { megjegyzes, ...nelkule } = b;
+  assert.equal((await v.sd(nelkule)).allapot, 'halasztva'); assert.equal(csereSor(v, u).allapot, 'hianyzo_mezo');
+  const als = new AsyncLocalStorage(); const w1 = { ki: 'W', minta: /^INSERT INTO foglalas_reschedule/, kapu: kapuPar() }, wc = { ki: 'W', minta: /^UPDATE meres_kuldes SET allapot = \?2, indok = \?3, platform_nev/, kapu: kapuPar() }, lv = { ki: 'L', minta: /^UPDATE foglalas_egyeztetes SET sd_allapot = \?2, riasztas = 0/, kapu: kapuPar() };
+  kapusDb(v, als, [w1, wc, lv]);
+  const pW = als.run('W', () => v.sd(b)); // a Zap-potlas: a csere-dontest meghozta (confirmed), az audit-INSERT elott all
+  await varjFelt(() => w1.allt, 'W az audit-INSERT elott');
+  const pL = als.run('L', () => v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz, egyideju emberi dontes' })); // a vesztes: audit `feloldva_uj`, majd a veglegesIr elott all
+  await varjFelt(() => lv.allt, 'L a veglegesIr elott');
+  assert.equal(csereSor(v, u).allapot, 'feloldva_uj', 'a vesztes audit-irasa megtortent (a nyertes meg nem irt)');
+  w1.kapu.nyit(); await varjFelt(() => wc.allt, 'W az elso cella-zaras elott'); // a nyertes audit-sora (confirmed, a bizonyitek-mezokkel) felulirta a vesztesét, a cellak meg NEM rc
+  const nyertesAudit = auditTeljes(v, u); assert.equal(nyertesAudit.allapot, 'confirmed'); assert.ok(nyertesAudit.regi_uuid && nyertesAudit.reschedule_from && nyertesAudit.reschedule_to);
+  assert.equal(v.sql("SELECT COUNT(*) AS n FROM meres_kuldes WHERE allapot = 'kihagyva' AND indok LIKE 'reschedule_confirmed%'")[0].n, 0, 'a cellak MEG nem rc (ez az ablak)');
+  lv.kapu.nyit(); const rL = await pL; // a vesztes veglegesIr-je EKKOR fut
+  assert.notEqual(sdSor(v, u).sd_allapot, 'feloldva_uj', 'a sor nem allt 0 kuldessel feloldva_uj-ra: ' + sdSor(v, u).sd_allapot + ' / ' + rL.allapot);
+  assert.deepEqual(auditTeljes(v, u), nyertesAudit, 'a nyertes audit-sor erintetlen');
+  wc.kapu.nyit(); await pW;
+  assert.ok(['reschedule_confirmed', 'feloldva_confirmed'].includes(sdSor(v, u).sd_allapot), 'a nyertes confirmed marad: ' + sdSor(v, u).sd_allapot);
+  assert.equal(auditTeljes(v, u).allapot, 'confirmed'); assert.equal(v.net.hivasok.length, 0, '0 platformhivas'); assert.equal(csendesVesztes(v, u), false);
+});
+
+test('S0-61g (#14e T2) a `rescheduleIr` CELLA-aga onalloan vedi az audit-sort: az emberi `confirmed` nyertes a cellakat ELOBB zarja (rc), az audit-sort UTANA irja; ha a vesztes uj_konverzio audit-INSERT-je EKKOR fut (az audit meg `hianyzo_mezo`), a cella-bizonyitek megfogja', async () => {
+  for (const [nev, vilagO, hiba] of [['elo allapot nem ellenorizheto', {}, true], ['tiltva', TILTVA, false]]) {
+    const { v, u, b } = await csereVilag({ vilag: vilagO }); const { megjegyzes, ...nelkule } = b;
+    assert.equal((await v.sd(nelkule)).allapot, 'halasztva'); if (hiba) v.net.allapot.set(u, 'hiba');
+    const als = new AsyncLocalStorage(); const lI = { ki: 'L', minta: /^INSERT INTO foglalas_reschedule/, kapu: kapuPar() }, wI = { ki: 'W', minta: /^INSERT INTO foglalas_reschedule/, kapu: kapuPar() };
+    kapusDb(v, als, [lI, wI]);
+    const pL = als.run('L', () => v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz, egyideju emberi dontes' }));
+    await varjFelt(() => lI.allt, nev + ': L az audit-INSERT elott (b1/b2 kesz, meg nincs bizonyitek)');
+    const pW = als.run('W', () => v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'confirmed', ok: 'helyes emberi dontes' }));
+    await varjFelt(() => wI.allt, nev + ': W az audit-INSERT elott (a cellak mar rc)');
+    assert.equal(v.sql("SELECT COUNT(*) AS n FROM meres_kuldes WHERE allapot = 'kihagyva' AND indok LIKE 'reschedule_confirmed%'")[0].n > 0, true, nev + ': a cellak rc-re zartak');
+    const elotte = auditTeljes(v, u); assert.equal(elotte.allapot, 'hianyzo_mezo', nev + ': az audit meg a regi (nincs audit-ag bizonyitek)');
+    lI.kapu.nyit(); const rL = await pL;
+    assert.deepEqual([rL.allapot, rL.kuldes], ['feloldas_nem_lehetseges', 0], nev + ': explicit elutasitas'); assert.deepEqual(auditTeljes(v, u), elotte, nev + ': az audit-sor erintetlen (a cella-ag fogta meg)');
+    wI.kapu.nyit(); await pW;
+    assert.equal(auditTeljes(v, u).allapot, 'feloldva_confirmed', nev); assert.equal(sdSor(v, u).sd_allapot, 'feloldva_confirmed', nev); assert.equal(v.net.hivasok.length, 0, nev);
+  }
+});
+
+test('S0-61h (#14e T2) a `feloldva_uj` audit-sor NEM bizonyitek: az `uj_konverzio` sajat Worker-halala az audit-iras UTAN, a veglegesIr ELOTT -> ugyanaz a feloldas ujrafuttathato (nem akad be `halasztva`-ban)', async () => {
+  const { v, u, b } = await csereVilag({ vilag: TILTVA }); const { megjegyzes, ...nelkule } = b;
+  assert.equal((await v.sd(nelkule)).allapot, 'halasztva');
+  const orig = v.e.KULCS_DB; let halt = false;
+  v.e.KULCS_DB = { prepare: (sql) => { const p = orig.prepare(sql); if (!/^UPDATE foglalas_egyeztetes SET sd_allapot = \?2, riasztas = 0/.test(sql)) return p; return { ...p, bind: (...a) => { const bb = p.bind(...a); return { ...bb, run: async () => { if (!halt) { halt = true; throw new Error('Worker halal (szimulalt) a veglegesIr-nel'); } return bb.run(); } }; } }; }, batch: orig.batch };
+  const FEL = { ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'emberi dontes' };
+  await v.post(FEL).catch(() => null); assert.equal(halt, true, 'a szimulalt halal a veglegesIr-nel bekovetkezett');
+  assert.deepEqual([csereSor(v, u).allapot, sdSor(v, u).sd_allapot], ['feloldva_uj', 'halasztva'], 'a halal utan: az audit mar feloldva_uj, a sor meg halasztva');
+  const r2 = await v.post(FEL);
+  assert.deepEqual([r2.sd_allapot, sdSor(v, u).sd_allapot, csereSor(v, u).allapot], ['feloldva_uj', 'feloldva_uj', 'feloldva_uj'], 'az ujrafuttatas lezarja: ' + JSON.stringify(r2));
+  assert.equal(v.net.hivasok.length, 0, 'tiltva: nincs mit kuldeni');
+});
+
+test('S0-61i (#14e T2) a `veglegesIr` audit-aga SZIMMETRIKUS: `feloldva_confirmed` audit-sor is megfogja a vegallapot-irast (cella-bizonyitek nelkul is), nem csak a `confirmed`', async () => {
+  const { v, u, b } = await csereVilag({ vilag: TILTVA }); const { megjegyzes, ...nelkule } = b;
+  assert.equal((await v.sd(nelkule)).allapot, 'halasztva');
+  const als = new AsyncLocalStorage(); const lv = { ki: 'L', minta: /^UPDATE foglalas_egyeztetes SET sd_allapot = \?2, riasztas = 0/, kapu: kapuPar() };
+  kapusDb(v, als, [lv]);
+  const pL = als.run('L', () => v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz, egyideju emberi dontes' }));
+  await varjFelt(() => lv.allt, 'L a veglegesIr elott (az audit mar feloldva_uj)');
+  v.sql("UPDATE foglalas_reschedule SET allapot = 'feloldva_confirmed' WHERE uuid = ?1", u); // egy parhuzamos `confirmed` lezarta az audit-sort (cella-bizonyitek nelkul)
+  assert.equal(v.sql("SELECT COUNT(*) AS n FROM meres_kuldes WHERE (allapot = 'kihagyva' AND indok LIKE 'reschedule_confirmed%') OR allapot IN ('elkuldve', 'nincs_hitelesites')")[0].n, 0, 'cella-bizonyitek nincs: csak az audit-ag dontheti el');
+  lv.kapu.nyit(); await pL;
+  assert.notEqual(sdSor(v, u).sd_allapot, 'feloldva_uj', 'a sor nem allt 0 kuldessel feloldva_uj-ra: ' + sdSor(v, u).sd_allapot); assert.equal(auditTeljes(v, u).allapot, 'feloldva_confirmed');
+});
