@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { MP_GADS, akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, apiTorzs, zapierTorzs, kuldes, elesKuldesE, szallitoValaszt, googleIdo, _tokenTorles } from '../lib/meres/google-ads.js';
-import { foglalasErkezes, admin, bemenet, _semaTorles } from '../lib/meres/lanc.js';
+import { foglalasErkezes, admin, bemenet, _semaTorles, igazolasErkezes } from '../lib/meres/lanc.js';
 import { onRequest } from '../functions/api/mp-foglalas.js';
 
 // --- D1-utanzat ---
@@ -41,6 +41,19 @@ function mockFetch(valasz = {}) {
   return f;
 }
 const keres = (torzs, { cookie = SUTI_IGEN, host = 'www.medicalpiercing.hu' } = {}) => new Request(`https://${host}/api/mp-foglalas`, { method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: JSON.stringify(torzs) });
+// Salonic-igazolas (a Salonic "Uj online foglalas" levele a webhookon): a feltoltes csak igazolt foglalasbol indul
+const HO = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
+function salonicLevel({ start = 1791800000, munkatars = 'Teszt Munkatars', ujPaciens = true, id = 'aaaaaaaa-bbbb-cccc-dddd-' + String(start).padStart(12, '0'), datum = MOST - 30 } = {}) {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Budapest', hourCycle: 'h23', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date(start * 1000)).map((x) => [x.type, x.value]));
+  const body = `Új online foglalás érkezett: 1 db Teszt Piercing Új online foglalás érkezett az alábbi adatokkal:Foglaló adatai:${ujPaciens ? 'Új páciens - Még nem volt foglalása!' : ''}Név: Teszt Vendég Mobiltelefonszám: 06301234567 E-mail cím: v@x.hu Időpont adatok:Szolgáltatás: 1 db Teszt Piercing Munkatárs: ${munkatars} Kezdő dátum: ${HO[+p.month - 1]} ${+p.day}. (hétfő) ${p.hour}:${p.minute} Foglalás megtekintése <a href="https://app.salonic.hu/backend/signin/?customer=medicalpiercing&redirect=%2Fcalendar%2FshowBooking%2F%3FbookingId%3D${id}">x</a>`;
+  return { from: 'Medical Piercing <app@salonic.hu>', subject: 'Új online foglalás érkezett: 1 db Teszt Piercing', body, date: new Date(datum * 1000).toISOString() };
+}
+const IG_TITOK = 'ig-TITOK';
+const igazolasKeres = (level, titok = IG_TITOK) => new Request('https://www.medicalpiercing.hu/api/mp-salonic-igazolas', { method: 'POST', headers: { 'content-type': 'application/json', 'x-mp-igazolas': titok }, body: JSON.stringify(level) });
+async function igazol(env, f, opts = {}, most = MOST) {
+  env.MP_IGAZOLAS_TITOK = IG_TITOK;
+  return (await igazolasErkezes({ request: igazolasKeres(salonicLevel(opts)), env }, { fetchImpl: f, most })).json();
+}
 const alapTorzs = (extra = {}) => ({ ut: '/foglalas-ok-mi', p: { bookingUrl: BURL(), price: '24900', first_booking: 'true', ...extra }, kattintas: { gclid: { ertek: GCLID, ido: MOST - 3600 } } });
 
 test('akciok: mindig Foglalas + uj VAGY visszatero; csak az MP ARNYEK akciok', () => {
@@ -121,6 +134,7 @@ test('lanc: koszonooldal -> D1 -> feltoltes (validate), deduplikacio a kulcson',
   _semaTorles(); _tokenTorles();
   const db = d1(); const f = mockFetch();
   const env = { MP_MERES_DB: db, ...API_ENV };
+  await igazol(env, f);
   const r1 = await (await foglalasErkezes({ request: keres(alapTorzs()), env }, { fetchImpl: f, most: MOST })).json();
   assert.deepEqual(r1, { ok: true, uj: true });
   const sor = db._s.prepare('SELECT * FROM mp_foglalas').get();
@@ -140,15 +154,16 @@ test('lanc: koszonooldal -> D1 -> feltoltes (validate), deduplikacio a kulcson',
   assert.equal(db._s.prepare('SELECT COUNT(*) n FROM mp_foglalas').get().n, 1);
 });
 
-test('lanc: hozzajarulas nelkul nincs gclid a rekordban es nincs Google-hivas; visszatero -> visszatero akcio', async () => {
+test('lanc: hozzajarulas nelkul nincs gclid a rekordban es nincs Google-hivas; nem "Uj paciens" -> ismeretlen, csak Foglalas', async () => {
   _semaTorles();
-  const db = d1(); const f = mockFetch();
-  await foglalasErkezes({ request: keres(alapTorzs({ first_booking: 'false' }), { cookie: SUTI_NEM + `; _gcl_aw=GCL.${MOST}.${GCLID}` }), env: { MP_MERES_DB: db, ...API_ENV } }, { fetchImpl: f, most: MOST });
+  const db = d1(); const f = mockFetch(); const env = { MP_MERES_DB: db, ...API_ENV };
+  await igazol(env, f, { ujPaciens: false });
+  await foglalasErkezes({ request: keres(alapTorzs({ first_booking: 'false' }), { cookie: SUTI_NEM + `; _gcl_aw=GCL.${MOST}.${GCLID}` }), env }, { fetchImpl: f, most: MOST });
   const sor = db._s.prepare('SELECT * FROM mp_foglalas').get();
   assert.equal(sor.kattintas_ertek, null); assert.equal(sor.kattintas_tipus, null); assert.equal(sor.hozzajarulas_hirdetes, 0); assert.equal(sor.uj_vendeg, 0);
   assert.equal(f.hivasok.length, 0);
   const ft = db._s.prepare('SELECT akcio_id, allapot, valasz FROM mp_feltoltes ORDER BY akcio_id').all();
-  assert.deepEqual(ft.map((x) => [x.akcio_id, x.allapot, x.valasz]), [['7834926162', 'kihagyva', 'nincs hirdetesi hozzajarulas'], ['7834926168', 'kihagyva', 'nincs hirdetesi hozzajarulas']]);
+  assert.deepEqual(ft.map((x) => [x.akcio_id, x.allapot, x.valasz]), [['7834926162', 'kihagyva', 'nincs hirdetesi hozzajarulas']]);
 });
 
 test('adatvedelem: a rekord es a feltoltes-naplo nem tartalmaz egeszsegugyi / szemelyes adatot; a bemenet a tobbi mezot eldobja', async () => {
@@ -156,7 +171,9 @@ test('adatvedelem: a rekord es a feltoltes-naplo nem tartalmaz egeszsegugyi / sz
   const db = d1(); const f = mockFetch({ torzs: { partialFailureError: { message: 'bad gclid ' + GCLID } } });
   const t = alapTorzs({ service: 'Migrén piercing', category: 'Gyógy', g: '2038420', email: 'a@b.hu', phone: '+36301234567', name: 'Teszt Elek' });
   t.nev = 'Teszt Elek';
-  await foglalasErkezes({ request: keres(t), env: { MP_MERES_DB: db, ...API_ENV } }, { fetchImpl: f, most: MOST });
+  const env = { MP_MERES_DB: db, ...API_ENV };
+  await igazol(env, f);
+  await foglalasErkezes({ request: keres(t), env }, { fetchImpl: f, most: MOST });
   const minden = JSON.stringify([db._s.prepare('SELECT * FROM mp_foglalas').all(), db._s.prepare('SELECT * FROM mp_feltoltes').all()]);
   for (const tilt of ['Migr', 'Gyógy', '2038420', 'a@b.hu', '36301234567', 'Teszt Elek', 'migren', 'foglalas-ok-mi']) assert.ok(!minden.includes(tilt), 'nincs: ' + tilt);
   const naplo = JSON.stringify(db._s.prepare('SELECT * FROM mp_feltoltes').all());
@@ -187,7 +204,9 @@ test('ket foglalasi ut: Salonic es beagyazott motor (booking_id) ugyanazzal a ku
 test('elonezet: kornyezet=elonezet, MP_GADS_MOD=eles mellett is csak validateOnly', async () => {
   _semaTorles(); _tokenTorles();
   const db = d1(); const f = mockFetch();
-  await foglalasErkezes({ request: keres(alapTorzs(), { host: 'claude-mp.medicalpiercing.pages.dev' }), env: { MP_MERES_DB: db, MP_GADS_MOD: 'eles', ...API_ENV } }, { fetchImpl: f, most: MOST });
+  const env = { MP_MERES_DB: db, MP_GADS_MOD: 'eles', ...API_ENV };
+  await igazol(env, f);
+  await foglalasErkezes({ request: keres(alapTorzs(), { host: 'claude-mp.medicalpiercing.pages.dev' }), env }, { fetchImpl: f, most: MOST });
   assert.equal(db._s.prepare('SELECT kornyezet FROM mp_foglalas').get().kornyezet, 'elonezet');
   assert.equal(JSON.parse(f.hivasok.find((h) => h.url.includes('upload')).o.body).validateOnly, true);
 });
@@ -196,6 +215,7 @@ test('eles mod (mock): validateOnly=false, a mar elkuldott akcio nem megy ujra',
   _semaTorles(); _tokenTorles();
   const db = d1(); const f = mockFetch();
   const env = { MP_MERES_DB: db, MP_GADS_MOD: 'eles', MP_MERES_ADMIN_KULCS: 'k', ...API_ENV };
+  await igazol(env, f);
   await foglalasErkezes({ request: keres(alapTorzs()), env }, { fetchImpl: f, most: MOST });
   assert.equal(JSON.parse(f.hivasok.find((h) => h.url.includes('upload')).o.body).validateOnly, false);
   assert.deepEqual(db._s.prepare("SELECT allapot FROM mp_feltoltes WHERE mod='eles'").all().map((x) => x.allapot), ['elkuldve', 'elkuldve']);
@@ -244,7 +264,9 @@ const ZAP_KULCSOK = ['customer_id', 'conversion_action_id', 'conversion_date_tim
 test('zapier (mock): dryrun alapbol, csak engedett mezok, nyers gclid es webhook-cim nincs a naploban', async () => {
   _semaTorles(); _tokenTorles();
   const db = d1(); const f = mockFetch({ torzs: { status: 'success' } });
-  await foglalasErkezes({ request: keres(alapTorzs()), env: { MP_MERES_DB: db, ...ZAP_ENV } }, { fetchImpl: f, most: MOST });
+  const env = { MP_MERES_DB: db, ...ZAP_ENV };
+  await igazol(env, f);
+  await foglalasErkezes({ request: keres(alapTorzs()), env }, { fetchImpl: f, most: MOST });
   const hivasok = f.hivasok.filter((h) => h.url.startsWith('https://hooks.zapier.com/'));
   assert.equal(hivasok.length, 2); // Foglalas + uj vendeg
   for (const h of hivasok) {
@@ -266,7 +288,9 @@ test('zapier (mock): dryrun alapbol, csak engedett mezok, nyers gclid es webhook
 test('zapier (mock): eles modban nincs dryrun mezo; hozzajarulas nelkul nincs webhook-hivas', async () => {
   _semaTorles(); _tokenTorles();
   const db = d1(); const f = mockFetch({ torzs: { status: 'success' } });
-  await foglalasErkezes({ request: keres(alapTorzs()), env: { MP_MERES_DB: db, MP_GADS_MOD: 'eles', ...ZAP_ENV } }, { fetchImpl: f, most: MOST });
+  const env1 = { MP_MERES_DB: db, MP_GADS_MOD: 'eles', ...ZAP_ENV };
+  await igazol(env1, f);
+  await foglalasErkezes({ request: keres(alapTorzs()), env: env1 }, { fetchImpl: f, most: MOST });
   const t = JSON.parse(f.hivasok.find((h) => h.url.startsWith('https://hooks.zapier.com/')).o.body);
   assert.equal('dryrun' in t, false);
   const db2 = d1(); const f2 = mockFetch();
@@ -278,6 +302,7 @@ test('MP_GADS_MOD=off: semmilyen kimeno hivas, allapot kikapcsolva; visszakapcso
   _semaTorles(); _tokenTorles();
   const db = d1(); const f = mockFetch({ torzs: { status: 'success' } });
   const env = { MP_MERES_DB: db, MP_GADS_MOD: 'off', MP_MERES_ADMIN_KULCS: 'k', ...ZAP_ENV };
+  await igazol(env, f);
   await foglalasErkezes({ request: keres(alapTorzs()), env }, { fetchImpl: f, most: MOST });
   assert.equal(f.hivasok.length, 0);
   assert.deepEqual(db._s.prepare('SELECT allapot FROM mp_feltoltes').all().map((x) => x.allapot), ['kikapcsolva', 'kikapcsolva']);
@@ -294,6 +319,7 @@ const uplSzam = (f) => f.hivasok.filter((h) => h.url.includes('uploadClickConver
 test('potlas: kesoi hozzajarulas -> a meg azonosito nelkuli sor kiegeszul, EGY feltoltes; ismetles nem kuld ujra', async () => {
   _semaTorles(); _tokenTorles();
   const db = d1(); const f = mockFetch(); const env = { MP_MERES_DB: db, ...API_ENV };
+  await igazol(env, f);
   const r1 = await (await foglalasErkezes({ request: keres(torzsKattNelkul(), { cookie: '' }), env }, { fetchImpl: f, most: MOST })).json();
   assert.deepEqual(r1, { ok: true, uj: true });
   assert.equal(uplSzam(f), 0, 'hozzajarulas nelkul nincs feltoltes');
@@ -314,6 +340,7 @@ test('potlas: kesoi hozzajarulas -> a meg azonosito nelkuli sor kiegeszul, EGY f
 test('potlas: nem ir felul meglevo azonositot; potlas-jelzes, hozzajarulas vagy azonosito nelkul nincs hatasa', async () => {
   _semaTorles(); _tokenTorles();
   const db = d1(); const f = mockFetch(); const env = { MP_MERES_DB: db, ...API_ENV };
+  await igazol(env, f);
   await foglalasErkezes({ request: keres(alapTorzs()), env }, { fetchImpl: f, most: MOST }); // mar van gclid
   const masik = { gclid: { ertek: 'Cj0KCQjwMASIKgclid_999999999', ido: MOST } };
   assert.equal((await (await foglalasErkezes({ request: keres(potlo({}, masik)), env }, { fetchImpl: f, most: MOST + 5 })).json()).potolva, false);
@@ -333,6 +360,7 @@ test('potlas: nem ir felul meglevo azonositot; potlas-jelzes, hozzajarulas vagy 
 test('potlas: mas foglalashoz nem kotheto (masik booking_id), es csak az ablakon belul', async () => {
   _semaTorles(); _tokenTorles();
   const db = d1(); const f = mockFetch(); const env = { MP_MERES_DB: db, ...API_ENV };
+  await igazol(env, f);
   await foglalasErkezes({ request: keres(torzsKattNelkul({ booking_id: 'mb_eredeti0000000000' }), { cookie: '' }), env }, { fetchImpl: f, most: MOST });
   assert.equal((await (await foglalasErkezes({ request: keres(potlo({ booking_id: 'mb_masik00000000000' })), env }, { fetchImpl: f, most: MOST + 5 })).json()).potolva, false);
   assert.equal((await (await foglalasErkezes({ request: keres(potlo()), env }, { fetchImpl: f, most: MOST + 5 })).json()).potolva, false, 'booking_id nelkul sem');
@@ -346,6 +374,7 @@ test('potlas elesben: a mar elkuldott akcio nem megy ki ujra (D1-ellenorzes + or
   _semaTorles(); _tokenTorles();
   const db = d1(); const f = mockFetch({ torzs: { results: [{}] } });
   const env = { MP_MERES_DB: db, ...API_ENV, MP_GADS_MOD: 'eles' };
+  await igazol(env, f);
   await foglalasErkezes({ request: keres(torzsKattNelkul(), { cookie: '' }), env }, { fetchImpl: f, most: MOST });
   await foglalasErkezes({ request: keres(potlo()), env }, { fetchImpl: f, most: MOST + 5 });
   await foglalasErkezes({ request: keres(potlo()), env }, { fetchImpl: f, most: MOST + 9 });
