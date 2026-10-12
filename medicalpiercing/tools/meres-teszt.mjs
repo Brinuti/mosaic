@@ -20,7 +20,7 @@
 //     munkamenetben sem taroljuk; tools/gclid-atvitel-pw.mjs), a parameterek a
 //     munkamenetben megmaradnak (mint a Wixen);
 //   - TikTok "Foglalas inditasa": foglalasi linkre kattintaskor pontosan egy InitiateCheckout
-//     (content_name, content_category), a koszonooldalon es nem eles cimen egy sem;
+//     (content_name; tipuskod nelkul), a koszonooldalon es nem eles cimen egy sem;
 //   - a medicalpiercing/ kodban nincs Mosaic-azonosito.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -168,7 +168,7 @@ for (const [honnan, hova] of [['/kontroll-ok', '/kontroll-xyz'], ['/garancia-ok'
     await kattint(p, linkek.first());
     const e1 = foglalasEsemenyek(ki);
     ok('TikTok InitiateCheckout: 1 kattintas -> pontosan 1 esemeny', e1.length === 1, JSON.stringify(e1.map((j) => j.properties)));
-    ok('TikTok InitiateCheckout: content_name + content_category (tipuskod)', e1.length === 1 && e1[0].properties && e1[0].properties.content_name === 'foglalas_inditasa' && e1[0].properties.content_category === 'mi');
+    ok('TikTok InitiateCheckout: content_name, tipuskod (content_category) NELKUL', e1.length === 1 && e1[0].properties && e1[0].properties.content_name === 'foglalas_inditasa' && !('content_category' in e1[0].properties));
     await kattint(p, linkek.nth(1), { button: 'middle' });
     await kattint(p, linkek.nth(2), { button: 'right' });
     ok('TikTok InitiateCheckout: kozepso gomb +1, jobb gomb 0', foglalasEsemenyek(ki).length === 2, foglalasEsemenyek(ki).length + ' esemeny');
@@ -188,7 +188,7 @@ for (const [honnan, hova] of [['/kontroll-ok', '/kontroll-xyz'], ['/garancia-ok'
     await p.waitForTimeout(1500);
     await kattint(p, p.locator('a[href^="https://medicalpiercing.salonic.hu"]:visible').first());
     const e = foglalasEsemenyek(ki);
-    ok('TikTok InitiateCheckout: /idopontfoglalas a soft akcio utan -> soft', e.length === 1 && e[0].properties.content_category === 'soft', JSON.stringify(e.map((j) => j.properties)));
+    ok('TikTok InitiateCheckout: /idopontfoglalas a soft akcio utan -> egy esemeny, kategoria nelkul', e.length === 1 && !('content_category' in e[0].properties), JSON.stringify(e.map((j) => j.properties)));
     await ctx.close();
   }
   // koszonooldal: semmi
