@@ -222,7 +222,7 @@ Párja a Drive MP-mappájában van („MP-ATADAS-2026-10-11.md”), ugyanezzel a
 
 1. ~~PR #247, #246, #248~~ kész, élesben (a motor 100%-on, saját süti-sáv).
 2. ~~A Salonic „Egyedi CSS URL” beállítása~~ kész (lásd a 4. pontot), igazolva. Visszavonás: a mező kiürítése (app.salonic.hu, medicalpiercing fiók, Beállítások > Online bejelentkezés megjelenés). Ugyanitt vigyázz a fiókra: a közös Salonic-belépés más fiókon állhat (2026-10-11-én az A76-on ez egyszer tévesen beállt).
-   - **Függőben (Salonic-admin kell):** az 1–10. próbafoglalás törlése a Salonicból (a „Szentes Johanna” vendégprofilról, azonosítók a 4. pontban). Feri kérte; a Claude-nak nincs Salonic-belépése, és a Salonic-fiókhoz nem nyúl.
+   - **Függőben (Salonic-admin kell):** az 1–10. próbafoglalás törlése a Salonicból (a „<vendeg neve>” vendégprofilról, azonosítók a 4. pontban). Feri kérte; a Claude-nak nincs Salonic-belépése, és a Salonic-fiókhoz nem nyúl.
    - Új próbafoglalás NEM kell: a 100%-os motor élesben igazolt (270/270 teszt, valódi próba). A jövőbeli próbák telefonszáma Feri tesztszáma.
 3. **Salonic-kínálat (Feri kérte):** Sopronban (9067) és Szombathelyen (14229) hiányzik a „👭 2 személynek – 2 db piercing” (189187). Ugyanaz a fiókváltási kérdés, mint a 2. pontnál.
 4. **A 24 órás figyelés** a mérési Claude-é (lásd a 4. pont). Bármelyik eltérésnél azonnal 0%-ra.

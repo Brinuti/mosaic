@@ -20,6 +20,8 @@ const ua = MOBIL ? UA_MOBIL : UA;
 const T0 = Date.now(); const mp = () => Date.now() - T0;
 const idovonal = [], naplo = [], jegyzettombIras = []; // jegyzettombIras: a (blokkolt) foglalasi jegyzettomb-jelzesek
 
+// kotelezo env (a repo nem tartalmazza): gyors hiba a bongeszo inditasa elott, nem a foglalas kozben
+for (const [n, mit] of [['MERES_EMAIL', 'a tulajdonos probaja e-mail cime']]) if (!process.env[n]) { console.error(n + ' kotelezo: ' + mit + '; a repo nem tartalmazza'); process.exit(1); }
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const ctx = await browser.newContext({ userAgent: ua, viewport: MOBIL ? { width: 390, height: 844 } : { width: 1280, height: 900 }, locale: 'hu-HU', timezoneId: 'Europe/Budapest', serviceWorkers: 'block', isMobile: MOBIL, hasTouch: MOBIL });
 await ctx.route('**/*', async (route) => {

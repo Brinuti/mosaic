@@ -57,6 +57,8 @@ const idovonal = [], naplo = [], hist = [], iras = [], hibak = [];
 let fazis = 'landing';
 const lepes = (esemeny, extra = {}) => { idovonal.push({ t: mp(), fazis, esemeny, ...extra }); console.log(`[${String(mp()).padStart(6)}ms] ${esemeny}`, Object.keys(extra).length ? JSON.stringify(extra).slice(0, 200) : ''); };
 
+// kotelezo env (a repo nem tartalmazza): gyors hiba a bongeszo inditasa elott, nem a foglalas kozben
+if (MOD === 'valodi' && !MEGALL) for (const [n, mit] of [['MERES_TELEFON', 'a tulajdonos probaszama (a +36 utani resz)'],['MERES_EMAIL', 'a tulajdonos probaja e-mail cime']]) if (!process.env[n]) { console.error(n + ' kotelezo: ' + mit + '; a repo nem tartalmazza'); process.exit(1); }
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 1000 }, locale: 'hu-HU', timezoneId: 'Europe/Budapest', serviceWorkers: 'block' });
 await ctx.addInitScript(hozzajarulasScript);
