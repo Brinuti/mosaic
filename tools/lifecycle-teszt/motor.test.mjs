@@ -105,7 +105,7 @@ test('nevek: megszolitas', () => {
   const k = (n) => keresztnev(n);
   assert.equal(k('Katalin Szathmáry'), 'Katalin');
   assert.equal(k('Fűrész Ágnes'), 'Ágnes');
-  assert.equal(k('Koncz-Szabó Tünde'), 'Tünde');
+  assert.equal(k('Kiss-Varga Réka'), 'Réka');
   assert.equal(k('Márton Szilvia'), 'Szilvia');
   assert.equal(k('Dr. Nagy Éva'), 'Éva');
   assert.equal(k('Kovács'), null);

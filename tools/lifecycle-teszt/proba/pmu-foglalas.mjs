@@ -3,8 +3,10 @@
 //   node _tmp/pmu-foglalas.mjs --elkuld   -> be is kuldi
 import { chromium } from 'playwright-core';
 const KULDES = process.argv.includes('--elkuld');
-const TELEFON = process.env.MERES_TELEFON || '709420090';
+const TELEFON = (process.env.MERES_TELEFON || (() => { throw new Error('MERES_TELEFON kotelezo: a tulajdonos probaszama (a +36 utani resz); a repo nem tartalmazza'); })());
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+// kotelezo env (a repo nem tartalmazza): gyors hiba a bongeszo inditasa elott, nem a foglalas kozben
+for (const [n, mit] of [['MERES_EMAIL', 'a tulajdonos probaja e-mail cime']]) if (!process.env[n]) { console.error(n + ' kotelezo: ' + mit + '; a repo nem tartalmazza'); process.exit(1); }
 const b = await chromium.launch({ executablePath: CHROME, headless: true });
 const ctx = await b.newContext({ viewport: { width: 1100, height: 1600 }, locale: 'hu-HU', serviceWorkers: 'block' });
 const ENGEDETT = /^https:\/\/([a-z0-9.-]*salonic\.hu|cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|fonts\.(googleapis|gstatic)\.com|www\.google\.com\/recaptcha|www\.gstatic\.com\/recaptcha)\//;
@@ -33,7 +35,7 @@ try {
   await tolt('#GuestDataForm_guestPhoneTemp', TELEFON);
   await tolt('#GuestDataForm_guestLastName', 'TESZT –');
   await tolt('#GuestDataForm_guestFirstName', 'Claude');
-  await tolt('#GuestDataForm_guestEmail', 'deakfi@grantis.hu');
+  await tolt('#GuestDataForm_guestEmail', (process.env.MERES_EMAIL || (() => { throw new Error('MERES_EMAIL kotelezo: a tulajdonos probaja e-mail cime; a repo nem tartalmazza'); })()));
   await p.locator('#GuestDataForm_acceptTerms').check();
   console.log('adatlap kitoltve; url:', p.url());
   if (await p.locator('iframe[src*="recaptcha"][src*="bframe"]').count()) throw new Error('RECAPTCHA-KIHIVAS: megallok');

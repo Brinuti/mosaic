@@ -30,7 +30,7 @@ const E = ESETEK[ESET]; if (!E) throw new Error('ismeretlen eset: ' + ESET);
 const PROFILOK = { teljes: { ana: true, adv: true, fun: true }, nincs: { ana: false, adv: false, fun: false }, ana: { ana: true, adv: false, fun: true }, dontes_nelkul: null };
 if (!(PROFIL in PROFILOK)) throw new Error('ismeretlen profil: ' + PROFIL);
 const HOZZ = PROFILOK[PROFIL];
-const TELEFON = process.env.MERES_TELEFON || '709420090';
+const TELEFON = (process.env.MERES_TELEFON || (() => { throw new Error('MERES_TELEFON kotelezo: a tulajdonos probaszama (a +36 utani resz); a repo nem tartalmazza'); })());
 const CHROME = process.env.CHROME_UTVONAL || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const T0 = Date.now(); const mp = () => Date.now() - T0;
 const idovonal = [], tiltott = [], sajatKeresek = [], hibak = [], konzol = [];
@@ -43,6 +43,8 @@ const UTOLSO = { utm_source: 'facebook', utm_medium: 'paid', utm_campaign: `qa2_
 const ts = Math.floor(Date.now() / 1000);
 const SUTIK = { _fbp: `fb.1.${ts * 1000 - 5000000}.${Math.floor(Math.random() * 9e9 + 1e9)}`, _ttp: `${S}_ttp_${Math.random().toString(36).slice(2, 12)}`, _ga: `GA1.1.${Math.floor(Math.random() * 9e8 + 1e8)}.${ts - 86400}`, _ga_H4206SQ0Q7: `GS2.1.s${ts - 1200}$o1$g1$t${ts - 600}$j0$l0$h0` };
 
+// kotelezo env (a repo nem tartalmazza): gyors hiba a bongeszo inditasa elott, nem a foglalas kozben
+for (const [n, mit] of [['MERES_EMAIL', 'a tulajdonos probaja e-mail cime']]) if (!process.env[n]) { console.error(n + ' kotelezo: ' + mit + '; a repo nem tartalmazza'); process.exit(1); }
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 900 }, locale: 'hu-HU', timezoneId: 'Europe/Budapest', serviceWorkers: 'block' });
 const host = new URL(BAZIS).hostname;
@@ -120,7 +122,7 @@ try {
   o.azonosito_a_keret_cimeben = new URL(fr.url()).searchParams.get('back'); o.keret_url = fr.url(); o.kontextus = await kontextus();
   lepes('Salonic-adatlap betoltve', { back: o.azonosito_a_keret_cimeben });
   const tolt = async (sel, ertek) => { const l = fr.locator(sel).first(); await l.click(); await l.pressSequentially(ertek, { delay: 45 }); };
-  await tolt('#GuestDataForm_guestPhoneTemp', TELEFON); await tolt('#GuestDataForm_guestLastName', 'TESZT –'); await tolt('#GuestDataForm_guestFirstName', 'Claude'); await tolt('#GuestDataForm_guestEmail', 'deakfi@grantis.hu');
+  await tolt('#GuestDataForm_guestPhoneTemp', TELEFON); await tolt('#GuestDataForm_guestLastName', 'TESZT –'); await tolt('#GuestDataForm_guestFirstName', 'Claude'); await tolt('#GuestDataForm_guestEmail', (process.env.MERES_EMAIL || (() => { throw new Error('MERES_EMAIL kotelezo: a tulajdonos probaja e-mail cime; a repo nem tartalmazza'); })()));
   await fr.locator('#GuestDataForm_acceptTerms').check();
   if (await page.locator('iframe[src*="recaptcha"][src*="bframe"]').count()) throw new Error('RECAPTCHA-KIHIVAS: megallok');
   lepes('urlap kitoltve, kuldes', { ido: new Date().toISOString() });

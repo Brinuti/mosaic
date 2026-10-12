@@ -19,6 +19,8 @@ import path from 'node:path';
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const SZ = arg('szenario', 'hair'), MOD = arg('mod', 'szim'), OUT = arg('out', `meres-${SZ}-${MOD}.json`);
 const OVERLAY = arg('overlay', ''), CLICK = arg('clickids', '0') === '1', FEJES = arg('fejes', '0') === '1', MEGALL = arg('megall', '0') === '1';
+// kotelezo env a VALODI foglalashoz (a repo nem tartalmazza): gyors hiba a bongeszo inditasa elott
+if (MOD === 'valodi' && !MEGALL) for (const [n, mit] of [['MERES_TELEFON', 'a tulajdonos probaszama (a +36 utani resz)'], ['MERES_EMAIL', 'a tulajdonos probaja e-mail cime']]) if (!process.env[n]) { console.error(n + ' kotelezo: ' + mit + '; a repo nem tartalmazza'); process.exit(1); }
 const BASE = 'https://www.mosaicheadspa.hu';
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
@@ -294,11 +296,11 @@ try {
     if (MEGALL) { idovonal.push({ t: mp(), esemeny: 'megallas (--megall): az urlapot nem toltom ki' }); }
     else {
       const tolt = async (sel, ertek) => { const l = fr.locator(sel).first(); await l.click(); await l.pressSequentially(ertek, { delay: 45 }); }; // valodi billentyuleutesek: a telefonmezo (intl-tel-input) rejtett mezoi igy frissulnek
-      // A telefonszam a +36 elotti resz nelkul. Alapbol a tulajdonos SAJAT szama (709420090; 2026-10-04 ota, mert a szalon szama egy valodi vendeg kartonjara parosul a Salonicban); felulirhato: MERES_TELEFON.
-      await tolt('#GuestDataForm_guestPhoneTemp', process.env.MERES_TELEFON || '709420090');
+      // A telefonszam a +36 elotti resz nelkul: MERES_TELEFON (kotelezo; a repo nem tartalmazza; a szalon szama egy valodi vendeg kartonjara parosulna a Salonicban); az e-mail: MERES_EMAIL.
+      await tolt('#GuestDataForm_guestPhoneTemp', (process.env.MERES_TELEFON || (() => { throw new Error('MERES_TELEFON kotelezo: a tulajdonos probaszama (a +36 utani resz); a repo nem tartalmazza'); })()));
       await tolt('#GuestDataForm_guestLastName', 'TESZT –');
       await tolt('#GuestDataForm_guestFirstName', 'Claude');
-      await tolt('#GuestDataForm_guestEmail', 'deakfi@grantis.hu');
+      await tolt('#GuestDataForm_guestEmail', (process.env.MERES_EMAIL || (() => { throw new Error('MERES_EMAIL kotelezo: a tulajdonos probaja e-mail cime; a repo nem tartalmazza'); })()));
       await fr.locator('#GuestDataForm_acceptTerms').check(); // csak a feltetel (hirlevel NEM)
       // reCAPTCHA-kihivas eseten megallunk (CAPTCHA-t nem oldunk meg)
       if (await page.locator('iframe[src*="recaptcha"][src*="bframe"]').count()) throw new Error('RECAPTCHA-KIHIVAS: megallok');

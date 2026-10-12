@@ -34,7 +34,7 @@ const BE = () => ({
 });
 
 // --- eseménymodell -------------------------------------------------------------------------------------------------------------------------
-const FK = (o = {}) => ({ tipus: 'foglalas', uzletag: 'headspa', source_entity_id: BID, jelleg: 'elso', kupon: false, ertek: 26900, ido: IDO, szolgaltatas: 'HeadSpa', vendeg: { email: 'Teszt.Claude@Example.com', telefon: '06 70 942 0090' }, ...o });
+const FK = (o = {}) => ({ tipus: 'foglalas', uzletag: 'headspa', source_entity_id: BID, jelleg: 'elso', kupon: false, ertek: 26900, ido: IDO, szolgaltatas: 'HeadSpa', vendeg: { email: 'Teszt.Claude@Example.com', telefon: '06 30 000 0001' }, ...o });
 const nevek = (fk) => esemenyek(fk).map((e) => `${e.tipus}:${e.nev}`);
 
 test('esemenymodell: HeadSpa uj vendeg = FoglalasElso + Schedule ernyo; az id <esemeny>:<booking_id>', () => {
@@ -81,9 +81,9 @@ test('hash: SHA-256 normalizalas (e-mail kisbetu + trim; telefon orszagkoddal; T
   assert.equal(await sha256hex('abc'), 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
   assert.equal(await hashEmail('  Teszt.Claude@Example.com '), await sha256hex('teszt.claude@example.com'));
   assert.equal(await hashEmail('nem email'), null);
-  for (const v of ['06 70 942 0090', '+36 70 942 0090', '0036709420090', '709420090', '36-70-942-0090']) assert.equal(telefonSzamjegy(v), '36709420090', v);
-  assert.equal(await hashTelefon('06 70 942 0090'), await sha256hex('36709420090'));
-  assert.equal(await hashTelefon('06 70 942 0090', { plusz: true }), await sha256hex('+36709420090'));
+  for (const v of ['06 30 000 0001', '+36 30 000 0001', '0036300000001', '300000001', '36-30-000-0001']) assert.equal(telefonSzamjegy(v), '36300000001', v);
+  assert.equal(await hashTelefon('06 30 000 0001'), await sha256hex('36300000001'));
+  assert.equal(await hashTelefon('06 30 000 0001', { plusz: true }), await sha256hex('+36300000001'));
   assert.equal(telefonSzamjegy('123'), null); assert.equal(await hashTelefon(''), null);
 });
 
@@ -144,7 +144,7 @@ test('Meta CAPI kerelem: ARNYEK dataset + test_event_code, event_id, ertek HUF, 
   const d = k.body.data[0];
   assert.deepEqual([d.event_name, d.event_id, d.event_time, d.action_source], ['HeadSpa_FoglalasElso', `FoglalasElso:${BID}`, IDO, 'website']);
   assert.deepEqual([d.custom_data.value, d.custom_data.currency, d.custom_data.order_id], [26900, 'HUF', BID]);
-  assert.deepEqual(d.user_data.em, [await sha256hex('teszt.claude@example.com')]); assert.deepEqual(d.user_data.ph, [await sha256hex('36709420090')]);
+  assert.deepEqual(d.user_data.em, [await sha256hex('teszt.claude@example.com')]); assert.deepEqual(d.user_data.ph, [await sha256hex('36300000001')]);
   assert.equal(d.user_data.fbc, BE().meta.fbc); assert.equal(d.user_data.fbp, BE().fbp);
   assert.ok(!JSON.stringify(k).includes('teszt.claude@example.com'), 'a nyers e-mail nincs a kerelemben');
   assert.equal(metaKerelem(ernyo, ctx, ENV).body.data[0].event_name, 'Schedule');
@@ -159,7 +159,7 @@ test('TikTok kerelem: ARNYEK pixel + test_event_code, ttclid + ttp, E.164 hash; 
   const d = k.body.data[0];
   assert.deepEqual([d.event, d.event_id, d.properties.value, d.properties.currency], ['HeadSpa_FoglalasElso', `FoglalasElso:${BID}`, 26900, 'HUF']);
   assert.equal(d.user.ttclid, 'E.C.P.ttclid_TESZT_01'); assert.equal(d.user.ttp, BE().ttp);
-  assert.equal(d.user.phone, await sha256hex('+36709420090')); assert.equal(d.user.email, await sha256hex('teszt.claude@example.com'));
+  assert.equal(d.user.phone, await sha256hex('+36300000001')); assert.equal(d.user.email, await sha256hex('teszt.claude@example.com'));
   assert.equal(tiktokKerelem(ernyo, ctx, ENV).body.data[0].event, 'CompletePayment');
   assert.match(tiktokKerelem(alap, ctx, {}).tiltva, /TIKTOK_TESZT_KOD/);
   assert.match(tiktokKerelem(alap, ctx, { ...ENV, TIKTOK_ARNYEK_PIXEL: ELO_CELOK.tiktok[0] }).tiltva, /ARNYEK/);
@@ -405,7 +405,7 @@ function halozat({ salonic = 'aktiv' } = {}) { // salonic: 'aktiv' | 'torolve' |
 const kerErkezes = (body, fej = {}) => new Request('https://x.pages.dev/api/meres-erkezes', { method: 'POST', headers: { origin: 'https://x.pages.dev', 'content-type': 'application/json', 'user-agent': 'UA TESZT', 'cf-connecting-ip': '203.0.113.7', ...fej }, body: typeof body === 'string' ? body : JSON.stringify(body) });
 const HAIR_ERK = (o = {}) => ({ source_id: BID, uzletag: 'fodrasz', tipus: 'foglalas', attr: BE(), hozz: { ana: true, adv: true, fun: true }, oldal: 'https://x.pages.dev/foglalas-koszono', first_booking: true, szolgaltatas: 'Fodrász konzultáció', ...o });
 const egyeztetKer = (body) => new Request('https://x.pages.dev/api/foglalas-egyeztetes', { method: 'POST', headers: { 'x-egyeztetes-kulcs': KULCS_SZOVEG }, body: JSON.stringify(body) });
-const LEVEL = () => ({ email_html: fx('kulcs-email-hair.html'), level_datuma: '2026-10-06T13:36:32Z', vendeg: { email: 'teszt.claude@example.com', telefon: '+36 70 942 0090' }, uj_vendeg: true });
+const LEVEL = () => ({ email_html: fx('kulcs-email-hair.html'), level_datuma: '2026-10-06T13:36:32Z', vendeg: { email: 'teszt.claude@example.com', telefon: '+36 30 000 0001' }, uj_vendeg: true });
 
 test('emailElemzes: a levelbol a tenyleges ar (Fizetendo varhatoan / Price)', () => {
   assert.equal(emailElemzes(fx('kulcs-email-hair.html')).ar, 0);

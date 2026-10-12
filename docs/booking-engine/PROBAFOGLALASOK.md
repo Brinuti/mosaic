@@ -2,7 +2,7 @@
 
 Négy valódi próbafoglalás a **rejtett `/foglalo-motor` oldalról**, az éles tartományon (`www.mosaicheadspa.hu`), a jóváhagyott feltételekkel. A hirdetési mérés kódján nem változtattunk: a foglaló sikeres foglalás után a **meglévő köszönőoldalt** nyitja meg ugyanazokkal a paraméterekkel, így a mérés úgy fut, mint a Salonic saját átirányításánál.
 
-- Beírt név: vezetéknév „TESZT –”, keresztnév „Claude”. E-mail: `deakfi@grantis.hu` (a Gmail-összekötő ezt a fiókot éri el, ezért ezt a címet választotta a tulajdonos). Telefon: +36 70 942 0090.
+- Beírt név: vezetéknév „TESZT –”, keresztnév „Claude”. E-mail: `<tulajdonos e-mail>` (a Gmail-összekötő ezt a fiókot éri el, ezért ezt a címet választotta a tulajdonos). Telefon: <tulajdonos telefonszama>.
 - A Salonic-feltételt (adatvédelmi tájékoztató és foglalási szabályzat) bepipáltuk, a hírlevelet **nem**. Süti-sáv: a saját oldalunkon „Elfogadom”.
 - reCAPTCHA-kihívás **egyiknél sem** jött.
 - **Lemondás:** a tulajdonos jóváhagyásával 2026-10-03 20:05 körül mind a négy foglalást lemondtuk a visszaigazoló e-mail „Lemondom” linkjével (lemondás oka: „Próbafoglalás (TESZT), lemondva”); a Salonic mindegyiknél kiírta: „Az időpont lemondása sikeres volt!”. A vendégkartonokat **nem** töröltük.
@@ -44,7 +44,7 @@ A Google-címkék a böngészőben három csatornán (`pagead/conversion`, `ccm/
 ## Teendők a próbák után
 
 - A négy próbaidőpont lemondva (lásd fent); a szalon, ha tisztán akarja tartani, a Salonic-adminban a lemondott „Deák Ferenc István” (HeadSpa), „TESZT – Claude” (Oxigén, Fodrászat) és „teszt teszt” (Elysion) bejegyzéseket megtalálja; a vendégkartonok maradtak.
-- A próbaszám (tisztázva 2026-10-03): a próbafoglalásokhoz a tulajdonos saját telefonszámát (+36 70 942 0090) adtuk meg; az átkapcsolás után a próbákhoz (és minden további teszthez) a **szalon** számát kell megadni: 06 20 247 4444. A vendégeknek szóló helyeken (motor, hibaüzenetek, levelek, PMU-foglaló) a kódban már most a szalon száma áll; a tulajdonos száma csak a mérő-szkript próbaadataiban és ezekben a naplókban szerepel. A `meres-proba.mjs` alapértelmezett próbaszáma ezért a szalon száma (`MERES_TELEFON` környezeti változóval felülírható). A már létrejött Salonic-vendégkartonokon (TESZT – Claude, teszt teszt, a HeadSpa-nál a meglévő karton) a régi szám marad, amíg valaki a Salonic adminban át nem írja.
+- A próbaszám (tisztázva 2026-10-03): a próbafoglalásokhoz a tulajdonos saját telefonszámát (<tulajdonos telefonszama>) adtuk meg; az átkapcsolás után a próbákhoz (és minden további teszthez) a **szalon** számát kell megadni: 06 20 247 4444. A vendégeknek szóló helyeken (motor, hibaüzenetek, levelek, PMU-foglaló) a kódban már most a szalon száma áll; a tulajdonos száma csak a mérő-szkript próbaadataiban és ezekben a naplókban szerepel. A `meres-proba.mjs` alapértelmezett próbaszáma ezért a szalon száma (`MERES_TELEFON` környezeti változóval felülírható). A már létrejött Salonic-vendégkartonokon (TESZT – Claude, teszt teszt, a HeadSpa-nál a meglévő karton) a régi szám marad, amíg valaki a Salonic adminban át nem írja.
 
 ## Harmadik kör – az élesítés (PR #114) végigfutó tesztjei (2026-10-04 késő este – 2026-10-05 éjfél után)
 

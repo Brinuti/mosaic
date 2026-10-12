@@ -3,7 +3,7 @@
 //   node tools/meres-proba/reteg-foglalas.mjs --bazis https://www.mosaicheadspa.hu|https://<ag>.mosaic-d77.pages.dev --utvonal h0-headspa|hair-konzult|... [--overlay dist] [--mobil 1] [--out naplo.json]
 //
 // Utvonalak: h0-headspa (szolgaltatas-elso: Head Spa -> Egyeni HeadSpa -> havi naptar), hair-konzult, oxigen-1, oxigen-2, lezer-konzult.
-// A kimeno meres (capig.stape.do is) alapbol tiltva (tilt.mjs), a naplo a tiltott kereseket is tartalmazza. A telefonszam: MERES_TELEFON (alap: a tulajdonos sajat szama; a szalon szama egy valodi vendeg kartonjahoz tartozik a Salonicban).
+// A kimeno meres (capig.stape.do is) alapbol tiltva (tilt.mjs), a naplo a tiltott kereseket is tartalmazza. A telefonszam es az e-mail: MERES_TELEFON / MERES_EMAIL (kotelezo; a repo nem tartalmazza; a szalon szama egy valodi vendeg kartonjahoz tartozik a Salonicban).
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,7 +11,7 @@ import { UA, UA_MOBIL, platformOf, engedett, dnsArg, ures, esemenyIras, esemenyU
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const BAZIS = arg('bazis', 'https://www.mosaicheadspa.hu'), UTVONAL = arg('utvonal', 'hair-konzult'), OVERLAY = arg('overlay', ''), MOBIL = arg('mobil', '0') === '1', OUT = arg('out', '');
-const TELEFON = process.env.MERES_TELEFON || '709420090'; // a +36 utani resz: a tulajdonos sajat szama (a szalon szama egy valodi vendeg kartonjara parosulna)
+const TELEFON = (process.env.MERES_TELEFON || (() => { throw new Error('MERES_TELEFON kotelezo: a tulajdonos probaszama (a +36 utani resz); a repo nem tartalmazza'); })()); // a +36 utani resz: a tulajdonos sajat szama (a szalon szama egy valodi vendeg kartonjara parosulna)
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 let fajlUtvonal = null;
 if (OVERLAY) ({ fajlUtvonal } = await import('../serve-dist.mjs'));
@@ -20,6 +20,8 @@ const ua = MOBIL ? UA_MOBIL : UA;
 const T0 = Date.now(); const mp = () => Date.now() - T0;
 const idovonal = [], naplo = [], jegyzettombIras = []; // jegyzettombIras: a (blokkolt) foglalasi jegyzettomb-jelzesek
 
+// kotelezo env (a repo nem tartalmazza): gyors hiba a bongeszo inditasa elott, nem a foglalas kozben
+for (const [n, mit] of [['MERES_EMAIL', 'a tulajdonos probaja e-mail cime']]) if (!process.env[n]) { console.error(n + ' kotelezo: ' + mit + '; a repo nem tartalmazza'); process.exit(1); }
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const ctx = await browser.newContext({ userAgent: ua, viewport: MOBIL ? { width: 390, height: 844 } : { width: 1280, height: 900 }, locale: 'hu-HU', timezoneId: 'Europe/Budapest', serviceWorkers: 'block', isMobile: MOBIL, hasTouch: MOBIL });
 await ctx.route('**/*', async (route) => {
@@ -91,7 +93,7 @@ try {
   await tolt('#GuestDataForm_guestPhoneTemp', TELEFON);
   await tolt('#GuestDataForm_guestLastName', 'TESZT –');
   await tolt('#GuestDataForm_guestFirstName', 'Claude');
-  await tolt('#GuestDataForm_guestEmail', 'deakfi@grantis.hu');
+  await tolt('#GuestDataForm_guestEmail', (process.env.MERES_EMAIL || (() => { throw new Error('MERES_EMAIL kotelezo: a tulajdonos probaja e-mail cime; a repo nem tartalmazza'); })()));
   await fr.locator('#GuestDataForm_acceptTerms').check(); // csak a feltetel (hirlevel NEM)
   if (await page.locator('iframe[src*="recaptcha"][src*="bframe"]').count()) throw new Error('RECAPTCHA-KIHIVAS: megallok');
   lepes('űrlap kitöltve, küldés', { ido: new Date().toISOString() });

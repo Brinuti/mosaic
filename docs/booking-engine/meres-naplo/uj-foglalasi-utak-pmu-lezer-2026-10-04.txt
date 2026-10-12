@@ -9,7 +9,7 @@ Kiindulas: https://www.mosaicheadspa.hu/<landing>?gclid=TESZT123&fbclid=TESZT456
 
 Futasok (mindegyik az eles domainen)
 - VALODI foglalas (1-1): PMU 2026-10-04 21:19:45 UTC (Ajaktetovalas - Aquarell, okt. 31. 16:00), lezer 21:21:08 UTC (hónalj, okt. 31. 17:00; a landing sajat naptaraval).
-  Vendeg: "TESZT - Claude" jellegu nev, deakfi@grantis.hu, a tulajdonos sajat telefonszama. LEMONDVA: PMU 21:22:42, lezer 21:22:50 UTC (lemond.mjs, "Az idopont lemondasa
+  Vendeg: "TESZT - Claude" jellegu nev, <tulajdonos e-mail>, a tulajdonos sajat telefonszama. LEMONDVA: PMU 21:22:42, lezer 21:22:50 UTC (lemond.mjs, "Az idopont lemondasa
   sikeres volt!"); a Salonic naptarban a ket idopont ujra szabad.
 - SZIMULALT Salonic-atiranyitas (--mod szim, foglalas NEM jon letre): ugyanaz a keret-atadas (PMU: a Salonic-keret a /pmu-ok-ra iranyit, ket keret melyen), + bongeszo "vissza" (--vissza 1).
 - NATIV alap (--mod nativ): a koszonooldal kozvetlenul a fo ablakban, Salonic-referrerrel (a regi, nem beagyazott utvonal).

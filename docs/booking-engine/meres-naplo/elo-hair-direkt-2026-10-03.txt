@@ -1,7 +1,7 @@
 MOSAIC - ELO ellenorzes az atkapcsolas elott: kozvetlen belepes a /foglalo-motor cimen + valodi fodrasz-konzultacios probafoglalas
 Futtatva: 2026-10-03 22:39 helyi ido (20:39 UTC), az ELO oldalon (www.mosaicheadspa.hu), a #70 utan; a kapcsolok mind kikapcsolva (a rejtett /foglalo-motor cimen).
 Indulo URL: /foglalo-motor?business=hair&service=konzult&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc
-Foglalas: "TESZT - Claude", deakfi@grantis.hu, fodrasz konzultacio, 2026-10-22 15:30 (Salonic: mosaic-hair). Lemondva: 22:41:37 helyi ido (20:41:37 UTC) a visszaigazolo level "Lemondom" linkjevel; a Salonic lemondo levele megjott.
+Foglalas: "TESZT - Claude", <tulajdonos e-mail>, fodrasz konzultacio, 2026-10-22 15:30 (Salonic: mosaic-hair). Lemondva: 22:41:37 helyi ido (20:41:37 UTC) a visszaigazolo level "Lemondom" linkjevel; a Salonic lemondo levele megjott.
 Kimeno meres: alapbol tilto szuro + DNS-zar (capig.stape.do, capi-pmu.mosaicheadspa.hu, Google, TikTok, Zapier is): 56 kerest naplozott es tiltott, semmi nem ment ki.
 
 TRANZAKCIO-AZONOSITO: fodraszok-3385039-232804-1792675800   (g = vendeg-azonosito 3385039, serviceId 232804, startDate 1792675800 = 2026-10-22 13:30 UTC)

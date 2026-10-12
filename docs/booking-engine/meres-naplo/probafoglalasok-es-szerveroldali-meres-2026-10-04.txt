@@ -10,7 +10,7 @@ A BONGESZOBOL kimeno meres: minden proba tiltott kimeno kereses futtatassal ment
 A SZERVEROLDALI meres viszont NEM a bongeszobol megy: a Salonic "Uj online foglalas" e-mailjebol indulo Zapier-folyamatok kuldik (Meta CAPI "Contact", TikTok szerveres esemeny,
 Google Ads bovitett konverzio), a bongeszo-tiltas ezeket nem fogja meg. Vedelem (2026-10-04 07:57 helyi ido ota, a folyamatok 06:06 UTC-s verzioi): ha a vendeg NEVE tartalmazza a "teszt"
 szot, a folyamat nem kuld semmit ("teszt-foglalas"). Ez a NEVRE epul, ezert (a) a vedelem elotti probak (07:19-07:50) mind kikuldtek, (b) a HeadSpa-probak, amelyek egy valodi
-vendegkartonra parosulnak (Deak Ferenc Istvan, Koncz-Szabo Tunde - a Salonic a kartonbol veszi a nevet), a vedelem utan is KIKULDTEK.
+vendegkartonra parosulnak (Deak Ferenc Istvan, <kulso szemely> - a Salonic a kartonbol veszi a nevet), a vedelem utan is KIKULDTEK.
 
 #  Foglalas ideje | Uzletag - szolgaltatas | Idopont (Salonic) | Tranzakcio | Lemondva | Kikuldott szerveroldali esemeny (UTC)
 -- --------------- | --------------------- | ----------------- | ---------- | -------- | -------------------------------------
@@ -20,7 +20,7 @@ vendegkartonra parosulnak (Deak Ferenc Istvan, Koncz-Szabo Tunde - a Salonic a k
 4  07:33:08 | Oxigen 2. alkalomtol (TESZT - Claude) | okt. 21. 17:00 | oxigenterapi-3385031-466110-1792594800 (m) | igen (hely szabad) | Meta Contact 05:34:06 (pixel 1361403694872594) + TikTok-dusitas 05:34:29 + GOOGLE ADS bovitett konverzio (uploadConversionAdjustments, ENHANCEMENT, validateOnly=false, order_id fent, hashelt e-mail + telefon) 05:34:29
 5  07:34:50 | Lezer ARC - Teljes arc (teszt teszt) | okt. 26. 14:00 | elysionok-3353226-476485-1793019600 (sz) | igen (hely szabad) | Meta Contact 05:35:56 (Szor-pixel 643342342027957) + TikTok-dusitas 05:36:35; Google: nem probalt
 6  07:48:58 | Fodraszat konzultacio (TESZT - Claude) | okt. 22. 15:30 | fodraszok-3385039-232804-1792675800 (m) | igen (hely szabad) | Meta Contact 05:49:36 + TikTok-dusitas 05:50:20; Google: nem probalt
-7  18:59:49 | HeadSpa Egyeni Relax (karton: Koncz-Szabo T.) | okt. 17. 17:30 | hs-2461253-302342-1792251000 (sz) | 19:01 (e-mail) | Meta Contact 17:00:03 + TikTok 17:00:53 (value 0)   <- a vedelem utan, mert a nev a kartonbol jon
+7  18:59:49 | HeadSpa Egyeni Relax (karton: <kulso szemely>) | okt. 17. 17:30 | hs-2461253-302342-1792251000 (sz) | 19:01 (e-mail) | Meta Contact 17:00:03 + TikTok 17:00:53 (value 0)   <- a vedelem utan, mert a nev a kartonbol jon
 8  18:57:26 | Fodraszat konzultacio (TESZT - Claude) | okt. 16. 11:30 | fodraszok-3385039-232804-1792143000 (sz) | igen (hely szabad) | semmi (teszt-foglalas vedelem)
 9  18:58:33 | Oxigen 2. alkalomtol (TESZT - Claude) | okt. 17. 17:30 | oxigenterapi-3385031-466110-1792251000 (sz) | igen (hely szabad) | semmi (vedelem)
 10 18:59:27 | Lezer Ingyenes konzultacio (TESZT - Claude) | okt. 16. 15:30 | elysionok-3353226-476477-1792157400 (sz) | igen (hely szabad) | semmi (vedelem)
@@ -45,12 +45,12 @@ Megjegyzesek
 - A #4 sor Google Ads bovitett konverzioja a tiltas miatt nem letezo bongeszos konverziora hivatkozik (a Google valoszinuleg figyelmen kivul hagyja); a hivas viszont tenylegesen elment.
 
 VEDELEM BOVITESE (2026-10-05, ~05:45-05:50 UTC; a mero Zapier-folyamatok kodjaban, a weboldal kodja nem valtozott)
-- Szabaly (mind a 6 szerveroldali folyamatban ugyanaz a fuggveny, "tesztFoglalas"): a foglalas teszt, ha a NEV "teszt" szot tartalmaz, VAGY az E-MAIL a teszt-listan van (deakfi@grantis.hu, ferraj@gmail.com,
-  teszt@gmail.com, mosaicheadspa@gmail.com, salonicfoglalas@gmail.com), VAGY a TELEFONSZAM a tulajdonos / a szalon probaszamara vegzodik (709420090, 202474444). Teszt-foglalasbol nem megy ki szerveres esemeny
+- Szabaly (mind a 6 szerveroldali folyamatban ugyanaz a fuggveny, "tesztFoglalas"): a foglalas teszt, ha a NEV "teszt" szot tartalmaz, VAGY az E-MAIL a teszt-listan van (<tulajdonos e-mail>, <tulajdonos e-mail>,
+  teszt@gmail.com, mosaicheadspa@gmail.com, salonicfoglalas@gmail.com), VAGY a TELEFONSZAM a tulajdonos / a szalon probaszamara vegzodik (<tulajdonos telefonszama>, 202474444). Teszt-foglalasbol nem megy ki szerveres esemeny
   ("teszt-foglalas"). A vedelem a folyamat legelejen fut, minden uzletag-szuro elott.
 - Elesitve mind a 6 folyamatban: TikTok HeadSpa, Meta CAPI, Salonic level -> PII dusitas, Google Ads offline HeadSpa / Oxigen / Fodraszat. (A Lezer-foglalasokat a folyamatok eleve nem viszik tovabb.)
 - Probak (vazlat-futtatas elesites elott, a Salonic-azonosito nelkuli probalevellel, hogy semmi ne menjen ki): mind a 6 folyamatban a tulajdonos telefonszama + "valodi" kartonnev + nem teszt e-mail ->
-  "teszt-foglalas" (kihagyva). A teszt e-mail es a Koncz-jellegu szalon-telefon esetet a TikTok / Meta / dusitas / HeadSpa-Google-Ads folyamatok vazlatan probaltam ki (kihagyva). Egy teljesen ismeretlen vendeg
+  "teszt-foglalas" (kihagyva). A teszt e-mail es a <kulso szemely>-jellegu szalon-telefon esetet a TikTok / Meta / dusitas / HeadSpa-Google-Ads folyamatok vazlatan probaltam ki (kihagyva). Egy teljesen ismeretlen vendeg
   (masik nev, telefon, e-mail) NEM esik a vedelembe: az Oxigen- es a Fodraszat-folyamatban az uzletag-szuroig ment tovabb ("not-oxigen" / "not-hair"), vagyis sem a Google Adsnek, sem masnak nem ment ki semmi.
 - Ismert hatar: ha egy VALODI vendeg a szalon vagy a tulajdonos e-mail-cimet / telefonszamat adja meg (pl. a szalon sajat telefonja), az a foglalas sem kerul szerveres meresbe. Ez szandekos kompromisszum.
 - A tegnapi (2026-10-03) probak szerveroldali esemenyeit tovabbra sem soroltuk fel (lasd fent).

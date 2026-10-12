@@ -27,7 +27,7 @@ SMS: SimpleSMS REST (api.simplesms.hu)      E-mail: Gmail SMTP (SMTP_PASS, ugyan
 | mód | jelentés |
 |---|---|
 | `ki` | semmi nem megy ki (a foglalások rögzülnek) |
-| `teszt` | **csak a teszt-vendégeknek** megy üzenet (`deakfi@grantis.hu`, `ferencistvandeak@gmail.com`, `ferraj@gmail.com`, a `+36709420090` telefon, „TESZT …” nevű vendég); a valódi vendégek foglalása rögzül, de nem kap üzenetet |
+| `teszt` | **csak a teszt-vendégeknek** megy üzenet (`<tulajdonos e-mail>`, `<tulajdonos e-mail>`, `<tulajdonos e-mail>`, a `<tulajdonos telefonszama>` telefon, „TESZT …” nevű vendég); a valódi vendégek foglalása rögzül, de nem kap üzenetet |
 | `elo` | az `LIFECYCLE_UZLETAGOK`-ban felsorolt üzletágak (headspa, hair, oxygen, laser, pmu) **valódi vendégeinek** is |
 
 Élesítéskor a `teszt` módban rögzített, de még el nem küldött üzenetek közül a T0 12 órán belül, a többi 2 órán belül küldhető ki (a régi, késett üzenet nem megy ki: „késett” → kihagyva).
@@ -104,7 +104,7 @@ A lifecycle és a mérési réteg (QA-4: párosító kulcs, érkezési adat, ár
 
 ## Konfiguráció
 
-`wrangler.toml` (nem titkos): `LIFECYCLE_MOD`, `LIFECYCLE_UZLETAGOK`, `LIFECYCLE_KULCS_HASH` (a belépő kulcs SHA-256-ja; **több hash is megadható** vesszővel/szóközzel elválasztva, ilyenkor mindegyik érvényes: lásd „Kulcscsere”), `SIMPLESMS_FELHASZNALO` (`ferraj@gmail.com`: a SimpleSMS „Felhasználó” oszlopa, NEM a „Felhasználó neve”), `SIMPLESMS_DOMAIN` (`mosaicheadspa.hu`), D1: `LIFECYCLE_DB` (eles: `mosaic-lifecycle`, előnézet: `mosaic-lifecycle-elonezet`).
+`wrangler.toml` (nem titkos): `LIFECYCLE_MOD`, `LIFECYCLE_UZLETAGOK`, `LIFECYCLE_KULCS_HASH` (a belépő kulcs SHA-256-ja; **több hash is megadható** vesszővel/szóközzel elválasztva, ilyenkor mindegyik érvényes: lásd „Kulcscsere”), `SIMPLESMS_FELHASZNALO` (`<tulajdonos e-mail>`: a SimpleSMS „Felhasználó” oszlopa, NEM a „Felhasználó neve”), `SIMPLESMS_DOMAIN` (`mosaicheadspa.hu`), D1: `LIFECYCLE_DB` (eles: `mosaic-lifecycle`, előnézet: `mosaic-lifecycle-elonezet`).
 Titkok (Cloudflare, Secret, **Production és Preview külön**): `SIMPLESMS_JELSZO` (a SimpleSMS API-jelszó), `SMTP_PASS` (meglévő). A belépő kulcs a **Zapier Storage-ban** van (`lifecycle_kulcs`), a Zapier-láncok (`lifecycle-bejovo`, `lifecycle-tick`, a munkatársi levelek Zapja) onnan olvassák; a forrásukban és a repóban nincs kulcs, a repóban csak a SHA-256-ja (a kulcscsere 2026-10-09-én megtörtént, a régi hash törölve).
 Munkatársi értesítők (DECISION #117): `LIFECYCLE_MUNKATARS_MOD` (`ki` | `figyel` alap | `be`), `LIFECYCLE_ELO_ELLENORZES` (`ki` kikapcsolja a kiküldés előtti Salonic-oldal ellenőrzést; alapból be), `LIFECYCLE_NOSHOW_AUTO` (`1` = a régi, törlésből induló automatikus no-show; alapból ki).
 
@@ -136,7 +136,7 @@ Valódi próba: `tools/meres-proba/reteg-foglalas.mjs` (valódi próbafoglalás,
 
 ## Minta-levelek (az e-mailek formázásához)
 
-`tools/lifecycle-teszt/minta-levelek.mjs` az összes e-mail-sablonból (20 tartalmi / T0 / T-72 e-mail, lemondás, no-show = 22 db) egy-egy mintafoglalást készít a `deakfi@grantis.hu` címre (`MINTA_EMAIL` környezeti változóval átírható).
+`tools/lifecycle-teszt/minta-levelek.mjs` az összes e-mail-sablonból (20 tartalmi / T0 / T-72 e-mail, lemondás, no-show = 22 db) egy-egy mintafoglalást készít a `<tulajdonos e-mail>` címre (`MINTA_EMAIL` környezeti változóval átírható).
 A levél a **valódi úton** megy ki (SMTP, az üzletág neve a feladó), ugyanazzal a HTML-lel, mint a vendégeknek – a Gmail-eszközzel (MCP) **nem** szabad küldeni: az a háttérszíneket kiszedi, a fejléc és a gomb láthatatlan lesz.
 
 1. `node tools/lifecycle-teszt/minta-levelek.mjs [AZONOSÍTÓ,AZONOSÍTÓ] > minta.sql` (lista nélkül mind a 22; pl. `PMU-EMAIL-01,COMMON-NOSHOW-EMAIL`)
