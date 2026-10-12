@@ -163,7 +163,10 @@ Hivatalos Salonic API / webhook még nincs, ezért a forrás a Salonic automatik
   minden más **ismeretlen** → csak az általános „Foglalás” akció. A „visszatérő” akció így nem kap adatot, a `first_booking`
   paramétert nem tekintjük bizonyítottnak (Feri, 2026-10-11).
 - **Fail-closed:** formátumváltás, késés vagy hiányzó levél esetén kevesebb konverzió megy, hamis nem.
-- **Élesítéshez kell (Feri „mehet”-je):** a PR mergelése, a `MP_IGAZOLAS_TITOK` titok a Cloudflare-en, és a Zapier-Zap létrehozása.
+- **Élesítéshez kell (Feri „mehet”-je):** a PR mergelése, a titok beállítása, és a Zapier-Zap létrehozása.
+- **A titok helye:** vagy a Cloudflare `MP_IGAZOLAS_TITOK` titka (Production), vagy – ha az nincs – a D1 `mp_beallitas`
+  táblájában az `igazolas_titok_sha256` sor (a titok SHA-256 lenyomata, maga a titok nincs tárolva). A D1-lenyomat
+  csak az éles hoszton (`www.medicalpiercing.hu`) érvényes, előnézeten nem. Titok nélkül a végpont 404.
   A titok nélkül a végpont 404-et ad, a feltöltés pedig — igazolás híján — nem indul.
 - **Tesztek:** `node --test tools/test-mp-igazolas.mjs` (a 2026-10-11-i 27 valódi foglalás anonim adataival, fantom / késői
   újranyitás, késő és duplikált igazolás, 4 vitatott új/visszatérő eset, gclid/hozzájárulás/idő megőrzése) és

@@ -172,3 +172,20 @@ test('elkulonites: az igazolas-kod nem importal a Mosaic kodjabol', () => {
     for (const m of s.matchAll(/from\s+'([^']+)'/g)) assert.ok(!m[1].includes('netlify') && !/^\.\.\/\.\.\/\.\.\//.test(m[1]), f + ': ' + m[1]);
   }
 });
+
+test('titok a D1-ben (SHA-256 lenyomat): jo titokkal igazol, rosszal 403, lenyomat nelkul 404', async () => {
+  _semaTorles();
+  const db = d1(); const f = mockFetch();
+  const env = { MP_MERES_DB: db, ...API_ENV };
+  const x = FIX[0]; const l = level({ ...x, iso: x.level, id: idFor(x.kulcs) });
+  assert.equal((await igazolasErkezes({ request: igKeres(l), env }, { fetchImpl: f, most: unix(x.level) })).status, 404);
+  const { createHash } = await import('node:crypto');
+  db._s.exec('CREATE TABLE IF NOT EXISTS mp_beallitas (kulcs TEXT PRIMARY KEY, ertek TEXT)');
+  db._s.prepare("INSERT INTO mp_beallitas VALUES ('igazolas_titok_sha256', ?)").run(createHash('sha256').update(TITOK).digest('hex'));
+  assert.equal((await igazolasErkezes({ request: igKeres(l, 'rossz'), env }, { fetchImpl: f, most: unix(x.level) })).status, 403);
+  const elo = new Request('https://claude-mp-salonic-igazolas.medicalpiercing.pages.dev/api/mp-salonic-igazolas', { method: 'POST', headers: { 'content-type': 'application/json', 'x-mp-igazolas': TITOK }, body: JSON.stringify(l) });
+  assert.equal((await igazolasErkezes({ request: elo, env }, { fetchImpl: f, most: unix(x.level) })).status, 404, 'elonezeten a D1-lenyomat nem ervenyes');
+  const jo = await igazolasErkezes({ request: igKeres(l), env }, { fetchImpl: f, most: unix(x.level) });
+  assert.equal(jo.status, 200);
+  assert.equal((await jo.json()).ok, true);
+});

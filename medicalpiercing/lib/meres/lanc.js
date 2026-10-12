@@ -28,6 +28,7 @@ export const SEMA = [
     booking_id TEXT PRIMARY KEY, employee_ids TEXT, start_unix INTEGER NOT NULL, uj_paciens INTEGER, erkezett INTEGER NOT NULL,
     rogzitve INTEGER NOT NULL, kulcs TEXT)`,
   'CREATE INDEX IF NOT EXISTS mp_salonic_igazolas_start ON mp_salonic_igazolas (start_unix)',
+  'CREATE TABLE IF NOT EXISTS mp_beallitas (kulcs TEXT PRIMARY KEY, ertek TEXT)',
 ];
 // a mar letezo mp_foglalas tablat bovito oszlopok (a hiba = mar megvan, elnyeljuk)
 const BOVITES = [
@@ -251,10 +252,23 @@ const egyenlo = (a, b) => {
  * Torzs: { from, subject, body, date }. A levelbol csak a foglalasi azonosito, munkatars-azonosito, kezdes, uj paciens jelzes
  * es a level ideje kerul tarolasra. Ha van hozza D1-sor, igazoltra allitja es elinditja a feltoltest.
  */
+const sha256hex = async (s) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(s))))].map((x) => x.toString(16).padStart(2, '0')).join('');
+
+/** A webhook titka: MP_IGAZOLAS_TITOK (Cloudflare-titok) VAGY a D1-ben tarolt SHA-256 lenyomata (mp_beallitas.igazolas_titok_sha256). */
+async function igazolasTitok(db, env, kapott, eles) {
+  if (env.MP_IGAZOLAS_TITOK) return { van: true, jo: !!kapott && egyenlo(kapott, env.MP_IGAZOLAS_TITOK) };
+  if (!eles) return { van: false, jo: false }; // a D1-lenyomat csak az eles hoszton ervenyes
+  let sor = null;
+  try { if (db) sor = await db.prepare("SELECT ertek FROM mp_beallitas WHERE kulcs = 'igazolas_titok_sha256'").first(); } catch (e) { /* nincs tabla */ }
+  if (!sor || !sor.ertek) return { van: false, jo: false };
+  return { van: true, jo: !!kapott && egyenlo(await sha256hex(kapott), sor.ertek) };
+}
+
 export async function igazolasErkezes({ request, env = {}, waitUntil }, { fetchImpl = fetch, most = Math.floor(Date.now() / 1000) } = {}) {
-  if (!env.MP_IGAZOLAS_TITOK) return json({ ok: false }, 404);
-  if (!egyenlo(request.headers.get('x-mp-igazolas'), env.MP_IGAZOLAS_TITOK)) return json({ ok: false }, 403);
   const db = env.MP_MERES_DB;
+  const t = await igazolasTitok(db, env, request.headers.get('x-mp-igazolas'), new URL(request.url).hostname === ELES_HOST);
+  if (!t.van) return json({ ok: false }, 404);
+  if (!t.jo) return json({ ok: false }, 403);
   if (!db) return json({ ok: false, hiba: 'nincs_adatbazis' }, 503);
   let b; try { b = await request.json(); } catch (e) { return json({ ok: false, hiba: 'rossz_keres' }, 400); }
   const l = levelErtelmezes(b);
