@@ -86,7 +86,8 @@
     return {
       ad_storage: d && d.mark ? 'granted' : 'denied',
       ad_user_data: d && d.mark ? 'granted' : 'denied',
-      ad_personalization: d && d.mark ? 'granted' : 'denied',
+      // Remarketing / szemelyre szabott hirdetes nincs (Feri, 2026-10-12): a Google-jelek mindig npa=1-gyel mennek
+      ad_personalization: 'denied',
       analytics_storage: d && d.stat ? 'granted' : 'denied'
     };
   };

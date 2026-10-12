@@ -107,7 +107,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
   ok('Elfogadom: mp_suti = v1-s1-m1', /^v1-s1-m1-t\d+$/.test(await sutiErtek(ctx) || ''), await sutiErtek(ctx));
   ok('Elfogadom: a sav eltunik', !(await savLathato(p)));
   const upd = await p.evaluate(() => window.dataLayer.map((x) => (x && typeof x === 'object' && 'length' in x ? Array.from(x) : x)).filter((x) => Array.isArray(x) && x[0] === 'consent' && x[1] === 'update').pop());
-  ok('Elfogadom: Consent Mode update granted', upd && upd[2].ad_storage === 'granted' && upd[2].analytics_storage === 'granted' && upd[2].ad_user_data === 'granted' && upd[2].ad_personalization === 'granted', JSON.stringify(upd && upd[2]));
+  ok('Elfogadom: Consent Mode update granted (ad_personalization marad denied)', upd && upd[2].ad_storage === 'granted' && upd[2].analytics_storage === 'granted' && upd[2].ad_user_data === 'granted' && upd[2].ad_personalization === 'denied', JSON.stringify(upd && upd[2]));
   ok('Elfogadom: Meta-pixel betolt, PageView egyszer', betolt.filter((u) => /fbevents\.js/.test(u)).length === 1 && ki.filter((x) => /facebook\.com\/tr\/?\?id=2177829632420786&ev=PageView/.test(x.u)).length === 1, ki.filter((x) => /facebook\.com\/tr/.test(x.u)).length + ' Meta-keres');
   ok('Elfogadom: Convertize betolt', ki.some((x) => /pixel\.convertize\.io\/11722\.js/.test(x.u)));
   const ttMost = betolt.some((u) => /analytics\.tiktok\.com\/i18n\/pixel\//.test(u));
