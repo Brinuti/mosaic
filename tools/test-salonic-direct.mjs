@@ -5,6 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import fs from 'node:fs';
 import { BUSINESSES } from '../assets/js/booking-engine/salonic-adapter.js';
 import { HOSTOK, kulcsIras, nevtablaMent } from '../netlify/lib/foglalas-kulcs.js';
@@ -304,7 +305,7 @@ async function regiFoglalas(v, o = {}) {
   return regi;
 }
 async function csereVilag(o = {}) { // a regi foglalas indexelve + az uj foglalas (Oct 20 16:00) lezart motorral
-  const v = vilag(); await v.kesz;
+  const v = vilag(o.vilag || {}); await v.kesz;
   const regi = o.nincsRegi ? null : await regiFoglalas(v, o.regi || {});
   const regi2 = o.masodikRegi ? await regiFoglalas(v, { start: '2026-10-14T16:00:00+02:00' }) : null;
   const u = ujUuid(); const b = level(u, { megjegyzes: MEGJ_99, ...(o.uj || {}) });
@@ -1430,4 +1431,54 @@ test('S0-61c a 2. bizonyitek-ellenorzes UTANI ablak is zart: ha a kuldesi lepes 
       assert.equal(csendesVesztes(v, u), false, cim); assert.equal(v.net.hivasok.length, 0, cim + ': 0 platformhivas');
     }
   }
+});
+
+test('S0-61d (#14d K1) a Zap-potlas "folyamatban" ablaka is zart: a nyertes az audit-sort ELOBB irja (`confirmed`), a cellakat UTANA zarja `reschedule_confirmed`-re; ha EKKOR erkezik a vesztes `uj_konverzio` audit-irasa, a bizonyitek az audit-agbol is jon -> a nyertes audit-sor (a bizonyitek-mezokkel) bajtra erintetlen, explicit elutasitas, 0 platformhivas', async () => {
+  const kapu = () => { let f; const p = new Promise((r) => { f = r; }); return { p, nyit: () => f() };};
+  const varj = async (felt) => { for (let i = 0; i < 4000 && !felt(); i++) await new Promise((r) => setTimeout(r, 1)); assert.ok(felt(), 'idozites: a kapu nem erte el a varakozasi pontot'); };
+  const vilagok = [['az elo allapot nem ellenorizheto', {}, true], ['Meta/TikTok teszt-kod nelkul (tiltva)', { env: { META_TESZT_KOD: '', TIKTOK_TESZT_KOD: '' } }, false]];
+  for (const [nev, vilagO, hiba] of vilagok) {
+    const { v, u, b } = await csereVilag({ vilag: vilagO }); const { megjegyzes, ...nelkule } = b;
+    assert.equal((await v.sd(nelkule)).allapot, 'halasztva'); assert.equal(csereSor(v, u).allapot, 'hianyzo_mezo');
+    if (hiba) v.net.allapot.set(u, 'hiba');
+    const als = new AsyncLocalStorage(); const gL = kapu(), gW = kapu(); const st = { L: false, W: false };
+    const orig = v.e.KULCS_DB;
+    const kapus = async (sql) => { // L = a vesztes uj_konverzio: a sajat audit-INSERT-je elott all meg; W = a nyertes Zap-potlas: az audit-iras UTAN, az elso cella-zaras ELOTT all meg
+      const ki = als.getStore();
+      if (ki === 'L' && !st.L && /^INSERT INTO foglalas_reschedule/.test(sql)) { st.L = true; await gL.p; }
+      if (ki === 'W' && !st.W && /^UPDATE meres_kuldes SET allapot = \?2, indok = \?3, platform_nev/.test(sql)) { st.W = true; await gW.p; }
+    };
+    const burk = (sql, p) => ({ run: async () => { await kapus(sql); return p.run(); }, first: async () => { await kapus(sql); return p.first(); }, all: async () => { await kapus(sql); return p.all(); } });
+    v.e.KULCS_DB = { prepare: (sql) => { const p = orig.prepare(sql); return { ...p, ...burk(sql, p), bind: (...a) => burk(sql, p.bind(...a)) }; }, batch: orig.batch };
+    const pL = als.run('L', () => v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz, egyideju emberi dontes' }));
+    await varj(() => st.L);
+    const pW = als.run('W', () => v.sd(b)); // a Zap mostantol kuldi a megjegyzes kulcsot -> automatikus confirmed
+    await varj(() => st.W);
+    const nyertesAudit = auditTeljes(v, u);
+    assert.equal(nyertesAudit.allapot, 'confirmed', nev + ': a nyertes audit-sor megirva');
+    assert.ok(nyertesAudit.regi_uuid && nyertesAudit.reschedule_from && nyertesAudit.reschedule_to && nyertesAudit.regi_aktiv === 1, nev + ': a nyertes bizonyitek-mezoi megvannak (a teszt nem ures)');
+    assert.equal(v.sql("SELECT COUNT(*) AS n FROM meres_kuldes WHERE allapot = 'kihagyva' AND indok LIKE 'reschedule_confirmed%'")[0].n, 0, nev + ': a cellak MEG nem rc (ez az ablak)');
+    gL.nyit(); const rL = await pL;
+    assert.deepEqual([rL.allapot, rL.kuldes], ['feloldas_nem_lehetseges', 0], nev + ': explicit elutasitas');
+    assert.deepEqual(auditTeljes(v, u), nyertesAudit, nev + ': a vesztes nem irta felul a nyertes audit-sort');
+    gW.nyit(); const rW = await pW;
+    assert.ok(['reschedule_confirmed', 'feloldva_confirmed'].includes(sdSor(v, u).sd_allapot), nev + ': a nyertes confirmed marad: ' + sdSor(v, u).sd_allapot + ' / ' + rW.allapot);
+    assert.deepEqual(auditTeljes(v, u), nyertesAudit, nev + ': a vegen is bajtra a nyertes audit-sor');
+    assert.equal(v.net.hivasok.length, 0, nev + ': 0 platformhivas'); assert.equal(csendesVesztes(v, u), false, nev);
+  }
+});
+
+test('S0-61e a bizonyitek audit-aga SZIMMETRIKUS: `feloldva_confirmed` audit-sor is megfogja a vesztes uj_konverzio audit-irasat (cella-bizonyitek nelkul is), nem csak a `confirmed`', async () => {
+  const { v, u, b } = await csereVilag(); const { megjegyzes, ...nelkule } = b;
+  assert.equal((await v.sd(nelkule)).allapot, 'halasztva'); v.net.allapot.set(u, 'hiba'); // a vesztes semmit nem kuld
+  const orig = v.e.KULCS_DB; let all = null; const belep = new Promise((r) => { all = r; }); let elenged; const kapu = new Promise((r) => { elenged = r; }); let vart = false;
+  const burk = (sql, p) => ({ run: async () => { if (!vart && /^INSERT INTO foglalas_reschedule/.test(sql)) { vart = true; all(); await kapu; } return p.run(); }, first: () => p.first(), all: () => p.all() });
+  v.e.KULCS_DB = { prepare: (sql) => { const p = orig.prepare(sql); return { ...p, bind: (...a) => burk(sql, p.bind(...a)) }; }, batch: orig.batch };
+  const pL = v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz, egyideju emberi dontes' });
+  await belep; // a vesztes b1/b2 utan, a sajat audit-INSERT elott all; kozben egy `feloldva_confirmed` audit-sor jelenik meg (cella-bizonyitek nelkul)
+  v.sql("UPDATE foglalas_reschedule SET allapot = 'feloldva_confirmed', reschedule_from = '2026-10-16T14:00:00.000Z', reschedule_to = '2026-10-20T14:00:00.000Z', regi_uuid = 'bizonyitek-mezo', regi_aktiv = 1 WHERE uuid = ?1", u);
+  const elotte = auditTeljes(v, u); assert.equal(elotte.allapot, 'feloldva_confirmed');
+  assert.equal(v.sql("SELECT COUNT(*) AS n FROM meres_kuldes WHERE (allapot = 'kihagyva' AND indok LIKE 'reschedule_confirmed%') OR allapot IN ('elkuldve', 'nincs_hitelesites')")[0].n, 0, 'cella-bizonyitek nincs: csak az audit-ag dontheti el');
+  elenged(); const r = await pL;
+  assert.deepEqual([r.allapot, r.kuldes], ['feloldas_nem_lehetseges', 0]); assert.deepEqual(auditTeljes(v, u), elotte, 'az audit-sor bajtra erintetlen');
 });
