@@ -144,3 +144,27 @@ szolgáltatásnév, hozzájárulás nélkül nincs kattintásazonosító, a hozz
 - `node --test tools/test-mp-meres.mjs tools/test-mp-feltoltes.mjs` – egységtesztek (D1: `node:sqlite`, Google: mock fetch).
 - `node tools/mp-meres-pw.mjs` – Playwright, helyben (mockolt végpont), vagy `BASE=https://<ág>.medicalpiercing.pages.dev`
   a PR-előnézeten (valódi függvény + D1, Google-hívás nélkül).
+
+## Salonic-igazolás (2026-10-12, átmeneti megoldás a Salonic API-ig)
+
+Feri döntése: a Google Ads felé **csak a Salonic által igazolt foglalás** mehet, nem pusztán a köszönőoldal megnyitása.
+Hivatalos Salonic API / webhook még nincs, ezért a forrás a Salonic automatikus „Új online foglalás érkezett” levele
+(feladó: `app@salonic.hu`, fiók: „Medical Piercing”, címzett: salonicfoglalas@gmail.com).
+
+- **Lánc:** Zapier Gmail-trigger (szűrt keresés) → `POST /api/mp-salonic-igazolas` (fejléc: `x-mp-igazolas` = `MP_IGAZOLAS_TITOK`,
+  törzs: `{ from, subject, body, date }`) → `lib/meres/igazolas.js` értelmezi → D1 `mp_salonic_igazolas`.
+- **Tárolt adat:** Salonic foglalási azonosító, munkatárs-azonosító(k), kezdés, „Új páciens” jelzés, a levél ideje. Vendégnév,
+  telefon, e-mail, szolgáltatás **nem**.
+- **Párosítás:** a D1-sor kulcsa (`placeId|employeeId|startUnix`) ↔ a levél munkatársa (név → azonosító, `MUNKATARSAK`) és a
+  percre pontos kezdés. Ismeretlen munkatársnévnél csak egyértelmű egyezés párosítható.
+- **Állapotok (`mp_foglalas.igazolas`):** `NULL` = rögzített, még nem igazolt · `igazolt` · `nem_igazolt` (48 órán belül nem jött levél).
+- **Feltöltés:** csak `igazolt` sorból; konverziós idő = a Salonic-levél ideje (a foglalás ideje), nem a köszönőoldal megnyitása.
+- **Új vendég:** csak ha a levél „Új páciens - Még nem volt foglalása” (aki még sosem foglalt, nem járt teljesült kezelésen);
+  minden más **ismeretlen** → csak az általános „Foglalás” akció. A „visszatérő” akció így nem kap adatot, a `first_booking`
+  paramétert nem tekintjük bizonyítottnak (Feri, 2026-10-11).
+- **Fail-closed:** formátumváltás, késés vagy hiányzó levél esetén kevesebb konverzió megy, hamis nem.
+- **Élesítéshez kell (Feri „mehet”-je):** a PR mergelése, a `MP_IGAZOLAS_TITOK` titok a Cloudflare-en, és a Zapier-Zap létrehozása.
+  A titok nélkül a végpont 404-et ad, a feltöltés pedig — igazolás híján — nem indul.
+- **Tesztek:** `node --test tools/test-mp-igazolas.mjs` (a 2026-10-11-i 27 valódi foglalás anonim adataival, fantom / késői
+  újranyitás, késő és duplikált igazolás, 4 vitatott új/visszatérő eset, gclid/hozzájárulás/idő megőrzése) és
+  `node --test tools/test-mp-feltoltes.mjs`.
