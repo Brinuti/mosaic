@@ -33,7 +33,7 @@ Minta (már kész, élő) oldalak: `foglalas/headspa-ferfiaknak.html` (+ `assets
 ## Szabályok / csapdák
 
 - Más oldalak, a közös fejléc / lábléc, `tools/netlify-build.mjs`, `tools/fejlec-menu.mjs`, `netlify/lib/utvonal.js`, a foglaló-motor, a `suti.js` **nem** a te feladatod – ne módosítsd őket (az `-uj` → eredeti átirányításhoz nincs szükség, mert itt nincs `-uj` cím).
-- A `git config`-hoz nem nyúlsz (a közös `.git/config` korábban megsérült). Commit: `GIT_AUTHOR_NAME="Brinuti" GIT_AUTHOR_EMAIL="ferencistvandeak@gmail.com" GIT_COMMITTER_NAME="Brinuti" GIT_COMMITTER_EMAIL="ferencistvandeak@gmail.com" git commit ...` (környezeti változókkal).
+- A `git config`-hoz nem nyúlsz (a közös `.git/config` korábban megsérült). Commit: `GIT_AUTHOR_NAME="Brinuti" GIT_AUTHOR_EMAIL="<tulajdonos e-mail>" GIT_COMMITTER_NAME="Brinuti" GIT_COMMITTER_EMAIL="<tulajdonos e-mail>" git commit ...` (környezeti változókkal).
 - Az ágat az `origin/main`-ről nyisd; a munkamappát a worktree-izoláció adja (más session mappájához ne nyúlj).
 - `heredoc` / `node -e` szkriptben a `\` és `$` elromlik: fájlba írj (Write eszköz), úgy futtasd.
 - A Wix-oldalak képei `assets/img/c2eb0f_<azonosító>.jpg` stb. néven vannak a repóban (a `folyam.txt` kép-sorai ezeket adják); új képet ne tölts le, csak a meglévőket használd (kisebb mobil változat: `assets/img/m/` – a build a mobil oldalakon automatikusan átírja).

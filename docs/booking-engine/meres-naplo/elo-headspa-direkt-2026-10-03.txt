@@ -1,7 +1,7 @@
 MOSAIC - ELO ellenorzes az atkapcsolas elott: kozvetlen belepes a /foglalo-motor cimen + valodi HeadSpa probafoglalas
 Futtatva: 2026-10-03 22:47 helyi ido (20:47 UTC), az ELO oldalon (www.mosaicheadspa.hu), a #70 utan; a kapcsolok mind kikapcsolva (a rejtett /foglalo-motor cimen).
 Indulo URL: /foglalo-motor?business=headspa&gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_source=teszt&utm_medium=cpc  (lepesek: Idopontot foglalok -> Egyeni HeadSpa -> utolso szabad nap/ido -> Salonic-adatlap)
-Foglalas: "TESZT - Claude", deakfi@grantis.hu, Egyeni 50 perces Relax Head Spa + 30 perc hajszaritas (26 900 Ft), 2026-10-30 19:00 (Salonic: mosaicheadspa; a Salonic a telefon/e-mail alapjan a meglevo vendegkartonra parositott: g=2038420). Lemondva: 22:48:28 helyi ido (20:48 UTC) a visszaigazolo level "Lemondom" linkjevel (Salonic: "Az idopont lemondasa sikeres volt!").
+Foglalas: "TESZT - Claude", <tulajdonos e-mail>, Egyeni 50 perces Relax Head Spa + 30 perc hajszaritas (26 900 Ft), 2026-10-30 19:00 (Salonic: mosaicheadspa; a Salonic a telefon/e-mail alapjan a meglevo vendegkartonra parositott: g=2038420). Lemondva: 22:48:28 helyi ido (20:48 UTC) a visszaigazolo level "Lemondom" linkjevel (Salonic: "Az idopont lemondasa sikeres volt!").
 Kimeno meres: alapbol tilto szuro + DNS-zar (capig.stape.do, capi-pmu.mosaicheadspa.hu, Google, TikTok, Zapier is): 61 kerest naplozott es tiltott, semmi nem ment ki.
 
 TRANZAKCIO-AZONOSITO: hs-2038420-302342-1793383200   (g = vendeg-azonosito 2038420, serviceId 302342, startDate 1793383200 = 2026-10-30 18:00 UTC)

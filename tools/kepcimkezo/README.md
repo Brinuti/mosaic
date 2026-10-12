@@ -4,12 +4,12 @@ A megadott Google Drive mappák összes képét és videóját címkézi az Open
 Egyszer végigmegy mindenen (kb. 9 700 egyedi fájl), utána naponta csak az újakat és a módosultakat címkézi.
 
 - **Táblázat:** a Drive-on a „Képtár-címkéző (Mosaic + Medical Piercing)” mappában: „Képtár-címkék (Mosaic + Medical Piercing)” – lapok: `képek` (az eredmény), `napló` (futásonként egy sor), `beállítások` (élesítés, időkeret, vészfék).
-- **Hol fut:** Google Apps Script önálló projekt („Képtár-címkéző (Mosaic + Medical Piercing)”), a `deakfi@grantis.hu` fiók Drive-ján: <https://script.google.com/d/16fBf2TfF0o7Y9oxdyMtUUc9aopeFqTBnoqp53S-bv90rsDIrWnIcr7jT/edit>. A forráskód ebben a mappában van, innen töltjük fel (`clasp`).
+- **Hol fut:** Google Apps Script önálló projekt („Képtár-címkéző (Mosaic + Medical Piercing)”), a `<tulajdonos e-mail>` fiók Drive-ján: <https://script.google.com/d/16fBf2TfF0o7Y9oxdyMtUUc9aopeFqTBnoqp53S-bv90rsDIrWnIcr7jT/edit>. A forráskód ebben a mappában van, innen töltjük fel (`clasp`).
 - **Titok:** az OpenAI-kulcs a szkript „Szkripttulajdonságok” (Script Properties) között van `OPENAI_API_KEY` néven. Nincs a kódban, nincs a repóban.
 
 ## Miért Apps Script (és nem Cloudflare Worker / GitHub Actions / n8n)?
 
-A három gyökérmappa tartalmát **több különböző Google-fiók** birtokolja (mosaicheadspa, karolinmedical, prenatocontent, gyarmat.hermina …), és a mappák többségét csak olvasásra osztották meg a `deakfi@grantis.hu` fiókkal (a megosztás nem adható tovább). Egy külön „szerviz-fiók” vagy szerveroldali futtató ezeket nem érné el; csak az a fiók látja mindet, amelyik a megosztásokat kapta. Az Apps Script ezen a fiókon fut, ezért pontosan azt látja, amit a tulajdonos is lát – külön megosztás, szerviz-fiók, Google Cloud projekt nélkül. Az időzítés (napi futás) és a titkos változó (Script Properties) is beépített.
+A három gyökérmappa tartalmát **több különböző Google-fiók** birtokolja (mosaicheadspa, karolinmedical, prenatocontent, gyarmat.hermina …), és a mappák többségét csak olvasásra osztották meg a `<tulajdonos e-mail>` fiókkal (a megosztás nem adható tovább). Egy külön „szerviz-fiók” vagy szerveroldali futtató ezeket nem érné el; csak az a fiók látja mindet, amelyik a megosztásokat kapta. Az Apps Script ezen a fiókon fut, ezért pontosan azt látja, amit a tulajdonos is lát – külön megosztás, szerviz-fiók, Google Cloud projekt nélkül. Az időzítés (napi futás) és a titkos változó (Script Properties) is beépített.
 
 ## Mit csinál egy futás
 

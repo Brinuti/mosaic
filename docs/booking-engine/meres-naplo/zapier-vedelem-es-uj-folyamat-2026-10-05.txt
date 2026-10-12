@@ -2,7 +2,7 @@ Zapier: a szerveroldali probavedelem verzioi (2026-10-05) + az uj ajandek-vasarl
 ======================================================================================================
 
 1) PROBAVEDELEM BOVITESE (a tulajdonos 2026-10-05-i dontese; az elemzo kerese: melyik Zap, melyik verzio)
-Szabaly (mind a 6 folyamatban ugyanaz): a foglalas teszt, ha a NEV "teszt" szot tartalmaz, VAGY az E-MAIL a teszt-listan van, VAGY a TELEFON<tulajdonos telefonszama> / 202474444-re vegzodik -> "teszt-foglalas", semmi nem megy ki.
+Szabaly (mind a 6 folyamatban ugyanaz): a foglalas teszt, ha a NEV "teszt" szot tartalmaz, VAGY az E-MAIL a teszt-listan van, VAGY a TELEFON <tulajdonos telefonszama> / 202474444-re vegzodik -> "teszt-foglalas", semmi nem megy ki.
 
  Folyamat                                                    | Workflow azonosito                       | Elesitett verzio (2026-10-05)
  TikTok Events API (HeadSpa)                                 | 01a0e70e-2e0f-7969-8cd4-ad1476062710     | 01a10a96-3bfe-7eaf-b320-d68c49095d9c

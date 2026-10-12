@@ -46,7 +46,7 @@ Megjegyzesek
 
 VEDELEM BOVITESE (2026-10-05, ~05:45-05:50 UTC; a mero Zapier-folyamatok kodjaban, a weboldal kodja nem valtozott)
 - Szabaly (mind a 6 szerveroldali folyamatban ugyanaz a fuggveny, "tesztFoglalas"): a foglalas teszt, ha a NEV "teszt" szot tartalmaz, VAGY az E-MAIL a teszt-listan van (<tulajdonos e-mail>, <tulajdonos e-mail>,
-  teszt@gmail.com, mosaicheadspa@gmail.com, salonicfoglalas@gmail.com), VAGY a TELEFONSZAM a tulajdonos / a szalon probaszamara vegzodik<tulajdonos telefonszama>, 202474444). Teszt-foglalasbol nem megy ki szerveres esemeny
+  teszt@gmail.com, mosaicheadspa@gmail.com, salonicfoglalas@gmail.com), VAGY a TELEFONSZAM a tulajdonos / a szalon probaszamara vegzodik (<tulajdonos telefonszama>, 202474444). Teszt-foglalasbol nem megy ki szerveres esemeny
   ("teszt-foglalas"). A vedelem a folyamat legelejen fut, minden uzletag-szuro elott.
 - Elesitve mind a 6 folyamatban: TikTok HeadSpa, Meta CAPI, Salonic level -> PII dusitas, Google Ads offline HeadSpa / Oxigen / Fodraszat. (A Lezer-foglalasokat a folyamatok eleve nem viszik tovabb.)
 - Probak (vazlat-futtatas elesites elott, a Salonic-azonosito nelkuli probalevellel, hogy semmi ne menjen ki): mind a 6 folyamatban a tulajdonos telefonszama + "valodi" kartonnev + nem teszt e-mail ->

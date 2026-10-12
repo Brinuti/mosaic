@@ -2,7 +2,7 @@
 // (pi_ azonosito) -> nyers BONGESZOS naplo. A szerveres lepest (esemenyek, platformvalasz) a qa2-ajandek-szerver.mjs inditja (a webhook ujrajatszasa: ezen az elonezeten a Stripe nem eri el a webhookot).
 //   node tools/meres-proba/qa2-ajandek.mjs --bazis https://<ag>.mosaic-d77.pages.dev [--profil teljes|nincs|ana|dontes_nelkul] [--out naplo.json]
 // Csak elonezeten (Stripe TESZT-mod: pk_test / sk_test) fut; a kimeno MERES (GA4, Meta, TikTok, Google Ads, Stape, Zapier) tiltott; a Stripe sajat hostjai engedettek (a fizetes maga).
-// SZINTETIKUS adatok (TESZT-jelolesu kattintasazonositok, a _fbp / _ttp / _ga sutiket a teszt allitja be). A vevo: "TESZT - Claude", deakfi@grantis.hu (a Zapier-oldali probavedelem is ezt ismeri).
+// SZINTETIKUS adatok (TESZT-jelolesu kattintasazonositok, a _fbp / _ttp / _ga sutiket a teszt allitja be). A vevo: "TESZT - Claude", <tulajdonos e-mail> (a Zapier-oldali probavedelem is ezt ismeri).
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import { UA, platformOf, engedett, dnsArg, ures } from './tilt.mjs';
@@ -51,7 +51,7 @@ try {
   await page.locator('#ah-tervezo-tovabb').waitFor({ state: 'visible', timeout: 20000 }); await page.locator('#ah-tervezo-tovabb').click(); lepes('tovabb a fizeteshez');
   await page.locator('#ah-nev').waitFor({ state: 'visible', timeout: 20000 });
   const tolt = async (id, v) => { const l = page.locator('#' + id); await l.click(); await l.fill(v); };
-  await tolt('ah-ajandekozott', 'Teszt Fogado'); await tolt('ah-nev', 'TESZT – Claude'); await tolt('ah-email', 'deakfi@grantis.hu'); await tolt('ah-iranyitoszam', '1023'); await tolt('ah-varos', 'Budapest'); await tolt('ah-cim', 'Teszt utca 1.');
+  await tolt('ah-ajandekozott', 'Teszt Fogado'); await tolt('ah-nev', 'TESZT – Claude'); await tolt('ah-email', (process.env.MERES_EMAIL || (() => { throw new Error('MERES_EMAIL kotelezo: a tulajdonos probaja e-mail cime; a repo nem tartalmazza'); })())); await tolt('ah-iranyitoszam', '1023'); await tolt('ah-varos', 'Budapest'); await tolt('ah-cim', 'Teszt utca 1.');
   lepes('szamlazasi adatok kitoltve');
   // Stripe Payment Element: a kartya-mezok iframe-ben
   await page.waitForSelector('#ah-fizetesi-elem iframe', { timeout: 30000 }); await page.waitForTimeout(3500);

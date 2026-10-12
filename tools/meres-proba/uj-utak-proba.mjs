@@ -28,7 +28,7 @@ const KEZELES = arg('kezeles', '');
 const VAR = +arg('varakozas', '20000');
 const MOD = arg('mod', 'valodi'); // valodi | szim | nativ
 const VISSZA = arg('vissza', '0') === '1';
-const TELEFON = (process.env.MERES_TELEFON || (() => { throw new Error('MERES_TELEFON kotelezo: a tulajdonos probaszama (a +36 utani resz); a repo nem tartalmazza'); })());
+const telefon = () => (process.env.MERES_TELEFON || (() => { throw new Error('MERES_TELEFON kotelezo: a tulajdonos probaszama (a +36 utani resz); a repo nem tartalmazza'); })()); // lusta: csak a foglalo modok igenylik
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const CLICK = { gclid: 'TESZT123', fbclid: 'TESZT456', ttclid: 'TESZT789' };
 const CLICK_QS = `gclid=${CLICK.gclid}&fbclid=${CLICK.fbclid}&ttclid=${CLICK.ttclid}&utm_source=teszt&utm_medium=cpc`;
@@ -124,7 +124,7 @@ const lathato = async (loc, ido = 25000) => { await loc.first().waitFor({ state:
 // a Salonic-adatlap kitoltese es elkuldese (valodi foglalas); a keret: a lapon (lezer) vagy egy beagyazott keretben (pmu)
 async function adatlap(fr) {
   const tolt = async (sel, ertek) => { const l = fr.locator(sel).first(); await l.waitFor({ state: 'visible', timeout: 30000 }); await l.click(); await l.pressSequentially(ertek, { delay: 45 }); }; // valodi billentyuleutesek: a telefonmezo (intl-tel-input) rejtett mezoi igy frissulnek
-  await tolt('#GuestDataForm_guestPhoneTemp', TELEFON);
+  await tolt('#GuestDataForm_guestPhoneTemp', telefon());
   await tolt('#GuestDataForm_guestLastName', 'TESZT –');
   await tolt('#GuestDataForm_guestFirstName', 'Claude');
   await tolt('#GuestDataForm_guestEmail', (process.env.MERES_EMAIL || (() => { throw new Error('MERES_EMAIL kotelezo: a tulajdonos probaja e-mail cime; a repo nem tartalmazza'); })()));
