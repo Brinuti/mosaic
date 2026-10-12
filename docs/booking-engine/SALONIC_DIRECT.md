@@ -1,6 +1,6 @@
 # Salonic-direct safety net (DECISION #127 (b), #130, #131)
 
-**Állapot: kód + offline tesztek kész, NINCS élesítve.** Alapból **minden KI**: a környezeti kapu az élesben nincs beállítva, a D1-kapcsoló hiányzó sora = KI, a két titok nincs beállítva. Élesítés, Zap-módosítás, kapcsoló-váltás és a QA-5 T2 indítása **külön GPT + tulajdonos jóváhagyás** után (a QA-5 T2 feltétele: go-live + smoke PASS; az (a) hirdetés-útvonal **nem** feltétel, DECISION #128).
+**Állapot: kód + offline tesztek kész, NINCS élesítve.** Alapból **minden KI**: a környezeti kapu az élesben nincs beállítva, a D1-kapcsoló hiányzó sora = KI, a két titok nincs beállítva. (A „minden KI” az sd-**logikára** igaz: a séma additív bővítése és a motoros ág néhány kapuzatlan változása a deploytól él – lásd a 12. pontot.) Élesítés, Zap-módosítás, kapcsoló-váltás és a QA-5 T2 indítása **külön GPT + tulajdonos jóváhagyás** után (a QA-5 T2 feltétele: go-live + smoke PASS; az (a) hirdetés-útvonal **nem** feltétel, DECISION #128).
 
 ## 1. Cél
 
@@ -85,7 +85,9 @@ A meglévő vészkapcsolók (`mind`, `uzletag:*`, `platform:*`, `iras`, `MERES_I
 
 ## 12. Séma (mind additív, IF NOT EXISTS / `ALTER … ADD COLUMN`, idempotens)
 
-`meres_kuldes` + `forras` (alap `motor`), `attr_minoseg`, `attr_jelek`, `salonic_uuid`, `ertek_minoseg` + részleges egyedi index; `foglalas_egyeztetes` + `sd_id`, `sd_allapot`, `sd_ido` + részleges egyedi index; új táblák: `foglalas_vendeg`, `foglalas_alias`, `foglalas_reschedule`; `salonic_nevtabla` új `ar` sorok. A meglévő sorok és a motoros út nem változik.
+`meres_kuldes` + `forras` (alap `motor`), `attr_minoseg`, `attr_jelek`, `salonic_uuid`, `ertek_minoseg` + részleges egyedi index; `foglalas_egyeztetes` + `sd_id`, `sd_allapot`, `sd_ido` + részleges egyedi index; új táblák: `foglalas_vendeg`, `foglalas_alias`, `foglalas_reschedule`; `salonic_nevtabla` új `ar` sorok. A meglévő sorok nem változnak (a régi oszlopok értékei bájtra azonosak; az új oszlopok `forras='motor'` alapértéket, illetve NULL-t kapnak).
+
+**Mi változik a kapuktól függetlenül, a deploy pillanatától (független review #14b)** – a statikus `dist` bájtra azonos, de a Pages Functions csomag 8/14 belépési pontja új kódot kap, és az éles motoros ágon: (a) az első kérésen lefut az additív séma-bővítés (3 tábla, 4 index, 8 oszlop, **0 DML**; idempotens; párhuzamos kéréseknél a `duplicate column` hibát az `oszlopokBiztosit` elnyeli); (b) a motoros sorok mostantól `salonic_uuid`-t kapnak, és az azonos (`salonic_uuid`, `esemeny_nev`, `platform`) két különböző `esemeny_id`-vel DB-szinten dedupe-olódik (normál üzemben nincs hatása: 1 UUID = 1 `booking_id`; biztonsági háló); (c) az újrapróbálható cella UPDATE-je CAS (`AND probalkozas = ?`), az INSERT `ON CONFLICT DO NOTHING` – csak párhuzamos hívásnál más a viselkedés; (d) minden sikeres kulcs-íráson +1 `INSERT…SELECT` (alias; az üres részleges indexen keres); (e) az `egyeztet()` UPDATE-jei `AND sd_id IS NULL`: `sd_id` NULL mellett azonos hatás; (f) hideg isolate-onként +9 D1-lekérdezés (a `sema()` + `meresSema()` pár: 15 → 24 SQL a már migrált DB-n; az első, migráló kérésen 32, ebből 8 `ALTER`). Zárt kapu mellett az `sd_atvetel` **0 sd-írást** végez (a `sema()` DDL és a meglévő `veglegesLejart` UPDATE-je a kapu előtt még lefut). Az éles D1 `pragma_table_info()` táblaértékű függvényt támogat (a Cloudflare-eszközön át, csak olvasva ellenőrizve); az `ALTER … ADD COLUMN` valós D1-en a PR-előnézeti smoke-ban (S1) bizonyítandó.
 
 ## 13. Tesztek
 
