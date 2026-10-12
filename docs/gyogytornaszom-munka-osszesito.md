@@ -186,3 +186,9 @@ A munkához készült mentések (`/tmp/*_backup.json`, `member_meta_backup.json`
 - Kritikus CSS: Playwright-tal (8 oldal x 3 szelesseg) kigyujtve = 96 KB (ebbol 33 KB base64 betutipus) a 185 KB helyett; brotli utan ~10 KB nyereseg, FOUC/CLS kockazat mellett -> nem eri meg, nem eles.
 - Betutipusok (2x base64 woff2 a CSS-ben) kulso fajlba: HTML brotli 85 -> 61 KB, de a laborban az LCP nem javult (zajos), az inline betu elso latogatasnal gyorsabb -> kikapcsolva es torolve (snippet 57). Autoptimize "data URI" opcio valtozatlan (on).
 - Lemaradt vizsgalat: hirdetesi kattintasok mobil TTFB 0,96 s / LCP 1,87 s (RUM) - kampanyonkenti bontas kovetkezik.
+
+## 27. Zsofia (Benyei) akcios allapotfelmeres a Salonicban (2026-10-12)
+- Hiba: a hirdetett/weben akcios listan szereplo Zsofia a Salonic "1. alkalom - Allapotfelmeres / Egyeni 20% Akcios Allapotfelmeres" (19 000 Ft, 50 perc, serviceId 416586) szolgaltatasnal ki volt kapcsolva (Aba, Szandi, Niki, Dani be volt). Beallitasok -> Szolgaltatasok -> a szolgaltatas nyila -> "Szolgaltatast vegzo munkatarsak" (app.salonic.hu/settings/services/employees/416586).
+- Tanulsag: a nyilvanos lista (gyogytornaszomhu.salonic.hu/selectEmployee/?placeId=8439&serviceId=416586) a megbizhato forras, a bongeszougynok kapcsolo-szin olvasasa tevedhet.
+- Elvegezve: Zsofia kapcsoloja bekapcsolva (admin ujratoltes utan zold). A Szemelyes Allapotfelmeres ara 23 500 Ft maradt (nem valtozott). Nyitott: a nyilvanos listan meg nem jelenik meg (gyorsitotar/beosztas?) - ujraellenorzes.
+- A bongeszougynok STOP kilovi a munkamenetet es a belepest; ne allitsd le feleslegesen.
