@@ -168,3 +168,10 @@ Hivatalos Salonic API / webhook még nincs, ezért a forrás a Salonic automatik
 - **Tesztek:** `node --test tools/test-mp-igazolas.mjs` (a 2026-10-11-i 27 valódi foglalás anonim adataival, fantom / késői
   újranyitás, késő és duplikált igazolás, 4 vitatott új/visszatérő eset, gclid/hozzájárulás/idő megőrzése) és
   `node --test tools/test-mp-feltoltes.mjs`.
+- **Ismert korlátok (ChatGPT-review, 2026-10-12):** (1) időpont-módosítás („Foglalás módosítva” levél) és lemondás nem
+  vonja vissza a már igazolt/feltöltött konverziót — ugyanúgy, mint a mai böngészős címkék; (2) ismeretlen munkatársnév esetén
+  csak egyértelmű egyezés párosul, a válasz `ismeretlen_munkatars: true`, és a naplóban figyelmeztetés jelzi, hogy a
+  `MUNKATARSAK` térkép frissítendő; (3) a feladó-ellenőrzés a Gmail-fiókba érkezett levélre épül (a Zapier csak a
+  salonicfoglalas@gmail.com postafiókot olvassa), és párosítani csak létező, azonos munkatársú és percű D1-sorral lehet,
+  ami egy hamisított levél hatását erősen korlátozza; (4) idempotencia: `mp_feltoltes` elsődleges kulcs (kulcs, akció, mód) +
+  éles módban a már elküldött akció ellenőrzése.

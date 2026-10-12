@@ -270,7 +270,8 @@ export async function igazolasErkezes({ request, env = {}, waitUntil }, { fetchI
     const k = kulcsResz(s.kulcs);
     return k.start >= l.startUnix && k.start <= l.startUnix + 59 && (!l.employeeIds.length || l.employeeIds.includes(k.emp));
   });
-  if (jelolt.length !== 1) return json({ ok: true, igazolva: false, varakozik: true, uj: !!(uj && uj.meta && uj.meta.changes) });
+  if (!l.employeeIds.length) console.warn('mp-meres: ismeretlen Salonic-munkatars az igazolasban (MUNKATARSAK frissitendo)');
+  if (jelolt.length !== 1) return json({ ok: true, igazolva: false, varakozik: true, tobb_jelolt: jelolt.length > 1, ismeretlen_munkatars: !l.employeeIds.length, uj: !!(uj && uj.meta && uj.meta.changes) });
   const sor = { ...jelolt[0], ...(await igazoltJeloles(db, jelolt[0].kulcs, ig)) };
   const host = new URL(request.url).hostname;
   const pf = feltoltes(db, sor, env, host, { fetchImpl, most }).catch((e) => console.error('mp-meres: igazolt feltoltes hiba', String(e && e.message || e).slice(0, 200)));
