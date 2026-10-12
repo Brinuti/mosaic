@@ -12,6 +12,7 @@
 // Kifele csak: akcio, tipus, orderId (szamok), ido. Nev, e-mail, telefon, szolgaltatas SOHA.
 import { semaBiztos } from './lanc.js';
 import { googleIdo, ELES_HOST, MP_GADS } from './google-ads.js';
+import { riport, adsSorok, adsMentes } from './riport.js';
 
 export const IGAZOLT_AKCIO = '7839410357';
 /** A bongeszo-cimke elesitese (GTM v16, 2026-10-12 09:45 UTC): ennel korabbi foglalashoz nincs orderId-s konverzio. */
@@ -121,6 +122,12 @@ export async function kiigazitasVegpont({ request, env = {} }, { most = Math.flo
   if (!t.van) return json({ ok: false }, 404);
   if (!t.jo) return json({ ok: false }, 403);
   const mod = await modOlvas(db, eles);
+  const url = new URL(request.url);
+
+  // napi meres-egeszseg riport (riport.js) es a Google Ads napi konverziok betoltese (a Zapier napi workflow)
+  if (request.method === 'GET' && url.searchParams.get('riport')) {
+    return json(await riport(db, most, Math.min(60, Math.max(1, Number(url.searchParams.get('nap')) || 14))));
+  }
 
   if (request.method === 'GET') {
     if (mod === 'ki') return json({ ok: true, mod, orderIdk: [], keres: null });
@@ -132,6 +139,13 @@ export async function kiigazitasVegpont({ request, env = {} }, { most = Math.flo
 
   if (request.method === 'POST') {
     let b; try { b = await request.json(); } catch (e) { return json({ ok: false, hiba: 'rossz_keres' }, 400); }
+    if (b.muvelet === 'ads_napi') {
+      let v = b.valasz; if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } }
+      const sorok = adsSorok(v);
+      await adsMentes(db, sorok, most);
+      const r = await riport(db, most, 14);
+      return json({ ok: true, mentve: sorok.length, figyelmeztetesek: r.figyelmeztetesek });
+    }
     const orderIdk = Array.isArray(b.orderIdk) ? b.orderIdk.map(String).filter((k) => /^\d+\|\d+\|\d+$/.test(k)).slice(0, MAX_TETEL) : [];
     if (b.mod !== mod) return json({ ok: false, hiba: 'mod_elteres', mod }, 409); // menet kozbeni atkapcsolas: a kovetkezo kor ujra lekeri
     let valasz = b.valasz;
