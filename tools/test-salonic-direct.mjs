@@ -1143,3 +1143,53 @@ test('S0-54 a feloldas irasi sorrendje: audit-sor ELOBB, allapot UTANA - Worker-
     halal.be = false; assert.equal((await v.post(f)).sd_allapot, 'feloldva_confirmed'); assert.equal(csereSor(v, u).allapot, 'feloldva_confirmed');
   }
 });
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+// DECISION #144 mini pre-T2 kor: a `confirmed` audit-sor + felbemaradt lezaras (4.), valamint a korabbi KICSI tesztlyukak potlasa (1-3.)
+/** Az sd sor QA-riport sora (egyeztetes-sor.js) az UUID alapjan. */
+async function sdRiportSor(v, u) {
+  const { egyeztetoSorok } = await import('../netlify/lib/meres/egyeztetes-sor.js');
+  const tol = Math.floor(T0 / 1000) - 4 * 86400, ig = Math.floor(T0 / 1000) + 2 * 86400;
+  const r = await egyeztetoSorok(v.db, { tol, ig }); assert.equal(r.ok, true);
+  return r.sorok.find((s) => s.salonic_uuid === u);
+}
+
+test('S0-55 tesztlyukak potlasa: feloldva_* + felbemaradt lezaras QA-cimkeje, a tartva sor riasztas DB-jelzoje (?riasztas=1), a "Torles..." regex-alakok', async () => {
+  for (const dontes of ['confirmed', 'uj_konverzio']) { // a felbemaradt feloldas (audit-sor megvan, a sor-allapot nem) a QA-riportban atvetel_megszakadt
+    const { v, u, b } = await jelolt({}, { megjegyzes: 'A korabbi 16 oras foglalas helyett', uj_vendeg: false });
+    await v.sd(b); const halal = halalSql(v, /^UPDATE foglalas_egyeztetes SET sd_allapot/);
+    await v.post({ ...b, muvelet: 'sd_feloldas', dontes, ok: 'emberi dontes' }).catch(() => null); assert.ok(halal.talalt >= 1);
+    const jel = dontes === 'confirmed' ? 'feloldva_confirmed' : 'feloldva_uj'; assert.equal(csereSor(v, u).allapot, jel);
+    const s = await sdRiportSor(v, u);
+    assert.deepEqual([s.sd_allapot, s.qa_kategoria, s.jelzesek.includes('atvetel_megszakadt'), s.jelzesek.includes('reschedule_suspected_hold')], ['halasztva', 'atvetel_megszakadt', true, false], dontes);
+  }
+  { // a sikeres feltetelezett tartva-iras a riasztas DB-oszlopot is 1-re allitja: a meglevo ?riasztas=1 oldal listazza a sort
+    const { v, u, b } = await csereVilag({ nincsRegi: true });
+    assert.equal((await v.sd(b)).allapot, 'halasztva'); v.net.allapot.set(u, 'hiba');
+    const r = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'emberi: uj vendeg' });
+    assert.deepEqual([r.sd_allapot, r.riasztas], ['tartva', true]);
+    assert.deepEqual([sdSor(v, u).sd_allapot, sdSor(v, u).riasztas], ['tartva', 1], 'a tartva sor riasztas-jelzoje a DB-ben 1');
+    assert.ok(((await v.get('riasztas=1')).lista || []).some((x) => x.uuid === u), 'a ?riasztas=1 oldal listazza a tartva sort');
+  }
+  for (const m of ['Törlés', 'Törlést kérek', 'A törlése miatt írok', 'Törlések', 'törlöm', 'törlök']) assert.ok(csereGyanu(m), m);
+});
+
+test('S0-56 `confirmed` audit-sor + felbemaradt lezaras (hianyzo_mezo potlas, Worker-halal az allapot-irasnal): atvetel_megszakadt cimke es riasztas (nem reschedule_suspected), 0 kuldes, a feloldas lezarja', async () => {
+  const { v, u, b } = await csereVilag(); // a regi foglalas indexelve, MEGJ_99 -> confirmed
+  const { megjegyzes, ...nelkule } = b;
+  assert.equal((await v.sd(nelkule)).allapot, 'halasztva'); assert.equal(csereSor(v, u).allapot, 'hianyzo_mezo');
+  const halal = halalSql(v, /^UPDATE foglalas_egyeztetes SET sd_allapot/); // a pot-futas a sor-allapot irasnal meghal
+  await v.sd(b).catch(() => null); assert.ok(halal.talalt >= 1, 'a szimulalt halal lefutott');
+  assert.equal(csereSor(v, u).allapot, 'confirmed', 'a dontes (confirmed) mar rogzitett'); assert.equal(sdSor(v, u).sd_allapot, 'halasztva'); assert.equal(v.net.hivasok.length, 0, '0 kuldes');
+  const s = await sdRiportSor(v, u);
+  assert.deepEqual([s.qa_kategoria, s.jelzesek.includes('atvetel_megszakadt'), s.jelzesek.includes('reschedule_suspected_hold')], ['atvetel_megszakadt', true, false]);
+  assert.deepEqual((await riasztasok(v, u)).map((x) => x.tipus), ['atvetel_megszakadt']);
+  halal.be = false;
+  const f = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'confirmed', ok: 'emberi dontes' }); // az emberi feloldas lezarja
+  assert.equal(f.sd_allapot, 'feloldva_confirmed'); assert.equal(v.net.hivasok.length, 0); assert.deepEqual(await riasztasok(v, u), []);
+  { // kontroll: a valodi csere-gyanu (suspected audit-sor) marad reschedule_suspected_hold / reschedule_suspected
+    const w = await csereVilag({ nincsRegi: true }); await w.v.sd(w.b);
+    const t = await sdRiportSor(w.v, w.u); assert.deepEqual([t.qa_kategoria, csereSor(w.v, w.u).allapot], ['reschedule_suspected_hold', 'suspected']);
+    assert.deepEqual((await riasztasok(w.v, w.u)).map((x) => x.tipus), ['reschedule_suspected']);
+  }
+});

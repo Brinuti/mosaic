@@ -55,10 +55,10 @@ export function motorAttrMinoseg(erk) {
   return cid && uaIp && jel ? 'A_teljes' : 'B_motor_reszleges';
 }
 const SD_QA = Object.freeze({ reschedule_confirmed: 'reschedule_confirmed', feloldva_confirmed: 'reschedule_confirmed', halasztva: 'reschedule_suspected_hold', tartva: 'sd_tartva', lejart: 'sd_lejart', atveve: 'sd_atveve_folyamatban', kesz: 'post_t2_booking_object', feloldva_uj: 'post_t2_booking_object' });
-/** Egy 'halasztva' sd sor jellege a reschedule audit-sor alapjan: hianyzo_mezo -> hianyzo_mezo_hold; hianyzo_mezo_potolva / feloldva_*: a dontes MEGSZULETETT (nincs gyanu / az ember feloldotta), de a lezaras kihagyva maradt -> atvetel_megszakadt (nem uj csere-gyanu); egyebkent csere-gyanu hold. */
+/** Egy 'halasztva' sd sor jellege a reschedule audit-sor alapjan: hianyzo_mezo -> hianyzo_mezo_hold; hianyzo_mezo_potolva / confirmed / feloldva_*: a dontes MEGSZULETETT (nincs gyanu / confirmed / az ember feloldotta), de a lezaras kihagyva maradt (Worker-halal) -> atvetel_megszakadt (nem uj csere-gyanu); egyebkent csere-gyanu hold. */
 const halasztvaJelleg = (reschedule) => {
   const a = reschedule && reschedule.allapot;
-  return a === 'hianyzo_mezo' ? 'hianyzo_mezo_hold' : (a === 'hianyzo_mezo_potolva' || a === 'feloldva_uj' || a === 'feloldva_confirmed') ? 'atvetel_megszakadt' : 'reschedule_suspected_hold';
+  return a === 'hianyzo_mezo' ? 'hianyzo_mezo_hold' : (a === 'hianyzo_mezo_potolva' || a === 'confirmed' || a === 'feloldva_uj' || a === 'feloldva_confirmed') ? 'atvetel_megszakadt' : 'reschedule_suspected_hold';
 };
 export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = null, erkezes = null, kuldesek = [], reschedule = null, regiStatus = null }) {
   // a foglalaskori pillanatkep (amit az attribucio.js a szervernek kuldott: hozz = { ana, adv, fun, dontes }, attr.ga4.client_id)
