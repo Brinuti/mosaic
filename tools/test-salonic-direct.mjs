@@ -1560,3 +1560,18 @@ test('S0-61i (#14e T2) a `veglegesIr` audit-aga SZIMMETRIKUS: `feloldva_confirme
   lv.kapu.nyit(); await pL;
   assert.notEqual(sdSor(v, u).sd_allapot, 'feloldva_uj', 'a sor nem allt 0 kuldessel feloldva_uj-ra: ' + sdSor(v, u).sd_allapot); assert.equal(auditTeljes(v, u).allapot, 'feloldva_confirmed');
 });
+
+test('S0-61j (#14f T1) a `veglegesIr` CELLA-aga onalloan: a cellak mar rc (a nyertes emberi `confirmed` ELOBB zart), az audit-sor meg a vesztes sajat `feloldva_uj`-a -> a sor nem allhat 0 kuldessel `feloldva_uj`-ra', async () => {
+  const { v, u, b } = await csereVilag({}); const { megjegyzes, ...nelkule } = b;
+  assert.equal((await v.sd(nelkule)).allapot, 'halasztva'); v.net.allapot.set(u, 'hiba'); // az elo allapot nem ellenorizheto: a cellak a kuldes utan `halasztva`
+  const als = new AsyncLocalStorage(); const lv = { ki: 'L', minta: /^UPDATE foglalas_egyeztetes SET sd_allapot = \?2, riasztas = 0/, kapu: kapuPar() };
+  kapusDb(v, als, [lv]);
+  const pL = als.run('L', () => v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz, egyideju emberi dontes' }));
+  await varjFelt(() => lv.allt, 'L a veglegesIr elott (az audit mar feloldva_uj)');
+  assert.equal(csereSor(v, u).allapot, 'feloldva_uj');
+  v.sql("UPDATE meres_kuldes SET allapot = 'kihagyva', indok = 'reschedule_confirmed (feloldva): nincs uj konverzio (korabbi foglalas: ?)' WHERE allapot = 'halasztva'"); // a nyertes emberi `confirmed` cella-zarasa (az audit-irasa meg nem futott)
+  assert.equal(v.sql("SELECT COUNT(*) AS n FROM meres_kuldes WHERE allapot = 'kihagyva' AND indok LIKE 'reschedule_confirmed%'")[0].n > 0, true, 'a cellak rc');
+  assert.equal(v.sql("SELECT COUNT(*) AS n FROM meres_kuldes WHERE allapot IN ('elkuldve', 'nincs_hitelesites')")[0].n, 0, 'nincs kiment cella');
+  lv.kapu.nyit(); await pL;
+  assert.notEqual(sdSor(v, u).sd_allapot, 'feloldva_uj', 'a sor nem allt 0 kuldessel feloldva_uj-ra: ' + sdSor(v, u).sd_allapot);
+});
