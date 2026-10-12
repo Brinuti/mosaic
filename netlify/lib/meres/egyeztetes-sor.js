@@ -22,6 +22,8 @@ import { PLATFORMOK } from './platformok.js';
 import { replayLista } from './validation-replay.js';
 
 const sec = (now) => Math.floor(now / 1000);
+/** Az attribucios rezsimvaltas ideje: a `977e1232` (PR #226, hozzajarulas-fuggo tarolas) eles deployja (DECISION #145/3, a reviewer K1 merese). */
+export const ATTR_REZSIMVALTAS_UTC = '2026-10-10T09:07:52Z';
 const UJ_VISSZATERO = Object.freeze({ FoglalasElso: 'uj', Konzultacio: 'uj_konzultacio', Visszajaro: 'visszatero', Ajandekkartya: 'ajandekkartya' });
 
 /**
@@ -248,6 +250,9 @@ export async function egyeztetoSorok(db, { tol, ig, uzletag = null, limit = 500,
     if (c.osztaly === 'jogos_0') osszegzes.jogos_0_okok[p][c.ok] = (osszegzes.jogos_0_okok[p][c.ok] || 0) + 1;
   }
   osszegzes.lefedettseg = lefedettseg(sorok);
+  // DECISION #145/3 (977e1232 K1): az attribucios rezsimvaltas kulon jelolese + a Google jogos_0 ertelmezese (a T1->T2 baseline-ban kulon kezelendo)
+  osszegzes.attribucios_rezsimvaltas = { utc: ATTR_REZSIMVALTAS_UTC, unix: Math.floor(Date.parse(ATTR_REZSIMVALTAS_UTC) / 1000), ok: 'mh_attr hozzajarulas-kapu (977e1232, PR #226): hozzajarulas nelkul a kattintas-azonosito csak az aktualis oldal URL-jeben el, oldalvaltason at nem' };
+  osszegzes.figyelmeztetesek = ['google_jogos_0_tartalmazhat_hozzajarulas_vagy_click_id_hiany_miatt_elmaradt_feltoltest', 'attribucios_rezsimvaltas_' + ATTR_REZSIMVALTAS_UTC];
   // D6: retegezett lefedettseg - motor / salonic_direct / osszes, es az attr_minoseg szerinti bontas; az osszes (= osszegzes.lefedettseg) nevezojeben az sd benne marad
   const reteg = (r) => ({ foglalas: r.length, lefedettseg: lefedettseg(r) });
   osszegzes.retegek = { motor: reteg(sorok.filter((x) => x.forras === 'motor')), salonic_direct: reteg(sorok.filter((x) => x.forras === 'salonic_direct')), osszes: reteg(sorok) };

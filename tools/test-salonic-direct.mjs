@@ -1193,3 +1193,64 @@ test('S0-56 `confirmed` audit-sor + felbemaradt lezaras (hianyzo_mezo potlas, Wo
     assert.deepEqual((await riasztasok(w.v, w.u)).map((x) => x.tipus), ['reschedule_suspected']);
   }
 });
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+// DECISION #145/3 mini-2 kor: sd_feloldas fail-closed, a csere-regex minden alternativajanak tablazatos tesztje, QA-5 riport jelzesek
+test('S0-57 `uj_konverzio` fail-closed: a felbemaradt `confirmed` sor (cellak `kihagyva`, egy sem kiment) 0 kuldessel NEM allithato feloldva_uj-ra; a sor es az audit valtozatlan; a `confirmed` feloldas lezar; mar kiment cellaval a felbemaradt uj_konverzio lezarhato', async () => {
+  const { v, u, b } = await csereVilag(); // a regi foglalas indexelve, MEGJ_99 -> confirmed
+  const { megjegyzes, ...nelkule } = b;
+  assert.equal((await v.sd(nelkule)).allapot, 'halasztva');
+  const halal = halalSql(v, /^UPDATE foglalas_egyeztetes SET sd_allapot/); // a hianyzo_mezo-potlas a sor-allapot irasnal meghal (S0-56 helyzet)
+  await v.sd(b).catch(() => null); assert.ok(halal.talalt >= 1); halal.be = false;
+  assert.deepEqual([sdSor(v, u).sd_allapot, csereSor(v, u).allapot, v.net.hivasok.length], ['halasztva', 'confirmed', 0]);
+  assert.ok(v.sql("SELECT allapot FROM meres_kuldes").every((c) => c.allapot === 'kihagyva'), 'a cellak mar `kihagyva (reschedule_confirmed)`');
+  const rossz = { ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz emberi dontes' };
+  for (let i = 0; i < 2; i++) { // ismetelve is: ugyanaz, semmi nem valtozik
+    const r = await v.post(rossz);
+    assert.deepEqual([r.allapot, r.sd_allapot, r.kuldes], ['feloldas_nem_lehetseges', 'halasztva', 0]); assert.match(r.miert, /confirmed/);
+    assert.deepEqual([sdSor(v, u).sd_allapot, csereSor(v, u).allapot, v.net.hivasok.length], ['halasztva', 'confirmed', 0], 'a sor es az audit valtozatlan, 0 platformhivas');
+  }
+  assert.deepEqual((await riasztasok(v, u)).map((x) => x.tipus), ['atvetel_megszakadt'], 'a riasztas megmarad');
+  const jo = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'confirmed', ok: 'helyes dontes' });
+  assert.equal(jo.sd_allapot, 'feloldva_confirmed'); assert.equal(v.net.hivasok.length, 0); assert.deepEqual(await riasztasok(v, u), []);
+  { // kontroll: valodi HOLD-nal (cellak halasztva) az uj_konverzio tovabbra is kuld
+    const w = await csereVilag({ nincsRegi: true }); assert.equal((await w.v.sd(w.b)).allapot, 'halasztva');
+    const f = await w.v.post({ ...w.b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'emberi: uj vendeg' });
+    assert.equal(f.sd_allapot, 'feloldva_uj'); assert.ok(w.v.net.hivasok.length > 0, 'a halasztott cellak kimennek');
+  }
+});
+
+test('S0-58 a csere-regex MINDEN alternativaja tablazatosan tesztelt: a pelda a teljes regexre illeszkedik, az adott alternativa nelkuli regexre NEM (igy egy alternativa torlese bukik)', () => {
+  const ALT = [
+    ['\\w*cser\\w*', 'cserelni szeretnem'], ['athelyez\\w*', 'athelyeznem kell'], ['atfoglal\\w*', 'atfoglalnam'], ['atutemez\\w*', 'atutemezne valaki'], ['atrak\\w*', 'atrakhatnank'],
+    ['atir\\w*', 'atirnam'], ['atvinn\\w*', 'atvinnem a foglalast'], ['atte(?:sz|tt|nn|hete|het|ni)\\w*', 'atteszem'], ['modosit\\w*', 'modositanam'], ['(?:meg)?valtoztat\\w*', 'valtoztatnek'],
+    ['elhalaszt\\w*', 'elhalasztanam'], ['eltol\\w*', 'eltolnam'], ['elorebb\\w*', 'elorebb hoznam'], ['hatrebb\\w*', 'hatrebb szeretnem'],
+    ['(?:korabbi|regi|elozo|eredeti)\\s+(?:foglalas|idopont|ido)\\w*', 'az eredeti idopontom'], ['(?:uj|masik)\\s+idopont\\w*', 'masik idopontot kernek'], ['korabban', 'korabban foglaltam'],
+    ['volt\\s+\\d', 'volt 15 orara foglalasom'], ['torol(?!k)\\w*', 'torolje a foglalast'], ['torl(?:om|ok)\\b', 'torlom'], ['torles\\w*', 'torlesi kerelem'], ['megsem?\\b', 'megse lesz jo'],
+    ['helyett', 'szerda helyett csutortok'], ['lemond\\w*', 'lemondanam'], ['reschedul\\w*', 'i need to reschedule'], ['instead', 'thursday instead'], ['moved?', 'i moved it'],
+    ['swap\\w*', 'can we swap'], ['chang\\w*', 'i changed my mind'], ['(?:earlier|previous|original|old)\\s+(?:booking|appointment|time)', 'my previous appointment'],
+  ];
+  const forras = CSERE_GYANU.source;
+  assert.equal(ALT.length, 30, 'a regex 30 alternativaja');
+  for (const [alt, pelda] of ALT) {
+    assert.ok(forras.includes(alt), 'az alternativa a regexben van: ' + alt);
+    const tag = forras.includes('|' + alt) ? '|' + alt : alt + '|';
+    const kevesebb = new RegExp(forras.replace(tag, ''));
+    const folded = pelda.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    assert.ok(csereGyanu(pelda), 'illeszkedik: ' + pelda);
+    assert.ok(!kevesebb.test(folded), 'az alternativa nelkul NEM illeszkedik (egyedi pelda): ' + alt + ' <- ' + pelda);
+  }
+  // az alternativak teljes listaja = a regex (nincs dokumentalatlan / tesztetlen alternativa)
+  assert.equal(forras, '\\b(' + ALT.map(([a]) => a).join('|') + ')');
+});
+
+test('S0-59 QA-5 riport: a Google jogos_0 figyelmeztetes es az attribucios rezsimvaltas (2026-10-10 09:07:52 UTC) kulon jelolve az osszegzesben', async () => {
+  const { egyeztetoSorok, ATTR_REZSIMVALTAS_UTC } = await import('../netlify/lib/meres/egyeztetes-sor.js');
+  const v = vilag(); await v.kesz;
+  const tol = Math.floor(T0 / 1000) - 4 * 86400, ig = Math.floor(T0 / 1000) + 2 * 86400;
+  const r = await egyeztetoSorok(v.db, { tol, ig }); assert.equal(r.ok, true);
+  assert.equal(ATTR_REZSIMVALTAS_UTC, '2026-10-10T09:07:52Z');
+  assert.deepEqual([r.osszegzes.attribucios_rezsimvaltas.utc, r.osszegzes.attribucios_rezsimvaltas.unix], ['2026-10-10T09:07:52Z', Math.floor(Date.UTC(2026, 9, 10, 9, 7, 52) / 1000)]);
+  assert.ok(r.osszegzes.figyelmeztetesek.some((x) => /^google_jogos_0_tartalmazhat_hozzajarulas_vagy_click_id_hiany/.test(x)));
+  assert.ok(r.osszegzes.figyelmeztetesek.includes('attribucios_rezsimvaltas_2026-10-10T09:07:52Z'));
+});

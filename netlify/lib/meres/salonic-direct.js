@@ -345,7 +345,12 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
       const mod = dontes === 'confirmed' ? 'feloldva_confirmed' : 'feloldva_uj';
       const csere = { ...(csereRow || {}), ok: 'feloldva: ' + ok };
       const k = await kuldesFuttat({ ...futas, mod: mod === 'feloldva_uj' ? 'normal' : mod, csere });
-      // az audit-sor ELOBB, a sor allapota UTANA (5. kodattekintes / DECISION #142): ha a Worker a ket iras kozott meghal, a sor 'halasztva' marad (a feloldas ujrafuttathato) - nem marad vegleges allapot elavult audit-sorral
+      // FAIL-CLOSED (mini-2, DECISION #145/3): az `uj_konverzio` nem allithatja a sort 0 kuldessel `feloldva_uj`-ra: ha az elosztas `mar_kuldve`-t jelez (minden cella vegleges) ES egyetlen cella sem `elkuldve`
+      // (pl. a felbemaradt `confirmed` sor cellai `kihagyva (reschedule_confirmed)`), a konverzio CSENDBEN elmaradna -> elutasitjuk, a sor es az audit valtozatlan. Ha mar kiment cella (`elkuldve`), a felbemaradt feloldas lezarasa helyes.
+      if (mod === 'feloldva_uj' && k.esemeny_kuldes && k.esemeny_kuldes.allapot === 'mar_kuldve') {
+        const kiment = await db.prepare("SELECT COUNT(*) AS n FROM meres_kuldes WHERE source_id = ?1 AND allapot = 'elkuldve'").bind(sdId).first();
+        if (!kiment || !(kiment.n > 0)) return { ...alap, allapot: 'feloldas_nem_lehetseges', sd_allapot: allapot, miert: 'az uj_konverzio nem kuldene semmit (minden cella mar vegleges, egy sem kiment): a felbemaradt `confirmed` sor helyes feloldasa a `confirmed`', riasztas: sor.riasztas === 1, kuldes: 0 };
+      }
       await rescheduleIr(db, { uuid, sdId, allapot: mod === 'feloldva_uj' ? 'feloldva_uj' : 'feloldva_confirmed', d: { ...(csereRow || {}), ok: csere.ok }, t });
       const veg = await lezarAllapot(db, { uuid, sdId, mod, csere, t });
       if (veg.kihagyva) return { ...alap, allapot, sd_allapot: allapot, idempotens: true, miert: 'egy parhuzamos hivas mar dolgozik a cellakon: a sor allapotat a nyertes hivas irja', riasztas: sor.riasztas === 1, ...k };
