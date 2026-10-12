@@ -10,7 +10,7 @@
 //     lezer-konzult                  lezer, ingyenes konzultacio
 //
 // Csak elonezeten fut (az eles domainre a szkript nem enged). Egyetlen foglalas futasonkent; "TESZT - Claude" nev (a Zapier probavedelme: nev "teszt", az e-mail a teszt-listan,
-// a telefon a tulajdonos 709420090-es szama: mindharom talal), hirlevel NEM.
+// a telefon a tulajdonos <tulajdonos telefonszama>-es szama: mindharom talal), hirlevel NEM.
 // Mit mer: (1) az adatlap (iframe) cimen ott van-e a back=<azonosito>; (2) a Salonic foglalas-kuldes (AJAX) valaszanak redirect.url-je es booking.id-ja (a POST-ot a szkript
 // ugyanazzal a keressel tovabbitja: route.fetch, ujraprobalas NINCS); (3) a keretet atiranyito koszonooldal URL-je (bookingUrl). A KIMENO MERES (GA4, Meta, TikTok, Google Ads,
 // Stape, Zapier) tiltott (tilt.mjs), ES az eles koszonooldalt (www.mosaicheadspa.hu) a szkript sem tolti be: a keret navigalasat elfogja es egy ures oldallal valaszolja meg,
@@ -26,12 +26,14 @@ const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ?
 const START = arg('start', ''); // opcionalis: pontos idopont (unix masodperc)
 const BAZIS = arg('bazis', ''), UTVONAL = arg('utvonal', 'hair-konzult'), OUT = arg('out', ''), SZARAZ = arg('szaraz', '0') === '1', KOSZONO = arg('koszono', '0') === '1';
 if (!/^https:\/\/[a-z0-9-]+\.mosaic-d77\.pages\.dev$/.test(BAZIS)) throw new Error('csak PR-elonezeten fut (--bazis https://<ag>.mosaic-d77.pages.dev); az eles domainre nem engedett: ' + BAZIS);
-const TELEFON = process.env.MERES_TELEFON || '709420090'; // a +36 utani resz: a tulajdonos sajat szama
+const telefon = () => (process.env.MERES_TELEFON || (() => { throw new Error('MERES_TELEFON kotelezo: a tulajdonos probaszama (a +36 utani resz); a repo nem tartalmazza'); })()); // lusta: csak a foglalo modok igenylik
 const CHROME = process.env.CHROME_UTVONAL || (process.platform === 'win32' ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : '/opt/pw-browsers/chromium-1194/chrome-linux/chrome');
 const T0 = Date.now(); const mp = () => Date.now() - T0;
 const idovonal = [], naplo = [];
 const lepes = (esemeny, extra = {}) => { idovonal.push({ t: mp(), esemeny, ...extra }); console.log(`[${String(mp()).padStart(6)}ms] ${esemeny}`, Object.keys(extra).length ? JSON.stringify(extra).slice(0, 400) : ''); };
 
+// kotelezo env (a repo nem tartalmazza): gyors hiba a bongeszo inditasa elott, nem a foglalas kozben
+if (!SZARAZ) for (const [n, mit] of [['MERES_TELEFON', 'a tulajdonos probaszama (a +36 utani resz)'],['MERES_EMAIL', 'a tulajdonos probaja e-mail cime']]) if (!process.env[n]) { console.error(n + ' kotelezo: ' + mit + '; a repo nem tartalmazza'); process.exit(1); }
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 900 }, locale: 'hu-HU', timezoneId: 'Europe/Budapest', serviceWorkers: 'block' });
 const elesNavigaciok = []; // az eles koszonooldal cimei, amiket a keret tolteni probalt (a szkript NEM tolti be)
@@ -125,10 +127,10 @@ try {
   lepes('az adatlap urlapjanak action-je (a Salonic ezt hasznalja a foglalas-kuldeshez)', { action, tartalmazza_az_azonositot: !!(action && k1 && action.includes(k1.id)) });
   if (SZARAZ) { lepes('SZARAZ FUTAS: itt megallok, foglalas nem jott letre'); throw new Error('szaraz-futas-vege'); }
   const tolt = async (sel, ertek) => { const l = fr.locator(sel).first(); await l.click(); await l.pressSequentially(ertek, { delay: 45 }); };
-  await tolt('#GuestDataForm_guestPhoneTemp', TELEFON);
+  await tolt('#GuestDataForm_guestPhoneTemp', telefon());
   await tolt('#GuestDataForm_guestLastName', 'TESZT –');
   await tolt('#GuestDataForm_guestFirstName', 'Claude');
-  await tolt('#GuestDataForm_guestEmail', 'deakfi@grantis.hu');
+  await tolt('#GuestDataForm_guestEmail', (process.env.MERES_EMAIL || (() => { throw new Error('MERES_EMAIL kotelezo: a tulajdonos probaja e-mail cime; a repo nem tartalmazza'); })()));
   await fr.locator('#GuestDataForm_acceptTerms').check(); // csak a feltetel (hirlevel NEM)
   if (await page.locator('iframe[src*="recaptcha"][src*="bframe"]').count()) throw new Error('RECAPTCHA-KIHIVAS: megallok');
   lepes('urlap kitoltve, kuldes', { ido: new Date().toISOString() });

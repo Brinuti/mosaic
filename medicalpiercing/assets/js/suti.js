@@ -404,7 +404,8 @@
       if (typeof window.gtag === 'function') window.gtag('event', 'foglalas_inditasa', { send_to: 'G-SJT2RN62H8', piercing_tipus: tipus });
       // TikTok: csak marketing-hozzajarulassal (a GA4-jel fent hozzajarulas nelkul is megy, a Consent Mode szerint suti nelkul)
       if (!(dontes && dontes.mark) || !window.ttq || typeof window.ttq.track !== 'function') return;
-      window.ttq.track('InitiateCheckout', { content_name: 'foglalas_inditasa', content_category: tipus });
+      // content_category (piercing-tipus) NEM megy a TikToknak: egeszsegi allapotra utalo kategoria (GPT + Claude, 2026-10-12)
+      window.ttq.track('InitiateCheckout', { content_name: 'foglalas_inditasa' });
     };
     var foglalasInditasa = function (e) {
       if (e.type === 'auxclick' && e.button !== 1) return;

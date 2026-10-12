@@ -14,7 +14,7 @@
 //   --mod nativ osszehasonlitasi alap: a koszonooldal KOZVETLENUL a fo ablakban (landing a click-azonositokkal, majd a Salonic-referrerrel a koszonooldal)
 //   --vissza 1  a koszonooldal utan a bongeszo "vissza" gombja (history.back), es az utana kimeno meres is naplozva ('vissza' fazis)
 //
-// A foglalas: az utolso szabad nap utolso idopontja, "TESZT – Claude" nev, deakfi@grantis.hu, a tulajdonos sajat telefonszama (MERES_TELEFON).
+// A foglalas: az utolso szabad nap utolso idopontja, "TESZT – Claude" nev, <tulajdonos e-mail>, a tulajdonos sajat telefonszama (MERES_TELEFON).
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import { UA, platformOf, engedett, dnsArg, ures, hozzajarulasScript, esemenyIras, esemenyUres } from './tilt.mjs';
@@ -28,7 +28,7 @@ const KEZELES = arg('kezeles', '');
 const VAR = +arg('varakozas', '20000');
 const MOD = arg('mod', 'valodi'); // valodi | szim | nativ
 const VISSZA = arg('vissza', '0') === '1';
-const TELEFON = process.env.MERES_TELEFON || '709420090';
+const telefon = () => (process.env.MERES_TELEFON || (() => { throw new Error('MERES_TELEFON kotelezo: a tulajdonos probaszama (a +36 utani resz); a repo nem tartalmazza'); })()); // lusta: csak a foglalo modok igenylik
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const CLICK = { gclid: 'TESZT123', fbclid: 'TESZT456', ttclid: 'TESZT789' };
 const CLICK_QS = `gclid=${CLICK.gclid}&fbclid=${CLICK.fbclid}&ttclid=${CLICK.ttclid}&utm_source=teszt&utm_medium=cpc`;
@@ -57,6 +57,8 @@ const idovonal = [], naplo = [], hist = [], iras = [], hibak = [];
 let fazis = 'landing';
 const lepes = (esemeny, extra = {}) => { idovonal.push({ t: mp(), fazis, esemeny, ...extra }); console.log(`[${String(mp()).padStart(6)}ms] ${esemeny}`, Object.keys(extra).length ? JSON.stringify(extra).slice(0, 200) : ''); };
 
+// kotelezo env (a repo nem tartalmazza): gyors hiba a bongeszo inditasa elott, nem a foglalas kozben
+if (MOD === 'valodi' && !MEGALL) for (const [n, mit] of [['MERES_TELEFON', 'a tulajdonos probaszama (a +36 utani resz)'],['MERES_EMAIL', 'a tulajdonos probaja e-mail cime']]) if (!process.env[n]) { console.error(n + ' kotelezo: ' + mit + '; a repo nem tartalmazza'); process.exit(1); }
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 1000 }, locale: 'hu-HU', timezoneId: 'Europe/Budapest', serviceWorkers: 'block' });
 await ctx.addInitScript(hozzajarulasScript);
@@ -124,10 +126,10 @@ const lathato = async (loc, ido = 25000) => { await loc.first().waitFor({ state:
 // a Salonic-adatlap kitoltese es elkuldese (valodi foglalas); a keret: a lapon (lezer) vagy egy beagyazott keretben (pmu)
 async function adatlap(fr) {
   const tolt = async (sel, ertek) => { const l = fr.locator(sel).first(); await l.waitFor({ state: 'visible', timeout: 30000 }); await l.click(); await l.pressSequentially(ertek, { delay: 45 }); }; // valodi billentyuleutesek: a telefonmezo (intl-tel-input) rejtett mezoi igy frissulnek
-  await tolt('#GuestDataForm_guestPhoneTemp', TELEFON);
+  await tolt('#GuestDataForm_guestPhoneTemp', telefon());
   await tolt('#GuestDataForm_guestLastName', 'TESZT –');
   await tolt('#GuestDataForm_guestFirstName', 'Claude');
-  await tolt('#GuestDataForm_guestEmail', 'deakfi@grantis.hu');
+  await tolt('#GuestDataForm_guestEmail', (process.env.MERES_EMAIL || (() => { throw new Error('MERES_EMAIL kotelezo: a tulajdonos probaja e-mail cime; a repo nem tartalmazza'); })()));
   await fr.locator('#GuestDataForm_acceptTerms').check(); // csak a feltetel (hirlevel NEM)
   if (await page.locator('iframe[src*="recaptcha"][src*="bframe"]').count()) throw new Error('RECAPTCHA-KIHIVAS: megallok');
   lepes('urlap kitoltve, kuldes', { ido: new Date().toISOString() });

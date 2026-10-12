@@ -1,7 +1,7 @@
 // QA-2 SZERVERES LEPES egy tesztesethez: a Salonic visszaigazolo level adataibol (a levelet a QA-futtato olvassa a postafiokbol) a /api/foglalas-egyeztetes hivasa - EZT hivna az eles
 // folyamat is (Salonic-level -> parositas -> esemenyek kuldese). A valasz tartalmazza a kuldes osszefoglalojat; utana a szerveres NAPLO (/api/meres-admin) a platformvalaszokkal.
 //
-//   EGYEZTETES_KULCS=... node tools/meres-proba/qa2-szerver.mjs --bazis <elonezet> --bongeszo <qa2-*-bongeszo-*.json> --level-ido <ISO> [--ar <Ft>] [--email deakfi@grantis.hu] [--telefon "+36 70 942 0090"]
+//   EGYEZTETES_KULCS=... node tools/meres-proba/qa2-szerver.mjs --bazis <elonezet> --bongeszo <qa2-*-bongeszo-*.json> --level-ido <ISO> [--ar <Ft>] [--email <tulajdonos e-mail>] [--telefon "<tulajdonos telefonszama>"]
 //        [--uj-vendeg igen|nem|nincs] [--out szerver.json] [--fuggo 1]
 //   --fuggo 1: a "nincs_hitelesites" kerelmek listaja (a kulso szallitonak: pl. a Composio-s Meta-tesztkuldes), kuldes nelkul.
 // A "uj vendeg" jelzest a Salonic maga adja (a valodi folyamatban a Salonic-level / -jelzes); itt a teszt SZIMULALJA (a TESZT-vendeg a Salonicban mar nem uj), a naplo ezt jelzi.
@@ -25,7 +25,7 @@ const ujVendeg = { igen: true, nem: false }[arg('uj-vendeg', 'igen')] ?? undefin
 // ar: alapbol a Salonic-atiranyitas price parametere (= a levelbeli tenyleges ar)
 const kerelem = {
   uuid: be.salonic_uuid, host: be.salonic_host, felado: arg('felado', undefined), szolgaltatas: q.service, munkatarsak: [], ld: start ? { startDate: new Date(start * 1000).toISOString() } : null,
-  level_datuma: arg('level-ido'), ar: arg('ar') ? Number(arg('ar')) : (/^\d+$/.test(String(q.price || '')) ? Number(q.price) : undefined), vendeg: { email: arg('email', 'deakfi@grantis.hu'), telefon: arg('telefon', '+36 70 942 0090') }, uj_vendeg: ujVendeg,
+  level_datuma: arg('level-ido'), ar: arg('ar') ? Number(arg('ar')) : (/^\d+$/.test(String(q.price || '')) ? Number(q.price) : undefined), vendeg: { email: (arg('email') || process.env.MERES_EMAIL || (() => { throw new Error('--email vagy MERES_EMAIL kotelezo: a tulajdonos probaadata; a repo nem tartalmazza'); })()), telefon: (arg('telefon') || (process.env.MERES_TELEFON ? '+36 ' + process.env.MERES_TELEFON : '') || (() => { throw new Error('--telefon vagy MERES_TELEFON kotelezo: a tulajdonos probaszama; a repo nem tartalmazza'); })()) }, uj_vendeg: ujVendeg,
 };
 // vedelem: egy felkesz kerelem (pl. elkallodott sor miatt hianyzo vendeg / uj_vendeg) NE menjen ki: a kikuldott esemeny a platformokon (Meta, TikTok, GA4) nem vonhato vissza
 if (!kerelem.uuid || !kerelem.host || !kerelem.vendeg || !kerelem.vendeg.email || !kerelem.vendeg.telefon || !kerelem.level_datuma || kerelem.ar === undefined || !kerelem.ld) { console.error('HIBA: felkesz kerelem, nem kuldom ki:', Object.keys(kerelem).filter((k) => kerelem[k] === undefined || kerelem[k] === null || kerelem[k] === '').join(', ') || 'vendeg'); process.exit(3); }

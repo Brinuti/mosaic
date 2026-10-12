@@ -2,7 +2,7 @@
 // (pi_ azonosito) -> nyers BONGESZOS naplo. A szerveres lepest (esemenyek, platformvalasz) a qa2-ajandek-szerver.mjs inditja (a webhook ujrajatszasa: ezen az elonezeten a Stripe nem eri el a webhookot).
 //   node tools/meres-proba/qa2-ajandek.mjs --bazis https://<ag>.mosaic-d77.pages.dev [--profil teljes|nincs|ana|dontes_nelkul] [--out naplo.json]
 // Csak elonezeten (Stripe TESZT-mod: pk_test / sk_test) fut; a kimeno MERES (GA4, Meta, TikTok, Google Ads, Stape, Zapier) tiltott; a Stripe sajat hostjai engedettek (a fizetes maga).
-// SZINTETIKUS adatok (TESZT-jelolesu kattintasazonositok, a _fbp / _ttp / _ga sutiket a teszt allitja be). A vevo: "TESZT - Claude", deakfi@grantis.hu (a Zapier-oldali probavedelem is ezt ismeri).
+// SZINTETIKUS adatok (TESZT-jelolesu kattintasazonositok, a _fbp / _ttp / _ga sutiket a teszt allitja be). A vevo: "TESZT - Claude", <tulajdonos e-mail> (a Zapier-oldali probavedelem is ezt ismeri).
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import { UA, platformOf, engedett, dnsArg, ures } from './tilt.mjs';
@@ -23,6 +23,8 @@ const ts = Math.floor(Date.now() / 1000);
 const SUTIK = { _fbp: `fb.1.${ts * 1000 - 5000000}.${Math.floor(Math.random() * 9e9 + 1e9)}`, _ttp: `${S}_ttp_${Math.random().toString(36).slice(2, 12)}`, _ga: `GA1.1.${Math.floor(Math.random() * 9e8 + 1e8)}.${ts - 86400}`, _ga_H4206SQ0Q7: `GS2.1.s${ts - 1200}$o1$g1$t${ts - 600}$j0$l0$h0` };
 const STRIPE = /^(.+\.)?(stripe\.com|stripe\.network|hcaptcha\.com)$/;
 
+// kotelezo env (a repo nem tartalmazza): gyors hiba a bongeszo inditasa elott, nem a foglalas kozben
+for (const [n, mit] of [['MERES_EMAIL', 'a tulajdonos probaja e-mail cime']]) if (!process.env[n]) { console.error(n + ' kotelezo: ' + mit + '; a repo nem tartalmazza'); process.exit(1); }
 const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--disable-blink-features=AutomationControlled', dnsArg()] });
 const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1280, height: 1000 }, locale: 'hu-HU', timezoneId: 'Europe/Budapest', serviceWorkers: 'block' });
 const host = new URL(BAZIS).hostname;
@@ -51,7 +53,7 @@ try {
   await page.locator('#ah-tervezo-tovabb').waitFor({ state: 'visible', timeout: 20000 }); await page.locator('#ah-tervezo-tovabb').click(); lepes('tovabb a fizeteshez');
   await page.locator('#ah-nev').waitFor({ state: 'visible', timeout: 20000 });
   const tolt = async (id, v) => { const l = page.locator('#' + id); await l.click(); await l.fill(v); };
-  await tolt('ah-ajandekozott', 'Teszt Fogado'); await tolt('ah-nev', 'TESZT – Claude'); await tolt('ah-email', 'deakfi@grantis.hu'); await tolt('ah-iranyitoszam', '1023'); await tolt('ah-varos', 'Budapest'); await tolt('ah-cim', 'Teszt utca 1.');
+  await tolt('ah-ajandekozott', 'Teszt Fogado'); await tolt('ah-nev', 'TESZT – Claude'); await tolt('ah-email', (process.env.MERES_EMAIL || (() => { throw new Error('MERES_EMAIL kotelezo: a tulajdonos probaja e-mail cime; a repo nem tartalmazza'); })())); await tolt('ah-iranyitoszam', '1023'); await tolt('ah-varos', 'Budapest'); await tolt('ah-cim', 'Teszt utca 1.');
   lepes('szamlazasi adatok kitoltve');
   // Stripe Payment Element: a kartya-mezok iframe-ben
   await page.waitForSelector('#ah-fizetesi-elem iframe', { timeout: 30000 }); await page.waitForTimeout(3500);
