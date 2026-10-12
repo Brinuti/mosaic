@@ -1340,9 +1340,9 @@ test('S0-60b az `uj_konverzio` guard NEM utasit el helyes feloldast: valodi HOLD
 // ---------------------------------------------------------------------------------------------------------------------------------------
 // DECISION #148/2 mini-4 kor: az `uj_konverzio` guard TOCTOU-ablaka zart - a feltetel KOZVETLENUL az audit-/allapot-iras elott FRISS allapotbol ujra ellenorzodik
 /** Az `uj_konverzio` guard ELSO bizonyitek-SELECT-je UTAN (a guard mar atengedett) lefuttat egy parhuzamos, ellentetes hivast (`elteres`) - determinisztikus TOCTOU-beszuras. */
-function guardUtanBeszur(v, elteres) {
+function guardUtanBeszur(v, elteres, utana) {
   const orig = v.e.KULCS_DB; let hivas = 0, beszurva = 0;
-  v.e.KULCS_DB = { prepare: (sql) => { const p = orig.prepare(sql); if (!sql.includes("SUM(allapot IN ('elkuldve', 'nincs_hitelesites'))")) return p; return { ...p, bind: (...a) => { const b = p.bind(...a); return { ...b, first: async () => { const r = await b.first(); if (!hivas++) { beszurva++; await elteres(); } return r; } }; } }; }, batch: orig.batch };
+  v.e.KULCS_DB = { prepare: (sql) => { const p = orig.prepare(sql); if (!sql.includes("SUM(allapot IN ('elkuldve', 'nincs_hitelesites'))")) return p; return { ...p, bind: (...a) => { const b = p.bind(...a); return { ...b, first: async () => { const r = await b.first(); if (!hivas++) { beszurva++; await elteres(); if (utana) utana(); } return r; } }; } }; }, batch: orig.batch };
   return () => beszurva;
 }
 /** Veletlen 0..maxMs ms kesleltetes minden kotott utasitasra (valodi D1-szeru interleaving). */
@@ -1357,14 +1357,17 @@ test('S0-61 TOCTOU: a guard es a kuldes kozott egy parhuzamos `confirmed` dontes
   for (const nev of ['sd_feloldas confirmed', 'Zap hianyzo_mezo-potlas']) {
     const { v, u, b } = await csereVilag(); const { megjegyzes, ...nelkule } = b;
     assert.equal((await v.sd(nelkule)).allapot, 'halasztva'); assert.equal(csereSor(v, u).allapot, 'hianyzo_mezo');
+    let dumpNyertesUtan = null;
     const futott = guardUtanBeszur(v, async () => {
       if (nev === 'sd_feloldas confirmed') await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'confirmed', ok: 'parhuzamos helyes dontes' });
       else await v.sd(b); // a Zap mostantol kuldi a megjegyzes kulcsot -> automatikus confirmed
-    });
+    }, () => { dumpNyertesUtan = dumpMind(v); });
     const r = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz, egyideju emberi dontes' });
     assert.equal(futott(), 1, nev + ': a beszuras lefutott');
     assert.deepEqual([r.allapot, r.kuldes], ['feloldas_nem_lehetseges', 0], nev); assert.match(r.miert, /a helyes feloldas a `confirmed`$/);
     assert.equal(r.sd_allapot, sdSor(v, u).sd_allapot, nev + ': a valasz a FRISS (nyertes) allapotot mutatja');
+    assert.equal(r.riasztas, sdSor(v, u).riasztas === 1, nev + ': a valasz riasztas-mezoje a FRISS sorbol jon (nem a pillanatkepbol)');
+    assert.deepEqual(dumpMind(v), dumpNyertesUtan, nev + ': a 2. elutasitas utan MINDEN tabla bajtra azonos a nyertes hivas vegen merttel (a kuldesi lepes sem irt semmit)');
     assert.ok(['feloldva_confirmed', 'reschedule_confirmed'].includes(sdSor(v, u).sd_allapot), nev + ': a nyertes confirmed marad: ' + sdSor(v, u).sd_allapot);
     assert.ok(['confirmed', 'feloldva_confirmed'].includes(csereSor(v, u).allapot), nev + ': az audit nem lett feloldva_uj: ' + csereSor(v, u).allapot);
     assert.equal(v.net.hivasok.length, 0, nev + ': 0 platformhivas'); assert.equal(csendesVesztes(v, u), false, nev);
@@ -1386,5 +1389,35 @@ test('S0-61b konkurencia-stressz: ellentetes egyideju dontesek (confirmed || uj_
       if (v.net.hivasok.length > 2) dupla++;
     }
     assert.deepEqual([csendes, dupla], [0, 0], nev + ': csendes vesztes / dupla kuldes');
+  }
+});
+
+/** Az elso, mintara illeszkedo iras (`run`) ELOTT lefuttat egy parhuzamos, ellentetes hivast (`elteres`) - determinisztikus beszuras egy konkret ir\u00e1si pontra. */
+function iraselottBeszur(v, minta, elteres) {
+  const orig = v.e.KULCS_DB; let n = 0, beszurva = 0;
+  v.e.KULCS_DB = { prepare: (sql) => { const p = orig.prepare(sql); if (!minta.test(sql)) return p; return { ...p, bind: (...a) => { const b = p.bind(...a); return { ...b, run: async () => { if (!n++) { beszurva++; await elteres(); } return b.run(); } }; } }; }, batch: orig.batch };
+  return () => beszurva;
+}
+
+test('S0-61c a 2. bizonyitek-ellenorzes UTANI ablak is zart: ha a kuldesi lepes utan a cellak meg nem vegleges allapotuak (az elo allapot nem ellenorizheto -> `halasztva`), es EKKOR (az audit-iras elott / az allapot-iras elott) erkezik a parhuzamos `confirmed`, a vegallapot-iras atomi feltetele megfogja: nincs csendes 0-kuldeses feloldva_uj', async () => {
+  const pontok = { 'az audit-iras ELOTT': /^INSERT INTO foglalas_reschedule/, 'az allapot-iras (veglegesIr) ELOTT': /^UPDATE foglalas_egyeztetes SET sd_allapot = \?2, riasztas = 0/ };
+  for (const [pont, minta] of Object.entries(pontok)) {
+    for (const nev of ['sd_feloldas confirmed', 'Zap hianyzo_mezo-potlas']) {
+      const { v, u, b } = await csereVilag(); const { megjegyzes, ...nelkule } = b;
+      assert.equal((await v.sd(nelkule)).allapot, 'halasztva'); assert.equal(csereSor(v, u).allapot, 'hianyzo_mezo');
+      v.net.allapot.set(u, 'hiba'); // az elo allapot NEM ellenorizheto: az uj_konverzio cellai a kuldesi lepes utan `halasztva` (nem vegleges) -> az 1. es a 2. ellenorzes nem lat bizonyitekot
+      const futott = iraselottBeszur(v, minta, async () => {
+        if (nev === 'sd_feloldas confirmed') await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'confirmed', ok: 'parhuzamos helyes dontes' });
+        else await v.sd(b);
+      });
+      const r = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz, egyideju emberi dontes' });
+      const cim = pont + ' / ' + nev;
+      assert.equal(futott(), 1, cim + ': a beszuras lefutott');
+      assert.notEqual(r.sd_allapot, 'feloldva_uj', cim + ': a valasz nem feloldva_uj');
+      // a nyertes `confirmed` marad; kivetel: ha az audit mar `feloldva_uj` volt, a Zap-potlas no-op (nincs `hianyzo_mezo` audit), es az uj_konverzio cellai `halasztva` -> `tartva` + riasztas (ujraprobalhato, NEM csendes veszteseg)
+      assert.ok(['feloldva_confirmed', 'reschedule_confirmed', 'tartva'].includes(sdSor(v, u).sd_allapot), cim + ': ' + sdSor(v, u).sd_allapot);
+      if (sdSor(v, u).sd_allapot === 'tartva') assert.equal(sdSor(v, u).riasztas, 1, cim + ': a tartva sor riasztassal jelzett');
+      assert.equal(csendesVesztes(v, u), false, cim); assert.equal(v.net.hivasok.length, 0, cim + ': 0 platformhivas');
+    }
   }
 });

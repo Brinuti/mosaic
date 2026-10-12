@@ -282,7 +282,12 @@ const vegAllapot = (mod, csere) => {
  */
 async function veglegesIr(db, uuid, sdId, cel, t) {
   for (let proba = 0; proba < 3; proba++) {
-    const r = await db.prepare("UPDATE foglalas_egyeztetes SET sd_allapot = ?2, riasztas = 0, frissitve = ?3 WHERE uuid = ?1 AND sd_id = ?4 AND NOT EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?4 AND allapot IN ('halasztva', 'folyamatban'))").bind(uuid, cel, t, sdId).run();
+    // `feloldva_uj` (mini-4, #14a 1. megallapitas): a vegallapot-iras ATOMI feltetele a DONTESI BIZONYITEKOT is tartalmazza - ha egy parhuzamos `confirmed` kozben `reschedule_confirmed`-re zarta a cellakat es semmi nem ment ki / nem keszult ki
+    // (`elkuldve` / `nincs_hitelesites`), a sor NEM allitodik 0 kuldessel `feloldva_uj`-ra (a nyertes `confirmed` irja a sort). Ez zarja a 2. bizonyitek-ellenorzes utani egy-utasitasnyi ablakot is, amikor a kuldesi lepes utan a cellak meg nem voltak vegleges allapotuak.
+    const bizonyitekNelkul = cel === 'feloldva_uj'
+      ? " AND NOT (EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?4 AND allapot = 'kihagyva' AND indok LIKE 'reschedule_confirmed%') AND NOT EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?4 AND allapot IN ('elkuldve', 'nincs_hitelesites')))"
+      : '';
+    const r = await db.prepare("UPDATE foglalas_egyeztetes SET sd_allapot = ?2, riasztas = 0, frissitve = ?3 WHERE uuid = ?1 AND sd_id = ?4 AND NOT EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?4 AND allapot IN ('halasztva', 'folyamatban'))" + bizonyitekNelkul).bind(uuid, cel, t, sdId).run();
     if (r.meta && r.meta.changes > 0) return { sd_allapot: cel, riasztas: false };
     const f = await db.prepare("SELECT COALESCE(SUM(allapot = 'folyamatban'), 0) AS f, COALESCE(SUM(allapot = 'halasztva'), 0) AS h FROM meres_kuldes WHERE source_id = ?1").bind(sdId).first();
     if (f && f.f > 0) return { kihagyva: true };
