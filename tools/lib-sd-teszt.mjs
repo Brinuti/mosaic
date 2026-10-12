@@ -13,7 +13,7 @@ export const fx = (f) => fs.readFileSync(path.join(here, 'fixtures', 'salonic', 
 export const KULCS_SZOVEG = 'teszt-olvaso-kulcs';
 export const FIX_UUID = '3f10fabc-4f7d-9257-2088-cfe7b5b24a2e'; // a mentett oldalak UUID-ja (hair)
 export const T0 = Date.UTC(2026, 9, 6, 13, 36, 32); // a letrehozo level erkezese (2026-10-06 13:36:32Z)
-export const VENDEG = Object.freeze({ email: 'teszt.claude@example.com', telefon: '+36 70 942 0090' });
+export const VENDEG = Object.freeze({ email: 'teszt.claude@example.com', telefon: '+36 30 000 0001' });
 export const NEV = 'Teszt Claude';
 export const SIKER = { meta: { events_received: 1, fbtrace_id: 'x' }, tiktok: { code: 0, message: 'OK' }, google: { results: [{}] }, ga4: {} };
 

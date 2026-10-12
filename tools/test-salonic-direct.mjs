@@ -273,9 +273,9 @@ test('S0-15 a D1-ben es a naplozott kerelmekben NINCS nyers e-mail / telefon / n
   await v.sd(b);
   const tablak = ['foglalas_egyeztetes', 'foglalas_vendeg', 'foglalas_alias', 'foglalas_reschedule', 'meres_kuldes', 'meres_jelleg', 'meres_kapcsolo'];
   const mind = dump(v, tablak);
-  for (const tiltott of ['teszt.claude', 'example.com', '942 0090', '709420090', '36709420090', 'Teszt Claude', 'teszt claude', 'csendes sarkot']) assert.ok(!mind.toLowerCase().includes(tiltott.toLowerCase()), 'nyers adat a D1-ben: ' + tiltott);
+  for (const tiltott of ['teszt.claude', 'example.com', '000 0001', '300000001', '36300000001', 'Teszt Claude', 'teszt claude', 'csendes sarkot']) assert.ok(!mind.toLowerCase().includes(tiltott.toLowerCase()), 'nyers adat a D1-ben: ' + tiltott);
   const keresek = JSON.stringify([...v.sql('SELECT kerelem, platform_valasz, indok, attr_jelek FROM meres_kuldes'), ...v.net.hivasok]);
-  for (const tiltott of ['teszt.claude', 'example.com', '942 0090', 'Teszt Claude', u, u.toUpperCase()]) assert.ok(!keresek.includes(tiltott), 'nyers adat a kerelemben: ' + tiltott);
+  for (const tiltott of ['teszt.claude', 'example.com', '000 0001', 'Teszt Claude', u, u.toUpperCase()]) assert.ok(!keresek.includes(tiltott), 'nyers adat a kerelemben: ' + tiltott);
   const attr = JSON.parse(v.sql('SELECT attr_jelek FROM meres_kuldes LIMIT 1')[0].attr_jelek);
   assert.deepEqual(attr, { forras: 'salonic_level', email_hash: true, telefon_hash: true, click_id: false, fbp: false, ttp: false, ga4_client_id: false, ip_ua: false });
 });
@@ -442,7 +442,7 @@ test('S0-24 megjegyzes- es idopont-ertelmezes: csere-gyanu (ekezet-fuggetlen), e
   assert.equal(szolgKanon('KUPONKÓDDAL - Soft powder (12 000 Ft helyett most 9 900 Ft)'), szolgKanon('soft  powder'));
   assert.equal(szolgKanon('🌸 Soft powder'), 'soft powder'); assert.notEqual(szolgKanon('Lip blush'), szolgKanon('Soft powder')); assert.equal(szolgKanon(''), null);
   assert.equal(nevNorm('Kovács  Anna'), nevNorm('anna kovacs')); assert.equal(nevNorm('Al'), null);
-  const h1 = await vendegHash(SD_ENV, VENDEG, NEV), h2 = await vendegHash(SD_ENV, { email: ' TESZT.Claude@Example.com ', telefon: '06 70 942 0090' }, 'claude teszt');
+  const h1 = await vendegHash(SD_ENV, VENDEG, NEV), h2 = await vendegHash(SD_ENV, { email: ' TESZT.Claude@Example.com ', telefon: '06 30 000 0001' }, 'claude teszt');
   assert.deepEqual(h1, h2); assert.match(h1.email_h, /^[0-9a-f]{32}$/);
   assert.ok(azonosVendeg(h1, h2) && azonosVendeg(h1, { ...h2, tel_h: null }) && azonosVendeg(h1, { ...h2, nev_h: null }));
   assert.ok(!azonosVendeg(h1, { ...h2, tel_h: 'x', nev_h: 'y' }) && !azonosVendeg(h1, { ...h2, email_h: 'z' }) && !azonosVendeg(h1, { email_h: h1.email_h, tel_h: null, nev_h: null }) && !azonosVendeg(null, h2));
@@ -680,7 +680,7 @@ test('S0-32 QA-5 retegezett riport (D6): motor / salonic_direct / osszes + attr_
   assert.deepEqual(adm.sorok.map((x) => x.forras), ['motor']);
   // a riport szemelyes adatot nem tartalmaz
   const mind = JSON.stringify(r) + csv.join('\n');
-  for (const tiltott of ['teszt.claude', 'example.com', '942 0090', 'Teszt Claude', 'korábbi foglalásom', 'csendes']) assert.ok(!mind.includes(tiltott), tiltott);
+  for (const tiltott of ['teszt.claude', 'example.com', '000 0001', 'Teszt Claude', 'korábbi foglalásom', 'csendes']) assert.ok(!mind.includes(tiltott), tiltott);
   assert.ok(!/"ip"|203\.0\.113/.test(mind), 'az IP nem kerul a riportba');
 });
 
