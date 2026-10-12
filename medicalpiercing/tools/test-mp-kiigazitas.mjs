@@ -114,3 +114,27 @@ test('valaszFeldolgozas: altalanos hiba minden sort hibara allit', () => {
   assert.match(v.altalanos, /PERMISSION/);
   assert.ok(keresTorzs(['1|2|3'], 'validate', MOST).conversionAdjustments[0].adjustmentDateTime.endsWith(':00') || true);
 });
+
+test('riport: Ads napi betoltes + napi osszesites + figyelmeztetesek', async () => {
+  const k = await kornyezet();
+  const nap = (u) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest' }).format(new Date(u * 1000));
+  const tegnap = MOST - 86400;
+  await k.fogl(`6029|7|${tegnap + 9000}`, tegnap, 'igazolt');
+  await k.fogl(`6029|7|${tegnap + 9100}`, tegnap + 60);
+  await k.fogl(`6029|7|${tegnap + 9200}`, tegnap + 120);
+  await k.ig('L1', tegnap + 9000, tegnap + 200, `6029|7|${tegnap + 9000}`);
+  await k.ig('L2', tegnap + 99999, tegnap - 10 * H); // parositatlan, regi
+  const valasz = { results: [
+    { segments: { date: nap(tegnap), conversionAction: 'customers/2626380837/conversionActions/7468541217' }, metrics: { allConversions: 4.5, allConversionsValue: 90000 } },
+    { segments: { date: nap(tegnap), conversionAction: 'customers/2626380837/conversionActions/7839410357' }, metrics: { allConversions: 0, allConversionsValue: 0 } },
+    { segments: { date: nap(tegnap), conversionAction: 'customers/2626380837/conversionActions/1111' }, metrics: { allConversions: 9 } },
+  ] };
+  const p = await futtat(k.env, keres('POST', { muvelet: 'ads_napi', valasz }));
+  assert.equal(p.j.mentve, 2);
+  const r = await futtat(k.env, new Request('https://www.medicalpiercing.hu/api/mp-kiigazitas?riport=1&nap=7', { headers: { 'x-mp-kiigazitas': TITOK } }));
+  const sor = r.j.sorok.find((s) => s.nap === nap(tegnap));
+  assert.equal(sor.d1_foglalas, 3); assert.equal(sor.d1_igazolt, 1); assert.equal(sor.ads_all, 4.5); assert.equal(sor.ads_igazolt, 0);
+  const kodok = r.j.figyelmeztetesek.map((f) => f.kod);
+  assert.ok(kodok.includes('igazolt_cimke_nulla'));
+  assert.ok(kodok.includes('parositatlan_salonic_level'));
+});
