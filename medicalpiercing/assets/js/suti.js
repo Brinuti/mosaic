@@ -99,6 +99,24 @@
   window.gtag('set', 'ads_data_redaction', true);
   if (dontes) window.gtag('consent', 'update', jelek(dontes));
 
+  // Igazolhato foglalas (Google Ads "Időpontfoglalás - igazolt", orderId = foglalasi kulcs): a kulcs ugyanaz, mint a szerveren
+  // (lib/meres/meres.js foglalasKulcs: placeId|employeeId|startUnix), igy a szerver a Salonic-igazolas alapjan
+  // RETRACT/RESTATE kiigazitast kuldhet ra. Csak szamok mennek ki (nincs szolgaltatasnev, nincs szemelyes adat).
+  // Csak az elso, meg tisztitatlan betolteskor: F5 / vissza / uj lap a tisztitott cimen mar nem hordozza a kulcsot.
+  if (KOSZONO_UT && window.mpKoszonoAdat) {
+    try {
+      var kp = window.mpKoszonoAdat.p || {}, bq = new URLSearchParams();
+      try { if (kp.bookingUrl) bq = new URL(kp.bookingUrl, 'https://medicalpiercing.salonic.hu/').searchParams; } catch (e) { /* */ }
+      var kv = function (k) { var v = String(bq.get(k) || kp[k] || '').trim(); return /^\d+$/.test(v) ? v : ''; };
+      var hely = kv('placeId'), mun = kv('employeeId'), kezd = kv('startDate');
+      if (hely && mun && kezd) {
+        var ar = Number(String(kp.price || '').replace(/[^\d.]/g, ''));
+        window.dataLayer.push({ event: 'mp_foglalas_igazolhato', mp_foglalas_kulcs: hely + '|' + mun + '|' + kezd,
+          mp_foglalas_ertek: Number.isFinite(ar) && ar > 0 ? Math.round(ar) : 1 });
+      }
+    } catch (e) { /* nincs kulcs: nincs esemeny */ }
+  }
+
   var marketingFigyelok = [];
   var rogzit = function (stat, mark) {
     var elozo = dontes;

@@ -134,6 +134,34 @@ for (const ut of ['/foglalas-ok-mi', '/foglalas-ok', '/foglalas-ok-slim', '/fulb
   void c2;
   await ctx.close();
 }
+// 8. Igazolhato foglalas (Google Ads "Időpontfoglalás - igazolt", orderId): elso betolteskor PONTOSAN egy esemeny a
+//    szerverrel azonos kulccsal (placeId|employeeId|startUnix) es az arral; F5 / uj ful / vissza: nincs uj esemeny.
+{
+  const esem = (pg) => pg.evaluate(() => (window.dataLayer || []).filter((e) => e && e.event === 'mp_foglalas_igazolhato'));
+  for (const hozza of [true, false]) {
+    const { ctx } = await kornyezet(hozza);
+    const p = await ctx.newPage();
+    await p.goto(koszono('/foglalas-ok-mi'), { waitUntil: 'load' }); await varj(1200);
+    const e1 = await esem(p);
+    ok(`8a (${hozza ? 'hozzajarulassal' : 'hozzajarulas nelkul'}) elso betoltes: 1 esemeny, kulcs = 12169|555|${START}, ertek 24900, mas mezo nincs`,
+      e1.length === 1 && e1[0].mp_foglalas_kulcs === `12169|555|${START}` && e1[0].mp_foglalas_ertek === 24900 && Object.keys(e1[0]).sort().join(',') === 'event,mp_foglalas_ertek,mp_foglalas_kulcs', JSON.stringify(e1));
+    const tiszta = p.url();
+    await p.reload({ waitUntil: 'load' }); await varj(1000);
+    const e2 = await esem(p);
+    const p2 = await ctx.newPage(); await p2.goto(tiszta, { waitUntil: 'load' }); await varj(1000);
+    const e3 = await esem(p2);
+    await p.goto(`${CIM}/elerhetosegek`, { waitUntil: 'load' }); await p.goBack({ waitUntil: 'load' }); await varj(1000);
+    const e4 = await esem(p);
+    ok(`8b (${hozza ? 'hozzajarulassal' : 'hozzajarulas nelkul'}) F5 / uj ful / vissza: 0 uj esemeny`, e2.length === 0 && e3.length === 0 && e4.length === 0, `${e2.length}/${e3.length}/${e4.length}`);
+    await ctx.close();
+  }
+  // kulcs nelkuli koszonooldal (pl. hianyzo bookingUrl): nincs esemeny
+  const { ctx } = await kornyezet(true);
+  const p = await ctx.newPage();
+  await p.goto(`${CIM}/foglalas-ok?first_booking=true&price=24900`, { waitUntil: 'load' }); await varj(1000);
+  ok('8c kulcs nelkul nincs esemeny', (await esem(p)).length === 0);
+  await ctx.close();
+}
 await b.close();
 console.log(hiba ? `\n${hiba} HIBA` : '\nMIND PASS');
 process.exit(hiba ? 1 : 0);
