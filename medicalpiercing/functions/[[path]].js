@@ -21,6 +21,9 @@ import { TABLAZAT_CSV, osszesSor } from '../lib/kitelepulesek.js';
 // Minden mas host (*.pages.dev elonezetek) probacim: noindex + tilto robots.txt.
 const ELES_HOST = /^(www\.)?medicalpiercing\.hu$/;
 const TILTO_ROBOTS = 'User-agent: *\nDisallow: /\n';
+// Rejtett, kezzel irt lapok (tools/uj-fooldal.mjs): az eles domainen is noindex (a lap meta robots-a mellett fejlecben is)
+const REJTETT_LAPOK = new Set(['/uj-fooldal', '/uj-oldalak']);
+const REJTETT_ELOTAG = /^\/uj(\/|$)/;   // az uj stilusu tukor-oldalak: /uj/<eredeti utvonal>
 const MAX_MELLEKLET = 20 * 1024 * 1024; // osszesen; a Gmail 25 MB-ot fogad
 
 export async function onRequest(context) {
@@ -56,7 +59,7 @@ export async function onRequest(context) {
   const h = new Headers(valasz.headers);
   // ugyanaz a cim mobilon es asztalin mast ad - a gyorsitotar ezt tudja
   h.set('vary', 'User-Agent');
-  if (!eles) h.set('x-robots-tag', 'noindex, nofollow');
+  if (!eles || REJTETT_LAPOK.has(ut) || REJTETT_ELOTAG.test(ut)) h.set('x-robots-tag', 'noindex, nofollow');
   return new Response(valasz.body, { status, headers: h });
 }
 

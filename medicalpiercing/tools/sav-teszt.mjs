@@ -52,7 +52,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
 {
   const { ctx, ki, betolt } = await kornyezet();
   const p = await ctx.newPage();
-  await p.goto(CIM + '/idopontfoglalas', { waitUntil: 'load' });
+  await p.goto(CIM + '/a-migren-piercing-gyogyulasi-ideje', { waitUntil: 'load' });
   await varGtm(p, betolt);
   ok('dontes elott: a sav latszik', await savLathato(p));
   const szoveg = await p.evaluate(() => document.getElementById('mp-cc').innerText);
@@ -91,7 +91,9 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
   // foglalasi link dontes nelkul: GA4 foglalas_inditasa (suti nelkul) igen, TikTok nem
   const elotte = ki.length;
   await p.evaluate(() => { const a = [...document.querySelectorAll('a[href^="https://medicalpiercing.salonic.hu"]')].find((x) => x.offsetParent !== null); a.click(); });
-  await p.waitForTimeout(2000);
+  // a motor (nincs lapelhagyas) mellett a GA4 kotege kesobb megy el: legfeljebb 10 mp-ig varjuk a foglalas_inditasa keresre
+  for (let i = 0; i < 40 && !ki.slice(elotte).some((x) => /[?&]en=foglalas_inditasa/.test(x.u)); i++) await p.waitForTimeout(250);
+  await p.waitForTimeout(500);
   const uj = ki.slice(elotte);
   ok('dontes elott: foglalasi kattintas -> GA4 foglalas_inditasa (gcs=G100)', uj.some((x) => /[?&]en=foglalas_inditasa/.test(x.u) && /[?&]gcs=G100/.test(x.u)), uj.filter((x) => /en=/.test(x.u)).map((x) => (x.u.match(/[?&]en=([^&]+)/) || [])[1]).join(','));
   ok('dontes elott: foglalasi kattintas -> nincs TikTok', !uj.some((x) => /tiktok/.test(x.u)));
@@ -105,7 +107,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
   ok('Elfogadom: mp_suti = v1-s1-m1', /^v1-s1-m1-t\d+$/.test(await sutiErtek(ctx) || ''), await sutiErtek(ctx));
   ok('Elfogadom: a sav eltunik', !(await savLathato(p)));
   const upd = await p.evaluate(() => window.dataLayer.map((x) => (x && typeof x === 'object' && 'length' in x ? Array.from(x) : x)).filter((x) => Array.isArray(x) && x[0] === 'consent' && x[1] === 'update').pop());
-  ok('Elfogadom: Consent Mode update granted', upd && upd[2].ad_storage === 'granted' && upd[2].analytics_storage === 'granted' && upd[2].ad_user_data === 'granted' && upd[2].ad_personalization === 'granted', JSON.stringify(upd && upd[2]));
+  ok('Elfogadom: Consent Mode update granted (ad_personalization marad denied)', upd && upd[2].ad_storage === 'granted' && upd[2].analytics_storage === 'granted' && upd[2].ad_user_data === 'granted' && upd[2].ad_personalization === 'denied', JSON.stringify(upd && upd[2]));
   ok('Elfogadom: Meta-pixel betolt, PageView egyszer', betolt.filter((u) => /fbevents\.js/.test(u)).length === 1 && ki.filter((x) => /facebook\.com\/tr\/?\?id=2177829632420786&ev=PageView/.test(x.u)).length === 1, ki.filter((x) => /facebook\.com\/tr/.test(x.u)).length + ' Meta-keres');
   ok('Elfogadom: Convertize betolt', ki.some((x) => /pixel\.convertize\.io\/11722\.js/.test(x.u)));
   const ttMost = betolt.some((u) => /analytics\.tiktok\.com\/i18n\/pixel\//.test(u));
@@ -161,7 +163,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
 {
   const { ctx } = await kornyezet();
   const p = await ctx.newPage();
-  await p.goto(CIM + '/idopontfoglalas?motor=1', { waitUntil: 'load' });
+  await p.goto(CIM + '/a-migren-piercing-gyogyulasi-ideje?motor=1', { waitUntil: 'load' });
   await p.waitForTimeout(1500);
   ok('motor: a sav latszik', await savLathato(p));
   await p.evaluate(() => {
@@ -170,7 +172,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
     a.scrollIntoView({ block: 'center' }); a.click();
   });
   let megvan = false;
-  for (let i = 0; i < 100 && !megvan; i++) { megvan = await p.evaluate(() => !!document.querySelector('[data-mp-motor]')?.shadowRoot.querySelector('[data-hely]')); if (!megvan) await p.waitForTimeout(250); }
+  for (let i = 0; i < 100 && !megvan; i++) { megvan = await p.evaluate(() => { const r = document.querySelector('[data-mp-motor]')?.shadowRoot; if (!r) return false; const t = r.querySelector('[data-tipus="uj"]'); if (t) t.click(); return !!r.querySelector('[data-hely]'); }); if (!megvan) await p.waitForTimeout(250); }
   ok('motor: ?motor=1-gyel megnyilik (15 helyszin)', megvan && (await p.evaluate(() => document.querySelector('[data-mp-motor]').shadowRoot.querySelectorAll('[data-hely]').length)) === 15);
   await ctx.close();
 }

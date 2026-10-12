@@ -132,12 +132,17 @@ Az éles címen (`CIM=https://www.medicalpiercing.hu`) minden adatküldő kéré
 ### Foglalómotor (`assets/js/motor/`, `assets/js/motor-indito.js`)
 
 A MOSAIC-foglalómotor MP-adaptációja (Drive: MP-FOGLALOMOTOR-FELADAT.md, MP-FOGLALOMOTOR-PROBAFOGLALASOK.md). A foglalási linkek
-(`medicalpiercing.salonic.hu`) helyben nyíló foglalót nyitnak, az oldal címe nem változik. A lépések:
-1. helyszín (15);
-2. kezelés (a típusoldalról érkezőnek az ajánlott elöl);
-3. időpont (havi naptár, szakemberválasztó);
-4. a Salonic beágyazott adatlapja;
-5. köszönőoldal.
+(`medicalpiercing.salonic.hu`, `/idopontfoglalas`, `/kontroll`) helyben nyíló foglalót nyitnak, az oldal címe nem változik. A `/idopontfoglalas` és a `/kontroll` cím a főoldal tartalmát adja, a motor ráugrik, bezárva a főoldal marad (a régi köztes oldalak tartaléka: `/regi-idopontfoglalas`, `/regi-kontroll`). A fő oldala a
+„Mire szeretnél időpontot foglalni?” (Új piercing / Kontroll / Ékszercsere / Garancia). Az **új piercing** lépései:
+1. szolgáltatás (a fő oldal, akárhonnan kattint; csak a konkrét kontroll / ékszercsere / garancia link visz egyből az űrlapra);
+2. helyszín (15);
+3. piercing (két kérdéssel szűrve: Kinek? Magamnak / Két személynek, és Milyen piercing? 1 piercing / Több piercing / Fülbevaló (alapérték: Magamnak + Több piercing); a „legjobban megéri” a Több piercing);
+4. időpont (havi naptár, szakemberválasztó);
+5. a Salonic beágyazott adatlapja;
+6. köszönőoldal.
+
+A **kontroll / ékszercsere / garancia** nem naptáras: a beépített visszahívás-kérő űrlap (a régi `/kontroll` űrlapja, `POST /api/urlap`,
+`form-name` = `kontroll-visszahivas`), majd a `/kontroll-ok` → `/kontroll-xyz` köszönőoldal.
 
 - **Kapcsoló:** `motor-kapcsolo.json` (`"arany": 0` = mindenki a régi Salonic-foglalót kapja, `100` = a motor nyílik). A build
   beírja az indítóba, és minden kattintásnál érvényes. Visszaállítás:
@@ -241,6 +246,77 @@ saját városoldalon. A build beírja a lapokba (a dátumblokk `data-mp-kitelepu
 betöltéskor az `/api/kitelepulesek`-ből frissíti (a táblázat legfeljebb 5 perces másolata). A helyszínt a blokk
 melletti cím, a városoldalakon a lap címe adja (a Wix-címek nem megbízhatók: a `/varosok/8800-nagykanizsa-fo-ut-23`
 ma a székesfehérvári helyszín). A nem értelmezhető cellákat az `/api/kitelepulesek` `hibak` listája mutatja.
+
+## 3/b. Rejtett új főoldal: `/uj-fooldal` (kézzel írt, nem Wix-klón)
+
+Az új főoldal látványterve alapján készült lap, **élesben, de rejtve**: a mostani főoldalt (`/`) nem váltja le, nincs a sitemapben,
+semmi nem linkeli, a keresők nem indexelhetik (`noindex,nofollow` a lapban és `X-Robots-Tag` a függvényben, `functions/[[path]].js`
+`REJTETT_LAPOK`). Éles címe: https://www.medicalpiercing.hu/uj-fooldal (a PR-előnézeten is: `https://<ág>.medicalpiercing.pages.dev/uj-fooldal`).
+
+| Mi | Hol |
+|---|---|
+| a lap (HTML, reszponzív: asztali és mobil ugyanaz a fájl) | `uj-fooldal/index.html` |
+| stílus / viselkedés | `assets/css/uj-fooldal.css`, `assets/js/uj-fooldal.js` (a `klon.js` ezen a lapon nem fut) |
+| build | `tools/uj-fooldal.mjs` (a `tools/build.mjs` hívja; leáll, ha a lapból hiányzik a `noindex`, van `canonical`, vagy hiányzó kép / betű van benne) |
+| képek | `assets/img/uj-*.webp`, gyártja: `python3 tools/uj-fooldal-kepek.py` (a meglévő `assets/img/` forrásokból; a videók indexképei és a logók is) |
+| betű | `assets/fonts/plus-jakarta-sans-*.woff2` (OFL, saját tárhelyről) |
+| teszt | `node tools/uj-fooldal-teszt.mjs` (build + `serve.mjs` után; `BASE=<cím>`-mel előnézeten / élesben is: ilyenkor a mérőkérések és a Salonic-hívások blokkolva vannak, `tools/meres-tiltas.mjs`) |
+
+Működés: a foglalási gombok (`/idopontfoglalas`, `/kontroll`) a foglalómotort nyitják, a mérés (süti-sáv, GTM, foglalásindítás) a `suti.js`-ben és a
+`mp-meres.js`-ben ugyanúgy fut, mint a többi lapon; az URL-paraméterek (fbclid, utm_*, gclid) megőrzése a `klon.js` 8. szakaszának mása
+(ugyanaz a munkamenet-kulcs). A Google-vélemények a Trustindex lapozható widgetje (35 vélemény, `daf9c4e6…` kulcs; a widget felhasználói
+görgetésre / érintésre tölt, programozott görgetésre nem); ha 9 mp alatt nem jelenik meg, a mentett kártyák látszanak. A három videó a
+kártyára kattintva ablakban nyílik (youtube-nocookie / RTL beágyazás), nem a lap betöltésekor. Az ékszerképre kattintva a nagyító 1400 px-es
+képet mutat (nyilak, billentyű, ujjal húzás). A helyszín-csempék a foglalómotort nyitják az adott helyszínnel
+(`https://medicalpiercing.salonic.hu/selectEmployee/?placeId=<id>`), és kiírják a kitelepülések időpontjait (a build a „MP - KITELEPÜLÉSEK”
+táblázatból írja be, a lap betöltéskor az `/api/kitelepulesek`-ből frissíti, mint a klón). A mobilmenü a fejléc alatt teljes magasságú lap.
+Az `uj-*` képek hivatkozása `?v=<tartalom-hash>` jelet kap (a `/assets/img/` 30 napig tárolódik, így az újragyártott kép azonnal látszik).
+
+**Tartalom:** a látványterv szerkezete és a valódi oldal szövegei / adatai. A látványterv (generált kép) néhány adata nem egyezett az élő oldallal, ezeket
+a valós oldal alapján cseréltük: Google 4,8 / 4 962 vélemény (élő Trustindex-adat), valódi vendégvélemények, telefon / e-mail / cím (Kecskemét: Vágó utca 19.),
+az orvosi ajánlás eredeti szövege (Dr. Schmolcz Gergely, „szakmai mentor”), árak és akció az élő árlista szerint, a piercing-típusok panaszlistái az
+élő oldalról. A „szakorvostól”, az „ingyenes konzultáció”, a „7 szalon” és a Nők Lapja logó nincs az élő oldalon, ezért nem kerültek a lapra.
+A jogi láb (EÜ szakember, 93%-os statisztika, „nem gyógymód”) az élő oldalról átvéve.
+
+**Szabályok az oldalhoz (a tulajdonos kérései, 2026-10-11):**
+- **Színek:** az eredeti oldal palettája, nem a látványterv bordója: gomb `#d7aba8` (fehér felirat, pill, lágy árnyék), szöveg `#454659`, háttér `#f6ebe4`,
+  sötét sáv `#454659`; a logó az eredeti rózsaszín (`tools/uj-fooldal-kepek.py`, csak a fehér háttér van átlátszóra cserélve).
+- **Szövegek:** „garancia” (nem „6 hónap garancia”, a 6 hónap sehol nem szerepel), „G23 titánium ékszer” (nem „orvosi ékszer”); az árak szekció üzenete:
+  „Minél többet választasz, annál olcsóbb” (darabár: 24 900 / 19 900 / 14 900 Ft), „vendégeink több mint 70%-a többet választ”.
+- **Ékszerek:** a fő oldal összes ékszerképe (20) helyben lapozható galériában (nyilak, ujjal húzás, billentyűzet), a lehető legnagyobb méretben.
+- **Helyszínek:** mind a 15 helyszín egy blokkban, kompakt csempékben (a csempére kattintva a foglalómotor nyílik az adott helyszínnel, a kitelepülések időpontjaival együtt); a teszt egyezteti a foglalómotor helyszínlistájával.
+- **Mobil:** a hősben cím, kép, szöveg sorrend; a dobozokon belül minden (szöveg, lista, gomb) középre igazítva; az orvosi fotó teljes szélességben; kisebb lábléc.
+- **Ingyenes kontroll fotó:** Nagy-Markó Fanni (a főoldal csapatrészéből, `fanni4.jpg`).
+
+**Élesítés főoldalként** (csak a tulajdonos kérésére): a `klon/index.html` helyett ennek a lapnak a tartalmát kell a `/` címen adni (a `dist/_a|_m/fooldal.html`
+helyére), a `<meta name="robots">` és a REJTETT_LAPOK bejegyzés eltávolításával, `canonical` hozzáadásával, és a `fooldal-b` / Convertize-kísérlet
+ellenőrzésével. **Visszavonás:** a lap törlése a `tools/build.mjs`-ből (egy sor) és a `REJTETT_LAPOK`-ból.
+
+## 3/c. Az összes többi oldal új stílusú, rejtett tükre: `/uj/<eredeti útvonal>` + link-index `/uj-oldalak`
+
+Az új főoldal stílusában (ugyanaz a fejléc / menü / lábléc, az eredeti színek, a lehető legkisebb helyen elmondott tartalom) elkészült **az összes többi oldal is**
+(175 oldal: piercing- és árakoldalak, blog + 78 cikk, helyszínek, piercerek, állásajánlatok, jogi és köszönőoldalak). **A mostani oldalak változatlanok**, a tükör
+rejtett: nincs a sitemapben, nem indexelhető (`noindex` a lapban, `X-Robots-Tag` a függvényben: `/uj/*`, `/uj-oldalak`, `/uj-fooldal`), az eredeti oldalról nem linkelt.
+A tükör oldalai egymásra mutatnak (a belső linkek `/uj/...`-ra íródnak át, a főoldal link `/uj-fooldal`), a foglalási gombok (`/idopontfoglalas`, `/kontroll`,
+Salonic-linkek) a foglalómotort nyitják. **Áttekintő (minden oldal új és eredeti linkje, kereshető):** `/uj-oldalak`.
+
+| Mi | Hol |
+|---|---|
+| tartalom (oldalanként JSON: szövegek, képek, linkek, beágyazások, űrlapmezők, hozzászólások, olvasási sorrendben, a Wix-elrendezés szerint csoportosítva) | `uj-oldalak/tartalom/*.json` (a repóban; a Cloudflare-build nem használ böngészőt) |
+| kinyerés a Wix-klónból (Playwright) | `node tools/build.mjs && node tools/serve.mjs &` majd `node tools/uj-oldalak/kinyer.mjs [útvonalak]` (a böngészőben futó rész: `tools/uj-oldalak/kinyer-oldalon.js`) |
+| megjelenítés (sablon: `sor` / `verem` / `racs` fa → HTML) | `tools/uj-oldalak/sablon.mjs`; stílus `assets/css/uj-oldalak.css`, viselkedés `assets/js/uj-oldalak.js` (a fejléc / menü / videóablak az `uj-fooldal.js`-ben) |
+| tükrözött oldalak jegyzéke (a linkátíráshoz) | `uj-oldalak/jegyzek.json` (a `kinyer.mjs` írja) |
+| build | `tools/uj-fooldal.mjs` → `ujOldalak()` (a `tools/build.mjs` hívja): `dist/_a|_m/uj/<kulcs>.html`, `dist/_a|_m/uj-oldalak.html` |
+| teszt | `node tools/uj-oldalak-teszt.mjs [--gyors] [--oldal=/rolunk] [--forras]` (`BASE=<cím>`-mel előnézeten / élesben is; a mérés, a Salonic és az űrlapküldés blokkolva / elkapva) |
+
+**Tartalom-szabály:** a szöveg, a kép, a link és a beágyazás nem változik (a teszt az eredeti oldal minden szövegsorát megkeresi az új oldalon); kihagyott: a Wix
+szerkesztő-maradék (az `/rolunk` árkártyája mögötti „Id” szövegtöredék), a blogcikkek üres „Hozzászólások” fejléce (a cikk saját hozzászólás-blokkja van), a Wix
+a11y-szövegei („0 csillagot kapott az 5-ből”). Nem tükrözött: `/` (az az új főoldal), `/idopontfoglalas`, `/kontroll` (a foglalómotort nyitják).
+**Új funkciók a tükörben:** blogcikk: kedvelés, megosztás (Facebook / X / LinkedIn / link / nyomtatás), hozzászólás-űrlap (`/api/urlap`, `blog-hozzaszolas`), a meglévő hozzászólások;
+blog-lista: kereső; képgalériák: lapozható sáv + kattintásra nagyító; videók: kattintásra ablakban; állásjelentkezés: `/api/urlap` (`allasjelentkezes`), siker után a tükör
+köszönőoldalára visz; helyszínoldalak: előző / következő helyszín.
+**Újra-kinyerés:** ha az eredeti oldal tartalma változik (vagy új oldal kerül a Wixre), `tools/oldalak.txt` frissítése + `kinyer.mjs`; a tükör ettől függetlenül épül.
+**Élesítés:** csak a tulajdonos kérésére; a `/uj/` előtag elhagyása a `ujOldalak()` kiírásában és a `linkAtiras()`-ban (`tools/uj-fooldal.mjs`), a noindex eltávolításával.
 
 ## 4. Publikálás: Cloudflare Pages (egyszeri beállítás)
 

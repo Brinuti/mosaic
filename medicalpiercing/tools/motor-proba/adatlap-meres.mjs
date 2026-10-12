@@ -20,10 +20,11 @@ if (STILUS) {
 const p = await ctx.newPage();
 const sr = (fn, a) => p.evaluate(([fn, a]) => { const h = document.querySelector('[data-mp-motor]'); return h ? new Function('r', 'a', fn)(h.shadowRoot, a) : null; }, [fn, a]);
 const varj = async (sel) => { for (let i = 0; i < 160; i++) { if (await sr('return !!r.querySelector(a)', sel)) return; await p.waitForTimeout(250); } throw new Error('nincs ' + sel); };
-await p.goto(BASE + '/idopontfoglalas?motor=1', { waitUntil: 'load' });
+await p.goto(BASE + '/a-migren-piercing-gyogyulasi-ideje?motor=1', { waitUntil: 'load' });
 await p.evaluate(() => { const l = [...document.querySelectorAll('a[href*="medicalpiercing.salonic.hu/selectLocation"]')]; (l.find((x) => x.offsetParent) || l[0]).click(); });
+for (let i = 0; i < 100; i++) { if (await sr('return !!r.querySelector("[data-hely]")')) break; if (await sr('const t=r.querySelector(\'[data-tipus="uj"]\'); if (t) { t.click(); return true; } return false')) break; await p.waitForTimeout(250); }
 await varj('[data-hely]'); await sr('r.querySelector(`[data-hely="${a}"]`).click()', HELY);
-await varj('[data-szolg]'); await sr('[...r.querySelectorAll("[data-szolg]")].find(x=>/Migrén/.test(x.textContent)).click()');
+await varj('[data-szolg]'); await sr('r.querySelector("[data-mit=egy]").click()'); await sr('[...r.querySelectorAll("[data-szolg]")].find(x=>/Migrén/.test(x.textContent)).click()');
 await varj('[data-slot]'); await p.waitForTimeout(3500);
 for (let i = 0; i < 4; i++) { const t = await sr('const b=[...r.querySelectorAll("[data-honap]")].pop(); if(!b||b.disabled||!b.dataset.honap) return false; b.click(); return true'); if (!t) break; await p.waitForTimeout(600); }
 await sr('[...r.querySelectorAll("[data-nap]")].pop().click()'); await p.waitForTimeout(700);

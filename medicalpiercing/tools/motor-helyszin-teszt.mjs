@@ -10,6 +10,7 @@
 // a szakember-valaszto; a legtavolabbi nap legkesobbi idopontjara az adatlap cime helyes (placeId, serviceId, startDate =
 // a valasztott idopont, lang=hu, back=mb_...); mobilon a keret a kepernyo aljaig er, a lepesjelzo rejtve.
 import { chromium, devices } from './pw.mjs';
+import { MINDEN_SZOLG, SZOLG_KATTINT } from './motor-teszt-segedek.mjs';
 import fs from 'node:fs';
 const BASE = (process.env.BASE || 'http://localhost:4290').replace(/\/$/, '');
 const arg = (k) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : null; };
@@ -31,12 +32,13 @@ async function egy(h, mobil) {
   const varj = async (sel, ms = 30000) => { for (let i = 0; i < ms / 250; i++) { if (await sr('return !!r.querySelector(a)', sel)) return true; await p.waitForTimeout(250); } return false; };
   const sor = { helyszin: h.varos, placeId: h.place_id, nezet: mobil ? 'mobil' : 'asztali' };
   try {
-    await p.goto(BASE + '/idopontfoglalas?motor=1', { waitUntil: 'load' });
+    await p.goto(BASE + '/a-migren-piercing-gyogyulasi-ideje?motor=1', { waitUntil: 'load' });
     await p.evaluate(() => { const l = [...document.querySelectorAll('a[href*="medicalpiercing.salonic.hu/selectLocation"]')]; (l.find((x) => x.offsetParent) || l[0]).click(); });
+    for (let i = 0; i < 100; i++) { if (await sr('return !!r.querySelector("[data-hely]")')) break; if (await sr('const t=r.querySelector(\'[data-tipus="uj"]\'); if (t) { t.click(); return true; } return false')) break; await p.waitForTimeout(250); }
     if (!ok(`${nev}: a motor megnyilik, a helyszin kozte van`, await varj(`[data-hely="${h.place_id}"]`))) return sor;
     await sr('r.querySelector(`[data-hely="${a}"]`).click()', h.place_id);
     if (!ok(`${nev}: a kezelesek betoltodnek`, await varj('[data-szolg]'))) return sor;
-    const kezelesek = await sr('return [...r.querySelectorAll("[data-szolg]")].map(x=>({id:x.dataset.szolg, nev:x.querySelector(".nev").textContent, ar:x.querySelector(".ar").textContent.replace(/\\D/g,"")}))');
+    const kezelesek = await sr(MINDEN_SZOLG); // az osszes szuro-kombinaciobol
     const vart = h.szolgaltatasok.map((s) => s.service_id);
     const kapott = kezelesek.map((k) => k.id);
     const hianyzik = vart.filter((x) => !kapott.includes(x)), tobblet = kapott.filter((x) => !vart.includes(x));
@@ -46,7 +48,7 @@ async function egy(h, mobil) {
     // a leggyakoribb kezeles (Migren), ha nincs, az elso, amelyre a lekepezes szerint van idopont
     const cel = h.szolgaltatasok.find((s) => s.service_id === '115575' && s.szabad_60_nap > 0) || h.szolgaltatasok.find((s) => s.szabad_60_nap > 0) || h.szolgaltatasok[0];
     sor.kezeles = cel.nev;
-    await sr('r.querySelector(`[data-szolg="${a}"]`).click()', cel.service_id);
+    await sr(SZOLG_KATTINT, cel.service_id);
     const vanIdo = await varj('[data-slot], .uzenet', 35000) && await sr('return !!r.querySelector("[data-slot]")');
     // az elo allapot dont (a lekepezes ota a szalon megnyithatott / lezarhatott napokat): nincs idopont -> az uzenet es a tovabblepes
     if (!vanIdo) { sor.idopont = 'nincs' + (cel.szabad_60_nap > 0 ? ' (a lekepezes szerint volt!)' : ''); ok(`${nev}: ${cel.nev} - nincs szabad idopont: a motor ezt irja ki, masik kezelest / helyszint kinal`, await sr('const u=r.querySelector(".uzenet"); return !!u && /nincs szabad időpont/.test(u.textContent) && !!r.querySelector(".tartalom [data-lepes=hely]")')); return sor; }
@@ -54,6 +56,11 @@ async function egy(h, mobil) {
     ok(`${nev}: ${cel.nev} - van szabad idopont${sor.megjegyzes ? ' (' + sor.megjegyzes + ')' : ''}`, true);
     sor.szakemberek = await sr('return r.querySelectorAll("[data-staff]").length');
     ok(`${nev}: szakember-valaszto (Barki + nevek), ha tobb munkatars van`, sor.szakemberek === 0 || sor.szakemberek >= 3, String(sor.szakemberek));
+    // ha csak egy szakember van: nem valasztatjuk, de kijelolve, fejkeppel (vagy monogrammal) mutatjuk, hogy a vendeg lassa, kihez megy
+    if (sor.szakemberek === 0) {
+      const egy = await sr('const c=r.querySelector(".chip.egy"); return c ? { nev: c.textContent.trim(), fejkep: !!c.querySelector(".fejkep"), valaszthato: !!r.querySelector("[data-staff]") } : null');
+      ok(`${nev}: egy szakember: kijelolve, fejkeppel latszik, nem valaszthato`, !!egy && egy.fejkep && !egy.valaszthato && egy.nev.length > 0, JSON.stringify(egy));
+    }
     await p.waitForTimeout(3000); // a tovabbi napok betoltese
     for (let i = 0; i < 4; i++) { const t = await sr('const b=[...r.querySelectorAll("[data-honap]")].pop(); if(!b||b.disabled||!b.dataset.honap) return false; b.click(); return true'); if (!t) break; await p.waitForTimeout(600); }
     await sr('[...r.querySelectorAll("[data-nap]")].pop().click()');

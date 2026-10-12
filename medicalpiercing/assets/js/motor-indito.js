@@ -30,21 +30,29 @@
     if (u.hostname !== 'medicalpiercing.salonic.hu' || KIZART.test(u.pathname) || !FOGLALO.test(u.pathname)) return null;
     return u;
   };
-  var szam = function (v) { return v && /^-?\d+$/.test(v) ? +v : null; };
-  var oldalTipus = function () {
+  // A regi koztes oldalak (/idopontfoglalas = a 4 kartya, /kontroll = a visszahivas-kero urlap) megszuntek: a cimuk a fooldalt adja (a build
+  // a fooldal tartalmat teszi oda), es betolteskor magatol megnyilik a foglalo (/idopontfoglalas: tipus-valaszto, /kontroll: a kontroll-urlap);
+  // bezarva a fooldal marad, a cim "/" lesz. Minden ra mutato link is a motort nyitja (nincs lapbetoltes). A regi oldalak csak a vesz-
+  // visszaallitas (0%-os kapcsolo, ?motor=0, a motor nem tolt be) tartaleka: /regi-idopontfoglalas, /regi-kontroll (noindex).
+  var BELSO = /^\/(idopontfoglalas|kontroll)\/?$/i;
+  var belsoLink = function (a) {
     var u;
-    try { u = decodeURIComponent(location.pathname); } catch (e) { u = location.pathname; }
-    u = u.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-    if (/3-piercing-2-araert/.test(u)) return '3pc';
-    if (/kozerzetjavito-piercing-soft/.test(u)) return 'soft';
-    var T = [[/migren|daith|fejfajas/, 'mi'], [/shenmen/, 'sh'], [/klimax/, 'kl'], [/slim|fogyas|etvagy/, 'sl'], [/allergia/, 'al'], [/(^|[-/])maj([-/]|$)/, 'mj'], [/(^|[-/])lep([-/]|$)/, 'lp'], [/vastagbel/, 'vb'], [/pajzsmirigy/, 'pm'], [/ful-piercing|fulbevalo/, 'divat']];
-    var kod = 'alt', hol = Infinity;
-    for (var i = 0; i < T.length; i++) { var m = T[i][0].exec(u); if (m && m.index < hol) { hol = m.index; kod = T[i][1]; } }
-    if (kod === 'alt') { // az altalanos oldalakon (pl. /idopontfoglalas) a 30 percen belul nezett tipusoldal (suti.js: mp_tipus)
-      try { var t = (localStorage.getItem('mp_tipus') || '').split('|'); if (t[0] && Date.now() - Number(t[1]) < 30 * 60 * 1000) kod = t[0]; } catch (e) { /* */ }
-    }
-    return kod;
+    try { u = new URL(a.href); } catch (e) { return null; }
+    return u.origin === location.origin && BELSO.test(u.pathname) ? u : null;
   };
+  var szam = function (v) { return v && /^-?\d+$/.test(v) ? +v : null; };
+  // A link szovege dont: ha kontrollt, ekszercserét vagy garanciat emlit, egybol az ures-urlap nyilik; minden mas foglalasi gomb a tipus-valasztot nyitja.
+  var szoveg = function (a) { return ((a.textContent || '') + ' ' + (a.getAttribute('aria-label') || '') + ' ' + (a.getAttribute('title') || '')).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' '); };
+  var urlapTipus = function (a, u) {
+    var t = szoveg(a);
+    if (/ekszer\s*cser/.test(t)) return 'ekszercsere';
+    if (/garanci/.test(t) && !/kontrol/.test(t)) return 'garancia';
+    if (/kontrol/.test(t)) return 'kontroll';
+    return /^\/kontroll\/?$/i.test(u.pathname) ? 'kontroll' : null;
+  };
+  // az idopont modositasa / lemondasa a Salonic vendeg-fiokjaban tortenik: ezek a linkek a Salonicra mennek
+  var NEM_FOGLALAS = /modosit|lemond/;
+  var regiOldal = function () { return '/regi-' + location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase() + location.search + location.hash; };
 
   var betolt = null;
   var motor = function () {
@@ -57,13 +65,20 @@
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
     if (!a) return;
+    var b = belsoLink(a);
+    if (b && bekapcsolva()) {
+      e.preventDefault();
+      var bctx = { merjen: true, tipus: urlapTipus(a, b), link: 'https://medicalpiercing.salonic.hu/selectLocation', forras: location.pathname };
+      motor().then(function (m) { m.nyit(bctx); }, function () { gtagHiba('betoltes'); location.href = '/regi-' + b.pathname.replace(/^\/+|\/+$/g, '').toLowerCase() + b.search; });
+      return;
+    }
     var u = foglalasiLink(a);
-    if (!u || !bekapcsolva()) return;
+    if (!u || !bekapcsolva() || NEM_FOGLALAS.test(szoveg(a))) return;
     e.preventDefault();
     var p = u.searchParams;
     var ctx = {
       placeId: szam(p.get('placeId')), employeeId: szam(p.get('employeeId')) > 0 ? szam(p.get('employeeId')) : (/^\/employees\/(\d+)/i.exec(u.pathname) || [])[1] || null,
-      serviceId: szam(p.get('serviceId')) > 0 ? p.get('serviceId') : null, oldalTipus: oldalTipus(), link: u.href, forras: location.pathname,
+      serviceId: szam(p.get('serviceId')) > 0 ? p.get('serviceId') : null, tipus: urlapTipus(a, u), link: u.href, forras: location.pathname,
     };
     motor().then(function (m) { m.nyit(ctx); }, function () {
       // a motor nem toltheto be: a vendeg a regi utat kapja (ugyanabban a lapban, a felugro-tilto nem allitja meg)
@@ -76,10 +91,20 @@
   var meleg = function (e) {
     if (!bekapcsolva()) return;
     var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
-    var u = a && foglalasiLink(a);
+    var u = a && (foglalasiLink(a) || belsoLink(a));
     if (!u) return;
     motor().then(function (m) { var pid = szam(u.searchParams.get('placeId')); if (pid) m.melegit(pid); }, function () {});
   };
+  // az (egykori) koztes oldalak cimen betolteskor magatol megnyilik a foglalo; bezarva a fooldal marad (a cim "/" lesz)
+  if (BELSO.test(location.pathname)) {
+    if (!bekapcsolva()) { location.replace(regiOldal()); return; }
+    var auto = function () {
+      var kontroll = /^\/kontroll\/?$/i.test(location.pathname);
+      var bezarasUtan = function () { try { history.replaceState(null, '', '/' + location.search + location.hash); } catch (e) { /* */ } };
+      motor().then(function (m) { m.nyit({ tipus: kontroll ? 'kontroll' : null, merjen: !kontroll, link: 'https://medicalpiercing.salonic.hu/selectLocation', forras: location.pathname, bezarasUtan: bezarasUtan }); }, function () { gtagHiba('betoltes'); location.replace(regiOldal()); });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', auto); else auto();
+  }
   document.addEventListener('pointerover', meleg, { passive: true });
   document.addEventListener('touchstart', meleg, { passive: true });
 })();

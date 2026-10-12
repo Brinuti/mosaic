@@ -34,7 +34,7 @@ const kattintLink = (p) => p.evaluate(() => {
 });
 { // alap (kapcsolo szerint)
   const ctx = await kornyezet(true); const p = await ctx.newPage();
-  await p.goto(BASE + '/idopontfoglalas', { waitUntil: 'load' });
+  await p.goto(BASE + '/a-migren-piercing-gyogyulasi-ideje', { waitUntil: 'load' });
   const nav = ctx.waitForEvent('request', { predicate: (r) => r.isNavigationRequest() && /medicalpiercing\.salonic\.hu/.test(r.url()), timeout: 8000 }).then((r) => r.url(), () => null);
   await kattintLink(p); const cel = await nav; await p.waitForTimeout(800);
   if (ARANY >= 100) await p.waitForFunction(() => !!document.querySelector('[data-mp-motor]'), null, { timeout: 8000 }).catch(() => {});
@@ -47,14 +47,16 @@ const kattintLink = (p) => p.evaluate(() => {
 { // ?motor=1 az adatlapig
   const ctx = await kornyezet(false); const p = await ctx.newPage();
   const hibak = []; p.on('pageerror', (e) => hibak.push(e.message));
-  await p.goto(BASE + '/idopontfoglalas?motor=1&gclid=FUSTTESZT123', { waitUntil: 'load' });
+  await p.goto(BASE + '/a-migren-piercing-gyogyulasi-ideje?motor=1&gclid=FUSTTESZT123', { waitUntil: 'load' });
   const cim = p.url();
   await kattintLink(p);
+  for (let i = 0; i < 100; i++) { if (await sr(p, 'return !!r.querySelector("[data-hely]")')) break; if (await sr(p, 'const t=r.querySelector(\'[data-tipus="uj"]\'); if (t) { t.click(); return true; } return false')) break; await p.waitForTimeout(250); }
   ok('?motor=1: megnyilik', await varMotor(p, '[data-hely]'));
   ok('cim valtozatlan', p.url() === cim);
   ok('15 helyszin', (await sr(p, 'return r.querySelectorAll("[data-hely]").length')) === 15);
   await sr(p, 'r.querySelector("[data-hely=\\"6029\\"]").click()');
   ok('Budapest kezelesei', await varMotor(p, '[data-szolg]'));
+  await sr(p, 'r.querySelector("[data-mit=egy]").click()');
   const sz = await sr(p, 'return [...r.querySelectorAll("[data-szolg] .nev")].map(x=>x.textContent)');
   ok('magyar nevek', sz.length >= 15 && sz.some((x) => /Migrén/.test(x)), sz.slice(0, 2).join(' | '));
   await sr(p, 'r.querySelector("[data-szolg]").click()');

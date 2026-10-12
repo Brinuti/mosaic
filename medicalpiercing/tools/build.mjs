@@ -16,6 +16,7 @@ import { fajlnev } from '../lib/utvonal.js';
 import { TABLAZAT_CSV, osszesSor, htmlFrissites } from '../lib/kitelepulesek.js';
 import { takarit } from './takaritas.mjs';
 import { gyorsit } from './gyorsitas.mjs';
+import { ujFooldal, ujOldalak, ujKitelepules } from './uj-fooldal.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -39,7 +40,25 @@ for (const o of mindenOldal()) {
     db++;
   }
 }
+// A regi koztes oldalak (/idopontfoglalas = a 4 kartya, /kontroll = a visszahivas-kero urlap) megszuntek: a cimuk a FOOLDAL tartalmat adja (a foglalo-
+// motor betolteskor ra nyilik, bezarva a fooldal marad; assets/js/motor-indito.js). Az eredeti oldalak /regi-idopontfoglalas es /regi-kontroll cimen
+// maradnak, noindex-szel: csak a vesz-visszaallitas (0%-os kapcsolo, ?motor=0, a motor nem toltheto be) tartaleka. A kanonikus cim a fooldale,
+// a sitemapbol kikerulnek.
+export const KOZTES_OLDALAK = ['idopontfoglalas', 'kontroll'];
+for (const ki of ['_a', '_m']) {
+  const fooldal = path.join(DIST, ki, 'fooldal.html');
+  for (const k of KOZTES_OLDALAK) {
+    const fajl = path.join(DIST, ki, k + '.html');
+    if (!fs.existsSync(fajl) || !fs.existsSync(fooldal)) continue;
+    fs.writeFileSync(path.join(DIST, ki, 'regi-' + k + '.html'), fs.readFileSync(fajl, 'utf8').replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>'));
+    fs.copyFileSync(fooldal, fajl);
+  }
+}
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
+// az uj, rejtett fooldal (/uj-fooldal): kezzel irt lap, nem a Wix-klon resze (tools/uj-fooldal.mjs); a foglalomotor-indito, a verziojelek
+// es a foglalas-meres alabb ugyanugy kerulnek ra, mint a tobbi lapra
+ujFooldal(ROOT, DIST);
+ujOldalak(ROOT, DIST);
 // foglalomotor (assets/js/motor/, assets/js/motor-indito.js; MP-FOGLALOMOTOR-FELADAT): az indito minden lapra kerul, a
 // kapcsolo (motor-kapcsolo.json: 0 = mindenki a regi Salonic-foglalot kapja, 100 = a motor nyilik) az inditoba irodik.
 // A motor moduljai egymast verziojellel importaljak (?v=<a modulok tartalmanak jele>): egy evig tarolhatok (_headers),
@@ -105,6 +124,23 @@ if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(
   console.log(`mp-meres: ${n} lapon`);
 }
 
+// #257: a koszonooldalak (foglalas-ok*, fulbevalo-ok*) lapcime semleges: a "foglalas-ok-klimax | Medical Piercing" tipusu cim
+// a GA4 / Google Ads / TikTok fele (oldalcim) egeszsegugyi jellegu szolgaltatasra utalna. A suti.js futas kozben is atirja.
+{
+  const SEMLEGES = 'Sikeres foglalás | Medical Piercing';
+  let n = 0;
+  for (const ki of ['_a', '_m']) for (const f of fs.readdirSync(path.join(DIST, ki)).filter((x) => /^(foglalas-ok|fulbevalo-ok)[a-z0-9-]*\.html$/.test(x))) {
+    const fajl = path.join(DIST, ki, f);
+    const html = fs.readFileSync(fajl, 'utf8');
+    const uj = html.replace(/<title>[^<]*<\/title>/, `<title>${SEMLEGES}</title>`)
+      .replace(/(<meta property="og:title" content=")[^"]*(")/g, `$1${SEMLEGES}$2`)
+      .replace(/(<meta name="twitter:title" content=")[^"]*(")/g, `$1${SEMLEGES}$2`)
+      .replace(/https:\/\/www\.medicalpiercing\.hu\/(foglalas-ok|fulbevalo-ok)[a-z0-9-]*/g, 'https://www.medicalpiercing.hu/$1');
+    if (uj !== html) { fs.writeFileSync(fajl, uj); n++; }
+  }
+  console.log(`koszonooldal-cim semleges: ${n} lapon`);
+}
+
 // kitelepulesek: a videki helyszinek idopontjai a tablazatbol. Ha a tablazat nem erheto el, a
 // mentett idopontok maradnak (futas kozben a lapok az /api/kitelepulesek-bol ugyis frissulnek).
 {
@@ -125,6 +161,7 @@ if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(
     const r = htmlFrissites(fs.readFileSync(f, 'utf8'), sorok, o.ut);
     if (r.db) { fs.writeFileSync(f, r.html); lapDb++; }
   }
+  ujKitelepules(DIST, sorok); // az uj, rejtett oldalak helyszin-csempei (tools/uj-fooldal.mjs)
   console.log(`kitelepulesek: ${lapDb} lapon ${olvasva ? 'a tablazatbol frissitve' : 'csak jelolve'}` + (hibak.length ? `; nem ertelmezheto cellak:\n  ${hibak.join('\n  ')}` : ''));
 }
 
@@ -152,7 +189,7 @@ if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(
 const sitemapben = new Set(fs.readFileSync(path.join(ROOT, 'tools/sitemap-oldalak.txt'), 'utf8').split('\n').filter(Boolean));
 const ma = new Date().toISOString().slice(0, 10);
 fs.writeFileSync(path.join(DIST, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-  + oldalak().filter((o) => sitemapben.has(o.url)).map((o) => `<url><loc>${o.url}</loc><lastmod>${ma}</lastmod></url>`).join('\n')
+  + oldalak().filter((o) => sitemapben.has(o.url) && !KOZTES_OLDALAK.includes(o.kulcs)).map((o) => `<url><loc>${o.url}</loc><lastmod>${ma}</lastmod></url>`).join('\n')
   + '\n</urlset>\n');
 fs.writeFileSync(path.join(DIST, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${DOMAIN}/sitemap.xml\n`);
 // a blog RSS-csatornaja ugyanazon a cimen, mint a Wixen (tools/rss-mentes.mjs)
