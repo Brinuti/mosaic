@@ -218,9 +218,15 @@ async function csereDontes(db, env, { uzletag, uuid, kezdet, szolgKulcs, h, megj
   return { ...alap, allapot: 'confirmed', jeloltek, regi_uuid: regi.uuid, reschedule_from: isoUtc(regi.kezdet), reschedule_to: isoUtc(kezdet), regi_aktiv: regiAktiv, regi_elo_allapot: elo.allapot };
 }
 const csereAllapotNev = (csere) => (csere && csere.hianyzo ? 'hianyzo_mezo' : csere.allapot);
+/**
+ * Az audit-sor upsertje. `feloldva_uj` allapotra (az `uj_konverzio` feloldas) az iras ATOMI feltetele ugyanaz a cella-bizonyitek, mint a `veglegesIr` feltetele (#14c K1): ha egy parhuzamos `confirmed` dontes mar
+ * lezarta a cellakat `reschedule_confirmed`-re es egy cella sem kiment, a vesztes hivas NEM irhatja felul a nyertes `confirmed` / `feloldva_confirmed` audit-sort (a bizonyitek-mezoi - regi_uuid, a csere idopontjai -
+ * a hivas elejen olvasott, elavult pillanatkepbol nem veszhetnek el). Visszater: igaz, ha a sor megirodott; hamis, ha a feltetel megfogta.
+ */
 async function rescheduleIr(db, { uuid, sdId, allapot, d, t }) {
-  await db.prepare('INSERT INTO foglalas_reschedule (uuid, sd_id, allapot, reschedule_from, reschedule_to, regi_uuid, regi_aktiv, ok, ido, frissitve) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?9) ON CONFLICT(uuid) DO UPDATE SET allapot = excluded.allapot, reschedule_from = excluded.reschedule_from, reschedule_to = excluded.reschedule_to, regi_uuid = excluded.regi_uuid, regi_aktiv = excluded.regi_aktiv, ok = excluded.ok, frissitve = excluded.frissitve')
+  const r = await db.prepare("INSERT INTO foglalas_reschedule (uuid, sd_id, allapot, reschedule_from, reschedule_to, regi_uuid, regi_aktiv, ok, ido, frissitve) SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?9 WHERE ?3 <> 'feloldva_uj' OR NOT (EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?2 AND allapot = 'kihagyva' AND indok LIKE 'reschedule_confirmed%') AND NOT EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?2 AND allapot IN ('elkuldve', 'nincs_hitelesites'))) ON CONFLICT(uuid) DO UPDATE SET allapot = excluded.allapot, reschedule_from = excluded.reschedule_from, reschedule_to = excluded.reschedule_to, regi_uuid = excluded.regi_uuid, regi_aktiv = excluded.regi_aktiv, ok = excluded.ok, frissitve = excluded.frissitve")
     .bind(uuid, sdId, allapot, d.reschedule_from || null, d.reschedule_to || null, d.regi_uuid || null, d.regi_aktiv === true ? 1 : d.regi_aktiv === false ? 0 : null, String(d.ok || '').slice(0, 300) || null, t).run();
+  return !(r && r.meta && r.meta.changes === 0);
 }
 
 // --- atvetel / allapot ---------------------------------------------------------------------------------------------------------------------
@@ -365,18 +371,22 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
       const csere = { ...(csereRow || {}), ok: 'feloldva: ' + ok };
       // FAIL-CLOSED (mini-3, DECISION #147/2; mini-4, DECISION #148/2): az `uj_konverzio` nem allithatja a sort 0 kuldessel `feloldva_uj`-ra. A guard a DONTESI BIZONYITEKHOZ kotott (`ujKonverzioBizonyitek`), es KETSZER fut:
       // (1) a kuldes ELOTT (nincs mellekhatas: a sor, az audit es a cellak valtozatlanok), (2) KOZVETLENUL az audit-/allapot-iras ELOTT, FRISS allapotbol (TOCTOU: egy parhuzamos, ellentetes `confirmed` dontes az (1) es az iras kozott zarhatta
-      // a cellakat `reschedule_confirmed`-re - a cella-allapot monoton, ezert a kuldes UTANI ujraellenorzes minden 0-kuldeses `mar_kuldve` esetet elkap). A 2. elutasitaskor a kuldesi lepes mar lefutott, de semmit nem kuldott (nincs kiment / kimeno cella).
+      // a cellakat `reschedule_confirmed`-re - a cella-allapot monoton, ezert a kuldes UTANI ujraellenorzes minden 0-kuldeses `mar_kuldve` esetet elkap; az audit- es a vegallapot-iras ezutan meg ATOMI feltetelt is kap: `rescheduleIr`, `veglegesIr`). A 2. elutasitaskor a kuldesi lepes mar lefutott, de semmit nem kuldott (nincs kiment / kimeno cella).
       // Nem utasit el helyes feloldast: valodi HOLD (`suspected` / `hianyzo_mezo` audit) sort a cellak allapota (nincs token, lemondva, nyitott ertek, vesz-kapcsolo) mellett sem.
       if (mod === 'feloldva_uj') {
         const b1 = await ujKonverzioBizonyitek(db, uuid, sdId);
         if (b1.elutasit) return { ...alap, allapot: 'feloldas_nem_lehetseges', sd_allapot: allapot, miert: UJ_KONVERZIO_ELUTASITAS, riasztas: sor.riasztas === 1, kuldes: 0 };
       }
       const k = await kuldesFuttat({ ...futas, mod: mod === 'feloldva_uj' ? 'normal' : mod, csere });
+      // a 2. elutasitas FRISS sor-allapotot ad vissza (a nyertes hivas irta), es semmit nem ir
+      const masodikElutasitas = async () => { const friss = await olvas(); return { ...alap, allapot: 'feloldas_nem_lehetseges', sd_allapot: (friss && friss.sd_allapot) || allapot, miert: UJ_KONVERZIO_ELUTASITAS, riasztas: friss ? friss.riasztas === 1 : sor.riasztas === 1, kuldes: 0 }; };
       if (mod === 'feloldva_uj') {
         const b2 = await ujKonverzioBizonyitek(db, uuid, sdId);
-        if (b2.elutasit) { const friss = await olvas(); return { ...alap, allapot: 'feloldas_nem_lehetseges', sd_allapot: (friss && friss.sd_allapot) || allapot, miert: UJ_KONVERZIO_ELUTASITAS, riasztas: friss ? friss.riasztas === 1 : sor.riasztas === 1, kuldes: 0 }; }
+        if (b2.elutasit) return masodikElutasitas();
       }
-      await rescheduleIr(db, { uuid, sdId, allapot: mod === 'feloldva_uj' ? 'feloldva_uj' : 'feloldva_confirmed', d: { ...(csereRow || {}), ok: csere.ok }, t });
+      // (#14c K1) az audit-iras `feloldva_uj`-ra ATOMI feltetelhez kotott (lasd rescheduleIr): ha a b2 es az iras kozott zarta a cellakat egy parhuzamos `confirmed`, az audit-sor erintetlen marad, a valasz ugyanaz az elutasitas
+      const irva = await rescheduleIr(db, { uuid, sdId, allapot: mod === 'feloldva_uj' ? 'feloldva_uj' : 'feloldva_confirmed', d: { ...(csereRow || {}), ok: csere.ok }, t });
+      if (mod === 'feloldva_uj' && !irva) return masodikElutasitas();
       const veg = await lezarAllapot(db, { uuid, sdId, mod, csere, t });
       if (veg.kihagyva) return { ...alap, allapot, sd_allapot: allapot, idempotens: true, miert: 'egy parhuzamos hivas mar dolgozik a cellakon: a sor allapotat a nyertes hivas irja', riasztas: sor.riasztas === 1, ...k };
       return { ...alap, allapot: veg.sd_allapot, sd_allapot: veg.sd_allapot, feloldas: dontes, ...k, riasztas: veg.riasztas };

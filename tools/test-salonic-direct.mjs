@@ -1062,6 +1062,7 @@ function halalSql(v, minta) {
 }
 const sdSor = (v, u) => v.sql('SELECT sd_allapot, riasztas FROM foglalas_egyeztetes WHERE uuid = ?1', u)[0];
 const csereSor = (v, u) => v.sql('SELECT allapot FROM foglalas_reschedule WHERE uuid = ?1', u)[0];
+const auditTeljes = (v, u) => v.sql('SELECT * FROM foglalas_reschedule WHERE uuid = ?1', u)[0];
 
 test('S0-51 csere-regex: "torlest kerem" / "torlom az elozot" / "megse jo" alakok is HOLD (a tobbi hamis pozitiv nem); a regex nyitott veguek - a korlat dokumentalt', async () => {
   for (const m of ['Törlést kérem', 'Kérem a törlést', 'Törlöm az előzőt', 'Törlök egyet', 'Mégse jó', 'mégse jó az idő', 'Mégsem jó']) assert.ok(csereGyanu(m), m);
@@ -1406,13 +1407,22 @@ test('S0-61c a 2. bizonyitek-ellenorzes UTANI ablak is zart: ha a kuldesi lepes 
       const { v, u, b } = await csereVilag(); const { megjegyzes, ...nelkule } = b;
       assert.equal((await v.sd(nelkule)).allapot, 'halasztva'); assert.equal(csereSor(v, u).allapot, 'hianyzo_mezo');
       v.net.allapot.set(u, 'hiba'); // az elo allapot NEM ellenorizheto: az uj_konverzio cellai a kuldesi lepes utan `halasztva` (nem vegleges) -> az 1. es a 2. ellenorzes nem lat bizonyitekot
+      let nyertesAudit = null, nyertesDump = null;
       const futott = iraselottBeszur(v, minta, async () => {
         if (nev === 'sd_feloldas confirmed') await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'confirmed', ok: 'parhuzamos helyes dontes' });
         else await v.sd(b);
+        nyertesAudit = auditTeljes(v, u); nyertesDump = dumpMind(v);
       });
       const r = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'rossz, egyideju emberi dontes' });
       const cim = pont + ' / ' + nev;
       assert.equal(futott(), 1, cim + ': a beszuras lefutott');
+      if (pont === 'az audit-iras ELOTT') { // (#14c K1) a vesztes audit-irasa atomi feltetelhez kotott: a nyertes audit-sor (a bizonyitek-mezokkel egyutt) bajtra erintetlen, a valasz explicit elutasitas, a vesztes semmit nem ir
+        assert.ok(['confirmed', 'feloldva_confirmed'].includes(nyertesAudit.allapot), cim + ': a nyertes audit: ' + nyertesAudit.allapot);
+        if (nev === 'Zap hianyzo_mezo-potlas') assert.ok(nyertesAudit.regi_uuid && nyertesAudit.reschedule_from && nyertesAudit.reschedule_to && nyertesAudit.regi_aktiv === 1, cim + ': a Zap-potlas bizonyitek-mezoi megvannak (a teszt nem ures)');
+        assert.deepEqual(auditTeljes(v, u), nyertesAudit, cim + ': a vesztes nem irta felul az audit-sort');
+        assert.deepEqual([r.allapot, r.kuldes], ['feloldas_nem_lehetseges', 0], cim + ': explicit elutasitas');
+        assert.deepEqual(dumpMind(v), nyertesDump, cim + ': a nyertes utan MINDEN tabla bajtra azonos');
+      }
       assert.notEqual(r.sd_allapot, 'feloldva_uj', cim + ': a valasz nem feloldva_uj');
       // a nyertes `confirmed` marad; kivetel: ha az audit mar `feloldva_uj` volt, a Zap-potlas no-op (nincs `hianyzo_mezo` audit), es az uj_konverzio cellai `halasztva` -> `tartva` + riasztas (ujraprobalhato, NEM csendes veszteseg)
       assert.ok(['feloldva_confirmed', 'reschedule_confirmed', 'tartva'].includes(sdSor(v, u).sd_allapot), cim + ': ' + sdSor(v, u).sd_allapot);
