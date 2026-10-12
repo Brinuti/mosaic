@@ -4,7 +4,7 @@
 // Tiszta fuggvenyek: a D1-et es a hivasokat az engine.js vegzi.
 import { htmlSzoveg } from './parser.js';
 import { huDatumEpoch } from './ido.js';
-import { uzletagFelismer, szolgNorm, tisztaNev } from './uzletag.js';
+import { uzletagFelismer, szolgNorm } from './uzletag.js';
 
 const TIPUSOK = [
   { re: /^[^\p{L}\p{N}]*Időpont törölve/iu, tipus: 'szalon_torolte' },
@@ -29,11 +29,6 @@ export const munkatarsKulcs = (s) => nevNorm(String(s || '').split(/\s+[-–—]
 export const beesoNev = (s) => String(s || '').normalize('NFC').replace(/\s+/g, ' ').trim().toLowerCase() === 'beeső';
 /** Szolgaltatas-kulcs: kisbetu, emoji/jelek nelkul (mint az uzletag.js szolgNorm), ekezettel. */
 export const szolgKulcs = (s) => szolgNorm(s);
-/**
- * Kanonikus szolgaltatas-kulcs (2. szint): az "AKCIO" / "KUPONKODDAL" elotag, az ar- es kedvezmeny-toldalek ("(X Ft helyett most Y Ft)", "+ allapotfelmeres") nelkul. A munkatarsi ertesito
- * szolgaltatas-neve es a foglalas (vendegoldali level) neve ugyanannak a szolgaltatasnak mas dekoracioval is lehet; pontos egyezes elobb, a kanonikus csak akkor, ha a pontos nem talal semmit. Nincs fuzzy.
- */
-export const szolgKanon = (s) => szolgNorm(tisztaNev(s));
 
 /**
  * @param {{targy?:string, kuldo?:string, szoveg?:string, html?:string}} level

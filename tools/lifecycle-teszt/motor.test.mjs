@@ -484,7 +484,7 @@ test('motor: a Salonic minden foglalasrol KET levelet kuld - egyidejuleg is csak
   assert.equal((await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-CANCEL-%'").get()).n, 2);
 });
 
-test('motor: NO-SHOW (LIFECYCLE_NOSHOW_AUTO=1) - a szalon az idopont UTAN torli, az ok pontosan "Nem jött el": nem lemondas-visszaigazolas, hanem "nem talalkoztunk" SMS + e-mail masnap 10:00-kor', async () => {
+test('motor: NO-SHOW (LIFECYCLE_NOSHOW_AUTO=1) - a szalon az idopont utan torli: nem lemondas-visszaigazolas, hanem "nem talalkoztunk" SMS + e-mail masnap 10:00-kor', async () => {
   const db = d1(); const k = hamisKuldok(); const env = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair', LIFECYCLE_NOSHOW_AUTO: '1' };
   const REKA = { nev: 'Kiss Réka', tel: '06201112222', email: 'kiss.reka@example.com' };
   const r = await ingest(db, env, foglaltLevel({ ...REKA }), MOST); // november 25. 16:00
@@ -492,7 +492,7 @@ test('motor: NO-SHOW (LIFECYCLE_NOSHOW_AUTO=1) - a szalon az idopont UTAN torli,
   const elotte = k.ki.sms.length;
   // az idopont napjan 17:30-kor a szalon kitorli a foglalast
   const jelzes = helyiEpoch(2026, 11, 25, 17, 30);
-  const n = await ingest(db, env, { ...lemondottLevel({ ...REKA, uzenetId: 'ns-1', ok: 'Nem jött el' }), kuldve: jelzes }, jelzes); // az automatikus no-show bizonyitott level-idot (kuldve) kivan
+  const n = await ingest(db, env, lemondottLevel({ ...REKA, uzenetId: 'ns-1', ok: '' }), jelzes);
   assert.equal(n.tipus, 'nem_jelent_meg'); assert.equal(n.foglalasId, UUID1); assert.equal(n.ismeretlenVolt, false);
   assert.equal((await db.sqlite.prepare('SELECT allapot FROM foglalasok').get()).allapot, 'nem_jelent_meg');
   // lemondas-visszaigazolas NEM megy; a no-show 20 perccel kesobb meg nem esedekes
@@ -507,76 +507,36 @@ test('motor: NO-SHOW (LIFECYCLE_NOSHOW_AUTO=1) - a szalon az idopont UTAN torli,
   assert.match(mail.targy, /Nem találkoztunk/); assert.match(mail.szoveg, /Tegnap nem találkoztunk/); assert.match(mail.szoveg, /Új időpontot választok/);
   assert.ok(!k.ki.sms.some((x) => /töröltük/.test(x.szoveg)) && !k.ki.email.some((m) => /töröltük/.test(m.targy)));
   // a Salonic ket levelet kuld: a masodik nem ketszerez
-  const n2 = await ingest(db, env, { ...lemondottLevel({ ...REKA, uzenetId: 'ns-2', ok: 'Nem jött el' }), kuldve: jelzes + 3 }, jelzes + 3);
+  const n2 = await ingest(db, env, lemondottLevel({ ...REKA, uzenetId: 'ns-2', ok: '' }), jelzes + 3);
   assert.equal(n2.duplikalt, true);
   assert.equal((await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-NOSHOW-%'").get()).n, 2);
 });
 
-test('motor: NO-SHOW szigoritas (lifecycle B, GPT-jovahagyas 2026-10-11, issue #167): CSAK a pontos "Nem jött el" ok + kezdes UTANI torles + EGYETLEN egyezo foglalas; minden mas laza jelzes csak riasztas (0 allapotvaltas, 0 uzenet); a sima lemondas valtozatlan', async () => {
+test('motor: NO-SHOW jelzes az okban ("Nem jelent meg") az idopont ELOTT is (LIFECYCLE_NOSHOW_AUTO=1); a sima lemondas valtozatlan; a regi (3 napnal regebbi) torles csendes', async () => {
   const env = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair', LIFECYCLE_NOSHOW_AUTO: '1' };
   const REKA = { nev: 'Kiss Réka', tel: '06201112222', email: 'kiss.reka@example.com' };
-  const kezdet = helyiEpoch(2026, 11, 25, 16, 0);
-  const felvesz = async (e = env, opc = {}) => { const db = d1(); const k = hamisKuldok(); await ingest(db, e, foglaltLevel({ ...REKA, ...opc }), MOST); return { db, k }; };
-  const lem = (o, ido, ...k) => ({ ...lemondottLevel(o), kuldve: k.length ? k[0] : ido }); // a level bizonyitott kuldesi ideje (kuldve) = a feldolgozas ideje
-  const allapot = async (db) => (await db.sqlite.prepare('SELECT allapot FROM foglalasok').get()).allapot;
-  const noshowUzenet = async (db) => (await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-NOSHOW-%'").get()).n;
-  // 1) a szigoru feltetel: az ok PONTOSAN "Nem jött el" (NFC, szokoz, kis- / nagybetu mindegy), a kezdes UTAN
-  for (const ok of ['Nem jött el', ' nem  JÖTT el ', 'Nem jo\u0308tt el']) {
-    const { db } = await felvesz();
-    const n = await ingest(db, env, lem({ ...REKA, ok }, kezdet + 1800), kezdet + 1800);
-    assert.equal(n.tipus, 'nem_jelent_meg', JSON.stringify(ok)); assert.equal(await allapot(db), 'nem_jelent_meg'); assert.equal(await noshowUzenet(db), 2);
-  }
-  // 2) minden mas ok / ok nelkul: kezdes UTAN is CSAK riasztas (a regi laza szabaly - "Nem jelent meg", ok nelkuli kesei torles - mar nem no-show)
-  for (const ok of ['Nem jelent meg', 'Nem jött el.', 'Nem jött el, beteg volt', 'Nem jött el és nem jelzett', 'no-show', 'Közbejött valami', '']) {
-    const { db, k } = await felvesz();
-    const n = await ingest(db, env, lem({ ...REKA, ok }, kezdet + 1800), kezdet + 1800);
-    assert.equal(n.tipus, 'riasztas:utolagos_torles', JSON.stringify(ok)); assert.equal(n.valtozas, false);
-    assert.equal(await allapot(db), 'aktiv'); assert.equal(await noshowUzenet(db), 0);
-    assert.equal(k.ki.sms.length + k.ki.email.length, 0);
-  }
-  // 3) kezdes ELOTT: a pontos ok sem elég (a torles a kezdes elott nem no-show): riasztas, allapot valtozatlan
-  { const { db } = await felvesz(); const n = await ingest(db, env, lem({ ...REKA, ok: 'Nem jött el' }, MOST + 7200), MOST + 7200);
-    assert.equal(n.tipus, 'riasztas:nem_jelent_meg_jelzes'); assert.equal(await allapot(db), 'aktiv'); assert.equal(await noshowUzenet(db), 0); }
-  // 4) kapcsolo ki (alap): a pontos ok + kezdes utan is csak riasztas (DECISION #117 D3 / D5 valtozatlan)
-  { const { db } = await felvesz({ LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair' }); const n = await ingest(db, { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair' }, lem({ ...REKA, ok: 'Nem jött el' }, kezdet + 1800), kezdet + 1800);
-    assert.equal(n.tipus, 'riasztas:utolagos_torles'); assert.equal(await allapot(db), 'aktiv'); assert.equal(await noshowUzenet(db), 0); }
-  // 5) sima vendeg-lemondas (ok: mas): lemondas-visszaigazolas, nem no-show
+  // 1) az ok megjeloli: a szalon a nap folyaman, az idopont elott torolt egy "nem jelent meg" jelolest
+  const db = d1();
+  await ingest(db, env, foglaltLevel({ ...REKA }), MOST);
+  const n = await ingest(db, env, lemondottLevel({ ...REKA, ok: 'Nem jelent meg' }), MOST + 7200);
+  assert.equal(n.tipus, 'nem_jelent_meg');
+  // 2) sima vendeg-lemondas (ok: mas): lemondas-visszaigazolas, nem no-show
   const db2 = d1(); const k2 = hamisKuldok();
   await ingest(db2, env, foglaltLevel({ ...REKA }), MOST);
   const l = await ingest(db2, env, lemondottLevel({ ...REKA, ok: 'Közbejött valami' }), MOST + 7200);
   assert.equal(l.tipus, 'lemondva'); await tick(db2, env, k2, MOST + 7300);
   assert.ok(k2.ki.sms.some((x) => /töröltük/.test(x.szoveg)));
-  // 6) 3 napnal regebbi, mar elmult idopont torlese: csendben lemondva, semmi nem megy ki
+  // 3) 3 napnal regebbi, mar elmult idopont torlese: csendben lemondva, semmi nem megy ki
   const db3 = d1(); const k3 = hamisKuldok();
   await ingest(db3, env, foglaltLevel({ ...REKA }), MOST);
   const regi = await ingest(db3, env, lemondottLevel({ ...REKA }), helyiEpoch(2026, 11, 30, 12, 0));
   assert.equal(regi.tipus, 'lemondva');
   assert.equal((await tick(db3, env, k3, helyiEpoch(2026, 11, 30, 12, 30))).elkuldve, 0);
-  // 7) NINCS egyezo foglalas (a rendszer inditasa elotti): fail-closed - nincs uj sor, nincs uzenet, riasztas (korabban a levelbol is ment no-show SMS)
-  { const db4 = d1(); const k4 = hamisKuldok();
-    const u = await ingest(db4, env, lem({ ...REKA, ok: 'Nem jött el' }, helyiEpoch(2026, 11, 25, 18, 0)), helyiEpoch(2026, 11, 25, 18, 0));
-    assert.equal(u.tipus, 'riasztas:nem_jelent_meg_nincs_foglalas'); assert.equal(u.valtozas, false); assert.equal(u.egyezo, 0);
-    assert.equal((await db4.sqlite.prepare('SELECT COUNT(*) AS n FROM foglalasok').get()).n, 0); assert.equal(await noshowUzenet(db4), 0);
-    assert.equal((await tick(db4, env, k4, helyiEpoch(2026, 11, 26, 10, 10))).elkuldve, 0);
-    assert.equal((await db4.sqlite.prepare("SELECT tipus FROM esemenyek WHERE forras_id = 'l1'").get()).tipus, 'ingest:riasztas:nem_jelent_meg_nincs_foglalas'); }
-  // 8) TOBB egyezo foglalas (ugyanaz a vendeg / telefon / idopont, ket foglalas): fail-closed, egyik sem valtozik
-  { const db5 = d1();
-    await ingest(db5, env, foglaltLevel({ ...REKA, uzenetId: 'g1', uuid: UUID1 }), MOST); await ingest(db5, env, foglaltLevel({ ...REKA, uzenetId: 'g2', uuid: '11111111-2222-4333-8444-555555555555' }), MOST + 1);
-    const u = await ingest(db5, env, lem({ ...REKA, ok: 'Nem jött el' }, kezdet + 1800), kezdet + 1800);
-    assert.equal(u.tipus, 'riasztas:nem_jelent_meg_tobbertelmu'); assert.equal(u.egyezo, 2);
-    assert.deepEqual((await db5.sqlite.prepare('SELECT DISTINCT allapot FROM foglalasok').all()).map((x) => x.allapot), ['aktiv']); assert.equal(await noshowUzenet(db5), 0); }
-  // 9) a level kuldesi ideje NEM bizonyitott (hianyzik / nem masodperc / jovobeli): a "kezdes utan torolt" nem allithato -> csak riasztas (egy kesei feldolgozas nem tehet kezdes elotti torlest no-show-va)
-  for (const kuldve of [undefined, 'nem szam', (kezdet + 1800) * 1000, kezdet + 99999]) {
-    const { db } = await felvesz();
-    const n = await ingest(db, env, lem({ ...REKA, ok: 'Nem jött el' }, kezdet + 1800, kuldve), kezdet + 1800);
-    assert.equal(n.tipus, 'riasztas:utolagos_torles', String(kuldve)); assert.equal(await allapot(db), 'aktiv'); assert.equal(await noshowUzenet(db), 0);
-  }
-  // 10) egy mar LEMONDOTT sor azonos id-vel nem "egyezo foglalas": nincs no-show a lemondott sorbol
-  { const db6 = d1();
-    await ingest(db6, env, foglaltLevel({ ...REKA }), MOST);
-    await db6.sqlite.prepare("UPDATE foglalasok SET allapot = 'lemondva'").run();
-    const u = await ingest(db6, env, lem({ ...REKA, ok: 'Nem jött el' }, kezdet + 1800), kezdet + 1800);
-    assert.equal(u.tipus, 'riasztas:nem_jelent_meg_nincs_foglalas'); assert.equal(await allapot(db6), 'lemondva'); assert.equal(await noshowUzenet(db6), 0); }
+  // 4) ismeretlen (a rendszer inditasa elotti) foglalas no-show-ja: a levelbol is megy az SMS + e-mail
+  const db4 = d1(); const k4 = hamisKuldok();
+  const u = await ingest(db4, env, lemondottLevel({ ...REKA, ok: '' }), helyiEpoch(2026, 11, 25, 18, 0));
+  assert.equal(u.tipus, 'nem_jelent_meg'); assert.equal(u.ismeretlenVolt, true);
+  assert.equal((await tick(db4, env, k4, helyiEpoch(2026, 11, 26, 10, 10))).elkuldve, 2);
 });
 
 test('no-show kuldesi ido: az idopont napjan masnap 10:00; kesobb nappal fel ora mulva, reggel 10:00, este masnap 10:00', () => {

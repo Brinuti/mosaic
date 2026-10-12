@@ -52,14 +52,10 @@ export function uzletagFelismer({ fiok, kuldo }) {
 export const szolgNorm = (s) => String(s || '').normalize('NFC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 
 const PILLANATKEP = new Map(snapshot.szolgaltatasok.map((s) => [`${s.uzletag}|${szolgNorm(s.nev)}`, s]));
-const PILLANATKEP_KANON = new Set(snapshot.szolgaltatasok.map((s) => `${s.uzletag}|${szolgNorm(tisztaNev(s.nev))}`));
 
-/**
- * Igaz, ha a szolgaltatas az uzletag Salonic-pillanatkepeben szerepel (vendeg-szolgaltatas, nem belso blokk).
- * Ket szint, kozelito (fuzzy) egyeztetes NELKUL: (1) pontos (szolgNorm), (2) kanonikus (szolgNorm(tisztaNev(.)): az "AKCIO" / "KUPONKODDAL" elotag, az ar- es kedvezmeny-toldalek nem szamit).
- */
+/** Igaz, ha a szolgaltatas az uzletag Salonic-pillanatkepeben szerepel (vendeg-szolgaltatas, nem belso blokk). */
 export function ismertSzolgaltatas(uzletag, szolgaltatas) {
-  return PILLANATKEP.has(`${uzletag}|${szolgNorm(szolgaltatas)}`) || PILLANATKEP_KANON.has(`${uzletag}|${szolgNorm(tisztaNev(szolgaltatas))}`);
+  return PILLANATKEP.has(`${uzletag}|${szolgNorm(szolgaltatas)}`);
 }
 
 /** A szolgaltatas idotartama percben (a Salonic-pillanatkepbol), vagy null. */
