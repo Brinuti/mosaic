@@ -49,7 +49,7 @@ A hirdetési kattintást `?gclid=TESZT123&fbclid=TESZT456&ttclid=TESZT789&utm_so
 
 ## 3. Valódi próbafoglalások (a mérés mellett)
 
-Név „TESZT – Claude”, e-mail `deakfi@grantis.hu`, telefon +36 70 942 0090, a feltétel bepipálva, a hírlevél nem; a motor-URL kattintás-azonosítókkal; a kimenő mérési kérések tiltva. A visszaigazoló e-mail mindháromnál megérkezett.
+Név „TESZT – Claude”, e-mail `<tulajdonos e-mail>`, telefon <tulajdonos telefonszama>, a feltétel bepipálva, a hírlevél nem; a motor-URL kattintás-azonosítókkal; a kimenő mérési kérések tiltva. A visszaigazoló e-mail mindháromnál megérkezett.
 
 | Üzletág | Küldés (perc) | Foglalt időpont | Köszönőoldal | Vendég (`g`) / tranzakcióazonosító | Lemondva |
 |---|---|---|---|---|---|

@@ -51,7 +51,7 @@ async function hiv(method, ut, { body, headers = {}, env, most } = {}) {
   return { ...v, adat: /json/.test(v.headers['content-type'] || '') ? JSON.parse(v.body) : null };
 }
 const torzs = (extra = {}) => ({ termek: 'egyeni', email: 'teszt.claude@example.com', ajandekozott: 'Kiss Anna', nev: 'TESZT – Claude', iranyitoszam: '1023', varos: 'Budapest', cim: 'Bécsi út 2.', ceges: null,
-  attr: { variant_id: 'general', gift_context: 'general', oldal: '/ajandek' }, mer: { ana: true, adv: true }, kulcs: 'k-' + crypto.randomUUID(), telefon: '+36 70 942 0090', ...extra });
+  attr: { variant_id: 'general', gift_context: 'general', oldal: '/ajandek' }, mer: { ana: true, adv: true }, kulcs: 'k-' + crypto.randomUUID(), telefon: '+36 30 000 0001', ...extra });
 const alairt = (piId) => { const pi = mock.allapot.pi(piId); const t = JSON.stringify({ id: 'evt_' + crypto.randomUUID().replace(/-/g, ''), object: 'event', type: 'payment_intent.succeeded', data: { object: { id: piId, object: 'payment_intent', status: 'succeeded', metadata: pi.metadata } } }); const ts = Math.floor(Date.now() / 1000); return { t, f: `t=${ts},v1=${crypto.createHmac('sha256', WHSEC).update(`${ts}.${t}`).digest('hex')}` }; };
 const webhook = (piId, env) => { const e = alairt(piId); return hiv('POST', 'webhook', { body: e.t, headers: { 'stripe-signature': e.f }, env }); };
 const erk = (id, o = {}) => erkezesMent(DB, { source_id: id, uzletag: 'headspa', tipus: 'ajandekkartya', attr: ATTR(), hozz: { ana: true, adv: true, fun: true }, ua: 'UA TESZT', ip: '203.0.113.7', oldal: 'https://x.pages.dev/ajandek', szolgaltatas: 'egyeni', ...o }, NOW);

@@ -14,7 +14,7 @@
 //   --mod nativ osszehasonlitasi alap: a koszonooldal KOZVETLENUL a fo ablakban (landing a click-azonositokkal, majd a Salonic-referrerrel a koszonooldal)
 //   --vissza 1  a koszonooldal utan a bongeszo "vissza" gombja (history.back), es az utana kimeno meres is naplozva ('vissza' fazis)
 //
-// A foglalas: az utolso szabad nap utolso idopontja, "TESZT – Claude" nev, deakfi@grantis.hu, a tulajdonos sajat telefonszama (MERES_TELEFON).
+// A foglalas: az utolso szabad nap utolso idopontja, "TESZT – Claude" nev, <tulajdonos e-mail>, a tulajdonos sajat telefonszama (MERES_TELEFON).
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
 import { UA, platformOf, engedett, dnsArg, ures, hozzajarulasScript, esemenyIras, esemenyUres } from './tilt.mjs';
@@ -28,7 +28,7 @@ const KEZELES = arg('kezeles', '');
 const VAR = +arg('varakozas', '20000');
 const MOD = arg('mod', 'valodi'); // valodi | szim | nativ
 const VISSZA = arg('vissza', '0') === '1';
-const TELEFON = process.env.MERES_TELEFON || '709420090';
+const TELEFON = (process.env.MERES_TELEFON || (() => { throw new Error('MERES_TELEFON kotelezo: a tulajdonos probaszama (a +36 utani resz); a repo nem tartalmazza'); })());
 const CHROME = process.env.CHROME_UTVONAL || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const CLICK = { gclid: 'TESZT123', fbclid: 'TESZT456', ttclid: 'TESZT789' };
 const CLICK_QS = `gclid=${CLICK.gclid}&fbclid=${CLICK.fbclid}&ttclid=${CLICK.ttclid}&utm_source=teszt&utm_medium=cpc`;
@@ -127,7 +127,7 @@ async function adatlap(fr) {
   await tolt('#GuestDataForm_guestPhoneTemp', TELEFON);
   await tolt('#GuestDataForm_guestLastName', 'TESZT –');
   await tolt('#GuestDataForm_guestFirstName', 'Claude');
-  await tolt('#GuestDataForm_guestEmail', 'deakfi@grantis.hu');
+  await tolt('#GuestDataForm_guestEmail', (process.env.MERES_EMAIL || (() => { throw new Error('MERES_EMAIL kotelezo: a tulajdonos probaja e-mail cime; a repo nem tartalmazza'); })()));
   await fr.locator('#GuestDataForm_acceptTerms').check(); // csak a feltetel (hirlevel NEM)
   if (await page.locator('iframe[src*="recaptcha"][src*="bframe"]').count()) throw new Error('RECAPTCHA-KIHIVAS: megallok');
   lepes('urlap kitoltve, kuldes', { ido: new Date().toISOString() });
