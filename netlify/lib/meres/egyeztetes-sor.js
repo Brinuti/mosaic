@@ -55,6 +55,11 @@ export function motorAttrMinoseg(erk) {
   return cid && uaIp && jel ? 'A_teljes' : 'B_motor_reszleges';
 }
 const SD_QA = Object.freeze({ reschedule_confirmed: 'reschedule_confirmed', feloldva_confirmed: 'reschedule_confirmed', halasztva: 'reschedule_suspected_hold', tartva: 'sd_tartva', lejart: 'sd_lejart', atveve: 'sd_atveve_folyamatban', kesz: 'post_t2_booking_object', feloldva_uj: 'post_t2_booking_object' });
+/** Egy 'halasztva' sd sor jellege a reschedule audit-sor alapjan: hianyzo_mezo -> hianyzo_mezo_hold; hianyzo_mezo_potolva / feloldva_*: a dontes MEGSZULETETT (nincs gyanu / az ember feloldotta), de a lezaras kihagyva maradt -> atvetel_megszakadt (nem uj csere-gyanu); egyebkent csere-gyanu hold. */
+const halasztvaJelleg = (reschedule) => {
+  const a = reschedule && reschedule.allapot;
+  return a === 'hianyzo_mezo' ? 'hianyzo_mezo_hold' : (a === 'hianyzo_mezo_potolva' || a === 'feloldva_uj' || a === 'feloldva_confirmed') ? 'atvetel_megszakadt' : 'reschedule_suspected_hold';
+};
 export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = null, erkezes = null, kuldesek = [], reschedule = null, regiStatus = null }) {
   // a foglalaskori pillanatkep (amit az attribucio.js a szervernek kuldott: hozz = { ana, adv, fun, dontes }, attr.ga4.client_id)
   const hozz = erkezes ? jsonVagyNull(erkezes.hozz) : null, attr = erkezes ? jsonVagyNull(erkezes.attr) : null;
@@ -86,7 +91,7 @@ export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = n
   const sdAllapot = sd && egyeztetes ? egyeztetes.sd_allapot || null : null;
   if (sd) { // az sd sor sajat jelzesei: a "parositatlan" a motoros parositas allapota (az sd eppen ezt palyazza be) - nem hiba
     const i = jelzesek.findIndex((x) => /^(parositatlan|egyeztetes_)/.test(x)); if (i >= 0) jelzesek.splice(i, 1);
-    if (sdAllapot === 'halasztva') jelzesek.push(reschedule && reschedule.allapot === 'hianyzo_mezo' ? 'hianyzo_mezo_hold' : 'reschedule_suspected_hold');
+    if (sdAllapot === 'halasztva') jelzesek.push(halasztvaJelleg(reschedule));
     if (sdAllapot === 'tartva') jelzesek.push('sd_tartva');
     if (sdAllapot === 'lejart') jelzesek.push('sd_lejart');
     if (sdAllapot === 'atveve') jelzesek.push('sd_atveve_folyamatban');
@@ -117,7 +122,7 @@ export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = n
     salonic_uuid: sd && egyeztetes ? egyeztetes.uuid || null : null,
     sd_allapot: sdAllapot,
     csere,
-    qa_kategoria: sd ? (sdAllapot === 'halasztva' && reschedule && reschedule.allapot === 'hianyzo_mezo' ? 'hianyzo_mezo_hold' : (SD_QA[sdAllapot] || 'post_t2_booking_object')) : 'motor',
+    qa_kategoria: sd ? (sdAllapot === 'halasztva' ? halasztvaJelleg(reschedule) : (SD_QA[sdAllapot] || 'post_t2_booking_object')) : 'motor',
     no_new_conversion_expected: sdAllapot === 'reschedule_confirmed' || sdAllapot === 'feloldva_confirmed',
   };
 }

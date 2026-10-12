@@ -65,7 +65,7 @@ export function szolgKanon(s) {
 
 // --- megjegyzes (CSAK a Salonic "Megjegyzes" mezoje; a vendeg szabad szovege) -----------------------------------------------------------
 /** Csere- / athelyezes-gyanu a megjegyzesben (ekezet-fuggetlen). A gyanu nem dont: csak a csere-agat nyitja meg (igazolas vagy HOLD). */
-export const CSERE_GYANU = /\b(\w*cser\w*|athelyez\w*|atfoglal\w*|atutemez\w*|atrak\w*|atir\w*|atvinn\w*|atte(?:sz|tt|nn|hete|het|ni)\w*|modosit\w*|(?:meg)?valtoztat\w*|elhalaszt\w*|eltol\w*|elorebb\w*|hatrebb\w*|(?:korabbi|regi|elozo|eredeti)\s+(?:foglalas|idopont|ido)\w*|(?:uj|masik)\s+idopont\w*|korabban|volt\s+\d|torol(?!k)\w*|megsem\b|helyett|lemond\w*|reschedul\w*|instead|moved?|swap\w*|chang\w*|(?:earlier|previous|original|old)\s+(?:booking|appointment|time))/;
+export const CSERE_GYANU = /\b(\w*cser\w*|athelyez\w*|atfoglal\w*|atutemez\w*|atrak\w*|atir\w*|atvinn\w*|atte(?:sz|tt|nn|hete|het|ni)\w*|modosit\w*|(?:meg)?valtoztat\w*|elhalaszt\w*|eltol\w*|elorebb\w*|hatrebb\w*|(?:korabbi|regi|elozo|eredeti)\s+(?:foglalas|idopont|ido)\w*|(?:uj|masik)\s+idopont\w*|korabban|volt\s+\d|torol(?!k)\w*|torl(?:om|ok)\b|torles\w*|megsem?\b|helyett|lemond\w*|reschedul\w*|instead|moved?|swap\w*|chang\w*|(?:earlier|previous|original|old)\s+(?:booking|appointment|time))/;
 export const csereGyanu = (megjegyzes) => CSERE_GYANU.test(fold(megjegyzes));
 const HONAP = { jan: 1, feb: 2, mar: 3, apr: 4, maj: 5, jun: 6, jul: 7, aug: 8, sze: 9, okt: 10, nov: 11, dec: 12 };
 const DATUM_MINTAK = [
@@ -264,16 +264,20 @@ const vegAllapot = (mod, csere) => {
 /**
  * A normal / feloldva_uj vegallapota a DB CELLAALLAPOTAIBOL (nem a hivas sajat osszegzesebol), egyetlen ATOMI feltetelu UPDATE-tel (4. kodattekintes):
  * 'kesz' / 'feloldva_uj' csak akkor, ha az sd azonosito egyik cellaja sem 'halasztva' vagy 'folyamatban'. Kulonben: van 'folyamatban' cella -> egy MASIK hivas dolgozik rajta, a sor
- * allapotat ok irja (kihagyva); csak 'halasztva' cella -> 'tartva' + riasztas (ujrafuttathato). Igy egy cella-CAS vesztes (vagy egy elakadt nyertes) sem ir hamis 'kesz'-t.
+ * allapotat ok irja (kihagyva); csak 'halasztva' cella -> 'tartva' + riasztas (ujrafuttathato; ez az iras is ATOMI feltetelu: egy kozben lezarult cella utan nem irja felul a lezart allapotot). Igy egy cella-CAS vesztes (vagy egy elakadt nyertes) sem ir hamis 'kesz'-t.
  */
 async function veglegesIr(db, uuid, sdId, cel, t) {
-  for (let proba = 0; proba < 2; proba++) {
+  for (let proba = 0; proba < 3; proba++) {
     const r = await db.prepare("UPDATE foglalas_egyeztetes SET sd_allapot = ?2, riasztas = 0, frissitve = ?3 WHERE uuid = ?1 AND sd_id = ?4 AND NOT EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?4 AND allapot IN ('halasztva', 'folyamatban'))").bind(uuid, cel, t, sdId).run();
     if (r.meta && r.meta.changes > 0) return { sd_allapot: cel, riasztas: false };
     const f = await db.prepare("SELECT COALESCE(SUM(allapot = 'folyamatban'), 0) AS f, COALESCE(SUM(allapot = 'halasztva'), 0) AS h FROM meres_kuldes WHERE source_id = ?1").bind(sdId).first();
     if (f && f.f > 0) return { kihagyva: true };
-    if (f && f.h > 0) { await allapotIr(db, uuid, 'tartva', t, true); return { sd_allapot: 'tartva', riasztas: true }; }
-    // semmi sem fuggoben: a felteteles UPDATE egy kozbeeso valtozas miatt nem futott (a cellak kozben lezarultak) -> egyszer ujra
+    if (f && f.h > 0) {
+      // a 'tartva' iras is ATOMI feltetelu (5. kodattekintes / DECISION #142): csak ha az iraskor is van 'halasztva' cella es nincs 'folyamatban' - egy kozben lezarult cella utan a mar lezart allapotot nem irhatja felul
+      const w = await db.prepare("UPDATE foglalas_egyeztetes SET sd_allapot = 'tartva', riasztas = 1, frissitve = ?3 WHERE uuid = ?1 AND sd_id = ?2 AND EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?2 AND allapot = 'halasztva') AND NOT EXISTS (SELECT 1 FROM meres_kuldes WHERE source_id = ?2 AND allapot = 'folyamatban')").bind(uuid, sdId, t).run();
+      if (w.meta && w.meta.changes > 0) return { sd_allapot: 'tartva', riasztas: true };
+    }
+    // a cellak kozben valtoztak (lezarultak / egy masik hivas dolgozni kezdett): a felteteleket ujra kiertekeljuk
   }
   return { kihagyva: true };
 }
@@ -341,9 +345,10 @@ export async function sdAtvetel({ db, env, bejovo = {}, mezok, fuggosegek = {}, 
       const mod = dontes === 'confirmed' ? 'feloldva_confirmed' : 'feloldva_uj';
       const csere = { ...(csereRow || {}), ok: 'feloldva: ' + ok };
       const k = await kuldesFuttat({ ...futas, mod: mod === 'feloldva_uj' ? 'normal' : mod, csere });
+      // az audit-sor ELOBB, a sor allapota UTANA (5. kodattekintes / DECISION #142): ha a Worker a ket iras kozott meghal, a sor 'halasztva' marad (a feloldas ujrafuttathato) - nem marad vegleges allapot elavult audit-sorral
+      await rescheduleIr(db, { uuid, sdId, allapot: mod === 'feloldva_uj' ? 'feloldva_uj' : 'feloldva_confirmed', d: { ...(csereRow || {}), ok: csere.ok }, t });
       const veg = await lezarAllapot(db, { uuid, sdId, mod, csere, t });
       if (veg.kihagyva) return { ...alap, allapot, sd_allapot: allapot, idempotens: true, miert: 'egy parhuzamos hivas mar dolgozik a cellakon: a sor allapotat a nyertes hivas irja', riasztas: sor.riasztas === 1, ...k };
-      await rescheduleIr(db, { uuid, sdId, allapot: mod === 'feloldva_uj' ? 'feloldva_uj' : 'feloldva_confirmed', d: { ...(csereRow || {}), ok: csere.ok }, t });
       return { ...alap, allapot: veg.sd_allapot, sd_allapot: veg.sd_allapot, feloldas: dontes, ...k, riasztas: veg.riasztas };
     }
     // hianyzo_mezo HOLD: ha a Zap mostantol kuldi a megjegyzes kulcsot (akar uresen is), a dontes automatikusan ujraertekelodik (ember nem kell)
@@ -453,7 +458,7 @@ export async function sdRiasztasok(db, env, { fetchImpl, now } = {}) {
   const { results: sorok } = await db.prepare("SELECT e.uuid, e.sd_id, e.sd_allapot, e.sd_ido, e.frissitve, r.allapot AS csere_allapot, r.regi_uuid, r.regi_aktiv, r.reschedule_from, r.reschedule_to, r.ok AS csere_ok FROM foglalas_egyeztetes e LEFT JOIN foglalas_reschedule r ON r.uuid = e.uuid WHERE e.sd_id IS NOT NULL AND (e.sd_allapot IN ('halasztva', 'tartva', 'lejart', 'atveve') OR (e.sd_allapot = 'reschedule_confirmed' AND r.regi_aktiv IS NOT 0)) ORDER BY e.sd_ido DESC LIMIT 200").all();
   let ellenorzes = 0;
   for (const s of sorok || []) {
-    let tipus = s.sd_allapot === 'reschedule_confirmed' ? 'old_booking_still_active' : s.sd_allapot === 'halasztva' ? (s.csere_allapot === 'hianyzo_mezo' ? 'hianyzo_mezo' : s.csere_allapot === 'hianyzo_mezo_potolva' ? 'atvetel_megszakadt' : 'reschedule_suspected') : s.sd_allapot === 'tartva' ? 'elo_allapot_nem_ellenorizheto' : s.sd_allapot === 'lejart' ? 'lejart_48_ora' : 'atvetel_megszakadt';
+    let tipus = s.sd_allapot === 'reschedule_confirmed' ? 'old_booking_still_active' : s.sd_allapot === 'halasztva' ? (s.csere_allapot === 'hianyzo_mezo' ? 'hianyzo_mezo' : (s.csere_allapot === 'hianyzo_mezo_potolva' || s.csere_allapot === 'feloldva_uj' || s.csere_allapot === 'feloldva_confirmed') ? 'atvetel_megszakadt' : 'reschedule_suspected') : s.sd_allapot === 'tartva' ? 'elo_allapot_nem_ellenorizheto' : s.sd_allapot === 'lejart' ? 'lejart_48_ora' : 'atvetel_megszakadt';
     if (tipus === 'old_booking_still_active' && s.regi_uuid && fetchImpl && ellenorzes < 20) { // elo ujraellenorzes: a regi foglalas kozben torolve lett?
       const uz = await db.prepare('SELECT uzletag FROM foglalas_vendeg WHERE uuid = ?1').bind(s.regi_uuid).first();
       const hostnev = uz ? Object.keys(SALONIC_UZLETAG).find((x) => SALONIC_UZLETAG[x] === uz.uzletag) : null; // a foglalas_vendeg.uzletag meres-nev (fodrasz / oxigen / szor), nem BUSINESSES-kulcs

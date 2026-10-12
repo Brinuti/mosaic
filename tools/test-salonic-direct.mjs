@@ -1045,3 +1045,101 @@ test('S0-50 sd_feloldas, de egy masik hivas friss "folyamatban" cellai: a sor ha
   const r2 = await v.post(f);
   assert.equal(r2.sd_allapot, 'feloldva_uj'); assert.equal(v.net.hivasok.length, 2);
 });
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+// 5. kodattekintes (PASS) KISEBB megallapitasainak pre-T2 keményitese (DECISION #142/2): 1 tartva-iras atomi, 3 QA-cimke, 4 feloldas-irasi sorrend, 5 csere-regex alakok
+/** A "cella-allapot osszeg" SELECT UTAN lefuttat egy mutaciot: egy parhuzamos hivas kozben atallitotta a cellakat (az elso ilyen SELECT utan egyszer). */
+function versenyUtanSelect(v, mutacio) {
+  const orig = v.e.KULCS_DB; let n = 0;
+  v.e.KULCS_DB = { prepare: (sql) => { const p = orig.prepare(sql); if (!sql.includes("SUM(allapot = 'folyamatban')")) return p; return { ...p, bind: (...a) => { const b = p.bind(...a); return { ...b, first: async () => { const r = await b.first(); if (!n++) mutacio(); return r; } }; } }; }, batch: orig.batch };
+  return () => n;
+}
+/** Worker-halal szimulacio: a minta szerinti SQL `run()`-ja kivetelt dob, amig a kapcsolo be van kapcsolva. */
+function halalSql(v, minta) {
+  const orig = v.e.KULCS_DB; const allapot = { be: true, talalt: 0 };
+  v.e.KULCS_DB = { prepare: (sql) => { const p = orig.prepare(sql); if (!minta.test(sql)) return p; return { ...p, bind: (...a) => { const b = p.bind(...a); return { ...b, run: async () => { if (allapot.be) { allapot.talalt++; throw new Error('Worker halal (szimulalt)'); } return b.run(); } }; } }; }, batch: orig.batch };
+  return allapot;
+}
+const sdSor = (v, u) => v.sql('SELECT sd_allapot, riasztas FROM foglalas_egyeztetes WHERE uuid = ?1', u)[0];
+const csereSor = (v, u) => v.sql('SELECT allapot FROM foglalas_reschedule WHERE uuid = ?1', u)[0];
+
+test('S0-51 csere-regex: "torlest kerem" / "torlom az elozot" / "megse jo" alakok is HOLD (a tobbi hamis pozitiv nem); a regex nyitott veguek - a korlat dokumentalt', async () => {
+  for (const m of ['Törlést kérem', 'Kérem a törlést', 'Törlöm az előzőt', 'Törlök egyet', 'Mégse jó', 'mégse jó az idő', 'Mégsem jó']) assert.ok(csereGyanu(m), m);
+  for (const m of ['Törlőkendőt kérek', 'A törlőkendő legyen puha', 'Kérek törölközőt', 'Saját törölközőt hozok', 'Megsemmisült a kuponom?']) assert.ok(!csereGyanu(m), m);
+  for (const megj of ['Törlést kérem', 'Törlöm az előzőt', 'Mégse jó']) {
+    const { v, b } = await jelolt({}, { megjegyzes: megj, uj_vendeg: true });
+    const r = await v.sd(b); assert.equal(r.sd_allapot, 'halasztva', megj); assert.equal(v.net.hivasok.length, 0, 'HOLD: ' + megj);
+  }
+  { const { v, b } = await jelolt({}, { megjegyzes: 'Törlőkendőt kérek', uj_vendeg: true }); assert.equal((await v.sd(b)).allapot, 'kesz'); assert.equal(v.net.hivasok.length, 4); }
+});
+
+test('S0-52 a "tartva" iras is atomi: ha a SELECT utan egy parhuzamos hivas lezarta a cellakat, a lezart allapotot nem irja felul hamis tartva + riasztas; ha egy masik hivas dolgozni kezd, a sor nem irodik', async () => {
+  { // a cellak a SELECT es az iras kozott lezarulnak -> a vegso allapot feloldva_uj (nem tartva), riasztas nelkul
+    const { v, u, b } = await csereVilag({ nincsRegi: true });
+    assert.equal((await v.sd(b)).allapot, 'halasztva'); v.net.allapot.set(u, 'hiba');
+    const n = versenyUtanSelect(v, () => v.D.db.prepare("UPDATE meres_kuldes SET allapot = 'kesz' WHERE allapot = 'halasztva'").run());
+    const r = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'emberi: uj vendeg' });
+    assert.ok(n() >= 1, 'a verseny-injektalas lefutott');
+    assert.deepEqual([r.sd_allapot, r.riasztas], ['feloldva_uj', false]);
+    assert.deepEqual([sdSor(v, u).sd_allapot, sdSor(v, u).riasztas], ['feloldva_uj', 0]);
+    assert.deepEqual(await riasztasok(v, u), [], 'nincs hamis riasztas');
+  }
+  { // egy masik hivas a SELECT utan "folyamatban"-ra allitja a cellak egy reszet (a tobbi halasztva marad) -> nem irunk tartva-t, a valasz idempotens, a riasztas-jelzo valtozatlan
+    const { v, u, b } = await csereVilag({ nincsRegi: true });
+    assert.equal((await v.sd(b)).allapot, 'halasztva'); v.net.allapot.set(u, 'hiba');
+    versenyUtanSelect(v, () => v.D.db.prepare("UPDATE meres_kuldes SET allapot = 'folyamatban', frissitve = ?1 WHERE allapot = 'halasztva' AND platform = 'meta'").run(Math.floor(v.t() / 1000))); // vegyes: a tobbi platform cellaja halasztva marad
+    const r = await v.post({ ...b, muvelet: 'sd_feloldas', dontes: 'uj_konverzio', ok: 'emberi: uj vendeg' });
+    assert.equal(r.idempotens, true); assert.equal(r.riasztas, true, 'a skip-valasz a sor valos riasztas-jelzojet adja'); assert.equal(r.sd_allapot, 'halasztva');
+    assert.deepEqual([sdSor(v, u).sd_allapot, sdSor(v, u).riasztas], ['halasztva', 1], 'a sort nem irtuk');
+  }
+});
+
+test('S0-53 QA-riport es riasztas-tipus: hianyzo_mezo_potolva + halasztva = atvetel_megszakadt (nem reschedule_suspected_hold); hianyzo_mezo es valodi csere-gyanu cimkeje valtozatlan', async () => {
+  const { egyeztetoSorok } = await import('../netlify/lib/meres/egyeztetes-sor.js');
+  const riport = async (v, u) => { const tol = Math.floor(T0 / 1000) - 4 * 86400, ig = Math.floor(T0 / 1000) + 2 * 86400; const r = await egyeztetoSorok(v.db, { tol, ig }); assert.equal(r.ok, true); return r.sorok.find((s) => s.salonic_uuid === u); };
+  { // (a) hianyzo_mezo (a kulcs nem jott): hianyzo_mezo_hold + hianyzo_mezo riasztas
+    const { v, u, b } = await jelolt({}, { uj_vendeg: true }); const { megjegyzes, ...nelkule } = b; await v.sd(nelkule);
+    const s = await riport(v, u); assert.deepEqual([s.qa_kategoria, s.jelzesek.includes('hianyzo_mezo_hold'), s.jelzesek.includes('reschedule_suspected_hold')], ['hianyzo_mezo_hold', true, false]);
+    assert.deepEqual((await riasztasok(v, u)).map((x) => x.tipus), ['hianyzo_mezo']);
+  }
+  { // (b) a kulcs megjott, de a lezaras kihagyva maradt (masik hivas cellai): hianyzo_mezo_potolva + halasztva -> atvetel_megszakadt
+    const { v, u, b } = await jelolt({}, { uj_vendeg: true }); const { megjegyzes, ...nelkule } = b; await v.sd(nelkule);
+    v.D.db.prepare("UPDATE meres_kuldes SET allapot = 'folyamatban', frissitve = ?1").run(Math.floor(v.t() / 1000));
+    assert.equal((await v.sd(b)).sd_allapot, 'halasztva'); assert.equal(csereSor(v, u).allapot, 'hianyzo_mezo_potolva');
+    const s = await riport(v, u);
+    assert.deepEqual([s.sd_allapot, s.qa_kategoria, s.jelzesek.includes('atvetel_megszakadt'), s.jelzesek.includes('reschedule_suspected_hold'), s.jelzesek.includes('hianyzo_mezo_hold')], ['halasztva', 'atvetel_megszakadt', true, false, false]);
+    assert.deepEqual((await riasztasok(v, u)).map((x) => x.tipus), ['atvetel_megszakadt']);
+  }
+  { // (c) valodi csere-gyanu: reschedule_suspected_hold + reschedule_suspected
+    const { v, u, b } = await jelolt({}, { megjegyzes: 'A korabbi 16 oras foglalas helyett', uj_vendeg: false }); await v.sd(b);
+    const s = await riport(v, u); assert.deepEqual([s.qa_kategoria, s.jelzesek.includes('reschedule_suspected_hold')], ['reschedule_suspected_hold', true]);
+    assert.deepEqual((await riasztasok(v, u)).map((x) => x.tipus), ['reschedule_suspected']);
+  }
+});
+
+test('S0-54 a feloldas irasi sorrendje: audit-sor ELOBB, allapot UTANA - Worker-halalnal a sor halasztva marad (nem lesz vegleges allapot elavult audit-sorral), a feloldas ujrafuttathato', async () => {
+  for (const dontes of ['confirmed', 'uj_konverzio']) {
+    const { v, u, b } = await jelolt({}, { megjegyzes: 'A korabbi 16 oras foglalas helyett', uj_vendeg: false });
+    assert.equal((await v.sd(b)).sd_allapot, 'halasztva'); assert.equal(csereSor(v, u).allapot, 'suspected');
+    const halal = halalSql(v, /^UPDATE foglalas_egyeztetes SET sd_allapot/); // a sor-allapot iras meghal
+    const f = { ...b, muvelet: 'sd_feloldas', dontes, ok: 'emberi dontes' };
+    await v.post(f).catch(() => null); // a vegpont a kivetelt hibavalaszba csomagolhatja: a mellekhatas szamit
+    assert.ok(halal.talalt >= 1);
+    const jel = dontes === 'confirmed' ? 'feloldva_confirmed' : 'feloldva_uj';
+    assert.equal(csereSor(v, u).allapot, jel, 'az audit-sor mar a dontest tartalmazza');
+    assert.equal(sdSor(v, u).sd_allapot, 'halasztva', 'a sor nem lett vegleges: a feloldas ujrafuttathato');
+    assert.deepEqual((await riasztasok(v, u)).map((x) => x.tipus), ['atvetel_megszakadt'], 'a felbemaradt feloldas nem uj csere-gyanukent latszik');
+    halal.be = false;
+    const r2 = await v.post(f);
+    assert.equal(r2.sd_allapot, jel); assert.deepEqual([sdSor(v, u).sd_allapot, sdSor(v, u).riasztas], [jel, 0]); assert.equal(csereSor(v, u).allapot, jel);
+    assert.deepEqual(await riasztasok(v, u), []);
+    assert.equal(v.net.hivasok.length, dontes === 'confirmed' ? 0 : 2, 'a cellak egyszer mennek ki (idempotens ujrafuttatas)');
+  }
+  { // az audit-sor irasa hal meg: a sor es az audit valtozatlan, az ujrafuttatas lefut
+    const { v, u, b } = await jelolt({}, { megjegyzes: 'A korabbi 16 oras foglalas helyett', uj_vendeg: false }); await v.sd(b);
+    const halal = halalSql(v, /^INSERT INTO foglalas_reschedule/); const f = { ...b, muvelet: 'sd_feloldas', dontes: 'confirmed', ok: 'emberi dontes' };
+    await v.post(f).catch(() => null); assert.ok(halal.talalt >= 1, 'a szimulalt halal lefutott');
+    assert.deepEqual([sdSor(v, u).sd_allapot, csereSor(v, u).allapot], ['halasztva', 'suspected']);
+    halal.be = false; assert.equal((await v.post(f)).sd_allapot, 'feloldva_confirmed'); assert.equal(csereSor(v, u).allapot, 'feloldva_confirmed');
+  }
+});
