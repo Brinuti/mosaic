@@ -10,6 +10,7 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { utvonal } from '../lib/utvonal.js';
 import { TABLAZAT_CSV, osszesSor } from '../lib/kitelepulesek.js';
+import { TRUSTINDEX_TARTALOM, ertekelesAdat } from '../lib/ertekeles.js';
 
 // DIST=<mappa> mas build kiszolgalasara (pl. elotte / utana osszeveteshez, tools/klon-regresszio.mjs)
 const DIST = process.env.DIST ? path.resolve(process.env.DIST) : path.resolve(import.meta.dirname, '../dist');
@@ -36,6 +37,13 @@ createServer((req, res) => {
   if (req.method === 'GET' && url.pathname === '/api/kitelepulesek') {
     fetch(TABLAZAT_CSV).then((v) => (v.ok ? v.text() : Promise.reject(new Error('HTTP ' + v.status))))
       .then((csv) => { res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(osszesSor(csv))); })
+      .catch((e) => { res.writeHead(502, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ hiba: e.message })); });
+    return;
+  }
+  // a Google-ertekeles a Trustindex-widgetbol (elesben: functions/[[path]].js)
+  if (req.method === 'GET' && url.pathname === '/api/ertekeles') {
+    fetch(TRUSTINDEX_TARTALOM).then((v) => (v.ok ? v.text() : Promise.reject(new Error('HTTP ' + v.status))))
+      .then((h) => { const a = ertekelesAdat(h); if (!a) throw new Error('a widget fejlece nem olvashato'); res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(a)); })
       .catch((e) => { res.writeHead(502, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify({ hiba: e.message })); });
     return;
   }

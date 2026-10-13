@@ -184,7 +184,8 @@ async function lapTeszt(o, nezet, ctx) {
   });
   await p.evaluate(() => document.querySelectorAll('#mp-cc').forEach((e) => e.remove()));   // a suti-sav a lap aljat takarja: a vendeg elfogadja / elutasitja
   // tartalom-lefedettseg
-  const tartalom = await p.evaluate(() => document.querySelector('main#fo')?.innerText || '');
+  // (a csukott harmonika tartalma nem latszik az innerText-ben: a lefedettseghez kinyitjuk, utana becsukjuk)
+  const tartalom = await p.evaluate(() => { const d = [...document.querySelectorAll('main#fo details')]; d.forEach((x) => { x.open = true; }); const t = document.querySelector('main#fo')?.innerText || ''; d.forEach((x) => { x.open = false; }); return t; });
   const ered = JSON.parse(fs.readFileSync(tartalomFajl(o), 'utf8'));
   // az eredeti oldal szovege: a kinyert JSON szovegei + az eredeti oldal (Wix-klon) lathato szovege
   if (nezet === 'asztali') {
@@ -194,9 +195,10 @@ async function lapTeszt(o, nezet, ctx) {
     await eredeti.close();
     const t = norm(tartalom);
     // (a kitelepulesek datum-sorai naponta valtoznak: a mentett tartalomban a regi datumok vannak, az oldal betoltes utan a tablazatbol frissul - ezeket nem hasonlitjuk)
+    // (a kategoria-oldalakon a hos ertekeles-sora a Trustindex adataibol frissul, a "Piercinget csak eu szakembertol!" felirat a hosbol kikerult: tulajdonosi dontes, 2026-10-13)
     // a kategoria-oldalakon a fooldal dobozai (ekszer, akcio / arlista, media, csapat, helyszin) valtottak fel az eredeti blokkokat: azok szovege nem kell
     const cserelt = KATEGORIA_UTAK.has(o.ut) ? norm((kategoriaCserelt(ered, TESZT_T) || []).join(' ')) : '';
-    const hianyzo = [...new Set(sorok)].filter((s) => !t.includes(norm(s)) && !(cserelt && cserelt.includes(norm(s))) && !/^(január|február|március|április|május|június|július|augusztus|szeptember|október|november|december)\s*\d/i.test(s) && !/^(hozzászólások|hozzászólás írása|rendezés erre|legújabb|még nincsenek értékelések|megosztás|friss bejegyzések|az összes megtekintése)/i.test(s) && !/^\d+\s*(megtekint|kedvel|hozzászólás)/i.test(s) && !/^(\d+ perc olvasás|id|Search this site)$/i.test(s) && !/csillagot kapott|nincs kedvelve|Értékelés hozzáadása|^\d+ kedvelés|^Like post|\d+ megtekintés|\d+ hozzászólás$/i.test(s));
+    const hianyzo = [...new Set(sorok)].filter((s) => !t.includes(norm(s)) && !(cserelt && cserelt.includes(norm(s))) && !/^(január|február|március|április|május|június|július|augusztus|szeptember|október|november|december)\s*\d/i.test(s) && !(KATEGORIA_UTAK.has(o.ut) && /^(Kiváló\s*[-–|]|Piercinget csak eü szakembertől)/i.test(s)) && !/^(hozzászólások|hozzászólás írása|rendezés erre|legújabb|még nincsenek értékelések|megosztás|friss bejegyzések|az összes megtekintése)/i.test(s) && !/^\d+\s*(megtekint|kedvel|hozzászólás)/i.test(s) && !/^(\d+ perc olvasás|id|Search this site)$/i.test(s) && !/csillagot kapott|nincs kedvelve|Értékelés hozzáadása|^\d+ kedvelés|^Like post|\d+ megtekintés|\d+ hozzászólás$/i.test(s));
     const lefedett = sorok.length ? 1 - hianyzo.length / new Set(sorok).size : 1;
     ok(`${cim}: az eredeti oldal szovege megvan (${(lefedett * 100).toFixed(1)}%)`, hianyzo.length === 0, hianyzo.slice(0, 4).map((s) => `«${s.slice(0, 70)}»`).join(' '));
   }
