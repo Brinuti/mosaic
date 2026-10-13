@@ -217,3 +217,126 @@
   .oldal-kategoria .uzletek{padding:16px 10px}
 }
 @media print{.kat-fb .kar-gomb{display:none!important}}
+
+/* =====================================================================================================================================
+   "B" valtozat (/uj/uj-*-piercing-b): az eredeti -b oldal szerkezete, szovegei; a hosben galeria (nincs rozsaszin keret, nincs szurke doboz).
+   Forras: tools/uj-oldalak/kategoria.mjs (KATEGORIA_B_UTAK). A .kar galeria-sav viselkedese az uj-oldalak.js-ben van.
+   ===================================================================================================================================== */
+.kat-hos-b .hos-kep{align-self:center}
+.kat-hos-kar{position:relative}
+.kat-hos-kar .kar-sav{gap:0;padding:0;border-radius:30px;box-shadow:var(--sh);background:var(--beige-l)}
+.kat-hos-kar .kar-dia{flex:0 0 100%;border:0;border-radius:0;background:var(--beige-l)}
+.kat-hos-kar .kar-dia img{aspect-ratio:1/1;object-fit:cover;cursor:zoom-in}
+.kat-hos-kar .kar-gomb{top:50%;width:46px;height:46px;box-shadow:0 3px 12px rgba(0,0,0,.22)}
+.kat-hos-kar .kar-gomb:hover:not(:disabled){background:var(--slate);color:#fff}
+.kat-hos-kar .kar-gomb .ik{width:22px;height:22px;stroke-width:2.2}
+.kat-hos-kar .kar-elozo{left:12px}
+.kat-hos-kar .kar-kov{right:12px}
+.kat-hos-kar p.kar-szam{position:absolute;left:16px;top:16px;margin:0;padding:3px 12px;border-radius:99px;background:rgba(69,70,89,.88);color:#fff;font-size:.8rem;font-weight:700}
+
+/* "A migren piercing biztonsagos es termeszetes modszer": kep + szoveg + pipak */
+.kat-biztos{grid-template-columns:minmax(220px,340px) minmax(0,1fr);gap:44px}
+.kat-biztos-kep{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:22px;box-shadow:var(--sh);cursor:zoom-in}
+
+/* szoveg + kep parok (hova szurjuk / hogy nez ki / mennyibe kerul) */
+.kat-parok{display:grid;gap:22px}
+.oldal-kategoria main>section.kat-parok{margin-block:26px}
+.kat-par{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px}
+.kat-par-ford{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}
+.kat-par-ford .kat-par-kep{order:-1}
+.kat-par-kep{display:block;width:100%;aspect-ratio:1/1;max-height:400px;object-fit:cover;border-radius:22px;box-shadow:var(--sh);cursor:zoom-in}
+.kat-par .kat-doboz-szoveg>p:not(.felirat){font-size:1rem;line-height:1.6}
+
+/* fuggoleges bemutato video */
+.kat-bevideo{grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:44px}
+.kat-bevideo-kep{order:-1;justify-self:center;width:100%;max-width:300px}
+.kat-bevideo-kep video{display:block;width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:22px;box-shadow:var(--sh);background:#000}
+
+/* "Miert a Medical Piercinget valaszd?": ikonos racs */
+.kat-bizalom{display:block;padding:34px}
+.kat-bizalom>h2{margin-bottom:22px;text-align:center}
+.kat-biz-racs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0;padding:0;list-style:none}
+.kat-biz-racs li{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--sh-s)}
+.kat-biz-racs img{flex:none;width:58px;height:58px;object-fit:contain}
+.kat-biz-racs b{display:block;color:var(--navy);font-size:1rem;line-height:1.25}
+.kat-biz-racs span{display:block;margin-top:2px;color:var(--mut);font-size:.88rem;line-height:1.35}
+
+/* orvosi ajanlas */
+.kat-ajanlas{margin:0;text-align:center}
+.kat-ajanlas img{display:inline-block;width:min(100%,820px);height:auto;border-radius:24px;box-shadow:var(--sh);cursor:zoom-in}
+
+/* "Budapesten a Jaszainal varunk": elerhetoseg + terkep */
+.kat-elerh{display:block;padding:34px}
+.kat-elerh>h2{margin-bottom:22px}
+.kat-elerh-racs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:34px;align-items:stretch}
+.kat-elerh-adat{display:grid;gap:18px;align-content:start}
+.kat-elerh-sor{display:flex;gap:14px;align-items:flex-start}
+.kat-elerh-sor>.ik{flex:none;width:40px;height:40px;padding:10px;border-radius:50%;background:#fff;color:var(--slate);box-shadow:var(--sh-s)}
+.kat-elerh-sor h3{margin:0 0 3px;font-size:1.05rem;color:var(--navy)}
+.kat-elerh-sor p{margin:0 0 2px;font-size:.98rem}
+.kat-nyitva{display:grid;gap:2px;margin:0;font-size:.98rem}
+.kat-nyitva div{display:flex;gap:14px}
+.kat-nyitva dt{min-width:3.4em;font-weight:700}
+.kat-nyitva dd{margin:0}
+.kat-elerh-akcio{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.kat-kozosseg{display:flex;gap:8px;margin:0;padding:0;list-style:none}
+.kat-kozosseg a{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#fff;color:var(--slate);box-shadow:var(--sh-s)}
+.kat-kozosseg a:hover{background:var(--slate);color:#fff}
+.kat-kozosseg .ik{width:20px;height:20px}
+.kat-elerh-terkep .terkepdoboz{aspect-ratio:auto;height:100%;min-height:320px;max-height:none}
+
+@media (max-width:1000px){
+  .kat-hos-b .hos-kep{max-width:520px}
+  .kat-biztos,.kat-bevideo{grid-template-columns:minmax(0,1fr);justify-items:center;gap:22px}
+  .kat-biztos-kep{max-width:300px}
+  .kat-par,.kat-par-ford{grid-template-columns:minmax(0,1fr);gap:22px}
+  .kat-par-kep,.kat-par-ford .kat-par-kep{order:-1;aspect-ratio:16/10;max-height:320px}
+  .kat-biz-racs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kat-elerh-racs{grid-template-columns:minmax(0,1fr);gap:22px}
+  .kat-elerh-terkep .terkepdoboz{min-height:260px}
+}
+@media (max-width:760px){
+  /* mobil hos: cim, GOMBOK, galeria, utana a bevezeto, ertekeles, linkek, bizalmi sor (mindket gomb az elso kepernyon) */
+  .kat-hos-b .hos-racs{display:flex;flex-direction:column;gap:12px}
+  .kat-hos-b .hos-szoveg{display:contents}
+  .kat-hos-b .hos-cim{order:1}
+  .kat-hos-b .hos-szoveg .gombsor{order:2;margin:0}
+  .kat-hos-b .hos-kep{order:3;margin:0 auto 4px}
+  .kat-hos-b .hos-bevezeto{order:4}
+  .kat-hos-b .kat-ertekeles{order:5;margin-top:0}
+  .kat-hos-b .hos-linkek{order:6;margin-top:0}
+  .kat-hos-b .bizalom{order:7;margin-top:6px}
+  .kat-hos-kar .kar-sav{border-radius:22px}
+  .kat-hos-kar .kar-gomb{width:38px;height:38px}
+  .kat-hos-kar .kar-elozo{left:8px}
+  .kat-hos-kar .kar-kov{right:8px}
+  .kat-hos-kar p.kar-szam{left:10px;top:10px;padding:2px 10px;font-size:.74rem}
+  /* a szoveges dobozok: olvashato, balra igazitott szoveg; a kepek kisebbek */
+  .kat-biztos,.kat-par,.kat-bevideo{text-align:left}
+  .kat-biztos .kat-doboz-szoveg,.kat-par .kat-doboz-szoveg{align-items:stretch}
+  .kat-biztos{grid-template-columns:96px minmax(0,1fr);gap:8px 12px;align-items:center;justify-items:stretch}
+  .kat-biztos .kat-doboz-szoveg{display:contents}
+  .kat-biztos-kep{grid-column:1;grid-row:1;max-width:96px;margin:0}
+  .kat-biztos h2{grid-column:2;grid-row:1;margin:0;text-align:left}
+  .kat-biztos .kat-doboz-szoveg>p,.kat-biztos .pipak{grid-column:1/-1;text-align:left}
+  .kat-biztos .pipak li{text-align:left}
+  .kat-par-kep,.kat-par-ford .kat-par-kep{aspect-ratio:16/9;max-height:190px;border-radius:16px}
+  .kat-par .kat-doboz-szoveg>p:not(.felirat){font-size:.88rem;line-height:1.45}
+  .kat-bevideo{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:12px;align-items:center;justify-items:stretch}
+  .kat-bevideo-kep{max-width:150px}
+  .kat-bevideo-kep video{border-radius:16px}
+  .kat-bevideo .kat-doboz-szoveg{align-items:flex-start}
+  .kat-bevideo .felirat{display:flex;justify-content:flex-start}
+  .kat-bizalom{padding:16px 0 16px 14px}
+  .kat-bizalom>h2{padding-right:14px}
+  .kat-biz-racs{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 14px 8px 0;-webkit-overflow-scrolling:touch}
+  .kat-biz-racs li{flex:0 0 72%;scroll-snap-align:start;flex-direction:column;text-align:center;gap:6px;padding:12px 10px}
+  .kat-biz-racs img{width:46px;height:46px}
+  .kat-biz-racs b{font-size:.92rem}
+  .kat-biz-racs span{font-size:.8rem}
+  .kat-ajanlas img{border-radius:16px}
+  .kat-elerh{padding:16px 14px;text-align:left}
+  .kat-elerh>h2{text-align:center}
+  .kat-elerh-akcio{justify-content:flex-start}
+  .kat-elerh-terkep .terkepdoboz{min-height:220px}
+}

@@ -13,6 +13,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { kulcsbol, fajlnev } from '../lib/utvonal.js';
 import { oldalHtml, indexHtml } from './uj-oldalak/sablon.mjs';
+import { KATEGORIA_B_UTAK, bUt } from './uj-oldalak/kategoria.mjs';
 
 export const UJ_FOOLDAL_UT = '/uj-fooldal';
 export const TUKOR_ELO = '/uj';   // a tobbi oldal tukre: /uj/<eredeti utvonal>
@@ -97,6 +98,12 @@ export function ujOldalak(ROOT, DIST) {
     oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, adat, { lapozo }));
     jegyzek.push({ ut: adat.ut, cim: adat.cim, tipus: adat.tipus, uj: TUKOR_ELO + (eredeti.get(adat.ut) || encodeURI(adat.ut)) });
     db++;
+    // a "B" kategoria-oldalak: ugyanennek az eredeti -b oldalnak a mostani kategoria-dizajnnal epitett valtozata, KULON cimen (/uj/uj-migren-piercing-b)
+    if (KATEGORIA_B_UTAK.has(adat.ut)) {
+      oldalKiir(ROOT, DIST, TUKOR_ELO + bUt(adat.ut), oldalHtml(ROOT, adat, { lapozo, b: true }));
+      jegyzek.push({ ut: adat.ut, cim: adat.cim + ' – új kinézet (B)', tipus: adat.tipus, uj: TUKOR_ELO + bUt(adat.ut) });
+      db++;
+    }
   }
   const index = indexHtml(ROOT, jegyzek, { datum: new Date().toISOString().slice(0, 10) });
   oldalKiir(ROOT, DIST, '/uj-oldalak', index);

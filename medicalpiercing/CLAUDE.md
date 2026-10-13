@@ -19,3 +19,6 @@ Ezen felül:
   gyors szemrevételezés). Az együttes élesítés akkor jön, amikor a tulajdonos jelzi, hogy véglegesek vagyunk: akkor merge a `main`-re, a teljes teszt
   (`tools/uj-oldalak-teszt.mjs`, `tools/uj-fooldal-teszt.mjs`) és az ellenőrzés az éles oldalon. (Ez felülírja a gyökér `CLAUDE.md` „azonnali élesítés”
   szabályát ezekre a rejtett oldalakra.)
+- **A „B” kategóriaoldalak** (`/uj/uj-migren-piercing-b`, `…-shenmen-…`, `…-klimax-…`, `…-slim-…`): az eredeti `-b` oldalak szerkezete és szövege a kategóriaoldalak mostani dizájnjával, **külön címen**, a meglévő `/uj/migren-piercing` stb. változatlan.
+  A kód a `tools/uj-oldalak/kategoria.mjs`-ben van (`KATEGORIA_B_UTAK`, `kategoriaFo(..., { b: true })`), a stílus a `assets/css/uj-kategoria.css` végén; a „Miért a Medical Piercinget válaszd?” ikonjait a
+  `tools/uj-b-ikonok.py` színezi át a főoldal palettájára (`assets/img/uj-biz-*.webp`).
