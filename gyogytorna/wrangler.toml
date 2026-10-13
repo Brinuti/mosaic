@@ -1,0 +1,18 @@
+# Cloudflare Pages: a gyogytornaszom.hu foglalomotorja. A projekt neve: gyogytorna; gyoker (Root directory) a tarhazban: gyogytorna/;
+# build-parancs: node tools/build.mjs, kimenet: dist. A vegpontok: functions/api/*. Eles hasznalat: a www.gyogytornaszom.hu/gy-foglalas/*
+# utvonalat egy kis proxy Worker a Pages-eredetre kuldi (elso feles sutik); az elonezet a Pages sajat cime.
+name = "gyogytorna"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+GY_ATTR_NELKUL = "1"        # hozzajarulas nelkuli (24 oras) munkamenet-forras; vesz-kikapcsolas: "0" (Feri dontese, 2026-10-13)
+GY_ORIGINS = "https://www.gyogytornaszom.hu,https://gyogytornaszom.hu"
+
+# A titkok a Cloudflare felueleten, Secret tipussal, kornyezetenkent: GY_HMAC_KULCS (tranzakcio_id es parosito), GY_ADMIN_KULCS_HASH (a /api/gy-admin es
+# /api/gy-kampanyok kulcsanak SHA-256 hash-e). Az D1 (GY_DB) az eles es az elonezet kozos adatbazisa is lehet (a rekordok "teszt" jelzoje szerint).
+[[d1_databases]]
+binding = "GY_DB"
+database_name = "gy-meres"
+database_id = "00000000-0000-0000-0000-000000000000"   # TODO: a D1 letrehozasa utan a valodi azonosito
