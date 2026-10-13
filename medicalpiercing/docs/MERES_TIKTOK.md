@@ -1,4 +1,8 @@
-# Medical Piercing – TikTok Events API „Schedule” (szerveroldali) – CSAK NAPLÓ
+# Medical Piercing – TikTok Events API „IgazoltFoglalas” (szerveroldali)
+
+> Eseménynév 2026-10-13 óta saját (custom) `IgazoltFoglalas`, NEM `Schedule`: a kampány a böngészős, URL-szabályos
+> (event_id nélküli) SCHEDULE-ra optimalizál, azonos névvel a TikTok nem deduplikálna (dupla számolás). Másodlagos mérés,
+> a kampány tanulását nem érinti. Élesítés: `TIKTOK_EVENTS_TOKEN` titok (Cloudflare, Production) + `mp_beallitas.tiktok_mod='eles'`.
 
 Állapot (2026-10-13): **csak napló**. A TikTok felé **semmi nem megy ki**; a rendszer minden jogosult, Salonic által
 igazolt foglalásnál feljegyzi, *mit küldene*. Élesítés csak a tulajdonos döntésével (lásd 5. pont).
@@ -29,7 +33,7 @@ hozzájárulás pótlásakor, ha a sor már igazolt. A Google-lánctól függetl
 
 ```json
 { "event_source": "web", "event_source_id": "CU2CR03C77UAQJITQK80",
-  "data": [{ "event": "Schedule", "event_time": 1791799100, "event_id": "Foglalas:12169|555|1791800000",
+  "data": [{ "event": "IgazoltFoglalas", "event_time": 1791799100, "event_id": "Foglalas:12169|555|1791800000",
              "user": { "ttclid": "…", "ttp": "…" },
              "page": { "url": "https://www.medicalpiercing.hu/foglalas-ok" },
              "properties": { "currency": "HUF", "value": 24900 } }] }

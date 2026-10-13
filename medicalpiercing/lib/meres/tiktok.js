@@ -1,4 +1,7 @@
-// MEDICAL PIERCING - TikTok Events API (szerveroldali) "Schedule" esemeny a Salonic altal IGAZOLT foglalasokbol.
+// MEDICAL PIERCING - TikTok Events API (szerveroldali) foglalas-esemeny a Salonic altal IGAZOLT foglalasokbol.
+// Esemenynev: SAJAT (custom) "IgazoltFoglalas", NEM "Schedule" (GPT-dontes 2026-10-13): a kampany a bongeszos, URL-szabalyos
+// (event_id nelkuli) SCHEDULE-ra optimalizal; azonos nevvel a TikTok nem deduplikalna -> dupla szamolas az optimalizacios
+// esemenyen. Igy masodlagos meres, a kampany tanulasat nem erinti.
 //
 // ALLAPOT: CSAK NAPLO. Alapertelmezes (mp_beallitas.tiktok_mod hianyzik) = 'naplo': a kuldendo torzset maszkolt
 // azonositokkal az mp_tiktok_feltoltes tablaba irjuk, halozati hivas NINCS. Elesre kapcsolas csak a tulajdonos dontesevel:
@@ -9,6 +12,7 @@
 // piercing-tipus, helyszin, uj/visszatero jeloles. A nem-azonosito mezokon a meres.js vedohaloja (vanErzekeny) fut: talalat -> semmi.
 import { esemenyId, vanErzekeny, SEMLEGES_URL } from './meres.js';
 import { maszk, kitakar, ELES_HOST } from './google-ads.js';
+export const TIKTOK_ESEMENY = 'IgazoltFoglalas';
 
 export const TIKTOK_VEGPONT = 'https://business-api.tiktok.com/open_api/v1.3/event/track/';
 export const TIKTOK_PIXEL = 'CU2CR03C77UAQJITQK80';
@@ -67,7 +71,7 @@ export function tiktokTorzs(sor) {
   const user = { ttclid: String(sor.tiktok_ttclid) };
   if (sor.tiktok_ttp) user.ttp = String(sor.tiktok_ttp);
   const ertek = Number(sor.ertek);
-  const esemeny = { event: 'Schedule', event_time: esemenyIdo(sor), event_id: esemenyId(sor.kulcs), page: { url: SEMLEGES_URL } };
+  const esemeny = { event: TIKTOK_ESEMENY, event_time: esemenyIdo(sor), event_id: esemenyId(sor.kulcs), page: { url: SEMLEGES_URL } };
   if (sor.ertek != null && Number.isFinite(ertek) && ertek > 0) esemeny.properties = { currency: 'HUF', value: Math.round(ertek) };
   const torzs = { event_source: 'web', event_source_id: TIKTOK_PIXEL, data: [{ ...esemeny, user }] };
   // a ttclid / ttp veletlen karaktersor: a tartalmi ellenorzes minden masra vonatkozik
