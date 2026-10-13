@@ -8,8 +8,8 @@ const { chromium } = createRequire('/opt/node-tools/node_modules/')('playwright'
 const ORIGIN = process.argv[2].replace(/\/$/, '');
 const EMAIL = process.env.VENDEG_EMAIL, TEL = process.env.VENDEG_TEL;
 assert.ok(EMAIL && TEL, 'VENDEG_EMAIL es VENDEG_TEL kell');
-const curl = (url, q) => {
-  const args = ['-s', '-i', '-A', 'Mozilla/5.0 (X11; Linux x86_64) Chrome/130 Safari/537.36', '--retry', '5', '--retry-all-errors', '-X', q.method(), url, ...Object.entries(q.headers()).filter(([k]) => ['content-type', 'cookie', 'origin'].includes(k)).flatMap(([k, v]) => ['-H', `${k}: ${v}`]), ...(q.postData() ? ['--data-binary', q.postData()] : [])];
+const curl = (url, q, fej = null) => {
+  const args = ['-s', '-i', '-A', 'Mozilla/5.0 (X11; Linux x86_64) Chrome/130 Safari/537.36', '--retry', '5', '--retry-all-errors', '-X', q.method(), url, ...Object.entries(fej || q.headers()).filter(([k]) => ['content-type', 'cookie', 'origin', 'referer', 'accept', 'accept-language', 'x-requested-with'].includes(k)).flatMap(([k, v]) => ['-H', `${k}: ${v}`]), ...(q.postData() ? ['--data-binary', q.postData()] : [])];
   const nyers = execFileSync('curl', args, { maxBuffer: 20e6 }).toString('latin1');
   const feje = nyers.split(/\r?\n\r?\n/);
   let i = 0; while (i < feje.length - 1 && /^HTTP\/[\d.]+ (100|200 Connection)/.test(feje[i])) i++;
@@ -31,7 +31,11 @@ await ctx.route('**/*', async (route) => {
     const html = lap.body.toString('utf8').replace('src="/assets/js/launcher.js"', `src="${ORIGIN}/assets/js/launcher.js"`).replace('src="/assets/js/suti.js"', `src="${ORIGIN}/assets/js/suti.js"`);
     return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html });
   }
-  return route.continue();
+  // minden mas (Salonic, CDN-ek, Google reCAPTCHA): curl-lel, ujraprobalkozassal - a sandbox-proxy a Chromiumbol megbizhatatlan (jQuery / reCAPTCHA nem toltodott be)
+  if (/(^|\.)(google|gstatic|recaptcha)\.(com|net)$/.test(u.hostname) && !/googletagmanager|google-analytics|googleadservices|doubleclick/.test(u.hostname)) return route.continue(); // a reCAPTCHA-keretek kozvetlenul mennek
+  const r = curl(u.href, q, await q.allHeaders());
+  if (/google|gstatic|recaptcha/.test(u.hostname)) console.log('curl', q.method(), r.status, u.hostname + u.pathname.slice(0, 60), r.body.length);
+  return route.fulfill(r);
 });
 let p, m, keret;
 for (let kiserlet = 1; kiserlet <= 8; kiserlet++) { // a sandbox halozata a Chromiumbol megbizhatatlan: az ELOKESZITES (a veglegesites elott) ujraprobalhato
@@ -68,11 +72,13 @@ await keret.locator('#GuestDataForm_guestEmail').pressSequentially(EMAIL, { dela
 await keret.locator('#GuestDataForm_acceptTerms').check();
 await p.waitForTimeout(4000); // reCAPTCHA
 const fr = p.frames().find((x) => x.name() === 'gy-adatlap');
-console.log('urlap allapot:', JSON.stringify(await fr.evaluate(() => ({ dis: document.getElementById('button-submit-booking').disabled, tel: document.getElementById('GuestDataForm_guestPhoneTemp').value.replace(/\d/g, '#'), ln: document.getElementById('GuestDataForm_guestLastName').value.length, fn: document.getElementById('GuestDataForm_guestFirstName').value.length, em: document.getElementById('GuestDataForm_guestEmail').value.length, terms: document.getElementById('GuestDataForm_acceptTerms').checked, rc: typeof window.grecaptcha, w: innerWidth }))));
+console.log('urlap allapot:', JSON.stringify(await fr.evaluate(() => ({ dis: document.getElementById('button-submit-booking').disabled, tel: document.getElementById('GuestDataForm_guestPhoneTemp').value.replace(/\d/g, '#'), ln: document.getElementById('GuestDataForm_guestLastName').value.length, fn: document.getElementById('GuestDataForm_guestFirstName').value.length, em: document.getElementById('GuestDataForm_guestEmail').value.length, terms: document.getElementById('GuestDataForm_acceptTerms').checked, rc: typeof window.grecaptcha + '/' + typeof (window.grecaptcha && window.grecaptcha.execute), jq: typeof window.jQuery, iti: typeof window.intlTelInput, w: innerWidth }))));
 const gomb = keret.locator('#button-submit-booking');
 await gomb.waitFor();
+for (let i = 0; i < 40 && !(await gomb.isEnabled()); i++) await p.waitForTimeout(1000); // a reCAPTCHA / ervenyesites utan engedelyezodik
 console.log('veglegesito gomb engedelyezve:', await gomb.isEnabled());
-await gomb.click();
+if (process.env.SZARAZ) { console.log('SZARAZ futas: nem veglegesitek'); await b.close(); process.exit(0); }
+await gomb.click({ timeout: 5000 });
 await p.waitForURL(`${ORIGIN}/allapot-ok/`, { timeout: 90000 });
 console.log('a foglalas utan a fo ablak URL-je:', new URL(p.url()).pathname + new URL(p.url()).search);
 await p.waitForFunction(() => (window.dataLayer || []).some((e) => e && e.event === 'foglalas_kesz'), null, { timeout: 30000 }).catch(() => {});
