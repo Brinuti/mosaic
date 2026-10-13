@@ -46,3 +46,7 @@ Varhato jelentes erre a napra (kezi szamolas az eles sorokbol; a vegpont eles ki
 
 ## 5. post288_missing_hmac_index az ELES D1-en (csak olvasas)
 A szamlalo SQL-je a 2026-10-13-i napra az eles D1-en: 2 sor – `9a03d9f7` (headspa, 15:49:06Z, parositott) es `dca36449` (headspa, 18:32:19Z, parositott); pontosan az a ket level, amelyet a 136. komment jelzett. A jelentes `uzletagak.headspa.post288_missing_hmac_index.db = 2`, `osszes.post288_missing_hmac_index = 2`.
+
+## Kiegeszites: `post288_nincs_email` (2026-10-13, #167 143. komment (b))
+Uj, tajekoztato szamlalo a jelolo sorokhoz (`foglalas_vendeg.forras LIKE '%\_nincs\_email'`): a `post288_missing_hmac_index` igy csak a valodi kimaradast mutatja. Teszt: **N25** (jelolo / sd-jelolo / valodi kimaradas / valodi index-sor / parositatlan / proba kulon szamolva; jelolo-ag elott 0) → `node --test tools/test-qa-nap.mjs` **27 / 27 PASS** (N1–N24b + N25 + N7b). Az uj SQL az eles D1-en is lefutott (csak olvasas, 2026-10-13): 0 sor (jelolo meg nincs). A SQL tovabbra is csak SELECT (a teszt N20 ezt ellenorzi).
+

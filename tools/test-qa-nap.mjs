@@ -531,3 +531,36 @@ test('N24b post288: a #288 elotti letrehozo level nem szamit (az a pre288 terule
   const dump = () => JSON.stringify(w.sql("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").map((t) => [t.name, w.sql(`SELECT * FROM ${t.name}`)]));
   const elotte = dump(); await w.jelentes('qa=nap&datum=2026-10-13', { now: Date.UTC(2026, 9, 14, 12) }); assert.equal(dump(), elotte);
 });
+
+// ---------- N25: post288_nincs_email (a meresi oldal jovahagyta, #167 143. komment (b)) ----------
+test('N25 post288_nincs_email: a jelolo soros (forras *_nincs_email) letrehozo level KULON szamlalo, a post288_missing_hmac_index CSAK a valodi kimaradast mutatja; a jelolo agig a szamlalo 0', async () => {
+  const w = await vilag();
+  const E = PRE288_EPOCH; const KESOBB = Date.UTC(2026, 9, 14, 12);
+  const jelolo = w.egyeztetes({ uuid: 'a1a1a1a1-2222-4222-8222-000000000001', kulcs: HEADSPA(), t: E + 100 });
+  w.vendeg({ uuid: jelolo, uzletag: 'headspa', forras: 'level_nincs_email', t: E + 100 });                 // jelolo sor: nincs e-mail
+  const jeloloSd = w.egyeztetes({ uuid: 'b2b2b2b2-2222-4222-8222-000000000002', kulcs: HEADSPA(), t: E + 200 });
+  w.vendeg({ uuid: jeloloSd, uzletag: 'headspa', forras: 'sd_atvetel_nincs_email', t: E + 200 });          // az sd-atvetel jelolo
+  const kimaradas = w.egyeztetes({ uuid: 'c3c3c3c3-2222-4222-8222-000000000003', kulcs: HEADSPA(), t: E + 300 }); // sem sor, sem jelolo: VALODI kimaradas
+  const valodi = w.egyeztetes({ uuid: 'd4d4d4d4-2222-4222-8222-000000000004', kulcs: HEADSPA(), t: E + 400 });
+  w.vendeg({ uuid: valodi, uzletag: 'headspa', email_h: 'a'.repeat(32), forras: 'level', t: E + 400 });      // valodi index-sor: egyik szamlalobol sem
+  w.egyeztetes({ uuid: 'e5e5e5e5-2222-4222-8222-000000000005', kulcs: FODRASZ(), t: E + 500, allapot: 'parositatlan' }); // parositatlan, jelolo nelkul: missing.parositatlan_db
+  const jeloloParositatlan = w.egyeztetes({ uuid: 'f6f6f6f6-2222-4222-8222-000000000006', kulcs: FODRASZ(), t: E + 600, allapot: 'parositatlan' });
+  w.vendeg({ uuid: jeloloParositatlan, uzletag: 'fodrasz', forras: 'level_nincs_email', t: E + 600 });
+  const probaJelolo = w.egyeztetes({ uuid: '99999999-2222-4222-8222-000000000009', kulcs: PMU(), t: E + 700 });
+  w.vendeg({ uuid: probaJelolo, uzletag: 'pmu', forras: 'level_nincs_email', t: E + 700 });
+  const j = await w.jelentes(`qa=nap&datum=2026-10-13&proba=${probaJelolo.slice(0, 8)}`, { now: KESOBB });
+  const h = j.uzletagak.headspa;
+  assert.equal(h.post288_nincs_email.db, 2); assert.deepEqual(h.post288_nincs_email.mintak.map((m) => m.uuid_prefix).sort(), [jelolo.slice(0, 8), jeloloSd.slice(0, 8)].sort());
+  assert.equal(h.post288_missing_hmac_index.db, 1); assert.deepEqual(h.post288_missing_hmac_index.mintak.map((m) => m.uuid_prefix), [kimaradas.slice(0, 8)], 'csak a valodi kimaradas');
+  assert.equal(j.uzletagak.fodrasz.post288_nincs_email.parositatlan_db, 1); assert.equal(j.uzletagak.fodrasz.post288_nincs_email.db, 0);
+  assert.equal(j.uzletagak.fodrasz.post288_missing_hmac_index.parositatlan_db, 1, 'a jelolo nelkuli parositatlan marad a missing-ben');
+  assert.equal(j.uzletagak.pmu.post288_nincs_email.db, 0, 'a proba nem szamit');
+  assert.equal(j.osszes.post288_nincs_email, 2); assert.equal(j.osszes.post288_missing_hmac_index, 1);
+  assert.deepEqual(Object.keys(h.post288_nincs_email.mintak[0]).sort(), ['ido', 'uuid_prefix', 'uzletag']);
+  assert.notEqual(j.lampa, 'piros', 'tajekoztato szamlalo');
+  assert.ok(!JSON.stringify(j).includes('a1a1a1a1-2222'), 'teljes UUID nincs a valaszban');
+  // a jelolo-ag elott (nincs *_nincs_email sor) a szamlalo 0
+  const u = await vilag(); u.egyeztetes({ uuid: 'a7a7a7a7-2222-4222-8222-000000000007', kulcs: HEADSPA(), t: E + 100 });
+  const k = await u.jelentes('qa=nap&datum=2026-10-13', { now: KESOBB });
+  assert.equal(k.uzletagak.headspa.post288_nincs_email.db, 0); assert.equal(k.uzletagak.headspa.post288_missing_hmac_index.db, 1);
+});
