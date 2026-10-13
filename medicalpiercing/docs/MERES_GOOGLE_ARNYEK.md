@@ -178,3 +178,37 @@ Hivatalos Salonic API / webhook még nincs, ezért a forrás a Salonic automatik
   salonicfoglalas@gmail.com postafiókot olvassa), és párosítani csak létező, azonos munkatársú és percű D1-sorral lehet,
   ami egy hamisított levél hatását erősen korlátozza; (4) idempotencia: `mp_feltoltes` elsődleges kulcs (kulcs, akció, mód) +
   éles módban a már elküldött akció ellenőrzése.
+
+## Platform szerinti forrás és „Honnan hallottál rólunk?” (2026-10-13)
+
+Cél: a **Salonic által igazolt** foglalások megszámlálása hirdetési platformonként (google / meta / tiktok / egyeb) a
+foglalások szinte teljes körére. **Ebben a lépésben semmi új nem megy egyetlen hirdetési platformnak sem.**
+
+1. **Forrás-címke, hozzájárulástól függetlenül** – Feri kifejezett kérése (2026-10-13 07:36): „Kifejezetten azt kérem,
+   hogy hozzájárulás nélkül is menjen el.” A jogi kockázatot a tulajdonos vállalja. Az `assets/js/mp-meres.js` az érkező
+   cím alapján **csak egy durva csatornanevet** tesz a `sessionStorage`-ba (`mp_forras` = `{p, t}`: csatorna + első észlelés
+   ideje), azonosító nélkül: `gclid`/`gbraid`/`wbraid` → `google`; `fbclid` vagy `utm_source` = facebook / fb / instagram /
+   ig / meta → `meta`; `ttclid` vagy `utm_source` = tiktok → `tiktok`; más `utm_source` → `egyeb`; semmi → nincs címke
+   (D1: `NULL` = közvetlen / ismeretlen). Első érintés a munkamenetben (a lap bezárásáig), felülírás nincs. A köszönőoldali
+   jelzés `forras_platform` mezőben küldi; a szerver (`lib/meres/forras.js`) fehér listával ellenőrzi → `mp_foglalas.forras_platform`.
+   A motor a köszönőoldalt ugyanabban a lapban, a fő ablakban nyitja (`location.assign`), a régi beágyazott naptárak
+   keretben (azonos eredet) – mindkettő ugyanazt a munkamenet-tárolót látja (`tools/forras-pw.mjs` 1., 5. eset).
+   Korlát: ha a vendég a Salonic-oldalt **új lapon** nyitja és ott foglal, a köszönőoldal új munkamenetben nyílik → `NULL`.
+2. **Meta / TikTok kattintásazonosító csak hozzájárulással** (ugyanaz a szabály, mint a Google-é): `fbclid`, `ttclid` az
+   `mp_gk`-ba (90 nap), a szerver ezekből és a saját tartomány `_fbc` / `_fbp` / `_ttp` sütijéből tölti a `meta_fbc`,
+   `meta_fbp`, `meta_kattintas_ido`, `tiktok_ttclid`, `tiktok_ttp`, `tiktok_kattintas_ido` oszlopot (formátum-ellenőrzéssel;
+   az `fbc` a frissebb a `_fbc` süti és az `fb.1.<ms>.<fbclid>` közül). Hozzájárulás nélkül `NULL`. **Sehova nem küldjük**;
+   az admin-válaszban maszkolva (`h:…`), 90 nap után törlődnek. A késői hozzájárulás pótlása (`potlas`) ezeket is kitölti,
+   ugyanazokkal a feltételekkel (2 órán belül, azonos `booking_id` és környezet, csak ha még üresek).
+3. **Séma:** `sema(db)` a `PRAGMA table_info(mp_foglalas)` alapján csak a hiányzó oszlopot adja hozzá (`BOVITES`); a
+   meglévő sorok változatlanok.
+4. **„Honnan hallottál rólunk?”** – a fő ablak köszönőoldalán, miután a foglalás sora rögzült (`/api/mp-foglalas` `ok`), egy
+   kis kártya (TikTok / Instagram–Facebook / Google / Ismerős ajánlotta / Egyéb). Egy kattintás → `POST /api/mp-onbevallas`
+   (`functions/api/mp-onbevallas.js`) → `mp_foglalas.onbevallas` (fehér lista: tiktok, meta, google, ismeros, egyeb), csak
+   létező, 2 órán belüli, azonos `booking_id`-jú és környezetű sorra, ha még üres. Utána „Köszönjük!”; ugyanarra a
+   foglalásra nem kérdez újra (`localStorage` `mp_onbevallas`, 60 nap). Keretben nem jelenik meg. A `/fulbevalo-ok*`
+   oldalakról a meglévő mérés nem küld foglalást (nincs D1-sor), ezért ott a kártya sem jelenik meg.
+5. **Riport** (`lib/meres/riport.js`, napi sorok, a régi mezők változatlanok): `forras_<google|meta|tiktok|egyeb|ismeretlen>`
+   és ebből Salonic-igazolt (`igazolas = 'igazolt'`): `forras_<…>_igazolt`; `onbevallas_<tiktok|meta|google|ismeros|egyeb|nincs>`.
+
+Tesztek: `node --test tools/test-mp-forras.mjs`, `node tools/forras-pw.mjs` (valódi szerverkód + `node:sqlite` D1).
