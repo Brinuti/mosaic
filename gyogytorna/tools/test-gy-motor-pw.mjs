@@ -12,7 +12,8 @@ const mod = process.argv[2] === 'mobil' ? 'mobil' : 'desktop';
 const MOST = Math.floor(Date.now() / 1000);
 const START = Math.floor((MOST + 6 * 86400) / 900) * 900 + 36000 % 900;
 const EMP = '31525';
-const bongeszoHamis = salonicHamis({ szabad: { [`8439:24666:${EMP}`]: [START, START + 900, START + 86400] } });
+const KIEM_START = Math.floor((MOST + 86400) / 900) * 900 + 900; // "holnap" kb. ilyenkor
+const bongeszoHamis = salonicHamis({ szabad: { [`8439:24666:${EMP}`]: [START, START + 900, START + 86400], '418:416586:33185': [KIEM_START, KIEM_START + 1800] } });
 const szerverHamis = salonicHamis({ szabad: {} }); // a szerver szerint a foglalt idopont mar nem szabad (a Salonic rogzitette)
 const valos = globalThis.fetch;
 globalThis.fetch = (u, i) => (String(u).includes('salonic.hu') ? szerverHamis(u, i) : valos(u, i));
@@ -71,6 +72,43 @@ const lep = (nev) => { siker++; console.log(`  ok ${siker}. ${nev}`); };
 await oldal.goto(`${ORIGIN}/booking-test/`);
 assert.equal(await oldal.locator('[data-gy-motor]').count(), 0);
 lep('a kapcsolo 0%: a motor nem nyilik, a link marad a Salonicon');
+
+// 1/b) kiemelt szakember (Nora, Batthyany ter, akcios allapotfelmeres): doboz a helyszin-lepesen + kiemelt kartya a szakember-lepesen
+await oldal.goto(`${ORIGIN}/booking-test/?motor=1`);
+await oldal.click('#gomb-allapot');
+{
+  const mk = oldal.locator('[data-gy-motor]');
+  await mk.locator('[data-csalad="allapotfelmeres"]').click();
+  await mk.locator('[data-valt="416586"]').click();
+  await mk.locator('.kiemelt-doboz').waitFor();
+  const doboz = await mk.locator('.kiemelt-doboz').innerText();
+  assert.match(doboz, /Németh Nóra/); assert.match(doboz, /Ajánlott/); assert.match(doboz, /Rugalmasan elérhető időpontok/); assert.match(doboz, /Batthyány tér/);
+  if (process.env.KEPEK) await oldal.screenshot({ path: `${process.env.KEPEK}/kiemelt-hely-${mod}.png` });
+  await mk.locator('.kiemelt-doboz [data-kiem-ido]').filter({ hasText: /holnap|ma|október|november|december/ }).waitFor();
+  assert.match(await mk.locator('.kiemelt-doboz [data-kiem-ido]').innerText(), /^Legkorábbi időpont: (holnap|ma) \d\d:\d\d$/);
+  await mk.locator('[data-hely="418"]').click();
+  await mk.locator('.kartya.szak.kiemelt').waitFor();
+  if (process.env.KEPEK) await oldal.screenshot({ path: `${process.env.KEPEK}/kiemelt-szakember-${mod}.png` });
+  assert.equal(await mk.locator('.szak-racs .kartya.szak').nth(1).getAttribute('class').then((c) => /kiemelt/.test(c)), true); // a "Mindegy" utan az elso
+  await mk.locator('.kartya.szak.kiemelt').click(); // a kiemelt szakember naptara
+  await mk.locator('.nap.van').first().waitFor();
+  await oldal.keyboard.press('Escape');
+  // a rendelo-lepesen a doboz kozvetlenul a naptarra visz
+  await oldal.click('#gomb-allapot');
+  await mk.locator('[data-csalad="allapotfelmeres"]').click();
+  await mk.locator('[data-valt="416586"]').click();
+  await mk.locator('.kiemelt-doboz').click();
+  await mk.locator('.nap.van').first().waitFor();
+  await oldal.keyboard.press('Escape');
+  // a nem akcios allapotfelmeresnel nincs kiemeles
+  await oldal.click('#gomb-allapot');
+  await mk.locator('[data-csalad="allapotfelmeres"]').click();
+  await mk.locator('[data-valt="24666"]').click();
+  await mk.locator('[data-hely="418"]').waitFor();
+  assert.equal(await mk.locator('.kiemelt-doboz').count(), 0);
+  await oldal.keyboard.press('Escape');
+}
+lep('kiemelt szakember: doboz a helyszin-lepesen (+ gyors utvonal a naptarra), narancs kartya a szakember-lepesen, a sima allapotfelmeresnel nincs kiemeles');
 
 // 2) ?motor=1: a motor nyilik; vegig a folyamat
 await oldal.goto(`${ORIGIN}/booking-test/?motor=1`);
