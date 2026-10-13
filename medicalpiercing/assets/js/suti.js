@@ -154,6 +154,7 @@
     '#mp-cc h2{font-size:15px;margin:0 0 6px;font-weight:700}' +
     '#mp-cc .mp-gombok{display:flex;gap:8px;flex-wrap:wrap;align-items:center}' +
     '#mp-cc .mp-gomb{flex:1 1 0;min-width:120px;cursor:pointer;border-radius:999px;padding:9px 14px;font-size:14px;font-weight:700;border:2px solid #474759;background:#474759;color:#fff;white-space:nowrap}' +
+    '#mp-cc .mp-gomb[data-mp=elutasit]{background:#6c6c7e;border-color:#6c6c7e}' +
     '#mp-cc .mp-link{flex:0 0 auto;cursor:pointer;border:none;background:none;color:#2b2b38;padding:8px 4px;font-size:13px;text-decoration:underline}' +
     '#mp-cc .mp-kat{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:8px 0;border-top:1px solid #eee}' +
     '#mp-cc .mp-kat small{display:block;color:#5b5b66}' +
@@ -185,9 +186,9 @@
   };
   var JELOLES =
     '<div id="mp-cc-fo">' +
-      '<h2 class="mp-nagy">Engedélyezed a sütiket?</h2>' +
-      '<p><span class="mp-nagy">Sütikkel mérjük, melyik hirdetésünkből érkeztél és hogyan használod az oldalt. Te döntöd el, engedélyezed-e; később a lábléc „Süti beállítások” linkjén módosíthatod. </span>' +
-        '<span class="mp-rovid">Sütiket használunk a méréshez </span>(<a href="/adatkezeles" target="_blank" rel="noopener">részletek</a>).</p>' +
+      '<h2 class="mp-nagy">Segítesz nekünk egy kattintással?</h2>' +
+      '<p><span class="mp-nagy">A sütikkel azt mérjük, melyik hirdetésünkből érkeznek a foglalások, így kevesebb felesleges hirdetést mutatunk. Te döntöd el, engedélyezed-e; bármikor módosíthatod a lábléc „Süti beállítások” linkjén. </span>' +
+        '<span class="mp-rovid">Sütikkel mérjük, melyik hirdetésből jönnek a foglalások </span>(<a href="/adatkezeles" target="_blank" rel="noopener">részletek</a>).</p>' +
       '<div class="mp-gombok">' +
         '<button type="button" class="mp-gomb" data-mp="elutasit">Elutasítom</button>' +
         '<button type="button" class="mp-gomb" data-mp="elfogad">Elfogadom</button>' +
@@ -234,6 +235,15 @@
     helyez();
     setTimeout(function () { if (sav.style.display !== 'none') helyez(); }, 1200);
   };
+  // nevtelen sutisav-statisztika (functions/api/mp-suti-stat.js): suti, azonosito, URL nelkul, csak napi darabszam
+  var SAV_VERZIO = 'v3';
+  var statKuld = function (e, n) {
+    try {
+      var adat = JSON.stringify({ e: e, n: n || (sav && sav.getAttribute('data-nezet')) || '', m: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 1 : 0, v: SAV_VERZIO });
+      if (navigator.sendBeacon) navigator.sendBeacon('/api/mp-suti-stat', new Blob([adat], { type: 'text/plain' }));
+      else fetch('/api/mp-suti-stat', { method: 'POST', body: adat, keepalive: true });
+    } catch (x) { /* a statisztika soha nem zavarhatja a savot */ }
+  };
   var elrejt = function () {
     if (sav) sav.style.display = 'none';
     var q = document.getElementById('QUICK_ACTION_BAR');
@@ -267,10 +277,13 @@
       var g = e.target && e.target.closest ? e.target.closest('[data-mp]') : null;
       if (!g) return;
       var mit = g.getAttribute('data-mp');
-      if (mit === 'elfogad') { rogzit(true, true); elrejt(); }
-      else if (mit === 'elutasit') { rogzit(false, false); elrejt(); }
-      else if (mit === 'beall') mutat('beall');
-      else if (mit === 'mentes') { rogzit(document.getElementById('mp-cc-stat').checked, document.getElementById('mp-cc-mark').checked); elrejt(); }
+      if (mit === 'elfogad') { statKuld('elfogad'); rogzit(true, true); elrejt(); }
+      else if (mit === 'elutasit') { statKuld('elutasit'); rogzit(false, false); elrejt(); }
+      else if (mit === 'beall') { statKuld('beall'); mutat('beall'); }
+      else if (mit === 'mentes') {
+        var ms = document.getElementById('mp-cc-stat').checked, mm = document.getElementById('mp-cc-mark').checked;
+        statKuld(mm ? 'elfogad' : (ms ? 'reszleges' : 'elutasit')); rogzit(ms, mm); elrejt();
+      }
     });
     var ujrahelyez = function () { if (sav.style.display !== 'none') helyez(); };
     addEventListener('resize', ujrahelyez);
@@ -283,6 +296,7 @@
       var nagy = true;
       try { nagy = sessionStorage.getItem('mp_cc_nagy') !== '1'; sessionStorage.setItem('mp_cc_nagy', '1'); } catch (e) { /* */ }
       mutat(nagy ? 'nagy' : 'fo');
+      statKuld('megjelent', nagy ? 'nagy' : 'fo');
     }
   };
   window.mpSuti = {
