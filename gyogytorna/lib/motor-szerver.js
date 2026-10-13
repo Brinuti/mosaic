@@ -10,8 +10,9 @@
 import { belepes, osszevon, cimkez, fizetett } from './forras.js';
 import { sutik, hozzajarulas } from './hozzajarulas.js';
 import { sha256Hex, ujToken, tranzakcioId, egyenlo, hmacHex } from './titkos.js';
+import { igazolasJeloltek, foglalasSalonicIdAlapjan } from './db.js';
 import { sema, munkamenetOlvas, munkamenetIr, munkamenetTorol, foglalasOlvas, foglalasLetrehoz, foglalasAllapot, esemenyJelol, tokenKiad, tokenFelhasznal, kampanyLista, kampanyFrissit, riaszt, takarit, IDOK } from './db.js';
-import { szerverAdapter, katalogusSzolgaltatas, szabadMeg, eloAllapot } from './salonic-szerver.js';
+import { szerverAdapter, katalogusSzolgaltatas, szabadMeg, eloAllapot, UUID_RE } from './salonic-szerver.js';
 import { foglalasTipus, HELYSZINEK, HOST } from '../public/assets/js/motor/salonic-adapter.js';
 
 export const SUTI_MUNKAMENET = 'gy_s';
@@ -180,8 +181,9 @@ export async function foglalasVegpont({ request, env, deps = {} }) {
   const t = await kampanyLista(db, most);
   const c = cimkez(valasztott ? valasztott.belepes : null, { lista: t.lista, friss: t.friss });
   const parosito = e.employeeId ? await hmacHex(env.GY_HMAC_KULCS, `gy-parosito|${kert.startUnix}|${e.employeeId}`) : null;
+  const parositoHely = await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${kert.startUnix}|${kert.placeId}`); // a Salonic-igazolas parositasahoz (hely + idopont)
 
-  const letrejott = await foglalasLetrehoz(db, { uuid, tipus, uj_vendeg: e.ujVendeg, cimke: c.cimke, bizonyitek: c.bizonyitek + (c.elavult ? '+elavult_lista' : ''), hozzajarulas: hj.allapot, allapot, teszt, parosito }, most);
+  const letrejott = await foglalasLetrehoz(db, { uuid, tipus, uj_vendeg: e.ujVendeg, cimke: c.cimke, bizonyitek: c.bizonyitek + (c.elavult ? '+elavult_lista' : ''), hozzajarulas: hj.allapot, allapot, teszt, parosito, parosito_hely: parositoHely }, most);
   if (!letrejott) return valasz(200, { ok: true, ismetles: true }); // versenyhelyzet: egy masik kerelem mar letrehozta
   if (allapot !== 'aktiv') await riaszt(db, 'bizonytalan_foglalas', { uuid, adat: miert, most });
   let token = null;
@@ -242,6 +244,42 @@ export async function kampanyokVegpont({ request, env, deps = {} }) {
   await sema(db);
   await kampanyFrissit(db, lista, mostUnix(deps));
   return valasz(200, { ok: true, db: lista.length, brand: lista.filter((x) => x.brand).length });
+}
+
+// --- /api/gy-salonic-igazolas (Zapier: a Salonic ertesito e-mail alapjan) ---------------------------------------------------------------
+// A Zap CSAK minimalis egyeztetomezoket kuld: {esemeny:'igazolas'|'lemondas', salonic_id (UUID), start_unix, place_id}. Nev, e-mail, telefon, szolgaltatasnev NEM.
+// Hitelesites: x-gy-zap-kulcs fejlec (a kulcs SHA-256 hash-e: GY_ZAP_KULCS_HASH). A szerver a Salonic ELO bookingDetails oldalat is ellenorzi (a Zap allitasat
+// onmagaban nem fogadjuk el). Idempotens: ugyanarra a salonic_id-ra az ujrakuldes nem hoz letre / nem modosit tobbet.
+export async function igazolasVegpont({ request, env, deps = {} }) {
+  if (request.method !== 'POST') return valasz(405, { ok: false });
+  if (!(await kulcsOk(request, env, 'x-gy-zap-kulcs', 'GY_ZAP_KULCS_HASH'))) return valasz(401, { ok: false });
+  const db = env.GY_DB;
+  if (!db) return valasz(503, { ok: false, hiba: 'nincs_adatbazis' });
+  if (!env.GY_HMAC_KULCS) return valasz(503, { ok: false, hiba: 'nincs_titkos_kulcs' });
+  const be = await jsonTest(request, 2048);
+  if (!be || !['igazolas', 'lemondas'].includes(be.esemeny) || !UUID_RE.test(String(be.salonic_id || '').toLowerCase())) return nincsKerelem('ervenytelen_kerelem');
+  const salonicId = String(be.salonic_id).toLowerCase();
+  await sema(db);
+  const most = mostUnix(deps);
+  const tudott = await foglalasSalonicIdAlapjan(db, salonicId);
+  const elo = await eloAllapot(salonicId, { fetchFn: deps.fetch || globalThis.fetch });
+
+  if (be.esemeny === 'lemondas') {
+    if (!tudott) { await riaszt(db, 'lemondas_ismeretlen', { most }); return valasz(404, { ok: false, hiba: 'ismeretlen_foglalas' }); }
+    if (elo.allapot !== 'torolve') return valasz(409, { ok: false, hiba: 'nincs_torolve' });
+    if (tudott.allapot !== 'lemondott') await foglalasAllapot(db, tudott.uuid, 'lemondott', most);
+    return valasz(200, { ok: true, allapot: 'lemondott', ismetles: tudott.allapot === 'lemondott' });
+  }
+
+  if (tudott) return valasz(200, { ok: true, ismetles: true, allapot: tudott.allapot, igazolt: !!tudott.igazolt }); // Zap-ujrakuldes: nincs duplikacio
+  const start = egesz(be.start_unix, 1e9, 4e9), hely = egesz(be.place_id, 1, 999999);
+  if (start === null || !HELYSZINEK[hely]) return nincsKerelem('ervenytelen_idopont_vagy_hely');
+  if (elo.allapot !== 'aktiv' || (elo.startUnix && elo.startUnix !== start)) { await riaszt(db, 'igazolas_nem_aktiv', { adat: elo.miert || elo.allapot, most }); return valasz(409, { ok: false, hiba: 'nem_aktiv_vagy_idopont_nem_egyezik' }); }
+  const jeloltek = await igazolasJeloltek(db, await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${start}|${hely}`));
+  if (jeloltek.length === 0) { await riaszt(db, 'igazolas_nincs_par', { most }); return valasz(404, { ok: false, hiba: 'nincs_par' }); }
+  if (jeloltek.length > 1) { await riaszt(db, 'igazolas_tobb_par', { adat: `db=${jeloltek.length}`, most }); return valasz(409, { ok: false, hiba: 'tobb_par' }); }
+  await foglalasAllapot(db, jeloltek[0].uuid, 'aktiv', most, { salonic_id: salonicId, igazolt: true });
+  return valasz(200, { ok: true, allapot: 'aktiv', igazolt: true });
 }
 
 /** GET /api/gy-admin?riport=YYYY-MM | ?riasztasok=1 | ?foglalas=<uuid>   (x-gy-kulcs). A riport CSAK aggregalt szamokat ad, vendegadat nincs. */

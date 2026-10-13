@@ -29,6 +29,11 @@ const CSALADOK = [
   { kod: 'gyogymasszazs', nev: 'Gyógymasszázs', leiras: 'Gyógymasszázs', ids: ['173650', '234838', '438133'] },
   { kod: 'online', nev: 'Online gyógytorna', leiras: 'Videóhíváson keresztül, otthonról', ids: ['36855'] },
 ];
+// Kiemelt szakember (uzleti dontes, Feri 2026-10-13): a Batthyany teri rendeloben az akcios allapotfelmeresre Nora fogad legkorabban - a szakember- es a helyszin-lepesen
+// narancs dobozzal kiemeljuk ("Ajanlott", "Rugalmasan elerheto idopontok", legkorabbi idopont: a Salonic ELO adataibol). Ha a Salonicban a szolgaltatas / szakember /
+// helyszin kapcsolata megvaltozik, a kiemeles magatol eltunik (csak akkor jelenik meg, ha a szakember tenyleg elerheto a szolgaltatashoz).
+const KIEMELT = [{ serviceId: '416586', placeId: 418, staffId: '33185', cimke: 'Ajánlott', alcim: 'Rugalmasan elérhető időpontok' }];
+const kiemeltFor = (serviceId, placeId) => KIEMELT.find((k) => k.serviceId === String(serviceId) && (placeId === undefined || k.placeId === +placeId)) || null;
 const csaladId = (s) => (CSALADOK.find((c) => c.ids.includes(s.serviceId)) || { kod: 'egyeb' }).kod;
 
 const adapter = createSalonicAdapter({ storage: tarolo });
@@ -47,6 +52,12 @@ export const bp = (unix) => {
   const t = new Date((unix + (nyariIdo(unix) ? 7200 : 3600)) * 1000);
   const ev = t.getUTCFullYear(), ho = t.getUTCMonth() + 1, d = t.getUTCDate();
   return { nap: `${ev}-${k2(ho)}-${k2(d)}`, ido: `${k2(t.getUTCHours())}:${k2(t.getUTCMinutes())}`, ev, ho, d };
+};
+const napSzoveg = (unix) => { // "ma 16:00" / "holnap 14:30" / "október 27., kedd 10:00"
+  const b = bp(unix), most = Math.floor(Date.now() / 1000);
+  if (b.nap === bp(most).nap) return `ma ${b.ido}`;
+  if (b.nap === bp(most + 86400).nap) return `holnap ${b.ido}`;
+  return `${napCim(b.nap)} ${b.ido}`;
 };
 const sb = (x) => x._b || (x._b = bp(x.start_unix));
 const napCim = (nap) => { const [e, h, d] = nap.split('-').map(Number); const w = new Date(Date.UTC(e, h - 1, d)).getUTCDay(); return `${HONAP[h - 1]} ${d}., ${NAP_NEV[w]}`; };
@@ -96,6 +107,19 @@ button:focus-visible, a:focus-visible { outline: 3px solid #70c69c; outline-offs
 .kartya .ar { float: right; font-weight: 700; color: #0c4c8a; margin-left: 10px; white-space: nowrap; }
 .kartya.kiemelt { border: 2px solid #0c4c8a; background: #f3f8fc; }
 .cimke { display: inline-block; margin-top: 6px; font-size: 12px; background: #e69500; color: #fff; border-radius: 99px; padding: 2px 10px; font-weight: 600; }
+.kartya.szak.kiemelt { border: 2px solid #e69500; background: #fff8ea; }
+.kartya.szak .cimke { margin-top: 0; }
+.kartya.szak .kicsi { font-size: 11.5px; line-height: 1.3; }
+.kiemelt-doboz { display: flex; gap: 12px; align-items: center; margin-top: 12px; border: 2px solid #e69500; background: #fff8ea; }
+.kiemelt-doboz .szoveg { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+.kiemelt-doboz .kn { font-size: 15px; }
+.kiemelt-doboz:hover, .kiemelt-doboz:focus-visible { border-color: #e69500; box-shadow: 0 0 0 3px #fbe3b3; }
+.adatlap-sav { display: flex; gap: 10px; align-items: center; flex: none; background: #f3f8fc; border-radius: 10px; padding: 5px 10px; margin: 0 0 6px; font-size: 13px; line-height: 1.3; }
+.adatlap-sav .fejkep { width: 36px; height: 36px; font-size: 13px; }
+.adatlap-sav .sav-sz { display: flex; flex-direction: column; min-width: 0; }
+.adatlap-sav .sav-sz span { color: #55687a; font-size: 12px; }
+.ablak[data-lepes="adatlap"] .osszegzes { display: none; }
+@media (max-width: 700px) { .ablak[data-lepes="adatlap"] .tartalom > .adatlap-sav { margin: 6px 10px 4px; } }
 .kartya.akcio { border: 2px solid #e69500; background: #fff8ea; }
 .kartya.akcio:hover, .kartya.akcio:focus-visible { border-color: #e69500; box-shadow: 0 0 0 3px #fbe3b3; }
 .cimke.zold { background: #70c69c; color: #06331e; }
@@ -271,14 +295,50 @@ export function nyit(ctx = {}) {
     tartalom.innerHTML = `<p class="kicsi bevezeto">${esc(csalad ? csalad.nev : 'Szolgáltatás')}: melyiket választod?</p><div class="lista">${l.map((s) => `<button class="kartya${akcioSzazalek(s.name) ? ' akcio' : ''}" data-valt="${esc(s.serviceId)}"><span class="ar">${ft(s.activePrice)}</span><span class="nev">${esc(szepNev(s.name))}</span>${akcioSzazalek(s.name) ? `<span class="cimke">${akcioSzazalek(s.name)} akció</span>` : ''}<div class="reszlet">${s.durationMin ? s.durationMin + ' perc' : ''}${akcioSzazalek(s.name) ? ' · csak bizonyos gyógytornászoknál' : ''}</div></button>`).join('')}</div>`;
   }
 
+  // --- a kiemelt szakember legkorabbi idopontja (a Salonic ELO naptarabol; gyors, csak az o szabad idopontjai) ---
+  all.kiem = {};
+  const kiemeltIdo = (k) => {
+    const kulcs = `${k.placeId}:${k.serviceId}:${k.staffId}`;
+    if (!all.kiem[kulcs]) {
+      all.kiem[kulcs] = adapter.getAvailability(k.placeId, k.serviceId, { staffId: +k.staffId, days: 21, minLeadMinutes: 30 })
+        .then((l) => (l.length ? l.reduce((m, x) => (x.start_unix < m ? x.start_unix : m), l[0].start_unix) : null), () => null);
+    }
+    return all.kiem[kulcs];
+  };
+  // a "Legkorabbi idopont: holnap 14:30" sor kitoltese (aszinkron; ha nincs szabad idopont, a sor eltunik)
+  const kiemeltIdoKitolt = (k) => {
+    kiemeltIdo(k).then((t) => {
+      for (const el of shadow.querySelectorAll(`[data-kiem-ido="${k.placeId}:${k.staffId}"]`)) {
+        if (t) el.innerHTML = `Legkorábbi időpont: <b>${esc(napSzoveg(t))}</b>`; else el.remove();
+      }
+    });
+  };
+  const kiemeltFejkep = (e, nev) => `<span class="fejkep" aria-hidden="true">${e && e.foto ? `<img src="${esc(e.foto)}" alt="" width="56" height="56" loading="lazy" decoding="async">` : esc(monogram(nev))}</span>`;
+
   // --- 3. helyszin (csak ahol a valasztott szolgaltatas elerheto) ---
   function helyLepes() {
     const l = csaladSzolgak();
     const s = all.szolg ? l.find((x) => x.serviceId === all.szolg.serviceId) : null;
     const helyek = HELYSZIN_SORREND.filter((id) => (s ? s.helyek.includes(id) : l.some((x) => x.helyek.includes(id))));
     if (helyek.length === 1) { all.placeId = helyek[0]; return ugrik('szakember'); }
-    tartalom.innerHTML = osszegzes() + `<p class="kicsi bevezeto">Melyik rendelőbe szeretnél menni?</p><div class="lista hely-racs">${helyek.map((id) => { const h = HELYSZINEK[id]; return `<button class="kartya hely" data-hely="${id}"><span class="nev">${esc(h.nev)}</span><div class="cim">${esc(h.cim)}</div></button>`; }).join('')}</div>`;
+    const k = s && kiemeltFor(s.serviceId) && helyek.includes(kiemeltFor(s.serviceId).placeId) && s.helyek.includes(kiemeltFor(s.serviceId).placeId) ? kiemeltFor(s.serviceId) : null;
+    tartalom.innerHTML = osszegzes() + `<p class="kicsi bevezeto">Melyik rendelőbe szeretnél menni?</p><div class="lista hely-racs">${helyek.map((id) => { const h = HELYSZINEK[id]; return `<button class="kartya hely" data-hely="${id}"><span class="nev">${esc(h.nev)}</span><div class="cim">${esc(h.cim)}</div></button>`; }).join('')}</div>` + (k ? '<div data-kiem-doboz></div>' : '');
+    if (k) kiemeltDoboz(k);
   }
+  // a rendelok ala kerulo narancs doboz: a kiemelt szakember, a rendelo es a legkorabbi idopont; kattintasra egybol az idopont-valasztora visz
+  async function kiemeltDoboz(k) {
+    let staff = {};
+    try { staff = await adapter.getStaff(); } catch (e) { /* foto nelkul is megy */ }
+    const e = staff[k.staffId];
+    let eleres = false;
+    try { const sv = (await adapter.getServices(k.placeId)).find((x) => x.serviceId === k.serviceId); eleres = !!(sv && sv.staffIds.includes(k.staffId)); } catch (x) { /* nincs doboz */ }
+    const hely = shadow.querySelector('[data-kiem-doboz]');
+    if (!e || !eleres || !hely || all.lepes !== 'hely' || lezart) return;
+    hely.outerHTML = `<button class="kartya kiemelt-doboz" data-kiemelt="${k.placeId}:${k.staffId}">${kiemeltFejkep(e, e.nev)}<span class="szoveg"><span class="cimke">${esc(k.cimke)}</span><b class="kn">${esc(e.nev)} · ${esc(HELYSZINEK[k.placeId].nev)}</b><span class="kicsi">${esc(k.alcim)}</span><span class="kicsi" data-kiem-ido="${k.placeId}:${k.staffId}">Legkorábbi időpont betöltése…</span><span class="kicsi">A ${esc(HELYSZINEK[k.placeId].nev)} rendelőben ${esc(keresztnev(e.nev))} tud legelőször fogadni.</span></span></button>`;
+    kiemeltIdoKitolt(k);
+  }
+
+
 
   // --- 4. szakember (a "Mindegy - a legkorabbi idopont" legfelul) ---
   async function szakemberLepes() {
@@ -293,8 +353,11 @@ export function nyit(ctx = {}) {
     elolt(s); // a szabad idopontok elotoltese, amig a vendeg szakembert valaszt
     const ok = s.staffIds;
     tartalom._staff = staff;
-    const kartya = (id) => { const e = staff[id]; const nev = e ? e.nev : null; return `<button class="kartya szak" data-szak="${esc(id)}"${nev ? ` title="${esc(nev)}"` : ''}><span class="fejkep" aria-hidden="true">${e && e.foto ? `<img src="${esc(e.foto)}" alt="" width="56" height="56" loading="lazy" decoding="async">` : esc(monogram(nev))}</span><span class="nev">${esc(nev ? keresztnev(nev) : 'Szakember')}</span></button>`; };
-    tartalom.innerHTML = osszegzes() + `<p class="kicsi bevezeto">Kihez szeretnél menni?</p><div class="lista szak-racs"><button class="kartya szak mindegy" data-szak=""><span class="fejkep" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6.5-1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM9 13c-2.7 0-5 1.4-5 3.5V18h10v-1.5C14 14.4 11.7 13 9 13Zm6.5.5c-.5 0-1 .1-1.4.2 1 .8 1.6 1.8 1.6 2.8V18H20v-1.2c0-1.8-2-3.3-4.5-3.3Z"/></svg></span><span class="nev"><b>Mindegy</b><br><span class="kicsi">a legkorábbi időpont érdekel</span></span></button>${ok.map(kartya).join('')}</div>`;
+    const kiem = kiemeltFor(s.serviceId, all.placeId);
+    const kartya = (id) => { const e = staff[id]; const nev = e ? e.nev : null; const kk = kiem && kiem.staffId === String(id) ? kiem : null; return `<button class="kartya szak${kk ? ' kiemelt' : ''}" data-szak="${esc(id)}"${nev ? ` title="${esc(nev)}"` : ''}><span class="fejkep" aria-hidden="true">${e && e.foto ? `<img src="${esc(e.foto)}" alt="" width="56" height="56" loading="lazy" decoding="async">` : esc(monogram(nev))}</span><span class="nev">${esc(nev ? keresztnev(nev) : 'Szakember')}</span>${kk ? `<span class="cimke">${esc(kk.cimke)}</span><span class="kicsi">${esc(kk.alcim)}</span><span class="kicsi" data-kiem-ido="${kk.placeId}:${kk.staffId}">Legkorábbi időpont betöltése…</span>` : ''}</button>`; };
+    const sorrend = kiem && ok.includes(kiem.staffId) ? [kiem.staffId, ...ok.filter((i) => i !== kiem.staffId)] : ok;
+    tartalom.innerHTML = osszegzes() + `<p class="kicsi bevezeto">Kihez szeretnél menni?</p><div class="lista szak-racs"><button class="kartya szak mindegy" data-szak=""><span class="fejkep" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6.5-1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM9 13c-2.7 0-5 1.4-5 3.5V18h10v-1.5C14 14.4 11.7 13 9 13Zm6.5.5c-.5 0-1 .1-1.4.2 1 .8 1.6 1.8 1.6 2.8V18H20v-1.2c0-1.8-2-3.3-4.5-3.3Z"/></svg></span><span class="nev"><b>Mindegy</b><br><span class="kicsi">a legkorábbi időpont érdekel</span></span></button>${sorrend.map(kartya).join('')}</div>`;
+    if (kiem && ok.includes(kiem.staffId)) kiemeltIdoKitolt(kiem);
   }
 
   // --- 5. idopont ---
@@ -361,20 +424,30 @@ export function nyit(ctx = {}) {
   // --- 6. adatlap (a Salonic beagyazott urlapja) ---
   async function adatlapLepes() {
     tartalom.innerHTML = osszegzes() + '<div class="toltes">Az adatlap betöltése…</div>';
+    // "Mindegy": a valasztott idoponthoz tartozo konkret szakemberrel foglalunk (igy tudjuk, kit lat a vendeg; az idopont ugyanaz marad)
+    const slotStaff = all.slot && /^\d+$/.test(String(all.slot.staff_id || '')) && +all.slot.staff_id > 0 ? +all.slot.staff_id : null;
+    const effStaff = all.staffId ? +all.staffId : (slotStaff || ANY_STAFF);
     let b;
     try {
-      b = await adapter.beginBooking({ placeId: all.placeId, serviceId: all.szolg.serviceId, startUnix: all.slot.start_unix, staffId: all.staffId ? +all.staffId : ANY_STAFF, bookingId: all.bookingId });
+      b = await adapter.beginBooking({ placeId: all.placeId, serviceId: all.szolg.serviceId, startUnix: all.slot.start_unix, staffId: effStaff, bookingId: all.bookingId });
     } catch (e) { return hiba('adatlap', e); }
     if (all.lepes !== 'adatlap' || lezart) return;
     all.expected = b.expected;
+    all.effStaff = effStaff;
     const u = new URL(b.guestDataUrl);
     for (const [k, v] of tovabbi) if (!u.searchParams.has(k)) u.searchParams.set(k, v);
-    foglalas.update({ business: 'gyogytorna', service_id: all.szolg.serviceId, slot_unix: all.slot.start_unix, staff_id: all.staffId || '-1', carrier: 'back', sent_at: Date.now() });
-    let stilus = null;
+    foglalas.update({ business: 'gyogytorna', service_id: all.szolg.serviceId, slot_unix: all.slot.start_unix, staff_id: String(effStaff), carrier: 'back', sent_at: Date.now() });
+    let stilus = null, staff = {};
     try { stilus = (await adapter.getPresentation()).customCss; } catch (e) { /* alap kinezet */ }
+    try { staff = await adapter.getStaff(); } catch (e) { /* foto nelkul is megy */ }
     if (all.lepes !== 'adatlap' || lezart) return;
     $('.ablak').dataset.stilus = stilus ? '1' : '0';
-    tartalom.innerHTML = osszegzes() + `<p class="kicsi adatlap-sugo" style="margin:0 0 8px">Add meg az adataidat, és véglegesítsd a foglalást. Ha az időpont közben elkelt, <button class="chip" data-lepes="ido">válassz másikat</button>.</p><div class="adatlap-burok"><iframe class="adatlap" name="gy-adatlap" title="Foglalási adatlap" src="${esc(u.href)}" allow="payment"></iframe></div>`;
+    // egy sor: a valasztott szakember (arc + nev), a rendelo es az idopont - igy az adatlap mobilon is gorgetes nelkul elfer
+    const e = staff[String(effStaff)] || null;
+    const nev = e ? e.nev : (all.slot.staff_label || null);
+    const bb = bp(all.slot.start_unix), h = HELYSZINEK[all.placeId];
+    const sav = `<div class="adatlap-sav">${nev ? kiemeltFejkep(e, nev) : ''}<div class="sav-sz"><b>${esc(nev || 'Szakember')}</b><span>${esc(h ? h.nev : '')} · ${esc(napCim(bb.nap))}, <b>${bb.ido}</b></span></div></div>`;
+    tartalom.innerHTML = sav + `<p class="kicsi adatlap-sugo" style="margin:0 0 8px">Add meg az adataidat, és véglegesítsd a foglalást. Ha az időpont közben elkelt, <button class="chip" data-lepes="ido">válassz másikat</button>.</p><div class="adatlap-burok"><iframe class="adatlap" name="gy-adatlap" title="Foglalási adatlap" src="${esc(u.href)}" allow="payment"></iframe></div>`;
   }
 
   async function rajzol() {
@@ -398,6 +471,7 @@ export function nyit(ctx = {}) {
     if (d.csalad) { all.csalad = d.csalad; all.szolg = null; all.placeId = null; all.staffId = null; return ugrik('valt'); }
     if (d.valt) { all.szolg = csaladSzolgak().find((x) => x.serviceId === d.valt) || null; all.placeId = null; if (all.szolg) return ugrik('hely'); return; }
     if (d.lepes && (t.classList.contains('kesz') || !t.closest('.lepesek'))) return visszaLep(d.lepes);
+    if (d.kiemelt) { const [pid, sid] = d.kiemelt.split(':'); all.placeId = +pid; all.staffId = sid; all.mindegy = false; all.nap = null; all.honap = null; all.slotok = null; return ugrik('ido'); }
     if (d.hely) { all.placeId = +d.hely; all.staffId = null; all.mindegy = false; return ugrik('szakember'); }
     if (d.szak !== undefined) { all.staffId = d.szak || null; all.mindegy = !d.szak; all.nap = null; all.honap = null; all.slotok = null; return ugrik('ido'); }
     if (d.honap) { all.honap = d.honap; const elso = [...new Set(all.slotok.map((x) => sb(x).nap))].sort().find((k) => k.startsWith(d.honap)); if (elso) all.nap = elso; return naptar(); }
@@ -436,7 +510,7 @@ export function nyit(ctx = {}) {
     try {
       const v = await fetch((ctx.apiBase || '') + '/api/gy-foglalas', {
         method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ uuid: all.bookingId, place_id: all.placeId, service_id: all.szolg.serviceId, staff_id: all.staffId || '-1', start_unix: all.slot.start_unix, redirect_url: url }),
+        body: JSON.stringify({ uuid: all.bookingId, place_id: all.placeId, service_id: all.szolg.serviceId, staff_id: String(all.effStaff || all.staffId || '-1'), start_unix: all.slot.start_unix, redirect_url: url }),
       });
       const j = v.ok ? await v.json() : null;
       if (j && typeof j.koszono === 'string' && /^\/(allapot-ok|foglalas-ok)\/$/.test(j.koszono)) ut = j.koszono;

@@ -7,6 +7,6 @@
     "build": "node tools/build.mjs",
     "serve": "node tools/serve.mjs",
     "teszt": "node --test tools/test-gy-szerver.mjs",
-    "teszt:bongeszo": "node tools/build.mjs && node tools/test-gy-motor-pw.mjs desktop && node tools/test-gy-motor-pw.mjs mobil"
+    "teszt:bongeszo": "node tools/build.mjs && node tools/test-gy-motor-pw.mjs desktop && node tools/test-gy-motor-pw.mjs mobil && node tools/test-gy-suti-pw.mjs desktop && node tools/test-gy-suti-pw.mjs mobil"
   }
 }

@@ -12,7 +12,7 @@ const b = await chromium.launch({ args: ['--disable-http2'] });
 const c = await b.newContext({ ignoreHTTPSErrors: true, viewport: { width: +w, height: +h }, isMobile: +w < 600, hasTouch: +w < 600 });
 const p = await c.newPage();
 await p.goto(`https://gyogytornaszomhu.salonic.hu/guestData/?placeId=8439&serviceId=24666&employeeId=${emp}&startDate=${start}&lang=hu&back=mb_proba123456789012`, { waitUntil: 'load', timeout: 60000 });
-await p.addStyleTag({ content: css });
+if (!process.env.ELO_CSS) await p.addStyleTag({ content: css });
 await p.waitForTimeout(1500);
 const m = await p.evaluate(() => ({ scrollH: document.documentElement.scrollHeight, innerH: innerHeight, scrollW: document.documentElement.scrollWidth, cookie: !!document.querySelector('.cc-window') && document.querySelector('.cc-window').getBoundingClientRect().height }));
 console.log(JSON.stringify(m));

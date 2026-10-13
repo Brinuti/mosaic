@@ -2,7 +2,8 @@
 
 1. A hozzajarulas nelkuli 24 oras forras-megtartas (nem azonosit szemelyt) jogalapja: jogos erdek - elfogadod, es szerepeljen az adatkezelesi tajekoztatoban?
 2. Az "allapotfelmeres" tipus (egeszsegugyi szolgaltatas igenybevetelere utalo adat) a D1-ben es a dataLayerben szerepel: a tipus-szint (allapotfelmeres/egyeb) elfogadhato-e, vagy csak "foglalas" legyen?
-3. A hirdetesi hozzajarulashoz (30 napos suti) a CookieYes kategoria neve `advertisement` - jo-e?
+3. A hirdetesi hozzajarulashoz (30 napos suti) a sajat sav `Marketing` kategoriaja (`gy_suti` m=1) - jo-e a szoveg (Google Ads, szemelyre szabott hirdetes nincs)?
+3/b. A sav nevtelen statisztikaja (`gy_suti_stat`: csak napi darabszam) - elfogadod?
 4. Megorzesi ido: 13 honap a D1 foglalas-rekordoknak - megfelel?
 5. Ki a kapcsolattarto adatvedelmi kerdesekben (a tajekoztatoba)?
 6. A Google Ads fiok-kampanylista (kampanyazonositok) tarolasa - rendben?
