@@ -180,7 +180,7 @@ body[class*="customer-gyogytornaszomhu"] .panel-body > div > hr { margin: 4px 0 
   body[class*="customer-gyogytornaszomhu"] form.form { margin-bottom: 0 !important; }
   body[class*="customer-gyogytornaszomhu"] .section { padding-bottom: 6px !important; }
   body[class*="customer-gyogytornaszomhu"] .grecaptcha-badge { visibility: hidden !important; position: absolute !important; bottom: 0 !important; }
-  body[class*="customer-gyogytornaszomhu"] .panel-body > div::after { content: 'Az oldalt a reCAPTCHA védi; a Google adatvédelmi irányelvei és ÁSZF-je érvényes.'; flex: 0 0 100%; display: block; margin-top: 6px; font-size: 9.5px; line-height: 1.3; color: #8493a1; text-align: center; }
+  body[class*="customer-gyogytornaszomhu"] .panel-body > div::after { content: 'reCAPTCHA védi; a Google adatvédelmi irányelvei és ÁSZF-je érvényes.'; flex: 0 0 100%; display: block; margin-top: 6px; font-size: 9.5px; line-height: 1.3; color: #8493a1; text-align: center; }
 }
 
 /* asztalon (a foglalo kerete itt 880 px magas) a mezok kozott tobb levego, az urlap lefele hosszabb */
@@ -260,3 +260,36 @@ body[class*="customer-gyogytornaszomhu"] .input-group-prepend { margin: 0 !impor
 body[class*="customer-gyogytornaszomhu"] .input-group-prepend .input-group-text { padding: 0 0 0 10px !important; margin: 0 !important; background: none !important; border: 0 !important; align-items: center !important; line-height: 1 !important; }
 body[class*="customer-gyogytornaszomhu"] .btn-check-coupon-code { margin: 0 !important; }
 body[class*="customer-gyogytornaszomhu"] .cc-window.cc-banner, body[class*="customer-gyogytornaszomhu"] .cc-window.cc-banner.cc-bottom { display: none !important; }
+
+/* ===== Feri kerese (2026-10-13): rovidebb hozzajarulasi szoveg, a jelolonegyzet a mezok bal szelen, szellosebb urlap ===== */
+/* a pipa a kupon-mezo bal szelevel egy vonalban kezdodik */
+body[class*="customer-gyogytornaszomhu"] .form-check { padding-left: 0 !important; margin-left: 0 !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check label { padding-left: 0 !important; display: flex !important; flex-wrap: wrap !important; align-items: baseline !important; column-gap: 5px !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check label > input[type=checkbox] { order: 0 !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check label::before { order: 1 !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check label > a.policy:nth-of-type(1) { order: 2 !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check label > a.policy:nth-of-type(2) { order: 3 !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check label > span.required { order: 4 !important; }
+/* a szoveg: "Megismertem es elfogadom az adatvedelmi tajekoztatot es a foglalasi szabalyzatot. *" - a "...es kifejezetten hozzajarulasomat adom..." resz el van rejtve (Feri dontese) */
+body[class*="customer-gyogytornaszomhu"] .form-check label { font-size: 0 !important; line-height: 0 !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check label > a, body[class*="customer-gyogytornaszomhu"] .form-check label > span.required { font-size: 11.5px !important; line-height: 1.4 !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check label::before { content: 'Megismertem és elfogadom az '; font-size: 11.5px; line-height: 1.4; color: var(--mh-kozep); vertical-align: middle; }
+body[class*="customer-gyogytornaszomhu"] .form-check label > a.policy:nth-of-type(2)::before { content: 'és a '; display: inline-block; text-decoration: none; color: var(--mh-kozep); font-size: 11.5px; }
+body[class*="customer-gyogytornaszomhu"] .form-check label > a.policy:nth-of-type(2)::after { content: '.'; display: inline-block; text-decoration: none; color: var(--mh-kozep); font-size: 11.5px; }
+/* szellosebb adatlap (a megtakaritott helybol) */
+@media (max-width: 599px) {
+  body[class*="customer-gyogytornaszomhu"] .form-group { margin-bottom: 10px !important; }
+  body[class*="customer-gyogytornaszomhu"] .control-label, body[class*="customer-gyogytornaszomhu"] .form-group label:not(.form-check-label) { margin-bottom: 4px !important; margin-top: 2px !important; }
+  body[class*="customer-gyogytornaszomhu"] .card { margin-top: 10px !important; margin-bottom: 14px !important; }
+  body[class*="customer-gyogytornaszomhu"] .form-check { margin: 8px 0 10px !important; }
+  body[class*="customer-gyogytornaszomhu"] .btn-submit-booking { margin-top: 8px !important; }
+}
+@media (min-width: 600px) {
+  body[class*="customer-gyogytornaszomhu"] .form-group { margin-bottom: 10px !important; }
+  body[class*="customer-gyogytornaszomhu"] .card { margin-bottom: 14px !important; }
+  body[class*="customer-gyogytornaszomhu"] .form-check { margin: 8px 0 10px !important; }
+}
+/* tobb hely az osszefoglalo doboz alatt (a doboz es az urlap kozott) */
+body[class*="customer-gyogytornaszomhu"] .order-lg-1 { margin-top: 14px !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check label > a.policy:nth-of-type(2)::before { margin-right: 4px; }
+body[class*="customer-gyogytornaszomhu"] .form-check label::before { margin-right: 2px; }
