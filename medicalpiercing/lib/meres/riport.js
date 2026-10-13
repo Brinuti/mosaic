@@ -2,6 +2,7 @@
 // Forrasok napra bontva (Budapest): D1 foglalas (koszonooldal), Salonic-level (igazolas), Google Ads konverziok
 // (a Zapier napi workflow tolti be: mp_ads_napi), kiigazitasok. Csak szamok, szemelyes adat nincs.
 import { PLATFORMOK, ONBEVALLASOK } from './forras.js';
+import { TIKTOK_SEMA } from './tiktok.js';
 
 const FORRAS_KULCSOK = [...PLATFORMOK, 'ismeretlen'];
 const ONBEVALLAS_KULCSOK = [...ONBEVALLASOK, 'nincs'];
@@ -38,9 +39,10 @@ export async function adsMentes(db, sorok, most) {
  */
 export async function riport(db, most, nap = 14) {
   await db.prepare(ADS_SEMA).run();
+  await db.prepare(TIKTOK_SEMA).run();
   const tol = most - nap * 86400;
   const napok = {};
-  const n = (d) => (napok[d] ||= { nap: d, d1_foglalas: 0, d1_uj: 0, d1_igazolt: 0, d1_nem_igazolt: 0, salonic_level: 0, salonic_parositatlan: 0, ads_all: null, ads_igazolt: null, ads_igazolt_ertek: null,
+  const n = (d) => (napok[d] ||= { nap: d, d1_foglalas: 0, d1_uj: 0, d1_igazolt: 0, d1_nem_igazolt: 0, salonic_level: 0, salonic_parositatlan: 0, ads_all: null, ads_igazolt: null, ads_igazolt_ertek: null, tiktok_naplo: 0,
     ...Object.fromEntries(FORRAS_KULCSOK.flatMap((p) => [[`forras_${p}`, 0], [`forras_${p}_igazolt`, 0]])),
     ...Object.fromEntries(ONBEVALLAS_KULCSOK.map((o) => [`onbevallas_${o}`, 0])) });
   const f = await db.prepare("SELECT letrehozva, uj_vendeg, igazolas, forras_platform, onbevallas FROM mp_foglalas WHERE kornyezet = 'eles' AND letrehozva >= ?").bind(tol).all();
@@ -64,6 +66,9 @@ export async function riport(db, most, nap = 14) {
     if (ADS_AKCIOK[s.akcio] === 'all') x.ads_all = Math.round(s.db * 100) / 100;
     if (ADS_AKCIOK[s.akcio] === 'igazolt') { x.ads_igazolt = Math.round(s.db * 100) / 100; x.ads_igazolt_ertek = Math.round(s.ertek); }
   }
+  // TikTok "Schedule": a naplozott (csak naplo modban rogzitett, el nem kuldott) sorok szama naponta
+  const tt = await db.prepare("SELECT ido FROM mp_tiktok_feltoltes WHERE allapot = 'naplozva' AND ido >= ?").bind(tol).all();
+  for (const s of tt.results || []) n(napBp(s.ido)).tiktok_naplo++;
   const sorok = Object.values(napok).sort((p, q) => (p.nap < q.nap ? 1 : -1));
   const k = await db.prepare('SELECT mod, allapot, COUNT(*) AS db FROM mp_kiigazitas WHERE ido >= ? GROUP BY 1, 2').bind(tol).all();
 

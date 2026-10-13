@@ -12,6 +12,7 @@ import { koszonoOldal, foglalasKulcs, ertekFeloldas, HELYSZINEK, MP_SALONIC_HOST
 import { levelErtelmezes } from './igazolas.js';
 import { akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, kuldes, elesKuldesE, maszk, ELES_HOST } from './google-ads.js';
 import { forrasPlatform, onbevallasErtek, platformAzonositok, vanPlatformId, URES_PLATFORM_ID } from './forras.js';
+import { tiktokLepes, TIKTOK_SEMA } from './tiktok.js';
 
 export const SEMA = [
   `CREATE TABLE IF NOT EXISTS mp_foglalas (
@@ -34,6 +35,8 @@ export const SEMA = [
   `CREATE TABLE IF NOT EXISTS mp_kiigazitas (
     kulcs TEXT NOT NULL, tipus TEXT NOT NULL, mod TEXT NOT NULL, allapot TEXT NOT NULL, ok TEXT, valasz TEXT,
     probalkozas INTEGER NOT NULL DEFAULT 0, ido INTEGER NOT NULL, PRIMARY KEY (kulcs, tipus, mod))`,
+  // TikTok Events API "Schedule" (tiktok.js): kulcsonkent egy sor; alapertelmezes CSAK NAPLO (maszkolt torzs, halozati hivas nincs)
+  TIKTOK_SEMA,
 ];
 // a mar letezo mp_foglalas tablat bovito oszlopok: csak a hianyzot adjuk hozza (PRAGMA table_info), a meglevo sorok maradnak
 export const BOVITES = [
@@ -69,6 +72,17 @@ async function sema(db) {
     }
   }
   semaKesz = true;
+}
+
+/**
+ * A TikTok-lepes (tiktok.js) a Google-feltoltestol FUGGETLENUL, sajat hibakezelessel: a Google-lancot nem zavarhatja.
+ * Alapertelmezes: csak naplo (mp_tiktok_feltoltes), halozati hivas nincs.
+ */
+function tiktokInditas(db, sor, env, host, opts, waitUntil) {
+  let p;
+  try { p = tiktokLepes(db, sor, env, host, opts).catch((e) => console.error('mp-meres: tiktok hiba', String(e && e.message || e).slice(0, 200))); } catch (e) { return Promise.resolve(); }
+  if (typeof waitUntil === 'function') { waitUntil(p); return Promise.resolve(); }
+  return p;
 }
 
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
@@ -142,6 +156,13 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
             kulcs, most - POTLAS_ABLAK, be.bookingId || null, sor.kornyezet).run();
         platPotolva = !!(up && up.meta && up.meta.changes);
       }
+      if (platPotolva) {
+        // kesoi hozzajarulas: ha a sor mar Salonic-igazolt, a TikTok-lepes most indul (kulcsonkent egyszer)
+        try {
+          const ts = await db.prepare('SELECT * FROM mp_foglalas WHERE kulcs = ?').bind(kulcs).first();
+          if (ts && ts.igazolas === 'igazolt') await tiktokInditas(db, ts, env, host, { fetchImpl, most }, waitUntil);
+        } catch (e) { console.error('mp-meres: tiktok potlas hiba', String(e && e.message || e).slice(0, 200)); }
+      }
       if (!katt) return json({ ok: true, uj: false, potolva: platPotolva });
       const u = await db.prepare(`UPDATE mp_foglalas SET kattintas_tipus = ?, kattintas_ertek = ?, kattintas_ido = ?, hozzajarulas_dontott = 1, hozzajarulas_hirdetes = 1, hozzajarulas_analitika = ?
         WHERE kulcs = ? AND kattintas_ertek IS NULL AND letrehozva >= ? AND salonic_id IS ? AND kornyezet = ?`)
@@ -159,11 +180,13 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       Object.assign(sor, await igazoltJeloles(db, sor.kulcs, ig));
       const feltolt = feltoltes(db, sor, env, host, { fetchImpl, most }).catch((e) => console.error('mp-meres: feltoltes hiba', String(e && e.message || e).slice(0, 200)));
       if (typeof waitUntil === 'function') waitUntil(feltolt); else await feltolt;
+      await tiktokInditas(db, sor, env, host, { fetchImpl, most }, waitUntil);
     }
     // karbantartas: regi rekordok es a 90 napnal regebbi kattintasazonositok torlese
     const karb = db.batch([
       db.prepare('DELETE FROM mp_foglalas WHERE letrehozva < ?').bind(most - MEGORZES_NAP * 86400),
       db.prepare('DELETE FROM mp_feltoltes WHERE ido < ?').bind(most - MEGORZES_NAP * 86400),
+      db.prepare('DELETE FROM mp_tiktok_feltoltes WHERE ido < ?').bind(most - MEGORZES_NAP * 86400),
       db.prepare('UPDATE mp_foglalas SET kattintas_ertek = NULL WHERE kattintas_ertek IS NOT NULL AND letrehozva < ?').bind(most - 90 * 86400),
       db.prepare(`UPDATE mp_foglalas SET ${PLATFORM_ID_OSZLOPOK.map((o) => `${o} = NULL`).join(', ')}
         WHERE (${PLATFORM_ID_OSZLOPOK.map((o) => `${o} IS NOT NULL`).join(' OR ')}) AND letrehozva < ?`).bind(most - 90 * 86400),
@@ -357,5 +380,6 @@ export async function igazolasErkezes({ request, env = {}, waitUntil }, { fetchI
   const host = new URL(request.url).hostname;
   const pf = feltoltes(db, sor, env, host, { fetchImpl, most }).catch((e) => console.error('mp-meres: igazolt feltoltes hiba', String(e && e.message || e).slice(0, 200)));
   if (typeof waitUntil === 'function') waitUntil(pf); else await pf;
+  await tiktokInditas(db, sor, env, host, { fetchImpl, most }, waitUntil);
   return json({ ok: true, igazolva: true });
 }
