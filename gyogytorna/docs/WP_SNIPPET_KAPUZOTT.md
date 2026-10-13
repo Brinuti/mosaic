@@ -1,9 +1,9 @@
 # Kapuzott WordPress-snippet (valodi, eles vegponttol vegpontig proba) - JOVAHAGYASRA
 
-**Allapot: NINCS telepitve.** Telepites csak Feri + a meresi felelos (ChatGPT / meresi Claude) jovahagyasa utan. Az eles oldal viselkedese a latogatoknak NEM valtozik.
+**Allapot: NINCS telepitve (ChatGPT: jovahagyva modositassal; meresi Claude jovahagyasara var).** Telepites csak Feri + a meresi felelos (ChatGPT / meresi Claude) jovahagyasa utan. Az eles oldal viselkedese a latogatoknak NEM valtozik.
 
 ## Mit csinal
-Egy kicsi `<head>`-szkript (Code Snippets, "csak elol"), ami a `launcher.js`-t es a `suti.js`-t CSAK akkor tolti be, ha **mindharom** igaz valamelyike teljesul:
+Egy kicsi `<head>`-szkript (Code Snippets, "csak elol"), ami a `launcher.js`-t es a `suti.js`-t CSAK akkor tolti be, ha **a fulben `gy_motor=1` (csak a `?motor=1` allitja be)**, es ezen belul:
 1. az URL-ben `?motor=1` van (vagy ezt korabban ebben a fulben beallitottuk: `sessionStorage.gy_motor === '1'`) - a tesztelo kapcsolja be magnak;
 2. a lap a motor Salonic-adatlap kereteben fut (`window.name === 'gy-adatlap'`) - csak a motor nyitja;
 3. koszonooldal (`/allapot-ok/`, `/foglalas-ok/`) ES a fulben van a motor egyszeri tokenje (`sessionStorage.gy_tk`) - csak a motorral foglalo tesztelo.
@@ -20,6 +20,7 @@ Minden mas latogato: **semmi nem toltodik, semmi nem fut, a DOM nem valtozik.** 
 - Tesztelo-oldali mellekhatas: a probat vegzo bongeszoben a Salonic-oldal sajat merokodjai (GTM) a keretben futnak, mint egy valodi foglalasnal; a proba foglalas teszt-vendeggel, nem csucsidoben, azonnali lemondassal tortenik (Feri jovahagyasa megvan).
 
 ## A kod (PHP, Code Snippets, "Run snippet everywhere" / csak frontend)
+Szigoritva a ChatGPT-review (2. kor) utan: `?motor=0` TELJES kikapcsolas (kulcsok torlese, semmi nem toltodik); a tokenes koszonooldal es a keret CSAK akkor fut, ha a fulben `gy_motor === '1'` is van (a keret a szulovel azonos origin, igy a sessionStorage kozos).
 ```php
 add_action('wp_head', function () {
   if (is_admin()) return;
@@ -28,12 +29,16 @@ add_action('wp_head', function () {
 (function () {
   try {
     var q = new URLSearchParams(location.search);
-    if (q.get('motor') === '1' || q.get('motor') === '0') sessionStorage.setItem('gy_motor', q.get('motor'));
+    var m = q.get('motor');
+    if (m === '0') {
+      ['gy_motor', 'gy_tk', 'gy_b'].forEach(function (k) { try { sessionStorage.removeItem(k); } catch (e) {} try { localStorage.removeItem(k); } catch (e) {} });
+      return;
+    }
+    if (m === '1') sessionStorage.setItem('gy_motor', '1');
     var kapu = sessionStorage.getItem('gy_motor') === '1';
+    if (!kapu) return;
     var keret = window.top !== window && window.name === 'gy-adatlap';
-    var koszono = /^\/(allapot-ok|foglalas-ok)\/?$/i.test(location.pathname);
-    var token = !!sessionStorage.getItem('gy_tk');
-    if (!(kapu || keret || (koszono && token))) return;
+    if (!keret && window.top !== window) return;
     var be = function (src) { var s = document.createElement('script'); s.src = src; s.async = false; document.head.appendChild(s); };
     if (!keret) be('/gy-foglalas/assets/js/suti.js');
     be('/gy-foglalas/assets/js/launcher.js');
@@ -43,6 +48,11 @@ add_action('wp_head', function () {
   <?php
 }, 1);
 ```
+Megjegyzes: a kapu egyetlen feltetele a fulben a `gy_motor === '1'`, amit csak a `?motor=1` allit be. A token (`gy_tk`) onmagaban nem nyit semmit.
+
+## Review (ChatGPT / OpenAI API, 2026-10-13, 2. kor)
+DONTES: JOVAHAGYVA MODOSITASSAL - a snippet telepitese igen (a fenti kapuzassal, valtozatlan eles GTM-mel); a `foglalas_kesz` eles triggerenek publikalasa nem resze a jovahagyasnak. A tesztfoglalas feltetelesen: csak akkor, ha a meresi Claude elozetesen igazolja, hogy a teszt kizarhato az eles konverziokuldesbol (a gclid hianya onmagaban nem eleg).
+
 (A `launcher.js` `defer` nelkul, dinamikusan toltve is jol mukodik: `document.currentScript` a dinamikus betoltesnel is a script elem.)
 
 ## Ellenorzes telepites utan (a latogatok szemszogebol)
