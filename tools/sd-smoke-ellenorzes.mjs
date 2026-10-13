@@ -51,7 +51,10 @@ const reszletKerelem = (c) => { // arnyekCel() a meres_kuldes.kerelem {url, cel}
  * A lista ertekelese. r = { level, index, cellak, motor_cellak, dupla, elo_id, reschedule, kapcsolok } (a smokeSql() nev -> sorok). -> { u8, verdikt: 'PASS' | 'FAIL' | 'FOLYAMATBAN', kriteriumok: [{ id, nev, allapot: 'PASS'|'FAIL'|'WARN'|'NA'|'FOLYAMATBAN', reszlet }] }
  * opciok: { mostSec } (a "korai" / "elmaradt" sd megitelesehez), { env } (GA4_TESZT_MEASUREMENT_ID az arnyekCel-hez).
  */
+export const EREDMENY_KULCSOK = Object.freeze(['level', 'index', 'cellak', 'motor_cellak', 'dupla', 'elo_id', 'reschedule', 'kapcsolok']);
 export function ertekel(u8, r, { mostSec = Math.floor(Date.now() / 1000), env = {} } = {}) {
+  const hianyzo = EREDMENY_KULCSOK.filter((x) => !r || !Array.isArray(r[x]));
+  if (hianyzo.length) return { u8, verdikt: 'FAIL', kriteriumok: [K('C0', 'eredmenyek_teljesek', 'FAIL', `hianyzo / nem tomb eredmeny-halmaz: ${hianyzo.join(', ')} (mind a ${EREDMENY_KULCSOK.length} SELECT eredmenye kell; egy kimaradt lekerdezes nem lehet PASS)`)] };
   const k = [];
   const level = (r.level || [])[0];
   if (!level) return { u8, verdikt: 'FAIL', kriteriumok: [K('C1', 'level_latva', 'FAIL', 'nincs ilyen foglalas_egyeztetes sor')] };
@@ -59,7 +62,7 @@ export function ertekel(u8, r, { mostSec = Math.floor(Date.now() / 1000), env = 
   const place = Number(String(level.kulcs || '').split('|')[0]);
   const idx0 = (r.index || [])[0], cella0 = (r.cellak || [])[0];
   const uzletag = PMU_OXIGEN[place] || (idx0 && ['pmu', 'oxigen'].includes(idx0.uzletag) ? idx0.uzletag : null) || (cella0 && ['pmu', 'oxigen'].includes(cella0.uzletag) ? cella0.uzletag : null); // a kulcs (place) -> a hash-index uzletag -> az sd cellak uzletag
-  k.push(K('C1', 'level_latva', uzletag ? 'PASS' : 'WARN', uzletag ? `${uzletag}, allapot=${level.allapot}` : `nem pmu / oxigen (place=${Number.isFinite(place) && place ? place : '?'}) vagy kulcs / index nelkuli level: az sd csak pmu / oxigen`));
+  k.push(K('C1', 'level_latva', uzletag ? 'PASS' : (r.level[0].van_sd ? 'FAIL' : 'WARN'), uzletag ? `${uzletag}, allapot=${level.allapot}` : `nem pmu / oxigen (place=${Number.isFinite(place) && place ? place : '?'}) vagy kulcs / index nelkuli level: az sd csak pmu / oxigen`));
 
   const idx = (r.index || [])[0];
   k.push(!idx ? K('C2', 'hash_index', 'WARN', 'nincs foglalas_vendeg sor (valodi kimaradas, vagy a jelolo-ag elott az e-mail nelkuli level)')
@@ -71,7 +74,8 @@ export function ertekel(u8, r, { mostSec = Math.floor(Date.now() / 1000), env = 
   let sdVan = !!level.van_sd;
   if (sdVan) {
     k.push(K('C3', 'sd_atvetel', level.sd_allapot === 'kesz' ? 'PASS' : ['atveve', 'koran'].includes(level.sd_allapot) ? 'FOLYAMATBAN' : 'FAIL', `sd_allapot=${level.sd_allapot}${level.riasztas ? ', riasztas=1' : ''}`));
-    k.push(K('C4', 'kor_ido', kor != null && kor >= SD_MIN_KOR_MP ? 'PASS' : 'FAIL', kor != null ? `${kor} mp a letrehozo level utan (minimum ${SD_MIN_KOR_MP})` : 'nincs sd_ido'));
+    const sdHozta = level.sd_ido != null && level.sd_ido === level.letrehozva; // az sd INSERT-je hozta letre a sort (a letrehozo level horga nem futott): a level valodi kora nem ismert
+    k.push(K('C4', 'kor_ido', sdHozta ? 'WARN' : kor != null && kor >= SD_MIN_KOR_MP ? 'PASS' : 'FAIL', sdHozta ? 'az sd hozta letre a sort (nincs levelhorog-ido): a level kora nem ellenorizheto' : kor != null ? `${kor} mp a letrehozo level utan (minimum ${SD_MIN_KOR_MP})` : 'nincs sd_ido'));
   } else if (motorNyert) {
     k.push(K('C3', 'sd_atvetel', 'NA', 'a motor parositotta es kuldte (booking_id): az sd nem vett at - a motoros ut (nem az sd) a smoke targya, az sd smoke itt nem teljesul'));
     k.push(K('C4', 'kor_ido', 'NA', 'nincs sd-atvetel'));
@@ -94,7 +98,7 @@ export function ertekel(u8, r, { mostSec = Math.floor(Date.now() / 1000), env = 
     k.push(K('C7', 'cel_arnyek', !kuldott.length ? 'WARN' : rosszCel.length ? 'FAIL' : 'PASS', !kuldott.length ? 'nincs kiment kerelem' : rosszCel.length ? `${rosszCel.length} kiment kerelem celpontja NEM az ARNYEK (${[...new Set(rosszCel.map((c) => c.platform))].join(', ')})` : `${kuldott.length} kiment kerelem, mind ARNYEK cel (Meta dataset + tesztkod, TikTok pixel + tesztkod, GA4 teszt property, Google ARNYEK akciok)`));
     const hibas = cellak.filter((c) => c.allapot === 'hiba'), tiltott = cellak.filter((c) => c.allapot === 'tiltva');
     const meta = alap('meta').some((c) => c.allapot === 'elkuldve'), tiktok = alap('tiktok').some((c) => c.allapot === 'elkuldve');
-    k.push(K('C8', 'allapotok', hibas.length ? 'FAIL' : !meta || !tiktok ? 'WARN' : tiltott.length ? 'WARN' : 'PASS', `hiba=${hibas.length}, tiltva=${tiltott.length}; alap esemeny elkuldve: meta=${meta}, tiktok=${tiktok}${PLATFORMOK.filter((p) => alap(p).some((c) => c.allapot === 'kihagyva')).length ? ' (kihagyva: ' + PLATFORMOK.filter((p) => alap(p).some((c) => c.allapot === 'kihagyva')).join(', ') + ')' : ''}`));
+    k.push(K('C8', 'allapotok', hibas.length || !meta || !tiktok ? 'FAIL' : tiltott.length ? 'WARN' : 'PASS', `hiba=${hibas.length}, tiltva=${tiltott.length}; alap esemeny elkuldve: meta=${meta}, tiktok=${tiktok}${!meta || !tiktok ? ' - a Meta es a TikTok alap esemenynek kimennie kell (egyik sem ment ki: a smoke nem PASS)' : ''}${PLATFORMOK.filter((p) => alap(p).some((c) => c.allapot === 'kihagyva')).length ? ' (kihagyva: ' + PLATFORMOK.filter((p) => alap(p).some((c) => c.allapot === 'kihagyva')).join(', ') + ')' : ''}`));
   }
   const eloDb = Number(((r.elo_id || [])[0] || {}).db) || 0;
   k.push(K('C9', 'elo_id', eloDb === 0 ? 'PASS' : 'FAIL', eloDb === 0 ? '0 elo ID a kerelmekben' : `${eloDb} sorban ELO ID`));

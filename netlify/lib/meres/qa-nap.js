@@ -46,7 +46,9 @@ const isoUtc = (ms) => new Date(ms).toISOString().replace('.000Z', 'Z');
 // ---------- segedek ----------
 const placeUzletag = (kulcs) => { const p = Number(String(kulcs || '').split('|')[0]); return PLACE_UZLETAG[p] || null; };
 const jsonVagyNull = (s) => { try { return s ? JSON.parse(s) : null; } catch (e) { return null; } };
-const novel = (o, k, n = 1) => { o[k] = (o[k] || 0) + n; };
+const TILTOTT_KULCS = new Set(['__proto__', 'constructor', 'prototype', 'hasOwnProperty', 'toString', 'valueOf']);
+const kulcsBiztos = (k) => (TILTOTT_KULCS.has(String(k)) ? 'ismeretlen' : String(k == null ? 'ismeretlen' : k).slice(0, 40)); // az adatbazisbol jovo szoveg (forras, sd_allapot ...) objektum-kulcsnak: az Object.prototype nevei nem hasznalhatok
+const novel = (o, k, n = 1) => { const kk = kulcsBiztos(k); o[kk] = (Object.hasOwn(o, kk) ? o[kk] : 0) + n; };
 const hanyados = (x, y) => (y > 0 ? Math.round((x / y) * 100) / 100 : null);
 /** A tabla oszlopai (hianyzo tabla = ures halmaz). Az adatbazis-HIBA nem nyelodik el: a hivo szekcio hibakent jelzi (sarga lampa), soha nem "zold ures nap". */
 async function oszlopok(db, tabla) {
@@ -84,14 +86,14 @@ export function lemondasOsztaly(eredmeny) {
 
 const ures = () => ({
   valos: { letrehozo_level: 0, parositott: 0, parositatlan: 0, egyeb_allapot: 0, proba_kizarva: 0, lemondas: { db: 0, felszabadult: 0, nincs_bejegyzes: 0, nem_ellenorizheto: 0, birtokos_el: 0, egyeb: 0 } },
-  arnyek: Object.fromEntries(PLATFORMOK.map((p) => [p, { ...Object.fromEntries(ALLAPOTOK.map((a) => [a, 0])), mas: 0, alap_elkuldve: 0, forras: {}, lampa: 'n/a' }])),
+  arnyek: Object.fromEntries(PLATFORMOK.map((p) => [p, { ...Object.fromEntries(ALLAPOTOK.map((a) => [a, 0])), mas: 0, alap_elkuldve: 0, proba_cella_kizarva: 0, forras: {}, lampa: 'n/a' }])),
   biztonsag: { elo_id_talalat: 0, dupla: 0, nem_arnyek_cel: 0 },
   sd: { sd_allapot: {}, csere: {} },
   pre288_missing_hmac_index: { db: 0, mintak: [] },
   post288_missing_hmac_index: { db: 0, parositatlan_db: 0, mintak: [] },
   post288_nincs_email: { db: 0, parositatlan_db: 0, mintak: [] },
   // BOOKING COVERAGE (a meresi oldal / GPT DECISION #166): latta-e a rendszer a valos foglalast. latott = a rendszer altal latott valos letrehozo levelek; elvart = a hivo FUGGETLEN forrasbol (pl. Salonic) megadott darabszam (?elvart=headspa:12,...), egyebkent null (a nevezo ekkor a latott: a lathatatlan kimaradas nem merheto)
-  lefedettseg: { latott: 0, elvart: null, nevezo_forras: 'latott', lefedettseg: null, hiany: null, parositott_esemeny_nelkul: 0, friss_kizarva: 0 },
+  lefedettseg: { latott: 0, elvart: null, nevezo_forras: 'latott', lefedettseg: null, hiany: null, parositott_esemeny_nelkul: 0, szabalyos_esemeny_nelkul: 0, friss_kizarva: 0 },
   // PLATFORM ELIGIBILITY: lehetett-e szabalyosan esemenyt kuldeni. Platformonkent a foglalasonkenti alap-esemeny cellak: kuldve (ok) | szabalyos_nulla (jogos_0: pl. nincs hozzajarulas / kattintasazonosito) | technikai_hiany (hiba, tiltva, veszkapcsolo, halasztva ...) | nincs_sor (parositott level esemeny-sor nelkul).
   // A TECHNIKAI KIMARADAS (technikai_hiany + nincs_sor) BENNE MARAD a nevezoben: jogosult = kuldve + technikai_hiany + nincs_sor; a szabalyos nulla kimarad belole.
   jogosultsag: Object.fromEntries(PLATFORMOK.map((p) => [p, { cellak: 0, kuldve: 0, szabalyos_nulla: 0, technikai_hiany: 0, technikai_hiany_okok: {}, nincs_sor: 0, jogosult: 0, arany: null }])),
@@ -132,24 +134,37 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     }
   }, hibak);
 
+  // a ?proba= levelek esemeny-celljai (booking_id / sd_id): a kuldott-arany szamlaloktol (alap_elkuldve, jogosultsag) KI vannak zarva - a nevezobol (valos / lefedettseg) is kimaradnak -, a biztonsagi ellenorzesek (elo ID, dupla, nem-arnyek cel) viszont MINDEN kuldesre futnak
+  const probaForrasok = new Set();
+  if (probaSet.size && eOszl.size) {
+    await vedett('proba_forrasok', async () => {
+      const lista = [...probaSet];
+      for (const r of await mind(db, `SELECT booking_id${eOszl.has('sd_id') ? ', sd_id' : ''} FROM foglalas_egyeztetes WHERE lower(substr(uuid, 1, 8)) IN (${lista.map((_, i) => '?' + (i + 1)).join(', ')})`, ...lista)) { if (r.booking_id) probaForrasok.add(r.booking_id); if (r.sd_id) probaForrasok.add(r.sd_id); }
+    }, hibak);
+  }
+
   // 2) arnyek + 3) biztonsag: a meres_kuldes napi sorai
   await vedett('arnyek', async () => {
     if (!kOszl.size) return;
     const forrasOszlop = kOszl.has('forras') ? "COALESCE(forras, 'motor')" : "'motor'";
     const indokOszlop = kOszl.has('indok') ? 'indok' : 'NULL AS indok', hozzOszlop = kOszl.has('hozzajarulas') ? 'hozzajarulas' : 'NULL AS hozzajarulas';
-    const sorok = await mind(db, `SELECT esemeny_id, esemeny_tipus, platform, platform_nev, uzletag, allapot, ${forrasOszlop} AS forras, ${indokOszlop}, ${hozzOszlop}, kerelem FROM meres_kuldes WHERE letrehozva >= ?1 AND letrehozva < ?2 LIMIT 50000`, from, to);
+    const sorok = await mind(db, `SELECT esemeny_id, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, ${forrasOszlop} AS forras, ${indokOszlop}, ${hozzOszlop}, kerelem FROM meres_kuldes WHERE letrehozva >= ?1 AND letrehozva < ?2 LIMIT 50000`, from, to);
     const dupla = new Map();
     for (const s of sorok) {
       const u = bizt(s.uzletag);
       const p = u.arnyek[s.platform];
       if (p) {
         if (ALLAPOTOK.includes(s.allapot)) p[s.allapot]++; else p.mas++;
-        const f = (p.forras[s.forras] = p.forras[s.forras] || Object.fromEntries([...ALLAPOTOK, 'mas'].map((a) => [a, 0])));
+        const fk = kulcsBiztos(s.forras);
+        const f = (p.forras[fk] = Object.hasOwn(p.forras, fk) ? p.forras[fk] : Object.fromEntries([...ALLAPOTOK, 'mas'].map((a) => [a, 0])));
         f[ALLAPOTOK.includes(s.allapot) ? s.allapot : 'mas']++;
-        if (s.allapot === 'elkuldve' && s.esemeny_tipus === 'alap' && (s.forras === 'motor' || s.forras === 'salonic_direct') && !/Ajandekkartya$/.test(String(s.platform_nev || ''))) p.alap_elkuldve++; // a foglalasonkenti alap-esemeny (FoglalasElso / Konzultacio / Visszajaro); az ajandekkartya nem foglalas-level
-        if (s.esemeny_tipus === 'alap' && (s.forras === 'motor' || s.forras === 'salonic_direct') && !/Ajandekkartya$/.test(String(s.platform_nev || ''))) { // platform eligibility: ugyanaz a cella-halmaz, mint az alap_elkuldve, de MINDEN allapotban
+        const probaCella = probaForrasok.has(s.source_id); // a proba-level cellaja: nem szamit bele a kuldott-aranyba
+        if (probaCella) p.proba_cella_kizarva++;
+        if (!probaCella && s.allapot === 'elkuldve' && s.esemeny_tipus === 'alap' && (s.forras === 'motor' || s.forras === 'salonic_direct') && !/Ajandekkartya$/.test(String(s.platform_nev || ''))) p.alap_elkuldve++; // a foglalasonkenti alap-esemeny (FoglalasElso / Konzultacio / Visszajaro); az ajandekkartya nem foglalas-level
+        if (!probaCella && s.esemeny_tipus === 'alap' && (s.forras === 'motor' || s.forras === 'salonic_direct') && !/Ajandekkartya$/.test(String(s.platform_nev || ''))) { // platform eligibility: ugyanaz a cella-halmaz, mint az alap_elkuldve, de MINDEN allapotban
           const j = u.jogosultsag[s.platform]; j.cellak++;
-          const c = cellaOsztaly({ allapot: s.allapot, indok: s.indok }, { hozz: jsonVagyNull(s.hozzajarulas) });
+          const hz = jsonVagyNull(s.hozzajarulas); // a meres_kuldes.hozzajarulas = { allapot: { ana, adv, fun, dontes }, szabaly: {...} } (elosztas.js naploz): a cellaOsztaly a LAPOS foglalaskori pillanatkepet (allapot) varja
+          const c = cellaOsztaly({ allapot: s.allapot, indok: s.indok }, { hozz: hz && typeof hz === 'object' && hz.allapot && typeof hz.allapot === 'object' ? hz.allapot : null });
           if (c.osztaly === 'ok') j.kuldve++;
           else if (c.osztaly === 'jogos_0') j.szabalyos_nulla++;
           else { j.technikai_hiany++; novel(j.technikai_hiany_okok, c.kod || (s.allapot === 'kihagyva' ? 'veszkapcsolo' : String(s.allapot || 'ismeretlen').slice(0, 24))); } // az ok csak kod / allapot (a szabad indok-szoveg nem kerul ki)
@@ -243,12 +258,17 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
   await vedett('lefedettseg', async () => {
     if (!eOszl.size || !kOszl.size || !eOszl.has('booking_id')) return;
     const sdVan = eOszl.has('sd_id') && eOszl.has('sd_allapot');
-    const sql = `SELECT substr(e.uuid, 1, 8) AS u8, e.kulcs AS kulcs, e.letrehozva AS ido FROM foglalas_egyeztetes e WHERE e.letrehozva >= ?1 AND e.letrehozva < ?2 AND ((e.allapot = 'parositott' AND e.booking_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.booking_id AND k.esemeny_tipus = 'alap'))${sdVan ? " OR (e.sd_id IS NOT NULL AND e.sd_allapot = 'kesz' AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.sd_id AND k.esemeny_tipus = 'alap'))" : ''}) ORDER BY e.letrehozva, e.uuid`;
+    const jellegVan = (await oszlopok(db, 'meres_jelleg')).size > 0; // a rogzitett foglalas-jelleg: a HeadSpa KONZULTACIOHOZ a modell szandekosan nem keszit esemenyt (#101) -> szabalyos, nem technikai kimaradas
+    const jellegOszlop = jellegVan ? ", (SELECT j.jelleg FROM meres_jelleg j WHERE j.source_id = COALESCE(CASE WHEN e.allapot = 'parositott' THEN e.booking_id END, e.sd_id)) AS jelleg" : ', NULL AS jelleg';
+    const sql = `SELECT substr(e.uuid, 1, 8) AS u8, e.kulcs AS kulcs, e.letrehozva AS ido${jellegOszlop} FROM foglalas_egyeztetes e WHERE e.letrehozva >= ?1 AND e.letrehozva < ?2 AND ((e.allapot = 'parositott' AND e.booking_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.booking_id AND k.esemeny_tipus = 'alap'))${sdVan ? " OR (e.sd_id IS NOT NULL AND e.sd_allapot = 'kesz' AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.sd_id AND k.esemeny_tipus = 'alap'))" : ''}) ORDER BY e.letrehozva, e.uuid`;
     const frissHatar = Math.floor(mostMs / 1000) - FRISS_MP;
     for (const r of await mind(db, sql, from, to)) {
       if (probaSet.has(r.u8)) continue;
-      const b = bizt(placeUzletag(r.kulcs)).lefedettseg;
-      if (r.ido > frissHatar) b.friss_kizarva++; else b.parositott_esemeny_nelkul++;
+      const nev = placeUzletag(r.kulcs);
+      const b = bizt(nev).lefedettseg;
+      if (r.ido > frissHatar) b.friss_kizarva++;
+      else if (nev === 'headspa' && r.jelleg === 'konzultacio') b.szabalyos_esemeny_nelkul++;
+      else b.parositott_esemeny_nelkul++;
     }
   }, hibak);
 
@@ -262,7 +282,7 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
 
   // ---------- lampa ----------
   let osszLampa = 'zold';
-  const osszes = { valos: { letrehozo_level: 0, parositott: 0, parositatlan: 0, lemondas: 0 }, biztonsag: { elo_id_talalat: 0, dupla: 0, nem_arnyek_cel: 0 }, pre288_missing_hmac_index: 0, post288_missing_hmac_index: 0, post288_nincs_email: 0, foglalas_vendeg: 0, lefedettseg: { latott: 0, elvart: elvart ? 0 : null, elvart_hianyos: elvart ? !UZLETAGAK.every((x) => x in elvart) : null, hiany: elvart ? 0 : null, parositott_esemeny_nelkul: 0, friss_kizarva: 0 }, jogosultsag: Object.fromEntries(PLATFORMOK.map((p) => [p, { kuldve: 0, szabalyos_nulla: 0, technikai_hiany: 0, nincs_sor: 0, jogosult: 0, arany: null }])) };
+  const osszes = { valos: { letrehozo_level: 0, parositott: 0, parositatlan: 0, lemondas: 0 }, biztonsag: { elo_id_talalat: 0, dupla: 0, nem_arnyek_cel: 0 }, pre288_missing_hmac_index: 0, post288_missing_hmac_index: 0, post288_nincs_email: 0, foglalas_vendeg: 0, lefedettseg: { latott: 0, elvart: elvart ? 0 : null, latott_az_elvart_uzletagakban: elvart ? 0 : null, elvart_hianyos: elvart ? !UZLETAGAK.every((x) => x in elvart) : null, hiany: elvart ? 0 : null, parositott_esemeny_nelkul: 0, szabalyos_esemeny_nelkul: 0, friss_kizarva: 0 }, jogosultsag: Object.fromEntries(PLATFORMOK.map((p) => [p, { kuldve: 0, szabalyos_nulla: 0, technikai_hiany: 0, nincs_sor: 0, jogosult: 0, arany: null }])) };
   for (const [nev, u] of Object.entries(uz)) {
     let lampa = 'zold';
     const b = u.biztonsag;
@@ -282,8 +302,8 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     const lf = u.lefedettseg; lf.latott = u.valos.letrehozo_level;
     const e = elvart && nev in elvart ? elvart[nev] : null;
     if (e != null) { lf.elvart = e; lf.nevezo_forras = 'elvart'; lf.lefedettseg = hanyados(lf.latott, e); lf.hiany = Math.max(0, e - lf.latott); }
-    osszes.lefedettseg.latott += lf.latott; osszes.lefedettseg.parositott_esemeny_nelkul += lf.parositott_esemeny_nelkul; osszes.lefedettseg.friss_kizarva += lf.friss_kizarva;
-    if (elvart && e != null) { osszes.lefedettseg.elvart += e; osszes.lefedettseg.hiany += lf.hiany; }
+    osszes.lefedettseg.latott += lf.latott; osszes.lefedettseg.parositott_esemeny_nelkul += lf.parositott_esemeny_nelkul; osszes.lefedettseg.szabalyos_esemeny_nelkul += lf.szabalyos_esemeny_nelkul; osszes.lefedettseg.friss_kizarva += lf.friss_kizarva;
+    if (elvart && e != null) { osszes.lefedettseg.elvart += e; osszes.lefedettseg.latott_az_elvart_uzletagakban += lf.latott; osszes.lefedettseg.hiany += lf.hiany; }
     for (const pl of PLATFORMOK) {
       const j = u.jogosultsag[pl]; j.nincs_sor = lf.parositott_esemeny_nelkul; j.jogosult = j.kuldve + j.technikai_hiany + j.nincs_sor; j.arany = hanyados(j.kuldve, j.jogosult);
       const o = osszes.jogosultsag[pl]; for (const k of ['kuldve', 'szabalyos_nulla', 'technikai_hiany', 'nincs_sor', 'jogosult']) o[k] += j[k];
@@ -296,7 +316,8 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     osszes.foglalas_vendeg += Object.values(u.foglalas_vendeg).reduce((x, y) => x + y, 0);
   }
   for (const pl of PLATFORMOK) osszes.jogosultsag[pl].arany = hanyados(osszes.jogosultsag[pl].kuldve, osszes.jogosultsag[pl].jogosult);
-  if (osszes.lefedettseg.elvart != null) osszes.lefedettseg.lefedettseg = hanyados(osszes.lefedettseg.latott, osszes.lefedettseg.elvart); else delete osszes.lefedettseg.elvart_hianyos;
+  if (osszes.lefedettseg.elvart != null) osszes.lefedettseg.lefedettseg = hanyados(osszes.lefedettseg.latott_az_elvart_uzletagakban, osszes.lefedettseg.elvart); // like-for-like: csak az elvart-tal rendelkezo uzletagak latottja
+  else { delete osszes.lefedettseg.elvart_hianyos; delete osszes.lefedettseg.latott_az_elvart_uzletagakban; }
   if (!ismeretlenHasznalt) delete uz.ismeretlen;
   if (hibak.length && LAMPA_RANG[osszLampa] < LAMPA_RANG.sarga) osszLampa = 'sarga'; // hiányos szekcio nem lehet "zold"
   return {
@@ -358,9 +379,9 @@ export async function t2Start(db, env, mostMs, { sha = null, zapRev = null } = {
       titkok_jelen: Object.fromEntries(TITOK_JELENLET.map((k) => [k, !!e[k]])), // csak jelenlet-bit, az ertek soha
     },
     arnyekcelok: {
-      meta: { dataset: ARNYEK.meta.datasetId, nev: ARNYEK.meta.nev, api_verzio: e.META_API_VERSION || ARNYEK.meta.apiVerzio, test_event_code: e.META_TESZT_KOD || null },
-      tiktok: { pixel_code: ARNYEK.tiktok.pixelCode, pixel_id: ARNYEK.tiktok.pixelId, test_event_code: e.TIKTOK_TESZT_KOD || null },
-      ga4: { measurement_id: e.GA4_TESZT_MEASUREMENT_ID || null },
+      meta: { dataset: ARNYEK.meta.datasetId, nev: ARNYEK.meta.nev, api_verzio: e.META_API_VERSION ? String(e.META_API_VERSION).slice(0, 40) : ARNYEK.meta.apiVerzio, test_event_code: e.META_TESZT_KOD ? String(e.META_TESZT_KOD).slice(0, 40) : null },
+      tiktok: { pixel_code: ARNYEK.tiktok.pixelCode, pixel_id: ARNYEK.tiktok.pixelId, test_event_code: e.TIKTOK_TESZT_KOD ? String(e.TIKTOK_TESZT_KOD).slice(0, 40) : null },
+      ga4: e.GA4_TESZT_MEASUREMENT_ID && ELO_CELOK.ga4.includes(String(e.GA4_TESZT_MEASUREMENT_ID)) ? { measurement_id: null, hiba: 'a konfiguralt GA4 teszt measurement ID az ELO tiltolistan van (nem irjuk ki)' } : { measurement_id: e.GA4_TESZT_MEASUREMENT_ID ? String(e.GA4_TESZT_MEASUREMENT_ID).slice(0, 40) : null },
       google: { customer_id: ARNYEK.google.customerId, akciok: ARNYEK.google.akciok },
     },
     szekcio_hibak: hibak,

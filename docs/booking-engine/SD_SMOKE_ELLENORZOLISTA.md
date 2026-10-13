@@ -17,20 +17,21 @@
 
 | # | Nev | PASS | FAIL / WARN |
 |---|---|---|---|
-| C1 | `level_latva` | a letrehozo level megvan, uzletag pmu / oxigen (kulcs, hash-index vagy az sd cellak uzletagabol) | FAIL: nincs sor / az elotag nem egyertelmu; WARN: nem pmu / oxigen |
+| C0 | `eredmenyek_teljesek` | mind a 8 SELECT eredmenye (tomb) megvan | FAIL: barmelyik hianyzik / nem tomb (egy kimaradt lekerdezes nem lehet PASS) |
+| C1 | `level_latva` | a letrehozo level megvan, uzletag pmu / oxigen (kulcs, hash-index vagy az sd cellak uzletagabol) | FAIL: nincs sor / az elotag nem egyertelmu / az sd NEM pmu-oxigen uzletagra vett at; WARN: nem pmu / oxigen level (sd nelkul) |
 | C2 | `hash_index` | `foglalas_vendeg` sor `email_h`-val | WARN: nincs sor, vagy jelolo sor (`*_nincs_email`): e-mail nelkul a csere-felismeres nem lehetseges |
 | C3 | `sd_atvetel` | `sd_allapot = kesz` | FOLYAMATBAN: nincs sd-atvetel, de a level fiatalabb 30 percnel / `atveve`; FAIL: elmaradt (`sd_hianyzik`), `halasztva` / `tartva` / `lejart`; NA: a motor parositott es kuldott (az sd nem vett at) |
-| C4 | `kor_ido` | az atvetel >= 20 perccel a letrehozo level utan | FAIL: korabban |
+| C4 | `kor_ido` | az atvetel >= 20 perccel a letrehozo level utan | FAIL: korabban; WARN: az sd INSERT-je hozta letre a sort (`sd_ido = letrehozva`: a levelhorog nem futott, a level kora nem ellenorizheto) |
 | C5 | `esemeny_sorok` | mind a 4 platformon van alap esemeny-sor az sd azonositoja alatt | FAIL: hianyzo platform |
 | C6 | `forras` | minden sor `forras = salonic_direct` | FAIL: mas forras |
 | C7 | `cel_arnyek` | minden kiment kerelem ARNYEK cel (Meta dataset + tesztkod, TikTok pixel + tesztkod, GA4 teszt property, Google ARNYEK akciok) | FAIL: nem ARNYEK cel (a QA-vegpont `arnyekCel()`-je) |
-| C8 | `allapotok` | nincs `hiba`; Meta + TikTok alap esemeny `elkuldve` | FAIL: `hiba`; WARN: `tiltva` vagy hianyzo Meta / TikTok kuldes |
+| C8 | `allapotok` | nincs `hiba`; Meta + TikTok alap esemeny `elkuldve` | FAIL: `hiba`, vagy a Meta / TikTok alap esemeny NEM ment ki (pl. hianyzo teszt-kod -> `tiltva`, `mind=0` -> `kihagyva`: semmi nem ment ki = nem PASS); WARN: mas `tiltva` |
 | C9 | `elo_id` | 0 elo azonosito (`ELO_CELOK`) a kerelmekben | FAIL: barmelyik |
 | C10 | `dupla` | nincs duplikalt (`esemeny_nev`, `platform`) kimeno esemeny; az sd ES a motor nem kuldott is | FAIL: duplikacio / mindketto kuldott |
 | C11 | `reschedule` | nincs `foglalas_reschedule` sor (normal ut) | WARN: van (csak valodi csere eseten varhato) |
 | C12 | `kapcsolok` | a fo kuldesi kapcsolo nincs 0-n (`mind`), es az sd kapcsolo be van (`salonic_direct:<uzletag>` = 1, vagy globalis `salonic_direct` = 1 es az uzletag-sor nem 0) | WARN: ki |
 
-**Verdikt:** FAIL, ha barmelyik kriterium FAIL; FOLYAMATBAN, ha van FOLYAMATBAN (vagy nincs sd-atvetel); egyebkent PASS (a WARN-ok kiirva, nem buktatnak). **A smoke csak sd-atvetellel teljesulhet:** ha a motor parositotta a foglalast, az a motoros ut sikere, nem az sd smoke.
+**Verdikt:** FAIL, ha barmelyik kriterium FAIL (a C0 is); FOLYAMATBAN, ha van FOLYAMATBAN (vagy nincs sd-atvetel); egyebkent PASS (a WARN-ok kiirva, nem buktatnak). **A smoke csak sd-atvetellel teljesulhet:** ha a motor parositotta a foglalast, az a motoros ut sikere, nem az sd smoke.
 
 ## Tesztek
-`node --test tools/test-sd-smoke.mjs` (SM1-SM9): a szimulalt sd-vilagon (valodi SQLite) termeszetes pmu foglalas -> mind a 12 kriterium PASS; tesztfoglalas (oxigen) ugyanaz + a `proba` kizaras a QA-hivasban; FOLYAMATBAN / FAIL idoablakok; 20 percnel korabbi atvetel; HOLD (csere-gyanu, `halasztva`); a motor parositott; szintetikus hibak (nem ARNYEK cel, elo ID, duplikacio, sd ES motor kuldott, `hiba`, hianyzo platform, mas forras); PII-mentesseg; CLI. A lekerdezesek az eles D1-en is lefutottak csak olvasasra (2026-10-13).
+`node --test tools/test-sd-smoke.mjs` (SM1-SM10): a szimulalt sd-vilagon (valodi SQLite) termeszetes pmu foglalas -> mind a 12 kriterium PASS; tesztfoglalas (oxigen) ugyanaz + a `proba` kizaras a QA-hivasban; FOLYAMATBAN / FAIL idoablakok; 20 percnel korabbi atvetel; HOLD (csere-gyanu, `halasztva`); a motor parositott; szintetikus hibak (nem ARNYEK cel, elo ID, duplikacio, sd ES motor kuldott, `hiba`, hianyzo platform, mas forras); PII-mentesseg; CLI. A lekerdezesek az eles D1-en is lefutottak csak olvasasra (2026-10-13).

@@ -631,6 +631,9 @@ test('N27 t2start CSAK OLVAS: minden SQL SELECT; ures adatbazison sem hoz letre 
   assert.equal(k.d1.tablak_db, 0); assert.match(k.d1.sema_ujjlenyomat, /^[0-9a-f]{64}$/); assert.ok(Object.values(k.d1.sorok).every((x) => x === null)); assert.equal(k.kapcsolok.d1, null); assert.deepEqual(k.szekcio_hibak, []);
 });
 
+// a meres_kuldes.hozzajarulas PRODUKCIOS alakja (elosztas.js): { allapot: { ana, adv, fun, dontes }, szabaly: {...} }
+const HOZZ = (allapot) => ({ allapot, szabaly: { kuldheto: true, felhasznaloi_adat: false } });
+
 // ---------- N28-N29: booking coverage + platform eligibility (DECISION #166 5.) ----------
 test('N28 booking coverage: latott (a rendszer altal latott valos levelek) / elvart (FUGGETLEN forrasbol, ?elvart=) / lefedettseg / hiany; elvart nelkul a nevezo a latott (nevezo_forras jelzi); ervenytelen elvart = 400', async () => {
   const w = await vilag();
@@ -644,7 +647,7 @@ test('N28 booking coverage: latott (a rendszer altal latott valos levelek) / elv
   const f = j.uzletagak.fodrasz.lefedettseg; assert.deepEqual([f.latott, f.elvart, f.lefedettseg, f.hiany], [1, 3, 0.33, 2]);
   const p = j.uzletagak.pmu.lefedettseg; assert.deepEqual([p.latott, p.elvart, p.lefedettseg, p.hiany, p.nevezo_forras], [0, 0, null, 0, 'elvart'], '0 elvart -> nincs hanyados, nincs hiany');
   const o = j.uzletagak.oxigen.lefedettseg; assert.deepEqual([o.latott, o.elvart, o.nevezo_forras, o.lefedettseg, o.hiany], [0, null, 'latott', null, null]);
-  assert.deepEqual(j.osszes.lefedettseg, { latott: 4, elvart: 7, elvart_hianyos: true, hiany: 3, parositott_esemeny_nelkul: 0, friss_kizarva: 0, lefedettseg: 0.57 });
+  assert.deepEqual(j.osszes.lefedettseg, { latott: 4, elvart: 7, latott_az_elvart_uzletagakban: 4, elvart_hianyos: true, hiany: 3, parositott_esemeny_nelkul: 0, szabalyos_esemeny_nelkul: 0, friss_kizarva: 0, lefedettseg: 0.57 });
   j = await w.jelentes(`qa=nap&datum=${NAP}&elvart=headspa:4,fodrasz:1,oxigen:0,szor:0,pmu:0`);
   assert.equal(j.osszes.lefedettseg.elvart_hianyos, false); assert.equal(j.osszes.lefedettseg.hiany, 0, 'probakizaras nelkul a headspa 4 latott = 4 elvart, a fodrasz 1 = 1'); assert.equal(j.osszes.lefedettseg.lefedettseg, 1);
   j = await w.jelentes();
@@ -658,7 +661,7 @@ test('N29 platform eligibility: kuldve / szabalyos_nulla (jogos_0) / technikai_h
   const A = w.egyeztetes({ uuid: w.uuid('ea'), kulcs: HEADSPA(1), t: FROM + 100, booking_id: 'mb_A' });
   cella('mb_A', 'meta', 'elkuldve'); cella('mb_A', 'tiktok', 'elkuldve');
   cella('mb_A', 'google', 'kihagyva', { indok: 'nincs kattintasazonosito' });                                             // jogos_0
-  cella('mb_A', 'ga4', 'tiltva', { indok: 'nincs GA4 client_id', hozz: { ana: false, dontes: 'elutasit' }, kerelem: null });  // jogos_0 (nincs analytics-hozzajarulas)
+  cella('mb_A', 'ga4', 'tiltva', { indok: 'nincs GA4 client_id', hozz: HOZZ({ ana: false, adv: false, fun: false, dontes: true }), kerelem: null });  // jogos_0 (analytics-hozzajarulas elutasitva)
   const B = w.egyeztetes({ uuid: w.uuid('eb'), kulcs: HEADSPA(2), t: FROM + 200, booking_id: 'mb_B' });
   cella('mb_B', 'meta', 'hiba'); cella('mb_B', 'tiktok', 'elkuldve');
   cella('mb_B', 'google', 'tiltva', { indok: 'a celpont nem az ARNYEK', kerelem: null });                                  // technikai
@@ -695,5 +698,91 @@ test('N29 platform eligibility: kuldve / szabalyos_nulla (jogos_0) / technikai_h
   assert.equal(j.uzletagak.headspa.jogosultsag.tiktok.technikai_hiany, 1); assert.equal(j.uzletagak.headspa.jogosultsag.tiktok.jogosult, 7); assert.equal(j.uzletagak.headspa.jogosultsag.tiktok.arany, 0.43);
   assert.ok(!/[0-9a-f]{8}-[0-9a-f]{4}-/.test(JSON.stringify(j)), 'teljes UUID nincs a valaszban');
   void [A, B, C, D, E];
+});
+
+// ---------- N30-N35: a fuggetlen review (#310, 4e151e2) javitasai ----------
+test('N30 GA4 hozzajarulas: a PRODUKCIOS alak ({ allapot: {ana...}, szabaly }) szerint osztalyoz - analytics-hozzajarulas VAN, de nincs client_id = TECHNIKAI hiany (nevezoben marad); nincs dontes / elutasitva = szabalyos nulla; nincs pillanatkep = technikai', async () => {
+  const w = await vilag();
+  const cella = (src, ga4Hozz, id) => w.kuldes({ esemeny_id: id, platform: 'ga4', allapot: 'tiltva', uzletag: 'headspa', source_id: src, t: FROM + 100, indok: 'nincs GA4 client_id (nincs _ga suti)', kerelem: null, hozz: ga4Hozz });
+  w.egyeztetes({ uuid: w.uuid('a1'), kulcs: HEADSPA(1), t: FROM + 100, booking_id: 'mb_h1' }); cella('mb_h1', HOZZ({ ana: true, adv: false, fun: false, dontes: true }), 'h1');   // ana VAN -> technikai
+  w.egyeztetes({ uuid: w.uuid('a2'), kulcs: HEADSPA(2), t: FROM + 100, booking_id: 'mb_h2' }); cella('mb_h2', HOZZ({ ana: false, adv: false, fun: false, dontes: true }), 'h2'); // elutasitva -> szabalyos nulla
+  w.egyeztetes({ uuid: w.uuid('a3'), kulcs: HEADSPA(3), t: FROM + 100, booking_id: 'mb_h3' }); cella('mb_h3', HOZZ({ ana: null, adv: null, fun: null, dontes: false }), 'h3'); // nincs dontes (a prod mostani GA4 tiltva sorai) -> szabalyos nulla
+  w.egyeztetes({ uuid: w.uuid('a4'), kulcs: HEADSPA(4), t: FROM + 100, booking_id: 'mb_h4' }); cella('mb_h4', null, 'h4');                                                       // nincs pillanatkep -> technikai
+  const j = await w.jelentes();
+  const g = j.uzletagak.headspa.jogosultsag.ga4;
+  assert.deepEqual([g.szabalyos_nulla, g.technikai_hiany, g.technikai_hiany_okok, g.kuldve, g.nincs_sor, g.jogosult, g.arany], [2, 2, { ga4_ana_van_client_id_nincs: 1, ga4_nincs_pillanatkep: 1 }, 0, 0, 2, 0]);
+});
+
+test('N31 ?proba=: a proba-level cellai KI vannak zarva a kuldott-aranybol (alap_elkuldve, jogosultsag) - mint a nevezobol -, a biztonsagi ellenorzesek viszont minden kuldesre futnak; a lampa nem zold hamisan', async () => {
+  const w = await vilag();
+  const cella = (src, platform, extra = {}) => w.kuldes({ esemeny_id: `${src}:${platform}`, platform, uzletag: 'headspa', source_id: src, t: FROM + 100, ...extra });
+  w.egyeztetes({ uuid: w.uuid('b1'), kulcs: HEADSPA(1), t: FROM + 100, booking_id: 'mb_A' }); cella('mb_A', 'meta');          // valos, elkuldve
+  w.egyeztetes({ uuid: w.uuid('b2'), kulcs: HEADSPA(2), t: FROM + 100, booking_id: 'mb_B' });                               // valos, esemeny nelkul
+  const P = w.egyeztetes({ uuid: w.uuid('b9'), kulcs: HEADSPA(3), t: FROM + 100, booking_id: 'mb_P' }); cella('mb_P', 'meta'); // PROBA, elkuldve
+  const sd = w.egyeztetes({ uuid: w.uuid('b8'), kulcs: HEADSPA(4), t: FROM + 100, allapot: 'parositatlan', sd_id: 'sd_P', sd_allapot: 'kesz' }); cella('sd_P', 'meta', { forras: 'salonic_direct' }); // PROBA (sd-ut)
+  cella('mb_P', 'tiktok', { kerelem: { url: 'https://business-api.tiktok.com/open_api/v1.3/event/track/', cel: { pixel_code: ELO_CELOK.tiktok[0], test_event_code: 'T' } } }); // a proba ELO-celra ment: a biztonsag ezt MEGLATJA
+  const nelkule = await w.jelentes();
+  const vele = await w.jelentes(`qa=nap&datum=${NAP}&proba=${P.slice(0, 8)},${sd.slice(0, 8)}`);
+  const m0 = nelkule.uzletagak.headspa, m1 = vele.uzletagak.headspa;
+  assert.deepEqual([m0.valos.parositott, m0.arnyek.meta.alap_elkuldve, m0.jogosultsag.meta.kuldve], [3, 3, 3], 'proba nelkul mindharom szamit (a sd-s parositatlan)');
+  assert.deepEqual([m1.valos.parositott, m1.valos.proba_kizarva, m1.arnyek.meta.alap_elkuldve, m1.arnyek.meta.proba_cella_kizarva, m1.arnyek.meta.elkuldve], [2, 2, 1, 2, 3], 'a nevezo es a szamlalo is a proba nelkul: 1 elkuldve / 2 valos; az allapot-szamlalo (elkuldve) minden kuldest mutat');
+  assert.deepEqual([m1.jogosultsag.meta.kuldve, m1.jogosultsag.meta.nincs_sor, m1.jogosultsag.meta.jogosult, m1.jogosultsag.meta.arany], [1, 1, 2, 0.5]);
+  assert.equal(m1.arnyek.meta.lampa, 'sarga', 'valos.parositott=2, alap_elkuldve=1 < 0,9 x 2: sarga (korabban a proba cellaja miatt hamisan zold)');
+  assert.deepEqual([m1.biztonsag.nem_arnyek_cel, m1.biztonsag.elo_id_talalat], [1, 1], 'a proba-level ELO celu kuldese a biztonsagban TOVABBRA is latszik (nem-arnyek cel + elo ID talalat)');
+});
+
+test('N32 elvart: reszleges elvart mellett az osszesites like-for-like (csak az elvart-tal rendelkezo uzletagak latottja); a hiany nem negativ', async () => {
+  const w = await vilag();
+  for (let i = 0; i < 9; i++) w.egyeztetes({ uuid: w.uuid('d' + i), kulcs: HEADSPA(i + 1), t: FROM + 10 + i });
+  for (let i = 0; i < 5; i++) w.egyeztetes({ uuid: w.uuid('e' + i), kulcs: OXIGEN(i + 1), t: FROM + 30 + i });
+  let j = await w.jelentes(`qa=nap&datum=${NAP}&elvart=headspa:12`);
+  assert.deepEqual([j.osszes.lefedettseg.latott, j.osszes.lefedettseg.latott_az_elvart_uzletagakban, j.osszes.lefedettseg.elvart, j.osszes.lefedettseg.lefedettseg, j.osszes.lefedettseg.hiany, j.osszes.lefedettseg.elvart_hianyos], [14, 9, 12, 0.75, 3, true]);
+  j = await w.jelentes(`qa=nap&datum=${NAP}&elvart=headspa:4,oxigen:5`); // latott > elvart: a hiany 0 (nem negativ), a lefedettseg > 1 megengedett
+  assert.deepEqual([j.uzletagak.headspa.lefedettseg.hiany, j.uzletagak.headspa.lefedettseg.lefedettseg, j.osszes.lefedettseg.hiany, j.osszes.lefedettseg.latott_az_elvart_uzletagakban], [0, 2.25, 0, 14]);
+});
+
+test('N33 lefedettseg szelei: a nap hatara felig nyitott [from, to); sd csak "kesz" allapotban nincs_sor (atveve / halasztva cella nelkul nem); a meres_kuldes cellak ablaka is felig nyitott; HeadSpa konzultacio esemeny nelkul SZABALYOS', async () => {
+  const w = await vilag();
+  const nincsCella = (pre, t, extra = {}) => w.egyeztetes({ uuid: w.uuid(pre), kulcs: HEADSPA(Math.floor(Math.random() * 1000)), t, booking_id: 'mb_' + pre + t, ...extra });
+  nincsCella('f1', FROM);       // pontosan a hatar: BENNE
+  nincsCella('f2', FROM - 1);   // elotte: nem
+  nincsCella('f3', TO);         // a kovetkezo nap eleje: nem
+  nincsCella('f4', TO - 1);     // az utolso masodperc: benne
+  w.egyeztetes({ uuid: w.uuid('f5'), kulcs: HEADSPA(5), t: FROM + 100, allapot: 'parositatlan', sd_id: 'sd_atveve', sd_allapot: 'atveve' });   // folyamatban: nem hiany
+  w.egyeztetes({ uuid: w.uuid('f6'), kulcs: HEADSPA(6), t: FROM + 100, allapot: 'parositatlan', sd_id: 'sd_halasztva', sd_allapot: 'halasztva' }); // HOLD, cella nelkul: nem hiany (a sd szekcioban latszik)
+  w.egyeztetes({ uuid: w.uuid('f7'), kulcs: HEADSPA(7), t: FROM + 100, allapot: 'parositatlan', sd_id: 'sd_kesz', sd_allapot: 'kesz' });           // kesz, cella nelkul: HIANY
+  w.futtat('CREATE TABLE IF NOT EXISTS meres_jelleg (source_id TEXT PRIMARY KEY, jelleg TEXT NOT NULL, kupon INTEGER NOT NULL, forras TEXT NOT NULL, ido INTEGER NOT NULL) WITHOUT ROWID'); // a jelleg-rogzites.js DDL-je
+  const konz = nincsCella('f8', FROM + 200); w.futtat("INSERT INTO meres_jelleg (source_id, jelleg, kupon, forras, ido) VALUES (?, 'konzultacio', 0, 'elso_level', ?)", 'mb_f8' + (FROM + 200), FROM + 200); // HeadSpa konzultacio: nincs esemeny (#101)
+  void konz;
+  w.kuldes({ esemeny_id: 'ablak1', platform: 'meta', uzletag: 'headspa', t: TO - 1 });   // benne
+  w.kuldes({ esemeny_id: 'ablak2', platform: 'meta', uzletag: 'headspa', t: TO });       // kint
+  w.kuldes({ esemeny_id: 'ablak3', platform: 'meta', uzletag: 'headspa', t: FROM - 1 }); // kint
+  const j = await w.jelentes();
+  const h = j.uzletagak.headspa;
+  assert.deepEqual([h.lefedettseg.parositott_esemeny_nelkul, h.lefedettseg.szabalyos_esemeny_nelkul], [3, 1], 'f1, f4 (hatar-benn) + f7 (sd kesz); a f8 HeadSpa konzultacio szabalyos');
+  assert.equal(h.arnyek.meta.elkuldve, 1, 'a meres_kuldes cellak ablaka felig nyitott');
+  assert.equal(j.osszes.lefedettseg.szabalyos_esemeny_nelkul, 1);
+});
+
+test('N34 az adatbazisbol jovo szoveg nem lehet objektum-kulcs veszely: forras / sd_allapot "__proto__" / "constructor" nem torik el a jelentest', async () => {
+  const w = await vilag();
+  w.egyeztetes({ uuid: w.uuid('g1'), kulcs: HEADSPA(), t: FROM + 10, allapot: 'parositatlan', sd_id: 'sd_x', sd_allapot: 'constructor', sd_ido: FROM + 10 });
+  w.kuldes({ esemeny_id: 'p1', platform: 'meta', uzletag: 'headspa', t: FROM + 11, forras: '__proto__' });
+  w.kuldes({ esemeny_id: 'p2', platform: 'meta', uzletag: 'headspa', t: FROM + 12, forras: 'constructor' });
+  const j = await w.jelentes();
+  assert.deepEqual(j.szekcio_hibak, []);
+  assert.equal(j.uzletagak.headspa.sd.sd_allapot.ismeretlen, 1); assert.equal(Object.hasOwn(j.uzletagak.headspa.sd.sd_allapot, 'constructor'), false, 'a tiltott kulcs nem sajat tulajdonsag');
+  assert.equal(j.uzletagak.headspa.arnyek.meta.forras.ismeretlen.elkuldve, 2);
+  assert.equal(Object.getPrototypeOf(j.uzletagak.headspa.arnyek.meta.forras), Object.prototype, 'a prototipus nem modosult');
+});
+
+test('N35 t2start: a konfiguralt teszt-ID-k csonkolva; ha a GA4 teszt measurement ID az ELO listan van, NEM irjuk ki (jelzes), egyebkent igen', async () => {
+  const w = await vilag({ env: { META_TESZT_KOD: 'M'.repeat(80), TIKTOK_TESZT_KOD: 'T'.repeat(80), META_API_VERSION: 'v'.repeat(80), GA4_TESZT_MEASUREMENT_ID: ELO_CELOK.ga4[0] } });
+  const j = await w.jelentes('qa=t2start');
+  assert.equal(j.arnyekcelok.meta.test_event_code.length, 40); assert.equal(j.arnyekcelok.tiktok.test_event_code.length, 40); assert.equal(j.arnyekcelok.meta.api_verzio.length, 40);
+  assert.equal(j.arnyekcelok.ga4.measurement_id, null); assert.match(j.arnyekcelok.ga4.hiba, /ELO/);
+  assert.ok(!JSON.stringify(j).includes(ELO_CELOK.ga4[0]), 'az elo GA4 ID nem kerul ki');
+  const v = await vilag({ env: { GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001' } });
+  assert.equal((await v.jelentes('qa=t2start')).arnyekcelok.ga4.measurement_id, 'G-TESZT00001');
 });
 

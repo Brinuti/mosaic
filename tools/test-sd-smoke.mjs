@@ -93,7 +93,7 @@ test('SM6 a motor parositott (nincs sd-atvetel): C3 / C4 NA, VERDIKT nem PASS (a
   const w = vilag(); await w.kesz; await w.kapcsol('mind', true);
   const u2 = uuid('c0ffee08'); await lezar(w, level(u2, { host: 'mosaic-hair.salonic.hu' }));
   const e2 = ertekel('c0ffee08', lefuttat(w, 'c0ffee08'), { mostSec: Math.floor(SD_ELOTT / 1000) });
-  assert.ok(['WARN', 'PASS'].includes(allapotok(e2).C1)); assert.equal(ertekel('c0ffee99', lefuttat(w, 'c0ffee99')).verdikt, 'FAIL', 'ismeretlen u8 = FAIL');
+  assert.equal(allapotok(e2).C1, 'WARN', 'nem pmu / oxigen level, sd nelkul: C1 WARN (a verdikt ugyis FOLYAMATBAN)'); assert.notEqual(e2.verdikt, 'PASS'); assert.equal(ertekel('c0ffee99', lefuttat(w, 'c0ffee99')).verdikt, 'FAIL', 'ismeretlen u8 = FAIL');
 });
 
 test('SM7 SZINTETIKUS HIBAK: nem ARNYEK cel, elo ID, duplikalt esemeny, az sd ES a motor is kuldott, hiba allapot, hianyzo platform, nem salonic_direct forras -> mind FAIL', () => {
@@ -152,3 +152,27 @@ test('SM9 a jeloltek-lekerdezes: csak pmu / oxigen letrehozo levelek, csokkeno i
   assert.deepEqual(sorok.map((r) => r.u8).sort(), ['c0ffee11', 'c0ffee13'], 'a kulcsos pmu (place) es a kulcs nelkuli oxigen (hash-index uzletag) is');
   assert.ok(sorok[0].letrehozva >= sorok[1].letrehozva);
 });
+
+test('SM10 a REVIEW javitasai: hianyzo eredmeny-halmaz = FAIL (nem hallgatolagos PASS); ha a Meta / TikTok alap esemeny nem ment ki = FAIL; nem pmu / oxigen uzletagu sd-atvetel = FAIL; az sd-INSERT hozta sor (sd_ido = letrehozva) C4 WARN, nem hamis FAIL', async () => {
+  const { v, u8 } = await termeszetes({ u8: 'c0ffee20' });
+  const jo = lefuttat(v, u8); const ido = { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: { GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001' } };
+  assert.equal(ertekel(u8, jo, ido).verdikt, 'PASS');
+  for (const kulcs of ['elo_id', 'dupla', 'motor_cellak', 'reschedule', 'kapcsolok', 'index', 'cellak', 'level']) {
+    const csonka = { ...jo }; delete csonka[kulcs];
+    const e = ertekel(u8, csonka, ido);
+    assert.equal(e.verdikt, 'FAIL', kulcs); assert.match(e.kriteriumok[0].reszlet, new RegExp(kulcs));
+  }
+  assert.equal(ertekel(u8, { ...jo, elo_id: 'nem tomb' }, ido).verdikt, 'FAIL');
+  // minden cella tiltva (pl. hianyzo teszt-kod): semmi nem ment ki -> FAIL, nem PASS
+  const tiltva = { ...jo, cellak: jo.cellak.map((c) => ({ ...c, allapot: 'tiltva', url: null, cel: null })) };
+  const et = ertekel(u8, tiltva, ido); assert.equal(et.verdikt, 'FAIL'); assert.equal(allapotok(et).C8, 'FAIL');
+  // minden cella kihagyva (mind=0): ugyanez
+  assert.equal(ertekel(u8, { ...jo, cellak: jo.cellak.map((c) => ({ ...c, allapot: 'kihagyva', url: null, cel: null })), kapcsolok: [{ kulcs: 'mind', be: 0 }] }, ido).verdikt, 'FAIL');
+  // sd-atvetel nem pmu / oxigen uzletagra
+  const hair = JSON.parse(JSON.stringify(jo)); hair.level[0].kulcs = '10823|1|1792000000'; hair.index = []; hair.cellak = hair.cellak.map((c) => ({ ...c, uzletag: 'fodrasz' }));
+  const eh = ertekel(u8, hair, ido); assert.equal(eh.verdikt, 'FAIL'); assert.equal(allapotok(eh).C1, 'FAIL');
+  // az sd INSERT-je hozta letre a sort
+  const sdHozta = JSON.parse(JSON.stringify(jo)); sdHozta.level[0].letrehozva = sdHozta.level[0].sd_ido;
+  const es = ertekel(u8, sdHozta, ido); assert.equal(allapotok(es).C4, 'WARN'); assert.equal(es.verdikt, 'PASS');
+});
+
