@@ -11,6 +11,7 @@
 import { koszonoOldal, foglalasKulcs, ertekFeloldas, HELYSZINEK, MP_SALONIC_HOST } from './meres.js';
 import { levelErtelmezes } from './igazolas.js';
 import { akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, kuldes, elesKuldesE, maszk, ELES_HOST } from './google-ads.js';
+import { forrasPlatform, onbevallasErtek, platformAzonositok, vanPlatformId, URES_PLATFORM_ID } from './forras.js';
 
 export const SEMA = [
   `CREATE TABLE IF NOT EXISTS mp_foglalas (
@@ -34,13 +35,21 @@ export const SEMA = [
     kulcs TEXT NOT NULL, tipus TEXT NOT NULL, mod TEXT NOT NULL, allapot TEXT NOT NULL, ok TEXT, valasz TEXT,
     probalkozas INTEGER NOT NULL DEFAULT 0, ido INTEGER NOT NULL, PRIMARY KEY (kulcs, tipus, mod))`,
 ];
-// a mar letezo mp_foglalas tablat bovito oszlopok (a hiba = mar megvan, elnyeljuk)
-const BOVITES = [
-  'ALTER TABLE mp_foglalas ADD COLUMN igazolas TEXT', // NULL = rogzitett, meg nem igazolt | 'igazolt' | 'nem_igazolt'
-  'ALTER TABLE mp_foglalas ADD COLUMN igazolas_id TEXT', // a Salonic foglalasi azonosito
-  'ALTER TABLE mp_foglalas ADD COLUMN foglalas_ido INTEGER', // a Salonic-level ideje = a foglalas ideje (konverzios ido)
-  'ALTER TABLE mp_foglalas ADD COLUMN uj_vendeg_igazolt INTEGER', // 1 = a Salonic szerint meg sosem foglalt; NULL = ismeretlen
+// a mar letezo mp_foglalas tablat bovito oszlopok: csak a hianyzot adjuk hozza (PRAGMA table_info), a meglevo sorok maradnak
+export const BOVITES = [
+  ['igazolas', 'TEXT'], // NULL = rogzitett, meg nem igazolt | 'igazolt' | 'nem_igazolt'
+  ['igazolas_id', 'TEXT'], // a Salonic foglalasi azonosito
+  ['foglalas_ido', 'INTEGER'], // a Salonic-level ideje = a foglalas ideje (konverzios ido)
+  ['uj_vendeg_igazolt', 'INTEGER'], // 1 = a Salonic szerint meg sosem foglalt; NULL = ismeretlen
+  // forras.js: hozzajarulastol fuggetlen csatornanev (google|meta|tiktok|egyeb, NULL = ismeretlen / kozvetlen) es az onbevallas
+  ['forras_platform', 'TEXT'],
+  ['onbevallas', 'TEXT'], // tiktok|meta|google|ismeros|egyeb
+  // CSAK hirdetesi hozzajarulassal; most sehova nem mennek (90 nap utan torlodnek)
+  ['meta_fbc', 'TEXT'], ['meta_fbp', 'TEXT'], ['meta_kattintas_ido', 'INTEGER'],
+  ['tiktok_ttclid', 'TEXT'], ['tiktok_ttp', 'TEXT'], ['tiktok_kattintas_ido', 'INTEGER'],
 ];
+/** A nyers platform-azonosito oszlopok (admin-valaszban maszkolva, 90 nap utan NULL). */
+const PLATFORM_ID_OSZLOPOK = ['meta_fbc', 'meta_fbp', 'tiktok_ttclid', 'tiktok_ttp'];
 /** Ennyi ido utan a meg nem igazolt sor 'nem_igazolt' lesz (a Salonic-level / Zapier kesese ennel joval rovidebb). */
 export const IGAZOLAS_HATARIDO = 48 * 3600;
 const MEGORZES_NAP = 120; // a rekord ennyi nap utan torlodik; a kattintasazonosito 90 nap utan (a Google ennyit fogad)
@@ -51,7 +60,14 @@ export async function semaBiztos(db) { return sema(db); }
 async function sema(db) {
   if (semaKesz) return;
   await db.batch(SEMA.map((s) => db.prepare(s)));
-  for (const b of BOVITES) { try { await db.prepare(b).run(); } catch (e) { /* mar letezik */ } }
+  const ti = await db.prepare('PRAGMA table_info(mp_foglalas)').all();
+  const van = new Set(((ti && ti.results) || []).map((o) => o.name));
+  for (const [nev, tipus] of BOVITES) {
+    if (van.has(nev)) continue;
+    try { await db.prepare(`ALTER TABLE mp_foglalas ADD COLUMN ${nev} ${tipus}`).run(); } catch (e) {
+      if (!/duplicate column/i.test(String(e && e.message || e))) throw e; // parhuzamos keres mar hozzaadta
+    }
+  }
   semaKesz = true;
 }
 
@@ -73,7 +89,8 @@ export function bemenet(b) {
   if (q.has('bookingUrl')) {
     try { if (new URL(q.get('bookingUrl'), `https://${MP_SALONIC_HOST}/`).hostname !== MP_SALONIC_HOST) q.delete('bookingUrl'); } catch (e) { q.delete('bookingUrl'); }
   }
-  return { url: `https://${ELES_HOST}${ut}?${q}`, bookingId: q.get('booking_id'), kattintas: b.kattintas && typeof b.kattintas === 'object' ? b.kattintas : null, potlas: b.potlas === true };
+  return { url: `https://${ELES_HOST}${ut}?${q}`, bookingId: q.get('booking_id'), kattintas: b.kattintas && typeof b.kattintas === 'object' ? b.kattintas : null, potlas: b.potlas === true,
+    forrasPlatform: forrasPlatform(b.forras_platform) };
 }
 
 /**
@@ -94,6 +111,8 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
   const cookie = request.headers.get('cookie') || '';
   const hozz = hozzajarulas(cookie);
   const katt = hozz.hirdetes ? kattintasValaszt(be.kattintas, cookie, most) : null;
+  // Meta / TikTok azonositok: CSAK hirdetesi hozzajarulassal (kulonben mind NULL); most sehova nem kuldjuk
+  const plat = hozz.hirdetes ? platformAzonositok(be.kattintas, cookie, most) : { ...URES_PLATFORM_ID };
   const ert = ertekFeloldas(a, arlista);
   const kulcs = foglalasKulcs(a);
   const sor = {
@@ -101,6 +120,7 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
     ertek: ert.ertek, ertek_forras: ert.ertek_forras, uj_vendeg: a.ujVendeg === true ? 1 : a.ujVendeg === false ? 0 : null, helyszin: HELYSZINEK[a.placeId] || null,
     hozzajarulas_dontott: hozz.dontott ? 1 : 0, hozzajarulas_hirdetes: hozz.hirdetes ? 1 : 0, hozzajarulas_analitika: hozz.analitika ? 1 : 0,
     kattintas_tipus: katt ? katt.tipus : null, kattintas_ertek: katt ? katt.ertek : null, kattintas_ido: katt ? katt.ido : null,
+    forras_platform: be.forrasPlatform, ...plat,
   };
   try {
     await sema(db);
@@ -111,11 +131,22 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       // Kesoi hozzajarulas potlasa (assets/js/mp-meres.js): CSAK ha a bongeszo potlasnak jelolte, a suti szerint MOST van hirdetesi
       // hozzajarulas es ervenyes azonosito, a sor meg azonosito nelkuli, POTLAS_ABLAK-on belul jott letre, es ugyanaz a booking_id
       // (salonic-uton mindketto ures). Igy mas foglalashoz nem kotheto, meglevo erteket nem ir felul, ismetelt hivas 0 sort modosit.
-      if (!be.potlas || !katt) return json({ ok: true, uj: false });
+      if (!be.potlas || !(katt || vanPlatformId(plat))) return json({ ok: true, uj: false });
+      // Meta / TikTok: ugyanazok a feltetelek; csak a meg teljesen ures (Meta + TikTok) azonositoju sor egeszitheto ki
+      let platPotolva = false;
+      if (vanPlatformId(plat)) {
+        const up = await db.prepare(`UPDATE mp_foglalas SET meta_fbc = ?, meta_fbp = ?, meta_kattintas_ido = ?, tiktok_ttclid = ?, tiktok_ttp = ?, tiktok_kattintas_ido = ?,
+          hozzajarulas_dontott = 1, hozzajarulas_hirdetes = 1, hozzajarulas_analitika = ?
+          WHERE kulcs = ? AND meta_fbc IS NULL AND meta_fbp IS NULL AND tiktok_ttclid IS NULL AND tiktok_ttp IS NULL AND letrehozva >= ? AND salonic_id IS ? AND kornyezet = ?`)
+          .bind(plat.meta_fbc, plat.meta_fbp, plat.meta_kattintas_ido, plat.tiktok_ttclid, plat.tiktok_ttp, plat.tiktok_kattintas_ido, hozz.analitika ? 1 : 0,
+            kulcs, most - POTLAS_ABLAK, be.bookingId || null, sor.kornyezet).run();
+        platPotolva = !!(up && up.meta && up.meta.changes);
+      }
+      if (!katt) return json({ ok: true, uj: false, potolva: platPotolva });
       const u = await db.prepare(`UPDATE mp_foglalas SET kattintas_tipus = ?, kattintas_ertek = ?, kattintas_ido = ?, hozzajarulas_dontott = 1, hozzajarulas_hirdetes = 1, hozzajarulas_analitika = ?
         WHERE kulcs = ? AND kattintas_ertek IS NULL AND letrehozva >= ? AND salonic_id IS ? AND kornyezet = ?`)
         .bind(katt.tipus, katt.ertek, katt.ido, hozz.analitika ? 1 : 0, kulcs, most - POTLAS_ABLAK, be.bookingId || null, sor.kornyezet).run();
-      if (!(u && u.meta && u.meta.changes)) return json({ ok: true, uj: false, potolva: false });
+      if (!(u && u.meta && u.meta.changes)) return json({ ok: true, uj: false, potolva: platPotolva });
       const frissSor = await db.prepare('SELECT * FROM mp_foglalas WHERE kulcs = ?').bind(kulcs).first();
       const pf = feltoltes(db, frissSor, env, host, { fetchImpl, most }).catch((e) => console.error('mp-meres: potlo feltoltes hiba', String(e && e.message || e).slice(0, 200)));
       if (typeof waitUntil === 'function') waitUntil(pf); else await pf;
@@ -134,6 +165,8 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       db.prepare('DELETE FROM mp_foglalas WHERE letrehozva < ?').bind(most - MEGORZES_NAP * 86400),
       db.prepare('DELETE FROM mp_feltoltes WHERE ido < ?').bind(most - MEGORZES_NAP * 86400),
       db.prepare('UPDATE mp_foglalas SET kattintas_ertek = NULL WHERE kattintas_ertek IS NOT NULL AND letrehozva < ?').bind(most - 90 * 86400),
+      db.prepare(`UPDATE mp_foglalas SET ${PLATFORM_ID_OSZLOPOK.map((o) => `${o} = NULL`).join(', ')}
+        WHERE (${PLATFORM_ID_OSZLOPOK.map((o) => `${o} IS NOT NULL`).join(' OR ')}) AND letrehozva < ?`).bind(most - 90 * 86400),
       db.prepare("UPDATE mp_foglalas SET igazolas = 'nem_igazolt' WHERE igazolas IS NULL AND letrehozva < ?").bind(most - IGAZOLAS_HATARIDO),
       db.prepare('DELETE FROM mp_salonic_igazolas WHERE rogzitve < ?').bind(most - MEGORZES_NAP * 86400),
     ]).catch(() => {});
@@ -141,6 +174,34 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
     return json({ ok: true, uj: true });
   } catch (e) {
     console.error('mp-meres: adatbazis-hiba', String(e && e.message || e).slice(0, 200));
+    return json({ ok: false, hiba: 'adatbazis_hiba' }, 500);
+  }
+}
+
+/**
+ * POST /api/mp-onbevallas: a koszonooldali "Honnan hallottal rolunk?" kartya (assets/js/mp-meres.js) egy kattintasa.
+ * Torzs: { ut, p: (ugyanaz, mint a foglalas-jelzesnel), onbevallas: tiktok|meta|google|ismeros|egyeb }.
+ * Csak a mar letezo, POTLAS_ABLAK-on belul letrejott, ugyanazon booking_id-ju es kornyezetu sorra ir, es csak ha meg ures:
+ * foglalasonkent egyszer, felulirni nem lehet. Semmilyen kulso hivas nincs.
+ */
+export async function onbevallasErkezes({ request, env = {} }, { most = Math.floor(Date.now() / 1000) } = {}) {
+  if (String(env.MP_MERES_KI || '') === '1') return json({ ok: false, ki: true }, 503);
+  const db = env.MP_MERES_DB;
+  if (!db) return json({ ok: false, hiba: 'nincs_adatbazis' }, 503);
+  let b; try { b = await request.json(); } catch (e) { return json({ ok: false, hiba: 'rossz_keres' }, 400); }
+  const be = bemenet(b);
+  const ob = onbevallasErtek(b && b.onbevallas);
+  if (!be || !ob) return json({ ok: false, hiba: 'rossz_keres' }, 400);
+  const k = koszonoOldal(be.url);
+  if (!k.ok) return json({ ok: false, hiba: k.hiba }, 422);
+  const kornyezet = new URL(request.url).hostname === ELES_HOST ? 'eles' : 'elonezet';
+  try {
+    await sema(db);
+    const u = await db.prepare('UPDATE mp_foglalas SET onbevallas = ? WHERE kulcs = ? AND onbevallas IS NULL AND letrehozva >= ? AND salonic_id IS ? AND kornyezet = ?')
+      .bind(ob, foglalasKulcs(k.adat), most - POTLAS_ABLAK, be.bookingId || null, kornyezet).run();
+    return json({ ok: true, mentve: !!(u && u.meta && u.meta.changes) });
+  } catch (e) {
+    console.error('mp-meres: onbevallas adatbazis-hiba', String(e && e.message || e).slice(0, 200));
     return json({ ok: false, hiba: 'adatbazis_hiba' }, 500);
   }
 }
@@ -192,6 +253,7 @@ export async function admin({ request, env = {} }, { fetchImpl = fetch, most = M
     if (!f) return json({ ok: true, foglalas: null });
     const kattintas_maszk = await maszk(f.kattintas_ertek);
     delete f.kattintas_ertek;
+    for (const o of PLATFORM_ID_OSZLOPOK) if (o in f) f[o] = await maszk(f[o]); // nyers Meta / TikTok azonosito sem megy ki
     const t = await db.prepare('SELECT akcio_id, mod, kuldo, allapot, http_status, valasz, kattintas_maszk, probalkozas, ido FROM mp_feltoltes WHERE kulcs = ? ORDER BY akcio_id, mod').bind(f.kulcs).all();
     return json({ ok: true, foglalas: { ...f, kattintas_maszk }, feltoltesek: t.results || [] });
   }

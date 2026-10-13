@@ -52,3 +52,17 @@ következő oldalon már be sem töltenek.
 - `node tools/sav-teszt.mjs` és `--mobil` – döntés előtt / Elfogadom / Elutasítom / lábléc / köszönőoldal / motor.
 - `node tools/meres-teszt.mjs` – elfogadott hozzájárulással a mérőkódok, mint eddig.
 - `tools/mp-meres-pw.mjs` – foglalás-mérés hozzájárulással és nélküle.
+- `tools/forras-pw.mjs` – forrás-címke hozzájárulás nélkül, Meta / TikTok azonosító csak hozzájárulással.
+
+## Hozzájárulástól független forrás-címke (2026-10-13)
+
+Feri kifejezett kérése (2026-10-13 07:36): „Kifejezetten azt kérem, hogy hozzájárulás nélkül is menjen el.” A jogi
+kockázatot a tulajdonos vállalja. Az `assets/js/mp-meres.js` döntés előtt / elutasításkor is eltárol a `sessionStorage`-ban
+(`mp_forras`) **egyetlen durva csatornanevet** (google / meta / tiktok / egyeb) és az első észlelés idejét – azonosítót,
+kattintásazonosítót, személyes adatot nem; a lap bezárásával törlődik. Semmilyen hirdetési platformnak nem megy, csak a
+saját D1-be (`mp_foglalas.forras_platform`). A Meta / TikTok kattintásazonosítók (`fbclid`, `ttclid`, `_fbc`, `_fbp`,
+`_ttp`) viszont **csak marketing-hozzájárulással** kerülnek tárolásra, és most sehova nem mennek. Részletek:
+`docs/MERES_GOOGLE_ARNYEK.md`, „Platform szerinti forrás” szakasz.
+
+Megjegyzés: a `klon.js` (a Wix örökölt kódja) a `fbclid` / `ttclid` / `utm_*` paramétereket már eddig is a munkamenetbe
+(`savedQueryParams`) mentette hozzájárulás nélkül; ezen ez a változás nem módosít.

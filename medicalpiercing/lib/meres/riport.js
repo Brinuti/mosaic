@@ -1,6 +1,10 @@
 // MEDICAL PIERCING – napi meres-egeszseg riport (GPT 2026-10-12: a primary-csere dontesi alapja is).
 // Forrasok napra bontva (Budapest): D1 foglalas (koszonooldal), Salonic-level (igazolas), Google Ads konverziok
 // (a Zapier napi workflow tolti be: mp_ads_napi), kiigazitasok. Csak szamok, szemelyes adat nincs.
+import { PLATFORMOK, ONBEVALLASOK } from './forras.js';
+
+const FORRAS_KULCSOK = [...PLATFORMOK, 'ismeretlen'];
+const ONBEVALLAS_KULCSOK = [...ONBEVALLASOK, 'nincs'];
 export const ADS_AKCIOK = Object.freeze({ '7468541217': 'all', '7839410357': 'igazolt' });
 
 export const ADS_SEMA = `CREATE TABLE IF NOT EXISTS mp_ads_napi (nap TEXT NOT NULL, akcio TEXT NOT NULL, db REAL NOT NULL, ertek REAL,
@@ -36,11 +40,17 @@ export async function riport(db, most, nap = 14) {
   await db.prepare(ADS_SEMA).run();
   const tol = most - nap * 86400;
   const napok = {};
-  const n = (d) => (napok[d] ||= { nap: d, d1_foglalas: 0, d1_uj: 0, d1_igazolt: 0, d1_nem_igazolt: 0, salonic_level: 0, salonic_parositatlan: 0, ads_all: null, ads_igazolt: null, ads_igazolt_ertek: null });
-  const f = await db.prepare("SELECT letrehozva, uj_vendeg, igazolas FROM mp_foglalas WHERE kornyezet = 'eles' AND letrehozva >= ?").bind(tol).all();
+  const n = (d) => (napok[d] ||= { nap: d, d1_foglalas: 0, d1_uj: 0, d1_igazolt: 0, d1_nem_igazolt: 0, salonic_level: 0, salonic_parositatlan: 0, ads_all: null, ads_igazolt: null, ads_igazolt_ertek: null,
+    ...Object.fromEntries(FORRAS_KULCSOK.flatMap((p) => [[`forras_${p}`, 0], [`forras_${p}_igazolt`, 0]])),
+    ...Object.fromEntries(ONBEVALLAS_KULCSOK.map((o) => [`onbevallas_${o}`, 0])) });
+  const f = await db.prepare("SELECT letrehozva, uj_vendeg, igazolas, forras_platform, onbevallas FROM mp_foglalas WHERE kornyezet = 'eles' AND letrehozva >= ?").bind(tol).all();
   for (const s of f.results || []) {
     const x = n(napBp(s.letrehozva)); x.d1_foglalas++; if (s.uj_vendeg === 1) x.d1_uj++;
     if (s.igazolas === 'igazolt') x.d1_igazolt++; else if (s.igazolas === 'nem_igazolt') x.d1_nem_igazolt++;
+    // forras-cimke (hozzajarulastol fuggetlen csatornanev) szerinti bontas; ebbol Salonic-igazolt (igazolas = 'igazolt')
+    const fp = PLATFORMOK.includes(s.forras_platform) ? s.forras_platform : 'ismeretlen';
+    x[`forras_${fp}`]++; if (s.igazolas === 'igazolt') x[`forras_${fp}_igazolt`]++;
+    x[`onbevallas_${ONBEVALLASOK.includes(s.onbevallas) ? s.onbevallas : 'nincs'}`]++;
   }
   const l = await db.prepare('SELECT erkezett, rogzitve, kulcs FROM mp_salonic_igazolas WHERE erkezett >= ?').bind(tol).all();
   let parositatlanRegi = 0;
