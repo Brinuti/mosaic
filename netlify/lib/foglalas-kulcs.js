@@ -723,7 +723,8 @@ async function vendegIndexJelentes(deps, env, mezok, o, r) {
   try {
     const x = await deps.vendegIndexIr({ db: env.KULCS_DB, env, mezok, bejovo: o, kulcs: r.kulcs, now: deps.now });
     if (x && x.ok) return { allapot: x.uj === false ? 'meglevo' : 'ok', kod: x.kod || (x.uj === false ? 'ok_meglevo' : 'ok_uj'), mezok: x.mezok };
-    return { allapot: 'kihagyva', kod: (x && x.kod) || 'ismeretlen', mezok: x && x.mezok };
+    if (x && (x.jelolo === 'uj' || x.jelolo === 'meglevo')) return { allapot: 'jelolo', kod: x.kod || 'nincs_ervenyes_email', mezok: x.mezok, jelolo: x.jelolo }; // nincs hash-index sor, de a jelolo sor (email_h=NULL) megvan
+    return { allapot: 'kihagyva', kod: (x && x.kod) || 'ismeretlen', mezok: x && x.mezok, ...(x && x.jelolo ? { jelolo: x.jelolo } : {}) };
   } catch (e) { return { allapot: 'hiba', kod: 'kivetel', hiba: hibaKod(e) }; } // az index sosem akaszthatja meg a parositast
 }
 

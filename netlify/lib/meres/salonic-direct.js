@@ -135,14 +135,27 @@ export async function vendegIndexSor(db, env, { mezok, vendeg, nev, now, allapot
   if (!UUID_MINTA.test(uuid)) return { ok: false, miert: 'ervenytelen uuid', kod: 'ervenytelen_uuid', mezok: mezoK };
   const h = await vendegHash(env, vendeg || {}, nev);
   if (!h) return { ok: false, miert: 'nincs GUEST_HMAC_KEY_V1', kod: 'nincs_guest_hmac_kulcs', mezok: mezoK };
-  if (!h.email_h) return { ok: false, miert: 'nincs ervenyes e-mail', kod: 'nincs_ervenyes_email', mezok: mezoK };
   const t = sec(now || Date.now());
   const level = Date.parse(mezok.leveldatum || '');
   const ido = Number.isFinite(level) ? Math.round(level / 1000) : t;
   const kezdet = kezdetSzamol(mezok, ido);
+  if (!h.email_h) {
+    // JELOLO SOR (a meresi oldal jovahagyta, #167 143. komment (b)): a level megerkezett, de nincs ervenyes e-mail -> nincs hash-index sor (a miert / kod valtozatlan), CSAK strukturalis jelolo: email_h / tel_h / nev_h = NULL,
+    // forras = '<forras>_nincs_email'. A csere-felismeres (csereDontes: `WHERE email_h = ?1`) a NULL-ra sosem egyezik, az azonosVendeg() email_h-t kovetel: a reschedule-logika VALTOZATLAN. A post288_missing_hmac_index igy csak a valodi kimaradast mutatja.
+    // Csak az eles utakon (level hook, sd_atvetel); a backfill (regi foglalasok) es a szaraz futas nem ir jelolot. Fail-open: a jelolo hibaja nem akasztja a hookot.
+    const kod = { ok: false, miert: 'nincs ervenyes e-mail', kod: 'nincs_ervenyes_email', mezok: mezoK };
+    if (szaraz || (forras !== 'level' && forras !== 'sd_atvetel')) return kod;
+    try {
+      await parositasSema(db);
+      const j = await db.prepare("INSERT INTO foglalas_vendeg (uuid, uzletag, szolg_kulcs, kezdet, nev_h, tel_h, email_h, allapot, forras, ido, lejar) VALUES (?1, ?2, ?3, ?4, NULL, NULL, NULL, 'aktiv', ?5, ?6, ?7) ON CONFLICT(uuid) DO NOTHING")
+        .bind(uuid, uzletag, szolgKanon(mezok.szolgaltatas), kezdet, forras + '_nincs_email', ido, ido + MEGORZES_NAP * 86400).run();
+      return { ...kod, jelolo: j.meta && j.meta.changes > 0 ? 'uj' : 'meglevo' };
+    } catch (e) { return { ...kod, jelolo: 'hiba' }; }
+  }
   if (szaraz) return { ok: true, uj: null, kezdet: !!kezdet, kod: 'szaraz', mezok: mezoK };
   await parositasSema(db);
-  const r = await db.prepare("INSERT INTO foglalas_vendeg (uuid, uzletag, szolg_kulcs, kezdet, nev_h, tel_h, email_h, allapot, forras, ido, lejar) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11) ON CONFLICT(uuid) DO NOTHING")
+  // egy korabbi jelolo sort (email_h IS NULL) a kesobbi, ervenyes e-mailes sor FELULIRJA (pl. a letrehozo level e-mail nelkul jott, az sd 5. lepese mar e-maillel): igy a valodi sorok viselkedese ugyanaz, mint jelolo nelkul; valodi sort sosem ir felul
+  const r = await db.prepare("INSERT INTO foglalas_vendeg (uuid, uzletag, szolg_kulcs, kezdet, nev_h, tel_h, email_h, allapot, forras, ido, lejar) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11) ON CONFLICT(uuid) DO UPDATE SET uzletag = excluded.uzletag, szolg_kulcs = excluded.szolg_kulcs, kezdet = excluded.kezdet, nev_h = excluded.nev_h, tel_h = excluded.tel_h, email_h = excluded.email_h, allapot = excluded.allapot, forras = excluded.forras, ido = excluded.ido, lejar = excluded.lejar WHERE foglalas_vendeg.email_h IS NULL")
     .bind(uuid, uzletag, szolgKanon(mezok.szolgaltatas), kezdet, h.nev_h, h.tel_h, h.email_h, allapot === 'torolve' ? 'torolve' : 'aktiv', forras, ido, ido + MEGORZES_NAP * 86400).run();
   const uj = !!(r.meta && r.meta.changes > 0);
   return { ok: true, uj, kezdet: !!kezdet, kod: uj ? 'ok_uj' : 'ok_meglevo', mezok: mezoK };
@@ -152,7 +165,7 @@ export async function vendegIndexIr({ db, env, mezok, bejovo = {}, now }) {
   if (!sdIndexBe(env)) return { ok: false, miert: 'az index nincs bekapcsolva', kod: 'nincs_bekapcsolva' };
   const t = now ? now() : Date.now();
   const r = await vendegIndexSor(db, env, { mezok, vendeg: bejovo.vendeg, nev: bejovo.nev, now: t });
-  if (r.uj) await db.prepare('DELETE FROM foglalas_vendeg WHERE lejar < ?1').bind(sec(t)).run(); // a 180 napnal regebbi sorok torlese: csak uj sor beszurasakor (egy levelre 4 proba van)
+  if (r.uj || r.jelolo === 'uj') await db.prepare('DELETE FROM foglalas_vendeg WHERE lejar < ?1').bind(sec(t)).run(); // a 180 napnal regebbi sorok torlese: csak uj sor (vagy jelolo) beszurasakor (egy levelre 4 proba van)
   return r;
 }
 /** INDEX-BACKFILL (kuldesmentes HMAC-index; az EVENT-BACKFILL - regi foglalasok esemenyeinek utolagos kuldese - TILOS, lasd foglalas-kulcs.js): {muvelet:'index_backfill', elemek:[{uuid, host, szolgaltatas, idopont_szoveg, ld?, level_datuma, vendeg{email,telefon}, nev?, allapot?}] (max 50), szaraz?}. KULDES NINCS. */
