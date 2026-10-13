@@ -56,7 +56,16 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
   await varGtm(p, betolt);
   ok('dontes elott: a sav latszik', await savLathato(p));
   const szoveg = await p.evaluate(() => document.getElementById('mp-cc').innerText);
-  ok('a sav magyar, Elfogadom + Elutasitom + Beallitasok', /Elfogadom/.test(szoveg) && /Elutasítom/.test(szoveg) && /Beállítások/.test(szoveg) && /Sütiket használunk/.test(szoveg));
+  ok('a sav magyar, Elfogadom + Elutasitom + Beallitasok', /Elfogadom/.test(szoveg) && /Elutasítom/.test(szoveg) && /Beállítások/.test(szoveg) && /Engedélyezed a sütiket/.test(szoveg));
+  ok('elso oldal: nagyobb doboz (data-nezet=nagy)', (await p.evaluate(() => document.getElementById('mp-cc').getAttribute('data-nezet'))) === 'nagy');
+  {
+    const p2 = await ctx.newPage();
+    await p2.goto(CIM + '/a-migren-piercing-gyogyulasi-ideje', { waitUntil: 'load' });
+    await p2.goto(CIM + '/', { waitUntil: 'load' });
+    const n2 = await p2.evaluate(() => { const s = document.getElementById('mp-cc'); return s && s.getAttribute('data-nezet'); });
+    ok('ugyanabban a munkamenetben a kovetkezo oldalon vekony sav (fo)', n2 === 'fo', n2);
+    await p2.close();
+  }
   ok('link az /adatkezeles oldalra', await p.evaluate(() => !!document.querySelector('#mp-cc a[href="/adatkezeles"]')));
   const meret = await p.evaluate(() => [...document.querySelectorAll('#mp-cc-fo .mp-gomb')].map((g) => { const s = getComputedStyle(g); return [g.offsetHeight, s.backgroundColor, s.color, s.fontWeight, s.fontSize].join('|'); }));
   ok('Elfogadom es Elutasitom egyenrangu (azonos meret es stilus)', meret.length === 2 && meret[0] === meret[1], meret.join(' / '));
