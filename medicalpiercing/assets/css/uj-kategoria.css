@@ -34,6 +34,7 @@
 .kat-doboz{display:grid;gap:34px;align-items:center;padding:34px;border:1px solid var(--line);border-radius:var(--r-l);background:linear-gradient(100deg,var(--beige) 0,#fff 82%);box-shadow:var(--sh-s)}
 .kat-doboz h2{font-size:clamp(1.45rem,2.3vw,2rem)}
 .kat-doboz-szoveg>*:last-child{margin-bottom:0}
+.kat-doboz-szoveg{overflow-wrap:anywhere}   /* a hosszu hivatkozas-szovegek (pl. egy kutatas webcime) ne nyomjak szet az oldalt */
 .kat-doboz-szoveg>p:not(.felirat){font-size:.98rem}
 .kat-doboz a:not(.gomb):not(.video):not(.szoveg-link){color:var(--slate);text-decoration-color:var(--rose);text-decoration-thickness:2px;text-underline-offset:4px}
 .kat-doboz .pipak{margin:0 0 18px}
@@ -232,11 +233,18 @@
 .kat-hos-kar .kar-gomb .ik{width:22px;height:22px;stroke-width:2.2}
 .kat-hos-kar .kar-elozo{left:12px}
 .kat-hos-kar .kar-kov{right:12px}
+/* a kerek jelveny a galeria also szelen, kozepen log le (a kepeken sutott szoveget / a "Lapozz jobbra" jelzest nem takarja) */
+.kat-hos-b .hos-pecset{left:50%;right:auto;bottom:-34px;width:96px;height:96px;margin-left:-48px;font-size:.5rem}
+.kat-hos-b .hos-pecset .ik{width:22px;height:22px}
 .kat-hos-kar p.kar-szam{position:absolute;left:16px;top:16px;margin:0;padding:3px 12px;border-radius:99px;background:rgba(69,70,89,.88);color:#fff;font-size:.8rem;font-weight:700}
 
 /* "A migren piercing biztonsagos es termeszetes modszer": kep + szoveg + pipak */
 .kat-biztos{grid-template-columns:minmax(220px,340px) minmax(0,1fr);gap:44px}
+.kat-biztos-fig{position:relative;margin:0}
 .kat-biztos-kep{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:22px;box-shadow:var(--sh);cursor:zoom-in}
+.kat-nagyit-jel{position:absolute;right:10px;bottom:10px;display:inline-flex;align-items:center;gap:6px;padding:5px 12px 5px 9px;border-radius:99px;background:rgba(69,70,89,.88);color:#fff;font-size:.78rem;font-weight:700;pointer-events:none}
+.kat-nagyit-jel .ik{width:1.15rem;height:1.15rem;stroke-width:2}
+.hos-linkek .rovid{display:none}
 
 /* szoveg + kep parok (hova szurjuk / hogy nez ki / mennyibe kerul) */
 .kat-parok{display:grid;gap:22px}
@@ -248,8 +256,9 @@
 .kat-par .kat-doboz-szoveg>p:not(.felirat){font-size:1rem;line-height:1.6}
 
 /* fuggoleges bemutato video */
-.kat-bevideo{grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:44px}
-.kat-bevideo-kep{order:-1;justify-self:center;width:100%;max-width:300px}
+/* a video allo (9:16), a doboz kicsi es kozepre igazitott: a szoveg csak egy cim, nincs mit kitolteni */
+.kat-bevideo{grid-template-columns:200px minmax(0,1fr);gap:36px;width:min(100%,780px);margin-inline:auto;padding:22px 34px}
+.kat-bevideo-kep{order:-1;justify-self:center;width:100%;max-width:200px}
 .kat-bevideo-kep video{display:block;width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:22px;box-shadow:var(--sh);background:#000}
 
 /* "Miert a Medical Piercinget valaszd?": ikonos racs */
@@ -288,7 +297,7 @@
 @media (max-width:1000px){
   .kat-hos-b .hos-kep{max-width:520px}
   .kat-biztos,.kat-bevideo{grid-template-columns:minmax(0,1fr);justify-items:center;gap:22px}
-  .kat-biztos-kep{max-width:300px}
+  .kat-biztos-fig{width:100%;max-width:300px}
   .kat-par,.kat-par-ford{grid-template-columns:minmax(0,1fr);gap:22px}
   .kat-par-kep,.kat-par-ford .kat-par-kep{order:-1;aspect-ratio:16/10;max-height:320px}
   .kat-biz-racs{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -296,16 +305,24 @@
   .kat-elerh-terkep .terkepdoboz{min-height:260px}
 }
 @media (max-width:760px){
-  /* mobil hos: cim, GOMBOK, galeria, utana a bevezeto, ertekeles, linkek, bizalmi sor (mindket gomb az elso kepernyon) */
-  .kat-hos-b .hos-racs{display:flex;flex-direction:column;gap:12px}
+  /* mobil hos (egy kepernyore): cim, galeria, alcim (bevezeto), gombok EGY sorban, ertekeles + linkek (egy sorban, az ertekelessel azonos szelessegben), bizalmi sor */
+  .kat-hos-b .hos-racs{display:flex;flex-direction:column;gap:8px}
   .kat-hos-b .hos-szoveg{display:contents}
-  .kat-hos-b .hos-cim{order:1}
-  .kat-hos-b .hos-szoveg .gombsor{order:2;margin:0}
-  .kat-hos-b .hos-kep{order:3;margin:0 auto 4px}
-  .kat-hos-b .hos-bevezeto{order:4}
-  .kat-hos-b .kat-ertekeles{order:5;margin-top:0}
-  .kat-hos-b .hos-linkek{order:6;margin-top:0}
-  .kat-hos-b .bizalom{order:7;margin-top:6px}
+  .kat-hos-b .hos-cim{order:1;font-size:1.42rem;line-height:1.1}
+  .kat-hos-b .hos-kep{order:2;width:100%;max-width:300px;margin:0 auto}
+  .kat-hos-b .hos-bevezeto{order:3;font-size:.82rem;line-height:1.4}
+  .kat-hos-b .hos-szoveg .gombsor{order:4;flex-wrap:nowrap;gap:8px;margin:0}
+  .kat-hos-b .gombsor .gomb{flex:1 1 0;min-width:0;justify-content:center;padding:.8em .4em;font-size:.84rem;white-space:nowrap}
+  .kat-hos-b .gombsor .gomb>.ik:first-child{display:none}
+  .kat-hos-b .hos-ertek-sav{order:5;display:flex;flex-direction:column;align-items:stretch;width:fit-content;max-width:100%;margin:0 auto}
+  .kat-hos-b .kat-ertekeles{margin:0;justify-content:center;font-size:.86rem}
+  .kat-hos-b .hos-linkek{flex-wrap:nowrap;justify-content:space-between;gap:8px;margin:6px 0 0;font-size:.76rem}
+  .kat-hos-b .hos-linkek .hosszu{display:none}
+  .kat-hos-b .hos-linkek .rovid{display:inline}
+  .kat-hos-b .bizalom{order:6;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:2px 0 0;text-align:center}
+  .kat-hos-b .bizalom li{flex-direction:column;gap:3px;font-size:.62rem;line-height:1.2}
+  .kat-hos-b .bizalom .ik{width:28px;height:28px;padding:6px}
+  .kat-hos-b .bizalom b{font-size:.66rem}
   .kat-hos-kar .kar-sav{border-radius:22px}
   .kat-hos-kar .kar-gomb{width:38px;height:38px}
   .kat-hos-kar .kar-elozo{left:8px}
@@ -314,15 +331,16 @@
   /* a szoveges dobozok: olvashato, balra igazitott szoveg; a kepek kisebbek */
   .kat-biztos,.kat-par,.kat-bevideo{text-align:left}
   .kat-biztos .kat-doboz-szoveg,.kat-par .kat-doboz-szoveg{align-items:stretch}
-  .kat-biztos{grid-template-columns:96px minmax(0,1fr);gap:8px 12px;align-items:center;justify-items:stretch}
-  .kat-biztos .kat-doboz-szoveg{display:contents}
-  .kat-biztos-kep{grid-column:1;grid-row:1;max-width:96px;margin:0}
-  .kat-biztos h2{grid-column:2;grid-row:1;margin:0;text-align:left}
-  .kat-biztos .kat-doboz-szoveg>p,.kat-biztos .pipak{grid-column:1/-1;text-align:left}
+  .kat-biztos{grid-template-columns:minmax(0,1fr);gap:14px;justify-items:stretch}
+  .kat-biztos .kat-doboz-szoveg{display:block}
+  .kat-biztos-fig{width:100%;max-width:none}
+  .kat-biztos-kep{aspect-ratio:4/5;max-height:none;width:100%}
+  .kat-biztos h2{margin:0 0 8px;text-align:left}
+  .kat-biztos .kat-doboz-szoveg>p,.kat-biztos .pipak{text-align:left}
   .kat-biztos .pipak li{text-align:left}
   .kat-par-kep,.kat-par-ford .kat-par-kep{aspect-ratio:16/9;max-height:190px;border-radius:16px}
   .kat-par .kat-doboz-szoveg>p:not(.felirat){font-size:.88rem;line-height:1.45}
-  .kat-bevideo{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:12px;align-items:center;justify-items:stretch}
+  .kat-bevideo{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:12px;align-items:center;justify-items:stretch;width:auto;padding:16px 14px}
   .kat-bevideo-kep{max-width:150px}
   .kat-bevideo-kep video{border-radius:16px}
   .kat-bevideo .kat-doboz-szoveg{align-items:flex-start}

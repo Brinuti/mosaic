@@ -313,12 +313,15 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     const linkek = [`<li><a href="/migren-es-shenmen-piercing-garancia">Garancia »</a></li>`];
     if (van.has('helyszin')) linkek.push('<li><a href="#helyszinek">Helyszíneink »</a></li>');
     // az eredeti "Mutasd az ekszereket es az arakat >>" link az oldal sajat reszere mutat: a lapon belul az ekszerekhez ugrik
-    for (const e of h.extra) linkek.push(`<li><a href="${van.has('ekszer') ? '#ekszerek' : '#arak'}">${esc(szovegTiszta(e.html).replace(/\s*(?:>>|&gt;&gt;)\s*$/, '')) } »</a></li>`);
+    // mobilon a hosszu szoveg helyett a rovid ("Ekszerek es arak") latszik, hogy a 3 link egy sorba ferjen
+    for (const e of h.extra) linkek.push(`<li><a href="${van.has('ekszer') ? '#ekszerek' : '#arak'}"><span class="hosszu">${esc(szovegTiszta(e.html).replace(/\s*(?:>>|&gt;&gt;)\s*$/, ''))}</span><span class="rovid">Ékszerek és árak</span> »</a></li>`);
     const csill = Array.from({ length: 5 }, () => IK('star')).join('');
     const ert = `<p class="kat-ertekeles"><span class="csillagok" role="img" aria-label="5 csillagból 4,8">${csill}</span><a href="/migren-shenmen-piercing-velemenyek" data-ti-ertekeles>Kiváló – 4,8 – 5\u00a0000+ vélemény »</a></p>`;
     const id = ++c.galeriaSzam;
     const db = h.gal.kepek.length;
-    const dia = (k, i) => `<figure class="kar-dia"><img src="${esc(k.src)}" width="800" height="800" alt="${esc(`Medical Piercing – ${i + 1}. kép a ${db}-ből`)}"${i === 0 ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async" data-nagyit data-grp="g${id}"></figure>`;
+    // az elso kep eredetileg "<- Lapozz balra" jelzest hordoz: a tools/uj-b-hos-kep.py "Lapozz jobbra ->" jelzesu valtozatot keszit (assets/img/uj-hos-01.webp)
+    const hosKep = (src) => (/54ef80f3849d46cfa63ae77598afbcf7/.test(src) && fs.existsSync(path.join(ROOT, 'assets/img/uj-hos-01.webp')) ? '/assets/img/uj-hos-01.webp' : src);
+    const dia = (k, i) => `<figure class="kar-dia"><img src="${esc(hosKep(k.src))}" width="800" height="800" alt="${esc(`Medical Piercing – ${i + 1}. kép a ${db}-ből`)}"${i === 0 ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async" data-nagyit data-grp="g${id}"></figure>`;
     const galeria = `<div class="kar kat-hos-kar" data-kar="${id}"><div class="kar-sav" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Fotók a kezelésről">${h.gal.kepek.map(dia).join('')}</div>`
       + `<button type="button" class="kar-gomb kar-elozo" aria-label="Előző kép" disabled>${IK('chev')}</button><button type="button" class="kar-gomb kar-kov" aria-label="Következő kép">${IK('chev')}</button><p class="kar-szam"><span data-kar-akt>1</span> / ${db}</p></div>`;
     return `<section class="hos kat-hos kat-hos-b">
@@ -330,8 +333,10 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
           <a class="gomb gomb-tomor" href="${esc(belso(gomb.href))}">${IK('calendar')}${esc(gomb.szoveg.replace(/!$/, ''))}${IK('chev', 'ik-nyil')}</a>
           ${van.has('ar') ? `<a class="gomb gomb-ures" href="#arak">Árak és akciók${IK('chev', 'ik-nyil')}</a>` : ''}
         </div>
-        ${ert}
-        <ul class="hos-linkek">${linkek.join('')}</ul>
+        <div class="hos-ertek-sav">
+          ${ert}
+          <ul class="hos-linkek">${linkek.join('')}</ul>
+        </div>
         <ul class="bizalom">
           <li>${IK('shield')}<span><b>EÜ</b> szakemberek</span></li>
           <li>${IK('users')}<span><b>Alapítói</b> EÜ tapasztalat</span></li>
@@ -349,8 +354,9 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
 
   // --- B: "A migren piercing biztonsagos es termeszetes modszer": kep + szoveg + pipas lista ---
   const pipaTisztit = (html) => html.replace(/(?:\u2705|\u2714\uFE0F?|\u2611\uFE0F?)\s*/u, '');   // a pipa-emoji a linkbe is kerulhet: az elso elofordulast vesszuk ki
+  // a kep (Kovacs Gabriella a fulakupunkturas bizonyitvanyaval) fontos: kattintasra nagyban nyilik, egy jelzes mutatja, hogy nagyithato
   const biztos = (b) => `<section class="tarto"><article class="kat-doboz kat-biztos">
-    <img class="kat-biztos-kep" src="${esc(b.kep.src)}"${keparany(b.kep)} alt="${esc(b.kep.alt && !/^\d+_/.test(b.kep.alt) ? b.kep.alt : 'Kovács Gabriella a fülakupunktúrás bizonyítványával')}" loading="lazy" decoding="async" data-nagyit>
+    <figure class="kat-biztos-fig"><img class="kat-biztos-kep" src="${esc(b.kep.src)}"${keparany(b.kep)} alt="${esc(b.kep.alt && !/^\d+_/.test(b.kep.alt) ? b.kep.alt : 'Kovács Gabriella a fülakupunktúrás bizonyítványával')}" loading="lazy" decoding="async" data-nagyit><span class="kat-nagyit-jel" aria-hidden="true"><svg class="ik" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5M10.5 8v5M8 10.5h5"/></svg>Nagyítás</span></figure>
     <div class="kat-doboz-szoveg">
       <h2>${szovegLink(b.cim.html)}</h2>
       ${b.szovegek.map(bekezd).join('\n      ')}

@@ -75,7 +75,14 @@ main>section{margin-block:26px}
 .lenyilo{position:relative}
 .almenu{position:absolute;left:0;top:100%;min-width:268px;margin-top:6px;padding:8px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh);display:none}
 .lenyilo.nyitva>.almenu{display:block}
-@media (hover:hover) and (min-width:1001px){.lenyilo:hover>.almenu{display:block}.lenyilo:hover>.menu-gomb{background:var(--beige)}}
+/* asztali lenyilo: a gomb es az almenu kozti 6 px-es res nem szakitja meg a kurzor utjat (athidalo sav), es a menu nem tunik el azonnal, ha a kurzor kicsit
+   lecsuszik: a bezaras ~0,4 mp-et var; a nyitas azonnali */
+@media (hover:hover) and (min-width:1001px){
+  .almenu{display:block;opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .16s ease .4s,transform .16s ease .4s,visibility 0s linear .56s}
+  .almenu::before{content:"";position:absolute;left:-14px;right:-14px;top:-14px;height:16px}
+  .lenyilo:hover>.almenu,.lenyilo.nyitva>.almenu{opacity:1;visibility:visible;transform:none;transition-delay:0s}
+  .lenyilo:hover>.menu-gomb{background:var(--beige)}
+}
 .almenu a{display:block;padding:9px 12px;border-radius:10px;font-size:.92rem;font-weight:500;text-decoration:none;color:var(--ink)}
 .almenu a:hover{background:var(--beige);color:var(--navy)}
 .menu-lab{display:none}
