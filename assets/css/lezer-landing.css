@@ -370,10 +370,12 @@ dialog.nagyito img { display: block; max-width: 92vw; max-height: 86vh; border-r
 .foglalo-kartya legend + * { clear: both; }
 .szam { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--sotet); color: #fff; display: inline-grid; place-items: center; font: 500 13px/1 var(--test); }
 .valaszto { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.valaszto label { position: relative; cursor: pointer; }
+.valaszto { align-items: stretch; }
+.valaszto label { position: relative; cursor: pointer; display: flex; }
 .valaszto input { position: absolute; opacity: 0; inset: 0; }
-.valaszto span { display: flex; align-items: center; justify-content: center; padding: 10px 8px; min-height: 44px; line-height: 1.2; border: 1px solid var(--vonal); border-radius: 12px; background: #fff; font-size: 15px; text-align: center; transition: background .15s, color .15s, border-color .15s; }
-.valaszto input:checked + span { background: var(--sotet); border-color: var(--sotet); color: #fff; }
+.valaszto span { flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px 8px; min-height: 56px; line-height: 1.2; border: 1px solid var(--vonal); border-radius: 12px; background: #fff; font-size: 15px; text-align: center; transition: background .15s, color .15s, border-color .15s; }
+.valaszto label:hover span { border-color: #c6a346; }
+.valaszto input:checked + span { background: var(--arany-gomb); border-color: #c6a346; color: #fff; font-weight: 500; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); box-shadow: 0 6px 18px rgba(150, 120, 40, .22); }
 .valaszto input:focus-visible + span { outline: 2px solid var(--arany); outline-offset: 3px; }
 #terulet-select { width: 100%; border: 1px solid var(--vonal); border-radius: 12px; padding: 12px 14px; background: #fff; font-size: 15px; color: var(--szoveg); cursor: pointer; }
 .naptar { background: #fff; border: 1px solid var(--vonal); border-radius: 14px; padding: 8px 10px 10px; width: 100%; max-width: 296px; }
@@ -592,7 +594,7 @@ a.ido:hover { border-color: var(--arany); box-shadow: 0 6px 14px rgba(160, 127, 
   .pipa-lista { grid-template-columns: 1fr; gap: 8px; }
   .pipa-lista li { font-size: 15px; }
   .foglalo-kartya { padding: 22px 16px 20px; border-radius: 16px; gap: 18px; }
-  .valaszto span { font-size: 14px; padding: 12px 8px; }
+  .valaszto span { font-size: 14px; padding: 12px 8px; min-height: 56px; }
   .foglalo-kartya { grid-template-columns: 1fr; }
   .naptar { padding: 8px 8px 10px; max-width: none; }
   .naptar-nap { font-size: 14px; }
