@@ -209,6 +209,14 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
         .bind(katt.tipus, katt.ertek, katt.ido, hozz.analitika ? 1 : 0, kulcs, most - POTLAS_ABLAK, be.bookingId || null, sor.kornyezet).run();
       if (!(u && u.meta && u.meta.changes)) return json({ ok: true, uj: false, potolva: platPotolva });
       const frissSor = await db.prepare('SELECT * FROM mp_foglalas WHERE kulcs = ?').bind(kulcs).first();
+      // a kesoi hozzajarulassal erkezett kattintasazonosito a cimket is valtoztathatja (last paid click) -> ujraszamolas
+      try {
+        const c = cimkez(frissSor, await markasListaOlvas(db));
+        if (c.forras_cimke !== frissSor.forras_cimke || c.cimke_megjegyzes !== frissSor.cimke_megjegyzes) {
+          await db.prepare('UPDATE mp_foglalas SET forras_cimke = ?, ismeretlen_ok = ?, cimke_megjegyzes = ? WHERE kulcs = ?').bind(c.forras_cimke, c.ismeretlen_ok, c.cimke_megjegyzes, kulcs).run();
+          Object.assign(frissSor, c);
+        }
+      } catch (e) { /* a cimke nem allithatja meg a feltoltest */ }
       const pf = feltoltes(db, frissSor, env, host, { fetchImpl, most }).catch((e) => console.error('mp-meres: potlo feltoltes hiba', String(e && e.message || e).slice(0, 200)));
       if (typeof waitUntil === 'function') waitUntil(pf); else await pf;
       return json({ ok: true, uj: false, potolva: true });

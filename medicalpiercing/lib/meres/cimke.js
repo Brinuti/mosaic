@@ -159,10 +159,30 @@ export async function markasListaOlvas(db) {
  * forras_platform, forras_keret). markasLista: kampany-ID tomb vagy null.
  * -> { forras_cimke, ismeretlen_ok, cimke_megjegyzes }
  */
+/**
+ * Tartalek-bizonyitek a HOZZAJARULASSAL tarolt kattintasazonositokbol (gclid/gbraid/wbraid, fbc, ttclid + kattintasi ido):
+ * a foglalas elotti 30 napon beluli legfrissebb fizetett kattintas platformja, kulonben null. (Last paid click: ha a
+ * munkamenetben nincs fizetett erintes, de a hozzajarulo vendegnek van friss hirdetesi kattintasa, az nyer.)
+ */
+export function kattintasAzonositoPlatform(s) {
+  if (!s || Number(s.hozzajarulas_hirdetes) !== 1) return null;
+  const t = Number(s.foglalas_ido || s.letrehozva);
+  const jo = (ido) => Number.isFinite(Number(ido)) && Number(ido) <= t + 300 && t - Number(ido) <= 30 * 86400;
+  const j = [];
+  if (s.kattintas_tipus && ['gclid', 'gbraid', 'wbraid'].includes(s.kattintas_tipus) && jo(s.kattintas_ido)) j.push(['google', Number(s.kattintas_ido)]);
+  if (s.meta_fbc && jo(s.meta_kattintas_ido)) j.push(['meta', Number(s.meta_kattintas_ido)]);
+  if (s.tiktok_ttclid && jo(s.tiktok_kattintas_ido)) j.push(['tiktok', Number(s.tiktok_kattintas_ido)]);
+  j.sort((a, b) => b[1] - a[1]);
+  return j.length ? j[0][0] : null;
+}
+
 export function cimkez(sor, markasLista) {
   const s = sor || {};
   const ki = (forras_cimke, ismeretlen_ok = null, cimke_megjegyzes = null) => ({ forras_cimke, ismeretlen_ok, cimke_megjegyzes });
   const vanBizonyitek = s.forras_verzio === FORRAS_VERZIO && REFERRER_KAT.includes(s.referrer_kat);
+  const kap = kattintasAzonositoPlatform(s);
+  const kapCimke = () => ki(kap === 'google' ? 'google_nem_markas' : kap, null, 'kattintas_azonosito');
+  if (kap && (!vanBizonyitek || !fizetett(s))) return kapCimke();
   if (!vanBizonyitek) {
     // regi kliens (csak forras_platform) vagy nincs erintes a munkamenetben
     if (s.forras_verzio !== FORRAS_VERZIO && s.forras_platform) {
