@@ -165,14 +165,28 @@
     '#mp-cc-fo .mp-gombok{flex:0 0 auto;flex-wrap:nowrap;gap:6px}' +
     '#mp-cc-fo .mp-gomb{flex:0 0 auto;min-width:0;padding:4px 10px;font-size:12px;border-width:1px}' +
     '#mp-cc-fo .mp-link{padding:4px 2px;font-size:11px}' +
-    '@media (max-width:600px){#mp-cc[data-nezet=fo]{padding:4px 8px;font-size:11px}#mp-cc-fo{gap:6px}#mp-cc-fo .mp-gomb{padding:3px 8px;font-size:11px}#mp-cc-fo .mp-gombok{gap:4px}#mp-cc-fo .mp-link{font-size:10px;padding:2px 0}#mp-cc-fo p{font-size:10.5px}#mp-cc-fo .mp-gomb{padding:3px 7px}#mp-cc-beall p{margin-bottom:8px}}';
+    // elso megjelenes egy munkamenetben: nagyobb doboz (Feri, 2026-10-13: a vekony savra a foglalok ~2/3-a nem dontott);
+    // a ket gomb egyforma sulyu marad (nincs "trukkos" sav), utana a tobbi oldalon ujra a vekony sav
+    '#mp-cc .mp-nagy{display:none}' +
+    '#mp-cc[data-nezet=nagy] .mp-rovid{display:none}' +
+    '#mp-cc[data-nezet=nagy] .mp-nagy{display:block}' +
+    '#mp-cc[data-nezet=nagy]{max-width:560px;padding:16px 18px;font-size:14px}' +
+    '#mp-cc[data-nezet=nagy] #mp-cc-fo{display:block}' +
+    '#mp-cc[data-nezet=nagy] #mp-cc-fo p{margin:0 0 12px}' +
+    '#mp-cc[data-nezet=nagy] #mp-cc-fo .mp-gombok{flex-wrap:wrap;gap:8px}' +
+    '#mp-cc[data-nezet=nagy] #mp-cc-fo .mp-gomb{flex:1 1 0;min-width:120px;padding:10px 14px;font-size:15px;border-width:2px}' +
+    '#mp-cc[data-nezet=nagy] #mp-cc-fo .mp-link{flex:1 0 100%;text-align:center;padding:2px 0;font-size:13px}' +
+        '@media (max-width:600px){#mp-cc[data-nezet=fo]{padding:4px 8px;font-size:11px}#mp-cc-fo{gap:6px}#mp-cc-fo .mp-gomb{padding:3px 8px;font-size:11px}#mp-cc-fo .mp-gombok{gap:4px}#mp-cc-fo .mp-link{font-size:10px;padding:2px 0}#mp-cc-fo p{font-size:10.5px}#mp-cc-fo .mp-gomb{padding:3px 7px}#mp-cc-beall p{margin-bottom:8px}}' +
+    '@media (max-width:600px){#mp-cc[data-nezet=nagy]{padding:14px 14px;font-size:13.5px}#mp-cc[data-nezet=nagy] #mp-cc-fo p{font-size:13.5px}#mp-cc[data-nezet=nagy] #mp-cc-fo .mp-gomb{padding:10px 12px;font-size:15px}#mp-cc[data-nezet=nagy] #mp-cc-fo .mp-link{font-size:13px}';
   var kategoria = function (id, cim, leiras) {
     return '<div class="mp-kat"><div><b>' + cim + '</b><small>' + leiras + '</small></div>' +
       '<input type="checkbox"' + (id ? ' id="' + id + '"' : ' checked disabled') + ' aria-label="' + cim + '"></div>';
   };
   var JELOLES =
     '<div id="mp-cc-fo">' +
-      '<p>Sütiket használunk a méréshez (<a href="/adatkezeles" target="_blank" rel="noopener">részletek</a>).</p>' +
+      '<h2 class="mp-nagy">Engedélyezed a sütiket?</h2>' +
+      '<p><span class="mp-nagy">Sütikkel mérjük, melyik hirdetésünkből érkeztél és hogyan használod az oldalt. Te döntöd el, engedélyezed-e; később a lábléc „Süti beállítások” linkjén módosíthatod. </span>' +
+        '<span class="mp-rovid">Sütiket használunk a méréshez </span>(<a href="/adatkezeles" target="_blank" rel="noopener">részletek</a>).</p>' +
       '<div class="mp-gombok">' +
         '<button type="button" class="mp-gomb" data-mp="elutasit">Elutasítom</button>' +
         '<button type="button" class="mp-gomb" data-mp="elfogad">Elfogadom</button>' +
@@ -195,7 +209,7 @@
   // gomb gorgetesig nem is latszik). A kerek gyorsmenu-gomb (QUICK_ACTION_BAR, jobbra lent) csuszik a sav FOLE, amig a vekony sav
   // latszik; a sav elrejtesekor / a beallitas-nezetben visszaall. A felso fejlec "Idopontok" gombjat a sav nem takarja.
   var helyez = function () {
-    var vekony = sav.getAttribute('data-nezet') !== 'beall';
+    var vekony = sav.getAttribute('data-nezet') === 'fo';
     sav.style.bottom = vekony ? '0px' : '8px';
     var q = document.getElementById('QUICK_ACTION_BAR');
     if (!q) return;
@@ -263,7 +277,12 @@
     addEventListener('load', ujrahelyez);
     lableclink();
     if (location.hash === '#suti-beallitasok') mutat('beall');
-    else if (!dontes) mutat('fo');
+    else if (!dontes) {
+      // munkamenetenkent az elso oldalon nagyobb doboz, utana vekony sav (tiltott tarolonal mindig a nagyobb)
+      var nagy = true;
+      try { nagy = sessionStorage.getItem('mp_cc_nagy') !== '1'; sessionStorage.setItem('mp_cc_nagy', '1'); } catch (e) { /* */ }
+      mutat(nagy ? 'nagy' : 'fo');
+    }
   };
   window.mpSuti = {
     engedely: function (k) { return !!(dontes && dontes[k]); },
