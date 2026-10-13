@@ -186,6 +186,47 @@ test('adatvedelem: a rekord es a feltoltes-naplo nem tartalmaz egeszsegugyi / sz
   assert.ok(!bemenet({ ut: '/foglalas-ok', p: { bookingUrl: 'https://gonosz.hu/?placeId=6029&employeeId=1&startDate=2' } }).url.includes('gonosz'));
 });
 
+test('divat fulpiercing (/fulbevalo-ok*): ugyanaz a lanc - D1-sor (tipus=ful, forras v2 cimke), Salonic-igazolas, Google-feltoltes, TikTok-naplo; kifele nincs tipus', async () => {
+  _semaTorles(); _tokenTorles();
+  const db = d1(); const f = mockFetch();
+  const env = { MP_MERES_DB: db, MP_MERES_ADMIN_KULCS: 'admin-k', ...API_ENV };
+  // valodi adatok a lekepezesbol (tools/mp-salonic-lekepezes.json): Sopron 9067, "2 db Fulbevalo" 402057, Mester Brigitta 20562
+  const START = 1791800000, KULCS = `9067|20562|${START}`;
+  await igazol(env, f, { start: START, munkatars: 'Mester Brigitta' });
+  const TTCLID = 'E.C.P.ttclidTESZT0123456789';
+  const torzs = { ut: '/fulbevalo-ok2', p: { bookingUrl: BURL(9067, 20562, START, 402057), price: '20000', first_booking: 'true', booking_id: 'mb_ful1' },
+    kattintas: { gclid: { ertek: GCLID, ido: MOST - 3600 }, ttclid: { ertek: TTCLID, ido: MOST - 3600 } },
+    forras: { v: 'mp_v2', us: 'google', um: 'cpc', uc: '23456789', kp: 'gclid', rk: 'search', t: MOST - 3600 }, forras_v: 'mp_v2' };
+  const r = await (await foglalasErkezes({ request: keres(torzs), env }, { fetchImpl: f, most: MOST })).json();
+  assert.deepEqual(r, { ok: true, uj: true });
+  const sor = db._s.prepare('SELECT * FROM mp_foglalas').get();
+  assert.equal(sor.kulcs, KULCS); assert.equal(sor.tipus, 'ful'); assert.equal(sor.helyszin, 'sopron'); assert.equal(sor.ertek, 20000);
+  assert.equal(sor.forras, 'motor'); assert.equal(sor.salonic_id, 'mb_ful1');
+  assert.equal(sor.igazolas, 'igazolt', 'a fulbevalo munkatarsa (Mester Brigitta) a MUNKATARSAK-ban van: parosithato');
+  assert.equal(sor.forras_verzio, 'mp_v2'); assert.equal(sor.utm_campaign, '23456789'); assert.equal(sor.forras_cimke, 'google_nem_markas');
+  // Google ARNYEK: ugyanaz az orderId (kulcs), ugyanazok az akciok
+  const upl = f.hivasok.filter((h) => h.url.includes('uploadClickConversions'));
+  assert.equal(upl.length, 1);
+  const konv = JSON.parse(upl[0].o.body).conversions;
+  assert.deepEqual(konv.map((c) => c.orderId), [KULCS, KULCS]);
+  // TikTok (csak naplo): a sor jogosult, a torzsben nincs tipus
+  const tt = db._s.prepare('SELECT * FROM mp_tiktok_feltoltes').get();
+  assert.equal(tt.allapot, 'naplozva');
+  for (const ki of [upl[0].o.body, tt.payload_maszkolt]) assert.ok(!/fulbevalo|"ful"|divat|402057/i.test(ki), ki);
+  // ugyanaz a foglalas ujra (F5): nincs uj sor, nincs uj feltoltes
+  assert.deepEqual(await (await foglalasErkezes({ request: keres(torzs), env }, { fetchImpl: f, most: MOST + 5 })).json(), { ok: true, uj: false });
+  assert.equal(f.hivasok.filter((h) => h.url.includes('uploadClickConversions')).length, 1);
+  // a gyogypiercing-foglalas tipusa NEM tarolodik
+  await foglalasErkezes({ request: keres(alapTorzs()), env }, { fetchImpl: f, most: MOST });
+  assert.equal(db._s.prepare("SELECT tipus FROM mp_foglalas WHERE kulcs = '12169|555|1791800000'").get().tipus, null);
+  // admin-riport: bontas
+  const rip = await (await admin({ request: new Request('https://www.medicalpiercing.hu/api/mp-foglalas?riport=1&nap=30', { headers: { 'x-mp-kulcs': 'admin-k' } }), env }, { most: MOST + 60 })).json();
+  assert.equal(rip.foglalasok[0].foglalas, 2); assert.equal(rip.foglalasok[0].fulbevalo, 1);
+  // bemenet: a -ok2/-ok3 a semleges /fulbevalo-ok-ra egyszerusodik, ismeretlen ut -> /foglalas-ok
+  assert.match(bemenet({ ut: '/fulbevalo-ok3', p: {} }).url, /\/fulbevalo-ok\?/);
+  assert.match(bemenet({ ut: '/fulbevalo-okx', p: {} }).url, /\/foglalas-ok\?/);
+});
+
 test('ket foglalasi ut: Salonic es beagyazott motor (booking_id) ugyanazzal a kulccsal es definicioval', async () => {
   _semaTorles();
   const db = d1(); const f = mockFetch();

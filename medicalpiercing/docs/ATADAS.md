@@ -226,7 +226,7 @@ Párja a Drive MP-mappájában van („MP-ATADAS-2026-10-11.md”), ugyanezzel a
    - Új próbafoglalás NEM kell: a 100%-os motor élesben igazolt (270/270 teszt, valódi próba). A jövőbeli próbák telefonszáma Feri tesztszáma.
 3. **Salonic-kínálat (Feri kérte):** Sopronban (9067) és Szombathelyen (14229) hiányzik a „👭 2 személynek – 2 db piercing” (189187). Ugyanaz a fiókváltási kérdés, mint a 2. pontnál.
 4. **A 24 órás figyelés** a mérési Claude-é (lásd a 4. pont). Bármelyik eltérésnél azonnal 0%-ra.
-5. **Döntésre vár (mérés):** a #242 `mp-meres.js` a divat fülpiercing (`/fulbevalo-ok*`) foglalásait nem küldi. Ha kell, a mérési munkamenet bővítse.
+5. ~~**Döntésre vár (mérés):** a #242 `mp-meres.js` a divat fülpiercing (`/fulbevalo-ok*`) foglalásait nem küldi.~~ **Kész (2026-10-13, `claude/mp-fulbevalo-meres`):** a `/fulbevalo-ok*` foglalások ugyanúgy mennek a D1-be (forrás v2, `tipus = 'ful'`), a Salonic-párosításba, az ÁRNYÉK-feltöltésbe és a TikTok-naplóba; kifelé semleges marad. Részletek: `docs/MERES_GOOGLE_ARNYEK.md` „Divat fülpiercing”. Nyitva (külső fiók / döntés): a GTM Ads-konverziók triggere (`/foglalas-ok`) a `/fulbevalo-ok`-ra nem fut; a Meta PageView a `/fulbevalo-ok`-on fut.
 6. **A tulajdonos teendői (nem a Claude-éi):**
    - a Wix-előfizetés lemondása néhány nap hibátlan működés után.
 

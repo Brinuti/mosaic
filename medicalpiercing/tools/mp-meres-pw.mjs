@@ -15,7 +15,7 @@ const KOSZONO = `${BASE}/foglalas-ok-mi?first_booking=true&location=Szeged&emplo
 // a sajat suti-sav (assets/js/suti.js) dontese
 const SUTI = (igen) => ({ name: 'mp_suti', value: `v1-s${igen ? 1 : 0}-m${igen ? 1 : 0}-t${Math.floor(Date.now() / 1000)}`, url: BASE });
 
-async function eset(bongeszo, hozzajarul) {
+async function eset(bongeszo, hozzajarul, koszono = KOSZONO) {
   const ctx = await bongeszo.newContext();
   await ctx.addCookies([SUTI(hozzajarul)]);
   const page = await ctx.newPage();
@@ -29,7 +29,7 @@ async function eset(bongeszo, hozzajarul) {
   const tarolt = await page.evaluate(() => localStorage.getItem('mp_gk'));
   // 2) koszonooldal
   const valasz = HELYI ? null : page.waitForResponse((r) => r.url().endsWith('/api/mp-foglalas'), { timeout: 15000 });
-  await page.goto(KOSZONO, { waitUntil: 'domcontentloaded' });
+  await page.goto(koszono, { waitUntil: 'domcontentloaded' });
   const v = valasz ? await (await valasz).json() : null;
   await page.waitForTimeout(800);
   // 3) frissites: deduplikalt
@@ -60,5 +60,15 @@ try {
   assert.equal(nem.tarolt, null, 'hozzajarulas nelkul nincs tarolt gclid');
   assert.equal(nem.kuldott[0].kattintas, null, 'hozzajarulas nelkul nincs kattintasazonosito a keresben');
   if (!HELYI) assert.equal(nem.v.uj, false, 'ugyanaz a foglalas (kulcs): deduplikalva');
+  // divat fulpiercing (/fulbevalo-ok*): ugyanugy jelez, semleges uttal; uj kulcs (Sopron 9067, 2 db fulbevalo 402057, 20562)
+  const FSTART = START + 7;
+  const FBURL = encodeURIComponent(`https://medicalpiercing.salonic.hu/booking/selectDate/?placeId=9067&serviceId=402057&employeeId=20562&startDate=${FSTART}`);
+  const ful = await eset(b, true, `${BASE}/fulbevalo-ok2?first_booking=true&location=Sopron&employee=X&bookingUrl=${FBURL}&price=20000&service=2%20db%20F%C3%BClbeval%C3%B3`);
+  assert.equal(ful.kuldott.length, 1, 'fulbevalo: pontosan egy kuldes');
+  assert.equal(ful.kuldott[0].ut, '/fulbevalo-ok', 'fulbevalo: semleges ut');
+  assert.deepEqual(Object.keys(ful.kuldott[0].p).sort(), ['bookingUrl', 'first_booking', 'price']);
+  assert.ok(!/Sopron|F%C3%BClbeval|Fülbeval/.test(JSON.stringify(ful.kuldott[0])), 'fulbevalo: szolgaltatasnev / helyszin nem megy');
+  assert.deepEqual(ful.hibak, []);
+  if (!HELYI) { assert.deepEqual(ful.v, { ok: true, uj: true }); assert.deepEqual(ful.v2, { ok: true, uj: false }, 'fulbevalo frissites: deduplikalva'); }
   console.log(`OK (${HELYI ? 'helyi, mockolt vegpont' : 'elonezet, valodi fuggveny + D1'}), kulcs: 12169|555|${START}`);
 } finally { await b.close(); }

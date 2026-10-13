@@ -20,11 +20,28 @@ const UTOTAG_TIPUS = Object.freeze({
 });
 export const TIPUSOK = Object.freeze([...new Set([...Object.values(UTOTAG_TIPUS), 'pajzsmirigy', 'ful', 'paros', 'egyeb'])]);
 
-/** Tipus a koszonooldal utvonalabol, tartalekkent a szolgaltatas nevebol. */
-export function tipusNormal(utvonal = '', szolgaltatas = '') {
+/**
+ * A divat fulpiercing (fulbevalo) Salonic-szolgaltatasai (tools/mp-salonic-lekepezes.json, 2026-10-11: mind a 15 helyszinen,
+ * a gyogypiercingekkel azonos fiokban es munkatarsakkal): 1 / 2 / 3 db. A Salonic ezekrol a /fulbevalo-ok, -ok2, -ok3 oldalra iranyit.
+ */
+export const FUL_SZOLGALTATASOK = Object.freeze(['395895', '402057', '402059']);
+/** A divat fulpiercing koszonooldala (a suti.js a semleges /fulbevalo-ok cimre tisztitja). */
+export const FUL_UT = /^\/fulbevalo-ok\d*\/?$/i;
+/**
+ * A D1-ben tarolhato tipus: CSAK 'ful' (divat fulpiercing - nem egeszsegugyi adat; a forras-/kampanyelemzeshez kell, pl. a
+ * "06 - Altalanos fulpiercing" kampany). Egeszsegugyi tipus (migren, klimax ...) a rekordba SOHA nem kerul (MP-16), es a 'ful'
+ * sem megy kifele (kifeleEsemeny / tiktokTorzs nem olvassa).
+ */
+export const TAROLHATO_TIPUSOK = Object.freeze(['ful']);
+export const tarolhatoTipus = (t) => (TAROLHATO_TIPUSOK.includes(t) ? t : null);
+
+/** Tipus a koszonooldal utvonalabol, a divat fulpiercing szolgaltatas-azonositojabol, tartalekkent a szolgaltatas nevebol. */
+export function tipusNormal(utvonal = '', szolgaltatas = '', serviceId = null) {
+  if (FUL_UT.test(String(utvonal)) || (serviceId != null && FUL_SZOLGALTATASOK.includes(String(serviceId)))) return 'ful';
   const m = /\/foglalas-ok-([a-z0-9]+)\/?$/i.exec(String(utvonal));
   if (m && UTOTAG_TIPUS[m[1].toLowerCase()]) return UTOTAG_TIPUS[m[1].toLowerCase()];
   const s = String(szolgaltatas).toLowerCase();
+  if (/fülbeval|fulbeval|divat f[üu]l/.test(s)) return 'ful'; // "2 db Fülbevaló- / Divat fülpiercing szúrás": nem 2piercing
   const db = /(\d)\s*(db|piercing)/.exec(s);
   if (db && ['2', '3', '4', '6'].includes(db[1])) return `${db[1]}piercing`;
   for (const [kulcs, nev] of [['migr', 'migren'], ['shen', 'shenmen'], ['klimax', 'klimax'], ['slim', 'slim'], ['allerg', 'allergia'],
@@ -53,13 +70,14 @@ export function koszonoOldal(url) {
   if (!employeeId || !startUnix) return { ok: false, hiba: 'hianyos_kulcs' };
   const fb = String(p.get('first_booking') ?? '').toLowerCase();
   const szolgaltatas = p.get('service') || '';
+  const serviceId = egesz(bp.get('serviceId') ?? p.get('serviceId'));
   return {
     ok: true,
     adat: {
-      placeId, employeeId, startUnix, serviceId: egesz(bp.get('serviceId') ?? p.get('serviceId')),
+      placeId, employeeId, startUnix, serviceId,
       ar: egesz(p.get('price')),
       ujVendeg: fb === 'true' ? true : fb === 'false' ? false : null,
-      tipus: tipusNormal(u.pathname, szolgaltatas),
+      tipus: tipusNormal(u.pathname, szolgaltatas, serviceId),
       kategoria: p.get('category') || '', szolgaltatas, vendeg: p.get('g') || null,
     },
   };

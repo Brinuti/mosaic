@@ -4,7 +4,7 @@
 // 1) Minden oldalon: ha az URL-ben Google-kattintasazonosito van (gclid / gbraid / wbraid) ES a sajat suti-savban
 //    (assets/js/suti.js, "mp_suti" suti) van marketing-hozzajarulas, eltarolja (localStorage "mp_gk", 90 nap). Hozzajarulas nelkul nem tarol semmit; ha a vendeg
 //    kesobb, ugyanazon az oldalon fogadja el, akkor tarolja. Visszavonaskor torli.
-// 2) A koszonooldalon (/foglalas-ok*): a foglalas parametereibol CSAK a kulcshoz / ertekhez szukseges mezoket kuldi
+// 2) A koszonooldalon (/foglalas-ok* a gyogypiercingeknel, /fulbevalo-ok* a divat fulpiercingnel - KOSZONO_UT): a foglalas parametereibol CSAK a kulcshoz / ertekhez szukseges mezoket kuldi
 //    (bookingUrl, price, first_booking, booking_id ...); a szolgaltatas nevet, kategoriat, vendegazonositot NEM.
 //    A kattintasazonositot csak hirdetesi hozzajarulassal kuldi (a szerver ezt a sutibol ujra ellenorzi).
 // 3) Forras v2 (Feri kifejezett kerese, 2026-10-13: "hozzajarulas nelkul is menjen el"; kozos szabaly:
@@ -129,7 +129,10 @@
     try { fetch('/api/mp-forras', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: '{}' }).catch(function () {}); } catch (e) { /* regi bongeszo */ }
   });
   // a koszonooldal cimeben a motor altal atvitt azonosito csak potlas: hozzajarulassal mar tarolt, ervenyes erteket nem ir felul
-  var koszono = /^\/foglalas-ok[a-z0-9-]*\/?$/i.test(location.pathname);
+  // Koszonooldalak: /foglalas-ok* (gyogypiercingek) es /fulbevalo-ok, -ok2, -ok3 (divat fulpiercing 1/2/3 db; ugyanaz a
+  // Salonic-fiok, helyszin es munkatarsak: tools/mp-salonic-lekepezes.json). A jelzes mindkettorol ugyanugy megy.
+  var KOSZONO_UT = /^\/(foglalas-ok[a-z0-9-]*|fulbevalo-ok\d*)\/?$/i;
+  var koszono = KOSZONO_UT.test(location.pathname);
   var mentes = function () {
     if (!hirdetesiHozzajarulas()) return;
     var o = olvas();
@@ -143,7 +146,7 @@
     if (hirdetesiHozzajarulas()) mentes(); else torol();
   });
 
-  if (!/^\/foglalas-ok[a-z0-9-]*\/?$/i.test(KA ? KA.ut : location.pathname)) return;
+  if (!KOSZONO_UT.test(KA ? KA.ut : location.pathname)) return;
   var p = {};
   ['bookingUrl', 'price', 'first_booking', 'booking_id', 'placeId', 'employeeId', 'startDate', 'serviceId'].forEach(function (k) {
     var v = q.get(k);

@@ -47,9 +47,10 @@ for (const ut of ['/foglalas-ok-mi', '/foglalas-ok', '/foglalas-ok-slim', '/fulb
     allapot.fagyott && !allapot.felsorolhato && !allapot.regi && !['Migr', '"service"', '"category"', 'Szeged', 'TesztKezelo', '"location"', '"employee"', '"g"', 'ok-mi', 'ok-slim', 'ok3', 'klimax'].some((x) => allapot.adat.includes(x)), allapot.adat.slice(0, 160));
   ok(`${ut}: a kulso kerések cime es Referer-e nem tartalmaz erzekeny adatot`, kulso.length > 0 && kulso.every((k) => !szivarog(k.u).length && !szivarog(k.ref).length), `${kulso.length} kulso keres; ` + kulso.filter((k) => szivarog(k.u).length || szivarog(k.ref).length).map((k) => k.u.slice(0, 70)).slice(0, 2).join(' '));
   ok(`${ut}: dataLayer / sessionStorage / localStorage erzekeny adat nelkul`, !szivarog(allapot.dl).length && !szivarog(allapot.ss).length && !szivarog(allapot.ls.replace(/mp_gk[^}]*}/, '').replace(/"mp_koszono":"[^"]*"/, '')).length, [szivarog(allapot.dl), szivarog(allapot.ss), szivarog(allapot.ls)].join('/'));
-  if (ut.startsWith('/foglalas-ok')) {
+  // a divat fulpiercing koszonooldala (/fulbevalo-ok*) is pontosan ugyanigy jelez (a #242 ota ez hianyzott)
+  {
     const t = kuldott.at(-1);
-    ok(`${ut}: a sajat meres megkapja a foglalasi adatokat (bookingUrl, booking_id, gclid)`, !!t && t.p.bookingUrl === BURL && t.p.booking_id === `mb_tesztkoszono${START}` && t.kattintas?.gclid?.ertek === G, t ? Object.keys(t.p).join(',') : 'nincs kuldes');
+    ok(`${ut}: pontosan 1 sajat meres, semleges ut (${semleges}), a foglalasi adatokkal (bookingUrl, booking_id, gclid)`, kuldott.length === 1 && !!t && t.ut === semleges && t.p.bookingUrl === BURL && t.p.booking_id === `mb_tesztkoszono${START}` && t.kattintas?.gclid?.ertek === G, t ? `${kuldott.length} kuldes, ut=${t.ut}, ` + Object.keys(t.p).join(',') : 'nincs kuldes');
     ok(`${ut}: a sajat meres nem kapja a szolgaltatasnevet / helyszint / munkatarsat`, !!t && !szivarog(JSON.stringify(t.p)).filter((x) => !['bookingUrl', 'serviceId', 'booking_id', G].includes(x)).length);
   }
   await ctx.close();
@@ -71,6 +72,17 @@ for (const ut of ['/foglalas-ok-mi', '/foglalas-ok', '/foglalas-ok-slim', '/fulb
   await p.goto(koszono('/foglalas-ok-mi'), { waitUntil: 'load' }); await varj(1200);
   ok('4 ugyanaz a foglalas masodszor: suti.js ismetlest jelol (data-mp-mar-mert)', (await p.evaluate(() => document.documentElement.getAttribute('data-mp-mar-mert'))) === '1');
   ok('4b a sajat meres szerveroldali dedupra hagyatkozik (ket keres, ugyanaz a kulcs)', kuldott.length === 2 && kuldott[0].p.bookingUrl === kuldott[1].p.bookingUrl);
+  await ctx.close();
+}
+// 4c. Divat fulpiercing: a tisztitott cim F5-je / uj fulben megnyitasa sem kuld ujra
+{
+  const { ctx, kuldott } = await kornyezet(true);
+  const p = await ctx.newPage();
+  await p.goto(koszono('/fulbevalo-ok2'), { waitUntil: 'load' }); await varj(1200);
+  const tiszta = p.url();
+  await p.reload({ waitUntil: 'load' }); await varj(1200);
+  const p2 = await ctx.newPage(); await p2.goto(tiszta, { waitUntil: 'load' }); await varj(1200);
+  ok('4c /fulbevalo-ok2: 1 kuldes, F5 es uj ful a tisztitott cimrol: 0 uj kuldes', kuldott.length === 1 && new URL(tiszta).pathname === '/fulbevalo-ok', `${kuldott.length} kuldes, ${tiszta.replace(CIM, '')}`);
   await ctx.close();
 }
 // 5. Motor-atadas: a keretben nyilo koszonooldal az EREDETI cimet kuldi a szulonek (a tisztitas utan is)

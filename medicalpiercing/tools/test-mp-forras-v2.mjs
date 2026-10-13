@@ -242,7 +242,7 @@ test('riport: cimkek, lefedettseg osszes / uj vendeg, hozzajarulas szerinti bont
   await foglal(env, { forras: META }, SUTI_NEM, t); // uj (first_booking), meta, hozzajarulas nelkul
   await foglal(env, { forras: { v: 'mp_v2', rk: 'search', t } }, SUTI_IGEN, t); // uj, organikus, hozzajarulassal
   await foglal(env, { forras_v: 'mp_v2' }, SUTI_NEM, t); // uj, ismeretlen (nincs_jel)
-  await foglal(env, { forras: META }, SUTI_NEM, t, { first_booking: 'false' }); // visszatero, meta
+  await foglal(env, { forras: META, ut: '/fulbevalo-ok' }, SUTI_NEM, t, { first_booking: 'false' }); // visszatero, meta, divat fulpiercing
   // elonezet sor: nem szamit
   await foglalasErkezes({ request: keres('/api/mp-foglalas', { ut: '/foglalas-ok', p: { bookingUrl: BURL(1799999999), first_booking: 'true' }, forras: META }, SUTI_NEM, 'x.medicalpiercing.pages.dev'), env }, { fetchImpl: nemKuld, most: t });
   db._s.prepare("UPDATE mp_foglalas SET igazolas = 'igazolt' WHERE forras_cimke = 'meta' AND uj_vendeg = 1").run();
@@ -256,6 +256,7 @@ test('riport: cimkek, lefedettseg osszes / uj vendeg, hozzajarulas szerinti bont
   assert.equal(x.lefedettseg_uj_hozzajarulas_nelkul, 50);
   assert.deepEqual(x.ismeretlen_okok, { nincs_jel: 1 });
   assert.equal(x.forras_meta, 2, 'a regi mezok megmaradnak');
+  assert.deepEqual([x.d1_ful, x.d1_ful_igazolt, x.ful_cimke_meta, x.ful_cimke_organikus_direkt], [1, 0, 1, 0], 'divat fulpiercing bontas');
   assert.equal(r.google_markas_lista, null);
 });
 
