@@ -29,6 +29,14 @@ await ctx.route('**/*', async (route) => {
   const u = new URL(route.request().url());
   if (u.hostname === 'cdn.salonic.hu') return route.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64') });
   if (u.hostname.endsWith('salonic.hu')) {
+    if (u.pathname.startsWith('/guestData') && process.env.ECHT_ADATLAP) { // kepkeszitéshez: a valodi Salonic-adatlap + a gy.css (curl-lel, a MOST szabad idoponttal)
+      const { createSalonicAdapter } = await import('../public/assets/js/motor/salonic-adapter.js');
+      const szabad = await createSalonicAdapter({ fetchImpl: valos }).getAvailability(8439, '24666', { days: 20 });
+      const sl = szabad[Math.floor(szabad.length / 2)];
+      const html = execFileSync('curl', ['-s', '-L', '-A', 'Mozilla/5.0 (X11; Linux x86_64) Chrome/130 Safari/537.36', '--retry', '4', '--retry-all-errors', `https://gyogytornaszomhu.salonic.hu/guestData/?placeId=8439&serviceId=24666&employeeId=${sl.staff_id}&startDate=${sl.start_unix}&lang=hu`], { maxBuffer: 20e6 }).toString('utf8');
+      const css = (await import('node:fs')).readFileSync(new URL('../public/salonic/gy.css', import.meta.url), 'utf8');
+      return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html.replace('<head>', '<head><base href="https://gyogytornaszomhu.salonic.hu/"><style>' + css + '</style>') });
+    }
     if (u.pathname.startsWith('/guestData')) {
       const bu = `https://gyogytornaszomhu.salonic.hu/guestData/?anyone=true&employeeId=${EMP}&placeId=8439&serviceId=24666&startDate=${START}&back=${u.searchParams.get('back')}`;
       const cel = `${ORIGIN}/allapot-ok/?first_booking=true&service=X&price=23500&location=L&employee=E&g=${encodeURIComponent('g:pw-proba')}&bookingUrl=${encodeURIComponent(bu)}`;
@@ -94,7 +102,7 @@ lep('vissza gomb + fokuszcsapda a retegen belul marad');
 await m.locator('.ido').first().click();
 await m.locator('iframe[name="gy-adatlap"]').waitFor();
 lep('az idopont utan a Salonic adatlapja beagyazva');
-if (process.env.KEPEK) { await oldal.screenshot({ path: `${process.env.KEPEK}/adatlap-${mod}.png` }); }
+if (process.env.KEPEK) { await oldal.waitForTimeout(process.env.ECHT_ADATLAP ? 5000 : 0); await oldal.screenshot({ path: `${process.env.KEPEK}/adatlap-${mod}.png` }); if (process.env.ECHT_ADATLAP) { const f = oldal.frames().find((x) => x.name() === 'gy-adatlap'); console.log('KERET', f && f.url(), f && await f.evaluate(() => ({ h: document.documentElement.scrollHeight, w: innerWidth, vis: getComputedStyle(document.body).display + '/' + getComputedStyle(document.body).visibility + '/' + getComputedStyle(document.body).opacity, txt: document.body.innerText.slice(0, 80), rs: document.readyState, len: document.body.innerHTML.length, form: !!document.querySelector('form'), kids: [...document.body.children].map((e) => e.tagName + '.' + (e.className || '').toString().slice(0, 30) + ':' + e.getBoundingClientRect().height).slice(0, 8) })).catch((e) => e.message)); process.exit(0); } }
 // a Salonic "sikeres foglalas": az iframe a koszonooldalra navigal -> a launcher uzen -> a motor POST + atiranyit
 const keret = oldal.frameLocator('[data-gy-motor] iframe[name="gy-adatlap"]');
 await keret.locator('#foglal').click();
