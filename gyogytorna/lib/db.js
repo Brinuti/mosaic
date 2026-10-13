@@ -28,6 +28,7 @@ export async function sema(db) {
   await db.batch(SEMA.map((s) => db.prepare(s)));
   // migracio: a Salonic-igazolas parositasahoz (hely + idopont HMAC); a mar letezo tablara is felkerul, a duplikalt oszlop hibajat elnyeljuk
   try { await db.prepare('ALTER TABLE gy_foglalas ADD COLUMN parosito_hely TEXT').run(); } catch (e) { /* mar megvan */ }
+  for (const oszlop of ['kampany', 'hirdetescsoport', 'hirdetes']) { try { await db.prepare(`ALTER TABLE gy_foglalas ADD COLUMN ${oszlop} TEXT`).run(); } catch (e) { /* mar megvan */ } }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS gy_foglalas_parosito_hely ON gy_foglalas (parosito_hely)').run(); } catch (e) { /* */ }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS gy_foglalas_salonic ON gy_foglalas (salonic_id)').run(); } catch (e) { /* */ }
   kesz.add(db);
@@ -78,9 +79,9 @@ export async function foglalasOlvas(db, uuid) {
 /** Idempotens letrehozas: ugyanarra az UUID-ra masodszor nem hoz letre ujat. @returns {Promise<boolean>} true, ha most jott letre */
 export async function foglalasLetrehoz(db, f, most) {
   const r = await db.prepare(
-    `INSERT OR IGNORE INTO gy_foglalas (uuid, letrehozva, frissitve, tipus, uj_vendeg, cimke, bizonyitek, hozzajarulas, allapot, salonic_id, igazolt, esemeny_kiadva, teszt, parosito, parosito_hely)
-     VALUES (?1, ?2, ?2, ?3, ?4, ?5, ?6, ?7, ?8, NULL, 0, 0, ?9, ?10, ?11)`,
-  ).bind(f.uuid, most, f.tipus, f.uj_vendeg, f.cimke, f.bizonyitek, f.hozzajarulas, f.allapot, f.teszt ? 1 : 0, f.parosito || null, f.parosito_hely || null).run();
+    `INSERT OR IGNORE INTO gy_foglalas (uuid, letrehozva, frissitve, tipus, uj_vendeg, cimke, bizonyitek, hozzajarulas, allapot, salonic_id, igazolt, esemeny_kiadva, teszt, parosito, parosito_hely, kampany, hirdetescsoport, hirdetes)
+     VALUES (?1, ?2, ?2, ?3, ?4, ?5, ?6, ?7, ?8, NULL, 0, 0, ?9, ?10, ?11, ?12, ?13, ?14)`,
+  ).bind(f.uuid, most, f.tipus, f.uj_vendeg, f.cimke, f.bizonyitek, f.hozzajarulas, f.allapot, f.teszt ? 1 : 0, f.parosito || null, f.parosito_hely || null, f.kampany || null, f.hirdetescsoport || null, f.hirdetes || null).run();
   return !!(r.meta && r.meta.changes);
 }
 

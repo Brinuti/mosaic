@@ -194,11 +194,11 @@ test('kampanyok-vegpont: kulcs nelkul 401; a BRAND-ID brand, a tobbi nem', async
   assert.equal((await kampanyokVegpont({ request: kerelem('/api/gy-kampanyok', { kampanyok: [{ id: 'x' }] }, { fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: d })).status, 400);
 });
 
-async function teljesFolyamat({ cookie = '', env = null, bodyFelul = {}, depsFelul = {}, uuid = 'mb_proba1234567890abcdef', szinkron = true } = {}) {
+async function teljesFolyamat({ search = null, cookie = '', env = null, bodyFelul = {}, depsFelul = {}, uuid = 'mb_proba1234567890abcdef', szinkron = true } = {}) {
   env = env || (await ujKornyezet());
   const d = deps(depsFelul);
   if (szinkron) await kampanyokVegpont({ request: kerelem('/api/gy-kampanyok', { kampanyok: [{ id: BRAND, allapot: 'ENABLED' }, { id: DSA, allapot: 'ENABLED' }] }, { fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: d });
-  const f = await forrasVegpont({ request: kerelem('/api/gy-forras', { search: `?utm_campaign=${BRAND}&gclid=ABCDEFGH12345&utm_source=google&utm_medium=cpc`, referrer: '', path: '/' }, { cookie }), env, deps: d });
+  const f = await forrasVegpont({ request: kerelem('/api/gy-forras', { search: search || `?utm_campaign=${BRAND}&gclid=ABCDEFGH12345&utm_source=google&utm_medium=cpc`, referrer: '', path: '/' }, { cookie }), env, deps: d });
   const sutik = [cookie, sutikBol(f)].filter(Boolean).join('; ');
   const r = await foglalasVegpont({ request: kerelem('/api/gy-foglalas', { ...foglalasBody(), uuid, ...bodyFelul }, { cookie: sutik }), env, deps: d });
   return { env, d, sutik, r, j: await r.json() };
@@ -435,4 +435,19 @@ test('lemondas: csak ha a Salonic elo oldala szerint torolve; ismetles rendben; 
   assert.equal((await env.GY_DB.prepare('SELECT allapot FROM gy_foglalas').first()).allapot, 'lemondott');
   assert.equal((await (await igazolasVegpont({ request: zapKerelem(lem), env, deps: torolve })).json()).ismetles, true);
   assert.equal((await igazolasVegpont({ request: zapKerelem({ ...lem, salonic_id: '11111111-2222-3333-4444-555555555555' }), env, deps: torolve })).status, 404);
+});
+
+test('UTM-sablon (Feri 2026-10-13): kampany / hirdetescsoport / hirdetes azonosito a foglalasra kerul (csak szamok); ervenytelen ertek eldobva; riport-bontas', async () => {
+  const { env, d } = await teljesFolyamat({ search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&utm_content=987654321&gyt_ag=123456789&gclid=ABCDEFGH12345` });
+  const sor = await env.GY_DB.prepare('SELECT kampany, hirdetescsoport, hirdetes, cimke FROM gy_foglalas').first();
+  assert.deepEqual({ ...sor }, { kampany: DSA, hirdetescsoport: '123456789', hirdetes: '987654321', cimke: 'google_nem_brand' });
+  const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?riport=2026-10', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: d })).json();
+  assert.deepEqual(rap.kampany_bontas.map((x) => ({ ...x })), [{ kampany: DSA, hirdetescsoport: '123456789', cimke: 'google_nem_brand', db: 1 }]);
+  // rossz formatum (nem 6-15 szamjegy / szoveg) -> null, nem javitjuk
+  const { env: env2 } = await teljesFolyamat({ search: `?utm_source=google&utm_medium=cpc&utm_campaign=${DSA}&utm_content=abc&gyt_ag=12&gclid=ABCDEFGH12345` });
+  const sor2 = await env2.GY_DB.prepare('SELECT hirdetescsoport, hirdetes FROM gy_foglalas').first();
+  assert.deepEqual({ ...sor2 }, { hirdetescsoport: null, hirdetes: null });
+  // UTM nelkul (direkt): nincs azonosito
+  const { env: env3 } = await teljesFolyamat({ search: '?x=1' });
+  assert.equal((await env3.GY_DB.prepare('SELECT kampany FROM gy_foglalas').first()).kampany, null);
 });
