@@ -80,7 +80,7 @@
   var JELOLES =
     '<div id="gy-cc-fo">' +
       '<h2 class="gy-nagy">Segítesz nekünk egy kattintással?</h2>' +
-      '<p>A sütikkel mérjük, melyik hirdetésből jön a foglalás (<a href="' + ADATVEDELEM + '" target="_blank" rel="noopener">részletek</a>).</p>' +
+      '<p>A sütikkel azt mérjük, melyik hirdetésünkből érkeznek a foglalások, így kevesebb felesleges hirdetést mutatunk. (<a href="' + ADATVEDELEM + '" target="_blank" rel="noopener">részletek</a>).</p>' +
       // Elfogadom elol (asztalon balra, mobilon felul), az Elutasitom mogotte: ugyanakkora, ugyanolyan betu, csak kicsit halvanyabb
       '<div class="gy-gombok"><button type="button" class="gy-gomb" data-gy="elfogad">Elfogadom</button><button type="button" class="gy-gomb gy-halvany" data-gy="elutasit">Elutasítom</button><button type="button" class="gy-link" data-gy="beall">Beállítások</button></div>' +
     '</div>' +
