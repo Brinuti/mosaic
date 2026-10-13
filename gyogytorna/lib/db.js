@@ -26,6 +26,10 @@ const kesz = new WeakSet();
 export async function sema(db) {
   if (kesz.has(db)) return;
   await db.batch(SEMA.map((s) => db.prepare(s)));
+  // migracio: a Salonic-igazolas parositasahoz (hely + idopont HMAC); a mar letezo tablara is felkerul, a duplikalt oszlop hibajat elnyeljuk
+  try { await db.prepare('ALTER TABLE gy_foglalas ADD COLUMN parosito_hely TEXT').run(); } catch (e) { /* mar megvan */ }
+  try { await db.prepare('CREATE INDEX IF NOT EXISTS gy_foglalas_parosito_hely ON gy_foglalas (parosito_hely)').run(); } catch (e) { /* */ }
+  try { await db.prepare('CREATE INDEX IF NOT EXISTS gy_foglalas_salonic ON gy_foglalas (salonic_id)').run(); } catch (e) { /* */ }
   kesz.add(db);
 }
 
@@ -74,9 +78,9 @@ export async function foglalasOlvas(db, uuid) {
 /** Idempotens letrehozas: ugyanarra az UUID-ra masodszor nem hoz letre ujat. @returns {Promise<boolean>} true, ha most jott letre */
 export async function foglalasLetrehoz(db, f, most) {
   const r = await db.prepare(
-    `INSERT OR IGNORE INTO gy_foglalas (uuid, letrehozva, frissitve, tipus, uj_vendeg, cimke, bizonyitek, hozzajarulas, allapot, salonic_id, igazolt, esemeny_kiadva, teszt, parosito)
-     VALUES (?1, ?2, ?2, ?3, ?4, ?5, ?6, ?7, ?8, NULL, 0, 0, ?9, ?10)`,
-  ).bind(f.uuid, most, f.tipus, f.uj_vendeg, f.cimke, f.bizonyitek, f.hozzajarulas, f.allapot, f.teszt ? 1 : 0, f.parosito || null).run();
+    `INSERT OR IGNORE INTO gy_foglalas (uuid, letrehozva, frissitve, tipus, uj_vendeg, cimke, bizonyitek, hozzajarulas, allapot, salonic_id, igazolt, esemeny_kiadva, teszt, parosito, parosito_hely)
+     VALUES (?1, ?2, ?2, ?3, ?4, ?5, ?6, ?7, ?8, NULL, 0, 0, ?9, ?10, ?11)`,
+  ).bind(f.uuid, most, f.tipus, f.uj_vendeg, f.cimke, f.bizonyitek, f.hozzajarulas, f.allapot, f.teszt ? 1 : 0, f.parosito || null, f.parosito_hely || null).run();
   return !!(r.meta && r.meta.changes);
 }
 
@@ -85,6 +89,14 @@ export async function foglalasAllapot(db, uuid, allapot, most, mezok = {}) {
   if (!FOGLALAS_ALLAPOTOK.includes(allapot)) throw new Error('ervenytelen_allapot');
   await db.prepare('UPDATE gy_foglalas SET allapot = ?2, frissitve = ?3, salonic_id = COALESCE(?4, salonic_id), igazolt = MAX(igazolt, ?5), parosito = COALESCE(?6, parosito) WHERE uuid = ?1')
     .bind(uuid, allapot, most, mezok.salonic_id || null, mezok.igazolt ? 1 : 0, mezok.parosito || null).run();
+}
+
+/** A Salonic-igazolas jeloltjei: meg nem igazolt, meg nem parositott foglalasok ugyanarra a hely + idopontra (HMAC). */
+export async function igazolasJeloltek(db, parositoHely) {
+  return (await db.prepare("SELECT uuid, allapot, teszt FROM gy_foglalas WHERE parosito_hely = ?1 AND salonic_id IS NULL AND allapot IN ('fuggo','aktiv','bizonytalan')").bind(parositoHely).all()).results || [];
+}
+export async function foglalasSalonicIdAlapjan(db, salonicId) {
+  return db.prepare('SELECT uuid, allapot, igazolt FROM gy_foglalas WHERE salonic_id = ?').bind(salonicId).first();
 }
 
 /** Az esemeny-kiadas atomi jelolese: csak akkor sikerul (true), ha meg nem volt kiadva. */

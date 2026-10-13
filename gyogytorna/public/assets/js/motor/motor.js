@@ -96,6 +96,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid #70c69c; outline-offs
 .kartya .ar { float: right; font-weight: 700; color: #0c4c8a; margin-left: 10px; white-space: nowrap; }
 .kartya.kiemelt { border: 2px solid #0c4c8a; background: #f3f8fc; }
 .cimke { display: inline-block; margin-top: 6px; font-size: 12px; background: #e69500; color: #fff; border-radius: 99px; padding: 2px 10px; font-weight: 600; }
+.elonezet-figy { background: #fff3cd; color: #664d03; border: 1px solid #ffda6a; border-radius: 8px; padding: 6px 10px; margin: 0 0 8px; font-size: 13px; }
+.ablak[data-lepes="adatlap"] .tartalom > .elonezet-figy { flex: none; }
+@media (max-width: 700px) { .ablak[data-lepes="adatlap"] .tartalom > .elonezet-figy { margin: 6px 10px 4px; } }
 .kartya.akcio { border: 2px solid #e69500; background: #fff8ea; }
 .kartya.akcio:hover, .kartya.akcio:focus-visible { border-color: #e69500; box-shadow: 0 0 0 3px #fbe3b3; }
 .cimke.zold { background: #70c69c; color: #06331e; }
@@ -374,7 +377,8 @@ export function nyit(ctx = {}) {
     try { stilus = (await adapter.getPresentation()).customCss; } catch (e) { /* alap kinezet */ }
     if (all.lepes !== 'adatlap' || lezart) return;
     $('.ablak').dataset.stilus = stilus ? '1' : '0';
-    tartalom.innerHTML = osszegzes() + `<p class="kicsi adatlap-sugo" style="margin:0 0 8px">Add meg az adataidat, és véglegesítsd a foglalást. Ha az időpont közben elkelt, <button class="chip" data-lepes="ido">válassz másikat</button>.</p><div class="adatlap-burok"><iframe class="adatlap" name="gy-adatlap" title="Foglalási adatlap" src="${esc(u.href)}" allow="payment"></iframe></div>`;
+    const elonezet = !/(^|\.)gyogytornaszom\.hu$/.test(location.hostname); // elonezeten / helyben: figyelmeztetes a veglegesito gomb elott
+    tartalom.innerHTML = (elonezet ? '<div class="elonezet-figy" role="alert"><b>Előnézet:</b> ez valódi Salonic-foglalást hoz létre!</div>' : '') + osszegzes() + `<p class="kicsi adatlap-sugo" style="margin:0 0 8px">Add meg az adataidat, és véglegesítsd a foglalást. Ha az időpont közben elkelt, <button class="chip" data-lepes="ido">válassz másikat</button>.</p><div class="adatlap-burok"><iframe class="adatlap" name="gy-adatlap" title="Foglalási adatlap" src="${esc(u.href)}" allow="payment"></iframe></div>`;
   }
 
   async function rajzol() {

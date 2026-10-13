@@ -132,7 +132,7 @@ lep('ujratoltes / token ujrafelhasznalas: nincs masodik esemeny');
 const p2 = await ctx.newPage();
 await p2.goto(`${ORIGIN}/allapot-ok/?price=1&bookingUrl=x`);
 await p2.waitForTimeout(500);
-assert.equal(await p2.evaluate(() => (window.dataLayer || []).length), 0);
+assert.equal(await p2.evaluate(() => (window.dataLayer || []).filter((e) => !(e && /^gy_suti_/.test(e.event || ''))).length), 0); // csak a sutisav allapot-esemenye lehet
 assert.equal(await p2.evaluate(() => location.search), '');
 lep('token nelkul megnyitott koszonooldal: nincs esemeny, a parameterek levalnak a cimsorrol');
 // bezaras / Esc

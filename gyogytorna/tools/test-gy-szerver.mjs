@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { belepes, cimkez, osszevon, fizetett, referrerKategoria } from '../lib/forras.js';
 import { hozzajarulas } from '../lib/hozzajarulas.js';
 import { tranzakcioId, hmacHex, ujToken, sha256Hex } from '../lib/titkos.js';
-import { forrasVegpont, foglalasVegpont, koszonoVegpont, kampanyokVegpont, adminVegpont, atiranyitasElemzes } from '../lib/motor-szerver.js';
+import { forrasVegpont, igazolasVegpont, foglalasVegpont, koszonoVegpont, kampanyokVegpont, adminVegpont, atiranyitasElemzes } from '../lib/motor-szerver.js';
 import { createSalonicAdapter, foglalasTipus, ALLAPOTFELMERES_ID } from '../public/assets/js/motor/salonic-adapter.js';
 import { eloElemzes } from '../lib/salonic-szerver.js';
 import { ujD1 } from './d1-szim.mjs';
@@ -14,10 +14,12 @@ import { salonicHamis } from './salonic-hamis.mjs';
 const BASE = 'https://gy.test';
 const KULCS = 'proba-titkos-kulcs-0123456789abcdef';
 const ADMIN = 'proba-admin-kulcs';
+const ZAP = 'proba-zap-kulcs';
 const BRAND = '1655523772', DSA = '12757996014';
 const LISTA = new Map([[BRAND, { brand: true }], [DSA, { brand: false }]]);
-const HJ_IGEN = 'cookieyes-consent=consentid:abc,consent:yes,action:yes,necessary:yes,functional:yes,analytics:yes,performance:yes,advertisement:yes,other:yes';
-const HJ_NEM = 'cookieyes-consent=consentid:abc,consent:yes,action:yes,necessary:yes,functional:no,analytics:no,performance:no,advertisement:no,other:no';
+const ts = () => Math.floor(Date.now() / 1000);
+const HJ_IGEN = `gy_suti=v1-s1-m1-t${ts()}`;
+const HJ_NEM = `gy_suti=v1-s0-m0-t${ts()}`;
 
 // --- forras-cimkezes -----------------------------------------------------------------------------------------------------------------------
 test('cimkez: a GY-15 2. pont szerinti esetek', () => {
@@ -72,12 +74,14 @@ test('osszevon: az utolso FIZETETT forras nyer; direkt / organikus nem irja felu
   assert.equal(fizetett(dir), false);
 });
 
-test('hozzajarulas: CookieYes suti ertelmezese', () => {
-  assert.equal(hozzajarulas(HJ_IGEN).marketing, true);
+test('hozzajarulas: a sajat gy_suti ertelmezese; hianyzo / ervenytelen / regi / jovobeli = nincs hozzajarulas; a CookieYes-suti nem szamit', () => {
+  assert.deepEqual(hozzajarulas(HJ_IGEN), { allapot: 'igen', marketing: true, analitika: true });
+  assert.deepEqual(hozzajarulas(`gy_suti=v1-s1-m0-t${ts()}`), { allapot: 'nem', marketing: false, analitika: true });
   assert.equal(hozzajarulas(HJ_NEM).allapot, 'nem');
-  assert.equal(hozzajarulas('a=b').allapot, 'nincs_dontes');
-  assert.equal(hozzajarulas('').allapot, 'nincs_dontes');
-  assert.equal(hozzajarulas('cookieyes-consent=consentid:abc,consent:no,action:no,advertisement:yes').allapot, 'nincs_dontes');
+  for (const rossz of ['', 'a=b', 'gy_suti=', 'gy_suti=v2-s1-m1-t1792000000', `gy_suti=v1-s1-m2-t${ts()}`, `gy_suti=v1-s1-m1-t${ts() - 500 * 86400}`, `gy_suti=v1-s1-m1-t${ts() + 5 * 86400}`, 'cookieyes-consent=consentid:abc,consent:yes,action:yes,advertisement:yes']) {
+    assert.equal(hozzajarulas(rossz).allapot, 'nincs_dontes', rossz);
+    assert.equal(hozzajarulas(rossz).marketing, false, rossz);
+  }
 });
 
 test('titkos: a tranzakcio-azonosito hex, 64 karakter, determinisztikus; kulcs nelkul hiba', async () => {
@@ -125,7 +129,7 @@ const MOST = Date.UTC(2026, 9, 14, 10, 0, 0); // 2026-10-14 10:00 UTC
 const unixMost = Math.floor(MOST / 1000);
 const START = Math.floor((unixMost + 6 * 86400) / 900) * 900; // 6 nap mulva, negyedora-illesztve
 const kornyezet = (felul = {}) => ({ GY_DB: ujD1(), GY_HMAC_KULCS: KULCS, GY_ADMIN_KULCS_HASH: null, ...felul });
-async function ujKornyezet(felul = {}) { const e = kornyezet(felul); e.GY_ADMIN_KULCS_HASH = await sha256Hex(ADMIN); return e; }
+async function ujKornyezet(felul = {}) { const e = kornyezet(felul); e.GY_ADMIN_KULCS_HASH = await sha256Hex(ADMIN); e.GY_ZAP_KULCS_HASH = await sha256Hex(ZAP); return e; }
 const kerelem = (ut, body, { cookie = '', origin = BASE, metodus = 'POST', fejlec = {} } = {}) => new Request(BASE + ut, { method: metodus, headers: { 'content-type': 'application/json', ...(origin ? { origin } : {}), ...(cookie ? { cookie } : {}), ...fejlec }, ...(metodus === 'GET' ? {} : { body: typeof body === 'string' ? body : JSON.stringify(body) }) });
 const sutikBol = (r) => r.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
 const deps = (felul = {}) => ({ most: () => MOST, fetch: salonicHamis({ szabad: { [`8439:24666:31525`]: [START + 3600] }, ...felul }) });
@@ -365,4 +369,70 @@ test('admin riport: a 90%-os cel (nevezo, azonositott, hozzajarulo / nem hozzaja
   assert.equal(rap.nem_hozzajarulo.hiany_google_bizonytalan, 1);
   assert.equal(/ABCDEFGH|g:555/.test(JSON.stringify(rap)), false);
   assert.equal((await adminVegpont({ request: kerelem('/api/gy-admin?riport=2026-10', null, { metodus: 'GET' }), env, deps: d })).status, 401);
+});
+
+// --- Zapier / Salonic-igazolas -------------------------------------------------------------------------------------------------------------------------------
+const SID = '85ebd7de-61c6-79fa-d1c5-c9303082fb23';
+const zapKerelem = (body, kulcs = ZAP) => kerelem('/api/gy-salonic-igazolas', body, { fejlec: kulcs ? { 'x-gy-zap-kulcs': kulcs } : {} });
+async function foglalasLetrehozva(env, felul = {}) {
+  const d = deps(felul);
+  await foglalasVegpont({ request: kerelem('/api/gy-foglalas', foglalasBody()), env, deps: d });
+  return d;
+}
+
+test('igazolas: a Salonic elo oldala + hely/idopont egyezes -> igazolt=1; Zap-ujrakuldes nem duplikal', async () => {
+  const env = await ujKornyezet();
+  const d = await foglalasLetrehozva(env);
+  const dd = { ...d, fetch: salonicHamis({ szabad: {}, foglalasok: { [SID]: { startUnix: START } } }) };
+  const be = { esemeny: 'igazolas', salonic_id: SID, start_unix: START, place_id: 8439 };
+  assert.equal((await igazolasVegpont({ request: zapKerelem(be, null), env, deps: dd })).status, 401);
+  assert.equal((await igazolasVegpont({ request: zapKerelem(be, 'rossz'), env, deps: dd })).status, 401);
+  const j = await (await igazolasVegpont({ request: zapKerelem(be), env, deps: dd })).json();
+  assert.deepEqual(j, { ok: true, allapot: 'aktiv', igazolt: true });
+  const sor = await env.GY_DB.prepare('SELECT igazolt, salonic_id, allapot FROM gy_foglalas').first();
+  assert.equal(sor.igazolt, 1); assert.equal(sor.salonic_id, SID);
+  const ujra = await (await igazolasVegpont({ request: zapKerelem(be), env, deps: dd })).json();
+  assert.equal(ujra.ismetles, true);
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_foglalas').first()).n, 1);
+});
+
+test('igazolas: ismeretlen / nem egyezo / nem aktiv a Salonicban -> nincs igazolas; nincs par -> riasztas; tobb jelolt -> nincs automatikus par', async () => {
+  const env = await ujKornyezet();
+  const d = await foglalasLetrehozva(env);
+  const be = { esemeny: 'igazolas', salonic_id: SID, start_unix: START, place_id: 8439 };
+  // a Salonicban nincs ilyen foglalas
+  assert.equal((await igazolasVegpont({ request: zapKerelem(be), env, deps: { ...d, fetch: salonicHamis({ foglalasok: {} }) } })).status, 409);
+  // az idopont nem egyezik az elo oldallal
+  assert.equal((await igazolasVegpont({ request: zapKerelem(be), env, deps: { ...d, fetch: salonicHamis({ foglalasok: { [SID]: { startUnix: START + 900 } } }) } })).status, 409);
+  // a hely/idopont-parhoz nincs foglalas
+  const masik = { ...be, start_unix: START + 1800 };
+  assert.equal((await igazolasVegpont({ request: zapKerelem(masik), env, deps: { ...d, fetch: salonicHamis({ foglalasok: { [SID]: { startUnix: START + 1800 } } }) } })).status, 404);
+  assert.ok((await env.GY_DB.prepare("SELECT COUNT(*) AS n FROM gy_riasztas WHERE tipus = 'igazolas_nincs_par'").first()).n >= 1);
+  assert.equal((await env.GY_DB.prepare('SELECT igazolt FROM gy_foglalas').first()).igazolt, 0);
+  // ervenytelen torzs
+  assert.equal((await igazolasVegpont({ request: zapKerelem({ esemeny: 'igazolas', salonic_id: 'x' }), env, deps: d })).status, 400);
+  assert.equal((await igazolasVegpont({ request: zapKerelem({ ...be, nev: 'Kiss Pista' }), env, deps: { ...d, fetch: salonicHamis({ foglalasok: { [SID]: { startUnix: START } } }) } })).status, 200); // a felesleges mezot nem tarolja
+  // tobb jelolt: ugyanarra a helyre es idopontra ket foglalas
+  const env2 = await ujKornyezet();
+  const d2 = deps();
+  for (const u of ['mb_proba1234567890abcdef', 'mb_masik1234567890abcdef']) await foglalasVegpont({ request: kerelem('/api/gy-foglalas', { ...foglalasBody(), uuid: u }), env: env2, deps: d2 });
+  const r = await igazolasVegpont({ request: zapKerelem(be), env: env2, deps: { ...d2, fetch: salonicHamis({ foglalasok: { [SID]: { startUnix: START } } }) } });
+  assert.equal(r.status, 409);
+  assert.equal((await env2.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_foglalas WHERE igazolt = 1').first()).n, 0);
+});
+
+test('lemondas: csak ha a Salonic elo oldala szerint torolve; ismetles rendben; ismeretlen foglalas -> 404', async () => {
+  const env = await ujKornyezet();
+  const d = await foglalasLetrehozva(env);
+  const igaz = { esemeny: 'igazolas', salonic_id: SID, start_unix: START, place_id: 8439 };
+  await igazolasVegpont({ request: zapKerelem(igaz), env, deps: { ...d, fetch: salonicHamis({ foglalasok: { [SID]: { startUnix: START } } }) } });
+  const lem = { esemeny: 'lemondas', salonic_id: SID };
+  // meg aktiv: a Zap allitasa kevés
+  assert.equal((await igazolasVegpont({ request: zapKerelem(lem), env, deps: { ...d, fetch: salonicHamis({ foglalasok: { [SID]: { startUnix: START } } }) } })).status, 409);
+  assert.equal((await env.GY_DB.prepare('SELECT allapot FROM gy_foglalas').first()).allapot, 'aktiv');
+  const torolve = { ...d, fetch: salonicHamis({ foglalasok: { [SID]: { startUnix: START, torolve: true } } }) };
+  assert.equal((await (await igazolasVegpont({ request: zapKerelem(lem), env, deps: torolve })).json()).allapot, 'lemondott');
+  assert.equal((await env.GY_DB.prepare('SELECT allapot FROM gy_foglalas').first()).allapot, 'lemondott');
+  assert.equal((await (await igazolasVegpont({ request: zapKerelem(lem), env, deps: torolve })).json()).ismetles, true);
+  assert.equal((await igazolasVegpont({ request: zapKerelem({ ...lem, salonic_id: '11111111-2222-3333-4444-555555555555' }), env, deps: torolve })).status, 404);
 });
