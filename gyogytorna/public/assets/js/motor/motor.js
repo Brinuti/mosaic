@@ -107,9 +107,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid #70c69c; outline-offs
 .kartya .ar { float: right; font-weight: 700; color: #0c4c8a; margin-left: 10px; white-space: nowrap; }
 .kartya.kiemelt { border: 2px solid #0c4c8a; background: #f3f8fc; }
 .cimke { display: inline-block; margin-top: 6px; font-size: 12px; background: #e69500; color: #fff; border-radius: 99px; padding: 2px 10px; font-weight: 600; }
-.elonezet-figy { background: #fff3cd; color: #664d03; border: 1px solid #ffda6a; border-radius: 8px; padding: 6px 10px; margin: 0 0 8px; font-size: 13px; }
-.ablak[data-lepes="adatlap"] .tartalom > .elonezet-figy { flex: none; }
-@media (max-width: 700px) { .ablak[data-lepes="adatlap"] .tartalom > .elonezet-figy { margin: 6px 10px 4px; } }
 .kartya.szak.kiemelt { border: 2px solid #e69500; background: #fff8ea; }
 .kartya.szak .cimke { margin-top: 0; }
 .kartya.szak .kicsi { font-size: 11.5px; line-height: 1.3; }
@@ -117,6 +114,12 @@ button:focus-visible, a:focus-visible { outline: 3px solid #70c69c; outline-offs
 .kiemelt-doboz .szoveg { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
 .kiemelt-doboz .kn { font-size: 15px; }
 .kiemelt-doboz:hover, .kiemelt-doboz:focus-visible { border-color: #e69500; box-shadow: 0 0 0 3px #fbe3b3; }
+.adatlap-sav { display: flex; gap: 10px; align-items: center; flex: none; background: #f3f8fc; border-radius: 10px; padding: 5px 10px; margin: 0 0 6px; font-size: 13px; line-height: 1.3; }
+.adatlap-sav .fejkep { width: 36px; height: 36px; font-size: 13px; }
+.adatlap-sav .sav-sz { display: flex; flex-direction: column; min-width: 0; }
+.adatlap-sav .sav-sz span { color: #55687a; font-size: 12px; }
+.ablak[data-lepes="adatlap"] .osszegzes { display: none; }
+@media (max-width: 700px) { .ablak[data-lepes="adatlap"] .tartalom > .adatlap-sav { margin: 6px 10px 4px; } }
 .kartya.akcio { border: 2px solid #e69500; background: #fff8ea; }
 .kartya.akcio:hover, .kartya.akcio:focus-visible { border-color: #e69500; box-shadow: 0 0 0 3px #fbe3b3; }
 .cimke.zold { background: #70c69c; color: #06331e; }
@@ -421,21 +424,30 @@ export function nyit(ctx = {}) {
   // --- 6. adatlap (a Salonic beagyazott urlapja) ---
   async function adatlapLepes() {
     tartalom.innerHTML = osszegzes() + '<div class="toltes">Az adatlap betöltése…</div>';
+    // "Mindegy": a valasztott idoponthoz tartozo konkret szakemberrel foglalunk (igy tudjuk, kit lat a vendeg; az idopont ugyanaz marad)
+    const slotStaff = all.slot && /^\d+$/.test(String(all.slot.staff_id || '')) && +all.slot.staff_id > 0 ? +all.slot.staff_id : null;
+    const effStaff = all.staffId ? +all.staffId : (slotStaff || ANY_STAFF);
     let b;
     try {
-      b = await adapter.beginBooking({ placeId: all.placeId, serviceId: all.szolg.serviceId, startUnix: all.slot.start_unix, staffId: all.staffId ? +all.staffId : ANY_STAFF, bookingId: all.bookingId });
+      b = await adapter.beginBooking({ placeId: all.placeId, serviceId: all.szolg.serviceId, startUnix: all.slot.start_unix, staffId: effStaff, bookingId: all.bookingId });
     } catch (e) { return hiba('adatlap', e); }
     if (all.lepes !== 'adatlap' || lezart) return;
     all.expected = b.expected;
+    all.effStaff = effStaff;
     const u = new URL(b.guestDataUrl);
     for (const [k, v] of tovabbi) if (!u.searchParams.has(k)) u.searchParams.set(k, v);
-    foglalas.update({ business: 'gyogytorna', service_id: all.szolg.serviceId, slot_unix: all.slot.start_unix, staff_id: all.staffId || '-1', carrier: 'back', sent_at: Date.now() });
-    let stilus = null;
+    foglalas.update({ business: 'gyogytorna', service_id: all.szolg.serviceId, slot_unix: all.slot.start_unix, staff_id: String(effStaff), carrier: 'back', sent_at: Date.now() });
+    let stilus = null, staff = {};
     try { stilus = (await adapter.getPresentation()).customCss; } catch (e) { /* alap kinezet */ }
+    try { staff = await adapter.getStaff(); } catch (e) { /* foto nelkul is megy */ }
     if (all.lepes !== 'adatlap' || lezart) return;
     $('.ablak').dataset.stilus = stilus ? '1' : '0';
-    const elonezet = !/(^|\.)gyogytornaszom\.hu$/.test(location.hostname); // elonezeten / helyben: figyelmeztetes a veglegesito gomb elott
-    tartalom.innerHTML = (elonezet ? '<div class="elonezet-figy" role="alert"><b>Előnézet:</b> ez valódi Salonic-foglalást hoz létre!</div>' : '') + osszegzes() + `<p class="kicsi adatlap-sugo" style="margin:0 0 8px">Add meg az adataidat, és véglegesítsd a foglalást. Ha az időpont közben elkelt, <button class="chip" data-lepes="ido">válassz másikat</button>.</p><div class="adatlap-burok"><iframe class="adatlap" name="gy-adatlap" title="Foglalási adatlap" src="${esc(u.href)}" allow="payment"></iframe></div>`;
+    // egy sor: a valasztott szakember (arc + nev), a rendelo es az idopont - igy az adatlap mobilon is gorgetes nelkul elfer
+    const e = staff[String(effStaff)] || null;
+    const nev = e ? e.nev : (all.slot.staff_label || null);
+    const bb = bp(all.slot.start_unix), h = HELYSZINEK[all.placeId];
+    const sav = `<div class="adatlap-sav">${nev ? kiemeltFejkep(e, nev) : ''}<div class="sav-sz"><b>${esc(nev || 'Szakember')}</b><span>${esc(h ? h.nev : '')} · ${esc(napCim(bb.nap))}, <b>${bb.ido}</b></span></div></div>`;
+    tartalom.innerHTML = sav + `<p class="kicsi adatlap-sugo" style="margin:0 0 8px">Add meg az adataidat, és véglegesítsd a foglalást. Ha az időpont közben elkelt, <button class="chip" data-lepes="ido">válassz másikat</button>.</p><div class="adatlap-burok"><iframe class="adatlap" name="gy-adatlap" title="Foglalási adatlap" src="${esc(u.href)}" allow="payment"></iframe></div>`;
   }
 
   async function rajzol() {
@@ -498,7 +510,7 @@ export function nyit(ctx = {}) {
     try {
       const v = await fetch((ctx.apiBase || '') + '/api/gy-foglalas', {
         method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ uuid: all.bookingId, place_id: all.placeId, service_id: all.szolg.serviceId, staff_id: all.staffId || '-1', start_unix: all.slot.start_unix, redirect_url: url }),
+        body: JSON.stringify({ uuid: all.bookingId, place_id: all.placeId, service_id: all.szolg.serviceId, staff_id: String(all.effStaff || all.staffId || '-1'), start_unix: all.slot.start_unix, redirect_url: url }),
       });
       const j = v.ok ? await v.json() : null;
       if (j && typeof j.koszono === 'string' && /^\/(allapot-ok|foglalas-ok)\/$/.test(j.koszono)) ut = j.koszono;

@@ -62,33 +62,34 @@
     '#gy-cc .gy-gombok{display:flex;gap:8px;flex-wrap:wrap;align-items:center}' +
     // az Elfogadom es az Elutasitom ugyanolyan meretu, szinu es sulyu (nincs "trukkos" sav)
     '#gy-cc .gy-gomb{flex:1 1 0;min-width:120px;cursor:pointer;border-radius:999px;padding:9px 14px;font-size:14px;font-weight:700;border:2px solid #0c4c8a;background:#0c4c8a;color:#fff;white-space:nowrap}' +
+    '#gy-cc .gy-gomb.gy-halvany{background:#5d89b5;border-color:#5d89b5}' +
     '#gy-cc .gy-link{flex:0 0 auto;cursor:pointer;border:none;background:none;color:#1b2733;padding:8px 4px;font-size:13px;text-decoration:underline}' +
     '#gy-cc .gy-kat{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:8px 0;border-top:1px solid #e3ebf2}#gy-cc .gy-kat small{display:block;color:#55687a}' +
     '#gy-cc input[type=checkbox]{width:20px;height:20px;margin-top:2px;flex:none;accent-color:#0c4c8a}#gy-cc-beall .gy-gombok{margin-top:10px}' +
     '#gy-cc[data-nezet=fo]{left:0;right:0;bottom:0;max-width:none;border-radius:0;padding:5px 10px;font-size:12px;line-height:1.3;box-shadow:0 -1px 6px rgba(0,0,0,.15)}' +
     '#gy-cc-fo{display:flex;align-items:center;gap:8px}#gy-cc-fo p{flex:1 1 auto;margin:0}#gy-cc-fo .gy-gombok{flex:0 0 auto;flex-wrap:nowrap;gap:6px}' +
     '#gy-cc-fo .gy-gomb{flex:0 0 auto;min-width:0;padding:4px 10px;font-size:12px;border-width:1px}#gy-cc-fo .gy-link{padding:4px 2px;font-size:11px}' +
-    '#gy-cc .gy-nagy{display:none}#gy-cc[data-nezet=nagy] .gy-rovid{display:none}#gy-cc[data-nezet=nagy] .gy-nagy{display:block}' +
+    '#gy-cc .gy-nagy{display:none}#gy-cc[data-nezet=nagy] .gy-nagy{display:block}' +
     '#gy-cc[data-nezet=nagy]{max-width:560px;padding:16px 18px;font-size:14px}#gy-cc[data-nezet=nagy] #gy-cc-fo{display:block}#gy-cc[data-nezet=nagy] #gy-cc-fo p{margin:0 0 12px}' +
     '#gy-cc[data-nezet=nagy] #gy-cc-fo .gy-gombok{flex-wrap:wrap;gap:8px}#gy-cc[data-nezet=nagy] #gy-cc-fo .gy-gomb{flex:1 1 0;min-width:120px;padding:10px 14px;font-size:15px;border-width:2px}' +
     '#gy-cc[data-nezet=nagy] #gy-cc-fo .gy-link{flex:1 0 100%;text-align:center;padding:2px 0;font-size:13px}' +
-    '@media (max-width:600px){#gy-cc[data-nezet=fo]{padding:4px 8px;font-size:11px}#gy-cc-fo{gap:6px}#gy-cc-fo .gy-gomb{padding:3px 8px;font-size:11px}#gy-cc-fo .gy-gombok{gap:4px}#gy-cc-fo .gy-link{font-size:10px;padding:2px 0}#gy-cc-fo p{font-size:10.5px}#gy-cc[data-nezet=nagy]{padding:14px;font-size:13.5px}}';
+    '@media (max-width:600px){#gy-cc[data-nezet=nagy] #gy-cc-fo .gy-gombok{flex-direction:column;align-items:stretch}#gy-cc[data-nezet=nagy] #gy-cc-fo .gy-gomb{flex:0 0 auto;width:100%}#gy-cc[data-nezet=fo]{padding:4px 8px;font-size:11px}#gy-cc-fo{gap:6px}#gy-cc-fo .gy-gomb{padding:3px 8px;font-size:11px}#gy-cc-fo .gy-gombok{gap:4px}#gy-cc-fo .gy-link{font-size:10px;padding:2px 0}#gy-cc-fo p{font-size:10.5px}#gy-cc[data-nezet=nagy]{padding:14px;font-size:13.5px}}';
   var kategoria = function (id, cim, leiras) {
     return '<div class="gy-kat"><div><b>' + cim + '</b><small>' + leiras + '</small></div><input type="checkbox"' + (id ? ' id="' + id + '"' : ' checked disabled') + ' aria-label="' + cim + '"></div>';
   };
   var JELOLES =
     '<div id="gy-cc-fo">' +
       '<h2 class="gy-nagy">Segítesz nekünk egy kattintással?</h2>' +
-      '<p><span class="gy-nagy">A sütikkel azt mérjük, melyik Google-hirdetésünkből érkeznek a foglalások, így kevesebb felesleges hirdetést mutatunk. Te döntöd el, engedélyezed-e; az Elutasítom ugyanolyan könnyen elérhető, és a foglalás működését nem befolyásolja. Bármikor módosíthatod a lábléc „Süti beállítások” linkjén. </span>' +
-        '<span class="gy-rovid">Sütikkel mérjük, melyik hirdetésből jönnek a foglalások </span>(<a href="' + ADATVEDELEM + '" target="_blank" rel="noopener">részletek</a>).</p>' +
-      '<div class="gy-gombok"><button type="button" class="gy-gomb" data-gy="elutasit">Elutasítom</button><button type="button" class="gy-gomb" data-gy="elfogad">Elfogadom</button><button type="button" class="gy-link" data-gy="beall">Beállítások</button></div>' +
+      '<p>A sütikkel mérjük, melyik hirdetésből jön a foglalás (<a href="' + ADATVEDELEM + '" target="_blank" rel="noopener">részletek</a>).</p>' +
+      // Elfogadom elol (asztalon balra, mobilon felul), az Elutasitom mogotte: ugyanakkora, ugyanolyan betu, csak kicsit halvanyabb
+      '<div class="gy-gombok"><button type="button" class="gy-gomb" data-gy="elfogad">Elfogadom</button><button type="button" class="gy-gomb gy-halvany" data-gy="elutasit">Elutasítom</button><button type="button" class="gy-link" data-gy="beall">Beállítások</button></div>' +
     '</div>' +
     '<div id="gy-cc-beall" style="display:none"><h2>Süti beállítások</h2>' +
       kategoria('', 'Szükséges', 'Az oldal és a foglalás működéséhez kellenek (pl. ennek a döntésnek a tárolása), nem kapcsolhatók ki.') +
       kategoria('gy-cc-stat', 'Statisztika', 'Megmutatja, hogyan használják a látogatók az oldalt (Google Analytics).') +
       kategoria('gy-cc-mark', 'Marketing', 'Hirdetéseink mérése: melyik Google-hirdetésből érkezett a foglalás (Google Ads). Személyre szabott hirdetést nem használunk.') +
       '<p style="margin:8px 0 0"><a href="' + ADATVEDELEM + '" target="_blank" rel="noopener">Adatkezelési tájékoztató</a></p>' +
-      '<div class="gy-gombok"><button type="button" class="gy-gomb" data-gy="elutasit">Elutasítom</button><button type="button" class="gy-gomb" data-gy="elfogad">Elfogadom</button><button type="button" class="gy-link" data-gy="mentes">Kiválasztottak mentése</button></div>' +
+      '<div class="gy-gombok"><button type="button" class="gy-gomb" data-gy="elfogad">Elfogadom</button><button type="button" class="gy-gomb gy-halvany" data-gy="elutasit">Elutasítom</button><button type="button" class="gy-link" data-gy="mentes">Kiválasztottak mentése</button></div>' +
     '</div>';
   var mutat = function (nezet) {
     if (!sav) return;

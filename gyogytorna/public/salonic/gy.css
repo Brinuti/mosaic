@@ -241,3 +241,10 @@ body[class*="customer-gyogytornaszomhu"] .cc-window .cc-link { color: #0c4c8a !i
 body[class*="customer-gyogytornaszomhu"] .cc-window .cc-compliance { flex: 0 0 auto !important; }
 body[class*="customer-gyogytornaszomhu"] .cc-window .cc-btn { background: #0c4c8a !important; color: #fff !important; border: 0 !important; border-radius: 99px !important; padding: 6px 14px !important; min-height: 32px !important; font-size: 12px !important; font-weight: 600 !important; width: auto !important; text-decoration: none !important; }
 body[class*="customer-gyogytornaszomhu"] .cc-window.cc-banner { position: fixed !important; top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important; display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; z-index: 9999; }
+
+/* Feri kerese (2026-10-13): a "A *-gal jelolt mezok kitoltese kotelezo!" mondat es a "A foglalasodat lemondani ...-ig van lehetosegod" sor nem kell az adatlapon
+ * (a lemondasi hatarido a visszaigazolo e-mailben benne van; a * jeloles a mezok mellett marad). A reCAPTCHA-tajekoztatot a Google feltetelei miatt NEM rejtjuk el. */
+body[class*="customer-gyogytornaszomhu"] .panel-body > div { font-size: 0 !important; line-height: 0 !important; }
+body[class*="customer-gyogytornaszomhu"] .panel-body > div > * { font-size: 12px !important; line-height: 1.35 !important; }
+body[class*="customer-gyogytornaszomhu"] .panel-body > div > span.d-block.mb-3 { display: none !important; }
+body[class*="customer-gyogytornaszomhu"] .panel-body > div > hr { display: none !important; }
