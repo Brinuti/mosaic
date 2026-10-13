@@ -1,0 +1,12 @@
+{
+  "name": "gyogytorna-foglalomotor",
+  "private": true,
+  "type": "module",
+  "description": "A gyogytornaszom.hu sajat foglalomotorja (Cloudflare Pages + Functions + D1). A foglalast a Salonic gyogytornaszomhu fiokja rogziti.",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "serve": "node tools/serve.mjs",
+    "teszt": "node --test tools/test-gy-szerver.mjs",
+    "teszt:bongeszo": "node tools/build.mjs && node tools/test-gy-motor-pw.mjs desktop && node tools/test-gy-motor-pw.mjs mobil"
+  }
+}

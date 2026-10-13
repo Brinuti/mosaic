@@ -1,0 +1,3 @@
+# Salonic-lekepezes (gyogytornaszomhu, 2026-10-13)
+
+Helyszinek: Batthyany ter 418, Nyugati ter 2581, Oktogon 8439. Szolgaltatas, ar, idotartam, szakember, fotok mindig a Salonic elo oldalaibol (`selectSpecialization`, `showServices`, `employees`, `api.salonic.hu/calendar/getAvailableTimes`). Allapotfelmeres: 24666 + 416586. 27315 (allkapocs kezeles) = egyeb. A specifikacio "Allkapocs Allapotfelmeres" / "Online konzultacio" tetelei a Salonicban nem leteznek ilyen neven. A Salonic sajat foglalas-UUID-ja az atiranyitasban nincs: a kemeny visszaigazolas a Salonic e-mailjebol (Zapier) jonne, a lemondas az elo `bookingDetails/<uuid>` oldalbol.
