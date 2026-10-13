@@ -6,7 +6,7 @@
 | localStorage | `gy_b` (latogatoi vodor 0..99) | tartos | nincs |
 | Suti `gy_s` (HttpOnly, Secure, Lax) | veletlen munkamenet-token | session; szerveroldali TTL: 30 perc inaktivitas / max 24 ora | nincs |
 | Suti `gy_lpt` | veletlen token, CSAK marketing-hozzajarulassal (a sajat sav `gy_suti` sutije: m=1) | 30 nap; visszavonaskor torlodik | nincs |
-| D1 `gy_foglalas` | motor-uuid, tipus (allapotfelmeres/egyeb), uj/visszatero, forras-cimke + bizonyitek-kod, hozzajarulas-allapot, statusz, igazolt, esemeny_kiadva, teszt, parosito (HMAC) | 13 honap | NINCS: se nev, e-mail, telefon, panasz, szolgaltatasnev, nyers click-ID |
+| D1 `gy_foglalas` | motor-uuid, tipus (allapotfelmeres/egyeb), uj/visszatero, forras-cimke + bizonyitek-kod, Google Ads azonositok (`kampany` = utm_campaign, `hirdetescsoport` = gyt_ag, `hirdetes` = utm_content; csak 6-15 szamjegy, nem szemelyes adat), hozzajarulas-allapot, statusz, igazolt, esemeny_kiadva, teszt, parosito (HMAC) | 13 honap | NINCS: se nev, e-mail, telefon, panasz, szolgaltatasnev, nyers click-ID |
 | Suti `gy_suti` (nem HttpOnly, a sav allitja) | `v1-s<0|1>-m<0|1>-t<unix mp>` = statisztika / marketing dontes + idopont | 365 nap; visszavonhato / modosithato | nincs |
 | D1 `gy_suti_stat` | napi osszesitett darabszam (megjelent / elfogad / elutasit / reszleges / beall; nezet; eszkoz) | 13 honap | nincs (suti, IP, URL, azonosito nelkul) |
 | D1 munkamenet / token / riasztas | hash-elt azonositok, belepesi forras-mezok | munkamenet 24 ora, token 15 perc, riasztas rovid | nincs |

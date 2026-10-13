@@ -92,8 +92,8 @@ export const LASER = Object.freeze({
     introTitle: 'Melyik út illik rád?',
     intro: Object.freeze([
       { key: 'consult', title: 'Ingyenes konzultációt kérek', sub: 'Ha még nem tudod pontosan, melyik terület vagy kezelés megfelelő.', kep: 'la-consult' },
-      { key: 'known', title: 'Már tudom, mit szeretnék', kep: 'la-known' },
-      { key: 'returning', title: 'Már járok kezelésre', kep: 'la-returning' },
+      { key: 'known', title: 'Időpontfoglalás első alkalommal', kep: 'la-known' },
+      { key: 'returning', title: 'Időpontfoglalás, már járok hozzátok', kep: 'la-returning' },
     ]),
     areaTitle: 'Melyik területet szeretnéd?',
     returningTitle: 'Következő kezelés: melyik terület?',

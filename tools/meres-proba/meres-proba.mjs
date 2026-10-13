@@ -255,8 +255,8 @@ try {
   if (sc.terulet && !POPUP) {
     // a belepo-kerdes (LA1), ha az intent-belepes nincs meg az eles motorban: "Mar tudom, mit szeretnek"
     await page.waitForTimeout(1500);
-    const mar = page.locator(MAIN + ' button', { hasText: 'Már tudom' });
-    if (await mar.count()) { idovonal.push({ t: mp(), esemeny: 'LA1: "Már tudom" (az eles motor meg nem ismeri az intent-belepest)' }); await mar.first().click(); }
+    const mar = page.locator(MAIN + ' button', { hasText: /Már tudom|Időpontfoglalás első alkalommal/ });
+    if (await mar.count()) { idovonal.push({ t: mp(), esemeny: 'LA1: "Időpontfoglalás első alkalommal" (a régi "Már tudom"; az eles motor meg nem ismeri az intent-belepest)' }); await mar.first().click(); }
     await (await elsoLathato(page.locator(MAIN + ' button', { hasText: sc.terulet }))).click();
     await page.waitForTimeout(1500);
     if (await page.locator('.be-list button').count() > 0) { // kezeles-valasztas (LA2B), ha a teruleten tobb kezeles van; egy kezelesnel rogton az idopont-naptar jon

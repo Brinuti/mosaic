@@ -72,7 +72,7 @@ button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent
 /* a szolgaltatas neve MINDIG egy sorban (a betumeret a kepernyo szelessegehez igazodik; vegso esetben kipontozva) */
 .os-szolg { font-size: clamp(11px, 3.5vw, 14px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lista { display: grid; gap: 10px; }
-.kartya { display: block; width: 100%; text-align: left; border: 1px solid #e8e6e6; border-radius: 12px; background: #fff; padding: 13px 14px; font: inherit; color: inherit; cursor: pointer; }
+.kartya { display: block; width: 100%; text-align: left; border: 1.5px solid #d9c9c5; border-radius: 12px; background: #fff; box-shadow: 0 1px 3px rgba(69, 70, 89, .1); padding: 13px 14px; font: inherit; color: inherit; cursor: pointer; }
 .kartya:hover, .kartya:focus-visible { border-color: #d7aba8; box-shadow: 0 0 0 3px #f5d3ca; outline: none; }
 .kartya .nev { font: 600 16px/1.3 'poppins-semibold', Poppins, Arial, sans-serif; }
 .kartya .reszlet { margin-top: 3px; font-size: 13px; color: #6b6c80; }
@@ -157,9 +157,9 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 /* 0. lepes: mire foglalsz? (a foglalo fo oldala: 4 szolgaltatas). Az urlapos opciok (kontroll / ekszercsere / garancia) NEM naptarbol foglalnak */
 .ablak[data-lepes="tipus"] .lepesek { display: none; }
 .tipus-racs { grid-template-columns: 1fr; gap: 10px; }
-.kartya.tipus { padding: 14px 16px; border-radius: 12px; }
-.kartya.tipus .nev { display: block; font-size: 17px; }
-.kartya.tipus .reszlet { margin-top: 3px; font-size: 13px; }
+.kartya.tipus { padding: 16px 18px; border: 2px solid #c9a399; border-radius: 14px; box-shadow: 0 2px 6px rgba(69, 70, 89, .12); }
+.kartya.tipus .nev { display: block; font-size: 18px; }
+.kartya.tipus .reszlet { margin-top: 4px; font-size: 14px; }
 @media (min-width: 701px) { .tipus-racs { grid-template-columns: 1fr 1fr; } .ablak[data-lepes="tipus"] { height: auto; }
   .szolg-racs { gap: 6px; }
   .kartya.szolg { padding: 7px 12px; border-radius: 10px; }
@@ -178,6 +178,29 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
   .szeg button { min-height: 46px; font-size: 14px; }
   .szuro-cimke, .lista-fej { font-size: 12px; }
   .szam { width: 20px; height: 20px; margin-right: 8px; font-size: 12px; } }
+/* MOBIL (Feri 2026-10-13): az elsodleges a nagy, jol olvashato elem - ha kell, gorgetni lehet. Helyszinek: egy oszlop, nagy cellak; piercingek:
+   nagy betu, magas sorok (a hosszabb nev ket sorba tores is elfer), nagy szuro-gombok. A tomor, egykepernyos elrendezes csak asztalon marad. */
+@media (max-width: 700px) {
+  .hely-racs { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .kartya.hely { height: 58px; padding: 0 14px; border-radius: 12px; }
+  .kartya.hely .nev { font-size: 18px; }
+  .kartya.hely .terkep { height: 34px; margin-right: 12px; }
+  .szolg-racs { gap: 10px; }
+  .kartya.szolg { min-height: 60px; padding: 8px 12px; border-radius: 12px; column-gap: 10px; }
+  .kartya.szolg .nev { gap: 10px; font-size: 16.5px; line-height: 1.22; }
+  .kartya.szolg .ar { font-size: 16px; }
+  .kartya.szolg .ar s { display: block; margin: 0; font-size: 12.5px; }
+  .ikon { width: 30px; height: 30px; }
+  .szuro-sor { margin-bottom: 20px; }
+  .szuro-cimke, .lista-fej { font-size: 13px; }
+  .szam { width: 22px; height: 22px; margin-right: 8px; font-size: 13px; }
+  .szeg { gap: 10px; }
+  .szeg button { min-height: 50px; padding: 0 6px; border-width: 1.5px; font-size: 15px; line-height: 1.15; white-space: normal; }
+  .szeg button i { top: -8px; font-size: 9px; line-height: 15px; }
+  .szeg.harom { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr); grid-auto-flow: row; gap: 8px; }
+  .szeg.harom button { font-size: 14.5px; white-space: nowrap; }
+}
+@media (max-width: 359px) { .szeg.harom button { font-size: 13.5px; padding: 0 3px; } .szeg.harom { gap: 6px; } .szuro-cimke, .lista-fej { font-size: 12px; letter-spacing: .01em; } .lista-fej span:last-child { white-space: nowrap; } }
 /* visszahivas-kero urlap (kontroll / ekszercsere / garancia): ugyanaz az urlap es vegpont (/api/urlap), mint a regi /kontroll oldalon.
    TOMOR: asztalon sehol nem logki (2 oszlop), mobilon egy kepernyore torekszik (mint a Salonic-adatlap: nincs lepesjelzo, kisebb fejlec,
    a ket rovid mezo - datum, varos - egymas mellett, rovid kepfeltoltes-felirat) */
@@ -206,7 +229,7 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
   .ablak[data-lepes="urlap"] .fej { padding: 4px 10px; }
   .ablak[data-lepes="urlap"] .tartalom { padding: 10px 14px 12px; }
   .cimke-szoveg .hosszu { display: none; } .cimke-szoveg .rovid { display: inline; }
-  .ablak[data-lepes="szolg"] .osszegzes { padding: 4px 10px; margin-bottom: 16px; font-size: 13px; line-height: 1.3; }
+  .ablak[data-lepes="szolg"] .osszegzes { padding: 9px 12px; margin-bottom: 20px; font-size: 15px; line-height: 1.3; }
 }
 @media (max-width: 359px) {
   .urlap .mezo.m-fel { grid-column: 1 / -1; }
@@ -527,7 +550,7 @@ export function nyit(ctx) {
     const gomb = (attr, k, nev, on, tilt, plusz = '') => `<button class="${on ? 'on' : ''}" data-${attr}="${k}" aria-pressed="${on}"${tilt ? ' disabled' : ''}>${nev}${plusz}</button>`;
     tartalom.innerHTML = osszegzes()
       + `<div class="szuro"><div class="szuro-sor"><span class="szuro-cimke"><b class="szam">1</b>Kinek szeretnél időpontot?</span><div class="szeg">${gomb('kinek', 'magamnak', 'Magamnak', all.kinek === 'magamnak', false)}${gomb('kinek', 'ketto', 'Két személynek', all.kinek === 'ketto', !db('ketto'))}</div></div>`
-      + `<div class="szuro-sor"><span class="szuro-cimke"><b class="szam">2</b>Milyen piercing érdekel?</span><div class="szeg">${MIT.map(([k, n]) => gomb('mit', k, n, all.mit === k, !db(all.kinek, k), k === 'tobb' && db(all.kinek, 'tobb') ? '<i>legjobban megéri</i>' : '')).join('')}</div></div></div>`
+      + `<div class="szuro-sor"><span class="szuro-cimke"><b class="szam">2</b>Milyen piercing érdekel?</span><div class="szeg harom">${MIT.map(([k, n]) => gomb('mit', k, n, all.mit === k, !db(all.kinek, k), k === 'tobb' && db(all.kinek, 'tobb') ? '<i>legjobban megéri</i>' : '')).join('')}</div></div></div>`
       + `<div class="lista-fej"><span><b class="szam">3</b>Választható piercingek</span><span>${mutat.length} lehetőség</span></div><div class="lista szolg-racs">${mutat.map(kartya).join('')}</div>`;
   }
 
