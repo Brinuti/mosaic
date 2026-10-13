@@ -13,6 +13,7 @@ import { levelErtelmezes } from './igazolas.js';
 import { akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, kuldes, elesKuldesE, maszk, ELES_HOST } from './google-ads.js';
 import { forrasPlatform, onbevallasErtek, platformAzonositok, vanPlatformId, URES_PLATFORM_ID } from './forras.js';
 import { tiktokLepes, TIKTOK_SEMA } from './tiktok.js';
+import { bizonyitekBemenet, bizonyitekValaszt, platformBizonyitekbol, cimkez, markasListaOlvas, FORRAS_VERZIO } from './cimke.js';
 
 export const SEMA = [
   `CREATE TABLE IF NOT EXISTS mp_foglalas (
@@ -50,6 +51,17 @@ export const BOVITES = [
   // CSAK hirdetesi hozzajarulassal; most sehova nem mennek (90 nap utan torlodnek)
   ['meta_fbc', 'TEXT'], ['meta_fbp', 'TEXT'], ['meta_kattintas_ido', 'INTEGER'],
   ['tiktok_ttclid', 'TEXT'], ['tiktok_ttp', 'TEXT'], ['tiktok_kattintas_ido', 'INTEGER'],
+  // forras v2 (cimke.js): hozzajarulas NELKUL is, minimalis, tisztitott bizonyitek (kattintasazonosito-ERTEK nincs benne)
+  ['utm_source', 'TEXT'], ['utm_medium', 'TEXT'], ['utm_campaign', 'TEXT'], ['utm_term', 'TEXT'], ['utm_content', 'TEXT'],
+  ['kattintas_param', 'TEXT'], // gclid|gbraid|wbraid|fbclid|ttclid: csak a TIPUS
+  ['referrer_kat', 'TEXT'], // search|social|egyeb|nincs (a hivatkozo tartomanyabol; URL nincs)
+  ['forras_ido', 'INTEGER'], // a nyertes erintes ideje
+  ['forras_verzio', 'TEXT'], // 'mp_v2'
+  ['forras_keret', 'INTEGER'], // 1 = a jelzes keretbol (regi beagyazott Salonic-naptar) jott
+  ['bizonyitek_forras', 'TEXT'], // munkamenet|suti (mp_lpt, csak hozzajarulassal)
+  ['forras_cimke', 'TEXT'], // meta|tiktok|google_nem_markas|google_markas|organikus_direkt|ismeretlen (cimkez())
+  ['ismeretlen_ok', 'TEXT'], // nincs_jel|iframe_munkamenet|hianyos_utm|regi_kliens
+  ['cimke_megjegyzes', 'TEXT'], // organikus_kereso|organikus_social|direkt|... |markas_lista_hianyzik|nincs_kampany_id
 ];
 /** A nyers platform-azonosito oszlopok (admin-valaszban maszkolva, 90 nap utan NULL). */
 const PLATFORM_ID_OSZLOPOK = ['meta_fbc', 'meta_fbp', 'tiktok_ttclid', 'tiktok_ttp'];
@@ -104,7 +116,11 @@ export function bemenet(b) {
     try { if (new URL(q.get('bookingUrl'), `https://${MP_SALONIC_HOST}/`).hostname !== MP_SALONIC_HOST) q.delete('bookingUrl'); } catch (e) { q.delete('bookingUrl'); }
   }
   return { url: `https://${ELES_HOST}${ut}?${q}`, bookingId: q.get('booking_id'), kattintas: b.kattintas && typeof b.kattintas === 'object' ? b.kattintas : null, potlas: b.potlas === true,
-    forrasPlatform: forrasPlatform(b.forras_platform) };
+    forrasPlatform: forrasPlatform(b.forras_platform),
+    // forras v2: a munkamenet erintese (tisztitva; a hivo a "most"-tal meg egyszer ellenorzi) es a keret-jelzes
+    forras: b.forras && typeof b.forras === 'object' && b.forras.v === FORRAS_VERZIO ? b.forras : null,
+    forrasV2: !!(b.forras && typeof b.forras === 'object' && b.forras.v === FORRAS_VERZIO) || b.forras_v === FORRAS_VERZIO,
+    keret: b.keret === true };
 }
 
 /**
@@ -129,15 +145,25 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
   const plat = hozz.hirdetes ? platformAzonositok(be.kattintas, cookie, most) : { ...URES_PLATFORM_ID };
   const ert = ertekFeloldas(a, arlista);
   const kulcs = foglalasKulcs(a);
+  // forras v2: munkamenet-erintes (hozzajarulastol fuggetlen), fizetett erintes hianyaban hozzajarulassal az mp_lpt suti
+  const { bizonyitek: biz, bizonyitek_forras } = bizonyitekValaszt(bizonyitekBemenet(be.forras, most), cookie, hozz.hirdetes, most);
+  const v2 = be.forrasV2 || !!biz;
+  const forrasMezok = {
+    utm_source: biz ? biz.utm_source : null, utm_medium: biz ? biz.utm_medium : null, utm_campaign: biz ? biz.utm_campaign : null,
+    utm_term: biz ? biz.utm_term : null, utm_content: biz ? biz.utm_content : null, kattintas_param: biz ? biz.kattintas_param : null,
+    referrer_kat: biz ? biz.referrer_kat : null, forras_ido: biz ? biz.forras_ido : null, forras_verzio: v2 ? FORRAS_VERZIO : null,
+    forras_keret: be.keret ? 1 : 0, bizonyitek_forras,
+  };
   const sor = {
     kulcs, salonic_id: be.bookingId || null, forras: be.bookingId ? 'motor' : 'salonic', kornyezet: host === ELES_HOST ? 'eles' : 'elonezet', letrehozva: most,
     ertek: ert.ertek, ertek_forras: ert.ertek_forras, uj_vendeg: a.ujVendeg === true ? 1 : a.ujVendeg === false ? 0 : null, helyszin: HELYSZINEK[a.placeId] || null,
     hozzajarulas_dontott: hozz.dontott ? 1 : 0, hozzajarulas_hirdetes: hozz.hirdetes ? 1 : 0, hozzajarulas_analitika: hozz.analitika ? 1 : 0,
     kattintas_tipus: katt ? katt.tipus : null, kattintas_ertek: katt ? katt.ertek : null, kattintas_ido: katt ? katt.ido : null,
-    forras_platform: be.forrasPlatform, ...plat,
+    forras_platform: biz ? platformBizonyitekbol(biz) : be.forrasPlatform, ...plat, ...forrasMezok,
   };
   try {
     await sema(db);
+    Object.assign(sor, cimkez(sor, await markasListaOlvas(db)));
     const oszl = Object.keys(sor);
     const r = await db.prepare(`INSERT OR IGNORE INTO mp_foglalas (${oszl.join(',')}) VALUES (${oszl.map(() => '?').join(',')})`).bind(...oszl.map((o) => sor[o])).run();
     const uj = !!(r && r.meta && r.meta.changes);

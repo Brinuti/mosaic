@@ -189,7 +189,8 @@ foglalások szinte teljes körére. **Ebben a lépésben semmi új nem megy egye
    cím alapján **csak egy durva csatornanevet** tesz a `sessionStorage`-ba (`mp_forras` = `{p, t}`: csatorna + első észlelés
    ideje), azonosító nélkül: `gclid`/`gbraid`/`wbraid` → `google`; `fbclid` vagy `utm_source` = facebook / fb / instagram /
    ig / meta → `meta`; `ttclid` vagy `utm_source` = tiktok → `tiktok`; más `utm_source` → `egyeb`; semmi → nincs címke
-   (D1: `NULL` = közvetlen / ismeretlen). Első érintés a munkamenetben (a lap bezárásáig), felülírás nincs. A köszönőoldali
+   (D1: `NULL` = közvetlen / ismeretlen). ~~Első érintés a munkamenetben, felülírás nincs~~ – **a „Forrás v2” szakasz
+   (utolsó fizetett kattintás) váltotta.** A köszönőoldali
    jelzés `forras_platform` mezőben küldi; a szerver (`lib/meres/forras.js`) fehér listával ellenőrzi → `mp_foglalas.forras_platform`.
    A motor a köszönőoldalt ugyanabban a lapban, a fő ablakban nyitja (`location.assign`), a régi beágyazott naptárak
    keretben (azonos eredet) – mindkettő ugyanazt a munkamenet-tárolót látja (`tools/forras-pw.mjs` 1., 5. eset).
@@ -208,6 +209,65 @@ foglalások szinte teljes körére. **Ebben a lépésben semmi új nem megy egye
    és ebből Salonic-igazolt (`igazolas = 'igazolt'`): `forras_<…>_igazolt`; `onbevallas_<tiktok|meta|google|ismeros|egyeb|nincs>`.
 
 Tesztek: `node --test tools/test-mp-forras.mjs`, `node tools/forras-pw.mjs` (valódi szerverkód + `node:sqlite` D1).
+
+## Forrás v2 – utolsó fizetett kattintás, bizonyíték, végső címke (2026-10-13)
+
+Közös szabály (mind a 4 projekt): **FORRASMERES-KOZOS-SZABALY-4-PROJEKT-2026-10-13.md** (Drive; Feri döntése 2026-10-13,
+ChatGPT-vel átnézve): havonta platformonként a valós (Salonic-igazolt) foglalások száma; platformok közötti **LAST PAID
+CLICK**, 1 foglalás = 1 címke; a forrást a foglaláshoz ugyanabban a látogatásban **hozzájárulás nélkül is** hozzá kell kötni
+(Feri kifejezett kérése, **a jogi kockázatot vállalja**; platformkockázat nincs, mert semmi nem megy hirdetési platformnak);
+extra űrlapmező nincs. Cél: az ÚJ vendégek foglalásainak ≥ 90%-a pontosan egy címkét kapjon, tárolt bizonyítékkal, a
+lefedettség hozzájárulással / nélküle bontva. Ez az előző szakasz 1. pontját (első érintés, csak csatornanév) váltja.
+
+1. **Böngésző (`assets/js/mp-meres.js`, `sessionStorage.mp_forras`, a lap bezárásáig):**
+   - *fizetett érkezés*: `gclid`/`gbraid`/`wbraid`/`fbclid`/`ttclid` VAGY `utm_medium` ∈ cpc / ppc / paid / paid_social /
+     paidsocial / paid_search / cpm → **mindig felülírja** a tárolt érintést (ugyanannak az érintésnek az újratöltése az időt nem írja át);
+   - *nem fizetett érkezés* fizetettet **soha** nem ír felül; nem fizetettet csak akkor, ha van jele (utm vagy kereső /
+     social / egyéb hivatkozó) – a direkt (jel nélküli) érkezés nem ír felül (last non-direct);
+   - *belső hivatkozó* (saját tartomány, `*.salonic.hu`) nem változtat (a `klon.js` a paramétereket a belső linkeken
+     továbbviszi); ha még nincs tárolt érintés, csak jellel tárol;
+   - tárolt mezők: `v:'mp_v2'`, `p` (google/meta/tiktok/egyeb/null – a régi `forras_platform`), `t`, `us/um/uc/ut/uco`
+     (utm_*, trim, ≤ 100 karakter, `[A-Za-z0-9._~:+-]`, különben eldobva), `kp` (a kattintási paraméter **típusa** – az
+     **értéke soha**), `rk` (`search`/`social`/`egyeb`/`nincs` a `document.referrer` **tartományából**; URL nem kerül tárolásra).
+   - A köszönőoldali jelzés ezt `forras` objektumként küldi (+ `forras_v`, keretből `keret: true`), mellette a régi
+     `forras_platform`-ot is. A régi (v1) `{p,t}` alakot a szkript továbbra is olvassa.
+2. **Szerver (`lib/meres/cimke.js`, `lanc.js`):** újratisztítja a bizonyítékot és új oszlopokba írja (`BOVITES`, idempotens):
+   `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, `kattintas_param`, `referrer_kat`, `forras_ido`,
+   `forras_verzio` (= `mp_v2`), `forras_keret`, `bizonyitek_forras` (`munkamenet` / `suti`), és a **szerveren számolt**
+   `forras_cimke`, `ismeretlen_ok`, `cimke_megjegyzes`. A `forras_platform` továbbra is kitöltődik (google/meta/tiktok/egyeb).
+   Kattintásazonosító-**érték** továbbra is csak hirdetési hozzájárulással (`mp_gk`, `kattintas_ertek`, `meta_*`, `tiktok_*`).
+3. **Címke – `cimkez(sor, markasLista)`** (tiszta, determinisztikus függvény; a beszúrás ÉS a riport is ezt használja, így a
+   márkás lista változásakor a címke utólag újraszámolható):
+   - `meta` / `tiktok` / `google_markas` / `google_nem_markas` (fizetett érintés; előbb a kattintási paraméter, utána az `utm_source`);
+     Google márkás = az `utm_campaign` (kampány-ID) szerepel a D1 `mp_beallitas.google_markas_kampanyok` vesszős listájában;
+     lista nélkül `google_nem_markas` + `cimke_megjegyzes = markas_lista_hianyzik`; kampány-ID nélkül `nincs_kampany_id`;
+     `fbclid` fizetett `utm_medium` nélkül: `meta` + `fbclid_utm_nelkul` (a Facebook az organikus linkekre is teszi);
+   - `organikus_direkt` + `cimke_megjegyzes`: `organikus_kereso` / `organikus_social` / `hivatkozo` / `organikus_utm` / `direkt`;
+   - `ismeretlen` + `ismeretlen_ok`: `nincs_jel` (a munkamenetben nincs érintés), `iframe_munkamenet` (keretből jött jelzés
+     érintés nélkül), `hianyos_utm` (fizetett medium ismeretlen forrással, vagy platformnév medium nélkül), `regi_kliens`.
+   - Márkás lista beállítása (Google Ads kampány-ID-k): `INSERT OR REPLACE INTO mp_beallitas (kulcs, ertek) VALUES ('google_markas_kampanyok', '123,456')`.
+4. **30 napos süti CSAK hirdetési hozzájárulással** (`mp_lpt`): a böngésző fizetett érkezéskor (és a hozzájárulás megadása
+   után, ha a munkamenetben fizetett érintés van) `POST /api/mp-forras`-t hív (`functions/api/mp-forras.js`); a szerver a
+   süti alapján újra ellenőrzi a hozzájárulást, és csak fizetett érintésre ír `Set-Cookie: mp_lpt=<base64url JSON>; Max-Age=2592000;
+   Path=/; HttpOnly; Secure; SameSite=Lax` sütit (ugyanazok a tisztított mezők, kattintásazonosító-érték nélkül).
+   Hozzájárulás nélkül süti nincs; visszavonáskor a végpont törli. A köszönőoldali jelzéskor a szerver – csak hozzájárulással
+   – akkor használja, ha a munkamenetben **nincs fizetett** érintés (last paid click a munkamenetek között is):
+   `bizonyitek_forras = 'suti'`.
+5. **Riport** (`riport.js`, napi sorok; a régi mezők változatlanok; csak `kornyezet = 'eles'`): `cimke_<c>`,
+   `cimke_<c>_igazolt`, új vendégre `uj_cimke_<c>`, `uj_cimke_<c>_igazolt` (új vendég = `uj_vendeg_igazolt = 1` VAGY
+   `uj_vendeg = 1`), `lefedettseg_osszes`, `lefedettseg_uj`, `lefedettseg_[uj_]hozzajarulassal`,
+   `lefedettseg_[uj_]hozzajarulas_nelkul` (%, címkézett = nem `ismeretlen`), `ismeretlen_okok`, `google_markas_lista`
+   (a lista hossza, `null` = nincs beállítva). A címke az **aktuális** márkás listával újraszámolva.
+6. **Havi pillanatkép:** `GET /api/mp-kiigazitas?riport=havi&ho=YYYY-MM` (fejléc: `x-mp-kiigazitas`) → személyes adat nélküli
+   CSV: `ho, forras_cimke, foglalas, igazolt, uj_vendeg, uj_vendeg_igazolt (új ÉS Salonic-igazolt), hozzajarulassal, verzio,
+   pillanatkep`; hónaphatár Europe/Budapest szerint, csak éles sorok. Az ütemezett Drive-mentés külön készül.
+7. **Korlátok:** új lapon nyitott Salonic-foglalás → új munkamenet → hozzájárulás nélkül `nincs_jel`; az `fbclid` organikus
+   Facebook-megosztásból is jöhet (jelölve); a UTM-ek a hirdetésekbe később kerülnek – addig a Google-kampány-ID hiányzik
+   (`nincs_kampany_id`), a Meta / TikTok a kattintási paraméterből címkézhető.
+
+Tesztek: `node --test tools/test-mp-forras-v2.mjs` (böngésző-logika `vm`-ben, tisztítás, hivatkozó-kategóriák, címke, süti,
+riport, havi CSV), `node tools/forras-pw.mjs` (3., 5–9. eset: fizetett → organikus nem ír felül, meta → tiktok felülír,
+hozzájárulás nélkül nincs süti, hozzájárulással HttpOnly süti és új munkamenetben tartalék, keretes foglalás címkéje).
 
 ## TikTok Events API „Schedule” (2026-10-13, csak napló)
 

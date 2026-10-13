@@ -52,7 +52,8 @@ következő oldalon már be sem töltenek.
 - `node tools/sav-teszt.mjs` és `--mobil` – döntés előtt / Elfogadom / Elutasítom / lábléc / köszönőoldal / motor.
 - `node tools/meres-teszt.mjs` – elfogadott hozzájárulással a mérőkódok, mint eddig.
 - `tools/mp-meres-pw.mjs` – foglalás-mérés hozzájárulással és nélküle.
-- `tools/forras-pw.mjs` – forrás-címke hozzájárulás nélkül, Meta / TikTok azonosító csak hozzájárulással.
+- `tools/forras-pw.mjs` – forrás v2 (utolsó fizetett kattintás) hozzájárulás nélkül, `mp_lpt` süti csak hozzájárulással, Meta / TikTok azonosító csak hozzájárulással.
+- `node --test tools/test-mp-forras-v2.mjs` – forrás v2 logika, tisztítás, címke, süti-kapu, riport, havi CSV.
 
 ## Hozzájárulástól független forrás-címke (2026-10-13)
 
@@ -66,3 +67,18 @@ saját D1-be (`mp_foglalas.forras_platform`). A Meta / TikTok kattintásazonosí
 
 Megjegyzés: a `klon.js` (a Wix örökölt kódja) a `fbclid` / `ttclid` / `utm_*` paramétereket már eddig is a munkamenetbe
 (`savedQueryParams`) mentette hozzájárulás nélkül; ezen ez a változás nem módosít.
+
+## Forrás v2 (2026-10-13) – mi tárolódik hozzájárulás nélkül és mi csak hozzájárulással
+
+Közös szabály: **FORRASMERES-KOZOS-SZABALY-4-PROJEKT-2026-10-13.md** (Drive). Feri kifejezett kérése, hogy a forrás
+hozzájárulás nélkül is a foglaláshoz kötődjön; **a jogi kockázatot a tulajdonos vállalja**. Hirdetési platformnak semmi nem megy.
+
+| | Hozzájárulás nélkül (döntés előtt / elutasítva) | Hirdetési hozzájárulással |
+|---|---|---|
+| `sessionStorage.mp_forras` (lap bezárásáig) | igen: utolsó fizetett érintés – csatornanév, utm_* (tisztítva), a kattintási paraméter **típusa**, a hivatkozó **kategóriája**, idő | ugyanaz |
+| D1 `mp_foglalas` bizonyíték-oszlopok (`utm_*`, `kattintas_param`, `referrer_kat`, `forras_ido`, `forras_cimke` …) | igen | igen |
+| `mp_lpt` süti (HttpOnly, Secure, SameSite=Lax, 30 nap, szerver írja: `/api/mp-forras`) | **nem** (ha volt, törli) | igen, csak fizetett érintésre, azonosító-érték nélkül |
+| Kattintásazonosító-**érték** (`gclid`, `fbclid`, `ttclid`, `_fbc`, `_fbp`, `_ttp`) | **nem** | igen (`mp_gk`, D1), mint eddig |
+
+A hivatkozó URL-je, a kattintásazonosító értéke, név, e-mail, telefon hozzájárulás nélkül sehol nem tárolódik. A riport és
+a havi CSV a lefedettséget hozzájárulással / nélküle külön mutatja. Részletek: `docs/MERES_GOOGLE_ARNYEK.md`, „Forrás v2”.
