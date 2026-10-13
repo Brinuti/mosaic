@@ -1,14 +1,15 @@
 // MEDICAL PIERCING foglalas-meres lanca: koszonooldal -> /api/mp-foglalas (Pages Function) -> sajat D1-rekord
 // (MP_MERES_DB, "mp-meres") -> deduplikacio a foglalasi kulcson -> Google Ads ARNYEK-feltoltes (google-ads.js).
 //
-// Mindket foglalasi utra ugyanaz: a mai Salonic-ut (a Salonic a /foglalas-ok*-ra iranyit a bookingUrl / price /
+// Mindket foglalasi utra ugyanaz: a mai Salonic-ut (a Salonic a /foglalas-ok*-ra, a divat fulpiercingnel a /fulbevalo-ok*-ra iranyit a bookingUrl / price /
 // first_booking parameterekkel) es kesobb a beagyazott motor (ugyanarra a koszonooldalra, ugyanazokkal a
 // parameterekkel, plusz booking_id). A kulcs mindket uton placeId|employeeId|startUnix (meres.js foglalasKulcs).
 //
 // Adatvedelem (MP-16): a bongeszo a szolgaltatas nevet / kategoriat / vendegazonositot NEM kuldi ide; a rekordban
-// sincs nev, e-mail, telefon, szolgaltatasszoveg vagy piercing-tipus. Kattintasazonosito csak hirdetesi
+// sincs nev, e-mail, telefon, szolgaltatasszoveg vagy egeszsegugyi piercing-tipus (csak a 'ful' = divat fulpiercing jeloles, meres.js
+// TAROLHATO_TIPUSOK; kifele az sem megy). Kattintasazonosito csak hirdetesi
 // hozzajarulassal kerul a rekordba (es megy a Google-nek); naploba / riportba csak maszkolva (h:xxxxxxxx).
-import { koszonoOldal, foglalasKulcs, ertekFeloldas, HELYSZINEK, MP_SALONIC_HOST } from './meres.js';
+import { koszonoOldal, foglalasKulcs, ertekFeloldas, tarolhatoTipus, HELYSZINEK, MP_SALONIC_HOST, FUL_UT } from './meres.js';
 import { levelErtelmezes } from './igazolas.js';
 import { akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, kuldes, elesKuldesE, maszk, ELES_HOST } from './google-ads.js';
 import { forrasPlatform, onbevallasErtek, platformAzonositok, vanPlatformId, URES_PLATFORM_ID } from './forras.js';
@@ -62,6 +63,7 @@ export const BOVITES = [
   ['forras_cimke', 'TEXT'], // meta|tiktok|google_nem_markas|google_markas|organikus_direkt|ismeretlen (cimkez())
   ['ismeretlen_ok', 'TEXT'], // nincs_jel|iframe_munkamenet|hianyos_utm|regi_kliens
   ['cimke_megjegyzes', 'TEXT'], // organikus_kereso|organikus_social|direkt|... |markas_lista_hianyzik|nincs_kampany_id
+  ['tipus', 'TEXT'], // 'ful' = divat fulpiercing (/fulbevalo-ok*); NULL = minden mas. Egeszsegugyi tipus SOHA (meres.js tarolhatoTipus)
 ];
 /** A nyers platform-azonosito oszlopok (admin-valaszban maszkolva, 90 nap utan NULL). */
 const PLATFORM_ID_OSZLOPOK = ['meta_fbc', 'meta_fbp', 'tiktok_ttclid', 'tiktok_ttp'];
@@ -108,7 +110,8 @@ export const POTLAS_ABLAK = 2 * 3600;
 const ENGEDETT_P = ['bookingUrl', 'price', 'first_booking', 'booking_id', 'placeId', 'employeeId', 'startDate', 'serviceId'];
 export function bemenet(b) {
   if (!b || typeof b !== 'object') return null;
-  const ut = /^\/foglalas-ok[a-z0-9-]*\/?$/i.test(String(b.ut || '')) ? String(b.ut) : '/foglalas-ok';
+  // a divat fulpiercing koszonooldala (/fulbevalo-ok, -ok2, -ok3) a semleges /fulbevalo-ok-ra egyszerusodik
+  const ut = FUL_UT.test(String(b.ut || '')) ? '/fulbevalo-ok' : /^\/foglalas-ok[a-z0-9-]*\/?$/i.test(String(b.ut || '')) ? String(b.ut) : '/foglalas-ok';
   const q = new URLSearchParams();
   for (const k of ENGEDETT_P) if (b.p && b.p[k] != null && String(b.p[k]).length <= 600) q.set(k, String(b.p[k]));
   // a bookingUrl csak a Salonic MP-aldomainje lehet
@@ -160,6 +163,7 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
     hozzajarulas_dontott: hozz.dontott ? 1 : 0, hozzajarulas_hirdetes: hozz.hirdetes ? 1 : 0, hozzajarulas_analitika: hozz.analitika ? 1 : 0,
     kattintas_tipus: katt ? katt.tipus : null, kattintas_ertek: katt ? katt.ertek : null, kattintas_ido: katt ? katt.ido : null,
     forras_platform: biz ? platformBizonyitekbol(biz) : be.forrasPlatform, ...plat, ...forrasMezok,
+    tipus: tarolhatoTipus(a.tipus),
   };
   try {
     await sema(db);
@@ -312,7 +316,7 @@ export async function admin({ request, env = {} }, { fetchImpl = fetch, most = M
     const tol = most - nap * 86400;
     const f = await db.prepare(`SELECT date(letrehozva, 'unixepoch') AS nap, COUNT(*) AS foglalas, SUM(uj_vendeg = 1) AS uj, SUM(uj_vendeg = 0) AS visszatero,
       SUM(ertek IS NOT NULL) AS ertekkel, SUM(hozzajarulas_hirdetes) AS hirdetesi_hozzajarulas, SUM(kattintas_tipus IS NOT NULL) AS google_kattintassal,
-      SUM(forras = 'motor') AS motorbol, SUM(igazolas = 'igazolt') AS salonic_igazolt, SUM(igazolas = 'nem_igazolt') AS nem_igazolt FROM mp_foglalas WHERE kornyezet = ? AND letrehozva >= ? GROUP BY 1 ORDER BY 1`).bind(korny, tol).all();
+      SUM(forras = 'motor') AS motorbol, SUM(tipus = 'ful') AS fulbevalo, SUM(igazolas = 'igazolt') AS salonic_igazolt, SUM(igazolas = 'nem_igazolt') AS nem_igazolt FROM mp_foglalas WHERE kornyezet = ? AND letrehozva >= ? GROUP BY 1 ORDER BY 1`).bind(korny, tol).all();
     const t = await db.prepare(`SELECT t.akcio_id, t.mod, t.allapot, COUNT(*) AS db FROM mp_feltoltes t JOIN mp_foglalas f ON f.kulcs = t.kulcs
       WHERE f.kornyezet = ? AND t.ido >= ? GROUP BY 1, 2, 3 ORDER BY 1, 2, 3`).bind(korny, tol).all();
     return json({ ok: true, kornyezet: korny, nap, foglalasok: f.results || [], feltoltesek: t.results || [] });

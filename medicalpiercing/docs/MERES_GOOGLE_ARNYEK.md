@@ -11,7 +11,8 @@ külön adatbázis, külön titkok**: a Mosaic kódjából semmit nem importál 
 vendég hirdetésből érkezik (?gclid / gbraid / wbraid)
   └─ assets/js/mp-meres.js: marketing-hozzájárulással (saját süti-sáv, "mp_suti") localStorage "mp_gk" (90 nap); nélküle semmi
 Salonic (medicalpiercing.salonic.hu)  vagy  később a beágyazott motor
-  └─ átirányítás: /foglalas-ok[-tipus]?bookingUrl=…&price=…&first_booking=…[&booking_id=…]
+  └─ átirányítás: /foglalas-ok[-tipus] (gyógypiercing) vagy /fulbevalo-ok[2|3] (divat fülpiercing)
+       ?bookingUrl=…&price=…&first_booking=…[&booking_id=…]
        └─ mp-meres.js: POST /api/mp-foglalas  { ut, p: {bookingUrl, price, first_booking, booking_id, placeId, employeeId, startDate, serviceId}, kattintas }
             └─ functions/api/mp-foglalas.js → lib/meres/lanc.js
                  ├─ koszonoOldal() (lib/meres/meres.js) → kulcs = placeId|employeeId|startUnix
@@ -34,7 +35,8 @@ Salonic (medicalpiercing.salonic.hu)  vagy  később a beágyazott motor
 
 - A böngésző **csak** a fenti mezőket küldi; a szolgáltatás neve, kategória, vendég-azonosító (`g`), név / e-mail / telefon
   nem hagyja el a böngészőt. A szerver a többi mezőt eldobja, a `bookingUrl` csak a Salonic MP-aldomainje lehet.
-- A rekordban nincs piercing-típus, szolgáltatásszöveg, személyes adat; a helyszín semleges városkód.
+- A rekordban nincs egészségügyi piercing-típus, szolgáltatásszöveg, személyes adat; a helyszín semleges városkód.
+  Egyetlen kivétel a `tipus = 'ful'` (divat fülpiercing, nem egészségügyi adat; lásd lent); kifelé ez sem megy.
 - **gclid / gbraid / wbraid csak hirdetési hozzájárulással** kerül a rekordba és a Google-hoz (`consent.adUserData = GRANTED`).
   Hozzájárulás nélkül a rekord megvan (statisztika), a feltöltés `kihagyva: nincs hirdetesi hozzajarulas`.
 - **Napló / riport:** nyers kattintásazonosító sehol; helyette `h:` + SHA-256 első 8 hex. A Google válaszából is kitakarva.
@@ -74,7 +76,7 @@ Titok nélkül a rekord elkészül, a feltöltés `nincs_hitelesites` (kimenő h
 | `MP_MERES_ADMIN_KULCS` | (Secret) az admin végpont kulcsa (`x-mp-kulcs` fejléc); nélküle az admin 404 |
 
 - `GET /api/mp-foglalas?riport=1&nap=7[&kornyezet=elonezet]` – napi összesítés (foglalás, új / visszatérő, értékkel,
-  hirdetési hozzájárulás, Google-kattintással, motorból) és feltöltések akciónként / állapotonként.
+  hirdetési hozzájárulás, Google-kattintással, motorból, `fulbevalo` = divat fülpiercing) és feltöltések akciónként / állapotonként.
 - `GET /api/mp-foglalas?kulcs=<kulcs>` – egy foglalás rekordja és feltöltései (maszkolt kattintásazonosítóval).
 - `POST /api/mp-foglalas {"muvelet":"ujra"}` – a `hiba` / `nincs_hitelesites` / `kikapcsolva` feltöltések újrapróbálása (max 50, 90 napon belül).
   Éles módban a már `elkuldve` akció nem megy újra.
@@ -144,6 +146,32 @@ szolgáltatásnév, hozzájárulás nélkül nincs kattintásazonosító, a hozz
 - `node --test tools/test-mp-meres.mjs tools/test-mp-feltoltes.mjs` – egységtesztek (D1: `node:sqlite`, Google: mock fetch).
 - `node tools/mp-meres-pw.mjs` – Playwright, helyben (mockolt végpont), vagy `BASE=https://<ág>.medicalpiercing.pages.dev`
   a PR-előnézeten (valódi függvény + D1, Google-hívás nélkül).
+
+## Divat fülpiercing (`/fulbevalo-ok*`, 2026-10-13)
+
+A divat fülpiercing (fülbevaló) foglalásai a `/fulbevalo-ok`, `-ok2`, `-ok3` köszönőoldalra érkeznek (1 / 2 / 3 db; a motor
+is így nyitja a fő ablakban, PR #247). A #242 óta az `mp-meres.js` csak a `/foglalas-ok*`-ról küldött, így ezek a foglalások
+kimaradtak a D1-ből, a forrás-lefedettségből, a Salonic-párosításból és a szerveres Google-feltöltésből (a „06 - Általános
+fülpiercing” kampány foglalásai). Javítva (PR `claude/mp-fulbevalo-meres`): **a lánc mindkét köszönőoldalon azonos.**
+
+- **Böngésző** (`assets/js/mp-meres.js`, `KOSZONO_UT`): a `/fulbevalo-ok*` ugyanúgy küld (egyszer, a keretben nem, ha a motor
+  átvette; a `suti.js` tisztítása után). Az `ut` a semleges `/fulbevalo-ok` (a `-ok2/-ok3` darabszám sem megy).
+- **Szerver** (`lib/meres/lanc.js` `bemenet`): a `/fulbevalo-ok*` → `/fulbevalo-ok`; `koszonoOldal` → `tipus = 'ful'`
+  (az útvonalból, vagy a fülbevaló Salonic-szolgáltatás-azonosítójából: 395895 / 402057 / 402059, `meres.js FUL_SZOLGALTATASOK`).
+- **D1:** új oszlop `mp_foglalas.tipus` (`BOVITES`): `'ful'` vagy NULL. Csak a `'ful'` tárolható (`meres.js tarolhatoTipus`);
+  egészségügyi típus soha. Kifelé (Google, TikTok, GA4, Meta) nem megy: a feltöltés / TikTok-törzs nem olvassa, a semleges
+  URL marad `https://www.medicalpiercing.hu/foglalas-ok`.
+- **Helyszín / munkatárs:** a leképezés (`tools/mp-salonic-lekepezes.json`, 2026-10-11) szerint a fülbevaló mind a 15
+  helyszínen ugyanabban a Salonic-fiókban van, és minden munkatársa (13509, 17769, 19566, 25773, 27569, 27571, 27572, 27575,
+  30145, 32224, 20562) szerepel az `igazolas.js MUNKATARSAK`-ban → a `HELYSZINEK` szűrőn átmegy, és a Salonic-levél párosítható
+  (igazolt → ÁRNYÉK-feltöltés, TikTok-napló, ugyanazokkal a feltételekkel). Új helyszín / munkatárs nem kellett.
+- **Riport:** `?riport=1` → `fulbevalo`; a napi riport (`riport.js`) → `d1_ful`, `d1_ful_igazolt`, `ful_cimke_<címke>` (a fő
+  számokban is benne van, ez csak bontás).
+- **Tesztek:** `test-mp-meres` (típus, kifelé semleges), `test-mp-feltoltes` (teljes lánc: D1, igazolás, Google, TikTok, riport),
+  `test-mp-forras-v2` (riport-bontás), `koszono-tisztitas-pw` / `forras-pw` (10.) / `mp-meres-pw` (1 POST, D1-sor címkével,
+  F5 nem küld újra, semleges cím).
+- Nem változott: a GTM-es Ads-konverziók triggere („Page Path tartalmazza /foglalas-ok”) a `/fulbevalo-ok`-ra nem fut, és a
+  Meta-pixel PageView a `/fulbevalo-ok`-on fut (a `suti.js` `KOSZONO` csak a `/foglalas-ok*`). Ezek külső fiók / tulajdonosi döntés.
 
 ## Salonic-igazolás (2026-10-12, átmeneti megoldás a Salonic API-ig)
 

@@ -1,7 +1,7 @@
 // MP meresi reteg (medicalpiercing/lib/meres/meres.js) - adatminimalizalas, kulcs, ertek, tipus, 5 mutato.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { koszonoOldal, tipusNormal, foglalasKulcs, esemenyId, ertekFeloldas, kifeleEsemeny, vanErzekeny, otMutato, HELYSZINEK, SEMLEGES_URL } from '../lib/meres/meres.js';
+import { koszonoOldal, tipusNormal, tarolhatoTipus, FUL_SZOLGALTATASOK, foglalasKulcs, esemenyId, ertekFeloldas, kifeleEsemeny, vanErzekeny, otMutato, HELYSZINEK, SEMLEGES_URL } from '../lib/meres/meres.js';
 
 const burl = (place = 12169, emp = 555, start = 1791700000, svc = 9001) =>
   encodeURIComponent(`https://medicalpiercing.salonic.hu/booking/selectDate/?placeId=${place}&serviceId=${svc}&employeeId=${emp}&startDate=${start}`);
@@ -31,6 +31,23 @@ test('tipus: utvonalbol, csomagbol, nevbol, kulonben egyeb', () => {
   assert.equal(tipusNormal('/foglalas-ok', '3 db piercing akcio'), '3piercing');
   assert.equal(tipusNormal('/foglalas-ok', 'Páros piercing'), 'paros');
   assert.equal(tipusNormal('/foglalas-ok', 'Valami más'), 'egyeb');
+});
+
+test('divat fulpiercing: /fulbevalo-ok* (es -ok2/-ok3), a fulbevalo szolgaltatas-azonosito vagy neve -> ful; csak a ful tarolhato', () => {
+  for (const ut of ['/fulbevalo-ok', '/fulbevalo-ok2', '/fulbevalo-ok3/']) assert.equal(tipusNormal(ut), 'ful', ut);
+  assert.equal(tipusNormal('/foglalas-ok', '', 402057), 'ful');
+  assert.equal(tipusNormal('/foglalas-ok', '2 db Fülbevaló- / Divat fülpiercing szúrás'), 'ful', 'nem 2piercing');
+  assert.equal(tipusNormal('/foglalas-ok-mi', '', 9001), 'migren');
+  assert.deepEqual([...FUL_SZOLGALTATASOK], ['395895', '402057', '402059']);
+  const fb = `https://medicalpiercing.salonic.hu/booking/selectDate/?placeId=9067&serviceId=402057&employeeId=20562&startDate=1791700000`;
+  const r = koszonoOldal('https://www.medicalpiercing.hu/fulbevalo-ok?bookingUrl=' + encodeURIComponent(fb) + '&price=20000&first_booking=true');
+  assert.equal(r.ok, true); assert.equal(r.adat.tipus, 'ful'); assert.equal(r.adat.placeId, 9067); assert.equal(HELYSZINEK[9067], 'sopron');
+  assert.equal(tarolhatoTipus('ful'), 'ful');
+  for (const t of ['migren', 'klimax', 'allergia', 'egyeb', '2piercing', null, undefined]) assert.equal(tarolhatoTipus(t), null, String(t));
+  // kifele a divat fulpiercing sem latszik: ugyanaz a semleges esemeny
+  const ki = kifeleEsemeny({ ...r.adat, ertek: 20000, ido: 1 });
+  assert.equal(ki.forras_url, SEMLEGES_URL);
+  assert.ok(!/ful|divat|402057/i.test(JSON.stringify(ki)), JSON.stringify(ki));
 });
 
 test('ertek: koszonooldal > arlista > hianyzik (soha 0 Ft)', () => {

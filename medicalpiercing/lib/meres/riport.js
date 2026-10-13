@@ -54,11 +54,13 @@ export async function riport(db, most, nap = 14) {
     // forras v2 (cimke.js): vegso cimke (a tarolt bizonyitekbol, az AKTUALIS markas listaval ujraszamolva), osszes es uj vendeg
     ...Object.fromEntries(CIMKEK.flatMap((c) => [[`cimke_${c}`, 0], [`cimke_${c}_igazolt`, 0], [`uj_cimke_${c}`, 0], [`uj_cimke_${c}_igazolt`, 0]])),
     d1_uj_vendeg: 0, cimkezett: 0, cimkezett_uj: 0,
+    // divat fulpiercing (/fulbevalo-ok*, tipus = 'ful'): a fenti szamokban is benne van, ez csak a bontasa
+    d1_ful: 0, d1_ful_igazolt: 0, ...Object.fromEntries(CIMKEK.map((c) => [`ful_cimke_${c}`, 0])),
     hozzajarulassal: 0, hozzajarulassal_cimkezett: 0, hozzajarulas_nelkul: 0, hozzajarulas_nelkul_cimkezett: 0,
     uj_hozzajarulassal: 0, uj_hozzajarulassal_cimkezett: 0, uj_hozzajarulas_nelkul: 0, uj_hozzajarulas_nelkul_cimkezett: 0,
     ismeretlen_okok: {} });
   const markas = await markasListaOlvas(db);
-  const f = await db.prepare(`SELECT letrehozva, uj_vendeg, uj_vendeg_igazolt, igazolas, onbevallas, hozzajarulas_hirdetes, ${FORRAS_OSZLOPOK} FROM mp_foglalas WHERE kornyezet = 'eles' AND letrehozva >= ?`).bind(tol).all();
+  const f = await db.prepare(`SELECT letrehozva, uj_vendeg, uj_vendeg_igazolt, igazolas, onbevallas, hozzajarulas_hirdetes, tipus, ${FORRAS_OSZLOPOK} FROM mp_foglalas WHERE kornyezet = 'eles' AND letrehozva >= ?`).bind(tol).all();
   for (const s of f.results || []) {
     const x = n(napBp(s.letrehozva)); x.d1_foglalas++; if (s.uj_vendeg === 1) x.d1_uj++;
     if (s.igazolas === 'igazolt') x.d1_igazolt++; else if (s.igazolas === 'nem_igazolt') x.d1_nem_igazolt++;
@@ -75,6 +77,7 @@ export async function riport(db, most, nap = 14) {
       x.d1_uj_vendeg++; x[`uj_cimke_${c.forras_cimke}`]++; if (ig) x[`uj_cimke_${c.forras_cimke}_igazolt`]++;
       x[`uj_${hz}`]++; if (jo) { x.cimkezett_uj++; x[`uj_${hz}_cimkezett`]++; }
     }
+    if (s.tipus === 'ful') { x.d1_ful++; if (ig) x.d1_ful_igazolt++; x[`ful_cimke_${c.forras_cimke}`]++; }
     if (!jo) x.ismeretlen_okok[c.ismeretlen_ok || 'nincs_jel'] = (x.ismeretlen_okok[c.ismeretlen_ok || 'nincs_jel'] || 0) + 1;
   }
   for (const x of Object.values(napok)) {

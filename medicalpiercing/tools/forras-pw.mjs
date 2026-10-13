@@ -214,6 +214,34 @@ const varRa = async (f, ms = 8000) => { for (let i = 0; i < ms / 100 && !(await 
   ok('9d uj munkamenet direkt erkezessel: forras_cimke = meta a sutibol', sor(s)?.forras_cimke === 'meta' && sor(s)?.bizonyitek_forras === 'suti', JSON.stringify(sor(s) && [sor(s).forras_cimke, sor(s).bizonyitek_forras]));
   await ctx.close();
 }
+// 10. Divat fulpiercing (/fulbevalo-ok*, a motor a fo ablakban nyitja booking_id-vel): ugyanugy egy D1-sor forras v2 bizonyitekkal es
+//     cimkevel, tipus = 'ful'; a fizetett erintes a "06 - Altalanos fulpiercing" kampanybol. Valodi adatok a lekepezesbol
+//     (tools/mp-salonic-lekepezes.json): Sopron 9067, "2 db Fulbevalo" 402057, Mester Brigitta 20562. F5 / uj ful: nincs uj kuldes.
+{
+  const s = ++start, KULCS = `9067|20562|${s}`;
+  const FBURL = encodeURIComponent(`https://medicalpiercing.salonic.hu/booking/selectDate/?placeId=9067&serviceId=402057&employeeId=20562&startDate=${s}`);
+  const fsor = () => db._s.prepare('SELECT * FROM mp_foglalas WHERE kulcs = ?').get(KULCS) || null;
+  const { ctx, kuldott, kulso } = await kornyezet(false);
+  const p = await ctx.newPage();
+  const hibak = []; p.on('pageerror', (e) => hibak.push(e.message));
+  await p.goto(`${CIM}/ful-piercing-beloves-budapest?utm_source=google&utm_medium=cpc&utm_campaign=2306&gclid=${G}`, { waitUntil: 'load', referer: 'https://www.google.com/' });
+  await p.goto(`${CIM}/fulbevalo-ok2?first_booking=true&price=20000&service=2%20db%20F%C3%BClbeval%C3%B3&location=Sopron&employee=Mester%20Brigitta&bookingUrl=${FBURL}&booking_id=mb_ful${s}`, { waitUntil: 'load' });
+  await varRa(() => fsor());
+  await p.waitForTimeout(800);
+  const r = fsor();
+  ok('10a /fulbevalo-ok2: pontosan 1 POST /api/mp-foglalas, ut = /fulbevalo-ok (semleges), szolgaltatasnev / helyszin / munkatars nelkul',
+    kuldott.length === 1 && kuldott[0].ut === '/fulbevalo-ok' && !/F%C3%BClbeval|Fülbeval|Sopron|Mester/.test(JSON.stringify(kuldott[0])), JSON.stringify(kuldott.map((k) => k.ut)));
+  ok('10b D1-sor: tipus = ful, helyszin = sopron, ertek 20000, motor, forras v2 (google_nem_markas, utm_campaign 2306, gclid tipus)',
+    r && r.tipus === 'ful' && r.helyszin === 'sopron' && r.ertek === 20000 && r.forras === 'motor' && r.forras_verzio === 'mp_v2' && r.forras_cimke === 'google_nem_markas' && r.utm_campaign === '2306' && r.kattintas_param === 'gclid' && r.kattintas_ertek === null,
+    JSON.stringify(r && [r.tipus, r.helyszin, r.forras_cimke, r.utm_campaign]));
+  ok('10c a cim semleges: /fulbevalo-ok?price&first_booking&mert=1', new URL(p.url()).pathname === '/fulbevalo-ok' && [...new URL(p.url()).searchParams.keys()].sort().join(',') === 'first_booking,mert,price', p.url().replace(CIM, ''));
+  ok('10d kulso keres nem kapja: fulbevalo-ok2, serviceId, bookingUrl, booking_id, Sopron', !kulso.some((u) => /fulbevalo-ok2|serviceId|bookingUrl|booking_id|Sopron|402057/.test(u)), `${kulso.length} kulso keres`);
+  await p.reload({ waitUntil: 'load' }); await p.waitForTimeout(1200);
+  const p2 = await ctx.newPage(); await p2.goto(p.url(), { waitUntil: 'load' }); await p2.waitForTimeout(1200);
+  ok('10e F5 es a tisztitott cim uj fulben: nincs uj POST, egy D1-sor', kuldott.length === 1 && db._s.prepare("SELECT COUNT(*) n FROM mp_foglalas WHERE kulcs LIKE '9067|%'").get().n === 1, `${kuldott.length} POST`);
+  ok('10f nincs JS-hiba', hibak.length === 0, hibak.join(' | '));
+  await ctx.close();
+}
 await b.close();
 console.log(hiba ? `\n${hiba} HIBA` : '\nMIND PASS');
 process.exit(hiba ? 1 : 0);
