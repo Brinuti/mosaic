@@ -535,6 +535,14 @@ test('ikonok: a hajhossz- es kezeles-ikonok, a lezer-testreszek es a HeadSpa-kar
   for (const g of hairServices) assert.ok(IKONOK[kezelesIkon(g.name)], g.name);
 });
 
+test('Lezer: az elso kepernyo (LA1) feliratai: ingyenes konzultacio + "Idopontfoglalas elso alkalommal" + "Idopontfoglalas, mar jarok hozzatok" (nem a regi "Mar tudom" / "Mar jarok kezelesre")', () => {
+  assert.deepEqual(LASER.copy.intro.map((o) => [o.key, o.title]), [
+    ['consult', 'Ingyenes konzultációt kérek'],
+    ['known', 'Időpontfoglalás első alkalommal'],
+    ['returning', 'Időpontfoglalás, már járok hozzátok'],
+  ]);
+});
+
 test('lezer-csomagok: a testreszek a site csomag-leirasa szerint (nem az "allapotfelmeres + kedvezmeny"), ikonokkal', () => {
   const laser = mapping.services.filter((s) => s.business === 'laser').map((s) => ({ serviceId: s.salonic_service_id, name: s.service_name_raw, activePrice: s.active_price }));
   const csomagok = laser.map((s) => [labelOf(s).title, packageOf(s)]).filter(([, p]) => p);

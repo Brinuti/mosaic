@@ -274,7 +274,7 @@ const egyenloMagas = async (page) => { const m = await reteg(page).locator('.be-
   ok('design | Lezer: a teruletek mellett kep, mind egyforma kartya', k.db >= 4 && k.jo === k.db && (await egyenloMagas(page)).egyenlo, JSON.stringify(k));
   await kattint(page, 'Csomagok');
   const csomagSzoveg = await reteg(page).locator('main').textContent();
-  ok('design | Lezer csomagok: testreszek kis ikonokkal (nincs "allapotfelmeres" / "kedvezmennyel" felirat)', (await reteg(page).locator('.be-resz').count()) >= 8 && !/állap\w*felmér|kedvezménnyel/i.test(csomagSzoveg), `${await reteg(page).locator('.be-resz').count()} jelveny`);
+  ok('design | Lezer csomagok: testreszek kis jelvenyekkel, csak felirattal (nincs "allapotfelmeres" / "kedvezmennyel" felirat)', (await reteg(page).locator('.be-resz').count()) >= 8 && !/állap\w*felmér|kedvezménnyel/i.test(csomagSzoveg), `${await reteg(page).locator('.be-resz').count()} jelveny`);
   ok('design | Lezer csomagok: BASIC = Honalj + Teljes intim; az egyedi csomagnal a leiras', /Hónalj/.test(await reteg(page).locator('.be-choice', { hasText: 'BASIC' }).first().textContent()) && /Teljes intim/.test(await reteg(page).locator('.be-choice', { hasText: 'BASIC' }).first().textContent()) && /válogatod össze/.test(await reteg(page).locator('.be-choice', { hasText: 'EGYEDI' }).first().textContent()));
   await zar(page);
 
@@ -465,8 +465,8 @@ async function zarFigyelve(page) {
   await reteg(page).locator('#be-back').click(); await varCim(page); await page.waitForTimeout(300);
   await kattint(page, 'Csomagok');
   const cs = await kepekBetoltve(page, 8);
-  const resz = await reteg(page).locator('img.be-resz-kep').evaluateAll((es) => ({ db: es.length, jo: es.filter((e) => e.complete && e.naturalWidth > 0).length }));
-  ok('lezer csomagok: minden kartyan illusztracio, a testreszek jelvenyein is illusztracio (nincs vonalikon)', cs.db >= 8 && cs.jo === cs.db && resz.db >= 12 && resz.jo === resz.db && !(await reteg(page).locator('.be-ikon, .be-resz svg').count()), JSON.stringify(cs) + ' jelveny: ' + JSON.stringify(resz));
+  const resz = await reteg(page).locator('.be-resz').evaluateAll((es) => ({ db: es.length, ikonos: es.filter((e) => e.querySelector('svg, img')).length }));
+  ok('lezer csomagok: minden kartyan illusztracio; a testreszek jelvenyein csak felirat (nincs ikon / kep)', cs.db >= 8 && cs.jo === cs.db && resz.db >= 12 && resz.ikonos === 0 && !(await reteg(page).locator('.be-ikon, .be-resz svg').count()), JSON.stringify(cs) + ' jelveny: ' + JSON.stringify(resz));
   const gorg = await reteg(page).locator('.be-scroll').evaluate((e) => ({ tobblet: e.scrollHeight - e.clientHeight, kartya: e.querySelectorAll('.be-choice').length }));
   if (MOBIL) ok('lezer csomagok (mobil, 390x844): az osszes csomag egy kepernyore fer, gorgetes nelkul', gorg.tobblet <= 1 && gorg.kartya >= 8, JSON.stringify(gorg));
   else ok('lezer csomagok (asztali): mind a ' + gorg.kartya + ' csomag latszik', gorg.kartya >= 8, JSON.stringify(gorg));
