@@ -202,12 +202,8 @@ foglalások szinte teljes körére. **Ebben a lépésben semmi új nem megy egye
    ugyanazokkal a feltételekkel (2 órán belül, azonos `booking_id` és környezet, csak ha még üresek).
 3. **Séma:** `sema(db)` a `PRAGMA table_info(mp_foglalas)` alapján csak a hiányzó oszlopot adja hozzá (`BOVITES`); a
    meglévő sorok változatlanok.
-4. **„Honnan hallottál rólunk?”** – a fő ablak köszönőoldalán, miután a foglalás sora rögzült (`/api/mp-foglalas` `ok`), egy
-   kis kártya (TikTok / Instagram–Facebook / Google / Ismerős ajánlotta / Egyéb). Egy kattintás → `POST /api/mp-onbevallas`
-   (`functions/api/mp-onbevallas.js`) → `mp_foglalas.onbevallas` (fehér lista: tiktok, meta, google, ismeros, egyeb), csak
-   létező, 2 órán belüli, azonos `booking_id`-jú és környezetű sorra, ha még üres. Utána „Köszönjük!”; ugyanarra a
-   foglalásra nem kérdez újra (`localStorage` `mp_onbevallas`, 60 nap). Keretben nem jelenik meg. A `/fulbevalo-ok*`
-   oldalakról a meglévő mérés nem küld foglalást (nincs D1-sor), ezért ott a kártya sem jelenik meg.
+4. **„Honnan hallottál rólunk?”** – 2026-10-13-án Feri döntésére KIKERÜLT (várható kitöltés max. ~20%, nem ér semmit). A végpont
+   törölve; az `onbevallas` oszlop és a riportmezők üresen maradnak.
 5. **Riport** (`lib/meres/riport.js`, napi sorok, a régi mezők változatlanok): `forras_<google|meta|tiktok|egyeb|ismeretlen>`
    és ebből Salonic-igazolt (`igazolas = 'igazolt'`): `forras_<…>_igazolt`; `onbevallas_<tiktok|meta|google|ismeros|egyeb|nincs>`.
 

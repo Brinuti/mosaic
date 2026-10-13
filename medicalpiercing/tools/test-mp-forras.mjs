@@ -7,7 +7,6 @@ import { DatabaseSync } from 'node:sqlite';
 import { foglalasErkezes, onbevallasErkezes, admin, semaBiztos, _semaTorles, BOVITES } from '../lib/meres/lanc.js';
 import { forrasPlatform, onbevallasErtek, platformAzonositok, PLATFORMOK, ONBEVALLASOK } from '../lib/meres/forras.js';
 import { riport } from '../lib/meres/riport.js';
-import { onRequest as onbevallasVegpont } from '../functions/api/mp-onbevallas.js';
 
 function d1() {
   const s = new DatabaseSync(':memory:');
@@ -165,8 +164,6 @@ test('onbevallas: csak letezo, friss, ures sorra, feher listaval, egyszer', asyn
   assert.equal((await ob({ ...torzs(), onbevallas: 'google' })).mentve, false);
   assert.equal((await sor(db)).onbevallas, 'ismeros');
   // a Pages-fuggveny: GET 405, POST mukodik
-  assert.equal((await onbevallasVegpont({ request: new Request('https://www.medicalpiercing.hu/api/mp-onbevallas'), env })).status, 405);
-  assert.equal((await onbevallasVegpont({ request: keres('/api/mp-onbevallas', { ...torzs(), onbevallas: 'egyeb' }), env })).status, 200);
   // vészkapcsolo
   assert.equal((await onbevallasErkezes({ request: keres('/api/mp-onbevallas', { ...torzs(), onbevallas: 'egyeb' }), env: { ...env, MP_MERES_KI: '1' } })).status, 503);
 });

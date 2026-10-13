@@ -13,8 +13,7 @@
 //    hirdetesi platformnak nem megy; a koszonooldali jelzes "forras_platform" mezojeben a sajat D1-be kerul.
 // 4) Meta / TikTok kattintasazonosito (fbclid, ttclid) CSAK hirdetesi hozzajarulassal, ugyanugy, mint a Google-e (mp_gk);
 //    a szerver tarolja (D1), de most SEHOVA nem kuldi.
-// 5) "Honnan hallottal rolunk?" kartya a fo ablak koszonooldalan, ha a foglalas sora mar rogzitve van; egy kattintas
-//    -> /api/mp-onbevallas. Foglalasonkent egyszer (localStorage "mp_onbevallas").
+// 5) (A "Honnan hallottal rolunk?" kartya 2026-10-13-an Feri dontesere kikerult: alacsony kitoltesi arany varhato.)
 (function () {
   'use strict';
   var h = location.hostname;
@@ -96,7 +95,6 @@
   if (!p.bookingUrl && !(p.placeId && p.employeeId && p.startDate)) return; // nem foglalasbol erkezett
   var katNelkulKuldve = false, potolva = false;
   var vanKatt = function (o) { return !!(o && (o.gclid || o.gbraid || o.wbraid || o.fbclid || o.ttclid)); };
-  var foAblak = window.top === window;
   var kuld = function (potlas) {
     var kat = hirdetesiHozzajarulas() ? olvas() : null;
     if (!potlas && !vanKatt(kat)) katNelkulKuldve = true;
@@ -106,67 +104,10 @@
     if (potlas) torzs.potlas = true;
     try {
       fetch('/api/mp-foglalas', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify(torzs) })
-        .then(function (r) { return r.json(); })
-        .then(function (j) { if (!potlas && foAblak && j && j.ok) kartya(); })
         .catch(function () { /* a vendeg folyamatat nem zavarja */ });
     } catch (e) { /* regi bongeszo */ }
   };
 
-  // ---------- "Honnan hallottal rolunk?" (5. pont): csak a fo ablakban, ha a foglalas sora mar rogzitve van ----------
-  var OB = 'mp_onbevallas';
-  var fogKulcs = p.booking_id || p.bookingUrl || [p.placeId, p.employeeId, p.startDate].join('|');
-  var obLista = function () { try { return JSON.parse(localStorage.getItem(OB) || '{}') || {}; } catch (e) { return {}; } };
-  var obMegvolt = function () { return Object.prototype.hasOwnProperty.call(obLista(), fogKulcs); };
-  var obJelol = function () {
-    var l = obLista(), t = Date.now();
-    for (var k in l) if (!(t - l[k] < 60 * 864e5)) delete l[k];
-    l[fogKulcs] = t;
-    try { localStorage.setItem(OB, JSON.stringify(l)); } catch (e) { /* tiltott tarolo */ }
-  };
-  var kartyaKesz = false;
-  function kartya() {
-    if (kartyaKesz || obMegvolt() || !document.body) return;
-    kartyaKesz = true;
-    var st = document.createElement('style');
-    st.textContent = '#mp-ob,#mp-ob *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}' +
-      '#mp-ob{position:fixed;left:8px;right:8px;bottom:16px;z-index:2147482000;max-width:520px;margin:0 auto;background:#fff;color:#2b2b38;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.22);padding:14px 16px;font-size:14px;line-height:1.4}' +
-      '#mp-ob p{margin:0 0 10px;font-weight:700;font-size:15px;padding-right:24px}' +
-      '#mp-ob .mp-ob-gombok{display:flex;flex-wrap:wrap;gap:6px}' +
-      '#mp-ob button.mp-ob-v{flex:1 1 auto;cursor:pointer;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:700;border:2px solid #474759;background:#fff;color:#474759;white-space:nowrap}' +
-      '#mp-ob button.mp-ob-v:hover,#mp-ob button.mp-ob-v:focus-visible{background:#474759;color:#fff}' +
-      '#mp-ob .mp-ob-x{position:absolute;top:6px;right:8px;border:none;background:none;font-size:20px;line-height:1;cursor:pointer;color:#5b5b66;padding:4px}' +
-      '#mp-ob .mp-ob-kosz{margin:0;font-weight:700;font-size:15px;text-align:center;padding:0}';
-    document.head.appendChild(st);
-    var d = document.createElement('div');
-    d.id = 'mp-ob';
-    d.setAttribute('role', 'dialog');
-    d.setAttribute('aria-label', 'Honnan hallottál rólunk?');
-    d.innerHTML = '<button type="button" class="mp-ob-x" aria-label="Bezárás">&times;</button><p>Honnan hallottál rólunk?</p><div class="mp-ob-gombok">' +
-      [['tiktok', 'TikTok'], ['meta', 'Instagram / Facebook'], ['google', 'Google'], ['ismeros', 'Ismerős ajánlotta'], ['egyeb', 'Egyéb']]
-        .map(function (g) { return '<button type="button" class="mp-ob-v" data-ertek="' + g[0] + '">' + g[1] + '</button>'; }).join('') + '</div>';
-    // a suti-sav (assets/js/suti.js, #mp-cc) fole kerul, ha az meg latszik
-    var helyez = function () {
-      var sav = document.getElementById('mp-cc');
-      var m = sav && getComputedStyle(sav).display !== 'none' ? sav.offsetHeight + 16 : 16;
-      d.style.bottom = m + 'px';
-    };
-    document.body.appendChild(d);
-    helyez();
-    document.addEventListener('mp_suti_valtozas', function () { setTimeout(helyez, 50); });
-    d.querySelector('.mp-ob-x').addEventListener('click', function () { d.remove(); });
-    d.addEventListener('click', function (e) {
-      var g = e.target && e.target.closest ? e.target.closest('button.mp-ob-v') : null;
-      if (!g) return;
-      obJelol();
-      try {
-        fetch('/api/mp-onbevallas', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', keepalive: true,
-          body: JSON.stringify({ ut: KA ? KA.ut : location.pathname, p: p, onbevallas: g.getAttribute('data-ertek') }) })
-          .catch(function () { /* */ });
-      } catch (x) { /* regi bongeszo */ }
-      d.innerHTML = '<p class="mp-ob-kosz">Köszönjük!</p>';
-      setTimeout(function () { d.remove(); }, 2500);
-    });
-  }
   // a suti-sav dontesere roviden varunk (ha a vendeg epp most fogad el), de legkesobb 4 mp utan kuldunk
   var elkuldve = false;
   var egyszer = function () { if (!elkuldve) { elkuldve = true; kuld(); } };
