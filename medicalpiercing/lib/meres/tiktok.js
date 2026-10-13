@@ -50,6 +50,7 @@ export function hatalyosMod(mod, env = {}, host = '') {
 export function jogosult(sor, most) {
   if (!sor) return { ok: false, miert: 'nincs_sor' };
   if (sor.kornyezet !== 'eles') return { ok: false, miert: 'nem_eles' };
+  if (sor.tipus === 'ful') return { ok: false, miert: 'divat_fulpiercing' }; // Feri dontese (2026-10-13): nem optimalizalunk ra
   if (sor.igazolas !== 'igazolt') return { ok: false, miert: 'nem_igazolt' };
   if (Number(sor.hozzajarulas_hirdetes) !== 1) return { ok: false, miert: 'nincs_hozzajarulas' };
   if (!sor.tiktok_ttclid) return { ok: false, miert: 'nincs_ttclid' };
