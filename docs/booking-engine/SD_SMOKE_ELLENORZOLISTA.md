@@ -17,7 +17,7 @@
 
 | # | Nev | PASS | FAIL / WARN |
 |---|---|---|---|
-| C0 | `eredmenyek_teljesek` | mind a 8 SELECT eredmenye (tomb) megvan | FAIL: barmelyik hianyzik / nem tomb (egy kimaradt lekerdezes nem lehet PASS) |
+| C0 | `eredmenyek_teljesek` | mind a 8 SELECT eredmenye (tomb) megvan | FAIL: barmelyik hianyzik / nem tomb; a COUNT-os `motor_cellak` es `elo_id` pontosan 1 sort kell adjon (az ures tomb = a futtato elnyelte / kihagyta). Egy kimaradt lekerdezes nem lehet PASS |
 | C1 | `level_latva` | a letrehozo level megvan, uzletag pmu / oxigen (kulcs, hash-index vagy az sd cellak uzletagabol) | FAIL: nincs sor / az elotag nem egyertelmu / az sd NEM pmu-oxigen uzletagra vett at; WARN: nem pmu / oxigen level (sd nelkul) |
 | C2 | `hash_index` | `foglalas_vendeg` sor `email_h`-val | WARN: nincs sor, vagy jelolo sor (`*_nincs_email`): e-mail nelkul a csere-felismeres nem lehetseges |
 | C3 | `sd_atvetel` | `sd_allapot = kesz` | FOLYAMATBAN: nincs sd-atvetel, de a level fiatalabb 30 percnel / `atveve`; FAIL: elmaradt (`sd_hianyzik`), `halasztva` / `tartva` / `lejart`; NA: a motor parositott es kuldott (az sd nem vett at) |

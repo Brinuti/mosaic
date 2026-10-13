@@ -146,13 +146,14 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
   // 2) arnyek + 3) biztonsag: a meres_kuldes napi sorai
   await vedett('arnyek', async () => {
     if (!kOszl.size) return;
-    const forrasOszlop = kOszl.has('forras') ? "COALESCE(forras, 'motor')" : "'motor'";
-    const indokOszlop = kOszl.has('indok') ? 'indok' : 'NULL AS indok', hozzOszlop = kOszl.has('hozzajarulas') ? 'hozzajarulas' : 'NULL AS hozzajarulas';
-    const sorok = await mind(db, `SELECT esemeny_id, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, ${forrasOszlop} AS forras, ${indokOszlop}, ${hozzOszlop}, kerelem FROM meres_kuldes WHERE letrehozva >= ?1 AND letrehozva < ?2 LIMIT 50000`, from, to);
+    const forrasOszlop = kOszl.has('forras') ? "COALESCE(k.forras, 'motor')" : "'motor'";
+    const indokOszlop = kOszl.has('indok') ? 'k.indok' : 'NULL AS indok';
+    const erkVan = (await oszlopok(db, 'meres_erkezes')).has('hozz'); // a foglalaskori hozzajarulas-PILLANATKEP (meres_erkezes.hozz, lapos { ana, adv, fun, dontes }): a GA4-kimaradas besorolasahoz ugyanaz a forras, mint az egyeztetosornal (egyeztetes-sor.js); a meres_kuldes.hozzajarulas hianyzo pillanatkepnel is kitoltott ("nincs dontes"), ezert nem alkalmas
+    const sorok = await mind(db, `SELECT k.esemeny_id, k.esemeny_tipus, k.platform, k.platform_nev, k.uzletag, k.source_id, k.allapot, ${forrasOszlop} AS forras, ${indokOszlop}, ${erkVan ? 'er.hozz' : 'NULL'} AS erk_hozz, k.kerelem FROM meres_kuldes k ${erkVan ? 'LEFT JOIN meres_erkezes er ON er.source_id = k.source_id' : ''} WHERE k.letrehozva >= ?1 AND k.letrehozva < ?2 LIMIT 50000`, from, to);
     const dupla = new Map();
     for (const s of sorok) {
       const u = bizt(s.uzletag);
-      const p = u.arnyek[s.platform];
+      const p = Object.hasOwn(u.arnyek, s.platform) ? u.arnyek[s.platform] : null; // az adatbazisbol jovo platform-nev nem kerulhet prototipus-keresesre
       if (p) {
         if (ALLAPOTOK.includes(s.allapot)) p[s.allapot]++; else p.mas++;
         const fk = kulcsBiztos(s.forras);
@@ -163,8 +164,7 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
         if (!probaCella && s.allapot === 'elkuldve' && s.esemeny_tipus === 'alap' && (s.forras === 'motor' || s.forras === 'salonic_direct') && !/Ajandekkartya$/.test(String(s.platform_nev || ''))) p.alap_elkuldve++; // a foglalasonkenti alap-esemeny (FoglalasElso / Konzultacio / Visszajaro); az ajandekkartya nem foglalas-level
         if (!probaCella && s.esemeny_tipus === 'alap' && (s.forras === 'motor' || s.forras === 'salonic_direct') && !/Ajandekkartya$/.test(String(s.platform_nev || ''))) { // platform eligibility: ugyanaz a cella-halmaz, mint az alap_elkuldve, de MINDEN allapotban
           const j = u.jogosultsag[s.platform]; j.cellak++;
-          const hz = jsonVagyNull(s.hozzajarulas); // a meres_kuldes.hozzajarulas = { allapot: { ana, adv, fun, dontes }, szabaly: {...} } (elosztas.js naploz): a cellaOsztaly a LAPOS foglalaskori pillanatkepet (allapot) varja
-          const c = cellaOsztaly({ allapot: s.allapot, indok: s.indok }, { hozz: hz && typeof hz === 'object' && hz.allapot && typeof hz.allapot === 'object' ? hz.allapot : null });
+          const c = cellaOsztaly({ allapot: s.allapot, indok: s.indok }, { hozz: jsonVagyNull(s.erk_hozz) }); // nincs erkezesi pillanatkep (vagy nem objektum) -> a cellaOsztaly 'ga4_nincs_pillanatkep' (technikai)
           if (c.osztaly === 'ok') j.kuldve++;
           else if (c.osztaly === 'jogos_0') j.szabalyos_nulla++;
           else { j.technikai_hiany++; novel(j.technikai_hiany_okok, c.kod || (s.allapot === 'kihagyva' ? 'veszkapcsolo' : String(s.allapot || 'ismeretlen').slice(0, 24))); } // az ok csak kod / allapot (a szabad indok-szoveg nem kerul ki)
@@ -259,7 +259,8 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     if (!eOszl.size || !kOszl.size || !eOszl.has('booking_id')) return;
     const sdVan = eOszl.has('sd_id') && eOszl.has('sd_allapot');
     const jellegVan = (await oszlopok(db, 'meres_jelleg')).size > 0; // a rogzitett foglalas-jelleg: a HeadSpa KONZULTACIOHOZ a modell szandekosan nem keszit esemenyt (#101) -> szabalyos, nem technikai kimaradas
-    const jellegOszlop = jellegVan ? ", (SELECT j.jelleg FROM meres_jelleg j WHERE j.source_id = COALESCE(CASE WHEN e.allapot = 'parositott' THEN e.booking_id END, e.sd_id)) AS jelleg" : ', NULL AS jelleg';
+    const jellegKulcs = sdVan ? "COALESCE(CASE WHEN e.allapot = 'parositott' THEN e.booking_id END, e.sd_id)" : "CASE WHEN e.allapot = 'parositott' THEN e.booking_id END"; // regi semaban nincs sd_id
+    const jellegOszlop = jellegVan ? ', (SELECT j.jelleg FROM meres_jelleg j WHERE j.source_id = ' + jellegKulcs + ') AS jelleg' : ', NULL AS jelleg';
     const sql = `SELECT substr(e.uuid, 1, 8) AS u8, e.kulcs AS kulcs, e.letrehozva AS ido${jellegOszlop} FROM foglalas_egyeztetes e WHERE e.letrehozva >= ?1 AND e.letrehozva < ?2 AND ((e.allapot = 'parositott' AND e.booking_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.booking_id AND k.esemeny_tipus = 'alap'))${sdVan ? " OR (e.sd_id IS NOT NULL AND e.sd_allapot = 'kesz' AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.sd_id AND k.esemeny_tipus = 'alap'))" : ''}) ORDER BY e.letrehozva, e.uuid`;
     const frissHatar = Math.floor(mostMs / 1000) - FRISS_MP;
     for (const r of await mind(db, sql, from, to)) {
@@ -276,13 +277,13 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
   await vedett('foglalas_vendeg', async () => {
     if (!(await oszlopok(db, 'foglalas_vendeg')).size) return;
     for (const s of await mind(db, 'SELECT uzletag, forras, COUNT(*) AS db FROM foglalas_vendeg WHERE ido >= ?1 AND ido < ?2 GROUP BY uzletag, forras', from, to)) {
-      const b = bizt(s.uzletag).foglalas_vendeg; b[s.forras || 'ismeretlen'] = (b[s.forras || 'ismeretlen'] || 0) + s.db;
+      novel(bizt(s.uzletag).foglalas_vendeg, s.forras || 'ismeretlen', s.db);
     }
   }, hibak);
 
   // ---------- lampa ----------
   let osszLampa = 'zold';
-  const osszes = { valos: { letrehozo_level: 0, parositott: 0, parositatlan: 0, lemondas: 0 }, biztonsag: { elo_id_talalat: 0, dupla: 0, nem_arnyek_cel: 0 }, pre288_missing_hmac_index: 0, post288_missing_hmac_index: 0, post288_nincs_email: 0, foglalas_vendeg: 0, lefedettseg: { latott: 0, elvart: elvart ? 0 : null, latott_az_elvart_uzletagakban: elvart ? 0 : null, elvart_hianyos: elvart ? !UZLETAGAK.every((x) => x in elvart) : null, hiany: elvart ? 0 : null, parositott_esemeny_nelkul: 0, szabalyos_esemeny_nelkul: 0, friss_kizarva: 0 }, jogosultsag: Object.fromEntries(PLATFORMOK.map((p) => [p, { kuldve: 0, szabalyos_nulla: 0, technikai_hiany: 0, nincs_sor: 0, jogosult: 0, arany: null }])) };
+  const osszes = { valos: { letrehozo_level: 0, parositott: 0, parositatlan: 0, lemondas: 0 }, biztonsag: { elo_id_talalat: 0, dupla: 0, nem_arnyek_cel: 0 }, pre288_missing_hmac_index: 0, post288_missing_hmac_index: 0, post288_nincs_email: 0, foglalas_vendeg: 0, lefedettseg: { latott: 0, elvart: elvart ? 0 : null, latott_az_elvart_uzletagakban: elvart ? 0 : null, lefedett: elvart ? 0 : null, elvart_hianyos: elvart ? !UZLETAGAK.every((x) => x in elvart) : null, hiany: elvart ? 0 : null, parositott_esemeny_nelkul: 0, szabalyos_esemeny_nelkul: 0, friss_kizarva: 0 }, jogosultsag: Object.fromEntries(PLATFORMOK.map((p) => [p, { kuldve: 0, szabalyos_nulla: 0, technikai_hiany: 0, nincs_sor: 0, jogosult: 0, arany: null }])) };
   for (const [nev, u] of Object.entries(uz)) {
     let lampa = 'zold';
     const b = u.biztonsag;
@@ -303,7 +304,7 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     const e = elvart && nev in elvart ? elvart[nev] : null;
     if (e != null) { lf.elvart = e; lf.nevezo_forras = 'elvart'; lf.lefedettseg = hanyados(lf.latott, e); lf.hiany = Math.max(0, e - lf.latott); }
     osszes.lefedettseg.latott += lf.latott; osszes.lefedettseg.parositott_esemeny_nelkul += lf.parositott_esemeny_nelkul; osszes.lefedettseg.szabalyos_esemeny_nelkul += lf.szabalyos_esemeny_nelkul; osszes.lefedettseg.friss_kizarva += lf.friss_kizarva;
-    if (elvart && e != null) { osszes.lefedettseg.elvart += e; osszes.lefedettseg.latott_az_elvart_uzletagakban += lf.latott; osszes.lefedettseg.hiany += lf.hiany; }
+    if (elvart && e != null) { osszes.lefedettseg.elvart += e; osszes.lefedettseg.latott_az_elvart_uzletagakban += lf.latott; osszes.lefedettseg.lefedett += Math.min(lf.latott, e); osszes.lefedettseg.hiany += lf.hiany; }
     for (const pl of PLATFORMOK) {
       const j = u.jogosultsag[pl]; j.nincs_sor = lf.parositott_esemeny_nelkul; j.jogosult = j.kuldve + j.technikai_hiany + j.nincs_sor; j.arany = hanyados(j.kuldve, j.jogosult);
       const o = osszes.jogosultsag[pl]; for (const k of ['kuldve', 'szabalyos_nulla', 'technikai_hiany', 'nincs_sor', 'jogosult']) o[k] += j[k];
@@ -316,8 +317,8 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     osszes.foglalas_vendeg += Object.values(u.foglalas_vendeg).reduce((x, y) => x + y, 0);
   }
   for (const pl of PLATFORMOK) osszes.jogosultsag[pl].arany = hanyados(osszes.jogosultsag[pl].kuldve, osszes.jogosultsag[pl].jogosult);
-  if (osszes.lefedettseg.elvart != null) osszes.lefedettseg.lefedettseg = hanyados(osszes.lefedettseg.latott_az_elvart_uzletagakban, osszes.lefedettseg.elvart); // like-for-like: csak az elvart-tal rendelkezo uzletagak latottja
-  else { delete osszes.lefedettseg.elvart_hianyos; delete osszes.lefedettseg.latott_az_elvart_uzletagakban; }
+  if (osszes.lefedettseg.elvart != null) osszes.lefedettseg.lefedettseg = hanyados(osszes.lefedettseg.lefedett, osszes.lefedettseg.elvart); // like-for-like ES uzletagonkent plafonozott: csak az elvart-tal rendelkezo uzletagak, es az egyik uzletag tulteljesitese nem fedi el a masik hianyat (lefedett = Σ min(latott, elvart))
+  else { delete osszes.lefedettseg.elvart_hianyos; delete osszes.lefedettseg.latott_az_elvart_uzletagakban; delete osszes.lefedettseg.lefedett; }
   if (!ismeretlenHasznalt) delete uz.ismeretlen;
   if (hibak.length && LAMPA_RANG[osszLampa] < LAMPA_RANG.sarga) osszLampa = 'sarga'; // hiányos szekcio nem lehet "zold"
   return {

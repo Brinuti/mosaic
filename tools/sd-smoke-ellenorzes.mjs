@@ -53,8 +53,9 @@ const reszletKerelem = (c) => { // arnyekCel() a meres_kuldes.kerelem {url, cel}
  */
 export const EREDMENY_KULCSOK = Object.freeze(['level', 'index', 'cellak', 'motor_cellak', 'dupla', 'elo_id', 'reschedule', 'kapcsolok']);
 export function ertekel(u8, r, { mostSec = Math.floor(Date.now() / 1000), env = {} } = {}) {
-  const hianyzo = EREDMENY_KULCSOK.filter((x) => !r || !Array.isArray(r[x]));
-  if (hianyzo.length) return { u8, verdikt: 'FAIL', kriteriumok: [K('C0', 'eredmenyek_teljesek', 'FAIL', `hianyzo / nem tomb eredmeny-halmaz: ${hianyzo.join(', ')} (mind a ${EREDMENY_KULCSOK.length} SELECT eredmenye kell; egy kimaradt lekerdezes nem lehet PASS)`)] };
+  const COUNT_KULCSOK = ['motor_cellak', 'elo_id']; // a COUNT(*) lekerdezes MINDIG pontosan 1 sort ad: az ures tomb = a futtato elnyelte / kihagyta
+  const hianyzo = EREDMENY_KULCSOK.filter((x) => !r || !Array.isArray(r[x]) || (COUNT_KULCSOK.includes(x) && r[x].length !== 1));
+  if (hianyzo.length) return { u8, verdikt: 'FAIL', kriteriumok: [K('C0', 'eredmenyek_teljesek', 'FAIL', `hianyzo / nem tomb eredmeny-halmaz (a COUNT-os motor_cellak es elo_id eredmenye pontosan 1 sor kell): ${hianyzo.join(', ')} (mind a ${EREDMENY_KULCSOK.length} SELECT eredmenye kell; egy kimaradt lekerdezes nem lehet PASS)`)] };
   const k = [];
   const level = (r.level || [])[0];
   if (!level) return { u8, verdikt: 'FAIL', kriteriumok: [K('C1', 'level_latva', 'FAIL', 'nincs ilyen foglalas_egyeztetes sor')] };

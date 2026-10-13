@@ -163,6 +163,7 @@ test('SM10 a REVIEW javitasai: hianyzo eredmeny-halmaz = FAIL (nem hallgatolagos
     assert.equal(e.verdikt, 'FAIL', kulcs); assert.match(e.kriteriumok[0].reszlet, new RegExp(kulcs));
   }
   assert.equal(ertekel(u8, { ...jo, elo_id: 'nem tomb' }, ido).verdikt, 'FAIL');
+  for (const kulcs of ['elo_id', 'motor_cellak']) assert.equal(ertekel(u8, { ...jo, [kulcs]: [] }, ido).verdikt, 'FAIL', 'a COUNT-os halmaz ures tombje = a futtato elnyelte: ' + kulcs);
   // minden cella tiltva (pl. hianyzo teszt-kod): semmi nem ment ki -> FAIL, nem PASS
   const tiltva = { ...jo, cellak: jo.cellak.map((c) => ({ ...c, allapot: 'tiltva', url: null, cel: null })) };
   const et = ertekel(u8, tiltva, ido); assert.equal(et.verdikt, 'FAIL'); assert.equal(allapotok(et).C8, 'FAIL');
