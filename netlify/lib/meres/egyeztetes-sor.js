@@ -12,12 +12,18 @@
 // Az osszegzes 'lefedettseg' blokkja: platformonkent (es uzletagonkent) foglalas_osszes, jogosult, jogosult_arany (jogosult / osszes foglalas), kezbesitve, hiany, jogos_0, kezbesites_arany (kezbesitve / jogosult);
 //   a GA4-nel 'ga4_client_id': client_id-elerheto arany (osszes pillanatkepre es az analytics-hozzajarulassal rendelkezokre kulon). Csak az ALAPESEMENY (egy foglalasra egy) szamit a nevezobe.
 // Jelzesek (foglalas-szint): tobb_alap_esemeny (rossz tipus / duplikacio gyanu), nincs_esemeny, parositatlan, hianyzo_platform_sor, platform_hiany:<platform>:<esemeny>.
+// SALONIC-DIRECT (DECISION #127 (b), D6 - retegezett riport): a sorok kozott a salonic_direct (sd_...) foglalasok is megjelennek: forras (motor | salonic_direct), attr_minoseg (A_teljes | B_motor_reszleges | C_salonic_direct),
+//   ertek_minoseg, csere (reschedule) blokk, qa_kategoria. A lefedettseg NEVEZOJEBEN az sd is benne marad (osszes); kulon latszik a motor / sd / osszes reteg es az attr_minoseg szerinti bontas is.
+//   A reschedule_confirmed sor SAJAT sorkent latszik (no_new_conversion_expected=true), de a cellai jogos 0 (kihagyva: reschedule_confirmed) -> az "eligible" nevezobol kimaradnak.
+//   A motoros sor attr_minoseg-je SZARMAZTATOTT (nem tarolt): A_teljes = van erkezesi pillanatkep ES IP + user agent ES GA4 client_id ES legalabb egy kattintas- / fbp / ttp-jel; egyebkent B_motor_reszleges.
 import { meresSema } from './elosztas.js';
 import { sema as parositasSema } from '../foglalas-kulcs.js';
 import { PLATFORMOK } from './platformok.js';
 import { replayLista } from './validation-replay.js';
 
 const sec = (now) => Math.floor(now / 1000);
+/** Az attribucios rezsimvaltas ideje: a `977e1232` (PR #226, hozzajarulas-fuggo tarolas) eles deployja (DECISION #145/3, a reviewer K1 merese). */
+export const ATTR_REZSIMVALTAS_UTC = '2026-10-10T09:07:52Z';
 const UJ_VISSZATERO = Object.freeze({ FoglalasElso: 'uj', Konzultacio: 'uj_konzultacio', Visszajaro: 'visszatero', Ajandekkartya: 'ajandekkartya' });
 
 /**
@@ -41,7 +47,22 @@ export function cellaOsztaly(sor, ctx = {}) {
 const jsonVagyNull = (v) => { if (v && typeof v === 'object') return v; try { return v ? JSON.parse(v) : null; } catch (e) { return null; } };
 
 /** Egy foglalas sora a nyers D1-adatokbol. Tiszta fuggveny (a tesztelheto resz). */
-export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = null, erkezes = null, kuldesek = [] }) {
+/** A motoros sor attr-minosege az erkezesi pillanatkepbol (SZARMAZTATOTT, nem tarolt). */
+export function motorAttrMinoseg(erk) {
+  if (!erk) return 'B_motor_reszleges';
+  const attr = jsonVagyNull(erk.attr) || {};
+  const cid = !!(attr.ga4 && attr.ga4.client_id);
+  const uaIp = !!(erk.ua && erk.ip);
+  const jel = !!(attr.fbp || attr.ttp || (attr.google && (attr.google.gclid || attr.google.gbraid || attr.google.wbraid)) || (attr.meta && (attr.meta.fbc || attr.meta.fbclid)) || (attr.tiktok && attr.tiktok.ttclid));
+  return cid && uaIp && jel ? 'A_teljes' : 'B_motor_reszleges';
+}
+const SD_QA = Object.freeze({ reschedule_confirmed: 'reschedule_confirmed', feloldva_confirmed: 'reschedule_confirmed', halasztva: 'reschedule_suspected_hold', tartva: 'sd_tartva', lejart: 'sd_lejart', atveve: 'sd_atveve_folyamatban', kesz: 'post_t2_booking_object', feloldva_uj: 'post_t2_booking_object' });
+/** Egy 'halasztva' sd sor jellege a reschedule audit-sor alapjan: hianyzo_mezo -> hianyzo_mezo_hold; hianyzo_mezo_potolva / confirmed / feloldva_*: a dontes MEGSZULETETT (nincs gyanu / confirmed / az ember feloldotta), de a lezaras kihagyva maradt (Worker-halal) -> atvetel_megszakadt (nem uj csere-gyanu); egyebkent csere-gyanu hold. */
+const halasztvaJelleg = (reschedule) => {
+  const a = reschedule && reschedule.allapot;
+  return a === 'hianyzo_mezo' ? 'hianyzo_mezo_hold' : (a === 'hianyzo_mezo_potolva' || a === 'confirmed' || a === 'feloldva_uj' || a === 'feloldva_confirmed') ? 'atvetel_megszakadt' : 'reschedule_suspected_hold';
+};
+export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = null, erkezes = null, kuldesek = [], reschedule = null, regiStatus = null }) {
   // a foglalaskori pillanatkep (amit az attribucio.js a szervernek kuldott: hozz = { ana, adv, fun, dontes }, attr.ga4.client_id)
   const hozz = erkezes ? jsonVagyNull(erkezes.hozz) : null, attr = erkezes ? jsonVagyNull(erkezes.attr) : null;
   const ga4ClientId = erkezes ? !!(attr && attr.ga4 && attr.ga4.client_id) : null;
@@ -68,6 +89,18 @@ export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = n
   if (!lista.length) jelzesek.push(parositva ? 'nincs_esemeny' : egyeztetes ? 'egyeztetes_' + egyeztetes.allapot : 'parositatlan');
   else if (!parositva && booking_id.startsWith('mb_')) jelzesek.push(egyeztetes ? 'egyeztetes_' + egyeztetes.allapot : 'parositatlan');
   const alap = alapok[0] || null;
+  const sd = String(booking_id).startsWith('sd_');
+  const sdAllapot = sd && egyeztetes ? egyeztetes.sd_allapot || null : null;
+  if (sd) { // az sd sor sajat jelzesei: a "parositatlan" a motoros parositas allapota (az sd eppen ezt palyazza be) - nem hiba
+    const i = jelzesek.findIndex((x) => /^(parositatlan|egyeztetes_)/.test(x)); if (i >= 0) jelzesek.splice(i, 1);
+    if (sdAllapot === 'halasztva') jelzesek.push(halasztvaJelleg(reschedule));
+    if (sdAllapot === 'tartva') jelzesek.push('sd_tartva');
+    if (sdAllapot === 'lejart') jelzesek.push('sd_lejart');
+    if (sdAllapot === 'atveve') jelzesek.push('sd_atveve_folyamatban');
+    if (reschedule && reschedule.allapot === 'confirmed' && reschedule.regi_aktiv !== 0) jelzesek.push('old_booking_still_active');
+  }
+  const csere = reschedule ? { allapot: reschedule.allapot, reschedule_from: reschedule.reschedule_from || null, reschedule_to: reschedule.reschedule_to || null, regi_uuid_elo8: reschedule.regi_uuid ? String(reschedule.regi_uuid).slice(0, 8) : null, old_booking_still_active: reschedule.regi_aktiv === null || reschedule.regi_aktiv === undefined ? null : reschedule.regi_aktiv === 1, pre_t2_original_conversion: regiStatus || 'unknown' } : null;
+  const kuld0 = kuldesek[0] || null;
   return {
     booking_id,
     kulcs: (irat && irat.kulcs) || (egyeztetes && egyeztetes.kulcs) || null,
@@ -84,6 +117,15 @@ export function sorEpit({ booking_id, irat = null, egyeztetes = null, jelleg = n
     esemenyek: lista,
     jelzesek,
     rendben: !jelzesek.length,
+    // --- Salonic-direct / retegezett riport (D6) ---
+    forras: sd ? 'salonic_direct' : 'motor',
+    attr_minoseg: sd ? 'C_salonic_direct' : motorAttrMinoseg(erkezes),
+    ertek_minoseg: (kuld0 && kuld0.ertek_minoseg) || null,
+    salonic_uuid: sd && egyeztetes ? egyeztetes.uuid || null : null,
+    sd_allapot: sdAllapot,
+    csere,
+    qa_kategoria: sd ? (sdAllapot === 'halasztva' ? halasztvaJelleg(reschedule) : (SD_QA[sdAllapot] || 'post_t2_booking_object')) : 'motor',
+    no_new_conversion_expected: sdAllapot === 'reschedule_confirmed' || sdAllapot === 'feloldva_confirmed',
   };
 }
 
@@ -161,7 +203,7 @@ export async function ga4Csere(db, ido) {
 }
 
 /** Az idoszak (unix mp, [tol, ig)) foglalasai: a koszonooldali iras, a levelparositas vagy a kuldes alapjan. Csak OLVAS. */
-export async function egyeztetoSorok(db, { tol, ig, uzletag = null, limit = 500, utan = '', ga4_csere = null } = {}) {
+export async function egyeztetoSorok(db, { tol, ig, uzletag = null, limit = 500, utan = '', ga4_csere = null, forras = null } = {}) {
   await meresSema(db); await parositasSema(db);
   const t0 = Math.floor(Number(tol)), t1 = Math.floor(Number(ig));
   if (!Number.isFinite(t0) || !Number.isFinite(t1) || t1 <= t0) return { ok: false, miert: 'tol / ig: unix masodperc, ig > tol' };
@@ -170,20 +212,34 @@ export async function egyeztetoSorok(db, { tol, ig, uzletag = null, limit = 500,
       SELECT booking_id FROM foglalas_kulcs_irasok WHERE ido >= ?1 AND ido < ?2
       UNION SELECT booking_id FROM foglalas_egyeztetes WHERE booking_id IS NOT NULL AND letrehozva >= ?1 AND letrehozva < ?2
       UNION SELECT source_id FROM meres_kuldes WHERE source_id LIKE 'mb\\_%' ESCAPE '\\' AND letrehozva >= ?1 AND letrehozva < ?2
+      UNION SELECT source_id FROM meres_kuldes WHERE source_id LIKE 'sd\\_%' ESCAPE '\\' AND letrehozva >= ?1 AND letrehozva < ?2
+      UNION SELECT sd_id FROM foglalas_egyeztetes WHERE sd_id IS NOT NULL AND letrehozva >= ?1 AND letrehozva < ?2
     ) WHERE booking_id > ?3 ORDER BY booking_id LIMIT ?4`).bind(t0, t1, String(utan || ''), lim + 1).all();
   const mind = (idk || []).map((r) => r.booking_id);
   const oldal = mind.slice(0, lim);
   const sorok = [];
   for (const id of oldal) {
+    const sd = id.startsWith('sd_');
     const [irat, egyeztetes, jelleg, erkezes, kuld] = await Promise.all([
-      db.prepare('SELECT kulcs, service_id, ido FROM foglalas_kulcs_irasok WHERE booking_id = ?1').bind(id).first(),
-      db.prepare('SELECT uuid, allapot, probalkozas, kulcs, kulcs_forras, kuldve, riasztas FROM foglalas_egyeztetes WHERE booking_id = ?1 ORDER BY kuldve IS NULL, kuldve DESC LIMIT 1').bind(id).first(),
+      sd ? null : db.prepare('SELECT kulcs, service_id, ido FROM foglalas_kulcs_irasok WHERE booking_id = ?1').bind(id).first(),
+      db.prepare(sd ? 'SELECT uuid, allapot, probalkozas, kulcs, kulcs_forras, kuldve, riasztas, sd_allapot FROM foglalas_egyeztetes WHERE sd_id = ?1' : 'SELECT uuid, allapot, probalkozas, kulcs, kulcs_forras, kuldve, riasztas FROM foglalas_egyeztetes WHERE booking_id = ?1 ORDER BY kuldve IS NULL, kuldve DESC LIMIT 1').bind(id).first(),
       db.prepare('SELECT jelleg, kupon, forras FROM meres_jelleg WHERE source_id = ?1').bind(id).first().catch(() => null), // a meres_jelleg tabla az elso jelleg-rogzitesnel jon letre (olvasaskor nem hozzuk letre)
-      db.prepare('SELECT uzletag, tipus, ido, hozz, attr FROM meres_erkezes WHERE source_id = ?1').bind(id).first(),
-      db.prepare('SELECT esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, allapot, indok, ertek, penznem, http_status, kuldo FROM meres_kuldes WHERE source_id = ?1 ORDER BY id').bind(id).all(),
+      sd ? null : db.prepare('SELECT uzletag, tipus, ido, hozz, attr, ua, ip FROM meres_erkezes WHERE source_id = ?1').bind(id).first(),
+      db.prepare('SELECT esemeny_id, esemeny_nev, esemeny_tipus, platform, uzletag, allapot, indok, ertek, penznem, http_status, kuldo, forras, attr_minoseg, ertek_minoseg FROM meres_kuldes WHERE source_id = ?1 ORDER BY id').bind(id).all(),
     ]);
-    const sor = sorEpit({ booking_id: id, irat, egyeztetes, jelleg, erkezes, kuldesek: (kuld && kuld.results) || [] });
+    let reschedule = null, regiStatus = null;
+    if (sd && egyeztetes) {
+      reschedule = (await db.prepare('SELECT allapot, reschedule_from, reschedule_to, regi_uuid, regi_aktiv FROM foglalas_reschedule WHERE uuid = ?1').bind(egyeztetes.uuid).first()) || null;
+      if (reschedule && reschedule.regi_uuid) { // a regi foglalas eredeti konverzioja: merte-e az uj meres (kuldott esemeny a regi foglalasra)?
+        const regi = await db.prepare('SELECT booking_id, sd_id FROM foglalas_egyeztetes WHERE uuid = ?1').bind(reschedule.regi_uuid).first();
+        const sid = regi ? (regi.booking_id || regi.sd_id) : null;
+        const n = sid ? (await db.prepare("SELECT COUNT(*) AS n FROM meres_kuldes WHERE source_id = ?1 AND allapot = 'elkuldve'").bind(sid).first()).n : 0;
+        regiStatus = n > 0 ? 'measured_new' : 'not_observed';
+      }
+    }
+    const sor = sorEpit({ booking_id: id, irat, egyeztetes, jelleg, erkezes, kuldesek: (kuld && kuld.results) || [], reschedule, regiStatus });
     if (uzletag && sor.uzletag !== uzletag) continue;
+    if (forras && sor.forras !== forras) continue;
     sorok.push(sor);
   }
   const osszegzes = { foglalas: sorok.length, rendben: sorok.filter((s) => s.rendben).length, jelzett: sorok.filter((s) => !s.rendben).length, platformonkent: {} };
@@ -194,6 +250,20 @@ export async function egyeztetoSorok(db, { tol, ig, uzletag = null, limit = 500,
     if (c.osztaly === 'jogos_0') osszegzes.jogos_0_okok[p][c.ok] = (osszegzes.jogos_0_okok[p][c.ok] || 0) + 1;
   }
   osszegzes.lefedettseg = lefedettseg(sorok);
+  // DECISION #145/3 (977e1232 K1): az attribucios rezsimvaltas kulon jelolese + a Google jogos_0 ertelmezese (a T1->T2 baseline-ban kulon kezelendo)
+  osszegzes.attribucios_rezsimvaltas = { utc: ATTR_REZSIMVALTAS_UTC, unix: Math.floor(Date.parse(ATTR_REZSIMVALTAS_UTC) / 1000), ok: 'mh_attr hozzajarulas-kapu (977e1232, PR #226): hozzajarulas nelkul a kattintas-azonosito csak az aktualis oldal URL-jeben el, oldalvaltason at nem' };
+  osszegzes.figyelmeztetesek = ['google_jogos_0_tartalmazhat_hozzajarulas_vagy_click_id_hiany_miatt_elmaradt_feltoltest', 'attribucios_rezsimvaltas_' + ATTR_REZSIMVALTAS_UTC];
+  // D6: retegezett lefedettseg - motor / salonic_direct / osszes, es az attr_minoseg szerinti bontas; az osszes (= osszegzes.lefedettseg) nevezojeben az sd benne marad
+  const reteg = (r) => ({ foglalas: r.length, lefedettseg: lefedettseg(r) });
+  osszegzes.retegek = { motor: reteg(sorok.filter((x) => x.forras === 'motor')), salonic_direct: reteg(sorok.filter((x) => x.forras === 'salonic_direct')), osszes: reteg(sorok) };
+  osszegzes.attr_minoseg_szerint = Object.fromEntries(['A_teljes', 'B_motor_reszleges', 'C_salonic_direct'].map((k) => [k, reteg(sorok.filter((x) => x.attr_minoseg === k))]));
+  const sdSorok = sorok.filter((x) => x.forras === 'salonic_direct');
+  const db_ = (f) => sdSorok.filter(f).length;
+  osszegzes.salonic_direct = { foglalas: sdSorok.length, arany: sorok.length ? Math.round((sdSorok.length / sorok.length) * 10000) / 10000 : null, // az sd-arany kulon health metric
+    allapotok: Object.fromEntries([...new Set(sdSorok.map((x) => x.sd_allapot || 'ismeretlen'))].sort().map((k) => [k, db_((x) => (x.sd_allapot || 'ismeretlen') === k)])),
+    qa_kategoriak: Object.fromEntries([...new Set(sorok.map((x) => x.qa_kategoria))].sort().map((k) => [k, sorok.filter((x) => x.qa_kategoria === k).length])),
+    reschedule: { confirmed: db_((x) => x.csere && x.csere.allapot === 'confirmed'), feloldva_confirmed: db_((x) => x.csere && x.csere.allapot === 'feloldva_confirmed'), suspected_hold: db_((x) => x.sd_allapot === 'halasztva'), feloldva_uj: db_((x) => x.csere && x.csere.allapot === 'feloldva_uj'),
+      old_booking_still_active: db_((x) => x.csere && x.csere.old_booking_still_active === true), no_new_conversion_expected: sorok.filter((x) => x.no_new_conversion_expected).length } };
   osszegzes.validation_replay = await replayLista(db); // DECISION #123: a GA4 validation_replay tetelek KIZARVA a mintabol, itt csak tajekoztatasul
   const cs = csereIdo(ga4_csere);
   if (ga4_csere !== null && ga4_csere !== undefined && ga4_csere !== '' && cs === null) return { ok: false, miert: 'ga4_csere: unix masodperc vagy ISO-datum' };
@@ -209,7 +279,7 @@ export async function egyeztetoSorok(db, { tol, ig, uzletag = null, limit = 500,
   return { ok: true, tol: t0, ig: t1, sorok, osszegzes, kovetkezo: mind.length > lim ? oldal[oldal.length - 1] : null };
 }
 
-const CSV_OSZLOPOK = ['booking_id', 'kulcs', 'uzletag', 'esemenytipus', 'uj_visszatero', 'ertek', 'penznem', 'parositas_allapot', 'parositas_forras', 'kulcs_irva', 'esemeny_id', ...PLATFORMOK.map((p) => `${p}_kezbesites`), ...PLATFORMOK.map((p) => `${p}_osztaly`), 'hozz_ana', 'ga4_client_id', 'ga4_csere_jelolo', 'jelzesek'];
+const CSV_OSZLOPOK = ['booking_id', 'kulcs', 'uzletag', 'esemenytipus', 'uj_visszatero', 'ertek', 'penznem', 'parositas_allapot', 'parositas_forras', 'kulcs_irva', 'esemeny_id', ...PLATFORMOK.map((p) => `${p}_kezbesites`), ...PLATFORMOK.map((p) => `${p}_osztaly`), 'hozz_ana', 'ga4_client_id', 'ga4_csere_jelolo', 'jelzesek', 'forras', 'attr_minoseg', 'ertek_minoseg', 'qa_kategoria', 'no_new_conversion_expected'];
 const csvMezo = (v) => { const s = v === null || v === undefined ? '' : String(v); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
 /** CSV (foglalas x esemeny egy sor): a tabla a QA-5 tablazatba masolhato. */
 export function egyeztetoCsv(sorok) {
@@ -219,7 +289,7 @@ export function egyeztetoCsv(sorok) {
     for (const e of lista) {
       const o = {
         booking_id: s.booking_id, kulcs: s.kulcs, uzletag: s.uzletag, esemenytipus: e ? e.nev : s.esemenytipus, uj_visszatero: s.uj_visszatero, ertek: e ? e.ertek : s.ertek, penznem: e ? e.penznem : s.penznem,
-        parositas_allapot: s.parositas ? s.parositas.allapot : '', parositas_forras: s.parositas ? s.parositas.forras : '', kulcs_irva: s.kulcs_irva, esemeny_id: e ? e.esemeny_id : '', hozz_ana: s.hozzajarulas ? s.hozzajarulas.ana : '', ga4_client_id: s.ga4_client_id === null ? '' : s.ga4_client_id, ga4_csere_jelolo: e && e.platformok.ga4.csere_jelolo ? e.platformok.ga4.csere_jelolo.join(' | ') : '', jelzesek: s.jelzesek.join(' | '),
+        parositas_allapot: s.parositas ? s.parositas.allapot : '', parositas_forras: s.parositas ? s.parositas.forras : '', kulcs_irva: s.kulcs_irva, esemeny_id: e ? e.esemeny_id : '', hozz_ana: s.hozzajarulas ? s.hozzajarulas.ana : '', ga4_client_id: s.ga4_client_id === null ? '' : s.ga4_client_id, ga4_csere_jelolo: e && e.platformok.ga4.csere_jelolo ? e.platformok.ga4.csere_jelolo.join(' | ') : '', jelzesek: s.jelzesek.join(' | '), forras: s.forras, attr_minoseg: s.attr_minoseg, ertek_minoseg: s.ertek_minoseg, qa_kategoria: s.qa_kategoria, no_new_conversion_expected: s.no_new_conversion_expected,
       };
       for (const p of PLATFORMOK) { o[`${p}_kezbesites`] = e ? e.platformok[p].kezbesites : ''; o[`${p}_osztaly`] = e ? e.platformok[p].osztaly : ''; }
       sorokCsv.push(CSV_OSZLOPOK.map((k) => csvMezo(o[k])).join(';'));

@@ -135,7 +135,8 @@ test('GA4 titokcsere (GPT-dontes): a csere elotti utolso es az utani elso SIKERE
   const by = Object.fromEntries(r.sorok.map((x) => [x.booking_id, x]));
   assert.deepEqual(by[G].esemenyek[0].platformok.ga4.csere_jelolo, ['foglalas_csere_elotti_utolso']); assert.deepEqual(by[I].esemenyek[0].platformok.ga4.csere_jelolo, ['foglalas_csere_utani_elso']);
   assert.equal(by[A].ga4_csere_jelolo, undefined); assert.equal(r.osszegzes.ga4_csere.foglalas_elso_sikeres_utana.source_id, I);
-  const csv = egyeztetoCsv(r.sorok).trim().split('\n'); assert.match(csv[0], /;ga4_csere_jelolo;jelzesek$/); assert.ok(csv.some((l) => l.startsWith(G) && l.includes('foglalas_csere_elotti_utolso')));
+  const csv = egyeztetoCsv(r.sorok).trim().split('\n'); assert.match(csv[0], /;ga4_csere_jelolo;jelzesek;forras;attr_minoseg;ertek_minoseg;qa_kategoria;no_new_conversion_expected$/); // a Salonic-direct (D6) oszlopai a vegen, additivan
+  assert.ok(csv.some((l) => l.startsWith(G) && l.includes('foglalas_csere_elotti_utolso')));
   // csere nelkul nincs jeloles; ervenytelen ido 400-as hiba; ISO-datum es unix is jo
   assert.equal((await egyeztetoSorok(D1, { tol: T0, ig: T1 })).osszegzes.ga4_csere, undefined);
   assert.equal((await egyeztetoSorok(D1, { tol: T0, ig: T1, ga4_csere: 'holnap' })).ok, false);
@@ -178,7 +179,7 @@ test('DECISION #122: GA4 client_id nelkul a FOGLALASKORI analytics-hozzajarulas 
   assert.ok(r.osszegzes.lefedettseg.platformonkent.ga4.foglalas_osszes >= 6); assert.equal(r.osszegzes.lefedettseg.alapesemeny_nelkuli_foglalas, 2, 'D es E: nincs esemeny');
   assert.deepEqual(r.osszegzes.jogos_0_okok.ga4['nincs analytics-hozzajarulas (elutasitva), nincs GA4 client_id'], 1);
   // CSV: az uj oszlopok
-  const csv = egyeztetoCsv(r.sorok).split('\n'); assert.match(csv[0], /;hozz_ana;ga4_client_id;ga4_csere_jelolo;jelzesek$/);
+  const csv = egyeztetoCsv(r.sorok).split('\n'); assert.match(csv[0], /;hozz_ana;ga4_client_id;ga4_csere_jelolo;jelzesek;forras;attr_minoseg;ertek_minoseg;qa_kategoria;no_new_conversion_expected$/);
 });
 
 test('GA4 csere utani BUKASOK szama a #122 szerint: a jogos 0 (analytics-hozzajarulas nelkuli client_id-hiany, ernyo) NEM bukas; hiba / vedelmi tiltva / analytics-hozzajarulas melletti client_id-hiany / pillanatkep nelkuli client_id-hiany BUKAS', async () => {

@@ -54,15 +54,18 @@ export function metaKerelem(e, ctx, env = {}) {
   const teszt = env && env.META_TESZT_KOD;
   if (!teszt) return { tiltva: 'nincs META_TESZT_KOD: Meta-nak csak tesztkoddal kuldunk' };
   const szab = ctx.hozz.meta;
+  const sd = ctx.fk.forras === 'salonic_direct'; // Salonic-direct safety net (DECISION #127 (b)): nincs bongeszo (IP / user agent / URL / fbp), ezeket NEM talaljuk ki
   const ud = tisztit({
     em: ctx.hash.em && szab.felhasznaloi_adat ? [ctx.hash.em] : null, ph: ctx.hash.ph_meta && szab.felhasznaloi_adat ? [ctx.hash.ph_meta] : null,
     external_id: ctx.hash.ext ? [ctx.hash.ext] : null, client_ip_address: ctx.ip, client_user_agent: ctx.ua, fbc: metaFbc(ctx.erk), fbp: ctx.erk.fbp,
   });
   const nev = metaNev(e, ctx.fk.uzletag);
   const adat = tisztit({
-    event_name: nev, event_time: ctx.fk.ido, event_id: e.esemeny_id, action_source: 'website', event_source_url: ctx.oldal,
+    event_name: nev, event_time: ctx.fk.ido, event_id: e.esemeny_id, action_source: sd ? 'other' : 'website', event_source_url: sd ? null : ctx.oldal,
     user_data: ud,
-    custom_data: tisztit({ value: egesz(e.ertek), currency: 'HUF', order_id: ctx.fk.source_entity_id, content_name: ctx.fk.szolgaltatas, content_category: ctx.fk.uzletag, esemeny_tipus: e.tipus, ertek_forras: e.ertek_forras, salonic_ar: e.salonic_ar, utm_source: ctx.erk.utm_utolso && ctx.erk.utm_utolso.source, utm_campaign: ctx.erk.utm_utolso && ctx.erk.utm_utolso.campaign }),
+    // e.ertek_nelkul (D5, DECISION #131): ismeretlen tenyleges ar -> az esemeny ERTEK NELKUL megy (value / currency / salonic_ar kimarad), lista- / activePrice SOHA nem tenyleges arkent
+    custom_data: tisztit({ value: e.ertek_nelkul ? null : egesz(e.ertek), currency: e.ertek_nelkul ? null : 'HUF', order_id: ctx.fk.source_entity_id, content_name: ctx.fk.szolgaltatas, content_category: ctx.fk.uzletag, esemeny_tipus: e.tipus, ertek_forras: e.ertek_forras, salonic_ar: e.ertek_nelkul ? null : e.salonic_ar, utm_source: ctx.erk.utm_utolso && ctx.erk.utm_utolso.source, utm_campaign: ctx.erk.utm_utolso && ctx.erk.utm_utolso.campaign,
+      forras: sd ? 'salonic_direct' : null, attr_minoseg: sd ? ctx.fk.attr_minoseg : null, ertek_minoseg: sd ? ctx.fk.ertek_minoseg : null }),
   });
   return { platform: 'meta', platform_nev: nev, url: `https://graph.facebook.com/${(env && env.META_API_VERSION) || ARNYEK.meta.apiVerzio}/${dataset}/events`, method: 'POST', fejlec_nevek: ['content-type'], cel: { dataset, nev: ARNYEK.meta.nev, test_event_code: teszt }, body: { data: [adat], test_event_code: teszt, partner_agent: 'mosaic-qa2-arnyek' } };
 }
@@ -77,12 +80,14 @@ export function tiktokKerelem(e, ctx, env = {}) {
   // ernyo: HeadSpa = CompletePayment (kompatibilitas), a tobbi uzletag = Schedule. Nem-HeadSpa esemeny SOHA nem lehet CompletePayment (DECISION 10-06, MERES-KONVERZIO-TERKEP 4. pont).
   const nev = e.tipus === 'ernyo' ? (ctx.fk.uzletag === 'headspa' ? 'CompletePayment' : 'Schedule') : metaNev(e, ctx.fk.uzletag);
   if (nev === 'CompletePayment' && ctx.fk.uzletag !== 'headspa') return { tiltva: 'nem-HeadSpa esemeny nem lehet CompletePayment' };
+  // DECISION #131 / GPT: a TikTok CompletePayment ERTEKHORDOZO esemeny - csak determinisztikusan ismert tenyleges arral megy; a base / lifecycle esemeny ettol meg mehet ertek nelkul
+  if (nev === 'CompletePayment' && ctx.fk.ertek_minoseg && ctx.fk.ertek_minoseg !== 'exact') return { kihagyva: `ertek_ismeretlen (${ctx.fk.ertek_minoseg}): az ertekhordozo CompletePayment csak ismert tenyleges arral megy` };
   const user = tisztit({ email: ctx.hash.em && szab.felhasznaloi_adat ? ctx.hash.em : null, phone: ctx.hash.ph_e164 && szab.felhasznaloi_adat ? ctx.hash.ph_e164 : null, external_id: ctx.hash.ext, ttclid: ctx.erk.tiktok && ctx.erk.tiktok.ttclid && ctx.erk.tiktok.ttclid.ertek, ttp: ctx.erk.ttp, ip: ctx.ip, user_agent: ctx.ua });
   const kod = ctx.fk.tipus === 'ajandekkartya' ? 'ajandekkartya' : `${ctx.fk.uzletag}_${e.nev}`.toLowerCase();
   const adat = tisztit({
     event: nev, event_time: ctx.fk.ido, event_id: e.esemeny_id, user,
-    properties: { currency: 'HUF', value: egesz(e.ertek), content_type: 'product', contents: [{ content_id: kod, content_name: ctx.fk.szolgaltatas || kod, quantity: 1, price: egesz(e.ertek) }], order_id: ctx.fk.source_entity_id },
-    page: { url: ctx.oldal },
+    properties: { ...(e.ertek_nelkul ? {} : { currency: 'HUF', value: egesz(e.ertek) }), content_type: 'product', contents: [{ content_id: kod, content_name: ctx.fk.szolgaltatas || kod, quantity: 1, ...(e.ertek_nelkul ? {} : { price: egesz(e.ertek) }) }], order_id: ctx.fk.source_entity_id },
+    page: ctx.fk.forras === 'salonic_direct' && !ctx.oldal ? null : { url: ctx.oldal }, // Salonic-direct: nincs bongeszo -> nincs oldal-URL (nem talaljuk ki); a motoros ag valtozatlan
   });
   return { platform: 'tiktok', platform_nev: nev, url: 'https://business-api.tiktok.com/open_api/v1.3/event/track/', method: 'POST', fejlec_nevek: ['content-type', 'access-token'], cel: { pixel_code: pixel, nev: ARNYEK.tiktok.nev, test_event_code: teszt }, body: { event_source: 'web', event_source_id: pixel, test_event_code: teszt, data: [adat] } };
 }
@@ -110,13 +115,16 @@ export function googleKerelem(e, ctx, env = {}) {
 
 export function ga4Kerelem(e, ctx, env = {}) {
   if (e.tipus !== 'alap') return { kihagyva: 'a GA4-be csak alapesemeny megy (az ernyo nem)' };
+  // DECISION #127 D3 (GPT: jogos_0): Salonic-direct foglalasnak nincs bongeszos client_id-je; a Measurement Protocol client_id nelkul nem kuldheto, szintetikus / ujrahasznositott client_id TILOS.
+  // Ha ugyanahhoz a bookinghoz bizonyitott valodi client_id mégis rendelkezesre all, a normal GA4-szabaly ervenyes.
+  if (ctx.fk.forras === 'salonic_direct' && !(ctx.erk && ctx.erk.ga4 && ctx.erk.ga4.client_id)) return { kihagyva: 'salonic_direct: nincs GA4 client_id (a Measurement Protocol client_id nelkul nem kuldheto; szintetikus / ujrahasznositott client_id tilos)' };
   const mid = env && env.GA4_TESZT_MEASUREMENT_ID;
   if (!mid) return { tiltva: 'nincs GA4_TESZT_MEASUREMENT_ID (teszt-property): a GA4-be csak teszt-property-be kuldunk' };
   if (ELO_CELOK.ga4.includes(mid)) return { tiltva: 'az elo GA4 property tiltott' };
   const ga = ctx.erk.ga4 || {};
   if (!ga.client_id) return { tiltva: 'nincs GA4 client_id (nincs _ga suti): a Measurement Protocol client_id nelkul nem kuldheto' };
   const szab = ctx.hozz.ga4;
-  const params = tisztit({ session_id: ga.session_id, engagement_time_msec: 1, value: egesz(e.ertek), currency: 'HUF', transaction_id: e.nev === 'Ajandekkartya' ? ctx.fk.source_entity_id : null, esemeny_id: e.esemeny_id, uzletag: ctx.fk.uzletag, ertek_forras: e.ertek_forras, salonic_ar: e.salonic_ar,
+  const params = tisztit({ session_id: ga.session_id, engagement_time_msec: 1, value: e.ertek_nelkul ? null : egesz(e.ertek), currency: e.ertek_nelkul ? null : 'HUF', transaction_id: e.nev === 'Ajandekkartya' ? ctx.fk.source_entity_id : null, esemeny_id: e.esemeny_id, uzletag: ctx.fk.uzletag, ertek_forras: e.ertek_forras, salonic_ar: e.salonic_ar,
     items: e.nev === 'Ajandekkartya' ? [{ item_id: ctx.fk.szolgaltatas || 'ajandekkartya', item_name: ctx.fk.szolgaltatas || 'Ajandekkartya', price: egesz(e.ertek), quantity: 1 }] : null,
     source: ctx.erk.utm_utolso && ctx.erk.utm_utolso.source, medium: ctx.erk.utm_utolso && ctx.erk.utm_utolso.medium, campaign: ctx.erk.utm_utolso && ctx.erk.utm_utolso.campaign });
   const consent = szab.jel.ad_user_data === 'UNSPECIFIED' ? null : { ad_user_data: szab.jel.ad_user_data, ad_personalization: szab.jel.ad_personalization };

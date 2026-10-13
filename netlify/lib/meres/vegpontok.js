@@ -3,6 +3,7 @@ import { azonosEredet, kulcsEllenorzes, valasz } from '../foglalas-kulcs.js';
 import { egyeztetoSorok, egyeztetoCsv } from './egyeztetes-sor.js';
 import { erkezesMent, fuggoKuldesek, kapcsoloBeallit, kapcsolokOlvas, kuldesMegerosit, naploLeker } from './elosztas.js';
 import { irasKi, irasKapcsolo, IRAS_KI_VALASZ } from './iras-kapcsolo.js';
+import { sdKapcsoloBeallit } from './salonic-direct.js';
 
 /** POST /api/meres-erkezes (azonos eredet; a bongeszo nem ker valaszt a foglalas folyamataban: a hiba nem akaszthat meg semmit). A "ip" / "ua" a keresbol jon, nem a torzsbol. */
 export async function kezelErkezes(request, env, deps = {}) {
@@ -20,7 +21,7 @@ export async function kezelErkezes(request, env, deps = {}) {
   return valasz(r.ok ? 200 : 422, r);
 }
 
-/** /api/meres-admin (kulcsos, mint a /api/foglalas-egyeztetes): GET ?source_id=.. (naplo) | ?fuggo=1 (kuldesre varo kerelmek) | ?kapcsolok=1 | ?egyeztetes=1&tol=<unix>&ig=<unix>[&uzletag=..][&formatum=csv][&utan=<booking_id>][&ga4_csere=<unix|ISO>] (QA-5 foglalasonkenti egyeztetosor, csak olvas; ga4_csere: a GA4 titokcsere elotti utolso / utani elso sikeres esemeny jelolese);  POST {muvelet:'kapcsolo'|'megerosit', ...} */
+/** /api/meres-admin (kulcsos, mint a /api/foglalas-egyeztetes): GET ?source_id=.. (naplo) | ?fuggo=1 (kuldesre varo kerelmek) | ?kapcsolok=1 | ?egyeztetes=1&tol=<unix>&ig=<unix>[&uzletag=..][&formatum=csv][&utan=<booking_id>][&forras=motor|salonic_direct][&ga4_csere=<unix|ISO>] (QA-5 foglalasonkenti egyeztetosor, csak olvas; ga4_csere: a GA4 titokcsere elotti utolso / utani elso sikeres esemeny jelolese);  POST {muvelet:'kapcsolo'|'sd_kapcsolo'|'megerosit', ...} */
 export async function kezelAdmin(request, env, deps = {}) {
   if (!env || !env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
   if (!(await kulcsEllenorzes(request, env))) return valasz(404, { ok: false });
@@ -30,7 +31,7 @@ export async function kezelAdmin(request, env, deps = {}) {
     if (url.searchParams.get('fuggo') === '1') return valasz(200, { ok: true, fuggo: await fuggoKuldesek(env.KULCS_DB) });
     if (url.searchParams.get('egyeztetes') === '1') {
       const q = url.searchParams;
-      const r = await egyeztetoSorok(env.KULCS_DB, { tol: q.get('tol'), ig: q.get('ig'), uzletag: q.get('uzletag') || null, limit: q.get('limit'), utan: q.get('utan') || '', ga4_csere: q.get('ga4_csere') });
+      const r = await egyeztetoSorok(env.KULCS_DB, { tol: q.get('tol'), ig: q.get('ig'), uzletag: q.get('uzletag') || null, limit: q.get('limit'), utan: q.get('utan') || '', ga4_csere: q.get('ga4_csere'), forras: q.get('forras') || null });
       if (!r.ok) return valasz(400, r);
       if (q.get('formatum') === 'csv') return new Response(egyeztetoCsv(r.sorok), { status: 200, headers: { 'content-type': 'text/csv; charset=utf-8', 'cache-control': 'no-store', 'x-kovetkezo': r.kovetkezo || '' } });
       return valasz(200, r);
@@ -44,6 +45,8 @@ export async function kezelAdmin(request, env, deps = {}) {
     let o; try { o = JSON.parse(szoveg); } catch (e) { return valasz(400, { ok: false, miert: 'nem JSON' }); }
     const most = deps.now ? deps.now() : Date.now();
     if (o.muvelet === 'iras') return valasz(200, await irasKapcsolo(env.KULCS_DB, { be: o.be === true, ok: typeof o.ok === 'string' ? o.ok.slice(0, 200) : null }, most)); // QA-4: az UJ IRASOK veszkapcsoloja (be:false = leall)
+    // Salonic-direct safety net (DECISION #127 (b), D1): a kapcsolo ALAPBOL KI (hianyzo sor = ki); be:true KULON, kifejezett jovahagyas utan allithato (salonic_direct / salonic_direct:<uzletag>)
+    if (o.muvelet === 'sd_kapcsolo') return valasz(200, await sdKapcsoloBeallit(env.KULCS_DB, { uzletag: o.uzletag || null, be: o.be === true, ok: typeof o.ok === 'string' ? o.ok.slice(0, 200) : null }, most));
     if (o.muvelet === 'kapcsolo') return valasz(200, await kapcsoloBeallit(env.KULCS_DB, { uzletag: o.uzletag || null, platform: o.platform || null, be: o.be === true, ok: typeof o.ok === 'string' ? o.ok.slice(0, 200) : null }, most));
     // ajandekkartya: a webhook-ut MANUALIS ujrajatszasa (pl. elonezeten, ahol a Stripe nem erte el a webhookot): ugyanaz a kod fut (arnyekMeres), a PaymentIntentet a Stripe-tol kerdezi; kulcsos, csak MERES_ELOSZTO=1 mellett kuld
     if (o.muvelet === 'ajandek_ujra') {

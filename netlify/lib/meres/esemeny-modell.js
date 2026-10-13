@@ -9,6 +9,8 @@ export const ERNYOESEMENYEK = Object.freeze({ headspa: 'Schedule', szor: 'Schedu
 export const UZLETAG_NEV = Object.freeze({ headspa: 'HeadSpa', fodrasz: 'Fodrasz', oxigen: 'Oxigen', szor: 'Szor', pmu: 'PMU' }); // a meglevo Meta-esemenynevek elotagja (HeadSpa_FoglalasElso ...)
 export const SALONIC_UZLETAG = Object.freeze({ 'mosaicheadspa.salonic.hu': 'headspa', 'mosaic-hair.salonic.hu': 'fodrasz', 'mosaic-oxigen.salonic.hu': 'oxigen', 'mosaic-elysion.salonic.hu': 'szor', 'mosaic-pmu.salonic.hu': 'pmu' });
 export const SOURCE_ID_MINTA = /^(mb_[a-z0-9]{12,40}|pi_[A-Za-z0-9]{8,80}|ATU-[A-Z0-9]{4,12})$/;
+// Salonic-direct safety net (DECISION #127 (b)): a SZERVER kepezi a Salonic-UUID-bol (HMAC), a bongeszo ilyet NEM irhat (az erkezesMent tovabbra is a SOURCE_ID_MINTA-t hasznalja).
+export const SD_ID_MINTA = /^sd_[0-9a-f]{24}$/;
 
 const KONZULTACIO = /konzult|hajkamer/i; // ugyanaz a szabaly, mint a foglalo-motorban (business-config.js CONSULT)
 
@@ -48,7 +50,7 @@ export function foglalasJelleg({ szolgaltatasNev = '', ujVendeg = null, kategori
  */
 export function esemenyek(fk, tabla = KONZULTACIO_ERTEK) {
   if (!fk || !UZLETAGAK.includes(fk.uzletag)) return [];
-  if (!SOURCE_ID_MINTA.test(String(fk.source_entity_id || ''))) return [];
+  if (!SOURCE_ID_MINTA.test(String(fk.source_entity_id || '')) && !SD_ID_MINTA.test(String(fk.source_entity_id || ''))) return [];
   const salonicAr = Number.isFinite(Number(fk.ertek)) ? Math.max(0, Math.round(Number(fk.ertek))) : 0; // a tenyleges ar (Salonic-level / Stripe)
   const penznem = 'HUF';
   const alap = fk.tipus === 'ajandekkartya' ? 'Ajandekkartya'

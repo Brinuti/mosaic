@@ -139,6 +139,10 @@ META_TESZT_KOD = "TEST83939"            # a Meta Esemenykezelo "Teszteszemenyek"
 TIKTOK_TESZT_KOD = "TEST83543"         # a TikTok Esemenykezelo "Teszteszemenyek" kodja (ARNYEK pixel DB2GTTJC77UE4D1NE4MG); a korabbi szintetikus TEST_MOSAIC_QA2 helyett (2026-10-06)
 GA4_TESZT_MEASUREMENT_ID = "G-M5MLRLNQBP"   # a GA4 TESZT-property (az elo G-H4206SQ0Q7 a kodban tiltott); a Measurement Protocol secret: GA4_TESZT_API_SECRET (titok)
 MERES_NAPLO_TELJES = "1"                # CSAK elonezet (sajat teszt-IP): a naploban a TELJES kikuldott payload; ott, ahol nincs beallitva, a nyers IP maszkolt
+# SALONIC-DIRECT SAFETY NET (DECISION #127 (b), lasd docs/booking-engine/SALONIC_DIRECT.md): CSAK ELONEZET. Az eles ([vars]) NEM kapja meg, amig a go-live (GPT + tulajdonos jovahagyas) meg nincs.
+# A kornyezeti kapu ONMAGABAN nem kapcsol be semmit: a D1-kapcsolo (meres_kapcsolo: salonic_direct / salonic_direct:<uzletag>) alapbol KI, es a ket titok (SD_HMAC_KEY_V1, GUEST_HMAC_KEY_V1; Secret, Preview) nincs beallitva -> az sd inert.
+MERES_SALONIC_DIRECT = "1"
+MERES_SD_NS = "smoke"                   # az sd azonosito nevtere az elonezeten (az eles nevtere: prod, az alapertelmezes)
 
 # A szemelyre szabott ajandekkartyak fotoi (Cloudflare KV, lasd AJANDEK.md "Foto-tarolas"): eles es elonezeti nevter kulon.
 # A kezelo az AJANDEK_FOTOK kotesen at olvassa / irja; nelkule a fotofeltoltes ki van kapcsolva.

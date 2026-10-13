@@ -10,6 +10,7 @@ import { hashEmail, hashTelefon, hashAzonosito } from './hash.js';
 import { erkezesTisztit } from './erkezes.js';
 import { hozzajarulasTisztit, platformSzabaly } from './hozzajarulas.js';
 import { KEREM_EPITO, kuldes, PLATFORMOK } from './platformok.js';
+import { oszlopokBiztosit } from './sema-seged.js';
 
 const SEMA = [
   'CREATE TABLE IF NOT EXISTS meres_erkezes (source_id TEXT PRIMARY KEY, uzletag TEXT NOT NULL, tipus TEXT NOT NULL, attr TEXT NOT NULL, hozz TEXT NOT NULL, ua TEXT, ip TEXT, oldal TEXT, bongeszo TEXT, ido INTEGER NOT NULL, frissitve INTEGER NOT NULL) WITHOUT ROWID',
@@ -19,7 +20,15 @@ const SEMA = [
   'CREATE INDEX IF NOT EXISTS meres_kuldes_source ON meres_kuldes (source_id)',
 ];
 const kesz = new WeakSet();
-export async function meresSema(db) { if (kesz.has(db)) return; await db.batch(SEMA.map((s) => db.prepare(s))); kesz.add(db); }
+// Salonic-direct safety net (DECISION #127 (b)): ADDITIV oszlopok a naplora (a meglevo sorok forras = 'motor'); salonic_uuid: egy Salonic-foglalasbol egy esemenytipus egy platformra - az mb_ es az sd_ identitas kozott is
+const KULDES_BOVITES = [['forras', "TEXT NOT NULL DEFAULT 'motor'"], ['attr_minoseg', 'TEXT'], ['attr_jelek', 'TEXT'], ['salonic_uuid', 'TEXT'], ['ertek_minoseg', 'TEXT']];
+export async function meresSema(db) {
+  if (kesz.has(db)) return;
+  await db.batch(SEMA.map((s) => db.prepare(s)));
+  await oszlopokBiztosit(db, 'meres_kuldes', KULDES_BOVITES);
+  await db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS meres_kuldes_uuid ON meres_kuldes (salonic_uuid, esemeny_nev, platform) WHERE salonic_uuid IS NOT NULL').run();
+  kesz.add(db);
+}
 const sec = (now) => Math.floor(now / 1000);
 // Ujraprobalhato sor: hiba, tiltas (a beallitas kozben valtozhat), halasztas, a veszkapcsolo miatt kihagyott; a modell szerint kihagyott / lemondott / elkuldott sor VEGLEGES.
 const ujraprobalhato = (sor, t) => ['hiba', 'tiltva', 'halasztva', 'nyitott'].includes(sor.allapot) || (sor.allapot === 'kihagyva' && /^veszkapcsolo/.test(sor.indok || '')) || (sor.allapot === 'folyamatban' && t - sor.frissitve > ELAKADAS_MP);
@@ -102,6 +111,10 @@ export async function elosztas(db, fk, deps = {}) {
   const t = sec(now);
   const lista = esemenyek(fk, konzultacioTabla(env));
   if (!lista.length) return { allapot: 'nincs_esemeny', miert: 'a forras-entitasbol nem kepezheto esemeny' };
+  // D5 (DECISION #131): ismeretlen tenyleges ar (kedvezmenygyanu / nincs ar) -> a tenyleges arra epulo esemeny ERTEK NELKUL megy; a konzultacio-tabla erteke (fix) marad
+  if (fk.ertek_minoseg && fk.ertek_minoseg !== 'exact') for (const e of lista) if (e.ertek_forras === 'tenyleges_ar') e.ertek_nelkul = true;
+  // az ertek forrasa a naplohoz / a QA-hoz (pl. 'szolgaltatas_lista' a Salonic-direct, Zap-ar nelkuli esetben); a motoros foglalasnal nincs ilyen mezo
+  if (fk.ertek_forras_jel) for (const e of lista) if (e.ertek_forras === 'tenyleges_ar') e.ertek_forras = fk.ertek_forras_jel;
   const erkRow = await erkezesOlvas(db, fk.source_entity_id);
   const erk = erkRow ? erkRow.attr : {};
   const hozz = hozzajarulasTisztit(erkRow ? erkRow.hozz : null);
@@ -118,19 +131,25 @@ export async function elosztas(db, fk, deps = {}) {
 
   // esemeny kuldese ELOTT elo allapot-ellenorzes (a levelek sorrendjetol fuggetlen: mindig az aktualis allapot)
   let elo = 'nincs_ellenorzes';
-  if (deps.eloEllenorzes) {
+  if (deps.eloEllenorzes && !fk.fixAllapot) { // fk.fixAllapot (reschedule_confirmed / suspected): a cellak rogzitett allapotot kapnak, elo lekeres nem kell
     try { elo = await deps.eloEllenorzes(); } catch (e) { elo = 'ismeretlen'; }
     osszefoglalo.elo_allapot = elo;
     if (elo === 'ismeretlen') { osszefoglalo.allapot = 'halasztva'; osszefoglalo.miert = 'a foglalas elo allapota nem ellenorizheto az esemeny kuldese elott'; osszefoglalo.ujraprobal_mp = 180; }
   }
   const naploz = async (e, platform, mezok) => {
-    const sor = { esemeny_id: e.esemeny_id, esemeny_nev: e.nev, esemeny_tipus: e.tipus, platform, platform_nev: null, uzletag: fk.uzletag, source_id: fk.source_entity_id, ertek: e.ertek, penznem: e.penznem, hozzajarulas: JSON.stringify({ allapot: hozz, szabaly: ctxAlap.hozz[platform] }), allapot: 'tiltva', indok: null, kerelem: null, http_status: null, platform_valasz: null, kuldo: null, ...mezok };
+    const sor = { esemeny_id: e.esemeny_id, esemeny_nev: e.nev, esemeny_tipus: e.tipus, platform, platform_nev: null, uzletag: fk.uzletag, source_id: fk.source_entity_id, ertek: e.ertek_nelkul ? null : e.ertek, penznem: e.ertek_nelkul ? null : e.penznem, hozzajarulas: JSON.stringify({ allapot: hozz, szabaly: ctxAlap.hozz[platform] }), allapot: 'tiltva', indok: null, kerelem: null, http_status: null, platform_valasz: null, kuldo: null, ...mezok };
+    // a motoros foglalasnal forras = 'motor' (a fk.uuid a Salonic-UUID, ha ismert), a safety netnel 'salonic_direct' + attr_minoseg / attr_jelek / ertek_minoseg
+    const bov = { forras: fk.forras || 'motor', attr_minoseg: fk.attr_minoseg || null, attr_jelek: fk.attr_jelek ? JSON.stringify(fk.attr_jelek) : null, salonic_uuid: fk.uuid ? String(fk.uuid).toLowerCase() : null, ertek_minoseg: fk.ertek_minoseg || null };
     const meglevo = await db.prepare('SELECT id, allapot, probalkozas, frissitve FROM meres_kuldes WHERE esemeny_id = ?1 AND platform = ?2').bind(e.esemeny_id, platform).first();
     if (meglevo && !ujraprobalhato(meglevo, t)) return { id: meglevo.id, allapot: meglevo.allapot, duplikalt: true }; // egy megszakadt hivas sora (folyamatban) ELAKADAS_MP utan ujraprobalhato
     if (meglevo && meglevo.probalkozas >= MAX_PROBA && meglevo.allapot === 'hiba') return { id: meglevo.id, allapot: 'hiba', duplikalt: true, indok: 'tul sok sikertelen probalkozas' };
-    if (meglevo) { await db.prepare('UPDATE meres_kuldes SET allapot = ?2, indok = ?3, platform_nev = ?4, kerelem = ?5, http_status = ?6, platform_valasz = ?7, kuldo = ?8, hozzajarulas = ?9, ertek = ?10, probalkozas = probalkozas + 1, frissitve = ?11 WHERE id = ?1').bind(meglevo.id, sor.allapot, sor.indok, sor.platform_nev, sor.kerelem, sor.http_status, sor.platform_valasz, sor.kuldo, sor.hozzajarulas, sor.ertek, t).run(); return { id: meglevo.id, allapot: sor.allapot }; }
-    const r = await db.prepare('INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, indok, ertek, penznem, hozzajarulas, kerelem, http_status, platform_valasz, kuldo, probalkozas, letrehozva, frissitve) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,1,?17,?17) ON CONFLICT(esemeny_id, platform) DO NOTHING')
-      .bind(sor.esemeny_id, sor.esemeny_nev, sor.esemeny_tipus, sor.platform, sor.platform_nev, sor.uzletag, sor.source_id, sor.allapot, sor.indok, sor.ertek, sor.penznem, sor.hozzajarulas, sor.kerelem, sor.http_status, sor.platform_valasz, sor.kuldo, t).run();
+    if (meglevo) { const rr = await db.prepare('UPDATE meres_kuldes SET allapot = ?2, indok = ?3, platform_nev = ?4, kerelem = ?5, http_status = ?6, platform_valasz = ?7, kuldo = ?8, hozzajarulas = ?9, ertek = ?10, probalkozas = probalkozas + 1, frissitve = ?11 WHERE id = ?1 AND probalkozas = ?12').bind(meglevo.id, sor.allapot, sor.indok, sor.platform_nev, sor.kerelem, sor.http_status, sor.platform_valasz, sor.kuldo, sor.hozzajarulas, sor.ertek, t, meglevo.probalkozas).run();
+      // COMPARE-AND-SWAP (2. kodattekintes): az ujraprobalhato cellat PONTOSAN EGY hivas foglalhatja le (a probalkozas-szamlalo az olvasott ertek volt); ha egy parhuzamos hivas megelozott, az nem kuld ujra (egymas utan hivva a viselkedes valtozatlan)
+      if (!(rr.meta && rr.meta.changes > 0)) return { id: meglevo.id, allapot: 'folyamatban', duplikalt: true };
+      return { id: meglevo.id, allapot: sor.allapot }; }
+    // ON CONFLICT DO NOTHING (cel nelkul): barmelyik egyedi megkotes (esemeny_id + platform, VAGY salonic_uuid + esemenynev + platform) utkozese = egy masik hivas / identitas mar beszurta
+    const r = await db.prepare('INSERT INTO meres_kuldes (esemeny_id, esemeny_nev, esemeny_tipus, platform, platform_nev, uzletag, source_id, allapot, indok, ertek, penznem, hozzajarulas, kerelem, http_status, platform_valasz, kuldo, probalkozas, letrehozva, frissitve, forras, attr_minoseg, attr_jelek, salonic_uuid, ertek_minoseg) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,1,?17,?17,?18,?19,?20,?21,?22) ON CONFLICT DO NOTHING')
+      .bind(sor.esemeny_id, sor.esemeny_nev, sor.esemeny_tipus, sor.platform, sor.platform_nev, sor.uzletag, sor.source_id, sor.allapot, sor.indok, sor.ertek, sor.penznem, sor.hozzajarulas, sor.kerelem, sor.http_status, sor.platform_valasz, sor.kuldo, t, bov.forras, bov.attr_minoseg, bov.attr_jelek, bov.salonic_uuid, bov.ertek_minoseg).run();
     if (!(r.meta && r.meta.changes > 0)) return { allapot: 'folyamatban', duplikalt: true }; // egy masik hivas mar beszurta
     const uj = await db.prepare('SELECT id FROM meres_kuldes WHERE esemeny_id = ?1 AND platform = ?2').bind(e.esemeny_id, platform).first();
     return { id: uj.id, allapot: sor.allapot };
@@ -138,10 +157,11 @@ export async function elosztas(db, fk, deps = {}) {
   const ir = (id, mezok) => db.prepare('UPDATE meres_kuldes SET allapot = ?2, indok = ?3, platform_nev = ?4, kerelem = ?5, http_status = ?6, platform_valasz = ?7, kuldo = ?8, frissitve = ?9 WHERE id = ?1').bind(id, mezok.allapot, mezok.indok ?? null, mezok.platform_nev ?? null, mezok.kerelem ?? null, mezok.http_status ?? null, mezok.platform_valasz ?? null, mezok.kuldo ?? null, t).run();
 
   for (const e of lista) {
-    const sor = { esemeny_id: e.esemeny_id, nev: e.nev, tipus: e.tipus, ertek: e.ertek, ertek_forras: e.ertek_forras, salonic_ar: e.salonic_ar, nyitott: e.nyitott, platformok: {} };
+    const sor = { esemeny_id: e.esemeny_id, nev: e.nev, tipus: e.tipus, ertek: e.ertek_nelkul ? null : e.ertek, ertek_forras: e.ertek_forras, salonic_ar: e.salonic_ar, nyitott: e.nyitott, platformok: {} };
     for (const platform of PLATFORMOK) {
       let mezok;
-      if (kikapcsolva(kapcsolok, fk.uzletag, platform)) mezok = { allapot: 'kihagyva', indok: 'veszkapcsolo: ' + kikapcsolva(kapcsolok, fk.uzletag, platform) };
+      if (fk.fixAllapot) mezok = { allapot: fk.fixAllapot.allapot, indok: fk.fixAllapot.indok }; // Salonic-direct: reschedule_confirmed (kihagyva) / reschedule_suspected (halasztva = hold)
+      else if (kikapcsolva(kapcsolok, fk.uzletag, platform)) mezok = { allapot: 'kihagyva', indok: 'veszkapcsolo: ' + kikapcsolva(kapcsolok, fk.uzletag, platform) };
       else if (elo === 'torolve') mezok = { allapot: 'kihagyva', indok: 'a foglalas az esemeny elkuldese elott lemondva (elo allapot-ellenorzes)' };
       else if (elo === 'ismeretlen') mezok = { allapot: 'halasztva', indok: 'a foglalas elo allapota nem ellenorizheto: az esemeny nem megy ki, amig nem tudjuk, hogy a foglalas el' };
       else {

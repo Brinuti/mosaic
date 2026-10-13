@@ -310,7 +310,7 @@ test('nevtablaSalonicbol: a munkatars-oldalbol (azonosito + nev) es a Salonic-li
   };
   const adapterGyar = () => ({
     getPlace: async (uz) => ({ name: uz === 'hair' ? 'Mosaic Hair' : 'Mosaic Oxigén' }),
-    getServices: async (uz) => (uz === 'hair' ? [{ serviceId: '232804', name: 'Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)' }] : [{ serviceId: '466147', name: 'AKCIÓS Hajkamerás vizsgálat és konzultáció' }]),
+    getServices: async (uz) => (uz === 'hair' ? [{ serviceId: '232804', name: 'Fodrász konzultáció (9.900 Ft helyett most 0 Ft!)', activePrice: 0 }] : [{ serviceId: '466147', name: 'AKCIÓS Hajkamerás vizsgálat és konzultáció', activePrice: 8990 }, { serviceId: '466148', name: 'Ár nélküli szolgáltatás', activePrice: null }]),
     getStaff: async () => [],
   });
   const tabla = await nevtablaSalonicbol({ fetchImpl, adapterGyar, uzletagok: ['hair', 'oxygen', 'laser'] });
@@ -318,10 +318,13 @@ test('nevtablaSalonicbol: a munkatars-oldalbol (azonosito + nev) es a Salonic-li
   assert.ok(tabla.munkatarsak.some((x) => x.placeId === 14409 && x.employeeId === 31988 && x.nev === 'Bozsoki - Harangozó Tündi'));
   assert.ok(tabla.helyek.some((x) => x.placeId === 10823 && x.nev === 'Mosaic Hair'));
   assert.deepEqual(tabla.szolgaltatasok.filter((x) => x.placeId === 10823).map((x) => x.serviceId), ['232804']);
+  // Salonic-direct (D5): a szolgaltatas-lista aktualis ara (data-price) is a nevtablaba kerul ('ar' sor; a hamis adapter a nem-hair fiokoknak - oxigen, laser - ugyanazt a listat adja); a 0 valodi ar, az ures (null) nem kerul be; kedvezmeny / kupon NINCS benne
+  assert.deepEqual(tabla.arak.map((x) => [x.placeId, x.serviceId, x.ar]).sort(), [[10823, '232804', 0], [14409, '466147', 8990], [14586, '466147', 8990]]);
   const { db, ...D } = d1(); const adb = { prepare: D.prepare, batch: D.batch };
   const n1 = await nevtablaMent(adb, tabla, 1000); const n2 = await nevtablaMent(adb, tabla, 2000);
   assert.equal(n1, n2); assert.equal(db.prepare('SELECT COUNT(*) AS n FROM salonic_nevtabla').get().n, n1, 'ujrafuttatva nem duplaz');
   assert.equal((await nevtablaBetolt(adb)).frissitve, 2);
+  assert.deepEqual((await nevtablaBetolt(adb)).arak.map((x) => [x.placeId, x.serviceId, x.ar]).sort(), [[10823, '232804', 0], [14409, '466147', 8990], [14586, '466147', 8990]], 'a betoltes visszaadja az ar sorokat');
 });
 
 // --- HTTP ----------------------------------------------------------------------------------------------------------------------------------
