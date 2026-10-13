@@ -1,5 +1,5 @@
 // MEDICAL PIERCING - TikTok Events API (szerveroldali) foglalas-esemeny a Salonic altal IGAZOLT foglalasokbol.
-// Esemenynev: SAJAT (custom) "IgazoltFoglalas", NEM "Schedule" (GPT-dontes 2026-10-13): a kampany a bongeszos, URL-szabalyos
+// Esemenynev (2026-10-13 16:48-tol): "SubmitForm" (korabban "IgazoltFoglalas"), NEM "Schedule" (GPT-dontes 2026-10-13): a kampany a bongeszos, URL-szabalyos
 // (event_id nelkuli) SCHEDULE-ra optimalizal; azonos nevvel a TikTok nem deduplikalna -> dupla szamolas az optimalizacios
 // esemenyen. Igy masodlagos meres, a kampany tanulasat nem erinti.
 //
@@ -12,7 +12,7 @@
 // piercing-tipus, helyszin, uj/visszatero jeloles. A nem-azonosito mezokon a meres.js vedohaloja (vanErzekeny) fut: talalat -> semmi.
 import { esemenyId, vanErzekeny, SEMLEGES_URL } from './meres.js';
 import { maszk, kitakar, ELES_HOST } from './google-ads.js';
-export const TIKTOK_ESEMENY = 'IgazoltFoglalas';
+export const TIKTOK_ESEMENY = 'SubmitForm'; // Feri dontese (2026-10-13 16:48): a split teszthez Leads -> Submit form; a Salonic-oldali GTM-cimke (68) ki, mi kuldjuk
 
 export const TIKTOK_VEGPONT = 'https://business-api.tiktok.com/open_api/v1.3/event/track/';
 export const TIKTOK_PIXEL = 'CU2CR03C77UAQJITQK80';
@@ -53,7 +53,7 @@ export function jogosult(sor, most) {
   if (sor.tipus === 'ful') return { ok: false, miert: 'divat_fulpiercing' }; // Feri dontese (2026-10-13): nem optimalizalunk ra
   if (sor.igazolas !== 'igazolt') return { ok: false, miert: 'nem_igazolt' };
   if (Number(sor.hozzajarulas_hirdetes) !== 1) return { ok: false, miert: 'nincs_hozzajarulas' };
-  if (!sor.tiktok_ttclid) return { ok: false, miert: 'nincs_ttclid' };
+  if (!sor.tiktok_ttclid && !sor.tiktok_ttp) return { ok: false, miert: 'nincs_tiktok_azonosito' }; // ttclid VAGY _ttp (hozzajarulassal)
   const ido = esemenyIdo(sor);
   if (!Number.isFinite(ido) || most - ido > TIKTOK_ABLAK || ido > most + 300) return { ok: false, miert: 'ablakon_kivul' };
   const k = Number(sor.tiktok_kattintas_ido);
@@ -69,7 +69,8 @@ export const esemenyIdo = (sor) => Number(sor.foglalas_ido || sor.letrehozva);
  * Dob, ha a nem-azonosito mezok barmelyike erzekeny adatot tartalmazna (vedohalo: inkabb semmi ne epuljon).
  */
 export function tiktokTorzs(sor) {
-  const user = { ttclid: String(sor.tiktok_ttclid) };
+  const user = {};
+  if (sor.tiktok_ttclid) user.ttclid = String(sor.tiktok_ttclid);
   if (sor.tiktok_ttp) user.ttp = String(sor.tiktok_ttp);
   const ertek = Number(sor.ertek);
   const esemeny = { event: TIKTOK_ESEMENY, event_time: esemenyIdo(sor), event_id: esemenyId(sor.kulcs), page: { url: SEMLEGES_URL } };
