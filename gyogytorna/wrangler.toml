@@ -18,3 +18,15 @@ GY_ORIGINS = "https://www.gyogytornaszom.hu,https://gyogytornaszom.hu"
 binding = "GY_DB"
 database_name = "mp-meres"
 database_id = "68a1b80e-ab8e-48ac-9ef7-5fc02c07326e"
+
+# Elonezet: a Playwright-probak "g" azonositoja (g:pw-proba) TESZT foglalasnak szamit: rekordja teszt=1, token es esemeny nincs. (Pages: a nem oroklodo
+# blokkokat az elonezetre kulon ismetelni kell.)
+[env.preview.vars]
+GY_ATTR_NELKUL = "1"
+GY_ORIGINS = "https://www.gyogytornaszom.hu,https://gyogytornaszom.hu"
+GY_TESZT_G = "g:pw-proba"
+
+[[env.preview.d1_databases]]
+binding = "GY_DB"
+database_name = "mp-meres"
+database_id = "68a1b80e-ab8e-48ac-9ef7-5fc02c07326e"

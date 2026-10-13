@@ -3,6 +3,7 @@
 //   node tools/build.mjs && node tools/test-gy-motor-pw.mjs [desktop|mobil]
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { execFileSync } from 'node:child_process';
 import { salonicHamis } from './salonic-hamis.mjs';
 import { indit } from './serve.mjs';
 const { chromium } = createRequire('/opt/node-tools/node_modules/')('playwright');
@@ -16,11 +17,13 @@ const szerverHamis = salonicHamis({ szabad: {} }); // a szerver szerint a foglal
 const valos = globalThis.fetch;
 globalThis.fetch = (u, i) => (String(u).includes('salonic.hu') ? szerverHamis(u, i) : valos(u, i));
 
-const srv = await indit({ env: { GY_HMAC_KULCS: 'pw-proba-kulcs-0123456789abcdef' } });
-const ORIGIN = `http://127.0.0.1:${srv.port}`;
+// ELONEZET=<url>: a telepitett elonezeten fut (a szerver a VALODI Salonicot latja; a proba "g" azonositoja teszt-foglalas: token es esemeny NINCS - ez a vart eredmeny)
+const ELONEZET = process.env.ELONEZET ? process.env.ELONEZET.replace(/\/$/, '') : null;
+const srv = ELONEZET ? { port: 0, env: null, leall: async () => {} } : await indit({ env: { GY_HMAC_KULCS: 'pw-proba-kulcs-0123456789abcdef' } });
+const ORIGIN = ELONEZET || `http://127.0.0.1:${srv.port}`;
 const naplo = [];
 const kulso = [];
-const b = await chromium.launch({ args: [`--ip-address-space-overrides=127.0.0.1:${srv.port}=public`] }) // a mockolt https Salonic-keret es a helyi szerver kozott a Private Network Access ne blokkoljon;
+const b = await chromium.launch({ args: ['--disable-http2', '--disable-quic', `--ip-address-space-overrides=127.0.0.1:${srv.port}=public`] }) // a mockolt https Salonic-keret es a helyi szerver kozott a Private Network Access ne blokkoljon;
 const ctx = await b.newContext({ ...(mod === 'mobil' ? { viewport: { width: 390, height: 780 }, isMobile: true, hasTouch: true } : { viewport: { width: 1280, height: 800 } }), ignoreHTTPSErrors: true });
 await ctx.route('**/*', async (route) => {
   const u = new URL(route.request().url());
@@ -33,6 +36,18 @@ await ctx.route('**/*', async (route) => {
     }
     const r = await bongeszoHamis(u.href);
     return route.fulfill({ status: r.status, contentType: r.headers.get('content-type') || 'text/html', body: await r.text(), headers: { 'access-control-allow-origin': '*' } });
+  }
+  if (u.origin === ORIGIN && ELONEZET) { // a sandbox-proxy a Chromiumbol megbizhatatlan: az elonezet kereseit curl-lel (ujraprobalkozassal) vegezzuk
+    const q = route.request();
+    const args = ['-s', '-i', '--retry', '4', '--retry-all-errors', '-X', q.method(), u.href, ...Object.entries(q.headers()).filter(([k]) => ['content-type', 'cookie', 'origin'].includes(k)).flatMap(([k, v]) => ['-H', `${k}: ${v}`]), ...(q.postData() ? ['--data-binary', q.postData()] : [])];
+    const nyers = execFileSync('curl', args, { maxBuffer: 20e6 }).toString('latin1');
+    const feje = nyers.split(/\r?\n\r?\n/); // tobb fejlec-blokk lehet (Connection Established / 100): az utolso HTTP blokk kell
+    let i = 0; while (i < feje.length - 1 && /^HTTP\/[\d.]+ (100|200 Connection)/.test(feje[i])) i++;
+    const fejSor = feje[i].split(/\r?\n/);
+    const status = +fejSor[0].split(' ')[1];
+    const hdr = {}; for (const sor of fejSor.slice(1)) { const k = sor.indexOf(':'); if (k > 0) { const n = sor.slice(0, k).toLowerCase(); hdr[n] = hdr[n] ? hdr[n] + '\n' + sor.slice(k + 1).trim() : sor.slice(k + 1).trim(); } }
+    delete hdr['content-length']; delete hdr['content-encoding']; delete hdr['transfer-encoding'];
+    return route.fulfill({ status, headers: hdr, body: Buffer.from(feje.slice(i + 1).join('\r\n\r\n'), 'latin1') });
   }
   if (u.origin === ORIGIN) return route.continue();
   kulso.push(u.hostname);
@@ -80,8 +95,15 @@ lep('az idopont utan a Salonic adatlapja beagyazva');
 // a Salonic "sikeres foglalas": az iframe a koszonooldalra navigal -> a launcher uzen -> a motor POST + atiranyit
 const keret = oldal.frameLocator('[data-gy-motor] iframe[name="gy-adatlap"]');
 await keret.locator('#foglal').click();
-await oldal.waitForURL(`${ORIGIN}/allapot-ok/`, { timeout: 15000 });
+await oldal.waitForURL(`${ORIGIN}/allapot-ok/`, { timeout: 30000 });
 lep('a foglalas utan a parameter-mentes /allapot-ok/ oldal (az URL-ben nincs semmilyen adat)');
+if (ELONEZET) {
+  await oldal.waitForTimeout(1500);
+  assert.equal(await oldal.evaluate(() => (window.dataLayer || []).filter((e) => e.event === 'foglalas_kesz').length), 0);
+  lep('elonezet: a teszt-foglalas (g:pw-proba) rekordja teszt=1, NINCS token es NINCS esemeny');
+  assert.deepEqual(kulso, [], 'kulso kerelem: ' + kulso.join(','));
+  await b.close(); console.log(`PW elonezet ${mod}: ${siker} lepes rendben`); process.exit(0);
+}
 await oldal.waitForFunction(() => (window.dataLayer || []).some((e) => e.event === 'foglalas_kesz'), null, { timeout: 15000 });
 const esemeny = await oldal.evaluate(() => window.dataLayer.filter((e) => e.event === 'foglalas_kesz'));
 assert.equal(esemeny.length, 1);
