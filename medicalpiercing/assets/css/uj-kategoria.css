@@ -1,0 +1,142 @@
+/* A kategoria-oldalak (/uj/migren-piercing, /uj/shenmen-piercing, /uj/klimax-piercing, /uj/slim-etvagycsokkento-piercing) kiegeszito stilusa.
+   Az uj fooldal nyelvet beszeli: ugyanakkora hos, ugyanazok a dobozok (ekszer, akcio, ar, helyszin, media, csapat, Google-velemeny) a
+   uj-fooldal.css-bol; ez a fajl csak a kategoria-oldalak egyedi dobozait adja (video, miert mukodik, Facebook-kommentek, figyelmeztetes, 93%,
+   panaszok, hosszu szoveg). Forras: tools/uj-oldalak/kategoria.mjs. SZINEK: a fooldal palettaja (--rose, --beige, --slate). */
+
+/* a fooldal szelessege es szekcio-kozei (a tobbi tukor-oldal 1120 px-es, tomorebb) */
+.oldal-kategoria main>section{margin-block:26px}
+.oldal-kategoria main .tarto{width:min(1240px,100% - 48px)}
+.oldal-kategoria .kat-egy{margin-block:26px}
+
+/* hos: ugyanaz, mint a fooldalon; kiegeszitve az ertekelessel es a cimsor feletti felirattal */
+.kat-hos .hos-cim{grid-area:cim;align-self:end}
+.kat-hos .hos-cim .felirat{margin:0 0 14px}
+.kat-hos .hos-cim h1{margin:0 0 20px}
+.kat-hos .hos-kep>img{object-position:50% 28%}
+.kat-hos .hos-szoveg .gombsor{margin-top:22px}
+.kat-hos .hos-linkek{flex-wrap:wrap}
+.kat-hos .hos-linkek a{white-space:nowrap}
+.kat-ertekeles{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:16px 0 0;font-size:.9rem;font-weight:600}
+.kat-ertekeles a{color:var(--slate);text-decoration-color:var(--rose);text-decoration-thickness:2px;text-underline-offset:4px}
+.kat-ertekeles .csillagok .ik{width:1.05rem;height:1.05rem}
+
+/* Google-velemenyek: cim, a fooldal widgetje, "tovabb" link */
+.kat-fej{text-align:center;margin-bottom:18px}
+.kat-fej h2{margin-bottom:6px}
+.kat-alcim{margin:0;color:var(--mut);font-size:1rem}
+.kat-tovabb{margin-top:16px;text-align:center}
+.kat-tovabb .szoveg-link{font-size:.98rem}
+
+/* kozos doboz: a fooldal "panel" / "valasztas" dobozainak nyelve (beige -> feher atmenet, lagy arnyek) */
+.kat-doboz{display:grid;gap:34px;align-items:center;padding:34px;border:1px solid var(--line);border-radius:var(--r-l);background:linear-gradient(100deg,var(--beige) 0,#fff 82%);box-shadow:var(--sh-s)}
+.kat-doboz h2{font-size:clamp(1.45rem,2.3vw,2rem)}
+.kat-doboz-szoveg>*:last-child{margin-bottom:0}
+.kat-doboz-szoveg>p:not(.felirat){font-size:.98rem}
+.kat-doboz a:not(.gomb):not(.video):not(.szoveg-link){color:var(--slate);text-decoration-color:var(--rose);text-decoration-thickness:2px;text-underline-offset:4px}
+.kat-doboz .pipak{margin:0 0 18px}
+.kat-doboz .pipak li{margin-bottom:9px;font-size:.98rem}
+.kat-doboz .gomb{margin-top:6px}
+
+/* "Igy mukodik": video + szoveg */
+.kat-video{grid-template-columns:minmax(0,1.08fr) minmax(0,1fr)}
+.kat-video-kep .video{display:block}
+.kat-video-kep .video-kep{aspect-ratio:16/9;border-radius:22px;box-shadow:var(--sh)}
+.kat-video-kep .lejatszo{width:76px;height:76px;margin:-38px 0 0 -38px}
+.kat-video-kep .lejatszo .ik{width:30px;height:30px}
+.kat-video-kep .beagyaz{height:min(var(--mag,420px),520px);border-radius:22px;box-shadow:var(--sh)}
+.kat-video-kepes{grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr)}
+.kat-video-img{display:block;width:100%;max-width:420px;max-height:520px;margin-inline:auto;object-fit:cover;border-radius:22px;box-shadow:var(--sh)}
+.kat-video-egy{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
+.kat-video-egy .kat-video-kep{width:min(100%,820px);order:2}
+.kat-video-egy .kat-doboz-szoveg{display:flex;flex-direction:column;align-items:center}
+
+/* "Miert mukodnek a piercingjeink?" */
+.kat-miert{grid-template-columns:minmax(150px,250px) minmax(0,1fr);gap:44px}
+.kat-miert-kep{display:block;width:100%;max-width:250px;height:auto;margin-inline:auto;border-radius:0;mix-blend-mode:multiply}
+
+/* Facebook-kommentek: nagy, olvashato kartyak, kozepre rendezve, lapozhato, kattintasra nagyit */
+.kat-fb{display:block;padding:34px 30px 24px;text-align:center}
+.kat-fb .felirat{justify-content:center}
+.kat-fb-bev{max-width:62em;margin:0 auto}
+.kat-fb-bev,.kat-tipp{font-size:.98rem}
+.kat-fb-kar{margin-top:22px}
+.kat-fb .kar-sav{width:fit-content;max-width:100%;margin-inline:auto;gap:18px;padding:4px 2px 14px}
+.kat-fb .kar-dia{flex:0 0 min(80vw,372px);border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:var(--sh-s)}
+.kat-fb .kar-dia img{aspect-ratio:1/1;object-fit:cover;object-position:50% 0;cursor:zoom-in}
+.kat-fb .kar-gomb{top:calc(50% - 8px);width:48px;height:48px;box-shadow:0 3px 12px rgba(0,0,0,.2)}
+.kat-fb .kar-gomb:hover:not(:disabled){background:var(--rose);color:#fff}
+.kat-fb .kar-gomb .ik{width:24px;height:24px;stroke-width:2.2}
+.kat-fb .kar-elozo{left:-10px}
+.kat-fb .kar-kov{right:-10px}
+.kat-fb p.kar-szam{display:inline-block;margin:2px 0 0;padding:3px 14px;border-radius:99px;background:rgba(69,70,89,.88);color:#fff;font-size:.82rem;font-weight:700}
+.kat-fb p.kat-tipp{margin:10px 0 0;color:var(--mut);font-size:.9rem}
+
+/* "Nem hozzaerto kezekben": figyelmezteto doboz */
+.kat-figyelem{grid-template-columns:minmax(120px,210px) minmax(0,1fr);gap:40px;border-color:#efd2cd;background:linear-gradient(100deg,#fbefec 0,#fff 80%)}
+.kat-figyelem-kep{display:block;width:100%;max-width:210px;height:auto;margin-inline:auto;border-radius:0;mix-blend-mode:multiply}
+.kat-hiba{margin:0 0 16px}
+.kat-hiba li{position:relative;margin:0 0 9px;padding-left:28px;font-size:.98rem}
+.kat-hiba li::before{content:"×";position:absolute;left:0;top:.18em;width:1.2em;height:1.2em;border-radius:50%;background:#b0463b;color:#fff;font-size:.9rem;font-weight:800;line-height:1.2em;text-align:center}
+
+/* 93% */
+.kat-stat{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:40px}
+.kat-stat-kep{display:block;width:100%;height:auto;max-height:330px;object-fit:cover;border-radius:20px}
+.kat-doboz-szoveg>p.kat-szam{margin:0;font-size:clamp(3.6rem,8vw,6.2rem);font-weight:800;line-height:1;letter-spacing:-.03em;color:var(--rose)}
+.kat-doboz-szoveg>p.kat-szam-szoveg{margin:6px 0 12px;font-size:clamp(1.15rem,1.9vw,1.5rem);font-weight:700;line-height:1.3;color:var(--navy)}
+.kat-doboz-szoveg>p.kat-lab{margin:0;font-size:.78rem;line-height:1.5;color:var(--mut)}
+
+/* panaszok: a fooldal "panel" stilusa, egy oszlopban */
+.kat-panasz{grid-template-columns:1.2fr 1fr}
+.kat-panasz .panel-szoveg{padding:34px 12px 34px 40px}
+.kat-panasz .panel-szoveg>p:not(.felirat){font-size:.98rem}
+.kat-panasz>img{min-height:330px;object-position:50% 25%}
+
+/* minden mas tartalom (a kategoria-sablon nem ismerte fel): a fooldal stilusu keretben; a hosszu szoveg keret nelkul, jol olvashatoan */
+.kat-egyeb{display:block;padding:30px 34px}
+.kat-cikk{padding:8px 0 0;font-size:.98rem;line-height:1.62}
+.kat-cikk>.tarto{max-width:1000px}
+.kat-cikk h2.cim{margin:22px 0 6px;font-size:clamp(1.3rem,2.1vw,1.7rem)}
+.kat-cikk p{margin-bottom:9px}
+.kat-cikk p:last-child{margin-bottom:0}
+
+/* ---------- tablet ---------- */
+@media (max-width:1000px){
+  .kat-video,.kat-miert,.kat-figyelem,.kat-stat,.kat-panasz{grid-template-columns:minmax(0,1fr)}
+  .kat-miert,.kat-figyelem{justify-items:center;gap:22px}
+  .kat-video{gap:24px}
+  .kat-stat{gap:24px}
+  .kat-stat-kep{max-height:300px}
+  .kat-panasz>img{order:-1;min-height:0;height:auto;aspect-ratio:4/3;-webkit-mask-image:linear-gradient(180deg,#000 62%,transparent);mask-image:linear-gradient(180deg,#000 62%,transparent)}
+  .kat-panasz .panel-szoveg{padding:26px 24px 28px}
+}
+
+/* ---------- mobil: a dobozokon belul minden kozepre, mint a fooldalon ---------- */
+@media (max-width:760px){
+  .oldal-kategoria main>section{margin-block:20px}
+  .oldal-kategoria .kat-egy{margin-block:20px}
+  .oldal-kategoria main .tarto{width:min(1240px,100% - 32px)}
+  .kat-hos .hos-cim .felirat{justify-content:center}
+  .kat-ertekeles{justify-content:center}
+  .kat-fej{margin-bottom:14px}
+  .kat-doboz{gap:20px;padding:24px 18px;text-align:center}
+  .kat-doboz .felirat{justify-content:center}
+  .kat-doboz-szoveg{display:flex;flex-direction:column;align-items:center}
+  .kat-doboz-szoveg>p:not(.felirat){font-size:.94rem}
+  .kat-doboz-szoveg>p.kat-szam{font-size:clamp(3.6rem,19vw,4.8rem)}
+  .kat-doboz-szoveg>p.kat-szam-szoveg{font-size:1.15rem}
+  .kat-doboz-szoveg>p.kat-lab{font-size:.72rem}
+  .kat-doboz .pipak li{font-size:.94rem}
+  .kat-fb{padding:26px 14px 20px}
+  .kat-fb .kar-dia{flex-basis:min(78vw,330px)}
+  .kat-fb .kar-gomb{width:40px;height:40px}
+  .kat-fb .kar-elozo{left:-4px}
+  .kat-fb .kar-kov{right:-4px}
+  .kat-hiba li{padding-left:0;text-align:center}
+  .kat-hiba li::before{position:static;display:inline-block;margin:0 8px 0 0;vertical-align:-.1em}
+  .kat-miert-kep,.kat-figyelem-kep{max-width:190px}
+  .kat-video-kep .lejatszo{width:60px;height:60px;margin:-30px 0 0 -30px}
+  .kat-panasz .panel-szoveg{padding:6px 18px 24px}
+  .kat-egyeb{padding:22px 16px}
+  .kat-cikk{font-size:.94rem}
+}
+@media print{.kat-fb .kar-gomb{display:none!important}}

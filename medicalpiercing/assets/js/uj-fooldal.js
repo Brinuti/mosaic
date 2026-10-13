@@ -144,9 +144,15 @@
   }
 
   // --- 4. Google-velemenyek: a Trustindex-widget (az oldalban a loader.js tolti, lapozhato); ha 9 mp alatt nem jelenik meg, a mentett tartalek latszik ---
+  // A Trustindex-loader a widgetet csak a lap kozeleben, felhasznaloi tevekenyseg utan tolti: a 9 masodperc attol szamit, hogy a doboz kozel er a kepernyohoz
+  // (a lap aljan levo doboz, pl. a kategoria-oldalakon, nem mutat tartalekot, amig a latogato oda nem gorget).
   const tiHely = $('[data-trustindex]'), tartalek = $('[data-tartalek]');
   if (tiHely && tartalek) {
-    window.setTimeout(() => { if (!$('.ti-widget', tiHely)) tartalek.hidden = false; }, 9000);
+    const indit = () => window.setTimeout(() => { if (!$('.ti-widget', tiHely)) tartalek.hidden = false; }, 9000);
+    if ('IntersectionObserver' in window) {
+      const figyel = new IntersectionObserver((e) => { if (e[0].isIntersecting) { figyel.disconnect(); indit(); } }, { rootMargin: '600px' });
+      figyel.observe(tiHely);
+    } else indit();
   }
 
   // --- 4b. kitelepulesek: a helyszin-csempek friss idopontjai (a build mar beirta; itt a tablazat mostani allapota, /api/kitelepulesek) ---

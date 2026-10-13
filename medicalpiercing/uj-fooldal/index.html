@@ -55,44 +55,10 @@
   </section>
 
   <!-- 2. GOOGLE-VÉLEMÉNYEK: a Trustindex-widget (lapozható, sok vélemény), ugyanaz, amit a mostani főoldal beágyaz. Ha nem töltődik be, a mentett tartalék látszik (uj-fooldal.js). -->
-  <section class="velemenyek tarto" aria-label="Google-vélemények">
-    <div class="velemeny-doboz">
-      <div class="ti-hely" data-trustindex><script defer async src="https://cdn.trustindex.io/loader.js?daf9c4e6731895546126ce4c8b5"></script></div>
-      <div class="velemeny-tartalek" data-tartalek hidden>
-        <div class="velemeny-fej">
-          <span class="google" aria-label="Google"><i>G</i><i>o</i><i>o</i><i>g</i><i>l</i><i>e</i></span>
-          <span class="pontszam">4.8</span>
-          <span class="csillagok" role="img" aria-label="5 csillagból 4,8"><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg><svg class="ik" aria-hidden="true"><use href="#i-star"/></svg></span>
-          <span class="darab"><b>4 962</b> Google-vélemény</span>
-          <a class="osszes" href="/migren-shenmen-piercing-velemenyek">Összes vélemény megtekintése <svg class="ik" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-        </div>
-        <div class="velemeny-lista">
-          <article class="velemeny"><header><span class="monogram" aria-hidden="true">A</span><div><b>Angéla Szemző</b></div></header><p>A fejfajas piercing 4 hét utan hatott, honapok ota gyötört a fejfajas, most egyik naprol a masikra eltunk, remélem, nem jon vissza!</p></article>
-          <article class="velemeny"><header><span class="monogram" aria-hidden="true">Z</span><div><b>Zseszti</b></div></header><p>Migrén és shenmen piercinget szúrattam a kecskeméti helyszínen. Nagyon kedves és segítőkész volt a szakember, teljesen meg vagyok elégedve. Másnap fájt a fejem, de ez normális, azóta nincs panaszom, és az utókezeléssel is minden rendben, nem fáj egyáltalán.</p></article>
-          <a class="velemeny velemeny-tovabb" href="/migren-shenmen-piercing-velemenyek"><b>Még több vendégvélemény</b><span>Olvasd el, mit írnak a vendégeink a Google-on.</span><span class="szoveg-link">Vélemények <svg class="ik" aria-hidden="true"><use href="#i-arrow"/></svg></span></a>
-        </div>
-      </div>
-    </div>
-  </section>
+<!--#velemenyek-->
 
   <!-- 3. ŐSZI AKCIÓ -->
-  <section class="tarto akcio-sor">
-    <div class="akcio">
-      <img class="akcio-kep" src="/assets/img/uj-ful-akcio.webp" width="460" height="553" alt="Fül több piercinggel" loading="lazy">
-      <div class="akcio-cim">
-        <p class="akcio-fo">Őszi piercing akció!</p>
-        <p class="akcio-al">A második féláron, a harmadik 5000 Ft!</p>
-      </div>
-      <ul class="akcio-arak" aria-label="Akciós árak">
-        <li><span>1 piercing</span><b>24 900 Ft</b></li>
-        <li><span>2 piercing</span><b>39 900 Ft</b></li>
-        <li class="legnepszerubb"><em>Legnépszerűbb</em><span>3 piercing</span><b>44 900 Ft</b></li>
-      </ul>
-      <div class="akcio-jobb">
-        <a class="gomb gomb-tomor" href="#arak">Érdekel az akció<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
-      </div>
-    </div>
-  </section>
+<!--#akcio-->
 
   <!-- 4. SZAKÉRTŐK -->
   <section class="tarto szakertok">
@@ -199,47 +165,7 @@
   </section>
 
   <!-- 7. PRÉMIUM ÉKSZEREK + helyben lapozható galéria (az élő főoldal összes ékszere) -->
-  <section class="tarto" id="ekszerek">
-    <div class="premium">
-      <div class="premium-szoveg">
-        <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-shield"/></svg>Prémium ékszerek</p>
-        <h2>A legmagasabb minőségű ékszerek, biztonságos viselethez</h2>
-        <p>Kizárólag tanúsítvánnyal rendelkező G23 titánium, antiallergén ékszerekkel dolgozunk, ezüst színben vagy 14 karátos arany bevonattal, amelyeket autoklávban fertőtlenítünk. Lapozd végig őket!</p>
-        <ul class="elonyok">
-          <li><span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-shield"/></svg></span><div><b>Tanúsítvánnyal rendelkező anyag</b><span>G23 titánium, 14 karátos arany bevonat</span></div></li>
-          <li><span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-gem"/></svg></span><div><b>Bőrbarát és biztonságos</b><span>Antiallergén, autoklávban fertőtlenített</span></div></li>
-          <li><span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-sparkles"/></svg></span><div><b>Széles választék</b><span>Stílusos, modern ékszerek, nőknek és férfiaknak</span></div></li>
-        </ul>
-      </div>
-      <div class="galeria" role="region" aria-roledescription="carousel" aria-label="Ékszereink">
-        <div class="galeria-sav" id="galeria-sav" tabindex="0">
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="1 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-01-nagy.webp"><img src="/assets/img/uj-ekszer-01.webp" width="900" height="900" alt="Ékszer 1 a 20-ból" fetchpriority="high"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="2 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-02-nagy.webp"><img src="/assets/img/uj-ekszer-02.webp" width="900" height="900" alt="Ékszer 2 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="3 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-03-nagy.webp"><img src="/assets/img/uj-ekszer-03.webp" width="900" height="900" alt="Ékszer 3 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="4 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-04-nagy.webp"><img src="/assets/img/uj-ekszer-04.webp" width="900" height="900" alt="Ékszer 4 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="5 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-05-nagy.webp"><img src="/assets/img/uj-ekszer-05.webp" width="900" height="900" alt="Ékszer 5 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="6 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-06-nagy.webp"><img src="/assets/img/uj-ekszer-06.webp" width="900" height="900" alt="Ékszer 6 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="7 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-07-nagy.webp"><img src="/assets/img/uj-ekszer-07.webp" width="900" height="900" alt="Ékszer 7 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="8 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-08-nagy.webp"><img src="/assets/img/uj-ekszer-08.webp" width="900" height="900" alt="Ékszer 8 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="9 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-09-nagy.webp"><img src="/assets/img/uj-ekszer-09.webp" width="900" height="900" alt="Ékszer 9 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="10 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-10-nagy.webp"><img src="/assets/img/uj-ekszer-10.webp" width="900" height="900" alt="Ékszer 10 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="11 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-11-nagy.webp"><img src="/assets/img/uj-ekszer-11.webp" width="900" height="900" alt="Ékszer 11 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="12 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-12-nagy.webp"><img src="/assets/img/uj-ekszer-12.webp" width="900" height="900" alt="Ékszer 12 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="13 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-13-nagy.webp"><img src="/assets/img/uj-ekszer-13.webp" width="900" height="900" alt="Ékszer 13 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="14 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-14-nagy.webp"><img src="/assets/img/uj-ekszer-14.webp" width="900" height="900" alt="Ékszer 14 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="15 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-15-nagy.webp"><img src="/assets/img/uj-ekszer-15.webp" width="900" height="900" alt="Ékszer 15 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="16 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-16-nagy.webp"><img src="/assets/img/uj-ekszer-16.webp" width="900" height="900" alt="Ékszer 16 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="17 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-17-nagy.webp"><img src="/assets/img/uj-ekszer-17.webp" width="900" height="900" alt="Ékszer 17 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="18 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-18-nagy.webp"><img src="/assets/img/uj-ekszer-18.webp" width="900" height="900" alt="Ékszer 18 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="19 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-19-nagy.webp"><img src="/assets/img/uj-ekszer-19.webp" width="900" height="900" alt="Ékszer 19 a 20-ból" loading="lazy"></button></figure>
-          <figure class="dia" role="group" aria-roledescription="dia" aria-label="20 / 20"><button type="button" class="dia-nagyit" aria-label="Kép nagyítása" data-nagy="/assets/img/uj-ekszer-20-nagy.webp"><img src="/assets/img/uj-ekszer-20.webp" width="900" height="900" alt="Ékszer 20 a 20-ból" loading="lazy"></button></figure>
-        </div>
-        <button type="button" class="galeria-gomb galeria-elozo" aria-label="Előző ékszer" disabled><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></button>
-        <button type="button" class="galeria-gomb galeria-kov" aria-label="Következő ékszer"><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></button>
-        <p class="galeria-szamlalo" aria-live="polite"><span data-aktualis>1</span> / 20</p>
-      </div>
-    </div>
-  </section>
+<!--#ekszerek-->
 
   <!-- 8. BIZTONSÁG + KONTROLL -->
   <section class="tarto ketto">
@@ -295,105 +221,15 @@
   </section>
 
   <!-- 10. ÁRAK -->
-  <section class="tarto arak" id="arak">
-    <div class="arak-szoveg">
-      <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-gem"/></svg>Árak és akciók</p>
-      <h2>Minél többet választasz, annál olcsóbb</h2>
-      <p>A piercingek erősítik egymás hatását, ezért vendégeink több mint 70%-a többet választ.</p>
-      <a class="gomb gomb-kicsi" href="/arlista-garancia">Áraink megtekintése<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
-    </div>
-    <div class="ar-racs">
-      <article class="ar-kartya">
-        <span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-ear"/></svg></span>
-        <h3>1 piercing</h3>
-        <p class="ar"><s>27 900 Ft</s>24 900 Ft</p>
-        <p class="darabar">azaz <b>24 900 Ft</b> / piercing</p>
-        <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>G23 titánium ékszer</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Állapotfelmérés, szakszerű szúrás</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Garancia</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
-      </article>
-      <article class="ar-kartya">
-        <span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-ear"/></svg></span>
-        <h3>2 piercing</h3>
-        <p class="ar"><s>55 800 Ft</s>39 900 Ft</p>
-        <p class="darabar">azaz <b>19 900 Ft</b> / piercing</p>
-        <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>G23 titánium ékszerek</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Állapotfelmérés, szakszerű szúrás</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Garancia</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
-      </article>
-      <article class="ar-kartya">
-        <span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-ear"/></svg></span>
-        <h3>3 piercing</h3>
-        <p class="ar"><s>83 700 Ft</s>44 900 Ft</p>
-        <p class="darabar">azaz <b>14 900 Ft</b> / piercing</p>
-        <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>G23 titánium ékszerek</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Állapotfelmérés, szakszerű szúrás</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Garancia</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
-      </article>
-      <article class="ar-kartya ar-akcio">
-        <span class="akcio-cimke">Akció</span>
-        <span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-ear"/></svg></span>
-        <h3>4 piercing, ketten</h3>
-        <p class="ar"><s>111 600 Ft</s>79 800 Ft</p><p class="kedvezmeny">32 000 Ft kedvezmény</p>
-        <p class="darabar">azaz <b>19 900 Ft</b> / piercing</p>
-        <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Egy időpontra jöttök</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>G23 titánium ékszerek</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Garancia</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
-      </article>
-    </div>
-  </section>
+<!--#arak-->
 
   <!-- 11. HELYSZÍNEK: mind a 15 helyszín egy blokkban; a csempe a foglalót nyitja az adott helyszínnel, a kitelepülések időpontjaival -->
-  <section class="tarto uzletek" id="helyszinek">
-    <div class="uzletek-fej">
-      <div>
-        <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-users"/></svg>Helyszíneink</p>
-        <h2>Országszerte várunk</h2>
-      </div>
-      <p>Budapesten állandó szalonunkban, vidéken 14 városban, kitelepüléseink alkalmával fogadunk, előzetes időpontfoglalással. Kattints a városra, és a foglalóban rögtön az adott helyszínt választhatod.</p>
-    </div>
-    <ul class="helyek">
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=6029"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Budapest</b><span class="cim">1137 Budapest, Újpesti rakpart 7.</span><span class="datum">Állandó szalon · H–Szo</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=11424"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Debrecen</b><span class="cim">4031 Debrecen, Derék utca 100/B</span><span class="datum" data-mp-kitelepules="debrecen">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=13422"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Békéscsaba</b><span class="cim">5600 Békéscsaba, Wlassics sétány 5/6</span><span class="datum" data-mp-kitelepules="bekescsaba">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=14144"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Kaposvár</b><span class="cim">7400 Kaposvár, Arany János tér 5.</span><span class="datum" data-mp-kitelepules="kaposvar">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=10330"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Kecskemét</b><span class="cim">6000 Kecskemét, Vágó utca 19.</span><span class="datum" data-mp-kitelepules="kecskemet">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=10329"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Keszthely</b><span class="cim">8360 Keszthely, Fenyves u. 13.</span><span class="datum" data-mp-kitelepules="keszthely">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=10357"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Miskolc</b><span class="cim">3530 Miskolc, Széchenyi I. u. 19. 4/2.</span><span class="datum" data-mp-kitelepules="miskolc">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=12348"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Nagykanizsa</b><span class="cim">8800 Nagykanizsa, Ady Endre utca 12/A</span><span class="datum" data-mp-kitelepules="nagykanizsa">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=12353"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Nyíregyháza</b><span class="cim">4400 Nyíregyháza, Mező u. 6.</span><span class="datum" data-mp-kitelepules="nyiregyhaza">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=12236"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Pécs</b><span class="cim">7624 Pécs, Boszorkány út 2/1.</span><span class="datum" data-mp-kitelepules="pecs">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=9067"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Sopron</b><span class="cim">Sopron, Kertvárosi utca 38.</span><span class="datum" data-mp-kitelepules="sopron">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=12169"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Szeged</b><span class="cim">6721 Szeged, Felső Tisza part 17.</span><span class="datum" data-mp-kitelepules="szeged">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=14145"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Székesfehérvár</b><span class="cim">8000 Székesfehérvár, Tobak u. 10.</span><span class="datum" data-mp-kitelepules="szekesfehervar">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=14229"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Szombathely</b><span class="cim">9700 Szombathely, Thököly Imre u. 16.</span><span class="datum" data-mp-kitelepules="szombathely">Időpontok a foglalóban</span></a></li>
-        <li><a href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=12237"><svg class="ik" aria-hidden="true"><use href="#i-pin"/></svg><b>Zalaegerszeg</b><span class="cim">8900 Zalaegerszeg, Bíró Márton utca 8.</span><span class="datum" data-mp-kitelepules="zalaegerszeg">Időpontok a foglalóban</span></a></li>
-    </ul>
-  </section>
+<!--#helyszinek-->
 
   <!-- 12. MÉDIA + CSAPAT -->
   <section class="tarto media-csapat">
-    <article class="media" id="media">
-      <div class="media-szoveg">
-        <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-shield"/></svg>A médiában</p>
-        <h2>Rólunk mondták</h2>
-        <p>Munkánkról és szakértelmünkről több alkalommal is beszámolt a hazai média. A migrén piercingről az RTL Klub Fókusz című műsorában, a HírTV-ben és a Divány.hu-n is beszéltünk.</p>
-        <a class="gomb gomb-kicsi" href="https://www.youtube.com/channel/UC7O2pR7ki13p_heEWT1nCQQ" target="_blank" rel="noopener">YouTube-csatornánk<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
-      </div>
-      <div class="media-jobb">
-        <div class="logok">
-          <img src="/assets/img/uj-logo-rtl.webp" width="581" height="109" alt="RTL Klub" loading="lazy">
-          <img src="/assets/img/uj-logo-hirtv.webp" width="176" height="63" alt="HírTV" loading="lazy">
-          <img src="/assets/img/uj-logo-divany.webp" width="496" height="140" alt="Divány" loading="lazy">
-        </div>
-        <ul class="videok">
-          <li><a class="video" href="https://rtl.hu/fokusz/2023/12/14/migren-fejfajas-modszerek" target="_blank" rel="noopener" data-embed="https://embed.rtl.hu/embed/2275840?autoplay=1" data-cim="RTL Klub – Fókusz: migrén piercing"><span class="video-kep"><img src="/assets/img/uj-video-rtl.webp" width="640" height="360" alt="" loading="lazy"><span class="lejatszo"><svg class="ik" aria-hidden="true"><use href="#i-play"/></svg></span></span><span class="video-cim">RTL Klub – Fókusz: migrén piercing</span></a></li>
-          <li><a class="video" href="https://www.youtube.com/watch?v=JX4nNVb-jB8" target="_blank" rel="noopener" data-embed="https://www.youtube-nocookie.com/embed/JX4nNVb-jB8?autoplay=1&amp;rel=0&amp;enablejsapi=1" data-cim="HírTV – Radar: Tünetkezelés ékszerekkel"><span class="video-kep"><img src="/assets/img/uj-video-hirtv.webp" width="640" height="360" alt="" loading="lazy"><span class="lejatszo"><svg class="ik" aria-hidden="true"><use href="#i-play"/></svg></span></span><span class="video-cim">HírTV – Radar: Tünetkezelés ékszerekkel</span></a></li>
-          <li><a class="video" href="https://www.youtube.com/watch?v=foEQNUg6DzI" target="_blank" rel="noopener" data-embed="https://www.youtube-nocookie.com/embed/foEQNUg6DzI?autoplay=1&amp;rel=0&amp;enablejsapi=1" data-cim="Divány.hu – Migrén piercing interjú"><span class="video-kep"><img src="/assets/img/uj-video-divany.webp" width="640" height="360" alt="" loading="lazy"><span class="lejatszo"><svg class="ik" aria-hidden="true"><use href="#i-play"/></svg></span></span><span class="video-cim">Divány.hu – Migrén piercing interjú</span></a></li>
-        </ul>
-      </div>
-    </article>
-    <article class="csapat" id="csapat">
-      <div class="csapat-szoveg">
-        <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-users"/></svg>Csapatunk</p>
-        <h2>Ismerd meg a szakértőinket</h2>
-        <p>Válaszd ki a Medical Piercing szakértői közül, aki szimpatikus, és azonnal foglalhatsz hozzá időpontot. Mindannyian az egészségügyből jöttünk.</p>
-        <a class="gomb gomb-kicsi" href="/rolunk">Csapatunk bemutatása<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
-      </div>
-      <img src="/assets/img/f18724_b3f9de7f5dbd4db18f1d6b42591cb89a.webp" width="1200" height="823" alt="A Medical Piercing csapata" loading="lazy">
-    </article>
+<!--#media-->
+<!--#csapat-->
   </section>
 
   <!-- 13. KAPCSOLAT -->
@@ -437,13 +273,7 @@
   <div class="videoablak-keret"></div>
 </dialog>
 
-<dialog class="nagyito" id="nagyito" aria-label="Ékszer nagyban">
-  <button type="button" class="nagyito-zar" aria-label="Bezárás"><svg class="ik" aria-hidden="true"><use href="#i-close"/></svg></button>
-  <button type="button" class="galeria-gomb nagyito-elozo" aria-label="Előző ékszer"><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></button>
-  <img class="nagyito-kep" alt="" width="1400" height="1400">
-  <button type="button" class="galeria-gomb nagyito-kov" aria-label="Következő ékszer"><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></button>
-  <p class="galeria-szamlalo nagyito-szam"><span data-n>1</span> / 20</p>
-</dialog>
+<!--#ekszer-nagyito-->
 
 <script src="/assets/js/uj-fooldal.js" defer></script>
 </body>

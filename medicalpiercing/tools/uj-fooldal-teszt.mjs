@@ -16,6 +16,7 @@ import path from 'node:path';
 import { chromium, devices } from './pw.mjs';
 import { kulcsbol } from '../lib/utvonal.js';
 import { meresTiltas, MERES } from './meres-tiltas.mjs';
+import { osszerak } from './uj-fooldal.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const BASE = (process.env.BASE || 'http://localhost:4290').replace(/\/$/, '');
@@ -25,7 +26,8 @@ let hiba = 0;
 const ok = (nev, felt, info = '') => { console.log(`${felt ? 'OK  ' : 'HIBA'} ${nev}${info ? '  ' + info : ''}`); if (!felt) hiba++; };
 
 // ---------- 1. forras: rejtett, linkek, horgonyok (halozat nelkul) ----------
-const forras = fs.readFileSync(path.join(ROOT, 'uj-fooldal/index.html'), 'utf8');
+// a fooldal forrasa a kozos reszekkel egyutt (uj-oldalak/reszek/*.html: ekszerek, akcio, arak, helyszinek, media, csapat ...), ahogy a build osszerakja
+const forras = osszerak(ROOT, fs.readFileSync(path.join(ROOT, 'uj-fooldal/index.html'), 'utf8'));
 ok('forras: noindex,nofollow meta', /<meta name="robots" content="noindex,nofollow">/.test(forras));
 ok('forras: nincs canonical', !/rel="canonical"/.test(forras));
 ok('forras: pontosan egy h1', (forras.match(/<h1[\s>]/g) || []).length === 1);

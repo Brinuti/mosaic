@@ -4,6 +4,7 @@
 // Tiszta fuggveny: nincs benne bongeszo, igy a Cloudflare-build is futtatja (tools/uj-fooldal.mjs: ujOldalak).
 import fs from 'node:fs';
 import path from 'node:path';
+import { kategoriaFo } from './kategoria.mjs';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const SITE_RE = /^https?:\/\/(?:www\.)?medicalpiercing\.hu(?=[/?#]|$)/i;
@@ -314,17 +315,23 @@ function lapozo(c, lapozoAdat) {
 
 const partial = (ROOT, nev, horgony) => {
   let h = fs.readFileSync(path.join(ROOT, 'uj-oldalak/reszek', nev + '.html'), 'utf8').trimEnd();
-  // a fooldal horgonyai (#arak, #csapat ...) a belso oldalakon az uj fooldalra mutatnak
-  if (horgony) h = h.replace(/href="#([a-z]+)"/g, 'href="/uj-fooldal#$1"');
+  // a fooldal horgonyai (#arak, #csapat ...) a belso oldalakon az uj fooldalra mutatnak; ami az oldalon is megvan (a "horgony" halmaz), az helyben marad
+  if (horgony) h = h.replace(/href="#([a-z]+)"/g, (m, id) => (horgony instanceof Set && horgony.has(id) ? m : `href="/uj-fooldal#${id}"`));
   return h;
 };
+
+// a kategoria-sablon (kategoria.mjs) ezeket a kozos reszeket kapja
+const KOZOS = { esc, IK, szovegLink, szovegTiszta, belso, csakLink, iframe, csomopont, partial };
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 export function oldalHtml(ROOT, adat, opciok = {}) {
   const c = ujKontextus(adat, opciok);
-  let szekciok = opciok.fo !== undefined ? opciok.fo : adat.szekciok.map((s, i) => szekcio(s, i, c)).join('\n');
+  // a kategoria-oldalak (migren / shenmen / klimax / slim) a fooldal stilusaban, a fooldal dobozaival (kategoria.mjs)
+  const kat = opciok.fo === undefined && adat.tipus === 'oldal' ? kategoriaFo(ROOT, adat, c, KOZOS) : null;
+  let szekciok = kat ? kat.html : opciok.fo !== undefined ? opciok.fo : adat.szekciok.map((s, i) => szekcio(s, i, c)).join('\n');
   if (!/<h1[\s>]/.test(szekciok)) szekciok = `<h1 class="sr">${esc(adat.cim)}</h1>\n` + szekciok;   // az oldalnak mindig van h1-e (a lathato cim hianyaban rejtett)
-  const cimke = adat.tipus === 'cikk' ? 'oldal-cikk' : adat.tipus === 'blog' ? 'oldal-blog' : 'oldal-altalanos';
+  const cimke = adat.tipus === 'cikk' ? 'oldal-cikk' : adat.tipus === 'blog' ? 'oldal-blog' : kat ? 'oldal-altalanos oldal-kategoria' : 'oldal-altalanos';
+  const horgony = kat ? kat.helyiIdk : true;
   return `<!doctype html>
 <html lang="hu">
 <head>
@@ -340,23 +347,22 @@ export function oldalHtml(ROOT, adat, opciok = {}) {
 <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/plus-jakarta-sans-latin.woff2">
 <script src="/assets/js/suti.js"></script>
 <link rel="stylesheet" href="/assets/css/uj-fooldal.css">
-<link rel="stylesheet" href="/assets/css/uj-oldalak.css">
+<link rel="stylesheet" href="/assets/css/uj-oldalak.css">${kat ? '\n<link rel="stylesheet" href="/assets/css/uj-kategoria.css">' : ''}
 </head>
 <body class="belso ${cimke}">
 <a class="ugras" href="#fo">Ugrás a tartalomra</a>
 
 <!--#ikonok-->
 
-${partial(ROOT, 'fejlec', true)}
+${partial(ROOT, 'fejlec', horgony)}
 
-<a class="promo-sav" href="/3-piercing-2-araert-regi"><strong>AKCIÓ!</strong> – A 2. piercing féláron, a 3. csak 5.000 Ft!</a>
-
+${kat ? '' : '<a class="promo-sav" href="/3-piercing-2-araert-regi"><strong>AKCIÓ!</strong> – A 2. piercing féláron, a 3. csak 5.000 Ft!</a>\n'}
 <main id="fo">
 ${szekciok}
 ${lapozo(c, opciok.lapozo)}
 </main>
 
-${partial(ROOT, 'lablec', true)}
+${partial(ROOT, 'lablec', horgony)}
 
 <dialog class="nagyito" id="kepnezo" aria-label="Kép nagyban">
   <button type="button" class="nagyito-zar" aria-label="Bezárás">${IK('close')}</button>
@@ -369,7 +375,7 @@ ${partial(ROOT, 'lablec', true)}
   <button type="button" class="videoablak-zar" aria-label="Bezárás">${IK('close')}</button>
   <div class="videoablak-keret"></div>
 </dialog>
-
+${kat && kat.nagyito ? '<!--#ekszer-nagyito-->\n' : ''}
 <script src="/assets/js/uj-fooldal.js" defer></script>
 <script src="/assets/js/uj-oldalak.js" defer></script>
 </body>
