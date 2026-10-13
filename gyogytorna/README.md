@@ -13,5 +13,5 @@ Szerver (Cloudflare Pages Functions + D1): `functions/api/gy-forras|gy-foglalas|
 `npm run build` · `npm run serve` (http://localhost:4291/booking-test/?motor=1) · `npm run teszt` · `npm run teszt:bongeszo`
 
 ## Eles uzem (lepesek)
-Pages projekt `gyogytorna` (gyoker `gyogytorna`, build `node tools/build.mjs`, kimenet `dist`), D1 `gy-meres` (kotes `GY_DB`), titkok: `GY_HMAC_KULCS`, `GY_ADMIN_KULCS_HASH`; proxy Worker: `www.gyogytornaszom.hu/gy-foglalas/*` -> Pages. A WordPress-snippet a launcher-t tolti (`<script src="/gy-foglalas/assets/js/launcher.js" defer>`), a GTM-et a `gy-adatlap` keretben a koszonooldalakon kihagyja.
+Pages projekt `gyogytorna` (gyoker `gyogytorna`, build `node tools/build.mjs`, kimenet `dist`), D1 `mp-meres` (kotes `GY_DB`, csak gy_ tablak), titkok: `GY_HMAC_KULCS`, `GY_ADMIN_KULCS_HASH`; proxy Worker: `www.gyogytornaszom.hu/gy-foglalas/*` -> Pages. A WordPress-snippet a launcher-t tolti (`<script src="/gy-foglalas/assets/js/launcher.js" defer>`), a GTM-et a `gy-adatlap` keretben a koszonooldalakon kihagyja.
 Nyitott: a Salonic e-mail -> Zapier -> `/api/gy-salonic-igazolas` kemeny visszaigazolas es a lemondas-egyeztetes (Feri jovahagyasa kell a Zap letrehozasahoz); a Google Ads kampanylista napi szinkronja.
