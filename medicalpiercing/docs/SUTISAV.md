@@ -76,9 +76,19 @@ hozzájárulás nélkül is a foglaláshoz kötődjön; **a jogi kockázatot a t
 | | Hozzájárulás nélkül (döntés előtt / elutasítva) | Hirdetési hozzájárulással |
 |---|---|---|
 | `sessionStorage.mp_forras` (lap bezárásáig) | igen: utolsó fizetett érintés – csatornanév, utm_* (tisztítva), a kattintási paraméter **típusa**, a hivatkozó **kategóriája**, idő | ugyanaz |
+| `localStorage.mp_forras_l` – **látogatás-tároló** (az utolsó írás után **2 óráig**, minden oldalmegtekintés megújítja) | igen: ugyanaz a tisztított érintés, mint az `mp_forras`-ban (azonosító-érték, URL nélkül) + lejárati idő | ugyanaz |
+| `sessionStorage` diagnosztika (`mp_oldalak` számláló, `mp_nav_elozo` navigációs típus, `mp_elso` = első oldal opener-jelzése + hivatkozó-**kategóriája**) | igen (csak szám / kategória / típus) | ugyanaz |
 | D1 `mp_foglalas` bizonyíték-oszlopok (`utm_*`, `kattintas_param`, `referrer_kat`, `forras_ido`, `forras_cimke` …) | igen | igen |
 | `mp_lpt` süti (HttpOnly, Secure, SameSite=Lax, 30 nap, szerver írja: `/api/mp-forras`) | **nem** (ha volt, törli) | igen, csak fizetett érintésre, azonosító-érték nélkül |
 | Kattintásazonosító-**érték** (`gclid`, `fbclid`, `ttclid`, `_fbc`, `_fbp`, `_ttp`) | **nem** | igen (`mp_gk`, D1), mint eddig |
+
+**2 órás látogatás-tároló hozzájárulás nélkül (Feri kifejezett döntése, 2026-10-13; a jogi kockázatot vállalja; ChatGPT
+jóváhagyta):** a forrás v2 első éles napján (9 motoros foglalásból 4 `nincs_jel`, 0 Google) kiderült, hogy a `sessionStorage`
+új lapon (noopener), iOS-lapeldobás / újratöltés után vagy más lapon történt érkezésnél üres. Ezért az érintés a
+`localStorage`-ban is megmarad, de csak 2 óráig az utolsó írás után (egy látogatás), utána a szkript nem használja és törli.
+A köszönőoldali jelzés `forras_tarolo` mezővel jelzi, ha a bizonyíték innen jött (D1: `bizonyitek_forras = 'latogatas'`), és
+a `nincs_jel` okainak felderítéséhez diagnosztikát küld (`diag_oldalak`, `diag_nav`, `diag_opener`, `diag_elso_ref` – csak
+szám / típus / kategória). Részletek: `docs/MERES_GOOGLE_ARNYEK.md`, „Forrás v2 – látogatás-tároló”.
 
 A hivatkozó URL-je, a kattintásazonosító értéke, név, e-mail, telefon hozzájárulás nélkül sehol nem tárolódik. A riport és
 a havi CSV a lefedettséget hozzájárulással / nélküle külön mutatja. Részletek: `docs/MERES_GOOGLE_ARNYEK.md`, „Forrás v2”.

@@ -118,6 +118,27 @@ export function bizonyitekValaszt(munkamenet, cookieFejlec, hirdetesiHozzajarula
   return { bizonyitek: munkamenet || null, bizonyitek_forras: munkamenet ? 'munkamenet' : null };
 }
 
+/**
+ * A bongeszo jelzese szerint a munkamenet-erintes a 2 oras latogatas-tarolobol (localStorage "mp_forras_l") jott-e
+ * (Feri dontese 2026-10-13): ilyenkor a 'munkamenet' bizonyitek-forras 'latogatas' lesz; a 'suti' (mp_lpt) marad.
+ */
+export function bizonyitekForrasTarolo(bizonyitekForras, tarolo) {
+  return bizonyitekForras === 'munkamenet' && tarolo === 'latogatas' ? 'latogatas' : bizonyitekForras;
+}
+
+/** A "nincs_jel" diagnosztika (szemelyes adat / URL nelkul) feher listas ellenorzese; minden mas eldobva. */
+export const DIAG_NAV = Object.freeze(['navigate', 'reload', 'back_forward', 'prerender']);
+export const DIAG_ELSO_REF = Object.freeze(['belso', 'kereso', 'social', 'egyeb', 'nincs']);
+export function diagBemenet(d) {
+  const ki = { diag_oldalak: null, diag_nav: null, diag_opener: null, diag_elso_ref: null };
+  if (!d || typeof d !== 'object' || Array.isArray(d)) return ki;
+  if (Number.isInteger(d.oldalak) && d.oldalak >= 1) ki.diag_oldalak = Math.min(d.oldalak, 999);
+  if (DIAG_NAV.includes(d.nav)) ki.diag_nav = d.nav;
+  if (d.opener === 0 || d.opener === 1) ki.diag_opener = d.opener;
+  if (DIAG_ELSO_REF.includes(d.elso_ref)) ki.diag_elso_ref = d.elso_ref;
+  return ki;
+}
+
 /** mp_beallitas.google_markas_kampanyok -> kampany-ID tomb, vagy null (nincs beallitva). */
 export function markasListaErtelmez(ertek) {
   if (ertek == null) return null;

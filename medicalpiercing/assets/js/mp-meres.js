@@ -16,12 +16,42 @@
 // 4) Meta / TikTok kattintasazonosito (fbclid, ttclid) CSAK hirdetesi hozzajarulassal, ugyanugy, mint a Google-e (mp_gk);
 //    a szerver tarolja (D1), de most SEHOVA nem kuldi.
 // 5) (A "Honnan hallottal rolunk?" kartya 2026-10-13-an Feri dontesere kikerult: alacsony kitoltesi arany varhato.)
+// 6) Latogatas-tarolo (Feri dontese 2026-10-13, a jogi kockazatot vallalja; GPT-vel atnezve): ugyanaz a tisztitott erintes a
+//    localStorage "mp_forras_l"-ben is, az utolso iras utan 2 oraig (minden oldalmegtekintes, amig van erintes, megujitja). Igy
+//    az uj lapon (noopener -> ures sessionStorage), iOS-lapeldobas / ujratoltes utan is ugyanahhoz a latogatashoz kotheto a forras.
+//    Olvasas: sessionStorage -> (ures eseten) ervenyes "mp_forras_l" (visszairva a sessionStorage-ba); a last paid click mindket
+//    taroloban ervenyes. A szerver 'latogatas' bizonyitek-forrast tarol, ha a jelzett erintes a latogatas-tarolobol jott.
+// 7) Diagnosztika a "nincs_jel" okaihoz (szemelyes adat es URL nelkul): a lapon latott sajat oldalak szama, az elozo oldal
+//    navigacios tipusa, a munkamenet elso oldalanak opener-jelzese es hivatkozo-KATEGORIAJA.
 (function () {
   'use strict';
   var h = location.hostname;
   if (!(h === 'www.medicalpiercing.hu' || /\.pages\.dev$/.test(h) || h === 'localhost' || h === '127.0.0.1')) return;
   var KULCS = 'mp_gk', NAP90 = 90 * 86400;
   var most = function () { return Math.floor(Date.now() / 1000); };
+
+  // ---------- diagnosztika (7. pont): csak szamlalo / kategoria / tipus, URL es azonosito nincs ----------
+  var DIAG_NAV = ['navigate', 'reload', 'back_forward', 'prerender'];
+  var navTipus = function () {
+    try {
+      var n = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      if (n && DIAG_NAV.indexOf(n.type) >= 0) return n.type;
+      var r = performance.navigation && performance.navigation.type;
+      return r === 1 ? 'reload' : r === 2 ? 'back_forward' : r === 0 ? 'navigate' : null;
+    } catch (e) { return null; }
+  };
+  var diag = { oldalak: null, nav: null, opener: null, elso_ref: null };
+  if (window.top === window) {
+    try {
+      var db0 = (parseInt(sessionStorage.getItem('mp_oldalak'), 10) || 0) + 1;
+      sessionStorage.setItem('mp_oldalak', String(db0));
+      diag.oldalak = db0;
+      diag.nav = sessionStorage.getItem('mp_nav_elozo') || null; // az ELOZO oldal navigacios tipusa (ha volt), kulonben a mostanie
+      var nt = navTipus();
+      if (!diag.nav) diag.nav = nt;
+      if (nt) sessionStorage.setItem('mp_nav_elozo', nt);
+    } catch (e) { /* tiltott tarolo */ }
+  }
 
   var hirdetesiHozzajarulas = function () {
     // a sajat suti-sav dontese: "mp_suti=v1-s<0|1>-m<0|1>-t<unix>" (assets/js/suti.js)
@@ -60,13 +90,33 @@
   var FORRAS = 'mp_forras', PLATFORMOK = ['google', 'meta', 'tiktok', 'egyeb'], V2 = 'mp_v2';
   var KP = ['gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid'];
   var FIZ_MEDIUM = ['cpc', 'ppc', 'paid', 'paid_social', 'paidsocial', 'paid_search', 'cpm'];
-  var forrasOlvas = function () {
+  var LATOG = 'mp_forras_l', LATOG_MP = 2 * 3600; // latogatas-tarolo (6. pont): az utolso iras utan 2 ora
+  var ervenyes = function (o) {
+    if (!o || typeof o !== 'object' || !/^\d+$/.test(String(o.t))) return null;
+    if (o.v === V2) return o;
+    return PLATFORMOK.indexOf(o.p) >= 0 ? o : null; // regi (v1) alak: { p, t }
+  };
+  var munkamenetOlvas = function () {
+    try { return ervenyes(JSON.parse(sessionStorage.getItem(FORRAS) || 'null')); } catch (e) { return null; }
+  };
+  var munkamenetIr = function (o) { try { sessionStorage.setItem(FORRAS, JSON.stringify(o)); } catch (e) { /* tiltott tarolo */ } };
+  var latogatasOlvas = function () {
     try {
-      var o = JSON.parse(sessionStorage.getItem(FORRAS) || 'null');
-      if (!o || !/^\d+$/.test(String(o.t))) return null;
-      if (o.v === V2) return o;
-      return PLATFORMOK.indexOf(o.p) >= 0 ? o : null; // regi (v1) alak: { p, t }
-    } catch (e) { return null; }
+      var w = JSON.parse(localStorage.getItem(LATOG) || 'null');
+      if (!w || typeof w !== 'object' || !(Number(w.lej) > most())) { if (w) localStorage.removeItem(LATOG); return null; }
+      var o = ervenyes(w.e);
+      if (o && o.v === V2) return o;
+      localStorage.removeItem(LATOG); // hibas / idegen tartalom
+      return null;
+    } catch (e) { try { localStorage.removeItem(LATOG); } catch (x) { /* tiltott tarolo */ } return null; }
+  };
+  var tiszta = function (o) { // csak a feher listas mezok (a "b" tarolo-jelzes nelkul)
+    var f = {}; ['v', 'p', 't', 'us', 'um', 'uc', 'ut', 'uco', 'kp', 'rk'].forEach(function (k) { if (o[k] != null) f[k] = o[k]; });
+    return f;
+  };
+  var latogatasIr = function (o) {
+    if (!o || o.v !== V2) return;
+    try { localStorage.setItem(LATOG, JSON.stringify({ e: tiszta(o), lej: most() + LATOG_MP })); } catch (e) { /* tiltott tarolo */ }
   };
   var utm = function (v) { v = String(v == null ? '' : v).trim(); return /^[A-Za-z0-9._~:+-]{1,100}$/.test(v) ? v : null; };
   var refKat = function () {
@@ -79,6 +129,19 @@
     return 'egyeb';
   };
   var fizetett = function (o) { return !!o && (KP.indexOf(o.kp) >= 0 || FIZ_MEDIUM.indexOf(String(o.um || '').toLowerCase()) >= 0); };
+  var fizetettBarmely = function (o) { return !!o && (o.v === V2 ? fizetett(o) : PLATFORMOK.indexOf(o.p) >= 0 && o.p !== 'egyeb'); };
+  // A hatalyos erintes a ket tarolobol (last paid click mindketton): sessionStorage; ha ures, a latogatas-tarolo; ha a
+  // latogatas-taroloban UJABB fizetett erintes van (masik lapon erkezett), az nyer. Nem fizetett fizetettet sosem ir felul.
+  // A latogatas-tarolobol vett erintes "b: 'l'" jelzessel kerul vissza a sessionStorage-ba (a szerver 'latogatas'-kent tarolja).
+  var forrasOlvas = function () {
+    var s = munkamenetOlvas(), l = latogatasOlvas();
+    if (l && (!s || (fizetett(l) && (!fizetettBarmely(s) || Number(l.t) > Number(s.t))))) {
+      var o = tiszta(l); o.b = 'l';
+      munkamenetIr(o);
+      return o;
+    }
+    return s;
+  };
   var platform = function (o) {
     if (o.kp === 'gclid' || o.kp === 'gbraid' || o.kp === 'wbraid') return 'google';
     if (o.kp === 'fbclid') return 'meta';
@@ -119,9 +182,24 @@
     else if (fizetett(uj)) csere = !(regi.v === V2 && fizetett(regi) && azonos(regi, uj)); // uj fizetett kattintas nyer (ujratoltes nem)
     else if (!(regi.v === V2 ? fizetett(regi) : PLATFORMOK.indexOf(regi.p) >= 0 && regi.p !== 'egyeb')) csere = jel(uj); // nem fizetett: csak nem-fizetett, nem direkt felulir
     if (csere) {
-      try { sessionStorage.setItem(FORRAS, JSON.stringify(uj)); } catch (e) { /* tiltott tarolo */ }
+      munkamenetIr(uj);
       if (fizetett(uj)) lptKuld();
     }
+  }
+  // latogatas-tarolo: minden oldalmegtekintesen, amig van erintes, a hatalyos erintes 2 orara megujitva (6. pont)
+  latogatasIr(forrasOlvas());
+  // diagnosztika: a munkamenet ELSO oldala (a lapon egyszer): opener volt-e es a hivatkozo KATEGORIAJA (URL nincs)
+  if (window.top === window) {
+    try {
+      var elso = JSON.parse(sessionStorage.getItem('mp_elso') || 'null');
+      if (!elso || typeof elso !== 'object') {
+        var ek = { belso: 'belso', search: 'kereso', social: 'social', egyeb: 'egyeb', nincs: 'nincs' }[refKat()] || 'nincs';
+        var op = 0; try { op = window.opener ? 1 : 0; } catch (e) { op = 1; } // mas eredetu opener elerese is dobhat: akkor van
+        elso = { r: ek, o: op };
+        sessionStorage.setItem('mp_elso', JSON.stringify(elso));
+      }
+      diag.elso_ref = elso.r; diag.opener = elso.o;
+    } catch (e) { /* tiltott tarolo */ }
   }
   // a suti-sav dontese / modositasa utan: hozzajarulassal a fizetett erintes sutije most kerul ki; visszavonaskor a szerver torli
   document.addEventListener('mp_suti_valtozas', function () {
@@ -164,7 +242,10 @@
     if (fo && fo.v === V2) {
       var f = {}; ['v', 't', 'us', 'um', 'uc', 'ut', 'uco', 'kp', 'rk'].forEach(function (k) { if (fo[k] != null) f[k] = fo[k]; });
       torzs.forras = f; // tisztitott bizonyitek, kattintasazonosito-ertek NELKUL
+      torzs.forras_tarolo = fo.b === 'l' ? 'latogatas' : 'munkamenet'; // melyik tarolobol jott (6. pont)
     }
+    var d = {}; for (var dk in diag) if (diag[dk] != null) d[dk] = diag[dk];
+    torzs.diag = d; // 7. pont: szamlalo / kategoria / tipus
     torzs.forras_v = V2;
     if (window.top !== window) torzs.keret = true;
     if (potlas) torzs.potlas = true;
