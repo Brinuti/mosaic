@@ -2,6 +2,7 @@
 // CSAK OLVAS, AGGREGALT, PII-MENTES. Az eles D1-et a meresi oldal nem olvashatja; ezzel a vegponttal a Zapier admin-draft naponta lekeri a T2-osszevetest (arnyek vs. valos).
 // Nincs nev, e-mail, telefon, hash, teljes UUID; egyetlen kivetel a pre288 mintalista (legfeljebb 8 karakteres uuid-elotag). Nem ir semmit, nem hoz letre tablat.
 import { ARNYEK, ELO_CELOK, PLATFORMOK } from './platformok.js';
+import { cellaOsztaly } from './egyeztetes-sor.js';
 
 export const QA_TIMEZONE = 'Europe/Budapest';
 /** 2026-10-13 09:53:07 UTC: a #288 (sd kornyezeti kapu) eles merge-enek pillanata; ez elott letrehozott foglalasokhoz nem keszult foglalas_vendeg hash-index sor. */
@@ -15,6 +16,7 @@ const ELO_ID_MINTA = new RegExp(ELO_ID_LISTA.map((id) => `(?<![0-9A-Za-z])${id}(
 const LAMPA_RANG = Object.freeze({ zold: 0, sarga: 1, piros: 2 });
 const KUSZOB = 0.9; // Meta / TikTok: az elkuldott alap-esemenyek szama < KUSZOB x valos.parositott -> sarga (a viszonyitasi alap a meresi oldal/GPT dontese, #167 134. komment: a parositatlan levelhez nem keszul arnyek-esemeny)
 const MINTA_MAX = 20;
+const FRISS_MP = 20 * 60; // a 20 percnel frissebb parositott levelhez az esemeny-sorok meg keszulhetnek: nem szamit technikai kimaradasnak (friss_kizarva)
 const KORLAT = { ablakMs: 60000, max: 30, hibaMax: 5, maxBejegyzes: 2000 };
 
 // ---------- ido: a budapesti naptari nap es az UTC-intervalluma ----------
@@ -88,6 +90,11 @@ const ures = () => ({
   pre288_missing_hmac_index: { db: 0, mintak: [] },
   post288_missing_hmac_index: { db: 0, parositatlan_db: 0, mintak: [] },
   post288_nincs_email: { db: 0, parositatlan_db: 0, mintak: [] },
+  // BOOKING COVERAGE (a meresi oldal / GPT DECISION #166): latta-e a rendszer a valos foglalast. latott = a rendszer altal latott valos letrehozo levelek; elvart = a hivo FUGGETLEN forrasbol (pl. Salonic) megadott darabszam (?elvart=headspa:12,...), egyebkent null (a nevezo ekkor a latott: a lathatatlan kimaradas nem merheto)
+  lefedettseg: { latott: 0, elvart: null, nevezo_forras: 'latott', lefedettseg: null, hiany: null, parositott_esemeny_nelkul: 0, friss_kizarva: 0 },
+  // PLATFORM ELIGIBILITY: lehetett-e szabalyosan esemenyt kuldeni. Platformonkent a foglalasonkenti alap-esemeny cellak: kuldve (ok) | szabalyos_nulla (jogos_0: pl. nincs hozzajarulas / kattintasazonosito) | technikai_hiany (hiba, tiltva, veszkapcsolo, halasztva ...) | nincs_sor (parositott level esemeny-sor nelkul).
+  // A TECHNIKAI KIMARADAS (technikai_hiany + nincs_sor) BENNE MARAD a nevezoben: jogosult = kuldve + technikai_hiany + nincs_sor; a szabalyos nulla kimarad belole.
+  jogosultsag: Object.fromEntries(PLATFORMOK.map((p) => [p, { cellak: 0, kuldve: 0, szabalyos_nulla: 0, technikai_hiany: 0, technikai_hiany_okok: {}, nincs_sor: 0, jogosult: 0, arany: null }])),
   foglalas_vendeg: {},
 });
 
@@ -96,7 +103,7 @@ const ures = () => ({
  * @param {{ datum: string, from_ms: number, to_ms: number }} nap
  * @param {{ proba?: string[], env?: object }} opciok  proba = a hivo altal megadott 8 karakteres uuid-elotagok (a D1-ben NINCS proba-jelolo; lasd PROBA_SZABALY)
  */
-export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now() } = {}) {
+export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now(), elvart = null } = {}) {
   const from = Math.floor(nap.from_ms / 1000), to = Math.floor(nap.to_ms / 1000);
   const hibak = [];
   const uz = Object.fromEntries([...UZLETAGAK, 'ismeretlen'].map((u) => [u, ures()]));
@@ -129,7 +136,8 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
   await vedett('arnyek', async () => {
     if (!kOszl.size) return;
     const forrasOszlop = kOszl.has('forras') ? "COALESCE(forras, 'motor')" : "'motor'";
-    const sorok = await mind(db, `SELECT esemeny_id, esemeny_tipus, platform, platform_nev, uzletag, allapot, ${forrasOszlop} AS forras, kerelem FROM meres_kuldes WHERE letrehozva >= ?1 AND letrehozva < ?2 LIMIT 50000`, from, to);
+    const indokOszlop = kOszl.has('indok') ? 'indok' : 'NULL AS indok', hozzOszlop = kOszl.has('hozzajarulas') ? 'hozzajarulas' : 'NULL AS hozzajarulas';
+    const sorok = await mind(db, `SELECT esemeny_id, esemeny_tipus, platform, platform_nev, uzletag, allapot, ${forrasOszlop} AS forras, ${indokOszlop}, ${hozzOszlop}, kerelem FROM meres_kuldes WHERE letrehozva >= ?1 AND letrehozva < ?2 LIMIT 50000`, from, to);
     const dupla = new Map();
     for (const s of sorok) {
       const u = bizt(s.uzletag);
@@ -139,6 +147,13 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
         const f = (p.forras[s.forras] = p.forras[s.forras] || Object.fromEntries([...ALLAPOTOK, 'mas'].map((a) => [a, 0])));
         f[ALLAPOTOK.includes(s.allapot) ? s.allapot : 'mas']++;
         if (s.allapot === 'elkuldve' && s.esemeny_tipus === 'alap' && (s.forras === 'motor' || s.forras === 'salonic_direct') && !/Ajandekkartya$/.test(String(s.platform_nev || ''))) p.alap_elkuldve++; // a foglalasonkenti alap-esemeny (FoglalasElso / Konzultacio / Visszajaro); az ajandekkartya nem foglalas-level
+        if (s.esemeny_tipus === 'alap' && (s.forras === 'motor' || s.forras === 'salonic_direct') && !/Ajandekkartya$/.test(String(s.platform_nev || ''))) { // platform eligibility: ugyanaz a cella-halmaz, mint az alap_elkuldve, de MINDEN allapotban
+          const j = u.jogosultsag[s.platform]; j.cellak++;
+          const c = cellaOsztaly({ allapot: s.allapot, indok: s.indok }, { hozz: jsonVagyNull(s.hozzajarulas) });
+          if (c.osztaly === 'ok') j.kuldve++;
+          else if (c.osztaly === 'jogos_0') j.szabalyos_nulla++;
+          else { j.technikai_hiany++; novel(j.technikai_hiany_okok, c.kod || (s.allapot === 'kihagyva' ? 'veszkapcsolo' : String(s.allapot || 'ismeretlen').slice(0, 24))); } // az ok csak kod / allapot (a szabad indok-szoveg nem kerul ki)
+        }
       }
       if (s.kerelem && ELO_ID_MINTA.test(String(s.kerelem))) u.biztonsag.elo_id_talalat++;
       if (s.allapot === 'elkuldve') {
@@ -224,6 +239,19 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     }
   }, hibak);
 
+  // 5d) lefedettseg: a parositott (motor: booking_id) vagy kesz sd (sd_id) levelek, amelyekhez NINCS alap esemeny-sor a meres_kuldes-ben = technikai kimaradas (a nevezoben marad: nincs_sor)
+  await vedett('lefedettseg', async () => {
+    if (!eOszl.size || !kOszl.size || !eOszl.has('booking_id')) return;
+    const sdVan = eOszl.has('sd_id') && eOszl.has('sd_allapot');
+    const sql = `SELECT substr(e.uuid, 1, 8) AS u8, e.kulcs AS kulcs, e.letrehozva AS ido FROM foglalas_egyeztetes e WHERE e.letrehozva >= ?1 AND e.letrehozva < ?2 AND ((e.allapot = 'parositott' AND e.booking_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.booking_id AND k.esemeny_tipus = 'alap'))${sdVan ? " OR (e.sd_id IS NOT NULL AND e.sd_allapot = 'kesz' AND NOT EXISTS (SELECT 1 FROM meres_kuldes k WHERE k.source_id = e.sd_id AND k.esemeny_tipus = 'alap'))" : ''}) ORDER BY e.letrehozva, e.uuid`;
+    const frissHatar = Math.floor(mostMs / 1000) - FRISS_MP;
+    for (const r of await mind(db, sql, from, to)) {
+      if (probaSet.has(r.u8)) continue;
+      const b = bizt(placeUzletag(r.kulcs)).lefedettseg;
+      if (r.ido > frissHatar) b.friss_kizarva++; else b.parositott_esemeny_nelkul++;
+    }
+  }, hibak);
+
   // 6) foglalas_vendeg: a nap uj sorai forras szerint
   await vedett('foglalas_vendeg', async () => {
     if (!(await oszlopok(db, 'foglalas_vendeg')).size) return;
@@ -234,7 +262,7 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
 
   // ---------- lampa ----------
   let osszLampa = 'zold';
-  const osszes = { valos: { letrehozo_level: 0, parositott: 0, parositatlan: 0, lemondas: 0 }, biztonsag: { elo_id_talalat: 0, dupla: 0, nem_arnyek_cel: 0 }, pre288_missing_hmac_index: 0, post288_missing_hmac_index: 0, post288_nincs_email: 0, foglalas_vendeg: 0 };
+  const osszes = { valos: { letrehozo_level: 0, parositott: 0, parositatlan: 0, lemondas: 0 }, biztonsag: { elo_id_talalat: 0, dupla: 0, nem_arnyek_cel: 0 }, pre288_missing_hmac_index: 0, post288_missing_hmac_index: 0, post288_nincs_email: 0, foglalas_vendeg: 0, lefedettseg: { latott: 0, elvart: elvart ? 0 : null, elvart_hianyos: elvart ? !UZLETAGAK.every((x) => x in elvart) : null, hiany: elvart ? 0 : null, parositott_esemeny_nelkul: 0, friss_kizarva: 0 }, jogosultsag: Object.fromEntries(PLATFORMOK.map((p) => [p, { kuldve: 0, szabalyos_nulla: 0, technikai_hiany: 0, nincs_sor: 0, jogosult: 0, arany: null }])) };
   for (const [nev, u] of Object.entries(uz)) {
     let lampa = 'zold';
     const b = u.biztonsag;
@@ -250,6 +278,16 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     for (const p of ['google', 'ga4']) { const g = u.arnyek[p]; g.lampa = 'tajekoztato'; g.arany = hanyados(g.alap_elkuldve, u.valos.letrehozo_level); g.arany_parositott = hanyados(g.alap_elkuldve, u.valos.parositott); }
     u.lampa = lampa;
     if (LAMPA_RANG[lampa] > LAMPA_RANG[osszLampa]) osszLampa = lampa;
+    // booking coverage + platform eligibility (tajekoztato szamlalok: nem valtoztatjak a lampat)
+    const lf = u.lefedettseg; lf.latott = u.valos.letrehozo_level;
+    const e = elvart && nev in elvart ? elvart[nev] : null;
+    if (e != null) { lf.elvart = e; lf.nevezo_forras = 'elvart'; lf.lefedettseg = hanyados(lf.latott, e); lf.hiany = Math.max(0, e - lf.latott); }
+    osszes.lefedettseg.latott += lf.latott; osszes.lefedettseg.parositott_esemeny_nelkul += lf.parositott_esemeny_nelkul; osszes.lefedettseg.friss_kizarva += lf.friss_kizarva;
+    if (elvart && e != null) { osszes.lefedettseg.elvart += e; osszes.lefedettseg.hiany += lf.hiany; }
+    for (const pl of PLATFORMOK) {
+      const j = u.jogosultsag[pl]; j.nincs_sor = lf.parositott_esemeny_nelkul; j.jogosult = j.kuldve + j.technikai_hiany + j.nincs_sor; j.arany = hanyados(j.kuldve, j.jogosult);
+      const o = osszes.jogosultsag[pl]; for (const k of ['kuldve', 'szabalyos_nulla', 'technikai_hiany', 'nincs_sor', 'jogosult']) o[k] += j[k];
+    }
     osszes.valos.letrehozo_level += u.valos.letrehozo_level; osszes.valos.parositott += u.valos.parositott; osszes.valos.parositatlan += u.valos.parositatlan; osszes.valos.lemondas += u.valos.lemondas.db;
     for (const k of Object.keys(osszes.biztonsag)) osszes.biztonsag[k] += b[k];
     osszes.pre288_missing_hmac_index += u.pre288_missing_hmac_index.db;
@@ -257,6 +295,8 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     osszes.post288_nincs_email += u.post288_nincs_email.db;
     osszes.foglalas_vendeg += Object.values(u.foglalas_vendeg).reduce((x, y) => x + y, 0);
   }
+  for (const pl of PLATFORMOK) osszes.jogosultsag[pl].arany = hanyados(osszes.jogosultsag[pl].kuldve, osszes.jogosultsag[pl].jogosult);
+  if (osszes.lefedettseg.elvart != null) osszes.lefedettseg.lefedettseg = hanyados(osszes.lefedettseg.latott, osszes.lefedettseg.elvart); else delete osszes.lefedettseg.elvart_hianyos;
   if (!ismeretlenHasznalt) delete uz.ismeretlen;
   if (hibak.length && LAMPA_RANG[osszLampa] < LAMPA_RANG.sarga) osszLampa = 'sarga'; // hiányos szekcio nem lehet "zold"
   return {
@@ -273,6 +313,59 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
 
 /** A "proba" definicioja: a D1 foglalas_egyeztetes sorainak NINCS proba-jelolo oszlopa / allapota (a Zap tesztFoglalas-szabalya a Zapben dol el, es nem kerul a D1-be). Ezert: alapbol MINDEN letrehozo level valos; a hivo a ?proba=<8 karakteres uuid-elotagok vesszovel> parameterrel zarhatja ki az ismert probakat (pl. a napi ellenorzes determinisztikus listaja). */
 export const PROBA_SZABALY = 'alapbol minden foglalas_egyeztetes sor valos; kizaras csak a ?proba=<uuid 8 karakteres elotagok> parameterrel';
+
+// ---------- T2_START rogzito (a meresi oldal / GPT DECISION #166 3.) ----------
+/** A T2 kezdetekor rogzitendo allapot EGY hivasban: idopont + kod-ujjlenyomat (+ a hivo altal megadott production SHA) + D1 sema-ujjlenyomat + Zap revizio (a hivo adja) + kapcsolok + arnyekcel-ID-k. CSAK OLVAS, titok / PII nelkul (a titkokrol csak jelenlet-bit). */
+export const T2_ACCEPTANCE = Object.freeze({ min_nap: 7, max_nap: 14, min_valos_jogosult_foglalas: 200 });
+const KAPCSOLO_ENV = Object.freeze(['MERES_ELOSZTO', 'MERES_SALONIC_DIRECT', 'MERES_SD_INDEX', 'MERES_SD_NS', 'MERES_IRAS_KI', 'META_API_VERSION']);
+const TITOK_JELENLET = Object.freeze(['META_CAPI_TOKEN', 'TIKTOK_EVENTS_TOKEN', 'GA4_TESZT_API_SECRET', 'GOOGLE_ARNYEK_WEBHOOK_URL', 'SD_HMAC_KEY_V1', 'GUEST_HMAC_KEY_V1', 'EGYEZTETES_KULCS_HASH']);
+const T2_TABLAK = Object.freeze(['meres_kuldes', 'foglalas_egyeztetes', 'foglalas_vendeg', 'foglalas_reschedule', 'foglalas_lemondas', 'meres_erkezes', 'foglalas_kulcs']);
+/** Rendezett, kanonikus JSON (a kulcsok sorrendje nem szamit) -> a sha256-hez. */
+const kanon = (v) => (Array.isArray(v) ? v.map(kanon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, kanon(v[k])])) : v);
+export async function t2Start(db, env, mostMs, { sha = null, zapRev = null } = {}) {
+  const hibak = [];
+  const kodUjjlenyomat = await sha256hex(JSON.stringify(kanon({ ARNYEK, ELO_CELOK, PLATFORMOK, QA_TIMEZONE, PRE288_EPOCH, UZLETAGAK, PLACE_UZLETAG })));
+  const semaSorok = await vedett('sema', async () => mind(db, "SELECT type, name, tbl_name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite\\_%' ESCAPE '\\' AND name NOT LIKE '\\_cf\\_%' ESCAPE '\\' ORDER BY type, name"), hibak);
+  const semaUjjlenyomat = semaSorok ? await sha256hex(semaSorok.map((r) => [r.type, r.name, r.tbl_name, String(r.sql || '').replace(/\s+/g, ' ').trim()].join('|')).join('\n')) : null;
+  const tablak = new Set((semaSorok || []).filter((r) => r.type === 'table').map((r) => r.name));
+  const sorok = {};
+  for (const t of T2_TABLAK) {
+    if (!tablak.has(t)) { sorok[t] = null; continue; }
+    await vedett(`sorok_${t}`, async () => {
+      const r = (await mind(db, `SELECT COUNT(*) AS db${t === 'meres_kuldes' ? ', MAX(id) AS max_id' : ''} FROM ${t}`))[0] || {};
+      sorok[t] = t === 'meres_kuldes' ? { db: r.db, max_id: r.max_id } : { db: r.db };
+    }, hibak);
+  }
+  let kapcsolok = null;
+  if (tablak.has('meres_kapcsolo')) kapcsolok = await vedett('kapcsolok', async () => (await mind(db, 'SELECT kulcs, be, ido, ok FROM meres_kapcsolo ORDER BY kulcs')).map((r) => ({ kulcs: r.kulcs, be: r.be === 1, ido: r.ido, ok: r.ok == null ? null : String(r.ok).slice(0, 80) })), hibak);
+  const e = env || {};
+  return {
+    ok: true, qa: 't2start',
+    t2_start_utc: isoUtc(mostMs), t2_start_budapest: `${budapestiNap(mostMs)} ${helyi(mostMs).hour}:${helyi(mostMs).minute}`, timezone: QA_TIMEZONE,
+    allapot_neve: 'T2_START (a PRE-T2 / QA-5 arnyek-validacio utan)',
+    acceptance: T2_ACCEPTANCE,
+    kod: {
+      production_sha: sha, production_sha_forras: sha ? 'hivo' : (e.CF_PAGES_COMMIT_SHA ? 'env' : 'nincs'), // a Cloudflare Pages a CF_PAGES_COMMIT_SHA-t csak BUILD-kor adja; futasidoben nincs: a rogzito a deploy SHA-t a hivasban adja (&sha=)
+      env_sha: e.CF_PAGES_COMMIT_SHA ? String(e.CF_PAGES_COMMIT_SHA).slice(0, 40) : null,
+      kod_ujjlenyomat: kodUjjlenyomat, // az ARNYEK-celok + az elo tiltolista + a QA-konstansok sha256-ja: ha valtozik, a celok / a tiltolista valtozott
+      elo_tiltolista_db: { meta: ELO_CELOK.meta.length, tiktok: ELO_CELOK.tiktok.length, ga4: ELO_CELOK.ga4.length, google_primary: ELO_CELOK.google_primary.length },
+    },
+    d1: { sema_ujjlenyomat: semaUjjlenyomat, tablak_db: tablak.size, sorok },
+    zap: { revizio: zapRev, forras: zapRev ? 'hivo' : 'nincs' }, // a Zap revizioja nem lathato a szerveroldalrol: a rogzito a hivasban adja (&zap_rev=)
+    kapcsolok: {
+      env: Object.fromEntries(KAPCSOLO_ENV.map((k) => [k, e[k] == null ? null : String(e[k]).slice(0, 40)])),
+      d1: kapcsolok,
+      titkok_jelen: Object.fromEntries(TITOK_JELENLET.map((k) => [k, !!e[k]])), // csak jelenlet-bit, az ertek soha
+    },
+    arnyekcelok: {
+      meta: { dataset: ARNYEK.meta.datasetId, nev: ARNYEK.meta.nev, api_verzio: e.META_API_VERSION || ARNYEK.meta.apiVerzio, test_event_code: e.META_TESZT_KOD || null },
+      tiktok: { pixel_code: ARNYEK.tiktok.pixelCode, pixel_id: ARNYEK.tiktok.pixelId, test_event_code: e.TIKTOK_TESZT_KOD || null },
+      ga4: { measurement_id: e.GA4_TESZT_MEASUREMENT_ID || null },
+      google: { customer_id: ARNYEK.google.customerId, akciok: ARNYEK.google.akciok },
+    },
+    szekcio_hibak: hibak,
+  };
+}
 
 // ---------- vegpont ----------
 const FEJ = Object.freeze({ 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' });
@@ -296,7 +389,7 @@ async function kulcsEgyezik(request, env) {
   return d === 0;
 }
 
-/** GET /api/meres-admin?qa=nap&datum=YYYY-MM-DD[&proba=<uuid8,uuid8>] - kulcs CSAK az x-egyeztetes-kulcs fejlecben (URL-ben soha). 401 = nincs kulcs, 403 = rossz kulcs, 405 = nem GET, 429 = rate-limit, 400 = hibas datum. */
+/** GET /api/meres-admin?qa=nap&datum=YYYY-MM-DD[&proba=<uuid8,uuid8>][&elvart=headspa:12,...] | ?qa=t2start[&sha=..][&zap_rev=..] - kulcs CSAK az x-egyeztetes-kulcs fejlecben (URL-ben soha). 401 = nincs kulcs, 403 = rossz kulcs, 405 = nem GET, 429 = rate-limit, 400 = hibas datum. */
 export async function kezelQaNap(request, env, deps = {}) {
   const ms = deps.now ? deps.now() : Date.now();
   if (request.method !== 'GET') return valasz(405, { ok: false });
@@ -309,10 +402,28 @@ export async function kezelQaNap(request, env, deps = {}) {
   }
   if (!env || !env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
   const url = new URL(request.url);
+  if (url.searchParams.get('qa') === 't2start') { // T2_START rogzito (csak olvas): ?qa=t2start[&sha=<hex 7-40>][&zap_rev=<azonosito>]
+    const sha = (url.searchParams.get('sha') || '').trim().toLowerCase() || null, zapRev = (url.searchParams.get('zap_rev') || '').trim() || null;
+    if (sha && !/^[0-9a-f]{7,40}$/.test(sha)) return valasz(400, { ok: false, miert: 'sha: 7-40 hexa karakter' });
+    if (zapRev && !/^[A-Za-z0-9._:-]{1,40}$/.test(zapRev)) return valasz(400, { ok: false, miert: 'zap_rev: legfeljebb 40 karakter (betu, szam, . _ : -)' });
+    try { return valasz(200, await t2Start(env.KULCS_DB, env, ms, { sha, zapRev })); }
+    catch (e) { console.error('qa-t2start:', String(e && e.message || e).slice(0, 200)); return valasz(500, { ok: false, miert: 'adatbazis-hiba' }); }
+  }
   const nap = napIntervallum(url.searchParams.get('datum'), ms);
   if (!nap) return valasz(400, { ok: false, miert: 'datum: YYYY-MM-DD (2026-01-01 .. holnap)' });
   const nyers = (url.searchParams.get('proba') || '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
   if (nyers.length > 100 || nyers.some((x) => !/^[0-9a-f]{8}$/.test(x))) return valasz(400, { ok: false, miert: 'proba: legfeljebb 100 db 8 karakteres hex uuid-elotag, vesszovel' });
-  try { return valasz(200, await qaNap(env.KULCS_DB, nap, { proba: nyers, env, mostMs: ms })); }
+  // elvart: a FUGGETLEN forrasbol (pl. Salonic) szamolt valos foglalasok uzletagonkent: ?elvart=headspa:12,fodrasz:3 (a booking coverage nevezoje)
+  let elvart = null;
+  const elvartNyers = (url.searchParams.get('elvart') || '').trim();
+  if (elvartNyers) {
+    elvart = {};
+    for (const par of elvartNyers.split(',')) {
+      const m = /^([a-z]+):(\d{1,6})$/.exec(par.trim());
+      if (!m || !UZLETAGAK.includes(m[1]) || m[1] in elvart) return valasz(400, { ok: false, miert: 'elvart: uzletag:darab,... (headspa|fodrasz|oxigen|szor|pmu; 0-999999; uzletagonkent egyszer)' });
+      elvart[m[1]] = Number(m[2]);
+    }
+  }
+  try { return valasz(200, await qaNap(env.KULCS_DB, nap, { proba: nyers, env, mostMs: ms, elvart })); }
   catch (e) { console.error('qa-nap:', String(e && e.message || e).slice(0, 200)); return valasz(500, { ok: false, miert: 'adatbazis-hiba' }); }
 }
