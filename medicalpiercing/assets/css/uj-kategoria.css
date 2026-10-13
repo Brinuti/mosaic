@@ -11,6 +11,8 @@
 /* hos: ugyanaz, mint a fooldalon; kiegeszitve az ertekelessel es a cimsor feletti felirattal */
 .kat-hos .hos-cim{grid-area:cim;align-self:end}
 .kat-hos .hos-kep>img{object-position:50% 28%}
+.kat-hos .hos-alcim{display:none}
+.kat-hos .hos-idezet-cim{display:block}
 /* a szurke idezet-doboz a kep alsó szelen log le (nem takarja a kepet) */
 .kat-hos .hos-idezet{left:22px;bottom:-40px}
 .kat-hos .hos-szoveg .gombsor{margin-top:22px}
@@ -136,12 +138,17 @@
   /* mobil alapszabaly: a hosben mindket gomb latszik (cim, kep, GOMBOK, utana a bevezeto); a szurke doboz kisebb es lejjebb van, nem takarja a kepet */
   .kat-hos .hos-szoveg{display:flex;flex-direction:column}
   .kat-hos .hos-szoveg .gombsor{order:-1;margin:0 0 16px}
-  .kat-hos .hos-kep{margin-bottom:46px}
-  .kat-hos .hos-idezet{left:10px;bottom:-36px;max-width:68%;padding:8px 11px;font-size:.74rem;line-height:1.35}
-  .kat-hos .hos-idezet small{margin-top:2px;font-size:.64rem;line-height:1.3}
-  .kat-hos .hos-pecset{right:8px;bottom:-32px;width:80px;height:80px;font-size:.44rem}
-  .kat-fej{margin-bottom:14px}
-  .kat-doboz{gap:20px;padding:24px 18px;text-align:center}
+  .kat-hos .hos-kep{margin-bottom:28px}
+  .kat-hos .hos-idezet{left:10px;bottom:-15px;max-width:calc(100% - 20px);padding:6px 10px;border-radius:12px;font-size:.7rem;line-height:1.3}
+  .kat-hos .hos-idezet small{display:none}
+  .kat-hos .hos-idezet-cim{white-space:nowrap}
+  .kat-hos .hos-alcim{display:block;margin:10px 0 0;font-size:.8rem;line-height:1.4;color:var(--mut)}
+  .kat-hos .hos-pecset{display:none}   /* mobilon a pecset helyett a bizalmi sor mutatja ugyanezt (nincs rajta a kepen) */
+  .oldal-kategoria main>section{margin-block:14px}
+  .oldal-kategoria .kat-egy{margin-block:14px}
+  .kat-fej{margin-bottom:10px}
+  .kat-doboz{gap:12px;padding:16px 14px;text-align:center}
+  .kat-doboz h2{margin-bottom:8px;font-size:1.2rem}
   .kat-doboz .felirat{justify-content:center}
   .kat-doboz-szoveg{display:flex;flex-direction:column;align-items:center}
   .kat-doboz-szoveg>p:not(.felirat){font-size:.94rem}
@@ -163,5 +170,49 @@
   .kat-elem>summary{padding:14px 16px;font-size:.98rem}
   .kat-elem-torzs{padding:0 16px 16px;font-size:.94rem}
   .kat-cikk{font-size:.94rem}
+}
+@media (max-width:760px){
+  .kat-doboz-szoveg>p:not(.felirat){font-size:.88rem;line-height:1.45;margin-bottom:8px}
+  .kat-doboz .pipak{margin-bottom:10px}
+  .kat-doboz .pipak li{margin-bottom:4px;font-size:.88rem;line-height:1.4}
+  .kat-hiba li{margin-bottom:5px;font-size:.88rem;line-height:1.4}
+  /* video-doboz: a video + a szoveg, felirat es gomb nelkul (a hosben mar van gomb) */
+  .kat-video{gap:10px}
+  .kat-video .felirat,.kat-video .kat-doboz-szoveg>.gomb{display:none}
+  .kat-video-kep .video-kep,.kat-video-kep .beagyaz{border-radius:14px}
+  .kat-video-kep .lejatszo{width:52px;height:52px;margin:-26px 0 0 -26px}
+  /* "Miert mukodnek" es "Nem hozzaerto kezekben": a kep a cim mellett, alatta a lista balra igazitva */
+  .kat-miert,.kat-figyelem{grid-template-columns:76px minmax(0,1fr);gap:8px 12px;align-items:center;justify-items:stretch;text-align:left}
+  .kat-miert .kat-doboz-szoveg,.kat-figyelem .kat-doboz-szoveg{display:contents}
+  .kat-miert-kep,.kat-figyelem-kep{grid-column:1;grid-row:1;max-width:76px;margin:0}
+  .kat-miert h2,.kat-figyelem h2{grid-column:2;grid-row:1;margin:0;text-align:left}
+  .kat-miert .pipak,.kat-figyelem .kat-hiba,.kat-figyelem .kat-doboz-szoveg>p{grid-column:1/-1;text-align:left}
+  .kat-miert .pipak li,.kat-hiba li{text-align:left}
+  .kat-hiba li{padding-left:24px}
+  .kat-hiba li::before{position:absolute;display:block;margin:0}
+  .kat-figyelem .kat-doboz-szoveg>p{margin:0 0 4px;font-size:.84rem}
+  /* 93%: kep + szam egymas mellett */
+  .kat-stat{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:12px;text-align:left}
+  .kat-stat-kep{max-height:130px}
+  .kat-stat .kat-doboz-szoveg{align-items:flex-start}
+  .kat-doboz-szoveg>p.kat-szam{font-size:2.9rem}
+  .kat-doboz-szoveg>p.kat-szam-szoveg{margin:2px 0 4px;font-size:.88rem}
+  .kat-doboz-szoveg>p.kat-lab{font-size:.6rem;line-height:1.35}
+  .kat-fb .kar-dia{flex-basis:min(70vw,270px)}
+  .kat-panasz>img{aspect-ratio:16/9}
+  /* fooldali dobozok a kategoria-oldalakon, mobilon tomorebben */
+  .oldal-kategoria .galeria{aspect-ratio:4/3}
+  .oldal-kategoria .premium{gap:14px;padding:16px 14px}
+  .oldal-kategoria .premium-szoveg>p:not(.felirat){font-size:.88rem;line-height:1.45;margin-bottom:8px}
+  .oldal-kategoria .elonyok{gap:8px;margin-top:8px}
+  .oldal-kategoria .elonyok li span:not(.kor){display:none}
+  .oldal-kategoria .elonyok .kor{width:36px;height:36px}
+  .oldal-kategoria .elonyok .kor .ik{width:18px;height:18px}
+  .oldal-kategoria .videok{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin-inline:-4px;padding:0 4px 6px;-webkit-overflow-scrolling:touch}
+  .oldal-kategoria .videok li{flex:0 0 74%;scroll-snap-align:start}
+  .oldal-kategoria .media{padding:16px 14px;gap:10px}
+  .oldal-kategoria .csapat>img{height:130px}
+  .oldal-kategoria .csapat-szoveg{padding:16px 14px 2px}
+  .oldal-kategoria .uzletek{padding:16px 10px}
 }
 @media print{.kat-fb .kar-gomb{display:none!important}}

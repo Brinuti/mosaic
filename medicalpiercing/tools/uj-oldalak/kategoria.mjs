@@ -177,6 +177,15 @@ export function kategoriaFo(ROOT, adat, c, T) {
   c.h1 = true;       // a hos h1-e mar megvan
   c.kepSzam = 1;     // a hos kepe az elso (a tobbi lusta toltesu)
 
+  // az eredeti fooldal szalon-fotogaleriaja (a tartalom-JSON-ban: a cim nelkuli, 10-nel tobb kepes galeria)
+  let fooldaliGaleria = null;
+  try {
+    const fo = JSON.parse(fs.readFileSync(path.join(ROOT, 'uj-oldalak/tartalom/index.json'), 'utf8'));
+    const keres = (n) => (n.t === 'galeria' ? [n] : (n.k || []).flatMap(keres));
+    const cimes = (n) => n.t === 'h' || (n.k || []).some(cimes);
+    for (const sz of fo.szekciok) { if (cimes(sz.fa)) continue; const g = keres(sz.fa).find((x) => x.kepek.length >= 10); if (g) { fooldaliGaleria = g; break; } }
+  } catch { /* marad az eredeti galeria */ }
+
   const lista = (n, osztaly = 'pipak') => `<ul class="${osztaly}">${n.elemek.map((e) => `<li>${osztaly === 'pipak' ? IK('check') : ''}${szovegLink(e)}</li>`).join('')}</ul>`;
   const bekezd = (n) => `<p>${szovegLink(n.html)}</p>`;
   const gombHtml = (szoveg, href, kicsi = true) => `<a class="gomb ${kicsi ? 'gomb-kicsi' : 'gomb-tomor'}" href="${esc(href)}">${esc(szoveg)}${IK('chev', 'ik-nyil')}</a>`;
@@ -200,6 +209,7 @@ export function kategoriaFo(ROOT, adat, c, T) {
       <h1 class="hos-cim">${cim}</h1>
       <div class="hos-szoveg">
         ${h.bev ? `<p class="hos-bevezeto">${szovegLink(h.bev.html)}</p>` : ''}
+        ${h.idezetP ? `<p class="hos-alcim">${szovegLink(h.idezetP.html)}</p>` : ''}
         <div class="gombsor">
           <a class="gomb gomb-tomor" href="${esc(belso(gomb.href))}">${IK('calendar')}${esc(gomb.szoveg.replace(/!$/, ''))}${IK('chev', 'ik-nyil')}</a>
           ${van.has('ar') ? `<a class="gomb gomb-ures" href="#arak">Árak és akciók${IK('chev', 'ik-nyil')}</a>` : ''}
@@ -208,15 +218,15 @@ export function kategoriaFo(ROOT, adat, c, T) {
         <ul class="hos-linkek">${linkek.join('')}</ul>
         <ul class="bizalom">
           <li>${IK('shield')}<span><b>EÜ</b> szakemberek</span></li>
-          <li>${IK('users')}<span><b>20+ év</b> egészségügyi tapasztalat</span></li>
+          <li>${IK('users')}<span><b>Alapítói</b> EÜ tapasztalat</span></li>
           <li>${IK('pin')}<span><b>Budapesten</b> állandó szalon</span></li>
           <li>${IK('map')}<span><b>Több mint 11</b> vidéki városban</span></li>
         </ul>
       </div>
       <figure class="hos-kep">
         <img src="${esc(h.kep.src)}"${keparany(h.kep)} alt="${esc(h.kep.alt || adat.cim)}"${h.kep.nh > h.kep.nw ? ' style="object-position:50% 40%"' : ''} fetchpriority="high">
-        ${h.idezetH ? `<figcaption class="hos-idezet">${szovegLink(h.idezetH.html)}${h.idezetP ? `<small>${szovegLink(h.idezetP.html)}</small>` : ''}</figcaption>` : ''}
-        <div class="hos-pecset" aria-hidden="true">${IK('shield')}<span>20+ év<br>egészségügyi<br>tapasztalat</span></div>
+        ${h.idezetH ? `<figcaption class="hos-idezet"><span class="hos-idezet-cim">${szovegLink(h.idezetH.html)}</span>${h.idezetP ? `<small>${szovegLink(h.idezetP.html)}</small>` : ''}</figcaption>` : ''}
+        <div class="hos-pecset" aria-hidden="true">${IK('shield')}<span>Alapítói<br>EÜ<br>tapasztalat</span></div>
       </figure>
     </div>
   </section>`;
@@ -367,6 +377,8 @@ ${widget}
   const egyeb = (b) => {
     const lathato = [];
     const lattak = new Set();
+    // a szalon-fotogaleria (csak egy nagy galeria, nincs mellette cim): az eredeti FOOLDAL mostani kepei jelennek meg (a regi kepeken mar nem dolgozo kolleganok is vannak)
+    if (b.nodes.length === 1 && b.nodes[0].t === 'galeria' && b.nodes[0].kepek.length >= 10 && fooldaliGaleria) return `<section class="tarto"><div class="sz kat-doboz kat-egyeb">${T.csomopont(fooldaliGaleria, c)}</div></section>`;
     for (const n of b.nodes) {   // az ismetlodo, azonos gombokbol (a Wix-oldalon egymas alatt halmozva) egy marad
       if (n.t === 'gomb') { const kulcs = n.szoveg + '|' + n.href; if (lattak.has(kulcs)) continue; lattak.add(kulcs); }
       lathato.push(n);
@@ -380,7 +392,11 @@ ${widget}
   };
 
   const resz = [hos()];
-  for (const b of p.blokkok) {
+  // a vendegek panaszai ("az alabbi panaszokon ertek el javulast") rogton a Google-velemenyek alatt
+  const sorrend = [...p.blokkok];
+  const pi = sorrend.findIndex((b) => b.tip === 'panasz'), vi = sorrend.findIndex((b) => b.tip === 'velemeny');
+  if (pi >= 0 && vi >= 0) sorrend.splice(vi + 1, 0, ...sorrend.splice(pi, 1));
+  for (const b of sorrend) {
     switch (b.tip) {
       case 'video': resz.push(video(b)); break;
       case 'velemeny': resz.push(velemeny(b)); break;

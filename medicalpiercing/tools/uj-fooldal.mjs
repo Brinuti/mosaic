@@ -107,7 +107,7 @@ export function ujOldalak(ROOT, DIST) {
 
 // --- kitelepulesek: a helyszin-csempek datumai a tablazatbol (a build irja be; a lap betolteskor frissiti: uj-fooldal.js) ----------
 const HONAP_ROVID = { 'Január': 'Jan.', 'Február': 'Febr.', 'Március': 'Márc.', 'Április': 'Ápr.', 'Május': 'Máj.', 'Június': 'Jún.', 'Július': 'Júl.', 'Augusztus': 'Aug.', 'Szeptember': 'Szept.', 'Október': 'Okt.', 'November': 'Nov.', 'December': 'Dec.' };
-export const rovidSor = (sor) => sor.replace(/^[A-ZÁÉÍÓÖŐÚÜŰa-záéíóöőúüű]+/, (h) => HONAP_ROVID[h] || h).replace(/,\s*/g, ', ');
+export const rovidSor = (sor) => sor.replace(/^[A-ZÁÉÍÓÖŐÚÜŰa-záéíóöőúüű]+/, (h) => HONAP_ROVID[h] || h).replace(/,\s*/g, ',\u2009');
 export function ujKitelepules(DIST, sorok) {
   let db = 0;
   const lapok = [];
