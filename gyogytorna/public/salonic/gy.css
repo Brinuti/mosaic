@@ -248,3 +248,6 @@ body[class*="customer-gyogytornaszomhu"] .panel-body > div { font-size: 0 !impor
 body[class*="customer-gyogytornaszomhu"] .panel-body > div > * { font-size: 12px !important; line-height: 1.35 !important; }
 body[class*="customer-gyogytornaszomhu"] .panel-body > div > span.d-block.mb-3 { display: none !important; }
 body[class*="customer-gyogytornaszomhu"] .panel-body > div > hr { display: none !important; }
+
+/* Feri kerese (2026-10-13): a Salonic sajat sutisavja ("Az oldal hasznalataval hozzajarulsz...") ne latszodjon az adatlapon; a hozzajarulast a gyogytornaszom.hu sajat savja kezeli. */
+body[class*="customer-gyogytornaszomhu"] .cc-window, body[class*="customer-gyogytornaszomhu"] .cc-revoke { display: none !important; }
