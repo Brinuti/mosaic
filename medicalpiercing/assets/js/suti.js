@@ -73,6 +73,19 @@
     return m ? { stat: m[1] === '1', mark: m[2] === '1', t: +m[3] } : null;
   };
   var dontes = olvasDontes();
+  // SAV_KI (Feri dontese, 2026-10-13 22:20): a sav NEM jelenik meg, vissza a 10-10 elotti allapotba (minden meres fut).
+  // Kifejezett vendegdontes (lablec "Suti beallitasok") tovabbra is ervenyes es elsobbsegu. A sav nelkuli alapallapot jele
+  // a "t0" suti (nem valodi dontes): ha a savot visszakapcsoljuk (SAV_KI = false), a t0 dontes nelkulinek szamit, es a sav ujra megjelenik.
+  // Vissza: SAV_KI = false (Google-figyelmeztetes eseten 7 napon belul).
+  var SAV_KI = true;
+  if (dontes && dontes.t === 0 && !SAV_KI) dontes = null;
+  if (!dontes && SAV_KI) {
+    dontes = { stat: true, mark: true, t: 0 };
+    try {
+      document.cookie = SUTI + '=v1-s1-m1-t0; path=/; max-age=' + NAP * 86400 +
+        (ELES_DOMAINEK.indexOf(location.hostname) >= 0 ? '; domain=medicalpiercing.hu' : '') + '; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
+    } catch (e) { /* tiltott suti */ }
+  }
 
   // Google Consent Mode v2: az alapallapot a gtag.js es a GTM betoltese ELOTT (ez a szkript a <head>-ben szinkron fut).
   // Dontes nelkul minden nem szukseges tarolas tiltva; a gtag/GTM ilyenkor suti nelkuli jelet (cookieless ping) kuld.
