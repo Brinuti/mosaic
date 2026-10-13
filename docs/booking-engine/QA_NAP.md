@@ -2,6 +2,8 @@
 
 **Cel:** az eles D1-et a meresi oldal nem olvashatja. Ezzel a vegponttal a Zapier admin-draft (a kulcs csak a Storage-ban) naponta lekeri a T2-osszevetest (arnyek vs. valos) es a Drive-ra irja. A `pre288_missing_hmac_index` cimke is itt keletkezik.
 
+**Hivo (DECISION #168, 2. pont): Zap caller = N/A.** Az `elvart` (napi Salonic-foglalasszam uzletagankent, MERES-NAPI-ELLENORZES) forrasa a meresi oldal; a `qa=nap` vegpontot (`&elvart=headspa:12,...`) a **meresi oldal / admin-draft (01a134e9)** hivja, a kulcs a Zapier Storage-ban van. Ehhez **nem kell Zap-bekotes** (az eles Zap-ok nem hivjak es nem modosulnak). A `qa=t2start` kulon vegpont marad.
+
 **CSAK OLVAS, AGGREGALT, PII-MENTES.** Nem ir semmit, nem hoz letre tablat (egyetlen utasitasa sem INSERT / UPDATE / DELETE / CREATE: a teszt ezt ellenorzi), nem kuld semmit semelyik platformra.
 
 ```
