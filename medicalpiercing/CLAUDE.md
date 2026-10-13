@@ -13,3 +13,6 @@ Ezen felül:
   és az érintett oldalakra `node tools/elteres.mjs` (asztali és `--mobil`). A cél: 0 eltérő elem.
 - A mérőkódok csak a `www.medicalpiercing.hu` domainen futhatnak (`assets/js/suti.js`, `ELES_DOMAINEK`).
 - Külső fiókokban (Wix, Google, Meta, CookieYes, Cloudflare DNS) semmit ne módosíts a tulajdonos kifejezett kérése nélkül.
+- **Csiszolás közben nem kell minden változtatás után teljes tesztet futtatni** (a tulajdonos döntése, 2026-10-13): amíg az új, rejtett
+  oldalak (`/uj-fooldal`, `/uj/...`) formázása tart, elég a build és egy gyors szemrevételezés (képernyőkép asztalin és mobilon). A teljes
+  tesztet (`tools/uj-oldalak-teszt.mjs`, `tools/uj-fooldal-teszt.mjs`) az együttes élesítés előtt kell lefuttatni.

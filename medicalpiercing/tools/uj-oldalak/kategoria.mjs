@@ -8,8 +8,28 @@
 // Tiszta fuggveny (nincs benne bongeszo): a Cloudflare-build is futtatja (tools/uj-fooldal.mjs -> sablon.mjs).
 
 // a fejlec "Piercingek" menujenek oldalai. A "Divat fulpiercing" kimarad: kulon arlistaja van (12.000 Ft), a fooldal arai nem igazak ra.
+import fs from 'node:fs';
+import path from 'node:path';
+
 export const KATEGORIA_UTAK = new Set(['/migren-piercing', '/shenmen-piercing', '/klimax-piercing', '/slim-etvagycsokkento-piercing',
   '/allergia-piercing', '/maj-piercing', '/pajzsmirigy-piercing', '/lep-piercing', '/vastagbel-piercing']);
+
+// A hosszu szoveg fo-cimeinek helye (csomopont-indexek): h (1-2. szint), a szamozott cimek ("10. ...": a Wixen neha csak bekezdes, vagy 3. szintu cim) akkor,
+// ha a szamuk folytatja a sort (az "a) ..." / "1. 2. 3." alpontok nem fo-cimek)
+const foCimIndexek = (nodes, T) => {
+  const fo = new Set();
+  let utolso = 0;
+  nodes.forEach((x, i) => {
+    const t = T.szovegTiszta(x.html || '');
+    const m = /^(\d{1,2})\.\s\S/.exec(t);
+    const szam = m ? +m[1] : 0;
+    if (x.t === 'h' && x.n <= 2) { fo.add(i); if (szam) utolso = szam; return; }
+    const folytatja = szam > utolso && szam <= utolso + 3;
+    if (x.t === 'h' && folytatja) { fo.add(i); utolso = szam; return; }
+    if (x.t === 'p' && folytatja && t.length <= 90 && !/[.!?:]$/.test(t)) { fo.add(i); utolso = szam; }
+  });
+  return fo;
+};
 
 const laposit = (n, ki = []) => { if (n.k) n.k.forEach((x) => laposit(x, ki)); else ki.push(n); return ki; };
 const gyerekek = (fa) => (fa.t === 'verem' ? fa.k : [fa]);
@@ -39,7 +59,7 @@ export function kategoriaBlokkok(adat, T) {
       const alcim = kov.t === 'p' ? kov : null;
       const utan = k[i + (alcim ? 3 : 2)];
       const link = utan && utan.t === 'p' && /Tovább az összes/i.test(tisztit(utan)) ? utan : null;
-      return { tip: 'velemeny', cim: n, alcim, link, hossz: (alcim ? 3 : 2) + (link ? 1 : 0) };
+      return { tip: 'velemeny', cim: n, alcim, link, ifr: alcim ? kov2 : kov, hossz: (alcim ? 3 : 2) + (link ? 1 : 0) };
     }
     // "Igy mukodik": video + szoveg
     if (n.t === 'sor' && n.k.length === 2 && vanVideo(n)) {
@@ -79,6 +99,8 @@ export function kategoriaBlokkok(adat, T) {
       const tipp = k[j] && k[j].t === 'p' && /Kattints/i.test(tisztit(k[j])) ? k[j++] : null;
       if (kepek) return { tip: 'fb', cim: n, bev, kepek, tipp, hossz: j - i };
     }
+    // a hosszu szoveges resz ("... tudastar" / osszefoglalo / informaciok): cim + egy nagy szoveg-verem, sok szamozott / fo-cimmel -> harmonika
+    if (n.t === 'h' && kov && kov.t === 'verem' && foCimIndexek(kov.k, T).size >= 4) return { tip: 'tudastar', cim: n, torzs: kov.k, tobbi: k.slice(i + 2), hossz: vege };
     // a fooldal dobozaval megjeleno blokkok
     if (hCim(n, /legmagasabb minőségű ékszerek/i)) {
       let j = i + 1;
@@ -166,16 +188,16 @@ export function kategoriaFo(ROOT, adat, c, T) {
     const h = p.hero;
     let cim = szovegLink(h.h1.html);
     if (!/</.test(cim)) cim = cim.replace(/(garanci.*|egészségügyi tapasztalattal\.?)$/i, '<em>$1</em>');
-    const cimsor = `${h.tag ? `<p class="felirat">${szovegLink(h.tag.html)}</p>` : ''}<h1>${cim}</h1>`;
     const gomb = h.gomb ? h.gomb : { szoveg: 'Időpontot foglalok', href: '/idopontfoglalas' };
     const linkek = [`<li><a href="/migren-es-shenmen-piercing-garancia">Garancia »</a></li>`];
     if (van.has('helyszin')) linkek.push('<li><a href="#helyszinek">Helyszíneink »</a></li>');
     for (const e of h.extra) linkek.push(`<li>${szovegLink(e.html)}</li>`);
     const csill = Array.from({ length: 5 }, () => IK('star')).join('');
-    const ert = h.ert ? `<p class="kat-ertekeles"><span class="csillagok" role="img" aria-label="5 csillagból 4,8">${csill}</span>${szovegLink(h.ert.html)}</p>` : '';
+    // a pontszam es a vélemenyek szama a Trustindex-widget fejlecebol jon (assets/js/uj-fooldal.js 4c.: /api/ertekeles); a szoveg itt csak tartalek
+    const ert = `<p class="kat-ertekeles"><span class="csillagok" role="img" aria-label="5 csillagból 4,8">${csill}</span><a href="/migren-shenmen-piercing-velemenyek" data-ti-ertekeles>Kiváló – 4,8 – 5\u00a0000+ vélemény »</a></p>`;
     return `<section class="hos kat-hos">
     <div class="tarto hos-racs">
-      ${h.tag ? `<div class="hos-cim">${cimsor}</div>` : `<h1 class="hos-cim">${cim}</h1>`}
+      <h1 class="hos-cim">${cim}</h1>
       <div class="hos-szoveg">
         ${h.bev ? `<p class="hos-bevezeto">${szovegLink(h.bev.html)}</p>` : ''}
         <div class="gombsor">
@@ -233,10 +255,14 @@ export function kategoriaFo(ROOT, adat, c, T) {
 
   // --- Google-velemenyek: cim + a fooldal Trustindex-doboza + tovabb link ---
   const velemeny = (b) => {
+    // az eredeti oldal beagyazasa (assets/embed/*.html) az oldal sajat Trustindex-widgetjet toltotte (pl. a migren-oldalon elol a migrenes velemenyek): ugyanazt a kulcsot hasznaljuk
+    let kulcs = null;
+    try { kulcs = /loader\.js\?([a-z0-9]+)/.exec(fs.readFileSync(path.join(ROOT, b.ifr.src.replace(/^\//, '')), 'utf8'))?.[1] || null; } catch { /* a fooldali widget marad */ }
+    const widget = kulcs ? reszlet('velemenyek').replace(/loader\.js\?[a-z0-9]+/, 'loader.js?' + kulcs) : reszlet('velemenyek');
     const l = b.link && T.csakLink(b.link.html) ? szovegLink(b.link.html).trim().replace(/^<a /, '<a class="szoveg-link" ') : '';
     return `<section class="kat-blokk">
     <div class="tarto kat-fej"><h2>${szovegLink(b.cim.html)}</h2>${b.alcim ? `<p class="kat-alcim">${szovegLink(b.alcim.html)}</p>` : ''}</div>
-${reszlet('velemenyek')}
+${widget}
     ${l ? `<div class="tarto kat-tovabb">${l}</div>` : ''}
   </section>`;
   };
@@ -298,6 +324,45 @@ ${reszlet('velemenyek')}
     <img src="${esc(b.kep.src)}"${keparany(b.kep)} alt="${esc(b.kep.alt || '')}" loading="lazy" decoding="async">
   </article></section>`;
 
+  // a hosszu szoveges resz harmonikaban: csak a fo-cimek latszanak, a tartalom csukva (nativ <details>, nincs hozza szkript)
+  const tudastar = (b) => {
+    const elemek = [];
+    const bevezeto = [];
+    let akt = null;
+    const fo = foCimIndexek(b.torzs, T);
+    for (const [i, n] of b.torzs.entries()) {
+      if (fo.has(i)) { akt = { cim: n.html, nodes: [] }; elemek.push(akt); } else if (akt) akt.nodes.push(n); else bevezeto.push(n);
+    }
+    if (bevezeto.length) elemek.unshift({ cim: 'Bevezető', nodes: bevezeto });
+    // az eredeti oldalon a "pont helye" abra a szoveg vegere csuszott: oda tesszuk, ahova tartozik (a "helye / hova szurjak" resz, ennek hianyaban a "mukodese")
+    const lent = [];
+    for (const kep of b.tobbi.filter((x) => x.t === 'kep')) {
+      const hova = (re) => elemek.findIndex((e) => !e.kep && re.test(szovegTiszta(e.cim)));
+      const i = [hova(/helye|hova |hol /i), hova(/műk[öo]d[ée]s/i)].find((x) => x >= 0);
+      if (i === undefined) lent.push(kep); else elemek[i].kep = kep;
+    }
+    const kepHtml = (kep) => `<figure class="kat-elem-kep"><img src="${esc(kep.src)}"${keparany(kep)} alt="${esc(kep.alt || '')}" loading="lazy" decoding="async" data-nagyit></figure>`;
+    const torzs = (e) => {
+      const r = [];
+      let kepBent = !e.kep;
+      for (const n of e.nodes) {
+        r.push(T.csomopont(n, c));
+        if (!kepBent && n.t === 'p') { r.push(kepHtml(e.kep)); kepBent = true; }   // a "lasd a kepen" bekezdes utan
+      }
+      if (!kepBent) r.push(kepHtml(e.kep));
+      return r.join('\n');
+    };
+    const gomb = b.tobbi.find((x) => x.t === 'gomb');
+    return `<section class="tarto kat-tudastar">
+    <h2 class="kat-tudastar-cim">${szovegLink(b.cim.html)}</h2>
+    <div class="kat-harmonika">
+      ${elemek.map((e) => `<details class="kat-elem"><summary><span class="kat-elem-cim">${String(e.cim).replace(/<[^>]+>/g, '')}</span><span class="kat-elem-nyil" aria-hidden="true">${IK('chev')}</span></summary><div class="sz kat-elem-torzs">${torzs(e)}</div></details>`).join('\n      ')}
+    </div>
+    ${lent.map((k) => kepHtml(k)).join('')}
+    <div class="kat-tudastar-gomb"><a class="gomb gomb-tomor" href="${esc(gomb ? belso(gomb.href) : '/idopontfoglalas')}">${esc((gomb ? gomb.szoveg : 'Időpontot foglalok').replace(/!$/, ''))}${IK('chev', 'ik-nyil')}</a></div>
+  </section>`;
+  };
+
   // minden mas: az altalanos tukor-sablon, a fooldal stilusu keretben (a hosszu szoveg keret nelkul)
   const egyeb = (b) => {
     const lathato = [];
@@ -326,6 +391,7 @@ ${reszlet('velemenyek')}
       case 'panasz': resz.push(panasz(b)); break;
       case 'ekszer': resz.push(reszlet('ekszerek')); break;
       case 'ar': resz.push(reszlet('akcio'), reszlet('arak')); break;
+      case 'tudastar': resz.push(tudastar(b)); break;
       case 'media': resz.push(`<section class="tarto kat-egy">\n${reszlet('media')}\n  </section>`); break;
       case 'csapat': resz.push(`<section class="tarto kat-egy">\n${reszlet('csapat')}\n  </section>`); break;
       case 'helyszin': resz.push(reszlet('helyszinek')); break;

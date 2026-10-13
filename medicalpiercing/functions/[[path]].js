@@ -5,7 +5,9 @@
 // - POST /api/urlap: az oldalak urlapjai (assets/js/klon.js 6.) - e-mail a
 //   szalonnak, a feltoltott fajlok mellekletkent (lib/levelek.js);
 // - GET /api/kitelepulesek: a videki helyszinek idopontjai a tablazatbol (lib/kitelepulesek.js),
-//   a lapok ebbol frissitik a datumokat (assets/js/klon.js 10.).
+//   a lapok ebbol frissitik a datumokat (assets/js/klon.js 10.);
+// - GET /api/ertekeles: a Google-ertekeles (pontszam, vélemenyek szama) a Trustindex fooldali widgetjebol (lib/ertekeles.js),
+//   a kategoria-oldalak hosenek ertekeles-sora ebbol frissul (assets/js/uj-fooldal.js 4c.).
 //
 // Csak a lapokra fut (dist/_routes.json): a kepek, betuk, stilusok, szkriptek es
 // videok kozvetlenul a Cloudflare tarhelyerol jonnek, fuggvenyhivas nelkul.
@@ -17,6 +19,7 @@ import { WorkerMailer } from 'worker-mailer';
 import { utvonal } from '../lib/utvonal.js';
 import { level } from '../lib/levelek.js';
 import { TABLAZAT_CSV, osszesSor } from '../lib/kitelepulesek.js';
+import { TRUSTINDEX_TARTALOM, ertekelesAdat } from '../lib/ertekeles.js';
 
 // Minden mas host (*.pages.dev elonezetek) probacim: noindex + tilto robots.txt.
 const ELES_HOST = /^(www\.)?medicalpiercing\.hu$/;
@@ -31,6 +34,7 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   if (request.method === 'POST' && url.pathname === '/api/urlap') return urlap(context);
   if (request.method === 'GET' && url.pathname === '/api/kitelepulesek') return kitelepulesek();
+  if (request.method === 'GET' && url.pathname === '/api/ertekeles') return ertekeles();
   if (request.method !== 'GET' && request.method !== 'HEAD') return context.next();
 
   const eles = ELES_HOST.test(url.hostname);
@@ -61,6 +65,20 @@ export async function onRequest(context) {
   h.set('vary', 'User-Agent');
   if (!eles || REJTETT_LAPOK.has(ut) || REJTETT_ELOTAG.test(ut)) h.set('x-robots-tag', 'noindex, nofollow');
   return new Response(valasz.body, { status, headers: h });
+}
+
+// A Trustindex-widget fejleceben latszo ertekeles (a widget ugyanezt a szamot mutatja): egy oran at tarolodik.
+async function ertekeles() {
+  try {
+    const v = await fetch(TRUSTINDEX_TARTALOM, { cf: { cacheTtl: 3600, cacheEverything: true } });
+    if (!v.ok) throw new Error('HTTP ' + v.status);
+    const adat = ertekelesAdat(await v.text());
+    if (!adat) throw new Error('a widget fejlece nem olvashato');
+    return new Response(JSON.stringify(adat), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
+  } catch (e) {
+    console.error('ertekeles: nem olvashato', e && e.message);
+    return new Response(JSON.stringify({ hiba: 'az ertekeles most nem olvashato' }), { status: 502, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+  }
 }
 
 // A tablazatot a Cloudflare 5 percig tarolja: egy modositas legkesobb ennyi ido mulva latszik.

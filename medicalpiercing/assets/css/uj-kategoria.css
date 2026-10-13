@@ -10,9 +10,9 @@
 
 /* hos: ugyanaz, mint a fooldalon; kiegeszitve az ertekelessel es a cimsor feletti felirattal */
 .kat-hos .hos-cim{grid-area:cim;align-self:end}
-.kat-hos .hos-cim .felirat{margin:0 0 14px}
-.kat-hos .hos-cim h1{margin:0 0 20px}
 .kat-hos .hos-kep>img{object-position:50% 28%}
+/* a szurke idezet-doboz a kep alsó szelen log le (nem takarja a kepet) */
+.kat-hos .hos-idezet{left:22px;bottom:-40px}
 .kat-hos .hos-szoveg .gombsor{margin-top:22px}
 .kat-hos .hos-linkek{flex-wrap:wrap}
 .kat-hos .hos-linkek a{white-space:nowrap}
@@ -99,6 +99,23 @@
 .kat-cikk p{margin-bottom:9px}
 .kat-cikk p:last-child{margin-bottom:0}
 
+/* a hosszu szoveges resz harmonikaban: csak a fo-cimek latszanak, a tartalom csukva */
+.kat-tudastar-cim{margin:0 0 16px;font-size:clamp(1.45rem,2.3vw,2rem)}
+.kat-harmonika{display:grid;gap:10px}
+.kat-elem{border:1px solid var(--line);border-radius:var(--r-m);background:#fff;box-shadow:var(--sh-s);transition:border-color .15s}
+.kat-elem[open]{border-color:var(--rose);background:linear-gradient(100deg,var(--beige-l) 0,#fff 80%)}
+.kat-elem>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 22px;list-style:none;cursor:pointer;color:var(--navy);font-size:1.05rem;font-weight:800;line-height:1.3}
+.kat-elem>summary::-webkit-details-marker{display:none}
+.kat-elem>summary:hover{color:var(--rose-i)}
+.kat-elem-nyil{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:50%;background:var(--beige);color:var(--rose-i);transition:transform .2s}
+.kat-elem-nyil .ik{width:18px;height:18px;transform:rotate(90deg)}
+.kat-elem[open] .kat-elem-nyil{transform:rotate(180deg)}
+.kat-elem-torzs{padding:0 22px 20px;font-size:.98rem;line-height:1.6}
+.kat-elem-torzs h3.cim{margin:16px 0 4px;font-size:1.05rem}
+.kat-elem-kep{margin:12px 0;text-align:center}
+.kat-elem-kep img{display:inline-block;max-width:min(100%,460px);height:auto;border-radius:16px;box-shadow:var(--sh-s)}
+.kat-tudastar-gomb{margin-top:22px;text-align:center}
+
 /* ---------- tablet ---------- */
 @media (max-width:1000px){
   .kat-video,.kat-miert,.kat-figyelem,.kat-stat,.kat-panasz{grid-template-columns:minmax(0,1fr)}
@@ -115,8 +132,14 @@
   .oldal-kategoria main>section{margin-block:20px}
   .oldal-kategoria .kat-egy{margin-block:20px}
   .oldal-kategoria main .tarto{width:min(1240px,100% - 32px)}
-  .kat-hos .hos-cim .felirat{justify-content:center}
   .kat-ertekeles{justify-content:center}
+  /* mobil alapszabaly: a hosben mindket gomb latszik (cim, kep, GOMBOK, utana a bevezeto); a szurke doboz kisebb es lejjebb van, nem takarja a kepet */
+  .kat-hos .hos-szoveg{display:flex;flex-direction:column}
+  .kat-hos .hos-szoveg .gombsor{order:-1;margin:0 0 16px}
+  .kat-hos .hos-kep{margin-bottom:46px}
+  .kat-hos .hos-idezet{left:10px;bottom:-36px;max-width:68%;padding:8px 11px;font-size:.74rem;line-height:1.35}
+  .kat-hos .hos-idezet small{margin-top:2px;font-size:.64rem;line-height:1.3}
+  .kat-hos .hos-pecset{right:8px;bottom:-32px;width:80px;height:80px;font-size:.44rem}
   .kat-fej{margin-bottom:14px}
   .kat-doboz{gap:20px;padding:24px 18px;text-align:center}
   .kat-doboz .felirat{justify-content:center}
@@ -137,6 +160,8 @@
   .kat-video-kep .lejatszo{width:60px;height:60px;margin:-30px 0 0 -30px}
   .kat-panasz .panel-szoveg{padding:6px 18px 24px}
   .kat-egyeb{padding:22px 16px}
+  .kat-elem>summary{padding:14px 16px;font-size:.98rem}
+  .kat-elem-torzs{padding:0 16px 16px;font-size:.94rem}
   .kat-cikk{font-size:.94rem}
 }
 @media print{.kat-fb .kar-gomb{display:none!important}}
