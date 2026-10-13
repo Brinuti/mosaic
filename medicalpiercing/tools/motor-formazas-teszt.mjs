@@ -5,7 +5,7 @@
 //   BASE=https://<elonezet> node tools/motor-formazas-teszt.mjs   (elonezeten / elesben)
 //
 // Ellenorzi (mobilon TOBB keszuleken, es asztalon):
-//   - 1. lepes: mind a 15 helyszin gorgetes nelkul latszik; nincs "Kitelepules" / "Allando rendelo" felirat;
+//   - 1. lepes: asztalon mind a 15 helyszin gorgetes nelkul latszik, mobilon egy oszlopban nagy cellak (gorgetes elfogadott); nincs "Kitelepules" / "Allando rendelo" felirat;
 //   - a fejlec cime kozepen van; a "Kezeles" szo sehol nem szerepel (helyette "Szolgaltatas");
 //   - 2. lepes: asztalon a teljes lista egy kepernyon (gorgetes nelkul);
 //   - 3. lepes: a szolgaltatas neve egy sorban fer el (MINDEN szolgaltatasnevre, a keszulek szelessegen);
@@ -55,12 +55,18 @@ async function egy(nev, opt, mobil) {
   // 1. helyszin
   const m1 = await meres();
   const db = await sr('return r.querySelectorAll("[data-hely]").length');
-  ok(`${nev}: 1. lepes: mind a ${db} helyszin gorgetes nelkul latszik`, db === 15 && m1.elfer, `scrollH ${m1.sh} / lathato ${m1.ch}`);
+  if (!mobil) ok(`${nev}: 1. lepes: mind a ${db} helyszin gorgetes nelkul latszik`, db === 15 && m1.elfer, `scrollH ${m1.sh} / lathato ${m1.ch}`);
+  else {
+    // mobilon (Feri 2026-10-13): egy oszlop, nagy cellak; ha kell, gorgetni lehet, az utolso helyszin is elerheto
+    const e = await sr('const ks=[...r.querySelectorAll("[data-hely]")]; const t=r.querySelector(".tartalom"); const u=ks[ks.length-1]; u.scrollIntoView({block:"end"}); const tr=t.getBoundingClientRect(), ur=u.getBoundingClientRect(); const rr=ks.map(x=>x.getBoundingClientRect()); return { oszlop: new Set(rr.map(x=>Math.round(x.left))).size, utolsoLatszik: ur.top>=tr.top-1 && ur.bottom<=tr.bottom+1, magas: Math.round(Math.min(...rr.map(x=>x.height))) };');
+    ok(`${nev}: 1. lepes: a ${db} helyszin egy oszlopban, nagy cellakban, az utolso gorgetessel elerheto`, db === 15 && e.oszlop === 1 && e.magas >= 54 && e.utolsoLatszik, JSON.stringify(e));
+    await sr('r.querySelector(".tartalom").scrollTop = 0');
+  }
   ok(`${nev}: 1. lepes: nincs "Kitelepules" / "Allando rendelo" felirat`, !/Kitelepülés|Állandó/.test(m1.szoveg));
   ok(`${nev}: a fejlec cime kozepen van`, m1.cimKozep <= 2, `elteres ${m1.cimKozep.toFixed(1)} px`);
   const meretek = await sr('const mn=(s)=>Math.min(...[...r.querySelectorAll(s)].map(e=>e.getBoundingClientRect().height)); return {sav: mn(".lepesek button"), bez: mn("[data-bezar]"), hely: mn("[data-hely]")};');
-  // a helyszin-cellak Feri kerese szerint kisebbek (>= 38 px: 15 helyszin egy mobilkepernyon); a lepesjelzo es a bezaras tovabbra is >= 44 px
-  ok(`${nev}: a lepesjelzo es a bezaras legalabb 44 px, a helyszin-gombok legalabb 38 px magasak`, meretek.sav >= 43.5 && meretek.bez >= 43.5 && meretek.hely >= 37.5, JSON.stringify(meretek));
+  // a lepesjelzo es a bezaras >= 44 px; a helyszin-gombok asztalon >= 38 px (15 helyszin egy kepernyon), mobilon >= 54 px (nagy, olvashato cellak)
+  ok(`${nev}: a lepesjelzo es a bezaras legalabb 44 px, a helyszin-gombok legalabb ${mobil ? 54 : 38} px magasak`, meretek.sav >= 43.5 && meretek.bez >= 43.5 && meretek.hely >= (mobil ? 53.5 : 37.5), JSON.stringify(meretek));
   await kep('1-helyszin');
 
   // 2. szolgaltatas
