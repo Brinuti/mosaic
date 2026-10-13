@@ -685,10 +685,11 @@ test('S0-32 QA-5 retegezett riport (D6): motor / salonic_direct / osszes + attr_
   assert.ok(!/"ip"|203\.0\.113/.test(mind), 'az IP nem kerul a riportba');
 });
 
-test('S0-33 wrangler.toml: a MERES_SALONIC_DIRECT kapu CSAK az elonezeti valtozok kozott van (az eles [vars] nem kapja meg a go-live-ig); a titkok nincsenek a kodban', () => {
+test('S0-33 wrangler.toml: a MERES_SALONIC_DIRECT kapu az eles [vars]-ban a tulajdonosi jovahagyas (2026-10-13) utan van; MERES_SD_INDEX / MERES_SD_NS (smoke nevter) CSAK az elonezetben lehet; a titkok nincsenek a kodban', () => {
   const toml = fs.readFileSync(new URL('../wrangler.toml', import.meta.url), 'utf8');
   const elo = toml.slice(0, toml.indexOf('[env.preview.vars]')), elonezet = toml.slice(toml.indexOf('[env.preview.vars]'), toml.indexOf('[[kv_namespaces]]', toml.indexOf('[env.preview.vars]')));
-  for (const kulcs of ['MERES_SALONIC_DIRECT', 'MERES_SD_INDEX', 'MERES_SD_NS']) assert.ok(!new RegExp(`^${kulcs}\\s*=`, 'm').test(elo), `${kulcs} nem lehet az eles [vars]-ban`);
+  assert.match(elo, /^MERES_SALONIC_DIRECT = "1"/m); // a kornyezeti kapu onmagaban inert: D1-kapcsolo (alapbol KI) + ket titok nelkul nem kuld
+  for (const kulcs of ['MERES_SD_INDEX', 'MERES_SD_NS']) assert.ok(!new RegExp(`^${kulcs}\\s*=`, 'm').test(elo), `${kulcs} nem lehet az eles [vars]-ban (az eles nevter az alapertelmezett prod)`);
   assert.match(elonezet, /^MERES_SALONIC_DIRECT = "1"/m); assert.match(elonezet, /^MERES_SD_NS = "smoke"/m);
   assert.ok(!/^(SD_HMAC_KEY_V1|GUEST_HMAC_KEY_V1)\s*=/m.test(toml), 'a titkok nem kerulhetnek a wrangler.toml-ba');
   assert.ok(!/(SD_HMAC_KEY_V1|GUEST_HMAC_KEY_V1)\s*[:=]\s*['"][^'"]{8,}['"]/.test(fs.readFileSync(new URL('../netlify/lib/meres/salonic-direct.js', import.meta.url), 'utf8')), 'a modulban nincs titok'); // a tesztek csak hamis, ket tesztkulcsot hasznalnak

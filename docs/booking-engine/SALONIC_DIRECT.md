@@ -10,7 +10,7 @@ Ha egy Salonic-foglalásra a motoros (saját `booking_id`-s) párosítás **nem 
 
 | kapu | hol | alap |
 |---|---|---|
-| `MERES_SALONIC_DIRECT = "1"` | környezet (`wrangler.toml`: **csak** `[env.preview.vars]`; az éles `[vars]` nem kapja meg a go-live-ig; teszt őrzi: `S0-33`) | nincs |
+| `MERES_SALONIC_DIRECT = "1"` | környezet (`wrangler.toml`: előnézet `[env.preview.vars]` + az éles `[vars]` a tulajdonosi jóváhagyás után, 2026-10-13; **önmagában inert**: a D1-kapcsoló és a két titok nélkül nem küld; az éles névtér az alapértelmezett `prod`, a `MERES_SD_INDEX` / `MERES_SD_NS` csak előnézetben lehet; teszt őrzi: `S0-33`) | nincs |
 | D1-kapcsoló `meres_kapcsolo`: `salonic_direct` (összes) / `salonic_direct:<üzletág>` (az üzletág-sor felülírja az összesítőt) | `POST /api/meres-admin {muvelet:"sd_kapcsolo", uzletag?, be:true}` — **a meglévő vészkapcsolókkal ellentétben a hiányzó sor = KI** | nincs sor = KI |
 | `MERES_ELOSZTO = "1"` | az átvétel a motoros párosítást **lezárja**, ezért küldés nélkül nem veszünk át | éles + előnézet: be |
 | titkok: `SD_HMAC_KEY_V1`, `GUEST_HMAC_KEY_V1` (Secret, nem a repóban) | Cloudflare felület | **nincsenek beállítva** → az sd inert; **mindkettő kell**: bármelyik hiánya `ki` (nincs átvétel, nincs küldés), mert vendég-hash nélkül a csere-felismerés vak (teszt: `S0-42`) |
