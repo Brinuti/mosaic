@@ -96,6 +96,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid #70c69c; outline-offs
 .kartya .ar { float: right; font-weight: 700; color: #0c4c8a; margin-left: 10px; white-space: nowrap; }
 .kartya.kiemelt { border: 2px solid #0c4c8a; background: #f3f8fc; }
 .cimke { display: inline-block; margin-top: 6px; font-size: 12px; background: #e69500; color: #fff; border-radius: 99px; padding: 2px 10px; font-weight: 600; }
+.kartya.akcio { border: 2px solid #e69500; background: #fff8ea; }
+.kartya.akcio:hover, .kartya.akcio:focus-visible { border-color: #e69500; box-shadow: 0 0 0 3px #fbe3b3; }
 .cimke.zold { background: #70c69c; color: #06331e; }
 .hely-racs { grid-template-columns: 1fr; }
 @media (min-width: 701px) { .hely-racs { grid-template-columns: repeat(3, minmax(0, 1fr)); } .tipus-racs { grid-template-columns: 1fr 1fr; } .tipus-racs .kartya.kiemelt { grid-column: 1 / -1; } }
@@ -264,9 +266,9 @@ export function nyit(ctx = {}) {
 
   // --- 2. valtozat (ha a csaladban tobb szolgaltatas van: pl. allapotfelmeres normal / akcios) ---
   function valtLepes() {
-    const l = csaladSzolgak();
+    const l = csaladSzolgak().sort((a, b) => (akcioSzazalek(b.name) ? 1 : 0) - (akcioSzazalek(a.name) ? 1 : 0)); // az akcios valtozat elol
     const csalad = CSALADOK.find((c) => c.kod === all.csalad);
-    tartalom.innerHTML = `<p class="kicsi bevezeto">${esc(csalad ? csalad.nev : 'Szolgáltatás')}: melyiket választod?</p><div class="lista">${l.map((s) => `<button class="kartya" data-valt="${esc(s.serviceId)}"><span class="ar">${ft(s.activePrice)}</span><span class="nev">${esc(szepNev(s.name))}</span>${akcioSzazalek(s.name) ? `<span class="cimke">${akcioSzazalek(s.name)} akció</span>` : ''}<div class="reszlet">${s.durationMin ? s.durationMin + ' perc' : ''}${akcioSzazalek(s.name) ? ' · csak bizonyos gyógytornászoknál' : ''}</div></button>`).join('')}</div>`;
+    tartalom.innerHTML = `<p class="kicsi bevezeto">${esc(csalad ? csalad.nev : 'Szolgáltatás')}: melyiket választod?</p><div class="lista">${l.map((s) => `<button class="kartya${akcioSzazalek(s.name) ? ' akcio' : ''}" data-valt="${esc(s.serviceId)}"><span class="ar">${ft(s.activePrice)}</span><span class="nev">${esc(szepNev(s.name))}</span>${akcioSzazalek(s.name) ? `<span class="cimke">${akcioSzazalek(s.name)} akció</span>` : ''}<div class="reszlet">${s.durationMin ? s.durationMin + ' perc' : ''}${akcioSzazalek(s.name) ? ' · csak bizonyos gyógytornászoknál' : ''}</div></button>`).join('')}</div>`;
   }
 
   // --- 3. helyszin (csak ahol a valasztott szolgaltatas elerheto) ---
