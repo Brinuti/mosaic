@@ -899,7 +899,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
         track('booking_filter_used', { filter: 'area' });
         if (o.services.length === 1) return chooseService(o.services[0], { next: F.next(state, 'service') }); // egy szolgaltatas: nincs mit pontositani
         return go(F.next(state, 'area'));
-      }, { kep: o.area.kep, ar: fromPrice(o.services) }))));
+      }, { kep: o.area.kep }))));
     });
   }
 
