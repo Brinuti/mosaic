@@ -186,7 +186,7 @@ test('adatvedelem: a rekord es a feltoltes-naplo nem tartalmaz egeszsegugyi / sz
   assert.ok(!bemenet({ ut: '/foglalas-ok', p: { bookingUrl: 'https://gonosz.hu/?placeId=6029&employeeId=1&startDate=2' } }).url.includes('gonosz'));
 });
 
-test('divat fulpiercing (/fulbevalo-ok*): ugyanaz a lanc - D1-sor (tipus=ful, forras v2 cimke), Salonic-igazolas, Google-feltoltes, TikTok-naplo; kifele nincs tipus', async () => {
+test('divat fulpiercing (/fulbevalo-ok*): ugyanaz a lanc - D1-sor (tipus=ful, forras v2 cimke), Salonic-igazolas; platformra (Google, TikTok) NEM megy', async () => {
   _semaTorles(); _tokenTorles();
   const db = d1(); const f = mockFetch();
   const env = { MP_MERES_DB: db, MP_MERES_ADMIN_KULCS: 'admin-k', ...API_ENV };
@@ -204,18 +204,12 @@ test('divat fulpiercing (/fulbevalo-ok*): ugyanaz a lanc - D1-sor (tipus=ful, fo
   assert.equal(sor.forras, 'motor'); assert.equal(sor.salonic_id, 'mb_ful1');
   assert.equal(sor.igazolas, 'igazolt', 'a fulbevalo munkatarsa (Mester Brigitta) a MUNKATARSAK-ban van: parosithato');
   assert.equal(sor.forras_verzio, 'mp_v2'); assert.equal(sor.utm_campaign, '23456789'); assert.equal(sor.forras_cimke, 'google_nem_markas');
-  // Google ARNYEK: ugyanaz az orderId (kulcs), ugyanazok az akciok
-  const upl = f.hivasok.filter((h) => h.url.includes('uploadClickConversions'));
-  assert.equal(upl.length, 1);
-  const konv = JSON.parse(upl[0].o.body).conversions;
-  assert.deepEqual(konv.map((c) => c.orderId), [KULCS, KULCS]);
-  // TikTok (csak naplo): a sor jogosult, a torzsben nincs tipus
-  const tt = db._s.prepare('SELECT * FROM mp_tiktok_feltoltes').get();
-  assert.equal(tt.allapot, 'naplozva');
-  for (const ki of [upl[0].o.body, tt.payload_maszkolt]) assert.ok(!/fulbevalo|"ful"|divat|402057/i.test(ki), ki);
+  // Feri dontese (2026-10-13): a divat fulpiercing NEM megy platformra (alacsony erteku, ne optimalizaljanak ra)
+  assert.equal(f.hivasok.filter((h) => h.url.includes('uploadClickConversions')).length, 0, 'Google: nincs feltoltes');
+  assert.equal(db._s.prepare('SELECT count(*) n FROM mp_tiktok_feltoltes').get().n, 0, 'TikTok: nincs naplo/kuldes');
   // ugyanaz a foglalas ujra (F5): nincs uj sor, nincs uj feltoltes
   assert.deepEqual(await (await foglalasErkezes({ request: keres(torzs), env }, { fetchImpl: f, most: MOST + 5 })).json(), { ok: true, uj: false });
-  assert.equal(f.hivasok.filter((h) => h.url.includes('uploadClickConversions')).length, 1);
+  assert.equal(f.hivasok.filter((h) => h.url.includes('uploadClickConversions')).length, 0);
   // a gyogypiercing-foglalas tipusa NEM tarolodik
   await foglalasErkezes({ request: keres(alapTorzs()), env }, { fetchImpl: f, most: MOST });
   assert.equal(db._s.prepare("SELECT tipus FROM mp_foglalas WHERE kulcs = '12169|555|1791800000'").get().tipus, null);

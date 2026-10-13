@@ -104,7 +104,8 @@
   // (lib/meres/meres.js foglalasKulcs: placeId|employeeId|startUnix), igy a szerver a Salonic-igazolas alapjan
   // RETRACT/RESTATE kiigazitast kuldhet ra. Csak szamok mennek ki (nincs szolgaltatasnev, nincs szemelyes adat).
   // Csak az elso, meg tisztitatlan betolteskor: F5 / vissza / uj lap a tisztitott cimen mar nem hordozza a kulcsot.
-  if (KOSZONO_UT && window.mpKoszonoAdat) {
+  // A divat fulpiercing (/fulbevalo-ok) NEM: alacsony erteku, Feri dontese (2026-10-13) - egyetlen platform se optimalizaljon ra.
+  if (KOSZONO_UT && window.mpKoszonoAdat && !/^\/fulbevalo-ok/i.test(location.pathname) && !/fulbevalo-ok/i.test(String(window.mpKoszonoAdat.ut || ''))) {
     try {
       var kp = window.mpKoszonoAdat.p || {}, bq = new URLSearchParams();
       try { if (kp.bookingUrl) bq = new URL(kp.bookingUrl, 'https://medicalpiercing.salonic.hu/').searchParams; } catch (e) { /* */ }

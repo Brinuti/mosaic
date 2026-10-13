@@ -272,6 +272,8 @@ export async function onbevallasErkezes({ request, env = {} }, { most = Math.flo
 /** A foglalas ARNYEK-konverzioinak feltoltese es naplozasa (mp_feltoltes). Eles modban a mar elkuldott akciot nem kuldi ujra. */
 export async function feltoltes(db, sor, env, host, { fetchImpl = fetch, most = Math.floor(Date.now() / 1000) } = {}) {
   if (sor.igazolas !== 'igazolt') return []; // fail-closed: Salonic-igazolas nelkul semmi nem megy a Google-nek
+  // Divat fulpiercing (tipus='ful'): alacsony erteku, Feri dontese (2026-10-13): egyetlen platform se optimalizaljon ra -> nem megy ki
+  if (sor.tipus === 'ful') return [];
   const eles = sor.kornyezet === 'eles' && elesKuldesE(env, host);
   // konverzios ido: a foglalas ideje (Salonic-level), nem a koszonooldal (kesobbi) megnyitasa
   const f = { kulcs: sor.kulcs, letrehozva: sor.foglalas_ido || sor.letrehozva, ertek: sor.ertek, kattintas: sor.kattintas_ertek ? { tipus: sor.kattintas_tipus, ertek: sor.kattintas_ertek } : null };
