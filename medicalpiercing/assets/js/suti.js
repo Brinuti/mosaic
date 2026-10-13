@@ -100,6 +100,7 @@
   window.gtag('set', 'ads_data_redaction', true);
   if (dontes) window.gtag('consent', 'update', jelek(dontes));
 
+  var tiktokFoglalas = null; // a koszonooldali TikTok SubmitForm adatai (lent: tiktokSubmitForm)
   // Igazolhato foglalas (Google Ads "Időpontfoglalás - igazolt", orderId = foglalasi kulcs): a kulcs ugyanaz, mint a szerveren
   // (lib/meres/meres.js foglalasKulcs: placeId|employeeId|startUnix), igy a szerver a Salonic-igazolas alapjan
   // RETRACT/RESTATE kiigazitast kuldhet ra. Csak szamok mennek ki (nincs szolgaltatasnev, nincs szemelyes adat).
@@ -115,11 +116,27 @@
         var ar = Number(String(kp.price || '').replace(/[^\d.]/g, ''));
         window.dataLayer.push({ event: 'mp_foglalas_igazolhato', mp_foglalas_kulcs: hely + '|' + mun + '|' + kezd,
           mp_foglalas_ertek: Number.isFinite(ar) && ar > 0 ? Math.round(ar) : 1 });
+        tiktokFoglalas = { id: 'Foglalas:' + hely + '|' + mun + '|' + kezd, ertek: Number.isFinite(ar) && ar > 0 ? Math.round(ar) : null };
       }
     } catch (e) { /* nincs kulcs: nincs esemeny */ }
   }
 
   var marketingFigyelok = [];
+  // TikTok SubmitForm a koszonooldalrol (csak gyogypiercing /foglalas-ok, marketing-hozzajarulassal), ugyanazzal az
+  // event_id-val, mint a szerveres Events API (lib/meres/tiktok.js: 'Foglalas:<kulcs>') -> a TikTok deduplikal.
+  // (A Salonic-oldali GTM 'purchase' -> SubmitForm cimke ki van kapcsolva.)
+  var tiktokSubmitForm = function () {
+    if (!tiktokFoglalas || !eles) return;
+    var probak = 0;
+    var kuld = function () {
+      if (window.ttq && typeof window.ttq.track === 'function' && window.ttq._i) {
+        var tul = tiktokFoglalas.ertek ? { value: tiktokFoglalas.ertek, currency: 'HUF' } : {};
+        try { window.ttq.track('SubmitForm', tul, { event_id: tiktokFoglalas.id }); } catch (e) { /* */ }
+        tiktokFoglalas = null;
+      } else if (++probak < 40) setTimeout(kuld, 250);
+    };
+    kuld();
+  };
   var rogzit = function (stat, mark) {
     var elozo = dontes;
     dontes = { stat: !!stat, mark: !!mark, t: Math.floor(Date.now() / 1000) };
@@ -371,6 +388,9 @@
   // Google Tag Manager
   window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
   szkript('https://www.googletagmanager.com/gtm.js?id=GTM-T9GR4JCK');
+
+  // TikTok SubmitForm a koszonooldalon: csak marketing-hozzajarulassal (a TikTok-pixelt a GTM tolti)
+  marketingKor(tiktokSubmitForm);
 
   // Convertize es Meta-pixel: CSAK marketing-hozzajarulassal (ha a vendeg kesobb fogad el, akkor abban a pillanatban)
   marketingKor(function () {

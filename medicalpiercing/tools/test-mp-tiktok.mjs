@@ -50,7 +50,7 @@ test('torzs: Events API 2.0 forma; user csak ttclid + ttp; semleges URL; ertek c
   assert.equal(t.data.length, 1);
   const e = t.data[0];
   assert.deepEqual(Object.keys(e).sort(), ['event', 'event_id', 'event_time', 'page', 'properties', 'user']);
-  assert.equal(e.event, 'IgazoltFoglalas'); // nem Schedule: nincs dupla szamolas az optimalizacios esemenyen
+  assert.equal(e.event, 'SubmitForm'); // Feri dontese 2026-10-13: Leads -> Submit form, a koszonooldali bongeszos esemennyel azonos event_id
   assert.equal(e.event_time, MOST - 900, 'a foglalas (Salonic-level) ideje');
   assert.equal(e.event_id, `Foglalas:${KULCS}`, 'ugyanaz, mint a bongeszo deduplikacios azonositoja');
   assert.deepEqual(e.user, { ttclid: TTCLID, ttp: TTP });
@@ -90,7 +90,8 @@ test('jogosultsag: eles + igazolt + hozzajarulas + ttclid + 7 napos ablak', () =
   assert.equal(jogosult(alapSor({ igazolas: null }), MOST).miert, 'nem_igazolt');
   assert.equal(jogosult(alapSor({ igazolas: 'nem_igazolt' }), MOST).miert, 'nem_igazolt');
   assert.equal(jogosult(alapSor({ hozzajarulas_hirdetes: 0 }), MOST).miert, 'nincs_hozzajarulas');
-  assert.equal(jogosult(alapSor({ tiktok_ttclid: null }), MOST).miert, 'nincs_ttclid');
+  assert.equal(jogosult(alapSor({ tiktok_ttclid: null, tiktok_ttp: null }), MOST).miert, 'nincs_tiktok_azonosito');
+  assert.equal(jogosult(alapSor({ tiktok_ttclid: null }), MOST).ok, true); // _ttp eleg
   assert.equal(jogosult(alapSor({ foglalas_ido: MOST - TIKTOK_ABLAK - 1 }), MOST).miert, 'ablakon_kivul');
   assert.equal(jogosult(alapSor({ foglalas_ido: MOST - TIKTOK_ABLAK + 60 }), MOST).ok, true);
   assert.equal(jogosult(alapSor({ tiktok_kattintas_ido: MOST - 900 - TIKTOK_ABLAK - 1 }), MOST).miert, 'kattintas_ablakon_kivul');
