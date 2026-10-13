@@ -226,7 +226,7 @@ export function kategoriaFo(ROOT, adat, c, T) {
       <figure class="hos-kep">
         <img src="${esc(h.kep.src)}"${keparany(h.kep)} alt="${esc(h.kep.alt || adat.cim)}"${h.kep.nh > h.kep.nw ? ' style="object-position:50% 40%"' : ''} fetchpriority="high">
         ${h.idezetH ? `<figcaption class="hos-idezet"><span class="hos-idezet-cim">${szovegLink(h.idezetH.html)}</span>${h.idezetP ? `<small>${szovegLink(h.idezetP.html)}</small>` : ''}</figcaption>` : ''}
-        <div class="hos-pecset" aria-hidden="true">${IK('shield')}<span>Alapítói<br>EÜ<br>tapasztalat</span></div>
+        <div class="hos-pecset" aria-hidden="true">${IK('shield')}<span>20 év<br>alapítói<br>egészségügyi<br>tapasztalat</span></div>
       </figure>
     </div>
   </section>`;

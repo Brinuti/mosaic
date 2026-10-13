@@ -14,7 +14,8 @@
 .kat-hos .hos-alcim{display:none}
 .kat-hos .hos-idezet-cim{display:block}
 /* a szurke idezet-doboz a kep alsó szelen log le (nem takarja a kepet) */
-.kat-hos .hos-idezet{left:22px;bottom:-40px}
+.kat-hos .hos-idezet{left:22px;bottom:-30px;max-width:calc(100% - 150px)}
+.kat-hos .hos-idezet small{font-size:.74rem}
 .kat-hos .hos-szoveg .gombsor{margin-top:22px}
 .kat-hos .hos-linkek{flex-wrap:wrap}
 .kat-hos .hos-linkek a{white-space:nowrap}

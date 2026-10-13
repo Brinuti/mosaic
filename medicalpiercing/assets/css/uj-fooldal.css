@@ -101,7 +101,7 @@ h1 em{font-style:normal;color:var(--rose)}
 .bizalom b{display:block;color:var(--navy);font-size:.82rem}
 .hos-kep{position:relative;margin:0}
 .hos-kep>img{display:block;width:100%;height:auto;aspect-ratio:1200/823;object-fit:cover;border-radius:30px;box-shadow:var(--sh)}
-.hos-idezet{position:absolute;left:18px;bottom:18px;max-width:64%;padding:13px 18px;border-radius:16px;background:rgba(69,70,89,.9);color:#fff;font-weight:600;font-size:.92rem;line-height:1.4}
+.hos-idezet{position:absolute;left:18px;bottom:-30px;max-width:calc(100% - 150px);padding:13px 18px;border-radius:16px;background:rgba(69,70,89,.9);color:#fff;font-weight:600;font-size:.92rem;line-height:1.4}
 .hos-idezet small{display:block;margin-top:4px;font-weight:500;opacity:.9;font-size:.78rem}
 .hos-pecset{position:absolute;right:-10px;bottom:-30px;width:128px;height:128px;border-radius:50%;background:#fff;border:2px solid var(--rose);box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;color:var(--slate);font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;line-height:1.3}
 .hos-pecset .ik{width:26px;height:26px;color:var(--rose-i)}
@@ -381,7 +381,7 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   h1{font-size:clamp(1.6rem,7vw,1.95rem);line-height:1.1}
   .hos-kep>img{aspect-ratio:16/9;object-position:50% 30%}
   .hos-kep{margin-bottom:30px}
-  .hos-idezet{left:10px;bottom:-16px;max-width:62%;padding:9px 12px;font-size:.78rem}
+  .hos-idezet{left:10px;bottom:-18px;max-width:62%;padding:9px 12px;font-size:.78rem}
   .hos-idezet small{font-size:.68rem;margin-top:2px}
   .hos-pecset{right:8px;bottom:-18px;width:88px;height:88px;font-size:.46rem}
   .hos-pecset .ik{width:20px;height:20px}
