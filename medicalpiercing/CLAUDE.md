@@ -13,6 +13,9 @@ Ezen felül:
   és az érintett oldalakra `node tools/elteres.mjs` (asztali és `--mobil`). A cél: 0 eltérő elem.
 - A mérőkódok csak a `www.medicalpiercing.hu` domainen futhatnak (`assets/js/suti.js`, `ELES_DOMAINEK`).
 - Külső fiókokban (Wix, Google, Meta, CookieYes, Cloudflare DNS) semmit ne módosíts a tulajdonos kifejezett kérése nélkül.
-- **Csiszolás közben nem kell minden változtatás után teljes tesztet futtatni** (a tulajdonos döntése, 2026-10-13): amíg az új, rejtett
-  oldalak (`/uj-fooldal`, `/uj/...`) formázása tart, elég a build és egy gyors szemrevételezés (képernyőkép asztalin és mobilon). A teljes
-  tesztet (`tools/uj-oldalak-teszt.mjs`, `tools/uj-fooldal-teszt.mjs`) az együttes élesítés előtt kell lefuttatni.
+- **Az új, rejtett oldalak (`/uj-fooldal`, `/uj/...`) csiszolása közben nem élesítünk és nem tesztelünk minden körben** (a tulajdonos döntése,
+  2026-10-13): a munka a fejlesztői ág Cloudflare-előnézeti linkjén megy (pl. `https://claude-ecstatic-wright-ujp97.medicalpiercing.pages.dev/uj/migren-piercing`,
+  az ágnév első 28 karaktere); a változtatást csak commitold és told fel az ágra, a `main`-re **ne** mergelj, teljes tesztet **ne** futtass (elég a build és egy
+  gyors szemrevételezés). Az együttes élesítés akkor jön, amikor a tulajdonos jelzi, hogy véglegesek vagyunk: akkor merge a `main`-re, a teljes teszt
+  (`tools/uj-oldalak-teszt.mjs`, `tools/uj-fooldal-teszt.mjs`) és az ellenőrzés az éles oldalon. (Ez felülírja a gyökér `CLAUDE.md` „azonnali élesítés”
+  szabályát ezekre a rejtett oldalakra.)
