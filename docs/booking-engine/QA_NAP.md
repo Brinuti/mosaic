@@ -21,6 +21,9 @@ x-egyeztetes-kulcs: <kulcs>          (CSAK fejlecben; az URL-ben kapott kulcs ne
 
 A tobbi `/api/meres-admin` ag (`kapcsolok`, `fuggo`, `egyeztetes`, `source_id`, POST) valtozatlan, kulcs nelkul tovabbra is 404; csak a `qa=nap` kapott sajat (401/403) valaszt.
 
+## Korlat: regi napok (> 30 nap)
+A `meres_erkezes` sorokat az `erkezesMent` 30 nap utan torli. Egy 30 napnal regebbi `datum` lekerdezesekor a GA4 „nincs client_id” cellak foglalaskori pillanatkepe mar nincs meg, ezert azok **technikai** kimaradaskent (`ga4_nincs_pillanatkep`) latszanak a „szabalyos nulla” helyett (ugyanaz, mint az egyeztetosornal). A napi „tegnapi” hivasra ez nincs hatassal; a T2 (max. 14 nap) teljes idotartama a 30 napon belul van.
+
 ## Ido
 A `datum` az **Europe/Budapest** szerinti naptari nap; az intervallum `[Budapest 00:00, kovetkezo nap Budapest 00:00)` UTC-ben, **felig nyitott** (a pontosan ejfeli sor a kovetkezo naphoz tartozik). A nyari / teli ido atallasa a `Intl` adatbazisbol jon (az oszi atallas napja 25, a tavaszi 23 oras). A valasz visszaadja: `datum`, `timezone`, `from_utc`, `to_utc`, `generalva_utc`.
 

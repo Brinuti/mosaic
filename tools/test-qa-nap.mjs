@@ -810,3 +810,18 @@ test('N36 a re-review maradekai: nem-HeadSpa konzultacio esemeny nelkul TECHNIKA
   assert.deepEqual([j.osszes.lefedettseg.lefedett, j.osszes.lefedettseg.elvart, j.osszes.lefedettseg.lefedettseg, j.osszes.lefedettseg.hiany], [5, 9, 0.56, 4]);
 });
 
+test('N37 a re-review (aabcbaa) tesztlyukai: platform = "constructor" / "__proto__" sor nem szennyezi az Object-et es nem dob szekcio-hibat (a biztonsagi ellenorzes lat: nem arnyek cel); foglalas_vendeg.forras = "constructor" -> ismeretlen', async () => {
+  const w = await vilag();
+  for (const [i, platform] of ['constructor', '__proto__'].entries()) w.kuldes({ esemeny_id: 'px' + i, platform, uzletag: 'headspa', t: FROM + 10 + i, kerelem: null });
+  w.vendeg({ uuid: w.uuid('v1'), uzletag: 'headspa', forras: 'constructor', t: FROM + 20 });
+  w.vendeg({ uuid: w.uuid('v2'), uzletag: 'headspa', forras: '__proto__', t: FROM + 21 });
+  const j = await w.jelentes();
+  assert.deepEqual(j.szekcio_hibak, []);
+  assert.equal(Object.hasOwn(Object, 'elkuldve'), false, 'az Object nem szennyezodott');
+  assert.equal(Object.getPrototypeOf(j.uzletagak.headspa.arnyek) , Object.prototype);
+  assert.equal(j.uzletagak.headspa.biztonsag.nem_arnyek_cel, 2, 'az ismeretlen platformu kuldott sor a biztonsagban lathato (nem arnyek cel)');
+  assert.equal(j.lampa, 'piros');
+  assert.equal(j.uzletagak.headspa.foglalas_vendeg.ismeretlen, 2);
+  assert.equal(Object.hasOwn(j.uzletagak.headspa.foglalas_vendeg, 'constructor'), false);
+});
+
