@@ -212,3 +212,8 @@ foglalások szinte teljes körére. **Ebben a lépésben semmi új nem megy egye
    és ebből Salonic-igazolt (`igazolas = 'igazolt'`): `forras_<…>_igazolt`; `onbevallas_<tiktok|meta|google|ismeros|egyeb|nincs>`.
 
 Tesztek: `node --test tools/test-mp-forras.mjs`, `node tools/forras-pw.mjs` (valódi szerverkód + `node:sqlite` D1).
+
+## TikTok Events API „Schedule” (2026-10-13, csak napló)
+
+Az igazolt foglalásoknál a Google-feltöltéssel egy időben, attól függetlenül fut; alapértelmezésben semmit nem küld,
+csak naplóz (`mp_tiktok_feltoltes`). Részletek és élesítés: [MERES_TIKTOK.md](MERES_TIKTOK.md).
