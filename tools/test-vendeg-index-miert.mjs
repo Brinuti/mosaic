@@ -36,11 +36,12 @@ test('M2 rendben: valos e-mail + telefon + nev -> ok_uj, a 2. proba ok_meglevo; 
   nincsPii(a); nincsPii(b);
 });
 
-test('M3 nincs ervenyes e-mail (a 2026-10-13-i dca36449 / 9a03d9f7 eset): telefon van, e-mail hianyzik -> kihagyva / nincs_ervenyes_email; nincs sor; a parositas VALTOZATLAN', async () => {
+test('M3 nincs ervenyes e-mail (a 2026-10-13-i dca36449 / 9a03d9f7 eset): telefon van, e-mail hianyzik -> jelolo / nincs_ervenyes_email; nincs HASH-index sor (csak a jelolo, lasd test-vendeg-jelolo-sor.mjs); a parositas VALTOZATLAN', async () => {
   const v = vilag({ sd: false, env: { MERES_SD_INDEX: '1', GUEST_HMAC_KEY_V1: SD_ENV.GUEST_HMAC_KEY_V1, SD_HMAC_KEY_V1: SD_ENV.SD_HMAC_KEY_V1 } }); await v.kesz;
   const a = await v.post(level(ujUuid(), { vendeg: { telefon: VENDEG.telefon } }));
-  assert.deepEqual(a.vendeg_index, { allapot: 'kihagyva', kod: 'nincs_ervenyes_email', mezok: { email: 'hianyzik', telefon: 'ervenyes', nev: 'ervenyes' } });
-  assert.equal(szamol(v), 0);
+  assert.deepEqual(a.vendeg_index, { allapot: 'jelolo', kod: 'nincs_ervenyes_email', mezok: { email: 'hianyzik', telefon: 'ervenyes', nev: 'ervenyes' }, jelolo: 'uj' });
+  assert.equal(v.sql('SELECT COUNT(*) AS n FROM foglalas_vendeg WHERE email_h IS NOT NULL')[0].n, 0, 'valodi hash-index sor nincs');
+  assert.equal(szamol(v), 1, 'csak a jelolo sor');
   nincsPii(a);
   // ugyanaz a level e-mail NELKUL ugyanazt az allapotot adja a parositasra, mint e-mail-lel (a diagnosztika nem valtoztat a viselkedesen)
   const w = vilag({ sd: false, env: { MERES_SD_INDEX: '1', GUEST_HMAC_KEY_V1: SD_ENV.GUEST_HMAC_KEY_V1, SD_HMAC_KEY_V1: SD_ENV.SD_HMAC_KEY_V1 } }); await w.kesz;
@@ -57,7 +58,8 @@ test('M4 az e-mail mezo letezik, de ervenytelen formatumu -> mezok.email = erven
     assert.equal(a.vendeg_index.mezok.email, 'ervenytelen_formatum', email);
     assert.ok(!JSON.stringify(a).includes('pelda'), 'az ertek nem szerepel');
   }
-  assert.equal(szamol(v), 0);
+  assert.equal(v.sql('SELECT COUNT(*) AS n FROM foglalas_vendeg WHERE email_h IS NOT NULL')[0].n, 0, 'valodi hash-index sor nincs');
+  assert.equal(szamol(v), 4, 'negy level -> negy jelolo sor');
 });
 
 test('M5 nincs vendeg mezo / nem objektum -> nincs_vendeg_mezo / vendeg_nem_objektum (korabban nema kihagyas)', async () => {
@@ -76,6 +78,7 @@ test('M6 hianyzo GUEST_HMAC_KEY_V1 -> nincs_guest_hmac_kulcs; ismeretlen host ->
   const v = vilag({ sd: false, env: { MERES_SD_INDEX: '1', SD_HMAC_KEY_V1: SD_ENV.SD_HMAC_KEY_V1 } }); await v.kesz; // nincs GUEST kulcs
   const a = await v.post(level(ujUuid(), {}));
   assert.equal(a.vendeg_index.kod, 'nincs_guest_hmac_kulcs');
+  assert.equal(szamol(v), 0, 'GUEST kulcs nelkul a jelolo sem keszul (az sd ugyis inert)');
   const w = vilag({ sd: false, env: { MERES_SD_INDEX: '1', GUEST_HMAC_KEY_V1: SD_ENV.GUEST_HMAC_KEY_V1, SD_HMAC_KEY_V1: SD_ENV.SD_HMAC_KEY_V1 } }); await w.kesz;
   const b = await w.post(level(ujUuid(), { host: 'ismeretlen.salonic.hu' }));
   assert.equal(b.vendeg_index.kod, 'ismeretlen_host');
