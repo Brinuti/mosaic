@@ -56,7 +56,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
   await varGtm(p, betolt);
   ok('dontes elott: a sav latszik', await savLathato(p));
   const szoveg = await p.evaluate(() => document.getElementById('mp-cc').innerText);
-  ok('a sav magyar, Elfogadom + Elutasitom + Beallitasok', /Elfogadom/.test(szoveg) && /Elutasítom/.test(szoveg) && /Beállítások/.test(szoveg) && /Engedélyezed a sütiket/.test(szoveg));
+  ok('a sav magyar, Elfogadom + Elutasitom + Beallitasok', /Elfogadom/.test(szoveg) && /Elutasítom/.test(szoveg) && /Beállítások/.test(szoveg) && /Segítesz nekünk/.test(szoveg));
   ok('elso oldal: nagyobb doboz (data-nezet=nagy)', (await p.evaluate(() => document.getElementById('mp-cc').getAttribute('data-nezet'))) === 'nagy');
   {
     const p2 = await ctx.newPage();
@@ -68,7 +68,9 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
   }
   ok('link az /adatkezeles oldalra', await p.evaluate(() => !!document.querySelector('#mp-cc a[href="/adatkezeles"]')));
   const meret = await p.evaluate(() => [...document.querySelectorAll('#mp-cc-fo .mp-gomb')].map((g) => { const s = getComputedStyle(g); return [g.offsetHeight, s.backgroundColor, s.color, s.fontWeight, s.fontSize].join('|'); }));
-  ok('Elfogadom es Elutasitom egyenrangu (azonos meret es stilus)', meret.length === 2 && meret[0] === meret[1], meret.join(' / '));
+  // Feri dontese (2026-10-13): az Elutasitom gomb kicsit halvanyabb szinu; meret, betu, sulyozas azonos marad
+  const nemSzin = (x) => { const r = x.split('|'); r.splice(1, 1); return r.join('|'); };
+  ok('Elfogadom es Elutasitom azonos meretu (az Elutasitom csak kicsit halvanyabb)', meret.length === 2 && nemSzin(meret[0]) === nemSzin(meret[1]), meret.join(' / '));
   ok('dontes elott: nincs Meta, TikTok, Convertize keres', !marketingKeres(ki, betolt).length, marketingKeres(ki, betolt).slice(0, 3).join(' '));
   ok('dontes elott: nincs fbq / ttq', await p.evaluate(() => !window.fbq && !window.ttq));
   const cm = await p.evaluate(() => {
