@@ -113,29 +113,19 @@ const varRa = async (f, ms = 8000) => { for (let i = 0; i < ms / 100 && !(await 
   ok('3e uj lap: mas utm_source -> egyeb', (await forras(p4))?.p === 'egyeb');
   await ctx.close();
 }
-// 4. Kerdes-kartya: a fo ablak koszonooldalan; egy kattintas -> onbevallas; ugyanarra a foglalasra nem kerdez ujra
+// 4. A kerdes-kartya 2026-10-13 ota NINCS (Feri dontese): a fo ablak koszonooldalan sem jelenik meg
 {
   const s = ++start;
-  const { ctx, ob } = await kornyezet(false);
+  const { ctx } = await kornyezet(false);
   const p = await ctx.newPage();
   const hibak = []; p.on('pageerror', (e) => hibak.push(e.message));
   await p.goto(`${CIM}/?fbclid=TESZTfbclid_${T}`, { waitUntil: 'load' });
   await p.goto(koszono(s), { waitUntil: 'load' });
-  const latszik = await varRa(() => p.locator('#mp-ob').isVisible().catch(() => false));
-  ok('4a a kartya megjelenik a fo ablakban', latszik);
-  ok('4b a cim ettol fuggetlenul tisztitott (mert=1)', /\/foglalas-ok\?.*mert=1/.test(p.url()) && !p.url().includes('bookingUrl'), p.url().replace(CIM, ''));
-  await p.screenshot({ path: process.env.KEP || '/tmp/mp-ob.png' }).catch(() => {});
-  await p.locator('#mp-ob button[data-ertek=ismeros]').click();
-  await varRa(() => sor(s)?.onbevallas);
-  ok('4c kattintas: D1 onbevallas = ismeros, forras = meta', sor(s)?.onbevallas === 'ismeros' && sor(s)?.forras_platform === 'meta', JSON.stringify({ ob: sor(s)?.onbevallas, fp: sor(s)?.forras_platform }));
-  ok('4d "Köszönjük!" latszik', (await p.locator('#mp-ob').innerText().catch(() => '')).includes('Köszönjük!'));
-  ok('4e a keres csak a kulcsot es az erteket viszi', ob.length === 1 && ob[0].onbevallas === 'ismeros' && Object.keys(ob[0]).sort().join() === 'onbevallas,p,ut');
-  // ugyanaz a foglalas ujra (pl. a motor-cim uj lapon): a meres ujra jelez (deduplikalva), de a kartya NEM jelenik meg
-  const p2 = await ctx.newPage();
-  await p2.goto(koszono(s), { waitUntil: 'load' });
-  await p2.waitForTimeout(1500);
-  ok('4f ugyanarra a foglalasra nem kerdez ujra', !(await p2.locator('#mp-ob').count()));
-  ok('4g nincs JS-hiba', hibak.length === 0, hibak.join(' | '));
+  await varRa(() => sor(s));
+  await p.waitForTimeout(1500);
+  ok('4a nincs kerdes-kartya', (await p.locator('#mp-ob').count()) === 0);
+  ok('4b a foglalas rogzitve, forras = meta', sor(s)?.forras_platform === 'meta');
+  ok('4c nincs JS-hiba', hibak.length === 0, hibak.join(' | '));
   await ctx.close();
 }
 // 5. Keretben (regi, kozvetlenul beagyazott Salonic-naptar): a keret is latja a munkamenet cimkejet, kartya NINCS
@@ -150,25 +140,6 @@ const varRa = async (f, ms = 8000) => { for (let i = 0; i < ms / 100 && !(await 
   ok('5a keretbol jelzett foglalas: forras_platform = tiktok (kozos sessionStorage)', sor(s)?.forras_platform === 'tiktok' && kuldott.at(-1)?.forras_platform === 'tiktok');
   await p.waitForTimeout(600);
   ok('5b keretben nincs kartya', keret && (await keret.locator('#mp-ob').count()) === 0 && (await p.locator('#mp-ob').count()) === 0);
-  await ctx.close();
-}
-// 6. Hozzajarulas nelkul, dontes elott a koszonooldalon (4 mp-es varakozas): a kartya a jelzes UTAN jelenik meg, a suti-sav fole
-{
-  const s = ++start;
-  const { ctx } = await kornyezet();
-  const p = await ctx.newPage();
-  await p.setViewportSize({ width: 390, height: 800 });
-  await p.goto(koszono(s), { waitUntil: 'load' });
-  ok('6a jelzes elott nincs kartya', (await p.locator('#mp-ob').count()) === 0);
-  const latszik = await varRa(() => p.locator('#mp-ob').isVisible().catch(() => false), 8000);
-  const atfed = await p.evaluate(() => {
-    const a = document.getElementById('mp-ob'), c = document.getElementById('mp-cc');
-    if (!a || !c || getComputedStyle(c).display === 'none') return false;
-    const x = a.getBoundingClientRect(), y = c.getBoundingClientRect();
-    return !(x.bottom <= y.top || y.bottom <= x.top);
-  });
-  ok('6b 4 mp utan megjelenik, sor forras nelkul (NULL), nem takarja a suti-savot', latszik && sor(s) && sor(s).forras_platform === null && !atfed);
-  await p.screenshot({ path: process.env.KEP2 || '/tmp/mp-ob-mobil.png' }).catch(() => {});
   await ctx.close();
 }
 await b.close();
