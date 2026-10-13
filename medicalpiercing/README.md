@@ -304,7 +304,7 @@ Salonic-linkek) a foglalómotort nyitják. **Áttekintő (minden oldal új és e
 |---|---|
 | tartalom (oldalanként JSON: szövegek, képek, linkek, beágyazások, űrlapmezők, hozzászólások, olvasási sorrendben, a Wix-elrendezés szerint csoportosítva) | `uj-oldalak/tartalom/*.json` (a repóban; a Cloudflare-build nem használ böngészőt) |
 | kinyerés a Wix-klónból (Playwright) | `node tools/build.mjs && node tools/serve.mjs &` majd `node tools/uj-oldalak/kinyer.mjs [útvonalak]` (a böngészőben futó rész: `tools/uj-oldalak/kinyer-oldalon.js`) |
-| megjelenítés (sablon: `sor` / `verem` / `racs` fa → HTML) | `tools/uj-oldalak/sablon.mjs`; stílus `assets/css/uj-oldalak.css`, viselkedés `assets/js/uj-oldalak.js` (a fejléc / menü / videóablak az `uj-fooldal.js`-ben) |
+| megjelenítés (sablon: `sor` / `verem` / `racs` fa → HTML) | `tools/uj-oldalak/sablon.mjs` (+ a kategória-oldalaké: `tools/uj-oldalak/kategoria.mjs`); stílus `assets/css/uj-oldalak.css`, viselkedés `assets/js/uj-oldalak.js` (a fejléc / menü / videóablak az `uj-fooldal.js`-ben) |
 | tükrözött oldalak jegyzéke (a linkátíráshoz) | `uj-oldalak/jegyzek.json` (a `kinyer.mjs` írja) |
 | build | `tools/uj-fooldal.mjs` → `ujOldalak()` (a `tools/build.mjs` hívja): `dist/_a|_m/uj/<kulcs>.html`, `dist/_a|_m/uj-oldalak.html` |
 | teszt | `node tools/uj-oldalak-teszt.mjs [--gyors] [--oldal=/rolunk] [--forras]` (`BASE=<cím>`-mel előnézeten / élesben is; a mérés, a Salonic és az űrlapküldés blokkolva / elkapva) |
@@ -315,6 +315,14 @@ a11y-szövegei („0 csillagot kapott az 5-ből”). Nem tükrözött: `/` (az a
 **Új funkciók a tükörben:** blogcikk: kedvelés, megosztás (Facebook / X / LinkedIn / link / nyomtatás), hozzászólás-űrlap (`/api/urlap`, `blog-hozzaszolas`), a meglévő hozzászólások;
 blog-lista: kereső; képgalériák: lapozható sáv + kattintásra nagyító; videók: kattintásra ablakban; állásjelentkezés: `/api/urlap` (`allasjelentkezes`), siker után a tükör
 köszönőoldalára visz; helyszínoldalak: előző / következő helyszín.
+**Kategória-oldalak (a fejléc „Piercingek” menüje: migrén, shenmen, klimax, slim, allergia, máj, pajzsmirigy, lép, vastagbél) a főoldal stílusában** (2026-10-13):
+a hős ugyanakkora és ugyanúgy épül, mint a főoldalon (nagy cím, fotó idézet-dobozzal és pecséttel, gombok, bizalmi sor); az **ékszer-galéria, az őszi akció, az árak,
+a helyszínek (15), a média és a csapat blokk pontosan a főoldal dobozával** jelenik meg (közös részek: `uj-oldalak/reszek/{velemenyek,akcio,ekszerek,arak,helyszinek,media,csapat,ekszer-nagyito}.html`,
+a főoldal `index.html`-je is ezeket illeszti be `<!--#név-->` jelölővel; a Google-vélemények a főoldal Trustindex-widgetje). Az egyedi dobozok (Így működik – videó / kép + szöveg,
+Miért működnek, Facebook-kommentek nagy, lapozható, kattintásra nagyítható kártyákon, Nem hozzáértő kezekben, 93%, panaszok) a `tools/uj-oldalak/kategoria.mjs`-ben vannak
+(blokk-felismerés a kinyert JSON-ból; amit nem ismer fel, azt az általános sablon változatlanul adja), stílusuk `assets/css/uj-kategoria.css`. A főoldali árakat csak ott cseréli,
+ahol az eredeti árlista is 24.900 / 39.900 / 44.900 Ft (a „Divat fülpiercing” 12.000 Ft-os árlistája miatt az általános sablonnal marad). A teszt (`uj-oldalak-teszt.mjs`) ezekre
+külön ellenőrzi: a hős mérete = a főoldalé, a főoldali dobozok megvannak, a Facebook-kártyák mérete és betöltése, az ékszer-galéria lapozása és nagyítása.
 **Újra-kinyerés:** ha az eredeti oldal tartalma változik (vagy új oldal kerül a Wixre), `tools/oldalak.txt` frissítése + `kinyer.mjs`; a tükör ettől függetlenül épül.
 **Élesítés:** csak a tulajdonos kérésére; a `/uj/` előtag elhagyása a `ujOldalak()` kiírásában és a `linkAtiras()`-ban (`tools/uj-fooldal.mjs`), a noindex eltávolításával.
 

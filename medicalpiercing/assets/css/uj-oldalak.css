@@ -144,6 +144,7 @@ ol.lista li{padding-left:24px}
 .kar-elozo .ik{transform:scaleX(-1)}
 .kar-kov{right:-6px}
 .kar-szam{margin:6px 0 0;text-align:center;font-size:.78rem;color:var(--mut)}
+.kar-nincs-gorg .kar-gomb,.kar-nincs-gorg .kar-szam{display:none}
 
 /* urlapok */
 .urlap{max-width:760px}

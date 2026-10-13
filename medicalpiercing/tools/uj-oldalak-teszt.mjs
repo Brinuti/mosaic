@@ -1,6 +1,6 @@
 // Az uj, rejtett tukor-oldalak (/uj/..., /uj-oldalak) ellenorzese a helyi kiszolgalon (tools/serve.mjs) vagy elonezeten, Playwrighttal.
 //
-//   node tools/build.mjs && node tools/serve.mjs &     majd:     node tools/uj-oldalak-teszt.mjs [--gyors] [--oldal=/rolunk] [--forras]
+//   node tools/build.mjs && node tools/serve.mjs &     majd:     node tools/uj-oldalak-teszt.mjs [--gyors] [--oldal=/rolunk[,/blog]] [--forras]
 //   BASE=https://<ag>.medicalpiercing.pages.dev node tools/uj-oldalak-teszt.mjs
 //
 // Nem helyi cimen minden merokeres es minden Salonic-hivas blokkolva van (tools/meres-tiltas.mjs): a teszt nem szennyezi a statisztikat, nem indit foglalast,
@@ -10,6 +10,7 @@
 //  - forras: rejtett (noindex, nincs canonical), pontosan egy h1, kepek alt-ja, belso linkek celjai (letezo /uj/... oldal vagy foglalasi cim), horgonyok
 //  - tartalom: az eredeti oldal minden szovege (a cim, bekezdesek, listak, gombok) megvan az uj oldalon (szoveg-lefedettseg)
 //  - futas: nincs JS-hiba, nincs vizszintes gorgetes 360-1920 px kozott, minden kep betolt, nem logo elem
+//  - kategoria-oldalak (migren, shenmen ...): a fooldal-meretu hos, a fooldal dobozai (ekszer, akcio, ar, helyszin, media, csapat), a Facebook-kommentek kartyai
 //  - funkciok: MINDEN foglalasi gomb megnyitja a foglalomotort, a fejlec-menu (asztali lenyilok, mobil teljes menu), galeria + nagyito, videoablak,
 //    urlapok (allasjelentkezes, hozzaszolas), kedveles, blog-kereso, helyszin-lapozo, link-index
 import fs from 'node:fs';
@@ -18,6 +19,7 @@ import { chromium } from './pw.mjs';
 import { oldalak } from './oldalak.mjs';
 import { meresTiltas } from './meres-tiltas.mjs';
 import { kulcsbol } from '../lib/utvonal.js';
+import { KATEGORIA_UTAK, kategoriaCserelt } from './uj-oldalak/kategoria.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const BASE = (process.env.BASE || 'http://localhost:4290').replace(/\/$/, '');
@@ -40,9 +42,9 @@ const ok = (nev, felt, info = '') => {
 
 const lista = oldalak().filter((o) => !KIHAGY.has(o.ut));
 let kijelolt = lista;
-if (arg('oldal')) kijelolt = lista.filter((o) => o.ut === arg('oldal'));
+if (arg('oldal')) kijelolt = lista.filter((o) => arg('oldal').split(',').includes(o.ut));
 else if (GYORS) {
-  const mintak = ['/rolunk', '/blog', '/migren-piercing', '/shenmen-piercing', '/allasajanlat', '/a-migren-piercing-mukodese', '/migren-piercing-arak', '/piercer-kovacs-gabriella', '/migren-es-shenmen-piercing-garancia', '/adatkezeles', '/allas-ok', '/elerhetosegek', '/home', '/search', '/fejfajas'];
+  const mintak = ['/rolunk', '/blog', '/migren-piercing', '/shenmen-piercing', '/klimax-piercing', '/slim-etvagycsokkento-piercing', '/maj-piercing', '/allasajanlat', '/a-migren-piercing-mukodese', '/migren-piercing-arak', '/piercer-kovacs-gabriella', '/migren-es-shenmen-piercing-garancia', '/adatkezeles', '/allas-ok', '/elerhetosegek', '/home', '/search', '/fejfajas'];
   kijelolt = lista.filter((o) => mintak.includes(o.ut) || /^\/varosok\//.test(o.ut) && o.ut.includes('szombathely'));
 }
 // ---------- 1. forras (dist): rejtett, h1, alt, belso linkek ----------
@@ -110,6 +112,58 @@ async function ctxKesz(nezet) {
   return ctx;
 }
 
+// a kategoria-sablon segedei a teszthez (a sablon sajatjai a sablon.mjs-ben vannak)
+const TESZT_T = {
+  szovegTiszta: (h) => String(h || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim(),
+  csakLink: (h) => { const m = String(h).trim().match(/^<a href="([^"]*)"([^>]*)>([\s\S]*?)<\/a>$/); return m && !/<a /.test(m[3]) ? { href: m[1] } : null; },
+};
+// a fooldal (/uj-fooldal) merei: a kategoria-oldal hosenek ugyanakkorank kell lennie (asztali / mobil)
+const fooldalMeret = {};
+async function kategoriaTeszt(o, nezet, p, cim) {
+  if (!fooldalMeret[nezet]) {
+    const q = await p.context().newPage();
+    await q.goto(BASE + '/uj-fooldal?motor=0', { waitUntil: 'load', timeout: 60000 });
+    fooldalMeret[nezet] = await q.evaluate(() => ({ h1: parseFloat(getComputedStyle(document.querySelector('.hos h1')).fontSize), kep: Math.round(document.querySelector('.hos-kep img').getBoundingClientRect().width) }));
+    await q.close();
+  }
+  const ref = fooldalMeret[nezet];
+  const m = await p.evaluate(() => {
+    const kep = document.querySelector('.kat-hos .hos-kep img');
+    const r = (s) => document.querySelector(s);
+    const dia = [...document.querySelectorAll('.kat-fb .kar-dia')].map((d) => Math.round(d.getBoundingClientRect().width));
+    return {
+      h1: parseFloat(getComputedStyle(document.querySelector('.kat-hos h1')).fontSize), kep: kep ? Math.round(kep.getBoundingClientRect().width) : 0,
+      hosGomb: !!document.querySelector('.kat-hos .gomb-tomor[href="/idopontfoglalas"]'), bizalom: document.querySelectorAll('.kat-hos .bizalom li').length,
+      promoSav: !!r('.promo-sav'), tarto: Math.round(r('main .tarto').getBoundingClientRect().width), vp: document.documentElement.clientWidth,
+      ekszer: !!r('#ekszerek .galeria'), akcio: !!r('.akcio-sor .akcio'), ar: document.querySelectorAll('#arak .ar-kartya').length, helyszin: document.querySelectorAll('#helyszinek .helyek li').length,
+      media: !!r('#media .videok'), csapat: !!r('#csapat'), velemeny: !!r('.velemeny-doboz'), nagyito: !!r('#nagyito'), dia, fbKep: [...document.querySelectorAll('.kat-fb .kar-dia img')].every((i) => i.naturalWidth > 0),
+      doboz: [...document.querySelectorAll('.kat-doboz')].filter((d) => d.scrollWidth > d.clientWidth + 1).length,
+    };
+  });
+  ok(`${cim}: a hos ugyanakkora, mint a fooldalon (h1 ${m.h1}px, kep ${m.kep}px)`, m.h1 === ref.h1 && Math.abs(m.kep - ref.kep) <= 24, `fooldal: h1 ${ref.h1}px, kep ${ref.kep}px`);
+  ok(`${cim}: a hos a fooldal elemeivel (foglalo gomb, bizalmi sor), a promo-sav nincs`, m.hosGomb && m.bizalom === 4 && !m.promoSav, JSON.stringify(m));
+  ok(`${cim}: a tartalom a fooldal szelessegu (${m.tarto}px)`, nezet === 'mobil' ? m.tarto >= m.vp - 34 : m.tarto >= Math.min(1240, m.vp - 48) - 2, `${m.tarto}/${m.vp}`);
+  ok(`${cim}: a fooldal dobozai: ekszer-galeria, akcio, ${m.ar} ar-kartya, ${m.helyszin} helyszin, media, csapat, velemeny`, m.ekszer && m.akcio && m.ar === 4 && m.helyszin === 15 && m.media && m.csapat && m.velemeny && m.nagyito, JSON.stringify(m));
+  ok(`${cim}: nincs kicsorduló doboz`, m.doboz === 0, String(m.doboz));
+  if (m.dia.length) {
+    ok(`${cim}: a Facebook-kommentek kartyai nagyok es olvashatok (${m.dia.join('/')} px) es betoltenek`, m.dia.every((w) => w >= (nezet === 'mobil' ? 250 : 300)) && m.fbKep, JSON.stringify(m.dia));
+  }
+  // az ekszer-galeria lapoz, a kep kattintasra nagyban nyilik (a fooldal viselkedese)
+  const gal = await p.$('#ekszerek .galeria');
+  await gal.scrollIntoViewIfNeeded();
+  const elo = await p.$eval('#ekszerek [data-aktualis]', (e) => e.textContent);
+  await p.click('#ekszerek .galeria-kov'); await p.waitForTimeout(700);
+  const utana = await p.$eval('#ekszerek [data-aktualis]', (e) => e.textContent);
+  ok(`${cim}: az ekszer-galeria nyila lapoz (${elo} -> ${utana})`, +utana === +elo + 1);
+  await p.click('#ekszerek .dia-nagyit >> nth=1');
+  const nagy = await p.evaluate(() => { const d = document.querySelector('#nagyito'); return d.open && !!d.querySelector('.nagyito-kep').getAttribute('src'); });
+  ok(`${cim}: az ekszer kattintasra nagyban nyilik`, nagy);
+  await p.keyboard.press('Escape');
+  // a fejlec "Arak" linkje az oldalon belul az arakhoz visz (nem a fooldalra)
+  const arHref = await p.$eval('#fejlec a.menu-link[href*="arak"]', (a) => a.getAttribute('href'));
+  ok(`${cim}: a fejlec "Arak" linkje helyben marad (#arak)`, arHref === '#arak', arHref);
+}
+
 async function lapTeszt(o, nezet, ctx) {
   const cim = `${o.ut} [${nezet}]`;
   const p = await ctx.newPage();
@@ -139,7 +193,10 @@ async function lapTeszt(o, nezet, ctx) {
     const sorok = await eredeti.evaluate(() => (document.querySelector('main#PAGES_CONTAINER')?.innerText || '').split('\n').map((s) => s.trim()).filter((s) => s.length >= 12));
     await eredeti.close();
     const t = norm(tartalom);
-    const hianyzo = [...new Set(sorok)].filter((s) => !t.includes(norm(s)) && !/^(hozzászólások|hozzászólás írása|rendezés erre|legújabb|még nincsenek értékelések|megosztás|friss bejegyzések|az összes megtekintése)/i.test(s) && !/^\d+\s*(megtekint|kedvel|hozzászólás)/i.test(s) && !/^(\d+ perc olvasás|id|Search this site)$/i.test(s) && !/csillagot kapott|nincs kedvelve|Értékelés hozzáadása|^\d+ kedvelés|^Like post|\d+ megtekintés|\d+ hozzászólás$/i.test(s));
+    // (a kitelepulesek datum-sorai naponta valtoznak: a mentett tartalomban a regi datumok vannak, az oldal betoltes utan a tablazatbol frissul - ezeket nem hasonlitjuk)
+    // a kategoria-oldalakon a fooldal dobozai (ekszer, akcio / arlista, media, csapat, helyszin) valtottak fel az eredeti blokkokat: azok szovege nem kell
+    const cserelt = KATEGORIA_UTAK.has(o.ut) ? norm((kategoriaCserelt(ered, TESZT_T) || []).join(' ')) : '';
+    const hianyzo = [...new Set(sorok)].filter((s) => !t.includes(norm(s)) && !(cserelt && cserelt.includes(norm(s))) && !/^(január|február|március|április|május|június|július|augusztus|szeptember|október|november|december)\s*\d/i.test(s) && !/^(hozzászólások|hozzászólás írása|rendezés erre|legújabb|még nincsenek értékelések|megosztás|friss bejegyzések|az összes megtekintése)/i.test(s) && !/^\d+\s*(megtekint|kedvel|hozzászólás)/i.test(s) && !/^(\d+ perc olvasás|id|Search this site)$/i.test(s) && !/csillagot kapott|nincs kedvelve|Értékelés hozzáadása|^\d+ kedvelés|^Like post|\d+ megtekintés|\d+ hozzászólás$/i.test(s));
     const lefedett = sorok.length ? 1 - hianyzo.length / new Set(sorok).size : 1;
     ok(`${cim}: az eredeti oldal szovege megvan (${(lefedett * 100).toFixed(1)}%)`, hianyzo.length === 0, hianyzo.slice(0, 4).map((s) => `«${s.slice(0, 70)}»`).join(' '));
   }
@@ -213,6 +270,8 @@ async function lapTeszt(o, nezet, ctx) {
     ok(`${cim}: a galeria kepe kattintasra nagyban nyilik`, nyitva);
     await p.keyboard.press('Escape');
   }
+  // kategoria-oldalak: a fooldal-meretu hos, a fooldal dobozai, a Facebook-kommentek kartyai
+  if (KATEGORIA_UTAK.has(o.ut)) await kategoriaTeszt(o, nezet, p, cim);
   // videoablak
   const vid = await p.$('a.video[data-embed]');
   if (vid && nezet === 'asztali') {

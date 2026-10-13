@@ -16,6 +16,8 @@
     const frissit = () => {
       const i = Math.round(sav.scrollLeft / Math.max(1, lepes()));
       if (szam) szam.textContent = String(Math.min(dias.length, i + 1));
+      // ha minden kep elfer, a nyilak es a szamlalo feleslegesek
+      kar.classList.toggle('kar-nincs-gorg', sav.scrollWidth <= sav.clientWidth + 2);
       if (elozo) elozo.disabled = sav.scrollLeft <= 2;
       if (kov) kov.disabled = sav.scrollLeft + sav.clientWidth >= sav.scrollWidth - 2;
       // a kovetkezo kepek elore toltodnek
