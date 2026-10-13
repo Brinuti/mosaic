@@ -14,7 +14,7 @@ import { levelErtelmezes } from './igazolas.js';
 import { akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, kuldes, elesKuldesE, maszk, ELES_HOST } from './google-ads.js';
 import { forrasPlatform, onbevallasErtek, platformAzonositok, vanPlatformId, URES_PLATFORM_ID } from './forras.js';
 import { tiktokLepes, TIKTOK_SEMA } from './tiktok.js';
-import { bizonyitekBemenet, bizonyitekValaszt, platformBizonyitekbol, cimkez, markasListaOlvas, FORRAS_VERZIO } from './cimke.js';
+import { bizonyitekBemenet, bizonyitekValaszt, bizonyitekForrasTarolo, diagBemenet, platformBizonyitekbol, cimkez, markasListaOlvas, FORRAS_VERZIO } from './cimke.js';
 
 export const SEMA = [
   `CREATE TABLE IF NOT EXISTS mp_foglalas (
@@ -59,11 +59,16 @@ export const BOVITES = [
   ['forras_ido', 'INTEGER'], // a nyertes erintes ideje
   ['forras_verzio', 'TEXT'], // 'mp_v2'
   ['forras_keret', 'INTEGER'], // 1 = a jelzes keretbol (regi beagyazott Salonic-naptar) jott
-  ['bizonyitek_forras', 'TEXT'], // munkamenet|suti (mp_lpt, csak hozzajarulassal)
+  ['bizonyitek_forras', 'TEXT'], // munkamenet|latogatas (2 oras localStorage-tarolo)|suti (mp_lpt, csak hozzajarulassal)
   ['forras_cimke', 'TEXT'], // meta|tiktok|google_nem_markas|google_markas|organikus_direkt|ismeretlen (cimkez())
   ['ismeretlen_ok', 'TEXT'], // nincs_jel|iframe_munkamenet|hianyos_utm|regi_kliens
   ['cimke_megjegyzes', 'TEXT'], // organikus_kereso|organikus_social|direkt|... |markas_lista_hianyzik|nincs_kampany_id
   ['tipus', 'TEXT'], // 'ful' = divat fulpiercing (/fulbevalo-ok*); NULL = minden mas. Egeszsegugyi tipus SOHA (meres.js tarolhatoTipus)
+  // "nincs_jel" diagnosztika (cimke.js diagBemenet; szemelyes adat / URL nelkul)
+  ['diag_oldalak', 'INTEGER'], // a lapon (munkamenetben) latott sajat oldalak szama, a koszonooldallal egyutt
+  ['diag_nav', 'TEXT'], // az elozo oldal (ennek hianyaban a koszonooldal) navigacios tipusa: navigate|reload|back_forward|prerender
+  ['diag_opener', 'INTEGER'], // 1 = a munkamenet elso oldalan volt window.opener
+  ['diag_elso_ref', 'TEXT'], // a munkamenet elso oldalanak hivatkozo-KATEGORIAJA: belso|kereso|social|egyeb|nincs
 ];
 /** A nyers platform-azonosito oszlopok (admin-valaszban maszkolva, 90 nap utan NULL). */
 const PLATFORM_ID_OSZLOPOK = ['meta_fbc', 'meta_fbp', 'tiktok_ttclid', 'tiktok_ttp'];
@@ -123,7 +128,10 @@ export function bemenet(b) {
     // forras v2: a munkamenet erintese (tisztitva; a hivo a "most"-tal meg egyszer ellenorzi) es a keret-jelzes
     forras: b.forras && typeof b.forras === 'object' && b.forras.v === FORRAS_VERZIO ? b.forras : null,
     forrasV2: !!(b.forras && typeof b.forras === 'object' && b.forras.v === FORRAS_VERZIO) || b.forras_v === FORRAS_VERZIO,
-    keret: b.keret === true };
+    keret: b.keret === true,
+    // a munkamenet-erintes a 2 oras latogatas-tarolobol jott-e (assets/js/mp-meres.js 6. pont), es a "nincs_jel" diagnosztika
+    forrasTarolo: b.forras_tarolo === 'latogatas' ? 'latogatas' : 'munkamenet',
+    diag: diagBemenet(b.diag) };
 }
 
 /**
@@ -149,7 +157,9 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
   const ert = ertekFeloldas(a, arlista);
   const kulcs = foglalasKulcs(a);
   // forras v2: munkamenet-erintes (hozzajarulastol fuggetlen), fizetett erintes hianyaban hozzajarulassal az mp_lpt suti
-  const { bizonyitek: biz, bizonyitek_forras } = bizonyitekValaszt(bizonyitekBemenet(be.forras, most), cookie, hozz.hirdetes, most);
+  const valasztott = bizonyitekValaszt(bizonyitekBemenet(be.forras, most), cookie, hozz.hirdetes, most);
+  const biz = valasztott.bizonyitek;
+  const bizonyitek_forras = bizonyitekForrasTarolo(valasztott.bizonyitek_forras, be.forrasTarolo);
   const v2 = be.forrasV2 || !!biz;
   const forrasMezok = {
     utm_source: biz ? biz.utm_source : null, utm_medium: biz ? biz.utm_medium : null, utm_campaign: biz ? biz.utm_campaign : null,
@@ -163,7 +173,7 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
     hozzajarulas_dontott: hozz.dontott ? 1 : 0, hozzajarulas_hirdetes: hozz.hirdetes ? 1 : 0, hozzajarulas_analitika: hozz.analitika ? 1 : 0,
     kattintas_tipus: katt ? katt.tipus : null, kattintas_ertek: katt ? katt.ertek : null, kattintas_ido: katt ? katt.ido : null,
     forras_platform: biz ? platformBizonyitekbol(biz) : be.forrasPlatform, ...plat, ...forrasMezok,
-    tipus: tarolhatoTipus(a.tipus),
+    tipus: tarolhatoTipus(a.tipus), ...be.diag,
   };
   try {
     await sema(db);

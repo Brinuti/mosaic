@@ -58,9 +58,13 @@ export async function riport(db, most, nap = 14) {
     d1_ful: 0, d1_ful_igazolt: 0, ...Object.fromEntries(CIMKEK.map((c) => [`ful_cimke_${c}`, 0])),
     hozzajarulassal: 0, hozzajarulassal_cimkezett: 0, hozzajarulas_nelkul: 0, hozzajarulas_nelkul_cimkezett: 0,
     uj_hozzajarulassal: 0, uj_hozzajarulassal_cimkezett: 0, uj_hozzajarulas_nelkul: 0, uj_hozzajarulas_nelkul_cimkezett: 0,
-    ismeretlen_okok: {} });
+    ismeretlen_okok: {},
+    // bizonyitek-forras (munkamenet|latogatas|suti|nincs) es a "nincs_jel" diagnosztika (elso oldal hivatkozo-kategoriaja, oldalszam)
+    bizonyitek_forrasok: { munkamenet: 0, latogatas: 0, suti: 0, nincs: 0 },
+    nincs_jel_elso_ref: { belso: 0, kereso: 0, social: 0, egyeb: 0, nincs: 0, ismeretlen: 0 },
+    nincs_jel_oldalak: { '1': 0, '2-3': 0, '4+': 0, ismeretlen: 0 } });
   const markas = await markasListaOlvas(db);
-  const f = await db.prepare(`SELECT letrehozva, uj_vendeg, uj_vendeg_igazolt, igazolas, onbevallas, hozzajarulas_hirdetes, tipus, ${FORRAS_OSZLOPOK} FROM mp_foglalas WHERE kornyezet = 'eles' AND letrehozva >= ?`).bind(tol).all();
+  const f = await db.prepare(`SELECT letrehozva, uj_vendeg, uj_vendeg_igazolt, igazolas, onbevallas, hozzajarulas_hirdetes, tipus, bizonyitek_forras, diag_oldalak, diag_elso_ref, ${FORRAS_OSZLOPOK} FROM mp_foglalas WHERE kornyezet = 'eles' AND letrehozva >= ?`).bind(tol).all();
   for (const s of f.results || []) {
     const x = n(napBp(s.letrehozva)); x.d1_foglalas++; if (s.uj_vendeg === 1) x.d1_uj++;
     if (s.igazolas === 'igazolt') x.d1_igazolt++; else if (s.igazolas === 'nem_igazolt') x.d1_nem_igazolt++;
@@ -79,6 +83,13 @@ export async function riport(db, most, nap = 14) {
     }
     if (s.tipus === 'ful') { x.d1_ful++; if (ig) x.d1_ful_igazolt++; x[`ful_cimke_${c.forras_cimke}`]++; }
     if (!jo) x.ismeretlen_okok[c.ismeretlen_ok || 'nincs_jel'] = (x.ismeretlen_okok[c.ismeretlen_ok || 'nincs_jel'] || 0) + 1;
+    const bf = s.bizonyitek_forras in x.bizonyitek_forrasok && s.bizonyitek_forras !== 'nincs' ? s.bizonyitek_forras : 'nincs';
+    x.bizonyitek_forrasok[bf]++;
+    if (!jo && (c.ismeretlen_ok || 'nincs_jel') === 'nincs_jel') {
+      x.nincs_jel_elso_ref[s.diag_elso_ref in x.nincs_jel_elso_ref && s.diag_elso_ref !== 'ismeretlen' ? s.diag_elso_ref : 'ismeretlen']++;
+      const o = s.diag_oldalak;
+      x.nincs_jel_oldalak[!Number.isInteger(o) || o < 1 ? 'ismeretlen' : o === 1 ? '1' : o <= 3 ? '2-3' : '4+']++;
+    }
   }
   for (const x of Object.values(napok)) {
     x.lefedettseg_osszes = szazalek(x.cimkezett, x.d1_foglalas);

@@ -109,13 +109,18 @@ const varRa = async (f, ms = 8000) => { for (let i = 0; i < ms / 100 && !(await 
   await varRa(() => sor(s));
   ok('3b D1: forras_platform = google, forras_cimke = google_nem_markas (nincs kampany-ID)', sor(s)?.forras_platform === 'google' && sor(s)?.forras_cimke === 'google_nem_markas' && sor(s)?.cimke_megjegyzes === 'nincs_kampany_id', JSON.stringify(sor(s) && [sor(s).forras_cimke, sor(s).cimke_megjegyzes]));
   // uj lap (uj munkamenet) utm_source=ig (nem fizetett) -> egyeb; parameter nelkul -> direkt erintes; mas utm_source -> egyeb
+  // (a 2 oras latogatas-tarolot - "mp_forras_l" - elotte uritjuk, kulonben az uj lap az elozo latogatas erinteset folytatja: 11. pont)
+  const urit = () => p.evaluate(() => localStorage.removeItem('mp_forras_l'));
+  await urit();
   const p2 = await ctx.newPage();
   await p2.goto(`${CIM}/?utm_source=ig&utm_medium=social`, { waitUntil: 'load' });
   ok('3c uj lap: utm_source=ig&utm_medium=social -> egyeb (nem fizetett)', (await forras(p2))?.p === 'egyeb');
+  await urit();
   const p3 = await ctx.newPage();
   await p3.goto(`${CIM}/elerhetosegek`, { waitUntil: 'load' });
   const f3d = await forras(p3);
   ok('3d uj lap parameter nelkul: direkt erintes (rk = nincs, p = null)', f3d && f3d.p == null && f3d.rk === 'nincs', JSON.stringify(f3d));
+  await urit();
   const p4 = await ctx.newPage();
   await p4.goto(`${CIM}/?utm_source=meta&utm_medium=paid_social&utm_campaign=120001`, { waitUntil: 'load' });
   ok('3e uj lap: utm_source=meta&utm_medium=paid_social -> meta', (await forras(p4))?.p === 'meta');
@@ -207,6 +212,8 @@ const varRa = async (f, ms = 8000) => { for (let i = 0; i < ms / 100 && !(await 
   ok('9b a bongeszoben HttpOnly suti, JS nem latja', c && c.httpOnly && !(await p.evaluate(() => document.cookie)).includes('mp_lpt'));
   ok('9c a suti erteke nem tartalmaz kattintasazonositot', c && !Buffer.from(c.value, 'base64url').toString().includes('TESZTfbclid'));
   // uj lap (uj munkamenet), direkt erkezes, foglalas: a suti a tartalek -> meta, bizonyitek_forras = suti
+  // (a 2 oras latogatas-tarolo nelkul, mintha a latogatas mar lejart volna; vele 'latogatas' lenne: 11. pont)
+  await p.evaluate(() => localStorage.removeItem('mp_forras_l'));
   const p2 = await ctx.newPage();
   await p2.goto(`${CIM}/elerhetosegek`, { waitUntil: 'load' });
   await p2.goto(koszono(s), { waitUntil: 'load' });
@@ -240,6 +247,39 @@ const varRa = async (f, ms = 8000) => { for (let i = 0; i < ms / 100 && !(await 
   const p2 = await ctx.newPage(); await p2.goto(p.url(), { waitUntil: 'load' }); await p2.waitForTimeout(1200);
   ok('10e F5 es a tisztitott cim uj fulben: nincs uj POST, egy D1-sor', kuldott.length === 1 && db._s.prepare("SELECT COUNT(*) n FROM mp_foglalas WHERE kulcs LIKE '9067|%'").get().n === 1, `${kuldott.length} POST`);
   ok('10f nincs JS-hiba', hibak.length === 0, hibak.join(' | '));
+  await ctx.close();
+}
+// 11. Latogatas-tarolo (localStorage "mp_forras_l", 2 ora; Feri dontese 2026-10-13): A lapon ?gclid erkezes, B lap (noopener ->
+//     ures sessionStorage) belso oldallal, ott foglalas -> google, bizonyitek_forras = latogatas; 2 ora utan (eltolt ido) -> nincs_jel.
+{
+  const s = ++start, s2 = ++start;
+  const { ctx, kuldott } = await kornyezet(false);
+  const hibak = [];
+  const a = await ctx.newPage(); a.on('pageerror', (e) => hibak.push(e.message));
+  await a.goto(`${CIM}/?utm_source=google&utm_medium=cpc&utm_campaign=999&gclid=${G}`, { waitUntil: 'load', referer: 'https://www.google.com/' });
+  const l = await a.evaluate(() => localStorage.getItem('mp_forras_l'));
+  ok('11a A lap: latogatas-tarolo google, lejarat ~2 ora, kattintasazonosito-ertek nelkul', !!l && JSON.parse(l).e.kp === 'gclid' && Math.abs(JSON.parse(l).lej - Date.now() / 1000 - 7200) < 120 && !l.includes(G), l);
+  const [bLap] = await Promise.all([ctx.waitForEvent('page'), a.evaluate(() => window.open('/elerhetosegek', '_blank', 'noopener'))]);
+  bLap.on('pageerror', (e) => hibak.push(e.message));
+  await bLap.waitForLoadState('load');
+  const fb = await forras(bLap);
+  ok('11b B lap (noopener): a sessionStorage a latogatas-tarolobol, b = l', fb && fb.p === 'google' && fb.kp === 'gclid' && fb.b === 'l', JSON.stringify(fb));
+  await bLap.goto(koszono(s), { waitUntil: 'load' });
+  await varRa(() => sor(s));
+  const r = sor(s);
+  ok('11c D1: google_nem_markas, bizonyitek_forras = latogatas, kattintas_ertek NULL', r && r.forras_cimke === 'google_nem_markas' && r.bizonyitek_forras === 'latogatas' && r.kattintas_param === 'gclid' && r.kattintas_ertek === null, JSON.stringify(r && [r.forras_cimke, r.bizonyitek_forras]));
+  ok('11d D1 diag: oldalak = 2, opener = 0, elso_ref = belso, nav kitoltve', r && r.diag_oldalak === 2 && r.diag_opener === 0 && r.diag_elso_ref === 'belso' && ['navigate', 'reload', 'back_forward', 'prerender'].includes(r.diag_nav), JSON.stringify(r && [r.diag_oldalak, r.diag_opener, r.diag_elso_ref, r.diag_nav]));
+  ok('11e a jelzesben nincs kattintasazonosito-ertek, nincs URL a diag-ban', !JSON.stringify(kuldott.at(-1)).includes(G) && !/http/.test(JSON.stringify(kuldott.at(-1).diag || {})));
+  // C lap 3 oraval kesobb (eltolt Date.now): a latogatas-tarolo lejart -> nincs_jel, diag kitoltve
+  const c = await ctx.newPage(); c.on('pageerror', (e) => hibak.push(e.message));
+  await c.addInitScript(() => { const valodi = Date.now.bind(Date); Date.now = () => valodi() + 3 * 3600 * 1000; });
+  await c.goto(`${CIM}/elerhetosegek`, { waitUntil: 'load', referer: `${CIM}/` });
+  ok('11f C lap 3 ora mulva: nincs erintes, a lejart latogatas-tarolo torolve', (await forras(c)) === null && (await c.evaluate(() => localStorage.getItem('mp_forras_l'))) === null);
+  await c.goto(koszono(s2), { waitUntil: 'load' });
+  await varRa(() => sor(s2));
+  const r2 = sor(s2);
+  ok('11g D1: ismeretlen / nincs_jel, bizonyitek_forras NULL, diag: oldalak = 2, elso_ref = belso, opener = 0', r2 && r2.forras_cimke === 'ismeretlen' && r2.ismeretlen_ok === 'nincs_jel' && r2.bizonyitek_forras === null && r2.diag_oldalak === 2 && r2.diag_elso_ref === 'belso' && r2.diag_opener === 0 && !!r2.diag_nav, JSON.stringify(r2 && [r2.forras_cimke, r2.ismeretlen_ok, r2.diag_oldalak, r2.diag_elso_ref, r2.diag_nav]));
+  ok('11h nincs JS-hiba', hibak.length === 0, hibak.join(' | '));
   await ctx.close();
 }
 await b.close();

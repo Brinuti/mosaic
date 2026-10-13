@@ -261,7 +261,7 @@ lefedettség hozzájárulással / nélküle bontva. Ez az előző szakasz 1. pon
      `forras_platform`-ot is. A régi (v1) `{p,t}` alakot a szkript továbbra is olvassa.
 2. **Szerver (`lib/meres/cimke.js`, `lanc.js`):** újratisztítja a bizonyítékot és új oszlopokba írja (`BOVITES`, idempotens):
    `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, `kattintas_param`, `referrer_kat`, `forras_ido`,
-   `forras_verzio` (= `mp_v2`), `forras_keret`, `bizonyitek_forras` (`munkamenet` / `suti`), és a **szerveren számolt**
+   `forras_verzio` (= `mp_v2`), `forras_keret`, `bizonyitek_forras` (`munkamenet` / `latogatas` / `suti`), és a **szerveren számolt**
    `forras_cimke`, `ismeretlen_ok`, `cimke_megjegyzes`. A `forras_platform` továbbra is kitöltődik (google/meta/tiktok/egyeb).
    Kattintásazonosító-**érték** továbbra is csak hirdetési hozzájárulással (`mp_gk`, `kattintas_ertek`, `meta_*`, `tiktok_*`).
 3. **Címke – `cimkez(sor, markasLista)`** (tiszta, determinisztikus függvény; a beszúrás ÉS a riport is ezt használja, így a
@@ -289,13 +289,55 @@ lefedettség hozzájárulással / nélküle bontva. Ez az előző szakasz 1. pon
 6. **Havi pillanatkép:** `GET /api/mp-kiigazitas?riport=havi&ho=YYYY-MM` (fejléc: `x-mp-kiigazitas`) → személyes adat nélküli
    CSV: `ho, forras_cimke, foglalas, igazolt, uj_vendeg, uj_vendeg_igazolt (új ÉS Salonic-igazolt), hozzajarulassal, verzio,
    pillanatkep`; hónaphatár Europe/Budapest szerint, csak éles sorok. Az ütemezett Drive-mentés külön készül.
-7. **Korlátok:** új lapon nyitott Salonic-foglalás → új munkamenet → hozzájárulás nélkül `nincs_jel`; az `fbclid` organikus
+7. **Korlátok:** új lapon nyitott Salonic-foglalás → új munkamenet → hozzájárulás nélkül `nincs_jel` (2026-10-13 óta 2 órán
+   belül a látogatás-tároló pótolja, lásd lent); az `fbclid` organikus
    Facebook-megosztásból is jöhet (jelölve); a UTM-ek a hirdetésekbe később kerülnek – addig a Google-kampány-ID hiányzik
    (`nincs_kampany_id`), a Meta / TikTok a kattintási paraméterből címkézhető.
 
 Tesztek: `node --test tools/test-mp-forras-v2.mjs` (böngésző-logika `vm`-ben, tisztítás, hivatkozó-kategóriák, címke, süti,
 riport, havi CSV), `node tools/forras-pw.mjs` (3., 5–9. eset: fizetett → organikus nem ír felül, meta → tiktok felülír,
 hozzájárulás nélkül nincs süti, hozzájárulással HttpOnly süti és új munkamenetben tartalék, keretes foglalás címkéje).
+
+### Forrás v2 – látogatás-tároló és `nincs_jel`-diagnosztika (2026-10-13)
+
+Háttér: a forrás v2 élesítése (09:15) után 9 motoros foglalásból 4 `ismeretlen` / `nincs_jel` lett (a munkamenetben semmilyen
+érintés), Google 0 – miközben a Google napi ~370 kattintást hoz. A `gclid`/`fbclid` érkezés helyesen tárol, és a motor a
+köszönőoldalt ugyanabban a lapban nyitja (`location.assign`). Valószínű ok: a munkamenet első oldala belső hivatkozós, jel
+nélküli (új lap `noopener`-rel → a `sessionStorage` nem másolódik; iOS-lapeldobás / újratöltés; az érkezés másik lapon volt),
+és a v2 szabálya („belső hivatkozó + üres tároló → nincs tárolás”) ilyenkor semmit nem tárol.
+
+**Tulajdonosi döntés (Feri, 2026-10-13, kifejezett; a jogi kockázatot vállalja; ChatGPT jóváhagyta):** a forrást a foglaláshoz
+ugyanabban a látogatásban hozzájárulás nélkül is hozzá kell kötni. Ezért:
+
+1. **Látogatás-tároló** (`assets/js/mp-meres.js`, 6. pont): az érintés minden írásakor ugyanaz a tisztított objektum
+   (azonosító-érték, URL nélkül; ugyanazok a mezők, mint az `mp_forras`-ban) a `localStorage.mp_forras_l`-be is kerül
+   `{ e: <érintés>, lej: <unix> }` alakban, `lej` = az utolsó írás + **2 óra**. Minden oldalmegtekintés, amíg van hatályos
+   érintés, megújítja. Lejárt / hibás tartalmat a szkript töröl. Minden tárolóhozzáférés `try/catch`-ben.
+2. **Olvasási sorrend:** `sessionStorage.mp_forras` → ha üres, az érvényes `mp_forras_l` (visszaírva a `sessionStorage`-ba
+   `b: 'l'` jelzéssel). **Last paid click mindkét tárolón:** ha a látogatás-tárolóban **újabb fizetett** érintés van (másik
+   lapon érkezett), az nyer; nem fizetett érintés fizetettet sosem ír felül (a látogatás-tároló sem); az érkezéskori
+   felülírási szabály a két tároló hatályos érintéséhez mér.
+3. **Szerver:** a köszönőoldali jelzés `forras_tarolo: 'latogatas' | 'munkamenet'` mezőt küld; a D1 `bizonyitek_forras`
+   értéke `latogatas`, ha a munkamenet-érintés a látogatás-tárolóból jött (`cimke.js bizonyitekForrasTarolo`); a `munkamenet`
+   és a hozzájárulásos `suti` (`mp_lpt`) változatlan.
+4. **Diagnosztika** (szám / típus / kategória; személyes adat és URL nincs; a szerver fehérlistán ellenőrzi, minden más
+   eldobva – `cimke.js diagBemenet`; idempotens `ADD COLUMN`):
+   - `diag_oldalak`: a lapon (munkamenetben) látott saját oldalak száma a köszönőoldallal együtt (`sessionStorage.mp_oldalak`,
+     minden oldalbetöltéskor +1, csak a fő ablakban; 1–999);
+   - `diag_nav`: a köszönőoldal **előtti** oldal navigációs típusa (`navigate` / `reload` / `back_forward` / `prerender`),
+     ha nincs előző, a köszönőoldalé (`sessionStorage.mp_nav_elozo`);
+   - `diag_opener`: 0/1 – a munkamenet első oldalán volt-e `window.opener` (`sessionStorage.mp_elso`);
+   - `diag_elso_ref`: a munkamenet első oldalának hivatkozó-**kategóriája**: `belso` / `kereso` / `social` / `egyeb` / `nincs`.
+5. **Riport** (`riport.js`, napi sorok, a régi mezők változatlanok): `bizonyitek_forrasok` (`munkamenet` / `latogatas` /
+   `suti` / `nincs` szerinti darabszám), a `nincs_jel` sorokra `nincs_jel_elso_ref` (kategóriánként + `ismeretlen`) és
+   `nincs_jel_oldalak` (`1` / `2-3` / `4+` / `ismeretlen`).
+6. **Korlát:** 2 óránál hosszabb szünet utáni, jel nélküli új lapos foglalás továbbra is `nincs_jel`; másik böngészőben /
+   eszközön indult látogatás nem köthető össze.
+
+Tesztek: `node --test tools/test-mp-forras-v2.mjs` (olvasási sorrend, lejárat, last paid a két tárolón, hibás tartalom /
+tiltott tároló, diagnosztika, szerveroldali fehérlista, riport-bontások); `node tools/forras-pw.mjs` 11. eset (A lapon `gclid`,
+B lap `noopener`-rel belső oldallal → foglalás: `google_nem_markas`, `bizonyitek_forras = 'latogatas'`, diag kitöltve;
+3 órával később (eltolt `Date.now`) új lapon → `nincs_jel`).
 
 ## TikTok Events API „Schedule” (2026-10-13, csak napló)
 

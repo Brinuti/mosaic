@@ -15,22 +15,23 @@ const JS = fs.readFileSync(new URL('../assets/js/mp-meres.js', import.meta.url),
 const MOST = 1791700000;
 
 /** Az mp-meres.js futtatasa egy lapbetoltesre: { url, referrer, tar (sessionStorage Map), cookie } -> { tar, hivasok } */
-function lap({ url, referrer = '', tar = new Map(), cookie = '', top = true }) {
+function lap({ url, referrer = '', tar = new Map(), cookie = '', top = true, ls = new Map(), nowMs = null, opener = null, nav = null, tiltott = false }) {
   const u = new URL(url);
   const hivasok = [];
-  const sessionStorage = { getItem: (k) => (tar.has(k) ? tar.get(k) : null), setItem: (k, v) => tar.set(k, String(v)), removeItem: (k) => tar.delete(k) };
-  const ls = new Map();
-  const localStorage = { getItem: (k) => (ls.has(k) ? ls.get(k) : null), setItem: (k, v) => ls.set(k, String(v)), removeItem: (k) => ls.delete(k) };
+  const dob = () => { throw new Error('SecurityError'); };
+  const sessionStorage = tiltott ? { getItem: dob, setItem: dob, removeItem: dob } : { getItem: (k) => (tar.has(k) ? tar.get(k) : null), setItem: (k, v) => tar.set(k, String(v)), removeItem: (k) => tar.delete(k) };
+  const localStorage = tiltott ? { getItem: dob, setItem: dob, removeItem: dob } : { getItem: (k) => (ls.has(k) ? ls.get(k) : null), setItem: (k, v) => ls.set(k, String(v)), removeItem: (k) => ls.delete(k) };
   const w = {
     location: { hostname: u.hostname, pathname: u.pathname, search: u.search, href: u.href },
     document: { referrer, cookie, addEventListener: () => {}, documentElement: { getAttribute: () => null } },
-    sessionStorage, localStorage, URLSearchParams, URL, JSON, Math, Date, Object, String, Number, setTimeout: () => 0,
-    addEventListener: () => {},
+    sessionStorage, localStorage, URLSearchParams, URL, JSON, Math, Date: nowMs == null ? Date : { now: () => nowMs }, Object, String, Number, setTimeout: () => 0,
+    addEventListener: () => {}, opener,
     fetch: (cim, o) => { hivasok.push({ cim, torzs: JSON.parse(o.body) }); return Promise.resolve({}); },
   };
+  if (nav) w.performance = { getEntriesByType: () => [{ type: nav }] };
   w.window = w; w.top = top ? w : {};
   vm.runInNewContext(JS, w);
-  return { tar, hivasok, forras: tar.has('mp_forras') ? JSON.parse(tar.get('mp_forras')) : null };
+  return { tar, ls, hivasok, forras: tar.has('mp_forras') ? JSON.parse(tar.get('mp_forras')) : null, latogatas: ls.has('mp_forras_l') ? JSON.parse(ls.get('mp_forras_l')) : null };
 }
 const H = 'https://www.medicalpiercing.hu';
 
@@ -291,4 +292,119 @@ test('havi CSV: honaphatar (Budapest), szemelyes adat nelkul, titkos vegponton',
 test('fizetett(): medium-lista', () => {
   for (const m of ['cpc', 'CPC', 'paid_social', 'paid', 'ppc']) assert.ok(fizetett({ utm_medium: m }), m);
   for (const m of ['email', 'social', 'organic', '', null]) assert.ok(!fizetett({ utm_medium: m }), String(m));
+});
+
+// ---------------- latogatas-tarolo (localStorage "mp_forras_l", 2 ora) es "nincs_jel" diagnosztika ----------------
+const KOSZ = `${H}/foglalas-ok?first_booking=true&bookingUrl=${encodeURIComponent('https://medicalpiercing.salonic.hu/booking/selectDate/?placeId=12169&serviceId=9001&employeeId=555&startDate=1791900000')}`;
+const MS = MOST * 1000;
+const jelzes = (r) => r.hivasok.find((h) => h.cim === '/api/mp-foglalas')?.torzs;
+
+test('latogatas-tarolo: ugyanaz a tisztitott erintes, 2 ora lejarat; uj lap (ures sessionStorage) olvassa es visszairja', () => {
+  const ls = new Map();
+  const a = lap({ url: `${H}/?utm_source=google&utm_medium=cpc&utm_campaign=999&gclid=Cj0KCQSECRETabc`, referrer: 'https://www.google.com/', ls, nowMs: MS });
+  assert.equal(a.latogatas.lej, MOST + 7200);
+  assert.deepEqual(a.latogatas.e, a.forras, 'ugyanazok a mezok');
+  assert.ok(!ls.get('mp_forras_l').includes('SECRET'), 'kattintasazonosito-ertek nincs a latogatas-taroloban');
+  // uj lap (noopener): ures sessionStorage, belso hivatkozo, jel nelkul -> a latogatas-tarolobol, b = 'l'
+  const b = lap({ url: `${H}/arak`, referrer: `${H}/`, ls, nowMs: MS + 1800e3 });
+  assert.deepEqual([b.forras.p, b.forras.kp, b.forras.uc, b.forras.b], ['google', 'gclid', '999', 'l']);
+  assert.equal(b.latogatas.lej, MOST + 1800 + 7200, 'oldalmegtekintes megujitja a lejaratot');
+  assert.equal(b.latogatas.e.b, undefined, 'a tarolo-jelzes nem kerul a latogatas-taroloba');
+  // a koszonooldal ugyanezen a lapon: forras_tarolo = latogatas
+  const k = lap({ url: KOSZ, referrer: `${H}/arak`, tar: b.tar, ls, nowMs: MS + 1900e3, cookie: `mp_suti=v1-s0-m0-t${MOST}` });
+  const t = jelzes(k);
+  assert.equal(t.forras_tarolo, 'latogatas'); assert.equal(t.forras.kp, 'gclid'); assert.equal(t.forras.b, undefined);
+  assert.ok(!JSON.stringify(t).includes('SECRET'));
+  // sajat munkamenet-erintessel: munkamenet
+  const k2 = lap({ url: KOSZ, tar: a.tar, ls: new Map(), nowMs: MS, cookie: `mp_suti=v1-s0-m0-t${MOST}` });
+  assert.equal(jelzes(k2).forras_tarolo, 'munkamenet');
+});
+
+test('latogatas-tarolo: lejarat utan nem ervenyes (torlodik), uj lapon nincs erintes -> a jelzesben nincs forras', () => {
+  const ls = new Map();
+  lap({ url: `${H}/?gclid=Cj0KCQabcdefgh`, ls, nowMs: MS });
+  const b = lap({ url: `${H}/arak`, referrer: `${H}/`, ls, nowMs: MS + 7201e3 });
+  assert.equal(b.forras, null); assert.equal(b.latogatas, null, 'lejart: torolve');
+  const k = lap({ url: KOSZ, referrer: `${H}/arak`, tar: b.tar, ls, nowMs: MS + 7300e3, cookie: `mp_suti=v1-s0-m0-t${MOST}` });
+  assert.equal(jelzes(k).forras, undefined); assert.equal(jelzes(k).forras_tarolo, undefined);
+  // pont a lejarat elott meg ervenyes
+  const ls2 = new Map();
+  lap({ url: `${H}/?gclid=Cj0KCQabcdefgh`, ls: ls2, nowMs: MS });
+  assert.equal(lap({ url: `${H}/arak`, referrer: `${H}/`, ls: ls2, nowMs: MS + 7199e3 }).forras.p, 'google');
+});
+
+test('latogatas-tarolo: last paid click mindket taroloban', () => {
+  // A lap: google (t0); B lap kesobb: meta fizetett -> a latogatas-tarolo meta; A lapon a kovetkezo oldal: meta (ujabb fizetett nyer)
+  const ls = new Map();
+  const a = lap({ url: `${H}/?gclid=Cj0KCQabcdefgh`, ls, nowMs: MS });
+  const b = lap({ url: `${H}/?utm_source=meta&utm_medium=paid_social&fbclid=FBabcdefgh`, referrer: 'https://l.facebook.com/', ls, nowMs: MS + 60e3 });
+  assert.equal(b.forras.p, 'meta'); assert.equal(b.latogatas.e.p, 'meta');
+  const a2 = lap({ url: `${H}/arak`, referrer: `${H}/`, tar: a.tar, ls, nowMs: MS + 120e3 });
+  assert.deepEqual([a2.forras.p, a2.forras.b], ['meta', 'l']);
+  // nem fizetett erkezes uj lapon (organikus kereso) nem irja felul a latogatas fizetett erinteset
+  const c = lap({ url: `${H}/`, referrer: 'https://www.google.com/', ls, nowMs: MS + 180e3 });
+  assert.deepEqual([c.forras.p, c.forras.kp], ['meta', 'fbclid']); assert.equal(c.latogatas.e.p, 'meta');
+  // nem fizetett latogatas-erintes nem irja felul a munkamenet fizetett erinteset, regebbi fizetett sem
+  const ls2 = new Map([['mp_forras_l', JSON.stringify({ e: { v: 'mp_v2', t: MOST + 500, rk: 'search' }, lej: MOST + 7200 })]]);
+  const d = lap({ url: `${H}/arak`, referrer: `${H}/`, tar: new Map([['mp_forras', JSON.stringify({ v: 'mp_v2', p: 'tiktok', kp: 'ttclid', t: MOST, rk: 'nincs' })]]), ls: ls2, nowMs: MS + 600e3 });
+  assert.deepEqual([d.forras.p, d.forras.b], ['tiktok', undefined]);
+  assert.equal(d.latogatas.e.p, 'tiktok', 'a latogatas-tarolo a hatalyos (fizetett) erintest kapja');
+  const ls3 = new Map([['mp_forras_l', JSON.stringify({ e: { v: 'mp_v2', p: 'meta', kp: 'fbclid', t: MOST - 500, rk: 'social' }, lej: MOST + 7200 })]]);
+  const e = lap({ url: `${H}/arak`, referrer: `${H}/`, tar: new Map([['mp_forras', JSON.stringify({ v: 'mp_v2', p: 'tiktok', kp: 'ttclid', t: MOST, rk: 'nincs' })]]), ls: ls3, nowMs: MS + 600e3 });
+  assert.equal(e.forras.p, 'tiktok', 'regebbi fizetett latogatas-erintes nem nyer');
+  // nem fizetett munkamenet (direkt) + fizetett latogatas: a fizetett nyer
+  const ls4 = new Map([['mp_forras_l', JSON.stringify({ e: { v: 'mp_v2', p: 'meta', kp: 'fbclid', t: MOST - 500, rk: 'social' }, lej: MOST + 7200 })]]);
+  const f = lap({ url: `${H}/arak`, referrer: `${H}/`, tar: new Map([['mp_forras', JSON.stringify({ v: 'mp_v2', t: MOST, rk: 'nincs' })]]), ls: ls4, nowMs: MS + 600e3 });
+  assert.equal(f.forras.p, 'meta');
+});
+
+test('latogatas-tarolo: hibas / idegen tartalom es tiltott tarolo nem tor', () => {
+  for (const v of ['nem json', '{"e":{"v":"mp_v2","t":"x"},"lej":9999999999}', '{"e":{"p":"google","t":1},"lej":9999999999}', '{"e":null,"lej":9999999999}', '[]']) {
+    const r = lap({ url: `${H}/arak`, referrer: `${H}/`, ls: new Map([['mp_forras_l', v]]), nowMs: MS });
+    assert.equal(r.forras, null, v); assert.equal(r.latogatas, null, `${v}: torolve`);
+  }
+  const r = lap({ url: `${H}/?gclid=Cj0KCQabcdefgh`, tiltott: true, nowMs: MS });
+  assert.equal(r.forras, null);
+  const k = lap({ url: KOSZ, tiltott: true, nowMs: MS, cookie: `mp_suti=v1-s0-m0-t${MOST}` });
+  assert.ok(jelzes(k), 'tiltott taroloval is megy a jelzes');
+});
+
+test('diagnosztika: oldalszamlalo, elozo oldal navigacios tipusa, elso oldal opener / hivatkozo-kategoria', () => {
+  const tar = new Map(), ls = new Map();
+  lap({ url: `${H}/arak`, referrer: 'https://www.google.com/search?q=x', tar, ls, nowMs: MS, opener: {}, nav: 'navigate' });
+  lap({ url: `${H}/elerhetosegek`, referrer: `${H}/arak`, tar, ls, nowMs: MS, nav: 'reload' });
+  const k = lap({ url: KOSZ, referrer: `${H}/elerhetosegek`, tar, ls, nowMs: MS, nav: 'navigate', cookie: `mp_suti=v1-s0-m0-t${MOST}` });
+  assert.deepEqual(jelzes(k).diag, { oldalak: 3, nav: 'reload', opener: 1, elso_ref: 'kereso' });
+  assert.ok(!JSON.stringify(jelzes(k).diag).includes('google'), 'URL nincs benne');
+  // az elso oldal maga a koszonooldal (nincs elozo): a sajat tipusa; opener nelkul, belso hivatkozo
+  const k2 = lap({ url: KOSZ, referrer: `${H}/x`, nowMs: MS, nav: 'back_forward', cookie: `mp_suti=v1-s0-m0-t${MOST}` });
+  assert.deepEqual(jelzes(k2).diag, { oldalak: 1, nav: 'back_forward', opener: 0, elso_ref: 'belso' });
+  // keretben nem szamol
+  assert.equal(lap({ url: `${H}/arak`, top: false }).tar.get('mp_oldalak'), undefined);
+});
+
+test('szerver: forras_tarolo -> bizonyitek_forras = latogatas; diag feher lista; riport bontasok', async () => {
+  const { db, env } = uj();
+  const G = { v: 'mp_v2', us: 'google', um: 'cpc', uc: '555', kp: 'gclid', rk: 'search', t: MOST - 50 };
+  let s = await foglal(env, { forras: G, forras_tarolo: 'latogatas', diag: { oldalak: 2, nav: 'navigate', opener: 1, elso_ref: 'belso' } });
+  assert.deepEqual([s.forras_cimke, s.bizonyitek_forras, s.diag_oldalak, s.diag_nav, s.diag_opener, s.diag_elso_ref], ['google_nem_markas', 'latogatas', 2, 'navigate', 1, 'belso']);
+  s = await foglal(env, { forras: G, forras_tarolo: 'barmi' });
+  assert.equal(s.bizonyitek_forras, 'munkamenet');
+  // hibas diag-ertekek eldobva; ismeretlen mezo nem kerul be
+  s = await foglal(env, { forras_v: 'mp_v2', diag: { oldalak: '5', nav: 'https://x.hu/', opener: 2, elso_ref: 'https://google.com', url: 'https://x' } });
+  assert.deepEqual([s.diag_oldalak, s.diag_nav, s.diag_opener, s.diag_elso_ref, s.ismeretlen_ok], [null, null, null, null, 'nincs_jel']);
+  assert.ok(!JSON.stringify(s).includes('https://x'));
+  s = await foglal(env, { forras_v: 'mp_v2', diag: { oldalak: 100000, nav: 'prerender', opener: 0, elso_ref: 'nincs' } });
+  assert.deepEqual([s.diag_oldalak, s.diag_nav, s.diag_opener, s.diag_elso_ref], [999, 'prerender', 0, 'nincs']);
+  await foglal(env, { forras_v: 'mp_v2', diag: { oldalak: 3, elso_ref: 'belso' } });
+  // mp_lpt suti tartalek: 'suti' marad, akkor is, ha a kliens latogatast jelez
+  const lpt = `mp_lpt=${lptErtek(bizonyitekBemenet({ ...META, t: MOST - 86400 }, MOST))}`;
+  s = await foglal(env, { forras: { v: 'mp_v2', rk: 'nincs', t: MOST - 10 }, forras_tarolo: 'latogatas' }, `${SUTI_IGEN}; ${lpt}`);
+  assert.deepEqual([s.forras_cimke, s.bizonyitek_forras], ['meta', 'suti']);
+  const r = await riport(db, MOST + 60, 2);
+  const x = r.sorok.find((o) => o.d1_foglalas > 0);
+  assert.deepEqual(x.bizonyitek_forrasok, { munkamenet: 1, latogatas: 1, suti: 1, nincs: 3 });
+  assert.deepEqual(x.nincs_jel_elso_ref, { belso: 1, kereso: 0, social: 0, egyeb: 0, nincs: 1, ismeretlen: 1 });
+  assert.deepEqual(x.nincs_jel_oldalak, { '1': 0, '2-3': 1, '4+': 1, ismeretlen: 1 });
+  assert.deepEqual(x.ismeretlen_okok, { nincs_jel: 3 });
 });
