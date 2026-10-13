@@ -484,3 +484,50 @@ test('N23 "ismeretlen" uzletag: csak ha van oda eso adat; az arnyek-sorai latsza
   j = await w.jelentes();
   assert.equal(j.uzletagak.ismeretlen.biztonsag.elo_id_talalat, 1); assert.equal(j.lampa, 'piros');
 });
+
+// ---------- N24: post288_missing_hmac_index (a meresi oldal jovahagyta, #167 137. komment) ----------
+test('N24 post288_missing_hmac_index: a #288 UTAN letrehozott PAROSITOTT level foglalas_vendeg sor nelkul; a #288 elotti, az indexelt, a parositatlan (kulon szamlalo) es a proba nem; mintak <= 20', async () => {
+  const w = await vilag();
+  const E = PRE288_EPOCH; const KESOBB = Date.UTC(2026, 9, 14, 12); // a 2026-10-13-i nap (a #288 napja); a "most" tobb, mint a nap vege
+  const talalat = w.egyeztetes({ uuid: 'a1a1a1a1-1111-4111-8111-000000000001', kulcs: HEADSPA(), t: E + 100 }); // parositott, nincs index: TALALAT
+  const indexelt = w.egyeztetes({ uuid: 'b2b2b2b2-1111-4111-8111-000000000002', kulcs: HEADSPA(), t: E + 200 });
+  w.vendeg({ uuid: indexelt, uzletag: 'headspa', t: E + 150 });
+  w.egyeztetes({ uuid: 'c3c3c3c3-1111-4111-8111-000000000003', kulcs: PMU(), t: E + 300 }); // pmu: TALALAT
+  w.egyeztetes({ uuid: 'd4d4d4d4-1111-4111-8111-000000000004', kulcs: FODRASZ(), t: E + 400, allapot: 'parositatlan' }); // nem parositott: kulon szamlalo
+  const proba = w.egyeztetes({ uuid: 'e5e5e5e5-1111-4111-8111-000000000005', kulcs: OXIGEN(), t: E + 500 }); // proba: nem szamit
+  w.egyeztetes({ uuid: 'f6f6f6f6-1111-4111-8111-000000000006', kulcs: null, t: E + 600 }); // kulcs nelkul parositott: ismeretlen uzletag
+  let j = await w.jelentes(`qa=nap&datum=2026-10-13&proba=${proba.slice(0, 8)}`, { now: KESOBB });
+  const h = j.uzletagak.headspa.post288_missing_hmac_index;
+  assert.equal(h.db, 1); assert.deepEqual(h.mintak.map((m) => m.uuid_prefix), [talalat.slice(0, 8)]);
+  assert.deepEqual(Object.keys(h.mintak[0]).sort(), ['ido', 'uuid_prefix', 'uzletag']); assert.equal(h.mintak[0].uzletag, 'headspa');
+  assert.equal(j.uzletagak.pmu.post288_missing_hmac_index.db, 1);
+  assert.equal(j.uzletagak.fodrasz.post288_missing_hmac_index.db, 0); assert.equal(j.uzletagak.fodrasz.post288_missing_hmac_index.parositatlan_db, 1);
+  assert.equal(j.uzletagak.oxigen.post288_missing_hmac_index.db, 0, 'a proba nem szamit');
+  assert.equal(j.uzletagak.ismeretlen.post288_missing_hmac_index.db, 1, 'kulcs nelkuli parositott level nem vész el');
+  assert.equal(j.osszes.post288_missing_hmac_index, 3);
+  assert.notEqual(j.lampa, 'piros', 'a szamlalo tajekoztato: onmagaban nem piros');
+  // probakent nem megadva az oxigen is szamit
+  j = await w.jelentes('qa=nap&datum=2026-10-13', { now: KESOBB });
+  assert.equal(j.uzletagak.oxigen.post288_missing_hmac_index.db, 1);
+  assert.ok(!JSON.stringify(j).includes(talalat) && !JSON.stringify(j).includes('a1a1a1a1-1111'), 'teljes UUID nincs a valaszban');
+});
+
+test('N24b post288: a #288 elotti letrehozo level nem szamit (az a pre288 teruletenek); a hatar pontos (PRE288_EPOCH benne, -1 kint); mintak <= 20; csak olvas', async () => {
+  const w = await vilag();
+  // a #288 elotti sor: a nap [FROM, TO) kozott, de PRE288_EPOCH ele esik -> a 2026-10-13 elotti napra kell tenni
+  const regiNap = '2026-10-12'; // PRE288_EPOCH = 2026-10-13 09:53:07Z, ezert a regiNap egyetlen sora sem "post288"
+  w.egyeztetes({ uuid: 'a1a1a1a1-1111-4111-8111-000000000001', kulcs: HEADSPA(), t: FROM + 100 });
+  let j = await w.jelentes(`qa=nap&datum=${regiNap}`);
+  assert.equal(j.uzletagak.headspa.post288_missing_hmac_index.db, 0, 'a #288 elotti nap sora nem post288');
+  assert.equal(j.uzletagak.headspa.valos.letrehozo_level, 1);
+  // a 2026-10-13-i nap: [2026-10-12 22:00Z, 2026-10-13 22:00Z)
+  w.egyeztetes({ uuid: 'b2b2b2b2-1111-4111-8111-000000000002', kulcs: HEADSPA(), t: PRE288_EPOCH - 1 }); // 1 mp-cel a #288 elott: nem
+  w.egyeztetes({ uuid: 'c3c3c3c3-1111-4111-8111-000000000003', kulcs: HEADSPA(), t: PRE288_EPOCH }); // pontosan a #288: igen
+  for (let i = 0; i < 25; i++) w.egyeztetes({ uuid: `${(0x20000000 + i).toString(16)}-1111-4111-8111-0000000000${String(i).padStart(2, '0')}`, kulcs: FODRASZ(), t: PRE288_EPOCH + 60 + i });
+  j = await w.jelentes('qa=nap&datum=2026-10-13', { now: Date.UTC(2026, 9, 14, 12) });
+  assert.equal(j.uzletagak.headspa.post288_missing_hmac_index.db, 1);
+  assert.equal(j.uzletagak.fodrasz.post288_missing_hmac_index.db, 25);
+  assert.equal(j.uzletagak.fodrasz.post288_missing_hmac_index.mintak.length, 20);
+  const dump = () => JSON.stringify(w.sql("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").map((t) => [t.name, w.sql(`SELECT * FROM ${t.name}`)]));
+  const elotte = dump(); await w.jelentes('qa=nap&datum=2026-10-13', { now: Date.UTC(2026, 9, 14, 12) }); assert.equal(dump(), elotte);
+});

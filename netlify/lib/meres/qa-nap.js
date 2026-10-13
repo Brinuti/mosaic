@@ -86,6 +86,7 @@ const ures = () => ({
   biztonsag: { elo_id_talalat: 0, dupla: 0, nem_arnyek_cel: 0 },
   sd: { sd_allapot: {}, csere: {} },
   pre288_missing_hmac_index: { db: 0, mintak: [] },
+  post288_missing_hmac_index: { db: 0, parositatlan_db: 0, mintak: [] },
   foglalas_vendeg: {},
 });
 
@@ -189,6 +190,22 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     }
   }, hibak);
 
+  // 5b) post288_missing_hmac_index (a meresi oldal jovahagyta, #167 137. komment): a #288 (PRE288_EPOCH) UTAN letrehozott letrehozo level, amelyhez NINCS foglalas_vendeg sor.
+  //     A parositott sor nem maradhat index nelkul (az sd csere-felismerese az index-soron mulik); a kimaradas oka (pl. nincs ervenyes e-mail) a Zap-futas valaszaban latszik (vendeg_index.kod), a D1-bol nem.
+  await vedett('post288', async () => {
+    if (!eOszl.size) return;
+    const vanVendeg = (await oszlopok(db, 'foglalas_vendeg')).size > 0;
+    const sorok = await mind(db, `SELECT substr(e.uuid, 1, 8) AS u8, e.kulcs AS kulcs, e.allapot AS allapot, e.letrehozva AS ido FROM foglalas_egyeztetes e WHERE e.letrehozva >= ?1 AND e.letrehozva < ?2 AND e.letrehozva >= ?3${vanVendeg ? ' AND NOT EXISTS (SELECT 1 FROM foglalas_vendeg v WHERE v.uuid = e.uuid)' : ''} ORDER BY e.letrehozva, e.uuid`, from, to, PRE288_EPOCH);
+    for (const r of sorok) {
+      if (probaSet.has(r.u8)) continue;
+      const nev = placeUzletag(r.kulcs);
+      const b = bizt(nev).post288_missing_hmac_index;
+      if (r.allapot !== 'parositott') { b.parositatlan_db++; continue; } // a nem parositott levelnel a hiany tajekoztato (kulon szamlalo), a parositott a kritikus
+      b.db++;
+      if (b.mintak.length < MINTA_MAX) b.mintak.push({ uuid_prefix: r.u8, uzletag: nev || 'ismeretlen', ido: isoUtc(r.ido * 1000) });
+    }
+  }, hibak);
+
   // 6) foglalas_vendeg: a nap uj sorai forras szerint
   await vedett('foglalas_vendeg', async () => {
     if (!(await oszlopok(db, 'foglalas_vendeg')).size) return;
@@ -199,7 +216,7 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
 
   // ---------- lampa ----------
   let osszLampa = 'zold';
-  const osszes = { valos: { letrehozo_level: 0, parositott: 0, parositatlan: 0, lemondas: 0 }, biztonsag: { elo_id_talalat: 0, dupla: 0, nem_arnyek_cel: 0 }, pre288_missing_hmac_index: 0, foglalas_vendeg: 0 };
+  const osszes = { valos: { letrehozo_level: 0, parositott: 0, parositatlan: 0, lemondas: 0 }, biztonsag: { elo_id_talalat: 0, dupla: 0, nem_arnyek_cel: 0 }, pre288_missing_hmac_index: 0, post288_missing_hmac_index: 0, foglalas_vendeg: 0 };
   for (const [nev, u] of Object.entries(uz)) {
     let lampa = 'zold';
     const b = u.biztonsag;
@@ -218,6 +235,7 @@ export async function qaNap(db, nap, { proba = [], env = {}, mostMs = Date.now()
     osszes.valos.letrehozo_level += u.valos.letrehozo_level; osszes.valos.parositott += u.valos.parositott; osszes.valos.parositatlan += u.valos.parositatlan; osszes.valos.lemondas += u.valos.lemondas.db;
     for (const k of Object.keys(osszes.biztonsag)) osszes.biztonsag[k] += b[k];
     osszes.pre288_missing_hmac_index += u.pre288_missing_hmac_index.db;
+    osszes.post288_missing_hmac_index += u.post288_missing_hmac_index.db;
     osszes.foglalas_vendeg += Object.values(u.foglalas_vendeg).reduce((x, y) => x + y, 0);
   }
   if (!ismeretlenHasznalt) delete uz.ismeretlen;
