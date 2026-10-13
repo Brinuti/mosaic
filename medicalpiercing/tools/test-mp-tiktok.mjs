@@ -50,7 +50,7 @@ test('torzs: Events API 2.0 forma; user csak ttclid + ttp; semleges URL; ertek c
   assert.equal(t.data.length, 1);
   const e = t.data[0];
   assert.deepEqual(Object.keys(e).sort(), ['event', 'event_id', 'event_time', 'page', 'properties', 'user']);
-  assert.equal(e.event, 'Schedule');
+  assert.equal(e.event, 'IgazoltFoglalas'); // nem Schedule: nincs dupla szamolas az optimalizacios esemenyen
   assert.equal(e.event_time, MOST - 900, 'a foglalas (Salonic-level) ideje');
   assert.equal(e.event_id, `Foglalas:${KULCS}`, 'ugyanaz, mint a bongeszo deduplikacios azonositoja');
   assert.deepEqual(e.user, { ttclid: TTCLID, ttp: TTP });
