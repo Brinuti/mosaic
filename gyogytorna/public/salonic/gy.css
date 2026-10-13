@@ -1,0 +1,243 @@
+/* GYOGYTORNASZOM.HU - a Salonic foglalo oldalainak egyedi megjelenese (a foglalomotor beagyazott adatlapjahoz).
+ * A /salonic/mosaic.css adaptacioja (kompakt, egy kepernyore elferő adatlap; kompakt sutisav). Bekapcsolas (Salonic: Beallitasok > Online bejelentkezes
+ * megjelenes > "Egyedi CSS URL"): https://www.gyogytornaszom.hu/gy-foglalas/salonic/gy.css  (a motor ezt a <link>-bol felismeri)
+ */
+
+
+body[class*="customer-gyogytornaszomhu"] {
+  --mh-sotet: #1b2733; --mh-kozep: #44586a; --mh-halvany: #6b7c8b;
+  --mh-krem: #f3f8fc; --mh-hatter: #ffffff; --mh-vonal: #dbe5ee; --mh-hiba: #c0392b;
+  background: var(--mh-hatter) !important;
+  color: var(--mh-sotet);
+  font-family: 'Poppins', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+}
+body[class*="customer-gyogytornaszomhu"] h1, body[class*="customer-gyogytornaszomhu"] h2, body[class*="customer-gyogytornaszomhu"] h3,
+body[class*="customer-gyogytornaszomhu"] h4, body[class*="customer-gyogytornaszomhu"] .title, body[class*="customer-gyogytornaszomhu"] .card-title {
+  font-family: 'Poppins', 'Segoe UI', Arial, sans-serif !important;
+  font-weight: 400 !important;
+  color: var(--mh-sotet) !important;
+  letter-spacing: .01em;
+}
+
+/* fejlec es boritokep: vekony, egyszinu sav */
+body[class*="customer-gyogytornaszomhu"] .navbar { background: var(--mh-sotet) !important; box-shadow: none !important; }
+body[class*="customer-gyogytornaszomhu"] .page-header { min-height: 0 !important; height: 70px !important; background: var(--mh-sotet) !important; background-image: none !important; }
+body[class*="customer-gyogytornaszomhu"] .page-header::before, body[class*="customer-gyogytornaszomhu"] .page-header::after { display: none !important; }
+body[class*="customer-gyogytornaszomhu"] .main-raised, body[class*="customer-gyogytornaszomhu"] .section { margin-top: 0 !important; padding-top: 12px !important; padding-bottom: 12px !important; box-shadow: none !important; background: transparent !important; }
+
+/* kartyak */
+body[class*="customer-gyogytornaszomhu"] .card {
+  background: #fff !important; border: 1px solid var(--mh-vonal) !important; border-radius: 14px !important;
+  box-shadow: none !important; margin-top: 8px !important; margin-bottom: 12px !important;
+}
+body[class*="customer-gyogytornaszomhu"] .card-body { padding: 12px 14px !important; }
+
+/* visszaszamlalo */
+body[class*="customer-gyogytornaszomhu"] .booking-time-remain-container { font-size: 14px; color: var(--mh-kozep) !important; }
+body[class*="customer-gyogytornaszomhu"] .booking-time-remain-container .countdown { font-weight: 700; color: var(--mh-sotet); }
+
+/* urlapmezok */
+body[class*="customer-gyogytornaszomhu"] .form-group { margin: 0 0 8px !important; padding-top: 0 !important; }
+body[class*="customer-gyogytornaszomhu"] .control-label, body[class*="customer-gyogytornaszomhu"] .form-group label:not(.form-check-label) {
+  position: static !important; transform: none !important; display: block;
+  font-size: 13px !important; font-weight: 700 !important; color: var(--mh-sotet) !important; margin: 0 0 3px !important; line-height: 1.25 !important;
+}
+body[class*="customer-gyogytornaszomhu"] .control-label .required, body[class*="customer-gyogytornaszomhu"] span.required { color: var(--mh-hiba) !important; }
+body[class*="customer-gyogytornaszomhu"] .form-control {
+  height: 40px !important; padding: 6px 12px !important; font-size: 16px !important; color: var(--mh-sotet) !important;
+  background: #fff !important; background-image: none !important;
+  border: 1.5px solid var(--mh-vonal) !important; border-radius: 10px !important; box-shadow: none !important;
+}
+body[class*="customer-gyogytornaszomhu"] textarea.form-control { height: 56px !important; min-height: 0 !important; }
+body[class*="customer-gyogytornaszomhu"] .form-control:focus { border-color: var(--mh-sotet) !important; outline: none !important; }
+body[class*="customer-gyogytornaszomhu"] .has-error .form-control { border-color: var(--mh-hiba) !important; }
+body[class*="customer-gyogytornaszomhu"] .iti { width: 100%; }
+body[class*="customer-gyogytornaszomhu"] .iti input.form-control { padding-left: 92px !important; }
+body[class*="customer-gyogytornaszomhu"] .alert-danger { background: #f8e3df !important; color: var(--mh-hiba) !important; border: 0 !important; border-radius: 10px !important; box-shadow: none !important; }
+
+/* jelolonegyzetek */
+body[class*="customer-gyogytornaszomhu"] .form-check { margin: 2px 0 6px !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check .form-check-label { font-size: 12px !important; color: var(--mh-kozep) !important; line-height: 1.35 !important; padding-left: 28px !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check .form-check-sign .check { border-color: var(--mh-halvany) !important; border-radius: 4px !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check .form-check-input:checked + .form-check-sign .check { background: var(--mh-sotet) !important; border-color: var(--mh-sotet) !important; }
+
+/* gombok */
+body[class*="customer-gyogytornaszomhu"] .btn-success, body[class*="customer-gyogytornaszomhu"] .btn-primary, body[class*="customer-gyogytornaszomhu"] .salonic-gradient-button {
+  background: var(--mh-sotet) !important; background-image: none !important; border: 0 !important; color: var(--mh-krem) !important;
+  border-radius: 12px !important; box-shadow: none !important;
+  font-weight: 700 !important; letter-spacing: .1em !important; text-transform: uppercase !important;
+}
+body[class*="customer-gyogytornaszomhu"] .btn-submit-booking { min-height: 46px; padding: 10px 16px !important; font-size: 14px !important; margin-top: 4px !important; }
+body[class*="customer-gyogytornaszomhu"] .btn-success:hover, body[class*="customer-gyogytornaszomhu"] .btn-primary:hover { background: #0a3c6e !important; }
+body[class*="customer-gyogytornaszomhu"] .btn-success[disabled], body[class*="customer-gyogytornaszomhu"] .btn-success.disabled { opacity: .45 !important; }
+body[class*="customer-gyogytornaszomhu"] a:not(.btn):not(.nav-link) { color: var(--mh-sotet); text-decoration: underline; text-underline-offset: 2px; }
+
+/* osszegzo kartya (kezelo, nap, kezeles) */
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card h4 { font-size: 18px !important; }
+body[class*="customer-gyogytornaszomhu"] .text-muted { color: var(--mh-kozep) !important; }
+
+/* Facebook-belepes es elvalaszto: nem kell a foglalashoz */
+body[class*="customer-gyogytornaszomhu"] .fb-login-button, body[class*="customer-gyogytornaszomhu"] .divider-line { display: none !important; }
+body[class*="customer-gyogytornaszomhu"] .panel-body .text-center.py-4 { display: none !important; }
+
+/* lablec: nem kell (a szabalyzat es az adatkezeles linkje a hozzajarulasnal is ott van) */
+body[class*="customer-gyogytornaszomhu"] footer, body[class*="customer-gyogytornaszomhu"] .footer { display: none !important; }
+
+/* tomorebb elrendezes: kisebb cimsorok es kozok */
+body[class*="customer-gyogytornaszomhu"] .panel-heading h3, body[class*="customer-gyogytornaszomhu"] .card-body h3 { font-size: 18px !important; margin: 0 0 8px !important; }
+body[class*="customer-gyogytornaszomhu"] .my-3 { margin-top: 6px !important; margin-bottom: 6px !important; }
+body[class*="customer-gyogytornaszomhu"] .mt-3 { margin-top: 6px !important; }
+body[class*="customer-gyogytornaszomhu"] .booking-time-remain-container { margin: 0 0 4px !important; }
+body[class*="customer-gyogytornaszomhu"] .form-group .alert { padding: 6px 10px !important; margin: 4px 0 0 !important; font-size: 13px !important; }
+body[class*="customer-gyogytornaszomhu"] hr { margin: 8px 0 !important; }
+
+/* ===== egy mobilkepernyore: a teljes adatlap a gombbal egyutt ===== */
+/* a Salonic osszegzo kartyaja (kezelo, nap, kezeles): tomor sav, foto nelkul */
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card { margin: 0 0 6px !important; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body { padding: 8px 12px !important; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 img { display: none !important; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 h4 { font-size: 14px !important; margin: 0 !important; line-height: 1.3 !important; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 hr, body[class*="customer-gyogytornaszomhu"] .order-lg-2 .divider-line { display: none !important; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body > * { margin-top: 0 !important; margin-bottom: 2px !important; padding-top: 0 !important; padding-bottom: 0 !important; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body, body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body span { font-size: 13px !important; line-height: 1.3 !important; }
+/* vezeteknev + keresztnev egy sorban: a mezoket tartalmazo doboz rugalmas sor */
+body[class*="customer-gyogytornaszomhu"] .panel-body > div { display: flex !important; flex-wrap: wrap !important; column-gap: 8px; }
+body[class*="customer-gyogytornaszomhu"] .panel-body > div > * { flex: 0 0 100%; max-width: 100%; }
+body[class*="customer-gyogytornaszomhu"] .panel-body > div > .form-group:has(#GuestDataForm_guestLastName),
+body[class*="customer-gyogytornaszomhu"] .panel-body > div > .form-group:has(#GuestDataForm_guestFirstName) { flex: 1 1 0; min-width: 0; }
+/* megjegyzes: egysoros */
+body[class*="customer-gyogytornaszomhu"] textarea.form-control { height: 40px !important; resize: vertical; }
+/* jelolonegyzetek: kisebb betu */
+body[class*="customer-gyogytornaszomhu"] .form-check .form-check-label { font-size: 11px !important; line-height: 1.3 !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check { margin: 0 0 4px !important; }
+/* a kotelezo-mezo megjegyzes ("A *-gal jelolt mezok...") es a lemondasi sor kisebb */
+body[class*="customer-gyogytornaszomhu"] .guest-data-container p, body[class*="customer-gyogytornaszomhu"] .guest-data-container small { font-size: 11px !important; margin: 2px 0 !important; }
+body[class*="customer-gyogytornaszomhu"] .section, body[class*="customer-gyogytornaszomhu"] .container.mt-3 { padding-top: 6px !important; }
+
+/* Salonic-osszegzo: a kezelo neve el (a mi oldalunkon es a datumnal ugyis latszik), a datum es a kezeles egy tomor sorban */
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body > .d-flex { display: none !important; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body { display: flex !important; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .service-data li { padding: 0 !important; display: flex; gap: 8px; align-items: baseline; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .service-data li strong { font-size: 13px !important; }
+/* kartya-margok */
+body[class*="customer-gyogytornaszomhu"] .order-lg-1 .card { margin-top: 0 !important; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-1 .card-body { padding: 10px 12px !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check { margin-top: 4px !important; }
+
+/* a reCAPTCHA jelvenye ne usszon ra az urlapra: az oldal aljara kerul, a helyen marad lathatonak */
+body[class*="customer-gyogytornaszomhu"] .grecaptcha-badge { position: relative !important; bottom: auto !important; right: auto !important; margin: 8px auto 4px !important; box-shadow: none !important; }
+
+/* Salonic-osszegzo: 1. sor a kezeles neve (egy sorban, ...-tal), 2. sor datum + idopont, idotartam, ar */
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body { display: flex !important; flex-wrap: wrap !important; align-items: baseline !important; column-gap: 8px !important; row-gap: 2px !important; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body > ul, body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body > ul > li { display: contents !important; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body strong { order: 1; flex: 0 0 100%; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px !important; font-weight: 700 !important; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body h4.my-0, body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body > h4 { order: 2; font-size: 12px !important; font-family: inherit !important; font-weight: 700 !important; margin: 0 !important; white-space: nowrap; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body li > div { order: 3; display: flex !important; gap: 8px; font-size: 12px !important; white-space: nowrap; }
+body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body li > div * { font-size: 12px !important; white-space: nowrap; }
+/* jelolonegyzetek, "*-gal jelolt mezok" es lemondasi sor: kisebb betu (a szoveg a mezoket tartalmazo dobozban van) */
+body[class*="customer-gyogytornaszomhu"] .panel-body > div { font-size: 11px !important; line-height: 1.35 !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check label, body[class*="customer-gyogytornaszomhu"] .form-check label a { font-size: 10.5px !important; line-height: 1.35 !important; }
+body[class*="customer-gyogytornaszomhu"] .form-check label { padding-left: 24px !important; }
+body[class*="customer-gyogytornaszomhu"] .panel-body > div > hr { margin: 4px 0 !important; }
+
+/* mobilon (a foglalo keretben is) egy kepernyo: a nem kotelezo megjegyzes-mezo es a reCAPTCHA-jelveny
+   helyett a Google altal elfogadott egysoros szoveges jelzes */
+@media (max-width: 599px) {
+  body[class*="customer-gyogytornaszomhu"] .booking-time-remain-container, body[class*="customer-gyogytornaszomhu"] .booking-time-remain-container * { font-size: 12px !important; }
+  body[class*="customer-gyogytornaszomhu"] .form-group:has(#GuestDataForm_guestComment) { display: none !important; }
+  /* kisebb cellak es surubb sorkoz (a 16 px-es betu marad, kulonben az iPhone ranagyit) */
+  body[class*="customer-gyogytornaszomhu"] .form-control { height: 36px !important; padding: 4px 10px !important; }
+  body[class*="customer-gyogytornaszomhu"] .iti input.form-control { padding-left: 88px !important; }
+  body[class*="customer-gyogytornaszomhu"] .form-group { margin-bottom: 5px !important; }
+  body[class*="customer-gyogytornaszomhu"] .control-label, body[class*="customer-gyogytornaszomhu"] .form-group label:not(.form-check-label) { font-size: 12px !important; margin-bottom: 2px !important; }
+  body[class*="customer-gyogytornaszomhu"] .order-lg-1 .card-body { padding: 8px 10px !important; }
+  body[class*="customer-gyogytornaszomhu"] .form-check { margin: 0 0 3px !important; }
+  body[class*="customer-gyogytornaszomhu"] .form-check label, body[class*="customer-gyogytornaszomhu"] .form-check label a { font-size: 10px !important; line-height: 1.25 !important; }
+  body[class*="customer-gyogytornaszomhu"] .my-3 { margin-top: 2px !important; margin-bottom: 4px !important; }
+  body[class*="customer-gyogytornaszomhu"] .btn-submit-booking { margin-top: 4px !important; height: 42px !important; min-height: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important; }
+  /* meg egy kicsit tomorebben */
+  body[class*="customer-gyogytornaszomhu"] .form-control, body[class*="customer-gyogytornaszomhu"] input.form-control { height: 32px !important; min-height: 0 !important; max-height: 32px !important; padding: 2px 10px !important; line-height: 26px !important; }
+  body[class*="customer-gyogytornaszomhu"] .panel-body > div { font-size: 10.5px !important; line-height: 1.3 !important; }
+  body[class*="customer-gyogytornaszomhu"] .panel-body > div > hr { margin: 2px 0 !important; }
+  body[class*="customer-gyogytornaszomhu"] .form-check label, body[class*="customer-gyogytornaszomhu"] .form-check label a { line-height: 1.2 !important; }
+  body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body { padding: 5px 10px !important; }
+  body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body strong { font-size: 13px !important; }
+  body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body h4.my-0, body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body > h4,
+  body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body li > div, body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body li > div * { font-size: 11.5px !important; }
+  body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card { margin-bottom: 4px !important; }
+  /* a felszabadult helyen kicsit szellosebb: tobb hely a mezok kozott es a cimke alatt */
+  body[class*="customer-gyogytornaszomhu"] .form-group { margin-bottom: 10px !important; }
+  body[class*="customer-gyogytornaszomhu"] .control-label, body[class*="customer-gyogytornaszomhu"] .form-group label:not(.form-check-label) { font-size: 12.5px !important; margin-bottom: 4px !important; }
+  /* nincs oldaliranyu gorgetes (a Salonic mobilmenuje es a negativ margoju sor kilog), es alul nincs ures hely */
+  html, body[class*="customer-gyogytornaszomhu"] { overflow-x: hidden !important; }
+  /* gorgetosav nem latszik (telefonon amugy is rejtett; asztali keskeny ablakban zavaro), gorgetni tovabbra is lehet */
+  html { scrollbar-width: none !important; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+  body[class*="customer-gyogytornaszomhu"] .navbar-collapse { display: none !important; }
+  body[class*="customer-gyogytornaszomhu"] .guest-data-container .row { margin-left: 0 !important; margin-right: 0 !important; }
+  body[class*="customer-gyogytornaszomhu"] .guest-data-container .row > [class*="col-"] { padding-left: 0 !important; padding-right: 0 !important; }
+  body[class*="customer-gyogytornaszomhu"] .order-lg-1 .card { margin-bottom: 0 !important; }
+  body[class*="customer-gyogytornaszomhu"] form.form { margin-bottom: 0 !important; }
+  body[class*="customer-gyogytornaszomhu"] .section { padding-bottom: 6px !important; }
+  body[class*="customer-gyogytornaszomhu"] .grecaptcha-badge { visibility: hidden !important; position: absolute !important; bottom: 0 !important; }
+  body[class*="customer-gyogytornaszomhu"] .panel-body > div::after { content: 'Az oldalt a reCAPTCHA védi; a Google adatvédelmi irányelvei és ÁSZF-je érvényes.'; flex: 0 0 100%; display: block; margin-top: 6px; font-size: 9.5px; line-height: 1.3; color: #8493a1; text-align: center; }
+}
+
+/* asztalon (a foglalo kerete itt 880 px magas) a mezok kozott tobb levego, az urlap lefele hosszabb */
+@media (min-width: 600px) {
+  body[class*="customer-gyogytornaszomhu"] .form-group { margin-bottom: 6px !important; padding-bottom: 0 !important; }
+  body[class*="customer-gyogytornaszomhu"] .form-control { height: 38px !important; }
+  body[class*="customer-gyogytornaszomhu"] .control-label, body[class*="customer-gyogytornaszomhu"] .form-group label:not(.form-check-label) { font-size: 13px !important; margin-bottom: 3px !important; }
+  body[class*="customer-gyogytornaszomhu"] .order-lg-1 .card-body { padding: 10px 16px !important; }
+  body[class*="customer-gyogytornaszomhu"] .btn-submit-booking { margin-top: 4px !important; }
+  body[class*="customer-gyogytornaszomhu"] textarea.form-control { height: 38px !important; min-height: 38px !important; }
+  body[class*="customer-gyogytornaszomhu"] .booking-time-remain-container { margin: 0 0 2px !important; }
+}
+}
+
+/* egy betucsalad (Jost), mint a landingen es a foglaloban; a foglalas-gomb arany, mint a MOSAIC oldalon */
+body[class*="customer-gyogytornaszomhu"], body[class*="customer-gyogytornaszomhu"] input, body[class*="customer-gyogytornaszomhu"] button, body[class*="customer-gyogytornaszomhu"] label, body[class*="customer-gyogytornaszomhu"] .form-control { font-family: 'Poppins', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important; }
+body[class*="customer-gyogytornaszomhu"] .btn-success, body[class*="customer-gyogytornaszomhu"] .btn-primary, body[class*="customer-gyogytornaszomhu"] .salonic-gradient-button, body[class*="customer-gyogytornaszomhu"] .btn-submit-booking, body[class*="customer-gyogytornaszomhu"] .btn-submit-booking:focus { background: #e69500 !important; border: 0 !important; color: #fff !important; border-radius: 999px !important;  }
+body[class*="customer-gyogytornaszomhu"] .btn-success:hover, body[class*="customer-gyogytornaszomhu"] .btn-primary:hover, body[class*="customer-gyogytornaszomhu"] .btn-submit-booking:hover { background: #c77f00 !important; text-shadow: none; }
+
+/* 2026-10-04: mobilon a teljes adatlap (gombbal) gorgetes nelkul elferjen - a landingen ~290 px szeles keretben is */
+@media (max-width: 599px) {
+  body[class*="customer-gyogytornaszomhu"] .my-3:has(.booking-time-remain-container) { margin: 0 0 4px !important; }
+  body[class*="customer-gyogytornaszomhu"] .booking-time-remain-container, body[class*="customer-gyogytornaszomhu"] .booking-time-remain-container * { font-size: 11px !important; line-height: 1.2 !important; white-space: nowrap; }
+  body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card { margin: 0 0 4px !important; }
+  body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body { padding: 4px 8px !important; }
+  body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body, body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body * { font-size: 11px !important; line-height: 1.25 !important; margin-top: 0 !important; margin-bottom: 0 !important; }
+  body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body strong, body[class*="customer-gyogytornaszomhu"] .order-lg-2 .card-body h4 { font-size: 12px !important; }
+  body[class*="customer-gyogytornaszomhu"] .order-lg-1 .card-body { padding: 6px 8px !important; }
+  body[class*="customer-gyogytornaszomhu"] .form-group { margin-bottom: 6px !important; }
+  body[class*="customer-gyogytornaszomhu"] .control-label, body[class*="customer-gyogytornaszomhu"] .form-group label:not(.form-check-label) { font-size: 12px !important; margin-bottom: 2px !important; }
+  body[class*="customer-gyogytornaszomhu"] .form-check { margin: 0 0 2px !important; }
+  body[class*="customer-gyogytornaszomhu"] .form-check label, body[class*="customer-gyogytornaszomhu"] .form-check label a { font-size: 9.5px !important; line-height: 1.2 !important; }
+  body[class*="customer-gyogytornaszomhu"] span.d-block.mb-3 { margin: 0 !important; font-size: 10.5px !important; line-height: 1.25 !important; }
+  body[class*="customer-gyogytornaszomhu"] .btn-submit-booking { height: 40px !important; margin-top: 4px !important; }
+}
+
+/* --- Sutisav (cookieconsent) kompakt ----------------------------------------------------------------------------------------------
+ * A Salonic sajat, kotelezo sutisavja ("Az oldal hasznalataval hozzajarulsz a cookie-k ..." + "Elfogadom"). A foglalo keskeny keretebe (telefon) agyazva
+ * az alapmerete (lebego, edgeless tema) 16 px-es szoveggel, a szoveg ALATT teljes szelessegu gombbal ~200 px: az urlap harmadat takarta. Itt: kisebb betu, a gomb a szoveg MELLETT
+ * (oszlop helyett sor), igy ~70 px. Tartalma (szoveg, link, "Elfogadom") valtozatlan; a Salonic hatterszine / gombszine marad.
+ */
+body[class*="customer-gyogytornaszomhu"] .cc-window { flex-direction: row !important; align-items: stretch !important; font-size: 11.5px !important; line-height: 1.3 !important; max-width: none !important; left: 0 !important; right: 0 !important; bottom: 0 !important; }
+body[class*="customer-gyogytornaszomhu"] .cc-window .cc-message { margin: 8px 10px !important; flex: 1 1 auto !important; }
+body[class*="customer-gyogytornaszomhu"] .cc-window .cc-message .cc-link { padding: 0 0 0 2px !important; opacity: 1 !important; }
+body[class*="customer-gyogytornaszomhu"] .cc-window .cc-compliance { flex: 0 0 auto !important; width: 96px; display: flex !important; align-items: stretch !important; }
+body[class*="customer-gyogytornaszomhu"] .cc-window .cc-compliance .cc-btn { width: 100% !important; min-width: 0 !important; padding: 0 6px !important; margin: 0 !important; height: auto !important; flex: 1 1 auto !important; font-size: 12px !important; line-height: 1.2 !important; display: flex !important; align-items: center; justify-content: center; }
+
+
+/* ===== Gyogytornaszom.hu: a foglalomotor sajat fejlecet ad (lepesjelzo + vissza), ezert a Salonic fejlece / boritokepe / menuje nem kell ===== */
+body[class*="customer-gyogytornaszomhu"] #sectionsNav, body[class*="customer-gyogytornaszomhu"] .page-header, body[class*="customer-gyogytornaszomhu"] .navbar { display: none !important; }
+body[class*="customer-gyogytornaszomhu"] .main, body[class*="customer-gyogytornaszomhu"] .main-raised, body[class*="customer-gyogytornaszomhu"] .wrapper { margin-top: 0 !important; padding-top: 0 !important; }
+body[class*="customer-gyogytornaszomhu"] #widget-booking-container, body[class*="customer-gyogytornaszomhu"] .container { padding-top: 8px !important; margin-top: 0 !important; }
+
+/* Sutisav (a Salonic sajat, kotelezo sutisavja): vekony, a foglalo szineiben; az "Elfogadom"-ra eltunik */
+body[class*="customer-gyogytornaszomhu"] .cc-window.cc-banner { padding: 6px 10px !important; background: #f3f8fc !important; color: #44586a !important; font-size: 11px !important; line-height: 1.3 !important; border-top: 1px solid #dbe5ee; align-items: center !important; }
+body[class*="customer-gyogytornaszomhu"] .cc-window .cc-message { font-size: 11px !important; margin: 0 8px 0 0 !important; flex: 1 1 auto !important; }
+body[class*="customer-gyogytornaszomhu"] .cc-window .cc-link { color: #0c4c8a !important; opacity: 1 !important; padding: 0 !important; }
+body[class*="customer-gyogytornaszomhu"] .cc-window .cc-compliance { flex: 0 0 auto !important; }
+body[class*="customer-gyogytornaszomhu"] .cc-window .cc-btn { background: #0c4c8a !important; color: #fff !important; border: 0 !important; border-radius: 99px !important; padding: 6px 14px !important; min-height: 32px !important; font-size: 12px !important; font-weight: 600 !important; width: auto !important; text-decoration: none !important; }
+body[class*="customer-gyogytornaszomhu"] .cc-window.cc-banner { position: fixed !important; top: auto !important; bottom: 0 !important; left: 0 !important; right: 0 !important; display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; z-index: 9999; }

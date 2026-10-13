@@ -74,11 +74,13 @@ assert.equal(await oldal.evaluate(() => location.pathname + location.search), '/
 lep('a motor megnyilik, az URL nem valtozik, a hatter gorgetese zarolt');
 await m.locator('[data-csalad="allapotfelmeres"]').click();
 await m.locator('[data-valt]').first().waitFor();
+if (process.env.KEPEK) { await oldal.screenshot({ path: `${process.env.KEPEK}/valtozat-${mod}.png` }); }
 const valtozatok = await m.locator('[data-valt]').count();
 assert.ok(valtozatok >= 1);
 await m.locator('[data-valt="24666"]').click();
 await m.locator('[data-hely="8439"]').click();
 await m.locator('[data-szak=""]').click();
+if (process.env.KEPEK) { await oldal.screenshot({ path: `${process.env.KEPEK}/naptar-${mod}.png` }); }
 await m.locator('.nap.van').first().waitFor();
 lep(`szolgaltatas -> valtozat(${valtozatok}) -> helyszin -> szakember -> naptar`);
 // fokuszcsapda / Esc / vissza
@@ -92,6 +94,7 @@ lep('vissza gomb + fokuszcsapda a retegen belul marad');
 await m.locator('.ido').first().click();
 await m.locator('iframe[name="gy-adatlap"]').waitFor();
 lep('az idopont utan a Salonic adatlapja beagyazva');
+if (process.env.KEPEK) { await oldal.screenshot({ path: `${process.env.KEPEK}/adatlap-${mod}.png` }); }
 // a Salonic "sikeres foglalas": az iframe a koszonooldalra navigal -> a launcher uzen -> a motor POST + atiranyit
 const keret = oldal.frameLocator('[data-gy-motor] iframe[name="gy-adatlap"]');
 await keret.locator('#foglal').click();

@@ -52,7 +52,14 @@ const sb = (x) => x._b || (x._b = bp(x.start_unix));
 const napCim = (nap) => { const [e, h, d] = nap.split('-').map(Number); const w = new Date(Date.UTC(e, h - 1, d)).getUTCDay(); return `${HONAP[h - 1]} ${d}., ${NAP_NEV[w]}`; };
 const ekezetNelkul = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 // a Salonic-nev elejen levo "1. alkalom - " / "2. alkalomtol - " jeloles nem kell a vendegnek (a kartya mar megmondja)
-const szepNev = (n) => String(n || '').replace(/[\p{Extended_Pictographic}️‍]/gu, '').replace(/\s+/g, ' ').trim();
+const szepNev = (n) => {
+  let t = String(n || '').replace(/[\p{Extended_Pictographic}️‍]/gu, '').replace(/\s+/g, ' ').trim();
+  // "Egyéni 20% Akciós Állapotfelmérés" -> "20% akciós állapotfelmérés" (a százalék-jelölés elöl; a Salonic neve csupa nagybetűs szavakból áll)
+  const m = /^Egy[ée]ni\s+(\d+\s*%)\s+Akci[óo]s\s+(.+)$/i.exec(t);
+  if (m) t = `${m[1].replace(/\s+/g, '')} akciós ${m[2].toLowerCase()}`;
+  return t;
+};
+const akcioSzazalek = (n) => { const m = /(\d+)\s*%/.exec(String(n || '')); return /akci/i.test(String(n || '')) && m ? m[1] + '%' : null; };
 const monogram = (nev) => { const sz = String(nev || '').trim().split(/\s+/).filter((x) => /\p{L}/u.test(x)); return (sz[sz.length > 1 ? 1 : 0] || '?')[0].toUpperCase(); };
 const keresztnev = (nev) => { const sz = String(nev || '').trim().split(/\s+/).filter((x) => /\p{L}/u.test(x)); return sz.length > 1 ? sz.slice(1).join(' ') : sz[0] || ''; };
 
@@ -129,7 +136,8 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .ablak[data-lepes="adatlap"] .adatlap-burok { flex: 1; min-height: 0; }
 .ablak[data-lepes="adatlap"][data-stilus="1"] .osszegzes, .ablak[data-lepes="adatlap"][data-stilus="1"] .adatlap-sugo { display: none; }
 @media (max-width: 700px) {
-  .ablak[data-lepes="adatlap"] .lepesek, .ablak[data-lepes="adatlap"] .osszegzes, .ablak[data-lepes="adatlap"] .adatlap-sugo { display: none; }
+  .ablak[data-lepes="adatlap"] .osszegzes, .ablak[data-lepes="adatlap"] .adatlap-sugo { display: none; }
+  .ablak[data-lepes="adatlap"] .lepesek button { min-height: 36px; padding-top: 8px; }
   .ablak[data-lepes="adatlap"] .tartalom { padding: 0; }
   .ablak[data-lepes="adatlap"] .adatlap-burok { margin: 0; }
 }
@@ -258,7 +266,7 @@ export function nyit(ctx = {}) {
   function valtLepes() {
     const l = csaladSzolgak();
     const csalad = CSALADOK.find((c) => c.kod === all.csalad);
-    tartalom.innerHTML = `<p class="kicsi bevezeto">${esc(csalad ? csalad.nev : 'Szolgáltatás')}: melyiket választod?</p><div class="lista">${l.map((s) => `<button class="kartya" data-valt="${esc(s.serviceId)}"><span class="ar">${ft(s.activePrice)}</span><span class="nev">${esc(szepNev(s.name))}</span><div class="reszlet">${s.durationMin ? s.durationMin + ' perc' : ''}${/akci/i.test(s.name) ? ' · <b>akciós</b>' : ''}</div></button>`).join('')}</div>`;
+    tartalom.innerHTML = `<p class="kicsi bevezeto">${esc(csalad ? csalad.nev : 'Szolgáltatás')}: melyiket választod?</p><div class="lista">${l.map((s) => `<button class="kartya" data-valt="${esc(s.serviceId)}"><span class="ar">${ft(s.activePrice)}</span><span class="nev">${esc(szepNev(s.name))}</span>${akcioSzazalek(s.name) ? `<span class="cimke">${akcioSzazalek(s.name)} akció</span>` : ''}<div class="reszlet">${s.durationMin ? s.durationMin + ' perc' : ''}${akcioSzazalek(s.name) ? ' · csak bizonyos gyógytornászoknál' : ''}</div></button>`).join('')}</div>`;
   }
 
   // --- 3. helyszin (csak ahol a valasztott szolgaltatas elerheto) ---
@@ -280,29 +288,38 @@ export function nyit(ctx = {}) {
     const s = szolgLista.find((x) => x.serviceId === all.szolg.serviceId);
     if (!s) return hiba('szolgaltatas', new Error('nincs_a_helyszinen'));
     all.szolg = s;
-    const ok = s.staffIds.filter((id) => staff[id] || true);
+    elolt(s); // a szabad idopontok elotoltese, amig a vendeg szakembert valaszt
+    const ok = s.staffIds;
     tartalom._staff = staff;
     const kartya = (id) => { const e = staff[id]; const nev = e ? e.nev : null; return `<button class="kartya szak" data-szak="${esc(id)}"${nev ? ` title="${esc(nev)}"` : ''}><span class="fejkep" aria-hidden="true">${e && e.foto ? `<img src="${esc(e.foto)}" alt="" width="56" height="56" loading="lazy" decoding="async">` : esc(monogram(nev))}</span><span class="nev">${esc(nev ? keresztnev(nev) : 'Szakember')}</span></button>`; };
     tartalom.innerHTML = osszegzes() + `<p class="kicsi bevezeto">Kihez szeretnél menni?</p><div class="lista szak-racs"><button class="kartya szak mindegy" data-szak=""><span class="fejkep" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6.5-1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM9 13c-2.7 0-5 1.4-5 3.5V18h10v-1.5C14 14.4 11.7 13 9 13Zm6.5.5c-.5 0-1 .1-1.4.2 1 .8 1.6 1.8 1.6 2.8V18H20v-1.2c0-1.8-2-3.3-4.5-3.3Z"/></svg></span><span class="nev"><b>Mindegy</b><br><span class="kicsi">a legkorábbi időpont érdekel</span></span></button>${ok.map(kartya).join('')}</div>`;
   }
 
   // --- 5. idopont ---
+  // A szabad idopontokat mar a szakember-lepesnel elkezdjuk tolteni (a vendeg addig valaszt): az elso 7 nap ~0,5 mp, a tobbi resz parhuzamosan jon.
+  const elolt = (s) => {
+    const kulcs = `${all.placeId}:${s.serviceId}`;
+    if (all.pre && all.pre.kulcs === kulcs && Date.now() - all.pre.t < 90000) return all.pre;
+    const pre = { kulcs, t: Date.now(), kesz: false, lista: null, figyel: null };
+    pre.elso = adapter.getAvailability(all.placeId, s.serviceId, {
+      days: NAPOK, firstDays: 7, minLeadMinutes: 30,
+      onMore: (l) => { pre.kesz = true; if (l) pre.lista = l; if (pre.figyel) pre.figyel(); },
+    }).then((l) => { if (!pre.kesz && !pre.lista) pre.lista = l; return l; });
+    pre.elso.catch(() => { if (all.pre === pre) all.pre = null; });
+    all.pre = pre;
+    return pre;
+  };
   async function idopontLepes() {
     const s = all.szolg;
-    const kulcs = `${all.placeId}:${s.serviceId}`;
-    if (all.slotok && all.slotokKulcs === kulcs && Date.now() - all.slotokT < 90000) return naptar();
-    tartalom.innerHTML = osszegzes() + '<div class="toltes">A szabad időpontok betöltése…</div>';
-    all.tovabbi = true;
-    const kesz = () => { all.tovabbi = false; };
-    let elso;
-    try {
-      elso = await adapter.getAvailability(all.placeId, s.serviceId, {
-        days: NAPOK, firstDays: 21, minLeadMinutes: 30,
-        onMore: (l) => { kesz(); if (l && all.szolg === s && !lezart) { all.slotok = l; all.slotokKulcs = kulcs; all.slotokT = Date.now(); } if (all.lepes === 'ido' && all.szolg === s && !lezart && all.slotok) naptar(); },
-      });
-    } catch (e) { kesz(); return hiba('idopontok', e); }
-    if (all.lepes !== 'ido' || all.szolg !== s || lezart) return;
-    all.slotok = elso; all.slotokKulcs = kulcs; all.slotokT = Date.now();
+    const pre = elolt(s);
+    if (!pre.lista) {
+      tartalom.innerHTML = osszegzes() + '<div class="toltes">A szabad időpontok betöltése…</div>';
+      try { await pre.elso; } catch (e) { return hiba('idopontok', e); }
+      if (all.lepes !== 'ido' || all.szolg !== s || lezart) return;
+    }
+    all.slotok = pre.lista;
+    all.tovabbi = !pre.kesz;
+    pre.figyel = () => { if (all.lepes === 'ido' && all.szolg === s && !lezart && pre.lista) { all.slotok = pre.lista; all.tovabbi = false; naptar(); } };
     naptar();
   }
   function naptar() {

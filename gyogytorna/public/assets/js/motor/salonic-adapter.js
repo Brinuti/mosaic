@@ -177,7 +177,7 @@ export function parseCustomCss(html) {
   for (const m of String(html).matchAll(/<link\b[^>]*>/gi)) {
     const rel = /\brel\s*=\s*["']([^"']*)["']/i.exec(m[0]), href = /\bhref\s*=\s*["']([^"']+)["']/i.exec(m[0]);
     if (!rel || !href || !/stylesheet/i.test(rel[1])) continue;
-    try { const u = new URL(href[1].replace(/&amp;/g, '&'), HOST); if (/^(www\.)?gyogytornaszom\.hu$/.test(u.hostname) && /\/salonic\/[^/]+\.css$/i.test(u.pathname)) return u.href; } catch (e) { /* hibas href */ }
+    try { const u = new URL(href[1].replace(/&amp;/g, '&'), HOST); if (/^((www\.)?gyogytornaszom\.hu|([a-z0-9-]+\.)?gyogytorna\.pages\.dev)$/.test(u.hostname) && /\/salonic\/[^/]+\.css$/i.test(u.pathname)) return u.href; } catch (e) { /* hibas href */ }
   }
   return null;
 }
@@ -298,7 +298,7 @@ export function createSalonicAdapter({ fetchImpl = globalThis.fetch, now = () =>
     return slotsFromApi(json, { placeId, service });
   }
 
-  const CHUNK_DAYS = 90; // az elso 21 nap utan a maradek egyben jon
+  const CHUNK_DAYS = 30; // a 7 nap utani resz ~30 napos darabokban, parhuzamosan jon (egy nagy keres lassabb)
   const AVAIL_MS = 90 * 1000;
   const chunkCache = new Map();
   function chunk(placeId, service, staffId, startDate, n, fresh = false) {
