@@ -232,6 +232,32 @@
     }
   }
 
+  // --- nevtelen sutisav-statisztika (functions/api/suti-stat.js; #167 125. komment) -----------------
+  // Cel: hany latogato dont a savban es hogyan. Suti, azonosito, idobelyeg NINCS a kliensrol: csak az esemeny, a dontes (0/1), az oldaltipus es az eszkoz megy
+  // (a napot a szerver szamolja). sendBeacon: nem var valaszra, nem lassitja a dontest. FAIL-OPEN: a hivas a dontes rogzitese UTAN fut, hiba / hianyzo vegpont mellett a sav valtozatlanul mukodik.
+  function oldalTipus() {
+    if (/^success-|-ok$|^pmu-vh$/.test(OLDAL)) return 'koszono';
+    if (/^foglalo(-|$)|(^|-)foglalas$|idopontfoglalas$/.test(OLDAL)) return 'foglalo';
+    if (OLDAL === 'index') return 'fooldal';
+    return PIXEL_OLDALAK[OLDAL] ? 'landing' : 'egyeb';
+  }
+  function statKuld(esemeny, fun, ana, adv) {
+    if (!eles) return; // mint a tobbi mero-kod: csak az eles domainen (ELES_DOMAINEK) - a probacimek (pages.dev, localhost) ne szennyezzek az elesi szamlalot
+    try {
+      var o = { esemeny: esemeny, oldaltipus: oldalTipus(), eszkoz: (w.matchMedia && w.matchMedia('(max-width: 767px)').matches) ? 'mobil' : 'desktop' };
+      if (esemeny !== 'megjelent') { o.fun = fun ? 1 : 0; o.ana = ana ? 1 : 0; o.adv = adv ? 1 : 0; }
+      var adat = JSON.stringify(o);
+      if (!(navigator.sendBeacon && navigator.sendBeacon('/api/suti-stat', new Blob([adat], { type: 'text/plain' })))) {
+        fetch('/api/suti-stat', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: adat, keepalive: true }).catch(function () { /* nem baj */ });
+      }
+    } catch (e) { /* a statisztika soha nem zavarhatja a savot */ }
+  }
+  // a savban hozott dontes (a rogzit() utan: a globalis dontes mar az uj ertek)
+  function statDontes() {
+    if (!dontes) return;
+    statKuld(dontes.fun && dontes.ana && dontes.adv ? 'elfogad_minden' : (!dontes.fun && !dontes.ana && !dontes.adv ? 'elutasit' : 'reszleges'), dontes.fun, dontes.ana, dontes.adv);
+  }
+
   // --- a sav --------------------------------------------------------------
   // Kinezet es szoveg: az eles oldal "Mosaic suti-sav" egyeni kodjabol, valtozatlanul.
   var STILUS =
@@ -362,14 +388,15 @@
     sav.addEventListener('click', function (e) {
       var a = e.target && e.target.getAttribute && e.target.getAttribute('data-mh');
       if (!a) return;
-      if (a === 'accept') { rogzit(true, true, true); elrejt(); }
-      else if (a === 'reject') { rogzit(false, false, false); elrejt(); }
+      if (a === 'accept') { rogzit(true, true, true); elrejt(); statDontes(); }
+      else if (a === 'reject') { rogzit(false, false, false); elrejt(); statDontes(); }
       else if (a === 'settings') mutat('settings');
       else if (a === 'save') {
         rogzit(d.getElementById('mh-cc-fun').checked,
           d.getElementById('mh-cc-ana').checked,
           d.getElementById('mh-cc-adv').checked);
         elrejt();
+        statDontes();
       }
     });
     ujra.addEventListener('click', function () { mutat('settings'); });
@@ -378,7 +405,7 @@
     });
     lableclink();
 
-    if ((!dontes || dontes.reszleges) && !rejtveMunkamenetben()) mutat('main');
+    if ((!dontes || dontes.reszleges) && !rejtveMunkamenetben()) { mutat('main'); statKuld('megjelent'); }
   }
 
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', felepit);
