@@ -4,6 +4,7 @@ import { egyeztetoSorok, egyeztetoCsv } from './egyeztetes-sor.js';
 import { erkezesMent, fuggoKuldesek, kapcsoloBeallit, kapcsolokOlvas, kuldesMegerosit, naploLeker } from './elosztas.js';
 import { irasKi, irasKapcsolo, IRAS_KI_VALASZ } from './iras-kapcsolo.js';
 import { sdKapcsoloBeallit } from './salonic-direct.js';
+import { sutiStatOlvasValasz } from './suti-stat.js';
 
 /** POST /api/meres-erkezes (azonos eredet; a bongeszo nem ker valaszt a foglalas folyamataban: a hiba nem akaszthat meg semmit). A "ip" / "ua" a keresbol jon, nem a torzsbol. */
 export async function kezelErkezes(request, env, deps = {}) {
@@ -21,7 +22,7 @@ export async function kezelErkezes(request, env, deps = {}) {
   return valasz(r.ok ? 200 : 422, r);
 }
 
-/** /api/meres-admin (kulcsos, mint a /api/foglalas-egyeztetes): GET ?source_id=.. (naplo) | ?fuggo=1 (kuldesre varo kerelmek) | ?kapcsolok=1 | ?egyeztetes=1&tol=<unix>&ig=<unix>[&uzletag=..][&formatum=csv][&utan=<booking_id>][&forras=motor|salonic_direct][&ga4_csere=<unix|ISO>] (QA-5 foglalasonkenti egyeztetosor, csak olvas; ga4_csere: a GA4 titokcsere elotti utolso / utani elso sikeres esemeny jelolese);  POST {muvelet:'kapcsolo'|'sd_kapcsolo'|'megerosit', ...} */
+/** /api/meres-admin (kulcsos, mint a /api/foglalas-egyeztetes): GET ?source_id=.. (naplo) | ?fuggo=1 (kuldesre varo kerelmek) | ?kapcsolok=1 | ?suti_stat=1[&tol=YYYY-MM-DD&ig=YYYY-MM-DD] (nevtelen sutisav-statisztika, aggregalt) | ?egyeztetes=1&tol=<unix>&ig=<unix>[&uzletag=..][&formatum=csv][&utan=<booking_id>][&forras=motor|salonic_direct][&ga4_csere=<unix|ISO>] (QA-5 foglalasonkenti egyeztetosor, csak olvas; ga4_csere: a GA4 titokcsere elotti utolso / utani elso sikeres esemeny jelolese);  POST {muvelet:'kapcsolo'|'sd_kapcsolo'|'megerosit', ...} */
 export async function kezelAdmin(request, env, deps = {}) {
   if (!env || !env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
   if (!(await kulcsEllenorzes(request, env))) return valasz(404, { ok: false });
@@ -29,6 +30,7 @@ export async function kezelAdmin(request, env, deps = {}) {
   if (request.method === 'GET') {
     if (url.searchParams.get('kapcsolok') === '1') return valasz(200, { ok: true, kapcsolok: await kapcsolokOlvas(env.KULCS_DB) });
     if (url.searchParams.get('fuggo') === '1') return valasz(200, { ok: true, fuggo: await fuggoKuldesek(env.KULCS_DB) });
+    if (url.searchParams.get('suti_stat') === '1') return sutiStatOlvasValasz(env.KULCS_DB, { tol: url.searchParams.get('tol') || undefined, ig: url.searchParams.get('ig') || undefined }); // sutisav-statisztika: csak aggregalt szamok
     if (url.searchParams.get('egyeztetes') === '1') {
       const q = url.searchParams;
       const r = await egyeztetoSorok(env.KULCS_DB, { tol: q.get('tol'), ig: q.get('ig'), uzletag: q.get('uzletag') || null, limit: q.get('limit'), utan: q.get('utan') || '', ga4_csere: q.get('ga4_csere'), forras: q.get('forras') || null });

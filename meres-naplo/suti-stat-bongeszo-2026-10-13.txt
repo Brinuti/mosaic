@@ -1,0 +1,78 @@
+# suti-stat bongeszos bizonyitek | 2026-10-13T16:10:51.356Z | uj suti.js 4eece24ea4a4 (23813 B) | alap suti.js 523405f81e8b (21804 B)
+OK   A megjelenes desktop / | [{"esemeny":"megjelent","oldaltipus":"fooldal","eszkoz":"desktop"}]
+OK   A nincs kezeletlen hiba /
+OK   A megjelenes desktop /lezeres-szortelenites-budapest | [{"esemeny":"megjelent","oldaltipus":"landing","eszkoz":"desktop"}]
+OK   A nincs kezeletlen hiba /lezeres-szortelenites-budapest
+OK   A megjelenes desktop /foglalo-motor | [{"esemeny":"megjelent","oldaltipus":"foglalo","eszkoz":"desktop"}]
+OK   A nincs kezeletlen hiba /foglalo-motor
+OK   A megjelenes desktop /fodrasz-ok | [{"esemeny":"megjelent","oldaltipus":"koszono","eszkoz":"desktop"}]
+OK   A nincs kezeletlen hiba /fodrasz-ok
+OK   A megjelenes desktop /oxigenterapia-ok | [{"esemeny":"megjelent","oldaltipus":"koszono","eszkoz":"desktop"}]
+OK   A nincs kezeletlen hiba /oxigenterapia-ok
+OK   A megjelenes desktop /aszf | [{"esemeny":"megjelent","oldaltipus":"egyeb","eszkoz":"desktop"}]
+OK   A nincs kezeletlen hiba /aszf
+OK   A megjelenes mobil / | [{"esemeny":"megjelent","oldaltipus":"fooldal","eszkoz":"mobil"}]
+OK   A nincs kezeletlen hiba /
+OK   A megjelenes mobil /lezeres-szortelenites-budapest | [{"esemeny":"megjelent","oldaltipus":"landing","eszkoz":"mobil"}]
+OK   A nincs kezeletlen hiba /lezeres-szortelenites-budapest
+OK   A megjelenes mobil /foglalo-motor | [{"esemeny":"megjelent","oldaltipus":"foglalo","eszkoz":"mobil"}]
+OK   A nincs kezeletlen hiba /foglalo-motor
+OK   A megjelenes mobil /fodrasz-ok | [{"esemeny":"megjelent","oldaltipus":"koszono","eszkoz":"mobil"}]
+OK   A nincs kezeletlen hiba /fodrasz-ok
+OK   A megjelenes mobil /oxigenterapia-ok | [{"esemeny":"megjelent","oldaltipus":"koszono","eszkoz":"mobil"}]
+OK   A nincs kezeletlen hiba /oxigenterapia-ok
+OK   A megjelenes mobil /aszf | [{"esemeny":"megjelent","oldaltipus":"egyeb","eszkoz":"mobil"}]
+OK   A nincs kezeletlen hiba /aszf
+OK   A "Mindet elfogadom" -> elfogad_minden 1,1,1 | {"esemeny":"elfogad_minden","oldaltipus":"landing","eszkoz":"desktop","fun":1,"ana":1,"adv":1}
+OK   A a sav eltunt, a dontes rogzult
+OK   A "Mindet elutasitom" (beallitasokbol) -> elutasit 0,0,0 | {"esemeny":"elutasit","oldaltipus":"koszono","eszkoz":"mobil","fun":0,"ana":0,"adv":0}
+OK   A kivalasztottak mentese (fun+adv) -> reszleges 1,0,1 | {"esemeny":"reszleges","oldaltipus":"fooldal","eszkoz":"desktop","fun":1,"ana":0,"adv":1}
+OK   A minden pipa mentese -> elfogad_minden | {"esemeny":"elfogad_minden","oldaltipus":"fooldal","eszkoz":"desktop","fun":1,"ana":1,"adv":1}
+OK   A visszatero latogato: nincs sav, nincs uj esemeny | 2 -> 2
+OK   A nem eles domainen (127.0.0.1) a sav mukodik, de nincs beacon | 0 beacon
+OK   B accept desktop: a sav DOM-ja (szoveg + gombok) bajtazonos | 0f0d257615e0 = 0f0d257615e0
+OK   B accept desktop: szamitott stilus + meret azonos
+OK   B accept desktop: a sav kepe (pixel) azonos | cb4f71c2edfc = cb4f71c2edfc
+OK   B accept desktop: dontes-tarolas azonos (mh_cc mezok), ugyanazok a localStorage / sessionStorage kulcsok, ugyanazok a sutik | {"ls":{"v":1,"fun":true,"ana":true,"adv":true},"lsKulcsok":["mh_cc"],"ssKulcsok":[],"cookie":["consent-policy"]}
+OK   B accept desktop: az egyetlen uj halozati keres a /api/suti-stat (a tobbi keres azonos); az alap valtozat semmit nem kuld | alap 6 keres, uj 6 + 2 beacon
+OK   B accept desktop: nincs kezeletlen hiba
+OK   B accept mobil: a sav DOM-ja (szoveg + gombok) bajtazonos | 0f0d257615e0 = 0f0d257615e0
+OK   B accept mobil: szamitott stilus + meret azonos
+OK   B accept mobil: a sav kepe (pixel) azonos | b3515564fcae = b3515564fcae
+OK   B accept mobil: dontes-tarolas azonos (mh_cc mezok), ugyanazok a localStorage / sessionStorage kulcsok, ugyanazok a sutik | {"ls":{"v":1,"fun":true,"ana":true,"adv":true},"lsKulcsok":["mh_cc"],"ssKulcsok":[],"cookie":["consent-policy"]}
+OK   B accept mobil: az egyetlen uj halozati keres a /api/suti-stat (a tobbi keres azonos); az alap valtozat semmit nem kuld | alap 6 keres, uj 6 + 2 beacon
+OK   B accept mobil: nincs kezeletlen hiba
+OK   B reject desktop: a sav DOM-ja (szoveg + gombok) bajtazonos | 0f0d257615e0 = 0f0d257615e0
+OK   B reject desktop: szamitott stilus + meret azonos
+OK   B reject desktop: a sav kepe (pixel) azonos | cb4f71c2edfc = cb4f71c2edfc
+OK   B reject desktop: dontes-tarolas azonos (mh_cc mezok), ugyanazok a localStorage / sessionStorage kulcsok, ugyanazok a sutik | {"ls":{"v":1,"fun":false,"ana":false,"adv":false},"lsKulcsok":["mh_cc"],"ssKulcsok":[],"cookie":["consent-policy"]}
+OK   B reject desktop: az egyetlen uj halozati keres a /api/suti-stat (a tobbi keres azonos); az alap valtozat semmit nem kuld | alap 6 keres, uj 6 + 2 beacon
+OK   B reject desktop: nincs kezeletlen hiba
+OK   B reject mobil: a sav DOM-ja (szoveg + gombok) bajtazonos | 0f0d257615e0 = 0f0d257615e0
+OK   B reject mobil: szamitott stilus + meret azonos
+OK   B reject mobil: a sav kepe (pixel) azonos | b3515564fcae = b3515564fcae
+OK   B reject mobil: dontes-tarolas azonos (mh_cc mezok), ugyanazok a localStorage / sessionStorage kulcsok, ugyanazok a sutik | {"ls":{"v":1,"fun":false,"ana":false,"adv":false},"lsKulcsok":["mh_cc"],"ssKulcsok":[],"cookie":["consent-policy"]}
+OK   B reject mobil: az egyetlen uj halozati keres a /api/suti-stat (a tobbi keres azonos); az alap valtozat semmit nem kuld | alap 6 keres, uj 6 + 2 beacon
+OK   B reject mobil: nincs kezeletlen hiba
+OK   B reszleges desktop: a sav DOM-ja (szoveg + gombok) bajtazonos | 0f0d257615e0 = 0f0d257615e0
+OK   B reszleges desktop: szamitott stilus + meret azonos
+OK   B reszleges desktop: a sav kepe (pixel) azonos | cb4f71c2edfc = cb4f71c2edfc
+OK   B reszleges desktop: dontes-tarolas azonos (mh_cc mezok), ugyanazok a localStorage / sessionStorage kulcsok, ugyanazok a sutik | {"ls":{"v":1,"fun":false,"ana":true,"adv":false},"lsKulcsok":["mh_cc"],"ssKulcsok":[],"cookie":["consent-policy"]}
+OK   B reszleges desktop: az egyetlen uj halozati keres a /api/suti-stat (a tobbi keres azonos); az alap valtozat semmit nem kuld | alap 6 keres, uj 6 + 2 beacon
+OK   B reszleges desktop: nincs kezeletlen hiba
+OK   B reszleges mobil: a sav DOM-ja (szoveg + gombok) bajtazonos | 0f0d257615e0 = 0f0d257615e0
+OK   B reszleges mobil: szamitott stilus + meret azonos
+OK   B reszleges mobil: a sav kepe (pixel) azonos | b3515564fcae = b3515564fcae
+OK   B reszleges mobil: dontes-tarolas azonos (mh_cc mezok), ugyanazok a localStorage / sessionStorage kulcsok, ugyanazok a sutik | {"ls":{"v":1,"fun":false,"ana":true,"adv":false},"lsKulcsok":["mh_cc"],"ssKulcsok":[],"cookie":["consent-policy"]}
+OK   B reszleges mobil: az egyetlen uj halozati keres a /api/suti-stat (a tobbi keres azonos); az alap valtozat semmit nem kuld | alap 6 keres, uj 6 + 2 beacon
+OK   B reszleges mobil: nincs kezeletlen hiba
+OK   C 500: a dontes AZONNAL rogzul, a sav eltunik, a mhSuti.engedely valtozatlanul mukodik | 24 ms a kattintastol (a vegpont 500)
+OK   C 500: nincs kezeletlen hiba
+OK   C 500: a beacon elment (2 db: megjelent + dontes) | 2
+OK   C abort: a dontes AZONNAL rogzul, a sav eltunik, a mhSuti.engedely valtozatlanul mukodik | 43 ms a kattintastol (a vegpont abort)
+OK   C abort: nincs kezeletlen hiba
+OK   C abort: a beacon elment (2 db: megjelent + dontes) | 2
+OK   C lefagy: a dontes AZONNAL rogzul, a sav eltunik, a mhSuti.engedely valtozatlanul mukodik | 25 ms a kattintastol (a vegpont lefagy)
+OK   C lefagy: nincs kezeletlen hiba
+OK   C lefagy: a beacon elment (2 db: megjelent + dontes) | 2
+# EREDMENY: minden ellenorzes rendben
