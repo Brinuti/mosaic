@@ -13,10 +13,17 @@ import path from 'node:path';
 
 export const KATEGORIA_UTAK = new Set(['/migren-piercing', '/shenmen-piercing', '/klimax-piercing', '/slim-etvagycsokkento-piercing',
   '/allergia-piercing', '/maj-piercing', '/pajzsmirigy-piercing', '/lep-piercing', '/vastagbel-piercing']);
-// A "B" valtozat: az eredeti "-b" oldalak (galeria a hosben, az o szekcio-sorrendjuk es szovegeik) a mostani kategoria-dizajnnal, KULON cimen
-// (/uj/uj-migren-piercing-b ...), a meglevo kategoria-oldalak valtozatlanok. Ezek tartalma a tartalom/*-piercing-b.json.
-export const KATEGORIA_B_UTAK = new Set(['/migren-piercing-b', '/shenmen-piercing-b', '/klimax-piercing-b', '/slim-piercing-b']);
-export const bUt = (ut) => '/uj-' + ut.replace(/^\//, '');
+// A "B" valtozat: az eredeti "-b" oldalak (galeria a hosben, az o szekcio-sorrendjuk es szovegeik) a kategoria-dizajnnal. A tulajdonos donteseert (2026-10-13)
+// EZ AZ ALAP: az uj /uj/migren-piercing, /uj/shenmen-piercing, /uj/klimax-piercing, /uj/slim-etvagycsokkento-piercing oldal a -b oldal tartalmabol epul
+// (a cim "b" nelkuli, a menu es a belso linkek ugyanide mutatnak). A tartalom: uj-oldalak/tartalom/*-piercing-b.json. A tobbi kategoria-oldalnak
+// (allergia, maj, pajzsmirigy, lep, vastagbel) nincs -b oldala: azok a regi kategoria-sablonnal maradnak.
+export const B_ALAP = new Map([
+  ['/migren-piercing', '/migren-piercing-b'],
+  ['/shenmen-piercing', '/shenmen-piercing-b'],
+  ['/klimax-piercing', '/klimax-piercing-b'],
+  ['/slim-etvagycsokkento-piercing', '/slim-piercing-b'],
+]);
+export const KATEGORIA_B_UTAK = new Set(B_ALAP.values());
 
 // A hosszu szoveg fo-cimeinek helye (csomopont-indexek): h (1-2. szint), a szamozott cimek ("10. ...": a Wixen neha csak bekezdes, vagy 3. szintu cim) akkor,
 // ha a szamuk folytatja a sort (az "a) ..." / "1. 2. 3." alpontok nem fo-cimek)
@@ -189,8 +196,8 @@ export function kategoriaBlokkok(adat, T, B = false) {
 
 // Az eredeti blokkok szovegei, amiket a fooldal dobozai valtottak fel (ekszer, akcio / arlista, media, csapat, helyszin): a tukor-teszt szoveg-lefedettsegi
 // ellenorzese ezeket nem varja el az uj oldalon (a fooldal szovege jelenik meg helyettuk).
-export function kategoriaCserelt(adat, T) {
-  const p = kategoriaBlokkok(adat, T);
+export function kategoriaCserelt(adat, T, B = false) {
+  const p = kategoriaBlokkok(adat, T, B);
   if (!p) return null;
   const szovegek = [];
   for (const b of p.blokkok) {
@@ -420,7 +427,8 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     const lv = b.nodes.flatMap((n) => laposit(n));
     const ps = lv.filter((x) => x.t === 'p');
     const cimP = ps.find((x) => /^\d{4}\s/.test(szovegTiszta(x.html)));
-    const telP = ps.find((x) => /\+36/.test(szovegTiszta(x.html)));
+    const TEL = /(?:\+36|\b06)[\d\s]{8,}\d/;   // +36 1 901 7444 vagy 06 70 789 7477 (oldalankent mas a szam)
+    const telP = ps.find((x) => TEL.test(szovegTiszta(x.html)));
     const mailP = ps.find((x) => /@/.test(szovegTiszta(x.html)));
     const terkep = lv.find((x) => x.t === 'iframe' && x.fajta === 'terkep');
     const gomb = lv.find((x) => x.t === 'gomb');
@@ -433,7 +441,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     if (!cimP || !terkep || !cimkek.length || cimkek.length !== idok.length) {   // nem a megszokott felepites: valtozatlan tartalom
       return `<section class="tarto" id="elerhetoseg"><div class="sz kat-doboz kat-egyeb"><h2 class="cim">${szovegLink(b.cim.html)}</h2>${b.nodes.map((n) => T.csomopont(n, c)).join('\n')}</div></section>`;
     }
-    const tel = telP ? szovegLink(telP.html).replace(/(\+36[\d\s]*\d)/, (m) => `<a href="tel:${m.replace(/\s/g, '')}">${m.trim()}</a>`) : '';
+    const tel = telP ? szovegLink(telP.html).replace(TEL, (m) => `<a href="tel:${m.replace(/\s/g, '')}">${m.trim()}</a>`) : '';
     const ikonNev = (u) => (/facebook/i.test(u) ? 'fb' : /instagram/i.test(u) ? 'ig' : /tiktok/i.test(u) ? 'tt' : /youtube/i.test(u) ? 'yt' : 'link');
     const mail = mailP ? szovegTiszta(mailP.html) : '';
     const galeria = fooldaliGaleria ? `<section class="tarto"><div class="sz kat-doboz kat-egyeb">${T.csomopont(fooldaliGaleria, c)}</div></section>` : '';
@@ -443,7 +451,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
       <div class="kat-elerh-adat">
         <div class="kat-elerh-sor">${IK('pin')}<div><h3>Címe</h3><p>${szovegLink(cimP.html)}</p></div></div>
         <div class="kat-elerh-sor">${IK('phone')}<div><h3>Elérhetőségei</h3>${tel ? `<p>${tel}</p>` : ''}${mail ? `<p><a href="mailto:${esc(mail)}">${esc(mail)}</a></p>` : ''}</div></div>
-        <div class="kat-elerh-sor">${IK('clock')}<div><h3>Nyitvatartása</h3><dl class="kat-nyitva">${cimkek.map((x, i) => `<div><dt>${esc(x.replace(/\s*-\s*/, '–'))}</dt><dd>${esc(idok[i].replace(/\s*-\s*/, '–'))}</dd></div>`).join('')}</dl></div></div>
+        <div class="kat-elerh-sor">${IK('clock')}<div><h3>Nyitvatartása</h3><dl class="kat-nyitva">${cimkek.map((x, i) => `<div><dt>${esc(x.replace(/\s*[-–]\s*/, '–'))}</dt><dd>${esc(idok[i].replace(/\s*[-–]\s*/, '–'))}</dd></div>`).join('')}</dl></div></div>
         <div class="kat-elerh-akcio">
           ${gomb ? `<a class="gomb gomb-tomor" href="${esc(belso(gomb.href))}">${esc(gomb.szoveg.replace(/!$/, ''))}${IK('chev', 'ik-nyil')}</a>` : ''}
           <ul class="kat-kozosseg">${kozosseg.map((k) => `<li><a href="${esc(k.link)}" target="_blank" rel="noopener" aria-label="${esc((k.alt || '').trim() || ikonNev(k.link))}">${IK(ikonNev(k.link))}</a></li>`).join('')}</ul>

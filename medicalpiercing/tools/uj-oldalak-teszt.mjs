@@ -19,7 +19,7 @@ import { chromium } from './pw.mjs';
 import { oldalak } from './oldalak.mjs';
 import { meresTiltas } from './meres-tiltas.mjs';
 import { kulcsbol } from '../lib/utvonal.js';
-import { KATEGORIA_UTAK, kategoriaCserelt } from './uj-oldalak/kategoria.mjs';
+import { KATEGORIA_UTAK, B_ALAP, kategoriaCserelt } from './uj-oldalak/kategoria.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const BASE = (process.env.BASE || 'http://localhost:4290').replace(/\/$/, '');
@@ -128,7 +128,7 @@ async function kategoriaTeszt(o, nezet, p, cim) {
   }
   const ref = fooldalMeret[nezet];
   const m = await p.evaluate(() => {
-    const kep = document.querySelector('.kat-hos .hos-kep img');
+    const kep = document.querySelector('.kat-hos .hos-kep img') || document.querySelector('.kat-hos .hos-kep');
     const r = (s) => document.querySelector(s);
     const dia = [...document.querySelectorAll('.kat-fb .kar-dia')].map((d) => Math.round(d.getBoundingClientRect().width));
     return {
@@ -140,7 +140,10 @@ async function kategoriaTeszt(o, nezet, p, cim) {
       doboz: [...document.querySelectorAll('.kat-doboz')].filter((d) => d.scrollWidth > d.clientWidth + 1).length,
     };
   });
-  ok(`${cim}: a hos ugyanakkora, mint a fooldalon (h1 ${m.h1}px, kep ${m.kep}px)`, m.h1 === ref.h1 && Math.abs(m.kep - ref.kep) <= 24, `fooldal: h1 ${ref.h1}px, kep ${ref.kep}px`);
+  // a B oldal (a galeriaval): asztalin ugyanakkora, mint a fooldalon; mobilon az egy kepernyore illesztett hos kisebb cimet (1,42 rem) es 300 px-es galeriat hasznal
+  const b = B_ALAP.has(o.ut);
+  ok(`${cim}: a hos ${b && nezet === 'mobil' ? 'az egy kepernyore illesztett merettel' : 'ugyanakkora, mint a fooldalon'} (h1 ${m.h1}px, kep ${m.kep}px)`,
+    b && nezet === 'mobil' ? m.h1 >= 20 && m.kep >= 280 && m.kep <= ref.kep : m.h1 === ref.h1 && Math.abs(m.kep - ref.kep) <= 24, `fooldal: h1 ${ref.h1}px, kep ${ref.kep}px`);
   ok(`${cim}: a hos a fooldal elemeivel (foglalo gomb, bizalmi sor), a promo-sav nincs`, m.hosGomb && m.bizalom === 4 && !m.promoSav, JSON.stringify(m));
   ok(`${cim}: a tartalom a fooldal szelessegu (${m.tarto}px)`, nezet === 'mobil' ? m.tarto >= m.vp - 34 : m.tarto >= Math.min(1240, m.vp - 48) - 2, `${m.tarto}/${m.vp}`);
   ok(`${cim}: a fooldal dobozai: ekszer-galeria, akcio, ${m.ar} ar-kartya, ${m.helyszin} helyszin, media, csapat, velemeny`, m.ekszer && m.akcio && m.ar === 4 && m.helyszin === 15 && m.media && m.csapat && m.velemeny && m.nagyito, JSON.stringify(m));
@@ -186,19 +189,21 @@ async function lapTeszt(o, nezet, ctx) {
   // tartalom-lefedettseg
   // (a csukott harmonika tartalma nem latszik az innerText-ben: a lefedettseghez kinyitjuk, utana becsukjuk)
   const tartalom = await p.evaluate(() => { const d = [...document.querySelectorAll('main#fo details')]; d.forEach((x) => { x.open = true; }); const t = document.querySelector('main#fo')?.innerText || ''; d.forEach((x) => { x.open = false; }); return t; });
-  const ered = JSON.parse(fs.readFileSync(tartalomFajl(o), 'utf8'));
+  // a migren / shenmen / klimax / slim oldal alapja a "B" valtozat: az eredeti -b oldal tartalmahoz (JSON es az eredeti oldal szovege) hasonlitunk
+  const bUt = B_ALAP.get(o.ut) || null;
+  const ered = JSON.parse(fs.readFileSync(tartalomFajl(bUt ? { kulcs: bUt.slice(1) } : o), 'utf8'));
   // az eredeti oldal szovege: a kinyert JSON szovegei + az eredeti oldal (Wix-klon) lathato szovege
   if (nezet === 'asztali') {
     const eredeti = await p.context().newPage();
-    await eredeti.goto(BASE + new URL(o.url).pathname + '?motor=0', { waitUntil: 'load', timeout: 60000 }).catch(() => {});
+    await eredeti.goto(BASE + (bUt || new URL(o.url).pathname) + '?motor=0', { waitUntil: 'load', timeout: 60000 }).catch(() => {});
     const sorok = await eredeti.evaluate(() => (document.querySelector('main#PAGES_CONTAINER')?.innerText || '').split('\n').map((s) => s.trim()).filter((s) => s.length >= 12));
     await eredeti.close();
     const t = norm(tartalom);
     // (a kitelepulesek datum-sorai naponta valtoznak: a mentett tartalomban a regi datumok vannak, az oldal betoltes utan a tablazatbol frissul - ezeket nem hasonlitjuk)
     // (a kategoria-oldalakon a hos ertekeles-sora a Trustindex adataibol frissul, a "Piercinget csak eu szakembertol!" felirat a hosbol kikerult: tulajdonosi dontes, 2026-10-13)
     // a kategoria-oldalakon a fooldal dobozai (ekszer, akcio / arlista, media, csapat, helyszin) valtottak fel az eredeti blokkokat: azok szovege nem kell
-    const cserelt = KATEGORIA_UTAK.has(o.ut) ? norm((kategoriaCserelt(ered, TESZT_T) || []).join(' ')) : '';
-    const hianyzo = [...new Set(sorok)].filter((s) => !t.includes(norm(s)) && !(cserelt && cserelt.includes(norm(s))) && !/^(január|február|március|április|május|június|július|augusztus|szeptember|október|november|december)\s*\d/i.test(s) && !(KATEGORIA_UTAK.has(o.ut) && /^(Kiváló\s*[-–|]|Piercinget csak eü szakembertől)/i.test(s)) && !/^(hozzászólások|hozzászólás írása|rendezés erre|legújabb|még nincsenek értékelések|megosztás|friss bejegyzések|az összes megtekintése)/i.test(s) && !/^\d+\s*(megtekint|kedvel|hozzászólás)/i.test(s) && !/^(\d+ perc olvasás|id|Search this site)$/i.test(s) && !/csillagot kapott|nincs kedvelve|Értékelés hozzáadása|^\d+ kedvelés|^Like post|\d+ megtekintés|\d+ hozzászólás$/i.test(s));
+    const cserelt = KATEGORIA_UTAK.has(o.ut) ? norm((kategoriaCserelt(ered, TESZT_T, !!bUt) || []).join(' ')) : '';
+    const hianyzo = [...new Set(sorok)].filter((s) => !t.includes(norm(s)) && !(cserelt && cserelt.includes(norm(s))) && !/^(január|február|március|április|május|június|július|augusztus|szeptember|október|november|december)\s*\d/i.test(s) && !(KATEGORIA_UTAK.has(o.ut) && /^(Kiváló\s*[-–|]|Piercinget csak eü szakembertől)/i.test(s)) && !(bUt && /vélemény alapján|vendégünk leírta|^Így néz ki egy klimax piercing behelyezés$/i.test(s)) && !/^(hozzászólások|hozzászólás írása|rendezés erre|legújabb|még nincsenek értékelések|megosztás|friss bejegyzések|az összes megtekintése)/i.test(s) && !/^\d+\s*(megtekint|kedvel|hozzászólás)/i.test(s) && !/^(\d+ perc olvasás|id|Search this site)$/i.test(s) && !/csillagot kapott|nincs kedvelve|Értékelés hozzáadása|^\d+ kedvelés|^Like post|\d+ megtekintés|\d+ hozzászólás$/i.test(s));
     const lefedett = sorok.length ? 1 - hianyzo.length / new Set(sorok).size : 1;
     ok(`${cim}: az eredeti oldal szovege megvan (${(lefedett * 100).toFixed(1)}%)`, hianyzo.length === 0, hianyzo.slice(0, 4).map((s) => `«${s.slice(0, 70)}»`).join(' '));
   }

@@ -19,6 +19,9 @@ Ezen felül:
   gyors szemrevételezés). Az együttes élesítés akkor jön, amikor a tulajdonos jelzi, hogy véglegesek vagyunk: akkor merge a `main`-re, a teljes teszt
   (`tools/uj-oldalak-teszt.mjs`, `tools/uj-fooldal-teszt.mjs`) és az ellenőrzés az éles oldalon. (Ez felülírja a gyökér `CLAUDE.md` „azonnali élesítés”
   szabályát ezekre a rejtett oldalakra.)
-- **A „B” kategóriaoldalak** (`/uj/uj-migren-piercing-b`, `…-shenmen-…`, `…-klimax-…`, `…-slim-…`): az eredeti `-b` oldalak szerkezete és szövege a kategóriaoldalak mostani dizájnjával, **külön címen**, a meglévő `/uj/migren-piercing` stb. változatlan.
-  A kód a `tools/uj-oldalak/kategoria.mjs`-ben van (`KATEGORIA_B_UTAK`, `kategoriaFo(..., { b: true })`), a stílus a `assets/css/uj-kategoria.css` végén; a „Miért a Medical Piercinget válaszd?” ikonjait a
-  `tools/uj-b-ikonok.py` színezi át a főoldal palettájára (`assets/img/uj-biz-*.webp`).
+- **A „B” változat az alap** (a tulajdonos döntése, 2026-10-13): az `/uj/migren-piercing`, `/uj/shenmen-piercing`, `/uj/klimax-piercing` és `/uj/slim-etvagycsokkento-piercing` oldal az eredeti
+  `-b` oldalak (`migren-piercing-b`, `shenmen-piercing-b`, `klimax-piercing-b`, `slim-piercing-b`) szerkezetéből és szövegéből épül, a kategóriaoldalak dizájnjával, **„b” nélküli címen**
+  (a menü és a belső linkek ide mutatnak; `/uj/uj-…-b` cím nincs). Az eredeti (régi) kategória-sablon csak az allergia / máj / pajzsmirigy / lép / vastagbél oldalnak marad (nincs `-b` oldaluk).
+  A leképezés: `B_ALAP` a `tools/uj-oldalak/kategoria.mjs`-ben, a kiírás `tools/uj-fooldal.mjs` (`ujOldalak`); a stílus az `assets/css/uj-kategoria.css` végén (B szakasz). Az első galériakép „Lapozz jobbra”
+  jelzését a `tools/uj-b-hos-kep.py` rajzolja (`assets/img/uj-hos-01.webp`), a „Miért a Medical Piercinget válaszd?” ikonjait a `tools/uj-b-ikonok.py` színezi a főoldal palettájára (`assets/img/uj-biz-*.webp`).
+  A `tools/uj-oldalak-teszt.mjs` ezekre az oldalakra az eredeti `-b` oldalhoz hasonlít. A `/uj/…-b` tükör-oldalak (az eredeti `-b` oldalak általános sablonnal készült másolatai) megmaradnak.
