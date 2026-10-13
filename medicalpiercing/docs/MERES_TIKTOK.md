@@ -64,3 +64,7 @@ A napi riport (`riport.js`) soronként `tiktok_naplo` számot ad (az adott napon
 3. Cloudflare → Pages → `medicalpiercing` → Settings → Variables and Secrets: `TIKTOK_EVENTS_TOKEN` (Secret, Production).
 4. D1 (`mp-meres`): `INSERT OR REPLACE INTO mp_beallitas (kulcs, ertek) VALUES ('tiktok_mod', 'eles');`
 5. Visszakapcsolás: `UPDATE mp_beallitas SET ertek = 'naplo' WHERE kulcs = 'tiktok_mod';` (vagy `ki`).
+
+## Élesítés
+
+- 2026-10-13: Feri beállította a `TIKTOK_EVENTS_TOKEN` titkot (Production). `mp_beallitas.tiktok_mod = 'eles'`. Az esemény neve `IgazoltFoglalas` (másodlagos, a kampány optimalizációs eseménye változatlan). Visszakapcsolás: `tiktok_mod = 'naplo'`.
