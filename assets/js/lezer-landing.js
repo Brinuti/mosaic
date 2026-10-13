@@ -60,6 +60,14 @@
   const AR = Object.fromEntries(SOROK.map((s) => [s.kulcs, s]));
   const SZOLGALTATAS = { ...AR, [EGYEDI.kulcs]: { ...EGYEDI, ar: 0, tartalmaz: [] } };
 
+  // --- a terulet-legordulo: minden opcio mellett az ar (egy kezeles listaara; az arlista tablazat az egyetlen forras, nem kell kezzel karbantartani) ---------
+  for (const o of document.querySelectorAll('#terulet-select option')) {
+    if (o.dataset.arKiirva) continue;
+    const sor = AR[o.value];
+    o.textContent += o.value === EGYEDI.kulcs ? ' \u2013 \u00e1r a kalkul\u00e1tor szerint' : (sor ? ' \u2013 ' + ft(sor.ar).replace(/ /g, '\u00a0') : '');
+    o.dataset.arKiirva = '1';
+  }
+
   // --- 2. kalkulator -------------------------------------------------------------------------------------------------------------
   /** A kivalasztott teruletek ara: a legdragabb teljes aron, a tobbi 50%-on. Az azonos arunal a tablazat sorrendje dont. */
   function szamol(kulcsok) {

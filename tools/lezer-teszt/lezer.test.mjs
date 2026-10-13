@@ -377,6 +377,35 @@ describe('idopont-valaszto: naptar (hamisitott Salonic-API)', () => {
 });
 
 describe('osszekottetesek', () => {
+  test('a terulet-legordulo minden opcio mellett kiirja az arat (az arlista tablazat szerint, asztalon es telefonon); a mod-valaszto ket gombja egyforma meretu, a kivalasztott arany', async () => {
+    for (const mobil of [false, true]) {
+      const { p, ctx } = await nyit({ mobil, api: () => idok(...SLOTOK) });
+      await p.locator('#foglalo').scrollIntoViewIfNeeded();
+      await p.waitForSelector('#naptar button.naptar-nap');
+      const opciok = await p.$$eval('#terulet-select option', (l) => l.map((o) => [o.value, o.textContent.replace(/\u00a0/g, ' ')]));
+      const tabla = await p.$$eval('#arlista tr[data-kulcs]', (l) => Object.fromEntries(l.map((tr) => [tr.dataset.kulcs, +tr.dataset.ar])));
+      assert.ok(opciok.length >= 20, 'opciok: ' + opciok.length);
+      for (const [k, t] of opciok) {
+        if (k === 'egyedi') { assert.match(t, /Több terület \(egyedi csomag\) – ár a kalkulátor szerint$/, t); continue; }
+        const ar = tabla[k];
+        assert.ok(ar > 0, 'nincs ar: ' + k);
+        assert.ok(t.endsWith(' – ' + String(ar).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' Ft'), `${k}: ${t}`);
+      }
+      assert.equal(opciok.find(([k]) => k === 'honalj')[1], 'Hónalj – 19 000 Ft');
+      // a kivalasztott opcio szovege (a becsukott legordulon) is tartalmazza az arat
+      assert.match(await p.$eval('#terulet-select', (e) => e.options[e.selectedIndex].textContent), /19.000.Ft$/);
+      const dobozok = await p.$$eval('.valaszto label span', (l) => l.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; }));
+      assert.equal(dobozok.length, 2);
+      assert.deepEqual(dobozok[0], dobozok[1], (mobil ? 'mobil' : 'asztal') + ': a ket valaszto-gomb egyforma meretu: ' + JSON.stringify(dobozok));
+      assert.ok(dobozok[0][1] >= 56, 'legalabb 56 px magas');
+      assert.match(await p.$eval('.valaszto input:checked + span', (e) => getComputedStyle(e).backgroundImage), /linear-gradient/, 'a kivalasztott gomb arany');
+      await p.check('input[name="mod"][value="konzult"]');
+      assert.match(await p.$eval('.valaszto input:checked + span', (e) => getComputedStyle(e).backgroundImage), /linear-gradient/, 'a konzultacio kivalasztva: az is arany');
+      assert.equal(await p.$eval('.valaszto input[value="kezeles"] + span', (e) => getComputedStyle(e).backgroundImage), 'none', 'a nem kivalasztott gomb feher');
+      await ctx.close();
+    }
+  });
+
   test('a data-terulet gombok (kartyak, kalkulator) a valasztot az adott teruletre allitjak es oda gorgetnek', async () => {
     const { p, ctx } = await nyit({ api: () => idok(...SLOTOK) });
     await p.click('.gyors-kartya[data-terulet="lab"]');
