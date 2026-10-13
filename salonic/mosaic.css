@@ -285,3 +285,10 @@ body:is(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-
 body:is(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)[class*="customer-mosaic"] .main-raised { box-shadow: none !important; background: transparent !important; margin: 0 !important; }
 body:is(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)[class*="customer-mosaic"] .py-4 img { width: 52px; height: auto; }
 body:is(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)[class*="customer-mosaic"] .appointment-deleted-text { font-size: 14px; color: var(--mh-kozep); }
+
+/* --- Egy pipa: csak az adatkezelesi / foglalasi szabalyzat elfogadasa kotelezo ------------------------------------------------------------------
+ * A Salonic adatlapjan ket pipa van: (1) KOTELEZO: "Megismertem es elfogadom az adatvedelmi tajekoztatot, a foglalasi szabalyzatot ..." es (2) OPCIONALIS hirlevel
+ * ("Szeretnek e-mailben ertesitest kapni az akciokrol ..."). A hirlevel-pipat elrejtjuk (alapbol ures, a rejtett "newsletter" mezo erteke 0 marad): a vendeg
+ * nem kap felugro "hirlevel"-kerdest, hirlevelre ezen az uton nem iratkozik fel. A kotelezo hozzajarulas valtozatlan.
+ */
+body[class*="customer-mosaic"] .newsletter-container { display: none !important; }
