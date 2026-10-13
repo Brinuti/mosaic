@@ -15,6 +15,7 @@ export const GOOGLE_KATT = Object.freeze(['gclid', 'gbraid', 'wbraid']);
 const MAS_KATT = Object.freeze(['fbclid', 'ttclid', 'msclkid']);
 const MAS_PLATFORM = Object.freeze(['facebook', 'fb', 'meta', 'instagram', 'ig', 'tiktok', 'bing', 'microsoft']);
 export const UTM_MEZOK = Object.freeze(['utm_source', 'utm_medium', 'utm_campaign', 'utm_content']);
+// A Google Ads UTM-sablon (Feri dontese, 2026-10-13): ?utm_source=google&utm_medium=cpc&utm_campaign={kampany-ID}&utm_content={hirdetes-ID}&gyt_ag={hirdetescsoport-ID}. Ezek szamok, nem szemelyes adatok.
 export const FIZETETT_MEDIUM = Object.freeze(['cpc', 'ppc', 'paid', 'paid_search', 'paidsearch']);
 const UTM_MINTA = /^[A-Za-z0-9._~:+-]{1,100}$/;
 const KATT_ERTEK = /^[A-Za-z0-9_-]{8,512}$/;
@@ -23,6 +24,9 @@ const KAMPANY_ID = /^\d{6,15}$/;
 const SEARCH = ['google', 'bing', 'duckduckgo', 'yahoo', 'ecosia', 'yandex', 'startpage', 'brave', 'qwant', 'seznam', 'baidu', 'naver', 'ask'];
 const SOCIAL = ['facebook', 'instagram', 'tiktok', 'youtube', 'linkedin', 'twitter', 'x', 'pinterest', 'reddit', 't', 'lnkd', 'fb', 'l.facebook', 'm.facebook', 'l.instagram', 'out.reddit'];
 const kis = (v) => (v == null ? '' : String(v).toLowerCase());
+
+/** Google Ads azonosito (kampany / hirdetescsoport / hirdetes): csak 6-15 szamjegy, kulonben null. */
+export const ads_id = (v) => (typeof v === 'string' && KAMPANY_ID.test(v.trim()) ? v.trim() : null);
 
 /** Egy utm-ertek tisztitasa: legfeljebb 100 karakter, csak [A-Za-z0-9._~:+-]; kulonben null (eldobjuk, nem javitjuk). */
 export function utmTisztit(v) {
@@ -59,8 +63,9 @@ export function referrerKategoria(domain, sajatHostok = ['gyogytornaszom.hu']) {
  */
 export function belepes({ search = '', referrer = '', path = '/', sajatHostok } = {}) {
   const p = new URLSearchParams(String(search).replace(/^\?/, ''));
-  const o = { utm_source: null, utm_medium: null, utm_campaign: null, utm_content: null, kattintas_param: null, kattintas_ertek: null, landing: null, ref_domain: null, ref_kat: 'nincs' };
+  const o = { utm_source: null, utm_medium: null, utm_campaign: null, utm_content: null, gyt_ag: null, kattintas_param: null, kattintas_ertek: null, landing: null, ref_domain: null, ref_kat: 'nincs' };
   for (const k of UTM_MEZOK) o[k] = utmTisztit(p.get(k));
+  o.gyt_ag = ads_id(p.get('gyt_ag'));
   for (const k of GOOGLE_KATT) {
     const v = p.get(k);
     if (v && KATT_ERTEK.test(v)) { o.kattintas_param = k; o.kattintas_ertek = v; break; }
@@ -79,6 +84,11 @@ export function fizetett(b) {
 
 /** Van-e Google kattintas-azonosito. */
 export const googleKattintas = (b) => !!b && GOOGLE_KATT.includes(b.kattintas_param);
+
+/** A foglalashoz mentheto, nem szemelyes hirdetesi azonositok: { kampany, hirdetescsoport, hirdetes } (mind szam vagy null). */
+export function hirdetesAzonositok(b) {
+  return { kampany: ads_id(b && b.utm_campaign), hirdetescsoport: ads_id(b && b.gyt_ag), hirdetes: ads_id(b && b.utm_content) };
+}
 
 /** A kampany-ID az utm_campaign-bol (csak szamjegyek, 6-15 hosszan), kulonben null. */
 export function kampanyId(b) {

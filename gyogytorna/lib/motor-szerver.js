@@ -7,7 +7,7 @@
 //   POST /api/gy-kampanyok   (kulcsos) a Google Ads kampanylista napi szinkronja
 //   GET/POST /api/gy-admin   (kulcsos) riport, riasztasok, egyeztetes
 // Hibaban a vendeg foglalasa NEM akad el: ezek a vegpontok csak a merest szolgaljak, a foglalast a Salonic rogziti.
-import { belepes, osszevon, cimkez, fizetett } from './forras.js';
+import { belepes, osszevon, cimkez, fizetett, hirdetesAzonositok } from './forras.js';
 import { sutik, hozzajarulas } from './hozzajarulas.js';
 import { sha256Hex, ujToken, tranzakcioId, egyenlo, hmacHex } from './titkos.js';
 import { igazolasJeloltek, foglalasSalonicIdAlapjan } from './db.js';
@@ -180,10 +180,11 @@ export async function foglalasVegpont({ request, env, deps = {} }) {
   const valasztott = rekordok.find((r) => r.fizetett) || rekordok[0] || null;
   const t = await kampanyLista(db, most);
   const c = cimkez(valasztott ? valasztott.belepes : null, { lista: t.lista, friss: t.friss });
+  const hirdetes = hirdetesAzonositok(valasztott ? valasztott.belepes : null); // szam-azonositok (kampany / hirdetescsoport / hirdetes), nem szemelyes adat
   const parosito = e.employeeId ? await hmacHex(env.GY_HMAC_KULCS, `gy-parosito|${kert.startUnix}|${e.employeeId}`) : null;
   const parositoHely = await hmacHex(env.GY_HMAC_KULCS, `gy-hely|${kert.startUnix}|${kert.placeId}`); // a Salonic-igazolas parositasahoz (hely + idopont)
 
-  const letrejott = await foglalasLetrehoz(db, { uuid, tipus, uj_vendeg: e.ujVendeg, cimke: c.cimke, bizonyitek: c.bizonyitek + (c.elavult ? '+elavult_lista' : ''), hozzajarulas: hj.allapot, allapot, teszt, parosito, parosito_hely: parositoHely }, most);
+  const letrejott = await foglalasLetrehoz(db, { uuid, tipus, uj_vendeg: e.ujVendeg, cimke: c.cimke, bizonyitek: c.bizonyitek + (c.elavult ? '+elavult_lista' : ''), hozzajarulas: hj.allapot, allapot, teszt, parosito, parosito_hely: parositoHely, ...hirdetes }, most);
   if (!letrejott) return valasz(200, { ok: true, ismetles: true }); // versenyhelyzet: egy masik kerelem mar letrehozta
   if (allapot !== 'aktiv') await riaszt(db, 'bizonytalan_foglalas', { uuid, adat: miert, most });
   let token = null;
@@ -311,7 +312,10 @@ export async function adminVegpont({ request, env, deps = {} }) {
     const osszeg = (l) => l.reduce((a, s) => a + s.db, 0);
     const azonositott = nevezo.filter((s) => ['google_brand', 'google_nem_brand', 'organikus', 'direkt'].includes(s.cimke));
     const bontas = (hj) => { const l = nevezo.filter((s) => (hj ? s.hozzajarulas === 'igen' : s.hozzajarulas !== 'igen')); const a = l.filter((s) => azonositott.includes(s)); return { nevezo: osszeg(l), azonositott: osszeg(a), hiany_google_bizonytalan: osszeg(l.filter((s) => s.cimke === 'google_bizonytalan')), hiany_ismeretlen: osszeg(l.filter((s) => s.cimke === 'ismeretlen')) }; };
-    return valasz(200, { ok: true, honap: ho, osszes: osszeg(sorok), nevezo: osszeg(nevezo), azonositott: osszeg(azonositott), hozzajarulo: bontas(true), nem_hozzajarulo: bontas(false), sorok });
+    const kampanyBontas = (await db.prepare(
+      `SELECT kampany, hirdetescsoport, cimke, COUNT(*) AS db FROM gy_foglalas WHERE letrehozva >= ?1 AND letrehozva < ?2 AND teszt = 0 AND kampany IS NOT NULL GROUP BY kampany, hirdetescsoport, cimke ORDER BY db DESC LIMIT 200`,
+    ).bind(tol, ig).all()).results || [];
+    return valasz(200, { ok: true, honap: ho, osszes: osszeg(sorok), nevezo: osszeg(nevezo), azonositott: osszeg(azonositott), hozzajarulo: bontas(true), nem_hozzajarulo: bontas(false), sorok, kampany_bontas: kampanyBontas });
   }
   void most;
   return nincsKerelem('ismeretlen_muvelet');
