@@ -5,6 +5,8 @@
 // azt itt visszavonasra jeloljuk. A Google-hivast egy utemezett Zapier durable workflow vegzi (a Workernek nincs sajat
 // Google Ads API-hitelesitese, a Pages-ben nincs cron):
 //   GET  /api/mp-kiigazitas            -> { mod, keres: <uploadConversionAdjustments torzs>, orderIdk, bizonytalan }
+//   GET  /api/mp-kiigazitas?riport=1[&nap=14]       -> napi meres-egeszseg riport (riport.js, forras v2 cimkekkel)
+//   GET  /api/mp-kiigazitas?riport=havi&ho=YYYY-MM  -> havi forras-pillanatkep CSV (szemelyes adat nelkul)
 //   POST /api/mp-kiigazitas  { mod, orderIdk, valasz }  -> a Google-valasz soronkenti feldolgozasa a D1-be
 // Fejlec: x-mp-kiigazitas = titok (MP_KIIGAZITAS_TITOK, vagy a D1 mp_beallitas.kiigazitas_titok_sha256 lenyomata, csak eles hoszton).
 // Mod: mp_beallitas.kiigazitas_mod = 'eles' | 'ki' | (barmi mas / ures) 'validate'. Elesre kapcsolas: Feri jovahagyasaval.
@@ -12,7 +14,7 @@
 // Kifele csak: akcio, tipus, orderId (szamok), ido. Nev, e-mail, telefon, szolgaltatas SOHA.
 import { semaBiztos } from './lanc.js';
 import { googleIdo, ELES_HOST, MP_GADS } from './google-ads.js';
-import { riport, adsSorok, adsMentes } from './riport.js';
+import { riport, adsSorok, adsMentes, haviCsv } from './riport.js';
 
 export const IGAZOLT_AKCIO = '7839410357';
 /** A bongeszo-cimke elesitese (GTM v16, 2026-10-12 09:45 UTC): ennel korabbi foglalashoz nincs orderId-s konverzio. */
@@ -125,6 +127,12 @@ export async function kiigazitasVegpont({ request, env = {} }, { most = Math.flo
   const url = new URL(request.url);
 
   // napi meres-egeszseg riport (riport.js) es a Google Ads napi konverziok betoltese (a Zapier napi workflow)
+  // havi forras-pillanatkep (forras v2), szemelyes adat nelkuli CSV: GET ?riport=havi&ho=YYYY-MM
+  if (request.method === 'GET' && url.searchParams.get('riport') === 'havi') {
+    const csv = await haviCsv(db, url.searchParams.get('ho'), most);
+    if (!csv) return json({ ok: false, hiba: 'rossz_ho' }, 400);
+    return new Response(csv, { status: 200, headers: { 'content-type': 'text/csv; charset=utf-8', 'cache-control': 'no-store' } });
+  }
   if (request.method === 'GET' && url.searchParams.get('riport')) {
     return json(await riport(db, most, Math.min(60, Math.max(1, Number(url.searchParams.get('nap')) || 14))));
   }
