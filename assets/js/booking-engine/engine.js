@@ -149,7 +149,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
   const chevron = () => h('span', { class: 'be-chev', 'aria-hidden': 'true', text: '›' });
   // Valasztokartya: bal oldalt kis kep (vagy monogram), kozepen a cim + egy sor, jobbra az ar (ha van) es a nyil
   // (a hosszabb egysoros magyarazat a kartya aljan, teljes szelessegben all, nem a szuk szovegoszlopban)
-  // resz: testresz-jelvenyek a kartya aljan ([{ ikon, label }]; lezer-csomagok). ikon: ikonok.js kulcsa (ahol nincs jo foto, de a kulonbseget segiti).
+  // resz: testresz-jelvenyek a kartya aljan, CSAK felirattal ([{ label }]; lezer-csomagok; 2026-10-13: a tulajdonos kerese, az ikonok zsufoltak voltak).
   // pre: a kartyahoz tartozo szolgaltatasok: ra-vitt egerre / erintesre az idopontjaik elore toltodnek (a naptar azonnal megnyilik)
   const bigButton = (title, sub, onclick, { kep = null, ikon = null, ar = null, monogram = null, resz = null, pre = null } = {}) => {
     const wide = !!sub && (kep || ikon || monogram) && sub.length > 36;
@@ -160,7 +160,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       h('span', { class: 'be-choice-text' }, h('b', { text: title }), sub && !wide ? h('small', { text: sub }) : null),
       ar ? h('span', { class: 'be-choice-ar', text: ar }) : null, chevron(),
       wide ? h('small', { class: 'be-choice-wide', text: sub }) : null,
-      resz ? h('span', { class: 'be-reszek' }, resz.map((r) => h('span', { class: 'be-resz' }, r.kep ? h('img', { class: 'be-resz-kep', src: kepSrc(r.kep), alt: '', width: '28', height: '28', onerror: (e) => e.currentTarget.remove() }) : icon(IKONOK[r.ikon] || '', 1.6), r.label))) : null);
+      resz ? h('span', { class: 'be-reszek' }, resz.map((r) => h('span', { class: 'be-resz', text: r.label }))) : null);
   };
   const primary = (text, onclick, extra = {}) => h('button', { type: 'button', class: 'be-btn', onclick, ...extra }, text);
   const secondary = (text, onclick) => h('button', { type: 'button', class: 'be-btn be-btn-2', onclick }, text);
@@ -899,7 +899,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
         track('booking_filter_used', { filter: 'area' });
         if (o.services.length === 1) return chooseService(o.services[0], { next: F.next(state, 'service') }); // egy szolgaltatas: nincs mit pontositani
         return go(F.next(state, 'area'));
-      }, { kep: o.area.kep }))));
+      }, { kep: o.area.kep, ar: fromPrice(o.services) }))));
     });
   }
 
