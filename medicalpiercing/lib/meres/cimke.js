@@ -128,7 +128,7 @@ export function bizonyitekForrasTarolo(bizonyitekForras, tarolo) {
 
 /** A "nincs_jel" diagnosztika (szemelyes adat / URL nelkul) feher listas ellenorzese; minden mas eldobva. */
 export const DIAG_NAV = Object.freeze(['navigate', 'reload', 'back_forward', 'prerender']);
-export const DIAG_ELSO_REF = Object.freeze(['belso', 'kereso', 'social', 'egyeb', 'nincs']);
+export const DIAG_ELSO_REF = Object.freeze(['belso', 'salonic', 'kereso', 'social', 'egyeb', 'nincs']);
 export function diagBemenet(d) {
   const ki = { diag_oldalak: null, diag_nav: null, diag_opener: null, diag_elso_ref: null };
   if (!d || typeof d !== 'object' || Array.isArray(d)) return ki;
@@ -190,7 +190,10 @@ export function cimkez(sor, markasLista) {
       if (s.forras_platform === 'meta' || s.forras_platform === 'tiktok') return ki(s.forras_platform, null, 'regi_kliens');
       return ki('ismeretlen', 'regi_kliens');
     }
-    return ki('ismeretlen', s.forras_keret === 1 ? 'iframe_munkamenet' : 'nincs_jel');
+    if (s.forras_keret === 1) return ki('ismeretlen', 'iframe_munkamenet');
+    // a munkamenet elso oldala a Salonicrol jott (kozvetlen Salonic-link: a hirdetesi kattintas a Salonicnal maradt)
+    if (s.diag_elso_ref === 'salonic') return ki('ismeretlen', 'salonic_kozvetlen');
+    return ki('ismeretlen', 'nincs_jel');
   }
   if (fizetett(s)) {
     const p = fizetettPlatform(s);

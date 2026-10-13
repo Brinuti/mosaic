@@ -194,6 +194,7 @@
       var elso = JSON.parse(sessionStorage.getItem('mp_elso') || 'null');
       if (!elso || typeof elso !== 'object') {
         var ek = { belso: 'belso', search: 'kereso', social: 'social', egyeb: 'egyeb', nincs: 'nincs' }[refKat()] || 'nincs';
+        try { if (ek === 'belso' && /(^|\.)salonic\.hu$/.test(new URL(document.referrer).hostname.toLowerCase())) ek = 'salonic'; } catch (e) { /* hibas hivatkozo */ }
         var op = 0; try { op = window.opener ? 1 : 0; } catch (e) { op = 1; } // mas eredetu opener elerese is dobhat: akkor van
         elso = { r: ek, o: op };
         sessionStorage.setItem('mp_elso', JSON.stringify(elso));
