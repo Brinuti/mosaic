@@ -68,13 +68,14 @@ async function egy(h, mobil) {
     await p.waitForTimeout(500);
     const slot = await sr('const s=[...r.querySelectorAll("[data-slot]")].pop(); return s ? +s.dataset.slot : null');
     sor.idopont = new Date(slot * 1000).toLocaleString('hu-HU', { timeZone: 'Europe/Budapest' });
+    const vegso = await sr('const e=r.querySelector(".chip.egy"); return { db: r.querySelectorAll("[data-staff]").length, egy: e ? e.textContent.trim() : null };');
     await sr('[...r.querySelectorAll("[data-slot]")].pop().click()');
     if (!ok(`${nev}: adatlap`, await varj('iframe.adatlap'))) return sor;
     const u = new URL(await sr('return r.querySelector("iframe.adatlap").src'));
     ok(`${nev}: adatlap cime (guestData, placeId, serviceId, startDate = a valasztott idopont, lang=hu, back=mb_)`, u.hostname === 'medicalpiercing.salonic.hu' && u.pathname === '/guestData/' && u.searchParams.get('placeId') === String(h.place_id) && u.searchParams.get('serviceId') === cel.service_id && Number(u.searchParams.get('startDate')) === slot && u.searchParams.get('lang') === 'hu' && /^mb_[a-z0-9]{12,40}$/.test(u.searchParams.get('back') || ''), u.search.slice(0, 140));
     // az adatlap tetejen a szakember: a helyszin egyetlen szakembere, tobb szakembernel (alapertek) "Barki"
     const savSzoveg = await sr('const c=r.querySelector(".adatlap-szakember .chip"); return c ? c.textContent.trim() : null');
-    const vartSav = sor.szakemberek === 0 ? sor.egyNev : 'Bárki';
+    const vartSav = vegso.db === 0 ? vegso.egy : 'Bárki'; // a tovabbi napok betoltese utan mas szakember is megjelenhet: a slot-kattintas elotti allapot a mervado
     ok(`${nev}: az adatlap tetejen a szakember latszik (${vartSav})`, !!savSzoveg && savSzoveg === vartSav, String(savSzoveg));
     await p.waitForTimeout(400);
     const geo = await sr('const i=r.querySelector("iframe.adatlap").getBoundingClientRect(); return {alja:Math.round(i.bottom), mag:Math.round(i.height), ablak:innerHeight, lepesek:Math.round(r.querySelector(".lepesek").getBoundingClientRect().height), cim:r.querySelector(".fej h2").textContent}');
