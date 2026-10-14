@@ -301,9 +301,10 @@ body.customer-mosaic-pmu .newsletter-container { display: none !important; }
  * e-mailben benne van; a * jeloles a mezok mellett marad); a "Kod ellenorzese" gomb a mezo fuggoleges kozepen; rovid hozzajarulasi szoveg
  * (a teljes szoveg a DOM-ban megvan), a jelolonegyzet a mezok bal szelen; szellosebb urlap. A fejlecet / lablecet NEM rejtjuk el: a foglalo
  * motor a keretet ehhez a geometriahoz igazitja (engine.js FRAME_STYLED). A reCAPTCHA-tajekoztatot a Google feltetelei miatt nem rejtjuk el.
- * A "A foglalasod" oldalakra (reszletek / modositas / lemondas) ez a blokk nem vonatkozik. ===== */
-/* a Salonic sajat sutisavja ("Az oldal hasznalataval hozzajarulsz...") ne latszodjon az adatlapon */
-body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .cc-window, body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .cc-revoke { display: none !important; }
+ * A "A foglalasod" oldalakra (reszletek / modositas / lemondas) ez a blokk a sutisav elrejteset KIVEVE nem vonatkozik. ===== */
+/* a Salonic sajat sutisavja ("Az oldal hasznalataval hozzajarulsz...") sehol ne latszodjon: sem az adatlapon, sem a "A foglalasod" oldalakon
+ * (reszletek / idopont modositasa / sikeroldalak: az SMS-ben es az e-mailben kuldott linkek ide visznek; Feri kerese, 2026-10-14) */
+body.customer-mosaic-pmu .cc-window, body.customer-mosaic-pmu .cc-revoke { display: none !important; }
 /* mondatok, amik nem kellenek: a "*-gal jelolt mezok" (a mezoket tartalmazo doboz kozvetlen szovege) es a lemondasi sor + vonal */
 body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .panel-body > div { font-size: 0 !important; line-height: 0 !important; }
 body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .panel-body > div > * { font-size: 12px !important; line-height: 1.35 !important; }

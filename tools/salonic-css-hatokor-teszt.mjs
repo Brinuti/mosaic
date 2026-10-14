@@ -1,5 +1,6 @@
 // SALONIC ADATLAP (gyogytornas elrendezes, 2026-10-14): az uj blokk (salonic/mosaic.css, salonic/pmu.css) CSAK az adatlapon (page-booking-guestData-body) ervenyes,
-// a "A foglalasod" oldalakra (reszletek / modositas / lemondas / sikeroldalak) NEM; a HeadSpa-fiok angol adatlapja nem kap magyar szoveget.
+// a "A foglalasod" oldalakra (reszletek / modositas / lemondas / sikeroldalak) NEM - KIVEVE a Salonic sutisavjat: az (.cc-window / .cc-revoke) minden oldalon rejtett
+// (Feri kerese, 2026-10-14: az idopont-modositas oldalon se latszodjon); a HeadSpa-fiok angol adatlapja nem kap magyar szoveget.
 // Futtatas:  node tools/salonic-css-hatokor-teszt.mjs        Kornyezet: PLAYWRIGHT_UTVONAL (a playwright-core szulomappaja), CHROME_UTVONAL.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -28,8 +29,8 @@ try {
       await lap.setContent(`<!doctype html><html><head><style>${css}</style></head><body id="${id}" class="${osztaly} ${id}"><div class="cc-window" style="display:block">cookie</div><div class="panel-body"><div><span class="d-block mb-3">x</span><hr></div></div><div class="form-check"><label><input type="checkbox"><a class="policy">a</a>, <a class="policy">b</a><span class="required">*</span></label></div></body></html>`);
       const r = await lap.evaluate(() => ({ cc: getComputedStyle(document.querySelector('.cc-window')).display, mb3: getComputedStyle(document.querySelector('.d-block.mb-3')).display, lbl: getComputedStyle(document.querySelector('.form-check label')).fontSize }));
       const adatlap = id === 'page-booking-guestData-body';
-      ell(`${fajl} (${osztaly}) ${id}: ${adatlap ? 'az uj blokk ervenyes (sutisav, "*-gal jelolt" mondat, hosszu hozzajarulas rejtve)' : 'az uj blokk NEM ervenyes (valtozatlan)'}`,
-        adatlap ? (r.cc === 'none' && r.mb3 === 'none' && r.lbl === '0px') : (r.cc !== 'none' && r.mb3 !== 'none' && r.lbl !== '0px'), r);
+      ell(`${fajl} (${osztaly}) ${id}: ${adatlap ? 'az uj blokk ervenyes (sutisav, "*-gal jelolt" mondat, hosszu hozzajarulas rejtve)' : 'a sutisav rejtett, az adatlap-elrendezes NEM ervenyes (a tobbi valtozatlan)'}`,
+        adatlap ? (r.cc === 'none' && r.mb3 === 'none' && r.lbl === '0px') : (r.cc === 'none' && r.mb3 !== 'none' && r.lbl !== '0px'), r);
     }
   }
   // magyar / angol rovid hozzajarulasi szoveg (::before): a HeadSpa-fiok angol, nem kaphat magyar szoveget
