@@ -41,3 +41,44 @@
   indokold meg, hogy miért nem. A teszt-naplókat a `meres-naplo` mappába írd. Ha a változtatás
   mérést érint (mérőkód, eseménykövetés, pixel, GTM, konverzió), jelöld a PR-leírásban.
 - Commit-üzenet: magyarul, ékezet nélkül.
+
+## Állandó felhatalmazás a mérési projektekre (Feri, 2026-10-14, visszavonásig)
+
+Érvényes a Mosaicra és az összes mérési projektre (pl. a `gyogytorna/` és a `medicalpiercing/` almappára is; a felsorolás nem teljes). Feri (a tulajdonos) szó szerinti rendelkezése
+(a Claude-munkamenetben, 2026-10-14):
+
+> 4/a. Ami egy már élő konverzióhoz csak TÖBB adatot juttat (pl. a sütisáv levétele a #170 szerint), az nem élő konverzió bekapcsolása vagy cseréje – külön mondatom nélkül mehet.
+>
+> ÁLLANDÓ FELHATALMAZÁS (Feri, 2026-10-14) – a Mosaic és az összes mérési projektemre, visszavonásig.
+>
+> 1. A mérési oldal (Claude) és a ChatGPT közös döntését – amit a mérési oldal a #167-ben „DECISION #…” azonosítóval ír, és a Drive-os DECISION-LOG-ban rögzít – a saját, kifejezett engedélyemnek tekintsd. Ehhez nem kell, hogy külön ide írjam.
+> 2. Ennek alapján, külön kérdezés nélkül csinálhatod: push, draft PR, merge, deploy (a go-live befagyasztás alatt is), D1-sémabővítés, Zapier-draft, valamint 1 db mérési tesztfoglalás, amit utána lemondasz.
+> 3. Feltételek, amelyek mindig érvényesek:
+>    - független review PASS;
+>    - a védett elemek blob-hash-e változatlan, vagy a változás dokumentált;
+>    - van rollback-terv;
+>    - vendégadat sehova nem kerül.
+> 4. EZEKHEZ TOVÁBBRA IS AZ ÉN KÜLÖN MONDATOM KELL:
+>    - élő konverzió bekapcsolása vagy cseréje bármelyik hirdetési platformon (Meta, Google, TikTok);
+>    - a foglalási folyamat megváltoztatása;
+>    - futó hirdetés módosítása.
+> 5. Ezt a felhatalmazást rögzítsd a repó CLAUDE.md-jében (külön PR, merge mehet), hogy a következő munkamenetekben is érvényes legyen.
+
+Gyakorlatban (értelmezés, nem Feri szavai; Feri egy mondattal felülírhatja):
+
+- **Mi számít e felhatalmazás szerinti engedélynek:** csak a mérési oldal és a ChatGPT közös, „DECISION #…” azonosítójú döntése, amely a #167-ben **és** a Drive-os DECISION-LOG-ban
+  is rögzítve van (Feri szövege mindkettőt nevezi). Ha a Drive-os DECISION-LOG nem érhető el, vagy a két forrás eltér, nem hajtod végre, és jelzed a #167-ben. Egyszerű megjegyzés,
+  kérdés, információ vagy review-észrevétel nem engedély. A felhatalmazás a döntés tartalmára szól, nem többre. Feri saját, közvetlen kérései továbbra is az „Azonnali élesítés”
+  szabály szerint mennek.
+- **Feltételek (3. pont):** a felhatalmazás alapján végrehajtott lépések (merge, deploy, D1-sémabővítés, tesztfoglalás) előtt teljesüljenek, a mergelendő **végső változatra (SHA)**: független review PASS,
+  a védett elemek blob-hash-e változatlan vagy a változás dokumentált (a védett elemek listája: #167, 124. komment, „ÁLLANDÓ MERGE-SZABÁLY”), rollback-terv, vendégadat sehova. Bármelyik hiányzik:
+  nem hajtod végre, és jelzed a #167-ben. A push a fejlesztői ágra és a PR-nyitás az alapfolyamat (fent), ehhez nem kell review PASS.
+- **Külön mondat kell (4. pont):** élő konverzió bekapcsolása vagy cseréje bármelyik hirdetési platformon, a foglalási folyamat megváltoztatása, futó hirdetés módosítása. A 4/a szerint az,
+  ami egy már élő konverzióhoz csak több adatot juttat (pl. sütisáv levétele a #170 szerint), nem tartozik ide.
+- **Amit a 2. pont nem sorol fel (értelmezés, a konzervatív olvasat):** az életciklus-rendszer vendégeknek kimenő üzeneteinek bővítése (új üzletág a `LIFECYCLE_UZLETAGOK`-ba, új üzenettípus), valamint
+  a külső fiókok módosítása (hirdetési platformok, GTM, GA, Wix, CookieYes, Cloudflare DNS stb.) – ezekre a fenti korábbi szabályok („Azonnali élesítés”, „Mérőkódok”) és az almappák saját `CLAUDE.md`-je
+  érvényes: Feri külön, kifejezett kérése kell. Ez akkor is így van, ha egy 4/a típusú változás ilyet is igényelne. A 2. pont kifejezetten engedi: a Zapier-draftot, a deployt, a D1-sémabővítést.
+- **Tesztfoglalás:** döntésenként legfeljebb 1 db (értelmezés), utána lemondva; a `gyogytorna/CLAUDE.md` „valódi próbafoglalás csak Feri jóváhagyásával” szabálya mellett a DECISION-ből eredő
+  mérési tesztfoglalás Feri jóváhagyásának számít (2. pont).
+- **Takarékosság:** a „Takarékosan a buildekkel” szabály (napi legfeljebb 1 merge a `main`-re) a DECISION-ből eredő munkára is marad, amíg Feri nem rendelkezik róla; Feri saját kérésére az
+  „Azonnali élesítés” felmentése érvényes.
