@@ -5,11 +5,12 @@
 //
 // Adatvedelem: kifele csak esemenynev, ido, esemeny_id, fbc/fbp, semleges URL. NINCS e-mail, telefon, nev, IP, user agent,
 // szolgaltatasnev, kategoria, helyszin.
-import { SEMLEGES_URL } from './meres.js';
+import { SEMLEGES_URL, esemenyId, vanErzekeny } from './meres.js';
+import { kitakar, ELES_HOST } from './google-ads.js';
 
 export const META_DATASET = '2177829632420786';
 export const META_ESEMENY = 'IgazoltFoglalas';
-export const TESZT_ESEMENYEK = Object.freeze(['IgazoltFoglalas', 'Schedule']);
+export const TESZT_ESEMENYEK = Object.freeze(['IgazoltFoglalas', 'Schedule', 'SubmitApplication', 'Contact', 'CompleteRegistration', 'FindLocation', 'CustomizeProduct']);
 export const TESZT_FORRASOK = Object.freeze({ fo: SEMLEGES_URL, salonic: 'https://medicalpiercing.salonic.hu/' });
 export const META_VEGPONT = (v = 'v21.0') => `https://graph.facebook.com/${v}/${META_DATASET}/events`;
 
@@ -63,10 +64,94 @@ export async function metaTesztVegpont({ request, env, fetchFn = fetch }) {
   const url = TESZT_FORRASOK[body.forras] || SEMLEGES_URL;
   const most = Math.floor(Date.now() / 1000);
   const torzs = tesztTorzs({ most, kod, esemeny, url, fbc: `fb.1.${most * 1000}.TESZTclaude`, fbp: `fb.1.${most * 1000}.1234567890`, esemenyId: `Teszt:${most}`, ua: request.headers.get('user-agent') || '' });
-  const r = await fetchFn(`${META_VEGPONT()}?access_token=${encodeURIComponent(env.META_CAPI_TOKEN)}`, {
+  // 2026-10-14: adathalmaz:'arnyek' -> a kulon ARNYEK adathalmaz (hozzaferes-ellenorzes, csak TEST-koddal)
+  const vegpont = body.adathalmaz === 'arnyek' ? `https://graph.facebook.com/v21.0/1650176753358464/events` : META_VEGPONT();
+  const r = await fetchFn(`${vegpont}?access_token=${encodeURIComponent(env.META_CAPI_TOKEN)}`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(torzs),
   });
   let valasz = null;
   try { valasz = await r.json(); } catch (e) { valasz = { nem_json: true }; }
   return json({ ok: r.ok, http: r.status, meta: valasz, kuldott_esemeny: torzs.data[0].event_name, url: torzs.data[0].event_source_url });
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// ARNYEKMERES (Feri, 2026-10-14 08:57 "mehet a meta teszt", 10:22: a GPT-javaslat szerinti 1. valtozat).
+// A foglalas ROGZITESEKOR (a koszonooldali bongeszo-keresbol) sajat szerveres Schedule megy a kampanyban NEM hasznalt
+// "ARNYEK - MP meres teszt" adathalmazba (1650176753358464), forraskent a Salonic-aldomainnel (a foglalas ott tortenik),
+// fbc/fbp-vel. A bongeszo user agentjet (a Meta website-esemenyhez keri) CSAK ebben a hivasban hasznaljuk, SEHOL NEM TAROLJUK.
+// Csak hirdetesi hozzajarulassal. A Salonic-igazolast csak a sajat osszevetesunkhoz hasznaljuk. Az eles adathalmazt nem erinti.
+// Kifele NINCS e-mail, telefon, nev, IP, szolgaltatasnev, helyszin.
+// Mod: mp_beallitas.meta_arnyek_mod = 'ki' | 'naplo' (alapertelmezes) | 'eles'; eles kuldes csak eles hoszton + tokennel.
+export const ARNYEK_DATASET = '1650176753358464';
+export const ARNYEK_ESEMENY = 'Schedule';
+export const SALONIC_FORRAS_URL = TESZT_FORRASOK.salonic;
+export const ARNYEK_VEGPONT = (v = 'v21.0') => `https://graph.facebook.com/${v}/${ARNYEK_DATASET}/events`;
+export const ARNYEK_SEMA = `CREATE TABLE IF NOT EXISTS mp_meta_arnyek (
+  kulcs TEXT PRIMARY KEY, mod TEXT NOT NULL, allapot TEXT NOT NULL, van_fbc INTEGER, van_fbp INTEGER, valasz TEXT, ido INTEGER NOT NULL)`;
+
+export async function arnyekMod(db) {
+  let m = '';
+  try { const r = await db.prepare("SELECT ertek FROM mp_beallitas WHERE kulcs = 'meta_arnyek_mod'").first(); m = String((r && r.ertek) || '').trim().toLowerCase(); } catch (e) { /* nincs */ }
+  if (m === 'ki' || m === 'eles') return m;
+  return 'naplo';
+}
+export function arnyekHatalyos(mod, env = {}, host = '') {
+  if (mod === 'ki') return 'ki';
+  if (mod === 'eles' && env.META_CAPI_TOKEN && host === ELES_HOST) return 'eles';
+  return 'naplo';
+}
+
+/** Jogosultsag (tiszta): eles, hirdetesi hozzajarulas, fbc vagy fbp, van user agent. */
+export function arnyekJogosult(sor, ua) {
+  if (!sor) return { ok: false, miert: 'nincs_sor' };
+  if (sor.kornyezet !== 'eles') return { ok: false, miert: 'nem_eles' };
+  if (Number(sor.hozzajarulas_hirdetes) !== 1) return { ok: false, miert: 'nincs_hozzajarulas' };
+  if (!sor.meta_fbc && !sor.meta_fbp) return { ok: false, miert: 'nincs_meta_azonosito' };
+  if (!ua) return { ok: false, miert: 'nincs_ua' };
+  return { ok: true };
+}
+
+/** Torzs (tiszta). Dob, ha a nem-azonosito mezokben erzekeny adat lenne. */
+export function arnyekTorzs(sor, ua) {
+  const user = { client_user_agent: String(ua).slice(0, 400) };
+  if (sor.meta_fbc) user.fbc = String(sor.meta_fbc);
+  if (sor.meta_fbp) user.fbp = String(sor.meta_fbp);
+  const e = { event_name: ARNYEK_ESEMENY, event_time: Number(sor.letrehozva), event_id: esemenyId(sor.kulcs), action_source: 'website', event_source_url: SALONIC_FORRAS_URL };
+  const ertek = Number(sor.ertek);
+  if (sor.ertek != null && Number.isFinite(ertek) && ertek > 0) e.custom_data = { currency: 'HUF', value: Math.round(ertek) };
+  if (vanErzekeny({ data: [e] })) throw new Error('mp_meta_erzekeny_adat');
+  return { data: [{ ...e, user_data: user }] };
+}
+
+/** Az uj foglalas arnyek-lepese. Soha nem dob; kulcsonkent egyszer. A user agent nem kerul a naplóba. */
+export async function metaArnyekLepes(db, sor, ua, env = {}, host = '', { fetchImpl = fetch, most = Math.floor(Date.now() / 1000) } = {}) {
+  try {
+    const j = arnyekJogosult(sor, ua);
+    if (!j.ok) return { kihagyva: j.miert };
+    await db.prepare(ARNYEK_SEMA).run();
+    const mod = arnyekHatalyos(await arnyekMod(db), env, host);
+    if (mod === 'ki') return { kihagyva: 'ki' };
+    const van = await db.prepare('SELECT allapot FROM mp_meta_arnyek WHERE kulcs = ?').bind(sor.kulcs).first();
+    if (van) return { kihagyva: 'mar_rogzitve' };
+    let torzs;
+    try { torzs = arnyekTorzs(sor, ua); } catch (e) { return { kihagyva: 'erzekeny_adat' }; }
+    let allapot = 'naplozva';
+    let valasz = null;
+    if (mod === 'eles') {
+      const nyersek = [sor.meta_fbc, sor.meta_fbp, env.META_CAPI_TOKEN, ua].filter(Boolean);
+      try {
+        const r = await fetchImpl(`${ARNYEK_VEGPONT()}?access_token=${encodeURIComponent(env.META_CAPI_TOKEN)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(torzs) });
+        const sz = await r.text();
+        let jj = null; try { jj = JSON.parse(sz); } catch (e) { /* nem JSON */ }
+        allapot = r.ok && jj && Number(jj.events_received) === 1 ? 'elkuldve' : 'hiba';
+        valasz = kitakar(sz, nyersek).slice(0, 400);
+      } catch (e) { allapot = 'hiba'; valasz = kitakar(String(e && e.message || e), nyersek).slice(0, 200); }
+    }
+    await db.prepare('INSERT OR IGNORE INTO mp_meta_arnyek (kulcs, mod, allapot, van_fbc, van_fbp, valasz, ido) VALUES (?,?,?,?,?,?,?)')
+      .bind(sor.kulcs, mod, allapot, sor.meta_fbc ? 1 : 0, sor.meta_fbp ? 1 : 0, valasz, most).run();
+    return { allapot, mod };
+  } catch (e) {
+    console.error('mp-meres: meta arnyek hiba', String(e && e.message || e).slice(0, 200));
+    return { kihagyva: 'hiba' };
+  }
 }
