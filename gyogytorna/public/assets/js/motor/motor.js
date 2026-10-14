@@ -168,6 +168,7 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
   .ablak[data-lepes="adatlap"] .adatlap-burok { margin: 0; }
 }
 .ablak[data-lepes="szolg"] .lepesek { display: none; }
+.fatyol.takar { background: #f3f8fc; }
 .hivas-doboz { margin-top: 14px; padding-top: 14px; border-top: 1px solid #e3ebf2; }
 .kartya.telefon { display: flex; align-items: center; gap: 12px; border: 2px dashed #0c4c8a; background: #fff; }
 .kartya.telefon:hover, .kartya.telefon:focus-visible { background: #f3f8fc; border-color: #0c4c8a; box-shadow: 0 0 0 3px #d9e8f4; }
@@ -208,6 +209,7 @@ export function nyit(ctx = {}) {
   host.setAttribute('data-gy-motor', '');
   const shadow = host.attachShadow({ mode: 'open' });
   shadow.innerHTML = `<style>${CSS}</style><div class="fatyol" role="dialog" aria-modal="true" aria-label="Időpontfoglalás"><div class="ablak"><div class="fej"><button class="gomb-ikon" data-vissza aria-label="Vissza" hidden>‹</button><h2>Időpontfoglalás</h2><button class="gomb-ikon" data-bezar aria-label="Bezárás">×</button></div><div class="lepesek"></div><div class="tartalom" tabindex="-1"></div></div></div>`;
+  if (ctx.takar) shadow.querySelector('.fatyol').classList.add('takar'); // a koztes foglalo oldal cimen: a mogotte levo tartalom rejtett, a hatter tompitas helyett tomor
   const elozoFokusz = document.activeElement;
   document.body.appendChild(host);
   // a hatter nem kezelheto: a host testvereit inert-te tesszuk (nyitott allapot alatt), bezaraskor visszaallitjuk; gorgetes-zar: csak overflow (nem body-fixed: ez okozta a Mosaic feher kepernyos hibajat)
@@ -226,6 +228,8 @@ export function nyit(ctx = {}) {
     staffId: ctx.employeeId && +ctx.employeeId > 0 ? String(ctx.employeeId) : null, szolg: null, slot: null, nap: null, honap: null, slotok: null, expected: null,
     bookingId: null, startUnix: Number.isInteger(+ctx.startUnix) && +ctx.startUnix > 0 ? +ctx.startUnix : null, mindegy: false,
   };
+  // a linkbol elore megadott helyszin / szakember: a szolgaltatas-valasztas utan is megmarad (csak a "Szolgaltatas" lepesre visszalepve torlodik)
+  const elore = { place: all.placeId, staff: all.staffId };
   const ctxFoglalas = foglalas.begin({ business: 'gyogytorna', source_page: ctx.forras || location.pathname });
   all.bookingId = ctxFoglalas.id;
   let lezart = false;
@@ -284,10 +288,12 @@ export function nyit(ctx = {}) {
     mindSzolg = Object.fromEntries(lista.filter(([, l]) => l));
     return mindSzolg;
   };
+  // ha a link egy konkret szakemberre mutat (/employees/<id>), csak az o szolgaltatasai latszanak
+  const szakemberSzolga = (s) => !all.staffId || (s.staffIds || []).includes(String(all.staffId));
   const csaladSzolgak = () => {
     if (!mindSzolg || !all.csalad) return [];
     const egyedi = new Map();
-    for (const [pid, l] of Object.entries(mindSzolg)) for (const s of l) if (csaladId(s) === all.csalad) { const e = egyedi.get(s.serviceId) || { ...s, helyek: [] }; e.helyek.push(+pid); egyedi.set(s.serviceId, e); }
+    for (const [pid, l] of Object.entries(mindSzolg)) for (const s of l) if (csaladId(s) === all.csalad && szakemberSzolga(s) && (!all.placeId || +pid === all.placeId)) { const e = egyedi.get(s.serviceId) || { ...s, helyek: [] }; e.helyek.push(+pid); egyedi.set(s.serviceId, e); }
     return [...egyedi.values()];
   };
 
@@ -306,8 +312,10 @@ export function nyit(ctx = {}) {
       if (all.szolg) return ugrik(all.staffId ? 'ido' : 'szakember');
       all.serviceId = null;
     }
+    // konkret szakember (link): a helyszine elore kitoltodik, ha csak egy van; csak az o szolgaltatasai latszanak
+    if (all.staffId && !all.placeId) { try { const st = (await adapter.getStaff())[all.staffId]; if (st && st.helyszinek && st.helyszinek.length === 1) { all.placeId = st.helyszinek[0]; elore.place = all.placeId; } } catch (e) { /* a helyszin-lepes megkerdezi */ } }
     const jelen = new Set();
-    for (const l of Object.values(m)) for (const s of l) jelen.add(csaladId(s));
+    for (const [pid, l] of Object.entries(m)) for (const s of l) if (szakemberSzolga(s) && (!all.placeId || +pid === all.placeId)) jelen.add(csaladId(s)); // elore megadott helyszin: csak ott elerheto szolgaltatasok
     const kartyak = CSALADOK.filter((c) => jelen.has(c.kod)).map((c) => ({ ...c }));
     if (jelen.has('egyeb')) kartyak.push({ kod: 'egyeb', nev: 'Egyéb szolgáltatás', leiras: 'További szolgáltatásaink' });
     // az ajanlott csalad (a belepesi link kontextusa: pl. allapotfelmeres-landing) elore kerul
@@ -560,8 +568,8 @@ export function nyit(ctx = {}) {
     if (t.hasAttribute('data-vissza')) return vissza();
     const d = t.dataset;
     if (t.hasAttribute('data-hivas')) { all.lepes = 'hivas'; return rajzol(); }
-    if (d.csalad) { all.csalad = d.csalad; all.szolg = null; all.placeId = null; all.staffId = null; return ugrik('valt'); }
-    if (d.valt) { all.szolg = csaladSzolgak().find((x) => x.serviceId === d.valt) || null; all.placeId = null; if (all.szolg) return ugrik('hely'); return; }
+    if (d.csalad) { all.csalad = d.csalad; all.szolg = null; all.placeId = elore.place; all.staffId = elore.staff; return ugrik('valt'); }
+    if (d.valt) { all.szolg = csaladSzolgak().find((x) => x.serviceId === d.valt) || null; all.placeId = elore.place; if (all.szolg) return ugrik('hely'); return; }
     if (d.lepes && (t.classList.contains('kesz') || !t.closest('.lepesek'))) return visszaLep(d.lepes);
     if (d.kiemelt) { const [pid, sid] = d.kiemelt.split(':'); all.placeId = +pid; all.staffId = sid; all.mindegy = false; all.nap = null; all.honap = null; all.slotok = null; return ugrik('ido'); }
     if (d.hely) { all.placeId = +d.hely; all.staffId = null; all.mindegy = false; return ugrik('szakember'); }

@@ -91,9 +91,22 @@
   var salonicLink = function (a) {
     var u;
     try { u = new URL(a.href); } catch (e) { return null; }
-    return u.hostname === HOSZT && !KIZART.test(u.pathname) ? u : null;
+    // a Salonic ket cime: gyogytornaszomhu.salonic.hu es (egyes cikkekben) booking.salonic.hu/gyogytornaszomhu/...
+    var sajat = u.hostname === HOSZT || (u.hostname === 'booking.salonic.hu' && /^\/gyogytornaszomhu\//i.test(u.pathname));
+    return sajat && !KIZART.test(u.pathname) ? u : null;
   };
   var jeloltLink = function (a) { return a.hasAttribute('data-gy-foglalas') ? a : null; };
+  // A koztes foglalo oldal (/online-gyogytorna/): marad az oldal (SEO, tartalom), de minden ra mutato foglalasi gomb a motort nyitja (nincs lapbetoltes), a cimere
+  // erkezo latogatonal pedig a motor magatol megnyilik, a mogotte levo tartalom addig rejtett (bezarva elokerul). A #horgony-linkek (pl. "TELEFONON FOGLALOK") nem.
+  var KOZTES = /^\/(online-gyogytorna|booking-auto)\/?$/i;
+  var azonosHoszt = function (h) { return String(h).replace(/^www\./, '') === location.hostname.replace(/^www\./, ''); };
+  var koztesLink = function (a) {
+    var h = a.getAttribute('href') || '';
+    if (!h || h.charAt(0) === '#') return null;
+    var u;
+    try { u = new URL(a.href); } catch (e) { return null; }
+    return azonosHoszt(u.hostname) && !u.hash && KOZTES.test(u.pathname) ? u : null;
+  };
   var szam = function (v) { return v && /^-?\d+$/.test(v) ? +v : null; };
   var betolt = null;
   var motor = function () {
@@ -106,25 +119,42 @@
     if (!a || !bekapcsolva()) return;
     var u = salonicLink(a);
     var jel = jeloltLink(a);
-    if (!u && !jel) return;
+    var kz = !u && !jel ? koztesLink(a) : null;
+    if (!u && !jel && !kz) return;
     e.preventDefault();
     var p = u ? u.searchParams : new URLSearchParams();
     var ctx = {
-      placeId: szam(p.get('placeId')), employeeId: szam(p.get('employeeId')) > 0 ? szam(p.get('employeeId')) : null,
+      placeId: szam(p.get('placeId')), employeeId: szam(p.get('employeeId')) > 0 ? szam(p.get('employeeId')) : (u && /\/employees\/(\d+)/i.exec(u.pathname) ? +/\/employees\/(\d+)/i.exec(u.pathname)[1] : null),
       serviceId: szam(p.get('serviceId')) > 0 ? p.get('serviceId') : null,
       csalad: jel ? jel.getAttribute('data-gy-foglalas') || null : null,
       link: u ? u.href : 'https://' + HOSZT + '/selectLocation', forras: location.pathname, apiBase: API,
       hivas: tarol('gy_hivas') === '1' || (HIVAS === 1 && tarol('gy_hivas') !== '0'),
     };
-    motor().then(function (m) { m.nyit(ctx); }, function () { if (u) location.href = u.href; });
+    motor().then(function (m) { m.nyit(ctx); }, function () { if (u) location.href = u.href; else if (kz) location.href = kz.href; });
   }, false);
 
   // elomelegites
   var meleg = function (e) {
     if (!bekapcsolva()) return;
     var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
-    if (a && (salonicLink(a) || jeloltLink(a))) motor().then(function (m) { m.melegit(); }, function () { /* */ });
+    if (a && (salonicLink(a) || jeloltLink(a) || koztesLink(a))) motor().then(function (m) { m.melegit(); }, function () { /* */ });
   };
+  // a koztes oldal cimen betolteskor magatol megnyilik a foglalo (teljes kepernyon, a tartalom rejtve); ha a motor ki van kapcsolva / nem toltheto be, az oldal marad
+  // keresorobot / sebessegmero ne kapja a rejtett tartalmat (SEO): ott az oldal marad
+  var ROBOT = /bot|crawl|spider|slurp|lighthouse|pagespeed|inspectiontool|gtmetrix|pingdom/i.test(navigator.userAgent || '');
+  if (KOZTES.test(location.pathname)) {
+    var felfed = function () { document.documentElement.classList.remove('gy-fh'); };
+    if (ROBOT || !bekapcsolva()) felfed();
+    else {
+      document.documentElement.classList.add('gy-fh');
+      try { var st = document.createElement('style'); st.textContent = 'html.gy-fh body{visibility:hidden!important}html.gy-fh [data-gy-motor]{visibility:visible!important}'; document.head.appendChild(st); } catch (e) { /* */ }
+      var auto = function () {
+        var c = { link: 'https://' + HOSZT + '/selectLocation', forras: location.pathname, apiBase: API, takar: true, bezarasUtan: felfed, hivas: tarol('gy_hivas') === '1' || (HIVAS === 1 && tarol('gy_hivas') !== '0') };
+        motor().then(function (m) { m.nyit(c); }, felfed);
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', auto); else auto();
+    }
+  }
   document.addEventListener('pointerover', meleg, { passive: true });
   document.addEventListener('touchstart', meleg, { passive: true });
 })();
