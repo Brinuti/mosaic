@@ -1,0 +1,890 @@
+{
+ "futtatva": "2026-10-14T04:35:48.353Z",
+ "leiras": "suti-sav levetele (DECISION #170): valodi suti.js, valodi Chromium, helyi dist, minden kulso host tiltva",
+ "eredmeny": "PASS",
+ "db": 84,
+ "ellenorzesek": [
+  {
+   "nev": "1) [asztali 1280px] uj latogato: a sav / doboz NEM latszik (20 mp-es ablakon belul sem)",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "1) [asztali 1280px] ...tovabbra sem latszik",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "1) [asztali 1280px] Consent Mode default: analytics / ad_storage / ad_user_data / ad_personalization = granted",
+   "ok": true,
+   "adat": {
+    "ad_storage": "granted",
+    "ad_user_data": "granted",
+    "ad_personalization": "granted",
+    "analytics_storage": "granted",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "1) [asztali 1280px] ...functionality_storage denied (a terkep / velemenyek tovabbra is kifejezett engedellyel)",
+   "ok": true,
+   "adat": {
+    "ad_storage": "granted",
+    "ad_user_data": "granted",
+    "ad_personalization": "granted",
+    "analytics_storage": "granted",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "1) [asztali 1280px] ...nincs wait_for_update (nincs mire varni)",
+   "ok": true,
+   "adat": {
+    "ad_storage": "granted",
+    "ad_user_data": "granted",
+    "ad_personalization": "granted",
+    "analytics_storage": "granted",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "1) [asztali 1280px] a default a GTM (gtm.js) ELOTT kerul a dataLayerbe",
+   "ok": true,
+   "adat": {
+    "default": 0,
+    "gtm": 2
+   }
+  },
+  {
+   "nev": "1) [asztali 1280px] a GTM betolt (a kerest megprobalta - a Playwright megszakitotta) es a GA4 gtag.js is",
+   "ok": true,
+   "adat": [
+    "www.googletagmanager.com/gtm.js?id=GTM-PST2HB22",
+    "www.googletagmanager.com/gtag/js?id=G-H4206SQ0Q7"
+   ]
+  },
+  {
+   "nev": "1) [asztali 1280px] mhSuti.mod(): alapertek_granted_v1 / uj_alapertek / ana + adv igen, fun nem",
+   "ok": true,
+   "adat": {
+    "mod": "alapertek_granted_v1",
+    "forras": "uj_alapertek",
+    "fun": false,
+    "ana": true,
+    "adv": true
+   }
+  },
+  {
+   "nev": "1) [asztali 1280px] dataLayer: mh_consent_init (mod + forras + 0/1 jelzok, szemelyes adat nelkul)",
+   "ok": true,
+   "adat": {
+    "event": "mh_consent_init",
+    "mh_consent_mod": "alapertek_granted_v1",
+    "mh_consent_forras": "uj_alapertek",
+    "mh_consent_fun": 0,
+    "mh_consent_ana": 1,
+    "mh_consent_adv": 1
+   }
+  },
+  {
+   "nev": "1) [asztali 1280px] nincs tarolt dontes (mh_cc), nincs Wix consent-policy suti (nem irunk hozzajarulast a latogato helyett)",
+   "ok": true,
+   "adat": {
+    "mhCc": null,
+    "mhAttr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_gclid_0123456789\",\"ts\":1791952521}}}",
+    "suti": false
+   }
+  },
+  {
+   "nev": "1) [asztali 1280px] engedely(): ana + adv igen, fun nem",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "1) [asztali 1280px] attribucio.js a hatalyos (alapertek) hozzajarulast latja: a kattintas-azonosito eltarolodik (mh_attr)",
+   "ok": true,
+   "adat": [
+    "v",
+    "google"
+   ]
+  },
+  {
+   "nev": "1) [asztali 1280px] nincs kezeletlen JS-hiba",
+   "ok": true,
+   "adat": []
+  },
+  {
+   "nev": "2) [asztali 1280px] korabbi elutasitas: a default MINDEN denied, a GTM elott",
+   "ok": true,
+   "adat": {
+    "ad_storage": "denied",
+    "ad_user_data": "denied",
+    "ad_personalization": "denied",
+    "analytics_storage": "denied",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "2) [asztali 1280px] nincs sav; forras = korabbi_dontes; engedely hamis",
+   "ok": true,
+   "adat": {
+    "mod": "alapertek_granted_v1",
+    "forras": "korabbi_dontes",
+    "fun": false,
+    "ana": false,
+    "adv": false
+   }
+  },
+  {
+   "nev": "2) [asztali 1280px] az attribucio.js nem ir (nincs marketing-hozzajarulas)",
+   "ok": true,
+   "adat": {
+    "mhCc": "{\"v\":1,\"t\":1791952523804,\"fun\":false,\"ana\":false,\"adv\":false}",
+    "mhAttr": null,
+    "suti": false
+   }
+  },
+  {
+   "nev": "2) [asztali 1280px] nincs kezeletlen JS-hiba",
+   "ok": true,
+   "adat": []
+  },
+  {
+   "nev": "3) [asztali 1280px] reszleges tiltas: analytics granted, ad_storage / ad_user_data / ad_personalization denied, functionality granted",
+   "ok": true,
+   "adat": {
+    "ad_storage": "denied",
+    "ad_user_data": "denied",
+    "ad_personalization": "denied",
+    "analytics_storage": "granted",
+    "functionality_storage": "granted",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "3) [asztali 1280px] forras = korabbi_dontes; nincs sav",
+   "ok": true,
+   "adat": {
+    "mod": "alapertek_granted_v1",
+    "forras": "korabbi_dontes",
+    "fun": true,
+    "ana": true,
+    "adv": false
+   }
+  },
+  {
+   "nev": "4) [asztali 1280px] Wix-suti (elutasitva): default MINDEN denied a GTM elott; forras = korabbi_dontes; nincs sav",
+   "ok": true,
+   "adat": {
+    "def": {
+     "ad_storage": "denied",
+     "ad_user_data": "denied",
+     "ad_personalization": "denied",
+     "analytics_storage": "denied",
+     "functionality_storage": "denied",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    },
+    "m": {
+     "mod": "alapertek_granted_v1",
+     "forras": "korabbi_dontes",
+     "fun": false,
+     "ana": false,
+     "adv": false
+    }
+   }
+  },
+  {
+   "nev": "4) [asztali 1280px] a Wix-dontes atkerult a sajat taroloba (mh_cc)",
+   "ok": true,
+   "adat": "{\"v\":1,\"t\":1791952500000,\"fun\":false,\"ana\":false,\"adv\":false,\"wix\":true}"
+  },
+  {
+   "nev": "5) [asztali 1280px] reszleges bejegyzes: statisztika + marketing = alapertek (granted), funkcionalis = igen",
+   "ok": true,
+   "adat": {
+    "def": {
+     "ad_storage": "granted",
+     "ad_user_data": "granted",
+     "ad_personalization": "granted",
+     "analytics_storage": "granted",
+     "functionality_storage": "granted",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    },
+    "m": {
+     "mod": "alapertek_granted_v1",
+     "forras": "uj_alapertek",
+     "fun": true,
+     "ana": true,
+     "adv": true
+    }
+   }
+  },
+  {
+   "nev": "6) [asztali 1280px] enged('fun'): a hatalyos ana + adv marad granted, fun granted",
+   "ok": true,
+   "adat": {
+    "mod": "alapertek_granted_v1",
+    "forras": "uj_alapertek",
+    "fun": true,
+    "ana": true,
+    "adv": true
+   }
+  },
+  {
+   "nev": "6) [asztali 1280px] ...a Consent Mode update: analytics / ad_* granted, functionality granted (nem vonodik vissza)",
+   "ok": true,
+   "adat": {
+    "ad_storage": "granted",
+    "ad_user_data": "granted",
+    "ad_personalization": "granted",
+    "analytics_storage": "granted",
+    "functionality_storage": "granted",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "6) [asztali 1280px] ...a tarolt bejegyzes reszleges, ana / adv false (egy visszaallitas utan sem szamit kifejezett engedelynek)",
+   "ok": true,
+   "adat": {
+    "v": 1,
+    "t": 1791952528100,
+    "fun": true,
+    "ana": false,
+    "adv": false,
+    "reszleges": true
+   }
+  },
+  {
+   "nev": "6) [asztali 1280px] ...Wix-suti nem keletkezik (reszleges)",
+   "ok": true,
+   "adat": {
+    "mhCc": "{\"v\":1,\"t\":1791952528100,\"fun\":true,\"ana\":false,\"adv\":false,\"reszleges\":true}",
+    "mhAttr": "{\"v\":1}",
+    "suti": false
+   }
+  },
+  {
+   "nev": "7) [asztali 1280px] a lablec \"Suti beallitasok\" link megvan",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "7) [asztali 1280px] a link megnyitja a beallitast; statisztika + marketing be van pipalva, funkcionalis nincs",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "7) [asztali 1280px] a beallitasban jelzi, hogy a statisztikai / marketing sutik alapbol be vannak kapcsolva",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "7) [asztali 1280px] \"Mindet elutasitom\": Consent Mode update = minden denied",
+   "ok": true,
+   "adat": {
+    "ad_storage": "denied",
+    "ad_user_data": "denied",
+    "ad_personalization": "denied",
+    "analytics_storage": "denied",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "7) [asztali 1280px] ...mh_cc: ana / adv / fun false; Wix consent-policy suti is megirodik",
+   "ok": true,
+   "adat": {
+    "c": {
+     "v": 1,
+     "t": 1791952529535,
+     "fun": false,
+     "ana": false,
+     "adv": false
+    },
+    "suti": true
+   }
+  },
+  {
+   "nev": "7) [asztali 1280px] dataLayer: mh_consent_valtozas, forras = modositott",
+   "ok": true,
+   "adat": {
+    "event": "mh_consent_valtozas",
+    "mh_consent_mod": "alapertek_granted_v1",
+    "mh_consent_forras": "modositott",
+    "mh_consent_fun": 0,
+    "mh_consent_ana": 0,
+    "mh_consent_adv": 0
+   }
+  },
+  {
+   "nev": "7) [asztali 1280px] visszavonas utan az ertesites latszik: ujratoltes szukseges",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "7) [asztali 1280px] az attribucio.js a visszavonaskor torli a tarolt adatot (mh_attr nincs)",
+   "ok": true,
+   "adat": {
+    "mhCc": "{\"v\":1,\"t\":1791952529535,\"fun\":false,\"ana\":false,\"adv\":false}",
+    "mhAttr": null,
+    "suti": true
+   }
+  },
+  {
+   "nev": "7) [asztali 1280px] ujratoltes utan: default MINDEN denied a GTM elott, forras = korabbi_dontes, nincs sav",
+   "ok": true,
+   "adat": {
+    "def": {
+     "ad_storage": "denied",
+     "ad_user_data": "denied",
+     "ad_personalization": "denied",
+     "analytics_storage": "denied",
+     "functionality_storage": "denied",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    },
+    "m2": {
+     "mod": "alapertek_granted_v1",
+     "forras": "korabbi_dontes",
+     "fun": false,
+     "ana": false,
+     "adv": false
+    }
+   }
+  },
+  {
+   "nev": "7) [asztali 1280px] nincs kezeletlen JS-hiba",
+   "ok": true,
+   "adat": []
+  },
+  {
+   "nev": "8) [asztali 1280px] mentes (marketing ki): analytics granted, ad_storage / ad_user_data / ad_personalization denied",
+   "ok": true,
+   "adat": {
+    "ad_storage": "denied",
+    "ad_user_data": "denied",
+    "ad_personalization": "denied",
+    "analytics_storage": "granted",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "8) [asztali 1280px] ...ertesites latszik (marketing visszavonva); forras = modositott",
+   "ok": true,
+   "adat": {
+    "mod": "alapertek_granted_v1",
+    "forras": "modositott",
+    "fun": false,
+    "ana": true,
+    "adv": false
+   }
+  },
+  {
+   "nev": "8) [asztali 1280px] a \"Bezar\" elrejti a dobozt",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "9) [asztali 1280px] \"Mindet elfogadom\": update minden granted; nincs ertesites; a doboz elrejtodik",
+   "ok": true,
+   "adat": {
+    "upd": {
+     "ad_storage": "granted",
+     "ad_user_data": "granted",
+     "ad_personalization": "granted",
+     "analytics_storage": "granted",
+     "functionality_storage": "granted",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    },
+    "c": {
+     "v": 1,
+     "t": 1791952533387,
+     "fun": true,
+     "ana": true,
+     "adv": true
+    }
+   }
+  },
+  {
+   "nev": "1) [mobil 390px] uj latogato: a sav / doboz NEM latszik (20 mp-es ablakon belul sem)",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "1) [mobil 390px] ...tovabbra sem latszik",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "1) [mobil 390px] Consent Mode default: analytics / ad_storage / ad_user_data / ad_personalization = granted",
+   "ok": true,
+   "adat": {
+    "ad_storage": "granted",
+    "ad_user_data": "granted",
+    "ad_personalization": "granted",
+    "analytics_storage": "granted",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "1) [mobil 390px] ...functionality_storage denied (a terkep / velemenyek tovabbra is kifejezett engedellyel)",
+   "ok": true,
+   "adat": {
+    "ad_storage": "granted",
+    "ad_user_data": "granted",
+    "ad_personalization": "granted",
+    "analytics_storage": "granted",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "1) [mobil 390px] ...nincs wait_for_update (nincs mire varni)",
+   "ok": true,
+   "adat": {
+    "ad_storage": "granted",
+    "ad_user_data": "granted",
+    "ad_personalization": "granted",
+    "analytics_storage": "granted",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "1) [mobil 390px] a default a GTM (gtm.js) ELOTT kerul a dataLayerbe",
+   "ok": true,
+   "adat": {
+    "default": 0,
+    "gtm": 2
+   }
+  },
+  {
+   "nev": "1) [mobil 390px] a GTM betolt (a kerest megprobalta - a Playwright megszakitotta) es a GA4 gtag.js is",
+   "ok": true,
+   "adat": [
+    "www.googletagmanager.com/gtm.js?id=GTM-PST2HB22",
+    "www.googletagmanager.com/gtag/js?id=G-H4206SQ0Q7"
+   ]
+  },
+  {
+   "nev": "1) [mobil 390px] mhSuti.mod(): alapertek_granted_v1 / uj_alapertek / ana + adv igen, fun nem",
+   "ok": true,
+   "adat": {
+    "mod": "alapertek_granted_v1",
+    "forras": "uj_alapertek",
+    "fun": false,
+    "ana": true,
+    "adv": true
+   }
+  },
+  {
+   "nev": "1) [mobil 390px] dataLayer: mh_consent_init (mod + forras + 0/1 jelzok, szemelyes adat nelkul)",
+   "ok": true,
+   "adat": {
+    "event": "mh_consent_init",
+    "mh_consent_mod": "alapertek_granted_v1",
+    "mh_consent_forras": "uj_alapertek",
+    "mh_consent_fun": 0,
+    "mh_consent_ana": 1,
+    "mh_consent_adv": 1
+   }
+  },
+  {
+   "nev": "1) [mobil 390px] nincs tarolt dontes (mh_cc), nincs Wix consent-policy suti (nem irunk hozzajarulast a latogato helyett)",
+   "ok": true,
+   "adat": {
+    "mhCc": null,
+    "mhAttr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_gclid_0123456789\",\"ts\":1791952534}}}",
+    "suti": false
+   }
+  },
+  {
+   "nev": "1) [mobil 390px] engedely(): ana + adv igen, fun nem",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "1) [mobil 390px] attribucio.js a hatalyos (alapertek) hozzajarulast latja: a kattintas-azonosito eltarolodik (mh_attr)",
+   "ok": true,
+   "adat": [
+    "v",
+    "google"
+   ]
+  },
+  {
+   "nev": "1) [mobil 390px] nincs kezeletlen JS-hiba",
+   "ok": true,
+   "adat": []
+  },
+  {
+   "nev": "2) [mobil 390px] korabbi elutasitas: a default MINDEN denied, a GTM elott",
+   "ok": true,
+   "adat": {
+    "ad_storage": "denied",
+    "ad_user_data": "denied",
+    "ad_personalization": "denied",
+    "analytics_storage": "denied",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "2) [mobil 390px] nincs sav; forras = korabbi_dontes; engedely hamis",
+   "ok": true,
+   "adat": {
+    "mod": "alapertek_granted_v1",
+    "forras": "korabbi_dontes",
+    "fun": false,
+    "ana": false,
+    "adv": false
+   }
+  },
+  {
+   "nev": "2) [mobil 390px] az attribucio.js nem ir (nincs marketing-hozzajarulas)",
+   "ok": true,
+   "adat": {
+    "mhCc": "{\"v\":1,\"t\":1791952535823,\"fun\":false,\"ana\":false,\"adv\":false}",
+    "mhAttr": null,
+    "suti": false
+   }
+  },
+  {
+   "nev": "2) [mobil 390px] nincs kezeletlen JS-hiba",
+   "ok": true,
+   "adat": []
+  },
+  {
+   "nev": "3) [mobil 390px] reszleges tiltas: analytics granted, ad_storage / ad_user_data / ad_personalization denied, functionality granted",
+   "ok": true,
+   "adat": {
+    "ad_storage": "denied",
+    "ad_user_data": "denied",
+    "ad_personalization": "denied",
+    "analytics_storage": "granted",
+    "functionality_storage": "granted",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "3) [mobil 390px] forras = korabbi_dontes; nincs sav",
+   "ok": true,
+   "adat": {
+    "mod": "alapertek_granted_v1",
+    "forras": "korabbi_dontes",
+    "fun": true,
+    "ana": true,
+    "adv": false
+   }
+  },
+  {
+   "nev": "4) [mobil 390px] Wix-suti (elutasitva): default MINDEN denied a GTM elott; forras = korabbi_dontes; nincs sav",
+   "ok": true,
+   "adat": {
+    "def": {
+     "ad_storage": "denied",
+     "ad_user_data": "denied",
+     "ad_personalization": "denied",
+     "analytics_storage": "denied",
+     "functionality_storage": "denied",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    },
+    "m": {
+     "mod": "alapertek_granted_v1",
+     "forras": "korabbi_dontes",
+     "fun": false,
+     "ana": false,
+     "adv": false
+    }
+   }
+  },
+  {
+   "nev": "4) [mobil 390px] a Wix-dontes atkerult a sajat taroloba (mh_cc)",
+   "ok": true,
+   "adat": "{\"v\":1,\"t\":1791952500000,\"fun\":false,\"ana\":false,\"adv\":false,\"wix\":true}"
+  },
+  {
+   "nev": "5) [mobil 390px] reszleges bejegyzes: statisztika + marketing = alapertek (granted), funkcionalis = igen",
+   "ok": true,
+   "adat": {
+    "def": {
+     "ad_storage": "granted",
+     "ad_user_data": "granted",
+     "ad_personalization": "granted",
+     "analytics_storage": "granted",
+     "functionality_storage": "granted",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    },
+    "m": {
+     "mod": "alapertek_granted_v1",
+     "forras": "uj_alapertek",
+     "fun": true,
+     "ana": true,
+     "adv": true
+    }
+   }
+  },
+  {
+   "nev": "6) [mobil 390px] enged('fun'): a hatalyos ana + adv marad granted, fun granted",
+   "ok": true,
+   "adat": {
+    "mod": "alapertek_granted_v1",
+    "forras": "uj_alapertek",
+    "fun": true,
+    "ana": true,
+    "adv": true
+   }
+  },
+  {
+   "nev": "6) [mobil 390px] ...a Consent Mode update: analytics / ad_* granted, functionality granted (nem vonodik vissza)",
+   "ok": true,
+   "adat": {
+    "ad_storage": "granted",
+    "ad_user_data": "granted",
+    "ad_personalization": "granted",
+    "analytics_storage": "granted",
+    "functionality_storage": "granted",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "6) [mobil 390px] ...a tarolt bejegyzes reszleges, ana / adv false (egy visszaallitas utan sem szamit kifejezett engedelynek)",
+   "ok": true,
+   "adat": {
+    "v": 1,
+    "t": 1791952540003,
+    "fun": true,
+    "ana": false,
+    "adv": false,
+    "reszleges": true
+   }
+  },
+  {
+   "nev": "6) [mobil 390px] ...Wix-suti nem keletkezik (reszleges)",
+   "ok": true,
+   "adat": {
+    "mhCc": "{\"v\":1,\"t\":1791952540003,\"fun\":true,\"ana\":false,\"adv\":false,\"reszleges\":true}",
+    "mhAttr": "{\"v\":1}",
+    "suti": false
+   }
+  },
+  {
+   "nev": "7) [mobil 390px] a lablec \"Suti beallitasok\" link megvan",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "7) [mobil 390px] a link megnyitja a beallitast; statisztika + marketing be van pipalva, funkcionalis nincs",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "7) [mobil 390px] a beallitasban jelzi, hogy a statisztikai / marketing sutik alapbol be vannak kapcsolva",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "7) [mobil 390px] \"Mindet elutasitom\": Consent Mode update = minden denied",
+   "ok": true,
+   "adat": {
+    "ad_storage": "denied",
+    "ad_user_data": "denied",
+    "ad_personalization": "denied",
+    "analytics_storage": "denied",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "7) [mobil 390px] ...mh_cc: ana / adv / fun false; Wix consent-policy suti is megirodik",
+   "ok": true,
+   "adat": {
+    "c": {
+     "v": 1,
+     "t": 1791952541415,
+     "fun": false,
+     "ana": false,
+     "adv": false
+    },
+    "suti": true
+   }
+  },
+  {
+   "nev": "7) [mobil 390px] dataLayer: mh_consent_valtozas, forras = modositott",
+   "ok": true,
+   "adat": {
+    "event": "mh_consent_valtozas",
+    "mh_consent_mod": "alapertek_granted_v1",
+    "mh_consent_forras": "modositott",
+    "mh_consent_fun": 0,
+    "mh_consent_ana": 0,
+    "mh_consent_adv": 0
+   }
+  },
+  {
+   "nev": "7) [mobil 390px] visszavonas utan az ertesites latszik: ujratoltes szukseges",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "7) [mobil 390px] az attribucio.js a visszavonaskor torli a tarolt adatot (mh_attr nincs)",
+   "ok": true,
+   "adat": {
+    "mhCc": "{\"v\":1,\"t\":1791952541415,\"fun\":false,\"ana\":false,\"adv\":false}",
+    "mhAttr": null,
+    "suti": true
+   }
+  },
+  {
+   "nev": "7) [mobil 390px] ujratoltes utan: default MINDEN denied a GTM elott, forras = korabbi_dontes, nincs sav",
+   "ok": true,
+   "adat": {
+    "def": {
+     "ad_storage": "denied",
+     "ad_user_data": "denied",
+     "ad_personalization": "denied",
+     "analytics_storage": "denied",
+     "functionality_storage": "denied",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    },
+    "m2": {
+     "mod": "alapertek_granted_v1",
+     "forras": "korabbi_dontes",
+     "fun": false,
+     "ana": false,
+     "adv": false
+    }
+   }
+  },
+  {
+   "nev": "7) [mobil 390px] nincs kezeletlen JS-hiba",
+   "ok": true,
+   "adat": []
+  },
+  {
+   "nev": "8) [mobil 390px] mentes (marketing ki): analytics granted, ad_storage / ad_user_data / ad_personalization denied",
+   "ok": true,
+   "adat": {
+    "ad_storage": "denied",
+    "ad_user_data": "denied",
+    "ad_personalization": "denied",
+    "analytics_storage": "granted",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "8) [mobil 390px] ...ertesites latszik (marketing visszavonva); forras = modositott",
+   "ok": true,
+   "adat": {
+    "mod": "alapertek_granted_v1",
+    "forras": "modositott",
+    "fun": false,
+    "ana": true,
+    "adv": false
+   }
+  },
+  {
+   "nev": "8) [mobil 390px] a \"Bezar\" elrejti a dobozt",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "9) [mobil 390px] \"Mindet elfogadom\": update minden granted; nincs ertesites; a doboz elrejtodik",
+   "ok": true,
+   "adat": {
+    "upd": {
+     "ad_storage": "granted",
+     "ad_user_data": "granted",
+     "ad_personalization": "granted",
+     "analytics_storage": "granted",
+     "functionality_storage": "granted",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    },
+    "c": {
+     "v": 1,
+     "t": 1791952544999,
+     "fun": true,
+     "ana": true,
+     "adv": true
+    }
+   }
+  },
+  {
+   "nev": "10) index: a Meta-pixel (3473839859576758) init + PageView, a fbevents.js kerese megprobalva",
+   "ok": true,
+   "adat": [
+    [
+     "init",
+     "3473839859576758"
+    ],
+    [
+     "track",
+     "PageView"
+    ]
+   ]
+  },
+  {
+   "nev": "10) elutasitott latogato: a Meta-pixel logika valtozatlan (mint eddig: hozzajarulastol fuggetlenul betolt)",
+   "ok": true,
+   "adat": [
+    [
+     "init",
+     "3473839859576758"
+    ],
+    [
+     "track",
+     "PageView"
+    ]
+   ]
+  },
+  {
+   "nev": "10) /aszf (a pixel-listan kivul): nincs Meta-pixel; a Consent Mode default itt is granted",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "11) az oldal sav / doboz es JS-hiba nelkul betolt (#mh-cc nem latszik, #mh-cc-reopen nem latszik)",
+   "ok": true,
+   "adat": []
+  }
+ ],
+ "megfigyelesek": [
+  {
+   "nev": "[asztali 1280px] uj latogato: a foglalaskor a szervernek kuldott hozz (attribucio.js hozzajarulas())",
+   "adat": "{}"
+  },
+  {
+   "nev": "[mobil 390px] uj latogato: a foglalaskor a szervernek kuldott hozz (attribucio.js hozzajarulas())",
+   "adat": "{}"
+  }
+ ]
+}

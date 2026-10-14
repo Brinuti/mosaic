@@ -13,11 +13,18 @@
 //   ana = statisztika  (Google Analytics 4)
 //   adv = marketing    (Google Ads, Meta, TikTok - a GTM-en es a Pixelen at)
 //
-// A tobbi szkript a window.mhSuti feluleten at kerdezheti le a dontest:
+// 2026-10 (meresi oldal DECISION #170, a tulajdonos dontese): a suti-sav NEM jelenik meg. Uj latogatonal a statisztika (ana) es a
+// marketing (adv) hozzajarulas ALAPERTEKE "granted" (Consent Mode v2: analytics_storage, ad_storage, ad_user_data, ad_personalization);
+// a funkcionalis (fun: terkep, velemenyek) tovabbra is csak kifejezett engedellyel. A korabban TAROLT dontes (sajat tarolo mh_cc /
+// Wix "consent-policy" suti) MINDIG felulirja az alaperteket (elutasitas, reszleges tiltas is), a GTM es a pixelek betoltese ELOTT.
+// A lablec "Suti beallitasok" linkje marad: ott a hozzajarulas modosithato / visszavonhato. Visszaallitas: ennek a commitnak a revertje.
+//
+// A tobbi szkript a window.mhSuti feluleten at kerdezheti le a HATALYOS dontest (tarolt dontes, ennek hianyaban az alapertek):
 //   mhSuti.engedely('fun')         -> true/false
-//   mhSuti.figyel(fn)              -> fn(dontes) minden valtozaskor
+//   mhSuti.figyel(fn)              -> fn(hatalyos dontes) minden valtozaskor
 //   mhSuti.enged('fun')            -> egy kategoria utolagos engedelyezese
-//   mhSuti.beallitasok()           -> a sav megnyitasa a beallitasoknal
+//   mhSuti.beallitasok()           -> a beallitasok megnyitasa
+//   mhSuti.mod()                   -> { mod, forras, fun, ana, adv }: a consent-mod es a forrasa (uj_alapertek | korabbi_dontes | modositott)
 (function () {
   'use strict';
 
@@ -70,6 +77,10 @@
   var ELES_DOMAINEK = ['mosaicheadspa.hu', 'www.mosaicheadspa.hu'];
   var KULCS = 'mh_cc';
   var ERVENYES_NAP = 365; // a tajekoztato szerint 12 honap
+  // Consent-mod (DECISION #170): a dontes NELKULI (uj) latogato alapertekei. fun marad tiltva (csak kifejezett engedellyel).
+  var CONSENT_MOD = 'alapertek_granted_v1';
+  var ALAP = { fun: false, ana: true, adv: true };
+  var SAV_AUTO = false; // a sav dontes nelkuli latogatonak SOHA nem jelenik meg magatol (true = a regi viselkedes; a visszaallitas modja a commit revertje)
 
   var w = window, d = document;
   if (w.mhSuti) return;
@@ -124,6 +135,18 @@
   }
   var figyelok = [];
 
+  // A HATALYOS hozzajarulas: a tarolt dontes, ha van; dontes nelkul az alapertek (DECISION #170). A "reszleges" bejegyzes (a latogato csak a
+  // funkcionalis kategoriat engedte meg, pl. a terkepnel, a savban nem dontott) a statisztikarol / marketingrol NEM dont: ott az alapertek
+  // ervenyes (a bejegyzesben ana / adv false marad, hogy egy visszaallitas utan se szamitson kifejezett engedelynek).
+  function hatalyos() {
+    if (!dontes) return { fun: ALAP.fun, ana: ALAP.ana, adv: ALAP.adv };
+    if (dontes.reszleges) return { fun: !!dontes.fun, ana: ALAP.ana, adv: ALAP.adv };
+    return { fun: !!dontes.fun, ana: !!dontes.ana, adv: !!dontes.adv };
+  }
+  // A hatalyos hozzajarulas forrasa: uj_alapertek (nincs tarolt dontes) | korabbi_dontes (a tarolt dontes ervenyes: sajat tarolo / Wix-suti) |
+  // modositott (a latogato ebben a munkamenetben allitott a beallitasokban).
+  var forras = dontes && !dontes.reszleges ? 'korabbi_dontes' : 'uj_alapertek';
+
   // --- Google Consent Mode v2 ------------------------------------------
   // Ugyanazok a jelek, amiket a Wix integracioja allitott.
   w.dataLayer = w.dataLayer || [];
@@ -141,6 +164,12 @@
       personalization_storage: 'granted',
       security_storage: 'granted'
     };
+  }
+
+  // A consent-mod es a forrasa a dataLayerben (T2 / elemzes). Csak kiolvashato jel: a GTM-ben nincs ra cimke; szemelyes adat nincs benne.
+  function jelzes(esemeny) {
+    var h = hatalyos();
+    w.dataLayer.push({ event: esemeny, mh_consent_mod: CONSENT_MOD, mh_consent_forras: forras, mh_consent_fun: h.fun ? 1 : 0, mh_consent_ana: h.ana ? 1 : 0, mh_consent_adv: h.adv ? 1 : 0 });
   }
 
   function betolt(src) {
@@ -206,10 +235,12 @@
     }
   }
 
-  // alapallapot: amig nincs dontes, minden tiltva
-  var alap = jelek(dontes);
-  if (!dontes) alap.wait_for_update = 500;
+  // alapallapot: a hatalyos hozzajarulas (dontes nelkul az alapertek: statisztika + marketing granted). Ez kerul a dataLayerbe a GTM es a
+  // pixelek betoltese ELOTT (merokodok() lejjebb hivodik); a tarolt dontes (elutasitas / reszleges tiltas) itt mar felulirta az alaperteket.
+  // wait_for_update nem kell: nincs mire varni (a savbol ujabb dontes nem erkezik magatol).
+  var alap = jelek(hatalyos());
   gtag('consent', 'default', alap);
+  jelzes('mh_consent_init');
 
   // A Trustindex ertekeles-snippet (csillagok a Google-talalatban) a Wixen is
   // hozzajarulastol fuggetlenul futott: sutit nem hasznal, csak strukturalt adatot ad.
@@ -219,17 +250,22 @@
 
   // --- dontes rogzitese ---------------------------------------------------
   // reszleges: csak egy kategoriat engedett (pl. a terkepnel), a savban meg nem dontott
+  // Visszaadja: vissza lett-e vonva valami (a statisztika vagy a marketing az elozo hatalyos allapothoz kepest kikapcsolt) - ilyenkor kell ujratoltes.
   function rogzit(fun, ana, adv, reszleges) {
+    var elozo = hatalyos();
     dontes = { v: 1, t: Date.now(), fun: !!fun, ana: !!ana, adv: !!adv };
-    if (reszleges) dontes.reszleges = true;
+    if (reszleges) dontes.reszleges = true; else forras = 'modositott';
     tarol(dontes);
-    gtag('consent', 'update', jelek(dontes));
+    var uj = hatalyos();
+    gtag('consent', 'update', jelek(uj));
     // A Wix is ezt az esemenyt kuldte - ha a GTM-ben erre epul egy aktivalo, maradjon mukodokepes.
     w.dataLayer.push({ event: 'consentPolicyChanged' });
+    jelzes('mh_consent_valtozas');
     merokodok();
     for (var i = 0; i < figyelok.length; i++) {
-      try { figyelok[i](dontes); } catch (e) { /* egy hibas figyelo ne allitsa meg a tobbit */ }
+      try { figyelok[i](uj); } catch (e) { /* egy hibas figyelo ne allitsa meg a tobbit */ }
     }
+    return (elozo.ana && !uj.ana) || (elozo.adv && !uj.adv);
   }
 
   // --- a sav --------------------------------------------------------------
@@ -239,8 +275,9 @@
     '#mh-cc{position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483000;max-width:520px;margin:0 auto;background:#fff;color:#222;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.18);padding:8px 10px 8px 14px;font-size:13px;line-height:1.4;display:none}' +
     '#mh-cc h2{font-size:15px;margin:0 0 6px;font-weight:600}' +
     '#mh-cc a{color:inherit;text-decoration:underline}' +
-    '#mh-cc-main{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}' +
-    '#mh-cc-main .mh-txt{flex:1 1 auto;margin:0}' +
+    '#mh-cc-main,#mh-cc-ertesites{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}' +
+    '#mh-cc-main .mh-txt,#mh-cc-ertesites .mh-txt{flex:1 1 auto;margin:0}' +
+    '#mh-cc .mh-bev{margin:0 0 6px;color:#666}' +
     '#mh-cc .mh-row{display:flex;gap:8px;flex-wrap:wrap}' +
     '#mh-cc button{cursor:pointer;border-radius:999px;padding:7px 14px;font-size:13px;border:1px solid #222;background:#fff;color:#222;white-space:nowrap}' +
     '#mh-cc button.mh-primary{background:#222;color:#fff}' +
@@ -264,6 +301,7 @@
       '</div>' +
       '<div id="mh-cc-settings" style="display:none">' +
         '<h2>Süti beállítások</h2>' +
+        '<p class="mh-bev">A statisztikai és a marketing sütik alapértelmezetten be vannak kapcsolva, itt kikapcsolhatók. <a href="/suti-tajekoztato" target="_blank" rel="noopener">Részletek</a></p>' +
         kategoria('', 'Feltétlenül szükséges', 'Az oldal működéséhez kellenek, nem kapcsolhatók ki.') +
         kategoria('mh-cc-fun', 'Funkcionális', 'Kényelmi funkciók, pl. vendégértékelések és a térkép megjelenítése.') +
         kategoria('mh-cc-ana', 'Statisztika', 'Megmutatja, hogyan használják a látogatók az oldalt.') +
@@ -274,6 +312,12 @@
           '<button type="button" class="mh-link" data-mh="reject">Mindet elutasítom</button>' +
         '</div>' +
       '</div>' +
+      // visszavonas utan: a mar betoltott meroszkriptek teljes leallitasahoz ujratoltes kell (a mentett dontes az ujratolteskor a GTM ELOTT ervenyes)
+      '<div id="mh-cc-ertesites" style="display:none">' +
+        '<p class="mh-txt">A beállítás mentve. A kikapcsolt sütik teljes leállításához töltse újra az oldalt.</p>' +
+        '<button type="button" class="mh-link" data-mh="close">Bezár</button>' +
+        '<button type="button" class="mh-primary" data-mh="reload">Újratöltés</button>' +
+      '</div>' +
     '</div>' +
     '<button type="button" id="mh-cc-reopen">Süti beállítások</button>';
 
@@ -282,11 +326,12 @@
   function nezet(melyik) {
     d.getElementById('mh-cc-main').style.display = melyik === 'main' ? 'flex' : 'none';
     d.getElementById('mh-cc-settings').style.display = melyik === 'settings' ? '' : 'none';
+    d.getElementById('mh-cc-ertesites').style.display = melyik === 'ertesites' ? 'flex' : 'none';
   }
   function mutat(melyik) {
     if (melyik === 'settings') {
-      // Elore bepipalt negyzet nem ervenyes hozzajarulas - dontes nelkul uresek.
-      var p = dontes || {};
+      // A negyzetek a HATALYOS allapotot mutatjak (DECISION #170: dontes nelkul a statisztika es a marketing be van kapcsolva, ezt latja a latogato).
+      var p = hatalyos();
       d.getElementById('mh-cc-fun').checked = !!p.fun;
       d.getElementById('mh-cc-ana').checked = !!p.ana;
       d.getElementById('mh-cc-adv').checked = !!p.adv;
@@ -301,6 +346,8 @@
   // A lebego "Suti beallitasok" gomb nem jelenik meg (kerésre): a hozzajarulas a
   // lablec "Suti beallitasok" linkjevel modosithato (lasd lableclink()).
   function elrejt() { stopIdozito(); sav.style.display = 'none'; ujra.style.display = 'none'; }
+  // A dontes rogzitese utan: ha a statisztika vagy a marketing ki lett kapcsolva (visszavonas), az ertesites jelzi az ujratoltes szuksegesseget; egyebkent elrejtjuk.
+  function vege(visszavont) { if (visszavont) mutat('ertesites'); else elrejt(); }
 
   // Ha a latogato 20 masodpercig nem nyul a savhoz, eltunik (dontes nelkul - ilyenkor
   // minden nem-szukseges kategoria tiltva marad), es ebben a munkamenetben nem jon vissza.
@@ -362,15 +409,16 @@
     sav.addEventListener('click', function (e) {
       var a = e.target && e.target.getAttribute && e.target.getAttribute('data-mh');
       if (!a) return;
-      if (a === 'accept') { rogzit(true, true, true); elrejt(); }
-      else if (a === 'reject') { rogzit(false, false, false); elrejt(); }
+      if (a === 'accept') vege(rogzit(true, true, true));
+      else if (a === 'reject') vege(rogzit(false, false, false));
       else if (a === 'settings') mutat('settings');
       else if (a === 'save') {
-        rogzit(d.getElementById('mh-cc-fun').checked,
+        vege(rogzit(d.getElementById('mh-cc-fun').checked,
           d.getElementById('mh-cc-ana').checked,
-          d.getElementById('mh-cc-adv').checked);
-        elrejt();
+          d.getElementById('mh-cc-adv').checked));
       }
+      else if (a === 'reload') { try { location.reload(); } catch (e) { /* nem baj */ } }
+      else if (a === 'close') elrejt();
     });
     ujra.addEventListener('click', function () { mutat('settings'); });
     ['pointerdown', 'focusin', 'mouseenter', 'touchstart'].forEach(function (ev) {
@@ -378,7 +426,8 @@
     });
     lableclink();
 
-    if ((!dontes || dontes.reszleges) && !rejtveMunkamenetben()) mutat('main');
+    // DECISION #170: a sav dontes nelkuli latogatonak nem jelenik meg magatol (SAV_AUTO = false); csak a lablec-linkkel / a beallitasok hivasaval nyilik meg
+    if (SAV_AUTO && (!dontes || dontes.reszleges) && !rejtveMunkamenetben()) mutat('main');
   }
 
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', felepit);
@@ -386,11 +435,13 @@
 
   // --- felulet a tobbi szkriptnek -------------------------------------------
   w.mhSuti = {
-    engedely: function (kat) { return !!(dontes && dontes[kat]); },
+    engedely: function (kat) { return !!hatalyos()[kat]; },
     figyel: function (fn) { figyelok.push(fn); },
+    // a consent-mod es a forrasa (T2_START / elemzes): { mod, forras: uj_alapertek | korabbi_dontes | modositott, fun, ana, adv }
+    mod: function () { var h = hatalyos(); return { mod: CONSENT_MOD, forras: forras, fun: h.fun, ana: h.ana, adv: h.adv }; },
     enged: function (kat) {
-      // A savot nyitva hagyjuk, ha meg nem dontott: egy terkep megnyitasa nem
-      // jelenti a statisztika es a marketing elutasitasat.
+      // Egy terkep megnyitasa nem jelenti a statisztika es a marketing elutasitasat: dontes nelkul "reszleges" bejegyzes keletkezik (ana / adv false marad
+      // a tarolasban, a hatalyos allapotban viszont az alapertek ervenyes), igy a latogato Consent Mode allapota nem valtozik.
       var p = dontes || {}, reszleges = !dontes || !!dontes.reszleges;
       rogzit(kat === 'fun' || p.fun, kat === 'ana' || p.ana, kat === 'adv' || p.adv, reszleges);
     },
