@@ -15,13 +15,13 @@ import { KEREM_EPITO, PLATFORMOK } from '../../netlify/lib/meres/platformok.js';
 import { elosztas, erkezesMent } from '../../netlify/lib/meres/elosztas.js';
 
 export const FIXTURE = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'fixtures', 'golden-motor-kerelem.json');
-const BID = 'mb_0muwq2ciorsos0tznsfyliq';
-const PI = 'pi_3Sabc123XYZabc456';
-const NOW = Date.UTC(2026, 9, 6, 14, 0, 0);
-const IDO = Math.floor(NOW / 1000) - 60;
-const ENV = { META_TESZT_KOD: 'TEST12345', TIKTOK_TESZT_KOD: 'TEST67890', GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001' };
-const TELJES_ENV = { ...ENV, MERES_ELOSZTO: '1', META_CAPI_TOKEN: 't', TIKTOK_EVENTS_TOKEN: 't', GOOGLE_ARNYEK_WEBHOOK_URL: 'https://hooks.zapier.com/hooks/catch/1/teszt/', GA4_TESZT_API_SECRET: 't' };
-const BE = () => ({
+export const BID = 'mb_0muwq2ciorsos0tznsfyliq';
+export const PI = 'pi_3Sabc123XYZabc456';
+export const NOW = Date.UTC(2026, 9, 6, 14, 0, 0);
+export const IDO = Math.floor(NOW / 1000) - 60;
+export const ENV = { META_TESZT_KOD: 'TEST12345', TIKTOK_TESZT_KOD: 'TEST67890', GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001' };
+export const TELJES_ENV = { ...ENV, MERES_ELOSZTO: '1', META_CAPI_TOKEN: 't', TIKTOK_EVENTS_TOKEN: 't', GOOGLE_ARNYEK_WEBHOOK_URL: 'https://hooks.zapier.com/hooks/catch/1/teszt/', GA4_TESZT_API_SECRET: 't' };
+export const BE = () => ({
   google: { gclid: { ertek: 'Cj0KCQjw_TESZT_gclid_0123456789', ts: IDO - 100 }, wbraid: { ertek: 'CoMKCQ_wbraid_TESZT_0123', ts: IDO - 50 } },
   meta: { fbc: `fb.1.${(IDO - 90) * 1000}.IwAR_fbclid_TESZT_01`, fbclid: 'IwAR_fbclid_TESZT_01', ts: IDO - 90 },
   tiktok: { ttclid: { ertek: 'E.C.P.ttclid_TESZT_01', ts: IDO - 80 } },
@@ -29,14 +29,14 @@ const BE = () => ({
   fbp: `fb.1.${(IDO - 9000) * 1000}.1234567890`, ttp: 'ttp_TESZT_0123456789abcdef',
   ga4: { client_id: '1234567890.1759759200', session_id: '1759759200', measurement_id: 'G-H4206SQ0Q7' },
 });
-const FK = (o = {}) => ({ tipus: 'foglalas', uzletag: 'headspa', source_entity_id: BID, jelleg: 'elso', kupon: false, ertek: 26900, ido: IDO, szolgaltatas: 'HeadSpa', vendeg: { email: 'Teszt.Claude@Example.com', telefon: '06 30 000 0001' }, ...o });
+export const FK = (o = {}) => ({ tipus: 'foglalas', uzletag: 'headspa', source_entity_id: BID, jelleg: 'elso', kupon: false, ertek: 26900, ido: IDO, szolgaltatas: 'HeadSpa', vendeg: { email: 'Teszt.Claude@Example.com', telefon: '06 30 000 0001' }, ...o });
 
-async function ctxEpit(fkMod, hozz, erk) {
+export async function ctxEpit(fkMod, hozz, erk) {
   const fk = FK(fkMod); const v = fk.vendeg; const h = hozzajarulasTisztit(hozz);
   return { fk, erk, ua: 'Mozilla/5.0 TESZT', ip: '203.0.113.7', oldal: 'https://www.mosaicheadspa.hu/koszonjuk', hozz: { meta: platformSzabaly('meta', h), tiktok: platformSzabaly('tiktok', h), google: platformSzabaly('google', h), ga4: platformSzabaly('ga4', h) },
     hash: { em: await hashEmail(v.email), ph_meta: await hashTelefon(v.telefon), ph_e164: await hashTelefon(v.telefon, { plusz: true }), ext: await sha256hex(v.email.toLowerCase()) } };
 }
-function d1() {
+export function d1() {
   const db = new DatabaseSync(':memory:');
   const kot = (sql, args = []) => ({
     run: async () => { const r = db.prepare(sql).run(...args); return { success: true, meta: { changes: Number(r.changes) } }; },
@@ -46,7 +46,7 @@ function d1() {
   return { db, prepare: (sql) => ({ bind: (...args) => kot(sql, args), ...kot(sql, []) }), batch: async (stmts) => { for (const s of stmts) await s.run(); } };
 }
 const SIKER = { 'graph.facebook.com': { events_received: 1, fbtrace_id: 'x' }, 'business-api.tiktok.com': { code: 0, message: 'OK' }, 'hooks.zapier.com': { results: [{}] }, 'google-analytics.com': {} };
-function hamisFetch() {
+export function hamisFetch() {
   const hivasok = [];
   const f = async (url, o = {}) => {
     const u = String(url);
