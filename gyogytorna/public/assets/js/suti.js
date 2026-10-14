@@ -12,6 +12,9 @@
 // Nevtelen statisztika (suti, IP, URL, azonosito nelkul): POST /api/gy-suti-stat - csak napi darabszam.
 // SAV_KI (Feri dontese, 2026-10-14: "sutisavot ne rakjunk ki egyaltalan"; ugyanaz a megoldas, mint a Medical Piercingen): se nagy doboz, se vekony sav. Dontes nelkul az alapertelmezes
 // "megadott" (statisztika + marketing; a szerver is ezt latja, GY_SAV_KI), a lableci "Suti beallitasok" link megmarad, a latogato kifejezett dontese (elutasitas, visszavonas) elsobbseget el.
+// SAV-TESZT (Feri 2026-10-14: "a savteszt mehet erre az egy oldalra"): SAV_KI modban a sav CSAK a /api/gy-suti-config-ban megadott oldal(ak)on jelenik meg, A/B valtozatokkal
+// (veletlen, ulesenkent allando valtozat; szoveg, kesleltetes / gorgetes, pozicio, gombsorrend a konfigbol, deploy nelkul). Statisztika valtozatra / oldalra / eszkozre bontva:
+// megjelent / elfogad / elutasit / reszleges / beall / dontes_nelkul (a sav latszott, de a latogato dontes nelkul elhagyta az oldalt). Minden mas oldalon nincs sav.
 // Biztonsagi fek: ha Google-iranyelv-figyelmeztetes erkezik, SAV_KI = false (a sav visszajon). Probahoz: window.GY_SAV_KI = false (a teszt allitja be).
 (function () {
   'use strict';
@@ -60,6 +63,8 @@
   };
 
   var sav = null;
+  var teszt = null; // az aktiv sav-teszt valtozata ({ id, cim, szoveg, ... }) ezen az oldalon, kulonben null
+  var mutatva = false, dontesNelkul = false;
   var STILUS =
     '#gy-cc,#gy-cc *{box-sizing:border-box;font-family:Poppins,"Segoe UI",Roboto,Arial,sans-serif}' +
     '#gy-cc{position:fixed;left:8px;right:8px;bottom:8px;z-index:2147482000;max-width:640px;margin:0 auto;background:#fff;color:#1b2733;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.22);padding:12px 14px;font-size:13px;line-height:1.45;display:none}' +
@@ -74,6 +79,7 @@
     '#gy-cc[data-nezet=fo]{left:0;right:0;bottom:0;max-width:none;border-radius:0;padding:5px 10px;font-size:12px;line-height:1.3;box-shadow:0 -1px 6px rgba(0,0,0,.15)}' +
     '#gy-cc-fo{display:flex;align-items:center;gap:8px}#gy-cc-fo p{flex:1 1 auto;margin:0}#gy-cc-fo .gy-gombok{flex:0 0 auto;flex-wrap:nowrap;gap:6px}' +
     '#gy-cc-fo .gy-gomb{flex:0 0 auto;min-width:0;padding:4px 10px;font-size:12px;border-width:1px}#gy-cc-fo .gy-link{padding:4px 2px;font-size:11px}' +
+    '#gy-cc[data-poz=felso]{top:8px;bottom:auto}' +
     '#gy-cc .gy-nagy{display:none}#gy-cc[data-nezet=nagy] .gy-nagy{display:block}' +
     '#gy-cc[data-nezet=nagy]{max-width:560px;padding:16px 18px;font-size:14px}#gy-cc[data-nezet=nagy] #gy-cc-fo{display:block}#gy-cc[data-nezet=nagy] #gy-cc-fo p{margin:0 0 12px}' +
     '#gy-cc[data-nezet=nagy] #gy-cc-fo .gy-gombok{flex-wrap:wrap;gap:8px}#gy-cc[data-nezet=nagy] #gy-cc-fo .gy-gomb{flex:1 1 0;min-width:120px;padding:10px 14px;font-size:15px;border-width:2px}' +
@@ -84,8 +90,8 @@
   };
   var JELOLES =
     '<div id="gy-cc-fo">' +
-      '<h2 class="gy-nagy">Segítesz nekünk egy kattintással?</h2>' +
-      '<p>A sütikkel azt mérjük, melyik hirdetésünkből érkeznek a foglalások, így kevesebb felesleges hirdetést mutatunk. (<a href="' + ADATVEDELEM + '" target="_blank" rel="noopener">részletek</a>).</p>' +
+      '<h2 class="gy-nagy" id="gy-cc-cim">Segítesz nekünk egy kattintással?</h2>' +
+      '<p id="gy-cc-szoveg">A sütikkel azt mérjük, melyik hirdetésünkből érkeznek a foglalások, így kevesebb felesleges hirdetést mutatunk. (<a href="' + ADATVEDELEM + '" target="_blank" rel="noopener">részletek</a>).</p>' +
       // Elfogadom elol (asztalon balra, mobilon felul), az Elutasitom mogotte: ugyanakkora, ugyanolyan betu, csak kicsit halvanyabb
       '<div class="gy-gombok"><button type="button" class="gy-gomb" data-gy="elfogad">Elfogadom</button><button type="button" class="gy-gomb gy-halvany" data-gy="elutasit">Elutasítom</button><button type="button" class="gy-link" data-gy="beall">Beállítások</button></div>' +
     '</div>' +
@@ -109,7 +115,7 @@
   };
   var statKuld = function (e, n) {
     try {
-      var adat = JSON.stringify({ e: e, n: n || (sav && sav.getAttribute('data-nezet')) || '', m: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 1 : 0, v: SAV_VERZIO });
+      var adat = JSON.stringify({ e: e, n: n || (sav && sav.getAttribute('data-nezet')) || '', m: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 1 : 0, v: teszt ? teszt.id : SAV_VERZIO, p: teszt ? location.pathname : undefined });
       if (navigator.sendBeacon) navigator.sendBeacon(API + '/api/gy-suti-stat', new Blob([adat], { type: 'text/plain' }));
       else fetch(API + '/api/gy-suti-stat', { method: 'POST', body: adat, keepalive: true });
     } catch (x) { /* a statisztika soha nem zavarhatja a savot */ }
@@ -117,14 +123,72 @@
   var elrejt = function () { if (sav) sav.style.display = 'none'; };
   var lablec = function () {
     if (document.getElementById('gy-cc-lablec')) return;
-    var cel = null, l = document.querySelectorAll('footer a[href*="adatvedelmi-nyilatkozat"]');
-    for (var i = 0; i < l.length; i++) cel = l[i];
+    // az eles lablec: <ul id="nav2"> ... <li><a rel="privacy-policy" href=".../adatvedelmi-nyilatkozat/">; tartalek: barmelyik adatvedelmi link
+    var cel = document.querySelector('a[rel~="privacy-policy"]');
+    if (!cel) { var l = document.querySelectorAll('footer a[href*="adatvedelmi-nyilatkozat"]'); for (var i = 0; i < l.length; i++) cel = l[i]; }
     if (!cel) return;
     var a = document.createElement('a');
-    a.id = 'gy-cc-lablec'; a.href = '#suti-beallitasok'; a.textContent = 'Süti beállítások'; a.className = cel.className; a.style.color = 'inherit'; a.style.textDecoration = 'underline';
+    a.id = 'gy-cc-lablec'; a.href = '#suti-beallitasok'; a.textContent = 'Süti beállítások'; a.className = cel.className; a.style.color = 'inherit';
     a.addEventListener('click', function (e) { e.preventDefault(); mutat('beall'); });
-    cel.after(document.createTextNode(' - '), a);
+    var li = cel.parentElement;
+    if (li && li.tagName === 'LI' && li.parentElement) { var uj = document.createElement('li'); uj.className = li.className.replace(/\bmenu-item-privacy-policy\b|\bmenu-item-\d+\b/g, '').trim(); uj.appendChild(a); li.after(uj); }
+    else { a.style.textDecoration = 'underline'; cel.after(document.createTextNode(' - '), a); }
   };
+  // --- sav-teszt (SAV_KI mod): konfig a /api/gy-suti-config vegpontrol (deploy nelkul cserelheto) ---
+  var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var normUt = function (u) { u = String(u || '').split('?')[0].split('#')[0]; try { u = decodeURIComponent(u); } catch (e) { /* marad */ } return u.replace(/\/+$/, '') || '/'; };
+  var valasztVaz = function (lista) {
+    var tarolt = null;
+    try { tarolt = sessionStorage.getItem('gy_cc_v'); } catch (e) { /* */ }
+    for (var i = 0; i < lista.length; i++) if (lista[i].id === tarolt) return lista[i];
+    var ossz = 0; for (var j = 0; j < lista.length; j++) ossz += Math.max(0, +lista[j].suly || 0);
+    var r = Math.random() * (ossz || lista.length), v = lista[lista.length - 1];
+    for (var k = 0; k < lista.length; k++) { r -= ossz ? Math.max(0, +lista[k].suly || 0) : 1; if (r < 0) { v = lista[k]; break; } }
+    try { sessionStorage.setItem('gy_cc_v', v.id); } catch (e) { /* */ }
+    return v;
+  };
+  var tesztMegjelenit = function () {
+    if (dontes || !sav || mutatva) return;
+    var v = teszt;
+    var cim = document.getElementById('gy-cc-cim'), sz = document.getElementById('gy-cc-szoveg');
+    if (cim) cim.textContent = v.cim;
+    if (sz) sz.innerHTML = esc(v.szoveg) + ' (<a href="' + ADATVEDELEM + '" target="_blank" rel="noopener">részletek</a>).';
+    var gombok = document.querySelector('#gy-cc-fo .gy-gombok'), ok = gombok && gombok.querySelector('[data-gy=elfogad]'), nem = gombok && gombok.querySelector('[data-gy=elutasit]');
+    if (ok && nem) {
+      if (v.gombsorrend === 'elutasit_elol') gombok.insertBefore(nem, ok);
+      if (v.halvany === false) nem.classList.remove('gy-halvany');
+    }
+    sav.setAttribute('data-poz', v.pozicio === 'felso' ? 'felso' : 'also');
+    mutat('nagy');
+    mutatva = true; dontesNelkul = true;
+    statKuld('megjelent', 'nagy');
+  };
+  var tesztInditas = function () {
+    if (keretben) return;
+    var kuld = function (cfg) {
+      try {
+        if (!cfg || !cfg.aktiv || !cfg.valtozatok || !cfg.valtozatok.length) return;
+        var ut = normUt(location.pathname), egyezik = false;
+        for (var i = 0; i < (cfg.oldalak || []).length; i++) if (normUt(cfg.oldalak[i]) === ut) egyezik = true;
+        if (!egyezik) return;
+        teszt = valasztVaz(cfg.valtozatok);
+        var mutat2 = function () { tesztMegjelenit(); };
+        var kes = +teszt.kesleltetes || 0, gor = +teszt.gorgetes || 0;
+        if (!kes && !gor) return mutat2();
+        var kesz = false, egyszer = function () { if (kesz) return; kesz = true; window.removeEventListener('scroll', gorgetesFigyel); mutat2(); };
+        var gorgetesFigyel = function () { var m = document.documentElement.scrollHeight - window.innerHeight; if (gor && m > 0 && (window.pageYOffset / m) * 100 >= gor) egyszer(); };
+        if (gor) window.addEventListener('scroll', gorgetesFigyel, { passive: true });
+        if (kes) setTimeout(egyszer, kes * 1000);
+      } catch (e) { /* a teszt soha nem zavarhatja az oldalt */ }
+    };
+    try {
+      var cs = typeof AbortController === 'function' ? new AbortController() : null;
+      if (cs) setTimeout(function () { cs.abort(); }, 4000);
+      fetch(API + '/api/gy-suti-config', { credentials: 'omit', signal: cs ? cs.signal : undefined }).then(function (r) { return r.ok ? r.json() : null; }).then(kuld, function () { /* nincs teszt */ });
+    } catch (e) { /* */ }
+  };
+  // a sav latszott, de a latogato dontes nelkul elhagyta az oldalt (tovabblepes / bezaras): egyszer jelezzuk
+  window.addEventListener('pagehide', function () { if (teszt && mutatva && !dontes && dontesNelkul) { dontesNelkul = false; statKuld('dontes_nelkul', 'nagy'); } });
   var felepit = function () {
     if (sav || keretben || !document.body) return;
     var st = document.createElement('style'); st.textContent = STILUS; document.head.appendChild(st);
@@ -135,6 +199,7 @@
       var g = e.target && e.target.closest ? e.target.closest('[data-gy]') : null;
       if (!g) return;
       var mit = g.getAttribute('data-gy');
+      if (mit === 'elfogad' || mit === 'elutasit' || mit === 'mentes') mutatva = false;
       if (mit === 'elfogad') { statKuld('elfogad'); rogzit(true, true); elrejt(); }
       else if (mit === 'elutasit') { statKuld('elutasit'); rogzit(false, false); elrejt(); }
       else if (mit === 'beall') { statKuld('beall'); mutat('beall'); }
@@ -145,6 +210,7 @@
     });
     lablec();
     if (location.hash === '#suti-beallitasok') mutat('beall');
+    else if (!dontes && SAV_KI) tesztInditas();
     else if (!dontes && !SAV_KI) { // munkamenetenkent az elso oldalon nagyobb doboz, utana vekony sav; ket egyforma suly gomb
       var nagy = true;
       try { nagy = sessionStorage.getItem('gy_cc_nagy') !== '1'; sessionStorage.setItem('gy_cc_nagy', '1'); } catch (e) { /* */ }

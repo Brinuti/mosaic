@@ -6,6 +6,7 @@
 //   POST /api/gy-koszono     a koszonooldal a tokennel kapja a foglalas_kesz esemeny adatait (egyszer)
 //   POST /api/gy-kampanyok   (kulcsos) a Google Ads kampanylista napi szinkronja
 //   POST /api/gy-visszahivas a "telefonon egyeztetek idopontot" visszahivas-kerelem (nev + telefon), D1 + ertesito webhook
+//   GET/POST /api/gy-suti-config  a sav-teszt konfigja (GET: nyilvanos, rovid cache; POST: kulcsos csere, deploy nelkul)
 //   GET/POST /api/gy-admin   (kulcsos) riport, riasztasok, egyeztetes, visszahivasok
 // Hibaban a vendeg foglalasa NEM akad el: ezek a vegpontok csak a merest szolgaljak, a foglalast a Salonic rogziti.
 import { belepes, osszevon, cimkez, fizetett, hirdetesAzonositok } from './forras.js';
@@ -297,6 +298,15 @@ export async function adminVegpont({ request, env, deps = {} }) {
     const r = (await db.prepare('SELECT id, letrehozva, nev, email, tel, rendelo, surgosseg, hivhato, oldal, ertesitve, allapot FROM gy_visszahivas ORDER BY id DESC LIMIT 200').all()).results || [];
     return valasz(200, { ok: true, visszahivasok: r });
   }
+  if (u.searchParams.get('suti_teszt')) {
+    let t = [];
+    try { t = (await db.prepare('SELECT nap, verzio, oldal, eszkoz, esemeny, db FROM gy_suti_teszt ORDER BY nap DESC, verzio').all()).results || []; } catch (e) { /* meg nincs adat */ }
+    const ossz = {};
+    for (const x of t) { const k = `${x.verzio}|${x.oldal}|${x.eszkoz}`; const o = ossz[k] || (ossz[k] = { verzio: x.verzio, oldal: x.oldal, eszkoz: x.eszkoz, megjelent: 0, elfogad: 0, elutasit: 0, reszleges: 0, beall: 0, dontes_nelkul: 0 }); if (x.esemeny in o) o[x.esemeny] += x.db; }
+    // elfogadasi arany = elfogad / (elfogad + elutasit + reszleges + dontes_nelkul)
+    const sorok = Object.values(ossz).map((o) => { const nev = o.elfogad + o.elutasit + o.reszleges + o.dontes_nelkul; return { ...o, elfogadasi_arany: nev ? Math.round((1000 * o.elfogad) / nev) / 10 : null }; });
+    return valasz(200, { ok: true, definicio: 'elfogadasi_arany (%) = elfogad / (elfogad + elutasit + reszleges + dontes_nelkul)', osszesitett: sorok, napi: t });
+  }
   if (u.searchParams.get('riasztasok')) {
     const r = (await db.prepare('SELECT id, ido, tipus, uuid, adat FROM gy_riasztas ORDER BY id DESC LIMIT 200').all()).results || [];
     return valasz(200, { ok: true, riasztasok: r });
@@ -385,6 +395,57 @@ export async function visszahivasVegpont({ request, env, deps = {} }) {
   if (ertesitve && id) await db.prepare('UPDATE gy_visszahivas SET ertesitve = 1 WHERE id = ?').bind(id).run();
   else await riaszt(db, 'visszahivas_nincs_ertesites', { adat: { id }, most });
   return valasz(200, { ok: true });
+}
+
+// --- /api/gy-suti-config ------------------------------------------------------------------------------------------------------
+// A sav-teszt (A/B) konfigja: melyik oldal(ak)on latszik a sav, milyen valtozatokkal. A D1 gy_meta 'suti_teszt' kulcsa; alapertek: lent. Deploy nelkul csereli a kulcsos POST.
+export const SUTI_TESZT_ALAP = Object.freeze({
+  aktiv: true,
+  oldalak: ['/az-izuleti-fajdalom-okai-tunetei-es-gyogytornaja'],
+  valtozatok: [
+    { id: 'v1', suly: 50, cim: 'Segítesz nekünk egy kattintással?', szoveg: 'A sütikkel azt mérjük, melyik hirdetésünkből érkeznek a foglalások, így kevesebb felesleges hirdetést mutatunk.', kesleltetes: 0, gorgetes: 0, pozicio: 'also', gombsorrend: 'elfogad_elol', halvany: true },
+    { id: 'v2', suly: 50, cim: 'Segítesz nekünk?', szoveg: 'A sütikkel mérjük, melyik hirdetésünk hoz pácienst – így kevesebb felesleges hirdetést látsz.', kesleltetes: 3, gorgetes: 30, pozicio: 'also', gombsorrend: 'elfogad_elol', halvany: true },
+  ],
+});
+const UT_MINTA = /^\/[A-Za-z0-9\-_/.%]{0,150}$/;
+/** A konfig ellenorzese: ismeretlen mezo eldobva, hatarok kozott; hiba eseten null. Megtevesztes ellen: az Elutasitom mindig latszik (a gombsorrend / halvany csak a megjelenes, a gomb nem rejtheto). */
+export function sutiTesztEllenorzes(c) {
+  if (!c || typeof c !== 'object' || !Array.isArray(c.oldalak) || !Array.isArray(c.valtozatok)) return null;
+  if (c.oldalak.length > 10 || !c.oldalak.every((o) => typeof o === 'string' && UT_MINTA.test(o))) return null;
+  if (c.valtozatok.length < 1 || c.valtozatok.length > 4) return null;
+  const ids = new Set();
+  const vs = [];
+  for (const v of c.valtozatok) {
+    if (!v || typeof v.id !== 'string' || !/^v[0-9]{1,2}$/.test(v.id) || ids.has(v.id)) return null;
+    ids.add(v.id);
+    const sz = (x, max) => (typeof x === 'string' && x.trim().length >= 1 && x.length <= max ? x.trim() : null);
+    const cim = sz(v.cim, 80), szoveg = sz(v.szoveg, 240);
+    if (!cim || !szoveg) return null;
+    const n = (x, lo, hi, alap) => (x === undefined ? alap : Number.isFinite(+x) && +x >= lo && +x <= hi ? +x : NaN);
+    const suly = n(v.suly, 0, 100, 50), kes = n(v.kesleltetes, 0, 60, 0), gor = n(v.gorgetes, 0, 100, 0);
+    if ([suly, kes, gor].some(Number.isNaN)) return null;
+    vs.push({ id: v.id, suly, cim, szoveg, kesleltetes: kes, gorgetes: gor, pozicio: v.pozicio === 'felso' ? 'felso' : 'also', gombsorrend: v.gombsorrend === 'elutasit_elol' ? 'elutasit_elol' : 'elfogad_elol', halvany: v.halvany !== false });
+  }
+  return { aktiv: c.aktiv !== false, oldalak: c.oldalak, valtozatok: vs };
+}
+export async function sutiConfigVegpont({ request, env }) {
+  const db = env.GY_DB;
+  if (request.method === 'GET') {
+    let cfg = SUTI_TESZT_ALAP;
+    if (db) { try { await sema(db); const r = await db.prepare("SELECT ertek FROM gy_meta WHERE kulcs = 'suti_teszt'").first(); const j = r && JSON.parse(r.ertek); const ok = j && sutiTesztEllenorzes(j); if (ok) cfg = ok; } catch (e) { /* alapertek */ } }
+    return new Response(JSON.stringify(cfg), { status: 200, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=60', 'x-content-type-options': 'nosniff', 'access-control-allow-origin': '*' } });
+  }
+  if (request.method === 'POST') {
+    if (!(await kulcsOk(request, env, 'x-gy-kulcs', 'GY_ADMIN_KULCS_HASH'))) return valasz(401, { ok: false });
+    if (!db) return valasz(503, { ok: false, hiba: 'nincs_adatbazis' });
+    const be = await jsonTest(request, 16384);
+    const cfg = sutiTesztEllenorzes(be);
+    if (!cfg) return nincsKerelem('ervenytelen_konfig');
+    await sema(db);
+    await db.prepare("INSERT INTO gy_meta (kulcs, ertek) VALUES ('suti_teszt', ?1) ON CONFLICT(kulcs) DO UPDATE SET ertek = ?1").bind(JSON.stringify(cfg)).run();
+    return valasz(200, { ok: true, konfig: cfg });
+  }
+  return valasz(405, { ok: false });
 }
 
 export { eloAllapot };

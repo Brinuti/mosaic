@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { indit } from './serve.mjs';
+import { sha256Hex } from '../lib/titkos.js';
 const { chromium } = createRequire('/opt/node-tools/node_modules/')('playwright');
 const mod = process.argv[2] === 'mobil' ? 'mobil' : 'desktop';
 const srv = await indit({ env: { GY_HMAC_KULCS: 'suti-proba-kulcs-0123456789abcdef' } });
@@ -112,8 +113,10 @@ assert.equal(await suti(p), null, 'SAV_KI: nem irunk sutit dontes nelkul');
 }
 assert.deepEqual(await consent(p), [], 'SAV_KI: a default-ot a GTM adja, a szkript nem allit consentet dontes nelkul');
 assert.equal(await p.evaluate(() => window.gySuti.engedely('mark') && window.gySuti.engedely('stat') && !window.gySuti.dontott()), true);
-// a lableci / API-s "Suti beallitasok" megnyitja a savot; az elutasitas elsobbseget el
-await p.evaluate(() => window.gySuti.beallitasok());
+// a lableci "Suti beallitasok" link (az eles lablec szerkezete: ul#nav2 > li > a[rel=privacy-policy]) megnyitja a savot; az elutasitas elsobbseget el
+assert.equal(await p.locator('#nav2 li #gy-cc-lablec').count(), 1, 'lableci link megvan');
+assert.match(await p.locator('#gy-cc-lablec').innerText(), /Süti beállítások/);
+await p.locator('#gy-cc-lablec').click();
 await p.locator('#gy-cc-beall').waitFor();
 await p.locator('#gy-cc-stat').uncheck(); await p.locator('#gy-cc-mark').uncheck();
 await p.locator('[data-gy=mentes]').click();
@@ -124,6 +127,51 @@ await p.reload(); await p.waitForTimeout(500);
 assert.equal(await p.locator('#gy-cc').isVisible().catch(() => false), false);
 assert.equal(await p.evaluate(() => window.gySuti.engedely('mark')), false, 'a kifejezett elutasitas visszalepes utan is elsobbseget el');
 lep('SAV_KI: nincs sav, nincs suti, alap "megadott" (event + engedely), nincs consent-update dontes nelkul; a kifejezett elutasitas elsobbseget el es megmarad');
+savKi = false;
+
+// 6/c) SAV-TESZT (SAV_KI mod + konfig): a sav CSAK a teszt-oldalon latszik, A/B valtozatokkal, ulesenkent allando valtozattal; statisztika valtozatra / oldalra bontva
+savKi = true; srv.env.GY_SAV_KI = '1';
+srv.env.GY_ADMIN_KULCS_HASH = await sha256Hex('proba-admin');
+{
+  const cfg = { aktiv: true, oldalak: ['/booking-test'], valtozatok: [
+    { id: 'v1', suly: 100, cim: 'A cim', szoveg: 'A szoveg', kesleltetes: 0, gorgetes: 0 },
+    { id: 'v2', suly: 0, cim: 'B cim', szoveg: 'B szoveg', kesleltetes: 1, gorgetes: 0, pozicio: 'felso' } ] };
+  const ar = await fetch(`${O}/api/gy-suti-config`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-gy-kulcs': 'proba-admin', origin: O }, body: JSON.stringify(cfg) });
+  assert.equal(ar.status, 200);
+  // nem teszt-oldalon (nincs a listaban) nincs sav
+  c = await uj(); p = await c.newPage();
+  await p.goto(`${O}/`); await p.waitForTimeout(800);
+  assert.equal(await p.locator('#gy-cc').isVisible().catch(() => false), false);
+  // a teszt-oldalon: A valtozat (suly 100) azonnal latszik, a szoveg a konfigbol; nincs suti; megjelent-esemeny
+  await p.goto(`${O}/booking-test/`);
+  await p.locator('#gy-cc').waitFor({ state: 'visible' });
+  assert.equal(await p.locator('#gy-cc-cim').innerText(), 'A cim');
+  assert.match(await p.locator('#gy-cc-szoveg').innerText(), /^A szoveg/);
+  assert.equal(await suti(p), null);
+  assert.equal(await p.evaluate(() => sessionStorage.getItem('gy_cc_v')), 'v1');
+  // a valtozat az uleshez kotott: a konfig atvaltasa mellett is v1 marad ebben az ulesben
+  await fetch(`${O}/api/gy-suti-config`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-gy-kulcs': 'proba-admin', origin: O }, body: JSON.stringify({ ...cfg, valtozatok: [{ ...cfg.valtozatok[0], suly: 0 }, { ...cfg.valtozatok[1], suly: 100 }] }) });
+  await p.reload(); await p.locator('#gy-cc').waitFor({ state: 'visible' });
+  assert.equal(await p.locator('#gy-cc-cim').innerText(), 'A cim');
+  // doksi: Elfogadom elol; elfogadas -> cookie + consent update granted, a sav eltunik
+  assert.equal(await p.locator('#gy-cc-fo .gy-gombok button').first().getAttribute('data-gy'), 'elfogad');
+  await p.locator('#gy-cc-fo [data-gy=elfogad]').click();
+  assert.match(await suti(p), /^v1-s1-m1-t\d+$/);
+  await p.waitForTimeout(400);
+  // uj ules (uj kontextus): a konfig most B-t ad (kesleltetett, felso); a latogato dontes nelkul elhagyja az oldalt -> dontes_nelkul
+  const c2 = await uj(); const p2 = await c2.newPage();
+  await p2.goto(`${O}/booking-test/`);
+  assert.equal(await p2.locator('#gy-cc').isVisible().catch(() => false), false, 'B: kesleltetve jelenik meg');
+  await p2.locator('#gy-cc').waitFor({ state: 'visible', timeout: 5000 });
+  assert.equal(await p2.locator('#gy-cc-cim').innerText(), 'B cim');
+  assert.equal(await p2.locator('#gy-cc').getAttribute('data-poz'), 'felso');
+  await p2.goto(`${O}/`); await p2.waitForTimeout(800); // elhagyja az oldalt dontes nelkul
+  await c2.close();
+  const sorok = (await srv.env.GY_DB.prepare('SELECT verzio, oldal, esemeny, SUM(db) AS db FROM gy_suti_teszt GROUP BY verzio, oldal, esemeny ORDER BY verzio, esemeny').all()).results.map((x) => [x.verzio, x.oldal, x.esemeny, x.db]).filter((x) => !(x[0] === 'v1' && x[2] === 'dontes_nelkul')); // a v1 ujratoltese dontes nelkuli elhagyas is (a beacon kezbesitese idozites-fuggo)
+  assert.deepEqual(sorok, [['v1', '/booking-test/', 'elfogad', 1], ['v1', '/booking-test/', 'megjelent', 2], ['v2', '/booking-test/', 'dontes_nelkul', 1], ['v2', '/booking-test/', 'megjelent', 1]]);
+  await c.close();
+}
+lep('SAV-TESZT: csak a konfigban megadott oldalon latszik; A/B valtozat (ulesenkent allando, kesleltetes, pozicio, Elfogadom elol); statisztika valtozatra / oldalra bontva (megjelent, elfogad, dontes_nelkul)');
 savKi = false;
 
 // 7) statisztika: csak szamlalo, azonosito nelkul
