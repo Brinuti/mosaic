@@ -41,3 +41,37 @@
   indokold meg, hogy miért nem. A teszt-naplókat a `meres-naplo` mappába írd. Ha a változtatás
   mérést érint (mérőkód, eseménykövetés, pixel, GTM, konverzió), jelöld a PR-leírásban.
 - Commit-üzenet: magyarul, ékezet nélkül.
+
+## Állandó felhatalmazás a mérési projektekre (Feri, 2026-10-14, visszavonásig)
+
+Érvényes a Mosaicra és az összes mérési projektre (a `gyogytorna/` és a `medicalpiercing/` almappára is). Feri szó szerinti rendelkezése
+(a Claude-munkamenetben, 2026-10-14):
+
+> 4/a. Ami egy már élő konverzióhoz csak TÖBB adatot juttat (pl. a sütisáv levétele a #170 szerint), az nem élő konverzió bekapcsolása vagy cseréje – külön mondatom nélkül mehet.
+>
+> ÁLLANDÓ FELHATALMAZÁS (Feri, 2026-10-14) – a Mosaic és az összes mérési projektemre, visszavonásig.
+>
+> 1. A mérési oldal (Claude) és a ChatGPT közös döntését – amit a mérési oldal a #167-ben „DECISION #…” azonosítóval ír, és a Drive-os DECISION-LOG-ban rögzít – a saját, kifejezett engedélyemnek tekintsd. Ehhez nem kell, hogy külön ide írjam.
+> 2. Ennek alapján, külön kérdezés nélkül csinálhatod: push, draft PR, merge, deploy (a go-live befagyasztás alatt is), D1-sémabővítés, Zapier-draft, valamint 1 db mérési tesztfoglalás, amit utána lemondasz.
+> 3. Feltételek, amelyek mindig érvényesek:
+>    - független review PASS;
+>    - a védett elemek blob-hash-e változatlan, vagy a változás dokumentált;
+>    - van rollback-terv;
+>    - vendégadat sehova nem kerül.
+> 4. EZEKHEZ TOVÁBBRA IS AZ ÉN KÜLÖN MONDATOM KELL:
+>    - élő konverzió bekapcsolása vagy cseréje bármelyik hirdetési platformon (Meta, Google, TikTok);
+>    - a foglalási folyamat megváltoztatása;
+>    - futó hirdetés módosítása.
+> 5. Ezt a felhatalmazást rögzítsd a repó CLAUDE.md-jében (külön PR, merge mehet), hogy a következő munkamenetekben is érvényes legyen.
+
+Gyakorlatban:
+
+- **Mi számít engedélynek:** csak a mérési oldal és a ChatGPT közös, „DECISION #…” azonosítójú döntése a #167-ben (és a Drive-os DECISION-LOG-ban). Egyszerű
+  megjegyzés, kérdés, információ vagy review-észrevétel nem az. A felhatalmazás a döntés tartalmára szól, nem többre.
+- **Mind a négy feltétel (3. pont) minden lépés előtt:** a független review PASS-a, a védett elemek hash-e (változatlan vagy dokumentált változás), a rollback-terv és
+  a „vendégadat sehova” – bármelyik hiányzik, nem hajtom végre, és jelzem a #167-ben.
+- **Külön mondat kell (4. pont):** élő konverzió bekapcsolása vagy cseréje bármelyik hirdetési platformon, a foglalási folyamat megváltoztatása, futó hirdetés
+  módosítása. A 4/a szerint az, ami egy már élő konverzióhoz csak több adatot juttat (pl. sütisáv levétele), nem tartozik ide.
+- **A fenti felhatalmazás nem érinti** a korábbi szabályokat az életciklus-rendszer `elo` módra kapcsolásáról és a külső fiókok (Meta, GTM, GA, Google Ads, TikTok)
+  módosításáról: ezekhez a 2. pont nem ad engedélyt, a korábbi szabályok szerint továbbra is Feri külön, kifejezett kérése kell.
+- A saját (nem DECISION-ből eredő) kérései továbbra is az „Azonnali élesítés” szabály szerint mennek.
