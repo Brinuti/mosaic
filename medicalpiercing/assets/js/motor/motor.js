@@ -209,7 +209,7 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
    TOMOR: asztalon sehol nem logki (2 oszlop), mobilon egy kepernyore torekszik (mint a Salonic-adatlap: nincs lepesjelzo, kisebb fejlec,
    a ket rovid mezo - datum, varos - egymas mellett, rovid kepfeltoltes-felirat) */
 .urlap-fej { margin: 0 0 8px; font-size: 13px; line-height: 1.35; }
-.urlap { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; position: relative; }
+.urlap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; position: relative; }
 .urlap .mezo { grid-column: 1 / -1; min-width: 0; }
 .urlap .mezo.m-fel { grid-column: auto; }
 .mezo .cimke-szoveg { display: block; margin: 0 0 2px; font: 600 12px/1.3 'poppins-semibold', Poppins, Arial, sans-serif; }
@@ -233,6 +233,11 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
   .ablak[data-lepes="urlap"] .fej { padding: 4px 10px; }
   .ablak[data-lepes="urlap"] .tartalom { padding: 10px 14px 12px; }
   .cimke-szoveg .hosszu { display: none; } .cimke-szoveg .rovid { display: inline; }
+  /* iOS Safari: a datummezo a sajat oszlopa FOLE nyulik (a width:100% mellett a belso margo is hozzaadodik, es magasabb a tobbi mezonel): ugyanolyan dobozmodell, fix magassag */
+  .mezo input[type="date"] { -webkit-appearance: none; appearance: none; display: block; box-sizing: border-box !important; width: 100% !important; min-width: 0 !important; max-width: 100% !important; height: 37px; line-height: 1.3; text-align: left; }
+  .mezo input[type="date"]::-webkit-date-and-time-value { text-align: left; min-height: 1.3em; margin: 0; padding: 0; }
+  .mezo input[type="date"]::-webkit-datetime-edit { padding: 0; }
+  .urlap .mezo.m-fel input { min-width: 0; max-width: 100%; }
   .ablak[data-lepes="szolg"] .osszegzes { padding: 9px 12px; margin-bottom: 20px; font-size: 15px; line-height: 1.3; }
 }
 @media (max-width: 359px) {
@@ -320,6 +325,7 @@ export function nyit(ctx) {
   if (nyitott) nyitott.bezar();
   const host = document.createElement('div');
   host.setAttribute('data-mp-motor', '');
+  document.documentElement.setAttribute('data-mp-motor-nyitva', ''); // amig a foglalo nyitva van, a suti-sav rejtve (suti.js)
   const shadow = host.attachShadow({ mode: 'open' });
   shadow.innerHTML = `<style>${CSS}</style><div class="fatyol" role="dialog" aria-modal="true" aria-label="Időpontfoglalás"><div class="ablak"><div class="fej"><button class="gomb-ikon" data-vissza aria-label="Vissza" hidden>‹</button><h2>Időpontfoglalás</h2><button class="gomb-ikon" data-bezar aria-label="Bezárás">×</button></div><div class="lepesek"></div><div class="tartalom" tabindex="-1"></div></div></div>`;
   document.body.appendChild(host);
@@ -710,6 +716,7 @@ export function nyit(ctx) {
     document.documentElement.style.overflow = elozoOverflow;
     if (nezet && nezetEredeti !== null && nezet.getAttribute('content') !== nezetEredeti) nezet.setAttribute('content', nezetEredeti);
     host.remove();
+    document.documentElement.removeAttribute('data-mp-motor-nyitva');
     if (nyitott && nyitott.host === host) nyitott = null;
     try { if (typeof ctx.bezarasUtan === 'function') ctx.bezarasUtan(); } catch (e) { /* */ }
   }

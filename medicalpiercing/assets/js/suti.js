@@ -80,7 +80,9 @@
   // SAV-TESZT (Feri dontese, 2026-10-14 07:02): a sav CSAK konverzio szempontjabol semleges oldalakon jelenik meg
   // (kontroll-foglalas, utogondozasi cikk), hogy az elfogadasi aranyt merjuk (cel: >= 80%). Itt a t0 alapallapot
   // nem dontes, igy a sav megjelenik; a vendeg valasztasa (elfogad / elutasit) az egesz oldalon ervenyes.
-  var TESZT_OLDAL = /^\/(kontroll|shenmen-piercing-ezt-tedd-ha-begyulladt)\/?$/i.test(location.pathname);
+  // Feri kerese (2026-10-14, kb. 07:30): az URLAPROL a sav lekerul (a /kontroll oldal az urlapot nyitja meg, a sav rafedett): a kontroll-oldal kikerult a
+  // tesztoldalak kozul, es amig a foglalo ablak nyitva van, a sav rejtve van (akarmelyik oldalon; bezaras utan, ha nincs dontes, ujra latszik).
+  var TESZT_OLDAL = /^\/(shenmen-piercing-ezt-tedd-ha-begyulladt)\/?$/i.test(location.pathname);
   var SAV_KI = !TESZT_OLDAL;
   if (dontes && dontes.t === 0 && !SAV_KI) dontes = null;
   if (!dontes && SAV_KI) {
@@ -182,6 +184,7 @@
   var sav = null;
   var STILUS =
     '#mp-cc,#mp-cc *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}' +
+    'html[data-mp-motor-nyitva] #mp-cc{display:none!important}' +
     '#mp-cc{position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483600;max-width:640px;margin:0 auto;background:#fff;color:#2b2b38;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.22);padding:12px 14px;font-size:13px;line-height:1.45;display:none}' +
     '#mp-cc p{margin:0 0 10px}' +
     '#mp-cc a{color:inherit;text-decoration:underline}' +
