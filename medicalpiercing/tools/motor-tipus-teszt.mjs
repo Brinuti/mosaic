@@ -425,6 +425,41 @@ if (!MOBIL) {
   }
 }
 
+// P. az adatlap (utolso oldal) tetejen latszik a szakember (Feri kerese, 2026-10-14): Barki valasztasakor "Barki", kulonben a valasztott szakember
+//    (fejkep / monogram + becenev, ugyanaz a csempe, mint az idopont-lepesben); a Salonic adatlapja a szakembert nem mutatja
+{
+  const { ctx, p } = await uj();
+  await p.goto(CIM + '/idopontfoglalas', { waitUntil: 'load' });
+  await varj(p, '[data-tipus]'); await kattint(p, '[data-tipus="uj"]');
+  await varj(p, '[data-hely]'); await kattint(p, '[data-hely="6029"]');
+  const van = await varj(p, '[data-szolg]', 30000);
+  if (ok('P: a piercing-lista betoltodik (Budapest)', van)) {
+    await kattint(p, '[data-mit="egy"]'); await p.waitForTimeout(300);
+    await kattint(p, '[data-szolg]');
+    const ido = await varj(p, '[data-slot]', 40000);
+    if (ok('P: az idopontok betoltodnek', ido)) {
+      const chipek = await sr(p, 'return [...r.querySelectorAll("[data-staff]")].map(x=>({id:x.dataset.staff, szoveg:x.textContent.trim()}))');
+      ok('P: tobb szakember: Barki + nevek', chipek.length >= 3 && chipek[0].id === '', JSON.stringify(chipek));
+      await kattint(p, '[data-slot]'); // alapertek: Barki
+      const sav = () => sr(p, 'const c=r.querySelector(".adatlap-szakember .chip"); return c ? { szoveg: c.textContent.trim(), fejkep: !!c.querySelector(".fejkep"), cim: r.querySelector(".adatlap-szakember").textContent.trim(), lathato: c.getBoundingClientRect().height > 20 } : null');
+      ok('P: az adatlap tetejen "Szakember" sav latszik', await varj(p, '.adatlap-szakember'));
+      let m = await sav();
+      ok('P: Barki: a sav "Barki", fejkeppel (ikon)', !!m && m.szoveg === 'Bárki' && m.fejkep && m.lathato && /^Szakember/.test(m.cim), JSON.stringify(m));
+      // vissza az idopontokhoz, konkret szakember valasztasa
+      await kattint(p, '[data-vissza]');
+      await varj(p, '[data-staff]');
+      const kivalasztott = chipek.find((x) => x.id !== '');
+      await kattint(p, `[data-staff="${kivalasztott.id}"]`);
+      await varj(p, '[data-slot]');
+      await kattint(p, '[data-slot]');
+      await varj(p, '.adatlap-szakember');
+      m = await sav();
+      ok(`P: valasztott szakember (${kivalasztott.szoveg}): a sav ugyanazt a csempet mutatja, mint az idopont-lepes`, !!m && m.szoveg === kivalasztott.szoveg && m.fejkep && m.lathato, JSON.stringify({ var: kivalasztott.szoveg, sav: m }));
+    }
+  }
+  await ctx.close();
+}
+
 await b.close();
 console.log(hiba ? `\n${hiba} HIBA` : '\nMinden rendben');
 process.exit(hiba ? 1 : 0);

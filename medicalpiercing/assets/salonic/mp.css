@@ -232,7 +232,7 @@ body.customer-medicalpiercing.page-booking-guestData-body .cc-window .cc-complia
 /* ===== Gyogytorna-mintaju adatlap (Feri kerese, 2026-10-14): ugyanaz az elrendezes, mint a Gyogytornaszom foglalojaban (gyogytorna/public/salonic/gy.css),
  * a szinek MP-sek maradnak. Tartalma: a Salonic sajat sutisavja nem latszik; a "Kod ellenorzese" gomb a mezo fuggoleges kozepen; a "*-gal jelolt mezok"
  * mondat es a lemondasi hatarido sor nem kell (a lemondasi hatarido a visszaigazolo e-mailben benne van; a * jeloles a mezok mellett marad); rovidebb
- * hozzajarulasi szoveg, a jelolonegyzet a mezok bal szelen; szellosebb urlap. A reCAPTCHA-tajekoztatot a Google feltetelei miatt NEM rejtjuk el. ===== */
+ * hozzajarulasi szoveg, a jelolonegyzet a mezok bal szelen; a hirlevel-jelolonegyzet nem latszik (egyetlen jelolonegyzet marad); szellosebb urlap. A reCAPTCHA-tajekoztatot a Google feltetelei miatt NEM rejtjuk el. ===== */
 /* a Salonic sajat sutisavja ("Az oldal hasznalataval hozzajarulsz...") ne latszodjon az adatlapon */
 body.customer-medicalpiercing.page-booking-guestData-body .cc-window, body.customer-medicalpiercing.page-booking-guestData-body .cc-revoke, body.customer-medicalpiercing.page-booking-guestData-body .cc-window.cc-banner, body.customer-medicalpiercing.page-booking-guestData-body .cc-window.cc-banner.cc-bottom { display: none !important; }
 /* mondatok, amik nem kellenek: a "*-gal jelolt mezok" (a mezoket tartalmazo doboz kozvetlen szovege) es a lemondasi sor + vonal */
@@ -247,11 +247,12 @@ body.customer-medicalpiercing.page-booking-guestData-body .input-group > .form-c
 body.customer-medicalpiercing.page-booking-guestData-body .input-group-prepend { margin: 0 !important; align-self: center !important; display: flex !important; align-items: center !important; }
 body.customer-medicalpiercing.page-booking-guestData-body .input-group-prepend .input-group-text { padding: 0 0 0 10px !important; margin: 0 !important; background: none !important; border: 0 !important; align-items: center !important; line-height: 1 !important; }
 body.customer-medicalpiercing.page-booking-guestData-body .btn-check-coupon-code { margin: 0 !important; }
+/* a hirlevel-feliratkozas jelolonegyzete nem kell (Feri kerese, 2026-10-14): az adatlapon egyetlen jelolonegyzet marad (a hozzajarulas); nem bejelolve a feliratkozas "nem" */
+body.customer-medicalpiercing.page-booking-guestData-body .form-check.newsletter-container { display: none !important; }
 /* jelolonegyzetek: a mezok bal szelevel egy vonalban kezdodnek */
 body.customer-medicalpiercing.page-booking-guestData-body .form-check { padding-left: 0 !important; margin-left: 0 !important; }
 body.customer-medicalpiercing.page-booking-guestData-body .form-check label { padding-left: 0 !important; margin: 0 !important; display: flex !important; flex-wrap: wrap !important; align-items: baseline !important; column-gap: 0 !important; }
 body.customer-medicalpiercing.page-booking-guestData-body .form-check label > input[type=checkbox] { margin: 0 8px 0 0 !important; flex: none !important; }
-body.customer-medicalpiercing.page-booking-guestData-body .form-check.newsletter-container label { flex-wrap: nowrap !important; align-items: flex-start !important; }
 body.customer-medicalpiercing.page-booking-guestData-body .form-check:not(.newsletter-container) label > input[type=checkbox] { order: 0 !important; }
 body.customer-medicalpiercing.page-booking-guestData-body .form-check:not(.newsletter-container) label::before { order: 1 !important; }
 body.customer-medicalpiercing.page-booking-guestData-body .form-check:not(.newsletter-container) label > a.policy:nth-of-type(1) { order: 2 !important; }
@@ -264,14 +265,12 @@ body.customer-medicalpiercing.page-booking-guestData-body .form-check:not(.newsl
 body.customer-medicalpiercing.page-booking-guestData-body .form-check:not(.newsletter-container) label > a.policy:nth-of-type(1) { margin-right: 4px !important; }
 body.customer-medicalpiercing.page-booking-guestData-body .form-check:not(.newsletter-container) label > a.policy:nth-of-type(2)::before { content: 'és a '; display: inline-block; text-decoration: none; color: var(--mh-kozep); font-size: 11.5px; margin-right: 4px; }
 body.customer-medicalpiercing.page-booking-guestData-body .form-check:not(.newsletter-container) label > a.policy:nth-of-type(2)::after { content: '.'; display: inline-block; text-decoration: none; color: var(--mh-kozep); font-size: 11.5px; }
-body.customer-medicalpiercing.page-booking-guestData-body .form-check.newsletter-container label { font-size: 11.5px !important; line-height: 1.4 !important; color: var(--mh-kozep) !important; }
 /* keskeny telefonon (320 px) a hozzajarulas sora ket sorban marad (a * ne keruljon kulon sorba) */
 @media (max-width: 359px) {
   body.customer-medicalpiercing.page-booking-guestData-body .form-check:not(.newsletter-container) label > a, body.customer-medicalpiercing.page-booking-guestData-body .form-check:not(.newsletter-container) label > span.required,
   body.customer-medicalpiercing.page-booking-guestData-body .form-check:not(.newsletter-container) label::before, body.customer-medicalpiercing.page-booking-guestData-body .form-check:not(.newsletter-container) label > a.policy:nth-of-type(2)::before,
   body.customer-medicalpiercing.page-booking-guestData-body .form-check:not(.newsletter-container) label > a.policy:nth-of-type(2)::after { font-size: 10.5px !important; }
   body.customer-medicalpiercing.page-booking-guestData-body .form-check label > input[type=checkbox] { margin-right: 6px !important; }
-  body.customer-medicalpiercing.page-booking-guestData-body .form-check.newsletter-container label { font-size: 11px !important; }
 }
 /* szellosebb adatlap (a megtakaritott helybol) */
 @media (max-width: 599px) {
