@@ -5,6 +5,7 @@
 //   POST /api/gy-foglalas    a Salonic-atiranyitas szerveroldali ellenorzese + idempotens D1-rekord + egyszeri, 15 perces koszono-token
 //   POST /api/gy-koszono     a koszonooldal a tokennel kapja a foglalas_kesz esemeny adatait (egyszer)
 //   POST /api/gy-kampanyok   (kulcsos) a Google Ads kampanylista napi szinkronja
+//   POST /api/gy-idopont-ellenorzes  az adatlap (guestData) tenyleg megnyilik-e a valasztott idopontra (a Salonic naptar-API nehol olyat is listaz, amit a foglalo oldal visszautasit)
 //   POST /api/gy-visszahivas a "telefonon egyeztetek idopontot" visszahivas-kerelem (nev + telefon), D1 + ertesito webhook
 //   GET/POST /api/gy-suti-config  a sav-teszt konfigja (GET: nyilvanos, rovid cache; POST: kulcsos csere, deploy nelkul)
 //   GET/POST /api/gy-admin   (kulcsos) riport, riasztasok, egyeztetes, visszahivasok
@@ -335,6 +336,33 @@ export async function adminVegpont({ request, env, deps = {} }) {
   }
   void most;
   return nincsKerelem('ismeretlen_muvelet');
+}
+
+// --- /api/gy-idopont-ellenorzes -----------------------------------------------------------------------------------------------
+// A Salonic naptar-API-ja (api.salonic.hu) neha olyan idopontot is listaz (pl. nem fer bele a szolgaltatas hossza, mas ok), amelyre a foglalo oldala (/guestData/) a
+// Salonic SAJAT naptaraba iranyit. A beagyazott keretben ez zavaro lenne; ezert a motor a keret megnyitasa elott ezt a vegpontot kerdezi: 200 = az adatlap megnyilik,
+// atiranyitas = az idopont nem foglalhato. Csak olvasas (GET), vendegadat nincs benne; a Salonic hibaja / idozito eseten "nem ellenorizheto" (null), a motor ilyenkor megnyitja a keretet.
+const BONGESZO_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
+export async function idopontEllenorzesVegpont({ request, env, deps = {} }) {
+  if (request.method !== 'POST') return valasz(405, { ok: false });
+  if (!eredetEngedett(request, env)) return valasz(403, { ok: false, hiba: 'eredet' });
+  const be = await jsonTest(request, 1024);
+  if (!be) return nincsKerelem('ervenytelen_torzs');
+  const hely = +be.place_id, szolg = String(be.service_id ?? ''), start = be.start_unix;
+  const munkatars = String(be.staff_id ?? '-1');
+  const most = mostUnix(deps);
+  if (!HELYSZINEK[hely] || !/^\d{3,9}$/.test(szolg) || !/^(-1|\d{1,9})$/.test(munkatars) || !Number.isInteger(start) || start < most - 3600 || start > most + 400 * 86400) return nincsKerelem('ervenytelen_mezo');
+  const q = new URLSearchParams({ placeId: String(hely), serviceId: szolg, employeeId: munkatars, startDate: String(start), lang: 'hu' });
+  const ab = new AbortController();
+  const idozito = setTimeout(() => ab.abort(), 5000);
+  try {
+    const r = await (deps.fetch || fetch)(`${HOST}/guestData/?${q}`, { redirect: 'manual', signal: ab.signal, headers: { 'user-agent': BONGESZO_UA, accept: 'text/html', 'accept-language': 'hu-HU,hu;q=0.9' } });
+    if (r.status === 200) return valasz(200, { ok: true, szabad: true });
+    if (r.status >= 300 && r.status < 400) return valasz(200, { ok: true, szabad: false });
+    return valasz(200, { ok: true, szabad: null });
+  } catch (e) {
+    return valasz(200, { ok: true, szabad: null });
+  } finally { clearTimeout(idozito); }
 }
 
 // --- /api/gy-visszahivas ------------------------------------------------------------------------------------------------------

@@ -129,6 +129,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #70c69c; outline-offs
 .szak-racs { grid-template-columns: 1fr 1fr; gap: 8px; }
 @media (min-width: 701px) { .szak-racs { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .kartya.szak { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 10px 6px; }
+.figyelem { background: #fff8ea; border: 1px solid #e69500; border-radius: 10px; padding: 10px 12px; margin: 0 0 10px; font-size: 14px; line-height: 1.4; }
 .kartya.szak.mindegy { grid-column: 1 / -1; flex-direction: row; justify-content: center; text-align: left; background: #f3f8fc; border: 2px solid #0c4c8a; padding: 12px; }
 .fejkep { flex: none; width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: #dbe8f3; color: #0c4c8a; display: inline-flex; align-items: center; justify-content: center; font: 600 18px/1 'Poppins', Arial, sans-serif; }
 .fejkep img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -472,6 +473,9 @@ export function nyit(ctx = {}) {
     all.pre = pre;
     return pre;
   };
+  // a Salonic ellenorzese szerint nem foglalhato idopontok (a naptar-API listazta, a foglalo oldal visszautasitotta): ebben a foglalasban nem mutatjuk ujra
+  all.rossz = new Set();
+  const rosszSzuro = (l) => (all.rossz.size ? l.filter((x) => !all.rossz.has(`${x.staff_id}:${x.start_unix}`)) : l);
   async function idopontLepes() {
     const s = all.szolg;
     const pre = elolt(s);
@@ -480,9 +484,9 @@ export function nyit(ctx = {}) {
       try { await pre.elso; } catch (e) { return hiba('idopontok', e); }
       if (all.lepes !== 'ido' || all.szolg !== s || lezart) return;
     }
-    all.slotok = pre.lista;
+    all.slotok = rosszSzuro(pre.lista);
     all.tovabbi = !pre.kesz;
-    pre.figyel = () => { if (all.lepes === 'ido' && all.szolg === s && !lezart && pre.lista) { all.slotok = pre.lista; all.tovabbi = false; naptar(); } };
+    pre.figyel = () => { if (all.lepes === 'ido' && all.szolg === s && !lezart && pre.lista) { all.slotok = rosszSzuro(pre.lista); all.tovabbi = false; naptar(); } };
     naptar();
   }
   function naptar() {
@@ -514,12 +518,27 @@ export function nyit(ctx = {}) {
     const staff = tartalom._staff || {};
     const nevVal = all.staffId ? (staff[all.staffId] ? staff[all.staffId].nev : (munkatarsak.find(([id]) => id === all.staffId) || [])[1]) : null;
     tartalom.innerHTML = osszegzes()
+      + (all.ertesites ? `<div class="figyelem" role="alert">${esc(all.ertesites)}</div>` : '')
       + (nevVal ? `<div class="kicsi">Szakember: <b>${esc(nevVal)}</b> · <button class="chip" data-lepes="szakember">másik szakember</button></div>` : all.mindegy ? '<div class="kicsi">Szakember: <b>mindegy, a legkorábbi időpont</b> · <button class="chip" data-lepes="szakember">szakembert választok</button></div>' : '')
       + `<div class="honap-fej"><button class="gomb-ikon" data-honap="${hi > 0 ? honapok[hi - 1] : ''}" ${hi > 0 ? '' : 'disabled style="visibility:hidden"'} aria-label="Előző hónap">‹</button><span>${ev}. ${HONAP[ho - 1]}</span><button class="gomb-ikon" data-honap="${hi < honapok.length - 1 ? honapok[hi + 1] : ''}" ${hi < honapok.length - 1 ? '' : 'disabled style="visibility:hidden"'} aria-label="Következő hónap">›</button></div>`
       + `<div class="racs">${racs}</div>${all.tovabbi ? '<div class="kicsi tovabbi">További napok betöltése…</div>' : ''}<div class="alcim">${esc(napCim(all.nap))}</div><div class="idok">${idok.map((x) => `<button class="ido" data-slot="${x.start_unix}">${sb(x).ido}</button>`).join('')}</div>`;
   }
 
   // --- 6. adatlap (a Salonic beagyazott urlapja) ---
+  // @returns {Promise<true|false|null>} true: az adatlap megnyilik; false: a Salonic visszautasitja az idopontot; null: nem ellenorizheto (a kereset nem akasztjuk meg)
+  async function adatlapEllenorzes(effStaff) {
+    try {
+      const ab = typeof AbortController === 'function' ? new AbortController() : null;
+      const idozito = ab ? setTimeout(() => ab.abort(), 6000) : null;
+      const v = await fetch((ctx.apiBase || '') + '/api/gy-idopont-ellenorzes', {
+        method: 'POST', credentials: 'omit', headers: { 'content-type': 'application/json' }, signal: ab ? ab.signal : undefined,
+        body: JSON.stringify({ place_id: all.placeId, service_id: all.szolg.serviceId, staff_id: String(effStaff), start_unix: all.slot.start_unix }),
+      });
+      if (idozito) clearTimeout(idozito);
+      const j = v.ok ? await v.json() : null;
+      return j && typeof j.szabad === 'boolean' ? j.szabad : null;
+    } catch (e) { return null; }
+  }
   async function adatlapLepes() {
     tartalom.innerHTML = osszegzes() + '<div class="toltes">Az adatlap betöltése…</div>';
     // "Mindegy": a valasztott idoponthoz tartozo konkret szakemberrel foglalunk (igy tudjuk, kit lat a vendeg; az idopont ugyanaz marad)
@@ -530,6 +549,17 @@ export function nyit(ctx = {}) {
       b = await adapter.beginBooking({ placeId: all.placeId, serviceId: all.szolg.serviceId, startUnix: all.slot.start_unix, staffId: effStaff, bookingId: all.bookingId });
     } catch (e) { return hiba('adatlap', e); }
     if (all.lepes !== 'adatlap' || lezart) return;
+    // A Salonic naptar-API-ja néha olyan idopontot is listaz, amelyet a foglalo (guestData) oldala visszautasit, es ilyenkor a keretben a Salonic SAJAT naptara jelenne meg.
+    // Ezert a keret megnyitasa elott a szerver megnezi, hogy az adatlap tenyleg megnyilik-e; ha nem, az idopontot elejtjuk, es a vendeg masikat valaszt.
+    const szabad = await adatlapEllenorzes(effStaff);
+    if (all.lepes !== 'adatlap' || lezart) return;
+    if (szabad === false) {
+      all.rossz.add(`${all.slot.staff_id}:${all.slot.start_unix}`);
+      all.rossz.add(`${effStaff}:${all.slot.start_unix}`);
+      all.slot = null;
+      all.ertesites = 'Ez az időpont közben már nem foglalható. Kérjük, válassz másikat!';
+      return ugrik('ido');
+    }
     all.expected = b.expected;
     all.effStaff = effStaff;
     const u = new URL(b.guestDataUrl);
@@ -577,6 +607,7 @@ export function nyit(ctx = {}) {
     if (d.honap) { all.honap = d.honap; const elso = [...new Set(all.slotok.map((x) => sb(x).nap))].sort().find((k) => k.startsWith(d.honap)); if (elso) all.nap = elso; return naptar(); }
     if (d.nap) { all.nap = d.nap; return naptar(); }
     if (d.slot) {
+      all.ertesites = null;
       const unix = +d.slot;
       all.slot = (all.staffId ? all.slotok.filter((x) => x.staff_id === all.staffId) : all.slotok).find((x) => x.start_unix === unix) || null;
       if (all.slot) ugrik('adatlap');

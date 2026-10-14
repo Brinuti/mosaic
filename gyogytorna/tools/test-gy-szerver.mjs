@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { belepes, cimkez, osszevon, fizetett, referrerKategoria } from '../lib/forras.js';
 import { hozzajarulas } from '../lib/hozzajarulas.js';
 import { tranzakcioId, hmacHex, ujToken, sha256Hex } from '../lib/titkos.js';
-import { forrasVegpont, igazolasVegpont, foglalasVegpont, koszonoVegpont, kampanyokVegpont, adminVegpont, atiranyitasElemzes, visszahivasVegpont, sutiConfigVegpont, sutiTesztEllenorzes, SUTI_TESZT_ALAP } from '../lib/motor-szerver.js';
+import { forrasVegpont, igazolasVegpont, foglalasVegpont, koszonoVegpont, kampanyokVegpont, adminVegpont, atiranyitasElemzes, visszahivasVegpont, idopontEllenorzesVegpont, sutiConfigVegpont, sutiTesztEllenorzes, SUTI_TESZT_ALAP } from '../lib/motor-szerver.js';
 import { createSalonicAdapter, foglalasTipus, ALLAPOTFELMERES_ID } from '../public/assets/js/motor/salonic-adapter.js';
 import { eloElemzes } from '../lib/salonic-szerver.js';
 import { ujD1 } from './d1-szim.mjs';
@@ -573,4 +573,24 @@ test('sav-teszt: konfig (alapertek, kulcsos csere, ellenorzes), A/B statisztika 
   assert.deepEqual([v2.megjelent, v2.elfogad, v2.elfogadasi_arany], [4, 3, 75]);
   assert.equal(v1.eszkoz, 'mobil');
   assert.equal(JSON.stringify(rap).includes('cookie'), false);
+});
+
+test('idopont-ellenorzes: 200 = az adatlap megnyilik, atiranyitas = nem foglalhato, hiba = nem ellenorizheto; ervenytelen mezo / idegen eredet elutasitva', async () => {
+  const env = await ujKornyezet();
+  const hivasok = [];
+  const fetchHamis = (status, extra = {}) => async (url, init) => { hivasok.push({ url: String(url), init }); if (extra.dob) throw new Error('halozat'); return new Response(null, { status, headers: extra.fejlec || {} }); };
+  const kuld = (b, fetchFn, opt = {}) => idopontEllenorzesVegpont({ request: kerelem('/api/gy-idopont-ellenorzes', b, opt), env, deps: { most: () => MOST, fetch: fetchFn } });
+  const jo = { place_id: 8439, service_id: '416586', staff_id: '19428', start_unix: unixMost + 86400 };
+  let r = await kuld(jo, fetchHamis(200));
+  assert.deepEqual(await r.json(), { ok: true, szabad: true });
+  assert.match(hivasok[0].url, /^https:\/\/gyogytornaszomhu\.salonic\.hu\/guestData\/\?placeId=8439&serviceId=416586&employeeId=19428&startDate=\d+&lang=hu$/);
+  assert.equal(hivasok[0].init.redirect, 'manual'); // az atiranyitast nem koveti: az maga az informacio
+  assert.match(hivasok[0].init.headers['user-agent'], /Mozilla/);
+  assert.deepEqual(await (await kuld(jo, fetchHamis(302, { fejlec: { location: 'https://gyogytornaszomhu.salonic.hu/selectDate/' } }))).json(), { ok: true, szabad: false });
+  assert.deepEqual(await (await kuld(jo, fetchHamis(500))).json(), { ok: true, szabad: null });
+  assert.deepEqual(await (await kuld(jo, fetchHamis(200, { dob: true }))).json(), { ok: true, szabad: null });
+  for (const rossz of [{ ...jo, place_id: 1 }, { ...jo, service_id: 'x' }, { ...jo, staff_id: 'abc' }, { ...jo, start_unix: 5 }, { ...jo, start_unix: unixMost + 500 * 86400 }, { ...jo, start_unix: 'ma' }]) assert.equal((await kuld(rossz, fetchHamis(200))).status, 400);
+  assert.equal((await kuld(jo, fetchHamis(200), { origin: 'https://rossz.example' })).status, 403);
+  assert.equal((await idopontEllenorzesVegpont({ request: kerelem('/api/gy-idopont-ellenorzes', null, { metodus: 'GET' }), env })).status, 405);
+  assert.equal(r.headers.get('cache-control'), 'private, no-store');
 });

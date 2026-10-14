@@ -21,6 +21,10 @@ export function salonicHamis(opts = {}) {
       if (u.pathname === '/selectSpecialization/') return ok(olvas(`spec_${p.get('placeId')}.html`));
       if (u.pathname === '/showServices/') return ok(olvas(`svc_${p.get('placeId')}_${p.get('specId')}.html`));
       if (u.pathname === '/employees') return ok(olvas('employees.html'));
+      if (u.pathname.startsWith('/guestData')) { // a foglalo adatlapja: elutasitott idopont (opts.guestElutasit) -> atiranyitas a Salonic naptarara (mint az eloben)
+        if ((opts.guestElutasit || []).includes(+p.get('startDate'))) { const r = new Response(null, { status: 302, headers: { location: `https://gyogytornaszomhu.salonic.hu/selectDate/?employeeId=${p.get('employeeId')}&placeId=${p.get('placeId')}&serviceId=${p.get('serviceId')}&startDate=${p.get('startDate')}` } }); Object.defineProperty(r, 'url', { value: u.href }); return r; }
+        return ok('<html><body>adatlap</body></html>');
+      }
       if (u.pathname === '/selectLocation/') return ok('<html><head></head><body>helyszinek</body></html>');
       if (u.pathname.startsWith('/selectDate/')) return ok(olvas('selectDate_8439.html'));
       const m = /^\/booking\/bookingDetails\/([0-9a-f-]{36})$/.exec(u.pathname);

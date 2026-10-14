@@ -14,7 +14,7 @@ const START = Math.floor((MOST + 6 * 86400) / 900) * 900 + 36000 % 900;
 const EMP = '31525';
 const KIEM_START = Math.floor((MOST + 86400) / 900) * 900 + 900; // "holnap" kb. ilyenkor
 const bongeszoHamis = salonicHamis({ szabad: { [`8439:24666:${EMP}`]: [START, START + 900, START + 86400], '8439:24666:18783': [START + 1800, START + 86400], '418:416586:33185': [KIEM_START, KIEM_START + 1800] } });
-const szerverHamis = salonicHamis({ szabad: {} }); // a szerver szerint a foglalt idopont mar nem szabad (a Salonic rogzitette)
+const szerverHamis = salonicHamis({ szabad: {}, guestElutasit: [START + 900] }); // a Salonic foglalo oldala a START+900 idopontot visszautasitja (mint az eloben nehol) // a szerver szerint a foglalt idopont mar nem szabad (a Salonic rogzitette)
 const valos = globalThis.fetch;
 globalThis.fetch = (u, i) => (String(u).includes('salonic.hu') ? szerverHamis(u, i) : valos(u, i));
 
@@ -204,6 +204,28 @@ await oldal.waitForTimeout(500);
 assert.equal(await oldal.locator('[data-gy-motor]').count(), 0);
 assert.equal(await oldal.evaluate(() => location.hash), '#telefonos');
 lep('koztes foglalo oldal: a cimen a motor magatol megnyilik (tartalom rejtve, bezarva elokerul, ?motor=0: marad az oldal); a ra mutato gomb a motort nyitja, a #horgony nem');
+// a Salonic naptar-API-ja listazott, de a foglalo oldala visszautasitja az idopontot: a keretben NEM a Salonic sajat naptara jelenik meg, hanem a motor ejti az idopontot
+await oldal.goto(`${ORIGIN}/booking-test/?motor=1`);
+await oldal.click('#gomb-salonic');
+{
+  const mk = oldal.locator('[data-gy-motor]');
+  await mk.locator('[data-csalad="allapotfelmeres"]').click();
+  await mk.locator('[data-valt="24666"]').click();
+  await mk.locator('[data-szak=""]').click().catch(() => {});
+  await mk.locator('.nap.van').first().waitFor();
+  const rossz = mk.locator(`.ido[data-slot="${START + 900}"]`);
+  await rossz.waitFor();
+  await rossz.click();
+  await mk.locator('.figyelem').waitFor();
+  assert.match(await mk.locator('.figyelem').innerText(), /közben már nem foglalható/);
+  assert.equal(await mk.locator('iframe').count(), 0, 'a Salonic sajat naptara nem kerulhet a keretbe');
+  assert.equal(await mk.locator(`.ido[data-slot="${START + 900}"]`).count(), 0, 'az elutasitott idopont eltunik a listabol');
+  await mk.locator('.ido').first().click(); // egy rendes idopont tovabbmegy
+  await mk.locator('iframe[name="gy-adatlap"]').waitFor();
+  await oldal.keyboard.press('Escape').catch(() => {});
+  await oldal.goto(`${ORIGIN}/booking-test/`);
+}
+lep('elutasitott idopont: a motor szolj (nincs Salonic-naptar a keretben), az idopont eltunik, masik idoponttal tovabbmegy');
 // szakember-link (/employees/<id>/): a helyszin elore kitoltve, csak az o szolgaltatasai; az allapotfelmeres -> egybol a naptar
 await oldal.goto(`${ORIGIN}/booking-test/?motor=1`);
 await oldal.click('#gomb-szakember');
