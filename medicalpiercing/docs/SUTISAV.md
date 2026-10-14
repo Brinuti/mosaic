@@ -49,6 +49,7 @@ következő oldalon már be sem töltenek.
 ## Tesztek
 
 - `node --test tools/test-mp-feltoltes.mjs tools/test-mp-meres.mjs` – a szerver az `mp_suti` sütit olvassa.
+- **Sáv a foglaló / űrlap mellett (Feri, 2026-10-14):** a `/kontroll` (űrlap) nem tesztoldal; amíg a foglaló ablak nyitva van, a sáv rejtett (`html[data-mp-motor-nyitva]`). Teszt: `motor-tipus-teszt` R.
 - `node tools/sav-teszt.mjs` és `--mobil` – döntés előtt / Elfogadom / Elutasítom / lábléc / köszönőoldal / motor.
 - `node tools/meres-teszt.mjs` – elfogadott hozzájárulással a mérőkódok, mint eddig.
 - `tools/mp-meres-pw.mjs` – foglalás-mérés hozzájárulással és nélküle.

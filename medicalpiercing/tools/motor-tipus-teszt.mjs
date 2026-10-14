@@ -460,6 +460,48 @@ if (!MOBIL) {
   await ctx.close();
 }
 
+// Q. az urlap ket egymas melletti mezoje (Mikor voltal nalunk? + Melyik varosban voltal?) mobilon nem akad ossze (Feri kepe, 2026-10-14: iOS-en a datummezo a
+//    sajat oszlopa fole nyult). Chromiumban nem reprodukalhato az iOS-hiba, ezert a dobozmodellt es az oszlophatart is ellenorizzuk (a javitas ezekre epul).
+if (MOBIL) {
+  for (const w of [360, 375, 390, 412, 480]) {
+    const ctx = await b.newContext({ viewport: { width: w, height: 760 }, isMobile: true, hasTouch: true, locale: 'hu-HU' });
+    await ctx.route((u) => !u.toString().startsWith(CIM), (r) => r.abort());
+    const p = await ctx.newPage();
+    await p.goto(CIM + '/idopontfoglalas', { waitUntil: 'load' });
+    await varj(p, '[data-tipus]'); await kattint(p, '[data-tipus="garancia"]');
+    if (ok(`Q: ${w}px: az urlap megnyilik`, await varj(p, '#mp-mikor'))) {
+      const m = await sr(p, 'const da=r.querySelector("#mp-mikor"), vc=r.querySelector("#mp-varos"), dr=da.getBoundingClientRect(), vr=vc.getBoundingClientRect(), mr=da.closest(".mezo").getBoundingClientRect(), ur=r.querySelector(".urlap").getBoundingClientRect(), nr=r.querySelector("#mp-nev").getBoundingClientRect(); const cs=getComputedStyle(da); return { egySorban: Math.abs(dr.top - vr.top) < 6, atfed: dr.right > vr.left + 0.5, oszlopon_belul: dr.left >= mr.left - 0.5 && dr.right <= mr.right + 0.5, urlapon_belul: vr.right <= ur.right + 0.5, doboz: cs.boxSizing, szeles: Math.round(dr.width), oszlop: Math.round(mr.width), dMagas: Math.round(dr.height), nMagas: Math.round(nr.height), sw: r.querySelector(".tartalom").scrollWidth, cw: r.querySelector(".tartalom").clientWidth };');
+      ok(`Q: ${w}px: a datum- es a varos-mezo nem akad ossze, a datum a sajat oszlopan belul marad, border-box`, !m.atfed && m.oszlopon_belul && m.urlapon_belul && m.doboz === 'border-box' && m.sw <= m.cw + 1, JSON.stringify(m));
+      ok(`Q: ${w}px: a datummezo nem magasabb a tobbi mezonel (legfeljebb 3 px)`, m.dMagas <= m.nMagas + 3, `${m.dMagas} / ${m.nMagas} px`);
+    }
+    await ctx.close();
+  }
+}
+
+// R. a suti-sav az urlapon / a foglalo ablak mellett nem latszik (Feri kerese, 2026-10-14): a /kontroll (urlap) nem tesztoldal; a tesztoldalon (utogondozasi cikk) a sav
+//    latszik, de amig a foglalo ablak nyitva van, rejtett, bezaras utan (dontes nelkul) ujra latszik
+if (MERES_HOST) {
+  const ctx = await b.newContext(OPT);
+  await ctx.route((u) => !u.toString().startsWith(CIM), (r) => (SZABAD.test(r.request().url()) && r.request().method() === 'GET' ? r.continue() : r.abort()));
+  const p = await ctx.newPage();
+  const savLatszik = () => p.evaluate(() => { const e = document.getElementById('mp-cc'); if (!e) return false; const c = getComputedStyle(e); const r = e.getBoundingClientRect(); return c.display !== 'none' && c.visibility !== 'hidden' && r.height > 10; });
+  await p.goto(CIM + '/kontroll', { waitUntil: 'load' });
+  ok('R: /kontroll: az urlap megnyilik', await varj(p, '#mp-nev, [data-urlap], .urlap', 25000));
+  await p.waitForTimeout(1500);
+  ok('R: /kontroll (urlap): nincs suti-sav', !(await savLatszik()));
+  await p.goto(CIM + '/shenmen-piercing-ezt-tedd-ha-begyulladt', { waitUntil: 'load' });
+  let van = false; for (let i = 0; i < 30 && !van; i++) { van = await savLatszik(); if (!van) await p.waitForTimeout(250); }
+  ok('R: a tesztoldalon (utogondozasi cikk) a suti-sav latszik', van);
+  await linkKattint(p, 'a[href="/idopontfoglalas"]');
+  ok('R: a foglalo megnyilik', await varj(p, '[data-tipus]', 20000));
+  await p.waitForTimeout(400);
+  ok('R: amig a foglalo ablak nyitva van, a suti-sav rejtett', !(await savLatszik()));
+  await sr(p, 'r.querySelector("[data-bezar]").click()');
+  await p.waitForTimeout(500);
+  ok('R: a foglalo bezarasa utan (dontes nelkul) a suti-sav ujra latszik', await savLatszik());
+  await ctx.close();
+}
+
 await b.close();
 console.log(hiba ? `\n${hiba} HIBA` : '\nMinden rendben');
 process.exit(hiba ? 1 : 0);
