@@ -9,6 +9,8 @@ import { SEMLEGES_URL } from './meres.js';
 
 export const META_DATASET = '2177829632420786';
 export const META_ESEMENY = 'IgazoltFoglalas';
+export const TESZT_ESEMENYEK = Object.freeze(['IgazoltFoglalas', 'Schedule']);
+export const TESZT_FORRASOK = Object.freeze({ fo: SEMLEGES_URL, salonic: 'https://medicalpiercing.salonic.hu/' });
 export const META_VEGPONT = (v = 'v21.0') => `https://graph.facebook.com/${v}/${META_DATASET}/events`;
 
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
@@ -21,18 +23,18 @@ const egyenlo = (a, b) => {
 };
 
 /** Tesztesemeny-torzs (tiszta). Csak TEST-kod mellett hasznalhato. */
-export function tesztTorzs({ most, kod, fbc, fbp, esemenyId, ua }) {
+export function tesztTorzs({ most, kod, fbc, fbp, esemenyId, ua, esemeny = META_ESEMENY, url = SEMLEGES_URL }) {
   const user = {};
   if (ua) user.client_user_agent = ua; // website action_source mellett a Meta keri
   if (fbc) user.fbc = fbc;
   if (fbp) user.fbp = fbp;
   return {
     data: [{
-      event_name: META_ESEMENY,
+      event_name: esemeny,
       event_time: most,
       event_id: esemenyId,
       action_source: 'website',
-      event_source_url: SEMLEGES_URL,
+      event_source_url: url,
       user_data: user,
       custom_data: { currency: 'HUF', value: 1 },
     }],
@@ -56,8 +58,11 @@ export async function metaTesztVegpont({ request, env, fetchFn = fetch }) {
   const kod = String(body.test_event_code || '');
   if (!/^TEST\d{3,10}$/.test(kod)) return json({ ok: false, hiba: 'csak_tesztkoddal' }, 400);
   if (!env.META_CAPI_TOKEN) return json({ ok: false, hiba: 'nincs_token' }, 500);
+  // 2026-10-14 (Feri): forras-teszt - standard Schedule es/vagy a Salonic-aldomain mint valos esemenyforras (csak TEST-kod mellett)
+  const esemeny = TESZT_ESEMENYEK.includes(body.esemeny) ? body.esemeny : META_ESEMENY;
+  const url = TESZT_FORRASOK[body.forras] || SEMLEGES_URL;
   const most = Math.floor(Date.now() / 1000);
-  const torzs = tesztTorzs({ most, kod, fbc: `fb.1.${most * 1000}.TESZTclaude`, fbp: `fb.1.${most * 1000}.1234567890`, esemenyId: `Teszt:${most}`, ua: request.headers.get('user-agent') || '' });
+  const torzs = tesztTorzs({ most, kod, esemeny, url, fbc: `fb.1.${most * 1000}.TESZTclaude`, fbp: `fb.1.${most * 1000}.1234567890`, esemenyId: `Teszt:${most}`, ua: request.headers.get('user-agent') || '' });
   const r = await fetchFn(`${META_VEGPONT()}?access_token=${encodeURIComponent(env.META_CAPI_TOKEN)}`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(torzs),
   });
