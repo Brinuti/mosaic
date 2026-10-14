@@ -140,6 +140,10 @@ button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent
 .toltes::before { content: ''; display: block; width: 28px; height: 28px; margin: 0 auto 10px; border: 3px solid #f5d3ca; border-top-color: #ab6354; border-radius: 50%; animation: forog .8s linear infinite; }
 @keyframes forog { to { transform: rotate(360deg); } }
 iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
+.adatlap-szakember { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; }
+.adatlap-szakember .kicsi { font-size: 13px; }
+.adatlap-szakember .chip { margin: 0; }
+@media (max-width: 700px) { .ablak[data-lepes="adatlap"] .adatlap-szakember { margin: 0; padding: 8px 12px 6px; background: #fff; } }
 .adatlap-burok { margin: 0 -16px -16px; }
 /* adatlap: a Salonic-keret kitolti a maradek helyet (a hosszabb tartalom a keretben gorget). Mobilon a lepesjelzo, az osszegzes es a
    sugo rejtve (a fejlec a helyszint mutatja, a vissza gomb az idopontokhoz visz): ha a Salonic-fiok betolti az MP stiluslapjat
@@ -282,6 +286,8 @@ const csapattag = (nev) => {
   const szavak = String(nev || '').trim().split(/\s+/).filter((x) => /\p{L}/u.test(x));
   return t ? { rovid: t[1], kep: `/assets/img/csapat/${t[2]}.webp` } : { rovid: szavak[szavak.length - 1] || String(nev), kep: null, kezdo: (szavak[szavak.length - 1] || String(nev) || '?')[0].toUpperCase() };
 };
+// a "Barki" csempe tartalma (altalanos ember-ikon): az idopont-lepes szakember-valasztojaban es az adatlap tetején, ha nincs kijelolt szakember
+const BARKI_JEL = '<span class="fejkep" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6.5-1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM9 13c-2.7 0-5 1.4-5 3.5V18h10v-1.5C14 14.4 11.7 13 9 13Zm6.5.5c-.5 0-1 .1-1.4.2 1 .8 1.6 1.8 1.6 2.8V18H20v-1.2c0-1.8-2-3.3-4.5-3.3Z"/></svg></span><span>Bárki</span>';
 // a szakember-csempe tartalma: kis kerek fejkep (vagy monogram) + becenev
 const szakemberJel = (nev) => { const t = csapattag(nev); return `<span class="fejkep" aria-hidden="true">${t.kep ? `<img src="${t.kep}" alt="" width="28" height="28" loading="lazy">` : esc(t.kezdo)}</span><span>${esc(t.rovid)}</span>`; };
 // szolgaltatas-ikonok (assets/img/ikon/<kod>.webp, AI-val generalt csomag): a piercing tipus-kodja szerint; a csomagok sajat ikont kapnak, a tobbinek nincs
@@ -602,12 +608,20 @@ export function nyit(ctx) {
     }
     const idok = [...new Map(napok.get(all.nap).map((x) => [sb(x).ido, x])).values()].sort((a, b) => a.start_unix - b.start_unix);
     tartalom.innerHTML = osszegzes()
-      + (munkatarsak.length > 1 ? `<div class="alcim">Szakember</div><div class="chipek"><button class="chip${all.staffId ? '' : ' valasztott'}" data-staff=""><span class="fejkep" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6.5-1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM9 13c-2.7 0-5 1.4-5 3.5V18h10v-1.5C14 14.4 11.7 13 9 13Zm6.5.5c-.5 0-1 .1-1.4.2 1 .8 1.6 1.8 1.6 2.8V18H20v-1.2c0-1.8-2-3.3-4.5-3.3Z"/></svg></span><span>Bárki</span></button>${munkatarsak.map(([id, n]) => `<button class="chip${all.staffId === id ? ' valasztott' : ''}" data-staff="${esc(id)}" title="${esc(n)}" aria-label="${esc(n)}">${szakemberJel(n)}</button>`).join('')}</div>`
+      + (munkatarsak.length > 1 ? `<div class="alcim">Szakember</div><div class="chipek"><button class="chip${all.staffId ? '' : ' valasztott'}" data-staff="">${BARKI_JEL}</button>${munkatarsak.map(([id, n]) => `<button class="chip${all.staffId === id ? ' valasztott' : ''}" data-staff="${esc(id)}" title="${esc(n)}" aria-label="${esc(n)}">${szakemberJel(n)}</button>`).join('')}</div>`
         // ha egy helyszinen csak egy szakember van, nem valasztatunk, de kijelolve mutatjuk (fejkep + nev), hogy a vendeg lassa, kihez megy
         : munkatarsak.length === 1 ? `<div class="alcim">Szakember</div><div class="chipek"><span class="chip valasztott egy" title="${esc(munkatarsak[0][1])}" aria-label="Szakember: ${esc(munkatarsak[0][1])}">${szakemberJel(munkatarsak[0][1])}</span></div>` : '')
       + `<div class="honap-fej"><button class="gomb-ikon" data-honap="${hi > 0 ? honapok[hi - 1] : ''}" ${hi > 0 ? '' : 'disabled style="visibility:hidden"'} aria-label="Előző hónap">‹</button><span>${ev}. ${HONAP[ho - 1]}</span><button class="gomb-ikon" data-honap="${hi < honapok.length - 1 ? honapok[hi + 1] : ''}" ${hi < honapok.length - 1 ? '' : 'disabled style="visibility:hidden"'} aria-label="Következő hónap">›</button></div>`
       + `<div class="racs">${racs}</div>${all.tovabbi ? '<div class="kicsi tovabbi">További napok betöltése…</div>' : ''}<div class="alcim">${esc(napCim(all.nap))}</div><div class="idok">${idok.map((x) => `<button class="ido" data-slot="${x.start_unix}">${sb(x).ido}</button>`).join('')}</div>`;
   }
+
+  // az adatlap tetejen: melyik szakemberhez szol a foglalas (a kijelolt szakember, vagy a helyszin egyetlen szakembere, kulonben "Barki" - ilyenkor a Salonic
+  // osztja ki); a Salonic adatlapja a szakembert nem mutatja
+  const adatlapSzakember = () => {
+    const mt = [...new Map((all.slotok || []).filter((x) => x.staff_label).map((x) => [x.staff_id, x.staff_label])).entries()];
+    const nev = all.staffId ? ((mt.find(([id]) => id === all.staffId) || [])[1] || (all.slot && all.slot.staff_label) || null) : mt.length === 1 ? mt[0][1] : null;
+    return `<div class="adatlap-szakember"><span class="kicsi">Szakember</span><span class="chip valasztott egy" title="${esc(nev || 'Bármelyik szabad szakember')}" aria-label="Szakember: ${esc(nev || 'Bárki')}">${nev ? szakemberJel(nev) : BARKI_JEL}</span></div>`;
+  };
 
   // --- 4. adatlap (a Salonic beagyazott urlapja) ---
   async function adatlapLepes() {
@@ -625,7 +639,7 @@ export function nyit(ctx) {
     try { stilus = (await adapter.getPresentation()).customCss; } catch (e) { /* alap kinezet */ }
     if (all.lepes !== 'adatlap' || lezart) return;
     $('.ablak').dataset.stilus = stilus ? '1' : '0';
-    tartalom.innerHTML = osszegzes() + `<p class="kicsi adatlap-sugo" style="margin:0 0 8px">Add meg az adataidat, és véglegesítsd a foglalást. Ha az időpont közben elkelt, <button class="chip" data-lepes="ido">válassz másikat</button>.</p><div class="adatlap-burok"><iframe class="adatlap" title="Foglalási adatlap" src="${esc(u.href)}" allow="payment"></iframe></div>`;
+    tartalom.innerHTML = osszegzes() + adatlapSzakember() + `<p class="kicsi adatlap-sugo" style="margin:0 0 8px">Add meg az adataidat, és véglegesítsd a foglalást. Ha az időpont közben elkelt, <button class="chip" data-lepes="ido">válassz másikat</button>.</p><div class="adatlap-burok"><iframe class="adatlap" title="Foglalási adatlap" src="${esc(u.href)}" allow="payment"></iframe></div>`;
   }
 
   async function rajzol() {
