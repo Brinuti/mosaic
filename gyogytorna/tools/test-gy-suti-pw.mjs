@@ -9,9 +9,11 @@ const srv = await indit({ env: { GY_HMAC_KULCS: 'suti-proba-kulcs-0123456789abcd
 const O = `http://127.0.0.1:${srv.port}`;
 const b = await chromium.launch();
 const nev = [];
+let savKi = false;
 const uj = async () => {
   const c = await b.newContext(mod === 'mobil' ? { viewport: { width: 390, height: 780 }, isMobile: true, hasTouch: true } : { viewport: { width: 1280, height: 800 } });
   await c.route('**/*', (r) => (new URL(r.request().url()).origin === O ? r.continue() : (nev.push(r.request().url()), r.abort())));
+  if (!savKi) await c.addInitScript(() => { window.GY_SAV_KI = false; }); // a regi (savos) mod tesztelese
   return c;
 };
 const suti = (p) => p.evaluate(() => (document.cookie.match(/(?:^|;\s*)gy_suti=([^;]*)/) || [])[1] || null);
@@ -95,6 +97,34 @@ await p.waitForTimeout(1000);
 const fr = p.frames().find((x) => x.url().includes('/booking-test/'));
 assert.equal(await fr.locator('#gy-cc').count(), 0);
 lep('iframe-ben a sav nem jelenik meg');
+
+// 6/b) SAV_KI mod (az eles beallitas: nincs sav; alapertelmezes "megadott"; a latogato kifejezett dontese elsobbseget el)
+savKi = true; srv.env.GY_SAV_KI = '1';
+c = await uj(); p = await c.newPage();
+await p.goto(`${O}/booking-test/`);
+await p.waitForTimeout(600);
+assert.equal(await p.locator('#gy-cc').count() === 0 || !(await p.locator('#gy-cc').isVisible()), true, 'SAV_KI: nincs sav');
+assert.equal(await suti(p), null, 'SAV_KI: nem irunk sutit dontes nelkul');
+{
+  const ev = await esemenyek(p);
+  assert.equal(ev.length, 1);
+  assert.deepEqual([ev[0].event, ev[0].gy_suti_dontott, ev[0].gy_suti_stat, ev[0].gy_suti_mark, ev[0].gy_suti_sav_ki, ev[0].gy_suti_alap], ['gy_suti_allapot', false, true, true, true, true]);
+}
+assert.deepEqual(await consent(p), [], 'SAV_KI: a default-ot a GTM adja, a szkript nem allit consentet dontes nelkul');
+assert.equal(await p.evaluate(() => window.gySuti.engedely('mark') && window.gySuti.engedely('stat') && !window.gySuti.dontott()), true);
+// a lableci / API-s "Suti beallitasok" megnyitja a savot; az elutasitas elsobbseget el
+await p.evaluate(() => window.gySuti.beallitasok());
+await p.locator('#gy-cc-beall').waitFor();
+await p.locator('#gy-cc-stat').uncheck(); await p.locator('#gy-cc-mark').uncheck();
+await p.locator('[data-gy=mentes]').click();
+assert.match(await suti(p), /^v1-s0-m0-t\d+$/);
+assert.deepEqual((await consent(p)).map((x) => x[1].ad_storage + '/' + x[1].analytics_storage), ['denied/denied']);
+assert.equal(await p.evaluate(() => window.gySuti.engedely('mark') || window.gySuti.engedely('stat')), false);
+await p.reload(); await p.waitForTimeout(500);
+assert.equal(await p.locator('#gy-cc').isVisible().catch(() => false), false);
+assert.equal(await p.evaluate(() => window.gySuti.engedely('mark')), false, 'a kifejezett elutasitas visszalepes utan is elsobbseget el');
+lep('SAV_KI: nincs sav, nincs suti, alap "megadott" (event + engedely), nincs consent-update dontes nelkul; a kifejezett elutasitas elsobbseget el es megmarad');
+savKi = false;
 
 // 7) statisztika: csak szamlalo, azonosito nelkul
 const st = (await srv.env.GY_DB.prepare('SELECT esemeny, SUM(db) AS db FROM gy_suti_stat GROUP BY esemeny').all()).results;

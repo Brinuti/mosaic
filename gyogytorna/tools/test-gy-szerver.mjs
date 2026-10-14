@@ -512,3 +512,26 @@ test('visszahivas: az elo "Telefonos Idopont" urlap mezoi; panasz NEM tarolodik 
   await takarit(env.GY_DB, Math.floor((MOST + 61 * 86400 * 1000) / 1000));
   assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_visszahivas').first()).n, 0);
 });
+
+test('SAV_KI mod (GY_SAV_KI=1, Feri 2026-10-14): dontes nelkul az alapertelmezes "megadott"; a latogato kifejezett dontese elsobbseget el; kapcsolo nelkul a regi viselkedes', async () => {
+  assert.deepEqual(hozzajarulas('', { alap: true }), { allapot: 'igen', marketing: true, analitika: true });
+  assert.deepEqual(hozzajarulas('gy_suti=v2-s1-m1-t1', { alap: true }), { allapot: 'igen', marketing: true, analitika: true }); // ervenytelen suti = alapertek
+  assert.equal(hozzajarulas(HJ_NEM, { alap: true }).allapot, 'nem'); // kifejezett elutasitas elsobbseget el
+  assert.deepEqual(hozzajarulas(`gy_suti=v1-s1-m0-t${ts()}`, { alap: true }), { allapot: 'nem', marketing: false, analitika: true });
+  assert.equal(hozzajarulas('').allapot, 'nincs_dontes'); // alap nelkul a regi
+  const be = { search: `?utm_campaign=${BRAND}&gclid=ABCDEFGH12345&utm_source=google&utm_medium=cpc`, referrer: '', path: '/x/' };
+  const d = deps();
+  // KI mod, suti nelkul: 30 napos suti is megy (alapertelmezett hozzajarulas)
+  const env = await ujKornyezet({ GY_SAV_KI: '1' });
+  let r = await forrasVegpont({ request: kerelem('/api/gy-forras', be), env, deps: d });
+  assert.equal(r.headers.getSetCookie().length, 2);
+  assert.match(r.headers.getSetCookie().find((c) => c.startsWith('gy_lpt=')), /Max-Age=2592000/);
+  // KI mod, de a latogato elutasitott: nincs 30 napos suti
+  const env2 = await ujKornyezet({ GY_SAV_KI: '1' });
+  r = await forrasVegpont({ request: kerelem('/api/gy-forras', be, { cookie: HJ_NEM }), env: env2, deps: d });
+  assert.equal(r.headers.getSetCookie().length, 1);
+  // kapcsolo nincs: a regi viselkedes
+  const env3 = await ujKornyezet();
+  r = await forrasVegpont({ request: kerelem('/api/gy-forras', be), env: env3, deps: d });
+  assert.equal(r.headers.getSetCookie().length, 1);
+});

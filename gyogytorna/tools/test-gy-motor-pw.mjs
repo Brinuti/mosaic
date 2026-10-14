@@ -182,7 +182,12 @@ assert.equal(await oldal.locator('[data-gy-motor]').count(), 0);
 assert.equal(await oldal.evaluate(() => document.documentElement.style.overflow), '');
 lep('Esc bezarja; a gorgetes-zar es az inert visszaall');
 // visszahivas-kerelem: "Telefonon egyeztetek idopontot" az elso lepes aljan; az urlap mezoi az elo "Telefonos Idopont" urlapbol
-await oldal.goto(`${ORIGIN}/booking-test/?motor=1`);
+// (kapcsolo: motor-kapcsolo.json "hivas"; alapbol 0, a proba ?hivas=1-gyel kapcsolja be)
+await oldal.goto(`${ORIGIN}/booking-test/?motor=1&hivas=0`);
+await oldal.click('#gomb-salonic');
+assert.equal(await oldal.locator('[data-gy-motor] [data-hivas]').count(), 0, 'kapcsolo nelkul nincs visszahivas-gomb');
+await oldal.keyboard.press('Escape');
+await oldal.goto(`${ORIGIN}/booking-test/?motor=1&hivas=1`);
 await oldal.click('#gomb-salonic');
 {
   const mk = oldal.locator('[data-gy-motor]');

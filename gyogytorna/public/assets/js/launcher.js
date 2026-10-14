@@ -10,6 +10,7 @@
 (function () {
   'use strict';
   var KAPCSOLO = __GY_KAPCSOLO__; // 0..100
+  var HIVAS = __GY_HIVAS__; // 1 = a "Telefonon egyeztetek idopontot" (visszahivas-kero) lehetoseg latszik a motor elso lepeseben; ?hivas=1 / ?hivas=0 a munkamenetre (proba)
   var VERZIO = '__GY_VERZIO__';
   var script = document.currentScript;
   var forras = script && script.src ? new URL(script.src, location.href) : new URL(location.href);
@@ -61,6 +62,8 @@
     var q = new URLSearchParams(location.search).get('motor');
     if (q === '1' || q === '0') tarol('gy_motor', q);
     kenyszer = tarol('gy_motor');
+    var h = new URLSearchParams(location.search).get('hivas');
+    if (h === '1' || h === '0') tarol('gy_hivas', h);
   } catch (e) { /* */ }
   var vodor = function () {
     try {
@@ -111,6 +114,7 @@
       serviceId: szam(p.get('serviceId')) > 0 ? p.get('serviceId') : null,
       csalad: jel ? jel.getAttribute('data-gy-foglalas') || null : null,
       link: u ? u.href : 'https://' + HOSZT + '/selectLocation', forras: location.pathname, apiBase: API,
+      hivas: tarol('gy_hivas') === '1' || (HIVAS === 1 && tarol('gy_hivas') !== '0'),
     };
     motor().then(function (m) { m.nyit(ctx); }, function () { if (u) location.href = u.href; });
   }, false);

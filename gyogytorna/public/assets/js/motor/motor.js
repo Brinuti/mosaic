@@ -313,7 +313,7 @@ export function nyit(ctx = {}) {
     // az ajanlott csalad (a belepesi link kontextusa: pl. allapotfelmeres-landing) elore kerul
     if (ctx.csalad) kartyak.sort((a, b) => (b.kod === ctx.csalad) - (a.kod === ctx.csalad));
     tartalom.innerHTML = `<p class="kicsi bevezeto">Mire szeretnél időpontot foglalni?</p><div class="lista tipus-racs">${kartyak.map((c) => `<button class="kartya${c.kiemelt ? ' kiemelt' : ''}" data-csalad="${c.kod}"><span class="nev">${esc(c.nev)}</span>${c.kiemelt ? '<span class="cimke zold">Első alkalom</span>' : ''}<div class="reszlet">${esc(c.leiras)}</div></button>`).join('')}</div>`
-      + '<div class="hivas-doboz"><button class="kartya telefon" data-hivas><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span><span class="nev">Telefonon egyeztetek időpontot</span><div class="reszlet">Előbb beszélnék egy gyógytornásszal: visszahívunk</div></span></button></div>';
+      + (ctx.hivas ? '<div class="hivas-doboz"><button class="kartya telefon" data-hivas><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span><span class="nev">Telefonon egyeztetek időpontot</span><div class="reszlet">Előbb beszélnék egy gyógytornásszal: visszahívunk</div></span></button></div>' : '');
   }
 
   // --- visszahivas-kerelem: "telefonon egyeztetek idopontot" (a vendeg elobb beszelne egy gyogytornasszal). A mezok es a szovegek SZO SZERINT az elo "Telefonos Idopont" urlapbol

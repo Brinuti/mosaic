@@ -10,6 +10,9 @@
 // dontes eseten gtag('consent','update', ...). Document esemeny: "gy_suti_valtozas" (detail: { stat, mark }). API: window.gySuti.{engedely(k), beallitasok(), dontott()}.
 // A sav keretben (iframe) soha nem jelenik meg. Visszavonas / modositas: lablec "Suti beallitasok" link, #suti-beallitasok, window.gySuti.beallitasok().
 // Nevtelen statisztika (suti, IP, URL, azonosito nelkul): POST /api/gy-suti-stat - csak napi darabszam.
+// SAV_KI (Feri dontese, 2026-10-14: "sutisavot ne rakjunk ki egyaltalan"; ugyanaz a megoldas, mint a Medical Piercingen): se nagy doboz, se vekony sav. Dontes nelkul az alapertelmezes
+// "megadott" (statisztika + marketing; a szerver is ezt latja, GY_SAV_KI), a lableci "Suti beallitasok" link megmarad, a latogato kifejezett dontese (elutasitas, visszavonas) elsobbseget el.
+// Biztonsagi fek: ha Google-iranyelv-figyelmeztetes erkezik, SAV_KI = false (a sav visszajon). Probahoz: window.GY_SAV_KI = false (a teszt allitja be).
 (function () {
   'use strict';
   if (window.gySuti) return;
@@ -20,6 +23,7 @@
   var API = forras.origin + BASE;
   var ELES = location.hostname === 'www.gyogytornaszom.hu' || location.hostname === 'gyogytornaszom.hu';
   var SUTI = 'gy_suti', NAP = 365, VERZIO = 'v1', SAV_VERZIO = 'v1';
+  var SAV_KI = window.GY_SAV_KI === undefined ? true : !!window.GY_SAV_KI;
   var ADATVEDELEM = ELES ? '/adatvedelmi-nyilatkozat/' : 'https://www.gyogytornaszom.hu/adatvedelmi-nyilatkozat/';
 
   var olvas = function () {
@@ -37,7 +41,8 @@
     return { ad_storage: d && d.mark ? 'granted' : 'denied', ad_user_data: d && d.mark ? 'granted' : 'denied', ad_personalization: 'denied', analytics_storage: d && d.stat ? 'granted' : 'denied' };
   };
   var allapotEsemeny = function (nev) {
-    window.dataLayer.push({ event: nev, gy_suti_dontott: !!dontes, gy_suti_stat: !!(dontes && dontes.stat), gy_suti_mark: !!(dontes && dontes.mark), gy_suti_verzio: VERZIO });
+    var alap = SAV_KI && !dontes; // SAV_KI: dontes nelkul az alapertelmezes "megadott"
+    window.dataLayer.push({ event: nev, gy_suti_dontott: !!dontes, gy_suti_stat: alap || !!(dontes && dontes.stat), gy_suti_mark: alap || !!(dontes && dontes.mark), gy_suti_verzio: VERZIO, gy_suti_sav_ki: SAV_KI, gy_suti_alap: alap });
   };
   // mentett dontes: a Google-jelek frissitese (a default-ot a GTM Consent Initialization adja, denied); nincs dontes: semmi nem valtozik (denied marad)
   if (dontes) window.gtag('consent', 'update', jelek(dontes));
@@ -140,7 +145,7 @@
     });
     lablec();
     if (location.hash === '#suti-beallitasok') mutat('beall');
-    else if (!dontes) { // munkamenetenkent az elso oldalon nagyobb doboz, utana vekony sav; ket egyforma suly gomb
+    else if (!dontes && !SAV_KI) { // munkamenetenkent az elso oldalon nagyobb doboz, utana vekony sav; ket egyforma suly gomb
       var nagy = true;
       try { nagy = sessionStorage.getItem('gy_cc_nagy') !== '1'; sessionStorage.setItem('gy_cc_nagy', '1'); } catch (e) { /* */ }
       mutat(nagy ? 'nagy' : 'fo');
@@ -148,7 +153,7 @@
     }
   };
   window.gySuti = {
-    engedely: function (k) { return !!(dontes && dontes[k]); },
+    engedely: function (k) { return dontes ? !!dontes[k] : SAV_KI; },
     beallitasok: function () { if (!sav) felepit(); mutat('beall'); },
     dontott: function () { return !!dontes; }
   };

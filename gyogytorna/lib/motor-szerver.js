@@ -51,6 +51,7 @@ async function jsonTest(request, maxBajt = 8192) {
 
 const mostUnix = (deps) => Math.floor((deps && deps.most ? deps.most() : Date.now()) / 1000);
 const suti = (nev, ertek, { maxAge = null, torol = false } = {}) => `${nev}=${torol ? '' : ertek}; Path=/; Secure; HttpOnly; SameSite=Lax${torol ? '; Max-Age=0' : maxAge ? `; Max-Age=${maxAge}` : ''}`;
+const savKi = (env) => String(env.GY_SAV_KI ?? '0') === '1'; // sutisav kikapcsolva: dontes nelkul az alapertelmezes "megadott" (Feri dontese 2026-10-14); vesz-kikapcsolas: "0"
 const attrNelkul = (env) => String(env.GY_ATTR_NELKUL ?? '1') !== '0'; // Feri dontese 2026-10-13: hozzajarulas nelkul is menjen a (24 oras) munkamenet-forras; vesz-kikapcsolas: "0"
 
 // --- /api/gy-forras -----------------------------------------------------------------------------------------------------------
@@ -64,7 +65,7 @@ export async function forrasVegpont({ request, env, deps = {} }) {
   await sema(db);
   const most = mostUnix(deps);
   const s = sutik(request.headers.get('cookie'));
-  const hj = hozzajarulas(request.headers.get('cookie'));
+  const hj = hozzajarulas(request.headers.get('cookie'), { alap: savKi(env) });
   const extra = { cookies: [] };
   const sajatHostok = ['gyogytornaszom.hu', new URL(request.url).hostname.replace(/^www\./, '')];
   const uj = belepes({ search: typeof be.search === 'string' ? be.search.slice(0, 1500) : '', referrer: typeof be.referrer === 'string' ? be.referrer.slice(0, 500) : '', path: typeof be.path === 'string' ? be.path : '/', sajatHostok });
@@ -138,7 +139,7 @@ export async function foglalasVegpont({ request, env, deps = {} }) {
   await sema(db);
   const most = mostUnix(deps);
   const uuid = String(be.uuid);
-  const hj = hozzajarulas(request.headers.get('cookie'));
+  const hj = hozzajarulas(request.headers.get('cookie'), { alap: savKi(env) });
   const ad = szerverAdapter(env, deps.fetch || globalThis.fetch);
 
   const e = atiranyitasElemzes(be.redirect_url);
