@@ -117,13 +117,16 @@
   var elrejt = function () { if (sav) sav.style.display = 'none'; };
   var lablec = function () {
     if (document.getElementById('gy-cc-lablec')) return;
-    var cel = null, l = document.querySelectorAll('footer a[href*="adatvedelmi-nyilatkozat"]');
-    for (var i = 0; i < l.length; i++) cel = l[i];
+    // az eles lablec: <ul id="nav2"> ... <li><a rel="privacy-policy" href=".../adatvedelmi-nyilatkozat/">; tartalek: barmelyik adatvedelmi link
+    var cel = document.querySelector('a[rel~="privacy-policy"]');
+    if (!cel) { var l = document.querySelectorAll('footer a[href*="adatvedelmi-nyilatkozat"]'); for (var i = 0; i < l.length; i++) cel = l[i]; }
     if (!cel) return;
     var a = document.createElement('a');
-    a.id = 'gy-cc-lablec'; a.href = '#suti-beallitasok'; a.textContent = 'Süti beállítások'; a.className = cel.className; a.style.color = 'inherit'; a.style.textDecoration = 'underline';
+    a.id = 'gy-cc-lablec'; a.href = '#suti-beallitasok'; a.textContent = 'Süti beállítások'; a.className = cel.className; a.style.color = 'inherit';
     a.addEventListener('click', function (e) { e.preventDefault(); mutat('beall'); });
-    cel.after(document.createTextNode(' - '), a);
+    var li = cel.parentElement;
+    if (li && li.tagName === 'LI' && li.parentElement) { var uj = document.createElement('li'); uj.className = li.className.replace(/\bmenu-item-privacy-policy\b|\bmenu-item-\d+\b/g, '').trim(); uj.appendChild(a); li.after(uj); }
+    else { a.style.textDecoration = 'underline'; cel.after(document.createTextNode(' - '), a); }
   };
   var felepit = function () {
     if (sav || keretben || !document.body) return;

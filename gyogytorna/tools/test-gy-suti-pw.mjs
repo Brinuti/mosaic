@@ -112,8 +112,10 @@ assert.equal(await suti(p), null, 'SAV_KI: nem irunk sutit dontes nelkul');
 }
 assert.deepEqual(await consent(p), [], 'SAV_KI: a default-ot a GTM adja, a szkript nem allit consentet dontes nelkul');
 assert.equal(await p.evaluate(() => window.gySuti.engedely('mark') && window.gySuti.engedely('stat') && !window.gySuti.dontott()), true);
-// a lableci / API-s "Suti beallitasok" megnyitja a savot; az elutasitas elsobbseget el
-await p.evaluate(() => window.gySuti.beallitasok());
+// a lableci "Suti beallitasok" link (az eles lablec szerkezete: ul#nav2 > li > a[rel=privacy-policy]) megnyitja a savot; az elutasitas elsobbseget el
+assert.equal(await p.locator('#nav2 li #gy-cc-lablec').count(), 1, 'lableci link megvan');
+assert.match(await p.locator('#gy-cc-lablec').innerText(), /Süti beállítások/);
+await p.locator('#gy-cc-lablec').click();
 await p.locator('#gy-cc-beall').waitFor();
 await p.locator('#gy-cc-stat').uncheck(); await p.locator('#gy-cc-mark').uncheck();
 await p.locator('[data-gy=mentes]').click();
