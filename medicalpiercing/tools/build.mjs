@@ -195,7 +195,9 @@ fs.writeFileSync(path.join(DIST, 'robots.txt'), `User-agent: *\nAllow: /\n\nSite
 // a blog RSS-csatornaja ugyanazon a cimen, mint a Wixen (tools/rss-mentes.mjs)
 fs.copyFileSync(path.join(ROOT, 'assets/blog-feed.xml'), path.join(DIST, 'blog-feed.xml'));
 // a fuggveny csak a lapcimekre fusson, a fajlok kozvetlenul jojjenek
-fs.writeFileSync(path.join(DIST, '_routes.json'), JSON.stringify({ version: 1, include: ['/*'], exclude: ['/assets/*', '/sitemap.xml', '/blog-feed.xml'] }, null, 2));
+// az /assets/ tartalma (a salonic/ kivetelevel) kozvetlenul a tarhelyrol jon; a salonic/ a fuggvenyen at (mindig ellenorzott stiluslap, lib/salonic-css.js)
+const ASSET_KIZART = fs.readdirSync(path.join(DIST, 'assets'), { withFileTypes: true }).filter((e) => e.name !== 'salonic').map((e) => (e.isDirectory() ? `/assets/${e.name}/*` : `/assets/${e.name}`)).sort();
+fs.writeFileSync(path.join(DIST, '_routes.json'), JSON.stringify({ version: 1, include: ['/*'], exclude: [...ASSET_KIZART, '/sitemap.xml', '/blog-feed.xml'] }, null, 2));
 fs.writeFileSync(path.join(DIST, '_headers'), [
   '/assets/img/*', '  Cache-Control: public, max-age=2592000',
   '/assets/fonts/*', '  Cache-Control: public, max-age=31536000, immutable',
@@ -203,7 +205,7 @@ fs.writeFileSync(path.join(DIST, '_headers'), [
   // minden hivatkozasuk ?v=<tartalom-jel>-lel megy (fent), igy egy evig tarolhatok
   '/assets/css/*', '  Cache-Control: public, max-age=31536000, immutable',
   '/assets/js/*', '  Cache-Control: public, max-age=31536000, immutable',
-  // a Salonic adatlapjanak stiluslapja (a Salonic-fiok "Egyedi CSS URL"-je, verziojel nelkul): rovid ideig tarolhato
+  // a Salonic adatlapjanak stiluslapja (a Salonic-fiok "Egyedi CSS URL"-je, verziojel nelkul): rovid ideig tarolhato (a functions/[[path]].js ezt mindig ellenorzottre irja: lib/salonic-css.js)
   '/assets/salonic/*', '  Cache-Control: public, max-age=600', '  Access-Control-Allow-Origin: *',
   '',
 ].join('\n'));
