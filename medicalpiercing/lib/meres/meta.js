@@ -9,7 +9,7 @@ import { SEMLEGES_URL } from './meres.js';
 
 export const META_DATASET = '2177829632420786';
 export const META_ESEMENY = 'IgazoltFoglalas';
-export const TESZT_ESEMENYEK = Object.freeze(['IgazoltFoglalas', 'Schedule']);
+export const TESZT_ESEMENYEK = Object.freeze(['IgazoltFoglalas', 'Schedule', 'SubmitApplication', 'Contact', 'CompleteRegistration', 'FindLocation', 'CustomizeProduct']);
 export const TESZT_FORRASOK = Object.freeze({ fo: SEMLEGES_URL, salonic: 'https://medicalpiercing.salonic.hu/' });
 export const META_VEGPONT = (v = 'v21.0') => `https://graph.facebook.com/${v}/${META_DATASET}/events`;
 
