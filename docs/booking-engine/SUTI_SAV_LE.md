@@ -15,6 +15,8 @@ Ag: `claude/mosaic-suti-sav-le-rrbwkk` (a `main` 9ec2b6b-rol). Csak az `assets/j
 * A lablec "Suti beallitasok" link marad (a kozos lablec-sablon mar tartalmazza: `assets/fejlec/lablec-*.html`); megnyitja a beallito dobozt, ahol a bepipalas a **hatalyos** allapotot mutatja. A beallitasokban uj magyarazo sor: "A statisztikai es a marketing sutik alapertelmezetten be vannak kapcsolva, itt kikapcsolhatok."
 * **Visszavonas** (statisztika vagy marketing kikapcsolasa a beallitasokban): a `consent update` azonnal `denied`-et kuld, a `mh_cc` + a Wix `consent-policy` suti megirodik, az `attribucio.js` torli a tarolt `mh_attr`-t; a doboz ertesitest mutat: "A beallitas mentve. A kikapcsolt sutik teljes leallitasahoz toltse ujra az oldalt." (Ujratoltes / Bezar). Ujratolteskor a tarolt elutasitas a GTM betoltese ELOTT ervenyes.
 * **Terkep / velemenyek** (`mhSuti.enged('fun')`): nem vonja vissza a granted alapertekeket; dontes nelkul "reszleges" bejegyzes keletkezik, amelyben `ana` / `adv` false marad (igy egy visszaallitas / revert utan sem szamit kifejezett engedelynek).
+* **Lejart bejegyzes:** a tarolt elutasitas (statisztika / marketing) a lejarat utan is kotelezo marad (a granted alapertek nem tamad fel egy regi elutasitasra); csak a funkcionalis engedely jar le a megszokott ideje utan.
+* **Visszavonas utan a doboz nem tunik el magatol** (`role="status"`, a fokusz az "Ujratoltes" gombra kerul); a doboz-idozito a beallitasok / ertesites nezeten all.
 * A sav kodja (kompakt sav, "Elfogadom" gomb) megmaradt, de `SAV_AUTO = false` miatt dontes nelkuli latogatonak soha nem jelenik meg magatol. Visszaallitas: ennek a commitnak a revertje (egy commit).
 
 ## Technikai
@@ -22,6 +24,7 @@ Ag: `claude/mosaic-suti-sav-le-rrbwkk` (a `main` 9ec2b6b-rol). Csak az `assets/j
 * `hatalyos()`: a tarolt dontes, ennek hianyaban az alapertek (`ALAP = { fun: false, ana: true, adv: true }`). Mindenhol ez ervenyes: `jelek()` (Consent Mode), `mhSuti.engedely()`, a figyelok (`mhSuti.figyel`) es a beallitasok bepipalasa.
 * `mhSuti.mod()` -> `{ mod: 'alapertek_granted_v1', forras, fun, ana, adv }`. A dataLayerbe: `mh_consent_init` (betolteskor, a `consent default` utan, a GTM elott) es `mh_consent_valtozas` (dontes utan): `mh_consent_mod`, `mh_consent_forras`, `mh_consent_fun|ana|adv` (0/1). Szemelyes adat nincs bennuk; a GTM-ben nincs ra cimke (kulso fiokhoz nem nyultunk).
 * A `wait_for_update` megszunt (nincs mire varni).
+* `mhSuti.enged('fun')` (terkep / velemenyek) kozvetett iras: a `forras` nem lesz `modositott`, a granted alapertekeket nem vonja vissza.
 * Az `attribucio.js` (valtozatlan) a `mhSuti.engedely('adv')`-t kerdezi: uj latogatonal igen -> a kattintas-azonositok / UTM a `mh_attr`-ba kerulnek. A `lepes-meres.js` (booking-engine, valtozatlan) a `mhSuti.engedely('ana')`-t kerdezi: uj latogatonal igen -> a GA4 lepes-esemenyek mennek.
 
 ## NYITOTT PONTOK (dontes a mereso oldale / a tulajdonose; ezeket ez a PR NEM dont el)
@@ -35,6 +38,10 @@ Ag: `claude/mosaic-suti-sav-le-rrbwkk` (a `main` 9ec2b6b-rol). Csak az `assets/j
 7. **Reszleges bejegyzes** (lasd a tablazatot): a statisztikarol / marketingrol nem dont (alapertek). A szigorubb olvasat (a tarolt bejegyzes mindig kotelezo) egy sor (`hatalyos()`), de a terkep-engedelyezes ekkor visszavonna a granted alapertekeket.
 8. **Ajandekkartya mero-keret** (`MERO_KERET`, lathatatlan iframe a regi konverzio lejatszasahoz): uj latogatonal itt is granted az alapertek (a keretben sav eddig sem volt).
 9. A testver-oldalak (`gyogytorna`, `medicalpiercing`) sajat `suti.js`-t hasznalnak; ez a PR csak a Mosaic `assets/js/suti.js`-t erinti.
+10. **`attribucio.js` olyan oldalakon, ahol nincs `suti.js`** (kozvetlen `/foglalo-pmu`, `/foglalo-motor`, `/foglalas`, `/oxigenterapia-budapest-uj`, `/pmu-sminktetovalas`): a `mhSuti` hianyaban az `attribucio.js` tiltottnak veszi a marketinget, es **torli a tarolt `mh_attr`-t**, tehat az ide erkezo uj latogato kattintas-azonositoi elvesznek. Javaslat (kb. 1 sor, kulon commit): `mhSuti` hianyaban `adv !== false` (az `mh_cc` hianya = alapertek granted). Nem csinaltam meg (attribucio.js = foglalasi folyamat).
+11. **A `/foglalo-pmu` oldalaknak nincs lablec-linkjuk** a "Suti beallitasok"-hoz (a lablec-sablon nincs rajtuk): ott a visszavonas nem erheto el; a tobbi oldalon igen.
+12. **`reszleges` bejegyzes tovabbi hatasa:** a `ajandek.js` `mhSuti.engedely()`-t olvas, igy uj latogatonal (es "reszleges" bejegyzesnel) a megjelenito `granted`-et kuld; a "reszleges" bejegyzes `{fun: true, ana: false, adv: false}` marad a tarolt formaban, de a hatalyos ertek `ana/adv = granted` (lasd 7. pont).
+13. **Korlatok:** (a) ha a `localStorage` blokkolt, az elutasitas nem tarolodik (az oldal betoltesenkent alapertek granted); (b) mas, mar nyitott lapok a visszavonas utan az ujratoltesig `granted`-en maradnak; (c) a `_ga` / `_fbp` sutiket a mero kod a hozzajarulas tole fuggetlenul olvassa; (d) a beallitasokban az elore bepipalt "Kivalasztottak mentese" kifejezett dontesnek szamit (a bepipalas a hatalyos allapot, ami granted).
 
 ## Vedett elemek (ellenorizve)
 
@@ -48,7 +55,7 @@ Ag: `claude/mosaic-suti-sav-le-rrbwkk` (a `main` 9ec2b6b-rol). Csak az `assets/j
 
 ## Tesztek
 
-* `tools/meres-proba/suti-alapertek-bongeszo.mjs` (valodi Chromium, valodi `suti.js`, helyi `dist`, MINDEN kulso host tiltva): 84/84 PASS asztali (1280 px) es mobil (390 px) nezetben - uj latogato, korabbi elutasitas, reszleges tiltas, Wix-suti, "reszleges" bejegyzes, terkep-engedelyezes, lablec-link, visszavonas + ertesites + ujratoltes, kivalasztottak mentese, mindet elfogadom, Meta-pixel valtozatlansag. Negativ kontroll: a modositatlan (main) `suti.js`-en elbukik (`mhSuti.mod is not a function`). Naplo: `meres-naplo/suti-sav-le-bongeszo-2026-10-14.json`.
+* `tools/meres-proba/suti-alapertek-bongeszo.mjs` (valodi Chromium, valodi `suti.js`, helyi `dist`, MINDEN kulso host tiltva): 94/94 PASS asztali (1280 px) es mobil (390 px) nezetben - uj latogato, korabbi elutasitas, reszleges tiltas, Wix-suti, "reszleges" bejegyzes, terkep-engedelyezes, lablec-link, visszavonas + ertesites (nem tunik el, fokusz) + ujratoltes, kivalasztottak mentese, mindet elfogadom, Meta-pixel valtozatlansag, kulso iframe, MERO_KERET, lejart elutasitas / lejart engedely, reszleges Wix-suti, blokkolt localStorage, `enged('fun')` tarolt elutasitassal. Negativ kontroll: a modositatlan (main) `suti.js`-en elbukik (a `.mh-bev` magyarazo sor hianya miatt idotullepes; `mhSuti.mod` is hianyzik). Naplo: `meres-naplo/suti-sav-le-bongeszo-2026-10-14.json`.
 * `tools/meres-proba/attribucio-hozzajarulas-bongeszo.mjs` frissitve az uj rezsimre (a "dontes nelkul" mostantol alapertek: az iras megtortenik; a tiltas tarolt elutasitassal / a beallitasokban): PASS (naplo: `meres-naplo/attribucio-hozzajarulas-suti-sav-le-2026-10-14.json`).
 * `node --test tools/test-meres.mjs tools/test-lepes-meres.mjs`: 68/68.
 * Szintaxis: `node --check assets/js/suti.js`.

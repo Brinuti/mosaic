@@ -1,16 +1,16 @@
 {
- "futtatva": "2026-10-14T04:35:48.353Z",
+ "futtatva": "2026-10-14T04:53:07.021Z",
  "leiras": "suti-sav levetele (DECISION #170): valodi suti.js, valodi Chromium, helyi dist, minden kulso host tiltva",
  "eredmeny": "PASS",
- "db": 84,
+ "db": 94,
  "ellenorzesek": [
   {
-   "nev": "1) [asztali 1280px] uj latogato: a sav / doboz NEM latszik (20 mp-es ablakon belul sem)",
+   "nev": "1) [asztali 1280px] uj latogato: a sav / doboz NEM latszik (a betoltes utan azonnal)",
    "ok": true,
    "adat": null
   },
   {
-   "nev": "1) [asztali 1280px] ...tovabbra sem latszik",
+   "nev": "1) [asztali 1280px] ...1,2 mp mulva sem latszik (a SAV_AUTO = false miatt magatol soha nem jelenik meg)",
    "ok": true,
    "adat": null
   },
@@ -97,7 +97,7 @@
    "ok": true,
    "adat": {
     "mhCc": null,
-    "mhAttr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_gclid_0123456789\",\"ts\":1791952521}}}",
+    "mhAttr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_gclid_0123456789\",\"ts\":1791953533}}}",
     "suti": false
    }
   },
@@ -147,7 +147,7 @@
    "nev": "2) [asztali 1280px] az attribucio.js nem ir (nincs marketing-hozzajarulas)",
    "ok": true,
    "adat": {
-    "mhCc": "{\"v\":1,\"t\":1791952523804,\"fun\":false,\"ana\":false,\"adv\":false}",
+    "mhCc": "{\"v\":1,\"t\":1791953535166,\"fun\":false,\"ana\":false,\"adv\":false}",
     "mhAttr": null,
     "suti": false
    }
@@ -206,7 +206,7 @@
   {
    "nev": "4) [asztali 1280px] a Wix-dontes atkerult a sajat taroloba (mh_cc)",
    "ok": true,
-   "adat": "{\"v\":1,\"t\":1791952500000,\"fun\":false,\"ana\":false,\"adv\":false,\"wix\":true}"
+   "adat": "{\"v\":1,\"t\":1791953520000,\"fun\":false,\"ana\":false,\"adv\":false,\"wix\":true}"
   },
   {
    "nev": "5) [asztali 1280px] reszleges bejegyzes: statisztika + marketing = alapertek (granted), funkcionalis = igen",
@@ -259,7 +259,7 @@
    "ok": true,
    "adat": {
     "v": 1,
-    "t": 1791952528100,
+    "t": 1791953539267,
     "fun": true,
     "ana": false,
     "adv": false,
@@ -270,7 +270,7 @@
    "nev": "6) [asztali 1280px] ...Wix-suti nem keletkezik (reszleges)",
    "ok": true,
    "adat": {
-    "mhCc": "{\"v\":1,\"t\":1791952528100,\"fun\":true,\"ana\":false,\"adv\":false,\"reszleges\":true}",
+    "mhCc": "{\"v\":1,\"t\":1791953539267,\"fun\":true,\"ana\":false,\"adv\":false,\"reszleges\":true}",
     "mhAttr": "{\"v\":1}",
     "suti": false
    }
@@ -309,7 +309,7 @@
    "adat": {
     "c": {
      "v": 1,
-     "t": 1791952529535,
+     "t": 1791953540693,
      "fun": false,
      "ana": false,
      "adv": false
@@ -335,13 +335,22 @@
    "adat": null
   },
   {
-   "nev": "7) [asztali 1280px] az attribucio.js a visszavonaskor torli a tarolt adatot (mh_attr nincs)",
+   "nev": "7) [asztali 1280px] az attribucio.js a visszavonaskor torli a tarolt adatot (a visszavonas ELOTT letezett, utana nincs mh_attr)",
    "ok": true,
    "adat": {
-    "mhCc": "{\"v\":1,\"t\":1791952529535,\"fun\":false,\"ana\":false,\"adv\":false}",
-    "mhAttr": null,
-    "suti": true
+    "elotte": true,
+    "utana": null
    }
+  },
+  {
+   "nev": "7) [asztali 1280px] az ertesites az Ujratoltes gombra viszi a fokuszt (billentyuzettel elerheto), role = status",
+   "ok": true,
+   "adat": null
+  },
+  {
+   "nev": "7) [asztali 1280px] az ertesites 21 mp mulva is latszik (nem tunik el magatol)",
+   "ok": true,
+   "adat": null
   },
   {
    "nev": "7) [asztali 1280px] ujratoltes utan: default MINDEN denied a GTM elott, forras = korabbi_dontes, nincs sav",
@@ -414,7 +423,7 @@
     },
     "c": {
      "v": 1,
-     "t": 1791952533387,
+     "t": 1791953565208,
      "fun": true,
      "ana": true,
      "adv": true
@@ -422,12 +431,12 @@
    }
   },
   {
-   "nev": "1) [mobil 390px] uj latogato: a sav / doboz NEM latszik (20 mp-es ablakon belul sem)",
+   "nev": "1) [mobil 390px] uj latogato: a sav / doboz NEM latszik (a betoltes utan azonnal)",
    "ok": true,
    "adat": null
   },
   {
-   "nev": "1) [mobil 390px] ...tovabbra sem latszik",
+   "nev": "1) [mobil 390px] ...1,2 mp mulva sem latszik (a SAV_AUTO = false miatt magatol soha nem jelenik meg)",
    "ok": true,
    "adat": null
   },
@@ -514,7 +523,7 @@
    "ok": true,
    "adat": {
     "mhCc": null,
-    "mhAttr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_gclid_0123456789\",\"ts\":1791952534}}}",
+    "mhAttr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_gclid_0123456789\",\"ts\":1791953565}}}",
     "suti": false
    }
   },
@@ -564,7 +573,7 @@
    "nev": "2) [mobil 390px] az attribucio.js nem ir (nincs marketing-hozzajarulas)",
    "ok": true,
    "adat": {
-    "mhCc": "{\"v\":1,\"t\":1791952535823,\"fun\":false,\"ana\":false,\"adv\":false}",
+    "mhCc": "{\"v\":1,\"t\":1791953567501,\"fun\":false,\"ana\":false,\"adv\":false}",
     "mhAttr": null,
     "suti": false
    }
@@ -623,7 +632,7 @@
   {
    "nev": "4) [mobil 390px] a Wix-dontes atkerult a sajat taroloba (mh_cc)",
    "ok": true,
-   "adat": "{\"v\":1,\"t\":1791952500000,\"fun\":false,\"ana\":false,\"adv\":false,\"wix\":true}"
+   "adat": "{\"v\":1,\"t\":1791953520000,\"fun\":false,\"ana\":false,\"adv\":false,\"wix\":true}"
   },
   {
    "nev": "5) [mobil 390px] reszleges bejegyzes: statisztika + marketing = alapertek (granted), funkcionalis = igen",
@@ -676,7 +685,7 @@
    "ok": true,
    "adat": {
     "v": 1,
-    "t": 1791952540003,
+    "t": 1791953571504,
     "fun": true,
     "ana": false,
     "adv": false,
@@ -687,7 +696,7 @@
    "nev": "6) [mobil 390px] ...Wix-suti nem keletkezik (reszleges)",
    "ok": true,
    "adat": {
-    "mhCc": "{\"v\":1,\"t\":1791952540003,\"fun\":true,\"ana\":false,\"adv\":false,\"reszleges\":true}",
+    "mhCc": "{\"v\":1,\"t\":1791953571504,\"fun\":true,\"ana\":false,\"adv\":false,\"reszleges\":true}",
     "mhAttr": "{\"v\":1}",
     "suti": false
    }
@@ -726,7 +735,7 @@
    "adat": {
     "c": {
      "v": 1,
-     "t": 1791952541415,
+     "t": 1791953572891,
      "fun": false,
      "ana": false,
      "adv": false
@@ -752,13 +761,17 @@
    "adat": null
   },
   {
-   "nev": "7) [mobil 390px] az attribucio.js a visszavonaskor torli a tarolt adatot (mh_attr nincs)",
+   "nev": "7) [mobil 390px] az attribucio.js a visszavonaskor torli a tarolt adatot (a visszavonas ELOTT letezett, utana nincs mh_attr)",
    "ok": true,
    "adat": {
-    "mhCc": "{\"v\":1,\"t\":1791952541415,\"fun\":false,\"ana\":false,\"adv\":false}",
-    "mhAttr": null,
-    "suti": true
+    "elotte": true,
+    "utana": null
    }
+  },
+  {
+   "nev": "7) [mobil 390px] az ertesites az Ujratoltes gombra viszi a fokuszt (billentyuzettel elerheto), role = status",
+   "ok": true,
+   "adat": null
   },
   {
    "nev": "7) [mobil 390px] ujratoltes utan: default MINDEN denied a GTM elott, forras = korabbi_dontes, nincs sav",
@@ -831,7 +844,7 @@
     },
     "c": {
      "v": 1,
-     "t": 1791952544999,
+     "t": 1791953576239,
      "fun": true,
      "ana": true,
      "adv": true
@@ -872,9 +885,145 @@
    "adat": null
   },
   {
-   "nev": "11) az oldal sav / doboz es JS-hiba nelkul betolt (#mh-cc nem latszik, #mh-cc-reopen nem latszik)",
+   "nev": "11) idegen szuloben levo keret: a suti.js betolt, DE nincs sav / doboz, nincs GTM-betoltes (gtm.js), nincs JS-hiba",
    "ok": true,
-   "adat": []
+   "adat": {
+    "adat": {
+     "mhSuti": "object",
+     "sav": false,
+     "dl": 0
+    },
+    "kulso": [],
+    "hibak": []
+   }
+  },
+  {
+   "nev": "12) MERO_KERET: a GTM betolt (a default ELOTT), a consent default granted (uj latogato), nincs sav, nincs JS-hiba",
+   "ok": true,
+   "adat": {
+    "def": {
+     "ad_storage": "granted",
+     "ad_user_data": "granted",
+     "ad_personalization": "granted",
+     "analytics_storage": "granted",
+     "functionality_storage": "denied",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    },
+    "gtm": 2,
+    "kulso": [
+     "www.googletagmanager.com/gtm.js?id=GTM-PST2HB22",
+     "www.googletagmanager.com/gtag/js?id=G-H4206SQ0Q7"
+    ],
+    "hibak": []
+   }
+  },
+  {
+   "nev": "13) lejart elutasitas: a default MINDEN denied a GTM elott, forras = korabbi_dontes, nincs sav",
+   "ok": true,
+   "adat": {
+    "def": {
+     "ad_storage": "denied",
+     "ad_user_data": "denied",
+     "ad_personalization": "denied",
+     "analytics_storage": "denied",
+     "functionality_storage": "denied",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    },
+    "m": {
+     "mod": "alapertek_granted_v1",
+     "forras": "korabbi_dontes",
+     "fun": false,
+     "ana": false,
+     "adv": false
+    },
+    "hibak": []
+   }
+  },
+  {
+   "nev": "14) lejart engedely: analytics / ad_* granted, functionality denied (a funkcionalis lejart engedelye nem szamit)",
+   "ok": true,
+   "adat": {
+    "ad_storage": "granted",
+    "ad_user_data": "granted",
+    "ad_personalization": "granted",
+    "analytics_storage": "granted",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "15) reszleges Wix-suti (anl:1, adv:0): analytics granted, ad_storage / ad_user_data / ad_personalization denied",
+   "ok": true,
+   "adat": {
+    "ad_storage": "denied",
+    "ad_user_data": "denied",
+    "ad_personalization": "denied",
+    "analytics_storage": "granted",
+    "functionality_storage": "denied",
+    "personalization_storage": "granted",
+    "security_storage": "granted"
+   }
+  },
+  {
+   "nev": "16) tiltott localStorage: nincs JS-hiba, a default granted, a \"Mindet elutasitom\" az oldalon belul denied-et kuld",
+   "ok": true,
+   "adat": {
+    "hibak": [],
+    "def": {
+     "ad_storage": "granted",
+     "ad_user_data": "granted",
+     "ad_personalization": "granted",
+     "analytics_storage": "granted",
+     "functionality_storage": "denied",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    },
+    "upd": {
+     "ad_storage": "denied",
+     "ad_user_data": "denied",
+     "ad_personalization": "denied",
+     "analytics_storage": "denied",
+     "functionality_storage": "denied",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    }
+   }
+  },
+  {
+   "nev": "17) enged(fun) tarolt elutasitas mellett: ana / adv denied marad, fun granted, forras = korabbi_dontes (nem modositott)",
+   "ok": true,
+   "adat": {
+    "m": {
+     "mod": "alapertek_granted_v1",
+     "forras": "korabbi_dontes",
+     "fun": true,
+     "ana": false,
+     "adv": false
+    },
+    "upd": {
+     "ad_storage": "denied",
+     "ad_user_data": "denied",
+     "ad_personalization": "denied",
+     "analytics_storage": "denied",
+     "functionality_storage": "granted",
+     "personalization_storage": "granted",
+     "security_storage": "granted"
+    }
+   }
+  },
+  {
+   "nev": "17) a figyel() egyszer fut, az argumentum { fun: true, ana: false, adv: false } logikai ertekekkel",
+   "ok": true,
+   "adat": [
+    {
+     "fun": true,
+     "ana": false,
+     "adv": false
+    }
+   ]
   }
  ],
  "megfigyelesek": [

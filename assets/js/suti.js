@@ -93,7 +93,8 @@
   function olvas() {
     try {
       var o = JSON.parse(localStorage.getItem(KULCS));
-      if (o && o.v === 1 && Date.now() - o.t < ERVENYES_NAP * 864e5) return o;
+      // DECISION #170: a 12 honapnal regebbi (lejart) tarolt dontes sem tunik el szo nelkul: az elutasitas tovabbra is ervenyes, lasd hatalyos()
+      if (o && o.v === 1 && isFinite(o.t)) return o;
     } catch (e) { /* privat ablak, tiltott tarolo */ }
     return null;
   }
@@ -116,8 +117,7 @@
       var c = JSON.parse(decodeURIComponent(m[1]));
       if (!c || c.ess === undefined) return null;
       var t = +c.ts > 0 ? c.ts * 6e4 : Date.now();
-      if (Date.now() - t > ERVENYES_NAP * 864e5) return null;
-      return { v: 1, t: t, fun: c.func == 1, ana: c.anl == 1, adv: c.adv == 1, wix: true };
+      return { v: 1, t: t, fun: c.func == 1, ana: c.anl == 1, adv: c.adv == 1, wix: true }; // a lejarat kezelese: hatalyos()
     } catch (e) { return null; }
   }
   function wixIr(o) {
@@ -138,10 +138,13 @@
   // A HATALYOS hozzajarulas: a tarolt dontes, ha van; dontes nelkul az alapertek (DECISION #170). A "reszleges" bejegyzes (a latogato csak a
   // funkcionalis kategoriat engedte meg, pl. a terkepnel, a savban nem dontott) a statisztikarol / marketingrol NEM dont: ott az alapertek
   // ervenyes (a bejegyzesben ana / adv false marad, hogy egy visszaallitas utan se szamitson kifejezett engedelynek).
+  // LEJART (12 honapnal regebbi) tarolt dontes: a statisztika / marketing dontese (elutasitas is) tovabbra ervenyes - egy regi elutasitasbol nem lehet csendben granted;
+  // a funkcionalis kategoria lejart engedelye viszont nem szamit (alapertek: tiltva).
   function hatalyos() {
     if (!dontes) return { fun: ALAP.fun, ana: ALAP.ana, adv: ALAP.adv };
-    if (dontes.reszleges) return { fun: !!dontes.fun, ana: ALAP.ana, adv: ALAP.adv };
-    return { fun: !!dontes.fun, ana: !!dontes.ana, adv: !!dontes.adv };
+    var fun = !!dontes.fun && Date.now() - dontes.t < ERVENYES_NAP * 864e5;
+    if (dontes.reszleges) return { fun: fun, ana: ALAP.ana, adv: ALAP.adv };
+    return { fun: fun, ana: !!dontes.ana, adv: !!dontes.adv };
   }
   // A hatalyos hozzajarulas forrasa: uj_alapertek (nincs tarolt dontes) | korabbi_dontes (a tarolt dontes ervenyes: sajat tarolo / Wix-suti) |
   // modositott (a latogato ebben a munkamenetben allitott a beallitasokban).
@@ -251,10 +254,11 @@
   // --- dontes rogzitese ---------------------------------------------------
   // reszleges: csak egy kategoriat engedett (pl. a terkepnel), a savban meg nem dontott
   // Visszaadja: vissza lett-e vonva valami (a statisztika vagy a marketing az elozo hatalyos allapothoz kepest kikapcsolt) - ilyenkor kell ujratoltes.
-  function rogzit(fun, ana, adv, reszleges) {
+  // kozvetett: nem a beallitasokban tortent (pl. egy terkep-engedelyezes, mhSuti.enged) - ilyenkor a forras nem lesz "modositott"
+  function rogzit(fun, ana, adv, reszleges, kozvetett) {
     var elozo = hatalyos();
     dontes = { v: 1, t: Date.now(), fun: !!fun, ana: !!ana, adv: !!adv };
-    if (reszleges) dontes.reszleges = true; else forras = 'modositott';
+    if (reszleges) dontes.reszleges = true; else if (!kozvetett) forras = 'modositott';
     tarol(dontes);
     var uj = hatalyos();
     gtag('consent', 'update', jelek(uj));
@@ -313,7 +317,7 @@
         '</div>' +
       '</div>' +
       // visszavonas utan: a mar betoltott meroszkriptek teljes leallitasahoz ujratoltes kell (a mentett dontes az ujratolteskor a GTM ELOTT ervenyes)
-      '<div id="mh-cc-ertesites" style="display:none">' +
+      '<div id="mh-cc-ertesites" role="status" style="display:none">' +
         '<p class="mh-txt">A beállítás mentve. A kikapcsolt sütik teljes leállításához töltse újra az oldalt.</p>' +
         '<button type="button" class="mh-link" data-mh="close">Bezár</button>' +
         '<button type="button" class="mh-primary" data-mh="reload">Újratöltés</button>' +
@@ -341,16 +345,21 @@
     ujra.style.display = 'none';
     // a savon belul barmilyen mozdulat leallitja az automatikus eltunest;
     // a beallitasok nezetet (a latogato nyitotta meg) nem rejtjuk el magatol
-    if (melyik === 'settings') stopIdozito(); else inditIdozito();
+    // az ertesites (visszavonas utan) nem tunik el magatol: a latogatonak el kell tudnia olvasni / az ujratoltest kivalasztani (billentyuzettel is)
+    if (melyik === 'settings' || melyik === 'ertesites') stopIdozito(); else inditIdozito();
   }
   // A lebego "Suti beallitasok" gomb nem jelenik meg (kerésre): a hozzajarulas a
   // lablec "Suti beallitasok" linkjevel modosithato (lasd lableclink()).
   function elrejt() { stopIdozito(); sav.style.display = 'none'; ujra.style.display = 'none'; }
   // A dontes rogzitese utan: ha a statisztika vagy a marketing ki lett kapcsolva (visszavonas), az ertesites jelzi az ujratoltes szuksegesseget; egyebkent elrejtjuk.
-  function vege(visszavont) { if (visszavont) mutat('ertesites'); else elrejt(); }
+  function vege(visszavont) {
+    if (!visszavont) { elrejt(); return; }
+    mutat('ertesites');
+    try { var gomb = d.querySelector('#mh-cc-ertesites [data-mh="reload"]'); if (gomb) gomb.focus(); } catch (e) { /* nem baj */ }
+  }
 
-  // Ha a latogato 20 masodpercig nem nyul a savhoz, eltunik (dontes nelkul - ilyenkor
-  // minden nem-szukseges kategoria tiltva marad), es ebben a munkamenetben nem jon vissza.
+  // Ha a latogato 20 masodpercig nem nyul a savhoz, eltunik (dontes nelkul; a hatalyos allapot valtozatlan),
+  // es ebben a munkamenetben nem jon vissza. (DECISION #170 ota a sav magatol nem jelenik meg; ez a beallitasok nezetet nem erinti.)
   var AUTO_REJTES_MS = 20000;
   var idozito = null;
   function stopIdozito() { if (idozito) { clearTimeout(idozito); idozito = null; } }
@@ -443,7 +452,7 @@
       // Egy terkep megnyitasa nem jelenti a statisztika es a marketing elutasitasat: dontes nelkul "reszleges" bejegyzes keletkezik (ana / adv false marad
       // a tarolasban, a hatalyos allapotban viszont az alapertek ervenyes), igy a latogato Consent Mode allapota nem valtozik.
       var p = dontes || {}, reszleges = !dontes || !!dontes.reszleges;
-      rogzit(kat === 'fun' || p.fun, kat === 'ana' || p.ana, kat === 'adv' || p.adv, reszleges);
+      rogzit(kat === 'fun' || p.fun, kat === 'ana' || p.ana, kat === 'adv' || p.adv, reszleges, true);
     },
     beallitasok: function () { if (sav) mutat('settings'); }
   };

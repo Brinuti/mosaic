@@ -1,5 +1,5 @@
 {
- "futtatva": "2026-10-14T04:38:01.718Z",
+ "futtatva": "2026-10-14T04:53:58.995Z",
  "leiras": "attribucio.js hozzajarulas-fuggo tarolas, valodi Chromium + valodi suti.js, helyi dist, hamisitott /api/*",
  "eredmeny": "PASS",
  "ellenorzesek": [
@@ -72,7 +72,7 @@
    "ok": true,
    "adat": {
     "mhAttr": null,
-    "mhCc": "{\"v\":1,\"t\":1791952677743,\"fun\":false,\"ana\":false,\"adv\":false}",
+    "mhCc": "{\"v\":1,\"t\":1791953634956,\"fun\":false,\"ana\":false,\"adv\":false}",
     "attrIras": 1
    }
   },
@@ -91,7 +91,7 @@
    "ok": true,
    "adat": {
     "mhAttr": null,
-    "mhCc": "{\"v\":1,\"t\":1791952678163,\"fun\":false,\"ana\":false,\"adv\":false}",
+    "mhCc": "{\"v\":1,\"t\":1791953635403,\"fun\":false,\"ana\":false,\"adv\":false}",
     "attrIras": 0
    }
   },
