@@ -13,6 +13,7 @@ import { createSalonicAdapter, HELYSZINEK, HELYSZIN_SORREND, ANY_STAFF, HOST, fo
 import { createBookingContext } from './booking-id.js';
 
 const TOVABB = /^(utm_[a-z_]+)$/i; // a Salonic-adatlapra csak az utm_* megy tovabb (a Google click-ID NEM: az a sajat tartomanyon, a Workernel marad)
+const MIN_ELOZETES_PERC = 24 * 60; // Salonic-beallitas: a legkorabbi kiajanlott idopont most+24 ora (az API ezt NEM tartatja be, a Salonic oldala igen)
 const NAPOK = 100; // a Salonic ~65-80 napra elore ad idopontot; 100 nap biztosan mindet lefedi
 const HONAP = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
 const NAP_ROVID = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
@@ -405,7 +406,7 @@ export function nyit(ctx = {}) {
   const kiemeltIdo = (k) => {
     const kulcs = `${k.placeId}:${k.serviceId}:${k.staffId}`;
     if (!all.kiem[kulcs]) {
-      all.kiem[kulcs] = adapter.getAvailability(k.placeId, k.serviceId, { staffId: +k.staffId, days: 21, minLeadMinutes: 30 })
+      all.kiem[kulcs] = adapter.getAvailability(k.placeId, k.serviceId, { staffId: +k.staffId, days: 21, minLeadMinutes: MIN_ELOZETES_PERC })
         .then((l) => (l.length ? l.reduce((m, x) => (x.start_unix < m ? x.start_unix : m), l[0].start_unix) : null), () => null);
     }
     return all.kiem[kulcs];
@@ -472,7 +473,7 @@ export function nyit(ctx = {}) {
     if (all.pre && all.pre.kulcs === kulcs && Date.now() - all.pre.t < 90000) return all.pre;
     const pre = { kulcs, t: Date.now(), kesz: false, lista: null, figyel: null };
     pre.elso = adapter.getAvailability(all.placeId, s.serviceId, {
-      days: NAPOK, firstDays: 7, minLeadMinutes: 30,
+      days: NAPOK, firstDays: 7, minLeadMinutes: MIN_ELOZETES_PERC,
       onMore: (l) => { pre.kesz = true; if (l) pre.lista = l; if (pre.figyel) pre.figyel(); },
     }).then((l) => { if (!pre.kesz && !pre.lista) pre.lista = l; return l; });
     pre.elso.catch(() => { if (all.pre === pre) all.pre = null; });

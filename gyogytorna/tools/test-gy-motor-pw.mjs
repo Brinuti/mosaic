@@ -13,7 +13,7 @@ const MOST = Math.floor(Date.now() / 1000);
 const START = Math.floor((MOST + 6 * 86400) / 900) * 900 + 36000 % 900;
 const EMP = '31525';
 const KIEM_START = Math.floor((MOST + 86400) / 900) * 900 + 900; // "holnap" kb. ilyenkor
-const bongeszoHamis = salonicHamis({ szabad: { [`8439:24666:${EMP}`]: [START, START + 900, START + 86400], '8439:24666:18783': [START + 1800, START + 86400], '418:416586:33185': [KIEM_START, KIEM_START + 1800] } });
+const bongeszoHamis = salonicHamis({ szabad: { [`8439:24666:${EMP}`]: [START, START + 900, START + 86400], '8439:24666:18783': [START + 1800, START + 86400], '418:416586:33185': [Math.floor(MOST / 900) * 900 + 7200, Math.floor(MOST / 900) * 900 + 23 * 3600, KIEM_START, KIEM_START + 1800] } });
 const szerverHamis = salonicHamis({ szabad: {} }); // a szerver szerint a foglalt idopont mar nem szabad (a Salonic rogzitette)
 const valos = globalThis.fetch;
 globalThis.fetch = (u, i) => (String(u).includes('salonic.hu') ? szerverHamis(u, i) : valos(u, i));
@@ -85,7 +85,12 @@ await oldal.click('#gomb-allapot');
   assert.match(doboz, /Németh Nóra/); assert.match(doboz, /Ajánlott/); assert.match(doboz, /Rugalmasan elérhető időpontok/); assert.match(doboz, /Batthyány tér/);
   if (process.env.KEPEK) await oldal.screenshot({ path: `${process.env.KEPEK}/kiemelt-hely-${mod}.png` });
   await mk.locator('.kiemelt-doboz [data-kiem-ido]').filter({ hasText: /holnap|ma|október|november|december/ }).waitFor();
-  assert.match(await mk.locator('.kiemelt-doboz [data-kiem-ido]').innerText(), /^Legkorábbi időpont: (holnap|ma) \d\d:\d\d$/);
+  const kiemSzoveg = await mk.locator('.kiemelt-doboz [data-kiem-ido]').innerText();
+  assert.match(kiemSzoveg, /^Legkorábbi időpont: (holnap|ma) \d\d:\d\d$/);
+  // Salonic: legkorabbi kiajanlott idopont most+24 ora; az API a 24 oran beluli (ma) idopontokat is adja, ezeket a motor nem mutathatja (Nora "ma 12:30" hiba)
+  const kiemOra = kiemSzoveg.match(/(\d\d):(\d\d)$/);
+  const varhato = new Date((KIEM_START) * 1000).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Budapest' });
+  assert.equal(`${kiemOra[1]}:${kiemOra[2]}`, varhato, 'a kiemelt doboz a 24 oran beluli idopontokat kihagyja');
   await mk.locator('[data-hely="418"]').click();
   await mk.locator('.kartya.szak.kiemelt').waitFor();
   if (process.env.KEPEK) await oldal.screenshot({ path: `${process.env.KEPEK}/kiemelt-szakember-${mod}.png` });
