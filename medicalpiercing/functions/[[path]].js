@@ -9,7 +9,7 @@
 // - GET /api/ertekeles: a Google-ertekeles (pontszam, vélemenyek szama) a Trustindex fooldali widgetjebol (lib/ertekeles.js),
 //   a kategoria-oldalak hosenek ertekeles-sora ebbol frissul (assets/js/uj-fooldal.js 4c.).
 //
-// Csak a lapokra fut (dist/_routes.json): a kepek, betuk, stilusok, szkriptek es
+// Csak a lapokra (es a Salonic stiluslapjara: /assets/salonic/) fut (dist/_routes.json): a kepek, betuk, stilusok, szkriptek es
 // videok kozvetlenul a Cloudflare tarhelyerol jonnek, fuggvenyhivas nelkul.
 //
 // Beallitas (Cloudflare: Workers & Pages -> a projekt -> Settings -> Variables and
@@ -20,6 +20,7 @@ import { utvonal } from '../lib/utvonal.js';
 import { level } from '../lib/levelek.js';
 import { TABLAZAT_CSV, osszesSor } from '../lib/kitelepulesek.js';
 import { TRUSTINDEX_TARTALOM, ertekelesAdat } from '../lib/ertekeles.js';
+import { SALONIC_ELOTAG, salonicFajl } from '../lib/salonic-css.js';
 
 // Minden mas host (*.pages.dev elonezetek) probacim: noindex + tilto robots.txt.
 const ELES_HOST = /^(www\.)?medicalpiercing\.hu$/;
@@ -36,6 +37,8 @@ export async function onRequest(context) {
   if (request.method === 'GET' && url.pathname === '/api/kitelepulesek') return kitelepulesek();
   if (request.method === 'GET' && url.pathname === '/api/ertekeles') return ertekeles();
   if (request.method !== 'GET' && request.method !== 'HEAD') return context.next();
+  // a Salonic adatlap stiluslapja: a bongeszo mindig ellenorzi (lib/salonic-css.js)
+  if (url.pathname.startsWith(SALONIC_ELOTAG)) return salonicFajl(request, context.env.ASSETS);
 
   const eles = ELES_HOST.test(url.hostname);
   // a gyoker domain 301-gyel a www-re, mint a Wixen
