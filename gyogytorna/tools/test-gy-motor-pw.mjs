@@ -217,6 +217,56 @@ await oldal.click('#gomb-szakember');
   await oldal.keyboard.press('Escape');
 }
 lep('szakember-link: a helyszin elore kitoltve, az allapotfelmeres egybol a szakember naptarara visz');
+// A Salonic az ELSO /guestData/ betoltesnel 10 percre lefoglalja az idopontot, a MASODIK betoltes a Salonic sajat naptarara iranyit (a keretben a Salonic-naptar jelent meg).
+// Ezert visszalepeskor a betoltott adatlap marad (rejtve), ugyanarra az idopontra nincs masodik betoltes; dupla koppintas sem tolt ketszer.
+await oldal.goto(`${ORIGIN}/booking-test/?motor=1`);
+{
+  let guestKeres = 0;
+  const szamlalo = (r) => { if (/\/guestData/.test(r.url())) guestKeres++; };
+  oldal.on('request', szamlalo);
+  await oldal.click('#gomb-salonic');
+  const mk = oldal.locator('[data-gy-motor]');
+  await mk.locator('[data-csalad="allapotfelmeres"]').click();
+  await mk.locator('[data-valt="24666"]').click();
+  await mk.locator('[data-szak=""]').click().catch(() => {});
+  await mk.locator('.nap.van').first().waitFor();
+  const elso = mk.locator('.ido').first();
+  const slot = await elso.getAttribute('data-slot');
+  await elso.dblclick(); // dupla koppintas
+  await mk.locator('iframe.adatlap.aktiv').waitFor();
+  await oldal.waitForTimeout(600);
+  assert.equal(await mk.locator('iframe.adatlap').count(), 1, 'dupla koppintasra is csak egy adatlap');
+  await mk.locator('iframe.adatlap').evaluate((el) => { el.dataset.proba = 'ugyanaz'; });
+  const elsoKeres = guestKeres;
+  assert.equal(elsoKeres, 1, 'egyetlen /guestData/ betoltes');
+  // vissza az idopont-valasztora ("Masik idopont"), majd UGYANAZ az idopont: nincs uj betoltes, ugyanaz a keret
+  await mk.locator('.adatlap-sav .masik').click();
+  await mk.locator('.nap.van').first().waitFor();
+  assert.equal(await mk.locator('iframe.adatlap').first().isVisible(), false, 'az idopont-valasztonal a keret rejtett');
+  await mk.locator(`.ido[data-slot="${slot}"]`).click();
+  await mk.locator('iframe.adatlap.aktiv').waitFor();
+  assert.equal(await mk.locator('iframe.adatlap').count(), 1);
+  assert.equal(await mk.locator('iframe.adatlap').getAttribute('data-proba'), 'ugyanaz', 'ugyanaz a keret, nem toltodott ujra');
+  assert.equal(guestKeres, elsoKeres, 'nincs masodik /guestData/ betoltes ugyanarra az idopontra');
+  // masik idopont: uj keret (a regi rejtve marad); vissza az elsore: megint a regi keret
+  await mk.locator('.adatlap-sav .masik').click();
+  await mk.locator('.nap.van').first().waitFor();
+  const masik = mk.locator('.ido').nth(1);
+  const slot2 = await masik.getAttribute('data-slot');
+  assert.notEqual(slot2, slot);
+  await masik.click();
+  await mk.locator('iframe.adatlap.aktiv').waitFor();
+  assert.equal(await mk.locator('iframe.adatlap').count(), 2);
+  await mk.locator('.adatlap-sav .masik').click();
+  await mk.locator('.nap.van').first().waitFor();
+  await mk.locator(`.ido[data-slot="${slot}"]`).click();
+  await mk.locator('iframe.adatlap.aktiv').waitFor();
+  assert.equal(await mk.locator('iframe.adatlap.aktiv').getAttribute('data-proba'), 'ugyanaz');
+  assert.equal(guestKeres, 2, 'ket kulonbozo idopont = ket betoltes, a visszavalasztas nem tolt ujra');
+  oldal.off('request', szamlalo);
+  await oldal.keyboard.press('Escape');
+}
+lep('adatlap-keret megtartasa: visszalepeskor es ugyanarra az idopontra nincs masodik /guestData/ betoltes (Salonic 10 perces foglalasa), dupla koppintas sem tolt ketszer');
 // visszahivas-kerelem: "Telefonon egyeztetek idopontot" az elso lepes aljan; az urlap mezoi az elo "Telefonos Idopont" urlapbol
 // (kapcsolo: motor-kapcsolo.json "hivas"; alapbol 0, a proba ?hivas=1-gyel kapcsolja be)
 await oldal.goto(`${ORIGIN}/booking-test/?motor=1&hivas=0`);
