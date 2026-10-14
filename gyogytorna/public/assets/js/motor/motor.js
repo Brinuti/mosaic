@@ -176,13 +176,14 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .hivas-urlap { display: grid; gap: 12px; }
 .hivas-urlap .mezo { display: block; min-width: 0; }
 .hivas-urlap .cimke-sz { display: block; margin: 0 0 4px; font: 600 13px/1.3 'Poppins', Arial, sans-serif; }
-.hivas-urlap input[type="text"], .hivas-urlap input[type="tel"], .hivas-urlap select { width: 100%; font: inherit; font-size: 16px; line-height: 1.3; padding: 10px 12px; border: 1px solid #c9d6e2; border-radius: 10px; background: #fff; color: #1b2733; }
-.hivas-urlap input:focus, .hivas-urlap select:focus { outline: none; border-color: #0c4c8a; box-shadow: 0 0 0 3px #d9e8f4; }
-.hivas-urlap .mezo.hibas input, .hivas-urlap .mezo.hibas select { border-color: #c0392b; }
+.hivas-urlap input[type="text"], .hivas-urlap input[type="tel"], .hivas-urlap input[type="email"], .hivas-urlap select, .hivas-urlap textarea { width: 100%; font: inherit; font-size: 16px; line-height: 1.3; padding: 10px 12px; border: 1px solid #c9d6e2; border-radius: 10px; background: #fff; color: #1b2733; }
+.hivas-urlap textarea { min-height: 76px; resize: vertical; }
+.hivas-urlap .mezo + .mezo { margin-top: 0; }
+.hivas-urlap .elfogad + .elfogad { margin-top: 8px; }
+.hivas-urlap input:focus, .hivas-urlap select:focus, .hivas-urlap textarea:focus { outline: none; border-color: #0c4c8a; box-shadow: 0 0 0 3px #d9e8f4; }
+.hivas-urlap .mezo.hibas input[type="text"], .hivas-urlap .mezo.hibas input[type="tel"], .hivas-urlap .mezo.hibas input[type="email"], .hivas-urlap .mezo.hibas select, .hivas-urlap .mezo.hibas textarea { border-color: #c0392b; }
 .hivas-urlap .hiba-uzenet { min-height: 0; font-size: 12.5px; color: #c0392b; margin-top: 3px; }
 .hivas-urlap .hiba-uzenet:empty { display: none; }
-.hivas-urlap .ket-oszlop { display: grid; grid-template-columns: 1fr; gap: 12px; }
-@media (min-width: 701px) { .hivas-urlap .ket-oszlop { grid-template-columns: 1fr 1fr; } }
 .hivas-urlap .elfogad { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.4; color: #1b2733; }
 .hivas-urlap .elfogad input { margin-top: 2px; width: 18px; height: 18px; flex: none; }
 .hivas-urlap .elfogad a { color: #0c4c8a; }
@@ -250,7 +251,7 @@ export function nyit(ctx = {}) {
     $('[data-vissza]').hidden = i <= 0;
     $('.ablak').dataset.lepes = all.lepes;
     const h = all.lepes === 'adatlap' && all.placeId && HELYSZINEK[all.placeId];
-    $('.fej h2').textContent = all.lepes === 'hivas' ? 'Visszahívás kérése' : h ? `${h.nev} · Adatok` : 'Időpontfoglalás';
+    $('.fej h2').textContent = all.lepes === 'hivas' ? 'Telefonos időpontfoglalás' : h ? `${h.nev} · Adatok` : 'Időpontfoglalás';
   };
   const ugrik = (lepes) => { all.lepes = lepes; rajzol(); };
   // visszalepes: a cel lepes utani valasztasokat eldobja
@@ -315,25 +316,35 @@ export function nyit(ctx = {}) {
       + '<div class="hivas-doboz"><button class="kartya telefon" data-hivas><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span><span class="nev">Telefonon egyeztetek időpontot</span><div class="reszlet">Előbb beszélnék egy gyógytornásszal: visszahívunk</div></span></button></div>';
   }
 
-  // --- visszahivas-kerelem: "telefonon egyeztetek idopontot" (a vendeg elobb beszelne egy gyogytornasszal). Nev + telefon (+ rendelo, idosav); egeszsegugyi adatot nem kerdez ---
-  all.hivasAdat = { nev: '', tel: '', rendelo: 'mindegy', mikor: 'barmikor', elfogad: false };
+  // --- visszahivas-kerelem: "telefonon egyeztetek idopontot" (a vendeg elobb beszelne egy gyogytornasszal). A mezok es a szovegek SZO SZERINT az elo "Telefonos Idopont" urlapbol
+  // valok (gyogytornaszom.hu/online-gyogytorna/); a kuldes utan ugyanaz a koszonooldal (/visszahivas-ok/), igy a meglevo meres valtozatlan. ---
+  const HIVAS_SURGOSSEG = ['A lehető leggyorsabban!', '1-2 héten belül!', '1 hónapon belül.'];
+  const HIVAS_HIVHATO = ['Bármikor', 'Inkább reggel / de', 'Délután'];
+  const HIVAS_RENDELO = ['Oktogon', 'Nyugati', 'Batthyány'];
+  const HIVAS_ALAP = () => ({ nev: '', email: '', tel: '', surgosseg: HIVAS_SURGOSSEG[0], hivhato: HIVAS_HIVHATO[0], rendelo: HIVAS_RENDELO[0], panasz: '', elfogad_info: false, elfogad_adatv: false });
+  all.hivasAdat = HIVAS_ALAP();
   let hivasKuldes = false;
-  const HIVAS_RENDELO = [['mindegy', 'Mindegy'], ['batthyany', 'Batthyány tér'], ['nyugati', 'Nyugati tér'], ['oktogon', 'Oktogon']];
-  const HIVAS_MIKOR = [['barmikor', 'Bármikor'], ['delelott', 'Délelőtt'], ['delutan', 'Délután'], ['este', 'Este']];
-  const HIVAS_HIBA = { nev: 'Kérlek add meg a neved.', tel: 'Kérlek adj meg egy telefonszámot (legalább 6 számjegy).', elfogad: 'A kéréshez el kell fogadnod az adatvédelmi tájékoztatót.' };
-  const hivasJo = (k, v) => (k === 'nev' ? v.trim().length >= 2 : k === 'tel' ? (v.match(/\d/g) || []).length >= 6 : k === 'elfogad' ? v === true : true);
+  const HIVAS_HIBA = { nev: 'Kérjük adja meg a nevét.', email: 'Kérjük adjon meg egy érvényes e-mail címet.', tel: 'Kérjük adjon meg egy telefonszámot (legalább 6 számjegy).', elfogad: 'A kéréshez el kell fogadnia az alábbiakat.' };
+  const hivasJo = (k, v) => (k === 'nev' ? v.trim().length >= 2 : k === 'email' ? /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]{2,}$/.test(v.trim()) : k === 'tel' ? (v.match(/\d/g) || []).length >= 6 : true);
+  const hivasElfogadva = () => all.hivasAdat.elfogad_info && all.hivasAdat.elfogad_adatv;
   function hivasLepes() {
     const a = all.hivasAdat;
-    const opt = (lista, ertek) => lista.map(([k, n]) => `<option value="${k}"${k === ertek ? ' selected' : ''}>${esc(n)}</option>`).join('');
-    const mezo = (id, cimke, bemenet) => `<div class="mezo" data-mezo="${id}"><label class="cimke-sz" for="hv-${id}">${esc(cimke)}</label>${bemenet}<div class="hiba-uzenet" role="alert"></div></div>`;
-    tartalom.innerHTML = '<p class="kicsi bevezeto">Hagyd meg az elérhetőségedet, és visszahívunk, hogy időpontot egyeztessünk.</p>'
-      + '<p class="kicsi" style="margin:0 0 12px">Egészségügyi adatot ide ne írj: a részleteket telefonon beszéljük meg.</p>'
-      + '<form class="hivas-urlap" novalidate><div class="csapda" aria-hidden="true"><label>Ne töltsd ki <input type="text" name="bot" tabindex="-1" autocomplete="off"></label></div>'
-      + mezo('nev', 'Név *', `<input id="hv-nev" type="text" name="nev" autocomplete="name" value="${esc(a.nev)}">`)
-      + mezo('tel', 'Telefonszám *', `<input id="hv-tel" type="tel" name="tel" inputmode="tel" autocomplete="tel" value="${esc(a.tel)}">`)
-      + `<div class="ket-oszlop">${mezo('rendelo', 'Melyik rendelő érdekel?', `<select id="hv-rendelo" name="rendelo">${opt(HIVAS_RENDELO, a.rendelo)}</select>`)}${mezo('mikor', 'Mikor hívhatunk?', `<select id="hv-mikor" name="mikor">${opt(HIVAS_MIKOR, a.mikor)}</select>`)}</div>`
-      + `<div class="mezo" data-mezo="elfogad"><label class="elfogad"><input type="checkbox" name="elfogad"${a.elfogad ? ' checked' : ''}><span>Megismertem és elfogadom az <a href="https://www.gyogytornaszom.hu/adatvedelmi-nyilatkozat" target="_blank" rel="noopener">adatvédelmi tájékoztatót</a>.</span></label><div class="hiba-uzenet" role="alert"></div></div>`
-      + '<button type="submit" class="gomb" data-kuld>Visszahívást kérek</button><div class="kuld-uzenet" role="status"></div></form>';
+    const opt = (lista, ertek) => lista.map((n) => `<option value="${esc(n)}"${n === ertek ? ' selected' : ''}>${esc(n)}</option>`).join('');
+    const mezo = (id, cimke, bemenet, kotelezo) => `<div class="mezo" data-mezo="${id}"><label class="cimke-sz" for="hv-${id}">${esc(cimke)}${kotelezo ? ' *' : ''}</label>${bemenet}<div class="hiba-uzenet" role="alert"></div></div>`;
+    tartalom.innerHTML = '<p class="kicsi bevezeto">Csak töltse ki az alábbi űrlapot és 1 munkanapon belül visszahívjuk és megtaláljuk Önnek azt a gyógytornászt akinek a legnagyobb tapasztalata van a panaszának kezelésében!</p>'
+      + '<form class="hivas-urlap" novalidate><div class="csapda" aria-hidden="true"><label>Ne töltse ki <input type="text" name="bot" tabindex="-1" autocomplete="off"></label></div>'
+      + mezo('nev', 'Név', `<input id="hv-nev" type="text" name="nev" autocomplete="name" value="${esc(a.nev)}">`, true)
+      + mezo('email', 'E-mail cím', `<input id="hv-email" type="email" name="email" autocomplete="email" value="${esc(a.email)}">`, true)
+      + mezo('tel', 'Telefonszám (FONTOS "036" kezdettel írja be!)', `<input id="hv-tel" type="tel" name="tel" inputmode="tel" autocomplete="tel" value="${esc(a.tel)}">`, true)
+      + mezo('surgosseg', 'Mikor szeretne időpontot?', `<select id="hv-surgosseg" name="surgosseg">${opt(HIVAS_SURGOSSEG, a.surgosseg)}</select>`, true)
+      + mezo('hivhato', 'Mikor hívhatjuk?', `<select id="hv-hivhato" name="hivhato">${opt(HIVAS_HIVHATO, a.hivhato)}</select>`, true)
+      + mezo('rendelo', 'Melyik rendelőnkbe jönne?', `<select id="hv-rendelo" name="rendelo">${opt(HIVAS_RENDELO, a.rendelo)}</select>`, true)
+      + mezo('panasz', 'Panasza rövid leírása', `<textarea id="hv-panasz" name="panasz" rows="3" maxlength="1000">${esc(a.panasz)}</textarea>`, false)
+      + `<div class="mezo" data-mezo="elfogad"><div class="cimke-sz">Elfogadom az alábbiakat: *</div>`
+      + `<label class="elfogad"><input type="checkbox" name="elfogad_info"${a.elfogad_info ? ' checked' : ''}><span>Ez nem egy általános információ kérő űrlap, hanem időpontegyeztetés.</span></label>`
+      + `<label class="elfogad"><input type="checkbox" name="elfogad_adatv"${a.elfogad_adatv ? ' checked' : ''}><span>A Gyógytornászom.hu <a href="https://www.gyogytornaszom.hu/adatvedelmi-nyilatkozat" target="_blank" rel="noopener">Adatvédelmi Szabályzatát</a>.</span></label>`
+      + '<div class="hiba-uzenet" role="alert"></div></div>'
+      + '<button type="submit" class="gomb" data-kuld>Elküldöm az időpontfoglalást!</button><div class="kuld-uzenet" role="status"></div></form>';
   }
   const hivasHiba = (f, k, van) => {
     const m = f.querySelector(`[data-mezo="${k}"]`);
@@ -347,19 +358,23 @@ export function nyit(ctx = {}) {
     if (!f || hivasKuldes || lezart) return;
     const a = all.hivasAdat, uz = f.querySelector('.kuld-uzenet'), gomb = f.querySelector('[data-kuld]');
     let elso = null;
-    for (const k of ['nev', 'tel', 'elfogad']) { const jo = hivasJo(k, a[k]); hivasHiba(f, k, !jo); if (!jo && !elso) elso = k; }
+    for (const k of ['nev', 'email', 'tel']) { const jo = hivasJo(k, a[k]); hivasHiba(f, k, !jo); if (!jo && !elso) elso = k; }
+    { const jo = hivasElfogadva(); hivasHiba(f, 'elfogad', !jo); if (!jo && !elso) elso = 'elfogad_info'; }
     if (elso) { const el = f.elements[elso]; if (el) el.focus({ preventScroll: true }); uz.textContent = ''; return; }
     hivasKuldes = true; gomb.disabled = true; uz.className = 'kuld-uzenet'; uz.textContent = 'Küldés…';
     try {
       const v = await fetch((ctx.apiBase || '') + '/api/gy-visszahivas', {
         method: 'POST', credentials: 'omit', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ nev: a.nev.trim(), tel: a.tel.trim(), rendelo: a.rendelo, mikor: a.mikor, elfogad: true, bot: f.elements.bot.value, oldal: ctx.forras || location.pathname }),
+        body: JSON.stringify({ nev: a.nev.trim(), email: a.email.trim(), tel: a.tel.trim(), surgosseg: a.surgosseg, hivhato: a.hivhato, rendelo: a.rendelo, panasz: a.panasz.trim(), elfogad_info: true, elfogad_adatv: true, bot: f.elements.bot.value, oldal: ctx.forras || location.pathname }),
       });
       if (!v.ok) throw new Error(String(v.status));
-      all.hivasAdat = { nev: '', tel: '', rendelo: 'mindegy', mikor: 'barmikor', elfogad: false };
-      tartalom.innerHTML = '<div class="hivas-kesz"><h3>Köszönjük, megkaptuk!</h3><p>Hamarosan visszahívunk a megadott telefonszámon, és egyeztetünk egy időpontot.</p><button class="gomb masodlagos" data-bezar>Bezárás</button></div>';
+      all.hivasAdat = HIVAS_ALAP();
+      lezart = true;
+      // mint az elo urlapnal: a /visszahivas-ok/ koszonooldal (URL-parameter NELKUL: a panasz / szemelyes adat nem kerul az URL-be), ahol a meglevo meres fut
+      tartalom.innerHTML = '<div class="toltes">Köszönjük, megkaptuk! Egy pillanat…</div>';
+      location.assign(location.origin + '/visszahivas-ok/');
     } catch (x) {
-      hivasKuldes = false; gomb.disabled = false; uz.className = 'kuld-uzenet hiba'; uz.textContent = 'Most nem sikerült elküldeni, kérlek próbáld újra egy perc múlva.';
+      hivasKuldes = false; gomb.disabled = false; uz.className = 'kuld-uzenet hiba'; uz.textContent = 'Most nem sikerült elküldeni, kérjük próbálja újra egy perc múlva.';
     }
   }
 
@@ -564,7 +579,8 @@ export function nyit(ctx = {}) {
     if (!el.closest || !el.closest('form.hivas-urlap') || !el.name || el.name === 'bot') return;
     const k = el.name, ertek = el.type === 'checkbox' ? el.checked : el.value;
     all.hivasAdat[k] = ertek;
-    if (el.closest('[data-mezo]').classList.contains('hibas') && hivasJo(k, ertek)) hivasHiba(el.closest('form'), k, false);
+    const mz = el.closest('[data-mezo]');
+    if (mz && mz.classList.contains('hibas') && (mz.dataset.mezo === 'elfogad' ? hivasElfogadva() : hivasJo(k, ertek))) hivasHiba(el.closest('form'), mz.dataset.mezo, false);
   });
   shadow.addEventListener('change', (e) => { if (e.target.closest && e.target.closest('form.hivas-urlap') && e.target.name && e.target.name !== 'bot') all.hivasAdat[e.target.name] = e.target.type === 'checkbox' ? e.target.checked : e.target.value; });
   shadow.addEventListener('submit', (e) => { if (e.target.closest && e.target.closest('form.hivas-urlap')) { e.preventDefault(); hivasKuld(); } });

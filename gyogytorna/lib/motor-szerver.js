@@ -293,7 +293,7 @@ export async function adminVegpont({ request, env, deps = {} }) {
   const u = new URL(request.url);
   const most = mostUnix(deps);
   if (u.searchParams.get('visszahivasok')) {
-    const r = (await db.prepare('SELECT id, letrehozva, nev, tel, rendelo, mikor, oldal, ertesitve, allapot FROM gy_visszahivas ORDER BY id DESC LIMIT 200').all()).results || [];
+    const r = (await db.prepare('SELECT id, letrehozva, nev, email, tel, rendelo, surgosseg, hivhato, oldal, ertesitve, allapot FROM gy_visszahivas ORDER BY id DESC LIMIT 200').all()).results || [];
     return valasz(200, { ok: true, visszahivasok: r });
   }
   if (u.searchParams.get('riasztasok')) {
@@ -327,26 +327,36 @@ export async function adminVegpont({ request, env, deps = {} }) {
 }
 
 // --- /api/gy-visszahivas ------------------------------------------------------------------------------------------------------
-const RENDELOK = Object.freeze({ mindegy: 'Mindegy', batthyany: 'Batthyány tér', nyugati: 'Nyugati tér', oktogon: 'Oktogon' });
-const IDOSAVOK = Object.freeze({ barmikor: 'Bármikor', delelott: 'Délelőtt', delutan: 'Délután', este: 'Este' });
+// Az ELO "Telefonos Idopont" urlap (gyogytornaszom.hu/online-gyogytorna/, 123FormBuilder) mezoi, szo szerint: a valasztolistak ertekei az elo urlap szovegei.
+export const SURGOSSEG = Object.freeze(['A lehető leggyorsabban!', '1-2 héten belül!', '1 hónapon belül.']);
+export const HIVHATO = Object.freeze(['Bármikor', 'Inkább reggel / de', 'Délután']);
+export const RENDELOK = Object.freeze(['Oktogon', 'Nyugati', 'Batthyány']);
 const HONNAN = /^\/[A-Za-z0-9\-_/.%]{0,120}$/;
+const EMAIL = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]{2,}$/;
 const tisztit = (v, max) => String(v ?? '').replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
-/** A vendeg KIFEJEZETT kerese: "hivjatok vissza, mert elobb beszelnek egy gyogytornaszszal". Nev + telefon (+ opcionalis rendelo / idosav). Egeszsegugyi szabad szoveg nincs. */
+/**
+ * A vendeg KIFEJEZETT kerese: "hivjatok vissza, elobb beszelnek egy gyogytornasszal". A panasz rovid leirasa (egeszsegugyi adat) a D1-be SOHA nem kerul, naplozasra sem;
+ * csak az ertesito webhookon (e-mail a klinikanak) halad at. Ha az ertesites nem megy, a kerelem a panasz nelkul megmarad, es riasztas keszul (a klinika visszahivaskor megkerdezi).
+ */
 export async function visszahivasVegpont({ request, env, deps = {} }) {
   if (request.method !== 'POST') return valasz(405, { ok: false });
   if (!eredetEngedett(request, env)) return valasz(403, { ok: false, hiba: 'eredet' });
   const db = env.GY_DB;
   if (!db) return valasz(503, { ok: false, hiba: 'nincs_adatbazis' });
-  const be = await jsonTest(request, 2048);
+  const be = await jsonTest(request, 4096);
   if (!be) return nincsKerelem('ervenytelen_torzs');
   if (be.bot) return valasz(200, { ok: true }); // csapda-mezo: a robot "sikert" kap, nem mentunk semmit
   const nev = tisztit(be.nev, 80);
+  const email = tisztit(be.email, 120);
   const tel = tisztit(be.tel, 30).replace(/[^+0-9 ()\-/]/g, '');
   if (nev.length < 2 || !/\p{L}/u.test(nev)) return nincsKerelem('nev');
+  if (!EMAIL.test(email)) return nincsKerelem('email');
   if ((tel.match(/\d/g) || []).length < 6 || (tel.match(/\d/g) || []).length > 15) return nincsKerelem('telefon');
-  if (be.elfogad !== true) return nincsKerelem('adatkezeles');
-  const rendelo = Object.hasOwn(RENDELOK, be.rendelo) ? be.rendelo : 'mindegy';
-  const mikor = Object.hasOwn(IDOSAVOK, be.mikor) ? be.mikor : 'barmikor';
+  if (!SURGOSSEG.includes(be.surgosseg)) return nincsKerelem('surgosseg');
+  if (!HIVHATO.includes(be.hivhato)) return nincsKerelem('hivhato');
+  if (!RENDELOK.includes(be.rendelo)) return nincsKerelem('rendelo');
+  if (be.elfogad_info !== true || be.elfogad_adatv !== true) return nincsKerelem('elfogadas');
+  const panasz = tisztit(be.panasz, 1000); // NEM tarolodik
   const oldal = typeof be.oldal === 'string' && HONNAN.test(be.oldal) ? be.oldal : null;
   await sema(db);
   const most = mostUnix(deps);
@@ -355,16 +365,19 @@ export async function visszahivasVegpont({ request, env, deps = {} }) {
   if (ora.n >= 30) { await riaszt(db, 'visszahivas_limit', { most }); return valasz(429, { ok: false, hiba: 'sok_kerelem' }); }
   const mar = await db.prepare('SELECT id FROM gy_visszahivas WHERE tel = ? AND letrehozva > ?').bind(tel, most - 600).first();
   if (mar) return valasz(200, { ok: true });
-  const r = await db.prepare('INSERT INTO gy_visszahivas (letrehozva, nev, tel, rendelo, mikor, oldal) VALUES (?,?,?,?,?,?)').bind(most, nev, tel, rendelo, mikor, oldal).run();
+  const r = await db.prepare('INSERT INTO gy_visszahivas (letrehozva, nev, email, tel, rendelo, surgosseg, hivhato, oldal) VALUES (?,?,?,?,?,?,?,?)').bind(most, nev, email, tel, be.rendelo, be.surgosseg, be.hivhato, oldal).run();
   const id = r && r.meta ? r.meta.last_row_id : null;
   if (Math.random() < 0.05) takarit(db, most).catch(() => {}); // 60 napos torles
-  // ertesites: a klinikanak szolo webhook (pl. Zapier -> e-mail); hiba eseten a kerelem a D1-ben megvan, riasztas keszul. A vendeg valasza ettol fuggetlen.
+  // ertesites: a klinikanak szolo webhook (pl. Zapier -> e-mail). A vendeg valasza ettol fuggetlen.
   let ertesitve = 0;
   const hook = String(env.GY_VISSZAHIVAS_WEBHOOK || '');
   if (/^https:\/\//.test(hook)) {
     try {
       const f = deps.fetch || fetch;
-      const v = await f(hook, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nev, tel, rendelo: RENDELOK[rendelo], mikor: IDOSAVOK[mikor], oldal, ido: new Date((most + 2 * 3600) * 1000).toISOString().replace('T', ' ').slice(0, 16) }) });
+      const v = await f(hook, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
+        nev, email, tel, mikor_szeretne_idopontot: be.surgosseg, mikor_hivhatjuk: be.hivhato, melyik_rendelo: be.rendelo, panasz_roviden: panasz || '-', oldal,
+        ido: new Date((most + 2 * 3600) * 1000).toISOString().replace('T', ' ').slice(0, 16),
+      }) });
       ertesitve = v.ok ? 1 : 0;
     } catch (e) { /* alabb riasztas */ }
   }

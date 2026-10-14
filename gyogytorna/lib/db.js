@@ -20,10 +20,11 @@ export const SEMA = [
   `CREATE TABLE IF NOT EXISTS gy_meta (kulcs TEXT PRIMARY KEY, ertek TEXT)`,
   `CREATE TABLE IF NOT EXISTS gy_riasztas (id INTEGER PRIMARY KEY AUTOINCREMENT, ido INTEGER NOT NULL, tipus TEXT NOT NULL, uuid TEXT, adat TEXT)`,
   `CREATE INDEX IF NOT EXISTS gy_riasztas_ido ON gy_riasztas (ido)`,
-  // visszahivas-kerelem (a vendeg kifejezett kerese): nev + telefon + opcionalis rendelo / idosav. Egeszsegugyi adat NINCS; megorzes 60 nap (IDOK.visszahivas)
+  // visszahivas-kerelem (a vendeg kifejezett kerese; az elo "Telefonos Idopont" urlap mezoi): nev, e-mail, telefon, surgosseg, hivhato idosav, rendelo. A PANASZ szovege
+  // (egeszsegugyi adat) SOHA nincs tarolva: csak az ertesitesben (e-mail) halad at. Megorzes 60 nap (IDOK.visszahivas)
   `CREATE TABLE IF NOT EXISTS gy_visszahivas (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, letrehozva INTEGER NOT NULL, nev TEXT NOT NULL, tel TEXT NOT NULL, rendelo TEXT NOT NULL DEFAULT 'mindegy',
-    mikor TEXT NOT NULL DEFAULT 'barmikor', oldal TEXT, ertesitve INTEGER NOT NULL DEFAULT 0, allapot TEXT NOT NULL DEFAULT 'uj')`,
+    id INTEGER PRIMARY KEY AUTOINCREMENT, letrehozva INTEGER NOT NULL, nev TEXT NOT NULL, email TEXT, tel TEXT NOT NULL, rendelo TEXT NOT NULL DEFAULT 'Oktogon',
+    surgosseg TEXT, hivhato TEXT, oldal TEXT, ertesitve INTEGER NOT NULL DEFAULT 0, allapot TEXT NOT NULL DEFAULT 'uj')`,
   `CREATE INDEX IF NOT EXISTS gy_visszahivas_ido ON gy_visszahivas (letrehozva)`,
 ];
 
@@ -34,6 +35,7 @@ export async function sema(db) {
   // migracio: a Salonic-igazolas parositasahoz (hely + idopont HMAC); a mar letezo tablara is felkerul, a duplikalt oszlop hibajat elnyeljuk
   try { await db.prepare('ALTER TABLE gy_foglalas ADD COLUMN parosito_hely TEXT').run(); } catch (e) { /* mar megvan */ }
   for (const oszlop of ['kampany', 'hirdetescsoport', 'hirdetes']) { try { await db.prepare(`ALTER TABLE gy_foglalas ADD COLUMN ${oszlop} TEXT`).run(); } catch (e) { /* mar megvan */ } }
+  for (const oszlop of ['email', 'surgosseg', 'hivhato']) { try { await db.prepare(`ALTER TABLE gy_visszahivas ADD COLUMN ${oszlop} TEXT`).run(); } catch (e) { /* mar megvan */ } }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS gy_foglalas_parosito_hely ON gy_foglalas (parosito_hely)').run(); } catch (e) { /* */ }
   try { await db.prepare('CREATE INDEX IF NOT EXISTS gy_foglalas_salonic ON gy_foglalas (salonic_id)').run(); } catch (e) { /* */ }
   kesz.add(db);
