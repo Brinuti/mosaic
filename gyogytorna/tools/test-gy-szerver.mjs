@@ -5,10 +5,11 @@ import assert from 'node:assert/strict';
 import { belepes, cimkez, osszevon, fizetett, referrerKategoria } from '../lib/forras.js';
 import { hozzajarulas } from '../lib/hozzajarulas.js';
 import { tranzakcioId, hmacHex, ujToken, sha256Hex } from '../lib/titkos.js';
-import { forrasVegpont, igazolasVegpont, foglalasVegpont, koszonoVegpont, kampanyokVegpont, adminVegpont, atiranyitasElemzes, visszahivasVegpont } from '../lib/motor-szerver.js';
+import { forrasVegpont, igazolasVegpont, foglalasVegpont, koszonoVegpont, kampanyokVegpont, adminVegpont, atiranyitasElemzes, visszahivasVegpont, sutiConfigVegpont, sutiTesztEllenorzes, SUTI_TESZT_ALAP } from '../lib/motor-szerver.js';
 import { createSalonicAdapter, foglalasTipus, ALLAPOTFELMERES_ID } from '../public/assets/js/motor/salonic-adapter.js';
 import { eloElemzes } from '../lib/salonic-szerver.js';
 import { ujD1 } from './d1-szim.mjs';
+import { onRequest as sutiStatVegpont } from '../functions/api/gy-suti-stat.js';
 import { salonicHamis } from './salonic-hamis.mjs';
 
 const BASE = 'https://gy.test';
@@ -534,4 +535,42 @@ test('SAV_KI mod (GY_SAV_KI=1, Feri 2026-10-14): dontes nelkul az alapertelmezes
   const env3 = await ujKornyezet();
   r = await forrasVegpont({ request: kerelem('/api/gy-forras', be), env: env3, deps: d });
   assert.equal(r.headers.getSetCookie().length, 1);
+});
+
+test('sav-teszt: konfig (alapertek, kulcsos csere, ellenorzes), A/B statisztika oldalra / valtozatra bontva, elfogadasi arany a riportban', async () => {
+  const env = await ujKornyezet();
+  const d = { most: () => MOST };
+  // alapertek: 1 oldal, 2 valtozat (A = a 16:35-os dizajn, B = kesleltetett, rovid szoveg)
+  let r = await sutiConfigVegpont({ request: kerelem('/api/gy-suti-config', null, { metodus: 'GET', origin: null }), env });
+  assert.equal(r.status, 200);
+  const alap = await r.json();
+  assert.deepEqual(alap.oldalak, ['/az-izuleti-fajdalom-okai-tunetei-es-gyogytornaja']);
+  assert.deepEqual(alap.valtozatok.map((v) => [v.id, v.kesleltetes, v.gorgetes]), [['v1', 0, 0], ['v2', 3, 30]]);
+  // csere: kulcs nelkul 401, ervenytelen konfig 400, ervenyes -> a GET mar az uj erteket adja
+  const uj = { aktiv: true, oldalak: ['/masik-oldal/'], valtozatok: [{ id: 'v1', suly: 70, cim: 'Cim', szoveg: 'Szoveg', kesleltetes: 2, gorgetes: 10, pozicio: 'felso', gombsorrend: 'elutasit_elol', halvany: false, ismeretlen: 'x' }, { id: 'v3', suly: 30, cim: 'B', szoveg: 'B szoveg' }] };
+  assert.equal((await sutiConfigVegpont({ request: kerelem('/api/gy-suti-config', uj), env })).status, 401);
+  const fejlec = { 'x-gy-kulcs': ADMIN };
+  assert.equal((await sutiConfigVegpont({ request: kerelem('/api/gy-suti-config', { ...uj, oldalak: ['http://rossz'] }, { fejlec }), env })).status, 400);
+  assert.equal((await sutiConfigVegpont({ request: kerelem('/api/gy-suti-config', { ...uj, valtozatok: [{ ...uj.valtozatok[0], id: 'x' }] }, { fejlec }), env })).status, 400);
+  assert.equal((await sutiConfigVegpont({ request: kerelem('/api/gy-suti-config', { ...uj, valtozatok: [{ ...uj.valtozatok[0], kesleltetes: 999 }] }, { fejlec }), env })).status, 400);
+  assert.equal((await sutiConfigVegpont({ request: kerelem('/api/gy-suti-config', uj, { fejlec }), env })).status, 200);
+  const gy = await (await sutiConfigVegpont({ request: kerelem('/api/gy-suti-config', null, { metodus: 'GET', origin: null }), env })).json();
+  assert.deepEqual(gy.oldalak, ['/masik-oldal/']);
+  assert.equal(gy.valtozatok[0].ismeretlen, undefined);
+  assert.deepEqual(gy.valtozatok.map((v) => [v.id, v.pozicio, v.gombsorrend, v.halvany]), [['v1', 'felso', 'elutasit_elol', false], ['v3', 'also', 'elfogad_elol', true]]);
+  assert.equal(sutiTesztEllenorzes(SUTI_TESZT_ALAP) !== null, true);
+  // statisztika: oldalra / valtozatra / eszkozre bontva; ervenytelen valtozat / oldal / esemeny elutasitva
+  const stat = (b) => sutiStatVegpont({ request: new Request(BASE + '/api/gy-suti-stat', { method: 'POST', body: JSON.stringify(b) }), env });
+  const P = '/az-izuleti-fajdalom-okai-tunetei-es-gyogytornaja/';
+  for (const [v, e, db] of [['v1', 'megjelent', 4], ['v1', 'elfogad', 2], ['v1', 'elutasit', 1], ['v1', 'dontes_nelkul', 1], ['v2', 'megjelent', 4], ['v2', 'elfogad', 3], ['v2', 'elutasit', 1]]) for (let i = 0; i < db; i++) assert.equal((await stat({ e, n: 'nagy', m: 1, v, p: P })).status, 204);
+  assert.equal((await stat({ e: 'megjelent', n: 'nagy', m: 0, v: 'x', p: P })).status, 204); // ervenytelen valtozat -> v0
+  assert.equal((await stat({ e: 'rossz', n: 'nagy', m: 0, v: 'v1', p: P })).status, 400);
+  assert.equal((await stat({ e: 'megjelent', n: 'nagy', m: 0, v: 'v1', p: 'http://rossz' })).status, 204); // rossz oldal: a regi (oldal nelkuli) tablaba
+  assert.equal((await env.GY_DB.prepare("SELECT COUNT(*) AS n FROM gy_suti_teszt WHERE oldal = ?").bind(P.toLowerCase()).first()).n >= 1, true);
+  const rap = await (await adminVegpont({ request: kerelem('/api/gy-admin?suti_teszt=1', null, { metodus: 'GET', fejlec }), env, deps: d })).json();
+  const v1 = rap.osszesitett.find((x) => x.verzio === 'v1'), v2 = rap.osszesitett.find((x) => x.verzio === 'v2');
+  assert.deepEqual([v1.megjelent, v1.elfogad, v1.elutasit, v1.dontes_nelkul, v1.elfogadasi_arany], [4, 2, 1, 1, 50]); // 2 / (2+1+0+1)
+  assert.deepEqual([v2.megjelent, v2.elfogad, v2.elfogadasi_arany], [4, 3, 75]);
+  assert.equal(v1.eszkoz, 'mobil');
+  assert.equal(JSON.stringify(rap).includes('cookie'), false);
 });
