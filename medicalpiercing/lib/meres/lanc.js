@@ -14,6 +14,7 @@ import { levelErtelmezes } from './igazolas.js';
 import { akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, kuldes, elesKuldesE, maszk, ELES_HOST } from './google-ads.js';
 import { forrasPlatform, onbevallasErtek, platformAzonositok, vanPlatformId, URES_PLATFORM_ID } from './forras.js';
 import { tiktokLepes, TIKTOK_SEMA } from './tiktok.js';
+import { metaArnyekLepes, ARNYEK_SEMA } from './meta.js';
 import { bizonyitekBemenet, bizonyitekValaszt, bizonyitekForrasTarolo, diagBemenet, platformBizonyitekbol, cimkez, markasListaOlvas, FORRAS_VERZIO } from './cimke.js';
 
 export const SEMA = [
@@ -221,6 +222,13 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       if (typeof waitUntil === 'function') waitUntil(pf); else await pf;
       return json({ ok: true, uj: false, potolva: true });
     }
+    // Meta arnyekmeres (meta.js, Feri 2026-10-14): az uj foglalasrol azonnal, a bongeszo user agentjevel (NEM taroljuk),
+    // a kampanyban nem hasznalt ARNYEK adathalmazba. Fuggetlen, sajat hibakezelessel; a lancot nem allithatja meg.
+    try {
+      const pa = metaArnyekLepes(db, sor, request.headers.get('user-agent') || '', env, host, { fetchImpl, most })
+        .catch((e) => console.error('mp-meres: meta arnyek hiba', String(e && e.message || e).slice(0, 200)));
+      if (typeof waitUntil === 'function') waitUntil(pa); else await pa;
+    } catch (e) { /* nem allithatja meg */ }
     // Google Ads felé CSAK Salonic által igazolt foglalás mehet: ha a Salonic-level mar megerkezett, most parositunk
     // es feltoltunk; kulonben a feltoltest a level erkezese (igazolasErkezes) inditja.
     const ig = await igazolasKeresSorhoz(db, sor);
@@ -235,6 +243,8 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       db.prepare('DELETE FROM mp_foglalas WHERE letrehozva < ?').bind(most - MEGORZES_NAP * 86400),
       db.prepare('DELETE FROM mp_feltoltes WHERE ido < ?').bind(most - MEGORZES_NAP * 86400),
       db.prepare('DELETE FROM mp_tiktok_feltoltes WHERE ido < ?').bind(most - MEGORZES_NAP * 86400),
+      db.prepare(ARNYEK_SEMA),
+      db.prepare("DELETE FROM mp_meta_arnyek WHERE ido < ?").bind(most - MEGORZES_NAP * 86400),
       db.prepare('UPDATE mp_foglalas SET kattintas_ertek = NULL WHERE kattintas_ertek IS NOT NULL AND letrehozva < ?').bind(most - 90 * 86400),
       db.prepare(`UPDATE mp_foglalas SET ${PLATFORM_ID_OSZLOPOK.map((o) => `${o} = NULL`).join(', ')}
         WHERE (${PLATFORM_ID_OSZLOPOK.map((o) => `${o} IS NOT NULL`).join(' OR ')}) AND letrehozva < ?`).bind(most - 90 * 86400),
