@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ELO_CELOK, ARNYEK } from '../netlify/lib/meres/platformok.js';
 import { SD_MIN_KOR_MP } from '../netlify/lib/meres/salonic-direct.js';
-import { ertekel, jeloltekSql, smokeSql } from './sd-smoke-ellenorzes.mjs';
+import { ertekel, jeloltekSql, smokeSql, C4_MIN_MP, C4_TURES_MP } from './sd-smoke-ellenorzes.mjs';
 import { T0, VENDEG, level, lezar, vilag } from './lib-sd-teszt.mjs';
 
 const SD_ELOTT = T0 + 1300_000; // a letrehozo level utan ~21,7 perccel
@@ -45,7 +45,19 @@ test('SM2 TERMESZETES pmu foglalas: motor lezart (parositatlan), az sd >= 20 per
   assert.equal(e.verdikt, 'PASS', JSON.stringify(e.kriteriumok.filter((x) => x.allapot !== 'PASS')));
   assert.deepEqual(allapotok(e), { C1: 'PASS', C2: 'PASS', C3: 'PASS', C4: 'PASS', C5: 'PASS', C6: 'PASS', C7: 'PASS', C8: 'PASS', C9: 'PASS', C10: 'PASS', C11: 'PASS', C12: 'PASS' });
   assert.match(e.kriteriumok.find((x) => x.id === 'C7').reszlet, /ARNYEK/);
-  assert.match(e.kriteriumok.find((x) => x.id === 'C4').reszlet, new RegExp(`minimum ${SD_MIN_KOR_MP}`));
+  assert.match(e.kriteriumok.find((x) => x.id === 'C4').reszlet, new RegExp(`minimum ${C4_MIN_MP} `));
+});
+
+test('SM11 C4 IDEIGLENES szabaly (DECISION #183): a sor letrehozasatol >= 1200 - 60 = 1140 mp PASS (a 95e40912: 1194 mp es a d81f5333: 1180 mp is), 1139 mp FAIL; a 20 perces production-minimum (SD_MIN_KOR_MP) valtozatlan', async () => {
+  assert.equal(SD_MIN_KOR_MP, 1200); assert.equal(C4_TURES_MP, 60); assert.equal(C4_MIN_MP, 1140);
+  const { v, u8 } = await termeszetes({ u8: 'c0ffee30' });
+  const jo = lefuttat(v, u8); const ido = { mostSec: Math.floor(SD_ELOTT / 1000) + 5, env: { GA4_TESZT_MEASUREMENT_ID: 'G-TESZT00001' } };
+  for (const [kor, vart] of [[1200, 'PASS'], [1194, 'PASS'], [1180, 'PASS'], [1140, 'PASS'], [1139, 'FAIL'], [600, 'FAIL']]) {
+    const x = JSON.parse(JSON.stringify(jo)); x.level[0].sd_ido = x.level[0].letrehozva + kor;
+    const e = ertekel(u8, x, ido);
+    assert.equal(allapotok(e).C4, vart, `${kor} mp -> ${vart}`);
+    assert.equal(e.verdikt, vart === 'PASS' ? 'PASS' : 'FAIL', `${kor} mp: a verdikt`);
+  }
 });
 
 test('SM3 TESZTFOGLALAS ugyanaz a lista (oxigen host): a teszt-nev nem szamit az ellenorzesnek; VERDIKT PASS, uzletag = oxigen; a tesztfoglalas u8-ja a napi QA-hivasban ?proba=<u8> (nem szamit a T2-mintaba)', async () => {

@@ -10,6 +10,12 @@ import { ELO_CELOK } from '../netlify/lib/meres/platformok.js';
 import { arnyekCel } from '../netlify/lib/meres/qa-nap.js';
 import { SD_MIN_KOR_MP } from '../netlify/lib/meres/salonic-direct.js';
 
+// C4 - IDEIGLENES szabaly (DECISION #183, a meresi oldal, 2026-10-14, ChatGPT-vel egyeztetve; a Drive-os DECISION-LOG-ban is rogzitve): a kor a foglalas_egyeztetes.letrehozva-tol merve PASS,
+// ha >= 1140 mp (= SD_MIN_KOR_MP 1200 - 60 mp tures, az ismert Zapier-keses). Ok: a production a level SAJAT datumatol szamol (salonic-direct.js: kor = t - level_datuma), a sor letrehozasa kesobbi.
+// VEGLEGES (kesobb): a level datuma kerul a D1-be (level_datuma oszlop, D1-semabovites), a C4 kizarolag ebbol: levéldatum + 1200 mp, +-30 mp (#180). Akkor ez a tures kiveheto.
+export const C4_TURES_MP = 60;
+export const C4_MIN_MP = SD_MIN_KOR_MP - C4_TURES_MP;
+
 const U8 = /^[0-9a-f]{8}$/;
 const PMU_OXIGEN = Object.freeze({ 14585: 'pmu', 14409: 'oxigen' });
 const ELO_ID_LISTA = Object.freeze([...ELO_CELOK.meta, ...ELO_CELOK.tiktok, ...ELO_CELOK.ga4, ...ELO_CELOK.google_primary]);
@@ -76,7 +82,7 @@ export function ertekel(u8, r, { mostSec = Math.floor(Date.now() / 1000), env = 
   if (sdVan) {
     k.push(K('C3', 'sd_atvetel', level.sd_allapot === 'kesz' ? 'PASS' : ['atveve', 'koran'].includes(level.sd_allapot) ? 'FOLYAMATBAN' : 'FAIL', `sd_allapot=${level.sd_allapot}${level.riasztas ? ', riasztas=1' : ''}`));
     const sdHozta = level.sd_ido != null && level.sd_ido === level.letrehozva; // az sd INSERT-je hozta letre a sort (a letrehozo level horga nem futott): a level valodi kora nem ismert
-    k.push(K('C4', 'kor_ido', sdHozta ? 'WARN' : kor != null && kor >= SD_MIN_KOR_MP ? 'PASS' : 'FAIL', sdHozta ? 'az sd hozta letre a sort (nincs levelhorog-ido): a level kora nem ellenorizheto' : kor != null ? `${kor} mp a letrehozo level utan (minimum ${SD_MIN_KOR_MP})` : 'nincs sd_ido'));
+    k.push(K('C4', 'kor_ido', sdHozta ? 'WARN' : kor != null && kor >= C4_MIN_MP ? 'PASS' : 'FAIL', sdHozta ? 'az sd hozta letre a sort (nincs levelhorog-ido): a level kora nem ellenorizheto' : kor != null ? `${kor} mp a letrehozo sor utan (ideiglenes minimum ${C4_MIN_MP} = ${SD_MIN_KOR_MP} - ${C4_TURES_MP} mp tures, DECISION #183; vegleges: levéldatum + ${SD_MIN_KOR_MP} mp, +-30 mp)` : 'nincs sd_ido'));
   } else if (motorNyert) {
     k.push(K('C3', 'sd_atvetel', 'NA', 'a motor parositotta es kuldte (booking_id): az sd nem vett at - a motoros ut (nem az sd) a smoke targya, az sd smoke itt nem teljesul'));
     k.push(K('C4', 'kor_ido', 'NA', 'nincs sd-atvetel'));
@@ -134,4 +140,4 @@ async function fo() {
   console.error('hasznalat: node tools/sd-smoke-ellenorzes.mjs jeloltek [--tol <unix>] | sql <u8> | ertekel <u8> <eredmenyek.json>');
   process.exitCode = 1;
 }
-if (import.meta.url === `file://${process.argv[1]}`) await fo();
+if (process.argv[1] && import.meta.url === (await import('node:url')).pathToFileURL(process.argv[1]).href) await fo(); // (Windows-on is helyes: a `file://${argv[1]}` osszehasonlitas ott sosem egyezett)
