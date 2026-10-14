@@ -192,7 +192,7 @@ body.customer-mosaic-pmu .panel-body > div > hr { margin: 4px 0 !important; }
   body.customer-mosaic-pmu form.form { margin-bottom: 0 !important; }
   body.customer-mosaic-pmu .section { padding-bottom: 6px !important; }
   body.customer-mosaic-pmu .grecaptcha-badge { visibility: hidden !important; position: absolute !important; bottom: 0 !important; }
-  body.customer-mosaic-pmu .panel-body > div::after { content: 'Az oldalt a reCAPTCHA védi; a Google adatvédelmi irányelvei és ÁSZF-je érvényes.'; flex: 0 0 100%; display: block; margin-top: 6px; font-size: 9.5px; line-height: 1.3; color: #8a9799; text-align: center; }
+  body.customer-mosaic-pmu .panel-body > div::after { content: 'reCAPTCHA védi; a Google adatvédelmi irányelvei és ÁSZF-je érvényes.'; flex: 0 0 100%; display: block; margin-top: 6px; font-size: 9.5px; line-height: 1.3; color: #8a9799; text-align: center; }
 }
 
 /* asztalon (a foglalo kerete itt 880 px magas) a mezok kozott tobb levego, az urlap lefele hosszabb */
@@ -294,3 +294,61 @@ body:is(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-
  * nem kap felugro "hirlevel"-kerdest, hirlevelre ezen az uton nem iratkozik fel. A kotelezo hozzajarulas valtozatlan.
  */
 body.customer-mosaic-pmu .newsletter-container { display: none !important; }
+
+/* ===== Gyogytornas adatlap (Feri kerese, 2026-10-14): az adatlap (a foglalo utolso oldala) ugyanugy nez ki, mint a Gyogytornaszom foglalojaban
+ * (gyogytorna/public/salonic/gy.css); a szinek, a betutipus es a gombok MOSAIC-sok maradnak. Csak az elrendezes / szovegek valtoznak:
+ * a Salonic sajat sutisavja nem latszik; a "*-gal jelolt mezok" mondat es a lemondasi hatarido sora nem kell (a hatarido a visszaigazolo
+ * e-mailben benne van; a * jeloles a mezok mellett marad); a "Kod ellenorzese" gomb a mezo fuggoleges kozepen; rovid hozzajarulasi szoveg
+ * (a teljes szoveg a DOM-ban megvan), a jelolonegyzet a mezok bal szelen; szellosebb urlap. A fejlecet / lablecet NEM rejtjuk el: a foglalo
+ * motor a keretet ehhez a geometriahoz igazitja (engine.js FRAME_STYLED). A reCAPTCHA-tajekoztatot a Google feltetelei miatt nem rejtjuk el.
+ * A "A foglalasod" oldalakra (reszletek / modositas / lemondas) ez a blokk nem vonatkozik. ===== */
+/* a Salonic sajat sutisavja ("Az oldal hasznalataval hozzajarulsz...") ne latszodjon az adatlapon */
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .cc-window, body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .cc-revoke { display: none !important; }
+/* mondatok, amik nem kellenek: a "*-gal jelolt mezok" (a mezoket tartalmazo doboz kozvetlen szovege) es a lemondasi sor + vonal */
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .panel-body > div { font-size: 0 !important; line-height: 0 !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .panel-body > div > * { font-size: 12px !important; line-height: 1.35 !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .panel-body > div > span.d-block.mb-3 { display: none !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .panel-body > div > hr { display: none !important; }
+/* kupon-sor: a "Kod ellenorzese" gomb pontosan a beviteli mezo fuggoleges kozepen, a Material-alahuzas nelkul */
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .input-group { align-items: center !important; flex-wrap: nowrap !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .input-group::after, body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .input-group::before { display: none !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .input-group > .form-control { margin: 0 !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .input-group-prepend { margin: 0 !important; align-self: center !important; display: flex !important; align-items: center !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .input-group-prepend .input-group-text { padding: 0 0 0 10px !important; margin: 0 !important; background: none !important; border: 0 !important; align-items: center !important; line-height: 1 !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .btn-check-coupon-code { margin: 0 !important; }
+/* a pipa a mezok bal szelevel egy vonalban kezdodik; a hozzajarulas rovid szovege: "Megismertem es elfogadom az adatvedelmi tajekoztatot es a foglalasi szabalyzatot. *" */
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check { padding-left: 0 !important; margin-left: 0 !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check label { padding-left: 0 !important; display: flex !important; flex-wrap: wrap !important; align-items: baseline !important; column-gap: 5px !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check label > input[type=checkbox] { order: 0 !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check label::before { order: 1 !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check label > a.policy:nth-of-type(1) { order: 2 !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check label > a.policy:nth-of-type(2) { order: 3 !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check label > span.required { order: 4 !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check label { font-size: 0 !important; line-height: 0 !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check label > a, body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check label > span.required { font-size: 11.5px !important; line-height: 1.4 !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)):not(.customer-mosaicheadspa) .form-check label::before { content: 'Megismertem és elfogadom az '; font-size: 11.5px; line-height: 1.4; color: var(--mh-kozep); vertical-align: middle; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)):not(.customer-mosaicheadspa) .form-check label > a.policy:nth-of-type(2)::before { content: 'és a '; display: inline-block; text-decoration: none; color: var(--mh-kozep); font-size: 11.5px; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)):not(.customer-mosaicheadspa) .form-check label > a.policy:nth-of-type(2)::after { content: '.'; display: inline-block; text-decoration: none; color: var(--mh-kozep); font-size: 11.5px; }
+/* szellosebb adatlap (a megtakaritott helybol) */
+@media (max-width: 599px) {
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-group { margin-bottom: 10px !important; }
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .control-label, body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-group label:not(.form-check-label) { margin-bottom: 4px !important; margin-top: 2px !important; }
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .card { margin-top: 10px !important; margin-bottom: 14px !important; }
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check { margin: 8px 0 10px !important; }
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .btn-submit-booking { margin-top: 8px !important; }
+}
+@media (min-width: 600px) {
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-group { margin-bottom: 10px !important; padding-bottom: 0 !important; }
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-control { height: 38px !important; }
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .control-label, body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-group label:not(.form-check-label) { font-size: 13px !important; margin-bottom: 3px !important; }
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .order-lg-1 .card-body { padding: 10px 16px !important; }
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .btn-submit-booking { margin-top: 4px !important; }
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) textarea.form-control { height: 38px !important; min-height: 38px !important; }
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .booking-time-remain-container { margin: 0 0 2px !important; }
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .card { margin-bottom: 14px !important; }
+  body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check { margin: 8px 0 10px !important; }
+}
+/* tobb hely az osszefoglalo doboz alatt (a doboz es az urlap kozott) */
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .order-lg-1 { margin-top: 14px !important; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check label > a.policy:nth-of-type(2)::before { margin-right: 4px; }
+body.customer-mosaic-pmu:not(:where(#page-booking-bookingDetails-body, #page-booking-selectDate-body, #page-booking-editSuccess-body, #page-booking-deleteSuccess-body)) .form-check label::before { margin-right: 2px; }
