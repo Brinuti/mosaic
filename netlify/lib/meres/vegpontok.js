@@ -4,6 +4,7 @@ import { egyeztetoSorok, egyeztetoCsv } from './egyeztetes-sor.js';
 import { erkezesMent, fuggoKuldesek, kapcsoloBeallit, kapcsolokOlvas, kuldesMegerosit, naploLeker } from './elosztas.js';
 import { irasKi, irasKapcsolo, IRAS_KI_VALASZ } from './iras-kapcsolo.js';
 import { sdKapcsoloBeallit } from './salonic-direct.js';
+import { kezelQaNap } from './qa-nap.js';
 
 /** POST /api/meres-erkezes (azonos eredet; a bongeszo nem ker valaszt a foglalas folyamataban: a hiba nem akaszthat meg semmit). A "ip" / "ua" a keresbol jon, nem a torzsbol. */
 export async function kezelErkezes(request, env, deps = {}) {
@@ -21,8 +22,9 @@ export async function kezelErkezes(request, env, deps = {}) {
   return valasz(r.ok ? 200 : 422, r);
 }
 
-/** /api/meres-admin (kulcsos, mint a /api/foglalas-egyeztetes): GET ?source_id=.. (naplo) | ?fuggo=1 (kuldesre varo kerelmek) | ?kapcsolok=1 | ?egyeztetes=1&tol=<unix>&ig=<unix>[&uzletag=..][&formatum=csv][&utan=<booking_id>][&forras=motor|salonic_direct][&ga4_csere=<unix|ISO>] (QA-5 foglalasonkenti egyeztetosor, csak olvas; ga4_csere: a GA4 titokcsere elotti utolso / utani elso sikeres esemeny jelolese);  POST {muvelet:'kapcsolo'|'sd_kapcsolo'|'megerosit', ...} */
+/** /api/meres-admin (kulcsos, mint a /api/foglalas-egyeztetes): GET ?source_id=.. (naplo) | ?fuggo=1 (kuldesre varo kerelmek) | ?qa=nap&datum=YYYY-MM-DD[&proba=<uuid8,..>][&elvart=..] | ?qa=t2start (napi T2 QA-jelentes / T2_START rogzito, lasd qa-nap.js) | ?kapcsolok=1 | ?egyeztetes=1&tol=<unix>&ig=<unix>[&uzletag=..][&formatum=csv][&utan=<booking_id>][&forras=motor|salonic_direct][&ga4_csere=<unix|ISO>] (QA-5 foglalasonkenti egyeztetosor, csak olvas; ga4_csere: a GA4 titokcsere elotti utolso / utani elso sikeres esemeny jelolese);  POST {muvelet:'kapcsolo'|'sd_kapcsolo'|'megerosit', ...} */
 export async function kezelAdmin(request, env, deps = {}) {
+  { const qa = new URL(request.url).searchParams.get('qa'); if (qa === 'nap' || qa === 't2start') return kezelQaNap(request, env, deps); } // napi T2 QA-jelentes (csak olvas, aggregalt, PII-mentes): sajat kulcs-ellenorzes (401/403), rate-limit, no-store
   if (!env || !env.KULCS_DB) return valasz(503, { ok: false, miert: 'nincs adatbazis-kotes' });
   if (!(await kulcsEllenorzes(request, env))) return valasz(404, { ok: false });
   const url = new URL(request.url);
