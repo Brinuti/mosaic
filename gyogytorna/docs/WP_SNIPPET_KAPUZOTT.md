@@ -72,3 +72,16 @@ add_action('wp_head', function () {
 ```
 Ellenorzes (2026-10-14, eles oldal, Playwright, a Google-kerelmek a halozaton megakadalyozva, csak megszamolva): fo ablakban a `/allapot-ok/` GTM-et probal betolteni (1), a `gy-adatlap` keretben 0 GTM/Google kerelem, a launcher a keretben is betoltodik.
 Visszaallitas: a snippet kikapcsolasa es/vagy `motor-kapcsolo.json` arany=0. Az oldal gyorsitotarat (W3TC) es a Cloudflare-t a snippet valtoztatasa utan uriteni kell.
+
+## Aktualis eles valtozat (2026-10-14, Code Snippets #58) - koztes foglalo oldal
+Kiegeszites: a `/online-gyogytorna/` cimen a tartalom a motor megnyilasaig rejtett (`html.gy-fh`), hogy ne villanjon fel; robotnak / sebessegmerőnek nem rejti. A launcher nyitja a motort magatol, bezarva a `gy-fh` osztaly lekerul. Minden ra mutato link is a motort nyitja (a `#horgony` linkek nem).
+```php
+add_action('wp_head', function () {
+  if (is_admin()) return;
+  ?>
+<style>#cookie-alert{display:none!important}html.gy-fh body{visibility:hidden!important}html.gy-fh [data-gy-motor]{visibility:visible!important}</style>
+<script>(function(){try{localStorage.setItem('cookieAccepted','true');}catch(e){}try{if(/^\/online-gyogytorna\/?$/i.test(location.pathname)&&!/bot|crawl|spider|slurp|lighthouse|pagespeed|inspectiontool|gtmetrix|pingdom/i.test(navigator.userAgent)&&sessionStorage.getItem('gy_motor')!=='0'&&!/[?&]motor=0/.test(location.search)){document.documentElement.classList.add('gy-fh');setTimeout(function(){document.documentElement.classList.remove('gy-fh');},6000);}}catch(e){}try{if(window.top!==window&&window.name==='gy-adatlap'){var ip=Node.prototype.insertBefore,ap=Node.prototype.appendChild,bl=function(n){return n&&n.tagName==='SCRIPT'&&/googletagmanager\.com\/(gtm|gtag)/i.test(n.src||'');};Node.prototype.insertBefore=function(n,r){return bl(n)?n:ip.call(this,n,r);};Node.prototype.appendChild=function(n){return bl(n)?n:ap.call(this,n);};}}catch(e){}try{var s=document.createElement('script');s.src='/gy-foglalas/assets/js/launcher.js';s.async=false;document.head.appendChild(s);if(window.top===window){var c=document.createElement('script');c.src='/gy-foglalas/assets/js/suti.js';c.async=false;document.head.appendChild(c);}}catch(e){}})();</script>
+  <?php
+}, 0);
+
+```

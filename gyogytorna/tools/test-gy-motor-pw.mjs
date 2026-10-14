@@ -13,7 +13,7 @@ const MOST = Math.floor(Date.now() / 1000);
 const START = Math.floor((MOST + 6 * 86400) / 900) * 900 + 36000 % 900;
 const EMP = '31525';
 const KIEM_START = Math.floor((MOST + 86400) / 900) * 900 + 900; // "holnap" kb. ilyenkor
-const bongeszoHamis = salonicHamis({ szabad: { [`8439:24666:${EMP}`]: [START, START + 900, START + 86400], '418:416586:33185': [KIEM_START, KIEM_START + 1800] } });
+const bongeszoHamis = salonicHamis({ szabad: { [`8439:24666:${EMP}`]: [START, START + 900, START + 86400], '8439:24666:18783': [START + 1800, START + 86400], '418:416586:33185': [KIEM_START, KIEM_START + 1800] } });
 const szerverHamis = salonicHamis({ szabad: {} }); // a szerver szerint a foglalt idopont mar nem szabad (a Salonic rogzitette)
 const valos = globalThis.fetch;
 globalThis.fetch = (u, i) => (String(u).includes('salonic.hu') ? szerverHamis(u, i) : valos(u, i));
@@ -181,6 +181,42 @@ await oldal.keyboard.press('Escape');
 assert.equal(await oldal.locator('[data-gy-motor]').count(), 0);
 assert.equal(await oldal.evaluate(() => document.documentElement.style.overflow), '');
 lep('Esc bezarja; a gorgetes-zar es az inert visszaall');
+// koztes foglalo oldal (/online-gyogytorna/ mintaja: /booking-auto/): a cimere erkezve a motor magatol megnyilik, a mogotte levo tartalom rejtett, bezarva elokerul; a ra mutato gombok is a motort nyitjak
+await oldal.goto(`${ORIGIN}/booking-auto/?motor=1`);
+await oldal.locator('[data-gy-motor] .ablak').waitFor();
+assert.equal(await oldal.evaluate(() => getComputedStyle(document.getElementById('koztes-tartalom')).visibility), 'hidden', 'a tartalom a motor mogott rejtett');
+assert.equal(await oldal.evaluate(() => location.pathname + location.search), '/booking-auto/?motor=1'); // az URL nem valtozik
+await oldal.keyboard.press('Escape');
+assert.equal(await oldal.locator('[data-gy-motor]').count(), 0);
+assert.equal(await oldal.evaluate(() => getComputedStyle(document.getElementById('koztes-tartalom')).visibility), 'visible', 'bezarva a tartalom elokerul');
+assert.equal(await oldal.evaluate(() => document.documentElement.classList.contains('gy-fh')), false);
+await oldal.goto(`${ORIGIN}/booking-auto/?motor=0`); // kikapcsolt motor: az oldal marad, a tartalom lathato
+await oldal.waitForTimeout(600);
+assert.equal(await oldal.locator('[data-gy-motor]').count(), 0);
+assert.equal(await oldal.evaluate(() => getComputedStyle(document.getElementById('koztes-tartalom')).visibility), 'visible');
+await oldal.goto(`${ORIGIN}/booking-test/?motor=1`);
+await oldal.click('#gomb-koztes'); // a koztes oldalra mutato gomb a motort nyitja (nincs lapbetoltes)
+await oldal.locator('[data-gy-motor] .ablak').waitFor();
+assert.equal(await oldal.evaluate(() => location.pathname), '/booking-test/');
+await oldal.keyboard.press('Escape');
+await oldal.click('#gomb-horgony'); // a #horgony-link nem nyitja a motort
+await oldal.waitForTimeout(500);
+assert.equal(await oldal.locator('[data-gy-motor]').count(), 0);
+assert.equal(await oldal.evaluate(() => location.hash), '#telefonos');
+lep('koztes foglalo oldal: a cimen a motor magatol megnyilik (tartalom rejtve, bezarva elokerul, ?motor=0: marad az oldal); a ra mutato gomb a motort nyitja, a #horgony nem');
+// szakember-link (/employees/<id>/): a helyszin elore kitoltve, csak az o szolgaltatasai; az allapotfelmeres -> egybol a naptar
+await oldal.goto(`${ORIGIN}/booking-test/?motor=1`);
+await oldal.click('#gomb-szakember');
+{
+  const mk = oldal.locator('[data-gy-motor]');
+  await mk.locator('[data-csalad="allapotfelmeres"]').click();
+  await mk.locator('[data-valt="24666"], .nap.van').first().waitFor({ timeout: 15000 });
+  if (await mk.locator('[data-valt="24666"]').count()) await mk.locator('[data-valt="24666"]').click(); // csak a szakember szolgaltatasai latszanak
+  await mk.locator('.nap.van').first().waitFor({ timeout: 15000 }).catch(async (e) => { console.log('DEBUG lepes:', await mk.locator('.lepesek .most').innerText().catch(() => '?'), '|', (await mk.locator('.tartalom').innerText()).replace(/\s+/g, ' ').slice(0, 300)); throw e; });
+  assert.match(await mk.locator('.osszegzes').innerText(), /Oktogon/);
+  await oldal.keyboard.press('Escape');
+}
+lep('szakember-link: a helyszin elore kitoltve, az allapotfelmeres egybol a szakember naptarara visz');
 // visszahivas-kerelem: "Telefonon egyeztetek idopontot" az elso lepes aljan; az urlap mezoi az elo "Telefonos Idopont" urlapbol
 // (kapcsolo: motor-kapcsolo.json "hivas"; alapbol 0, a proba ?hivas=1-gyel kapcsolja be)
 await oldal.goto(`${ORIGIN}/booking-test/?motor=1&hivas=0`);
