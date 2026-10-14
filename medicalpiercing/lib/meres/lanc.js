@@ -15,6 +15,7 @@ import { akciokFoglalashoz, hozzajarulas, kattintasValaszt, konverzio, kuldes, e
 import { forrasPlatform, onbevallasErtek, platformAzonositok, vanPlatformId, URES_PLATFORM_ID } from './forras.js';
 import { tiktokLepes, TIKTOK_SEMA } from './tiktok.js';
 import { metaArnyekLepes, ARNYEK_SEMA } from './meta.js';
+import { tipusSzamlal } from './tipus-stat.js';
 import { bizonyitekBemenet, bizonyitekValaszt, bizonyitekForrasTarolo, diagBemenet, platformBizonyitekbol, cimkez, markasListaOlvas, FORRAS_VERZIO } from './cimke.js';
 
 export const SEMA = [
@@ -222,6 +223,8 @@ export async function foglalasErkezes({ request, env = {}, waitUntil }, { fetchI
       if (typeof waitUntil === 'function') waitUntil(pf); else await pf;
       return json({ ok: true, uj: false, potolva: true });
     }
+    // Belso tipusstatisztika (tipus-stat.js, Feri 2026-10-14): kulcs nelkuli napi szamlalo, a tipus a sorba NEM kerul
+    await tipusSzamlal(db, sor, a.tipus);
     // Meta arnyekmeres (meta.js, Feri 2026-10-14): az uj foglalasrol azonnal, a bongeszo user agentjevel (NEM taroljuk),
     // a kampanyban nem hasznalt ARNYEK adathalmazba. Fuggetlen, sajat hibakezelessel; a lancot nem allithatja meg.
     try {
