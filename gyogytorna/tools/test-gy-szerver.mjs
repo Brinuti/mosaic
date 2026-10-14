@@ -582,12 +582,14 @@ test('idopont-ellenorzes: 200 = az adatlap megnyilik, atiranyitas = nem foglalha
   const kuld = (b, fetchFn, opt = {}) => idopontEllenorzesVegpont({ request: kerelem('/api/gy-idopont-ellenorzes', b, opt), env, deps: { most: () => MOST, fetch: fetchFn } });
   const jo = { place_id: 8439, service_id: '416586', staff_id: '19428', start_unix: unixMost + 86400 };
   let r = await kuld(jo, fetchHamis(200));
-  assert.deepEqual(await r.json(), { ok: true, szabad: true });
+  assert.deepEqual(await r.json(), { ok: true, szabad: true, http: 200 });
   assert.match(hivasok[0].url, /^https:\/\/gyogytornaszomhu\.salonic\.hu\/guestData\/\?placeId=8439&serviceId=416586&employeeId=19428&startDate=\d+&lang=hu$/);
   assert.equal(hivasok[0].init.redirect, 'manual'); // az atiranyitast nem koveti: az maga az informacio
   assert.match(hivasok[0].init.headers['user-agent'], /Mozilla/);
-  assert.deepEqual(await (await kuld(jo, fetchHamis(302, { fejlec: { location: 'https://gyogytornaszomhu.salonic.hu/selectDate/' } }))).json(), { ok: true, szabad: false });
-  assert.deepEqual(await (await kuld(jo, fetchHamis(500))).json(), { ok: true, szabad: null });
+  assert.deepEqual(await (await kuld(jo, fetchHamis(302, { fejlec: { location: 'https://gyogytornaszomhu.salonic.hu/selectDate/?employeeId=1&placeId=8439' } }))).json(), { ok: true, szabad: false, http: 302, cel: '/selectDate/' });
+  // mas atiranyitas (nem a Salonic naptara fele): NEM utasitjuk el az idopontot
+  assert.equal((await (await kuld(jo, fetchHamis(302, { fejlec: { location: 'https://gyogytornaszomhu.salonic.hu/' } }))).json()).szabad, null);
+  assert.deepEqual(await (await kuld(jo, fetchHamis(500))).json(), { ok: true, szabad: null, http: 500 });
   assert.deepEqual(await (await kuld(jo, fetchHamis(200, { dob: true }))).json(), { ok: true, szabad: null });
   for (const rossz of [{ ...jo, place_id: 1 }, { ...jo, service_id: 'x' }, { ...jo, staff_id: 'abc' }, { ...jo, start_unix: 5 }, { ...jo, start_unix: unixMost + 500 * 86400 }, { ...jo, start_unix: 'ma' }]) assert.equal((await kuld(rossz, fetchHamis(200))).status, 400);
   assert.equal((await kuld(jo, fetchHamis(200), { origin: 'https://rossz.example' })).status, 403);

@@ -357,9 +357,13 @@ export async function idopontEllenorzesVegpont({ request, env, deps = {} }) {
   const idozito = setTimeout(() => ab.abort(), 5000);
   try {
     const r = await (deps.fetch || fetch)(`${HOST}/guestData/?${q}`, { redirect: 'manual', signal: ab.signal, headers: { 'user-agent': BONGESZO_UA, accept: 'text/html', 'accept-language': 'hu-HU,hu;q=0.9' } });
-    if (r.status === 200) return valasz(200, { ok: true, szabad: true });
-    if (r.status >= 300 && r.status < 400) return valasz(200, { ok: true, szabad: false });
-    return valasz(200, { ok: true, szabad: null });
+    // CSAK a /selectDate/ (a Salonic sajat naptara) fele atiranyitas jelenti azt, hogy az idopont nem foglalhato; barmilyen mas valasz (mas atiranyitas, hiba, botvedelem) = nem ellenorizheto
+    const cel = (r.headers && r.headers.get && r.headers.get('location')) || '';
+    const celUt = (() => { try { return new URL(cel, HOST).pathname; } catch (e) { return ''; } })();
+    const diag = { http: r.status, cel: r.status >= 300 && r.status < 400 ? celUt.slice(0, 40) : undefined };
+    if (r.status === 200) return valasz(200, { ok: true, szabad: true, ...diag });
+    if (r.status >= 300 && r.status < 400 && /^\/selectDate\/?$/i.test(celUt)) return valasz(200, { ok: true, szabad: false, ...diag });
+    return valasz(200, { ok: true, szabad: null, ...diag });
   } catch (e) {
     return valasz(200, { ok: true, szabad: null });
   } finally { clearTimeout(idozito); }
