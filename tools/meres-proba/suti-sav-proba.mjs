@@ -1,3 +1,4 @@
+// MEGJEGYZES (2026-10-14): az adatlapon a Salonic sutisavja a gyogytornas mintara mar nem latszik (salonic/mosaic.css, docs/booking-engine/SALONIC_ADATLAP_GYOGYTORNAS.md): az alabbi ellenorzesek az adatlapon mar nem ertelmezhetok.
 // A Salonic adatlapon (a foglaloban beagyazott keretben) felbukkano sutisav (cookieconsent) merete: kompakt-e, olvashato-e, elerheto-e az "Elfogadom", nem takarja ki az urlapot.
 //
 //   node tools/meres-proba/suti-sav-proba.mjs [--overlay dist] [--bazis https://...] [--mobil 1] [--uzletag hair|oxygen|headspa] [--kep mappa]
