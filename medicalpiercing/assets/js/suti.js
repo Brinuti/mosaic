@@ -77,7 +77,11 @@
   // Kifejezett vendegdontes (lablec "Suti beallitasok") tovabbra is ervenyes es elsobbsegu. A sav nelkuli alapallapot jele
   // a "t0" suti (nem valodi dontes): ha a savot visszakapcsoljuk (SAV_KI = false), a t0 dontes nelkulinek szamit, es a sav ujra megjelenik.
   // Vissza: SAV_KI = false (Google-figyelmeztetes eseten 7 napon belul).
-  var SAV_KI = true;
+  // SAV-TESZT (Feri dontese, 2026-10-14 07:02): a sav CSAK konverzio szempontjabol semleges oldalakon jelenik meg
+  // (kontroll-foglalas, utogondozasi cikk), hogy az elfogadasi aranyt merjuk (cel: >= 80%). Itt a t0 alapallapot
+  // nem dontes, igy a sav megjelenik; a vendeg valasztasa (elfogad / elutasit) az egesz oldalon ervenyes.
+  var TESZT_OLDAL = /^\/(kontroll|shenmen-piercing-ezt-tedd-ha-begyulladt)\/?$/i.test(location.pathname);
+  var SAV_KI = !TESZT_OLDAL;
   if (dontes && dontes.t === 0 && !SAV_KI) dontes = null;
   if (!dontes && SAV_KI) {
     dontes = { stat: true, mark: true, t: 0 };
@@ -178,7 +182,7 @@
   var sav = null;
   var STILUS =
     '#mp-cc,#mp-cc *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}' +
-    '#mp-cc{position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483000;max-width:640px;margin:0 auto;background:#fff;color:#2b2b38;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.22);padding:12px 14px;font-size:13px;line-height:1.45;display:none}' +
+    '#mp-cc{position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483600;max-width:640px;margin:0 auto;background:#fff;color:#2b2b38;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.22);padding:12px 14px;font-size:13px;line-height:1.45;display:none}' +
     '#mp-cc p{margin:0 0 10px}' +
     '#mp-cc a{color:inherit;text-decoration:underline}' +
     '#mp-cc h2{font-size:15px;margin:0 0 6px;font-weight:700}' +
@@ -266,7 +270,7 @@
     setTimeout(function () { if (sav.style.display !== 'none') helyez(); }, 1200);
   };
   // nevtelen sutisav-statisztika (functions/api/mp-suti-stat.js): suti, azonosito, URL nelkul, csak napi darabszam
-  var SAV_VERZIO = 'v3';
+  var SAV_VERZIO = 'v4'; // v4 = teszt a semleges oldalakon (2026-10-14-tol)
   var statKuld = function (e, n) {
     try {
       var adat = JSON.stringify({ e: e, n: n || (sav && sav.getAttribute('data-nezet')) || '', m: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 1 : 0, v: SAV_VERZIO });
