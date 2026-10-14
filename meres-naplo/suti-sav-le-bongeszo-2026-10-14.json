@@ -1,5 +1,5 @@
 {
- "futtatva": "2026-10-14T04:53:07.021Z",
+ "futtatva": "2026-10-14T05:08:04.290Z",
  "leiras": "suti-sav levetele (DECISION #170): valodi suti.js, valodi Chromium, helyi dist, minden kulso host tiltva",
  "eredmeny": "PASS",
  "db": 94,
@@ -97,7 +97,7 @@
    "ok": true,
    "adat": {
     "mhCc": null,
-    "mhAttr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_gclid_0123456789\",\"ts\":1791953533}}}",
+    "mhAttr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_gclid_0123456789\",\"ts\":1791954428}}}",
     "suti": false
    }
   },
@@ -147,7 +147,7 @@
    "nev": "2) [asztali 1280px] az attribucio.js nem ir (nincs marketing-hozzajarulas)",
    "ok": true,
    "adat": {
-    "mhCc": "{\"v\":1,\"t\":1791953535166,\"fun\":false,\"ana\":false,\"adv\":false}",
+    "mhCc": "{\"v\":1,\"t\":1791954430464,\"fun\":false,\"ana\":false,\"adv\":false}",
     "mhAttr": null,
     "suti": false
    }
@@ -206,7 +206,7 @@
   {
    "nev": "4) [asztali 1280px] a Wix-dontes atkerult a sajat taroloba (mh_cc)",
    "ok": true,
-   "adat": "{\"v\":1,\"t\":1791953520000,\"fun\":false,\"ana\":false,\"adv\":false,\"wix\":true}"
+   "adat": "{\"v\":1,\"t\":1791954420000,\"fun\":false,\"ana\":false,\"adv\":false,\"wix\":true}"
   },
   {
    "nev": "5) [asztali 1280px] reszleges bejegyzes: statisztika + marketing = alapertek (granted), funkcionalis = igen",
@@ -259,7 +259,7 @@
    "ok": true,
    "adat": {
     "v": 1,
-    "t": 1791953539267,
+    "t": 1791954434671,
     "fun": true,
     "ana": false,
     "adv": false,
@@ -270,7 +270,7 @@
    "nev": "6) [asztali 1280px] ...Wix-suti nem keletkezik (reszleges)",
    "ok": true,
    "adat": {
-    "mhCc": "{\"v\":1,\"t\":1791953539267,\"fun\":true,\"ana\":false,\"adv\":false,\"reszleges\":true}",
+    "mhCc": "{\"v\":1,\"t\":1791954434671,\"fun\":true,\"ana\":false,\"adv\":false,\"reszleges\":true}",
     "mhAttr": "{\"v\":1}",
     "suti": false
    }
@@ -309,7 +309,7 @@
    "adat": {
     "c": {
      "v": 1,
-     "t": 1791953540693,
+     "t": 1791954436157,
      "fun": false,
      "ana": false,
      "adv": false
@@ -423,7 +423,7 @@
     },
     "c": {
      "v": 1,
-     "t": 1791953565208,
+     "t": 1791954460997,
      "fun": true,
      "ana": true,
      "adv": true
@@ -523,7 +523,7 @@
    "ok": true,
    "adat": {
     "mhCc": null,
-    "mhAttr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_gclid_0123456789\",\"ts\":1791953565}}}",
+    "mhAttr": "{\"v\":1,\"google\":{\"gclid\":{\"ertek\":\"Cj0KCQjw_TESZT_gclid_0123456789\",\"ts\":1791954461}}}",
     "suti": false
    }
   },
@@ -573,7 +573,7 @@
    "nev": "2) [mobil 390px] az attribucio.js nem ir (nincs marketing-hozzajarulas)",
    "ok": true,
    "adat": {
-    "mhCc": "{\"v\":1,\"t\":1791953567501,\"fun\":false,\"ana\":false,\"adv\":false}",
+    "mhCc": "{\"v\":1,\"t\":1791954463386,\"fun\":false,\"ana\":false,\"adv\":false}",
     "mhAttr": null,
     "suti": false
    }
@@ -632,7 +632,7 @@
   {
    "nev": "4) [mobil 390px] a Wix-dontes atkerult a sajat taroloba (mh_cc)",
    "ok": true,
-   "adat": "{\"v\":1,\"t\":1791953520000,\"fun\":false,\"ana\":false,\"adv\":false,\"wix\":true}"
+   "adat": "{\"v\":1,\"t\":1791954420000,\"fun\":false,\"ana\":false,\"adv\":false,\"wix\":true}"
   },
   {
    "nev": "5) [mobil 390px] reszleges bejegyzes: statisztika + marketing = alapertek (granted), funkcionalis = igen",
@@ -685,7 +685,7 @@
    "ok": true,
    "adat": {
     "v": 1,
-    "t": 1791953571504,
+    "t": 1791954467726,
     "fun": true,
     "ana": false,
     "adv": false,
@@ -696,7 +696,7 @@
    "nev": "6) [mobil 390px] ...Wix-suti nem keletkezik (reszleges)",
    "ok": true,
    "adat": {
-    "mhCc": "{\"v\":1,\"t\":1791953571504,\"fun\":true,\"ana\":false,\"adv\":false,\"reszleges\":true}",
+    "mhCc": "{\"v\":1,\"t\":1791954467726,\"fun\":true,\"ana\":false,\"adv\":false,\"reszleges\":true}",
     "mhAttr": "{\"v\":1}",
     "suti": false
    }
@@ -735,7 +735,7 @@
    "adat": {
     "c": {
      "v": 1,
-     "t": 1791953572891,
+     "t": 1791954469174,
      "fun": false,
      "ana": false,
      "adv": false
@@ -844,7 +844,7 @@
     },
     "c": {
      "v": 1,
-     "t": 1791953576239,
+     "t": 1791954472756,
      "fun": true,
      "ana": true,
      "adv": true
@@ -898,7 +898,7 @@
    }
   },
   {
-   "nev": "12) MERO_KERET: a GTM betolt (a default ELOTT), a consent default granted (uj latogato), nincs sav, nincs JS-hiba",
+   "nev": "12) MERO_KERET: a consent default a GTM betoltese ELOTT megy, granted (uj latogato), nincs sav, nincs JS-hiba",
    "ok": true,
    "adat": {
     "def": {

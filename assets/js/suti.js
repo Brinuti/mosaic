@@ -94,7 +94,7 @@
     try {
       var o = JSON.parse(localStorage.getItem(KULCS));
       // DECISION #170: a 12 honapnal regebbi (lejart) tarolt dontes sem tunik el szo nelkul: az elutasitas tovabbra is ervenyes, lasd hatalyos()
-      if (o && o.v === 1 && isFinite(o.t)) return o;
+      if (o && o.v === 1 && Number.isFinite(o.t)) return o;
     } catch (e) { /* privat ablak, tiltott tarolo */ }
     return null;
   }

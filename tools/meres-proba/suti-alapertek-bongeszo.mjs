@@ -45,6 +45,7 @@ function fajl(p, mobil) {
 
 async function ujLap(bongeszo, { mobil = false, init = null, suti = null } = {}) {
   const ctx = await bongeszo.newContext(mobil ? { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, serviceWorkers: 'block' } : { viewport: { width: 1280, height: 800 }, serviceWorkers: 'block' });
+  ctx.setDefaultTimeout(6000);
   if (suti) await ctx.addCookies(suti);
   if (init) await ctx.addInitScript(init);
   const lap = await ctx.newPage();
@@ -90,7 +91,7 @@ try {
     const E = mobil ? 'mobil 390px' : 'asztali 1280px';
 
     // 1) UJ LATOGATO: nincs sav; alapertek granted (a GTM ELOTT); fun denied; nincs tarolt dontes / suti; a consent-mod kiolvashato; a GTM betolt
-    { const { ctx, lap, hibak, kulso } = await ujLap(bongeszo, { mobil });
+    try { const { ctx, lap, hibak, kulso } = await ujLap(bongeszo, { mobil });
       await lap.goto(ELES + '/?gclid=' + GCLID, { waitUntil: 'load' }); await var_(lap);
       const adat = await dl(lap), m = await mod(lap), t = await tarolt(lap), def = consentSorok(adat, 'default');
       ell(`1) [${E}] uj latogato: a sav / doboz NEM latszik (a betoltes utan azonnal)`, (await lap.locator('#mh-cc').isVisible()) === false);
@@ -109,44 +110,44 @@ try {
       ell(`1) [${E}] attribucio.js a hatalyos (alapertek) hozzajarulast latja: a kattintas-azonosito eltarolodik (mh_attr)`, !!t.mhAttr && JSON.parse(t.mhAttr).google.gclid.ertek === GCLID, t.mhAttr && Object.keys(JSON.parse(t.mhAttr)));
       megf(`[${E}] uj latogato: a foglalaskor a szervernek kuldott hozz (attribucio.js hozzajarulas())`, await lap.evaluate(() => JSON.stringify(window.mhAttribucio.hozzajarulas())));
       ell(`1) [${E}] nincs kezeletlen JS-hiba`, hibak.length === 0, hibak);
-      await ctx.close(); }
+      await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
 
     // 2) KORABBI ELUTASITAS (mh_cc): minden denied a GTM ELOTT; nincs sav; forras = korabbi_dontes; az attribucio nem ir
-    { const { ctx, lap, hibak } = await ujLap(bongeszo, { mobil, init: MH_CC({ fun: false, ana: false, adv: false }) });
+    try { const { ctx, lap, hibak } = await ujLap(bongeszo, { mobil, init: MH_CC({ fun: false, ana: false, adv: false }) });
       await lap.goto(ELES + '/?gclid=' + GCLID, { waitUntil: 'load' }); await var_(lap);
       const adat = await dl(lap), m = await mod(lap), t = await tarolt(lap), def = consentSorok(adat, 'default');
       ell(`2) [${E}] korabbi elutasitas: a default MINDEN denied, a GTM elott`, def.length === 1 && reszhalmaz(def[0], DENIED) && def[0].functionality_storage === 'denied' && gtmIndex(adat) > defaultIndex(adat), def[0]);
       ell(`2) [${E}] nincs sav; forras = korabbi_dontes; engedely hamis`, (await lap.locator('#mh-cc').isVisible()) === false && m.forras === 'korabbi_dontes' && !m.ana && !m.adv && !m.fun, m);
       ell(`2) [${E}] az attribucio.js nem ir (nincs marketing-hozzajarulas)`, t.mhAttr === null, t);
       ell(`2) [${E}] nincs kezeletlen JS-hiba`, hibak.length === 0, hibak);
-      await ctx.close(); }
+      await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
 
     // 3) KORABBI RESZLEGES TILTAS (mh_cc: statisztika igen, marketing nem): ana granted, ad_* denied
-    { const { ctx, lap } = await ujLap(bongeszo, { mobil, init: MH_CC({ fun: true, ana: true, adv: false }) });
+    try { const { ctx, lap } = await ujLap(bongeszo, { mobil, init: MH_CC({ fun: true, ana: true, adv: false }) });
       await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
       const adat = await dl(lap), m = await mod(lap), def = consentSorok(adat, 'default');
       ell(`3) [${E}] reszleges tiltas: analytics granted, ad_storage / ad_user_data / ad_personalization denied, functionality granted`, def.length === 1 && def[0].analytics_storage === 'granted' && def[0].ad_storage === 'denied' && def[0].ad_user_data === 'denied' && def[0].ad_personalization === 'denied' && def[0].functionality_storage === 'granted', def[0]);
       ell(`3) [${E}] forras = korabbi_dontes; nincs sav`, m.forras === 'korabbi_dontes' && m.ana === true && m.adv === false && (await lap.locator('#mh-cc').isVisible()) === false, m);
-      await ctx.close(); }
+      await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
 
     // 4) WIX consent-policy SUTI (korabbi Wix-dontes: mind elutasitva): denied; atkerul a sajat taroloba; forras = korabbi_dontes
-    { const ts = Math.floor(Date.now() / 6e4);
+    try { const ts = Math.floor(Date.now() / 6e4);
       const { ctx, lap } = await ujLap(bongeszo, { mobil, suti: [{ name: 'consent-policy', value: encodeURIComponent(JSON.stringify({ ess: 1, func: 0, anl: 0, adv: 0, dt3: 0, ts })), domain: 'www.mosaicheadspa.hu', path: '/', secure: true }] });
       await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
       const adat = await dl(lap), m = await mod(lap), t = await tarolt(lap), def = consentSorok(adat, 'default');
       ell(`4) [${E}] Wix-suti (elutasitva): default MINDEN denied a GTM elott; forras = korabbi_dontes; nincs sav`, def.length === 1 && reszhalmaz(def[0], DENIED) && gtmIndex(adat) > defaultIndex(adat) && m.forras === 'korabbi_dontes' && (await lap.locator('#mh-cc').isVisible()) === false, { def: def[0], m });
       ell(`4) [${E}] a Wix-dontes atkerult a sajat taroloba (mh_cc)`, !!t.mhCc && JSON.parse(t.mhCc).adv === false && JSON.parse(t.mhCc).wix === true, t.mhCc);
-      await ctx.close(); }
+      await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
 
     // 5) "RESZLEGES" BEJEGYZES (csak a funkcionalis volt engedve): ana / adv = alapertek (granted), fun = igen
-    { const { ctx, lap } = await ujLap(bongeszo, { mobil, init: MH_CC({ fun: true, ana: false, adv: false, reszleges: true }) });
+    try { const { ctx, lap } = await ujLap(bongeszo, { mobil, init: MH_CC({ fun: true, ana: false, adv: false, reszleges: true }) });
       await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
       const adat = await dl(lap), m = await mod(lap), def = consentSorok(adat, 'default');
       ell(`5) [${E}] reszleges bejegyzes: statisztika + marketing = alapertek (granted), funkcionalis = igen`, def.length === 1 && reszhalmaz(def[0], GRANTED) && def[0].functionality_storage === 'granted' && m.forras === 'uj_alapertek', { def: def[0], m });
-      await ctx.close(); }
+      await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
 
     // 6) TERKEP-ENGEDELYEZES uj latogatonal (mhSuti.enged('fun')): a statisztika / marketing NEM vonodik vissza; a tarolt bejegyzesben ana / adv false marad (visszaallitas-biztos)
-    { const { ctx, lap } = await ujLap(bongeszo, { mobil });
+    try { const { ctx, lap } = await ujLap(bongeszo, { mobil });
       await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
       await lap.evaluate(() => window.mhSuti.enged('fun')); await lap.waitForTimeout(200);
       const adat = await dl(lap), m = await mod(lap), t = await tarolt(lap), upd = consentSorok(adat, 'update');
@@ -155,16 +156,16 @@ try {
       ell(`6) [${E}] ...a Consent Mode update: analytics / ad_* granted, functionality granted (nem vonodik vissza)`, upd.length === 1 && reszhalmaz(upd[0], GRANTED) && upd[0].functionality_storage === 'granted', upd[0]);
       ell(`6) [${E}] ...a tarolt bejegyzes reszleges, ana / adv false (egy visszaallitas utan sem szamit kifejezett engedelynek)`, !!c && c.reszleges === true && c.fun === true && c.ana === false && c.adv === false, c);
       ell(`6) [${E}] ...Wix-suti nem keletkezik (reszleges)`, t.suti === false, t);
-      await ctx.close(); }
+      await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
 
     // 7) LABLEC-LINK -> beallitasok (a bepipalas a hatalyos allapot) -> MINDET ELUTASITOM: update denied, ertesites, tarolt dontes, Wix-suti; UJRATOLTES: denied a GTM elott
-    { const { ctx, lap, hibak } = await ujLap(bongeszo, { mobil });
+    try { const { ctx, lap, hibak } = await ujLap(bongeszo, { mobil });
       await lap.goto(ELES + '/?gclid=' + GCLID, { waitUntil: 'load' }); await var_(lap);
       ell(`7) [${E}] a lablec "Suti beallitasok" link megvan`, (await lap.locator('#mh-cc-lablec').count()) === 1);
       const attrElotte = (await tarolt(lap)).mhAttr; // a visszavonas elott az attribucio.js mh_attr-ja LETEZIK (a torles ellenorzesenek elofeltetele)
       await lap.locator('#mh-cc-lablec').click(); await lap.waitForTimeout(250);
       ell(`7) [${E}] a link megnyitja a beallitast; statisztika + marketing be van pipalva, funkcionalis nincs`, (await lap.locator('#mh-cc-settings').isVisible()) && (await lap.locator('#mh-cc-ana').isChecked()) && (await lap.locator('#mh-cc-adv').isChecked()) && !(await lap.locator('#mh-cc-fun').isChecked()));
-      ell(`7) [${E}] a beallitasban jelzi, hogy a statisztikai / marketing sutik alapbol be vannak kapcsolva`, /alapértelmezetten be vannak kapcsolva/.test(await lap.locator('#mh-cc .mh-bev').innerText()));
+      ell(`7) [${E}] a beallitasban jelzi, hogy a statisztikai / marketing sutik alapbol be vannak kapcsolva`, /alapértelmezetten be vannak kapcsolva/.test(await lap.locator('#mh-cc .mh-bev').innerText({ timeout: 2000 }).catch(() => '')));
       await lap.locator('#mh-cc [data-mh="reject"]').click(); await lap.waitForTimeout(250);
       const adat = await dl(lap), upd = consentSorok(adat, 'update'), t = await tarolt(lap), c = t.mhCc ? JSON.parse(t.mhCc) : null;
       ell(`7) [${E}] "Mindet elutasitom": Consent Mode update = minden denied`, upd.length === 1 && reszhalmaz(upd[0], DENIED), upd[0]);
@@ -175,14 +176,14 @@ try {
       ell(`7) [${E}] az attribucio.js a visszavonaskor torli a tarolt adatot (a visszavonas ELOTT letezett, utana nincs mh_attr)`, !!attrElotte && t.mhAttr === null, { elotte: !!attrElotte, utana: t.mhAttr });
       ell(`7) [${E}] az ertesites az Ujratoltes gombra viszi a fokuszt (billentyuzettel elerheto), role = status`, (await lap.evaluate(() => (document.activeElement && document.activeElement.getAttribute('data-mh')) || '')) === 'reload' && (await lap.locator('#mh-cc-ertesites').getAttribute('role')) === 'status');
       if (!mobil) { await lap.waitForTimeout(21000); ell(`7) [${E}] az ertesites 21 mp mulva is latszik (nem tunik el magatol)`, await lap.locator('#mh-cc-ertesites').isVisible()); }
-      await Promise.all([lap.waitForEvent('load'), lap.locator('#mh-cc-ertesites [data-mh="reload"]').click()]); await var_(lap);
+      try { await Promise.all([lap.waitForEvent('load', { timeout: 5000 }), lap.locator('#mh-cc-ertesites [data-mh="reload"]').click({ timeout: 5000 })]); } catch (e) { await lap.reload({ waitUntil: 'load' }); } await var_(lap); // (a regi kodban nincs ertesites: a teszt ekkor is vegigfut, a HIBA-sorok megjelennek)
       const adat2 = await dl(lap), m2 = await mod(lap), def2 = consentSorok(adat2, 'default');
       ell(`7) [${E}] ujratoltes utan: default MINDEN denied a GTM elott, forras = korabbi_dontes, nincs sav`, def2.length === 1 && reszhalmaz(def2[0], DENIED) && gtmIndex(adat2) > defaultIndex(adat2) && m2.forras === 'korabbi_dontes' && (await lap.locator('#mh-cc').isVisible()) === false, { def: def2[0], m2 });
       ell(`7) [${E}] nincs kezeletlen JS-hiba`, hibak.length === 0, hibak);
-      await ctx.close(); }
+      await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
 
     // 8) KIVALASZTOTTAK MENTESE: csak a statisztika marad -> ad_* denied, analytics granted, ertesites (a marketing visszavonva)
-    { const { ctx, lap } = await ujLap(bongeszo, { mobil });
+    try { const { ctx, lap } = await ujLap(bongeszo, { mobil });
       await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
       await lap.evaluate(() => window.mhSuti.beallitasok()); await lap.waitForTimeout(200);
       await lap.locator('#mh-cc-adv').uncheck(); await lap.locator('#mh-cc [data-mh="save"]').click(); await lap.waitForTimeout(250);
@@ -191,81 +192,81 @@ try {
       ell(`8) [${E}] ...ertesites latszik (marketing visszavonva); forras = modositott`, (await lap.locator('#mh-cc-ertesites').isVisible()) && m.forras === 'modositott' && m.ana === true && m.adv === false, m);
       await lap.locator('#mh-cc-ertesites [data-mh="close"]').click(); await lap.waitForTimeout(150);
       ell(`8) [${E}] a "Bezar" elrejti a dobozt`, (await lap.locator('#mh-cc').isVisible()) === false);
-      await ctx.close(); }
+      await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
 
     // 9) MINDET ELFOGADOM a beallitasokbol: nincs visszavonas -> nincs ertesites, a doboz elrejtodik; minden granted (fun is)
-    { const { ctx, lap } = await ujLap(bongeszo, { mobil });
+    try { const { ctx, lap } = await ujLap(bongeszo, { mobil });
       await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
       await lap.evaluate(() => window.mhSuti.beallitasok()); await lap.waitForTimeout(200);
       await lap.locator('#mh-cc-settings [data-mh="accept"]').click(); await lap.waitForTimeout(250);
       const adat = await dl(lap), upd = consentSorok(adat, 'update'), c = JSON.parse((await tarolt(lap)).mhCc);
       ell(`9) [${E}] "Mindet elfogadom": update minden granted; nincs ertesites; a doboz elrejtodik`, upd.length === 1 && reszhalmaz(upd[0], GRANTED) && upd[0].functionality_storage === 'granted' && (await lap.locator('#mh-cc').isVisible()) === false && c.fun && c.ana && c.adv, { upd: upd[0], c });
-      await ctx.close(); }
+      await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
   }
 
   // 10) VEDETT: a Meta-pixel logika valtozatlan (PIXEL_OLDALAK) - az index pixelje betolt (hozzajarulastol fuggetlenul), a listan kivuli oldal nem kap pixelt
-  { const { ctx, lap, kulso } = await ujLap(bongeszo);
+  try { const { ctx, lap, kulso } = await ujLap(bongeszo);
     await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
     const q = await lap.evaluate(() => (window.fbq && window.fbq.queue ? window.fbq.queue.map((x) => Array.from(x).slice(0, 2)) : null));
     ell('10) index: a Meta-pixel (3473839859576758) init + PageView, a fbevents.js kerese megprobalva', !!q && q.some((x) => x[0] === 'init' && x[1] === '3473839859576758') && q.some((x) => x[0] === 'track' && x[1] === 'PageView') && kulso.some((h) => h.startsWith('connect.facebook.net/en_US/fbevents.js')), q);
-    await ctx.close(); }
-  { const { ctx, lap } = await ujLap(bongeszo, { init: MH_CC({ fun: false, ana: false, adv: false }) });
+    await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
+  try { const { ctx, lap } = await ujLap(bongeszo, { init: MH_CC({ fun: false, ana: false, adv: false }) });
     await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
     const q = await lap.evaluate(() => (window.fbq && window.fbq.queue ? window.fbq.queue.map((x) => Array.from(x).slice(0, 2)) : null));
     ell('10) elutasitott latogato: a Meta-pixel logika valtozatlan (mint eddig: hozzajarulastol fuggetlenul betolt)', !!q && q.some((x) => x[0] === 'init' && x[1] === '3473839859576758'), q);
-    await ctx.close(); }
-  { const { ctx, lap } = await ujLap(bongeszo);
+    await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
+  try { const { ctx, lap } = await ujLap(bongeszo);
     const r = await lap.goto(ELES + '/aszf', { waitUntil: 'load' }); await var_(lap);
     const van = await lap.evaluate(() => typeof window.fbq !== 'undefined');
     ell('10) /aszf (a pixel-listan kivul): nincs Meta-pixel; a Consent Mode default itt is granted', r.status() === 200 && van === false && reszhalmaz(consentSorok(await dl(lap), 'default')[0], GRANTED));
-    await ctx.close(); }
+    await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
 
   // 11) IDEGEN SZULOBE AGYAZOTT keret (az osszehasonlito eszkoz): valtozatlan viselkedes - nincs sav, nincs merokod (GTM nem toltodik), nincs JS-hiba
-  { const { ctx, lap, hibak, kulso } = await ujLap(bongeszo);
+  try { const { ctx, lap, hibak, kulso } = await ujLap(bongeszo);
     await lap.goto('https://keret.example/', { waitUntil: 'load' }); await lap.waitForTimeout(1500);
     const keret = lap.frames().find((f) => f.url().includes('/aszf'));
     const adat = keret ? await keret.evaluate(() => ({ mhSuti: typeof window.mhSuti, sav: !!document.getElementById('mh-cc'), dl: window.dataLayer.filter((e) => e && e.event === 'gtm.js').length })) : null;
     ell('11) idegen szuloben levo keret: a suti.js betolt, DE nincs sav / doboz, nincs GTM-betoltes (gtm.js), nincs JS-hiba', !!keret && adat.mhSuti === 'object' && adat.sav === false && adat.dl === 0 && !kulso.some((h) => h.includes('gtm.js')) && hibak.length === 0, { adat, kulso: kulso.filter((h) => h.includes('googletagmanager')), hibak });
-    await ctx.close(); }
+    await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
   // 12) A SAJAT MEROKERETUNK (MERO_KERET: azonos eredetu szulo, data-ah-regi-konverzio): a merokodok futnak (GTM betolt), a consent default granted, sav nincs
-  { const { ctx, lap, hibak, kulso } = await ujLap(bongeszo);
+  try { const { ctx, lap, hibak, kulso } = await ujLap(bongeszo);
     await lap.goto(ELES + '/__merokeret', { waitUntil: 'load' }); await lap.waitForTimeout(1500);
     const keret = lap.frames().find((f) => f.url().includes('/aszf'));
     const adat = keret ? await keret.evaluate(() => ({ mod: window.mhSuti && window.mhSuti.mod ? window.mhSuti.mod() : null, sav: !!document.getElementById('mh-cc'), dl: window.dataLayer.map((e) => ((e && typeof e.length === 'number' && typeof e[0] === 'string') ? { gtag: Array.from(e).map((x) => (x && typeof x === 'object' && !(x instanceof Date) ? { ...x } : (x instanceof Date ? 'date' : x))) } : { ...e })) })) : null;
     const def = adat ? consentSorok(adat.dl, 'default') : [];
-    ell('12) MERO_KERET: a GTM betolt (a default ELOTT), a consent default granted (uj latogato), nincs sav, nincs JS-hiba', !!keret && def.length === 1 && reszhalmaz(def[0], GRANTED) && defaultIndex(adat.dl) >= 0 && gtmIndex(adat.dl) > defaultIndex(adat.dl) && adat.sav === false && adat.mod && adat.mod.forras === 'uj_alapertek' && kulso.some((h) => h.includes('gtm.js?id=' + GTM_ID)) && hibak.length === 0, { def: def[0], gtm: adat && gtmIndex(adat.dl), kulso: kulso.filter((h) => h.includes('googletagmanager')), hibak });
-    await ctx.close(); }
+    ell('12) MERO_KERET: a consent default a GTM betoltese ELOTT megy, granted (uj latogato), nincs sav, nincs JS-hiba', !!keret && def.length === 1 && reszhalmaz(def[0], GRANTED) && defaultIndex(adat.dl) >= 0 && gtmIndex(adat.dl) > defaultIndex(adat.dl) && adat.sav === false && adat.mod && adat.mod.forras === 'uj_alapertek' && kulso.some((h) => h.includes('gtm.js?id=' + GTM_ID)) && hibak.length === 0, { def: def[0], gtm: adat && gtmIndex(adat.dl), kulso: kulso.filter((h) => h.includes('googletagmanager')), hibak });
+    await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
 
   // 13) LEJART (400 napos) tarolt ELUTASITAS: tovabbra is denied (egy regi elutasitasbol nem lesz csendben granted); forras = korabbi_dontes; nincs sav
-  { const { ctx, lap, hibak } = await ujLap(bongeszo, { init: MH_CC({ t: Date.now() - 400 * 864e5, fun: false, ana: false, adv: false }) });
+  try { const { ctx, lap, hibak } = await ujLap(bongeszo, { init: MH_CC({ t: Date.now() - 400 * 864e5, fun: false, ana: false, adv: false }) });
     await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
     const adat = await dl(lap), m = await mod(lap), def = consentSorok(adat, 'default');
     ell('13) lejart elutasitas: a default MINDEN denied a GTM elott, forras = korabbi_dontes, nincs sav', def.length === 1 && reszhalmaz(def[0], DENIED) && gtmIndex(adat) > defaultIndex(adat) && m.forras === 'korabbi_dontes' && (await lap.locator('#mh-cc').isVisible()) === false && hibak.length === 0, { def: def[0], m, hibak });
-    await ctx.close(); }
+    await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
   // 14) LEJART tarolt ENGEDELY (statisztika + marketing + funkcionalis): ana / adv granted marad, a funkcionalis lejart engedelye nem szamit (denied)
-  { const { ctx, lap } = await ujLap(bongeszo, { init: MH_CC({ t: Date.now() - 400 * 864e5, fun: true, ana: true, adv: true }) });
+  try { const { ctx, lap } = await ujLap(bongeszo, { init: MH_CC({ t: Date.now() - 400 * 864e5, fun: true, ana: true, adv: true }) });
     await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
     const def = consentSorok(await dl(lap), 'default');
-    ell('14) lejart engedely: analytics / ad_* granted, functionality denied (a funkcionalis lejart engedelye nem szamit)', def.length === 1 && reszhalmaz(def[0], GRANTED) && def[0].functionality_storage === 'denied', def[0]);
-    await ctx.close(); }
+    ell('14) lejart engedely: analytics / ad_* granted, functionality denied (a funkcionalis lejart engedelye nem szamit)', def.length === 1 && reszhalmaz(def[0], GRANTED) && def[0].functionality_storage === 'denied' && (await mod(lap)).forras === 'korabbi_dontes', def[0]);
+    await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
   // 15) RESZLEGES Wix-suti (statisztika igen, marketing nem): analytics granted, ad_* denied
-  { const ts = Math.floor(Date.now() / 6e4);
+  try { const ts = Math.floor(Date.now() / 6e4);
     const { ctx, lap } = await ujLap(bongeszo, { suti: [{ name: 'consent-policy', value: encodeURIComponent(JSON.stringify({ ess: 1, func: 0, anl: 1, adv: 0, dt3: 0, ts })), domain: 'www.mosaicheadspa.hu', path: '/', secure: true }] });
     await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
     const def = consentSorok(await dl(lap), 'default');
     ell('15) reszleges Wix-suti (anl:1, adv:0): analytics granted, ad_storage / ad_user_data / ad_personalization denied', def.length === 1 && def[0].analytics_storage === 'granted' && def[0].ad_storage === 'denied' && def[0].ad_user_data === 'denied' && def[0].ad_personalization === 'denied', def[0]);
-    await ctx.close(); }
-  // 16) TILTOTT localStorage (privat mod / tiltott tarolo): nincs JS-hiba, a default granted, a beallitasok mukodnek (a visszavonas az oldalon belul ervenyes, tarolni nem tud)
-  { const { ctx, lap, hibak } = await ujLap(bongeszo, { init: "try { Object.defineProperty(window, 'localStorage', { get() { throw new Error('tiltott'); } }); } catch (e) {}" });
+    await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
+  // 16) TILTOTT localStorage (privat mod / tiltott tarolo): nincs JS-hiba, a default granted, a beallitasok mukodnek (a localStorage nem elerheto; a Wix-suti iras / visszaolvasas kulon agon megy, ezt a teszt nem ellenorzi)
+  try { const { ctx, lap, hibak } = await ujLap(bongeszo, { init: "try { Object.defineProperty(window, 'localStorage', { get() { throw new Error('tiltott'); } }); } catch (e) {}" });
     await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
     const def = consentSorok(await dl(lap), 'default');
     await lap.evaluate(() => window.mhSuti.beallitasok()); await lap.waitForTimeout(200);
     await lap.locator('#mh-cc [data-mh="reject"]').click(); await lap.waitForTimeout(250);
     const upd = consentSorok(await dl(lap), 'update');
     ell('16) tiltott localStorage: nincs JS-hiba, a default granted, a "Mindet elutasitom" az oldalon belul denied-et kuld', hibak.length === 0 && def.length === 1 && reszhalmaz(def[0], GRANTED) && upd.length === 1 && reszhalmaz(upd[0], DENIED), { hibak, def: def[0], upd: upd[0] });
-    await ctx.close(); }
+    await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
   // 17) enged('fun') TAROLT ELUTASITAS mellett (terkep): a statisztika / marketing denied marad, a funkcionalis granted; a forras NEM lesz "modositott" (nem a beallitasokban tortent)
-  { const { ctx, lap } = await ujLap(bongeszo, { init: MH_CC({ fun: false, ana: false, adv: false }) });
+  try { const { ctx, lap } = await ujLap(bongeszo, { init: MH_CC({ fun: false, ana: false, adv: false }) });
     await lap.goto(ELES + '/', { waitUntil: 'load' }); await var_(lap);
     // a figyel() argumentuma a HATALYOS dontes: fun / ana / adv logikai ertekek
     await lap.evaluate(() => { window.__figyel = []; window.mhSuti.figyel((d) => window.__figyel.push(d)); });
@@ -273,7 +274,7 @@ try {
     const m = await mod(lap), upd = consentSorok(await dl(lap), 'update'), arg = await lap.evaluate(() => window.__figyel);
     ell('17) enged(fun) tarolt elutasitas mellett: ana / adv denied marad, fun granted, forras = korabbi_dontes (nem modositott)', m.ana === false && m.adv === false && m.fun === true && m.forras === 'korabbi_dontes' && upd.length === 1 && upd[0].analytics_storage === 'denied' && upd[0].ad_storage === 'denied' && upd[0].functionality_storage === 'granted', { m, upd: upd[0] });
     ell('17) a figyel() egyszer fut, az argumentum { fun: true, ana: false, adv: false } logikai ertekekkel', arg.length === 1 && arg[0].fun === true && arg[0].ana === false && arg[0].adv === false && typeof arg[0].fun === 'boolean', arg);
-    await ctx.close(); }
+    await ctx.close(); } catch (e) { ell('HIBA a teszt futasa kozben (kivetel): ' + String((e && e.message) || e).split('\n')[0].slice(0, 160), false); }
 } finally { await bongeszo.close(); }
 
 const naplo = { futtatva: new Date().toISOString(), leiras: 'suti-sav levetele (DECISION #170): valodi suti.js, valodi Chromium, helyi dist, minden kulso host tiltva', eredmeny: eredmenyek.every((x) => x.ok) ? 'PASS' : 'FAIL', db: eredmenyek.length, ellenorzesek: eredmenyek, megfigyelesek: megfigyeles };
