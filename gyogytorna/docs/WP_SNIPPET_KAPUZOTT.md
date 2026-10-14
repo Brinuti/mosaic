@@ -1,6 +1,6 @@
 # Kapuzott WordPress-snippet (valodi, eles vegponttol vegpontig proba) - JOVAHAGYASRA
 
-**Allapot: NINCS telepitve (ChatGPT: jovahagyva modositassal; meresi Claude jovahagyasara var).** Telepites csak Feri + a meresi felelos (ChatGPT / meresi Claude) jovahagyasa utan. Az eles oldal viselkedese a latogatoknak NEM valtozik.
+**Allapot: ELESBEN (Feri dontese 2026-10-14: "mehet elesbe, suti savot ne rakjunk ki egyaltalan"). A lenti kapuzott valtozat HELYETT az egyszeru betolto fut; a suti.js (sutisav) NEM toltodik.** Telepites csak Feri + a meresi felelos (ChatGPT / meresi Claude) jovahagyasa utan. Az eles oldal viselkedese a latogatoknak NEM valtozik.
 
 ## Mit csinal
 Egy kicsi `<head>`-szkript (Code Snippets, "csak elol"), ami a `launcher.js`-t es a `suti.js`-t CSAK akkor tolti be, ha **a fulben `gy_motor=1` (csak a `?motor=1` allitja be)**, es ezen belul:
@@ -59,3 +59,15 @@ DONTES: JOVAHAGYVA MODOSITASSAL - a snippet telepitese igen (a fenti kapuzassal,
 1. Egy `?motor=1` nelkuli oldal HTML-je / halozata: nincs `gy-foglalas` kerelem.
 2. `/allapot-ok/` token nelkul: nincs `gy-foglalas` kerelem, nincs uj dataLayer-esemeny.
 3. `?motor=1`: a sutisav megjelenik, a Salonic-link a motort nyitja.
+
+## Elesitett valtozat (2026-10-14, Feri dontese: nincs sutisav)
+A kapuzott valtozat helyett a snippet csak a `launcher.js`-t tolti be (a `suti.js`-t NEM, ezert sutisav, "Suti beallitasok" link es consent-sutik nincsenek). A forgalom-szabalyzas a `motor-kapcsolo.json`-ban van (kezdetben 10%), a `?motor=1` / `?motor=0` proba-felulbiralas a launcherben marad. A szerver sutisav nelkul "nincs hozzajarulas"-t lat, az attribucio a `GY_ATTR_NELKUL`=1 szerint megy.
+```php
+add_action('wp_head', function () {
+  if (is_admin()) return;
+  ?>
+<script>(function(){try{var s=document.createElement('script');s.src='/gy-foglalas/assets/js/launcher.js';s.async=false;document.head.appendChild(s);}catch(e){}})();</script>
+  <?php
+}, 1);
+```
+Visszaallitas: a snippet kikapcsolasa es/vagy `motor-kapcsolo.json` arany=0.
