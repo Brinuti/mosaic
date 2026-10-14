@@ -20,6 +20,11 @@ export const SEMA = [
   `CREATE TABLE IF NOT EXISTS gy_meta (kulcs TEXT PRIMARY KEY, ertek TEXT)`,
   `CREATE TABLE IF NOT EXISTS gy_riasztas (id INTEGER PRIMARY KEY AUTOINCREMENT, ido INTEGER NOT NULL, tipus TEXT NOT NULL, uuid TEXT, adat TEXT)`,
   `CREATE INDEX IF NOT EXISTS gy_riasztas_ido ON gy_riasztas (ido)`,
+  // visszahivas-kerelem (a vendeg kifejezett kerese): nev + telefon + opcionalis rendelo / idosav. Egeszsegugyi adat NINCS; megorzes 60 nap (IDOK.visszahivas)
+  `CREATE TABLE IF NOT EXISTS gy_visszahivas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, letrehozva INTEGER NOT NULL, nev TEXT NOT NULL, tel TEXT NOT NULL, rendelo TEXT NOT NULL DEFAULT 'mindegy',
+    mikor TEXT NOT NULL DEFAULT 'barmikor', oldal TEXT, ertesitve INTEGER NOT NULL DEFAULT 0, allapot TEXT NOT NULL DEFAULT 'uj')`,
+  `CREATE INDEX IF NOT EXISTS gy_visszahivas_ido ON gy_visszahivas (letrehozva)`,
 ];
 
 const kesz = new WeakSet();
@@ -42,6 +47,7 @@ export const IDOK = Object.freeze({
   token: 15 * PERC,              // koszono-token: 15 perc, egyszer hasznalhato
   foglalas: 396 * NAP,           // 13 honap
   riasztas: 90 * NAP,
+  visszahivas: 60 * NAP,         // visszahivas-kerelem (nev + telefon): 60 nap
   kampanyFriss: 36 * 3600,       // a kampanylista "friss", ha az utolso sikeres frissites ennel nem regebbi
 });
 
@@ -150,5 +156,6 @@ export async function takarit(db, most) {
     db.prepare('DELETE FROM gy_token WHERE lejar <= ?').bind(most - 3600),
     db.prepare('DELETE FROM gy_foglalas WHERE letrehozva < ?').bind(most - IDOK.foglalas),
     db.prepare('DELETE FROM gy_riasztas WHERE ido < ?').bind(most - IDOK.riasztas),
+    db.prepare('DELETE FROM gy_visszahivas WHERE letrehozva < ?').bind(most - IDOK.visszahivas),
   ]);
 }

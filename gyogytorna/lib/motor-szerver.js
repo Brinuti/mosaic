@@ -5,7 +5,8 @@
 //   POST /api/gy-foglalas    a Salonic-atiranyitas szerveroldali ellenorzese + idempotens D1-rekord + egyszeri, 15 perces koszono-token
 //   POST /api/gy-koszono     a koszonooldal a tokennel kapja a foglalas_kesz esemeny adatait (egyszer)
 //   POST /api/gy-kampanyok   (kulcsos) a Google Ads kampanylista napi szinkronja
-//   GET/POST /api/gy-admin   (kulcsos) riport, riasztasok, egyeztetes
+//   POST /api/gy-visszahivas a "telefonon egyeztetek idopontot" visszahivas-kerelem (nev + telefon), D1 + ertesito webhook
+//   GET/POST /api/gy-admin   (kulcsos) riport, riasztasok, egyeztetes, visszahivasok
 // Hibaban a vendeg foglalasa NEM akad el: ezek a vegpontok csak a merest szolgaljak, a foglalast a Salonic rogziti.
 import { belepes, osszevon, cimkez, fizetett, hirdetesAzonositok } from './forras.js';
 import { sutik, hozzajarulas } from './hozzajarulas.js';
@@ -291,6 +292,10 @@ export async function adminVegpont({ request, env, deps = {} }) {
   await sema(db);
   const u = new URL(request.url);
   const most = mostUnix(deps);
+  if (u.searchParams.get('visszahivasok')) {
+    const r = (await db.prepare('SELECT id, letrehozva, nev, tel, rendelo, mikor, oldal, ertesitve, allapot FROM gy_visszahivas ORDER BY id DESC LIMIT 200').all()).results || [];
+    return valasz(200, { ok: true, visszahivasok: r });
+  }
   if (u.searchParams.get('riasztasok')) {
     const r = (await db.prepare('SELECT id, ido, tipus, uuid, adat FROM gy_riasztas ORDER BY id DESC LIMIT 200').all()).results || [];
     return valasz(200, { ok: true, riasztasok: r });
@@ -319,6 +324,53 @@ export async function adminVegpont({ request, env, deps = {} }) {
   }
   void most;
   return nincsKerelem('ismeretlen_muvelet');
+}
+
+// --- /api/gy-visszahivas ------------------------------------------------------------------------------------------------------
+const RENDELOK = Object.freeze({ mindegy: 'Mindegy', batthyany: 'Batthyány tér', nyugati: 'Nyugati tér', oktogon: 'Oktogon' });
+const IDOSAVOK = Object.freeze({ barmikor: 'Bármikor', delelott: 'Délelőtt', delutan: 'Délután', este: 'Este' });
+const HONNAN = /^\/[A-Za-z0-9\-_/.%]{0,120}$/;
+const tisztit = (v, max) => String(v ?? '').replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+/** A vendeg KIFEJEZETT kerese: "hivjatok vissza, mert elobb beszelnek egy gyogytornaszszal". Nev + telefon (+ opcionalis rendelo / idosav). Egeszsegugyi szabad szoveg nincs. */
+export async function visszahivasVegpont({ request, env, deps = {} }) {
+  if (request.method !== 'POST') return valasz(405, { ok: false });
+  if (!eredetEngedett(request, env)) return valasz(403, { ok: false, hiba: 'eredet' });
+  const db = env.GY_DB;
+  if (!db) return valasz(503, { ok: false, hiba: 'nincs_adatbazis' });
+  const be = await jsonTest(request, 2048);
+  if (!be) return nincsKerelem('ervenytelen_torzs');
+  if (be.bot) return valasz(200, { ok: true }); // csapda-mezo: a robot "sikert" kap, nem mentunk semmit
+  const nev = tisztit(be.nev, 80);
+  const tel = tisztit(be.tel, 30).replace(/[^+0-9 ()\-/]/g, '');
+  if (nev.length < 2 || !/\p{L}/u.test(nev)) return nincsKerelem('nev');
+  if ((tel.match(/\d/g) || []).length < 6 || (tel.match(/\d/g) || []).length > 15) return nincsKerelem('telefon');
+  if (be.elfogad !== true) return nincsKerelem('adatkezeles');
+  const rendelo = Object.hasOwn(RENDELOK, be.rendelo) ? be.rendelo : 'mindegy';
+  const mikor = Object.hasOwn(IDOSAVOK, be.mikor) ? be.mikor : 'barmikor';
+  const oldal = typeof be.oldal === 'string' && HONNAN.test(be.oldal) ? be.oldal : null;
+  await sema(db);
+  const most = mostUnix(deps);
+  // visszaeles ellen (IP-t nem tarolunk): oraban legfeljebb 30 kerelem osszesen; ugyanaz a telefonszam 10 percen belul egyszer szamit
+  const ora = (await db.prepare('SELECT COUNT(*) AS n FROM gy_visszahivas WHERE letrehozva > ?').bind(most - 3600).first()) || { n: 0 };
+  if (ora.n >= 30) { await riaszt(db, 'visszahivas_limit', { most }); return valasz(429, { ok: false, hiba: 'sok_kerelem' }); }
+  const mar = await db.prepare('SELECT id FROM gy_visszahivas WHERE tel = ? AND letrehozva > ?').bind(tel, most - 600).first();
+  if (mar) return valasz(200, { ok: true });
+  const r = await db.prepare('INSERT INTO gy_visszahivas (letrehozva, nev, tel, rendelo, mikor, oldal) VALUES (?,?,?,?,?,?)').bind(most, nev, tel, rendelo, mikor, oldal).run();
+  const id = r && r.meta ? r.meta.last_row_id : null;
+  if (Math.random() < 0.05) takarit(db, most).catch(() => {}); // 60 napos torles
+  // ertesites: a klinikanak szolo webhook (pl. Zapier -> e-mail); hiba eseten a kerelem a D1-ben megvan, riasztas keszul. A vendeg valasza ettol fuggetlen.
+  let ertesitve = 0;
+  const hook = String(env.GY_VISSZAHIVAS_WEBHOOK || '');
+  if (/^https:\/\//.test(hook)) {
+    try {
+      const f = deps.fetch || fetch;
+      const v = await f(hook, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ nev, tel, rendelo: RENDELOK[rendelo], mikor: IDOSAVOK[mikor], oldal, ido: new Date((most + 2 * 3600) * 1000).toISOString().replace('T', ' ').slice(0, 16) }) });
+      ertesitve = v.ok ? 1 : 0;
+    } catch (e) { /* alabb riasztas */ }
+  }
+  if (ertesitve && id) await db.prepare('UPDATE gy_visszahivas SET ertesitve = 1 WHERE id = ?').bind(id).run();
+  else await riaszt(db, 'visszahivas_nincs_ertesites', { adat: { id }, most });
+  return valasz(200, { ok: true });
 }
 
 export { eloAllapot };

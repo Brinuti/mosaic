@@ -181,6 +181,49 @@ await oldal.keyboard.press('Escape');
 assert.equal(await oldal.locator('[data-gy-motor]').count(), 0);
 assert.equal(await oldal.evaluate(() => document.documentElement.style.overflow), '');
 lep('Esc bezarja; a gorgetes-zar es az inert visszaall');
+// visszahivas-kerelem: "Telefonon egyeztetek idopontot" az elso lepes aljan
+await oldal.goto(`${ORIGIN}/booking-test/?motor=1`);
+await oldal.click('#gomb-salonic');
+{
+  const mk = oldal.locator('[data-gy-motor]');
+  await mk.locator('[data-hivas]').waitFor();
+  assert.match(await mk.locator('[data-hivas]').innerText(), /Telefonon egyeztetek időpontot/);
+  if (process.env.KEPEK) await oldal.screenshot({ path: `${process.env.KEPEK}/hivas-gomb-${mod}.png` });
+  await mk.locator('[data-hivas]').click();
+  await mk.locator('form.hivas-urlap').waitFor();
+  assert.equal(await mk.locator('.fej h2').innerText(), 'Visszahívás kérése');
+  // vissza az elso lepesre, majd ujra: az adatok megmaradnak
+  await mk.locator('input[name="nev"]').fill('Próba Teszt');
+  await mk.locator('[data-vissza]').click();
+  await mk.locator('[data-hivas]').waitFor();
+  await mk.locator('[data-hivas]').click();
+  assert.equal(await mk.locator('input[name="nev"]').inputValue(), 'Próba Teszt');
+  // ures / hibas kuldes: hibauzenetek, nincs keres
+  await mk.locator('input[name="nev"]').fill('');
+  await mk.locator('[data-kuld]').click();
+  assert.match(await mk.locator('[data-mezo="nev"] .hiba-uzenet').innerText(), /neved/);
+  assert.match(await mk.locator('[data-mezo="tel"] .hiba-uzenet').innerText(), /telefonszám/);
+  assert.match(await mk.locator('[data-mezo="elfogad"] .hiba-uzenet').innerText(), /adatvédelmi/);
+  if (process.env.KEPEK) await oldal.screenshot({ path: `${process.env.KEPEK}/hivas-hiba-${mod}.png` });
+  assert.equal((await srv.env.GY_DB.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE name = 'gy_visszahivas'").first()).n >= 0, true);
+  await mk.locator('input[name="nev"]').fill('Próba Teszt');
+  await mk.locator('input[name="tel"]').fill('+36 30 555 0199');
+  await mk.locator('select[name="rendelo"]').selectOption('oktogon');
+  await mk.locator('select[name="mikor"]').selectOption('delutan');
+  await mk.locator('input[name="elfogad"]').check();
+  if (process.env.KEPEK) await oldal.screenshot({ path: `${process.env.KEPEK}/hivas-urlap-${mod}.png` });
+  await mk.locator('[data-kuld]').click();
+  await mk.locator('.hivas-kesz').waitFor();
+  assert.match(await mk.locator('.hivas-kesz').innerText(), /Köszönjük, megkaptuk/);
+  if (process.env.KEPEK) await oldal.screenshot({ path: `${process.env.KEPEK}/hivas-kesz-${mod}.png` });
+  const sor = await srv.env.GY_DB.prepare('SELECT nev, tel, rendelo, mikor, oldal FROM gy_visszahivas').first();
+  assert.deepEqual({ ...sor }, { nev: 'Próba Teszt', tel: '+36 30 555 0199', rendelo: 'oktogon', mikor: 'delutan', oldal: '/booking-test/' });
+  assert.equal(await oldal.evaluate(() => (window.dataLayer || []).filter((e) => e && e.event && !/^gy_suti_/.test(e.event)).length), 0); // meresi esemeny nincs
+  assert.equal(await oldal.evaluate(() => location.pathname + location.search), '/booking-test/?motor=1'); // az URL nem valtozik
+  await mk.locator('[data-bezar]').first().click();
+  assert.equal(await oldal.locator('[data-gy-motor]').count(), 0);
+}
+lep('visszahivas-kerelem: gomb az elso lepes alatt, urlap, hibauzenetek, kuldes -> D1-sor, nincs meresi esemeny, az URL nem valtozik');
 // forras-ping elment
 const forrasDb = (await srv.env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_munkamenet').first()).n;
 assert.ok(forrasDb >= 1);
