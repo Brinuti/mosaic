@@ -217,6 +217,17 @@ await oldal.click('#gomb-szakember');
   await oldal.keyboard.press('Escape');
 }
 lep('szakember-link: a helyszin elore kitoltve, az allapotfelmeres egybol a szakember naptarara visz');
+// a szakemberek "Idopontok" gombja (selectDate?employeeId&placeId&serviceId, mint az akcios landing): egybol a szakember naptara
+await oldal.goto(`${ORIGIN}/booking-test/?motor=1`);
+await oldal.click('#gomb-szakember-datum');
+{
+  const mk = oldal.locator('[data-gy-motor]');
+  await mk.locator('.nap.van').first().waitFor({ timeout: 15000 });
+  assert.match(await mk.locator('.osszegzes').innerText(), /Oktogon/);
+  assert.equal(await oldal.evaluate(() => location.pathname), '/booking-test/');
+  await oldal.keyboard.press('Escape');
+}
+lep('szakember + szolgaltatas link (akcios landing "Idopontok"): egybol a szakember naptara, az URL nem valtozik');
 // visszahivas-kerelem: "Telefonon egyeztetek idopontot" az elso lepes aljan; az urlap mezoi az elo "Telefonos Idopont" urlapbol
 // (kapcsolo: motor-kapcsolo.json "hivas"; alapbol 0, a proba ?hivas=1-gyel kapcsolja be)
 await oldal.goto(`${ORIGIN}/booking-test/?motor=1&hivas=0`);
