@@ -156,16 +156,20 @@ button:focus-visible, a:focus-visible { outline: 3px solid #70c69c; outline-offs
 .toltes::before { content: ''; display: block; width: 28px; height: 28px; margin: 0 auto 10px; border: 3px solid #d9f1e6; border-top-color: #0c4c8a; border-radius: 50%; animation: forog .8s linear infinite; }
 @keyframes forog { to { transform: rotate(360deg); } }
 .kicsi.tovabbi { margin: -4px 0 6px; text-align: center; font-size: 12px; }
-iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
-.adatlap-burok { margin: 0 -16px -16px; }
-.ablak[data-lepes="adatlap"] .tartalom { display: flex; flex-direction: column; overflow: hidden; }
-.ablak[data-lepes="adatlap"] .adatlap-burok { flex: 1; min-height: 0; }
+/* A betoltott Salonic-adatlapok (keretek) a .keret-tarolo-ban elnek, az adatlap-lepesen kivul csak rejtve (display:none), SOHA nem toroljuk / mozgatjuk oket visszalepeskor:
+   a Salonic az elso /guestData/ betoltesnel 10 percre lefoglalja az idopontot (reservationKey suti, Safari-ban a harmadik feles suti nem marad meg), a MASODIK betoltes ugyanarra
+   az idopontra a Salonic sajat naptarara iranyit. Igy a vissza + ugyanaz az idopont nem tolt ujra. */
+.keret-tarolo { display: none; }
+.ablak[data-lepes="adatlap"] .tartalom { flex: 0 0 auto; overflow: visible; padding-bottom: 0; }
+.ablak[data-lepes="adatlap"] .keret-tarolo { display: block; flex: 1; min-height: 0; position: relative; }
+.keret-tarolo iframe.adatlap { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: none; }
+.keret-tarolo iframe.adatlap.aktiv { display: block; }
+.adatlap-sav .masik { margin-left: auto; flex: none; font-size: 12px; padding: 5px 10px; }
 .ablak[data-lepes="adatlap"][data-stilus="1"] .osszegzes, .ablak[data-lepes="adatlap"][data-stilus="1"] .adatlap-sugo { display: none; }
 @media (max-width: 700px) {
   .ablak[data-lepes="adatlap"] .osszegzes, .ablak[data-lepes="adatlap"] .adatlap-sugo { display: none; }
   .ablak[data-lepes="adatlap"] .lepesek button { min-height: 36px; padding-top: 8px; }
   .ablak[data-lepes="adatlap"] .tartalom { padding: 0; }
-  .ablak[data-lepes="adatlap"] .adatlap-burok { margin: 0; }
 }
 .ablak[data-lepes="szolg"] .lepesek { display: none; }
 .fatyol.takar { background: #f3f8fc; }
@@ -208,7 +212,7 @@ export function nyit(ctx = {}) {
   const host = document.createElement('div');
   host.setAttribute('data-gy-motor', '');
   const shadow = host.attachShadow({ mode: 'open' });
-  shadow.innerHTML = `<style>${CSS}</style><div class="fatyol" role="dialog" aria-modal="true" aria-label="Időpontfoglalás"><div class="ablak"><div class="fej"><button class="gomb-ikon" data-vissza aria-label="Vissza" hidden>‹</button><h2>Időpontfoglalás</h2><button class="gomb-ikon" data-bezar aria-label="Bezárás">×</button></div><div class="lepesek"></div><div class="tartalom" tabindex="-1"></div></div></div>`;
+  shadow.innerHTML = `<style>${CSS}</style><div class="fatyol" role="dialog" aria-modal="true" aria-label="Időpontfoglalás"><div class="ablak"><div class="fej"><button class="gomb-ikon" data-vissza aria-label="Vissza" hidden>‹</button><h2>Időpontfoglalás</h2><button class="gomb-ikon" data-bezar aria-label="Bezárás">×</button></div><div class="lepesek"></div><div class="tartalom" tabindex="-1"></div><div class="keret-tarolo"></div></div></div>`;
   if (ctx.takar) shadow.querySelector('.fatyol').classList.add('takar'); // a koztes foglalo oldal cimen: a mogotte levo tartalom rejtett, a hatter tompitas helyett tomor
   const elozoFokusz = document.activeElement;
   document.body.appendChild(host);
@@ -221,6 +225,9 @@ export function nyit(ctx = {}) {
   if (nezet && /width=320\b/.test(nezetEredeti || '')) nezet.setAttribute('content', 'width=device-width, initial-scale=1');
   const $ = (s) => shadow.querySelector(s);
   const tartalom = $('.tartalom');
+  const keretTarolo = $('.keret-tarolo');
+  const keretek = []; // { kulcs, el, t }: a betoltott adatlapok (legfeljebb 3, legfeljebb 9 percig)
+  let adatSorszam = 0;
   const link = (() => { try { return new URL(ctx.link || HOST + '/selectLocation'); } catch (e) { return new URL(HOST + '/selectLocation'); } })();
   const tovabbi = [...link.searchParams].filter(([k]) => TOVABB.test(k));
   const all = {
@@ -521,6 +528,7 @@ export function nyit(ctx = {}) {
 
   // --- 6. adatlap (a Salonic beagyazott urlapja) ---
   async function adatlapLepes() {
+    const sorszam = ++adatSorszam;
     tartalom.innerHTML = osszegzes() + '<div class="toltes">Az adatlap betöltése…</div>';
     // "Mindegy": a valasztott idoponthoz tartozo konkret szakemberrel foglalunk (igy tudjuk, kit lat a vendeg; az idopont ugyanaz marad)
     const slotStaff = all.slot && /^\d+$/.test(String(all.slot.staff_id || '')) && +all.slot.staff_id > 0 ? +all.slot.staff_id : null;
@@ -529,7 +537,7 @@ export function nyit(ctx = {}) {
     try {
       b = await adapter.beginBooking({ placeId: all.placeId, serviceId: all.szolg.serviceId, startUnix: all.slot.start_unix, staffId: effStaff, bookingId: all.bookingId });
     } catch (e) { return hiba('adatlap', e); }
-    if (all.lepes !== 'adatlap' || lezart) return;
+    if (all.lepes !== 'adatlap' || lezart || sorszam !== adatSorszam) return;
     all.expected = b.expected;
     all.effStaff = effStaff;
     const u = new URL(b.guestDataUrl);
@@ -538,14 +546,27 @@ export function nyit(ctx = {}) {
     let stilus = null, staff = {};
     try { stilus = (await adapter.getPresentation()).customCss; } catch (e) { /* alap kinezet */ }
     try { staff = await adapter.getStaff(); } catch (e) { /* foto nelkul is megy */ }
-    if (all.lepes !== 'adatlap' || lezart) return;
+    if (all.lepes !== 'adatlap' || lezart || sorszam !== adatSorszam) return;
     $('.ablak').dataset.stilus = stilus ? '1' : '0';
     // egy sor: a valasztott szakember (arc + nev), a rendelo es az idopont - igy az adatlap mobilon is gorgetes nelkul elfer
     const e = staff[String(effStaff)] || null;
     const nev = e ? e.nev : (all.slot.staff_label || null);
     const bb = bp(all.slot.start_unix), h = HELYSZINEK[all.placeId];
-    const sav = `<div class="adatlap-sav">${nev ? kiemeltFejkep(e, nev) : ''}<div class="sav-sz"><b>${esc(nev || 'Szakember')}</b><span>${esc(h ? h.nev : '')} · ${esc(napCim(bb.nap))}, <b>${bb.ido}</b></span></div></div>`;
-    tartalom.innerHTML = sav + `<p class="kicsi adatlap-sugo" style="margin:0 0 8px">Add meg az adataidat, és véglegesítsd a foglalást. Ha az időpont közben elkelt, <button class="chip" data-lepes="ido">válassz másikat</button>.</p><div class="adatlap-burok"><iframe class="adatlap" name="gy-adatlap" title="Foglalási adatlap" src="${esc(u.href)}" allow="payment"></iframe></div>`;
+    const sav = `<div class="adatlap-sav">${nev ? kiemeltFejkep(e, nev) : ''}<div class="sav-sz"><b>${esc(nev || 'Szakember')}</b><span>${esc(h ? h.nev : '')} · ${esc(napCim(bb.nap))}, <b>${bb.ido}</b></span></div><button class="chip masik" data-lepes="ido">Másik időpont</button></div>`;
+    tartalom.innerHTML = sav + `<p class="kicsi adatlap-sugo" style="margin:0 0 8px">Add meg az adataidat, és véglegesítsd a foglalást. Ha az időpont közben elkelt, <button class="chip" data-lepes="ido">válassz másikat</button>.</p>`;
+    // ugyanarra az idopontra a mar betoltott adatlapot hasznaljuk ujra (nincs masodik /guestData/ betoltes); lejart (9 perc: a Salonic 10 perces foglalasa) vagy tobb mint 3: eldobjuk
+    const most = Date.now();
+    for (let i = keretek.length - 1; i >= 0; i--) if (most - keretek[i].t > 9 * 60 * 1000 || keretek.length > 3) { keretek[i].el.remove(); keretek.splice(i, 1); }
+    const kulcs = `${all.placeId}:${all.szolg.serviceId}:${effStaff}:${all.slot.start_unix}`;
+    let k = keretek.find((x) => x.kulcs === kulcs);
+    if (!k) {
+      const el = document.createElement('iframe');
+      el.className = 'adatlap'; el.name = 'gy-adatlap'; el.title = 'Foglalási adatlap'; el.setAttribute('allow', 'payment'); el.src = u.href;
+      keretTarolo.appendChild(el);
+      k = { kulcs, el, t: most };
+      keretek.push(k);
+    }
+    for (const x of keretek) x.el.classList.toggle('aktiv', x === k);
   }
 
   async function rajzol() {
@@ -577,6 +598,7 @@ export function nyit(ctx = {}) {
     if (d.honap) { all.honap = d.honap; const elso = [...new Set(all.slotok.map((x) => sb(x).nap))].sort().find((k) => k.startsWith(d.honap)); if (elso) all.nap = elso; return naptar(); }
     if (d.nap) { all.nap = d.nap; return naptar(); }
     if (d.slot) {
+      if (all.lepes !== 'ido') return; // dupla koppintas: a masodik nem indit ujabb adatlap-betoltest
       const unix = +d.slot;
       all.slot = (all.staffId ? all.slotok.filter((x) => x.staff_id === all.staffId) : all.slotok).find((x) => x.start_unix === unix) || null;
       if (all.slot) ugrik('adatlap');
@@ -596,7 +618,7 @@ export function nyit(ctx = {}) {
   const billentyu = (e) => {
     if (e.key === 'Escape' && all.lepes !== 'adatlap') return bezar();
     if (e.key !== 'Tab') return;
-    const f = [...shadow.querySelectorAll('button:not([disabled]):not([hidden]):not([tabindex="-1"]), a[href], iframe')].filter((el) => el.offsetParent !== null || el.tagName === 'IFRAME');
+    const f = [...shadow.querySelectorAll('button:not([disabled]):not([hidden]):not([tabindex="-1"]), a[href], iframe.aktiv')].filter((el) => el.offsetParent !== null || el.tagName === 'IFRAME');
     if (!f.length) return;
     const elso = f[0], utolso = f[f.length - 1], aktiv = shadow.activeElement;
     if (e.shiftKey && (aktiv === elso || !aktiv)) { e.preventDefault(); utolso.focus(); } else if (!e.shiftKey && aktiv === utolso) { e.preventDefault(); elso.focus(); }
@@ -607,7 +629,7 @@ export function nyit(ctx = {}) {
   const KERET_ORIGIN = new Set([location.origin, 'https://www.gyogytornaszom.hu', 'https://gyogytornaszom.hu']);
   const uzenet = async (e) => {
     if (!KERET_ORIGIN.has(e.origin) || !e.data || e.data.tipus !== 'gy-foglalas-ok' || typeof e.data.url !== 'string') return;
-    const iframe = shadow.querySelector('iframe.adatlap');
+    const iframe = shadow.querySelector('iframe.adatlap.aktiv');
     if (!iframe || e.source !== iframe.contentWindow || lezart) return;
     if (!all.expected || !all.slot) return;
     lezart = true;
