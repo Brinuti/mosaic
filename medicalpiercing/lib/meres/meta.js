@@ -64,7 +64,9 @@ export async function metaTesztVegpont({ request, env, fetchFn = fetch }) {
   const url = TESZT_FORRASOK[body.forras] || SEMLEGES_URL;
   const most = Math.floor(Date.now() / 1000);
   const torzs = tesztTorzs({ most, kod, esemeny, url, fbc: `fb.1.${most * 1000}.TESZTclaude`, fbp: `fb.1.${most * 1000}.1234567890`, esemenyId: `Teszt:${most}`, ua: request.headers.get('user-agent') || '' });
-  const r = await fetchFn(`${META_VEGPONT()}?access_token=${encodeURIComponent(env.META_CAPI_TOKEN)}`, {
+  // 2026-10-14: adathalmaz:'arnyek' -> a kulon ARNYEK adathalmaz (hozzaferes-ellenorzes, csak TEST-koddal)
+  const vegpont = body.adathalmaz === 'arnyek' ? `https://graph.facebook.com/v21.0/1650176753358464/events` : META_VEGPONT();
+  const r = await fetchFn(`${vegpont}?access_token=${encodeURIComponent(env.META_CAPI_TOKEN)}`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(torzs),
   });
   let valasz = null;
