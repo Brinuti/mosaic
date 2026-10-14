@@ -181,6 +181,62 @@ await oldal.keyboard.press('Escape');
 assert.equal(await oldal.locator('[data-gy-motor]').count(), 0);
 assert.equal(await oldal.evaluate(() => document.documentElement.style.overflow), '');
 lep('Esc bezarja; a gorgetes-zar es az inert visszaall');
+// visszahivas-kerelem: "Telefonon egyeztetek idopontot" az elso lepes aljan; az urlap mezoi az elo "Telefonos Idopont" urlapbol
+// (kapcsolo: motor-kapcsolo.json "hivas"; alapbol 0, a proba ?hivas=1-gyel kapcsolja be)
+await oldal.goto(`${ORIGIN}/booking-test/?motor=1&hivas=0`);
+await oldal.click('#gomb-salonic');
+assert.equal(await oldal.locator('[data-gy-motor] [data-hivas]').count(), 0, 'kapcsolo nelkul nincs visszahivas-gomb');
+await oldal.keyboard.press('Escape');
+await oldal.goto(`${ORIGIN}/booking-test/?motor=1&hivas=1`);
+await oldal.click('#gomb-salonic');
+{
+  const mk = oldal.locator('[data-gy-motor]');
+  await mk.locator('[data-hivas]').waitFor();
+  assert.match(await mk.locator('[data-hivas]').innerText(), /Telefonon egyeztetek időpontot/);
+  if (process.env.KEPEK) await oldal.screenshot({ path: `${process.env.KEPEK}/hivas-gomb-${mod}.png` });
+  await mk.locator('[data-hivas]').click();
+  await mk.locator('form.hivas-urlap').waitFor();
+  assert.equal(await mk.locator('.fej h2').innerText(), 'Telefonos időpontfoglalás');
+  // az elo urlap mezoi, szo szerint
+  assert.deepEqual(await mk.locator('form.hivas-urlap .cimke-sz').allInnerTexts(), ['Név *', 'E-mail cím *', 'Telefonszám (FONTOS "036" kezdettel írja be!) *', 'Mikor szeretne időpontot? *', 'Mikor hívhatjuk? *', 'Melyik rendelőnkbe jönne? *', 'Panasza rövid leírása', 'Elfogadom az alábbiakat: *']);
+  assert.deepEqual(await mk.locator('select[name="surgosseg"] option').allInnerTexts(), ['A lehető leggyorsabban!', '1-2 héten belül!', '1 hónapon belül.']);
+  assert.deepEqual(await mk.locator('select[name="hivhato"] option').allInnerTexts(), ['Bármikor', 'Inkább reggel / de', 'Délután']);
+  assert.deepEqual(await mk.locator('select[name="rendelo"] option').allInnerTexts(), ['Oktogon', 'Nyugati', 'Batthyány']);
+  assert.deepEqual(await mk.locator('.elfogad span').allInnerTexts(), ['Ez nem egy általános információ kérő űrlap, hanem időpontegyeztetés.', 'A Gyógytornászom.hu Adatvédelmi Szabályzatát.']);
+  assert.equal(await mk.locator('[data-kuld]').innerText(), 'Elküldöm az időpontfoglalást!');
+  // vissza az elso lepesre, majd ujra: az adatok megmaradnak
+  await mk.locator('input[name="nev"]').fill('Próba Teszt');
+  await mk.locator('[data-vissza]').click();
+  await mk.locator('[data-hivas]').waitFor();
+  await mk.locator('[data-hivas]').click();
+  assert.equal(await mk.locator('input[name="nev"]').inputValue(), 'Próba Teszt');
+  // ures / hibas kuldes: hibauzenetek, nincs keres
+  await mk.locator('input[name="nev"]').fill('');
+  await mk.locator('[data-kuld]').click();
+  assert.match(await mk.locator('[data-mezo="nev"] .hiba-uzenet').innerText(), /nevét/);
+  assert.match(await mk.locator('[data-mezo="email"] .hiba-uzenet').innerText(), /e-mail/);
+  assert.match(await mk.locator('[data-mezo="tel"] .hiba-uzenet').innerText(), /telefonszám/);
+  assert.match(await mk.locator('[data-mezo="elfogad"] .hiba-uzenet').innerText(), /fogadnia/);
+  if (process.env.KEPEK) await oldal.screenshot({ path: `${process.env.KEPEK}/hivas-hiba-${mod}.png` });
+  await mk.locator('input[name="nev"]').fill('Próba Teszt');
+  await mk.locator('input[name="email"]').fill('proba@example.com');
+  await mk.locator('input[name="tel"]').fill('036 30 555 0199');
+  await mk.locator('select[name="surgosseg"]').selectOption('1-2 héten belül!');
+  await mk.locator('select[name="hivhato"]').selectOption('Délután');
+  await mk.locator('select[name="rendelo"]').selectOption('Nyugati');
+  await mk.locator('textarea[name="panasz"]').fill('TESZT panasz: derékfájás');
+  await mk.locator('input[name="elfogad_info"]').check();
+  await mk.locator('input[name="elfogad_adatv"]').check();
+  if (process.env.KEPEK) await oldal.screenshot({ path: `${process.env.KEPEK}/hivas-urlap-${mod}.png` });
+  await mk.locator('[data-kuld]').click();
+  // a koszonooldal: /visszahivas-ok/ (URL-parameter nelkul; a panasz / szemelyes adat nem kerul az URL-be)
+  await oldal.waitForURL(`${ORIGIN}/visszahivas-ok/`, { timeout: 15000 });
+  const sor = await srv.env.GY_DB.prepare('SELECT nev, email, tel, rendelo, surgosseg, hivhato, oldal FROM gy_visszahivas').first();
+  assert.deepEqual({ ...sor }, { nev: 'Próba Teszt', email: 'proba@example.com', tel: '036 30 555 0199', rendelo: 'Nyugati', surgosseg: '1-2 héten belül!', hivhato: 'Délután', oldal: '/booking-test/' });
+  assert.equal(JSON.stringify(await srv.env.GY_DB.prepare('SELECT * FROM gy_visszahivas').all()).includes('derékfájás'), false); // a panasz nincs a D1-ben
+  assert.equal(oldal.url().includes('?'), false);
+}
+lep('visszahivas-kerelem: az elo urlap mezoi szo szerint, hibauzenetek, kuldes -> D1-sor (panasz nelkul), atiranyitas a parameter-mentes /visszahivas-ok/ oldalra');
 // forras-ping elment
 const forrasDb = (await srv.env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_munkamenet').first()).n;
 assert.ok(forrasDb >= 1);

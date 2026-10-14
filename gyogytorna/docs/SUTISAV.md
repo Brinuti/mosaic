@@ -31,3 +31,11 @@ Munkamenetenkent az elso oldalon nagyobb doboz ("Segitesz nekunk egy kattintassa
 
 ## 6. Tesztek
 `node tools/test-gy-suti-pw.mjs desktop|mobil` (dontes elott, Elutasitom, reszleges mentes, Elfogadom + szerver-allapot, visszavonas, ervenytelen suti, iframe, statisztika, 0 kulso kerelem) es a `lib/hozzajarulas.js` egysegtesztjei (`npm run teszt`).
+
+## SAV_KI mod (Feri dontese, 2026-10-14: "sutisavot ne rakjunk ki egyaltalan")
+Ugyanaz a megoldas, mint a Medical Piercingen (a meresi Claude 2026-10-14 06:15-os bejegyzese): a `suti.js` `SAV_KI = true` modban fut.
+- **Nincs sav** (se nagy doboz, se vekony sav). A `suti.js` tovabbra is betoltodik (az eles WordPress-snippet tolti), a lableci **"Suti beallitasok"** link megmarad.
+- **Dontes nelkul az alapertelmezes "megadott"** (statisztika + marketing). A szkript ilyenkor SUTIT NEM IR es `consent update`-et NEM kuld: a Consent Mode alapertekeket a GTM adja (a meresi Claude allitja granted-re). A dataLayer-esemeny: `{event:'gy_suti_allapot', gy_suti_dontott:false, gy_suti_stat:true, gy_suti_mark:true, gy_suti_sav_ki:true, gy_suti_alap:true}`.
+- **A latogato kifejezett dontese elsobbseget el**: a lableci linkbol (vagy `window.gySuti.beallitasok()`) megnyilo beallitasban az elutasitas / visszavonas `gy_suti=v1-s0-m0-t...` sutit ir + `gtag('consent','update', denied)`; visszaterokent a mentett dontes ervenyes, es a `engedely()` is ezt adja.
+- **Szerver**: `GY_SAV_KI="1"` (wrangler.toml): hianyzo / ervenytelen `gy_suti` suti eseten a szerver "megadott"-nak latja (30 napos `gy_lpt` suti, `hozzajarulas: igen` a D1-ben); kifejezett elutasitas (`s0-m0`) eseten "nem". Vesz-kikapcsolas: `GY_SAV_KI="0"` + a `suti.js`-ben `SAV_KI = false` (a sav visszajon). Mérési Claude biztonsagi feke: Google Ads / GA4 iranyelv-figyelmeztetes eseten 7 napon belul `SAV_KI = false`.
+- Teszt: `tools/test-gy-suti-pw.mjs` 8. lepes (SAV_KI) + a regi, savos mod a `window.GY_SAV_KI = false` felulirassal; szerver: `SAV_KI mod` teszt.

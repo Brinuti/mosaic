@@ -17,9 +17,12 @@ export function sutik(fejlec) {
 export const SUTI_HOZZAJARULAS = 'gy_suti';
 const SUTI_MINTA = /^v1-s([01])-m([01])-t(\d{9,11})$/;
 
-/** @returns {{allapot:'igen'|'nem'|'nincs_dontes', marketing:boolean, analitika:boolean}} */
-export function hozzajarulas(cookieFejlec) {
-  const nincs = { allapot: 'nincs_dontes', marketing: false, analitika: false };
+/**
+ * @param {{alap?: boolean}} opciok alap = true (SAV_KI mod, env GY_SAV_KI = "1"): dontes / hianyzo / ervenytelen suti eseten az alapertelmezes "megadott" (Feri: "mindenhez hozzajarulok alapbol");
+ *   a latogato kifejezett dontese (a lableci "Suti beallitasok": elutasitas / visszavonas) elsobbseget el.
+ * @returns {{allapot:'igen'|'nem'|'nincs_dontes', marketing:boolean, analitika:boolean}} */
+export function hozzajarulas(cookieFejlec, { alap = false } = {}) {
+  const nincs = alap ? { allapot: 'igen', marketing: true, analitika: true } : { allapot: 'nincs_dontes', marketing: false, analitika: false };
   const nyers = sutik(cookieFejlec)[SUTI_HOZZAJARULAS];
   const m = nyers && SUTI_MINTA.exec(nyers);
   if (!m) return nincs;

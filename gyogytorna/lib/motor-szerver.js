@@ -5,7 +5,8 @@
 //   POST /api/gy-foglalas    a Salonic-atiranyitas szerveroldali ellenorzese + idempotens D1-rekord + egyszeri, 15 perces koszono-token
 //   POST /api/gy-koszono     a koszonooldal a tokennel kapja a foglalas_kesz esemeny adatait (egyszer)
 //   POST /api/gy-kampanyok   (kulcsos) a Google Ads kampanylista napi szinkronja
-//   GET/POST /api/gy-admin   (kulcsos) riport, riasztasok, egyeztetes
+//   POST /api/gy-visszahivas a "telefonon egyeztetek idopontot" visszahivas-kerelem (nev + telefon), D1 + ertesito webhook
+//   GET/POST /api/gy-admin   (kulcsos) riport, riasztasok, egyeztetes, visszahivasok
 // Hibaban a vendeg foglalasa NEM akad el: ezek a vegpontok csak a merest szolgaljak, a foglalast a Salonic rogziti.
 import { belepes, osszevon, cimkez, fizetett, hirdetesAzonositok } from './forras.js';
 import { sutik, hozzajarulas } from './hozzajarulas.js';
@@ -50,6 +51,7 @@ async function jsonTest(request, maxBajt = 8192) {
 
 const mostUnix = (deps) => Math.floor((deps && deps.most ? deps.most() : Date.now()) / 1000);
 const suti = (nev, ertek, { maxAge = null, torol = false } = {}) => `${nev}=${torol ? '' : ertek}; Path=/; Secure; HttpOnly; SameSite=Lax${torol ? '; Max-Age=0' : maxAge ? `; Max-Age=${maxAge}` : ''}`;
+const savKi = (env) => String(env.GY_SAV_KI ?? '0') === '1'; // sutisav kikapcsolva: dontes nelkul az alapertelmezes "megadott" (Feri dontese 2026-10-14); vesz-kikapcsolas: "0"
 const attrNelkul = (env) => String(env.GY_ATTR_NELKUL ?? '1') !== '0'; // Feri dontese 2026-10-13: hozzajarulas nelkul is menjen a (24 oras) munkamenet-forras; vesz-kikapcsolas: "0"
 
 // --- /api/gy-forras -----------------------------------------------------------------------------------------------------------
@@ -63,7 +65,7 @@ export async function forrasVegpont({ request, env, deps = {} }) {
   await sema(db);
   const most = mostUnix(deps);
   const s = sutik(request.headers.get('cookie'));
-  const hj = hozzajarulas(request.headers.get('cookie'));
+  const hj = hozzajarulas(request.headers.get('cookie'), { alap: savKi(env) });
   const extra = { cookies: [] };
   const sajatHostok = ['gyogytornaszom.hu', new URL(request.url).hostname.replace(/^www\./, '')];
   const uj = belepes({ search: typeof be.search === 'string' ? be.search.slice(0, 1500) : '', referrer: typeof be.referrer === 'string' ? be.referrer.slice(0, 500) : '', path: typeof be.path === 'string' ? be.path : '/', sajatHostok });
@@ -137,7 +139,7 @@ export async function foglalasVegpont({ request, env, deps = {} }) {
   await sema(db);
   const most = mostUnix(deps);
   const uuid = String(be.uuid);
-  const hj = hozzajarulas(request.headers.get('cookie'));
+  const hj = hozzajarulas(request.headers.get('cookie'), { alap: savKi(env) });
   const ad = szerverAdapter(env, deps.fetch || globalThis.fetch);
 
   const e = atiranyitasElemzes(be.redirect_url);
@@ -291,6 +293,10 @@ export async function adminVegpont({ request, env, deps = {} }) {
   await sema(db);
   const u = new URL(request.url);
   const most = mostUnix(deps);
+  if (u.searchParams.get('visszahivasok')) {
+    const r = (await db.prepare('SELECT id, letrehozva, nev, email, tel, rendelo, surgosseg, hivhato, oldal, ertesitve, allapot FROM gy_visszahivas ORDER BY id DESC LIMIT 200').all()).results || [];
+    return valasz(200, { ok: true, visszahivasok: r });
+  }
   if (u.searchParams.get('riasztasok')) {
     const r = (await db.prepare('SELECT id, ido, tipus, uuid, adat FROM gy_riasztas ORDER BY id DESC LIMIT 200').all()).results || [];
     return valasz(200, { ok: true, riasztasok: r });
@@ -319,6 +325,66 @@ export async function adminVegpont({ request, env, deps = {} }) {
   }
   void most;
   return nincsKerelem('ismeretlen_muvelet');
+}
+
+// --- /api/gy-visszahivas ------------------------------------------------------------------------------------------------------
+// Az ELO "Telefonos Idopont" urlap (gyogytornaszom.hu/online-gyogytorna/, 123FormBuilder) mezoi, szo szerint: a valasztolistak ertekei az elo urlap szovegei.
+export const SURGOSSEG = Object.freeze(['A lehető leggyorsabban!', '1-2 héten belül!', '1 hónapon belül.']);
+export const HIVHATO = Object.freeze(['Bármikor', 'Inkább reggel / de', 'Délután']);
+export const RENDELOK = Object.freeze(['Oktogon', 'Nyugati', 'Batthyány']);
+const HONNAN = /^\/[A-Za-z0-9\-_/.%]{0,120}$/;
+const EMAIL = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]{2,}$/;
+const tisztit = (v, max) => String(v ?? '').replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+/**
+ * A vendeg KIFEJEZETT kerese: "hivjatok vissza, elobb beszelnek egy gyogytornasszal". A panasz rovid leirasa (egeszsegugyi adat) a D1-be SOHA nem kerul, naplozasra sem;
+ * csak az ertesito webhookon (e-mail a klinikanak) halad at. Ha az ertesites nem megy, a kerelem a panasz nelkul megmarad, es riasztas keszul (a klinika visszahivaskor megkerdezi).
+ */
+export async function visszahivasVegpont({ request, env, deps = {} }) {
+  if (request.method !== 'POST') return valasz(405, { ok: false });
+  if (!eredetEngedett(request, env)) return valasz(403, { ok: false, hiba: 'eredet' });
+  const db = env.GY_DB;
+  if (!db) return valasz(503, { ok: false, hiba: 'nincs_adatbazis' });
+  const be = await jsonTest(request, 4096);
+  if (!be) return nincsKerelem('ervenytelen_torzs');
+  if (be.bot) return valasz(200, { ok: true }); // csapda-mezo: a robot "sikert" kap, nem mentunk semmit
+  const nev = tisztit(be.nev, 80);
+  const email = tisztit(be.email, 120);
+  const tel = tisztit(be.tel, 30).replace(/[^+0-9 ()\-/]/g, '');
+  if (nev.length < 2 || !/\p{L}/u.test(nev)) return nincsKerelem('nev');
+  if (!EMAIL.test(email)) return nincsKerelem('email');
+  if ((tel.match(/\d/g) || []).length < 6 || (tel.match(/\d/g) || []).length > 15) return nincsKerelem('telefon');
+  if (!SURGOSSEG.includes(be.surgosseg)) return nincsKerelem('surgosseg');
+  if (!HIVHATO.includes(be.hivhato)) return nincsKerelem('hivhato');
+  if (!RENDELOK.includes(be.rendelo)) return nincsKerelem('rendelo');
+  if (be.elfogad_info !== true || be.elfogad_adatv !== true) return nincsKerelem('elfogadas');
+  const panasz = tisztit(be.panasz, 1000); // NEM tarolodik
+  const oldal = typeof be.oldal === 'string' && HONNAN.test(be.oldal) ? be.oldal : null;
+  await sema(db);
+  const most = mostUnix(deps);
+  // visszaeles ellen (IP-t nem tarolunk): oraban legfeljebb 30 kerelem osszesen; ugyanaz a telefonszam 10 percen belul egyszer szamit
+  const ora = (await db.prepare('SELECT COUNT(*) AS n FROM gy_visszahivas WHERE letrehozva > ?').bind(most - 3600).first()) || { n: 0 };
+  if (ora.n >= 30) { await riaszt(db, 'visszahivas_limit', { most }); return valasz(429, { ok: false, hiba: 'sok_kerelem' }); }
+  const mar = await db.prepare('SELECT id FROM gy_visszahivas WHERE tel = ? AND letrehozva > ?').bind(tel, most - 600).first();
+  if (mar) return valasz(200, { ok: true });
+  const r = await db.prepare('INSERT INTO gy_visszahivas (letrehozva, nev, email, tel, rendelo, surgosseg, hivhato, oldal) VALUES (?,?,?,?,?,?,?,?)').bind(most, nev, email, tel, be.rendelo, be.surgosseg, be.hivhato, oldal).run();
+  const id = r && r.meta ? r.meta.last_row_id : null;
+  if (Math.random() < 0.05) takarit(db, most).catch(() => {}); // 60 napos torles
+  // ertesites: a klinikanak szolo webhook (pl. Zapier -> e-mail). A vendeg valasza ettol fuggetlen.
+  let ertesitve = 0;
+  const hook = String(env.GY_VISSZAHIVAS_WEBHOOK || '');
+  if (/^https:\/\//.test(hook)) {
+    try {
+      const f = deps.fetch || fetch;
+      const v = await f(hook, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
+        nev, email, tel, mikor_szeretne_idopontot: be.surgosseg, mikor_hivhatjuk: be.hivhato, melyik_rendelo: be.rendelo, panasz_roviden: panasz || '-', oldal,
+        ido: new Date((most + 2 * 3600) * 1000).toISOString().replace('T', ' ').slice(0, 16),
+      }) });
+      ertesitve = v.ok ? 1 : 0;
+    } catch (e) { /* alabb riasztas */ }
+  }
+  if (ertesitve && id) await db.prepare('UPDATE gy_visszahivas SET ertesitve = 1 WHERE id = ?').bind(id).run();
+  else await riaszt(db, 'visszahivas_nincs_ertesites', { adat: { id }, most });
+  return valasz(200, { ok: true });
 }
 
 export { eloAllapot };

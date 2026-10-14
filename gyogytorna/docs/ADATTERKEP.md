@@ -12,6 +12,7 @@
 | D1 munkamenet / token / riasztas | hash-elt azonositok, belepesi forras-mezok | munkamenet 24 ora, token 15 perc, riasztas rovid | nincs |
 | Worker napló | csak vegpontnev + rovid hibakod | Cloudflare alap | soha nem tartalmaz kerest, cookie-t, uuid-t, vendegadatot |
 | dataLayer | csak `foglalas_kesz {tipus, ertek, tranzakcio_id}` | oldalbetoltes | nincs (a `tranzakcio_id` HMAC, nem visszafejtheto) |
+| D1 `gy_visszahivas` | a "Telefonon egyeztetek idopontot" kerelem (az elo "Telefonos Idopont" urlap mezoi): nev, e-mail, telefonszam, "Mikor szeretne idopontot?", "Mikor hivhatjuk?", rendelo, a motor oldal utvonala, ertesitve-jelzo (a vendeg KIFEJEZETT kerese; az adatvedelmi szabalyzat elfogadasa kotelezo) | 60 nap | SZEMELYES adat (nev, e-mail, telefon). A "Panasza rovid leirasa" (EGESZSEGUGYI adat) a D1-be, a naplokba, az URL-be, a dataLayerbe SOHA nem kerul: csak az ertesito webhookon (`GY_VISSZAHIVAS_WEBHOOK`, pl. Zapier -> e-mail a klinikanak; az elo urlap 123FormBuilder-en at kuldte ugyanezt) halad at. Ha az ertesites nem megy, a kerelem panasz nelkul marad meg + riasztas |
 | Salonic | a vendeg adatai, panasza | a Salonic szabalyai szerint | ott marad; a motor nem latja |
 
 Engedelyezett lista: ami itt nincs felsorolva, azt a motor nem tarolja. A hozzajarulas nelkuli forras-megtartas (`GY_ATTR_NELKUL=1`, Feri dontese 2026-10-13) 24 oras, nem azonosit szemelyt; kapcsolo: `GY_ATTR_NELKUL=0`.
@@ -24,6 +25,7 @@ Hozzajarulas: megtagadas / visszavonas -> `gy_lpt` torlodik a kovetkezo hivasnal
 | `gy_munkamenet` | 24 ora (hozzajarulassal 30 nap); inaktivitas 30 perc | automatikus (lejarat), visszavonaskor a 30 napos rekord a kovetkezo hivasnal torlodik |
 | `gy_token` | 15 perc, egyszer hasznalhato; felhasznalaskor azonnal torlodik | automatikus |
 | `gy_riasztas` | 90 nap (csak technikai adat) | automatikus |
+| `gy_visszahivas` | 60 nap (nev + telefon) | automatikus: a `takarit()` a visszahivas-vegpont hivasainak ~5%-an fut; kezi torles: `DELETE FROM gy_visszahivas WHERE id = ?` |
 | `gy_suti_stat` | 13 honap (csak darabszam) | automatikus (a vegpont hivasainak ~2%-an) |
 | `gy_kampany`, `gy_meta` | a Google Ads kampanylista (azonositok, nevek); szemelyes adat nincs | a napi szinkron felulirja |
 

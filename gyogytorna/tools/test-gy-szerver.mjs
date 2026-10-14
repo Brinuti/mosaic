@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { belepes, cimkez, osszevon, fizetett, referrerKategoria } from '../lib/forras.js';
 import { hozzajarulas } from '../lib/hozzajarulas.js';
 import { tranzakcioId, hmacHex, ujToken, sha256Hex } from '../lib/titkos.js';
-import { forrasVegpont, igazolasVegpont, foglalasVegpont, koszonoVegpont, kampanyokVegpont, adminVegpont, atiranyitasElemzes } from '../lib/motor-szerver.js';
+import { forrasVegpont, igazolasVegpont, foglalasVegpont, koszonoVegpont, kampanyokVegpont, adminVegpont, atiranyitasElemzes, visszahivasVegpont } from '../lib/motor-szerver.js';
 import { createSalonicAdapter, foglalasTipus, ALLAPOTFELMERES_ID } from '../public/assets/js/motor/salonic-adapter.js';
 import { eloElemzes } from '../lib/salonic-szerver.js';
 import { ujD1 } from './d1-szim.mjs';
@@ -450,4 +450,88 @@ test('UTM-sablon (Feri 2026-10-13): kampany / hirdetescsoport / hirdetes azonosi
   // UTM nelkul (direkt): nincs azonosito
   const { env: env3 } = await teljesFolyamat({ search: '?x=1' });
   assert.equal((await env3.GY_DB.prepare('SELECT kampany FROM gy_foglalas').first()).kampany, null);
+});
+
+test('visszahivas: az elo "Telefonos Idopont" urlap mezoi; panasz NEM tarolodik (csak az ertesitesben); hibas mezok, elfogadas, robot, duplikalt szam, limit, eredet, megorzes', async () => {
+  const hivasok = [];
+  const env = await ujKornyezet({ GY_VISSZAHIVAS_WEBHOOK: 'https://hooks.test/gy' });
+  const d = { most: () => MOST, fetch: async (url, o) => { hivasok.push({ url, body: JSON.parse(o.body) }); return new Response('ok'); } };
+  const kuld = (b, opt = {}) => visszahivasVegpont({ request: kerelem('/api/gy-visszahivas', b, opt), env, deps: d });
+  const jo = { nev: 'Minta Mária', email: 'minta@example.com', tel: '036 30 123 4567', surgosseg: '1-2 héten belül!', hivhato: 'Délután', rendelo: 'Batthyány', panasz: 'Derékfájás a TESZT panasz', elfogad_info: true, elfogad_adatv: true, oldal: '/online-gyogytorna/' };
+  assert.equal((await kuld(jo)).status, 200);
+  assert.equal(hivasok.length, 1);
+  assert.deepEqual(hivasok[0].body, { nev: 'Minta Mária', email: 'minta@example.com', tel: '036 30 123 4567', mikor_szeretne_idopontot: '1-2 héten belül!', mikor_hivhatjuk: 'Délután', melyik_rendelo: 'Batthyány', panasz_roviden: 'Derékfájás a TESZT panasz', oldal: '/online-gyogytorna/', ido: hivasok[0].body.ido });
+  const sor = await env.GY_DB.prepare('SELECT * FROM gy_visszahivas').first();
+  assert.deepEqual({ ...sor, id: undefined, letrehozva: undefined }, { id: undefined, letrehozva: undefined, nev: 'Minta Mária', email: 'minta@example.com', tel: '036 30 123 4567', rendelo: 'Batthyány', surgosseg: '1-2 héten belül!', hivhato: 'Délután', oldal: '/online-gyogytorna/', ertesitve: 1, allapot: 'uj' });
+  assert.equal(JSON.stringify(sor).includes('panasz'), false, 'a panasz szovege nem kerulhet a D1-be');
+  assert.equal(JSON.stringify(sor).includes('Derékfájás'), false);
+  // ugyanaz a szam 10 percen belul: sikert kap, de nincs ujabb sor / ertesites
+  assert.equal((await kuld(jo)).status, 200);
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_visszahivas').first()).n, 1);
+  assert.equal(hivasok.length, 1);
+  // panasz nelkul is rendben (nem kotelezo); az ertesitesben "-"
+  assert.equal((await kuld({ ...jo, tel: '036 30 444 0000', panasz: '' })).status, 200);
+  assert.equal(hivasok[1].body.panasz_roviden, '-');
+  // hibas mezok (mindegyik 400)
+  const rossz = (felul) => kuld({ ...jo, tel: '036 30 999 0000', ...felul });
+  assert.equal((await rossz({ nev: 'A' })).status, 400);
+  assert.equal((await rossz({ email: 'nem-email' })).status, 400);
+  assert.equal((await rossz({ tel: '12345' })).status, 400);
+  assert.equal((await rossz({ surgosseg: 'x' })).status, 400);
+  assert.equal((await rossz({ hivhato: 'x' })).status, 400);
+  assert.equal((await rossz({ rendelo: 'Mindegy' })).status, 400);
+  assert.equal((await rossz({ elfogad_info: false })).status, 400);
+  assert.equal((await rossz({ elfogad_adatv: false })).status, 400);
+  assert.equal((await kuld('nem json')).status, 400);
+  // robot (csapda-mezo): sikert kap, de nem mentunk semmit
+  assert.equal((await kuld({ ...jo, tel: '036 30 777 0000', bot: 'x' })).status, 200);
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_visszahivas').first()).n, 2);
+  // ervenytelen oldal -> null (nem tarolunk idegen erteket)
+  assert.equal((await kuld({ ...jo, tel: '036 30 666 0000', oldal: 'http://rossz' })).status, 200);
+  assert.equal((await env.GY_DB.prepare("SELECT oldal FROM gy_visszahivas WHERE tel = '036 30 666 0000'").first()).oldal, null);
+  // idegen eredet / GET
+  assert.equal((await kuld(jo, { origin: 'https://rossz.example' })).status, 403);
+  assert.equal((await visszahivasVegpont({ request: kerelem('/api/gy-visszahivas', null, { metodus: 'GET' }), env, deps: d })).status, 405);
+  // webhook-hiba: a kerelem megvan (panasz nelkul), ertesitve=0, riasztas
+  const env2 = await ujKornyezet({ GY_VISSZAHIVAS_WEBHOOK: 'https://hooks.test/gy' });
+  const d2 = { most: () => MOST, fetch: async () => { throw new Error('halozat'); } };
+  assert.equal((await visszahivasVegpont({ request: kerelem('/api/gy-visszahivas', jo), env: env2, deps: d2 })).status, 200);
+  assert.equal((await env2.GY_DB.prepare('SELECT ertesitve FROM gy_visszahivas').first()).ertesitve, 0);
+  assert.equal((await env2.GY_DB.prepare("SELECT COUNT(*) AS n FROM gy_riasztas WHERE tipus = 'visszahivas_nincs_ertesites'").first()).n, 1);
+  assert.equal(JSON.stringify(await env2.GY_DB.prepare('SELECT * FROM gy_riasztas').all()).includes('Derékfájás'), false, 'a riasztasba sem kerulhet panasz');
+  // oraankenti limit: 30 kerelem utan 429
+  const env3 = await ujKornyezet();
+  for (let i = 0; i < 30; i++) assert.equal((await visszahivasVegpont({ request: kerelem('/api/gy-visszahivas', { ...jo, tel: `036 30 100 ${String(1000 + i)}` }), env: env3, deps: d })).status, 200);
+  assert.equal((await visszahivasVegpont({ request: kerelem('/api/gy-visszahivas', { ...jo, tel: '036 30 200 0000' }), env: env3, deps: d })).status, 429);
+  // admin lista (kulcsos): panasz-mezo nincs
+  const lista = await (await adminVegpont({ request: kerelem('/api/gy-admin?visszahivasok=1', null, { metodus: 'GET', fejlec: { 'x-gy-kulcs': ADMIN } }), env, deps: d })).json();
+  assert.equal(lista.visszahivasok.length, 3);
+  assert.equal(JSON.stringify(lista).includes('Derékfájás'), false);
+  // megorzes: 60 nap utan torlodik
+  const { takarit } = await import('../lib/db.js');
+  await takarit(env.GY_DB, Math.floor((MOST + 61 * 86400 * 1000) / 1000));
+  assert.equal((await env.GY_DB.prepare('SELECT COUNT(*) AS n FROM gy_visszahivas').first()).n, 0);
+});
+
+test('SAV_KI mod (GY_SAV_KI=1, Feri 2026-10-14): dontes nelkul az alapertelmezes "megadott"; a latogato kifejezett dontese elsobbseget el; kapcsolo nelkul a regi viselkedes', async () => {
+  assert.deepEqual(hozzajarulas('', { alap: true }), { allapot: 'igen', marketing: true, analitika: true });
+  assert.deepEqual(hozzajarulas('gy_suti=v2-s1-m1-t1', { alap: true }), { allapot: 'igen', marketing: true, analitika: true }); // ervenytelen suti = alapertek
+  assert.equal(hozzajarulas(HJ_NEM, { alap: true }).allapot, 'nem'); // kifejezett elutasitas elsobbseget el
+  assert.deepEqual(hozzajarulas(`gy_suti=v1-s1-m0-t${ts()}`, { alap: true }), { allapot: 'nem', marketing: false, analitika: true });
+  assert.equal(hozzajarulas('').allapot, 'nincs_dontes'); // alap nelkul a regi
+  const be = { search: `?utm_campaign=${BRAND}&gclid=ABCDEFGH12345&utm_source=google&utm_medium=cpc`, referrer: '', path: '/x/' };
+  const d = deps();
+  // KI mod, suti nelkul: 30 napos suti is megy (alapertelmezett hozzajarulas)
+  const env = await ujKornyezet({ GY_SAV_KI: '1' });
+  let r = await forrasVegpont({ request: kerelem('/api/gy-forras', be), env, deps: d });
+  assert.equal(r.headers.getSetCookie().length, 2);
+  assert.match(r.headers.getSetCookie().find((c) => c.startsWith('gy_lpt=')), /Max-Age=2592000/);
+  // KI mod, de a latogato elutasitott: nincs 30 napos suti
+  const env2 = await ujKornyezet({ GY_SAV_KI: '1' });
+  r = await forrasVegpont({ request: kerelem('/api/gy-forras', be, { cookie: HJ_NEM }), env: env2, deps: d });
+  assert.equal(r.headers.getSetCookie().length, 1);
+  // kapcsolo nincs: a regi viselkedes
+  const env3 = await ujKornyezet();
+  r = await forrasVegpont({ request: kerelem('/api/gy-forras', be), env: env3, deps: d });
+  assert.equal(r.headers.getSetCookie().length, 1);
 });

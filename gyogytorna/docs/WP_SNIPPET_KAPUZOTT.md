@@ -60,14 +60,15 @@ DONTES: JOVAHAGYVA MODOSITASSAL - a snippet telepitese igen (a fenti kapuzassal,
 2. `/allapot-ok/` token nelkul: nincs `gy-foglalas` kerelem, nincs uj dataLayer-esemeny.
 3. `?motor=1`: a sutisav megjelenik, a Salonic-link a motort nyitja.
 
-## Elesitett valtozat (2026-10-14, Feri dontese: nincs sutisav)
-A kapuzott valtozat helyett a snippet csak a `launcher.js`-t tolti be (a `suti.js`-t NEM, ezert sutisav, "Suti beallitasok" link es consent-sutik nincsenek). A forgalom-szabalyzas a `motor-kapcsolo.json`-ban van (kezdetben 10%), a `?motor=1` / `?motor=0` proba-felulbiralas a launcherben marad. A szerver sutisav nelkul "nincs hozzajarulas"-t lat, az attribucio a `GY_ATTR_NELKUL`=1 szerint megy.
+## Elesitett valtozat (2026-10-14, Feri dontese: nincs sutisav; Code Snippets #58)
+A kapuzott valtozat helyett az egyszeru betolto fut. Ket dolgot csinal: (1) a motor Salonic-adatlapjat tartalmazo keretben (`window.name === 'gy-adatlap'`) a GTM betoltese BLOKKOLVA (a koszonooldal a keretben ne szamoljon masodik konverziot: a meresi Claude feltetele); (2) betolti a `launcher.js`-t; (3) a `suti.js`-t SAV_KI modban (nincs sav, a lableci "Suti beallitasok" link megmarad: docs/SUTISAV.md). A forgalom-szabalyzas a `motor-kapcsolo.json`-ban van (kezdetben 10%), a `?motor=1` / `?motor=0` proba-felulbiralas a launcherben marad. A szerver sutisav nelkul "nincs hozzajarulas"-t lat, az attribucio `GY_ATTR_NELKUL`=1 szerint megy.
 ```php
 add_action('wp_head', function () {
   if (is_admin()) return;
   ?>
-<script>(function(){try{var s=document.createElement('script');s.src='/gy-foglalas/assets/js/launcher.js';s.async=false;document.head.appendChild(s);}catch(e){}})();</script>
+<script>(function(){try{if(window.top!==window&&window.name==='gy-adatlap'){var ip=Node.prototype.insertBefore,ap=Node.prototype.appendChild,bl=function(n){return n&&n.tagName==='SCRIPT'&&/googletagmanager\.com\/(gtm|gtag)/i.test(n.src||'');};Node.prototype.insertBefore=function(n,r){return bl(n)?n:ip.call(this,n,r);};Node.prototype.appendChild=function(n){return bl(n)?n:ap.call(this,n);};}}catch(e){}try{var s=document.createElement('script');s.src='/gy-foglalas/assets/js/launcher.js';s.async=false;document.head.appendChild(s);if(window.top===window){var c=document.createElement('script');c.src='/gy-foglalas/assets/js/suti.js';c.async=false;document.head.appendChild(c);}}catch(e){}})();</script>
   <?php
-}, 1);
+}, 0);
 ```
-Visszaallitas: a snippet kikapcsolasa es/vagy `motor-kapcsolo.json` arany=0.
+Ellenorzes (2026-10-14, eles oldal, Playwright, a Google-kerelmek a halozaton megakadalyozva, csak megszamolva): fo ablakban a `/allapot-ok/` GTM-et probal betolteni (1), a `gy-adatlap` keretben 0 GTM/Google kerelem, a launcher a keretben is betoltodik.
+Visszaallitas: a snippet kikapcsolasa es/vagy `motor-kapcsolo.json` arany=0. Az oldal gyorsitotarat (W3TC) es a Cloudflare-t a snippet valtoztatasa utan uriteni kell.
