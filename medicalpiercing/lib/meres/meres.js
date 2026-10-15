@@ -3,6 +3,8 @@
 // Dontesek: MP-DECISION-LOG MP-4 (ertek = tenyleges ar), MP-5 (egy fo esemeny + uj/visszatero jeloles),
 // MP-6 (tipus parameter), MP-13..MP-16 (Meta: Salonic Schedule marad; kifele csak minimalis, nem egeszsegugyi adat).
 
+import { SZOLGALTATAS_TIPUS } from './szolgaltatas-tipus.js';
+
 export const MP_HOST = 'www.medicalpiercing.hu';
 export const MP_SALONIC_HOST = 'medicalpiercing.salonic.hu';
 
@@ -38,6 +40,7 @@ export const tarolhatoTipus = (t) => (TAROLHATO_TIPUSOK.includes(t) ? t : null);
 /** Tipus a koszonooldal utvonalabol, a divat fulpiercing szolgaltatas-azonositojabol, tartalekkent a szolgaltatas nevebol. */
 export function tipusNormal(utvonal = '', szolgaltatas = '', serviceId = null) {
   if (FUL_UT.test(String(utvonal)) || (serviceId != null && FUL_SZOLGALTATASOK.includes(String(serviceId)))) return 'ful';
+  if (serviceId != null && SZOLGALTATAS_TIPUS[String(serviceId)]) return SZOLGALTATAS_TIPUS[String(serviceId)];
   const m = /\/foglalas-ok-([a-z0-9]+)\/?$/i.exec(String(utvonal));
   if (m && UTOTAG_TIPUS[m[1].toLowerCase()]) return UTOTAG_TIPUS[m[1].toLowerCase()];
   const s = String(szolgaltatas).toLowerCase();
