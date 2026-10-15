@@ -208,8 +208,10 @@ async function atiranyit(p) {
   await u.page.evaluate(() => window.openBooking({ business: 'headspa', service: 'paros' }));
   await reteg(u.page).locator('.be-title', { hasText: 'Most nem sikerült betölteni' }).waitFor({ timeout: 60000 }).catch(() => {});
   await zar(u.page);
-  const e = uj(await dl(u.page)); const h = e.filter((x) => x.event === 'booking_error');
+  const e = uj(await dl(u.page)); const h = e.filter((x) => x.event === 'booking_error'); const sz4b = szamlaloLepesek(u.naplo);
   ok('4b. a Salonic-API hibaja: pontosan egy booking_error, error_type=salonic_api (nem client_error), booking_close step=A3', h.length === 1 && h[0].error_type === 'salonic_api' && e.at(-1).event === 'booking_close' && e.at(-1).step === 'A3', nevek(e).join(' > ') + ' | ' + JSON.stringify(h[0]));
+  const r4b = sz4b.filter((x) => x.lepes === 'error_reszlet');
+  ok('4b. hiba-reszlet (DECISION #188): a szamlalo pontosan egy error_reszlet-et kap: salonic_api.<nezet-kod>.HTTP.500 (a mockolt API-hiba), a dataLayer-be nem kerul', r4b.length === 1 && /^salonic_api\.[A-Z][A-Z0-9_]{0,11}\.HTTP\.500$/.test(r4b[0].tipus) && !JSON.stringify(uj(await dl(u.page))).includes('HTTP.500'), JSON.stringify(r4b));
   await u.ctx.close();
 }
 

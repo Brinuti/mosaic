@@ -17,14 +17,25 @@ export const LEPESEK = Object.freeze(['open', 'business', 'service', 'slots_load
 export const UZLETAGAK = Object.freeze(['headspa', 'hair', 'oxygen', 'laser', 'pmu', 'gift', 'none']);
 export const HIBA_TIPUSOK = Object.freeze(['salonic_api', 'no_slots', 'timeout', 'validation', 'slot_lost', 'hold_expired', 'verify_failed', 'unknown_redirect', 'callback_failed', 'client_error']);
 // Hiba-reszlet (DECISION #188, 2026-10-15): a hibatipus mellett a nezet-kod (step), az adapter hibakodja es a HTTP-statusz, darabszamkent (nincs URL, uzenet, azonosito).
-// A tipus alakja: <hibatipus>.<nezet-kod>.<hibakod>.<http>   pl. salonic_api.C1.HTTP.503  (http: 0 = nincs / nem szam). Kulon lepes ('error_reszlet'), hogy a LEPESEK / hibak szerkezete valtozatlan maradjon.
+// A tipus alakja: <hibatipus>.<nezet-kod>.<hibakod>.<http>   pl. salonic_api.C1.HTTP.503  (http: 0 = nincs HTTP-statusz: halozati hiba / nem HTTP-hibakod; kanonikus alak: 0 vagy 100-599).
+// Kulon lepes ('error_reszlet'), hogy a LEPESEK / hibak szerkezete valtozatlan maradjon. Zart: a nezet-kod a foglalo nezeteinek alakja (nagybetu + szam + alahuzas) vagy 'ismeretlen';
+// a hibatipus-hibakod parosok a kliens tenyleges kimenetet fedik; (nap, uzletag) szerint legfeljebb RESZLET_KULCS_PLAFON KULONBOZO kulcs (a kulcsok szama ellen; a darabszam-plafon DB_PLAFON kulcsonkent).
 export const HIBA_KODOK = Object.freeze(['HTTP', 'PARSE', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'TIMEOUT', 'OTHER', 'NONE']);
 export const RESZLET_LEPES = 'error_reszlet';
+export const RESZLET_KULCS_PLAFON = 100; // napi legfeljebb ennyi KULONBOZO hiba-reszlet kulcs uzletagankent (a valodi forgalom naponta par tucat)
+// hibatipus -> megengedett hibakodok (a kliens engine.js hibaTipus() es a SalonicError kodjai szerint): timeout csak TIMEOUT, client_error csak NONE (nincs adapter-kod), a tobbi hibatipus nem hordoz reszletet
+const RESZLET_PAROK = Object.freeze({ timeout: ['TIMEOUT'], client_error: ['NONE'], salonic_api: ['HTTP', 'PARSE', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'OTHER'] });
 export const VEDROK = Object.freeze([['lt500', 500], ['lt1000', 1000], ['lt2000', 2000], ['lt5000', 5000], ['ge5000', Infinity]]);
 export const DB_PLAFON = 100000;
 const BEZARAS_LEPES = /^[A-Za-z0-9_]{1,12}$/; // a foglalo nezet-kodja (H0, HS1, C1, C4, A1_SENT, ...)
-const RESZLET_ALAK = /^([a-z_]+)\.([A-Za-z0-9_]{1,12})\.([A-Z_]+)\.([0-9]{1,3})$/;
-function reszletTipus(t) { const m = typeof t === 'string' ? RESZLET_ALAK.exec(t) : null; if (!m) return null; const h = Number(m[4]); return HIBA_TIPUSOK.includes(m[1]) && HIBA_KODOK.includes(m[3]) && (h === 0 || (h >= 100 && h <= 599)) ? t : null; }
+const RESZLET_ALAK = /^([a-z_]+)\.([A-Z][A-Z0-9_]{0,11}|ismeretlen)\.([A-Z_]+)\.(0|[1-5][0-9]{2})$/; // kanonikus http: 0 vagy 100-599 (nincs 00 / 000 / vezeto nulla)
+function reszletTipus(t) {
+  const m = typeof t === 'string' ? RESZLET_ALAK.exec(t) : null; if (!m) return null;
+  const [, tipus, , kod, http] = m;
+  if (!HIBA_TIPUSOK.includes(tipus) || !HIBA_KODOK.includes(kod) || !(RESZLET_PAROK[tipus] || []).includes(kod)) return null;
+  if (http !== '0' && kod !== 'HTTP' && kod !== 'API_STATUS') return null; // HTTP-statusz csak HTTP / API_STATUS kod mellett
+  return t;
+}
 const TIMEZONE = 'Europe/Budapest';
 const MAX_NAP = 93;
 
@@ -59,9 +70,14 @@ export function ervenyesit(torzs) {
 const SQL_LEPES = 'INSERT INTO lepes_szamlalo (nap, uzletag, lepes, tipus, db) VALUES (?1, ?2, ?3, ?4, 1) ON CONFLICT(nap, uzletag, lepes, tipus) DO UPDATE SET db = db + 1 WHERE db < ?5';
 const SQL_BETOLTES = 'INSERT INTO betoltes_szamlalo (nap, uzletag, vedro, db, ossz_ms, max_ms) VALUES (?1, ?2, ?3, 1, ?4, ?4) ON CONFLICT(nap, uzletag, vedro) DO UPDATE SET db = db + 1, ossz_ms = ossz_ms + ?4, max_ms = MAX(max_ms, ?4) WHERE db < ?5';
 
+// hiba-reszlet: ugyanaz, de UJ kulcs csak akkor kerul be, ha az (nap, uzletag) alatti kulonbozo reszlet-kulcsok szama a plafon alatt van (vagy a kulcs mar letezik): egyetlen atomikus utasitas
+const SQL_RESZLET = 'INSERT INTO lepes_szamlalo (nap, uzletag, lepes, tipus, db) SELECT ?1, ?2, ?3, ?4, 1 WHERE EXISTS (SELECT 1 FROM lepes_szamlalo WHERE nap = ?1 AND uzletag = ?2 AND lepes = ?3 AND tipus = ?4) OR (SELECT COUNT(*) FROM lepes_szamlalo WHERE nap = ?1 AND uzletag = ?2 AND lepes = ?3) < ?6 ON CONFLICT(nap, uzletag, lepes, tipus) DO UPDATE SET db = db + 1 WHERE db < ?5';
+
 /** Egy esemeny beirasa (D1): atomikus novelés (nincs olvas-modosit-ir verseny). */
 export async function ir(db, adat, nap) {
-  const stmts = [db.prepare(SQL_LEPES).bind(nap, adat.uzletag, adat.lepes, adat.tipus, DB_PLAFON)];
+  const stmts = [adat.lepes === RESZLET_LEPES
+    ? db.prepare(SQL_RESZLET).bind(nap, adat.uzletag, adat.lepes, adat.tipus, DB_PLAFON, RESZLET_KULCS_PLAFON)
+    : db.prepare(SQL_LEPES).bind(nap, adat.uzletag, adat.lepes, adat.tipus, DB_PLAFON)];
   if (adat.loadMs !== null) stmts.push(db.prepare(SQL_BETOLTES).bind(nap, adat.uzletag, vedroNev(adat.loadMs), adat.loadMs, DB_PLAFON));
   await db.batch(stmts);
 }

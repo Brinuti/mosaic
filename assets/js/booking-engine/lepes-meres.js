@@ -49,11 +49,19 @@ export function tisztaOldal(p) {
 }
 const tisztaUzletag = (b) => (UZLETAGAK.includes(b) ? b : NINCS);
 const tisztaSzolgaltatas = (id) => (id !== undefined && id !== null && /^[A-Za-z0-9_-]{1,40}$/.test(String(id)) ? String(id) : NINCS);
-/** A hiba-reszlet tipusa: { code, status } -> '<hibatipus>.<nezet-kod>.<hibakod>.<http>' (zart listak; ami nem illik: OTHER / NONE / ismeretlen / 0). Csak darabszam-kulcs, szemelyes adat nincs. */
-export function hibaReszlet(hibaTipus, step, { code, status } = {}) {
-  const kod = HIBA_KODOK.includes(code) ? code : (code ? 'OTHER' : 'NONE');
-  const nezet = typeof step === 'string' && /^[A-Za-z0-9_]{1,12}$/.test(step) ? step : 'ismeretlen';
-  const http = Number.isInteger(status) && status >= 100 && status <= 599 ? status : 0;
+/**
+ * A hiba-reszlet tipusa: { code, status } -> '<hibatipus>.<nezet-kod>.<hibakod>.<http>', vagy null, ha az adott hibatipus nem hordoz reszletet.
+ * Zart listak, a szerver ervenyesitesevel egyezoen (a kimenet MINDIG elfogadhato): timeout -> TIMEOUT, client_error -> NONE, salonic_api -> az adapter hibakodja (ismeretlen: OTHER);
+ * a nezet-kod a foglalo nezeteinek alakja (C1, HS1, A3_SENT, ...), minden mas 'ismeretlen'; HTTP-statusz csak HTTP / API_STATUS kod mellett (100-599), egyebkent 0. Csak darabszam-kulcs, szemelyes adat nincs.
+ */
+const RESZLET_KODOK = Object.freeze({ timeout: ['TIMEOUT'], client_error: ['NONE'], salonic_api: HIBA_KODOK.filter((k) => k !== 'NONE' && k !== 'TIMEOUT') });
+export function hibaReszlet(hibaTipus, step, reszlet) {
+  const lehet = RESZLET_KODOK[hibaTipus];
+  if (!lehet) return null;
+  const { code, status } = reszlet && typeof reszlet === 'object' ? reszlet : {};
+  const kod = lehet.length === 1 ? lehet[0] : (lehet.includes(code) ? code : 'OTHER');
+  const nezet = typeof step === 'string' && /^[A-Z][A-Z0-9_]{0,11}$/.test(step) ? step : 'ismeretlen';
+  const http = (kod === 'HTTP' || kod === 'API_STATUS') && Number.isInteger(status) && status >= 100 && status <= 599 ? status : 0;
   return `${hibaTipus}.${nezet}.${kod}.${http}`;
 }
 
@@ -127,7 +135,7 @@ export function createStepMeter({ win = typeof window !== 'undefined' ? window :
       const t = HIBA_TIPUSOK.includes(errorType) ? errorType : 'client_error';
       if (egyszer('error:' + t + ':' + step + ':' + allapot.serviceId)) {
         jelez('error', { extra: { error_type: t }, szamlalo: { tipus: t } });
-        if (reszlet && !proba) kuld({ lepes: RESZLET_LEPES, uzletag: allapot.business, tipus: hibaReszlet(t, step, reszlet) }); // hiba-reszlet: ugyanaz az egyszer-kapu, nincs GA4
+        if (reszlet && !proba) { try { const rt = hibaReszlet(t, step, reszlet); if (rt) kuld({ lepes: RESZLET_LEPES, uzletag: allapot.business, tipus: rt }); } catch (e) { /* a modul minden hivasa biztonsagos: a reszlet hibaja sem akadalyozhatja a foglalast */ } } // hiba-reszlet: ugyanaz az egyszer-kapu, nincs GA4
       }
     },
     /** A reteg bezarult: step = a nezet kodja, ahol a vendeg bezarta (egyszer ulesenkent). */
