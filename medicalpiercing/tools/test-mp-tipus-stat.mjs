@@ -52,3 +52,12 @@ test('kifele nem olvassa: a platform-modulok nem hivatkoznak tipus-statra / tipu
     assert.ok(!/tipus-stat|tipus_kod|mp_tipus_stat/.test(k), f);
   }
 });
+
+test('a tipus a Salonic szolgaltatas-azonositobol jon (semleges koszonooldalon is)', async () => {
+  const { tipusNormal, tarolhatoTipus } = await import('../lib/meres/meres.js');
+  assert.equal(tipusNormal('/foglalas-ok', '', 189184), '2piercing');
+  assert.equal(tipusNormal('/foglalas-ok', '', 220503), '3piercing');
+  assert.equal(tipusNormal('/foglalas-ok', '', 395895), 'ful');
+  assert.equal(tipusNormal('/foglalas-ok', '', 999999), 'egyeb');
+  assert.equal(tarolhatoTipus(tipusNormal('/foglalas-ok', '', 189184)), null); // a sorba tovabbra sem kerul
+});
