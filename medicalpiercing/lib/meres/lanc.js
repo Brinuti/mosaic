@@ -16,6 +16,7 @@ import { forrasPlatform, onbevallasErtek, platformAzonositok, vanPlatformId, URE
 import { tiktokLepes, TIKTOK_SEMA } from './tiktok.js';
 import { metaArnyekLepes, ARNYEK_SEMA } from './meta.js';
 import { tipusSzamlal } from './tipus-stat.js';
+import { lemondasErtelmezes, lemondasRogzites } from './lemondas.js';
 import { bizonyitekBemenet, bizonyitekValaszt, bizonyitekForrasTarolo, diagBemenet, platformBizonyitekbol, cimkez, markasListaOlvas, FORRAS_VERZIO } from './cimke.js';
 
 export const SEMA = [
@@ -424,6 +425,9 @@ export async function igazolasErkezes({ request, env = {}, waitUntil }, { fetchI
   if (!t.jo) return json({ ok: false }, 403);
   if (!db) return json({ ok: false, hiba: 'nincs_adatbazis' }, 503);
   let b; try { b = await request.json(); } catch (e) { return json({ ok: false, hiba: 'rossz_keres' }, 400); }
+  // Lemondas / modositas (lemondas.js): csak minimalis mezok, a vendegadat es a lemondas oka nem tarolodik
+  const lm = lemondasErtelmezes(b);
+  if (lm.ok) { await sema(db); const r = await lemondasRogzites(db, lm, most); return json({ ok: true, lemondas: lm.tipus, ...r }); }
   const l = levelErtelmezes(b);
   if (!l.ok) return json({ ok: true, igazolva: false, hiba: l.hiba }); // 2xx: a Zapier ne probalja ujra a nem MP-s leveleket
   await sema(db);
