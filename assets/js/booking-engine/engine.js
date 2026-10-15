@@ -335,7 +335,7 @@ export function startEngine({ root, doc = document, win = window, adapter = shar
       if (token !== renderToken) return;
       console.error(e);
       track('booking_error', { step: state, reason: (e && e.code) || 'load_failed' });
-      meter.error(hibaTipus(e), state);
+      meter.error(hibaTipus(e), state, { code: e && e.code, status: e && e.status }); // hiba-reszlet a belso szamlalonak (DECISION #188): nezet-kod + adapter hibakod + HTTP-statusz
       setView(loadError(), 'A3');
     }
   }

@@ -61,6 +61,17 @@ Kulcs nélkül / rossz kulccsal 404. Új kulcs: `node -e "const c=require('crypt
 - A `gift` üzletág a számlálóban és a spec szerinti listában szerepel (a jövőbeli ajándékkártya-lépésekhez); a foglaló jelenleg nem használja, az ajándékkártyás beváltás HeadSpa-foglalásként `headspa`.
 - GA4: a paraméterek riportálásához a GA4-ben (Admin → Egyedi definíciók) a `business`, `service_id`, `source_page`, `step`, `error_type` esemény-szintű egyedi dimenzió, a `load_ms` egyedi mutató legyen (a GTM publikálása után; ezt a GA4 felületén kell egyszer beállítani).
 
+## 5b. Hiba-részlet (2026-10-15, DECISION #188, #178) – MÉRÉS ÉRINTŐ
+
+A `salonic_api` hibatípus eddig nem árulta el, **melyik nézetben** és **milyen hibakóddal / HTTP-státusszal** keletkezett (a régi `tracking.js` `booking_error` `step` / `reason` mezője a dataLayer-be nem kerül, a belső számláló csak a típust tárolta). A kiegészítés a **belső számlálóba** (D1 `lepes_szamlalo`) ír egy további, csak darabszámot hordozó sort:
+
+- `lepes = error_reszlet`, `tipus = <hibatípus>.<nézet-kód>.<hibakód>.<http>`, pl. `salonic_api.C1.HTTP.503`. A `<nézet-kód>` a foglaló nézetének kódja (C1, A3, …, vagy `ismeretlen`), a `<hibakód>` az adapter hibakódja (`HTTP`, `PARSE`, `API_STATUS`, `SERVICE_NOT_FOUND`, `NO_CALENDAR`, `UNKNOWN_BUSINESS`, `NOT_SUPPORTED`, `TIMEOUT`; ismeretlen kód: `OTHER`; nincs kód: `NONE`), a `<http>` a HTTP-státusz (100–599), egyébként `0` (pl. a Salonic API szöveges `status` mezője sem HTTP-státusz).
+- **Nincs benne** URL, hibaüzenet, azonosító, süti, időbélyeg, személyes adat; a szerver zárt alakot fogad el (`ervenyesit`), minden más `400`.
+- **Mikor megy:** csak a nézet-betöltési hibánál (`engine.js` `catch`), a hibatípus egyszer-kapuján belül (ugyanaz a (típus, nézet, szolgáltatás) hármas legfeljebb egyszer), próbából és robotból nem.
+- **Nem változik:** a `LEPESEK` lista és a GA4-esemény lista (a részlet **nem** megy GA4-be és a dataLayer-be sem), a tölcsér-számok, az `error` sor, a foglalási logika, a Salonic-hívások, a konverziók és a kiküldés. A `GET /api/foglalo-szamlalo` JSON kimenetében egy **további** `hiba_reszlet` kulcs jelenik meg üzletágankénti (napi és összesített) bontásban, csak ha van adat; a CSV-ben `error_reszlet` sorok, a HTML-ben a hibák cellában kis betűvel.
+- **D1-séma:** nincs változás (a meglévő `lepes_szamlalo` oszlopai elegendők).
+- Teszt: `node --test tools/test-lepes-meres.mjs` (25/25; 5 új eset), napló: `meres-naplo/2026-10-15-hiba-reszlet-teszt.md`.
+
 ## 6. Kikapcsolás
 
 - Számláló: a `wrangler.toml`-ból a `[[d1_databases]]` kötés törlése → a végpont `204`-et ad és semmit nem tárol (a foglaló ettől nem akad el).

@@ -20,6 +20,9 @@ export const ESEMENYEK = Object.freeze({
 });
 export const UZLETAGAK = Object.freeze(['headspa', 'hair', 'oxygen', 'laser', 'pmu', 'gift']);
 export const HIBA_TIPUSOK = Object.freeze(['salonic_api', 'no_slots', 'timeout', 'validation', 'slot_lost', 'hold_expired', 'verify_failed', 'unknown_redirect', 'callback_failed', 'client_error']);
+// Hiba-reszlet (DECISION #188, 2026-10-15): CSAK a belso szamlalonak (nem a GA4-nek): <hibatipus>.<nezet-kod>.<hibakod>.<http> darabszam, URL / uzenet / azonosito nelkul.
+export const HIBA_KODOK = Object.freeze(['HTTP', 'PARSE', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'TIMEOUT', 'OTHER', 'NONE']);
+export const RESZLET_LEPES = 'error_reszlet';
 export const VEGPONT = '/api/foglalo-szamlalo';
 // A regi tracking.js ezt a ket nevet a dataLayer-be nem irja (a lepes-meres adja, a spec szerinti parameterekkel)
 export const RESERVED_BY_STEPS = Object.freeze(['booking_open', 'booking_error']);
@@ -46,6 +49,13 @@ export function tisztaOldal(p) {
 }
 const tisztaUzletag = (b) => (UZLETAGAK.includes(b) ? b : NINCS);
 const tisztaSzolgaltatas = (id) => (id !== undefined && id !== null && /^[A-Za-z0-9_-]{1,40}$/.test(String(id)) ? String(id) : NINCS);
+/** A hiba-reszlet tipusa: { code, status } -> '<hibatipus>.<nezet-kod>.<hibakod>.<http>' (zart listak; ami nem illik: OTHER / NONE / ismeretlen / 0). Csak darabszam-kulcs, szemelyes adat nincs. */
+export function hibaReszlet(hibaTipus, step, { code, status } = {}) {
+  const kod = HIBA_KODOK.includes(code) ? code : (code ? 'OTHER' : 'NONE');
+  const nezet = typeof step === 'string' && /^[A-Za-z0-9_]{1,12}$/.test(step) ? step : 'ismeretlen';
+  const http = Number.isInteger(status) && status >= 100 && status <= 599 ? status : 0;
+  return `${hibaTipus}.${nezet}.${kod}.${http}`;
+}
 
 /**
  * win: az ablak (mock-olhato); ctx: parseContext() eredmenye; ido: () => ms.
@@ -113,9 +123,12 @@ export function createStepMeter({ win = typeof window !== 'undefined' ? window :
     /** Ellenorzott sikeres foglalas: egyszer foglalasonkent (a foglalas azonositoja csak a kulcsban van, sehova nem kerul). */
     success(ref) { if (egyszer('success:' + ref)) jelez('success'); },
     /** Hiba: errorType a HIBA_TIPUSOK egyike; egyszer (tipus, lepes, szolgaltatas) hármasonkent. */
-    error(errorType, step) {
+    error(errorType, step, reszlet) {
       const t = HIBA_TIPUSOK.includes(errorType) ? errorType : 'client_error';
-      if (egyszer('error:' + t + ':' + step + ':' + allapot.serviceId)) jelez('error', { extra: { error_type: t }, szamlalo: { tipus: t } });
+      if (egyszer('error:' + t + ':' + step + ':' + allapot.serviceId)) {
+        jelez('error', { extra: { error_type: t }, szamlalo: { tipus: t } });
+        if (reszlet && !proba) kuld({ lepes: RESZLET_LEPES, uzletag: allapot.business, tipus: hibaReszlet(t, step, reszlet) }); // hiba-reszlet: ugyanaz az egyszer-kapu, nincs GA4
+      }
     },
     /** A reteg bezarult: step = a nezet kodja, ahol a vendeg bezarta (egyszer ulesenkent). */
     close(step) {
