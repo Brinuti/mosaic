@@ -16,9 +16,26 @@
 export const LEPESEK = Object.freeze(['open', 'business', 'service', 'slots_loaded', 'slot', 'form_start', 'submit', 'success', 'close', 'error']);
 export const UZLETAGAK = Object.freeze(['headspa', 'hair', 'oxygen', 'laser', 'pmu', 'gift', 'none']);
 export const HIBA_TIPUSOK = Object.freeze(['salonic_api', 'no_slots', 'timeout', 'validation', 'slot_lost', 'hold_expired', 'verify_failed', 'unknown_redirect', 'callback_failed', 'client_error']);
+// Hiba-reszlet (DECISION #188, 2026-10-15): a hibatipus mellett a nezet-kod (step), az adapter hibakodja es a HTTP-statusz, darabszamkent (nincs URL, uzenet, azonosito).
+// A tipus alakja: <hibatipus>.<nezet-kod>.<hibakod>.<http>   pl. salonic_api.C1.HTTP.503  (http: 0 = nincs HTTP-statusz: halozati hiba / nem HTTP-hibakod; kanonikus alak: 0 vagy 100-599).
+// Kulon lepes ('error_reszlet'), hogy a LEPESEK / hibak szerkezete valtozatlan maradjon. Zart: a nezet-kod a foglalo nezeteinek alakja (nagybetu + szam + alahuzas) vagy 'ismeretlen';
+// a hibatipus-hibakod parosok a kliens tenyleges kimenetet fedik; (nap, uzletag) szerint legfeljebb RESZLET_KULCS_PLAFON KULONBOZO kulcs (a kulcsok szama ellen; a darabszam-plafon DB_PLAFON kulcsonkent).
+export const HIBA_KODOK = Object.freeze(['HTTP', 'PARSE', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'TIMEOUT', 'OTHER', 'NONE']);
+export const RESZLET_LEPES = 'error_reszlet';
+export const RESZLET_KULCS_PLAFON = 100; // napi legfeljebb ennyi KULONBOZO hiba-reszlet kulcs uzletagankent (a valodi forgalom naponta par tucat)
+// hibatipus -> megengedett hibakodok (a kliens engine.js hibaTipus() es a SalonicError kodjai szerint): timeout csak TIMEOUT, client_error csak NONE (nincs adapter-kod), a tobbi hibatipus nem hordoz reszletet
+const RESZLET_PAROK = Object.freeze({ timeout: ['TIMEOUT'], client_error: ['NONE'], salonic_api: ['HTTP', 'PARSE', 'API_STATUS', 'SERVICE_NOT_FOUND', 'NO_CALENDAR', 'UNKNOWN_BUSINESS', 'NOT_SUPPORTED', 'OTHER'] });
 export const VEDROK = Object.freeze([['lt500', 500], ['lt1000', 1000], ['lt2000', 2000], ['lt5000', 5000], ['ge5000', Infinity]]);
 export const DB_PLAFON = 100000;
 const BEZARAS_LEPES = /^[A-Za-z0-9_]{1,12}$/; // a foglalo nezet-kodja (H0, HS1, C1, C4, A1_SENT, ...)
+const RESZLET_ALAK = /^([a-z_]+)\.([A-Z][A-Z0-9_]{0,11}|ismeretlen)\.([A-Z_]+)\.(0|[1-5][0-9]{2})$/; // kanonikus http: 0 vagy 100-599 (nincs 00 / 000 / vezeto nulla)
+function reszletTipus(t) {
+  const m = typeof t === 'string' ? RESZLET_ALAK.exec(t) : null; if (!m) return null;
+  const [, tipus, , kod, http] = m;
+  if (!HIBA_TIPUSOK.includes(tipus) || !HIBA_KODOK.includes(kod) || !(RESZLET_PAROK[tipus] || []).includes(kod)) return null;
+  if (http !== '0' && kod !== 'HTTP' && kod !== 'API_STATUS') return null; // HTTP-statusz csak HTTP / API_STATUS kod mellett
+  return t;
+}
 const TIMEZONE = 'Europe/Budapest';
 const MAX_NAP = 93;
 
@@ -35,10 +52,11 @@ export function ervenyesit(torzs) {
   if (!o || typeof o !== 'object' || Array.isArray(o)) return { ok: false, miert: 'nem objektum' };
   const ismert = new Set(['lepes', 'uzletag', 'tipus', 'load_ms']);
   for (const k of Object.keys(o)) if (!ismert.has(k)) return { ok: false, miert: 'ismeretlen mezo: ' + k };
-  if (!LEPESEK.includes(o.lepes)) return { ok: false, miert: 'ismeretlen lepes' };
+  if (!LEPESEK.includes(o.lepes) && o.lepes !== RESZLET_LEPES) return { ok: false, miert: 'ismeretlen lepes' };
   if (!UZLETAGAK.includes(o.uzletag)) return { ok: false, miert: 'ismeretlen uzletag' };
   let tipus = '';
   if (o.lepes === 'error') { if (!HIBA_TIPUSOK.includes(o.tipus)) return { ok: false, miert: 'ismeretlen hibatipus' }; tipus = o.tipus; }
+  else if (o.lepes === RESZLET_LEPES) { const t = reszletTipus(o.tipus); if (!t) return { ok: false, miert: 'hibas hiba-reszlet' }; tipus = t; }
   else if (o.lepes === 'close') { if (typeof o.tipus !== 'string' || !BEZARAS_LEPES.test(o.tipus)) return { ok: false, miert: 'hibas bezaras-lepes' }; tipus = o.tipus; }
   else if (o.tipus !== undefined) return { ok: false, miert: 'ennel a lepesnel nincs tipus' };
   let loadMs = null;
@@ -52,15 +70,21 @@ export function ervenyesit(torzs) {
 const SQL_LEPES = 'INSERT INTO lepes_szamlalo (nap, uzletag, lepes, tipus, db) VALUES (?1, ?2, ?3, ?4, 1) ON CONFLICT(nap, uzletag, lepes, tipus) DO UPDATE SET db = db + 1 WHERE db < ?5';
 const SQL_BETOLTES = 'INSERT INTO betoltes_szamlalo (nap, uzletag, vedro, db, ossz_ms, max_ms) VALUES (?1, ?2, ?3, 1, ?4, ?4) ON CONFLICT(nap, uzletag, vedro) DO UPDATE SET db = db + 1, ossz_ms = ossz_ms + ?4, max_ms = MAX(max_ms, ?4) WHERE db < ?5';
 
+// hiba-reszlet: ugyanaz, de UJ kulcs csak akkor kerul be, ha az (nap, uzletag) alatti kulonbozo reszlet-kulcsok szama a plafon alatt van (vagy a kulcs mar letezik): egyetlen atomikus utasitas
+const SQL_RESZLET = 'INSERT INTO lepes_szamlalo (nap, uzletag, lepes, tipus, db) SELECT ?1, ?2, ?3, ?4, 1 WHERE EXISTS (SELECT 1 FROM lepes_szamlalo WHERE nap = ?1 AND uzletag = ?2 AND lepes = ?3 AND tipus = ?4) OR (SELECT COUNT(*) FROM lepes_szamlalo WHERE nap = ?1 AND uzletag = ?2 AND lepes = ?3) < ?6 ON CONFLICT(nap, uzletag, lepes, tipus) DO UPDATE SET db = db + 1 WHERE db < ?5';
+
 /** Egy esemeny beirasa (D1): atomikus novelés (nincs olvas-modosit-ir verseny). */
 export async function ir(db, adat, nap) {
-  const stmts = [db.prepare(SQL_LEPES).bind(nap, adat.uzletag, adat.lepes, adat.tipus, DB_PLAFON)];
+  const stmts = [adat.lepes === RESZLET_LEPES
+    ? db.prepare(SQL_RESZLET).bind(nap, adat.uzletag, adat.lepes, adat.tipus, DB_PLAFON, RESZLET_KULCS_PLAFON)
+    : db.prepare(SQL_LEPES).bind(nap, adat.uzletag, adat.lepes, adat.tipus, DB_PLAFON)];
   if (adat.loadMs !== null) stmts.push(db.prepare(SQL_BETOLTES).bind(nap, adat.uzletag, vedroNev(adat.loadMs), adat.loadMs, DB_PLAFON));
   await db.batch(stmts);
 }
 
 const ures = () => ({ lepesek: {}, bezaras_lepesenkent: {}, hibak: {}, betoltes: { db: 0, atlag_ms: null, max_ms: 0, eloszlas: {} } });
 function hozzaad(cel, r) {
+  if (r.t === 'lepes' && r.lepes === RESZLET_LEPES) { cel.hiba_reszlet ||= {}; cel.hiba_reszlet[r.tipus] = (cel.hiba_reszlet[r.tipus] || 0) + r.db; return; } // additiv kimeneti kulcs: csak ha van adat
   if (r.t === 'lepes') {
     cel.lepesek[r.lepes] = (cel.lepesek[r.lepes] || 0) + r.db;
     if (r.lepes === 'close') cel.bezaras_lepesenkent[r.tipus] = (cel.bezaras_lepesenkent[r.tipus] || 0) + r.db;
@@ -91,6 +115,7 @@ export function csvbe(kimenet) {
     for (const [l, db] of Object.entries(v.lepesek)) if (l !== 'close' && l !== 'error') sor.push([nap, u, l, '', db].join(';'));
     for (const [t, db] of Object.entries(v.bezaras_lepesenkent)) sor.push([nap, u, 'close', t, db].join(';'));
     for (const [t, db] of Object.entries(v.hibak)) sor.push([nap, u, 'error', t, db].join(';'));
+    for (const [t, db] of Object.entries(v.hiba_reszlet || {})) sor.push([nap, u, RESZLET_LEPES, t, db].join(';'));
     for (const [vedro, db] of Object.entries(v.betoltes.eloszlas)) sor.push([nap, u, 'slots_loaded_ms', vedro, db].join(';'));
     if (v.betoltes.db) { sor.push([nap, u, 'slots_loaded_ms', 'atlag', v.betoltes.atlag_ms].join(';')); sor.push([nap, u, 'slots_loaded_ms', 'max', v.betoltes.max_ms].join(';')); }
   }
@@ -107,7 +132,7 @@ export function htmlbe(kimenet) {
     t += `<h2>${ESC(nap)}</h2><table><tr><th>Üzletág</th>${fejlec.map((l) => `<th>${ESC(MEGNEVEZES[l])}</th>`).join('')}<th>Bezárás (lépésenként)</th><th>Hibák (típusonként)</th><th>Betöltés ms (átlag / max)</th></tr>`;
     for (const [u, v] of Object.entries(kimenet.napok[nap])) {
       const fel = (o) => Object.entries(o).map(([k, db]) => `${ESC(k)}: ${db}`).join(', ') || '–';
-      t += `<tr><td>${ESC(u)}</td>${fejlec.map((l) => `<td>${v.lepesek[l] || 0}</td>`).join('')}<td>${fel(v.bezaras_lepesenkent)}</td><td>${fel(v.hibak)}</td><td>${v.betoltes.db ? `${v.betoltes.atlag_ms} / ${v.betoltes.max_ms}` : '–'}</td></tr>`;
+      t += `<tr><td>${ESC(u)}</td>${fejlec.map((l) => `<td>${v.lepesek[l] || 0}</td>`).join('')}<td>${fel(v.bezaras_lepesenkent)}</td><td>${fel(v.hibak)}${v.hiba_reszlet ? '<br><small>' + fel(v.hiba_reszlet) + '</small>' : ''}</td><td>${v.betoltes.db ? `${v.betoltes.atlag_ms} / ${v.betoltes.max_ms}` : '–'}</td></tr>`;
     }
     t += '</table>';
   }

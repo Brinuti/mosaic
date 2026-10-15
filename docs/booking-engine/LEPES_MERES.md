@@ -61,6 +61,22 @@ Kulcs nélkül / rossz kulccsal 404. Új kulcs: `node -e "const c=require('crypt
 - A `gift` üzletág a számlálóban és a spec szerinti listában szerepel (a jövőbeli ajándékkártya-lépésekhez); a foglaló jelenleg nem használja, az ajándékkártyás beváltás HeadSpa-foglalásként `headspa`.
 - GA4: a paraméterek riportálásához a GA4-ben (Admin → Egyedi definíciók) a `business`, `service_id`, `source_page`, `step`, `error_type` esemény-szintű egyedi dimenzió, a `load_ms` egyedi mutató legyen (a GTM publikálása után; ezt a GA4 felületén kell egyszer beállítani).
 
+## 5b. Hiba-részlet (2026-10-15, DECISION #188, #178) – MÉRÉS ÉRINTŐ
+
+A `salonic_api` hibatípus eddig nem árulta el, **melyik nézetben** és **milyen hibakóddal / HTTP-státusszal** keletkezett (a régi `tracking.js` `booking_error` `step` / `reason` mezője a dataLayer-be nem kerül, a belső számláló csak a típust tárolta). A kiegészítés a **belső számlálóba** (D1 `lepes_szamlalo`) ír egy további, csak darabszámot hordozó sort:
+
+- `lepes = error_reszlet`, `tipus = <hibatípus>.<nézet-kód>.<hibakód>.<http>`, pl. `salonic_api.C1.HTTP.503`.
+  - `<nézet-kód>`: a foglaló nézetének kódja (C1, HS1, A3_SENT, … : nagybetű + nagybetű/szám/aláhúzás, legfeljebb 12 karakter), egyébként `ismeretlen`.
+  - `<hibakód>` és `<hibatípus>` zárt párok: `timeout` → `TIMEOUT`; `client_error` → `NONE` (nincs adapter-hibakód); `salonic_api` → az adapter hibakódja (`HTTP`, `PARSE`, `API_STATUS`, `SERVICE_NOT_FOUND`, `NO_CALENDAR`, `UNKNOWN_BUSINESS`, `NOT_SUPPORTED`; ismeretlen kód: `OTHER`). A többi hibatípus (`no_slots`, `slot_lost`, …) nem hordoz részletet.
+  - `<http>`: kanonikusan `0` vagy `100`–`599` (nincs `00` / `000` / vezető nulla), és csak `HTTP` vagy `API_STATUS` kód mellett lehet nem nulla. **A `0` azt jelenti: nincs HTTP-státusz** (pl. a kérés nem jutott el a Salonic-hoz: hálózati hiba, CORS, megszakítás; vagy a hibakód nem HTTP-eredetű). Ha a Salonic API `status` mezője szám, az `API_STATUS.<szám>` alakban jelenik meg: ez az API saját státusza, **nem** HTTP-státusz; a szöveges API-státusz `API_STATUS.0`.
+- **Nincs benne** URL, hibaüzenet, azonosító, süti, időbélyeg, személyes adat; a szerver zárt alakot fogad el (`ervenyesit`), minden más `400`; a kliens kimenete a szerver által elfogadott halmaz része (teszt: kliens ⊆ szerver).
+- **Mikor megy:** csak a nézet-betöltési hibánál (`engine.js` `catch`), a hibatípus egyszer-kapuján belül (ugyanaz a (típus, nézet, szolgáltatás) hármas legfeljebb egyszer: egy második, más kódú hiba ugyanarra a hármasra nem kerül be), próbából és robotból nem. A kliens a hiba-részletet saját `try`-blokkban küldi, hibája sosem akadályozza a foglalást.
+- **Kulcsszám-plafon:** (nap, üzletág) szerint legfeljebb `RESZLET_KULCS_PLAFON` = 100 **különböző** részlet-kulcs kerül be (egyetlen atomikus `INSERT … SELECT` feltétellel); a meglévő kulcs tovább nő (kulcsonként a `DB_PLAFON`). A valódi forgalom naponta néhány tucat kulcsot ad. Ez véd a D1-sorok felfúvódása ellen, ha valaki a végpontot közvetlenül hívja.
+- **Nem változik:** a `LEPESEK` lista és a GA4-esemény lista (a részlet **nem** megy GA4-be és a dataLayer-be sem), a tölcsér-számok, az `error` sor, a foglalási logika, a Salonic-hívások, a konverziók és a kiküldés. A `GET /api/foglalo-szamlalo` JSON kimenetében egy **további** `hiba_reszlet` kulcs jelenik meg üzletágankénti (napi és összesített) bontásban, csak ha van adat; a CSV-ben `error_reszlet` sorok; a HTML-ben a hibák cellában kis betűvel.
+- **D1-séma:** nincs változás (a meglévő `lepes_szamlalo` oszlopai elegendők).
+- **Visszagörgetés:** a kód revertje után a már beírt `error_reszlet` sorokat a **régi** kód a `lepesek.error_reszlet` kulcsban és a CSV-ben mutatná (a tölcsér 10 lépésének száma nem torzul, de a `lepesek` objektum 11. kulcsot kap). Ezért a revert után: `DELETE FROM lepes_szamlalo WHERE lepes = 'error_reszlet';` az éles (`mosaic-foglalo-szamlalo`) és az előnézeti (`mosaic-foglalo-szamlalo-elonezet`) D1-en is.
+- Teszt: `node --test tools/test-lepes-meres.mjs` (29/29; 9 új eset), `node tools/meres-proba/lepes-proba.mjs --overlay dist` (asztali és mobil: 25/25, a 4b eset a valódi böngészőben ellenőrzi az `error_reszlet` beaconját), napló: `meres-naplo/2026-10-15-hiba-reszlet-teszt.md`.
+
 ## 6. Kikapcsolás
 
 - Számláló: a `wrangler.toml`-ból a `[[d1_databases]]` kötés törlése → a végpont `204`-et ad és semmit nem tárol (a foglaló ettől nem akad el).

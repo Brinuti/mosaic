@@ -5,9 +5,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
-import { createStepMeter, ESEMENYEK, HIBA_TIPUSOK as KLIENS_HIBAK, RESERVED_BY_STEPS, tisztaOldal } from '../assets/js/booking-engine/lepes-meres.js';
+import { createStepMeter, ESEMENYEK, HIBA_TIPUSOK as KLIENS_HIBAK, RESERVED_BY_STEPS, tisztaOldal, hibaReszlet, HIBA_KODOK as KLIENS_KODOK, RESZLET_LEPES as KLIENS_RESZLET } from '../assets/js/booking-engine/lepes-meres.js';
 import { createTracker, EVENTS } from '../assets/js/booking-engine/tracking.js';
-import { kezel, ervenyesit, napBudapest, osszeallit, csvbe, htmlbe, LEPESEK, UZLETAGAK, HIBA_TIPUSOK as SZERVER_HIBAK, DB_PLAFON } from '../netlify/lib/foglalo-szamlalo.js';
+import { kezel, ervenyesit, napBudapest, osszeallit, csvbe, htmlbe, LEPESEK, UZLETAGAK, HIBA_TIPUSOK as SZERVER_HIBAK, DB_PLAFON, HIBA_KODOK as SZERVER_KODOK, RESZLET_LEPES as SZERVER_RESZLET, RESZLET_KULCS_PLAFON } from '../netlify/lib/foglalo-szamlalo.js';
 
 // --- kliens ------------------------------------------------------------------------------------------------------------------------
 function ablak({ ana = false, webdriver = false, proba = false, beacon = true } = {}) {
@@ -230,4 +230,145 @@ test('probajeles bongeszo (?proba=1 -> localStorage mhProba): sem GA4, sem szaml
   // ?proba=0: torli, onnantol szamol
   w.location.search = '?proba=0'; createStepMeter({ win: w, ctx: ctx() }).open();
   assert.equal(tar.has('mhProba'), false); assert.equal(w.kuldve.length, 1);
+});
+
+
+// --- hiba-reszlet (DECISION #188, 2026-10-15): a hibatipus mellett nezet-kod + adapter hibakod + HTTP-statusz, csak darabszamkent a belso szamlalonak ---------------------
+test('hiba-reszlet: a kliens es a szerver ugyanazt a hibakod-listat es lepes-nevet ismeri; a LEPESEK / ESEMENYEK szerzodes valtozatlan', () => {
+  assert.deepEqual(KLIENS_KODOK, SZERVER_KODOK, 'a hibakod-lista egyezik');
+  assert.equal(KLIENS_RESZLET, SZERVER_RESZLET); assert.equal(KLIENS_RESZLET, 'error_reszlet');
+  assert.equal(LEPESEK.length, 10); assert.ok(!LEPESEK.includes('error_reszlet'), 'a reszlet NEM a lepes-lista tagja (a tolcser-szerkezet valtozatlan)');
+  assert.ok(!('error_reszlet' in ESEMENYEK), 'a GA4 esemeny-lista valtozatlan: a reszlet nem megy GA4-be');
+});
+
+test('hibaReszlet: zart listak, hianyzo / ismeretlen / hibas ertek biztonsagosan', () => {
+  assert.equal(hibaReszlet('salonic_api', 'C1', { code: 'HTTP', status: 503 }), 'salonic_api.C1.HTTP.503');
+  assert.equal(hibaReszlet('salonic_api', 'A3', { code: 'SERVICE_NOT_FOUND' }), 'salonic_api.A3.SERVICE_NOT_FOUND.0');
+  assert.equal(hibaReszlet('salonic_api', 'C1', { code: 'API_STATUS', status: 'error' }), 'salonic_api.C1.API_STATUS.0', 'szoveges API-statusz nem HTTP-statusz');
+  assert.equal(hibaReszlet('timeout', 'C1', { code: 'TIMEOUT' }), 'timeout.C1.TIMEOUT.0');
+  assert.equal(hibaReszlet('client_error', 'C1', { code: undefined, status: undefined }), 'client_error.C1.NONE.0');
+  assert.equal(hibaReszlet('salonic_api', 'C1', { code: 'MAS_KOD', status: 99 }), 'salonic_api.C1.OTHER.0');
+  assert.equal(hibaReszlet('salonic_api', 'C1', { code: 'HTTP', status: 600 }), 'salonic_api.C1.HTTP.0');
+  assert.equal(hibaReszlet('salonic_api', 'C1', { code: 'HTTP', status: 404.5 }), 'salonic_api.C1.HTTP.0');
+  for (const rossz of [undefined, null, '', 'C1/../x', 'C 1', 'tul_hosszu_nezet_kod', 12]) assert.match(hibaReszlet('salonic_api', rossz, { code: 'HTTP', status: 500 }), /^salonic_api\.ismeretlen\.HTTP\.500$/);
+  assert.equal(hibaReszlet('salonic_api', 'C1'), 'salonic_api.C1.OTHER.0', 'kod nelkul a salonic_api OTHER (a NONE csak a client_error-e)');
+  assert.equal(hibaReszlet('salonic_api', 'C1', { code: 'NONE', status: 503 }), 'salonic_api.C1.OTHER.0'); assert.equal(hibaReszlet('salonic_api', 'C1', { code: 'TIMEOUT' }), 'salonic_api.C1.OTHER.0');
+  assert.equal(hibaReszlet('salonic_api', 'C1', { code: 'PARSE', status: 503 }), 'salonic_api.C1.PARSE.0', 'HTTP-statusz csak HTTP / API_STATUS mellett');
+  assert.equal(hibaReszlet('timeout', 'C1', { code: 'HTTP', status: 500 }), 'timeout.C1.TIMEOUT.0'); assert.equal(hibaReszlet('client_error', 'C1', { code: 'HTTP', status: 500 }), 'client_error.C1.NONE.0');
+  for (const nincs of ['no_slots', 'validation', 'slot_lost', 'hold_expired', 'verify_failed', 'unknown_redirect', 'callback_failed', 'kamu', undefined]) assert.equal(hibaReszlet(nincs, 'C1', { code: 'HTTP', status: 500 }), null, String(nincs));
+  assert.equal(hibaReszlet('salonic_api', 'c1', { code: 'HTTP', status: 500 }), 'salonic_api.ismeretlen.HTTP.500', 'kisbetus nezet-kod nem fogadhato');
+});
+
+test('meter.error reszlettel: egy plusz beacon a belso szamlalonak (GA4-be nem), hibankent egyszer; reszlet nelkul / probabol / robotbol nincs', () => {
+  const w = ablak({ ana: true }); const m = createStepMeter({ win: w, ctx: ctx({ business: 'oxygen' }) });
+  m.service(466147); m.error('salonic_api', 'C1', { code: 'HTTP', status: 503 }); m.error('salonic_api', 'C1', { code: 'HTTP', status: 503 });
+  const reszlet = w.kuldve.filter((k) => k.lepes === 'error_reszlet');
+  assert.deepEqual(reszlet.map(({ url, lepes, uzletag, tipus }) => ({ url, lepes, uzletag, tipus })), [{ url: '/api/foglalo-szamlalo', lepes: 'error_reszlet', uzletag: 'oxygen', tipus: 'salonic_api.C1.HTTP.503' }], 'hibankent egyszer');
+  assert.equal(w.kuldve.filter((k) => k.lepes === 'error').length, 1, 'a regi hiba-beacon valtozatlan, egyszer');
+  assert.equal(w.dataLayer.filter((e) => e.event === 'booking_error').length, 1, 'a GA4 hiba-esemeny valtozatlan: egyetlen booking_error');
+  assert.ok(!w.dataLayer.some((e) => JSON.stringify(e).includes('HTTP') || JSON.stringify(e).includes('503')), 'a reszlet nem kerul a dataLayer-be');
+  // reszlet nelkul (a tobbi hibatipus hivasai) nincs extra beacon
+  const w2 = ablak({ ana: true }); const m2 = createStepMeter({ win: w2, ctx: ctx() }); m2.error('no_slots', 'C1'); m2.error('slot_lost', 'C4');
+  assert.equal(w2.kuldve.filter((k) => k.lepes === 'error_reszlet').length, 0);
+  // robot: semmi nem megy
+  const w3 = ablak({ ana: true, webdriver: true }); createStepMeter({ win: w3, ctx: ctx() }).error('salonic_api', 'C1', { code: 'HTTP', status: 500 });
+  assert.equal(w3.kuldve.length, 0);
+  // probabongeszo (?proba=1): semmi nem megy, a reszlet sem
+  const tar = new Map(); const ls = { getItem: (k) => (tar.has(k) ? tar.get(k) : null), setItem: (k, v) => tar.set(k, String(v)), removeItem: (k) => tar.delete(k) };
+  const w4 = ablak({ ana: true }); Object.assign(w4, { URLSearchParams, localStorage: ls, location: { pathname: '/x', search: '?proba=1' } });
+  createStepMeter({ win: w4, ctx: ctx() }).error('salonic_api', 'C1', { code: 'HTTP', status: 500 });
+  assert.equal(w4.kuldve.length, 0); assert.equal(w4.dataLayer.length, 0);
+});
+
+test('ervenyesit: hiba-reszlet csak zart alakban fogadhato el; minden mas (URL, szoveg, ismeretlen kod, hibas HTTP, mas lepes mellett) elutasitva', () => {
+  const ok = (tipus) => ervenyesit(JSON.stringify({ lepes: 'error_reszlet', uzletag: 'oxygen', tipus }));
+  assert.deepEqual(ok('salonic_api.C1.HTTP.503'), { ok: true, adat: { lepes: 'error_reszlet', uzletag: 'oxygen', tipus: 'salonic_api.C1.HTTP.503', loadMs: null } });
+  assert.equal(ok('timeout.A3.TIMEOUT.0').ok, true); assert.equal(ok('client_error.ismeretlen.NONE.0').ok, true); assert.equal(ok('salonic_api.C1.API_STATUS.200').ok, true);
+  for (const rossz of ['salonic_api.C1.HTTP.99', 'salonic_api.C1.HTTP.600', 'salonic_api.C1.HTTP.5031', 'salonic_api.C1.MAS.503', 'kamu.C1.HTTP.503', 'salonic_api.C1.http.503', 'salonic_api.C1.HTTP',
+    'salonic_api.C1.HTTP.503.9', 'salonic_api..HTTP.503', 'salonic_api.tul_hosszu_nezet_kod.HTTP.503', 'salonic_api.C 1.HTTP.503', 'https://api.salonic.hu/x', 'salonic_api', '', 'Salonic_api.C1.HTTP.503',
+    'salonic_api.C1.HTTP.503\n', 'salonic_api.C1.HTTP.5e2']) assert.equal(ok(rossz).ok, false, rossz);
+  assert.equal(ervenyesit('{"lepes":"error_reszlet","uzletag":"oxygen"}').ok, false, 'tipus nelkul nem');
+  assert.equal(ervenyesit('{"lepes":"error_reszlet","uzletag":"oxygen","tipus":"salonic_api.C1.HTTP.503","load_ms":5}').ok, false, 'load_ms nem engedett');
+  assert.equal(ervenyesit('{"lepes":"error_reszlet","uzletag":"kamu","tipus":"salonic_api.C1.HTTP.503"}').ok, false);
+  assert.equal(ervenyesit('{"lepes":"error","uzletag":"oxygen","tipus":"salonic_api.C1.HTTP.503"}').ok, false, 'a regi error lepes tipusa tovabbra is csak a sima hibatipus');
+  assert.equal(ervenyesit('{"lepes":"open","uzletag":"oxygen","tipus":"salonic_api.C1.HTTP.503"}').ok, false);
+});
+
+test('POST + GET: a hiba-reszlet D1-be kerul (atomikus novekedes), a kimenetben additiv `hiba_reszlet` kulcs; reszlet nelkuli uzletagnak a kimenete valtozatlan; CSV / HTML', async () => {
+  const D = d1(); const env = { SZAMLALO_DB: D, SZAMLALO_OLVASO_HASH: HASH }; const t = ido('2026-10-13T10:00:00Z');
+  for (const tipus of ['salonic_api.C1.HTTP.503', 'salonic_api.C1.HTTP.503', 'salonic_api.A3.PARSE.0']) {
+    assert.equal((await kezel(post({ lepes: 'error', uzletag: 'oxygen', tipus: 'salonic_api' }), env, t)).status, 204);
+    assert.equal((await kezel(post({ lepes: 'error_reszlet', uzletag: 'oxygen', tipus }), env, t)).status, 204);
+  }
+  await kezel(post({ lepes: 'open', uzletag: 'hair' }), env, t);
+  assert.equal((await kezel(post({ lepes: 'error_reszlet', uzletag: 'oxygen', tipus: 'https://x' }), env, t)).status, 400);
+  const sorok = D.db.prepare("SELECT lepes, tipus, db FROM lepes_szamlalo WHERE uzletag='oxygen' ORDER BY lepes, tipus").all().map((r) => ({ ...r }));
+  assert.deepEqual(sorok, [{ lepes: 'error', tipus: 'salonic_api', db: 3 }, { lepes: 'error_reszlet', tipus: 'salonic_api.A3.PARSE.0', db: 1 }, { lepes: 'error_reszlet', tipus: 'salonic_api.C1.HTTP.503', db: 2 }]);
+  const j = await (await kezel(get('kulcs=' + TOKEN + '&nap=2026-10-13'), env, t)).json();
+  const ox = j.napok['2026-10-13'].oxygen;
+  assert.deepEqual(ox.hibak, { salonic_api: 3 }); assert.deepEqual(ox.hiba_reszlet, { 'salonic_api.A3.PARSE.0': 1, 'salonic_api.C1.HTTP.503': 2 });
+  assert.deepEqual(ox.lepesek, { error: 3 }, 'a reszlet nem szamit lepesnek / nem torzitja a tolcsert');
+  assert.ok(!('hiba_reszlet' in j.napok['2026-10-13'].hair), 'reszlet nelkuli uzletag kimenete valtozatlan (additiv kulcs)'); assert.ok(!('hiba_reszlet' in j.osszesen.hair));
+  assert.deepEqual(j.osszesen.oxygen.hiba_reszlet, ox.hiba_reszlet);
+  const csv = await (await kezel(get('kulcs=' + TOKEN + '&nap=2026-10-13&formatum=csv'), env, t)).text();
+  assert.match(csv, /2026-10-13;oxygen;error;salonic_api;3\n/); assert.match(csv, /2026-10-13;oxygen;error_reszlet;salonic_api\.C1\.HTTP\.503;2\n/);
+  const html = await (await kezel(get('kulcs=' + TOKEN + '&nap=2026-10-13&formatum=html'), env, t)).text();
+  assert.match(html, /salonic_api\.C1\.HTTP\.503: 2/); assert.doesNotMatch(html, /error_reszlet/);
+});
+
+
+// --- hiba-reszlet: a fuggetlen review (PASS with notes) utani szigoritasok -------------------------------------------------------------------------------------------
+test('hiba-reszlet szigoritasok: kanonikus HTTP (0 vagy 100-599), zart nezet-kod, hibatipus-hibakod parok, HTTP-statusz csak HTTP / API_STATUS mellett', () => {
+  const ok = (tipus) => ervenyesit(JSON.stringify({ lepes: 'error_reszlet', uzletag: 'oxygen', tipus })).ok;
+  for (const jo of ['salonic_api.C1.HTTP.503', 'salonic_api.A3_SENT.HTTP.0', 'salonic_api.HS1.API_STATUS.200', 'salonic_api.C1.PARSE.0', 'salonic_api.PMU.SERVICE_NOT_FOUND.0', 'salonic_api.LA2B.OTHER.0',
+    'salonic_api.ismeretlen.HTTP.404', 'timeout.C1.TIMEOUT.0', 'client_error.A3.NONE.0']) assert.equal(ok(jo), true, jo);
+  for (const rossz of [
+    'salonic_api.C1.HTTP.000', 'salonic_api.C1.HTTP.00', 'salonic_api.C1.HTTP.050', 'salonic_api.C1.HTTP.099', 'salonic_api.C1.HTTP.600', // nem kanonikus / tartomanyon kivuli http
+    'salonic_api.KovacsAnna12.HTTP.503', 'salonic_api.c1.HTTP.503', 'salonic_api.1C.HTTP.503', 'salonic_api._C.HTTP.503', 'salonic_api.Ismeretlen.HTTP.503', 'salonic_api.IsmeretlenX.HTTP.503', // nem a foglalo nezet-kodjanak alakja
+    'client_error.C1.HTTP.503', 'timeout.C1.HTTP.503', 'salonic_api.C1.NONE.503', 'salonic_api.C1.NONE.0', 'salonic_api.C1.TIMEOUT.0', 'timeout.C1.NONE.0', 'client_error.C1.TIMEOUT.0', // lehetetlen parok
+    'no_slots.C1.PARSE.404', 'no_slots.C1.NONE.0', 'validation.C1.NONE.0', 'slot_lost.C1.NONE.0', // mas hibatipus nem hordoz reszletet
+    'salonic_api.C1.PARSE.503', 'salonic_api.C1.SERVICE_NOT_FOUND.404', 'salonic_api.C1.OTHER.500', // HTTP-statusz csak HTTP / API_STATUS kod mellett
+  ]) assert.equal(ok(rossz), false, rossz);
+});
+
+test('hiba-reszlet: minden, amit a kliens elo tud allitani, a szerver elfogadja (kliens reszhalmaza a szervernek)', () => {
+  const hibaTipusMint = (e) => (e && e.code === 'TIMEOUT' ? 'timeout' : e && e.code ? 'salonic_api' : 'client_error'); // engine.js hibaTipus() masolata
+  const kodok = [...KLIENS_KODOK, 'valami_mas', 20, undefined, null, '', 0, Symbol('x')];
+  const statuszok = [undefined, null, 0, 99, 100, 200, 404, 503, 599, 600, 'error', '503', 503.5, NaN, -1, {}];
+  const lepesek = ['A1', 'A1_SENT', 'A2', 'A3', 'A3U', 'A3_CB', 'A3_SENT', 'C1', 'C4', 'C5', 'C6', 'H0', 'HA0', 'HA1', 'HA2', 'HA2B', 'HS1', 'HS2', 'HS3', 'LA1', 'LA2', 'LA2B', 'LA3', 'PMU',
+    undefined, null, '', 'c1', 'x y', 'tul_hosszu_nezet_kod_xx', 12, 'KovacsAnna12'];
+  let db = 0;
+  for (const code of kodok) for (const status of statuszok) for (const step of lepesek) {
+    const t = hibaTipusMint({ code }); const tipus = hibaReszlet(t, step, { code, status });
+    const v = ervenyesit(JSON.stringify({ lepes: 'error_reszlet', uzletag: 'oxygen', tipus }));
+    assert.equal(v.ok, true, `${String(code)} / ${String(status)} / ${String(step)} -> ${tipus}`); db++;
+  }
+  assert.ok(db > 3000);
+});
+
+test('hiba-reszlet: napi plafon a KULONBOZO kulcsok szamara (nap, uzletag) szerint; a meglevo kulcs tovabb novekszik; mas uzletag / nap fuggetlen', async () => {
+  assert.equal(RESZLET_KULCS_PLAFON, 100);
+  const D = d1(); const env = { SZAMLALO_DB: D }; const t = ido('2026-10-13T10:00:00Z'); const ujIdo = ido('2026-10-14T10:00:00Z');
+  const kuld = (tipus, uzletag = 'oxygen', tt = t) => kezel(post({ lepes: 'error_reszlet', uzletag, tipus }), env, tt);
+  for (let i = 0; i < RESZLET_KULCS_PLAFON; i++) assert.equal((await kuld(`salonic_api.C${i}.HTTP.503`)).status, 204);
+  const db = () => D.db.prepare("SELECT COUNT(*) n FROM lepes_szamlalo WHERE lepes='error_reszlet' AND uzletag='oxygen' AND nap='2026-10-13'").get().n;
+  assert.equal(db(), RESZLET_KULCS_PLAFON);
+  assert.equal((await kuld('salonic_api.A3.PARSE.0')).status, 204, 'a plafon felett is 204 (a foglalo nem akad el)');
+  assert.equal(db(), RESZLET_KULCS_PLAFON, 'az uj kulcs nem kerult be');
+  assert.equal(D.db.prepare("SELECT COUNT(*) n FROM lepes_szamlalo WHERE tipus='salonic_api.A3.PARSE.0'").get().n, 0);
+  await kuld('salonic_api.C0.HTTP.503'); await kuld('salonic_api.C0.HTTP.503');
+  assert.equal(D.db.prepare("SELECT db FROM lepes_szamlalo WHERE tipus='salonic_api.C0.HTTP.503'").get().db, 3, 'a meglevo kulcs a plafon felett is novekszik');
+  assert.equal((await kuld('salonic_api.A3.PARSE.0', 'laser')).status, 204); assert.equal(D.db.prepare("SELECT COUNT(*) n FROM lepes_szamlalo WHERE uzletag='laser' AND lepes='error_reszlet'").get().n, 1, 'mas uzletag fuggetlen');
+  await kuld('salonic_api.A3.PARSE.0', 'oxygen', ujIdo); assert.equal(D.db.prepare("SELECT COUNT(*) n FROM lepes_szamlalo WHERE uzletag='oxygen' AND nap='2026-10-14' AND lepes='error_reszlet'").get().n, 1, 'masik nap fuggetlen');
+  // a plafon a TOBBI lepest nem erinti
+  await kezel(post({ lepes: 'error', uzletag: 'oxygen', tipus: 'salonic_api' }), env, t); assert.equal(D.db.prepare("SELECT db FROM lepes_szamlalo WHERE lepes='error' AND uzletag='oxygen'").get().db, 1);
+});
+
+test('meter.error furcsa reszlet-ertekkel sem dob, es a kimenet mindig zart alak; nem sztring tipus az error_reszlet lepesnel elutasitva', () => {
+  for (const r of ['sz', 5, true, {}, [], { code: Symbol('x') }, { code: 'HTTP', status: '503' }, { code: 20, status: 500 }, { status: 500 }, { code: { toString() { throw new Error('x'); } } }]) {
+    const w = ablak({ ana: true }); const m = createStepMeter({ win: w, ctx: ctx({ business: 'oxygen' }) });
+    assert.doesNotThrow(() => m.error('salonic_api', 'C1', r), JSON.stringify(r) || String(r));
+    for (const k of w.kuldve.filter((x) => x.lepes === 'error_reszlet')) assert.match(k.tipus, /^salonic_api\.C1\.[A-Z_]+\.(0|[1-5][0-9]{2})$/);
+  }
+  for (const rossz of [5, [], {}, null, true]) assert.equal(ervenyesit(JSON.stringify({ lepes: 'error_reszlet', uzletag: 'oxygen', tipus: rossz })).ok, false, JSON.stringify(rossz));
 });
