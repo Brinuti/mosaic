@@ -69,6 +69,8 @@ const tartalomFajl = (o) => path.join(ROOT, 'uj-oldalak/tartalom', o.kulcs.repla
 ok('jegyzek: minden tukrozott oldalnak van tartalom-fajlja', [...mirrorUtak].every((ut) => lista.some((o) => o.ut === ut && fs.existsSync(tartalomFajl(o)))));
 ok('jegyzek: nincs benne a kezdolap / foglalasi cim', ![...KIHAGY].some((k) => mirrorUtak.has(k)));
 
+// ket "Tovább az összes véleményhez" link, koztuk csak cimkek (a tulajdonos jelezte, 2026-10-16: a piercing-oldalakon duplan volt)
+const DUPLA_VELEMENYLINK = /Tovább az összes véleményhez[^<]*<\/a>(?:\s*<\/?(?:p|div|section)\b[^>]*>)*\s*<a\b[^>]*>Tovább az összes véleményhez/;
 const forrasFajlok = new Map();
 for (const o of kijelolt) {
   const f = distFajl(o.ut);
@@ -109,6 +111,13 @@ for (const o of kijelolt) {
   const idk = new Set([...h.matchAll(/\sid="([^"]+)"/g)].map((x) => x[1]));
   const horg = [...new Set([...h.matchAll(/<a\b[^>]*?\shref="#([^"]+)"/g)].map((x) => x[1]))];
   ok(`${o.ut}: a lapon belüli horgonyok celja letezik`, horg.every((x) => idk.has(x)), horg.filter((x) => !idk.has(x)).join(' '));
+  ok(`${o.ut}: nincs egymas utan ketszer "Tovább az összes véleményhez" link`, !DUPLA_VELEMENYLINK.test(main));
+}
+// a fooldal is (a kihagyott cimek kozott van)
+{
+  const f = distFajl(UJ_ELES ? '/' : '/uj-fooldal');
+  const h = fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : fs.readFileSync(path.join(ROOT, 'dist/_a/uj-fooldal.html'), 'utf8');
+  ok('fooldal: nincs egymas utan ketszer "Tovább az összes véleményhez" link', !DUPLA_VELEMENYLINK.test(h));
 }
 // a link-index: minden oldal ott van, a linkek a letezo uj oldalakra mutatnak
 const indexF = path.join(ROOT, 'dist/_a/uj-oldalak.html');

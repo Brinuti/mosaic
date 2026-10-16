@@ -484,3 +484,18 @@
 .video-indito .lejatszo{width:68px;height:68px;margin:-34px 0 0 -34px;transition:transform .15s}
 .video-indito .lejatszo .ik{width:28px;height:28px;margin-left:4px}
 .video-indito:hover .lejatszo,.video-indito:focus-visible .lejatszo{transform:scale(1.07)}
+
+/* arlista: GPT-vel rajzolt fulikonok (a tulajdonos kerese, 2026-10-16; tools/uj-ful-ikonok.py) - a kor vilagos az akcios (sotet) kartyan is */
+.ar-kartya .kor-ful .ful-kep{display:block;height:62%;max-height:40px;width:auto}
+.ar-kartya.ar-akcio .kor-ful{background:var(--beige)}
+
+/* az allo Facebook-videok tervezett boritoja (a tulajdonos kerese, 2026-10-16; tools/uj-fooldal.mjs fbBorito, uj-fooldal.js 3d.): ugyanott es ugyanakkora,
+   mint az iframe volt; kattintasra a helyen a Facebook-lejatszo */
+.fb-indito{display:block;width:100%;aspect-ratio:9/16;padding:0;border:0;background:#f6ebe4;cursor:pointer;overflow:hidden}
+.fb-indito img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.fb-indito:hover img{transform:scale(1.02)}
+.fb-indito:focus-visible{outline:3px solid var(--rose-i);outline-offset:3px}
+.allo-keret>.fb-indito{position:absolute;inset:0;height:100%}
+.segit-video .fb-indito{max-width:267px;margin:0 auto;border-radius:16px}
+@media (min-width:1001px){.segit-video .fb-indito{flex:1;max-width:none;min-height:420px;aspect-ratio:auto}}
+@media (max-width:1000px){.segit-video .fb-indito{max-width:none}}

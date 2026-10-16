@@ -67,8 +67,17 @@ Ezen felül:
   `playsinline=0&iv_load_policy=3&fs=1`-et. Asztalon semmi sem változik. A foglaló „Hogy néz ki egy szúrás?” videója is teljes képernyőn indul mobilon (`szurasNyit`).
 - **Videók indexképei** (a tulajdonos kérése, 2026-10-16, 4. kör): a fő piercing-oldalak YouTube-videóinak indexképe GPT-vel tervezett háttér + a videó valódi képkockája +
   felirat (`assets/img/uj-yt-<videó-azonosító>.webp`; a `YT_KEP` / `videoBorito` a `tools/uj-fooldal.mjs`-ben cseréli a YouTube saját képét); az álló (saját) videókon nagy
-  lejátszás-jel (`.video-indito`, `uj-fooldal.js` 3c.). A vendégvideók közül egy próba-indexkép (a vendég legerősebb mondatával, `uj-velemeny-09-terv.webp`) a sáv elején;
-  a többi vendégvideóhoz csak a tulajdonos jóváhagyása után készül ilyen. Vendégnév a fájlnévben és a képen nincs.
+  lejátszás-jel (`.video-indito`, `uj-fooldal.js` 3c.). **Mind a 37 vendégvideó tervezett borítót kapott** (a tulajdonos kérése, 2026-10-16, a 09-es próba után):
+  `assets/img/uj-velemeny-<nn>-terv.webp`, a `tools/uj-velemeny-borito.mjs` sablonjával (GPT-háttér `tools/kep-forras/velemeny-borito-hatter.webp` + a videó felirat
+  nélküli valódi kockája, arcra vágva, a felső logósáv nélkül + a vendég legerősebb, valóban elhangzott mondata + alul „<Keresztnév> így segített a … piercing”).
+  A tulajdonos döntése: a borítón a vendég **keresztneve** szerepel; a fájlnevekben továbbra sincs név, és a név–sorszám összerendelés, az idézetek adatfájlja a repóba
+  nem kerül (a sablon az adatfájlt paraméterként kapja). Új vendégvideónál: felirat nélküli kocka + mondat a leiratból + a sablon futtatása.
+- **Álló Facebook-videók borítója** (a tulajdonos kérése, 2026-10-16): a `facebook.com/plugins/video.php` iframe-ek helyett a build (`fbBorito`, `tools/uj-fooldal.mjs`)
+  tervezett borítót tesz (`assets/img/uj-fb-<videó-azonosító>.webp`, ugyanazzal a sablonnal: `tools/kep-forras/fb-boritok.json`, a kivágott kockák
+  `tools/kep-forras/fb/`), kattintásra a helyén tölt be a Facebook-lejátszó (`uj-fooldal.js` 3d.); addig a Facebook semmit nem tölt a lapon.
+- **Árlista-doboz fülikonjai** (2026-10-16): GPT-vel rajzolt vonalas fülek az ékszerekkel (`assets/img/uj-ful-1|2|3|2x2.webp`, `tools/uj-ful-ikonok.py`, forrás:
+  `tools/kep-forras/ful-ikonok-gpt.webp`); az akciós (sötét) kártyán is világos körben. A „Tovább az összes véleményhez” link nem kerül oda, ahol az eredeti oldal saját
+  ilyen linkje közvetlenül utána áll (`velemenyLink`; a teszt figyeli a duplát).
 - **Arcra igazított képvágás** (2026-10-16): a vágott (`object-fit: cover`) képek mobilon is az arcnál maradnak: a `tools/kep-fokusz.py` (OpenCV YuNet arcfelismerő, offline) írja az
   `uj-oldalak/kep-fokusz.json`-t, a build `object-position`-t tesz a képekre. Új kép esetén a szkriptet újra kell futtatni. A páros képek mobilon 4:3-asak.
 - **Apróságok** (2026-10-16, 4. kör): minden vélemény-blokk alatt „Tovább az összes véleményhez” link (a Vélemények oldal megfelelő részéhez, `velemenyLink`); a mobilmenüben

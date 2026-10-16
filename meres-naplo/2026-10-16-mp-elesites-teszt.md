@@ -57,4 +57,9 @@ után megnyitott lapok címében is ott vannak (pl. `/rolunk?price=…&mert=1`).
 (a köszönőoldal a saját, eredeti címét olvassa a mérés előtt). Mérést érintő javítás, ezért nem ebben a PR-ben: külön körben, a mérési oldallal egyeztetve.
 
 ## Élesítés után (az éles oldalon, könnyű, egyszeri ellenőrzés)
-A merge után az éles oldalon: az eredmény a [Brinuti/mosaic#354](https://github.com/Brinuti/mosaic/pull/354) záró kommentjében (a következő körben ide is bekerül).
+A [Brinuti/mosaic#354](https://github.com/Brinuti/mosaic/pull/354) merge-e (f328319) után, a https://www.medicalpiercing.hu oldalon:
+- `curl`, asztali + iPhone UA, 20 cím: mindenhol az új dizájn a régi SEO-fejjel (canonical az eredeti cím; `noindex` csak ahol a régin is volt), mind a 3 mérőszkript betölt;
+  köszönőoldalak 200, új dizájn, `noindex`; `/regi`, `/regi/migren-piercing` 200, `noindex,nofollow` + `X-Robots-Tag`; `/uj/migren-piercing?utm_source=teszt` → 301 `/migren-piercing?utm_source=teszt`,
+  `/uj-fooldal`, `/uj` → 301 `/`; nem létező cím 404 (új 404-oldal); sitemap 138 cím, `/regi` / `/uj` nélkül; a főoldalon Google- és Facebook-domainigazolás, 3 ld+json, 8 og-címke.
+- Böngésző (a mérőkérések blokkolva): `uj-fooldal-teszt` minden rendben; `uj-oldalak-teszt --oldal=/migren-piercing,/elerhetosegek,/blog` 109 ellenőrzés, 0 hiba.
+- A köszönőoldalt élesben böngészővel szándékosan nem nyitottuk meg (a `/api/mp-foglalas` valódi konverziót küldene); valódi foglalás nem indult.
