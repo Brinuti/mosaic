@@ -105,7 +105,10 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   ok(`${nezet}: nincs 4xx/5xx es sikertelen sajat keres`, p.rossz.length === 0, p.rossz.slice(0, 4).join(' | '));
   ok(`${nezet}: nincs Wix-keres`, p.wix.length === 0, p.wix.slice(0, 3).join(' '));
   ok(`${nezet}: nincs nem engedelyezett kulso keres`, p.kulso.length === 0, [...new Set(p.kulso.map((u) => new URL(u).host))].slice(0, 6).join(' '));
-  const kepek = await p.$$eval('img', (is) => is.filter((i) => !i.closest('.ti-widget') && !i.closest('dialog') && (!i.complete || i.naturalWidth === 0)).map((i) => i.currentSrc || i.src));
+  // a betoltes legfeljebb 20 mp-ig varhato (eloneteten / eles oldalon a halozat lassabb: a fooldalon 37 videoborito is van); a hibas kep sosem lesz kesz
+  const rosszKepek = () => p.$$eval('img', (is) => is.filter((i) => !i.closest('.ti-widget') && !i.closest('dialog') && (!i.complete || i.naturalWidth === 0)).map((i) => i.currentSrc || i.src));
+  let kepek = await rosszKepek();
+  for (let t = 0; kepek.length && t < 40; t++) { await p.waitForTimeout(500); kepek = await rosszKepek(); }
   ok(`${nezet}: minden kep betoltott`, kepek.length === 0, kepek.slice(0, 3).join(' '));
   const betu = await p.evaluate(async () => { await document.fonts.ready; return [...document.fonts].filter((f) => f.family.includes('Plus Jakarta')).map((f) => f.status).join(','); });
   ok(`${nezet}: betu betoltott (latin + latin-ext: o/u dupla ekezet)`, /loaded.*loaded|loaded,loaded/.test(betu) || (betu.split(',').filter((x) => x === 'loaded').length >= 2), betu);
