@@ -173,6 +173,25 @@
     document.addEventListener('ended', (e) => { if (hangosVideo(e.target) && document.fullscreenElement === e.target && document.exitFullscreen) document.exitFullscreen().catch(() => {}); }, true);
   }
 
+  // --- 3c. a sajat (allo) videok boritojan nagy lejatszas-gomb, kattintasra indul (a tulajdonos kerese, 2026-10-16, 4. kor: "latszodjon, hogy le tudja
+  // jatszani"); a lejatszo vezerlosavja az inditas utan jelenik meg (a 3b. elott a playsinline mar lekerult, a teljes kepernyo a lejatszaskor jon)
+  $$('video[controls]').forEach((v) => {
+    if (v.closest('[data-vsav]') || v.autoplay || !v.paused || !v.parentElement) return;
+    const szulo = v.parentElement;
+    if (getComputedStyle(szulo).position === 'static') szulo.style.position = 'relative';
+    const g = document.createElement('button');
+    g.type = 'button'; g.className = 'video-indito';
+    g.setAttribute('aria-label', v.getAttribute('aria-label') || 'Videó lejátszása');
+    g.innerHTML = '<span class="lejatszo"><svg class="ik" aria-hidden="true"><use href="#i-play"/></svg></span>';
+    const igazit = () => { g.style.left = v.offsetLeft + 'px'; g.style.top = v.offsetTop + 'px'; g.style.width = v.offsetWidth + 'px'; g.style.height = v.offsetHeight + 'px'; };
+    v.controls = false;
+    v.after(g); igazit();
+    if ('ResizeObserver' in window) new ResizeObserver(igazit).observe(v); else window.addEventListener('resize', igazit);
+    const kesz = () => { if (g.isConnected) g.remove(); v.controls = true; };
+    g.addEventListener('click', () => { kesz(); const p = v.play(); if (p && p.catch) p.catch(() => {}); });
+    v.addEventListener('play', kesz, { once: true });
+  });
+
   // --- 4. Google-velemenyek: a Trustindex-widget (az oldalban a loader.js tolti, lapozhato); ha 9 mp alatt nem jelenik meg, a mentett tartalek latszik ---
   // A Trustindex-loader a widgetet csak a lap kozeleben, felhasznaloi tevekenyseg utan tolti: a 9 masodperc attol szamit, hogy a doboz kozel er a kepernyohoz
   // (a lap aljan levo doboz, pl. a kategoria-oldalakon, nem mutat tartalekot, amig a latogato oda nem gorget).

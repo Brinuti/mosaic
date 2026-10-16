@@ -101,11 +101,50 @@ function szovegJavitBelso(html) {
     });
 }
 
+// --- a velemeny-blokkok alatti "Tovább az összes véleményhez »" link (a tulajdonos kerese, 2026-10-16, 4. kor; reszek/velemenyek.html, tools/uj-video-velemenyek.mjs):
+// a piercing-oldalakon a Velemenyek oldal sajat kategoriajara mutat, magan a Velemenyek oldalon nincs
+const VELEMENYEK_UT = '/migren-shenmen-piercing-velemenyek';
+const VELEMENY_HORGONY = { '/migren-piercing': 'v-migren', '/shenmen-piercing': 'v-shenmen', '/klimax-piercing': 'v-klimax', '/slim-etvagycsokkento-piercing': 'v-slim', '/allergia-piercing': 'v-allergia', '/maj-piercing': 'v-maj' };
+function velemenyLink(ut, html) {
+  const alap = ut.replace(new RegExp('^' + TUKOR_ELO + '(?=/)'), '');
+  if (alap === VELEMENYEK_UT) return html.replace(/\s*<p class="velemeny-osszes">.*?<\/p>/g, '');
+  const h = VELEMENY_HORGONY[alap];
+  return h ? html.replace(/(<p class="velemeny-osszes"><a class="szoveg-link" href=")\/migren-shenmen-piercing-velemenyek"/g, `$1${VELEMENYEK_UT}#${h}"`) : html;
+}
+
+// --- arc-fokusz a levagott kepeken (a tulajdonos kerese, 2026-10-16, 4. kor: mobilon ne logjon ki arc / fej): uj-oldalak/kep-fokusz.json
+// (tools/kep-fokusz.py, OpenCV-arcfelismeres) -> object-position a kepen; ahol a lapon mar van object-position, az marad
+let fokusz = null;
+function kepFokusz(ROOT, html) {
+  if (!fokusz) { const f = path.join(ROOT, 'uj-oldalak/kep-fokusz.json'); fokusz = fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : {}; }
+  return html.replace(/<img\b[^>]*>/g, (tag) => {
+    const m = /\ssrc="([^"?]+)/.exec(tag);
+    const p = m && fokusz[m[1]];
+    if (!p || /object-position/.test(tag)) return tag;
+    return /\sstyle="/.test(tag) ? tag.replace(/\sstyle="/, ` style="object-position:${p};`) : tag.replace(/^<img\b/, `<img style="object-position:${p}"`);
+  });
+}
+
+// --- videoboritok (a tulajdonos kerese, 2026-10-16, 4. kor): a YouTube letterboxos kepe helyett a sajat, GPT-vel tervezett indexkep
+// (GPT-hatter + a video valodi kepkockaja / a szereplo valodi fotoja + felirat, assets/img/uj-yt-<id>.webp; a lejatszas-jel a kepen van, az oldal sajat
+// jele ezeken rejtett, uj-egyseges.css), a mar meglevo szep boritok (szuras, GYIK, media) mindenhol; az elmosodott videoboritok helyett eles kocka
+const YT_KEP = {
+  '7bGYxWxje2U': 'uj-yt-7bGYxWxje2U.webp', 'x332O9DyMHc': 'uj-yt-x332O9DyMHc.webp', 'paM9uwnJfZI': 'uj-yt-paM9uwnJfZI.webp',
+  'MBr44D96ed0': 'uj-yt-MBr44D96ed0.webp', 'GP8JN-ouuxU': 'uj-yt-GP8JN-ouuxU.webp', '1qARKjvQ5EU': 'uj-yt-1qARKjvQ5EU.webp',
+  'GCO50aHDAyU': 'uj-szuras-video.webp', '5Gs8oYgKdQI': 'uj-gyik-video.webp', 'JX4nNVb-jB8': 'uj-video-hirtv.webp', 'foEQNUg6DzI': 'uj-video-divany.webp',
+};
+const POSZTER = { '/assets/img/36b443_db44b65ac652434f81f368121ed6ccccf000.webp': '/assets/img/uj-poszter-36b443-db44.webp' };
+function videoBorito(html) {
+  const meret = (x) => x.replace(/\s(?:width|height)="\d+"/g, '');
+  return html.replace(/<img\b([^>]*?)\ssrc="https:\/\/i\.ytimg\.com\/vi\/([\w-]+)\/(?:hq|sd|mq|maxres)?default\.jpg"([^>]*)>/g, (m, a, id, z) => (YT_KEP[id] ? `<img${meret(a)} src="/assets/img/${YT_KEP[id]}" width="1280" height="720"${meret(z)}>` : m))
+    .replace(/\sposter="([^"?]+)"/g, (m, f) => (POSZTER[f] ? ` poster="${POSZTER[f]}"` : m));
+}
+
 // --- egy oldal kiirasa asztali es mobil kiszolgalasra (a Wix-szel azonos kulcs-szabaly) --------------------------------------
 export function oldalKiir(ROOT, DIST, ut, html) {
   const kulcs = ut === '/' ? 'index' : kulcsbol(ut);
   const nev = fajlnev(kulcs) + '.html';
-  const kesz = kepVerzio(ROOT, linkAtiras(ROOT, szovegJavit(osszerak(ROOT, html))));
+  const kesz = kepVerzio(ROOT, kepFokusz(ROOT, videoBorito(linkAtiras(ROOT, szovegJavit(velemenyLink(ut, osszerak(ROOT, html)))))));
   if (/karátos|14K arany|aranyozott|arannyal|arany (?:shenmen|ékszer|piercing)/i.test(kesz)) throw new Error(`${ut}: aranyos ekszer-szoveg maradt (a tulajdonos kerese: nincs arany)`);
   if (!/<meta name="robots" content="[^"]*noindex[^"]*"/i.test(kesz)) throw new Error(`${ut}: hianyzik a noindex meta (a lap rejtett)`);
   if (/rel="canonical"/i.test(kesz)) throw new Error(`${ut}: canonical nem lehet a noindex lapon`);

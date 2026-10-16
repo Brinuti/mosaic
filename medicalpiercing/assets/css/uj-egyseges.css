@@ -455,3 +455,32 @@
   .hos .sajat-ugras a{display:block;padding:7px 6px;font-size:clamp(.8rem,3.6vw,.9rem);text-align:center;white-space:nowrap}
   .hos .sajat-ugras .ugras-hosszu{display:none}
 }
+/* labLec: a logo feheren, atlatszo hatterrel, a sotet labLec-hatteren, csempe nelkul (a tulajdonos kerese, 2026-10-16, 4. kor) */
+.lablec-logo{padding:0;border-radius:0;background:none}
+.lablec-logo img{height:50px}
+/* menu: a "Garancia" a mobilmenuben a Kapcsolat alatt ("a legfontosabb menupont, gyorsan megtalalja"); asztalon a Tudnivalok alatt van, a menusor egy sorban marad */
+@media (min-width:1001px){.menu-garancia{display:none!important}}
+@media (max-width:1000px){
+  .menu-garancia{justify-content:flex-start;gap:10px}
+  .menu-garancia .ik{width:1.15em;height:1.15em;color:var(--rose-i)}
+}
+/* a hos idezet-doboza asztalon a kep aljan kozepen (mobilon is kozepen van; a tulajdonos kerese, 2026-10-16, 4. kor) */
+@media (min-width:761px){
+  .hos .hos-idezet{left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:calc(100% - 36px);text-align:center}
+}
+/* a velemeny-blokkok alatt: "Tovább az összes véleményhez »" */
+.velemeny-osszes{margin:16px 0 0;text-align:center;font-weight:700}
+.vsav-doboz .velemeny-osszes{margin-top:14px}
+/* mobilon a kethasabos dobozok kepe negyzetesebb (4:3 a 16:9 helyett), es az arcokra igazodik (uj-oldalak/kep-fokusz.json, tools/kep-fokusz.py):
+   ne logjon ki arc / fej (a tulajdonos kerese, 2026-10-16, 4. kor) */
+@media (max-width:760px){
+  .kat-par .kat-par-kep,.kat-par-ford .kat-par-kep{aspect-ratio:4/3;max-height:none}
+}
+/* videoboritok (a tulajdonos kerese, 2026-10-16, 4. kor): a tervezett YouTube-indexkepen (uj-yt-*) es a tervezett vendegvideo-boriton (vsav-terv)
+   a lejatszas-jel a kepen van, az oldal sajatja rejtett; a sajat allo videok boritojan nagy lejatszas-gomb (uj-fooldal.js 3c.) */
+.video-kep:has(img[src*="/uj-yt-"]) .lejatszo{display:none}
+.vsav-terv .lejatszo,.vsav-terv .vsav-cimke{display:none}
+.video-indito{position:absolute;z-index:2;display:block;padding:0;border:0;border-radius:inherit;background:linear-gradient(180deg,transparent 55%,rgba(47,48,68,.18));cursor:pointer}
+.video-indito .lejatszo{width:68px;height:68px;margin:-34px 0 0 -34px;transition:transform .15s}
+.video-indito .lejatszo .ik{width:28px;height:28px;margin-left:4px}
+.video-indito:hover .lejatszo,.video-indito:focus-visible .lejatszo{transform:scale(1.07)}
