@@ -10,7 +10,7 @@
 // a fejlec "Piercingek" menujenek oldalai. A "Divat fulpiercing" kimarad: kulon arlistaja van (12.000 Ft), a fooldal arai nem igazak ra.
 import fs from 'node:fs';
 import path from 'node:path';
-import { statDoboz } from './kozos.mjs';
+import { statDoboz, BEVIDEO_LEPESEK } from './kozos.mjs';
 
 export const KATEGORIA_UTAK = new Set(['/migren-piercing', '/shenmen-piercing', '/klimax-piercing', '/slim-etvagycsokkento-piercing',
   '/allergia-piercing', '/maj-piercing', '/pajzsmirigy-piercing', '/lep-piercing', '/vastagbel-piercing']);
@@ -633,6 +633,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     <div class="kat-doboz-szoveg">
       <p class="felirat">${IK('play')}Videó</p>
       <h2>${szovegLink(b.cim.html)}</h2>
+      ${BEVIDEO_LEPESEK}
       <a class="gomb gomb-kicsi" href="/idopontfoglalas">Időpontot foglalok${IK('chev', 'ik-nyil')}</a>
     </div>
     <div class="kat-bevideo-kep"><video src="${esc(b.video.src)}"${b.kep ? ` poster="${esc(b.kep.src)}"` : ''} controls preload="none" playsinline></video></div>

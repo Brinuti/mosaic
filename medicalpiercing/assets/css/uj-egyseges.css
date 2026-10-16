@@ -516,3 +516,26 @@
 .hos-kep-link:hover>img{transform:translateY(-2px);box-shadow:0 14px 34px rgba(120,70,62,.18)}
 .hos-kep-link:focus-visible{outline:3px solid var(--rose-i);outline-offset:4px}
 @media (min-width:1001px){.belso .hos-racs>.hos-kep.hos-kep-tartalmaz>.hos-kep-link{width:100%}}
+/* arlista-doboz (a tulajdonos kerese, 2026-10-16, 5. kor: "minden legyen középre rendezve ... ne ilyen szürke legyen ... szebb legyen a keret"): a kartyakon az ikon, a cim,
+   az athuzott ar, az ar, a megtakaritas es a darabar kozepen; az athuzott ar es a keret rozsas (nem szurke); a pipalista asztalon kozepen, a sorai balra igazitva */
+.arak{border-color:#f0d6d0;box-shadow:0 10px 30px rgba(185,135,130,.10)}
+.ar-racs>.ar-kartya{align-items:center;text-align:center;border-color:#ecc6bf;background:linear-gradient(180deg,#fff 0,#fffaf8 100%);box-shadow:0 6px 18px rgba(185,135,130,.13)}
+.ar-racs>.ar-kartya.ar-akcio{border-color:var(--slate);background:var(--slate);box-shadow:0 10px 26px rgba(69,70,89,.28)}
+.ar-racs>.ar-kartya .ar s{color:var(--rose-i);font-weight:600;text-decoration-color:rgba(185,135,130,.8);text-decoration-thickness:1.5px}
+.ar-racs>.ar-kartya.ar-akcio .ar s{color:#ecc9c2;text-decoration-color:rgba(236,201,194,.8)}
+.ar-racs>.ar-kartya .pipak{align-self:center;width:fit-content;max-width:100%;margin-inline:auto;text-align:left}
+/* allo sajat videok (2026-10-16, 5. kor): a tervezett boriton (data-terv) a lejatszas-jel a kepen van, az oldal sajat jele rejtett (a gomb a video teljes feluleten
+   kattinthato marad); a hosben az allo video mellett nem marad ures feher sav: a kephasab a borito hatteret kapja (bezs + vonalrajz), a video keretezve kozepen */
+.video-indito.terv{background:none}
+.video-indito.terv .lejatszo{opacity:0}
+.belso .hos-racs>.hos-kep:has(>video.vid-allo){border-radius:30px;background:url(/assets/img/uj-allo-hatter.webp) center/cover no-repeat,radial-gradient(circle at 85% 90%,rgba(215,171,168,.5),transparent 40%),radial-gradient(circle at 10% 15%,rgba(215,171,168,.3),transparent 35%),linear-gradient(180deg,#fbf4ef 0%,#f6e9e2 100%)}
+.belso .hos-racs>.hos-kep>video.vid-allo{box-shadow:0 0 0 6px #fff,0 18px 36px rgba(120,70,62,.24)}
+@media (min-width:1001px){.belso .hos-racs>.hos-kep>video.vid-allo{top:22px;bottom:22px;height:calc(100% - 44px)}}
+@media (max-width:1000px){.belso .hos-racs>.hos-kep:has(>video.vid-allo){padding:18px 0}}
+/* "Így néz ki egy ... behelyezés" doboz (2026-10-16, 5. kor): a video mellett a behelyezes 4 lepese szamozva, alatta link a szuras folyamatahoz */
+.bevideo-lepesek{display:grid;gap:10px;margin:4px 0 12px;padding:0;list-style:none;counter-reset:bl}
+.bevideo-lepesek li{position:relative;display:grid;gap:1px;padding-left:42px;counter-increment:bl;font-size:.92rem;line-height:1.4;color:var(--mut)}
+.bevideo-lepesek li::before{content:counter(bl);position:absolute;left:0;top:1px;width:30px;height:30px;border-radius:50%;background:var(--beige);color:var(--rose-i);font-weight:800;font-size:.9rem;line-height:30px;text-align:center}
+.bevideo-lepesek b{color:var(--navy);font-weight:800}
+.bevideo-link{display:inline-block;margin:0 0 16px;font-size:.9rem}
+@media (max-width:760px){.bevideo-lepesek{gap:7px;margin:2px 0 8px}.bevideo-lepesek li{padding-left:34px;font-size:.8rem}.bevideo-lepesek li::before{width:25px;height:25px;line-height:25px;font-size:.78rem}.bevideo-lepesek span{display:none}.bevideo-link{margin-bottom:10px;font-size:.8rem}}

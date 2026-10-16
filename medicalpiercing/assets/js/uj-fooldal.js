@@ -180,7 +180,7 @@
     const szulo = v.parentElement;
     if (getComputedStyle(szulo).position === 'static') szulo.style.position = 'relative';
     const g = document.createElement('button');
-    g.type = 'button'; g.className = 'video-indito';
+    g.type = 'button'; g.className = 'video-indito' + (v.hasAttribute('data-terv') ? ' terv' : ''); // (tervezett borito: a lejatszas-jel a kepen van)
     g.setAttribute('aria-label', v.getAttribute('aria-label') || 'Videó lejátszása');
     g.innerHTML = '<span class="lejatszo"><svg class="ik" aria-hidden="true"><use href="#i-play"/></svg></span>';
     // a video LATHATO helye a szulohoz kepest (a CSS-eltolast - pl. left:50% + translateX(-50%) - is figyelembe veve; az offsetLeft ezt nem latja)

@@ -301,7 +301,7 @@ const LEHETOSEGEK = { kontroll: 3, ekszercsere: 4, garancia: 1 };
 
 // N. a piercing-lepes mindenhonnan ugyanaz (a tulajdonos latvanyterve es kerese, 2026-10-16): nincs fejlec-doboz, tomor szurosor (Magamnak / Ket szemelynek;
 //    1 piercing / 2-3 piercing / Fulbevalo), a 4,8-as ertekeles mellett a felugro "Hogy néz ki egy szúrás?", kicsi "Az ár tartalmazza", MINDEN lehetoseg kartyaja
-//    (nincs rejtett "+ tobbi"); minden kartyan "Részletek" (lenyitja) + "Időpontot választok" (tovabb). Alapertek: Magamnak + 1 piercing; a tipusoldal piercingje
+//    (nincs rejtett "+ tobbi"); minden kartyan "Részletek" (lenyitja) + "Időpontot választok" (tovabb). Alapertek: Magamnak + 2–3 piercing (5. kor); 1 piercingnel a tipusoldal piercingje
 //    elol es lenyitva (fulfoto, garancia, nincs "+ 2-3 piercing"); a csomagoknal a kedvezmeny magyarazata (kulon-kulon mennyi lenne, mennyi most, mennyit sporol)
 for (const [honnan, ut, elso] of [['migren-oldalrol', '/migren-piercing', 'Migrén'], ['lep-oldalrol', '/lep-piercing', 'Lép'], ['fooldalrol', '/', 'Migrén']]) {
   const { ctx, p } = await uj();
@@ -316,7 +316,11 @@ for (const [honnan, ut, elso] of [['migren-oldalrol', '/migren-piercing', 'Migr�
   ok(`N: ${honnan}: a lista betoltodik`, van);
   if (!van) { await ctx.close(); continue; }
   let m = await olvas();
-  ok(`N: ${honnan}: nincs fejlec-doboz, van "Az ár tartalmazza", alapertek: Magamnak + 1 piercing`, !m.fejlec && m.tartalmaz && JSON.stringify(m.on) === JSON.stringify(['Magamnak', '1 piercing']), JSON.stringify([m.fejlec, m.on]));
+  // 2026-10-16, 5. kor (a tulajdonos kerese): alapbol a "2–3 piercing" (Legjobban megéri) van kivalasztva, egy kartya sincs lenyitva
+  ok(`N: ${honnan}: nincs fejlec-doboz, van "Az ár tartalmazza", alapertek: Magamnak + 2–3 piercing (3 piercing, 2 piercing, 1+1; egy sincs lenyitva)`, !m.fejlec && m.tartalmaz && JSON.stringify(m.on) === JSON.stringify(['Magamnak', '2–3 piercing']) && m.nyitott === '' && /^3 piercing/.test(m.nevek[0]) && /^2 piercing/.test(m.nevek[1]) && /^1\+1/.test(m.nevek[2]), JSON.stringify([m.fejlec, m.on, m.nevek]));
+  ok(`N: ${honnan}: a "Legjobban megéri" jeloles nyillal a 2–3 piercing gomb folott`, (await sr(p, 'const g=r.querySelector(".pk-szuro [data-mit=tobb].ajanlott"); if(!g) return false; const ut=getComputedStyle(g,"::after"), el=getComputedStyle(g,"::before"); return /Legjobban megéri/.test(ut.content) && el.content !== "none" && parseFloat(el.borderTopWidth) > 0')) === true);
+  await kattint(p, '[data-mit="egy"]'); m = await olvas();
+  ok(`N: ${honnan}: 1 piercing kattintasra: Magamnak + 1 piercing`, JSON.stringify(m.on) === JSON.stringify(['Magamnak', '1 piercing']), JSON.stringify(m.on));
   // a "Kiesett ékszer újraszúrása" belsős Salonic-szolgáltatás (a tulajdonos döntése, 2026-10-16): sehol nincs a listában
   const nincsUjra = (l) => !l.some((x) => /kiesett|újraszúr/i.test(x));
   // 2026-10-16, 4. kor (a tulajdonos kerese): alapbol egy kartya sincs lenyitva, a nevek teljesek ("Migrén piercing")
