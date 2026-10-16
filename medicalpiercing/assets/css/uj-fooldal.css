@@ -523,3 +523,58 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 .nagyito-elozo{left:10px}.nagyito-elozo .ik{transform:scaleX(-1)}
 .nagyito-kov{right:10px}
 .nagyito-szam{z-index:2}
+
+/* ===== 2026-10-16, a tulajdonos kerese: akcios sav, teljes menu, arlista-ikonok, helyszin-terkepek ===== */
+/* akcios sav a fejlec alatt, minden uj oldalon (uj-oldalak/reszek/akcio-sav.html) */
+.akcio-sav{display:block;background:linear-gradient(90deg,#3f4053 0%,var(--slate) 50%,#55566b 100%);color:#fff;text-decoration:none}
+.akcio-sav-sor{display:flex;align-items:center;justify-content:center;gap:14px;min-height:46px;padding-block:7px;font-size:.93rem;line-height:1.3}
+.akcio-sav-cimke{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:var(--rose);color:#fff;font-weight:800;font-size:.76rem;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.akcio-sav-cimke .ik{width:15px;height:15px}
+.akcio-sav-szoveg{color:#fff}
+.akcio-sav-szoveg b{font-weight:800;color:#f6d5cf}
+.akcio-sav-gomb{display:inline-flex;align-items:center;gap:4px;font-weight:700;color:#fff;border-bottom:1.5px solid var(--rose);white-space:nowrap}
+.akcio-sav-gomb .ik{width:14px;height:14px}
+.akcio-sav:hover .akcio-sav-gomb{color:#f6d5cf}
+@media (max-width:760px){.akcio-sav-sor{flex-wrap:wrap;gap:5px 10px;font-size:.85rem;min-height:0;padding-block:8px;text-align:center}.akcio-sav-gomb{display:none}}
+
+/* menu: a regi menu minden oldala; asztalon tomorebb, hogy a 9 menupont kiferjen */
+@media (min-width:1001px){
+  .menu{gap:0;margin-left:2px}
+  .menu-link,.menu-gomb{padding:9px 9px;font-size:.88rem}
+  .almenu{min-width:240px}
+}
+@media (min-width:1001px) and (max-width:1300px){
+  .fejlec-sor{gap:10px}
+  .logo img{height:40px}
+  .menu-link,.menu-gomb{padding:8px 6px;font-size:.8rem;gap:3px}
+  .fejlec-cta{padding-inline:14px}
+  .fejlec-cta .ik-nyil{display:none}
+}
+@media (min-width:1001px) and (max-width:1130px){.fejlec-cta>.ik:first-child{display:none}.menu-velemeny .menu-csillag{display:none}}
+.menu-akcio{color:var(--rose-i)}
+.menu-akcio .ik{width:1em;height:1em}
+.menu-velemeny .ik-google{width:1.05em;height:1.05em}
+.menu-csillag{width:.92em;height:.92em;fill:#fbbc04;stroke:#fbbc04;stroke-width:1}
+
+/* arlista: a fulikonon latszik a piercingek szama (pottyok + szamjelveny), a 4 piercing (ketten) ket ful */
+.kor-ful{position:relative}
+.kor-ful .potty{fill:var(--rose-i);stroke:#fff;stroke-width:1.1}
+.ar-kartya .kor-ful .ik{width:36px;height:36px}
+.ar-kartya .kor-ful-ket{width:96px;border-radius:999px}
+.ar-kartya .kor-ful-ket .ik{width:72px;height:38px}
+.ar-akcio .kor-ful .potty{fill:#f3c9c2;stroke:var(--slate)}
+.ful-db{position:absolute;right:-7px;top:-7px;min-width:25px;height:25px;padding:0 6px;border-radius:999px;background:var(--rose-i);color:#fff;font:800 .74rem/25px var(--font);box-shadow:0 0 0 2px #fff}
+.ar-akcio .ful-db{background:#fff;color:var(--slate);box-shadow:0 0 0 2px var(--slate)}
+.arban{font-style:normal;color:var(--mut);font-size:.92em;white-space:nowrap}
+.ar-akcio .arban{color:#e6d8d2}
+.ar-kartya .pipak b{font-weight:800;color:var(--navy)}
+.ar-akcio .pipak b{color:#fff}
+
+/* helyszin-csempek: a foglalomotor kis terkepe (assets/img/helyszin/<placeId>.svg) a varos elott */
+.helyek a{grid-template-columns:38px minmax(0,1fr);column-gap:8px}
+.helyek .hely-terkep{width:38px;height:27px;align-self:center;display:block;margin:0}
+@media (max-width:1000px){
+  .menu-akcio,.menu-velemeny{justify-content:flex-start;gap:10px}
+  .menu-velemeny .menu-csillag{margin-left:auto}
+  .menu-akcio .ik,.menu-velemeny .ik-google{width:1.15em;height:1.15em}
+}

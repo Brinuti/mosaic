@@ -13,7 +13,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { kulcsbol, fajlnev } from '../lib/utvonal.js';
 import { oldalHtml, indexHtml } from './uj-oldalak/sablon.mjs';
-import { B_ALAP } from './uj-oldalak/kategoria.mjs';
+import { B_ALAP, GOOGLE_DB } from './uj-oldalak/kategoria.mjs';
 
 export const UJ_FOOLDAL_UT = '/uj-fooldal';
 export const TUKOR_ELO = '/uj';   // a tobbi oldal tukre: /uj/<eredeti utvonal>
@@ -58,11 +58,27 @@ export function linkAtiras(ROOT, html) {
   });
 }
 
+// --- szovegjavitas az osszes uj lapon (a tulajdonos kerese, 2026-10-16) ------------------------------------------------------
+// Az ekszereknel nincs arany (sem 14 karatos bevonat), nem "tanusitvannyal rendelkezo / antiallergen", hanem magas minosegu orvosi fem, G23 titanium.
+// A regi "4.100+" velemenyszam helyett a Google-velemenyek mostani szama (build ideju tartalek: GOOGLE_DB, a lap a /api/ertekeles szamara frissiti).
+const EKSZER_MONDAT = 'Kizárólag <strong>magas minőségű orvosi fémből, G23 titániumból</strong> készült ékszerekkel dolgozunk.';
+export function szovegJavit(html) {
+  return html
+    .replace(/<strong>A legmagasabb minőségű(?:<\/strong>)? \(tanúsítvánnyal rendelkező\) (?:<strong>)?G23 Titánium antiallergén<\/strong> ékszerek ezüst színben, vagy <strong>14 karátos arannyal(?: bevonva<\/strong>|<\/strong> bevonva)\./g, EKSZER_MONDAT)
+    .replace(/<strong>G23 Titánium, antiallergén orvosi fém piercingek\.<\/strong>/g, '<strong>Magas minőségű orvosi fém: G23 titánium piercingek.</strong>')
+    .replace(/Az ezüst színűek titánból, az arany ékszerek pedig orvosi fémből és 14K arannyal vannak<br>\s*bevonva\./g, 'Ékszereink magas minőségű orvosi fémből, G23 titániumból készülnek.')
+    .replace(/Találsz feketéket, aranyozottat, ezüst színűt\. Minden ékszerünk a legmagasabb minőségű G23 Titániumból készült orvosi fém, antiallergének és autóklávban fertőtlenítjük őket\./g,
+      'Minden ékszerünk magas minőségű orvosi fémből, G23 titániumból készül, és autoklávban fertőtlenítjük őket.')
+    // csak a szovegben (attributumban nem lehet <span>)
+    .replace(/>([^<]*)</g, (m, t) => (/4\.100/.test(t) ? '>' + t.replace(/(?:[Tt]öbb mint\s+)?4\.100\+?/g, `<span data-ti-darab>${GOOGLE_DB}</span>`) + '<' : m));
+}
+
 // --- egy oldal kiirasa asztali es mobil kiszolgalasra (a Wix-szel azonos kulcs-szabaly) --------------------------------------
 export function oldalKiir(ROOT, DIST, ut, html) {
   const kulcs = ut === '/' ? 'index' : kulcsbol(ut);
   const nev = fajlnev(kulcs) + '.html';
-  const kesz = kepVerzio(ROOT, linkAtiras(ROOT, osszerak(ROOT, html)));
+  const kesz = kepVerzio(ROOT, linkAtiras(ROOT, szovegJavit(osszerak(ROOT, html))));
+  if (/karátos|14K arany/.test(kesz)) throw new Error(`${ut}: aranyos ekszer-szoveg maradt (a tulajdonos kerese: nincs arany)`);
   if (!/<meta name="robots" content="[^"]*noindex[^"]*"/i.test(kesz)) throw new Error(`${ut}: hianyzik a noindex meta (a lap rejtett)`);
   if (/rel="canonical"/i.test(kesz)) throw new Error(`${ut}: canonical nem lehet a noindex lapon`);
   // minden helyi kep- es betu-hivatkozasnak letezni kell (hianyzo fajl = torott kep az eles lapon)

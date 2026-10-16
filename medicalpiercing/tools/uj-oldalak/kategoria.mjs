@@ -17,6 +17,9 @@ export const KATEGORIA_UTAK = new Set(['/migren-piercing', '/shenmen-piercing', 
 // EZ AZ ALAP: az uj /uj/migren-piercing, /uj/shenmen-piercing, /uj/klimax-piercing, /uj/slim-etvagycsokkento-piercing oldal a -b oldal tartalmabol epul
 // (a cim "b" nelkuli, a menu es a belso linkek ugyanide mutatnak). A tartalom: uj-oldalak/tartalom/*-piercing-b.json. A tobbi kategoria-oldalnak
 // (allergia, maj, pajzsmirigy, lep, vastagbel) nincs -b oldala: azok a regi kategoria-sablonnal maradnak.
+// a Google-velemenyek szama: build ideju tartalek (2026-10-16: 5 030), az oldal betoltesekor a /api/ertekeles mostani szama irja felul (uj-fooldal.js 4c.)
+export const GOOGLE_DB = '5030';
+
 export const B_ALAP = new Map([
   ['/migren-piercing', '/migren-piercing-b'],
   ['/shenmen-piercing', '/shenmen-piercing-b'],
@@ -280,7 +283,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     for (const e of h.extra) linkek.push(`<li>${szovegLink(e.html)}</li>`);
     const csill = Array.from({ length: 5 }, () => IK('star')).join('');
     // a pontszam es a vélemenyek szama a Trustindex-widget fejlecebol jon (assets/js/uj-fooldal.js 4c.: /api/ertekeles); a szoveg itt csak tartalek
-    const ert = `<p class="kat-ertekeles"><span class="csillagok" role="img" aria-label="5 csillagból 4,8">${csill}</span><a href="/migren-shenmen-piercing-velemenyek" data-ti-ertekeles>Kiváló – 4,8 – 5\u00a0000+ vélemény »</a></p>`;
+    const ert = `<p class="kat-ertekeles"><span class="csillagok" role="img" aria-label="5 csillagból 4,8">${csill}</span><a href="/migren-shenmen-piercing-velemenyek" data-ti-ertekeles>Kiváló – 4,8 – ${GOOGLE_DB} vélemény »</a></p>`;
     return `<section class="hos kat-hos">
     <div class="tarto hos-racs">
       <h1 class="hos-cim">${cim}</h1>
@@ -293,12 +296,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
         </div>
         ${ert}
         <ul class="hos-linkek">${linkek.join('')}</ul>
-        <ul class="bizalom">
-          <li>${IK('shield')}<span><b>EÜ</b> szakemberek</span></li>
-          <li>${IK('users')}<span><b>Alapítói</b> EÜ tapasztalat</span></li>
-          <li>${IK('pin')}<span><b>Budapesten</b> állandó szalon</span></li>
-          <li>${IK('map')}<span><b>Több mint 11</b> vidéki városban</span></li>
-        </ul>
+        <!--#bizalom-->
       </div>
       <figure class="hos-kep">
         <img src="${esc(h.kep.src)}"${keparany(h.kep)} alt="${esc(h.kep.alt || adat.cim)}"${h.kep.nh > h.kep.nw ? ' style="object-position:50% 40%"' : ''} fetchpriority="high">
@@ -323,7 +321,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     // mobilon a hosszu szoveg helyett a rovid ("Ekszerek es arak") latszik, hogy a 3 link egy sorba ferjen
     for (const e of h.extra) linkek.push(`<li><a href="${van.has('ekszer') ? '#ekszerek' : '#arak'}"><span class="hosszu">${esc(szovegTiszta(e.html).replace(/\s*(?:>>|&gt;&gt;)\s*$/, ''))}</span><span class="rovid">Ékszerek és árak</span> »</a></li>`);
     const csill = Array.from({ length: 5 }, () => IK('star')).join('');
-    const ert = `<p class="kat-ertekeles"><span class="csillagok" role="img" aria-label="5 csillagból 4,8">${csill}</span><a href="/migren-shenmen-piercing-velemenyek" data-ti-ertekeles>Kiváló – 4,8 – 5\u00a0000+ vélemény »</a></p>`;
+    const ert = `<p class="kat-ertekeles"><span class="csillagok" role="img" aria-label="5 csillagból 4,8">${csill}</span><a href="/migren-shenmen-piercing-velemenyek" data-ti-ertekeles>Kiváló – 4,8 – ${GOOGLE_DB} vélemény »</a></p>`;
     const id = ++c.galeriaSzam;
     const db = h.gal.kepek.length;
     // az elso kep eredetileg "<- Lapozz balra" jelzest hordoz: a tools/uj-b-hos-kep.py "Lapozz jobbra ->" jelzesu valtozatot keszit (assets/img/uj-hos-01.webp)
@@ -344,12 +342,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
           ${ert}
           <ul class="hos-linkek">${linkek.join('')}</ul>
         </div>
-        <ul class="bizalom">
-          <li>${IK('shield')}<span><b>EÜ</b> szakemberek</span></li>
-          <li>${IK('users')}<span><b>Alapítói</b> EÜ tapasztalat</span></li>
-          <li>${IK('pin')}<span><b>Budapesten</b> állandó szalon</span></li>
-          <li>${IK('map')}<span><b>Több mint 11</b> vidéki városban</span></li>
-        </ul>
+        <!--#bizalom-->
       </div>
       <figure class="hos-kep hos-galeria">
         ${galeria}
@@ -502,7 +495,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     const widget = kulcs ? reszlet('velemenyek').replace(/loader\.js\?[a-z0-9]+/, 'loader.js?' + kulcs) : reszlet('velemenyek');
     const l = b.link && T.csakLink(b.link.html) ? szovegLink(b.link.html).trim().replace(/^<a /, '<a class="szoveg-link" ') : '';
     // a B oldalakon a cim szama ("... 4.183 vendegunk leirta") is a Trustindex-widget mostani szamabol frissul (uj-fooldal.js 4c.)
-    const cimHtml = B ? szovegLink(b.cim.html).replace(/(\d[\d.\s]*\d)(?=\s+vendég)/, '<span data-ti-darab>5\u00a0000+</span>') : szovegLink(b.cim.html);
+    const cimHtml = B ? szovegLink(b.cim.html).replace(/(\d[\d.\s]*\d)(?=\s+vendég)/, `<span data-ti-darab>${GOOGLE_DB}</span>`) : szovegLink(b.cim.html);
     return `<section class="kat-blokk">
     <div class="tarto kat-fej"><h2>${cimHtml}</h2>${b.alcim ? `<p class="kat-alcim">${szovegLink(b.alcim.html)}</p>` : ''}</div>
 ${widget}

@@ -356,7 +356,8 @@ export function oldalHtml(ROOT, adat, opciok = {}) {
 
 ${partial(ROOT, 'fejlec', horgony)}
 
-${kat ? '' : '<a class="promo-sav" href="/3-piercing-2-araert-regi"><strong>AKCIÓ!</strong> – A 2. piercing féláron, a 3. csak 5.000 Ft!</a>\n'}
+${partial(ROOT, 'akcio-sav')}
+
 <main id="fo">
 ${szekciok}
 ${lapozo(c, opciok.lapozo)}
