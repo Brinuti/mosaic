@@ -146,14 +146,26 @@
   // --- 4. Google-velemenyek: a Trustindex-widget (az oldalban a loader.js tolti, lapozhato); ha 9 mp alatt nem jelenik meg, a mentett tartalek latszik ---
   // A Trustindex-loader a widgetet csak a lap kozeleben, felhasznaloi tevekenyseg utan tolti: a 9 masodperc attol szamit, hogy a doboz kozel er a kepernyohoz
   // (a lap aljan levo doboz, pl. a kategoria-oldalakon, nem mutat tartalekot, amig a latogato oda nem gorget).
-  const tiHely = $('[data-trustindex]'), tartalek = $('[data-tartalek]');
-  if (tiHely && tartalek) {
+  // (dobozonkent: egy lapon tobb widget is lehet, pl. a velemenyek oldalan kategoriankent)
+  $$('[data-trustindex]').forEach((tiHely) => {
+    const tartalek = tiHely.parentElement && $('[data-tartalek]', tiHely.parentElement);
+    if (!tartalek) return;
     const indit = () => window.setTimeout(() => { if (!$('.ti-widget', tiHely)) tartalek.hidden = false; }, 9000);
     if ('IntersectionObserver' in window) {
       const figyel = new IntersectionObserver((e) => { if (e[0].isIntersecting) { figyel.disconnect(); indit(); } }, { rootMargin: '600px' });
       figyel.observe(tiHely);
     } else indit();
-  }
+  });
+
+  // --- 4d. a keves velemenyt mutato widget (pl. a lep-oldal sajat, szurt widgetje: 1 velemeny) ne nyuljon a teljes szelessegre (a tulajdonos kerese, 2026-10-16) ---
+  $$('[data-trustindex]').forEach((hely) => {
+    const doboz = hely.closest('.velemeny-doboz');
+    if (!doboz || !('MutationObserver' in window)) return;
+    const meret = () => { const db = $$('.ti-review-item', hely).length; if (db) doboz.classList.toggle('ti-keves', db <= 2); };
+    const figyel = new MutationObserver(meret);
+    figyel.observe(hely, { childList: true, subtree: true });
+    window.setTimeout(() => figyel.disconnect(), 60000);
+  });
 
   // --- 4c. a hos ertekeles-sora (kategoria-oldalak): a pontszam es a vélemenyek szama a Trustindex-widget fejlecebol (/api/ertekeles), a build idejen irt szoveg tartalek ---
   const ertekelesek = $$('[data-ti-ertekeles]');

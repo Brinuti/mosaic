@@ -66,3 +66,25 @@
   .oldal-sajat .valasztas{align-items:stretch}
   .oldal-sajat .valasztas-kep{height:100%;max-height:none;min-height:230px}
 }
+
+/* --- Velemenyek: ugras a kategoriakhoz (gombok a hosben), a kategoria-cimek a ragado fejlec alatt allnak meg --- */
+.sajat-ugras{margin-top:18px}
+.sajat-ugras p{margin:0 0 8px;color:var(--slate);font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.sajat-ugras ul{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.sajat-ugras a{display:inline-block;padding:6px 14px;border:1px solid var(--line);border-radius:99px;background:#fff;color:var(--slate);font-size:.85rem;font-weight:600;text-decoration:none}
+.sajat-ugras a:hover{border-color:var(--rose);background:var(--beige-l)}
+.sajat-kat-fej{scroll-margin-top:120px}
+.oldal-sajat .kat-ertekeles{margin-top:14px}
+
+/* --- Garancia: video melletti doboz, kerdes-valasz kartyak --- */
+.gar-doboz{grid-template-columns:minmax(0,1fr);align-self:stretch}
+.gar-doboz .pipak li{align-items:flex-start;font-size:.95rem;line-height:1.5}
+.gar-racs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0;padding:0;list-style:none}
+.gar-racs li{padding:22px 24px;background:#fff;border:1px solid var(--line);border-radius:var(--r-m);box-shadow:var(--sh-s)}
+.gar-racs h3{margin:0 0 10px;color:var(--navy);font-size:1.08rem;line-height:1.3}
+.gar-racs p{margin:0 0 10px;color:var(--mut);font-size:.93rem;line-height:1.6}
+.gar-racs p:last-child{margin-bottom:0}
+.gar-racs .gar-kiemelt{background:linear-gradient(120deg,var(--beige) 0,#fff 90%);border-color:var(--rose)}
+.gar-racs .gar-kiemelt .gomb{margin-top:6px}
+@media (max-width:760px){.gar-racs{grid-template-columns:minmax(0,1fr)}.gar-racs li{padding:18px}}
+.gar-racs .gar-kiemelt{grid-column:1/-1}

@@ -333,12 +333,44 @@ function regiLinkLe(html) {
     .replace(/<a\b[^>]*\shref="\/3-piercing-2-araert(?:-2)?"[^>]*>3 piercing 2 áráért! - AKCIÓ!<\/a>/g, '<a href="/3-piercing-2-araert-regi">Őszi akció »</a>');
 }
 
+// --- a blog-oldal (/blog): kepes kartyak, 12-esevel lapozva (uj-oldalak.js), felul csak a cim (a tulajdonos kerese, 2026-10-16) ---
+// a kartya kepe: a regi oldal galeriajabol a cikk cime szerint, ha ott nincs, a cikk sajat elso nagy kepe
+function blogFo(ROOT, adat) {
+  const lv = laposit(adat.szekciok.map((sz) => sz.fa));
+  const gal = lv.find((x) => x.t === 'galeria');
+  const lista = lv.find((x) => x.t === 'posztok');
+  if (!lista) return null;
+  const kepek = new Map((gal ? gal.kepek : []).map((k) => [String(k.alt || '').trim(), k.src]));
+  const sajatKep = (href) => {
+    try {
+      const a = JSON.parse(fs.readFileSync(path.join(ROOT, 'uj-oldalak/tartalom', href.replace(/^\//, '').replace(/\//g, '__') + '.json'), 'utf8'));
+      const k = laposit(a.szekciok.map((sz) => sz.fa)).find((x) => x.t === 'kep' && (x.nw || 0) >= 400);
+      return k ? k.src : '';
+    } catch { return ''; }
+  };
+  const kartya = (p, i) => {
+    const kep = p.kep || kepek.get(String(p.cim).trim()) || sajatKep(p.href);
+    const meta = metaTisztit(p.meta);
+    return `<li class="blog-kartya"><a href="${esc(belso(p.href))}">
+      <span class="blog-kep">${kep ? `<img src="${esc(kep)}" alt="" loading="lazy" decoding="async">` : ''}</span>
+      <span class="blog-test">${meta ? `<span class="blog-meta">${esc(meta)}</span>` : ''}<b>${esc(p.cim)}</b>${p.kivonat ? `<span class="blog-kivonat">${esc(p.kivonat)}</span>` : ''}<span class="blog-tovabb">Tovább olvasom »</span></span>
+    </a></li>`;
+  };
+  return `<section class="tarto blog-fej"><h1>Blog</h1></section>
+  <section class="tarto blog-lista">
+    <ul class="blog-racs" data-blog-racs>${lista.elemek.map(kartya).join('')}</ul>
+    <nav class="blog-lapozo" data-blog-lapozo aria-label="Blog-oldalak"></nav>
+  </section>`;
+}
+const laposit = (n, ki = []) => { if (Array.isArray(n)) n.forEach((x) => laposit(x, ki)); else if (n && n.k) { ki.push(n); n.k.forEach((x) => laposit(x, ki)); } else if (n) ki.push(n); return ki; };
+
 export function oldalHtml(ROOT, adat, opciok = {}) {
   const c = ujKontextus(adat, opciok);
   // a kategoria-oldalak (migren / shenmen / klimax / slim) a fooldal stilusaban, a fooldal dobozaival (kategoria.mjs)
   const kat = opciok.fo === undefined && adat.tipus === 'oldal' ? kategoriaFo(ROOT, adat, c, KOZOS, { b: !!opciok.b }) : null;
   if (kat) kat.html = regiLinkLe(kat.html);
-  let szekciok = kat ? kat.html : opciok.fo !== undefined ? opciok.fo : adat.szekciok.map((s, i) => szekcio(s, i, c)).join('\n');
+  const blog = !kat && opciok.fo === undefined && adat.ut === '/blog' ? blogFo(ROOT, adat) : null;
+  let szekciok = kat ? kat.html : blog || (opciok.fo !== undefined ? opciok.fo : adat.szekciok.map((s, i) => szekcio(s, i, c)).join('\n'));
   if (!/<h1[\s>]/.test(szekciok)) szekciok = `<h1 class="sr">${esc(adat.cim)}</h1>\n` + szekciok;   // az oldalnak mindig van h1-e (a lathato cim hianyaban rejtett)
   // a kezzel irt oldalak (uj-oldalak/sajat/*.html: csapatunk, kapcsolat, ekszereink) a kategoria-oldalak szelessegevel es dobozaival
   const sajat = !!opciok.sajat;

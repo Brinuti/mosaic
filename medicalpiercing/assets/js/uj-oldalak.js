@@ -157,4 +157,29 @@
   };
   szuro($('[data-poszt-szuro]'), $$('#poszt-lista .poszt'), $('[data-poszt-db]'), 'bejegyzés');
   szuro($('[data-idx-szuro]'), $$('.idx-lista li'), $('[data-idx-db]'), 'oldal');
+
+  // --- blog: 12 kartya oldalankent, szamozott lapozo; az oldal a cim horgonyaban (#oldal-2), nem URL-parameterben
+  // (a parameterek a meresi parameter-megorzesbe kerulnenek, uj-fooldal.js 5.). JavaScript nelkul minden kartya latszik.
+  const blogRacs = $('[data-blog-racs]'), blogNav = $('[data-blog-lapozo]');
+  if (blogRacs && blogNav) {
+    const kartyak = $$('.blog-kartya', blogRacs), DB = 12, lapok = Math.ceil(kartyak.length / DB);
+    const horgony = () => { const m = /^#oldal-(\d+)$/.exec(location.hash); return m ? +m[1] : 1; };
+    const gomb = (szoveg, n, akt, cimke) => {
+      const g = document.createElement('button');
+      g.type = 'button'; g.textContent = szoveg; g.className = 'blog-lap' + (akt ? ' akt' : '');
+      if (cimke) g.setAttribute('aria-label', cimke);
+      if (akt) g.setAttribute('aria-current', 'page');
+      if (n < 1 || n > lapok) g.disabled = true; else g.addEventListener('click', () => mutat(n, true));
+      return g;
+    };
+    const mutat = (n, gorget) => {
+      n = Math.min(Math.max(1, n || 1), lapok);
+      kartyak.forEach((k, i) => { k.hidden = Math.floor(i / DB) + 1 !== n; });
+      blogNav.replaceChildren(gomb('‹', n - 1, false, 'Előző oldal'), ...Array.from({ length: lapok }, (_, i) => gomb(String(i + 1), i + 1, i + 1 === n, (i + 1) + '. oldal')), gomb('›', n + 1, false, 'Következő oldal'));
+      try { history.replaceState(history.state, '', location.pathname + location.search + (n > 1 ? '#oldal-' + n : '')); } catch (x) { /* marad a cim */ }
+      if (gorget) blogRacs.scrollIntoView({ behavior: csendes ? 'auto' : 'smooth', block: 'start' });
+    };
+    if (lapok > 1) mutat(horgony(), false);
+    window.addEventListener('hashchange', () => mutat(horgony(), false));
+  }
 })();

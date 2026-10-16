@@ -19,8 +19,12 @@ export const UJ_FOOLDAL_UT = '/uj-fooldal';
 export const TUKOR_ELO = '/uj';   // a tobbi oldal tukre: /uj/<eredeti utvonal>
 
 // --- kozos reszek: <!--#nev--> -> uj-oldalak/reszek/nev.html ---------------------------------------------------------------
+// <!--#velemenyek ti=<kulcs>--> : a velemeny-doboz egy masik (pl. kategoriankent szurt) Trustindex-widgettel
 export function osszerak(ROOT, html) {
-  return html.replace(/<!--#([a-z0-9-]+)-->/g, (m, nev) => fs.readFileSync(path.join(ROOT, 'uj-oldalak/reszek', nev + '.html'), 'utf8').trimEnd());
+  return html.replace(/<!--#([a-z0-9-]+)(?: ti=([a-z0-9]+))?-->/g, (m, nev, ti) => {
+    const resz = fs.readFileSync(path.join(ROOT, 'uj-oldalak/reszek', nev + '.html'), 'utf8').trimEnd();
+    return ti ? resz.replace(/loader\.js\?[a-z0-9]+/, 'loader.js?' + ti) : resz;
+  });
 }
 
 // --- kepek verziojele: az /assets/img/ 30 napig tarolodik, a megvaltozott uj-* kep ujra-keres kell (?v=<tartalom-hash>) ----------
@@ -110,8 +114,11 @@ export function ujOldalak(ROOT, DIST) {
   let db = 0;
   const adatok = fs.readdirSync(dir).filter((x) => x.endsWith('.json') && !x.startsWith('_')).sort().map((f) => JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')));
   const utSzerint = new Map(adatok.map((a) => [a.ut, a]));
+  const sajatDir = path.join(ROOT, 'uj-oldalak/sajat');
+  const sajatNevek = new Set(fs.existsSync(sajatDir) ? fs.readdirSync(sajatDir).filter((x) => x.endsWith('.html')).map((x) => '/' + x.slice(0, -5)) : []);
   for (const adat of adatok) {
     if (KIHAGY.has(adat.ut)) continue;
+    if (sajatNevek.has(adat.ut)) continue;   // kezzel irt uj valtozata van (uj-oldalak/sajat/), lent irodik ki
     // a migren / shenmen / klimax / slim oldal alapja a "B" valtozat (az eredeti -b oldal tartalma, a kategoria-dizajnnal): ugyanazon a (b nelkuli) cimen
     const bAdat = B_ALAP.has(adat.ut) ? utSzerint.get(B_ALAP.get(adat.ut)) : null;
     if (B_ALAP.has(adat.ut) && !bAdat) throw new Error(`${adat.ut}: hianyzik a B valtozat tartalma (${B_ALAP.get(adat.ut)})`);
@@ -121,7 +128,6 @@ export function ujOldalak(ROOT, DIST) {
   }
   // --- kezzel irt uj oldalak (uj-oldalak/sajat/<nev>.html -> /uj/<nev>): az elso sor <!--oldal {"cim","leiras"} -->, utana a <main> tartalma ---
   // (Csapatunk, Kapcsolat, Ekszereink: a regi oldalon nincs ilyen onallo lap, a tulajdonos kerese 2026-10-16)
-  const sajatDir = path.join(ROOT, 'uj-oldalak/sajat');
   if (fs.existsSync(sajatDir)) {
     for (const f of fs.readdirSync(sajatDir).filter((x) => x.endsWith('.html')).sort()) {
       const nev = f.slice(0, -5);

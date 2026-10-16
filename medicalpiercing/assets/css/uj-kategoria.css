@@ -371,3 +371,8 @@
   .kat-video-racs{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .kat-tapasztalat .pipak{columns:1}
 }
+/* B hos YouTube-videoval (Rolunk) */
+.hos-video .video{display:block}
+.hos-video .video-kep{display:block;position:relative;border-radius:30px;overflow:hidden;box-shadow:var(--sh)}
+.hos-video .video-kep img{display:block;width:100%;height:auto;aspect-ratio:1200/823;object-fit:cover}
+.kat-akciofelt{grid-template-columns:minmax(0,1fr)}

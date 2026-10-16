@@ -585,3 +585,7 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   .menu-velemeny .menu-csillag{margin-left:auto}
   .menu-akcio .ik,.menu-velemeny .ik-google{width:1.15em;height:1.15em}
 }
+/* keves (1-2) velemenyt mutato Trustindex-widget: keskeny, kozepre rendezett doboz (uj-fooldal.js 4d.) */
+.velemeny-doboz.ti-keves{max-width:680px;margin-inline:auto}
+/* a bovebb lablec-menu (Kapcsolat, Csapatunk) mobilon is kompakt maradjon */
+@media (max-width:760px){.lablec{padding:18px 0 14px}}
