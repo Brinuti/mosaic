@@ -551,6 +551,13 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   .fejlec-cta .ik-nyil{display:none}
 }
 @media (min-width:1001px) and (max-width:1130px){.fejlec-cta>.ik:first-child{display:none}.menu-velemeny .menu-csillag{display:none}}
+@media (min-width:1001px) and (max-width:1080px){
+  .fejlec-sor{gap:6px}
+  .logo img{height:34px}
+  .menu-link,.menu-gomb{padding:8px 5px;font-size:.77rem}
+  .menu-gomb .ik{width:.8em;height:.8em}
+  .fejlec-cta{padding-inline:12px;font-size:.8rem}
+}
 .menu-akcio{color:var(--rose-i)}
 .menu-akcio .ik{width:1em;height:1em}
 .menu-velemeny .ik-google{width:1.05em;height:1.05em}

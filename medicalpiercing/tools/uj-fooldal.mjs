@@ -119,6 +119,24 @@ export function ujOldalak(ROOT, DIST) {
     jegyzek.push({ ut: adat.ut, cim: (bAdat || adat).cim, tipus: adat.tipus, uj: TUKOR_ELO + (eredeti.get(adat.ut) || encodeURI(adat.ut)) });
     db++;
   }
+  // --- kezzel irt uj oldalak (uj-oldalak/sajat/<nev>.html -> /uj/<nev>): az elso sor <!--oldal {"cim","leiras"} -->, utana a <main> tartalma ---
+  // (Csapatunk, Kapcsolat, Ekszereink: a regi oldalon nincs ilyen onallo lap, a tulajdonos kerese 2026-10-16)
+  const sajatDir = path.join(ROOT, 'uj-oldalak/sajat');
+  if (fs.existsSync(sajatDir)) {
+    for (const f of fs.readdirSync(sajatDir).filter((x) => x.endsWith('.html')).sort()) {
+      const nev = f.slice(0, -5);
+      const forras = fs.readFileSync(path.join(sajatDir, f), 'utf8');
+      const m = /^<!--oldal (\{[\s\S]*?\}) -->\n/.exec(forras);
+      if (!m) throw new Error(`uj-oldalak/sajat/${f}: hianyzik az elso sor (<!--oldal {"cim":...,"leiras":...} -->)`);
+      const meta = JSON.parse(m[1]);
+      const fo = osszerak(ROOT, forras.slice(m[0].length));
+      const horgony = new Set([...fo.matchAll(/\sid="([a-z]+)"/g)].map((x) => x[1]));
+      const adat = { ut: '/' + nev, kulcs: nev, cim: meta.cim, leiras: meta.leiras, tipus: 'oldal', szekciok: [] };
+      oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, adat, { fo, sajat: true, horgony, nagyito: /data-ekszer-galeria|id="ekszerek"/.test(fo) }));
+      jegyzek.push({ ut: adat.ut, cim: meta.cim, tipus: 'oldal', uj: TUKOR_ELO + adat.ut });
+      db++;
+    }
+  }
   const index = indexHtml(ROOT, jegyzek, { datum: new Date().toISOString().slice(0, 10) });
   oldalKiir(ROOT, DIST, '/uj-oldalak', index);
   oldalKiir(ROOT, DIST, '/uj', index);   // a rovid cim (/uj) ugyanazt az attekintest adja

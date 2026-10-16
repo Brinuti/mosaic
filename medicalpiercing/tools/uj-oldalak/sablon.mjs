@@ -330,8 +330,10 @@ export function oldalHtml(ROOT, adat, opciok = {}) {
   const kat = opciok.fo === undefined && adat.tipus === 'oldal' ? kategoriaFo(ROOT, adat, c, KOZOS, { b: !!opciok.b }) : null;
   let szekciok = kat ? kat.html : opciok.fo !== undefined ? opciok.fo : adat.szekciok.map((s, i) => szekcio(s, i, c)).join('\n');
   if (!/<h1[\s>]/.test(szekciok)) szekciok = `<h1 class="sr">${esc(adat.cim)}</h1>\n` + szekciok;   // az oldalnak mindig van h1-e (a lathato cim hianyaban rejtett)
-  const cimke = adat.tipus === 'cikk' ? 'oldal-cikk' : adat.tipus === 'blog' ? 'oldal-blog' : kat ? 'oldal-altalanos oldal-kategoria' : 'oldal-altalanos';
-  const horgony = kat ? kat.helyiIdk : true;
+  // a kezzel irt oldalak (uj-oldalak/sajat/*.html: csapatunk, kapcsolat, ekszereink) a kategoria-oldalak szelessegevel es dobozaival
+  const sajat = !!opciok.sajat;
+  const cimke = adat.tipus === 'cikk' ? 'oldal-cikk' : adat.tipus === 'blog' ? 'oldal-blog' : kat ? 'oldal-altalanos oldal-kategoria' : sajat ? 'oldal-altalanos oldal-kategoria oldal-sajat' : 'oldal-altalanos';
+  const horgony = kat ? kat.helyiIdk : opciok.horgony || true;
   return `<!doctype html>
 <html lang="hu">
 <head>
@@ -347,7 +349,7 @@ export function oldalHtml(ROOT, adat, opciok = {}) {
 <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/plus-jakarta-sans-latin.woff2">
 <script src="/assets/js/suti.js"></script>
 <link rel="stylesheet" href="/assets/css/uj-fooldal.css">
-<link rel="stylesheet" href="/assets/css/uj-oldalak.css">${kat ? '\n<link rel="stylesheet" href="/assets/css/uj-kategoria.css">' : ''}
+<link rel="stylesheet" href="/assets/css/uj-oldalak.css">${kat || sajat ? '\n<link rel="stylesheet" href="/assets/css/uj-kategoria.css">' : ''}${sajat ? '\n<link rel="stylesheet" href="/assets/css/uj-sajat.css">' : ''}
 </head>
 <body class="belso ${cimke}">
 <a class="ugras" href="#fo">Ugrás a tartalomra</a>
@@ -376,7 +378,7 @@ ${partial(ROOT, 'lablec', horgony)}
   <button type="button" class="videoablak-zar" aria-label="Bezárás">${IK('close')}</button>
   <div class="videoablak-keret"></div>
 </dialog>
-${kat && kat.nagyito ? '<!--#ekszer-nagyito-->\n' : ''}
+${(kat && kat.nagyito) || opciok.nagyito ? '<!--#ekszer-nagyito-->\n' : ''}
 <script src="/assets/js/uj-fooldal.js" defer></script>
 <script src="/assets/js/uj-oldalak.js" defer></script>
 </body>
