@@ -71,7 +71,6 @@ CRM_KULDES = "dry"   # Oxigen CRM: "dry" = nincs valodi level / SMS (naplo); "el
 CRM_ADMIN_EMAILS = "ferraj@gmail.com"   # Oxigen CRM: akik e-mailes egyszeri kodos belepessel szalonvezetokent / adminkent beleptethetok (tovabbi munkatarsakat a /crm felulet vesz fel)
 LIFECYCLE_MOD = "elo"   # ELES (a tulajdonos kifejezett kerese, 2026-10-08). ki | teszt (CSAK a teszt-vendegeknek megy uzenet) | elo (az LIFECYCLE_UZLETAGOK uzletagainak vendegeinek is)
 LIFECYCLE_UZLETAGOK = "headspa,hair,oxygen,laser,pmu,mp"   # mp: ELES (a tulajdonos kifejezett kerese, 2026-10-16 21:39: "elesitsunk most")
-MP_IMPORT_HASH = "ff73c1ff57066bceed00417bbfd3e9baf472b7b26dc4444f5d2c551fd906fdc7"   # EGYSZERI: az MP elesites elotti foglalasainak atemelese (/api/lifecycle/mp-import). Az atemeles utan TOROLNI kell.
 LIFECYCLE_MUNKATARS_MOD = "figyel"   # DECISION #117: munkatarsi torles / modositas: figyel = csak naplo + riasztas (nincs allapotvaltas); be = a docs/lifecycle/LIFECYCLE.md szerinti valtoztatas (a kontrollalt teszt utan)
 LIFECYCLE_KULCS_HASH = "d34736dbb1682fc946a3fe80ac0a82f1f7f727493d47152197653e3313855f08"   # a bejovo / tick vegpontok kulcsanak SHA-256-ja; a kulcs a Zapier Storage-ban van (lifecycle_kulcs); a 2. kulcscsere kesz: 2026-10-09
 SIMPLESMS_FELHASZNALO = "ferraj@gmail.com"
