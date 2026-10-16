@@ -160,6 +160,7 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
     await p.click('.menu-gomb[aria-controls="alm-piercingek"]');
     ok(`${nezet}: almenu nyilik kattintasra`, (await p.isVisible('#alm-piercingek a[href$="/migren-piercing"]')) && (await p.getAttribute('.menu-gomb[aria-controls="alm-piercingek"]', 'aria-expanded')) === 'true');
     await p.mouse.click(700, 500);
+    await p.waitForTimeout(700); // az asztali almenu szandekosan kesleltetve zarul (0,4 s + 0,16 s attunes, uj-fooldal.css)
     ok(`${nezet}: kivul kattintva zarul`, !(await p.isVisible('#alm-piercingek')));
     await p.evaluate(() => scrollTo(0, 600)); await p.waitForTimeout(250);
     ok(`${nezet}: fejlec ragad es arnyekot kap gorgetve`, await p.$eval('#fejlec', (f) => f.classList.contains('gorgetve') && f.getBoundingClientRect().top === 0));
