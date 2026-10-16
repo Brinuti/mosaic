@@ -209,8 +209,12 @@ function regiFej(ROOT, ut) {
   const minta = /<meta\b[^>]*\b(?:name|property)="(?:description|robots|og:[^"]+|twitter:[^"]+|article:[^"]+|google-site-verification|facebook-domain-verification)"[^>]*>|<link\b[^>]*\brel="(?:canonical|alternate)"[^>]*>|<script type="application\/ld\+json">[\s\S]*?<\/script>/gi;
   return { cim: cim && cim.trim(), cimkek: [...fej.matchAll(minta)].map((m) => m[0].replace(/\s*\/>$/, '>')) };
 }
+// ahol a regi lapcim mar mast mond, mint az oldal (pl. az oszi akcio regi cime regi arral: "3 piercing 2 áráért 41.900 forintért"), ott a cim
+// (es az og- / twitter-cim) a mostani; minden mas regi SEO-cimke marad (2026-10-16, 5. kor)
+const FRISS_CIM = { '/3-piercing-2-araert-regi': 'Őszi akció: 3 piercing 44 900 Ft | Medical Piercing' };
 function elesFej(ROOT, ut, html) {
-  const r = ut === '/404' ? null : regiFej(ROOT, ut);   // a Wix 404-es lapjanak fejlece ("Post | Medical Piercing", canonical) nem kell
+  let r = ut === '/404' ? null : regiFej(ROOT, ut);   // a Wix 404-es lapjanak fejlece ("Post | Medical Piercing", canonical) nem kell
+  if (r && FRISS_CIM[ut]) r = { ...r, cim: FRISS_CIM[ut], cimkek: r.cimkek.map((c) => c.replace(/((?:property="og:title"|name="twitter:title") content=")[^"]*"/, `$1${FRISS_CIM[ut]}"`)) };
   const ki = html.replace(/<!-- Rejtett próbaoldal[^>]*-->\n?/, '').replace(/<meta name="robots" content="noindex,nofollow">\n?/, '');
   if (r) {
     const leirasVan = r.cimkek.some((c) => /name="description"/i.test(c));

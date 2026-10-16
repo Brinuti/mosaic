@@ -115,3 +115,103 @@
 .ht-pin-lent .ht-info::after{top:auto;bottom:100%;border-top-color:transparent;border-bottom-color:#2f3044}
 @media (hover:hover){.ht-pin:hover .ht-info,.ht-pin:focus-visible .ht-info{opacity:1;visibility:visible;transform:translate(-50%,0)}}
 .ht-pin:hover{z-index:4}
+
+/* ===== Oszi akcio oldal (/3-piercing-2-araert-regi; a tulajdonos kerese, 2026-10-16: ujratervezes a konverzios kepernyotervek 03-as terve szerint,
+   az oldal stilusaban). Az egyetlen domináns gomb-szin a foglalo eros barna szine (#a35a4b, telt), a tobbi gomb keretes. ===== */
+.akc-hos{padding:30px 0 34px}
+.akc-hos-racs{position:relative;display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:40px;align-items:center}
+.akc-hos .hos-cim{margin:0 0 14px;font-size:clamp(2rem,3.4vw,2.9rem);line-height:1.08}
+.akc-hos .hos-cim em{white-space:nowrap}
+.akc-hos .hos-bevezeto{margin:0 0 14px}
+.akc-hos .kat-ertekeles{margin:0}
+.akc-arak{display:grid;gap:12px}
+.akc-dobozok{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0;padding:14px 0 0;list-style:none}
+.akc-doboz{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:20px 10px 14px;border:1px solid #ecc6bf;border-radius:18px;background:linear-gradient(180deg,#fff 0,#fffaf8 100%);box-shadow:0 6px 18px rgba(185,135,130,.13);text-align:center}
+.akc-doboz.akc-kiemelt{border:2px solid #a35a4b;box-shadow:0 10px 26px rgba(163,90,75,.22)}
+.akc-cimke{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);padding:3px 10px;border-radius:99px;background:#a35a4b;color:#fff;font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.akc-db{color:var(--mut);font-size:.86rem;font-weight:600}
+.akc-ar{color:var(--navy);font-size:1.45rem;font-weight:800;line-height:1.15;white-space:nowrap}
+.akc-al{margin-bottom:10px;color:#3c7a4f;font-size:.8rem;font-weight:700}
+.akc-gomb,.akc-sav-gomb{width:100%;margin-top:auto;background:#a35a4b;border-color:#a35a4b;color:#fff;box-shadow:0 4px 12px rgba(163,90,75,.3)}
+.akc-gomb:hover,.akc-sav-gomb:hover{background:#8f4c3f;border-color:#8f4c3f;color:#fff}
+.akc-mikro{margin:2px 0 0;color:var(--mut);font-size:.84rem;text-align:center}
+.akc-mikro b{color:var(--navy)}
+.akc-garancia{display:flex;align-items:flex-start;gap:9px;margin:0;padding:11px 14px;border-radius:14px;background:#eef3ec;color:#3c4a3f;font-size:.88rem;line-height:1.45}
+.akc-garancia .ik{flex:none;width:18px;height:18px;margin-top:1px;color:#3c7a4f}
+/* puderes szakasz: melyik piercing? */
+.akc-pud{padding:28px 30px;border-radius:var(--r-l);background:var(--beige)}
+.akc-melyik h2,.akc-mi h2,.akc-hol h2,.akc-gyik h2{margin:0 0 10px}
+.akc-melyik p{max-width:46em;margin:0 0 12px}
+.akc-tipus-cim{margin:16px 0 8px!important;color:var(--slate);font-weight:700}
+.akc-tipusok{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.akc-tipusok a{display:inline-block;padding:7px 14px;border:1px solid #e7c6c1;border-radius:99px;background:#fff;color:var(--slate);font-size:.88rem;font-weight:700;text-decoration:none}
+.akc-tipusok a:hover{border-color:var(--rose-i);color:var(--rose-i)}
+/* mi jar az arert */
+.akc-mi{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;align-items:center}
+.akc-csekk{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 16px;padding:0;list-style:none}
+.akc-csekk li{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:99px;background:var(--beige-l);border:1px solid #f0d6d0;color:var(--navy);font-size:.88rem;font-weight:700}
+.akc-csekk .ik{width:15px;height:15px;color:#3c7a4f;stroke-width:2.6}
+.akc-mi-szoveg p{margin:0;color:var(--mut)}
+.akc-mi-kep{position:relative;margin:0}
+.akc-mi-kep img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--r-l);box-shadow:var(--sh-s)}
+.akc-mi-kep figcaption{position:absolute;left:14px;bottom:14px;padding:6px 12px;border-radius:99px;background:rgba(47,48,68,.82);color:#fff;font-size:.8rem;font-weight:700}
+/* videok: 3 db */
+.akc-videok .vsav-elem{flex-basis:calc((100% - 28px)/3);max-width:230px}
+/* hol es mikor */
+.akc-hol-al{margin:0 0 14px;color:var(--mut)}
+.akc-helyek{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0;padding:0;list-style:none}
+.akc-hely{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px solid #ecc6bf;border-radius:16px;background:#fff;box-shadow:var(--sh-s)}
+.akc-hely b{display:block;color:var(--navy);font-size:1.02rem}
+.akc-hely span{display:block;color:var(--mut);font-size:.84rem;line-height:1.35}
+.akc-hely .akc-kov{color:#3c7a4f;font-weight:700}
+.akc-hely .gomb{flex:none;background:#fff;color:#a35a4b;border-color:#a35a4b;box-shadow:none}
+.akc-hol-gomb{margin:14px 0 0;text-align:center}
+.akc-osszes{margin-top:10px}
+.akc-osszes>summary{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;list-style:none;cursor:pointer;color:#a35a4b;font-weight:800;font-size:.92rem}
+.akc-osszes>summary::-webkit-details-marker{display:none}
+.akc-osszes>summary .ik{width:16px;height:16px;transform:rotate(90deg);transition:transform .15s}
+.akc-osszes[open]>summary .ik{transform:rotate(-90deg)}
+.akc-osszes .uzletek{margin-top:8px;padding:18px}
+.akc-osszes .uzletek-fej{display:none}
+/* GYIK */
+.akc-gyik .kat-harmonika{max-width:820px}
+/* ragados foglalas-sav (mobilon) */
+.akc-sav{display:none}
+@media (max-width:1000px){
+  .akc-hos-racs{grid-template-columns:minmax(0,1fr);gap:16px;text-align:center}
+  .akc-hos .felirat{justify-content:center}
+  .akc-hos .kat-ertekeles{justify-content:center}
+  .akc-mi{grid-template-columns:minmax(0,1fr);gap:18px}
+  .akc-helyek{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:760px){
+  .akc-hos{padding:18px 0 22px}
+  .akc-dobozok{gap:7px}
+  .akc-doboz{padding:18px 5px 9px;border-radius:14px}
+  .akc-db{font-size:.76rem}
+  .akc-ar{font-size:1.06rem}
+  .akc-al{margin-bottom:8px;font-size:.68rem}
+  .akc-gomb{padding:.6em .4em;font-size:.78rem}
+  .akc-cimke{font-size:.54rem;padding:2px 7px}
+  .akc-garancia{font-size:.8rem;text-align:left}
+  .akc-pud{padding:20px 16px;text-align:center}
+  .akc-tipusok{justify-content:center}
+  .akc-mi-szoveg,.akc-hol,.akc-gyik h2{text-align:center}
+  .akc-csekk{justify-content:center}
+  .akc-hely{text-align:left}
+  .akc-videok .vsav-elem{flex-basis:31%}
+  .akc-sav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #f0d6d0;box-shadow:0 -6px 20px rgba(60,40,36,.12)}
+  .akc-sav-ar{min-width:0}
+  .akc-sav-ar b{display:block;color:var(--navy);font-size:.92rem;line-height:1.2}
+  .akc-sav-ar .akc-nowrap{display:inline;white-space:nowrap;color:inherit;font-size:inherit}
+  .akc-sav-ar span{display:block;color:var(--mut);font-size:.72rem}
+  .akc-sav-tel{display:grid;place-items:center;width:44px;height:44px;border:1.5px solid #e7c6c1;border-radius:50%;color:#a35a4b}
+  .akc-sav-tel .ik{width:20px;height:20px}
+  .akc-sav-gomb{width:auto;padding:.85em 1.1em;font-size:.9rem}
+  body:has(.akc-sav){padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+}
+@media (max-width:1000px){.akc-hos .hos-bevezeto{margin-inline:auto}}
+@media (max-width:760px){
+  .akc-cimke{white-space:normal;width:max-content;max-width:calc(100% - 4px);line-height:1.2;text-align:center}
+}
+@media (max-width:380px){.akc-sav{gap:7px;padding-inline:10px}.akc-sav-gomb{padding:.8em .85em;font-size:.84rem}.akc-sav-tel{width:40px;height:40px}.akc-sav-ar span{font-size:.68rem;white-space:nowrap}}

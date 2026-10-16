@@ -252,15 +252,60 @@
   const ROVID = { 'Január': 'Jan.', 'Február': 'Febr.', 'Március': 'Márc.', 'Április': 'Ápr.', 'Május': 'Máj.', 'Június': 'Jún.', 'Július': 'Júl.', 'Augusztus': 'Aug.', 'Szeptember': 'Szept.', 'Október': 'Okt.', 'November': 'Nov.', 'December': 'Dec.' };
   const rovid = (sor) => sor.replace(/^[^\s\d]+/, (h) => ROVID[h] || h).replace(/,\s*/g, ',\u2009');
   const datumok = $$('[data-mp-kitelepules]');
-  if (datumok.length && window.fetch) {
-    fetch('/api/kitelepulesek').then((v) => (v.ok ? v.json() : null)).then((adat) => {
-      if (!adat || !adat.sorok) return;
+  const akcHelyek = $('[data-akc-helyek]');
+  const kitAdat = (datumok.length || akcHelyek) && window.fetch
+    ? fetch('/api/kitelepulesek').then((v) => (v.ok ? v.json() : null)).catch(() => null) : Promise.resolve(null);
+  if (datumok.length) {
+    kitAdat.then((adat) => {
+      if (!adat || !adat.sorok) return; // (marad a build idejen beirt allapot)
       for (const d of datumok) {
         const sorok = adat.sorok[d.dataset.mpKitelepules];
         if (sorok && sorok.length) d.replaceChildren(...sorok.map(d.hasAttribute('data-teljes') ? (x) => x : rovid).flatMap((x, i) => (i ? [document.createElement('br'), x] : [x])));
       }
-    }).catch(() => { /* marad a build idejen beirt allapot */ });
+    });
   }
+
+  // --- 4f. az oszi akcio oldala ("Hol és mikor?", a tulajdonos kerese, 2026-10-16): Budapest mellett a ket legkozelebbi kitelepulesi nap a tablazatbol
+  // (a helyszin valodi napja, nem kitalalt "szabad idopont": a szabad idopontokat a foglalo mutatja); ha nincs adat, csak Budapest + a gomb latszik ---
+  if (akcHelyek) {
+    const HONAP = ['Január', 'Február', 'Március', 'Április', 'Május', 'Június', 'Július', 'Augusztus', 'Szeptember', 'Október', 'November', 'December'];
+    const HO_ROVID = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
+    const NAP = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
+    const most = new Date(), ma = new Date(most); ma.setHours(0, 0, 0, 0);
+    if (most.getHours() >= 15) ma.setDate(ma.getDate() + 1); // (delutan a mai kitelepulesi nap mar nem foglalhato: a kovetkezo napot mutatjuk)
+    const kovetkezo = (sorok) => {
+      let leg = null;
+      for (const sor of sorok || []) {
+        const m = /^(\S+)\s+([\d,\s]+)$/.exec(sor.trim()); const h = m ? HONAP.indexOf(m[1]) : -1;
+        if (h < 0) continue;
+        const ev = ma.getFullYear() + (h < ma.getMonth() - 2 ? 1 : 0); // (decemberben a januari sor mar a kovetkezo ev)
+        for (const n of m[2].split(',').map((x) => +x.trim()).filter(Boolean)) { const d = new Date(ev, h, n); if (d >= ma && (!leg || d < leg)) leg = d; }
+      }
+      return leg;
+    };
+    const ma0 = new Date(most); ma0.setHours(0, 0, 0, 0);
+    const szoveg = (d) => { const k = Math.round((d - ma0) / 864e5); return k === 0 ? 'ma' : k === 1 ? 'holnap' : `${HO_ROVID[d.getMonth()]} ${d.getDate()}., ${NAP[d.getDay()]}`; };
+    kitAdat.then((adat) => {
+      if (!adat || !adat.sorok) return;
+      const jelolt = [];
+      for (const li of $$('.akc-osszes .helyek li')) {
+        const kulcs = li.querySelector('[data-mp-kitelepules]'), a = li.querySelector('a[href]'), nev = li.querySelector('b');
+        const d = kulcs && a && nev && kovetkezo(adat.sorok[kulcs.dataset.mpKitelepules]);
+        if (d) jelolt.push({ d, nev: nev.textContent, href: a.getAttribute('href') });
+      }
+      jelolt.sort((x, y) => x.d - y.d).slice(0, 2).forEach((j) => {
+        const li = document.createElement('li'); li.className = 'akc-hely';
+        const bal = document.createElement('div'), b = document.createElement('b'), s1 = document.createElement('span'), s2 = document.createElement('span');
+        b.textContent = j.nev; s1.textContent = 'kitelepülés'; s2.className = 'akc-kov'; s2.textContent = 'Következő nap: ' + szoveg(j.d);
+        bal.append(b, s1, s2);
+        const g = document.createElement('a'); g.className = 'gomb gomb-kicsi'; g.href = j.href; g.textContent = 'Foglalás';
+        li.append(bal, g); akcHelyek.append(li);
+      });
+    });
+  }
+  // az akcio-oldal "Ezt foglalom" gombjai (data-csomag): a foglalo a csomaggal elovalasztva nyilik (motor.js nyit: a Piercing-lepesben az a csomag elol, lenyitva).
+  // (a kattintas a motor-indito elott fut - elkapo fazis -; a foglalasi ut es a meres ugyanaz)
+  document.addEventListener('click', (e) => { const a = e.target && e.target.closest ? e.target.closest('a[data-csomag]') : null; if (a) window.__mpCsomag = a.dataset.csomag; }, true);
 
   // --- 4e. a vendegek videos beszamoloi (lapozhato sav): csak a boritokep toltodik (lustan), a video kattintasra indul helyben; egyszerre egy szol ---
   $$('[data-vsav]').forEach((sav) => {
