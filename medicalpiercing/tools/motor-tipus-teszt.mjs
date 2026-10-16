@@ -235,11 +235,14 @@ const LEHETOSEGEK = { kontroll: 3, ekszercsere: 4, garancia: 1 };
   await p.goto(CIM + '/?motor=0', { waitUntil: 'load' });
   await p.waitForTimeout(1500);
   // a regi linkek "uj lapon" nyilnak (target=_blank): kikapcsolt motornal a link NEM kapja el a motor, a regi koztes oldal nyilik uj lapon
-  const popup = ctx.waitForEvent('page', { timeout: 8000 }).then((pg) => pg, () => null);
+  // (az uj fooldal - elesitve az eredeti cimen - a foglalasi linket ugyanabban a lapban nyitja: ott a lap maga jut a regi koztes oldalra)
+  const ujLap = (await p.$eval('a[href="/idopontfoglalas"]', (a) => a.target)) === '_blank';
+  const popup = ujLap ? ctx.waitForEvent('page', { timeout: 8000 }).then((pg) => pg, () => null) : null;
   await linkKattint(p, 'a[href="/idopontfoglalas"]');
-  const pg = await popup;
+  const pg = ujLap ? await popup : p;
   if (pg) await pg.waitForURL(/idopontfoglalas/, { timeout: 8000 }).catch(() => {});
-  ok('J: ?motor=0: a header link az /idopontfoglalas cimet nyitja (uj lapon), a motor az eredeti lapon nem nyilik', !!pg && /idopontfoglalas/.test(pg.url()) && !(await p.evaluate(() => !!document.querySelector('[data-mp-motor]'))), pg ? pg.url() : 'nincs uj lap');
+  const motorNyitva = await p.evaluate(() => !!document.querySelector('[data-mp-motor]')).catch(() => false);
+  ok(`J: ?motor=0: a header link az /idopontfoglalas cimet nyitja (${ujLap ? 'uj lapon' : 'ugyanabban a lapban'}), a motor nem nyilik`, !!pg && /idopontfoglalas/.test(pg.url()) && !motorNyitva, pg ? pg.url() : 'nincs uj lap');
   await ctx.close();
 }
 
