@@ -147,7 +147,21 @@ export function smsKirajzol(uz, ert) {
     s = (s.slice(0, kezd) + s.slice(veg)).replace(/\s{2,}/g, ' ');
   }
   const { szoveg } = sorKitolt(s, ert);
-  return { szoveg: szoveg.replace(/\s+([,.!?])/g, '$1'), szegmens: smsSzegmens(szoveg) };
+  const kesz = smsTomorit(szoveg.replace(/\s+([,.!?])/g, '$1'));
+  return { szoveg: kesz, szegmens: smsSzegmens(kesz) };
+}
+
+/**
+ * SMS-koltseg (a tulajdonos kerese, 2026-10-16): az SMS 1 szegmens legyen. Ekezettel csak 70 karakter fer egy szegmensbe,
+ * ekezet nelkul 160 -> a kitoltott szoveget ekezet nelkulire alakitjuk (a ragozas mar megtortent), a linkekbol elhagyjuk a
+ * "https://www." elotagot (mosaicheadspa.hu/f/<kod> a telefonokon igy is kattinthato), a tipografiai jeleket ASCII-ra csereljuk.
+ */
+export function smsTomorit(szoveg) {
+  return String(szoveg)
+    .replace(/https?:\/\/(www\.)?/g, '')
+    .replace(/[–—]/g, '-').replace(/[‘’]/g, "'").replace(/[“”„]/g, '"').replace(/…/g, '...')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^\x20-\x7e\n]/g, '');
 }
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);

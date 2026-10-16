@@ -5,7 +5,7 @@ export default {
   uzenetek: [
     {
       id: 'LASER-SMS-01', csatorna: 'sms', mikor: { tipus: 't0' },
-      szoveg: 'Szia {keresztnév}! Megvan az időpontod: {dátum} {időpont}, {szolgáltatás}. MOSAIC, 1023 Budapest, Bécsi út 2. Részletek/módosítás: {foglalás_részletei_link}.',
+      szoveg: 'Szia {keresztnév}! Megvan a szőrtelenítés időpontod: {dátum} {időpont}. MOSAIC, Bécsi út 2. Részletek, módosítás: {foglalás_részletei_link}',
     },
     {
       // T0 - uj konzultacio / elso kezeles. Ha a foglalas < 30 orara van az idopontig, a kritikus elokeszulet ide kerul (surgos_kiegeszites).
@@ -118,16 +118,16 @@ export default {
     },
     {
       id: 'LASER-SMS-02', csatorna: 'sms', mikor: { tipus: 't72' }, szegmensek: ['konzultacio', 'elso'],
-      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor várunk {szolgáltatás}-ra. Ha jössz: {megerősítés_link}. Ha változott valami: {módosítás_link}. A részletes előkészületet e-mailben is elküldtük. MOSAIC',
+      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor várunk. Ha jössz: {megerősítés_link} Ha változott valami: {módosítás_link} Teendők: lásd e-mail.',
     },
     {
       // a visszatérő kúravendég nem kap T-72 e-mailt (LASER-EMAIL-04 csak új vendégnek): nála a mondat az e-mailről kimarad
       id: 'LASER-SMS-02B', csatorna: 'sms', mikor: { tipus: 't72' }, szegmensek: ['visszatero'],
-      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor várunk {szolgáltatás}-ra. Ha jössz: {megerősítés_link}. Ha változott valami: {módosítás_link}. MOSAIC',
+      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor várunk szőrtelenítésre. Ha jössz: {megerősítés_link} Ha változott valami: {módosítás_link}',
     },
     {
       id: 'LASER-SMS-03', csatorna: 'sms', mikor: { tipus: 't24' },
-      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor várunk. A terület legyen leborotválva; ne legyen friss barnulás/önbarnító, és aznap ne használj krémet, olajat vagy dezodort rajta. Kérdés: 06 20 247 4444. MOSAIC',
+      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor várunk. A terület legyen leborotválva, ne legyen friss barnulás, aznap ne kend be. Kérdés: 06 20 247 4444',
     },
   ],
   megjegyzesek: [

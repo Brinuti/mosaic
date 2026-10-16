@@ -6,7 +6,7 @@ export default {
     {
       // T0 SMS: a "Melitta 24 oran belul felhiv" a korrekciora es eltavolitasra nem igaz, ezert azokra nem megy
       id: 'PMU-SMS-01', csatorna: 'sms', mikor: { tipus: 't0' }, szegmensek: ['fizetos', 'konzultacio'],
-      szoveg: 'Szia {keresztnév}! Megvan a PMU időpontod: {dátum} {időpont}, {szolgáltatás}, MOSAIC - Bécsi út 2. Melitta 24 órán belül felhív, hogy legyen lehetőséged kérdezni. Részletek: {foglalás_részletei_link}.',
+      szoveg: 'Szia {keresztnév}! Megvan a PMU időpontod: {dátum} {időpont}, Bécsi út 2. Melitta 24 órán belül felhív. Részletek: {foglalás_részletei_link}',
     },
     {
       id: 'PMU-EMAIL-01', csatorna: 'email', mikor: { tipus: 't0' }, szegmensek: ['fizetos'],
@@ -125,16 +125,16 @@ export default {
     },
     {
       id: 'PMU-SMS-02', csatorna: 'sms', mikor: { tipus: 't72' }, szegmensek: ['fizetos'],
-      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor vár Melitta {szolgáltatás}-ra. Ha jössz: {megerősítés_link}. Ha változott valami: {módosítás_link}. A fontos felkészülést e-mailben is elküldtük. MOSAIC',
+      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor vár Melitta. Ha jössz: {megerősítés_link} Módosítás: {módosítás_link} A teendők az e-mailben.',
     },
     {
       // konzultációra és korrekcióra nem megy T-72 prep e-mail (PMU-EMAIL-05 csak új fizetős kezelésre): náluk a mondat kimarad
       id: 'PMU-SMS-02B', csatorna: 'sms', mikor: { tipus: 't72' }, szegmensek: ['konzultacio', 'korrekcio'],
-      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor vár Melitta {szolgáltatás}-ra. Ha jössz: {megerősítés_link}. Ha változott valami: {módosítás_link}. MOSAIC',
+      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor vár Melitta. Ha jössz: {megerősítés_link} Ha változott valami: {módosítás_link}',
     },
     {
       id: 'PMU-SMS-03', csatorna: 'sms', mikor: { tipus: 't24' }, nem_szegmensek: ['eltavolitas'],
-      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor vár Melitta a MOSAIC-ban, 1023 Budapest, Bécsi út 2. Ha új gyógyszer, friss beavatkozás, napégés vagy ajaknál herpeszhajlam miatt kérdésed van, kérlek jelezd előre: 06 20 247 4444. Várunk!',
+      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor vár Melitta, Bécsi út 2. Új gyógyszer, napégés vagy herpeszhajlam esetén jelezd előre: 06 20 247 4444',
     },
     {
       // 7.4: az ingyenes konzultacio rovidített sorozata (a dokumentum azonositoja: PMU-KONZ-EMAIL-01)

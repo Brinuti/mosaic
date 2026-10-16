@@ -73,7 +73,7 @@ SMS-ben a linkek sima helyőrzők a szövegben.
 - Az opcionális helyőrzőket (`{munkatárs}`, `{fodrász}`, `{várható_időtartam}`, `{aktuális_ár}`, `{aktuális_ajánlat}`) tartalmazó sor/bekezdés kimarad, ha az érték nem ismert. A `{aktuális_ár}` és `{aktuális_ajánlat}` jelenleg SOHA nem ismert
   (nincs garantáltan aktuális ár-forrás): a dokumentum szerint ilyenkor ne legyen benne ár. **Ezeket a sorokat is tedd át a katalógusba** (a motor elhagyja őket); az ár/akció fixen SOHA ne legyen a szövegben
   (pl. "20% kedvezmény", hónapnév, forint összeg) – ahol a dokumentum fix összeget/százalékot ír, azt a sort **hagyd ki**, és jegyezd fel a `megjegyzesek` mezőbe (lásd lent).
-- Az SMS legfeljebb 480 karakter lehet kitöltve; az SMS-ben ne legyen `{aktuális_ár}` / `{aktuális_ajánlat}`.
+- Az SMS legfeljebb 160 karakter lehet kitöltve, ékezet nélkül (1 SMS-szegmens; a render.js `smsTomorit` a kiküldéskor ékezetteleníti és rövidíti a linkeket); az SMS-ben ne legyen `{aktuális_ár}` / `{aktuális_ajánlat}`.
 
 ## `megjegyzesek`
 

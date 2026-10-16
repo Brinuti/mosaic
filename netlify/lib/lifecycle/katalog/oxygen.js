@@ -5,7 +5,7 @@ export default {
   uzenetek: [
     {
       id: 'OX-SMS-01', csatorna: 'sms', mikor: { tipus: 't0' },
-      szoveg: 'Szia {keresztnév}! Megvan az időpontod: {dátum} {időpont}, {szolgáltatás}. MOSAIC, 1023 Budapest, Bécsi út 2. Részletek/módosítás: {foglalás_részletei_link}. Várunk!',
+      szoveg: 'Szia {keresztnév}! Megvan az oxigénterápia időpontod: {dátum} {időpont}. MOSAIC, Bécsi út 2. Részletek, módosítás: {foglalás_részletei_link}',
     },
     {
       id: 'OX-EMAIL-01', csatorna: 'email', mikor: { tipus: 't0' }, szegmensek: ['konzultacio', 'elso'],
@@ -108,7 +108,7 @@ export default {
     },
     {
       id: 'OX-SMS-02', csatorna: 'sms', mikor: { tipus: 't72' },
-      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor várunk {szolgáltatás}-ra. Ha jössz: {megerősítés_link}. Ha változott valami, itt tudod áttenni: {módosítás_link}. Kérjük, tiszta, száraz hajjal érkezz. MOSAIC',
+      szoveg: 'Szia {keresztnév}! 3 nap múlva {időpont}-kor várunk. Ha jössz: {megerősítés_link} Ha változott valami: {módosítás_link} Száraz hajjal gyere!',
     },
     {
       id: 'OX-EMAIL-04', csatorna: 'email', mikor: { tipus: 't72' }, szegmensek: ['konzultacio', 'elso'],
@@ -133,7 +133,7 @@ export default {
     },
     {
       id: 'OX-SMS-03', csatorna: 'sms', mikor: { tipus: 't24' },
-      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor várunk a MOSAIC-ban, 1023 Budapest, Bécsi út 2. Kérjük, tiszta, száraz hajjal érkezz, és tervezz {várható_időtartam} időt. Várunk!',
+      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor várunk a MOSAIC-ban, Bécsi út 2. Tiszta, száraz hajjal érkezz, és tervezz {várható_időtartam} időt. Várunk!',
     },
   ],
   megjegyzesek: [

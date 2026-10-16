@@ -5,7 +5,7 @@ export default {
   uzenetek: [
     {
       id: 'HS-SMS-01', csatorna: 'sms', mikor: { tipus: 't0' },
-      szoveg: 'Szia {keresztnév}! Megvan a HeadSpa időpontod: {dátum} {időpont}, {szolgáltatás}. Cím: MOSAIC, 1023 Budapest, Bécsi út 2. Részletek vagy módosítás: {foglalás_részletei_link}. Várunk!',
+      szoveg: 'Szia {keresztnév}! Megvan a HeadSpa időpontod: {dátum} {időpont}. MOSAIC, Bécsi út 2. Részletek, módosítás: {foglalás_részletei_link}',
     },
     {
       id: 'HS-EMAIL-01', csatorna: 'email', mikor: { tipus: 't0' },
@@ -80,11 +80,11 @@ export default {
     },
     {
       id: 'HS-SMS-02', csatorna: 'sms', mikor: { tipus: 't72' },
-      szoveg: 'Szia {keresztnév}! 3 nap múlva, {nap} {időpont}-kor várunk HeadSpára. Ha jössz, erősítsd meg itt: {megerősítés_link}. Ha változott valami, itt tudod áttenni az időpontot: {módosítás_link}. MOSAIC',
+      szoveg: 'Szia {keresztnév}! Várunk {nap} {időpont}-kor HeadSpára. Ha jössz, erősítsd meg: {megerősítés_link} Ha változott valami: {módosítás_link}',
     },
     {
       id: 'HS-SMS-03', csatorna: 'sms', mikor: { tipus: 't24' },
-      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor várunk a MOSAIC-ban. Érkezz kb. 10 perccel korábban. GPS: 1023 Budapest, Bécsi út 2. Parkolás: Bécsi út (0202) vagy ParkL, Bécsi út 11. Tervezz kb. 80-90 percet. Várunk!',
+      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor várunk, Bécsi út 2. Gyere 10 perccel korábban, tervezz 80-90 percet. Parkolás: ParkL, Bécsi út 11.',
     },
   ],
 };
