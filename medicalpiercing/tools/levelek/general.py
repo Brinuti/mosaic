@@ -388,7 +388,7 @@ SMS = [
  ('T-72 vidék', '72 órával előtte, vidéken', 'Szia {keresztnev}! {nap} {ido}-kor varunk {varosban}. Ha nem jo, itt atteheted: {link}. Legkozelebb itt: {kov_nap}. - MP'),
  ('T-24', '24 órával előtte', 'Szia {keresztnev}! Holnap {ido}-kor varunk: {cim_rovid}. Egyel elotte, erkezz 5 perccel korabban. - MP'),
  ('Lemondás', 'Azonnal', 'Szia {keresztnev}! Toroltuk a {datum} {ido}-s idopontodat. Ha csak az idopont nem jo, itt valaszthatsz ujat: {link} - MP'),
- ('Módosítás', 'Azonnal', 'Szia {keresztnev}! Megvan az uj idopontod: {datum} {ido}, {helyszin_rovid}. Reszletek: {link} - MP'),
+ ('Módosítás', 'Azonnal', 'Szia {keresztnev}! Attettuk az idopontodat: {datum} {ido}, {helyszin_rovid}. Reszletek: {link} - MP'),
  ('A0', 'A szúrás napján 19:00', 'Szia {keresztnev}! Koszonjuk, hogy nalunk jartal! Itt az utoapolasi utmutatod: {link} - Medical Piercing'),
  ('A1', 'A szúrás utáni 4. napon', 'Szia {keresztnev}! Ha most kicsit piros vagy duzzadt a fuled: ez a gyogyulas resze. Ha bizonytalan vagy: {link} - MP'),
  ('No-show', 'Következő munkanap 10:00', 'Szia {keresztnev}! Tegnap nem talalkoztunk, remeljuk, minden rendben. Ha attennad az idopontot: {link} - MP'),
@@ -399,7 +399,7 @@ MOTOR_SMS = [
  dict(id='MP-SMS-02', csatorna='sms', mikor=dict(tipus='t72'), szoveg='Szia {keresztnév}! Várunk {dátum_ragos} {időpont}-kor. Megerősíted, vagy átteszed? Egy kattintás: {foglalás_részletei_link} - Medical Piercing'),
  dict(id='MP-SMS-03', csatorna='sms', mikor=dict(tipus='t24'), szoveg='Szia {keresztnév}! Holnap {időpont}-kor várunk, {helyszín_rövid}. Egyél előtte, érkezz 5 perccel korábban. - Medical Piercing'),
  dict(id='MP-SMS-04', csatorna='sms', mikor=dict(tipus='lemondva'), szoveg='Szia {keresztnév}! Töröltük a {dátum} {időpont} időpontodat. Újat itt választhatsz: {foglalás_link} - Medical Piercing'),
- dict(id='MP-SMS-05', csatorna='sms', mikor=dict(tipus='athelyezve'), szoveg='Szia {keresztnév}! Megvan az új időpontod: {új_dátum} {új_időpont}. Részletek: {foglalás_részletei_link} - Medical Piercing'),
+ dict(id='MP-SMS-05', csatorna='sms', mikor=dict(tipus='athelyezve'), szoveg='Szia {keresztnév}! Áttettük az időpontodat: {új_dátum} {új_időpont}. Részletek: {foglalás_részletei_link} - Medical Piercing'),
  dict(id='MP-SMS-06', csatorna='sms', mikor=dict(tipus='nem_jelent_meg'), szoveg='Szia {keresztnév}! {nem_találkoztunk}. Új időpont: {foglalás_link} - Medical Piercing'),
 ]
 if MOTOR:

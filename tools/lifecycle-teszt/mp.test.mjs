@@ -158,7 +158,7 @@ test('mp: sajat lemondas / athelyezes uzenetek (nem a MOSAIC COMMON-*), az ujrat
   const r = await ingest(db, env, ath, MOST + ORA);
   assert.equal(r.tipus, 'athelyezve');
   await tick(db, env, k, MOST + ORA);
-  assert.ok(k.ki.sms.some((s) => /Megvan az uj idopontod/.test(s.szoveg) && / - Medical Piercing$/.test(s.szoveg)));
+  assert.ok(k.ki.sms.some((s) => /Attettuk az idopontodat/.test(s.szoveg) && / - Medical Piercing$/.test(s.szoveg)));
   assert.ok(k.ki.email.some((m) => /^Megvan az új időpontod: / .test(m.targy) && m.uzletag === 'mp'));
   assert.equal(szam(db, "SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'COMMON-%'").n, 0);
   assert.equal(szam(db, "SELECT COUNT(*) AS n FROM kuldesek WHERE uzenet_id LIKE 'MP-SMS-05#%' OR uzenet_id LIKE 'MP-EMAIL-12#%'").n, 2);
