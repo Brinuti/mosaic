@@ -111,7 +111,7 @@ assert.equal(await suti(p), null, 'SAV_KI: nem irunk sutit dontes nelkul');
   assert.equal(ev.length, 1);
   assert.deepEqual([ev[0].event, ev[0].gy_suti_dontott, ev[0].gy_suti_stat, ev[0].gy_suti_mark, ev[0].gy_suti_sav_ki, ev[0].gy_suti_alap], ['gy_suti_allapot', false, true, true, true, true]);
 }
-assert.deepEqual(await consent(p), [], 'SAV_KI: a default-ot a GTM adja, a szkript nem allit consentet dontes nelkul');
+assert.deepEqual(await consent(p), [['update', { ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'denied', analytics_storage: 'granted' }]], 'SAV_KI: dontes nelkul az alap "megadott" a Google-jelekben is (Feri, 2026-10-16)');
 assert.equal(await p.evaluate(() => window.gySuti.engedely('mark') && window.gySuti.engedely('stat') && !window.gySuti.dontott()), true);
 // a lableci "Suti beallitasok" link (az eles lablec szerkezete: ul#nav2 > li > a[rel=privacy-policy]) megnyitja a savot; az elutasitas elsobbseget el
 assert.equal(await p.locator('#nav2 li #gy-cc-lablec').count(), 1, 'lableci link megvan');
@@ -121,12 +121,12 @@ await p.locator('#gy-cc-beall').waitFor();
 await p.locator('#gy-cc-stat').uncheck(); await p.locator('#gy-cc-mark').uncheck();
 await p.locator('[data-gy=mentes]').click();
 assert.match(await suti(p), /^v1-s0-m0-t\d+$/);
-assert.deepEqual((await consent(p)).map((x) => x[1].ad_storage + '/' + x[1].analytics_storage), ['denied/denied']);
+assert.deepEqual((await consent(p)).map((x) => x[1].ad_storage + '/' + x[1].analytics_storage), ['granted/granted', 'denied/denied']);
 assert.equal(await p.evaluate(() => window.gySuti.engedely('mark') || window.gySuti.engedely('stat')), false);
 await p.reload(); await p.waitForTimeout(500);
 assert.equal(await p.locator('#gy-cc').isVisible().catch(() => false), false);
 assert.equal(await p.evaluate(() => window.gySuti.engedely('mark')), false, 'a kifejezett elutasitas visszalepes utan is elsobbseget el');
-lep('SAV_KI: nincs sav, nincs suti, alap "megadott" (event + engedely), nincs consent-update dontes nelkul; a kifejezett elutasitas elsobbseget el es megmarad');
+lep('SAV_KI: nincs sav, nincs suti, alap "megadott" (event + engedely), dontes nelkul consent-update granted; a kifejezett elutasitas elsobbseget el es megmarad');
 savKi = false;
 
 // 6/c) SAV-TESZT (SAV_KI mod + konfig): a sav CSAK a teszt-oldalon latszik, A/B valtozatokkal, ulesenkent allando valtozattal; statisztika valtozatra / oldalra bontva
