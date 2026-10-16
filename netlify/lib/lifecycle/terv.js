@@ -30,6 +30,20 @@ const tizOra = (epoch) => { const l = helyi(epoch); return helyiEpoch(l.y, l.m, 
 export function uzenetek(uzletag) { return KATALOG[uzletag]?.uzenetek || []; }
 export function kozosUzenet(tipus) { return KOZOS.uzenetek.filter((u) => u.mikor.tipus === tipus); }
 export function keres(uzletag, id) { return [...uzenetek(uzletag), ...KOZOS.uzenetek].find((u) => u.id === id) || null; }
+/**
+ * Az esemeny-uzenetek (lemondva | athelyezve | nem_jelent_meg) azonositoi az uzletagnak: ha az uzletag sajat katalogusaban van ilyen tipusu uzenet
+ * (Medical Piercing), azok; kulonben a kozos (COMMON-*) uzenetek - a MOSAIC-uzletagaknal a mukodes valtozatlan.
+ */
+export function esemenyIdk(uzletag, tipus) {
+  const sajat = uzenetek(uzletag).filter((u) => u.mikor.tipus === tipus);
+  return (sajat.length ? sajat : kozosUzenet(tipus)).map((u) => u.id);
+}
+const ESEMENY = new Set(['lemondva', 'athelyezve', 'nem_jelent_meg']);
+/** Igaz, ha az azonosito (a "#n" sorszam nelkul) esemeny-uzenet: ezeket az ujratervezes nem torli. */
+export function esemenyUzenet(uzletag, id) {
+  const u = keres(uzletag, String(id).split('#')[0]);
+  return u ? ESEMENY.has(u.mikor.tipus) : String(id).startsWith('COMMON-');
+}
 
 /**
  * @param {{uzletag:string, szegmensek:string[], kezdet:number}} f  a foglalas (kezdet = epoch mp)
@@ -62,6 +76,11 @@ export function tervez(f, alap, opciok = {}) {
     } else if (t === 'tartalom') {
       if (leadNap < u.mikor.min_lead_nap) { ki(u, `lead < ${u.mikor.min_lead_nap} nap`); continue; }
       tartalmiak.push(u);
+    } else if (t === 'elott_ora') { // pl. MP T-48 felkeszito level: az idopont elott `ora` oraval, ha a foglalas legalabb `min_lead_ora` oraval elotte tortent
+      if (lead < (u.mikor.min_lead_ora ?? u.mikor.ora) * ORA) { ki(u, `lead < ${u.mikor.min_lead_ora ?? u.mikor.ora} ora`); continue; }
+      const due = ablakos(u, f.kezdet - u.mikor.ora * ORA);
+      if (due <= alap) { ki(u, 'nincs ra hely az idopont elott'); continue; }
+      be(u, due);
     } else if (t === 'feladat_t0') {
       if (lead <= 0) { ki(u, 'az idopont mar elmult'); continue; }
       be(u, alap + 60);
@@ -75,12 +94,15 @@ export function tervez(f, alap, opciok = {}) {
   }
 
   // tartalmi e-mailek: a lead-time keret szerint a fontossagi sorrendben; nem eshetnek a T-72 koze (legalabb 24 oraval elotte), es nem az elso 6 oraba
-  const keret = tartalomKeret(leadNap);
+  // a katalogus kikapcsolhatja a lead-time keretet (MP: a tartalmi levelek sajat min_lead_nap szabalyai donetnek: 5+ nap E1, 7+ nap E2, 14+ nap E3)
+  const keret = KATALOG[f.uzletag]?.tartalomKeret === false ? Infinity : tartalomKeret(leadNap);
   const sorban = tartalmiak.sort((a, b) => (a.sorrend ?? 99) - (b.sorrend ?? 99));
   const valasztott = [];
   for (const u of sorban) {
     if (valasztott.length >= keret) { ki(u, `a ${keret} tartalmi e-mail kerete betelt`); continue; }
-    let due = u.mikor.utan_napok !== undefined ? tizOra(alap + u.mikor.utan_napok * NAP) : tizOra(f.kezdet - u.mikor.elott_napok * NAP);
+    // utan_napok: N nappal a foglalas utan; elott_napok: N nappal az idopont elott; aranyban: a foglalas es az idopont kozti ido adott hanyadanal (0.5 = felenel)
+    let due = u.mikor.utan_napok !== undefined ? tizOra(alap + u.mikor.utan_napok * NAP)
+      : u.mikor.aranyban !== undefined ? tizOra(alap + Math.round(lead * u.mikor.aranyban)) : tizOra(f.kezdet - u.mikor.elott_napok * NAP);
     if (due < alap + 6 * ORA) due = ablakos(u, alap + 6 * ORA);
     const hatar = f.kezdet - 96 * ORA; // a T-72 elott legalabb egy nappal
     if (due > hatar) due = hatar;
