@@ -33,7 +33,7 @@ export const B_ALAP = new Map([
 ]);
 export const KATEGORIA_B_UTAK = new Set(B_ALAP.values());
 // A piercing-oldalak hos-galeriaja (a tulajdonos kerese, 2026-10-16): mind a 9 kategoria-oldalon (a divat fulpiercing kivetelevel) galeria a hosben;
-// az 1-2. kep oldalankent a tulajdonos Drive-mappajabol (assets/img/uj-galeria-<kulcs>-1|2.webp), a 3-5. a migren-oldal kozos kepei.
+// az 1. kep a fulkep (Drive: "<x> ful.png" -> uj-galeria-<kulcs>-2.webp), a 2. az osszefoglalo ("<X> elso oldal.png" -> -1.webp), a 3-5. a migren-oldal kozos kepei.
 const GALERIA_KOZOS = ['/assets/img/f18724_6ea547e25b1d4b9b9073ebf522221b83.jpg', '/assets/img/f18724_a72cb347446b4b348cf6a35d08f43dca.webp', '/assets/img/f18724_0a502786784446d6a3c6b60c371ee731.jpg'];
 const GALERIA_KULCS = [[/^\/migren-piercing(?:-b)?$/, 'migren'], [/^\/shenmen-piercing(?:-b)?$/, 'shenmen'], [/^\/klimax-piercing(?:-b)?$/, 'klimax'],
   [/^\/slim-(?:etvagycsokkento-)?piercing(?:-b)?$/, 'slim'], [/^\/allergia-piercing$/, 'allergia'], [/^\/maj-piercing$/, 'maj'],
@@ -41,7 +41,7 @@ const GALERIA_KULCS = [[/^\/migren-piercing(?:-b)?$/, 'migren'], [/^\/shenmen-pi
 export function hosGaleriaKepek(ROOT, ut) {
   const k = GALERIA_KULCS.find(([re]) => re.test(ut));
   if (!k) return null;
-  const sajat = [1, 2].map((i) => `/assets/img/uj-galeria-${k[1]}-${i}.webp`);
+  const sajat = [2, 1].map((i) => `/assets/img/uj-galeria-${k[1]}-${i}.webp`);   // a tulajdonos kerese: elol a fulkep, utana az osszefoglalo kep
   if (!sajat.every((f) => fs.existsSync(path.join(ROOT, f)))) return null;
   return [...sajat, ...GALERIA_KOZOS].map((src) => ({ src }));
 }
@@ -49,7 +49,7 @@ export function hosGaleriaKepek(ROOT, ut) {
 // a B oldal sajat hos-cime (ahol az eredeti cim egy hosszu mondat): az eredeti mondat a bevezetobe kerul
 const HOS_CIM = new Map([
   ['/rolunk', { cim: '11 év migrén után <em>végre szabad vagyok</em>' }],
-  ['/3-piercing-2-araert-regi', { cim: 'Most megéri 2 vagy 3 <em>piercinget szúratni!</em>' }],
+  ['/3-piercing-2-araert-regi', { cim: 'Most megéri 2 vagy 3 <em>piercinget szúratni!</em>', negyzet: true }],   // a plakat szovege ne logjon le: negyzetes kep
   ['/igy-szabadultam-meg-a-migrentol', { cimBevezetobe: true, cim: 'Így szabadultam meg <em>a migréntől</em>', kep: { src: '/assets/img/f18724_54b61499c5b84a13a36273a398325981.webp', nw: 1000, nh: 963, alt: 'Kovács Gabriella, a Medical Piercing alapítója, munka közben' } }],
 ]);
 
@@ -423,7 +423,6 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
       <figure class="hos-kep">
         <img src="${esc(h.kep.src)}"${keparany(h.kep)} alt="${esc(h.kep.alt || adat.cim)}"${h.kep.nh > h.kep.nw ? ' style="object-position:50% 40%"' : ''} fetchpriority="high">
         ${h.idezetH ? `<figcaption class="hos-idezet"><span class="hos-idezet-cim">${szovegLink(h.idezetH.html)}</span>${h.idezetP ? `<small>${szovegLink(h.idezetP.html)}</small>` : ''}</figcaption>` : ''}
-        <div class="hos-pecset" aria-hidden="true">${IK('shield')}<span>20 év<br>alapítói<br>egészségügyi<br>tapasztalat</span></div>
       </figure>
     </div>
   </section>`;
@@ -477,11 +476,10 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
           ${ert}
           <ul class="hos-linkek">${linkek.join('')}</ul>
         </div>
-        <!--#bizalom-->
+        
       </div>
-      <figure class="hos-kep${h.gal ? ' hos-galeria' : !h.kep ? ' hos-video' : ''}">
+      <figure class="hos-kep${h.gal ? ' hos-galeria' : !h.kep ? ' hos-video' : ''}${sajatCim && sajatCim.negyzet ? ' hos-kep-negyzet' : ''}">
         ${galeria}
-        <div class="hos-pecset" aria-hidden="true">${IK('shield')}<span>20 év<br>alapítói<br>egészségügyi<br>tapasztalat</span></div>
       </figure>
     </div>
   </section>`;

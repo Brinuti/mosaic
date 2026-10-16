@@ -16,7 +16,7 @@ import path from 'node:path';
 import { chromium, devices } from './pw.mjs';
 import { kulcsbol } from '../lib/utvonal.js';
 import { meresTiltas, MERES } from './meres-tiltas.mjs';
-import { osszerak } from './uj-fooldal.mjs';
+import { osszerak, szovegJavit } from './uj-fooldal.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const BASE = (process.env.BASE || 'http://localhost:4290').replace(/\/$/, '');
@@ -58,7 +58,8 @@ const idk = new Set([...forras.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
 const horgonyok = hrefek.filter((h) => /^#./.test(h)).map((h) => h.slice(1));
 ok(`forras: ${horgonyok.length} horgony mind letezo azonositora mutat`, horgonyok.every((h) => idk.has(h)), horgonyok.filter((h) => !idk.has(h)).join(' '));
 const kulso = hrefek.filter((h) => /^https?:/.test(h));
-ok('forras: kulso linkek (target=_blank + noopener; a Salonic-foglalo linkek helyben, a motorral nyilnak)', [...forras.matchAll(/<a\b[^>]*href="https?:[^"]*"[^>]*>/g)].filter((m) => !/medicalpiercing\.salonic\.hu/.test(m[0])).every((m) => /target="_blank"/.test(m[0]) && /rel="noopener"/.test(m[0])), kulso.length + ' db');
+// (a tulajdonos kerese, 2026-10-16: minden link ugyanabban az ablakban nyilik - a kesz lapon nincs target=_blank, a szovegJavit veszi le)
+ok('kesz lap: minden link ugyanabban az ablakban nyilik (nincs target=_blank), a kulso linkek noopener-esek', !/target="_blank"/.test(szovegJavit(forras)) && [...forras.matchAll(/<a\b[^>]*href="https?:[^"]*"[^>]*>/g)].filter((m) => !/medicalpiercing\.salonic\.hu/.test(m[0])).every((m) => /rel="noopener"/.test(m[0])), kulso.length + ' db');
 ok('forras: nincs "Szeptember 1-től", nincs levelike az akcion', !/Szeptember 1/i.test(szoveg) && !/akcio-level/.test(forras));
 const tileLinkek = [...forras.matchAll(/<ul class="helyek">([\s\S]*?)<\/ul>/g)].flatMap((m) => [...m[1].matchAll(/<a href="([^"]+)"/g)].map((x) => x[1]));
 ok('forras: mind a 15 helyszin-csempe a foglalot nyitja az adott helyszinnel (placeId)', tileLinkek.length === 15 && tileLinkek.every((h) => /^https:\/\/medicalpiercing\.salonic\.hu\/selectEmployee\/\?placeId=\d+$/.test(h)), tileLinkek.length + ' db');

@@ -376,3 +376,25 @@
 .hos-video .video-kep{display:block;position:relative;border-radius:30px;overflow:hidden;box-shadow:var(--sh)}
 .hos-video .video-kep img{display:block;width:100%;height:auto;aspect-ratio:1200/823;object-fit:cover}
 .kat-akciofelt{grid-template-columns:minmax(0,1fr)}
+
+/* ===== 2026-10-16 (2), a tulajdonos kerese ===== */
+/* mobil galerias hos: minden elem pontosan a galeria szelessegeben (ott kezdodik es vegzodik), es egy kepernyore fer (a gombok latszanak) */
+@media (max-width:760px){
+  .kat-hos-b{--galeria:min(100%,318px)}
+  .kat-hos-b .hos-cim,.kat-hos-b .hos-kep,.kat-hos-b .hos-bevezeto,.kat-hos-b .hos-szoveg .gombsor,.kat-hos-b .hos-ertek-sav,.kat-hos-b .bizalom{width:var(--galeria);max-width:var(--galeria);margin-inline:auto}
+  .kat-hos-b .hos-cim{font-size:1.3rem;line-height:1.12;text-align:left}
+  .kat-hos-b .hos-bevezeto{font-size:.8rem;line-height:1.38;text-align:left}
+  .kat-hos-b .hos-ertek-sav{width:var(--galeria)}
+  .kat-hos-b .bizalom{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;justify-items:center}
+  .kat-hos-b .bizalom li{flex-direction:column;align-items:center;text-align:center}
+}
+/* negyzetes hoskep (oszi akcio plakatja: a szovege ne logjon le) */
+.hos-kep-negyzet>img{aspect-ratio:1/1!important;object-fit:cover}
+@media (min-width:1001px){.hos-kep-negyzet{max-width:520px;justify-self:end}}
+/* az altalanos (egyeb) blokkban a racs utani cim / szoveg ne tapadjon a kartyakhoz */
+.kat-egyeb .racs+*{margin-top:26px}
+.kat-egyeb .racs{margin-block:14px 6px}
+.kat-egyeb>*:first-child{margin-top:0}
+/* alacsony kepernyon (pl. 360x640) a galeria (es vele minden hos-elem) keskenyebb, hogy a gombok is kiferjenek */
+@media (max-width:760px){.kat-hos-b{--galeria:min(100%,318px,max(250px,calc(100svh - 384px)))}}
+@media (max-width:380px){.kat-hos-b .hos-cim{font-size:1.16rem}}
