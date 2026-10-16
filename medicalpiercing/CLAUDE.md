@@ -28,6 +28,8 @@ Ezen felül:
   nézd át szakaszonként, és igazítsd a mostani oldal kinézetéhez és dobozaihoz – a tervben szereplő elemeket nem kell pontosan úgy átvenni. Pl.: a GYIK teljes szélességű
   kérdés-rács (`gar-racs`), a helyszínek végig látszanak (a megszokott helyszín-doboz), a szöveg + kép a kéthasábos doboz (`kat-doboz kat-par`), a szakaszcímek középen
   (`kat-fej`), a hős a megszokott hős. Ugyanez érvényes, ha egy régi oldal szövegét kell új oldalba tenni (a szerkezet a forrásból, a kinézet a mostani oldalból).
+  **Asztalon nem maradhat üres doboz** (a tulajdonos szabálya, 2026-10-16): ha a szöveg rövid a kép mellett (nagy üres sáv a szöveg alatt / fölött), csökkentsd a kép méretét és vele
+  a doboz méretét (pl. az akció-oldal „Mi jár az árért?” doboza, a TikTok-landoló ékszer-doboza); ellenőrzéskor 1440 px-en minden kéthasábos dobozt nézz meg.
 - **A „B” változat az alap** (a tulajdonos döntése, 2026-10-13): az `/uj/migren-piercing`, `/uj/shenmen-piercing`, `/uj/klimax-piercing` és `/uj/slim-etvagycsokkento-piercing` oldal az eredeti
   `-b` oldalak (`migren-piercing-b`, `shenmen-piercing-b`, `klimax-piercing-b`, `slim-piercing-b`) szerkezetéből és szövegéből épül, a kategóriaoldalak dizájnjával, **„b” nélküli címen**
   (a menü és a belső linkek ide mutatnak; `/uj/uj-…-b` cím nincs). Az eredeti (régi) kategória-sablon csak az allergia / máj / pajzsmirigy / lép / vastagbél oldalnak marad (nincs `-b` oldaluk).
@@ -118,7 +120,9 @@ Ezen felül:
   `oldalHtml` `landolo` opció, `sablon.mjs`). Kimaradt: az akciós piercing-típusok sora, a „3 legnépszerűbb piercing” listái, „Tudtad, hogy…?”, „3000+”, két panaszos
   „Miért érdemes” pont, a kártyákon az állapotfelmérés és az érzéstelenítés, a kontroll első bekezdése, a csapat-jellemzések EÜ- / migrén-részei, a Google-vélemények doboza
   (a vendégek panaszokat írnak; marad a Google-értékelés feje és a link) és minden vendégvideó; a MIGRÉN-feliratos fülfotó helyett felirat nélküli. Az ékszer-lapozó a főoldali
-  doboz galériája (`reszek/ekszer-galeria.html`). Új elem a landolón: előbb nézd meg, nincs-e benne (képen, borítón sem) tiltott szó.
+  doboz galériája (`reszek/ekszer-galeria.html`). Új elem a landolón: előbb nézd meg, nincs-e benne (képen, borítón sem) tiltott szó. A tulajdonos döntése (2026-10-16, 10. kör): a hős „Áprilisban” helyett „Most”, a helyszínek címe
+  „Már 15 városban várunk!”, a címből a „Működő” kimaradt; a többi szöveg 1:1 marad. A szakaszok a főoldal dobozaival: a hős árai az akció-oldal árdobozaiban, az „AKCIÓ!” árai a főoldal
+  sötét akció-dobozában, az árlista és a páros akció a főoldal árlista-dobozában (balra a szöveg, jobbra a kártyák; a páros kártyák sötétek, két füllel), a kontroll a főoldal garancia-paneljében.
 - **Árlista-doboz** (2026-10-16, 5. kör): a kártyákon minden középen (ikon, cím, áthúzott ár, ár, megtakarítás), az áthúzott ár és a keret rózsás, nem szürke (`uj-egyseges.css` vége).
   A „Tovább az összes véleményhez” dupla-szűrője az eredeti oldal `<strong>`-os linkjét is felismeri (a TikTok-landolón és 7 másik oldalon kétszer állt).
 - **Árlista-doboz fülikonjai** (2026-10-16): GPT-vel rajzolt vonalas fülek az ékszerekkel (`assets/img/uj-ful-1|2|3|2x2.webp`, `tools/uj-ful-ikonok.py`, forrás:

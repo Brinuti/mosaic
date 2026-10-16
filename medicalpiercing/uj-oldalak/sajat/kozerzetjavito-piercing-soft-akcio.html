@@ -5,17 +5,17 @@
        bekezdese, a csapat-kartyak egy-egy resze, a Google-velemenyek doboza es minden vendegvideo. A szakaszok az oldal dobozaival (a tulajdonos alapszabalya:
        a szerkezet a forrasbol, a kinezet a mostani oldalbol); fejlec / lablec: reszek/*-landolo.html. -->
 
-  <!-- 1. HŐS -->
+  <!-- 1. HŐS (az árak az akció-oldal árdobozaiban) -->
   <section class="hos tt-hos">
     <div class="tarto hos-racs">
-      <h1 class="hos-cim">Működő közérzetjavító piercingek <em>akciósan</em>, profi szakemberektől!</h1>
+      <h1 class="hos-cim">Közérzetjavító piercingek <em>akciósan</em>, profi szakemberektől!</h1>
       <div class="hos-szoveg">
         <p class="hos-bevezeto">Steril, biztonságos, és 4.100+ vélemény alapján „kiváló”. Nálunk a piercing szúrást képzett szakemberek végzik speciális gépi bemérést követően.</p>
-        <p class="tt-hos-akcio">Áprilisban mindehhez <b>AKCIÓSAN</b> juthatsz hozzá!</p>
-        <ul class="tt-hos-arak">
-          <li><b>1 piercing</b> - <s>27.900 Ft</s> helyett <b>24.900 Ft!</b></li>
-          <li><b>2 piercingnél</b> - <s>55.800 Ft</s> helyett <b>39.900 Ft!</b></li>
-          <li><b>3 piercingnél</b> - <s>83.700 Ft</s> helyett <b>44.900 Ft!</b></li>
+        <p class="tt-hos-akcio">Most mindehhez <b>AKCIÓSAN</b> juthatsz hozzá!</p>
+        <ul class="akc-dobozok tt-hos-dobozok">
+          <li class="akc-doboz"><span class="akc-db">1 piercing</span><b class="akc-ar">24.900 Ft!</b><span class="akc-al"><s>27.900 Ft</s> helyett</span></li>
+          <li class="akc-doboz"><span class="akc-db">2 piercingnél</span><b class="akc-ar">39.900 Ft!</b><span class="akc-al"><s>55.800 Ft</s> helyett</span></li>
+          <li class="akc-doboz akc-kiemelt"><span class="akc-db">3 piercingnél</span><b class="akc-ar">44.900 Ft!</b><span class="akc-al"><s>83.700 Ft</s> helyett</span></li>
         </ul>
         <div class="gombsor">
           <a class="gomb gomb-tomor" href="/idopontfoglalas"><svg class="ik" aria-hidden="true"><use href="#i-calendar"/></svg>Időpontot foglalok<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
@@ -36,16 +36,27 @@
         <h2>AKCIÓ: 1 időpont, több piercing</h2>
         <p>Lapozd végig itt a legnépszerűbb ékszereinket!</p>
         <p>Ha eddig gondolkoztál azon, hogy adsz egy esélyt a közérzetjavító piercingeknek, akkor most van itt az idő!</p>
-        <p class="tt-akcio-cim">AKCIÓ!</p>
-        <ul class="tt-arlista">
-          <li><b>1 piercing</b> - 24.900 Ft</li>
-          <li><b>2 piercingnél</b> - 19.900 Ft / piercing</li>
-          <li><b>3 piercingnél</b> - 14.900 Ft / piercing</li>
-        </ul>
-        <p class="tt-megj">Az akció a visszavonásig tart és 1 időponton belül 1 személyre felhasználható!</p>
-        <a class="gomb gomb-kicsi" href="/idopontfoglalas">Időpontot foglalok!<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
       </div>
       <!--#ekszer-galeria-->
+    </div>
+  </section>
+
+  <!-- 2b. AKCIÓ! (a főoldal sötét akció-doboza) -->
+  <section class="tarto akcio-sor tt-akcio-sor">
+    <div class="akcio">
+      <img class="akcio-kep" src="/assets/img/uj-ful-akcio.webp" width="460" height="553" alt="Fül több piercinggel" loading="lazy" decoding="async">
+      <div class="akcio-cim">
+        <p class="akcio-fo">AKCIÓ!</p>
+        <p class="akcio-al">Az akció a visszavonásig tart és 1 időponton belül 1 személyre felhasználható!</p>
+      </div>
+      <ul class="akcio-arak" aria-label="Akciós árak">
+        <li><span>1 piercing</span><b>24.900 Ft</b></li>
+        <li><span>2 piercingnél</span><b>19.900 Ft</b><span>/ piercing</span></li>
+        <li class="legnepszerubb"><span>3 piercingnél</span><b>14.900 Ft</b><span>/ piercing</span></li>
+      </ul>
+      <div class="akcio-jobb">
+        <a class="gomb gomb-tomor" href="/idopontfoglalas">Időpontot foglalok!<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
+      </div>
     </div>
   </section>
 
@@ -70,7 +81,7 @@
     <div class="uzletek-fej">
       <div>
         <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-map"/></svg>Helyszíneink</p>
-        <h2>Már 12 városban várunk!</h2>
+        <h2>Már 15 városban várunk!</h2>
       </div>
     </div>
     <ul class="helyek">
@@ -92,23 +103,19 @@
     </ul>
   </section>
 
-  <!-- 5. ÁRLISTA + ŐSZI AKCIÓ (a kategória-oldalak kéthasábos doboza + az árlista-kártyák) -->
-  <section class="tarto" id="arlista">
-    <div class="kat-fej">
-      <p class="felirat felirat-kozep"><svg class="ik" aria-hidden="true"><use href="#i-percent"/></svg>Árak</p>
+  <!-- 5. ÁRLISTA + ŐSZI AKCIÓ (a főoldal árlista-doboza: balra a szöveg, jobbra a kártyák) -->
+  <section class="tarto arak tt-arak" id="arlista">
+    <div class="arak-szoveg">
+      <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-percent"/></svg>Árak</p>
       <h2>Árlista + ŐSZI AKCIÓ</h2>
+      <h3>Miért érdemes többet szúratni?</h3>
+      <ul class="pipak">
+        <li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg><span>Mert ha már eljönnek akkor <b>„essünk túl rajta egyszerre.”</b></span></li>
+        <li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg><span>Mert <b>imádják az ékszereket</b> és nem tudnak csak egyet választani :)</span></li>
+        <li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg><span>És persze mert 3 piercingnél nagyon <b>kedvező az ár! (14.900 Ft / piercing).</b></span></li>
+      </ul>
     </div>
-    <article class="kat-doboz kat-par-ford tt-miert">
-      <img class="kat-par-kep" src="/assets/img/uj-ful-akcio.webp" width="460" height="553" alt="Fül több piercinggel" loading="lazy" decoding="async">
-      <div class="kat-doboz-szoveg">
-        <h3>Miért érdemes többet szúratni?</h3>
-        <ul class="pipak">
-          <li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg><span>Mert ha már eljönnek akkor <b>„essünk túl rajta egyszerre.”</b></span></li>
-          <li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg><span>Mert <b>imádják az ékszereket</b> és nem tudnak csak egyet választani :)</span></li>
-          <li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg><span>És persze mert 3 piercingnél nagyon <b>kedvező az ár! (14.900 Ft / piercing).</b></span></li>
-        </ul>
-      </div>
-    </article>
+    <div class="tt-arak-jobb">
     <h3 class="tt-alcim">Piercingek 1 személynek</h3>
     <div class="ar-racs tt-ar-racs">
       <article class="ar-kartya">
@@ -142,18 +149,19 @@
         <a class="gomb gomb-kicsi" href="/idopontfoglalas">Időpont foglalás</a>
       </article>
     </div>
+    </div>
   </section>
 
-  <!-- 6. KETTEN JÖNNÉTEK? (ugyanazok az árlista-kártyák) -->
-  <section class="tarto" id="paros">
-    <div class="kat-fej">
-      <p class="felirat felirat-kozep"><svg class="ik" aria-hidden="true"><use href="#i-users"/></svg>Páros kedvezmény</p>
+  <!-- 6. KETTEN JÖNNÉTEK? (ugyanaz az árlista-doboz; a kártyák a főoldal sötét „4 piercing, ketten” kártyája szerint) -->
+  <section class="tarto arak tt-arak tt-paros" id="paros">
+    <div class="arak-szoveg">
+      <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-users"/></svg>Páros kedvezmény</p>
       <h2>AKCIÓ - Ketten jönnétek egy időpontra?</h2>
-      <p class="kat-alcim">Akár 78.000 Ft-ot spórolhattok - Mennyit szeretnétek összesen?</p>
+      <p>Akár 78.000 Ft-ot spórolhattok - Mennyit szeretnétek összesen?</p>
     </div>
     <div class="ar-racs tt-ar-racs">
-      <article class="ar-kartya">
-        <span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-users"/></svg></span>
+      <article class="ar-kartya ar-akcio">
+        <span class="kor kor-ful kor-ful-ket"><img class="ful-kep" src="/assets/img/uj-ful-2x2.webp" alt="" width="183" height="128" loading="lazy" decoding="async"><span class="ful-db" aria-hidden="true">2×1</span></span>
         <h3 class="tt-kartya-cim">2 DB PIERCING</h3>
         <p class="sporolas"><span>6.000 FT KEDVEZMÉNY</span></p>
         <p class="tt-helyett"><s>55.800 Ft</s> helyett:</p>
@@ -162,8 +170,8 @@
         <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>1 időpontra jöttök :)</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>2 db titánium ékszer</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Gépi bemérés + tűpontos piercing beszúrás</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
         <a class="gomb gomb-kicsi" href="/idopontfoglalas">Időpont foglalás</a>
       </article>
-      <article class="ar-kartya">
-        <span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-users"/></svg></span>
+      <article class="ar-kartya ar-akcio">
+        <span class="kor kor-ful kor-ful-ket"><img class="ful-kep" src="/assets/img/uj-ful-2x2.webp" alt="" width="183" height="128" loading="lazy" decoding="async"><span class="ful-db" aria-hidden="true">2×2</span></span>
         <h3 class="tt-kartya-cim">4 DB PIERCING</h3>
         <p class="sporolas"><span>32.000 FT KEDVEZMÉNY</span></p>
         <p class="tt-helyett"><s>111.600 Ft</s> helyett:</p>
@@ -172,8 +180,8 @@
         <ul class="pipak"><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>1 időpontra jöttök :)</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>4 db titánium ékszer</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Gépi bemérés + tűpontos piercing beszúrás</li><li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Ingyenes kontroll</li></ul>
         <a class="gomb gomb-kicsi" href="/idopontfoglalas">Időpont foglalás</a>
       </article>
-      <article class="ar-kartya">
-        <span class="kor"><svg class="ik" aria-hidden="true"><use href="#i-users"/></svg></span>
+      <article class="ar-kartya ar-akcio">
+        <span class="kor kor-ful kor-ful-ket"><img class="ful-kep" src="/assets/img/uj-ful-2x2.webp" alt="" width="183" height="128" loading="lazy" decoding="async"><span class="ful-db" aria-hidden="true">2×3</span></span>
         <h3 class="tt-kartya-cim">6 DB PIERCING</h3>
         <p class="sporolas"><span>78.000 FT KEDVEZMÉNY</span></p>
         <p class="tt-helyett"><s>167.400 Ft</s> helyett:</p>
@@ -185,18 +193,19 @@
     </div>
   </section>
 
-  <!-- 7. INGYENES KONTROLL 6 HÉTEN BELÜL (az első bekezdés nélkül) -->
+  <!-- 7. INGYENES KONTROLL 6 HÉTEN BELÜL (a főoldal garancia-panelje; az első bekezdés nélkül) -->
   <section class="tarto" id="kontroll">
-    <div class="kat-doboz tt-kontroll">
-      <div class="kat-doboz-szoveg">
-        <p class="felirat felirat-kozep"><svg class="ik" aria-hidden="true"><use href="#i-shield"/></svg>Kontroll</p>
+    <article class="panel garancia tt-kontroll">
+      <div class="panel-szoveg">
+        <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-shield"/></svg>Kontroll</p>
         <h2>Ingyenes kontroll 6 héten belül</h2>
         <h3>A kontroll érvényesítése</h3>
         <p>Mindenképp várj 6 hetet, mert nagyon sok esetben legalább ennyi időre van szüksége a testnek, hogy elkezdjen “együttműködni” a piercingekkel. Ha 6 hét után sem tapasztalsz semmilyen változást, akkor itt tudsz jelentkezni új kontroll-piercing szúrásra.</p>
         <p class="tt-kontroll-kiemelt"><b>AZ INGYENES KONTROLL-PIERCING A SZÚRÁSTÓL SZÁMÍTOTT 6 HÓNAPON BELÜL ÉRVÉNYESÍTHETŐ!</b></p>
-        <a class="szoveg-link" href="/kontroll">Időpontfoglalás Kontroll-piercing konzultációra »</a>
+        <a class="gomb gomb-kicsi" href="/kontroll">Időpontfoglalás Kontroll-piercing konzultációra<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
       </div>
-    </div>
+      <div class="pecset" aria-hidden="true"><svg class="ik" aria-hidden="true"><use href="#i-shield"/></svg><b>6 hét</b></div>
+    </article>
   </section>
 
   <!-- 8. ISMERD MEG CSAPATUNKAT! (a Csapatunk oldal piercer-kártyái) -->
