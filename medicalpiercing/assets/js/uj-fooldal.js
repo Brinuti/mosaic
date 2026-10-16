@@ -307,6 +307,8 @@
   // az akcio-oldal "Ezt foglalom" gombjai (data-csomag): a foglalo a csomaggal elovalasztva nyilik (motor.js nyit: a Piercing-lepesben az a csomag elol, lenyitva).
   // (a kattintas a motor-indito elott fut - elkapo fazis -; a foglalasi ut es a meres ugyanaz)
   document.addEventListener('click', (e) => { const a = e.target && e.target.closest ? e.target.closest('a[data-csomag]') : null; if (a) window.__mpCsomag = a.dataset.csomag; }, true);
+  // a gomb sajat piercing-tipusa (data-tipus, pl. a velemenyek kategoriainak "… piercinget foglalok" gombjai): a foglalo ezt veszi a lap utvonala helyett
+  document.addEventListener('click', (e) => { const a = e.target && e.target.closest ? e.target.closest('a[data-tipus]') : null; if (a) window.__mpTipus = a.dataset.tipus; }, true);
 
   // --- 4e. a vendegek videos beszamoloi (lapozhato sav): csak a boritokep toltodik (lustan), a video kattintasra indul helyben; egyszerre egy szol ---
   $$('[data-vsav]').forEach((sav) => {

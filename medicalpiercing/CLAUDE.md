@@ -30,6 +30,18 @@ Ezen felül:
   (`kat-fej`), a hős a megszokott hős. Ugyanez érvényes, ha egy régi oldal szövegét kell új oldalba tenni (a szerkezet a forrásból, a kinézet a mostani oldalból).
   **Asztalon nem maradhat üres doboz** (a tulajdonos szabálya, 2026-10-16): ha a szöveg rövid a kép mellett (nagy üres sáv a szöveg alatt / fölött), csökkentsd a kép méretét és vele
   a doboz méretét (pl. az akció-oldal „Mi jár az árért?” doboza, a TikTok-landoló ékszer-doboza); ellenőrzéskor 1440 px-en minden kéthasábos dobozt nézz meg.
+- **Rejtett B-változatok a konverziós képernyőtervek szerint** (a tulajdonos kérése, 2026-10-16: „az összes oldalból építs egy B verziót … kirakhatod élesbe, de nem fog rá
+  link mutatni”; PDF: „MP_kepernyotervek_mobil_v2”): `/b/<név>` – `/b/fooldal`, a 9 piercing-típus (`/b/migren-piercing` … `/b/vastagbel-piercing`), `/b/kozerzetjavito-piercing-soft-akcio`,
+  `/b/3-piercing-2-araert` (páros akció), `/b/arlista-garancia`, `/b/migren-shenmen-piercing-velemenyek`, `/b/migren-es-shenmen-piercing-garancia`, `/b/ful-piercing-beloves-budapest`,
+  `/b/elerhetosegek`, `/b/kontroll`, `/b/a-szuras-folyamata`. **Rejtett**: noindex (meta + `X-Robots-Tag`, `B_ELOTAG` a `functions/[[path]].js`-ben), nincs canonical, nincs a sitemapben, semmi nem
+  linkel rájuk. A generátor `tools/uj-b-oldalak.mjs` (→ `uj-oldalak/sajat-b/*.html`, kézzel ne szerkeszd; a tények egy helyen, a `T` objektumban), a build a `tools/uj-fooldal.mjs`
+  (`b2` opció: `oldal-b2` törzsosztály, `assets/css/uj-b.css` utolsóként). Saját részek: `reszek/akcio-sav-b*.html`, `akcio-sav-landolo-b.html`, `lablec-divat.html` (a fülpiercing-oldal
+  lábléce közérzetjavító pontok nélkül), `video-velemeny-slim-b.html` (semleges borítók, fogyásígéret nélkül: `assets/img/uj-velemeny-*-semleges.webp`), `video-velemeny-allergia-b.html`
+  (az egy videó kompakt, kéthasábos dobozban). A „Hova szúrjuk?” képe a hős fülfotójának közeli kivágása (`assets/img/uj-galeria-<típus>-pont.webp`). Új foglaló-előválasztások
+  (`motor.js` `nyit`, `uj-fooldal.js`): `data-csomag="ketto"` → „2 személynek”; `data-tipus="mi|sh|…"` → a gomb saját típusa (a lap útvonala helyett). A mérés útja nem változott
+  (a foglalás-indítás egyszer fut). Teszt: `node tools/uj-b-teszt.mjs` (rejtettség, képek, túlcsordulás, üres doboz, ragadós sáv egy sorban, minden foglaló-gomb + előválasztás + mérés,
+  tiltott szavak a TikTok-B-n). Kimaradt (külön döntés kell): a foglalómotor és a köszönőoldal terve, a „Nem tudom” motor-ág díja, a statikus Google- és szakember-idézetek.
+  Ha a tulajdonos véglegesíti, a B-oldal tartalma a régi helyére kerül (a `/b/` cím megszűnik, a belső linkek nem változnak).
 - **A „B” változat az alap** (a tulajdonos döntése, 2026-10-13): az `/uj/migren-piercing`, `/uj/shenmen-piercing`, `/uj/klimax-piercing` és `/uj/slim-etvagycsokkento-piercing` oldal az eredeti
   `-b` oldalak (`migren-piercing-b`, `shenmen-piercing-b`, `klimax-piercing-b`, `slim-piercing-b`) szerkezetéből és szövegéből épül, a kategóriaoldalak dizájnjával, **„b” nélküli címen**
   (a menü és a belső linkek ide mutatnak; `/uj/uj-…-b` cím nincs). Az eredeti (régi) kategória-sablon csak az allergia / máj / pajzsmirigy / lép / vastagbél oldalnak marad (nincs `-b` oldaluk).
@@ -114,7 +126,7 @@ Ezen felül:
   (`/regi/kozerzetjavito-piercing-soft-akcio`), de **sehol nem állhat panasz- vagy orvosi szó** („nem lehet sehol sem, se migrén, se klimax, semmi ilyesmi, nem lehet a
   thumbnail-es videók thumbnail-en se … semmi olyasmi kifejezés, ami orvosi” – a TikTok letiltja): a szövegben, a képeken és feliratukban, a videók borítóin, az alt / title /
   meta szövegekben, a menüben, a láblécben, sőt a forráskommentekben sem (EÜ, gyógy-, kezelés, állapotfelmérés, érzéstelenítés is tilos; a teljes lista: `TILTOTT_LANDOLO`,
-  `tools/uj-oldalak-teszt.mjs`, a teszt minden landolón ellenőrzi). Kézzel írt oldal (`uj-oldalak/sajat/kozerzetjavito-piercing-soft-akcio.html`, első sorában `"landolo":true`):
+  `tools/tiltott-landolo.mjs`; a `tools/uj-oldalak-teszt.mjs` és a `tools/uj-b-teszt.mjs` minden landolón ellenőrzi). Kézzel írt oldal (`uj-oldalak/sajat/kozerzetjavito-piercing-soft-akcio.html`, első sorában `"landolo":true`):
   saját rövid fejléc (logó **jelmondat nélkül** – `assets/img/uj-logo-marka*.webp`, `tools/uj-logo-marka.py` –, Vélemények, Időpontfoglalás; piercing-menü nincs), az akciós
   sáv a lap árlistájához visz, saját lábléc a tiltott szavak és a két jogi bekezdés nélkül (`reszek/fejlec-landolo.html`, `akcio-sav-landolo.html`, `lablec-landolo.html`;
   `oldalHtml` `landolo` opció, `sablon.mjs`). Kimaradt: az akciós piercing-típusok sora, a „3 legnépszerűbb piercing” listái, „Tudtad, hogy…?”, „3000+”, két panaszos

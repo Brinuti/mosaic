@@ -38,6 +38,8 @@ const TILTO_ROBOTS = 'User-agent: *\nDisallow: /\n';
 // a regi Wix-klon (/regi/<eredeti utvonal>) es a link-index (/uj-oldalak); elotte az uj stilusu tukor (/uj/<eredeti utvonal>, /uj-fooldal)
 const REJTETT_LAPOK = new Set(['/uj-fooldal', '/uj-oldalak']);
 const REJTETT_ELOTAG = UJ_ELES ? /^\/regi(\/|$)/ : /^\/uj(\/|$)/;
+// a B-valtozatok (/b/<ut>: a konverzios kepernyotervek szerint, a tulajdonos kerese 2026-10-16) rejtettek: link nem mutat rajuk, a keresok nem indexelik
+const B_ELOTAG = /^\/b(\/|$)/;
 const MAX_MELLEKLET = 20 * 1024 * 1024; // osszesen; a Gmail 25 MB-ot fogad
 
 export async function onRequest(context) {
@@ -85,7 +87,7 @@ export async function onRequest(context) {
   const h = new Headers(valasz.headers);
   // ugyanaz a cim mobilon es asztalin mast ad - a gyorsitotar ezt tudja
   h.set('vary', 'User-Agent');
-  if (!eles || REJTETT_LAPOK.has(ut) || REJTETT_ELOTAG.test(ut)) h.set('x-robots-tag', 'noindex, nofollow');
+  if (!eles || REJTETT_LAPOK.has(ut) || REJTETT_ELOTAG.test(ut) || B_ELOTAG.test(ut)) h.set('x-robots-tag', 'noindex, nofollow');
   return new Response(valasz.body, { status, headers: h });
 }
 

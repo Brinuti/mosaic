@@ -530,9 +530,13 @@ export function nyit(ctx) {
     tipus: null, urlapAdat: null, merve: !ctx.merjen, kinek: 'magamnak', mit: oldalTipus(ctx.forras || '') === 'divat' ? 'egy' : 'tobb',
     oldalTipus: oldalTipus(ctx.forras || ''), nyitott: null, arak: null, csomag: null,
   };
+  // a gomb sajat piercing-tipusa (uj-fooldal.js: window.__mpTipus = data-tipus, pl. a velemenyek kategoriainak gombjai): az oldal utvonala helyett ez dont
+  { const t = String(window.__mpTipus || ''); try { delete window.__mpTipus; } catch (e) { /* */ }
+    if (/^(mi|sh|kl|sl|al|mj|lp|vb|pm|divat)$/.test(t)) all.oldalTipus = t; }
   // az akcio-oldal "Ezt foglalom" gombjai (uj-fooldal.js: window.__mpCsomag = 1 / 2 / 3): a Piercing-lepes ezzel a csomaggal elol (csukva)
   { const c = String(ctx.csomag || window.__mpCsomag || ''); try { delete window.__mpCsomag; } catch (e) { /* */ }
-    if (/^[123]$/.test(c)) { all.kinek = 'magamnak'; all.mit = c === '1' ? 'egy' : 'tobb'; all.csomag = c; } }
+    if (/^[123]$/.test(c)) { all.kinek = 'magamnak'; all.mit = c === '1' ? 'egy' : 'tobb'; all.csomag = c; }
+    else if (c === 'ketto') { all.kinek = 'ketto'; all.mit = 'tobb'; all.csomag = c; } }   // paros gomb ("Páros időpontot foglalok"): a "2 személynek" csomagok
   const ctxFoglalas = foglalas.begin({ business: 'mp', source_page: ctx.forras || location.pathname });
   all.bookingId = ctxFoglalas.id;
   // belepes: a foglalo fo oldala a tipus-valaszto

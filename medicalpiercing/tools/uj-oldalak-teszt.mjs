@@ -21,11 +21,7 @@ import { meresTiltas } from './meres-tiltas.mjs';
 import { kulcsbol, fajlnev } from '../lib/utvonal.js';
 import { UJ_ELES, REGI_ELO } from '../lib/uj-eles.js';
 import { UJ_FOOLDAL_UT } from './uj-fooldal.mjs';
-// a hirdetesi landolo (TikTok) tiltott szavai (a tulajdonos kerese, 2026-10-16: "nem lehet sehol sem ... semmi olyasmi kifejezes, ami orvosi"; medicalpiercing/CLAUDE.md)
-const TILTOTT_LANDOLO = ['migrén', 'migren', 'klimax', 'klímax', 'menopauz', 'változókor', 'fejfáj', 'fejfaj', 'allergi', 'fogyás', 'fogyókúr', 'fogyokur', 'étvágy', 'pánik', 'szorong', 'depresszi',
-  'alvászavar', 'hőhullám', 'izzadás', 'betegs', 'gyógy', 'gyogy', 'orvos', 'egészségügy', 'egeszsegugy', ' eü ', ' eü-', ' eü,', 'panasz', 'tünet', 'kezelés', 'fájdalom', 'stressz', ' máj ', ' máj-',
-  'pajzsmirigy', 'vastagbél', 'lép piercing', 'hatékony', 'javulás', 'akupunkt', 'terápi', 'diagnó', 'shenmen', 'érzéstelen', 'állapotfelm', 'gyulladás', 'fertőz', 'immun', 'hormon', 'emésztés',
-  'puffad', 'vérnyomás'];
+import { TILTOTT_LANDOLO } from './tiltott-landolo.mjs';   // a hirdetesi landolo (TikTok) tiltott szavai
 // elesitve (lib/uj-eles.js) az uj oldal az eredeti cimen, a regi (Wix-klon) a /regi/... cimen; kulonben az uj a /uj/... cimen, a regi az eredetin
 const UJ = UJ_ELES ? '' : '/uj';
 const REGI = UJ_ELES ? REGI_ELO : '';
