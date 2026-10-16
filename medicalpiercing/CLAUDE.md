@@ -72,6 +72,11 @@ Ezen felül:
   nélküli valódi kockája, arcra vágva, a felső logósáv nélkül + a vendég legerősebb, valóban elhangzott mondata + alul „<Keresztnév> így segített a … piercing”).
   A tulajdonos döntése: a borítón a vendég **keresztneve** szerepel; a fájlnevekben továbbra sincs név, és a név–sorszám összerendelés, az idézetek adatfájlja a repóba
   nem kerül (a sablon az adatfájlt paraméterként kapja). Új vendégvideónál: felirat nélküli kocka + mondat a leiratból + a sablon futtatása.
+- **A tervezett indexképek soha nem vágódnak le** (a tulajdonos kérése, 2026-10-16: „minden nézetben látszódjanak”): a `YT_KEP` képei (`uj-yt-*`, GYIK, szúrás, média) a build
+  jelölésével (`data-terv` + `.terv-hatter`, `videoBorito` a `tools/uj-fooldal.mjs`-ben) egészben látszanak (contain); ha a doboz aránya más (pl. a kéthasábos dobozok egyforma
+  magas hasábjaiban), a maradék sávot a kép saját széle tölti ki (a legfelső / legalsó sorai kinyújtva, `uj-egyseges.css`). Új tervezett kép: a `YT_KEP`-be kerüljön.
+  Ellenőrzés: a borítók láthatósága minden oldalon 4 szélességen (1440 / 1100 / 820 / 390) – a vágott rész legfeljebb 3% lehet.
+  A Vélemények oldal hősképe a saját arányában (3:2, csík nélkül), kattintásra a migrénes videósávhoz görget (`#videok-migren`; minden videósáv horgonya `videok-<kulcs>`).
 - **Álló Facebook-videók borítója** (a tulajdonos kérése, 2026-10-16): a `facebook.com/plugins/video.php` iframe-ek helyett a build (`fbBorito`, `tools/uj-fooldal.mjs`)
   tervezett borítót tesz (`assets/img/uj-fb-<videó-azonosító>.webp`, ugyanazzal a sablonnal: `tools/kep-forras/fb-boritok.json`, a kivágott kockák
   `tools/kep-forras/fb/`), kattintásra a helyén tölt be a Facebook-lejátszó (`uj-fooldal.js` 3d.); addig a Facebook semmit nem tölt a lapon.
