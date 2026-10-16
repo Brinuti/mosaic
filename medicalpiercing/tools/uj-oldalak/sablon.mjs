@@ -5,6 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { kategoriaFo } from './kategoria.mjs';
+import { statDoboz } from './kozos.mjs';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const SITE_RE = /^https?:\/\/(?:www\.)?medicalpiercing\.hu(?=[/?#]|$)/i;
@@ -279,6 +280,13 @@ const kozepes = (n) => { const ls = (n.k || [n]).filter((x) => x.t === 'h' || x.
 const szovegHossz = (n) => (n.k ? n.k.reduce((a, x) => a + szovegHossz(x), 0) : n.html ? szovegTiszta(n.html).length : n.elemek && Array.isArray(n.elemek) && typeof n.elemek[0] === 'string' ? n.elemek.reduce((a, x) => a + szovegTiszta(x).length, 0) : n.szoveg ? n.szoveg.length : 0);
 
 function media(kepN, masik, kepElol, c, opciok = {}) {
+  // a 93%-os statisztika (kep + "93%" + mondat + gomb + jegyzet): a kozos doboz, mint a kategoria-oldalakon (tools/uj-oldalak/kozos.mjs)
+  if (kepN.t === 'kep' && masik.t === 'verem') {
+    const ps = masik.k.filter((x) => x.t === 'p');
+    if (ps[0] && /^\d{2,3}\s*%$/.test(szovegTiszta(ps[0].html))) {
+      return statDoboz({ kep: kepN.src, alt: '', szam: szovegTiszta(ps[0].html), mondat: ps[1] ? ps[1].html : '', lab: ps.slice(2).map((x) => x.html) });
+    }
+  }
   // a masik oszlop cime kiemelhetos: mobilon cim, kep, szoveg sorrend
   let cim = '', szovegN = masik;
   if (!opciok.nincsCim && masik.t === 'verem' && masik.k[0] && masik.k[0].t === 'h' && masik.k.length > 1) {
@@ -454,6 +462,8 @@ export function oldalHtml(ROOT, adat, opciok = {}) {
   const blog = !kat && opciok.fo === undefined && adat.ut === '/blog' ? blogFo(ROOT, adat) : null;
   let szekciok = kat ? kat.html : blog || (opciok.fo !== undefined ? opciok.fo : adat.szekciok.map((s, i) => szekcio(s, i, c)).join('\n'));
   if (!/<h1[\s>]/.test(szekciok)) szekciok = `<h1 class="sr">${esc(adat.cim)}</h1>\n` + szekciok;   // az oldalnak mindig van h1-e (a lathato cim hianyaban rejtett)
+  // a rovid hos-cim (legfeljebb 34 betu) mobilon egy sorban (a tulajdonos kerese, 2026-10-16; uj-egyseges.css: .cim-rovid)
+  szekciok = szekciok.replace(/<h1 class="hos-cim">([\s\S]*?)<\/h1>/, (m, b) => (b.replace(/<[^>]+>/g, '').replace(/&[a-z]+;/g, ' ').trim().length <= 34 ? `<h1 class="hos-cim cim-rovid">${b}</h1>` : m));
   // a kezzel irt oldalak (uj-oldalak/sajat/*.html: csapatunk, kapcsolat, ekszereink) a kategoria-oldalak szelessegevel es dobozaival
   const sajat = !!opciok.sajat;
   const cimke = adat.tipus === 'cikk' ? 'oldal-cikk' : adat.tipus === 'blog' ? 'oldal-blog' : kat ? 'oldal-altalanos oldal-kategoria' : sajat ? 'oldal-altalanos oldal-kategoria oldal-sajat' : 'oldal-altalanos';
@@ -474,6 +484,7 @@ export function oldalHtml(ROOT, adat, opciok = {}) {
 <script src="/assets/js/suti.js"></script>
 <link rel="stylesheet" href="/assets/css/uj-fooldal.css">
 <link rel="stylesheet" href="/assets/css/uj-oldalak.css">${kat || sajat ? '\n<link rel="stylesheet" href="/assets/css/uj-kategoria.css">' : ''}${sajat ? '\n<link rel="stylesheet" href="/assets/css/uj-sajat.css">' : ''}
+<link rel="stylesheet" href="/assets/css/uj-egyseges.css">
 </head>
 <body class="belso ${cimke}">
 <a class="ugras" href="#fo">Ugrás a tartalomra</a>

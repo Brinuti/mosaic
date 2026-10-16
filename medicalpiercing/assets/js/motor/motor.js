@@ -12,6 +12,7 @@
 import { createSalonicAdapter, HELYSZINEK, HELYSZIN_SORREND, ANY_STAFF, HOST } from './salonic-adapter.js';
 import { createBookingContext } from './booking-id.js';
 import { tipusKod, oldalTipus } from './tipus.js';
+import { TERKEP_SVG, TERKEP_PINEK } from './terkep.js';
 
 const TOVABB = /^(fbclid|gclid|gbraid|wbraid|ttclid|utm_[a-z_]+)$/i;
 const KOSZONO_ORIGIN = /^https:\/\/(www\.)?medicalpiercing\.hu$/;
@@ -79,6 +80,19 @@ button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent
 .kartya .ar { float: right; font-weight: 700; color: #ab6354; margin-left: 10px; }
 /* 1. lepes: az osszes helyszin egy kepernyon (mobilon 2 oszlop, asztalon 3), felirat nelkul */
 .kicsi.bevezeto { margin: 0 0 10px; }
+/* a helyszin-lepes terkepe (tools/uj-helyszin-terkep.mjs -> terkep.js): a varosra kattintva a helyszin kivalasztva */
+.ht-motor { position: relative; width: 100%; max-width: 440px; margin: 0 auto 10px; }
+.ht-motor svg { display: block; width: 100%; height: auto; overflow: visible; }
+.ht-motor .ht-nev { font: 700 24px/1 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; fill: #2f3044; paint-order: stroke; stroke: #fff; stroke-width: 6px; stroke-linejoin: round; }
+.ht-motor .ht-nev-fo { font-size: 32px; fill: #ab6354; }
+.ht-motor .ht-al { font: 700 18px/1 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; fill: #6b6c80; letter-spacing: .06em; text-transform: uppercase; paint-order: stroke; stroke: #fff; stroke-width: 5px; }
+.ht-motor .ht-pinek { position: absolute; inset: 0; }
+.ht-motor .ht-pin { position: absolute; padding: 0; border: 0; border-radius: 12px; background: transparent; cursor: pointer; transition: background .15s; }
+.ht-motor .ht-pin:hover { background: rgba(171, 99, 84, .14); }
+.ht-motor .ht-pin:focus-visible { outline: 3px solid #b98782; outline-offset: 0; }
+@media (max-width: 700px) { .ht-motor { max-width: 380px; margin-bottom: 12px; } .ht-motor .ht-nev { font-size: 30px; } .ht-motor .ht-nev-fo { font-size: 36px; } }
+@media (min-width: 701px) { .ablak[data-lepes="hely"] .hely-racs { grid-template-columns: repeat(3, minmax(0, 1fr)); } .ht-motor { max-width: 400px; } }
+@media (min-width: 701px) and (max-height: 820px) { .ht-motor { max-width: 320px; } }
 .hely-racs { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; }
 .kartya.hely { display: flex; align-items: center; min-width: 0; height: clamp(38px, 6dvh, 48px); padding: 0 8px; border-radius: 10px; }
 .kartya.hely .nev { min-width: 0; font-size: clamp(12.5px, 3.8vw, 14.5px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -161,6 +175,9 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 /* 0. lepes: mire foglalsz? (a foglalo fo oldala: 4 szolgaltatas). Az urlapos opciok (kontroll / ekszercsere / garancia) NEM naptarbol foglalnak */
 .ablak[data-lepes="tipus"] .lepesek { display: none; }
 .tipus-racs { grid-template-columns: 1fr; gap: 10px; }
+/* az elso kepernyo cime (a tulajdonos kerese, 2026-10-16): nagyobb, a lap cimeinek betujevel */
+.tipus-cim { margin: 4px 0 16px; font: 700 clamp(21px, 5.6vw, 26px)/1.2 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; letter-spacing: -.01em; color: #2b2b38; text-align: center; }
+.tipus-cim::after { content: ''; display: block; width: 44px; height: 3px; margin: 10px auto 0; border-radius: 3px; background: #d7aba8; }
 .kartya.tipus { padding: 16px 18px; border: 2px solid #c9a399; border-radius: 14px; box-shadow: 0 2px 6px rgba(69, 70, 89, .12); }
 .kartya.tipus .nev { display: block; font-size: 18px; }
 .kartya.tipus .reszlet { margin-top: 4px; font-size: 14px; }
@@ -265,6 +282,52 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
   .urlap .mezo.d-fel { grid-column: auto; }
   .mezo input, .mezo select, .mezo textarea { padding: 8px 12px; }
 }
+/* az urlap uj kinezete (a tulajdonos kerese, 2026-10-16): fejlec ikonnal, "igy mukodik" sor, ket csoport, nagyobb mezok, az oldal betuje, eros kuldes-gomb */
+.urlap-fej { display: flex; align-items: center; gap: 12px; margin: 2px 0 12px; padding: 12px 14px; border-radius: 16px; background: linear-gradient(110deg, #f8ece9, #fff 85%); border: 1px solid #f0e2de; font-size: 13.5px; line-height: 1.45; }
+.urlap-fej p { margin: 2px 0 0; color: #5d5e70; }
+.urlap-cim { display: block; font: 700 17px/1.2 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; color: #2b2b38; letter-spacing: -.01em; }
+.urlap-ikon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #fff; color: #a35a4b; box-shadow: 0 3px 10px rgba(163, 90, 75, .16); }
+.urlap-ikon svg { width: 22px; height: 22px; }
+.urlap-menet { display: flex; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; counter-reset: none; }
+.urlap-menet li { flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; padding: 7px 6px; border-radius: 99px; background: #faf6f5; color: #454659; font: 600 12.5px/1.15 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; white-space: nowrap; }
+.urlap-menet b { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #d7aba8; color: #fff; font-size: 11px; }
+.urlap { column-gap: 12px; row-gap: 12px; font-family: 'Plus Jakarta Sans', 'helvetica-w01-light', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+.urlap-szakasz { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin: 4px 0 -2px; color: #a35a4b; font: 700 11.5px/1 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.urlap-szakasz::after { content: ""; flex: 1; height: 1px; background: #efe4e1; }
+.urlap-szakasz:not(:first-of-type) { margin-top: 10px; }
+.mezo .cimke-szoveg { margin: 0 0 5px; font: 700 13px/1.3 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; color: #3f4053; }
+.mezo input, .mezo select, .mezo textarea { min-height: 46px; padding: 10px 14px; border: 1.5px solid #e6dcd9; border-radius: 12px; background: #fff; font-family: 'Plus Jakarta Sans', 'helvetica-w01-light', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; transition: border-color .15s, box-shadow .15s; }
+.mezo input::placeholder, .mezo textarea::placeholder { color: #a3a4b2; }
+.mezo input:hover, .mezo select:hover, .mezo textarea:hover { border-color: #d9c4bf; }
+.mezo input:focus, .mezo select:focus, .mezo textarea:focus { border-color: #a35a4b; box-shadow: 0 0 0 4px rgba(215, 171, 168, .3); }
+.mezo select { -webkit-appearance: none; appearance: none; padding-right: 38px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 6 8 10.5 12.5 6' fill='none' stroke='%23a35a4b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center / 14px; text-overflow: ellipsis; }
+.tel-sor { grid-template-columns: minmax(116px, 38%) 1fr; }
+.tel-sor select { padding-left: 12px; padding-right: 28px; background-position: right 10px center; text-overflow: clip; }
+.mezo textarea { min-height: 84px; line-height: 1.45; }
+.mezo input[type="date"] { height: 46px; }
+.feltolto { gap: 12px; padding: 8px; border: 1.5px dashed #e0cdc8; border-radius: 14px; background: #fcf8f7; }
+.feltolto-gomb { padding: 9px 15px; background: #fff; color: #a35a4b; border: 1.5px solid #e0c3bd; font: 700 13px/1.2 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; }
+.feltolto-gomb:hover { background: #f8ece9; }
+.kuld-gomb { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; margin-top: 4px; background: #a35a4b; box-shadow: 0 6px 16px rgba(163, 90, 75, .3); font: 700 16px/1 'Plus Jakarta Sans', 'poppins-semibold', Poppins, Arial, sans-serif; transition: background .15s, transform .15s; }
+.kuld-gomb svg { width: 20px; height: 20px; }
+.kuld-gomb:hover { background: #8f4c3f; }
+.kuld-gomb:active { transform: translateY(1px); }
+.mezo .hiba-uzenet { margin-top: 4px; font-size: 12px; }
+@media (max-width: 700px) {
+  .urlap-fej { gap: 10px; margin-bottom: 10px; padding: 10px 12px; font-size: 13px; }
+  .urlap-cim { font-size: 16px; }
+  .urlap-ikon { width: 38px; height: 38px; }
+  .urlap-menet { margin-bottom: 8px; }
+  .urlap-menet li { padding: 6px 4px; font-size: 12px; }
+  .urlap { row-gap: 9px; column-gap: 10px; }
+  .urlap-szakasz { margin-top: 2px; }
+  .urlap-szakasz:not(:first-of-type) { margin-top: 6px; }
+  .mezo .cimke-szoveg { margin-bottom: 4px; font-size: 12.5px; }
+  .mezo input, .mezo select, .mezo textarea { min-height: 44px; padding: 9px 12px; }
+  .mezo input[type="date"] { height: 44px; }
+  .mezo textarea { min-height: 64px; }
+}
+@media (max-width: 359px) { .urlap-menet li { font-size: 11px; gap: 4px; } .urlap-menet b { width: 17px; height: 17px; } }
 .kicsi { font-size: 13px; color: #6b6c80; }
 .kicsi.tovabbi { margin: -4px 0 6px; text-align: center; font-size: 12px; }
 
@@ -343,6 +406,7 @@ const TIPUSOK = [
   { kod: 'ekszercsere', nev: 'Ékszercsere', leiras: 'Cseréljük ki újra vagy szilikonra?' },
   { kod: 'garancia', nev: 'Garancia', leiras: 'Letelt a 6 hét és szúrjunk megerősítőt?' },
 ];
+const TELEFON_IKON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4-1.9 1.3a12 12 0 0 0 6.5 6.5l1.3-1.9 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 // "Mire kérsz időpontot?" - a regi /kontroll legordulo 6 lehetosege (a szoveg valtozatlan: ez kerul a szalon e-mailjebe), tipusonkent
 const LEHETOSEG = {
   kontroll: ['Kontroll - Meglévő vendégeknek - 0 Ft', 'Konzultáció - Új vendégeknek - 5.000 Ft', 'Sebkezelés / Tisztítás  - 2.000 Ft'],
@@ -486,7 +550,7 @@ export function nyit(ctx) {
 
   // --- 0. mire foglalsz? (a foglalo fo oldala) ---
   function tipusLepes() {
-    tartalom.innerHTML = `<p class="kicsi bevezeto">Mire szeretnél időpontot foglalni?</p><div class="lista tipus-racs">${TIPUSOK.map((t) => `<button class="kartya tipus" data-tipus="${t.kod}"><span class="nev">${esc(t.nev)}</span><div class="reszlet">${esc(t.leiras)}</div></button>`).join('')}</div>`;
+    tartalom.innerHTML = `<h3 class="tipus-cim">Mire szeretnél időpontot foglalni?</h3><div class="lista tipus-racs">${TIPUSOK.map((t) => `<button class="kartya tipus" data-tipus="${t.kod}"><span class="nev">${esc(t.nev)}</span><div class="reszlet">${esc(t.leiras)}</div></button>`).join('')}</div>`;
   }
   // a foglalasindulas merese (TikTok InitiateCheckout + GA4 foglalas_inditasa) a suti.js-ben: Salonic-linkre kattintaskor ott fut; ha a motor
   // belso linkrol (/idopontfoglalas, /kontroll) vagy a lapbetoltesen nyilt, az "Uj piercing" valasztasakor itt (ugyanaz az esemeny, egyszer)
@@ -524,17 +588,22 @@ export function nyit(ctx) {
     // fel: 'd' = asztalon ketto egy sorban, 'm' = mobilon is (a ket rovid mezo: datum, varos); rovid: a hosszu felirat mobilos valtozata
     const mezo = (id, cimke, kotelezo, bemenet, fel, rovid) => `<div class="mezo${fel ? ' d-fel' : ''}${fel === 'm' ? ' m-fel' : ''}"><label class="cimke-szoveg" for="mp-${id}">${rovid ? `<span class="hosszu">${esc(cimke)}</span><span class="rovid">${esc(rovid)}</span>` : esc(cimke)}${kotelezo ? ' *' : ''}</label>${bemenet}<div class="hiba-uzenet" role="alert"></div></div>`;
     const orszagok = (lista) => lista.map(([iso, , nev, hivo]) => `<option value="${esc(iso)}" title="${esc(nev)}"${iso === (adat.orszag || 'HU') ? ' selected' : ''}>${esc(iso)} ${esc(hivo)}</option>`).join('');
-    tartalom.innerHTML = `<p class="urlap-fej"><b>${esc(t.nev)}</b>: töltsd ki az űrlapot, és 24 órán belül visszahívunk és egyeztetünk egy időpontot!</p>`
+    // a tulajdonos kerese (2026-10-16: "a kontroll visszahivo urlap meg mindig nem az igazi"): fejlec ikonnal, "igy mukodik" sor, ket csoport (Elerhetoseged /
+    // A piercingedrol), mintaszovegek, eros kuldes-gomb. A mezonevek es a sorrend VALTOZATLAN (a szalon e-mailje ugyanaz).
+    tartalom.innerHTML = `<div class="urlap-fej"><span class="urlap-ikon" aria-hidden="true">${TELEFON_IKON}</span><div><b class="urlap-cim">${esc(t.nev)}</b><p>Töltsd ki az űrlapot, és 24 órán belül visszahívunk, hogy egyeztessünk egy időpontot.</p></div></div>`
+      + '<ol class="urlap-menet" aria-label="Így működik"><li><b>1</b>Kitöltöd</li><li><b>2</b>Visszahívunk</li><li><b>3</b>Egyeztetünk</li></ol>'
       + `<form class="urlap" novalidate><div class="csapda" aria-hidden="true"><label>Ne töltsd ki <input type="text" name="bot-field" tabindex="-1" autocomplete="off"></label></div>`
-      + mezo('nev', 'Név', true, '<input id="mp-nev" type="text" name="nev" autocomplete="name">', 'd')
-      + mezo('tel', 'Telefonszám', true, `<div class="tel-sor"><select name="orszag" aria-label="Országkód">${orszagok(orszagLista)}</select><input id="mp-tel" type="tel" name="tel" inputmode="tel" autocomplete="tel-national"></div>`, 'd')
-      + mezo('email', 'E-mail cím', true, '<input id="mp-email" type="email" name="email" autocomplete="email">', 'd')
+      + '<p class="urlap-szakasz">Elérhetőséged</p>'
+      + mezo('nev', 'Név', true, '<input id="mp-nev" type="text" name="nev" autocomplete="name" placeholder="Pl. Kovács Anna">', 'd')
+      + mezo('tel', 'Telefonszám', true, `<div class="tel-sor"><select name="orszag" aria-label="Országkód">${orszagok(orszagLista)}</select><input id="mp-tel" type="tel" name="tel" inputmode="tel" autocomplete="tel-national" placeholder="30 123 4567"></div>`, 'd')
+      + mezo('email', 'E-mail cím', true, '<input id="mp-email" type="email" name="email" autocomplete="email" placeholder="nev@email.hu">')
+      + '<p class="urlap-szakasz">A piercingedről</p>'
       + mezo('mikor', 'Mikor voltál nálunk?', true, `<input id="mp-mikor" type="date" name="mikor" max="${maStr}">`, 'm')
-      + mezo('varos', 'Melyik városban voltál?', true, `<input id="mp-varos" type="text" name="varos" list="mp-varosok" autocomplete="off"><datalist id="mp-varosok">${HELYSZIN_SORREND.map((id) => `<option value="${esc(HELYSZINEK[id].varos)}"></option>`).join('')}</datalist>`, 'm')
-      + mezo('mire', 'Mire kérsz időpontot?', false, `<select id="mp-mire" name="mire">${lehet.map((o) => `<option value="${esc(o)}"${(adat.mire && lehet.includes(adat.mire) ? adat.mire : lehet[0]) === o ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`, 'd')
-      + mezo('miben', 'Miben segíthetünk?', true, '<textarea id="mp-miben" name="miben"></textarea>')
+      + mezo('varos', 'Melyik városban voltál?', true, `<input id="mp-varos" type="text" name="varos" list="mp-varosok" autocomplete="off" placeholder="Pl. Budapest"><datalist id="mp-varosok">${HELYSZIN_SORREND.map((id) => `<option value="${esc(HELYSZINEK[id].varos)}"></option>`).join('')}</datalist>`, 'm', 'Melyik városban?')
+      + mezo('mire', 'Mire kérsz időpontot?', false, `<select id="mp-mire" name="mire">${lehet.map((o) => `<option value="${esc(o)}"${(adat.mire && lehet.includes(adat.mire) ? adat.mire : lehet[0]) === o ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`)
+      + mezo('miben', 'Miben segíthetünk?', true, '<textarea id="mp-miben" name="miben" placeholder="Írd le röviden, mit tapasztalsz, vagy mit kérdeznél."></textarea>')
       + mezo('kep', 'Kérlek csatolj egy képet a füledről (Opcionális)', false, '<span class="feltolto"><input id="mp-kep" type="file" name="kep" accept="image/*" multiple><label class="feltolto-gomb" for="mp-kep"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Kép kiválasztása</label><span class="feltolto-nev" data-fajlnev>Nincs kiválasztott kép</span></span>', false, 'Kép a füledről (opcionális)')
-      + '<button type="button" class="gomb teljes" data-kuld>Visszahívást kérek!</button><div class="kuld-uzenet" role="status"></div></form>';
+      + `<button type="button" class="gomb teljes kuld-gomb" data-kuld>${TELEFON_IKON}Visszahívást kérek!</button><div class="kuld-uzenet" role="status"></div></form>`;
     const f = tartalom.querySelector('form.urlap');
     for (const [k, v] of Object.entries(adat)) { const el = f.elements[k]; if (el && k !== 'mire' && k !== 'orszag' && el.type !== 'file') el.value = v; }
     // a sajat feltolto gomb mellett a kivalasztott kep(ek) neve
@@ -601,7 +670,9 @@ export function nyit(ctx) {
 
   // --- 1. helyszin ---
   function helyszinLepes() {
-    tartalom.innerHTML = `<p class="kicsi bevezeto">Válaszd ki, hol szeretnéd a piercinget.</p><div class="lista hely-racs">${HELYSZIN_SORREND.map((id) => {
+    // a terkep (a tulajdonos kerese, 2026-10-16): a varosra kattintva ugyanaz tortenik, mint a csempen (data-terkep-hely -> data-hely)
+    const terkep = `<div class="ht-motor">${TERKEP_SVG}<div class="ht-pinek">${TERKEP_PINEK.filter(([id]) => HELYSZINEK[id]).map(([id, varos, x, y, w, h]) => `<button class="ht-pin" data-terkep-hely="${id}" style="left:${x}%;top:${y}%;width:${w}%;height:${h}%" aria-label="${esc(varos)}"></button>`).join('')}</div></div>`;
+    tartalom.innerHTML = `<p class="kicsi bevezeto">Válaszd ki a térképen vagy a listában, hol szeretnéd a piercinget.</p>${terkep}<div class="lista hely-racs">${HELYSZIN_SORREND.map((id) => {
       const h = HELYSZINEK[id];
       return `<button class="kartya hely" data-hely="${id}"><img class="terkep" src="/assets/img/helyszin/${id}.svg" alt="" width="36" height="26" decoding="async"><span class="nev">${esc(h.varos)}</span></button>`;
     }).join('')}</div>`;
@@ -624,8 +695,15 @@ export function nyit(ctx) {
   }
   // A piercing-lista ket kerdesre szurve (mindenhonnan ugyanaz): 1. Kinek? (magamnak / ket szemelynek), 2. Milyen szolgaltatas? (1 piercing / tobb piercing / fulbevalo).
   // A kategoria a Salonic-szolgaltatas nevebol jon; a "2 szemelynek - 2 db" fejenkent 1 piercing, a 4 es 6 db tobb piercing.
-  const kategoria = (s) => {
+  // A "Kiesett ékszer újraszúrása" (2026-10-16 ota a Salonicban, ket valtozatban): a piercerei szerint a fulbevalos (divat) vagy a kozerzetjavito sorba kerul, a lista vegere.
+  const ujraszuras = (n) => /kiesett|\S*jrasz\S*r/i.test(n);
+  const kategoria = (s, lista = []) => {
     const n = szepNev(s.name);
+    if (ujraszuras(n)) {
+      const szem = (x) => (x && x.staffIds ? [...x.staffIds].sort().join() : '');
+      const ful = lista.find((x) => /f\S*lbeval/i.test(szepNev(x.name))), koz = lista.find((x) => PK[tipusKod(x.name)]);
+      return { kinek: 'magamnak', mit: ful && szem(s) === szem(ful) && szem(ful) !== szem(koz) ? 'fulbevalo' : 'egy', vegere: true };
+    }
     if (/szem\S*ynek/i.test(n)) return { kinek: 'ketto', mit: +((/(\d+)\s*db/i.exec(n) || [])[1]) <= 2 ? 'egy' : 'tobb' };
     if (/f\S*lbeval/i.test(n)) return { kinek: 'magamnak', mit: 'fulbevalo' };
     if (/3 PIERCING|2 PIERCING|^1\+1/i.test(n)) return { kinek: 'magamnak', mit: 'tobb' };
@@ -638,12 +716,14 @@ export function nyit(ctx) {
   // title = a teljes Salonic-nev, .nev > span = a rovid nev, .ar = az ar; a tesztek es a foglalasi logika ugyanaz). A kartya feje is nyit / zar (data-nyit).
   function szolgRajzol() {
     const lista = tartalom._lista || [];
-    const kat = lista.map((s) => [s, kategoria(s)]);
+    const kat = lista.map((s) => [s, kategoria(s, lista)]);
     const db = (k, m) => kat.filter(([, c]) => c.kinek === k && (!m || c.mit === m)).length;
     if (!db(all.kinek, all.mit)) { const m = MIT.find(([k]) => db(all.kinek, k)); if (m) all.mit = m[0]; else { all.kinek = 'magamnak'; all.mit = (MIT.find(([k]) => db('magamnak', k)) || ['egy'])[0]; } }
-    let mutat = kat.filter(([, c]) => c.kinek === all.kinek && c.mit === all.mit).map(([s]) => s);
-    // a tipusoldal piercingje elol (pl. a lep-oldalrol nyitva a Lep)
-    const sajat = (s) => all.mit === 'egy' && tipusKod(s.name) === all.oldalTipus;
+    // az ujraszuras a sor vegen; azonos nevu kartya csak egyszer
+    const sor = kat.filter(([, c]) => c.kinek === all.kinek && c.mit === all.mit);
+    let mutat = [...sor.filter(([, c]) => !c.vegere), ...sor.filter(([, c]) => c.vegere)].map(([s]) => s).filter((s, i, l) => l.findIndex((x) => szepNev(x.name) === szepNev(s.name)) === i);
+    // a tipusoldal piercingje elol (pl. a lep-oldalrol nyitva a Lep); tipus nelkuli oldalrol (fooldal) a Salonic sorrendje
+    const sajat = (s) => all.mit === 'egy' && !!PK[all.oldalTipus] && tipusKod(s.name) === all.oldalTipus;
     mutat = [...mutat.filter(sajat), ...mutat.filter((s) => !sajat(s))];
     // null: az alapertelmezett kartya nyilik le (a szuro valtasakor is); '': a vendeg bezarta, mind csukva marad
     if (all.nyitott === null || (all.nyitott && !mutat.some((s) => s.serviceId === all.nyitott))) all.nyitott = (all.oldalTipus === '3pc' && mutat.find((s) => /3 PIERCING/i.test(s.name)) || mutat[0] || {}).serviceId || null;
@@ -732,6 +812,8 @@ export function nyit(ctx) {
     }
     if (/^1\+1/i.test(n)) return { nev: 'Allergia 1+1', rovid: 'két allergia piercing egy időpontban', garancia: true, csomag: '',
       kedvezmeny: A.egy && p > A.egy ? kedvezmeny([['1. allergia piercing', ft(A.egy)], ['2. allergia piercing', '+ ' + ft(p - A.egy)]], p, 2, A.egy) : '' };
+    if (ujraszuras(n)) return { nev: 'Kiesett ékszer újraszúrása', rovid: 'ha kiesett az ékszered, és a bőr már bezárt', garancia: false, kedvezmeny: '',
+      csomag: '<p>Ha kiesett az ékszered, és már nem tudjuk visszahelyezni, mert a bőr bezárt, a piercinget újra kell szúrni. Ehhez válassz itt időpontot.</p>' };
     const t = PK[tipusKod(n)];
     if (t) return { nev: t[0], rovid: t[1], javulas: t[2], foto: t[3], garancia: true };
     return { nev: rovidNev(n), rovid: '', garancia: false };
@@ -842,7 +924,8 @@ export function nyit(ctx) {
     if (d.tipus) { all.tipus = d.tipus; if (d.tipus === 'uj') { meres(); return ugrik('hely'); } return ugrik('urlap'); }
     if (d.kuld !== undefined) return urlapKuld();
     if (d.lepes && (t.classList.contains('kesz') || !t.closest('.lepesek'))) return visszaLep(d.lepes);
-    if (d.hely) { all.placeId = +d.hely; all.szolg = null; all.nap = null; all.honap = null; all.staffId = null; return ugrik('szolg'); }
+    const hely = d.hely || d.terkepHely;
+    if (hely) { all.placeId = +hely; all.szolg = null; all.nap = null; all.honap = null; all.staffId = null; return ugrik('szolg'); }
     if (d.kinek) { all.kinek = d.kinek; all.nyitott = null; return szolgRajzol(); }
     if (d.mit) { all.mit = d.mit; all.nyitott = null; return szolgRajzol(); }
     if (d.nyit) { all.nyitott = all.nyitott === d.nyit ? '' : d.nyit; szolgRajzol(); const k = shadow.querySelector(`.pk[data-pk="${d.nyit}"]`); if (k && all.nyitott) k.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return; }

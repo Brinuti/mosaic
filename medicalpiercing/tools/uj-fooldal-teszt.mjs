@@ -65,7 +65,8 @@ const tileLinkek = [...forras.matchAll(/<ul class="helyek">([\s\S]*?)<\/ul>/g)].
 ok('forras: mind a 15 helyszin-csempe a foglalot nyitja az adott helyszinnel (placeId)', tileLinkek.length === 15 && tileLinkek.every((h) => /^https:\/\/medicalpiercing\.salonic\.hu\/selectEmployee\/\?placeId=\d+$/.test(h)), tileLinkek.length + ' db');
 
 const b = await chromium.launch();
-const ENGEDELYEZETT = /^(https?:\/\/(localhost|127\.0\.0\.1)|data:|blob:|https:\/\/([a-z0-9.-]*trustindex\.io|lh3\.googleusercontent\.com|maps\.google\.com|www\.google\.com|maps\.gstatic\.com|maps\.googleapis\.com|www\.youtube-nocookie\.com|embed\.rtl\.hu)\b)/;
+// a Trustindex-doboz Facebook-forrasu velemenyeinel a profilkep a graph.facebook.com/<id>/picture cimrol jon (a widget tartalma, 2026-10-16)
+const ENGEDELYEZETT = /^(https?:\/\/(localhost|127\.0\.0\.1)|data:|blob:|https:\/\/([a-z0-9.-]*trustindex\.io|lh3\.googleusercontent\.com|graph\.facebook\.com\/\d+\/picture|maps\.google\.com|www\.google\.com|maps\.gstatic\.com|maps\.googleapis\.com|www\.youtube-nocookie\.com|embed\.rtl\.hu)\b)/;
 const SAJAT_HOST = new URL(BASE).host;
 // nem helyi cimen a merokodok (suti.js: csak az eles domainen futnak) kerest inditanak: ezeket blokkoljuk, es nem szamit "kulso kerésnek"
 const MERO = (u) => !HELYI && (MERES.test(u) || /cloudflareinsights\.com|googlesyndication\.com/.test(u));
@@ -104,7 +105,10 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   ok(`${nezet}: nincs 4xx/5xx es sikertelen sajat keres`, p.rossz.length === 0, p.rossz.slice(0, 4).join(' | '));
   ok(`${nezet}: nincs Wix-keres`, p.wix.length === 0, p.wix.slice(0, 3).join(' '));
   ok(`${nezet}: nincs nem engedelyezett kulso keres`, p.kulso.length === 0, [...new Set(p.kulso.map((u) => new URL(u).host))].slice(0, 6).join(' '));
-  const kepek = await p.$$eval('img', (is) => is.filter((i) => !i.closest('.ti-widget') && !i.closest('dialog') && (!i.complete || i.naturalWidth === 0)).map((i) => i.currentSrc || i.src));
+  // a betoltes legfeljebb 20 mp-ig varhato (eloneteten / eles oldalon a halozat lassabb: a fooldalon 37 videoborito is van); a hibas kep sosem lesz kesz
+  const rosszKepek = () => p.$$eval('img', (is) => is.filter((i) => !i.closest('.ti-widget') && !i.closest('dialog') && (!i.complete || i.naturalWidth === 0)).map((i) => i.currentSrc || i.src));
+  let kepek = await rosszKepek();
+  for (let t = 0; kepek.length && t < 40; t++) { await p.waitForTimeout(500); kepek = await rosszKepek(); }
   ok(`${nezet}: minden kep betoltott`, kepek.length === 0, kepek.slice(0, 3).join(' '));
   const betu = await p.evaluate(async () => { await document.fonts.ready; return [...document.fonts].filter((f) => f.family.includes('Plus Jakarta')).map((f) => f.status).join(','); });
   ok(`${nezet}: betu betoltott (latin + latin-ext: o/u dupla ekezet)`, /loaded.*loaded|loaded,loaded/.test(betu) || (betu.split(',').filter((x) => x === 'loaded').length >= 2), betu);
@@ -243,7 +247,9 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
     ok('mobil: az arak gombja kozepen', Math.abs(m.arGomb - m.arPanel) < 4);
     ok('mobil: az orvosi foto teljes szelessegu', m.kepSzeles >= m.orvosSzeles - 1, `${m.kepSzeles}/${m.orvosSzeles}`);
     ok('mobil: mind a 15 helyszin idopontokkal egyutt is kompakt (< 1350 px)', m.helyekMagassag < 1350, Math.round(m.helyekMagassag) + ' px');
-    ok('mobil: a lablec kompakt (< 650 px)', m.lablecMagassag < 650, Math.round(m.lablecMagassag) + ' px');
+    // a lablec az eles oldal labenek tartalmaval (a tulajdonos kerese, 2026-10-16): Menu + Tudnivalok ket hasabban, Elerhetosegek, Nyitvatartas, foglalas + kontroll
+    const lb = await p.evaluate(() => { const l = document.querySelector('.lablec'); const menuk = [...l.querySelectorAll('.lablec-menu')].map((x) => Math.round(x.getBoundingClientRect().top)); return { cimek: [...l.querySelectorAll('h3')].map((x) => x.textContent.trim()), egySor: menuk.length === 2 && menuk[0] === menuk[1], nyitva: l.querySelectorAll('.lablec-nyitva div').length, gombok: [...l.querySelectorAll('.lablec-gombok a')].map((x) => x.getAttribute('href')) }; });
+    ok('mobil: a lablec az eles oldal tartalmaval, rendezetten (Menu + Tudnivalok egymas mellett, Elerhetosegek, Nyitvatartas, foglalas + kontroll)', ['Menü', 'Tudnivalók', 'Elérhetőségek', 'Nyitvatartás'].every((x) => lb.cimek.includes(x)) && lb.egySor && lb.nyitva === 3 && lb.gombok.length === 2, JSON.stringify(lb));
   }
 
   // ---------- 6. osszes piercing ----------
