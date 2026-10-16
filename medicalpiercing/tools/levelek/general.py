@@ -395,10 +395,12 @@ SMS = [
 ]
 # a motor SMS-ei (--motor): a fenti lista a motor helyorzoivel, a vegen mindig "- Medical Piercing" (1 SMS-szegmens: a katalogus-teszt ellenorzi)
 MOTOR_SMS = [
- dict(id='MP-SMS-01', csatorna='sms', mikor=dict(tipus='t0'), szoveg='Szia {keresztnév}! Megvan az időpontod: {dátum} {időpont}, {helyszín_rövid}. Részletek: {foglalás_részletei_link} - Medical Piercing'),
- dict(id='MP-SMS-02', csatorna='sms', mikor=dict(tipus='t72'), szoveg='Szia {keresztnév}! Várunk {dátum_ragos} {időpont}-kor. Megerősíted, vagy átteszed? Egy kattintás: {foglalás_részletei_link} - Medical Piercing'),
+ dict(id='MP-SMS-01', csatorna='sms', mikor=dict(tipus='t0', max_lead_ora=30),  # SMS-sporolas (tulajdonos, 2026-10-16): csak a 30 oran belulre foglalok kapjak
+ szoveg='Szia {keresztnév}! Megvan az időpontod: {dátum} {időpont}, {helyszín_rövid}. Részletek: {foglalás_részletei_link} - Medical Piercing'),
+ dict(id='MP-SMS-02', csatorna='sms', mikor=dict(tipus='t72'), szegmensek=['videk'],  # csak videk
+ szoveg='Szia {keresztnév}! Várunk {dátum_ragos} {időpont}-kor. Megerősíted, vagy átteszed? Egy kattintás: {foglalás_részletei_link} - Medical Piercing'),
  dict(id='MP-SMS-03', csatorna='sms', mikor=dict(tipus='t24'), szoveg='Szia {keresztnév}! Holnap {időpont}-kor várunk, {helyszín_rövid}. Egyél előtte, érkezz 5 perccel korábban. - Medical Piercing'),
- dict(id='MP-SMS-04', csatorna='sms', mikor=dict(tipus='lemondva'), szoveg='Szia {keresztnév}! Töröltük a {dátum} {időpont} időpontodat. Újat itt választhatsz: {foglalás_link} - Medical Piercing'),
+ # MP-SMS-04 (lemondas SMS) torolve: a lemondasrol csak e-mail megy (SMS-sporolas, 2026-10-16)
  dict(id='MP-SMS-05', csatorna='sms', mikor=dict(tipus='athelyezve'), szoveg='Szia {keresztnév}! Áttettük az időpontodat: {új_dátum} {új_időpont}. Részletek: {foglalás_részletei_link} - Medical Piercing'),
  dict(id='MP-SMS-06', csatorna='sms', mikor=dict(tipus='nem_jelent_meg'), szoveg='Szia {keresztnév}! {nem_találkoztunk}. Új időpont: {foglalás_link} - Medical Piercing'),
 ]

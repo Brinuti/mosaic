@@ -56,15 +56,18 @@ test('mp: szegmensek (piercing-tipus + bp/videk a munkatarsbol)', () => {
 
 test('mp: utemezes a lead-time szerint (T0 e-mail+SMS; T-24 SMS; 3+ nap T-48 level; 4+ nap T-72 SMS; 5+ nap E1; 7+ nap E2; 14+ nap E3)', () => {
   const idk = (leadOra, szeg = ['migren', 'bp']) => tervez({ uzletag: 'mp', szegmensek: szeg, kezdet: MOST + leadOra * ORA }, MOST).terv.map((x) => x.uzenet_id).sort();
+  // SMS-sporolas (2026-10-16): T0 SMS csak 30 oran belulre; T-72 SMS csak videk; T-24 SMS mindenkinek
   assert.deepEqual(idk(20), ['MP-EMAIL-01', 'MP-SMS-01']);
-  assert.deepEqual(idk(48), ['MP-EMAIL-01', 'MP-SMS-01', 'MP-SMS-03']);
-  assert.deepEqual(idk(80), ['MP-EMAIL-01', 'MP-EMAIL-10', 'MP-SMS-01', 'MP-SMS-03']);
-  assert.deepEqual(idk(100), ['MP-EMAIL-01', 'MP-EMAIL-10', 'MP-SMS-01', 'MP-SMS-02', 'MP-SMS-03']);
-  assert.deepEqual(idk(6 * 24), ['MP-EMAIL-01', 'MP-EMAIL-03', 'MP-EMAIL-10', 'MP-SMS-01', 'MP-SMS-02', 'MP-SMS-03']);
-  assert.deepEqual(idk(8 * 24), ['MP-EMAIL-01', 'MP-EMAIL-03', 'MP-EMAIL-08', 'MP-EMAIL-10', 'MP-SMS-01', 'MP-SMS-02', 'MP-SMS-03']);
-  assert.deepEqual(idk(15 * 24), ['MP-EMAIL-01', 'MP-EMAIL-03', 'MP-EMAIL-08', 'MP-EMAIL-09', 'MP-EMAIL-10', 'MP-SMS-01', 'MP-SMS-02', 'MP-SMS-03']);
+  assert.deepEqual(idk(29), ['MP-EMAIL-01', 'MP-SMS-01']);
+  assert.deepEqual(idk(48), ['MP-EMAIL-01', 'MP-SMS-03']);
+  assert.deepEqual(idk(80), ['MP-EMAIL-01', 'MP-EMAIL-10', 'MP-SMS-03']);
+  assert.deepEqual(idk(100), ['MP-EMAIL-01', 'MP-EMAIL-10', 'MP-SMS-03']);
+  assert.deepEqual(idk(100, ['migren', 'videk']), ['MP-EMAIL-02', 'MP-EMAIL-11', 'MP-SMS-02', 'MP-SMS-03']);
+  assert.deepEqual(idk(6 * 24), ['MP-EMAIL-01', 'MP-EMAIL-03', 'MP-EMAIL-10', 'MP-SMS-03']);
+  assert.deepEqual(idk(8 * 24), ['MP-EMAIL-01', 'MP-EMAIL-03', 'MP-EMAIL-08', 'MP-EMAIL-10', 'MP-SMS-03']);
+  assert.deepEqual(idk(15 * 24), ['MP-EMAIL-01', 'MP-EMAIL-03', 'MP-EMAIL-08', 'MP-EMAIL-09', 'MP-EMAIL-10', 'MP-SMS-03']);
   // videk: a videki T0 / T-48; tipus szerinti E1; az "egyeb" (pl. maj, divat) nem kap E1-et
-  assert.deepEqual(idk(15 * 24, ['klimax', 'videk']), ['MP-EMAIL-02', 'MP-EMAIL-05', 'MP-EMAIL-08', 'MP-EMAIL-09', 'MP-EMAIL-11', 'MP-SMS-01', 'MP-SMS-02', 'MP-SMS-03']);
+  assert.deepEqual(idk(15 * 24, ['klimax', 'videk']), ['MP-EMAIL-02', 'MP-EMAIL-05', 'MP-EMAIL-08', 'MP-EMAIL-09', 'MP-EMAIL-11', 'MP-SMS-02', 'MP-SMS-03']);
   assert.ok(!idk(15 * 24, ['egyeb', 'bp']).some((x) => ['MP-EMAIL-03', 'MP-EMAIL-04', 'MP-EMAIL-05', 'MP-EMAIL-06', 'MP-EMAIL-07'].includes(x)));
   // idopontok: E1 a foglalas utan 1 nappal, a T-48 48 oraval elotte, a tartalmi levelek 24 oranal nem kozelebb egymashoz, az utolso legalabb 96 oraval elotte
   const kezdet = MOST + 15 * NAP;
@@ -111,7 +114,7 @@ test('mp: minden sablon kitoltve hibatlan (bp / videk / ismeretlen munkatars, ne
       }
     }
   }
-  assert.ok(darab >= 300, String(darab));
+  assert.ok(darab >= 280, String(darab)); // 16 valtozat x 18 uzenet
 });
 
 test('mp: befogadas -> T0 a relay-en (uzletag mp, MP-felado / valaszcim), a velemenyek a D1 mp_velemenyek tablajabol; tick a lead-time szerint', async () => {
@@ -124,16 +127,15 @@ test('mp: befogadas -> T0 a relay-en (uzletag mp, MP-felado / valaszcim), a vele
   const f = szam(db, 'SELECT * FROM foglalasok WHERE id = ?1', UUID1);
   assert.equal(f.uzletag, 'mp'); assert.equal(f.fiok, 'medicalpiercing'); assert.equal(f.szegmens, 'migren,bp'); assert.equal(f.teszt, 1);
   const tervezett = db.sqlite.prepare("SELECT uzenet_id FROM kuldesek WHERE foglalas_id = ?1 AND allapot = 'fuggoben' ORDER BY uzenet_id").all(UUID1).map((x) => x.uzenet_id);
-  assert.deepEqual(tervezett, ['MP-EMAIL-01', 'MP-EMAIL-03', 'MP-EMAIL-08', 'MP-EMAIL-09', 'MP-EMAIL-10', 'MP-SMS-01', 'MP-SMS-02', 'MP-SMS-03']);
+  assert.deepEqual(tervezett, ['MP-EMAIL-01', 'MP-EMAIL-03', 'MP-EMAIL-08', 'MP-EMAIL-09', 'MP-EMAIL-10', 'MP-SMS-03']);
   const t = await tick(db, env, k, MOST, { foglalasId: UUID1, mpErtekeles: async () => 5033 });
-  assert.equal(t.elkuldve, 2);
+  assert.equal(t.elkuldve, 1); // 15 napra elore: a T0 SMS kimarad (SMS-sporolas), csak a T0 level megy
+  assert.equal(k.ki.sms.length, 0);
   const mail = k.ki.email[0];
   assert.equal(mail.uzletag, 'mp'); assert.equal(mail.felado, 'Medical Piercing'); assert.equal(mail.valasz, 'medicalpiercing.hu@gmail.com');
   assert.match(mail.targy, /^Visszaigazoltuk az időpontodat: október 22\. \(csütörtök\), 14:30$/);
   assert.ok(!HELYORZO_MARADT.test(mail.html) && /Nagyon kedvesek voltak, semmi nem fajt\./.test(mail.html) && /Proba Anna/.test(mail.html) && /5 033/.test(mail.html));
   assert.ok(/Kovács Gabriella/.test(mail.html) && /Újpesti rakpart 7/.test(mail.html) && /href="https:\/\/www\.medicalpiercing\.hu\/f\/[0-9a-f]{10}"/.test(mail.html));
-  assert.equal(k.ki.sms[0].uzletag, 'mp');
-  assert.match(k.ki.sms[0].szoveg, /^Szia Elek! Megvan az idopontod: oktober 22\. \(csutortok\) 14:30, Ujpesti rakpart 7\. Reszletek: medicalpiercing\.hu\/f\/[0-9a-f]{10} - Medical Piercing$/);
   // a kesobbi uzenetek az idejukben: E1 masnap 10:00, a T-48 level, a T-24 SMS
   await tick(db, env, k, MOST + NAP + 600);
   assert.ok(k.ki.email.some((m) => /így készül a migrén piercinged/.test(m.targy) || /migrén piercing/.test(m.targy)), JSON.stringify(k.ki.email.map((m) => m.targy)));
@@ -168,7 +170,7 @@ test('mp: sajat lemondas / athelyezes uzenetek (nem a MOSAIC COMMON-*), az ujrat
   const lr = await ingest(db, env, level(MINTA.lemondott, { datum: uj }), MOST + 2 * ORA);
   assert.equal(lr.tipus, 'lemondva');
   await tick(db, env, k, MOST + 2 * ORA);
-  assert.ok(k.ki.sms.some((s) => /^Szia Elek! Toroltuk a/.test(s.szoveg) && /medicalpiercing\.hu\/idopontfoglalas - Medical Piercing$/.test(s.szoveg)));
+  assert.ok(!k.ki.sms.some((s) => /Toroltuk/.test(s.szoveg))); // a lemondasrol csak e-mail megy (SMS-sporolas)
   assert.ok(k.ki.email.some((m) => /Töröltük az időpontodat/.test(m.targy) && /href="https:\/\/www\.medicalpiercing\.hu\/idopontfoglalas"/.test(m.html)));
   assert.equal(szam(db, "SELECT COUNT(*) AS n FROM kuldesek WHERE allapot = 'fuggoben'").n, 0);
 });
