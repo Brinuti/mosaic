@@ -333,6 +333,9 @@ function regiLinkLe(html) {
     .replace(/<a\b[^>]*\shref="\/3-piercing-2-araert(?:-2)?"[^>]*>3 piercing 2 áráért! - AKCIÓ!<\/a>/g, '<a href="/3-piercing-2-araert-regi">Őszi akció »</a>');
 }
 
+// az uj oldalakon nem szereplo regi oldalak (a tulajdonos kerese, 2026-10-16: aranyrol nincs szoveg): nincs /uj valtozatuk, a blogban sincs kartyajuk
+export const KIZART_UTAK = new Set(['/szurathatok-arany-shenmen-piercinget-is']);
+
 // --- a blog-oldal (/blog): kepes kartyak, 12-esevel lapozva (uj-oldalak.js), felul csak a cim (a tulajdonos kerese, 2026-10-16) ---
 // a kartya kepe: a regi oldal galeriajabol a cikk cime szerint, ha ott nincs, a cikk sajat elso nagy kepe
 function blogFo(ROOT, adat) {
@@ -358,7 +361,7 @@ function blogFo(ROOT, adat) {
   };
   return `<section class="tarto blog-fej"><h1>Blog</h1></section>
   <section class="tarto blog-lista">
-    <ul class="blog-racs" data-blog-racs>${lista.elemek.map(kartya).join('')}</ul>
+    <ul class="blog-racs" data-blog-racs>${lista.elemek.filter((p) => !KIZART_UTAK.has(p.href)).map(kartya).join('')}</ul>
     <nav class="blog-lapozo" data-blog-lapozo aria-label="Blog-oldalak"></nav>
   </section>`;
 }

@@ -32,6 +32,20 @@ export const B_ALAP = new Map([
   ['/3-piercing-2-araert-regi', '/3-piercing-2-araert-regi'],
 ]);
 export const KATEGORIA_B_UTAK = new Set(B_ALAP.values());
+// A piercing-oldalak hos-galeriaja (a tulajdonos kerese, 2026-10-16): mind a 9 kategoria-oldalon (a divat fulpiercing kivetelevel) galeria a hosben;
+// az 1-2. kep oldalankent a tulajdonos Drive-mappajabol (assets/img/uj-galeria-<kulcs>-1|2.webp), a 3-5. a migren-oldal kozos kepei.
+const GALERIA_KOZOS = ['/assets/img/f18724_6ea547e25b1d4b9b9073ebf522221b83.jpg', '/assets/img/f18724_a72cb347446b4b348cf6a35d08f43dca.webp', '/assets/img/f18724_0a502786784446d6a3c6b60c371ee731.jpg'];
+const GALERIA_KULCS = [[/^\/migren-piercing(?:-b)?$/, 'migren'], [/^\/shenmen-piercing(?:-b)?$/, 'shenmen'], [/^\/klimax-piercing(?:-b)?$/, 'klimax'],
+  [/^\/slim-(?:etvagycsokkento-)?piercing(?:-b)?$/, 'slim'], [/^\/allergia-piercing$/, 'allergia'], [/^\/maj-piercing$/, 'maj'],
+  [/^\/pajzsmirigy-piercing$/, 'pajzsmirigy'], [/^\/lep-piercing$/, 'lep'], [/^\/vastagbel-piercing$/, 'vastagbel']];
+export function hosGaleriaKepek(ROOT, ut) {
+  const k = GALERIA_KULCS.find(([re]) => re.test(ut));
+  if (!k) return null;
+  const sajat = [1, 2].map((i) => `/assets/img/uj-galeria-${k[1]}-${i}.webp`);
+  if (!sajat.every((f) => fs.existsSync(path.join(ROOT, f)))) return null;
+  return [...sajat, ...GALERIA_KOZOS].map((src) => ({ src }));
+}
+
 // a B oldal sajat hos-cime (ahol az eredeti cim egy hosszu mondat): az eredeti mondat a bevezetobe kerul
 const HOS_CIM = new Map([
   ['/rolunk', { cim: '11 év migrén után <em>végre szabad vagyok</em>' }],
@@ -273,6 +287,8 @@ export function kategoriaCserelt(adat, T, B = false) {
   const p = kategoriaBlokkok(adat, T, B);
   if (!p) return null;
   const szovegek = [];
+  // a galerias hos (2026-10-16) a regi sablon kepen levo idezet-dobozat valtja: a galeria elso kepe hordozza az uzenetet
+  if (!B && GALERIA_KULCS.some(([re]) => re.test(adat.ut))) szovegek.push(...[p.hero.idezetH, p.hero.idezetP].filter(Boolean).map((n) => T.szovegTiszta(n.html || '')));
   for (const b of p.blokkok) {
     if (!['ekszer', 'ar', 'media', 'csapat', 'helyszin'].includes(b.tip)) continue;
     for (const l of b.nodes.flatMap((n) => laposit(n))) {
@@ -347,6 +363,35 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
   const reszlet = (nev) => T.partial(ROOT, nev);
   const keparany = (n) => (n.nw && n.nh ? ` width="${n.nw}" height="${n.nh}"` : '');
 
+  // --- galerias hos (B felepites): cim, bevezeto, gombok, ertekeles + linkek, badge-ek, galeria; a "20 ev" pecset nelkul (a tulajdonos kerese, 2026-10-16) ---
+  const galeriaHos = ({ cim, bevHtml, gomb, ert, linkek, kepek }) => {
+    const id = ++c.galeriaSzam;
+    const db = kepek.length;
+    // az eredeti migren-galeria elso kepe "<- Lapozz balra" jelzest hordoz: a tools/uj-b-hos-kep.py "Lapozz jobbra ->" valtozata (assets/img/uj-hos-01.webp)
+    const hosKep = (src) => (/54ef80f3849d46cfa63ae77598afbcf7/.test(src) && fs.existsSync(path.join(ROOT, 'assets/img/uj-hos-01.webp')) ? '/assets/img/uj-hos-01.webp' : src);
+    const dia = (k, i) => `<figure class="kar-dia"><img src="${esc(hosKep(k.src))}" width="800" height="800" alt="${esc(`Medical Piercing – ${i + 1}. kép a ${db}-ből`)}"${i === 0 ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async" data-nagyit data-grp="g${id}"></figure>`;
+    return `<section class="hos kat-hos kat-hos-b">
+    <div class="tarto hos-racs">
+      <h1 class="hos-cim">${cim}</h1>
+      <div class="hos-szoveg">
+        ${bevHtml ? `<p class="hos-bevezeto">${bevHtml}</p>` : ''}
+        <div class="gombsor">
+          <a class="gomb gomb-tomor" href="${esc(belso(gomb.href))}">${IK('calendar')}${esc(gomb.szoveg.replace(/!$/, ''))}${IK('chev', 'ik-nyil')}</a>
+          ${van.has('ar') || van.has('akciofelt') ? `<a class="gomb gomb-ures" href="#arak">Árak és akciók${IK('chev', 'ik-nyil')}</a>` : ''}
+        </div>
+        <div class="hos-ertek-sav">
+          ${ert}
+          <ul class="hos-linkek">${linkek.join('')}</ul>
+        </div>
+        <!--#bizalom-->
+      </div>
+      <figure class="hos-kep hos-galeria">
+        <div class="kar kat-hos-kar" data-kar="${id}"><div class="kar-sav" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Fotók a kezelésről">${kepek.map(dia).join('')}</div><button type="button" class="kar-gomb kar-elozo" aria-label="Előző kép" disabled>${IK('chev')}</button><button type="button" class="kar-gomb kar-kov" aria-label="Következő kép">${IK('chev')}</button><p class="kar-szam"><span data-kar-akt>1</span> / ${db}</p></div>
+      </figure>
+    </div>
+  </section>`;
+  };
+
   // --- hos: ugyanaz a felepites, mint az uj fooldalon ---
   const hos = () => {
     const h = p.hero;
@@ -359,6 +404,8 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     const csill = Array.from({ length: 5 }, () => IK('star')).join('');
     // a pontszam es a vélemenyek szama a Trustindex-widget fejlecebol jon (assets/js/uj-fooldal.js 4c.: /api/ertekeles); a szoveg itt csak tartalek
     const ert = `<p class="kat-ertekeles"><span class="csillagok" role="img" aria-label="5 csillagból 4,8">${csill}</span><a href="/migren-shenmen-piercing-velemenyek" data-ti-ertekeles>Kiváló – 4,8 – ${GOOGLE_DB} vélemény »</a></p>`;
+    const kepek = hosGaleriaKepek(ROOT, adat.ut);
+    if (kepek) return galeriaHos({ cim, bevHtml: h.bev ? szovegLink(h.bev.html) : '', gomb, ert, linkek, kepek });
     return `<section class="hos kat-hos">
     <div class="tarto hos-racs">
       <h1 class="hos-cim">${cim}</h1>
@@ -408,6 +455,8 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     for (const e of h.extra) linkek.push(`<li><a href="${van.has('ekszer') ? '#ekszerek' : '#arak'}"><span class="hosszu">${esc(szovegTiszta(e.html).replace(/\s*(?:>>|&gt;&gt;)\s*$/, ''))}</span><span class="rovid">Ékszerek és árak</span> »</a></li>`);
     const csill = Array.from({ length: 5 }, () => IK('star')).join('');
     const ert = `<p class="kat-ertekeles"><span class="csillagok" role="img" aria-label="5 csillagból 4,8">${csill}</span><a href="/migren-shenmen-piercing-velemenyek" data-ti-ertekeles>Kiváló – 4,8 – ${GOOGLE_DB} vélemény »</a></p>`;
+    const kepek = hosGaleriaKepek(ROOT, adat.ut) || (h.gal ? h.gal.kepek : null);
+    if (kepek) return galeriaHos({ cim, bevHtml, gomb, ert, linkek, kepek });
     const id = ++c.galeriaSzam;
     const db = h.gal ? h.gal.kepek.length : 0;
     // az elso kep eredetileg "<- Lapozz balra" jelzest hordoz: a tools/uj-b-hos-kep.py "Lapozz jobbra ->" jelzesu valtozatot keszit (assets/img/uj-hos-01.webp)

@@ -12,7 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { kulcsbol, fajlnev } from '../lib/utvonal.js';
-import { oldalHtml, indexHtml } from './uj-oldalak/sablon.mjs';
+import { oldalHtml, indexHtml, KIZART_UTAK } from './uj-oldalak/sablon.mjs';
 import { B_ALAP, GOOGLE_DB } from './uj-oldalak/kategoria.mjs';
 
 export const UJ_FOOLDAL_UT = '/uj-fooldal';
@@ -44,7 +44,7 @@ let tukor = null;
 export function tukorJegyzek(ROOT) {
   if (tukor) return tukor;
   const f = path.join(ROOT, 'uj-oldalak/jegyzek.json');
-  tukor = fs.existsSync(f) ? new Set(JSON.parse(fs.readFileSync(f, 'utf8')).map((o) => o.ut)) : new Set();
+  tukor = fs.existsSync(f) ? new Set(JSON.parse(fs.readFileSync(f, 'utf8')).map((o) => o.ut).filter((ut) => !KIZART_UTAK.has(ut))) : new Set();
   return tukor;
 }
 // belso link atiras: / -> /uj-fooldal, /x -> /uj/x ha az x-nek van uj valtozata; a foglalasi cimek (/idopontfoglalas, /kontroll) maradnak
@@ -71,6 +71,11 @@ export function szovegJavit(html) {
     .replace(/<strong>A legmagasabb minőségű(?:<\/strong>)? \(tanúsítvánnyal rendelkező\) (?:<strong>)?G23 Titánium antiallergén<\/strong> ékszerek ezüst színben, vagy <strong>14 karátos arannyal(?: bevonva<\/strong>|<\/strong> bevonva)\./g, EKSZER_MONDAT)
     .replace(/<strong>G23 Titánium, antiallergén orvosi fém piercingek\.<\/strong>/g, '<strong>Magas minőségű orvosi fém: G23 titánium piercingek.</strong>')
     .replace(/Az ezüst színűek titánból, az arany ékszerek pedig orvosi fémből és 14K arannyal vannak<br>\s*bevonva\./g, 'Ékszereink magas minőségű orvosi fémből, G23 titániumból készülnek.')
+    .replace(/<p><strong>Az anyaga alapján tehát választhatsz:<\/strong><\/p>\s*<p>[·\s]*nemesfémet \(ezüstözött, aranyozott\)<\/p>\s*<p>[·\s]*ezüstöt<\/p>\s*<p>[·\s]*titániumot<\/p>/g,
+      '<p>Nálunk kizárólag <strong>magas minőségű orvosi fémből, G23 titániumból</strong> készült ékszereket használunk.</p>')
+    .replace(/ \(ez a páciens kérésének megfelelően arannyal bevont is lehetett\)/g, '')
+    .replace(/ha ilyen van akkor arany vagy fehérarany ékszert szoktunk javasolni, viszont<br>\s*ezek nem kaphatóak nálunk a vendégnek kell hoznia magával\./g,
+      'ha ilyen van, akkor a vendég által hozott, számára megfelelő ékszert javasoljuk: ezek nem kaphatóak nálunk, a vendégnek kell hoznia magával.')
     .replace(/Találsz feketéket, aranyozottat, ezüst színűt\. Minden ékszerünk a legmagasabb minőségű G23 Titániumból készült orvosi fém, antiallergének és autóklávban fertőtlenítjük őket\./g,
       'Minden ékszerünk magas minőségű orvosi fémből, G23 titániumból készül, és autoklávban fertőtlenítjük őket.')
     // csak a szovegben (attributumban nem lehet <span>)
@@ -82,7 +87,7 @@ export function oldalKiir(ROOT, DIST, ut, html) {
   const kulcs = ut === '/' ? 'index' : kulcsbol(ut);
   const nev = fajlnev(kulcs) + '.html';
   const kesz = kepVerzio(ROOT, linkAtiras(ROOT, szovegJavit(osszerak(ROOT, html))));
-  if (/karátos|14K arany/.test(kesz)) throw new Error(`${ut}: aranyos ekszer-szoveg maradt (a tulajdonos kerese: nincs arany)`);
+  if (/karátos|14K arany|aranyozott|arannyal|arany (?:shenmen|ékszer|piercing)/i.test(kesz)) throw new Error(`${ut}: aranyos ekszer-szoveg maradt (a tulajdonos kerese: nincs arany)`);
   if (!/<meta name="robots" content="[^"]*noindex[^"]*"/i.test(kesz)) throw new Error(`${ut}: hianyzik a noindex meta (a lap rejtett)`);
   if (/rel="canonical"/i.test(kesz)) throw new Error(`${ut}: canonical nem lehet a noindex lapon`);
   // minden helyi kep- es betu-hivatkozasnak letezni kell (hianyzo fajl = torott kep az eles lapon)
@@ -117,7 +122,7 @@ export function ujOldalak(ROOT, DIST) {
   const sajatDir = path.join(ROOT, 'uj-oldalak/sajat');
   const sajatNevek = new Set(fs.existsSync(sajatDir) ? fs.readdirSync(sajatDir).filter((x) => x.endsWith('.html')).map((x) => '/' + x.slice(0, -5)) : []);
   for (const adat of adatok) {
-    if (KIHAGY.has(adat.ut)) continue;
+    if (KIHAGY.has(adat.ut) || KIZART_UTAK.has(adat.ut)) continue;
     if (sajatNevek.has(adat.ut)) continue;   // kezzel irt uj valtozata van (uj-oldalak/sajat/), lent irodik ki
     // a migren / shenmen / klimax / slim oldal alapja a "B" valtozat (az eredeti -b oldal tartalma, a kategoria-dizajnnal): ugyanazon a (b nelkuli) cimen
     const bAdat = B_ALAP.has(adat.ut) ? utSzerint.get(B_ALAP.get(adat.ut)) : null;
