@@ -9,7 +9,7 @@ SITE = 'https://www.medicalpiercing.hu'
 KEPALAP = (sys.argv[1] if len(sys.argv) > 1 else SITE).rstrip('/') + '/assets/levelek/kep/'
 IMG = SITE + '/assets/img/f18724_'
 K = {
-  'logo': IMG + '5d639907d27148e1a1e80625fce81d7a.png',
+  'logo': KEPALAP + 'logo.png',
   'szalon': IMG + '9523f7cd094b451aa8534ca6d7cfaa3e.jpg',
   'gabi_portre': IMG + '3ae9dfe53a07477fae1a816f79be5098.jpg',   # minta: a foglalt munkatars fotoja (Salonic employeeProfilePicture)
   'video': KEPALAP + 'szuras-video.jpg', 'ekszerek': KEPALAP + 'ekszerek.jpg', 'steril': KEPALAP + 'steril.jpg',
@@ -41,7 +41,7 @@ def kep(src, href, alt='', stilus=''):  # minden kep linkelve: a Gmail igy nem t
 
 CSS = '''body{margin:0;background:#f6ebe4;font-family:Helvetica,Arial,sans-serif;color:#2f3044}
 .wrap{max-width:600px;margin:0 auto;background:#fff}
-.hd{padding:22px 28px 12px;text-align:center}.hd img{height:72px;width:auto;border:0}
+.hd{padding:24px 28px 16px;text-align:center}.hd img{width:270px;max-width:70%;height:auto;border:0}
 .in{padding:8px 28px 22px;font-size:16px;line-height:1.6}
 h1{font-size:24px;line-height:1.25;margin:16px 0 8px;color:#2f3044}
 h2{font-size:18px;margin:26px 0 6px;color:#2f3044}
@@ -57,7 +57,7 @@ p{margin:10px 0}
 .kep{margin:14px 0}.kep img{border-radius:8px}.felirat{font-size:13px;color:#6b6c80;margin-top:4px}
 .sig{margin-top:22px}.sig img{width:64px;height:64px;border-radius:32px;vertical-align:middle;margin-right:12px}
 .ft{padding:18px 28px 28px;font-size:12px;color:#6b6c80;line-height:1.5;background:#f6ebe4}
-.ft a{color:#6b6c80}.dyn{background:#fff3b0}
+.ft a{color:#6b6c80}.dyn{background:#fff3b0}.trust .dyn{color:#2f3044;padding:0 3px}
 '''
 
 BIZALOM = f'''<div class="trust"><b>Nyugodt kezekben leszel nálunk</b><br>
@@ -73,7 +73,7 @@ def lap(cim, preheader, torzs, hero=None, hero_link=None):
     return f'''<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>{html.escape(cim)}</title><style>{CSS}</style></head><body>
 <div style="display:none;max-height:0;overflow:hidden">{html.escape(preheader)}</div>
-<div class="wrap"><div class="hd"><a href="{SITE}"><img src="{K['logo']}" alt="Medical Piercing"></a></div>{hero_html}
+<div class="wrap"><div class="hd"><a href="{SITE}"><img src="{K['logo']}" width="270" alt="Medical Piercing"></a></div>{hero_html}
 <div class="in">{torzs}</div>{BIZALOM}
 <div class="ft">Medical Piercing · Tel.: +36 1 901 7444 · medicalpiercing.hu@gmail.com · <a href="{SITE}">medicalpiercing.hu</a><br>
 Erre a levélre nyugodtan válaszolhatsz, kollégáink elolvassák.<br><br>
