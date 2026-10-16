@@ -39,7 +39,7 @@ export const HELYORZOK = Object.freeze({
 export const CSATORNAK = Object.freeze(['sms', 'email', 'feladat']);
 /** mikor.tipus: t0 | t72 | t24 | tartalom | feladat | feladat_t0 (+ a kozos: lemondva | athelyezve | nem_jelent_meg) */
 /** elott_ora: { ora: 48, min_lead_ora: 72 } - az idopont elott N oraval, ha a foglalas legalabb min_lead_ora oraval elotte tortent (MP: T-48 felkeszito level) */
-export const MIKOR_TIPUSOK = Object.freeze(['t0', 't72', 't24', 'tartalom', 'elott_ora', 'feladat', 'feladat_t0', 'lemondva', 'athelyezve', 'nem_jelent_meg']);
+export const MIKOR_TIPUSOK = Object.freeze(['t0', 't72', 't24', 'tartalom', 'elott_ora', 'utan_ora', 'feladat', 'feladat_t0', 'lemondva', 'athelyezve', 'nem_jelent_meg']);
 export const SZEGMENSEK = Object.freeze(['ajandekkartya', 'fizetos', 'paros', 'negykezes', 'egyeni', 'hair', 'konzultacio', 'festes', 'nagy_valtozas', 'vagas_kezeles', 'elso', 'visszatero', 'korrekcio', 'eltavolitas',
   'migren', 'shenmen', 'klimax', 'slim', 'allergia', 'egyeb', 'bp', 'videk']); // utolso sor: Medical Piercing (piercing-tipus + helyszin)
 /** Az esemeny-tipusok (lemondas, athelyezes, no-show): nem a tervezo utemezi oket, hanem az engine az esemenykor. Az uzletag sajat katalogusaban levo ilyen uzenet
