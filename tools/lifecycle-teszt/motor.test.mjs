@@ -621,3 +621,17 @@ test('/f oldal (Feri, 2026-10-16): csupa nagybetus elso szo nem lesz "aKCIÓS"; 
   assert.ok(html.includes('Oxigénterápia akciós Hajkamerás vizsgálat') && !html.includes('aKCI'));
   assert.match(html, /\.kicsi \{[^}]*text-align: center/);
 });
+
+test('/m oldal (Feri, 2026-10-16): ugyanaz a fejlec es formazas, mint a /f oldalon; lemondottnal a /f lemondott oldala', async () => {
+  const { megerosites } = await import('../../netlify/lib/lifecycle/http.js');
+  const sor = { id: 'x', uzletag: 'oxygen', fiok: 'mosaic-oxigen', allapot: 'lemondva', kezdet: helyiEpoch(2026, 11, 2, 17, 0), szolgaltatas: 'AKCIÓS Hajkamerás vizsgálat és konzultáció', token: 'abcdef0123', megerositve: null };
+  const env = { LIFECYCLE_DB: { prepare: () => ({ bind: () => ({ first: async () => sor, run: async () => ({}) }), first: async () => sor }) } };
+  const req = (ua = 'Mozilla/5.0 (iPhone)') => new Request('https://www.mosaicheadspa.hu/m/abcdef0123', { headers: { 'user-agent': ua } });
+  const h1 = await (await megerosites(req(), env)).text();
+  assert.ok(h1.includes('<header class="fej">') && h1.includes('Ez az időpont le lett mondva') && h1.includes('booking=1&amp;business=oxygen'), 'lemondott: /f oldal');
+  sor.allapot = 'aktiv';
+  const h2 = await (await megerosites(req(), env)).text();
+  assert.ok(h2.includes('<header class="fej">') && h2.includes('megerősítettük az időpontodat') && h2.includes('href="/f/abcdef0123"') && h2.includes('class="uzenet"'), 'megerositett: uj formazas');
+  const h3 = await (await megerosites(req('WhatsApp/2'), env)).text();
+  assert.ok(h3.includes('<header class="fej">') && h3.includes('nyisd meg a linket a telefonodon'));
+});
