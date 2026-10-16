@@ -675,3 +675,30 @@ p,li,.hos-bevezeto{text-wrap:pretty}
 .szalon-kepek img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;box-shadow:var(--sh-s)}
 @media (max-width:1000px){.szalon-kepek ul{grid-auto-columns:calc((100% - 3*10px)/4)}}
 @media (max-width:640px){.szalon-kepek ul{grid-auto-columns:42%;gap:8px}}
+
+/* --- a vendegek videos beszamoloi: lapozhato sav (tools/uj-video-velemenyek.mjs; uj-fooldal.js 4e.), 2026-10-16 --- */
+.vsav-doboz{display:block;text-align:center}
+.vsav-doboz .felirat{justify-content:center}
+.vsav{position:relative;margin:16px 0 20px}
+.vsav-sav{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;padding:2px}
+.vsav-sav::-webkit-scrollbar{display:none}
+.vsav-nincs-gorg .vsav-sav{justify-content:center}
+.vsav-elem{flex:0 0 calc((100% - 42px)/4);margin:0;scroll-snap-align:start;aspect-ratio:9/16;border-radius:16px;overflow:hidden;background:var(--slate,#454659);box-shadow:var(--sh-s)}
+.vsav-gomb{position:relative;display:block;width:100%;height:100%;padding:0;border:0;background:none;cursor:pointer}
+.vsav-gomb img,.vsav-video{display:block;width:100%;height:100%;object-fit:cover}
+.vsav-gomb .lejatszo{position:absolute;left:50%;top:50%;display:flex;align-items:center;justify-content:center;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:rgba(255,255,255,.88);box-shadow:0 4px 14px rgba(0,0,0,.25);color:var(--rose-i,#ab6354)}
+.vsav-gomb .lejatszo svg{width:24px;height:24px;margin-left:3px;fill:currentColor}
+.vsav-gomb:hover .lejatszo,.vsav-gomb:focus-visible .lejatszo{background:#fff;transform:scale(1.06)}
+.vsav-gomb:focus-visible{outline:3px solid var(--rose,#d7aba8);outline-offset:-3px}
+.vsav-nyil{position:absolute;top:50%;z-index:2;display:flex;align-items:center;justify-content:center;width:42px;height:42px;margin-top:-21px;border:1px solid var(--line);border-radius:50%;background:#fff;box-shadow:var(--sh-s);color:var(--navy);cursor:pointer}
+.vsav-nyil svg{width:18px;height:18px}
+.vsav-elozo{left:-14px}.vsav-elozo svg{transform:rotate(180deg)}
+.vsav-kov{right:-14px}
+.vsav-nyil[disabled]{opacity:0;pointer-events:none}
+.vsav-nincs-gorg .vsav-nyil{display:none}
+@media (max-width:760px){
+  .vsav-elem{flex-basis:46%}
+  .vsav-sav{gap:10px}
+  .vsav-nyil{width:36px;height:36px;margin-top:-18px}
+  .vsav-elozo{left:-6px}.vsav-kov{right:-6px}
+}
