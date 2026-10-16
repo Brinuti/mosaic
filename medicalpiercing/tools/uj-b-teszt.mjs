@@ -144,7 +144,9 @@ async function oldalProba(nev, nezet) {
   // a lusta kepek betoltese (a lapozosavok kilogo kepei is): eager + vegiggorgetes
   await p.evaluate(() => document.querySelectorAll('img[loading="lazy"]').forEach((i) => { i.loading = 'eager'; }));
   await p.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } scrollTo(0, 0); });
-  await p.waitForTimeout(800);
+  // (halozaton a sok elore toltott kep idot ker: legfeljebb 20 mp-ig varunk, amig mind betolt vagy hibas lesz)
+  await p.waitForFunction(() => [...document.images].every((i) => !i.getAttribute('src') || i.complete), null, { timeout: 20000 }).catch(() => {});
+  await p.waitForTimeout(300);
   const rosszKep = await p.evaluate(() => [...document.images].filter((i) => i.getAttribute('src') && i.getBoundingClientRect().width > 0 && (!i.complete || !i.naturalWidth)).map((i) => i.getAttribute('src').slice(-60)));
   ok(`${cim}: minden kep betolt`, rosszKep.length === 0, rosszKep.slice(0, 3).join(' '));
   // vizszintes gorgetes
