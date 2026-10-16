@@ -22,7 +22,7 @@ javítva); a vendégek arcát nem módosítottuk, a kockák felirat nélküli va
 | Teszt | Eredmény |
 |---|---|
 | `tools/uj-oldalak-teszt.mjs --forras` (új ellenőrzés: nincs egymás után kétszer „Tovább az összes véleményhez”) | a javítás előtt 14 oldalon hibát jelzett (a piercing-oldalakon és a `/fooldal-b`-n az eredeti oldal saját linkje után a mienk is); javítva: 1224 ellenőrzés, 0 hiba |
-| `tools/uj-oldalak-teszt.mjs` (mind) | EREDMENY_UO |
+| `tools/uj-oldalak-teszt.mjs` (mind) | 174 oldal, 5727 ellenőrzés, 0 hiba |
 | `tools/uj-fooldal-teszt.mjs` | minden rendben |
 | Facebook-borító (Playwright, asztali + iPhone 13, `/kapcsolat`, `/a-szuras-folyamata`) | betöltéskor 0 Facebook-kérés; kattintásra ugyanakkora iframe (`autoplay=true`) a borító helyén |
 | Árlista-doboz (asztali 1440, iPhone 13) | az ikonok a körben, a jelvény nem takarja a fület; az akciós kártyán világos kör |
