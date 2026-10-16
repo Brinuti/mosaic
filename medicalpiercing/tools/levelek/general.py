@@ -15,13 +15,13 @@ K = {
   'video': KEPALAP + 'szuras-video.jpg', 'ekszerek': KEPALAP + 'ekszerek.jpg', 'steril': KEPALAP + 'steril.jpg',
 }
 L = {
-  'video': SITE + '/uj/a-szuras-folyamata#lepes-6', 'folyamat': SITE + '/uj/a-szuras-folyamata',
-  'garancia': SITE + '/uj/migren-es-shenmen-piercing-garancia', 'velemenyek': SITE + '/uj/migren-shenmen-piercing-velemenyek',
-  'utoapolas': SITE + '/uj/a-migren-es-shenmen-piercing-utoapolasa', 'ekszerek': SITE + '/uj/ekszereink',
+  'video': SITE + '/a-szuras-folyamata#lepes-6', 'folyamat': SITE + '/a-szuras-folyamata',
+  'garancia': SITE + '/migren-es-shenmen-piercing-garancia', 'velemenyek': SITE + '/migren-shenmen-piercing-velemenyek',
+  'utoapolas': SITE + '/a-migren-es-shenmen-piercing-utoapolasa', 'ekszerek': SITE + '/ekszereink',
   'kontroll': SITE + '/kontroll', 'foglalas': SITE + '/idopontfoglalas', 'varosok': SITE + '/elerhetosegek',
   'modositas': SITE + '/f/{token}',  # sajat "A foglalasod" oldal, mint a Mosaicnal (/f/<token>) – Salonicra soha nem visz
-  'migren': SITE + '/uj/migren-piercing', 'shenmen': SITE + '/uj/shenmen-piercing', 'klimax': SITE + '/uj/klimax-piercing',
-  'slim': SITE + '/uj/slim-etvagycsokkento-piercing', 'allergia': SITE + '/uj/allergia-piercing',
+  'migren': SITE + '/migren-piercing', 'shenmen': SITE + '/shenmen-piercing', 'klimax': SITE + '/klimax-piercing',
+  'slim': SITE + '/slim-etvagycsokkento-piercing', 'allergia': SITE + '/allergia-piercing',
 }
 GOOGLE_DB = '5 033'  # dinamikus: /api/ertekeles (db) – minden kuldeskor a friss szam
 BP = dict(nev='Feri', datum='2026. október 23., csütörtök', ido='14:30', szolg='3 db piercing (csomag)', ar='44 900 Ft',
@@ -151,7 +151,7 @@ def t0(d, bp):
 {alairas(d, bp)}'''
 
 level('01-T0-visszaigazolas-BP', 'Azonnal a foglalás után (a Salonic „Új időpont létrehozva” és „Sikeres foglalás” levele helyett)', 'Budapesti foglaló',
-      'Visszaigazoltuk az időpontodat: okt. 23., 14:30', 'Minden fontos részlet egy helyen – innentől csak meg kell érkezned.', t0(BP, True), K['szalon'], SITE + '/uj/elerhetosegek')
+      'Visszaigazoltuk az időpontodat: okt. 23., 14:30', 'Minden fontos részlet egy helyen – innentől csak meg kell érkezned.', t0(BP, True), K['szalon'], SITE + '/elerhetosegek')
 level('02-T0-visszaigazolas-VIDEK', 'Azonnal a foglalás után (a Salonic levelei helyett)', 'Vidéki foglaló',
       'Visszaigazoltuk az időpontodat Miskolcon: nov. 3., 10:40', 'Cím, időpont és minden, ami fontos – egy helyen.', t0(VIDEK, False))
 
@@ -312,7 +312,7 @@ level('10-A0-utoapolas', '1 órával a szúrás után, mint most a Salonic véle
 <h2>Hogy érezted magad nálunk?</h2>
 <p>Nekünk nagyon sokat jelent a véleményed – és annak is, aki most ugyanúgy bizonytalan, ahogy talán te voltál a foglalás előtt.</p>
 <p><a class="btn" style="font-size:14px;padding:10px 20px" href="{GOOGLE_IRAS}">★ Értékelem a Google-ön</a></p>
-<div class="card"><b>Valami nem úgy alakult, ahogy szeretted volna?</b><br>Akkor szeretnénk tőled közvetlenül hallani. Az itt küldött visszajelzésed kiemelten kezeljük, és egyenesen a tulajdonosunkhoz kerül – személyesen nézzük meg, és megoldjuk.<br><a href="{SITE}/uj/visszajelzes" style="font-weight:700">Írok a tulajdonosnak »</a></div>
+<div class="card"><b>Valami nem úgy alakult, ahogy szeretted volna?</b><br>Akkor szeretnénk tőled közvetlenül hallani. Az itt küldött visszajelzésed kiemelten kezeljük, és egyenesen a tulajdonosunkhoz kerül – személyesen nézzük meg, és megoldjuk.<br><a href="{SITE}/visszajelzes" style="font-weight:700">Írok a tulajdonosnak »</a></div>
 {alairas(UTO, True, 'Jó gyógyulást kíván:')}''', KEPALAP + 'ful-migren.jpg', L['utoapolas'])
 
 level('11-A2-ket-het', 'A szúrás után 14 nappal', 'Mindenki, aki megjelent (a „mire figyelj” bekezdés piercingenként más)',

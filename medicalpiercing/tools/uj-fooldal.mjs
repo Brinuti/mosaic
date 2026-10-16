@@ -185,7 +185,7 @@ function elesFej(ROOT, ut, html) {
   }
   const cim = idezojel((/<title>([\s\S]*?)<\/title>/.exec(ki) || [])[1] || 'Medical Piercing');
   const leiras = (/<meta name="description" content="([^"]*)"/.exec(ki) || [])[1] || '';
-  const sajat = ut === '/404' ? ['<meta name="robots" content="noindex,nofollow">']
+  const sajat = (ut === '/404' || ut === '/visszajelzes') ? /* a vendeglevelekbol elerheto urlap: nem kell a keresobe */ ['<meta name="robots" content="noindex,nofollow">']
     : [`<link rel="canonical" href="${DOMAIN}${ut}">`, `<meta property="og:title" content="${cim}">`, `<meta property="og:description" content="${leiras}">`,
       `<meta property="og:url" content="${DOMAIN}${ut}">`, '<meta property="og:site_name" content="Medical Piercing">', '<meta property="og:type" content="website">'];
   return ki.replace(/(<meta name="viewport"[^>]*>\n?)/, (m) => `${m}${sajat.join('\n')}\n`);
