@@ -214,7 +214,19 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .urlap .mezo.m-fel { grid-column: auto; }
 .mezo .cimke-szoveg { display: block; margin: 0 0 2px; font: 600 12px/1.3 'poppins-semibold', Poppins, Arial, sans-serif; }
 .mezo input, .mezo select, .mezo textarea { width: 100%; font: inherit; font-size: 16px; line-height: 1.3; padding: 7px 10px; border: 1px solid #d9d4d3; border-radius: 8px; background: #fff; color: #454659; }
-.mezo input[type="file"] { padding: 4px 8px; font-size: 13px; }
+/* egyseges betu minden mezoben (iOS-en a datum- es a valaszto mezo kulonben a rendszer betujevel latszik) */
+.mezo input, .mezo select, .mezo textarea { font-family: 'helvetica-w01-light', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 400; }
+.mezo input[type="date"] { color: #454659; }
+.mezo input[type="date"]::-webkit-datetime-edit, .mezo input[type="date"]::-webkit-datetime-edit-fields-wrapper { font: inherit; color: inherit; }
+.mezo input[type="date"]:invalid::-webkit-datetime-edit { color: #8a8b99; }
+/* kepfeltoltes: a bongeszo "Fajl kivalasztasa" gombja helyett sajat gomb + a kivalasztott kep neve */
+.feltolto { position: relative; display: flex; align-items: center; gap: 10px; min-width: 0; padding: 5px 6px; border: 1px dashed #d9c9c5; border-radius: 10px; background: #fbf7f6; }
+.feltolto input[type="file"] { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+.feltolto-gomb { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 99px; background: #d7aba8; color: #fff; font: 600 13px/1.2 'poppins-semibold', Poppins, Arial, sans-serif; cursor: pointer; white-space: nowrap; }
+.feltolto-gomb svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
+.feltolto-gomb:hover { background: #c99b97; }
+.feltolto:focus-within { border-color: #ab6354; box-shadow: 0 0 0 3px #f5d3ca; }
+.feltolto-nev { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: #6b6c80; }
 .mezo textarea { min-height: 54px; resize: vertical; }
 .mezo input:focus, .mezo select:focus, .mezo textarea:focus { outline: none; border-color: #ab6354; box-shadow: 0 0 0 3px #f5d3ca; }
 .mezo .hiba-uzenet { display: none; margin-top: 2px; font-size: 11.5px; line-height: 1.25; color: #b3261e; }
@@ -454,10 +466,13 @@ export function nyit(ctx) {
       + mezo('varos', 'Melyik városban voltál?', true, `<input id="mp-varos" type="text" name="varos" list="mp-varosok" autocomplete="off"><datalist id="mp-varosok">${HELYSZIN_SORREND.map((id) => `<option value="${esc(HELYSZINEK[id].varos)}"></option>`).join('')}</datalist>`, 'm')
       + mezo('mire', 'Mire kérsz időpontot?', false, `<select id="mp-mire" name="mire">${lehet.map((o) => `<option value="${esc(o)}"${(adat.mire && lehet.includes(adat.mire) ? adat.mire : lehet[0]) === o ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`, 'd')
       + mezo('miben', 'Miben segíthetünk?', true, '<textarea id="mp-miben" name="miben"></textarea>')
-      + mezo('kep', 'Kérlek csatolj egy képet a füledről (Opcionális)', false, '<input id="mp-kep" type="file" name="kep" accept="image/*" multiple>', false, 'Kép a füledről (opcionális)')
+      + mezo('kep', 'Kérlek csatolj egy képet a füledről (Opcionális)', false, '<span class="feltolto"><input id="mp-kep" type="file" name="kep" accept="image/*" multiple><label class="feltolto-gomb" for="mp-kep"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Kép kiválasztása</label><span class="feltolto-nev" data-fajlnev>Nincs kiválasztott kép</span></span>', false, 'Kép a füledről (opcionális)')
       + '<button type="button" class="gomb teljes" data-kuld>Visszahívást kérek!</button><div class="kuld-uzenet" role="status"></div></form>';
     const f = tartalom.querySelector('form.urlap');
-    for (const [k, v] of Object.entries(adat)) { const el = f.elements[k]; if (el && k !== 'mire' && k !== 'orszag') el.value = v; }
+    for (const [k, v] of Object.entries(adat)) { const el = f.elements[k]; if (el && k !== 'mire' && k !== 'orszag' && el.type !== 'file') el.value = v; }
+    // a sajat feltolto gomb mellett a kivalasztott kep(ek) neve
+    const kepMezo = f.elements.kep, fajlNev = f.querySelector('[data-fajlnev]');
+    if (kepMezo && fajlNev) kepMezo.addEventListener('change', () => { const n = kepMezo.files.length; fajlNev.textContent = !n ? 'Nincs kiválasztott kép' : n === 1 ? kepMezo.files[0].name : `${n} kép kiválasztva`; });
     // az orszagkod-lista (238 orszag) kesobb toltodik: addig a Magyarorszag
     orszagokBetolt().then((lista) => { if (f.isConnected && lista.length > 1) f.elements.orszag.innerHTML = orszagok(lista); });
     f.addEventListener('input', (e) => {

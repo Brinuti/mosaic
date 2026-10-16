@@ -20,7 +20,7 @@ import { oldalak } from './oldalak.mjs';
 import { meresTiltas } from './meres-tiltas.mjs';
 import { kulcsbol } from '../lib/utvonal.js';
 import { KATEGORIA_UTAK, B_ALAP, kategoriaCserelt, hosGaleriaKepek } from './uj-oldalak/kategoria.mjs';
-import { KIZART_UTAK } from './uj-oldalak/sablon.mjs';
+import { KIZART_UTAK, piercingCserelt, piercingRacs, piercingCim } from './uj-oldalak/sablon.mjs';
 // a tulajdonos kereseire (2026-10-16) atirt / lecserelt szovegek: az eredeti oldalon megvannak, az uj oldalon szandekosan nem
 // (a 4.100+ helyett a Google mostani szama; arany / 14 karatos bevonat helyett G23 titanium; a regi akcio-link helyett az oszi akcio; az ertekeles-sor a Trustindexbol)
 const SZANDEKOS = /4\.100|arany|arannyal|karát|antiallergén orvosi fém piercingek|Több tízezer szúrás tapasztalata után csak a legnépszerűbb|3 piercing 2 áráért! - AKCIÓ!|vélemény alapján >>|^Az anyaga alapján tehát választhatsz|^·\s*(nemesfémet|ezüstöt|titániumot)/i;
@@ -125,6 +125,7 @@ async function ctxKesz(nezet) {
 const TESZT_T = {
   szovegTiszta: (h) => String(h || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim(),
   csakLink: (h) => { const m = String(h).trim().match(/^<a href="([^"]*)"([^>]*)>([\s\S]*?)<\/a>$/); return m && !/<a /.test(m[3]) ? { href: m[1] } : null; },
+  piercingRacs, piercingCim,
 };
 // a fooldal (/uj-fooldal) merei: a kategoria-oldal hosenek ugyanakkorank kell lennie (asztali / mobil)
 const fooldalMeret = {};
@@ -213,7 +214,8 @@ async function lapTeszt(o, nezet, ctx) {
     // (a kitelepulesek datum-sorai naponta valtoznak: a mentett tartalomban a regi datumok vannak, az oldal betoltes utan a tablazatbol frissul - ezeket nem hasonlitjuk)
     // (a kategoria-oldalakon a hos ertekeles-sora a Trustindex adataibol frissul, a "Piercinget csak eu szakembertol!" felirat a hosbol kikerult: tulajdonosi dontes, 2026-10-13)
     // a kategoria-oldalakon a fooldal dobozai (ekszer, akcio / arlista, media, csapat, helyszin) valtottak fel az eredeti blokkokat: azok szovege nem kell
-    const cserelt = KATEGORIA_UTAK.has(o.ut) ? norm((kategoriaCserelt(ered, TESZT_T, !!bUt) || []).join(' ')) : '';
+    // a lecserelt blokkok (fooldali dobozok, a piercing-racs mindenhol) szovege
+    const cserelt = norm([...(KATEGORIA_UTAK.has(o.ut) ? kategoriaCserelt(ered, TESZT_T, !!bUt) || [] : []), ...piercingCserelt(ered)].join(' '));
     const hianyzo = [...new Set(sorok)].filter((s) => !t.includes(norm(s)) && !(cserelt && cserelt.includes(norm(s))) && !SZANDEKOS.test(s) && !/^(január|február|március|április|május|június|július|augusztus|szeptember|október|november|december)\s*\d/i.test(s) && !(KATEGORIA_UTAK.has(o.ut) && /^(Kiváló\s*[-–|]|Piercinget csak eü szakembertől)/i.test(s)) && !(bUt && /vélemény alapján|vendégünk leírta|^Így néz ki egy klimax piercing behelyezés$/i.test(s)) && !/^(hozzászólások|hozzászólás írása|rendezés erre|legújabb|még nincsenek értékelések|megosztás|friss bejegyzések|az összes megtekintése)/i.test(s) && !/^\d+\s*(megtekint|kedvel|hozzászólás)/i.test(s) && !/^(\d+ perc olvasás|id|Search this site)$/i.test(s) && !/csillagot kapott|nincs kedvelve|Értékelés hozzáadása|^\d+ kedvelés|^Like post|\d+ megtekintés|\d+ hozzászólás$/i.test(s));
     const lefedett = sorok.length ? 1 - hianyzo.length / new Set(sorok).size : 1;
     ok(`${cim}: az eredeti oldal szovege megvan (${(lefedett * 100).toFixed(1)}%)`, hianyzo.length === 0, hianyzo.slice(0, 4).map((s) => `«${s.slice(0, 70)}»`).join(' '));

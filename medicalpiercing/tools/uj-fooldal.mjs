@@ -20,11 +20,15 @@ export const TUKOR_ELO = '/uj';   // a tobbi oldal tukre: /uj/<eredeti utvonal>
 
 // --- kozos reszek: <!--#nev--> -> uj-oldalak/reszek/nev.html ---------------------------------------------------------------
 // <!--#velemenyek ti=<kulcs>--> : a velemeny-doboz egy masik (pl. kategoriankent szurt) Trustindex-widgettel
+// (a kozos resz maga is tartalmazhat kozos reszt, pl. kapcsolat -> szalon-galeria: legfeljebb 3 szint melyen)
 export function osszerak(ROOT, html) {
-  return html.replace(/<!--#([a-z0-9-]+)(?: ti=([a-z0-9]+))?-->/g, (m, nev, ti) => {
-    const resz = fs.readFileSync(path.join(ROOT, 'uj-oldalak/reszek', nev + '.html'), 'utf8').trimEnd();
-    return ti ? resz.replace(/loader\.js\?[a-z0-9]+/, 'loader.js?' + ti) : resz;
-  });
+  for (let szint = 0; szint < 3 && /<!--#[a-z0-9-]+(?: ti=[a-z0-9]+)?-->/.test(html); szint++) {
+    html = html.replace(/<!--#([a-z0-9-]+)(?: ti=([a-z0-9]+))?-->/g, (m, nev, ti) => {
+      const resz = fs.readFileSync(path.join(ROOT, 'uj-oldalak/reszek', nev + '.html'), 'utf8').trimEnd();
+      return ti ? resz.replace(/loader\.js\?[a-z0-9]+/, 'loader.js?' + ti) : resz;
+    });
+  }
+  return html;
 }
 
 // --- kepek verziojele: az /assets/img/ 30 napig tarolodik, a megvaltozott uj-* kep ujra-keres kell (?v=<tartalom-hash>) ----------

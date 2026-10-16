@@ -31,3 +31,19 @@ Ezen felül:
 - **Galéria a piercing-oldalak hősében** (2026-10-16): mind a 9 kategória-oldalon (migrén, shenmen, klimax, slim, allergia, máj, pajzsmirigy, lép, vastagbél; a divat fülpiercing nem) a hős galéria:
   az 1–2. kép a tulajdonos Drive-mappájából (`assets/img/uj-galeria-<kulcs>-1|2.webp`), a 3–5. a migrén-oldal közös képei (`GALERIA_KOZOS`, `hosGaleriaKepek` a `kategoria.mjs`-ben). A galériás hősön nincs „20 év” pecsét.
   Arany-szöveg sehol (a fotók maradhatnak); a „Szúrathatok arany Shenmen piercinget is?” cikknek nincs `/uj` változata (`KIZART_UTAK`, `sablon.mjs`).
+- **Egységes blokkok minden új oldalon** (2026-10-16): a „Legnépszerűbb piercingeink” mindenhol a főoldal doboza (`uj-oldalak/reszek/piercingek.html`); a tükör-sablon és a B-építő a régi
+  piercing-rácsot (és a címét) erre cseréli (`piercingRacs` / `piercingCim` a `sablon.mjs`-ben). A budapesti szalon fotógalériája mindenhol a `migren-piercing-b` oldal „Budapesten a Jászainál várunk”
+  galériájának képeivel jelenik meg (`szalonGaleria`, `sablon.mjs`; a főoldal alján: `reszek/szalon-galeria.html` a `kapcsolat` részben). A „9 ok, amiért minket válassz” csúszka kimarad.
+  A blogcikkek képei a szöveg szélességében, nagyítás nélkül. A közös rész maga is tartalmazhat közös részt (`osszerak`, legfeljebb 3 szint).
+- **A B-oldalak építőjével készül még** (`B_ALAP`, `HOS_CIM`): az 5 piercer-bemutatkozó oldal (név a cím, portré a hősben, a videók rácsban: `videoracs`), A szúrás folyamata, az Utóápolás és
+  A piercingek eredete (egyszekciós oldal: a cím + az első videó a hős). Kézzel írt oldal lett az Árlista (`sajat/arlista-garancia.html`) és az Ajándékkártya (`sajat/ajandekkartya.html`;
+  a vásárlás a `https://medicalpiercing.salonic.hu/giftcards` címen, a motor ezt nem fogja el).
+- **Vendégek videós beszámolói** (2026-10-16): a tulajdonos Drive-járól 12 vendég-testimonial (a leirat alapján besorolva: migrén 6, slim 3, shenmen 2, klimax 1), webes változat
+  `assets/video/uj-velemeny-<kulcs>-<n>.mp4` (480 px, H.264, 2–6 MB) + borító `assets/img/uj-velemeny-<kulcs>-<n>.webp`; a fájlnevekben nincs vendégnév. A blokk: `tools/uj-video-velemenyek.mjs`
+  → `reszek/video-velemeny-<kulcs>.html`; a Vélemények oldalon a kategória Trustindex-blokkja alatt, a piercing-oldalakon az első vélemény-blokk alatt (`kategoria.mjs`, `velemeny`).
+- **Google-vélemények mindenhol a főoldali lapozóval** (2026-10-16): az eredeti oldal saját Trustindex-widgetje csak akkor marad, ha rendes lapozó (`JO_VELEMENY_KULCSOK`, `sablon.mjs`);
+  a 2 véleményes (783989…), az üres és az ismeretlen widget helyett a főoldali (daf9c4…, 35 vélemény). A tükör-oldalak Trustindex-beágyazása (assets/embed) is a főoldali doboz lett.
+- **Helyszíneink hősképe**: Magyarország térképe a 15 helyszínnel (`tools/uj-helyszin-terkep.mjs` → `reszek/helyszin-terkep.html`, beágyazott SVG a lap betűjével).
+- **A hirdetések céloldalai** (Meta, TikTok; 2026-10-16-i lista) mind formázottak az `/uj` alatt; a két utolsó: `/kozerzetjavito-piercing-soft-akcio` (a TikTok-landoló) és `/3-piercing-2-araert`
+  („Páros kedvezmény”), a B-építővel. A közös dobozok (akció, árak, ékszerek, helyszínek, piercingek, média, csapat) egy oldalon csak egyszer jelennek meg.
+

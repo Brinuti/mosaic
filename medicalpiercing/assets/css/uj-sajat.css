@@ -93,3 +93,10 @@
 .sajat-ugras{text-align:center}
 .sajat-ugras ul{justify-content:center}
 @media (max-width:760px){.sajat-ugras a{padding:5px 10px;font-size:.76rem}.sajat-ugras ul{gap:6px}}
+
+/* --- Helyszineink: a hos kepe a 15 helyszin terkepe (tools/uj-helyszin-terkep.mjs, 2026-10-16) --- */
+.hos-terkep .helyszin-terkep{display:block;width:100%;height:auto;overflow:visible}
+.helyszin-terkep .ht-nev{font:700 22px/1 var(--font, 'Plus Jakarta Sans', system-ui, sans-serif);fill:var(--navy, #2f3044);paint-order:stroke;stroke:#fff;stroke-width:6px;stroke-linejoin:round}
+.helyszin-terkep .ht-nev-fo{font-size:30px;fill:var(--rose-i, #ab6354)}
+.helyszin-terkep .ht-al{font:700 17px/1 var(--font, 'Plus Jakarta Sans', system-ui, sans-serif);fill:var(--mut, #6b6c80);letter-spacing:.06em;text-transform:uppercase;paint-order:stroke;stroke:#fff;stroke-width:5px}
+@media (max-width:760px){.helyszin-terkep .ht-nev{font-size:26px}.helyszin-terkep .ht-nev-fo{font-size:34px}}
