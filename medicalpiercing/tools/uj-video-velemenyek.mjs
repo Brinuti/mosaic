@@ -39,7 +39,8 @@ for (const [kulcs, cim] of Object.entries(TEMAK)) {
   for (const [nn] of lista) {
     for (const f of [`assets/video/uj-velemeny-${nn}.mp4`, `assets/img/uj-velemeny-${nn}.webp`]) if (!fs.existsSync(path.join(ROOT, f))) throw new Error(`hianyzik: ${f}`);
   }
-  // tervezett borito (a tulajdonos kerese, 2026-10-16, 4. kor; probakent a 09-es): GPT-hatter + a video valodi kepkockaja + a vendeg legutosebb mondata;
+  // tervezett borito (a tulajdonos kerese, 2026-10-16, 4. kor: a 09-es proba utan mind a 37; tools/uj-velemeny-borito.mjs): GPT-hatter + a video valodi
+  // kepkockaja + a vendeg legerosebb mondata + alul a keresztneve ("Katinak így segített a migrén piercing");
   // a lejatszas-jel es a cimke a kepen van (vsav-terv: az oldal sajatja rejtett)
   const terv = (nn) => fs.existsSync(path.join(ROOT, `assets/img/uj-velemeny-${nn}-terv.webp`));
   const elemek = lista.map(([nn, kat]) => `      <li class="vsav-elem"><button type="button" class="vsav-gomb${terv(nn) ? ' vsav-terv' : ''}" data-vsav-video="/assets/video/uj-velemeny-${nn}.mp4" aria-label="Videó lejátszása: ${felirat(kat)}"><img src="/assets/img/uj-velemeny-${nn}${terv(nn) ? '-terv' : ''}.webp" alt="" width="540" height="960" loading="lazy" decoding="async"><span class="lejatszo">${IK('play')}</span><span class="vsav-cimke">${felirat(kat)}</span></button></li>`);

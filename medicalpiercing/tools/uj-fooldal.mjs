@@ -113,8 +113,11 @@ const VELEMENY_HORGONY = { '/migren-piercing': 'v-migren', '/shenmen-piercing': 
 function velemenyLink(ut, html) {
   const alap = TUKOR_ELO ? ut.replace(new RegExp('^' + TUKOR_ELO + '(?=/)'), '') : ut;
   if (alap === VELEMENYEK_UT) return html.replace(/\s*<p class="velemeny-osszes">.*?<\/p>/g, '');
+  // ahol az eredeti oldal sajat "Tovább az összes véleményhez >>" linkje (kat-tovabb, a tukor-sablonban p.kozep) kozvetlenul utana all, a mienk nem kell
+  // (a tulajdonos jelezte, 2026-10-16: a piercing-oldalakon duplan volt); a horgonyt ilyenkor az eredeti link kapja
+  html = html.replace(/\s*<p class="velemeny-osszes">.*?<\/p>((?:\s*<\/?(?:section|div|p)\b[^>]*>)*\s*<a\b[^>]*\shref="\/migren-shenmen-piercing-velemenyek[^"]*"[^>]*>Tovább az összes véleményhez)/g, '$1');
   const h = VELEMENY_HORGONY[alap];
-  return h ? html.replace(/(<p class="velemeny-osszes"><a class="szoveg-link" href=")\/migren-shenmen-piercing-velemenyek"/g, `$1${VELEMENYEK_UT}#${h}"`) : html;
+  return h ? html.replace(/(<(?:p class="velemeny-osszes"|div class="tarto kat-tovabb")><a class="szoveg-link" href=")\/migren-shenmen-piercing-velemenyek"/g, `$1${VELEMENYEK_UT}#${h}"`) : html;
 }
 
 // --- arc-fokusz a levagott kepeken (a tulajdonos kerese, 2026-10-16, 4. kor: mobilon ne logjon ki arc / fej): uj-oldalak/kep-fokusz.json
@@ -143,6 +146,18 @@ function videoBorito(html) {
   const meret = (x) => x.replace(/\s(?:width|height)="\d+"/g, '');
   return html.replace(/<img\b([^>]*?)\ssrc="https:\/\/i\.ytimg\.com\/vi\/([\w-]+)\/(?:hq|sd|mq|maxres)?default\.jpg"([^>]*)>/g, (m, a, id, z) => (YT_KEP[id] ? `<img${meret(a)} src="/assets/img/${YT_KEP[id]}" width="1280" height="720"${meret(z)}>` : m))
     .replace(/\sposter="([^"?]+)"/g, (m, f) => (POSZTER[f] ? ` poster="${POSZTER[f]}"` : m));
+}
+
+// --- az allo Facebook-videok (plugins/video.php iframe) helyett tervezett borito (a tulajdonos kerese, 2026-10-16: "ezekhez az allovideokhoz is csinalhatsz
+// thumbnailt"): assets/img/uj-fb-<video-azonosito>.webp (tools/uj-velemeny-borito.mjs, tools/kep-forras/fb-boritok.json); kattintasra a helyen tolt be
+// a Facebook-lejatszo (assets/js/uj-fooldal.js 3d.) - addig a Facebook semmit nem tolt a lapon
+function fbBorito(ROOT, html) {
+  return html.replace(/<iframe\b([^>]*?)\ssrc="(https:\/\/www\.facebook\.com\/plugins\/video\.php\?href=https%3A%2F%2Fwww\.facebook\.com%2Fmedicalpiercing\.hu%2Fvideos%2F(\d+)%2F[^"]*)"([^>]*)><\/iframe>/g, (m, a, src, id, z) => {
+    if (!fs.existsSync(path.join(ROOT, `assets/img/uj-fb-${id}.webp`))) return m;
+    const cim = ((a + z).match(/\stitle="([^"]*)"/) || [])[1] || 'Videó';
+    const meret = ['width', 'height'].map((k) => ((a + z).match(new RegExp(`\\s${k}="(\\d+)"`)) || [])[0] || '').join('');
+    return `<button type="button" class="fb-indito" data-fb-src="${src}" data-fb-cim="${cim}"${meret.replace(/\s(width|height)=/g, ' data-fb-$1=')} aria-label="Videó lejátszása: ${cim}"><img src="/assets/img/uj-fb-${id}.webp" alt="" width="540" height="960" loading="lazy" decoding="async"></button>`;
+  });
 }
 
 // --- elesitve: a regi (Wix-klon) oldal SEO-fejlece az uj lapra (cim, leiras, canonical, og/twitter, article, ld+json, Google / Facebook ellenorzo
@@ -180,7 +195,7 @@ function elesFej(ROOT, ut, html) {
 export function oldalKiir(ROOT, DIST, ut, html) {
   const kulcs = ut === '/' ? 'index' : kulcsbol(ut);
   const nev = fajlnev(kulcs) + '.html';
-  let kesz = kepVerzio(ROOT, kepFokusz(ROOT, videoBorito(linkAtiras(ROOT, szovegJavit(velemenyLink(ut, osszerak(ROOT, html)))))));
+  let kesz = kepVerzio(ROOT, kepFokusz(ROOT, fbBorito(ROOT, videoBorito(linkAtiras(ROOT, szovegJavit(velemenyLink(ut, osszerak(ROOT, html))))))));
   if (/karátos|14K arany|aranyozott|arannyal|arany (?:shenmen|ékszer|piercing)/i.test(kesz)) throw new Error(`${ut}: aranyos ekszer-szoveg maradt (a tulajdonos kerese: nincs arany)`);
   if (UJ_ELES && ut !== '/uj-oldalak') {
     kesz = elesFej(ROOT, ut, kesz);

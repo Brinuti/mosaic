@@ -192,6 +192,20 @@
     v.addEventListener('play', kesz, { once: true });
   });
 
+  // --- 3d. az allo Facebook-videok tervezett boritoja (tools/uj-fooldal.mjs fbBorito): kattintasra a helyen tolt be a Facebook-lejatszo, indulasra keszen ---
+  $$('.fb-indito[data-fb-src]').forEach((g) => g.addEventListener('click', () => {
+    const f = document.createElement('iframe');
+    f.src = g.dataset.fbSrc.replace(/&(amp;)?autoplay=[^&]*/g, '') + '&autoplay=true';
+    f.title = g.dataset.fbCim || 'Videó';
+    if (g.dataset.fbWidth) f.width = g.dataset.fbWidth;
+    if (g.dataset.fbHeight) f.height = g.dataset.fbHeight;
+    f.allow = 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share';
+    f.allowFullscreen = true;
+    f.setAttribute('frameborder', '0');
+    g.replaceWith(f);
+    f.focus();
+  }));
+
   // --- 4. Google-velemenyek: a Trustindex-widget (az oldalban a loader.js tolti, lapozhato); ha 9 mp alatt nem jelenik meg, a mentett tartalek latszik ---
   // A Trustindex-loader a widgetet csak a lap kozeleben, felhasznaloi tevekenyseg utan tolti: a 9 masodperc attol szamit, hogy a doboz kozel er a kepernyohoz
   // (a lap aljan levo doboz, pl. a kategoria-oldalakon, nem mutat tartalekot, amig a latogato oda nem gorget).
