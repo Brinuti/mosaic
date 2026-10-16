@@ -22,18 +22,20 @@ Helyben, a végleges buildre (`node tools/build.mjs`, `node tools/serve.mjs`), �
 ## Eredmények (helyben, élesített állapot)
 | Teszt | Eredmény |
 |---|---|
-| `tools/uj-oldalak-teszt.mjs` (mind, az eredeti címeken, a `/regi/...` régi oldalhoz hasonlítva) | EREDMENY_UJOLDALAK |
+| `tools/uj-oldalak-teszt.mjs` (mind, az eredeti címeken, a `/regi/...` régi oldalhoz hasonlítva) | 174 oldal, 5552 ellenőrzés: az első élesített futáson 86 hiba – mind tesztfeltevés (köszönőoldal, „Árak” link, `-b` oldalak, lásd lent); javítva, újrafuttatva 1 egyszeri hiba (lásd lent) |
 | `tools/uj-oldalak-teszt.mjs --forras` | 1049 ellenőrzés, 0 hiba |
-| `tools/uj-fooldal-teszt.mjs` (SEO-fej: indexelhető, canonical, og, ld+json, domainigazolások) | EREDMENY_FOOLDAL |
-| `tools/meres-teszt.mjs` (mérőkódok az új oldalakon, csak az éles domainen) | EREDMENY_MERES |
-| `tools/koszono-tisztitas-pw.mjs` (köszönőoldalak: címtisztítás, egyszeri mérés) | EREDMENY_KOSZONO |
+| `tools/uj-fooldal-teszt.mjs` (SEO-fej: indexelhető, canonical, og, ld+json, domainigazolások) | minden rendben (helyben és a PR-előnézeten is) |
+| `tools/meres-teszt.mjs` (mérőkódok az új oldalakon, csak az éles domainen) | Minden rendben |
+| `tools/koszono-tisztitas-pw.mjs` (köszönőoldalak: címtisztítás, egyszeri mérés) | MIND PASS |
 | `tools/mp-meres-pw.mjs` (köszönőoldali foglalásmérés, mockolt végpont) | OK |
 | `tools/gclid-atvitel-pw.mjs` | MIND PASS; 8 pont kihagyva (lásd lent) |
 | `tools/sav-teszt.mjs` / `--mobil` (süti-sáv a tesztoldalon, Consent Mode, Meta / TikTok / Convertize csak hozzájárulással) | minden rendben |
-| `tools/motor-teszt.mjs` / `--mobil` | EREDMENY_MOTOR |
-| `tools/motor-formazas-teszt.mjs` | EREDMENY_FORMAZAS |
-| `tools/motor-tipus-teszt.mjs` / `--mobil` | EREDMENY_TIPUS |
-| `tools/funkcio-teszt.mjs` a régi oldalakon (`HELYI=…/regi`) | EREDMENY_FUNKCIO |
+| `tools/motor-teszt.mjs` / `--mobil` | minden rendben (az első futáson 1 + 2 tesztfeltevés-hiba, lásd lent) |
+| `tools/motor-formazas-teszt.mjs` | minden rendben |
+| `tools/motor-tipus-teszt.mjs` / `--mobil` | minden rendben (a J pont igazítva, lásd lent) |
+| `tools/funkcio-teszt.mjs` a régi oldalakon (`HELYI=…/regi`) | 3 hiba, mind a `/regi` előtag miatt: a régi lapok szkriptje a menü aktuális pontját és a városlapozót az eredeti címhez méri (az archív régi lapokon nem számít; a vendég az új oldalt kapja) |
+| PR-előnézet (`claude-medicalpiercing-cloud.medicalpiercing.pages.dev`) | `uj-fooldal-teszt`: minden rendben; `uj-oldalak-teszt --gyors`: 19 oldal, 666 ellenőrzés, 0 hiba; útvonalak, 404, sitemap (138 cím, `/regi` és `/uj` nélkül) rendben |
+| Szemrevételezés (asztali 1440, iPhone 13) | `/foglalas-ok-mi` → `/foglalas-ok?…&mert=1`, új dizájn, köszönő szöveg (HU/DE); `/fulbevalo-ok`; 404; a mérőszkriptek (suti, mp-meres, motor-indito) minden lapon |
 | Útvonalak (`curl`) | `/uj/migren-piercing?utm_source=x` → 301 `/migren-piercing?utm_source=x`; `/uj-fooldal`, `/uj` → 301 `/`; `/regi`, `/regi/migren-piercing` 200; nem létező cím 404 (új 404-oldal); sitemap 138 cím, `/regi` és `/uj` nélkül |
 
 ## A tesztek igazítása (nem a kód hibája)
@@ -45,8 +47,14 @@ Helyben, a végleges buildre (`node tools/build.mjs`, `node tools/serve.mjs`), �
   a `-b` címek az eredeti `-b` oldalhoz hasonlítanak.
 - **motor-teszt:** kikapcsolt motornál (`?motor=0`) az új oldal belső foglalás-gombja a régi köztes oldalra visz (`/regi-idopontfoglalas`, Salonic-linkekkel) – ez a régi út;
   az új mobil lap eleve eszközszélességű (a régi 320 px-es volt), ott nincs mit átállítani.
+- **motor-tipus (J):** az új főoldal foglalás-linkje ugyanabban a lapban nyílik (a régi új lapon nyitotta); kikapcsolt motornál a régi köztes oldalra visz.
 - **motor-formazas / motor-tipus (E):** a Salonic-linkes eset a `/migren` lapon fut (a régi és az új dizájnban is van általános Salonic-link; az új blogcikkekben a gomb belső link).
 - Egy egyszeri hiba: a teljes futásban a Gabi története oldal 768 px-en vízszintes görgetést mutatott a videósávnál; négyszer újrafuttatva (párhuzamosan más oldalakkal is) nem jött elő.
 
+## Megfigyelés (nem az élesítés okozza, a régi oldalon is így van)
+A köszönőoldal paraméterei (`price`, `first_booking`, `mert=1`) a munkamenet-paraméterek közé kerülnek (`savedQueryParams`, `klon.js` 8. – a Wix viselkedésének mása), így a köszönőoldal
+után megnyitott lapok címében is ott vannak (pl. `/rolunk?price=…&mert=1`). A main (régi oldalak) ugyanígy viselkedik (helyben ellenőrizve). A következő foglalás mérését nem akadályozza
+(a köszönőoldal a saját, eredeti címét olvassa a mérés előtt). Mérést érintő javítás, ezért nem ebben a PR-ben: külön körben, a mérési oldallal egyeztetve.
+
 ## Élesítés után (az éles oldalon, könnyű, egyszeri ellenőrzés)
-ELES_ELLENORZES
+A merge után az éles oldalon: az eredmény a [Brinuti/mosaic#354](https://github.com/Brinuti/mosaic/pull/354) záró kommentjében (a következő körben ide is bekerül).
