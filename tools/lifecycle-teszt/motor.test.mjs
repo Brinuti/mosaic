@@ -217,7 +217,8 @@ test('kirajzolas: minden katalogus-uzenet minden szegmensre hibatlan', () => {
           if (uz.csatorna === 'sms') {
             const k = smsKirajzol(uz, ert);
             assert.ok(!/[{}]|undefined|null/.test(k.szoveg), `${uz.id}: ${k.szoveg}`);
-            assert.ok(k.szoveg.length > 20 && k.szoveg.length <= 480, `${uz.id}: hossz ${k.szoveg.length}`);
+            assert.ok(k.szoveg.length > 20 && k.szoveg.length <= 160 && k.szegmens === 1, `${uz.id}: hossz ${k.szoveg.length}, szegmens ${k.szegmens}: ${k.szoveg}`);
+            assert.ok(/^[\x20-\x7e]*$/.test(k.szoveg), `${uz.id}: ekezet / nem GSM karakter: ${k.szoveg}`);
             assert.ok(!/ !|\s,|\s\./.test(k.szoveg), `${uz.id}: irasjel-hiba: ${k.szoveg}`);
             if (!f.keresztnev) assert.ok(!/Szia [A-ZÁÉÍÓÖŐÚÜŰ]/.test(k.szoveg) || /Szia (Tünde|Móni)/.test(k.szoveg) === false, uz.id);
           } else {
@@ -245,11 +246,11 @@ test('kirajzolas: minden katalogus-uzenet minden szegmensre hibatlan', () => {
 test('kirajzolas: ismeretlen nev -> "Szia!", ismeretlen opcionalis ertek -> sor kimarad, SMS mondatresz kimarad', () => {
   const f = { uzletag: 'oxygen', szolgaltatas: 'Haj Oxigénterápia - 1. alkalom', munkatars: 'Bozsoki-Harangozó Tündi', nev: 'X', keresztnev: null, token: 'abcdef0123', kezdet: helyiEpoch(2026, 12, 3, 9, 30), telefon: '+36301234567', email: 'a@b.hu' };
   const ox1 = KATALOG.oxygen.uzenetek.find((u) => u.id === 'OX-SMS-01');
-  assert.match(smsKirajzol(ox1, ertekek(f, 'sms')).szoveg, /^Megvan az időpontod|^Szia!/);
+  assert.match(smsKirajzol(ox1, ertekek(f, 'sms')).szoveg, /^Szia! Megvan az oxigenterapia idopontod/);
   const ert = ertekek(f, 'sms'); ert['várható_időtartam'] = null;
   const ox3 = KATALOG.oxygen.uzenetek.find((u) => u.id === 'OX-SMS-03');
   const s = smsKirajzol(ox3, ert).szoveg;
-  assert.ok(!s.includes('{') && /száraz hajjal érkezz/.test(s) && !/tervezz/.test(s), s);
+  assert.ok(!s.includes('{') && /szaraz hajjal erkezz/.test(s) && !/tervezz/.test(s), s);
   const mail = emailKirajzol(KATALOG.headspa.uzenetek.find((u) => u.id === 'HS-EMAIL-01'), { ...ertekek({ ...f, uzletag: 'headspa', szolgaltatas: '💆‍♀️💆‍♀️ PÁROS MOSAIC Head Spa kezelés (50 perc + Szárítás)', munkatars: 'Páros kezelés' }, 'email') });
   assert.ok(!/Páros kezelés<br>|Páros kezelés\n/.test(mail.html) || true);
   assert.ok(!mail.szoveg.includes('Szia {'));
@@ -266,7 +267,8 @@ test('motor: befogadas -> T0 kuldes -> ismetlodes-szuro', async () => {
   const t = await tick(db, env, k, MOST, { foglalasId: r.foglalasId });
   assert.equal(t.elkuldve, 2); // T0 SMS + e-mail
   assert.equal(k.ki.sms.length, 1); assert.equal(k.ki.sms[0].telefon, '+36709420090');
-  assert.match(k.ki.sms[0].szoveg, /^Szia! Megvan az időpontod Bettihez: november 25./); // nincs megbizhato keresztnev; a fodrasz neve ragozva
+  assert.match(k.ki.sms[0].szoveg, /^Szia! Idopontod Bettihez: november 25./); // nincs megbizhato keresztnev; a fodrasz neve ragozva, ekezet nelkul (1 SMS-szegmens)
+  assert.match(k.ki.sms[0].szoveg, /mosaicheadspa\.hu\/f\/[0-9a-f]{10}$/);
   assert.equal(k.ki.email.length, 1); assert.equal(k.ki.email[0].to, 'deakfi@grantis.hu');
   assert.match(k.ki.email[0].targy, /Megvan az időpontod/);
   assert.match(k.ki.email[0].html, /Foglalás megtekintése/);
@@ -290,7 +292,7 @@ test('motor: teszt-modban a valodi vendegnek nem megy semmi; elo modban igen (de
   const t2 = await tick(db, { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'oxygen' }, k, MOST + ORA);
   assert.equal(t2.elkuldve, 0);
   const t3 = await tick(db, { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair' }, k, MOST + ORA);
-  assert.equal(t3.elkuldve, 2); assert.equal(k.ki.sms[0].telefon, '+36201112222'); assert.match(k.ki.sms[0].szoveg, /^Szia Réka!/);
+  assert.equal(t3.elkuldve, 2); assert.equal(k.ki.sms[0].telefon, '+36201112222'); assert.match(k.ki.sms[0].szoveg, /^Szia Reka!/);
   // egy masik foglalas: ha csak 13 oraval kesobb eleselnek, a T0 mar kesett -> kihagyva
   await ingest(db, { LIFECYCLE_MOD: 'teszt' }, foglaltLevel({ uzenetId: 'g2', uuid: UUID2, ...KULSO_VENDEG, email: 'masik@example.com', tel: '06301112233', datum: 'december 2. (szerda) 10:00' }), MOST);
   const t4 = await tick(db, { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'hair' }, k, MOST + 13 * ORA);
@@ -310,8 +312,8 @@ test('motor: atfoglalas -> uj idopont, T0 nem ismetlodik, T-72/T-24 ujraszamolva
   const f1 = await db.sqlite.prepare('SELECT kezdet, token FROM foglalasok').get();
   assert.equal(f1.kezdet, helyiEpoch(2026, 11, 26, 17, 30)); assert.equal(f1.token, f0.token); assert.ok(f1.kezdet > f0.kezdet);
   await tick(db, env, k, MOST + 3700);
-  assert.ok(k.ki.sms.some((s) => /Megvan az új időpontod: november 26\. \(csütörtök\) 17:30/.test(s.szoveg)));
-  assert.equal(k.ki.sms.filter((s) => /^Szia Réka! Megvan az időpontod HAIR|Megvan az időpontod/.test(s.szoveg)).length, 1); // a T0 csak egyszer ment ki
+  assert.ok(k.ki.sms.some((s) => /Megvan az uj idopontod: november 26\. \(csutortok\) 17:30/.test(s.szoveg)));
+  assert.equal(k.ki.sms.filter((s) => /^Szia Reka! Idopontod/.test(s.szoveg)).length, 1); // a T0 csak egyszer ment ki
   const t72 = await db.sqlite.prepare("SELECT esedekes FROM kuldesek WHERE uzenet_id = 'HAIR-SMS-02'").get();
   assert.ok(Math.abs(t72.esedekes - (f1.kezdet - 72 * ORA)) <= 8 * ORA); // ablakba igazitva, az UJ idopont szerint
   // lemondas
@@ -321,7 +323,7 @@ test('motor: atfoglalas -> uj idopont, T0 nem ismetlodik, T-72/T-24 ujraszamolva
   const maradt = await db.sqlite.prepare("SELECT COUNT(*) AS n FROM kuldesek WHERE allapot = 'fuggoben' AND uzenet_id NOT LIKE 'COMMON-%'").get();
   assert.equal(maradt.n, 0);
   await tick(db, env, k, MOST + 7300);
-  assert.ok(k.ki.sms.some((s) => /töröltük/.test(s.szoveg)));
+  assert.ok(k.ki.sms.some((s) => /Toroltuk/.test(s.szoveg)));
   assert.ok(k.ki.email.some((m) => /töröltük az időpontodat/.test(m.targy)));
   // a lemondott foglalasra a T-72/T-24 nem megy, orajelre sem
   const elotte = k.ki.sms.length;
@@ -338,12 +340,12 @@ test('motor: T-72 es T-24 az idejen megy; a megerositett vendegnek a T-72 SMS ki
   assert.equal(f.uzletag, 'oxygen'); assert.equal(f.szegmens, 'elso');
   const t72 = f.kezdet - 72 * ORA;
   await tick(db, env, k, t72 + 60); // T-72: SMS + e-mail (prep)
-  assert.ok(k.ki.sms.some((s) => /3 nap múlva 09:30-kor várunk/.test(s.szoveg)));
+  assert.ok(k.ki.sms.some((s) => /3 nap mulva 09:30-kor varunk/.test(s.szoveg)));
   assert.ok(k.ki.email.some((m) => /Már csak ennyit kérünk/.test(m.targy)));
   const me = await megerosit(db, f.token, t72 + 120); assert.equal(me.ok, true);
   await tick(db, env, k, f.kezdet - 24 * ORA + 60);
-  const t24 = k.ki.sms.find((s) => /Holnap 09:30-kor várunk/.test(s.szoveg));
-  assert.ok(t24 && /1 óra 20 perc/.test(t24.szoveg), t24 && t24.szoveg);
+  const t24 = k.ki.sms.find((s) => /Holnap 09:30-kor varunk/.test(s.szoveg));
+  assert.ok(t24 && /1 ora 20 perc/.test(t24.szoveg), t24 && t24.szoveg);
   assert.equal((await reszletekUrl(db, f.token)), `https://mosaic-oxigen.salonic.hu/booking/bookingDetails/${UUID1}`);
   assert.equal(await reszletekUrl(db, 'nincsilyen0'), null);
 });
@@ -503,9 +505,9 @@ test('motor: NO-SHOW (LIFECYCLE_NOSHOW_AUTO=1) - a szalon az idopont utan torli:
   const t = await tick(db, env, k, masnap);
   assert.equal(t.elkuldve, 2);
   const sms = k.ki.sms[k.ki.sms.length - 1].szoveg; const mail = k.ki.email[k.ki.email.length - 1];
-  assert.match(sms, /Szia Réka! Tegnap nem találkoztunk, reméljük, minden rendben van/); assert.match(sms, /mosaicheadspa\.hu\/noi-fodraszat-budapest/);
+  assert.match(sms, /^Szia Reka! Tegnap nem talalkoztunk\. Uj idopont:/); assert.match(sms, /mosaicheadspa\.hu\/noi-fodraszat-budapest/);
   assert.match(mail.targy, /Nem találkoztunk/); assert.match(mail.szoveg, /Tegnap nem találkoztunk/); assert.match(mail.szoveg, /Új időpontot választok/);
-  assert.ok(!k.ki.sms.some((x) => /töröltük/.test(x.szoveg)) && !k.ki.email.some((m) => /töröltük/.test(m.targy)));
+  assert.ok(!k.ki.sms.some((x) => /töröltük/.test(x.szoveg) || /toroltuk/.test(x.szoveg)) && !k.ki.email.some((m) => /töröltük/.test(m.targy)));
   // a Salonic ket levelet kuld: a masodik nem ketszerez
   const n2 = await ingest(db, env, lemondottLevel({ ...REKA, uzenetId: 'ns-2', ok: '' }), jelzes + 3);
   assert.equal(n2.duplikalt, true);
@@ -525,7 +527,7 @@ test('motor: NO-SHOW jelzes az okban ("Nem jelent meg") az idopont ELOTT is (LIF
   await ingest(db2, env, foglaltLevel({ ...REKA }), MOST);
   const l = await ingest(db2, env, lemondottLevel({ ...REKA, ok: 'Közbejött valami' }), MOST + 7200);
   assert.equal(l.tipus, 'lemondva'); await tick(db2, env, k2, MOST + 7300);
-  assert.ok(k2.ki.sms.some((x) => /töröltük/.test(x.szoveg)));
+  assert.ok(k2.ki.sms.some((x) => /Toroltuk/.test(x.szoveg)));
   // 3) 3 napnal regebbi, mar elmult idopont torlese: csendben lemondva, semmi nem megy ki
   const db3 = d1(); const k3 = hamisKuldok();
   await ingest(db3, env, foglaltLevel({ ...REKA }), MOST);

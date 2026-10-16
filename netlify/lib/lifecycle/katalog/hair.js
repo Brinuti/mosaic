@@ -5,7 +5,7 @@ export default {
   uzenetek: [
     {
       id: 'HAIR-SMS-01', csatorna: 'sms', mikor: { tipus: 't0' },
-      szoveg: 'Szia {keresztnév}! Megvan az időpontod {fodrász}-hoz: {dátum} {időpont}, {szolgáltatás}. MOSAIC, 1023 Budapest, Bécsi út 2. Részletek/módosítás: {foglalás_részletei_link}.',
+      szoveg: 'Szia {keresztnév}! Időpontod {fodrász}-hoz: {dátum} {időpont}, Bécsi út 2. Részletek, módosítás: {foglalás_részletei_link}',
     },
     {
       id: 'HAIR-EMAIL-01', csatorna: 'email', mikor: { tipus: 't0' },
@@ -115,17 +115,17 @@ export default {
     },
     {
       id: 'HAIR-SMS-02', csatorna: 'sms', mikor: { tipus: 't72' },
-      szoveg: 'Szia {keresztnév}! {nap} {időpont}-kor vár {fodrász} a MOSAIC Hairben. Ha jössz, erősítsd meg: {megerősítés_link}. Ha változott valami, itt tudod áttenni: {módosítás_link}.',
+      szoveg: 'Szia {keresztnév}! Várunk {nap} {időpont}-kor, MOSAIC Hair. Ha jössz, erősítsd meg: {megerősítés_link} Módosítás: {módosítás_link}',
     },
     {
       // T-24, vagas / szaritas (a "vagas_kezeles" szegmens: minden, ami nem festes es nem konzultacio)
       id: 'HAIR-SMS-03A', csatorna: 'sms', mikor: { tipus: 't24' }, szegmensek: ['vagas_kezeles'],
-      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor vár {fodrász}. Cím: 1023 Budapest, Bécsi út 2. Ha van 1-2 referenciafotód a kívánt fazonról, hozd a telefonodon. Várunk! MOSAIC Hair',
+      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor vár {fodrász}, Bécsi út 2. Ha van 1-2 fotód a kívánt fazonról, hozd a telefonodon. Várunk!',
     },
     {
       // T-24, festes / balayage / konzultacio (a "nagy_valtozas" foglalas mindig "festes" is)
       id: 'HAIR-SMS-03B', csatorna: 'sms', mikor: { tipus: 't24' }, szegmensek: ['festes', 'konzultacio'],
-      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor vár {fodrász}. Ha festésre jössz, legyen a telefonodban 2-3 referencia, és gondold át, mikor/mivel festették utoljára a hajad. 1023 Budapest, Bécsi út 2. Várunk!',
+      szoveg: 'Szia {keresztnév}! Holnap {időpont}-kor vár {fodrász}, Bécsi út 2. Hozz 2-3 referenciafotót, és gondold át, mikor/mivel festették utoljára a hajad.',
     },
   ],
   megjegyzesek: [
