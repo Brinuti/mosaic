@@ -14,7 +14,7 @@ import { szegmensek, uzletagFelismer, mpHelyszin } from '../../netlify/lib/lifec
 import { kuldokKeszit } from '../../netlify/lib/lifecycle/kuldok.js';
 import { kimenoFeldolgoz } from '../../medicalpiercing/lib/lifecycle-kimeno.js';
 import { reszletek, megerosites } from '../../netlify/lib/lifecycle/http.js';
-import { helyi } from '../../netlify/lib/lifecycle/ido.js';
+import { helyi, ablakba } from '../../netlify/lib/lifecycle/ido.js';
 
 const MINTA = JSON.parse(fs.readFileSync(new URL('./fixtures/mp-ertesitok.json', import.meta.url), 'utf8'));
 const HONAP = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
@@ -55,7 +55,7 @@ test('mp: szegmensek (piercing-tipus + bp/videk a munkatarsbol)', () => {
 });
 
 test('mp: utemezes a lead-time szerint (T0 e-mail+SMS; T-24 SMS; 3+ nap T-48 level; 4+ nap T-72 SMS; 5+ nap E1; 7+ nap E2; 14+ nap E3)', () => {
-  const idk = (leadOra, szeg = ['migren', 'bp']) => tervez({ uzletag: 'mp', szegmensek: szeg, kezdet: MOST + leadOra * ORA }, MOST).terv.map((x) => x.uzenet_id).sort();
+  const idk = (leadOra, szeg = ['migren', 'bp']) => tervez({ uzletag: 'mp', szegmensek: szeg, kezdet: MOST + leadOra * ORA }, MOST).terv.filter((x) => x.tipus !== 'utan_ora').map((x) => x.uzenet_id).sort();
   // SMS-sporolas (2026-10-16): T0 SMS csak 30 oran belulre; T-72 SMS csak videk; T-24 SMS mindenkinek
   assert.deepEqual(idk(20), ['MP-EMAIL-01', 'MP-SMS-01']);
   assert.deepEqual(idk(29), ['MP-EMAIL-01', 'MP-SMS-01']);
@@ -127,7 +127,7 @@ test('mp: befogadas -> T0 a relay-en (uzletag mp, MP-felado / valaszcim), a vele
   const f = szam(db, 'SELECT * FROM foglalasok WHERE id = ?1', UUID1);
   assert.equal(f.uzletag, 'mp'); assert.equal(f.fiok, 'medicalpiercing'); assert.equal(f.szegmens, 'migren,bp'); assert.equal(f.teszt, 1);
   const tervezett = db.sqlite.prepare("SELECT uzenet_id FROM kuldesek WHERE foglalas_id = ?1 AND allapot = 'fuggoben' ORDER BY uzenet_id").all(UUID1).map((x) => x.uzenet_id);
-  assert.deepEqual(tervezett, ['MP-EMAIL-01', 'MP-EMAIL-03', 'MP-EMAIL-08', 'MP-EMAIL-09', 'MP-EMAIL-10', 'MP-SMS-03']);
+  assert.deepEqual(tervezett, ['MP-EMAIL-01', 'MP-EMAIL-03', 'MP-EMAIL-08', 'MP-EMAIL-09', 'MP-EMAIL-10', 'MP-EMAIL-14', 'MP-EMAIL-20', 'MP-SMS-03']);
   const t = await tick(db, env, k, MOST, { foglalasId: UUID1, mpErtekeles: async () => 5033 });
   assert.equal(t.elkuldve, 1); // 15 napra elore: a T0 SMS kimarad (SMS-sporolas), csak a T0 level megy
   assert.equal(k.ki.sms.length, 0);
@@ -267,4 +267,49 @@ test('mp: a MOSAIC /f es /m linkje MP-foglalasnal az MP-oldalra iranyit (302), e
   const m = await megerosites(new Request(`https://www.mosaicheadspa.hu/m/${token}`, { headers: { 'user-agent': 'Mozilla/5.0 (iPhone)' } }), env);
   assert.equal(m.status, 302); assert.equal(m.headers.get('location'), `https://www.medicalpiercing.hu/m/${token}`);
   assert.equal(szam(db, 'SELECT megerositve FROM foglalasok WHERE id = ?1', UUID1).megerositve, null);
+});
+
+test('mp: utoapolas (A0 1 oraval a szuras utan, A2 14 nap mulva 10:00) piercingenkent; az idopont utan is kimegy, lemondaskor nem', async () => {
+  const kezdet = MOST + 5 * NAP;
+  const terv = (szeg) => tervez({ uzletag: 'mp', szegmensek: szeg, kezdet }, MOST).terv.filter((x) => x.tipus === 'utan_ora');
+  const m = terv(['migren', 'bp']);
+  assert.deepEqual(m.map((x) => x.uzenet_id).sort(), ['MP-EMAIL-14', 'MP-EMAIL-20']);
+  assert.equal(m.find((x) => x.uzenet_id === 'MP-EMAIL-14').esedekes, ablakba(kezdet + ORA, 7, 21));
+  const a2 = helyi(m.find((x) => x.uzenet_id === 'MP-EMAIL-20').esedekes); const k = helyi(kezdet + 14 * NAP);
+  assert.deepEqual([a2.y, a2.m, a2.d, a2.h, a2.mi], [k.y, k.m, k.d, 10, 0]);
+  assert.deepEqual(terv(['egyeb', 'videk']).map((x) => x.uzenet_id).sort(), ['MP-EMAIL-19', 'MP-EMAIL-25']);
+  for (const id of ['MP-EMAIL-14', 'MP-EMAIL-19', 'MP-EMAIL-20', 'MP-EMAIL-25']) {
+    const uz = KATALOG.mp.uzenetek.find((u) => u.id === id);
+    const k2 = emailKirajzol(uz, ertekek({ uzletag: 'mp', nev: 'TESZT Elek', keresztnev: 'Elek', munkatars: 'Kovács Gabriella', szolgaltatas: '1 db Fejfájás / Migrén Piercing', token: 'abcdef0123', kezdet, letrehozva: MOST, telefon: '+36301234567', email: 'a@b.hu' }, 'email', { most: MOST, velemenyek: {}, googleVelemenyek: 5033 }));
+    assert.ok(!HELYORZO_MARADT.test(k2.html + k2.targy), id);
+  }
+  // befogadas -> az idopont utan a tick kikuldi az A0-t; lemondott foglalasnal nem
+  const db = d1(); const kk = hamisKuldok();
+  const env = { LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'mp' };
+  await ingest(db, env, level(MINTA.foglalt, { datum: salonicDatum(15) }), MOST);
+  const f = szam(db, 'SELECT kezdet FROM foglalasok WHERE id = ?1', UUID1);
+  const a0 = szam(db, "SELECT esedekes FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id = 'MP-EMAIL-14'", UUID1).esedekes;
+  assert.ok(a0 > f.kezdet);
+  await tick(db, env, kk, a0 + 60, { foglalasId: UUID1, mpErtekeles: async () => 5033 });
+  assert.ok(kk.ki.email.some((x) => /Így ápold a piercinged/.test(x.targy)), JSON.stringify(kk.ki.email.map((x) => x.targy)));
+});
+
+test('mp: egyszeri atemeles (mpImport) - T0 nelkul, a tobbi a terv szerint; ismert / elmult / hibas kimarad; a vegpont kulcs nelkul 404', async () => {
+  const { mpImport, beallitas } = await import('../../netlify/lib/lifecycle/engine.js');
+  const db = d1();
+  const cfg = beallitas({ LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'mp' });
+  const r = { id: UUID1, nev: 'Próba Anna', telefon: '06301234567', email: 'anna@example.com', szolgaltatas: '1 db Fejfájás / Migrén Piercing', munkatars: 'Kovács Gabriella', kezdet: MOST + 10 * NAP };
+  const e = await mpImport(db, cfg, [r, { ...r }, { ...r, id: 'x' }, { ...r, id: '11111111-2222-3333-4444-555555555555', kezdet: MOST - 60 }], MOST);
+  assert.deepEqual(e, { felvett: 1, mar_volt: 1, hibas: 1, elmult: 1 });
+  const f = szam(db, 'SELECT * FROM foglalasok WHERE id = ?1', UUID1);
+  assert.equal(f.szegmens, 'migren,bp'); assert.equal(f.keresztnev, 'Anna'); assert.equal(f.telefon, '+36301234567'); assert.equal(f.teszt, 0); assert.match(f.token, /^[0-9a-f]{10}$/);
+  const t = db.sqlite.prepare("SELECT uzenet_id FROM kuldesek WHERE foglalas_id = ?1 AND allapot = 'fuggoben' ORDER BY uzenet_id").all(UUID1).map((x) => x.uzenet_id);
+  assert.ok(!t.includes('MP-EMAIL-01') && !t.includes('MP-SMS-01') && t.includes('MP-SMS-03') && t.includes('MP-EMAIL-10') && t.includes('MP-EMAIL-14'), t.join(','));
+  const { api } = await import('../../netlify/lib/lifecycle/http.js');
+  const keres = (env, torzs) => api(new Request('https://www.mosaicheadspa.hu/api/lifecycle/mp-import', { method: 'POST', body: JSON.stringify(torzs) }), { LIFECYCLE_DB: d1(), ...env });
+  assert.equal((await keres({}, { kulcs: 'a', rekordok: [r] })).status, 404);
+  const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode('titok')))].map((b) => b.toString(16).padStart(2, '0')).join('');
+  assert.equal((await keres({ MP_IMPORT_HASH: hash }, { kulcs: 'rossz', rekordok: [r] })).status, 404);
+  const jo = await keres({ MP_IMPORT_HASH: hash, LIFECYCLE_MOD: 'elo' }, { kulcs: 'titok', rekordok: [{ ...r, kezdet: Math.floor(Date.now() / 1000) + 10 * NAP }] });
+  assert.equal(jo.status, 200); assert.equal((await jo.json()).felvett, 1); assert.equal(jo.headers.get('access-control-allow-origin'), 'https://app.salonic.hu');
 });

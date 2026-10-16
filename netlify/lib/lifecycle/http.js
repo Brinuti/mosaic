@@ -8,7 +8,7 @@
 //
 // Beallitas (wrangler.toml / Cloudflare): LIFECYCLE_DB (D1), LIFECYCLE_KULCS_HASH (a kulcs SHA-256-ja; a kulcs maga az utemezoben / Zapier-ben van),
 // LIFECYCLE_MOD, LIFECYCLE_UZLETAGOK, LIFECYCLE_MUNKATARS_MOD (ki | figyel | be), LIFECYCLE_ELO_ELLENORZES (ki), LIFECYCLE_NOSHOW_AUTO (1), SIMPLESMS_FELHASZNALO / SIMPLESMS_DOMAIN (nem titkos), SIMPLESMS_JELSZO (Secret), SMTP_* (mint az urlap-leveleknel).
-import { ingest, tick, napi, megerosit, reszletekUrl, foglalasNezet, allapot, beallitas } from './engine.js';
+import { ingest, tick, napi, megerosit, reszletekUrl, foglalasNezet, allapot, beallitas, mpImport } from './engine.js';
 import { foglalasOldal, nemTalalhato, megerositesOldal } from './oldal.js';
 import { kuldokKeszit, smsKesz, emailKesz, smsEgyenleg, smsConnectProba } from './kuldok.js';
 import { eloEllenorzoKeszit } from './elo.js';
@@ -55,10 +55,30 @@ function bazis(request, env) {
   return /(^|\.)mosaicheadspa\.hu$/.test(u.hostname) ? 'https://www.mosaicheadspa.hu' : u.origin;
 }
 
+/**
+ * POST /api/lifecycle/mp-import: az MP elesites elotti foglalasainak egyszeri atemelese, kozvetlenul a Salonic admin-oldalarol (a bongeszobol, CORS).
+ * Kulcs: a torzs `kulcs` mezoje; a SHA-256-ja az MP_IMPORT_HASH (wrangler.toml). Az atemeles utan a hash torlendo (a vegpont ekkor 404).
+ * Torzs (text/plain, JSON): { kulcs, rekordok: [...] } - lasd engine.js mpImport.
+ */
+const IMPORT_ORIGIN = 'https://app.salonic.hu';
+async function mpImportVegpont(request, env, url) {
+  const cors = { 'access-control-allow-origin': IMPORT_ORIGIN, 'access-control-allow-methods': 'POST', 'access-control-allow-headers': 'content-type', vary: 'origin' };
+  if (!/^[0-9a-f]{64}$/.test(String(env.MP_IMPORT_HASH || ''))) return new Response('nincs', { status: 404 });
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+  if (request.method !== 'POST') return new Response('nincs', { status: 404 });
+  let t = {};
+  try { t = JSON.parse(await request.text()); } catch { return json({ hiba: 'json' }, 400); }
+  if (!t.kulcs || (await sha256(String(t.kulcs))) !== env.MP_IMPORT_HASH) return new Response('nincs', { status: 404, headers: cors });
+  const cfg = beallitas(env);
+  const e = await mpImport(env.LIFECYCLE_DB, cfg, t.rekordok, ma());
+  return new Response(JSON.stringify(e), { status: 200, headers: { ...cors, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+}
+
 export async function api(request, env, ctx) {
   const url = new URL(request.url);
   const resz = url.pathname.replace(/^\/api\/lifecycle\/?/, '').replace(/\/$/, '');
   if (!env.LIFECYCLE_DB) return json({ hiba: 'nincs_db' }, 503);
+  if (resz === 'mp-import') return mpImportVegpont(request, env, url);
   if (!(await kulcsos(request, env))) return new Response('nincs', { status: 404 });
   const cfg = beallitas(env);
   const db = env.LIFECYCLE_DB;

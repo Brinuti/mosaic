@@ -16,7 +16,7 @@ const atiranyit = (hova, fej = {}) => new Response(null, { status: 302, headers:
 function hamisSalonic(lemondoOldal) {
   const hivasok = [];
   const fetchFn = async (url, o = {}) => {
-    hivasok.push({ url, method: o.method || 'GET', body: o.body || null, cookie: (o.headers || {}).cookie || null });
+    hivasok.push({ url, method: o.method || 'GET', body: o.body || null, cookie: (o.headers || {}).cookie || null, xrw: (o.headers || {})['x-requested-with'] || null });
     const u = new URL(url);
     if (u.pathname === '/selectDate/') return html(SELECT);
     if (u.pathname === '/editBooking/') return atiranyit(`/success-edit/${ID}`);
@@ -58,23 +58,20 @@ test('modosit: csak szabad idopontra, editBooking -> success-edit', async () => 
   assert.ok(hivasok.some((h) => h.url === `https://medicalpiercing.salonic.hu/editBooking/?bookingId=${ID}&startDate=${T1}`));
 });
 
-test('lemond: urlap -> rejtett mezok + indok, a GET sutijevel POST, success-cancel', async () => {
-  const urlap = `<form method="post" action="/booking/cancelBooking/${ID}"><input type="hidden" name="_token" value="abc&amp;1">
-<select name="reason"><option value="">Válassz</option><option value="other">Egyéb</option></select><textarea name="comment"></textarea><button type="submit" name="cancel" value="1">Lemondom</button></form>
-<p>A foglalást legkésőbb 2026. október 22. 14:30-ig van lehetőséged lemondani.</p>`;
-  const u = urlapHtmlbol(urlap, `https://medicalpiercing.salonic.hu/booking/cancelBooking/${ID}`);
-  assert.equal(u.method, 'POST');
-  assert.equal(u.mezok.get('_token'), 'abc&1'); assert.equal(u.mezok.get('reason'), 'other'); assert.equal(u.mezok.get('comment'), INDOK); assert.equal(u.mezok.get('cancel'), '1');
-  const { fetchFn, hivasok } = hamisSalonic((o) => (o.method === 'POST' ? atiranyit(`/success-cancel/${ID}`) : html(urlap, 200, { 'set-cookie': 'sess=xyz; Path=/; HttpOnly' })));
+test('lemond: a Salonic sajat modja - GET (sutik), majd AJAX POST reason mezovel, JSON status:success', async () => {
+  const { fetchFn, hivasok } = hamisSalonic((o) => (o.method === 'POST' ? new Response('{"status":"success"}', { headers: { 'content-type': 'application/json' } }) : html('<a class="btn-cancel-booking">Lemondás</a>', 200, { 'set-cookie': 'sess=xyz; Path=/; HttpOnly' })));
   assert.deepEqual(await lemond(fetchFn, ID), { ok: true });
-  const p = hivasok.find((h) => h.method === 'POST');
-  assert.equal(p.cookie, 'sess=xyz'); assert.match(p.body, /_token=abc%261/);
+  const post = hivasok.find((h) => h.method === 'POST');
+  assert.equal(new URL(post.url).pathname, `/booking/cancelBooking/${ID}`);
+  assert.equal(new URLSearchParams(post.body).get('reason'), INDOK);
+  assert.equal(post.xrw, 'XMLHttpRequest'); assert.match(post.cookie, /sess=xyz/);
 });
 
-test('lemond: azonnali atiranyitas a success-cancel-re, illetve ismeretlen valasz -> hiba', async () => {
+test('lemond: mar lemondva (atiranyitas), illetve hibas / nem JSON valasz -> hiba', async () => {
   assert.deepEqual(await lemond(hamisSalonic(() => atiranyit(`/success-cancel/${ID}`)).fetchFn, ID), { ok: true });
-  assert.deepEqual(await lemond(hamisSalonic(() => html('<h1>Hiba történt</h1>')).fetchFn, ID), { ok: false, hiba: 'salonic_lemond' });
-  assert.deepEqual(await lemond(hamisSalonic((o) => (o.method === 'POST' ? html('<form action="x"></form><p>Hiba</p>') : html('<form method="post"><input type="hidden" name="t" value="1"></form>'))).fetchFn, ID), { ok: false, hiba: 'salonic_lemond' });
+  assert.deepEqual(await lemond(hamisSalonic((o) => (o.method === 'POST' ? html('<h1>Hiba</h1>') : html('ok'))).fetchFn, ID), { ok: false, hiba: 'salonic_lemond' });
+  assert.deepEqual(await lemond(hamisSalonic((o) => (o.method === 'POST' ? new Response('{"status":"error"}') : html('ok'))).fetchFn, ID), { ok: false, hiba: 'salonic_lemond' });
+  assert.deepEqual(await lemond(hamisSalonic(() => html('nincs', 404)).fetchFn, ID), { ok: false, hiba: 'salonic_lemond' });
 });
 
 function hamisDb(sor) { return { prepare: () => ({ bind: () => ({ first: async () => sor }) }) }; }

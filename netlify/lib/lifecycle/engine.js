@@ -111,6 +111,36 @@ async function vendegFoglalasa(db, uzletag, email, telefon, kezdet, allapot, lem
  * @param {{uzenetId:string, targy:string, kuldo?:string, szoveg?:string, html?:string}} level
  * @returns {Promise<{ok:boolean, tipus?:string, foglalasId?:string, duplikalt?:boolean, miert?:string}>}
  */
+/**
+ * MP egyszeri atemeles (a tulajdonos kerese, 2026-10-16): az elesites ELOTT foglalt, meg elottunk allo Salonic-foglalasok felvetele.
+ * T0 (visszaigazolas) NEM megy (mintha athelyezes lenne), a tobbi uzenet a szokasos terv szerint. A mar ismert foglalasokhoz nem nyul.
+ * rekord: { id (Salonic bookingId, UUID), nev, telefon, email, szolgaltatas, munkatars, kezdet (epoch) }
+ */
+export async function mpImport(db, cfg, rekordok, most) {
+  const ossz = { felvett: 0, mar_volt: 0, hibas: 0, elmult: 0 };
+  for (const r of Array.isArray(rekordok) ? rekordok.slice(0, 2000) : []) {
+    const id = String(r && r.id || '');
+    const kezdet = Number(r && r.kezdet);
+    if (!UUID_RE.test(id) || !Number.isFinite(kezdet) || !String(r.szolgaltatas || '').trim()) { ossz.hibas += 1; continue; }
+    if (kezdet <= most) { ossz.elmult += 1; continue; }
+    if (await elso(db, 'SELECT 1 AS x FROM foglalasok WHERE id = ?1', id)) { ossz.mar_volt += 1; continue; }
+    const telefon = normalizal(r.telefon);
+    const nev = String(r.nev || '').trim() || null;
+    const email = String(r.email || '').trim() || null;
+    const szolgaltatas = String(r.szolgaltatas).trim();
+    const munkatars = String(r.munkatars || '').trim() || null;
+    const szeg = szegmensCimkek('mp', szolgaltatas, munkatars || '');
+    const teszt = tesztVendeg(cfg, { email, nev, telefon }) ? 1 : 0;
+    await futtat(db, `INSERT INTO foglalasok (id, uzletag, fiok, nev, keresztnev, telefon, email, szolgaltatas, szegmens, munkatars, kezdet, letrehozva, allapot, token, teszt)
+      VALUES (?1, 'mp', ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 'aktiv', ?12, ?13) ON CONFLICT(id) DO NOTHING`,
+    id, UZLETAGAK.mp.fiok, nev, keresztnev(nev), telefon, email, szolgaltatas, szeg.join(','), munkatars, kezdet, most, veletlen(10), teszt);
+    await tervMent(db, id, tervez({ uzletag: 'mp', szegmensek: szeg, kezdet }, most, { athelyezes: true }), { uzletag: 'mp' });
+    ossz.felvett += 1;
+  }
+  await naplo(db, most, 'mp:import', null, `mp-import:${most}`, ossz);
+  return ossz;
+}
+
 export async function ingest(db, env, level, most, opc = {}) {
   const cfg = beallitas(env);
   const mt = munkatarsTipus(level.targy);
@@ -187,7 +217,7 @@ async function feldolgoz(db, cfg, e, forras, most, alapIdo = most) {
     else {
       if (volt) await futtat(db, "UPDATE foglalasok SET allapot = 'aktiv', kezdet = ?2, szolgaltatas = ?3, szegmens = ?4, munkatars = ?5, modositva = ?6, megerositve = NULL WHERE id = ?1", fid, e.kezdet, e.szolgaltatas, szeg.join(','), e.munkatars || null, most);
       else await beszur('aktiv');
-      await tervMent(db, fid, tervez(tervAlap, alapIdo, { athelyezes: true }), { reset: ['t72', 't24'], uzletag: e.uzletag });
+      await tervMent(db, fid, tervez(tervAlap, alapIdo, { athelyezes: true }), { reset: ['t72', 't24', 'elott_ora', 'utan_ora'], uzletag: e.uzletag });
       const n = await athelyezesSzam(db, fid, e.uzletag);
       await azonnaliUzenetek(db, fid, athelyezesUzenetek(e.uzletag, n + 1), alapIdo);
       eredmeny = { ok: true, tipus: 'athelyezve', foglalasId: fid, ismeretlenVolt: !volt };
@@ -361,7 +391,7 @@ async function munkatarsFeldolgoz(db, cfg, level, tipus, forras, most, alapIdo, 
   const sms = e.kezdet - alapIdo <= 72 * 3600; // D4: "az uj idopontod" SMS csak bizonyitott modositasnal es 72 oran belul
   if (figyel) { await veg('ingest:figyel:szalon_athelyezte', f.id, { ...resz, sms }); return { ok: true, tipus: 'figyel', volna: 'szalon_athelyezte', foglalasId: f.id, valtozas: false }; }
   await futtat(db, "UPDATE foglalasok SET kezdet = ?2, modositva = ?3, megerositve = NULL WHERE id = ?1 AND allapot = 'aktiv'", f.id, e.kezdet, most);
-  await tervMent(db, f.id, tervez({ uzletag: f.uzletag, szegmensek: String(f.szegmens || '').split(',').filter(Boolean), kezdet: e.kezdet }, alapIdo, { athelyezes: true }), { reset: ['t72', 't24'], uzletag: f.uzletag });
+  await tervMent(db, f.id, tervez({ uzletag: f.uzletag, szegmensek: String(f.szegmens || '').split(',').filter(Boolean), kezdet: e.kezdet }, alapIdo, { athelyezes: true }), { reset: ['t72', 't24', 'elott_ora', 'utan_ora'], uzletag: f.uzletag });
   if (sms) {
     const n = await athelyezesSzam(db, f.id, f.uzletag);
     await azonnaliUzenetek(db, f.id, athelyezesUzenetek(f.uzletag, n + 1).filter((id) => !/-EMAIL/.test(id)), alapIdo); // munkatarsi modositas: csak az SMS (D4)
@@ -375,7 +405,7 @@ async function munkatarsFeldolgoz(db, cfg, level, tipus, forras, most, alapIdo, 
  * Az esedekes uzenetek kikuldese. kuldok: { sms(adat), email(adat), egyenleg?() }. Visszaad egy osszegzest.
  * @param {{foglalasId?:string, limit?:number, base?:string}} [opc]  foglalasId: csak az o uzenetei (a befogadas utan azonnal)
  */
-const ELO_TIPUSOK = new Set(['t72', 't24', 'tartalom', 'elott_ora']); // a T0 / lemondas / athelyezes uzenetek egy allapotvaltast koveto azonnali uzenetek: nincs ertelme elo ellenorzesnek
+const ELO_TIPUSOK = new Set(['t72', 't24', 'tartalom', 'elott_ora', 'utan_ora']); // a T0 / lemondas / athelyezes uzenetek egy allapotvaltast koveto azonnali uzenetek: nincs ertelme elo ellenorzesnek
 const ELO_PLAFON = 10; // tickenkent legfeljebb ennyi Salonic-oldal lekeres (parhuzamosan; a tobbi a mostani modon megy)
 export async function tick(db, env, kuldok, most, opc = {}) {
   const cfg = beallitas(env);
@@ -419,7 +449,7 @@ export async function tick(db, env, kuldok, most, opc = {}) {
     if (tipus === 'lemondva') { /* a lemondott foglalasra is megy */ }
     else if (tipus === 'nem_jelent_meg') { /* ugyanez */ }
     else if (r.allapot !== 'aktiv') { await lezar('torolve', `allapot:${r.allapot}`); continue; }
-    else if (r.kezdet <= most) { await lezar('torolve', 'az_idopont_elmult'); continue; }
+    else if (r.kezdet <= most && tipus !== 'utan_ora') { await lezar('torolve', 'az_idopont_elmult'); continue; } // az utoapolas az idopont UTAN megy
 
     const t0szeru = ['t0', 'feladat_t0', 'lemondva', 'athelyezve', 'nem_jelent_meg'].includes(tipus);
     const plafon = t0szeru ? KESES_PLAFON.t0 : uz.csatorna === 'feladat' ? 6 * 3600 : KESES_PLAFON.egyeb;

@@ -82,6 +82,10 @@ export function tervez(f, alap, opciok = {}) {
       const due = ablakos(u, f.kezdet - u.mikor.ora * ORA);
       if (due <= alap) { ki(u, 'nincs ra hely az idopont elott'); continue; }
       be(u, due);
+    } else if (t === 'utan_ora') { // MP utoapolas: a szuras utan `ora` oraval, vagy `napok` nappal kesobb 10:00-kor (a foglalas idopontjahoz kotve)
+      const due = ablakos(u, u.mikor.napok ? tizOra(f.kezdet + u.mikor.napok * NAP) : f.kezdet + (u.mikor.ora || 1) * ORA);
+      if (due <= alap) { ki(u, 'az idopont mar elmult'); continue; }
+      be(u, due);
     } else if (t === 'feladat_t0') {
       if (lead <= 0) { ki(u, 'az idopont mar elmult'); continue; }
       be(u, alap + 60);
