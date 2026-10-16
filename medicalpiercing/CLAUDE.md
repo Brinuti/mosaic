@@ -77,6 +77,8 @@ Ezen felül:
   magas hasábjaiban), a maradék sávot a kép saját széle tölti ki (a legfelső / legalsó sorai kinyújtva, `uj-egyseges.css`). Új tervezett kép: a `YT_KEP`-be kerüljön.
   Ellenőrzés: a borítók láthatósága minden oldalon 4 szélességen (1440 / 1100 / 820 / 390) – a vágott rész legfeljebb 3% lehet.
   A Vélemények oldal hősképe a saját arányában (3:2, csík nélkül), kattintásra a migrénes videósávhoz görget (`#videok-migren`; minden videósáv horgonya `videok-<kulcs>`).
+  Az álló saját videók lejátszás-gombja (`.video-indito`, `uj-fooldal.js` 3c.) a videó LÁTHATÓ helyére kerül (`getBoundingClientRect`; a hősben a videót
+  `left:50%` + `translateX(-50%)` teszi középre, amit az `offsetLeft` nem lát – ettől csúszott félre a gomb, 2026-10-16).
 - **Álló Facebook-videók borítója** (a tulajdonos kérése, 2026-10-16): a `facebook.com/plugins/video.php` iframe-ek helyett a build (`fbBorito`, `tools/uj-fooldal.mjs`)
   tervezett borítót tesz (`assets/img/uj-fb-<videó-azonosító>.webp`, ugyanazzal a sablonnal: `tools/kep-forras/fb-boritok.json`, a kivágott kockák
   `tools/kep-forras/fb/`), kattintásra a helyén tölt be a Facebook-lejátszó (`uj-fooldal.js` 3d.); addig a Facebook semmit nem tölt a lapon.
