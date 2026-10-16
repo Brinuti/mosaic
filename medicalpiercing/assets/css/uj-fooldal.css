@@ -667,3 +667,11 @@ p,li,.hos-bevezeto{text-wrap:pretty}
 }
 @media (max-width:360px){.almenu a{font-size:.8rem;padding:9px 9px;gap:7px}.menu-kapcsolat{font-size:.78rem}}
 @media (max-width:1000px){.alm-utotag{display:none}}
+
+/* --- a budapesti szalon fotoi a kapcsolat-blokk aljan (a migren-piercing-b galeria kepei, 2026-10-16) --- */
+.szalon-kepek{grid-column:1/-1;margin:2px -4px 0;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.szalon-kepek ul{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 6*10px)/7);gap:10px;margin:0;padding:4px;list-style:none}
+.szalon-kepek li{scroll-snap-align:start}
+.szalon-kepek img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;box-shadow:var(--sh-s)}
+@media (max-width:1000px){.szalon-kepek ul{grid-auto-columns:calc((100% - 3*10px)/4)}}
+@media (max-width:640px){.szalon-kepek ul{grid-auto-columns:42%;gap:8px}}

@@ -398,3 +398,35 @@
 /* alacsony kepernyon (pl. 360x640) a galeria (es vele minden hos-elem) keskenyebb, hogy a gombok is kiferjenek */
 @media (max-width:760px){.kat-hos-b{--galeria:min(100%,318px,max(250px,calc(100svh - 384px)))}}
 @media (max-width:380px){.kat-hos-b .hos-cim{font-size:1.16rem}}
+/* --- piercer-oldalak: bemutatkozas + cimkezett videok racsban (2026-10-16) --- */
+.kat-videoracs{display:block}
+.kat-videoracs .kat-doboz-szoveg{max-width:58em;margin:0 auto 18px;text-align:center}
+.kat-videoracs .kat-doboz-szoveg>p{text-align:left}
+.kat-yt-racs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 20px;padding:0;list-style:none}
+.kat-yt-racs.kat-yt-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kat-yt-racs figure{margin:0}
+.kat-yt-racs figcaption{margin-top:8px;color:var(--navy);font-size:.9rem;font-weight:700;text-align:center}
+.kat-yt-racs .video-egy{display:block;width:100%;border-radius:14px;overflow:hidden}
+.kat-yt-racs .video-kep img{width:100%;aspect-ratio:16/9;object-fit:cover}
+.kat-videoracs>.gomb{display:flex;width:max-content;margin:0 auto}
+@media (max-width:760px){
+  .kat-yt-racs,.kat-yt-racs.kat-yt-3{grid-template-columns:minmax(0,1fr);gap:12px}
+  .kat-videoracs .kat-doboz-szoveg>p{font-size:.9rem}
+}
+/* hosszu szoveges doboz: mobilon balra zart bekezdesek es listak (a kozepre zart hosszu szoveg nehezen olvashato), a hos mp4-videoja alacsonyabb */
+@media (max-width:760px){
+  .kat-egyeb-hosszu p,.kat-egyeb-hosszu li,.kat-egyeb-hosszu .lista{text-align:left}
+  .kat-egyeb-hosszu .verem.kozepes{align-items:stretch}
+  .hos-video-mp4.vid-allo{max-height:58svh}
+}
+/* mobil B-hos: a hosszu feliratu gomb (pl. "Nem akarok lecsuszni") nem fer a masik melle: a gombok egymas ala kerulnek, teljes szelessegben (2026-10-16) */
+@media (max-width:760px){
+  .kat-hos-b .hos-szoveg .gombsor:has(.gomb-hosszu){flex-wrap:wrap}
+  .kat-hos-b .gombsor:has(.gomb-hosszu) .gomb{flex:1 1 100%}
+}
+/* a vendegek videos beszamoloi (tools/uj-video-velemenyek.mjs): kevesebb videonal kozepen, a kartyak a 4-es racs meretevel */
+.kat-video-keves .kat-video-racs{grid-template-columns:repeat(var(--db,2),minmax(0,calc((100% - 42px)/4)));justify-content:center}
+.kat-video-velemeny .kat-video-racs:has(li:nth-child(3):last-child){grid-template-columns:repeat(3,minmax(0,calc((100% - 42px)/4)));justify-content:center}
+@media (max-width:760px){.kat-video-keves .kat-video-racs{grid-template-columns:repeat(2,minmax(0,1fr))}.kat-video-velemeny .kat-video-racs:has(li:nth-child(3):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kat-video-velemeny .kat-video-racs:has(li:nth-child(6):last-child),.kat-video-velemeny .kat-video-racs:has(li:nth-child(5):last-child){grid-template-columns:repeat(3,minmax(0,calc((100% - 42px)/4)));justify-content:center}
+@media (max-width:760px){.kat-video-velemeny .kat-video-racs:has(li:nth-child(6):last-child),.kat-video-velemeny .kat-video-racs:has(li:nth-child(5):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}}

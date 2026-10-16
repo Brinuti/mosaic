@@ -30,6 +30,19 @@ export const B_ALAP = new Map([
   // Rolunk es az oszi akcio oldala: ugyanigy (a tulajdonos kerese, 2026-10-16)
   ['/rolunk', '/rolunk'],
   ['/3-piercing-2-araert-regi', '/3-piercing-2-araert-regi'],
+  // a piercereink bemutatkozo oldalai: ugyanigy (a tulajdonos kerese, 2026-10-16)
+  ['/piercer-kovacs-gabriella', '/piercer-kovacs-gabriella'],
+  ['/piercer-kovacs-richard', '/piercer-kovacs-richard'],
+  ['/piercer-kamilli-viktoria', '/piercer-kamilli-viktoria'],
+  ['/piercer-fanni', '/piercer-fanni'],
+  ['/piercer-mester-brigitta', '/piercer-mester-brigitta'],
+  // a tudnivalok: a szuras folyamata, az utoapolas, a piercingek eredete (a tulajdonos kerese, 2026-10-16)
+  ['/a-szuras-folyamata', '/a-szuras-folyamata'],
+  ['/a-migren-es-shenmen-piercing-utoapolasa', '/a-migren-es-shenmen-piercing-utoapolasa'],
+  ['/igy-mukodnek-a-kozerzetjavito-piercingek', '/igy-mukodnek-a-kozerzetjavito-piercingek'],
+  // a hirdetesek ket, meg formazatlan celoldala (a tulajdonos kerese, 2026-10-16): a TikTok-landolo (soft akcio) es a "Paros kedvezmeny" (Poszt anyukaddal)
+  ['/kozerzetjavito-piercing-soft-akcio', '/kozerzetjavito-piercing-soft-akcio'],
+  ['/3-piercing-2-araert', '/3-piercing-2-araert'],
 ]);
 export const KATEGORIA_B_UTAK = new Set(B_ALAP.values());
 // A piercing-oldalak hos-galeriaja (a tulajdonos kerese, 2026-10-16): mind a 9 kategoria-oldalon (a divat fulpiercing kivetelevel) galeria a hosben;
@@ -51,6 +64,14 @@ const HOS_CIM = new Map([
   ['/rolunk', { cim: '11 év migrén után <em>végre szabad vagyok</em>' }],
   ['/3-piercing-2-araert-regi', { cim: 'Most megéri 2 vagy 3 <em>piercinget szúratni!</em>', negyzet: true }],   // a plakat szovege ne logjon le: negyzetes kep
   ['/igy-szabadultam-meg-a-migrentol', { cimBevezetobe: true, cim: 'Így szabadultam meg <em>a migréntől</em>', kep: { src: '/assets/img/f18724_54b61499c5b84a13a36273a398325981.webp', nw: 1000, nh: 963, alt: 'Kovács Gabriella, a Medical Piercing alapítója, munka közben' } }],
+  // a piercer-oldalak: a nev a cim, a portre a hos kepe; a bevezeto: "Mikorra irhatlak be?" + az eredeti bevezeto (kerdesBev)
+  ['/piercer-kovacs-gabriella', { cimBevezetobe: true, kerdesBev: true, cim: 'Kovács Gabriella, <em>a Medical Piercing alapítója</em>', kep: { src: '/assets/img/f18724_54b61499c5b84a13a36273a398325981.webp', nw: 1000, nh: 963, alt: 'Kovács Gabriella, a Medical Piercing alapítója, munka közben' } }],
+  ['/piercer-kovacs-richard', { cimBevezetobe: true, kerdesBev: true, cim: 'Kovács Richárd, <em>fülakupunktúrás addiktológus</em>', kep: { src: '/assets/img/f18724_934eb02c7f7440a9b97932a3d6a66909.webp', nw: 1000, nh: 1000, alt: 'Kovács Richárd piercer munka közben' } }],
+  ['/piercer-kamilli-viktoria', { cimBevezetobe: true, kerdesBev: true, cim: 'Kamilli Viktória, <em>a Medical Piercing szakértője</em>', kep: { src: '/assets/img/f18724_82ec0f0190fc482fa2aa112d0fe1e884.webp', nw: 1258, nh: 1258, alt: 'Kamilli Viktória piercer munka közben' } }],
+  ['/piercer-fanni', { cimBevezetobe: true, kerdesBev: true, cim: 'Nagy-Markó Fanni, <em>a Medical Piercing szakértője</em>', kep: { src: '/assets/img/f18724_f9c0a8fd686f422482c6a443ea951b6d.webp', nw: 1000, nh: 1000, alt: 'Nagy-Markó Fanni piercer a budapesti szalonban' } }],
+  ['/piercer-mester-brigitta', { cimBevezetobe: true, kerdesBev: true, cim: 'Mester Brigitta, <em>soproni szakértőnk</em>', kep: { src: '/assets/img/f18724_ceb9d9dee26d47738ddde803fd53e4a4.webp', nw: 1000, nh: 1000, alt: 'Mester Brigitta, a Medical Piercing soproni szakértője' } }],
+  ['/kozerzetjavito-piercing-soft-akcio', { cim: 'Működő közérzetjavító piercingek akciósan, <em>profi szakemberektől!</em>', bev: `Steril, biztonságos, és <span data-ti-darab>${GOOGLE_DB}</span> vélemény alapján „kiváló”. Nálunk a piercing szúrást képzett szakemberek végzik, speciális gépi bemérést követően. Most mindehhez <strong>akciósan</strong> juthatsz hozzá!` }],
+  ['/3-piercing-2-araert', { cim: 'Páros kedvezmény: <em>gyertek együtt, és spóroljatok!</em>' }],
 ]);
 
 // A hosszu szoveg fo-cimeinek helye (csomopont-indexek): h (1-2. szint), a szamozott cimek ("10. ...": a Wixen neha csak bekezdes, vagy 3. szintu cim) akkor,
@@ -77,12 +98,27 @@ const gyerekek = (fa) => (fa.t === 'verem' ? fa.k : [fa]);
 // a blokkok felismerese
 export function kategoriaBlokkok(adat, T, B = false) {
   const tisztit = (n) => T.szovegTiszta(n.html || '');
-  const szekciok = adat.szekciok;
+  let szekciok = adat.szekciok;
   if (!szekciok.length) return null;
+  // egyetlen hosszu szekcio (cikkszeru oldal, pl. a piercingek eredete): a cim + az elso video a hos, a video melletti szoveg es a tobbi a torzs
+  const vidIfr = (n) => !!n && ((n.t === 'iframe' && (n.fajta === 'yt' || n.fajta === 'egyeb')) || (n.t === 'video' && !!n.src));
+  if (B && szekciok.length === 1 && szekciok[0].fa.t === 'verem') {
+    const k0 = szekciok[0].fa.k;
+    const si = k0.findIndex((x) => x.t === 'sor' && laposit(x).some(vidIfr));
+    if (si >= 0 && si <= 2) {
+      const lv0 = laposit(k0[si]);
+      const szov = lv0.filter((x) => x.t === 'p');
+      let vid = lv0.find(vidIfr);
+      const vi = lv0.indexOf(vid);
+      if (vid.t === 'video' && !vid.poster && lv0[vi - 1] && lv0[vi - 1].t === 'kep') vid = { ...vid, poster: lv0[vi - 1].src };   // a Wix a boritokepet kulon kepkent menti
+      szekciok = [{ ...szekciok[0], fa: { t: 'verem', k: [...k0.slice(0, si), vid, ...szov.slice(0, 1)] } },
+        { ...szekciok[0], fa: { t: 'verem', k: [...szov.slice(1), ...k0.slice(si + 1)] } }];
+    }
+  }
   const hero = B ? heroElemzesB(szekciok[0], T) : heroElemzes(szekciok[0], T);
   if (!hero) return null;
 
-  const videoIfr = (n) => n.t === 'iframe' && (n.fajta === 'yt' || n.fajta === 'egyeb');
+  const videoIfr = (n) => !!n && n.t === 'iframe' && (n.fajta === 'yt' || n.fajta === 'egyeb');
   const velemenyIfr = (n) => n && n.t === 'iframe' && n.fajta === 'beagyazas' && (n.h || 0) >= 500;
   const vanVideo = (n) => laposit(n).some(videoIfr);
   const hCim = (n, re) => n && n.t === 'h' && re.test(tisztit(n));
@@ -165,6 +201,22 @@ export function kategoriaBlokkok(adat, T, B = false) {
     if (n.t === 'kep' && k.length === 1 && (n.nw || 0) >= 500) return { tip: 'ajanlas', kep: n, hossz: 1 };
     // "Budapesten a Jaszainal varunk": cim, cim / elerhetoseg / nyitvatartas, terkep, kozossegi ikonok, galeria
     if (hCim(n, /^Budapesten\b.*várunk/i)) return { tip: 'elerhetoseg', cim: n, nodes: k.slice(i + 1), hossz: vege };
+    // bemutatkozo szoveg + tobb cimkezett video (a piercer-oldalak: Gabi cim / YouTube parjai, Ricsi cimek sora + videok sora): a videok racsban
+    if (n.t === 'h') {
+      let j = i + 1;
+      const szovegek = [];
+      while (k[j] && k[j].t === 'p' && !videoIfr(k[j + 1])) szovegek.push(k[j++]);
+      const elemek = [];
+      while (k[j] && k[j].t === 'p' && videoIfr(k[j + 1])) { elemek.push({ cim: k[j], video: k[j + 1] }); j += 2; }
+      if (!elemek.length && k[j] && k[j + 1] && k[j].t === 'sor' && k[j + 1].t === 'sor' && k[j].k.every((x) => x.t === 'p') && k[j + 1].k.every(videoIfr) && k[j].k.length === k[j + 1].k.length) {
+        k[j].k.forEach((x, m) => elemek.push({ cim: x, video: k[j + 1].k[m] }));
+        j += 2;
+      }
+      if (elemek.length >= 2) {
+        const gomb = k[j] && k[j].t === 'gomb' ? k[j] : null;
+        return { tip: 'videoracs', cim: n, szovegek, elemek, gomb, hossz: j - i + (gomb ? 1 : 0) };
+      }
+    }
     return null;
   }
 
@@ -196,6 +248,12 @@ export function kategoriaBlokkok(adat, T, B = false) {
   }
 
   function felismer(k, i) {
+    // a "Legnepszerubb piercingeink" racs (a cimevel): mindenhol a fooldal doboza (2026-10-16)
+    if (T.piercingRacs(k[i]) || T.piercingCim(k[i])) {
+      let j = i;
+      while (j < k.length && T.piercingCim(k[j])) j++;
+      if (T.piercingRacs(k[j])) return { tip: 'piercingek', hossz: j - i + 1, nodes: k.slice(i, j + 1) };
+    }
     if (B) { const b = felismerB(k, i); if (b) return b; }
     const n = k[i], kov = k[i + 1], kov2 = k[i + 2];
     const vege = k.length - i;   // "a szekcio vegeig"
@@ -290,7 +348,7 @@ export function kategoriaCserelt(adat, T, B = false) {
   // a galerias hos (2026-10-16) a regi sablon kepen levo idezet-dobozat valtja: a galeria elso kepe hordozza az uzenetet
   if (!B && GALERIA_KULCS.some(([re]) => re.test(adat.ut))) szovegek.push(...[p.hero.idezetH, p.hero.idezetP].filter(Boolean).map((n) => T.szovegTiszta(n.html || '')));
   for (const b of p.blokkok) {
-    if (!['ekszer', 'ar', 'media', 'csapat', 'helyszin'].includes(b.tip)) continue;
+    if (!['ekszer', 'ar', 'media', 'csapat', 'helyszin', 'piercingek'].includes(b.tip)) continue;
     for (const l of b.nodes.flatMap((n) => laposit(n))) {
       if (l.t === 'h' || l.t === 'p') szovegek.push(T.szovegTiszta(l.html || ''));
       else if (l.t === 'ul') szovegek.push(...l.elemek.map((e) => T.szovegTiszta(e)));
@@ -327,7 +385,7 @@ function heroElemzesB(szekcio, T) {
   // galeria nelkuli B hos (Gabi tortenete): az elso nagy kep a hos kepe
   const kep = gal ? null : lv.find((x) => x.t === 'kep' && (x.nw || 0) >= 500);
   // kep nelkuli B hos (Rolunk): a hos YouTube-videoja
-  const video = gal || kep ? null : lv.find((x) => x.t === 'iframe' && x.fajta === 'yt');
+  const video = gal || kep ? null : lv.find((x) => x.t === 'iframe' && x.fajta === 'yt') || lv.find((x) => x.t === 'video' && x.src) || lv.find((x) => x.t === 'iframe' && x.fajta === 'egyeb');   // (utoapolas: sajat mp4; eredet: Facebook-video)
   if (!h1 || (!gal && !kep && !video)) return null;
   const ps = lv.filter((x) => x.t === 'p' && tisztit(x));
   const ert = ps.find((p) => /vélemény alapján|\d értékelés|\d vélemény/i.test(tisztit(p)));
@@ -349,8 +407,8 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
   c.kepSzam = 1;     // a hos kepe az elso (a tobbi lusta toltesu)
 
   // az eredeti fooldal szalon-fotogaleriaja (a tartalom-JSON-ban: a cim nelkuli, 10-nel tobb kepes galeria)
-  let fooldaliGaleria = null;
-  try {
+  let fooldaliGaleria = T.szalonGaleria ? T.szalonGaleria() : null;   // 2026-10-16: a migren-piercing-b oldal galeriaja (sablon.mjs: szalonGaleria)
+  if (!fooldaliGaleria) try {
     const fo = JSON.parse(fs.readFileSync(path.join(ROOT, 'uj-oldalak/tartalom/index.json'), 'utf8'));
     const keres = (n) => (n.t === 'galeria' ? [n] : (n.k || []).flatMap(keres));
     const cimes = (n) => n.t === 'h' || (n.k || []).some(cimes);
@@ -360,7 +418,10 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
   const lista = (n, osztaly = 'pipak') => `<ul class="${osztaly}">${n.elemek.map((e) => `<li>${osztaly === 'pipak' ? IK('check') : ''}${szovegLink(e)}</li>`).join('')}</ul>`;
   const bekezd = (n) => `<p>${szovegLink(n.html)}</p>`;
   const gombHtml = (szoveg, href, kicsi = true) => `<a class="gomb ${kicsi ? 'gomb-kicsi' : 'gomb-tomor'}" href="${esc(href)}">${esc(szoveg)}${IK('chev', 'ik-nyil')}</a>`;
-  const reszlet = (nev) => T.partial(ROOT, nev);
+  // a fooldali kozos dobozok (akcio, arak, ekszerek ...) egy oldalon csak egyszer (az eredeti oldalon a ket arlista-szakasz ketszer hozna)
+  const EGYSZER = new Set(['akcio', 'arak', 'ekszerek', 'helyszinek', 'piercingek', 'media', 'csapat']);
+  const voltResz = new Set();
+  const reszlet = (nev) => { if (EGYSZER.has(nev)) { if (voltResz.has(nev)) return ''; voltResz.add(nev); } return T.partial(ROOT, nev); };
   const keparany = (n) => (n.nw && n.nh ? ` width="${n.nw}" height="${n.nh}"` : '');
 
   // --- galerias hos (B felepites): cim, bevezeto, gombok, ertekeles + linkek, badge-ek, galeria; a "20 ev" pecset nelkul (a tulajdonos kerese, 2026-10-16) ---
@@ -440,8 +501,9 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     let bevHtml = h.bev ? szovegLink(h.bev.html) : '';
     if (sajatCim && sajatCim.cimBevezetobe) {
       const kerdes = laposit(adat.szekciok[0].fa).find((x) => x.t === 'p' && /\?\s*$/.test(szovegTiszta(x.html)));
-      bevHtml = (kerdes ? `<b>${szovegLink(kerdes.html)}</b> ` : '') + szovegLink(h.h1.html);
+      bevHtml = (kerdes ? `<b>${szovegLink(kerdes.html)}</b> ` : '') + szovegLink((sajatCim.kerdesBev && h.bev ? h.bev : h.h1).html);
     }
+    if (sajatCim && sajatCim.bev) bevHtml = sajatCim.bev;   // az eredeti bevezeto elavult (pl. "Aprilisban ..."): a mostani szoveg
     if (sajatCim) {
       cim = sajatCim.cim;
       if (sajatCim.kep) h.kep = sajatCim.kep;
@@ -451,7 +513,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     if (van.has('helyszin')) linkek.push('<li><a href="#helyszinek">Helyszíneink »</a></li>');
     // az eredeti "Mutasd az ekszereket es az arakat >>" link az oldal sajat reszere mutat: a lapon belul az ekszerekhez ugrik
     // mobilon a hosszu szoveg helyett a rovid ("Ekszerek es arak") latszik, hogy a 3 link egy sorba ferjen
-    for (const e of h.extra) linkek.push(`<li><a href="${van.has('ekszer') ? '#ekszerek' : '#arak'}"><span class="hosszu">${esc(szovegTiszta(e.html).replace(/\s*(?:>>|&gt;&gt;)\s*$/, ''))}</span><span class="rovid">Ékszerek és árak</span> »</a></li>`);
+    for (const e of h.extra.filter((x) => !/vélemény|Kiváló/i.test(szovegTiszta(x.html)))) linkek.push(`<li><a href="${van.has('ekszer') ? '#ekszerek' : '#arak'}"><span class="hosszu">${esc(szovegTiszta(e.html).replace(/\s*(?:>>|&gt;&gt;)\s*$/, ''))}</span><span class="rovid">Ékszerek és árak</span> »</a></li>`);
     const csill = Array.from({ length: 5 }, () => IK('star')).join('');
     const ert = `<p class="kat-ertekeles"><span class="csillagok" role="img" aria-label="5 csillagból 4,8">${csill}</span><a href="/migren-shenmen-piercing-velemenyek" data-ti-ertekeles>Kiváló – 4,8 – ${GOOGLE_DB} vélemény »</a></p>`;
     const kepek = hosGaleriaKepek(ROOT, adat.ut) || (h.gal ? h.gal.kepek : null);
@@ -461,7 +523,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     // az elso kep eredetileg "<- Lapozz balra" jelzest hordoz: a tools/uj-b-hos-kep.py "Lapozz jobbra ->" jelzesu valtozatot keszit (assets/img/uj-hos-01.webp)
     const hosKep = (src) => (/54ef80f3849d46cfa63ae77598afbcf7/.test(src) && fs.existsSync(path.join(ROOT, 'assets/img/uj-hos-01.webp')) ? '/assets/img/uj-hos-01.webp' : src);
     const dia = (k, i) => `<figure class="kar-dia"><img src="${esc(hosKep(k.src))}" width="800" height="800" alt="${esc(`Medical Piercing – ${i + 1}. kép a ${db}-ből`)}"${i === 0 ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async" data-nagyit data-grp="g${id}"></figure>`;
-    const galeria = !h.gal && !h.kep ? T.iframe(h.video) : !h.gal ? `<img src="${esc(h.kep.src)}"${keparany(h.kep)} alt="${esc(h.kep.alt && !/^\d+_|\.(?:jpe?g|png|webp)$/i.test(h.kep.alt) ? h.kep.alt : adat.cim)}" fetchpriority="high">` : `<div class="kar kat-hos-kar" data-kar="${id}"><div class="kar-sav" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Fotók a kezelésről">${h.gal.kepek.map(dia).join('')}</div>`
+    const galeria = !h.gal && !h.kep ? (h.video.t === 'video' ? `<video class="vid vid-allo hos-video-mp4" src="${esc(h.video.src)}"${h.video.poster ? ` poster="${esc(h.video.poster)}"` : ''} controls preload="metadata" playsinline></video>` : T.iframe(h.video)) : !h.gal ? `<img src="${esc(h.kep.src)}"${keparany(h.kep)} alt="${esc(h.kep.alt && !/^\d+_|\.(?:jpe?g|png|webp)$/i.test(h.kep.alt) ? h.kep.alt : adat.cim)}" fetchpriority="high">` : `<div class="kar kat-hos-kar" data-kar="${id}"><div class="kar-sav" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Fotók a kezelésről">${h.gal.kepek.map(dia).join('')}</div>`
       + `<button type="button" class="kar-gomb kar-elozo" aria-label="Előző kép" disabled>${IK('chev')}</button><button type="button" class="kar-gomb kar-kov" aria-label="Következő kép">${IK('chev')}</button><p class="kar-szam"><span data-kar-akt>1</span> / ${db}</p></div>`;
     return `<section class="hos kat-hos kat-hos-b">
     <div class="tarto hos-racs">
@@ -514,6 +576,16 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     <ul class="kat-video-racs">${b.elemek.map((e) => `<li><video src="${esc(e.video.src)}"${e.kep ? ` poster="${esc(e.kep.src)}"` : ''} controls preload="none" playsinline></video></li>`).join('')}</ul>
     <a class="gomb gomb-kicsi" href="/idopontfoglalas">Időpontot foglalok${IK('chev', 'ik-nyil')}</a>
   </div></section>`;
+
+  // --- B: bemutatkozas + cimkezett videok racsban (piercer-oldalak) ---
+  const videoracs = (b) => `<section class="tarto"><article class="kat-doboz kat-videoracs">
+    <div class="kat-doboz-szoveg">
+      <h2>${szovegLink(b.cim.html)}</h2>
+      ${b.szovegek.map(bekezd).join('\n      ')}
+    </div>
+    <ul class="kat-yt-racs${b.elemek.length % 3 === 0 || b.elemek.length > 4 ? ' kat-yt-3' : ''}">${b.elemek.map((e) => `<li><figure>${T.iframe(e.video)}<figcaption>${szovegLink(e.cim.html)}</figcaption></figure></li>`).join('')}</ul>
+    ${b.gomb ? gombHtml(b.gomb.szoveg, b.gomb.href, false) : ''}
+  </article></section>`;
 
   // --- B: az akcio feltetelei (szoveg + gomb) ---
   const akcioFelt = (b) => `<section class="tarto"><article class="kat-doboz kat-akciofelt">
@@ -663,15 +735,20 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     // az eredeti oldal beagyazasa (assets/embed/*.html) az oldal sajat Trustindex-widgetjet toltotte (pl. a migren-oldalon elol a migrenes velemenyek): ugyanazt a kulcsot hasznaljuk
     let kulcs = null;
     try { kulcs = /loader\.js\?([a-z0-9]+)/.exec(fs.readFileSync(path.join(ROOT, b.ifr.src.replace(/^\//, '')), 'utf8'))?.[1] || null; } catch { /* a fooldali widget marad */ }
-    const widget = kulcs ? reszlet('velemenyek').replace(/loader\.js\?[a-z0-9]+/, 'loader.js?' + kulcs) : reszlet('velemenyek');
+    // a 2 velemenyes / ures widget helyett a fooldali lapozo (JO_VELEMENY_KULCSOK, sablon.mjs; a tulajdonos kerese, 2026-10-16)
+    const widget = kulcs && (!T.JO_VELEMENY_KULCSOK || T.JO_VELEMENY_KULCSOK.has(kulcs)) ? reszlet('velemenyek').replace(/loader\.js\?[a-z0-9]+/, 'loader.js?' + kulcs) : reszlet('velemenyek');
     const l = b.link && T.csakLink(b.link.html) ? szovegLink(b.link.html).trim().replace(/^<a /, '<a class="szoveg-link" ') : '';
     // a B oldalakon a cim szama ("... 4.183 vendegunk leirta") is a Trustindex-widget mostani szamabol frissul (uj-fooldal.js 4c.)
     const cimHtml = B ? szovegLink(b.cim.html).replace(/(\d[\d.\s]*\d)(?=\s+vendég)/, `<span data-ti-darab>${GOOGLE_DB}</span>`) : szovegLink(b.cim.html);
+    // a vendegek videos beszamoloi a piercing-tipus szerint (tools/uj-video-velemenyek.mjs), az elso velemeny-blokk alatt
+    const gk = GALERIA_KULCS.find(([re]) => re.test(adat.ut));
+    const vf = gk && !c.videoVelemeny && path.join(ROOT, `uj-oldalak/reszek/video-velemeny-${gk[1]}.html`);
+    const videok = vf && fs.existsSync(vf) ? (c.videoVelemeny = true, `\n${reszlet(`video-velemeny-${gk[1]}`)}`) : '';
     return `<section class="kat-blokk">
     <div class="tarto kat-fej"><h2>${cimHtml}</h2>${b.alcim ? `<p class="kat-alcim">${szovegLink(b.alcim.html)}</p>` : ''}</div>
 ${widget}
     ${l ? `<div class="tarto kat-tovabb">${l}</div>` : ''}
-  </section>`;
+  </section>${videok}`;
   };
 
   const miert = (b) => `<section class="tarto"><article class="kat-doboz kat-miert">
@@ -785,7 +862,7 @@ ${widget}
     const hossz = tartalom.replace(/<[^>]+>/g, '').length;   // a lathato szoveg hossza
     return hossz > 2500
       ? `<section class="sz kat-cikk"><div class="tarto">${tartalom}</div></section>`
-      : `<section class="tarto"><div class="sz kat-doboz kat-egyeb">${tartalom}</div></section>`;
+      : `<section class="tarto"><div class="sz kat-doboz kat-egyeb${hossz > 700 ? ' kat-egyeb-hosszu' : ''}">${tartalom}</div></section>`;   // a hosszu szoveg mobilon balra zart
   };
 
   const resz = [B ? hosB() : hos()];
@@ -814,9 +891,11 @@ ${widget}
       case 'media': resz.push(`<section class="tarto kat-egy">\n${reszlet('media')}\n  </section>`); break;
       case 'csapat': resz.push(`<section class="tarto kat-egy">\n${reszlet('csapat')}\n  </section>`); break;
       case 'helyszin': resz.push(reszlet('helyszinek')); break;
+      case 'piercingek': resz.push(reszlet('piercingek')); break;
       case 'kihagy': break;
       case 'gyiklink': resz.push(gyikLink(b)); break;
       case 'videok': resz.push(videok(b)); break;
+      case 'videoracs': resz.push(videoracs(b)); break;
       case 'tapasztalat': resz.push(tapasztalat(b)); break;
       case 'akciofelt': resz.push(reszlet('akcio'), reszlet('arak'), akcioFelt(b), reszlet('ekszerek')); break;
       default: resz.push(egyeb(b));
