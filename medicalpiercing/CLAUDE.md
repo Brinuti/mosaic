@@ -13,12 +13,16 @@ Ezen felül:
   és az érintett oldalakra `node tools/elteres.mjs` (asztali és `--mobil`). A cél: 0 eltérő elem.
 - A mérőkódok csak a `www.medicalpiercing.hu` domainen futhatnak (`assets/js/suti.js`, `ELES_DOMAINEK`).
 - Külső fiókokban (Wix, Google, Meta, CookieYes, Cloudflare DNS) semmit ne módosíts a tulajdonos kifejezett kérése nélkül.
-- **Az új, rejtett oldalak (`/uj-fooldal`, `/uj/...`) változtatásait is azonnal élesítjük** (a tulajdonos döntése, 2026-10-16, felülírja a 2026-10-13-ast):
-  „Ha végeztél …, akkor légy szíves élesítsd, ne is kérdezz meg, mindig élesítsd, mindig tedd ki. Nekem ne linkeket csinálj, hanem ezen a /uj oldalon … hogy itt tudjuk tesztelni élesen.”
-  Minden kérés után: build, a két teszt (`tools/uj-fooldal-teszt.mjs`, `tools/uj-oldalak-teszt.mjs`, helyben), commit, push, PR a `main`-re, merge, majd ellenőrzés az éles
-  `https://www.medicalpiercing.hu/uj/...` oldalakon; a tulajdonosnak az éles `/uj/...` linkeket add, ne az előnézetet. A lapok továbbra is rejtettek (noindex, nincs a sitemapben, a régi oldalak nem linkelik).
+- **Az új oldal ÉLES, a régi helyén** (a tulajdonos kérése, 2026-10-16: „tedd élesbe ezt az oldalt. Cseréld le az eredeti oldallal.”): a kapcsoló `lib/uj-eles.js`
+  (`UJ_ELES = true`). Az új oldalak az eredeti címeken vannak (`/`, `/migren-piercing`, …, a köszönőoldalak is), a régi oldal SEO-fejével (cím, leírás, canonical, og/twitter,
+  ld+json, Google- és Facebook-domainigazolás; ami a régin noindex volt, az marad; `elesFej` a `tools/uj-fooldal.mjs`-ben). A régi (Wix-klón) oldalak a `/regi/<út>` címen
+  maradnak (noindex + `X-Robots-Tag`), a `/uj/*`, `/uj-fooldal`, `/uj` címek 301-gyel az eredeti címre visznek (a paraméterek maradnak). A `-b` címeken (pl. `/migren-piercing-b`)
+  is a B-dizájnú új oldal van. A 404-oldal új (`uj-oldalak/sajat/404.html`). **Visszaállítás:** `UJ_ELES = false` a `lib/uj-eles.js`-ben, push + merge (minden a régi
+  állapotba kerül: a régi oldalak az eredeti címen, az új a `/uj/...` alatt, rejtve).
+  Minden kérés után (a „mindig élesítsd, mindig tedd ki” szabály szerint, 2026-10-16): build, a két teszt (`tools/uj-fooldal-teszt.mjs`, `tools/uj-oldalak-teszt.mjs`, helyben),
+  commit, push, PR a `main`-re, merge, majd ellenőrzés az éles `https://www.medicalpiercing.hu/...` oldalakon; a tulajdonosnak az éles linkeket add, ne az előnézetet.
 - **Minden fejlesztési kör végén bepipálós lista** (a tulajdonos kérése, 2026-10-16): a záró üzenetben `- [x]` lista arról, mi készült el – részletesen (minden kért pont
-  külön sor), de röviden és nem technikailag (ne fájlnevek, CSS, kód), hanem hogy mit lát a tulajdonos és hol. Minden sorhoz az éles `/uj/...` link, ahol ellenőrizheti; ha valami
+  külön sor), de röviden és nem technikailag (ne fájlnevek, CSS, kód), hanem hogy mit lát a tulajdonos és hol. Minden sorhoz az éles link, ahol ellenőrizheti; ha valami
   nem készült el vagy másképp lett, külön `- [ ]` sorban, egy mondat indoklással. Cél: ne kelljen visszagörgetnie, a listából tudja ellenőrizni, mit kell megnéznie.
 - **A „B” változat az alap** (a tulajdonos döntése, 2026-10-13): az `/uj/migren-piercing`, `/uj/shenmen-piercing`, `/uj/klimax-piercing` és `/uj/slim-etvagycsokkento-piercing` oldal az eredeti
   `-b` oldalak (`migren-piercing-b`, `shenmen-piercing-b`, `klimax-piercing-b`, `slim-piercing-b`) szerkezetéből és szövegéből épül, a kategóriaoldalak dizájnjával, **„b” nélküli címen**
@@ -61,6 +65,23 @@ Ezen felül:
   a saját mp4-ek (`video[controls]`, a vendégvideók sávja is) `playsinline` nélkül (iPhone: a Safari saját lejátszója), Androidon a lejátszáskor `requestFullscreen`, a végén vissza; a YouTube-ablak
   (`#videoablak.mobil`) kitölti a képernyőt (a YouTube címsora, gombjai a fekete sávokra kerülnek, nem a videóra), Androidon teljes képernyő + fekvő tájolás, a beágyazás kap
   `playsinline=0&iv_load_policy=3&fs=1`-et. Asztalon semmi sem változik. A foglaló „Hogy néz ki egy szúrás?” videója is teljes képernyőn indul mobilon (`szurasNyit`).
+- **Videók indexképei** (a tulajdonos kérése, 2026-10-16, 4. kör): a fő piercing-oldalak YouTube-videóinak indexképe GPT-vel tervezett háttér + a videó valódi képkockája +
+  felirat (`assets/img/uj-yt-<videó-azonosító>.webp`; a `YT_KEP` / `videoBorito` a `tools/uj-fooldal.mjs`-ben cseréli a YouTube saját képét); az álló (saját) videókon nagy
+  lejátszás-jel (`.video-indito`, `uj-fooldal.js` 3c.). **Mind a 37 vendégvideó tervezett borítót kapott** (a tulajdonos kérése, 2026-10-16, a 09-es próba után):
+  `assets/img/uj-velemeny-<nn>-terv.webp`, a `tools/uj-velemeny-borito.mjs` sablonjával (GPT-háttér `tools/kep-forras/velemeny-borito-hatter.webp` + a videó felirat
+  nélküli valódi kockája, arcra vágva, a felső logósáv nélkül + a vendég legerősebb, valóban elhangzott mondata + alul „<Keresztnév> így segített a … piercing”).
+  A tulajdonos döntése: a borítón a vendég **keresztneve** szerepel; a fájlnevekben továbbra sincs név, és a név–sorszám összerendelés, az idézetek adatfájlja a repóba
+  nem kerül (a sablon az adatfájlt paraméterként kapja). Új vendégvideónál: felirat nélküli kocka + mondat a leiratból + a sablon futtatása.
+- **Álló Facebook-videók borítója** (a tulajdonos kérése, 2026-10-16): a `facebook.com/plugins/video.php` iframe-ek helyett a build (`fbBorito`, `tools/uj-fooldal.mjs`)
+  tervezett borítót tesz (`assets/img/uj-fb-<videó-azonosító>.webp`, ugyanazzal a sablonnal: `tools/kep-forras/fb-boritok.json`, a kivágott kockák
+  `tools/kep-forras/fb/`), kattintásra a helyén tölt be a Facebook-lejátszó (`uj-fooldal.js` 3d.); addig a Facebook semmit nem tölt a lapon.
+- **Árlista-doboz fülikonjai** (2026-10-16): GPT-vel rajzolt vonalas fülek az ékszerekkel (`assets/img/uj-ful-1|2|3|2x2.webp`, `tools/uj-ful-ikonok.py`, forrás:
+  `tools/kep-forras/ful-ikonok-gpt.webp`); az akciós (sötét) kártyán is világos körben. A „Tovább az összes véleményhez” link nem kerül oda, ahol az eredeti oldal saját
+  ilyen linkje közvetlenül utána áll (`velemenyLink`; a teszt figyeli a duplát).
+- **Arcra igazított képvágás** (2026-10-16): a vágott (`object-fit: cover`) képek mobilon is az arcnál maradnak: a `tools/kep-fokusz.py` (OpenCV YuNet arcfelismerő, offline) írja az
+  `uj-oldalak/kep-fokusz.json`-t, a build `object-position`-t tesz a képekre. Új kép esetén a szkriptet újra kell futtatni. A páros képek mobilon 4:3-asak.
+- **Apróságok** (2026-10-16, 4. kör): minden vélemény-blokk alatt „Tovább az összes véleményhez” link (a Vélemények oldal megfelelő részéhez, `velemenyLink`); a mobilmenüben
+  a Kapcsolat alatt „Garancia”; a szöveg mindenhol „Garanciális szúrásra jelentkezem”; a lábléc logója fehér, átlátszó hátterű (`uj-logo-feher.webp`); a főoldal idézete asztalon is középen.
 - **A hős 4 badge-e** (`reszek/bizalom.html`) csak a piercing-oldalakon, az akció-oldalakon és a főoldalon van (a tulajdonos kérése, 2026-10-16: „csak helyet foglal mobilon”); a tartalmi
   oldalakon, a piercer-oldalakon és a GYIK-en nincs. A piros körös X rajzolt (SVG), nem „×” betű. A galériás hős asztalon négyzetes (1:1) marad.
 - **Térkép a kitelepülések oldalán**: a városokra kattintva a foglalómotor az adott helyszínnel nyílik; asztalon rámutatva infobox a címmel (a címek: `reszek/helyszinek.html`) (`tools/uj-helyszin-terkep.mjs`: HTML-linkek az SVG fölött, `ht-pin`, a meglévő
@@ -79,7 +100,9 @@ Ezen felül:
   kicsi szűrősor (Magamnak / Két személynek; 1 piercing / 2–3 piercing / Fülbevaló – asztalon egy sor, mobilon kettő), a „★ 4,8 · 5000+ értékelés” mellett egy sorban a „Hogy néz ki egy szúrás?”
   (felugró, bezárható videó: X, háttér, Esc), kicsi „Az ár tartalmazza”, alatta MINDEN lehetőség kártyája (nincs rejtett „+ többi”). Minden kártyán két gomb: „Részletek” (lenyitja: a pont helye
   a valódi fülfotóval, mire jó, garancia; a csomagoknál a kedvezmény levezetése a helyszín mostani Salonic-áraiból: 1./2./3. piercing ára, külön-külön mennyi lenne, mennyit spórol) és az erős
-  színű „Időpontot választok” (a régi `[data-szolg]`: a foglalási út, a mérés és a tesztek ugyanazok). Alapérték: Magamnak + 1 piercing, a típusoldal piercingje elöl és lenyitva (az akció-oldalról: 2–3 piercing).
+  színű „Időpontot választok” (a régi `[data-szolg]`: a foglalási út, a mérés és a tesztek ugyanazok). Alapérték: Magamnak + 1 piercing, a típusoldal piercingje elöl (az akció-oldalról: 2–3 piercing); MINDEN kártya csukva, a 2–3 piercingnél is (a tulajdonos kérése, 2026-10-16, 4. kör:
+  „lássa, hogy milyen piercingek vannak”). A nevek teljesek („Migrén piercing”, „Shenmen piercing”, „Slim piercing”, …). A szűrősor 385–520 px között is egy sorban (rövid felirat:
+  „1 db”, „2–3 db”), alatta két sorban. Az „Az ár tartalmazza” a kártya Részletek-részében van, nem a lista fölött. A szakember-lépés választói mobilon egy sorban.
   A „Kiesett ékszer újraszúrása” belsős Salonic-szolgáltatás (a tulajdonos döntése, 2026-10-16): NEM foglalható, a piercing-listából kimarad (`ujraszuras`, `szolgaltatasLepes`);
   az „Ékszercsere / visszarakás” visszahívó űrlap legördülőjében kérhető (közérzetjavító / fülbevaló, `LEHETOSEG.ekszercsere`). A szűrősorban „2 személynek”, a „2–3 piercing” gombon
   „Legjobban megéri” jelölés; az értékelés a pontos szám a `/api/ertekeles`-ből (a Trustindex-doboz fejléce), nem „5000+”. A „Hogy néz ki egy szúrás?” videója a TikTok-fiók legnézettebb

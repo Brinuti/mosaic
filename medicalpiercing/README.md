@@ -247,9 +247,28 @@ betöltéskor az `/api/kitelepulesek`-ből frissíti (a táblázat legfeljebb 5 
 melletti cím, a városoldalakon a lap címe adja (a Wix-címek nem megbízhatók: a `/varosok/8800-nagykanizsa-fo-ut-23`
 ma a székesfehérvári helyszín). A nem értelmezhető cellákat az `/api/kitelepulesek` `hibak` listája mutatja.
 
-## 3/b. Rejtett új főoldal: `/uj-fooldal` (kézzel írt, nem Wix-klón)
+## 3/a. ÉLESÍTVE (2026-10-16): az új oldal a régi helyén
 
-Az új főoldal látványterve alapján készült lap, **élesben, de rejtve**: a mostani főoldalt (`/`) nem váltja le, nincs a sitemapben,
+A tulajdonos kérésére („tedd élesbe ezt az oldalt. Cseréld le az eredeti oldallal.”) az új főoldal (3/b) és az új oldalak (3/c) az **eredeti címeken** vannak.
+A kapcsoló: `lib/uj-eles.js` (`UJ_ELES = true`, `REGI_ELO = '/regi'`); a build (`tools/build.mjs`, `tools/uj-fooldal.mjs`), az útválasztás (`lib/utvonal.js`) és a
+függvény (`functions/[[path]].js`) ebből dolgozik.
+
+| Cím | Mit ad |
+|---|---|
+| `/`, `/migren-piercing`, … (minden eredeti cím, a köszönőoldalak is) | az új oldal, a régi oldal SEO-fejével (cím, leírás, canonical, og/twitter, ld+json, Google- és Facebook-domainigazolás, RSS); ami a régin noindex volt, az marad (`elesFej`) |
+| `/regi`, `/regi/<út>` | a régi (Wix-klón) oldal, `noindex,nofollow` a lapban és `X-Robots-Tag` a függvényben (nincs a sitemapben) |
+| `/uj/<út>`, `/uj-fooldal`, `/uj` | 301 → az eredeti cím (a paraméterek maradnak) |
+| `/<x>-b` (pl. `/migren-piercing-b`) | a B-dizájnú új oldal (ugyanaz, mint `/<x>`) |
+| nem létező cím | az új 404-oldal (`uj-oldalak/sajat/404.html`, noindex) |
+
+A sitemap az eredeti címeket és az új, régi megfelelő nélküli oldalakat (pl. `/csapatunk`, `/ekszereink`, `/kapcsolat`) sorolja fel. A mérés változatlan: ugyanaz a
+`suti.js` + `mp-meres.js` minden lapon; a köszönőoldalak (`/foglalas-ok*`, `/fulbevalo-ok*`) a régi címükön, a régi logikával (címtisztítás `?mert=1`-re, a Meta-pixel ki,
+a foglalómotor ott nem tölt be).
+**Visszaállítás:** `UJ_ELES = false` (`lib/uj-eles.js`), push + merge: a régi oldalak vissza az eredeti címekre, az új oldalak a `/uj/...` alá (rejtve).
+
+## 3/b. Az új főoldal (kézzel írt, nem Wix-klón; élesítés előtt rejtve a `/uj-fooldal` címen)
+
+Az új főoldal látványterve alapján készült lap. *Az élesítés előtti állapot (`UJ_ELES = false`):* **élesben, de rejtve**: a mostani főoldalt (`/`) nem váltja le, nincs a sitemapben,
 semmi nem linkeli, a keresők nem indexelhetik (`noindex,nofollow` a lapban és `X-Robots-Tag` a függvényben, `functions/[[path]].js`
 `REJTETT_LAPOK`). Éles címe: https://www.medicalpiercing.hu/uj-fooldal (a PR-előnézeten is: `https://<ág>.medicalpiercing.pages.dev/uj-fooldal`).
 
@@ -288,11 +307,9 @@ A jogi láb (EÜ szakember, 93%-os statisztika, „nem gyógymód”) az élő o
 - **Mobil:** a hősben cím, kép, szöveg sorrend; a dobozokon belül minden (szöveg, lista, gomb) középre igazítva; az orvosi fotó teljes szélességben; kisebb lábléc.
 - **Ingyenes kontroll fotó:** Nagy-Markó Fanni (a főoldal csapatrészéből, `fanni4.jpg`).
 
-**Élesítés főoldalként** (csak a tulajdonos kérésére): a `klon/index.html` helyett ennek a lapnak a tartalmát kell a `/` címen adni (a `dist/_a|_m/fooldal.html`
-helyére), a `<meta name="robots">` és a REJTETT_LAPOK bejegyzés eltávolításával, `canonical` hozzáadásával, és a `fooldal-b` / Convertize-kísérlet
-ellenőrzésével. **Visszavonás:** a lap törlése a `tools/build.mjs`-ből (egy sor) és a `REJTETT_LAPOK`-ból.
+**Élesítés főoldalként:** megtörtént (3/a). A Convertize-kísérlet (külső fiók) nem a mi kódunk: a `/fooldal-b` címen is az új dizájnú oldal van.
 
-## 3/c. Az összes többi oldal új stílusú, rejtett tükre: `/uj/<eredeti útvonal>` + link-index `/uj-oldalak`
+## 3/c. Az összes többi oldal új stílusban (élesítés előtt rejtve: `/uj/<eredeti útvonal>` + link-index `/uj-oldalak`)
 
 Az új főoldal stílusában (ugyanaz a fejléc / menü / lábléc, az eredeti színek, a lehető legkisebb helyen elmondott tartalom) elkészült **az összes többi oldal is**
 (175 oldal: piercing- és árakoldalak, blog + 78 cikk, helyszínek, piercerek, állásajánlatok, jogi és köszönőoldalak). **A mostani oldalak változatlanok**, a tükör
@@ -324,7 +341,7 @@ Miért működnek, Facebook-kommentek nagy, lapozható, kattintásra nagyíthat�
 ahol az eredeti árlista is 24.900 / 39.900 / 44.900 Ft (a „Divat fülpiercing” 12.000 Ft-os árlistája miatt az általános sablonnal marad). A teszt (`uj-oldalak-teszt.mjs`) ezekre
 külön ellenőrzi: a hős mérete = a főoldalé, a főoldali dobozok megvannak, a Facebook-kártyák mérete és betöltése, az ékszer-galéria lapozása és nagyítása.
 **Újra-kinyerés:** ha az eredeti oldal tartalma változik (vagy új oldal kerül a Wixre), `tools/oldalak.txt` frissítése + `kinyer.mjs`; a tükör ettől függetlenül épül.
-**Élesítés:** csak a tulajdonos kérésére; a `/uj/` előtag elhagyása a `ujOldalak()` kiírásában és a `linkAtiras()`-ban (`tools/uj-fooldal.mjs`), a noindex eltávolításával.
+**Élesítés:** megtörtént (3/a, `UJ_ELES`). Élesítve a teszt (`uj-oldalak-teszt.mjs`) az eredeti címeken nézi az új oldalakat, és a `/regi/...` régi oldalhoz hasonlít.
 
 ## 4. Publikálás: Cloudflare Pages (egyszeri beállítás)
 

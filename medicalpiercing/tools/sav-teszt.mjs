@@ -18,6 +18,7 @@
 //   - lablec "Suti beallitasok": a beallitasok nyilnak, csak statisztika -> mp_suti=v1-s1-m0, Meta nincs;
 //   - koszonooldal (/foglalas-ok-mi) elfogadott hozzajarulassal: nincs fbq, nincs Meta-keres;
 //   - ?motor=1: a foglalomotor megnyilik (dontes elott, a sav mellett is).
+import fs from 'node:fs';
 import { chromium, devices } from './pw.mjs';
 
 const PORT = +process.env.PORT || 4290;
@@ -27,6 +28,9 @@ let hiba = 0;
 const ok = (nev, felt, info = '') => { console.log(`${felt ? 'OK  ' : 'HIBA'} ${MOBIL ? 'mobil' : 'asztali'}: ${nev}${info ? '  ' + info : ''}`); if (!felt) hiba++; };
 const SZABAD = /^https:\/\/(www\.googletagmanager\.com\/(gtm|gtag\/js)|connect\.facebook\.net\/(en_US\/fbevents\.js|signals\/config\/)|analytics\.tiktok\.com\/i18n\/pixel\/|medicalpiercing\.salonic\.hu\/(selectSpecialization|showServices|selectDate)\/|api\.salonic\.hu\/calendar\/getAvailableTimes)/;
 const MARKETING = /facebook|tiktok|convertize/;
+// SAV-TESZT (suti.js, Feri dontese, 2026-10-14): a sav csak a tesztoldalon jelenik meg (TESZT_OLDAL), mashol a dontes nelkuli alapallapot az elfogadott "t0" suti.
+// A "dontes elotti" lepesek ezert a tesztoldalon futnak; a mobil fejlec es a foglalasi gomb a regi (Wix-klon) es az uj oldalakon is.
+const SAV_OLDAL = (() => { const m = /TESZT_OLDAL = \/\^\\\/\(([a-z0-9-]+)/.exec(fs.readFileSync(new URL('../assets/js/suti.js', import.meta.url), 'utf8')); return m ? '/' + m[1] : '/a-migren-piercing-gyogyulasi-ideje'; })();
 const b = await chromium.launch({ args: ['--host-resolver-rules=MAP www.medicalpiercing.hu 127.0.0.1'] });
 const OPT = MOBIL ? { ...devices['Pixel 5'], userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36' } : { viewport: { width: 1440, height: 900 }, userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36' };
 
@@ -52,16 +56,16 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
 {
   const { ctx, ki, betolt } = await kornyezet();
   const p = await ctx.newPage();
-  await p.goto(CIM + '/a-migren-piercing-gyogyulasi-ideje', { waitUntil: 'load' });
+  await p.goto(CIM + SAV_OLDAL, { waitUntil: 'load' });
   await varGtm(p, betolt);
-  ok('dontes elott: a sav latszik', await savLathato(p));
+  ok(`dontes elott: a sav latszik (${SAV_OLDAL})`, await savLathato(p));
   const szoveg = await p.evaluate(() => document.getElementById('mp-cc').innerText);
   ok('a sav magyar, Elfogadom + Elutasitom + Beallitasok', /Elfogadom/.test(szoveg) && /Elutasítom/.test(szoveg) && /Beállítások/.test(szoveg) && /Segítesz nekünk/.test(szoveg));
   ok('elso oldal: nagyobb doboz (data-nezet=nagy)', (await p.evaluate(() => document.getElementById('mp-cc').getAttribute('data-nezet'))) === 'nagy');
   {
     const p2 = await ctx.newPage();
-    await p2.goto(CIM + '/a-migren-piercing-gyogyulasi-ideje', { waitUntil: 'load' });
-    await p2.goto(CIM + '/', { waitUntil: 'load' });
+    await p2.goto(CIM + SAV_OLDAL, { waitUntil: 'load' });
+    await p2.goto(CIM + SAV_OLDAL + '?masodik=1', { waitUntil: 'load' });
     const n2 = await p2.evaluate(() => { const s = document.getElementById('mp-cc'); return s && s.getAttribute('data-nezet'); });
     ok('ugyanabban a munkamenetben a kovetkezo oldalon vekony sav (fo)', n2 === 'fo', n2);
     await p2.close();
@@ -91,17 +95,20 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
     const fedes = await p.evaluate(() => {
       const s = document.getElementById('mp-cc').getBoundingClientRect();
       const at = (r) => r && r.width && !(r.bottom <= s.top || r.top >= s.bottom || r.right <= s.left || r.left >= s.right);
-      const fej = document.getElementById('SITE_HEADER'), q = document.getElementById('QUICK_ACTION_BAR');
-      const idopont = [...document.querySelectorAll('#SITE_HEADER a')].find((x) => /Időpont/i.test(x.innerText));
-      return { fej: at(fej && fej.getBoundingClientRect()), idopont: at(idopont && idopont.getBoundingClientRect()), q: at(q && q.offsetHeight ? q.getBoundingClientRect() : null), magas: Math.round(s.height), also: Math.round(innerHeight - s.bottom) };
+      const fej = document.getElementById('SITE_HEADER') || document.getElementById('fejlec'), q = document.getElementById('QUICK_ACTION_BAR');
+      const idopont = fej && [...fej.querySelectorAll('a')].find((x) => /Időpont/i.test(x.innerText) && x.offsetParent !== null);
+      return { fej: at(fej && fej.getBoundingClientRect()), idopont: at(idopont && idopont.getBoundingClientRect()), q: at(q && q.offsetHeight ? q.getBoundingClientRect() : null), magas: Math.round(s.height), also: Math.round(innerHeight - s.bottom), nezet: document.getElementById('mp-cc').getAttribute('data-nezet') };
     });
     ok('mobil: a sav nem takarja a fejlec "Idopontok" gombjat es a gyorsmenu-savot', !fedes.fej && !fedes.idopont && !fedes.q, JSON.stringify(fedes));
     ok('mobil: a sav legfeljebb a kepernyo harmada', fedes.magas < 844 / 3, fedes.magas + ' px');
-    ok('mobil: a sav az also szelen all (nem lebeg a tartalom kozepen)', fedes.also <= 1, fedes.also + ' px az alsotol');
+    // (munkamenetenkent az elso oldalon a nagyobb doboz 8 px-re all az aljatol - suti.js, #280; a vekony sav az also szelen)
+    ok('mobil: a sav az also szelen all (nem lebeg a tartalom kozepen)', fedes.also <= (fedes.nezet === 'nagy' ? 9 : 1), fedes.also + ' px az alsotol (' + fedes.nezet + ')');
   }
   // foglalasi link dontes nelkul: GA4 foglalas_inditasa (suti nelkul) igen, TikTok nem
   const elotte = ki.length;
-  await p.evaluate(() => { const a = [...document.querySelectorAll('a[href^="https://medicalpiercing.salonic.hu"]')].find((x) => x.offsetParent !== null); a.click(); });
+  // (a regi oldalon Salonic-link, az uj oldalakon /idopontfoglalas gomb: ott a motor "Uj piercing" valasztasa inditja ugyanazt az esemenyt)
+  const salonicra = await p.evaluate(() => { const a = [...document.querySelectorAll('a[href^="https://medicalpiercing.salonic.hu"]')].find((x) => x.offsetParent !== null) || [...document.querySelectorAll('main a[href^="/idopontfoglalas"]')].find((x) => x.offsetParent !== null); a.scrollIntoView({ block: 'center' }); a.click(); return /salonic/.test(a.href); });
+  if (!salonicra) for (let i = 0; i < 40; i++) { if (await p.evaluate(() => { const t = document.querySelector('[data-mp-motor]')?.shadowRoot?.querySelector('[data-tipus="uj"]'); if (t) t.click(); return !!t; })) break; await p.waitForTimeout(250); }
   // a motor (nincs lapelhagyas) mellett a GA4 kotege kesobb megy el: legfeljebb 10 mp-ig varjuk a foglalas_inditasa keresre
   for (let i = 0; i < 40 && !ki.slice(elotte).some((x) => /[?&]en=foglalas_inditasa/.test(x.u)); i++) await p.waitForTimeout(250);
   await p.waitForTimeout(500);
@@ -134,7 +141,7 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
 {
   const { ctx, ki, betolt } = await kornyezet();
   const p = await ctx.newPage();
-  await p.goto(CIM + '/rolunk', { waitUntil: 'load' });
+  await p.goto(CIM + SAV_OLDAL, { waitUntil: 'load' });
   await varGtm(p, betolt);
   await savGomb(p, 'elutasit').click();
   await p.waitForTimeout(4000);
@@ -174,11 +181,11 @@ const savGomb = (p, mit) => p.locator(`#mp-cc [data-mp="${mit}"]:visible`).first
 {
   const { ctx } = await kornyezet();
   const p = await ctx.newPage();
-  await p.goto(CIM + '/a-migren-piercing-gyogyulasi-ideje?motor=1', { waitUntil: 'load' });
+  await p.goto(CIM + SAV_OLDAL + '?motor=1', { waitUntil: 'load' });
   await p.waitForTimeout(1500);
   ok('motor: a sav latszik', await savLathato(p));
   await p.evaluate(() => {
-    const l = [...document.querySelectorAll('a[href]')].filter((a) => /^https:\/\/medicalpiercing\.salonic\.hu\/(selectLocation|selectSpecialization|showServices|employees|selectEmployee|selectDate)/i.test(a.href));
+    const l = [...document.querySelectorAll('a[href]')].filter((a) => /^https:\/\/medicalpiercing\.salonic\.hu\/(selectLocation|selectSpecialization|showServices|employees|selectEmployee|selectDate)/i.test(a.href) || /^\/idopontfoglalas\/?$/.test(a.getAttribute('href')));
     const a = l.find((x) => x.offsetParent !== null) || l[0];
     a.scrollIntoView({ block: 'center' }); a.click();
   });
