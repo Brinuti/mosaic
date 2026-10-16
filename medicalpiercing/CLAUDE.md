@@ -17,6 +17,9 @@ Ezen felül:
   „Ha végeztél …, akkor légy szíves élesítsd, ne is kérdezz meg, mindig élesítsd, mindig tedd ki. Nekem ne linkeket csinálj, hanem ezen a /uj oldalon … hogy itt tudjuk tesztelni élesen.”
   Minden kérés után: build, a két teszt (`tools/uj-fooldal-teszt.mjs`, `tools/uj-oldalak-teszt.mjs`, helyben), commit, push, PR a `main`-re, merge, majd ellenőrzés az éles
   `https://www.medicalpiercing.hu/uj/...` oldalakon; a tulajdonosnak az éles `/uj/...` linkeket add, ne az előnézetet. A lapok továbbra is rejtettek (noindex, nincs a sitemapben, a régi oldalak nem linkelik).
+- **Minden fejlesztési kör végén bepipálós lista** (a tulajdonos kérése, 2026-10-16): a záró üzenetben `- [x]` lista arról, mi készült el – részletesen (minden kért pont
+  külön sor), de röviden és nem technikailag (ne fájlnevek, CSS, kód), hanem hogy mit lát a tulajdonos és hol. Minden sorhoz az éles `/uj/...` link, ahol ellenőrizheti; ha valami
+  nem készült el vagy másképp lett, külön `- [ ]` sorban, egy mondat indoklással. Cél: ne kelljen visszagörgetnie, a listából tudja ellenőrizni, mit kell megnéznie.
 - **A „B” változat az alap** (a tulajdonos döntése, 2026-10-13): az `/uj/migren-piercing`, `/uj/shenmen-piercing`, `/uj/klimax-piercing` és `/uj/slim-etvagycsokkento-piercing` oldal az eredeti
   `-b` oldalak (`migren-piercing-b`, `shenmen-piercing-b`, `klimax-piercing-b`, `slim-piercing-b`) szerkezetéből és szövegéből épül, a kategóriaoldalak dizájnjával, **„b” nélküli címen**
   (a menü és a belső linkek ide mutatnak; `/uj/uj-…-b` cím nincs). Az eredeti (régi) kategória-sablon csak az allergia / máj / pajzsmirigy / lép / vastagbél oldalnak marad (nincs `-b` oldaluk).
