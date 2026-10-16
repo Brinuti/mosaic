@@ -1,0 +1,30 @@
+<!--oldal {"cim":"Visszajelzés a tulajdonosnak – Medical Piercing","leiras":"Valami nem úgy alakult, ahogy szeretted volna? Írd meg nekünk: a visszajelzésed kiemelten kezeljük, és egyenesen a tulajdonosunkhoz kerül."} -->
+  <section class="tarto vj">
+    <p class="felirat felirat-kozep">Kiemelt visszajelzés</p>
+    <h1 class="vj-cim">Valami nem úgy alakult, ahogy szeretted volna?</h1>
+    <p class="vj-bev">Sajnáljuk – és szeretnénk rendbe tenni. Az itt küldött üzeneted <b>kiemelten kezeljük, és egyenesen a tulajdonosunkhoz kerül</b>. Személyesen nézzük meg, mi történt, és hamarosan keresünk.</p>
+    <form class="vj-urlap" id="visszajelzes" novalidate>
+      <label>Neved<input name="Név" autocomplete="name" required></label>
+      <label>E-mail-címed<input name="E-mail" type="email" autocomplete="email" required></label>
+      <label>Telefonszámod <small>(ha telefonon keresnénk)</small><input name="Telefon" type="tel" autocomplete="tel"></label>
+      <label>Melyik helyszínen jártál, és mikor?<input name="Helyszín, időpont" placeholder="pl. Budapest, október 23."></label>
+      <label>Mi nem volt rendben?<textarea name="Üzenet" rows="6" required></textarea></label>
+      <input type="text" name="bot-field" tabindex="-1" autocomplete="off" class="vj-csapda" aria-hidden="true">
+      <button type="submit" class="gomb gomb-tomor">Elküldöm a tulajdonosnak</button>
+      <p class="vj-allapot" role="status" aria-live="polite"></p>
+    </form>
+    <p class="vj-lab">Ha sürgős, hívj minket: <a href="tel:+3619017444">+36 1 901 7444</a></p>
+  </section>
+  <style>
+    .vj{max-width:640px;margin:0 auto;padding:48px 16px 64px}
+    .vj-cim{font-size:clamp(26px,4vw,36px);line-height:1.2;margin:8px 0 12px;text-align:center}
+    .vj-bev{text-align:center;color:#454659;margin:0 0 28px;line-height:1.6}
+    .vj-urlap{display:grid;gap:16px;background:#fffaf7;border:1px solid #ecdcd4;border-radius:16px;padding:24px}
+    .vj-urlap label{display:grid;gap:6px;font-weight:700;font-size:15px;color:#2f3044}
+    .vj-urlap small{font-weight:400;color:#8a8b9c}
+    .vj-urlap input,.vj-urlap textarea{font:inherit;font-weight:400;padding:12px 14px;border:1px solid #d9c9c2;border-radius:10px;background:#fff}
+    .vj-urlap button{justify-self:start;cursor:pointer;border:0}
+    .vj-csapda{position:absolute;left:-9999px}
+    .vj-allapot{margin:0;font-weight:700}
+    .vj-lab{text-align:center;margin-top:20px;color:#454659}
+  </style>

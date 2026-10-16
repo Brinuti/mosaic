@@ -225,7 +225,7 @@ else if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.
 const sitemapben = new Set(fs.readFileSync(path.join(ROOT, 'tools/sitemap-oldalak.txt'), 'utf8').split('\n').filter(Boolean));
 const ma = new Date().toISOString().slice(0, 10);
 // elesitve az eredeti nelkuli uj lapok is (uj-oldalak/sajat/: csapatunk, ekszereink, kapcsolat; a 404 nem)
-const ujLapUrl = UJ_ELES ? fs.readdirSync(path.join(ROOT, 'uj-oldalak/sajat')).filter((f) => f.endsWith('.html') && f !== '404.html').map((f) => `${DOMAIN}/${f.slice(0, -5)}`)
+const ujLapUrl = UJ_ELES ? fs.readdirSync(path.join(ROOT, 'uj-oldalak/sajat')).filter((f) => f.endsWith('.html') && f !== '404.html' && f !== 'visszajelzes.html').map((f) => `${DOMAIN}/${f.slice(0, -5)}`)
   .filter((u) => !oldalak().some((o) => o.url === u)) : [];
 fs.writeFileSync(path.join(DIST, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
   + [...oldalak().filter((o) => sitemapben.has(o.url) && !KOZTES_OLDALAK.includes(o.kulcs)).map((o) => o.url), ...ujLapUrl].map((u) => `<url><loc>${u}</loc><lastmod>${ma}</lastmod></url>`).join('\n')

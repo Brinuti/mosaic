@@ -11,6 +11,7 @@ const CIMEK = {
   allasjelentkezes: 'Új állásjelentkezés',
   'blog-hozzaszolas': 'Új blog-hozzászólás',
   'kontroll-visszahivas': 'Új visszahívás-kérés (kontroll / garancia)',
+  'tulajdonosi-visszajelzes': 'KIEMELT vendég-visszajelzés (a tulajdonosnak)',
 };
 
 export function level(nev, mezok) {
