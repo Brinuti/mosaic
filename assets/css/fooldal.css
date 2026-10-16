@@ -151,7 +151,8 @@ a.bizalom-elem:hover b { text-decoration: underline; text-underline-offset: 3px;
 .k3 { left: 14%; top: 47%; transform: rotate(-3deg); }
 .ajandek:hover .k1 { transform: rotate(-11deg) translate(-6px, -4px); }
 .ajandek:hover .k2 { transform: rotate(8deg) translate(8px, 0); }
-.ajandek-szoveg { padding: 64px max(32px, calc((100vw - 1200px) / 2)) 64px 40px; max-width: 760px; }
+/* a jobb oldali padding a nezet szelessegevel no, de legfeljebb 120px: a racs (.ajandek-racs) 1360px-nel megall, igy a >1440px-es kepernyon a szoveg oszlopa nem szukulhet ossze (2026-10-16: 1920px-en a kartyak 98px, 2560px-en 30px szelesek lettek) */
+.ajandek-szoveg { padding: 64px clamp(32px, calc((100vw - 1200px) / 2), 120px) 64px 40px; max-width: 760px; }
 .ajandek-szoveg h2 { font-size: 40px; }
 .ajandek-mondat { margin-top: 12px; font: 400 25px/1.3 var(--cim); color: #20393a; }
 .ajandek-leiras { margin-top: 10px; font-size: 16.5px; color: #4a5958; }

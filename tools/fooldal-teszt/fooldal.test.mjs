@@ -422,4 +422,29 @@ describe('/ (főoldal)', () => {
     assert.equal(await a.p.getAttribute('.haj-tobb a', 'href'), '/head-spa-velemenyek#hajad');
     await a.ctx.close();
   });
+
+  // 2026-10-16: 1920 px felett az ajándékkártya-szekció "Anyukádnak / Párodnak / Barátnődnek" kártyái összecsúsztak (a szöveg-oszlop jobb paddingje a nézet szélességével nőtt, a rács 1360 px-nél megáll;
+  // 1920 px-en a kártya 98, 2560 px-en 30 px széles volt, a címek egymásra csúsztak). A szekció minden szélességen ugyanazt a képet adja.
+  for (const szeles of [1440, 1920, 2560, 3440]) {
+    test(`${szeles} px széles kijelzőn az ajándékkártya-szekció (#ajandek) nem csúszik össze: a három "kinek" kártya ugyanolyan széles, mint 1440 px-en, a szöveg nem lóg ki, nincs átfedés`, async () => {
+      const { p, ctx } = await nyit({ szeles });
+      const m = await p.evaluate(() => {
+        const kartyak = [...document.querySelectorAll('#ajandek .ajandek-kinek li')];
+        const dobozok = kartyak.map((l) => l.getBoundingClientRect());
+        const szovegek = kartyak.map((l) => [...l.querySelectorAll('b, small')].map((e) => e.getBoundingClientRect()));
+        const kilog = kartyak.flatMap((l, i) => szovegek[i].filter((r) => r.left < dobozok[i].left - 1 || r.right > dobozok[i].right + 1).map(() => i));
+        const atfed = dobozok.some((d, i) => dobozok.some((e, j) => j > i && d.right > e.left + 1 && d.left < e.right - 1));
+        const sz = document.querySelector('#ajandek .ajandek-szoveg').getBoundingClientRect();
+        return { db: kartyak.length, szeles: dobozok.map((d) => Math.round(d.width)), kilog, atfed, szovegSzeles: Math.round(sz.width), jobbPad: getComputedStyle(document.querySelector('#ajandek .ajandek-szoveg')).paddingRight };
+      });
+      assert.equal(m.db, 3);
+      assert.ok(m.szeles.every((w) => w >= 150), 'a kártyák legalább 150 px szélesek: ' + m.szeles.join(' / '));
+      assert.deepEqual(m.kilog, [], 'a kártyák szövege nem lóg ki a dobozából');
+      assert.equal(m.atfed, false, 'a kártyák nem fedik egymást');
+      assert.ok(m.szovegSzeles >= 700, 'a szöveg-oszlop legalább 700 px széles: ' + m.szovegSzeles);
+      assert.ok(parseFloat(m.jobbPad) <= 120, 'a jobb oldali padding legfeljebb 120 px: ' + m.jobbPad);
+      assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true, 'nincs vízszintes görgetés');
+      await ctx.close();
+    });
+  }
 });
