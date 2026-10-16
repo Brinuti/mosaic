@@ -107,7 +107,6 @@ export function urlapHtmlbol(html, alapUrl) {
   return { action, method, mezok };
 }
 export const INDOK = 'A vendég lemondta az oldalunkon';
-const LEMONDVA_JEL = /success-cancel|sikeresen lemond|sikeres lemond|lemondtad|lemondásra került|le lett mondva|lemondva|törölve|torolve|cancelled|canceled/i;
 
 // ---- HTTP (sütik megtartásával, kézi átirányítással) ---------------------------------------------------------------------------------------------
 function sutikFrissit(tar, valasz) {
@@ -171,21 +170,23 @@ export async function modosit(fetchFn, bookingId, start, most = Math.floor(Date.
   return siker ? { ok: true, uj: start } : { ok: false, hiba: 'salonic_modosit' };
 }
 
-/** Lemondás: GET a lemondó oldalra; ha űrlap jön, beküldjük (a GET sütijeivel). -> { ok:true } | { ok:false, hiba } */
+/**
+ * Lemondás, ahogy a Salonic saját oldala csinálja (widget.min.js cancelBooking): GET a lemondó oldalra (sütik), majd
+ * AJAX POST ugyanarra a címre `reason` mezővel; a válasz JSON: {"status":"success"}. -> { ok:true } | { ok:false, hiba }
+ */
 export async function lemond(fetchFn, bookingId) {
   const tar = new Map();
   const url = `${SALONIC_HOST}/booking/cancelBooking/${encodeURIComponent(bookingId)}`;
   const elso = await keres(fetchFn, url, { tar });
-  const sikerUrl = (v) => v.ut.concat(v.url).some((u) => /success-cancel/i.test(u));
-  const sikerSzoveg = (v) => LEMONDVA_JEL.test(v.html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ''));
-  if (sikerUrl(elso)) { console.log('foglalasom: lemond GET - azonnal lemondva'); return { ok: true }; }
-  const urlap = elso.status === 200 ? urlapHtmlbol(elso.html, elso.url) : null;
-  console.log('foglalasom: lemond GET', JSON.stringify({ status: elso.status, vegso: rovidUt(elso.url), urlap: !!urlap, mezok: urlap ? [...urlap.mezok.keys()] : [] }));
-  if (!urlap) return elso.status === 200 && sikerSzoveg(elso) ? { ok: true } : { ok: false, hiba: 'salonic_lemond' };
-  const masodik = urlap.method === 'POST'
-    ? await keres(fetchFn, urlap.action, { method: 'POST', torzs: urlap.mezok.toString(), tar })
-    : await keres(fetchFn, `${urlap.action}${urlap.action.includes('?') ? '&' : '?'}${urlap.mezok}`, { tar });
-  const siker = masodik.status < 400 && (sikerUrl(masodik) || (sikerSzoveg(masodik) && !sikerSzoveg(elso)));
-  console.log('foglalasom: lemond urlap', JSON.stringify({ status: masodik.status, vegso: rovidUt(masodik.url), siker }));
+  if (elso.ut.concat(elso.url).some((u) => /success-cancel|deleteSuccess/i.test(u))) { console.log('foglalasom: lemond GET - mar lemondva'); return { ok: true }; }
+  if (elso.status !== 200) { console.log('foglalasom: lemond GET HTTP', elso.status, rovidUt(elso.url)); return { ok: false, hiba: 'salonic_lemond' }; }
+  const fej = { 'user-agent': UA, accept: 'application/json, text/javascript, */*; q=0.01', 'accept-language': 'hu-HU,hu;q=0.9', 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+    'x-requested-with': 'XMLHttpRequest', origin: SALONIC_HOST, referer: url };
+  if (tar.size) fej.cookie = [...tar].map(([k, v]) => `${k}=${v}`).join('; ');
+  const v = await fetchFn(url, { method: 'POST', headers: fej, body: new URLSearchParams({ reason: INDOK }).toString(), redirect: 'manual' });
+  const szoveg = await v.text();
+  let adat = null; try { adat = JSON.parse(szoveg); } catch { /* nem JSON */ }
+  const siker = v.status === 200 && adat && adat.status === 'success';
+  console.log('foglalasom: lemond POST', JSON.stringify({ status: v.status, json: !!adat, allapot: adat && adat.status, siker }));
   return siker ? { ok: true } : { ok: false, hiba: 'salonic_lemond' };
 }

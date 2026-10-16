@@ -343,13 +343,13 @@ export async function foglalasMuvelet(request, env, fetchFn = fetch, most = Math
       const start = Number(test && test.start);
       if (start === f.kezdet) return json({ ok: false, hiba: 'ugyanaz' }, 400);
       const v = await salonicModosit(fetchFn, f.id, start, most);
-      return json(v, v.ok ? 200 : v.hiba === 'nem_szabad' || v.hiba === 'ervenytelen_idopont' ? 409 : 502);
+      return json(v, v.ok ? 200 : v.hiba === 'nem_szabad' || v.hiba === 'ervenytelen_idopont' ? 409 : 200); // 200 + ok:false: a Cloudflare az 502-t a sajat hibaoldalaval irna felul
     }
     if (!test || test.biztos !== true) return json({ ok: false, hiba: 'megerosites_kell' }, 400);
     const v = await salonicLemond(fetchFn, f.id);
-    return json(v, v.ok ? 200 : 502);
+    return json(v); // ok:false is 200-zal (a Cloudflare az 502-t felulirna)
   } catch (e) {
     console.error('foglalasom: Salonic-hiba', muvelet, e && e.message);
-    return json({ ok: false, hiba: 'salonic' }, 502);
+    return json({ ok: false, hiba: 'salonic' }); // 200-zal, lasd fent
   }
 }
