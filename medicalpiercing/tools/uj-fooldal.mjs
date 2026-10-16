@@ -5,18 +5,20 @@
 // Nem a Wix-klon resze: a tools/wix2static.mjs nem erinti, es a klon/ mappaba sem kerul.
 //
 // A lapok a Wix-szel azonos cimeken el a tobbi oldal mellett, asztali es mobil kiszolgalasra is ugyanaz a (reszponziv) fajl.
-// A mostani fooldalt (/) nem valtjak le. Rejtettek: nincsenek a sitemapben, semmi nem linkeli oket, noindex (meta + a fuggveny
-// X-Robots-Tag fejlece); a build megall, ha a forrasbol a noindex hianyzik. A foglalomotor-inditot, a verziojeleket (?v=)
-// es a foglalas-merest a build tobbi resze teszi ra, mint a tobbi lapra.
+// Elesitve (lib/uj-eles.js, UJ_ELES = true; a tulajdonos kerese, 2026-10-16): az uj lapok az EREDETI cimeken (/, /migren-piercing ...), a regi
+// Wix-klon SEO-fejlecevel (cim, leiras, canonical, og/twitter, ld+json, ellenorzo cimkek, robots: elesFej); a regi oldal a /regi/... cimen marad.
+// UJ_ELES = false: rejtve a /uj-fooldal es a /uj/... cimen (nincsenek a sitemapben, noindex: meta + a fuggveny X-Robots-Tag fejlece; a build megall,
+// ha a forrasbol a noindex hianyzik). A foglalomotor-inditot, a verziojeleket (?v=) es a foglalas-merest a build tobbi resze teszi ra, mint a tobbi lapra.
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { kulcsbol, fajlnev } from '../lib/utvonal.js';
+import { UJ_ELES, REGI_ELO } from '../lib/uj-eles.js';
 import { oldalHtml, indexHtml, KIZART_UTAK } from './uj-oldalak/sablon.mjs';
 import { B_ALAP, GOOGLE_DB } from './uj-oldalak/kategoria.mjs';
 
-export const UJ_FOOLDAL_UT = '/uj-fooldal';
-export const TUKOR_ELO = '/uj';   // a tobbi oldal tukre: /uj/<eredeti utvonal>
+export const UJ_FOOLDAL_UT = UJ_ELES ? '/' : '/uj-fooldal';
+export const TUKOR_ELO = UJ_ELES ? '' : '/uj';   // a tobbi oldal: elesitve az eredeti cimen, kulonben a rejtett tukor (/uj/<eredeti utvonal>)
 
 // --- kozos reszek: <!--#nev--> -> uj-oldalak/reszek/nev.html ---------------------------------------------------------------
 // <!--#velemenyek ti=<kulcs>--> : a velemeny-doboz egy masik (pl. kategoriankent szurt) Trustindex-widgettel
@@ -57,7 +59,10 @@ export function linkAtiras(ROOT, html) {
   const t = tukorJegyzek(ROOT);
   if (!t.size) return html;
   return html.replace(/(<a\b[^>]*?\shref=")(\/[^"]*)(")/g, (m, a, h, z) => {
-    if (/^\/(assets|api|_a|_m|uj\/|uj-)/.test(h) || /^\/(idopontfoglalas|kontroll)(?:[/?#]|$)/.test(h)) return m;
+    // elesitve a forrasban kezzel irt /uj/... es /uj-fooldal linkek az eredeti cimre mutatnak
+    if (UJ_ELES && /^\/uj-fooldal(?=[?#]|$)/.test(h)) return a + '/' + h.slice(11) + z;
+    if (UJ_ELES && /^\/uj\//.test(h)) return a + h.slice(3) + z;
+    if (/^\/(assets|api|_a|_m|uj\/|uj-|regi\/)/.test(h) || /^\/(idopontfoglalas|kontroll)(?:[/?#]|$)/.test(h)) return m;
     const [ut0, ...marad] = h.split(/(?=[?#])/);
     let ut;
     try { ut = decodeURIComponent(ut0).replace(/\/+$/, '') || '/'; } catch { return m; }
@@ -106,7 +111,7 @@ function szovegJavitBelso(html) {
 const VELEMENYEK_UT = '/migren-shenmen-piercing-velemenyek';
 const VELEMENY_HORGONY = { '/migren-piercing': 'v-migren', '/shenmen-piercing': 'v-shenmen', '/klimax-piercing': 'v-klimax', '/slim-etvagycsokkento-piercing': 'v-slim', '/allergia-piercing': 'v-allergia', '/maj-piercing': 'v-maj' };
 function velemenyLink(ut, html) {
-  const alap = ut.replace(new RegExp('^' + TUKOR_ELO + '(?=/)'), '');
+  const alap = TUKOR_ELO ? ut.replace(new RegExp('^' + TUKOR_ELO + '(?=/)'), '') : ut;
   if (alap === VELEMENYEK_UT) return html.replace(/\s*<p class="velemeny-osszes">.*?<\/p>/g, '');
   const h = VELEMENY_HORGONY[alap];
   return h ? html.replace(/(<p class="velemeny-osszes"><a class="szoveg-link" href=")\/migren-shenmen-piercing-velemenyek"/g, `$1${VELEMENYEK_UT}#${h}"`) : html;
@@ -140,14 +145,51 @@ function videoBorito(html) {
     .replace(/\sposter="([^"?]+)"/g, (m, f) => (POSZTER[f] ? ` poster="${POSZTER[f]}"` : m));
 }
 
+// --- elesitve: a regi (Wix-klon) oldal SEO-fejlece az uj lapra (cim, leiras, canonical, og/twitter, article, ld+json, Google / Facebook ellenorzo
+// cimke, RSS, robots): ugyanazon a cimen a keresok es a megosztasok ugyanazt latjak, mint eddig. Az eredeti nelkuli uj lapok (csapatunk, ekszereink,
+// kapcsolat) sajat canonicalt es og-cimkeket kapnak; a 404 noindex.
+const DOMAIN = 'https://www.medicalpiercing.hu';
+const idezojel = (x) => String(x).replace(/"/g, '&quot;');
+function regiFej(ROOT, ut) {
+  const f = path.join(ROOT, 'klon', (ut === '/' ? 'index' : kulcsbol(ut)) + '.html');
+  if (!fs.existsSync(f)) return null;
+  const s = fs.readFileSync(f, 'utf8');
+  const fej = s.slice(0, s.search(/<\/head>/i));
+  const cim = (/<title>([\s\S]*?)<\/title>/i.exec(fej) || [])[1];
+  const minta = /<meta\b[^>]*\b(?:name|property)="(?:description|robots|og:[^"]+|twitter:[^"]+|article:[^"]+|google-site-verification|facebook-domain-verification)"[^>]*>|<link\b[^>]*\brel="(?:canonical|alternate)"[^>]*>|<script type="application\/ld\+json">[\s\S]*?<\/script>/gi;
+  return { cim: cim && cim.trim(), cimkek: [...fej.matchAll(minta)].map((m) => m[0].replace(/\s*\/>$/, '>')) };
+}
+function elesFej(ROOT, ut, html) {
+  const r = ut === '/404' ? null : regiFej(ROOT, ut);   // a Wix 404-es lapjanak fejlece ("Post | Medical Piercing", canonical) nem kell
+  const ki = html.replace(/<!-- Rejtett próbaoldal[^>]*-->\n?/, '').replace(/<meta name="robots" content="noindex,nofollow">\n?/, '');
+  if (r) {
+    const leirasVan = r.cimkek.some((c) => /name="description"/i.test(c));
+    return ki.replace(/<title>[\s\S]*?<\/title>/, (m) => (r.cim ? `<title>${r.cim}</title>` : m))
+      .replace(/<meta name="description" content="[^"]*">\n?/, (m) => (leirasVan ? '' : m))
+      .replace(/(<meta name="viewport"[^>]*>\n?)/, (m) => `${m}${r.cimkek.join('\n')}\n`);
+  }
+  const cim = idezojel((/<title>([\s\S]*?)<\/title>/.exec(ki) || [])[1] || 'Medical Piercing');
+  const leiras = (/<meta name="description" content="([^"]*)"/.exec(ki) || [])[1] || '';
+  const sajat = ut === '/404' ? ['<meta name="robots" content="noindex,nofollow">']
+    : [`<link rel="canonical" href="${DOMAIN}${ut}">`, `<meta property="og:title" content="${cim}">`, `<meta property="og:description" content="${leiras}">`,
+      `<meta property="og:url" content="${DOMAIN}${ut}">`, '<meta property="og:site_name" content="Medical Piercing">', '<meta property="og:type" content="website">'];
+  return ki.replace(/(<meta name="viewport"[^>]*>\n?)/, (m) => `${m}${sajat.join('\n')}\n`);
+}
+
 // --- egy oldal kiirasa asztali es mobil kiszolgalasra (a Wix-szel azonos kulcs-szabaly) --------------------------------------
 export function oldalKiir(ROOT, DIST, ut, html) {
   const kulcs = ut === '/' ? 'index' : kulcsbol(ut);
   const nev = fajlnev(kulcs) + '.html';
-  const kesz = kepVerzio(ROOT, kepFokusz(ROOT, videoBorito(linkAtiras(ROOT, szovegJavit(velemenyLink(ut, osszerak(ROOT, html)))))));
+  let kesz = kepVerzio(ROOT, kepFokusz(ROOT, videoBorito(linkAtiras(ROOT, szovegJavit(velemenyLink(ut, osszerak(ROOT, html)))))));
   if (/karátos|14K arany|aranyozott|arannyal|arany (?:shenmen|ékszer|piercing)/i.test(kesz)) throw new Error(`${ut}: aranyos ekszer-szoveg maradt (a tulajdonos kerese: nincs arany)`);
-  if (!/<meta name="robots" content="[^"]*noindex[^"]*"/i.test(kesz)) throw new Error(`${ut}: hianyzik a noindex meta (a lap rejtett)`);
-  if (/rel="canonical"/i.test(kesz)) throw new Error(`${ut}: canonical nem lehet a noindex lapon`);
+  if (UJ_ELES && ut !== '/uj-oldalak') {
+    kesz = elesFej(ROOT, ut, kesz);
+    if (/\(új főoldal\)/.test(kesz)) throw new Error(`${ut}: a lapcim meg a rejtett probaoldale`);
+    if (ut !== '/404' && !/rel="canonical"/i.test(kesz) && !/<meta name="robots" content="[^"]*noindex/i.test(kesz)) throw new Error(`${ut}: elesitve hianyzik a canonical`);
+  } else {
+    if (!/<meta name="robots" content="[^"]*noindex[^"]*"/i.test(kesz)) throw new Error(`${ut}: hianyzik a noindex meta (a lap rejtett)`);
+    if (/rel="canonical"/i.test(kesz)) throw new Error(`${ut}: canonical nem lehet a noindex lapon`);
+  }
   // minden helyi kep- es betu-hivatkozasnak letezni kell (hianyzo fajl = torott kep az eles lapon)
   const hianyzo = [...new Set([...kesz.matchAll(/(?:src|href|data-nagy)="(\/assets\/[^"?#]+)"/g)].map((m) => m[1]))].filter((f) => !fs.existsSync(path.join(ROOT, f)));
   if (hianyzo.length) throw new Error(`${ut}: hianyzo fajlok: ` + hianyzo.join(', '));
@@ -161,7 +203,7 @@ export function oldalKiir(ROOT, DIST, ut, html) {
 
 export function ujFooldal(ROOT, DIST) {
   oldalKiir(ROOT, DIST, UJ_FOOLDAL_UT, fs.readFileSync(path.join(ROOT, 'uj-fooldal/index.html'), 'utf8'));
-  console.log('uj-fooldal: ' + UJ_FOOLDAL_UT + ' (rejtett, noindex) asztali es mobil');
+  console.log('uj-fooldal: ' + UJ_FOOLDAL_UT + (UJ_ELES ? ' (elesitve, a regi fooldal SEO-fejlecevel)' : ' (rejtett, noindex)') + ' asztali es mobil');
 }
 
 // --- az osszes tobbi oldal tukre: /uj/<eredeti utvonal> (uj-oldalak/tartalom/*.json -> tools/uj-oldalak/sablon.mjs) + a link-index (/uj-oldalak) ---
@@ -183,10 +225,13 @@ export function ujOldalak(ROOT, DIST) {
     if (KIHAGY.has(adat.ut) || KIZART_UTAK.has(adat.ut)) continue;
     if (sajatNevek.has(adat.ut)) continue;   // kezzel irt uj valtozata van (uj-oldalak/sajat/), lent irodik ki
     // a migren / shenmen / klimax / slim oldal alapja a "B" valtozat (az eredeti -b oldal tartalma, a kategoria-dizajnnal): ugyanazon a (b nelkuli) cimen
-    const bAdat = B_ALAP.has(adat.ut) ? utSzerint.get(B_ALAP.get(adat.ut)) : null;
+    // elesitve az eredeti -b cim (migren-piercing-b ...) is ugyanazt a B-oldalt adja: a Convertize-kiserlet (a mobilos latogatok egy reszet a -b oldalra
+    // viszi) igy is az uj oldalt mutatja
+    const bCim = UJ_ELES && [...B_ALAP.values()].includes(adat.ut);
+    const bAdat = B_ALAP.has(adat.ut) ? utSzerint.get(B_ALAP.get(adat.ut)) : bCim ? adat : null;
     if (B_ALAP.has(adat.ut) && !bAdat) throw new Error(`${adat.ut}: hianyzik a B valtozat tartalma (${B_ALAP.get(adat.ut)})`);
     oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, bAdat || adat, { lapozo, b: !!bAdat }));
-    jegyzek.push({ ut: adat.ut, cim: (bAdat || adat).cim, tipus: adat.tipus, uj: TUKOR_ELO + (eredeti.get(adat.ut) || encodeURI(adat.ut)) });
+    jegyzek.push({ ut: adat.ut, cim: (bAdat || adat).cim, tipus: adat.tipus, uj: TUKOR_ELO + (eredeti.get(adat.ut) || encodeURI(adat.ut)), regi: UJ_ELES ? REGI_ELO + (eredeti.get(adat.ut) || encodeURI(adat.ut)) : undefined });
     db++;
   }
   // --- kezzel irt uj oldalak (uj-oldalak/sajat/<nev>.html -> /uj/<nev>): az elso sor <!--oldal {"cim","leiras"} -->, utana a <main> tartalma ---
@@ -208,8 +253,9 @@ export function ujOldalak(ROOT, DIST) {
   }
   const index = indexHtml(ROOT, jegyzek, { datum: new Date().toISOString().slice(0, 10) });
   oldalKiir(ROOT, DIST, '/uj-oldalak', index);
-  oldalKiir(ROOT, DIST, '/uj', index);   // a rovid cim (/uj) ugyanazt az attekintest adja
-  console.log(`uj-oldalak: ${db} tukor-oldal (/uj/...) + link-index (/uj-oldalak), rejtett, noindex`);
+  if (!UJ_ELES) oldalKiir(ROOT, DIST, '/uj', index);   // a rovid cim (/uj) ugyanazt az attekintest adja (elesitve a /uj a fooldalra visz)
+  console.log(UJ_ELES ? `uj-oldalak: ${db} uj oldal az EREDETI cimeken (elesitve; a regi oldal: ${REGI_ELO}/...) + link-index (/uj-oldalak, rejtett)`
+    : `uj-oldalak: ${db} tukor-oldal (/uj/...) + link-index (/uj-oldalak), rejtett, noindex`);
   return jegyzek;
 }
 
@@ -221,7 +267,9 @@ export function ujKitelepules(DIST, sorok) {
   const lapok = [];
   for (const ki of ['_a', '_m']) {
     const dir = path.join(DIST, ki);
-    for (const f of fs.readdirSync(dir, { recursive: true })) if (/^(uj-fooldal|uj\/.*)\.html$/.test(String(f).replace(/\\/g, '/'))) lapok.push(path.join(dir, f));
+    // elesitve minden lap (a regi oldalak /regi/ masolata nelkul: azokat a regi frissito kezeli); kulonben csak a rejtett uj lapok
+    const uj = (f) => (UJ_ELES ? f.endsWith('.html') && !f.startsWith('regi/') : /^(uj-fooldal|uj\/.*)\.html$/.test(f));
+    for (const f of fs.readdirSync(dir, { recursive: true })) if (uj(String(f).replace(/\\/g, '/'))) lapok.push(path.join(dir, f));
   }
   for (const f of lapok) {
     const html = fs.readFileSync(f, 'utf8');

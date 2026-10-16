@@ -543,7 +543,7 @@ export function indexHtml(ROOT, lista, meta = {}) {
   for (const o of lista) { const g = csoport(o); if (!csoportok.has(g)) csoportok.set(g, []); csoportok.get(g).push(o); }
   const rendez = [...csoportok.entries()].sort((a, b) => a[0].localeCompare(b[0], 'hu', { numeric: true }));
   const sorok = rendez.map(([g, ls]) => `<section class="idx-csoport"><h2>${esc(g.replace(/^\d+\.\s*/, ''))} <span class="idx-db">${ls.length}</span></h2>
-    <ul class="idx-lista">${ls.sort((a, b) => a.ut.localeCompare(b.ut, 'hu')).map((o) => `<li data-szoveg="${esc((o.cim + ' ' + o.ut).toLowerCase())}"><a class="idx-uj" href="${esc(o.uj)}">${esc(o.cim || o.ut)}</a><span class="idx-ut">${esc(o.ut)}</span><a class="idx-regi" href="${esc(o.ut)}" aria-label="Az eredeti oldal: ${esc(o.cim || o.ut)}">eredeti</a></li>`).join('')}</ul></section>`).join('\n');
+    <ul class="idx-lista">${ls.sort((a, b) => a.ut.localeCompare(b.ut, 'hu')).map((o) => `<li data-szoveg="${esc((o.cim + ' ' + o.ut).toLowerCase())}"><a class="idx-uj" href="${esc(o.uj)}">${esc(o.cim || o.ut)}</a><span class="idx-ut">${esc(o.ut)}</span><a class="idx-regi" href="${esc(o.regi || o.ut)}" aria-label="Az eredeti oldal: ${esc(o.cim || o.ut)}">eredeti</a></li>`).join('')}</ul></section>`).join('\n');
   const adat = { cim: 'Új oldalak – áttekintés', leiras: 'Az összes oldal új stílusú, rejtett változata.', tipus: 'oldal', ut: '/uj-oldalak', kulcs: 'uj-oldalak', szekciok: [] };
   const tartalom = `<section class="sz sz-elso"><div class="tarto idx">
     <h1 class="cim">Új oldalak – áttekintés</h1>

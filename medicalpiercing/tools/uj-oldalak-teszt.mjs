@@ -18,8 +18,13 @@ import path from 'node:path';
 import { chromium } from './pw.mjs';
 import { oldalak } from './oldalak.mjs';
 import { meresTiltas } from './meres-tiltas.mjs';
-import { kulcsbol } from '../lib/utvonal.js';
-import { KATEGORIA_UTAK, B_ALAP, kategoriaCserelt, hosGaleriaKepek } from './uj-oldalak/kategoria.mjs';
+import { kulcsbol, fajlnev } from '../lib/utvonal.js';
+import { UJ_ELES, REGI_ELO } from '../lib/uj-eles.js';
+import { UJ_FOOLDAL_UT } from './uj-fooldal.mjs';
+// elesitve (lib/uj-eles.js) az uj oldal az eredeti cimen, a regi (Wix-klon) a /regi/... cimen; kulonben az uj a /uj/... cimen, a regi az eredetin
+const UJ = UJ_ELES ? '' : '/uj';
+const REGI = UJ_ELES ? REGI_ELO : '';
+import { KATEGORIA_UTAK, KATEGORIA_B_UTAK, B_ALAP, kategoriaCserelt, hosGaleriaKepek } from './uj-oldalak/kategoria.mjs';
 import { KIZART_UTAK, piercingCserelt, piercingRacs, piercingCim } from './uj-oldalak/sablon.mjs';
 // a tulajdonos kereseire (2026-10-16) atirt / lecserelt szovegek: az eredeti oldalon megvannak, az uj oldalon szandekosan nem
 // (a 4.100+ helyett a Google mostani szama; arany / 14 karatos bevonat helyett G23 titanium; a regi akcio-link helyett az oszi akcio; az ertekeles-sor a Trustindexbol)
@@ -55,7 +60,7 @@ else if (GYORS) {
   kijelolt = lista.filter((o) => mintak.includes(o.ut) || /^\/varosok\//.test(o.ut) && o.ut.includes('szombathely'));
 }
 // ---------- 1. forras (dist): rejtett, h1, alt, belso linkek ----------
-const distFajl = (ut) => path.join(ROOT, 'dist/_a', kulcsbol('/uj' + ut) + '.html');
+const distFajl = (ut) => path.join(ROOT, 'dist/_a', fajlnev(kulcsbol(UJ + ut)) + '.html');
 
 const mirrorUtak = new Set(JSON.parse(fs.readFileSync(path.join(ROOT, 'uj-oldalak/jegyzek.json'), 'utf8')).map((o) => o.ut).filter((ut) => !KIZART_UTAK.has(ut)));
 // a kezzel irt oldalak kozul azok, amelyeknek nincs tukor-parjuk (Csapatunk, Kapcsolat, Ekszereink): ezek is a link-indexben vannak
@@ -71,8 +76,15 @@ for (const o of kijelolt) {
   const h = fs.readFileSync(f, 'utf8');
   forrasFajlok.set(o.ut, h);
   const main = h.slice(h.indexOf('<main id="fo">'), h.indexOf('</main>'));
-  ok(`${o.ut}: noindex meta`, /<meta name="robots" content="[^"]*noindex[^"]*"/i.test(h));
-  ok(`${o.ut}: nincs canonical`, !/rel="canonical"/i.test(h));
+  const fejresz = h.slice(0, h.indexOf('</head>'));
+  if (UJ_ELES) {
+    // elesitve a regi oldal SEO-fejlece: canonical (vagy, ahol a regi oldal is az volt, noindex); a rejtett probaoldal megjegyzese nincs
+    ok(`${o.ut}: elesitve canonical vagy a regi oldal noindex-e`, /rel="canonical"/i.test(fejresz) || /<meta name="robots" content="[^"]*noindex/i.test(fejresz));
+    ok(`${o.ut}: nincs benne a rejtett probaoldal megjegyzese`, !/Rejtett próbaoldal/.test(fejresz));
+  } else {
+    ok(`${o.ut}: noindex meta`, /<meta name="robots" content="[^"]*noindex[^"]*"/i.test(h));
+    ok(`${o.ut}: nincs canonical`, !/rel="canonical"/i.test(h));
+  }
   ok(`${o.ut}: pontosan egy h1`, (main.match(/<h1[\s>]/g) || []).length === 1, String((main.match(/<h1[\s>]/g) || []).length));
   ok(`${o.ut}: minden kepnek van alt attributuma`, ![...h.matchAll(/<img\b[^>]*>/g)].some((m) => !/\salt="/.test(m[0])));
   // belso linkek: tukrozott oldal, foglalasi cim, fajl vagy horgony
@@ -83,6 +95,11 @@ for (const o of kijelolt) {
     if (FOGLALAS.test(href)) continue;
     let ut;
     try { ut = decodeURIComponent(href.replace(/[?#].*$/, '')).replace(/\/+$/, '') || '/'; } catch { rossz.push(href); continue; }
+    if (UJ_ELES) {
+      // elesitve minden belso link az eredeti cimre mutat: /uj/..., /uj-fooldal, /regi/... nem maradhat
+      if (/^\/(uj(\/|$)|uj-fooldal|regi(\/|$))/.test(ut)) rossz.push(href);
+      continue;
+    }
     if (ut === '/uj-fooldal' || ut === '/uj-oldalak') continue;
     const m2 = ut.match(/^\/uj(\/.*)$/);
     if (!m2) { if (lista.some((x) => x.ut === ut)) rossz.push(href + ' (nem /uj/)'); continue; }   // a nem letezo (Wix-sablon) oldalakra mutato linkek valtozatlanok
@@ -99,7 +116,7 @@ if (fs.existsSync(indexF)) {
   const h = fs.readFileSync(indexF, 'utf8');
   const uj = [...h.matchAll(/class="idx-uj" href="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&'));
   ok(`link-index: mind a ${mirrorUtak.size} tukor-oldal + ${sajatUj.length} kezzel irt + az uj fooldal linkelve`, uj.length === mirrorUtak.size + sajatUj.length + 1, String(uj.length));
-  const hianyzo = uj.filter((u) => u !== '/uj-fooldal' && !fs.existsSync(path.join(ROOT, 'dist/_a', kulcsbol(decodeURIComponent(u)) + '.html')));
+  const hianyzo = uj.filter((u) => u !== UJ_FOOLDAL_UT && !fs.existsSync(path.join(ROOT, 'dist/_a', fajlnev(kulcsbol(decodeURIComponent(u))) + '.html')));
   ok('link-index: minden link letezo oldalra mutat', hianyzo.length === 0, hianyzo.slice(0, 5).join(' '));
   ok('link-index: noindex', /noindex/.test(h) && !/rel="canonical"/.test(h));
 } else ok('link-index: dist/_a/uj-oldalak.html', false);
@@ -132,7 +149,7 @@ const fooldalMeret = {};
 async function kategoriaTeszt(o, nezet, p, cim) {
   if (!fooldalMeret[nezet]) {
     const q = await p.context().newPage();
-    await q.goto(BASE + '/uj-fooldal?motor=0', { waitUntil: 'load', timeout: 60000 });
+    await q.goto(BASE + UJ_FOOLDAL_UT + '?motor=0', { waitUntil: 'load', timeout: 60000 });
     fooldalMeret[nezet] = await q.evaluate(() => ({ h1: parseFloat(getComputedStyle(document.querySelector('.hos h1')).fontSize), kep: Math.round(document.querySelector('.hos-kep img').getBoundingClientRect().width) }));
     await q.close();
   }
@@ -176,7 +193,7 @@ async function kategoriaTeszt(o, nezet, p, cim) {
   // a fejlec "Arak" linkje az oldalon belul az arakhoz visz (nem a fooldalra)
   // (2026-10-16: az "Arak" a menuben lenyilo; az arlista oldalra visz)
   const arHref = await p.$eval('#alm-arak a[href*="arlista"]', (a) => a.getAttribute('href')).catch(() => '');
-  ok(`${cim}: a fejlec "Arak" lenyiloja az arlistara visz`, /^\/uj\/arlista-garancia/.test(arHref), arHref);
+  ok(`${cim}: a fejlec "Arak" lenyiloja az arlistara visz`, new RegExp('^' + UJ + '/arlista-garancia').test(arHref), arHref);
 }
 
 async function lapTeszt(o, nezet, ctx) {
@@ -184,11 +201,11 @@ async function lapTeszt(o, nezet, ctx) {
   const p = await ctx.newPage();
   const jsHibak = [];
   p.on('pageerror', (e) => jsHibak.push(e.message));
-  const url = BASE + '/uj' + new URL(o.url).pathname;
+  const url = BASE + UJ + new URL(o.url).pathname;
   const v = await p.goto(url, { waitUntil: 'load', timeout: 60000 }).catch((e) => ({ status: () => 0, hiba: e.message }));
   ok(`${cim}: 200-as valasz`, v.status() === 200, String(v.status()));
   if (v.status() !== 200) { await p.close(); return; }
-  if (!HELYI) ok(`${cim}: X-Robots-Tag noindex`, /noindex/.test(v.headers()['x-robots-tag'] || ''));
+  if (!HELYI && !UJ_ELES) ok(`${cim}: X-Robots-Tag noindex`, /noindex/.test(v.headers()['x-robots-tag'] || ''));
   // lusta kepek / galeriak
   await p.evaluate(async () => {
     document.querySelectorAll('img[loading=lazy]').forEach((i) => { i.loading = 'eager'; });
@@ -202,12 +219,13 @@ async function lapTeszt(o, nezet, ctx) {
   // (a csukott harmonika tartalma nem latszik az innerText-ben: a lefedettseghez kinyitjuk, utana becsukjuk)
   const tartalom = await p.evaluate(() => { const d = [...document.querySelectorAll('main#fo details')]; d.forEach((x) => { x.open = true; }); const t = document.querySelector('main#fo')?.innerText || ''; d.forEach((x) => { x.open = false; }); return t; });
   // a migren / shenmen / klimax / slim oldal alapja a "B" valtozat: az eredeti -b oldal tartalmahoz (JSON es az eredeti oldal szovege) hasonlitunk
-  const bUt = B_ALAP.get(o.ut) || null;
+  // (elesitve a -b cimeken is a B-dizajnu uj oldal van, ugyanabbol a tartalombol: az eredeti -b oldalhoz hasonlitjuk)
+  const bUt = B_ALAP.get(o.ut) || (UJ_ELES && KATEGORIA_B_UTAK.has(o.ut) ? o.ut : null);
   const ered = JSON.parse(fs.readFileSync(tartalomFajl(bUt ? { kulcs: bUt.slice(1) } : o), 'utf8'));
   // az eredeti oldal szovege: a kinyert JSON szovegei + az eredeti oldal (Wix-klon) lathato szovege
   if (nezet === 'asztali' && !ujraszerkesztett(o.ut)) {
     const eredeti = await p.context().newPage();
-    await eredeti.goto(BASE + (bUt || new URL(o.url).pathname) + '?motor=0', { waitUntil: 'load', timeout: 60000 }).catch(() => {});
+    await eredeti.goto(BASE + REGI + (bUt || new URL(o.url).pathname) + '?motor=0', { waitUntil: 'load', timeout: 60000 }).catch(() => {});
     const sorok = await eredeti.evaluate(() => (document.querySelector('main#PAGES_CONTAINER')?.innerText || '').split('\n').map((s) => s.trim()).filter((s) => s.length >= 12));
     await eredeti.close();
     const t = norm(tartalom);
@@ -215,8 +233,8 @@ async function lapTeszt(o, nezet, ctx) {
     // (a kategoria-oldalakon a hos ertekeles-sora a Trustindex adataibol frissul, a "Piercinget csak eu szakembertol!" felirat a hosbol kikerult: tulajdonosi dontes, 2026-10-13)
     // a kategoria-oldalakon a fooldal dobozai (ekszer, akcio / arlista, media, csapat, helyszin) valtottak fel az eredeti blokkokat: azok szovege nem kell
     // a lecserelt blokkok (fooldali dobozok, a piercing-racs mindenhol) szovege
-    const cserelt = norm([...(KATEGORIA_UTAK.has(o.ut) ? kategoriaCserelt(ered, TESZT_T, !!bUt) || [] : []), ...piercingCserelt(ered)].join(' '));
-    const hianyzo = [...new Set(sorok)].filter((s) => !t.includes(norm(s)) && !(cserelt && cserelt.includes(norm(s))) && !SZANDEKOS.test(s) && !/^(január|február|március|április|május|június|július|augusztus|szeptember|október|november|december)\s*\d/i.test(s) && !(KATEGORIA_UTAK.has(o.ut) && /^(Kiváló\s*[-–|]|Piercinget csak eü szakembertől)/i.test(s)) && !(bUt && /vélemény alapján|vendégünk leírta|^Így néz ki egy klimax piercing behelyezés$/i.test(s)) && !/^(hozzászólások|hozzászólás írása|rendezés erre|legújabb|még nincsenek értékelések|megosztás|friss bejegyzések|az összes megtekintése)/i.test(s) && !/^\d+\s*(megtekint|kedvel|hozzászólás)/i.test(s) && !/^(\d+ perc olvasás|id|Search this site)$/i.test(s) && !/csillagot kapott|nincs kedvelve|Értékelés hozzáadása|^\d+ kedvelés|^Like post|\d+ megtekintés|\d+ hozzászólás$/i.test(s));
+    const cserelt = norm([...(KATEGORIA_UTAK.has(o.ut) || bUt ? kategoriaCserelt(ered, TESZT_T, !!bUt) || [] : []), ...piercingCserelt(ered)].join(' '));
+    const hianyzo = [...new Set(sorok)].filter((s) => !t.includes(norm(s)) && !(cserelt && cserelt.includes(norm(s))) && !SZANDEKOS.test(s) && !/^(január|február|március|április|május|június|július|augusztus|szeptember|október|november|december)\s*\d/i.test(s) && !((KATEGORIA_UTAK.has(o.ut) || bUt) && /^(Kiváló\s*[-–|]|Piercinget csak eü szakembertől)/i.test(s)) && !(bUt && /vélemény alapján|vendégünk leírta|^Így néz ki egy klimax piercing behelyezés$/i.test(s)) && !/^(hozzászólások|hozzászólás írása|rendezés erre|legújabb|még nincsenek értékelések|megosztás|friss bejegyzések|az összes megtekintése)/i.test(s) && !/^\d+\s*(megtekint|kedvel|hozzászólás)/i.test(s) && !/^(\d+ perc olvasás|id|Search this site)$/i.test(s) && !/csillagot kapott|nincs kedvelve|Értékelés hozzáadása|^\d+ kedvelés|^Like post|\d+ megtekintés|\d+ hozzászólás$/i.test(s));
     const lefedett = sorok.length ? 1 - hianyzo.length / new Set(sorok).size : 1;
     ok(`${cim}: az eredeti oldal szovege megvan (${(lefedett * 100).toFixed(1)}%)`, hianyzo.length === 0, hianyzo.slice(0, 4).map((s) => `«${s.slice(0, 70)}»`).join(' '));
   }
@@ -248,6 +266,10 @@ async function lapTeszt(o, nezet, ctx) {
   let kijel = gombok;
   if (nezet === 'mobil' && gombok.length > 2) kijel = [gombok[0], gombok[gombok.length - 1]];
   let motorHiba = [];
+  // a koszonooldalakon (/foglalas-ok*, /fulbevalo-ok*) a motor szandekosan nem tolt be (motor-indito.js; a regi oldalon is igy):
+  // a foglalasi gomb a foglalo oldalra visz, ott nyilik a motor - elesitve az uj koszonooldal az eredeti cimen van, ezert itt nem a motort varjuk
+  const koszono = /^\/(foglalas-ok|fulbevalo-ok)/i.test(new URL(p.url()).pathname);
+  if (koszono) kijel = [];
   for (const g of kijel.slice(0, 40)) {
     const url0 = p.url();
     const nyit = await p.evaluate(([sel, i]) => { const a = [...document.querySelectorAll(sel)][i]; if (!a) return null; a.scrollIntoView({ block: 'center' }); const r = a.getBoundingClientRect(); return r.width > 0 && r.height > 0 ? { x: r.x + r.width / 2, y: r.y + r.height / 2 } : null; }, [GOMB_SEL, g.i]);
@@ -259,7 +281,8 @@ async function lapTeszt(o, nezet, ctx) {
     await p.keyboard.press('Escape');
     await p.waitForSelector('[data-mp-motor]', { state: 'detached', timeout: 5000 }).catch(() => p.evaluate(() => document.querySelectorAll('[data-mp-motor]').forEach((e) => e.remove())));
   }
-  ok(`${cim}: mind a ${kijel.length} foglalasi gomb megnyitja a foglalomotort`, motorHiba.length === 0, motorHiba.slice(0, 3).join(' '));
+  if (koszono) ok(`${cim}: koszonooldal: ${gombok.length} foglalasi link, a motor nem tolt be (szandekos)`, gombok.length > 0 && !(await p.evaluate(() => !!document.querySelector('script[src*="/motor/motor.js"]'))));
+  else ok(`${cim}: mind a ${kijel.length} foglalasi gomb megnyitja a foglalomotort`, motorHiba.length === 0, motorHiba.slice(0, 3).join(' '));
   // fejlec-menu
   if (nezet === 'mobil') {
     await p.evaluate(() => scrollTo(0, 0));
@@ -353,8 +376,8 @@ async function lapTeszt(o, nezet, ctx) {
     const adat = (ctx.__urlap || [])[0] || '';
     ok(`${cim}: a kitoltott allasjelentkezes elmegy az /api/urlap-ra (form-name, mezok)`, /form-name/.test(adat) && /allasjelentkezes/.test(adat) && /Vezet/.test(adat), adat.slice(0, 120));
     // siker utan, mint az eredeti oldalon, a koszonooldalra visz (itt: a tukor koszonooldalara)
-    const atment = await p.waitForURL(/\/uj\/allas-ok$/, { timeout: 10000 }).then(() => true).catch(() => false);
-    ok(`${cim}: a sikeres jelentkezes utan a koszonooldalra (/uj/allas-ok) visz`, atment, p.url());
+    const atment = await p.waitForURL(UJ_ELES ? /\/allas-ok$/ : /\/uj\/allas-ok$/, { timeout: 10000 }).then(() => true).catch(() => false);
+    ok(`${cim}: a sikeres jelentkezes utan a koszonooldalra (${UJ}/allas-ok) visz`, atment, p.url());
   }
   ok(`${cim}: nincs JS-hiba`, jsHibak.length === 0, jsHibak.slice(0, 2).join(' | '));
   await p.close();

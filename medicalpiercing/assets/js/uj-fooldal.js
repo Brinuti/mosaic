@@ -275,6 +275,14 @@
   // --- 5. URL-parameterek megorzese es a foglalasi linkek (klon.js 8.) --------------------------------------
   const MENTETT = 'savedQueryParams';
   const GK = /^(gclid|gbraid|wbraid)$/i;
+  // korabbi (a javitas elotti) munkamenetbol maradt Google-kattintasazonosito: torles, vissza nem irjuk (klon.js 8. masa)
+  try {
+    const regi = JSON.parse(sessionStorage.getItem(MENTETT) || 'null');
+    if (regi && typeof regi === 'object' && Object.keys(regi).some((k) => GK.test(k))) {
+      const tiszta = Object.fromEntries(Object.entries(regi).filter(([k]) => !GK.test(k)));
+      if (Object.keys(tiszta).length) sessionStorage.setItem(MENTETT, JSON.stringify(tiszta)); else sessionStorage.removeItem(MENTETT);
+    }
+  } catch (x) { try { sessionStorage.removeItem(MENTETT); } catch (y) { /* tiltott tarolo */ } }
   try {
     const most = new URLSearchParams(location.search);
     if ([...most.keys()].length) {

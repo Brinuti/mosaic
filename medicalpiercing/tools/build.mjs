@@ -17,6 +17,8 @@ import { TABLAZAT_CSV, osszesSor, htmlFrissites } from '../lib/kitelepulesek.js'
 import { takarit } from './takaritas.mjs';
 import { gyorsit } from './gyorsitas.mjs';
 import { ujFooldal, ujOldalak, ujKitelepules } from './uj-fooldal.mjs';
+import { UJ_ELES, REGI_ELO } from '../lib/uj-eles.js';
+import { kulcsbol } from '../lib/utvonal.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -36,7 +38,15 @@ for (const o of mindenOldal()) {
     fs.mkdirSync(path.dirname(cel), { recursive: true });
     // a Wixtol orokolt, semmire nem hasznalt kod nelkul (tools/takaritas.mjs), gyorsabb
     // betoltesi sorrenddel (tools/gyorsitas.mjs)
-    fs.writeFileSync(cel, gyorsit(takarit(fs.readFileSync(forras, 'utf8')), (HAJTAS[o.kulcs] || {})[ki === '_a' ? 'a' : 'm']));
+    const lap = gyorsit(takarit(fs.readFileSync(forras, 'utf8')), (HAJTAS[o.kulcs] || {})[ki === '_a' ? 'a' : 'm']);
+    fs.writeFileSync(cel, lap);
+    // elesitve (lib/uj-eles.js) a regi oldal a /regi/<eredeti utvonal> cimen is megmarad (noindex; osszevetes, visszaallitas): az eredeti cimen
+    // alabb az uj lap irja felul (ahol van uj valtozat)
+    if (UJ_ELES) {
+      const regi = path.join(DIST, ki, fajlnev(kulcsbol(o.ut === '/' ? REGI_ELO : REGI_ELO + o.ut)) + '.html');
+      fs.mkdirSync(path.dirname(regi), { recursive: true });
+      fs.writeFileSync(regi, lap.replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>'));
+    }
     db++;
   }
 }
@@ -45,20 +55,25 @@ for (const o of mindenOldal()) {
 // maradnak, noindex-szel: csak a vesz-visszaallitas (0%-os kapcsolo, ?motor=0, a motor nem toltheto be) tartaleka. A kanonikus cim a fooldale,
 // a sitemapbol kikerulnek.
 export const KOZTES_OLDALAK = ['idopontfoglalas', 'kontroll'];
-for (const ki of ['_a', '_m']) {
-  const fooldal = path.join(DIST, ki, 'fooldal.html');
-  for (const k of KOZTES_OLDALAK) {
-    const fajl = path.join(DIST, ki, k + '.html');
-    if (!fs.existsSync(fajl) || !fs.existsSync(fooldal)) continue;
-    fs.writeFileSync(path.join(DIST, ki, 'regi-' + k + '.html'), fs.readFileSync(fajl, 'utf8').replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>'));
-    fs.copyFileSync(fooldal, fajl);
+const koztes = () => {
+  for (const ki of ['_a', '_m']) {
+    const fooldal = path.join(DIST, ki, 'fooldal.html');
+    for (const k of KOZTES_OLDALAK) {
+      const fajl = path.join(DIST, ki, k + '.html');
+      if (!fs.existsSync(fajl) || !fs.existsSync(fooldal)) continue;
+      fs.writeFileSync(path.join(DIST, ki, 'regi-' + k + '.html'), fs.readFileSync(fajl, 'utf8').replace('</head>', '<meta name="robots" content="noindex,nofollow">\n</head>'));
+      fs.copyFileSync(fooldal, fajl);
+    }
   }
-}
+};
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
-// az uj, rejtett fooldal (/uj-fooldal): kezzel irt lap, nem a Wix-klon resze (tools/uj-fooldal.mjs); a foglalomotor-indito, a verziojelek
-// es a foglalas-meres alabb ugyanugy kerulnek ra, mint a tobbi lapra
+// az uj fooldal es az uj oldalak (tools/uj-fooldal.mjs): elesitve (lib/uj-eles.js) az eredeti cimeken, kulonben rejtve (/uj-fooldal, /uj/...);
+// a foglalomotor-indito, a verziojelek es a foglalas-meres alabb ugyanugy kerulnek ra, mint a tobbi lapra. Elesitve a koztes oldalak (/idopontfoglalas,
+// /kontroll) mar az UJ fooldal tartalmat kapjak (ezert utana futnak).
+if (!UJ_ELES) koztes();
 ujFooldal(ROOT, DIST);
 ujOldalak(ROOT, DIST);
+if (UJ_ELES) koztes();
 // foglalomotor (assets/js/motor/, assets/js/motor-indito.js; MP-FOGLALOMOTOR-FELADAT): az indito minden lapra kerul, a
 // kapcsolo (motor-kapcsolo.json: 0 = mindenki a regi Salonic-foglalot kapja, 100 = a motor nyilik) az inditoba irodik.
 // A motor moduljai egymast verziojellel importaljak (?v=<a modulok tartalmanak jele>): egy evig tarolhatok (_headers),
@@ -87,8 +102,9 @@ ujOldalak(ROOT, DIST);
   console.log(`foglalomotor: kapcsolo ${kapcsolo}%, ${modulok.length} modul (?v=${mv}), indito ${n} lapon`);
 }
 
-// a Wix 404-es oldala (tools/oldalak.mjs NEMTALALT)
-if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(DIST, '404.html'), gyorsit(takarit(fs.readFileSync(path.join(ROOT, 'klon/404.html'), 'utf8')), (HAJTAS['404'] || {}).a));
+// a 404-es oldal (tools/oldalak.mjs NEMTALALT): elesitve az uj (uj-oldalak/sajat/404.html), kulonben a Wixe
+if (UJ_ELES && fs.existsSync(path.join(DIST, '_a/404.html')) && fs.readFileSync(path.join(DIST, '_a/404.html'), 'utf8').includes('/assets/css/uj-egyseges.css')) fs.copyFileSync(path.join(DIST, '_a/404.html'), path.join(DIST, '404.html'));
+else if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(DIST, '404.html'), gyorsit(takarit(fs.readFileSync(path.join(ROOT, 'klon/404.html'), 'utf8')), (HAJTAS['404'] || {}).a));
 
 // a sajat stilusok es szkriptek verziojelet kapnak (?v=<tartalom-hash>): a bongeszo egy evig
 // tarolja oket (_headers), es egy uj kiadas utan az uj jel miatt azonnal az uj fajlt keri. A
@@ -169,11 +185,17 @@ if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(
   }
   // a datumblokkok jelolest kapnak akkor is, ha a tablazat most nem volt olvashato
   let lapDb = 0;
+  // (a regi, Wix-klon lapok: elesitve a /regi/ masolat es az uj valtozat nelkuli lapok; az uj lapokat lent az ujKitelepules irja)
   for (const o of mindenOldal()) for (const ki of ['_a', '_m']) {
-    const f = path.join(DIST, ki, fajlnev(o.kulcs) + '.html');
-    if (!fs.existsSync(f)) continue;
-    const r = htmlFrissites(fs.readFileSync(f, 'utf8'), sorok, o.ut);
-    if (r.db) { fs.writeFileSync(f, r.html); lapDb++; }
+    const fajlok = [path.join(DIST, ki, fajlnev(o.kulcs) + '.html')];
+    if (UJ_ELES) fajlok.push(path.join(DIST, ki, fajlnev(kulcsbol(o.ut === '/' ? REGI_ELO : REGI_ELO + o.ut)) + '.html'));
+    for (const f of fajlok) {
+      if (!fs.existsSync(f)) continue;
+      const html = fs.readFileSync(f, 'utf8');
+      if (html.includes('/assets/css/uj-egyseges.css')) continue;   // uj lap
+      const r = htmlFrissites(html, sorok, o.ut);
+      if (r.db) { fs.writeFileSync(f, r.html); lapDb++; }
+    }
   }
   ujKitelepules(DIST, sorok); // az uj, rejtett oldalak helyszin-csempei (tools/uj-fooldal.mjs)
   console.log(`kitelepulesek: ${lapDb} lapon ${olvasva ? 'a tablazatbol frissitve' : 'csak jelolve'}` + (hibak.length ? `; nem ertelmezheto cellak:\n  ${hibak.join('\n  ')}` : ''));
@@ -202,8 +224,11 @@ if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(
 // sitemap: a Wix sitemapjeiben szereplo oldalak (a rejtett, bejarassal talalt oldalak nem)
 const sitemapben = new Set(fs.readFileSync(path.join(ROOT, 'tools/sitemap-oldalak.txt'), 'utf8').split('\n').filter(Boolean));
 const ma = new Date().toISOString().slice(0, 10);
+// elesitve az eredeti nelkuli uj lapok is (uj-oldalak/sajat/: csapatunk, ekszereink, kapcsolat; a 404 nem)
+const ujLapUrl = UJ_ELES ? fs.readdirSync(path.join(ROOT, 'uj-oldalak/sajat')).filter((f) => f.endsWith('.html') && f !== '404.html').map((f) => `${DOMAIN}/${f.slice(0, -5)}`)
+  .filter((u) => !oldalak().some((o) => o.url === u)) : [];
 fs.writeFileSync(path.join(DIST, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-  + oldalak().filter((o) => sitemapben.has(o.url) && !KOZTES_OLDALAK.includes(o.kulcs)).map((o) => `<url><loc>${o.url}</loc><lastmod>${ma}</lastmod></url>`).join('\n')
+  + [...oldalak().filter((o) => sitemapben.has(o.url) && !KOZTES_OLDALAK.includes(o.kulcs)).map((o) => o.url), ...ujLapUrl].map((u) => `<url><loc>${u}</loc><lastmod>${ma}</lastmod></url>`).join('\n')
   + '\n</urlset>\n');
 fs.writeFileSync(path.join(DIST, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${DOMAIN}/sitemap.xml\n`);
 // a blog RSS-csatornaja ugyanazon a cimen, mint a Wixen (tools/rss-mentes.mjs)

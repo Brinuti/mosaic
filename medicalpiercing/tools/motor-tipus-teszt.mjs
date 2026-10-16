@@ -129,10 +129,10 @@ const linkKattint = (p, sel) => p.evaluate((sel) => { const a = [...document.que
   await ctx.close();
 }
 
-// E. Salonic-linkre kattintas: a meres a kattintaskor (suti.js), a motor nem duplazza (egy tartalmi oldalon: ott a motor nem nyilik magatol meg)
+// E. Salonic-linkre kattintas: a meres a kattintaskor (suti.js), a motor nem duplazza (a /migren lapon: ott a motor nem nyilik magatol meg, es a regi / uj dizajnban is van altalanos Salonic-link)
 {
   const { ctx, p, ki } = await uj();
-  await p.goto(CIM + '/a-migren-piercing-gyogyulasi-ideje', { waitUntil: 'load' });
+  await p.goto(CIM + '/migren', { waitUntil: 'load' });
   await p.waitForTimeout(2500);
   const elotte = inditasok(ki);
   await p.evaluate(() => { const l = [...document.querySelectorAll('a[href^="https://medicalpiercing.salonic.hu"]')].filter((x) => /id[őo]pont/i.test(x.textContent) && !/garanci|kontroll|cser|m[oó]dos|\bid[őo]pontjai/i.test(x.textContent)); (l.find((x) => x.offsetParent) || l[0]).click(); });
