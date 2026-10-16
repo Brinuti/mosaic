@@ -35,4 +35,4 @@ export const SZEGMENSEK = Object.freeze(['ajandekkartya', 'fizetos', 'paros', 'n
 export const BLOKK_KULCSOK = Object.freeze(['lista', 'szamozott', 'doboz', 'gomb', 'cim', 'kiemelt', 'kep', 'kepek', 'velemeny', 'video', 'szemely', 'ertekeles']);
 /** a blokk mellett megengedett feltetel-kulcs: a blokk csak az adott munkatarsnal jelenik meg */
 export const BLOKK_FELTETEL_KULCSOK = Object.freeze(['ha_munkatars']);
-export const SMS_MAX_KARAKTER = 480; // a legrosszabb eset (hosszu helyorzo-ertekekkel) is ennyin belul legyen
+export const SMS_MAX_KARAKTER = 160; // 1 SMS-szegmens (ekezet nelkul, a render.js smsTomorit utan) a legrosszabb esetben is (a tulajdonos kerese, 2026-10-16)

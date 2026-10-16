@@ -6,17 +6,18 @@ import { KATALOG, KOZOS } from '../../netlify/lib/lifecycle/katalog/index.js';
 import fs from 'node:fs';
 import { HELYORZOK, CSATORNAK, MIKOR_TIPUSOK, SZEGMENSEK, BLOKK_KULCSOK, BLOKK_FELTETEL_KULCSOK, SMS_MAX_KARAKTER } from '../../netlify/lib/lifecycle/katalog/ertekek.js';
 import { VELEMENYEK } from '../../netlify/lib/lifecycle/katalog/velemenyek.js';
+import { smsTomorit } from '../../netlify/lib/lifecycle/render.js';
 
 const UZLETAGAK = ['headspa', 'hair', 'oxygen', 'laser', 'pmu'];
 const ELOTAG = { headspa: 'HS', hair: 'HAIR', oxygen: 'OX', laser: 'LASER', pmu: 'PMU' };
 const KIEGESZITO_ELOTAG = { pmu: ['PMU-KONZ'] }; // a dokumentum tovabbi azonositoi (pl. PMU-KONZ-EMAIL-01)
 // legrosszabb eset: milyen hosszu lehet egy helyorzo kitoltve (SMS-hosszhoz)
 const LEGHOSSZABB = {
-  'keresztnév': 'Alexandra', 'dátum': 'szeptember 30. (csütörtök)', 'dátum_ragos': 'szeptember 30-án', 'nap': 'csütörtök', 'időpont': '16:30',
+  'keresztnév': 'Alexandra', 'dátum': 'szeptember 30. (csütörtök)', 'dátum_ragos': 'szeptember 30-án', 'nap': 'csütörtök', 'időpont': '16:30', 'nem_találkoztunk': 'A szeptember 30. (csütörtök) 16:30-ra szóló időpontodon nem találkoztunk',
   'szolgáltatás': 'Balayage / ombre / babylight +tőfestés+ vágás', 'munkatárs': 'Bozsoki-Harangozó Tündi', 'fodrász': 'Bozsoki-Harangozó Tündi',
   'várható_időtartam': '4 óra 30 perc', 'aktuális_ár': '', 'aktuális_ajánlat': '', 'foglalás_részletei_link': 'https://www.mosaicheadspa.hu/f/0123456789',
   'módosítás_link': 'https://www.mosaicheadspa.hu/f/0123456789', 'megerősítés_link': 'https://www.mosaicheadspa.hu/m/0123456789',
-  'foglalás_link': 'https://www.mosaicheadspa.hu/oxigenterapia-budapest', 'navigáció_link': 'https://www.mosaicheadspa.hu/n', 'eredmények_link': 'https://www.mosaicheadspa.hu/x',
+  'foglalás_link': 'https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest', 'navigáció_link': 'https://www.mosaicheadspa.hu/n', 'eredmények_link': 'https://www.mosaicheadspa.hu/x',
   'videó_link': 'https://www.mosaicheadspa.hu/x', 'új_dátum': 'szeptember 30. (csütörtök)', 'új_időpont': '16:30', 'telefon': '06 20 247 4444', 'cím': '1023 Budapest, Bécsi út 2.',
 };
 
@@ -156,8 +157,9 @@ for (const [kulcs, kat] of [...Object.entries(KATALOG), ['kozos', KOZOS]]) {
       }
       if (m.csatorna === 'sms') {
         assert.ok(!helyorzok(m.szoveg).some((h) => ['aktuális_ár', 'aktuális_ajánlat'].includes(h)), `${hol}: SMS-ben nincs ar/ajanlat`);
-        const kitoltve = m.szoveg.replace(/\{([^{}]+)\}/g, (_, h) => LEGHOSSZABB[h] ?? '');
-        assert.ok([...kitoltve].length <= SMS_MAX_KARAKTER, `${hol}: az SMS tul hosszu (${[...kitoltve].length} > ${SMS_MAX_KARAKTER})`);
+        const kitoltve = smsTomorit(m.szoveg.replace(/\{([^{}]+)\}(?:-(ra|hoz|nak|ba|ban))?/g, (_, h, rag) => (LEGHOSSZABB[h] ?? '') + (rag ? 'hoz' : '')));
+        assert.ok(/^[\x20-\x7e]*$/.test(kitoltve), `${hol}: az SMS nem ekezet nelkuli: ${kitoltve}`);
+        assert.ok([...kitoltve].length <= SMS_MAX_KARAKTER, `${hol}: az SMS tul hosszu, nem fer 1 szegmensbe (${[...kitoltve].length} > ${SMS_MAX_KARAKTER}): ${kitoltve}`);
       }
     }
   });

@@ -4,7 +4,7 @@ export default {
   uzenetek: [
     {
       id: 'COMMON-CANCEL-SMS', csatorna: 'sms', mikor: { tipus: 'lemondva' },
-      szoveg: 'Szia {keresztnév}! Rendben, a {dátum} {időpont}-ra szóló {szolgáltatás} időpontodat töröltük. Ha csak az időpont nem volt jó, itt rögtön választhatsz másikat: {foglalás_link}. MOSAIC',
+      szoveg: 'Szia {keresztnév}! Töröltük a {dátum} {időpont} időpontodat. Újat itt választhatsz: {foglalás_link}',
     },
     {
       id: 'COMMON-CANCEL-EMAIL', csatorna: 'email', mikor: { tipus: 'lemondva' },
@@ -21,11 +21,11 @@ export default {
     },
     {
       id: 'COMMON-RESCHEDULE-SMS', csatorna: 'sms', mikor: { tipus: 'athelyezve' },
-      szoveg: 'Szia {keresztnév}! Megvan az új időpontod: {új_dátum} {új_időpont}, {szolgáltatás}. A régi időpont helyett már ezt tartjuk neked. Részletek: {foglalás_részletei_link}. MOSAIC',
+      szoveg: 'Szia {keresztnév}! Megvan az új időpontod: {új_dátum} {új_időpont}. A régi helyett már ezt tartjuk neked. Részletek: {foglalás_részletei_link}',
     },
     {
       id: 'COMMON-NOSHOW-SMS', csatorna: 'sms', mikor: { tipus: 'nem_jelent_meg' },
-      szoveg: 'Szia {keresztnév}! {nem_találkoztunk}, reméljük, minden rendben van. Ha csak az időpont csúszott el, itt egyből tudsz újat választani: {foglalás_link}. Ha kérdésed van, hívj nyugodtan: {telefon}. MOSAIC',
+      szoveg: 'Szia {keresztnév}! {nem_találkoztunk}. Új időpont: {foglalás_link}',
     },
     {
       id: 'COMMON-NOSHOW-EMAIL', csatorna: 'email', mikor: { tipus: 'nem_jelent_meg' },
