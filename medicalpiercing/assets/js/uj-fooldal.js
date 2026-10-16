@@ -183,10 +183,16 @@
     g.type = 'button'; g.className = 'video-indito';
     g.setAttribute('aria-label', v.getAttribute('aria-label') || 'Videó lejátszása');
     g.innerHTML = '<span class="lejatszo"><svg class="ik" aria-hidden="true"><use href="#i-play"/></svg></span>';
-    const igazit = () => { g.style.left = v.offsetLeft + 'px'; g.style.top = v.offsetTop + 'px'; g.style.width = v.offsetWidth + 'px'; g.style.height = v.offsetHeight + 'px'; };
+    // a video LATHATO helye a szulohoz kepest (a CSS-eltolast - pl. left:50% + translateX(-50%) - is figyelembe veve; az offsetLeft ezt nem latja)
+    const igazit = () => {
+      const vr = v.getBoundingClientRect(), pr = szulo.getBoundingClientRect();
+      g.style.left = (vr.left - pr.left - szulo.clientLeft + szulo.scrollLeft) + 'px'; g.style.top = (vr.top - pr.top - szulo.clientTop + szulo.scrollTop) + 'px';
+      g.style.width = vr.width + 'px'; g.style.height = vr.height + 'px';
+    };
     v.controls = false;
     v.after(g); igazit();
-    if ('ResizeObserver' in window) new ResizeObserver(igazit).observe(v); else window.addEventListener('resize', igazit);
+    if ('ResizeObserver' in window) { const ro = new ResizeObserver(igazit); ro.observe(v); ro.observe(szulo); }
+    window.addEventListener('resize', igazit);
     const kesz = () => { if (g.isConnected) g.remove(); v.controls = true; };
     g.addEventListener('click', () => { kesz(); const p = v.play(); if (p && p.catch) p.catch(() => {}); });
     v.addEventListener('play', kesz, { once: true });

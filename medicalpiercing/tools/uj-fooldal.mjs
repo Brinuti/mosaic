@@ -144,9 +144,13 @@ const YT_KEP = {
 const POSZTER = { '/assets/img/36b443_db44b65ac652434f81f368121ed6ccccf000.webp': '/assets/img/uj-poszter-36b443-db44.webp' };
 function videoBorito(html) {
   const meret = (x) => x.replace(/\s(?:width|height)="\d+"/g, '');
-  return html.replace(/<img\b([^>]*?)\ssrc="https:\/\/i\.ytimg\.com\/vi\/([\w-]+)\/(?:hq|sd|mq|maxres)?default\.jpg"([^>]*)>/g, (m, a, id, z) => (YT_KEP[id] ? `<img${meret(a)} src="/assets/img/${YT_KEP[id]}" width="1280" height="720"${meret(z)}>` : m))
-    .replace(/\sposter="([^"?]+)"/g, (m, f) => (POSZTER[f] ? ` poster="${POSZTER[f]}"` : m));
+  // (a tervezett kep soha nem vagodik le - a tulajdonos kerese, 2026-10-16: "minden nezetben latszodjon"; a doboz maradek helyet a kep elmosott masa tolti ki)
+  return html.replace(/<img\b([^>]*?)\ssrc="https:\/\/i\.ytimg\.com\/vi\/([\w-]+)\/(?:hq|sd|mq|maxres)?default\.jpg"([^>]*)>/g, (m, a, id, z) => (YT_KEP[id] ? `<span class="terv-hatter" style="background-image:url('/assets/img/${YT_KEP[id]}')" aria-hidden="true"></span><img${meret(a)} src="/assets/img/${YT_KEP[id]}" width="1280" height="720" data-terv${meret(z)}>` : m))
+    .replace(/\sposter="([^"?]+)"/g, (m, f) => (POSZTER[f] ? ` poster="${POSZTER[f]}"` : m))
+    // a lapba kozvetlenul irt tervezett boritok (pl. a szuras folyamata, a GYIK) ugyanigy
+    .replace(TERV_KEP_RE, (m, koz, a, src, z) => `<span class="video-kep">${koz}<span class="terv-hatter" style="background-image:url('${src}')" aria-hidden="true"></span><img${a} data-terv${z}>`);
 }
+const TERV_KEP_RE = new RegExp(`<span class="video-kep">(\\s*)<img\\b(?![^>]*data-terv)([^>]*\\ssrc="(\\/assets\\/img\\/(?:${[...new Set(Object.values(YT_KEP))].map((f) => f.replace(/[.-]/g, (c) => '\\' + c)).join('|')}))")([^>]*)>`, 'g');
 
 // --- az allo Facebook-videok (plugins/video.php iframe) helyett tervezett borito (a tulajdonos kerese, 2026-10-16: "ezekhez az allovideokhoz is csinalhatsz
 // thumbnailt"): assets/img/uj-fb-<video-azonosito>.webp (tools/uj-velemeny-borito.mjs, tools/kep-forras/fb-boritok.json); kattintasra a helyen tolt be

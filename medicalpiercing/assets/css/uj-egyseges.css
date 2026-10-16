@@ -499,3 +499,20 @@
 .segit-video .fb-indito{max-width:267px;margin:0 auto;border-radius:16px}
 @media (min-width:1001px){.segit-video .fb-indito{flex:1;max-width:none;min-height:420px;aspect-ratio:auto}}
 @media (max-width:1000px){.segit-video .fb-indito{max-width:none}}
+
+/* a tervezett video-indexkepek (uj-yt-*, a GYIK, a szuras, a media boritoi) SOHA nem vagodnak le (a tulajdonos kerese, 2026-10-16: "minden nezetben latszodjanak"):
+   a kep egeszben (contain), a doboz maradek helyet (pl. a kethasabos dobozok egyforma magas hasabjaiban) a kep elmosott masa tolti ki - tools/uj-fooldal.mjs videoBorito */
+.video-kep:has(>img[data-terv]){background:#f6ebe4}
+.video-kep>.terv-hatter{position:absolute;inset:0;background-size:0 0;background-repeat:no-repeat;pointer-events:none}
+/* a sav a kep szelet folytatja: felul a legfelso, alul a legalso sorai kinyujtva (enyhen elmosva) */
+.video-kep>.terv-hatter::before,.video-kep>.terv-hatter::after{content:"";position:absolute;left:-8px;right:-8px;height:52%;background-image:inherit;background-repeat:no-repeat;background-size:100% 6000%;filter:blur(6px)}
+.video-kep>.terv-hatter::before{top:-8px;background-position:center top}
+.video-kep>.terv-hatter::after{bottom:-8px;background-position:center bottom}
+.video .video-kep>img[data-terv]{position:relative;z-index:1;width:100%;height:100%!important;aspect-ratio:auto!important;object-fit:contain!important;object-position:50% 50%!important}
+.video-kep>.lejatszo{z-index:2}
+/* a Velemenyek oldal hoskepe: a kep sajat aranyaban (3:2, nincs csik), kattintasra a migren-videokhoz gorget */
+.hos-kep-link{display:block;border-radius:26px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hos-kep-link>img{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;border-radius:26px;transition:transform .3s,box-shadow .3s}
+.hos-kep-link:hover>img{transform:translateY(-2px);box-shadow:0 14px 34px rgba(120,70,62,.18)}
+.hos-kep-link:focus-visible{outline:3px solid var(--rose-i);outline-offset:4px}
+@media (min-width:1001px){.belso .hos-racs>.hos-kep.hos-kep-tartalmaz>.hos-kep-link{width:100%}}

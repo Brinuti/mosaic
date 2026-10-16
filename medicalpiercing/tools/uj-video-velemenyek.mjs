@@ -46,7 +46,7 @@ for (const [kulcs, cim] of Object.entries(TEMAK)) {
   const elemek = lista.map(([nn, kat]) => `      <li class="vsav-elem"><button type="button" class="vsav-gomb${terv(nn) ? ' vsav-terv' : ''}" data-vsav-video="/assets/video/uj-velemeny-${nn}.mp4" aria-label="Videó lejátszása: ${felirat(kat)}"><img src="/assets/img/uj-velemeny-${nn}${terv(nn) ? '-terv' : ''}.webp" alt="" width="540" height="960" loading="lazy" decoding="async"><span class="lejatszo">${IK('play')}</span><span class="vsav-cimke">${felirat(kat)}</span></button></li>`);
   const alcim = kulcs === 'mind' ? `${lista.length} vendégünk mesél a tapasztalatairól` : lista.length > 1 ? `${lista.length} videós beszámoló` : '';
   const html = `  <!-- a vendegek videos beszamoloi (${kulcs}): tools/uj-video-velemenyek.mjs (ne kezzel szerkeszd) -->
-  <section class="tarto"><div class="kat-doboz vsav-doboz">
+  <section class="tarto" id="videok-${kulcs}"><div class="kat-doboz vsav-doboz">
     <h2>${cim}</h2>
     ${alcim ? `<p class="vsav-alcim">${alcim}</p>` : ''}
     <div class="vsav${lista.length < 4 ? ' vsav-keves' : ''}" data-vsav>
