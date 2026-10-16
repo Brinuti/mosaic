@@ -89,6 +89,18 @@ Ezen felül:
   a felirat nélküli, a felirat fölött kivágott kockák: `tools/kep-forras/allo/`; az egy, a 37 között nem szereplő vendégvideó adatai a repón kívül). A hősben az álló videó mellett nincs
   üres fehér sáv: a képhasáb a borító hátterét kapja (`assets/img/uj-allo-hatter.webp`), a videó keretezve középen. Az „Így néz ki egy … behelyezés” dobozokban a videó mellett
   a behelyezés 4 lépése + link a szúrás folyamatához (`BEVIDEO_LEPESEK`, `tools/uj-oldalak/kozos.mjs`; a tükör-oldalakon `behelyezesLepesek`).
+- **Az őszi akció oldala** (`/3-piercing-2-araert-regi`, a menü „Akció” pontja; a tulajdonos kérése, 2026-10-16: „csak az akció oldalt tervezd újra” a konverziós
+  képernyőtervek PDF-jének 03-as terve szerint, az oldal stílusában – „az összes szekció ugyanarról szól, csak az árat boncolgatjuk négyszer”): kézzel írt oldal
+  (`uj-oldalak/sajat/3-piercing-2-araert-regi.html`, a B-építő helyett). Sorrend: hős (az ár szövegként, ★, 3 árdoboz – a 3-ason „Legkedvezőbb darabár” –, „Ezt foglalom”,
+  mikroszöveg, zöld garancia-doboz) → „Nem tudod, melyik 2–3 piercinget válaszd?” (párosítási ajánlás nélkül, a típusoldalak linkjeivel) → „Mi jár az árért?” (5 csekk + a steril
+  eszközök fotója) → 3 videós beszámoló (migrén, shenmen, klimax) → „Hol és mikor?” (Budapest + a két legközelebbi kitelepülési nap a táblázatból, `uj-fooldal.js` 4f.; ez a helyszín
+  valódi napja, nem kitalált „szabad időpont”; adat nélkül csak Budapest + „Időpontok megtekintése”; alatta az összes helyszín lenyitható) → GYIK (Fáj? Kinek nem ajánljuk? – a szúrás
+  folyamata oldal listája –, Mikor fizetek?, Mi van, ha nem érzek javulást?) → mobilon ragadós alsó sáv („3 piercing 44 900 Ft · fizetés a helyszínen” + telefon + „Időpontot foglalok”).
+  Az „Ezt foglalom” gombok (`data-csomag="1|2|3"`) a foglalót a csomaggal előválasztva nyitják: a típusválasztó marad (ott fut a mérés), a Piercing-lépésben az a csomag elöl, lenyitva
+  (`window.__mpCsomag` → `motor.js` `nyit`/`szolgRajzol`; a `motor-indito.js` nem változott). A régi lapcím régi árral („41.900”) helyett a mostani (`FRISS_CIM`, `tools/uj-fooldal.mjs`).
+  A PDF „Képen még” szövegei és a makett-időpontok nem kerültek ki. A globális akciósáv szövege („a 2. piercing féláron…”) nem változott (a PDF nyitott kérdése a tulajdonosnak).
+  A foglaló szűrősora: ha a két kapcsoló két sorba törik (a foglaló-ablak szélessége szerint, `szuroSorok`), a „Magamnak / 2 személynek” feljebb, a jelölés a két sor között;
+  a „Hogy néz ki egy szúrás?” sima link (a tulajdonos kérése: „ne vegye el a fókuszt”).
 - **Árlista-doboz** (2026-10-16, 5. kör): a kártyákon minden középen (ikon, cím, áthúzott ár, ár, megtakarítás), az áthúzott ár és a keret rózsás, nem szürke (`uj-egyseges.css` vége).
   A „Tovább az összes véleményhez” dupla-szűrője az eredeti oldal `<strong>`-os linkjét is felismeri (a TikTok-landolón és 7 másik oldalon kétszer állt).
 - **Árlista-doboz fülikonjai** (2026-10-16): GPT-vel rajzolt vonalas fülek az ékszerekkel (`assets/img/uj-ful-1|2|3|2x2.webp`, `tools/uj-ful-ikonok.py`, forrás:
