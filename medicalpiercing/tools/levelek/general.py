@@ -209,7 +209,7 @@ level('04-E2-igy-zajlik', 'Ha legalább 7 nap van az időpontig: kb. a hátralé
 <p>Megmutatjuk az összes ékszert, és te választod ki, melyik tetszik a legjobban: karika vagy talpas, sima vagy köves, nőknek és férfiaknak is. Mindegyik G23 titánium – a legmagasabb minőségű, antiallergén orvosi fém, ezért fémallergia mellett is jó választás (ha van, jelezd a beszélgetésnél). Kicsi és könnyű: a legtöbben pár nap után már észre sem veszik, és a gyógyulás után akár az oldalán is kényelmesen lehet aludni vele. Az ékszer ára benne van a szúrás árában, és a gyógyulás után bármikor lecserélheted egy másikra.</p>
 <h2>3. Steril eszközök, orvosi alapossággal</h2>
 <div class="kep">{kep(K["steril"], L["folyamat"], "Steril, csomagolt eszközök és autokláv")}<div class="felirat">Steril, csomagolt eszközök – és az autokláv, amelyben sterilizálunk.</div></div>
-<p>Nem a bemutatott ékszert kapod, hanem annak autoklávban sterilizált, légmentesen lezárt párját. Eszközeinket zártkamrás autoklávval fertőtlenítjük, a füled felületét pedig fertőtlenítő spray-vel készítjük elő. A rendelőnket és a teljes folyamatunkat dr. Smolcz Gergely is átnézte: személyesen járt nálunk, és végignézte, hogyan dolgozunk.</p>
+<p>Nem a bemutatott ékszert kapod, hanem annak autoklávban sterilizált, légmentesen lezárt párját. Eszközeinket zártkamrás autoklávval fertőtlenítjük, a füled felületét pedig fertőtlenítő spray-vel készítjük elő. Szakmai mentorunk, Dr. Schmolcz Gergely személyesen is járt nálunk: átnézte a rendelőt, és végignézte a teljes folyamatunkat.</p>
 <h2>4. Megmérjük a pontot</h2>
 <p>Akupunktúrás pontmérő géppel keressük meg a pontot a te füleden – így pontosan oda kerül a piercing, ahová kell.</p>
 <h2>5. Érzéstelenítjük a füled</h2>
