@@ -430,3 +430,9 @@
 @media (max-width:760px){.kat-video-keves .kat-video-racs{grid-template-columns:repeat(2,minmax(0,1fr))}.kat-video-velemeny .kat-video-racs:has(li:nth-child(3):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}}
 .kat-video-velemeny .kat-video-racs:has(li:nth-child(6):last-child),.kat-video-velemeny .kat-video-racs:has(li:nth-child(5):last-child){grid-template-columns:repeat(3,minmax(0,calc((100% - 42px)/4)));justify-content:center}
 @media (max-width:760px){.kat-video-velemeny .kat-video-racs:has(li:nth-child(6):last-child),.kat-video-velemeny .kat-video-racs:has(li:nth-child(5):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* mobil B-hos: a ket gomb ("Idopontot foglalok" + "Arak es akciok") a galeria szelessegeben is elfer, egyik felirat sem log ki (2026-10-16) */
+@media (max-width:760px){
+  .kat-hos-b .hos-szoveg .gombsor{gap:6px}
+  .kat-hos-b .gombsor .gomb{flex:1 1 auto;font-size:.79rem;padding-inline:.3em}
+  .kat-hos-b .gombsor .gomb .ik-nyil{margin-left:2px}
+}

@@ -46,4 +46,8 @@ Ezen felül:
 - **Helyszíneink hősképe**: Magyarország térképe a 15 helyszínnel (`tools/uj-helyszin-terkep.mjs` → `reszek/helyszin-terkep.html`, beágyazott SVG a lap betűjével).
 - **A hirdetések céloldalai** (Meta, TikTok; 2026-10-16-i lista) mind formázottak az `/uj` alatt; a két utolsó: `/kozerzetjavito-piercing-soft-akcio` (a TikTok-landoló) és `/3-piercing-2-araert`
   („Páros kedvezmény”), a B-építővel. A közös dobozok (akció, árak, ékszerek, helyszínek, piercingek, média, csapat) egy oldalon csak egyszer jelennek meg.
+- **A foglalómotor Piercing-lépése** (a tulajdonos látványterve és kérése, 2026-10-16; `assets/js/motor/motor.js`, `szolgRajzol` / `pkKartya` / `pkAdat`): fejléc („Melyik piercing érdekel?”, a helyszín),
+  két szűrősor (Magamnak / Két személynek; 1 piercing / 2–3 piercing / Fülbevaló), „Az ár tartalmazza”, „Hogy néz ki egy szúrás?” (videó), lenyitható kártyák: a pont helye (a valódi fülfotó,
+  `uj-galeria-<kulcs>-2.webp`, 1:1), mire jó, garancia, „+ 2–3 piercing” (a csomagra vált és lenyitja; a csomag: bármelyik piercing, most nem kell eldönteni, a szalonban segítünk).
+  Alapérték: Magamnak + 1 piercing, a típusoldal piercingje elöl és lenyitva (az akció-oldalról: 2–3 piercing). A választás gombja a régi `[data-szolg]` (a foglalási út, a mérés és a tesztek ugyanazok).
 

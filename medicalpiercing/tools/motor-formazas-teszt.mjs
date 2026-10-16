@@ -75,8 +75,8 @@ async function egy(nev, opt, mobil) {
   await p.waitForTimeout(500);
   const m2 = await meres();
   ok(`${nev}: a "Kezeles" szo sehol nem szerepel, a lepesjelzoben "Szolgaltatas" van`, !/kezel/i.test(m2.szoveg) && /Szolgáltatás/.test(m2.szoveg));
-  if (!mobil) ok(`${nev}: 2. lepes: a teljes szolgaltatas-lista egy kepernyon (gorgetes nelkul)`, m2.elfer, `scrollH ${m2.sh} / lathato ${m2.ch}`);
-  else console.log(`INFO ${nev}: 2. lepes: a lista ${m2.sh} px magas, ${m2.ch} px latszik (mobilon gorgetes elfogadott)`);
+  // 2026-10-16: a lenyithato piercing-kartyak (a tulajdonos latvanyterve) gorgethetok; a meretek a motor-tipus-teszt K2-ben
+  console.log(`INFO ${nev}: 2. lepes: a lista ${m2.sh} px magas, ${m2.ch} px latszik (a lenyithato kartyak gorgethetok)`);
   ok(`${nev}: a fejlec cime kozepen van (2. lepes, vissza gombbal)`, m2.cimKozep <= 2, `elteres ${m2.cimKozep.toFixed(1)} px`);
   const osszes = await sr(MINDEN_SZOLG); // az osszes szolgaltatas (a ket szuro minden kombinaciojabol)
   const nevek = osszes.map((x) => x.nev);
