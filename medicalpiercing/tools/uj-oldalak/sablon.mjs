@@ -468,6 +468,9 @@ export function oldalHtml(ROOT, adat, opciok = {}) {
   const sajat = !!opciok.sajat;
   const cimke = adat.tipus === 'cikk' ? 'oldal-cikk' : adat.tipus === 'blog' ? 'oldal-blog' : kat ? 'oldal-altalanos oldal-kategoria' : sajat ? 'oldal-altalanos oldal-kategoria oldal-sajat' : 'oldal-altalanos';
   const horgony = kat ? kat.helyiIdk : opciok.horgony || true;
+  // hirdetesi landolo (a TikTok-landolo, a tulajdonos kerese, 2026-10-16: "nem lehet sehol sem ... semmi olyasmi kifejezes, ami orvosi"): sajat, rovid fejlec
+  // (logo jelmondat nelkul, Velemenyek, Idopontfoglalas - mint az eredeti landolon), akcios sav a lap arlistajahoz, lablec a panasz- es orvosi szavak nelkul
+  const landolo = !!opciok.landolo;
   return `<!doctype html>
 <html lang="hu">
 <head>
@@ -486,21 +489,21 @@ export function oldalHtml(ROOT, adat, opciok = {}) {
 <link rel="stylesheet" href="/assets/css/uj-oldalak.css">${kat || sajat ? '\n<link rel="stylesheet" href="/assets/css/uj-kategoria.css">' : ''}${sajat ? '\n<link rel="stylesheet" href="/assets/css/uj-sajat.css">' : ''}
 <link rel="stylesheet" href="/assets/css/uj-egyseges.css">
 </head>
-<body class="belso ${cimke}">
+<body class="belso ${cimke}${landolo ? ' oldal-landolo' : ''}">
 <a class="ugras" href="#fo">Ugrás a tartalomra</a>
 
 <!--#ikonok-->
 
-${partial(ROOT, 'fejlec', horgony)}
+${partial(ROOT, landolo ? 'fejlec-landolo' : 'fejlec', horgony)}
 
-${partial(ROOT, 'akcio-sav')}
+${partial(ROOT, landolo ? 'akcio-sav-landolo' : 'akcio-sav')}
 
 <main id="fo">
 ${szekciok}
 ${lapozo(c, opciok.lapozo)}
 </main>
 
-${partial(ROOT, 'lablec', horgony)}
+${partial(ROOT, landolo ? 'lablec-landolo' : 'lablec', horgony)}
 
 <dialog class="nagyito" id="kepnezo" aria-label="Kép nagyban">
   <button type="button" class="nagyito-zar" aria-label="Bezárás">${IK('close')}</button>

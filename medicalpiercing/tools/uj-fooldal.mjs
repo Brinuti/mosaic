@@ -300,7 +300,7 @@ export function ujOldalak(ROOT, DIST) {
       const fo = osszerak(ROOT, forras.slice(m[0].length));
       const horgony = new Set([...fo.matchAll(/\sid="([a-z]+)"/g)].map((x) => x[1]));
       const adat = { ut: '/' + nev, kulcs: nev, cim: meta.cim, leiras: meta.leiras, tipus: 'oldal', szekciok: [] };
-      oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, adat, { fo, sajat: true, horgony, nagyito: /data-ekszer-galeria|id="ekszerek"/.test(fo) }));
+      oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, adat, { fo, sajat: true, horgony, landolo: !!meta.landolo, nagyito: /data-ekszer-galeria|id="ekszerek"/.test(fo) }));
       jegyzek.push({ ut: adat.ut, cim: meta.cim, tipus: 'oldal', uj: TUKOR_ELO + adat.ut });
       db++;
     }

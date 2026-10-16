@@ -14,15 +14,16 @@
   gorgetes();
   window.addEventListener('scroll', gorgetes, { passive: true });
 
-  const nyito = $('#menu-nyito');
+  const nyito = $('#menu-nyito');   // a hirdetesi landolo rovid fejlecen nincs mobilmenu (fejlec-landolo.html)
   const menuZar = () => {
+    if (!nyito) return;
     fejlec.classList.remove('menu-nyitva');
     nyito.setAttribute('aria-expanded', 'false');
     nyito.setAttribute('aria-label', 'Menü megnyitása');
     $('use', nyito).setAttribute('href', '#i-menu');
     document.documentElement.style.overflow = '';
   };
-  nyito.addEventListener('click', () => {
+  if (nyito) nyito.addEventListener('click', () => {
     const nyit = !fejlec.classList.contains('menu-nyitva');
     fejlec.classList.toggle('menu-nyitva', nyit);
     nyito.setAttribute('aria-expanded', String(nyit));
@@ -31,7 +32,7 @@
     document.documentElement.style.overflow = nyit ? 'hidden' : '';
   });
   // a menü linkjére kattintva a mobilmenü bezárul (a lapon belüli horgonyoknál is)
-  $('#menu').addEventListener('click', (e) => { if (e.target.closest('a')) { menuZar(); lenyiloZar(); } });
+  if ($('#menu')) $('#menu').addEventListener('click', (e) => { if (e.target.closest('a')) { menuZar(); lenyiloZar(); } });
   window.matchMedia('(min-width: 1001px)').addEventListener('change', (e) => { if (e.matches) menuZar(); });
 
   const lenyilok = $$('.lenyilo');
@@ -288,7 +289,7 @@
     kitAdat.then((adat) => {
       if (!adat || !adat.sorok) return;
       const jelolt = [];
-      for (const li of $$('.akc-osszes .helyek li')) {
+      for (const li of $$('#helyszinek .helyek li')) {
         const kulcs = li.querySelector('[data-mp-kitelepules]'), a = li.querySelector('a[href]'), nev = li.querySelector('b');
         const d = kulcs && a && nev && kovetkezo(adat.sorok[kulcs.dataset.mpKitelepules]);
         if (d) jelolt.push({ d, nev: nev.textContent, href: a.getAttribute('href') });

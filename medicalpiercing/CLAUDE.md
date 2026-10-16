@@ -24,6 +24,10 @@ Ezen felül:
 - **Minden fejlesztési kör végén bepipálós lista** (a tulajdonos kérése, 2026-10-16): a záró üzenetben `- [x]` lista arról, mi készült el – részletesen (minden kért pont
   külön sor), de röviden és nem technikailag (ne fájlnevek, CSS, kód), hanem hogy mit lát a tulajdonos és hol. Minden sorhoz az éles link, ahol ellenőrizheti; ha valami
   nem készült el vagy másképp lett, külön `- [ ]` sorban, egy mondat indoklással. Cél: ne kelljen visszagörgetnie, a listából tudja ellenőrizni, mit kell megnéznie.
+- **Tervezés PDF / látványterv alapján – ALAPSZABÁLY** (a tulajdonos döntése, 2026-10-16): a terv (wireframe) elrendezéséből és tartalmából indulj ki, de ha megtervezted,
+  nézd át szakaszonként, és igazítsd a mostani oldal kinézetéhez és dobozaihoz – a tervben szereplő elemeket nem kell pontosan úgy átvenni. Pl.: a GYIK teljes szélességű
+  kérdés-rács (`gar-racs`), a helyszínek végig látszanak (a megszokott helyszín-doboz), a szöveg + kép a kéthasábos doboz (`kat-doboz kat-par`), a szakaszcímek középen
+  (`kat-fej`), a hős a megszokott hős. Ugyanez érvényes, ha egy régi oldal szövegét kell új oldalba tenni (a szerkezet a forrásból, a kinézet a mostani oldalból).
 - **A „B” változat az alap** (a tulajdonos döntése, 2026-10-13): az `/uj/migren-piercing`, `/uj/shenmen-piercing`, `/uj/klimax-piercing` és `/uj/slim-etvagycsokkento-piercing` oldal az eredeti
   `-b` oldalak (`migren-piercing-b`, `shenmen-piercing-b`, `klimax-piercing-b`, `slim-piercing-b`) szerkezetéből és szövegéből épül, a kategóriaoldalak dizájnjával, **„b” nélküli címen**
   (a menü és a belső linkek ide mutatnak; `/uj/uj-…-b` cím nincs). Az eredeti (régi) kategória-sablon csak az allergia / máj / pajzsmirigy / lép / vastagbél oldalnak marad (nincs `-b` oldaluk).
@@ -92,15 +96,29 @@ Ezen felül:
 - **Az őszi akció oldala** (`/3-piercing-2-araert-regi`, a menü „Akció” pontja; a tulajdonos kérése, 2026-10-16: „csak az akció oldalt tervezd újra” a konverziós
   képernyőtervek PDF-jének 03-as terve szerint, az oldal stílusában – „az összes szekció ugyanarról szól, csak az árat boncolgatjuk négyszer”): kézzel írt oldal
   (`uj-oldalak/sajat/3-piercing-2-araert-regi.html`, a B-építő helyett). Sorrend: hős (az ár szövegként, ★, 3 árdoboz – a 3-ason „Legkedvezőbb darabár” –, „Ezt foglalom”,
-  mikroszöveg, zöld garancia-doboz) → „Nem tudod, melyik 2–3 piercinget válaszd?” (párosítási ajánlás nélkül, a típusoldalak linkjeivel) → „Mi jár az árért?” (5 csekk + a steril
-  eszközök fotója) → 3 videós beszámoló (migrén, shenmen, klimax) → „Hol és mikor?” (Budapest + a két legközelebbi kitelepülési nap a táblázatból, `uj-fooldal.js` 4f.; ez a helyszín
-  valódi napja, nem kitalált „szabad időpont”; adat nélkül csak Budapest + „Időpontok megtekintése”; alatta az összes helyszín lenyitható) → GYIK (Fáj? Kinek nem ajánljuk? – a szúrás
-  folyamata oldal listája –, Mikor fizetek?, Mi van, ha nem érzek javulást?) → mobilon ragadós alsó sáv („3 piercing 44 900 Ft · fizetés a helyszínen” + telefon + „Időpontot foglalok”).
-  Az „Ezt foglalom” gombok (`data-csomag="1|2|3"`) a foglalót a csomaggal előválasztva nyitják: a típusválasztó marad (ott fut a mérés), a Piercing-lépésben az a csomag elöl, lenyitva
-  (`window.__mpCsomag` → `motor.js` `nyit`/`szolgRajzol`; a `motor-indito.js` nem változott). A régi lapcím régi árral („41.900”) helyett a mostani (`FRISS_CIM`, `tools/uj-fooldal.mjs`).
-  A PDF „Képen még” szövegei és a makett-időpontok nem kerültek ki. A globális akciósáv szövege („a 2. piercing féláron…”) nem változott (a PDF nyitott kérdése a tulajdonosnak).
-  A foglaló szűrősora: ha a két kapcsoló két sorba törik (a foglaló-ablak szélessége szerint, `szuroSorok`), a „Magamnak / 2 személynek” feljebb, a jelölés a két sor között;
-  a „Hogy néz ki egy szúrás?” sima link (a tulajdonos kérése: „ne vegye el a fókuszt”).
+  mikroszöveg, zöld garancia-doboz) → „Nem tudod, melyik 2–3 piercinget válaszd?” (középre igazított `kat-fej`, párosítási ajánlás nélkül, a típusoldalak linkjeivel) → „Mi jár az
+  árért?” (kéthasábos `kat-doboz kat-par`: 5 csekk + a steril eszközök fotója) → vendégeink videós beszámolói (a közös, lapozható sáv mind a 37 videóval, nagyobb kártyákkal;
+  a tulajdonos kérése: „nagyon picik … legyen lapozható”) → „Hol és mikor?” (Budapest + a két legközelebbi kitelepülési nap a táblázatból, `uj-fooldal.js` 4f.; ez a helyszín
+  valódi napja, nem kitalált „szabad időpont”; adat nélkül csak Budapest; alatta a megszokott helyszín-doboz, végig látható) → GYIK (a garancia-oldal teljes szélességű kérdés-rácsa:
+  Fáj? Kinek nem ajánljuk? – a szúrás folyamata oldal listája –, Mikor fizetek?, Mi van, ha nem érzek javulást?) → mobilon ragadós alsó sáv („3 piercing 44 900 Ft · fizetés
+  a helyszínen” + telefon + „Időpontot foglalok”). Az **„Ezt foglalom”** gombok (`data-csomag="1|2|3"`; a tulajdonos kérése, 2026-10-16: „a 2–3 akciónak külön boxa van, és nem arra
+  visznek … vigyenek arra”) a foglalót a csomaggal nyitják: a típusválasztó („Új piercing”) kimarad, rögtön a helyszín jön, a Piercing-lépésben a választott csomag áll
+  elöl – **csukva**, mint a többi kártya („a kártyák ugyanúgy legyenek csukva”); a foglalásindítás mérése (`meres()`, egyszer nyitásonként) ilyenkor a helyszín-lépés
+  megnyílásakor fut (`window.__mpCsomag` → `motor.js` `nyit` / `szolgRajzol`; a `motor-indito.js` nem változott). A régi lapcím régi árral („41.900”) helyett a mostani
+  (`FRISS_CIM`, `tools/uj-fooldal.mjs`). A PDF „Képen még” szövegei és a makett-időpontok nem kerültek ki. A globális akciósáv szövege („a 2. piercing féláron…”) nem
+  változott (a PDF nyitott kérdése a tulajdonosnak). A foglaló szűrősora: ha a két kapcsoló két sorba törik (a foglaló-ablak szélessége szerint, `szuroSorok`), a „Magamnak /
+  2 személynek” feljebb, a jelölés a két sor között; a „Hogy néz ki egy szúrás?” sima link (a tulajdonos kérése: „ne vegye el a fókuszt”).
+- **A TikTok-landoló** (`/kozerzetjavito-piercing-soft-akcio`, a TikTok-hirdetések céloldala; a tulajdonos kérése, 2026-10-16): a szöveg **1:1 az eredeti landolóról**
+  (`/regi/kozerzetjavito-piercing-soft-akcio`), de **sehol nem állhat panasz- vagy orvosi szó** („nem lehet sehol sem, se migrén, se klimax, semmi ilyesmi, nem lehet a
+  thumbnail-es videók thumbnail-en se … semmi olyasmi kifejezés, ami orvosi” – a TikTok letiltja): a szövegben, a képeken és feliratukban, a videók borítóin, az alt / title /
+  meta szövegekben, a menüben, a láblécben, sőt a forráskommentekben sem (EÜ, gyógy-, kezelés, állapotfelmérés, érzéstelenítés is tilos; a teljes lista: `TILTOTT_LANDOLO`,
+  `tools/uj-oldalak-teszt.mjs`, a teszt minden landolón ellenőrzi). Kézzel írt oldal (`uj-oldalak/sajat/kozerzetjavito-piercing-soft-akcio.html`, első sorában `"landolo":true`):
+  saját rövid fejléc (logó **jelmondat nélkül** – `assets/img/uj-logo-marka*.webp`, `tools/uj-logo-marka.py` –, Vélemények, Időpontfoglalás; piercing-menü nincs), az akciós
+  sáv a lap árlistájához visz, saját lábléc a tiltott szavak és a két jogi bekezdés nélkül (`reszek/fejlec-landolo.html`, `akcio-sav-landolo.html`, `lablec-landolo.html`;
+  `oldalHtml` `landolo` opció, `sablon.mjs`). Kimaradt: az akciós piercing-típusok sora, a „3 legnépszerűbb piercing” listái, „Tudtad, hogy…?”, „3000+”, két panaszos
+  „Miért érdemes” pont, a kártyákon az állapotfelmérés és az érzéstelenítés, a kontroll első bekezdése, a csapat-jellemzések EÜ- / migrén-részei, a Google-vélemények doboza
+  (a vendégek panaszokat írnak; marad a Google-értékelés feje és a link) és minden vendégvideó; a MIGRÉN-feliratos fülfotó helyett felirat nélküli. Az ékszer-lapozó a főoldali
+  doboz galériája (`reszek/ekszer-galeria.html`). Új elem a landolón: előbb nézd meg, nincs-e benne (képen, borítón sem) tiltott szó.
 - **Árlista-doboz** (2026-10-16, 5. kör): a kártyákon minden középen (ikon, cím, áthúzott ár, ár, megtakarítás), az áthúzott ár és a keret rózsás, nem szürke (`uj-egyseges.css` vége).
   A „Tovább az összes véleményhez” dupla-szűrője az eredeti oldal `<strong>`-os linkjét is felismeri (a TikTok-landolón és 7 másik oldalon kétszer állt).
 - **Árlista-doboz fülikonjai** (2026-10-16): GPT-vel rajzolt vonalas fülek az ékszerekkel (`assets/img/uj-ful-1|2|3|2x2.webp`, `tools/uj-ful-ikonok.py`, forrás:
@@ -122,14 +140,14 @@ Ezen felül:
 - **Google-vélemények mindenhol a főoldali lapozóval** (2026-10-16): az eredeti oldal saját Trustindex-widgetje csak akkor marad, ha rendes lapozó (`JO_VELEMENY_KULCSOK`, `sablon.mjs`);
   a 2 véleményes (783989…), az üres és az ismeretlen widget helyett a főoldali (daf9c4…, 35 vélemény). A tükör-oldalak Trustindex-beágyazása (assets/embed) is a főoldali doboz lett.
 - **Helyszíneink hősképe**: Magyarország térképe a 15 helyszínnel (`tools/uj-helyszin-terkep.mjs` → `reszek/helyszin-terkep.html`, beágyazott SVG a lap betűjével).
-- **A hirdetések céloldalai** (Meta, TikTok; 2026-10-16-i lista) mind formázottak az `/uj` alatt; a két utolsó: `/kozerzetjavito-piercing-soft-akcio` (a TikTok-landoló) és `/3-piercing-2-araert`
-  („Páros kedvezmény”), a B-építővel. A közös dobozok (akció, árak, ékszerek, helyszínek, piercingek, média, csapat) egy oldalon csak egyszer jelennek meg.
+- **A hirdetések céloldalai** (Meta, TikTok; 2026-10-16-i lista) mind formázottak az `/uj` alatt; a két utolsó: `/kozerzetjavito-piercing-soft-akcio` (a TikTok-landoló; 2026-10-16 óta kézzel írt,
+  lásd fent) és `/3-piercing-2-araert` („Páros kedvezmény”, a B-építővel). A közös dobozok (akció, árak, ékszerek, helyszínek, piercingek, média, csapat) egy oldalon csak egyszer jelennek meg.
 - **A foglalómotor Piercing-lépése** (a tulajdonos látványterve és kérései, 2026-10-16; `assets/js/motor/motor.js`, `szolgRajzol` / `pkKartya` / `pkAdat` / `arakBol`): nincs fejléc-doboz;
   kicsi szűrősor (Magamnak / Két személynek; 1 piercing / 2–3 piercing / Fülbevaló – asztalon egy sor, mobilon kettő), a „★ 4,8 · 5000+ értékelés” mellett egy sorban a „Hogy néz ki egy szúrás?”
   (felugró, bezárható videó: X, háttér, Esc), kicsi „Az ár tartalmazza”, alatta MINDEN lehetőség kártyája (nincs rejtett „+ többi”). Minden kártyán két gomb: „Részletek” (lenyitja: a pont helye
   a valódi fülfotóval, mire jó, garancia; a csomagoknál a kedvezmény levezetése a helyszín mostani Salonic-áraiból: 1./2./3. piercing ára, külön-külön mennyi lenne, mennyit spórol) és az erős
   színű „Időpontot választok” (a régi `[data-szolg]`: a foglalási út, a mérés és a tesztek ugyanazok). Alapérték: Magamnak + **2–3 piercing** (a tulajdonos kérése, 2026-10-16, 5. kor: „alapból a 2–3 piercing legyen kiválasztva”; a divat fülpiercing oldaláról 1 piercing), 1 piercingnél a típusoldal piercingje elöl; a „Legjobban megéri” jelölés lefelé mutató nyíllal pontosan a „2–3 piercing” gomb fölött, két sorban a „Magamnak / 2 személynek” feljebb, a jelölés a két sor között; a kártyák Részletek-részében a garancia: „ha 6–7 hét után nem tapasztalsz javulást, megerősítő piercinget szúrunk.”; MINDEN kártya csukva, a 2–3 piercingnél is (a tulajdonos kérése, 2026-10-16, 4. kör:
-  „lássa, hogy milyen piercingek vannak”). A nevek teljesek („Migrén piercing”, „Shenmen piercing”, „Slim piercing”, …). A szűrősor 385–520 px között is egy sorban (rövid felirat:
+  „lássa, hogy milyen piercingek vannak”), az akció-oldal „Ezt foglalom” gombjáról választott csomag is (az elöl áll, a típusválasztó kimarad). A nevek teljesek („Migrén piercing”, „Shenmen piercing”, „Slim piercing”, …). A szűrősor 385–520 px között is egy sorban (rövid felirat:
   „1 db”, „2–3 db”), alatta két sorban. Az „Az ár tartalmazza” a kártya Részletek-részében van, nem a lista fölött. A szakember-lépés választói mobilon egy sorban.
   A „Kiesett ékszer újraszúrása” belsős Salonic-szolgáltatás (a tulajdonos döntése, 2026-10-16): NEM foglalható, a piercing-listából kimarad (`ujraszuras`, `szolgaltatasLepes`);
   az „Ékszercsere / visszarakás” visszahívó űrlap legördülőjében kérhető (közérzetjavító / fülbevaló, `LEHETOSEG.ekszercsere`). A szűrősorban „2 személynek”, a „2–3 piercing” gombon

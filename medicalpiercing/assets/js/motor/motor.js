@@ -530,7 +530,7 @@ export function nyit(ctx) {
     tipus: null, urlapAdat: null, merve: !ctx.merjen, kinek: 'magamnak', mit: oldalTipus(ctx.forras || '') === 'divat' ? 'egy' : 'tobb',
     oldalTipus: oldalTipus(ctx.forras || ''), nyitott: null, arak: null, csomag: null,
   };
-  // az akcio-oldal "Ezt foglalom" gombjai (uj-fooldal.js: window.__mpCsomag = 1 / 2 / 3): a Piercing-lepes ezzel a csomaggal elol, lenyitva (a tipus-valaszto marad)
+  // az akcio-oldal "Ezt foglalom" gombjai (uj-fooldal.js: window.__mpCsomag = 1 / 2 / 3): a Piercing-lepes ezzel a csomaggal elol (csukva)
   { const c = String(ctx.csomag || window.__mpCsomag || ''); try { delete window.__mpCsomag; } catch (e) { /* */ }
     if (/^[123]$/.test(c)) { all.kinek = 'magamnak'; all.mit = c === '1' ? 'egy' : 'tobb'; all.csomag = c; } }
   const ctxFoglalas = foglalas.begin({ business: 'mp', source_page: ctx.forras || location.pathname });
@@ -540,6 +540,9 @@ export function nyit(ctx) {
   // (a link helyszine / szolgaltatasa / szakembere megmarad, az "Uj piercing" utan ervenyes). Az a link, amelyik konkretan kontrollt, ekszercserét vagy
   // garanciat emlit (ctx.tipus), egybol a visszahivas-kero urlapot nyitja.
   if (['kontroll', 'ekszercsere', 'garancia'].includes(ctx.tipus)) { all.tipus = ctx.tipus; all.lepes = 'urlap'; } else all.lepes = 'tipus';
+  // az akcio-oldal csomag-gombja ("Ezt foglalom", a tulajdonos kerese, 2026-10-16: "vigyenek arra"): uj piercing, a tipus-valaszto kimarad, egybol a helyszin,
+  // utana a Piercing-lepes a csomaggal elol (a kartyak csukva); a foglalasinditas merese ugyanaz, mint az "Uj piercing" valasztasakor (egyszer, lent: meres())
+  if (all.csomag && all.lepes === 'tipus') { all.tipus = 'uj'; all.lepes = 'hely'; }
   let lezart = false;
 
   const tartalek = () => {
@@ -603,6 +606,7 @@ export function nyit(ctx) {
     all.merve = true;
     try { if (window.mpSuti && typeof window.mpSuti.foglalasInditas === 'function') window.mpSuti.foglalasInditas(); } catch (e) { /* a meres nem allithatja meg a foglalast */ }
   };
+  if (all.csomag && all.tipus === 'uj' && all.lepes === 'hely') meres(); // (a kimaradt "Uj piercing" valasztas merese)
 
   // --- kontroll / ekszercsere / garancia: NEM naptaras foglalas, hanem visszahivas-kero urlap (a /kontroll oldal urlapja) ---
   let kuldes = false;
@@ -774,10 +778,10 @@ export function nyit(ctx) {
     mutat = [...mutat.filter(sajat), ...mutat.filter((s) => !sajat(s))];
     // alapbol (es a szuro valtasakor) egy kartya sincs lenyitva, a 2–3 piercingnel sem (a tulajdonos kerese, 2026-10-16, 4. kor): elsore latszon, milyen piercingek vannak
     if (all.nyitott === null || (all.nyitott && !mutat.some((s) => s.serviceId === all.nyitott))) all.nyitott = '';
-    if (all.csomag) { // (egyszer: az akcio-oldal elovalasztott csomagja elol es lenyitva; a szuro valtasakor mar a szokasos rend)
+    if (all.csomag) { // (egyszer: az akcio-oldal elovalasztott csomagja elol; a kartyak - mint mindig - csukva, a tulajdonos kerese, 2026-10-16; a szuro valtasakor mar a szokasos rend)
       const re = all.csomag === '3' ? /3 PIERCING/i : all.csomag === '2' ? /2 PIERCING/i : null;
       const c = re && all.mit === 'tobb' && mutat.find((s) => re.test(s.name));
-      if (c) { mutat = [c, ...mutat.filter((s) => s !== c)]; all.nyitott = c.serviceId; }
+      if (c) mutat = [c, ...mutat.filter((s) => s !== c)];
       all.csomag = null;
     }
     all.arak = arakBol(lista);
