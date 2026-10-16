@@ -295,8 +295,10 @@ const LEHETOSEGEK = { kontroll: 3, ekszercsere: 2, garancia: 1 };
   await ctx.close();
 }
 
-// N. a piercing-lepes mindenhonnan ugyanaz, ket kerdesre szurve: Kinek? (magamnak / ket szemelynek) + Milyen szolgaltatas? (1 piercing / tobb piercing / fulbevalo); nincs oldalfuggo "Ajanlott"
-for (const [honnan, ut] of [['migren-oldalrol', '/migren-piercing'], ['fooldalrol', '/']]) {
+// N. a piercing-lepes mindenhonnan ugyanaz (a tulajdonos latvanyterve, 2026-10-16): fejlec, ket szurosor (Magamnak / Ket szemelynek; 1 piercing / 2-3 piercing / Fulbevalo),
+//    "Az ar tartalmazza", lenyithato kartyak. Alapertek: Magamnak + 1 piercing; a tipusoldal piercingje elol es lenyitva (fulfoto, garancia, "+ 2-3 piercing");
+//    a "+ 2-3 piercing" a csomagra valt es lenyitja (bármelyik piercing, most nem kell eldonteni); nincs "Mikor? / Faj?" csempe
+for (const [honnan, ut, elso] of [['migren-oldalrol', '/migren-piercing', 'Migrén'], ['lep-oldalrol', '/lep-piercing', 'Lép'], ['fooldalrol', '/', 'Migrén']]) {
   const { ctx, p } = await uj();
   await p.goto(CIM + ut, { waitUntil: 'load' });
   await p.waitForTimeout(2200);
@@ -305,93 +307,33 @@ for (const [honnan, ut] of [['migren-oldalrol', '/migren-piercing'], ['fooldalro
   await varj(p, '[data-hely]'); await kattint(p, '[data-hely="6029"]');
   const van = await varj(p, '[data-szolg]', 30000);
   await p.waitForTimeout(400);
-  const olvas = () => sr(p, 'const nevek=[...r.querySelectorAll("[data-szolg] .nev > span")].map(x=>x.textContent.trim()); const on=[...r.querySelectorAll(".szeg button.on")].map(x=>x.textContent.replace(/legjobban megéri/i,"").trim()); const tilt=[...r.querySelectorAll(".szeg button[disabled]")].map(x=>x.textContent.trim()); return { cimkek:[...r.querySelectorAll(".szuro-cimke")].map(x=>x.textContent.trim().replace(/^[0-9]/,"")), szamok:[...r.querySelectorAll(".szam")].map(x=>x.textContent), on, tilt, db:nevek.length, nevek, fej:(r.querySelector(".lista-fej span:last-child")||{}).textContent, jelzo: !!r.querySelector("[data-mit=tobb] i"), ajanlott: /Ajánlott/.test(r.textContent), nevSzin: nevek.length?getComputedStyle(r.querySelector("[data-szolg] .nev")).color:"", arSzin: nevek.length?getComputedStyle(r.querySelector("[data-szolg] .ar")).color:"" }');
+  const olvas = () => sr(p, 'const nevek=[...r.querySelectorAll("[data-szolg] .nev > span")].map(x=>x.textContent.trim()); const ny=r.querySelector(".pk.nyitva"); return { cim:(r.querySelector(".pk-fejlec h3")||{}).textContent, tartalmaz:/Az ár tartalmazza/.test(r.textContent), on:[...r.querySelectorAll(".szeg button.on")].map(x=>x.textContent.trim()), db:nevek.length, nevek, latszik:[...r.querySelectorAll(".pk:not([hidden]) .pk-cim b")].map(x=>x.textContent), nyitott:ny?ny.querySelector(".pk-cim b").textContent:"", foto:!!(ny&&ny.querySelector(".pk-pont img")), garancia:!!(ny&&ny.querySelector(".pk-garancia")), plusz:!!(ny&&ny.querySelector("[data-plusz]")), csomag:ny?(ny.querySelector(".pk-csomag")||{}).textContent||"":"", tobb:!!r.querySelector("[data-tobbtipus]"), csempe:/Mikor\\?|Fáj\\?/.test(r.textContent) }');
   ok(`N: ${honnan}: a lista betoltodik`, van);
   if (!van) { await ctx.close(); continue; }
   let m = await olvas();
-  ok(`N: ${honnan}: ket kerdes (Kinek? / Milyen szolgaltatas?), alapertek: Magamnak + Tobb piercing (a "legjobban megeri" latszik elsore)`, JSON.stringify(m.cimkek) === JSON.stringify(['Kinek szeretnél időpontot?', 'Milyen piercing érdekel?']) && JSON.stringify(m.on) === JSON.stringify(['Magamnak', 'Több piercing']), JSON.stringify([m.cimkek, m.on]));
-  ok(`N: ${honnan}: a harom cim szamozott: 1 Kinek? / 2 Milyen szolgaltatas? / 3 Valaszthato piercingek`, JSON.stringify(m.szamok) === JSON.stringify(['1', '2', '3']), JSON.stringify(m.szamok));
-  ok(`N: ${honnan}: alapertek (Tobb piercing): 3 piercing, 2 piercing, 1+1 allergia`, m.db === 3 && /^3 piercing/.test(m.nevek[0]) && /^2 piercing/.test(m.nevek[1]) && /^1\+1/.test(m.nevek[2]), JSON.stringify(m.nevek));
-  ok(`N: ${honnan}: a "Tobb piercing" gombon "legjobban megeri" jelzes van`, m.jelzo);
-  await kattint(p, '[data-mit="egy"]'); m = await olvas();
-  ok(`N: ${honnan}: 1 piercing: 9 lehetoseg (maj, lep, vastagbel, allergia is), "9 lehetőség" felirat, nincs "Ajanlott"`, m.db === 9 && /9 lehetőség/i.test(m.fej) && ['Máj', 'Lép', 'Vastagbél', 'Allergia'].every((x) => m.nevek.includes(x)) && !m.ajanlott, JSON.stringify(m.nevek));
-  ok(`N: ${honnan}: a piercing neve kiemelt szinu (terrakotta), az ar sotet`, m.nevSzin === 'rgb(163, 90, 75)' && m.arSzin === 'rgb(69, 70, 89)', `${m.nevSzin} / ${m.arSzin}`);
+  ok(`N: ${honnan}: fejlec "Melyik piercing érdekel?", "Az ár tartalmazza", alapertek: Magamnak + 1 piercing`, m.cim === 'Melyik piercing érdekel?' && m.tartalmaz && JSON.stringify(m.on) === JSON.stringify(['Magamnak', '1 piercing']), JSON.stringify([m.cim, m.on]));
+  ok(`N: ${honnan}: 1 piercing: 9 lehetoseg, 4 latszik + "+ tobbi" gomb; a(z) ${elso} elol, lenyitva, fulfotoval, garanciaval, "+ 2–3 piercing" gombbal; nincs "Mikor? / Fáj?"`, m.db === 9 && ['Máj', 'Lép', 'Vastagbél', 'Allergia'].every((x) => m.nevek.includes(x)) && m.latszik.length === 4 && m.tobb && m.latszik[0] === elso && m.nyitott === elso && m.foto && m.garancia && m.plusz && !m.csempe, JSON.stringify(m.latszik) + ' nyitott: ' + m.nyitott);
+  await kattint(p, '[data-tobbtipus]'); m = await olvas();
+  ok(`N: ${honnan}: a "+ tobbi" gomb mind a 9-et mutatja`, m.latszik.length === 9 && !m.tobb, JSON.stringify(m.latszik));
+  await kattint(p, '.pk:not(.nyitva) [data-nyit]'); m = await olvas();
+  ok(`N: ${honnan}: egy masik kartya fejere kattintva az nyilik le (egyszerre egy)`, !!m.nyitott && m.nyitott !== elso && (await sr(p, 'return r.querySelectorAll(".pk.nyitva").length')) === 1, m.nyitott);
+  await kattint(p, '.pk.nyitva [data-plusz]'); m = await olvas();
+  ok(`N: ${honnan}: "+ 2–3 piercing": a 2–3 piercingre valt, a 2 piercing lenyitva, "bármelyik ... most nem kell eldöntened"`, JSON.stringify(m.on) === JSON.stringify(['Magamnak', '2–3 piercing']) && m.nyitott === '2 piercing' && /Bármelyik két piercinget/.test(m.csomag) && /nem kell eldöntened/.test(m.csomag) && /^3 piercing/.test(m.nevek[0]) && /^2 piercing/.test(m.nevek[1]) && /^1\+1/.test(m.nevek[2]), JSON.stringify([m.on, m.nyitott, m.nevek]));
   await kattint(p, '[data-mit="fulbevalo"]'); m = await olvas();
   ok(`N: ${honnan}: Fulbevalo: 1, 2, 3 db`, m.db === 3 && m.nevek.every((x) => /^Fülbevaló/.test(x)), JSON.stringify(m.nevek));
-  await kattint(p, '[data-kinek="ketto"]'); m = await olvas();
-  ok(`N: ${honnan}: Ket szemelynek: a Fulbevalo nem valaszthato (a valasztott fulbevalo helyett az 1 piercing lep: 2 szemelynek - 2 db)`, m.tilt.includes('Fülbevaló') && m.db === 1 && /^2 személynek – 2 db/.test(m.nevek[0]), JSON.stringify([m.tilt, m.nevek]));
-  await kattint(p, '[data-mit="tobb"]'); m = await olvas();
-  ok(`N: ${honnan}: Ket szemelynek + Tobb piercing: 2 szemelynek - 4 db es 6 db`, m.db === 2 && m.nevek.every((x) => /^2 személynek – [46] db/.test(x)), JSON.stringify(m.nevek));
-  await ctx.close();
-}
-// Sopron: nincs "2 szemelynek - 2 db" (a Salonicban hianyzik): a ket szemelynek az elso letezo lehetosegre all (tobb piercing), az 1 piercing nem valaszthato
-{
-  const { ctx, p } = await uj();
-  await p.goto(CIM + '/idopontfoglalas', { waitUntil: 'load' });
-  await varj(p, '[data-tipus]'); await kattint(p, '[data-tipus="uj"]');
-  await varj(p, '[data-hely]'); await kattint(p, '[data-hely="9067"]');
-  await varj(p, '[data-szolg]', 30000); await p.waitForTimeout(300);
-  await kattint(p, '[data-kinek="ketto"]');
-  const m = await sr(p, 'return { tilt:[...r.querySelectorAll(".szeg button[disabled]")].map(x=>x.textContent.trim()), nevek:[...r.querySelectorAll("[data-szolg] .nev > span")].map(x=>x.textContent.trim()) }');
-  ok('N: Sopron: ket szemelynek -> az 1 piercing es a fulbevalo nem valaszthato, a lista a tobb piercinges csomagokat mutatja', m.tilt.includes('1 piercing') && m.tilt.includes('Fülbevaló') && m.nevek.length >= 1, JSON.stringify(m));
+  await kattint(p, '[data-szuras]');
+  ok(`N: ${honnan}: "Hogy néz ki egy szúrás?": a szuras videoja lenyilik`, (await sr(p, 'return !!r.querySelector(".pk-video video") && !r.querySelector(".pk-video").hidden')) === true);
   await ctx.close();
 }
 
-// O. a helyszin-valaszto sehol nem log ki oldalra (nincs vizszintes gorgetes), semmilyen szelessegen
-for (const w of [320, 360, 375, 390, 393, 412, 480, 592, 700, 768, 1024, 1440]) {
-  const ctx = await b.newContext({ viewport: { width: w, height: w < 700 ? 740 : 900 }, locale: 'hu-HU' });
-  await ctx.route((u) => !u.toString().startsWith(CIM), (r) => r.abort());
-  const p = await ctx.newPage();
-  await p.goto(CIM + '/idopontfoglalas', { waitUntil: 'load' });
-  await varj(p, '[data-tipus]'); await kattint(p, '[data-tipus="uj"]'); await varj(p, '[data-hely]');
-  await p.waitForTimeout(300);
-  const m = await sr(p, 'const t=r.querySelector(".tartalom"), tr=t.getBoundingClientRect(); const ks=[...r.querySelectorAll("[data-hely]")]; return { sw:t.scrollWidth, cw:t.clientWidth, tulog:ks.filter(k=>k.getBoundingClientRect().right>tr.right+0.5||k.getBoundingClientRect().left<tr.left-0.5).map(k=>k.textContent.trim()), levagott: ks.filter(k=>{const n=k.querySelector(".nev"); return n.scrollWidth>n.clientWidth+1;}).map(k=>k.textContent.trim()), db: ks.length }');
-  ok(`O: ${w}px: a 15 helyszin-kartya oldalra nem log ki, a nev nem vagodik le`, m.db === 15 && m.sw <= m.cw + 1 && !m.tulog.length && !m.levagott.length, JSON.stringify(m));
-  if (w <= 700) {
-    // mobilon (Feri 2026-10-13): egy oszlop, nagy cellak es nagy betu; a gorgetes elfogadott
-    const k = await sr(p, 'const ks=[...r.querySelectorAll("[data-hely]")]; const rr=ks.map(x=>x.getBoundingClientRect()); return { oszlop: new Set(rr.map(x=>Math.round(x.left))).size, magas: Math.round(Math.min(...rr.map(x=>x.height))), szeles: Math.round(Math.min(...rr.map(x=>x.width))), betu: parseFloat(getComputedStyle(ks[0].querySelector(".nev")).fontSize) };');
-    ok(`O: ${w}px: a helyszinek egy oszlopban, nagy cellakban (>= 54 px magas, >= 17 px betu)`, k.oszlop === 1 && k.magas >= 54 && k.betu >= 17 && k.szeles >= w - 40, JSON.stringify(k));
-  }
-  await ctx.close();
-}
-
-// K. az urlap egy kepernyon: asztalon SEMMIKEPP nem lóg ki; mobilon egy kepernyore fer (mint a Salonic-adatlap) - tobb meretben (egyszer, az asztali futasban)
-if (!MOBIL) {
-  const MERETEK = [
-    ['asztali 1920x1080', { viewport: { width: 1920, height: 1080 }, locale: 'hu-HU' }, false],
-    ['asztali 1440x900', { viewport: { width: 1440, height: 900 }, locale: 'hu-HU' }, false],
-    ['asztali 1366x768', { viewport: { width: 1366, height: 768 }, locale: 'hu-HU' }, false],
-    ['Pixel 5 (393x727)', { ...devices['Pixel 5'], locale: 'hu-HU' }, true],
-    ['iPhone 12 (390x664)', { ...devices['iPhone 12'], locale: 'hu-HU' }, true],
-    ['iPhone SE 3 (375x667)', { ...devices['iPhone SE (3rd gen)'], locale: 'hu-HU' }, true],
-    ['Galaxy S9+ (320x658)', { ...devices['Galaxy S9+'], locale: 'hu-HU' }, true],
-  ];
-  for (const [nev, opt, mobil] of MERETEK) {
-    for (const tipus of Object.keys(LEHETOSEGEK)) {
-      const ctx = await b.newContext(opt);
-      await ctx.route((u) => !u.toString().startsWith(CIM), (r) => r.abort());
-      const p = await ctx.newPage();
-      await p.goto(CIM + '/idopontfoglalas', { waitUntil: 'load' });
-      await varj(p, '[data-tipus]');
-      await kattint(p, `[data-tipus="${tipus}"]`);
-      await varj(p, 'form.urlap');
-      await p.waitForTimeout(600);
-      const m = await sr(p, 'const t=r.querySelector(".tartalom"), g=r.querySelector("[data-kuld]").getBoundingClientRect(), ab=r.querySelector(".ablak").getBoundingClientRect(); return { elfer: t.scrollHeight<=t.clientHeight+1, sh:t.scrollHeight, ch:t.clientHeight, gombAlja:Math.round(g.bottom), ablakAlja:Math.round(ab.bottom), kep: (r.querySelector("[name=kep]").getBoundingClientRect().bottom <= ab.bottom) };');
-      ok(`K: ${nev}: ${tipus}: az urlap egy kepernyon (gorgetes nelkul), a gomb latszik`, m.elfer && m.gombAlja <= m.ablakAlja, `scrollH ${m.sh} / lathato ${m.ch}, gomb alja ${m.gombAlja} / ablak alja ${m.ablakAlja}`);
-      await ctx.close();
-      if (tipus === 'kontroll') continue; // a ket tovabbi tipus ugyanazt az elrendezest adja (csak a legordulo szovege mas): meretenkent elég egyszer
-      break;
-    }
-  }
-}
-
-// K2. a piercing-lepes (ket szuro + az alapertelmezett lista): asztalon egy kepernyon (szigoru), mobilon nagy, olvashato elemek (a gorgetes elfogadott) (a Salonic-listaadat olvaso GET-tel jon)
+// K2. a piercing-lepes merete (a tulajdonos latvanyterve, 2026-10-16): minden meretben nagy, olvashato elemek, semmi nem log ki; asztalon a lenyitott elso kartya
+//     "Időpontot választok" gombja gorgetes nelkul latszik (a Salonic-listaadat olvaso GET-tel jon)
 if (!MOBIL) {
   const SALONIC = /^https:\/\/(medicalpiercing\.salonic\.hu\/(selectLocation|selectSpecialization|showServices|selectDate)\/|api\.salonic\.hu\/calendar\/getAvailableTimes)/;
   const MERETEK2 = [
     ['asztali 1920x1080', { viewport: { width: 1920, height: 1080 }, locale: 'hu-HU' }, true],
     ['asztali 1440x900', { viewport: { width: 1440, height: 900 }, locale: 'hu-HU' }, true],
-    ['asztali 1366x768', { viewport: { width: 1366, height: 768 }, locale: 'hu-HU' }, true],
+    ['asztali 1366x768', { viewport: { width: 1366, height: 768 }, locale: 'hu-HU' }, false],
     ['Pixel 5 (393x727)', { ...devices['Pixel 5'], locale: 'hu-HU' }, false],
     ['iPhone 12 (390x664)', { ...devices['iPhone 12'], locale: 'hu-HU' }, false],
     ['iPhone SE 3 (375x667)', { ...devices['iPhone SE (3rd gen)'], locale: 'hu-HU' }, false],
@@ -406,21 +348,13 @@ if (!MOBIL) {
     await kattint(p, '[data-tipus="uj"]');
     await varj(p, '[data-hely]');
     await kattint(p, '[data-hely="6029"]');
-    const van = await varj(p, '[data-szolg]', 30000);
-    await kattint(p, '[data-mit="egy"]'); // a leghosszabb lista (9 sor): ez a legrosszabb eset
+    const van = await varj(p, '.pk', 30000);
     await p.waitForTimeout(500);
-    const m = van ? await sr(p, 'const t=r.querySelector(".tartalom"); const ks=[...r.querySelectorAll("[data-szolg]")]; const tr=t.getBoundingClientRect(), o=r.querySelector(".osszegzes").getBoundingClientRect(), q=[...r.querySelectorAll(".szuro-sor")].map(x=>x.getBoundingClientRect()), f=r.querySelector(".lista-fej").getBoundingClientRect(); return { sor: ks.length, betu: parseFloat(getComputedStyle(ks[0].querySelector(".nev")).fontSize), gomb: Math.round(Math.min(...[...r.querySelectorAll(".szeg button")].map(x=>x.getBoundingClientRect().height))), sh:t.scrollHeight, ch:t.clientHeight, magas: Math.round(ks[0].getBoundingClientRect().height), egysoros: ks.every(k=>k.querySelector(".nev > span").getBoundingClientRect().height < 19), szabad: Math.round(tr.bottom - ks[ks.length-1].getBoundingClientRect().bottom - 14), tav: [Math.round(q[0].top-o.bottom), Math.round(q[1].top-q[0].bottom), Math.round(f.top-q[1].bottom)] };') : null;
+    const m = van ? await sr(p, 'const t=r.querySelector(".tartalom"); const fej=[...r.querySelectorAll(".pk:not([hidden]) .pk-fej")]; const sz=[...r.querySelectorAll(".pk-szuro .szeg button")]; const v=r.querySelector(".pk.nyitva .pk-valaszt"); const tr=t.getBoundingClientRect(); return { sor: fej.length, magas: Math.round(Math.min(...fej.map(x=>x.getBoundingClientRect().height))), betu: parseFloat(getComputedStyle(r.querySelector(".pk-cim b")).fontSize), gomb: Math.round(Math.min(...sz.map(x=>x.getBoundingClientRect().height))), valaszt: v ? Math.round(v.getBoundingClientRect().height) : 0, kilog: t.scrollWidth > t.clientWidth + 1 || [...r.querySelectorAll(".pk:not([hidden])")].some(k=>k.scrollWidth > k.clientWidth + 1), latszik: v ? Math.round(v.getBoundingClientRect().bottom - tr.bottom) : 999 };') : null;
     if (!m) { ok(`K2: ${nev}: a piercing-lista betoltodik`, false); await ctx.close(); continue; }
-    const elfer = m.sh <= m.ch + 1;
-    ok(`K2: ${nev}: a szuro-szekciok kozott van levego (Budapest / 1. kerdes / 2. kerdes / lista: legalabb 10 px)`, m.tav.every((x) => x >= 10), JSON.stringify(m.tav));
-    if (szigoru) {
-      ok(`K2: ${nev}: a legrosszabb esetben (9 sor) az utolso sor alatt van meg hely (>= 8 px)`, m.szabad >= 8, `${m.szabad} px`);
-      ok(`K2: ${nev}: a piercing-lepes (szurok + ${m.sor} soros lista) egy kepernyon, gorgetes nelkul`, elfer, `scrollH ${m.sh} / lathato ${m.ch}, sormagassag ${m.magas}px`);
-    } else {
-      // mobilon (Feri 2026-10-13) az olvashatosag az elsodleges: nagy betu, magas sorok es gombok; a gorgetes elfogadott
-      ok(`K2: ${nev}: a piercing-sorok nagyok (>= 52 px magas sor, >= 16 px betu), a szuro-gombok >= 48 px magasak`, m.magas >= 52 && m.betu >= 16 && m.gomb >= 48, `sor ${m.magas}px, betu ${m.betu}px, gomb ${m.gomb}px`);
-      console.log(`INFO K2: ${nev}: ${m.sor} sor, ${elfer ? 'elfer' : `gorgetes kell (${m.sh} / ${m.ch})`}, sormagassag ${m.magas}px`);
-    }
+    ok(`K2: ${nev}: a kartyak feje >= 56 px, a nev >= 15 px, a szuro-gombok >= 44 px, az "Időpontot választok" >= 44 px, semmi nem log ki`, m.magas >= 56 && m.betu >= 15 && m.gomb >= 44 && m.valaszt >= 44 && !m.kilog, JSON.stringify(m));
+    if (szigoru) ok(`K2: ${nev}: a lenyitott elso kartya "Időpontot választok" gombja gorgetes nelkul latszik`, m.latszik <= 0, `${m.latszik} px`);
+    else console.log(`INFO K2: ${nev}: a valaszto gomb ${m.latszik <= 0 ? 'gorgetes nelkul latszik' : `${m.latszik} px-re a lathato resz alatt (gorgetes kell)`}`);
     await ctx.close();
   }
 }

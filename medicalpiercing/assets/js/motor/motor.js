@@ -11,7 +11,7 @@
 // Hiba eseten (a Salonic nem valaszol, nincs szolgaltatas): a vendeg a Salonic eredeti foglalojat kapja (tartalek-link).
 import { createSalonicAdapter, HELYSZINEK, HELYSZIN_SORREND, ANY_STAFF, HOST } from './salonic-adapter.js';
 import { createBookingContext } from './booking-id.js';
-import { tipusKod } from './tipus.js';
+import { tipusKod, oldalTipus } from './tipus.js';
 
 const TOVABB = /^(fbclid|gclid|gbraid|wbraid|ttclid|utm_[a-z_]+)$/i;
 const KOSZONO_ORIGIN = /^https:\/\/(www\.)?medicalpiercing\.hu$/;
@@ -267,6 +267,55 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 }
 .kicsi { font-size: 13px; color: #6b6c80; }
 .kicsi.tovabbi { margin: -4px 0 6px; text-align: center; font-size: 12px; }
+
+/* --- 2. lepes: a piercing-kartyak (a tulajdonos latvanyterve, 2026-10-16) --- */
+.pk-fejlec { margin: -2px -2px 14px; padding: 16px 18px 14px; border-radius: 14px; background: #f6e5e0; }
+.pk-fejlec h3 { margin: 0 0 4px; font: 600 clamp(20px, 5.4vw, 24px)/1.2 'poppins-semibold', Poppins, Arial, sans-serif; color: #2f3044; }
+.pk-fejlec p { margin: 0; font-size: 13.5px; color: #6b6c80; }
+.pk-szuro { display: grid; gap: 10px; margin-bottom: 14px; }
+.pk-szuro .szeg { gap: 8px; }
+.pk-szuro .szeg button { min-height: 44px; border-radius: 99px; font-size: 14px; }
+.pk-szuro .szeg button.on { background: #454659; border-color: #454659; box-shadow: none; color: #fff; }
+.pk-info { padding: 12px 0; margin-bottom: 14px; border-top: 1px solid #ecdcd8; border-bottom: 1px solid #ecdcd8; font-size: 13px; line-height: 1.45; }
+.pk-info p { margin: 0; }
+.pk-info-sor { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; margin-top: 6px !important; }
+.pk-csillag { color: #c99b3c; }
+.pk-szuras { padding: 0; border: 0; background: none; font: 600 13px/1.3 'poppins-semibold', Poppins, Arial, sans-serif; color: #a35a4b; cursor: pointer; }
+.pk-video video { display: block; width: min(100%, 260px); margin: 10px auto 0; aspect-ratio: 9 / 16; border-radius: 14px; background: #2f3044; object-fit: cover; }
+.pk-lista { display: grid; gap: 10px; }
+.pk { border: 1.5px solid #ecdcd8; border-radius: 16px; background: #fff; box-shadow: 0 1px 3px rgba(69, 70, 89, .08); }
+.pk.nyitva { border-color: #c99b97; box-shadow: 0 6px 18px rgba(163, 90, 75, .12); }
+.pk-fej { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.pk-ikon { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: #f6e5e0; }
+.pk-ikon img { width: 26px; height: 26px; object-fit: contain; }
+.pk-cim { min-width: 0; }
+.pk-cim b { display: block; font: 600 16.5px/1.25 'poppins-semibold', Poppins, Arial, sans-serif; color: #2f3044; }
+.pk-cim small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: #6b6c80; }
+.pk-ar { display: grid; justify-items: end; gap: 1px; white-space: nowrap; }
+.pk-ar s { font-size: 12px; color: #9a9aa8; }
+.pk-ar b { font: 600 15.5px/1.2 'poppins-semibold', Poppins, Arial, sans-serif; color: #2f3044; }
+.pk-ar em { font: 600 12.5px/1.2 'poppins-semibold', Poppins, Arial, sans-serif; font-style: normal; color: #a35a4b; }
+.pk-ar em:not(:empty)::after { content: ' ⌄'; }
+.pk-test { padding: 0 14px 12px; }
+.pk-pont { display: grid; grid-template-columns: minmax(96px, 34%) minmax(0, 1fr); gap: 12px; align-items: start; margin-bottom: 10px; }
+.pk-pont img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; background: #f6e5e0; }
+.pk-pont b { display: block; margin-bottom: 4px; font: 600 13.5px/1.35 'poppins-semibold', Poppins, Arial, sans-serif; color: #2f3044; }
+.pk-pont p { margin: 0; font-size: 13.5px; line-height: 1.45; }
+.pk-csomag { margin-bottom: 10px; padding: 10px 12px; border-radius: 12px; background: #fbf3f1; font-size: 13.5px; line-height: 1.45; }
+.pk-csomag p { margin: 0 0 6px; } .pk-csomag p:last-child { margin: 0; }
+.pk-garancia { margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; background: #eef3ec; font-size: 13px; line-height: 1.45; color: #3c4a3f; }
+.pk-plusz { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; padding: 10px 12px; border: 1.5px dashed #e3cfca; border-radius: 12px; }
+.pk-plusz b { display: block; font: 600 13.5px/1.3 'poppins-semibold', Poppins, Arial, sans-serif; }
+.pk-plusz span { display: block; font-size: 12.5px; color: #6b6c80; }
+.pk-plusz button { flex: none; min-height: 40px; padding: 0 16px; border: 0; border-radius: 99px; background: #a35a4b; color: #fff; font: 600 13.5px/1 'poppins-semibold', Poppins, Arial, sans-serif; cursor: pointer; white-space: nowrap; }
+.pk-lab { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pk-valaszt { flex: 1 1 auto; min-height: 44px; padding: 0 18px; border: 0; border-radius: 99px; background: #d7aba8; color: #fff; font: 600 15px/1 'poppins-semibold', Poppins, Arial, sans-serif; cursor: pointer; }
+.pk-valaszt:hover { background: #c99b97; }
+.pk-bezar { flex: none; padding: 6px 2px; border: 0; background: none; font: 600 13px/1 'poppins-semibold', Poppins, Arial, sans-serif; color: #a35a4b; cursor: pointer; }
+.pk-tobb { display: block; width: 100%; margin-top: 10px; padding: 10px; border: 0; background: none; font: 600 13.5px/1.35 'poppins-semibold', Poppins, Arial, sans-serif; color: #6b6c80; cursor: pointer; }
+.rejtett { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.pk-fej:focus-visible, .pk-valaszt:focus-visible, .pk-plusz button:focus-visible, .pk-tobb:focus-visible, .pk-szuras:focus-visible, .pk-bezar:focus-visible { outline: 3px solid #f5d3ca; outline-offset: 2px; }
+@media (max-width: 380px) { .pk-fej { gap: 9px; padding: 10px 11px; } .pk-ikon { width: 38px; height: 38px; } .pk-cim b { font-size: 15.5px; } .pk-plusz { flex-wrap: wrap; } .pk-plusz button { width: 100%; } }
 `;
 
 // A foglalo fo oldala: mire foglalsz? (a regi koztes oldal, /idopontfoglalas, 4 kartyaja). Az uj piercing a naptaras utat inditja
@@ -359,7 +408,8 @@ export function nyit(ctx) {
   const all = {
     lepes: 'hely', placeId: HELYSZINEK[ctx.placeId] ? +ctx.placeId : null, serviceId: ctx.serviceId || null,
     staffId: ctx.employeeId ? String(ctx.employeeId) : null, nap: null, honap: null, slotok: null, szolg: null, bookingId: null, expected: null,
-    tipus: null, urlapAdat: null, merve: !ctx.merjen, kinek: 'magamnak', mit: 'tobb',
+    tipus: null, urlapAdat: null, merve: !ctx.merjen, kinek: 'magamnak', mit: oldalTipus(ctx.forras || '') === '3pc' ? 'tobb' : 'egy',
+    oldalTipus: oldalTipus(ctx.forras || ''), nyitott: null, tobbTipus: false, szurasVideo: false,
   };
   const ctxFoglalas = foglalas.begin({ business: 'mp', source_page: ctx.forras || location.pathname });
   all.bookingId = ctxFoglalas.id;
@@ -565,20 +615,84 @@ export function nyit(ctx) {
     return { kinek: 'magamnak', mit: 'egy' };
   };
   const MIT = [['egy', '1 piercing'], ['tobb', 'Több piercing'], ['fulbevalo', 'Fülbevaló']];
+  // A piercing-kartyak (a tulajdonos latvanyterve, 2026-10-16): fejlec, ket szuro (Kinek? / Milyen?), "Az ar tartalmazza", lenyithato kartyak.
+  // A kartya feje nyit / zar (data-nyit); a valasztas gombja a regi [data-szolg] (title = a teljes Salonic-nev, .nev > span = a rovid nev, .ar = az ar:
+  // a tesztek es a foglalasi logika ugyanaz). Lenyitva: a pont helye (valodi fulfoto, 1:1), mire jo, garancia, a "+ 2-3 piercing" (a csomagra valt es lenyitja).
   function szolgRajzol() {
     const lista = tartalom._lista || [];
     const kat = lista.map((s) => [s, kategoria(s)]);
     const db = (k, m) => kat.filter(([, c]) => c.kinek === k && (!m || c.mit === m)).length;
-    // ha a valasztott kombinacio ures (pl. Sopronban nincs "2 szemelynek - 2 db"), az elso nem ures lehetoseg lep a helyere
     if (!db(all.kinek, all.mit)) { const m = MIT.find(([k]) => db(all.kinek, k)); if (m) all.mit = m[0]; else { all.kinek = 'magamnak'; all.mit = (MIT.find(([k]) => db('magamnak', k)) || ['egy'])[0]; } }
-    const kiemelt = (s) => /3 PIERCING|2 PIERCING|szem\S*ynek/i.test(s.name); // az akcios csomagok enyhe kiemelessel (a tobbi sor csak athuzott arat kap)
-    const kartya = (s) => { const e = eredetiAr(s); return `<button class="kartya szolg${e && kiemelt(s) ? ' akcios' : ''}" data-szolg="${esc(s.serviceId)}" title="${esc(szepNev(s.name))}"><span class="ar">${e ? `<s>${ft(e)}</s>` : ''}${ft(s.activePrice)}</span><span class="nev">${szolgIkon(s)}<span>${esc(rovidNev(s.name))}</span></span></button>`; };
-    const mutat = kat.filter(([, c]) => c.kinek === all.kinek && c.mit === all.mit).map(([s]) => s);
-    const gomb = (attr, k, nev, on, tilt, plusz = '') => `<button class="${on ? 'on' : ''}" data-${attr}="${k}" aria-pressed="${on}"${tilt ? ' disabled' : ''}>${nev}${plusz}</button>`;
-    tartalom.innerHTML = osszegzes()
-      + `<div class="szuro"><div class="szuro-sor"><span class="szuro-cimke"><b class="szam">1</b>Kinek szeretnél időpontot?</span><div class="szeg">${gomb('kinek', 'magamnak', 'Magamnak', all.kinek === 'magamnak', false)}${gomb('kinek', 'ketto', 'Két személynek', all.kinek === 'ketto', !db('ketto'))}</div></div>`
-      + `<div class="szuro-sor"><span class="szuro-cimke"><b class="szam">2</b>Milyen piercing érdekel?</span><div class="szeg harom">${MIT.map(([k, n]) => gomb('mit', k, n, all.mit === k, !db(all.kinek, k), k === 'tobb' && db(all.kinek, 'tobb') ? '<i>legjobban megéri</i>' : '')).join('')}</div></div></div>`
-      + `<div class="lista-fej"><span><b class="szam">3</b>Választható piercingek</span><span>${mutat.length} lehetőség</span></div><div class="lista szolg-racs">${mutat.map(kartya).join('')}</div>`;
+    let mutat = kat.filter(([, c]) => c.kinek === all.kinek && c.mit === all.mit).map(([s]) => s);
+    // a tipusoldal piercingje elol (pl. a lep-oldalrol nyitva a Lep)
+    const sajat = (s) => all.mit === 'egy' && tipusKod(s.name) === all.oldalTipus;
+    mutat = [...mutat.filter(sajat), ...mutat.filter((s) => !sajat(s))];
+    // null: az alapertelmezett kartya nyilik le (a szuro valtasakor is); '': a vendeg bezarta, mind csukva marad
+    if (all.nyitott === null || (all.nyitott && !mutat.some((s) => s.serviceId === all.nyitott))) all.nyitott = (all.oldalTipus === '3pc' && mutat.find((s) => /3 PIERCING/i.test(s.name)) || mutat[0] || {}).serviceId || null;
+    // 1 piercing: az elso 4 latszik, a tobbi egy gombra (a lenyitott mindig latszik)
+    const ELSO = 4;
+    const rejtett = all.kinek === 'magamnak' && all.mit === 'egy' && !all.tobbTipus && mutat.length > ELSO + 1 ? mutat.slice(ELSO).filter((s) => s.serviceId !== all.nyitott) : [];
+    const ketto = lista.find((s) => /2 PIERCING/i.test(s.name));
+    const kozerzet = all.mit !== 'fulbevalo';
+    const varos = all.placeId && HELYSZINEK[all.placeId] ? HELYSZINEK[all.placeId].varos : '';
+    const gomb = (attr, k, nev, on, tilt) => `<button class="${on ? 'on' : ''}" data-${attr}="${k}" aria-pressed="${on}"${tilt ? ' disabled' : ''}>${nev}</button>`;
+    tartalom.innerHTML = `<div class="pk-fejlec"><h3>Melyik piercing érdekel?</h3><p>${varos ? esc(varos) + ' · ' : ''}nyisd le a részleteket, mielőtt döntesz</p></div>`
+      + `<div class="pk-szuro"><div class="szeg">${gomb('kinek', 'magamnak', 'Magamnak', all.kinek === 'magamnak', false)}${gomb('kinek', 'ketto', 'Két személynek', all.kinek === 'ketto', !db('ketto'))}</div>`
+      + `<div class="szeg harom">${MIT.map(([k, n]) => gomb('mit', k, n === 'Több piercing' ? '2–3 piercing' : n, all.mit === k, !db(all.kinek, k))).join('')}</div></div>`
+      + `<div class="pk-info"><p><b>Az ár tartalmazza:</b> ${kozerzet ? 'titán ékszer · érzéstelenítő spray · gépi bemérés · ingyenes kontroll · garancia' : 'steril szúrás · G23 titánium ékszer vagy a hozott fülbevalód · ingyenes kontroll'}</p>`
+      + `<p class="pk-info-sor"><span><b class="pk-csillag" aria-hidden="true">★</b> 4,8 · 5000+ Google-értékelés</span><button class="pk-szuras" data-szuras aria-expanded="${all.szurasVideo}"><b aria-hidden="true">▶</b> Hogy néz ki egy szúrás?</button></p>`
+      + `<div class="pk-video"${all.szurasVideo ? '' : ' hidden'}>${all.szurasVideo ? SZURAS_VIDEO : ''}</div></div>`
+      + `<div class="pk-lista">${mutat.map((s) => pkKartya(s, ketto, rejtett.includes(s))).join('')}</div>`
+      + (rejtett.length ? `<button class="pk-tobb" data-tobbtipus>+ ${rejtett.map((s) => esc(pkAdat(s).nev)).join(', ')}</button>` : '');
+  }
+  const SZURAS_VIDEO = '<video src="/assets/video/f18724_e7b1f3b8462543879dbec7bbe759b379.mp4" poster="/assets/img/f18724_e7b1f3b8462543879dbec7bbe759b379f000.webp" controls autoplay muted playsinline preload="metadata"></video>';
+  // egy kartya: fej (ikon, nev, rovid leiras, ar, Reszletek) + lenyithato test; a "+ tobbi tipus" mogotti kartya rejtve (a DOM-ban benne van)
+  function pkKartya(s, ketto, rejt) {
+    const a = pkAdat(s);
+    const e = eredetiAr(s);
+    const nyitva = all.nyitott === s.serviceId;
+    const ikon = ikonKod(s);
+    const fej = `<button class="pk-fej" data-nyit="${esc(s.serviceId)}" aria-expanded="${nyitva}"><span class="pk-ikon">${ikon ? `<img src="/assets/img/ikon/${ikon}.webp" alt="" width="26" height="26" decoding="async">` : ''}</span>`
+      + `<span class="pk-cim"><b>${esc(a.nev)}</b><small>${esc(a.rovid)}</small></span><span class="pk-ar">${e ? `<s>${ft(e)}</s>` : ''}<b>${ft(s.activePrice)}</b><em>${nyitva ? '' : 'Részletek'}</em></span></button>`;
+    let test = '';
+    if (a.foto) test += `<div class="pk-pont"><img src="/assets/img/uj-galeria-${a.foto}-2.webp" alt="A ${esc(a.nev.toLowerCase())} piercing helye a fülön" width="300" height="300" loading="lazy" decoding="async"><div><b>Vendégeink általában ezeken érnek el javulást:</b><p>${esc(a.javulas)}</p></div></div>`;
+    else if (a.csomag) test += `<div class="pk-csomag">${a.csomag}</div>`;
+    if (a.garancia) test += '<p class="pk-garancia"><b>Garancia:</b> ha 6 hét után nem tapasztalsz javulást, 6 hónapon belül megerősítő piercinget kapsz, csak az új ékszer áráért.</p>';
+    if (a.foto && ketto && all.kinek === 'magamnak' && all.mit === 'egy') test += `<div class="pk-plusz"><div><b>Kérsz mellé még egyet?</b><span>2 piercing ${ft(ketto.activePrice)} – bármelyik kettőre</span></div><button data-plusz="${esc(ketto.serviceId)}">+ 2–3 piercing</button></div>`;
+    test += `<div class="pk-lab"><button class="pk-valaszt" data-szolg="${esc(s.serviceId)}" title="${esc(szepNev(s.name))}">Időpontot választok<span class="rejtett"><span class="nev"><span>${esc(rovidNev(s.name))}</span></span><span class="ar">${e ? `<s>${ft(e)}</s>` : ''}${ft(s.activePrice)}</span></span></button><button class="pk-bezar" data-nyit="${esc(s.serviceId)}">Bezár <b aria-hidden="true">⌃</b></button></div>`;
+    return `<div class="pk${nyitva ? ' nyitva' : ''}" data-pk="${esc(s.serviceId)}"${rejt ? ' hidden' : ''}>${fej}<div class="pk-test"${nyitva ? '' : ' hidden'}>${test}</div></div>`;
+  }
+  // a kartya szovegei a Salonic-szolgaltatasbol: tipus (1 piercing), csomag (2 / 3 piercing, ket szemelynek), fulbevalo
+  const PK = {
+    mi: ['Migrén', 'fejfájás, migrén, frontérzékenység', 'migrénes, tenziós és cluster fejfájás, frontérzékenység', 'migren'],
+    sh: ['Shenmen', 'stressz, alvászavar, szorongás', 'stressz, alvászavar, szorongás, nyugtalanság, pánikrohamok', 'shenmen'],
+    kl: ['Klimax', 'hőhullám, izzadás, alvászavar', 'a változókor tünetei: hőhullám, izzadás, alvászavar, hangulatingadozás', 'klimax'],
+    sl: ['Slim', 'étvágy, édesség utáni vágy', 'megnövekedett étvágy, falási rohamok, édesség utáni vágy', 'slim'],
+    al: ['Allergia', 'szénanátha, tüsszögés, szemviszketés', 'légúti allergia, szénanátha, tüsszögés, szemszárazság, szemviszketés', 'allergia'],
+    mj: ['Máj', 'puffadás, fáradtság, ingerlékenység', 'puffadás, emésztési panaszok, hormonális egyensúlyzavar, fáradtság', 'maj'],
+    lp: ['Lép', 'puffadás, fáradtság, gyenge immunrendszer', 'puffadás étkezések után, állandó fáradtság, legyengült immunrendszer, PMS', 'lep'],
+    vb: ['Vastagbél', 'székrekedés, puffadás, bőrproblémák', 'székrekedés, hasi feszülés, bőrproblémák, bélflóra-egyensúlytalanság', 'vastagbel'],
+    pm: ['Pajzsmirigy', 'fáradékonyság, hormonproblémák', 'pajzsmirigy-rendellenesség, fáradékonyság, hormonproblémák, hajhullás', 'pajzsmirigy'],
+  };
+  const DONTES = 'Most nem kell eldöntened: a szalonban segítünk kiválasztani a neked legjobbat.';
+  function pkAdat(s) {
+    const n = szepNev(s.name);
+    let m;
+    if ((m = /(\d)\s*PIERCING/i.exec(n)) && !/szem\S*ynek/i.test(n)) {
+      const d = +m[1];
+      return { nev: `${d} piercing`, rovid: d === 3 ? 'a harmadik csak 5000 Ft' : 'a második féláron', garancia: true,
+        csomag: `<p><b>Bármelyik ${d === 3 ? 'három' : 'két'} piercinget választhatod</b> (migrén, shenmen, klimax, slim, allergia, máj, lép, vastagbél, pajzsmirigy), rajtad múlik.</p><p>${DONTES}</p>` };
+    }
+    if ((m = /szem\S*ynek\s*[-–]\s*(\d)\s*db/i.exec(n))) {
+      const d = +m[1];
+      return { nev: `2 személynek – ${d} db`, rovid: `egy időpontra jöttök, fejenként ${d / 2} piercing`, garancia: true,
+        csomag: `<p><b>Fejenként ${d / 2} piercing, bármelyik típusból</b>: rajtatok múlik, melyiket választjátok.</p><p>Most nem kell eldöntenetek: a szalonban segítünk kiválasztani a nektek legjobbat.</p>` };
+    }
+    if ((m = /^(\d)\s*db\s*f\S*lbeval/i.exec(n))) return { nev: `Fülbevaló – ${m[1]} db`, rovid: 'divat fülpiercing, saját vagy hozott ékszerrel', garancia: false, csomag: '<p>Nem közérzetjavító piercing: a fülcimpába kerül, steril és biztonságos behelyezéssel, G23 titánium ékszerrel vagy a hozott fülbevalóddal.</p>' };
+    if (/^1\+1/i.test(n)) return { nev: 'Allergia 1+1', rovid: 'két allergia piercing egy időpontban', garancia: true, csomag: `<p><b>1+1 db allergia piercing</b> egy időpontban.</p><p>${DONTES}</p>` };
+    const t = PK[tipusKod(n)];
+    if (t) return { nev: t[0], rovid: t[1], javulas: t[2], foto: t[3], garancia: true };
+    return { nev: rovidNev(n), rovid: '', garancia: false };
   }
 
   // --- 3. idopont ---
@@ -685,8 +799,12 @@ export function nyit(ctx) {
     if (d.kuld !== undefined) return urlapKuld();
     if (d.lepes && (t.classList.contains('kesz') || !t.closest('.lepesek'))) return visszaLep(d.lepes);
     if (d.hely) { all.placeId = +d.hely; all.szolg = null; all.nap = null; all.honap = null; all.staffId = null; return ugrik('szolg'); }
-    if (d.kinek) { all.kinek = d.kinek; return szolgRajzol(); }
-    if (d.mit) { all.mit = d.mit; return szolgRajzol(); }
+    if (d.kinek) { all.kinek = d.kinek; all.nyitott = null; return szolgRajzol(); }
+    if (d.mit) { all.mit = d.mit; all.nyitott = null; return szolgRajzol(); }
+    if (d.nyit) { all.nyitott = all.nyitott === d.nyit ? '' : d.nyit; szolgRajzol(); const k = shadow.querySelector(`.pk[data-pk="${d.nyit}"]`); if (k && all.nyitott) k.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return; }
+    if (d.tobbtipus !== undefined) { all.tobbTipus = true; return szolgRajzol(); }
+    if (d.szuras !== undefined) { all.szurasVideo = !all.szurasVideo; return szolgRajzol(); }
+    if (d.plusz) { all.kinek = 'magamnak'; all.mit = 'tobb'; all.nyitott = d.plusz; szolgRajzol(); const k = shadow.querySelector(`.pk[data-pk="${d.plusz}"]`); if (k) k.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
     if (d.szolg) { all.szolg = (tartalom._lista || []).find((x) => x.serviceId === d.szolg) || null; all.nap = null; all.honap = null; if (all.szolg) ugrik('ido'); return; }
     if (d.staff !== undefined) { all.staffId = d.staff || null; all.nap = null; all.honap = null; return naptar(); }
     if (d.honap) { all.honap = d.honap; const elso = [...new Set(all.slotok.map((x) => sb(x).nap))].sort().find((k) => k.startsWith(d.honap)); if (elso) all.nap = elso; return naptar(); }
