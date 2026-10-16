@@ -56,20 +56,24 @@
   /* 1. a hos a tartalom teljes szelessegeben (a galeria, a cim, a szoveg es a gombok is) */
   .kat-hos-b{--galeria:100%}
   .belso .hos-racs{row-gap:12px}
-  .belso .hos-cim{font-size:clamp(1.45rem,6.6vw,1.95rem);line-height:1.12;text-align:left}
+  .belso .hos-cim{font-size:clamp(1.45rem,6.6vw,1.95rem);line-height:1.12;text-align:center}
   .kat-hos-b .hos-cim{font-size:clamp(1.45rem,6.6vw,1.95rem)}
   .kat-hos-b .hos-kep{max-width:none}
   .kat-hos-b .hos-bevezeto{font-size:.9rem;line-height:1.45}
-  /* 2. ertekeles: egy sor (bal: csillagok, jobb: "Kivalo ... velemeny"); alatta a linkek egy sorban; alatta a badge-ek */
+  /* 2. ertekeles: egy sor, a csillagok es a "Kivalo ... velemeny" egymas mellett, kozepen (a tulajdonos kerese, 2026-10-16, 3. kor: ne legyen rés kozottuk);
+     alatta a linkek egy sorban; alatta a badge-ek. A hos szovege mobilon egy kozepvonalra igazodik (cim, bevezeto, ertekeles, linkek, gombok). */
   .hos-ertek-sav{display:flex!important;flex-direction:column;gap:8px;width:100%!important;max-width:100%!important}
-  .hos .kat-ertekeles{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:8px;width:100%;margin:0;font-size:clamp(.8rem,3.6vw,.92rem)}
+  .hos .kat-ertekeles{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:10px;width:100%;margin:0;font-size:clamp(.8rem,3.6vw,.92rem)}
   .hos .kat-ertekeles .csillagok{flex:none}
   .hos .kat-ertekeles a{white-space:nowrap}
   .hos .hos-linkek{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:8px;width:100%;margin:0;font-size:clamp(.74rem,3.4vw,.86rem)}
   .hos .hos-linkek a{white-space:nowrap}
   .kat-hos-b .bizalom{width:100%!important;max-width:100%!important}
   .belso .hos-szoveg>.gombsor+.hos-ertek-sav{margin-top:16px}
-  .belso .hos-szoveg>.hos-bevezeto{text-align:left}
+  .belso .hos-szoveg{text-align:center}
+  .belso .hos-szoveg>.hos-bevezeto{text-align:center}
+  .belso .hos-szoveg>.hos-bevezeto+.kat-ertekeles{margin-top:12px}
+  .belso .hos-szoveg .sajat-elerhetoseg{width:fit-content;max-width:100%;margin-inline:auto}
   .belso .hos-szoveg .sajat-elerhetoseg li{display:flex;gap:10px;align-items:flex-start;text-align:left}
   .belso .hos-szoveg .sajat-elerhetoseg .ik{margin:.2em 0 0}
 }
@@ -81,7 +85,7 @@
 
 /* fooldal, mobil hos (a tulajdonos kerese, 2026-10-16): a cim kitolti a szelesseget; az idezet egy sorban a kep alatt; a ket gomb egy sorban */
 @media (max-width:760px){
-  body:not(.belso) .hos-cim{font-size:clamp(1.4rem,5.9vw,1.9rem);line-height:1.12}
+  body:not(.belso) .hos-cim{font-size:clamp(1.4rem,5.9vw,1.9rem);line-height:1.12;text-align:center}
   body:not(.belso) .hos-kep{margin-bottom:0}
   body:not(.belso) .hos-idezet{position:static;display:block;width:fit-content;max-width:100%;margin:10px auto 0;padding:7px 14px;border-radius:99px;font-size:clamp(.74rem,3.3vw,.86rem);white-space:nowrap;text-align:center}
   body:not(.belso) .hos-szoveg .gombsor{flex-wrap:nowrap;gap:8px}
@@ -121,6 +125,13 @@
   .hos .bizalom li{flex-direction:column;align-items:center;gap:3px;font-size:.62rem;line-height:1.2;text-align:center}
   .hos .bizalom .ik{width:30px;height:30px;padding:6px}
   .hos .bizalom b{font-size:.68rem}
+}
+/* mobil hos linksora (a tulajdonos kerese, 2026-10-16, 3. kor): nem sorkizart, hanem kozepen, mertekletes kozzel (kevés linknel is rendezett);
+   a fooldalon a linksor es alatta a 4 badge ugyanolyan szeles, kozepre igazitott blokk */
+@media (max-width:760px){
+  .belso .hos .hos-linkek{flex-wrap:wrap;justify-content:center;gap:6px clamp(18px,6.5vw,30px)}
+  body:not(.belso) .hos .hos-linkek,body:not(.belso) .hos .bizalom{width:min(100%,300px);margin-inline:auto}
+  body:not(.belso) .hos .bizalom{flex-wrap:nowrap;justify-content:space-between;gap:6px}
 }
 
 /* =====================================================================================================================================
@@ -164,6 +175,14 @@
 .allo-cimke{margin:8px 0 0;color:var(--mut);font-size:.84rem;text-align:center}
 .videoablak.allo{width:min(400px,92vw,calc((100dvh - 120px) * 9 / 16))}
 .videoablak.allo .videoablak-keret{aspect-ratio:9/16}
+/* erintokepernyon (uj-fooldal.js, .mobil; a tulajdonos kerese, 2026-10-16): a videoablak a teljes kepernyot kitolti, fekete hatterrel;
+   a YouTube cimsora es gombjai a lejatszo szelein, a fekete savokon vannak, nem a videon; a bezaro gomb felul, a lejatszo folott */
+.videoablak.mobil{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;border-radius:0;overflow:hidden}
+.videoablak.mobil[open]{display:flex;flex-direction:column}
+.videoablak.mobil .videoablak-zar{position:static;flex:none;align-self:flex-end;margin:max(10px,env(safe-area-inset-top)) 12px 6px 0;background:rgba(255,255,255,.92)}
+.videoablak.mobil .videoablak-keret,.videoablak.mobil.allo .videoablak-keret{flex:1;min-height:0;width:100%;aspect-ratio:auto;border-radius:0;padding-bottom:env(safe-area-inset-bottom)}
+.videoablak-keret:fullscreen{width:100%;height:100%;aspect-ratio:auto;border-radius:0;padding:0;background:#000}
+.videoablak-keret:-webkit-full-screen{width:100%;height:100%;aspect-ratio:auto;border-radius:0;padding:0;background:#000}
 /* info-kartyak (pl. "Kiknek nem ajanlott?") */
 .kartya-racs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0;padding:0;list-style:none}
 .kartya-racs.harom{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -428,3 +447,11 @@
   .belso .hos-racs>.hos-kep.hos-kep-tartalmaz .video .video-kep img{height:100%;object-fit:cover}
 }
 .idezet-nagy small{display:block;margin-top:4px;color:#e9c9c3;font-size:.86rem;font-weight:600}
+/* Velemenyek, mobil hos: a 6 kategoriagomb ket sorban (3 + 3), egyforma szeles racsban, csak a nevvel ("Migren" ...; a "piercing" szo asztalon latszik)
+   (a tulajdonos kerese, 2026-10-16, 3. kor) */
+@media (max-width:760px){
+  .hos .sajat-ugras{margin-top:14px}
+  .hos .sajat-ugras ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:360px;margin-inline:auto}
+  .hos .sajat-ugras a{display:block;padding:7px 6px;font-size:clamp(.8rem,3.6vw,.9rem);text-align:center;white-space:nowrap}
+  .hos .sajat-ugras .ugras-hosszu{display:none}
+}

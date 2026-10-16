@@ -19,3 +19,20 @@ Helyben, a végleges buildre (`node tools/build.mjs`, `node tools/serve.mjs`). A
 | `tools/motor-teszt.mjs` / `--mobil` | az első futáson 1-1 hiba (az adatlap „Sopron · Adatok” fejléce felülíródott) → javítva, újrafuttatva: minden rendben |
 | `tools/funkcio-teszt.mjs` (régi oldalak, a nyitvatartás-javítás miatt) | minden rendben |
 | `tools/elteres.mjs blog` / `--mobil` | 0 eltérő elem |
+
+## Kiegészítés (ugyanaz a PR): mobil hős rendezése és mobil videók
+A tulajdonos további kérései: a mobil hős linksora ne legyen sorkizárt (kevés linknél középre), a csillagok és a „Kiváló…” egymás mellett, egy középvonal a hősben; a főoldalon
+a linksor és a badge-ek egy szélességben; a Vélemények kategóriagombjai két sorban; mobilon a videók teljes képernyőre ugorjanak, a YouTube-ablak ne legyen tele ikonokkal.
+
+**Mérés:** nem érinti. A videókezelés csak megjelenés (teljes képernyő, YouTube `playsinline=0&iv_load_policy=3&fs=1`), új külső kérés nincs; a mérőkód fájljai nem változtak.
+A foglaló `szurasNyit` (információs videó) mobilon teljes képernyőt kér; a foglalási út nem változott.
+
+| Teszt | Eredmény |
+|---|---|
+| `tools/uj-oldalak-teszt.mjs` (mind) | 174 oldal, 5552 ellenőrzés, 0 hiba |
+| `tools/uj-fooldal-teszt.mjs` | minden rendben |
+| `tools/motor-tipus-teszt.mjs` / `--mobil`, `tools/motor-formazas-teszt.mjs`, `tools/motor-teszt.mjs` / `--mobil` | minden rendben |
+| Érintős mobil emuláció (Playwright, 390×844, eseti szkript) | YouTube-ablak: teljes képernyő (`.videoablak-keret`), a beágyazás paraméterei rendben, bezárás után nincs teljes képernyő; vendégvideó: `playsInline=false`, teljes képernyő; statikus `video[controls]`: a `playsinline` lekerül, a lejátszás teljes képernyőt kér, a végén kilép; asztalon (1440) változatlan |
+| Kategóriagombok (Vélemények) 320 / 360 / 375 / 390 / 430 px | mindenhol 2 sor |
+
+Megjegyzés: a tesztböngészőben (Playwright Chromium) nincs H.264, és a YouTube a helyi címről „Error 153”-at ad – ez a környezet korlátja, a régi paraméterekkel is így van.

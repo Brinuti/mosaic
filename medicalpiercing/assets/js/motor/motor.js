@@ -978,8 +978,12 @@ export function nyit(ctx) {
     f.innerHTML = `<div class="pk-felugro-doboz"><p class="pk-felugro-cim">Hogy néz ki egy szúrás?</p>${SZURAS_VIDEO}<button class="pk-felugro-x" data-szuras-bezar aria-label="Bezárás">×</button></div>`;
     $('.fatyol').appendChild(f);
     const v = f.querySelector('video');
+    // erintokepernyon a video teljes kepernyon indul (a tulajdonos kerese, 2026-10-16): iPhone-on playsinline nelkul a Safari sajat lejatszoja, mashol requestFullscreen
+    const erinto = !!(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+    if (erinto) { v.playsInline = false; v.removeAttribute('playsinline'); }
     const p = v.play();
     if (p && p.catch) p.catch(() => { v.muted = true; v.play().catch(() => {}); });
+    if (erinto && v.requestFullscreen) v.requestFullscreen().catch(() => {});
     f.querySelector('.pk-felugro-x').focus({ preventScroll: true });
   }
   const billentyu = (e) => { if (e.key !== 'Escape') return; if (szurasZar()) return; if (all.lepes !== 'adatlap') bezar(); };

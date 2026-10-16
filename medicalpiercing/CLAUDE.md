@@ -43,14 +43,21 @@ Ezen felül:
   az árak a Salonic mostani árai) és az Árlista / Ajándékkártya (`sajat/arlista-garancia.html`, `sajat/ajandekkartya.html`; a vásárlás a `https://medicalpiercing.salonic.hu/giftcards` címen,
   a motor ezt nem fogja el). A generált `sajat/` fájlokat ne kézzel szerkeszd, hanem a generátort futtasd. A Gabi története, a Rólunk és az őszi akció oldala a B-oldalak építőjével készül.
 - **Egységes formázás minden új oldalon** (a tulajdonos kérései, 2026-10-16): `assets/css/uj-egyseges.css` (minden lapon UTOLSÓKÉNT töltődik). Asztalon a hős szöveghasábjának teteje / alja
-  a kép tetejéhez / aljához igazodik; mobilon a hős a tartalom teljes szélességében, az értékelés egy sorban (bal: csillagok, jobb: „Kiváló…”), alatta a 3 link egy sorban, alatta a badge-ek;
-  a rövid (≤34 karakteres) cím egy sorban (`cim-rovid`, `sablon.mjs`). A kéthasábos dobozok hasábjai egyforma magasak (a cím a videó tetejénél, a gomb a videó aljánál), az ikonos
+  a kép tetejéhez / aljához igazodik; mobilon a hős a tartalom teljes szélességében, és MINDEN eleme egy középvonalra igazodik (cím, bevezető, gombok, értékelés, linkek;
+  a tulajdonos kérése, 2026-10-16, 3. kör: „valami középre van igazítva, meg nem”): az értékelés egy sorban, a csillagok és a „Kiváló…” egymás mellett, középen (nincs rés közöttük);
+  alatta a linkek középen, mértékletes közzel – nem sorkizárva, kevés linknél sem; alatta a badge-ek (a piercing-oldalakon teljes szélességben). A főoldalon a linksor és a 4 badge
+  ugyanolyan széles (300 px), középre igazított blokk. A Vélemények hősében a 6 kategóriagomb mobilon 3×2-es rácsban, csak a névvel (a „piercing” szó asztalon látszik, `ugras-hosszu`).
+  A rövid (≤34 karakteres) cím egy sorban (`cim-rovid`, `sablon.mjs`). A kéthasábos dobozok hasábjai egyforma magasak (a cím a videó tetejénél, a gomb a videó aljánál), az ikonos
   másodlagos címkék („VIDEÓ”, „A MÉDIÁBAN”) nincsenek. Álló videó mindig álló (9:16) keretben (`allo-keret`). A 93%-os blokk közös (`statDoboz`, `tools/uj-oldalak/kozos.mjs`;
   `reszek/stat-93.html`), a „Tudtad, hogy…?” doboz közös (`reszek/tudtad.html`), a „Helyszíneink” link mindenhol a kitelepülések oldalára (`/elerhetosegek`) mutat. Tablet (761–1000 px): a hős
   szövege teljes szélességű, az álló videós lépések két hasábban.
 - **Menü és lábléc** (2026-10-16): a „Vélemények” után 5 csillag (Google-jel nélkül), a menü 1001 px-től egy sorban elfér; az almenü-ikonok GPT-vel készült vonalas ikonok
   (`assets/img/menu-ikon/<név>.webp`, 96 px), a piercerek mellett a portréjuk (`assets/img/csapat/`). A lábléc (`reszek/lablec.html`) az éles oldal láblécének tartalma sötét háttéren: menü,
   tudnivalók, elérhetőségek, nyitvatartás (H–P 09:00–19:00, Szo 09:00–18:00, V zárva; a tulajdonos szerint a 9–19 a helyes – a régi oldalak láblécében álló „H-P: 10:00 - 19:00”-t a `tools/build.mjs` is javítja), két foglalás-gomb, jogi szövegek.
+- **Videók mobilon** (a tulajdonos kérése, 2026-10-16): érintőképernyőn (`(hover: none) and (pointer: coarse)`) a lejátszott videó teljes képernyőre ugrik (`assets/js/uj-fooldal.js`, 3. és 3b.):
+  a saját mp4-ek (`video[controls]`, a vendégvideók sávja is) `playsinline` nélkül (iPhone: a Safari saját lejátszója), Androidon a lejátszáskor `requestFullscreen`, a végén vissza; a YouTube-ablak
+  (`#videoablak.mobil`) kitölti a képernyőt (a YouTube címsora, gombjai a fekete sávokra kerülnek, nem a videóra), Androidon teljes képernyő + fekvő tájolás, a beágyazás kap
+  `playsinline=0&iv_load_policy=3&fs=1`-et. Asztalon semmi sem változik. A foglaló „Hogy néz ki egy szúrás?” videója is teljes képernyőn indul mobilon (`szurasNyit`).
 - **A hős 4 badge-e** (`reszek/bizalom.html`) csak a piercing-oldalakon, az akció-oldalakon és a főoldalon van (a tulajdonos kérése, 2026-10-16: „csak helyet foglal mobilon”); a tartalmi
   oldalakon, a piercer-oldalakon és a GYIK-en nincs. A piros körös X rajzolt (SVG), nem „×” betű. A galériás hős asztalon négyzetes (1:1) marad.
 - **Térkép a kitelepülések oldalán**: a városokra kattintva a foglalómotor az adott helyszínnel nyílik; asztalon rámutatva infobox a címmel (a címek: `reszek/helyszinek.html`) (`tools/uj-helyszin-terkep.mjs`: HTML-linkek az SVG fölött, `ht-pin`, a meglévő

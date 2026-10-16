@@ -121,6 +121,17 @@
   }
 
   // --- 3. videoablak ---------------------------------------------------------------------------------------
+  // erintokepernyon (telefon, tablet) a lejatszott video teljes kepernyore ugrik (a tulajdonos kerese, 2026-10-16)
+  const ERINTO = !!(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+  const teljesKepernyo = (el) => {
+    if (document.fullscreenElement || document.webkitFullscreenElement || el.webkitDisplayingFullscreen) return null;
+    try {
+      const kero = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (kero) { const p = kero.call(el); return p && p.then ? p : Promise.resolve(); }
+      if (el.webkitEnterFullscreen) el.webkitEnterFullscreen();   // iPhone: csak a video elem tud teljes kepernyot
+    } catch (x) { /* nem tamogatott: marad a helyben / ablakban lejatszas */ }
+    return null;
+  };
   const ablak = $('#videoablak');
   if (ablak && typeof ablak.showModal === 'function') {
     const keret = $('.videoablak-keret', ablak);
@@ -132,7 +143,8 @@
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
       e.preventDefault();
       const f = document.createElement('iframe');
-      f.src = a.dataset.embed;
+      // erintokepernyon: iPhone-on a YouTube a sajat teljes kepernyos lejatszojaban indul (playsinline=0), kevesebb felirat a kepen (iv_load_policy=3)
+      f.src = ERINTO && /youtube/.test(a.dataset.embed) ? a.dataset.embed + (a.dataset.embed.includes('?') ? '&' : '?') + 'playsinline=0&iv_load_policy=3&fs=1' : a.dataset.embed;
       f.title = a.dataset.cim || 'Videó';
       f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
       f.allowFullscreen = true;
@@ -140,8 +152,25 @@
       keret.textContent = '';
       keret.appendChild(f);
       ablak.classList.toggle('allo', a.hasAttribute('data-allo'));   // allo (9:16) video: allo ablak
+      // erintokepernyon az ablak kitolti a kepernyot (a YouTube feliratai, gombjai a fekete savokra kerulnek, nem a videora),
+      // es ahol lehet (Android), a lejatszo teljes kepernyore ugrik, a fekvo video fekvo tajolasban
+      ablak.classList.toggle('mobil', ERINTO);
       ablak.showModal();
+      if (ERINTO) {
+        const p = teljesKepernyo(keret);
+        if (p && !a.hasAttribute('data-allo')) p.then(() => { const t = window.screen && window.screen.orientation; if (t && t.lock) t.lock('landscape').catch(() => {}); }).catch(() => {});
+      }
     }));
+    ablak.addEventListener('close', () => { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); });
+  }
+
+  // --- 3b. az oldal sajat videoi (mp4) erintokepernyon a lejatszaskor teljes kepernyore ugranak; a vegen visszaallnak ---
+  // (iPhone: playsinline nelkul a Safari a sajat teljes kepernyos lejatszojaban inditja; Android: teljes kepernyo a lejatszaskor)
+  const hangosVideo = (v) => v instanceof HTMLVideoElement && v.controls && !v.loop && !v.defaultMuted;
+  if (ERINTO) {
+    $$('video').forEach((v) => { if (hangosVideo(v)) { v.playsInline = false; v.removeAttribute('playsinline'); } });
+    document.addEventListener('play', (e) => { if (hangosVideo(e.target)) teljesKepernyo(e.target); }, true);
+    document.addEventListener('ended', (e) => { if (hangosVideo(e.target) && document.fullscreenElement === e.target && document.exitFullscreen) document.exitFullscreen().catch(() => {}); }, true);
   }
 
   // --- 4. Google-velemenyek: a Trustindex-widget (az oldalban a loader.js tolti, lapozhato); ha 9 mp alatt nem jelenik meg, a mentett tartalek latszik ---
@@ -214,7 +243,7 @@
       const g = e.target.closest('[data-vsav-video]');
       if (!g) return;
       const v = document.createElement('video');
-      v.src = g.dataset.vsavVideo; v.controls = true; v.playsInline = true; v.autoplay = true; v.preload = 'auto';
+      v.src = g.dataset.vsavVideo; v.controls = true; v.playsInline = !ERINTO; v.autoplay = true; v.preload = 'auto';
       const kep = $('img', g); if (kep) v.poster = kep.currentSrc || kep.src;
       v.className = 'vsav-video';
       g.replaceWith(v);
