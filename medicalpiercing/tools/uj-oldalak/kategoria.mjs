@@ -10,6 +10,7 @@
 // a fejlec "Piercingek" menujenek oldalai. A "Divat fulpiercing" kimarad: kulon arlistaja van (12.000 Ft), a fooldal arai nem igazak ra.
 import fs from 'node:fs';
 import path from 'node:path';
+import { statDoboz } from './kozos.mjs';
 
 export const KATEGORIA_UTAK = new Set(['/migren-piercing', '/shenmen-piercing', '/klimax-piercing', '/slim-etvagycsokkento-piercing',
   '/allergia-piercing', '/maj-piercing', '/pajzsmirigy-piercing', '/lep-piercing', '/vastagbel-piercing']);
@@ -419,7 +420,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
   const bekezd = (n) => `<p>${szovegLink(n.html)}</p>`;
   const gombHtml = (szoveg, href, kicsi = true) => `<a class="gomb ${kicsi ? 'gomb-kicsi' : 'gomb-tomor'}" href="${esc(href)}">${esc(szoveg)}${IK('chev', 'ik-nyil')}</a>`;
   // a fooldali kozos dobozok (akcio, arak, ekszerek ...) egy oldalon csak egyszer (az eredeti oldalon a ket arlista-szakasz ketszer hozna)
-  const EGYSZER = new Set(['akcio', 'arak', 'ekszerek', 'helyszinek', 'piercingek', 'media', 'csapat']);
+  const EGYSZER = new Set(['akcio', 'arak', 'ekszerek', 'helyszinek', 'piercingek', 'media', 'csapat', 'tudtad']);
   const voltResz = new Set();
   const reszlet = (nev) => { if (EGYSZER.has(nev)) { if (voltResz.has(nev)) return ''; voltResz.add(nev); } return T.partial(ROOT, nev); };
   const keparany = (n) => (n.nw && n.nh ? ` width="${n.nw}" height="${n.nh}"` : '');
@@ -460,7 +461,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     if (!/</.test(cim)) cim = cim.replace(/(garanci.*|egészségügyi tapasztalattal\.?)$/i, '<em>$1</em>');
     const gomb = h.gomb ? h.gomb : { szoveg: 'Időpontot foglalok', href: '/idopontfoglalas' };
     const linkek = [`<li><a href="/migren-es-shenmen-piercing-garancia">Garancia »</a></li>`];
-    if (van.has('helyszin')) linkek.push('<li><a href="#helyszinek">Helyszíneink »</a></li>');
+    linkek.push('<li><a href="/elerhetosegek">Helyszíneink »</a></li>');   // a tulajdonos kerese (2026-10-16): mindenhol a kitelepulesek oldalara visz
     for (const e of h.extra) linkek.push(`<li>${szovegLink(e.html)}</li>`);
     const csill = Array.from({ length: 5 }, () => IK('star')).join('');
     // a pontszam es a vélemenyek szama a Trustindex-widget fejlecebol jon (assets/js/uj-fooldal.js 4c.: /api/ertekeles); a szoveg itt csak tartalek
@@ -510,7 +511,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     }
     const gomb = h.gomb ? h.gomb : { szoveg: 'Időpontot foglalok', href: '/idopontfoglalas' };
     const linkek = [`<li><a href="/migren-es-shenmen-piercing-garancia">Garancia »</a></li>`];
-    if (van.has('helyszin')) linkek.push('<li><a href="#helyszinek">Helyszíneink »</a></li>');
+    linkek.push('<li><a href="/elerhetosegek">Helyszíneink »</a></li>');   // a tulajdonos kerese (2026-10-16): mindenhol a kitelepulesek oldalara visz
     // az eredeti "Mutasd az ekszereket es az arakat >>" link az oldal sajat reszere mutat: a lapon belul az ekszerekhez ugrik
     // mobilon a hosszu szoveg helyett a rovid ("Ekszerek es arak") latszik, hogy a 3 link egy sorba ferjen
     for (const e of h.extra.filter((x) => !/vélemény|Kiváló/i.test(szovegTiszta(x.html)))) linkek.push(`<li><a href="${van.has('ekszer') ? '#ekszerek' : '#arak'}"><span class="hosszu">${esc(szovegTiszta(e.html).replace(/\s*(?:>>|&gt;&gt;)\s*$/, ''))}</span><span class="rovid">Ékszerek és árak</span> »</a></li>`);
@@ -555,7 +556,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     <div class="kat-doboz-szoveg">
       <h2>${szovegLink(b.cim.html)}</h2>
       ${b.szovegek.map(bekezd).join('\n      ')}
-      <ul class="pipak">${b.pipak.map((x) => `<li>${IK('check')}${pipaTisztit(szovegLink(x.html))}</li>`).join('')}</ul>
+      <ul class="pipak">${b.pipak.map((x) => `<li>${IK('check')}<span>${pipaTisztit(szovegLink(x.html))}</span></li>`).join('')}</ul>
     </div>
   </article></section>`;
 
@@ -602,7 +603,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     <div class="kat-doboz-szoveg">
       <p class="felirat">${IK('userc')}Vendégeink tapasztalata</p>
       <h2>${esc(szovegTiszta(b.cim.html).replace(/:\s*$/, ''))}</h2>
-      <ul class="pipak">${b.elemek.map((e) => `<li>${IK('check')}${esc(e)}</li>`).join('')}</ul>
+      <ul class="pipak">${b.elemek.map((e) => `<li>${IK('check')}<span>${esc(e)}</span></li>`).join('')}</ul>
       <a class="gomb gomb-kicsi" href="/idopontfoglalas">Időpontot foglalok${IK('chev', 'ik-nyil')}</a>
     </div>
   </article></section>`;
@@ -742,8 +743,9 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
     const cimHtml = B ? szovegLink(b.cim.html).replace(/(\d[\d.\s]*\d)(?=\s+vendég)/, `<span data-ti-darab>${GOOGLE_DB}</span>`) : szovegLink(b.cim.html);
     // a vendegek videos beszamoloi a piercing-tipus szerint (tools/uj-video-velemenyek.mjs), az elso velemeny-blokk alatt
     const gk = GALERIA_KULCS.find(([re]) => re.test(adat.ut));
-    const vf = gk && !c.videoVelemeny && path.join(ROOT, `uj-oldalak/reszek/video-velemeny-${gk[1]}.html`);
-    const videok = vf && fs.existsSync(vf) ? (c.videoVelemeny = true, `\n${reszlet(`video-velemeny-${gk[1]}`)}`) : '';
+    // (a tobbi oldalon, es ahol a tipushoz nincs video: mind a 37 video; a tulajdonos kerese: "mindenhol tedd bele az osszeset, ahol valo")
+    const vKulcs = gk && fs.existsSync(path.join(ROOT, `uj-oldalak/reszek/video-velemeny-${gk[1]}.html`)) ? gk[1] : 'mind';
+    const videok = !c.videoVelemeny ? (c.videoVelemeny = true, `\n${reszlet(`video-velemeny-${vKulcs}`)}`) : '';
     return `<section class="kat-blokk">
     <div class="tarto kat-fej"><h2>${cimHtml}</h2>${b.alcim ? `<p class="kat-alcim">${szovegLink(b.alcim.html)}</p>` : ''}</div>
 ${widget}
@@ -785,16 +787,10 @@ ${widget}
     </div>
   </article></section>`;
 
+  // a 93%-os statisztika: a kozos doboz (tools/uj-oldalak/kozos.mjs), mint a tukor-oldalakon
   const stat = (b) => {
     const [szam, szoveg, ...lab] = b.szovegek;
-    return `<section class="tarto"><article class="kat-doboz kat-stat">
-    <img class="kat-stat-kep" src="${esc(b.kep.src)}"${keparany(b.kep)} alt="${esc(b.kep.alt || '')}" loading="lazy" decoding="async">
-    <div class="kat-doboz-szoveg">
-      <p class="kat-szam">${szovegLink(szam.html)}</p>
-      ${szoveg ? `<p class="kat-szam-szoveg">${szovegLink(szoveg.html)}</p>` : ''}
-      ${lab.map((x) => `<p class="kat-lab">${szovegLink(x.html)}</p>`).join('')}
-    </div>
-  </article></section>`;
+    return `<section class="tarto">${statDoboz({ kep: esc(b.kep.src), alt: esc(b.kep.alt || ''), szam: szovegLink(szam.html), mondat: szoveg ? szovegLink(szoveg.html) : '', lab: lab.map((x) => szovegLink(x.html)) })}</section>`;
   };
 
   // a vendegek panaszai: a fooldal "panel" stilusa (szoveg + elhalvanyodo kep)
@@ -853,6 +849,8 @@ ${widget}
     const lattak = new Set();
     // a szalon-fotogaleria (csak egy nagy galeria, nincs mellette cim): az eredeti FOOLDAL mostani kepei jelennek meg (a regi kepeken mar nem dolgozo kolleganok is vannak)
     if (b.nodes.length === 1 && b.nodes[0].t === 'galeria' && b.nodes[0].kepek.length >= 10 && fooldaliGaleria) return `<section class="tarto"><div class="sz kat-doboz kat-egyeb">${T.csomopont(fooldaliGaleria, c)}</div></section>`;
+    // a "Tudtad, hogy...? Bizonyos piercing parok erositik egymas hatasat" doboz: a kozos, megtervezett valtozat (reszek/tudtad.html; a tulajdonos kerese, 2026-10-16)
+    if (b.nodes.some((n) => n.t === 'p' && /^Tudtad, hogy/.test(String(n.html).replace(/<[^>]+>/g, '').trim()))) return reszlet('tudtad');
     for (const n of b.nodes) {   // az ismetlodo, azonos gombokbol (a Wix-oldalon egymas alatt halmozva) egy marad
       if (n.t === 'gomb') { const kulcs = n.szoveg + '|' + n.href; if (lattak.has(kulcs)) continue; lattak.add(kulcs); }
       lathato.push(n);

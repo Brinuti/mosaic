@@ -15,11 +15,15 @@ const BALATON = [[17.24, 46.73], [17.42, 46.71], [17.62, 46.76], [17.86, 46.86],
 const VAROSOK = [
   ['Budapest', 47.4979, 19.0402, 0, -30, 'middle', true],
   ['Sopron', 47.6817, 16.5845, -4, -20, 'middle'], ['Szombathely', 47.2307, 16.6218, 16, 6, 'start'], ['Zalaegerszeg', 46.8417, 16.8416, -6, -18, 'middle'],
-  ['Keszthely', 46.7684, 17.2427, 16, 24, 'start'], ['Nagykanizsa', 46.459, 16.9897, 0, 30, 'middle'], ['Kaposvár', 46.3594, 17.7968, 0, 30, 'middle'],
+  ['Keszthely', 46.7684, 17.2427, 16, 24, 'start'], ['Nagykanizsa', 46.459, 16.9897, 0, 30, 'middle'], ['Kaposvár', 46.3594, 17.7968, 16, 8, 'start'],
   ['Pécs', 46.0727, 18.2323, 0, 30, 'middle'], ['Székesfehérvár', 47.186, 18.4221, -14, 30, 'middle'], ['Kecskemét', 46.8964, 19.6897, 0, 30, 'middle'],
   ['Szeged', 46.253, 20.1414, 0, 30, 'middle'], ['Békéscsaba', 46.6735, 21.0877, 0, 30, 'middle'], ['Debrecen', 47.5316, 21.6273, 0, 30, 'middle'],
   ['Nyíregyháza', 47.9495, 21.7244, 0, -18, 'middle'], ['Miskolc', 48.1035, 20.7784, 0, -18, 'middle'],
 ];
+
+// a varos Salonic-helyszine: a terkepen a varosra kattintva a foglalo ezzel a helyszinnel nyilik (a tulajdonos kerese, 2026-10-16)
+const HELY = { Budapest: 6029, Debrecen: 11424, Békéscsaba: 13422, Kaposvár: 14144, Kecskemét: 10330, Keszthely: 10329, Miskolc: 10357, Nagykanizsa: 12348,
+  Nyíregyháza: 12353, Pécs: 12236, Sopron: 9067, Szeged: 12169, Székesfehérvár: 14145, Szombathely: 14229, Zalaegerszeg: 12237 };
 
 // egyenterű vetítés a 47,2 fokos szélességen; 1000 egység széles, körben margó
 const K = Math.cos((47.2 * Math.PI) / 180);
@@ -59,6 +63,34 @@ const svg = `<svg class="helyszin-terkep" viewBox="0 0 ${W} ${H}" role="img" ari
   + `<path d="${gorbe(BALATON, true)}" fill="#c9dde8"/>`
   + tuk + '</svg>';
 
-const html = `  <!-- a Helyszíneink hősképe: generált térkép (tools/uj-helyszin-terkep.mjs), a 15 helyszín a valódi helyén -->\n  ${svg}\n`;
+// a kattinthato varosok: HTML-linkek a terkep folott (a foglalo-indito es a meres a rendes <a> linkeket ismeri, az SVG-linkeket nem); a link a varos
+// pontjat es feliratat fedi, a helyszin-csempekkel azonos Salonic-cimre mutat (a motor elfogja, a helyszin mar kivalasztva)
+const pinek = VAROSOK.map(([nev, la, lo, dx, dy, ig, fo]) => {
+  const x = px(lo), y = py(la);
+  const bal = ig === 'start' ? x - 14 : x - 60, jobb = ig === 'start' ? x + dx + 14 * nev.length + 10 : x + 60;
+  const fent = Math.min(y - 16, y + dy - 22), lent = Math.max(y + 16, y + dy + 8) + (fo ? 26 : 0);
+  const pct = (v, m) => `${((v / m) * 100).toFixed(2)}%`;
+  return `<a class="ht-pin${fo ? ' ht-pin-fo' : ''}" href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=${HELY[nev]}" style="left:${pct(bal, W)};top:${pct(fent, H)};width:${pct(jobb - bal, W)};height:${pct(lent - fent, H)}" aria-label="${nev}: időpontfoglalás"></a>`;
+}).join('');
+
+const html = `  <!-- a Helyszíneink hősképe: generált térkép (tools/uj-helyszin-terkep.mjs), a 15 helyszín a valódi helyén; a varosra kattintva a foglalo nyilik -->\n  <div class="ht-doboz">${svg}<div class="ht-pinek">${pinek}</div></div>\n`;
 fs.writeFileSync(KI, html);
 console.log(`${VAROSOK.length} helyszín, ${W}x${H}: ${KI}`);
+
+// ugyanez a terkep a foglalomotor helyszin-lepesében (a tulajdonos kerese, 2026-10-16: "tedd bele a motorba a terkepet"): a varosra kattintva a helyszin
+// kivalasztva (mint a csempere kattintva). A motor shadow DOM-jaban: gombok (data-terkep-hely), a motor CSS-e rajzolja (ht-*).
+const KI_MOTOR = new URL('../assets/js/motor/terkep.js', import.meta.url).pathname;
+const svgMotor = svg.replace(' role="img" aria-labelledby="ht-cim"', ' aria-hidden="true"').replace(/<title id="ht-cim">[^<]*<\/title>/, '');
+const pinekMotor = VAROSOK.map(([nev, la, lo, dx, dy, ig, fo]) => {
+  const x = px(lo), y = py(la);
+  const bal = ig === 'start' ? x - 14 : x - 60, jobb = ig === 'start' ? x + dx + 14 * nev.length + 10 : x + 60;
+  const fent = Math.min(y - 16, y + dy - 22), lent = Math.max(y + 16, y + dy + 8) + (fo ? 26 : 0);
+  const pct = (v, m) => +((v / m) * 100).toFixed(2);
+  return [HELY[nev], nev, pct(bal, W), pct(fent, H), pct(jobb - bal, W), pct(lent - fent, H)];
+});
+fs.writeFileSync(KI_MOTOR, `// GENERALT FAJL (tools/uj-helyszin-terkep.mjs), ne kezzel szerkeszd: Magyarorszag terkepe a 15 helyszinnel a foglalomotor helyszin-lepesehez.
+// TERKEP_PINEK: [placeId, varos, bal %, fent %, szeles %, magas %] - a kattinthato terulet a varos pontja es felirata folott.
+export const TERKEP_SVG = ${JSON.stringify(svgMotor)};
+export const TERKEP_PINEK = ${JSON.stringify(pinekMotor)};
+`);
+console.log(`motor-terkep: ${KI_MOTOR}`);

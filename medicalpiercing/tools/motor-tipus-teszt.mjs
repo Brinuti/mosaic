@@ -313,7 +313,9 @@ for (const [honnan, ut, elso] of [['migren-oldalrol', '/migren-piercing', 'Migr�
   if (!van) { await ctx.close(); continue; }
   let m = await olvas();
   ok(`N: ${honnan}: nincs fejlec-doboz, van "Az ár tartalmazza", alapertek: Magamnak + 1 piercing`, !m.fejlec && m.tartalmaz && JSON.stringify(m.on) === JSON.stringify(['Magamnak', '1 piercing']), JSON.stringify([m.fejlec, m.on]));
-  ok(`N: ${honnan}: 1 piercing: mind a 9 latszik (nincs "+ tobbi"), mindegyiken "Részletek" + "Időpontot választok"; a(z) ${elso} elol, lenyitva, fulfotoval, garanciaval, "+ 2–3 piercing" nelkul; nincs "Mikor? / Fáj?"`, m.db === 9 && ['Máj', 'Lép', 'Vastagbél', 'Allergia'].every((x) => m.nevek.includes(x)) && m.latszik.length === 9 && !m.tobb && m.ketgomb && m.latszik[0] === elso && m.nyitott === elso && m.foto && m.garancia && !m.plusz && !m.csempe, JSON.stringify(m.latszik) + ' nyitott: ' + m.nyitott);
+  // a "Kiesett ékszer újraszúrása" (2026-10-16 ota a Salonicban): legfeljebb egyszer, a sor vegen
+  const UJRA = 'Kiesett ékszer újraszúrása', vegen = (l) => l.filter((x) => x === UJRA).length <= 1 && (!l.includes(UJRA) || l.indexOf(UJRA) === l.length - 1);
+  ok(`N: ${honnan}: 1 piercing: mind a 9 latszik (nincs "+ tobbi"; az ujraszuras legfeljebb egyszer, a vegen), mindegyiken "Részletek" + "Időpontot választok"; a(z) ${elso} elol, lenyitva, fulfotoval, garanciaval, "+ 2–3 piercing" nelkul; nincs "Mikor? / Fáj?"`, m.latszik.filter((x) => x !== UJRA).length === 9 && vegen(m.latszik) && m.db === m.latszik.length && ['Máj', 'Lép', 'Vastagbél', 'Allergia'].every((x) => m.nevek.includes(x)) && !m.tobb && m.ketgomb && m.latszik[0] === elso && m.nyitott === elso && m.foto && m.garancia && !m.plusz && !m.csempe, JSON.stringify(m.latszik) + ' nyitott: ' + m.nyitott);
   await kattint(p, '.pk:not(.nyitva) .pk-reszlet'); m = await olvas();
   ok(`N: ${honnan}: egy masik kartya "Részletek" gombjara az nyilik le (egyszerre egy)`, !!m.nyitott && m.nyitott !== elso && (await sr(p, 'return r.querySelectorAll(".pk.nyitva").length')) === 1, m.nyitott);
   await kattint(p, '[data-mit="tobb"]'); m = await olvas();
@@ -321,7 +323,7 @@ for (const [honnan, ut, elso] of [['migren-oldalrol', '/migren-piercing', 'Migr�
   await kattint(p, '.pk:not(.nyitva) .pk-reszlet'); m = await olvas();
   ok(`N: ${honnan}: a 2 piercing kedvezmenye is ki van fejtve`, m.nyitott === '2 piercing' && /Külön-külön 2 × [\d.]+ Ft = [\d.]+ Ft lenne/.test(m.kedv), m.kedv);
   await kattint(p, '[data-mit="fulbevalo"]'); m = await olvas();
-  ok(`N: ${honnan}: Fulbevalo: 1, 2, 3 db`, m.db === 3 && m.nevek.every((x) => /^Fülbevaló/.test(x)), JSON.stringify(m.nevek));
+  ok(`N: ${honnan}: Fulbevalo: 1, 2, 3 db (+ legfeljebb az ujraszuras, a vegen)`, m.nevek.filter((x) => /^Fülbevaló/.test(x)).length === 3 && m.nevek.every((x) => /^Fülbevaló/.test(x) || x === UJRA) && vegen(m.latszik), JSON.stringify(m.nevek));
   await kattint(p, '[data-szuras]');
   ok(`N: ${honnan}: "Hogy néz ki egy szúrás?": a video felugrik (nem a lista alatt nyilik)`, (await sr(p, 'return !!r.querySelector(".pk-felugro[role=dialog] video") && !r.querySelector(".tartalom video")')) === true);
   await p.keyboard.press('Escape'); await p.waitForTimeout(150);

@@ -293,7 +293,6 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 .elerhetoseg a{text-decoration:none}.elerhetoseg a:hover{text-decoration:underline}
 .kozosseg{display:flex;gap:10px;margin:0 0 20px}
 .kozosseg a{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;border:1px solid var(--rose);color:var(--rose-i);background:#fff;transition:background .15s}
-.lablec .kozosseg a{border-color:#d7b5ad}
 .kozosseg a:hover{background:var(--beige)}
 .kozosseg .ik{width:18px;height:18px}
 .terkep{min-height:270px;border-radius:16px;overflow:hidden;background:var(--beige)}
@@ -306,20 +305,6 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 .jegyzet .ik{margin-top:.15em;color:var(--rose-i)}
 .jegyzet a{color:var(--slate);font-weight:600}
 
-/* lablec */
-.lablec{margin-top:48px;padding:34px 0 22px;background:#efe1d8;border-top:1px solid #e4d2c7}
-.lablec-racs{display:grid;grid-template-columns:1.3fr 1fr 1.2fr 1fr auto;gap:30px;align-items:start}
-.lablec-marka a{display:inline-block;padding:8px 14px;border-radius:14px;background:#fff}
-.lablec-marka img{display:block;height:50px;width:auto}
-.lablec h3{font-size:.9rem;margin-bottom:12px}
-.lablec li{margin-bottom:7px;font-size:.88rem}
-.lablec a{text-decoration:none;color:var(--ink)}.lablec a:hover{text-decoration:underline}
-.lablec .kozosseg{margin:0}
-.lablec .kozosseg a{text-decoration:none}
-.lablec .gomb{color:#fff}
-.jogi{margin-top:22px;padding-top:16px;border-top:1px solid #e0cdc1;font-size:.7rem;line-height:1.5;color:#5d5e70}
-.jogi p{margin:0 0 6px}
-.szerzoi{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 20px;margin-top:14px;font-size:.78rem;color:var(--mut)}
 
 /* videoablak */
 .videoablak{width:min(920px,94vw);padding:0;border:0;border-radius:16px;background:#000;overflow:visible}
@@ -338,8 +323,6 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   .arak{grid-template-columns:1fr}
   .helyek{grid-template-columns:repeat(4,1fr)}
   .media-csapat{grid-template-columns:1fr}
-  .lablec-racs{grid-template-columns:1fr 1fr 1fr}
-  .lablec-cta{grid-column:1/-1}
 }
 @media (max-width:1000px){
   .menu-nyito{display:grid;margin-left:0}
@@ -474,19 +457,6 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   .csapat>img{order:2;min-height:0;height:220px;-webkit-mask-image:linear-gradient(0deg,#000 55%,transparent);mask-image:linear-gradient(0deg,#000 55%,transparent)}
   .kapcsolat{grid-template-columns:1fr;padding:22px 16px}
   .kozosseg{justify-content:center}
-  /* kisebb lablec mobilon */
-  .lablec{margin-top:28px;padding:22px 0 16px}
-  .lablec-racs{grid-template-columns:1fr 1fr;gap:14px 18px}
-  .lablec-marka{grid-column:1/-1;text-align:center}
-  .lablec-marka img{height:40px;margin-inline:auto}
-  .lablec h3{font-size:.8rem;margin-bottom:6px}
-  .lablec li{margin-bottom:3px;font-size:.8rem}
-  .lablec-racs>div:not(.lablec-marka):not(.lablec-cta){grid-column:1/-1;text-align:center}
-  .lablec .kozosseg{justify-content:center}
-  .lablec-cta{grid-column:1/-1;text-align:center}
-  .jogi{margin-top:14px;padding-top:12px;font-size:.66rem;line-height:1.42}
-  .jogi p{margin-bottom:5px}
-  .szerzoi{justify-content:center;text-align:center;font-size:.7rem;margin-top:10px}
   /* lista-elemek: egysoros, kozepre igazitott szoveg, az ikon a szoveg elott (tobb soros szovegnel is egyenletes) */
   .pipak li{display:block;text-align:center}
   .pipak .ik{display:inline-block;margin:0 6px 0 0;vertical-align:-.17em}
@@ -494,13 +464,6 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   .elerhetoseg .ik{display:inline-block;margin:0 8px 0 0;vertical-align:-.2em}
   .hos-kep{margin-bottom:16px}
   .akcio-arak b{white-space:nowrap}
-  .lablec-racs nav[aria-label="Gyorslinkek"]{display:none}
-  .lablec-racs nav[aria-label="További információk"]{grid-column:1/-1}
-  .lablec-racs nav[aria-label="További információk"] h3{display:none}
-  .lablec-racs nav[aria-label="További információk"] ul{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;text-align:center}
-  .lablec-racs>div:not(.lablec-marka):not(.lablec-cta) h3{display:none}
-  .lablec-racs{gap:10px 14px}
-  .lablec .kozosseg a{width:34px;height:34px}
 }
 @media (max-width:520px){
   .fejlec-sor{gap:10px}
@@ -587,8 +550,6 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 }
 /* keves (1-2) velemenyt mutato Trustindex-widget: keskeny, kozepre rendezett doboz (uj-fooldal.js 4d.) */
 .velemeny-doboz.ti-keves{max-width:680px;margin-inline:auto}
-/* a bovebb lablec-menu (Kapcsolat, Csapatunk) mobilon is kompakt maradjon */
-@media (max-width:760px){.lablec{padding:18px 0 14px}}
 
 /* ===== 2026-10-16 (2), a tulajdonos kerese ===== */
 /* sortores: a cimek kiegyensulyozottak, a bekezdesek vegen nem marad 1-2 arva szo (a "Ft" nem torik: szovegJavit) */
@@ -628,14 +589,6 @@ p,li,.hos-bevezeto{text-wrap:pretty}
 /* kitelepulesek: a sok idopontu helyszin sora sem log ki (kisebb betu, tordelheto), a cellak rendezettek */
 .helyek .datum{white-space:normal;font-size:.72rem;line-height:1.42}
 @media (max-width:760px){.helyek .datum{font-size:.66rem}.helyek b{font-size:.88rem}}
-/* lablec: kompaktabb */
-.lablec{padding:26px 0 16px}
-.lablec h3{margin-bottom:8px}
-.lablec li{margin-bottom:5px;font-size:.84rem}
-.jogi{margin-top:16px;padding-top:12px;font-size:.62rem;line-height:1.45;color:#6b6c7e}
-.jogi p{margin:0 0 4px}
-.szerzoi{margin-top:10px;font-size:.72rem}
-@media (max-width:760px){.jogi{font-size:.58rem}.lablec li{font-size:.78rem}}
 /* keves (1-2) velemenyt mutato widget: egy kartyanyi, kozepre */
 .velemeny-doboz.ti-keves{max-width:460px}
 @media (max-width:520px){.gomb.gomb-hosszu{white-space:normal;text-align:center;justify-content:center}}
@@ -645,8 +598,6 @@ p,li,.hos-bevezeto{text-wrap:pretty}
 .almenu a span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .menu-csillagok{display:inline-flex;gap:1px;margin-left:4px}
 .menu-csillagok .ik{width:.82em;height:.82em;fill:#fbbc04;stroke:#fbbc04;stroke-width:1}
-@media (min-width:1001px){.menu-csillagok .ik:nth-child(n+2){display:none}}
-@media (min-width:1001px) and (max-width:1130px){.menu-csillagok{display:none}}
 @media (max-width:1000px){
   .menu{padding:4px 16px 0}
   .menu-link,.menu-gomb{padding:13px 4px;font-size:1.04rem}
@@ -701,4 +652,61 @@ p,li,.hos-bevezeto{text-wrap:pretty}
   .vsav-sav{gap:10px}
   .vsav-nyil{width:36px;height:36px;margin-top:-18px}
   .vsav-elozo{left:-6px}.vsav-kov{right:-6px}
+}
+
+/* ===== lablec (a tulajdonos kerese, 2026-10-16): az eles oldal labenek tartalma rendezetten, sotet hatteren; atlatszo ikonok ===== */
+.lablec{margin-top:48px;padding:44px 0 0;background:#3f4053;color:#d9d6de;font-size:.9rem}
+.lablec a{color:#fff;text-decoration:none}
+.lablec a:hover{text-decoration:underline;text-decoration-color:var(--rose);text-underline-offset:3px}
+.lablec h3{margin:0 0 14px;color:#fff;font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.lablec-racs{display:grid;grid-template-columns:1.25fr 1fr 1fr 1.35fr;gap:36px}
+.lablec-logo{display:inline-block;padding:10px 16px;border-radius:14px;background:#fff}
+.lablec-logo img{display:block;height:46px;width:auto}
+.lablec-marka p{max-width:28ch;margin:16px 0 18px;color:#c9c6d1;font-size:.88rem;line-height:1.55}
+.lablec-kozosseg{display:flex;gap:6px;margin:0 0 0 -8px}
+.lablec-kozosseg a{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:#fff;transition:color .15s,background .15s}
+.lablec-kozosseg a:hover{background:rgba(255,255,255,.08);color:var(--rose)}
+.lablec-kozosseg .ik{width:22px;height:22px}
+.lablec-menu li{margin:0 0 9px;line-height:1.35}
+.lablec-menu a{color:#e6e3ea}
+.lablec-elerh ul{margin:0 0 22px}
+.lablec-elerh li{display:flex;gap:12px;align-items:flex-start;margin:0 0 12px;line-height:1.45}
+.lablec-elerh .ik{margin-top:.12em;color:var(--rose)}
+.lablec-elerh small{display:block;margin-top:2px;color:#b9b6c3;font-size:.8rem}
+.lablec-elerh small a{color:#e6e3ea;text-decoration:underline;text-decoration-color:rgba(215,171,168,.6);text-underline-offset:3px}
+.lablec-elerh b{color:#fff}
+.lablec-nyitva{margin:0}
+.lablec-nyitva div{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.lablec-nyitva div:last-child{border-bottom:0}
+.lablec-nyitva dt{color:#c9c6d1}
+.lablec-nyitva dd{margin:0;color:#fff;font-weight:700}
+.lablec-foglalas{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 24px;margin:36px 0 0;padding:22px 26px;border-radius:var(--r-m);background:rgba(255,255,255,.06)}
+.lablec-foglalas p{margin:0;line-height:1.4}
+.lablec-foglalas b{display:block;color:#fff;font-size:1.1rem}
+.lablec-foglalas span{color:#c9c6d1;font-size:.88rem}
+.lablec-gombok{display:flex;flex-wrap:wrap;gap:12px}
+.lablec .gomb-tomor{color:#fff}
+.lablec .gomb-tomor:hover{text-decoration:none}
+.gomb-vilagos{background:transparent;color:#fff;border-color:rgba(255,255,255,.45)}
+.gomb-vilagos:hover{background:rgba(255,255,255,.08);text-decoration:none}
+.lablec .jogi{margin:30px 0 0;padding:20px 0 0;border-top:1px solid rgba(255,255,255,.12);color:#a9a6b4;font-size:.7rem;line-height:1.55}
+.lablec .jogi p{margin:0 0 6px}
+.lablec .szerzoi{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 20px;margin:16px 0 0;padding:16px 0 20px;border-top:1px solid rgba(255,255,255,.12);color:#b9b6c3;font-size:.78rem}
+.lablec .szerzoi a{color:#e6e3ea}
+@media (max-width:1100px){.lablec-racs{grid-template-columns:1fr 1fr;gap:32px 28px}}
+@media (max-width:760px){
+  .lablec{margin-top:32px;padding-top:30px;font-size:.88rem}
+  .lablec-racs{grid-template-columns:1fr 1fr;gap:26px 18px}
+  .lablec-marka,.lablec-elerh{grid-column:1/-1}
+  .lablec-marka{display:flex;flex-direction:column;align-items:center;text-align:center}
+  .lablec-marka p{max-width:34ch;margin:14px 0 10px}
+  .lablec-kozosseg{margin:0}
+  .lablec h3{margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.12)}
+  .lablec-menu li{margin-bottom:8px;font-size:.86rem}
+  .lablec-elerh{display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+  .lablec-foglalas{flex-direction:column;align-items:stretch;margin-top:26px;padding:18px 16px;text-align:center}
+  .lablec-gombok{flex-direction:column}
+  .lablec-gombok .gomb{width:100%}
+  .lablec .jogi{margin-top:22px;font-size:.66rem}
+  .lablec .szerzoi{flex-direction:column;align-items:center;text-align:center;font-size:.74rem}
 }

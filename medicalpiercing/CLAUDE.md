@@ -35,12 +35,28 @@ Ezen felül:
   piercing-rácsot (és a címét) erre cseréli (`piercingRacs` / `piercingCim` a `sablon.mjs`-ben). A budapesti szalon fotógalériája mindenhol a `migren-piercing-b` oldal „Budapesten a Jászainál várunk”
   galériájának képeivel jelenik meg (`szalonGaleria`, `sablon.mjs`; a főoldal alján: `reszek/szalon-galeria.html` a `kapcsolat` részben). A „9 ok, amiért minket válassz” csúszka kimarad.
   A blogcikkek képei a szöveg szélességében, nagyítás nélkül. A közös rész maga is tartalmazhat közös részt (`osszerak`, legfeljebb 3 szint).
-- **A B-oldalak építőjével készül még** (`B_ALAP`, `HOS_CIM`): az 5 piercer-bemutatkozó oldal (név a cím, portré a hősben, a videók rácsban: `videoracs`), A szúrás folyamata, az Utóápolás és
-  A piercingek eredete (egyszekciós oldal: a cím + az első videó a hős). Kézzel írt oldal lett az Árlista (`sajat/arlista-garancia.html`) és az Ajándékkártya (`sajat/ajandekkartya.html`;
-  a vásárlás a `https://medicalpiercing.salonic.hu/giftcards` címen, a motor ezt nem fogja el).
-- **Vendégek videós beszámolói** (2026-10-16): a tulajdonos Drive-járól 12 vendég-testimonial (a leirat alapján besorolva: migrén 6, slim 3, shenmen 2, klimax 1), webes változat
-  `assets/video/uj-velemeny-<kulcs>-<n>.mp4` (480 px, H.264, 2–6 MB) + borító `assets/img/uj-velemeny-<kulcs>-<n>.webp`; a fájlnevekben nincs vendégnév. A blokk: `tools/uj-video-velemenyek.mjs`
-  → `reszek/video-velemeny-<kulcs>.html`; a Vélemények oldalon a kategória Trustindex-blokkja alatt, a piercing-oldalakon az első vélemény-blokk alatt (`kategoria.mjs`, `velemeny`).
+- **A piercer-oldalak, a tartalmi oldalak és a GYIK** (2026-10-16): az 5 piercer-bemutatkozó oldal a `tools/uj-piercerek.mjs` kimenete (`sajat/piercer-*.html`: hős, „Rólam” doboz a tényekkel,
+  a videók rácsban – álló videók mobilon lapozható sávban –, piercingek, „Tudtad, hogy…?”, 93%, vélemények); a GYIK (`/uj/akupunkturas-piercing-tudastar-video`) a `tools/uj-gyik.mjs` kimenete
+  (33 kérdés 5 témában, lenyitható; az ékszer anyagáról szóló két válasz a mostani kínálat szerint, G23 titánium). Kézzel írt oldal lett: A szúrás folyamata (6 lépés, az 1. videó az állapotfelmérés,
+  az ékszerválasztásnál a közös ékszer-galéria), az Utóápolás, A piercingek eredete (`igy-mukodnek-a-kozerzetjavito-piercingek`), a divat fülpiercing (`ful-piercing-beloves-budapest`,
+  az árak a Salonic mostani árai) és az Árlista / Ajándékkártya (`sajat/arlista-garancia.html`, `sajat/ajandekkartya.html`; a vásárlás a `https://medicalpiercing.salonic.hu/giftcards` címen,
+  a motor ezt nem fogja el). A generált `sajat/` fájlokat ne kézzel szerkeszd, hanem a generátort futtasd. A Gabi története, a Rólunk és az őszi akció oldala a B-oldalak építőjével készül.
+- **Egységes formázás minden új oldalon** (a tulajdonos kérései, 2026-10-16): `assets/css/uj-egyseges.css` (minden lapon UTOLSÓKÉNT töltődik). Asztalon a hős szöveghasábjának teteje / alja
+  a kép tetejéhez / aljához igazodik; mobilon a hős a tartalom teljes szélességében, az értékelés egy sorban (bal: csillagok, jobb: „Kiváló…”), alatta a 3 link egy sorban, alatta a badge-ek;
+  a rövid (≤34 karakteres) cím egy sorban (`cim-rovid`, `sablon.mjs`). A kéthasábos dobozok hasábjai egyforma magasak (a cím a videó tetejénél, a gomb a videó aljánál), az ikonos
+  másodlagos címkék („VIDEÓ”, „A MÉDIÁBAN”) nincsenek. Álló videó mindig álló (9:16) keretben (`allo-keret`). A 93%-os blokk közös (`statDoboz`, `tools/uj-oldalak/kozos.mjs`;
+  `reszek/stat-93.html`), a „Tudtad, hogy…?” doboz közös (`reszek/tudtad.html`), a „Helyszíneink” link mindenhol a kitelepülések oldalára (`/elerhetosegek`) mutat. Tablet (761–1000 px): a hős
+  szövege teljes szélességű, az álló videós lépések két hasábban.
+- **Menü és lábléc** (2026-10-16): a „Vélemények” után 5 csillag (Google-jel nélkül), a menü 1001 px-től egy sorban elfér; az almenü-ikonok GPT-vel készült vonalas ikonok
+  (`assets/img/menu-ikon/<név>.webp`, 96 px), a piercerek mellett a portréjuk (`assets/img/csapat/`). A lábléc (`reszek/lablec.html`) az éles oldal láblécének tartalma sötét háttéren: menü,
+  tudnivalók, elérhetőségek, nyitvatartás (H–P 10:00–19:00, Szo 09:00–18:00, V zárva – az éles lábléc szerint), két foglalás-gomb, jogi szövegek.
+- **Térkép a kitelepülések oldalán**: a városokra kattintva a foglalómotor az adott helyszínnel nyílik (`tools/uj-helyszin-terkep.mjs`: HTML-linkek az SVG fölött, `ht-pin`, a meglévő
+  Salonic-linkekkel – a motor ezeket fogja el; a mérőkód nem változott).
+- **Vendégek videós beszámolói** (2026-10-16): a tulajdonos Drive-járól („Testimonial videók”) mind a 37 vendég-videó, webes változat `assets/video/uj-velemeny-<nn>.mp4` (480 px, H.264)
+  + borító `assets/img/uj-velemeny-<nn>.webp`; a fájlnevekben nincs vendégnév (a név–sorszám összerendelés a repóba nem kerül). A besorolás a leirat alapján (`VIDEOK` a
+  `tools/uj-video-velemenyek.mjs`-ben; egy videó több piercingről is szólhat) → `reszek/video-velemeny-<kulcs>.html` (migren 17, shenmen 11, klimax 9, slim 9, allergia 1, mind 37).
+  A piercing-oldalakon az első vélemény-blokk alatt a saját témájú sáv (ha nincs, a `mind`), a többi oldalon a `mind`. A Vélemények oldal hősképe: GPT-sablon + a videók valódi
+  képkockái (vendég arcát AI-jal nem módosítjuk).
 - **Google-vélemények mindenhol a főoldali lapozóval** (2026-10-16): az eredeti oldal saját Trustindex-widgetje csak akkor marad, ha rendes lapozó (`JO_VELEMENY_KULCSOK`, `sablon.mjs`);
   a 2 véleményes (783989…), az üres és az ismeretlen widget helyett a főoldali (daf9c4…, 35 vélemény). A tükör-oldalak Trustindex-beágyazása (assets/embed) is a főoldali doboz lett.
 - **Helyszíneink hősképe**: Magyarország térképe a 15 helyszínnel (`tools/uj-helyszin-terkep.mjs` → `reszek/helyszin-terkep.html`, beágyazott SVG a lap betűjével).
@@ -51,4 +67,5 @@ Ezen felül:
   (felugró, bezárható videó: X, háttér, Esc), kicsi „Az ár tartalmazza”, alatta MINDEN lehetőség kártyája (nincs rejtett „+ többi”). Minden kártyán két gomb: „Részletek” (lenyitja: a pont helye
   a valódi fülfotóval, mire jó, garancia; a csomagoknál a kedvezmény levezetése a helyszín mostani Salonic-áraiból: 1./2./3. piercing ára, külön-külön mennyi lenne, mennyit spórol) és az erős
   színű „Időpontot választok” (a régi `[data-szolg]`: a foglalási út, a mérés és a tesztek ugyanazok). Alapérték: Magamnak + 1 piercing, a típusoldal piercingje elöl és lenyitva (az akció-oldalról: 2–3 piercing).
+  A „Kiesett ékszer újraszúrása” (Salonic, 2026-10-16; két változat) a piercerei szerint a „1 piercing” vagy a „Fülbevaló” sor végére kerül, egyszer; típus nélküli oldalról (főoldal) a Salonic sorrendje.
 

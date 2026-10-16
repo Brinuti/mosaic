@@ -139,6 +139,7 @@
       f.referrerPolicy = 'strict-origin-when-cross-origin';
       keret.textContent = '';
       keret.appendChild(f);
+      ablak.classList.toggle('allo', a.hasAttribute('data-allo'));   // allo (9:16) video: allo ablak
       ablak.showModal();
     }));
   }

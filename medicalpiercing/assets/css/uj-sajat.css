@@ -100,3 +100,9 @@
 .helyszin-terkep .ht-nev-fo{font-size:30px;fill:var(--rose-i, #ab6354)}
 .helyszin-terkep .ht-al{font:700 17px/1 var(--font, 'Plus Jakarta Sans', system-ui, sans-serif);fill:var(--mut, #6b6c80);letter-spacing:.06em;text-transform:uppercase;paint-order:stroke;stroke:#fff;stroke-width:5px}
 @media (max-width:760px){.helyszin-terkep .ht-nev{font-size:26px}.helyszin-terkep .ht-nev-fo{font-size:34px}}
+/* a terkep varosai kattinthatok (a foglalo az adott helyszinnel nyilik; 2026-10-16) */
+.ht-doboz{position:relative}
+.ht-pinek{position:absolute;inset:0}
+.ht-pin{position:absolute;border-radius:14px;transition:background .15s}
+.ht-pin:hover{background:rgba(171,99,84,.12)}
+.ht-pin:focus-visible{outline:3px solid var(--rose-i,#b98782);outline-offset:0}

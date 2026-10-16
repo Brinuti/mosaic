@@ -1,0 +1,402 @@
+/* Egyseges elrendezes minden uj oldalon (/uj-fooldal, /uj/...), a tulajdonos 2026-10-16-i szabalyai szerint. Minden lap UTOLJARA tolti be,
+   igy a korabbi, oldalankenti szabalyokat felulirja. Szabalyok:
+   1. mobilon minden blokk (a hos is: cim, galeria, szoveg) a tartalom teljes szelessegeben, kis (16 px) szeli margoval;
+   2. a hos ertekelese egy sorban (bal: csillagok, jobb: "Kivalo ... velemeny"), alatta a linkek egy sorban, alatta a 4 badge;
+   3. asztalon a keppel / galeriaval / videoval egymas melletti hasabok egyforma magasak: a cim teteje a kep tetejenel, az utolso elem
+      (badge-sor, gomb) alja a kep aljanal;
+   4. a dobozok ikonos feliratai ("VIDEO", "A MEDIABAN" ...) nem kellenek;
+   5. az allo videok allo keretben (9:16), nem negyzetesen / fekvon. */
+
+/* 4. ikonos feliratok le */
+.felirat{display:none!important}
+
+/* ---------- asztal ---------- */
+@media (min-width:1001px){
+  /* 3. hos: a szoveghasab (cim + szoveg) es a kep / galeria egyforma magas; a kep a szoveg magassagahoz igazodik (legalabb 440 px) */
+  .belso .hos{padding-top:22px}
+  .belso .hos-racs{grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr);grid-template-rows:auto 1fr;grid-template-areas:"cim kep" "szoveg kep";align-items:stretch;row-gap:18px;column-gap:48px}
+  .belso .hos-racs>.hos-cim{align-self:start;margin:0}
+  .belso .hos-racs>.hos-szoveg{display:flex;flex-direction:column;justify-content:space-between;gap:14px;align-self:stretch}
+  .belso .hos-racs>.hos-szoveg>*{margin-top:0;margin-bottom:0}
+  .belso .hos-racs>.hos-kep{position:relative;align-self:stretch;min-height:440px;max-width:none;width:100%;margin:0}
+  .belso .hos-racs>.hos-kep>img,
+  .belso .hos-racs>.hos-kep>.kar,
+  .belso .hos-racs>.hos-kep>.video,
+  .belso .hos-racs>.hos-kep>iframe,
+  .belso .hos-racs>.hos-kep>.beagyaz{position:absolute;inset:0;width:100%;height:100%;margin:0}
+  .belso .hos-racs>.hos-kep>img{object-fit:cover;border-radius:30px}
+  .belso .hos-kep .kat-hos-kar .kar-sav,.belso .hos-kep .kat-hos-kar .kar-dia{height:100%}
+  .belso .hos-kep .kat-hos-kar .kar-dia img{height:100%;aspect-ratio:auto}
+  .belso .hos-kep .video .video-kep,.belso .hos-kep .video .video-kep img{height:100%}
+  .belso .hos-kep .video .video-kep img{object-fit:cover;aspect-ratio:auto}
+  /* allo video a hosben: a szoveghasab magassagaban, 9:16 aranyban, a hasab kozepen (nincs korulotte ures sav) */
+  .belso .hos-racs>.hos-kep>video.vid-allo{position:absolute;top:0;bottom:0;left:50%;width:auto;height:100%;max-width:100%;max-height:none;aspect-ratio:9/16;transform:translateX(-50%);object-fit:cover;border-radius:24px}
+  .belso .hos-racs>.hos-kep>video:not(.vid-allo){position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:24px}
+
+  /* 3. kethasabos dobozok: a ket hasab egyforma magas; a szoveg teteje a kep / video tetejenel, a gomb alja a kep / video aljanal */
+  .kat-doboz:is(.kat-video,.kat-video-kepes,.kat-biztos,.kat-par,.kat-par-ford,.kat-miert,.kat-figyelem,.kat-stat,.kat-bevideo){align-items:stretch}
+  .kat-doboz:is(.kat-video,.kat-video-kepes,.kat-biztos,.kat-par,.kat-par-ford,.kat-miert,.kat-figyelem,.kat-stat,.kat-bevideo)>.kat-doboz-szoveg{display:flex;flex-direction:column;align-items:flex-start}
+  .kat-doboz:is(.kat-video,.kat-video-kepes,.kat-biztos,.kat-par,.kat-par-ford,.kat-miert,.kat-figyelem,.kat-stat,.kat-bevideo)>.kat-doboz-szoveg>:first-child{margin-top:0}
+  .kat-doboz:is(.kat-video,.kat-video-kepes,.kat-biztos,.kat-par,.kat-par-ford,.kat-miert,.kat-figyelem,.kat-stat,.kat-bevideo)>.kat-doboz-szoveg>.gomb:last-child,
+  .kat-doboz:is(.kat-video,.kat-video-kepes,.kat-biztos,.kat-par,.kat-par-ford,.kat-miert,.kat-figyelem,.kat-stat,.kat-bevideo)>.kat-doboz-szoveg>.gombsor:last-child{margin-top:auto;margin-bottom:0}
+  .kat-video .kat-video-kep{display:flex}
+  .kat-video .kat-video-kep>.video{flex:1;display:flex}
+  .kat-video .kat-video-kep .video-kep{flex:1;height:100%;min-height:100%;aspect-ratio:auto}
+  .kat-video .kat-video-kep .video-kep img{height:100%;object-fit:cover}
+  .kat-par .kat-par-kep,.kat-par-ford .kat-par-kep{height:100%;max-height:none;aspect-ratio:auto;min-height:320px}
+}
+
+/* ---------- mobil ---------- */
+@media (max-width:760px){
+  /* 1. a hos a tartalom teljes szelessegeben (a galeria, a cim, a szoveg es a gombok is) */
+  .kat-hos-b{--galeria:100%}
+  .belso .hos-racs{row-gap:12px}
+  .belso .hos-cim{font-size:clamp(1.45rem,6.6vw,1.95rem);line-height:1.12;text-align:left}
+  .kat-hos-b .hos-cim{font-size:clamp(1.45rem,6.6vw,1.95rem)}
+  .kat-hos-b .hos-kep{max-width:none}
+  .kat-hos-b .hos-bevezeto{font-size:.9rem;line-height:1.45}
+  /* 2. ertekeles: egy sor (bal: csillagok, jobb: "Kivalo ... velemeny"); alatta a linkek egy sorban; alatta a badge-ek */
+  .hos-ertek-sav{display:flex!important;flex-direction:column;gap:8px;width:100%!important;max-width:100%!important}
+  .hos .kat-ertekeles{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:8px;width:100%;margin:0;font-size:clamp(.8rem,3.6vw,.92rem)}
+  .hos .kat-ertekeles .csillagok{flex:none}
+  .hos .kat-ertekeles a{white-space:nowrap}
+  .hos .hos-linkek{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:8px;width:100%;margin:0;font-size:clamp(.74rem,3.4vw,.86rem)}
+  .hos .hos-linkek a{white-space:nowrap}
+  .kat-hos-b .bizalom{width:100%!important;max-width:100%!important}
+  .belso .hos-szoveg>.gombsor+.hos-ertek-sav{margin-top:16px}
+  .belso .hos-szoveg>.hos-bevezeto{text-align:left}
+  .belso .hos-szoveg .sajat-elerhetoseg li{display:flex;gap:10px;align-items:flex-start;text-align:left}
+  .belso .hos-szoveg .sajat-elerhetoseg .ik{margin:.2em 0 0}
+}
+
+/* menu (a tulajdonos kerese, 2026-10-16): a "Velemenyek" utan 5 csillag (Google-jel nelkul); a menu minden szelessegben kifer */
+.menu-csillagok{gap:0;margin-left:3px}
+.menu-csillagok .ik{width:.74em;height:.74em}
+@media (min-width:1001px) and (max-width:1180px){.menu-csillagok .ik{width:.66em;height:.66em}}
+
+/* fooldal, mobil hos (a tulajdonos kerese, 2026-10-16): a cim kitolti a szelesseget; az idezet egy sorban a kep alatt; a ket gomb egy sorban */
+@media (max-width:760px){
+  body:not(.belso) .hos-cim{font-size:clamp(1.4rem,5.9vw,1.9rem);line-height:1.12}
+  body:not(.belso) .hos-kep{margin-bottom:0}
+  body:not(.belso) .hos-idezet{position:static;display:block;width:fit-content;max-width:100%;margin:10px auto 0;padding:7px 14px;border-radius:99px;font-size:clamp(.74rem,3.3vw,.86rem);white-space:nowrap;text-align:center}
+  body:not(.belso) .hos-szoveg .gombsor{flex-wrap:nowrap;gap:8px}
+  body:not(.belso) .hos-szoveg .gombsor .gomb{flex:1 1 auto;min-width:0;padding:.85em .5em;font-size:clamp(.74rem,3.3vw,.86rem);white-space:nowrap}
+  body:not(.belso) .hos-szoveg .gombsor .gomb>.ik:first-child{display:none}
+}
+
+/* a 93%-os statisztika doboza (tools/uj-oldalak/kozos.mjs), minden oldalon ugyanaz: nagy kep + szam, mondat, gomb; a jegyzet teljes szelessegben alul */
+.stat-doboz{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px 40px;align-items:stretch;padding:30px;border:1px solid var(--line);border-radius:var(--r-l);background:linear-gradient(100deg,var(--beige) 0,#fff 82%);box-shadow:var(--sh-s)}
+.stat-kep{display:block;width:100%;height:100%;min-height:280px;max-height:420px;object-fit:cover;border-radius:22px;box-shadow:var(--sh)}
+.stat-szoveg{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:12px}
+.stat-szoveg>p{margin:0}
+.stat-szam{font-size:clamp(4rem,8vw,6.6rem);font-weight:800;line-height:.95;letter-spacing:-.035em;color:var(--rose)}
+.stat-mondat{max-width:26ch;color:var(--navy);font-size:clamp(1.2rem,2vw,1.6rem);font-weight:800;line-height:1.28}
+.stat-szoveg .gomb{margin-top:6px}
+.stat-lab{grid-column:1/-1;padding-top:14px;border-top:1px solid var(--line)}
+.stat-lab p{margin:0;color:var(--mut);font-size:.78rem;line-height:1.5}
+@media (max-width:760px){
+  .stat-doboz{grid-template-columns:minmax(0,1fr);gap:16px;padding:16px;text-align:center}
+  .stat-kep{height:auto;min-height:0;aspect-ratio:16/10;border-radius:16px}
+  .stat-szoveg{align-items:center}
+  .stat-mondat{max-width:none;font-size:1.12rem}
+  .stat-lab p{font-size:.72rem;text-align:left}
+}
+
+/* a media-logok (RTL, HirTV, Divany) mobilon is egy sorban */
+@media (max-width:760px){
+  .logok{flex-wrap:nowrap!important;justify-content:center;gap:16px!important}
+  .logok img{height:20px!important;width:auto;max-width:34%}
+  .logok img:nth-child(2){height:26px!important}
+  .logok img:nth-child(3){height:24px!important}
+}
+/* fooldal, mobil hos: a linkek a gombok alatt levegosebben, a 4 badge egy sorban (mint a piercing-oldalakon) */
+@media (max-width:760px){
+  body:not(.belso) .hos .hos-linkek{margin-top:14px}
+  .hos .bizalom{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:16px;text-align:center}
+  .hos .bizalom li{flex-direction:column;align-items:center;gap:3px;font-size:.62rem;line-height:1.2;text-align:center}
+  .hos .bizalom .ik{width:30px;height:30px;padding:6px}
+  .hos .bizalom b{font-size:.68rem}
+}
+
+/* =====================================================================================================================================
+   Tartalmi oldalak kozos elemei (a tulajdonos kerese, 2026-10-16: "ne nyers szoveg egy dobozban"): szakasz-fej, lepes-kartyak (idovonal),
+   allo videokeret, info-kartyak, kiemeles, idezet, zaro doboz. A kezzel irt oldalak (uj-oldalak/sajat/) hasznaljak.
+   ===================================================================================================================================== */
+.szakasz-fej{max-width:780px;margin:0 auto 22px;text-align:center}
+.szakasz-fej h2{margin-bottom:8px}
+.szakasz-fej p{margin:0;color:var(--mut);font-size:1.02rem;line-height:1.55}
+/* a lepesek attekintese: horgony-linkek egy sorban */
+.lepes-csik{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 0 22px;padding:0;list-style:none}
+.lepes-csik a{display:inline-flex;align-items:center;gap:8px;padding:7px 14px 7px 7px;border:1px solid var(--line);border-radius:99px;background:#fff;color:var(--navy);font-size:.88rem;font-weight:700;text-decoration:none;box-shadow:var(--sh-s);transition:border-color .15s}
+.lepes-csik a:hover{border-color:var(--rose)}
+.lepes-csik b{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--rose);color:#fff;font-size:.78rem}
+/* lepes-kartya: media + fej (szam, cim) + szoveg; asztalon felvaltva bal / jobb oldali media, a ket hasab egyforma magas */
+.lepes-lista{display:grid;gap:18px;margin:0;padding:0;list-style:none}
+.lepes{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);grid-template-rows:auto 1fr;grid-template-areas:"media fej" "media szoveg";gap:14px 38px;align-items:stretch;padding:28px;border:1px solid var(--line);border-radius:var(--r-l);background:linear-gradient(100deg,var(--beige) 0,#fff 82%);box-shadow:var(--sh-s);scroll-margin-top:calc(var(--fej) + 20px)}
+.lepes.lepes-jobb{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);grid-template-areas:"fej media" "szoveg media"}
+.lepes.lepes-allo{grid-template-columns:minmax(0,300px) minmax(0,1fr)}
+.lepes.lepes-allo.lepes-jobb{grid-template-columns:minmax(0,1fr) minmax(0,300px)}
+.lepes.lepes-szoveges{grid-template-columns:minmax(0,1fr);grid-template-areas:"fej" "szoveg"}
+.lepes-fej{grid-area:fej;display:flex;align-items:center;gap:14px}
+.lepes-fej h3{margin:0;font-size:clamp(1.3rem,2vw,1.7rem);line-height:1.2}
+.lepes-szam{display:grid;flex:none;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--rose);color:#fff;font-size:1.15rem;font-weight:800;box-shadow:0 6px 14px rgba(171,99,84,.25)}
+.lepes-media{grid-area:media;display:flex;align-items:stretch;justify-content:center;min-width:0}
+.lepes-media>img{display:block;width:100%;height:100%;min-height:260px;max-height:460px;object-fit:cover;border-radius:22px;box-shadow:var(--sh)}
+.lepes-media>.video{display:block;width:100%}
+.lepes-media>.video .video-kep{display:block;width:100%;height:100%;min-height:260px;border-radius:22px;overflow:hidden;box-shadow:var(--sh)}
+.lepes-media>.video .video-kep img{width:100%;height:100%;object-fit:cover}
+.lepes-kepek{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.lepes-kepek img{display:block;width:100%;height:100%;min-height:220px;object-fit:cover;border-radius:18px;box-shadow:var(--sh-s)}
+.lepes-szoveg{grid-area:szoveg;display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.lepes-szoveg>p{margin:0 0 10px;font-size:.98rem;line-height:1.62}
+.lepes-szoveg>:last-child{margin-bottom:0}
+.lepes-szoveg>.gomb:last-child,.lepes-szoveg>.gombsor:last-child{margin-top:auto}
+/* allo (9:16) videokeret: a fuggoleges videok (Facebook, YouTube Shorts, sajat mp4) nem negyzetben / fekvo keretben */
+.allo-keret{position:relative;width:min(100%,300px);aspect-ratio:9/16;margin:0 auto;border-radius:22px;overflow:hidden;background:#2f3044;box-shadow:var(--sh)}
+.allo-keret>iframe,.allo-keret>video,.allo-keret>.video,.allo-keret>img{position:absolute;inset:0;display:block;width:100%;height:100%;border:0;object-fit:cover}
+.allo-keret .video-kep{display:block;width:100%;height:100%;min-height:0;aspect-ratio:auto}
+.allo-keret .video-kep img{width:100%;height:100%;object-fit:cover}
+.allo-cimke{margin:8px 0 0;color:var(--mut);font-size:.84rem;text-align:center}
+.videoablak.allo{width:min(400px,92vw,calc((100dvh - 120px) * 9 / 16))}
+.videoablak.allo .videoablak-keret{aspect-ratio:9/16}
+/* info-kartyak (pl. "Kiknek nem ajanlott?") */
+.kartya-racs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0;padding:0;list-style:none}
+.kartya-racs.harom{grid-template-columns:repeat(3,minmax(0,1fr))}
+.info-kartya{display:flex;flex-direction:column;gap:8px;padding:20px 18px;border:1px solid var(--line);border-radius:var(--r-m);background:#fff;box-shadow:var(--sh-s)}
+.info-kartya h3{margin:0;font-size:1.02rem;line-height:1.3}
+.info-kartya p{margin:0;color:var(--ink);font-size:.9rem;line-height:1.55}
+.info-ik{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--beige);color:var(--rose-i)}
+.info-ik .ik{width:20px;height:20px}
+.info-ik.tilos{background:#fbe9e6;color:#b0463b}
+/* kiemeles (jegyzet, figyelmeztetes) es nagy idezet */
+.kiemeles{display:flex;gap:12px;align-items:flex-start;width:100%;margin:6px 0 12px;padding:13px 16px;border:1px solid var(--line);border-left:4px solid var(--rose);border-radius:14px;background:#fff;font-size:.9rem;line-height:1.55}
+.kiemeles .ik{flex:none;margin-top:.15em;color:var(--rose-i)}
+.idezet-nagy{margin:8px 0 14px;padding:18px 22px;border-radius:18px;background:var(--slate);color:#fff;font-size:1.06rem;font-weight:700;line-height:1.5}
+/* ket hasabos szoveges doboz (kep / video + szoveg): a hasabok egyforma magasak */
+.ketto-doboz{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:34px;align-items:stretch;padding:30px;border:1px solid var(--line);border-radius:var(--r-l);background:linear-gradient(100deg,var(--beige) 0,#fff 82%);box-shadow:var(--sh-s)}
+.ketto-doboz.allo-bal{grid-template-columns:minmax(0,300px) minmax(0,1fr)}
+.ketto-doboz>.szoveg{display:flex;flex-direction:column;align-items:flex-start}
+.ketto-doboz>.szoveg>h2{margin-top:0}
+.ketto-doboz>.szoveg>p{font-size:.98rem;line-height:1.62}
+.ketto-doboz>.szoveg>.gomb:last-child,.ketto-doboz>.szoveg>.gombsor:last-child{margin-top:auto}
+.ketto-doboz>img{display:block;width:100%;height:100%;min-height:280px;object-fit:cover;border-radius:22px;box-shadow:var(--sh)}
+.nagy-szam{display:flex;align-items:baseline;gap:10px;margin:0 0 6px;color:var(--rose);font-size:clamp(3rem,6vw,4.6rem);font-weight:800;line-height:1;letter-spacing:-.03em}
+.nagy-szam small{color:var(--navy);font-size:1rem;font-weight:700;letter-spacing:0}
+/* zaro doboz: osszefoglalo + gombok kozepen */
+.zaro-doboz{padding:34px 30px;border:1px solid var(--line);border-radius:var(--r-l);background:linear-gradient(120deg,var(--beige) 0,#fff 70%);box-shadow:var(--sh-s);text-align:center}
+.zaro-doboz h2{margin-bottom:10px}
+.zaro-doboz p{max-width:760px;margin:0 auto 10px;font-size:1rem;line-height:1.6}
+.zaro-doboz .gombsor{justify-content:center}
+@media (max-width:1000px){
+  .kartya-racs,.kartya-racs.harom{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lepes,.lepes.lepes-jobb,.lepes.lepes-allo,.lepes.lepes-allo.lepes-jobb{grid-template-columns:minmax(0,1fr);grid-template-rows:auto;grid-template-areas:"fej" "media" "szoveg";gap:14px}
+  .lepes.lepes-szoveges{grid-template-areas:"fej" "szoveg"}
+  .ketto-doboz,.ketto-doboz.allo-bal{grid-template-columns:minmax(0,1fr);gap:18px}
+}
+@media (max-width:760px){
+  .lepes{padding:16px}
+  .lepes-fej h3{font-size:1.25rem}
+  .lepes-szam{width:40px;height:40px;font-size:1rem}
+  .lepes-media>img{min-height:0;max-height:none;aspect-ratio:4/3}
+  .lepes-media>.video .video-kep{min-height:0;height:auto;aspect-ratio:16/9}
+  .lepes-kepek img{min-height:0;aspect-ratio:3/4}
+  .lepes-szoveg>p{font-size:.94rem;line-height:1.58}
+  .lepes-csik{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding:0 16px 6px;scrollbar-width:none}
+  .lepes-csik::-webkit-scrollbar{display:none}
+  .lepes-csik a{white-space:nowrap}
+  .kartya-racs,.kartya-racs.harom{grid-template-columns:minmax(0,1fr)}
+  .ketto-doboz{padding:16px}
+  .ketto-doboz>img{min-height:0;aspect-ratio:4/3}
+  .zaro-doboz{padding:22px 16px}
+}
+/* szamozott lepesek listaja (pl. napi rutin) */
+.rutin-lista{display:grid;gap:12px;margin:4px 0 0;padding:0;list-style:none;counter-reset:rl}
+.rutin-lista li{position:relative;padding-left:46px;font-size:.98rem;line-height:1.55;counter-increment:rl}
+.rutin-lista li::before{content:counter(rl);position:absolute;left:0;top:-2px;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--rose);color:#fff;font-size:.9rem;font-weight:800}
+.rutin-lista b{color:var(--navy)}
+.info-kartya .kat-hiba{margin:2px 0 0}
+.info-kartya .kat-hiba li{margin-bottom:4px;font-size:.92rem}
+.info-kartya .nagy-szam{font-size:clamp(2.2rem,4vw,3rem)}
+/* idovonal (pl. a modszer eredete): asztalon 4 oszlop osszekoto vonallal, mobilon fuggoleges */
+.idovonal{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:0;padding:0;list-style:none}
+.idovonal::before{content:"";position:absolute;left:4%;right:4%;top:17px;height:2px;background:linear-gradient(90deg,var(--rose),var(--line))}
+.idovonal li{position:relative;display:flex;flex-direction:column;gap:8px;padding:0 4px}
+.idovonal-ido{position:relative;align-self:flex-start;padding:7px 14px;border-radius:99px;background:var(--rose);color:#fff;font-size:.82rem;font-weight:800;box-shadow:0 4px 10px rgba(171,99,84,.22)}
+.idovonal h3{margin:6px 0 0;font-size:1.06rem;line-height:1.3}
+.idovonal p{margin:0;font-size:.92rem;line-height:1.55}
+/* kepes kartyak (kep + cim + szoveg + link) */
+.kartya-racs.ketto{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kep-kartya{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:20px;align-items:stretch;padding:18px;border:1px solid var(--line);border-radius:var(--r-l);background:#fff;box-shadow:var(--sh-s)}
+.kep-kartya img{display:block;width:100%;height:100%;min-height:200px;object-fit:cover;border-radius:18px}
+.kep-kartya>div{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.kep-kartya h3{margin:4px 0 0;font-size:1.2rem}
+.kep-kartya p{margin:0;font-size:.94rem;line-height:1.58}
+.kep-kartya .szoveg-link{margin-top:auto}
+.idezet-kozep{max-width:880px;margin:18px auto 0;text-align:center}
+.kicsi-pipak{margin:2px 0 0}
+.kicsi-pipak li{margin-bottom:5px;font-size:.9rem}
+/* allo videokeret a hosben: a szoveghasab magassagaban, 9:16, kozepen */
+@media (min-width:1001px){.belso .hos-racs>.hos-kep>.allo-keret{position:absolute;top:0;bottom:0;left:50%;width:auto;height:100%;max-width:100%;transform:translateX(-50%);margin:0}}
+@media (max-width:1000px){
+  .idovonal{grid-template-columns:minmax(0,1fr) minmax(0,1fr);row-gap:22px}
+  .idovonal::before{display:none}
+  .kartya-racs.ketto{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:760px){
+  .idovonal{grid-template-columns:minmax(0,1fr);gap:18px;margin-left:6px;padding-left:20px;border-left:2px solid var(--line)}
+  .idovonal li{padding:0}
+  .idovonal li::before{content:"";position:absolute;left:-28px;top:9px;width:14px;height:14px;border-radius:50%;background:var(--rose);box-shadow:0 0 0 3px #fff}
+  .kep-kartya{grid-template-columns:minmax(0,1fr);padding:14px}
+  .kep-kartya img{min-height:0;aspect-ratio:4/3}
+  .belso .hos-kep>.allo-keret{width:min(100%,300px)}
+}
+/* "Tudtad, hogy...?" doboz (reszek/tudtad.html) */
+.tudtad{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px 40px;align-items:center;padding:30px;border:1px solid var(--line);border-radius:var(--r-l);background:linear-gradient(100deg,var(--beige) 0,#fff 82%);box-shadow:var(--sh-s)}
+.tudtad-fej h2{margin-bottom:8px}
+.tudtad-fej p{margin:0;font-size:1rem;line-height:1.55}
+.tudtad-parok{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.tudtad-parok li{display:flex;align-items:center;gap:10px;padding:12px 16px;border:1px solid var(--line);border-radius:99px;background:#fff;box-shadow:var(--sh-s);color:var(--navy);font-size:1.02rem}
+.tudtad-ik{display:grid;flex:none;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--beige)}
+.tudtad-ik img{width:28px;height:28px;object-fit:contain}
+.tudtad-plusz{margin:0 4px;color:var(--rose-i);font-size:1.5rem;font-weight:800;line-height:1}
+.tudtad-kieg p{margin:0 0 10px;font-size:.96rem}
+.cimkek{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.cimkek a{display:inline-block;padding:7px 14px;border:1px solid var(--rose);border-radius:99px;background:#fff;color:var(--slate);font-size:.88rem;font-weight:700;text-decoration:none}
+.cimkek a:hover{background:var(--beige)}
+.tudtad-lab{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:16px 18px;border-radius:var(--r-m);background:#fff;border:1px dashed var(--rose)}
+.tudtad-lab p{margin:0;font-size:.96rem;line-height:1.5}
+@media (max-width:760px){
+  .tudtad{grid-template-columns:minmax(0,1fr);gap:16px;padding:16px}
+  .tudtad-parok li{padding:10px 12px;font-size:.95rem}
+  .tudtad-ik{width:38px;height:38px}
+}
+/* piercer-oldalak (tools/uj-piercerek.mjs): tenyek, Rolam doboz, video-racs */
+.teny-lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%;margin:2px 0 14px;padding:0;list-style:none}
+.teny-lista li{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;font-size:.84rem;line-height:1.3;color:var(--mut)}
+.teny-lista b{display:block;color:var(--navy);font-size:.95rem}
+.teny-lista .info-ik{width:36px;height:36px;flex:none}
+.ketto-doboz.rolam-tenyek{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)}
+.ketto-doboz.rolam-tenyek>.teny-lista{grid-template-columns:minmax(0,1fr);align-content:center;margin:0}
+.ketto-doboz.rolam-tenyek>.teny-lista li{padding:14px 16px;font-size:.9rem}
+.ketto-doboz.rolam-tenyek>.teny-lista b{font-size:1.05rem}
+.rolam-media{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.video-racs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.video-racs.allo{grid-template-columns:repeat(auto-fit,minmax(220px,280px));justify-content:center}
+.video-elem{margin:0}
+.video-elem .video{display:block}
+.video-elem .video-kep{display:block;aspect-ratio:16/9;border-radius:18px;overflow:hidden;box-shadow:var(--sh-s)}
+.video-elem .video-kep img{width:100%;height:100%;object-fit:cover}
+.video-elem figcaption{margin-top:8px;color:var(--navy);font-size:.92rem;font-weight:700;text-align:center}
+.evszam-lista li{counter-increment:none}
+.evszam-lista li::before{content:"";top:.45em;left:10px;width:12px;height:12px}
+@media (max-width:1000px){.video-racs{grid-template-columns:repeat(2,minmax(0,1fr))}.ketto-doboz.rolam-tenyek{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:760px){
+  .teny-lista,.ketto-doboz.rolam-tenyek>.teny-lista{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .teny-lista li{flex-direction:column;align-items:flex-start;gap:6px;padding:10px;font-size:.78rem}
+  .video-racs{grid-template-columns:minmax(0,1fr);gap:14px}
+  /* az allo videok mobilon vizszintesen lapozhato savban (nincs arva harmadik) */
+  .video-racs.allo{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin-inline:-16px;padding:0 16px 8px;scrollbar-width:none}
+  .video-racs.allo::-webkit-scrollbar{display:none}
+  .video-racs.allo>.video-elem{flex:0 0 64%;scroll-snap-align:center}
+  .video-racs.allo>.video-elem:only-child{flex-basis:80%;margin-inline:auto}
+}
+/* GYIK (tools/uj-gyik.mjs): temak ket hasabban, lenyithato kerdesek */
+.gyik-temak{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 22px;align-items:start}
+.gyik-tema{scroll-margin-top:calc(var(--fej) + 20px)}
+.gyik-tema-cim{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:1.2rem}
+.gyik-tema .kat-elem>summary{padding:14px 18px;font-size:.98rem}
+.gyik-tema .kat-elem-torzs{padding:0 18px 16px;font-size:.94rem}
+.gyik-tema .kat-elem-torzs p{margin:0 0 8px}
+.gyik-tema .kat-elem-torzs p:last-child{margin:0}
+@media (max-width:1000px){.gyik-temak{grid-template-columns:minmax(0,1fr)}}
+/* fuggoleges kepes kartya (kep felul) es ar-kartyak */
+.kep-kartya.fuggo{grid-template-columns:minmax(0,1fr);gap:14px;padding:14px}
+.kep-kartya.fuggo img{min-height:0;aspect-ratio:4/3}
+.kep-kartya.fuggo>div{padding:0 6px 6px}
+.ar-kartya{align-items:flex-start;gap:10px;padding:22px 20px}
+.ar-kartya h3{font-size:1.15rem}
+.ar-kartya-ar{margin:0!important;color:var(--navy)!important;font-size:1.7rem!important;font-weight:800;line-height:1.1}
+.ar-kartya-ar s{margin-right:8px;color:var(--mut);font-size:1rem;font-weight:500}
+.ar-kartya-meg{margin:0!important;padding:4px 12px;border-radius:99px;background:#eef3ec;color:#3c7a4f!important;font-size:.8rem!important;font-weight:700}
+.ar-kartya .gomb{margin-top:auto}
+.ar-jegyzet{margin:12px 0 0;color:var(--mut);font-size:.85rem;text-align:center}
+/* Kapcsolat: Ricsi videoja (asztalon) a 9 csempe magassagaban; mobilon teljes szelessegben; a fejlec is teljes szelessegu */
+@media (min-width:1001px){
+  .segit{grid-template-columns:minmax(0,330px) minmax(0,1fr);align-items:stretch}
+  .segit-video{position:static;display:flex;flex-direction:column;padding:12px}
+  .segit-video iframe{flex:1;width:100%;max-width:none;height:auto;min-height:420px;aspect-ratio:auto}
+}
+@media (max-width:1000px){
+  .segit-video{max-width:none;width:100%}
+  .segit-video iframe{width:100%;max-width:none;aspect-ratio:9/16}
+}
+@media (max-width:760px){
+  .kat-fej,.kat-fej h2,.kat-fej .kat-alcim{max-width:none;width:100%}
+  /* rovid cim egy sorban (a tulajdonos kerese: ami lehet egysoros, legyen az) */
+  .belso .hos-cim.cim-rovid{font-size:clamp(1.25rem,5.3vw,1.7rem)}
+}
+/* a vendegek videos beszamoloi (vsav): alcim, a video alatti cimke, kevés video kozepen */
+.vsav-doboz h2{margin-bottom:4px}
+.vsav-alcim{margin:0 0 4px;color:var(--mut);font-size:.95rem;text-align:center}
+.vsav-gomb .vsav-cimke{position:absolute;left:8px;right:8px;bottom:8px;padding:5px 8px;border-radius:99px;background:rgba(43,43,56,.72);color:#fff;font-size:.72rem;font-weight:700;line-height:1.2;text-align:center;backdrop-filter:blur(2px)}
+.vsav-keves .vsav-sav{justify-content:center}
+/* hoskep, amelynek a teljes tartalma fontos (pl. a Velemenyek oldal montazsa): nem vagjuk, a hasab kozepen */
+@media (min-width:1001px){
+  .belso .hos-racs>.hos-kep.hos-kep-tartalmaz{display:flex;align-items:center;min-height:0}
+  .belso .hos-racs>.hos-kep.hos-kep-tartalmaz>img{position:static;width:100%;height:auto;object-fit:contain;border-radius:26px}
+}
+/* "Nem hozzaerto kezekben": a feher X pontosan a piros kor kozepen */
+.kat-hiba li::before{display:grid;place-items:center;top:.2em;line-height:1;padding:0 0 .08em;font-size:.85rem}
+/* az oszi akcio "Legnepszerubb" jelvenye: szalag-szeru, csillaggal */
+.akcio-arak .legnepszerubb em{top:-13px;display:inline-flex;align-items:center;gap:5px;padding:4px 12px 4px 10px;border-radius:99px;background:linear-gradient(135deg,#ab6354 0,#d7aba8 100%);color:#fff;font-size:.62rem;letter-spacing:.1em;box-shadow:0 4px 12px rgba(171,99,84,.45);border:2px solid #fff}
+.akcio-arak .legnepszerubb em::before{content:"★";font-size:.8rem;letter-spacing:0;line-height:1}
+@media (max-width:760px){.akcio-arak .legnepszerubb em{font-size:.54rem;padding:3px 9px 3px 8px;top:-12px}}
+/* menu: a ChatGPT-vel generalt, egyseges vonalas ikonok (assets/img/menu-ikon/), a piercereknel a sajat fotojuk */
+.almenu a .menu-ikon{flex:none;width:28px;height:28px;object-fit:contain}
+.almenu a .menu-foto{flex:none;width:28px;height:28px;border-radius:50%;object-fit:cover;object-position:50% 25%;box-shadow:0 0 0 2px #fff,0 0 0 3px var(--line)}
+@media (max-width:1000px){.almenu a .menu-ikon,.almenu a .menu-foto{width:26px;height:26px}}
+.allo-keret .video-kep{position:relative}
+.allo-keret .lejatszo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0}
+.ketto-doboz>.szoveg>p.nagy-szam,.info-kartya>p.nagy-szam{font-size:clamp(2.6rem,5vw,3.8rem);line-height:1;margin:0 0 6px}
+.kat-doboz.vsav-doboz{display:block;text-align:center}
+.vsav-doboz .vsav{margin-top:16px}
+
+/* tablet (761-1000 px; a tulajdonos kerese, 2026-10-16: "a tabletnezetet is formazd meg"): a hos szovege a teljes szelessegben,
+   a fooldali idezet nem csuszik ra a szovegre */
+@media (min-width:761px) and (max-width:1000px){
+  .hos-szoveg>.hos-bevezeto{max-width:none}
+  body:not(.belso) .hos-kep{max-width:none;margin-bottom:38px}
+  body:not(.belso) .hos-idezet{bottom:-24px}
+  .belso .hos-ertek-sav{display:flex!important;flex-direction:column;gap:10px}
+  .belso .hos:not(.kat-hos-b) .hos-racs>.hos-kep{max-width:none}
+  /* az allo videos lepesek tableten is ket hasabban (a video mellett a szoveg) */
+  .lepes.lepes-allo{grid-template-columns:minmax(0,230px) minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"media fej" "media szoveg";gap:12px 26px}
+  .lepes.lepes-allo.lepes-jobb{grid-template-columns:minmax(0,1fr) minmax(0,230px);grid-template-areas:"fej media" "szoveg media"}
+  .lepes.lepes-allo .lepes-media{align-items:flex-start}
+}
+
+/* blogcikk (a tulajdonos kerese, 2026-10-16: "osszefolyik a cim a szoveggel, legyen szellosebb"; "az aljan a szekciok mas szelessegeuek"):
+   nagyobb betu es sorkoz, levego a cimek elott; a cikk utani dobozok (pl. 93%) a cikk szelessegeben */
+.cikk-fej{margin-bottom:26px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.cikk-meta{margin-bottom:10px}
+.cikk-cim{font-size:clamp(1.7rem,3.3vw,2.35rem);line-height:1.16;margin:0 0 12px}
+.cikk-torzs{font-size:1.05rem;line-height:1.75;color:var(--slate)}
+.cikk-torzs p{margin:0 0 16px}
+.cikk-torzs h2{font-size:clamp(1.25rem,2.2vw,1.5rem);line-height:1.28;margin:38px 0 12px}
+.cikk-torzs h3{font-size:1.16rem;line-height:1.32;margin:28px 0 10px}
+.cikk-torzs h2+h3{margin-top:10px}
+.cikk-torzs>:first-child{margin-top:0}
+.cikk-torzs ul,.cikk-torzs ol{margin:0 0 18px}
+.cikk-torzs li{margin-bottom:7px}
+.cikk-torzs blockquote{margin:22px 0;padding:14px 20px}
+.cikk-kep{margin:24px 0}
+.cikk-torzs .gb{margin:22px 0}
+.cikk-eszkoz{margin-top:30px}
+.sz-cikk~.sz>.tarto,.sz-cikk~section>.tarto{max-width:920px;margin-inline:auto}
+@media (max-width:760px){
+  .cikk-fej{margin-bottom:18px;padding-bottom:14px}
+  .cikk-torzs{font-size:.98rem;line-height:1.68}
+  .cikk-torzs p{margin-bottom:13px}
+  .cikk-torzs h2{margin:30px 0 10px}
+  .cikk-torzs h3{margin:22px 0 8px}
+}
