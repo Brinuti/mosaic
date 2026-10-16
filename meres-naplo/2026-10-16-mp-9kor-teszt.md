@@ -20,4 +20,14 @@ nyitásonként pontosan egyszer (a próba a `mpSuti.foglalasInditas` hívásait 
 Nem került új vendégadat a repóba. A landolóról a Google-véleménydoboz és a vendégvideók lekerültek; a csapat-kártyák fotói az eredeti landoló saját fotói.
 
 ## Eredmények
-EREDMENYEK
+| Teszt | Eredmény |
+|---|---|
+| `tools/uj-oldalak-teszt.mjs` (mind) | 174 oldal, 5729 ellenőrzés, 0 hiba (a landolón új ellenőrzés: rövid fejléc – logó, Vélemények, Időpontfoglalás, menü nincs – és tiltott szavak, asztali és mobil) |
+| `tools/uj-oldalak-teszt.mjs --forras` | 1224 ellenőrzés, 0 hiba |
+| `tools/uj-fooldal-teszt.mjs` | minden rendben (102 ellenőrzés) |
+| `tools/motor-tipus-teszt.mjs` / `--mobil` | minden rendben (120 / 124 ellenőrzés) |
+| `tools/motor-teszt.mjs` / `--mobil`, `tools/motor-formazas-teszt.mjs` | minden rendben (26 / 26 / 90 ellenőrzés) |
+| Csomag-gombok (Playwright, asztali + iPhone 13; 1 / 2 / 3 piercing és a ragadós sáv) | minden rendben (12 ellenőrzés): a típusválasztó kimarad, a helyszín jön, a csomag elöl, csukva; a foglalásindítás mérése pontosan 1-szer fut; szűrőváltás után a szokásos rend |
+| `tools/meres-teszt.mjs` (éles domainnév, adatküldés nélkül) | minden rendben (85 ellenőrzés), a TikTok-landoló utáni foglalási út is |
+| Tiltott szavak a TikTok-landolón (látható és rejtett szöveg, alt / title / aria / meta, komment; asztali + mobil) | 0 találat; a linkek közül csak a Vélemények oldal címe (`/migren-shenmen-piercing-velemenyek`) tartalmazza – az eredeti landoló is ide linkelt |
+| Szemrevételezés (1440 / 390 px) | landoló: hős, akció + ékszer-lapozó, értékelés, 15 helyszín, árlista, páros akció, kontroll, csapat, lábléc; akció-oldal: szakaszok az oldal stílusában |
