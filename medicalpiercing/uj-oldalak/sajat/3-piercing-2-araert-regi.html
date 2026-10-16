@@ -44,7 +44,10 @@
   <!-- 2. MELYIK PIERCING? (párosítási ajánlás nélkül: a lehetőségeket az állapotfelmérésen egyeztetjük) -->
   <section class="tarto">
     <div class="akc-pud akc-melyik">
-      <h2>Nem tudod, melyik 2–3 piercinget válaszd?</h2>
+      <div class="kat-fej">
+        <p class="felirat felirat-kozep"><svg class="ik" aria-hidden="true"><use href="#i-ear"/></svg>Csomagárak</p>
+        <h2>Nem tudod, melyik 2–3 piercinget válaszd?</h2>
+      </div>
       <p>Csomagárak: 2 piercing 39 900 Ft, 3 piercing 44 900 Ft. A behelyezés lehetőségeit az állapotfelmérésen egyeztetjük.</p>
       <p class="akc-tipus-cim">Nézd meg, melyik piercing mire jó:</p>
       <ul class="akc-tipusok">
@@ -61,10 +64,11 @@
     </div>
   </section>
 
-  <!-- 3. MI JÁR AZ ÁRÉRT? -->
+  <!-- 3. MI JÁR AZ ÁRÉRT? (a kategória-oldalak kéthasábos doboza: szöveg + kép, egyforma magas hasábok) -->
   <section class="tarto">
-    <div class="akc-mi">
-      <div class="akc-mi-szoveg">
+    <article class="kat-doboz kat-par akc-mi">
+      <div class="kat-doboz-szoveg">
+        <p class="felirat"><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>Az ár tartalmazza</p>
         <h2>Mi jár az árért?</h2>
         <ul class="akc-csekk">
           <li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>G23 titánium ékszer</li>
@@ -74,54 +78,56 @@
           <li><svg class="ik" aria-hidden="true"><use href="#i-check"/></svg>garancia</li>
         </ul>
         <p>Kizárólag egyszer használatos, steril eszközökkel dolgozunk; a szúrás menetét lépésről lépésre <a class="szoveg-link" href="/a-szuras-folyamata">a szúrás folyamata</a> oldalon mutatjuk be.</p>
+        <a class="gomb gomb-kicsi akc-gomb" href="/idopontfoglalas" data-csomag="3">Időpontot foglalok<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a>
       </div>
-      <figure class="akc-mi-kep">
-        <img src="/assets/img/f18724_e620113496614be4918babe7e01bfb65.webp" width="1000" height="1000" alt="Steril, egyszer használatos eszközök a szúráshoz" loading="lazy" decoding="async">
-        <figcaption>Steril, egyszer használatos eszközök</figcaption>
-      </figure>
-    </div>
+      <img class="kat-par-kep" src="/assets/img/f18724_e620113496614be4918babe7e01bfb65.webp" width="1000" height="1000" alt="Steril, egyszer használatos eszközök a szúráshoz" loading="lazy" decoding="async">
+    </article>
   </section>
 
-  <!-- 4. VENDÉGEINK VIDEÓS BESZÁMOLÓI (3 videó: migrén, shenmen, klimax) -->
-  <section class="tarto" id="videok-akcio"><div class="kat-doboz vsav-doboz akc-videok">
-    <h2>Vendégeink videós beszámolói</h2>
-    <div class="vsav vsav-nincs-gorg" data-vsav>
-      <ul class="vsav-sav">
-      <li class="vsav-elem"><button type="button" class="vsav-gomb vsav-terv" data-vsav-video="/assets/video/uj-velemeny-01.mp4" aria-label="Videó lejátszása: Migrén piercing"><img src="/assets/img/uj-velemeny-01-terv.webp" alt="" width="540" height="960" loading="lazy" decoding="async"><span class="lejatszo"><svg class="ik" aria-hidden="true"><use href="#i-play"/></svg></span><span class="vsav-cimke">Migrén piercing</span></button></li>
-      <li class="vsav-elem"><button type="button" class="vsav-gomb vsav-terv" data-vsav-video="/assets/video/uj-velemeny-03.mp4" aria-label="Videó lejátszása: Shenmen piercing"><img src="/assets/img/uj-velemeny-03-terv.webp" alt="" width="540" height="960" loading="lazy" decoding="async"><span class="lejatszo"><svg class="ik" aria-hidden="true"><use href="#i-play"/></svg></span><span class="vsav-cimke">Shenmen piercing</span></button></li>
-      <li class="vsav-elem"><button type="button" class="vsav-gomb vsav-terv" data-vsav-video="/assets/video/uj-velemeny-04.mp4" aria-label="Videó lejátszása: Klimax piercing"><img src="/assets/img/uj-velemeny-04-terv.webp" alt="" width="540" height="960" loading="lazy" decoding="async"><span class="lejatszo"><svg class="ik" aria-hidden="true"><use href="#i-play"/></svg></span><span class="vsav-cimke">Klimax piercing</span></button></li>
-      </ul>
-    </div>
-    <p class="velemeny-osszes"><a class="szoveg-link" href="/migren-shenmen-piercing-velemenyek#videok-migren">Mind a 37 videós beszámoló »</a></p>
-  </div></section>
+  <!-- 4. VENDÉGEINK VIDEÓS BESZÁMOLÓI: a közös, lapozható videósáv (mind a 37), nagyobb kártyákkal (a tulajdonos kérése, 2026-10-16: „nagyon picik … legyen lapozható”) -->
+  <div class="akc-videok">
+<!--#video-velemeny-mind-->
+  </div>
 
-  <!-- 5. HOL ÉS MIKOR? Budapest + a két legközelebbi kitelepülési nap (a táblázatból, uj-fooldal.js 4f.); adat nélkül csak Budapest + a gomb -->
+  <!-- 5. HOL ÉS MIKOR? Budapest + a két legközelebbi kitelepülési nap (a táblázatból, uj-fooldal.js 4f.; adat nélkül csak Budapest), alatta a megszokott helyszín-doboz, végig látható -->
   <section class="tarto" id="idopontok">
     <div class="akc-hol">
-      <h2>Hol és mikor?</h2>
-      <p class="akc-hol-al">Budapest + 14 vidéki helyszín. A kitelepüléseken a megadott napokon fogadunk, a szabad időpontokat a foglalóban látod.</p>
+      <div class="kat-fej">
+        <p class="felirat felirat-kozep"><svg class="ik" aria-hidden="true"><use href="#i-calendar"/></svg>Időpontok</p>
+        <h2>Hol és mikor?</h2>
+        <p class="akc-hol-al">Budapest + 14 vidéki helyszín. A kitelepüléseken a megadott napokon fogadunk, a szabad időpontokat a foglalóban látod.</p>
+      </div>
       <ul class="akc-helyek" data-akc-helyek>
         <li class="akc-hely"><div><b>Budapest</b><span>állandó szalon · H–P 9–19, Szo 9–18</span></div><a class="gomb gomb-kicsi" href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=6029">Foglalás</a></li>
       </ul>
-      <p class="akc-hol-gomb"><a class="gomb gomb-ures gomb-kicsi" href="/idopontfoglalas">Időpontok megtekintése<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a></p>
-      <details class="akc-osszes">
-        <summary>Összes helyszín<svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></summary>
-<!--#helyszinek-->
-      </details>
     </div>
   </section>
+<!--#helyszinek-->
 
-  <!-- 6. GYAKORI KÉRDÉSEK -->
+  <!-- 6. GYAKORI KÉRDÉSEK (a garancia-oldal kérdés-rácsa: teljes szélesség, asztalon két hasáb) -->
   <section class="tarto" id="kerdesek">
-    <div class="akc-gyik">
+    <div class="kat-fej">
+      <p class="felirat felirat-kozep"><svg class="ik" aria-hidden="true"><use href="#i-steth"/></svg>Kérdések</p>
       <h2>Gyakori kérdések</h2>
-      <div class="kat-harmonika">
-        <details class="kat-elem" open><summary>Fáj a szúrás?<span class="kat-elem-nyil"><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></span></summary><div class="kat-elem-torzs"><p>A szúrás pár másodperc, előtte érzéstelenítő spray-t használunk; az érzés egyénenként eltér. Vendégeink nagy része utólag már csak mosolyog azon, mennyire félt tőle.</p></div></details>
-        <details class="kat-elem"><summary>Kinek nem ajánljuk?<span class="kat-elem-nyil"><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></span></summary><div class="kat-elem-torzs"><p>Véralvadási zavar, immunszuppresszáns kezelés, cukorbetegség, keloidra való hajlam, fül- vagy bőrbetegség és várandósság esetén az állapotfelmérésen mindenképp jelezd – szükség esetén előbb konzultálj orvosoddal. 14 éven aluliaknak nem szúrunk közérzetjavító piercinget. <a class="szoveg-link" href="/a-szuras-folyamata">Részletek »</a></p></div></details>
-        <details class="kat-elem"><summary>Mikor fizetek?<span class="kat-elem-nyil"><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></span></summary><div class="kat-elem-torzs"><p>A foglalás online, a fizetés a helyszínen, előleg nélkül – készpénzzel vagy bankkártyával.</p></div></details>
-        <details class="kat-elem"><summary>Mi van, ha nem érzek javulást?<span class="kat-elem-nyil"><svg class="ik" aria-hidden="true"><use href="#i-chev"/></svg></span></summary><div class="kat-elem-torzs"><p>Ha 6–7 hét után nem tapasztalsz javulást, megerősítő piercinget szúrunk. <a class="szoveg-link" href="/migren-es-shenmen-piercing-garancia">A garancia részletei »</a></p></div></details>
-      </div>
     </div>
+    <ul class="gar-racs">
+      <li>
+        <h3>Fáj a szúrás?</h3>
+        <p>A szúrás pár másodperc, előtte érzéstelenítő spray-t használunk; az érzés egyénenként eltér. Vendégeink nagy része utólag már csak mosolyog azon, mennyire félt tőle.</p>
+      </li>
+      <li>
+        <h3>Kinek nem ajánljuk?</h3>
+        <p>Véralvadási zavar, immunszuppresszáns kezelés, cukorbetegség, keloidra való hajlam, fül- vagy bőrbetegség és várandósság esetén az állapotfelmérésen mindenképp jelezd – szükség esetén előbb konzultálj orvosoddal. 14 éven aluliaknak nem szúrunk közérzetjavító piercinget. <a class="szoveg-link" href="/a-szuras-folyamata">Részletek »</a></p>
+      </li>
+      <li>
+        <h3>Mikor fizetek?</h3>
+        <p>A foglalás online, a fizetés a helyszínen, előleg nélkül – készpénzzel vagy bankkártyával.</p>
+      </li>
+      <li>
+        <h3>Mi van, ha nem érzek javulást?</h3>
+        <p>Ha 6–7 hét után nem tapasztalsz javulást, megerősítő piercinget szúrunk. <a class="szoveg-link" href="/migren-es-shenmen-piercing-garancia">A garancia részletei »</a></p>
+      </li>
+    </ul>
   </section>
 
   <!-- 7. RAGADÓS FOGLALÁS-SÁV (mobilon) -->

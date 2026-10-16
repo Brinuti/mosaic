@@ -21,6 +21,11 @@ import { meresTiltas } from './meres-tiltas.mjs';
 import { kulcsbol, fajlnev } from '../lib/utvonal.js';
 import { UJ_ELES, REGI_ELO } from '../lib/uj-eles.js';
 import { UJ_FOOLDAL_UT } from './uj-fooldal.mjs';
+// a hirdetesi landolo (TikTok) tiltott szavai (a tulajdonos kerese, 2026-10-16: "nem lehet sehol sem ... semmi olyasmi kifejezes, ami orvosi"; medicalpiercing/CLAUDE.md)
+const TILTOTT_LANDOLO = ['migrén', 'migren', 'klimax', 'klímax', 'menopauz', 'változókor', 'fejfáj', 'fejfaj', 'allergi', 'fogyás', 'fogyókúr', 'fogyokur', 'étvágy', 'pánik', 'szorong', 'depresszi',
+  'alvászavar', 'hőhullám', 'izzadás', 'betegs', 'gyógy', 'gyogy', 'orvos', 'egészségügy', 'egeszsegugy', ' eü ', ' eü-', ' eü,', 'panasz', 'tünet', 'kezelés', 'fájdalom', 'stressz', ' máj ', ' máj-',
+  'pajzsmirigy', 'vastagbél', 'lép piercing', 'hatékony', 'javulás', 'akupunkt', 'terápi', 'diagnó', 'shenmen', 'érzéstelen', 'állapotfelm', 'gyulladás', 'fertőz', 'immun', 'hormon', 'emésztés',
+  'puffad', 'vérnyomás'];
 // elesitve (lib/uj-eles.js) az uj oldal az eredeti cimen, a regi (Wix-klon) a /regi/... cimen; kulonben az uj a /uj/... cimen, a regi az eredetin
 const UJ = UJ_ELES ? '' : '/uj';
 const REGI = UJ_ELES ? REGI_ELO : '';
@@ -292,8 +297,24 @@ async function lapTeszt(o, nezet, ctx) {
   }
   if (koszono) ok(`${cim}: koszonooldal: ${gombok.length} foglalasi link, a motor nem tolt be (szandekos)`, gombok.length > 0 && !(await p.evaluate(() => !!document.querySelector('script[src*="/motor/motor.js"]'))));
   else ok(`${cim}: mind a ${kijel.length} foglalasi gomb megnyitja a foglalomotort`, motorHiba.length === 0, motorHiba.slice(0, 3).join(' '));
-  // fejlec-menu
-  if (nezet === 'mobil') {
+  // fejlec-menu (a hirdetesi landolon rovid fejlec: logo, Velemenyek, Idopontfoglalas, menu nelkul - reszek/fejlec-landolo.html)
+  const landolo = await p.evaluate(() => !!document.querySelector('.fejlec-landolo'));
+  if (landolo) {
+    await p.evaluate(() => scrollTo(0, 0)); await p.waitForTimeout(150);
+    const f = await p.evaluate(() => {
+      const lat = (s) => { const e = document.querySelector(s); if (!e) return false; const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.top >= 0 && r.bottom <= innerHeight && r.right <= innerWidth + 1; };
+      return { menu: !!document.querySelector('#menu'), logo: lat('.fejlec-landolo .logo img'), velemeny: lat('.landolo-velemeny'), cta: lat('.fejlec-landolo .fejlec-cta'), atfedes: (() => { const a = document.querySelector('.landolo-velemeny').getBoundingClientRect(), b = document.querySelector('.fejlec-landolo .logo img').getBoundingClientRect(); return a.left < b.right; })() };
+    });
+    ok(`${cim}: a landolo rovid fejlece: a logo, a Velemenyek es az Idopontfoglalas latszik, menu nincs`, !f.menu && f.logo && f.velemeny && f.cta && !f.atfedes, JSON.stringify(f));
+    // a tulajdonos kerese (2026-10-16): a landolon sehol nincs panasz- vagy orvosi szo (szoveg, rejtett szoveg, alt / title / aria-label, meta, komment; a linkek cimei nem szamitanak)
+    const t = await p.evaluate((szavak) => {
+      const komment = []; const w = document.createTreeWalker(document.documentElement, NodeFilter.SHOW_COMMENT); while (w.nextNode()) komment.push(w.currentNode.nodeValue);
+      const attr = [...document.querySelectorAll('[alt],[title],[aria-label],[placeholder],meta[content]')].map((e) => [e.getAttribute('alt'), e.getAttribute('title'), e.getAttribute('aria-label'), e.getAttribute('placeholder'), e.tagName === 'META' ? e.getAttribute('content') : ''].join(' '));
+      const l = (' ' + [document.title, document.body.textContent, attr.join(' '), komment.join(' ')].join(' ') + ' ').toLowerCase().replace(/\s+/g, ' ').replace(/adatkezel/g, 'adat');
+      return szavak.filter((sz) => l.includes(sz));
+    }, TILTOTT_LANDOLO);
+    ok(`${cim}: a landolon nincs panasz- vagy orvosi szo`, t.length === 0, t.join(', '));
+  } else if (nezet === 'mobil') {
     await p.evaluate(() => scrollTo(0, 0));
     await p.click('#menu-nyito');
     const m = await p.evaluate(() => { const m = document.querySelector('#menu'); const r = m.getBoundingClientRect(); const linkek = [...m.querySelectorAll('a.menu-link')]; return { h: Math.round(r.height), vis: getComputedStyle(m).visibility, linkekLatszanak: linkek.length > 0 && linkek.every((a) => { const q = a.getBoundingClientRect(); return q.height > 0 && q.bottom <= innerHeight + 1; }), nyitva: document.querySelector('#menu-nyito').getAttribute('aria-expanded') }; });
