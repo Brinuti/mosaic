@@ -12,15 +12,19 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { kulcsbol, fajlnev } from '../lib/utvonal.js';
-import { oldalHtml, indexHtml } from './uj-oldalak/sablon.mjs';
-import { B_ALAP } from './uj-oldalak/kategoria.mjs';
+import { oldalHtml, indexHtml, KIZART_UTAK } from './uj-oldalak/sablon.mjs';
+import { B_ALAP, GOOGLE_DB } from './uj-oldalak/kategoria.mjs';
 
 export const UJ_FOOLDAL_UT = '/uj-fooldal';
 export const TUKOR_ELO = '/uj';   // a tobbi oldal tukre: /uj/<eredeti utvonal>
 
 // --- kozos reszek: <!--#nev--> -> uj-oldalak/reszek/nev.html ---------------------------------------------------------------
+// <!--#velemenyek ti=<kulcs>--> : a velemeny-doboz egy masik (pl. kategoriankent szurt) Trustindex-widgettel
 export function osszerak(ROOT, html) {
-  return html.replace(/<!--#([a-z0-9-]+)-->/g, (m, nev) => fs.readFileSync(path.join(ROOT, 'uj-oldalak/reszek', nev + '.html'), 'utf8').trimEnd());
+  return html.replace(/<!--#([a-z0-9-]+)(?: ti=([a-z0-9]+))?-->/g, (m, nev, ti) => {
+    const resz = fs.readFileSync(path.join(ROOT, 'uj-oldalak/reszek', nev + '.html'), 'utf8').trimEnd();
+    return ti ? resz.replace(/loader\.js\?[a-z0-9]+/, 'loader.js?' + ti) : resz;
+  });
 }
 
 // --- kepek verziojele: az /assets/img/ 30 napig tarolodik, a megvaltozott uj-* kep ujra-keres kell (?v=<tartalom-hash>) ----------
@@ -40,7 +44,7 @@ let tukor = null;
 export function tukorJegyzek(ROOT) {
   if (tukor) return tukor;
   const f = path.join(ROOT, 'uj-oldalak/jegyzek.json');
-  tukor = fs.existsSync(f) ? new Set(JSON.parse(fs.readFileSync(f, 'utf8')).map((o) => o.ut)) : new Set();
+  tukor = fs.existsSync(f) ? new Set(JSON.parse(fs.readFileSync(f, 'utf8')).map((o) => o.ut).filter((ut) => !KIZART_UTAK.has(ut))) : new Set();
   return tukor;
 }
 // belso link atiras: / -> /uj-fooldal, /x -> /uj/x ha az x-nek van uj valtozata; a foglalasi cimek (/idopontfoglalas, /kontroll) maradnak
@@ -58,11 +62,32 @@ export function linkAtiras(ROOT, html) {
   });
 }
 
+// --- szovegjavitas az osszes uj lapon (a tulajdonos kerese, 2026-10-16) ------------------------------------------------------
+// Az ekszereknel nincs arany (sem 14 karatos bevonat), nem "tanusitvannyal rendelkezo / antiallergen", hanem magas minosegu orvosi fem, G23 titanium.
+// A regi "4.100+" velemenyszam helyett a Google-velemenyek mostani szama (build ideju tartalek: GOOGLE_DB, a lap a /api/ertekeles szamara frissiti).
+const EKSZER_MONDAT = 'Kizárólag <strong>magas minőségű orvosi fémből, G23 titániumból</strong> készült ékszerekkel dolgozunk.';
+export function szovegJavit(html) {
+  return html
+    .replace(/<strong>A legmagasabb minőségű(?:<\/strong>)? \(tanúsítvánnyal rendelkező\) (?:<strong>)?G23 Titánium antiallergén<\/strong> ékszerek ezüst színben, vagy <strong>14 karátos arannyal(?: bevonva<\/strong>|<\/strong> bevonva)\./g, EKSZER_MONDAT)
+    .replace(/<strong>G23 Titánium, antiallergén orvosi fém piercingek\.<\/strong>/g, '<strong>Magas minőségű orvosi fém: G23 titánium piercingek.</strong>')
+    .replace(/Az ezüst színűek titánból, az arany ékszerek pedig orvosi fémből és 14K arannyal vannak<br>\s*bevonva\./g, 'Ékszereink magas minőségű orvosi fémből, G23 titániumból készülnek.')
+    .replace(/<p><strong>Az anyaga alapján tehát választhatsz:<\/strong><\/p>\s*<p>[·\s]*nemesfémet \(ezüstözött, aranyozott\)<\/p>\s*<p>[·\s]*ezüstöt<\/p>\s*<p>[·\s]*titániumot<\/p>/g,
+      '<p>Nálunk kizárólag <strong>magas minőségű orvosi fémből, G23 titániumból</strong> készült ékszereket használunk.</p>')
+    .replace(/ \(ez a páciens kérésének megfelelően arannyal bevont is lehetett\)/g, '')
+    .replace(/ha ilyen van akkor arany vagy fehérarany ékszert szoktunk javasolni, viszont<br>\s*ezek nem kaphatóak nálunk a vendégnek kell hoznia magával\./g,
+      'ha ilyen van, akkor a vendég által hozott, számára megfelelő ékszert javasoljuk: ezek nem kaphatóak nálunk, a vendégnek kell hoznia magával.')
+    .replace(/Találsz feketéket, aranyozottat, ezüst színűt\. Minden ékszerünk a legmagasabb minőségű G23 Titániumból készült orvosi fém, antiallergének és autóklávban fertőtlenítjük őket\./g,
+      'Minden ékszerünk magas minőségű orvosi fémből, G23 titániumból készül, és autoklávban fertőtlenítjük őket.')
+    // csak a szovegben (attributumban nem lehet <span>)
+    .replace(/>([^<]*)</g, (m, t) => (/4\.100/.test(t) ? '>' + t.replace(/(?:[Tt]öbb mint\s+)?4\.100\+?/g, `<span data-ti-darab>${GOOGLE_DB}</span>`) + '<' : m));
+}
+
 // --- egy oldal kiirasa asztali es mobil kiszolgalasra (a Wix-szel azonos kulcs-szabaly) --------------------------------------
 export function oldalKiir(ROOT, DIST, ut, html) {
   const kulcs = ut === '/' ? 'index' : kulcsbol(ut);
   const nev = fajlnev(kulcs) + '.html';
-  const kesz = kepVerzio(ROOT, linkAtiras(ROOT, osszerak(ROOT, html)));
+  const kesz = kepVerzio(ROOT, linkAtiras(ROOT, szovegJavit(osszerak(ROOT, html))));
+  if (/karátos|14K arany|aranyozott|arannyal|arany (?:shenmen|ékszer|piercing)/i.test(kesz)) throw new Error(`${ut}: aranyos ekszer-szoveg maradt (a tulajdonos kerese: nincs arany)`);
   if (!/<meta name="robots" content="[^"]*noindex[^"]*"/i.test(kesz)) throw new Error(`${ut}: hianyzik a noindex meta (a lap rejtett)`);
   if (/rel="canonical"/i.test(kesz)) throw new Error(`${ut}: canonical nem lehet a noindex lapon`);
   // minden helyi kep- es betu-hivatkozasnak letezni kell (hianyzo fajl = torott kep az eles lapon)
@@ -94,14 +119,34 @@ export function ujOldalak(ROOT, DIST) {
   let db = 0;
   const adatok = fs.readdirSync(dir).filter((x) => x.endsWith('.json') && !x.startsWith('_')).sort().map((f) => JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')));
   const utSzerint = new Map(adatok.map((a) => [a.ut, a]));
+  const sajatDir = path.join(ROOT, 'uj-oldalak/sajat');
+  const sajatNevek = new Set(fs.existsSync(sajatDir) ? fs.readdirSync(sajatDir).filter((x) => x.endsWith('.html')).map((x) => '/' + x.slice(0, -5)) : []);
   for (const adat of adatok) {
-    if (KIHAGY.has(adat.ut)) continue;
+    if (KIHAGY.has(adat.ut) || KIZART_UTAK.has(adat.ut)) continue;
+    if (sajatNevek.has(adat.ut)) continue;   // kezzel irt uj valtozata van (uj-oldalak/sajat/), lent irodik ki
     // a migren / shenmen / klimax / slim oldal alapja a "B" valtozat (az eredeti -b oldal tartalma, a kategoria-dizajnnal): ugyanazon a (b nelkuli) cimen
     const bAdat = B_ALAP.has(adat.ut) ? utSzerint.get(B_ALAP.get(adat.ut)) : null;
     if (B_ALAP.has(adat.ut) && !bAdat) throw new Error(`${adat.ut}: hianyzik a B valtozat tartalma (${B_ALAP.get(adat.ut)})`);
     oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, bAdat || adat, { lapozo, b: !!bAdat }));
     jegyzek.push({ ut: adat.ut, cim: (bAdat || adat).cim, tipus: adat.tipus, uj: TUKOR_ELO + (eredeti.get(adat.ut) || encodeURI(adat.ut)) });
     db++;
+  }
+  // --- kezzel irt uj oldalak (uj-oldalak/sajat/<nev>.html -> /uj/<nev>): az elso sor <!--oldal {"cim","leiras"} -->, utana a <main> tartalma ---
+  // (Csapatunk, Kapcsolat, Ekszereink: a regi oldalon nincs ilyen onallo lap, a tulajdonos kerese 2026-10-16)
+  if (fs.existsSync(sajatDir)) {
+    for (const f of fs.readdirSync(sajatDir).filter((x) => x.endsWith('.html')).sort()) {
+      const nev = f.slice(0, -5);
+      const forras = fs.readFileSync(path.join(sajatDir, f), 'utf8');
+      const m = /^<!--oldal (\{[\s\S]*?\}) -->\n/.exec(forras);
+      if (!m) throw new Error(`uj-oldalak/sajat/${f}: hianyzik az elso sor (<!--oldal {"cim":...,"leiras":...} -->)`);
+      const meta = JSON.parse(m[1]);
+      const fo = osszerak(ROOT, forras.slice(m[0].length));
+      const horgony = new Set([...fo.matchAll(/\sid="([a-z]+)"/g)].map((x) => x[1]));
+      const adat = { ut: '/' + nev, kulcs: nev, cim: meta.cim, leiras: meta.leiras, tipus: 'oldal', szekciok: [] };
+      oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, adat, { fo, sajat: true, horgony, nagyito: /data-ekszer-galeria|id="ekszerek"/.test(fo) }));
+      jegyzek.push({ ut: adat.ut, cim: meta.cim, tipus: 'oldal', uj: TUKOR_ELO + adat.ut });
+      db++;
+    }
   }
   const index = indexHtml(ROOT, jegyzek, { datum: new Date().toISOString().slice(0, 10) });
   oldalKiir(ROOT, DIST, '/uj-oldalak', index);

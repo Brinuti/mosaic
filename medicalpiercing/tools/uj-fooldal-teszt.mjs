@@ -48,6 +48,8 @@ const rossz = [];
 for (const h of belso) {
   let ut;
   try { ut = decodeURIComponent(h.replace(/[?#].*$/, '')); } catch { rossz.push(h); continue; }
+  // a kezzel irt uj oldalak (uj-oldalak/sajat/<nev>.html -> /uj/<nev>) is ervenyes celok
+  if (/^\/uj\/[a-z0-9-]+$/.test(ut) && fs.existsSync(path.join(ROOT, 'uj-oldalak/sajat', ut.slice(4) + '.html'))) continue;
   const k = ut === '/' ? 'index' : kulcsbol(ut);
   if (!fs.existsSync(path.join(ROOT, 'klon', k + '.html'))) rossz.push(h);
 }
@@ -145,7 +147,7 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
     const mm = await p.evaluate(() => {
       const m = document.querySelector('#menu'), r = m.getBoundingClientRect(), cs = getComputedStyle(m);
       const link = (t) => { const a = [...m.querySelectorAll('a,button')].find((x) => x.textContent.trim().startsWith(t)); const q = a.getBoundingClientRect(); return q.top >= 0 && q.bottom <= innerHeight && q.height > 20; };
-      return { h: Math.round(r.height), vis: cs.visibility, ar: link('Árak'), garancia: link('Garancia'), blog: link('Blog'), expanded: document.querySelector('#menu-nyito').getAttribute('aria-expanded') };
+      return { h: Math.round(r.height), vis: cs.visibility, ar: link('Árak'), garancia: link('Tudnivalók'), blog: link('Blog'), expanded: document.querySelector('#menu-nyito').getAttribute('aria-expanded') };
     });
     ok(`${nezet}: a mobilmenu teljes magassagu es lathato (nem nulla magas), a linkek a kepernyon`, mm.h > 300 && mm.vis === 'visible' && mm.ar && mm.garancia && mm.blog && mm.expanded === 'true', JSON.stringify(mm));
     await p.click('#menu .menu-gomb[aria-controls="alm-piercingek"]');

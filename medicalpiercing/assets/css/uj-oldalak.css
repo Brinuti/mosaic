@@ -297,3 +297,28 @@ ol.lista li{padding-left:24px}
 @media print{
   .fejlec,.lablec,.promo-sav,.cikk-eszkoz,.hsz-uj,.kar-gomb{display:none!important}
 }
+
+/* --- blog (/uj/blog): kepes kartyak, 12-esevel lapozva (uj-oldalak.js), felul csak a cim (2026-10-16) --- */
+.oldal-blog main .tarto{width:min(1240px,100% - 48px)}
+.blog-fej{padding:26px 0 6px}
+.blog-fej h1{margin:0;font-size:clamp(1.6rem,2.6vw,2.2rem)}
+.blog-lista{padding-bottom:40px}
+.blog-racs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin:14px 0 0;padding:0;list-style:none;scroll-margin-top:110px}
+.blog-kartya[hidden]{display:none}
+.blog-kartya a{display:flex;flex-direction:column;height:100%;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:var(--r-l,22px);box-shadow:var(--sh-s);color:var(--ink);text-decoration:none;transition:border-color .15s,transform .15s,box-shadow .15s}
+.blog-kartya a:hover{border-color:var(--rose);transform:translateY(-2px);box-shadow:var(--sh)}
+.blog-kep{position:relative;display:block;flex:none;aspect-ratio:16/10;min-height:0;overflow:hidden;background:var(--beige)}
+.blog-kep img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover}
+.blog-test{display:flex;flex-direction:column;gap:8px;flex:1;padding:18px 20px 20px}
+.blog-meta{color:var(--rose-i);font-size:.74rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.blog-test b{color:var(--navy);font-size:1.06rem;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.blog-kivonat{color:var(--mut);font-size:.88rem;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.blog-tovabb{margin-top:auto;padding-top:4px;color:var(--slate);font-size:.86rem;font-weight:700;text-decoration:underline;text-decoration-color:var(--rose);text-decoration-thickness:2px;text-underline-offset:4px}
+.blog-lapozo{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:30px}
+.blog-lapozo:empty{display:none}
+.blog-lap{min-width:42px;height:42px;padding:0 12px;border:1px solid var(--line);border-radius:99px;background:#fff;color:var(--slate);font:700 .92rem/1 var(--font);cursor:pointer}
+.blog-lap:hover:not(:disabled){border-color:var(--rose);background:var(--beige)}
+.blog-lap.akt{background:var(--rose);border-color:var(--rose);color:#fff}
+.blog-lap:disabled{opacity:.4;cursor:default}
+@media (max-width:1000px){.blog-racs{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}
+@media (max-width:640px){.oldal-blog main .tarto{width:min(1240px,100% - 32px)}.blog-racs{grid-template-columns:minmax(0,1fr)}.blog-lap{min-width:38px;height:38px}}

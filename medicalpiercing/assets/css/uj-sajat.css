@@ -1,0 +1,90 @@
+/* A kezzel irt uj oldalak (uj-oldalak/sajat/*.html: /uj/csapatunk, /uj/kapcsolat, /uj/ekszereink) kiegeszito stilusa.
+   Alap: uj-fooldal.css (hos, panelek, ekszer-galeria, arak, helyszinek, kapcsolat) + uj-kategoria.css (szelesseg, kat-fej, kat-doboz).
+   Itt csak az oldalak egyedi dobozai: piercer-kartyak, "Miben segithetunk?" racs + video, ekszercsere-arak. SZINEK: a fooldal palettaja. */
+
+.felirat-kozep{justify-content:center}
+.oldal-sajat .hos-kep>img{object-position:50% 40%}
+
+/* --- Csapatunk: piercer-kartyak (5 db: asztalon 3 + 2, kozepre) --- */
+.piercer-racs{display:flex;flex-wrap:wrap;justify-content:center;gap:24px;margin:0;padding:0;list-style:none}
+.piercer-kartya{flex:0 1 calc((100% - 48px) / 3);min-width:260px;display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh-s)}
+.piercer-kartya>img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:50% 22%}
+.piercer-test{display:flex;flex-direction:column;flex:1;padding:20px 24px 24px}
+.piercer-szerep{margin:0 0 6px;color:var(--rose-i);font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.piercer-test h3{margin:0 0 8px;font-size:1.22rem;line-height:1.25;color:var(--navy)}
+.piercer-test h3 span{color:var(--mut);font-weight:600}
+.piercer-test p:not(.piercer-szerep){margin:0 0 18px;color:var(--mut);font-size:.92rem;line-height:1.55}
+.piercer-test .gomb{margin-top:auto;align-self:flex-start}
+
+/* --- Kapcsolat: elerhetoseg a hosben --- */
+.sajat-elerhetoseg{margin:20px 0 0;padding:0;list-style:none}
+.sajat-elerhetoseg li{font-size:1rem}
+.sajat-elerhetoseg a{color:var(--navy);font-weight:600}
+.sajat-elerhetoseg small{display:block;color:var(--mut);font-size:.82rem}
+.oldal-sajat .hos .gombsor{margin-top:22px}
+
+/* --- Kapcsolat: "Miben segithetunk?" (video + 9 helyzet) --- */
+.segit{display:grid;grid-template-columns:minmax(240px,300px) minmax(0,1fr);gap:28px;align-items:start}
+.segit-video{margin:0;padding:14px;background:linear-gradient(160deg,var(--beige) 0,#fff 80%);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh-s);text-align:center;position:sticky;top:96px}
+.segit-video iframe{display:block;width:100%;max-width:267px;aspect-ratio:267/476;height:auto;margin:0 auto;border:0;border-radius:16px;background:var(--slate)}
+.segit-video figcaption{margin-top:10px;color:var(--mut);font-size:.84rem;font-weight:600}
+.segit-racs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0;padding:0;list-style:none}
+.segit-racs li{display:flex;flex-direction:column;gap:12px;padding:18px;background:#fff;border:1px solid var(--line);border-radius:var(--r-m);box-shadow:var(--sh-s)}
+.segit-racs .kor{width:46px;height:46px}
+.segit-racs .kor .ik{width:22px;height:22px}
+.segit-racs div{display:flex;flex-direction:column;flex:1}
+.segit-racs b{color:var(--navy);font-size:1rem;line-height:1.3}
+.segit-racs p{margin:6px 0 12px;color:var(--mut);font-size:.88rem;line-height:1.5}
+.segit-racs .szoveg-link{margin-top:auto;align-self:flex-start;overflow-wrap:anywhere}
+
+/* --- Ekszereink: ekszercsere-arak --- */
+.sajat-csere{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+.csere-arak{margin:0;padding:0;list-style:none;background:#fff;border:1px solid var(--line);border-radius:var(--r-m);overflow:hidden}
+.csere-arak li{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px dashed var(--line);font-size:.95rem}
+.csere-arak li:last-child{border-bottom:0}
+.csere-arak b{color:var(--navy);white-space:nowrap}
+
+@media (max-width:1000px){
+  .piercer-kartya{flex-basis:calc((100% - 24px) / 2)}
+  .segit{grid-template-columns:minmax(0,1fr)}
+  .segit-video{position:static;max-width:320px;margin-inline:auto}
+  .segit-racs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sajat-csere{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .piercer-kartya{flex-basis:100%;min-width:0}
+  .segit-racs{grid-template-columns:minmax(0,1fr)}
+  .segit-racs li{flex-direction:row;align-items:flex-start}
+  .csere-arak li{padding:14px 16px;font-size:.9rem}
+}
+
+/* a szekcio-cim kozvetlenul a kovetkezo doboz folott (pl. a Google-velemenyek feje) */
+.oldal-kategoria main>section.sajat-fej{margin-bottom:0}
+.sajat-fej .felirat .ik{color:inherit}
+/* a "valasztas" doboz kepe a doboz teljes magassagaban (a fooldalon alacsonyabb a doboz) */
+@media (min-width:1001px){
+  .oldal-sajat .valasztas{align-items:stretch}
+  .oldal-sajat .valasztas-kep{height:100%;max-height:none;min-height:230px}
+}
+
+/* --- Velemenyek: ugras a kategoriakhoz (gombok a hosben), a kategoria-cimek a ragado fejlec alatt allnak meg --- */
+.sajat-ugras{margin-top:18px}
+.sajat-ugras p{margin:0 0 8px;color:var(--slate);font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.sajat-ugras ul{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.sajat-ugras a{display:inline-block;padding:6px 14px;border:1px solid var(--line);border-radius:99px;background:#fff;color:var(--slate);font-size:.85rem;font-weight:600;text-decoration:none}
+.sajat-ugras a:hover{border-color:var(--rose);background:var(--beige-l)}
+.sajat-kat-fej{scroll-margin-top:120px}
+.oldal-sajat .kat-ertekeles{margin-top:14px}
+
+/* --- Garancia: video melletti doboz, kerdes-valasz kartyak --- */
+.gar-doboz{grid-template-columns:minmax(0,1fr);align-self:stretch}
+.gar-doboz .pipak li{align-items:flex-start;font-size:.95rem;line-height:1.5}
+.gar-racs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0;padding:0;list-style:none}
+.gar-racs li{padding:22px 24px;background:#fff;border:1px solid var(--line);border-radius:var(--r-m);box-shadow:var(--sh-s)}
+.gar-racs h3{margin:0 0 10px;color:var(--navy);font-size:1.08rem;line-height:1.3}
+.gar-racs p{margin:0 0 10px;color:var(--mut);font-size:.93rem;line-height:1.6}
+.gar-racs p:last-child{margin-bottom:0}
+.gar-racs .gar-kiemelt{background:linear-gradient(120deg,var(--beige) 0,#fff 90%);border-color:var(--rose)}
+.gar-racs .gar-kiemelt .gomb{margin-top:6px}
+@media (max-width:760px){.gar-racs{grid-template-columns:minmax(0,1fr)}.gar-racs li{padding:18px}}
+.gar-racs .gar-kiemelt{grid-column:1/-1}
