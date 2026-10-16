@@ -15,7 +15,9 @@
   html { -webkit-text-size-adjust:100%; }
   body { margin:0; background:var(--hatter); color:var(--sotet); font:15px/1.4 'lato','Helvetica Neue',Arial,sans-serif; }
   main { max-width:480px; margin:0 auto; padding:12px 14px 20px; }
-  h1 { font-size:18px; margin:2px 0 10px; letter-spacing:.3px; }
+  .fej { background:var(--sotet); border-radius:12px; padding:10px; margin:0 0 10px; }
+  .logo { display:block; margin:0 auto; height:36px; width:auto; }
+  h1 { font-size:18px; margin:0 0 10px; letter-spacing:.3px; text-align:center; }
   label.c { display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--kozep); margin:10px 0 5px; }
   select, input[type=text], .mappak button { font-family:inherit; }
   select, input[type=text] { width:100%; font-size:16px; padding:10px 11px; border:1px solid var(--vonal); border-radius:10px; background:var(--feher); color:var(--sotet); }
@@ -40,7 +42,8 @@
 </head>
 <body>
 <main>
-  <h1>MOSAIC · fotó és videó feltöltés</h1>
+  <div class="fej"><img class="logo" src="/assets/img/logo-102x30@1x.png" srcset="/assets/img/logo-102x30@1x.png 1x, /assets/img/logo-102x30@2x.png 2x, /assets/img/logo-102x30@3x.png 3x" alt="MOSAIC" width="122" height="36"></div>
+  <h1>Fotó és videó feltöltés</h1>
 
   <label class="c" for="who">Ki vagy?</label>
   <select id="who"><option value="">Válassz…</option></select>
@@ -63,12 +66,12 @@
 var API = 'https://script.google.com/macros/s/AKfycbyrKy330YbhzafbMPR1PL260lYvqBQZ7Q2Uzx3-z0tZdUAYqAepDY8tjfxFFYxNaywArQ/exec';
 // Munkatarsak uzletagonkent; a nev kivalasztasa elore kijeloli az uzletag mappajat (atallithato).
 var CSAPAT = [
-  { mappa: 'HEA', cim: 'Head spa', nevek: ['Janka', 'Jucus', 'Mészáros Dóri', 'Zoltzer Viki', 'Judit', 'Niki', 'Zsuzsi'] },
+  { mappa: 'HEA', cim: 'Head spa', nevek: ['Janka', 'Jucus', 'Mészáros Dóri', 'Zoltzer Viki', 'Cakó Viki', 'Fanny', 'Vercsek Vivien', 'Judit', 'Niki', 'Zsuzsi'] },
   { mappa: 'FOD', cim: 'Fodrászat', nevek: ['Betti', 'Evelin', 'Noel'] },
   { mappa: 'OXI', cim: 'Oxigénterápia', nevek: ['Tündi', 'Menyhárt Móni', 'Szűcs Vivien'] },
   { mappa: 'LEZ', cim: 'Szőrtelenítés', nevek: ['Zsófi'] },
   { mappa: 'PMU', cim: 'Sminktetoválás', nevek: ['Melitta'] },
-  { mappa: '', cim: 'Egyéb', nevek: ['Recepció', 'Feri', 'Dani', 'Hermina'] }
+  { mappa: '', cim: 'Egyéb', nevek: ['Recepció', 'Evelin', 'Feri', 'Dani', 'Hermina'] }
 ];
 var CHUNK = 8 * 1024 * 1024; // 8 MB, a 256 KB tobbszorose
 var folder = '', items = [], busy = false;
