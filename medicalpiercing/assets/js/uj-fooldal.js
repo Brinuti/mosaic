@@ -193,6 +193,36 @@
     }).catch(() => { /* marad a build idejen beirt allapot */ });
   }
 
+  // --- 4e. a vendegek videos beszamoloi (lapozhato sav): csak a boritokep toltodik (lustan), a video kattintasra indul helyben; egyszerre egy szol ---
+  $$('[data-vsav]').forEach((sav) => {
+    const sor = $('.vsav-sav', sav), elozo = $('.vsav-elozo', sav), kov = $('.vsav-kov', sav);
+    if (!sor) return;
+    const frissit = () => {
+      const van = sor.scrollWidth > sor.clientWidth + 2;
+      sav.classList.toggle('vsav-nincs-gorg', !van);
+      if (elozo) elozo.disabled = sor.scrollLeft <= 2;
+      if (kov) kov.disabled = sor.scrollLeft + sor.clientWidth >= sor.scrollWidth - 2;
+    };
+    const lapoz = (irany) => sor.scrollBy({ left: irany * sor.clientWidth * 0.9, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    if (elozo) elozo.addEventListener('click', () => lapoz(-1));
+    if (kov) kov.addEventListener('click', () => lapoz(1));
+    sor.addEventListener('scroll', () => window.requestAnimationFrame(frissit), { passive: true });
+    window.addEventListener('resize', frissit);
+    frissit();
+    sav.addEventListener('click', (e) => {
+      const g = e.target.closest('[data-vsav-video]');
+      if (!g) return;
+      const v = document.createElement('video');
+      v.src = g.dataset.vsavVideo; v.controls = true; v.playsInline = true; v.autoplay = true; v.preload = 'auto';
+      const kep = $('img', g); if (kep) v.poster = kep.currentSrc || kep.src;
+      v.className = 'vsav-video';
+      g.replaceWith(v);
+      $$('video.vsav-video').forEach((m) => { if (m !== v && !m.paused) m.pause(); });
+      v.addEventListener('play', () => $$('video.vsav-video').forEach((m) => { if (m !== v && !m.paused) m.pause(); }));
+      const p = v.play(); if (p && p.catch) p.catch(() => {});
+    });
+  });
+
   // --- 5. URL-parameterek megorzese es a foglalasi linkek (klon.js 8.) --------------------------------------
   const MENTETT = 'savedQueryParams';
   const GK = /^(gclid|gbraid|wbraid)$/i;

@@ -46,8 +46,9 @@ Ezen felül:
 - **Helyszíneink hősképe**: Magyarország térképe a 15 helyszínnel (`tools/uj-helyszin-terkep.mjs` → `reszek/helyszin-terkep.html`, beágyazott SVG a lap betűjével).
 - **A hirdetések céloldalai** (Meta, TikTok; 2026-10-16-i lista) mind formázottak az `/uj` alatt; a két utolsó: `/kozerzetjavito-piercing-soft-akcio` (a TikTok-landoló) és `/3-piercing-2-araert`
   („Páros kedvezmény”), a B-építővel. A közös dobozok (akció, árak, ékszerek, helyszínek, piercingek, média, csapat) egy oldalon csak egyszer jelennek meg.
-- **A foglalómotor Piercing-lépése** (a tulajdonos látványterve és kérése, 2026-10-16; `assets/js/motor/motor.js`, `szolgRajzol` / `pkKartya` / `pkAdat`): fejléc („Melyik piercing érdekel?”, a helyszín),
-  két szűrősor (Magamnak / Két személynek; 1 piercing / 2–3 piercing / Fülbevaló), „Az ár tartalmazza”, „Hogy néz ki egy szúrás?” (videó), lenyitható kártyák: a pont helye (a valódi fülfotó,
-  `uj-galeria-<kulcs>-2.webp`, 1:1), mire jó, garancia, „+ 2–3 piercing” (a csomagra vált és lenyitja; a csomag: bármelyik piercing, most nem kell eldönteni, a szalonban segítünk).
-  Alapérték: Magamnak + 1 piercing, a típusoldal piercingje elöl és lenyitva (az akció-oldalról: 2–3 piercing). A választás gombja a régi `[data-szolg]` (a foglalási út, a mérés és a tesztek ugyanazok).
+- **A foglalómotor Piercing-lépése** (a tulajdonos látványterve és kérései, 2026-10-16; `assets/js/motor/motor.js`, `szolgRajzol` / `pkKartya` / `pkAdat` / `arakBol`): nincs fejléc-doboz;
+  kicsi szűrősor (Magamnak / Két személynek; 1 piercing / 2–3 piercing / Fülbevaló – asztalon egy sor, mobilon kettő), a „★ 4,8 · 5000+ értékelés” mellett egy sorban a „Hogy néz ki egy szúrás?”
+  (felugró, bezárható videó: X, háttér, Esc), kicsi „Az ár tartalmazza”, alatta MINDEN lehetőség kártyája (nincs rejtett „+ többi”). Minden kártyán két gomb: „Részletek” (lenyitja: a pont helye
+  a valódi fülfotóval, mire jó, garancia; a csomagoknál a kedvezmény levezetése a helyszín mostani Salonic-áraiból: 1./2./3. piercing ára, külön-külön mennyi lenne, mennyit spórol) és az erős
+  színű „Időpontot választok” (a régi `[data-szolg]`: a foglalási út, a mérés és a tesztek ugyanazok). Alapérték: Magamnak + 1 piercing, a típusoldal piercingje elöl és lenyitva (az akció-oldalról: 2–3 piercing).
 

@@ -295,9 +295,10 @@ const LEHETOSEGEK = { kontroll: 3, ekszercsere: 2, garancia: 1 };
   await ctx.close();
 }
 
-// N. a piercing-lepes mindenhonnan ugyanaz (a tulajdonos latvanyterve, 2026-10-16): fejlec, ket szurosor (Magamnak / Ket szemelynek; 1 piercing / 2-3 piercing / Fulbevalo),
-//    "Az ar tartalmazza", lenyithato kartyak. Alapertek: Magamnak + 1 piercing; a tipusoldal piercingje elol es lenyitva (fulfoto, garancia, "+ 2-3 piercing");
-//    a "+ 2-3 piercing" a csomagra valt es lenyitja (bármelyik piercing, most nem kell eldonteni); nincs "Mikor? / Faj?" csempe
+// N. a piercing-lepes mindenhonnan ugyanaz (a tulajdonos latvanyterve es kerese, 2026-10-16): nincs fejlec-doboz, tomor szurosor (Magamnak / Ket szemelynek;
+//    1 piercing / 2-3 piercing / Fulbevalo), a 4,8-as ertekeles mellett a felugro "Hogy néz ki egy szúrás?", kicsi "Az ár tartalmazza", MINDEN lehetoseg kartyaja
+//    (nincs rejtett "+ tobbi"); minden kartyan "Részletek" (lenyitja) + "Időpontot választok" (tovabb). Alapertek: Magamnak + 1 piercing; a tipusoldal piercingje
+//    elol es lenyitva (fulfoto, garancia, nincs "+ 2-3 piercing"); a csomagoknal a kedvezmeny magyarazata (kulon-kulon mennyi lenne, mennyi most, mennyit sporol)
 for (const [honnan, ut, elso] of [['migren-oldalrol', '/migren-piercing', 'Migrén'], ['lep-oldalrol', '/lep-piercing', 'Lép'], ['fooldalrol', '/', 'Migrén']]) {
   const { ctx, p } = await uj();
   await p.goto(CIM + ut, { waitUntil: 'load' });
@@ -307,22 +308,26 @@ for (const [honnan, ut, elso] of [['migren-oldalrol', '/migren-piercing', 'Migr�
   await varj(p, '[data-hely]'); await kattint(p, '[data-hely="6029"]');
   const van = await varj(p, '[data-szolg]', 30000);
   await p.waitForTimeout(400);
-  const olvas = () => sr(p, 'const nevek=[...r.querySelectorAll("[data-szolg] .nev > span")].map(x=>x.textContent.trim()); const ny=r.querySelector(".pk.nyitva"); return { cim:(r.querySelector(".pk-fejlec h3")||{}).textContent, tartalmaz:/Az ár tartalmazza/.test(r.textContent), on:[...r.querySelectorAll(".szeg button.on")].map(x=>x.textContent.trim()), db:nevek.length, nevek, latszik:[...r.querySelectorAll(".pk:not([hidden]) .pk-cim b")].map(x=>x.textContent), nyitott:ny?ny.querySelector(".pk-cim b").textContent:"", foto:!!(ny&&ny.querySelector(".pk-pont img")), garancia:!!(ny&&ny.querySelector(".pk-garancia")), plusz:!!(ny&&ny.querySelector("[data-plusz]")), csomag:ny?(ny.querySelector(".pk-csomag")||{}).textContent||"":"", tobb:!!r.querySelector("[data-tobbtipus]"), csempe:/Mikor\\?|Fáj\\?/.test(r.textContent) }');
+  const olvas = () => sr(p, 'const nevek=[...r.querySelectorAll("[data-szolg] .nev > span")].map(x=>x.textContent.trim()); const ny=r.querySelector(".pk.nyitva"); const kartyak=[...r.querySelectorAll(".pk:not([hidden])")]; return { fejlec:!!r.querySelector(".pk-fejlec"), tartalmaz:/Az ár tartalmazza/.test(r.textContent), on:[...r.querySelectorAll(".szeg button.on")].map(x=>x.textContent.trim()), db:nevek.length, nevek, latszik:kartyak.map(x=>x.querySelector(".pk-cim b").textContent), ketgomb:kartyak.every(k=>k.querySelector(".pk-gombok .pk-reszlet[data-nyit]") && k.querySelector(".pk-gombok .pk-valaszt[data-szolg]")), nyitott:ny?ny.querySelector(".pk-cim b").textContent:"", foto:!!(ny&&ny.querySelector(".pk-pont img")), garancia:!!(ny&&ny.querySelector(".pk-garancia")), plusz:!!r.querySelector("[data-plusz]"), kedv:ny?(ny.querySelector(".pk-kedv")||{}).textContent||"":"", tobb:!!r.querySelector("[data-tobbtipus]"), csempe:/Mikor\\?|Fáj\\?/.test(r.textContent) }');
   ok(`N: ${honnan}: a lista betoltodik`, van);
   if (!van) { await ctx.close(); continue; }
   let m = await olvas();
-  ok(`N: ${honnan}: fejlec "Melyik piercing érdekel?", "Az ár tartalmazza", alapertek: Magamnak + 1 piercing`, m.cim === 'Melyik piercing érdekel?' && m.tartalmaz && JSON.stringify(m.on) === JSON.stringify(['Magamnak', '1 piercing']), JSON.stringify([m.cim, m.on]));
-  ok(`N: ${honnan}: 1 piercing: 9 lehetoseg, 4 latszik + "+ tobbi" gomb; a(z) ${elso} elol, lenyitva, fulfotoval, garanciaval, "+ 2–3 piercing" gombbal; nincs "Mikor? / Fáj?"`, m.db === 9 && ['Máj', 'Lép', 'Vastagbél', 'Allergia'].every((x) => m.nevek.includes(x)) && m.latszik.length === 4 && m.tobb && m.latszik[0] === elso && m.nyitott === elso && m.foto && m.garancia && m.plusz && !m.csempe, JSON.stringify(m.latszik) + ' nyitott: ' + m.nyitott);
-  await kattint(p, '[data-tobbtipus]'); m = await olvas();
-  ok(`N: ${honnan}: a "+ tobbi" gomb mind a 9-et mutatja`, m.latszik.length === 9 && !m.tobb, JSON.stringify(m.latszik));
-  await kattint(p, '.pk:not(.nyitva) [data-nyit]'); m = await olvas();
-  ok(`N: ${honnan}: egy masik kartya fejere kattintva az nyilik le (egyszerre egy)`, !!m.nyitott && m.nyitott !== elso && (await sr(p, 'return r.querySelectorAll(".pk.nyitva").length')) === 1, m.nyitott);
-  await kattint(p, '.pk.nyitva [data-plusz]'); m = await olvas();
-  ok(`N: ${honnan}: "+ 2–3 piercing": a 2–3 piercingre valt, a 2 piercing lenyitva, "bármelyik ... most nem kell eldöntened"`, JSON.stringify(m.on) === JSON.stringify(['Magamnak', '2–3 piercing']) && m.nyitott === '2 piercing' && /Bármelyik két piercinget/.test(m.csomag) && /nem kell eldöntened/.test(m.csomag) && /^3 piercing/.test(m.nevek[0]) && /^2 piercing/.test(m.nevek[1]) && /^1\+1/.test(m.nevek[2]), JSON.stringify([m.on, m.nyitott, m.nevek]));
+  ok(`N: ${honnan}: nincs fejlec-doboz, van "Az ár tartalmazza", alapertek: Magamnak + 1 piercing`, !m.fejlec && m.tartalmaz && JSON.stringify(m.on) === JSON.stringify(['Magamnak', '1 piercing']), JSON.stringify([m.fejlec, m.on]));
+  ok(`N: ${honnan}: 1 piercing: mind a 9 latszik (nincs "+ tobbi"), mindegyiken "Részletek" + "Időpontot választok"; a(z) ${elso} elol, lenyitva, fulfotoval, garanciaval, "+ 2–3 piercing" nelkul; nincs "Mikor? / Fáj?"`, m.db === 9 && ['Máj', 'Lép', 'Vastagbél', 'Allergia'].every((x) => m.nevek.includes(x)) && m.latszik.length === 9 && !m.tobb && m.ketgomb && m.latszik[0] === elso && m.nyitott === elso && m.foto && m.garancia && !m.plusz && !m.csempe, JSON.stringify(m.latszik) + ' nyitott: ' + m.nyitott);
+  await kattint(p, '.pk:not(.nyitva) .pk-reszlet'); m = await olvas();
+  ok(`N: ${honnan}: egy masik kartya "Részletek" gombjara az nyilik le (egyszerre egy)`, !!m.nyitott && m.nyitott !== elso && (await sr(p, 'return r.querySelectorAll(".pk.nyitva").length')) === 1, m.nyitott);
+  await kattint(p, '[data-mit="tobb"]'); m = await olvas();
+  ok(`N: ${honnan}: 2–3 piercing: a 3 piercing lenyitva, a kedvezmeny magyarazataval (kulon-kulon 3 × ... lenne, ... Ft-ot sporolsz)`, JSON.stringify(m.on) === JSON.stringify(['Magamnak', '2–3 piercing']) && m.nyitott === '3 piercing' && /Így jön ki a kedvezmény/.test(m.kedv) && /Külön-külön 3 × [\d.]+ Ft = [\d.]+ Ft lenne/.test(m.kedv) && /Ft-ot spórolsz/.test(m.kedv) && /^3 piercing/.test(m.nevek[0]) && /^2 piercing/.test(m.nevek[1]) && /^1\+1/.test(m.nevek[2]), JSON.stringify([m.on, m.nyitott, m.kedv, m.nevek]));
+  await kattint(p, '.pk:not(.nyitva) .pk-reszlet'); m = await olvas();
+  ok(`N: ${honnan}: a 2 piercing kedvezmenye is ki van fejtve`, m.nyitott === '2 piercing' && /Külön-külön 2 × [\d.]+ Ft = [\d.]+ Ft lenne/.test(m.kedv), m.kedv);
   await kattint(p, '[data-mit="fulbevalo"]'); m = await olvas();
   ok(`N: ${honnan}: Fulbevalo: 1, 2, 3 db`, m.db === 3 && m.nevek.every((x) => /^Fülbevaló/.test(x)), JSON.stringify(m.nevek));
   await kattint(p, '[data-szuras]');
-  ok(`N: ${honnan}: "Hogy néz ki egy szúrás?": a szuras videoja lenyilik`, (await sr(p, 'return !!r.querySelector(".pk-video video") && !r.querySelector(".pk-video").hidden')) === true);
+  ok(`N: ${honnan}: "Hogy néz ki egy szúrás?": a video felugrik (nem a lista alatt nyilik)`, (await sr(p, 'return !!r.querySelector(".pk-felugro[role=dialog] video") && !r.querySelector(".tartalom video")')) === true);
+  await p.keyboard.press('Escape'); await p.waitForTimeout(150);
+  ok(`N: ${honnan}: az Esc csak a videot zarja be, a foglalo nyitva marad`, (await sr(p, 'return !r.querySelector(".pk-felugro") && !!r.querySelector(".pk")')) === true);
+  await kattint(p, '[data-szuras]'); await kattint(p, '[data-szuras-bezar]');
+  ok(`N: ${honnan}: a video X-szel is bezarhato`, (await sr(p, 'return !r.querySelector(".pk-felugro") && !!r.querySelector(".pk")')) === true);
   await ctx.close();
 }
 
@@ -350,9 +355,9 @@ if (!MOBIL) {
     await kattint(p, '[data-hely="6029"]');
     const van = await varj(p, '.pk', 30000);
     await p.waitForTimeout(500);
-    const m = van ? await sr(p, 'const t=r.querySelector(".tartalom"); const fej=[...r.querySelectorAll(".pk:not([hidden]) .pk-fej")]; const sz=[...r.querySelectorAll(".pk-szuro .szeg button")]; const v=r.querySelector(".pk.nyitva .pk-valaszt"); const tr=t.getBoundingClientRect(); return { sor: fej.length, magas: Math.round(Math.min(...fej.map(x=>x.getBoundingClientRect().height))), betu: parseFloat(getComputedStyle(r.querySelector(".pk-cim b")).fontSize), gomb: Math.round(Math.min(...sz.map(x=>x.getBoundingClientRect().height))), valaszt: v ? Math.round(v.getBoundingClientRect().height) : 0, kilog: t.scrollWidth > t.clientWidth + 1 || [...r.querySelectorAll(".pk:not([hidden])")].some(k=>k.scrollWidth > k.clientWidth + 1), latszik: v ? Math.round(v.getBoundingClientRect().bottom - tr.bottom) : 999 };') : null;
+    const m = van ? await sr(p, 'const t=r.querySelector(".tartalom"); const fej=[...r.querySelectorAll(".pk:not([hidden]) .pk-fej")]; const sz=[...r.querySelectorAll(".pk-szuro .szeg button")]; const is=r.querySelector(".pk-info-sor"); const v=r.querySelector(".pk.nyitva .pk-valaszt"); const tr=t.getBoundingClientRect(); return { sor: fej.length, magas: Math.round(Math.min(...fej.map(x=>x.getBoundingClientRect().height))), betu: parseFloat(getComputedStyle(r.querySelector(".pk-cim b")).fontSize), gomb: Math.round(Math.min(...sz.map(x=>x.getBoundingClientRect().height))), valaszt: v ? Math.round(v.getBoundingClientRect().height) : 0, kilog: t.scrollWidth > t.clientWidth + 1 || [...r.querySelectorAll(".pk:not([hidden])")].some(k=>k.scrollWidth > k.clientWidth + 1), latszik: v ? Math.round(v.getBoundingClientRect().bottom - tr.bottom) : 999, infoSor: is ? Math.round(is.getBoundingClientRect().height) : 0, szuroSor: new Set(sz.map(x=>Math.round(x.getBoundingClientRect().top))).size };') : null;
     if (!m) { ok(`K2: ${nev}: a piercing-lista betoltodik`, false); await ctx.close(); continue; }
-    ok(`K2: ${nev}: a kartyak feje >= 56 px, a nev >= 15 px, a szuro-gombok >= 44 px, az "Időpontot választok" >= 44 px, semmi nem log ki`, m.magas >= 56 && m.betu >= 15 && m.gomb >= 44 && m.valaszt >= 44 && !m.kilog, JSON.stringify(m));
+    ok(`K2: ${nev}: a kartyak feje >= 56 px, a nev >= 15 px, a (kicsi) szuro-gombok >= 30 px legfeljebb 2 sorban (asztalon 1), a 4,8 + "Hogy néz ki egy szúrás?" egy sorban, az "Időpontot választok" >= 44 px, semmi nem log ki`, m.magas >= 56 && m.betu >= 15 && m.gomb >= 30 && m.szuroSor <= (szigoru ? 1 : 2) && m.infoSor <= 36 && m.valaszt >= 44 && !m.kilog, JSON.stringify(m));
     if (szigoru) ok(`K2: ${nev}: a lenyitott elso kartya "Időpontot választok" gombja gorgetes nelkul latszik`, m.latszik <= 0, `${m.latszik} px`);
     else console.log(`INFO K2: ${nev}: a valaszto gomb ${m.latszik <= 0 ? 'gorgetes nelkul latszik' : `${m.latszik} px-re a lathato resz alatt (gorgetes kell)`}`);
     await ctx.close();
