@@ -97,3 +97,18 @@ export function foglalasOldal(f) {
 <script>(function(){var k=document.getElementById('foglalas'),b=document.getElementById('betolt'),l=document.getElementById('lassu'),t=setTimeout(function(){l.style.display='block'},8000);k.addEventListener('load',function(){clearTimeout(t);b.style.display='none';l.style.display='none';});})();</script>`;
   return oldal('A foglalásod', torzs, f.uzletag);
 }
+
+/**
+ * /m/<kod> (egykattintásos megerősítés) oldalai: ugyanaz a fejléc és formázás, mint az "A foglalásod" oldalon (Feri, 2026-10-16).
+ * eset: 'megerositve' | 'bot' ; a lemondott / meg nem jelent foglalásnál a hívó a foglalasOldal-t adja vissza.
+ */
+export function megerositesOldal(f, eset = 'megerositve') {
+  if (eset === 'bot' || !f) {
+    return oldal('Megerősítés', `<div class="uzenet"><h2>Időpont megerősítése</h2><p>A megerősítéshez nyisd meg a linket a telefonodon.</p></div>${hivas}`, f ? f.uzletag : null);
+  }
+  const nev = uzletaggal(f.uzletag, tisztaNev(f.szolgaltatas), true);
+  const doboz = `<div class="doboz"><b>${esc(nev)}</b><br>${esc(datumSzoveg(f.kezdet))}, ${esc(idopontSzoveg(f.kezdet))}<br>${esc(SZALON.cim)}</div>`;
+  return oldal('Időpont megerősítve', `<div class="uzenet"><h2>Köszönjük, megerősítettük az időpontodat!</h2>${doboz}<p>Várunk! Ha mégis változna valami, itt tudod módosítani:</p>
+<div class="alul" style="margin-top:0"><a class="gomb" href="/f/${esc(f.token)}">Foglalás megtekintése / módosítása</a><a class="gomb halk" href="${esc(SZALON.navigacioUrl)}" target="_blank" rel="noopener">Útvonalterv</a></div></div>${hivas}`, f.uzletag);
+}
+
