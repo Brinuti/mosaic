@@ -343,10 +343,28 @@ level('09-lemondas', 'Azonnal, lemondáskor vagy törléskor (a Salonic „Lemon
 # ---- 10-14  A szuras utan: utoapolas, kontroll, garancia ---------------------------------------------------
 UTO = dict(BP, szolg='migrén piercing')
 GOOGLE_IRAS = 'https://g.page/r/CYXBM5zFeg70EB0/review'  # a fo Google-profil (4,8, 4 800+ velemeny) – ezt hasznalja most a Salonic is
-level('10-A0-utoapolas', '1 órával a szúrás után, mint most a Salonic véleménykérő levele (+ SMS a linkkel) – ezt váltja ki', 'Mindenki, aki megjelent (a nagy kép a szúrt piercing fotója)',
- 'Így ápold a piercinged – az első hetek', 'Napi két perc, és a piercinged szépen gyógyul. Minden, amit tudnod kell, egy helyen.', f'''<h1>Köszönjük, hogy ma nálunk jártál, {m(UTO["nev"])}!</h1>
+# Piercingenkent kulon level (a motorban szegmens szerint): a hos-kep es a "mire figyelj" bekezdes mas. Az "egyeb" (maj, pajzsmirigy, divat stb.) altalanos.
+UTO_TIPUSOK = ['migren', 'shenmen', 'klimax', 'slim', 'allergia', 'egyeb'] if MOTOR else ['migren']
+_F6 = ', de a 6 hetet mindenképp érdemes kivárni. '
+FIGYELJ = {
+  'migren': 'A migrén piercing hatását a legtöbben néhány hét alatt kezdik érezni' + _F6 + 'Ha szeretnéd, jegyezd fel magadnak, hány napon fáj a fejed, és mennyire erősen – így 6 hét múlva te magad is látod, mit hozott.',
+  'shenmen': 'A shenmen piercing hatását a legtöbben néhány hét alatt kezdik érezni' + _F6 + 'Ha szeretnéd, figyeld meg, hogyan alszol, és mennyire vagy feszült a nap végén – így 6 hét múlva te magad is látod, mit hozott.',
+  'klimax': 'A klimax piercing hatását a legtöbben néhány hét alatt kezdik érezni' + _F6 + 'Ha szeretnéd, jegyezd fel magadnak, naponta hányszor jön hőhullám, és mennyire erős – így 6 hét múlva te magad is látod, mit hozott.',
+  'slim': 'A slim piercing hatását a legtöbben néhány hét alatt kezdik érezni' + _F6 + 'Ha szeretnéd, figyeld meg, mikor és mennyire vagy éhes a nap során, és mennyire kívánod a nassolást – így 6 hét múlva te magad is látod, mit hozott.',
+  'allergia': 'Az allergia piercing hatását a legtöbben néhány hét alatt kezdik érezni' + _F6 + 'Ha szeretnéd, jegyezd fel magadnak, mennyire zavarnak a tüneteid – így 6 hét múlva te magad is látod, mit hozott.',
+  'egyeb': 'Ha közérzetjavító piercinget kaptál, a hatást a legtöbben néhány hét alatt kezdik érezni' + _F6 + 'Ha szeretnéd, jegyezz fel magadnak néhány szót arról, hogy érzed magad – így 6 hét múlva te magad is látod, mit hozott.',
+}
+UTO_KEP = {'egyeb': 'ekszerek.jpg'}
+def utoapolas(tip):
+    sfx = f'-{tip}' if MOTOR else ''
+    if MOTOR:
+        n = UTO_TIPUSOK.index(tip)
+        MOTOR_META[f'10-A0-utoapolas{sfx}'] = (f'MP-EMAIL-{14 + n}', dict(tipus='utan_ora', ora=1), [tip], None)
+        MOTOR_META[f'11-A2-ket-het{sfx}'] = (f'MP-EMAIL-{20 + n}', dict(tipus='utan_ora', napok=14), [tip], None)
+    level(f'10-A0-utoapolas{sfx}', '1 órával a szúrás után, mint most a Salonic véleménykérő levele (+ SMS a linkkel) – ezt váltja ki', 'Mindenki, aki megjelent (a nagy kép a szúrt piercing fotója)',
+ 'Így ápold a piercinged – az első hetek', 'Napi két perc, és a piercinged szépen gyógyul. Minden, amit tudnod kell, egy helyen.', f'''<h1>{opt(f'Köszönjük, hogy ma nálunk jártál, {m(UTO["nev"])}!', 'Köszönjük, hogy ma nálunk jártál!')}</h1>
 <p>Reméljük, jól vagy, és már csak mosolyogsz azon, mennyire tartottál tőle. Ahogy ígértük, nem engedjük el a kezed: ebben a levélben mindent összeszedtünk, amire az első hetekben szükséged lesz.</p>
-<p>Az utóápolás nem csak azért fontos, hogy a gyógyulás gondtalan legyen: a piercing akkor tudja a legtöbbet adni, ha szépen gyógyul. A hatást fokozatosan fogod érezni – egyénenként eltérő, akár 4–6 hét is lehet, úgyhogy ne ijedj meg, ha nem azonnal jön.</p>
+<p>Az utóápolás nem csak azért fontos, hogy a gyógyulás gondtalan legyen: a piercing akkor tudja a legtöbbet adni, ha szépen gyógyul. {'Ha közérzetjavító piercinget kaptál, a hatást' if tip == 'egyeb' else 'A hatást'} fokozatosan fogod érezni – egyénenként eltérő, akár 4–6 hét is lehet, úgyhogy ne ijedj meg, ha nem azonnal jön.</p>
 <h2>A napi rutinod – reggel és este, két perc</h2><table role="presentation" class="steps">
 <tr><td><span class="num">1</span></td><td><b>Spray reggel és este.</b> A nálunk kapott otthonápolási csomag spray-jét fújd a sebre, amíg érzékeny.</td></tr>
 <tr><td><span class="num">2</span></td><td><b>Ne forgasd, ne mozgasd az ékszert.</b> Az ékszer porcba került, nem zsírszövetbe: ha mozgatod, nem tud gyógyulni.</td></tr>
@@ -366,21 +384,23 @@ level('10-A0-utoapolas', '1 órával a szúrás után, mint most a Salonic véle
 <p>Nekünk nagyon sokat jelent a véleményed – és annak is, aki most ugyanúgy bizonytalan, ahogy talán te voltál a foglalás előtt.</p>
 <p><a class="btn" style="font-size:14px;padding:10px 20px" href="{GOOGLE_IRAS}">★ Értékelem a Google-ön</a></p>
 <div class="card"><b>Valami nem úgy alakult, ahogy szeretted volna?</b><br>Akkor szeretnénk tőled közvetlenül hallani. Az itt küldött visszajelzésed kiemelten kezeljük, és egyenesen a tulajdonosunkhoz kerül – személyesen nézzük meg, és megoldjuk.<br><a href="{SITE}/visszajelzes" style="font-weight:700">Írok a tulajdonosnak »</a></div>
-{alairas(UTO, True, 'Jó gyógyulást kíván:')}''', KEPALAP + 'ful-migren.jpg', L['utoapolas'])
+{alairas(UTO, True, 'Jó gyógyulást kíván:')}''', KEPALAP + UTO_KEP.get(tip, f'ful-{tip}.jpg'), L['utoapolas'])
 
-level('11-A2-ket-het', 'A szúrás után 14 nappal', 'Mindenki, aki megjelent (a „mire figyelj” bekezdés piercingenként más)',
+    level(f'11-A2-ket-het{sfx}', 'A szúrás után 14 nappal', 'Mindenki, aki megjelent (a „mire figyelj” bekezdés piercingenként más)',
  'Két hét telt el – most jöhet az olaj', 'A gyógyulás második szakasza: mit csinálj most, és mire figyelj a következő hetekben.', f'''<h1>Két hét telt el – hogy van a füled?</h1>
-<p>{m(UTO["nev"])}, eddig a legnehezebb részen túl vagy. Most egy apró lépéssel bővül a rutinod.</p>
+<p>{opt(f'{m(UTO["nev"])}, eddig', 'Eddig')} a legnehezebb részen túl vagy. Most egy apró lépéssel bővül a rutinod.</p>
 <h2>Mostantól: spray, utána egy csepp olaj</h2>
 <p>Reggel és este a spray után tegyél <b>1 csepp olajat</b> a sebre. Ha a füled begyulladna, ne ijedj meg: fültisztítóval vékonyan vidd fel rá az olajat, hetente 2–3-szor; ha nem múlik, naponta kétszer – és szólj nekünk.</p>
 <h2>Mire figyelj a következő hetekben?</h2>
-<p>{m("A migrén piercing hatását a legtöbben néhány hét alatt kezdik érezni, de a 6 hetet mindenképp érdemes kivárni. Ha szeretnéd, jegyezd fel magadnak, hány napon fáj a fejed, és mennyire erősen – így 6 hét múlva te magad is látod, mit hozott.")}</p>
+<p>{m(FIGYELJ[tip])}</p>
 <p>A tapasztalat egyénenként eltér – és ha 6 hét után nem azt érzed, amit vártál, ott a garancia.</p>
 <h2>Ha valami nem úgy gyógyul, ahogy kellene</h2>
 <p>Ha érzékeny marad, hegszövet képződik, kiesett vagy cserélni kell az ékszert – foglalj ingyenes kontrollt. Megnézzük, és segítünk.</p>
 <p><a class="btn" href="{L["kontroll"]}">Ingyenes kontrollt kérek</a></p>
 {velemeny(*VEL("v12"))}
 {alairas(UTO, True, 'Jó gyógyulást kíván:')}''')
+
+for _t in UTO_TIPUSOK: utoapolas(_t)
 
 SMS = [
  ('T0', 'Azonnal', 'Szia {keresztnev}! Megvan az idopontod: {datum} {ido}, {helyszin_rovid}. Reszletek, modositas: {link} - Medical Piercing'),
