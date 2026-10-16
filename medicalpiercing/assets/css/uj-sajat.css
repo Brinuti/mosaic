@@ -219,6 +219,12 @@
 .akc-hol .akc-hol-al{max-width:44em;margin:0 auto}
 .akc-hol .akc-helyek{margin-top:6px}
 .akc-mi .akc-csekk{justify-content:flex-start}
+/* (a tulajdonos szabalya, 2026-10-16: "amikor ennyire ures a box asztalin, csokkentsd le a kepmeretet es a box meretet") */
+@media (min-width:1001px){
+  .oldal-sajat .kat-doboz.akc-mi{grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr);align-items:center}
+  .oldal-sajat .kat-doboz.akc-mi .kat-par-kep{height:auto;min-height:0;max-height:340px;aspect-ratio:4/3}
+  .oldal-sajat .kat-doboz.akc-mi>.kat-doboz-szoveg>.gomb:last-child{margin-top:16px}
+}
 
 /* --- TikTok-landolo (/kozerzetjavito-piercing-soft-akcio, 2026-10-16): rovid fejlec es lablec (reszek/*-landolo.html), a szakaszok az oldal dobozaival --- */
 .fejlec-landolo .logo img{height:44px}
@@ -230,40 +236,40 @@
 .oldal-landolo .lablec-racs{grid-template-columns:1.25fr 1fr 1.6fr 1fr}
 .oldal-landolo .lablec-logo img{height:40px}
 .oldal-landolo .lablec-kozosseg{margin-top:16px}
-.tt-hos-akcio{margin:4px 0 8px;color:var(--navy);font-size:1.05rem;font-weight:600}
+.tt-hos-akcio{margin:4px 0 4px;color:var(--navy);font-size:1.05rem;font-weight:600}
 .tt-hos-akcio b{color:#a35a4b}
-.tt-hos-arak{margin:0 0 18px;padding:0;list-style:none}
-.tt-hos-arak li{margin:0 0 4px;font-size:.98rem;color:var(--ink)}
-.tt-hos-arak s{color:var(--rose-i);text-decoration-color:rgba(185,135,130,.8)}
-.tt-hos-arak li>b:last-child{color:#a35a4b}
+.tt-hos-dobozok{max-width:560px;margin:0 0 20px;padding-top:12px}
+.tt-hos-dobozok .akc-al{margin-bottom:0;color:var(--mut);font-weight:600}
+.tt-hos-dobozok .akc-al s{color:var(--rose-i);text-decoration-color:rgba(185,135,130,.8)}
+/* ekszer-doboz: kevés szoveg mellett kisebb lapozo (a tulajdonos szabalya, 2026-10-16: "nem lehet teljesen ures a box ... csokkentsd a kepmeretet es a box meretet") */
+.tt-akcio.premium{grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:40px;padding:24px 34px}
+.tt-akcio .premium-szoveg h2{font-size:clamp(1.5rem,2.4vw,2.1rem)}
+.tt-akcio .premium-szoveg>p{font-size:1.02rem}
 .tt-akcio .premium-szoveg>p{margin:0 0 10px}
-.tt-akcio-cim{margin:14px 0 6px !important;color:#a35a4b;font-weight:800;letter-spacing:.06em}
-.tt-arlista{margin:0 0 12px;padding:0;list-style:none}
-.tt-arlista li{margin:0 0 4px;font-size:1rem;color:var(--navy)}
-.tt-megj{color:var(--mut);font-size:.9rem}
-.tt-akcio .gomb{margin-top:6px}
+.tt-akcio-sor .akcio-al{text-transform:none;font-size:clamp(.95rem,1.35vw,1.1rem);font-weight:600;line-height:1.45;color:#e9e6ef}
+.tt-akcio-sor .akcio-arak b+span{font-size:.78rem;font-weight:500;opacity:.85}
 .tt-velemeny .tt-velemeny-fej{justify-content:center;width:fit-content;margin:8px auto 10px;padding:14px 22px;background:#fff;border:1px solid var(--line);border-radius:var(--r-m);box-shadow:var(--sh-s)}
 .tt-velemeny .velemeny-osszes{text-align:center;margin:6px 0 0}
-.tt-helyek .uzletek-fej{display:block;text-align:center}
-.oldal-landolo .kat-doboz.tt-miert{margin-bottom:26px;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:center}
-.oldal-landolo .kat-doboz.tt-miert .kat-par-kep{height:auto;min-height:0;max-height:340px;aspect-ratio:4/3;object-position:50% 40%}
-.oldal-landolo .kat-doboz.tt-miert>.kat-doboz-szoveg{justify-content:center}
-.tt-miert h3{margin:0 0 12px;color:var(--navy);font-size:1.3rem}
-.tt-alcim{margin:0 0 14px;text-align:center;color:var(--navy);font-size:1.2rem}
-.tt-ar-racs{grid-template-columns:repeat(3,minmax(0,1fr));max-width:980px;margin-inline:auto;gap:18px}
-.tt-ar-racs .tt-kartya-cim{margin:0 0 6px;font-size:.84rem;line-height:1.35;letter-spacing:.04em;color:var(--navy)}
+.tt-arak .arak-szoveg h3{margin:4px 0 10px;color:var(--navy);font-size:1.08rem;line-height:1.3}
+.tt-arak .arak-szoveg .pipak li{font-size:.9rem}
+.tt-arak-jobb .tt-alcim{margin:0 0 12px;text-align:center;color:var(--navy);font-size:1.05rem}
+.tt-paros{margin-top:22px}
+.tt-ar-racs{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.tt-ar-racs .tt-kartya-cim{margin:0 0 6px;font-size:.8rem;line-height:1.35;letter-spacing:.04em;color:var(--navy)}
 .tt-helyett{margin:4px 0 0;font-size:.82rem;color:var(--mut)}
 .tt-helyett s{color:var(--rose-i);font-weight:600;text-decoration-color:rgba(185,135,130,.8);text-decoration-thickness:1.5px}
 .tt-ar-racs .ar{margin-top:0}
 .tt-ar-racs .darabar{margin-bottom:6px}
 .tt-ar-racs .pipak{margin:8px auto 14px}
 .tt-ar-racs .gomb{margin-top:auto}
-.tt-ar-racs .ar-kartya.tt-kiemelt{border-color:#a35a4b;box-shadow:0 10px 26px rgba(163,90,75,.18)}
-.tt-kontroll{grid-template-columns:minmax(0,1fr);text-align:center}
-.tt-kontroll .kat-doboz-szoveg{max-width:48em;margin:0 auto;display:flex;flex-direction:column;align-items:center}
-.tt-kontroll h3{margin:4px 0 8px;color:var(--navy);font-size:1.15rem}
-.tt-kontroll-kiemelt{color:#a35a4b;font-size:.9rem !important;letter-spacing:.02em}
+.tt-ar-racs .ar-kartya.tt-kiemelt{border:2px solid #a35a4b;box-shadow:0 10px 26px rgba(163,90,75,.18)}
+.tt-ar-racs .ar-akcio .tt-kartya-cim{color:#fff}
+.tt-ar-racs .ar-akcio .tt-helyett{color:#d9d6e2}
+.tt-ar-racs .ar-akcio .tt-helyett s{color:#ecc9c2}
+.tt-kontroll .panel-szoveg h3{margin:2px 0 8px;color:var(--navy);font-size:1.1rem}
+.tt-kontroll-kiemelt{color:#a35a4b;font-size:.88rem !important;letter-spacing:.02em}
 @media (max-width:1100px){.oldal-landolo .lablec-racs{grid-template-columns:1fr 1fr}}
+@media (max-width:1000px){.tt-akcio.premium{grid-template-columns:1fr}}
 @media (max-width:760px){
   .fejlec-landolo .logo img{height:30px}
   .landolo-menu{gap:4px}
@@ -271,14 +277,13 @@
   .landolo-velemeny .menu-csillagok{display:none}
   .landolo-hosszu{display:none}
   .landolo-rovid{display:inline}
-  .tt-hos-arak li{font-size:.92rem}
-  .tt-akcio .premium-szoveg .tt-arlista{text-align:center}
+  .tt-hos-dobozok{margin-inline:auto}
+  .tt-akcio.premium{padding:24px 16px}
   .tt-velemeny .tt-velemeny-fej{padding:10px 14px;gap:6px 12px}
-  .tt-ar-racs{grid-template-columns:minmax(0,1fr);max-width:420px;gap:22px}
-  .oldal-landolo .kat-doboz.tt-miert{grid-template-columns:minmax(0,1fr)}
-  .oldal-landolo .kat-doboz.tt-miert .kat-par-kep{aspect-ratio:16/10;max-height:260px}
-  .tt-miert .pipak{align-self:stretch;text-align:left}
-  .tt-miert .pipak li{display:flex;text-align:left}
+  .tt-arak .arak-szoveg>p:not(.felirat){display:block}
+  .tt-arak .arak-szoveg .pipak{align-self:stretch;text-align:left}
+  .tt-arak .arak-szoveg .pipak li{display:flex;text-align:left}
+  .tt-ar-racs{grid-template-columns:minmax(0,1fr);max-width:420px;margin-inline:auto;gap:22px}
   .tt-ar-racs .ar-kartya .pipak{display:block}
   .tt-ar-racs .pipak li{display:flex;text-align:left}
 }
