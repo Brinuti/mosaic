@@ -480,7 +480,7 @@ export function kategoriaFo(ROOT, adat, c, T, opciok = {}) {
         </div>
         ${ert}
         <ul class="hos-linkek">${linkek.join('')}</ul>
-        <!--#bizalom-->
+        ${/akcio|piercing-2-araert/.test(adat.ut) ? '<!--#bizalom-->' : '<!-- a 4 badge csak a piercing- es akcio-oldalakon (a tulajdonos kerese, 2026-10-16: "csak helyet foglal mobilon") -->'}
       </div>
       <figure class="hos-kep">
         <img src="${esc(h.kep.src)}"${keparany(h.kep)} alt="${esc(h.kep.alt || adat.cim)}"${h.kep.nh > h.kep.nw ? ' style="object-position:50% 40%"' : ''} fetchpriority="high">

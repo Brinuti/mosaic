@@ -70,7 +70,7 @@ const linkKattint = (p, sel) => p.evaluate((sel) => { const a = [...document.que
   ok('A: /idopontfoglalas: betolteskor magatol megnyilik a tipus-valaszto', await varj(p, '[data-tipus]'));
   await p.waitForTimeout(400);
   const m = await sr(p, 'const t=r.querySelector(".tartalom"), ab=r.querySelector(".ablak").getBoundingClientRect(), h=r.querySelector(".fej h2").getBoundingClientRect(); return { nevek:[...r.querySelectorAll("[data-tipus] .nev")].map(x=>x.textContent), sav:getComputedStyle(r.querySelector(".lepesek")).display, elfer:t.scrollHeight<=t.clientHeight+1, kozep:Math.abs((h.left+h.width/2)-(ab.left+ab.width/2)), vissza:getComputedStyle(r.querySelector("[data-vissza]")).visibility, szoveg:r.querySelector(".tartalom").innerText };');
-  ok('A: 4 kartya: Uj piercing, Kontroll, Ekszercsere, Garancia', JSON.stringify(m.nevek) === JSON.stringify(['Új piercing', 'Kontroll', 'Ékszercsere', 'Garancia']), m.nevek.join(' | '));
+  ok('A: 4 kartya: Uj piercing, Kontroll, Ekszercsere / visszarakas, Garancia', JSON.stringify(m.nevek) === JSON.stringify(['Új piercing', 'Kontroll', 'Ékszercsere / visszarakás', 'Garancia']), m.nevek.join(' | '));
   ok('A: a tipus-valaszto egy kepernyon, lepesjelzo nelkul, a cim kozepen, vissza gomb nincs', m.elfer && m.sav === 'none' && m.kozep <= 2 && m.vissza === 'hidden', JSON.stringify({ elfer: m.elfer, sav: m.sav, kozep: m.kozep, vissza: m.vissza }));
   ok('A: nincs "Kezeles" szo', !/kezel/i.test(m.szoveg));
   ok('A: nincs JS-hiba', !hibak.length, hibak.join(' | '));
@@ -145,7 +145,8 @@ const linkKattint = (p, sel) => p.evaluate((sel) => { const a = [...document.que
 }
 
 // F-I. az urlap
-const LEHETOSEGEK = { kontroll: 3, ekszercsere: 2, garancia: 1 };
+// az ekszercsere / visszarakas urlapon a ket csere mellett a kiesett ekszer ujraszurasa (kozerzetjavito / fulbevalo; a tulajdonos dontese, 2026-10-16)
+const LEHETOSEGEK = { kontroll: 3, ekszercsere: 4, garancia: 1 };
 {
   const { ctx, p, ki, urlap, hibak } = await uj();
   await p.goto(CIM + '/idopontfoglalas', { waitUntil: 'load' });
@@ -313,9 +314,9 @@ for (const [honnan, ut, elso] of [['migren-oldalrol', '/migren-piercing', 'Migr�
   if (!van) { await ctx.close(); continue; }
   let m = await olvas();
   ok(`N: ${honnan}: nincs fejlec-doboz, van "Az ár tartalmazza", alapertek: Magamnak + 1 piercing`, !m.fejlec && m.tartalmaz && JSON.stringify(m.on) === JSON.stringify(['Magamnak', '1 piercing']), JSON.stringify([m.fejlec, m.on]));
-  // a "Kiesett ékszer újraszúrása" (2026-10-16 ota a Salonicban): legfeljebb egyszer, a sor vegen
-  const UJRA = 'Kiesett ékszer újraszúrása', vegen = (l) => l.filter((x) => x === UJRA).length <= 1 && (!l.includes(UJRA) || l.indexOf(UJRA) === l.length - 1);
-  ok(`N: ${honnan}: 1 piercing: mind a 9 latszik (nincs "+ tobbi"; az ujraszuras legfeljebb egyszer, a vegen), mindegyiken "Részletek" + "Időpontot választok"; a(z) ${elso} elol, lenyitva, fulfotoval, garanciaval, "+ 2–3 piercing" nelkul; nincs "Mikor? / Fáj?"`, m.latszik.filter((x) => x !== UJRA).length === 9 && vegen(m.latszik) && m.db === m.latszik.length && ['Máj', 'Lép', 'Vastagbél', 'Allergia'].every((x) => m.nevek.includes(x)) && !m.tobb && m.ketgomb && m.latszik[0] === elso && m.nyitott === elso && m.foto && m.garancia && !m.plusz && !m.csempe, JSON.stringify(m.latszik) + ' nyitott: ' + m.nyitott);
+  // a "Kiesett ékszer újraszúrása" belsős Salonic-szolgáltatás (a tulajdonos döntése, 2026-10-16): sehol nincs a listában
+  const nincsUjra = (l) => !l.some((x) => /kiesett|újraszúr/i.test(x));
+  ok(`N: ${honnan}: 1 piercing: mind a 9 latszik (nincs "+ tobbi", nincs "Kiesett ékszer újraszúrása"), mindegyiken "Részletek" + "Időpontot választok"; a(z) ${elso} elol, lenyitva, fulfotoval, garanciaval, "+ 2–3 piercing" nelkul; nincs "Mikor? / Fáj?"`, m.db === 9 && m.latszik.length === 9 && nincsUjra(m.nevek) && ['Máj', 'Lép', 'Vastagbél', 'Allergia'].every((x) => m.nevek.includes(x)) && !m.tobb && m.ketgomb && m.latszik[0] === elso && m.nyitott === elso && m.foto && m.garancia && !m.plusz && !m.csempe, JSON.stringify(m.latszik) + ' nyitott: ' + m.nyitott);
   await kattint(p, '.pk:not(.nyitva) .pk-reszlet'); m = await olvas();
   ok(`N: ${honnan}: egy masik kartya "Részletek" gombjara az nyilik le (egyszerre egy)`, !!m.nyitott && m.nyitott !== elso && (await sr(p, 'return r.querySelectorAll(".pk.nyitva").length')) === 1, m.nyitott);
   await kattint(p, '[data-mit="tobb"]'); m = await olvas();
@@ -323,7 +324,7 @@ for (const [honnan, ut, elso] of [['migren-oldalrol', '/migren-piercing', 'Migr�
   await kattint(p, '.pk:not(.nyitva) .pk-reszlet'); m = await olvas();
   ok(`N: ${honnan}: a 2 piercing kedvezmenye is ki van fejtve`, m.nyitott === '2 piercing' && /Külön-külön 2 × [\d.]+ Ft = [\d.]+ Ft lenne/.test(m.kedv), m.kedv);
   await kattint(p, '[data-mit="fulbevalo"]'); m = await olvas();
-  ok(`N: ${honnan}: Fulbevalo: 1, 2, 3 db (+ legfeljebb az ujraszuras, a vegen)`, m.nevek.filter((x) => /^Fülbevaló/.test(x)).length === 3 && m.nevek.every((x) => /^Fülbevaló/.test(x) || x === UJRA) && vegen(m.latszik), JSON.stringify(m.nevek));
+  ok(`N: ${honnan}: Fulbevalo: 1, 2, 3 db (nincs "Kiesett ékszer újraszúrása")`, m.db === 3 && m.nevek.every((x) => /^Fülbevaló/.test(x)), JSON.stringify(m.nevek));
   await kattint(p, '[data-szuras]');
   ok(`N: ${honnan}: "Hogy néz ki egy szúrás?": a video felugrik (nem a lista alatt nyilik)`, (await sr(p, 'return !!r.querySelector(".pk-felugro[role=dialog] video") && !r.querySelector(".tartalom video")')) === true);
   await p.keyboard.press('Escape'); await p.waitForTimeout(150);

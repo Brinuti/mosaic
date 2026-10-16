@@ -1,6 +1,7 @@
 // A GYIK oldal (/uj/akupunkturas-piercing-tudastar-video, a menuben "GYIK"): a 33 leggyakoribb kerdes temak szerint csoportositva, lenyithato
 // kerdesekkel (a tulajdonos kerese, 2026-10-16: "a GYIK-et behanytad szovegkent, ez vicc"). A kerdesek es valaszok az eredeti oldalrol
 // (uj-oldalak/tartalom/akupunkturas-piercing-tudastar-video.json); az ekszer anyagarol szolo ket valasz a mostani kinalat szerint (G23 titanium).
+// A video boritoja (assets/img/uj-gyik-video.webp): GPT-vel tervezett hatter + a video valodi kepkockaja + felirat az oldal betujevel (2026-10-16).
 //
 //   node tools/uj-gyik.mjs   ->  uj-oldalak/sajat/akupunkturas-piercing-tudastar-video.html
 import fs from 'node:fs';
@@ -38,6 +39,8 @@ const TEMAK = [
   ['gyogyulas', 'Gyógyulás és utóápolás', 'heart', [23, 9, 29, 30, 24, 19, 20, 32, 33]],
   ['mindennap', 'A mindennapokban', 'sparkles', [6, 25, 26, 27, 31, 18]],
 ];
+// asztalon ket rogzitett oszlop (a temak indexe; kiegyensulyozva: 6 + 5 + 6 es 7 + 9 kerdes); mobilon az eredeti sorrend
+const HASABOK = [[0, 1, 4], [2, 3]];
 const hasznalt = TEMAK.flatMap((t) => t[3]).sort((a, b) => a - b);
 if (hasznalt.join() !== [...kerdesek.keys()].sort((a, b) => a - b).join()) throw new Error('minden kerdes pontosan egy temaban');
 
@@ -57,10 +60,9 @@ const html = `<!--oldal ${JSON.stringify({ cim: 'Gyakori kérdések – a 33 leg
 <!--#ertekeles-->
           <ul class="hos-linkek"><li><a href="/migren-es-shenmen-piercing-garancia">Garancia »</a></li><li><a href="/elerhetosegek">Helyszíneink »</a></li><li><a href="/a-migren-es-shenmen-piercing-utoapolasa">Utóápolás »</a></li></ul>
         </div>
-<!--#bizalom-->
       </div>
-      <figure class="hos-kep">
-        <a class="video" href="https://www.youtube.com/watch?v=5Gs8oYgKdQI" target="_blank" rel="noopener" data-embed="https://www.youtube-nocookie.com/embed/5Gs8oYgKdQI?autoplay=1&amp;rel=0" data-cim="Közérzetjavító piercingek: minden, amit tudni szeretnél – interjú Kovács Richárd piercerrel" aria-label="Videó lejátszása: interjú Kovács Richárd piercerrel"><span class="video-kep"><img src="https://i.ytimg.com/vi/5Gs8oYgKdQI/hqdefault.jpg" width="480" height="360" alt="" fetchpriority="high"><span class="lejatszo">${IK('play')}</span></span></a>
+      <figure class="hos-kep hos-kep-tartalmaz">
+        <a class="video" href="https://www.youtube.com/watch?v=5Gs8oYgKdQI" target="_blank" rel="noopener" data-embed="https://www.youtube-nocookie.com/embed/5Gs8oYgKdQI?autoplay=1&amp;rel=0" data-cim="Közérzetjavító piercingek: minden, amit tudni szeretnél – interjú Kovács Richárd piercerrel" aria-label="Videó lejátszása: interjú Kovács Richárd piercerrel"><span class="video-kep"><img src="/assets/img/uj-gyik-video.webp" width="1280" height="720" alt="" fetchpriority="high"><span class="lejatszo">${IK('play')}</span></span></a>
       </figure>
     </div>
   </section>
@@ -75,10 +77,10 @@ const html = `<!--oldal ${JSON.stringify({ cim: 'Gyakori kérdések – a 33 leg
       ${TEMAK.map(([id, cim, ik, l]) => `<li><a href="#${id}"><b>${l.length}</b>${cim}</a></li>`).join('\n      ')}
     </ul>
     <div class="gyik-temak">
-      ${TEMAK.map(([id, cim, ik, l]) => `<div class="gyik-tema" id="${id}">
+      ${HASABOK.map((h) => `<div class="gyik-hasab">${h.map((i) => { const [id, cim, ik, l] = TEMAK[i]; return `<div class="gyik-tema" id="${id}" style="order:${i}">
         <h3 class="gyik-tema-cim"><span class="info-ik">${IK(ik)}</span>${cim}</h3>
         <div class="kat-harmonika">${l.map(elem).join('')}</div>
-      </div>`).join('\n      ')}
+      </div>`; }).join('\n      ')}</div>`).join('\n      ')}
     </div>
   </section>
 

@@ -152,7 +152,6 @@ for (const p of PIERCEREK) {
 <!--#ertekeles-->
           <ul class="hos-linkek"><li><a href="/migren-es-shenmen-piercing-garancia">Garancia »</a></li><li><a href="/elerhetosegek">Helyszíneink »</a></li><li><a href="/uj/csapatunk">Csapatunk »</a></li></ul>
         </div>
-<!--#bizalom-->
       </div>
       <figure class="hos-kep">
         ${hosMedia}

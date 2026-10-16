@@ -141,6 +141,20 @@ if (fs.existsSync(path.join(ROOT, 'klon/404.html'))) fs.writeFileSync(path.join(
   console.log(`koszonooldal-cim semleges: ${n} lapon`);
 }
 
+// nyitvatartas (a tulajdonos, 2026-10-16: "9-19 a helyes"): a regi (Wix-) oldalak lableceben "H-P: 10:00 - 19:00" all; a buildben javitjuk,
+// igy egy uj Wix-tukrozes utan is a helyes ido latszik
+{
+  let n = 0;
+  for (const ki of ['_a', '_m']) for (const f of fs.readdirSync(path.join(DIST, ki), { recursive: true }).filter((x) => x.endsWith('.html'))) {
+    const fajl = path.join(DIST, ki, f);
+    const html = fs.readFileSync(fajl, 'utf8');
+    if (!html.includes('H-P: 10:00 - 19:00')) continue;
+    fs.writeFileSync(fajl, html.replaceAll('H-P: 10:00 - 19:00', 'H-P: 09:00 - 19:00'));
+    n++;
+  }
+  console.log(`nyitvatartas H-P 09:00-19:00: ${n} lapon`);
+}
+
 // kitelepulesek: a videki helyszinek idopontjai a tablazatbol. Ha a tablazat nem erheto el, a
 // mentett idopontok maradnak (futas kozben a lapok az /api/kitelepulesek-bol ugyis frissulnek).
 {
