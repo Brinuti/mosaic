@@ -347,12 +347,15 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .pk-szuro .szeg button { min-height: 32px; padding: 0 12px; border: 0; border-radius: 99px; background: none; box-shadow: none; font-size: 12.5px; line-height: 1; white-space: nowrap; color: #454659; }
 .pk-szuro .szeg button.on { background: #454659; border: 0; box-shadow: none; color: #fff; }
 .pk-szuro .szeg button[disabled] { opacity: .38; }
-/* a "2–3 piercing" eri meg a legjobban (a tulajdonos kerese, 2026-10-16): eros jeloles a gomb folott; ha kifer, a ket kapcsolo egy sorban */
-.pk-szuro { margin-top: 12px; row-gap: 16px; }
+/* a "2–3 piercing" eri meg a legjobban (a tulajdonos kerese, 2026-10-16): eros jeloles a gomb folott; ha kifer, a ket kapcsolo egy sorban.
+   5. kor: alapbol a 2–3 piercing van kivalasztva; a jeloles lefele mutato nyillal pontosan a gomb folott; ket sorban a "Magamnak / 2 személynek" feljebb, a jeloles a ket sor kozott */
+.pk-szuro { margin-top: 22px; row-gap: 30px; }
+@media (max-width: 384px) { .pk-szuro { margin-top: 2px; } }
 .pk-szuro .szeg button.ajanlott { position: relative; color: #a35a4b; font-weight: 700; }
 .pk-szuro .szeg button.ajanlott.on { background: #a35a4b; color: #fff; }
-.pk-szuro .szeg button.ajanlott::after { content: "Legjobban megéri"; position: absolute; left: 50%; top: -12px; transform: translateX(-50%); padding: 2px 8px; border-radius: 99px; background: linear-gradient(90deg, #c27a6a, #a35a4b); box-shadow: 0 2px 6px rgba(163, 90, 75, .35); color: #fff; font: 700 8.5px/1.25 'poppins-semibold', Poppins, Arial, sans-serif; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; pointer-events: none; }
-.pk-szuro .szeg button.ajanlott[disabled]::after { display: none; }
+.pk-szuro .szeg button.ajanlott::after { content: "Legjobban megéri"; position: absolute; left: 50%; top: -26px; transform: translateX(-50%); padding: 3px 9px; border-radius: 99px; background: linear-gradient(90deg, #c27a6a, #a35a4b); box-shadow: 0 2px 6px rgba(163, 90, 75, .35); color: #fff; font: 700 9px/1.25 'poppins-semibold', Poppins, Arial, sans-serif; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; pointer-events: none; }
+.pk-szuro .szeg button.ajanlott::before { content: ""; position: absolute; left: 50%; top: -9px; transform: translateX(-50%); border-style: solid; border-width: 7px 6px 0; border-color: #a35a4b transparent transparent; pointer-events: none; }
+.pk-szuro .szeg button.ajanlott[disabled]::after, .pk-szuro .szeg button.ajanlott[disabled]::before { display: none; }
 .pk-info { margin: 0 0 12px; text-align: center; }
 .pk-info p { margin: 0; }
 .pk-info-sor { display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 12px; margin: 0 0 6px !important; font-size: 12.5px; line-height: 1.2; white-space: nowrap; color: #454659; }
@@ -428,7 +431,7 @@ const TIPUSOK = [
   { kod: 'uj', nev: 'Új piercing', leiras: '1 vagy több piercing behelyezése' },
   { kod: 'kontroll', nev: 'Kontroll', leiras: 'Nézzünk rá a meglévő piercingeidre?' },
   { kod: 'ekszercsere', nev: 'Ékszercsere / visszarakás', leiras: 'Cseréljük ki, vagy kiesett az ékszered?' },
-  { kod: 'garancia', nev: 'Garancia', leiras: 'Letelt a 6 hét és szúrjunk megerősítőt?' },
+  { kod: 'garancia', nev: 'Garancia', leiras: 'Letelt a 6–7 hét, és szúrjunk megerősítőt?' },
 ];
 // az ertekeles (a tulajdonos kerese, 2026-10-16: "ne 5000+ legyen, hanem pontosan annyi, mint a Trustindexben"): a /api/ertekeles (a Trustindex-doboz fejlece,
 // ugyanaz a szam, mint a lapokon); egyszer kerjuk le, a Piercing-lepes ebbol rajzol. Ha nem erheto el, szam nelkul: "Google-értékelések".
@@ -521,7 +524,7 @@ export function nyit(ctx) {
   const all = {
     lepes: 'hely', placeId: HELYSZINEK[ctx.placeId] ? +ctx.placeId : null, serviceId: ctx.serviceId || null,
     staffId: ctx.employeeId ? String(ctx.employeeId) : null, nap: null, honap: null, slotok: null, szolg: null, bookingId: null, expected: null,
-    tipus: null, urlapAdat: null, merve: !ctx.merjen, kinek: 'magamnak', mit: oldalTipus(ctx.forras || '') === '3pc' ? 'tobb' : 'egy',
+    tipus: null, urlapAdat: null, merve: !ctx.merjen, kinek: 'magamnak', mit: oldalTipus(ctx.forras || '') === 'divat' ? 'egy' : 'tobb',
     oldalTipus: oldalTipus(ctx.forras || ''), nyitott: null, arak: null,
   };
   const ctxFoglalas = foglalas.begin({ business: 'mp', source_page: ctx.forras || location.pathname });
@@ -786,7 +789,7 @@ export function nyit(ctx) {
     if (a.foto) test += `<div class="pk-pont"><img src="/assets/img/uj-galeria-${a.foto}-2.webp" alt="A ${esc(a.nev.toLowerCase())} helye a fülön" width="300" height="300" loading="lazy" decoding="async"><div><b>Vendégeink általában ezeken érnek el javulást:</b><p>${esc(a.javulas)}</p></div></div>`;
     if (a.kedvezmeny) test += a.kedvezmeny;
     if (a.csomag) test += `<div class="pk-csomag">${a.csomag}</div>`;
-    if (a.garancia) test += '<p class="pk-garancia"><b>Garancia:</b> ha 6 hét után nem tapasztalsz javulást, 6 hónapon belül megerősítő piercinget kapsz, csak az új ékszer áráért.</p>';
+    if (a.garancia) test += '<p class="pk-garancia"><b>Garancia:</b> ha 6–7 hét után nem tapasztalsz javulást, megerősítő piercinget szúrunk.</p>';
     test += `<p class="pk-tart"><b>Az ár tartalmazza:</b> ${kozerzet ? 'titán ékszer · érzéstelenítő spray · gépi bemérés · ingyenes kontroll · garancia' : 'steril szúrás · G23 titánium ékszer vagy a hozott fülbevalód · ingyenes kontroll'}</p>`;
     const gombok = `<div class="pk-gombok"><button class="pk-reszlet" data-nyit="${id}" aria-expanded="${nyitva}" aria-controls="pk-t-${id}">${nyitva ? 'Bezár' : 'Részletek'}${NYIL_LE}</button>`
       + `<button class="pk-valaszt" data-szolg="${id}" title="${esc(szepNev(s.name))}">Időpontot választok${NYIL_JOBBRA}<span class="rejtett"><span class="nev"><span>${esc(rovidNev(s.name))}</span></span><span class="ar">${e ? `<s>${ft(e)}</s>` : ''}${ft(s.activePrice)}</span></span></button></div>`;

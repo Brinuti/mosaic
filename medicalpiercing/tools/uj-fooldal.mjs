@@ -16,6 +16,7 @@ import { kulcsbol, fajlnev } from '../lib/utvonal.js';
 import { UJ_ELES, REGI_ELO } from '../lib/uj-eles.js';
 import { oldalHtml, indexHtml, KIZART_UTAK } from './uj-oldalak/sablon.mjs';
 import { B_ALAP, GOOGLE_DB } from './uj-oldalak/kategoria.mjs';
+import { BEVIDEO_LEPESEK } from './uj-oldalak/kozos.mjs';
 
 export const UJ_FOOLDAL_UT = UJ_ELES ? '/' : '/uj-fooldal';
 export const TUKOR_ELO = UJ_ELES ? '' : '/uj';   // a tobbi oldal: elesitve az eredeti cimen, kulonben a rejtett tukor (/uj/<eredeti utvonal>)
@@ -115,7 +116,7 @@ function velemenyLink(ut, html) {
   if (alap === VELEMENYEK_UT) return html.replace(/\s*<p class="velemeny-osszes">.*?<\/p>/g, '');
   // ahol az eredeti oldal sajat "Tovább az összes véleményhez >>" linkje (kat-tovabb, a tukor-sablonban p.kozep) kozvetlenul utana all, a mienk nem kell
   // (a tulajdonos jelezte, 2026-10-16: a piercing-oldalakon duplan volt); a horgonyt ilyenkor az eredeti link kapja
-  html = html.replace(/\s*<p class="velemeny-osszes">.*?<\/p>((?:\s*<\/?(?:section|div|p)\b[^>]*>)*\s*<a\b[^>]*\shref="\/migren-shenmen-piercing-velemenyek[^"]*"[^>]*>Tovább az összes véleményhez)/g, '$1');
+  html = html.replace(/\s*<p class="velemeny-osszes">.*?<\/p>((?:\s*<\/?(?:section|div|p)\b[^>]*>)*\s*<a\b[^>]*\shref="\/migren-shenmen-piercing-velemenyek[^"]*"[^>]*>(?:\s*<(?:strong|b|span)\b[^>]*>)*\s*Tovább az összes véleményhez)/g, '$1'); // (az eredeti link szovege lehet <strong>-ban is)
   const h = VELEMENY_HORGONY[alap];
   return h ? html.replace(/(<(?:p class="velemeny-osszes"|div class="tarto kat-tovabb")><a class="szoveg-link" href=")\/migren-shenmen-piercing-velemenyek"/g, `$1${VELEMENYEK_UT}#${h}"`) : html;
 }
@@ -141,12 +142,42 @@ const YT_KEP = {
   'MBr44D96ed0': 'uj-yt-MBr44D96ed0.webp', 'GP8JN-ouuxU': 'uj-yt-GP8JN-ouuxU.webp', '1qARKjvQ5EU': 'uj-yt-1qARKjvQ5EU.webp',
   'GCO50aHDAyU': 'uj-szuras-video.webp', '5Gs8oYgKdQI': 'uj-gyik-video.webp', 'JX4nNVb-jB8': 'uj-video-hirtv.webp', 'foEQNUg6DzI': 'uj-video-divany.webp',
 };
-const POSZTER = { '/assets/img/36b443_db44b65ac652434f81f368121ed6ccccf000.webp': '/assets/img/uj-poszter-36b443-db44.webp' };
-function videoBorito(html) {
+// --- az allo sajat videok (mp4) tervezett boritoja (a tulajdonos kerese, 2026-10-16, 5. kor: "az allovideokkal fuss meg egy kort ... erre is generalj szepen
+// thumbnailt"): a Wix-bol atvett, feliratos elso kocka helyett ugyanaz a sablon, mint a vendegvideoknal (tools/uj-velemeny-borito.mjs). A landolooldalak Wix-es
+// vendegvideoi ugyanazok, mint a Drive-rol jott 37 vendegvideo (kepkocka-egyezes): azok a meglevo -terv boritot kapjak; a tobbi (piercereink videoi, behelyezesek)
+// tools/kep-forras/allo-boritok.json (a kivagott, felirat nelkuli kockak: tools/kep-forras/allo/). A build a poszter mellé data-terv-et tesz: a lejatszas-jel a kepen van,
+// az oldal sajat jele ezeken rejtett (uj-fooldal.js 3c., uj-egyseges.css). Uj allo video: felirat nelkuli kocka + sor az adatfajlba + ide.
+const ALLO_BORITO = {
+  f18724_024533902a4f4f12a925e272152f4afa: 'uj-velemeny-32-terv', f18724_268afe43ffd34bb684da1a016ac9a8a7: 'uj-velemeny-31-terv',
+  f18724_3978361e72434110a5172d0ca03100de: 'uj-velemeny-27-terv', f18724_4522aed115024f028ae39051f9a41317: 'uj-velemeny-17-terv',
+  f18724_76e3bf619f72489c9e39cb73b2e75897: 'uj-velemeny-13-terv', f18724_7a5f8879c9bf47d09f8706d4f3ebe27e: 'uj-velemeny-01-terv',
+  f18724_8bf6fb77d6f541babaa2c2444d0c6109: 'uj-velemeny-18-terv', f18724_8c5ba0ecc33c4d64b20afb485a4b24c9: 'uj-velemeny-35-terv',
+  f18724_9e4e296c2d904bd2bb57c2666b298bbd: 'uj-velemeny-09-terv', f18724_c157018ccd9c4ddc93f251da7ab15d22: 'uj-velemeny-12-terv',
+  f18724_d532ff3c5359445b8162a5722927882e: 'uj-velemeny-03-terv', f18724_d86f3b718cfd4783a47effdc3067c8ed: 'uj-velemeny-25-terv',
+  f18724_8c3e023567c34e90a7f97ce95dead996: 'uj-allo-8c3e023', // (vendegvideo, a Drive-os 37 kozott nincs; a borito adatai a repon kivul)
+  f18724_e392c37827d04e0fb171e9358a0c3482: 'uj-allo-e392c37', f18724_e7b1f3b8462543879dbec7bbe759b379: 'uj-allo-e7b1f3b',
+  f18724_bd92f8df0ee74d78bfb66849ae811e87: 'uj-allo-bd92f8d', f18724_5fcb7231c8a243c28ec400efbb921342: 'uj-allo-5fcb723',
+  f18724_1669d518e10043deabff26251298f021: 'uj-allo-1669d51', '36b443_db44b65ac652434f81f368121ed6cccc': 'uj-allo-db44b65',
+  '36b443_41b0a2e7ebc748d2b43e5161cbc69f49': 'uj-allo-41b0a2e',
+};
+const alloBorito = (ROOT, nev) => {
+  const k = ALLO_BORITO[nev] || (/^uj-velemeny-\d\d$/.test(nev) ? nev + '-terv' : '');
+  return k && fs.existsSync(path.join(ROOT, `assets/img/${k}.webp`)) ? `/assets/img/${k}.webp` : '';
+};
+// a tukor-oldalak (pl. /fooldal-b) "Így néz ki egy ... behelyezés" hasabja: a video mellett csak a cim allt (ures feher hasab) -> a behelyezes lepesei + foglalas
+// (2026-10-16, 5. kor; ugyanaz, mint a B-oldalak behelyezes-dobozaban, tools/uj-oldalak/kozos.mjs)
+const behelyezesLepesek = (html) => html.replace(/(<div class="oszlop"><h2 class="cim c-nagy">Így néz ki egy [^<]*behelyezés<\/h2>)(<\/div>)/g,
+  (m, a, z) => `${a}${BEVIDEO_LEPESEK}<p><a class="gomb gomb-kicsi" href="/idopontfoglalas">Időpontot foglalok<svg class="ik ik-nyil" aria-hidden="true"><use href="#i-chev"/></svg></a></p>${z}`);
+function videoBorito(ROOT, html) {
   const meret = (x) => x.replace(/\s(?:width|height)="\d+"/g, '');
   // (a tervezett kep soha nem vagodik le - a tulajdonos kerese, 2026-10-16: "minden nezetben latszodjon"; a doboz maradek helyet a kep elmosott masa tolti ki)
   return html.replace(/<img\b([^>]*?)\ssrc="https:\/\/i\.ytimg\.com\/vi\/([\w-]+)\/(?:hq|sd|mq|maxres)?default\.jpg"([^>]*)>/g, (m, a, id, z) => (YT_KEP[id] ? `<span class="terv-hatter" style="background-image:url('/assets/img/${YT_KEP[id]}')" aria-hidden="true"></span><img${meret(a)} src="/assets/img/${YT_KEP[id]}" width="1280" height="720" data-terv${meret(z)}>` : m))
-    .replace(/\sposter="([^"?]+)"/g, (m, f) => (POSZTER[f] ? ` poster="${POSZTER[f]}"` : m))
+    .replace(/<video\b([^>]*)>/g, (m, a) => {
+      const nev = (/\ssrc="\/assets\/video\/([\w-]+)\.mp4"/.exec(a) || [])[1];
+      const k = nev && !/\sdata-terv\b/.test(a) && alloBorito(ROOT, nev);
+      if (!k) return m;
+      return `<video${/\sposter="/.test(a) ? a.replace(/\sposter="[^"]*"/, ` poster="${k}"`) : a + ` poster="${k}"`} data-terv>`;
+    })
     // a lapba kozvetlenul irt tervezett boritok (pl. a szuras folyamata, a GYIK) ugyanigy
     .replace(TERV_KEP_RE, (m, koz, a, src, z) => `<span class="video-kep">${koz}<span class="terv-hatter" style="background-image:url('${src}')" aria-hidden="true"></span><img${a} data-terv${z}>`);
 }
@@ -199,7 +230,7 @@ function elesFej(ROOT, ut, html) {
 export function oldalKiir(ROOT, DIST, ut, html) {
   const kulcs = ut === '/' ? 'index' : kulcsbol(ut);
   const nev = fajlnev(kulcs) + '.html';
-  let kesz = kepVerzio(ROOT, kepFokusz(ROOT, fbBorito(ROOT, videoBorito(linkAtiras(ROOT, szovegJavit(velemenyLink(ut, osszerak(ROOT, html))))))));
+  let kesz = kepVerzio(ROOT, kepFokusz(ROOT, fbBorito(ROOT, videoBorito(ROOT, linkAtiras(ROOT, behelyezesLepesek(szovegJavit(velemenyLink(ut, osszerak(ROOT, html)))))))));
   if (/karátos|14K arany|aranyozott|arannyal|arany (?:shenmen|ékszer|piercing)/i.test(kesz)) throw new Error(`${ut}: aranyos ekszer-szoveg maradt (a tulajdonos kerese: nincs arany)`);
   if (UJ_ELES && ut !== '/uj-oldalak') {
     kesz = elesFej(ROOT, ut, kesz);

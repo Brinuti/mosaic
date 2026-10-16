@@ -70,7 +70,7 @@ ok('jegyzek: minden tukrozott oldalnak van tartalom-fajlja', [...mirrorUtak].eve
 ok('jegyzek: nincs benne a kezdolap / foglalasi cim', ![...KIHAGY].some((k) => mirrorUtak.has(k)));
 
 // ket "Tovább az összes véleményhez" link, koztuk csak cimkek (a tulajdonos jelezte, 2026-10-16: a piercing-oldalakon duplan volt)
-const DUPLA_VELEMENYLINK = /Tovább az összes véleményhez[^<]*<\/a>(?:\s*<\/?(?:p|div|section)\b[^>]*>)*\s*<a\b[^>]*>Tovább az összes véleményhez/;
+const DUPLA_VELEMENYLINK = /Tovább az összes véleményhez[^<]*(?:<\/(?:strong|b|span)>)*<\/a>(?:\s*<\/?(?:p|div|section)\b[^>]*>)*\s*<a\b[^>]*>(?:\s*<(?:strong|b|span)\b[^>]*>)*\s*Tovább az összes véleményhez/;
 const forrasFajlok = new Map();
 for (const o of kijelolt) {
   const f = distFajl(o.ut);

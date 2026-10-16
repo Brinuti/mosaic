@@ -82,6 +82,15 @@ Ezen felül:
 - **Álló Facebook-videók borítója** (a tulajdonos kérése, 2026-10-16): a `facebook.com/plugins/video.php` iframe-ek helyett a build (`fbBorito`, `tools/uj-fooldal.mjs`)
   tervezett borítót tesz (`assets/img/uj-fb-<videó-azonosító>.webp`, ugyanazzal a sablonnal: `tools/kep-forras/fb-boritok.json`, a kivágott kockák
   `tools/kep-forras/fb/`), kattintásra a helyén tölt be a Facebook-lejátszó (`uj-fooldal.js` 3d.); addig a Facebook semmit nem tölt a lapon.
+- **Álló saját videók (mp4) borítója** (a tulajdonos kérése, 2026-10-16, 5. kör: „az állóvideókkal fuss még egy kört … erre is generálj szépen thumbnailt”): a Wix-ből átvett,
+  feliratos első kocka helyett tervezett borító (`ALLO_BORITO` / `alloBorito` a `tools/uj-fooldal.mjs`-ben, a videó fájlneve szerint; a build `data-terv`-et tesz a videóra, a lejátszás-jel
+  a képen van, az oldal saját jele ezeken rejtett). A landolóoldalak Wix-es vendégvideói ugyanazok, mint a Drive-ról jött 37 vendégvideó (képkocka-egyezés): azok a meglévő
+  `uj-velemeny-<nn>-terv` borítót kapják; a többi (Ricsi, Fanni, Brigi videói, a behelyezések) `assets/img/uj-allo-<id7>.webp`, ugyanazzal a sablonnal (`tools/kep-forras/allo-boritok.json`,
+  a felirat nélküli, a felirat fölött kivágott kockák: `tools/kep-forras/allo/`; az egy, a 37 között nem szereplő vendégvideó adatai a repón kívül). A hősben az álló videó mellett nincs
+  üres fehér sáv: a képhasáb a borító hátterét kapja (`assets/img/uj-allo-hatter.webp`), a videó keretezve középen. Az „Így néz ki egy … behelyezés” dobozokban a videó mellett
+  a behelyezés 4 lépése + link a szúrás folyamatához (`BEVIDEO_LEPESEK`, `tools/uj-oldalak/kozos.mjs`; a tükör-oldalakon `behelyezesLepesek`).
+- **Árlista-doboz** (2026-10-16, 5. kör): a kártyákon minden középen (ikon, cím, áthúzott ár, ár, megtakarítás), az áthúzott ár és a keret rózsás, nem szürke (`uj-egyseges.css` vége).
+  A „Tovább az összes véleményhez” dupla-szűrője az eredeti oldal `<strong>`-os linkjét is felismeri (a TikTok-landolón és 7 másik oldalon kétszer állt).
 - **Árlista-doboz fülikonjai** (2026-10-16): GPT-vel rajzolt vonalas fülek az ékszerekkel (`assets/img/uj-ful-1|2|3|2x2.webp`, `tools/uj-ful-ikonok.py`, forrás:
   `tools/kep-forras/ful-ikonok-gpt.webp`); az akciós (sötét) kártyán is világos körben. A „Tovább az összes véleményhez” link nem kerül oda, ahol az eredeti oldal saját
   ilyen linkje közvetlenül utána áll (`velemenyLink`; a teszt figyeli a duplát).
@@ -107,7 +116,7 @@ Ezen felül:
   kicsi szűrősor (Magamnak / Két személynek; 1 piercing / 2–3 piercing / Fülbevaló – asztalon egy sor, mobilon kettő), a „★ 4,8 · 5000+ értékelés” mellett egy sorban a „Hogy néz ki egy szúrás?”
   (felugró, bezárható videó: X, háttér, Esc), kicsi „Az ár tartalmazza”, alatta MINDEN lehetőség kártyája (nincs rejtett „+ többi”). Minden kártyán két gomb: „Részletek” (lenyitja: a pont helye
   a valódi fülfotóval, mire jó, garancia; a csomagoknál a kedvezmény levezetése a helyszín mostani Salonic-áraiból: 1./2./3. piercing ára, külön-külön mennyi lenne, mennyit spórol) és az erős
-  színű „Időpontot választok” (a régi `[data-szolg]`: a foglalási út, a mérés és a tesztek ugyanazok). Alapérték: Magamnak + 1 piercing, a típusoldal piercingje elöl (az akció-oldalról: 2–3 piercing); MINDEN kártya csukva, a 2–3 piercingnél is (a tulajdonos kérése, 2026-10-16, 4. kör:
+  színű „Időpontot választok” (a régi `[data-szolg]`: a foglalási út, a mérés és a tesztek ugyanazok). Alapérték: Magamnak + **2–3 piercing** (a tulajdonos kérése, 2026-10-16, 5. kor: „alapból a 2–3 piercing legyen kiválasztva”; a divat fülpiercing oldaláról 1 piercing), 1 piercingnél a típusoldal piercingje elöl; a „Legjobban megéri” jelölés lefelé mutató nyíllal pontosan a „2–3 piercing” gomb fölött, két sorban a „Magamnak / 2 személynek” feljebb, a jelölés a két sor között; a kártyák Részletek-részében a garancia: „ha 6–7 hét után nem tapasztalsz javulást, megerősítő piercinget szúrunk.”; MINDEN kártya csukva, a 2–3 piercingnél is (a tulajdonos kérése, 2026-10-16, 4. kör:
   „lássa, hogy milyen piercingek vannak”). A nevek teljesek („Migrén piercing”, „Shenmen piercing”, „Slim piercing”, …). A szűrősor 385–520 px között is egy sorban (rövid felirat:
   „1 db”, „2–3 db”), alatta két sorban. Az „Az ár tartalmazza” a kártya Részletek-részében van, nem a lista fölött. A szakember-lépés választói mobilon egy sorban.
   A „Kiesett ékszer újraszúrása” belsős Salonic-szolgáltatás (a tulajdonos döntése, 2026-10-16): NEM foglalható, a piercing-listából kimarad (`ujraszuras`, `szolgaltatasLepes`);
