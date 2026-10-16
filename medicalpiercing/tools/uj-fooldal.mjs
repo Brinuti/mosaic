@@ -13,6 +13,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { kulcsbol, fajlnev } from '../lib/utvonal.js';
 import { oldalHtml, indexHtml } from './uj-oldalak/sablon.mjs';
+import { B_ALAP } from './uj-oldalak/kategoria.mjs';
 
 export const UJ_FOOLDAL_UT = '/uj-fooldal';
 export const TUKOR_ELO = '/uj';   // a tobbi oldal tukre: /uj/<eredeti utvonal>
@@ -91,11 +92,15 @@ export function ujOldalak(ROOT, DIST) {
   const jegyzek = [{ ut: '/', cim: 'Főoldal (új főoldal)', tipus: 'oldal', uj: UJ_FOOLDAL_UT }];
   const eredeti = new Map(fs.readFileSync(path.join(ROOT, 'tools/oldalak.txt'), 'utf8').split('\n').filter(Boolean).map((u) => [decodeURIComponent(new URL(u).pathname).replace(/\/+$/, '') || '/', new URL(u).pathname]));
   let db = 0;
-  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.json') && !x.startsWith('_')).sort()) {
-    const adat = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+  const adatok = fs.readdirSync(dir).filter((x) => x.endsWith('.json') && !x.startsWith('_')).sort().map((f) => JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')));
+  const utSzerint = new Map(adatok.map((a) => [a.ut, a]));
+  for (const adat of adatok) {
     if (KIHAGY.has(adat.ut)) continue;
-    oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, adat, { lapozo }));
-    jegyzek.push({ ut: adat.ut, cim: adat.cim, tipus: adat.tipus, uj: TUKOR_ELO + (eredeti.get(adat.ut) || encodeURI(adat.ut)) });
+    // a migren / shenmen / klimax / slim oldal alapja a "B" valtozat (az eredeti -b oldal tartalma, a kategoria-dizajnnal): ugyanazon a (b nelkuli) cimen
+    const bAdat = B_ALAP.has(adat.ut) ? utSzerint.get(B_ALAP.get(adat.ut)) : null;
+    if (B_ALAP.has(adat.ut) && !bAdat) throw new Error(`${adat.ut}: hianyzik a B valtozat tartalma (${B_ALAP.get(adat.ut)})`);
+    oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, bAdat || adat, { lapozo, b: !!bAdat }));
+    jegyzek.push({ ut: adat.ut, cim: (bAdat || adat).cim, tipus: adat.tipus, uj: TUKOR_ELO + (eredeti.get(adat.ut) || encodeURI(adat.ut)) });
     db++;
   }
   const index = indexHtml(ROOT, jegyzek, { datum: new Date().toISOString().slice(0, 10) });
@@ -107,7 +112,7 @@ export function ujOldalak(ROOT, DIST) {
 
 // --- kitelepulesek: a helyszin-csempek datumai a tablazatbol (a build irja be; a lap betolteskor frissiti: uj-fooldal.js) ----------
 const HONAP_ROVID = { 'Január': 'Jan.', 'Február': 'Febr.', 'Március': 'Márc.', 'Április': 'Ápr.', 'Május': 'Máj.', 'Június': 'Jún.', 'Július': 'Júl.', 'Augusztus': 'Aug.', 'Szeptember': 'Szept.', 'Október': 'Okt.', 'November': 'Nov.', 'December': 'Dec.' };
-export const rovidSor = (sor) => sor.replace(/^[A-ZÁÉÍÓÖŐÚÜŰa-záéíóöőúüű]+/, (h) => HONAP_ROVID[h] || h).replace(/,\s*/g, ', ');
+export const rovidSor = (sor) => sor.replace(/^[A-ZÁÉÍÓÖŐÚÜŰa-záéíóöőúüű]+/, (h) => HONAP_ROVID[h] || h).replace(/,\s*/g, ',\u2009');
 export function ujKitelepules(DIST, sorok) {
   let db = 0;
   const lapok = [];

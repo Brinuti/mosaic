@@ -327,7 +327,7 @@ const KOZOS = { esc, IK, szovegLink, szovegTiszta, belso, csakLink, iframe, csom
 export function oldalHtml(ROOT, adat, opciok = {}) {
   const c = ujKontextus(adat, opciok);
   // a kategoria-oldalak (migren / shenmen / klimax / slim) a fooldal stilusaban, a fooldal dobozaival (kategoria.mjs)
-  const kat = opciok.fo === undefined && adat.tipus === 'oldal' ? kategoriaFo(ROOT, adat, c, KOZOS) : null;
+  const kat = opciok.fo === undefined && adat.tipus === 'oldal' ? kategoriaFo(ROOT, adat, c, KOZOS, { b: !!opciok.b }) : null;
   let szekciok = kat ? kat.html : opciok.fo !== undefined ? opciok.fo : adat.szekciok.map((s, i) => szekcio(s, i, c)).join('\n');
   if (!/<h1[\s>]/.test(szekciok)) szekciok = `<h1 class="sr">${esc(adat.cim)}</h1>\n` + szekciok;   // az oldalnak mindig van h1-e (a lathato cim hianyaban rejtett)
   const cimke = adat.tipus === 'cikk' ? 'oldal-cikk' : adat.tipus === 'blog' ? 'oldal-blog' : kat ? 'oldal-altalanos oldal-kategoria' : 'oldal-altalanos';

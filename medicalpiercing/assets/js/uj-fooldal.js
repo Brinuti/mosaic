@@ -157,17 +157,19 @@
 
   // --- 4c. a hos ertekeles-sora (kategoria-oldalak): a pontszam es a vélemenyek szama a Trustindex-widget fejlecebol (/api/ertekeles), a build idejen irt szoveg tartalek ---
   const ertekelesek = $$('[data-ti-ertekeles]');
-  if (ertekelesek.length && window.fetch) {
+  const darabok = $$('[data-ti-darab]');   // a cimben szereplo vendegszam ("... 5 022 vendegunk leirta")
+  if ((ertekelesek.length || darabok.length) && window.fetch) {
     fetch('/api/ertekeles').then((v) => (v.ok ? v.json() : null)).then((a) => {
       if (!a || !a.db || !a.pont) return;
       const szoveg = a.szoveg + ' – ' + String(a.pont).replace('.', ',') + ' – ' + a.db.toLocaleString('hu-HU') + ' vélemény »';
       ertekelesek.forEach((e) => { e.textContent = szoveg; });
+      darabok.forEach((e) => { e.textContent = a.db.toLocaleString('hu-HU'); });
     }).catch(() => { /* marad a build idejen irt szoveg */ });
   }
 
   // --- 4b. kitelepulesek: a helyszin-csempek friss idopontjai (a build mar beirta; itt a tablazat mostani allapota, /api/kitelepulesek) ---
   const ROVID = { 'Január': 'Jan.', 'Február': 'Febr.', 'Március': 'Márc.', 'Április': 'Ápr.', 'Május': 'Máj.', 'Június': 'Jún.', 'Július': 'Júl.', 'Augusztus': 'Aug.', 'Szeptember': 'Szept.', 'Október': 'Okt.', 'November': 'Nov.', 'December': 'Dec.' };
-  const rovid = (sor) => sor.replace(/^[^\s\d]+/, (h) => ROVID[h] || h).replace(/,\s*/g, ', ');
+  const rovid = (sor) => sor.replace(/^[^\s\d]+/, (h) => ROVID[h] || h).replace(/,\s*/g, ',\u2009');
   const datumok = $$('[data-mp-kitelepules]');
   if (datumok.length && window.fetch) {
     fetch('/api/kitelepulesek').then((v) => (v.ok ? v.json() : null)).then((adat) => {
