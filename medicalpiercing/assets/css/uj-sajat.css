@@ -88,3 +88,8 @@
 .gar-racs .gar-kiemelt .gomb{margin-top:6px}
 @media (max-width:760px){.gar-racs{grid-template-columns:minmax(0,1fr)}.gar-racs li{padding:18px}}
 .gar-racs .gar-kiemelt{grid-column:1/-1}
+
+/* Velemenyek: az ugras-csempek kozepen, mobilon legfeljebb 3 sorban */
+.sajat-ugras{text-align:center}
+.sajat-ugras ul{justify-content:center}
+@media (max-width:760px){.sajat-ugras a{padding:5px 10px;font-size:.76rem}.sajat-ugras ul{gap:6px}}

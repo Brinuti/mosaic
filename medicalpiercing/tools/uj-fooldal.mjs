@@ -67,6 +67,12 @@ export function linkAtiras(ROOT, html) {
 // A regi "4.100+" velemenyszam helyett a Google-velemenyek mostani szama (build ideju tartalek: GOOGLE_DB, a lap a /api/ertekeles szamara frissiti).
 const EKSZER_MONDAT = 'Kizárólag <strong>magas minőségű orvosi fémből, G23 titániumból</strong> készült ékszerekkel dolgozunk.';
 export function szovegJavit(html) {
+  // a <script> / <style> blokkok tartalma valtozatlan marad (a szoveg-csere csak a lathato szovegre vonatkozik)
+  const vedett = [];
+  const vissza = (h) => h.replace(/\u0000(\d+)\u0000/g, (m, i) => vedett[+i]);
+  return vissza(szovegJavitBelso(html.replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, (m) => `\u0000${vedett.push(m) - 1}\u0000`)));
+}
+function szovegJavitBelso(html) {
   return html
     .replace(/<strong>A legmagasabb minőségű(?:<\/strong>)? \(tanúsítvánnyal rendelkező\) (?:<strong>)?G23 Titánium antiallergén<\/strong> ékszerek ezüst színben, vagy <strong>14 karátos arannyal(?: bevonva<\/strong>|<\/strong> bevonva)\./g, EKSZER_MONDAT)
     .replace(/<strong>G23 Titánium, antiallergén orvosi fém piercingek\.<\/strong>/g, '<strong>Magas minőségű orvosi fém: G23 titánium piercingek.</strong>')
@@ -78,8 +84,17 @@ export function szovegJavit(html) {
       'ha ilyen van, akkor a vendég által hozott, számára megfelelő ékszert javasoljuk: ezek nem kaphatóak nálunk, a vendégnek kell hoznia magával.')
     .replace(/Találsz feketéket, aranyozottat, ezüst színűt\. Minden ékszerünk a legmagasabb minőségű G23 Titániumból készült orvosi fém, antiallergének és autóklávban fertőtlenítjük őket\./g,
       'Minden ékszerünk magas minőségű orvosi fémből, G23 titániumból készül, és autoklávban fertőtlenítjük őket.')
-    // csak a szovegben (attributumban nem lehet <span>)
-    .replace(/>([^<]*)</g, (m, t) => (/4\.100/.test(t) ? '>' + t.replace(/(?:[Tt]öbb mint\s+)?4\.100\+?/g, `<span data-ti-darab>${GOOGLE_DB}</span>`) + '<' : m));
+    // a hosszu szovegu gomb (> 18 betu) keskeny kepernyon tobb sorba torhet; a rovid gombok soha (uj-fooldal.css: .gomb nowrap)
+    .replace(/<a class="gomb([^"]*)"([^>]*)>([\s\S]*?)<\/a>/g, (m, o, at, belso) => (belso.replace(/<[^>]+>/g, '').replace(/&[a-z]+;/g, ' ').trim().length > 18 ? `<a class="gomb${o} gomb-hosszu"${at}>${belso}</a>` : m))
+    // minden link ugyanabban az ablakban nyilik (a tulajdonos kerese, 2026-10-16: a kulon ablak a regi Wix miatt volt)
+    .replace(/(<a\b[^>]*?)\s+target="_blank"/g, '$1')
+    // csak a szovegben (attributumban nem lehet <span>): a regi velemenyszam; a "Ft" es az ezres tagolas nem torik uj sorba
+    .replace(/>([^<]*)</g, (m, t) => {
+      let x = t.replace(/(\d) (?=\d{3}(?!\d))/g, '$1\u00a0').replace(/(\d) (Ft|forint)\b/g, '$1\u00a0$2')
+        .replace(/([a-záéíóöőúüű]),([a-záéíóöőúüű])/gi, '$1, $2');   // a Wix-szovegben a vesszo utan neha hianyzik a szokoz ("felaron,a")
+      if (/4\.100/.test(x)) x = x.replace(/(?:[Tt]öbb mint\s+)?4\.100\+?/g, `<span data-ti-darab>${GOOGLE_DB}</span>`);
+      return '>' + x + '<';
+    });
 }
 
 // --- egy oldal kiirasa asztali es mobil kiszolgalasra (a Wix-szel azonos kulcs-szabaly) --------------------------------------

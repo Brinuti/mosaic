@@ -589,3 +589,81 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 .velemeny-doboz.ti-keves{max-width:680px;margin-inline:auto}
 /* a bovebb lablec-menu (Kapcsolat, Csapatunk) mobilon is kompakt maradjon */
 @media (max-width:760px){.lablec{padding:18px 0 14px}}
+
+/* ===== 2026-10-16 (2), a tulajdonos kerese ===== */
+/* sortores: a cimek kiegyensulyozottak, a bekezdesek vegen nem marad 1-2 arva szo (a "Ft" nem torik: szovegJavit) */
+h1,h2,h3,.hos-cim,.akcio-fo,.akcio-al,.kat-alcim,.felirat{text-wrap:balance}
+p,li,.hos-bevezeto{text-wrap:pretty}
+/* a gombok szovege soha nem torik ket sorba */
+.gomb{white-space:nowrap}
+/* a "20 ev" pecset soha nincs a hosben */
+.hos-pecset{display:none!important}
+/* badge-sor: mobilon kozepre */
+@media (max-width:760px){
+  .bizalom{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 22px;text-align:left}
+  .bizalom li{flex:0 0 auto}
+}
+/* akcios sav: egy sorban, ikon nelkul, finom mintazattal */
+.akcio-sav{position:relative;overflow:hidden;background:linear-gradient(100deg,#383949 0%,#4a4a5f 46%,#5f5267 100%)}
+.akcio-sav::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.045) 0 2px,transparent 2px 14px);pointer-events:none}
+.akcio-sav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,transparent,var(--rose) 30%,var(--rose) 70%,transparent)}
+.akcio-sav-sor{position:relative}
+@media (max-width:760px){
+  .akcio-sav-sor{flex-wrap:nowrap;gap:8px;min-height:38px;padding-block:6px;font-size:.76rem;white-space:nowrap}
+  .akcio-sav-cimke{padding:3px 9px;font-size:.62rem;letter-spacing:.05em}
+  .akcio-sav-szoveg{overflow:hidden;text-overflow:ellipsis}
+}
+@media (max-width:370px){.akcio-sav-sor{font-size:.7rem;gap:6px}.akcio-sav-cimke{padding:2px 7px}}
+/* arlista: a megtakaritas finomabb (rozsaszin korvonal, pipa nelkul), nem tomor szurke */
+.sporolas span{padding:3px 12px;border:1px solid #e7c6c1;background:linear-gradient(180deg,#fff 0,#fbefec 100%);color:var(--rose-i);font-weight:800}
+.ar-kartya.ar-akcio .sporolas span{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.12);color:#fff}
+/* akcio-doboz mobilon: az egesz ful latszik, a harmadik ar nem log ki */
+@media (max-width:760px){
+  .akcio-kep{height:auto;aspect-ratio:460/430;object-position:50% 72%;-webkit-mask-image:linear-gradient(180deg,#000 82%,transparent);mask-image:linear-gradient(180deg,#000 82%,transparent)}
+  .akcio-arak{grid-template-columns:repeat(3,minmax(0,1fr));padding:0 14px 18px;gap:7px}
+  .akcio-arak li{min-width:0;padding:12px 4px 10px}
+  .akcio-arak b{font-size:clamp(.95rem,4.5vw,1.3rem);white-space:nowrap}
+  .akcio-arak .legnepszerubb{box-shadow:0 6px 14px rgba(0,0,0,.22)}
+}
+/* kitelepulesek: a sok idopontu helyszin sora sem log ki (kisebb betu, tordelheto), a cellak rendezettek */
+.helyek .datum{white-space:normal;font-size:.72rem;line-height:1.42}
+@media (max-width:760px){.helyek .datum{font-size:.66rem}.helyek b{font-size:.88rem}}
+/* lablec: kompaktabb */
+.lablec{padding:26px 0 16px}
+.lablec h3{margin-bottom:8px}
+.lablec li{margin-bottom:5px;font-size:.84rem}
+.jogi{margin-top:16px;padding-top:12px;font-size:.62rem;line-height:1.45;color:#6b6c7e}
+.jogi p{margin:0 0 4px}
+.szerzoi{margin-top:10px;font-size:.72rem}
+@media (max-width:760px){.jogi{font-size:.58rem}.lablec li{font-size:.78rem}}
+/* keves (1-2) velemenyt mutato widget: egy kartyanyi, kozepre */
+.velemeny-doboz.ti-keves{max-width:460px}
+@media (max-width:520px){.gomb.gomb-hosszu{white-space:normal;text-align:center;justify-content:center}}
+/* ===== mobilmenu (2026-10-16, a tulajdonos kerese): rendezett almenuk ket hasabban, egysoros elemek ikonnal; 5 csillag; also sav mindig latszik ===== */
+.almenu a{display:flex;align-items:center;gap:9px}
+.almenu a .ik{width:16px;height:16px;flex:none;color:var(--rose-i)}
+.almenu a span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.menu-csillagok{display:inline-flex;gap:1px;margin-left:4px}
+.menu-csillagok .ik{width:.82em;height:.82em;fill:#fbbc04;stroke:#fbbc04;stroke-width:1}
+@media (min-width:1001px){.menu-csillagok .ik:nth-child(n+2){display:none}}
+@media (min-width:1001px) and (max-width:1130px){.menu-csillagok{display:none}}
+@media (max-width:1000px){
+  .menu{padding:4px 16px 0}
+  .menu-link,.menu-gomb{padding:13px 4px;font-size:1.04rem}
+  .menu-akcio .ik{display:none}
+  .menu-velemeny{justify-content:flex-start}
+  .menu-velemeny .menu-csillagok{margin-left:auto}
+  .menu-velemeny .menu-csillagok .ik{width:15px;height:15px}
+  .almenu{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0 0 12px;padding:0;background:none}
+  .almenu li{min-width:0}
+  .almenu a{padding:10px 11px;font-size:.86rem;font-weight:600;color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 3px rgba(90,70,66,.05)}
+  .almenu a:active,.almenu a:hover{border-color:var(--rose);background:var(--beige-l)}
+  /* a menu alja (foglalas, telefon, e-mail) mindig latszik, a kozossegi ikonok nelkul */
+  .menu-lab{position:sticky;bottom:0;z-index:2;gap:8px;margin:auto -16px 0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(251,246,242,.86),#fbf6f2 30%);border-top:1px solid var(--line);backdrop-filter:blur(6px)}
+  .menu-lab .menu-cta{max-width:none;padding:.85em}
+  .menu-kapcsolat{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:4px 16px;font-size:.84rem}
+  .menu-kapcsolat a{font-weight:700;color:var(--slate)}
+  .menu-lab .kozosseg{display:none}
+}
+@media (max-width:360px){.almenu a{font-size:.8rem;padding:9px 9px;gap:7px}.menu-kapcsolat{font-size:.78rem}}
+@media (max-width:1000px){.alm-utotag{display:none}}
