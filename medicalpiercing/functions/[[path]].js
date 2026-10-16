@@ -9,7 +9,8 @@
 // - GET /api/ertekeles: a Google-ertekeles (pontszam, vélemenyek szama) a Trustindex fooldali widgetjebol (lib/ertekeles.js),
 //   a kategoria-oldalak hosenek ertekeles-sora ebbol frissul (assets/js/uj-fooldal.js 4c.).
 // - GET /f/<kod>, /m/<kod>: "A foglalasod" oldal (lib/foglalasom.js) a foglalas -> megjelenes rendszer kozos D1-jebol (LIFECYCLE_DB), csak az MP-foglalasok;
-//   /f/minta: bemutato mintaadatokkal;
+//   /f/minta: bemutato mintaadatokkal; /f/<kod>/idopontok (GET), /f/<kod>/modosit, /f/<kod>/lemond (POST): sajat modosito / lemondo panel,
+//   a Salonic nyilvanos oldalait a fuggveny keri le (lib/salonic-modosit.js);
 // - POST /api/lifecycle-kimeno: a foglalas -> megjelenes rendszer (Mosaic-projekt) MP-leveleinek kimeno sora: a motor a kozos D1 mp_kimeno tablajaba
 //   irja a levelet, ez ennek a projektnek a Gmail-fiokjabol (SMTP_PASS) kuldi ki (lib/lifecycle-kimeno.js). Kulcs nincs (a tulajdonos dontese):
 //   csak a motor altal sorba tett level mehet ki, a valasz csak darabszam.
@@ -27,7 +28,7 @@ import { TABLAZAT_CSV, osszesSor } from '../lib/kitelepulesek.js';
 import { TRUSTINDEX_TARTALOM, ertekelesAdat } from '../lib/ertekeles.js';
 import { SALONIC_ELOTAG, salonicFajl } from '../lib/salonic-css.js';
 import { UJ_ELES } from '../lib/uj-eles.js';
-import { foglalasom } from '../lib/foglalasom.js';
+import { foglalasom, foglalasMuvelet } from '../lib/foglalasom.js';
 import { kimenoFeldolgoz } from '../lib/lifecycle-kimeno.js';
 
 // Minden mas host (*.pages.dev elonezetek) probacim: noindex + tilto robots.txt.
@@ -46,6 +47,10 @@ export async function onRequest(context) {
   if (request.method === 'GET' && url.pathname === '/api/kitelepulesek') return kitelepulesek();
   if (request.method === 'GET' && url.pathname === '/api/ertekeles') return ertekeles();
   if (url.pathname === '/api/lifecycle-kimeno') return request.method === 'POST' ? lifecycleKimenoVegpont(context) : new Response('POST kell', { status: 405, headers: { allow: 'POST' } });
+  if (/^\/f\/[^/]+\/(idopontok|modosit|lemond)\/?$/.test(url.pathname) && url.hostname !== 'medicalpiercing.hu') { // "A foglalasod": modositas / lemondas (lib/foglalasom.js)
+    const v = await foglalasMuvelet(request, context.env);
+    if (v) return v;
+  }
   if (request.method !== 'GET' && request.method !== 'HEAD') return context.next();
   if (/^\/[fm]\//.test(url.pathname) && url.hostname !== 'medicalpiercing.hu') { // "A foglalasod" (a statikus oldalak elott; a gyoker domain lent www-re iranyit)
     const v = await foglalasom(request, context.env);

@@ -66,6 +66,7 @@ export function tervez(f, alap, opciok = {}) {
     if (t === 't0') {
       if (opciok.athelyezes) { ki(u, 'athelyezes: a T0 nem megy ujra'); continue; }
       if (lead <= 0) { ki(u, 'az idopont mar elmult'); continue; }
+      if (Number.isFinite(u.mikor.max_lead_ora) && lead > u.mikor.max_lead_ora * ORA) { ki(u, `lead > ${u.mikor.max_lead_ora} ora: a T0 kimarad`); continue; }
       be(u, alap);
     } else if (t === 't72') {
       if (lead < 96 * ORA) { ki(u, 'lead < 96 ora: a T-72 kimarad'); continue; }
