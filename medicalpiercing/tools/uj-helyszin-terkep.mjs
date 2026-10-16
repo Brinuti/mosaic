@@ -25,6 +25,10 @@ const VAROSOK = [
 const HELY = { Budapest: 6029, Debrecen: 11424, Békéscsaba: 13422, Kaposvár: 14144, Kecskemét: 10330, Keszthely: 10329, Miskolc: 10357, Nagykanizsa: 12348,
   Nyíregyháza: 12353, Pécs: 12236, Sopron: 9067, Szeged: 12169, Székesfehérvár: 14145, Szombathely: 14229, Zalaegerszeg: 12237 };
 
+// a helyszinek cime (a helyszin-csempek kozos reszebol: uj-oldalak/reszek/helyszinek.html): a terkepen rámutatva felugro infobox (a tulajdonos kerese, 2026-10-16)
+const CIM = {};
+for (const m of fs.readFileSync(new URL('../uj-oldalak/reszek/helyszinek.html', import.meta.url), 'utf8').matchAll(/placeId=(\d+)"[^>]*>[\s\S]*?<span class="cim">([^<]+)<\/span>/g)) CIM[m[1]] = m[2].trim();
+const esc = (x) => String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 // egyenterű vetítés a 47,2 fokos szélességen; 1000 egység széles, körben margó
 const K = Math.cos((47.2 * Math.PI) / 180);
 const lon0 = Math.min(...HATAR.map((p) => p[0])), lon1 = Math.max(...HATAR.map((p) => p[0]));
@@ -70,7 +74,8 @@ const pinek = VAROSOK.map(([nev, la, lo, dx, dy, ig, fo]) => {
   const bal = ig === 'start' ? x - 14 : x - 60, jobb = ig === 'start' ? x + dx + 14 * nev.length + 10 : x + 60;
   const fent = Math.min(y - 16, y + dy - 22), lent = Math.max(y + 16, y + dy + 8) + (fo ? 26 : 0);
   const pct = (v, m) => `${((v / m) * 100).toFixed(2)}%`;
-  return `<a class="ht-pin${fo ? ' ht-pin-fo' : ''}" href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=${HELY[nev]}" style="left:${pct(bal, W)};top:${pct(fent, H)};width:${pct(jobb - bal, W)};height:${pct(lent - fent, H)}" aria-label="${nev}: időpontfoglalás"></a>`;
+  const cim = CIM[HELY[nev]] || '';
+  return `<a class="ht-pin${fo ? ' ht-pin-fo' : ''}${y < H * 0.3 ? ' ht-pin-lent' : ''}" href="https://medicalpiercing.salonic.hu/selectEmployee/?placeId=${HELY[nev]}" style="left:${pct(bal, W)};top:${pct(fent, H)};width:${pct(jobb - bal, W)};height:${pct(lent - fent, H)}" aria-label="${nev}${cim ? ', ' + esc(cim) : ''}: időpontfoglalás"><span class="ht-info" aria-hidden="true"><b>${nev}</b>${cim ? `<span>${esc(cim)}</span>` : ''}<small>Kattints az időpontokért »</small></span></a>`;
 }).join('');
 
 const html = `  <!-- a Helyszíneink hősképe: generált térkép (tools/uj-helyszin-terkep.mjs), a 15 helyszín a valódi helyén; a varosra kattintva a foglalo nyilik -->\n  <div class="ht-doboz">${svg}<div class="ht-pinek">${pinek}</div></div>\n`;
@@ -86,10 +91,10 @@ const pinekMotor = VAROSOK.map(([nev, la, lo, dx, dy, ig, fo]) => {
   const bal = ig === 'start' ? x - 14 : x - 60, jobb = ig === 'start' ? x + dx + 14 * nev.length + 10 : x + 60;
   const fent = Math.min(y - 16, y + dy - 22), lent = Math.max(y + 16, y + dy + 8) + (fo ? 26 : 0);
   const pct = (v, m) => +((v / m) * 100).toFixed(2);
-  return [HELY[nev], nev, pct(bal, W), pct(fent, H), pct(jobb - bal, W), pct(lent - fent, H)];
+  return [HELY[nev], nev, pct(bal, W), pct(fent, H), pct(jobb - bal, W), pct(lent - fent, H), CIM[HELY[nev]] || '', y < H * 0.3 ? 1 : 0];
 });
 fs.writeFileSync(KI_MOTOR, `// GENERALT FAJL (tools/uj-helyszin-terkep.mjs), ne kezzel szerkeszd: Magyarorszag terkepe a 15 helyszinnel a foglalomotor helyszin-lepesehez.
-// TERKEP_PINEK: [placeId, varos, bal %, fent %, szeles %, magas %] - a kattinthato terulet a varos pontja es felirata folott.
+// TERKEP_PINEK: [placeId, varos, bal %, fent %, szeles %, magas %, cim, az infobox lefele nyilik (a terkep tetejen)] - a kattinthato terulet a varos pontja es felirata folott.
 export const TERKEP_SVG = ${JSON.stringify(svgMotor)};
 export const TERKEP_PINEK = ${JSON.stringify(pinekMotor)};
 `);

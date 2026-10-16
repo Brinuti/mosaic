@@ -28,6 +28,11 @@
   .belso .hos-kep .kat-hos-kar .kar-sav,.belso .hos-kep .kat-hos-kar .kar-dia{height:100%}
   .belso .hos-kep .kat-hos-kar .kar-dia img{height:100%;aspect-ratio:auto}
   .belso .hos-kep .video .video-kep,.belso .hos-kep .video .video-kep img{height:100%}
+  /* a videokep a hasab szelessegeben (kulonben a 16:9-es arany miatt a magassagbol szamolt szelesseg kilogott a laprol) */
+  .belso .hos-racs>.hos-kep .video .video-kep{width:100%;aspect-ratio:auto}
+  /* a galeria negyzetes (1:1) marad (a tulajdonos kerese, 2026-10-16: a kepek 1:1-ben keszultek); a szoveghasab a negyzet magassagahoz igazodik */
+  .kat-hos-b .hos-racs{grid-template-columns:minmax(0,1fr) minmax(0,min(582px,47%));column-gap:36px}
+  .kat-hos-b .hos-racs>.hos-kep.hos-galeria{aspect-ratio:1/1;min-height:0;height:auto;align-self:start}
   .belso .hos-kep .video .video-kep img{object-fit:cover;aspect-ratio:auto}
   /* allo video a hosben: a szoveghasab magassagaban, 9:16 aranyban, a hasab kozepen (nincs korulotte ures sav) */
   .belso .hos-racs>.hos-kep>video.vid-allo{position:absolute;top:0;bottom:0;left:50%;width:auto;height:100%;max-width:100%;max-height:none;aspect-ratio:9/16;transform:translateX(-50%);object-fit:cover;border-radius:24px}
@@ -353,7 +358,7 @@
 @media (max-width:760px){.akcio-arak .legnepszerubb em{font-size:.54rem;padding:3px 9px 3px 8px;top:-12px}}
 /* menu: a ChatGPT-vel generalt, egyseges vonalas ikonok (assets/img/menu-ikon/), a piercereknel a sajat fotojuk */
 .almenu a .menu-ikon{flex:none;width:28px;height:28px;object-fit:contain}
-.almenu a .menu-foto{flex:none;width:28px;height:28px;border-radius:50%;object-fit:cover;object-position:50% 25%;box-shadow:0 0 0 2px #fff,0 0 0 3px var(--line)}
+.almenu a .menu-foto{flex:none;width:28px;height:28px;border-radius:50%;object-fit:cover;object-position:50% 50%;box-shadow:0 0 0 2px #fff,0 0 0 3px var(--line)}
 @media (max-width:1000px){.almenu a .menu-ikon,.almenu a .menu-foto{width:26px;height:26px}}
 .allo-keret .video-kep{position:relative}
 .allo-keret .lejatszo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0}
@@ -400,3 +405,26 @@
   .cikk-torzs h2{margin:30px 0 10px}
   .cikk-torzs h3{margin:22px 0 8px}
 }
+
+/* a piros korokben az X pontosan kozepen (a tulajdonos kerese, 2026-10-16): a "×" betu helyett rajzolt X (a betu metrikaja miatt elcsuszott) */
+.kat-hiba li::before{content:"";background:#b0463b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.4 3.4l5.2 5.2M8.6 3.4l-5.2 5.2' stroke='%23fff' stroke-width='1.9' stroke-linecap='round'/%3E%3C/svg%3E") center/62% no-repeat;padding:0;font-size:.9rem}
+
+/* lepes: "Altalunk keszitett piercingek" (a tulajdonos kerese, 2026-10-16: a pontmeres doboza ne legyen ures) */
+.lepes-galeria{align-self:stretch;margin-top:auto;padding-top:14px}
+.lepes-galeria-cim{margin:0 0 8px;color:var(--navy);font-size:.92rem;font-weight:800}
+.lepes-galeria-racs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.lepes-galeria-racs img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;box-shadow:var(--sh-s);cursor:zoom-in}
+@media (max-width:760px){.lepes-galeria-racs{gap:6px}.lepes-galeria-racs img{border-radius:10px}}
+
+/* GYIK: ket rogzitett oszlop, a temak egymas alatt, hezag nelkul (a tulajdonos kerese, 2026-10-16: "vannak kozotte ilyen helyek");
+   egy kerdes lenyitasa nem tolja at a temakat a masik oszlopba. Mobilon egy oszlop, az eredeti sorrendben (order). */
+.gyik-temak{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;align-items:start}
+.gyik-hasab{display:flex;flex-direction:column;gap:26px;min-width:0}
+@media (max-width:1000px){.gyik-temak{display:flex;flex-direction:column;gap:26px}.gyik-hasab{display:contents}}
+/* a hos videoja nem vagva (pl. a GYIK tervezett boritoja: a felirat a kep szelen is latsszon) */
+@media (min-width:1001px){
+  .belso .hos-racs>.hos-kep.hos-kep-tartalmaz>.video{position:relative;inset:auto;width:100%;height:auto}
+  .belso .hos-racs>.hos-kep.hos-kep-tartalmaz .video .video-kep{height:auto;aspect-ratio:16/9;border-radius:26px}
+  .belso .hos-racs>.hos-kep.hos-kep-tartalmaz .video .video-kep img{height:100%;object-fit:cover}
+}
+.idezet-nagy small{display:block;margin-top:4px;color:#e9c9c3;font-size:.86rem;font-weight:600}

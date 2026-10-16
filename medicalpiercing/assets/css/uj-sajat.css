@@ -106,3 +106,12 @@
 .ht-pin{position:absolute;border-radius:14px;transition:background .15s}
 .ht-pin:hover{background:rgba(171,99,84,.12)}
 .ht-pin:focus-visible{outline:3px solid var(--rose-i,#b98782);outline-offset:0}
+/* a terkep varosai: asztalon ramutatva felugro infobox a cimmel (a tulajdonos kerese, 2026-10-16) */
+.ht-info{position:absolute;left:50%;bottom:calc(100% + 6px);z-index:3;display:flex;flex-direction:column;gap:2px;width:max-content;max-width:240px;padding:9px 12px;border-radius:12px;background:#2f3044;box-shadow:0 8px 22px rgba(47,48,68,.28);color:#fff;font-size:.8rem;line-height:1.35;text-align:left;opacity:0;visibility:hidden;transform:translate(-50%,4px);transition:opacity .15s,transform .15s;pointer-events:none}
+.ht-info b{font-size:.92rem}
+.ht-info small{color:#e9c9c3;font-size:.74rem;font-weight:700}
+.ht-info::after{content:"";position:absolute;left:50%;top:100%;border:6px solid transparent;border-top-color:#2f3044;transform:translateX(-50%)}
+.ht-pin-lent .ht-info{top:calc(100% + 6px);bottom:auto}
+.ht-pin-lent .ht-info::after{top:auto;bottom:100%;border-top-color:transparent;border-bottom-color:#2f3044}
+@media (hover:hover){.ht-pin:hover .ht-info,.ht-pin:focus-visible .ht-info{opacity:1;visibility:visible;transform:translate(-50%,0)}}
+.ht-pin:hover{z-index:4}
