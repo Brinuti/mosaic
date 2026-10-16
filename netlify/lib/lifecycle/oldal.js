@@ -30,7 +30,8 @@ h1 { margin: 0 0 8px; font: 400 21px/1.2 'Jost', Arial, sans-serif; letter-spaci
 .alul { margin-top: 16px; display: grid; gap: 10px; text-align: center; }
 .gomb { display: block; padding: 13px 20px; border-radius: 999px; background: var(--aranyg); color: #fff; text-decoration: none; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; font-size: 14px; text-shadow: 0 1px 2px rgba(80, 60, 10, .35); }
 .gomb.halk { background: transparent; color: var(--sotet); border: 1.5px solid var(--sotet); text-shadow: none; }
-.kicsi { margin: 0; font-size: 13.5px; color: var(--kozep); }
+.kicsi { margin: 0; font-size: 13.5px; color: var(--kozep); text-align: center; }
+.uzenet + .kicsi { margin-top: 14px; }
 .kicsi a { color: var(--sotet); }
 .uzenet { background: #fff; border: 1px solid var(--vonal); border-radius: 14px; padding: 22px 18px; text-align: center; }
 .uzenet h2 { margin: 0 0 8px; font: 400 20px/1.3 'Jost', Arial, sans-serif; }
@@ -61,9 +62,22 @@ export function nemTalalhato() {
 /**
  * @param {{ token:string, uzletag:string, allapot:string, fiok:string, id:string, kezdet:number, szolgaltatas:string, salonicUrl:string|null }} f
  */
+/**
+ * Az "Új időpontot foglalok" gomb célja (Feri, 2026-10-16): ne az üzletág főoldala, hanem rögtön a foglaló-motor, a vendég szolgáltatására
+ * állítva. Az üzletág oldala ?booking=1 mellett megnyitja a foglaló-réteget (assets/js/booking-launcher.js); a service kulcsszavas
+ * (flow.js findByKey: a név minden szava szerepeljen), ha nem talál, a motor az üzletág első lépésén nyílik. A PMU saját beágyazott foglalóját
+ * a #foglalo horgony hozza elő.
+ */
+export function ujFoglalasUrl(f) {
+  const uz = UZLETAGAK[f.uzletag];
+  if (f.uzletag === 'pmu') return `${uz.foglalasUrl}#foglalo`;
+  const q = new URLSearchParams({ booking: '1', business: f.uzletag, service: tisztaNev(f.szolgaltatas), source_page: '/f' });
+  return `${uz.foglalasUrl}?${q.toString()}`;
+}
+
 export function foglalasOldal(f) {
   const uz = UZLETAGAK[f.uzletag];
-  const ujIdopont = `<a class="gomb" href="${esc(uz.foglalasUrl)}">Új időpontot foglalok</a>`;
+  const ujIdopont = `<a class="gomb" href="${esc(ujFoglalasUrl(f))}">Új időpontot foglalok</a>`;
   const nev = uzletaggal(f.uzletag, tisztaNev(f.szolgaltatas), true);
   const doboz = `<div class="doboz"><b>${esc(nev)}</b><br>${esc(datumSzoveg(f.kezdet))}, ${esc(idopontSzoveg(f.kezdet))}</div>`;
   if (f.allapot === 'lemondva') {

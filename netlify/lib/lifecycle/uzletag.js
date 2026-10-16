@@ -92,7 +92,9 @@ export function uzletaggal(uzletag, nev, nagy = false) {
   const t = String(nev || '').trim();
   const szo = UZLETAG_SZO[uzletag];
   if (!t || !szo || (UZLETAG_JEL[uzletag] && UZLETAG_JEL[uzletag].test(t))) return t;
-  const kisbetus = t.charAt(0).toLowerCase() + t.slice(1);
+  // csupa nagybetus elso szo ("AKCIÓS Hajkamerás vizsgálat"): az egesz szo kisbetus lesz, kulonben "aKCIÓS" lenne (Feri jelezte, 2026-10-16)
+  const elso = t.split(' ')[0];
+  const kisbetus = /^\p{Lu}{2,}$/u.test(elso) ? elso.toLowerCase() + t.slice(elso.length) : t.charAt(0).toLowerCase() + t.slice(1);
   const kapcsolt = `${szo} ${kisbetus}`;
   return nagy ? kapcsolt.charAt(0).toUpperCase() + kapcsolt.slice(1) : kapcsolt;
 }

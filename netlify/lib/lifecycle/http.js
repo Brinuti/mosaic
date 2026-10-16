@@ -9,7 +9,7 @@
 // Beallitas (wrangler.toml / Cloudflare): LIFECYCLE_DB (D1), LIFECYCLE_KULCS_HASH (a kulcs SHA-256-ja; a kulcs maga az utemezoben / Zapier-ben van),
 // LIFECYCLE_MOD, LIFECYCLE_UZLETAGOK, LIFECYCLE_MUNKATARS_MOD (ki | figyel | be), LIFECYCLE_ELO_ELLENORZES (ki), LIFECYCLE_NOSHOW_AUTO (1), SIMPLESMS_FELHASZNALO / SIMPLESMS_DOMAIN (nem titkos), SIMPLESMS_JELSZO (Secret), SMTP_* (mint az urlap-leveleknel).
 import { ingest, tick, napi, megerosit, reszletekUrl, foglalasNezet, allapot, beallitas } from './engine.js';
-import { foglalasOldal, nemTalalhato } from './oldal.js';
+import { foglalasOldal, nemTalalhato, ujFoglalasUrl } from './oldal.js';
 import { kuldokKeszit, smsKesz, emailKesz, smsEgyenleg, smsConnectProba } from './kuldok.js';
 import { eloEllenorzoKeszit } from './elo.js';
 import { UZLETAGAK, SZALON, tisztaNev } from './uzletag.js';
@@ -129,7 +129,7 @@ export async function megerosites(request, env) {
   if (bot) return html('Megerősítés', '<h1>Időpont megerősítése</h1><p>A megerősítéshez nyisd meg a linket a telefonodon.</p>');
   if (!r.ok) return html('Nem találom a foglalást', '<h1>Nem találom ezt a foglalást</h1><p>Hívj minket: ' + esc(SZALON.telefon) + '.</p>', 404);
   const f = r.f; const uz = UZLETAGAK[f.uzletag];
-  if (f.allapot !== 'aktiv') return html('Lemondott időpont', `<h1>Ez az időpont már le lett mondva</h1><p>Ha szeretnél újat, itt választhatsz:</p><p><a class="gomb" href="${esc(uz.foglalasUrl)}">Új időpontot választok</a></p>`);
+  if (f.allapot !== 'aktiv') return html('Lemondott időpont', `<h1>Ez az időpont már le lett mondva</h1><p>Ha szeretnél újat, itt választhatsz:</p><p><a class="gomb" href="${esc(ujFoglalasUrl(f))}">Új időpontot választok</a></p>`);
   const reszl = `/f/${kod}`; // a foglalas-kezelo oldal a sajat oldalunkon (a Salonic-oldal abban van beagyazva)
   return html('Időpont megerősítve', `<h1>Köszönjük, megerősítettük az időpontodat!</h1>
 <div class="doboz"><b>${esc(tisztaNev(f.szolgaltatas))}</b><br>${esc(datumSzoveg(f.kezdet))}, ${esc(idopontSzoveg(f.kezdet))}<br>${esc(SZALON.cim)}</div>

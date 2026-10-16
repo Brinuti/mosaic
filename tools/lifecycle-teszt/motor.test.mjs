@@ -604,3 +604,20 @@ test('motor: megszakadt feldolgozas ujraprobalhato (ketszer erkezo level nem nye
   const r = await ingest(db2, env, foglaltLevel({ uzenetId: 'ragadt-1', uuid: UUID2 }), MOST + 300);
   assert.equal(r.ok, true); assert.equal(r.duplikalt, undefined);
 });
+
+test('/f oldal (Feri, 2026-10-16): csupa nagybetus elso szo nem lesz "aKCIÓS"; az uj idopont gomb a foglalo-motort nyitja a szolgaltatasra allitva; a hivas-sor kozepen', async () => {
+  const { uzletaggal } = await import('../../netlify/lib/lifecycle/uzletag.js');
+  const { foglalasOldal, ujFoglalasUrl } = await import('../../netlify/lib/lifecycle/oldal.js');
+  assert.equal(uzletaggal('oxygen', 'AKCIÓS Hajkamerás vizsgálat', true), 'Oxigénterápia akciós Hajkamerás vizsgálat');
+  assert.equal(uzletaggal('oxygen', 'AKCIÓS Hajkamerás vizsgálat'), 'oxigénterápia akciós Hajkamerás vizsgálat');
+  assert.equal(uzletaggal('laser', 'Ingyenes konzultáció'), 'szőrtelenítés ingyenes konzultáció');
+  const f = { token: 'abcdef0123', uzletag: 'oxygen', allapot: 'lemondva', fiok: 'mosaic-oxigen', id: 'x', kezdet: helyiEpoch(2026, 11, 2, 17, 0), szolgaltatas: 'AKCIÓS Hajkamerás vizsgálat', salonicUrl: null };
+  const u = new URL(ujFoglalasUrl(f));
+  assert.equal(u.pathname, '/oxigenterapia-budapest');
+  assert.equal(u.searchParams.get('booking'), '1'); assert.equal(u.searchParams.get('business'), 'oxygen'); assert.equal(u.searchParams.get('service'), 'AKCIÓS Hajkamerás vizsgálat');
+  assert.match(ujFoglalasUrl({ ...f, uzletag: 'pmu' }), /sminktetovalas-budapest#foglalo$/);
+  const html = await foglalasOldal(f).text();
+  assert.ok(html.includes('booking=1&amp;business=oxygen'), 'a gomb a motort nyitja');
+  assert.ok(html.includes('Oxigénterápia akciós Hajkamerás vizsgálat') && !html.includes('aKCI'));
+  assert.match(html, /\.kicsi \{[^}]*text-align: center/);
+});
