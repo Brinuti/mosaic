@@ -24,4 +24,16 @@ külső fiók módosítása nincs. A/B-szétosztás (forgalom-felosztás) nem k�
 Nem került vendégadat a repóba. A slim-videók új, semleges borítóin csak a vendég keresztneve áll (mint eddig), idézet nélkül; a fájlnevekben nincs név.
 
 ## Eredmények
-EREDMENYEK
+| Teszt | Eredmény |
+|---|---|
+| `tools/uj-b-teszt.mjs` (új; 19 B-oldal, asztali + iPhone 13) | 1042 ellenőrzés, 0 hiba: rejtettség (noindex, nincs canonical, nincs a sitemapben), egy h1, alt, horgonyok, minden kép betölt, nincs vízszintes görgetés 360–1920 px között, nincs üres doboz (asztalon), a mobil hős sorrendje, a ragadós sáv felirata egy-egy sorban, a belső linkek élnek, minden foglaló-gomb megnyitja a foglalót, az előválasztás a gomb szerint (1 / 2 / 3 piercing, 2 személynek, a gomb típusa), a foglalásindítás mérése pontosan 1-szer, a kontroll- / garancia-űrlap nyitása 0-szor; a TikTok-B-n nincs tiltott szó |
+| `tools/uj-oldalak-teszt.mjs` (mind) | 174 oldal, 5729 ellenőrzés, 0 hiba (az A-oldalak változatlanok) |
+| `tools/uj-oldalak-teszt.mjs --forras` | 1224 ellenőrzés, 0 hiba |
+| `tools/uj-fooldal-teszt.mjs` | minden rendben (102 ellenőrzés) |
+| `tools/motor-tipus-teszt.mjs` / `--mobil` | minden rendben (120 / 124 ellenőrzés) |
+| `tools/motor-teszt.mjs` / `--mobil`, `tools/motor-formazas-teszt.mjs` | minden rendben (26 / 26 / 90 ellenőrzés) |
+| Akció-oldal csomag-gombjai (Playwright, asztali + iPhone 13) | minden rendben (12 ellenőrzés) |
+| `tools/meres-teszt.mjs` (éles domainnév, adatküldés nélkül) | az első futáson 1 hiba: a GTM-T9GR4JCK szkript letöltését a próba nem pontosan egyszer látta (külső letöltés a proxyn át); az újrafuttatás: minden rendben (85 ellenőrzés). A mérőkód nem változott. |
+
+A képernyőképeket (1440 px és 390 px, minden B-oldal) szakaszonként átnéztem; javítva: üres dobozok (allergia-videó kompakt dobozban, „Hova szúrjuk?” lista, „Kinek jó?”),
+a főoldal „Hogy zajlik?” képe (a levágott fali logó helyett munka közbeni fotó), a ragadós sáv sortörései, ismétlődő szavak (Csomagárak, „nem orvosi kezelés”).
