@@ -12,8 +12,8 @@ import { keresztnev } from './nevek.js';
 import { szegmensek as szegmensCimkek, UZLETAGAK, tisztaNev, ismertSzolgaltatas } from './uzletag.js';
 import { munkatarsTipus, ertelmezMunkatars, belsoBlokk, nevNorm, munkatarsKulcs, szolgKulcs, beesoNev } from './munkatars.js';
 import { UUID_RE } from './elo.js';
-import { tervez, keres, KESES_PLAFON, surgos } from './terv.js';
-import { ertekek, smsKirajzol, emailKirajzol, feladatKirajzol, ALAP_URL } from './render.js';
+import { tervez, keres, KESES_PLAFON, surgos, esemenyIdk, esemenyUzenet } from './terv.js';
+import { ertekek, smsKirajzol, emailKirajzol, feladatKirajzol, ALAP_URL, velemenyKulcsok } from './render.js';
 import { helyi, helyiEpoch } from './ido.js';
 
 const NAP = 86400;
@@ -55,8 +55,9 @@ async function naplo(db, ido, tipus, foglalasId, forras, reszlet) {
 
 // ---- terv mentese ------------------------------------------------------------------------------------------------------------------------------
 const ujraIndithato = new Set(['fuggoben', 'torolve', 'kihagyva', 'hiba']);
-/** A kiszamolt terv beirasa a kuldesek-be. reset: azok az uzenet-tipusok, amelyek mar elkuldve is ujra mennek (athelyezes: t72, t24). */
-export async function tervMent(db, foglalasId, terv, { reset = [] } = {}) {
+/** A kiszamolt terv beirasa a kuldesek-be. reset: azok az uzenet-tipusok, amelyek mar elkuldve is ujra mennek (athelyezes: t72, t24).
+ *  uzletag: az esemeny-uzenetek (lemondas / athelyezes / no-show; MOSAIC: COMMON-*, MP: sajat) felismeresehez - ezeket az ujratervezes nem torli. */
+export async function tervMent(db, foglalasId, terv, { reset = [], uzletag = null } = {}) {
   const letezo = new Map((await mind(db, 'SELECT uzenet_id, allapot FROM kuldesek WHERE foglalas_id = ?1', foglalasId)).map((r) => [r.uzenet_id, r.allapot]));
   const tervezett = new Set(terv.terv.map((p) => p.uzenet_id));
   const stmts = [];
@@ -65,7 +66,7 @@ export async function tervMent(db, foglalasId, terv, { reset = [] } = {}) {
     if (a === undefined) stmts.push(keszit(db, "INSERT INTO kuldesek (foglalas_id, uzenet_id, csatorna, esedekes, allapot) VALUES (?1, ?2, ?3, ?4, 'fuggoben')", foglalasId, p.uzenet_id, p.csatorna, p.esedekes));
     else if (ujraIndithato.has(a) || reset.includes(p.tipus)) stmts.push(keszit(db, "UPDATE kuldesek SET esedekes = ?3, allapot = 'fuggoben', ok = NULL, probalkozas = 0, elkuldve = NULL, hiba = NULL WHERE foglalas_id = ?1 AND uzenet_id = ?2", foglalasId, p.uzenet_id, p.esedekes));
   }
-  for (const [id, a] of letezo) if (a === 'fuggoben' && !tervezett.has(id) && !id.startsWith('COMMON-')) stmts.push(keszit(db, "UPDATE kuldesek SET allapot = 'torolve', ok = 'ujratervezes' WHERE foglalas_id = ?1 AND uzenet_id = ?2", foglalasId, id));
+  for (const [id, a] of letezo) if (a === 'fuggoben' && !tervezett.has(id) && !esemenyUzenet(uzletag, id)) stmts.push(keszit(db, "UPDATE kuldesek SET allapot = 'torolve', ok = 'ujratervezes' WHERE foglalas_id = ?1 AND uzenet_id = ?2", foglalasId, id));
   for (const k of terv.kihagyva) if (!letezo.has(k.uzenet_id)) stmts.push(keszit(db, "INSERT OR IGNORE INTO kuldesek (foglalas_id, uzenet_id, csatorna, esedekes, allapot, ok) VALUES (?1, ?2, ?3, 0, 'kihagyva', ?4)", foglalasId, k.uzenet_id, k.csatorna || 'sms', k.ok));
   if (stmts.length) await db.batch(stmts);
 }
@@ -83,11 +84,20 @@ export function nemJelentIdo(alap, kezdet) {
 const NEM_JELENT_MEG_JELZES = /nem\s*jelent\s*meg|nem\s*j[öo]tt\s*el|nem\s*[ée]rkezett\s*meg|no[\s-]*show/i;
 
 async function azonnaliUzenetek(db, foglalasId, uzenetIdk, most) {
-  const stmts = uzenetIdk.map((id) => keszit(db, "INSERT OR IGNORE INTO kuldesek (foglalas_id, uzenet_id, csatorna, esedekes, allapot) VALUES (?1, ?2, ?3, ?4, 'fuggoben')", foglalasId, id, /-EMAIL(-|$)/.test(id) ? 'email' : 'sms', most));
+  const stmts = uzenetIdk.map((id) => keszit(db, "INSERT OR IGNORE INTO kuldesek (foglalas_id, uzenet_id, csatorna, esedekes, allapot) VALUES (?1, ?2, ?3, ?4, 'fuggoben')", foglalasId, id, /-EMAIL(-|#|$)/.test(id) ? 'email' : 'sms', most));
   if (stmts.length) await db.batch(stmts);
 }
 
 /** A vendeg (telefon vagy e-mail) adott allapotu foglalasa az uzletagban, adott idopontra. lemondvaOta: lemondott foglalasnal ennyi ideje (epoch) modosult legkorabban. */
+/** Az athelyezes-uzenetek (sorszamozva: <id>#<n>, mert egy foglalas tobbszor is athelyezheto) kozul hany ment mar a foglalasra (az uzletag elso athelyezes-uzenete szerint). */
+async function athelyezesSzam(db, foglalasId, uzletag) {
+  const idk = esemenyIdk(uzletag, 'athelyezve');
+  const elsoId = idk.find((id) => !/-EMAIL/.test(id)) || idk[0]; // az SMS szamol (a munkatarsi modositasnal csak az SMS megy)
+  return (await mind(db, 'SELECT uzenet_id FROM kuldesek WHERE foglalas_id = ?1', foglalasId)).filter((r) => String(r.uzenet_id).split('#')[0] === elsoId).length;
+}
+/** Az athelyezes azonnali uzenetei (MOSAIC: COMMON-RESCHEDULE-SMS#n; MP: SMS + e-mail). */
+const athelyezesUzenetek = (uzletag, n) => esemenyIdk(uzletag, 'athelyezve').map((id) => `${id}#${n}`);
+
 async function vendegFoglalasa(db, uzletag, email, telefon, kezdet, allapot, lemondvaOta = 0) {
   if (!kezdet) return null;
   const sorok = await mind(db, 'SELECT * FROM foglalasok WHERE uzletag = ?1 AND kezdet = ?2 AND allapot = ?3 AND COALESCE(modositva, 0) >= ?4 ORDER BY letrehozva DESC', uzletag, kezdet, allapot, lemondvaOta);
@@ -143,7 +153,7 @@ async function feldolgoz(db, cfg, e, forras, most, alapIdo = most) {
   const telefon = normalizal(e.telefonNyers);
   const id = e.foglalasId || szintetikusId(e.uzletag, e.email, telefon, e.kezdet);
   const teszt = tesztVendeg(cfg, { email: e.email, nev: e.nev, telefon }) ? 1 : 0;
-  const szeg = szegmensCimkek(e.uzletag, e.szolgaltatas);
+  const szeg = szegmensCimkek(e.uzletag, e.szolgaltatas, e.munkatars);
   const nevek = { nev: e.nev || null, keresztnev: keresztnev(e.nev), telefon, email: e.email || null };
   const fiok = e.fiok || UZLETAGAK[e.uzletag].fiok;
   const tervAlap = { uzletag: e.uzletag, szegmensek: szeg, kezdet: e.kezdet };
@@ -165,21 +175,21 @@ async function feldolgoz(db, cfg, e, forras, most, alapIdo = most) {
       if (!volt) { const b = await beszur('aktiv'); ujSor = !(b.meta && b.meta.changes === 0); }
       else await futtat(db, "UPDATE foglalasok SET allapot = 'aktiv', kezdet = ?2, letrehozva = ?3, szolgaltatas = ?4, szegmens = ?5, munkatars = ?6, megerositve = NULL WHERE id = ?1", id, e.kezdet, most, e.szolgaltatas, szeg.join(','), e.munkatars || null);
       if (!volt && !ujSor) eredmeny = { ok: true, tipus: 'foglalt', foglalasId: id, duplikalt: true }; // egy egyideju masik level mar felvette
-      else { await tervMent(db, id, tervez(tervAlap, alapIdo)); eredmeny = { ok: true, tipus: 'foglalt', foglalasId: id }; }
+      else { await tervMent(db, id, tervez(tervAlap, alapIdo), { uzletag: e.uzletag }); eredmeny = { ok: true, tipus: 'foglalt', foglalasId: id }; }
     }
   } else if (e.tipus === 'athelyezve') {
     let volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', id);
     if (!volt && e.regiKezdet) volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', szintetikusId(e.uzletag, e.email, telefon, e.regiKezdet));
     if (!volt && e.regiKezdet) volt = await vendegFoglalasa(db, e.uzletag, e.email, telefon, e.regiKezdet, 'aktiv');
     const fid = volt ? volt.id : id;
-    const voltAtfoglalas = volt ? !!(await elso(db, "SELECT 1 AS x FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id LIKE 'COMMON-RESCHEDULE-%' LIMIT 1", fid)) : false;
+    const voltAtfoglalas = volt ? (await athelyezesSzam(db, fid, e.uzletag)) > 0 : false;
     if (volt && volt.allapot === 'aktiv' && volt.kezdet === e.kezdet && voltAtfoglalas) eredmeny = { ok: true, tipus: 'athelyezve', foglalasId: fid, duplikalt: true }; // a masodik (ketszer erkezo) level
     else {
       if (volt) await futtat(db, "UPDATE foglalasok SET allapot = 'aktiv', kezdet = ?2, szolgaltatas = ?3, szegmens = ?4, munkatars = ?5, modositva = ?6, megerositve = NULL WHERE id = ?1", fid, e.kezdet, e.szolgaltatas, szeg.join(','), e.munkatars || null, most);
       else await beszur('aktiv');
-      await tervMent(db, fid, tervez(tervAlap, alapIdo, { athelyezes: true }), { reset: ['t72', 't24'] });
-      const n = (await elso(db, "SELECT COUNT(*) AS n FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id LIKE 'COMMON-RESCHEDULE-%'", fid)).n;
-      await azonnaliUzenetek(db, fid, [`COMMON-RESCHEDULE-SMS#${n + 1}`], alapIdo);
+      await tervMent(db, fid, tervez(tervAlap, alapIdo, { athelyezes: true }), { reset: ['t72', 't24'], uzletag: e.uzletag });
+      const n = await athelyezesSzam(db, fid, e.uzletag);
+      await azonnaliUzenetek(db, fid, athelyezesUzenetek(e.uzletag, n + 1), alapIdo);
       eredmeny = { ok: true, tipus: 'athelyezve', foglalasId: fid, ismeretlenVolt: !volt };
     }
   } else if (e.tipus === 'lemondva' && !cfg.noShowAuto && ((NEM_JELENT_MEG_JELZES.test(e.lemondasOka || '') || e.kezdet <= alapIdo) && alapIdo - e.kezdet <= 3 * NAP)) {
@@ -193,14 +203,15 @@ async function feldolgoz(db, cfg, e, forras, most, alapIdo = most) {
     if (!volt) volt = await elso(db, 'SELECT * FROM foglalasok WHERE id = ?1', szintetikusId(e.uzletag, e.email, telefon, e.kezdet));
     if (!volt) volt = await vendegFoglalasa(db, e.uzletag, e.email, telefon, e.kezdet, 'aktiv') || await vendegFoglalasa(db, e.uzletag, e.email, telefon, e.kezdet, 'nem_jelent_meg', most - 900);
     const fid = volt ? volt.id : id;
-    const voltJelzes = volt ? !!(await elso(db, "SELECT 1 AS x FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id = 'COMMON-NOSHOW-SMS' LIMIT 1", fid)) : false;
+    const noShowIdk = esemenyIdk(e.uzletag, 'nem_jelent_meg');
+    const voltJelzes = volt ? !!(await elso(db, 'SELECT 1 AS x FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id = ?2 LIMIT 1', fid, noShowIdk[0])) : false;
     if (volt && volt.allapot === 'nem_jelent_meg' && voltJelzes) eredmeny = { ok: true, tipus: 'nem_jelent_meg', foglalasId: fid, duplikalt: true };
     else {
       if (volt) {
         await futtat(db, "UPDATE foglalasok SET allapot = 'nem_jelent_meg', modositva = ?2 WHERE id = ?1", fid, most);
         await futtat(db, "UPDATE kuldesek SET allapot = 'torolve', ok = 'nem_jelent_meg' WHERE foglalas_id = ?1 AND allapot IN ('fuggoben', 'kuldes')", fid);
       } else await beszur('nem_jelent_meg');
-      await azonnaliUzenetek(db, fid, ['COMMON-NOSHOW-SMS', 'COMMON-NOSHOW-EMAIL'], nemJelentIdo(alapIdo, e.kezdet));
+      await azonnaliUzenetek(db, fid, noShowIdk, nemJelentIdo(alapIdo, e.kezdet));
       eredmeny = { ok: true, tipus: 'nem_jelent_meg', foglalasId: fid, ismeretlenVolt: !volt };
     }
   } else { // lemondva
@@ -209,14 +220,15 @@ async function feldolgoz(db, cfg, e, forras, most, alapIdo = most) {
     // a Salonic lemondas-ertesitoje nem tartalmazza a foglalas azonositojat: a vendeg (telefon / e-mail) + uzletag + idopont alapjan keressuk meg
     if (!volt) volt = await vendegFoglalasa(db, e.uzletag, e.email, telefon, e.kezdet, 'aktiv') || await vendegFoglalasa(db, e.uzletag, e.email, telefon, e.kezdet, 'lemondva', most - 900);
     const fid = volt ? volt.id : id;
-    const voltLemondas = volt ? !!(await elso(db, "SELECT 1 AS x FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id = 'COMMON-CANCEL-SMS' LIMIT 1", fid)) : false;
+    const lemondasIdk = esemenyIdk(e.uzletag, 'lemondva');
+    const voltLemondas = volt ? !!(await elso(db, 'SELECT 1 AS x FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id = ?2 LIMIT 1', fid, lemondasIdk[0])) : false;
     if (volt && volt.allapot === 'lemondva' && voltLemondas) eredmeny = { ok: true, tipus: 'lemondva', foglalasId: fid, duplikalt: true };
     else {
       if (volt) {
         await futtat(db, "UPDATE foglalasok SET allapot = 'lemondva', modositva = ?2 WHERE id = ?1", fid, most);
         await futtat(db, "UPDATE kuldesek SET allapot = 'torolve', ok = 'lemondva' WHERE foglalas_id = ?1 AND allapot IN ('fuggoben', 'kuldes')", fid);
       } else await beszur('lemondva');
-      if (e.kezdet > alapIdo) await azonnaliUzenetek(db, fid, ['COMMON-CANCEL-SMS', 'COMMON-CANCEL-EMAIL'], alapIdo); // a regen elmult idopontra nincs lemondas-visszaigazolas
+      if (e.kezdet > alapIdo) await azonnaliUzenetek(db, fid, lemondasIdk, alapIdo); // a regen elmult idopontra nincs lemondas-visszaigazolas
       eredmeny = { ok: true, tipus: 'lemondva', foglalasId: fid, ismeretlenVolt: !volt };
     }
   }
@@ -349,10 +361,10 @@ async function munkatarsFeldolgoz(db, cfg, level, tipus, forras, most, alapIdo, 
   const sms = e.kezdet - alapIdo <= 72 * 3600; // D4: "az uj idopontod" SMS csak bizonyitott modositasnal es 72 oran belul
   if (figyel) { await veg('ingest:figyel:szalon_athelyezte', f.id, { ...resz, sms }); return { ok: true, tipus: 'figyel', volna: 'szalon_athelyezte', foglalasId: f.id, valtozas: false }; }
   await futtat(db, "UPDATE foglalasok SET kezdet = ?2, modositva = ?3, megerositve = NULL WHERE id = ?1 AND allapot = 'aktiv'", f.id, e.kezdet, most);
-  await tervMent(db, f.id, tervez({ uzletag: f.uzletag, szegmensek: String(f.szegmens || '').split(',').filter(Boolean), kezdet: e.kezdet }, alapIdo, { athelyezes: true }), { reset: ['t72', 't24'] });
+  await tervMent(db, f.id, tervez({ uzletag: f.uzletag, szegmensek: String(f.szegmens || '').split(',').filter(Boolean), kezdet: e.kezdet }, alapIdo, { athelyezes: true }), { reset: ['t72', 't24'], uzletag: f.uzletag });
   if (sms) {
-    const n = (await elso(db, "SELECT COUNT(*) AS n FROM kuldesek WHERE foglalas_id = ?1 AND uzenet_id LIKE 'COMMON-RESCHEDULE-%'", f.id)).n;
-    await azonnaliUzenetek(db, f.id, [`COMMON-RESCHEDULE-SMS#${n + 1}`], alapIdo);
+    const n = await athelyezesSzam(db, f.id, f.uzletag);
+    await azonnaliUzenetek(db, f.id, athelyezesUzenetek(f.uzletag, n + 1).filter((id) => !/-EMAIL/.test(id)), alapIdo); // munkatarsi modositas: csak az SMS (D4)
   }
   await veg('ingest:szalon_athelyezte', f.id, { ...resz, regi_kezdet: f.kezdet, sms });
   return { ok: true, tipus: 'szalon_athelyezte', foglalasId: f.id, valtozas: true, sms };
@@ -363,13 +375,15 @@ async function munkatarsFeldolgoz(db, cfg, level, tipus, forras, most, alapIdo, 
  * Az esedekes uzenetek kikuldese. kuldok: { sms(adat), email(adat), egyenleg?() }. Visszaad egy osszegzest.
  * @param {{foglalasId?:string, limit?:number, base?:string}} [opc]  foglalasId: csak az o uzenetei (a befogadas utan azonnal)
  */
-const ELO_TIPUSOK = new Set(['t72', 't24', 'tartalom']); // a T0 / lemondas / athelyezes uzenetek egy allapotvaltast koveto azonnali uzenetek: nincs ertelme elo ellenorzesnek
+const ELO_TIPUSOK = new Set(['t72', 't24', 'tartalom', 'elott_ora']); // a T0 / lemondas / athelyezes uzenetek egy allapotvaltast koveto azonnali uzenetek: nincs ertelme elo ellenorzesnek
 const ELO_PLAFON = 10; // tickenkent legfeljebb ennyi Salonic-oldal lekeres (parhuzamosan; a tobbi a mostani modon megy)
 export async function tick(db, env, kuldok, most, opc = {}) {
   const cfg = beallitas(env);
   const base = opc.base || cfg.base;
   const ossz = { elkuldve: 0, kihagyva: 0, torolve: 0, hiba: 0, varakozik: 0 };
   const eloGyorsitotar = new Map(); const eloTorolt = new Set();
+  const velemenyTar = new Map(); // MP: a sablon velemeny-helyorzoinek szovege (D1 mp_velemenyek), tickenkent egyszer
+  let mpGoogle; // MP: a Google-velemenyek szama (opc.mpErtekeles), tickenkent legfeljebb egyszer
   const sorok = await mind(db,
     `SELECT k.id AS kid, k.foglalas_id, k.uzenet_id, k.csatorna, k.esedekes, k.probalkozas,
             f.uzletag, f.fiok, f.nev, f.keresztnev, f.telefon, f.email, f.szolgaltatas, f.szegmens, f.munkatars, f.kezdet, f.letrehozva, f.allapot, f.megerositve, f.token, f.teszt
@@ -438,18 +452,21 @@ export async function tick(db, env, kuldok, most, opc = {}) {
     if (claim.meta && claim.meta.changes === 0) continue;
 
     try {
-      const ert = ertekek(f, uz.csatorna === 'sms' ? 'sms' : 'email', { base, most });
+      const mp = r.uzletag === 'mp';
+      if (mp && uz.html && mpGoogle === undefined) { try { mpGoogle = opc.mpErtekeles ? await opc.mpErtekeles() : null; } catch { mpGoogle = null; } }
+      const velemenyek = mp && uz.html ? await velemenySzovegek(db, uz.html, velemenyTar) : undefined;
+      const ert = ertekek(f, uz.csatorna === 'sms' ? 'sms' : 'email', { base, most, googleVelemenyek: mpGoogle, velemenyek, mpBase: opc.mpBase });
       let azon;
       if (uz.csatorna === 'sms') {
         if (!r.telefon) { await lezar('kihagyva', 'nincs_telefon'); continue; }
         if (!/^\+36(20|30|31|50|70)\d{7}$/.test(r.telefon)) { await lezar('kihagyva', 'nem_magyar_mobil'); continue; }
         const ki = smsKirajzol(uz, ert);
-        const v = await kuldok.sms({ telefon: r.telefon, szoveg: ki.szoveg });
+        const v = await kuldok.sms({ telefon: r.telefon, szoveg: ki.szoveg, uzletag: r.uzletag });
         await lezar('elkuldve', null, { elkuldve: most, szolgaltato: v?.id, szegmens: ki.szegmens });
       } else if (uz.csatorna === 'email') {
         if (!r.email) { await lezar('kihagyva', 'nincs_email'); continue; }
         const ki = emailKirajzol(uz, ert, { surgos: tipus === 't0' && surgos(r.kezdet, r.letrehozva) });
-        const v = await kuldok.email({ to: r.email, targy: ki.targy, html: ki.html, szoveg: ki.szoveg, felado: UZLETAGAK[r.uzletag].nev, valasz: cfg.szalonEmail });
+        const v = await kuldok.email({ to: r.email, targy: ki.targy, html: ki.html, szoveg: ki.szoveg, felado: UZLETAGAK[r.uzletag].nev, valasz: UZLETAGAK[r.uzletag].email || cfg.szalonEmail, uzletag: r.uzletag });
         await lezar('elkuldve', null, { elkuldve: most, szolgaltato: v?.id });
       } else { // feladat: belso level a szalonnak
         const ki = feladatKirajzol(uz, ert, f);
@@ -464,6 +481,19 @@ export async function tick(db, env, kuldok, most, opc = {}) {
     }
   }
   return { ...ossz, feldolgozott: sorok.length };
+}
+
+/** A sablon {vélemény:kulcs} helyorzoinek szovege a D1 mp_velemenyek tablajabol (a valodi idezetek nincsenek a nyilvanos repoban). Hiba / hianyzo tabla: {} (a blokk kimarad). */
+async function velemenySzovegek(db, sablon, tar) {
+  const ki = {};
+  const hianyzo = velemenyKulcsok(sablon).filter((k) => { if (tar.has(k)) { if (tar.get(k)) ki[k] = tar.get(k); return false; } return true; });
+  if (hianyzo.length) {
+    let sorok = [];
+    try { sorok = await mind(db, `SELECT kulcs, szoveg, nev FROM mp_velemenyek WHERE kulcs IN (${hianyzo.map((_, i) => `?${i + 1}`).join(', ')})`, ...hianyzo); } catch { sorok = []; }
+    const m = new Map(sorok.map((x) => [x.kulcs, x]));
+    for (const k of hianyzo) { const v = m.get(k) || null; tar.set(k, v); if (v) ki[k] = v; }
+  }
+  return ki;
 }
 
 // ---- napi karbantartas -------------------------------------------------------------------------------------------------------------------------

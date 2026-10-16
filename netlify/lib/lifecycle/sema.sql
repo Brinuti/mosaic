@@ -55,3 +55,28 @@ CREATE TABLE IF NOT EXISTS beallitasok (
   ertek TEXT,
   frissitve INTEGER
 );
+
+-- Medical Piercing (uzletag 'mp'): a levelek valodi Google-velemeny idezetei. NEM a nyilvanos repoban vannak: a sablon {vélemény:<kulcs>} helyorzoje
+-- kuldeskor innen toltodik ki (render.js htmlKitolt); ha a sor hianyzik, a velemeny-blokk kimarad. Feltoltes: wrangler d1 execute (kezzel / a tulajdonos jovahagyasaval).
+CREATE TABLE IF NOT EXISTS mp_velemenyek (
+  kulcs TEXT PRIMARY KEY,                   -- a sablon kulcsa: v01 ... v24 (medicalpiercing/tools/levelek/general.py)
+  szoveg TEXT,                              -- a velemeny szo szerint
+  nev TEXT                                  -- a velemenyezo neve, ahogy a Google-on latszik
+);
+
+-- Medical Piercing (uzletag 'mp'): a kimeno levelek sora. A motor (kuldok.js mpSorba) ide irja a kesz levelet, a medicalpiercing Pages-projekt
+-- POST /api/lifecycle-kimeno vegpontja (medicalpiercing/lib/lifecycle-kimeno.js) a sajat Gmail-fiokjabol kuldi ki. Kulcs / jelszo itt nincs.
+-- elkuldve: NULL = var, < 0 = folyamatban (-<felvetel ideje>), > 0 = elkuldve (unix mp); probak: legfeljebb 5.
+CREATE TABLE IF NOT EXISTS mp_kimeno (
+  id TEXT PRIMARY KEY,
+  cimzett TEXT NOT NULL,
+  targy TEXT NOT NULL,
+  html TEXT NOT NULL,
+  szoveg TEXT,
+  valasz TEXT,
+  letrehozva INTEGER NOT NULL,
+  elkuldve INTEGER,
+  hiba TEXT,
+  probak INTEGER DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_mp_kimeno_var ON mp_kimeno (elkuldve, letrehozva);

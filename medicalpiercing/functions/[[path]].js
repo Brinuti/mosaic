@@ -8,6 +8,11 @@
 //   a lapok ebbol frissitik a datumokat (assets/js/klon.js 10.);
 // - GET /api/ertekeles: a Google-ertekeles (pontszam, vélemenyek szama) a Trustindex fooldali widgetjebol (lib/ertekeles.js),
 //   a kategoria-oldalak hosenek ertekeles-sora ebbol frissul (assets/js/uj-fooldal.js 4c.).
+// - GET /f/<kod>, /m/<kod>: "A foglalasod" oldal (lib/foglalasom.js) a foglalas -> megjelenes rendszer kozos D1-jebol (LIFECYCLE_DB), csak az MP-foglalasok;
+//   /f/minta: bemutato mintaadatokkal;
+// - POST /api/lifecycle-kimeno: a foglalas -> megjelenes rendszer (Mosaic-projekt) MP-leveleinek kimeno sora: a motor a kozos D1 mp_kimeno tablajaba
+//   irja a levelet, ez ennek a projektnek a Gmail-fiokjabol (SMTP_PASS) kuldi ki (lib/lifecycle-kimeno.js). Kulcs nincs (a tulajdonos dontese):
+//   csak a motor altal sorba tett level mehet ki, a valasz csak darabszam.
 //
 // Csak a lapokra (es a Salonic stiluslapjara: /assets/salonic/) fut (dist/_routes.json): a kepek, betuk, stilusok, szkriptek es
 // videok kozvetlenul a Cloudflare tarhelyerol jonnek, fuggvenyhivas nelkul.
@@ -22,6 +27,8 @@ import { TABLAZAT_CSV, osszesSor } from '../lib/kitelepulesek.js';
 import { TRUSTINDEX_TARTALOM, ertekelesAdat } from '../lib/ertekeles.js';
 import { SALONIC_ELOTAG, salonicFajl } from '../lib/salonic-css.js';
 import { UJ_ELES } from '../lib/uj-eles.js';
+import { foglalasom } from '../lib/foglalasom.js';
+import { kimenoFeldolgoz } from '../lib/lifecycle-kimeno.js';
 
 // Minden mas host (*.pages.dev elonezetek) probacim: noindex + tilto robots.txt.
 const ELES_HOST = /^(www\.)?medicalpiercing\.hu$/;
@@ -38,7 +45,12 @@ export async function onRequest(context) {
   if (request.method === 'POST' && url.pathname === '/api/urlap') return urlap(context);
   if (request.method === 'GET' && url.pathname === '/api/kitelepulesek') return kitelepulesek();
   if (request.method === 'GET' && url.pathname === '/api/ertekeles') return ertekeles();
+  if (url.pathname === '/api/lifecycle-kimeno') return request.method === 'POST' ? lifecycleKimenoVegpont(context) : new Response('POST kell', { status: 405, headers: { allow: 'POST' } });
   if (request.method !== 'GET' && request.method !== 'HEAD') return context.next();
+  if (/^\/[fm]\//.test(url.pathname) && url.hostname !== 'medicalpiercing.hu') { // "A foglalasod" (a statikus oldalak elott; a gyoker domain lent www-re iranyit)
+    const v = await foglalasom(request, context.env);
+    if (v) return v;
+  }
   // a Salonic adatlap stiluslapja: a bongeszo mindig ellenorzi (lib/salonic-css.js)
   if (url.pathname.startsWith(SALONIC_ELOTAG)) return salonicFajl(request, context.env.ASSETS);
 
@@ -157,6 +169,34 @@ async function urlap(context) {
     return new Response('kuldesi hiba', { status: 502 });
   }
   return new Response('ok');
+}
+
+// ---- a foglalas -> megjelenes rendszer MP-leveleinek kimeno sora (lib/lifecycle-kimeno.js) -------------------------------------------------------
+const valaszJson = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+export async function lifecycleKimenoVegpont(context) {
+  const { env } = context;
+  if (!env.LIFECYCLE_DB) return valaszJson({ hiba: 'nincs_db' }, 503);
+  if (!env.SMTP_PASS) { console.log('lifecycle-kimeno: nincs SMTP_PASS, a sor marad'); return valaszJson({ hiba: 'nincs SMTP_PASS' }, 503); }
+  const SMTP_USER = env.SMTP_USER || 'medicalpiercing.hu@gmail.com';
+  const port = Number(env.SMTP_PORT || 465);
+  let posta = null;
+  const kuld = async ({ to, subject, html, text, reply }) => {
+    if (!posta) {
+      posta = await WorkerMailer.connect({
+        host: env.SMTP_HOST || 'smtp.gmail.com', port, secure: port === 465, startTls: port !== 465,
+        credentials: { username: SMTP_USER, password: String(env.SMTP_PASS).replace(/\s+/g, '') }, authType: 'plain',
+      });
+    }
+    try {
+      await posta.send({ from: { name: 'Medical Piercing', email: SMTP_USER }, to, reply: reply || SMTP_USER, subject, html, ...(text ? { text } : {}) });
+    } catch (e) { try { await posta.close(); } catch { /* mar lezarult */ } posta = null; throw e; }
+  };
+  try {
+    return valaszJson(await kimenoFeldolgoz(env.LIFECYCLE_DB, kuld));
+  } catch (e) {
+    console.error('lifecycle-kimeno: hiba', e && e.message);
+    return valaszJson({ hiba: 'feldolgozasi hiba' }, 500);
+  } finally { if (posta) { try { await posta.close(); } catch { /* mar lezarult */ } } }
 }
 
 function base64(puffer) {

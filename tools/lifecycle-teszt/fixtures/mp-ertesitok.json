@@ -1,0 +1,15 @@
+{
+  "_leiras": "Medical Piercing Salonic-ertesitok mintai (kitalalt vendeg, a Mosaic-mintak - seged.mjs foglaltLevel / lemondottLevel - szerkezete szerint: customer=medicalpiercing, MP-szolgaltatas es -munkatars). A {DATUM} helyere a teszt irja a datumot.",
+  "foglalt": {
+    "uzenetId": "mp-g1",
+    "targy": "Új online foglalás érkezett: 1 db Fejfájás / Migrén Piercing",
+    "kuldo": "Medical Piercing <app@salonic.hu>",
+    "html": "<html><head><style>.x{}</style></head><body><table><tr><td>Új online foglalás érkezett az alábbi adatokkal, melyet a rendszer automatikusan jóváhagyott:</td></tr><tr><td>Foglaló adatai:</td></tr><tr><td>Új páciens - Még nem volt foglalása!</td></tr><tr><td>Név: TESZT Elek</td></tr><tr><td>Mobiltelefonszám: 06301234567</td></tr><tr><td>E-mail cím: teszt.elek@example.com</td></tr><tr><td>Időpont adatok:</td></tr><tr><td>Szolgáltatás: 1 db Fejfájás / Migrén Piercing</td></tr><tr><td>Munkatárs: Kovács Gabriella</td></tr><tr><td>Kezdő dátum: {DATUM}</td></tr>\n<tr><td><a href=\"https://app.salonic.hu/backend/signin/?customer=medicalpiercing&amp;redirect=%2Fcalendar%2FshowBooking%2F%3FbookingId%3D{UUID}\">Foglalás megtekintése</a></td></tr>\n<tr><td>Magyar fejlesztésű online naptár és időpontfoglaló rendszer</td></tr></table></body></html>"
+  },
+  "lemondott": {
+    "uzenetId": "mp-l1",
+    "targy": "Foglalás lemondás - TESZT Elek - 1 db Fejfájás / Migrén Piercing",
+    "kuldo": "Medical Piercing <app@salonic.hu>",
+    "html": "<html><head><style>.x{}</style></head><body><table><tr><td>Az alábbi időpontot a vendég lemondta:</td></tr><tr><td>Lemondás oka: {DATUM}</td></tr><tr><td>Szolgáltatás: 1 db Fejfájás / Migrén Piercing</td></tr><tr><td>Munkatárs: Kovács Gabriella</td></tr><tr><td>Foglaló adatai:</td></tr><tr><td>Név: TESZT Elek</td></tr><tr><td>Mobiltelefonszám: 06301234567</td></tr><tr><td>E-mail cím: teszt.elek@example.com</td></tr>\n<tr><td>Magyar fejlesztésű online naptár és időpontfoglaló rendszer</td></tr></table></body></html>"
+  }
+}

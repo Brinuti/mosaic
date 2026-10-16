@@ -8,8 +8,8 @@ import { HELYORZOK, CSATORNAK, MIKOR_TIPUSOK, SZEGMENSEK, BLOKK_KULCSOK, BLOKK_F
 import { VELEMENYEK } from '../../netlify/lib/lifecycle/katalog/velemenyek.js';
 import { smsTomorit } from '../../netlify/lib/lifecycle/render.js';
 
-const UZLETAGAK = ['headspa', 'hair', 'oxygen', 'laser', 'pmu'];
-const ELOTAG = { headspa: 'HS', hair: 'HAIR', oxygen: 'OX', laser: 'LASER', pmu: 'PMU' };
+const UZLETAGAK = ['headspa', 'hair', 'oxygen', 'laser', 'pmu', 'mp'];
+const ELOTAG = { headspa: 'HS', hair: 'HAIR', oxygen: 'OX', laser: 'LASER', pmu: 'PMU', mp: 'MP' };
 const KIEGESZITO_ELOTAG = { pmu: ['PMU-KONZ'] }; // a dokumentum tovabbi azonositoi (pl. PMU-KONZ-EMAIL-01)
 // legrosszabb eset: milyen hosszu lehet egy helyorzo kitoltve (SMS-hosszhoz)
 const LEGHOSSZABB = {
@@ -19,7 +19,9 @@ const LEGHOSSZABB = {
   'módosítás_link': 'https://www.mosaicheadspa.hu/f/0123456789', 'megerősítés_link': 'https://www.mosaicheadspa.hu/m/0123456789',
   'foglalás_link': 'https://www.mosaicheadspa.hu/lezeres-szortelenites-budapest', 'navigáció_link': 'https://www.mosaicheadspa.hu/n', 'eredmények_link': 'https://www.mosaicheadspa.hu/x',
   'videó_link': 'https://www.mosaicheadspa.hu/x', 'új_dátum': 'szeptember 30. (csütörtök)', 'új_időpont': '16:30', 'telefon': '06 20 247 4444', 'cím': '1023 Budapest, Bécsi út 2.',
+  'helyszín_rövid': 'Újpesti rakpart 7', 'helyszín': '1137 Budapest, Újpesti rakpart 7., 5. emelet 25. (a Jászai Mari térnél)', 'látogatás_hossza': 'kb. 40–50 perc',
 };
+const MP_LEGHOSSZABB = { ...LEGHOSSZABB, 'foglalás_részletei_link': 'https://www.medicalpiercing.hu/f/0123456789', 'megerősítés_link': 'https://www.medicalpiercing.hu/m/0123456789', 'foglalás_link': 'https://www.medicalpiercing.hu/idopontfoglalas', 'szolgáltatás': '1 db Slim- / Étvágycsökkentő piercing' };
 
 // ---- kep / velemeny / video blokkok ellenorzese -------------------------------------------------------------------------------------------------
 const EMAIL_KEPEK = new URL('../../assets/email/', import.meta.url);
@@ -115,10 +117,12 @@ for (const [kulcs, kat] of [...Object.entries(KATALOG), ['kozos', KOZOS]]) {
       assert.ok(m.mikor && MIKOR_TIPUSOK.includes(m.mikor.tipus), `${hol}: ismeretlen mikor.tipus`);
       if (m.mikor.tipus === 'tartalom') {
         assert.equal(m.csatorna, 'email', `${hol}: tartalmi uzenet csak e-mail lehet`);
-        assert.ok(Number.isFinite(m.mikor.utan_napok) !== Number.isFinite(m.mikor.elott_napok), `${hol}: pontosan egy: utan_napok VAGY elott_napok`);
+        assert.equal([m.mikor.utan_napok, m.mikor.elott_napok, m.mikor.aranyban].filter(Number.isFinite).length, 1, `${hol}: pontosan egy: utan_napok VAGY elott_napok VAGY aranyban`);
+        if (Number.isFinite(m.mikor.aranyban)) assert.ok(m.mikor.aranyban > 0 && m.mikor.aranyban < 1, `${hol}: aranyban 0 es 1 kozott`);
         assert.ok(Number.isFinite(m.mikor.min_lead_nap), `${hol}: min_lead_nap kell`);
         assert.ok(Number.isFinite(m.sorrend), `${hol}: sorrend kell`);
       }
+      if (m.mikor.tipus === 'elott_ora') assert.ok(Number.isFinite(m.mikor.ora) && m.mikor.ora > 0, `${hol}: elott_ora: ora kell`);
       if (m.mikor.tipus === 'feladat') assert.ok(Number.isFinite(m.mikor.elott_ora), `${hol}: elott_ora kell`);
       if (m.csatorna === 'feladat') assert.ok(['feladat', 'feladat_t0'].includes(m.mikor.tipus), `${hol}: a feladat mikor.tipusa feladat/feladat_t0`);
       for (const mezo of ['szegmensek', 'nem_szegmensek']) for (const s of m[mezo] || []) assert.ok(SZEGMENSEK.includes(s), `${hol}: ismeretlen szegmens (${s})`);
@@ -126,6 +130,14 @@ for (const [kulcs, kat] of [...Object.entries(KATALOG), ['kozos', KOZOS]]) {
       if (m.csatorna === 'sms') {
         assert.equal(typeof m.szoveg, 'string', `${hol}: SMS-hez szoveg kell`);
         assert.ok(!m.torzs && !m.targy, `${hol}: SMS-nek nincs torzse/targya`);
+      } else if (m.html !== undefined) { // kesz HTML-sablon (Medical Piercing): targy + elotag + html, torzs nelkul
+        assert.equal(kulcs, 'mp', `${hol}: kesz HTML-sablon csak a Medical Piercingnel (a MOSAIC-levelek a kozos keretben)`);
+        assert.ok(typeof m.targy === 'string' && typeof m.elotag === 'string' && typeof m.html === 'string' && !m.torzs, `${hol}: targy + elotag + html (torzs nelkul)`);
+        for (const h of [...m.html.matchAll(/\{([\p{L}_]+)\}/gu)].map((x) => x[1])) assert.ok(HELYORZOK[h], `${hol}: ismeretlen helyorzo a sablonban {${h}}`);
+        assert.equal((m.html.match(/<!--\?-->/g) || []).length, (m.html.match(/<!--\/\?-->/g) || []).length, `${hol}: feltetelt blokk nyitas / zaras`);
+        assert.ok(!/\{vélemény:/.test(m.html.replace(/\{vélemény:v\d{2}\}/g, '')), `${hol}: velemeny-helyorzo: {vélemény:vNN}`);
+        assert.ok(!/Itt egy valódi Google-vélemény|class="velem"/.test(m.html), `${hol}: valodi / minta velemeny-szoveg nem lehet a repoban, csak helyorzo`);
+        assert.ok(/medicalpiercing\.hu@gmail\.com/.test(m.html) && !/mosaic/i.test(m.html), `${hol}: MP-lablec, MOSAIC-adat nelkul`);
       } else {
         assert.equal(typeof m.targy, 'string', `${hol}: targy kell`);
         assert.ok(Array.isArray(m.torzs) && m.torzs.length > 0, `${hol}: torzs kell`);
@@ -157,7 +169,9 @@ for (const [kulcs, kat] of [...Object.entries(KATALOG), ['kozos', KOZOS]]) {
       }
       if (m.csatorna === 'sms') {
         assert.ok(!helyorzok(m.szoveg).some((h) => ['aktuális_ár', 'aktuális_ajánlat'].includes(h)), `${hol}: SMS-ben nincs ar/ajanlat`);
-        const kitoltve = smsTomorit(m.szoveg.replace(/\{([^{}]+)\}(?:-(ra|hoz|nak|ba|ban))?/g, (_, h, rag) => (LEGHOSSZABB[h] ?? '') + (rag ? 'hoz' : '')));
+        const hosszu = kulcs === 'mp' ? MP_LEGHOSSZABB : LEGHOSSZABB;
+        const kitoltve = smsTomorit(m.szoveg.replace(/\{([^{}]+)\}(?:-(ra|hoz|nak|ba|ban))?/g, (_, h, rag) => (hosszu[h] ?? '') + (rag ? 'hoz' : '')));
+        if (kulcs === 'mp') assert.ok(/ - Medical Piercing$/.test(m.szoveg), `${hol}: az MP-SMS vegen "- Medical Piercing"`);
         assert.ok(/^[\x20-\x7e]*$/.test(kitoltve), `${hol}: az SMS nem ekezet nelkuli: ${kitoltve}`);
         assert.ok([...kitoltve].length <= SMS_MAX_KARAKTER, `${hol}: az SMS tul hosszu, nem fer 1 szegmensbe (${[...kitoltve].length} > ${SMS_MAX_KARAKTER}): ${kitoltve}`);
       }
