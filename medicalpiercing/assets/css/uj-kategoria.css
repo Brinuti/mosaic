@@ -358,3 +358,16 @@
   .kat-elerh-akcio{justify-content:flex-start}
   .kat-elerh-terkep .terkepdoboz{min-height:220px}
 }
+
+/* --- Gabi tortenete (B oldal, 2026-10-16): video-beszamolok racsa, GYIK-link, vendegek tapasztalata --- */
+.kat-videok{display:block;text-align:center}
+.kat-videok .felirat{justify-content:center}
+.kat-video-racs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:18px 0 22px;padding:0;list-style:none}
+.kat-video-racs video{display:block;width:100%;height:auto;aspect-ratio:9/16;object-fit:cover;border-radius:16px;background:var(--slate);box-shadow:var(--sh-s)}
+.kat-gyiklink,.kat-tapasztalat{grid-template-columns:minmax(0,1fr)}
+.kat-tapasztalat .pipak{columns:2;column-gap:32px}
+.kat-tapasztalat .pipak li{break-inside:avoid}
+@media (max-width:760px){
+  .kat-video-racs{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .kat-tapasztalat .pipak{columns:1}
+}

@@ -324,10 +324,20 @@ const partial = (ROOT, nev, horgony) => {
 const KOZOS = { esc, IK, szovegLink, szovegTiszta, belso, csakLink, iframe, csomopont, partial };
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
+// a piercing-oldalakrol a regi, mar nem frissitett oldalakra mutato linkek lekerulnek (a szoveg marad), a tulajdonos kerese 2026-10-16;
+// a regi "3 piercing 2 araert" akcio helyett a mostani oszi akcio (ugyanaz, mint a menuben es az akcios savban)
+const REGI_OLDALAK = /^\/(?:migren|fejfajas)$/;
+function regiLinkLe(html) {
+  return html
+    .replace(/<a\b[^>]*\shref="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g, (m, h, t) => (REGI_OLDALAK.test(h.split(/[?#]/)[0]) ? t : m))
+    .replace(/<a\b[^>]*\shref="\/3-piercing-2-araert(?:-2)?"[^>]*>3 piercing 2 áráért! - AKCIÓ!<\/a>/g, '<a href="/3-piercing-2-araert-regi">Őszi akció »</a>');
+}
+
 export function oldalHtml(ROOT, adat, opciok = {}) {
   const c = ujKontextus(adat, opciok);
   // a kategoria-oldalak (migren / shenmen / klimax / slim) a fooldal stilusaban, a fooldal dobozaival (kategoria.mjs)
   const kat = opciok.fo === undefined && adat.tipus === 'oldal' ? kategoriaFo(ROOT, adat, c, KOZOS, { b: !!opciok.b }) : null;
+  if (kat) kat.html = regiLinkLe(kat.html);
   let szekciok = kat ? kat.html : opciok.fo !== undefined ? opciok.fo : adat.szekciok.map((s, i) => szekcio(s, i, c)).join('\n');
   if (!/<h1[\s>]/.test(szekciok)) szekciok = `<h1 class="sr">${esc(adat.cim)}</h1>\n` + szekciok;   // az oldalnak mindig van h1-e (a lathato cim hianyaban rejtett)
   // a kezzel irt oldalak (uj-oldalak/sajat/*.html: csapatunk, kapcsolat, ekszereink) a kategoria-oldalak szelessegevel es dobozaival
