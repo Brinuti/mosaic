@@ -114,73 +114,74 @@ def level(kod, mikor, kinek, targy, preheader, torzs, hero=None):
 
 # ---- T0 visszaigazolas -------------------------------------------------------------------------------
 def t0(d, bp):
-    varos_sor = '' if bp else f'<p>A {m(d["varos"].lower()+"i")} kitelepülésünk csak meghatározott napokon van, ezért ha bármi közbejönne, kérjük, minél előbb tedd át az időpontot – így a helyedet más is megkaphatja.</p>'
+    varos_sor = '' if bp else f'<p>{m(d["varos"]+"on")} csak meghatározott napokon vagyunk, ezért ha mégsem tudsz jönni, kérjük, minél előbb módosítsd az időpontodat – így a helyedet másnak is fel tudjuk ajánlani.</p>'
     kep = f'<a class="vid" href="{L["folyamat"]}"><img src="{K["video_szuras"]}" alt="Videó: így néz ki egy szúrás"></a>'
     return f'''<h1>Megvan az időpontod, {m(d["nev"])}!</h1>
 <p>Köszönjük, hogy minket választottál. Innentől nincs más dolgod, csak megérkezni – minden fontos részletet ide összegyűjtöttünk.</p>
 {foglalas_kartya(d)}{gombok(d)}{varos_sor}{LEPESEK}
 <p><b>Nem kell semmit hoznod.</b> Előtte egyél rendesen, és érkezz kb. 5 perccel korábban.</p>
 <h2>Nézd meg előre, hogyan zajlik</h2>{kep}
-<p><b>Garancia:</b> ha a piercing nálad nem váltja ki a várt hatást, munkadíj nélkül, csak az ékszer áráért helyezünk el egy megerősítő piercinget. A kontroll ingyenes. <a href="{L["garancia"]}">A garancia részletei</a></p>
+<p><b>Garancia:</b> ha nem azt tapasztalod, amit vártál, munkadíj nélkül, csak az ékszer áráért helyezünk el egy megerősítő piercinget. A kontroll ingyenes. <a href="{L["garancia"]}">A garancia részletei</a></p>
 {csapat() if bp else ''}{alairas(bp)}'''
 
 level('01-T0-visszaigazolas-BP', 'Azonnal a foglalás után (Salonic „Új időpont létrehozva” + „Sikeres foglalás” helyett)', 'Budapesti foglaló',
-      'Megvan az időpontod – okt. 23., 14:30 · Medical Piercing', 'Minden fontos részlet egy helyen – innentől csak meg kell érkezned.', t0(BP, True), K['szalon'])
+      'Visszaigazoltuk az időpontodat: okt. 23., 14:30', 'Minden fontos részlet egy helyen – innentől csak meg kell érkezned.', t0(BP, True), K['szalon'])
 level('02-T0-visszaigazolas-VIDEK', 'Azonnal a foglalás után (Salonic helyett)', 'Vidéki foglaló',
-      'Megvan az időpontod Miskolcon – nov. 3., 10:40', 'Cím, időpont és minden, ami fontos – egy helyen.', t0(VIDEK, False))
+      'Visszaigazoltuk az időpontodat Miskolcon: nov. 3., 10:40', 'Cím, időpont és minden, ami fontos – egy helyen.', t0(VIDEK, False))
 
 # ---- E1 piercing-specifikus --------------------------------------------------------------------------
 TIPUSOK = {
  'migren': dict(cim='migrén piercing', targy='Miért pont oda kerül a migrén piercinged?',
    bek='A migrén piercinget a fül egy olyan pontjába helyezzük, amelyet a fülakupunktúra régóta használ. A pontot nem szemmértékre jelöljük ki: akupunktúrás pontmérő géppel keressük meg a te füleden.',
-   tipp='Ha a fejfájásod inkább féloldali, jelezd az állapotfelmérésnél – ilyenkor általában arra az oldalra javasoljuk az ékszert, ahol erősebbek a tünetek.',
+   tipp='Ha a fejfájásod inkább féloldali, jelezd az állapotfelmérésnél – ezt is figyelembe vesszük, amikor közösen kiválasztjuk az oldalt.',
    tort=('Kovács Gabriella, alapítónk', 'Gabi maga is évekig küzdött migrénnel. 20 évig dolgozott ápolóként az egészségügyben – a saját migrén piercingje után kezdett el mélyen foglalkozni a fülakupunktúrával.'), kep='ricsi_ful'),
  'shenmen': dict(cim='shenmen piercing', targy='Amit a shenmen piercingről érdemes tudnod',
-   bek='A shenmen pont a fülakupunktúra egyik legismertebb pontja; sokan stressz, feszültség és nyugtalan alvás miatt választják. Ha több piercinget foglaltál, az állapotfelmérésnél közösen döntjük el, melyik pontok illenek a panaszaidhoz.',
+   bek='A shenmen pont a fülakupunktúra egyik legismertebb pontja; sokan stressz, feszültség és nyugtalan alvás miatt választják. Ha több piercinget foglaltál, az állapotfelmérésnél közösen döntjük el, melyik pontok illenek leginkább ahhoz, ami miatt érkezel.',
    tipp='Gondold át előre, mi zavar most a legjobban (pl. alvás, feszültség, fejfájás) – így az állapotfelmérés gyorsabb és pontosabb lesz.',
-   tort=('Kamilli Viktória (Viki), piercerünk', 'Viki korábban fogászati asszisztensként dolgozott. Saját tapasztalata, hogy a piercingje után a szédülése és az alvása is javult – ezért tanulta ki a szakmát.'), kep='viki_munka'),
+   tort=('Kamilli Viktória (Viki), piercerünk', 'Viki korábban fogászati asszisztensként dolgozott. A saját jó tapasztalata után döntött úgy, hogy kitanulja a szakmát.'), kep='viki_munka'),
  'klimax': dict(cim='klimax piercing', targy='Amit a klimax piercingről érdemes tudnod',
-   bek='A klimax piercinget sok hölgy választja a változókor kellemetlenségei miatt – például hőhullám, éjszakai izzadás, rossz alvás vagy hangulatingadozás. A pontot akupunktúrás pontmérő géppel jelöljük ki a te füleden.',
+   bek='A klimax piercinget sokan választják a változókor kellemetlenségei miatt – például hőhullám, éjszakai izzadás, rossz alvás vagy hangulatingadozás. A pontot akupunktúrás pontmérő géppel jelöljük ki a te füleden.',
    tipp='Írd fel magadnak, mely tünetek zavarnak most a legjobban, és mióta – az állapotfelmérésnél ez sokat segít.',
-   tort=('Kovács Gabriella, alapítónk', 'Gabi 20 évet dolgozott az egészségügyben, egyetemi okleveles ápolóként, majd osztályvezető ápolóként. Nálunk minden szúrás előtt állapotfelmérés van: meghallgatunk, és csak utána döntünk a pontokról.'), kep='gabi_munka'),
- 'slim': dict(cim='slim (étvágycsökkentő) piercing', targy='Amit a slim piercingről érdemes tudnod',
-   bek='A slim piercinget a fül egy olyan pontjába helyezzük, amelyet a fülakupunktúra az étvággyal kapcsolatban használ. Sokan a nassolás, a stresszevés vagy a falási rohamok miatt választják – a tapasztalat egyénenként eltér, és nem helyettesíti az életmódváltást.',
+   tort=('Kovács Gabriella, alapítónk', 'Gabi 20 évet dolgozott az egészségügyben, egyetemi okleveles ápolóként, majd osztályvezető ápolóként. Nálunk minden szúrás előtt állapotfelmérés van: meghallgatunk, és utána közösen választjuk ki a pontokat.'), kep='gabi_munka'),
+ 'slim': dict(cim='slim piercing', targy='Amit a slim piercingről érdemes tudnod',
+   bek='A slim piercinget a fül egy olyan pontjába helyezzük, amelyet a fülakupunktúra az étvággyal kapcsolatban használ. Sokan a nassolás vagy a stresszevés miatt választják – a tapasztalat egyénenként eltér, és nem helyettesíti az életmódváltást.',
    tipp='A legtöbbet akkor adhat, ha támogatásként tekintesz rá: figyeld meg magadon, mikor és miért nassolsz.',
    tort=('Kovács Gabriella, alapítónk', 'Minden szúrás előtt átbeszéljük, mit vársz, és mi az, ami reális. Nálunk nincs csodaígéret – csak pontos munka és őszinte tájékoztatás.'), kep='gabi_munka'),
  'allergia': dict(cim='allergia piercing', targy='Amit az allergia piercingről érdemes tudnod',
-   bek='Az allergia piercinget sokan a szezonális panaszok miatt választják. A pontot akupunktúrás pontmérő géppel jelöljük ki a te füleden, egészségügyi tapasztalattal rendelkező szakember végzi a szúrást.',
+   bek='Az allergia piercinget sokan a szezonális panaszok miatt választják. A pontot akupunktúrás pontmérő géppel jelöljük ki a te füleden, a szúrást egészségügyi háttérrel rendelkező kollégánk végzi.',
    tipp='Ha éppen erős allergiás tüneteid vannak vagy gyógyszert szedsz, jelezd az állapotfelmérésnél.',
    tort=('Kovács Richárd (Ricsi), piercerünk', 'Ricsi fülakupunktúrás addiktológus. Nálunk minden vendégnél akupunktúrás pontmérő géppel, ugyanazzal a pontossággal jelöljük ki a helyet.'), kep='ricsi_munka'),
 }
+def nev(sz): return 'az' if sz[0].lower() in 'aáeéiíoóöőuúüű' else 'a'
 for kod, t in TIPUSOK.items():
-    torzs = f'''<h1>{m(BP["nev"])}, pár szó a {t["cim"]}edről</h1><p>{t["bek"]}</p>
+    torzs = f'''<h1>{m(BP["nev"])}, pár szó {nev(t["cim"])} {t["cim"]}edről</h1><p>{t["bek"]}</p>
 <div class="quote">{t["tort"][1]}<br><span style="font-style:normal;font-size:14px">– {t["tort"][0]}</span></div>
 <h2>Egy jó tanács az időpontod előtt</h2><p>{t["tipp"]}</p>
-<p><a class="btn" href="{L[kod]}">Bővebben a {t["cim"]}ről</a></p>
+<p><a class="btn" href="{L[kod]}">Bővebben {nev(t["cim"])} {t["cim"]}ről</a></p>
 <p>Az időpontod: <b>{m(BP["datum"])}, {m(BP["ido"])}</b>. Ha módosítanod kell, <a href="{L["foglalas"]}">itt teheted meg</a>.</p>{alairas(True)}'''
     level(f'03-E1-{kod}', 'Foglalás +1 nap, ha ≥5 nap van az időpontig (2–3 db csomag = shenmen)', f'{t["cim"].capitalize()} foglalói (BP-minta; vidéken fotó nélkül)',
-          t['targy'], 'Hova kerül, miért ott, és mit érdemes előre átgondolnod.', torzs, K[t['kep']])
+          f'Pár fontos tudnivaló {nev(t["cim"])} {t["cim"]}ed előtt', 'Hova kerül, miért ott, és mit érdemes előre átgondolnod.', torzs, K[t['kep']])
 
 # ---- E2 fajdalom + garancia --------------------------------------------------------------------------
 level('04-E2-faj-garancia', '≥10 nap az időpontig: kb. a hátralévő idő felénél', 'Minden foglaló',
- 'Fáj? Őszintén válaszolunk', 'Mit érzel majd, mennyi ideig tart – és mi van, ha nem hat.', f'''<h1>Fáj? Őszintén válaszolunk.</h1>
+ 'Fáj? Mire számíts a szúrásnál – őszintén', 'Mit érzel majd, mennyi ideig tart – és mi történik, ha nem azt tapasztalod, amit vártál.', f'''<h1>Fáj? Őszintén válaszolunk.</h1>
 <p>Ez a leggyakoribb kérdés, amit kapunk, ezért röviden és őszintén:</p>
 <ul><li><b>A szúrás helyét érzéstelenítjük.</b> A legtöbben egy rovarcsípéshez hasonlítják – és pár másodpercig tart.</li>
 <li><b>Utána néhány napig érzékeny lehet a fül,</b> előfordulhat, hogy arra az oldalra nem tudsz feküdni; ez általában 1–2 hét alatt elmúlik.</li>
 <li><b>Ha volt már ájulásod vagy félsz a tűtől,</b> szólj nyugodtan – az állapotfelmérésnél erre is rákérdezünk, és ehhez igazodunk.</li></ul>
-<h2>És ha nálad nem hat?</h2>
-<p>Vendégeink visszajelzései alapján a piercingek többségüknél pozitív hatást váltanak ki<sup>*</sup>, de van, akinek a szervezete nem fogékony a fülbéli pontok stimulálására. Ha te is így jársz, <b>munkadíj nélkül, csak az ékszer áráért</b> elhelyezünk egy megerősítő piercinget. A kontroll ingyenes.</p>
+<h2>És ha nem azt tapasztalod, amit vártál?</h2>
+<p>Vendégeink többsége kedvező tapasztalatról számol be<sup>*</sup>, de mindenki más – van, akinek a szervezete kevésbé fogékony a fülbéli pontok stimulálására. Ha te is így jársz, <b>munkadíj nélkül, csak az ékszer áráért</b> elhelyezünk egy megerősítő piercinget. A kontroll ingyenes.</p>
 <p><a class="btn" href="{L["garancia"]}">A garancia részletei</a><a class="btn2" href="{L["fajdalom"]}">Mennyire fáj? – cikk</a></p>
-<p style="font-size:12px;color:#6b6c80">* 2 238 megkérdezett vendégünk 93%-a számolt be pozitív hatásról. A statisztika nem minősül hivatalosnak.</p>
+<p style="font-size:12px;color:#6b6c80">* 2 238 megkérdezett vendégünk 93%-a számolt be számára kedvező tapasztalatról. Az adat saját vendég-visszajelzésen alapul; nem reprezentatív kutatás és nem klinikai eredmény.</p>
 <p>Várunk: <b>{m(BP["datum"])}, {m(BP["ido"])}</b>.</p>{alairas(True)}''', K['gabi_munka'])
 
 # ---- E3 velemenyek -----------------------------------------------------------------------------------
 level('05-E3-velemenyek', '≥21 nap az időpontig: egyszer, az E2 után', 'Minden foglaló',
- 'Akik előtted jártak nálunk', 'Valódi vendégek, valódi tapasztalatok – a te időpontod is közeleg.', f'''<h1>Akik előtted jártak nálunk</h1>
-<p>Még van egy kis idő az időpontodig, ezért nem reklámot küldünk – csak megmutatjuk, mit mondanak, akik már nálunk jártak.</p>
+ 'Akik előtted jártak nálunk', 'Valódi vendégek, egyéni tapasztalatok – a te időpontod is közeleg.', f'''<h1>Akik előtted jártak nálunk</h1>
+<p>Még van egy kis idő az időpontodig, ezért most megmutatjuk, mit mondanak azok, akik már nálunk jártak.</p>
 <div class="quote">„Egy piercingért mentem, hárommal távoztam. Sokkal kevésbé volt para, mint ahogy elképzeltem.”<br><span style="font-style:normal;font-size:14px">– Domján Dóra</span></div>
 <div class="quote">„Nagyon kedves és segítőkész volt a szakember, teljesen meg vagyok elégedve.”<br><span style="font-style:normal;font-size:14px">– Zseszti, Kecskemét</span></div>
-<p>Több mint 4 900 vendégünk írt rólunk a Google-ön, átlagosan <b>4,8 csillag</b>. Rólunk szólt az RTL Klub Fókusz és a HírTV is.</p>
+<p>Több mint 4 900 vendégünk írt rólunk Google-véleményt, az átlagunk <b>4,8 csillag</b>. Rólunk szólt az RTL Klub Fókusz és a HírTV is.</p>
 <p><a class="btn" href="{L["velemenyek"]}">Vendégvélemények és videók</a></p>
 <a class="vid" href="{L["rolunk"]}"><img src="{K["video_gabi"]}" alt="Videó: Gabi bemutatkozik"></a>
 <p>Az időpontod továbbra is: <b>{m(BP["datum"])}, {m(BP["ido"])}</b>.</p>{alairas(True)}''')
@@ -191,9 +192,9 @@ def t48(d, bp):
 <p>Már csak ennyi, hogy minden simán menjen:</p>
 <table role="presentation" class="steps">
 <tr><td><span class="num">1</span></td><td><b>Egyél előtte rendesen</b> – üres gyomorral könnyebben megszédül az ember.</td></tr>
-<tr><td><span class="num">2</span></td><td><b>A hajad legyen összefogva</b>, hogy ne lógjon a fülbe.</td></tr>
-<tr><td><span class="num">3</span></td><td><b>Szólj előre</b>, ha vérhígítót szedsz, várandós vagy, vagy volt már ájulásod – így biztonságosan tudunk dönteni. Hívj: +36 1 901 7444.</td></tr>
-<tr><td><span class="num">4</span></td><td><b>Tervezz {m(d["ido_tart"])} időt</b>, és érkezz 5 perccel korábban.</td></tr></table>
+<tr><td><span class="num">2</span></td><td><b>Ha hosszú a hajad, fogd össze</b>, hogy ne lógjon a füledre.</td></tr>
+<tr><td><span class="num">3</span></td><td><b>Kérjük, szólj előre</b>, ha vérhígítót szedsz, várandós vagy, volt már ájulásod, vagy a füled most gyulladt – így felelősen tudunk dönteni a szúrásról. Hívj: +36 1 901 7444.</td></tr>
+<tr><td><span class="num">4</span></td><td><b>Tervezz {m(d["ido_tart"])}et</b>, és érkezz 5 perccel korábban. Ha késnél, hívj: +36 1 901 7444.</td></tr></table>
 {foglalas_kartya(d)}{gombok(d)}{alairas(bp)}'''
 level('06-T48-felkeszules-BP', '48 órával előtte, ha ≥5 nap volt a foglalás és az időpont között (Salonic „Időpont emlékeztető” helyett)', 'Budapesti foglaló',
       'Két nap múlva találkozunk – így készülj', 'Négy apróság, és minden simán megy.', t48(BP, True), K['gabi_ekszer'])
@@ -203,23 +204,23 @@ level('07-T48-felkeszules-VIDEK', '48 órával előtte (Salonic emlékeztető he
 # ---- modositas, lemondas (Salonic helyett) ------------------------------------------------------------
 level('08-modositas', 'Azonnal, időpont-módosításkor (Salonic „Foglalás módosítva” helyett)', 'Mindenki',
  'Megvan az új időpontod – okt. 23., 14:30', 'A régi időpont helyett már ezt tartjuk neked.', f'''<h1>Megvan az új időpontod!</h1>
-<p>Rendben, módosítottuk – a régi időpont helyett már ezt tartjuk neked:</p>{foglalas_kartya(BP)}{gombok(BP)}{alairas(True)}''')
+<p>Rendben, módosítottuk az időpontodat. A korábbi helyett már ezt tartjuk neked:</p>{foglalas_kartya(BP)}{gombok(BP)}{alairas(True)}''')
 level('09-lemondas', 'Azonnal, lemondáskor vagy törléskor (Salonic „Lemondás” és „Időpont törlés” helyett)', 'Mindenki',
- 'Rendben, töröltük az időpontodat', 'Ha csak az időpont nem volt jó, innen egyből választhatsz újat.', f'''<h1>Rendben, töröltük az időpontodat</h1>
+ 'Töröltük az időpontodat – itt választhatsz újat', 'Ha csak az időpont nem volt jó, innen egyből választhatsz újat.', f'''<h1>Rendben, töröltük az időpontodat</h1>
 <p>Az alábbi időpontodat töröltük: <b>{m(BP["datum"])}, {m(BP["ido"])}</b> – {m(BP["szolg"])}.</p>
 <p>Ha csak az időpont nem volt jó, nem kell elölről kezdened – itt egy perc alatt választhatsz újat:</p>
 <p><a class="btn" href="{L["foglalas"]}">Új időpontot választok</a></p>
 <p>Ha most nem szeretnél új időpontot, az is teljesen rendben van. Ha kérdésed van, hívj nyugodtan: +36 1 901 7444.</p>
-<p style="font-size:14px;color:#6b6c80">Vidéken a következő helyi napokat a <a href="{L["varosok"]}">kitelepülési naptárban</a> látod.</p>{alairas(True)}''')
+<p style="font-size:14px;color:#6b6c80">Ha vidéki helyszínre foglalnál újra, a következő helyi napokat a <a href="{L["varosok"]}">kitelepülési naptárban</a> látod.</p><p>Ha később jönnél, szeretettel várunk.<br><b>A Medical Piercing csapata</b></p>''')
 
 SMS = [
- ('T0', 'Azonnal', 'Szia {keresztnév}! Megvan az időpontod: {dátum} {idő}, {helyszín}. Részletek, módosítás: {link} – Medical Piercing'),
- ('T-72', '72 órával előtte (ha ≥96 órája foglalt)', 'Szia {keresztnév}! {nap} {idő}-kor várunk. Megerősíted, vagy áttennéd? Egy kattintás: {link} – Medical Piercing'),
- ('T-72 vidék', '72 órával előtte, vidéken', 'Szia {keresztnév}! {nap} {idő}-kor várunk {városban}. Ha nem jó, itt áttehető: {link}. Itt legközelebb {köv_nap}-n leszünk. – MP'),
- ('T-24', '24 órával előtte', 'Szia {keresztnév}! Holnap {idő}-kor várunk: {cím}. Egyél előtte, érkezz 5 perccel korábban. – Medical Piercing'),
- ('Lemondás', 'Azonnal', 'Szia {keresztnév}! Töröltük a {dátum} {idő}-s időpontodat. Ha csak az időpont nem volt jó, itt választhatsz újat: {link} – MP'),
- ('Módosítás', 'Azonnal', 'Szia {keresztnév}! Megvan az új időpontod: {dátum} {idő}, {helyszín}. Részletek: {link} – Medical Piercing'),
- ('No-show', 'Következő munkanap 10:00', 'Szia {keresztnév}! Tegnap nem találkoztunk, reméljük, minden rendben. Ha csak csúszott az időpont: {link} – Medical Piercing'),
+ ('T0', 'Azonnal', 'Szia {keresztnev}! Megvan az idopontod: {datum} {ido}, {helyszin_rovid}. Reszletek, modositas: {link} - Medical Piercing'),
+ ('T-72', '72 órával előtte (ha ≥96 órája foglalt)', 'Szia {keresztnev}! {nap} {ido}-kor varunk. Megerosited, vagy attennad? Egy kattintas: {link} - MP'),
+ ('T-72 vidék', '72 órával előtte, vidéken', 'Szia {keresztnev}! {nap} {ido}-kor varunk {varosban}. Ha nem jo, itt atteheted: {link}. Legkozelebb itt: {kov_nap}. - MP'),
+ ('T-24', '24 órával előtte', 'Szia {keresztnev}! Holnap {ido}-kor varunk: {cim_rovid}. Egyel elotte, erkezz 5 perccel korabban. - MP'),
+ ('Lemondás', 'Azonnal', 'Szia {keresztnev}! Toroltuk a {datum} {ido}-s idopontodat. Ha csak az idopont nem jo, itt valaszthatsz ujat: {link} - MP'),
+ ('Módosítás', 'Azonnal', 'Szia {keresztnev}! Megvan az uj idopontod: {datum} {ido}, {helyszin_rovid}. Reszletek: {link} - MP'),
+ ('No-show', 'Következő munkanap 10:00', 'Szia {keresztnev}! Tegnap nem talalkoztunk, remeljuk, minden rendben. Ha attennad az idopontot: {link} - MP'),
 ]
 (OUT / 'sms.json').write_text(json.dumps(SMS, ensure_ascii=False), encoding='utf-8')
 
