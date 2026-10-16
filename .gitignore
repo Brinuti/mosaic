@@ -14,3 +14,6 @@ dist/
 # helyi Cloudflare-teszt beallitasai (wrangler pages dev)
 .dev.vars
 .wrangler/
+
+# MP levelek: valodi vendegvelemeny-idezetek (nem nyilvanos)
+medicalpiercing/tools/levelek/velemenyek.json

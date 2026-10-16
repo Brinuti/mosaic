@@ -132,7 +132,8 @@ async function urlap(context) {
     return new Response('ok');
   }
   const port = Number(SMTP_PORT || 465);
-  const cimzett = env.MAIL_TO || 'medicalpiercing.hu@gmail.com';
+  // a kiemelt vendég-visszajelzés (/uj/visszajelzes) a tulajdonoshoz megy, ha a MAIL_TO_TULAJDONOS be van allitva
+  const cimzett = (nev === 'tulajdonosi-visszajelzes' && env.MAIL_TO_TULAJDONOS) || env.MAIL_TO || 'medicalpiercing.hu@gmail.com';
   const felado = { name: 'Medical Piercing weboldal', email: SMTP_USER };
   if (env.MAIL_FROM) {
     const m = /^\s*(.*?)\s*<([^>]+)>\s*$/.exec(env.MAIL_FROM);
