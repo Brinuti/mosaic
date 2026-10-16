@@ -253,6 +253,23 @@
     });
   });
 
+  // --- 4f. kiemelt visszajelzes a tulajdonosnak (/uj/visszajelzes; a vendeglevelek "Valami nem volt rendben" gombja ide visz) ---
+  (() => {
+    const f = document.getElementById('visszajelzes'); if (!f) return;
+    const allapot = f.querySelector('.vj-allapot'), gomb = f.querySelector('button');
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!f.checkValidity()) { allapot.textContent = 'Kérjük, töltsd ki a nevet, az e-mail-címet és az üzenetet.'; f.reportValidity && f.reportValidity(); return; }
+      const adat = new FormData(f); adat.append('form-name', 'tulajdonosi-visszajelzes'); adat.append('oldal', location.pathname + location.search);
+      gomb.disabled = true; allapot.textContent = 'Küldés…';
+      try {
+        const v = await fetch('/api/urlap', { method: 'POST', body: adat });
+        if (!v.ok) throw new Error(String(v.status));
+        f.reset(); allapot.textContent = 'Köszönjük, megkaptuk! A tulajdonosunk hamarosan keres.';
+      } catch (x) { allapot.textContent = 'Hiba történt, kérjük, próbáld újra, vagy hívj minket: +36 1 901 7444.'; gomb.disabled = false; }
+    });
+  })();
+
   // --- 5. URL-parameterek megorzese es a foglalasi linkek (klon.js 8.) --------------------------------------
   const MENTETT = 'savedQueryParams';
   const GK = /^(gclid|gbraid|wbraid)$/i;

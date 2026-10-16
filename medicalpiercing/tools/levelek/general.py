@@ -23,7 +23,7 @@ L = {
   'migren': SITE + '/uj/migren-piercing', 'shenmen': SITE + '/uj/shenmen-piercing', 'klimax': SITE + '/uj/klimax-piercing',
   'slim': SITE + '/uj/slim-etvagycsokkento-piercing', 'allergia': SITE + '/uj/allergia-piercing',
 }
-GOOGLE_DB = '5 030'  # dinamikus: /api/ertekeles (db) – minden kuldeskor a friss szam
+GOOGLE_DB = '5 033'  # dinamikus: /api/ertekeles (db) – minden kuldeskor a friss szam
 BP = dict(nev='Feri', datum='2026. október 23., csütörtök', ido='14:30', szolg='3 db piercing (csomag)', ar='44 900 Ft',
           munkatars='Kovács Gabriella', varos='Budapest', varosban='Budapesten', cim='1137 Budapest, Újpesti rakpart 7., 5. emelet 25. (a Jászai Mari térnél)',
           ido_tart='kb. 40–50 perc', terkep='https://maps.google.com/?q=1137+Budapest+Újpesti+rakpart+7',
@@ -60,7 +60,7 @@ p{{margin:10px 0}} a{{color:#b0463b}} b{{color:#2f3044}}
 .velem{{background:#fbf6f3;border-radius:14px;padding:16px 18px 14px;margin:14px 0;font-size:15px;line-height:1.55;color:#454659}}
 .velem .cs{{color:#f5b400;font-size:14px;letter-spacing:2px}}.velem .nev{{display:block;margin-top:8px;font-size:13px;font-weight:700;color:#2f3044}}.velem .nev span{{font-weight:400;color:#8a8b9c}}
 .kep{{margin:18px 0}}.felirat{{font-size:13px;color:#8a8b9c;margin-top:6px;text-align:center}}
-.sig{{margin:28px 0 8px;padding-top:20px;border-top:1px solid #f1e6e0;font-size:15px}}.sig img{{width:56px;height:56px;border-radius:28px;vertical-align:middle;margin-right:14px;border:0}}
+.sig{{margin:28px 0 8px;padding-top:20px;border-top:1px solid #f1e6e0;font-size:15px}}.sig img{{width:56px;height:56px;border-radius:28px;display:block;border:0}}
 .trustw{{padding:8px 32px 30px}}
 .trust{{background:#2f3044;border-radius:16px;padding:22px 24px;color:#e9e9f0;font-size:14px;line-height:1.5}}
 .trust .cim{{font-size:17px;font-weight:800;color:#ffffff;margin-bottom:10px}}
@@ -110,7 +110,9 @@ def mini_idopont(d):
 
 def alairas(d, foto, szoveg='Szeretettel vár:'):
     kepe = f'<img src="{K["gabi_portre"]}" width="56" alt="">' if foto else ''
-    return f'<div class="sig">{kepe}{szoveg}<br><b>{m(d["munkatars"])}</b> és a Medical Piercing csapata</div>'
+    return (f'<div class="sig"><table role="presentation" cellspacing="0" cellpadding="0"><tr>'
+            + (f'<td style="width:70px;vertical-align:middle">{kepe}</td>' if foto else '')
+            + f'<td style="vertical-align:middle">{szoveg} <b>{m(d["munkatars"])}</b><br><span style="font-size:14px;color:#8a8b9c">és a Medical Piercing csapata</span></td></tr></table></div>')
 
 _VELPATH = pathlib.Path(__file__).with_name('velemenyek.json')  # a valodi idezetek: nem a nyilvanos repoban (gitignore)
 _VELEK = json.loads(_VELPATH.read_text(encoding='utf-8')) if _VELPATH.exists() else {}
@@ -168,7 +170,7 @@ TIPUSOK = {
    tipp='Írd fel magadnak, mely tünetek zavarnak most a legjobban, és mióta – a beszélgetésnél ez sokat segít.',
    vel=[VEL("v19"), VEL("v20")]),
  'slim': dict(nev='slim piercing', nevelo='a', h93=False,
-   bek='A slim piercinget a fül egy olyan pontjába helyezzük, amelyet a fülakupunktúra az étvággyal összefüggésben használ. Sokan a nassolás, az édesség utáni sóvárgás vagy a stresszevés miatt választják – támogatásként, nem az életmódváltás helyett.',
+   bek='A slim piercinget a fül egy olyan pontjába helyezzük, amelyet a fülakupunktúra az étvággyal összefüggésben használ. Sokan a nassolás, az édesség utáni sóvárgás vagy a stresszevés miatt választják – sokan már az első hetekben érzik a különbséget.',
    tipp='A legtöbbet akkor adhat, ha segítségként tekintesz rá: az első hetekben figyeld meg magadon, mikor és miért nassolsz.',
    vel=[VEL("v21"), VEL("v22")]),
  'allergia': dict(nev='allergia piercing', nevelo='az', h93=False,
@@ -178,10 +180,10 @@ TIPUSOK = {
 }
 for kod, t in TIPUSOK.items():
     n, a = t['nev'], t['nevelo']
-    h93 = (f'''<h2>93% – nem ígéret, hanem vendégeink visszajelzése</h2>
-<p>Megkérdezett vendégeink 93%-a jelezte vissza, hogy a piercing nála működik.* Fontos, hogy őszinték legyünk: ez nem akupunktúra, nem csodaszer és nem gyógymód, hanem közérzetjavító ékszer, amelyet egészségügyi alapossággal helyezünk be. Mindenki más, a tapasztalat egyénenként eltér – ezért van garancia: ha 6 hét után nem azt tapasztalod, amit vártál, munkadíj nélkül, csak az új ékszer áráért (5 000 Ft) helyezünk be egy megerősítő piercinget.</p>'''
-           if t['h93'] else f'''<h2>Őszintén: mire számíthatsz?</h2>
-<p>{a.capitalize()} {n} nem akupunktúra, nem csodaszer és nem gyógymód, hanem közérzetjavító ékszer, amelyet egészségügyi alapossággal helyezünk be. Mindenki más, a tapasztalat egyénenként eltér – de sok vendégünk ír arról, mit tapasztalt:</p>''')
+    h93 = (f'''<h2>Vendégeink visszajelzése alapján: működik</h2>
+<p>{a.capitalize()} {n} vendégeink visszajelzése alapján hatásos módszer: megkérdezett vendégeink 93%-a jelezte vissza, hogy nála működik.* Ez nem a mi ígéretünk – ők mondják. Olvasd el, mit írnak:</p>'''
+           if t['h93'] else f'''<h2>Vendégeink visszajelzése alapján: működik</h2>
+<p>{a.capitalize()} {n} vendégeink visszajelzése alapján hatásos módszer. Ez nem a mi ígéretünk – ők mondják. Olvasd el, mit írnak:</p>''')
     torzs = f'''<h1>{m(BP["nev"])}, a pontosság a lényeg – így készül {a} {n}ed</h1>
 <p>{t["bek"]}</p>
 <h2>Miért számít, hová kerül?</h2>
@@ -194,7 +196,7 @@ for kod, t in TIPUSOK.items():
 <p>Ezért mondjuk nyugodt szívvel: nálunk a szúrás helyéről nem szemmérték dönt, így nem kell attól tartanod, hogy rossz helyre kerül a piercing. Ismerjük a fül pontjait, anatómiai tudással dolgozunk, és minden pontot megmérünk.</p>
 {h93}
 {velemeny(*t["vel"][0])}{velemeny(*t["vel"][1])}
-<p><a class="btn2" href="{L["velemenyek"]}">Mind a {m(GOOGLE_DB)} vélemény</a></p>
+<p><a class="btn2" href="{L["velemenyek"]}">Mind az {m(GOOGLE_DB)} vélemény</a></p>
 <h2>Egy jó tanács az időpontod előtt</h2><p>{t["tipp"]}</p>
 <p><a class="btn" href="{L[kod]}">Bővebben {a} {n}ről</a></p>
 {mini_idopont(BP)}<p style="font-size:15px"><b>Kérdésed van még?</b> Válaszolj erre a levélre, és még az időpontod előtt válaszolunk.</p>{alairas(BP, True)}'''
@@ -309,10 +311,8 @@ level('10-A0-utoapolas', '1 órával a szúrás után, mint most a Salonic véle
 <p><a class="btn" href="{L["utoapolas"]}">A teljes utóápolási útmutató</a><a class="btn2" href="{L["kontroll"]}">Ingyenes kontroll</a></p>
 <h2>Hogy érezted magad nálunk?</h2>
 <p>Nekünk nagyon sokat jelent a véleményed – és annak is, aki most ugyanúgy bizonytalan, ahogy talán te voltál a foglalás előtt.</p>
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
-<td style="padding:6px 6px 6px 0;width:50%;vertical-align:top"><a class="btn" style="display:block;text-align:center;margin:0" href="{GOOGLE_IRAS}">★ Elégedett voltam – értékelek</a></td>
-<td style="padding:6px 0 6px 6px;width:50%;vertical-align:top"><a class="btn2" style="display:block;text-align:center;margin:0" href="mailto:medicalpiercing.hu@gmail.com?subject=Visszajelz%C3%A9s">Valami nem volt rendben</a></td></tr></table>
-<p style="font-size:14px">Ha bármi nem úgy alakult, ahogy szeretted volna, írj nekünk közvetlenül – személyesen nézzük meg, és megoldjuk.</p>
+<p><a class="btn" style="font-size:14px;padding:10px 20px" href="{GOOGLE_IRAS}">★ Értékelem a Google-ön</a></p>
+<div class="card"><b>Valami nem úgy alakult, ahogy szeretted volna?</b><br>Akkor szeretnénk tőled közvetlenül hallani. Az itt küldött visszajelzésed kiemelten kezeljük, és egyenesen a tulajdonosunkhoz kerül – személyesen nézzük meg, és megoldjuk.<br><a href="{SITE}/uj/visszajelzes" style="font-weight:700">Írok a tulajdonosnak »</a></div>
 {alairas(UTO, True, 'Jó gyógyulást kíván:')}''', KEPALAP + 'ful-migren.jpg', L['utoapolas'])
 
 level('11-A2-ket-het', 'A szúrás után 14 nappal', 'Mindenki, aki megjelent (a „mire figyelj” bekezdés piercingenként más)',
