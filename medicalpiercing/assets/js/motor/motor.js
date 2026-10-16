@@ -140,6 +140,10 @@ button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent
   .chip { gap: 4px; padding: 2px 8px 2px 2px; font-size: 13px; }
   .chip .fejkep { width: 24px; height: 24px; font-size: 10px; }
   .kartya.szolg .ar s { font-size: .8em; margin-right: 3px; }
+  /* a szakemberek egy sorban (a tulajdonos kerese, 2026-10-16, 4. kor): a csempek kitoltik a sort; 7+ szakembernel tordel */
+  .chipek:has(> :nth-child(2)):not(:has(> :nth-child(7))) { flex-wrap: nowrap; gap: 4px; }
+  .chipek:has(> :nth-child(2)):not(:has(> :nth-child(7))) .chip { flex: 1 1 auto; justify-content: center; gap: 3px; padding: 2px 6px 2px 2px; font-size: 12.5px; white-space: nowrap; }
+  .chipek:has(> :nth-child(2)):not(:has(> :nth-child(7))) .chip .fejkep { width: 22px; height: 22px; }
 }
 .chip.valasztott { background: #454659; color: #fff; border-color: #454659; }
 .honap-fej { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 8px; font: 600 16px/1 'poppins-semibold', Poppins, Arial, sans-serif; }
@@ -357,8 +361,17 @@ iframe.adatlap { width: 100%; height: 100%; border: 0; display: block; }
 .pk-szuras:hover { background: #fdf3f0; }
 .pk-play { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #a35a4b; color: #fff; }
 .pk-play svg { width: 8px; height: 10px; margin-left: 2px; fill: currentColor; }
-.pk-tart { font-size: 11.5px; line-height: 1.4; color: #6b6c80; }
+.pk-tart { margin: 0 0 10px; font-size: 12.5px; line-height: 1.45; color: #6b6c80; }
 .pk-tart b { font-weight: 600; color: #454659; }
+/* a szurosor egy sorban (a tulajdonos kerese, 2026-10-16, 4. kor): 385–520 px kozott a darab-gombok rovid felirata ("1 db", "2–3 db"); keskenyebb kepernyon (360 / 375 px) nem fer el,
+   ott ket sor marad, a teljes felirattal */
+.pk-rovid { display: none; }
+@media (min-width: 385px) and (max-width: 520px) {
+  .pk-szuro { flex-wrap: nowrap; gap: 5px; }
+  .pk-szuro .szeg button { padding: 0 7px; font-size: 11.5px; }
+  .pk-hosszu { display: none; }
+  .pk-rovid { display: inline; }
+}
 .pk-felugro { position: fixed; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 20px 16px; background: rgba(39, 40, 52, .78); }
 .pk-felugro-doboz { position: relative; width: min(100%, 380px, calc((100dvh - 110px) * 9 / 16)); }
 .pk-felugro-cim { margin: 0 0 10px; text-align: center; font: 600 15px/1.3 'poppins-semibold', Poppins, Arial, sans-serif; color: #fff; }
@@ -742,16 +755,15 @@ export function nyit(ctx) {
     // a tipusoldal piercingje elol (pl. a lep-oldalrol nyitva a Lep); tipus nelkuli oldalrol (fooldal) a Salonic sorrendje
     const sajat = (s) => all.mit === 'egy' && !!PK[all.oldalTipus] && tipusKod(s.name) === all.oldalTipus;
     mutat = [...mutat.filter(sajat), ...mutat.filter((s) => !sajat(s))];
-    // null: az alapertelmezett kartya nyilik le (a szuro valtasakor is); '': a vendeg bezarta, mind csukva marad
-    if (all.nyitott === null || (all.nyitott && !mutat.some((s) => s.serviceId === all.nyitott))) all.nyitott = (all.oldalTipus === '3pc' && mutat.find((s) => /3 PIERCING/i.test(s.name)) || mutat[0] || {}).serviceId || null;
+    // alapbol (es a szuro valtasakor) egy kartya sincs lenyitva, a 2–3 piercingnel sem (a tulajdonos kerese, 2026-10-16, 4. kor): elsore latszon, milyen piercingek vannak
+    if (all.nyitott === null || (all.nyitott && !mutat.some((s) => s.serviceId === all.nyitott))) all.nyitott = '';
     all.arak = arakBol(lista);
     const kozerzet = all.mit !== 'fulbevalo';
-    const gomb = (attr, k, nev, on, tilt, osztaly = '') => `<button class="${[on ? 'on' : '', osztaly].filter(Boolean).join(' ')}" data-${attr}="${k}" aria-pressed="${on}"${tilt ? ' disabled' : ''}${osztaly ? ' title="Ez éri meg a legjobban"' : ''}>${nev}</button>`;
+    const gomb = (attr, k, nev, on, tilt, osztaly = '', cimke = '') => `<button class="${[on ? 'on' : '', osztaly].filter(Boolean).join(' ')}" data-${attr}="${k}" aria-pressed="${on}"${cimke ? ` aria-label="${cimke}"` : ''}${tilt ? ' disabled' : ''}${osztaly ? ' title="Ez éri meg a legjobban"' : ''}>${nev}</button>`;
     tartalom.innerHTML = `<div class="pk-szuro"><div class="szeg">${gomb('kinek', 'magamnak', 'Magamnak', all.kinek === 'magamnak', false)}${gomb('kinek', 'ketto', '2 személynek', all.kinek === 'ketto', !db('ketto'))}</div>`
-      + `<div class="szeg harom">${MIT.map(([k, n]) => gomb('mit', k, n === 'Több piercing' ? '2–3 piercing' : n, all.mit === k, !db(all.kinek, k), k === 'tobb' ? 'ajanlott' : '')).join('')}</div></div>`
-      + `<div class="pk-info"><p class="pk-info-sor"><span class="pk-ertek">${ertekelesHtml()}</span><button class="pk-szuras" data-szuras aria-haspopup="dialog"><span class="pk-play">${PLAY}</span>Hogy néz ki egy szúrás?</button></p>`
-      + `<p class="pk-tart"><b>Az ár tartalmazza:</b> ${kozerzet ? 'titán ékszer · érzéstelenítő spray · gépi bemérés · ingyenes kontroll · garancia' : 'steril szúrás · G23 titánium ékszer vagy a hozott fülbevalód · ingyenes kontroll'}</p></div>`
-      + `<div class="pk-lista">${mutat.map((s) => pkKartya(s)).join('')}</div>`;
+      + `<div class="szeg harom">${MIT.map(([k, n]) => gomb('mit', k, n === 'Több piercing' ? '2–3 <span class="pk-hosszu">piercing</span><span class="pk-rovid">db</span>' : n === '1 piercing' ? '1 <span class="pk-hosszu">piercing</span><span class="pk-rovid">db</span>' : n, all.mit === k, !db(all.kinek, k), k === 'tobb' ? 'ajanlott' : '', k === 'tobb' ? '2–3 piercing' : k === 'egy' ? '1 piercing' : '')).join('')}</div></div>`
+      + `<div class="pk-info"><p class="pk-info-sor"><span class="pk-ertek">${ertekelesHtml()}</span><button class="pk-szuras" data-szuras aria-haspopup="dialog"><span class="pk-play">${PLAY}</span>Hogy néz ki egy szúrás?</button></p></div>`
+      + `<div class="pk-lista">${mutat.map((s) => pkKartya(s, kozerzet)).join('')}</div>`;
     // ha az ertekeles meg nem jott meg: megjottekor a sor frissul
     if (!ertekelesAdat) ertekelesBetolt().then(() => { const el = tartalom.querySelector('.pk-ertek'); if (el && ertekelesAdat) el.innerHTML = ertekelesHtml(); });
   }
@@ -762,7 +774,7 @@ export function nyit(ctx) {
   const NYIL_LE = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 8 10.5 12.5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const NYIL_JOBBRA = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   // egy kartya: fej (ikon, nev, rovid leiras, ar) + lenyithato test + a ket gomb (Részletek / Időpontot választok)
-  function pkKartya(s) {
+  function pkKartya(s, kozerzet = true) {
     const a = pkAdat(s);
     const e = eredetiAr(s);
     const nyitva = all.nyitott === s.serviceId;
@@ -771,25 +783,26 @@ export function nyit(ctx) {
     const fej = `<button class="pk-fej" data-nyit="${id}" aria-expanded="${nyitva}" aria-controls="pk-t-${id}"><span class="pk-ikon">${ikon ? `<img src="/assets/img/ikon/${ikon}.webp" alt="" width="26" height="26" decoding="async">` : ''}</span>`
       + `<span class="pk-cim"><b>${esc(a.nev)}</b><small>${esc(a.rovid)}</small></span><span class="pk-ar">${e ? `<s>${ft(e)}</s>` : ''}<b>${ft(s.activePrice)}</b></span></button>`;
     let test = '';
-    if (a.foto) test += `<div class="pk-pont"><img src="/assets/img/uj-galeria-${a.foto}-2.webp" alt="A ${esc(a.nev.toLowerCase())} piercing helye a fülön" width="300" height="300" loading="lazy" decoding="async"><div><b>Vendégeink általában ezeken érnek el javulást:</b><p>${esc(a.javulas)}</p></div></div>`;
+    if (a.foto) test += `<div class="pk-pont"><img src="/assets/img/uj-galeria-${a.foto}-2.webp" alt="A ${esc(a.nev.toLowerCase())} helye a fülön" width="300" height="300" loading="lazy" decoding="async"><div><b>Vendégeink általában ezeken érnek el javulást:</b><p>${esc(a.javulas)}</p></div></div>`;
     if (a.kedvezmeny) test += a.kedvezmeny;
     if (a.csomag) test += `<div class="pk-csomag">${a.csomag}</div>`;
     if (a.garancia) test += '<p class="pk-garancia"><b>Garancia:</b> ha 6 hét után nem tapasztalsz javulást, 6 hónapon belül megerősítő piercinget kapsz, csak az új ékszer áráért.</p>';
+    test += `<p class="pk-tart"><b>Az ár tartalmazza:</b> ${kozerzet ? 'titán ékszer · érzéstelenítő spray · gépi bemérés · ingyenes kontroll · garancia' : 'steril szúrás · G23 titánium ékszer vagy a hozott fülbevalód · ingyenes kontroll'}</p>`;
     const gombok = `<div class="pk-gombok"><button class="pk-reszlet" data-nyit="${id}" aria-expanded="${nyitva}" aria-controls="pk-t-${id}">${nyitva ? 'Bezár' : 'Részletek'}${NYIL_LE}</button>`
       + `<button class="pk-valaszt" data-szolg="${id}" title="${esc(szepNev(s.name))}">Időpontot választok${NYIL_JOBBRA}<span class="rejtett"><span class="nev"><span>${esc(rovidNev(s.name))}</span></span><span class="ar">${e ? `<s>${ft(e)}</s>` : ''}${ft(s.activePrice)}</span></span></button></div>`;
     return `<div class="pk${nyitva ? ' nyitva' : ''}" data-pk="${id}">${fej}<div class="pk-test" id="pk-t-${id}"${nyitva ? '' : ' hidden'}>${test}</div>${gombok}</div>`;
   }
   // a kartya szovegei a Salonic-szolgaltatasbol: tipus (1 piercing), csomag (2 / 3 piercing, ket szemelynek), fulbevalo
   const PK = {
-    mi: ['Migrén', 'fejfájás, migrén, frontérzékenység', 'migrénes, tenziós és cluster fejfájás, frontérzékenység', 'migren'],
-    sh: ['Shenmen', 'stressz, alvászavar, szorongás', 'stressz, alvászavar, szorongás, nyugtalanság, pánikrohamok', 'shenmen'],
-    kl: ['Klimax', 'hőhullám, izzadás, alvászavar', 'a változókor tünetei: hőhullám, izzadás, alvászavar, hangulatingadozás', 'klimax'],
-    sl: ['Slim', 'étvágy, édesség utáni vágy', 'megnövekedett étvágy, falási rohamok, édesség utáni vágy', 'slim'],
-    al: ['Allergia', 'szénanátha, tüsszögés, szemviszketés', 'légúti allergia, szénanátha, tüsszögés, szemszárazság, szemviszketés', 'allergia'],
-    mj: ['Máj', 'puffadás, fáradtság, ingerlékenység', 'puffadás, emésztési panaszok, hormonális egyensúlyzavar, fáradtság', 'maj'],
-    lp: ['Lép', 'puffadás, fáradtság, gyenge immunrendszer', 'puffadás étkezések után, állandó fáradtság, legyengült immunrendszer, PMS', 'lep'],
-    vb: ['Vastagbél', 'székrekedés, puffadás, bőrproblémák', 'székrekedés, hasi feszülés, bőrproblémák, bélflóra-egyensúlytalanság', 'vastagbel'],
-    pm: ['Pajzsmirigy', 'fáradékonyság, hormonproblémák', 'pajzsmirigy-rendellenesség, fáradékonyság, hormonproblémák, hajhullás', 'pajzsmirigy'],
+    mi: ['Migrén piercing', 'fejfájás, migrén, frontérzékenység', 'migrénes, tenziós és cluster fejfájás, frontérzékenység', 'migren'],
+    sh: ['Shenmen piercing', 'stressz, alvászavar, szorongás', 'stressz, alvászavar, szorongás, nyugtalanság, pánikrohamok', 'shenmen'],
+    kl: ['Klimax piercing', 'hőhullám, izzadás, alvászavar', 'a változókor tünetei: hőhullám, izzadás, alvászavar, hangulatingadozás', 'klimax'],
+    sl: ['Slim piercing', 'étvágy, édesség utáni vágy', 'megnövekedett étvágy, falási rohamok, édesség utáni vágy', 'slim'],
+    al: ['Allergia piercing', 'szénanátha, tüsszögés, szemviszketés', 'légúti allergia, szénanátha, tüsszögés, szemszárazság, szemviszketés', 'allergia'],
+    mj: ['Máj piercing', 'puffadás, fáradtság, ingerlékenység', 'puffadás, emésztési panaszok, hormonális egyensúlyzavar, fáradtság', 'maj'],
+    lp: ['Lép piercing', 'puffadás, fáradtság, gyenge immunrendszer', 'puffadás étkezések után, állandó fáradtság, legyengült immunrendszer, PMS', 'lep'],
+    vb: ['Vastagbél piercing', 'székrekedés, puffadás, bőrproblémák', 'székrekedés, hasi feszülés, bőrproblémák, bélflóra-egyensúlytalanság', 'vastagbel'],
+    pm: ['Pajzsmirigy piercing', 'fáradékonyság, hormonproblémák', 'pajzsmirigy-rendellenesség, fáradékonyság, hormonproblémák, hajhullás', 'pajzsmirigy'],
   };
   // a csomag-kedvezmeny magyarazata (a tulajdonos kerese, 2026-10-16): mennyibe kerulne kulon-kulon, mennyi most, mennyit sporol – a helyszin mostani
   // Salonic-araibol (egy = a legolcsobb 1 db kozerzetjavito piercing, ketto / harom = a 2 / 3 piercinges csomag, ful = 1 db fulbevalo)
@@ -831,7 +844,7 @@ export function nyit(ctx) {
         kedvezmeny: d > 1 && A.ful && p > A.ful ? kedvezmeny([['1. fülbevaló', ft(A.ful)], [`további ${d - 1} db`, '+ ' + ft(p - A.ful)]], p, d, A.ful) : '',
         csomag: '<p>Nem közérzetjavító piercing: a fülcimpába kerül, steril és biztonságos behelyezéssel, G23 titánium ékszerrel vagy a hozott fülbevalóddal.</p>' };
     }
-    if (/^1\+1/i.test(n)) return { nev: 'Allergia 1+1', rovid: 'két allergia piercing egy időpontban', garancia: true, csomag: '',
+    if (/^1\+1/i.test(n)) return { nev: 'Allergia piercing 1+1', rovid: 'két allergia piercing egy időpontban', garancia: true, csomag: '',
       kedvezmeny: A.egy && p > A.egy ? kedvezmeny([['1. allergia piercing', ft(A.egy)], ['2. allergia piercing', '+ ' + ft(p - A.egy)]], p, 2, A.egy) : '' };
     const t = PK[tipusKod(n)];
     if (t) return { nev: t[0], rovid: t[1], javulas: t[2], foto: t[3], garancia: true };

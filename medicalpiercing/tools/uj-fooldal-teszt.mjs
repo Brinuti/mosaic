@@ -16,18 +16,21 @@ import path from 'node:path';
 import { chromium, devices } from './pw.mjs';
 import { kulcsbol } from '../lib/utvonal.js';
 import { meresTiltas, MERES } from './meres-tiltas.mjs';
-import { osszerak, szovegJavit } from './uj-fooldal.mjs';
+import { osszerak, szovegJavit, UJ_FOOLDAL_UT } from './uj-fooldal.mjs';
+import { UJ_ELES } from '../lib/uj-eles.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const BASE = (process.env.BASE || 'http://localhost:4290').replace(/\/$/, '');
 const HELYI = /^https?:\/\/(localhost|127\.0\.0\.1)[:/]/.test(BASE);
-const LAP = BASE + '/uj-fooldal';
+// elesitve (lib/uj-eles.js) az uj fooldal a / cimen, indexelheto (a regi fooldal SEO-fejlecevel); kulonben rejtve a /uj-fooldal cimen
+const LAP = BASE + UJ_FOOLDAL_UT;
 let hiba = 0;
 const ok = (nev, felt, info = '') => { console.log(`${felt ? 'OK  ' : 'HIBA'} ${nev}${info ? '  ' + info : ''}`); if (!felt) hiba++; };
 
 // ---------- 1. forras: rejtett, linkek, horgonyok (halozat nelkul) ----------
 // a fooldal forrasa a kozos reszekkel egyutt (uj-oldalak/reszek/*.html: ekszerek, akcio, arak, helyszinek, media, csapat ...), ahogy a build osszerakja
 const forras = osszerak(ROOT, fs.readFileSync(path.join(ROOT, 'uj-fooldal/index.html'), 'utf8'));
+// (a forrasban a noindex marad: a nem elesitett allapot ez; elesitve a build cseréli a regi fooldal fejlecere, lent a kesz lapon ellenorizve)
 ok('forras: noindex,nofollow meta', /<meta name="robots" content="noindex,nofollow">/.test(forras));
 ok('forras: nincs canonical', !/rel="canonical"/.test(forras));
 ok('forras: pontosan egy h1', (forras.match(/<h1[\s>]/g) || []).length === 1);
@@ -97,8 +100,16 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   const p = await ujLap(ctx);
   const v = await p.goto(LAP, { waitUntil: 'load' });
   ok(`${nezet}: 200-as valasz`, v.status() === 200, String(v.status()));
-  ok(`${nezet}: noindex (meta)`, await p.$eval('meta[name="robots"]', (m) => /noindex/.test(m.content)));
-  if (!HELYI) ok(`${nezet}: noindex (X-Robots-Tag fejlec)`, /noindex/.test(v.headers()['x-robots-tag'] || ''), v.headers()['x-robots-tag'] || '');
+  if (UJ_ELES) {
+    // elesitve: indexelheto, a regi fooldal SEO-fejlecevel (canonical, cim, og, ld+json, ellenorzo cimkek); X-Robots-Tag csak az elonezeten
+    const fej = await p.evaluate(() => ({ robots: (document.querySelector('meta[name="robots"]') || {}).content || '', canonical: (document.querySelector('link[rel="canonical"]') || {}).href || '',
+      cim: document.title, og: !!document.querySelector('meta[property="og:title"]'), ld: document.querySelectorAll('script[type="application/ld+json"]').length,
+      gsv: !!document.querySelector('meta[name="google-site-verification"]'), fdv: !!document.querySelector('meta[name="facebook-domain-verification"]') }));
+    ok(`${nezet}: elesitve indexelheto, a regi fooldal SEO-fejlecevel (canonical, cim, og, ld+json, Google / Facebook ellenorzo cimke)`, !/noindex/.test(fej.robots) && /^https:\/\/www\.medicalpiercing\.hu\/?$/.test(fej.canonical) && !/új főoldal/.test(fej.cim) && fej.og && fej.ld >= 1 && fej.gsv && fej.fdv, JSON.stringify(fej));
+  } else {
+    ok(`${nezet}: noindex (meta)`, await p.$eval('meta[name="robots"]', (m) => /noindex/.test(m.content)));
+    if (!HELYI) ok(`${nezet}: noindex (X-Robots-Tag fejlec)`, /noindex/.test(v.headers()['x-robots-tag'] || ''), v.headers()['x-robots-tag'] || '');
+  }
   await p.evaluate(() => document.querySelectorAll('img[loading=lazy]').forEach((i) => { i.loading = 'eager'; }));
   await p.waitForTimeout(2500);
   ok(`${nezet}: nincs JS-hiba`, p.hibak.length === 0, p.hibak.join(' | '));
@@ -223,7 +234,7 @@ for (const [nezet, opt] of [['asztali', { viewport: { width: 1440, height: 900 }
   await p.locator('.helyek a').nth(4).click();   // Kecskemet
   await p.waitForSelector('[data-mp-motor]', { timeout: 15000 }).catch(() => {});
   const hm = await p.evaluate(() => { const h = document.querySelector('[data-mp-motor]'); return { van: !!h, urlMarad: location.pathname }; });
-  ok(`${nezet}: egy helyszin-csempe a foglalomotort nyitja (nem erre az oldalra visz)`, hm.van && hm.urlMarad === '/uj-fooldal', JSON.stringify(hm));
+  ok(`${nezet}: egy helyszin-csempe a foglalomotort nyitja (nem erre az oldalra visz)`, hm.van && hm.urlMarad === UJ_FOOLDAL_UT, JSON.stringify(hm));
   await p.evaluate(() => document.querySelector('[data-mp-motor]')?.remove());
   const lab = await p.evaluate(() => { const bg = getComputedStyle(document.querySelector('.lablec')).backgroundColor; const j = document.querySelector('.jogi p').getBoundingClientRect(), t = document.querySelector('.lablec .tarto').getBoundingClientRect(); return { bg, jogi: Math.round(j.width), tarto: Math.round(t.width), magassag: Math.round(document.querySelector('.lablec').getBoundingClientRect().height) }; });
   ok(`${nezet}: a lablec sotetebb a tobbi resznel, a jogi szoveg teljes szelessegu`, lab.bg !== 'rgb(255, 255, 255)' && lab.jogi >= lab.tarto - 2, JSON.stringify(lab));

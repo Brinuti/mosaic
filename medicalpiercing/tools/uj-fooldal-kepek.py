@@ -4,7 +4,7 @@
     python3 tools/uj-fooldal-kepek.py
 
 Kimenet (mind WebP, assets/img/uj-*.webp):
-  uj-logo               a logo atlatszo hatterrel, az EREDETI rozsaszin megtartva; uj-logo-rtl/-hirtv/-divany: a media-logok
+  uj-logo               a logo atlatszo hatterrel, az EREDETI rozsaszin megtartva; uj-logo-feher: ugyanaz feheren (a sotet lablecbe); uj-logo-rtl/-hirtv/-divany: a media-logok
                         a hatterszin eltavolitva, az eredeti szinek megtartva
   uj-orvos              Dr. Schmolcz Gergely az "Orvosi ajanlas" kepbol (a kep az eles fooldalon is szerepel)
   uj-ekszer-01..20      az eles fooldal osszes ekszerkepe (galeria), 900 px; -nagy: 1400 px (a nagyito)
@@ -147,6 +147,7 @@ def hatter_nelkul(forras, nev, szin=None, ker=4):
     save(kep, nev, 92)
 
 hatter_nelkul(src('f18724_5d639907d27148e1a1e80625fce81d7a'), 'uj-logo')
+hatter_nelkul(src('f18724_5d639907d27148e1a1e80625fce81d7a'), 'uj-logo-feher', szin=(255, 255, 255))   # a labLec sotet hatteren (a tulajdonos kerese, 2026-10-16)
 hatter_nelkul(src('f18724_9a3801c9a2a4432691acf8bb77cd7ae7'), 'uj-logo-rtl')
 hatter_nelkul(src('f18724_02c665dc12644013b715f4c02873cbae'), 'uj-logo-hirtv')
 hatter_nelkul(src('f18724_812ebad008414108bbae5e673867508e'), 'uj-logo-divany')

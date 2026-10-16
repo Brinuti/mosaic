@@ -9,6 +9,8 @@
 //   utvonal('/rolunk', ua)  -> { atir: '/_a/rolunk' }   (telefonon '/_m/rolunk')
 //   utvonal('/rolunk/', ua) -> { atiranyit: '/rolunk' }  (301, mint a Wix)
 
+import { UJ_ELES } from './uj-eles.js';
+
 export const TELEFON = /iPhone|iPod|Android.*Mobile|Windows Phone|BlackBerry|IEMobile|Opera Mini/i;
 
 // A Wix-cimbol (dekodolt utvonal) a fajl neve: ekezet es irasjel nelkul.
@@ -44,6 +46,11 @@ export function utvonal(ut, ua) {
   if (tiszta !== ut) return { atiranyit: tiszta || '/' };
   // a puszta /post cimet a Wix a kezdolapra iranyitja (301)
   if (tiszta === '/post') return { atiranyit: '/' };
+  // az uj oldalak elesitese utan (lib/uj-eles.js) a korabbi rejtett cimek (/uj/<utvonal>, /uj-fooldal, /uj) az eredeti cimre visznek (301, a parameterekkel)
+  if (UJ_ELES) {
+    if (tiszta === '/uj-fooldal' || tiszta === '/uj') return { atiranyit: '/' };
+    if (tiszta.startsWith('/uj/')) return { atiranyit: tiszta.slice(3) };
+  }
   // a Wix atiranyitas-kezelojenek szabalyai (301, a parametereket megtartja)
   if (WIX_ATIRANYITASOK[tiszta]) return { atiranyit: WIX_ATIRANYITASOK[tiszta] };
   // a blogbejegyzest a Wix a /post/ elotaggal is kiszolgalja

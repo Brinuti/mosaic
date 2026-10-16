@@ -45,7 +45,8 @@ async function egy(nev, opt, mobil) {
   // a motor allapota: elfer-e a tartalom gorgetes nelkul, a cim kozepen van-e, szoveg
   const meres = () => sr('const t=r.querySelector(".tartalom"), ab=r.querySelector(".ablak").getBoundingClientRect(), h=r.querySelector(".fej h2").getBoundingClientRect(); return {elfer: t.scrollHeight<=t.clientHeight+1, sh:t.scrollHeight, ch:t.clientHeight, cimKozep: Math.abs((h.left+h.width/2)-(ab.left+ab.width/2)), szoveg: r.querySelector(".ablak").innerText};');
 
-  await p.goto(`${CIM}/a-migren-piercing-gyogyulasi-ideje${ELES ? '' : '?motor=1'}`, { waitUntil: 'load' });
+  // (a /migren lapon a regi es az uj dizajnban is van altalanos Salonic-foglalo link; az uj blogcikkekben a foglalas gomb belso link: /idopontfoglalas)
+  await p.goto(`${CIM}/migren${ELES ? '' : '?motor=1'}`, { waitUntil: 'load' });
   await p.waitForTimeout(1500);
   await p.evaluate(() => { const l = [...document.querySelectorAll('a[href*="medicalpiercing.salonic.hu/selectLocation"]')]; const a = l.find((x) => x.offsetParent) || l[0]; a.scrollIntoView({ block: 'center' }); a.click(); });
   for (let i = 0; i < 100; i++) { if (await sr('return !!r.querySelector("[data-hely]")')) break; if (await sr('const t=r.querySelector(\'[data-tipus="uj"]\'); if (t) { t.click(); return true; } return false')) break; await p.waitForTimeout(250); }

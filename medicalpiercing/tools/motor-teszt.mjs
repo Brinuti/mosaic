@@ -160,10 +160,12 @@ const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) =
   await p.goto(CIM + '/a-migren-piercing-gyogyulasi-ideje?motor=1', { waitUntil: 'load' });
   await p.goto(CIM + '/a-migren-piercing-gyogyulasi-ideje?motor=0', { waitUntil: 'load' });
   const nav = salonicNavigacio(ctx);
-  await kattintLink(p);
-  const cel = await nav;
+  const hova = await kattintLink(p);
+  // az uj oldalakon (elesitve az eredeti cimen) a foglalasi gomb belso link (/idopontfoglalas): kikapcsolt motornal a regi koztes oldal (/regi-idopontfoglalas, Salonic-linkekkel) a regi ut
+  const belso = /^\/idopontfoglalas\/?$/.test(new URL(hova).pathname);
+  const cel = belso ? await p.waitForURL(/\/regi-idopontfoglalas(?:[?#]|$)/, { timeout: 8000 }).then(() => p.url(), () => null) : await nav;
   await p.waitForTimeout(600);
-  ok('?motor=0: regi ut (a munkamenetben is felulirja a ?motor=1-et)', !!cel && !(await motorAllapot(p)));
+  ok('?motor=0: regi ut (a munkamenetben is felulirja a ?motor=1-et)' + (belso ? ' - a regi koztes oldal' : ''), !!cel && !(await motorAllapot(p)), cel || '');
   await p.goto(CIM + '/foglalas-ok-mi?motor=1&first_booking=true', { waitUntil: 'load' });
   const inditoBetoltve = await p.evaluate(() => [...document.scripts].some((s) => /motor-indito/.test(s.src)));
   ok('a koszonooldalon az indito betolt, de nem csinal semmit (keret / koszonooldal)', inditoBetoltve && !(await p.evaluate(() => !!document.querySelector('[data-mp-motor]'))));
@@ -193,7 +195,9 @@ const salonicNavigacio = (ctx) => ctx.waitForEvent('request', { predicate: (r) =
   const eredetiNezet = await nezet();
   await kattintLink(p);
   await ujPiercing(p);
-  ok('nezetszelesseg: nyitott motornal eszkozszelesseg' + (MOBIL ? ' (a lap 320 px-es)' : ''), MOBIL ? /width=320/.test(eredetiNezet) && /device-width/.test(await nezet()) : (await nezet()) === eredetiNezet, `${eredetiNezet} -> ${await nezet()}`);
+  // (a regi, Wix-mintas mobil lap 320 px-es: nyitott motornal eszkozszelesseg; az uj oldal eleve eszkozszelesseg - ott nincs mit atallitani)
+  const lap320 = /width=320/.test(eredetiNezet);
+  ok('nezetszelesseg: nyitott motornal eszkozszelesseg' + (MOBIL ? (lap320 ? ' (a lap 320 px-es)' : ' (az uj lap eleve eszkozszelesseg)') : ''), MOBIL ? /device-width/.test(await nezet()) && (lap320 || /device-width/.test(eredetiNezet)) : (await nezet()) === eredetiNezet, `${eredetiNezet} -> ${await nezet()}`);
   await motorKattint(p, '[data-hely="9067"]');
   await varMotor(p, '[data-mit="fulbevalo"]');
   await motorKattint(p, '[data-mit="fulbevalo"]');

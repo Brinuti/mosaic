@@ -163,6 +163,9 @@ for (const [honnan, hova] of [['/kontroll-ok', '/kontroll-xyz'], ['/garancia-ok'
   // tipusoldal: bal kattintas, kozepso gomb (+1), jobb gomb (nem foglalas)
   {
     const { ctx, p, ki } = await nyit(CIM, '/migren-piercing-uj');
+    // az uj oldalakon a foglalasi link ugyanabban az ablakban nyilik (a tulajdonos kerese): a lap maradjon, hogy a kovetkezo kattintasok is merhetok
+    // legyenek (a window-szintu, buborekozo figyelo a suti.js document-figyeloje UTAN fut, a meres addigra megtortent)
+    await p.evaluate(() => window.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('a[href^="https://medicalpiercing.salonic.hu"]')) e.preventDefault(); }));
     ok('TikTok-pixel betolt (ttq)', await p.evaluate(() => typeof window.ttq === 'object'));
     const linkek = p.locator('a[href^="https://medicalpiercing.salonic.hu"]:visible');
     await kattint(p, linkek.first());
@@ -179,7 +182,10 @@ for (const [honnan, hova] of [['/kontroll-ok', '/kontroll-xyz'], ['/garancia-ok'
   {
     const { ctx, p: p0, ki } = await nyit(CIM, '/kozerzetjavito-piercing-soft-akcio');
     // a gomb (mint a Wixen) uj lapon nyitja a /idopontfoglalas oldalt
-    const [p] = await Promise.all([ctx.waitForEvent('page'), p0.locator('a[href="/idopontfoglalas"]:visible').first().click()]);
+    // (az uj oldalakon ugyanabban az ablakban nyilik: akkor a lap maga lep tovabb)
+    const ujLap = ctx.waitForEvent('page', { timeout: 6000 }).catch(() => null);
+    await p0.locator('a[href="/idopontfoglalas"]:visible').first().click();
+    const p = (await ujLap) || p0;
     await p.waitForLoadState('load');
     // az uj lap munkamenete ures: a regi utat kenyszeritjuk (kulonben a 100%-os kapcsolo mellett a motor magatol megnyilik es eltakarja a linket)
     await p.evaluate(() => sessionStorage.setItem('mp_motor', '0'));

@@ -18,6 +18,19 @@ const suti = (igen) => ({ name: 'mp_suti', value: `v1-s${igen ? 1 : 0}-m${igen ?
 const b = await chromium.launch({ args: ['--host-resolver-rules=MAP www.medicalpiercing.hu 127.0.0.1'] });
 let hiba = 0;
 const ok = (nev, felt, info = '') => { console.log((felt ? 'PASS ' : 'FAIL ') + nev + (info ? ' | ' + info : '')); if (!felt) hiba++; };
+// SAV_KI (assets/js/suti.js, Feri dontese, 2026-10-13): a suti-sav nem jelenik meg, a dontes nelkuli alapallapot az elfogadott "t0" suti.
+// Ilyenkor "dontes elotti" allapot nincs: az erre epulo pontok (2a, 3c, 4, 7, 9) nem ertelmezhetok - kihagyjuk, jelolve (a sav visszakapcsolasakor ujra futnak).
+const SAV_KI = await (async () => {
+  const ctx = await b.newContext();
+  await ctx.route('**/*', (r) => (r.request().url().startsWith(CIM) ? r.continue() : r.abort()));
+  const p = await ctx.newPage();
+  await p.goto(`${CIM}/adatkezeles`, { waitUntil: 'load' });
+  const t0 = /(?:^|;\s*)mp_suti=v1-s1-m1-t0(?:;|$)/.test(await p.evaluate(() => document.cookie));
+  await ctx.close();
+  return t0;
+})();
+if (SAV_KI) console.log('SAV_KI: a suti-sav ki van kapcsolva (alapbol elfogadott t0 suti) - a dontes elotti allapotra epulo pontok kihagyva');
+const okD = (nev, felt, info = '') => (SAV_KI ? console.log('KIHAGYVA (SAV_KI) ' + nev) : ok(nev, felt, info));
 
 async function kornyezet(elore) {
   const ctx = await b.newContext();
@@ -54,7 +67,7 @@ const varKuldes = async (k) => { for (let i = 0; i < 40 && !k.length; i++) await
   const { ctx, kuldott } = await kornyezet();
   const p = await ctx.newPage();
   await p.goto(`${CIM}/?gclid=${G}`, { waitUntil: 'load' });
-  ok('2a dontes elott: semmi nincs tarolva', (await tarolt(p)) === null);
+  okD('2a dontes elott: semmi nincs tarolva', (await tarolt(p)) === null);
   await dontes(p, true);
   ok('2b elfogadas utan ugyanazon a lapon: tarolva', (await tarolt(p))?.gclid?.ertek === G);
   await p.goto(koszono(G), { waitUntil: 'load' }); await varKuldes(kuldott);
@@ -75,7 +88,7 @@ const varKuldes = async (k) => { for (let i = 0; i < 40 && !k.length; i++) await
   const cel = belso.find((h) => new URL(h).pathname.length > 1) || belso[0];
   await p.goto(cel, { waitUntil: 'load' });
   const munkamenet = await p.evaluate(() => sessionStorage.getItem('savedQueryParams') || '');
-  ok('3c a masodik oldal cimeben ott a gclid, tarolva meg semmi (munkamenetben sem)', new URL(p.url()).searchParams.get('gclid') === G && (await tarolt(p)) === null && !munkamenet.includes(G), new URL(p.url()).pathname);
+  okD('3c a masodik oldal cimeben ott a gclid, tarolva meg semmi (munkamenetben sem)', new URL(p.url()).searchParams.get('gclid') === G && (await tarolt(p)) === null && !munkamenet.includes(G), new URL(p.url()).pathname);
   await dontes(p, true);
   ok('3d elfogadas a masodik oldalon: tarolva', (await tarolt(p))?.gclid?.ertek === G);
   await p.goto(koszono(null), { waitUntil: 'load' }); await varKuldes(kuldott);
@@ -97,12 +110,12 @@ const varKuldes = async (k) => { for (let i = 0; i < 40 && !k.length; i++) await
   const p = await ctx.newPage();
   await p.goto(`${CIM}/?gclid=${G}`, { waitUntil: 'load' });
   await dontes(p, false);
-  ok('4a elutasitas: semmi nincs tarolva (localStorage, sessionStorage, suti)', (await tarolt(p)) === null && !(await p.evaluate((g) => JSON.stringify(sessionStorage) + document.cookie, G)).includes(G));
+  okD('4a elutasitas: semmi nincs tarolva (localStorage, sessionStorage, suti)', (await tarolt(p)) === null && !(await p.evaluate((g) => JSON.stringify(sessionStorage) + document.cookie, G)).includes(G));
   const salonic = await p.evaluate(() => [...document.querySelectorAll('a[href]')].map((a) => a.href).filter((h) => /medicalpiercing\.salonic\.hu/.test(h)));
   ok('4b elutasitas: Salonic-link gclid nelkul', salonic.every((h) => !/[?&](gclid|gbraid|wbraid)=/.test(h)), `${salonic.length} link`);
   await p.goto(koszono(G), { waitUntil: 'load' }); await varKuldes(kuldott);
-  ok('4c elutasitas: a foglalas-meres kattintasazonosito nelkul', kuldott.length > 0 && !kuldott.at(-1).kattintas, JSON.stringify(kuldott.at(-1)?.kattintas));
-  ok('4d elutasitas a koszonooldalon sem tarol', (await tarolt(p)) === null);
+  okD('4c elutasitas: a foglalas-meres kattintasazonosito nelkul', kuldott.length > 0 && !kuldott.at(-1).kattintas, JSON.stringify(kuldott.at(-1)?.kattintas));
+  okD('4d elutasitas a koszonooldalon sem tarol', (await tarolt(p)) === null);
   ok('4e egyetlen kulso kerest sem kap gclid-et', !kulso.some((u) => u.includes(G)), kulso.filter((u) => u.includes(G)).slice(0, 2).join(' '));
   await ctx.close();
 }
@@ -133,8 +146,8 @@ const varKuldes = async (k) => { for (let i = 0; i < 40 && !k.length; i++) await
   const elso = kuldott.length;
   await dontes(p, true); await p.waitForTimeout(800);
   await dontes(p, true); await p.waitForTimeout(500); // dupla esemeny: nem mehet ki masodik potlas
-  ok('7a 4 mp utan: egy kuldes, azonosito nelkul', elso === 1 && !kuldott[0].kattintas && !kuldott[0].potlas);
-  ok('7b kesoi elfogadas: pontosan EGY potlo keres, gclid-del', kuldott.length === 2 && kuldott[1].potlas === true && kuldott[1].kattintas?.gclid?.ertek === G, `${kuldott.length} keres`);
+  okD('7a 4 mp utan: egy kuldes, azonosito nelkul', elso === 1 && !kuldott[0].kattintas && !kuldott[0].potlas);
+  okD('7b kesoi elfogadas: pontosan EGY potlo keres, gclid-del', kuldott.length === 2 && kuldott[1].potlas === true && kuldott[1].kattintas?.gclid?.ertek === G, `${kuldott.length} keres`);
   await ctx.close();
 }
 // 8. Elfogadas 4 mp-en belul: egy kuldes gclid-del, potlas nincs
@@ -152,7 +165,7 @@ const varKuldes = async (k) => { for (let i = 0; i < 40 && !k.length; i++) await
   const p = await ctx.newPage();
   await p.goto(koszono(G), { waitUntil: 'load' });
   await p.waitForTimeout(4600); await dontes(p, false); await p.waitForTimeout(800);
-  ok('9 kesoi elutasitas: egy kuldes azonosito nelkul, potlas es tarolas nincs', kuldott.length === 1 && !kuldott[0].kattintas && (await tarolt(p)) === null);
+  okD('9 kesoi elutasitas: egy kuldes azonosito nelkul, potlas es tarolas nincs', kuldott.length === 1 && !kuldott[0].kattintas && (await tarolt(p)) === null);
   await ctx.close();
 }
 // 10. Korabbi munkamenetbol maradt gclid (a javitas elotti savedQueryParams): nem kerul vissza a cimbe, a tarolo kitisztul
