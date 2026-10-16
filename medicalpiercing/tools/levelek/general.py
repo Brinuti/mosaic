@@ -61,7 +61,7 @@ p{margin:10px 0}
 '''
 
 BIZALOM = f'''<div class="trust"><b>Nyugodt kezekben leszel nálunk</b><br>
-✓ 2 238 megkérdezett vendégünk 93%-a visszajelzése: működik*<br>
+✓ 2 238 megkérdezett vendégünk 93%-a jelezte vissza, hogy nála működik*<br>
 ✓ Fülakupunktúrás végzettség, akupunktúrás pontmérő gép – a pontot a te füleden mérjük ki<br>
 ✓ Egészségügyből jöttünk, havonta közel 2 000 szúrás van mögöttünk<br>
 ✓ Orvosilag steril körülmények, G23 orvosi titán ékszer<br>
@@ -166,7 +166,7 @@ for kod, t in TIPUSOK.items():
     h93 = (f'''<h2>93% – nem ígéret, hanem vendégeink visszajelzése</h2>
 <p>2 238 megkérdezett vendégünk 93%-a jelezte vissza, hogy a piercing nála működik.* Fontos, hogy őszinték legyünk: ez nem akupunktúra, nem csodaszer és nem gyógymód, hanem közérzetjavító ékszer, amelyet egészségügyi alapossággal helyezünk be. Mindenki más, a tapasztalat egyénenként eltér – ezért van garancia: ha 6 hét után nem azt tapasztalod, amit vártál, munkadíj nélkül, csak az új ékszer áráért (5 000 Ft) helyezünk be egy megerősítő piercinget.</p>'''
            if t['h93'] else f'''<h2>Őszintén: mire számíthatsz?</h2>
-<p>A {n} nem akupunktúra, nem csodaszer és nem gyógymód, hanem közérzetjavító ékszer, amelyet egészségügyi alapossággal helyezünk be. Mindenki más, a tapasztalat egyénenként eltér – de sok vendégünk ír arról, mit tapasztalt:</p>''')
+<p>{a.capitalize()} {n} nem akupunktúra, nem csodaszer és nem gyógymód, hanem közérzetjavító ékszer, amelyet egészségügyi alapossággal helyezünk be. Mindenki más, a tapasztalat egyénenként eltér – de sok vendégünk ír arról, mit tapasztalt:</p>''')
     torzs = f'''<h1>{m(BP["nev"])}, a pontosság a lényeg – így készül {a} {n}ed</h1>
 <p>{t["bek"]}</p>
 <h2>Miért számít, hová kerül?</h2>
@@ -175,13 +175,13 @@ for kod, t in TIPUSOK.items():
 <p>Minden fül más. A szúrás előtt akupunktúrás pontmérő géppel vizsgáljuk meg a füledet: a készülék a bőr elektromos vezetőképességét méri, ami az akupunktúrás pontokon eltér a környező bőrétől. Így a pontot a te füleden keressük meg – nem egy ábráról másoljuk.</p>
 <h2>Akik szúrnak: egészségügyből jöttünk</h2>
 <p>Alapítónk, Kovács Gabriella 20 évig dolgozott az egészségügyben, egyetemi okleveles ápolóként, majd osztályvezető ápolóként. Kollégáink is az egészségügyből érkeztek, és mindannyian fülakupunktúrás végzettséggel dolgozunk. Havonta közel 2 000 piercinget helyezünk be – több tízezer szúrás van a hátunk mögött.</p>
-<p>Ezért mondjuk nyugodt szívvel: nálunk nem kell „rossz helyre szúrt” piercingtől tartanod. Ismerjük a fül pontjait, anatómiai tudással dolgozunk, és minden pontot megmérünk.</p>
+<p>Ezért mondjuk nyugodt szívvel: nálunk a szúrás helyéről nem szemmérték dönt, így nem kell attól tartanod, hogy rossz helyre kerül a piercing. Ismerjük a fül pontjait, anatómiai tudással dolgozunk, és minden pontot megmérünk.</p>
 {h93}
 {velemeny(*t["vel"][0])}{velemeny(*t["vel"][1])}
 <p><a class="btn2" href="{L["velemenyek"]}">Mind a {m(GOOGLE_DB)} vélemény</a></p>
 <h2>Egy jó tanács az időpontod előtt</h2><p>{t["tipp"]}</p>
 <p><a class="btn" href="{L[kod]}">Bővebben {a} {n}ről</a></p>
-{mini_idopont(BP)}{alairas(BP, True)}'''
+{mini_idopont(BP)}<p style="font-size:15px"><b>Kérdésed van még?</b> Válaszolj erre a levélre, és még az időpontod előtt válaszolunk.</p>{alairas(BP, True)}'''
     level(f'03-E1-{kod}', 'Foglalás +1 nap, ha legalább 5 nap van az időpontig (2–3 db-os csomag = shenmen)', f'{n.capitalize()} foglalói (vidéken az aláírás fotó nélkül)',
           f'Pontosan oda kerül, ahová kell – {a} {n}edről', 'Pontmérő, egészségügyi háttér, több tízezer szúrás – és mit mondanak a vendégeink.',
           torzs, KEPALAP + f'ful-{kod}.jpg', L[kod])
@@ -194,16 +194,16 @@ level('04-E2-igy-zajlik', 'Ha legalább 7 nap van az időpontig: kb. a hátralé
 <p>Minden egy rövid beszélgetéssel kezdődik: megkérdezzük, mi miatt érkeztél, milyen gyakran és mennyire zavarnak a panaszaid, és rákérdezünk a fontos előzményekre. Utána elmondjuk, hová kerül az ékszer, mire számíthatsz – és megválaszoljuk az összes kérdésedet. Semmi nem történik úgy, hogy ne tudnád előre.</p>
 <h2>2. Kiválasztod az ékszeredet</h2>
 <div class="kep">{kep(K["ekszerek"], L["ekszerek"], "Ékszereink")}<div class="felirat">Néhány a kedvenceink közül – a teljes választékot a helyszínen mutatjuk meg.</div></div>
-<p>Megmutatjuk az összes ékszert, és te választod ki, melyik tetszik a legjobban: karika vagy talpas, sima vagy köves, nőknek és férfiaknak is. Mindegyik G23 titánium – a legmagasabb minőségű, antiallergén orvosi fém, ezért fémallergia mellett is nyugodtan hordhatod. Kicsi és könnyű: a legtöbben pár nap után már észre sem veszik, és a gyógyulás után akár az oldalán is kényelmesen lehet aludni vele. Az ékszer ára benne van a szúrás árában, és a gyógyulás után bármikor lecserélheted egy másikra.</p>
+<p>Megmutatjuk az összes ékszert, és te választod ki, melyik tetszik a legjobban: karika vagy talpas, sima vagy köves, nőknek és férfiaknak is. Mindegyik G23 titánium – a legmagasabb minőségű, antiallergén orvosi fém, ezért fémallergia mellett is jó választás (ha van, jelezd a beszélgetésnél). Kicsi és könnyű: a legtöbben pár nap után már észre sem veszik, és a gyógyulás után akár az oldalán is kényelmesen lehet aludni vele. Az ékszer ára benne van a szúrás árában, és a gyógyulás után bármikor lecserélheted egy másikra.</p>
 <h2>3. Steril eszközök, orvosi alapossággal</h2>
-<div class="kep">{kep(K["steril"], L["folyamat"], "Steril, csomagolt eszközök és autokláv")}<div class="felirat">Steril, csomagolt eszközök – és az autokláv, amelyben fertőtlenítünk.</div></div>
+<div class="kep">{kep(K["steril"], L["folyamat"], "Steril, csomagolt eszközök és autokláv")}<div class="felirat">Steril, csomagolt eszközök – és az autokláv, amelyben sterilizálunk.</div></div>
 <p>Nem a bemutatott ékszert kapod, hanem annak autoklávban sterilizált, légmentesen lezárt párját. Eszközeinket zártkamrás autoklávval fertőtlenítjük, a füled felületét pedig fertőtlenítő spray-vel készítjük elő. A rendelőnket és a teljes folyamatunkat dr. Smolcz Gergely is átnézte: személyesen járt nálunk, és végignézte, hogyan dolgozunk.</p>
 <h2>4. Megmérjük a pontot</h2>
 <p>Akupunktúrás pontmérő géppel keressük meg a pontot a te füleden – így pontosan oda kerül a piercing, ahová kell.</p>
 <h2>5. Érzéstelenítjük a füled</h2>
 <p>A bemérés után érzéstelenítő spray-vel fújjuk be a fül felületét.</p>
 <h2>6. Pár másodperc, és kész</h2>
-<p>Maga a szúrás pár másodperc – olyan, mint egy szúnyogcsípés. Vendégeink nagy része utána már csak mosolyog, hogy ettől tartott. Nézd meg videón, hogy előre lásd:</p>
+<p>Maga a szúrás pár másodperc – vendégeink többsége egy szúnyogcsípéshez hasonlítja. Vendégeink nagy része utána már csak mosolyog, hogy ettől tartott. Nézd meg videón, hogy előre lásd:</p>
 {kep(K["video"], L["video"], "Videó: így néz ki egy szúrás")}
 {velemeny("A piercing helyét pontosan kimérte, behelyezés közben is folyamatosan jelezte, hogy éppen melyik folyamatnál tart, így semmi nem ért váratlanul. Az ékszerválaszték is nagy, szebbnél szebbek.", "Nikoletta B.")}
 {velemeny("Csekély kellemetlenséggel járt, gyorsan bent volt mindkettő. Mire feleszméltem, 2 piercing boldog tulajdonosa lettem.", "Éva K.-Sz.")}
@@ -220,7 +220,7 @@ level('05-E3-nem-engedjuk-el-a-kezed', 'Ha legalább 14 nap van az időpontig: e
 <p>Ha bármi történik – lassabban gyógyul, érzékeny marad, begyullad, kiesik az ékszer, vagy egyszerűen csak bizonytalan vagy –, bejelentkezhetsz ingyenes kontrollra. Megnézzük, segítünk, és ha kell, ideiglenes szilikon ékszert vagy ékszercserét is megoldunk. A szúrás után is korlátlanul számíthatsz ránk.</p>
 <p><a class="btn2" href="{L["kontroll"]}">Így működik a kontroll</a></p>
 <h2>És ha nem azt tapasztalod, amit vártál?</h2>
-<p>Vendégeink 93%-a visszajelzése szerint a piercing működik*, de mindenki más. Ha 6 hét után nálad nem hozza, amit vártál, munkadíj nélkül, csak az új ékszer áráért (5 000 Ft) helyezünk be egy megerősítő piercinget – a szúrás után 6 hét és 6 hónap között.</p>
+<p>Vendégeink 93%-a jelezte vissza, hogy nála működik*, de mindenki más. Ha 6 hét után nálad nem hozza, amit vártál, munkadíj nélkül, csak az új ékszer áráért (5 000 Ft) helyezünk be egy megerősítő piercinget – a szúrás után 6 hét és 6 hónap között.</p>
 <p><a class="btn2" href="{L["garancia"]}">A garancia részletei</a></p>
 {velemeny("A klimax rögtön segített a hőhullámaimon. Sajnos ez később kilökődött, ezért visszamentem garanciaidőn belül, megnézték és újraszúrták.", "Liza P.")}
 {velemeny("Kaptam utókezeléshez is tájékoztatást, és ha segítségre lenne szükségem, akkor keressem őket bizalommal!", "Andrea K.")}
@@ -232,7 +232,7 @@ level('05-E3-nem-engedjuk-el-a-kezed', 'Ha legalább 14 nap van az időpontig: e
 def t48(d, bp):
     return f'''<h1>Két nap múlva találkozunk, {m(d["nev"])}!</h1>
 <p>Már nagyon várunk. Hogy minden simán menjen, összeszedtük, amit érdemes tudnod.</p>
-{foglalas_kartya(d)}{gombok(d)}
+{foglalas_kartya(d)}<p><a class="btn" href="{L['modositas']}?ott-leszek=1">Ott leszek ✓</a><a class="btn2" href="{L['modositas']}">Időpont módosítása</a></p><p style="font-size:14px"><a href="{d['terkep']}">Útvonaltervezés a térképen »</a></p>
 <h2>Így készülj</h2><table role="presentation" class="steps">
 <tr><td><span class="num">1</span></td><td><b>Egyél előtte rendesen</b> – üres gyomorral könnyebben megszédül az ember.</td></tr>
 <tr><td><span class="num">2</span></td><td><b>Ha hosszú a hajad, fogd össze</b>, hogy ne lógjon a füledre.</td></tr>
@@ -240,12 +240,13 @@ def t48(d, bp):
 <tr><td><span class="num">4</span></td><td><b>Tervezz {m(d["ido_tart"])}et</b>, és érkezz 5 perccel korábban. Ha késnél, hívj minket.</td></tr></table>
 <p><b>Hogyan találsz meg minket?</b> {m(d["erkezes"])}</p>
 <h2>Mi fog történni?</h2>
-<p>Leülünk beszélgetni: megkérdezzük, mi miatt érkeztél, és elmondjuk, hová kerül az ékszer. Kiválasztod a neked tetsző G23 titán ékszert, akupunktúrás pontmérővel kimérjük a pontot a füleden, érzéstelenítjük – és a szúrás maga pár másodperc, olyan, mint egy szúnyogcsípés. Vendégeink nagy része utána csak mosolyog, hogy ettől tartott.</p>
+<p>Leülünk beszélgetni: megkérdezzük, mi miatt érkeztél, és elmondjuk, hová kerül az ékszer. Kiválasztod a neked tetsző G23 titán ékszert, akupunktúrás pontmérővel kimérjük a pontot a füleden, érzéstelenítjük – és a szúrás maga pár másodperc – a legtöbben egy szúnyogcsípéshez hasonlítják. Vendégeink nagy része utána csak mosolyog, hogy ettől tartott.</p>
 <div class="kep">{kep(K["ekszerek"], L["ekszerek"], "Ékszereink")}<div class="felirat">Antiallergén G23 titán ékszerek – a helyszínen te választasz.</div></div>
 {kep(K["video"], L["video"], "Videó: így néz ki egy szúrás")}
 <h2>Utána sem maradsz egyedül</h2>
 <p>A szúrás után elmondjuk és e-mailben is elküldjük az utóápolás lépéseit, és a gyógyulás alatt is jelentkezünk. Ha bármi kérdésed van, ingyenes kontrollra bármikor bejelentkezhetsz – ez az egész piacon csak nálunk van így.</p>
 {velemeny("Kedves fogadtatás, igényes, tiszta környezet, mindent elmondott a hölgy lépésről lépésre, ami megnyugtatott.", "Enikő Cs.")}
+<p style="font-size:15px"><b>Kérdésed van még?</b> Válaszolj erre a levélre, és még az időpontod előtt válaszolunk.</p>
 {alairas(d, bp)}'''
 level('06-T48-felkeszules-BP', '48 órával előtte, ha a foglalás legalább 3 nappal az időpont előtt történt (a Salonic „Időpont emlékeztető” helyett)', 'Budapesti foglaló',
       'Két nap múlva találkozunk – így készülj', 'Négy apróság, és minden simán megy. Plusz: mi fog pontosan történni.', t48(BP, True))
@@ -260,7 +261,7 @@ level('08-modositas', 'Azonnal, időpont-módosításkor (a Salonic „Foglalás
 level('09-lemondas', 'Azonnal, lemondáskor vagy törléskor (a Salonic „Lemondás” és „Időpont törlés” levele helyett)', 'Mindenki',
  'Töröltük az időpontodat – itt választhatsz újat', 'Ha csak az időpont nem volt jó, innen egyből választhatsz másikat.', f'''<h1>Töröltük az időpontodat</h1>
 <p>Az alábbi időpontodat töröltük: <b>{m(BP["datum"])}, {m(BP["ido"])}</b> – {m(BP["szolg"])}.</p>
-<p>Ha csak az időpont nem volt jó, nem kell elölről kezdened – itt egy perc alatt választhatsz újat:</p>
+<p>A legtöbben csak időpontot cserélnek. Ha nálad is csak az időpont nem volt jó, nem kell elölről kezdened – itt egy perc alatt választhatsz újat:</p>
 <p><a class="btn" href="{L["foglalas"]}">Új időpontot választok</a></p>
 <p>Ha vidéki helyszínre foglalnál újra, a következő helyi napokat a <a href="{L["varosok"]}">helyszíneink oldalán</a> látod. Ha kérdésed van, hívj nyugodtan: +36 1 901 7444.</p>
 <p>Ha később jönnél, akkor is szeretettel várunk.<br><b>A Medical Piercing csapata</b></p>''')
