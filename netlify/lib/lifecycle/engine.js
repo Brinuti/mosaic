@@ -111,6 +111,36 @@ async function vendegFoglalasa(db, uzletag, email, telefon, kezdet, allapot, lem
  * @param {{uzenetId:string, targy:string, kuldo?:string, szoveg?:string, html?:string}} level
  * @returns {Promise<{ok:boolean, tipus?:string, foglalasId?:string, duplikalt?:boolean, miert?:string}>}
  */
+/**
+ * MP egyszeri atemeles (a tulajdonos kerese, 2026-10-16): az elesites ELOTT foglalt, meg elottunk allo Salonic-foglalasok felvetele.
+ * T0 (visszaigazolas) NEM megy (mintha athelyezes lenne), a tobbi uzenet a szokasos terv szerint. A mar ismert foglalasokhoz nem nyul.
+ * rekord: { id (Salonic bookingId, UUID), nev, telefon, email, szolgaltatas, munkatars, kezdet (epoch) }
+ */
+export async function mpImport(db, cfg, rekordok, most) {
+  const ossz = { felvett: 0, mar_volt: 0, hibas: 0, elmult: 0 };
+  for (const r of Array.isArray(rekordok) ? rekordok.slice(0, 2000) : []) {
+    const id = String(r && r.id || '');
+    const kezdet = Number(r && r.kezdet);
+    if (!UUID_RE.test(id) || !Number.isFinite(kezdet) || !String(r.szolgaltatas || '').trim()) { ossz.hibas += 1; continue; }
+    if (kezdet <= most) { ossz.elmult += 1; continue; }
+    if (await elso(db, 'SELECT 1 AS x FROM foglalasok WHERE id = ?1', id)) { ossz.mar_volt += 1; continue; }
+    const telefon = normalizal(r.telefon);
+    const nev = String(r.nev || '').trim() || null;
+    const email = String(r.email || '').trim() || null;
+    const szolgaltatas = String(r.szolgaltatas).trim();
+    const munkatars = String(r.munkatars || '').trim() || null;
+    const szeg = szegmensCimkek('mp', szolgaltatas, munkatars || '');
+    const teszt = tesztVendeg(cfg, { email, nev, telefon }) ? 1 : 0;
+    await futtat(db, `INSERT INTO foglalasok (id, uzletag, fiok, nev, keresztnev, telefon, email, szolgaltatas, szegmens, munkatars, kezdet, letrehozva, allapot, token, teszt)
+      VALUES (?1, 'mp', ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 'aktiv', ?12, ?13) ON CONFLICT(id) DO NOTHING`,
+    id, UZLETAGAK.mp.fiok, nev, keresztnev(nev), telefon, email, szolgaltatas, szeg.join(','), munkatars, kezdet, most, veletlen(10), teszt);
+    await tervMent(db, id, tervez({ uzletag: 'mp', szegmensek: szeg, kezdet }, most, { athelyezes: true }), { uzletag: 'mp' });
+    ossz.felvett += 1;
+  }
+  await naplo(db, most, 'mp:import', null, `mp-import:${most}`, ossz);
+  return ossz;
+}
+
 export async function ingest(db, env, level, most, opc = {}) {
   const cfg = beallitas(env);
   const mt = munkatarsTipus(level.targy);

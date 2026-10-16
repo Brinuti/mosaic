@@ -293,3 +293,23 @@ test('mp: utoapolas (A0 1 oraval a szuras utan, A2 14 nap mulva 10:00) piercinge
   await tick(db, env, kk, a0 + 60, { foglalasId: UUID1, mpErtekeles: async () => 5033 });
   assert.ok(kk.ki.email.some((x) => /Így ápold a piercinged/.test(x.targy)), JSON.stringify(kk.ki.email.map((x) => x.targy)));
 });
+
+test('mp: egyszeri atemeles (mpImport) - T0 nelkul, a tobbi a terv szerint; ismert / elmult / hibas kimarad; a vegpont kulcs nelkul 404', async () => {
+  const { mpImport, beallitas } = await import('../../netlify/lib/lifecycle/engine.js');
+  const db = d1();
+  const cfg = beallitas({ LIFECYCLE_MOD: 'elo', LIFECYCLE_UZLETAGOK: 'mp' });
+  const r = { id: UUID1, nev: 'Próba Anna', telefon: '06301234567', email: 'anna@example.com', szolgaltatas: '1 db Fejfájás / Migrén Piercing', munkatars: 'Kovács Gabriella', kezdet: MOST + 10 * NAP };
+  const e = await mpImport(db, cfg, [r, { ...r }, { ...r, id: 'x' }, { ...r, id: '11111111-2222-3333-4444-555555555555', kezdet: MOST - 60 }], MOST);
+  assert.deepEqual(e, { felvett: 1, mar_volt: 1, hibas: 1, elmult: 1 });
+  const f = szam(db, 'SELECT * FROM foglalasok WHERE id = ?1', UUID1);
+  assert.equal(f.szegmens, 'migren,bp'); assert.equal(f.keresztnev, 'Anna'); assert.equal(f.telefon, '+36301234567'); assert.equal(f.teszt, 0); assert.match(f.token, /^[0-9a-f]{10}$/);
+  const t = db.sqlite.prepare("SELECT uzenet_id FROM kuldesek WHERE foglalas_id = ?1 AND allapot = 'fuggoben' ORDER BY uzenet_id").all(UUID1).map((x) => x.uzenet_id);
+  assert.ok(!t.includes('MP-EMAIL-01') && !t.includes('MP-SMS-01') && t.includes('MP-SMS-03') && t.includes('MP-EMAIL-10') && t.includes('MP-EMAIL-14'), t.join(','));
+  const { api } = await import('../../netlify/lib/lifecycle/http.js');
+  const keres = (env, torzs) => api(new Request('https://www.mosaicheadspa.hu/api/lifecycle/mp-import', { method: 'POST', body: JSON.stringify(torzs) }), { LIFECYCLE_DB: d1(), ...env });
+  assert.equal((await keres({}, { kulcs: 'a', rekordok: [r] })).status, 404);
+  const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode('titok')))].map((b) => b.toString(16).padStart(2, '0')).join('');
+  assert.equal((await keres({ MP_IMPORT_HASH: hash }, { kulcs: 'rossz', rekordok: [r] })).status, 404);
+  const jo = await keres({ MP_IMPORT_HASH: hash, LIFECYCLE_MOD: 'elo' }, { kulcs: 'titok', rekordok: [{ ...r, kezdet: Math.floor(Date.now() / 1000) + 10 * NAP }] });
+  assert.equal(jo.status, 200); assert.equal((await jo.json()).felvett, 1); assert.equal(jo.headers.get('access-control-allow-origin'), 'https://app.salonic.hu');
+});
