@@ -10,8 +10,9 @@
 //   a kategoria-oldalak hosenek ertekeles-sora ebbol frissul (assets/js/uj-fooldal.js 4c.).
 // - GET /f/<kod>, /m/<kod>: "A foglalasod" oldal (lib/foglalasom.js) a foglalas -> megjelenes rendszer kozos D1-jebol (LIFECYCLE_DB), csak az MP-foglalasok;
 //   /f/minta: bemutato mintaadatokkal;
-// - POST /api/lifecycle-level: a foglalas -> megjelenes rendszer (Mosaic-projekt) MP-leveleinek relay-e: a level ennek a projektnek a Gmail-fiokjabol megy
-//   (SMTP_PASS), a hivo az x-relay-kulcs fejlecet kuldi, aminek SHA-256-ja = RELAY_KULCS_HASH (wrangler.toml).
+// - POST /api/lifecycle-kimeno: a foglalas -> megjelenes rendszer (Mosaic-projekt) MP-leveleinek kimeno sora: a motor a kozos D1 mp_kimeno tablajaba
+//   irja a levelet, ez ennek a projektnek a Gmail-fiokjabol (SMTP_PASS) kuldi ki (lib/lifecycle-kimeno.js). Kulcs nincs (a tulajdonos dontese):
+//   csak a motor altal sorba tett level mehet ki, a valasz csak darabszam.
 //
 // Csak a lapokra (es a Salonic stiluslapjara: /assets/salonic/) fut (dist/_routes.json): a kepek, betuk, stilusok, szkriptek es
 // videok kozvetlenul a Cloudflare tarhelyerol jonnek, fuggvenyhivas nelkul.
@@ -27,6 +28,7 @@ import { TRUSTINDEX_TARTALOM, ertekelesAdat } from '../lib/ertekeles.js';
 import { SALONIC_ELOTAG, salonicFajl } from '../lib/salonic-css.js';
 import { UJ_ELES } from '../lib/uj-eles.js';
 import { foglalasom } from '../lib/foglalasom.js';
+import { kimenoFeldolgoz } from '../lib/lifecycle-kimeno.js';
 
 // Minden mas host (*.pages.dev elonezetek) probacim: noindex + tilto robots.txt.
 const ELES_HOST = /^(www\.)?medicalpiercing\.hu$/;
@@ -43,7 +45,7 @@ export async function onRequest(context) {
   if (request.method === 'POST' && url.pathname === '/api/urlap') return urlap(context);
   if (request.method === 'GET' && url.pathname === '/api/kitelepulesek') return kitelepulesek();
   if (request.method === 'GET' && url.pathname === '/api/ertekeles') return ertekeles();
-  if (url.pathname === '/api/lifecycle-level') return request.method === 'POST' ? lifecycleLevel(context) : new Response('POST kell', { status: 405 });
+  if (url.pathname === '/api/lifecycle-kimeno') return request.method === 'POST' ? lifecycleKimenoVegpont(context) : new Response('POST kell', { status: 405, headers: { allow: 'POST' } });
   if (request.method !== 'GET' && request.method !== 'HEAD') return context.next();
   if (/^\/[fm]\//.test(url.pathname) && url.hostname !== 'medicalpiercing.hu') { // "A foglalasod" (a statikus oldalak elott; a gyoker domain lent www-re iranyit)
     const v = await foglalasom(request, context.env);
@@ -169,46 +171,32 @@ async function urlap(context) {
   return new Response('ok');
 }
 
-// ---- a foglalas -> megjelenes rendszer MP-leveleinek relay-e -------------------------------------------------------------------------------------
-const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
-const EMAIL_RE = /^[^\s@<>",;]+@[^\s@<>",;]+\.[A-Za-z]{2,}$/;
+// ---- a foglalas -> megjelenes rendszer MP-leveleinek kimeno sora (lib/lifecycle-kimeno.js) -------------------------------------------------------
 const valaszJson = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
-/** Idoben allando osszehasonlitas (a hash-ek egyforma hosszuak). */
-function egyezik(a, b) {
-  if (a.length !== b.length) return false;
-  let d = 0;
-  for (let i = 0; i < a.length; i += 1) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return d === 0;
-}
-export async function lifecycleLevel(context) {
-  const { request, env } = context;
-  const hashek = String(env.RELAY_KULCS_HASH || '').toLowerCase().split(/[\s,;]+/).filter((h) => /^[0-9a-f]{64}$/.test(h)); // kulcscserekor ket hash is lehet
-  const kulcs = request.headers.get('x-relay-kulcs') || '';
-  if (!hashek.length || !kulcs) return valaszJson({ hiba: 'nincs jogosultsag' }, 401);
-  const h = hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(kulcs)));
-  if (!hashek.some((x) => egyezik(x, h))) return valaszJson({ hiba: 'nincs jogosultsag' }, 401);
-  let t;
-  try { t = await request.json(); } catch { return valaszJson({ hiba: 'rossz JSON' }, 400); }
-  const to = String(t.to || '').trim(), subject = String(t.subject || '').trim(), html = String(t.html || ''), text = String(t.text || '');
-  const replyTo = String(t.replyTo || '').trim();
-  if (!EMAIL_RE.test(to) || !subject || subject.length > 300 || /[\r\n]/.test(subject) || !html || html.length > 400000 || text.length > 200000 || (replyTo && !EMAIL_RE.test(replyTo))) {
-    return valaszJson({ hiba: 'hibas adat' }, 400);
-  }
+export async function lifecycleKimenoVegpont(context) {
+  const { env } = context;
+  if (!env.LIFECYCLE_DB) return valaszJson({ hiba: 'nincs_db' }, 503);
+  if (!env.SMTP_PASS) { console.log('lifecycle-kimeno: nincs SMTP_PASS, a sor marad'); return valaszJson({ hiba: 'nincs SMTP_PASS' }, 503); }
   const SMTP_USER = env.SMTP_USER || 'medicalpiercing.hu@gmail.com';
-  if (!env.SMTP_PASS) { console.log('lifecycle-level: nincs SMTP_PASS, a level nem ment ki'); return valaszJson({ hiba: 'nincs SMTP_PASS' }, 503); }
   const port = Number(env.SMTP_PORT || 465);
+  let posta = null;
+  const kuld = async ({ to, subject, html, text, reply }) => {
+    if (!posta) {
+      posta = await WorkerMailer.connect({
+        host: env.SMTP_HOST || 'smtp.gmail.com', port, secure: port === 465, startTls: port !== 465,
+        credentials: { username: SMTP_USER, password: String(env.SMTP_PASS).replace(/\s+/g, '') }, authType: 'plain',
+      });
+    }
+    try {
+      await posta.send({ from: { name: 'Medical Piercing', email: SMTP_USER }, to, reply: reply || SMTP_USER, subject, html, ...(text ? { text } : {}) });
+    } catch (e) { try { await posta.close(); } catch { /* mar lezarult */ } posta = null; throw e; }
+  };
   try {
-    const posta = await WorkerMailer.connect({
-      host: env.SMTP_HOST || 'smtp.gmail.com', port, secure: port === 465, startTls: port !== 465,
-      credentials: { username: SMTP_USER, password: String(env.SMTP_PASS).replace(/\s+/g, '') }, authType: 'plain',
-    });
-    await posta.send({ from: { name: 'Medical Piercing', email: SMTP_USER }, to, reply: replyTo || SMTP_USER, subject, html, ...(text ? { text } : {}) });
-    await posta.close();
+    return valaszJson(await kimenoFeldolgoz(env.LIFECYCLE_DB, kuld));
   } catch (e) {
-    console.error('lifecycle-level: SMTP-hiba', e && e.message);
-    return valaszJson({ hiba: 'kuldesi hiba' }, 502);
-  }
-  return valaszJson({ ok: true, id: 'mp-smtp' });
+    console.error('lifecycle-kimeno: hiba', e && e.message);
+    return valaszJson({ hiba: 'feldolgozasi hiba' }, 500);
+  } finally { if (posta) { try { await posta.close(); } catch { /* mar lezarult */ } } }
 }
 
 function base64(puffer) {

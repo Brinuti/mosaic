@@ -1,5 +1,5 @@
 // Medical Piercing (uzletag 'mp') a lifecycle-motorban: felismeres (customer=medicalpiercing), szegmensek, utemezes a lead-time szerint,
-// a kesz HTML-sablonok kitoltese (helyorzo nem marad), velemenyek a D1-bol, a kuldes a relay-en at (soha nem a MOSAIC postafiokjabol),
+// a kesz HTML-sablonok kitoltese (helyorzo nem marad), velemenyek a D1-bol, a kuldes a D1 mp_kimeno soron at, az MP-projekt kuldi (soha nem a MOSAIC postafiokjabol),
 // sajat lemondas / athelyezes uzenetek, a MOSAIC /f es /m linkje az MP-oldalra iranyit. Futtatas: node --test tools/lifecycle-teszt/mp.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,6 +12,7 @@ import { KATALOG } from '../../netlify/lib/lifecycle/katalog/index.js';
 import { ertekek, emailKirajzol, smsKirajzol } from '../../netlify/lib/lifecycle/render.js';
 import { szegmensek, uzletagFelismer, mpHelyszin } from '../../netlify/lib/lifecycle/uzletag.js';
 import { kuldokKeszit } from '../../netlify/lib/lifecycle/kuldok.js';
+import { kimenoFeldolgoz } from '../../medicalpiercing/lib/lifecycle-kimeno.js';
 import { reszletek, megerosites } from '../../netlify/lib/lifecycle/http.js';
 import { helyi } from '../../netlify/lib/lifecycle/ido.js';
 
@@ -172,31 +173,87 @@ test('mp: sajat lemondas / athelyezes uzenetek (nem a MOSAIC COMMON-*), az ujrat
   assert.equal(szam(db, "SELECT COUNT(*) AS n FROM kuldesek WHERE allapot = 'fuggoben'").n, 0);
 });
 
-test('mp: kuldo - az e-mail a relay-en at megy (x-relay-kulcs), kulcs nelkul NEM megy ki es nem a MOSAIC SMTP-jen; SMS: a fiok kozos, kesobbi sajat domain kulon tokennel', async () => {
+test('mp: kuldo - az e-mail a D1 mp_kimeno sorba kerul (kulcs nelkul), utana best-effort POST az MP-vegpontra; soha nem a MOSAIC SMTP-jen; SMS: a fiok kozos, kesobbi sajat domain kulon tokennel', async () => {
   const hivasok = [];
-  const fetchFn = async (url, o) => { hivasok.push({ url, o }); if (/connect$/.test(url)) return new Response(JSON.stringify({ access_token: `tok-${new URLSearchParams(o.body).get('domain')}` })); if (/sendSMS$/.test(url)) return new Response(JSON.stringify({ sms_id: 7 })); return new Response(JSON.stringify({ ok: true, id: 'relay-1' })); };
-  const k = kuldokKeszit({ MP_RELAY_KULCS: 'titok', SMTP_PASS: 'mosaic-jelszo', SIMPLESMS_JELSZO: 'x', MP_SIMPLESMS_DOMAIN: 'medicalpiercing.hu' }, { fetchFn });
+  const fetchFn = async (url, o) => { hivasok.push({ url, o }); if (/connect$/.test(url)) return new Response(JSON.stringify({ access_token: `tok-${new URLSearchParams(o.body).get('domain')}` })); if (/sendSMS$/.test(url)) return new Response(JSON.stringify({ sms_id: 7 })); return new Response('{"felvett":1}'); };
+  const db = d1();
+  const k = kuldokKeszit({ LIFECYCLE_DB: db, SMTP_PASS: 'mosaic-jelszo', SIMPLESMS_JELSZO: 'x', MP_SIMPLESMS_DOMAIN: 'medicalpiercing.hu' }, { fetchFn });
   const v = await k.email({ to: 'a@b.hu', targy: 'T', html: '<p>h</p>', szoveg: 'h', felado: 'Medical Piercing', valasz: 'medicalpiercing.hu@gmail.com', uzletag: 'mp' });
-  assert.equal(v.id, 'relay-1');
-  assert.equal(hivasok[0].url, 'https://www.medicalpiercing.hu/api/lifecycle-level');
-  assert.equal(hivasok[0].o.headers['x-relay-kulcs'], 'titok');
-  assert.deepEqual(JSON.parse(hivasok[0].o.body), { to: 'a@b.hu', subject: 'T', html: '<p>h</p>', text: 'h', replyTo: 'medicalpiercing.hu@gmail.com' });
+  assert.match(v.id, /^mp-sor:[0-9a-f-]{36}$/);
+  assert.equal(k.mpSorban, 1);
+  const sor = szam(db, 'SELECT * FROM mp_kimeno');
+  assert.deepEqual({ ...sor, id: undefined, letrehozva: undefined }, { id: undefined, cimzett: 'a@b.hu', targy: 'T', html: '<p>h</p>', szoveg: 'h', valasz: 'medicalpiercing.hu@gmail.com', letrehozva: undefined, elkuldve: null, hiba: null, probak: 0 });
+  assert.equal(`mp-sor:${sor.id}`, v.id);
+  assert.equal(hivasok.length, 1);
+  assert.equal(hivasok[0].url, 'https://www.medicalpiercing.hu/api/lifecycle-kimeno');
+  assert.equal(hivasok[0].o.method, 'POST'); assert.equal(hivasok[0].o.body, undefined); assert.equal(hivasok[0].o.headers, undefined, 'nincs kulcs / fejlec');
   await k.sms({ telefon: '+36301234567', szoveg: 'x - Medical Piercing', uzletag: 'mp' });
   await k.sms({ telefon: '+36301234567', szoveg: 'y', uzletag: 'hair' });
   const connect = hivasok.filter((h) => /connect$/.test(h.url)).map((h) => new URLSearchParams(h.o.body).get('domain'));
   assert.deepEqual(connect, ['medicalpiercing.hu', 'mosaicheadspa.hu']);
-  // kulcs nelkul: vegleges hiba, a fetch / SMTP nem hivodik
-  const h2 = [];
-  const k2 = kuldokKeszit({ SMTP_PASS: 'mosaic-jelszo' }, { fetchFn: async (u) => { h2.push(u); return new Response('{}'); } });
-  await assert.rejects(k2.email({ to: 'a@b.hu', targy: 'T', html: 'h', szoveg: 'h', uzletag: 'mp' }), (e) => e.vegleges === true && /MP_RELAY_KULCS/.test(e.message));
-  assert.equal(h2.length, 0);
-  // a motorban: a kuldes "hiba" allapotba kerul (nem probalja ujra, nem megy mas uton)
-  const db = d1(); const env = { LIFECYCLE_MOD: 'teszt' };
-  await ingest(db, env, level(MINTA.foglalt, { datum: salonicDatum(10) }), MOST);
-  const kk = { ...kuldokKeszit({ SMTP_PASS: 'mosaic-jelszo' }, { fetchFn: async () => new Response('{}') }), sms: async () => ({ id: 's' }) };
-  await tick(db, env, kk, MOST);
-  const sor = szam(db, "SELECT allapot, hiba FROM kuldesek WHERE uzenet_id = 'MP-EMAIL-01'");
-  assert.equal(sor.allapot, 'hiba'); assert.match(sor.hiba, /MP_RELAY_KULCS/);
+  // a ping hibaja nem szamit (a sor bent marad, a kovetkezo tick ujra pingel); waitUntil-lal a ping a hattetbe kerul
+  const varo = [];
+  const k2 = kuldokKeszit({ LIFECYCLE_DB: db }, { fetchFn: async () => { throw new Error('halozati hiba'); }, waitUntil: (p) => varo.push(p) });
+  assert.match((await k2.email({ to: 'c@d.hu', targy: 'T2', html: 'h', szoveg: 'h', uzletag: 'mp' })).id, /^mp-sor:/);
+  assert.equal(varo.length, 1); await Promise.all(varo);
+  await k2.mpPing(); assert.equal(varo.length, 2); await Promise.all(varo);
+  assert.equal(szam(db, 'SELECT COUNT(*) AS n FROM mp_kimeno').n, 2);
+  // a tabla meg nincs (regi adatbazis): a kuldo letrehozza, majd beir
+  const db2 = d1(); db2.sqlite.exec('DROP TABLE mp_kimeno');
+  const k3 = kuldokKeszit({ LIFECYCLE_DB: db2 }, { fetchFn: async () => new Response('{}') });
+  assert.match((await k3.email({ to: 'e@f.hu', targy: 'T3', html: 'h', szoveg: null, uzletag: 'mp' })).id, /^mp-sor:/);
+  assert.equal(szam(db2, 'SELECT COUNT(*) AS n FROM mp_kimeno').n, 1);
+  // a motorban: az MP-level a sorba kerul ('elkuldve' a kuldesek tablaban), a MOSAIC SMTP-je nem hivodik
+  const db3 = d1(); const env = { LIFECYCLE_MOD: 'teszt' };
+  await ingest(db3, env, level(MINTA.foglalt, { datum: salonicDatum(10) }), MOST);
+  const kk = { ...kuldokKeszit({ LIFECYCLE_DB: db3, SMTP_PASS: 'mosaic-jelszo' }, { fetchFn: async () => new Response('{}') }), sms: async () => ({ id: 's' }) };
+  await tick(db3, env, kk, MOST);
+  const ks = szam(db3, "SELECT allapot, szolgaltato_id FROM kuldesek WHERE uzenet_id = 'MP-EMAIL-01'");
+  assert.equal(ks.allapot, 'elkuldve'); assert.match(ks.szolgaltato_id, /^mp-sor:/);
+  const mk = szam(db3, 'SELECT cimzett, targy, html FROM mp_kimeno');
+  assert.equal(mk.cimzett, 'teszt.elek@example.com'); assert.ok(mk.targy && mk.html.length > 1000);
+  assert.doesNotMatch(fs.readFileSync(new URL('../../netlify/lib/lifecycle/kuldok.js', import.meta.url), 'utf8'), /MP_RELAY|x-relay-kulcs/);
+});
+
+test('mp: az MP-projekt kimeno sora (POST /api/lifecycle-kimeno): atomikus felvetel, kuldes, ujraprobalas (max 5), bennragadt sor visszavetele, csak darabszam a valasz', async () => {
+  const db = d1();
+  const be = (id, letrehozva, o = {}) => db.sqlite.prepare('INSERT INTO mp_kimeno (id, cimzett, targy, html, szoveg, valasz, letrehozva, elkuldve, probak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    .run(id, o.cimzett || `${id}@example.com`, 'Targy', '<p>x</p>', 'x', o.valasz ?? null, letrehozva, o.elkuldve ?? null, o.probak ?? 0);
+  for (let i = 0; i < 25; i += 1) be(`s${String(i).padStart(2, '0')}`, MOST - 100 + i);
+  be('kesz', MOST - 500, { elkuldve: MOST - 400, probak: 1 });
+  be('fogyott', MOST - 500, { probak: 5 });
+  be('ragadt', MOST - 2000, { elkuldve: -(MOST - 11 * 60), probak: 1 });
+  be('friss-folyamat', MOST - 2000, { elkuldve: -(MOST - 60), probak: 1 });
+  const ki = [];
+  const kuld = async (l) => { if (l.to === 's01@example.com') throw new Error('SMTP 550'); ki.push(l); };
+  const r = await kimenoFeldolgoz(db, kuld, MOST);
+  assert.deepEqual(r, { felvett: 20, elkuldve: 19, hiba: 1, visszavett: 1 });
+  assert.equal(ki[0].to, 'ragadt@example.com', 'a legregebbi elol (a visszavett bennragadt sor)');
+  assert.deepEqual(Object.keys(ki[1]).sort(), ['html', 'reply', 'subject', 'text', 'to']);
+  assert.equal(ki[1].reply, null);
+  assert.equal(szam(db, "SELECT elkuldve FROM mp_kimeno WHERE id = 's00'").elkuldve, MOST);
+  const h = szam(db, "SELECT elkuldve, hiba, probak FROM mp_kimeno WHERE id = 's01'");
+  assert.deepEqual({ ...h }, { elkuldve: null, hiba: 'SMTP 550', probak: 1 });
+  assert.equal(szam(db, "SELECT elkuldve FROM mp_kimeno WHERE id = 'friss-folyamat'").elkuldve, -(MOST - 60), 'a 10 percen beluli folyamatban levo sor nem kerul ujra sorra');
+  assert.equal(szam(db, "SELECT probak FROM mp_kimeno WHERE id = 'fogyott'").probak, 5);
+  // masodik kor: a maradek 7 (6 uj + a hibas), a kesz / fogyott / folyamatban levo nem
+  const r2 = await kimenoFeldolgoz(db, kuld, MOST + 60);
+  assert.deepEqual(r2, { felvett: 7, elkuldve: 6, hiba: 1, visszavett: 0 });
+  // a hibas sor legfeljebb 5-szor
+  for (let i = 0; i < 5; i += 1) await kimenoFeldolgoz(db, kuld, MOST + 120 + i);
+  assert.equal(szam(db, "SELECT probak FROM mp_kimeno WHERE id = 's01'").probak, 5);
+  assert.deepEqual(await kimenoFeldolgoz(db, kuld, MOST + 200), { felvett: 0, elkuldve: 0, hiba: 0, visszavett: 0 });
+  // ket parhuzamos hivas nem kuldi ketszer ugyanazt
+  const db2 = d1(); const ki2 = [];
+  for (let i = 0; i < 3; i += 1) db2.sqlite.prepare('INSERT INTO mp_kimeno (id, cimzett, targy, html, letrehozva) VALUES (?, ?, ?, ?, ?)').run(`p${i}`, `p${i}@example.com`, 'T', 'h', MOST + i);
+  const lassu = async (l) => { await new Promise((ok) => setTimeout(ok, 5)); ki2.push(l.to); };
+  await Promise.all([kimenoFeldolgoz(db2, lassu, MOST + 10), kimenoFeldolgoz(db2, lassu, MOST + 10)]);
+  assert.deepEqual(ki2.sort(), ['p0@example.com', 'p1@example.com', 'p2@example.com']);
+  // a vegpont: GET 405, POST nincs kulcs-ellenorzes, a valasz csak darabszam (nincs cimzett / targy / html)
+  const fv = fs.readFileSync(new URL('../../medicalpiercing/functions/[[path]].js', import.meta.url), 'utf8');
+  assert.match(fv, /'\/api\/lifecycle-kimeno'\) return request\.method === 'POST' \? lifecycleKimenoVegpont\(context\) : new Response\('POST kell', \{ status: 405/);
+  assert.doesNotMatch(fv, /lifecycle-level|RELAY_KULCS|x-relay-kulcs/);
+  assert.doesNotMatch(fs.readFileSync(new URL('../../medicalpiercing/wrangler.toml', import.meta.url), 'utf8'), /RELAY_KULCS/);
 });
 
 test('mp: a MOSAIC /f es /m linkje MP-foglalasnal az MP-oldalra iranyit (302), es itt nem ir', async () => {

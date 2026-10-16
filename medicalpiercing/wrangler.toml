@@ -13,10 +13,6 @@ SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = "465"
 SMTP_USER = "medicalpiercing.hu@gmail.com"
 MAIL_TO = "medicalpiercing.hu@gmail.com"
-# A foglalas -> megjelenes rendszer (a Mosaic-projektben fut: netlify/lib/lifecycle) MP-leveleinek relay-vegpontja (POST /api/lifecycle-level,
-# functions/[[path]].js): a level ennek a projektnek a Gmail-fiokjabol (SMTP_PASS) megy. A kulcs SHA-256-ja; a kulcs maga a Mosaic-projekt
-# MP_RELAY_KULCS Secretjeben van (a repoban soha).
-RELAY_KULCS_HASH = "793bb08b49765e73ae1581bde3d6afe58b3375318062a75fa38d68d1bf752c40"
 
 # Foglalas-meres (docs/MERES_GOOGLE_ARNYEK.md): sajat D1, a Mosaic adatbazisaitol kulon. A fiok D1-kerete (10)
 # betelt, ezert az elonezet ugyanezt az adatbazist hasznalja: a sorok "kornyezet" oszlopa (eles / elonezet)
@@ -28,7 +24,8 @@ database_id = "68a1b80e-ab8e-48ac-9ef7-5fc02c07326e"
 
 
 # A foglalas -> megjelenes (lifecycle) rendszer KOZOS adatbazisa (a Mosaic-projekt eles LIFECYCLE_DB-je, ../wrangler.toml): az "A foglalasod"
-# oldal (/f/<kod>, /m/<kod>: lib/foglalasom.js) CSAK az uzletag = 'mp' sorokat olvassa, es csak a megerositest (megerositve) irja.
+# oldal (/f/<kod>, /m/<kod>: lib/foglalasom.js) CSAK az uzletag = 'mp' sorokat olvassa, es csak a megerositest (megerositve) irja; a POST /api/lifecycle-kimeno
+# (lib/lifecycle-kimeno.js) az mp_kimeno sorbol (a motor irja) kuldi ki az MP-leveleket ennek a projektnek a Gmail-fiokjabol, es csak ennek a tablanak az allapotat irja.
 # [env.preview] blokk nincs ebben a projektben, ezert az elonezet is ezt hasznalja (ugyanugy csak mp-sorok; a /f/minta adatbazis nelkul is mukodik).
 [[d1_databases]]
 binding = "LIFECYCLE_DB"

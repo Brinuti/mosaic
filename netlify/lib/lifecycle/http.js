@@ -73,8 +73,9 @@ export async function api(request, env, ctx) {
   try { torzs = await request.json(); } catch { /* ures torzs is jo a tick-hez */ }
   const most = mostBol(cfg, torzs.most);
 
+  const waitUntil = ctx && typeof ctx.waitUntil === 'function' ? ctx.waitUntil.bind(ctx) : null;
   if (resz === 'bejovo') {
-    const k = kuldokKeszit(env);
+    const k = kuldokKeszit(env, { waitUntil });
     try {
       const elo = eloEllenorzoKeszit(env); // a foglalas nyilvanos Salonic-oldalanak elo ellenorzese (munkatarsi ertesitok bizonyitasa; LIFECYCLE_ELO_ELLENORZES=ki kikapcsolja)
       const e = await ingest(db, env, { uzenetId: torzs.uzenetId, targy: torzs.targy, kuldo: torzs.kuldo, szoveg: torzs.szoveg, html: torzs.html, kuldve: torzs.kuldve }, most, { eloEllenorzes: elo });
@@ -86,15 +87,17 @@ export async function api(request, env, ctx) {
       let kuldes = null;
       // A munkatarsi ertesito (figyel mod, riasztas, bizonytalan eset: valtozas === false) SOHA nem inditja el a kuldest; az esedekes uzenetek a koveto oraponkenti tickkel mennek, mint eddig.
       if (e.ok && e.foglalasId && !e.duplikalt && e.valtozas !== false) kuldes = await tick(db, env, k, most, { foglalasId: e.foglalasId, base, eloEllenorzes: elo, mpErtekeles: mpErtekelesKeszit(env) });
+      if (k.mpSorban > 0) await k.mpPing(); // MP-level kerult a sorba: az MP-projekt kuldje ki (best-effort)
       return json({ ...e, kuldes });
     } finally { await k.lezar(); }
   }
   if (resz === 'tick') {
-    const k = kuldokKeszit(env);
+    const k = kuldokKeszit(env, { waitUntil });
     const kk = { ...k, egyenleg: () => smsEgyenleg(env) };
     try {
       const t = await tick(db, env, kk, most, { limit: 40, base, eloEllenorzes: eloEllenorzoKeszit(env), mpErtekeles: mpErtekelesKeszit(env) });
       const n = await napi(db, env, kk, most);
+      await k.mpPing(); // minden tick utan: a bennragadt / hibas MP-sorok ujraprobalasa (best-effort)
       return json({ tick: t, napi: n });
     } finally { await k.lezar(); }
   }
