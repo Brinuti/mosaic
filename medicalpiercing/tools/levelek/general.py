@@ -112,6 +112,11 @@ def alairas(d, foto, szoveg='Szeretettel vár:'):
     kepe = f'<img src="{K["gabi_portre"]}" width="56" alt="">' if foto else ''
     return f'<div class="sig">{kepe}{szoveg}<br><b>{m(d["munkatars"])}</b> és a Medical Piercing csapata</div>'
 
+_VELPATH = pathlib.Path(__file__).with_name('velemenyek.json')  # a valodi idezetek: nem a nyilvanos repoban (gitignore)
+_VELEK = json.loads(_VELPATH.read_text(encoding='utf-8')) if _VELPATH.exists() else {}
+def VEL(k):
+    return tuple(_VELEK.get(k, ['Itt egy valódi Google-vélemény jelenik meg.', 'Vendégünk']))
+
 def velemeny(szoveg, nev):
     return f'<div class="velem"><span class="cs">★★★★★</span><br>„{szoveg}”<span class="nev">{nev} <span>· Google-vélemény</span></span></div>'
 
@@ -124,6 +129,8 @@ def level(kod, mikor, kinek, targy, preheader, torzs, hero=None, hero_link=None)
     (OUT / f'{kod}.html').write_text(lap(targy, preheader, torzs, hero, hero_link), encoding='utf-8')
 
 # ---- 01-02  T0 visszaigazolas ------------------------------------------------------------------------------
+T0_VEL_BP=VEL("v13")
+T0_VEL_VIDEK=VEL("v14")
 def t0(d, bp):
     videk = '' if bp else f'<p>{m(d["varosban"])} csak meghatározott napokon vagyunk, ezért ha mégsem tudsz jönni, kérjük, minél előbb módosítsd az időpontodat – így a helyedet másnak is fel tudjuk ajánlani.</p>'
     return f'''<h1>Megvan az időpontod, {m(d["nev"])}!</h1>
@@ -136,6 +143,7 @@ def t0(d, bp):
 <tr><td><span class="num">3</span></td><td><b>Pontmérés és érzéstelenítés</b> – géppel kimérjük a pontot a füleden, majd érzéstelenítjük.</td></tr>
 <tr><td><span class="num">4</span></td><td><b>Szúrás</b> – pár másodperc, steril eszközökkel. A legtöbben utána mosolyognak, hogy ettől féltek.</td></tr></table>
 {VIDEO()}
+{velemeny(*(T0_VEL_BP if bp else T0_VEL_VIDEK))}
 <p><b>Nem kell semmit hoznod.</b> Előtte egyél rendesen, és érkezz kb. 5 perccel korábban.</p>
 <p><b>Garancia:</b> ha 6 hét után nem azt tapasztalod, amit vártál, munkadíj nélkül, csak az ékszer áráért helyezünk be egy megerősítő piercinget. A kontroll ingyenes. <a href="{L["garancia"]}">A garancia részletei</a></p>
 {alairas(d, bp)}'''
@@ -150,28 +158,23 @@ TIPUSOK = {
  'migren': dict(nev='migrén piercing', nevelo='a', h93=True,
    bek='A migrén piercing a fül porcába, a fülakupunktúra egyik régóta használt pontjába kerül. Sokan azért választják, mert a fejfájás és a migrénes rohamok újra és újra kiveszik őket a hétköznapokból – és szeretnének egy gyógyszermentes, közérzetjavító lehetőséget is kipróbálni.',
    tipp='Ha a fejfájásod inkább féloldali, mondd el a beszélgetésnél: ilyenkor általában arra az oldalra javasoljuk az ékszert, ahol erősebbek a tünetek.',
-   vel=[('Február közepe óta nem fájt a fejem, még front idején sem. Korábban borzasztó migrénes voltam.', 'Eszter Sz.'),
-        ('Kedves fogadtatás, igényes, tiszta környezet, mindent elmondott lépésről lépésre, ami megnyugtatott. Két hónap telt el, és nem volt migrénes rohamom.', 'Enikő Cs.')]),
+   vel=[VEL("v15"), VEL("v16")]),
  'shenmen': dict(nev='shenmen piercing', nevelo='a', h93=True,
    bek='A shenmen pont a fülakupunktúra egyik legismertebb pontja. Sokan stressz, belső feszültség, szorongás vagy nyugtalan alvás miatt választják – gyakran más piercingek mellé, kiegészítésként. Ha 2–3 piercinget foglaltál, a beszélgetésnél közösen döntjük el, melyik pontok illenek leginkább ahhoz, ami miatt érkezel.',
    tipp='Gondold át előre, mi zavar most a legjobban – az alvás, a feszültség, a fejfájás vagy valami más. Így a beszélgetés gyorsabb, és pontosabban tudunk javasolni.',
-   vel=[('Úgy voltam vele, nincs veszteni valóm, legfeljebb lesz egy szép ékszerem. Pár hét után azt vettem észre, hogy egyre kevesebbet forgolódok, és egyre kevesebbszer ébredek fel az éjszaka.', 'Kata S.'),
-        ('1 hónapon belül jelentkeztek a pozitív hatásai: nyugodtabbnak éreztem magam, kevésbé vagyok stresszes azóta is.', 'Éva K.')]),
+   vel=[VEL("v17"), VEL("v18")]),
  'klimax': dict(nev='klimax piercing', nevelo='a', h93=True,
    bek='A klimax piercinget sokan a változókor kellemetlenségei miatt választják – hőhullám, éjszakai izzadás, rossz alvás vagy hangulatingadozás miatt. Nálunk minden szúrás előtt beszélgetés van: meghallgatunk, és utána közösen választjuk ki a pontokat.',
    tipp='Írd fel magadnak, mely tünetek zavarnak most a legjobban, és mióta – a beszélgetésnél ez sokat segít.',
-   vel=[('Sokkal kevesebb a hőhullámom nappal, éjszaka pedig szinte teljesen elmúlt. Eddig 4–5-ször felébredtem éjszaka, most csak egyszer, vagy egyszer sem.', 'Gabi M.'),
-        ('Nem szűntek meg teljesen a panaszaim, de sokkal kevesebb a hőhullám és kisebb intenzitású, és az alvásom is sokkal nyugodtabb.', 'Noémi M.')]),
+   vel=[VEL("v19"), VEL("v20")]),
  'slim': dict(nev='slim piercing', nevelo='a', h93=False,
    bek='A slim piercinget a fül egy olyan pontjába helyezzük, amelyet a fülakupunktúra az étvággyal összefüggésben használ. Sokan a nassolás, az édesség utáni sóvárgás vagy a stresszevés miatt választják – támogatásként, nem az életmódváltás helyett.',
    tipp='A legtöbbet akkor adhat, ha segítségként tekintesz rá: az első hetekben figyeld meg magadon, mikor és miért nassolsz.',
-   vel=[('Nincs az az erős édesség iránti vágyam, mint a piercing előtt. Jobban kontrollálhatók ezáltal az étkezések.', 'Katalin O.'),
-        ('Nincs édesség utáni sóvárgásom, valamint étkezésnél hamarabb van telítettségérzésem. Be sem gyulladtak a szúrások.', 'Enikő P.')]),
+   vel=[VEL("v21"), VEL("v22")]),
  'allergia': dict(nev='allergia piercing', nevelo='az', h93=False,
    bek='Az allergia piercinget sokan a szezonális, tavaszi vagy őszi panaszok miatt választják. Ha most éppen erős tüneteid vannak, vagy gyógyszert szedsz, mondd el a beszélgetésnél – ehhez igazodunk.',
    tipp='Ha tudod, írd fel, melyik időszakban a legerősebbek a tüneteid – így könnyebb lesz követned, mit tapasztalsz a piercing után.',
-   vel=[('Érezhetően elviselhetőbb a tavaszi allergiaszezon, amióta csináltattam allergia piercinget.', 'Rita I.'),
-        ('Kevés tünetem maradt, azok is teljesen elviselhetőek, sokkal jobb, mint a piercing előtt volt. A szúrás helye gyorsan gyógyult.', 'Viki F.')]),
+   vel=[VEL("v23"), VEL("v24")]),
 }
 for kod, t in TIPUSOK.items():
     n, a = t['nev'], t['nevelo']
@@ -183,6 +186,7 @@ for kod, t in TIPUSOK.items():
 <p>{t["bek"]}</p>
 <h2>Miért számít, hová kerül?</h2>
 <p>A fülben sok akupunktúrás pont van, egymástól sokszor csak milliméterekre. {a.capitalize()} {n} akkor tud a legtöbbet adni, ha pontosan a megfelelő pontba kerül. Ezért nálunk ez soha nem szemmérték kérdése.</p>
+{velemeny(*VEL("v01"))}
 <h2>A pontmérő: a te füledhez igazítva</h2>
 <p>Minden fül más. A szúrás előtt akupunktúrás pontmérő géppel vizsgáljuk meg a füledet: a készülék a bőr elektromos vezetőképességét méri, ami az akupunktúrás pontokon eltér a környező bőrétől. Így a pontot a te füleden keressük meg – nem egy ábráról másoljuk.</p>
 <h2>Akik szúrnak: egészségügyből jöttünk</h2>
@@ -210,6 +214,7 @@ level('04-E2-igy-zajlik', 'Ha legalább 7 nap van az időpontig: kb. a hátralé
 <h2>3. Steril eszközök, orvosi alapossággal</h2>
 <div class="kep">{kep(K["steril"], L["folyamat"], "Steril, csomagolt eszközök és autokláv")}<div class="felirat">Steril, csomagolt eszközök – és az autokláv, amelyben sterilizálunk.</div></div>
 <p>Nem a bemutatott ékszert kapod, hanem annak autoklávban sterilizált, légmentesen lezárt párját. Eszközeinket zártkamrás autoklávval fertőtlenítjük, a füled felületét pedig fertőtlenítő spray-vel készítjük elő. Szakmai mentorunk, Dr. Schmolcz Gergely személyesen is járt nálunk: átnézte a rendelőt, és végignézte a teljes folyamatunkat.</p>
+{velemeny(*VEL("v02"))}
 <h2>4. Megmérjük a pontot</h2>
 <p>Akupunktúrás pontmérő géppel keressük meg a pontot a te füleden – így pontosan oda kerül a piercing, ahová kell.</p>
 <h2>5. Érzéstelenítjük a füled</h2>
@@ -217,9 +222,10 @@ level('04-E2-igy-zajlik', 'Ha legalább 7 nap van az időpontig: kb. a hátralé
 <h2>6. Pár másodperc, és kész</h2>
 <p>Maga a szúrás pár másodperc – vendégeink többsége egy szúnyogcsípéshez hasonlítja. Vendégeink nagy része utána már csak mosolyog, hogy ettől tartott. Nézd meg videón, hogy előre lásd:</p>
 {kep(K["video"], L["video"], "Videó: így néz ki egy szúrás")}
-{velemeny("A piercing helyét pontosan kimérte, behelyezés közben is folyamatosan jelezte, hogy éppen melyik folyamatnál tart, így semmi nem ért váratlanul. Az ékszerválaszték is nagy, szebbnél szebbek.", "Nikoletta B.")}
-{velemeny("Csekély kellemetlenséggel járt, gyorsan bent volt mindkettő. Mire feleszméltem, 2 piercing boldog tulajdonosa lettem.", "Éva K.-Sz.")}
-{velemeny("A csajok kedvessége minden félelmet elfeledtetett, az ékszerek pedig csoda szépek!", "Andrea V.")}
+{velemeny(*VEL("v03"))}
+{velemeny(*VEL("v04"))}
+{velemeny(*VEL("v05"))}
+{velemeny(*VEL("v06"))}
 {mini_idopont(BP)}{alairas(BP, True)}''', K['szalon'], L['folyamat'])
 
 # ---- 05  E3: nem engedjuk el a kezed (utoapolas, ingyenes kontroll, garancia) -------------------------------
@@ -234,9 +240,9 @@ level('05-E3-nem-engedjuk-el-a-kezed', 'Ha legalább 14 nap van az időpontig: e
 <h2>És ha nem azt tapasztalod, amit vártál?</h2>
 <p>Vendégeink 93%-a jelezte vissza, hogy nála működik*, de mindenki más. Ha 6 hét után nálad nem hozza, amit vártál, munkadíj nélkül, csak az új ékszer áráért (5 000 Ft) helyezünk be egy megerősítő piercinget – a szúrás után 6 hét és 6 hónap között.</p>
 <p><a class="btn2" href="{L["garancia"]}">A garancia részletei</a></p>
-{velemeny("A klimax rögtön segített a hőhullámaimon. Sajnos ez később kilökődött, ezért visszamentem garanciaidőn belül, megnézték és újraszúrták.", "Liza P.")}
-{velemeny("Kaptam utókezeléshez is tájékoztatást, és ha segítségre lenne szükségem, akkor keressem őket bizalommal!", "Andrea K.")}
-{velemeny("Előtte és közben is végig mondták, éppen mit és miért csinálnak. És utána is teljes értékű tájékoztatást kaptam mindenről: utókezelés, ápolás, hatások.", "Gábor D.")}
+{velemeny(*VEL("v07"))}
+{velemeny(*VEL("v08"))}
+{velemeny(*VEL("v09"))}
 <p>Több mint {m(GOOGLE_DB)} vendégünk írt rólunk Google-véleményt, az átlagunk 4,8 csillag. <a href="{L["velemenyek"]}">Olvass bele a véleményekbe</a>.</p>
 {mini_idopont(BP)}{alairas(BP, True)}''')
 
@@ -257,7 +263,8 @@ def t48(d, bp):
 {kep(K["video"], L["video"], "Videó: így néz ki egy szúrás")}
 <h2>Utána sem maradsz egyedül</h2>
 <p>A szúrás után elmondjuk és e-mailben is elküldjük az utóápolás lépéseit, és a gyógyulás alatt is jelentkezünk. Ha bármi kérdésed van, ingyenes kontrollra bármikor bejelentkezhetsz – ez az egész piacon csak nálunk van így.</p>
-{velemeny("Kedves fogadtatás, igényes, tiszta környezet, mindent elmondott a hölgy lépésről lépésre, ami megnyugtatott.", "Enikő Cs.")}
+{velemeny(*VEL("v10"))}
+{velemeny(*VEL("v11"))}
 <p style="font-size:15px"><b>Kérdésed van még?</b> Válaszolj erre a levélre, és még az időpontod előtt válaszolunk.</p>
 {alairas(d, bp)}'''
 level('06-T48-felkeszules-BP', '48 órával előtte, ha a foglalás legalább 3 nappal az időpont előtt történt (a Salonic „Időpont emlékeztető” helyett)', 'Budapesti foglaló',
@@ -280,11 +287,11 @@ level('09-lemondas', 'Azonnal, lemondáskor vagy törléskor (a Salonic „Lemon
 
 # ---- 10-14  A szuras utan: utoapolas, kontroll, garancia ---------------------------------------------------
 UTO = dict(BP, szolg='migrén piercing')
-GOOGLE_IRAS = 'https://www.google.com/maps/search/Medical+Piercing+Budapest'  # elesben: a helyszin sajat Google-ertekelo linkje ({google_ertekeles_link})
-level('10-A0-utoapolas', 'A szúrás napján 19:00-kor (+ SMS a linkkel)', 'Mindenki, aki megjelent (a nagy kép a szúrt piercing fotója)',
+GOOGLE_IRAS = 'https://g.page/r/CYXBM5zFeg70EB0/review'  # a fo Google-profil (4,8, 4 800+ velemeny) – ezt hasznalja most a Salonic is
+level('10-A0-utoapolas', '1 órával a szúrás után, mint most a Salonic véleménykérő levele (+ SMS a linkkel) – ezt váltja ki', 'Mindenki, aki megjelent (a nagy kép a szúrt piercing fotója)',
  'Így ápold a piercinged – az első hetek', 'Napi két perc, és a piercinged szépen gyógyul. Minden, amit tudnod kell, egy helyen.', f'''<h1>Köszönjük, hogy ma nálunk jártál, {m(UTO["nev"])}!</h1>
 <p>Reméljük, jól vagy, és már csak mosolyogsz azon, mennyire tartottál tőle. Ahogy ígértük, nem engedjük el a kezed: ebben a levélben mindent összeszedtünk, amire az első hetekben szükséged lesz.</p>
-<p>Az utóápolás nem csak azért fontos, hogy a gyógyulás gondtalan legyen: a piercing akkor tudja a legtöbbet adni, ha szépen gyógyul.</p>
+<p>Az utóápolás nem csak azért fontos, hogy a gyógyulás gondtalan legyen: a piercing akkor tudja a legtöbbet adni, ha szépen gyógyul. A hatást fokozatosan fogod érezni – egyénenként eltérő, akár 4–6 hét is lehet, úgyhogy ne ijedj meg, ha nem azonnal jön.</p>
 <h2>A napi rutinod – reggel és este, két perc</h2><table role="presentation" class="steps">
 <tr><td><span class="num">1</span></td><td><b>Spray reggel és este.</b> A nálunk kapott otthonápolási csomag spray-jét fújd a sebre, amíg érzékeny.</td></tr>
 <tr><td><span class="num">2</span></td><td><b>Ne forgasd, ne mozgasd az ékszert.</b> Az ékszer porcba került, nem zsírszövetbe: ha mozgatod, nem tud gyógyulni.</td></tr>
@@ -293,12 +300,19 @@ level('10-A0-utoapolas', 'A szúrás napján 19:00-kor (+ SMS a linkkel)', 'Mind
 <h2>Mit szabad és mit kerülj?</h2>
 <div class="card"><table role="presentation" width="100%" cellspacing="0" cellpadding="0">
 <tr><td class="l">Ma is</td><td>Hajat moshatsz, zuhanyozhatsz – a víz érheti a füled, csak ne ázzon.</td></tr>
-<tr><td class="l">2–3 hétig</td><td>Kerüld a kádas fürdést, a medencét, a szaunát és a szoláriumot.</td></tr>
+<tr><td class="l">2–3 hétig</td><td>Kerüld a kádas fürdést, a medencét, a szaunát, a szoláriumot és az erős napsütést.</td></tr>
+<tr><td class="l">A gyógyulásig</td><td>Ne cseréld ki az ékszert – erre a végleges gyógyulás után (8–12 hét) lesz lehetőség.</td></tr>
 <tr><td class="l">Alváskor</td><td>Az első hetekben próbálj a másik oldaladon aludni.</td></tr>
 <tr><td class="l">2 hét múlva</td><td>Jöhet az olaj is – erről szólunk majd.</td></tr></table></div>
 <h2>Mi normális?</h2>
 <p>A 4–5. napon a füled bepirosodhat, megduzzadhat – ez a gyógyulás része, nem kell megijedned. A porc lassan gyógyul: a duzzanat 3–5 hétig is megmaradhat, a teljes gyógyulás akár 6 hónap. Ha bármi bizonytalan, írj vagy gyere el ingyenes kontrollra – csak nálunk.</p>
 <p><a class="btn" href="{L["utoapolas"]}">A teljes utóápolási útmutató</a><a class="btn2" href="{L["kontroll"]}">Ingyenes kontroll</a></p>
+<h2>Hogy érezted magad nálunk?</h2>
+<p>Nekünk nagyon sokat jelent a véleményed – és annak is, aki most ugyanúgy bizonytalan, ahogy talán te voltál a foglalás előtt.</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+<td style="padding:6px 6px 6px 0;width:50%;vertical-align:top"><a class="btn" style="display:block;text-align:center;margin:0" href="{GOOGLE_IRAS}">★ Elégedett voltam – értékelek</a></td>
+<td style="padding:6px 0 6px 6px;width:50%;vertical-align:top"><a class="btn2" style="display:block;text-align:center;margin:0" href="mailto:medicalpiercing.hu@gmail.com?subject=Visszajelz%C3%A9s">Valami nem volt rendben</a></td></tr></table>
+<p style="font-size:14px">Ha bármi nem úgy alakult, ahogy szeretted volna, írj nekünk közvetlenül – személyesen nézzük meg, és megoldjuk.</p>
 {alairas(UTO, True, 'Jó gyógyulást kíván:')}''', KEPALAP + 'ful-migren.jpg', L['utoapolas'])
 
 level('11-A2-ket-het', 'A szúrás után 14 nappal', 'Mindenki, aki megjelent (a „mire figyelj” bekezdés piercingenként más)',
@@ -312,33 +326,8 @@ level('11-A2-ket-het', 'A szúrás után 14 nappal', 'Mindenki, aki megjelent (a
 <h2>Ha valami nem úgy gyógyul, ahogy kellene</h2>
 <p>Ha érzékeny marad, hegszövet képződik, kiesett vagy cserélni kell az ékszert – foglalj ingyenes kontrollt. Megnézzük, és segítünk.</p>
 <p><a class="btn" href="{L["kontroll"]}">Ingyenes kontrollt kérek</a></p>
-{velemeny("Kaptam utókezeléshez is tájékoztatást, és ha segítségre lenne szükségem, akkor keressem őket bizalommal!", "Andrea K.")}
+{velemeny(*VEL("v12"))}
 {alairas(UTO, True, 'Jó gyógyulást kíván:')}''')
-
-level('12-A3-hat-het', 'A szúrás után 42 nappal (6 hét)', 'Mindenki, aki megjelent',
- 'Hat hét – hogy vagy?', 'Egy kattintás: mondd el, hogy vagy – és ha kell, segítünk.', f'''<h1>Hat hét telt el – hogy vagy, {m(UTO["nev"])}?</h1>
-<p>Ennyi idő után a legtöbben már érzik, mit hozott nekik a piercing. Kíváncsiak vagyunk rád – egy kattintással elmondhatod:</p>
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
-<td style="padding:6px 6px 6px 0;width:50%"><a class="btn" style="display:block;text-align:center;margin:0" href="{GOOGLE_IRAS}">😊 Elégedett vagyok</a></td>
-<td style="padding:6px 0 6px 6px;width:50%"><a class="btn2" style="display:block;text-align:center;margin:0" href="{L["kontroll"]}">Szeretnék kontrollt</a></td></tr></table>
-<h2>Elégedett vagy?</h2>
-<p>Akkor nagy segítség lenne, ha pár mondatban leírnád a Google-ön. A te tapasztalatod segít annak, aki most ugyanúgy bizonytalan, ahogy talán te is voltál a foglalás előtt.</p>
-<h2>Nem azt érzed, amit vártál?</h2>
-<p>Semmi gond, ezért van garancia. Vendégeink 93%-a jelezte vissza, hogy nála működik*, de mindenki más. A szúrás után 6 hét és 6 hónap között munkadíj nélkül, csak az új ékszer áráért (5 000 Ft) helyezünk be egy megerősítő piercinget. Ha pedig a gyógyulással van kérdésed, az ingyenes kontroll továbbra is jár.</p>
-<p><a class="btn2" href="{L["garancia"]}">A garancia részletei</a></p>
-{velemeny("A klimax rögtön segített a hőhullámaimon. Sajnos ez később kilökődött, ezért visszamentem garanciaidőn belül, megnézték és újraszúrták.", "Liza P.")}
-{alairas(UTO, True, 'Köszönjük, hogy minket választottál:')}''')
-
-level('13-A4-harom-honap', 'A szúrás után 3 hónappal – csak marketing-hozzájárulással', 'Aki hozzájárult a marketingüzenetekhez',
- 'Három hónap – új ékszer vagy egy második piercing?', 'A gyógyulás után cserélhetsz ékszert, és sokan egy második piercinggel is kiegészítik.', f'''<h1>Három hónapja vagy velünk – köszönjük!</h1>
-<p>{m(UTO["nev"])}, mostanra a füled szépen gyógyul. Két dolgot szoktak ilyenkor kérdezni tőlünk – összeszedtük a válaszokat.</p>
-<h2>Cserélhetem az ékszert egy másikra?</h2>
-<div class="kep">{kep(K["ekszerek"], L["ekszerek"], "Ékszereink")}<div class="felirat">G23 titán ékszerek – karika, talpas, sima vagy köves.</div></div>
-<p>Igen. A végleges gyógyulás után (legalább 8–12 hét) kicserélheted egy olyanra, ami éppen neked tetszik. Az ékszercsere helyben, a szalonban történik: nálunk vásárolt ékszerrel 5 000 Ft, hozott ékszerrel 2 000 Ft.</p>
-<h2>Érdemes egy második piercing?</h2>
-<p>Sokan nem csak egy dolog miatt érkeznek: a fejfájás mellé alvás vagy stressz, a változókor mellé nassolás. A piercingek kiegészíthetik egymást – ezért is olcsóbb a 2–3 piercinges csomag. Ha szeretnéd, a beszélgetésnél közösen átnézzük, mi illene hozzád.</p>
-<p><a class="btn" href="{L["foglalas"]}">Időpontot foglalok</a><a class="btn2" href="{L["ekszerek"]}">Ékszereink</a></p>
-{alairas(UTO, True, 'Szeretettel várunk újra:')}''')
 
 SMS = [
  ('T0', 'Azonnal', 'Szia {keresztnev}! Megvan az idopontod: {datum} {ido}, {helyszin_rovid}. Reszletek, modositas: {link} - Medical Piercing'),
@@ -361,7 +350,17 @@ table{{border-collapse:collapse;width:100%}}td{{border-bottom:1px solid #eee;pad
 <h1>Medical Piercing – levelek a foglalástól az utóápolásig (v3)</h1>
 <p>A változó részek (név, időpont, helyszín, piercer, ár) példaértékekkel szerepelnek; a vendég a sajátjait látja. Budapesten az aláírásban a foglalt piercer fotója, vidéken fotó nélkül.
 Időzítés a foglalás és az időpont közti idő szerint: 3 napnál kevesebb – csak a visszaigazolás és az SMS-ek; legalább 3 nap – + felkészítő levél 2 nappal előtte; legalább 5 nap – + a piercinghez illő levél; legalább 7 nap – + „Így telik majd”; legalább 14 nap – + „Nem engedjük el a kezed”.</p>
-<h2>E-mailek</h2><table>{sorok}</table><h2>SMS-ek</h2><table>{smssor}</table></main></body></html>''', encoding='utf-8')
+<h2>E-mailek</h2><table>{sorok}</table><h2>SMS-ek</h2><table>{smssor}</table><h2>A Salonic mostani levelei – mi lesz velük</h2><table>
+<tr><td><b>Új időpont létrehozva</b> + <b>Sikeres foglalás</b> (e-mail)</td><td>kikapcsoljuk → 01/02 visszaigazolás</td></tr>
+<tr><td><b>Sikeres foglalás</b> (SMS)</td><td>kikapcsoljuk → T0 SMS</td></tr>
+<tr><td><b>Foglalás módosítva</b></td><td>kikapcsoljuk → 08 módosítás + SMS</td></tr>
+<tr><td><b>Időpont törlés</b> + <b>Ügyfél lemondás</b></td><td>kikapcsoljuk → 09 lemondás + SMS</td></tr>
+<tr><td><b>Időpont emlékeztető</b></td><td>kikapcsoljuk → 06/07 felkészítő levél + T-72 és T-24 SMS</td></tr>
+<tr><td><b>Vélemények kérése</b> (most: új vendégnek, 1 órával a szúrás után, utóápolás + Google-link)</td><td>kikapcsoljuk → 10 utóápolás ugyanekkor, véleménykéréssel, minden vendégnek</td></tr>
+<tr><td><b>Előleg-levelek</b></td><td>maradnak (előleget most nem kérünk)</td></tr>
+<tr><td><b>Hírlevél-feliratkozás</b></td><td>marad, a „hílrevélre” elírás javítva</td></tr>
+<tr><td><b>Születésnapi levél</b></td><td>marad</td></tr></table>
+<p><small>Kikapcsolás csak az új rendszer éles indulásakor, a tulajdonos külön kérésére.</small></p></main></body></html>''', encoding='utf-8')
 
 # kinyert szoveg (lektoralashoz)
 ki = []
