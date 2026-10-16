@@ -49,6 +49,9 @@
   };
   // mentett dontes: a Google-jelek frissitese (a default-ot a GTM Consent Initialization adja, denied); nincs dontes: semmi nem valtozik (denied marad)
   if (dontes) window.gtag('consent', 'update', jelek(dontes));
+  // SAV_KI, dontes nelkul: az alapertelmezes "megadott" (Feri, 2026-10-14; 2026-10-16: "mindenhol elfogadott", a kockazatot vallalja, novembertol szabalyos sutisav).
+  // Ezt a Google-jelekkel is kozolni kell, kulonben a GTM Consent Initialization (tag 143) miatt az AW-784730317 cel nem kuld (10-14 ota 0 Ads-konverzio).
+  else if (SAV_KI) window.gtag('consent', 'update', jelek({ stat: true, mark: true }));
   allapotEsemeny('gy_suti_allapot');
 
   var rogzit = function (stat, mark) {
