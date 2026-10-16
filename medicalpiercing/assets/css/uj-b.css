@@ -1,0 +1,110 @@
+/* A B-valtozatok (/b/<ut>, a konverzios kepernyotervek PDF-je szerint; tools/uj-b-oldalak.mjs). A szakaszok a mostani oldal dobozaira epulnek (hos, kat-fej,
+   kat-doboz kat-par, akc-dobozok, gar-racs, helyszin-doboz, videosav, akc-sav); itt csak az uj elemek es a B-oldalak kozos szabalyai. Utolsokent toltodik. */
+
+/* a domináns foglalas-gomb: telt barna, AA-kontraszt (PDF: "oldalankent egy dominans CTA"); mint az akcio-oldal "Ezt foglalom" gombja */
+.b-cta{background:#a35a4b;border-color:#a35a4b;color:#fff;box-shadow:0 6px 16px rgba(163,90,75,.32)}
+.b-cta:hover,.b-cta:focus-visible{background:#8f4c3f;border-color:#8f4c3f;color:#fff}
+.b-hos .hos-szoveg .gombsor{margin-top:12px}
+.b-mikro{margin:8px 0 10px;text-align:left}
+.b-figyel{margin:0 0 10px;color:var(--mut);font-size:.8rem;line-height:1.45}
+.b-garancia{max-width:560px;margin:0 0 14px}
+.b-arsor{margin:6px 0 2px;color:var(--navy);font-size:.98rem;line-height:1.5}
+.b-arsor b{color:#a35a4b;white-space:nowrap}
+.b-dobozok{max-width:560px;margin:2px 0 4px}
+.b-hos .b-dobozok .akc-al s,.b-hos .b-dobozok .akc-al{color:var(--mut)}
+.b-hos .b-csekk{margin:4px 0 6px}
+.b-arak-cim{margin:16px 0 6px;color:var(--navy);font-weight:700}
+.b-hos .b-arak-cim{margin:10px 0 4px}
+
+/* ar-szakasz: a 3 csomag + mit tartalmaz az ar, kozepen */
+.kat-doboz.b-arak{display:block;text-align:center}
+.b-arak .b-dobozok{max-width:760px;margin:6px auto 0}
+.b-arak .b-csekk{justify-content:center}
+.b-arak .b-mikro{text-align:center}
+.b-arak .b-garancia{width:fit-content;margin:12px auto 0;text-align:left}
+
+/* lepesek (Hogy zajlik? / Igy foglalsz / A feltetelek / 4 lepes) */
+.b-lepesek{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0;padding:0;list-style:none;counter-reset:none}
+.b-lepesek-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.b-lepesek li{padding:22px 20px 18px;background:#fff;border:1px solid var(--line);border-radius:var(--r-m);box-shadow:var(--sh-s)}
+.b-szam{display:grid;place-items:center;width:38px;height:38px;margin-bottom:10px;border-radius:50%;background:var(--beige);color:#a35a4b;font-weight:800}
+.b-lepesek h3{margin:0 0 6px;color:var(--navy);font-size:1.05rem;line-height:1.3}
+.b-lepesek p{margin:0;color:var(--mut);font-size:.92rem;line-height:1.5}
+.b-kozep{margin:18px 0 0;text-align:center}
+
+/* "Miben segithetunk?" csempek (fooldal) */
+.b-csempek{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0;padding:0;list-style:none}
+.b-csempek>li{background:#fff;border:1px solid var(--line);border-radius:var(--r-m);box-shadow:var(--sh-s);transition:border-color .15s,background .15s}
+.b-csempek>li:hover{border-color:var(--rose);background:var(--beige-l)}
+.b-csempek>li>a,.b-csempe-tobb{display:flex;flex-direction:column;align-items:flex-start;gap:3px;height:100%;padding:18px 20px;color:var(--ink);text-decoration:none}
+.b-csempek img{width:44px;height:44px;margin-bottom:6px}
+.b-csempek b{color:var(--navy);font-size:1.02rem}
+.b-csempek span{color:var(--mut);font-size:.88rem;line-height:1.45}
+.b-csempe-tobb span a{color:var(--slate);font-weight:600;text-decoration:underline;text-decoration-color:#e7c6c1;text-underline-offset:3px}
+.b-csempek>li.b-csempe-nemtudom{grid-column:1/-1;border:1.5px dashed #d7aba8;background:var(--beige-l);box-shadow:none}
+.b-csempe-nemtudom>a{flex-direction:row !important;flex-wrap:wrap;align-items:center !important;justify-content:center;gap:4px 12px !important;text-align:center}
+
+/* ketfele kethasabos doboz: a "nem lehet ures a doboz" szabaly (a tulajdonos, 2026-10-16): rovid szoveg mellett kicsi kep, kisebb doboz */
+@media (min-width:1001px){
+  .oldal-b2 .kat-doboz.b-kicsi-kep{grid-template-columns:minmax(0,1.45fr) minmax(0,.55fr);align-items:center}
+  .oldal-b2 .kat-doboz.b-kicsi-kep.kat-par-ford{grid-template-columns:minmax(0,.55fr) minmax(0,1.45fr)}
+  .oldal-b2 .kat-doboz.b-kicsi-kep .kat-par-kep{height:auto;min-height:0;max-height:300px;aspect-ratio:1/1}
+  .oldal-b2 .kat-doboz.b-kicsi-kep>.kat-doboz-szoveg{justify-content:center}
+  .oldal-b2 .kat-doboz.b-kicsi-kep>.kat-doboz-szoveg>.gomb:last-child,.oldal-b2 .kat-doboz.b-kicsi-kep>.kat-doboz-szoveg>.szoveg-link:last-child{margin-top:10px}
+}
+.oldal-b2 .kat-doboz:is(.kat-par,.kat-par-ford){align-items:center}
+.oldal-b2 .kat-doboz:is(.kat-par,.kat-par-ford)>.kat-doboz-szoveg{justify-content:center}
+.oldal-b2 .kat-doboz:is(.kat-par,.kat-par-ford)>.kat-doboz-szoveg>.gomb:last-child{margin-top:14px}
+.kat-doboz.b-egyeb{display:block;text-align:center}
+.b-szerep{margin:-4px 0 10px;color:#a35a4b;font-weight:700;font-size:.92rem;line-height:1.4}
+.b-lista{margin:0 0 10px;padding-left:1.3em}
+ul.b-lista{list-style:disc}
+.b-lista li::marker{color:#a35a4b;font-weight:700}
+.b-lista li{margin:0 0 6px}
+.b-kepalairas{margin:0 0 8px;color:var(--mut);font-size:.88rem}
+.b-videok-link{margin:-4px auto 0;text-align:center}
+.b-kat-cta{margin:-2px auto 10px}
+.b-chipek{margin:0 0 12px}
+.b-chipek span{display:inline-block;padding:7px 14px;border:1px solid #e7c6c1;border-radius:99px;background:#fff;color:var(--slate);font-size:.88rem;font-weight:700}
+.b-hos-szoveg .tarto{text-align:center}
+.b-hos-szoveg .hos-bevezeto{max-width:44em;margin-inline:auto}
+.b-ugras{justify-content:center;margin-top:14px}
+.b-mikor .b-orvosi{background:#fdf1ee;border-color:#e7c6c1}
+.kat-doboz.b-telefon{display:block;text-align:center}
+.b-telefon .kat-doboz-szoveg{display:flex;flex-direction:column;align-items:center}
+.b-telefon .gomb .ik{width:1.1em;height:1.1em}
+
+@media (max-width:1000px){
+  .b-lepesek-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* a hos mobil sorrendje (uj-kategoria.css: cim 1, kep 2, bevezeto 3, gombsor 4, ertekeles 5): az uj elemek a helyukon */
+  .b-hos .b-arsor,.b-hos .b-dobozok,.b-hos .b-arak-cim,.b-hos .b-csekk{order:3}
+  .b-hos .b-mikro,.b-hos .b-figyel,.b-hos .b-garancia{order:4}
+  .b-hos .kat-ertekeles{order:5}
+}
+@media (max-width:760px){
+  .b-lepesek,.b-lepesek-4{grid-template-columns:minmax(0,1fr);gap:10px}
+  .b-lepesek li{display:grid;grid-template-columns:38px minmax(0,1fr);column-gap:12px;align-items:start;padding:14px 16px;text-align:left}
+  .b-lepesek li .b-szam{grid-row:span 2;margin:0}
+  .b-csempek{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .b-csempek>li>a,.b-csempe-tobb{padding:14px;align-items:center;text-align:center}
+  .b-mikro{text-align:center}
+  .b-dobozok,.b-garancia{margin-inline:auto}
+  .b-hos .b-csekk{justify-content:center}
+  .b-arsor{text-align:center}
+}
+
+/* egyetlen video (allergia): kethasabos, kompakt doboz – szoveg + keskeny videokartya, mobilon egymas alatt */
+.kat-doboz.b-video-egy{display:grid;grid-template-columns:minmax(0,1fr) 210px;column-gap:48px;align-items:center;text-align:left}
+.b-video-egy .b-video-egy-szoveg>p:not(.felirat):not(.velemeny-osszes){margin:6px 0 0;color:var(--mut);font-size:1rem;line-height:1.55}
+.b-video-egy .b-video-egy-szoveg>.gomb{margin-top:16px}
+.b-video-egy .velemeny-osszes{margin-top:12px;text-align:left}
+.b-video-egy .vsav{margin-top:0}
+.b-video-egy .vsav-sav{justify-content:center}
+.b-video-egy .vsav-elem{flex:0 0 100%;max-width:210px}
+@media (max-width:760px){
+  .kat-doboz.b-video-egy{grid-template-columns:minmax(0,1fr);row-gap:14px;text-align:center}
+  .b-video-egy .velemeny-osszes{text-align:center}
+  .b-video-egy .vsav-elem{max-width:220px;margin-inline:auto}
+}
+/* a ragados sav alsorában a Google-velemenyszam (data-ti-darab) a szovegben marad, nem uj sor */
+.akc-sav-ar [data-ti-darab]{display:inline;color:inherit;font-size:inherit}

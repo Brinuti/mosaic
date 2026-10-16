@@ -113,7 +113,7 @@ const VELEMENYEK_UT = '/migren-shenmen-piercing-velemenyek';
 const VELEMENY_HORGONY = { '/migren-piercing': 'v-migren', '/shenmen-piercing': 'v-shenmen', '/klimax-piercing': 'v-klimax', '/slim-etvagycsokkento-piercing': 'v-slim', '/allergia-piercing': 'v-allergia', '/maj-piercing': 'v-maj' };
 function velemenyLink(ut, html) {
   const alap = TUKOR_ELO ? ut.replace(new RegExp('^' + TUKOR_ELO + '(?=/)'), '') : ut;
-  if (alap === VELEMENYEK_UT) return html.replace(/\s*<p class="velemeny-osszes">.*?<\/p>/g, '');
+  if (alap === VELEMENYEK_UT || alap === '/b' + VELEMENYEK_UT) return html.replace(/\s*<p class="velemeny-osszes">.*?<\/p>/g, '');   // (a B-valtozata is: /b/...)
   // ahol az eredeti oldal sajat "Tovább az összes véleményhez >>" linkje (kat-tovabb, a tukor-sablonban p.kozep) kozvetlenul utana all, a mienk nem kell
   // (a tulajdonos jelezte, 2026-10-16: a piercing-oldalakon duplan volt); a horgonyt ilyenkor az eredeti link kapja
   html = html.replace(/\s*<p class="velemeny-osszes">.*?<\/p>((?:\s*<\/?(?:section|div|p)\b[^>]*>)*\s*<a\b[^>]*\shref="\/migren-shenmen-piercing-velemenyek[^"]*"[^>]*>(?:\s*<(?:strong|b|span)\b[^>]*>)*\s*Tovább az összes véleményhez)/g, '$1'); // (az eredeti link szovege lehet <strong>-ban is)
@@ -213,7 +213,8 @@ function regiFej(ROOT, ut) {
 // (es az og- / twitter-cim) a mostani; minden mas regi SEO-cimke marad (2026-10-16, 5. kor)
 const FRISS_CIM = { '/3-piercing-2-araert-regi': 'Őszi akció: 3 piercing 44 900 Ft | Medical Piercing' };
 function elesFej(ROOT, ut, html) {
-  let r = ut === '/404' ? null : regiFej(ROOT, ut);   // a Wix 404-es lapjanak fejlece ("Post | Medical Piercing", canonical) nem kell
+  const bValtozat = /^\/b\//.test(ut);   // a B-valtozatok (/b/<ut>) rejtettek: noindex, canonical nelkul
+  let r = ut === '/404' || bValtozat ? null : regiFej(ROOT, ut);   // a Wix 404-es lapjanak fejlece ("Post | Medical Piercing", canonical) nem kell
   if (r && FRISS_CIM[ut]) r = { ...r, cim: FRISS_CIM[ut], cimkek: r.cimkek.map((c) => c.replace(/((?:property="og:title"|name="twitter:title") content=")[^"]*"/, `$1${FRISS_CIM[ut]}"`)) };
   const ki = html.replace(/<!-- Rejtett próbaoldal[^>]*-->\n?/, '').replace(/<meta name="robots" content="noindex,nofollow">\n?/, '');
   if (r) {
@@ -224,7 +225,7 @@ function elesFej(ROOT, ut, html) {
   }
   const cim = idezojel((/<title>([\s\S]*?)<\/title>/.exec(ki) || [])[1] || 'Medical Piercing');
   const leiras = (/<meta name="description" content="([^"]*)"/.exec(ki) || [])[1] || '';
-  const sajat = (ut === '/404' || ut === '/visszajelzes') ? /* a vendeglevelekbol elerheto urlap: nem kell a keresobe */ ['<meta name="robots" content="noindex,nofollow">']
+  const sajat = (ut === '/404' || ut === '/visszajelzes' || bValtozat) ? /* a vendeglevelekbol elerheto urlap: nem kell a keresobe */ ['<meta name="robots" content="noindex,nofollow">']
     : [`<link rel="canonical" href="${DOMAIN}${ut}">`, `<meta property="og:title" content="${cim}">`, `<meta property="og:description" content="${leiras}">`,
       `<meta property="og:url" content="${DOMAIN}${ut}">`, '<meta property="og:site_name" content="Medical Piercing">', '<meta property="og:type" content="website">'];
   return ki.replace(/(<meta name="viewport"[^>]*>\n?)/, (m) => `${m}${sajat.join('\n')}\n`);
@@ -302,6 +303,23 @@ export function ujOldalak(ROOT, DIST) {
       const adat = { ut: '/' + nev, kulcs: nev, cim: meta.cim, leiras: meta.leiras, tipus: 'oldal', szekciok: [] };
       oldalKiir(ROOT, DIST, TUKOR_ELO + adat.ut, oldalHtml(ROOT, adat, { fo, sajat: true, horgony, landolo: !!meta.landolo, nagyito: /data-ekszer-galeria|id="ekszerek"/.test(fo) }));
       jegyzek.push({ ut: adat.ut, cim: meta.cim, tipus: 'oldal', uj: TUKOR_ELO + adat.ut });
+      db++;
+    }
+  }
+  // --- a B-valtozatok (a tulajdonos kerese, 2026-10-16: a "Konverzio-ujratervezes, kepernyotervek (mobil)" PDF szerint minden fo oldalbol egy B-valtozat, az oldal
+  // stilusaban; rejtett: link nem mutat ra, noindex): uj-oldalak/sajat-b/<nev>.html -> /b/<nev> (a fooldal: /b/fooldal). Ugyanaz a forma, mint a sajat/ oldalaknal.
+  const bDir = path.join(ROOT, 'uj-oldalak/sajat-b');
+  if (fs.existsSync(bDir)) {
+    for (const f of fs.readdirSync(bDir).filter((x) => x.endsWith('.html')).sort()) {
+      const nev = f.slice(0, -5);
+      const forras = fs.readFileSync(path.join(bDir, f), 'utf8');
+      const m = /^<!--oldal (\{[\s\S]*?\}) -->\n/.exec(forras);
+      if (!m) throw new Error(`uj-oldalak/sajat-b/${f}: hianyzik az elso sor (<!--oldal {"cim":...,"leiras":...} -->)`);
+      const meta = JSON.parse(m[1]);
+      const fo = osszerak(ROOT, forras.slice(m[0].length));
+      const horgony = new Set([...fo.matchAll(/\sid="([a-z]+)"/g)].map((x) => x[1]));
+      const adat = { ut: '/b/' + nev, kulcs: 'b-' + nev, cim: meta.cim, leiras: meta.leiras, tipus: 'oldal', szekciok: [] };
+      oldalKiir(ROOT, DIST, adat.ut, oldalHtml(ROOT, adat, { fo, sajat: true, b2: true, horgony, landolo: !!meta.landolo, fejlec: meta.fejlec, akciosav: meta.akciosav, lablec: meta.lablec, nagyito: /data-ekszer-galeria|id="ekszerek"/.test(fo) }));
       db++;
     }
   }

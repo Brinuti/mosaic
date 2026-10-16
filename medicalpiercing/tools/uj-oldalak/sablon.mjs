@@ -471,6 +471,11 @@ export function oldalHtml(ROOT, adat, opciok = {}) {
   // hirdetesi landolo (a TikTok-landolo, a tulajdonos kerese, 2026-10-16: "nem lehet sehol sem ... semmi olyasmi kifejezes, ami orvosi"): sajat, rovid fejlec
   // (logo jelmondat nelkul, Velemenyek, Idopontfoglalas - mint az eredeti landolon), akcios sav a lap arlistajahoz, lablec a panasz- es orvosi szavak nelkul
   const landolo = !!opciok.landolo;
+  // a B-valtozatok (/b/<ut>, uj-fooldal.mjs): az elso soruk megadhat sajat akcios savot / lablecet (a PDF szerint: a kozerzetjavito oldalakon az uj savszoveg,
+  // a paros oldalon paros sav, a fulpiercing-oldalon nincs sav, sajat lablec), es sajat stiluslapot kapnak (assets/css/uj-b.css, utolsokent)
+  const fejlecResz = opciok.fejlec || (landolo ? 'fejlec-landolo' : 'fejlec');
+  const savResz = opciok.akciosav === 'nincs' ? null : (opciok.akciosav || (landolo ? 'akcio-sav-landolo' : 'akcio-sav'));
+  const lablecResz = opciok.lablec || (landolo ? 'lablec-landolo' : 'lablec');
   return `<!doctype html>
 <html lang="hu">
 <head>
@@ -487,23 +492,23 @@ export function oldalHtml(ROOT, adat, opciok = {}) {
 <script src="/assets/js/suti.js"></script>
 <link rel="stylesheet" href="/assets/css/uj-fooldal.css">
 <link rel="stylesheet" href="/assets/css/uj-oldalak.css">${kat || sajat ? '\n<link rel="stylesheet" href="/assets/css/uj-kategoria.css">' : ''}${sajat ? '\n<link rel="stylesheet" href="/assets/css/uj-sajat.css">' : ''}
-<link rel="stylesheet" href="/assets/css/uj-egyseges.css">
+<link rel="stylesheet" href="/assets/css/uj-egyseges.css">${opciok.b2 ? '\n<link rel="stylesheet" href="/assets/css/uj-b.css">' : ''}
 </head>
-<body class="belso ${cimke}${landolo ? ' oldal-landolo' : ''}">
+<body class="belso ${cimke}${landolo ? ' oldal-landolo' : ''}${opciok.b2 ? ' oldal-b2' : ''}">
 <a class="ugras" href="#fo">Ugrás a tartalomra</a>
 
 <!--#ikonok-->
 
-${partial(ROOT, landolo ? 'fejlec-landolo' : 'fejlec', horgony)}
+${partial(ROOT, fejlecResz, horgony)}
 
-${partial(ROOT, landolo ? 'akcio-sav-landolo' : 'akcio-sav')}
+${savResz ? partial(ROOT, savResz) : ''}
 
 <main id="fo">
 ${szekciok}
 ${lapozo(c, opciok.lapozo)}
 </main>
 
-${partial(ROOT, landolo ? 'lablec-landolo' : 'lablec', horgony)}
+${partial(ROOT, lablecResz, horgony)}
 
 <dialog class="nagyito" id="kepnezo" aria-label="Kép nagyban">
   <button type="button" class="nagyito-zar" aria-label="Bezárás">${IK('close')}</button>
