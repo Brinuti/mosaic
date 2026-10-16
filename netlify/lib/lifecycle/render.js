@@ -1,6 +1,6 @@
 // Uzenet-kirajzolas: helyorzok kitoltese (SMS / e-mail / belso feladat-level) es az e-mail HTML + szoveges valtozata.
 import { HELYORZOK } from './katalog/ertekek.js';
-import { UZLETAGAK, SZALON, rovidNev, tisztaNev, idotartamPerc, uzletaggal, linkek } from './uzletag.js';
+import { UZLETAGAK, SZALON, rovidNev, tisztaNev, idotartamPerc, uzletaggal, linkek, szalonAdat, mpHelyszin, mpSzolgNev, mpLatogatas, mpFoto } from './uzletag.js';
 import { datumSzoveg, datumRagos, idopontSzoveg, napNev, idotartamSzoveg, napKezdet } from './ido.js';
 import { smsSzegmens } from './telefon.js';
 import { VELEMENYEK } from './katalog/velemenyek.js';
@@ -24,8 +24,9 @@ export function nemTalalkoztunk(kezdet, most) {
  * @param {{base?:string, ujKezdet?:number}} [opc]
  */
 export function ertekek(f, mod = 'email', opc = {}) {
-  const base = opc.base || ALAP_URL;
   const uz = UZLETAGAK[f.uzletag];
+  if (f.uzletag === 'mp') return mpErtekek(f, mod, opc, uz);
+  const base = opc.base || ALAP_URL;
   const munkatars = f.munkatars && !NEM_NEV.test(f.munkatars) ? f.munkatars : null;
   const perc = idotartamPerc(f.uzletag, f.szolgaltatas);
   const reszletek = `${base}/f/${f.token}`;
@@ -44,6 +45,44 @@ export function ertekek(f, mod = 'email', opc = {}) {
     'nem_találkoztunk': nemTalalkoztunk(f.kezdet, opc.most),
     _uzletag: f.uzletag,
     _base: base,
+  };
+}
+
+/** A Google-velemenyek szama, ha a /api/ertekeles nem olvashato (a legutobbi ismert kerek szam; a level "Mind az … vélemény" soraban). */
+export const MP_GOOGLE_ALAP = '5 000';
+/** "5033" -> "5 033" */
+export const ezresek = (n) => String(Math.round(Number(n))).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+/**
+ * A Medical Piercing helyorzo-ertekei. A linkek (/f, /m) a medicalpiercing.hu-ra mutatnak (opc.mpBase: csak teszthez), a szalon-adatok a sajatjai;
+ * a helyszin-sorok (cim, erkezes, utvonal) csak akkor ismertek, ha a munkatarsbol biztosan Budapest (lasd uzletag.js mpHelyszin).
+ */
+function mpErtekek(f, mod, opc, uz) {
+  const base = opc.mpBase || uz.oldal;
+  const sz = szalonAdat('mp');
+  const bp = mpHelyszin(f.munkatars) === 'bp';
+  const munkatars = f.munkatars && !NEM_NEV.test(f.munkatars) ? String(f.munkatars).replace(/\s+-\s*/g, '-').trim() : null; // "Nagy -Markó Fanni" -> "Nagy-Markó Fanni"
+  const nev = mpSzolgNev(f.szolgaltatas);
+  const reszletek = `${base}/f/${f.token}`;
+  const db = Number(opc.googleVelemenyek);
+  return {
+    'keresztnév': f.keresztnev || null,
+    'dátum': datumSzoveg(f.kezdet), 'dátum_ragos': datumRagos(f.kezdet), 'nap': napNev(f.kezdet), 'időpont': idopontSzoveg(f.kezdet),
+    'szolgáltatás': mod === 'sms' ? rovidNev(nev) : nev,
+    'munkatárs': munkatars, 'fodrász': munkatars,
+    'várható_időtartam': null, 'látogatás_hossza': mpLatogatas(f.szolgaltatas),
+    'aktuális_ár': null, 'aktuális_ajánlat': null,
+    'foglalás_részletei_link': reszletek, 'módosítás_link': reszletek, 'megerősítés_link': `${base}/m/${f.token}`,
+    'foglalás_link': uz.foglalasUrl, 'navigáció_link': sz.navigacioUrl, 'eredmények_link': uz.eredmenyekUrl, 'videó_link': uz.videoUrl,
+    'új_dátum': opc.ujKezdet ? datumSzoveg(opc.ujKezdet) : datumSzoveg(f.kezdet), 'új_időpont': opc.ujKezdet ? idopontSzoveg(opc.ujKezdet) : idopontSzoveg(f.kezdet),
+    'telefon': sz.telefon, 'cím': bp ? sz.cim : null,
+    'helyszín': bp ? sz.cim : null, 'helyszín_rövid': bp ? sz.cimRovid : null, 'érkezés': bp ? sz.erkezes : null, 'útvonal_link': bp ? sz.navigacioUrl : null,
+    'munkatárs_fotó': mpFoto(f.munkatars),
+    'google_vélemények': Number.isFinite(db) && db > 0 ? ezresek(db) : MP_GOOGLE_ALAP,
+    'nem_találkoztunk': nemTalalkoztunk(f.kezdet, opc.most),
+    _uzletag: f.uzletag,
+    _base: base,
+    _velemenyek: opc.velemenyek || {},
   };
 }
 
@@ -246,8 +285,52 @@ export function levelKirajzol({ elotag, blokkok, lablecMegjegyzes, base = ALAP_U
   return { html, szoveg: sz.join('\n\n') };
 }
 
+// ---- kesz HTML-sablon (Medical Piercing: katalog/mp.js, a medicalpiercing/tools/levelek/general.py --motor kimenete) -------------------------------
+// Helyorzo: {nev} (betuk + _; a <style> CSS-blokkjai igy nem helyorzok). Feltetelt blokk: <!--?-->A<!--|-->B<!--/?--> - A, ha minden helyorzoje ismert,
+// kulonben B (a B elhagyhato: ilyenkor semmi). Velemeny: {vélemény:v13} - a D1 mp_velemenyek tablajabol (a valodi idezetek nincsenek a nyilvanos repoban);
+// ha nincs ilyen sor, az egesz velemeny-blokk kimarad.
+const HTML_HELYORZO = /\{([\p{L}_]+)\}/gu;
+const HTML_FELTETEL = /<!--\?-->([\s\S]*?)(?:<!--\|-->([\s\S]*?))?<!--\/\?-->/g;
+export const VELEMENY_HELYORZO = /\{vélemény:([a-z0-9_-]+)\}/g;
+const ismert = (ert, h) => ert[h] !== null && ert[h] !== undefined && ert[h] !== '';
+
+/** A sablon velemeny-kulcsai (a D1-lekereshez). */
+export const velemenyKulcsok = (sablon) => [...new Set([...String(sablon || '').matchAll(VELEMENY_HELYORZO)].map((m) => m[1]))];
+
+export function htmlKitolt(sablon, ert) {
+  let s = String(sablon).replace(HTML_FELTETEL, (_, a, b) => ([...a.matchAll(HTML_HELYORZO)].every((m) => ismert(ert, m[1])) ? a : (b || '')));
+  const vel = ert._velemenyek || {};
+  s = s.replace(VELEMENY_HELYORZO, (_, k) => {
+    const v = vel[k];
+    if (!v || !v.szoveg) return '';
+    return `<div class="velem"><span class="cs">&#9733;&#9733;&#9733;&#9733;&#9733;</span><br>&bdquo;${esc(v.szoveg)}&rdquo;<span class="nev">${esc(v.nev || 'Vendégünk')} <span>&middot; Google-vélemény</span></span></div>`;
+  });
+  return s.replace(HTML_HELYORZO, (_, h) => {
+    if (!(h in HELYORZOK)) throw new Error(`ismeretlen helyorzo: {${h}}`);
+    if (ismert(ert, h)) return esc(ert[h]);
+    if (HELYORZOK[h].opcionalis) return '';
+    throw new Error(`hianyzo helyorzo-ertek: {${h}}`);
+  });
+}
+
+/** HTML -> sima szoveg (a level szoveges valtozatahoz): a linkek cime zarojelben. */
+export function htmlBolSzoveg(h) {
+  return String(h)
+    .replace(/<(style|head|title)[\s\S]*?<\/\1>/gi, '')
+    .replace(/<div style="display:none[^"]*">[\s\S]*?<\/div>/i, '')
+    .replace(/<a [^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, (_, u, t) => { const sz = t.replace(/<[^>]+>/g, '').trim(); return sz ? `${sz} (${u})` : ''; })
+    .replace(/<br\s*\/?>|<\/(p|div|h1|h2|tr|li|table)>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ').replace(/&middot;/g, '·').replace(/&#9733;/g, '★').replace(/&bdquo;/g, '„').replace(/&rdquo;/g, '”').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+    .replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 /** Az e-mail uzenet kirajzolasa a katalogus-bejegyzesbol. surgos: a T0 e-mail a "surgos_kiegeszites"-t is tartalmazza. */
 export function emailKirajzol(uz, ert, { surgos = false } = {}) {
+  if (uz.html) { // kesz sablon (Medical Piercing): nem a MOSAIC-keretbe kerul
+    const html = htmlKitolt(uz.html, ert);
+    return { targy: sorKitolt(uz.targy, ert).szoveg, elotag: uz.elotag ? sorKitolt(uz.elotag, ert).szoveg : '', html, szoveg: htmlBolSzoveg(html) };
+  }
   const torzs = [...uz.torzs, ...(surgos && uz.surgos_kiegeszites ? uz.surgos_kiegeszites : [])];
   const blokkok = blokkokKitolt(torzs, ert);
   const targy = sorKitolt(uz.targy, ert).szoveg;

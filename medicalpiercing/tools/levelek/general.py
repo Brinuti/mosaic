@@ -1,12 +1,18 @@
 # Medical Piercing – foglalastol a megjelenesig: e-mail mintak (v2, 2026-10-16, a tulajdonos visszajelzese alapjan).
-# Kimenet: assets/levelek/*.html + index.html + sms.json + szoveg.txt.  Futtatas: python3 general.py [kep_alap_url]
+# Kimenet: assets/levelek/*.html + index.html + sms.json + szoveg.txt.  Futtatas: python3 general.py [kep_alap_url] [--minta]
 # A {mezo} jelolesek a lifecycle-motor dinamikus mezoi; a mintakban pelda ertekek, sarga jelolessel.
+# --motor: a mintaertekek helyett a lifecycle-motor helyorzoi ({keresztnév}, {dátum}, ...), a kimenet a motor katalogusa:
+#   netlify/lib/lifecycle/katalog/mp.js (a repo gyokereben; a foglalas elotti levelek + SMS-ek). A valodi velemeny-idezetek NEM kerulnek bele:
+#   helyettuk {vélemény:vNN} helyorzo all, amit a motor kuldeskor a D1 mp_velemenyek tablajabol tolt ki (render.js htmlKitolt).
+#   A helyszinhez kotott sorok (cim, erkezes, utvonal, ar, munkatars) <!--?-->...<!--/?--> feltetelt blokkban: ismeretlen ertekkel kimaradnak.
 import html, pathlib, json, re, sys
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 OUT = ROOT / 'assets' / 'levelek'
 OUT.mkdir(parents=True, exist_ok=True)
 SITE = 'https://www.medicalpiercing.hu'
-KEPALAP = (sys.argv[1] if len(sys.argv) > 1 else SITE).rstrip('/') + '/assets/levelek/kep/'
+MOTOR = '--motor' in sys.argv
+_ARGOK = [a for a in sys.argv[1:] if not a.startswith('--')]
+KEPALAP = (_ARGOK[0] if _ARGOK and not MOTOR else SITE).rstrip('/') + '/assets/levelek/kep/'
 IMG = SITE + '/assets/img/f18724_'
 K = {
   'logo': KEPALAP + 'logo.png',
@@ -23,7 +29,13 @@ L = {
   'migren': SITE + '/migren-piercing', 'shenmen': SITE + '/shenmen-piercing', 'klimax': SITE + '/klimax-piercing',
   'slim': SITE + '/slim-etvagycsokkento-piercing', 'allergia': SITE + '/allergia-piercing',
 }
+L['ott_leszek'] = L['modositas'] + '?ott-leszek=1'
 GOOGLE_DB = '5 033'  # dinamikus: /api/ertekeles (db) – minden kuldeskor a friss szam
+if MOTOR:
+    L['modositas'] = '{foglalás_részletei_link}'   # medicalpiercing.hu/f/<token> (medicalpiercing/lib/foglalasom.js)
+    L['ott_leszek'] = '{megerősítés_link}'         # medicalpiercing.hu/m/<token>: egy kattintas, "Ott leszek"
+    L['foglalas'] = '{foglalás_link}'
+    GOOGLE_DB = '{google_vélemények}'
 BP = dict(nev='Feri', datum='2026. október 23., csütörtök', ido='14:30', szolg='3 db piercing (csomag)', ar='44 900 Ft',
           munkatars='Kovács Gabriella', varos='Budapest', varosban='Budapesten', cim='1137 Budapest, Újpesti rakpart 7., 5. emelet 25. (a Jászai Mari térnél)',
           ido_tart='kb. 40–50 perc', terkep='https://maps.google.com/?q=1137+Budapest+Újpesti+rakpart+7',
@@ -32,7 +44,15 @@ VIDEK = dict(BP, datum='2026. november 3., kedd', ido='10:40', szolg='1 db migr�
              varos='Miskolc', varosban='Miskolcon', cim='3525 Miskolc, Széchenyi István utca 19., 4. emelet 2. ajtó (Széchenyi Egészség Központ)',
              ido_tart='kb. 30–40 perc', terkep='https://maps.google.com/?q=3525+Miskolc+Széchenyi+István+utca+19',
              erkezes='A Széchenyi Egészség Központban, a 4. emeleten, a 2-es ajtónál várunk.')
+if MOTOR:  # a motor helyorzoi (katalog/ertekek.js HELYORZOK); a videki varost phase 1-ben nem ismerjuk: varos nelkuli (altalanos) mondatok
+    BP = dict(nev='{keresztnév}', datum='{dátum}', ido='{időpont}', szolg='{szolgáltatás}', ar='{aktuális_ár}', munkatars='{munkatárs}', varos=None, varosban=None,
+              cim='{helyszín}', ido_tart='{látogatás_hossza}', terkep='{útvonal_link}', erkezes='{érkezés}')
+    VIDEK = dict(BP)
 
+def opt(a, b=''):
+    """Feltetelt blokk: a motor A-t kuldi, ha minden helyorzoje ismert, kulonben B-t. A mintaban mindig A."""
+    if not MOTOR: return a
+    return f'<!--?-->{a}<!--|-->{b}<!--/?-->' if b else f'<!--?-->{a}<!--/?-->'
 MINTA = '--minta' in sys.argv  # a mintaoldalon sargaval jeloljuk a dinamikus mezoket; a kikuldott levelben nincs jeloles
 def m(v):  # dinamikus mezo
     return f'<span class="dyn">{html.escape(v)}</span>'
@@ -97,18 +117,23 @@ def foglalas_kartya(d):
     return f'''<div class="card"><div class="cimke">A foglalásod</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0">
 <tr><td class="l">Időpont</td><td><b>{m(d["datum"])}, {m(d["ido"])}</b></td></tr>
 <tr><td class="l">Szolgáltatás</td><td>{m(d["szolg"])}</td></tr>
-<tr><td class="l">Szakember</td><td>{m(d["munkatars"])}</td></tr>
-<tr><td class="l">Helyszín</td><td>{m(d["cim"])}</td></tr>
-<tr><td class="l">Időtartam</td><td>{m(d["ido_tart"])}</td></tr>
-<tr><td class="l">Ár</td><td>{m(d["ar"])} – a helyszínen fizetendő</td></tr></table></div>'''
+{opt(f'<tr><td class="l">Szakember</td><td>{m(d["munkatars"])}</td></tr>')}
+{opt(f'<tr><td class="l">Helyszín</td><td>{m(d["cim"])}</td></tr>')}
+{opt(f'<tr><td class="l">Időtartam</td><td>{m(d["ido_tart"])}</td></tr>')}
+{opt(f'<tr><td class="l">Ár</td><td>{m(d["ar"])} – a helyszínen fizetendő</td></tr>')}</table></div>'''
 
 def gombok(d):
-    return f'<p><a class="btn" href="{d["terkep"]}">Útvonal</a><a class="btn2" href="{L["modositas"]}">Időpont módosítása</a></p>'
+    return f'<p>{opt(f"<a class=\"btn\" href=\"{d["terkep"]}\">Útvonal</a>")}<a class="btn2" href="{L["modositas"]}">Időpont módosítása</a></p>'
 
 def mini_idopont(d):
-    return f'<p style="font-size:15px">Az időpontod: <b>{m(d["datum"])}, {m(d["ido"])}</b>, {m(d["varos"])}. Ha módosítanod kell, <a href="{L["modositas"]}">itt egy kattintással megteheted</a>.</p>'
+    varos = f', {m(d["varos"])}' if d.get('varos') else ''
+    return f'<p style="font-size:15px">Az időpontod: <b>{m(d["datum"])}, {m(d["ido"])}</b>{varos}. Ha módosítanod kell, <a href="{L["modositas"]}">itt egy kattintással megteheted</a>.</p>'
 
 def alairas(d, foto, szoveg='Szeretettel vár:'):
+    if MOTOR:  # a foglalt piercer fotoja (ha van), a neve (ha ismert); kulonben "a Medical Piercing csapata"
+        kep_td = opt('<td style="width:70px;vertical-align:middle"><img src="{munkatárs_fotó}" width="56" alt=""></td>')
+        nev = opt(f'{szoveg} <b>{m(d["munkatars"])}</b><br><span style="font-size:14px;color:#8a8b9c">és a Medical Piercing csapata</span>', f'{szoveg} <b>a Medical Piercing csapata</b>')
+        return f'<div class="sig"><table role="presentation" cellspacing="0" cellpadding="0"><tr>{kep_td}<td style="vertical-align:middle">{nev}</td></tr></table></div>'
     kepe = f'<img src="{K["gabi_portre"]}" width="56" alt="">' if foto else ''
     return (f'<div class="sig"><table role="presentation" cellspacing="0" cellpadding="0"><tr>'
             + (f'<td style="width:70px;vertical-align:middle">{kepe}</td>' if foto else '')
@@ -117,28 +142,56 @@ def alairas(d, foto, szoveg='Szeretettel vár:'):
 _VELPATH = pathlib.Path(__file__).with_name('velemenyek.json')  # a valodi idezetek: nem a nyilvanos repoban (gitignore)
 _VELEK = json.loads(_VELPATH.read_text(encoding='utf-8')) if _VELPATH.exists() else {}
 def VEL(k):
+    if MOTOR: return ('\x00' + k, '')  # a motorban helyorzo: {vélemény:k} (a szoveg a D1-ben, nem a repoban)
     return tuple(_VELEK.get(k, ['Itt egy valódi Google-vélemény jelenik meg.', 'Vendégünk']))
 
 def velemeny(szoveg, nev):
+    if szoveg.startswith('\x00'): return '{vélemény:' + szoveg[1:] + '}'
     return f'<div class="velem"><span class="cs">★★★★★</span><br>„{szoveg}”<span class="nev">{nev} <span>· Google-vélemény</span></span></div>'
 
 VIDEO = lambda: f'''<h2>Nézd meg előre, hogyan zajlik</h2><div class="kep">{kep(K["video"], L["video"], "Videó: így néz ki egy szúrás")}
 <div class="felirat">Egy teljes szúrás videón, az elejétől a végéig – kattints a képre.</div></div>'''
 
 LEVELEK = []
+MOTOR_LEVELEK = []
+# a motor-katalogus (--motor): level-kod -> (azonosito, mikor, szegmensek, motor-targy vagy None). A szuras utani levelek (10-11) a 2. fazisban.
+_E1 = dict(tipus='tartalom', utan_napok=1, min_lead_nap=5)
+MOTOR_META = {
+  '01-T0-visszaigazolas-BP': ('MP-EMAIL-01', dict(tipus='t0'), ['bp'], 'Visszaigazoltuk az időpontodat: {dátum}, {időpont}'),
+  '02-T0-visszaigazolas-VIDEK': ('MP-EMAIL-02', dict(tipus='t0'), ['videk'], 'Visszaigazoltuk az időpontodat: {dátum}, {időpont}'),
+  '03-E1-migren': ('MP-EMAIL-03', _E1, ['migren'], None), '03-E1-shenmen': ('MP-EMAIL-04', _E1, ['shenmen'], None),
+  '03-E1-klimax': ('MP-EMAIL-05', _E1, ['klimax'], None), '03-E1-slim': ('MP-EMAIL-06', _E1, ['slim'], None), '03-E1-allergia': ('MP-EMAIL-07', _E1, ['allergia'], None),
+  '04-E2-igy-zajlik': ('MP-EMAIL-08', dict(tipus='tartalom', aranyban=0.5, min_lead_nap=7), None, None),
+  '05-E3-nem-engedjuk-el-a-kezed': ('MP-EMAIL-09', dict(tipus='tartalom', aranyban=0.75, min_lead_nap=14), None, None),
+  '06-T48-felkeszules-BP': ('MP-EMAIL-10', dict(tipus='elott_ora', ora=48, min_lead_ora=72), ['bp'], None),
+  '07-T48-felkeszules-VIDEK': ('MP-EMAIL-11', dict(tipus='elott_ora', ora=48, min_lead_ora=72), ['videk'], 'Két nap múlva találkozunk – így készülj'),
+  '08-modositas': ('MP-EMAIL-12', dict(tipus='athelyezve'), None, 'Megvan az új időpontod: {dátum}, {időpont}'),
+  '09-lemondas': ('MP-EMAIL-13', dict(tipus='lemondva'), None, None),
+}
+_SORREND = {'MP-EMAIL-08': 2, 'MP-EMAIL-09': 3}
 def level(kod, mikor, kinek, targy, preheader, torzs, hero=None, hero_link=None):
     LEVELEK.append(dict(kod=kod, mikor=mikor, kinek=kinek, targy=targy, fajl=f'{kod}.html'))
+    if MOTOR:
+        if kod not in MOTOR_META: return
+        azon, mk, szeg, mtargy = MOTOR_META[kod]
+        u = dict(id=azon, csatorna='email', mikor=mk)
+        if szeg: u['szegmensek'] = szeg
+        if mk['tipus'] == 'tartalom': u['sorrend'] = _SORREND.get(azon, 1)
+        u.update(targy=mtargy or targy, elotag=preheader, html=lap(mtargy or targy, preheader, torzs, hero, hero_link))
+        MOTOR_LEVELEK.append(u)
+        return
     (OUT / f'{kod}.html').write_text(lap(targy, preheader, torzs, hero, hero_link), encoding='utf-8')
 
 # ---- 01-02  T0 visszaigazolas ------------------------------------------------------------------------------
 T0_VEL_BP=VEL("v13")
 T0_VEL_VIDEK=VEL("v14")
 def t0(d, bp):
-    videk = '' if bp else f'<p>{m(d["varosban"])} csak meghatározott napokon vagyunk, ezért ha mégsem tudsz jönni, kérjük, minél előbb módosítsd az időpontodat – így a helyedet másnak is fel tudjuk ajánlani.</p>'
-    return f'''<h1>Megvan az időpontod, {m(d["nev"])}!</h1>
+    hol = f'{m(d["varosban"])} csak' if d.get('varosban') else 'Vidéki helyszíneinken csak'
+    videk = '' if bp else f'<p>{hol} meghatározott napokon vagyunk, ezért ha mégsem tudsz jönni, kérjük, minél előbb módosítsd az időpontodat – így a helyedet másnak is fel tudjuk ajánlani.</p>'
+    return f'''<h1>{opt(f'Megvan az időpontod, {m(d["nev"])}!', 'Megvan az időpontod!')}</h1>
 <p>Köszönjük, hogy minket választottál. Innentől nincs más dolgod, csak megérkezni – minden fontos részletet ide gyűjtöttünk.</p>
 {foglalas_kartya(d)}{gombok(d)}{videk}
-<p><b>Hogyan találsz meg minket?</b> {m(d["erkezes"])}</p>
+{opt(f'<p><b>Hogyan találsz meg minket?</b> {m(d["erkezes"])}</p>')}
 <h2>Így zajlik majd</h2><table role="presentation" class="steps">
 <tr><td><span class="num">1</span></td><td><b>Rövid beszélgetés</b> – átbeszéljük, mi miatt érkeztél, és megnézzük a füled.</td></tr>
 <tr><td><span class="num">2</span></td><td><b>Ékszerválasztás</b> – kiválasztod a neked tetsző G23 titán ékszert.</td></tr>
@@ -184,7 +237,7 @@ for kod, t in TIPUSOK.items():
 <p>{a.capitalize()} {n} vendégeink visszajelzése alapján hatásos módszer: megkérdezett vendégeink 93%-a jelezte vissza, hogy nála működik.* Ez nem a mi ígéretünk – ők mondják. Olvasd el, mit írnak:</p>'''
            if t['h93'] else f'''<h2>Vendégeink visszajelzése alapján: működik</h2>
 <p>{a.capitalize()} {n} vendégeink visszajelzése alapján hatásos módszer. Ez nem a mi ígéretünk – ők mondják. Olvasd el, mit írnak:</p>''')
-    torzs = f'''<h1>{m(BP["nev"])}, a pontosság a lényeg – így készül {a} {n}ed</h1>
+    torzs = f'''<h1>{opt(f'{m(BP["nev"])}, a pontosság a lényeg', 'A pontosság a lényeg')} – így készül {a} {n}ed</h1>
 <p>{t["bek"]}</p>
 <h2>Miért számít, hová kerül?</h2>
 <p>A fülben sok akupunktúrás pont van, egymástól sokszor csak milliméterekre. {a.capitalize()} {n} akkor tud a legtöbbet adni, ha pontosan a megfelelő pontba kerül. Ezért nálunk ez soha nem szemmérték kérdése.</p>
@@ -207,7 +260,7 @@ for kod, t in TIPUSOK.items():
 # ---- 04  E2: igy telik majd a latogatasod (folyamat, biztonsag, ekszerek) -----------------------------------
 level('04-E2-igy-zajlik', 'Ha legalább 7 nap van az időpontig: kb. a hátralévő idő felénél', 'Minden foglaló',
  'Így telik majd az a fél óra nálunk', 'Lépésről lépésre: mi történik, milyen ékszert kapsz, és miért vagy biztonságban.', f'''<h1>Így telik majd az a fél óra nálunk</h1>
-<p>{m(BP["nev"])}, az első szúrás előtt a legtöbben ugyanazt szeretnék tudni: mi fog pontosan történni? Elmeséljük – az ajtótól az utolsó lépésig.</p>
+<p>{opt(f'{m(BP["nev"])}, az első', 'Az első')} szúrás előtt a legtöbben ugyanazt szeretnék tudni: mi fog pontosan történni? Elmeséljük – az ajtótól az utolsó lépésig.</p>
 <h2>1. Leülünk beszélgetni</h2>
 <p>Minden egy rövid beszélgetéssel kezdődik: megkérdezzük, mi miatt érkeztél, milyen gyakran és mennyire zavarnak a panaszaid, és rákérdezünk a fontos előzményekre. Utána elmondjuk, hová kerül az ékszer, mire számíthatsz – és megválaszoljuk az összes kérdésedet. Semmi nem történik úgy, hogy ne tudnád előre.</p>
 <h2>2. Kiválasztod az ékszeredet</h2>
@@ -233,7 +286,7 @@ level('04-E2-igy-zajlik', 'Ha legalább 7 nap van az időpontig: kb. a hátralé
 # ---- 05  E3: nem engedjuk el a kezed (utoapolas, ingyenes kontroll, garancia) -------------------------------
 level('05-E3-nem-engedjuk-el-a-kezed', 'Ha legalább 14 nap van az időpontig: egyszer, az E2 után', 'Minden foglaló',
  'A szúrás után sem engedjük el a kezed', 'Utóápolás, ingyenes kontroll – csak nálunk –, és garancia.', f'''<h1>A szúrás után sem engedjük el a kezed</h1>
-<p>{m(BP["nev"])}, abban, amit csinálunk, mi magunk is hiszünk: csapatunk tagjai a saját bőrükön tapasztalták, hogy jobban vannak tőle. Ezért nekünk nem a szúrással ér véget a közös munka – akkor kezdődik igazán.</p>
+<p>{opt(f'{m(BP["nev"])}, abban', 'Abban')}, amit csinálunk, mi magunk is hiszünk: csapatunk tagjai a saját bőrükön tapasztalták, hogy jobban vannak tőle. Ezért nekünk nem a szúrással ér véget a közös munka – akkor kezdődik igazán.</p>
 <h2>Végigkísérünk a gyógyulásban</h2>
 <p>A szúrás után elmondjuk, hogyan ápold a piercinged, és e-mailben is elküldjük a pontról pontra leírt útmutatót. A következő hetekben pedig rövid levelekben jelentkezünk: mikor mire figyelj, mi normális, és mikor érdemes szólnod. Nem maradsz egyedül a kérdéseiddel.</p>
 <h2>Ingyenes kontroll – az egész piacon csak nálunk</h2>
@@ -250,15 +303,15 @@ level('05-E3-nem-engedjuk-el-a-kezed', 'Ha legalább 14 nap van az időpontig: e
 
 # ---- 06-07  T-48 felkeszules (a Salonic emlekezteto helyett) ------------------------------------------------
 def t48(d, bp):
-    return f'''<h1>Két nap múlva találkozunk, {m(d["nev"])}!</h1>
+    return f'''<h1>{opt(f'Két nap múlva találkozunk, {m(d["nev"])}!', 'Két nap múlva találkozunk!')}</h1>
 <p>Már nagyon várunk. Hogy minden simán menjen, összeszedtük, amit érdemes tudnod.</p>
-{foglalas_kartya(d)}<p><a class="btn" href="{L['modositas']}?ott-leszek=1">Ott leszek ✓</a><a class="btn2" href="{L['modositas']}">Időpont módosítása</a></p><p style="font-size:14px"><a href="{d['terkep']}">Útvonaltervezés a térképen »</a></p>
+{foglalas_kartya(d)}<p><a class="btn" href="{L['ott_leszek']}">Ott leszek ✓</a><a class="btn2" href="{L['modositas']}">Időpont módosítása</a></p>{opt(f'<p style="font-size:14px"><a href="{d["terkep"]}">Útvonaltervezés a térképen »</a></p>')}
 <h2>Így készülj</h2><table role="presentation" class="steps">
 <tr><td><span class="num">1</span></td><td><b>Egyél előtte rendesen</b> – üres gyomorral könnyebben megszédül az ember.</td></tr>
 <tr><td><span class="num">2</span></td><td><b>Ha hosszú a hajad, fogd össze</b>, hogy ne lógjon a füledre.</td></tr>
 <tr><td><span class="num">3</span></td><td><b>Szólj előre</b>, ha vérhígítót szedsz, várandós vagy, volt már ájulásod, vagy a füled most gyulladt – így felelősen tudunk dönteni. Hívj nyugodtan: +36 1 901 7444.</td></tr>
 <tr><td><span class="num">4</span></td><td><b>Tervezz {m(d["ido_tart"])}et</b>, és érkezz 5 perccel korábban. Ha késnél, hívj minket.</td></tr></table>
-<p><b>Hogyan találsz meg minket?</b> {m(d["erkezes"])}</p>
+{opt(f'<p><b>Hogyan találsz meg minket?</b> {m(d["erkezes"])}</p>')}
 <h2>Mi fog történni?</h2>
 <p>Leülünk beszélgetni: megkérdezzük, mi miatt érkeztél, és elmondjuk, hová kerül az ékszer. Kiválasztod a neked tetsző G23 titán ékszert, akupunktúrás pontmérővel kimérjük a pontot a füleden, érzéstelenítjük – és a szúrás maga pár másodperc – a legtöbben egy szúnyogcsípéshez hasonlítják. Vendégeink nagy része utána csak mosolyog, hogy ettől tartott.</p>
 <div class="kep">{kep(K["ekszerek"], L["ekszerek"], "Ékszereink")}<div class="felirat">Antiallergén G23 titán ékszerek – a helyszínen te választasz.</div></div>
@@ -340,6 +393,31 @@ SMS = [
  ('A1', 'A szúrás utáni 4. napon', 'Szia {keresztnev}! Ha most kicsit piros vagy duzzadt a fuled: ez a gyogyulas resze. Ha bizonytalan vagy: {link} - MP'),
  ('No-show', 'Következő munkanap 10:00', 'Szia {keresztnev}! Tegnap nem talalkoztunk, remeljuk, minden rendben. Ha attennad az idopontot: {link} - MP'),
 ]
+# a motor SMS-ei (--motor): a fenti lista a motor helyorzoivel, a vegen mindig "- Medical Piercing" (1 SMS-szegmens: a katalogus-teszt ellenorzi)
+MOTOR_SMS = [
+ dict(id='MP-SMS-01', csatorna='sms', mikor=dict(tipus='t0'), szoveg='Szia {keresztnév}! Megvan az időpontod: {dátum} {időpont}, {helyszín_rövid}. Részletek: {foglalás_részletei_link} - Medical Piercing'),
+ dict(id='MP-SMS-02', csatorna='sms', mikor=dict(tipus='t72'), szoveg='Szia {keresztnév}! Várunk {dátum_ragos} {időpont}-kor. Megerősíted, vagy átteszed? Egy kattintás: {foglalás_részletei_link} - Medical Piercing'),
+ dict(id='MP-SMS-03', csatorna='sms', mikor=dict(tipus='t24'), szoveg='Szia {keresztnév}! Holnap {időpont}-kor várunk, {helyszín_rövid}. Egyél előtte, érkezz 5 perccel korábban. - Medical Piercing'),
+ dict(id='MP-SMS-04', csatorna='sms', mikor=dict(tipus='lemondva'), szoveg='Szia {keresztnév}! Töröltük a {dátum} {időpont} időpontodat. Újat itt választhatsz: {foglalás_link} - Medical Piercing'),
+ dict(id='MP-SMS-05', csatorna='sms', mikor=dict(tipus='athelyezve'), szoveg='Szia {keresztnév}! Megvan az új időpontod: {új_dátum} {új_időpont}. Részletek: {foglalás_részletei_link} - Medical Piercing'),
+ dict(id='MP-SMS-06', csatorna='sms', mikor=dict(tipus='nem_jelent_meg'), szoveg='Szia {keresztnév}! {nem_találkoztunk}. Új időpont: {foglalás_link} - Medical Piercing'),
+]
+if MOTOR:
+    # az esemeny-uzenetek sorrendje: az SMS elol (az engine az elso azonositot hasznalja ismetlodes-szuresre)
+    uzenetek = MOTOR_SMS + MOTOR_LEVELEK
+    uzenetek = [u for u in uzenetek if u['mikor']['tipus'] not in ('lemondva', 'athelyezve', 'nem_jelent_meg')] + \
+               sorted([u for u in uzenetek if u['mikor']['tipus'] in ('lemondva', 'athelyezve', 'nem_jelent_meg')], key=lambda u: (u['mikor']['tipus'], u['csatorna'] != 'sms'))
+    ki = ['// GENERALT - NE SZERKESZD KEZZEL. Forras: medicalpiercing/tools/levelek/general.py --motor (python3 medicalpiercing/tools/levelek/general.py --motor)',
+          '// A Medical Piercing (uzletag "mp") foglalas elotti levelei es SMS-ei. Az e-mail kesz HTML-sablon (`html`): render.js htmlKitolt tolti ki',
+          '// (helyorzok: katalog/ertekek.js; feltetelt blokk: <!--?-->A<!--|-->B<!--/?-->; {vélemény:vNN}: a D1 mp_velemenyek tablajabol).',
+          'export default {', "  uzletag: 'mp',", '  tartalomKeret: false, // a tartalmi levelek sajat min_lead_nap szabalyai donetnek (5+ nap E1, 7+ nap E2, 14+ nap E3)',
+          '  uzenetek: [']
+    for u in uzenetek: ki.append('    ' + json.dumps(u, ensure_ascii=False) + ',')
+    ki += ['  ],', '};', '']
+    cel = ROOT.parent / 'netlify' / 'lib' / 'lifecycle' / 'katalog' / 'mp.js'
+    cel.write_text('\n'.join(ki), encoding='utf-8')
+    print(len(uzenetek), 'motor-uzenet ->', cel)
+    sys.exit(0)
 (OUT / 'sms.json').write_text(json.dumps(SMS, ensure_ascii=False), encoding='utf-8')
 
 sorok = ''.join(f'<tr><td><a href="{x["fajl"]}">{html.escape(x["targy"])}</a><br><small>{html.escape(x["kinek"])}</small></td><td>{html.escape(x["mikor"])}</td></tr>' for x in LEVELEK)

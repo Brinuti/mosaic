@@ -24,6 +24,18 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 const ma = () => Math.floor(Date.now() / 1000);
 
 /** A LIFECYCLE_KULCS_HASH egy vagy tobb (vesszovel / szokozzel elvalasztott) SHA-256 hash: kulcscserekor atmenetileg mindketto ervenyes (leallas nelkuli csere). */
+/** MP: a Google-velemenyek szama a medicalpiercing.hu /api/ertekeles vegpontjabol (ott 1 oraig gyorsitotarazva); hiba / idotullepes: null (a level a kerek szamot irja). */
+export function mpErtekelesKeszit(env = {}, fetchFn = fetch) {
+  return async () => {
+    const ab = new AbortController(); const idozito = setTimeout(() => ab.abort(), 3000);
+    try {
+      const r = await fetchFn(env.MP_ERTEKELES_URL || 'https://www.medicalpiercing.hu/api/ertekeles', { signal: ab.signal });
+      const j = r.ok ? await r.json() : null;
+      return j && Number(j.db) > 0 ? Number(j.db) : null;
+    } catch { return null; } finally { clearTimeout(idozito); }
+  };
+}
+
 async function kulcsos(request, env) {
   const k = request.headers.get('x-lifecycle-kulcs') || '';
   const hashek = String(env.LIFECYCLE_KULCS_HASH || '').toLowerCase().split(/[\s,;]+/).filter((h) => /^[0-9a-f]{64}$/.test(h));
@@ -69,11 +81,11 @@ export async function api(request, env, ctx) {
       // Oxigen CRM (docs/oxigen-crm): a parser elemzett esemenyenek MASOLATA a CRM-be. Nem dobhat kivetelt, nem lassithatja a lifecycle-t (idokorlat), CRM_DB nelkul nem csinal semmit.
       try {
         const p = ertelmezCrm({ uzenetId: torzs.uzenetId, targy: torzs.targy, kuldo: torzs.kuldo, szoveg: torzs.szoveg, html: torzs.html, kuldve: torzs.kuldve }, most);
-        if (p && p.ok) await crmKapocs(env, { ...p, kuldve: Number(torzs.kuldve) || undefined }, { most });
+        if (p && p.ok && p.uzletag !== 'mp') await crmKapocs(env, { ...p, kuldve: Number(torzs.kuldve) || undefined }, { most });
       } catch { /* a CRM hibaja nem erintheti a lifecycle-t */ }
       let kuldes = null;
       // A munkatarsi ertesito (figyel mod, riasztas, bizonytalan eset: valtozas === false) SOHA nem inditja el a kuldest; az esedekes uzenetek a koveto oraponkenti tickkel mennek, mint eddig.
-      if (e.ok && e.foglalasId && !e.duplikalt && e.valtozas !== false) kuldes = await tick(db, env, k, most, { foglalasId: e.foglalasId, base, eloEllenorzes: elo });
+      if (e.ok && e.foglalasId && !e.duplikalt && e.valtozas !== false) kuldes = await tick(db, env, k, most, { foglalasId: e.foglalasId, base, eloEllenorzes: elo, mpErtekeles: mpErtekelesKeszit(env) });
       return json({ ...e, kuldes });
     } finally { await k.lezar(); }
   }
@@ -81,7 +93,7 @@ export async function api(request, env, ctx) {
     const k = kuldokKeszit(env);
     const kk = { ...k, egyenleg: () => smsEgyenleg(env) };
     try {
-      const t = await tick(db, env, kk, most, { limit: 40, base, eloEllenorzes: eloEllenorzoKeszit(env) });
+      const t = await tick(db, env, kk, most, { limit: 40, base, eloEllenorzes: eloEllenorzoKeszit(env), mpErtekeles: mpErtekelesKeszit(env) });
       const n = await napi(db, env, kk, most);
       return json({ tick: t, napi: n });
     } finally { await k.lezar(); }
@@ -112,11 +124,14 @@ footer{text-align:center;font:13px Arial,sans-serif;color:#6b7776;padding:0 12px
 const html = (cim, torzs, status = 200) => new Response(OLDAL(cim, torzs), { status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
 const BOT = /bot|crawl|spider|preview|facebookexternal|whatsapp|telegram|slackbot|inspectiontool|skypeuripreview/i;
 
+const mpAtiranyit = (ut, kod) => new Response(null, { status: 302, headers: { location: `${UZLETAGAK.mp.oldal}/${ut}/${kod}`, 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
+
 export async function reszletek(request, env) {
   if (!env.LIFECYCLE_DB) return new Response('nincs', { status: 404 });
   const kod = new URL(request.url).pathname.split('/').filter(Boolean)[1] || '';
   const f = /^[0-9a-f]{10}$/.test(kod) ? await foglalasNezet(env.LIFECYCLE_DB, kod) : null;
   if (!f) return nemTalalhato();
+  if (f.uzletag === 'mp') return mpAtiranyit('f', kod); // a Medical Piercing foglalasa a sajat oldalan (medicalpiercing/lib/foglalasom.js)
   return foglalasOldal(f); // a Salonic vendeg-oldala a SAJAT oldalunkba agyazva (iframe), nem a Salonicra visszuk a vendeget
 }
 
@@ -124,6 +139,8 @@ export async function megerosites(request, env) {
   if (!env.LIFECYCLE_DB) return new Response('nincs', { status: 404 });
   const kod = new URL(request.url).pathname.split('/').filter(Boolean)[1] || '';
   if (!/^[0-9a-f]{10}$/.test(kod)) return nemTalalhato();
+  const nezet = await foglalasNezet(env.LIFECYCLE_DB, kod);
+  if (nezet && nezet.uzletag === 'mp') return mpAtiranyit('m', kod); // a megerosites is az MP oldalan tortenik (itt nem irunk)
   if (BOT.test(request.headers.get('user-agent') || '')) return megerositesOldal(null, 'bot');
   const r = await megerosit(env.LIFECYCLE_DB, kod, ma());
   if (!r.ok) return nemTalalhato();

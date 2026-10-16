@@ -4,17 +4,22 @@ import { simpleSmsBontas } from './telefon.js';
 
 const SMS_ALAP = 'https://api.simplesms.hu/rest/SMSapi';
 
-/** A SimpleSMS beallitasai a kornyezetbol: felhasznalo + domain nem titkos (wrangler.toml), a jelszo Secret. */
-export function smsBeallitas(env) {
-  return { felhasznalo: env.SIMPLESMS_FELHASZNALO || 'ferraj@gmail.com', domain: env.SIMPLESMS_DOMAIN || 'mosaicheadspa.hu', jelszo: String(env.SIMPLESMS_JELSZO || '').trim() };
+/** A SimpleSMS beallitasai a kornyezetbol: felhasznalo + domain nem titkos (wrangler.toml), a jelszo Secret.
+ *  uzletag 'mp': ugyanaz a fiok; ha kesobb sajat domaint kap (MP_SIMPLESMS_DOMAIN), azzal csatlakozik (kulon token). */
+export function smsBeallitas(env, uzletag = null) {
+  const alapDomain = env.SIMPLESMS_DOMAIN || 'mosaicheadspa.hu';
+  const domain = uzletag === 'mp' && env.MP_SIMPLESMS_DOMAIN ? env.MP_SIMPLESMS_DOMAIN : alapDomain;
+  return { felhasznalo: env.SIMPLESMS_FELHASZNALO || 'ferraj@gmail.com', domain, jelszo: String(env.SIMPLESMS_JELSZO || '').trim() };
 }
 export const smsKesz = (env) => !!smsBeallitas(env).jelszo;
 export const emailKesz = (env) => !!env.SMTP_PASS;
 
-let tokenGyorsitotar = null; // { token, lejar } - egy isolate eleteig
-async function smsToken(env, fetchFn) {
-  if (tokenGyorsitotar && tokenGyorsitotar.lejar > Date.now() + 60000) return tokenGyorsitotar.token;
-  const b = smsBeallitas(env);
+const tokenGyorsitotar = new Map(); // "felhasznalo|domain" -> { token, lejar } - egy isolate eleteig (uzletagonkent kulon domain is lehet)
+async function smsToken(env, fetchFn, uzletag = null) {
+  const b = smsBeallitas(env, uzletag);
+  const kulcs = `${b.felhasznalo}|${b.domain}`;
+  const t = tokenGyorsitotar.get(kulcs);
+  if (t && t.lejar > Date.now() + 60000) return t.token;
   if (!b.jelszo) throw new Error('SIMPLESMS_JELSZO nincs beallitva');
   const r = await fetchFn(`${SMS_ALAP}/connect`, { method: 'POST', body: new URLSearchParams({ username: b.felhasznalo, password: b.jelszo, domain: b.domain }) });
   const szoveg = await r.text();
@@ -22,7 +27,7 @@ async function smsToken(env, fetchFn) {
   const token = j && (j.access_token || j.data?.access_token);
   if (!token) throw new Error(`SimpleSMS connect hiba: ${szoveg.slice(0, 160)}`);
   const lejar = j.expires_in ? Date.parse(j.expires_in) : NaN;
-  tokenGyorsitotar = { token, lejar: Number.isFinite(lejar) ? lejar : Date.now() + 10 * 60000 };
+  tokenGyorsitotar.set(kulcs, { token, lejar: Number.isFinite(lejar) ? lejar : Date.now() + 10 * 60000 });
   return token;
 }
 
@@ -38,15 +43,15 @@ export async function smsConnectProba(env, felhasznalo, fetchFn = fetch) {
 }
 
 /** SMS kuldese. telefon: '+36301234567'. Visszaad: { id } vagy hibat dob. */
-export async function smsKuld(env, { telefon, szoveg }, fetchFn = fetch) {
+export async function smsKuld(env, { telefon, szoveg, uzletag = null }, fetchFn = fetch) {
   const bontas = simpleSmsBontas(telefon);
   if (!bontas) throw Object.assign(new Error('nem magyar mobilszam'), { vegleges: true });
-  const token = await smsToken(env, fetchFn);
+  const token = await smsToken(env, fetchFn, uzletag);
   const r = await fetchFn(`${SMS_ALAP}/sendSMS`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: new URLSearchParams({ ...bontas, message: szoveg }) });
   const t = (await r.text()).trim();
   let j; try { j = JSON.parse(t); } catch { j = null; }
   const hiba = !r.ok || (j && (j.error || j.errors || j.status === 'error')) || /^\s*(error|hiba)/i.test(t);
-  if (hiba) { if (r.status === 401) tokenGyorsitotar = null; throw new Error(`SimpleSMS sendSMS hiba: ${t.slice(0, 200)}`); }
+  if (hiba) { if (r.status === 401) tokenGyorsitotar.delete(`${smsBeallitas(env, uzletag).felhasznalo}|${smsBeallitas(env, uzletag).domain}`); throw new Error(`SimpleSMS sendSMS hiba: ${t.slice(0, 200)}`); }
   const id = j ? (j.sms_id ?? j.id ?? j.response ?? j.data?.sms_id ?? j.data ?? t) : t;
   return { id: String(typeof id === 'object' ? JSON.stringify(id) : id).slice(0, 80) };
 }
@@ -60,6 +65,28 @@ export async function smsEgyenleg(env, fetchFn = fetch) {
   const v = j ? (j.credit ?? j.balance ?? j.response ?? j.data ?? Object.values(j)[0]) : t;
   const n = Number(String(v).replace(/[^\d.,-]/g, '').replace(',', '.'));
   return Number.isFinite(n) ? n : null;
+}
+
+/** A Medical Piercing leveleit a sajat Gmail-fiokja kuldi: a medicalpiercing Pages-projekt relay-vegpontja (ott van az SMTP_PASS). */
+export const MP_RELAY_URL = 'https://www.medicalpiercing.hu/api/lifecycle-level';
+/**
+ * MP e-mail a relay-en at. A kulcs (MP_RELAY_KULCS, Secret a Mosaic-projektben) nelkul NEM kuld (es soha nem a MOSAIC postafiokjabol): vegleges hiba,
+ * a kuldes "hiba" allapotba kerul (a tick nem probalja ujra), a naplo jelzi.
+ */
+export async function mpRelayKuld(env, { to, targy, html, szoveg, valasz }, fetchFn = fetch) {
+  const kulcs = String(env.MP_RELAY_KULCS || '').trim();
+  if (!kulcs) {
+    console.log('lifecycle mp: MP_RELAY_KULCS nincs beallitva - az e-mail nem ment ki');
+    throw Object.assign(new Error('MP_RELAY_KULCS nincs beallitva (az MP-level nem ment ki)'), { vegleges: true });
+  }
+  const r = await fetchFn(env.MP_RELAY_URL || MP_RELAY_URL, {
+    method: 'POST', headers: { 'content-type': 'application/json', 'x-relay-kulcs': kulcs },
+    body: JSON.stringify({ to, subject: targy, html, text: szoveg, replyTo: valasz || 'medicalpiercing.hu@gmail.com' }),
+  });
+  const t = (await r.text()).trim();
+  if (!r.ok) throw Object.assign(new Error(`MP relay hiba: HTTP ${r.status} ${t.slice(0, 160)}`), { vegleges: r.status === 401 || r.status === 403 || r.status === 400 });
+  let j; try { j = JSON.parse(t); } catch { j = null; }
+  return { id: String(j?.id || 'mp-relay').slice(0, 80) };
 }
 
 /**
@@ -80,7 +107,8 @@ export function kuldokKeszit(env, { fetchFn = fetch } = {}) {
   };
   return {
     sms: (adat) => smsKuld(env, adat, fetchFn),
-    async email({ to, targy, html, szoveg, felado, valasz }) {
+    async email({ to, targy, html, szoveg, felado, valasz, uzletag }) {
+      if (uzletag === 'mp') return mpRelayKuld(env, { to, targy, html, szoveg, valasz }, fetchFn); // soha nem a MOSAIC postafiokjabol
       if (!emailKesz(env)) throw new Error('SMTP_PASS nincs beallitva');
       const p = await kapcsolat();
       const user = env.SMTP_USER || 'mosaicheadspa@gmail.com';

@@ -55,3 +55,11 @@ CREATE TABLE IF NOT EXISTS beallitasok (
   ertek TEXT,
   frissitve INTEGER
 );
+
+-- Medical Piercing (uzletag 'mp'): a levelek valodi Google-velemeny idezetei. NEM a nyilvanos repoban vannak: a sablon {vélemény:<kulcs>} helyorzoje
+-- kuldeskor innen toltodik ki (render.js htmlKitolt); ha a sor hianyzik, a velemeny-blokk kimarad. Feltoltes: wrangler d1 execute (kezzel / a tulajdonos jovahagyasaval).
+CREATE TABLE IF NOT EXISTS mp_velemenyek (
+  kulcs TEXT PRIMARY KEY,                   -- a sablon kulcsa: v01 ... v24 (medicalpiercing/tools/levelek/general.py)
+  szoveg TEXT,                              -- a velemeny szo szerint
+  nev TEXT                                  -- a velemenyezo neve, ahogy a Google-on latszik
+);

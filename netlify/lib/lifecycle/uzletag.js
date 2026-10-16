@@ -1,7 +1,9 @@
 // Uzletag-felismeres, szolgaltatas-nevek tisztitasa, szegmensek, idotartam (a Salonic-pillanatkepbol).
 import snapshot from './szolgaltatasok.js';
+import mpSzolgaltatasok from './szolgaltatasok-mp.js';
 
 const OLDAL = 'https://www.mosaicheadspa.hu';
+const MP_OLDAL = 'https://www.medicalpiercing.hu';
 
 /** Az ot uzletag: a Salonic-fiok (a vendeg-linkek hostja), a szalon adatai, a kozos oldalak. */
 export const UZLETAGAK = Object.freeze({
@@ -11,6 +13,9 @@ export const UZLETAGAK = Object.freeze({
   oxygen: { kulcs: 'oxygen', fiok: 'mosaic-oxigen', nev: 'MOSAIC Oxigénterápia', foglalasUrl: `${OLDAL}/oxigenterapia-budapest`, eredmenyekUrl: `${OLDAL}/oxigenterapia-budapest#eredmenyek`, videoUrl: `${OLDAL}/oxigenterapia-budapest#video` },
   laser: { kulcs: 'laser', fiok: 'mosaic-elysion', nev: 'MOSAIC Lézeres szőrtelenítés', foglalasUrl: `${OLDAL}/lezeres-szortelenites-budapest`, eredmenyekUrl: `${OLDAL}/lezeres-szortelenites-budapest#eredmenyek`, videoUrl: `${OLDAL}/lezeres-szortelenites-budapest#zsofi` },
   pmu: { kulcs: 'pmu', fiok: 'mosaic-pmu', nev: 'MOSAIC PMU', foglalasUrl: `${OLDAL}/sminktetovalas-budapest`, eredmenyekUrl: `${OLDAL}/sminktetovalas-budapest#eredmenyek`, videoUrl: `${OLDAL}/sminktetovalas-budapest#melitta` },
+  // Medical Piercing (kulon ceg, kulon Salonic-fiok es weboldal): a vendeg-linkek (/f, /m) a sajat oldalara mutatnak (oldal), a level a sajat Gmail-fiokjabol megy
+  // (a medicalpiercing Pages-projekt relay-vegpontjan at: kuldok.js), az SMS vegen "- Medical Piercing" (a katalogus-teszt ellenorzi).
+  mp: { kulcs: 'mp', fiok: 'medicalpiercing', nev: 'Medical Piercing', oldal: MP_OLDAL, foglalasUrl: `${MP_OLDAL}/idopontfoglalas`, eredmenyekUrl: `${MP_OLDAL}/migren-shenmen-piercing-velemenyek`, videoUrl: `${MP_OLDAL}/a-szuras-folyamata#lepes-6`, email: 'medicalpiercing.hu@gmail.com' },
 });
 
 /** A fodraszok sajat oldala (Wixes klon): a munkaik szekcioja (#munkak) es a konzultacios videojuk (#video) - a levelekben a lefoglalt fodraszhoz vezet. */
@@ -26,19 +31,33 @@ export function linkek(uzletag, munkatars) {
   return f ? { eredmenyek: f.oldal + f.munkak, video: f.oldal + f.video } : { eredmenyek: uz.eredmenyekUrl, video: uz.videoUrl };
 }
 
-/** A szalon kozos adatai (minden uzletag ugyanott van). */
+/** A szalon kozos adatai (a MOSAIC minden uzletaga ugyanott van). */
 export const SZALON = Object.freeze({
   cim: '1023 Budapest, Bécsi út 2.',
   telefon: '06 20 247 4444',
   navigacioUrl: 'https://www.google.com/maps/search/?api=1&query=MOSAIC+Head+Spa+1023+Budapest+B%C3%A9csi+%C3%BAt+2',
   parkolas: 'Bécsi út (0202-es zóna) vagy ParkL, Bécsi út 11.',
 });
+/** A Medical Piercing budapesti szalonja (a videki helyszineket phase 1-ben nem ismerjuk: a level ott helyszin nelkul megy). */
+export const MP_SZALON = Object.freeze({
+  cim: '1137 Budapest, Újpesti rakpart 7., 5. emelet 25. (a Jászai Mari térnél)',
+  cimRovid: 'Újpesti rakpart 7', // SMS: utana mondatvegi pont jon
+  telefon: '+36 1 901 7444',
+  navigacioUrl: 'https://www.google.com/maps/search/?api=1&query=Medical+Piercing+1137+Budapest+%C3%9Ajpesti+rakpart+7',
+  erkezes: 'A Jászai Mari térnél vagyunk, a környező utcákban könnyen meg tudsz állni autóval; villamossal a Jászai Mari tér megálló van a legközelebb.',
+});
+/** Az uzletag szalon-adatai (cim, telefon, navigacio): a MOSAIC-uzletagak kozosek, a Medical Piercinge sajat. */
+export const szalonAdat = (uzletag) => (uzletag === 'mp' ? MP_SZALON : SZALON);
 
 const FIOK_UZLETAG = Object.fromEntries(Object.values(UZLETAGAK).map((u) => [u.fiok, u.kulcs]));
+/** A feladó PONTOS megjelenitett neve (nem regex: nem iranyithat felre) -> uzletag. A Salonic lemondas-ertesitojeben nincs customer= link, ezert kell. */
+const KULDO_PONTOS = Object.freeze({ 'medical piercing': 'mp' });
 
 /** a Salonic-fiok nevebol ("mosaic-hair") VAGY a feladobol ("Mosaic Hair <app@salonic.hu>") az uzletag; null = ismeretlen */
 export function uzletagFelismer({ fiok, kuldo }) {
   if (fiok && FIOK_UZLETAG[String(fiok).toLowerCase()]) return FIOK_UZLETAG[String(fiok).toLowerCase()];
+  const nevResz = String(kuldo || '').replace(/<[^>]*>/g, '').replace(/["']/g, '').trim().toLowerCase();
+  if (KULDO_PONTOS[nevResz]) return KULDO_PONTOS[nevResz];
   const k = String(kuldo || '').toLowerCase();
   if (/headspa|head spa/.test(k)) return 'headspa';
   if (/\bhair\b/.test(k)) return 'hair';
@@ -51,7 +70,7 @@ export function uzletagFelismer({ fiok, kuldo }) {
 /** Osszehasonlitashoz: kisbetu, emoji/jelek nelkul, egyetlen szokozzel. */
 export const szolgNorm = (s) => String(s || '').normalize('NFC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 
-const PILLANATKEP = new Map(snapshot.szolgaltatasok.map((s) => [`${s.uzletag}|${szolgNorm(s.nev)}`, s]));
+const PILLANATKEP = new Map([...snapshot.szolgaltatasok, ...mpSzolgaltatasok].map((s) => [`${s.uzletag}|${szolgNorm(s.nev)}`, s]));
 
 /** Igaz, ha a szolgaltatas az uzletag Salonic-pillanatkepeben szerepel (vendeg-szolgaltatas, nem belso blokk). */
 export function ismertSzolgaltatas(uzletag, szolgaltatas) {
@@ -107,8 +126,59 @@ export function rovidNev(szolgaltatas) {
   return vag.slice(0, Math.max(vag.lastIndexOf(' '), 20)).replace(/[\s+,-]+$/, '');
 }
 
-/** Szegmens-cimkek a szolgaltatas nevebol (a katalogus `szegmensek` / `nem_szegmensek` szuroi ezekre vonatkoznak). */
-export function szegmensek(uzletag, szolgaltatas) {
+// ---- Medical Piercing ----------------------------------------------------------------------------------------------------------------------------
+const ekezetNelkul = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+/** A budapesti / videki munkatarsak (tools/mp-salonic-lekepezes.json, 2026-10-11). Kamilli Viktoria Budapesten ES Szekesfehervaron is dolgozik: ismeretlen helyszin. */
+const MP_BP = [/\bkovacs gabriella\b/, /\bkovacs richard\b/, /\bmarko fanni\b/, /^fanni$/];
+const MP_VIDEK = [/\bfekete henrietta\b/, /\bszuliman nikoletta\b/, /\btompek kornelia\b/, /\bszalai nora\b/, /\bmester brigitta\b/];
+/** 'bp' | 'videk' | null (ismeretlen / tobb helyszinen dolgozo munkatars) a Salonic "Munkatárs" mezojebol. */
+export function mpHelyszin(munkatars) {
+  const n = ekezetNelkul(munkatars);
+  if (!n) return null;
+  if (MP_BP.some((re) => re.test(n))) return 'bp';
+  if (MP_VIDEK.some((re) => re.test(n))) return 'videk';
+  return null;
+}
+/** A piercing tipusa a szolgaltatas nevebol: migren | shenmen | klimax | slim | allergia | egyeb (a 2-3 db-os csomag = shenmen). */
+export function mpTipus(szolgaltatas) {
+  const n = ekezetNelkul(szolgaltatas);
+  if (/migren|fejfajas/.test(n)) return 'migren';
+  if (/shenmen|stressz/.test(n)) return 'shenmen';
+  if (/klimax|valtozokor/.test(n)) return 'klimax';
+  if (/\bslim\b|etvagy/.test(n)) return 'slim';
+  if (/allergia/.test(n)) return 'allergia';
+  if (/fulbevalo|divat/.test(n)) return 'egyeb';
+  if (/\b[23] (db )?piercing|\b2 szemelynek/.test(n)) return 'shenmen';
+  return 'egyeb';
+}
+/** Olvashato MP-szolgaltatasnev a levelbe (a Salonic-nev akcios / aras resze nelkul): "3 db piercing (csomag)". */
+export function mpSzolgNev(szolgaltatas) {
+  const n = ekezetNelkul(szolgaltatas);
+  const csomag = /^([23]) piercing\b/.exec(n);
+  if (csomag) return `${csomag[1]} db piercing (csomag)`;
+  return tisztaNev(szolgaltatas).replace(/\s*-?\s*\d[\d.\s]*\s?Ft\b.*$/i, '').trim();
+}
+/** A latogatas varhato hossza (a Salonic-idotartam csak a szuras ideje): egy piercing ~30-40 perc, csomag ~40-50 perc. */
+export function mpLatogatas(szolgaltatas) {
+  const n = ekezetNelkul(szolgaltatas);
+  return /^[23] piercing\b|\b[2-6] db\b|szemelynek|\b1 1 db\b/.test(n) ? 'kb. 40–50 perc' : 'kb. 30–40 perc';
+}
+/** A munkatars fotoja a Medical Piercing oldalarol (az alairas mellett); ismeretlen munkatarsnal nincs. */
+const MP_FOTOK = [
+  [/\bkovacs gabriella\b/, 'f18724_3ae9dfe53a07477fae1a816f79be5098.jpg'],
+  [/\bkovacs richard\b/, 'f18724_934eb02c7f7440a9b97932a3d6a66909.jpg'],
+  [/\bkamilli viktoria\b/, 'f18724_82ec0f0190fc482fa2aa112d0fe1e884.jpg'],
+  [/\bmarko fanni\b|^fanni$/, 'f18724_f9c0a8fd686f422482c6a443ea951b6d.jpg'],
+  [/\bmester brigitta\b/, 'f18724_ceb9d9dee26d47738ddde803fd53e4a4.jpg'],
+];
+export function mpFoto(munkatars) {
+  const n = ekezetNelkul(munkatars);
+  const t = n && MP_FOTOK.find(([re]) => re.test(n));
+  return t ? `${MP_OLDAL}/assets/img/${t[1]}` : null;
+}
+
+/** Szegmens-cimkek a szolgaltatas nevebol (a katalogus `szegmensek` / `nem_szegmensek` szuroi ezekre vonatkoznak). munkatars: csak az mp-nel (helyszin). */
+export function szegmensek(uzletag, szolgaltatas, munkatars = '') {
   const n = szolgNorm(szolgaltatas);
   const cimkek = [];
   const van = (re) => re.test(n);
@@ -144,6 +214,9 @@ export function szegmensek(uzletag, szolgaltatas) {
       else if (van(/korrekc/)) cimkek.push('korrekcio');
       else if (van(/eltavol|eltávol/)) cimkek.push('eltavolitas');
       else cimkek.push('fizetos');
+      break;
+    case 'mp': // piercing-tipus + helyszin (ismeretlen helyszin: a budapesti valtozat, de helyszin-sorok nelkul - lasd render.js)
+      cimkek.push(mpTipus(szolgaltatas), mpHelyszin(munkatars) === 'videk' ? 'videk' : 'bp');
       break;
     default:
   }

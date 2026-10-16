@@ -4,7 +4,8 @@ import hair from './hair.js';
 import oxygen from './oxygen.js';
 import laser from './laser.js';
 import pmu from './pmu.js';
+import mp from './mp.js'; // GENERALT: python3 medicalpiercing/tools/levelek/general.py --motor
 import kozos from './kozos.js';
 
-export const KATALOG = Object.freeze({ headspa, hair, oxygen, laser, pmu });
+export const KATALOG = Object.freeze({ headspa, hair, oxygen, laser, pmu, mp });
 export const KOZOS = kozos;
