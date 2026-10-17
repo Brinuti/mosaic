@@ -26,16 +26,16 @@
   .belso .hos-racs>.hos-kep>.beagyaz{position:absolute;inset:0;width:100%;height:100%;margin:0}
   .belso .hos-racs>.hos-kep>img{object-fit:cover;border-radius:30px}
   .belso .hos-kep .kat-hos-kar .kar-sav,.belso .hos-kep .kat-hos-kar .kar-dia{height:100%}
-  .belso .hos-kep .kat-hos-kar .kar-dia img{height:100%;aspect-ratio:auto}
+  .belso .hos-kep .kat-hos-kar .kar-dia img{height:100%;aspect-ratio:auto var(--ka)}
   .belso .hos-kep .video .video-kep,.belso .hos-kep .video .video-kep img{height:100%}
   /* a videokep a hasab szelessegeben (kulonben a 16:9-es arany miatt a magassagbol szamolt szelesseg kilogott a laprol) */
   .belso .hos-racs>.hos-kep .video .video-kep{width:100%;aspect-ratio:auto}
   /* a galeria negyzetes (1:1) marad (a tulajdonos kerese, 2026-10-16: a kepek 1:1-ben keszultek); a szoveghasab a negyzet magassagahoz igazodik */
   .kat-hos-b .hos-racs{grid-template-columns:minmax(0,1fr) minmax(0,min(582px,47%));column-gap:36px}
   .kat-hos-b .hos-racs>.hos-kep.hos-galeria{aspect-ratio:1/1;min-height:0;height:auto;align-self:start}
-  .belso .hos-kep .video .video-kep img{object-fit:cover;aspect-ratio:auto}
+  .belso .hos-kep .video .video-kep img{object-fit:cover;aspect-ratio:auto var(--ka)}
   /* allo video a hosben: a szoveghasab magassagaban, 9:16 aranyban, a hasab kozepen (nincs korulotte ures sav) */
-  .belso .hos-racs>.hos-kep>video.vid-allo{position:absolute;top:0;bottom:0;left:50%;width:auto;height:100%;max-width:100%;max-height:none;aspect-ratio:9/16;transform:translateX(-50%);object-fit:cover;border-radius:24px}
+  .belso .hos-racs>.hos-kep>video.vid-allo{position:absolute;top:0;bottom:0;left:50%;width:auto;height:100%;max-width:100%;max-height:none;--mh:100000px;aspect-ratio:9/16;transform:translateX(-50%);object-fit:cover;border-radius:24px}
   .belso .hos-racs>.hos-kep>video:not(.vid-allo){position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:24px}
 
   /* 3. kethasabos dobozok: a ket hasab egyforma magas; a szoveg teteje a kep / video tetejenel, a gomb alja a kep / video aljanal */
@@ -48,7 +48,7 @@
   .kat-video .kat-video-kep>.video{flex:1;display:flex}
   .kat-video .kat-video-kep .video-kep{flex:1;height:100%;min-height:100%;aspect-ratio:auto}
   .kat-video .kat-video-kep .video-kep img{height:100%;object-fit:cover}
-  .kat-par .kat-par-kep,.kat-par-ford .kat-par-kep{height:100%;max-height:none;aspect-ratio:auto;min-height:320px}
+  .kat-par .kat-par-kep,.kat-par-ford .kat-par-kep{height:100%;max-height:none;--mh:100000px;aspect-ratio:auto var(--ka);min-height:320px}
 }
 
 /* ---------- mobil ---------- */
@@ -95,7 +95,7 @@
 
 /* a 93%-os statisztika doboza (tools/uj-oldalak/kozos.mjs), minden oldalon ugyanaz: nagy kep + szam, mondat, gomb; a jegyzet teljes szelessegben alul */
 .stat-doboz{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px 40px;align-items:stretch;padding:30px;border:1px solid var(--line);border-radius:var(--r-l);background:linear-gradient(100deg,var(--beige) 0,#fff 82%);box-shadow:var(--sh-s)}
-.stat-kep{display:block;width:100%;height:100%;min-height:280px;max-height:420px;object-fit:cover;border-radius:22px;box-shadow:var(--sh)}
+.stat-kep{display:block;width:100%;height:100%;min-height:280px;max-height:420px;--mh:420px;object-fit:cover;border-radius:22px;box-shadow:var(--sh)}
 .stat-szoveg{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:12px}
 .stat-szoveg>p{margin:0}
 .stat-szam{font-size:clamp(4rem,8vw,6.6rem);font-weight:800;line-height:.95;letter-spacing:-.035em;color:var(--rose)}
@@ -157,7 +157,7 @@
 .lepes-fej h3{margin:0;font-size:clamp(1.3rem,2vw,1.7rem);line-height:1.2}
 .lepes-szam{display:grid;flex:none;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--rose);color:#fff;font-size:1.15rem;font-weight:800;box-shadow:0 6px 14px rgba(171,99,84,.25)}
 .lepes-media{grid-area:media;display:flex;align-items:stretch;justify-content:center;min-width:0}
-.lepes-media>img{display:block;width:100%;height:100%;min-height:260px;max-height:460px;object-fit:cover;border-radius:22px;box-shadow:var(--sh)}
+.lepes-media>img{display:block;width:100%;height:100%;min-height:260px;max-height:460px;--mh:460px;object-fit:cover;border-radius:22px;box-shadow:var(--sh)}
 .lepes-media>.video{display:block;width:100%}
 .lepes-media>.video .video-kep{display:block;width:100%;height:100%;min-height:260px;border-radius:22px;overflow:hidden;box-shadow:var(--sh)}
 .lepes-media>.video .video-kep img{width:100%;height:100%;object-fit:cover}
@@ -221,7 +221,7 @@
   .lepes{padding:16px}
   .lepes-fej h3{font-size:1.25rem}
   .lepes-szam{width:40px;height:40px;font-size:1rem}
-  .lepes-media>img{min-height:0;max-height:none;aspect-ratio:4/3}
+  .lepes-media>img{min-height:0;max-height:none;--mh:100000px;aspect-ratio:4/3}
   .lepes-media>.video .video-kep{min-height:0;height:auto;aspect-ratio:16/9}
   .lepes-kepek img{min-height:0;aspect-ratio:3/4}
   .lepes-szoveg>p{font-size:.94rem;line-height:1.58}
@@ -474,7 +474,7 @@
 /* mobilon a kethasabos dobozok kepe negyzetesebb (4:3 a 16:9 helyett), es az arcokra igazodik (uj-oldalak/kep-fokusz.json, tools/kep-fokusz.py):
    ne logjon ki arc / fej (a tulajdonos kerese, 2026-10-16, 4. kor) */
 @media (max-width:760px){
-  .kat-par .kat-par-kep,.kat-par-ford .kat-par-kep{aspect-ratio:4/3;max-height:none}
+  .kat-par .kat-par-kep,.kat-par-ford .kat-par-kep{aspect-ratio:4/3;max-height:none;--mh:100000px}
 }
 /* videoboritok (a tulajdonos kerese, 2026-10-16, 4. kor): a tervezett YouTube-indexkepen (uj-yt-*) es a tervezett vendegvideo-boriton (vsav-terv)
    a lejatszas-jel a kepen van, az oldal sajatja rejtett; a sajat allo videok boritojan nagy lejatszas-gomb (uj-fooldal.js 3c.) */
@@ -486,7 +486,7 @@
 .video-indito:hover .lejatszo,.video-indito:focus-visible .lejatszo{transform:scale(1.07)}
 
 /* arlista: GPT-vel rajzolt fulikonok (a tulajdonos kerese, 2026-10-16; tools/uj-ful-ikonok.py) - a kor vilagos az akcios (sotet) kartyan is */
-.ar-kartya .kor-ful .ful-kep{display:block;height:62%;max-height:40px;width:auto}
+.ar-kartya .kor-ful .ful-kep{display:block;height:62%;max-height:40px;--mh:40px;width:auto}
 .ar-kartya.ar-akcio .kor-ful{background:var(--beige)}
 
 /* az allo Facebook-videok tervezett boritoja (a tulajdonos kerese, 2026-10-16; tools/uj-fooldal.mjs fbBorito, uj-fooldal.js 3d.): ugyanott es ugyanakkora,
@@ -508,7 +508,7 @@
 .video-kep>.terv-hatter::before,.video-kep>.terv-hatter::after{content:"";position:absolute;left:-8px;right:-8px;height:52%;background-image:inherit;background-repeat:no-repeat;background-size:100% 6000%;filter:blur(6px)}
 .video-kep>.terv-hatter::before{top:-8px;background-position:center top}
 .video-kep>.terv-hatter::after{bottom:-8px;background-position:center bottom}
-.video .video-kep>img[data-terv]{position:relative;z-index:1;width:100%;height:100%!important;aspect-ratio:auto!important;object-fit:contain!important;object-position:50% 50%!important}
+.video .video-kep>img[data-terv]{position:relative;z-index:1;width:100%;height:100%!important;aspect-ratio:auto var(--ka)!important;object-fit:contain!important;object-position:50% 50%!important}
 .video-kep>.lejatszo{z-index:2}
 /* a Velemenyek oldal hoskepe: a kep sajat aranyaban (3:2, nincs csik), kattintasra a migren-videokhoz gorget */
 .hos-kep-link{display:block;border-radius:26px;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -542,13 +542,16 @@
 
 /* a feliratos abrak ("a pont helye" a testen es a fulon: allergia / maj / pajzsmirigy / lep / vastagbel / Gabi tortenete) es a 93%-os blokk feliratos kepe
    mindig EGESZBEN latszanak (a tulajdonos kerese, 2026-10-17: "ezek a kepek latszodjanak teljesen ... le van vagva"): a sajat aranyukban, kozepen, a doboz magassagaig */
-.kat-video-kep>.kat-video-img{width:auto;height:auto;max-width:100%;max-height:520px;object-fit:contain;align-self:center}
-.stat-kep{width:auto;height:auto;min-height:0;max-width:100%;max-height:420px;aspect-ratio:auto;object-fit:contain;align-self:center;justify-self:center}
+.kat-video-kep>.kat-video-img{width:var(--kepw,auto);height:auto;max-width:100%;max-height:520px;--mh:520px;object-fit:contain;align-self:center}
+.stat-kep{width:var(--kepw,auto);height:auto;min-height:0;max-width:100%;max-height:420px;--mh:420px;aspect-ratio:auto var(--ka);object-fit:contain;align-self:center;justify-self:center}
 /* a tobbi feliratos kep (data-teljes: tools/valaszado-kepek.mjs teljesKepek, uj-oldalak/teljes-kepek.json): egeszben; a kethasabos dobozban es a cikkben a kep
    sajat aranyaban (nincs sav), a fix aranyu keretben (blog-kartya, varos-csempe) kozepen, a maradek savban a kep szelenek szine (inline background-color) */
 img[data-teljes]{object-fit:contain!important;object-position:50% 50%!important}
-.kat-doboz>img[data-teljes],.cikk-kep img[data-teljes]{height:auto!important;min-height:0!important;max-height:none!important;aspect-ratio:auto!important;align-self:center}
+.kat-doboz>img[data-teljes],.cikk-kep img[data-teljes]{height:auto!important;min-height:0!important;max-height:none!important;--mh:100000px!important;aspect-ratio:auto var(--ka)!important;align-self:center}
+/* a kozepre igazitott oszlopban (.verem.kozepes) a galeria-sav a teljes szelesseget kapja mar a kepek betoltese elott is (kulonben a kepek erkezesekor
+   szelesedett ki; gyorsitas, 2026-10-17: elrendezes-csuszas) */
+.verem>.kar{align-self:stretch}
 @media (max-width:760px){
-  .kat-video-kep>.kat-video-img{max-height:440px}   /* (a 2:3-as csontvaz-abra se legyen kepernyonyi magas; egeszben, kozepen) */
-  .stat-kep{width:100%;max-width:340px;max-height:none;aspect-ratio:auto}
+  .kat-video-kep>.kat-video-img{max-height:440px;--mh:440px}   /* (a 2:3-as csontvaz-abra se legyen kepernyonyi magas; egeszben, kozepen) */
+  .stat-kep{width:100%;max-width:340px;max-height:none;--mh:100000px;aspect-ratio:auto var(--ka)}
 }

@@ -43,6 +43,14 @@ Ezen felül:
     `assets/img/valtozat/` + `jegyzek.json`), `node tools/kep-meretek.mjs` (a képek megjelenési szélessége lapanként: asztali 1440 és 820 px, mobil 390 px → `uj-oldalak/kep-meretek.json`),
     a build (`tools/valaszado-kepek.mjs`) ebből írja a `srcset` + `sizes` attribútumot (a lap `<link rel="preload" as="image">` sora `imagesrcset`-et kap, hogy ne az eredetit töltse). **Új kép vagy elrendezés-változás után futtasd a kettőt (build → kep-valtozatok → kep-meretek →
     build)**; a nem mért kép változatlan, eredeti méretben marad (nem romlik el, csak nem gyorsul). A `src` mindig az eredeti, a képnagyító is azt nyitja.
+  - **A képek doboza a betöltés előtt is a végleges méretű (elrendezés-csúszás, CLS)**: a Lighthouse a város- és állásajánlat-lapokon csúszást mért (a `width:auto` +
+    `height:auto` kép doboza a betöltés előtt 0 × 0 volt, a kép érkezésekor lejjebb tolta a tartalmat). A build (`kepDobozok`, `tools/valaszado-kepek.mjs`) minden új lapon az `<img>`-re
+    írja a fájl valódi szélességét és arányát (`--kw`, `--ka`); az `uj-fooldal.css` eleje ebből adja az arányt (`aspect-ratio:auto var(--ka)`) és a `--kepw`-t
+    (min(`--kw`, max-height × `--ka`)). **Ahol a CSS a kép saját méretét használja**, a szélesség `width:var(--kepw,auto)`, és **minden képre vonatkozó `max-height` mellett ugyanaz
+    az érték `--mh`-ként is áll** (`max-height:260px;--mh:260px`; `none` → `--mh:100000px`); a képen az `aspect-ratio:auto` helyett `aspect-ratio:auto var(--ka)`. Új ilyen szabálynál így írd.
+    Az álló videó (`.vid.vid-allo`) szélessége min(300px, max-height × 9/16); a középre igazított oszlopban a galéria-sáv `align-self:stretch`. Betöltés után a kinézet ugyanaz, mint
+    `width:auto`-val – kivéve, hogy a srcset nem nagyítja a kis képet a valódi szélessége fölé. Ellenőrzés: `node tools/csuszas-teszt.mjs` (késleltetett képekkel a lap első
+    képernyőjén mért csúszás, asztalon és mobilon) és `node tools/doboz-teszt.mjs ki.json [alap.json]` (a képdobozok betöltés előtt / után; az alaphoz mérve a végleges kinézet).
   - **Tömörített stílusok és szkriptek** (`tools/tomorites.mjs`, esbuild): csak a saját `uj-*.css`, `uj-fooldal.js`, `uj-oldalak.js`, `motor/motor.js`, `terkep.js`, `tipus.js`; a mérőkód
     fájljai (`suti.js`, `mp-meres.js`, `motor-indito.js`, `salonic-adapter.js`, `booking-id.js`) **változatlanul** mennek ki. Az esbuild nélkül a lépés kimarad (a lap ugyanúgy működik).
   - Betűk: a `plus-jakarta-sans-latin-ext.woff2` is előtöltve (a magyar ő / ű ebben van, a hős szövegében is); borítós videó `preload="none"` (a `sablon.mjs` `video()`-ja, és a build `videoElotoltes` lépése minden új lapon: a poszteres, nem automatikusan induló `<video preload="metadata">` → `none`, a hős álló videója mobilon különben ~650 KB-ot töltött); a blog első három kártyaképe nem lusta.

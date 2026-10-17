@@ -45,6 +45,56 @@ export function videoElotoltes(DIST) {
   return `${db} boritos video preload="none"`;
 }
 
+// A kep valodi merete a fajl fejlecebol (PNG, GIF, JPEG, WebP; mas formatum / hibas fajl: null).
+function fajlMeret(p) {
+  let b;
+  try { b = fs.readFileSync(p); } catch { return null; }
+  if (b.length > 24 && b.readUInt32BE(0) === 0x89504e47) return [b.readUInt32BE(16), b.readUInt32BE(20)];
+  if (b.length > 10 && b.toString('latin1', 0, 3) === 'GIF') return [b.readUInt16LE(6), b.readUInt16LE(8)];
+  if (b.length > 30 && b.toString('latin1', 0, 4) === 'RIFF' && b.toString('latin1', 8, 12) === 'WEBP') {
+    const t = b.toString('latin1', 12, 16);
+    if (t === 'VP8 ') return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
+    if (t === 'VP8L') { const n = b.readUInt32LE(21); return [(n & 0x3fff) + 1, ((n >> 14) & 0x3fff) + 1]; }
+    if (t === 'VP8X') return [b.readUIntLE(24, 3) + 1, b.readUIntLE(27, 3) + 1];
+    return null;
+  }
+  if (b.length > 4 && b[0] === 0xff && b[1] === 0xd8) {
+    let i = 2;
+    while (i + 9 < b.length) {
+      if (b[i] !== 0xff) { i++; continue; }
+      const m = b[i + 1];
+      if (m === 0xd8 || m === 0x01 || (m >= 0xd0 && m <= 0xd7)) { i += 2; continue; }
+      if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) return [b.readUInt16BE(i + 7), b.readUInt16BE(i + 5)];
+      i += 2 + b.readUInt16BE(i + 2);
+    }
+  }
+  return null;
+}
+
+// A kepek doboza a betoltes elott is a vegleges meretu (gyorsitas, 2026-10-17: a Lighthouse a varos- es allasajanlat-lapokon elrendezes-csuszast mert):
+// ahol a CSS a kep sajat meretet hasznalja (width:auto, pl. .verem>.kep, .kep-ikon, .stat-kep, .kat-video-img, a feliratos kepek), a doboz a betoltes elott
+// 0 x 0 volt, es a kep megerkezesekor lejjebb tolta a tartalmat. Minden uj lapon az <img> a fajl valodi szelesseget es aranyat kapja (--kw, --ka; inline stilus),
+// az uj-egyseges.css vege ebbol adja meg a szelesseget (min(--kw, max-height * --ka)) es az aranyt (aspect-ratio: auto --ka) – ugyanazt, amit betoltes utan.
+export function kepDobozok(ROOT, DIST) {
+  const meretek = new Map();
+  let db = 0, nincs = 0;
+  for (const fajl of ujLapok(DIST)) {
+    const h = fs.readFileSync(fajl, 'utf8');
+    const u = h.replace(/<img\b[^>]*>/g, (tag) => {
+      const m = tag.match(/\ssrc="\/assets\/img\/([^"?#]+)/);
+      if (!m || /--kw:/.test(tag)) return tag;
+      if (!meretek.has(m[1])) meretek.set(m[1], fajlMeret(path.join(ROOT, 'assets/img', m[1])));
+      const mr = meretek.get(m[1]);
+      if (!mr || !mr[0] || !mr[1]) { nincs++; return tag; }
+      db++;
+      const jel = `--kw:${mr[0]}px;--ka:${+(mr[0] / mr[1]).toFixed(4)}`;
+      return /\sstyle="/.test(tag) ? tag.replace(/\sstyle="([^"]*)"/, (x, s) => ` style="${s.replace(/;?\s*$/, ';')}${jel}"`) : tag.replace(/^<img\b/, `<img style="${jel}"`);
+    });
+    if (u !== h) fs.writeFileSync(fajl, u);
+  }
+  return `${db} kep kapott dobozmeretet${nincs ? `, ${nincs} meret nelkul (nem PNG/GIF/JPEG/WebP)` : ''}`;
+}
+
 export function valaszadoKepek(ROOT, DIST) {
   const jp = path.join(ROOT, 'assets/img/valtozat/jegyzek.json'), mp = path.join(ROOT, 'uj-oldalak/kep-meretek.json');
   if (!fs.existsSync(jp) || !fs.existsSync(mp)) return 'nincs valtozat-jegyzek vagy mert meret: kihagyva';

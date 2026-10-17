@@ -64,7 +64,7 @@
 /* a "valasztas" doboz kepe a doboz teljes magassagaban (a fooldalon alacsonyabb a doboz) */
 @media (min-width:1001px){
   .oldal-sajat .valasztas{align-items:stretch}
-  .oldal-sajat .valasztas-kep{height:100%;max-height:none;min-height:230px}
+  .oldal-sajat .valasztas-kep{height:100%;max-height:none;--mh:100000px;min-height:230px}
 }
 
 /* --- Velemenyek: ugras a kategoriakhoz (gombok a hosben), a kategoria-cimek a ragado fejlec alatt allnak meg --- */
@@ -222,7 +222,7 @@
 /* (a tulajdonos szabalya, 2026-10-16: "amikor ennyire ures a box asztalin, csokkentsd le a kepmeretet es a box meretet") */
 @media (min-width:1001px){
   .oldal-sajat .kat-doboz.akc-mi{grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr);align-items:center}
-  .oldal-sajat .kat-doboz.akc-mi .kat-par-kep{height:auto;min-height:0;max-height:340px;aspect-ratio:4/3}
+  .oldal-sajat .kat-doboz.akc-mi .kat-par-kep{height:auto;min-height:0;max-height:340px;--mh:340px;aspect-ratio:4/3}
   .oldal-sajat .kat-doboz.akc-mi>.kat-doboz-szoveg>.gomb:last-child{margin-top:16px}
 }
 

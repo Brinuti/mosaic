@@ -49,7 +49,7 @@
 .kat-video-kep .lejatszo .ik{width:30px;height:30px}
 .kat-video-kep .beagyaz{height:min(var(--mag,420px),520px);border-radius:22px;box-shadow:var(--sh)}
 .kat-video-kepes{grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr)}
-.kat-video-img{display:block;width:100%;max-width:420px;max-height:520px;margin-inline:auto;object-fit:cover;border-radius:22px;box-shadow:var(--sh)}
+.kat-video-img{display:block;width:100%;max-width:420px;max-height:520px;--mh:520px;margin-inline:auto;object-fit:cover;border-radius:22px;box-shadow:var(--sh)}
 .kat-video-egy{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
 .kat-video-egy .kat-video-kep{width:min(100%,820px);order:2}
 .kat-video-egy .kat-doboz-szoveg{display:flex;flex-direction:column;align-items:center}
@@ -252,7 +252,7 @@
 .kat-par{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px}
 .kat-par-ford{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}
 .kat-par-ford .kat-par-kep{order:-1}
-.kat-par-kep{display:block;width:100%;aspect-ratio:1/1;max-height:400px;object-fit:cover;border-radius:22px;box-shadow:var(--sh);cursor:zoom-in}
+.kat-par-kep{display:block;width:100%;aspect-ratio:1/1;max-height:400px;--mh:400px;object-fit:cover;border-radius:22px;box-shadow:var(--sh);cursor:zoom-in}
 .kat-par .kat-doboz-szoveg>p:not(.felirat){font-size:1rem;line-height:1.6}
 
 /* fuggoleges bemutato video */
@@ -299,7 +299,7 @@
   .kat-biztos,.kat-bevideo{grid-template-columns:minmax(0,1fr);justify-items:center;gap:22px}
   .kat-biztos-fig{width:100%;max-width:300px}
   .kat-par,.kat-par-ford{grid-template-columns:minmax(0,1fr);gap:22px}
-  .kat-par-kep,.kat-par-ford .kat-par-kep{order:-1;aspect-ratio:16/10;max-height:320px}
+  .kat-par-kep,.kat-par-ford .kat-par-kep{order:-1;aspect-ratio:16/10;max-height:320px;--mh:320px}
   .kat-biz-racs{grid-template-columns:repeat(2,minmax(0,1fr))}
   .kat-elerh-racs{grid-template-columns:minmax(0,1fr);gap:22px}
   .kat-elerh-terkep .terkepdoboz{min-height:260px}
@@ -334,11 +334,11 @@
   .kat-biztos{grid-template-columns:minmax(0,1fr);gap:14px;justify-items:stretch}
   .kat-biztos .kat-doboz-szoveg{display:block}
   .kat-biztos-fig{width:100%;max-width:none}
-  .kat-biztos-kep{aspect-ratio:4/5;max-height:none;width:100%}
+  .kat-biztos-kep{aspect-ratio:4/5;max-height:none;--mh:100000px;width:100%}
   .kat-biztos h2{margin:0 0 8px;text-align:left}
   .kat-biztos .kat-doboz-szoveg>p,.kat-biztos .pipak{text-align:left}
   .kat-biztos .pipak li{text-align:left}
-  .kat-par-kep,.kat-par-ford .kat-par-kep{aspect-ratio:16/9;max-height:190px;border-radius:16px}
+  .kat-par-kep,.kat-par-ford .kat-par-kep{aspect-ratio:16/9;max-height:190px;--mh:190px;border-radius:16px}
   .kat-par .kat-doboz-szoveg>p:not(.felirat){font-size:.88rem;line-height:1.45}
   .kat-bevideo{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:12px;align-items:center;justify-items:stretch;width:auto;padding:16px 14px}
   .kat-bevideo-kep{max-width:150px}
@@ -417,7 +417,7 @@
 @media (max-width:760px){
   .kat-egyeb-hosszu p,.kat-egyeb-hosszu li,.kat-egyeb-hosszu .lista{text-align:left}
   .kat-egyeb-hosszu .verem.kozepes{align-items:stretch}
-  .hos-video-mp4.vid-allo{max-height:58svh}
+  .hos-video-mp4.vid-allo{max-height:58svh;--mh:58svh}
 }
 /* mobil B-hos: a hosszu feliratu gomb (pl. "Nem akarok lecsuszni") nem fer a masik melle: a gombok egymas ala kerulnek, teljes szelessegben (2026-10-16) */
 @media (max-width:760px){

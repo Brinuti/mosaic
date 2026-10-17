@@ -48,7 +48,7 @@
 @media (min-width:1001px){
   .oldal-b2 .kat-doboz.b-kicsi-kep{grid-template-columns:minmax(0,1.45fr) minmax(0,.55fr);align-items:center}
   .oldal-b2 .kat-doboz.b-kicsi-kep.kat-par-ford{grid-template-columns:minmax(0,.55fr) minmax(0,1.45fr)}
-  .oldal-b2 .kat-doboz.b-kicsi-kep .kat-par-kep{height:auto;min-height:0;max-height:300px;aspect-ratio:1/1}
+  .oldal-b2 .kat-doboz.b-kicsi-kep .kat-par-kep{height:auto;min-height:0;max-height:300px;--mh:300px;aspect-ratio:1/1}
   .oldal-b2 .kat-doboz.b-kicsi-kep>.kat-doboz-szoveg{justify-content:center}
   .oldal-b2 .kat-doboz.b-kicsi-kep>.kat-doboz-szoveg>.gomb:last-child,.oldal-b2 .kat-doboz.b-kicsi-kep>.kat-doboz-szoveg>.szoveg-link:last-child{margin-top:10px}
 }

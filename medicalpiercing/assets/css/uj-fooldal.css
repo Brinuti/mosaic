@@ -22,6 +22,11 @@
 html{scroll-behavior:smooth;scroll-padding-top:calc(var(--fej) + 14px);-webkit-text-size-adjust:100%}
 body{margin:0;font:400 16px/1.6 var(--font);color:var(--ink);background:#fff;overflow-x:hidden}
 img{max-width:100%;height:auto}
+/* A kep doboza a betoltes elott is a vegleges meretu (elrendezes-csuszas, CLS; gyorsitas, 2026-10-17): a build minden uj lapon a kep valodi szelesseget es aranyat
+   irja az <img>-re (--kw, --ka; tools/valaszado-kepek.mjs kepDobozok). Az arany a fajle (a HTML width/height helyett, a tobbi szabaly felulirja); ahol a doboz a kep
+   sajat meretebol jon (width:var(--kepw,auto)), a szelesseg min(--kw, max-height x --ka) – a max-height melletti --mh-bol. Betoltes utan ugyanaz, mint width:auto-val. */
+@property --mh{syntax:'*';inherits:false}
+:where(img[style*="--ka:"]){aspect-ratio:auto var(--ka);--kepw:min(var(--kw),calc(var(--mh,100000px)*var(--ka)))}
 a{color:inherit}
 [hidden]{display:none!important}
 h1,h2,h3{color:var(--navy);margin:0;font-weight:800;letter-spacing:-.015em}
@@ -179,7 +184,7 @@ h1 em{font-style:normal;color:var(--rose)}
 .valasztas-szoveg .gombsor{margin-top:14px}
 .valasztas .pipak{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:12px}
 .valasztas .pipak li{margin:0;font-size:.82rem;color:var(--mut)}
-.valasztas-kep{display:block;width:100%;height:100%;min-height:150px;max-height:230px;object-fit:cover;object-position:50% 22%;-webkit-mask-image:linear-gradient(90deg,transparent,#000 24%);mask-image:linear-gradient(90deg,transparent,#000 24%)}
+.valasztas-kep{display:block;width:100%;height:100%;min-height:150px;max-height:230px;--mh:230px;object-fit:cover;object-position:50% 22%;-webkit-mask-image:linear-gradient(90deg,transparent,#000 24%);mask-image:linear-gradient(90deg,transparent,#000 24%)}
 
 /* premium + galeria */
 .premium{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,640px);gap:36px;align-items:center;padding:34px;border-radius:var(--r-l);border:1px solid var(--line);background:linear-gradient(100deg,var(--beige) 0,#fff 85%);box-shadow:var(--sh-s)}
@@ -219,7 +224,7 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 .orvos .panel-szoveg .gomb{align-self:flex-start;margin-top:auto}
 .orvos .panel-szoveg blockquote{margin-bottom:20px}
 .orvos-kep{position:relative;align-self:stretch;margin:0;min-height:300px;display:flex;justify-content:flex-end;align-items:flex-end}
-.orvos-kep img{display:block;width:auto;height:100%;max-height:360px;max-width:100%;object-fit:contain;object-position:right bottom;-webkit-mask-image:linear-gradient(90deg,transparent,#000 30%),linear-gradient(180deg,transparent,#000 16%);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 30%),linear-gradient(180deg,transparent,#000 16%);mask-composite:intersect}
+.orvos-kep img{display:block;width:auto;height:100%;max-height:360px;--mh:360px;max-width:100%;object-fit:contain;object-position:right bottom;-webkit-mask-image:linear-gradient(90deg,transparent,#000 30%),linear-gradient(180deg,transparent,#000 16%);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 30%),linear-gradient(180deg,transparent,#000 16%);mask-composite:intersect}
 .orvos-kep figcaption{position:absolute;left:6px;bottom:34px;padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.92);font-size:.8rem;line-height:1.3;color:var(--mut);box-shadow:var(--sh-s)}
 .orvos-kep figcaption b{display:block;color:var(--navy);font-size:.9rem}
 .pecset{position:relative;align-self:center;justify-self:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:176px;height:176px;margin:22px;border-radius:50%;color:#fff;text-align:center;background:radial-gradient(circle at 30% 24%,#e6c6c3,#d7aba8 62%,#c99b97);box-shadow:0 0 0 7px rgba(255,255,255,.75),var(--sh);text-shadow:0 1px 3px rgba(80,50,46,.35)}
@@ -355,7 +360,7 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   .kapcsolat-adat{grid-column:1/-1}
   .terkep{min-height:300px}
   .valasztas{grid-template-columns:1fr}
-  .valasztas-kep{min-height:0;height:180px;max-height:none;object-position:75% 56%;-webkit-mask-image:linear-gradient(180deg,transparent,#000 22%);mask-image:linear-gradient(180deg,transparent,#000 22%)}
+  .valasztas-kep{min-height:0;height:180px;max-height:none;--mh:100000px;object-position:75% 56%;-webkit-mask-image:linear-gradient(180deg,transparent,#000 22%);mask-image:linear-gradient(180deg,transparent,#000 22%)}
   .uzletek-fej{grid-template-columns:1fr}
 }
 
@@ -418,7 +423,7 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
   .orvos .panel-szoveg{align-self:auto;justify-content:flex-start}
   .orvos .panel-szoveg .gomb{align-self:center;margin-top:0}
   .orvos-kep{order:2;min-height:0;display:block;width:100%;margin:0}
-  .orvos-kep img{width:100%;height:auto;max-height:none;max-width:none;object-fit:contain;-webkit-mask-image:linear-gradient(180deg,transparent,#000 12%);mask-image:linear-gradient(180deg,transparent,#000 12%);-webkit-mask-composite:source-over;mask-composite:add}
+  .orvos-kep img{width:100%;height:auto;max-height:none;--mh:100000px;max-width:none;object-fit:contain;-webkit-mask-image:linear-gradient(180deg,transparent,#000 12%);mask-image:linear-gradient(180deg,transparent,#000 12%);-webkit-mask-composite:source-over;mask-composite:add}
   .orvos-kep figcaption{left:50%;transform:translateX(-50%);bottom:12px;text-align:center;white-space:nowrap}
   .pecset{margin:6px auto 28px;width:160px;height:160px}
   .pecset b{font-size:1.3rem}
@@ -479,7 +484,7 @@ blockquote{margin:0 0 20px;padding:0 0 0 16px;border-left:3px solid var(--rose);
 .nagyito{width:min(96vw,1100px);max-height:96vh;padding:0;border:0;border-radius:18px;background:#e9e6e4;overflow:visible}
 .nagyito[open]{display:grid;place-items:center}
 .nagyito::backdrop{background:rgba(30,30,40,.85)}
-.nagyito-kep{display:block;width:auto;height:auto;max-width:100%;max-height:92vh;border-radius:18px;object-fit:contain}
+.nagyito-kep{display:block;width:auto;height:auto;max-width:100%;max-height:92vh;--mh:92vh;border-radius:18px;object-fit:contain}
 .nagyito-zar{position:absolute;right:6px;top:-48px;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--navy);cursor:pointer}
 .nagyito-zar .ik{width:20px;height:20px}
 .nagyito .galeria-gomb{z-index:2}
