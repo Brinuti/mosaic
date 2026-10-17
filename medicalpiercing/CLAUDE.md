@@ -163,8 +163,9 @@ Ezen felül:
   ebbe olvadt bele (a záró mondata; a két páros csempe a 3. körben kimaradt, a csomag-kártyán az ár középen). A „Legnépszerűbb piercingeink” rács (3. kör: címe „Ezeket a piercingeket érdemes párban vagy hármasban választani 👇”) – belőle a divat fülpiercing kimaradt, a képeken jelölés: mivel szokták párban / hármasban
   választani (`.kartya-par`). A vélemények címe „Olvasd el, hogyan segített azoknak, akik többet szúrattak”, alcíme „A piercingek erősítik egymást – nézd meg, mit írtak róla
   viselőink:”; alatta a **2-3 piercinges vendégvideók** sávja („Videóban mesélnek a vendégeink, akik több piercinget szúrattak”) (`reszek/video-velemeny-tobb.html`, `TOBB` a `tools/uj-video-velemenyek.mjs`-ben: a leiratok szerint a 20-as három, a
-  többi két piercinget kapott; a 21-es és 36-os második piercingje megerősítő). A csapat lapozó (`.csapat-kar`). A Trustindex-widget még a „SHENMEN – 2026” (Shenmen címkére szűr);
-  a „2-3 Piercing” címkére szűrő widget nincs a fiókban – új widget létrehozásához a tulajdonos külön engedélye kell (a fiókban ne hozz létre semmit e nélkül).
+  többi két piercinget kapott; a 21-es és 36-os második piercingje megerősítő). A csapat lapozó (`.csapat-kar`). A vélemény-doboz widgetje a „2-3 PIERCING - 2026”
+  (Trustindex 838417, kulcs `a956e9c8305984117f761d63e99`): a „SHENMEN - 2026” (679552) klónja, csak a „2-3 Piercing” címkés véleményekkel; a tulajdonos kifejezett
+  engedélyével hoztam létre (2026-10-17), a lapban `<!--#velemenyek ti=a956e9c8305984117f761d63e99-->`. A Trustindex-fiókban mást továbbra se hozz létre és ne módosíts e nélkül.
   A `tools/uj-oldalak-teszt.mjs` `SZANDEKOS_LAP` sora a 2. kör átírt sorait is kivételnek veszi.
 - **A TikTok-landoló** (`/kozerzetjavito-piercing-soft-akcio`, a TikTok-hirdetések céloldala; a tulajdonos kérése, 2026-10-16): a szöveg **1:1 az eredeti landolóról**
   (`/regi/kozerzetjavito-piercing-soft-akcio`), de **sehol nem állhat panasz- vagy orvosi szó** („nem lehet sehol sem, se migrén, se klimax, semmi ilyesmi, nem lehet a
